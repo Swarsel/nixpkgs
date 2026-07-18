@@ -14,14 +14,13 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   makeFlags = [ "CC:=$(CC)" ];
-
   installFlags = [ "PREFIX=$(out)" ];
 
   meta = {
     description = "Simple IRC client";
-    mainProgram = "sic";
     homepage = "https://tools.suckless.org/sic/";
     license = lib.licenses.mit;
     platforms = lib.platforms.unix;
+    mainProgram = "sic";
   };
 })

@@ -11,8 +11,8 @@ in
   options = {
     services.automatic-timezoned = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Enable `automatic-timezoned`, simple daemon for keeping the system
           timezone up-to-date based on the current location. It uses geoclue2 to
@@ -24,16 +24,15 @@ in
           than the default value using `lib.mkDefault` or `lib.mkOverride`. This is
           to make the choice deliberate. An error will be presented otherwise.
         '';
+
+        type = lib.types.bool;
       };
+
       package = lib.mkPackageOption pkgs "automatic-timezoned" { };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    # This will give users an error if they have set an explicit time
-    # zone, rather than having the service silently override it.
-    time.timeZone = null;
-
     security.polkit.extraConfig = ''
       polkit.addRule(function(action, subject) {
         if (action.id == "org.freedesktop.timedate1.set-timezone"
@@ -45,6 +44,7 @@ in
 
     services.geoclue2 = {
       enable = true;
+
       appConfig.automatic-timezoned = {
         isAllowed = true;
         isSystem = true;
@@ -55,43 +55,52 @@ in
     systemd.services = {
 
       automatic-timezoned = {
-        description = "Automatically update system timezone based on location";
-        requires = [ "automatic-timezoned-geoclue-agent.service" ];
         after = [
           "automatic-timezoned-geoclue-agent.service"
           "multi-user.target"
         ];
+
+        description = "Automatically update system timezone based on location";
+        requires = [ "automatic-timezoned-geoclue-agent.service" ];
+
         serviceConfig = {
+          ExecStart = "${cfg.package}/bin/automatic-timezoned";
           Type = "exec";
           User = "automatic-timezoned";
-          ExecStart = "${cfg.package}/bin/automatic-timezoned";
         };
+
         wantedBy = [ "multi-user.target" ];
       };
 
       automatic-timezoned-geoclue-agent = {
+        after = [ "geoclue.service" ];
         description = "Geoclue agent for automatic-timezoned";
         requires = [ "geoclue.service" ];
-        after = [ "geoclue.service" ];
+
         serviceConfig = {
+          ExecStart = "${pkgs.geoclue2-with-demo-agent}/libexec/geoclue-2.0/demos/agent";
+          PrivateTmp = true;
+          Restart = "on-failure";
           Type = "exec";
           User = "automatic-timezoned";
-          ExecStart = "${pkgs.geoclue2-with-demo-agent}/libexec/geoclue-2.0/demos/agent";
-          Restart = "on-failure";
-          PrivateTmp = true;
         };
       };
 
     };
 
+    # This will give users an error if they have set an explicit time
+    # zone, rather than having the service silently override it.
+    time.timeZone = null;
+
     users = {
-      users.automatic-timezoned = {
-        description = "automatic-timezoned";
-        uid = config.ids.uids.automatic-timezoned;
-        group = "automatic-timezoned";
-      };
       groups.automatic-timezoned = {
         gid = config.ids.gids.automatic-timezoned;
+      };
+
+      users.automatic-timezoned = {
+        description = "automatic-timezoned";
+        group = "automatic-timezoned";
+        uid = config.ids.uids.automatic-timezoned;
       };
     };
   };

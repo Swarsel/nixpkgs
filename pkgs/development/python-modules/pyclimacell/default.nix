@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   pytestCheckHook,
   pytz,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pyclimacell";
   version = "0.18.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "raman325";
@@ -25,7 +24,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "pyclimacell" ];
 
   meta = {

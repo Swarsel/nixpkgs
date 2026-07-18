@@ -6,6 +6,7 @@
   blueprint-compiler,
   desktop-file-utils,
   gjs,
+  gnome,
   gst_all_1,
   libadwaita,
   meson,
@@ -13,7 +14,6 @@
   pkg-config,
   typescript,
   wrapGAppsHook4,
-  gnome,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "decibels";
@@ -65,11 +65,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.gnome.org/GNOME/decibels";
     changelog = "https://gitlab.gnome.org/GNOME/decibels/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
     license = lib.licenses.gpl3Only;
+    platforms = lib.platforms.linux;
+    mainProgram = "org.gnome.Decibels";
+
     teams = [
       lib.teams.gnome
       lib.teams.gnome-circle
     ];
-    mainProgram = "org.gnome.Decibels";
-    platforms = lib.platforms.linux;
   };
 })

@@ -1,14 +1,14 @@
 {
+  lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  python3,
   cmake,
   libmysqlclient,
   makeBinaryWrapper,
-  lib,
   nix-update-script,
   nixosTests,
+  pkg-config,
+  python3,
+  rustPlatform,
 }:
 
 let
@@ -43,19 +43,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libmysqlclient
   ];
 
+  cargoHash = "sha256-9Dcf5mDyK/XjsKTlCPXTHoBkIq+FFPDg1zfK24Y9nHQ=";
+  # almost all tests need a DB to test against
+  doCheck = false;
+
   preFixup = ''
     wrapProgram $out/bin/syncserver \
       --prefix PATH : ${lib.makeBinPath [ pyFxADeps ]}
   '';
 
-  cargoHash = "sha256-9Dcf5mDyK/XjsKTlCPXTHoBkIq+FFPDg1zfK24Y9nHQ=";
-
-  # almost all tests need a DB to test against
-  doCheck = false;
-
-  passthru.updateScript = nix-update-script { };
-
   passthru.tests = { inherit (nixosTests) firefox-syncserver; };
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Mozilla Sync Storage built with Rust";

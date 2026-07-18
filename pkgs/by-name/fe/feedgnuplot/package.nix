@@ -1,14 +1,14 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  makeFontsConf,
   freefont_ttf,
   gnuplot,
+  installShellFiles,
+  makeFontsConf,
+  makeWrapper,
   perl,
   perlPackages,
-  stdenv,
-  installShellFiles,
 }:
 
 let
@@ -30,6 +30,10 @@ perlPackages.buildPerlPackage rec {
 
   outputs = [ "out" ];
 
+  postPatch = ''
+    patchShebangs .
+  '';
+
   nativeBuildInputs = [
     makeWrapper
     installShellFiles
@@ -47,11 +51,6 @@ perlPackages.buildPerlPackage rec {
 
   # Fontconfig error: Cannot load default config file
   env.FONTCONFIG_FILE = fontsConf;
-
-  postPatch = ''
-    patchShebangs .
-  '';
-
   # Tests require gnuplot 4.6.4 and are completely skipped with gnuplot 5.
   doCheck = false;
 
@@ -67,12 +66,14 @@ perlPackages.buildPerlPackage rec {
   meta = {
     description = "General purpose pipe-oriented plotting tool";
     homepage = "https://github.com/dkogan/feedgnuplot/";
+
     license = with lib.licenses; [
       artistic1
       gpl1Plus
     ];
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [ mnacamura ];
+    platforms = lib.platforms.unix;
     mainProgram = "feedgnuplot";
   };
 }

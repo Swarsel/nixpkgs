@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   orjson,
   pytest-aiohttp,
   pytest-cov-stub,
@@ -15,9 +15,6 @@
 buildPythonPackage rec {
   pname = "pydeconz";
   version = "120";
-  pyproject = true;
-
-  disabled = pythonOlder "3.12";
 
   src = fetchFromGitHub {
     owner = "Kane610";
@@ -32,13 +29,6 @@ buildPythonPackage rec {
       --replace-fail "wheel==" "wheel>="
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    aiohttp
-    orjson
-  ];
-
   nativeCheckInputs = [
     aioresponses
     pytest-aiohttp
@@ -46,6 +36,15 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    aiohttp
+    orjson
+  ];
+
+  disabled = pythonOlder "3.12";
+  pyproject = true;
   pythonImportsCheck = [ "pydeconz" ];
 
   meta = {

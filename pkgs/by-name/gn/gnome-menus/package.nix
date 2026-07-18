@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   gettext,
   glib,
-  gobject-introspection,
   gnome,
+  gobject-introspection,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -18,17 +18,18 @@ stdenv.mkDerivation rec {
     sha256 = "EZipHNvc+yMt+U5x71QnYX0mAp4ye+P4YMOwkhxEgRg=";
   };
 
-  makeFlags = [
-    "INTROSPECTION_GIRDIR=${placeholder "out"}/share/gir-1.0/"
-    "INTROSPECTION_TYPELIBDIR=${placeholder "out"}/lib/girepository-1.0"
-  ];
-
   nativeBuildInputs = [
     pkg-config
     gettext
     gobject-introspection
   ];
+
   buildInputs = [ glib ];
+
+  makeFlags = [
+    "INTROSPECTION_GIRDIR=${placeholder "out"}/share/gir-1.0/"
+    "INTROSPECTION_TYPELIBDIR=${placeholder "out"}/lib/girepository-1.0"
+  ];
 
   passthru = {
     updateScript = gnome.updateScript {
@@ -38,12 +39,14 @@ stdenv.mkDerivation rec {
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/gnome-menus";
     description = "Library that implements freedesktops's Desktop Menu Specification in GNOME";
+    homepage = "https://gitlab.gnome.org/GNOME/gnome-menus";
+
     license = with lib.licenses; [
       gpl2
       lgpl2
     ];
+
     platforms = lib.platforms.linux;
   };
 }

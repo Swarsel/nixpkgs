@@ -1,8 +1,9 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   buildPythonPackage,
   cliff,
-  fetchFromGitHub,
   keystoneauth1,
   openstacksdk,
   oslo-i18n,
@@ -11,7 +12,6 @@
   requests,
   requests-mock,
   setuptools,
-  stdenv,
   stestr,
   stevedore,
 }:
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "osc-lib";
   version = "4.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openstack";
@@ -33,21 +32,6 @@ buildPythonPackage rec {
   ];
 
   env.PBR_VERSION = version;
-
-  build-system = [
-    pbr
-    setuptools
-  ];
-
-  dependencies = [
-    cliff
-    keystoneauth1
-    openstacksdk
-    oslo-i18n
-    oslo-utils
-    requests
-    stevedore
-  ];
 
   nativeCheckInputs = [
     requests-mock
@@ -68,6 +52,23 @@ buildPythonPackage rec {
       stestr run -e <(echo "${lib.concatStringsSep "\n" disabledTests}")
       runHook postCheck
     '';
+
+  build-system = [
+    pbr
+    setuptools
+  ];
+
+  dependencies = [
+    cliff
+    keystoneauth1
+    openstacksdk
+    oslo-i18n
+    oslo-utils
+    requests
+    stevedore
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "osc_lib"

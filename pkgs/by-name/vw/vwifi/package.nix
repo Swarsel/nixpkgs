@@ -9,6 +9,7 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "vwifi";
   version = "7.1";
+
   src = fetchFromGitHub {
     owner = "Raizo62";
     repo = "vwifi";
@@ -16,13 +17,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ed7MLPLdKIK9e4EQq83GwKWiOX3tNJShiFdnNgFGj7Q=";
   };
 
-  buildInputs = [
-    libnl
-  ];
-
   nativeBuildInputs = [
     cmake
     pkg-config
+  ];
+
+  buildInputs = [
+    libnl
   ];
 
   doInstallCheck = true;
@@ -41,7 +42,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Simulate Wi-Fi (802.11) between Linux Virtual Machines";
     homepage = "https://github.com/Raizo62/vwifi";
     license = lib.licenses.lgpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ asappia ];
+    platforms = lib.platforms.linux;
   };
 })

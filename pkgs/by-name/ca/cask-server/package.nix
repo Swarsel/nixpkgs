@@ -26,13 +26,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Public server and API to interface with Cask features";
-    mainProgram = "CaskServer";
     homepage = "https://github.com/Nitrux/cask-server";
+
     license = with lib.licenses; [
       bsd2
       lgpl21Plus
       cc0
     ];
+
     maintainers = with lib.maintainers; [ onny ];
+    mainProgram = "CaskServer";
   };
 })

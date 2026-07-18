@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   boost,
   cmake,
-  fetchFromGitHub,
   pkg-config,
   txt2tags,
   udevCheckHook,
@@ -12,6 +12,7 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "thunderbolt";
   version = "0.9.3";
+
   src = fetchFromGitHub {
     owner = "01org";
     repo = "thunderbolt-software-user-space";
@@ -25,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     txt2tags
     udevCheckHook
   ];
+
   buildInputs = [ boost ];
 
   cmakeFlags = [
@@ -36,9 +38,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Thunderbolt user-space components";
+    homepage = "https://01.org/thunderbolt-sw";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.ryantrinkle ];
-    homepage = "https://01.org/thunderbolt-sw";
     platforms = lib.platforms.linux;
   };
 })

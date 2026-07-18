@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -17,20 +17,20 @@ buildGoModule rec {
   };
 
   vendorHash = "sha256-gBcog+hw8yKYEBH6iokO7vnfDZn7zS0N/MWOGomxJGw=";
-
   doCheck = false; # needs internet connection
-
   passthru.tests = { inherit (nixosTests.prometheus-exporters) domain; };
 
   meta = {
-    homepage = "https://github.com/caarlos0/domain_exporter";
     description = "Exports the expiration time of your domains as prometheus metrics";
-    mainProgram = "domain_exporter";
+    homepage = "https://github.com/caarlos0/domain_exporter";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       mmilata
       peterhoeg
       caarlos0
     ];
+
+    mainProgram = "domain_exporter";
   };
 }

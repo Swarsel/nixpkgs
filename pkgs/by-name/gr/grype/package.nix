@@ -1,21 +1,18 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   git,
   installShellFiles,
-  openssl,
   net-tools,
+  openssl,
   zstd,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "grype";
   version = "0.115.0";
-
-  # required for tests
-  __darwinAllowLocalNetworking = true;
 
   src = fetchFromGitHub {
     owner = "anchore";
@@ -25,6 +22,7 @@ buildGoModule (finalAttrs: {
     # populate values that require us to use git. By doing this in postFetch we
     # can delete .git afterwards and maintain better reproducibility of the src.
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       git rev-parse HEAD > $out/COMMIT
@@ -34,10 +32,6 @@ buildGoModule (finalAttrs: {
     '';
   };
 
-  proxyVendor = true;
-
-  vendorHash = "sha256-QxHhRqLPXVzJL7ksx0lMQuk0qtzartJk+tKiz6IP4xc=";
-
   patches = [
     # several test golden files have unstable paths based on the platform
     # this patch adjusts the `Redact` helper to also work for builds by nix.
@@ -45,25 +39,7 @@ buildGoModule (finalAttrs: {
   ];
 
   nativeBuildInputs = [ installShellFiles ];
-
-  nativeCheckInputs = [
-    git
-    openssl
-    net-tools
-    zstd
-  ];
-
-  subPackages = [ "cmd/grype" ];
-
-  excludedPackages = "test/integration";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=main.version=${finalAttrs.version}"
-    "-X=main.gitDescription=v${finalAttrs.version}"
-    "-X=main.gitTreeState=clean"
-  ];
+  vendorHash = "sha256-QxHhRqLPXVzJL7ksx0lMQuk0qtzartJk+tKiz6IP4xc=";
 
   preBuild = ''
     # grype version also displays the version of the syft library used
@@ -74,22 +50,12 @@ buildGoModule (finalAttrs: {
     ldflags+=" -X main.buildDate=$(cat SOURCE_DATE_EPOCH)"
   '';
 
-  preCheck = ''
-    # test all dirs (except excluded)
-    unset subPackages
-    # test goldenfiles expect no version
-    unset ldflags
-
-    # patch utility script
-    patchShebangs grype/db/v5/distribution/testdata/tls/generate-x509-cert-pair.sh
-
-    # test build fingerprinting expects a git repository
-    git init
-    git config user.email "test@example.com"
-    git config user.name "Test User"
-    git add .
-    git commit -m "initial commit"
-  '';
+  nativeCheckInputs = [
+    git
+    openssl
+    net-tools
+    zstd
+  ];
 
   checkFlags =
     let
@@ -121,6 +87,23 @@ buildGoModule (finalAttrs: {
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
+  preCheck = ''
+    # test all dirs (except excluded)
+    unset subPackages
+    # test goldenfiles expect no version
+    unset ldflags
+
+    # patch utility script
+    patchShebangs grype/db/v5/distribution/testdata/tls/generate-x509-cert-pair.sh
+
+    # test build fingerprinting expects a git repository
+    git init
+    git config user.email "test@example.com"
+    git config user.name "Test User"
+    git add .
+    git commit -m "initial commit"
+  '';
+
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd grype \
       --bash <($out/bin/grype completion bash) \
@@ -128,20 +111,39 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/grype completion zsh)
   '';
 
+  # required for tests
+  __darwinAllowLocalNetworking = true;
+  excludedPackages = "test/integration";
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=main.version=${finalAttrs.version}"
+    "-X=main.gitDescription=v${finalAttrs.version}"
+    "-X=main.gitTreeState=clean"
+  ];
+
+  proxyVendor = true;
+  subPackages = [ "cmd/grype" ];
+
   meta = {
     description = "Vulnerability scanner for container images and filesystems";
-    homepage = "https://github.com/anchore/grype";
-    changelog = "https://github.com/anchore/grype/releases/tag/v${finalAttrs.version}";
+
     longDescription = ''
       As a vulnerability scanner grype is able to scan the contents of a
       container image or filesystem to find known vulnerabilities.
     '';
+
+    homepage = "https://github.com/anchore/grype";
+    changelog = "https://github.com/anchore/grype/releases/tag/v${finalAttrs.version}";
     license = with lib.licenses; [ asl20 ];
+
     maintainers = with lib.maintainers; [
       fab
       jk
       kashw2
     ];
+
     mainProgram = "grype";
   };
 })

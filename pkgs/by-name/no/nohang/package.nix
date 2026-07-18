@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  nixosTests,
   fetchFromGitHub,
+  coreutils,
+  libnotify,
+  nixosTests,
   python3,
   sudo,
-  libnotify,
-  coreutils,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "nohang";
@@ -28,10 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   buildInputs = [ python3 ];
-
   dontBuild = true;
 
-  installTargets = [ "base" ];
   installFlags = [
     "DESTDIR=${placeholder "out"}"
     "PREFIX=/"
@@ -40,16 +38,18 @@ stdenv.mkDerivation (finalAttrs: {
     "SYSTEMDUNITDIR=/lib/systemd/system"
   ];
 
+  installTargets = [ "base" ];
+
   passthru.tests = {
     inherit (nixosTests) nohang;
   };
 
   meta = {
-    homepage = "https://github.com/hakavlad/nohang";
     description = "Sophisticated low memory handler for Linux";
+    homepage = "https://github.com/hakavlad/nohang";
     license = with lib.licenses; [ mit ];
-    mainProgram = "nohang";
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ Dev380 ];
+    platforms = lib.platforms.linux;
+    mainProgram = "nohang";
   };
 })

@@ -1,22 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   cython,
   numpy,
-  setuptools,
-
   # tests
   pytestCheckHook,
   scipy,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pesq";
   version = "0.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ludlows";
@@ -42,6 +39,16 @@ buildPythonPackage rec {
           "assert np.allclose(np.array(score), np.array([1.6072081327438354]))"
     '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    scipy
+  ];
+
+  # Prevents importing the `pesq` module from the source files (which lack the cypesq extension)
+  preCheck = ''
+    rm -rf pesq
+  '';
+
   build-system = [
     cython
     setuptools
@@ -52,19 +59,11 @@ buildPythonPackage rec {
     numpy
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "pesq"
     "pesq.cypesq"
-  ];
-
-  # Prevents importing the `pesq` module from the source files (which lack the cypesq extension)
-  preCheck = ''
-    rm -rf pesq
-  '';
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    scipy
   ];
 
   meta = {

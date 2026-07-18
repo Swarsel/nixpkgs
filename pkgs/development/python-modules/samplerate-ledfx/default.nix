@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cmake,
-  fetchFromGitHub,
   fetchpatch,
   libsamplerate,
   numpy,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "samplerate-ledfx";
   version = "0.2.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "LedFx";
@@ -38,6 +37,13 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "add_subdirectory(external)" "find_package(pybind11 REQUIRED)"
   '';
 
+  buildInputs = [ libsamplerate ];
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
   build-system = [
     cmake
     pybind11
@@ -45,22 +51,15 @@ buildPythonPackage (finalAttrs: {
     setuptools-scm
   ];
 
-  dontUseCmakeConfigure = true;
-
-  buildInputs = [ libsamplerate ];
-
   dependencies = [ numpy ];
-
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
 
   disabledTestPaths = [
     # timing sensitive: AssertionError: Expected speedup > 1.0, got 0.68x
     "tests/test_threading_performance.py::test_conditional_gil_release_large_data_threading"
   ];
 
+  dontUseCmakeConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "samplerate" ];
 
   meta = {

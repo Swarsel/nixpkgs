@@ -2,14 +2,18 @@
   lib,
   stdenv,
   libpsl,
-  python3,
   lzip,
+  python3,
 }:
 
 stdenv.mkDerivation {
-  pname = "libpsl-with-scripts";
   inherit (libpsl) src version patches;
+  pname = "libpsl-with-scripts";
   outputs = libpsl.outputs ++ [ "bin" ];
+
+  postPatch = ''
+    patchShebangs src/psl-make-dafsa
+  '';
 
   nativeBuildInputs = [
     lzip
@@ -18,13 +22,6 @@ stdenv.mkDerivation {
   buildInputs = [
     python3
   ];
-
-  postPatch = ''
-    patchShebangs src/psl-make-dafsa
-  '';
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase =
     let
@@ -49,5 +46,7 @@ stdenv.mkDerivation {
       runHook postInstall
     '';
 
+  dontBuild = true;
+  dontConfigure = true;
   dontFixup = true;
 }

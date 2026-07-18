@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   libx11,
+  libxi,
   libxtst,
   pkg-config,
   xorgproto,
-  libxi,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,15 +20,16 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1dvgf356fihfav8pjzww1q6vgd96c5h18dh8vpv022g9iipiwq8a";
   };
 
-  makeFlags = [ "PREFIX=${placeholder "out"}" ];
-
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libx11
     libxtst
     xorgproto
     libxi
   ];
+
+  makeFlags = [ "PREFIX=${placeholder "out"}" ];
 
   meta = {
     description = "Tool to be able to bind the super key as a key rather than a modifier";

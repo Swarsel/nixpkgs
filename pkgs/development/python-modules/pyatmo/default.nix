@@ -1,16 +1,16 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   anyio,
   buildPythonPackage,
-  fetchFromGitHub,
   oauthlib,
   pytest-asyncio,
   pytest-mock,
   pytestCheckHook,
   requests,
-  requests-oauthlib,
   requests-mock,
+  requests-oauthlib,
   setuptools-scm,
   time-machine,
 }:
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "pyatmo";
   version = "9.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jabesq";
@@ -27,10 +26,13 @@ buildPythonPackage rec {
     hash = "sha256-VW4whif1l7nY1Ifwn/NHJrDbYNeroJRWQtO47dOfEAo=";
   };
 
-  pythonRelaxDeps = [
-    "oauthlib"
-    "requests-oauthlib"
-    "requests"
+  nativeCheckInputs = [
+    anyio
+    pytest-asyncio
+    pytest-mock
+    pytestCheckHook
+    requests-mock
+    time-machine
   ];
 
   build-system = [ setuptools-scm ];
@@ -42,16 +44,14 @@ buildPythonPackage rec {
     requests-oauthlib
   ];
 
-  nativeCheckInputs = [
-    anyio
-    pytest-asyncio
-    pytest-mock
-    pytestCheckHook
-    requests-mock
-    time-machine
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyatmo" ];
+
+  pythonRelaxDeps = [
+    "oauthlib"
+    "requests-oauthlib"
+    "requests"
+  ];
 
   meta = {
     description = "Simple API to access Netatmo weather station data";

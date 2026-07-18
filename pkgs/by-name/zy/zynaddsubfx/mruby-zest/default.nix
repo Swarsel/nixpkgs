@@ -1,14 +1,14 @@
 {
   lib,
-  gcc14Stdenv,
   fetchFromGitHub,
   bison,
-  pkg-config,
-  rake,
-  ruby,
+  gcc14Stdenv,
   libGL,
   libuv,
   libx11,
+  pkg-config,
+  rake,
+  ruby,
 }:
 
 # UI becomes unresponsive when built with GCC 15
@@ -22,8 +22,8 @@ gcc14Stdenv.mkDerivation (finalAttrs: {
     owner = "mruby-zest";
     repo = "mruby-zest-build";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-rIb6tQimwrUj+623IU5zDyKNWsNYYBElLQClOsP+5Dc=";
+    fetchSubmodules = true;
   };
 
   patches = [
@@ -52,8 +52,6 @@ gcc14Stdenv.mkDerivation (finalAttrs: {
     rm mruby/mrbgems/mruby-compiler/core/y.tab.c
   '';
 
-  installTargets = [ "pack" ];
-
   postInstall = ''
     ln -s "$out/zest" "$out/zyn-fusion"
     cp -a package/{font,libzest.so,schema,zest} "$out"
@@ -65,6 +63,8 @@ gcc14Stdenv.mkDerivation (finalAttrs: {
     mkdir -p "$out/qml"
     touch "$out/qml/MainWindow.qml"
   '';
+
+  installTargets = [ "pack" ];
 
   meta = {
     description = "Zest Framework used in ZynAddSubFX's UI";

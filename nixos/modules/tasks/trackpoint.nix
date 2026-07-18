@@ -8,165 +8,201 @@
     hardware.trackpoint = {
       enable = lib.mkOption {
         default = false;
-        type = lib.types.bool;
+
         description = ''
           Enable sensitivity and speed configuration for trackpoints.
         '';
+
+        type = lib.types.bool;
       };
 
-      sensitivity = lib.mkOption {
-        default = 128;
-        example = 255;
-        type = lib.types.int;
-        description = ''
-          Trackpoint sensitivity.
-        '';
-      };
+      device = lib.mkOption {
+        default = "TPPS/2 IBM TrackPoint";
 
-      inertia = lib.mkOption {
-        default = 6;
-        example = 10;
-        type = lib.types.int;
         description = ''
-          Negative inertia factor. High values cause the cursor to snap backward when the trackpoint is released.
+          The device name of the trackpoint. You can check with xinput.
+          Some newer devices (example x1c6) use "TPPS/2 Elan TrackPoint".
         '';
-      };
 
-      reach = lib.mkOption {
-        default = 10;
-        example = 20;
-        type = lib.types.int;
-        description = ''
-          Backup range for z-axis press.
-        '';
+        type = lib.types.str;
       };
 
       draghys = lib.mkOption {
         default = 255;
-        example = 200;
-        type = lib.types.int;
+
         description = ''
           The drag hysteresis controls how hard it is to drag with z-axis pressed.
         '';
-      };
 
-      mindrag = lib.mkOption {
-        default = 20;
-        example = 30;
+        example = 200;
         type = lib.types.int;
-        description = ''
-          Minimum amount of force needed to trigger dragging.
-        '';
-      };
-
-      speed = lib.mkOption {
-        default = 97;
-        example = 255;
-        type = lib.types.int;
-        description = ''
-          Speed of the trackpoint cursor.
-        '';
-      };
-
-      thresh = lib.mkOption {
-        default = 8;
-        example = 10;
-        type = lib.types.int;
-        description = ''
-          Minimum value for z-axis force required to trigger a press or release, relative to the running average.
-        '';
-      };
-
-      upthresh = lib.mkOption {
-        default = 255;
-        example = 250;
-        type = lib.types.int;
-        description = ''
-          The offset from the running average required to generate a select (click) on z-axis on release.
-        '';
-      };
-
-      ztime = lib.mkOption {
-        default = 38;
-        example = 50;
-        type = lib.types.int;
-        description = ''
-          This attribute determines how sharp a press has to be in order to be recognized.
-        '';
-      };
-
-      jenks = lib.mkOption {
-        default = 135;
-        example = 100;
-        type = lib.types.int;
-        description = ''
-          Minimum curvature in degrees required to generate a double click without a release.
-        '';
-      };
-
-      skipback = lib.mkOption {
-        default = false;
-        example = true;
-        type = lib.types.bool;
-        description = ''
-          When the skipback bit is set, backup cursor movement during releases from drags will be suppressed. The default value for this bit is 0.
-        '';
-      };
-
-      ext_dev = lib.mkOption {
-        default = true;
-        example = false;
-        type = lib.types.bool;
-        description = ''
-          Disable or enable external pointing device.
-        '';
-      };
-
-      press_to_select = lib.mkOption {
-        default = false;
-        example = true;
-        type = lib.types.bool;
-        description = ''
-          Setting this to true will enable the Press to Select functions like tapping the control stick to simulate a left click, and setting false will disable it.
-        '';
       };
 
       drift_time = lib.mkOption {
         default = 5;
-        example = 100;
-        type = lib.types.int;
+
         description = ''
           This parameter controls the period of time to test for a 'hands off' condition (i.e. when no force is applied) before a drift (noise) calibration occurs.
 
           IBM Trackpoints have a feature to compensate for drift by recalibrating themselves periodically. By default, if for 0.5 seconds there is no change in position, it's used as the new zero. This duration is too low. Often, the calibration happens when the trackpoint is in fact being used.
         '';
+
+        example = 100;
+        type = lib.types.int;
       };
 
       emulateWheel = lib.mkOption {
         default = false;
-        type = lib.types.bool;
+
         description = ''
           Enable scrolling while holding the middle mouse button.
         '';
+
+        type = lib.types.bool;
+      };
+
+      ext_dev = lib.mkOption {
+        default = true;
+
+        description = ''
+          Disable or enable external pointing device.
+        '';
+
+        example = false;
+        type = lib.types.bool;
       };
 
       fakeButtons = lib.mkOption {
         default = false;
-        type = lib.types.bool;
+
         description = ''
           Switch to "bare" PS/2 mouse support in case Trackpoint buttons are not recognized
           properly. This can happen for example on models like the L430, T450, T450s, on
           which the Trackpoint buttons are actually a part of the Synaptics touchpad.
         '';
+
+        type = lib.types.bool;
       };
 
-      device = lib.mkOption {
-        default = "TPPS/2 IBM TrackPoint";
-        type = lib.types.str;
+      inertia = lib.mkOption {
+        default = 6;
+
         description = ''
-          The device name of the trackpoint. You can check with xinput.
-          Some newer devices (example x1c6) use "TPPS/2 Elan TrackPoint".
+          Negative inertia factor. High values cause the cursor to snap backward when the trackpoint is released.
         '';
+
+        example = 10;
+        type = lib.types.int;
+      };
+
+      jenks = lib.mkOption {
+        default = 135;
+
+        description = ''
+          Minimum curvature in degrees required to generate a double click without a release.
+        '';
+
+        example = 100;
+        type = lib.types.int;
+      };
+
+      mindrag = lib.mkOption {
+        default = 20;
+
+        description = ''
+          Minimum amount of force needed to trigger dragging.
+        '';
+
+        example = 30;
+        type = lib.types.int;
+      };
+
+      press_to_select = lib.mkOption {
+        default = false;
+
+        description = ''
+          Setting this to true will enable the Press to Select functions like tapping the control stick to simulate a left click, and setting false will disable it.
+        '';
+
+        example = true;
+        type = lib.types.bool;
+      };
+
+      reach = lib.mkOption {
+        default = 10;
+
+        description = ''
+          Backup range for z-axis press.
+        '';
+
+        example = 20;
+        type = lib.types.int;
+      };
+
+      sensitivity = lib.mkOption {
+        default = 128;
+
+        description = ''
+          Trackpoint sensitivity.
+        '';
+
+        example = 255;
+        type = lib.types.int;
+      };
+
+      skipback = lib.mkOption {
+        default = false;
+
+        description = ''
+          When the skipback bit is set, backup cursor movement during releases from drags will be suppressed. The default value for this bit is 0.
+        '';
+
+        example = true;
+        type = lib.types.bool;
+      };
+
+      speed = lib.mkOption {
+        default = 97;
+
+        description = ''
+          Speed of the trackpoint cursor.
+        '';
+
+        example = 255;
+        type = lib.types.int;
+      };
+
+      thresh = lib.mkOption {
+        default = 8;
+
+        description = ''
+          Minimum value for z-axis force required to trigger a press or release, relative to the running average.
+        '';
+
+        example = 10;
+        type = lib.types.int;
+      };
+
+      upthresh = lib.mkOption {
+        default = 255;
+
+        description = ''
+          The offset from the running average required to generate a select (click) on z-axis on release.
+        '';
+
+        example = 250;
+        type = lib.types.int;
+      };
+
+      ztime = lib.mkOption {
+        default = 38;
+
+        description = ''
+          This attribute determines how sharp a press has to be in order to be recognized.
+        '';
+
+        example = 50;
+        type = lib.types.int;
       };
     };
   };
@@ -201,18 +237,21 @@
         );
 
         systemd.services.trackpoint = {
-          wantedBy = [ "sysinit.target" ];
           before = [
             "sysinit.target"
             "shutdown.target"
           ];
+
           conflicts = [ "shutdown.target" ];
-          unitConfig.DefaultDependencies = false;
-          serviceConfig.Type = "oneshot";
-          serviceConfig.RemainAfterExit = true;
+
           serviceConfig.ExecStart = ''
             ${config.systemd.package}/bin/udevadm trigger --attr-match=name="${cfg.device}"
           '';
+
+          serviceConfig.RemainAfterExit = true;
+          serviceConfig.Type = "oneshot";
+          unitConfig.DefaultDependencies = false;
+          wantedBy = [ "sysinit.target" ];
         };
       })
 

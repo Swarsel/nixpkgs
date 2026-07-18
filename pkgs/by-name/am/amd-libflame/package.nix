@@ -2,15 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  amd-blis,
+  aocl-utils,
   cmake,
   gfortran,
   python3,
-  amd-blis,
-  aocl-utils,
-
-  withOpenMP ? true,
   blas64 ? false,
   withAMDOpt ? true,
+  withOpenMP ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,12 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     # Enforce reproducible build compiler flags
     substituteInPlace CMakeLists.txt --replace '-mtune=native' ""
   '';
-
-  env.NIX_CFLAGS_COMPILE = "-Wno-implicit-function-declaration";
-
-  passthru = {
-    inherit blas64;
-  };
 
   nativeBuildInputs = [
     cmake
@@ -59,10 +52,16 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional blas64 "-DENABLE_ILP64=ON"
   ++ lib.optional withAMDOpt "-DENABLE_AMD_OPT=ON";
 
+  env.NIX_CFLAGS_COMPILE = "-Wno-implicit-function-declaration";
+
   postInstall = ''
     ln -s $out/lib/libflame.so $out/lib/liblapack.so.3
     ln -s $out/lib/libflame.so $out/lib/liblapacke.so.3
   '';
+
+  passthru = {
+    inherit blas64;
+  };
 
   meta = {
     description = "LAPACK-compatible linear algebra library optimized for AMD CPUs";

@@ -1,16 +1,15 @@
 {
-  wrapGAppsHook3,
   lib,
-  python3Packages,
   fetchFromGitHub,
-  rofi,
   gobject-introspection,
+  python3Packages,
+  rofi,
+  wrapGAppsHook3,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "plasma-hud";
   version = "22.01.0";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "Zren";
@@ -18,6 +17,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-HEAvwQSROQtJAZdiDObu9qbpgJlkJdks2v95Xjh5520=";
   };
+
+  postPatch = ''
+    sed -i "s:/usr/lib/plasma-hud:$out/bin:" etc/xdg/autostart/plasma-hud.desktop
+  '';
 
   nativeBuildInputs = [
     gobject-introspection
@@ -33,10 +36,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ])
     ++ [ rofi ];
 
-  postPatch = ''
-    sed -i "s:/usr/lib/plasma-hud:$out/bin:" etc/xdg/autostart/plasma-hud.desktop
-  '';
-
   installPhase = ''
     runHook preInstall
 
@@ -46,12 +45,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     runHook postInstall
   '';
 
+  pyproject = false;
+
   meta = {
-    license = lib.licenses.gpl2Only;
-    homepage = "https://github.com/Zren/plasma-hud";
-    platforms = lib.platforms.unix;
     description = "Run menubar commands, much like the Unity 7 Heads-Up Display (HUD)";
+    homepage = "https://github.com/Zren/plasma-hud";
+    license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ pasqui23 ];
+    platforms = lib.platforms.unix;
     mainProgram = "plasma-hud";
   };
 })

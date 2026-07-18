@@ -1,15 +1,15 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
   flavor ? "mocha", # override with your chosen flavor
 }:
 let
   version = "1.0.0";
 in
 stdenvNoCC.mkDerivation {
-  pname = "catppuccin-grub";
   inherit version;
+  pname = "catppuccin-grub";
 
   src = fetchFromGitHub {
     owner = "catppuccin";
@@ -31,10 +31,12 @@ stdenvNoCC.mkDerivation {
     description = "Soothing pastel theme for GRUB";
     homepage = "https://github.com/catppuccin/grub";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       isabelroses
       mimvoid
     ];
+
     platforms = lib.platforms.linux;
   };
 }

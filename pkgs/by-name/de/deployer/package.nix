@@ -1,7 +1,7 @@
 {
   lib,
-  php,
   fetchFromGitHub,
+  php,
 }:
 
 php.buildComposerProject2 (finalAttrs: {
@@ -15,14 +15,13 @@ php.buildComposerProject2 (finalAttrs: {
     hash = "sha256-mbqwAYfEiJB1ELkxQwuMVmgXZZLi9jLjg33o0ZfgT4Y=";
   };
 
+  vendorHash = "sha256-X30D05d0PCmw2tHN7PC9PiAXVlnI6SkQg2l7G+tZ4Mo=";
   composerLock = ./composer.lock;
 
-  vendorHash = "sha256-X30D05d0PCmw2tHN7PC9PiAXVlnI6SkQg2l7G+tZ4Mo=";
-
   meta = {
-    changelog = "https://github.com/deployphp/deployer/releases/tag/v${finalAttrs.version}";
     description = "PHP deployment tool with support for popular frameworks out of the box";
     homepage = "https://deployer.org/";
+    changelog = "https://github.com/deployphp/deployer/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     mainProgram = "dep";
     teams = [ lib.teams.php ];

@@ -12,15 +12,15 @@ in
   options = {
     services.alice-lg = {
       enable = lib.mkEnableOption "Alice Looking Glass";
-
       package = lib.mkPackageOption pkgs "alice-lg" { };
 
       settings = lib.mkOption {
-        type = settingsFormat.type;
         default = { };
+
         description = ''
           alice-lg configuration, for configuration options see the example on [github](https://github.com/alice-lg/alice-lg/blob/main/etc/alice-lg/alice.example.conf)
         '';
+
         example = lib.literalExpression ''
           {
             server = {
@@ -46,6 +46,8 @@ in
             };
           }
         '';
+
+        type = settingsFormat.type;
       };
     };
   };
@@ -54,40 +56,13 @@ in
     environment = {
       etc."alice-lg/alice.conf".source = settingsFormat.generate "alice-lg.conf" cfg.settings;
     };
+
     systemd.services = {
       alice-lg = {
-        wants = [ "network.target" ];
         after = [ "network.target" ];
-        wantedBy = [ "multi-user.target" ];
         description = "Alice Looking Glass";
+
         serviceConfig = {
-          DynamicUser = true;
-          Type = "simple";
-          Restart = "on-failure";
-          RestartSec = 15;
-          ExecStart = "${cfg.package}/bin/alice-lg";
-          StateDirectoryMode = "0700";
-          UMask = "0007";
-          CapabilityBoundingSet = "";
-          NoNewPrivileges = true;
-          ProtectSystem = "strict";
-          PrivateTmp = true;
-          PrivateDevices = true;
-          PrivateUsers = true;
-          ProtectHostname = true;
-          ProtectClock = true;
-          ProtectKernelTunables = true;
-          ProtectKernelModules = true;
-          ProtectKernelLogs = true;
-          ProtectControlGroups = true;
-          RestrictAddressFamilies = [ "AF_INET AF_INET6" ];
-          LockPersonality = true;
-          MemoryDenyWriteExecute = true;
-          RestrictRealtime = true;
-          RestrictSUIDSGID = true;
-          PrivateMounts = true;
-          SystemCallArchitectures = "native";
-          SystemCallFilter = "~@clock @privileged @cpu-emulation @debug @keyring @module @mount @obsolete @raw-io @reboot @setuid @swap";
           BindReadOnlyPaths = [
             "-/etc/resolv.conf"
             "-/etc/nsswitch.conf"
@@ -96,7 +71,38 @@ in
             "-/etc/hosts"
             "-/etc/localtime"
           ];
+
+          CapabilityBoundingSet = "";
+          DynamicUser = true;
+          ExecStart = "${cfg.package}/bin/alice-lg";
+          LockPersonality = true;
+          MemoryDenyWriteExecute = true;
+          NoNewPrivileges = true;
+          PrivateDevices = true;
+          PrivateMounts = true;
+          PrivateTmp = true;
+          PrivateUsers = true;
+          ProtectClock = true;
+          ProtectControlGroups = true;
+          ProtectHostname = true;
+          ProtectKernelLogs = true;
+          ProtectKernelModules = true;
+          ProtectKernelTunables = true;
+          ProtectSystem = "strict";
+          Restart = "on-failure";
+          RestartSec = 15;
+          RestrictAddressFamilies = [ "AF_INET AF_INET6" ];
+          RestrictRealtime = true;
+          RestrictSUIDSGID = true;
+          StateDirectoryMode = "0700";
+          SystemCallArchitectures = "native";
+          SystemCallFilter = "~@clock @privileged @cpu-emulation @debug @keyring @module @mount @obsolete @raw-io @reboot @setuid @swap";
+          Type = "simple";
+          UMask = "0007";
         };
+
+        wantedBy = [ "multi-user.target" ];
+        wants = [ "network.target" ];
       };
     };
   };

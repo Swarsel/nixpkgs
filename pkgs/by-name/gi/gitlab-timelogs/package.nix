@@ -1,11 +1,11 @@
 {
+  lib,
+  stdenv,
   fetchCrate,
   iconv,
-  lib,
   openssl,
   pkg-config,
   rustPlatform,
-  stdenv,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -30,18 +30,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "CLI utility to support you with your time logs in GitLab";
-    mainProgram = "gitlab-timelogs";
+
     longDescription = ''
       CLI utility to support you with your time logs in GitLab.
 
       gitlab-timelogs is not associated with the official GitLab project!
     '';
+
     homepage = "https://github.com/phip1611/gitlab-timelogs";
     changelog = "https://github.com/phip1611/gitlab-timelogs/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = with lib.licenses; [ mit ];
+
     maintainers = with lib.maintainers; [
       blitz
       phip1611
     ];
+
+    mainProgram = "gitlab-timelogs";
   };
 })

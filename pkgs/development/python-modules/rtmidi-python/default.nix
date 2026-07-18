@@ -1,16 +1,15 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
-  fetchPypi,
-  cython_0,
   alsa-lib,
+  buildPythonPackage,
+  cython_0,
+  fetchPypi,
 }:
 
 buildPythonPackage rec {
   pname = "rtmidi-python";
   version = "0.2.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,13 +22,11 @@ buildPythonPackage rec {
 
   nativeBuildInputs = [ cython_0 ];
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ alsa-lib ];
-
-  setupPyBuildFlags = [ "--from-cython" ];
-
   # package has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "rtmidi_python" ];
+  setupPyBuildFlags = [ "--from-cython" ];
 
   meta = {
     description = "Python wrapper for RtMidi";

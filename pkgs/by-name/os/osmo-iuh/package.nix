@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  libosmocore,
-  lksctp-tools,
+  libasn1c,
   libosmo-netif,
   libosmo-sigtran,
-  libasn1c,
+  libosmocore,
+  lksctp-tools,
+  pkg-config,
   python3,
 }:
 
@@ -26,11 +26,6 @@ stdenv.mkDerivation rec {
     rev = version;
     hash = "sha256-3ADn0GSoXPXL1gD79JjD2hXNBN/v8aaEKgf5qFNGEJs=";
   };
-
-  prePatch = ''
-    substituteInPlace src/../asn1/utils/asn1tostruct.py  \
-      --replace '#!/usr/bin/env python3' '#!${python3}/bin/python3'
-  '';
 
   postPatch = ''
     echo "${version}" > .tarball-version
@@ -51,6 +46,11 @@ stdenv.mkDerivation rec {
   ];
 
   enableParallelBuilding = true;
+
+  prePatch = ''
+    substituteInPlace src/../asn1/utils/asn1tostruct.py  \
+      --replace '#!/usr/bin/env python3' '#!${python3}/bin/python3'
+  '';
 
   meta = {
     description = "Osmocom IuH library";

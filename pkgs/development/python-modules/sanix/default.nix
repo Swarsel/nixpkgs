@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "sanix";
   version = "1.0.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tomaszsluszniak";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-D2w3hmL8ym63liWOYdZS4ry3lJ0utbbYGagWoOTT1TQ=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   # Module has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "sanix" ];
 
   meta = {

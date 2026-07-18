@@ -1,22 +1,7 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  makeWrapper,
-  nixosTests,
-  buildPerlPackage,
-  coreutils,
-  curl,
-  git,
-  gnumake,
-  highlight,
-  libgit2,
-  libxcrypt,
-  man,
-  openssl,
-  pkg-config,
-  sqlite,
-  xapian,
   AnyURIEscape,
   DBDSQLite,
   DBI,
@@ -38,10 +23,25 @@
   Plack,
   PlackMiddlewareReverseProxy,
   PlackTestExternalServer,
-  Xapian,
   TimeDate,
   URI,
   XMLTreePP,
+  Xapian,
+  buildPerlPackage,
+  coreutils,
+  curl,
+  git,
+  gnumake,
+  highlight,
+  libgit2,
+  libxcrypt,
+  makeWrapper,
+  man,
+  nixosTests,
+  openssl,
+  pkg-config,
+  sqlite,
+  xapian,
 }:
 
 let
@@ -101,13 +101,6 @@ buildPerlPackage rec {
     "sa_config"
   ];
 
-  postConfigure = ''
-    substituteInPlace Makefile --replace 'TEST_FILES = t/*.t' \
-        'TEST_FILES = $(shell find t -name *.t ${testConditions})'
-    substituteInPlace lib/PublicInbox/TestCommon.pm t/clone-coderepo.t \
-      --replace-fail /bin/cp ${coreutils}/bin/cp
-  '';
-
   nativeBuildInputs = [ makeWrapper ];
 
   buildInputs = [
@@ -134,7 +127,15 @@ buildPerlPackage rec {
     man
   ];
 
+  postConfigure = ''
+    substituteInPlace Makefile --replace 'TEST_FILES = t/*.t' \
+        'TEST_FILES = $(shell find t -name *.t ${testConditions})'
+    substituteInPlace lib/PublicInbox/TestCommon.pm t/clone-coderepo.t \
+      --replace-fail /bin/cp ${coreutils}/bin/cp
+  '';
+
   doCheck = !stdenv.hostPlatform.isDarwin;
+
   nativeCheckInputs = [
     curl
     git
@@ -149,6 +150,7 @@ buildPerlPackage rec {
   ++ lib.optionals stdenv.hostPlatform.isLinux [
     LinuxInotify2
   ];
+
   preCheck = ''
     perl certs/create-certs.perl
     export TEST_LEI_ERR_LOUD=1
@@ -156,7 +158,6 @@ buildPerlPackage rec {
     mkdir -p "$HOME"/.cache/public-inbox/inline-c
   '';
 
-  installTargets = [ "install" ];
   postInstall = ''
     for prog in $out/bin/*; do
         wrapProgram $prog \
@@ -175,6 +176,8 @@ buildPerlPackage rec {
     mv sa_config $sa_config
   '';
 
+  installTargets = [ "install" ];
+
   passthru.tests = {
     nixos-public-inbox = nixosTests.public-inbox;
   };
@@ -182,10 +185,12 @@ buildPerlPackage rec {
   meta = {
     homepage = "https://public-inbox.org/";
     license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       julm
       qyliss
     ];
+
     platforms = lib.platforms.all;
   };
 }

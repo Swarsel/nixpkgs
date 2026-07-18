@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,11 +18,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-b9CpHSC3/kj7lHs+QhDqnRZfda9rtJJEs3j24NDZSPQ=";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru.updateScript = nix-update-script { };
 
@@ -30,9 +30,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Sudoless performance monitoring for Apple Silicon processors";
     homepage = "https://github.com/vladkens/macmon";
     changelog = "https://github.com/vladkens/macmon/releases/tag/${finalAttrs.src.tag}";
-    platforms = [ "aarch64-darwin" ];
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ schrobingus ];
+    platforms = [ "aarch64-darwin" ];
     mainProgram = "macmon";
   };
 })

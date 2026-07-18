@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   ifaddr,
   poetry-core,
   requests,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "roonapi";
   version = "0.1.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pavoni";
@@ -32,7 +31,7 @@ buildPythonPackage rec {
 
   # Tests require access to the Roon API
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "roonapi" ];
 
   meta = {

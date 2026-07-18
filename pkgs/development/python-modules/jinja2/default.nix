@@ -1,26 +1,24 @@
 {
   lib,
   stdenv,
-  python,
+  babel,
   buildPythonPackage,
   fetchPypi,
   flit-core,
-  babel,
   markupsafe,
-  pytestCheckHook,
-  sphinxHook,
   pallets-sphinx-themes,
-  sphinxcontrib-log-cabinet,
-  sphinx-issues,
-
+  pytestCheckHook,
+  python,
   # Reverse dependency
   sage,
+  sphinx-issues,
+  sphinxHook,
+  sphinxcontrib-log-cabinet,
 }:
 
 buildPythonPackage rec {
   pname = "jinja2";
   version = "3.1.6";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -37,35 +35,32 @@ buildPythonPackage rec {
       --replace-fail ", \"trio\"" ""
   '';
 
+  # Multiple tests run out of stack space on 32bit systems with python2.
+  # See https://github.com/pallets/jinja/issues/1158
+  doCheck = !stdenv.hostPlatform.is32bit;
+  nativeCheckInputs = [ pytestCheckHook ] ++ optional-dependencies.i18n;
   build-system = [ flit-core ];
-
   dependencies = [ markupsafe ];
 
   optional-dependencies = {
     i18n = [ babel ];
   };
 
-  # Multiple tests run out of stack space on 32bit systems with python2.
-  # See https://github.com/pallets/jinja/issues/1158
-  doCheck = !stdenv.hostPlatform.is32bit;
-
-  nativeCheckInputs = [ pytestCheckHook ] ++ optional-dependencies.i18n;
+  pyproject = true;
 
   passthru.doc = stdenv.mkDerivation {
+    inherit src version;
+    inherit (python) pythonVersion;
+    inherit meta;
     # Forge look and feel of multi-output derivation as best as we can.
     #
     # Using 'outputs = [ "doc" ];' breaks a lot of assumptions.
     pname = "${pname}-doc";
-    inherit src version;
 
     patches = [
       # Fix import of "sphinxcontrib-log-cabinet"
       ./patches/import-order.patch
     ];
-
-    postInstallSphinx = ''
-      mv $out/share/doc/* $out/share/doc/python$pythonVersion-$pname-$version
-    '';
 
     nativeBuildInputs = [
       sphinxHook
@@ -74,8 +69,9 @@ buildPythonPackage rec {
       sphinx-issues
     ];
 
-    inherit (python) pythonVersion;
-    inherit meta;
+    postInstallSphinx = ''
+      mv $out/share/doc/* $out/share/doc/python$pythonVersion-$pname-$version
+    '';
   };
 
   passthru.tests = {
@@ -83,16 +79,18 @@ buildPythonPackage rec {
   };
 
   meta = {
-    changelog = "https://github.com/pallets/jinja/blob/${version}/CHANGES.rst";
     description = "Very fast and expressive template engine";
-    downloadPage = "https://github.com/pallets/jinja";
-    homepage = "https://jinja.palletsprojects.com";
-    license = lib.licenses.bsd3;
+
     longDescription = ''
       Jinja is a fast, expressive, extensible templating engine. Special
       placeholders in the template allow writing code similar to Python
       syntax. Then the template is passed data to render the final document.
     '';
+
+    homepage = "https://jinja.palletsprojects.com";
+    changelog = "https://github.com/pallets/jinja/blob/${version}/CHANGES.rst";
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ pierron ];
+    downloadPage = "https://github.com/pallets/jinja";
   };
 }

@@ -10,25 +10,24 @@
   autoconf,
   automake,
   bash,
-  libtool,
-  libsigsegv,
+  coreutils,
   gettext,
-  ncurses,
-  zlib,
-  readline,
-  libffi,
   libffcall,
+  libffi,
+  libsigsegv,
+  libtool,
   libx11,
   libxau,
-  libxt,
-  libxpm,
   libxext,
+  libxpm,
+  libxt,
+  ncurses,
+  readline,
   xorgproto,
-  coreutils,
+  zlib,
+  dllSupport ? true,
   # build options
   threadSupport ? (stdenv.hostPlatform.isx86 && !stdenv.hostPlatform.isDarwin),
-  x11Support ? (stdenv.hostPlatform.isx86 && !stdenv.hostPlatform.isDarwin),
-  dllSupport ? true,
   withModules ? [
     "asdf"
     "rawsock"
@@ -38,6 +37,7 @@
     "zlib"
   ]
   ++ lib.optional x11Support "clx/new-clx",
+  x11Support ? (stdenv.hostPlatform.isx86 && !stdenv.hostPlatform.isDarwin),
 }:
 
 assert
@@ -56,8 +56,8 @@ let
 in
 
 stdenv.mkDerivation {
-  version = "2.49.95-unstable-2024-12-28";
   pname = "clisp";
+  version = "2.49.95-unstable-2024-12-28";
 
   src = fetchFromGitLab {
     owner = "gnu-clisp";
@@ -66,12 +66,24 @@ stdenv.mkDerivation {
     hash = "sha256-xXGx2FlS0l9huVMHqNbcAViLjxK8szOFPT0J8MpGp9w=";
   };
 
+  # First, replace port 9090 (rather low, can be used)
+  # with 64237 (much higher, IANA private area, not
+  # anything rememberable).
+  postPatch = ''
+    sed -e 's@9090@64237@g' -i tests/socket.tst
+    sed -i 's@/bin/pwd@${coreutils}&@' src/clisp-link.in
+    sed -i 's@1\.16\.2@${automake.version}@' src/aclocal.m4
+    find . -type f | xargs sed -e 's/-lICE/-lXau &/' -i
+  '';
+
   strictDeps = true;
+
   nativeBuildInputs = [
     autoconf
     automake
     libtool
   ];
+
   buildInputs = [
     bash
     libsigsegv
@@ -91,16 +103,6 @@ stdenv.mkDerivation {
     libxext
   ];
 
-  # First, replace port 9090 (rather low, can be used)
-  # with 64237 (much higher, IANA private area, not
-  # anything rememberable).
-  postPatch = ''
-    sed -e 's@9090@64237@g' -i tests/socket.tst
-    sed -i 's@/bin/pwd@${coreutils}&@' src/clisp-link.in
-    sed -i 's@1\.16\.2@${automake.version}@' src/aclocal.m4
-    find . -type f | xargs sed -e 's/-lICE/-lXau &/' -i
-  '';
-
   configureFlags = [
     "builddir"
   ]
@@ -112,6 +114,10 @@ stdenv.mkDerivation {
   ++ lib.optional (!ffcallAvailable) "--without-ffcall"
   ++ map (x: " --with-module=" + x) withModules
   ++ lib.optional threadSupport "--with-threads=POSIX_THREADS";
+
+  env.NIX_CFLAGS_COMPILE = "-O0 -falign-functions=${
+    if stdenv.hostPlatform.is64bit then "8" else "4"
+  }";
 
   preBuild = ''
     sed -e '/avcall.h/a\#include "config.h"' -i src/foreign.d
@@ -132,16 +138,12 @@ stdenv.mkDerivation {
     done
   '';
 
-  env.NIX_CFLAGS_COMPILE = "-O0 -falign-functions=${
-    if stdenv.hostPlatform.is64bit then "8" else "4"
-  }";
-
   meta = {
     description = "ANSI Common Lisp Implementation";
     homepage = "http://clisp.org";
-    mainProgram = "clisp";
-    teams = [ lib.teams.lisp ];
     license = lib.licenses.gpl2Plus;
     platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "clisp";
+    teams = [ lib.teams.lisp ];
   };
 }

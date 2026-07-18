@@ -1,9 +1,9 @@
 {
   lib,
-  gitMinimal,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
+  gitMinimal,
   mkdocs,
   mkdocs-exclude,
   mkdocs-material,
@@ -11,12 +11,10 @@
   pydantic,
   pytestCheckHook,
   wcmatch,
-
 }:
 buildPythonPackage rec {
   pname = "mkdocs-awesome-nav";
   version = "3.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lukasgeiter";
@@ -25,6 +23,13 @@ buildPythonPackage rec {
     hash = "sha256-guv+c4QwaATYEZ6XcWVZaOcZ7U9oLsW+RdWBtB1Xrnc=";
   };
 
+  nativeCheckInputs = [
+    gitMinimal
+    mkdocs-exclude
+    mkdocs-material
+    pytestCheckHook
+  ];
+
   build-system = [ flit-core ];
 
   dependencies = [
@@ -32,13 +37,6 @@ buildPythonPackage rec {
     natsort
     pydantic
     wcmatch
-  ];
-
-  nativeCheckInputs = [
-    gitMinimal
-    mkdocs-exclude
-    mkdocs-material
-    pytestCheckHook
   ];
 
   disabledTestPaths = [
@@ -52,6 +50,8 @@ buildPythonPackage rec {
     "tests/compatibility/test_static_i18n_folder.py"
     "tests/compatibility/test_static_i18n_suffix.py"
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Plugin for customizing the navigation structure of your MkDocs site";

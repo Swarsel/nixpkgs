@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -12,21 +12,17 @@ buildGoModule (finalAttrs: {
 
   src = fetchFromGitHub {
     owner = "infracost";
-    rev = "v${finalAttrs.version}";
     repo = "infracost";
+    rev = "v${finalAttrs.version}";
     sha256 = "sha256-ionW8XChMCQxekKqbiNc6wSu5pxdG59WX2CxlCqStXk=";
   };
-  vendorHash = "sha256-fwMVYzbCHENra1ySNMQnWF/JnYngO/oHgxZvMZ2+3TQ=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/infracost/infracost/internal/version.Version=v${finalAttrs.version}"
-  ];
-
-  subPackages = [ "cmd/infracost" ];
 
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-fwMVYzbCHENra1ySNMQnWF/JnYngO/oHgxZvMZ2+3TQ=";
+
+  checkFlags = [
+    "-short"
+  ];
 
   preCheck = ''
     # Feed in all tests for testing
@@ -40,10 +36,6 @@ buildGoModule (finalAttrs: {
     rm internal/providers/terraform/hcl_provider_test.go
   '';
 
-  checkFlags = [
-    "-short"
-  ];
-
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     export INFRACOST_SKIP_UPDATE_CHECK=true
     installShellCompletion --cmd infracost \
@@ -53,6 +45,7 @@ buildGoModule (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -63,21 +56,33 @@ buildGoModule (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/infracost/infracost/internal/version.Version=v${finalAttrs.version}"
+  ];
+
+  subPackages = [ "cmd/infracost" ];
+
   meta = {
-    homepage = "https://infracost.io";
-    changelog = "https://github.com/infracost/infracost/releases/tag/v${finalAttrs.version}";
     description = "Cloud cost estimates for Terraform in your CLI and pull requests";
+
     longDescription = ''
       Infracost shows hourly and monthly cost estimates for a Terraform project.
       This helps developers, DevOps et al. quickly see the cost breakdown and
       compare different deployment options upfront.
     '';
+
+    homepage = "https://infracost.io";
+    changelog = "https://github.com/infracost/infracost/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       davegallant
       jk
       kashw2
     ];
+
     mainProgram = "infracost";
   };
 })

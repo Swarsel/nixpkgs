@@ -16,10 +16,9 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-jJQnp3oWlaariLCAZ9tcn19xX8eCIGck7xwC3vMYqIg=";
   };
 
-  dontConfigure = true;
   dontBuild = true;
+  dontConfigure = true;
   installFlags = "PREFIX=${placeholder "out"}";
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {

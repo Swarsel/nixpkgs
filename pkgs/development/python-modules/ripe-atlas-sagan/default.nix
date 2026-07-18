@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   pytestCheckHook,
   python-dateutil,
   pytz,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "ripe-atlas-sagan";
   version = "1.3.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "RIPE-NCC";
@@ -27,18 +26,19 @@ buildPythonPackage rec {
     pytz
   ];
 
-  optional-dependencies = {
-    fast = [ ujson ];
-  };
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  enabledTestPaths = [ "tests/*.py" ];
 
   disabledTests = [
     # This test fail for unknown reason, I suspect it to be flaky.
     "test_invalid_country_code"
   ];
+
+  enabledTestPaths = [ "tests/*.py" ];
+  format = "setuptools";
+
+  optional-dependencies = {
+    fast = [ ujson ];
+  };
 
   pythonImportsCheck = [ "ripe.atlas.sagan" ];
 

@@ -1,16 +1,26 @@
 {
   lib,
+  stdenv,
   cmake,
   fixDarwinDylibNames,
   isLuaJIT,
   libuv,
   lua,
-  stdenv,
 }:
 
 stdenv.mkDerivation {
-  pname = "libluv";
   inherit (lua.pkgs.luv) version src meta;
+  pname = "libluv";
+
+  nativeBuildInputs = [
+    cmake
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [ fixDarwinDylibNames ];
+
+  buildInputs = [
+    libuv
+    lua
+  ];
 
   cmakeFlags = [
     "-DBUILD_SHARED_LIBS=ON"
@@ -24,16 +34,6 @@ stdenv.mkDerivation {
   prePatch = ''
     rm -rf deps/lua deps/luajit deps/libuv
   '';
-
-  buildInputs = [
-    libuv
-    lua
-  ];
-
-  nativeBuildInputs = [
-    cmake
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [ fixDarwinDylibNames ];
 
   passthru.tests = {
     # Test luv too

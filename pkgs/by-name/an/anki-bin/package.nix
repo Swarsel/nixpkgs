@@ -1,14 +1,14 @@
 {
-  fetchurl,
-  stdenv,
   lib,
-  buildFHSEnv,
-  appimageTools,
-  writeShellScript,
+  stdenv,
+  fetchurl,
   anki,
-  undmg,
-  zstd,
+  appimageTools,
+  buildFHSEnv,
   cacert,
+  undmg,
+  writeShellScript,
+  zstd,
   commandLineArgs ? [ ],
 }:
 
@@ -18,31 +18,32 @@ let
   version = "26.05";
 
   sources = {
-    linux-aarch64 = fetchurl {
-      url = "https://github.com/ankitects/anki/releases/download/${version}/anki-${version}-linux-aarch64.tar.zst";
-      hash = "sha256-z/w7+TKLW+xi/iJMXGOp50Yjwnv7FD5O0lNsu31dfqo=";
-    };
-    linux-x86_64 = fetchurl {
-      url = "https://github.com/ankitects/anki/releases/download/${version}/anki-${version}-linux-x86_64.tar.zst";
-      hash = "sha256-YiPXBVY/catAzgcqXZajkZxUbV3eHkxJ3CeXXnAGcnQ=";
+    darwin-aarch64 = fetchurl {
+      hash = "sha256-c5NZf0uWNB7XQDYBDtgrtCU+A5Cuck0rJ1xFG8hY0Sc=";
+      url = "https://github.com/ankitects/anki/releases/download/${version}/anki-${version}-mac-apple.dmg";
     };
 
     # For some reason anki distributes completely separate dmg-files for the aarch64 version and the x86_64 version
     darwin-x86_64 = fetchurl {
-      url = "https://github.com/ankitects/anki/releases/download/${version}/anki-${version}-mac-intel.dmg";
       hash = "sha256-L/TXKh0cmTop7/ROA9YC4dyBz9iAFRhpXuNRbR3wwYk=";
+      url = "https://github.com/ankitects/anki/releases/download/${version}/anki-${version}-mac-intel.dmg";
     };
-    darwin-aarch64 = fetchurl {
-      url = "https://github.com/ankitects/anki/releases/download/${version}/anki-${version}-mac-apple.dmg";
-      hash = "sha256-c5NZf0uWNB7XQDYBDtgrtCU+A5Cuck0rJ1xFG8hY0Sc=";
+
+    linux-aarch64 = fetchurl {
+      hash = "sha256-z/w7+TKLW+xi/iJMXGOp50Yjwnv7FD5O0lNsu31dfqo=";
+      url = "https://github.com/ankitects/anki/releases/download/${version}/anki-${version}-linux-aarch64.tar.zst";
+    };
+
+    linux-x86_64 = fetchurl {
+      hash = "sha256-YiPXBVY/catAzgcqXZajkZxUbV3eHkxJ3CeXXnAGcnQ=";
+      url = "https://github.com/ankitects/anki/releases/download/${version}/anki-${version}-linux-x86_64.tar.zst";
     };
   };
 
   unpacked = stdenv.mkDerivation {
     inherit pname version;
-
-    nativeBuildInputs = [ zstd ];
     src = if stdenv.hostPlatform.isAarch64 then sources.linux-aarch64 else sources.linux-x86_64;
+    nativeBuildInputs = [ zstd ];
 
     installPhase = ''
       runHook preInstall
@@ -66,14 +67,16 @@ let
       mainProgram
       longDescription
       ;
+
+    maintainers = with lib.maintainers; [
+      mahmoudk1000
+      cything
+    ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
-    ];
-    maintainers = with lib.maintainers; [
-      mahmoudk1000
-      cything
     ];
   };
 
@@ -85,12 +88,27 @@ let
     appimageTools.defaultFhsEnvArgs
     // {
       inherit pname version;
+      inherit meta passthru;
+
+      extraInstallCommands = ''
+        ln -s ${pname} $out/bin/anki
+
+        mkdir -p $out/share
+        cp -R ${unpacked}/share/applications \
+          ${unpacked}/share/man \
+          ${unpacked}/share/pixmaps \
+          $out/share/
+      '';
 
       profile = ''
         # anki vendors QT and mixing QT versions usually causes crashes
         unset QT_PLUGIN_PATH
         # anki uses the system ssl cert, without it plugins do not download/update
         export SSL_CERT_FILE="${cacert}/etc/ssl/certs/ca-bundle.crt"
+      '';
+
+      runScript = writeShellScript "anki-wrapper.sh" ''
+        exec ${unpacked}/bin/anki ${lib.strings.escapeShellArgs commandLineArgs} "$@"
       '';
 
       # Dependencies of anki
@@ -103,22 +121,6 @@ let
           krb5
           zstd
         ]);
-
-      runScript = writeShellScript "anki-wrapper.sh" ''
-        exec ${unpacked}/bin/anki ${lib.strings.escapeShellArgs commandLineArgs} "$@"
-      '';
-
-      extraInstallCommands = ''
-        ln -s ${pname} $out/bin/anki
-
-        mkdir -p $out/share
-        cp -R ${unpacked}/share/applications \
-          ${unpacked}/share/man \
-          ${unpacked}/share/pixmaps \
-          $out/share/
-      '';
-
-      inherit meta passthru;
     }
   );
 in
@@ -128,16 +130,14 @@ if stdenv.hostPlatform.isLinux then
 else
   stdenv.mkDerivation {
     inherit pname version passthru;
-
+    inherit meta;
     src = if stdenv.hostPlatform.isAarch64 then sources.darwin-aarch64 else sources.darwin-x86_64;
-
     nativeBuildInputs = [ undmg ];
-    sourceRoot = ".";
 
     installPhase = ''
       mkdir -p $out/Applications/
       cp -a Anki.app $out/Applications/
     '';
 
-    inherit meta;
+    sourceRoot = ".";
   }

@@ -1,10 +1,10 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   boost,
   cmake,
-  fetchFromGitHub,
   openssl,
-  stdenv,
   enableOpenMP ? false,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -34,6 +34,13 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'cmake_minimum_required( VERSION 3.1 FATAL_ERROR)' 'cmake_minimum_required(VERSION 3.10)'
   '';
 
+  nativeBuildInputs = [ cmake ];
+
+  buildInputs = [
+    boost
+    openssl
+  ];
+
   # https://gitlab.orfeo-toolbox.org/orfeotoolbox/otb/-/blob/develop/SuperBuild/CMake/External_shark.cmake?ref_type=heads
   cmakeFlags = [
     "-DBUILD_SHARED_LIBS=ON"
@@ -43,12 +50,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-DENABLE_CBLAS=OFF"
   ]
   ++ lib.optionals (!enableOpenMP) [ "-DENABLE_OPENMP=OFF" ];
-  buildInputs = [
-    boost
-    openssl
-  ];
-
-  nativeBuildInputs = [ cmake ];
 
   meta = {
     description = "Fast, modular, general open-source C++ machine learning library";

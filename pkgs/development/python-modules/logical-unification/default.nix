@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
-  toolz,
   multipledispatch,
   py,
-  pytestCheckHook,
-  pytest-html,
   pytest-benchmark,
+  pytest-html,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
+  toolz,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "logical-unification";
   version = "0.4.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pythological";
@@ -27,9 +26,16 @@ buildPythonPackage (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/pythological/unification/pull/49.patch";
       hash = "sha256-0y1DHxxjQ19upOlstf/zihP1b6iQ4A/WqyWNpirW/kg=";
+      url = "https://github.com/pythological/unification/pull/49.patch";
     })
+  ];
+
+  nativeCheckInputs = [
+    py
+    pytestCheckHook
+    pytest-html
+    pytest-benchmark # Needed for the `--benchmark-skip` flag
   ];
 
   build-system = [
@@ -42,12 +48,7 @@ buildPythonPackage (finalAttrs: {
     multipledispatch
   ];
 
-  nativeCheckInputs = [
-    py
-    pytestCheckHook
-    pytest-html
-    pytest-benchmark # Needed for the `--benchmark-skip` flag
-  ];
+  pyproject = true;
 
   pytestFlags = [
     "--benchmark-skip"

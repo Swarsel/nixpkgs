@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   bcrypt,
   buildPythonPackage,
   cheroot,
   defusedxml,
-  fetchFromGitHub,
   jinja2,
   json5,
   lxml,
@@ -20,7 +20,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "wsgidav";
   version = "4.3.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mar10";
@@ -29,10 +28,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-LsHVCGXgeXjHJt6VfB+uKsYjqCybBRcweTGvoR8tJ1E=";
   };
 
-  pythonRelaxDeps = [ "bcrypt" ];
+  nativeCheckInputs = [
+    pytestCheckHook
+    requests
+    webtest
+  ];
 
   __darwinAllowLocalNetworking = true;
-
   build-system = [ setuptools ];
 
   dependencies = [
@@ -50,13 +52,9 @@ buildPythonPackage (finalAttrs: {
     pam = [ python-pam ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    requests
-    webtest
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "wsgidav" ];
+  pythonRelaxDeps = [ "bcrypt" ];
 
   meta = {
     description = "Generic and extendable WebDAV server based on WSGI";

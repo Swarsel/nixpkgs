@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  makeWrapper,
-  ffmpeg,
   feh,
+  ffmpeg,
   imagemagick_light,
   lz4,
+  makeWrapper,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "resnap";
@@ -20,13 +20,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
-  runtimeInputs = [
-    ffmpeg
-    feh
-    imagemagick_light
-    lz4
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -43,6 +36,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     wrapProgram $out/bin/reSnap \
       --suffix PATH : "${lib.makeBinPath finalAttrs.runtimeInputs}"
   '';
+
+  runtimeInputs = [
+    ffmpeg
+    feh
+    imagemagick_light
+    lz4
+  ];
 
   meta = {
     description = "Take screnshots of your reMarkable tablet over SSH";

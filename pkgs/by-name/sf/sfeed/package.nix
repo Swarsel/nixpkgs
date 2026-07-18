@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchgit,
   ncurses,
 }:
@@ -24,14 +24,13 @@ stdenv.mkDerivation (finalAttrs: {
   # use macOS's strlcat() and strlcpy() instead of vendored ones
   ++ lib.optional stdenv.hostPlatform.isDarwin "COMPATOBJ:=";
 
-  installFlags = [ "PREFIX=$(out)" ];
-
   # otherwise does not find SIGWINCH
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-D_DARWIN_C_SOURCE";
+  installFlags = [ "PREFIX=$(out)" ];
 
   meta = {
-    homepage = "https://codemadness.org/sfeed-simple-feed-parser.html";
     description = "RSS and Atom parser (and some format programs)";
+
     longDescription = ''
       It converts RSS or Atom feeds from XML to a TAB-separated file. There are
       formatting programs included to convert this TAB-separated format to
@@ -39,6 +38,8 @@ stdenv.mkDerivation (finalAttrs: {
       to import and export OPML and to fetch, filter, merge and order feed
       items.
     '';
+
+    homepage = "https://codemadness.org/sfeed-simple-feed-parser.html";
     license = lib.licenses.isc;
     maintainers = [ lib.maintainers.matthiasbeyer ];
     platforms = lib.platforms.all;

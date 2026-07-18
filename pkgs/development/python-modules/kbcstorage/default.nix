@@ -1,9 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   azure-storage-blob,
   boto3,
   buildPythonPackage,
-  fetchFromGitHub,
+  google-auth,
+  google-cloud-storage,
   python-dotenv,
   requests,
   responses,
@@ -11,14 +13,11 @@
   setuptools-git-versioning,
   setuptools-scm,
   urllib3,
-  google-auth,
-  google-cloud-storage,
 }:
 
 buildPythonPackage rec {
   pname = "sapi-python-client";
   version = "0.9.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "keboola";
@@ -32,15 +31,14 @@ buildPythonPackage rec {
       --replace-fail "urllib3<2.0.0" "urllib3"
   '';
 
+  # Requires API token and an active Keboola bucket
+  # ValueError: Root URL is required.
+  doCheck = false;
+
   build-system = [
     setuptools
     setuptools-git-versioning
     setuptools-scm
-  ];
-
-  pythonRelaxDeps = [
-    "google-cloud-storage"
-    "google-auth"
   ];
 
   dependencies = [
@@ -54,15 +52,18 @@ buildPythonPackage rec {
     google-cloud-storage
   ];
 
-  # Requires API token and an active Keboola bucket
-  # ValueError: Root URL is required.
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "kbcstorage"
     "kbcstorage.buckets"
     "kbcstorage.client"
     "kbcstorage.tables"
+  ];
+
+  pythonRelaxDeps = [
+    "google-cloud-storage"
+    "google-auth"
   ];
 
   meta = {

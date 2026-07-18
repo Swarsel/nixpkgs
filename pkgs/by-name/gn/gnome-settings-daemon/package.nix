@@ -1,43 +1,43 @@
 {
-  stdenv,
   lib,
-  replaceVars,
-  fetchpatch,
-  buildPackages,
+  stdenv,
   fetchurl,
-  meson,
-  ninja,
-  pkg-config,
-  gnome,
-  perl,
+  alsa-lib,
+  buildPackages,
+  colord,
+  docbook-xsl-nons,
+  fetchpatch,
+  gcr_4,
+  geoclue2,
+  geocode-glib_2,
   gettext,
   glib,
-  libnotify,
-  libgnomekbd,
-  libpulseaudio,
-  alsa-lib,
-  libcanberra,
-  upower,
-  colord,
-  libgweather,
-  polkit,
+  gnome,
+  gnome-desktop,
+  gnome-session-ctl,
   gsettings-desktop-schemas,
-  geoclue2,
-  systemd,
+  libcanberra,
+  libgnomekbd,
   libgudev,
-  libxslt,
+  libgweather,
+  libnotify,
+  libpulseaudio,
   libxml2,
+  libxslt,
+  meson,
   modemmanager,
   networkmanager,
-  gnome-desktop,
-  geocode-glib_2,
-  docbook-xsl-nons,
-  wrapGAppsNoGuiHook,
+  ninja,
+  perl,
+  pkg-config,
+  polkit,
   python3,
+  replaceVars,
+  systemd,
   tzdata,
-  gcr_4,
-  gnome-session-ctl,
   udevCheckHook,
+  upower,
+  wrapGAppsNoGuiHook,
   withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
 }:
 
@@ -59,10 +59,12 @@ stdenv.mkDerivation (finalAttrs: {
     })
   ];
 
-  depsBuildBuild = [
-    buildPackages.stdenv.cc
-    pkg-config
-  ];
+  postPatch = ''
+    for f in plugins/power/gsd-power-constants-update.pl; do
+      chmod +x $f
+      patchShebangs $f
+    done
+  '';
 
   nativeBuildInputs = [
     meson
@@ -114,15 +116,12 @@ stdenv.mkDerivation (finalAttrs: {
   # Default for release buildtype but passed manually because
   # we're using plain
   env.NIX_CFLAGS_COMPILE = "-DG_DISABLE_CAST_CHECKS";
-
-  postPatch = ''
-    for f in plugins/power/gsd-power-constants-update.pl; do
-      chmod +x $f
-      patchShebangs $f
-    done
-  '';
-
   doInstallCheck = true;
+
+  depsBuildBuild = [
+    buildPackages.stdenv.cc
+    pkg-config
+  ];
 
   passthru = {
     updateScript = gnome.updateScript {
@@ -132,7 +131,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.gnome ];
   };
 })

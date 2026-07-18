@@ -1,23 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   beautifulsoup4,
+  buildPythonPackage,
   extruct,
   isodate,
   language-tags,
+  nixosTests,
+  pytestCheckHook,
   regex,
   requests,
-  pytestCheckHook,
   responses,
   setuptools,
-  nixosTests,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "recipe-scrapers";
   version = "15.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hhursev";
@@ -25,6 +24,11 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-S0/RPVeEr/lAPJZSUwCippuXyirYnmaAuesWGYwg6kE=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    responses
+  ];
 
   build-system = [ setuptools ];
 
@@ -36,20 +40,16 @@ buildPythonPackage (finalAttrs: {
     regex
   ];
 
-  optional-dependencies = {
-    online = [ requests ];
-  };
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    responses
-  ];
-
   disabledTests = [
     # Fixture is broken
     "test_instructions"
   ];
 
+  optional-dependencies = {
+    online = [ requests ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "recipe_scrapers" ];
 
   passthru = {

@@ -1,43 +1,40 @@
 {
   lib,
   stdenv,
-  runCommand,
-  newScope,
   fetchFromGitLab,
-  makeWrapper,
-  symlinkJoin,
+  adwaita-icon-theme,
   callPackage,
   callPackages,
-
-  adwaita-icon-theme,
-  dconf,
-  gtk3,
-  wxwidgets_3_2,
-  librsvg,
   cups,
+  dconf,
   gsettings-desktop-schemas,
+  gtk3,
   hicolor-icon-theme,
-
-  unzip,
   jq,
-
-  pname ? "kicad",
-  stable ? true,
-  compressStep ? true,
-  testing ? false,
-  withNgspice ? !stdenv.hostPlatform.isDarwin,
-  libngspice,
-  withScripting ? true,
-  python3,
-  withJava ? false,
   jre,
+  libngspice,
+  librsvg,
+  makeWrapper,
+  newScope,
+  python3,
+  runCommand,
+  symlinkJoin,
+  unzip,
+  wxwidgets_3_2,
   addons ? [ ],
+  compressStep ? true,
   debug ? false,
+  pname ? "kicad",
   sanitizeAddress ? false,
   sanitizeThreads ? false,
+  srcs ? { },
+  stable ? true,
+  testing ? false,
   with3d ? true,
   withI18n ? true,
-  srcs ? { },
+  withJava ? false,
+  withNgspice ? !stdenv.hostPlatform.isDarwin,
+  withScripting ? true,
 }:
 
 # `addons`: https://dev-docs.kicad.org/en/addons/
@@ -144,6 +141,7 @@ let
     runCommand "addonsJoined"
       {
         inherit addonsDrvs;
+
         nativeBuildInputs = [
           unzip
           jq
@@ -177,105 +175,11 @@ let
 in
 stdenv.mkDerivation rec {
 
-  # Common libraries, referenced during runtime, via the wrapper.
-  passthru.libraries = callPackages ./libraries.nix { inherit libSrc compressStep; };
-  passthru.callPackage = newScope { inherit addonPath python3; };
-  base = callPackage ./base.nix {
-    inherit stable testing;
-    inherit kicadSrc kicadVersion;
-    inherit wxGTK python wxPython;
-    inherit withNgspice withScripting withI18n;
-    inherit debug sanitizeAddress sanitizeThreads;
-  };
-
   inherit pname;
   version = if stable then kicadVersion else builtins.substring 0 10 src.src.rev;
-
   src = base;
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
-  dontFixup = true;
-
-  pythonPath =
-    optionals withScripting [
-      wxPython
-      python.pkgs.six
-      python.pkgs.requests
-    ]
-    ++ addonsDrvs;
-
   nativeBuildInputs = [ makeWrapper ] ++ optionals withScripting [ python.pkgs.wrapPython ];
-
   buildInputs = optionals withJava [ jre ];
-
-  # KICAD7_TEMPLATE_DIR only works with a single path (it does not handle : separated paths)
-  # but it's used to find both the templates and the symbol/footprint library tables
-  # https://gitlab.com/kicad/code/kicad/-/issues/14792
-  template_dir = symlinkJoin {
-    name = "KiCad_template_dir";
-    paths = with passthru.libraries; [
-      "${templates}/share/kicad/template"
-      "${footprints}/share/kicad/template"
-      "${symbols}/share/kicad/template"
-    ];
-  };
-
-  # KiCad looks up its stock library tables relative to GetStockDataPath(),
-  # which our runtime_stock_data_path.patch lets us override via
-  # NIX_KICAD10_STOCK_DATA_PATH. We synthesise a directory that mirrors
-  # ${base}/share/kicad but replaces the upstream-installed (incomplete)
-  # template/ with the merged template_dir from the library packages.
-  # Doing this in the wrapper instead of in base.nix keeps the heavy
-  # kicad-base compile independent of the (cheap) library packages, so
-  # toggling overrides like compressStep doesn't force a base rebuild.
-  baseWithTemplate = runCommand "kicad-stock-data" { } ''
-    mkdir -p $out
-    for d in ${base}/share/kicad/*; do
-      name=$(basename "$d")
-      [ "$name" = template ] || ln -s "$d" "$out/$name"
-    done
-    ln -s ${template_dir} $out/template
-  '';
-
-  stockDataPath =
-    if addons == [ ] then
-      baseWithTemplate
-    else
-      symlinkJoin {
-        name = "kicad_stock_data_path";
-        paths = [
-          baseWithTemplate
-          "${addonsJoined}/share/kicad"
-        ];
-      };
-
-  # We are emulating wrapGAppsHook3, along with other variables to the wrapper
-  makeWrapperArgs =
-    with passthru.libraries;
-    [
-      "--prefix XDG_DATA_DIRS : ${base}/share"
-      "--prefix XDG_DATA_DIRS : ${hicolor-icon-theme}/share"
-      "--prefix XDG_DATA_DIRS : ${adwaita-icon-theme}/share"
-      "--prefix XDG_DATA_DIRS : ${gtk3}/share/gsettings-schemas/${gtk3.name}"
-      "--prefix XDG_DATA_DIRS : ${gsettings-desktop-schemas}/share/gsettings-schemas/${gsettings-desktop-schemas.name}"
-      # wrapGAppsHook3 did these two as well, no idea if it matters...
-      "--prefix XDG_DATA_DIRS : ${cups}/share"
-      "--prefix GIO_EXTRA_MODULES : ${dconf}/lib/gio/modules"
-      # required to open a bug report link in firefox-wayland
-      "--set-default MOZ_DBUS_REMOTE 1"
-      "--set-default KICAD10_FOOTPRINT_DIR ${footprints}/share/kicad/footprints"
-      "--set-default KICAD10_SYMBOL_DIR ${symbols}/share/kicad/symbols"
-      "--set-default KICAD10_TEMPLATE_DIR ${template_dir}"
-      "--set-default NIX_KICAD10_STOCK_DATA_PATH ${stockDataPath}"
-    ]
-    ++ optionals with3d [
-      "--set-default KICAD10_3DMODEL_DIR ${packages3d}/share/kicad/3dmodels"
-    ]
-    ++ optionals withNgspice [ "--prefix LD_LIBRARY_PATH : ${libngspice}/lib" ]
-
-    # infinisil's workaround for #39493
-    ++ [ "--set GDK_PIXBUF_MODULE_FILE ${librsvg}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache" ];
 
   # why does $makeWrapperArgs have to be added explicitly?
   # $out and $program_PYTHONPATH don't exist when makeWrapperArgs gets set?
@@ -326,11 +230,107 @@ stdenv.mkDerivation rec {
     ln -s ${base}/share/metainfo $out/share/metainfo
   '';
 
+  base = callPackage ./base.nix {
+    inherit stable testing;
+    inherit kicadSrc kicadVersion;
+    inherit wxGTK python wxPython;
+    inherit withNgspice withScripting withI18n;
+    inherit debug sanitizeAddress sanitizeThreads;
+  };
+
+  # KiCad looks up its stock library tables relative to GetStockDataPath(),
+  # which our runtime_stock_data_path.patch lets us override via
+  # NIX_KICAD10_STOCK_DATA_PATH. We synthesise a directory that mirrors
+  # ${base}/share/kicad but replaces the upstream-installed (incomplete)
+  # template/ with the merged template_dir from the library packages.
+  # Doing this in the wrapper instead of in base.nix keeps the heavy
+  # kicad-base compile independent of the (cheap) library packages, so
+  # toggling overrides like compressStep doesn't force a base rebuild.
+  baseWithTemplate = runCommand "kicad-stock-data" { } ''
+    mkdir -p $out
+    for d in ${base}/share/kicad/*; do
+      name=$(basename "$d")
+      [ "$name" = template ] || ln -s "$d" "$out/$name"
+    done
+    ln -s ${template_dir} $out/template
+  '';
+
+  dontBuild = true;
+  dontConfigure = true;
+  dontFixup = true;
+  dontUnpack = true;
+
+  # We are emulating wrapGAppsHook3, along with other variables to the wrapper
+  makeWrapperArgs =
+    with passthru.libraries;
+    [
+      "--prefix XDG_DATA_DIRS : ${base}/share"
+      "--prefix XDG_DATA_DIRS : ${hicolor-icon-theme}/share"
+      "--prefix XDG_DATA_DIRS : ${adwaita-icon-theme}/share"
+      "--prefix XDG_DATA_DIRS : ${gtk3}/share/gsettings-schemas/${gtk3.name}"
+      "--prefix XDG_DATA_DIRS : ${gsettings-desktop-schemas}/share/gsettings-schemas/${gsettings-desktop-schemas.name}"
+      # wrapGAppsHook3 did these two as well, no idea if it matters...
+      "--prefix XDG_DATA_DIRS : ${cups}/share"
+      "--prefix GIO_EXTRA_MODULES : ${dconf}/lib/gio/modules"
+      # required to open a bug report link in firefox-wayland
+      "--set-default MOZ_DBUS_REMOTE 1"
+      "--set-default KICAD10_FOOTPRINT_DIR ${footprints}/share/kicad/footprints"
+      "--set-default KICAD10_SYMBOL_DIR ${symbols}/share/kicad/symbols"
+      "--set-default KICAD10_TEMPLATE_DIR ${template_dir}"
+      "--set-default NIX_KICAD10_STOCK_DATA_PATH ${stockDataPath}"
+    ]
+    ++ optionals with3d [
+      "--set-default KICAD10_3DMODEL_DIR ${packages3d}/share/kicad/3dmodels"
+    ]
+    ++ optionals withNgspice [ "--prefix LD_LIBRARY_PATH : ${libngspice}/lib" ]
+
+    # infinisil's workaround for #39493
+    ++ [ "--set GDK_PIXBUF_MODULE_FILE ${librsvg}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache" ];
+
+  pythonPath =
+    optionals withScripting [
+      wxPython
+      python.pkgs.six
+      python.pkgs.requests
+    ]
+    ++ addonsDrvs;
+
+  stockDataPath =
+    if addons == [ ] then
+      baseWithTemplate
+    else
+      symlinkJoin {
+        name = "kicad_stock_data_path";
+
+        paths = [
+          baseWithTemplate
+          "${addonsJoined}/share/kicad"
+        ];
+      };
+
+  # KICAD7_TEMPLATE_DIR only works with a single path (it does not handle : separated paths)
+  # but it's used to find both the templates and the symbol/footprint library tables
+  # https://gitlab.com/kicad/code/kicad/-/issues/14792
+  template_dir = symlinkJoin {
+    name = "KiCad_template_dir";
+
+    paths = with passthru.libraries; [
+      "${templates}/share/kicad/template"
+      "${footprints}/share/kicad/template"
+      "${symbols}/share/kicad/template"
+    ];
+  };
+
+  passthru.callPackage = newScope { inherit addonPath python3; };
+  # Common libraries, referenced during runtime, via the wrapper.
+  passthru.libraries = callPackages ./libraries.nix { inherit libSrc compressStep; };
+
   passthru.updateScript = {
     command = [
       ./update.sh
       "${pname}"
     ];
+
     supportedFeatures = [ "commit" ];
   };
 
@@ -345,18 +345,22 @@ stdenv.mkDerivation rec {
           "Open Source EDA suite, latest on master branch"
       )
       + (lib.optionalString (!with3d) ", without 3D models");
-    homepage = "https://www.kicad.org/";
+
     longDescription = ''
       KiCad is an open source software suite for Electronic Design Automation.
       The Programs handle Schematic Capture, and PCB Layout with Gerber output.
     '';
+
+    homepage = "https://www.kicad.org/";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       korken89
       ryand56
     ];
+
     platforms = lib.platforms.all;
-    broken = stdenv.hostPlatform.isDarwin;
     mainProgram = "kicad";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 }

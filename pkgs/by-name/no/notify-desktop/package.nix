@@ -27,15 +27,17 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Little application that lets you send desktop notifications with one command";
+
     longDescription = ''
       It's basically clone of notify-send from libnotify,
       but it supports reusing notifications on screen by passing its ID.
       It also does not use any external dependencies (except from libdbus of course).
     '';
+
     homepage = "https://github.com/nowrep/notify-desktop";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ ylwghst ];
+    platforms = lib.platforms.unix;
     mainProgram = "notify-desktop";
   };
 }

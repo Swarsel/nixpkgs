@@ -13,8 +13,6 @@ buildDunePackage (finalAttrs: {
   pname = "mirage-net";
   version = "4.0.0";
 
-  duneVersion = "3";
-
   src = fetchurl {
     url = "https://github.com/mirage/mirage-net/releases/download/v${finalAttrs.version}/mirage-net-v${finalAttrs.version}.tbz";
     hash = "sha256-Zo7/0Ye4GgqzJFCHDBXbuJ/5ETl/8ziolRgH4lDhlM4=";
@@ -27,6 +25,8 @@ buildDunePackage (finalAttrs: {
     macaddr
     mirage-device
   ];
+
+  duneVersion = "3";
 
   meta = {
     description = "Network signatures for MirageOS";

@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
+  dpkg,
+  glib,
   openjdk21,
   openjfx21,
-  glib,
-  dpkg,
   wrapGAppsHook3,
 }:
 let
@@ -25,6 +25,7 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://www.greenfoot.org/download/files/Greenfoot-linux-arm64-${
       builtins.replaceStrings [ "." ] [ "" ] finalAttrs.version
     }.deb";
+
     hash = "sha256-d5bkK+teTA4fxFb46ovbZE28l8WILGStv3Vg3nJZfv0=";
   };
 
@@ -32,9 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
     dpkg
     wrapGAppsHook3
   ];
-  buildInputs = [ glib ];
 
-  dontWrapGApps = true;
+  buildInputs = [ glib ];
 
   installPhase = ''
     runHook preInstall
@@ -57,16 +57,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontWrapGApps = true;
+
   meta = {
     description = "Simple integrated development environment for Java";
     homepage = "https://www.greenfoot.org/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     license = with lib.licenses; [
       gpl2Plus
       classpathException20
     ];
-    mainProgram = "greenfoot";
+
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ lib.maintainers.chvp ];
     platforms = lib.platforms.linux;
+    mainProgram = "greenfoot";
   };
 })

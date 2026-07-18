@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   grpcio,
+  poetry-core,
   protobuf,
   pytest-asyncio,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "grpc-interceptor";
   version = "0.15.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "d5h-foss";
@@ -28,19 +27,18 @@ buildPythonPackage rec {
     protobuf
   ];
 
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [
     pytest-asyncio
     pytestCheckHook
   ];
 
+  __darwinAllowLocalNetworking = true;
+  pyproject = true;
   pythonImportsCheck = [ "grpc_interceptor" ];
 
   meta = {
     description = "Simplified gRPC interceptors";
-    homepage = "https://github.com/d5h-foss/grpc-interceptor";
-    changelog = "https://github.com/d5h-foss/grpc-interceptor/releases/tag/v${version}";
+
     longDescription = ''
       Simplified Python gRPC interceptors.
 
@@ -50,6 +48,9 @@ buildPythonPackage rec {
       context. Access to these are often desired, to be able to log data in the
       request or response, or set status codes on the context.
     '';
+
+    homepage = "https://github.com/d5h-foss/grpc-interceptor";
+    changelog = "https://github.com/d5h-foss/grpc-interceptor/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ tomaskala ];
   };

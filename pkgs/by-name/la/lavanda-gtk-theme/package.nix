@@ -1,9 +1,9 @@
 {
+  lib,
   fetchFromGitHub,
   gnome-themes-extra,
   gtk-engine-murrine,
   jdupes,
-  lib,
   sassc,
   stdenvNoCC,
 }:
@@ -26,8 +26,6 @@ stdenvNoCC.mkDerivation rec {
 
   buildInputs = [ gnome-themes-extra ];
 
-  propagatedUserEnvPkgs = [ gtk-engine-murrine ];
-
   preInstall = ''
     mkdir -p $out/share/themes
   '';
@@ -42,11 +40,13 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  propagatedUserEnvPkgs = [ gtk-engine-murrine ];
+
   meta = {
     description = "Lavanda gtk theme for linux desktops";
     homepage = "https://github.com/vinceliuice/Lavanda-gtk-theme";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ dretyuiop ];
+    platforms = lib.platforms.linux;
   };
 }

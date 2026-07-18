@@ -6,9 +6,9 @@
   ibtool,
   lld,
   makeWrapper,
+  nix-update-script,
   rcodesign,
   re-plistbuddy,
-  nix-update-script,
 }:
 
 let
@@ -16,10 +16,10 @@ let
   # maintained Rectangle fork instead; it adds F20 and macOS Tahoe fixes while
   # retaining the API and bundle identity used by Itsycal.
   masShortcutSrc = fetchFromGitHub {
+    hash = "sha256-EZLt7ph24L1wwFEMlltuPutId09RBug/y9OtDhixIig=";
     owner = "rxhanson";
     repo = "MASShortcut";
     rev = "2f9fbb3f959b7a683c6faaf9638d22afad37a235";
-    hash = "sha256-EZLt7ph24L1wwFEMlltuPutId09RBug/y9OtDhixIig=";
   };
 
   masShortcutSources = [
@@ -69,6 +69,12 @@ stdenv.mkDerivation (finalAttrs: {
     ./0004-Use-APIs-available-on-the-Nixpkgs-macOS-baseline.patch
   ];
 
+  postPatch = ''
+    # Both upstream frameworks contain native code. MASShortcut is rebuilt
+    # below and Sparkle is removed by patch 0002, so make accidental reuse fail.
+    rm -rf Itsycal/_frameworks
+  '';
+
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -83,14 +89,6 @@ stdenv.mkDerivation (finalAttrs: {
   # The classic open-source ld64 crashes while linking MASShortcut on arm64.
   # Keep lld until the cctools linker can link this framework reliably.
   env.NIX_CFLAGS_LINK = "-fuse-ld=lld";
-
-  dontConfigure = true;
-
-  postPatch = ''
-    # Both upstream frameworks contain native code. MASShortcut is rebuilt
-    # below and Sparkle is removed by patch 0002, so make accidental reuse fail.
-    rm -rf Itsycal/_frameworks
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -216,25 +214,31 @@ stdenv.mkDerivation (finalAttrs: {
     rcodesign sign "$out/Applications/Itsycal.app"
   '';
 
+  dontConfigure = true;
+
   passthru.updateScript = nix-update-script {
     # Ignore upstream's non-version "help" tag.
     extraArgs = [ "--version-regex=^([0-9]+\\.[0-9]+\\.[0-9]+)$" ];
   };
 
   meta = {
-    changelog = "https://www.mowglii.com/itsycal/versionhistory.html";
     description = "Tiny menu bar calendar";
     homepage = "https://www.mowglii.com/itsycal/";
+    changelog = "https://www.mowglii.com/itsycal/versionhistory.html";
+
     license = with lib.licenses; [
       bsd2
       mit
     ];
-    mainProgram = "itsycal";
+
+    sourceProvenance = with lib.sourceTypes; [ fromSource ];
+
     maintainers = with lib.maintainers; [
       eclairevoyant
       _4evy
     ];
+
     platforms = lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [ fromSource ];
+    mainProgram = "itsycal";
   };
 })

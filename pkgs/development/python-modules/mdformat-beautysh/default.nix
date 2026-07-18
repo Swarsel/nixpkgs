@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   beautysh,
   buildPythonPackage,
-  fetchFromGitHub,
   mdformat,
   mdformat-gfm,
   mdit-py-plugins,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "mdformat-beautysh";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hukkin";
@@ -22,6 +21,7 @@ buildPythonPackage rec {
     hash = "sha256-Wzwy2FSknohmgrZ/ACliBDD2lOaQKKHyacAL57Ci3SU=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -31,8 +31,7 @@ buildPythonPackage rec {
     mdit-py-plugins
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mdformat_beautysh" ];
 
   meta = {

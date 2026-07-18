@@ -1,5 +1,6 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dissect-apfs,
   dissect-archive,
@@ -31,7 +32,6 @@
   dissect-vmfs,
   dissect-volume,
   dissect-xfs,
-  fetchFromGitHub,
   setuptools,
   setuptools-scm,
 }:
@@ -39,7 +39,6 @@
 buildPythonPackage rec {
   pname = "dissect";
   version = "3.22";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fox-it";
@@ -48,7 +47,8 @@ buildPythonPackage rec {
     hash = "sha256-+Nq/7ftOD9/un9TYdrztbaUcBtDcfju36bkrDH57+ms=";
   };
 
-  pythonRelaxDeps = true;
+  # Module has no tests
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -89,10 +89,9 @@ buildPythonPackage rec {
   ]
   ++ dissect-target.optional-dependencies.full;
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "dissect" ];
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Dissect meta module";

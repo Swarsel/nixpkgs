@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  makeWrapper,
+  buildGoModule,
   go,
+  makeWrapper,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,22 +17,21 @@ buildGoModule (finalAttrs: {
     sha256 = "0mkh81hd7kn45dz7b6yhzqsg2mvg1g6pwx89jjigxrnqhyg9vrl7";
   };
 
-  vendorHash = null;
-
-  # This is required for wrapProgram.
-  allowGoReference = true;
-
   nativeBuildInputs = [ makeWrapper ];
+  vendorHash = null;
 
   postFixup = ''
     wrapProgram $out/bin/gox --prefix PATH : ${lib.makeBinPath [ go ]}
   '';
 
+  # This is required for wrapProgram.
+  allowGoReference = true;
+
   meta = {
-    homepage = "https://github.com/mitchellh/gox";
     description = "Dead simple, no frills Go cross compile tool";
-    mainProgram = "gox";
+    homepage = "https://github.com/mitchellh/gox";
     license = lib.licenses.mpl20;
     maintainers = [ ];
+    mainProgram = "gox";
   };
 })

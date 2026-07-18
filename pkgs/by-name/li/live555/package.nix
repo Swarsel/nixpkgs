@@ -1,17 +1,16 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   buildPackages,
   cctools,
   fetchpatch,
-  fetchurl,
-  lib,
   live555,
   openssl,
   runCommand,
-  stdenv,
-  writeScript,
-
   # tests
   vlc,
+  writeScript,
 }:
 let
   isStatic = stdenv.hostPlatform.isStatic;
@@ -22,49 +21,23 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2026.01.12";
 
   src = fetchurl {
+    hash = "sha256-LFTC4JAGWEnQq4zHsGlC9OZt3hfyoMgK4guQfVYsk34=";
+
     urls = [
       "http://www.live555.com/liveMedia/public/live.${finalAttrs.version}.tar.gz"
       "https://src.rrz.uni-hamburg.de/files/src/live555/live.${finalAttrs.version}.tar.gz"
       "https://download.videolan.org/contrib/live555/live.${finalAttrs.version}.tar.gz"
       "mirror://sourceforge/slackbuildsdirectlinks/live.${finalAttrs.version}.tar.gz"
     ];
-    hash = "sha256-LFTC4JAGWEnQq4zHsGlC9OZt3hfyoMgK4guQfVYsk34=";
   };
 
   patches = [
     (fetchpatch {
+      hash = "sha256-IDSdByBu/EBLsUTBe538rWsDwH61RJfAEhvT68Nb9rU=";
       name = "0000-cflags-when-darwin.patch";
       url = "https://github.com/rgaufman/live555/commit/16701af5486bb3a2d25a28edaab07789c8a9ce57.patch?full_index=1";
-      hash = "sha256-IDSdByBu/EBLsUTBe538rWsDwH61RJfAEhvT68Nb9rU=";
     })
   ];
-
-  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
-    cctools
-  ];
-
-  buildInputs = [
-    openssl
-  ];
-
-  makeFlags = [
-    "PREFIX=${placeholder "out"}"
-    "C_COMPILER=$(CC)"
-    "CPLUSPLUS_COMPILER=$(CXX)"
-    "LINK=$(CXX) -o "
-    "LIBRARY_LINK=${if isStatic then "$(AR) cr " else "$(CC) -o "}"
-  ];
-
-  # Since NIX_CFLAGS_COMPILE affects both C and C++ toolchains, we set CXXFLAGS
-  # directly
-  env.CXXFLAGS = "-std=c++20";
-
-  strictDeps = true;
-
-  enableParallelBuilding = true;
-
-  # required for whitespaces in makeFlags
-  __structuredAttrs = true;
 
   postPatch = ''
     substituteInPlace config.macosx-catalina \
@@ -87,6 +60,41 @@ stdenv.mkDerivation (finalAttrs: {
           --replace '<xlocale.h>' '<locale.h>'
       '';
 
+  strictDeps = true;
+
+  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
+    cctools
+  ];
+
+  buildInputs = [
+    openssl
+  ];
+
+  makeFlags = [
+    "PREFIX=${placeholder "out"}"
+    "C_COMPILER=$(CC)"
+    "CPLUSPLUS_COMPILER=$(CXX)"
+    "LINK=$(CXX) -o "
+    "LIBRARY_LINK=${if isStatic then "$(AR) cr " else "$(CC) -o "}"
+  ];
+
+  # Since NIX_CFLAGS_COMPILE affects both C and C++ toolchains, we set CXXFLAGS
+  # directly
+  env.CXXFLAGS = "-std=c++20";
+  doInstallCheck = true;
+
+  installCheckPhase = ''
+    if ! ($out/bin/openRTSP || :) 2>&1 | grep -q "Usage: "; then
+      echo "Executing example program failed" >&2
+      exit 1
+    else
+      echo "Example program executed successfully"
+    fi
+  '';
+
+  # required for whitespaces in makeFlags
+  __structuredAttrs = true;
+
   configurePhase =
     let
       platform =
@@ -105,21 +113,15 @@ stdenv.mkDerivation (finalAttrs: {
       runHook postConfigure
     '';
 
-  doInstallCheck = true;
-  installCheckPhase = ''
-    if ! ($out/bin/openRTSP || :) 2>&1 | grep -q "Usage: "; then
-      echo "Executing example program failed" >&2
-      exit 1
-    else
-      echo "Example program executed successfully"
-    fi
-  '';
+  enableParallelBuilding = true;
 
   passthru.tests =
     let
       emulator = stdenv.hostPlatform.emulator buildPackages;
     in
     {
+      inherit vlc;
+
       # The installCheck phase above cannot be ran in cross-compilation scenarios,
       # therefore the passthru test
       run-test-prog = runCommand "live555-run-test-prog" { } ''
@@ -131,8 +133,6 @@ stdenv.mkDerivation (finalAttrs: {
           touch $out
         fi
       '';
-
-      inherit vlc;
     };
 
   passthru.updateScript = writeScript "update-live555" ''
@@ -146,8 +146,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://www.live555.com/liveMedia/";
     description = "Set of C++ libraries for multimedia streaming, using open standard protocols (RTP/RTCP, RTSP, SIP)";
+    homepage = "http://www.live555.com/liveMedia/";
     changelog = "http://www.live555.com/liveMedia/public/changelog.txt";
     license = with lib.licenses; [ lgpl21Plus ];
     maintainers = [ ];

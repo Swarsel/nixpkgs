@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
   installShellFiles,
-  installShellCompletions ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
+  rustPlatform,
   installManPages ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
+  installShellCompletions ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
   withTcp ? true,
 }:
 
@@ -20,16 +20,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-FnNNJ6WHR8KCsW+1hPIYddxQlUvpPc+SRbaxAcdVEUk=";
   };
 
-  cargoHash = "sha256-2Drty/dj9HCG86rPt4RgexU83vKMnGFETbOT11Puy/0=";
-
   nativeBuildInputs = lib.optional (installManPages || installShellCompletions) installShellFiles;
-
-  buildNoDefaultFeatures = true;
-  buildFeatures = [
-    "hook-command"
-    "hook-notify"
-  ]
-  ++ lib.optional withTcp "tcp";
+  cargoHash = "sha256-2Drty/dj9HCG86rPt4RgexU83vKMnGFETbOT11Puy/0=";
 
   postInstall =
     lib.optionalString installManPages ''
@@ -43,6 +35,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
         --fish <($out/bin/comodoro completion fish) \
         --zsh <($out/bin/comodoro completion zsh)
     '';
+
+  buildFeatures = [
+    "hook-command"
+    "hook-notify"
+  ]
+  ++ lib.optional withTcp "tcp";
+
+  buildNoDefaultFeatures = true;
 
   meta = {
     description = "CLI to manage your time";

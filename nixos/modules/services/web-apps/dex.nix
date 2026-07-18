@@ -46,22 +46,31 @@ in
 {
   options.services.dex = {
     enable = mkEnableOption "the OpenID Connect and OAuth2 identity provider";
-
     package = mkPackageOption pkgs "dex-oidc" { };
 
     environmentFile = mkOption {
-      type = types.nullOr types.path;
       default = null;
+
       description = ''
         Environment file (see {manpage}`systemd.exec(5)`
         "EnvironmentFile=" section for the syntax) to define variables for dex.
         This option can be used to safely include secret keys into the dex configuration.
       '';
+
+      type = types.nullOr types.path;
     };
 
     settings = mkOption {
-      type = settingsFormat.type;
       default = { };
+
+      description = ''
+        The available options can be found in
+        [the example configuration](https://github.com/dexidp/dex/blob/v${cfg.package.version}/config.yaml.dist).
+
+        It's also possible to refer to environment variables (defined in [services.dex.environmentFile](#opt-services.dex.environmentFile))
+        using the syntax `$VARIABLE_NAME`.
+      '';
+
       example = literalExpression ''
         {
           # External url
@@ -84,34 +93,25 @@ in
           ];
         }
       '';
-      description = ''
-        The available options can be found in
-        [the example configuration](https://github.com/dexidp/dex/blob/v${cfg.package.version}/config.yaml.dist).
 
-        It's also possible to refer to environment variables (defined in [services.dex.environmentFile](#opt-services.dex.environmentFile))
-        using the syntax `$VARIABLE_NAME`.
-      '';
+      type = settingsFormat.type;
     };
   };
 
   config = mkIf cfg.enable {
     systemd.services.dex = {
-      description = "dex identity provider";
-      wantedBy = [ "multi-user.target" ];
       after = [
         "network.target"
       ]
       ++ (optional (cfg.settings.storage.type == "postgres") "postgresql.target");
+
+      description = "dex identity provider";
       path = with pkgs; [ replace-secret ];
       restartTriggers = restartTriggers;
-      serviceConfig = {
-        ExecStart = "${cfg.package}/bin/dex serve /run/dex/config.yaml";
-        ExecStartPre = [
-          "${pkgs.coreutils}/bin/install -m 600 ${configFile} /run/dex/config.yaml"
-          "+${startPreScript}"
-        ];
 
-        RuntimeDirectory = "dex";
+      serviceConfig = {
+        BindPaths = optional (cfg.settings.storage.type == "postgres") "/var/run/postgresql";
+
         BindReadOnlyPaths = [
           "/nix/store"
           "-/etc/dex"
@@ -121,10 +121,17 @@ in
           "-/etc/resolv.conf"
           "${config.security.pki.caBundle}:/etc/ssl/certs/ca-certificates.crt"
         ];
-        BindPaths = optional (cfg.settings.storage.type == "postgres") "/var/run/postgresql";
+
         # ProtectClock= adds DeviceAllow=char-rtc r
         DeviceAllow = "";
         DynamicUser = true;
+        ExecStart = "${cfg.package}/bin/dex serve /run/dex/config.yaml";
+
+        ExecStartPre = [
+          "${pkgs.coreutils}/bin/install -m 600 ${configFile} /run/dex/config.yaml"
+          "+${startPreScript}"
+        ];
+
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
         NoNewPrivileges = true;
@@ -136,32 +143,39 @@ in
         PrivateUsers = true;
         ProcSubset = "pid";
         ProtectClock = true;
+        ProtectControlGroups = true;
         ProtectHome = true;
         ProtectHostname = true;
-        ProtectSystem = "strict";
-        ProtectControlGroups = true;
         ProtectKernelLogs = true;
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
+        ProtectSystem = "strict";
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
           "AF_UNIX"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
+        RuntimeDirectory = "dex";
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged @setuid @keyring"
         ];
+
         UMask = "0066";
       }
       // optionalAttrs (cfg.environmentFile != null) {
         EnvironmentFile = cfg.environmentFile;
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

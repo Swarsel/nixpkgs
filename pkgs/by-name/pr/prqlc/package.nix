@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   openssl,
+  pkg-config,
+  python3,
+  rustPlatform,
   sqlite,
   zlib,
-  python3,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-/5z8i65WpLl06uYqu+PD/fMyajeHiECbzdgTD6D4M20=";
   };
 
-  cargoHash = "sha256-vQOcdDnNPC6dcHbr3GgsE/seokiormNK1oi6E9JrcTY=";
-
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
@@ -33,6 +31,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zlib
   ];
 
+  cargoHash = "sha256-vQOcdDnNPC6dcHbr3GgsE/seokiormNK1oi6E9JrcTY=";
   env.PYO3_PYTHON = "${python3}/bin/python3";
 
   # we are only interested in the prqlc binary

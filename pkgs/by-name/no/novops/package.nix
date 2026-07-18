@@ -1,12 +1,12 @@
 {
   lib,
-  fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  openssl,
   stdenv,
+  fetchFromGitHub,
   installShellFiles,
   libiconv,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,7 +20,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-F3MtDTaeLoI54/xbbIU61hb+qLDn2u4lRv+3kU5c/D0=";
   };
 
-  cargoHash = "sha256-F+JIAHk28qpJy97aQQup1Ss5G1p4LQzkj1ptjBhp1CY=";
+  nativeBuildInputs = [
+    installShellFiles
+    pkg-config # required for openssl-sys
+  ];
 
   buildInputs = [
     openssl # required for openssl-sys
@@ -29,16 +32,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libiconv
   ];
 
-  nativeBuildInputs = [
-    installShellFiles
-    pkg-config # required for openssl-sys
-  ];
-
-  cargoTestFlags = [
-    # Only run lib tests (unit tests)
-    # All other tests are integration tests which should not be run with Nix build
-    "--lib"
-  ];
+  cargoHash = "sha256-F+JIAHk28qpJy97aQQup1Ss5G1p4LQzkj1ptjBhp1CY=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd novops \
@@ -46,6 +40,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --fish <($out/bin/novops completion fish) \
       --zsh <($out/bin/novops completion zsh)
   '';
+
+  cargoTestFlags = [
+    # Only run lib tests (unit tests)
+    # All other tests are integration tests which should not be run with Nix build
+    "--lib"
+  ];
 
   meta = {
     description = "Cross-platform secret & config manager for development and CI environments";

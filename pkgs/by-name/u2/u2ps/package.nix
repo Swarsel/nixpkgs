@@ -23,20 +23,21 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   buildInputs = [ ghostscript_headless ];
-
   # gcc 15 defaults to C23 where bool is a keyword; u2ps does `typedef unsigned char bool;`
   env.NIX_CFLAGS_COMPILE = "-std=gnu17";
 
   meta = {
     description = "Unicode text to postscript converter";
-    homepage = "https://github.com/arsv/u2ps";
-    license = lib.licenses.gpl3Plus;
+
     longDescription = ''
       U2ps is a text to postscript converter similar to a2ps,
       with emphasis on Unicode support.
     '';
-    mainProgram = "u2ps";
+
+    homepage = "https://github.com/arsv/u2ps";
+    license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.athas ];
     platforms = lib.platforms.unix;
+    mainProgram = "u2ps";
   };
 })

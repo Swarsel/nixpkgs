@@ -1,13 +1,13 @@
 {
   lib,
-  rustPlatform,
-  buildPackages,
+  stdenv,
   fetchFromGitHub,
+  buildPackages,
   installShellFiles,
-  pkg-config,
   libgit2,
   openssl,
-  stdenv,
+  pkg-config,
+  rustPlatform,
   zlib,
   zstd,
 }:
@@ -23,8 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-8DnujtAtJiSnrC3k5vGRQuk6RfC5Vn+z4HAVsEnXN7c=";
   };
 
-  cargoHash = "sha256-8b9kAl9KoeWG+LEFkRQd6zbiWqyIybbcXpImz+akS7M=";
-
   nativeBuildInputs = [
     installShellFiles
     pkg-config
@@ -37,6 +35,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zstd
   ];
 
+  cargoHash = "sha256-8b9kAl9KoeWG+LEFkRQd6zbiWqyIybbcXpImz+akS7M=";
+
+  env = {
+    OPENSSL_NO_VENDOR = true;
+    ZSTD_SYS_USE_PKG_CONFIG = true;
+  };
+
   postInstall =
     let
       ghr = "${stdenv.hostPlatform.emulator buildPackages} $out/bin/ghr";
@@ -46,11 +51,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
         --bash <(${ghr} shell --completion bash) \
         --fish <(${ghr} shell --completion fish)
     '';
-
-  env = {
-    OPENSSL_NO_VENDOR = true;
-    ZSTD_SYS_USE_PKG_CONFIG = true;
-  };
 
   meta = {
     description = "Yet another repository management with auto-attaching profiles";

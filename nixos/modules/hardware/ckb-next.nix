@@ -16,17 +16,18 @@ in
 
   options.hardware.ckb-next = {
     enable = lib.mkEnableOption "the Corsair keyboard/mouse driver";
+    package = lib.mkPackageOption pkgs "ckb-next" { };
 
     gid = lib.mkOption {
-      type = lib.types.nullOr lib.types.int;
       default = null;
-      example = 100;
+
       description = ''
         Limit access to the ckb daemon to a particular group.
       '';
-    };
 
-    package = lib.mkPackageOption pkgs "ckb-next" { };
+      example = 100;
+      type = lib.types.nullOr lib.types.int;
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -34,13 +35,16 @@ in
 
     systemd.services.ckb-next = {
       description = "Corsair Keyboards and Mice Daemon";
-      wantedBy = [ "multi-user.target" ];
+
       serviceConfig = {
         ExecStart = "${cfg.package}/bin/ckb-next-daemon ${
           lib.optionalString (cfg.gid != null) "--gid=${toString cfg.gid}"
         }";
+
         Restart = "on-failure";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

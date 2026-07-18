@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  openssl,
-  libevent,
   c-ares,
+  libevent,
+  nixosTests,
+  openssl,
+  pandoc,
   pkg-config,
   python3,
-  pandoc,
   systemd,
-  nixosTests,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,28 +26,32 @@ stdenv.mkDerivation (finalAttrs: {
     python3
     pandoc
   ];
+
   buildInputs = [
     libevent
     openssl
     c-ares
   ]
   ++ lib.optional stdenv.hostPlatform.isLinux systemd;
-  enableParallelBuilding = true;
+
   configureFlags = lib.optional stdenv.hostPlatform.isLinux "--with-systemd";
+  enableParallelBuilding = true;
 
   passthru.tests = {
     pgbouncer = nixosTests.pgbouncer;
   };
 
   meta = {
-    homepage = "https://www.pgbouncer.org/";
-    mainProgram = "pgbouncer";
     description = "Lightweight connection pooler for PostgreSQL";
+    homepage = "https://www.pgbouncer.org/";
+
     changelog = "https://github.com/pgbouncer/pgbouncer/releases/tag/pgbouncer_${
       lib.replaceStrings [ "." ] [ "_" ] finalAttrs.version
     }";
+
     license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ _1000101 ];
     platforms = lib.platforms.all;
+    mainProgram = "pgbouncer";
   };
 })

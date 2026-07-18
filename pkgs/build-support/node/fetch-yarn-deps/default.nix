@@ -1,40 +1,135 @@
 {
-  stdenv,
   lib,
-  makeWrapper,
-  installShellFiles,
-  nodejsInstallManuals,
-  nodejsInstallExecutables,
-  coreutils,
-  nix-prefetch-git,
+  stdenv,
   fetchurl,
-  jq,
-  nodejs-slim,
-  prefetch-yarn-deps,
-  fixup-yarn-lock,
-  diffutils,
-  yarn,
-  makeSetupHook,
   cacert,
   callPackage,
+  coreutils,
+  diffutils,
+  fixup-yarn-lock,
+  installShellFiles,
+  jq,
+  makeSetupHook,
+  makeWrapper,
+  nix-prefetch-git,
+  nodejs-slim,
+  nodejsInstallExecutables,
+  nodejsInstallManuals,
+  prefetch-yarn-deps,
+  yarn,
 }:
 
 let
   yarnpkg-lockfile-tar = fetchurl {
-    url = "https://registry.yarnpkg.com/@yarnpkg/lockfile/-/lockfile-1.1.0.tgz";
     hash = "sha512-GpSwvyXOcOOlV70vbnzjj4fW5xW/FdUF6nQEt1ENy7m4ZCczi1+/buVUPAqmGfqznsORNFzUMjctTIp8a9tuCQ==";
+    url = "https://registry.yarnpkg.com/@yarnpkg/lockfile/-/lockfile-1.1.0.tgz";
   };
 
   tests = callPackage ./tests { };
 in
 {
+  fetchYarnDeps =
+    let
+      f =
+        {
+          hash ? "",
+          name ? "offline",
+          sha256 ? "",
+          src ? null,
+          ...
+        }@args:
+        let
+          hash_ =
+            if hash != "" then
+              {
+                outputHash = hash;
+                outputHashAlgo = null;
+              }
+            else if sha256 != "" then
+              {
+                outputHash = sha256;
+                outputHashAlgo = "sha256";
+              }
+            else
+              {
+                outputHash = lib.fakeSha256;
+                outputHashAlgo = "sha256";
+              };
+        in
+        stdenv.mkDerivation (
+          {
+            inherit name;
+
+            nativeBuildInputs = [
+              prefetch-yarn-deps
+              cacert
+            ];
+
+            env = {
+              GIT_SSL_CAINFO = "${cacert}/etc/ssl/certs/ca-bundle.crt";
+              NODE_EXTRA_CA_CERTS = "${cacert}/etc/ssl/certs/ca-bundle.crt";
+            };
+
+            buildPhase = ''
+              runHook preBuild
+
+              yarnLock=''${yarnLock:=$PWD/yarn.lock}
+              mkdir -p $out
+              (cd $out; prefetch-yarn-deps --verbose --builder $yarnLock)
+
+              runHook postBuild
+            '';
+
+            dontInstall = true;
+            dontUnpack = src == null;
+            outputHashMode = "recursive";
+          }
+          // hash_
+          // (removeAttrs args (
+            [
+              "name"
+              "hash"
+              "sha256"
+            ]
+            ++ (lib.optional (src == null) "src")
+          ))
+        );
+    in
+    lib.setFunctionArgs f (lib.functionArgs f) // { inherit tests; };
+
+  fixup-yarn-lock = stdenv.mkDerivation {
+    pname = "fixup-yarn-lock";
+    version = lib.trivial.release;
+    nativeBuildInputs = [ makeWrapper ];
+    buildInputs = [ nodejs-slim ];
+
+    installPhase = ''
+      runHook preInstall
+
+      mkdir -p $out/bin $out/libexec
+
+      tar --strip-components=1 -xf ${yarnpkg-lockfile-tar} package/index.js
+      mv index.js $out/libexec/yarnpkg-lockfile.js
+      cp ${./common.js} $out/libexec/common.js
+      cp ${./fixup.js} $out/libexec/fixup.js
+
+      patchShebangs $out/libexec
+      makeWrapper $out/libexec/fixup.js $out/bin/fixup-yarn-lock
+
+      runHook postInstall
+    '';
+
+    dontBuild = true;
+    dontUnpack = true;
+
+    passthru = {
+      inherit tests;
+    };
+  };
+
   prefetch-yarn-deps = stdenv.mkDerivation {
     pname = "prefetch-yarn-deps";
     version = lib.trivial.release;
-
-    dontUnpack = true;
-    dontBuild = true;
-
     nativeBuildInputs = [ makeWrapper ];
     buildInputs = [ nodejs-slim ];
 
@@ -60,147 +155,56 @@ in
       runHook postInstall
     '';
 
-    passthru = {
-      inherit tests;
-    };
-  };
-
-  fixup-yarn-lock = stdenv.mkDerivation {
-    pname = "fixup-yarn-lock";
-    version = lib.trivial.release;
-
-    dontUnpack = true;
     dontBuild = true;
-
-    nativeBuildInputs = [ makeWrapper ];
-    buildInputs = [ nodejs-slim ];
-
-    installPhase = ''
-      runHook preInstall
-
-      mkdir -p $out/bin $out/libexec
-
-      tar --strip-components=1 -xf ${yarnpkg-lockfile-tar} package/index.js
-      mv index.js $out/libexec/yarnpkg-lockfile.js
-      cp ${./common.js} $out/libexec/common.js
-      cp ${./fixup.js} $out/libexec/fixup.js
-
-      patchShebangs $out/libexec
-      makeWrapper $out/libexec/fixup.js $out/bin/fixup-yarn-lock
-
-      runHook postInstall
-    '';
+    dontUnpack = true;
 
     passthru = {
       inherit tests;
     };
   };
-
-  fetchYarnDeps =
-    let
-      f =
-        {
-          name ? "offline",
-          src ? null,
-          hash ? "",
-          sha256 ? "",
-          ...
-        }@args:
-        let
-          hash_ =
-            if hash != "" then
-              {
-                outputHashAlgo = null;
-                outputHash = hash;
-              }
-            else if sha256 != "" then
-              {
-                outputHashAlgo = "sha256";
-                outputHash = sha256;
-              }
-            else
-              {
-                outputHashAlgo = "sha256";
-                outputHash = lib.fakeSha256;
-              };
-        in
-        stdenv.mkDerivation (
-          {
-            inherit name;
-
-            dontUnpack = src == null;
-            dontInstall = true;
-
-            nativeBuildInputs = [
-              prefetch-yarn-deps
-              cacert
-            ];
-
-            env = {
-              GIT_SSL_CAINFO = "${cacert}/etc/ssl/certs/ca-bundle.crt";
-              NODE_EXTRA_CA_CERTS = "${cacert}/etc/ssl/certs/ca-bundle.crt";
-            };
-
-            buildPhase = ''
-              runHook preBuild
-
-              yarnLock=''${yarnLock:=$PWD/yarn.lock}
-              mkdir -p $out
-              (cd $out; prefetch-yarn-deps --verbose --builder $yarnLock)
-
-              runHook postBuild
-            '';
-
-            outputHashMode = "recursive";
-          }
-          // hash_
-          // (removeAttrs args (
-            [
-              "name"
-              "hash"
-              "sha256"
-            ]
-            ++ (lib.optional (src == null) "src")
-          ))
-        );
-    in
-    lib.setFunctionArgs f (lib.functionArgs f) // { inherit tests; };
-
-  yarnConfigHook = makeSetupHook {
-    name = "yarn-config-hook";
-    propagatedBuildInputs = [
-      yarn
-      fixup-yarn-lock
-    ];
-    substitutions = {
-      # Specify `diff` by abspath to ensure that the user's build
-      # inputs do not cause us to find the wrong binaries.
-      diff = "${diffutils}/bin/diff";
-    };
-    meta = {
-      description = "Install nodejs dependencies from an offline yarn cache produced by fetchYarnDeps";
-      license = lib.licenses.mit;
-    };
-  } ./yarn-config-hook.sh;
 
   yarnBuildHook = makeSetupHook {
     name = "yarn-build-hook";
+
     meta = {
       description = "Run yarn build in buildPhase";
       license = lib.licenses.mit;
     };
   } ./yarn-build-hook.sh;
 
+  yarnConfigHook = makeSetupHook {
+    propagatedBuildInputs = [
+      yarn
+      fixup-yarn-lock
+    ];
+
+    name = "yarn-config-hook";
+
+    substitutions = {
+      # Specify `diff` by abspath to ensure that the user's build
+      # inputs do not cause us to find the wrong binaries.
+      diff = "${diffutils}/bin/diff";
+    };
+
+    meta = {
+      description = "Install nodejs dependencies from an offline yarn cache produced by fetchYarnDeps";
+      license = lib.licenses.mit;
+    };
+  } ./yarn-config-hook.sh;
+
   yarnInstallHook = makeSetupHook {
-    name = "yarn-install-hook";
     propagatedBuildInputs = [
       yarn
       nodejsInstallManuals
       nodejsInstallExecutables
     ];
+
+    name = "yarn-install-hook";
+
     substitutions = {
       jq = lib.getExe jq;
     };
+
     meta = {
       description = "Prune yarn dependencies and install files for packages using Yarn 1";
       license = lib.licenses.mit;

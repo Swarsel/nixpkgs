@@ -1,20 +1,20 @@
 {
-  mkKdeDerivation,
-  fetchpatch,
-  qtdeclarative,
-  qtmultimedia,
-  qtsvg,
   extra-cmake-modules,
+  fetchpatch,
   futuresql,
   kcoreaddons,
   kcrash,
   ki18n,
-  kirigami-addons,
   kirigami,
+  kirigami-addons,
   kwindowsystem,
+  mkKdeDerivation,
   purpose,
-  qcoro,
   python3,
+  qcoro,
+  qtdeclarative,
+  qtmultimedia,
+  qtsvg,
 }:
 let
   ps = python3.pkgs;
@@ -25,10 +25,6 @@ let
 in
 mkKdeDerivation {
   pname = "audiotube";
-
-  extraNativeBuildInputs = [
-    ps.pybind11
-  ];
 
   extraBuildInputs = [
     qtdeclarative
@@ -48,8 +44,13 @@ mkKdeDerivation {
   ]
   ++ pythonDeps;
 
+  extraNativeBuildInputs = [
+    ps.pybind11
+  ];
+
   qtWrapperArgs = [
     "--prefix PYTHONPATH : ${ps.makePythonPath pythonDeps}"
   ];
+
   meta.mainProgram = "audiotube";
 }

@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 let
@@ -10,13 +10,12 @@ in
 {
   options.programs.idescriptor = {
     enable = lib.mkEnableOption "iDescriptor, a cross-platform iDevice management tool";
-
     package = lib.mkPackageOption pkgs "idescriptor" { };
 
     users = lib.mkOption {
-      type = with lib.types; listOf str;
       default = [ ];
       description = "Users to be added to the idevice group.";
+      type = with lib.types; listOf str;
     };
   };
 
@@ -25,7 +24,6 @@ in
 
     services = {
       udev.packages = [ cfg.package ];
-
       usbmuxd.enable = true;
     };
 

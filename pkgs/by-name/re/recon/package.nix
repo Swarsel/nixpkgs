@@ -1,7 +1,7 @@
 {
   lib,
-  flutter338,
   fetchFromGitHub,
+  flutter338,
   nix-update-script,
 }:
 
@@ -17,15 +17,14 @@ flutter338.buildFlutterApplication rec {
   };
 
   pubspecLock = lib.importJSON ./pubspec.lock.json;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Contacts app for Resonite, built with flutter";
     homepage = "https://github.com/Nutcake/Recon";
-    mainProgram = "recon";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ bddvlpr ];
+    platforms = lib.platforms.linux;
+    mainProgram = "recon";
   };
 }

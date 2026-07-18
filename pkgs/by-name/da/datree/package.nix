@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  datree,
   installShellFiles,
   testers,
-  datree,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,17 +19,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-W1eX7eUMdPGbHA/f08xkG2EUeZmaunEAQn7/LRBe2nk=";
   };
 
-  vendorHash = "sha256-+PQhuIO4KjXtW/ZcS0OamuOHzK7ZL+nwOBxeCRoXuKE=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/datreeio/datree/cmd.CliVersion=${finalAttrs.version}"
-  ];
-
-  tags = [ "main" ];
+  vendorHash = "sha256-+PQhuIO4KjXtW/ZcS0OamuOHzK7ZL+nwOBxeCRoXuKE=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion \
@@ -39,26 +30,38 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/datree completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/datreeio/datree/cmd.CliVersion=${finalAttrs.version}"
+  ];
+
+  tags = [ "main" ];
+
   passthru.tests.version = testers.testVersion {
-    package = datree;
     command = "datree version";
+    package = datree;
   };
 
   meta = {
     description = "CLI tool to ensure K8s manifests and Helm charts follow best practices";
-    mainProgram = "datree";
+
     longDescription = ''
       Datree provides an E2E policy enforcement solution to run automatic checks
       for rule violations. Datree can be used on the command line, admission
       webhook, or even as a kubectl plugin to run policies against Kubernetes
       objects.
     '';
+
     homepage = "https://datree.io/";
     changelog = "https://github.com/datreeio/datree/releases/tag/${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       azahi
       jceb
     ];
+
+    mainProgram = "datree";
   };
 })

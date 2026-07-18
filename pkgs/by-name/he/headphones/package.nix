@@ -1,14 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  python3,
   makeWrapper,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "headphones";
   version = "0.6.4";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "rembo10";
@@ -17,10 +16,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     sha256 = "0gv7rasjbm4rf9izghibgf5fbjykvzv0ibqc2in1naagjivqrpq4";
   };
 
-  dontBuild = true;
-  doCheck = false;
-
   nativeBuildInputs = [ makeWrapper ];
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -35,10 +32,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  pyproject = false;
+
   meta = {
     description = "Automatic music downloader for SABnzbd";
-    license = lib.licenses.gpl3Plus;
     homepage = "https://github.com/rembo10/headphones";
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ rembo10 ];
     mainProgram = "headphones";
   };

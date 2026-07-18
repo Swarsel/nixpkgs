@@ -1,19 +1,17 @@
 {
   lib,
   fetchurl,
+  buildDunePackage,
   ctypes,
   ctypes-foreign,
   dune-configurator,
-  result,
   libargon2,
-  buildDunePackage,
+  result,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "argon2";
   version = "1.0.2";
-
-  minimalOCamlVersion = "4.02.3";
 
   src = fetchurl {
     url = "https://github.com/Khady/ocaml-argon2/releases/download/${finalAttrs.version}/argon2-${finalAttrs.version}.tbz";
@@ -31,9 +29,11 @@ buildDunePackage (finalAttrs: {
     result
   ];
 
+  minimalOCamlVersion = "4.02.3";
+
   meta = {
-    homepage = "https://github.com/Khady/ocaml-argon2";
     description = "Ocaml bindings to Argon2";
+    homepage = "https://github.com/Khady/ocaml-argon2";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ naora ];
   };

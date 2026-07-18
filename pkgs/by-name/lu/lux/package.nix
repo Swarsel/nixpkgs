@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  makeWrapper,
+  buildGoModule,
   ffmpeg,
+  makeWrapper,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,8 +18,13 @@ buildGoModule (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
   vendorHash = "sha256-RCZzcycUKqJgwBZZQBD1UEZCZCitpiqNpD51oKm6IvI=";
+  doCheck = false; # require network
+
+  postInstall = ''
+    wrapProgram $out/bin/lux \
+      --prefix PATH : ${lib.makeBinPath [ ffmpeg ]}
+  '';
 
   ldflags = [
     "-s"
@@ -27,19 +32,12 @@ buildGoModule (finalAttrs: {
     "-X github.com/iawia002/lux/app.version=v${finalAttrs.version}"
   ];
 
-  postInstall = ''
-    wrapProgram $out/bin/lux \
-      --prefix PATH : ${lib.makeBinPath [ ffmpeg ]}
-  '';
-
-  doCheck = false; # require network
-
   meta = {
     description = "Fast and simple video download library and CLI tool written in Go";
     homepage = "https://github.com/iawia002/lux";
     changelog = "https://github.com/iawia002/lux/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "lux";
     maintainers = with lib.maintainers; [ miniharinn ];
+    mainProgram = "lux";
   };
 })

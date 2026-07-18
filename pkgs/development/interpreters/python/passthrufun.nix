@@ -2,29 +2,29 @@
   lib,
   stdenv,
   callPackage,
-  pythonPackagesExtensions,
   config,
   makeScopeWithSplicing',
+  pythonPackagesExtensions,
   ...
 }:
 
 {
+  executable,
+  hasDistutilsCxxPatch,
   implementation,
   libPrefix,
-  executable,
-  sourceVersion,
-  pythonVersion,
   packageOverrides,
-  sitePackages,
-  hasDistutilsCxxPatch,
   pythonOnBuildForBuild,
   pythonOnBuildForHost,
   pythonOnBuildForTarget,
   pythonOnHostForHost,
   pythonOnTargetForTarget,
-  pythonAttr ? null,
-  pythonABITags ? [ "none" ],
+  pythonVersion,
   self, # is pythonOnHostForTarget
+  sitePackages,
+  sourceVersion,
+  pythonABITags ? [ "none" ],
+  pythonAttr ? null,
 }:
 let
   pythonPackages =
@@ -58,10 +58,10 @@ let
         # - applies overrides from `packageOverrides` and `pythonPackagesOverlays`.
         (
           {
-            pkgs,
             stdenv,
-            python,
             overrides,
+            pkgs,
+            python,
           }:
           let
             pythonPackagesFun = import ./python-packages-base.nix {
@@ -109,21 +109,6 @@ let
     );
 in
 rec {
-  isPy311 = pythonVersion == "3.11";
-  isPy312 = pythonVersion == "3.12";
-  isPy313 = pythonVersion == "3.13";
-  isPy314 = pythonVersion == "3.14";
-  isPy3 = lib.strings.substring 0 1 pythonVersion == "3";
-  isPy3k = isPy3;
-  isPyPy = lib.hasInfix "pypy" interpreter;
-
-  buildEnv = callPackage ./wrapper.nix {
-    python = self;
-    inherit (pythonPackages) requiredPythonModules;
-  };
-  withPackages = import ./with-packages.nix { inherit buildEnv pythonPackages; };
-  pkgs = pythonPackages;
-  interpreter = "${self}/bin/${executable}";
   inherit
     executable
     implementation
@@ -131,10 +116,10 @@ rec {
     pythonVersion
     sitePackages
     ;
+
   inherit sourceVersion;
-  pythonAtLeast = lib.versionAtLeast pythonVersion;
-  pythonOlder = lib.versionOlder pythonVersion;
   inherit hasDistutilsCxxPatch;
+
   inherit
     pythonOnBuildForBuild
     pythonOnBuildForHost
@@ -142,11 +127,30 @@ rec {
     pythonOnHostForHost
     pythonOnTargetForTarget
     ;
+
   inherit pythonABITags;
+  inherit pythonAttr;
+
+  buildEnv = callPackage ./wrapper.nix {
+    inherit (pythonPackages) requiredPythonModules;
+    python = self;
+  };
+
+  interpreter = "${self}/bin/${executable}";
+  isPy3 = lib.strings.substring 0 1 pythonVersion == "3";
+  isPy311 = pythonVersion == "3.11";
+  isPy312 = pythonVersion == "3.12";
+  isPy313 = pythonVersion == "3.13";
+  isPy314 = pythonVersion == "3.14";
+  isPy3k = isPy3;
+  isPyPy = lib.hasInfix "pypy" interpreter;
+  pkgs = pythonPackages;
+  pythonAtLeast = lib.versionAtLeast pythonVersion;
+  pythonOlder = lib.versionOlder pythonVersion;
 
   tests = callPackage ./tests.nix {
     python = self;
   };
 
-  inherit pythonAttr;
+  withPackages = import ./with-packages.nix { inherit buildEnv pythonPackages; };
 }

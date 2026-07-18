@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  perlPackages,
   makeWrapper,
+  perlPackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,11 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-vb7M3EPIrxIz6jUwm241fzaEz2czqdCObrFgSOSgJRU=";
   };
 
-  nativeBuildInputs = [ makeWrapper ];
-  buildInputs = [ perlPackages.perl ];
-
-  dontConfigure = true;
-
   postPatch = ''
     patchShebangs mylvmbackup
     substituteInPlace Makefile \
@@ -27,6 +22,9 @@ stdenv.mkDerivation (finalAttrs: {
       --replace "sysconfdir = /etc" "sysconfdir = ${placeholder "out"}/etc" \
       --replace "/usr/bin/install" "install"
   '';
+
+  nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ perlPackages.perl ];
 
   postInstall = ''
     wrapProgram "$out/bin/mylvmbackup" \
@@ -44,12 +42,14 @@ stdenv.mkDerivation (finalAttrs: {
       }"
   '';
 
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://www.lenzg.net/mylvmbackup/";
     description = "Tool for quickly creating full physical backups of a MySQL server's data files";
-    mainProgram = "mylvmbackup";
+    homepage = "https://www.lenzg.net/mylvmbackup/";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ ryantm ];
     platforms = with lib.platforms; linux;
+    mainProgram = "mylvmbackup";
   };
 })

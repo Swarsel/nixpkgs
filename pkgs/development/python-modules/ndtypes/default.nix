@@ -2,22 +2,19 @@
   lib,
   stdenv,
   buildPythonPackage,
-  python,
-  numpy,
   libndtypes,
+  numpy,
+  python,
 }:
 
 buildPythonPackage {
-  pname = "ndtypes";
-  format = "setuptools";
   inherit (libndtypes) version src meta;
+  pname = "ndtypes";
 
   outputs = [
     "out"
     "dev"
   ];
-
-  propagatedBuildInputs = [ numpy ];
 
   postPatch = ''
     substituteInPlace setup.py \
@@ -29,6 +26,15 @@ buildPythonPackage {
                 'runtime_library_dirs = ["${libndtypes}/lib"]'
   '';
 
+  propagatedBuildInputs = [ numpy ];
+
+  checkPhase = ''
+    pushd python
+    mv ndtypes _ndtypes
+    python test_ndtypes.py
+    popd
+  '';
+
   postInstall = ''
     mkdir $out/include
     cp python/ndtypes/*.h $out/include
@@ -37,10 +43,5 @@ buildPythonPackage {
     install_name_tool -add_rpath ${libndtypes}/lib $out/${python.sitePackages}/ndtypes/_ndtypes.*.so
   '';
 
-  checkPhase = ''
-    pushd python
-    mv ndtypes _ndtypes
-    python test_ndtypes.py
-    popd
-  '';
+  format = "setuptools";
 }

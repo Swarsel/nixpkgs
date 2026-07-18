@@ -22,22 +22,22 @@ in
       enable = lib.mkEnableOption "the Apache Felix OSGi service";
 
       bundles = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
         default = [ pkgs.felix_remoteshell ];
         defaultText = lib.literalExpression "[ pkgs.felix_remoteshell ]";
         description = "List of bundles that should be activated on startup";
-      };
-
-      user = lib.mkOption {
-        type = lib.types.str;
-        default = "osgi";
-        description = "User account under which Apache Felix runs.";
+        type = lib.types.listOf lib.types.package;
       };
 
       group = lib.mkOption {
-        type = lib.types.str;
         default = "osgi";
         description = "Group account under which Apache Felix runs.";
+        type = lib.types.str;
+      };
+
+      user = lib.mkOption {
+        default = "osgi";
+        description = "User account under which Apache Felix runs.";
+        type = lib.types.str;
       };
 
     };
@@ -47,17 +47,8 @@ in
   ###### implementation
 
   config = lib.mkIf cfg.enable {
-    users.groups.osgi.gid = config.ids.gids.osgi;
-
-    users.users.osgi = {
-      uid = config.ids.uids.osgi;
-      description = "OSGi user";
-      home = "/homeless-shelter";
-    };
-
     systemd.services.felix = {
       description = "Felix server";
-      wantedBy = [ "multi-user.target" ];
 
       preStart = ''
         # Initialise felix instance on first startup
@@ -100,6 +91,16 @@ in
         cd /var/felix
         ${pkgs.su}/bin/su -s ${pkgs.bash}/bin/sh ${cfg.user} -c '${pkgs.jre}/bin/java -jar bin/felix.jar'
       '';
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups.osgi.gid = config.ids.gids.osgi;
+
+    users.users.osgi = {
+      description = "OSGi user";
+      home = "/homeless-shelter";
+      uid = config.ids.uids.osgi;
     };
   };
 }

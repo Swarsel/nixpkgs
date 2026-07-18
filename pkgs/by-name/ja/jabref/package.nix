@@ -3,21 +3,21 @@
   stdenv,
   fetchurl,
   fetchFromGitHub,
-  wrapGAppsHook3,
-  makeDesktopItem,
   copyDesktopItems,
-  makeShellWrapper,
-  unzip,
-  zip,
-  xdg-utils,
-  gtk3,
-  jdk25,
-  openjfx25,
-  jre25_minimal,
   gradle_9,
-  python3,
-  postgresql,
+  gtk3,
   jbang,
+  jdk25,
+  jre25_minimal,
+  makeDesktopItem,
+  makeShellWrapper,
+  openjfx25,
+  postgresql,
+  python3,
+  unzip,
+  wrapGAppsHook3,
+  xdg-utils,
+  zip,
 }:
 
 let
@@ -51,14 +51,14 @@ let
   gradle = gradle_9;
   ltwaUrl = "https://www.issn.org/wp-content/uploads/2021/07/ltwa_20210702.csv";
   ltwa = fetchurl {
-    url = ltwaUrl;
     hash = "sha256-jnS8Y9x8eg2L3L3RPnS6INTs19mEtwzfNIjJUw6HtIY=";
+    url = ltwaUrl;
   };
   kotlinDslVersion = "6.4.2";
 in
 stdenv.mkDerivation rec {
-  version = "6.0-alpha.4";
   pname = "jabref";
+  version = "6.0-alpha.4";
 
   src = fetchFromGitHub {
     owner = "JabRef";
@@ -66,25 +66,6 @@ stdenv.mkDerivation rec {
     tag = "v${version}";
     hash = "sha256-ZhyWYZD8QT3dH6MwG2kMjTAjkxaVFIMR4C9aAvi3FJQ=";
     fetchSubmodules = true;
-  };
-
-  desktopItems = [
-    (makeDesktopItem {
-      comment = meta.description;
-      name = "JabRef";
-      desktopName = "JabRef";
-      genericName = "BibTex Editor";
-      categories = [ "Office" ];
-      icon = "jabref";
-      exec = "JabRef %U";
-      startupWMClass = "org.jabref.gui.JabRefGUI";
-      mimeTypes = [ "text/x-bibtex" ];
-    })
-  ];
-
-  mitmCache = gradle.fetchDeps {
-    inherit pname;
-    data = ./deps.json;
   };
 
   postPatch = ''
@@ -132,16 +113,9 @@ stdenv.mkDerivation rec {
     python3
   ];
 
-  gradleFlags = [
-    "-PprojVersion=${version}"
-    "-Dorg.gradle.java.home=${jdk}"
-  ];
-
   preBuild = ''
     gradleFlagsArray+=(-PprojVersionInfo="${version} NixOS")
   '';
-
-  dontWrapGApps = true;
 
   installPhase = ''
     runHook preInstall
@@ -222,6 +196,27 @@ stdenv.mkDerivation rec {
     ln -sf $out/bin/jabgui $out/bin/JabRef
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Office" ];
+      comment = meta.description;
+      desktopName = "JabRef";
+      exec = "JabRef %U";
+      genericName = "BibTex Editor";
+      icon = "jabref";
+      mimeTypes = [ "text/x-bibtex" ];
+      name = "JabRef";
+      startupWMClass = "org.jabref.gui.JabRefGUI";
+    })
+  ];
+
+  dontWrapGApps = true;
+
+  gradleFlags = [
+    "-PprojVersion=${version}"
+    "-Dorg.gradle.java.home=${jdk}"
+  ];
+
   gradleUpdateScript = ''
     # Add jbang deps to gradle
     sed -n 's|//DEPS \(.*\)|    implementation("\1")|p' build-support/src/main/java/*.java | sort -u | sed -i '/dependencies {/r /dev/stdin' build-logic/build.gradle.kts
@@ -230,21 +225,29 @@ stdenv.mkDerivation rec {
     gradle assemble -Dos.arch=aarch64
   '';
 
+  mitmCache = gradle.fetchDeps {
+    inherit pname;
+    data = ./deps.json;
+  };
+
   meta = {
     description = "Open source bibliography reference manager";
     homepage = "https://www.jabref.org";
+    license = lib.licenses.mit;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # source bundles dependencies as jars
       binaryNativeCode # source bundles dependencies as jars
     ];
-    license = lib.licenses.mit;
+
+    maintainers = with lib.maintainers; [
+      linsui
+    ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
-    ];
-    maintainers = with lib.maintainers; [
-      linsui
     ];
   };
 }

@@ -13,15 +13,13 @@ in
 {
   config = lib.mkMerge [
     (lib.mkIf (ntfsEnabled && ntfsPlusSupported && !ntfs3gEnabled) {
-      system.fsPackages = [ pkgs.ntfsprogs-plus ];
-
       boot.initrd.availableKernelModules = lib.optionals initrdSupport [ "ntfs" ];
+      system.fsPackages = [ pkgs.ntfsprogs-plus ];
     })
 
     (lib.mkIf (ntfs3gEnabled || (ntfsEnabled && !ntfsPlusSupported)) {
-      system.fsPackages = [ pkgs.ntfs3g ];
-
       boot.initrd.availableKernelModules = lib.optionals initrdSupport [ "ntfs3" ];
+      system.fsPackages = [ pkgs.ntfs3g ];
     })
   ];
 }

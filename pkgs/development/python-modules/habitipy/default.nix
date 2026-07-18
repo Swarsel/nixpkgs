@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  plumbum,
-  requests,
-  setuptools,
+  buildPythonPackage,
   hypothesis,
+  plumbum,
   pytestCheckHook,
+  requests,
   responses,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "habitipy";
   version = "0.3.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ASMfreaK";
@@ -21,14 +20,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-AEeTCrxLXkokRRnNUfW4y23Qdh8ek1F88GmCPLGb84A=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    plumbum
-    requests
-    setuptools
-  ];
 
   nativeCheckInputs = [
     hypothesis
@@ -40,6 +31,14 @@ buildPythonPackage rec {
     export HOME=$TMPDIR
   '';
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    plumbum
+    requests
+    setuptools
+  ];
+
   disabledTests = [
     # network access
     "test_content_cache"
@@ -47,13 +46,14 @@ buildPythonPackage rec {
     "test_data"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "habitipy" ];
 
   meta = {
     description = "Tools and library for Habitica restful API";
-    mainProgram = "habitipy";
     homepage = "https://github.com/ASMfreaK/habitipy";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
+    mainProgram = "habitipy";
   };
 }

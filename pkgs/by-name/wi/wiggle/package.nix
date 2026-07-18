@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  ncurses,
   groff,
+  ncurses,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,9 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://blog.neil.brown.name/category/wiggle/";
     description = "Tool for applying patches with conflicts";
-    mainProgram = "wiggle";
+
     longDescription = ''
       Wiggle applies patches to a file in a similar manner to the patch(1)
       program. The distinctive difference is, however, that wiggle will
@@ -51,8 +50,11 @@ stdenv.mkDerivation (finalAttrs: {
       possible. Also, wiggle will (in some cases) detect changes that have
       already been applied, and will ignore them.
     '';
+
+    homepage = "https://blog.neil.brown.name/category/wiggle/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
+    mainProgram = "wiggle";
   };
 })

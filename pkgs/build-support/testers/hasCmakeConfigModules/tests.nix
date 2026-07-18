@@ -2,72 +2,80 @@
 # nix-build -A tests.testers.hasCmakeConfigModules
 {
   lib,
-  testers,
   boost,
-  mpi,
   eigen,
+  mpi,
   runCommand,
+  testers,
 }:
 
 lib.recurseIntoAttrs {
 
-  boost-versions-match = testers.hasCmakeConfigModules {
-    package = boost;
+  boost-has-boost_mpi = testers.hasCmakeConfigModules {
+    buildInputs = [ mpi ];
+
+    moduleNames = [
+      "boost_mpi"
+    ];
+
+    package = boost.override { useMpi = true; };
+  };
+
+  boost-no-versionCheck = testers.hasCmakeConfigModules {
+    version = "1.2.3"; # Deliberately-incorrect version number
+
     moduleNames = [
       "Boost"
       "boost_math"
     ];
+
+    package = boost;
+    versionCheck = false;
+  };
+
+  boost-versions-match = testers.hasCmakeConfigModules {
+    moduleNames = [
+      "Boost"
+      "boost_math"
+    ];
+
+    package = boost;
     versionCheck = true;
   };
 
   boost-versions-mismatch = testers.testBuildFailure (
     testers.hasCmakeConfigModules {
-      package = boost;
+      version = "1.2.3"; # Deliberately-incorrect version number
+
       moduleNames = [
         "Boost"
         "boost_math"
       ];
-      version = "1.2.3"; # Deliberately-incorrect version number
+
+      package = boost;
       versionCheck = true;
     }
   );
 
-  boost-no-versionCheck = testers.hasCmakeConfigModules {
-    package = boost;
-    moduleNames = [
-      "Boost"
-      "boost_math"
-    ];
-    version = "1.2.3"; # Deliberately-incorrect version number
-    versionCheck = false;
-  };
-
-  boost-has-boost_mpi = testers.hasCmakeConfigModules {
-    package = boost.override { useMpi = true; };
-    moduleNames = [
-      "boost_mpi"
-    ];
-    buildInputs = [ mpi ];
-  };
-
   boost_mpi-does-not-have-mpi = testers.testBuildFailure (
     testers.hasCmakeConfigModules {
-      package = boost.override { useMpi = true; };
       moduleNames = [
         "boost_mpi"
       ];
+
+      package = boost.override { useMpi = true; };
+    }
+  );
+
+  eigen-does-not-have-eigen = testers.testBuildFailure (
+    testers.hasCmakeConfigModules {
+      moduleNames = [ "eigen3" ];
+      package = eigen;
     }
   );
 
   eigen-has-Eigen = testers.hasCmakeConfigModules {
-    package = eigen;
     moduleNames = [ "Eigen3" ];
+    package = eigen;
   };
-
-  eigen-does-not-have-eigen = testers.testBuildFailure (
-    testers.hasCmakeConfigModules {
-      package = eigen;
-      moduleNames = [ "eigen3" ];
-    }
-  );
 }

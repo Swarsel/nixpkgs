@@ -1,34 +1,34 @@
 {
-  monolithic ? true, # build monolithic amule
-  enableDaemon ? false, # build amule daemon
-  httpServer ? false, # build web interface for the daemon
-  client ? false, # build amule remote gui
-  textClient ? false, # build amule remote command line client
-  mainProgram ? "amule",
-  fetchFromGitHub,
-  stdenv,
   lib,
-  cmake,
-  zlib,
-  wxwidgets_3_2,
-  curl,
-  cryptopp,
-  libupnp,
+  stdenv,
+  fetchFromGitHub,
   boost,
+  cmake,
+  cryptopp,
+  curl,
   gettext,
   glib,
-  libintl,
   gtk3,
   libayatana-appindicator,
-  libsysprof-capture,
+  libintl,
   libmaxminddb,
   libpng,
+  libsysprof-capture,
+  libupnp,
+  libx11,
+  nix-update-script,
   pkg-config,
   readline,
-  nix-update-script,
   writeShellScript,
+  wxwidgets_3_2,
   xcbuild,
-  libx11,
+  zlib,
+  client ? false, # build amule remote gui
+  enableDaemon ? false, # build amule daemon
+  httpServer ? false, # build web interface for the daemon
+  mainProgram ? "amule",
+  monolithic ? true, # build monolithic amule
+  textClient ? false, # build amule remote command line client
 }:
 
 let
@@ -53,6 +53,7 @@ stdenv.mkDerivation (finalAttrs: {
     + lib.optionalString enableDaemon "-daemon"
     + lib.optionalString client "-gui"
     + lib.optionalString textClient "-cmd";
+
   version = "3.0.1";
 
   src = fetchFromGitHub {
@@ -61,15 +62,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-zLd8mt+dYEilGcFn3qspZv5EkZ4TmBbKgvgcuSvswFk=";
   };
-
-  __structuredAttrs = true;
-  strictDeps = true;
-
-  nativeBuildInputs = [
-    cmake
-    gettext
-    pkg-config
-  ];
 
   postPatch =
     lib.optionalString (stdenv.hostPlatform.isDarwin && (monolithic || client)) ''
@@ -84,6 +76,14 @@ stdenv.mkDerivation (finalAttrs: {
       substituteInPlace src/ExternalConnector.cpp \
         --replace-fail "(Function *)&command_completion" "(rl_compentry_func_t *)&command_completion"
     '';
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    cmake
+    gettext
+    pkg-config
+  ];
 
   buildInputs = [
     zlib
@@ -142,10 +142,13 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    inherit mainProgram;
     description = "Peer-to-peer client for the eD2K and Kademlia networks";
+
     longDescription = ''
       aMule is an eMule-like client for the eD2k and Kademlia
       networks, supporting multiple platforms.  Currently aMule
@@ -156,11 +159,11 @@ stdenv.mkDerivation (finalAttrs: {
       no adware or spyware as is often found in proprietary P2P
       applications.
     '';
+
     homepage = "https://amule-org.github.io/";
     changelog = "https://github.com/amule-org/amule/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ aciceri ];
-    inherit mainProgram;
     platforms = lib.platforms.unix;
   };
 })

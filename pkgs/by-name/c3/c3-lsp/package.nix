@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,13 +15,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-MScpFh4J4jVJI5WtW4tfNB18YDpxs+ass1HmXyOO5VM=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/server";
-
   vendorHash = "sha256-eT+Qirl0R1+di3JvXxggGK/nK9+nqw+8QEur+ldJXSc=";
 
   postInstall = ''
     mv $out/bin/lsp $out/bin/c3-lsp
   '';
+
+  sourceRoot = "${finalAttrs.src.name}/server";
 
   meta = {
     description = "Language Server for C3 Language";
@@ -29,7 +29,7 @@ buildGoModule (finalAttrs: {
     changelog = "https://github.com/pherrymason/c3-lsp/blob/${finalAttrs.src.rev}/changelog.md";
     license = lib.licenses.gpl3Only;
     maintainers = [ ];
-    mainProgram = "c3-lsp";
     platforms = lib.platforms.all;
+    mainProgram = "c3-lsp";
   };
 })

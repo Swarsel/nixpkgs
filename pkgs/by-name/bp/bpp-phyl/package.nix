@@ -1,15 +1,14 @@
 {
   stdenv,
   fetchFromGitHub,
-  cmake,
   bpp-core,
   bpp-seq,
+  cmake,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "bpp-phyl";
-
   inherit (bpp-core) version postPatch;
+  pname = "bpp-phyl";
 
   src = fetchFromGitHub {
     owner = "BioPP";
@@ -19,17 +18,18 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     bpp-core
     bpp-seq
   ];
 
+  doCheck = !stdenv.hostPlatform.isDarwin;
+
   postFixup = ''
     substituteInPlace $out/lib/cmake/bpp-phyl/bpp-phyl-targets.cmake  \
       --replace 'set(_IMPORT_PREFIX' '#set(_IMPORT_PREFIX'
   '';
-
-  doCheck = !stdenv.hostPlatform.isDarwin;
 
   meta = bpp-core.meta // {
     homepage = "https://github.com/BioPP/bpp-phyl";

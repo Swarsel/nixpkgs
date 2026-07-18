@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "termdown";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "trehn";
@@ -26,12 +25,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     python-dateutil
   ];
 
+  pyproject = true;
+
   meta = {
-    changelog = "https://github.com/trehn/termdown/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "Starts a countdown to or from TIMESPEC";
-    mainProgram = "termdown";
     longDescription = "Countdown timer and stopwatch in your terminal";
     homepage = "https://github.com/trehn/termdown";
+    changelog = "https://github.com/trehn/termdown/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.gpl3;
+    mainProgram = "termdown";
   };
 })

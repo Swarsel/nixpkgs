@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "conpass";
   version = "0.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "login-securite";
@@ -15,6 +14,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-7o4aQ6qpaWimWqgFO35Wht7mQsdVezoPTm7hp54FWR8=";
   };
+
+  # Project has no tests
+  doCheck = false;
 
   build-system = with python3.pkgs; [
     setuptools
@@ -26,9 +28,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     rich
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "conpass" ];
 
   meta = {

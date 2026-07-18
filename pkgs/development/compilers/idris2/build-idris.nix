@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   idris2,
   makeBinaryWrapper,
 }:
@@ -20,10 +20,10 @@
 #        }
 #
 {
-  src,
-  ipkgName, # ipkg filename without the extension
-  version ? "unversioned",
   idrisLibraries, # Other libraries built with buildIdris
+  ipkgName, # ipkg filename without the extension
+  src,
+  version ? "unversioned",
   ...
 }@attrs:
 
@@ -65,15 +65,16 @@ let
       finalAttrs:
       drvAttrs
       // {
-        pname = ipkgName;
         inherit src version;
+        pname = ipkgName;
+
         nativeBuildInputs = [
           idris2
           makeBinaryWrapper
         ]
         ++ attrs.nativeBuildInputs or [ ];
-        buildInputs = propagatedIdrisLibraries ++ attrs.buildInputs or [ ];
 
+        buildInputs = propagatedIdrisLibraries ++ attrs.buildInputs or [ ];
         env.IDRIS2_PACKAGE_PATH = libDirs propagatedIdrisLibraries;
 
         buildPhase = ''
@@ -82,14 +83,14 @@ let
           runHook postBuild
         '';
 
+        shellHook = ''
+          export IDRIS2_PACKAGE_PATH="${finalAttrs.env.IDRIS2_PACKAGE_PATH}"
+        '';
+
         passthru = {
           inherit propagatedIdrisLibraries;
         }
         // (attrs.passthru or { });
-
-        shellHook = ''
-          export IDRIS2_PACKAGE_PATH="${finalAttrs.env.IDRIS2_PACKAGE_PATH}"
-        '';
       }
     );
 

@@ -1,17 +1,17 @@
 {
-  buildPackages,
-  writeText,
-  fontconfig,
   lib,
-  runCommand,
   stdenv,
+  buildPackages,
+  fontconfig,
+  runCommand,
+  writeText,
 }:
 let
   fontconfig' = fontconfig;
 in
 {
-  fontconfig ? fontconfig',
   fontDirectories,
+  fontconfig ? fontconfig',
 }:
 
 let
@@ -22,8 +22,8 @@ let
 in
 runCommand "fc-cache"
   {
-    preferLocalBuild = true;
     allowSubstitutes = false;
+    preferLocalBuild = true;
   }
   ''
     export FONTCONFIG_FILE=$(pwd)/fonts.conf

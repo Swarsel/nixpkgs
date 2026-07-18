@@ -1,15 +1,15 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
-  ocaml,
+  alcotest,
+  backoff,
+  buildDunePackage,
   domain-local-await,
   domain-local-timeout,
-  alcotest,
-  multicore-magic,
-  backoff,
   domain_shims,
   mdx,
+  multicore-magic,
+  ocaml,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -30,6 +30,7 @@ buildDunePackage (finalAttrs: {
 
   doCheck = lib.versionAtLeast ocaml.version "5.1" && !lib.versionAtLeast ocaml.version "5.4";
   nativeCheckInputs = [ mdx.bin ];
+
   checkInputs = [
     alcotest
     domain_shims
@@ -37,11 +38,13 @@ buildDunePackage (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/ocaml-multicore/kcas";
     description = "STM based on lock-free MCAS";
+
     longDescription = ''
       A software transactional memory (STM) implementation based on an atomic lock-free multi-word compare-and-set (MCAS) algorithm enhanced with read-only compare operations and ability to block awaiting for changes.
     '';
+
+    homepage = "https://github.com/ocaml-multicore/kcas";
     changelog = "https://raw.githubusercontent.com/ocaml-multicore/kcas/refs/tags/${finalAttrs.version}/CHANGES.md";
     license = lib.licenses.isc;
     maintainers = [ lib.maintainers.vbgl ];

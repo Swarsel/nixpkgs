@@ -1,13 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
+  buildPythonPackage,
   # dependencies
   dacite,
   filetype,
@@ -20,26 +14,28 @@
   numpy,
   pandas,
   phik,
+  # tests
+  pyarrow,
   pydantic,
+  pytestCheckHook,
+  pythonAtLeast,
   pyyaml,
   requests,
   scipy,
   seaborn,
+  # build-system
+  setuptools,
+  setuptools-scm,
   statsmodels,
   tqdm,
   typeguard,
   visions,
   wordcloud,
-
-  # tests
-  pyarrow,
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "ydata-profiling";
   version = "4.18.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ydataai";
@@ -47,9 +43,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-CNeHsOpFkKvcCWGEholabcsqXJzINUUxFZ7I5bPBoYM=";
   };
-
-  # pydantic.v1.errors.ConfigError: unable to infer type for attribute "sortby"
-  disabled = pythonAtLeast "3.14";
 
   postPatch = ''
     substituteInPlace pyproject.toml \
@@ -61,18 +54,14 @@ buildPythonPackage (finalAttrs: {
     echo ${finalAttrs.version} > VERSION
   '';
 
+  nativeCheckInputs = [
+    pyarrow
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
     setuptools-scm
-  ];
-
-  pythonRelaxDeps = [
-    "imagehash"
-    "matplotlib"
-    "multimethod"
-    "numba"
-    "numpy"
-    "scipy"
   ];
 
   dependencies = [
@@ -100,10 +89,8 @@ buildPythonPackage (finalAttrs: {
     wordcloud
   ];
 
-  nativeCheckInputs = [
-    pyarrow
-    pytestCheckHook
-  ];
+  # pydantic.v1.errors.ConfigError: unable to infer type for attribute "sortby"
+  disabled = pythonAtLeast "3.14";
 
   disabledTestPaths = [
     # needs Spark:
@@ -124,7 +111,17 @@ buildPythonPackage (finalAttrs: {
     "test_urls"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "ydata_profiling" ];
+
+  pythonRelaxDeps = [
+    "imagehash"
+    "matplotlib"
+    "multimethod"
+    "numba"
+    "numpy"
+    "scipy"
+  ];
 
   meta = {
     description = "Create HTML profiling reports from Pandas DataFrames";

@@ -1,17 +1,14 @@
 {
-  stdenv,
   lib,
-  buildGo125Module,
+  stdenv,
   fetchFromGitHub,
-  installShellFiles,
+  buildGo125Module,
   fuse,
+  installShellFiles,
 }:
 buildGo125Module (finalAttrs: {
   pname = "plakar";
   version = "1.1.4";
-
-  # to avoid having all the Test(Get|Set|Validate)Service.* tests fail on darwin
-  __darwinAllowLocalNetworking = true;
 
   src = fetchFromGitHub {
     owner = "PlakarKorp";
@@ -20,15 +17,15 @@ buildGo125Module (finalAttrs: {
     hash = "sha256-Urj1BG3XGhSroaa9pl9NGiKj38J1P+H9sA7noGwIhdc=";
   };
 
-  vendorHash = "sha256-aqHjSTVVxBbaHAZZNQaFbftN0Hbl/+7wgk5uFM664po=";
+  nativeBuildInputs = [
+    installShellFiles
+  ];
 
   buildInputs = [
     fuse
   ];
 
-  nativeBuildInputs = [
-    installShellFiles
-  ];
+  vendorHash = "sha256-aqHjSTVVxBbaHAZZNQaFbftN0Hbl/+7wgk5uFM664po=";
 
   checkFlags =
     let
@@ -48,15 +45,20 @@ buildGo125Module (finalAttrs: {
     installManPage $(find $src -regex '.*\.[0-9]$')
   '';
 
+  # to avoid having all the Test(Get|Set|Validate)Service.* tests fail on darwin
+  __darwinAllowLocalNetworking = true;
+
   meta = {
-    mainProgram = "plakar";
     description = "Encrypted, queryable backups for engineers based on an immutable data store and portable archives";
     homepage = "https://www.plakar.io";
     license = lib.licenses.isc;
+
     maintainers = with lib.maintainers; [
       heph2
       qbit
       nadir-ishiguro
     ];
+
+    mainProgram = "plakar";
   };
 })

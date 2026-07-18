@@ -2,44 +2,44 @@
   lib,
   stdenv,
   fetchurl,
+  bison,
+  blas,
   bzip2,
+  curl,
   gfortran,
-  libx11,
-  libxmu,
-  libxt,
+  graphviz,
+  icu,
+  jdk,
+  lapack,
+  less,
   libjpeg,
   libpng,
   libtiff,
+  libx11,
+  libxmu,
+  libxt,
+  llvmPackages,
   ncurses,
   pango,
   pcre2,
   perl,
+  pkg-config,
   readline,
   tcl,
+  testers,
+  texinfo,
   texliveSmall,
   tk,
+  tzdata,
+  which,
   xz,
   zlib,
-  less,
-  texinfo,
-  graphviz,
-  icu,
-  pkg-config,
-  bison,
-  which,
-  llvmPackages,
-  jdk,
-  blas,
-  lapack,
-  curl,
-  tzdata,
-  withRecommendedPackages ? true,
-  enableStrictBarrier ? false,
   enableMemoryProfiling ? false,
+  enableStrictBarrier ? false,
   # R as of writing does not support outputting both .so and .a files; it outputs:
   #     --enable-R-static-lib conflicts with --enable-R-shlib and will be ignored
   static ? false,
-  testers,
+  withRecommendedPackages ? true,
 }:
 
 assert (!blas.isILP64) && (!lapack.isILP64);
@@ -62,6 +62,23 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
     "tex"
   ];
+
+  patches = [
+    ./no-usr-local-search-paths.patch
+  ];
+
+  # Test of the examples for package 'tcltk' fails in Darwin sandbox. See:
+  # https://github.com/NixOS/nixpkgs/issues/146131
+  postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    substituteInPlace configure \
+      --replace "-install_name libRblas.dylib" "-install_name $out/lib/R/lib/libRblas.dylib" \
+      --replace "-install_name libRlapack.dylib" "-install_name $out/lib/R/lib/libRlapack.dylib" \
+      --replace "-install_name libR.dylib" "-install_name $out/lib/R/lib/libR.dylib"
+    substituteInPlace tests/Examples/Makefile.in \
+      --replace "test-Examples: test-Examples-Base" "test-Examples:" # do not test the examples
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     bison
@@ -111,24 +128,6 @@ stdenv.mkDerivation (finalAttrs: {
     tk
     jdk
   ];
-  strictDeps = true;
-
-  patches = [
-    ./no-usr-local-search-paths.patch
-  ];
-
-  # Test of the examples for package 'tcltk' fails in Darwin sandbox. See:
-  # https://github.com/NixOS/nixpkgs/issues/146131
-  postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    substituteInPlace configure \
-      --replace "-install_name libRblas.dylib" "-install_name $out/lib/R/lib/libRblas.dylib" \
-      --replace "-install_name libRlapack.dylib" "-install_name $out/lib/R/lib/libRlapack.dylib" \
-      --replace "-install_name libR.dylib" "-install_name $out/lib/R/lib/libR.dylib"
-    substituteInPlace tests/Examples/Makefile.in \
-      --replace "test-Examples: test-Examples-Base" "test-Examples:" # do not test the examples
-  '';
-
-  dontDisableStatic = static;
 
   env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
     # TODO: Remove once #536365 reaches this branch
@@ -176,11 +175,8 @@ stdenv.mkDerivation (finalAttrs: {
     echo >>etc/Renviron.in "TZDIR=${tzdata}/share/zoneinfo"
   '';
 
-  installTargets = [
-    "install"
-    "install-info"
-    "install-pdf"
-  ];
+  doCheck = true;
+  preCheck = "export HOME=$TMPDIR; export TZ=CET; bin/Rscript -e 'sessionInfo()'";
 
   # move tex files to $tex for use with texlive.combine
   # add link in $out since ${R_SHARE_DIR}/texmf is hardcoded in several places
@@ -197,13 +193,16 @@ stdenv.mkDerivation (finalAttrs: {
     ${lib.optionalString stdenv.hostPlatform.isLinux ''find $out -name "*.so" -exec patchelf {} --add-rpath $out/lib/R/lib \;''}
   '';
 
-  doCheck = true;
-  preCheck = "export HOME=$TMPDIR; export TZ=CET; bin/Rscript -e 'sessionInfo()'";
-
+  dontDisableStatic = static;
   enableParallelBuilding = true;
 
-  setupHook = ./setup-hook.sh;
+  installTargets = [
+    "install"
+    "install-info"
+    "install-pdf"
+  ];
 
+  setupHook = ./setup-hook.sh;
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   # dependencies (based on \RequirePackage in jss.cls, Rd.sty, Sweave.sty)
@@ -223,10 +222,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "http://www.r-project.org/";
     description = "Free software environment for statistical computing and graphics";
-    mainProgram = "R";
-    license = lib.licenses.gpl2Plus;
 
     longDescription = ''
       GNU R is a language and environment for statistical computing and
@@ -247,10 +243,12 @@ stdenv.mkDerivation (finalAttrs: {
       user-defined recursive functions and input and output facilities.
     '';
 
-    pkgConfigModules = [ "libR" ];
-    platforms = lib.platforms.all;
-
+    homepage = "http://www.r-project.org/";
+    license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ jbedo ];
+    platforms = lib.platforms.all;
+    mainProgram = "R";
+    pkgConfigModules = [ "libR" ];
     teams = [ lib.teams.sage ];
   };
 })

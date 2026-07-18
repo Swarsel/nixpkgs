@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   glfw3,
 }:
 
 buildPythonPackage rec {
   pname = "glfw";
   version = "2.10.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "FlorianRhiem";
@@ -23,10 +22,9 @@ buildPythonPackage rec {
   '';
 
   propagatedBuildInputs = [ glfw3 ];
-
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "glfw" ];
 
   meta = {

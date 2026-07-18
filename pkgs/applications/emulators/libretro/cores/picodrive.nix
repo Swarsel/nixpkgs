@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "picodrive";
   version = "0-unstable-2026-04-02";
 
   src = fetchFromGitHub {
@@ -15,6 +14,7 @@ mkLibretroCore {
     fetchSubmodules = true;
   };
 
+  core = "picodrive";
   dontConfigure = true;
 
   meta = {

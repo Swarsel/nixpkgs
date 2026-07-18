@@ -1,15 +1,14 @@
 {
-  stdenv,
   lib,
-  python3Packages,
+  stdenv,
   fetchFromGitHub,
   git,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "gigalixir";
   version = "1.15.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gigalixir";
@@ -22,6 +21,14 @@ python3Packages.buildPythonApplication rec {
     substituteInPlace setup.py \
       --replace-fail "'pytest-runner'," ""
   '';
+
+  nativeCheckInputs = with python3Packages; [
+    git
+
+    httpretty
+    pytestCheckHook
+    sure
+  ];
 
   build-system = with python3Packages; [
     setuptools
@@ -38,14 +45,6 @@ python3Packages.buildPythonApplication rec {
     stripe
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    git
-
-    httpretty
-    pytestCheckHook
-    sure
-  ];
-
   disabledTests = [
     # Test requires network access
     "test_rollback_without_version"
@@ -58,6 +57,8 @@ python3Packages.buildPythonApplication rec {
     "test_delete_free_database"
     "test_get_free_databases"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "gigalixir"

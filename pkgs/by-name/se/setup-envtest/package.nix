@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,13 +18,12 @@ buildGoModule (finalAttrs: {
     + "/tools/setup-envtest";
 
   vendorHash = "sha256-1WxRIvzVUg+6XUWTAs6SVR12vGihUFkuwH1jH10Oa50=";
+  __darwinAllowLocalNetworking = true;
 
   ldflags = [
     "-s"
     "-w"
   ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Tool that manages binaries for envtest, allowing the download of new binaries, listing installed and available ones, and cleaning up versions";

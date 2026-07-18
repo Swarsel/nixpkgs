@@ -1,14 +1,14 @@
 {
+  lib,
   stdenv,
   fetchurl,
   boost,
+  cargo,
   gdk-pixbuf,
   glib,
   libjpeg,
   libxml2,
-  lib,
   pkg-config,
-  cargo,
   rustc,
 }:
 
@@ -20,6 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://libopenraw.freedesktop.org/download/libopenraw-${finalAttrs.version}.tar.bz2";
     hash = "sha256-VRWyYQNh7zRYC2uXZjURn23ttPCnnVRmL6X+YYakXtU=";
   };
+
+  postPatch = ''
+    sed -i configure{,.ac} \
+      -e "s,GDK_PIXBUF_DIR=.*,GDK_PIXBUF_DIR=$out/lib/gdk-pixbuf-2.0/2.10.0/loaders,"
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -35,11 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxml2
   ];
 
-  postPatch = ''
-    sed -i configure{,.ac} \
-      -e "s,GDK_PIXBUF_DIR=.*,GDK_PIXBUF_DIR=$out/lib/gdk-pixbuf-2.0/2.10.0/loaders,"
-  '';
-
   configureFlags = [
     "--with-boost=${lib.getDev boost}"
   ];
@@ -48,7 +48,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "RAW camerafile decoding library";
     homepage = "https://libopenraw.freedesktop.org";
     license = lib.licenses.lgpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.struan ];
+    platforms = lib.platforms.linux;
   };
 })

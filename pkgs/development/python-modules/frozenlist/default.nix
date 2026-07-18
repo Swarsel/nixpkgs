@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cython,
   expandvars,
-  fetchFromGitHub,
   pep517,
   pytestCheckHook,
   setuptools,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "frozenlist";
   version = "1.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aio-libs";
@@ -34,12 +33,12 @@ buildPythonPackage rec {
     wheel
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   preBuild = ''
     cython frozenlist/_frozenlist.pyx
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
   pythonImportsCheck = [ "frozenlist" ];
 
   meta = {

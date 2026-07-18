@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   llvmPackages,
+  pkg-config,
   enableOpenMP ? true,
 }:
 
@@ -25,7 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = lib.optionals enableOpenMP [ llvmPackages.openmp ];
-
   cmakeFlags = [ "-DOPENMP=${if enableOpenMP then "ON" else "OFF"}" ];
 
   meta = {

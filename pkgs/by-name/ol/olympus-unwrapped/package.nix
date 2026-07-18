@@ -1,14 +1,14 @@
 {
   lib,
   fetchFromGitHub,
-  fetchzip,
   buildDotnetModule,
+  curl,
   dotnetCorePackages,
+  fetchzip,
+  libarchive,
+  love,
   luajitPackages,
   sqlite,
-  libarchive,
-  curl,
-  love,
   xdg-utils,
 }:
 let
@@ -27,27 +27,22 @@ let
   rev = "e2fb5adc8c1b122b44f0d5aab84ef2d5d609812a";
 in
 buildDotnetModule {
-  pname = "olympus-unwrapped";
   inherit version;
-
-  strictDeps = false;
+  pname = "olympus-unwrapped";
 
   src = fetchFromGitHub {
     inherit rev;
     owner = "EverestAPI";
     repo = "Olympus";
-    fetchSubmodules = true; # Required. See upstream's README.
     hash = "sha256-0ChH9lm1RZU8MdNF12fZneAXHpKwr7j/0m42eBoqw0E=";
+    fetchSubmodules = true; # Required. See upstream's README.
   };
+
+  strictDeps = false;
 
   nativeBuildInputs = [
     libarchive # To create the .love file (zip format).
   ];
-
-  nugetDeps = ./deps.json;
-  projectFile = "sharp/Olympus.Sharp.csproj";
-  executables = [ ];
-  installPath = "${placeholder "out"}/lib/olympus/sharp";
 
   # See the 'Dist: Update src/version.txt' step in azure-pipelines.yml from upstream.
   preConfigure = ''
@@ -81,19 +76,25 @@ buildDotnetModule {
     install -Dm644 LICENSE $out/share/licenses/olympus/LICENSE
   '';
 
+  executables = [ ];
+  installPath = "${placeholder "out"}/lib/olympus/sharp";
+  nugetDeps = ./deps.json;
+  projectFile = "sharp/Olympus.Sharp.csproj";
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Cross-platform GUI Everest installer and Celeste mod manager";
     homepage = "https://github.com/EverestAPI/Olympus";
-    downloadPage = "https://everestapi.github.io/#olympus";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       ulysseszhan
       petingoso
     ];
-    mainProgram = "olympus";
+
     platforms = lib.platforms.unix;
     badPlatforms = lib.platforms.aarch; # Celeste doesn't support aarch in the first place
+    mainProgram = "olympus";
+    downloadPage = "https://everestapi.github.io/#olympus";
   };
 }

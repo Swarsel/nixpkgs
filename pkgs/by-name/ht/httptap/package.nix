@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,15 +16,14 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-yTtUt+kfDwN6W4caHCAYFjpYzhaqZUbLe+Nz7JKAXu8=";
-
   env.CGO_ENABLED = 0;
-
-  subPackages = [ "." ];
 
   ldflags = [
     "-s"
     "-w"
   ];
+
+  subPackages = [ "." ];
 
   meta = {
     description = "View HTTP/HTTPS requests made by any Linux program";

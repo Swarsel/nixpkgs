@@ -1,15 +1,14 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
   installShellFiles,
+  python3,
   writableTmpDirAsHomeHook,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "ripe-atlas-tools";
   version = "3.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "RIPE-NCC";
@@ -28,6 +27,27 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  preBuild = ''
+    echo "RIPE Atlas Tools [NixOS ${finalAttrs.version}" > ripe/atlas/tools/user-agent
+  '';
+
+  nativeCheckInputs = with python3.pkgs; [
+    pytestCheckHook
+    writableTmpDirAsHomeHook # for cache generation.
+  ];
+
+  # Necessary because it confuse the tests when it does "from ripe.atlas.sagan import X"
+  # version.py is used by Sphinx tests.
+  preCheck = ''
+    rm -rf ripe
+    mkdir -p ripe/atlas/tools
+    echo "__version__ = \"${finalAttrs.version}\"" > ripe/atlas/tools/version.py
+  '';
+
+  postInstall = ''
+    installShellCompletion --cmd ripe-atlas --bash ./ripe-atlas-bash-completion.sh
+  '';
 
   build-system = with python3.pkgs; [
     setuptools
@@ -48,21 +68,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ujson
   ];
 
-  preBuild = ''
-    echo "RIPE Atlas Tools [NixOS ${finalAttrs.version}" > ripe/atlas/tools/user-agent
-  '';
-
-  postInstall = ''
-    installShellCompletion --cmd ripe-atlas --bash ./ripe-atlas-bash-completion.sh
-  '';
-
-  pythonImportsCheck = [
-    "ripe.atlas.tools"
-  ];
-
-  nativeCheckInputs = with python3.pkgs; [
-    pytestCheckHook
-    writableTmpDirAsHomeHook # for cache generation.
+  disabledTestPaths = [
+    # Relies on `ripe-atlas` being available in the PATH, installed with autocompletions
+    "tests/test_bash_completion.py"
+    # AS lookups are not mocked up: https://github.com/RIPE-NCC/ripe-atlas-tools/blob/master/tests/renderers/test_traceroute_aspath.py#L26
+    "tests/renderers/test_traceroute_aspath.py"
+    # We already build Sphinx so we do not need to test it
+    "tests/test_docs.py"
   ];
 
   disabledTests = [
@@ -78,22 +90,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "test_user_agent_xdg_present"
   ];
 
-  disabledTestPaths = [
-    # Relies on `ripe-atlas` being available in the PATH, installed with autocompletions
-    "tests/test_bash_completion.py"
-    # AS lookups are not mocked up: https://github.com/RIPE-NCC/ripe-atlas-tools/blob/master/tests/renderers/test_traceroute_aspath.py#L26
-    "tests/renderers/test_traceroute_aspath.py"
-    # We already build Sphinx so we do not need to test it
-    "tests/test_docs.py"
-  ];
+  pyproject = true;
 
-  # Necessary because it confuse the tests when it does "from ripe.atlas.sagan import X"
-  # version.py is used by Sphinx tests.
-  preCheck = ''
-    rm -rf ripe
-    mkdir -p ripe/atlas/tools
-    echo "__version__ = \"${finalAttrs.version}\"" > ripe/atlas/tools/version.py
-  '';
+  pythonImportsCheck = [
+    "ripe.atlas.tools"
+  ];
 
   meta = {
     description = "RIPE ATLAS project tools";

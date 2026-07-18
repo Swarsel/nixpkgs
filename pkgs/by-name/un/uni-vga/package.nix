@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  perl,
-  kbd,
   bdftopcf,
+  fonttosfnt,
+  kbd,
   libfaketime,
   mkfontscale,
-  fonttosfnt,
+  perl,
 }:
 
 stdenv.mkDerivation {
@@ -19,6 +19,13 @@ stdenv.mkDerivation {
     sha256 = "05sns8h5yspa7xkl81ri7y1yxf5icgsnl497f3xnaryhx11s2rv6";
   };
 
+  outputs = [
+    "out"
+    "bdf"
+  ];
+
+  postPatch = "patchShebangs .";
+
   nativeBuildInputs = [
     bdftopcf
     libfaketime
@@ -29,8 +36,6 @@ stdenv.mkDerivation {
     perl
     kbd
   ];
-
-  postPatch = "patchShebangs .";
 
   buildPhase = ''
     # convert font to compressed pcf
@@ -62,15 +67,10 @@ stdenv.mkDerivation {
     install -m 644 -D *.psf.gz -t "$out/share/consolefonts"
   '';
 
-  outputs = [
-    "out"
-    "bdf"
-  ];
-
   meta = {
     description = "Unicode VGA font";
-    maintainers = [ ];
     homepage = "http://www.inp.nsk.su/~bolkhov/files/fonts/univga/";
     license = lib.licenses.mit;
+    maintainers = [ ];
   };
 }

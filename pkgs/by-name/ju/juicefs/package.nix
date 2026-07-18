@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,6 +16,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-LE6bpFSHhIRKaGlgn8nU8leOfcNH1ruKRv3vHZu0n/s=";
+  doCheck = false; # requires network access
+
+  postInstall = ''
+    ln -s $out/bin/juicefs $out/bin/mount.juicefs
+  '';
 
   excludedPackages = [ "sdk/java/libjfs" ];
 
@@ -24,12 +29,6 @@ buildGoModule (finalAttrs: {
     "-w"
     "-X github.com/juicedata/juicefs/pkg/version.version=${finalAttrs.version}"
   ];
-
-  doCheck = false; # requires network access
-
-  postInstall = ''
-    ln -s $out/bin/juicefs $out/bin/mount.juicefs
-  '';
 
   meta = {
     description = "Distributed POSIX file system built on top of Redis and S3";

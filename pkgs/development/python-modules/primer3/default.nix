@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
   cython,
   distutils,
-  fetchFromGitHub,
   gcc,
   pytestCheckHook,
   setuptools,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "primer3";
   version = "2.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "libnano";
@@ -26,12 +25,6 @@ buildPythonPackage (finalAttrs: {
   postPatch = ''
     substituteInPlace pyproject.toml --replace-fail "Cython~=3.1.0" "cython"
   '';
-
-  build-system = [
-    cython
-    distutils
-    setuptools
-  ];
 
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ gcc ];
 
@@ -49,6 +42,13 @@ buildPythonPackage (finalAttrs: {
     python setup.py build_ext --inplace
   '';
 
+  build-system = [
+    cython
+    distutils
+    setuptools
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "primer3" ];
 
   meta = {

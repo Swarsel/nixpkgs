@@ -15,13 +15,13 @@
 buildPythonPackage rec {
   inherit (pocketsphinx) version src;
   pname = "pocketsphinx";
-  pyproject = true;
-
-  dontUseCmakeConfigure = true;
-
+  buildInputs = [ pocketsphinx ];
   env.CMAKE_ARGS = lib.cmakeBool "USE_INSTALLED_POCKETSPHINX" true;
 
-  buildInputs = [ pocketsphinx ];
+  nativeCheckInputs = [
+    memory-profiler
+    pytestCheckHook
+  ];
 
   build-system = [
     cmake
@@ -32,18 +32,15 @@ buildPythonPackage rec {
   ];
 
   dependencies = [ sounddevice ];
-
-  nativeCheckInputs = [
-    memory-profiler
-    pytestCheckHook
-  ];
-
+  dontUseCmakeConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "pocketsphinx" ];
 
   meta = {
     description = "Small speech recognizer";
     homepage = "https://github.com/cmusphinx/pocketsphinx";
     changelog = "https://github.com/cmusphinx/pocketsphinx/blob/v${version}/NEWS";
+
     license =
       with lib.licenses;
       AND [
@@ -51,6 +48,7 @@ buildPythonPackage rec {
         bsd3
         mit
       ];
+
     maintainers = with lib.maintainers; [ jopejoe1 ];
   };
 }

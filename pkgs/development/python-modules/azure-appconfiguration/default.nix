@@ -10,14 +10,15 @@
 buildPythonPackage rec {
   pname = "azure-appconfiguration";
   version = "1.7.2";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_appconfiguration";
     inherit version;
     hash = "sha256-zv11spi4mKjtn3MEjz859OgQWaWM2DLQUjeH/B2RKgY=";
+    pname = "azure_appconfiguration";
   };
 
+  # Tests are not shipped
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -25,9 +26,7 @@ buildPythonPackage rec {
     isodate
   ];
 
-  # Tests are not shipped
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.appconfiguration" ];
 
   meta = {

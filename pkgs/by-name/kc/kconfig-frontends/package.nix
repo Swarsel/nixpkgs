@@ -20,20 +20,22 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-yxg4z+Lwl7oJyt4n1HUncg1bKeK3FcCpbDPQtqELqxM=";
   };
 
-  patches = [
-    # This patch is a fixed file, there is no need to normalize it
-    (fetchurl {
-      url = "https://bitbucket.org/nuttx/tools/downloads/gperf3.1_kconfig_id_lookup.patch";
-      hash = "sha256-cqAWjRnMA/fJ8wnEfUxoPEW0hIJY/mprE6/TQMY6NPI=";
-    })
-  ];
-
   outputs = [
     "out"
     "lib"
     "dev"
     "doc"
   ];
+
+  patches = [
+    # This patch is a fixed file, there is no need to normalize it
+    (fetchurl {
+      hash = "sha256-cqAWjRnMA/fJ8wnEfUxoPEW0hIJY/mprE6/TQMY6NPI=";
+      url = "https://bitbucket.org/nuttx/tools/downloads/gperf3.1_kconfig_id_lookup.patch";
+    })
+  ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     bison
@@ -48,8 +50,6 @@ stdenv.mkDerivation (finalAttrs: {
     python3
   ];
 
-  strictDeps = true;
-
   configureFlags = [
     "--enable-frontends=conf,mconf,nconf"
   ];
@@ -58,12 +58,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Out of Linux tree packaging of the kconfig infrastructure";
+
     longDescription = ''
       Configuration language and system for the Linux kernel and other
       projects. Features simple syntax and grammar, limited yet adequate option
       types, simple organization of options, and direct and reverse
       dependencies.
     '';
+
     homepage = "https://bitbucket.org/nuttx/tools/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];

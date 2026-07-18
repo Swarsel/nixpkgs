@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  cmake,
   boost,
+  cmake,
   gmp,
   mpfr,
 }:
@@ -17,6 +17,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-FcdDyzldGghVuQYlJfOuDNQEhkiaz+fOFFfDcQqzQRE=";
   };
 
+  patches = [ ./cgal_path.patch ];
+  nativeBuildInputs = [ cmake ];
+
   # note: optional component libCGAL_ImageIO would need zlib and opengl;
   #   there are also libCGAL_Qt{3,4} omitted ATM
   buildInputs = [
@@ -24,20 +27,19 @@ stdenv.mkDerivation (finalAttrs: {
     gmp
     mpfr
   ];
-  nativeBuildInputs = [ cmake ];
-
-  patches = [ ./cgal_path.patch ];
 
   doCheck = false;
 
   meta = {
     description = "Computational Geometry Algorithms Library";
     homepage = "http://cgal.org";
+
     license = with lib.licenses; [
       gpl3Plus
       lgpl3Plus
     ];
-    platforms = lib.platforms.all;
+
     maintainers = [ lib.maintainers.raskin ];
+    platforms = lib.platforms.all;
   };
 })

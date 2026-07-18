@@ -1,9 +1,9 @@
 {
-  stdenv,
-  fetchPypi,
-  fetchurl,
-  installShellFiles,
   lib,
+  stdenv,
+  fetchurl,
+  fetchPypi,
+  installShellFiles,
   python3Packages,
 }:
 
@@ -13,8 +13,8 @@ let
   specVersion = "4.176.0";
   specHash = "sha256-P1E8Ga5ckrsw/CX0kxFef5fe8/p/pDCLuleX9wR5l48=";
   spec = fetchurl {
-    url = "https://raw.githubusercontent.com/linode/linode-api-docs/v${specVersion}/openapi.yaml";
     hash = specHash;
+    url = "https://raw.githubusercontent.com/linode/linode-api-docs/v${specVersion}/openapi.yaml";
   };
 
 in
@@ -22,25 +22,15 @@ in
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "linode-cli";
   version = "5.56.2";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "linode_cli";
     inherit (finalAttrs) version;
     hash = hash;
+    pname = "linode_cli";
   };
 
-  build-system = [
-    python3Packages.setuptools
-  ];
-
   patches = [ ./remove-update-check.patch ];
-
-  # remove need for git history
-  prePatch = ''
-    substituteInPlace setup.py \
-      --replace "version = get_version()" "version='${finalAttrs.version}',"
-  '';
+  nativeBuildInputs = [ installShellFiles ];
 
   postConfigure = ''
     python3 -m linodecli bake ${spec} --skip-config
@@ -48,7 +38,22 @@ python3Packages.buildPythonApplication (finalAttrs: {
     echo "${finalAttrs.version}" > baked_version
   '';
 
-  nativeBuildInputs = [ installShellFiles ];
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    for shell in bash fish; do
+      installShellCompletion --cmd linode-cli \
+        --$shell <($out/bin/linode-cli --skip-config completion $shell)
+      done
+  '';
+
+  doInstallCheck = true;
+
+  installCheckPhase = ''
+    $out/bin/linode-cli --skip-config --version | grep ${finalAttrs.version} > /dev/null
+  '';
+
+  build-system = [
+    python3Packages.setuptools
+  ];
 
   dependencies = [
     python3Packages.colorclass
@@ -60,30 +65,27 @@ python3Packages.buildPythonApplication (finalAttrs: {
     python3Packages.packaging
   ];
 
-  doInstallCheck = true;
-  installCheckPhase = ''
-    $out/bin/linode-cli --skip-config --version | grep ${finalAttrs.version} > /dev/null
+  # remove need for git history
+  prePatch = ''
+    substituteInPlace setup.py \
+      --replace "version = get_version()" "version='${finalAttrs.version}',"
   '';
 
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    for shell in bash fish; do
-      installShellCompletion --cmd linode-cli \
-        --$shell <($out/bin/linode-cli --skip-config completion $shell)
-      done
-  '';
-
+  pyproject = true;
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Linode Command Line Interface";
-    changelog = "https://github.com/linode/linode-cli/releases/tag/v${finalAttrs.version}";
-    downloadPage = "https://pypi.org/project/linode-cli";
     homepage = "https://github.com/linode/linode-cli";
+    changelog = "https://github.com/linode/linode-cli/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       ryantm
       techknowlogick
     ];
+
     mainProgram = "linode-cli";
+    downloadPage = "https://pypi.org/project/linode-cli";
   };
 })

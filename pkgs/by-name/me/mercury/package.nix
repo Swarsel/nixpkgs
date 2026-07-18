@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  gcc,
-  flex,
-  bison,
-  texinfo,
-  openjdk8_headless,
   beamPackages,
+  bison,
+  flex,
+  gcc,
   makeWrapper,
+  openjdk8_headless,
   readline,
+  texinfo,
 }:
 
 stdenv.mkDerivation rec {
@@ -22,6 +22,7 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     gcc
     flex
@@ -31,15 +32,6 @@ stdenv.mkDerivation rec {
     beamPackages.erlang
     readline
   ];
-
-  patchPhase = ''
-    # Fix calls to programs in /bin
-    for p in uname pwd ; do
-      for f in $(egrep -lr /bin/$p *) ; do
-        sed -i 's@/bin/'$p'@'$p'@g' $f ;
-      done
-    done
-  '';
 
   preConfigure = ''
     mkdir -p $out/lib/mercury/cgi-bin ;
@@ -61,8 +53,18 @@ stdenv.mkDerivation rec {
     done
   '';
 
+  patchPhase = ''
+    # Fix calls to programs in /bin
+    for p in uname pwd ; do
+      for f in $(egrep -lr /bin/$p *) ; do
+        sed -i 's@/bin/'$p'@'$p'@g' $f ;
+      done
+    done
+  '';
+
   meta = {
     description = "Pure logic programming language";
+
     longDescription = ''
       Mercury is a logic/functional programming language which combines the
       clarity and expressiveness of declarative programming with advanced
@@ -73,10 +75,11 @@ stdenv.mkDerivation rec {
       allowing modularity, separate compilation, and numerous optimization/time
       trade-offs.
     '';
+
     homepage = "https://mercurylang.org/";
     changelog = "https://dl.mercurylang.org/release/release-notes-${version}.html";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ vieta ];
+    platforms = lib.platforms.all;
   };
 }

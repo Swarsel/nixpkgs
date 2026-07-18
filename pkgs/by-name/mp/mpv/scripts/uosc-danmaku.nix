@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   gitUpdater,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "uosc-danmaku";
@@ -15,9 +15,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-r4HcrDh4iW8ErfClfX1gkEWp7lVKbLE88fpj3tjYBAI=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -27,9 +24,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   passthru = {
-    updateScript = gitUpdater { };
     scriptName = "uosc_danmaku";
+    updateScript = gitUpdater { };
   };
 
   meta = {

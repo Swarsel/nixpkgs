@@ -1,42 +1,37 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  aiohttp,
+  # dependencies (incl. optional)
+  anyio,
+  buildPythonPackage,
+  dirty-equals,
+  distro,
   # build-system
   hatch-fancy-pypi-readme,
   hatchling,
-
-  # dependencies (incl. optional)
-  anyio,
-  distro,
   httpx,
-  pydantic,
-  sniffio,
-  typing-extensions,
-  aiohttp,
   httpx-aiohttp,
-
+  importlib-metadata,
+  mypy,
+  nox,
+  pydantic,
   # tests
   pyright,
-  mypy,
-  respx,
   pytest,
   pytest-asyncio,
-  ruff,
-  time-machine,
-  nox,
-  dirty-equals,
-  importlib-metadata,
-  rich,
   pytest-xdist,
+  respx,
+  rich,
+  ruff,
+  sniffio,
+  time-machine,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "perplexityai";
   version = "0.39.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "perplexityai";
@@ -50,6 +45,24 @@ buildPythonPackage (finalAttrs: {
     substituteInPlace pyproject.toml \
       --replace-fail '"hatchling==1.26.3"' '"hatchling"'
   '';
+
+  nativeCheckInputs = [
+    pyright
+    mypy
+    respx
+    pytest
+    pytest-asyncio
+    ruff
+    time-machine
+    nox
+    dirty-equals
+    importlib-metadata
+    rich
+    pytest-xdist
+  ]
+  ++ finalAttrs.passthru.optional-dependencies.aiohttp;
+
+  __structuredAttrs = true;
 
   build-system = [
     hatch-fancy-pypi-readme
@@ -72,21 +85,7 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = [
-    pyright
-    mypy
-    respx
-    pytest
-    pytest-asyncio
-    ruff
-    time-machine
-    nox
-    dirty-equals
-    importlib-metadata
-    rich
-    pytest-xdist
-  ]
-  ++ finalAttrs.passthru.optional-dependencies.aiohttp;
+  pyproject = true;
 
   pythonImportsCheck = [
     "perplexity"

@@ -1,10 +1,10 @@
 {
+  lib,
+  stdenv,
   fetchurl,
   frink,
   jdk,
-  lib,
   rlwrap,
-  stdenv,
   testers,
 }:
 stdenv.mkDerivation rec {
@@ -16,8 +16,6 @@ stdenv.mkDerivation rec {
     url = "https://web.archive.org/web/20250119105218/https://frinklang.org/frinkjar/frink-tng.jar";
     sha256 = "sha256-qsbYUUBBVILUG6oZVR3t5UaVdNew6xRvjqQBJVr76L8=";
   };
-
-  dontUnpack = true;
 
   nativeBuildInputs = [ jdk ];
 
@@ -52,18 +50,20 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
+  passthru.tests = {
+    callFrinkVersion = testers.testVersion {
+      command = "frink -e 'FrinkVersion[]'";
+      package = frink;
+    };
+  };
+
   meta = {
     description = "Practical calculating tool and programming language";
     homepage = "https://frinklang.org/";
     license = lib.licenses.unfree;
     sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
     maintainers = [ lib.maintainers.stefanfehrenbach ];
-  };
-
-  passthru.tests = {
-    callFrinkVersion = testers.testVersion {
-      package = frink;
-      command = "frink -e 'FrinkVersion[]'";
-    };
   };
 }

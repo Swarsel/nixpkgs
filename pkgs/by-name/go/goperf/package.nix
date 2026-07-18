@@ -2,9 +2,9 @@
   lib,
   buildGoModule,
   fetchgit,
-  writeShellScript,
-  unstableGitUpdater,
   sd,
+  unstableGitUpdater,
+  writeShellScript,
 }:
 
 buildGoModule (finalAttrs: {
@@ -35,7 +35,7 @@ buildGoModule (finalAttrs: {
     description = "Tools and packages for analyzing Go benchmark results";
     homepage = "https://cs.opensource.google/go/x/perf";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ pbsds ];
+    platforms = lib.platforms.all;
   };
 })

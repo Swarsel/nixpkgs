@@ -3,19 +3,18 @@
   stdenv,
   fetchurl,
   bash,
-  flex,
   bison,
+  flex,
   valgrind,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "lockdep";
-
   # it would be nice to be able to pick a kernel version in sync with something
   # else we already ship, but it seems userspace lockdep isn't very well maintained
   # and appears broken in many kernel releases
   version = "5.0.21";
-  fullver = "5.0.21";
+
   src = fetchurl {
     url = "mirror://kernel/linux/kernel/v5.x/linux-${finalAttrs.version}.tar.xz";
     sha256 = "1my2m9hvnvdrvzcg0fgqgaga59y2cd5zlpv7xrfj2nn98sjhglwq";
@@ -49,6 +48,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
   nativeCheckInputs = [ valgrind ];
+
   checkPhase = ''
     # there are more /bin/bash references than just shebangs
     for f in lockdep run_tests.sh tests/*.sh; do
@@ -68,12 +68,14 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace $out/bin/lockdep --replace "./liblockdep.so" "$out/lib/liblockdep.so.$fullver"
   '';
 
+  fullver = "5.0.21";
+
   meta = {
     description = "Userspace locking validation tool built on the Linux kernel";
-    mainProgram = "lockdep";
     homepage = "https://kernel.org/";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.thoughtpolice ];
+    platforms = lib.platforms.linux;
+    mainProgram = "lockdep";
   };
 })

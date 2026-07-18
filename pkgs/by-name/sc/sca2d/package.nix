@@ -1,8 +1,8 @@
 {
   lib,
-  python3,
-  fetchFromGitLab,
   fetchFromGitHub,
+  fetchFromGitLab,
+  python3,
 }:
 let
   python = python3.override {
@@ -18,17 +18,16 @@ let
         };
 
         patches = [ ];
-
         disabledTestPaths = [ "tests/test_nearley/test_nearley.py" ];
       });
     };
+
     self = python;
   };
 in
 python.pkgs.buildPythonApplication rec {
   pname = "sca2d";
   version = "0.2.2";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "bath_open_instrumentation_group";
@@ -44,14 +43,15 @@ python.pkgs.buildPythonApplication rec {
     colorama
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "sca2d" ];
 
   meta = {
     description = "Experimental static code analyser for OpenSCAD";
-    mainProgram = "sca2d";
     homepage = "https://gitlab.com/bath_open_instrumentation_group/sca2d";
     changelog = "https://gitlab.com/bath_open_instrumentation_group/sca2d/-/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ traxys ];
+    mainProgram = "sca2d";
   };
 }

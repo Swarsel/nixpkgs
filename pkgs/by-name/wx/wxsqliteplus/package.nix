@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   makeWrapper,
-  wxwidgets_3_2,
-  wxsqlite3,
+  pkg-config,
   sqlite,
+  wxsqlite3,
+  wxwidgets_3_2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -49,10 +49,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Simple SQLite database browser built with wxWidgets";
-    mainProgram = "wxSQLitePlus";
     homepage = "https://github.com/guanlisheng/wxsqliteplus";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "wxSQLitePlus";
   };
 })

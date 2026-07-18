@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "awslimitchecker";
   version = "12.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jantman";
@@ -21,6 +20,15 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ./version.patch
   ];
 
+  nativeCheckInputs = with python3.pkgs; [
+    freezegun
+    onetimepass
+    pyotp
+    mock
+    (pytestCheckHook.override { pytest = pytest_7; })
+    testfixtures
+  ];
+
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -29,15 +37,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pytz
     termcolor
     versionfinder
-  ];
-
-  nativeCheckInputs = with python3.pkgs; [
-    freezegun
-    onetimepass
-    pyotp
-    mock
-    (pytestCheckHook.override { pytest = pytest_7; })
-    testfixtures
   ];
 
   disabledTestPaths = [
@@ -50,6 +49,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "awslimitchecker/tests/test_version.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "awslimitchecker.checker" ];
 
   meta = {

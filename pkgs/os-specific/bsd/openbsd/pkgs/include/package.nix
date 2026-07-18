@@ -1,17 +1,29 @@
 {
-  mkDerivation,
-  makeMinimal,
   bsdSetupHook,
-  openbsdSetupHook,
-  install,
-  rpcgen,
-  mtree,
-  pax,
   buildPackages,
+  install,
+  makeMinimal,
+  mkDerivation,
+  mtree,
+  openbsdSetupHook,
+  pax,
+  rpcgen,
 }:
 mkDerivation {
-  path = "include";
-  noCC = true;
+  nativeBuildInputs = [
+    bsdSetupHook
+    install
+    makeMinimal
+    mtree
+    openbsdSetupHook
+    pax
+    rpcgen
+  ];
+
+  makeFlags = [
+    "RPCGEN_CPP=${buildPackages.stdenv.cc.cc}/bin/cpp"
+    "-B"
+  ];
 
   extraPaths = [
     "lib"
@@ -37,20 +49,7 @@ mkDerivation {
     "sys/uvm"
   ];
 
-  nativeBuildInputs = [
-    bsdSetupHook
-    install
-    makeMinimal
-    mtree
-    openbsdSetupHook
-    pax
-    rpcgen
-  ];
-
-  makeFlags = [
-    "RPCGEN_CPP=${buildPackages.stdenv.cc.cc}/bin/cpp"
-    "-B"
-  ];
-
   headersOnly = true;
+  noCC = true;
+  path = "include";
 }

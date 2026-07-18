@@ -1,17 +1,16 @@
 {
   lib,
+  fetchFromGitHub,
   bleak,
   bleak-retry-connector,
   buildPythonPackage,
-  fetchFromGitHub,
-  setuptools,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "automower-ble";
   version = "0.2.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "alistair23";
@@ -20,6 +19,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-3Hiplg4PTu84H890JwTja7wopB7bSYteGXR7RQ/J++0=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,8 +27,7 @@ buildPythonPackage (finalAttrs: {
     bleak-retry-connector
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "automower_ble" ];
 
   meta = {

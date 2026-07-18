@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  perlPackages,
-  perl,
   installShellFiles,
+  perl,
+  perlPackages,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -27,8 +27,6 @@ stdenvNoCC.mkDerivation rec {
     perlPackages.XMLTokeParser
   ];
 
-  dontBuild = true;
-
   # File installation and setup similar to Makefile commands below.
   installPhase = ''
     runHook preInstall
@@ -44,12 +42,14 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Two very simple scripts for converting xml to groff or html";
     homepage = "https://github.com/atsb/xmltoman";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ tochiaha ];
-    mainProgram = "xmltoman";
     platforms = lib.platforms.all;
+    mainProgram = "xmltoman";
   };
 }

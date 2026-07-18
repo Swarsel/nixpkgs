@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  singularity,
   python3Packages,
+  singularity,
   testers,
   udocker,
 }:
@@ -10,7 +10,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "udocker";
   version = "1.3.17";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "indigo-dc";
@@ -30,6 +29,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     singularity
   ];
 
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+  ];
+
   build-system = with python3Packages; [
     setuptools
   ];
@@ -38,8 +41,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pycurl
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
+  disabledTestPaths = [
+    # Network
+    "tests/unit/test_curl.py"
+    "tests/unit/test_dockerioapi.py"
   ];
 
   disabledTests = [
@@ -47,12 +52,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "test_05__get_volume_bindings"
   ];
 
-  disabledTestPaths = [
-    # Network
-    "tests/unit/test_curl.py"
-    "tests/unit/test_dockerioapi.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "udocker" ];
 
   passthru = {

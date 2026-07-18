@@ -1,16 +1,16 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  sassc,
   gnome-themes-extra,
   gtk-engine-murrine,
+  sassc,
+  stdenvNoCC,
   unstableGitUpdater,
   colorVariants ? [ ],
+  iconVariants ? [ ],
   sizeVariants ? [ ],
   themeVariants ? [ ],
   tweakVariants ? [ ],
-  iconVariants ? [ ],
 }:
 
 let
@@ -77,18 +77,12 @@ lib.checkListOfEnum "${pname}: colorVariants" colorVariantList colorVariants lib
       hash = "sha256-RXoPj/aj9OCTIi8xWatG0QpDAUh102nFOipdSIiqt7o=";
     };
 
-    propagatedUserEnvPkgs = [ gtk-engine-murrine ];
-
-    nativeBuildInputs = [ sassc ];
-    buildInputs = [ gnome-themes-extra ];
-
-    dontBuild = true;
-
-    passthru.updateScript = unstableGitUpdater { };
-
     postPatch = ''
       patchShebangs themes/install.sh
     '';
+
+    nativeBuildInputs = [ sassc ];
+    buildInputs = [ gnome-themes-extra ];
 
     installPhase = ''
       runHook preInstall
@@ -108,13 +102,19 @@ lib.checkListOfEnum "${pname}: colorVariants" colorVariantList colorVariants lib
       runHook postInstall
     '';
 
+    dontBuild = true;
+    propagatedUserEnvPkgs = [ gtk-engine-murrine ];
+    passthru.updateScript = unstableGitUpdater { };
+
     meta = {
       description = "GTK theme based on the Gruvbox colour palette";
       homepage = "https://github.com/Fausto-Korpsvart/Gruvbox-GTK-Theme";
       license = lib.licenses.gpl3Plus;
-      platforms = lib.platforms.unix;
+
       maintainers = with lib.maintainers; [
         luftmensch-luftmensch
       ];
+
+      platforms = lib.platforms.unix;
     };
   }

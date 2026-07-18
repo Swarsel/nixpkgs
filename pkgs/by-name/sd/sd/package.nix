@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,13 +16,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-HK53+1oH3EJm4Tg6BhLtG575FlBREb0OCetIQuCsBNc=";
   };
 
-  cargoHash = "sha256-iOCIX7hq8RqRihVQrVoU2qCTSziuJePxsexkDSCZS9c=";
-
-  # Only build the CLI; the workspace also has a build-only `xtask` helper.
-  cargoBuildFlags = [ "--package=sd-cli" ];
-  cargoTestFlags = [ "--package=sd-cli" ];
-
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-iOCIX7hq8RqRihVQrVoU2qCTSziuJePxsexkDSCZS9c=";
 
   postInstall = ''
     installManPage gen/sd.1
@@ -31,13 +26,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     installShellCompletion --zsh gen/completions/_sd
   '';
 
+  # Only build the CLI; the workspace also has a build-only `xtask` helper.
+  cargoBuildFlags = [ "--package=sd-cli" ];
+  cargoTestFlags = [ "--package=sd-cli" ];
+
   meta = {
     description = "Intuitive find & replace CLI (sed alternative)";
-    mainProgram = "sd";
     homepage = "https://github.com/chmln/sd";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       amar1729
     ];
+
+    mainProgram = "sd";
   };
 })

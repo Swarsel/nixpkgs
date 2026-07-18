@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  perl,
   coreutils,
+  perl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,16 +19,15 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs .
   '';
 
+  buildInputs = [ perl ];
+  # Used during the configure phase
+  env.ENVCMD = "${coreutils}/bin/env";
   # gcc 15
   env.NIX_CFLAGS_COMPILE = "-Wno-incompatible-pointer-types";
 
-  # Used during the configure phase
-  env.ENVCMD = "${coreutils}/bin/env";
-
-  buildInputs = [ perl ];
-
   meta = {
     description = "Compiler for the Berkely Unified Parallel C language";
+
     longDescription = ''
       Unified Parallel C (UPC) is an extension of the C programming language
       designed for high performance computing on large-scale parallel
@@ -41,9 +40,10 @@ stdenv.mkDerivation (finalAttrs: {
       parallelism is fixed at program startup time, typically with a single
       thread of execution per processor.
     '';
+
     homepage = "https://upc.lbl.gov/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ zimbatm ];
+    platforms = lib.platforms.linux;
   };
 })

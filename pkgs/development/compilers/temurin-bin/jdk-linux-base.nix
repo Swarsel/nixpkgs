@@ -1,37 +1,37 @@
 {
-  name-prefix ? "temurin",
-  brand-name ? "Eclipse Temurin",
   sourcePerArch,
+  brand-name ? "Eclipse Temurin",
   knownVulnerabilities ? [ ],
+  name-prefix ? "temurin",
 }:
 
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  autoPatchelfHook,
-  makeWrapper,
-  setJavaClassPath,
   # minimum dependencies
   alsa-lib,
-  fontconfig,
-  freetype,
-  libffi,
-  libxtst,
-  libxrender,
-  libxi,
-  libxext,
-  libx11,
-  zlib,
+  autoPatchelfHook,
+  cairo,
   # runtime dependencies
   cups,
+  fontconfig,
+  freetype,
+  glib,
+  gtk3,
+  libffi,
+  libx11,
+  libxext,
+  libxi,
+  libxrender,
+  libxtst,
+  makeWrapper,
+  setJavaClassPath,
+  zlib,
   # runtime dependencies for GTK+ Look and Feel
   # TODO(@sternenseemann): gtk3 fails to evaluate in pkgsCross.ghcjs.buildPackages
   # which should be fixable, this is a no-rebuild workaround for GHC.
   gtkSupport ? !stdenv.targetPlatform.isGhcjs,
-  cairo,
-  glib,
-  gtk3,
 }:
 
 let
@@ -62,6 +62,11 @@ let
       inherit (sourcePerArch.${cpuName}) url sha256;
     };
 
+    nativeBuildInputs = [
+      autoPatchelfHook
+      makeWrapper
+    ];
+
     buildInputs = [
       alsa-lib # libasound.so wanted by lib/libjsound.so
       fontconfig
@@ -75,14 +80,6 @@ let
       zlib
     ]
     ++ lib.optional stdenv.hostPlatform.isAarch32 libffi;
-
-    nativeBuildInputs = [
-      autoPatchelfHook
-      makeWrapper
-    ];
-
-    # See: https://github.com/NixOS/patchelf/issues/10
-    dontStrip = 1;
 
     installPhase = ''
       cd ..
@@ -127,27 +124,33 @@ let
         patchelf --add-needed libfontconfig.so {} \;
     '';
 
+    # See: https://github.com/NixOS/patchelf/issues/10
+    dontStrip = 1;
+
     # FIXME: use multiple outputs or return actual JRE package
     passthru = {
-      jre = result;
       home = result;
+      jre = result;
     };
 
     meta = {
+      inherit knownVulnerabilities;
+      description = "${brand-name}, prebuilt OpenJDK binary";
+
       license = with lib.licenses; [
         gpl2
         classpathException20
       ];
+
       sourceProvenance = with lib.sourceTypes; [
         binaryNativeCode
         binaryBytecode
       ];
-      description = "${brand-name}, prebuilt OpenJDK binary";
-      platforms = map (arch: arch + "-linux") providedCpuTypes; # some inherit jre.meta.platforms
+
       maintainers = with lib.maintainers; [ taku0 ];
-      teams = [ lib.teams.java ];
-      inherit knownVulnerabilities;
+      platforms = map (arch: arch + "-linux") providedCpuTypes; # some inherit jre.meta.platforms
       mainProgram = "java";
+      teams = [ lib.teams.java ];
     };
   };
 in

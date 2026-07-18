@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  copyDesktopItems,
   love,
   lua,
-  zip,
-  makeWrapper,
   makeDesktopItem,
-  copyDesktopItems,
+  makeWrapper,
   tmx2lua,
+  zip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -73,15 +73,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "hawkthorne";
-      exec = "hawkthorne";
-      icon = "hawkthorne";
-      desktopName = "Journey to the Center of Hawkthorne";
-      genericName = "Platform Game";
       categories = [
         "Game"
         "ArcadeGame"
       ];
+
+      desktopName = "Journey to the Center of Hawkthorne";
+      exec = "hawkthorne";
+      genericName = "Platform Game";
+      icon = "hawkthorne";
+      name = "hawkthorne";
     })
   ];
 

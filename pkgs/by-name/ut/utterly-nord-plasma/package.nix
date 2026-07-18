@@ -16,8 +16,6 @@ stdenv.mkDerivation {
     hash = "sha256-lXX7Gk2QYyMP96qbYdHtommW0DM1DUK03cti1gAeBBc=";
   };
 
-  dontWrapQtApps = true;
-
   propagatedBuildInputs = with kdePackages; [
     # avoid .dev outputs propagation
     qt5compat.out
@@ -54,11 +52,13 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontWrapQtApps = true;
+
   meta = {
     description = "Plasma theme with Nordic Colors, transparency, blur and round edges for UI elements";
     homepage = "https://himdek.com/Utterly-Nord-Plasma/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ romildo ];
+    platforms = lib.platforms.all;
   };
 }

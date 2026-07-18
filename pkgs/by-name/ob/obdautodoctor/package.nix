@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
-  fetchzip,
+  stdenv,
   autoPatchelfHook,
-  copyDesktopItems,
-  makeDesktopItem,
-  kdePackages,
   bluez,
+  copyDesktopItems,
+  fetchzip,
+  kdePackages,
+  makeDesktopItem,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,19 +18,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-3qht1G2Qi+IhL/x9MMEAwM0exCav5iKtnZXTl6cwx3E=";
   };
 
-  buildInputs = [
-    stdenv.cc.cc.lib
-    kdePackages.qtbase
-    bluez
-  ];
-
   nativeBuildInputs = [
     autoPatchelfHook
     kdePackages.wrapQtAppsHook
     copyDesktopItems
   ];
 
-  dontBuild = true;
+  buildInputs = [
+    stdenv.cc.cc.lib
+    kdePackages.qtbase
+    bluez
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -46,25 +44,28 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "obdautodoctor";
-      desktopName = "OBD Auto Doctor";
-      comment = "OBD Car Diagnostics Software";
-      icon = "obdautodoctor";
-      exec = "obdautodoctor";
-      terminal = false;
       categories = [
         "Qt"
         "Utility"
       ];
+
+      comment = "OBD Car Diagnostics Software";
+      desktopName = "OBD Auto Doctor";
+      exec = "obdautodoctor";
+      icon = "obdautodoctor";
+      name = "obdautodoctor";
+      terminal = false;
     })
   ];
+
+  dontBuild = true;
 
   meta = {
     description = "Diagnose problems, reset the Check Engine Light, and monitor your car's performance with ease";
     homepage = "https://www.obdautodoctor.com/";
-    platforms = [ "x86_64-linux" ];
     license = lib.licenses.unfree;
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = with lib.maintainers; [ leoflo ];
+    platforms = [ "x86_64-linux" ];
   };
 })

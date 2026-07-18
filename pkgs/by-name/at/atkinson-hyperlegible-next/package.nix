@@ -1,18 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
   pname = "atkinson-hyperlegible-next";
   version = "2.001-unstable-2025-02-21";
-
-  outputs = [
-    "out"
-    "webfont"
-  ];
 
   src = fetchFromGitHub {
     owner = "googlefonts";
@@ -21,7 +16,10 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-LhwfYI5Z6BhO7OaY/RwXT7r3WYiUY9AO2HL3MmhPpQY=";
   };
 
-  dontBuild = true;
+  outputs = [
+    "out"
+    "webfont"
+  ];
 
   nativeBuildInputs = [ installFonts ];
 
@@ -30,6 +28,8 @@ stdenvNoCC.mkDerivation {
     runHook preInstall
     runHook postInstall
   '';
+
+  dontBuild = true;
 
   meta = {
     description = "New (2024) second version of the Atkinson Hyperlegible fonts";

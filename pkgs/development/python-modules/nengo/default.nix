@@ -2,18 +2,17 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
   numpy,
-  scipySupport ? false,
-  scipy,
-  scikitSupport ? false,
   scikit-learn,
+  scipy,
+  setuptools,
+  scikitSupport ? false,
+  scipySupport ? false,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "nengo";
   version = "4.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nengo";
@@ -22,6 +21,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-yZDnttXU5qMmQwFESkhQb06BXcqPEiPYl54azS5b284=";
   };
 
+  # checks req missing:
+  #   pytest-allclose
+  #   pytest-plt
+  #   pytest-rng
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,12 +34,7 @@ buildPythonPackage (finalAttrs: {
   ++ lib.optionals scipySupport [ scipy ]
   ++ lib.optionals scikitSupport [ scikit-learn ];
 
-  # checks req missing:
-  #   pytest-allclose
-  #   pytest-plt
-  #   pytest-rng
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "nengo" ];
 
   meta = {

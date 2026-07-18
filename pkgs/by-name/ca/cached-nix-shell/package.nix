@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   nix,
   ronn,
   rustPlatform,
@@ -8,10 +8,10 @@
 
 let
   blake3-src = fetchFromGitHub {
+    hash = "sha256-STWAnJjKrtb2Xyj6i1ACwxX/gTkQo5jUHilcqcgJYxc=";
     owner = "BLAKE3-team";
     repo = "BLAKE3";
     tag = "1.5.1";
-    hash = "sha256-STWAnJjKrtb2Xyj6i1ACwxX/gTkQo5jUHilcqcgJYxc=";
   };
 in
 rustPlatform.buildRustPackage rec {
@@ -25,13 +25,12 @@ rustPlatform.buildRustPackage rec {
     hash = "sha256-LI/hecqeRg3eCzU2bASJA8VoG4nvrSeHSeaGYn7M/UI=";
   };
 
-  cargoHash = "sha256-Rl+PgNr29OAl6P/iUfkuFlQycyeYNmxUIIdigk7PgV4=";
-
   nativeBuildInputs = [
     nix
     ronn
   ];
 
+  cargoHash = "sha256-Rl+PgNr29OAl6P/iUfkuFlQycyeYNmxUIIdigk7PgV4=";
   # The BLAKE3 C library is intended to be built by the project depending on it
   # rather than as a standalone library.
   # https://github.com/BLAKE3-team/BLAKE3/blob/0.3.1/c/README.md#building
@@ -47,15 +46,17 @@ rustPlatform.buildRustPackage rec {
 
   meta = {
     description = "Instant startup time for nix-shell";
-    mainProgram = "cached-nix-shell";
     homepage = "https://github.com/xzfc/cached-nix-shell";
     changelog = "https://github.com/xzfc/cached-nix-shell/releases/tag/v${version}";
+
     license = with lib.licenses; [
       unlicense
       # or
       mit
     ];
+
     maintainers = with lib.maintainers; [ xzfc ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "cached-nix-shell";
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,12 +19,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Cargo plugin to easily build Swift packages from Rust code";
-    mainProgram = "cargo-swift";
     homepage = "https://github.com/antoniusnaumann/cargo-swift";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ elliot ];
+    mainProgram = "cargo-swift";
   };
 })

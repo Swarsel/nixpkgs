@@ -1,6 +1,6 @@
 {
-  callPackage,
   fetchFromGitHub,
+  callPackage,
   fetchpatch,
   substitute,
 }:
@@ -20,6 +20,7 @@ callPackage ../generic.nix rec {
   patches = [
     (substitute {
       src = ./disable-git-version.patch;
+
       substitutions = [
         "--subst-var-by"
         "version"
@@ -28,9 +29,9 @@ callPackage ../generic.nix rec {
     })
     # FIXME: Remove after next release
     (fetchpatch {
+      hash = "sha256-zAiOz/Cu89Y+VmAyLCf7fzq0Mr0sYFZu14sqBZ/XvZU=";
       name = "Update-desktop-build-script-for-Gradle-7.0+";
       url = "https://github.com/TrashboxBobylev/Summoning-Pixel-Dungeon/commit/5610142126e161cbdc78a07c5d5abfbcd6eaf8a6.patch";
-      hash = "sha256-zAiOz/Cu89Y+VmAyLCf7fzq0Mr0sYFZu14sqBZ/XvZU=";
     })
   ];
 
@@ -45,8 +46,8 @@ callPackage ../generic.nix rec {
   desktopName = "Summoning Pixel Dungeon";
 
   meta = {
+    description = "Fork of the Shattered Pixel Dungeon roguelike with added summoning mechanics";
     homepage = "https://github.com/TrashboxBobylev/Summoning-Pixel-Dungeon";
     downloadPage = "https://github.com/TrashboxBobylev/Summoning-Pixel-Dungeon/releases";
-    description = "Fork of the Shattered Pixel Dungeon roguelike with added summoning mechanics";
   };
 }

@@ -1,43 +1,35 @@
 {
   lib,
-  config,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  typing-extensions,
-
+  buildPythonPackage,
   # nativeBuildInputs
   cmake,
-  cudaPackages,
-
-  # buildInputs
-  dlpack,
-
-  # tests
-  pytestCheckHook,
-  torch,
-
+  config,
   # passthru
   cuda-tile,
+  cudaPackages,
+  # buildInputs
+  dlpack,
+  # tests
+  pytestCheckHook,
+  # build-system
+  setuptools,
+  torch,
+  # dependencies
+  typing-extensions,
 }:
 let
   # https://github.com/NVIDIA/cutile-python/blob/v1.4.0/cmake/FetchXLAHeaders.cmake#L5-L6
   xla = fetchFromGitHub {
+    hash = "sha256-U4e3k4nm9gB1x5hahXwycWSryBQuxIPmOzVf6kuahY0=";
     owner = "openxla";
     repo = "xla";
     rev = "b6f37ab7767f428fd6f993de5e211643d47d4deb";
-    hash = "sha256-U4e3k4nm9gB1x5hahXwycWSryBQuxIPmOzVf6kuahY0=";
   };
 in
 buildPythonPackage.override { stdenv = cudaPackages.backendStdenv; } (finalAttrs: {
   pname = "cuda-tile";
   version = "1.4.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "NVIDIA";
@@ -67,8 +59,13 @@ buildPythonPackage.override { stdenv = cudaPackages.backendStdenv; } (finalAttrs
     echo "${finalAttrs.version}" >src/cuda/tile/VERSION
   '';
 
-  build-system = [
-    setuptools
+  nativeBuildInputs = [
+    cmake
+    cudaPackages.cuda_nvcc
+  ];
+
+  buildInputs = [
+    cudaPackages.cuda_cudart # cuda.h
   ];
 
   env = {
@@ -76,19 +73,25 @@ buildPythonPackage.override { stdenv = cudaPackages.backendStdenv; } (finalAttrs
     CUDA_TILE_CMAKE_XLA_PATH = xla;
   };
 
-  nativeBuildInputs = [
-    cmake
-    cudaPackages.cuda_nvcc
-  ];
-  dontUseCmakeConfigure = true;
+  # Tests require access to a physical GPU
+  doCheck = false;
 
-  buildInputs = [
-    cudaPackages.cuda_cudart # cuda.h
+  nativeCheckInputs = [
+    pytestCheckHook
+    torch
+  ];
+
+  __structuredAttrs = true;
+
+  build-system = [
+    setuptools
   ];
 
   dependencies = [
     typing-extensions
   ];
+
+  dontUseCmakeConfigure = true;
 
   optional-dependencies = {
     tileiras = [
@@ -97,31 +100,26 @@ buildPythonPackage.override { stdenv = cudaPackages.backendStdenv; } (finalAttrs
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "cuda.tile" ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    torch
-  ];
-
-  # Tests require access to a physical GPU
-  doCheck = false;
-
   passthru.gpuCheck = cuda-tile.overridePythonAttrs {
-    requiredSystemFeatures = [ "cuda" ];
     doCheck = true;
+    requiredSystemFeatures = [ "cuda" ];
   };
 
   meta = {
     description = "Programming model for writing parallel kernels for NVIDIA GPUs";
     homepage = "https://docs.nvidia.com/cuda/cutile-python/";
-    downloadPage = "https://github.com/NVIDIA/cutile-python";
     changelog = "https://docs.nvidia.com/cuda/cutile-python/generated/release_notes.html";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       prince213
     ];
+
     broken = !config.cudaSupport;
+    downloadPage = "https://github.com/NVIDIA/cutile-python";
   };
 })

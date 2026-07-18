@@ -1,7 +1,7 @@
 {
-  buildOctavePackage,
   lib,
   fetchurl,
+  buildOctavePackage,
 }:
 
 buildOctavePackage rec {
@@ -14,15 +14,17 @@ buildOctavePackage rec {
   };
 
   meta = {
-    homepage = "https://gnu-octave.github.io/packages/generate_html/";
-    license = lib.licenses.gpl3Plus;
-    maintainers = with lib.maintainers; [ ravenjoad ];
     description = "Provides functions for generating HTML pages that contain the help texts for a set of functions";
+
     longDescription = ''
       This package provides functions for generating HTML pages that contain
       the help texts for a set of functions. The package is designed to be as
       general as possible, but also contains convenience functions for generating
       a set of pages for entire packages.
     '';
+
+    homepage = "https://gnu-octave.github.io/packages/generate_html/";
+    license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ ravenjoad ];
   };
 }

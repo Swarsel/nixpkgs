@@ -14,19 +14,20 @@
 buildPythonPackage (finalAttrs: {
   pname = "google-cloud-vision";
   version = "3.15.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_vision";
     inherit (finalAttrs) version;
     hash = "sha256-7St5ygWlipKewRIlmpyqaYUJ9jSHYqjs7TMQ5lcqbHA=";
+    pname = "google_cloud_vision";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
+  nativeCheckInputs = [
+    mock
+    pytestCheckHook
+    pytest-asyncio
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     google-api-core
@@ -35,11 +36,12 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  nativeCheckInputs = [
-    mock
-    pytestCheckHook
-    pytest-asyncio
+  disabledTests = [
+    # Tests require PROJECT_ID
+    "test_list_products"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "google.cloud.vision"
@@ -51,9 +53,8 @@ buildPythonPackage (finalAttrs: {
     "google.cloud.vision_v1p4beta1"
   ];
 
-  disabledTests = [
-    # Tests require PROJECT_ID
-    "test_list_products"
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

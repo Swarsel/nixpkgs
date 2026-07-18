@@ -25,75 +25,98 @@ let
   cfg = config.services.udp-over-tcp;
 
   commonOptions = {
-    openFirewall = mkOption {
-      type = types.bool;
-      default = false;
-      description = ''
-        Open the appropriate ports in the firewall.
-      '';
-    };
-
     # Options and descriptions as indicated by `tcp2udp --help` and `udp2tcp --help`.
     forward = mkOption {
-      type = types.str;
       description = ''
         The IP and port to forward all traffic to.
       '';
+
+      type = types.str;
     };
+
+    fwmark = mkOption {
+      default = null;
+
+      description = ''
+        If given, sets the SO_MARK option on the TCP socket.
+      '';
+
+      type = types.nullOr types.ints.u32;
+    };
+
+    nodelay = mkOption {
+      default = false;
+
+      description = ''
+        Enables TCP_NODELAY on the TCP socket.
+      '';
+
+      type = types.bool;
+    };
+
+    openFirewall = mkOption {
+      default = false;
+
+      description = ''
+        Open the appropriate ports in the firewall.
+      '';
+
+      type = types.bool;
+    };
+
     recvBufferSize = mkOption {
-      type = types.nullOr types.ints.positive;
+      default = null;
+
       description = ''
         If given, sets the SO_RCVBUF option on the TCP socket to the given number of bytes.
         Changes the size of the operating system's receive buffer associated with the socket.
       '';
-      default = null;
-    };
-    sendBufferSize = mkOption {
+
       type = types.nullOr types.ints.positive;
+    };
+
+    recvTimeout = mkOption {
+      default = null;
+
+      description = ''
+        An application timeout on receiving data from the TCP socket.
+      '';
+
+      type = types.nullOr types.ints.positive;
+    };
+
+    sendBufferSize = mkOption {
+      default = null;
+
       description = ''
         If given, sets the SO_SNDBUF option on the TCP socket to the given number of bytes.
         Changes the size of the operating system's send buffer associated with the socket.
       '';
-      default = null;
-    };
-    recvTimeout = mkOption {
+
       type = types.nullOr types.ints.positive;
-      description = ''
-        An application timeout on receiving data from the TCP socket.
-      '';
-      default = null;
-    };
-    fwmark = mkOption {
-      type = types.nullOr types.ints.u32;
-      description = ''
-        If given, sets the SO_MARK option on the TCP socket.
-      '';
-      default = null;
-    };
-    nodelay = mkOption {
-      type = types.bool;
-      description = ''
-        Enables TCP_NODELAY on the TCP socket.
-      '';
-      default = false;
     };
   };
   tcp2udpSubmodule = {
     options = commonOptions // {
+      bind = mkOption {
+        default = null;
+
+        description = ''
+          Which local IP to bind the UDP socket to.
+        '';
+
+        type = types.nullOr types.str;
+      };
+
       threads = mkOption {
-        type = types.nullOr types.ints.positive;
+        default = null;
+
         description = ''
           Sets the number of worker threads to use.
           The default value is the number of cores available to the system.
         '';
-        default = null;
-      };
-      bind = mkOption {
-        type = types.nullOr types.str;
-        description = ''
-          Which local IP to bind the UDP socket to.
-        '';
-        default = null;
+
+        type = types.nullOr types.ints.positive;
       };
     };
   };
@@ -103,34 +126,27 @@ let
 
   configToService = type: buildCmdline: listen: conf: {
     name = "${type}-${listen}";
+
     value = {
-      description = "${type} tunnel from ${listen} to ${conf.forward}";
       after = [ "network-online.target" ];
-      wants = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "${type} tunnel from ${listen} to ${conf.forward}";
       reloadIfChanged = true;
 
       serviceConfig = {
-        Type = "exec";
-        ExecStart = "${getExe' cfg.package type} " + escapeShellArgs (buildCmdline listen conf);
-
-        DynamicUser = true;
-        User = "udp-over-tcp";
-
         # CAP_NET_BIND_SERVICE in case we are binding to ports < 1024, CAP_NET_ADMIN only covers addresses.
         # CAP_NET_ADMIN for setting SO_MARK on the socket.
         AmbientCapabilities = [
           "CAP_NET_ADMIN"
           "CAP_NET_BIND_SERVICE"
         ];
+
         CapabilityBoundingSet = [
           "CAP_NET_ADMIN"
           "CAP_NET_BIND_SERVICE"
         ];
 
-        Restart = "on-failure";
-        RestartSec = 10;
-
+        DynamicUser = true;
+        ExecStart = "${getExe' cfg.package type} " + escapeShellArgs (buildCmdline listen conf);
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
         NoNewPrivileges = true;
@@ -147,17 +163,26 @@ let
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
         ProtectSystem = "strict";
+        Restart = "on-failure";
+        RestartSec = 10;
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
         SystemCallArchitectures = "native";
         SystemCallFilter = "@system-service";
+        Type = "exec";
         UMask = "077";
+        User = "udp-over-tcp";
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
   };
 
@@ -218,8 +243,14 @@ in
 {
   options.services.udp-over-tcp = {
     package = mkPackageOption pkgs "udp-over-tcp" { };
+
     tcp2udp = mkOption {
-      type = types.attrsOf (types.submodule tcp2udpSubmodule);
+      default = { };
+
+      description = ''
+        Mapping of TCP listening ports to UDP forwarding ports or configurations.
+      '';
+
       example = literalExpression ''
         {
           "0.0.0.0:443" = {
@@ -238,13 +269,17 @@ in
           };
         }
       '';
-      description = ''
-        Mapping of TCP listening ports to UDP forwarding ports or configurations.
-      '';
-      default = { };
+
+      type = types.attrsOf (types.submodule tcp2udpSubmodule);
     };
+
     udp2tcp = mkOption {
-      type = types.attrsOf (types.submodule udp2tcpSubmodule);
+      default = { };
+
+      description = ''
+        Mapping of UDP listening ports to TCP forwarding ports or configurations.
+      '';
+
       example = literalExpression ''
         {
           "0.0.0.0:51820" = {
@@ -261,20 +296,18 @@ in
           };
         }
       '';
-      description = ''
-        Mapping of UDP listening ports to TCP forwarding ports or configurations.
-      '';
-      default = { };
+
+      type = types.attrsOf (types.submodule udp2tcpSubmodule);
     };
   };
 
   config = {
+    networking.firewall.allowedTCPPorts = getFirewallPorts cfg.tcp2udp;
+    networking.firewall.allowedUDPPorts = getFirewallPorts cfg.udp2tcp;
+
     systemd.services =
       (mapAttrs' (configToService "tcp2udp" buildTcp2udpCmdline) cfg.tcp2udp)
       // (mapAttrs' (configToService "udp2tcp" buildUdp2tcpCmdline) cfg.udp2tcp);
-
-    networking.firewall.allowedTCPPorts = getFirewallPorts cfg.tcp2udp;
-    networking.firewall.allowedUDPPorts = getFirewallPorts cfg.udp2tcp;
   };
 
   meta.maintainers = with maintainers; [ timschumi ];

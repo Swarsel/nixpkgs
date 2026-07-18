@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pyparsing,
   setuptools,
   six,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "ucsmsdk";
   version = "0.9.26";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "CiscoUcs";
@@ -19,6 +18,8 @@ buildPythonPackage rec {
     hash = "sha256-PX9SoUhFp0XlEXaKKEh1TA7+gNCUj+t0jOR5hgosu9c=";
   };
 
+  # most tests are broken
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage rec {
     six
   ];
 
-  # most tests are broken
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "ucsmsdk" ];
 
   meta = {

@@ -3,16 +3,16 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  hyprutils,
+  hyprwayland-scanner,
+  libjpeg,
+  libxkbcommon,
+  nix-update-script,
+  pango,
   pkg-config,
   wayland,
   wayland-protocols,
   wayland-scanner,
-  hyprwayland-scanner,
-  libxkbcommon,
-  pango,
-  libjpeg,
-  hyprutils,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation {
@@ -51,10 +51,12 @@ stdenv.mkDerivation {
     description = "wlroots-compatible Wayland magnifier that does not suck";
     homepage = "https://github.com/st0rmbtw/hyprmagnifier";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       matthewcroughan
     ];
-    mainProgram = "hyprmagnifier";
+
     platforms = lib.platforms.all;
+    mainProgram = "hyprmagnifier";
   };
 }

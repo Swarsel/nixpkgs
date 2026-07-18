@@ -1,7 +1,7 @@
 {
   lib,
-  appimageTools,
   fetchurl,
+  appimageTools,
   makeWrapper,
 }:
 let
@@ -9,10 +9,6 @@ let
   version = "1.8.3";
   src = appimageTools.extract {
     inherit pname version;
-    src = fetchurl {
-      url = "https://github.com/Dygmalab/Bazecor/releases/download/v${version}/Bazecor-${version}-x64.AppImage";
-      hash = "sha256-OAwHeLLbW+FlKeyxS+MCOTirHCvqZptiYXbeA3l4YJc=";
-    };
 
     # Workaround for https://github.com/Dygmalab/Bazecor/issues/370
     postExtract = ''
@@ -22,23 +18,23 @@ let
           'checkUdev=()=>{try{if(l.default.existsSync(h))return l.default.readFileSync(h,"utf-8").trim()===f.trim()}catch(e){d.default.error(e)}return!1}' \
           'checkUdev=()=>{return 1}'
     '';
+
+    src = fetchurl {
+      url = "https://github.com/Dygmalab/Bazecor/releases/download/v${version}/Bazecor-${version}-x64.AppImage";
+      hash = "sha256-OAwHeLLbW+FlKeyxS+MCOTirHCvqZptiYXbeA3l4YJc=";
+    };
   };
 in
 appimageTools.wrapAppImage {
   inherit pname version src;
-
   # also make sure to update the udev rules in ./60-dygma.rules; most recently
   # taken from
   # https://github.com/Dygmalab/Bazecor/blob/v1.4.4/src/main/utils/udev.ts#L6
-
   nativeBuildInputs = [ makeWrapper ];
-
-  extraPkgs = pkgs: [ pkgs.glib ];
 
   # Also expose the udev rules here, so it can be used as:
   #   services.udev.packages = [ pkgs.bazecor ];
   # to allow non-root modifications to the keyboards.
-
   extraInstallCommands = ''
     wrapProgram $out/bin/bazecor \
       --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations --enable-wayland-ime=true}}"
@@ -53,15 +49,19 @@ appimageTools.wrapAppImage {
       --replace-fail 'Exec=Bazecor' 'Exec=bazecor'
   '';
 
+  extraPkgs = pkgs: [ pkgs.glib ];
+
   meta = {
     description = "Graphical configurator for Dygma Products";
     homepage = "https://github.com/Dygmalab/Bazecor";
     changelog = "https://github.com/Dygmalab/Bazecor/releases/tag/v${version}";
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     license = lib.licenses.gpl3Only;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       gcleroux
     ];
+
     platforms = [ "x86_64-linux" ];
     mainProgram = "bazecor";
   };

@@ -1,16 +1,15 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   absl-py,
+  buildPythonPackage,
   distutils,
+  # tests
+  dm-tree,
   h5py,
+  jax,
   ml-dtypes,
   namex,
   numpy,
@@ -18,19 +17,17 @@
   optree,
   orbax-checkpoint,
   packaging,
-  pythonAtLeast,
-  rich,
-  scikit-learn,
-  tensorflow,
-  tf2onnx,
-
-  # tests
-  dm-tree,
-  jax,
   pandas,
   pydot,
   pytestCheckHook,
+  pythonAtLeast,
+  rich,
+  scikit-learn,
+  # build-system
+  setuptools,
+  tensorflow,
   tf-keras,
+  tf2onnx,
   torch,
   writableTmpDirAsHomeHook,
 }:
@@ -38,8 +35,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "keras";
   version = "3.15.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "keras-team";
@@ -47,6 +42,19 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-EF61E7pwyuv9eKkTaPzJOWfbhK6rwkePIvmaVeriEDM=";
   };
+
+  nativeCheckInputs = [
+    dm-tree
+    jax
+    pandas
+    pydot
+    pytestCheckHook
+    tf-keras
+    torch
+    writableTmpDirAsHomeHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -69,20 +77,45 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.optionals (pythonAtLeast "3.12") [ distutils ];
 
-  pythonImportsCheck = [
-    "keras"
-    "keras._tf_keras"
-  ];
+  disabledTestPaths = [
+    # np.cross is deprecated for 2d arrays starting from numpy 2.5.0
+    # ValueError: Both input arrays must be (arrays of) 3-dimensional vectors, but they are 3 and 2 dimensional instead
+    "keras/src/ops/numpy_test.py::NumpyTwoInputOpsCorrectnessTest::test_cross"
 
-  nativeCheckInputs = [
-    dm-tree
-    jax
-    pandas
-    pydot
-    pytestCheckHook
-    tf-keras
-    torch
-    writableTmpDirAsHomeHook
+    # Require unpackaged `grain`
+    "keras/src/layers/preprocessing/data_layer_test.py"
+    "keras/src/layers/preprocessing/discretization_test.py"
+    "keras/src/layers/preprocessing/image_preprocessing/resizing_test.py"
+    "keras/src/layers/preprocessing/rescaling_test.py"
+    "keras/src/layers/preprocessing/string_lookup_test.py"
+    "keras/src/layers/preprocessing/text_vectorization_test.py"
+    "keras/src/trainers/data_adapters/grain_dataset_adapter_test.py"
+
+    # These tests succeed when run individually, but crash within the full test suite:
+    # ImportError: /nix/store/4bw0x7j3wfbh6i8x3plmzknrdwdzwfla-abseil-cpp-20240722.1/lib/libabsl_cord_internal.so.2407.0.0:
+    # undefined symbol: _ZN4absl12lts_2024072216strings_internal13StringifySink6AppendESt17basic_string_viewIcSt11char_traitsIcEE
+    "keras/src/export/onnx_test.py"
+
+    # Require internet access
+    "integration_tests/dataset_tests"
+    "keras/src/applications/applications_test.py"
+
+    # TypeError: test_custom_fit.<locals>.CustomModel.train_step() missing 1 required positional argument: 'data'
+    "integration_tests/jax_custom_fit_test.py"
+
+    # RuntimeError: Virtual devices cannot be modified after being initialized
+    "integration_tests/tf_distribute_training_test.py"
+
+    # AttributeError: 'CustomModel' object has no attribute 'zero_grad'
+    "integration_tests/torch_custom_fit_test.py"
+
+    # Fails for an unclear reason:
+    # self.assertLen(list(net.parameters()), 2
+    # AssertionError: 0 != 2
+    "integration_tests/torch_workflow_test.py"
+
+    # TypeError: this __dict__ descriptor does not support '_DictWrapper' objects
+    "keras/src/backend/tensorflow/saved_model_test.py"
   ];
 
   disabledTests = [
@@ -129,45 +162,11 @@ buildPythonPackage (finalAttrs: {
     "test_fit_with_data_adapter"
   ];
 
-  disabledTestPaths = [
-    # np.cross is deprecated for 2d arrays starting from numpy 2.5.0
-    # ValueError: Both input arrays must be (arrays of) 3-dimensional vectors, but they are 3 and 2 dimensional instead
-    "keras/src/ops/numpy_test.py::NumpyTwoInputOpsCorrectnessTest::test_cross"
+  pyproject = true;
 
-    # Require unpackaged `grain`
-    "keras/src/layers/preprocessing/data_layer_test.py"
-    "keras/src/layers/preprocessing/discretization_test.py"
-    "keras/src/layers/preprocessing/image_preprocessing/resizing_test.py"
-    "keras/src/layers/preprocessing/rescaling_test.py"
-    "keras/src/layers/preprocessing/string_lookup_test.py"
-    "keras/src/layers/preprocessing/text_vectorization_test.py"
-    "keras/src/trainers/data_adapters/grain_dataset_adapter_test.py"
-
-    # These tests succeed when run individually, but crash within the full test suite:
-    # ImportError: /nix/store/4bw0x7j3wfbh6i8x3plmzknrdwdzwfla-abseil-cpp-20240722.1/lib/libabsl_cord_internal.so.2407.0.0:
-    # undefined symbol: _ZN4absl12lts_2024072216strings_internal13StringifySink6AppendESt17basic_string_viewIcSt11char_traitsIcEE
-    "keras/src/export/onnx_test.py"
-
-    # Require internet access
-    "integration_tests/dataset_tests"
-    "keras/src/applications/applications_test.py"
-
-    # TypeError: test_custom_fit.<locals>.CustomModel.train_step() missing 1 required positional argument: 'data'
-    "integration_tests/jax_custom_fit_test.py"
-
-    # RuntimeError: Virtual devices cannot be modified after being initialized
-    "integration_tests/tf_distribute_training_test.py"
-
-    # AttributeError: 'CustomModel' object has no attribute 'zero_grad'
-    "integration_tests/torch_custom_fit_test.py"
-
-    # Fails for an unclear reason:
-    # self.assertLen(list(net.parameters()), 2
-    # AssertionError: 0 != 2
-    "integration_tests/torch_workflow_test.py"
-
-    # TypeError: this __dict__ descriptor does not support '_DictWrapper' objects
-    "keras/src/backend/tensorflow/saved_model_test.py"
+  pythonImportsCheck = [
+    "keras"
+    "keras._tf_keras"
   ];
 
   meta = {

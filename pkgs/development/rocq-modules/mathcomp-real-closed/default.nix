@@ -1,33 +1,31 @@
 {
-  rocq-core,
-  mkRocqDerivation,
+  lib,
   mathcomp,
   mathcomp-bigenough,
-  lib,
+  mkRocqDerivation,
+  rocq-core,
   version ? null,
 }:
 
 mkRocqDerivation {
 
-  namePrefix = [
-    "rocq-core"
-    "mathcomp"
-  ];
-  pname = "real-closed";
-  owner = "math-comp";
   inherit version;
-  release = {
-    "2.0.5".sha256 = "sha256-nns1TF3isv8FpWqtXilfMEVKvR50fvS6MXnYVzbCzVs=";
-  };
+  pname = "real-closed";
+
+  propagatedBuildInputs = [
+    mathcomp.field
+    mathcomp-bigenough
+  ];
 
   defaultVersion =
     let
       case = rocq: mc: out: {
+        inherit out;
+
         cases = [
           rocq
           mc
         ];
-        inherit out;
       };
     in
     with lib.versions;
@@ -38,10 +36,16 @@ mkRocqDerivation {
       ]
       null;
 
-  propagatedBuildInputs = [
-    mathcomp.field
-    mathcomp-bigenough
+  namePrefix = [
+    "rocq-core"
+    "mathcomp"
   ];
+
+  owner = "math-comp";
+
+  release = {
+    "2.0.5".sha256 = "sha256-nns1TF3isv8FpWqtXilfMEVKvR50fvS6MXnYVzbCzVs=";
+  };
 
   meta = {
     description = "Mathematical Components Library on real closed fields";

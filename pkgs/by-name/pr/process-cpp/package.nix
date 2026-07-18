@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  testers,
-  gitUpdater,
   boost,
   cmake,
   coreutils,
   doxygen,
+  gitUpdater,
   graphviz,
   gtest,
   lomiri,
-  properties-cpp,
   pkg-config,
+  properties-cpp,
+  testers,
   withDocumentation ? true,
 }:
 
@@ -62,14 +62,13 @@ stdenv.mkDerivation (finalAttrs: {
     properties-cpp
   ];
 
-  checkInputs = [ gtest ];
-
   cmakeFlags = [
     (lib.cmakeBool "BUILD_TESTING" finalAttrs.finalPackage.doCheck)
     (lib.cmakeBool "PROCESS_CPP_ENABLE_DOC_GENERATION" withDocumentation)
   ];
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+  checkInputs = [ gtest ];
 
   passthru = {
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
@@ -79,14 +78,17 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Simple convenience library for handling processes in C++11";
     homepage = "https://gitlab.com/ubports/development/core/lib-cpp/process-cpp";
+
     license = with lib.licenses; [
       gpl3Only
       lgpl3Only
     ];
+
     maintainers = with lib.maintainers; [
       onny
       OPNA2608
     ];
+
     platforms = lib.platforms.linux;
     pkgConfigModules = [ "process-cpp" ];
   };

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch2,
   poetry-core,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "memory-tempfile";
   version = "2.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mbello";
@@ -20,18 +19,17 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch2 {
+      hash = "sha256-q3027MwKXtX09MH7T2UrX19BImK1FJo+YxADfxcdTME=";
       # Migrate to poetry-core build backend
       # https://github.com/mbello/memory-tempfile/pull/13
       name = "poetry-core.patch";
       url = "https://github.com/mbello/memory-tempfile/commit/938a3a3abf01756b1629eca6c69e970021bbc7c0.patch";
-      hash = "sha256-q3027MwKXtX09MH7T2UrX19BImK1FJo+YxADfxcdTME=";
     })
   ];
 
-  build-system = [ poetry-core ];
-
   doCheck = false; # constrained selection of memory backed filesystems due to build sandbox
-
+  build-system = [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "memory_tempfile" ];
 
   meta = {

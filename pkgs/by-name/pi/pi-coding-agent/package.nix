@@ -1,14 +1,14 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  nix-update-script,
-  versionCheckHook,
-  writableTmpDirAsHomeHook,
-  ripgrep,
+  buildNpmPackage,
   fd,
   makeBinaryWrapper,
+  nix-update-script,
+  ripgrep,
   stdenvNoCC,
+  versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 buildNpmPackage (finalAttrs: {
   pname = "pi-coding-agent";
@@ -21,16 +21,11 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-s7dD82fugvWRvqL1VTcEwCIR5JI6t7VeFHR9NdMtG00=";
   };
 
-  npmDepsHash = "sha256-Bd/NIt3lyQR5Y7P+HksPxMQvJc0AjVfDi1M1bH3/eOg=";
-
-  npmWorkspace = "packages/coding-agent";
-
-  # Skip native module rebuild for unneeded workspaces (e.g. canvas from web-ui)
-  npmRebuildFlags = [ "--ignore-scripts" ];
-
   nativeBuildInputs = [
     makeBinaryWrapper
   ];
+
+  npmDepsHash = "sha256-Bd/NIt3lyQR5Y7P+HksPxMQvJc0AjVfDi1M1bH3/eOg=";
 
   # Build workspace dependencies in order, then the coding-agent.
   # We invoke tsgo directly for workspace deps to skip pi-ai's
@@ -76,6 +71,13 @@ buildNpmPackage (finalAttrs: {
       "$nm/@anthropic-ai/sandbox-runtime/vendor/seccomp"
   '';
 
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    writableTmpDirAsHomeHook
+    versionCheckHook
+  ];
+
   postFixup = ''
     wrapProgram $out/bin/pi --prefix PATH : ${
       lib.makeBinPath [
@@ -87,27 +89,26 @@ buildNpmPackage (finalAttrs: {
       --set-default PI_TELEMETRY 0
   '';
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [
-    writableTmpDirAsHomeHook
-    versionCheckHook
-  ];
+  # Skip native module rebuild for unneeded workspaces (e.g. canvas from web-ui)
+  npmRebuildFlags = [ "--ignore-scripts" ];
+  npmWorkspace = "packages/coding-agent";
   versionCheckKeepEnvironment = [ "HOME" ];
   versionCheckProgram = "${placeholder "out"}/bin/pi";
   versionCheckProgramArg = "--version";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Coding agent CLI with read, bash, edit, write tools and session management";
     homepage = "https://pi.dev/";
-    downloadPage = "https://www.npmjs.com/package/@earendil-works/pi-coding-agent";
     changelog = "https://github.com/earendil-works/pi/blob/main/packages/coding-agent/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       munksgaard
       bryanhonof
     ];
+
     mainProgram = "pi";
+    downloadPage = "https://www.npmjs.com/package/@earendil-works/pi-coding-agent";
   };
 })

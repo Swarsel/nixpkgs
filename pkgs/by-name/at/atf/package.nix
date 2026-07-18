@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  darwin,
   fetchFromGitHub,
-  fetchpatch,
   autoreconfHook,
-  kyua,
+  darwin,
+  fetchpatch,
   gitUpdater,
+  kyua,
 }:
 
 let
@@ -42,7 +42,6 @@ stdenv'.mkDerivation (finalAttrs: {
     '';
 
   strictDeps = true;
-
   nativeBuildInputs = [ autoreconfHook ];
 
   configureFlags =
@@ -57,17 +56,9 @@ stdenv'.mkDerivation (finalAttrs: {
       "kyua_cv_getcwd_works=yes"
     ];
 
-  enableParallelBuilding = true;
-
   makeFlags = [
     # ATF isn’t compatible with C++17, which is the default on current clang and GCC.
     "CXXFLAGS=-std=c++14"
-  ];
-
-  doInstallCheck = true;
-
-  nativeInstallCheckInputs = [
-    kyua
   ];
 
   # Don’t install the test programs for ATF itself; they’re useless
@@ -77,22 +68,28 @@ stdenv'.mkDerivation (finalAttrs: {
     rm -r $out/tests
   '';
 
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    kyua
+  ];
+
   installCheckPhase = ''
     runHook preInstallCheck
     HOME=$TMPDIR PATH=$out/bin:$PATH kyua test
     runHook postInstallCheck
   '';
 
-  passthru.updateScript = gitUpdater { rev-prefix = "atf-"; };
-
   __structuredAttrs = true;
+  enableParallelBuilding = true;
+  passthru.updateScript = gitUpdater { rev-prefix = "atf-"; };
 
   meta = {
     description = "Libraries to write tests in C, C++, and shell";
     homepage = "https://github.com/freebsd/atf/";
     license = lib.licenses.bsd3;
-    mainProgram = "atf-sh";
     maintainers = with lib.maintainers; [ reckenrode ];
     platforms = lib.platforms.unix;
+    mainProgram = "atf-sh";
   };
 })

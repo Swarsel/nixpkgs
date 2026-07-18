@@ -1,21 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  replaceVars,
+  buildPythonPackage,
+  config,
   cudaPackages,
-
+  # passthru
+  nix-update-script,
+  # buildInputs
+  pybind11,
+  replaceVars,
   # build-system
   setuptools,
   torch,
-
-  # buildInputs
-  pybind11,
-
-  # passthru
-  nix-update-script,
-
-  config,
   cudaSupport ? config.cudaSupport,
 }:
 
@@ -29,17 +25,15 @@ in
 buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
   pname = "flash-mla";
   version = "0-unstable-2026-04-29";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "deepseek-ai";
     repo = "FlashMLA";
     rev = "9241ae3ef9bac614dd25e45e507e089f888280e0";
+    hash = "sha256-rHHoDGEbBIvLRT0ZYOWQHrqyPBWtCpmF/AIcqFieomE=";
     # Using the cutlass git subodules is necessary to get cutlass/util/command_line.h which is not
     # shipped in cudaPackages.cutlass
     fetchSubmodules = true;
-    hash = "sha256-rHHoDGEbBIvLRT0ZYOWQHrqyPBWtCpmF/AIcqFieomE=";
   };
 
   patches = [
@@ -55,15 +49,6 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
         ""
   '';
 
-  env = optionalAttrs cudaSupport {
-    CUDA_HOME = (getBin cudaPackages.cuda_nvcc).outPath;
-  };
-
-  build-system = [
-    setuptools
-    torch
-  ];
-
   buildInputs = [
     pybind11
   ]
@@ -78,10 +63,21 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     ]
   );
 
-  pythonImportsCheck = [ "flash_mla" ];
+  env = optionalAttrs cudaSupport {
+    CUDA_HOME = (getBin cudaPackages.cuda_nvcc).outPath;
+  };
 
   # Tests are not meant to run with pytest
   doCheck = false;
+  __structuredAttrs = true;
+
+  build-system = [
+    setuptools
+    torch
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "flash_mla" ];
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];

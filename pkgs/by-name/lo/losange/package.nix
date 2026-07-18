@@ -1,30 +1,24 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  nix-update-script,
-
-  # buildInputs
-  mpv,
+  glib,
   libadwaita,
   libepoxy,
-  openssl,
-
   # nativeBuildInputs
   makeBinaryWrapper,
-  pkg-config,
-  wrapGAppsHook4,
-  glib,
-
+  # buildInputs
+  mpv,
+  nix-update-script,
   # Wrapper
   nodejs,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  wrapGAppsHook4,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "losange";
   version = "0.10.1";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "tymmesyde";
@@ -33,7 +27,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-mr54/vnaopLwG9lhFiZJGgxWH/VaGitROVEeV7GSyHM=";
   };
 
-  cargoHash = "sha256-LJ8EpxEIN8wojSmQ+WVshYRxGFAC9sUk5tnh3I2J408=";
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    makeBinaryWrapper
+    pkg-config
+    wrapGAppsHook4
+    glib
+  ];
 
   buildInputs = [
     mpv
@@ -42,12 +43,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
-  nativeBuildInputs = [
-    makeBinaryWrapper
-    pkg-config
-    wrapGAppsHook4
-    glib
-  ];
+  cargoHash = "sha256-LJ8EpxEIN8wojSmQ+WVshYRxGFAC9sUk5tnh3I2J408=";
 
   postInstall = ''
     install -Dm444 data/xyz.timtimtim.Losange.gschema.xml -t $out/share/gsettings-schemas/$name/glib-2.0/schemas/
@@ -71,15 +67,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     )
   '';
 
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    mainProgram = "losange";
     description = "Simple Stremio client for GNOME";
     homepage = "https://github.com/tymmesyde/Losange";
     changelog = "https://github.com/tymmesyde/Losange/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ talal ];
+    platforms = lib.platforms.linux;
+    mainProgram = "losange";
   };
 })

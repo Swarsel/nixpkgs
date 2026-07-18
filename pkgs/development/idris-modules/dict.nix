@@ -1,14 +1,12 @@
 {
-  build-idris-package,
-  fetchFromGitHub,
-  contrib,
   lib,
+  fetchFromGitHub,
+  build-idris-package,
+  contrib,
 }:
 build-idris-package {
   pname = "dict";
   version = "2016-12-26";
-
-  idrisDeps = [ contrib ];
 
   src = fetchFromGitHub {
     owner = "be5invis";
@@ -16,6 +14,8 @@ build-idris-package {
     rev = "dddc7c9f45e079b151ee03c9752b968ceeab9dab";
     sha256 = "18riq40vapg884y92w10w51j4896ah984zm5hisfv1sm9qbgx8ii";
   };
+
+  idrisDeps = [ contrib ];
 
   postUnpack = ''
     sed -i 's/\"//g' source/dict.ipkg

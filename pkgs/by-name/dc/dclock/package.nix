@@ -16,10 +16,8 @@ haskellPackages.mkDerivation {
     sha256 = "sha256-IJsbEg1dFiyIJSlVWy8x+tsa49YxLK8mNkJESFyUQoU=";
   };
 
-  isLibrary = false;
-  isExecutable = true;
-  jailbreak = true;
   doCheck = false;
+  description = "Decimal clock that breaks your day into a 1000 decimal minutes";
 
   executableHaskellDepends = with haskellPackages; [
     base
@@ -35,9 +33,11 @@ haskellPackages.mkDerivation {
     process
   ];
 
-  description = "Decimal clock that breaks your day into a 1000 decimal minutes";
   homepage = "https://github.com/travgm/dclock";
+  isExecutable = true;
+  isLibrary = false;
+  jailbreak = true;
   license = lib.licenses.mit;
-  maintainers = with lib.maintainers; [ travgm ];
   mainProgram = "dclock";
+  maintainers = with lib.maintainers; [ travgm ];
 }

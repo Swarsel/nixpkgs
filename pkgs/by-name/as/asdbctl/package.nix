@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   pkg-config,
+  rustPlatform,
   udev,
   udevCheckHook,
 }:
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-jDflaksnsw55RHMgamfJNRE7GwThQMYfXtLAWbOnoMw=";
   };
 
-  cargoHash = "sha256-OPmnGh6xN6XeREeIgyYB2aeHUpdQ5hFS5MivcTeY29E=";
-
   nativeBuildInputs = [
     pkg-config
     udevCheckHook
@@ -29,6 +27,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     udev
   ];
+
+  cargoHash = "sha256-OPmnGh6xN6XeREeIgyYB2aeHUpdQ5hFS5MivcTeY29E=";
 
   postInstall = ''
     install -Dm444 \
@@ -40,12 +40,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Apple Studio Display brightness controll";
-    mainProgram = "asdbctl";
     homepage = "https://github.com/juliuszint/asdbctl";
     changelog = "https://github.com/juliuszint/asdbctl/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = [
       lib.maintainers.danieldk
     ];
+
+    mainProgram = "asdbctl";
   };
 })

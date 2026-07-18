@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   cairo,
   pango,
   pkg-config,
@@ -24,15 +24,15 @@ buildNpmPackage {
     ./bump-nan.patch
   ];
 
-  npmDepsHash = "sha256-bU+q83Pmw6+mCF5rTR0DyYstUYVN+YxH9T9H7ZA15so=";
-
-  npmBuildScript = "compile";
+  nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
     cairo
     pango
   ];
-  nativeBuildInputs = [ pkg-config ];
+
+  npmDepsHash = "sha256-bU+q83Pmw6+mCF5rTR0DyYstUYVN+YxH9T9H7ZA15so=";
+  npmBuildScript = "compile";
 
   meta = {
     description = "CLI to export Excalidraw drawings to SVG and PDF";

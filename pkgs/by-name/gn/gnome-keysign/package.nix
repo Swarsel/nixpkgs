@@ -2,32 +2,31 @@
   lib,
   fetchFromGitLab,
   fetchpatch,
+  glib,
+  gobject-introspection,
+  gst_all_1,
+  gtk3,
   python3,
   wrapGAppsHook3,
-  gobject-introspection,
-  gtk3,
-  glib,
-  gst_all_1,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "gnome-keysign";
   version = "1.3.0";
-  format = "setuptools";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "GNOME";
     repo = "gnome-keysign";
     rev = finalAttrs.version;
     hash = "sha256-k77z8Yligzs4rHpPckRGcC5qnCHynHQRjdDkzxwt1Ss=";
+    domain = "gitlab.gnome.org";
   };
 
   patches = [
     # Remove broken future dependency
     (fetchpatch {
-      url = "https://gitlab.gnome.org/GNOME/gnome-keysign/-/commit/ea197254baf70a499a371678369eda85aff7a4c5.patch";
       hash = "sha256-Msd0NzNAkoAAxZ/WNiM3xV382lnx+xT6gyQiNGDEMM8=";
+      url = "https://gitlab.gnome.org/GNOME/gnome-keysign/-/commit/ea197254baf70a499a371678369eda85aff7a4c5.patch";
     })
   ];
 
@@ -63,12 +62,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   # bunch of linting
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "GTK/GNOME application to use GnuPG for signing other peoples’ keys";
     homepage = "https://gitlab.gnome.org/GNOME/gnome-keysign";
     license = lib.licenses.gpl3Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.gnome ];
   };
 })

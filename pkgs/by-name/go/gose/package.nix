@@ -1,26 +1,25 @@
 {
+  lib,
   buildGoModule,
   buildNpmPackage,
+  fetchFromCodeberg,
   nix-update-script,
   versionCheckHook,
-  fetchFromCodeberg,
-  lib,
 }:
 let
   version = "0.11.4";
 
   src = fetchFromCodeberg {
-    repo = "gose";
     owner = "stv0g";
+    repo = "gose";
     tag = "v${version}";
     hash = "sha256-T6PD6MI1IOAgtPOJuPSZp4te9BokKfj+TZHLRqt2FCo=";
   };
 
   frontend = buildNpmPackage {
-    pname = "gose-frontend";
     inherit version;
+    pname = "gose-frontend";
     src = "${src}/frontend";
-
     npmDepsHash = "sha256-p24s2SgCL8E9vUoZEyWSrd15IdkprneAXS7dwb7UbyA=";
 
     installPhase = ''
@@ -33,19 +32,24 @@ let
   };
 in
 buildGoModule {
-  pname = "gose";
   inherit version;
   inherit src;
-
+  pname = "gose";
   vendorHash = "sha256-PTu4OzVjGVExuNDsK01p3/gAwNhDZbPewhI476m5i/M=";
-
   env.CGO_ENABLED = 0;
+  # Skipping test which relies on internet services.
+  checkFlags = "-skip TestShortener";
 
   postInstall = ''
     mv $out/bin/cmd $out/bin/gose
   '';
 
-  tags = [ "embed" ];
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
   ldflags = [
     "-s"
     "-w"
@@ -53,19 +57,12 @@ buildGoModule {
     "-X main.builtBy=Nix"
   ];
 
-  # Skipping test which relies on internet services.
-  checkFlags = "-skip TestShortener";
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  versionCheckProgramArg = "-version";
-  doInstallCheck = true;
-
   prePatch = ''
     cp -r ${frontend} frontend/dist
   '';
 
+  tags = [ "embed" ];
+  versionCheckProgramArg = "-version";
   passthru.updateScript = nix-update-script { };
 
   meta = {

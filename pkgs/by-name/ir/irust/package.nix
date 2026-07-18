@@ -1,13 +1,14 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  makeWrapper,
   cargo,
-  rustfmt,
-  cargo-show-asm,
   cargo-expand,
+  cargo-show-asm,
   clang,
+  makeWrapper,
+  nix-update-script,
+  rustPlatform,
+  rustfmt,
   # Workaround to allow easily overriding runtime inputs
   runtimeInputs ? [
     cargo
@@ -16,7 +17,6 @@
     cargo-expand
     clang
   ],
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -30,19 +30,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-bZKFoN6hr/TLTvGAWUXS+S3RnYhdirUeGz30LYbgA7g=";
   };
 
-  cargoHash = "sha256-lcnKiJCFN/bN/4R6VIhut2Xz3ueYPgXkr4dsYH57d9g=";
-
   nativeBuildInputs = [ makeWrapper ];
-
-  postFixup = ''
-    wrapProgram $out/bin/irust \
-      --suffix PATH : ${lib.makeBinPath runtimeInputs}
-  '';
+  cargoHash = "sha256-lcnKiJCFN/bN/4R6VIhut2Xz3ueYPgXkr4dsYH57d9g=";
 
   checkFlags = [
     "--skip=repl"
     "--skip=printer::tests"
   ];
+
+  postFixup = ''
+    wrapProgram $out/bin/irust \
+      --suffix PATH : ${lib.makeBinPath runtimeInputs}
+  '';
 
   passthru.updateScript = nix-update-script { };
 

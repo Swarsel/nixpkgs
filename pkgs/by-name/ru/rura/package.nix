@@ -1,15 +1,14 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
   testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "rura";
   version = "1.9.0";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "tlipinski";
@@ -19,12 +18,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-HBcKuQjRqVBItgIVUyNQiqfZxNVtyQgwr+5mTrlV3eM=";
+  __structuredAttrs = true;
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
       package = finalAttrs.finalPackage;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {

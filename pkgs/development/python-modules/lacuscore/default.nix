@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   defang,
   dnspython,
-  fetchFromGitHub,
   orjson,
   playwrightcapture,
   poetry-core,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "lacuscore";
   version = "1.25.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ail-project";
@@ -25,14 +24,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-wbs/EZuK6eK8mKOB7sb0l4Y/orhugmoEnwy1bclusoU=";
   };
 
-  pythonRelaxDeps = [
-    "dnspython"
-    "orjson"
-    "pydantic"
-    "redis"
-    "requests"
-  ];
-
+  # Module has no tests
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -49,10 +42,16 @@ buildPythonPackage (finalAttrs: {
   ++ redis.optional-dependencies.hiredis
   ++ ua-parser.optional-dependencies.regex;
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "lacuscore" ];
+
+  pythonRelaxDeps = [
+    "dnspython"
+    "orjson"
+    "pydantic"
+    "redis"
+    "requests"
+  ];
 
   meta = {
     description = "Modulable part of Lacus";

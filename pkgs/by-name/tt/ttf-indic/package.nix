@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -22,8 +22,8 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://www.indlinux.org/wiki/index.php/Downloads";
     description = "Indic Opentype Fonts collection";
+    homepage = "https://www.indlinux.org/wiki/index.php/Downloads";
     license = lib.licenses.gpl2Only;
     maintainers = [ lib.maintainers.akssri ];
     platforms = lib.platforms.all;

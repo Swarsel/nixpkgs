@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  openjdk,
+  bash,
+  libGL,
   libnotify,
   makeWrapper,
-  tor,
+  openjdk,
   p7zip,
-  bash,
+  tor,
   writeScript,
-  libGL,
 }:
 let
 
@@ -27,8 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://desktop.briarproject.org/jars/linux/${finalAttrs.version}/briar-desktop-linux-${finalAttrs.version}.jar";
     hash = "sha256-YDFvM6EicHe6s7SDTiKRySCTO9IUwDrEtO373bavfmw=";
   };
-
-  dontUnpack = true;
 
   nativeBuildInputs = [
     makeWrapper
@@ -48,6 +46,8 @@ stdenv.mkDerivation (finalAttrs: {
       }"
   '';
 
+  dontUnpack = true;
+
   fixupPhase = ''
     # Replace the embedded Tor binary (which is in a Tar archive)
     # with one from Nixpkgs.
@@ -61,14 +61,16 @@ stdenv.mkDerivation (finalAttrs: {
   # TODO: Add a custom update script
   meta = {
     description = "Decentralized and secure messenger";
-    mainProgram = "briar-desktop";
     homepage = "https://code.briarproject.org/briar/briar-desktop";
     license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       onny
       supinie
     ];
-    teams = with lib.teams; [ ngi ];
+
     platforms = [ "x86_64-linux" ];
+    mainProgram = "briar-desktop";
+    teams = with lib.teams; [ ngi ];
   };
 })

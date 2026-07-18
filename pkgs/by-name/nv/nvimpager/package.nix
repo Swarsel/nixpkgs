@@ -1,13 +1,13 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
   bash,
+  lua51Packages,
   ncurses,
   neovim-unwrapped,
   procps,
   scdoc,
-  lua51Packages,
   util-linux,
 }:
 
@@ -22,24 +22,27 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-hwUI0DlkXveE+m4BkO8xEF/IARqSVk2E6tw07+UtnbA=";
   };
 
+  strictDeps = true;
+  nativeBuildInputs = [ scdoc ];
+
   buildInputs = [
     bash
   ];
-  nativeBuildInputs = [ scdoc ];
-
-  strictDeps = true;
 
   makeFlags = [ "PREFIX=$(out)" ];
+
   buildFlags = [
     "nvimpager.configured"
     "nvimpager.1"
   ];
+
   preBuild = ''
     patchShebangs nvimpager
     substituteInPlace nvimpager --replace-fail ':-nvim' ':-${lib.getExe neovim-unwrapped}'
   '';
 
   doCheck = true;
+
   nativeCheckInputs = [
     lua51Packages.busted
     ncurses # for tput
@@ -47,6 +50,7 @@ stdenv.mkDerivation (finalAttrs: {
     procps # for nvim_get_proc() which uses ps(1)
     util-linux
   ];
+
   # filter out one test that fails in the sandbox of nix or with neovim v0.10
   # or on macOS
   preCheck = ''
@@ -61,15 +65,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Use neovim as pager";
+
     longDescription = ''
       Use neovim as a pager to view manpages, diffs, etc with nvim's syntax
       highlighting.  Includes a cat mode to print highlighted files to stdout
       and a ansi esc mode to highlight ansi escape sequences in neovim.
     '';
+
     homepage = "https://github.com/lucc/nvimpager";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.lucc ];
+    platforms = lib.platforms.unix;
     mainProgram = "nvimpager";
   };
 })

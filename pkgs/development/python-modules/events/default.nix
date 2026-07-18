@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "events";
   version = "0.5";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "pyeve";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "events" ];
-
   enabledTestPaths = [ "events/tests/tests.py" ];
+  format = "setuptools";
+  pythonImportsCheck = [ "events" ];
 
   meta = {
     description = "Bringing the elegance of C# EventHanlder to Python";

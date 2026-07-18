@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  acl,
   cmake,
-  pkg-config,
   libevdev,
+  nix-update-script,
+  pkg-config,
   udev,
   udevCheckHook,
-  acl,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation {
@@ -27,12 +27,11 @@ stdenv.mkDerivation {
     pkg-config
     udevCheckHook
   ];
+
   buildInputs = [
     libevdev
     udev
   ];
-
-  doInstallCheck = true;
 
   # CMake has hardcoded install paths
   installPhase = ''
@@ -50,14 +49,15 @@ stdenv.mkDerivation {
       "/bin/setfacl"  "${acl}/bin/setfacl"
   '';
 
+  doInstallCheck = true;
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
   meta = {
-    homepage = "https://github.com/DanielOgorchock/joycond";
     description = "Userspace daemon to combine joy-cons from the hid-nintendo kernel driver";
-    mainProgram = "joycond";
+    homepage = "https://github.com/DanielOgorchock/joycond";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ claymorwan ];
     platforms = lib.platforms.linux;
+    mainProgram = "joycond";
   };
 }

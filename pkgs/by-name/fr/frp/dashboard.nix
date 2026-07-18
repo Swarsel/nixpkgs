@@ -6,10 +6,9 @@ let
   builder =
     name:
     buildNpmPackage {
-      pname = "${name}-dashboard";
       inherit (frp) version src;
-
-      sourceRoot = "source/web";
+      pname = "${name}-dashboard";
+      npmDepsHash = "sha256-XuqQPfywzK81anAD1pAl1TMQqb1+hH2QxLwuTn7zCPU=";
 
       preBuild = ''
         pushd ${name}
@@ -21,7 +20,7 @@ let
         runHook postInstall
       '';
 
-      npmDepsHash = "sha256-XuqQPfywzK81anAD1pAl1TMQqb1+hH2QxLwuTn7zCPU=";
+      sourceRoot = "source/web";
 
       meta = frp.meta // {
         description = "Dashboard for frp";

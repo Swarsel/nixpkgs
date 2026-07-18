@@ -1,11 +1,11 @@
 {
   lib,
-  fetchFromGitHub,
-  rustPlatform,
   stdenv,
-  testers,
+  fetchFromGitHub,
   hwatch,
   installShellFiles,
+  rustPlatform,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,9 +19,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-ic83D46CGDWRqcNJt/KcMEsnKj6rO/LsTNm247YK/Qs=";
   };
 
-  cargoHash = "sha256-xJZpZPhjU81cb00O/FE0QGOsRKY9BG4oGMk2jNy2skw=";
-
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-xJZpZPhjU81cb00O/FE0QGOsRKY9BG4oGMk2jNy2skw=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     for shell in bash fish zsh; do
@@ -35,10 +34,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Modern alternative to the watch command";
+
     longDescription = ''
       A modern alternative to the watch command, records the differences in
       execution results and can check this differences at after.
     '';
+
     homepage = "https://github.com/blacknon/hwatch";
     changelog = "https://github.com/blacknon/hwatch/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;

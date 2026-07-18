@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  perl,
   inkscape,
   librsvg,
+  perl,
+  stdenvNoCC,
   targets ? [ "all" ],
 }:
 
@@ -19,6 +19,10 @@ stdenvNoCC.mkDerivation {
     sha256 = "17bm7w4md56xywixfvp7vr3d6ihvxk3383i9i4rpmgm6qa9dyxdl";
   };
 
+  postPatch = ''
+    patchShebangs .
+  '';
+
   nativeBuildInputs = [
     perl
     inkscape
@@ -31,10 +35,6 @@ stdenvNoCC.mkDerivation {
     ))
   ];
 
-  postPatch = ''
-    patchShebangs .
-  '';
-
   buildFlags = targets;
 
   installPhase = ''
@@ -43,10 +43,10 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/joielechong/iso-country-flags-svg-collection";
     description = "248 country flag SVG & PNG icons with different icon styles";
+    homepage = "https://github.com/joielechong/iso-country-flags-svg-collection";
     license = [ lib.licenses.publicDomain ];
-    platforms = lib.platforms.linux; # the output assets should work anywhere, but unsure about the tools to build them...
     maintainers = [ lib.maintainers.mkg20001 ];
+    platforms = lib.platforms.linux; # the output assets should work anywhere, but unsure about the tools to build them...
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "crc";
   version = "7.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Nicoretti";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-Oa2VSzNT+8O/rWZurIr7RnP8m3xAEVOQLs+ObT4xIa0=";
   };
 
-  build-system = [ poetry-core ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "crc" ];
-
+  build-system = [ poetry-core ];
   disabledTestPaths = [ "test/bench" ];
+  pyproject = true;
+  pythonImportsCheck = [ "crc" ];
 
   meta = {
     description = "Python module for calculating and verifying predefined & custom CRC's";

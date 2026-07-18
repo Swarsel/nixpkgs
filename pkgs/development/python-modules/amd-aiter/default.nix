@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   amd-aiter,
   buildPythonPackage,
   einops,
-  fetchFromGitHub,
   ninja,
   numpy,
   packaging,
@@ -44,7 +44,6 @@ in
 buildPythonPackage (finalAttrs: {
   pname = "amd-aiter";
   version = "0.1.11.post1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ROCm";
@@ -86,11 +85,21 @@ buildPythonPackage (finalAttrs: {
         'if False:'
   '';
 
+  nativeBuildInputs = [
+    rocmPackages.hipcc
+    writableTmpDirAsHomeHook
+  ];
+
+  buildInputs = [ rocmPackages.clr ];
+
   env = {
     BUILD_TARGET = "rocm";
     PREBUILD_KERNELS = "0";
     ROCM_PATH = "${rocmPackages.clr}";
   };
+
+  # Most tests and imports require a GPU and writable $HOME for JIT cache
+  doCheck = false;
 
   build-system = [
     ninja
@@ -100,13 +109,6 @@ buildPythonPackage (finalAttrs: {
     pybind11
     setuptools
     setuptools-scm
-  ];
-
-  buildInputs = [ rocmPackages.clr ];
-
-  nativeBuildInputs = [
-    rocmPackages.hipcc
-    writableTmpDirAsHomeHook
   ];
 
   dependencies = [
@@ -120,8 +122,7 @@ buildPythonPackage (finalAttrs: {
     torch
   ];
 
-  # Most tests and imports require a GPU and writable $HOME for JIT cache
-  doCheck = false;
+  pyproject = true;
 
   # Test JIT module builds for CDNA3 iff rocm enabled for torch
   passthru.tests = lib.optionalAttrs torch.rocmSupport (
@@ -135,6 +136,7 @@ buildPythonPackage (finalAttrs: {
               rocmPackages.clr
               writableTmpDirAsHomeHook
             ];
+
             env = {
               CXX = "amdclang++";
               GPU_ARCHS = "gfx942";
@@ -159,8 +161,8 @@ buildPythonPackage (finalAttrs: {
           '';
     in
     {
-      jit-module-opus-sort = mkJitTest "opus-sort" "module_moe_sorting_opus";
       jit-module-mhc = mkJitTest "mhc" "module_mhc";
+      jit-module-opus-sort = mkJitTest "opus-sort" "module_moe_sorting_opus";
     }
   );
 
@@ -168,12 +170,14 @@ buildPythonPackage (finalAttrs: {
     description = "AI Tensor Engine for ROCm";
     homepage = "https://github.com/ROCm/aiter";
     license = lib.licenses.mit;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryNativeCode
     ];
+
     maintainers = with lib.maintainers; [ lach ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

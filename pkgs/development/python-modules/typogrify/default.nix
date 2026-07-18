@@ -2,39 +2,39 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  smartypants,
   hatchling,
   pytestCheckHook,
+  smartypants,
 }:
 
 buildPythonPackage rec {
   pname = "typogrify";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-8KoATpgDKm5r5MnaZefrcVDjbKO/UIrbzagrTQA+Ye4=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ smartypants ];
-
-  pythonImportsCheck = [ "typogrify.filters" ];
-
-  pytestFlags = [
-    "--doctest-modules"
+  nativeCheckInputs = [
+    pytestCheckHook
   ];
+
+  build-system = [ hatchling ];
+  dependencies = [ smartypants ];
 
   enabledTestPaths = [
     "typogrify/filters.py"
     "typogrify/packages/titlecase/tests.py"
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
+  pyproject = true;
+
+  pytestFlags = [
+    "--doctest-modules"
   ];
+
+  pythonImportsCheck = [ "typogrify.filters" ];
 
   meta = {
     description = "Filters to enhance web typography, including support for Django & Jinja templates";

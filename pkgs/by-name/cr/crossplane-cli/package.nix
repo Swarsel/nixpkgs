@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  crossplane-cli,
   nix-update-script,
   testers,
-  crossplane-cli,
 }:
 
 buildGoModule (finalAttrs: {
@@ -29,22 +29,24 @@ buildGoModule (finalAttrs: {
   subPackages = [ "cmd/crossplane" ];
 
   passthru.tests.version = testers.testVersion {
-    package = crossplane-cli;
-    command = "crossplane version --client";
     version = "v${finalAttrs.version}";
+    command = "crossplane version --client";
+    package = crossplane-cli;
   };
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "Utility to make using Crossplane easier";
     homepage = "https://www.crossplane.io/";
     changelog = "https://github.com/crossplane/crossplane/releases/tag/v${finalAttrs.version}";
-    description = "Utility to make using Crossplane easier";
-    mainProgram = "crossplane";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       selfuryon
       LorenzBischof
     ];
+
+    mainProgram = "crossplane";
   };
 })

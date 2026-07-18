@@ -1,17 +1,15 @@
 {
   lib,
   stdenv,
-  requireFile,
-  dpkg,
-  wrapGAppsHook3,
-  autoPatchelfHook,
   alsa-lib,
-  atk,
   at-spi2-atk,
   at-spi2-core,
+  atk,
+  autoPatchelfHook,
   cairo,
   cups,
   dbus,
+  dpkg,
   expat,
   fontconfig,
   freetype,
@@ -20,6 +18,7 @@
   gtk3,
   libcxx,
   libdrm,
+  libgbm,
   libnotify,
   libpulseaudio,
   libuuid,
@@ -35,12 +34,13 @@
   libxrender,
   libxscrnsaver,
   libxtst,
-  libgbm,
   nspr,
   nss,
   openssl,
   pango,
+  requireFile,
   systemd,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation rec {
@@ -48,9 +48,9 @@ stdenv.mkDerivation rec {
   version = "5.8.0.35";
 
   src = requireFile {
-    name = "${pname}_${version}_amd64.deb";
     url = "https://www.upwork.com/ab/downloads/os/linux/";
     sha256 = "sha256-Suv23TL6l5HhkOSRT56LpFRZJxuSLYVc1uT6he8j7O0=";
+    name = "${pname}_${version}_amd64.deb";
   };
 
   nativeBuildInputs = [
@@ -99,10 +99,6 @@ stdenv.mkDerivation rec {
     systemd
   ];
 
-  libPath = lib.makeLibraryPath buildInputs;
-
-  dontWrapGApps = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -124,12 +120,15 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontWrapGApps = true;
+  libPath = lib.makeLibraryPath buildInputs;
+
   meta = {
     description = "Online freelancing platform desktop application for time tracking";
     homepage = "https://www.upwork.com/ab/downloads/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ zakkor ];
+    platforms = [ "x86_64-linux" ];
   };
 }

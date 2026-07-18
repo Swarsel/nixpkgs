@@ -21,6 +21,7 @@ stdenv.mkDerivation rec {
     pkg-config
     python3
   ];
+
   buildInputs = [
     ibus
     ibus-table
@@ -31,14 +32,16 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    isIbusEngine = true;
     description = "Various table-based input methods for IBus";
     homepage = "https://github.com/moebiuscurve/ibus-table-others";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       mudri
       McSinyx
     ];
+
+    platforms = lib.platforms.linux;
+    isIbusEngine = true;
   };
 }

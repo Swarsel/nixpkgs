@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   aiodns,
   aiohttp,
   aiosqlite,
   boto3,
   buildPythonPackage,
-  fetchFromGitHub,
   moto,
   pytest-asyncio,
   pytestCheckHook,
@@ -19,26 +19,12 @@
 buildPythonPackage (finalAttrs: {
   pname = "slack-sdk";
   version = "3.43.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "slackapi";
     repo = "python-slack-sdk";
     tag = "v${finalAttrs.version}";
     hash = "sha256-slgf9U/Rm0pSV84CZR/8gGhvEi1zowjzE7YG9FsqwKk=";
-  };
-
-  build-system = [ setuptools ];
-
-  optional-dependencies = {
-    optional = [
-      aiodns
-      aiohttp
-      boto3
-      sqlalchemy
-      websocket-client
-      websockets
-    ];
   };
 
   nativeCheckInputs = [
@@ -49,7 +35,14 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
-  pythonImportsCheck = [ "slack_sdk" ];
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  disabledTestPaths = [
+    # Event loop issues
+    "tests/slack_sdk/oauth/installation_store/test_file.py"
+    "tests/slack_sdk/oauth/state_store/test_file.py"
+  ];
 
   disabledTests = [
     # Requires internet access (to slack API)
@@ -66,13 +59,19 @@ buildPythonPackage (finalAttrs: {
     "test_send_dict"
   ];
 
-  disabledTestPaths = [
-    # Event loop issues
-    "tests/slack_sdk/oauth/installation_store/test_file.py"
-    "tests/slack_sdk/oauth/state_store/test_file.py"
-  ];
+  optional-dependencies = {
+    optional = [
+      aiodns
+      aiohttp
+      boto3
+      sqlalchemy
+      websocket-client
+      websockets
+    ];
+  };
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+  pythonImportsCheck = [ "slack_sdk" ];
 
   meta = {
     description = "Slack Developer Kit for Python";

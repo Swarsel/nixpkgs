@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchzip,
-  unzip,
   makeWrapper,
   nodejs,
   python3,
+  unzip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,18 +17,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ef9433pG+eMFc+7pReE2qA3hK27y5KyiRTPQ2h6Ir8A=";
   };
 
-  __structuredAttrs = true;
   strictDeps = true;
-
   nativeBuildInputs = [ makeWrapper ];
 
   buildInputs = [
     python3.pkgs.python-rtmidi
   ];
-
-  dontConfigure = true;
-  dontBuild = true;
-  sourceRoot = ".";
 
   installPhase = ''
     runHook preInstall
@@ -44,6 +38,11 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  __structuredAttrs = true;
+  dontBuild = true;
+  dontConfigure = true;
+  sourceRoot = ".";
 
   meta = {
     description = "Libre and modular OSC / MIDI controller";

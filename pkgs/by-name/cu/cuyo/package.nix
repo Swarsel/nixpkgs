@@ -23,11 +23,11 @@ stdenv.mkDerivation {
   ];
 
   meta = {
-    homepage = "http://karimmi.de/cuyo";
     description = "Stacking blocks game, with different rules for each level";
-    mainProgram = "cuyo";
+    homepage = "http://karimmi.de/cuyo";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "cuyo";
   };
 
 }

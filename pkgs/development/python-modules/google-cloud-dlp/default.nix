@@ -15,26 +15,12 @@
 buildPythonPackage rec {
   pname = "google-cloud-dlp";
   version = "3.38.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_dlp";
     inherit version;
     hash = "sha256-BcdlhL62CzBcE9xRMhp9Aebj7DHd8QXxjVDy+DT3toQ=";
+    pname = "google_cloud_dlp";
   };
-
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
-  ];
-
-  dependencies = [
-    google-api-core
-    proto-plus
-    protobuf
-  ]
-  ++ google-api-core.optional-dependencies.grpc;
 
   nativeCheckInputs = [
     google-cloud-testutils
@@ -43,15 +29,30 @@ buildPythonPackage rec {
     pytest-asyncio
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    google-api-core
+    proto-plus
+    protobuf
+  ]
+  ++ google-api-core.optional-dependencies.grpc;
+
   disabledTests = [
     # Tests require credentials
     "test_inspect_content"
     "test_list_dlp_jobs"
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "google.cloud.dlp"
     "google.cloud.dlp_v2"
+  ];
+
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

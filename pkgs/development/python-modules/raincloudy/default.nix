@@ -1,13 +1,13 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   beautifulsoup4,
   buildPythonPackage,
-  fetchFromGitHub,
   html5lib,
-  pytest-asyncio,
   pytest-aiohttp,
+  pytest-asyncio,
   pytestCheckHook,
   pythonAtLeast,
   requests,
@@ -20,11 +20,6 @@
 buildPythonPackage rec {
   pname = "raincloudy";
   version = "1.2.0";
-  format = "setuptools";
-  pypriject = true;
-
-  # https://github.com/vanstinator/raincloudy/issues/65
-  disabled = pythonAtLeast "3.12";
 
   src = fetchFromGitHub {
     owner = "vanstinator";
@@ -43,6 +38,14 @@ buildPythonPackage rec {
     sed -i '/packages=/d' setup.py
   '';
 
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytest-aiohttp
+    pytestCheckHook
+    requests-mock
+  ];
+
   build-system = [
     setuptools
     setuptools-scm
@@ -56,22 +59,20 @@ buildPythonPackage rec {
     html5lib
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytest-aiohttp
-    pytestCheckHook
-    requests-mock
-  ];
-
-  pythonImportsCheck = [
-    "raincloudy"
-    "raincloudy.aio"
-  ];
+  # https://github.com/vanstinator/raincloudy/issues/65
+  disabled = pythonAtLeast "3.12";
 
   disabledTests = [
     # Test requires network access
     "test_attributes"
+  ];
+
+  format = "setuptools";
+  pypriject = true;
+
+  pythonImportsCheck = [
+    "raincloudy"
+    "raincloudy.aio"
   ];
 
   meta = {

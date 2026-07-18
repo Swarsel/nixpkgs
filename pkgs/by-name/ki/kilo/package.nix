@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
-  bun,
   fetchFromGitHub,
+  bun,
   installShellFiles,
   makeBinaryWrapper,
   models-dev,
   nix-update-script,
   ripgrep,
+  stdenvNoCC,
   sysctl,
   versionCheckHook,
   writableTmpDirAsHomeHook,
@@ -24,66 +24,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-Jw2C8C7dFPwOGp8tg6ewcRXdVsJEDDFSe+xuF86Xwfc=";
   };
 
-  node_modules = stdenvNoCC.mkDerivation {
-    pname = "${finalAttrs.pname}-node_modules";
-    inherit (finalAttrs) version src;
-
-    impureEnvVars = lib.fetchers.proxyImpureEnvVars ++ [
-      "GIT_PROXY_COMMAND"
-      "SOCKS_SERVER"
-    ];
-
-    nativeBuildInputs = [
-      bun
-      writableTmpDirAsHomeHook
-    ];
-
-    dontConfigure = true;
-
-    buildPhase = ''
-      runHook preBuild
-
-      export BUN_INSTALL_CACHE_DIR=$(mktemp -d)
-      bun install \
-        --cpu="*" \
-        --frozen-lockfile \
-        --ignore-scripts \
-        --no-progress \
-        --os="*"
-
-      bun --bun ./nix/scripts/canonicalize-node-modules.ts
-      bun --bun ./nix/scripts/normalize-bun-binaries.ts
-
-      runHook postBuild
-    '';
-
-    installPhase = ''
-      runHook preInstall
-
-      mkdir -p $out
-      find . -type d -name node_modules -exec cp -R --parents {} $out \;
-
-      runHook postInstall
-    '';
-
-    dontFixup = true;
-
-    outputHash = "sha256-Defmk7fN49UQtBpmWIFGnUiPlBpJtLp+8QaFFQCAY8k=";
-    outputHashAlgo = "sha256";
-    outputHashMode = "recursive";
-  };
-
-  nativeBuildInputs = [
-    bun
-    installShellFiles
-    makeBinaryWrapper
-    models-dev
-    writableTmpDirAsHomeHook
-  ];
-
-  strictDeps = true;
-  __structuredAttrs = true;
-
   postPatch = ''
     # NOTE: Relax Bun version check to be a warning instead of an error.
     substituteInPlace packages/script/src/index.ts \
@@ -94,15 +34,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
                      'await $`true`'
   '';
 
-  configurePhase = ''
-    runHook preConfigure
+  strictDeps = true;
 
-    cp -R ${finalAttrs.node_modules}/. .
-    patchShebangs node_modules
-    patchShebangs packages/*/node_modules
-
-    runHook postConfigure
-  '';
+  nativeBuildInputs = [
+    bun
+    installShellFiles
+    makeBinaryWrapper
+    models-dev
+    writableTmpDirAsHomeHook
+  ];
 
   env.KILO_CHANNEL = "latest";
   env.KILO_VERSION = finalAttrs.version;
@@ -148,17 +88,80 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --zsh <(SHELL=/bin/zsh $out/bin/kilo completion)
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
     writableTmpDirAsHomeHook
   ];
-  doInstallCheck = true;
+
+  __structuredAttrs = true;
+
+  configurePhase = ''
+    runHook preConfigure
+
+    cp -R ${finalAttrs.node_modules}/. .
+    patchShebangs node_modules
+    patchShebangs packages/*/node_modules
+
+    runHook postConfigure
+  '';
+
+  node_modules = stdenvNoCC.mkDerivation {
+    inherit (finalAttrs) version src;
+    pname = "${finalAttrs.pname}-node_modules";
+
+    nativeBuildInputs = [
+      bun
+      writableTmpDirAsHomeHook
+    ];
+
+    buildPhase = ''
+      runHook preBuild
+
+      export BUN_INSTALL_CACHE_DIR=$(mktemp -d)
+      bun install \
+        --cpu="*" \
+        --frozen-lockfile \
+        --ignore-scripts \
+        --no-progress \
+        --os="*"
+
+      bun --bun ./nix/scripts/canonicalize-node-modules.ts
+      bun --bun ./nix/scripts/normalize-bun-binaries.ts
+
+      runHook postBuild
+    '';
+
+    installPhase = ''
+      runHook preInstall
+
+      mkdir -p $out
+      find . -type d -name node_modules -exec cp -R --parents {} $out \;
+
+      runHook postInstall
+    '';
+
+    dontConfigure = true;
+    dontFixup = true;
+
+    impureEnvVars = lib.fetchers.proxyImpureEnvVars ++ [
+      "GIT_PROXY_COMMAND"
+      "SOCKS_SERVER"
+    ];
+
+    outputHash = "sha256-Defmk7fN49UQtBpmWIFGnUiPlBpJtLp+8QaFFQCAY8k=";
+    outputHashAlgo = "sha256";
+    outputHashMode = "recursive";
+  };
+
   versionCheckKeepEnvironment = [
     "HOME"
     "KILO_CHANNEL"
     "KILO_VERSION"
     "MODELS_DEV_API_JSON"
   ];
+
   versionCheckProgram = "${placeholder "out"}/bin/kilo";
   versionCheckProgramArg = "--version";
 
@@ -167,6 +170,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       config = "${placeholder "out"}/share/kilocode/config.json";
       tui = "${placeholder "out"}/share/kilocode/tui.json";
     };
+
     updateScript = nix-update-script {
       extraArgs = [
         "--subpackage"
@@ -179,17 +183,20 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Terminal User Interface for Kilo Code";
     homepage = "https://github.com/Kilo-Org/kilocode";
     changelog = "https://github.com/Kilo-Org/kilocode/releases/tag/v${finalAttrs.version}";
-    downloadPage = "https://www.npmjs.com/package/@kilocode/cli";
     license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ fromSource ];
+
     maintainers = with lib.maintainers; [
       xiaoxiangmoe
     ];
-    sourceProvenance = with lib.sourceTypes; [ fromSource ];
-    mainProgram = "kilo";
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
       "aarch64-darwin"
     ];
+
+    mainProgram = "kilo";
+    downloadPage = "https://www.npmjs.com/package/@kilocode/cli";
   };
 })

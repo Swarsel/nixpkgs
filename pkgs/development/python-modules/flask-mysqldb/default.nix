@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   flask,
   mysqlclient,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "flask-mysqldb";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "alexferl";
@@ -27,9 +26,9 @@ buildPythonPackage rec {
     mysqlclient
   ];
 
-  pythonImportsCheck = [ "flask_mysqldb" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
+  pythonImportsCheck = [ "flask_mysqldb" ];
 
   meta = {
     description = "MySQL connection support for Flask";

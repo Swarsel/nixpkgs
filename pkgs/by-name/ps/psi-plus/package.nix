@@ -3,30 +3,26 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  qt6,
-  kdePackages,
-  libxscrnsaver,
-  hunspell,
-  libgcrypt,
-  libgpg-error,
-  usrsctp,
-
-  chatType ? "basic", # See the assertion below for available options
-
-  enablePlugins ? true,
+  gst_all_1,
   html-tidy,
   http-parser,
-  libotr,
+  hunspell,
+  kdePackages,
+  libgcrypt,
+  libgpg-error,
   libomemo-c,
-
-  # Voice messages
-  voiceMessagesSupport ? true,
-  gst_all_1,
-  enablePsiMedia ? false,
+  libotr,
+  libxscrnsaver,
   pkg-config,
-
   # For tests
   psi-plus,
+  qt6,
+  usrsctp,
+  chatType ? "basic", # See the assertion below for available options
+  enablePlugins ? true,
+  enablePsiMedia ? false,
+  # Voice messages
+  voiceMessagesSupport ? true,
 }:
 
 assert lib.assertMsg (lib.toLower chatType != "webkit")
@@ -41,21 +37,14 @@ assert enablePsiMedia -> enablePlugins;
 
 stdenv.mkDerivation rec {
   pname = "psi-plus";
-
   version = "1.5.2140";
+
   src = fetchFromGitHub {
     owner = "psi-plus";
     repo = "psi-plus-snapshots";
     tag = version;
     hash = "sha256-cXgjskHb7Rx4FB+DW/cTlsNtdyWgXN3sBh9WBBCgliA=";
   };
-
-  cmakeFlags = [
-    "-DCHAT_TYPE=${chatType}"
-    "-DENABLE_PLUGINS=${if enablePlugins then "ON" else "OFF"}"
-    "-DBUILD_PSIMEDIA=${if enablePsiMedia then "ON" else "OFF"}"
-    "-DUSE_QT6=ON"
-  ];
 
   nativeBuildInputs = [
     cmake
@@ -91,6 +80,13 @@ stdenv.mkDerivation rec {
     qt6.qtwebengine
   ];
 
+  cmakeFlags = [
+    "-DCHAT_TYPE=${chatType}"
+    "-DENABLE_PLUGINS=${if enablePlugins then "ON" else "OFF"}"
+    "-DBUILD_PSIMEDIA=${if enablePsiMedia then "ON" else "OFF"}"
+    "-DUSE_QT6=ON"
+  ];
+
   preFixup = lib.optionalString voiceMessagesSupport ''
     qtWrapperArgs+=(
       --prefix GST_PLUGIN_SYSTEM_PATH_1_0 : "$GST_PLUGIN_SYSTEM_PATH_1_0"
@@ -102,13 +98,15 @@ stdenv.mkDerivation rec {
   };
 
   meta = {
-    homepage = "https://psi-plus.com";
     description = "XMPP (Jabber) client based on Qt5";
-    mainProgram = "psi-plus";
+    homepage = "https://psi-plus.com";
+    license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       unclechu
     ];
-    license = lib.licenses.gpl2Only;
+
     platforms = lib.platforms.linux;
+    mainProgram = "psi-plus";
   };
 }

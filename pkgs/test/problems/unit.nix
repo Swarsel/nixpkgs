@@ -3,8 +3,8 @@ let
   p = import ../../stdenv/generic/problems.nix { inherit lib; };
 
   genConstraintsTest = problems: expected: {
-    expr = (p.genHandlerSwitch { inherit problems; }).definedConstraints;
     inherit expected;
+    expr = (p.genHandlerSwitch { inherit problems; }).definedConstraints;
   };
 
   genHandlerTest =
@@ -56,13 +56,118 @@ let
 
     in
     v: {
-      expr = genValue (p.genHandlerSwitch { problems = v; }).handlerForProblem;
       expected = genValue (slowReference {
         problems = v;
       });
+
+      expr = genValue (p.genHandlerSwitch { problems = v; }).handlerForProblem;
     };
 in
 lib.runTests {
+  testDefinedConstraintsEmpty =
+    genConstraintsTest
+      {
+        handlers = { };
+        matchers = [ ];
+      }
+      {
+        kinds = [ ];
+        names = [ ];
+        packages = [ ];
+      };
+
+  testDefinedConstraintsHandlers =
+    genConstraintsTest
+      {
+        handlers.p1.n1 = "warn";
+        handlers.p1.n2 = "error";
+        handlers.p2.n3 = "ignore";
+        matchers = [ ];
+      }
+      {
+        kinds = [ ];
+
+        names = [
+          "n1"
+          "n2"
+        ];
+
+        packages = [
+          "p1"
+        ];
+      };
+
+  testDefinedConstraintsMatchers =
+    genConstraintsTest
+      {
+        handlers = { };
+
+        matchers = [
+          {
+            handler = "warn";
+            kind = "k1";
+            name = null;
+            package = null;
+          }
+          {
+            handler = "error";
+            kind = "k2";
+            name = null;
+            package = null;
+          }
+          {
+            handler = "ignore";
+            kind = "k3";
+            name = null;
+            package = null;
+          }
+          {
+            handler = "error";
+            kind = null;
+            name = "n1";
+            package = "p1";
+          }
+          {
+            handler = "warn";
+            kind = null;
+            name = "n1";
+            package = "p2";
+          }
+        ];
+      }
+      {
+        kinds = [
+          "k1"
+          "k2"
+        ];
+
+        names = [ "n1" ];
+
+        packages = [
+          "p1"
+          "p2"
+        ];
+      };
+
+  testHandlerEmpty = genHandlerTest {
+    handlers = { };
+    matchers = [ ];
+  };
+
+  testHandlerNameSpecificHandlers = genHandlerTest {
+    handlers.p1.n1 = "error";
+    handlers.p1.n2 = "warn";
+    handlers.p1.n3 = "ignore";
+    matchers = [ ];
+  };
+
+  testHandlerPackageSpecificHandlers = genHandlerTest {
+    handlers.p1.n1 = "error";
+    handlers.p2.n1 = "warn";
+    handlers.p3.n1 = "ignore";
+    matchers = [ ];
+  };
+
   testHandlersLessThan =
     let
       levels = p.handlers.levels;
@@ -78,161 +183,65 @@ lib.runTests {
         ) (lib.length levels);
     in
     {
-      expr = genValue p.handlers.lessThan;
       expected = genValue slowReference;
+      expr = genValue p.handlers.lessThan;
     };
 
-  testHandlerEmpty = genHandlerTest {
-    matchers = [ ];
-    handlers = { };
-  };
-
-  testHandlerNameSpecificHandlers = genHandlerTest {
-    matchers = [ ];
-    handlers.p1.n1 = "error";
-    handlers.p1.n2 = "warn";
-    handlers.p1.n3 = "ignore";
-  };
-
-  testHandlerPackageSpecificHandlers = genHandlerTest {
-    matchers = [ ];
-    handlers.p1.n1 = "error";
-    handlers.p2.n1 = "warn";
-    handlers.p3.n1 = "ignore";
-  };
-
   testHandlersOverrideMatchers = genHandlerTest {
-    matchers = [
-      {
-        package = "p1";
-        name = "n1";
-        kind = null;
-        handler = "error";
-      }
-    ];
     handlers.p1.n1 = "warn";
-  };
 
-  testMatchersDefault = genHandlerTest {
     matchers = [
-      # Everything should warn by default
       {
-        package = null;
-        name = null;
+        handler = "error";
         kind = null;
-        handler = "warn";
+        name = "n1";
+        package = "p1";
       }
     ];
-    handlers = { };
   };
 
   testMatchersComplicated = genHandlerTest {
+    handlers = { };
+
     matchers = [
       {
-        package = "p1";
-        name = null;
-        kind = null;
         handler = "warn";
-      }
-      {
-        package = "p1";
-        name = "n1";
         kind = null;
-        handler = "error";
-      }
-      {
-        package = "p1";
         name = null;
-        kind = "k1";
-        handler = "error";
+        package = "p1";
       }
       {
-        package = "p1";
-        name = "n2";
-        kind = "k2";
         handler = "error";
+        kind = null;
+        name = "n1";
+        package = "p1";
+      }
+      {
+        handler = "error";
+        kind = "k1";
+        name = null;
+        package = "p1";
+      }
+      {
+        handler = "error";
+        kind = "k2";
+        name = "n2";
+        package = "p1";
       }
     ];
-    handlers = { };
   };
 
-  testDefinedConstraintsEmpty =
-    genConstraintsTest
-      {
-        matchers = [ ];
-        handlers = { };
-      }
-      {
-        kinds = [ ];
-        names = [ ];
-        packages = [ ];
-      };
+  testMatchersDefault = genHandlerTest {
+    handlers = { };
 
-  testDefinedConstraintsMatchers =
-    genConstraintsTest
+    matchers = [
+      # Everything should warn by default
       {
-        handlers = { };
-        matchers = [
-          {
-            package = null;
-            name = null;
-            kind = "k1";
-            handler = "warn";
-          }
-          {
-            package = null;
-            name = null;
-            kind = "k2";
-            handler = "error";
-          }
-          {
-            package = null;
-            name = null;
-            kind = "k3";
-            handler = "ignore";
-          }
-          {
-            package = "p1";
-            name = "n1";
-            kind = null;
-            handler = "error";
-          }
-          {
-            package = "p2";
-            name = "n1";
-            kind = null;
-            handler = "warn";
-          }
-        ];
+        handler = "warn";
+        kind = null;
+        name = null;
+        package = null;
       }
-      {
-        kinds = [
-          "k1"
-          "k2"
-        ];
-        names = [ "n1" ];
-        packages = [
-          "p1"
-          "p2"
-        ];
-      };
-
-  testDefinedConstraintsHandlers =
-    genConstraintsTest
-      {
-        matchers = [ ];
-        handlers.p1.n1 = "warn";
-        handlers.p1.n2 = "error";
-        handlers.p2.n3 = "ignore";
-      }
-      {
-        kinds = [ ];
-        names = [
-          "n1"
-          "n2"
-        ];
-        packages = [
-          "p1"
-        ];
-      };
+    ];
+  };
 }

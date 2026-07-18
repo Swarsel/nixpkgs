@@ -1,7 +1,7 @@
 {
-  runCommand,
-  closureInfo,
   lib,
+  closureInfo,
+  runCommand,
 }:
 {
   # The store path of the derivation is given in $path

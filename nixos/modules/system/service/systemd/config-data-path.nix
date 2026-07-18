@@ -9,7 +9,6 @@ let
       servicePrefix = "${prefix}${name}";
     in
     {
-      _class = "service";
       options = {
         # Extend portable configData option
         configData = mkOption {
@@ -24,6 +23,7 @@ let
             )
           );
         };
+
         services = mkOption {
           type = types.attrsOf (
             types.submoduleWith {
@@ -34,6 +34,8 @@ let
           );
         };
       };
+
+      _class = "service";
     };
 in
 setPathsModule ""

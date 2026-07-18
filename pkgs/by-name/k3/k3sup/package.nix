@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  makeWrapper,
-  installShellFiles,
   bash,
+  buildGoModule,
+  installShellFiles,
+  makeWrapper,
   openssh,
 }:
 
@@ -25,20 +25,12 @@ buildGoModule (finalAttrs: {
   ];
 
   vendorHash = null;
+  env.CGO_ENABLED = 0;
 
   postConfigure = ''
     substituteInPlace vendor/github.com/alexellis/go-execute/v2/exec.go \
       --replace "/bin/bash" "${bash}/bin/bash"
   '';
-
-  env.CGO_ENABLED = 0;
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/alexellis/k3sup/cmd.GitCommit=ref/tags/${finalAttrs.version}"
-    "-X github.com/alexellis/k3sup/cmd.Version=${finalAttrs.version}"
-  ];
 
   postInstall = ''
     wrapProgram "$out/bin/k3sup" \
@@ -50,14 +42,23 @@ buildGoModule (finalAttrs: {
       --fish <($out/bin/k3sup completion fish)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/alexellis/k3sup/cmd.GitCommit=ref/tags/${finalAttrs.version}"
+    "-X github.com/alexellis/k3sup/cmd.Version=${finalAttrs.version}"
+  ];
+
   meta = {
-    homepage = "https://github.com/alexellis/k3sup";
     description = "Bootstrap Kubernetes with k3s over SSH";
-    mainProgram = "k3sup";
+    homepage = "https://github.com/alexellis/k3sup";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       welteki
       qjoly
     ];
+
+    mainProgram = "k3sup";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   loguru,
   platformdirs,
   pydantic,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "maison";
   version = "2.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dbatten5";
@@ -22,6 +21,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-F0mxOeLFDCiPhhKaaUy4qV//Pb2JXCtOLNB1uW2KWZY=";
   };
+
+  checkInputs = [
+    pydantic
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -32,11 +36,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  checkInputs = [
-    pydantic
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "maison" ];
 
   meta = {

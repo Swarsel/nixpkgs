@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 buildGoModule (finalAttrs: {
@@ -16,15 +16,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-nbJdePlzZFM2ihbvFIMKyYZ9C0uKjU3TE5VLduLvtKE=";
   };
 
-  proxyVendor = true;
-  vendorHash = null;
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = null;
+  doCheck = false; # test fail because of sandbox
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     # Mangal creates a config file in the folder ~/.config/mangal and fails if not possible
@@ -35,7 +29,12 @@ buildGoModule (finalAttrs: {
       --fish <($out/bin/mangal completion fish)
   '';
 
-  doCheck = false; # test fail because of sandbox
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
+  proxyVendor = true;
 
   meta = {
     description = "CLI app written in Go which scrapes, downloads and packs manga into different formats";

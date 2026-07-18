@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  fontforge,
   installFonts,
   python3,
-  fontforge,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -18,6 +18,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-VyO+7PUYcmmhbFVAW37yvWQLUpt0K/ihA/JGmbt+4Uk=";
   };
 
+  outputs = [
+    "out"
+    "webfont"
+  ];
+
   nativeBuildInputs = [
     python3
     fontforge
@@ -30,23 +35,20 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postBuild
   '';
 
-  outputs = [
-    "out"
-    "webfont"
-  ];
-
   postInstall = ''
     installFont svg $out/share/fonts/svg
   '';
 
   meta = {
-    homepage = "https://dyalog.github.io/APL387";
     description = "Redrawn and extended version of Adrian Smith's classic APL385 font with clean rounded look";
+    homepage = "https://dyalog.github.io/APL387";
     license = lib.licenses.unlicense;
+
     maintainers = [
       lib.maintainers.sternenseemann
       lib.maintainers.sigmanificient
     ];
+
     platforms = lib.platforms.all;
   };
 })

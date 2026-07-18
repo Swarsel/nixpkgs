@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "gevent-websocket";
   version = "0.10.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,7 +22,7 @@ buildPythonPackage rec {
 
   # Module has no test
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "geventwebsocket" ];
 
   meta = {

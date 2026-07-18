@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "python-motionmount";
   version = "2.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vogelsproducts";
@@ -17,11 +16,10 @@ buildPythonPackage rec {
     hash = "sha256-cXh+7DNbwYoKp76XmzPno6dcfujZT/QUO3Ns72M4gV0=";
   };
 
-  build-system = [ setuptools ];
-
   # Module has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "motionmount" ];
 
   meta = {

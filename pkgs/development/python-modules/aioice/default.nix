@@ -1,17 +1,16 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
   dnspython,
   ifaddr,
-  fetchFromGitHub,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "aioice";
   version = "0.10.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aiortc";
@@ -19,6 +18,9 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-UEXkTxcpe6mlA2FmMSfDmtcEYE9zwuitpi2Eh188xZc=";
   };
+
+  doCheck = true;
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -29,7 +31,6 @@ buildPythonPackage rec {
     ifaddr
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
   disabledTestPaths = [
     # Network tests failing
     "tests/test_ice.py"
@@ -37,7 +38,9 @@ buildPythonPackage rec {
     "tests/test_turn.py"
     "tests/test_ice_trickle.py"
   ];
-  doCheck = true;
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "aioice"
   ];

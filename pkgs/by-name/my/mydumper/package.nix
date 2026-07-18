@@ -3,22 +3,22 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  installShellFiles,
-  pkg-config,
   glib,
-  pcre2,
-  util-linux,
-  libsysprof-capture,
+  installShellFiles,
   libmysqlclient,
   libressl,
-  zlib,
-  zstd,
   libselinux,
   libsepol,
-  nix-update-script,
-  testers,
-  versionCheckHook,
+  libsysprof-capture,
   mydumper,
+  nix-update-script,
+  pcre2,
+  pkg-config,
+  testers,
+  util-linux,
+  versionCheckHook,
+  zlib,
+  zstd,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "mydumper";
@@ -39,14 +39,18 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
+  postPatch = ''
+    # as of mydumper v0.14.5-1, mydumper tries to install its config to /etc
+    substituteInPlace CMakeLists.txt\
+      --replace-fail "/etc" "$out/etc" \
+      --replace-fail "cmake_minimum_required(VERSION 2.8.12)" "cmake_minimum_required(VERSION 3.10)"
+  '';
+
   nativeBuildInputs = [
     cmake
     pkg-config
     installShellFiles
   ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
 
   buildInputs = [
     glib
@@ -68,19 +72,22 @@ stdenv.mkDerivation (finalAttrs: {
     "-DMYSQL_INCLUDE_DIR=${lib.getDev libmysqlclient}/include/mysql"
   ];
 
-  postPatch = ''
-    # as of mydumper v0.14.5-1, mydumper tries to install its config to /etc
-    substituteInPlace CMakeLists.txt\
-      --replace-fail "/etc" "$out/etc" \
-      --replace-fail "cmake_minimum_required(VERSION 2.8.12)" "cmake_minimum_required(VERSION 3.10)"
-  '';
-
   # copy man files & docs over
   postInstall = ''
     installManPage $src/docs/man/*
     mkdir -p $doc/share/doc/mydumper
     cp -r $src/docs/html/* $doc/share/doc/mydumper
   '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  # mydumper --version is checked in `versionCheckHook`
+  passthru.tests = testers.testVersion {
+    version = "myloader v${finalAttrs.version}";
+    command = "myloader --version";
+    package = mydumper;
+  };
 
   passthru.updateScript = nix-update-script {
     # even patch numbers are pre-releases
@@ -91,22 +98,17 @@ stdenv.mkDerivation (finalAttrs: {
     ];
   };
 
-  # mydumper --version is checked in `versionCheckHook`
-  passthru.tests = testers.testVersion {
-    package = mydumper;
-    command = "myloader --version";
-    version = "myloader v${finalAttrs.version}";
-  };
-
   meta = {
     description = "High-performance MySQL backup tool";
     homepage = "https://github.com/mydumper/mydumper";
     changelog = "https://github.com/mydumper/mydumper/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       izorkin
       michaelglass
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

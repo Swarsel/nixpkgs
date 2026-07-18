@@ -1,8 +1,8 @@
 {
-  stdenvNoCC,
-  darcs,
-  cacert,
   lib,
+  cacert,
+  darcs,
+  stdenvNoCC,
 }:
 
 lib.makeOverridable (
@@ -10,25 +10,18 @@ lib.makeOverridable (
     {
       # Repository to fetch
       url,
+      context ? null,
       # Additional list of repositories specifying alternative download
       # location to be tried in order, if the prior repository failed to fetch.
       mirrors ? [ ],
-      rev ? null,
-      context ? null,
+      name ? "fetchdarcs",
       outputHash ? lib.fakeHash,
       outputHashAlgo ? null,
-      name ? "fetchdarcs",
+      rev ? null,
     }:
 
     stdenvNoCC.mkDerivation {
-      builder = ./builder.sh;
-      nativeBuildInputs = [
-        cacert
-        darcs
-      ];
-
       inherit outputHash outputHashAlgo;
-      outputHashMode = "recursive";
 
       inherit
         rev
@@ -36,6 +29,13 @@ lib.makeOverridable (
         name
         ;
 
+      nativeBuildInputs = [
+        cacert
+        darcs
+      ];
+
+      builder = ./builder.sh;
+      outputHashMode = "recursive";
       repositories = [ url ] ++ mirrors;
     }
   )

@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   llm,
   llm-echo,
   pytest-asyncio,
   pytestCheckHook,
+  setuptools,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "llm-echo";
   version = "0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -22,18 +21,16 @@ buildPythonPackage rec {
     hash = "sha256-E0C/SZ+0t1iPWulr/xaQQPzRR7Qg7nF/X5/HX8QxkMw=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ llm ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytestCheckHook
     writableTmpDirAsHomeHook
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ llm ];
+  pyproject = true;
   pythonImportsCheck = [ "llm_echo" ];
-
   passthru.tests = llm.mkPluginTest llm-echo;
 
   meta = {

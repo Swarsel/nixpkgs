@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   cargo,
   makeWrapper,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "cargo-clean-recursive";
@@ -16,9 +16,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-9+FqRvd0s9N7mQwIf+f3+vBhaa0YQWUR0j0lv4CBOkM=";
   };
 
-  cargoHash = "sha256-KIoRsCy/Cei1YM/94kUcgI2Twgi8kEFVNiUM+sCPMyo=";
-
   nativeBuildInputs = [ makeWrapper ];
+  cargoHash = "sha256-KIoRsCy/Cei1YM/94kUcgI2Twgi8kEFVNiUM+sCPMyo=";
 
   postInstall = ''
     wrapProgram $out/bin/cargo-clean-recursive \
@@ -27,12 +26,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Cleans all projects under specified directory";
-    mainProgram = "cargo-clean-recursive";
     homepage = "https://github.com/IgaguriMK/cargo-clean-recursive";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
+
     maintainers = with lib.maintainers; [ qubic ];
+    mainProgram = "cargo-clean-recursive";
   };
 })

@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   docopt,
   openstep-parser,
+  pytestCheckHook,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pbxproj";
   version = "4.3.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kronenthaler";
@@ -20,6 +19,7 @@ buildPythonPackage rec {
     hash = "sha256-Gb3JeMONOkQWm3pv2EXIU4aw1HJQiiYSr94sjTFVF/Q=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,7 +27,7 @@ buildPythonPackage rec {
     openstep-parser
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "pbxproj"

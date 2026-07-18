@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -26,11 +26,11 @@ buildGoModule (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/paepckehh/uniex/releases/tag/v${finalAttrs.version}";
-    homepage = "https://paepcke.de/uniex";
     description = "Unifi controller device inventory exporter, analyses all device and stat records for complete records";
+    homepage = "https://paepcke.de/uniex";
+    changelog = "https://github.com/paepckehh/uniex/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
-    mainProgram = "uniex";
     maintainers = with lib.maintainers; [ paepcke ];
+    mainProgram = "uniex";
   };
 })

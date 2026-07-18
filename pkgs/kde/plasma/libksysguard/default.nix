@@ -1,13 +1,13 @@
 {
-  mkKdeDerivation,
-  qtwebchannel,
-  qtwebengine,
-  qttools,
   kitemmodels,
   kquickcharts,
-  libpcap,
   libnl,
+  libpcap,
   lm_sensors,
+  mkKdeDerivation,
+  qttools,
+  qtwebchannel,
+  qtwebengine,
 }:
 mkKdeDerivation {
   pname = "libksysguard";

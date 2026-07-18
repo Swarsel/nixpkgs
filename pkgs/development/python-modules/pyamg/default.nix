@@ -4,17 +4,16 @@
   buildPythonPackage,
   fetchPypi,
   numpy,
-  scipy,
+  pybind11,
   pytest,
   python,
-  pybind11,
+  scipy,
   setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "pyamg";
   version = "5.3.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -48,6 +47,8 @@ buildPythonPackage rec {
 
     runHook postCheck
   '';
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "pyamg"

@@ -1,9 +1,9 @@
 {
+  lib,
   fetchFromGitHub,
   buildLuarocksPackage,
   lua,
   pkg-config,
-  lib,
   replaceVars,
   zenity,
 }:
@@ -26,9 +26,7 @@ buildLuarocksPackage {
       inherit zenity;
     })
   ];
-  knownRockspec = "lua/nfd-scm-1.rockspec";
 
-  luarocksConfig.variables.LUA_LIBDIR = "${lua}/lib";
   nativeBuildInputs = [ pkg-config ];
 
   postInstall = ''
@@ -37,9 +35,13 @@ buildLuarocksPackage {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ lua.pkgs.busted ];
+
   installCheckPhase = ''
     busted lua/spec/
   '';
+
+  knownRockspec = "lua/nfd-scm-1.rockspec";
+  luarocksConfig.variables.LUA_LIBDIR = "${lua}/lib";
 
   meta = {
     description = "Tiny, neat Lua library that invokes native file open and save dialogs";

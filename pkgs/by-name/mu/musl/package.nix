@@ -1,8 +1,8 @@
 {
-  stdenv,
-  stdenvNoLibc,
   lib,
+  stdenv,
   fetchurl,
+  stdenvNoLibc,
   linuxHeaders ? null,
   useBSDCompatHeaders ? true,
 }:
@@ -14,24 +14,24 @@ let
 
   cdefs_h = fetchurl {
     name = "sys-cdefs.h";
-    url = "https://git.alpinelinux.org/aports/plain/main/libc-dev/sys-cdefs.h?id=7ca0ed62d4c0d713d9c7dd5b9a077fba78bce578";
     sha256 = "16l3dqnfq0f20rzbkhc38v74nqcsh9n3f343bpczqq8b1rz6vfrh";
+    url = "https://git.alpinelinux.org/aports/plain/main/libc-dev/sys-cdefs.h?id=7ca0ed62d4c0d713d9c7dd5b9a077fba78bce578";
   };
   queue_h = fetchurl {
     name = "sys-queue.h";
-    url = "http://git.alpinelinux.org/aports/plain/main/libc-dev/sys-queue.h?id=7ca0ed62d4c0d713d9c7dd5b9a077fba78bce578";
     sha256 = "12qm82id7zys92a1qh2l1qf2wqgq6jr4qlbjmqyfffz3s3nhfd61";
+    url = "http://git.alpinelinux.org/aports/plain/main/libc-dev/sys-queue.h?id=7ca0ed62d4c0d713d9c7dd5b9a077fba78bce578";
   };
   tree_h = fetchurl {
     name = "sys-tree.h";
-    url = "http://git.alpinelinux.org/aports/plain/main/libc-dev/sys-tree.h?id=7ca0ed62d4c0d713d9c7dd5b9a077fba78bce578";
     sha256 = "14igk6k00bnpfw660qhswagyhvr0gfqg4q55dxvaaq7ikfkrir71";
+    url = "http://git.alpinelinux.org/aports/plain/main/libc-dev/sys-tree.h?id=7ca0ed62d4c0d713d9c7dd5b9a077fba78bce578";
   };
 
   stack_chk_fail_local_c = fetchurl {
     name = "__stack_chk_fail_local.c";
-    url = "https://git.alpinelinux.org/aports/plain/main/musl/__stack_chk_fail_local.c?id=9afbe3cbbf4c30ff23c733218c3c03d7e8c6461d";
     sha256 = "1nhkzzy9pklgjcq2yg89d3l18jif331srd3z3vhy5qwxl1spv6i9";
+    url = "https://git.alpinelinux.org/aports/plain/main/musl/__stack_chk_fail_local.c?id=9afbe3cbbf4c30ff23c733218c3c03d7e8c6461d";
   };
 
   # iconv tool, implemented by musl author.
@@ -40,8 +40,8 @@ let
   # https://git.alpinelinux.org/aports/commit/main/musl/iconv.c?id=a3d97e95f766c9c378194ee49361b375f093b26f
   iconv_c = fetchurl {
     name = "iconv.c";
-    url = "https://git.alpinelinux.org/aports/plain/main/musl/iconv.c?id=a3d97e95f766c9c378194ee49361b375f093b26f";
     sha256 = "1mzxnc2ncq8lw9x6n7p00fvfklc9p3wfv28m68j0dfz5l8q2k6pp";
+    url = "https://git.alpinelinux.org/aports/plain/main/musl/iconv.c?id=a3d97e95f766c9c378194ee49361b375f093b26f";
   };
 
   arch =
@@ -64,35 +64,27 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "qaEYu+hNh2TaDqDSizqz+uhHf8fkCF2QECuFlvx8deQ=";
   };
 
-  enableParallelBuilding = true;
-
-  # Disable auto-adding stack protector flags,
-  # so musl can selectively disable as needed
-  hardeningDisable = [ "stackprotector" ];
-
-  # Leave these, be friendlier to debuggers/perf tools
-  # Don't force them on, but don't force off either
-  postPatch = ''
-    substituteInPlace configure \
-      --replace -fno-unwind-tables "" \
-      --replace -fno-asynchronous-unwind-tables ""
-  '';
+  outputs = [
+    "out"
+    "bin"
+    "dev"
+  ];
 
   patches = [
     # Minor touchup to build system making dynamic linker symlink relative
     (fetchurl {
-      url = "https://raw.githubusercontent.com/openwrt/openwrt/87606e25afac6776d1bbc67ed284434ec5a832b4/toolchain/musl/patches/300-relative.patch";
       sha256 = "0hfadrycb60sm6hb6by4ycgaqc9sgrhh42k39v8xpmcvdzxrsq2n";
+      url = "https://raw.githubusercontent.com/openwrt/openwrt/87606e25afac6776d1bbc67ed284434ec5a832b4/toolchain/musl/patches/300-relative.patch";
     })
     (fetchurl {
+      hash = "sha256-CJb821El2dByP04WXxPCCYMOcEWnXLpOhYBgg3y3KS4=";
       name = "CVE-2025-26519_0.patch";
       url = "https://www.openwall.com/lists/musl/2025/02/13/1/1";
-      hash = "sha256-CJb821El2dByP04WXxPCCYMOcEWnXLpOhYBgg3y3KS4=";
     })
     (fetchurl {
+      hash = "sha256-BiD87k6KTlLr4ep14rUdIZfr2iQkicBYaSTq+p6WBqE=";
       name = "CVE-2025-26519_1.patch";
       url = "https://www.openwall.com/lists/musl/2025/02/13/1/2";
-      hash = "sha256-BiD87k6KTlLr4ep14rUdIZfr2iQkicBYaSTq+p6WBqE=";
     })
     # required for systemd user namespacing and oomd to work correctly on musl
     # drop next release
@@ -108,6 +100,22 @@ stdenv.mkDerivation (finalAttrs: {
     ./renameat2.patch
   ];
 
+  # Leave these, be friendlier to debuggers/perf tools
+  # Don't force them on, but don't force off either
+  postPatch = ''
+    substituteInPlace configure \
+      --replace -fno-unwind-tables "" \
+      --replace -fno-asynchronous-unwind-tables ""
+  '';
+
+  configureFlags = [
+    "--enable-shared"
+    "--enable-static"
+    "--enable-debug"
+    "--enable-wrapper=all"
+    "--syslibdir=${placeholder "out"}/lib"
+  ];
+
   env = {
     CFLAGS = toString (
       [
@@ -120,24 +128,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     NIX_DONT_SET_RPATH = true;
   };
-
-  configureFlags = [
-    "--enable-shared"
-    "--enable-static"
-    "--enable-debug"
-    "--enable-wrapper=all"
-    "--syslibdir=${placeholder "out"}/lib"
-  ];
-
-  outputs = [
-    "out"
-    "bin"
-    "dev"
-  ];
-
-  dontDisableStatic = true;
-  dontAddStaticConfigureFlags = true;
-  separateDebugInfo = true;
 
   preBuild = ''
     ${lib.optionalString (stdenv.targetPlatform.libc == "musl" && stdenv.targetPlatform.isx86_32)
@@ -186,6 +176,13 @@ stdenv.mkDerivation (finalAttrs: {
     install -D ${tree_h} $dev/include/sys/tree.h
   '';
 
+  dontAddStaticConfigureFlags = true;
+  dontDisableStatic = true;
+  enableParallelBuilding = true;
+  # Disable auto-adding stack protector flags,
+  # so musl can selectively disable as needed
+  hardeningDisable = [ "stackprotector" ];
+  separateDebugInfo = true;
   passthru.linuxHeaders = linuxHeaders;
 
   meta = {
@@ -193,6 +190,11 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://musl.libc.org/";
     changelog = "https://git.musl-libc.org/cgit/musl/tree/WHATSNEW?h=v${finalAttrs.version}";
     license = lib.licenses.mit;
+
+    maintainers = with lib.maintainers; [
+      thoughtpolice
+    ];
+
     platforms = [
       "aarch64-linux"
       "armv5tel-linux"
@@ -216,12 +218,10 @@ stdenv.mkDerivation (finalAttrs: {
       "s390x-linux"
       "x86_64-linux"
     ];
+
     badPlatforms = [
       # On 64-bit POWER, musl is ELFv2-only
       (lib.recursiveUpdate lib.systems.inspect.patterns.isPower64 lib.systems.inspect.patterns.isAbiElfv1)
-    ];
-    maintainers = with lib.maintainers; [
-      thoughtpolice
     ];
   };
 })

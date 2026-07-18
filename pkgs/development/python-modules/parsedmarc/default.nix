@@ -1,21 +1,19 @@
 {
   lib,
-  buildPythonPackage,
-  fetchFromGitHub,
   fetchurl,
-
-  # build-system
-  hatchling,
-
+  fetchFromGitHub,
   # dependencies
   azure-identity,
   azure-monitor-ingestion,
   boto3,
+  buildPythonPackage,
   dateparser,
   dnspython,
-  elasticsearch-dsl,
   elasticsearch,
+  elasticsearch-dsl,
   expiringdict,
+  # build-system
+  hatchling,
   kafka-python,
   lxml,
   mailsuite,
@@ -24,26 +22,24 @@
   opensearch-py,
   publicsuffixlist,
   pygelf,
+  # test
+  pytestCheckHook,
   pyyaml,
   requests,
   tqdm,
   urllib3,
   xmltodict,
-
-  # test
-  pytestCheckHook,
 }:
 
 let
   dashboard = fetchurl {
-    url = "https://raw.githubusercontent.com/domainaware/parsedmarc/77331b55c54cb3269205295bd57d0ab680638964/grafana/Grafana-DMARC_Reports.json";
     sha256 = "0wbihyqbb4ndjg79qs8088zgrcg88km8khjhv2474y7nzjzkf43i";
+    url = "https://raw.githubusercontent.com/domainaware/parsedmarc/77331b55c54cb3269205295bd57d0ab680638964/grafana/Grafana-DMARC_Reports.json";
   };
 in
 buildPythonPackage rec {
   pname = "parsedmarc";
   version = "10.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "domainaware";
@@ -57,13 +53,12 @@ buildPythonPackage rec {
       --replace-fail 'requires_python = ">=3.10,<3.15"' ""
   '';
 
-  build-system = [
-    hatchling
+  nativeCheckInputs = [
+    pytestCheckHook
   ];
 
-  pythonRelaxDeps = [
-    "elasticsearch"
-    "elasticsearch-dsl"
+  build-system = [
+    hatchling
   ];
 
   dependencies = [
@@ -91,16 +86,18 @@ buildPythonPackage rec {
   ++ mailsuite.optional-dependencies.gmail
   ++ mailsuite.optional-dependencies.msgraph;
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # contacts DNS servers at 1.1.1.1 and 8.8.8.8
     "test_general_dns_settings_with_defaults"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "parsedmarc" ];
+
+  pythonRelaxDeps = [
+    "elasticsearch"
+    "elasticsearch-dsl"
+  ];
 
   passthru = {
     inherit dashboard;

@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "pbkdf2";
   version = "1.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,9 +15,10 @@ buildPythonPackage rec {
 
   # ImportError: No module named test
   doCheck = false;
+  format = "setuptools";
 
   meta = {
-    maintainers = [ ];
     license = lib.licenses.mit;
+    maintainers = [ ];
   };
 }

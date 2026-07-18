@@ -2,9 +2,9 @@
   lib,
   fetchFromGitHub,
   installShellFiles,
-  rustPlatform,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
   scdoc,
   which,
 }:
@@ -13,11 +13,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   pname = "phetch";
   version = "1.2.0";
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
   src = fetchFromGitHub {
     owner = "xvxx";
     repo = "phetch";
@@ -25,7 +20,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-J+ka7/B37WzVPPE2Krkd/TIiVwuKfI2QYWmT0JHgBGQ=";
   };
 
-  cargoHash = "sha256-2lbQAM3gdytXsoMFzKwLWA1hvQIJf1vBdMRpYx/VLVg=";
+  outputs = [
+    "out"
+    "man"
+  ];
 
   nativeBuildInputs = [
     installShellFiles
@@ -33,18 +31,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     scdoc
     which
   ];
+
   buildInputs = [ openssl ];
+  cargoHash = "sha256-2lbQAM3gdytXsoMFzKwLWA1hvQIJf1vBdMRpYx/VLVg=";
+  doCheck = true;
 
   postInstall = ''
     make manual
     installManPage doc/phetch.1
   '';
 
-  doCheck = true;
-
   meta = {
     description = "Quick lil gopher client for your terminal, written in rust";
-    mainProgram = "phetch";
+
     longDescription = ''
       phetch is a terminal client designed to help you quickly navigate the gophersphere.
       - <1MB executable for Linux, Mac, and NetBSD
@@ -56,9 +55,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
       - Secure Gopher support (TLS)
       - Tor support
     '';
-    changelog = "https://github.com/xvxx/phetch/releases/tag/v${finalAttrs.version}";
+
     homepage = "https://github.com/xvxx/phetch";
+    changelog = "https://github.com/xvxx/phetch/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ felixalbrigtsen ];
+    mainProgram = "phetch";
   };
 })

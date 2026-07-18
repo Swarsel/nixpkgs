@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchzip,
   addDriverRunpath,
   cmake,
-  glibc_multi,
-  glibc,
+  fetchzip,
   git,
+  glibc,
+  glibc_multi,
   pkg-config,
   cudaPackages ? { },
   withCuda ? false,
@@ -24,6 +24,16 @@ let
       url = "https://download.open-mpi.org/release/hwloc/v${lib.versions.majorMinor version}/hwloc-${version}.tar.gz";
       sha256 = "1ibw14h9ppg8z3mmkwys8vp699n85kymdz20smjd2iq9b67y80b6";
     };
+
+    outputs = [
+      "out"
+      "lib"
+      "dev"
+      "doc"
+      "man"
+    ];
+
+    nativeBuildInputs = [ pkg-config ];
 
     configureFlags = [
       "--enable-static"
@@ -43,17 +53,7 @@ let
       "--disable-plugin-ltdl"
     ];
 
-    nativeBuildInputs = [ pkg-config ];
-
     enableParallelBuilding = true;
-
-    outputs = [
-      "out"
-      "lib"
-      "dev"
-      "doc"
-      "man"
-    ];
   };
 
 in
@@ -98,10 +98,6 @@ stdenv.mkDerivation rec {
       [ glibc.static ]
   );
 
-  env = lib.optionalAttrs withCuda {
-    NIX_LDFLAGS = "-L${cudatoolkit}/lib/stubs";
-  };
-
   cmakeFlags = [
     "-DFIRESTARTER_BUILD_HWLOC=OFF"
     "-DCMAKE_C_COMPILER_WORKS=1"
@@ -110,6 +106,10 @@ stdenv.mkDerivation rec {
   ++ lib.optionals withCuda [
     "-DFIRESTARTER_BUILD_TYPE=FIRESTARTER_CUDA"
   ];
+
+  env = lib.optionalAttrs withCuda {
+    NIX_LDFLAGS = "-L${cudatoolkit}/lib/stubs";
+  };
 
   installPhase = ''
     runHook preInstall
@@ -123,15 +123,17 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
-    homepage = "https://tu-dresden.de/zih/forschung/projekte/firestarter";
     description = "Processor Stress Test Utility";
-    platforms = lib.platforms.linux;
+    homepage = "https://tu-dresden.de/zih/forschung/projekte/firestarter";
+    license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       astro
       marenz
     ];
-    license = lib.licenses.gpl3;
+
+    platforms = lib.platforms.linux;
     mainProgram = "FIRESTARTER";
+    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
   };
 }

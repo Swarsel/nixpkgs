@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
-  fetchzip,
-  replaceVars,
+  stdenv,
   bash,
+  fetchzip,
   jre,
+  replaceVars,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -43,7 +43,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Mobility scenario generation and analysis tool";
-    mainProgram = "bm";
+
     longDescription = ''
       BonnMotion is a Java software which creates and analyzes mobility
       scenarios and is most commonly used as a tool for the investigation of
@@ -51,12 +51,16 @@ stdenv.mkDerivation (finalAttrs: {
       for several network simulators, such as ns-2, ns-3, GloMoSim/QualNet,
       COOJA, MiXiM, and ONE.
     '';
+
     homepage = "https://bonnmotion.sys.cs.uos.de";
+    license = lib.licenses.gpl2Plus;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # source bundles dependency jars
     ];
-    license = lib.licenses.gpl2Plus;
+
     maintainers = [ ];
+    mainProgram = "bm";
   };
 })

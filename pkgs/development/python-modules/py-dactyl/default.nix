@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
-  lib,
   pytestCheckHook,
   requests,
   setuptools,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "py-dactyl";
   version = "2.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "iamkubi";
@@ -20,6 +19,10 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-/bmk4RIS8pEi+RbJ+6tOchwFj246hdoTXv6WBNisKuc=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -29,21 +32,18 @@ buildPythonPackage rec {
     websocket-client
   ];
 
-  pythonImportsCheck = [ "pydactyl" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # upstream's tests are not fully maintained
     "test_paginated_response_multipage_iterator"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "pydactyl" ];
+
   meta = {
-    changelog = "https://github.com/iamkubi/pydactyl/releases/tag/${src.tag}";
     description = "Python wrapper for the Pterodactyl Panel API";
     homepage = "https://github.com/iamkubi/pydactyl";
+    changelog = "https://github.com/iamkubi/pydactyl/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

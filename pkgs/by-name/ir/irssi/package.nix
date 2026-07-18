@@ -49,12 +49,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Terminal based IRC client";
-    mainProgram = "irssi";
     homepage = "https://irssi.org";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       fab
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "irssi";
   };
 })

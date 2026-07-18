@@ -1,32 +1,34 @@
 {
   lib,
-  mkCoqDerivation,
   coq,
+  mathcomp-algebra,
   mathcomp-boot,
   mathcomp-fingroup,
-  mathcomp-algebra,
+  mkCoqDerivation,
   stdlib,
   version ? null,
 }:
 
 mkCoqDerivation {
-  namePrefix = [
-    "coq"
-    "mathcomp"
-  ];
-  pname = "zify";
-  repo = "mczify";
-  owner = "math-comp";
   inherit version;
+  pname = "zify";
+
+  propagatedBuildInputs = [
+    mathcomp-boot
+    mathcomp-algebra
+    mathcomp-fingroup
+    stdlib
+  ];
 
   defaultVersion =
     let
       case = coq: mc: out: {
+        inherit out;
+
         cases = [
           coq
           mc
         ];
-        inherit out;
       };
     in
     with lib.versions;
@@ -40,18 +42,18 @@ mkCoqDerivation {
       ]
       null;
 
+  namePrefix = [
+    "coq"
+    "mathcomp"
+  ];
+
+  owner = "math-comp";
   release."1.0.0+1.12+8.13".hash = "sha256:1j533vx6lacr89bj1bf15l1a0s7rvrx4l00wyjv99aczkfbz6h6k";
   release."1.1.0+1.12+8.13".hash = "sha256:1plf4v6q5j7wvmd5gsqlpiy0vwlw6hy5daq2x42gqny23w9mi2pr";
   release."1.3.0+1.12+8.13".hash = "sha256-ebfY8HatP4te44M6o84DSLpDCkMu4IroPCy+HqzOnTE=";
   release."1.5.0+2.0+8.16".hash = "sha256-boBYGvXdGFc6aPnjgSZYSoW4kmN5khtNrSV3DUv9DqM=";
   release."1.6.0+2.3+8.18".hash = "sha256-rI5ZWtgO0a2sxCVChTdASxWxhgYEbM4OhC0dnSMRzZ8=";
-
-  propagatedBuildInputs = [
-    mathcomp-boot
-    mathcomp-algebra
-    mathcomp-fingroup
-    stdlib
-  ];
+  repo = "mczify";
 
   meta = {
     description = "Micromega tactics for Mathematical Components";

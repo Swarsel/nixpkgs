@@ -4,14 +4,13 @@
   gobject-introspection,
   gtk3,
   gtksourceview4,
-  wrapGAppsHook3,
   python3Packages,
+  wrapGAppsHook3,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "skytemple";
   version = "1.8.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SkyTemple";
@@ -20,7 +19,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-jdiZLDQEfYESgpe7F5X/odkgXnvjhvfFArrpt4bpPbo=";
   };
 
-  build-system = with python3Packages; [ setuptools ];
+  nativeBuildInputs = [
+    gobject-introspection
+    wrapGAppsHook3
+  ];
 
   buildInputs = [
     gtk3
@@ -32,10 +34,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     # rendered in-app as non-interactive image)
   ];
 
-  nativeBuildInputs = [
-    gobject-introspection
-    wrapGAppsHook3
-  ];
+  doCheck = false; # there are no tests
+
+  postInstall = ''
+    install -Dm444 org.skytemple.SkyTemple.desktop -t $out/share/applications
+    install -Dm444 installer/skytemple.ico $out/share/icons/hicolor/256x256/apps/org.skytemple.SkyTemple.ico
+  '';
+
+  build-system = with python3Packages; [ setuptools ];
 
   dependencies =
     with python3Packages;
@@ -60,18 +66,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ]
     ++ skytemple-files.optional-dependencies.spritecollab;
 
-  doCheck = false; # there are no tests
-
-  postInstall = ''
-    install -Dm444 org.skytemple.SkyTemple.desktop -t $out/share/applications
-    install -Dm444 installer/skytemple.ico $out/share/icons/hicolor/256x256/apps/org.skytemple.SkyTemple.ico
-  '';
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/SkyTemple/skytemple";
     description = "ROM hacking tool for Pokémon Mystery Dungeon Explorers of Sky";
-    mainProgram = "skytemple";
+    homepage = "https://github.com/SkyTemple/skytemple";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ marius851000 ];
+    mainProgram = "skytemple";
   };
 })

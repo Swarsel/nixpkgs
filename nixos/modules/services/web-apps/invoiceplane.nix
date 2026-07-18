@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -65,16 +65,6 @@ let
   pkg =
     hostName: cfg:
     pkgs.stdenv.mkDerivation rec {
-      pname = "invoiceplane-${hostName}";
-      version = src.version;
-      src = pkgs.invoiceplane;
-
-      postPatch = ''
-        # Patch index.php file to load additional config file
-        substituteInPlace index.php \
-          --replace-fail "require __DIR__ . '/vendor/autoload.php';" "require('vendor/autoload.php'); \$dotenv = Dotenv\Dotenv::createImmutable(__DIR__, 'extraConfig.php'); \$dotenv->load();";
-      '';
-
       installPhase = ''
         mkdir -p $out
         cp -r * $out/
@@ -99,6 +89,17 @@ let
           template: "cp -r ${template}/. $out/application/views/quote_templates/pdf/"
         ) cfg.quoteTemplates}
       '';
+
+      pname = "invoiceplane-${hostName}";
+
+      postPatch = ''
+        # Patch index.php file to load additional config file
+        substituteInPlace index.php \
+          --replace-fail "require __DIR__ . '/vendor/autoload.php';" "require('vendor/autoload.php'); \$dotenv = Dotenv\Dotenv::createImmutable(__DIR__, 'extraConfig.php'); \$dotenv->load();";
+      '';
+
+      src = pkgs.invoiceplane;
+      version = src.version;
     };
 
   siteOpts =
@@ -108,61 +109,73 @@ let
 
         enable = mkEnableOption "InvoicePlane web application";
 
-        stateDir = mkOption {
-          type = types.path;
-          default = "/var/lib/invoiceplane/${name}";
-          description = ''
-            This directory is used for uploads of attachments and cache.
-            The directory passed here is automatically created and permissions
-            adjusted as required.
-          '';
+        cron = {
+          enable = mkOption {
+            default = false;
+
+            description = ''
+              Enable cron service which periodically runs Invoiceplane tasks.
+              Requires key taken from the administration page. Refer to
+              <https://wiki.invoiceplane.com/en/1.0/modules/recurring-invoices>
+              on how to configure it.
+            '';
+
+            type = types.bool;
+          };
+
+          key = mkOption {
+            description = "Cron key taken from the administration page.";
+            type = types.str;
+          };
         };
 
         database = {
-          host = mkOption {
-            type = types.str;
-            default = "localhost";
-            description = "Database host address.";
+          createLocally = mkOption {
+            default = true;
+            description = "Create the database and database user locally.";
+            type = types.bool;
           };
 
-          port = mkOption {
-            type = types.port;
-            default = 3306;
-            description = "Database host port.";
+          host = mkOption {
+            default = "localhost";
+            description = "Database host address.";
+            type = types.str;
           };
 
           name = mkOption {
-            type = types.str;
             default = "invoiceplane";
             description = "Database name.";
-          };
-
-          user = mkOption {
             type = types.str;
-            default = "invoiceplane";
-            description = "Database user.";
           };
 
           passwordFile = mkOption {
-            type = types.nullOr types.path;
             default = null;
-            example = "/run/keys/invoiceplane-dbpassword";
+
             description = ''
               A file containing the password corresponding to
               {option}`database.user`.
             '';
+
+            example = "/run/keys/invoiceplane-dbpassword";
+            type = types.nullOr types.path;
           };
 
-          createLocally = mkOption {
-            type = types.bool;
-            default = true;
-            description = "Create the database and database user locally.";
+          port = mkOption {
+            default = 3306;
+            description = "Database host port.";
+            type = types.port;
+          };
+
+          user = mkOption {
+            default = "invoiceplane";
+            description = "Database user.";
+            type = types.str;
           };
         };
 
         invoiceTemplates = mkOption {
-          type = types.listOf types.path;
           default = [ ];
+
           description = ''
             List of path(s) to respective template(s) which are copied from the 'invoice_templates/pdf' directory.
 
@@ -170,6 +183,7 @@ let
             These templates need to be packaged before use, see example.
             :::
           '';
+
           example = literalExpression ''
             let
               # Let's package an example template
@@ -190,41 +204,25 @@ let
             # And then pass this package to the template list like this:
             in [ template-vtdirektmarketing ]
           '';
-        };
 
-        quoteTemplates = mkOption {
           type = types.listOf types.path;
-          default = [ ];
-          description = ''
-            List of path(s) to respective template(s) which are copied from the 'quote_templates/pdf' directory.
-
-            ::: {.note}
-            These templates need to be packaged before use, see example.
-            :::
-          '';
-          example = literalExpression ''
-            let
-              # Let's package an example template
-              template-vtdirektmarketing = pkgs.stdenv.mkDerivation {
-                name = "vtdirektmarketing";
-                # Download the template from a public repository
-                src = pkgs.fetchgit {
-                  url = "https://git.project-insanity.org/onny/invoiceplane-vtdirektmarketing.git";
-                  sha256 = "1hh0q7wzsh8v8x03i82p6qrgbxr4v5fb05xylyrpp975l8axyg2z";
-                };
-                sourceRoot = ".";
-                # Installing simply means copying template php file to the output directory
-                installPhase = ""
-                  mkdir -p $out
-                  cp invoiceplane-vtdirektmarketing/vtdirektmarketing.php $out/
-                "";
-              };
-            # And then pass this package to the template list like this:
-            in [ template-vtdirektmarketing ]
-          '';
         };
 
         poolConfig = mkOption {
+          default = {
+            "pm" = "dynamic";
+            "pm.max_children" = 32;
+            "pm.max_requests" = 500;
+            "pm.max_spare_servers" = 4;
+            "pm.min_spare_servers" = 2;
+            "pm.start_servers" = 2;
+          };
+
+          description = ''
+            Options for the InvoicePlane PHP pool. See the documentation on `php-fpm.conf`
+            for details on configuration directives.
+          '';
+
           type =
             with types;
             attrsOf (oneOf [
@@ -232,28 +230,52 @@ let
               int
               bool
             ]);
-          default = {
-            "pm" = "dynamic";
-            "pm.max_children" = 32;
-            "pm.start_servers" = 2;
-            "pm.min_spare_servers" = 2;
-            "pm.max_spare_servers" = 4;
-            "pm.max_requests" = 500;
-          };
+        };
+
+        quoteTemplates = mkOption {
+          default = [ ];
+
           description = ''
-            Options for the InvoicePlane PHP pool. See the documentation on `php-fpm.conf`
-            for details on configuration directives.
+            List of path(s) to respective template(s) which are copied from the 'quote_templates/pdf' directory.
+
+            ::: {.note}
+            These templates need to be packaged before use, see example.
+            :::
           '';
+
+          example = literalExpression ''
+            let
+              # Let's package an example template
+              template-vtdirektmarketing = pkgs.stdenv.mkDerivation {
+                name = "vtdirektmarketing";
+                # Download the template from a public repository
+                src = pkgs.fetchgit {
+                  url = "https://git.project-insanity.org/onny/invoiceplane-vtdirektmarketing.git";
+                  sha256 = "1hh0q7wzsh8v8x03i82p6qrgbxr4v5fb05xylyrpp975l8axyg2z";
+                };
+                sourceRoot = ".";
+                # Installing simply means copying template php file to the output directory
+                installPhase = ""
+                  mkdir -p $out
+                  cp invoiceplane-vtdirektmarketing/vtdirektmarketing.php $out/
+                "";
+              };
+            # And then pass this package to the template list like this:
+            in [ template-vtdirektmarketing ]
+          '';
+
+          type = types.listOf types.path;
         };
 
         settings = mkOption {
-          type = types.attrsOf types.anything;
           default = { };
+
           description = ''
             Structural InvoicePlane configuration. Refer to
             <https://github.com/InvoicePlane/InvoicePlane/blob/master/ipconfig.php.example>
             for details and supported values.
           '';
+
           example = literalExpression ''
             {
               SETUP_COMPLETED = true;
@@ -261,23 +283,20 @@ let
               IP_URL = "https://invoice.example.com";
             }
           '';
+
+          type = types.attrsOf types.anything;
         };
 
-        cron = {
-          enable = mkOption {
-            type = types.bool;
-            default = false;
-            description = ''
-              Enable cron service which periodically runs Invoiceplane tasks.
-              Requires key taken from the administration page. Refer to
-              <https://wiki.invoiceplane.com/en/1.0/modules/recurring-invoices>
-              on how to configure it.
-            '';
-          };
-          key = mkOption {
-            type = types.str;
-            description = "Cron key taken from the administration page.";
-          };
+        stateDir = mkOption {
+          default = "/var/lib/invoiceplane/${name}";
+
+          description = ''
+            This directory is used for uploads of attachments and cache.
+            The directory passed here is automatically created and permissions
+            adjusted as required.
+          '';
+
+          type = types.path;
         };
 
       };
@@ -288,28 +307,32 @@ in
   # interface
   options = {
     services.invoiceplane = mkOption {
+      default = { };
+      description = "InvoicePlane configuration.";
+
       type = types.submodule {
 
         options.sites = mkOption {
-          type = types.attrsOf (types.submodule siteOpts);
           default = { };
           description = "Specification of one or more InvoicePlane sites to serve";
+          type = types.attrsOf (types.submodule siteOpts);
         };
 
         options.webserver = mkOption {
+          default = "caddy";
+
+          description = ''
+            Which webserver to use for virtual host management.
+          '';
+
+          example = "nginx";
+
           type = types.enum [
             "caddy"
             "nginx"
           ];
-          default = "caddy";
-          example = "nginx";
-          description = ''
-            Which webserver to use for virtual host management.
-          '';
         };
       };
-      default = { };
-      description = "InvoicePlane configuration.";
     };
 
   };
@@ -339,11 +362,13 @@ in
         enable = true;
         package = mkDefault pkgs.mariadb;
         ensureDatabases = mapAttrsToList (hostName: cfg: cfg.database.name) eachSite;
+
         ensureUsers = mapAttrsToList (hostName: cfg: {
-          name = cfg.database.user;
           ensurePermissions = {
             "${cfg.database.name}.*" = "ALL PRIVILEGES";
           };
+
+          name = cfg.database.user;
         }) eachSite;
       };
 
@@ -353,9 +378,10 @@ in
           (nameValuePair "invoiceplane-${hostName}" {
             inherit user;
             group = webserver.group;
+
             settings = {
-              "listen.owner" = webserver.user;
               "listen.group" = webserver.group;
+              "listen.owner" = webserver.user;
             }
             // cfg.poolConfig;
           })
@@ -365,6 +391,24 @@ in
     }
 
     {
+
+      systemd.services.invoiceplane-config = {
+        script = concatStrings (
+          mapAttrsToList (hostName: cfg: ''
+            mkdir -p ${cfg.stateDir}/logs \
+                     ${cfg.stateDir}/uploads
+            if ! grep -q IP_URL "${cfg.stateDir}/ipconfig.php"; then
+              cp "${invoiceplane-config hostName cfg}" "${cfg.stateDir}/ipconfig.php"
+            fi
+            if ! grep -q 'php exit' "${cfg.stateDir}/ipconfig.php"; then
+              sed -i "1i # <?php exit('No direct script access allowed'); ?>" "${cfg.stateDir}/ipconfig.php"
+            fi
+          '') eachSite
+        );
+
+        serviceConfig.Type = "oneshot";
+        wantedBy = [ "multi-user.target" ];
+      };
 
       systemd.tmpfiles.rules = flatten (
         mapAttrsToList (hostName: cfg: [
@@ -380,23 +424,6 @@ in
         ]) eachSite
       );
 
-      systemd.services.invoiceplane-config = {
-        serviceConfig.Type = "oneshot";
-        script = concatStrings (
-          mapAttrsToList (hostName: cfg: ''
-            mkdir -p ${cfg.stateDir}/logs \
-                     ${cfg.stateDir}/uploads
-            if ! grep -q IP_URL "${cfg.stateDir}/ipconfig.php"; then
-              cp "${invoiceplane-config hostName cfg}" "${cfg.stateDir}/ipconfig.php"
-            fi
-            if ! grep -q 'php exit' "${cfg.stateDir}/ipconfig.php"; then
-              sed -i "1i # <?php exit('No direct script access allowed'); ?>" "${cfg.stateDir}/ipconfig.php"
-            fi
-          '') eachSite
-        );
-        wantedBy = [ "multi-user.target" ];
-      };
-
       users.users.${user} = {
         group = webserver.group;
         isSystemUser = true;
@@ -405,31 +432,31 @@ in
     }
     {
 
-      # Cron service implementation
-
-      systemd.timers = mapAttrs' (
-        hostName: cfg:
-        (nameValuePair "invoiceplane-cron-${hostName}" (
-          mkIf cfg.cron.enable {
-            wantedBy = [ "timers.target" ];
-            timerConfig = {
-              OnBootSec = "5m";
-              OnUnitActiveSec = "5m";
-              Unit = "invoiceplane-cron-${hostName}.service";
-            };
-          }
-        ))
-      ) eachSite;
-
       systemd.services = mapAttrs' (
         hostName: cfg:
         (nameValuePair "invoiceplane-cron-${hostName}" (
           mkIf cfg.cron.enable {
             serviceConfig = {
+              ExecStart = "${pkgs.curl}/bin/curl --header 'Host: ${hostName}' http://localhost/invoices/cron/recur/${cfg.cron.key}";
               Type = "oneshot";
               User = user;
-              ExecStart = "${pkgs.curl}/bin/curl --header 'Host: ${hostName}' http://localhost/invoices/cron/recur/${cfg.cron.key}";
             };
+          }
+        ))
+      ) eachSite;
+
+      # Cron service implementation
+      systemd.timers = mapAttrs' (
+        hostName: cfg:
+        (nameValuePair "invoiceplane-cron-${hostName}" (
+          mkIf cfg.cron.enable {
+            timerConfig = {
+              OnBootSec = "5m";
+              OnUnitActiveSec = "5m";
+              Unit = "invoiceplane-cron-${hostName}.service";
+            };
+
+            wantedBy = [ "timers.target" ];
           }
         ))
       ) eachSite;
@@ -439,6 +466,7 @@ in
     (mkIf (cfg.webserver == "caddy") {
       services.caddy = {
         enable = true;
+
         virtualHosts = mapAttrs' (
           hostName: cfg:
           (nameValuePair hostName {
@@ -455,10 +483,10 @@ in
     (mkIf (cfg.webserver == "nginx") {
       services.nginx = {
         enable = true;
+
         virtualHosts = mapAttrs' (
           hostName: cfg:
           (nameValuePair hostName {
-            root = pkg hostName cfg;
             extraConfig = ''
               index index.php index.html index.htm;
 
@@ -482,6 +510,8 @@ in
                 '';
               };
             };
+
+            root = pkg hostName cfg;
           })
         ) eachSite;
       };

@@ -2,25 +2,25 @@
   lib,
   stdenv,
   fetchurl,
-  libxml2,
-  readline,
-  zlib,
-  perl,
   cairo,
-  gtk3,
-  gsl,
-  pkg-config,
-  gtksourceview4,
-  pango,
-  gettext,
   dconf,
-  makeWrapper,
+  gettext,
   gsettings-desktop-schemas,
+  gsl,
+  gtk3,
+  gtksourceview4,
   hicolor-icon-theme,
-  texinfo,
-  ssw,
-  python3,
   iconv,
+  libxml2,
+  makeWrapper,
+  pango,
+  perl,
+  pkg-config,
+  python3,
+  readline,
+  ssw,
+  texinfo,
+  zlib,
 }:
 
 stdenv.mkDerivation rec {
@@ -38,6 +38,7 @@ stdenv.mkDerivation rec {
     python3
     makeWrapper
   ];
+
   buildInputs = [
     libxml2
     readline
@@ -58,12 +59,11 @@ stdenv.mkDerivation rec {
   env = {
     C_INCLUDE_PATH =
       "${libxml2.dev}/include/libxml2/:" + lib.makeSearchPathOutput "dev" "include" buildInputs;
+
     LIBRARY_PATH = lib.makeLibraryPath buildInputs;
   };
 
   doCheck = false;
-
-  enableParallelBuilding = true;
 
   preFixup = ''
     wrapProgram "$out/bin/psppire" \
@@ -73,10 +73,10 @@ stdenv.mkDerivation rec {
      --prefix GIO_EXTRA_MODULES : "${lib.getLib dconf}/lib/gio/modules"
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://www.gnu.org/software/pspp/";
     description = "Free replacement for SPSS, a program for statistical analysis of sampled data";
-    license = lib.licenses.gpl3Plus;
 
     longDescription = ''
       PSPP is a program for statistical analysis of sampled data. It is
@@ -90,6 +90,8 @@ stdenv.mkDerivation rec {
       more traditional syntax commands.
     '';
 
+    homepage = "https://www.gnu.org/software/pspp/";
+    license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.unix;
   };
 }

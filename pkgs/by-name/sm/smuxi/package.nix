@@ -1,30 +1,27 @@
 {
+  lib,
   stdenv,
+  fetchFromGitHub,
   autoconf,
   automake,
-  itstool,
-  intltool,
-  pkg-config,
-  fetchFromGitHub,
-  glib,
-  gettext,
-  sqlite,
-  mono,
-  stfl,
-  makeWrapper,
-  lib,
-  guiSupport ? true,
-  gtk-sharp-2_0,
   gdk-pixbuf,
+  gettext,
+  glib,
+  gtk-sharp-2_0,
+  intltool,
+  itstool,
+  makeWrapper,
+  mono,
   pango,
+  pkg-config,
+  sqlite,
+  stfl,
+  guiSupport ? true,
 }:
 
 stdenv.mkDerivation rec {
   pname = "smuxi";
   version = "unstable-2023-07-01";
-
-  runtimeLoaderEnvVariableName =
-    if stdenv.hostPlatform.isDarwin then "DYLD_FALLBACK_LIBRARY_PATH" else "LD_LIBRARY_PATH";
 
   src = fetchFromGitHub {
     owner = "meebey";
@@ -38,6 +35,7 @@ stdenv.mkDerivation rec {
     pkg-config
     makeWrapper
   ];
+
   buildInputs = [
     autoconf
     automake
@@ -54,15 +52,15 @@ stdenv.mkDerivation rec {
     pango
   ];
 
-  preConfigure = ''
-    NOCONFIGURE=1 NOGIT=1 ACLOCAL_FLAGS="-I ${gettext}/share/gettext/m4" ./autogen.sh
-  '';
-
   configureFlags = [
     "--disable-frontend-gnome"
     "--enable-frontend-stfl"
   ]
   ++ lib.optional guiSupport "--enable-frontend-gnome";
+
+  preConfigure = ''
+    NOCONFIGURE=1 NOGIT=1 ACLOCAL_FLAGS="-I ${gettext}/share/gettext/m4" ./autogen.sh
+  '';
 
   postInstall = ''
     makeWrapper "${mono}/bin/mono" "$out/bin/smuxi-message-buffer" \
@@ -125,15 +123,20 @@ stdenv.mkDerivation rec {
     }
   '';
 
+  runtimeLoaderEnvVariableName =
+    if stdenv.hostPlatform.isDarwin then "DYLD_FALLBACK_LIBRARY_PATH" else "LD_LIBRARY_PATH";
+
   meta = {
-    homepage = "https://smuxi.im/";
-    downloadPage = "https://smuxi.im/download/";
-    changelog = "https://github.com/meebey/smuxi/releases/tag/v${version}";
     description = "irssi-inspired, detachable, cross-platform, multi-protocol (IRC, XMPP/Jabber) chat client for the GNOME desktop";
-    platforms = lib.platforms.unix;
+    homepage = "https://smuxi.im/";
+    changelog = "https://github.com/meebey/smuxi/releases/tag/v${version}";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       meebey
     ];
+
+    platforms = lib.platforms.unix;
+    downloadPage = "https://smuxi.im/download/";
   };
 }

@@ -2,31 +2,29 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  cmake,
-  gettext,
-  wrapGAppsHook3,
-  pkg-config,
-  help2man,
-
   adwaita-icon-theme,
   alsa-lib,
+  cmake,
+  gettext,
   glib,
   gsettings-desktop-schemas,
   gtk3,
   gtksourceview4,
+  help2man,
   librsvg,
   libsndfile,
   libxml2,
   libzip,
+  lua5_3,
+  nix-update-script,
+  pkg-config,
   poppler,
   portaudio,
   qpdf,
+  wrapGAppsHook3,
   zlib,
   # plugins
   withLua ? true,
-  lua5_3,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -85,10 +83,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://xournalpp.github.io/";
     changelog = "https://github.com/xournalpp/xournalpp/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       iedame
       sikmir
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "xournalpp";
   };

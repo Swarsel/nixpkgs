@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
   freezegun,
   pytest,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pytest-freezegun";
   version = "0.4.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "ktosiek";
@@ -22,18 +21,17 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-/7GTQdidVbE2LT5hwxjEc2dr+aWr6TX1131U4KMQhns=";
       # https://github.com/ktosiek/pytest-freezegun/pull/38
       name = "pytest-freezegun-drop-distutils.patch";
       url = "https://github.com/ktosiek/pytest-freezegun/commit/03d7107a877e8f07617f931a379f567d89060085.patch";
-      hash = "sha256-/7GTQdidVbE2LT5hwxjEc2dr+aWr6TX1131U4KMQhns=";
     })
   ];
 
   buildInputs = [ pytest ];
-
   propagatedBuildInputs = [ freezegun ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
 
   meta = {
     description = "Wrap tests with fixtures in freeze_time";

@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  tcl,
   pandoc,
+  tcl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,14 +40,16 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = true;
 
   meta = {
-    homepage = "https://github.com/RubyLane/rl_json";
     description = "Tcl extension for fast json manipulation";
-    license = lib.licenses.tcltk;
+
     longDescription = ''
       Extends Tcl with a json value type and a command to manipulate json values
       directly. Similar in spirit to how the dict command manipulates dictionary
       values, and comparable in speed.
     '';
+
+    homepage = "https://github.com/RubyLane/rl_json";
+    license = lib.licenses.tcltk;
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = tcl.meta.platforms;
     # From version 0.15.1: 'endian.h' file not found

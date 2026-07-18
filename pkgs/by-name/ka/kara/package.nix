@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  nix-update-script,
   kdePackages,
+  nix-update-script,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "kara";
@@ -16,6 +16,8 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-nOMsR9bocDVwH1wB+tGu7y4hnvcAUVTNPXrAzcmws3w=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -34,21 +36,18 @@ stdenv.mkDerivation (finalAttrs: {
     plasma-workspace
   ];
 
-  strictDeps = true;
-
   cmakeFlags = [
     (lib.cmakeFeature "Qt6_DIR" "${kdePackages.qtbase}/lib/cmake/Qt6")
   ];
 
   dontWrapQtApps = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    inherit (kdePackages.kwindowsystem.meta) platforms;
     description = "KDE Plasma Applet for use as a desktop/workspace pager";
     homepage = "https://github.com/dhruv8sh/kara";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ HeitorAugustoLN ];
-    inherit (kdePackages.kwindowsystem.meta) platforms;
   };
 })

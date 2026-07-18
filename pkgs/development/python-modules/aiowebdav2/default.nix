@@ -1,11 +1,11 @@
 {
+  lib,
+  fetchFromGitHub,
   aiofiles,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   hatchling,
-  lib,
   lxml,
   pytest-asyncio,
   pytest-cov-stub,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "aiowebdav2";
   version = "0.6.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jpbede";
@@ -25,6 +24,13 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-W3TdumweNyGz2qDFgSGu+ZPnEpLvWQQ216jER6e4k18=";
   };
+
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -36,19 +42,13 @@ buildPythonPackage rec {
     yarl
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "aiowebdav2" ];
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
   meta = {
-    changelog = "https://github.com/jpbede/aiowebdav2/releases/tag/${src.tag}";
     description = "Async Python 3 client for WebDAV";
     homepage = "https://github.com/jpbede/aiowebdav2";
+    changelog = "https://github.com/jpbede/aiowebdav2/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

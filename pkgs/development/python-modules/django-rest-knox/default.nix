@@ -1,20 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   django,
   djangorestframework,
   freezegun,
   pytest-django,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "django-rest-knox";
   version = "5.1.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "jazzband";
@@ -22,13 +20,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-YK2dD2QAnrgDqWy506afRnEbnla4VT8RFV4Rg0BRjEY=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    django
-    djangorestframework
-  ];
 
   nativeCheckInputs = [
     freezegun
@@ -40,6 +31,15 @@ buildPythonPackage (finalAttrs: {
     export DJANGO_SETTINGS_MODULE=knox_project.settings
   '';
 
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    django
+    djangorestframework
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "knox" ];
 
   meta = {

@@ -1,24 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  jsonschema,
   # dependencies
   licomp,
-
   # tests
   pytestCheckHook,
-  jsonschema,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "licomp-doubleopen";
   version = "0.1.5";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "hesa";
@@ -26,6 +21,13 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-ju+Ewp5q3bzanLeldtE7NSSlfLpMe6muM4ZlpFgBDh0=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    jsonschema
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -35,10 +37,7 @@ buildPythonPackage (finalAttrs: {
     licomp
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    jsonschema
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "licomp_doubleopen"
@@ -48,12 +47,14 @@ buildPythonPackage (finalAttrs: {
     description = "Licomp implementation of Double Open Project's license classifications";
     homepage = "https://github.com/hesa/licomp-doubleopen";
     changelog = "https://github.com/hesa/licomp-doubleopen/releases/tag/${finalAttrs.src.tag}";
+
     license = with lib.licenses; [
       cc-by-30
       cc-by-40
       cc0
       gpl3Plus
     ];
+
     maintainers = with lib.maintainers; [ eljamm ];
     teams = with lib.teams; [ ngi ];
   };

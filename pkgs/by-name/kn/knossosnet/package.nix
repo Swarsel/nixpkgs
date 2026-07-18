@@ -1,12 +1,12 @@
 {
-  buildDotnetModule,
-  fetchFromGitHub,
   lib,
-  openal,
-  dotnetCorePackages,
+  fetchFromGitHub,
+  buildDotnetModule,
   copyDesktopItems,
+  dotnetCorePackages,
   makeDesktopItem,
   nix-update-script,
+  openal,
 }:
 
 buildDotnetModule rec {
@@ -21,42 +21,38 @@ buildDotnetModule rec {
   };
 
   patches = [ ./dotnet-8-upgrade.patch ];
-
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-  nugetDeps = ./deps.json;
-  executables = [ "Knossos.NET" ];
-
-  # IO errors in build due to solution building race
-  enableParallelBuilding = false;
-
-  runtimeDeps = [ openal ];
-
   nativeBuildInputs = [ copyDesktopItems ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "knossos";
-      exec = "Knossos.NET";
-      icon = "knossos";
-      desktopName = "Knossos.NET";
-      comment = "Multi-platform launcher for Freespace 2 Open";
-      categories = [ "Game" ];
-    })
-  ];
 
   postInstall = ''
     install -Dm444 $src/packaging/linux/knossos-512.png $out/share/icons/hicolor/512x512/apps/knossos.png
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = "Multi-platform launcher for Freespace 2 Open";
+      desktopName = "Knossos.NET";
+      exec = "Knossos.NET";
+      icon = "knossos";
+      name = "knossos";
+    })
+  ];
+
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+  # IO errors in build due to solution building race
+  enableParallelBuilding = false;
+  executables = [ "Knossos.NET" ];
+  nugetDeps = ./deps.json;
+  runtimeDeps = [ openal ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/KnossosNET/Knossos.NET/releases/tag/v${version}";
     description = "Multi-platform launcher for Freespace 2 Open";
     homepage = "https://fsnebula.org/knossos/";
+    changelog = "https://github.com/KnossosNET/Knossos.NET/releases/tag/v${version}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "Knossos.NET";
     maintainers = with lib.maintainers; [ cdombroski ];
     platforms = lib.platforms.unix;
+    mainProgram = "Knossos.NET";
   };
 }

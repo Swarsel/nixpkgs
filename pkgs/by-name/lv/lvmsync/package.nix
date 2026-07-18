@@ -2,27 +2,24 @@
   lib,
   stdenv,
   bundlerEnv,
-  ruby,
   bundlerUpdateScript,
   makeWrapper,
+  ruby,
 }:
 
 stdenv.mkDerivation rec {
   pname = "lvmsync";
   version = (import ./gemset.nix).${pname}.version;
-
   nativeBuildInputs = [ makeWrapper ];
-
-  dontUnpack = true;
 
   installPhase =
     let
       env = bundlerEnv {
+        gemfile = ./Gemfile;
+        gemset = ./gemset.nix;
+        lockfile = ./Gemfile.lock;
         name = "${pname}-${version}-gems";
         ruby = ruby;
-        gemfile = ./Gemfile;
-        lockfile = ./Gemfile.lock;
-        gemset = ./gemset.nix;
       };
     in
     ''
@@ -30,18 +27,21 @@ stdenv.mkDerivation rec {
       makeWrapper ${env}/bin/lvmsync $out/bin/lvmsync
     '';
 
+  dontUnpack = true;
   passthru.updateScript = bundlerUpdateScript "lvmsync";
 
   meta = {
     description = "Optimised synchronisation of LVM snapshots over a network";
-    mainProgram = "lvmsync";
     homepage = "https://theshed.hezmatt.org/lvmsync/";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       jluttine
       nicknovitski
     ];
+
+    platforms = lib.platforms.all;
+    mainProgram = "lvmsync";
   };
 
 }

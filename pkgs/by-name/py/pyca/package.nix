@@ -1,19 +1,20 @@
 {
   lib,
-  python3,
-  buildNpmPackage,
-  fetchFromGitHub,
-  jq,
   stdenv,
+  fetchFromGitHub,
+  buildNpmPackage,
+  jq,
+  python3,
 }:
 
 let
   python = python3.override {
-    self = python;
     packageOverrides = self: super: {
       # pyca is incompatible with SQLAlchemy 2.0
       sqlalchemy = super.sqlalchemy_1_4;
     };
+
+    self = python;
   };
 
   frontend = buildNpmPackage rec {
@@ -27,17 +28,17 @@ let
       sha256 = "sha256-cTkWkOmgxJZlddqaSYKva2wih4Mvsdrd7LD4NggxKQk=";
     };
 
-    npmDepsHash = "sha256-0U+semrNWTkNu3uQQkiJKZT1hB0/IfkL84G7/oP8XYY=";
+    postPatch = ''
+      ${jq}/bin/jq '. += {"version": "${version}"}' < package.json > package.json.tmp
+      mv package.json.tmp package.json
+    '';
 
     nativeBuildInputs = [
       jq
       python
     ];
 
-    postPatch = ''
-      ${jq}/bin/jq '. += {"version": "${version}"}' < package.json > package.json.tmp
-      mv package.json.tmp package.json
-    '';
+    npmDepsHash = "sha256-0U+semrNWTkNu3uQQkiJKZT1hB0/IfkL84G7/oP8XYY=";
 
     installPhase = ''
       mkdir -p $out/static
@@ -49,7 +50,6 @@ in
 python3.pkgs.buildPythonApplication rec {
   pname = "pyca";
   version = "4.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "opencast";
@@ -57,6 +57,10 @@ python3.pkgs.buildPythonApplication rec {
     rev = "v${version}";
     sha256 = "sha256-cTkWkOmgxJZlddqaSYKva2wih4Mvsdrd7LD4NggxKQk=";
   };
+
+  postPatch = ''
+    sed -i -e 's#static_folder=.*#static_folder="${frontend}/static")#' pyca/ui/__init__.py
+  '';
 
   build-system = with python3.pkgs; [ setuptools ];
 
@@ -71,10 +75,7 @@ python3.pkgs.buildPythonApplication rec {
     prometheus-client
   ];
 
-  postPatch = ''
-    sed -i -e 's#static_folder=.*#static_folder="${frontend}/static")#' pyca/ui/__init__.py
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "pyca" ];
 
   passthru = {
@@ -82,11 +83,11 @@ python3.pkgs.buildPythonApplication rec {
   };
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Fully functional Opencast capture agent written in Python";
-    mainProgram = "pyca";
     homepage = "https://github.com/opencast/pyCA";
     license = lib.licenses.lgpl3;
     maintainers = with lib.maintainers; [ pmiddend ];
+    mainProgram = "pyca";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 }

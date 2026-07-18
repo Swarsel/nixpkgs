@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,17 +16,15 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-aJVVMVoxmECmUUJphEMz5PYWx6FiSprn7NfO8asVXMc=";
-
-  subPackages = [ "." ];
-
   preInstallCheck = "make test";
+  subPackages = [ "." ];
 
   meta = {
     description = "Less verbose and more shell friendly Terraform";
-    mainProgram = "tf";
     homepage = "https://github.com/dex4er/tf";
     changelog = "https://github.com/dex4er/tf/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ Tenzer ];
+    mainProgram = "tf";
   };
 })

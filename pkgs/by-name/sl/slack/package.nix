@@ -1,7 +1,7 @@
 {
-  callPackage,
-  fetchurl,
   lib,
+  fetchurl,
+  callPackage,
   stdenvNoCC,
 }:
 
@@ -19,16 +19,19 @@ let
     description = "Desktop client for Slack";
     homepage = "https://slack.com";
     changelog = "https://slack.com/release-notes";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       mmahut
       prince213
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-darwin"
     ];
+
     mainProgram = "slack";
   };
 in

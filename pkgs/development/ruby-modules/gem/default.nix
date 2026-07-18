@@ -21,45 +21,45 @@
 {
   lib,
   fetchurl,
-  fetchgit,
-  makeWrapper,
-  gitMinimal,
-  ruby,
   bundler,
+  fetchgit,
+  gitMinimal,
+  makeWrapper,
+  ruby,
 }@defs:
 
 lib.makeOverridable (
 
   {
-    name ? null,
-    gemName,
-    version ? null,
-    type ? "gem",
-    document ? [ ], # e.g. [ "ri" "rdoc" ]
-    platform ? "ruby",
-    ruby ? defs.ruby,
     stdenv ? ruby.stdenv,
-    namePrefix ? "${ruby.pname}${lib.versions.majorMinor (toString ruby.version)}-",
-    nativeBuildInputs ? [ ],
+    gemName,
+    buildFlags ? [ ],
     buildInputs ? [ ],
-    meta ? { },
-    patches ? [ ],
-    gemPath ? [ ],
-    dontStrip ? false,
+    document ? [ ], # e.g. [ "ri" "rdoc" ]
     # Assume we don't have to build unless strictly necessary (e.g. the source is a
     # git checkout).
     # If you need to apply patches, make sure to set `dontBuild = false`;
     dontBuild ? true,
     dontInstallManpages ? false,
-    propagatedBuildInputs ? [ ],
-    propagatedUserEnvPkgs ? [ ],
-    buildFlags ? [ ],
-    passthru ? { },
+    dontStrip ? false,
+    gemPath ? [ ],
     # bundler expects gems to be stored in the cache directory for certain actions
     # such as `bundler install --redownload`.
     # At the cost of increasing the store size, you can keep the gems to have closer
     # alignment with what Bundler expects.
     keepGemCache ? false,
+    meta ? { },
+    name ? null,
+    namePrefix ? "${ruby.pname}${lib.versions.majorMinor (toString ruby.version)}-",
+    nativeBuildInputs ? [ ],
+    passthru ? { },
+    patches ? [ ],
+    platform ? "ruby",
+    propagatedBuildInputs ? [ ],
+    propagatedUserEnvPkgs ? [ ],
+    ruby ? defs.ruby,
+    type ? "gem",
+    version ? null,
     ...
   }@attrs:
 
@@ -68,15 +68,17 @@ lib.makeOverridable (
       attrs.src or (
         if type == "gem" then
           fetchurl {
+            inherit (attrs.source) sha256;
+
             urls = map (remote: "${remote}/gems/${gemName}-${suffix}.gem") (
               attrs.source.remotes or [ "https://rubygems.org" ]
             );
-            inherit (attrs.source) sha256;
+
             meta = {
               identifiers.purlParts = {
-                type = "gem";
                 # https://github.com/package-url/purl-spec/blob/18fd3e395dda53c00bc8b11fe481666dc7b3807a/types-doc/gem-definition.md
                 spec = "${gemName}@${version}?platform=${platform}";
+                type = "gem";
               };
             };
           }
@@ -116,9 +118,8 @@ lib.makeOverridable (
       inherit dontStrip;
       inherit suffix;
       inherit version;
-      gemType = type;
+      inherit src;
       pname = gemName;
-      name = attrs.name or "${namePrefix}${gemName}-${suffix}";
 
       nativeBuildInputs = [
         ruby
@@ -133,37 +134,7 @@ lib.makeOverridable (
       ]
       ++ buildInputs;
 
-      inherit src;
-
-      unpackPhase =
-        attrs.unpackPhase or ''
-          runHook preUnpack
-
-          if [[ -f $src && $src == *.gem ]]; then
-            if [[ -z "''${dontBuild-}" ]]; then
-              # we won't know the name of the directory that RubyGems creates,
-              # so we'll just use a glob to find it and move it over.
-              gempkg="$src"
-              sourceRoot=source
-              gem unpack $gempkg --target=container
-              cp -r container/* $sourceRoot
-              rm -r container
-
-              # copy out the original gemspec, for convenience during patching /
-              # overrides.
-              gem specification $gempkg  --ruby > original.gemspec
-              gemspec=$(readlink -f .)/original.gemspec
-            else
-              gempkg="$src"
-            fi
-          else
-            # Fall back to the original thing for everything else.
-            dontBuild=""
-            preUnpack="" postUnpack="" unpackPhase
-          fi
-
-          runHook postUnpack
-        '';
+      propagatedBuildInputs = gemPath ++ propagatedBuildInputs;
 
       # As of ruby 3.0, ruby headers require -fdeclspec when building with clang
       # Introduced in https://github.com/ruby/ruby/commit/0958e19ffb047781fe1506760c7cbd8d7fe74e57
@@ -298,12 +269,44 @@ lib.makeOverridable (
           runHook postInstall
         '';
 
-      propagatedBuildInputs = gemPath ++ propagatedBuildInputs;
+      gemType = type;
+      name = attrs.name or "${namePrefix}${gemName}-${suffix}";
       propagatedUserEnvPkgs = gemPath ++ propagatedUserEnvPkgs;
+
+      unpackPhase =
+        attrs.unpackPhase or ''
+          runHook preUnpack
+
+          if [[ -f $src && $src == *.gem ]]; then
+            if [[ -z "''${dontBuild-}" ]]; then
+              # we won't know the name of the directory that RubyGems creates,
+              # so we'll just use a glob to find it and move it over.
+              gempkg="$src"
+              sourceRoot=source
+              gem unpack $gempkg --target=container
+              cp -r container/* $sourceRoot
+              rm -r container
+
+              # copy out the original gemspec, for convenience during patching /
+              # overrides.
+              gem specification $gempkg  --ruby > original.gemspec
+              gemspec=$(readlink -f .)/original.gemspec
+            else
+              gempkg="$src"
+            fi
+          else
+            # Fall back to the original thing for everything else.
+            dontBuild=""
+            preUnpack="" postUnpack="" unpackPhase
+          fi
+
+          runHook postUnpack
+        '';
 
       passthru = passthru // {
         isRubyGem = true;
       };
+
       meta = {
         # default to Ruby's platforms
         platforms = ruby.meta.platforms;

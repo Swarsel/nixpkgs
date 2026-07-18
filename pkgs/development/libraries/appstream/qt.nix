@@ -2,16 +2,16 @@
   lib,
   stdenv,
   appstream,
+  nixosTests,
   qtbase,
   qttools,
-  nixosTests,
 }:
 
 # TODO: look into using the libraries from the regular appstream derivation as we keep duplicates here
 
 stdenv.mkDerivation {
-  pname = "appstream-qt";
   inherit (appstream) version src;
+  pname = "appstream-qt";
 
   outputs = [
     "out"
@@ -19,20 +19,17 @@ stdenv.mkDerivation {
     "installedTests"
   ];
 
+  patches = appstream.patches;
+  nativeBuildInputs = appstream.nativeBuildInputs ++ [ qttools ];
+
   buildInputs = appstream.buildInputs ++ [
     appstream
     qtbase
   ];
 
-  nativeBuildInputs = appstream.nativeBuildInputs ++ [ qttools ];
-
   mesonFlags = appstream.mesonFlags ++ [
     (lib.mesonBool "qt" true)
   ];
-
-  patches = appstream.patches;
-
-  dontWrapQtApps = true;
 
   # AppStreamQt tries to be relocatable, in hacky cmake ways that generally fail
   # horribly on NixOS. Just hardcode the paths.
@@ -42,6 +39,8 @@ stdenv.mkDerivation {
     sed -i "$dev/lib/cmake/AppStreamQt/AppStreamQtConfig.cmake" \
       -e "/IMPORTED_LOCATION/ s@\''${PACKAGE_PREFIX_DIR}@$out@"
   '';
+
+  dontWrapQtApps = true;
 
   passthru = appstream.passthru // {
     tests = {

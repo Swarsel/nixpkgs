@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  perl,
-  swig,
   autoreconfHook,
-  gd,
-  ncurses,
-  python311,
-  libxml2,
-  tcl,
-  libusb-compat-0_1,
-  pkg-config,
   boost,
+  buildPackages,
+  gd,
   libtool,
+  libusb-compat-0_1,
+  libxml2,
+  ncurses,
+  perl,
+  pkg-config,
+  python311,
+  swig,
+  tcl,
+  perlBindings ? stdenv.buildPlatform == stdenv.hostPlatform,
   pythonBindings ? true,
   tclBindings ? true,
-  perlBindings ? stdenv.buildPlatform == stdenv.hostPlatform,
-  buildPackages,
 }:
 let
   python3 = python311; # needs distutils and imp
@@ -34,7 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
+
   nativeBuildInputs = [
     swig
     pkg-config
@@ -67,8 +67,11 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals pythonBindings [ "--with-python-binding" ];
 
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+
   meta = {
     description = "Runtime library to control radio transceivers and receivers";
+
     longDescription = ''
       Hamlib provides a standardized programming interface that applications
       can use to send the appropriate commands to a radio.
@@ -77,15 +80,19 @@ stdenv.mkDerivation (finalAttrs: {
       which lets one control a radio transceiver or receiver, either from
       command line interface or in a text-oriented interactive interface.
     '';
+
+    homepage = "https://hamlib.sourceforge.net";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl2Plus
     ];
-    homepage = "https://hamlib.sourceforge.net";
+
     maintainers = with lib.maintainers; [
       relrod
       fstracke
     ];
+
     platforms = with lib.platforms; unix;
   };
 })

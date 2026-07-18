@@ -12,15 +12,15 @@ let
     db: dumpCmd:
     let
       compressSuffixes = {
-        "none" = "";
         "gzip" = ".gz";
+        "none" = "";
         "zstd" = ".zstd";
       };
       compressSuffix = lib.getAttr cfg.compression compressSuffixes;
 
       compressCmd = lib.getAttr cfg.compression {
-        "none" = "cat";
         "gzip" = "${pkgs.gzip}/bin/gzip -c -${toString cfg.compressionLevel} --rsyncable";
+        "none" = "cat";
         "zstd" = "${pkgs.zstd}/bin/zstd -c -${toString cfg.compressionLevel} --rsyncable";
       };
 
@@ -32,15 +32,14 @@ let
     in
     {
       enable = true;
-
       description = "Backup of ${db} database(s)";
-
-      requires = [ "postgresql.target" ];
 
       path = [
         pkgs.coreutils
         config.services.postgresql.package
       ];
+
+      requires = [ "postgresql.target" ];
 
       script = ''
         set -e -o pipefail
@@ -81,20 +80,10 @@ in
     services.postgresqlBackup = {
       enable = lib.mkEnableOption "PostgreSQL dumps";
 
-      startAt = lib.mkOption {
-        default = "*-*-* 01:15:00";
-        type = with lib.types; either (listOf str) str;
-        description = ''
-          This option defines (see `systemd.time` for format) when the
-          databases should be dumped.
-          The default is to update at 01:15 (at night) every day.
-        '';
-      };
-
       backupAll = lib.mkOption {
         default = cfg.databases == [ ];
         defaultText = lib.literalExpression "services.postgresqlBackup.databases == []";
-        type = lib.types.bool;
+
         description = ''
           Backup all databases using pg_dumpall.
           This option is mutual exclusive to
@@ -102,63 +91,89 @@ in
           The resulting backup dump will have the name all.sql.gz.
           This option is the default if no databases are specified.
         '';
+
+        type = lib.types.bool;
+      };
+
+      compression = lib.mkOption {
+        default = "gzip";
+
+        description = ''
+          The type of compression to use on the generated database dump.
+        '';
+
+        type = lib.types.enum [
+          "none"
+          "gzip"
+          "zstd"
+        ];
+      };
+
+      compressionLevel = lib.mkOption {
+        default = 6;
+
+        description = ''
+          The compression level used when compression is enabled.
+          gzip accepts levels 1 to 9. zstd accepts levels 1 to 19.
+        '';
+
+        type = lib.types.ints.between 1 19;
       };
 
       databases = lib.mkOption {
         default = [ ];
-        type = lib.types.listOf lib.types.str;
+
         description = ''
           List of database names to dump.
         '';
+
+        type = lib.types.listOf lib.types.str;
       };
 
       location = lib.mkOption {
         default = "/var/backup/postgresql";
-        type = lib.types.path;
+
         description = ''
           Path of directory where the PostgreSQL database dumps will be placed.
         '';
+
+        type = lib.types.path;
+      };
+
+      pgdumpAllOptions = lib.mkOption {
+        default = "";
+
+        description = ''
+          Command line options for pg_dumpall. This options is not used if
+          `config.services.postgresqlBackup.backupAll` is disabled.
+        '';
+
+        type = lib.types.separatedString " ";
       };
 
       pgdumpOptions = lib.mkOption {
-        type = lib.types.separatedString " ";
         default = "-C";
+
         description = ''
           Command line options for pg_dump. This options is not used if
           `config.services.postgresqlBackup.backupAll` is enabled. Note that
           config.services.postgresqlBackup.backupAll is also active, when no
           databases where specified.
         '';
-      };
 
-      pgdumpAllOptions = lib.mkOption {
         type = lib.types.separatedString " ";
-        default = "";
-        description = ''
-          Command line options for pg_dumpall. This options is not used if
-          `config.services.postgresqlBackup.backupAll` is disabled.
-        '';
       };
 
-      compression = lib.mkOption {
-        type = lib.types.enum [
-          "none"
-          "gzip"
-          "zstd"
-        ];
-        default = "gzip";
-        description = ''
-          The type of compression to use on the generated database dump.
-        '';
-      };
+      startAt = lib.mkOption {
+        default = "*-*-* 01:15:00";
 
-      compressionLevel = lib.mkOption {
-        type = lib.types.ints.between 1 19;
-        default = 6;
         description = ''
-          The compression level used when compression is enabled.
-          gzip accepts levels 1 to 9. zstd accepts levels 1 to 19.
+          This option defines (see `systemd.time` for format) when the
+          databases should be dumped.
+          The default is to update at 01:15 (at night) every day.
         '';
+
+        type = with lib.types; either (listOf str) str;
       };
     };
 
@@ -177,6 +192,7 @@ in
               cfg.compression == "none"
               || (cfg.compression == "gzip" && cfg.compressionLevel >= 1 && cfg.compressionLevel <= 9)
               || (cfg.compression == "zstd" && cfg.compressionLevel >= 1 && cfg.compressionLevel <= 19);
+
             message = "config.services.postgresqlBackup.compressionLevel must be set between 1 and 9 for gzip and 1 and 19 for zstd";
           }
         ];

@@ -20,7 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
-
   buildInputs = [ sdl3 ];
 
   meta = {
@@ -28,7 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/FNA-XNA/FAudio";
     changelog = "https://github.com/FNA-XNA/FAudio/releases/tag/${finalAttrs.version}";
     license = lib.licenses.zlib;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.marius851000 ];
+    platforms = lib.platforms.unix;
   };
 })

@@ -1,19 +1,15 @@
 {
   lib,
-  buildPythonPackage,
-  pythonAtLeast,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  pythonAtLeast,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "numericalunits";
   version = "1.26";
-  pyproject = true;
-
-  # AttributeError: module 'ast' has no attribute 'Num'
-  disabled = pythonAtLeast "3.14";
 
   src = fetchFromGitHub {
     owner = "sbyrnes321";
@@ -22,23 +18,27 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-vPB1r+j+p9n+YLnBjHuk2t+QSr+adEOjyC45QSbeb4M=";
   };
 
-  build-system = [
-    setuptools
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "numericalunits" ];
+  build-system = [
+    setuptools
+  ];
+
+  # AttributeError: module 'ast' has no attribute 'Num'
+  disabled = pythonAtLeast "3.14";
 
   enabledTestPaths = [
     "tests/tests.py"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "numericalunits" ];
+
   meta = {
-    homepage = "http://pypi.org/pypi/numericalunits/";
     description = "Package that lets you define quantities with unit";
+    homepage = "http://pypi.org/pypi/numericalunits/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ nickcao ];
   };

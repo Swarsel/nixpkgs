@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "btlejack";
   version = "2.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "virtualabs";
@@ -29,11 +28,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     python3Packages.halo
   ];
 
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/virtualabs/btlejack";
     description = "Bluetooth Low Energy Swiss-army knife";
-    mainProgram = "btlejack";
+    homepage = "https://github.com/virtualabs/btlejack";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "btlejack";
   };
 })

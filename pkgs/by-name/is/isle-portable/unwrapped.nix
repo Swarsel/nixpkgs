@@ -1,41 +1,37 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  alsa-lib,
   callPackage,
-  unstableGitUpdater,
-
   # Native Build Inputs
   cmake,
-  ninja,
-  python3,
-  pkg-config,
-
-  # Build Inputs
-  libxrender,
-  libxrandr,
-  libxi,
-  libxinerama,
-  libxfixes,
-  libxext,
-  libxcursor,
-  libx11,
-  wayland,
-  libxkbcommon,
-  wayland-protocols,
   glew,
-  qt6,
-  alsa-lib,
-  sdl3,
   iniparser,
   libweaver,
-
+  libx11,
+  libxcursor,
+  libxext,
+  libxfixes,
+  libxi,
+  libxinerama,
+  libxkbcommon,
+  libxrandr,
+  # Build Inputs
+  libxrender,
+  ninja,
+  pkg-config,
+  python3,
+  qt6,
+  sdl3,
+  unstableGitUpdater,
+  wayland,
+  wayland-protocols,
+  emscriptenHost ? "",
   # Options
   imguiDebug ? false,
-  emscriptenHost ? "",
 }:
 stdenv.mkDerivation (finalAttrs: {
-  strictDeps = true;
   pname = "isle-portable";
   version = "0-unstable-2026-01-31";
 
@@ -47,15 +43,17 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
+  outputs = [
+    "out"
+    "lib"
+  ];
+
   postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
     substituteInPlace packaging/macos/CMakeLists.txt \
       --replace-fail "fixup_bundle" "#fixup_bundle"
   '';
 
-  outputs = [
-    "out"
-    "lib"
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -95,6 +93,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     updateScript = unstableGitUpdater { hardcodeZeroVersion = true; };
+
     wrapped = callPackage ./package.nix {
       isle-portable-unwrapped = finalAttrs.finalPackage;
     };
@@ -103,6 +102,7 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Portable decompilation of Lego Island";
     homepage = "https://github.com/isledecomp/isle-portable";
+
     license = with lib.licenses; [
       # The original code for the portable project
       lgpl3Plus
@@ -110,10 +110,12 @@ stdenv.mkDerivation (finalAttrs: {
       mit
       unfree
     ];
-    platforms = with lib.platforms; windows ++ linux ++ darwin;
-    mainProgram = "isle";
+
     maintainers = with lib.maintainers; [
       RossSmyth
     ];
+
+    platforms = with lib.platforms; windows ++ linux ++ darwin;
+    mainProgram = "isle";
   };
 })

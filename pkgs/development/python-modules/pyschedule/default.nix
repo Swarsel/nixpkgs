@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "pyschedule";
   version = "0.2.34";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,9 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ pulp ];
-
   # tests not included with pypi release (in examples)
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Formulate and solve resource-constrained scheduling problems";

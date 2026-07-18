@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "termstyle";
   version = "0.1.11";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
 
   # Only manual tests
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Console colouring for python";

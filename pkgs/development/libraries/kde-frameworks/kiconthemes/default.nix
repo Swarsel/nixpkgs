@@ -1,13 +1,13 @@
 {
-  mkDerivation,
+  breeze-icons,
   cmake,
   extra-cmake-modules,
-  breeze-icons,
   karchive,
-  kcoreaddons,
   kconfigwidgets,
+  kcoreaddons,
   ki18n,
   kitemviews,
+  mkDerivation,
   qtbase,
   qtsvg,
   qttools,
@@ -15,13 +15,16 @@
 
 mkDerivation {
   pname = "kiconthemes";
+
   patches = [
     ./default-theme-breeze.patch
   ];
+
   nativeBuildInputs = [
     cmake
     extra-cmake-modules
   ];
+
   buildInputs = [
     breeze-icons
     karchive
@@ -30,6 +33,7 @@ mkDerivation {
     ki18n
     kitemviews
   ];
+
   propagatedBuildInputs = [
     qtbase
     qtsvg

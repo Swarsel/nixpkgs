@@ -14,14 +14,33 @@ in
       enable = lib.mkEnableOption "Apache Guacamole Client (Tomcat)";
       package = lib.mkPackageOption pkgs "guacamole-client" { };
 
+      enableWebserver = lib.mkOption {
+        default = true;
+
+        description = ''
+          Enable the Guacamole web application in a Tomcat webserver.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      logbackXml = lib.mkOption {
+        default = null;
+
+        description = ''
+          Configuration file that correspond to `logback.xml`.
+        '';
+
+        example = "/path/to/logback.xml";
+        type = lib.types.nullOr lib.types.path;
+      };
+
       settings = lib.mkOption {
-        type = lib.types.submodule {
-          freeformType = settingsFormat.type;
-        };
         default = {
           guacd-hostname = "localhost";
           guacd-port = 4822;
         };
+
         description = ''
           Configuration written to `guacamole.properties`.
 
@@ -32,32 +51,21 @@ in
           Guacamole, including authentication providers.
           :::
         '';
-      };
 
-      enableWebserver = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = ''
-          Enable the Guacamole web application in a Tomcat webserver.
-        '';
-      };
-
-      logbackXml = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
-        default = null;
-        example = "/path/to/logback.xml";
-        description = ''
-          Configuration file that correspond to `logback.xml`.
-        '';
+        type = lib.types.submodule {
+          freeformType = settingsFormat.type;
+        };
       };
 
       userMappingXml = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
         default = null;
-        example = "/path/to/user-mapping.xml";
+
         description = ''
           Configuration file that correspond to `user-mapping.xml`.
         '';
+
+        example = "/path/to/user-mapping.xml";
+        type = lib.types.nullOr lib.types.path;
       };
     };
   };
@@ -67,9 +75,11 @@ in
     environment.etc."guacamole/guacamole.properties" = lib.mkIf (cfg.settings != { }) {
       source = (settingsFormat.generate "guacamole.properties" cfg.settings);
     };
+
     environment.etc."guacamole/logback.xml" = lib.mkIf (cfg.logbackXml != null) {
       source = cfg.logbackXml;
     };
+
     environment.etc."guacamole/user-mapping.xml" = lib.mkIf (cfg.userMappingXml != null) {
       source = cfg.userMappingXml;
     };
@@ -77,6 +87,7 @@ in
     services = lib.mkIf cfg.enableWebserver {
       tomcat = {
         enable = true;
+
         webapps = [
           cfg.package
         ];

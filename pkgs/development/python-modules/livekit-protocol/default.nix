@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  gitUpdater,
   hatchling,
   protobuf,
-  gitUpdater,
 }:
 
 buildPythonPackage rec {
   pname = "livekit-protocol";
   version = "1.1.17";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "livekit";
@@ -19,20 +18,17 @@ buildPythonPackage rec {
     hash = "sha256-XTBQi1ckwHw7bpd2jQWqwhDXO0iHQRirc2GjfDtYILA=";
   };
 
-  pypaBuildFlags = [ "livekit-protocol" ];
-
+  doCheck = false; # no tests
   build-system = [ hatchling ];
 
   dependencies = [
     protobuf
   ];
 
-  pythonRemoveDeps = [ "types-protobuf" ];
-
-  doCheck = false; # no tests
-
+  pypaBuildFlags = [ "livekit-protocol" ];
+  pyproject = true;
   pythonImportsCheck = [ "livekit" ];
-
+  pythonRemoveDeps = [ "types-protobuf" ];
   passthru.updateScript = gitUpdater { rev-prefix = "protocol-v"; };
 
   meta = {

@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  autoreconfHook,
   fetchFromGitHub,
+  autoreconfHook,
   l-smash,
 }:
 
@@ -23,10 +23,12 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Losslessly & gaplessly cut m4a (AAC in MP4) files";
     homepage = "https://github.com/nu774/m4acut";
+
     license = with lib.licenses; [
       bsdOriginal
       zlib
     ];
+
     maintainers = [ lib.maintainers.chkno ];
     platforms = lib.platforms.all;
     mainProgram = "m4acut";

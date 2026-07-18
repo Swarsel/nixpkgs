@@ -1,23 +1,19 @@
 {
   lib,
-  buildPythonPackage,
-  cython_0,
-  openems,
-  csxcad,
   boost,
-  python-csxcad,
-  numpy,
+  buildPythonPackage,
+  csxcad,
+  cython_0,
   h5py,
+  numpy,
+  openems,
+  python-csxcad,
 }:
 
 buildPythonPackage rec {
   pname = "python-openems";
   version = openems.version;
-  format = "setuptools";
-
   src = openems.src;
-
-  sourceRoot = "${src.name}/python";
 
   nativeBuildInputs = [
     cython_0
@@ -32,12 +28,16 @@ buildPythonPackage rec {
     h5py
   ];
 
+  format = "setuptools";
+  pythonImportsCheck = [ "openEMS" ];
+
   setupPyBuildFlags = [
     "-I${openems}/include"
     "-L${openems}/lib"
     "-R${openems}/lib"
   ];
-  pythonImportsCheck = [ "openEMS" ];
+
+  sourceRoot = "${src.name}/python";
 
   meta = {
     description = "Python interface to OpenEMS";

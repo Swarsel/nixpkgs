@@ -3,160 +3,192 @@
 # has additional options that affect the web server as a whole, like
 # the user/group to run under.)
 
-{ lib, config }:
+{ config, lib }:
 
 with lib;
 
 {
   options = {
-    basicAuth = mkOption {
-      type = types.attrsOf types.str;
-      default = { };
-      example = literalExpression ''
-        {
-          user = "password";
-        };
+    alias = mkOption {
+      default = null;
+
+      description = ''
+        Alias directory for requests.
       '';
+
+      example = "/your/alias/directory";
+      type = types.nullOr types.path;
+    };
+
+    basicAuth = mkOption {
+      default = { };
+
       description = ''
         Basic Auth protection for a vhost.
 
         WARNING: This is implemented to store the password in plain text in the
         Nix store.
       '';
+
+      example = literalExpression ''
+        {
+          user = "password";
+        };
+      '';
+
+      type = types.attrsOf types.str;
     };
 
     basicAuthFile = mkOption {
-      type = types.nullOr types.path;
       default = null;
+
       description = ''
         Basic Auth password file for a vhost.
         Can be created by running {command}`nix-shell --packages apacheHttpd --run 'htpasswd -B -c FILENAME USERNAME'`.
       '';
+
+      type = types.nullOr types.path;
+    };
+
+    extraConfig = mkOption {
+      default = "";
+
+      description = ''
+        These lines go to the end of the location verbatim.
+      '';
+
+      type = types.lines;
+    };
+
+    fastcgiParams = mkOption {
+      default = { };
+
+      description = ''
+        FastCGI parameters to override.  Unlike in the Nginx
+        configuration file, overriding only some default parameters
+        won't unset the default values for other parameters.
+      '';
+
+      type = types.attrsOf (types.either types.str types.path);
+    };
+
+    index = mkOption {
+      default = null;
+
+      description = ''
+        Adds index directive.
+      '';
+
+      example = "index.php index.html";
+      type = types.nullOr types.str;
+    };
+
+    priority = mkOption {
+      default = 1000;
+
+      description = ''
+        Order of this location block in relation to the others in the vhost.
+        The semantics are the same as with `lib.mkOrder`. Smaller values have
+        a greater priority.
+      '';
+
+      type = types.int;
     };
 
     proxyPass = mkOption {
-      type = types.nullOr types.str;
       default = null;
-      example = "http://www.example.org/";
+
       description = ''
         Adds proxy_pass directive and sets recommended proxy headers if
         recommendedProxySettings is enabled.
       '';
+
+      example = "http://www.example.org/";
+      type = types.nullOr types.str;
     };
 
     proxyWebsockets = mkOption {
-      type = types.bool;
       default = false;
-      example = true;
+
       description = ''
         Whether to support proxying websocket connections with HTTP/1.1.
       '';
+
+      example = true;
+      type = types.bool;
     };
 
-    uwsgiPass = mkOption {
-      type = types.nullOr types.str;
-      default = null;
-      example = "unix:/run/example/example.sock";
+    recommendedProxySettings = mkOption {
+      default = config.services.nginx.recommendedProxySettings;
+      defaultText = literalExpression "config.services.nginx.recommendedProxySettings";
+
       description = ''
-        Adds uwsgi_pass directive and sets recommended proxy headers if
-        recommendedUwsgiSettings is enabled.
+        Enable recommended proxy settings.
       '';
+
+      type = types.bool;
     };
 
-    index = mkOption {
-      type = types.nullOr types.str;
-      default = null;
-      example = "index.php index.html";
-      description = ''
-        Adds index directive.
-      '';
-    };
+    recommendedUwsgiSettings = mkOption {
+      default = config.services.nginx.recommendedUwsgiSettings;
+      defaultText = literalExpression "config.services.nginx.recommendedUwsgiSettings";
 
-    tryFiles = mkOption {
-      type = types.nullOr types.str;
-      default = null;
-      example = "$uri =404";
       description = ''
-        Adds try_files directive.
+        Enable recommended uwsgi settings.
       '';
-    };
 
-    root = mkOption {
-      type = types.nullOr types.path;
-      default = null;
-      example = "/your/root/directory";
-      description = ''
-        Root directory for requests.
-      '';
-    };
-
-    alias = mkOption {
-      type = types.nullOr types.path;
-      default = null;
-      example = "/your/alias/directory";
-      description = ''
-        Alias directory for requests.
-      '';
+      type = types.bool;
     };
 
     return = mkOption {
+      default = null;
+
+      description = ''
+        Adds a return directive, for e.g. redirections.
+      '';
+
+      example = "301 http://example.com$request_uri";
+
       type =
         with types;
         nullOr (oneOf [
           str
           int
         ]);
+    };
+
+    root = mkOption {
       default = null;
-      example = "301 http://example.com$request_uri";
+
       description = ''
-        Adds a return directive, for e.g. redirections.
+        Root directory for requests.
       '';
+
+      example = "/your/root/directory";
+      type = types.nullOr types.path;
     };
 
-    fastcgiParams = mkOption {
-      type = types.attrsOf (types.either types.str types.path);
-      default = { };
+    tryFiles = mkOption {
+      default = null;
+
       description = ''
-        FastCGI parameters to override.  Unlike in the Nginx
-        configuration file, overriding only some default parameters
-        won't unset the default values for other parameters.
+        Adds try_files directive.
       '';
+
+      example = "$uri =404";
+      type = types.nullOr types.str;
     };
 
-    extraConfig = mkOption {
-      type = types.lines;
-      default = "";
-      description = ''
-        These lines go to the end of the location verbatim.
-      '';
-    };
+    uwsgiPass = mkOption {
+      default = null;
 
-    priority = mkOption {
-      type = types.int;
-      default = 1000;
       description = ''
-        Order of this location block in relation to the others in the vhost.
-        The semantics are the same as with `lib.mkOrder`. Smaller values have
-        a greater priority.
+        Adds uwsgi_pass directive and sets recommended proxy headers if
+        recommendedUwsgiSettings is enabled.
       '';
-    };
 
-    recommendedProxySettings = mkOption {
-      type = types.bool;
-      default = config.services.nginx.recommendedProxySettings;
-      defaultText = literalExpression "config.services.nginx.recommendedProxySettings";
-      description = ''
-        Enable recommended proxy settings.
-      '';
-    };
-
-    recommendedUwsgiSettings = mkOption {
-      type = types.bool;
-      default = config.services.nginx.recommendedUwsgiSettings;
-      defaultText = literalExpression "config.services.nginx.recommendedUwsgiSettings";
-      description = ''
-        Enable recommended uwsgi settings.
-      '';
+      example = "unix:/run/example/example.sock";
+      type = types.nullOr types.str;
     };
   };
 }

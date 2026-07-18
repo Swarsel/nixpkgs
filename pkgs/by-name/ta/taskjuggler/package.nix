@@ -6,7 +6,6 @@
 
 bundlerApp {
   pname = "taskjuggler";
-  gemdir = ./.;
 
   exes = [
     "tj3"
@@ -21,15 +20,18 @@ bundlerApp {
     "tj3webd"
   ];
 
+  gemdir = ./.;
   passthru.updateScript = bundlerUpdateScript "taskjuggler";
 
   meta = {
     description = "Modern and powerful project management tool";
     homepage = "https://taskjuggler.org/";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       nicknovitski
     ];
+
+    platforms = lib.platforms.unix;
   };
 }

@@ -2,8 +2,8 @@
   lib,
   aiohttp,
   buildPythonPackage,
-  fetchPypi,
   certifi,
+  fetchPypi,
   pytestCheckHook,
   setuptools,
 }:
@@ -11,14 +11,14 @@
 buildPythonPackage rec {
   pname = "crownstone-cloud";
   version = "1.4.11";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "crownstone_cloud";
     inherit version;
     hash = "sha256-s84pK52uMupxQfdMldV14V3nj+yVku1Vw13CRX4o08U=";
+    pname = "crownstone_cloud";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,8 +26,7 @@ buildPythonPackage rec {
     certifi
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "crownstone_cloud" ];
 
   meta = {

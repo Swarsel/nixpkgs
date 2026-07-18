@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest-regressions,
   pytest-timeout,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "coincidence";
   version = "0.6.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-coincidence";
@@ -22,10 +21,6 @@ buildPythonPackage rec {
     hash = "sha256-ktSuUzAwMych6Y2eJWMUfG1a3mGypg8L20f/105RFXc=";
   };
 
-  build-system = [ whey ];
-
-  dependencies = [ typing-extensions ];
-
   nativeCheckInputs = [
     pytest-regressions
     pytest-timeout
@@ -33,6 +28,9 @@ buildPythonPackage rec {
     toml
   ];
 
+  build-system = [ whey ];
+  dependencies = [ typing-extensions ];
+  pyproject = true;
   pythonImportsCheck = [ "coincidence" ];
 
   meta = {

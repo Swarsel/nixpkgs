@@ -1,45 +1,39 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
-  # dependencies
-  jsonpatch,
-  langchain-protocol,
-  langsmith,
-  packaging,
-  pydantic,
-  pyyaml,
-  tenacity,
-  typing-extensions,
-  uuid-utils,
-
   # tests
   blockbuster,
+  buildPythonPackage,
   freezegun,
+  # passthru
+  gitUpdater,
   grandalf,
+  # build-system
+  hatchling,
+  # dependencies
+  jsonpatch,
   langchain-core,
+  langchain-protocol,
   langchain-tests,
+  langsmith,
   numpy,
+  packaging,
+  pydantic,
   pytest-asyncio,
   pytest-mock,
   pytest-xdist,
   pytestCheckHook,
+  pyyaml,
   syrupy,
-
-  # passthru
-  gitUpdater,
+  tenacity,
+  typing-extensions,
+  uuid-utils,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "langchain-core";
   version = "1.4.8";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "langchain-ai";
@@ -47,24 +41,6 @@ buildPythonPackage (finalAttrs: {
     tag = "langchain-core==${finalAttrs.version}";
     hash = "sha256-fJKr1NlpCujGoVxxqjaEXGOVZO5NH9+71dWHyMuQ2jw=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/libs/core";
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    jsonpatch
-    langchain-protocol
-    langsmith
-    packaging
-    pydantic
-    pyyaml
-    tenacity
-    typing-extensions
-    uuid-utils
-  ];
-
-  pythonImportsCheck = [ "langchain_core" ];
 
   # avoid infinite recursion
   doCheck = false;
@@ -82,19 +58,22 @@ buildPythonPackage (finalAttrs: {
     syrupy
   ];
 
-  enabledTestPaths = [ "tests/unit_tests" ];
+  __structuredAttrs = true;
+  build-system = [ hatchling ];
 
-  passthru = {
-    tests.pytest = langchain-core.overridePythonAttrs (_: {
-      doCheck = true;
-    });
-    # python updater script sets the wrong tag
-    skipBulkUpdate = true;
-    updateScript = gitUpdater {
-      rev-prefix = "langchain-core==";
-      ignoredVersions = "a|b|dev|rc";
-    };
-  };
+  dependencies = [
+    jsonpatch
+    langchain-protocol
+    langsmith
+    packaging
+    pydantic
+    pyyaml
+    tenacity
+    typing-extensions
+    uuid-utils
+  ];
+
+  disabledTestPaths = [ "tests/unit_tests/runnables/test_runnable_events_v2.py" ];
 
   disabledTests = [
     # flaky, sometimes fail to strip uuid from AIMessageChunk before comparing to test value
@@ -145,13 +124,31 @@ buildPythonPackage (finalAttrs: {
     "test_rate_limit_astream"
   ];
 
-  disabledTestPaths = [ "tests/unit_tests/runnables/test_runnable_events_v2.py" ];
+  enabledTestPaths = [ "tests/unit_tests" ];
+  pyproject = true;
+  pythonImportsCheck = [ "langchain_core" ];
+  sourceRoot = "${finalAttrs.src.name}/libs/core";
+
+  passthru = {
+    # python updater script sets the wrong tag
+    skipBulkUpdate = true;
+
+    tests.pytest = langchain-core.overridePythonAttrs (_: {
+      doCheck = true;
+    });
+
+    updateScript = gitUpdater {
+      ignoredVersions = "a|b|dev|rc";
+      rev-prefix = "langchain-core==";
+    };
+  };
 
   meta = {
     description = "Building applications with LLMs through composability";
     homepage = "https://github.com/langchain-ai/langchain/tree/master/libs/core";
     changelog = "https://github.com/langchain-ai/langchain/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       natsukium
       sarahec

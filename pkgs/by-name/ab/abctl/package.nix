@@ -1,8 +1,8 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -17,6 +17,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-pnzXE3yv/0m0vsiC8iNiPBBrGnzSxbzMBwzFv0Y+O94=";
   };
 
+  vendorHash = "sha256-hxiR1zv5TlDPuNv2X4VY3p/uTuETQkV+ifc4w09XC2I=";
+
   checkFlags =
     let
       skippedTests = [
@@ -30,8 +32,6 @@ buildGoModule (finalAttrs: {
       ];
     in
     [ "-skip=^${lib.concatStringsSep "$|^" skippedTests}$" ];
-
-  vendorHash = "sha256-hxiR1zv5TlDPuNv2X4VY3p/uTuETQkV+ifc4w09XC2I=";
 
   passthru.updateScript = nix-update-script { };
 

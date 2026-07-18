@@ -2,15 +2,15 @@
   lib,
   stdenv,
   callPackage,
-  runCommand,
-  writeText,
-  pub2nix,
-  dartHooks,
-  makeWrapper,
   dart,
-  nodejs,
+  dartHooks,
   darwin,
   jq,
+  makeWrapper,
+  nodejs,
+  pub2nix,
+  runCommand,
+  writeText,
   yq,
 }:
 
@@ -28,29 +28,21 @@ lib.extendMkDerivation {
     finalAttrs:
     args@{
       src,
-      sourceRoot ? "source",
-      packageRoot ? (lib.removePrefix "/" (lib.removePrefix "source" sourceRoot)),
-      gitHashes ? { },
-      sdkSourceBuilders ? { },
+      autoPubspecLock ? null,
       customSourceBuilders ? { },
-
-      sdkSetupScript ? "",
-      extraPackageConfigSetup ? "",
-
-      # Output type to produce. Can be any kind supported by dart
-      # https://dart.dev/tools/dart-compile#types-of-output
-      # If using jit, you might want to pass some arguments to `dartJitFlags`
-      dartOutputType ? "exe",
       dartCompileCommand ? "dart compile",
       dartCompileFlags ? [ ],
-      # These come at the end of the command, useful to pass flags to the jit run
-      dartJitFlags ? [ ],
-
       # Attrset of entry point files to build and install.
       # Where key is the final binary path and value is the source file path
       # e.g. { "bin/foo" = "bin/main.dart";  }
       # Set to null to read executables from pubspec.yaml
       dartEntryPoints ? null,
+      # These come at the end of the command, useful to pass flags to the jit run
+      dartJitFlags ? [ ],
+      # Output type to produce. Can be any kind supported by dart
+      # https://dart.dev/tools/dart-compile#types-of-output
+      # If using jit, you might want to pass some arguments to `dartJitFlags`
+      dartOutputType ? "exe",
       # Used when wrapping aot, jit, kernel, and js builds.
       # Set to null to disable wrapping.
       dartRuntimeCommand ?
@@ -62,11 +54,10 @@ lib.extendMkDerivation {
           "${nodejs}/bin/node"
         else
           null,
-
-      runtimeDependencies ? [ ],
+      extraPackageConfigSetup ? "",
       extraWrapProgramArgs ? "",
-
-      autoPubspecLock ? null,
+      gitHashes ? { },
+      packageRoot ? (lib.removePrefix "/" (lib.removePrefix "source" sourceRoot)),
       pubspecLock ?
         if autoPubspecLock == null then
           throw "The pubspecLock argument is required. If import-from-derivation is allowed (it isn't in Nixpkgs), you can set autoPubspecLock to the path to a pubspec.lock instead."
@@ -77,6 +68,10 @@ lib.extendMkDerivation {
               nativeBuildInputs = [ yq ];
             } ''yq . '${autoPubspecLock}' > "$out"''
           ),
+      runtimeDependencies ? [ ],
+      sdkSetupScript ? "",
+      sdkSourceBuilders ? { },
+      sourceRoot ? "source",
       ...
     }:
     let
@@ -91,6 +86,7 @@ lib.extendMkDerivation {
           gitHashes
           customSourceBuilders
           ;
+
         sdkSourceBuilders = {
           # https://github.com/dart-lang/pub/blob/e1fbda73d1ac597474b82882ee0bf6ecea5df108/lib/src/sdk/dart.dart#L80
           "dart" =
@@ -113,7 +109,10 @@ lib.extendMkDerivation {
       };
       packageConfig = generators.linkPackageConfig {
         inherit pubspecLock;
+        extraSetupCommands = extraPackageConfigSetup;
+
         packageConfig = pub2nix.generatePackageConfig {
+          inherit (pubspecLockData) dependencySources;
           pname = if args.pname != null then "${args.pname}-${args.version}" else null;
 
           dependencies =
@@ -125,10 +124,7 @@ lib.extendMkDerivation {
             # include the transitive dependencies of dev and override dependencies
             # without including the dev and override dependencies themselves.
             builtins.concatLists (builtins.attrValues pubspecLockData.dependencies);
-
-          inherit (pubspecLockData) dependencySources;
         };
-        extraSetupCommands = extraPackageConfigSetup;
       };
 
       inherit (dartHooks.override { inherit dart; })
@@ -167,14 +163,6 @@ lib.extendMkDerivation {
       ]
       ++ args.outputs or [ ];
 
-      dartEntryPoints =
-        if (dartEntryPoints != null) then
-          writeText "entrypoints.json" (builtins.toJSON dartEntryPoints)
-        else
-          null;
-
-      runtimeDependencies = map lib.getLib runtimeDependencies;
-
       nativeBuildInputs =
         (args.nativeBuildInputs or [ ])
         ++ [
@@ -197,11 +185,17 @@ lib.extendMkDerivation {
         ln -sf "$pubspecLockFilePath" pubspec.lock
       '';
 
+      dartEntryPoints =
+        if (dartEntryPoints != null) then
+          writeText "entrypoints.json" (builtins.toJSON dartEntryPoints)
+        else
+          null;
+
       # When stripping, it seems some ELF information is lost and the dart VM cli
       # runs instead of the expected program. Don't strip if it's an exe output.
       dontStrip = args.dontStrip or (dartOutputType == "exe");
-
       passAsFile = [ "pubspecLockFile" ];
+      runtimeDependencies = map lib.getLib runtimeDependencies;
 
       passthru = {
         pubspecLock = pubspecLockData;

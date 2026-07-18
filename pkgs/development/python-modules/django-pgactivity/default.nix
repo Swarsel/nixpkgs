@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   django,
+  poetry-core,
   psycopg,
 }:
 
 buildPythonPackage rec {
   pname = "django-pgactivity";
   version = "1.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "AmbitionEng";
@@ -26,6 +25,7 @@ buildPythonPackage rec {
     psycopg
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pgactivity" ];
 
   meta = {

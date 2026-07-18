@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   nix-update-script,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "wsrepl";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "doyensec";
@@ -17,10 +16,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-Y96p39TjpErGsR5vFS0NxEF/2Tnr2Zk7ULDgNXaXx9o=";
   };
 
-  pythonRelaxDeps = [
-    "rich"
-    "textual"
-  ];
+  # Project has no tests
+  doCheck = false;
 
   build-system = with python3Packages; [
     poetry-core
@@ -34,11 +31,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
     websocket-client
   ];
 
-  # Project has no tests
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "wsrepl"
+  ];
+
+  pythonRelaxDeps = [
+    "rich"
+    "textual"
   ];
 
   passthru = {

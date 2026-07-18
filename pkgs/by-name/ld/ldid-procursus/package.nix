@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  installShellFiles,
   fetchpatch,
-  pkg-config,
+  installShellFiles,
   libplist,
   openssl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,19 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-QnSmWY9zCOPYAn2VHc5H+VQXjTCyr0EuosxvKGGpDtQ=";
   };
 
+  patches = [
+    (fetchpatch {
+      hash = "sha256-D5o/E2tCbuNOv2D9UVaLEx8ZiwSB/wT0hf7XaTGzxE0=";
+      name = "fix-memory-issues-with-various-entitlements.patch";
+      url = "https://github.com/ProcursusTeam/ldid/commit/f38a095aa0cc721c40050cb074116c153608a11b.patch";
+    })
+  ];
+
+  postPatch = ''
+    substituteInPlace Makefile \
+      --replace-fail "pkg-config" "$PKG_CONFIG"
+  '';
+
   nativeBuildInputs = [
     pkg-config
     installShellFiles
@@ -30,34 +43,21 @@ stdenv.mkDerivation (finalAttrs: {
     openssl
   ];
 
-  stripDebugFlags = [ "--strip-unneeded" ];
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
-
-  dontConfigure = true;
-
-  patches = [
-    (fetchpatch {
-      name = "fix-memory-issues-with-various-entitlements.patch";
-      url = "https://github.com/ProcursusTeam/ldid/commit/f38a095aa0cc721c40050cb074116c153608a11b.patch";
-      hash = "sha256-D5o/E2tCbuNOv2D9UVaLEx8ZiwSB/wT0hf7XaTGzxE0=";
-    })
-  ];
-
-  postPatch = ''
-    substituteInPlace Makefile \
-      --replace-fail "pkg-config" "$PKG_CONFIG"
-  '';
 
   postInstall = ''
     installShellCompletion --cmd ldid --zsh _ldid
   '';
 
+  dontConfigure = true;
+  stripDebugFlags = [ "--strip-unneeded" ];
+
   meta = {
-    mainProgram = "ldid";
     description = "Put real or fake signatures in a Mach-O binary";
     homepage = "https://github.com/ProcursusTeam/ldid";
+    license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ keto ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.agpl3Only;
+    mainProgram = "ldid";
   };
 })

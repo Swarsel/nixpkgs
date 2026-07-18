@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
-  fetchurl,
   lib,
+  fetchurl,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -12,6 +12,18 @@ stdenvNoCC.mkDerivation rec {
     url = "https://github.com/190n/plymouth-blahaj/releases/download/v${version}/blahaj.tar.gz";
     sha256 = "sha256-JSCu/3SK1FlSiRwxnjQvHtPGGkPc6u/YjaoIvw0PU8A=";
   };
+
+  installPhase = ''
+    runHook preInstall
+
+    mkdir -p $out/share/plymouth/themes/blahaj
+    cp * $out/share/plymouth/themes/blahaj
+    find $out/share/plymouth/themes/ -name \*.plymouth -exec sed -i "s@\/usr\/@$out\/@" {} \;
+
+    runHook postInstall
+  '';
+
+  dontBuild = true;
 
   patchPhase = ''
     runHook prePatch
@@ -26,23 +38,11 @@ stdenvNoCC.mkDerivation rec {
     runHook postPatch
   '';
 
-  dontBuild = true;
-
-  installPhase = ''
-    runHook preInstall
-
-    mkdir -p $out/share/plymouth/themes/blahaj
-    cp * $out/share/plymouth/themes/blahaj
-    find $out/share/plymouth/themes/ -name \*.plymouth -exec sed -i "s@\/usr\/@$out\/@" {} \;
-
-    runHook postInstall
-  '';
-
   meta = {
     description = "Plymouth theme featuring IKEA's 1m soft toy shark";
     homepage = "https://github.com/190n/plymouth-blahaj";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ miampf ];
+    platforms = lib.platforms.linux;
   };
 }

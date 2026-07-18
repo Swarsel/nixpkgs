@@ -26,6 +26,11 @@ stdenv.mkDerivation (finalAttrs: {
     which
   ];
 
+  postInstall = ''
+    # bash completion is already handled by make install
+    install -D etc/git-extras-completion.zsh $out/share/zsh/site-functions/_git_extras
+  '';
+
   dontBuild = true;
 
   installFlags = [
@@ -33,17 +38,12 @@ stdenv.mkDerivation (finalAttrs: {
     "SYSCONFDIR=${placeholder "out"}/share"
   ];
 
-  postInstall = ''
-    # bash completion is already handled by make install
-    install -D etc/git-extras-completion.zsh $out/share/zsh/site-functions/_git_extras
-  '';
-
   meta = {
-    changelog = "https://github.com/tj/git-extras/releases/tag/${finalAttrs.src.tag}";
-    homepage = "https://github.com/tj/git-extras";
     description = "GIT utilities -- repo summary, repl, changelog population, author commit percentages and more";
+    homepage = "https://github.com/tj/git-extras";
+    changelog = "https://github.com/tj/git-extras/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ SuperSandro2000 ];
+    platforms = lib.platforms.all;
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   rarezip,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {

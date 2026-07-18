@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   httpx,
+  poetry-core,
   pytest-asyncio,
   pytest-httpx,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "iceportal";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "home-assistant-ecosystem";
@@ -21,16 +20,15 @@ buildPythonPackage rec {
     hash = "sha256-kpAUgGi2fAHzQYuZAaQW9wdrYjwbduRsoTwSuzcjJa8=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ httpx ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-httpx
     pytestCheckHook
   ];
 
+  build-system = [ poetry-core ];
+  dependencies = [ httpx ];
+  pyproject = true;
   pythonImportsCheck = [ "iceportal" ];
 
   meta = {

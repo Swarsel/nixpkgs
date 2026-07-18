@@ -1,7 +1,7 @@
 {
   lib,
-  appimageTools,
   fetchurl,
+  appimageTools,
   nix-update-script,
 }:
 let
@@ -33,11 +33,11 @@ appimageTools.wrapType2 {
     description = "Visual scope for coffee roasters";
     homepage = "https://artisan-scope.org/";
     changelog = "https://github.com/artisan-roaster-scope/artisan/releases/tag/v${version}";
-    downloadPage = "https://github.com/artisan-roaster-scope/artisan/releases";
     license = lib.licenses.gpl3Only;
-    mainProgram = "artisan";
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ bohreromir ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "artisan";
+    downloadPage = "https://github.com/artisan-roaster-scope/artisan/releases";
   };
 }

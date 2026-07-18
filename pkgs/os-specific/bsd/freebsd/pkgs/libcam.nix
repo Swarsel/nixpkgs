@@ -4,14 +4,17 @@
   mkDerivation,
 }:
 mkDerivation {
-  path = "lib/libcam";
+  buildInputs = [
+    libsbuf
+  ];
+
+  MK_TESTS = "no";
+
   extraPaths = [
     "sys/cam"
     "sys/dev/nvme"
   ];
-  buildInputs = [
-    libsbuf
-  ];
-  MK_TESTS = "no";
+
+  path = "lib/libcam";
   meta.platforms = lib.platforms.freebsd;
 }

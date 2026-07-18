@@ -18,14 +18,14 @@ let
   makeBinfmtLine =
     name:
     {
-      recognitionType,
-      offset,
+      fixBinary,
       magicOrExtension,
       mask,
-      preserveArgvZero,
-      openBinary,
       matchCredentials,
-      fixBinary,
+      offset,
+      openBinary,
+      preserveArgvZero,
+      recognitionType,
       ...
     }:
     let
@@ -64,6 +64,51 @@ in
 
   options = {
     boot.binfmt = {
+      addEmulatedSystemsToNixSandbox = mkOption {
+        default = true;
+
+        description = ''
+          Whether to add the {option}`boot.binfmt.emulatedSystems` to {option}`nix.settings.extra-platforms`.
+          Disable this to use remote builders for those platforms, while allowing testing binaries locally.
+        '';
+
+        example = false;
+        type = types.bool;
+      };
+
+      emulatedSystems = mkOption {
+        default = [ ];
+
+        description = ''
+          List of systems to emulate. Will also configure Nix to
+          support your new systems.
+          Warning: the builder can execute all emulated systems within the same build, which introduces impurities in the case of cross compilation.
+        '';
+
+        example = [
+          "wasm32-wasi"
+          "x86_64-windows"
+          "aarch64-linux"
+        ];
+
+        type = types.listOf (types.enum (builtins.attrNames magics));
+      };
+
+      preferStaticEmulators = mkOption {
+        default = false;
+
+        description = ''
+          Whether to use static emulators when available.
+
+          This enables the kernel to preload the emulator binaries when
+          the binfmt registrations are added, obviating the need to make
+          the emulator binaries available inside chroots and chroot-like
+          sandboxes.
+        '';
+
+        type = types.bool;
+      };
+
       registrations = mkOption {
         default = { };
 
@@ -77,19 +122,42 @@ in
             { config, ... }:
             {
               options = {
-                recognitionType = mkOption {
-                  default = "magic";
-                  description = "Whether to recognize executables by magic number or extension.";
-                  type = types.enum [
-                    "magic"
-                    "extension"
-                  ];
+                fixBinary = mkOption {
+                  default = false;
+
+                  description = ''
+                    Whether to open the interpreter file as soon as the
+                    registration is loaded, rather than waiting for a
+                    relevant file to be invoked.
+
+                    See the description of the 'F' flag in the kernel docs
+                    for more details.
+                  '';
+
+                  type = types.bool;
                 };
 
-                offset = mkOption {
+                interpreter = mkOption {
+                  description = ''
+                    The interpreter to invoke to run the program.
+
+                    Note that the actual registration will point to
+                    /run/binfmt/''${name}, so the kernel interpreter length
+                    limit doesn't apply.
+                  '';
+
+                  type = types.path;
+                };
+
+                interpreterSandboxPath = mkOption {
                   default = null;
-                  description = "The byte offset of the magic number used for recognition.";
-                  type = types.nullOr types.int;
+
+                  description = ''
+                    Path of the interpreter to expose in the build sandbox.
+                  '';
+
+                  internal = true;
+                  type = types.nullOr types.path;
                 };
 
                 magicOrExtension = mkOption {
@@ -103,39 +171,9 @@ in
                   type = types.nullOr types.str;
                 };
 
-                interpreter = mkOption {
-                  description = ''
-                    The interpreter to invoke to run the program.
-
-                    Note that the actual registration will point to
-                    /run/binfmt/''${name}, so the kernel interpreter length
-                    limit doesn't apply.
-                  '';
-                  type = types.path;
-                };
-
-                preserveArgvZero = mkOption {
-                  default = false;
-                  description = ''
-                    Whether to pass the original argv[0] to the interpreter.
-
-                    See the description of the 'P' flag in the kernel docs
-                    for more details;
-                  '';
-                  type = types.bool;
-                };
-
-                openBinary = mkOption {
-                  default = config.matchCredentials;
-                  description = ''
-                    Whether to pass the binary to the interpreter as an open
-                    file descriptor, instead of a path.
-                  '';
-                  type = types.bool;
-                };
-
                 matchCredentials = mkOption {
                   default = false;
+
                   description = ''
                     Whether to launch with the credentials and security
                     token of the binary, not the interpreter (e.g. setuid
@@ -146,82 +184,65 @@ in
 
                     Implies/requires openBinary = true.
                   '';
+
                   type = types.bool;
                 };
 
-                fixBinary = mkOption {
-                  default = false;
-                  description = ''
-                    Whether to open the interpreter file as soon as the
-                    registration is loaded, rather than waiting for a
-                    relevant file to be invoked.
+                offset = mkOption {
+                  default = null;
+                  description = "The byte offset of the magic number used for recognition.";
+                  type = types.nullOr types.int;
+                };
 
-                    See the description of the 'F' flag in the kernel docs
-                    for more details.
+                openBinary = mkOption {
+                  default = config.matchCredentials;
+
+                  description = ''
+                    Whether to pass the binary to the interpreter as an open
+                    file descriptor, instead of a path.
                   '';
+
                   type = types.bool;
+                };
+
+                preserveArgvZero = mkOption {
+                  default = false;
+
+                  description = ''
+                    Whether to pass the original argv[0] to the interpreter.
+
+                    See the description of the 'P' flag in the kernel docs
+                    for more details;
+                  '';
+
+                  type = types.bool;
+                };
+
+                recognitionType = mkOption {
+                  default = "magic";
+                  description = "Whether to recognize executables by magic number or extension.";
+
+                  type = types.enum [
+                    "magic"
+                    "extension"
+                  ];
                 };
 
                 wrapInterpreterInShell = mkOption {
                   default = true;
+
                   description = ''
                     Whether to wrap the interpreter in a shell script.
 
                     This allows a shell command to be set as the interpreter.
                   '';
-                  type = types.bool;
-                };
 
-                interpreterSandboxPath = mkOption {
-                  internal = true;
-                  default = null;
-                  description = ''
-                    Path of the interpreter to expose in the build sandbox.
-                  '';
-                  type = types.nullOr types.path;
+                  type = types.bool;
                 };
               };
             }
           )
         );
-      };
-
-      emulatedSystems = mkOption {
-        default = [ ];
-        example = [
-          "wasm32-wasi"
-          "x86_64-windows"
-          "aarch64-linux"
-        ];
-        description = ''
-          List of systems to emulate. Will also configure Nix to
-          support your new systems.
-          Warning: the builder can execute all emulated systems within the same build, which introduces impurities in the case of cross compilation.
-        '';
-        type = types.listOf (types.enum (builtins.attrNames magics));
-      };
-
-      addEmulatedSystemsToNixSandbox = mkOption {
-        type = types.bool;
-        default = true;
-        example = false;
-        description = ''
-          Whether to add the {option}`boot.binfmt.emulatedSystems` to {option}`nix.settings.extra-platforms`.
-          Disable this to use remote builders for those platforms, while allowing testing binaries locally.
-        '';
-      };
-
-      preferStaticEmulators = mkOption {
-        default = false;
-        description = ''
-          Whether to use static emulators when available.
-
-          This enables the kernel to preload the emulator binaries when
-          the binfmt registrations are added, obviating the need to make
-          the emulator binaries available inside chroots and chroot-like
-          sandboxes.
-        '';
-        type = types.bool;
       };
     };
   };
@@ -238,6 +259,7 @@ in
         assert system != pkgs.stdenv.hostPlatform.system;
         {
           name = system;
+
           value =
             { config, ... }:
             let
@@ -257,23 +279,30 @@ in
             in
             (
               {
-                preserveArgvZero = mkDefault isQemu;
-
-                interpreter = mkDefault interpreterReg;
                 fixBinary = mkDefault useStaticEmulator;
-                wrapInterpreterInShell = mkDefault (!config.preserveArgvZero && !config.fixBinary);
+                interpreter = mkDefault interpreterReg;
+
                 interpreterSandboxPath = mkDefault (
                   if config.fixBinary then null else dirOf (dirOf config.interpreter)
                 );
+
+                preserveArgvZero = mkDefault isQemu;
+                wrapInterpreterInShell = mkDefault (!config.preserveArgvZero && !config.fixBinary);
               }
               // (magics.${system} or (throw "Cannot create binfmt registration for system ${system}"))
             );
         }
       ) cfg.emulatedSystems
     );
+
+    environment.etc."binfmt.d/nixos.conf".source = builtins.toFile "binfmt_nixos.conf" (
+      lib.concatStringsSep "\n" (lib.mapAttrsToList makeBinfmtLine config.boot.binfmt.registrations)
+    );
+
     nix.settings = lib.mkIf (cfg.addEmulatedSystemsToNixSandbox && cfg.emulatedSystems != [ ]) {
       extra-platforms =
         cfg.emulatedSystems ++ lib.optional pkgs.stdenv.hostPlatform.isx86_64 "i686-linux";
+
       extra-sandbox-paths =
         let
           ruleFor = system: cfg.registrations.${system};
@@ -286,10 +315,6 @@ in
           map (system: (ruleFor system).interpreterSandboxPath) cfg.emulatedSystems
         );
     };
-
-    environment.etc."binfmt.d/nixos.conf".source = builtins.toFile "binfmt_nixos.conf" (
-      lib.concatStringsSep "\n" (lib.mapAttrsToList makeBinfmtLine config.boot.binfmt.registrations)
-    );
 
     systemd = lib.mkMerge [
       {
@@ -307,6 +332,7 @@ in
           "proc-sys-fs-binfmt_misc.mount"
           "systemd-binfmt.service"
         ];
+
         services.systemd-binfmt.after = [ "systemd-tmpfiles-setup.service" ];
         services.systemd-binfmt.restartTriggers = [ (builtins.toJSON config.boot.binfmt.registrations) ];
       })

@@ -1,61 +1,53 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  # build-system
-  ninja,
-  scikit-build-core,
-  setuptools,
-
-  # nativeBuildInputs
-  cmake,
-
   # buildInputs
   bashNonInteractive,
+  buildPythonPackage,
   ceres-solver,
-  eigen,
-  gflags,
-  glog,
-  gtest,
-  lapack,
-  metis,
-  pybind11,
-  suitesparse,
-
   # dependencies
   cloudpickle,
+  # nativeBuildInputs
+  cmake,
+  eigen,
   exifread,
   flask,
   fpdf2,
+  gflags,
+  glog,
+  gtest,
   joblib,
+  lapack,
   matplotlib,
+  metis,
   networkx,
+  # build-system
+  ninja,
+  nix-update-script,
   numpy,
   opencv-python,
   pillow,
+  pybind11,
   pyproj,
-  python-dateutil,
-  pyyaml,
-  scipy,
-  xmltodict,
-
   # tests
   pytestCheckHook,
-
+  python-dateutil,
+  pythonAtLeast,
+  pyyaml,
   # passthru
   runCommand,
+  scikit-build-core,
+  scipy,
+  setuptools,
   srcOnly,
-  nix-update-script,
+  suitesparse,
+  xmltodict,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "opensfm";
   version = "odm-4-unstable-2026-07-01";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "mapillary";
@@ -90,14 +82,6 @@ buildPythonPackage (finalAttrs: {
     rm setup.py
   '';
 
-  dontUseCmakeConfigure = true;
-
-  build-system = [
-    ninja
-    scikit-build-core
-    setuptools
-  ];
-
   nativeBuildInputs = [
     cmake
   ];
@@ -113,6 +97,29 @@ buildPythonPackage (finalAttrs: {
     metis
     pybind11
     suitesparse
+  ];
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
+  # pyproject.toml has yet to enable the [project.scripts]
+  postInstall = ''
+    if [[ -d $out/bin ]]; then
+      echo >&2 "ERROR: $out/bin found, re-check our assumptions"
+      false
+    fi
+    install -Dt $out/bin -m +rwx bin/opensfm
+    install -Dt $out/bin -m +rwx bin/opensfm_run_all
+    install -Dt $out/bin -m +rwx bin/opensfm_main.py
+  '';
+
+  __structuredAttrs = true;
+
+  build-system = [
+    ninja
+    scikit-build-core
+    setuptools
   ];
 
   dependencies = [
@@ -133,21 +140,6 @@ buildPythonPackage (finalAttrs: {
     xmltodict
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
-  # pyproject.toml has yet to enable the [project.scripts]
-  postInstall = ''
-    if [[ -d $out/bin ]]; then
-      echo >&2 "ERROR: $out/bin found, re-check our assumptions"
-      false
-    fi
-    install -Dt $out/bin -m +rwx bin/opensfm
-    install -Dt $out/bin -m +rwx bin/opensfm_run_all
-    install -Dt $out/bin -m +rwx bin/opensfm_main.py
-  '';
-
   disabledTests = [
     # flaky
     "test_match_candidates_from_metadata_bow"
@@ -162,6 +154,8 @@ buildPythonPackage (finalAttrs: {
     "test_reconstruction_triangulation"
   ];
 
+  dontUseCmakeConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "opensfm" ];
 
   passthru = {
@@ -192,15 +186,17 @@ buildPythonPackage (finalAttrs: {
   };
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
+    description = "Open source Structure-from-Motion pipeline from Mapillary";
+    homepage = "https://opensfm.org/";
+    changelog = "https://github.com/mapillary/OpenSfM/blob/${finalAttrs.src.rev}/CHANGELOG.md";
+    license = lib.licenses.bsd2;
+
     maintainers = [
       lib.maintainers.pbsds
       lib.maintainers.SomeoneSerge
     ];
+
+    broken = stdenv.hostPlatform.isDarwin;
     teams = [ lib.teams.geospatial ];
-    license = lib.licenses.bsd2;
-    changelog = "https://github.com/mapillary/OpenSfM/blob/${finalAttrs.src.rev}/CHANGELOG.md";
-    description = "Open source Structure-from-Motion pipeline from Mapillary";
-    homepage = "https://opensfm.org/";
   };
 })

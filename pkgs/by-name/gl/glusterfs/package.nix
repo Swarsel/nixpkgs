@@ -2,45 +2,45 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fuse,
-  bison,
-  flex,
-  openssl,
-  python3,
-  ncurses,
-  readline,
+  acl,
+  attr,
   autoconf,
   automake,
-  libtool,
-  pkg-config,
-  zlib,
+  bison,
+  btrfs-progs,
+  coreutils,
+  e2fsprogs,
+  findutils,
+  flex,
+  fuse,
+  gawk,
+  getent,
+  gnugrep,
+  gnused,
+  gperftools,
   libaio,
-  libxml2,
-  acl,
-  sqlite,
+  libtirpc,
+  libtool,
   liburcu,
   liburing,
-  attr,
-  makeWrapper,
-  coreutils,
-  gnused,
-  gnugrep,
-  which,
-  openssh,
-  gawk,
-  findutils,
-  util-linux,
+  libxml2,
   lvm2,
-  btrfs-progs,
-  e2fsprogs,
-  xfsprogs,
-  systemd,
-  rsync,
-  getent,
-  rpcsvc-proto,
-  libtirpc,
-  gperftools,
+  makeWrapper,
+  ncurses,
   nixosTests,
+  openssh,
+  openssl,
+  pkg-config,
+  python3,
+  readline,
+  rpcsvc-proto,
+  rsync,
+  sqlite,
+  systemd,
+  util-linux,
+  which,
+  xfsprogs,
+  zlib,
 }:
 let
   # NOTE: On each glusterfs release, it should be checked if gluster added
@@ -104,6 +104,7 @@ let
   ];
 in
 stdenv.mkDerivation (finalAttrs: {
+  inherit buildInputs propagatedBuildInputs;
   pname = "glusterfs";
   version = "11.2";
 
@@ -113,7 +114,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-MGTntR9SVmejgpAkZnhJOaIkZeCMNBGaQSorLOStdjo=";
   };
-  inherit buildInputs propagatedBuildInputs;
 
   patches = [
     # Upstream invokes `openssl version -d` to derive the canonical system path
@@ -139,6 +139,35 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail '$ACLOCAL -I ./contrib/aclocal' '$ACLOCAL'
   '';
 
+  nativeBuildInputs = [
+    autoconf
+    automake
+    libtool
+    pkg-config
+    bison
+    flex
+    makeWrapper
+    rpcsvc-proto
+  ];
+
+  configureFlags = [
+    "--localstatedir=/var"
+  ];
+
+  makeFlags = [ "DESTDIR=$(out)" ];
+
+  env = {
+    # Below we run Python programs. That generates .pyc/.pyo files.
+    # By default they are indeterministic because such files contain time stamps
+    # (see https://nedbatchelder.com/blog/200804/the_structure_of_pyc_files.html).
+    # So we use the same environment variables as in
+    #   https://github.com/NixOS/nixpkgs/blob/249b34aadca7038207492f29142a3456d0cecec3/pkgs/development/interpreters/python/mk-python-derivation.nix#L61
+    # to make these files deterministic.
+    # A general solution to this problem might be brought by #25707.
+    DETERMINISTIC_BUILD = 1;
+    PYTHONHASHSEED = 0;
+  };
+
   # Note that the VERSION file is something that is present in release tarballs
   # but not in git tags (at least not as of writing in v3.10.1).
   # That's why we have to create it.
@@ -155,28 +184,31 @@ stdenv.mkDerivation (finalAttrs: {
     export PYTHON=${python3}/bin/python
   '';
 
-  configureFlags = [
-    "--localstatedir=/var"
-  ];
-
-  nativeBuildInputs = [
-    autoconf
-    automake
-    libtool
-    pkg-config
-    bison
-    flex
-    makeWrapper
-    rpcsvc-proto
-  ];
-
-  makeFlags = [ "DESTDIR=$(out)" ];
-
-  enableParallelBuilding = true;
-
   postInstall = ''
     cp -r $out/$out/* $out
     rm -r $out/nix
+  '';
+
+  doInstallCheck = true;
+
+  installCheckPhase = ''
+    # Tests that the above programs work without import errors.
+    # For testing it manually in a shell you may want to substitute `$out` with `$(dirname $(readlink -f $(which gluster)))/../`.
+    $out/bin/glusterd --help
+    # $out/bin/gluster help # can't do this because even `gluster help` tries to write to `/var/log/glusterfs/cli.log`
+    $out/bin/gluster-eventsapi --help
+    $out/bin/gluster-georep-sshkey --help
+    $out/bin/gluster-mountbroker --help
+    $out/bin/glusterfind --help
+    # gfid_to_path.py doesn't accept --help, and it requires different arguments
+    # (a dir as single argument) than the usage prints when stdin is not a TTY.
+    # The `echo ""` is just so that stdin is not a TTY even if you try this line
+    # on a real TTY for testing purposes.
+    echo "" | (mkdir -p nix-test-dir-for-gfid_to_path && touch b && $out/libexec/glusterfs/gfind_missing_files/gfid_to_path.py nix-test-dir-for-gfid_to_path)
+    $out/share/glusterfs/scripts/eventsdash.py --help
+
+    # this gets falsely loaded as module by glusterfind
+    rm -r $out/bin/conf.py
   '';
 
   postFixup = ''
@@ -223,39 +255,7 @@ stdenv.mkDerivation (finalAttrs: {
     wrapProgram $out/libexec/glusterfs/glusterfind/changelog.py --set PATH "$GLUSTER_PATH" --set PYTHONPATH "$GLUSTER_PYTHONPATH" --set LD_LIBRARY_PATH "$GLUSTER_LD_LIBRARY_PATH"
   '';
 
-  doInstallCheck = true;
-
-  env = {
-    # Below we run Python programs. That generates .pyc/.pyo files.
-    # By default they are indeterministic because such files contain time stamps
-    # (see https://nedbatchelder.com/blog/200804/the_structure_of_pyc_files.html).
-    # So we use the same environment variables as in
-    #   https://github.com/NixOS/nixpkgs/blob/249b34aadca7038207492f29142a3456d0cecec3/pkgs/development/interpreters/python/mk-python-derivation.nix#L61
-    # to make these files deterministic.
-    # A general solution to this problem might be brought by #25707.
-    DETERMINISTIC_BUILD = 1;
-    PYTHONHASHSEED = 0;
-  };
-
-  installCheckPhase = ''
-    # Tests that the above programs work without import errors.
-    # For testing it manually in a shell you may want to substitute `$out` with `$(dirname $(readlink -f $(which gluster)))/../`.
-    $out/bin/glusterd --help
-    # $out/bin/gluster help # can't do this because even `gluster help` tries to write to `/var/log/glusterfs/cli.log`
-    $out/bin/gluster-eventsapi --help
-    $out/bin/gluster-georep-sshkey --help
-    $out/bin/gluster-mountbroker --help
-    $out/bin/glusterfind --help
-    # gfid_to_path.py doesn't accept --help, and it requires different arguments
-    # (a dir as single argument) than the usage prints when stdin is not a TTY.
-    # The `echo ""` is just so that stdin is not a TTY even if you try this line
-    # on a real TTY for testing purposes.
-    echo "" | (mkdir -p nix-test-dir-for-gfid_to_path && touch b && $out/libexec/glusterfs/gfind_missing_files/gfid_to_path.py nix-test-dir-for-gfid_to_path)
-    $out/share/glusterfs/scripts/eventsdash.py --help
-
-    # this gets falsely loaded as module by glusterfind
-    rm -r $out/bin/conf.py
-  '';
+  enableParallelBuilding = true;
 
   passthru.tests = {
     glusterfs = nixosTests.glusterfs;

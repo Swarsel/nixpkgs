@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
   pytestCheckHook,
   pythonAtLeast,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "py-zabbix";
   version = "1.1.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "adubkov";
@@ -23,22 +22,22 @@ buildPythonPackage rec {
   patches = [
     # Remove Python2 comp, https://github.com/adubkov/py-zabbix/pull/154
     (fetchpatch {
+      hash = "sha256-Af7pnCZIObC0ZQLaamBK1pTAVAFs/Mh7+og5jAKqk4s=";
       name = "no-more-py2.patch";
       url = "https://github.com/adubkov/py-zabbix/commit/8deedb860f52870fbeacc54a40341520702341e2.patch";
-      hash = "sha256-Af7pnCZIObC0ZQLaamBK1pTAVAFs/Mh7+og5jAKqk4s=";
     })
   ];
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "pyzabbix" ];
+  build-system = [ setuptools ];
 
   disabledTests = lib.optionals (pythonAtLeast "3.12") [
     # AttributeError: 'RawConfigParser' object has no attribute 'readfp'
     "config"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pyzabbix" ];
 
   meta = {
     description = "Python module to interact with Zabbix";

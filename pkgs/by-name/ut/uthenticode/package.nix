@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   gtest,
@@ -19,26 +19,27 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-NGVOGXMRlgpSRw56jr63rJc/5/qCmPjtAFa0D21ogd4=";
   };
 
-  cmakeFlags = [
-    "-DBUILD_TESTS=1"
-    "-DUSE_EXTERNAL_GTEST=1"
-  ];
-
   nativeBuildInputs = [ cmake ];
-  nativeCheckInputs = [ gtest ];
+
   buildInputs = [
     pe-parse
     openssl
   ];
 
+  cmakeFlags = [
+    "-DBUILD_TESTS=1"
+    "-DUSE_EXTERNAL_GTEST=1"
+  ];
+
   doCheck = true;
+  nativeCheckInputs = [ gtest ];
   checkPhase = "test/uthenticode_test";
 
   meta = {
     description = "Small cross-platform library for verifying Authenticode digital signatures";
     homepage = "https://github.com/trailofbits/uthenticode";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ arturcygan ];
+    platforms = lib.platforms.unix;
   };
 })

@@ -4,18 +4,19 @@
   fetchFromGitHub,
   SDL2,
   SDL2_image,
-  libGLU,
-  libGL,
-  cmake,
-  physfs,
   boost,
+  cmake,
+  libGL,
+  libGLU,
+  physfs,
+  pkg-config,
+  unzip,
   zip,
   zlib,
-  unzip,
-  pkg-config,
 }:
 
 stdenv.mkDerivation {
+  inherit unzip;
   pname = "blobby-volley";
   version = "1.1.1-unstable-2025-07-26";
 
@@ -31,6 +32,7 @@ stdenv.mkDerivation {
     pkg-config
     zip
   ];
+
   buildInputs = [
     SDL2
     SDL2_image
@@ -41,8 +43,6 @@ stdenv.mkDerivation {
     zlib
   ];
 
-  inherit unzip;
-
   postInstall = ''
     cp ../data/Icon.bmp "$out/share/blobby/"
     mv "$out/bin"/blobby{,.bin}
@@ -52,11 +52,11 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Volleyball game";
-    license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux;
-    maintainers = with lib.maintainers; [ raskin ];
     homepage = "https://blobbyvolley.de/";
-    downloadPage = "https://sourceforge.net/projects/blobby/files/Blobby%20Volley%202%20%28Linux%29/";
+    license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ raskin ];
+    platforms = lib.platforms.linux;
     mainProgram = "blobby";
+    downloadPage = "https://sourceforge.net/projects/blobby/files/Blobby%20Volley%202%20%28Linux%29/";
   };
 }

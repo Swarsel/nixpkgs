@@ -2,29 +2,30 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  # Reverse dependency
+  sage,
   setuptools,
   setuptools-scm,
   toml,
   zipp,
-
-  # Reverse dependency
-  sage,
 }:
 
 buildPythonPackage rec {
   pname = "importlib-metadata";
   version = "9.0.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "importlib_metadata";
     inherit version;
     hash = "sha256-pPV6tZnmouMBbXWVz9cutGYaUQbnh6lbzJDHEFuDHvw=";
+    pname = "importlib_metadata";
   };
 
   postPatch = ''
     sed -i "/coherent.licensed/d" pyproject.toml
   '';
+
+  # Cyclic dependencies due to pyflakefs
+  doCheck = false;
 
   build-system = [
     setuptools # otherwise cross build fails
@@ -36,9 +37,7 @@ buildPythonPackage rec {
     zipp
   ];
 
-  # Cyclic dependencies due to pyflakefs
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "importlib_metadata" ];
 
   passthru.tests = {
@@ -49,6 +48,7 @@ buildPythonPackage rec {
     description = "Read metadata from Python packages";
     homepage = "https://importlib-metadata.readthedocs.io/";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       fab
     ];

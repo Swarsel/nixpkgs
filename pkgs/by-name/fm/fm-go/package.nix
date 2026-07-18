@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 let
@@ -19,12 +19,12 @@ let
     vendorHash = "sha256-uhrE8ZuUeQSm+Jg1xi83RsBrzjex+aBlElJRT61k0BU=";
 
     meta = {
-      homepage = "https://github.com/mistakenelf/fm";
       description = "Terminal based file manager";
+      homepage = "https://github.com/mistakenelf/fm";
       changelog = "https://github.com/mistakenelf/fm/releases/tag/${finalAttrs.src.rev}";
       license = with lib.licenses; [ mit ];
-      mainProgram = "fm";
       maintainers = [ ];
+      mainProgram = "fm";
     };
   };
 in

@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   httpx,
+  poetry-core,
   pydicom,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyorthanc";
   version = "1.23.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gacou54";
@@ -19,18 +18,17 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-L1vIU6oDZ95lFt2w/TYFpHdmHmDE2XPn10XdEUIlxRQ=";
   };
 
+  doCheck = false; # requires orthanc server (not in Nixpkgs)
   build-system = [ poetry-core ];
-
-  pythonRelaxDeps = [ "pydicom" ];
 
   dependencies = [
     httpx
     pydicom
   ];
 
-  doCheck = false; # requires orthanc server (not in Nixpkgs)
-
+  pyproject = true;
   pythonImportsCheck = [ "pyorthanc" ];
+  pythonRelaxDeps = [ "pydicom" ];
 
   meta = {
     description = "Python library that wraps the Orthanc REST API";

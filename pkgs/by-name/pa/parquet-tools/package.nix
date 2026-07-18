@@ -1,15 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
   addBinToPathHook,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "parquet-tools";
   version = "0.2.16";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ktrueda";
@@ -30,12 +28,6 @@ python3Packages.buildPythonApplication rec {
       --replace "serialized_size: 2222" "serialized_size: 2221" \
       --replace "format_version: 1.0" "format_version: 2.6"
   '';
-
-  pythonRelaxDeps = [
-    "halo"
-    "tabulate"
-    "thrift"
-  ];
 
   nativeBuildInputs = with python3Packages; [
     poetry-core
@@ -67,8 +59,16 @@ python3Packages.buildPythonApplication rec {
     "test_excute_simple"
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "parquet_tools"
+  ];
+
+  pythonRelaxDeps = [
+    "halo"
+    "tabulate"
+    "thrift"
   ];
 
   meta = {

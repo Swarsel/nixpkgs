@@ -3,14 +3,14 @@
   stdenv,
   fetchurl,
   cmake,
-  libGLU,
-  libGL,
-  libglut,
-  glew,
-  libxmu,
-  libxext,
-  libx11,
   fixDarwinDylibNames,
+  glew,
+  libGL,
+  libGLU,
+  libglut,
+  libx11,
+  libxext,
+  libxmu,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,7 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   patches = lib.optionals stdenv.hostPlatform.isDarwin [ ./opencsgexample.patch ];
-
   nativeBuildInputs = [ cmake ] ++ lib.optional stdenv.hostPlatform.isDarwin fixDarwinDylibNames;
 
   buildInputs = [
@@ -54,10 +53,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Constructive Solid Geometry library";
-    mainProgram = "opencsgexample";
     homepage = "http://www.opencsg.org/";
-    platforms = lib.platforms.unix;
-    maintainers = [ lib.maintainers.raskin ];
     license = lib.licenses.gpl2Plus;
+    maintainers = [ lib.maintainers.raskin ];
+    platforms = lib.platforms.unix;
+    mainProgram = "opencsgexample";
   };
 })

@@ -1,56 +1,52 @@
 # Linux-specific base builder.
 
 {
-  stdenv,
   lib,
+  stdenv,
+  autoPatchelfHook,
+  coreutils,
+  e2fsprogs,
+  excludeDrvArgNames,
+  fontconfig,
+  git,
+  glibcLocales,
+  gnugrep,
+  jdk,
+  libGL,
+  libnotify,
+  libsecret,
+  libx11,
   makeDesktopItem,
   makeWrapper,
   patchelf,
-  writeText,
-  coreutils,
-  gnugrep,
-  which,
-  git,
-  unzip,
-  libsecret,
-  libnotify,
-  udev,
-  e2fsprogs,
   python3,
-  autoPatchelfHook,
-  glibcLocales,
-  fontconfig,
-  libGL,
-  libx11,
-
-  jdk,
-  vmopts ? null,
+  udev,
+  unzip,
+  which,
+  writeText,
   forceWayland ? null,
-  excludeDrvArgNames,
+  vmopts ? null,
 }:
 
 lib.extendMkDerivation {
   inherit excludeDrvArgNames;
-
   constructDrv = stdenv.mkDerivation;
 
   extendDrvArgs =
     finalAttrs:
     {
+      fsnotifier,
+      libdbm,
       pname,
       product,
-      productShort ? product,
       wmClass,
-
-      libdbm,
-      fsnotifier,
-
+      buildInputs ? [ ],
       extraLdPath ? [ ],
       extraWrapperArgs ? [ ],
-      buildInputs ? [ ],
-      nativeBuildInputs ? [ ],
       meta ? { },
+      nativeBuildInputs ? [ ],
       postPatch ? "",
+      productShort ? product,
       ...
     }:
 
@@ -65,13 +61,13 @@ lib.extendMkDerivation {
         ];
 
       desktopItem = makeDesktopItem {
-        name = finalAttrs.pname;
-        exec = finalAttrs.meta.mainProgram;
+        categories = [ "Development" ];
         comment = lib.trim (lib.replaceString "\n" " " finalAttrs.meta.longDescription);
         desktopName = product;
+        exec = finalAttrs.meta.mainProgram;
         genericName = finalAttrs.meta.description;
-        categories = [ "Development" ];
         icon = pname;
+        name = finalAttrs.pname;
         startupWMClass = wmClass;
       };
 
@@ -80,20 +76,6 @@ lib.extendMkDerivation {
     in
     {
       inherit desktopItem vmoptsIDE vmoptsFile;
-
-      buildInputs = buildInputs ++ [
-        stdenv.cc.cc
-        fontconfig
-        libGL
-        libx11
-      ];
-
-      nativeBuildInputs = nativeBuildInputs ++ [
-        makeWrapper
-        patchelf
-        unzip
-        autoPatchelfHook
-      ];
 
       postPatch = ''
         rm -rf jbr
@@ -124,6 +106,20 @@ lib.extendMkDerivation {
         } >> $vmopts_file
       ''
       + postPatch;
+
+      nativeBuildInputs = nativeBuildInputs ++ [
+        makeWrapper
+        patchelf
+        unzip
+        autoPatchelfHook
+      ];
+
+      buildInputs = buildInputs ++ [
+        stdenv.cc.cc
+        fontconfig
+        libGL
+        libx11
+      ];
 
       installPhase = ''
         runHook preInstall

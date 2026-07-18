@@ -58,22 +58,22 @@ let
       args
       // {
         inherit src version;
-        name = "datadog-integration-${pname}-${version}";
-        pyproject = true;
 
-        sourceRoot = "${src.name}/${args.sourceRoot or pname}";
         buildInputs = with python3Packages; [
           hatchling
           setuptools
         ];
+
         doCheck = false;
+        name = "datadog-integration-${pname}-${version}";
+        pyproject = true;
+        sourceRoot = "${src.name}/${args.sourceRoot or pname}";
       }
     );
 
   # Base package depended on by all other integrations.
   datadog_checks_base = buildIntegration {
     pname = "checks-base";
-    sourceRoot = "datadog_checks_base";
 
     dependencies = with python3Packages; [
       binary
@@ -100,6 +100,8 @@ let
       "datadog_checks.base.checks"
       "datadog_checks.checks"
     ];
+
+    sourceRoot = "datadog_checks_base";
   };
 
   # Default integrations that should be built:
@@ -108,6 +110,7 @@ let
     mongo = (ps: [ ps.pymongo ]);
     network = (ps: [ ps.psutil ]);
     nginx = (ps: [ ]);
+
     postgres = (
       ps: with ps; [
         pg8000
@@ -115,6 +118,7 @@ let
         semver
       ]
     );
+
     process = (ps: [ ps.psutil ]);
   };
 

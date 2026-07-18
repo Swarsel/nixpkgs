@@ -1,9 +1,9 @@
 {
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
   perl,
   pkg-config,
-  stdenv,
   versionCheckHook,
   zstd,
 }:
@@ -17,12 +17,9 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "MoarVM";
     repo = "MoarVM";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-vxEtNiQH7XQ3gDlETJsjsSZ2cVJrjFb5TtoNKVB8F0U=";
+    fetchSubmodules = true;
   };
-
-  nativeBuildInputs = [ pkg-config ];
-  buildInputs = [ zstd ];
 
   postPatch = ''
     patchShebangs .
@@ -38,24 +35,29 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail '`sw_vers -productVersion`' '"11.0"'
   '';
 
-  configureScript = "${lib.getExe perl} ./Configure.pl";
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ zstd ];
+
   configureFlags = [
     "--pkgconfig=${lib.getExe pkg-config}"
   ];
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  configureScript = "${lib.getExe perl} ./Configure.pl";
 
   meta = {
     description = "VM with adaptive optimization and JIT compilation, built for Rakudo";
     homepage = "https://moarvm.org";
     license = lib.licenses.artistic2;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
       sgo
       prince213
     ];
-    mainProgram = "moar";
+
     platforms = lib.platforms.unix;
+    mainProgram = "moar";
   };
 })

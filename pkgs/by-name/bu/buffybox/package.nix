@@ -1,8 +1,10 @@
 {
+  lib,
+  stdenv,
   fetchFromGitLab,
   fetchpatch,
+  gitUpdater,
   inih,
-  lib,
   libdrm,
   libinput,
   libxkbcommon,
@@ -10,8 +12,6 @@
   ninja,
   pkg-config,
   scdoc,
-  stdenv,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,17 +19,13 @@ stdenv.mkDerivation (finalAttrs: {
   version = "3.5.1";
 
   src = fetchFromGitLab {
-    domain = "gitlab.postmarketos.org";
     owner = "postmarketOS";
     repo = "buffybox";
-    fetchSubmodules = true; # to use its vendored lvgl
     tag = finalAttrs.version;
     hash = "sha256-aOPfKqnUIkJozt+DwVJjbNQEcmpjCmUgJUjTx9LV23M=";
+    fetchSubmodules = true; # to use its vendored lvgl
+    domain = "gitlab.postmarketos.org";
   };
-
-  mesonFlags = [
-    (lib.mesonBool "systemd" true)
-  ];
 
   patches = [
     /*
@@ -40,15 +36,13 @@ stdenv.mkDerivation (finalAttrs: {
     */
 
     (fetchpatch {
+      hash = "sha256-GUk+YrG07hL+0w70qvymPzHGTmUXdfzG4Cy35gg/Asw=";
       name = "fix-32-bit-build";
       url = "https://gitlab.postmarketos.org/postmarketOS/buffybox/-/merge_requests/87.patch";
-      hash = "sha256-GUk+YrG07hL+0w70qvymPzHGTmUXdfzG4Cy35gg/Asw=";
     })
   ];
 
-  depsBuildBuild = [
-    pkg-config
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -64,9 +58,15 @@ stdenv.mkDerivation (finalAttrs: {
     libxkbcommon
   ];
 
+  mesonFlags = [
+    (lib.mesonBool "systemd" true)
+  ];
+
   env.PKG_CONFIG_SYSTEMD_SYSTEMD_SYSTEM_UNIT_DIR = "${placeholder "out"}/lib/systemd/system";
 
-  strictDeps = true;
+  depsBuildBuild = [
+    pkg-config
+  ];
 
   passthru.updateScript = gitUpdater { };
 

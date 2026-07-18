@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pillow,
-  zbar,
   pytestCheckHook,
+  setuptools,
+  zbar,
 }:
 
 buildPythonPackage rec {
   pname = "python-zbar";
   version = "0.23.93";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mchehab";
@@ -24,13 +23,10 @@ buildPythonPackage rec {
     cd python
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pillow ];
-
   buildInputs = [ zbar ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  dependencies = [ pillow ];
 
   disabledTests = [
     #AssertionError: b'Y800' != 'Y800'
@@ -44,6 +40,7 @@ buildPythonPackage rec {
     "test_version"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "zbar" ];
 
   meta = {

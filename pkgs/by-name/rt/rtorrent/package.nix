@@ -1,11 +1,12 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   _experimental-update-script-combinators,
   autoreconfHook,
   cppunit,
   curl,
-  fetchFromGitHub,
   installShellFiles,
-  lib,
   libtool,
   libtorrent-rakshasa,
   lua5_4_compat,
@@ -14,18 +15,15 @@
   nixosTests,
   openssl,
   pkg-config,
-  stdenv,
   versionCheckHook,
   writableTmpDirAsHomeHook,
-  withLua ? false,
   zlib,
+  withLua ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "rtorrent";
   version = "0.16.17";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "rakshasa";
@@ -65,8 +63,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals withLua [ "--with-lua" ];
 
-  enableParallelBuilding = true;
-
   postInstall = ''
     installManPage doc/old/rtorrent.1
     install -Dm644 doc/rtorrent.rc-example -t $out/share/doc/rtorrent/rtorrent.rc
@@ -74,12 +70,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "-h";
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
   versionCheckKeepEnvironment = [ "HOME" ];
+  versionCheckProgramArg = "-h";
 
   passthru = {
     inherit libtorrent-rakshasa;
     tests = { inherit (nixosTests) rtorrent; };
+
     updateScript = _experimental-update-script-combinators.sequence [
       (nix-update-script { attrPath = "libtorrent-rakshasa"; })
       (nix-update-script { })
@@ -90,10 +89,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Ncurses client for libtorrent, ideal for use with screen, tmux, or dtach";
     homepage = "https://rakshasa.github.io/rtorrent/";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "rtorrent";
+
     maintainers = with lib.maintainers; [
       thiagokokada
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "rtorrent";
   };
 })

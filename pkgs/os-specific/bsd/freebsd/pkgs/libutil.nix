@@ -1,31 +1,17 @@
 {
   lib,
-  mkDerivation,
-  include,
-  libgcc,
-  libcMinimal,
   csu,
+  include,
+  libcMinimal,
+  libgcc,
+  mkDerivation,
   withPwdMkdb ? null,
 }:
 mkDerivation {
-  path = "lib/libutil";
-  extraPaths = [
-    "lib/libc/gen"
-    "lib/libc/Versions.def"
-  ];
-
   outputs = [
     "out"
     "man"
     "debug"
-  ];
-
-  noLibc = true;
-
-  buildInputs = [
-    include
-    libgcc
-    libcMinimal
   ];
 
   # XXX mass rebuild moment
@@ -37,9 +23,23 @@ mkDerivation {
         substituteInPlace lib/libutil/pw_util.c --replace-fail _PATH_PWD_MKDB '"${lib.getExe withPwdMkdb}"'
       '';
 
+  buildInputs = [
+    include
+    libgcc
+    libcMinimal
+  ];
+
+  env.MK_TESTS = "no";
+
   preBuild = ''
     export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE -B${csu}/lib"
   '';
 
-  env.MK_TESTS = "no";
+  extraPaths = [
+    "lib/libc/gen"
+    "lib/libc/Versions.def"
+  ];
+
+  noLibc = true;
+  path = "lib/libutil";
 }

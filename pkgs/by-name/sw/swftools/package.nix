@@ -1,8 +1,8 @@
 {
   lib,
-  gccStdenv,
   fetchurl,
   freetype,
+  gccStdenv,
   libjpeg,
   zlib,
 }:
@@ -30,6 +30,7 @@ gccStdenv.mkDerivation rec {
     license = lib.licenses.gpl2Only;
     maintainers = [ lib.maintainers.koral ];
     platforms = lib.platforms.unix;
+
     knownVulnerabilities = [
       "CVE-2017-10976"
       "CVE-2017-11096"

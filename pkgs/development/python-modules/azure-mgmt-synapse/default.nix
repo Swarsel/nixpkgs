@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-synapse";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -29,6 +28,7 @@ buildPythonPackage rec {
     msrestazure
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "azure.mgmt.synapse" ];
 
   meta = {

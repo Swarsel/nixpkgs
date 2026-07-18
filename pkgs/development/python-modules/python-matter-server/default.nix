@@ -1,36 +1,31 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonOlder,
-  stdenvNoCC,
-  buildNpmPackage,
-  python,
-  home-assistant-chip-wheels,
-
-  # build
-  setuptools,
-
   # dependencies
   aiohttp,
-  aiorun,
-  atomicwrites,
-  coloredlogs,
-  orjson,
-  home-assistant-chip-clusters,
-
-  # optionals
-  cryptography,
-  home-assistant-chip-core,
-  zeroconf,
-
   # tests
   aioresponses,
+  aiorun,
+  atomicwrites,
+  buildNpmPackage,
+  buildPythonPackage,
+  coloredlogs,
+  # optionals
+  cryptography,
+  home-assistant-chip-clusters,
+  home-assistant-chip-core,
+  home-assistant-chip-wheels,
+  orjson,
   pytest,
   pytest-aiohttp,
   pytest-cov-stub,
   pytestCheckHook,
-
+  python,
+  pythonOlder,
+  # build
+  setuptools,
+  stdenvNoCC,
+  zeroconf,
   # build options
   withDashboard ? true,
 }:
@@ -59,19 +54,9 @@ let
       ]);
     in
     buildNpmPackage {
-      pname = "python-matter-server-dashboard";
       inherit src version;
-
+      pname = "python-matter-server-dashboard";
       npmDepsHash = "sha256-IgI1H3VlTq66duplVQqL67SpgxPF2MOowDn+ICMXCik=";
-
-      prePatch = ''
-        ${pythonWithChip.interpreter} scripts/generate_descriptions.py
-
-        # cd before the patch phase sets up the npm install hook to find the
-        # package.json. The script would need to be patched in order to be used
-        # with sourceRoot.
-        cd "dashboard"
-      '';
 
       # This package does not contain a normal `npm build` step.
       buildPhase = ''
@@ -88,18 +73,24 @@ let
 
         runHook postInstall
       '';
+
+      prePatch = ''
+        ${pythonWithChip.interpreter} scripts/generate_descriptions.py
+
+        # cd before the patch phase sets up the npm install hook to find the
+        # package.json. The script would need to be patched in order to be used
+        # with sourceRoot.
+        cd "dashboard"
+      '';
     };
 in
 buildPythonPackage rec {
-  pname = if withDashboard then "python-matter-server" else "python-matter-server-without-dashboard";
   inherit
     src
     version
     ;
 
-  pyproject = true;
-
-  disabled = pythonOlder "3.12";
+  pname = if withDashboard then "python-matter-server" else "python-matter-server-without-dashboard";
 
   postPatch = ''
     substituteInPlace pyproject.toml \
@@ -109,29 +100,6 @@ buildPythonPackage rec {
     substituteInPlace "matter_server/server/server.py" \
       --replace-fail 'Path(__file__).parent.joinpath("../dashboard/")' 'Path("${matterServerDashboard}")'
   '';
-
-  build-system = [
-    setuptools
-  ];
-
-  pythonRelaxDeps = [ "home-assistant-chip-clusters" ];
-
-  dependencies = [
-    aiohttp
-    aiorun
-    atomicwrites
-    coloredlogs
-    orjson
-    home-assistant-chip-clusters
-  ];
-
-  optional-dependencies = {
-    server = [
-      cryptography
-      home-assistant-chip-core
-      zeroconf
-    ];
-  };
 
   nativeCheckInputs = [
     aioresponses
@@ -149,17 +117,43 @@ buildPythonPackage rec {
       export PYTHONPATH=${pythonEnv}/${python.sitePackages}
     '';
 
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    aiohttp
+    aiorun
+    atomicwrites
+    coloredlogs
+    orjson
+    home-assistant-chip-clusters
+  ];
+
+  disabled = pythonOlder "3.12";
+
   disabledTestPaths = [
     # requires internet access
     "tests/server/ota/test_dcl.py"
   ];
 
+  optional-dependencies = {
+    server = [
+      cryptography
+      home-assistant-chip-core
+      zeroconf
+    ];
+  };
+
+  pyproject = true;
+  pythonRelaxDeps = [ "home-assistant-chip-clusters" ];
+
   meta = {
-    changelog = "https://github.com/home-assistant-libs/python-matter-server/releases/tag/${src.tag}";
     description = "Python server to interact with Matter";
-    mainProgram = "matter-server";
     homepage = "https://github.com/home-assistant-libs/python-matter-server";
+    changelog = "https://github.com/home-assistant-libs/python-matter-server/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
+    mainProgram = "matter-server";
     teams = [ lib.teams.home-assistant ];
   };
 }

@@ -1,18 +1,18 @@
 # Derivation containing the Limine host tool and the compiled bootloader
 {
-  fetchurl,
   lib,
+  fetchurl,
   llvmPackages,
   mtools,
   nasm,
   nixosTests,
-  # The following options map to configure flags.
-  enableAll ? false,
-  buildCDs ? false,
-  targets ? [ ],
   # x86 specific flags
   biosSupport ? true,
+  buildCDs ? false,
+  # The following options map to configure flags.
+  enableAll ? false,
   pxeSupport ? false,
+  targets ? [ ],
 }:
 let
   stdenv = llvmPackages.stdenv;
@@ -57,10 +57,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-mrNz84nKqeY9wpintFr1NRrJpNAPgE9owcumGYZc2t4=";
   };
 
-  enableParallelBuilding = true;
-
-  hardeningDisable = lib.optionals missingZerocallusedregs [
-    "zerocallusedregs"
+  outputs = [
+    "out"
+    "dev"
+    "doc"
+    "man"
   ];
 
   nativeBuildInputs = [
@@ -72,13 +73,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals hasX86 [ nasm ];
 
-  outputs = [
-    "out"
-    "dev"
-    "doc"
-    "man"
-  ];
-
   configureFlags =
     lib.optionals enableAll [ "--enable-all" ]
     ++ lib.optionals biosSupport' [ "--enable-bios" ]
@@ -89,17 +83,19 @@ stdenv.mkDerivation (finalAttrs: {
       if targets == [ ] then [ stdenv.hostPlatform.parsed.cpu.name ] else targets
     );
 
+  enableParallelBuilding = true;
+
+  hardeningDisable = lib.optionals missingZerocallusedregs [
+    "zerocallusedregs"
+  ];
+
   passthru.tests = nixosTests.limine;
 
   meta = {
+    description = "Limine Bootloader";
     homepage = "https://limine-bootloader.org/";
     changelog = "https://github.com/Limine-Bootloader/Limine/raw/refs/tags/v${finalAttrs.version}/ChangeLog";
-    description = "Limine Bootloader";
-    mainProgram = "limine";
-    # The platforms on that the Limine binary and helper tools can run, not
-    # necessarily the platforms for that bootable images can be created.
-    platforms = lib.platforms.unix;
-    badPlatforms = lib.platforms.darwin;
+
     # Caution. Some submodules have different licenses.
     license = with lib.licenses; [
       asl20 # cc-runtime
@@ -110,6 +106,7 @@ stdenv.mkDerivation (finalAttrs: {
       bsdAxisNoDisclaimerUnmodified # PicoEFI
       mit # PicoEFI, stb_image
     ];
+
     maintainers = with lib.maintainers; [
       johnrtitor
       lzcunt
@@ -117,5 +114,11 @@ stdenv.mkDerivation (finalAttrs: {
       programmerlexi
       ryand56
     ];
+
+    # The platforms on that the Limine binary and helper tools can run, not
+    # necessarily the platforms for that bootable images can be created.
+    platforms = lib.platforms.unix;
+    badPlatforms = lib.platforms.darwin;
+    mainProgram = "limine";
   };
 })

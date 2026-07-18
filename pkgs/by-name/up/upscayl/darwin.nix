@@ -1,12 +1,11 @@
 {
+  makeWrapper,
+  meta,
+  pname,
+  src,
   stdenvNoCC,
   unzip,
-  makeWrapper,
-
-  pname,
   version,
-  meta,
-  src,
 }:
 stdenvNoCC.mkDerivation {
   inherit
@@ -15,8 +14,6 @@ stdenvNoCC.mkDerivation {
     meta
     src
     ;
-
-  sourceRoot = ".";
 
   nativeBuildInputs = [
     unzip
@@ -30,4 +27,6 @@ stdenvNoCC.mkDerivation {
     makeWrapper $out/Applications/Upscayl.app/Contents/MacOS/Upscayl $out/bin/upscayl
     runHook postInstall
   '';
+
+  sourceRoot = ".";
 }

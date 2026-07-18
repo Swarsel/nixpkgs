@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   qt6,
@@ -28,13 +28,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    license = lib.licenses.gpl2Only;
-    homepage = "https://github.com/tibirna/qgit";
+    inherit (qt6.qtbase.meta) platforms;
     description = "Graphical front-end to Git";
+    homepage = "https://github.com/tibirna/qgit";
+    license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       peterhoeg
     ];
-    inherit (qt6.qtbase.meta) platforms;
+
     mainProgram = "qgit";
   };
 })

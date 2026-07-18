@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  lib,
   libevent,
   net-snmp,
   openssl,
@@ -19,6 +19,25 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-lYeUDtIxSoZ3TFSZ89+xOo64YjKmLSQ6g6HwmIaEjgM=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+    "man"
+    "doc"
+  ];
+
+  nativeBuildInputs = [
+    pkg-config
+    removeReferencesTo
+  ];
+
+  buildInputs = [
+    libevent
+    readline
+    net-snmp
+    openssl
+  ];
+
   configureFlags = [
     "--localstatedir=/var"
     "--enable-pie"
@@ -32,34 +51,16 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-privsep-user=nobody"
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-    removeReferencesTo
-  ];
-  buildInputs = [
-    libevent
-    readline
-    net-snmp
-    openssl
-  ];
-
   preConfigure = lib.optionalString (stdenv.hostPlatform != stdenv.buildPlatform) ''
     # Yes, this works and is required for cross :'/
     export PATH=$PATH:${net-snmp.dev}/bin
   '';
 
-  enableParallelBuilding = true;
-
-  outputs = [
-    "out"
-    "dev"
-    "man"
-    "doc"
-  ];
-
   preFixup = ''
     find $out -type f -exec remove-references-to -t ${stdenv.cc} '{}' +
   '';
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "802.1ab implementation (LLDP) to help you locate neighbors of all your equipments";

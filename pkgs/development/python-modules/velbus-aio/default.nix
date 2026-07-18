@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiofile,
   backoff,
   beautifulsoup4,
   buildPythonPackage,
-  fetchFromGitHub,
   lxml,
   pytest-asyncio,
   pytestCheckHook,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "velbus-aio";
   version = "2026.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Cereal2nd";
@@ -25,6 +24,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-l77L2JI2jXw+cQw/yO1LvyWBxvUF0IBctM5V02BGtO8=";
     fetchSubmodules = true;
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -36,12 +41,7 @@ buildPythonPackage (finalAttrs: {
     serialx
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "velbusaio" ];
 
   meta = {

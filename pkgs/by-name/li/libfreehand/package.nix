@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  perl,
-  pkg-config,
   boost,
   cppunit,
   doxygen,
+  fetchzip,
   gperf,
   icu,
   lcms2,
   librevenge,
+  perl,
+  pkg-config,
   zlib,
 }:
 stdenv.mkDerivation (finalAttrs: {

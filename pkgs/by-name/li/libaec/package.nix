@@ -23,9 +23,9 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = true;
 
   meta = {
-    changelog = "https://github.com/Deutsches-Klimarechenzentrum/libaec/blob/v${finalAttrs.version}/CHANGELOG.md";
-    homepage = "https://github.com/Deutsches-Klimarechenzentrum/libaec";
     description = "Adaptive Entropy Coding library";
+    homepage = "https://github.com/Deutsches-Klimarechenzentrum/libaec";
+    changelog = "https://github.com/Deutsches-Klimarechenzentrum/libaec/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.bsd2;
     maintainers = [ ];
   };

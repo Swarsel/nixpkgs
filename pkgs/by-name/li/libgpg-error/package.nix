@@ -1,13 +1,15 @@
 {
-  stdenv,
   lib,
-  buildPackages,
+  stdenv,
   fetchurl,
+  buildPackages,
   gettext,
   genPosixLockObjOnly ? false,
 }:
 let
   genPosixLockObjOnlyAttrs = lib.optionalAttrs genPosixLockObjOnly {
+    outputs = [ "out" ];
+
     buildPhase = ''
       cd src
       make gen-posix-lock-obj
@@ -18,7 +20,6 @@ let
       install -m755 gen-posix-lock-obj $out/bin
     '';
 
-    outputs = [ "out" ];
     outputBin = "out";
   };
 in
@@ -32,6 +33,12 @@ stdenv.mkDerivation (
       hash = "sha256-eoVBPyvDVPT4qoMrcYrxIuSJZeng65AS7mWcE8Y4XJM=";
     };
 
+    outputs = [
+      "out"
+      "dev"
+      "info"
+    ];
+
     postPatch = ''
       sed '/BUILD_TIMESTAMP=/s/=.*/=1970-01-01T00:01+0000/' -i ./configure
     ''
@@ -41,24 +48,12 @@ stdenv.mkDerivation (
       cp ${./lock-obj-pub.x86_64-unknown-freebsd.h} src/syscfg/lock-obj-pub.freebsd.h
     '';
 
-    hardeningDisable = [ "strictflexarrays3" ];
+    nativeBuildInputs = [ gettext ];
 
     configureFlags = [
       # See https://dev.gnupg.org/T6257#164567
       "--enable-install-gpg-error-config"
     ];
-
-    outputs = [
-      "out"
-      "dev"
-      "info"
-    ];
-    outputBin = "dev"; # deps want just the lib, most likely
-
-    # If architecture-dependent MO files aren't available, they're generated
-    # during build, so we need gettext for cross-builds.
-    depsBuildBuild = [ buildPackages.stdenv.cc ];
-    nativeBuildInputs = [ gettext ];
 
     postConfigure =
       # For some reason, /bin/sh on OpenIndiana leads to this at the end of the
@@ -78,12 +73,14 @@ stdenv.mkDerivation (
       '';
 
     doCheck = true; # not cross
+    # If architecture-dependent MO files aren't available, they're generated
+    # during build, so we need gettext for cross-builds.
+    depsBuildBuild = [ buildPackages.stdenv.cc ];
+    hardeningDisable = [ "strictflexarrays3" ];
+    outputBin = "dev"; # deps want just the lib, most likely
 
     meta = {
-      homepage = "https://www.gnupg.org/software/libgpg-error/index.html";
-      changelog = "https://git.gnupg.org/cgi-bin/gitweb.cgi?p=libgpg-error.git;a=blob;f=NEWS;hb=refs/tags/libgpg-error-${version}";
       description = "Small library that defines common error values for all GnuPG components";
-      mainProgram = "gen-posix-lock-obj";
 
       longDescription = ''
         Libgpg-error is a small library that defines common error values
@@ -92,9 +89,12 @@ stdenv.mkDerivation (
         Daemon and possibly more in the future.
       '';
 
+      homepage = "https://www.gnupg.org/software/libgpg-error/index.html";
+      changelog = "https://git.gnupg.org/cgi-bin/gitweb.cgi?p=libgpg-error.git;a=blob;f=NEWS;hb=refs/tags/libgpg-error-${version}";
       license = lib.licenses.lgpl2Plus;
-      platforms = lib.platforms.all;
       maintainers = [ ];
+      platforms = lib.platforms.all;
+      mainProgram = "gen-posix-lock-obj";
     };
   }
   // genPosixLockObjOnlyAttrs

@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
   aiohttp,
   aiomqtt,
+  buildPythonPackage,
   freenub,
   mashumaro,
+  poetry-core,
 }:
 
 buildPythonPackage rec {
   pname = "python-snoo";
   version = "0.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Lash-L";
@@ -26,6 +25,8 @@ buildPythonPackage rec {
       --replace-fail poetry-core==1.8.0 poetry-core
   '';
 
+  # upstream has no tests
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -35,15 +36,13 @@ buildPythonPackage rec {
     mashumaro
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "python_snoo" ];
 
-  # upstream has no tests
-  doCheck = false;
-
   meta = {
-    changelog = "https://github.com/Lash-L/python-snoo/blob/${src.tag}/CHANGELOG.md";
     description = "Control Snoo devices via python and get auto updates";
     homepage = "https://github.com/Lash-L/python-snoo";
+    changelog = "https://github.com/Lash-L/python-snoo/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchurl,
-  meson,
-  ninja,
-  vala,
-  pkg-config,
+  desktop-file-utils,
+  gettext,
   gnome,
   gtk4,
-  libadwaita,
-  wrapGAppsHook4,
-  librsvg,
-  gettext,
   itstool,
-  libxml2,
+  libadwaita,
   libgee,
-  desktop-file-utils,
+  librsvg,
+  libxml2,
+  meson,
+  ninja,
+  pkg-config,
+  vala,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -53,11 +53,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/gnome-mines";
     description = "Clear hidden mines from a minefield";
-    mainProgram = "gnome-mines";
-    teams = [ lib.teams.gnome ];
+    homepage = "https://gitlab.gnome.org/GNOME/gnome-mines";
     license = lib.licenses.gpl3;
     platforms = lib.platforms.unix;
+    mainProgram = "gnome-mines";
+    teams = [ lib.teams.gnome ];
   };
 })

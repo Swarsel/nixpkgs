@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   nix,
   nix-update-script,
-  fetchFromGitHub,
   rustPlatform,
 }:
 
@@ -18,13 +18,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-dJA9fOU06txPAx5kMl7aGoFeKo7UXqB7X+viUfJqG/M=";
-
   nativeCheckInputs = [ nix ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Cache the nix package list, query and sort results by relevance";
+
     longDescription = ''
       Find SEARCH_TERM in available nix packages and sort results by relevance.
 
@@ -37,14 +36,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
         direct    SEARCH_TERMbar (PACKAGE_NAME starts with SEARCH_TERM)
         exact     SEARCH_TERM (PACKAGE_NAME is exactly SEARCH_TERM)
     '';
-    changelog = "https://github.com/OleMussmann/nps/releases/tag/v${finalAttrs.version}";
+
     homepage = "https://github.com/OleMussmann/nps";
+    changelog = "https://github.com/OleMussmann/nps/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "nps";
+
     maintainers = with lib.maintainers; [
       mdaniels5757
       olemussmann
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "nps";
   };
 })

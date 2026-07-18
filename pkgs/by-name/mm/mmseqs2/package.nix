@@ -1,23 +1,23 @@
 {
   lib,
-  config,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  xxd,
-  perl,
-  installShellFiles,
-  enableAvx2 ? stdenv.hostPlatform.avx2Support,
-  enableSse4_1 ? stdenv.hostPlatform.sse4_1Support,
-  enableMpi ? false,
-  mpi,
-  cudaSupport ? config.cudaSupport,
-  cudaPackages,
-  llvmPackages,
-  zlib,
   bzip2,
-  zstd,
+  cmake,
+  config,
+  cudaPackages,
+  installShellFiles,
+  llvmPackages,
+  mpi,
+  perl,
   runCommand,
+  xxd,
+  zlib,
+  zstd,
+  cudaSupport ? config.cudaSupport,
+  enableAvx2 ? stdenv.hostPlatform.avx2Support,
+  enableMpi ? false,
+  enableSse4_1 ? stdenv.hostPlatform.sse4_1Support,
 }@args:
 let
   # require static library, libzstd.a
@@ -45,18 +45,6 @@ stdenv.mkDerivation (finalAttrs: {
     cudaPackages.cuda_nvcc
   ];
 
-  cmakeFlags = [
-    (lib.cmakeBool "HAVE_AVX2" enableAvx2)
-    (lib.cmakeBool "HAVE_SSE4_1" enableSse4_1)
-    (lib.cmakeBool "HAVE_MPI" enableMpi)
-    (lib.cmakeBool "USE_SYSTEM_ZSTD" true)
-    (lib.cmakeBool "HAVE_ARM8" stdenv.hostPlatform.isAarch64)
-  ]
-  ++ lib.optionals cudaSupport [
-    (lib.cmakeBool "ENABLE_CUDA" true)
-    (lib.cmakeFeature "CMAKE_CUDA_ARCHITECTURES" cudaPackages.flags.cmakeCudaArchitecturesString)
-  ];
-
   buildInputs = [
     zstd
   ]
@@ -69,6 +57,18 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals cudaSupport [
     cudaPackages.cuda_cudart
     cudaPackages.cccl
+  ];
+
+  cmakeFlags = [
+    (lib.cmakeBool "HAVE_AVX2" enableAvx2)
+    (lib.cmakeBool "HAVE_SSE4_1" enableSse4_1)
+    (lib.cmakeBool "HAVE_MPI" enableMpi)
+    (lib.cmakeBool "USE_SYSTEM_ZSTD" true)
+    (lib.cmakeBool "HAVE_ARM8" stdenv.hostPlatform.isAarch64)
+  ]
+  ++ lib.optionals cudaSupport [
+    (lib.cmakeBool "ENABLE_CUDA" true)
+    (lib.cmakeFeature "CMAKE_CUDA_ARCHITECTURES" cudaPackages.flags.cmakeCudaArchitecturesString)
   ];
 
   postInstall = ''
@@ -86,11 +86,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Ultra fast and sensitive sequence search and clustering suite";
-    mainProgram = "mmseqs";
     homepage = "https://mmseqs.com/";
     changelog = "https://github.com/soedinglab/MMseqs2/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ natsukium ];
     platforms = lib.platforms.unix;
+    mainProgram = "mmseqs";
   };
 })

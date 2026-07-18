@@ -1,19 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # tests
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "mktestdocs";
   version = "0.2.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "koaning";
@@ -22,11 +19,10 @@ buildPythonPackage rec {
     hash = "sha256-OiOkU/qfxeLbCT1QywA1rGSwe9Ja8tENTmBo93vo0vc=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "mktestdocs" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "mktestdocs" ];
 
   meta = {
     description = "Run pytest against markdown files/docstrings";

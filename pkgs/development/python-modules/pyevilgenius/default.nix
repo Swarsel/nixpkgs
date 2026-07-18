@@ -1,15 +1,14 @@
 {
   lib,
-  aiohttp,
-  buildPythonPackage,
   fetchFromGitHub,
+  aiohttp,
   async-timeout,
+  buildPythonPackage,
 }:
 
 buildPythonPackage rec {
   pname = "pyevilgenius";
   version = "2.0.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "home-assistant-libs";
@@ -25,7 +24,7 @@ buildPythonPackage rec {
 
   # Project has no test
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pyevilgenius" ];
 
   meta = {

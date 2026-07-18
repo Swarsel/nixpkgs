@@ -10,9 +10,9 @@ let
   version = "5.8.0";
 
   src = fetchurl {
-    name = "altus-${version}.AppImage";
     url = "https://github.com/amanharwara/altus/releases/download/${version}/Altus-${version}.AppImage";
     hash = "sha256-TA1AhWO8TDKbl7ukG1KzPvHP1AZ0leAENLVQ/W+GsrE=";
+    name = "altus-${version}.AppImage";
   };
 
   appimageContents = appimageTools.extractType2 {
@@ -21,7 +21,6 @@ let
 in
 appimageTools.wrapType2 {
   inherit pname version src;
-
   nativeBuildInputs = [ makeWrapper ];
 
   extraInstallCommands = ''

@@ -17,15 +17,14 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ unixtools.xxd ];
-
   makeFlags = [ "PREFIX=$(out)/bin" ];
 
   meta = {
     description = "Minimalist re-implementation of the Fusée Gelée exploit";
-    mainProgram = "fusee-nano";
     homepage = "https://github.com/DavidBuchanan314/fusee-nano";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.leo60228 ];
+    platforms = lib.platforms.linux;
+    mainProgram = "fusee-nano";
   };
 }

@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  libxcb,
   installShellFiles,
+  libxcb,
   pandoc,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,13 +18,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-g4154Axvjp9jbE0lvMeNGM+v2UxkAsZqt9kPv5bhVK8=";
   };
 
-  cargoHash = "sha256-DnIZTeRyxhmVK2uB21ScPiEyL4k9kAWfVoLNIAM9P68=";
-
-  buildInputs = [ libxcb ];
   nativeBuildInputs = [
     pandoc
     installShellFiles
   ];
+
+  buildInputs = [ libxcb ];
+  cargoHash = "sha256-DnIZTeRyxhmVK2uB21ScPiEyL4k9kAWfVoLNIAM9P68=";
 
   postInstall = ''
     pandoc gobble.1.md -s -t man -o gobble.1

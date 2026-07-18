@@ -2,29 +2,28 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pytest-mock,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "file-read-backwards";
   version = "3.2.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "file_read_backwards";
     inherit version;
     hash = "sha256-VHjTBeuuquj+PGWFok38MmIXAiRFCsyTITmPDSbN0Qk=";
+    pname = "file_read_backwards";
   };
-
-  build-system = [ setuptools ];
 
   nativeCheckInputs = [
     pytest-mock
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "file_read_backwards" ];
 
   meta = {

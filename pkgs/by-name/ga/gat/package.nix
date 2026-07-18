@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,7 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-HHhvJNuoUHjHdQ864YpUWxRHCXeL/cd4EHSFq3N2mo4=";
-
   env.CGO_ENABLED = 0;
 
   ldflags = [
@@ -27,8 +26,8 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Cat alternative written in Go";
-    license = lib.licenses.mit;
     homepage = "https://github.com/koki-develop/gat";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ themaxmur ];
     mainProgram = "gat";
   };

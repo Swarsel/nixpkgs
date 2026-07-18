@@ -18,88 +18,101 @@ in
 
   options.virtualisation.docker.rootless = {
     enable = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         This option enables docker in a rootless mode, a daemon that manages
         linux containers. To interact with the daemon, one needs to set
         {command}`DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock`.
       '';
-    };
 
-    setSocketVariable = lib.mkOption {
       type = lib.types.bool;
-      default = false;
-      description = ''
-        Point {command}`DOCKER_HOST` to rootless Docker instance for
-        normal users by default.
-      '';
-    };
-
-    daemon.settings = lib.mkOption {
-      type = settingsFormat.type;
-      default = { };
-      example = {
-        ipv6 = true;
-        "fixed-cidr-v6" = "fd00::/80";
-      };
-      description = ''
-        Configuration for docker daemon. The attributes are serialized to JSON used as daemon.conf.
-        See <https://docs.docker.com/engine/reference/commandline/dockerd/#daemon-configuration-file>
-      '';
     };
 
     package = lib.mkPackageOption pkgs "docker" { };
 
+    daemon.settings = lib.mkOption {
+      default = { };
+
+      description = ''
+        Configuration for docker daemon. The attributes are serialized to JSON used as daemon.conf.
+        See <https://docs.docker.com/engine/reference/commandline/dockerd/#daemon-configuration-file>
+      '';
+
+      example = {
+        "fixed-cidr-v6" = "fd00::/80";
+        ipv6 = true;
+      };
+
+      type = settingsFormat.type;
+    };
+
     extraPackages = lib.mkOption {
-      type = lib.types.listOf lib.types.package;
       default = [ ];
+
       description = ''
         Extra packages to add to PATH for the docker daemon process.
       '';
+
+      type = lib.types.listOf lib.types.package;
+    };
+
+    setSocketVariable = lib.mkOption {
+      default = false;
+
+      description = ''
+        Point {command}`DOCKER_HOST` to rootless Docker instance for
+        normal users by default.
+      '';
+
+      type = lib.types.bool;
     };
   };
 
   ###### implementation
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ cfg.package ];
-
     environment.extraInit = lib.optionalString cfg.setSocketVariable ''
       if [ -z "$DOCKER_HOST" -a -n "$XDG_RUNTIME_DIR" ]; then
         export DOCKER_HOST="unix://$XDG_RUNTIME_DIR/docker.sock"
       fi
     '';
 
+    environment.systemPackages = [ cfg.package ];
+
     # Taken from https://github.com/moby/moby/blob/master/contrib/dockerd-rootless-setuptool.sh
     systemd.user.services.docker = {
-      wantedBy = [ "default.target" ];
       description = "Docker Application Container Engine (Rootless)";
+      environment = proxy_env;
       # needs newuidmap from pkgs.shadow
       path = [ "/run/wrappers" ] ++ cfg.extraPackages;
-      environment = proxy_env;
+
+      serviceConfig = {
+        Delegate = true;
+        ExecReload = "${pkgs.procps}/bin/kill -s HUP $MAINPID";
+        ExecStart = "${cfg.package}/bin/dockerd-rootless --config-file=${daemonSettingsFile}";
+        KillMode = "mixed";
+        LimitCORE = "infinity";
+        LimitNOFILE = "infinity";
+        LimitNPROC = "infinity";
+        NotifyAccess = "all";
+        Restart = "always";
+        RestartSec = 2;
+        TimeoutSec = 0;
+        Type = "notify";
+      };
+
       unitConfig = {
         # docker-rootless doesn't support running as root.
         ConditionUser = "!root";
         StartLimitInterval = "60s";
       };
-      serviceConfig = {
-        Type = "notify";
-        ExecStart = "${cfg.package}/bin/dockerd-rootless --config-file=${daemonSettingsFile}";
-        ExecReload = "${pkgs.procps}/bin/kill -s HUP $MAINPID";
-        TimeoutSec = 0;
-        RestartSec = 2;
-        Restart = "always";
-        LimitNOFILE = "infinity";
-        LimitNPROC = "infinity";
-        LimitCORE = "infinity";
-        Delegate = true;
-        NotifyAccess = "all";
-        KillMode = "mixed";
-      };
+
       unitConfig = {
         StartLimitBurst = 3;
       };
+
+      wantedBy = [ "default.target" ];
     };
   };
 

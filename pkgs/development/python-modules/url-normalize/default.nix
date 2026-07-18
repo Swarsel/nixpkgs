@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   idna,
   pytest-cov-stub,
   pytest-socket,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "url-normalize";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "niksite";
@@ -21,16 +20,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-RZORbZfeRfzGJFsLXJUuqXVFsD8TfcHzjBGb80cTetQ=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ idna ];
-
   nativeCheckInputs = [
     pytest-cov-stub
     pytest-socket
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ idna ];
+  pyproject = true;
   pythonImportsCheck = [ "url_normalize" ];
 
   meta = {

@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "jsonalias";
   version = "0.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kevinheavey";
@@ -17,12 +16,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-1Pb0VpwnAZiv3z+Ur6FS0LV4D9xKvrfAdUtulvr6ACg=";
   };
 
-  build-system = [ poetry-core ];
-
-  pythonImportsCheck = [ "jsonalias" ];
-
   # Module has no tests
   doCheck = false;
+  build-system = [ poetry-core ];
+  pyproject = true;
+  pythonImportsCheck = [ "jsonalias" ];
 
   meta = {
     description = "Library that defines a Json type alias for Python";

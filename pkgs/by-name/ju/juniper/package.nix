@@ -16,13 +16,15 @@ buildDotnetModule rec {
     hash = "sha256-b+aDDz46Hxgt+Oh2fNMiXFfXhuy16mzauousQGq9+dg=";
   };
 
-  projectFile = "Juniper/Juniper.fsproj";
-  nugetDeps = ./deps.json;
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
   dotnet-runtime = dotnetCorePackages.runtime_8_0;
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+  nugetDeps = ./deps.json;
+  projectFile = "Juniper/Juniper.fsproj";
 
   meta = {
+    inherit (dotnet-sdk.meta) platforms;
     description = "Functional reactive programming language for programming Arduino";
+
     longDescription = ''
       The purpose of Juniper is to provide a functional reactive programming
       platform for designing Arduino projects. FRP's high-level approach to
@@ -31,10 +33,10 @@ buildDotnetModule rec {
       transpiles to Arduino C++, which is then compiled to an Arduino
       executable.
     '';
+
     homepage = "https://www.juniper-lang.org/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ AlexSKaye ];
     mainProgram = "Juniper";
-    inherit (dotnet-sdk.meta) platforms;
   };
 }

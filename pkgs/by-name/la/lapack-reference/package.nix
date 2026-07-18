@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gfortran,
   cmake,
-  shared ? true,
+  gfortran,
+  testers,
   # Compile with ILP64 interface
   blas64 ? false,
-  testers,
+  shared ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,11 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
   ];
 
-  # Configure stage fails on aarch64-darwin otherwise, due to either clang 11 or gfortran 10.
-  hardeningDisable = lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) [
-    "stackprotector"
-  ];
-
   cmakeFlags = [
     "-DCMAKE_Fortran_FLAGS=-fPIC"
     "-DLAPACKE=ON"
@@ -46,7 +41,13 @@ stdenv.mkDerivation (finalAttrs: {
     !stdenv.buildPlatform.canExecute stdenv.hostPlatform
   ) "-DTEST_FORTRAN_COMPILER=OFF";
 
-  passthru = { inherit blas64; };
+  doCheck = true;
+
+  checkPhase = ''
+    runHook preCheck
+    ctest ${finalAttrs.ctestArgs}
+    runHook postCheck
+  '';
 
   postInstall =
     let
@@ -60,8 +61,6 @@ stdenv.mkDerivation (finalAttrs: {
       ln -s $out/lib/liblapack64${canonicalExtension} $out/lib/liblapack${canonicalExtension}
       ln -s $out/lib/liblapacke64${canonicalExtension} $out/lib/liblapacke${canonicalExtension}
     '';
-
-  doCheck = true;
 
   # Some CBLAS related tests fail on Darwin:
   #  14 - CBLAS-xscblat2 (Failed)
@@ -77,20 +76,20 @@ stdenv.mkDerivation (finalAttrs: {
   # * https://github.com/Reference-LAPACK/lapack/issues/440
   ctestArgs = lib.optionalString stdenv.hostPlatform.isDarwin "-E '^(CBLAS-(x[sdcz]cblat[23]))$'";
 
-  checkPhase = ''
-    runHook preCheck
-    ctest ${finalAttrs.ctestArgs}
-    runHook postCheck
-  '';
+  # Configure stage fails on aarch64-darwin otherwise, due to either clang 11 or gfortran 10.
+  hardeningDisable = lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) [
+    "stackprotector"
+  ];
 
+  passthru = { inherit blas64; };
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {
     description = "Linear Algebra PACKage";
     homepage = "http://www.netlib.org/lapack/";
-    maintainers = with lib.maintainers; [ markuskowa ];
     license = lib.licenses.bsd3;
-    pkgConfigModules = [ "lapack" ];
+    maintainers = with lib.maintainers; [ markuskowa ];
     platforms = lib.platforms.all;
+    pkgConfigModules = [ "lapack" ];
   };
 })

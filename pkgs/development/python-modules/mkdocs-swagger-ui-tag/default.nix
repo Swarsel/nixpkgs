@@ -1,16 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
   # dependencies
   beautifulsoup4,
-
+  buildPythonPackage,
   # tests
   click,
+  # build-system
+  hatchling,
   mkdocs,
   playwright,
   pytestCheckHook,
@@ -19,7 +16,6 @@
 buildPythonPackage rec {
   pname = "mkdocs-swagger-ui-tag";
   version = "0.7.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Blueswen";
@@ -28,14 +24,6 @@ buildPythonPackage rec {
     hash = "sha256-5bQJMmPrweIAR42bjfWHUqnSy4IFoTpFoBaV+Gj/OGI=";
   };
 
-  build-system = [
-    hatchling
-  ];
-
-  dependencies = [
-    beautifulsoup4
-  ];
-
   nativeCheckInputs = [
     click
     mkdocs
@@ -43,7 +31,13 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "mkdocs_swagger_ui_tag" ];
+  build-system = [
+    hatchling
+  ];
+
+  dependencies = [
+    beautifulsoup4
+  ];
 
   disabledTests = [
     # Don't actually build results
@@ -56,6 +50,9 @@ buildPythonPackage rec {
     # ValueError: I/O operation on closed file
     "test_error"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "mkdocs_swagger_ui_tag" ];
 
   meta = {
     description = "MkDocs plugin supports for add Swagger UI in page";

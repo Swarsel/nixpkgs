@@ -1,14 +1,13 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
   future,
-  lib,
 }:
 
 buildPythonPackage rec {
   pname = "monkeyhex";
   version = "1.7.4";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ future ];
-
   # No tests in repo.
   doCheck = false;
-
+  format = "setuptools";
   # Verify import still works.
   pythonImportsCheck = [ "monkeyhex" ];
 

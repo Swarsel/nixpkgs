@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   colorama,
   editorconfig,
-  fetchFromGitHub,
   hatchling,
   hypothesis,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "beautysh";
   version = "6.4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lovesegfault";
@@ -22,6 +21,12 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-P2oF6Sb7CBsZGSOXifxgCtJdY50YUJF3tKihp3v1cK4=";
   };
+
+  nativeCheckInputs = [
+    hypothesis
+    pytestCheckHook
+    pyyaml
+  ];
 
   build-system = [ hatchling ];
 
@@ -31,12 +36,7 @@ buildPythonPackage (finalAttrs: {
     types-colorama
   ];
 
-  nativeCheckInputs = [
-    hypothesis
-    pytestCheckHook
-    pyyaml
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "beautysh" ];
 
   meta = {

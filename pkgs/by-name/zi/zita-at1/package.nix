@@ -4,11 +4,11 @@
   fetchurl,
   cairo,
   fftwSinglePrec,
-  libx11,
-  libxft,
   libclthreads,
   libclxclient,
   libjack2,
+  libx11,
+  libxft,
   xorgproto,
   zita-resampler,
 }:
@@ -34,13 +34,13 @@ stdenv.mkDerivation (finalAttrs: {
     zita-resampler
   ];
 
-  preConfigure = ''
-    cd ./source/
-  '';
-
   makeFlags = [
     "PREFIX=$(out)"
   ];
+
+  preConfigure = ''
+    cd ./source/
+  '';
 
   enableParallelBuilding = true;
 

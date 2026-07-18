@@ -1,26 +1,26 @@
 {
   lib,
   fetchFromGitHub,
-  unixtools,
-  php,
-  python3,
-  makeWrapper,
-  nixosTests,
   # run-time dependencies
   graphviz,
   ipmitool,
   libvirt,
+  makeWrapper,
   monitoring-plugins,
   net-snmp,
   nfdump,
+  nixosTests,
+  php,
+  python3,
   rrdtool,
   system-sendmail,
+  unixtools,
   dataDir ? "/var/lib/librenms",
   logDir ? "/var/log/librenms",
 }:
 
 let
-  phpPackage = php.withExtensions ({ enabled, all }: enabled ++ [ all.memcached ]);
+  phpPackage = php.withExtensions ({ all, enabled }: enabled ++ [ all.memcached ]);
 in
 phpPackage.buildComposerProject2 rec {
   pname = "librenms";
@@ -33,9 +33,7 @@ phpPackage.buildComposerProject2 rec {
     hash = "sha256-RuKUdOopU8NDhsvYH1TIOdKzx5WMF9lfygZ7Ox8VM0E=";
   };
 
-  vendorHash = "sha256-evJriHdnKSVD9sDZj0xWyLmUPD/LgM8X8p8U5NwXwqk=";
-
-  php = phpPackage;
+  nativeBuildInputs = [ makeWrapper ];
 
   buildInputs = [
     graphviz
@@ -60,7 +58,7 @@ phpPackage.buildComposerProject2 rec {
     ))
   ];
 
-  nativeBuildInputs = [ makeWrapper ];
+  vendorHash = "sha256-evJriHdnKSVD9sDZj0xWyLmUPD/LgM8X8p8U5NwXwqk=";
 
   postInstall = ''
     chmod -R u+w $out/share
@@ -113,6 +111,8 @@ phpPackage.buildComposerProject2 rec {
     ln -s ${dataDir}/cache $out/bootstrap/cache
   '';
 
+  php = phpPackage;
+
   passthru = {
     phpPackage = phpPackage;
     tests.librenms = nixosTests.librenms;
@@ -122,10 +122,12 @@ phpPackage.buildComposerProject2 rec {
     description = "Auto-discovering PHP/MySQL/SNMP based network monitoring";
     homepage = "https://www.librenms.org/";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       netali
       johannwagner
     ];
+
     platforms = lib.platforms.linux;
   };
 }

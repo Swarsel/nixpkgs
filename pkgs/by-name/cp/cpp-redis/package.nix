@@ -18,11 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
-  env.CFLAGS = "-D_GLIBCXX_USE_NANOSLEEP";
   patches = [
     ./01-fix-sleep_for.patch
   ];
@@ -34,6 +29,13 @@ stdenv.mkDerivation (finalAttrs: {
       "cmake_minimum_required(VERSION 2.8.7)" \
       "cmake_minimum_required(VERSION 3.10)"
   '';
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
+
+  env.CFLAGS = "-D_GLIBCXX_USE_NANOSLEEP";
 
   meta = {
     description = "C++11 Lightweight Redis client: async, thread-safe, no dependency, pipelining, multi-platform";

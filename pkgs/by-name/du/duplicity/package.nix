@@ -2,28 +2,27 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  python3,
-  librsync,
+  getconf,
+  gettext,
   glib,
-  ncftp,
   gnupg,
   gnutar,
-  par2cmdline,
-  util-linux,
-  rsync,
+  librsync,
   makeWrapper,
-  wrapGAppsNoGuiHook,
-  gettext,
-  getconf,
-  testers,
+  ncftp,
   nix-update-script,
+  par2cmdline,
+  python3,
+  rsync,
+  testers,
+  util-linux,
+  wrapGAppsNoGuiHook,
 }:
 
 let
   self = python3.pkgs.buildPythonApplication rec {
     pname = "duplicity";
     version = "3.0.7";
-    format = "setuptools";
 
     src = fetchFromGitLab {
       owner = "duplicity";
@@ -51,14 +50,6 @@ let
         --replace-fail /usr/bin /dev
     '';
 
-    disabledTests = [
-      # fails on some unsupported backends, e.g.
-      # ************* Module duplicity.backends.swiftbackend
-      # duplicity/backends/swiftbackend.py:176: [E0401(import-error), SwiftBackend._put] Unable to import 'swiftclient.service'
-      "test_pylint"
-      "test_black"
-    ];
-
     nativeBuildInputs = [
       makeWrapper
       gettext
@@ -75,17 +66,7 @@ let
       glib
     ];
 
-    pythonPath = with python3.pkgs; [
-      b2sdk
-      boto3
-      idna
-      pygobject3
-      fasteners
-      paramiko
-      pexpect
-      # Currently marked as broken.
-      # pydrive2
-    ];
+    doCheck = true;
 
     nativeCheckInputs = [
       gnupg # Add 'gpg' to PATH.
@@ -107,8 +88,12 @@ let
       fasteners
     ]);
 
-    # Prevent double wrapping, let the Python wrapper use the args in preFixup.
-    dontWrapGApps = true;
+    preCheck = ''
+      # tests need writable $HOME
+      HOME=$PWD/.home
+
+      wrapPythonProgramsIn "$PWD/testing/overrides/bin" "''${pythonPath[*]}"
+    '';
 
     preFixup =
       let
@@ -136,35 +121,50 @@ let
       makeWrapperArgs=("''${makeWrapperArgsBak[@]}")
     '';
 
-    preCheck = ''
-      # tests need writable $HOME
-      HOME=$PWD/.home
+    disabledTests = [
+      # fails on some unsupported backends, e.g.
+      # ************* Module duplicity.backends.swiftbackend
+      # duplicity/backends/swiftbackend.py:176: [E0401(import-error), SwiftBackend._put] Unable to import 'swiftclient.service'
+      "test_pylint"
+      "test_black"
+    ];
 
-      wrapPythonProgramsIn "$PWD/testing/overrides/bin" "''${pythonPath[*]}"
-    '';
+    # Prevent double wrapping, let the Python wrapper use the args in preFixup.
+    dontWrapGApps = true;
+    format = "setuptools";
 
-    doCheck = true;
+    pythonPath = with python3.pkgs; [
+      b2sdk
+      boto3
+      idna
+      pygobject3
+      fasteners
+      paramiko
+      pexpect
+      # Currently marked as broken.
+      # pydrive2
+    ];
 
     passthru = {
+      tests.version = testers.testVersion {
+        package = self;
+      };
+
       updateScript = nix-update-script {
         extraArgs = [
           "--version-regex"
           "rel\\.(.*)"
         ];
       };
-
-      tests.version = testers.testVersion {
-        package = self;
-      };
     };
 
     meta = {
-      changelog = "https://gitlab.com/duplicity/duplicity/-/blob/${src.rev}/CHANGELOG.md";
       description = "Encrypted bandwidth-efficient backup using the rsync algorithm";
       homepage = "https://duplicity.gitlab.io/duplicity-web/";
+      changelog = "https://gitlab.com/duplicity/duplicity/-/blob/${src.rev}/CHANGELOG.md";
       license = lib.licenses.gpl2Plus;
-      mainProgram = "duplicity";
       maintainers = with lib.maintainers; [ corngood ];
+      mainProgram = "duplicity";
     };
   };
 

@@ -8,21 +8,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
   pname = "20kly";
   version = "1.5.2";
 
-  pyproject = false;
-
   src = fetchFromGitHub {
     owner = "20kly";
     repo = "20kly";
     tag = "v${finalAttrs.version}";
     sha256 = "sha256-7i1tHylnXWlTvfu9CbStTcA0qsFFqQcGX6bUUTUcYBw=";
   };
-
-  patchPhase = ''
-    substituteInPlace lightyears \
-      --replace-fail \
-        "LIGHTYEARS_DIR = \".\"" \
-        "LIGHTYEARS_DIR = \"$out/share\""
-  '';
 
   propagatedBuildInputs = with python3Packages; [
     pygame
@@ -38,11 +29,20 @@ python3Packages.buildPythonApplication (finalAttrs: {
     install -Dm755 lightyears "$out/bin/lightyears"
   '';
 
+  patchPhase = ''
+    substituteInPlace lightyears \
+      --replace-fail \
+        "LIGHTYEARS_DIR = \".\"" \
+        "LIGHTYEARS_DIR = \"$out/share\""
+  '';
+
+  pyproject = false;
+
   meta = {
     description = "Steampunk-themed strategy game where you have to manage a steam supply network";
-    mainProgram = "lightyears";
     homepage = "http://jwhitham.org.uk/20kly/";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ fgaz ];
+    mainProgram = "lightyears";
   };
 })

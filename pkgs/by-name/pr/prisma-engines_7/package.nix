@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   openssl,
   pkg-config,
   rustPlatform,
@@ -20,14 +20,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-nquIcOmFz+ikD0x/YEPZ5NVKCFPCdR5MSCHldn+b9jI=";
   };
 
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ openssl ];
   cargoHash = "sha256-uiFvzxwVJXCW9LUDFRC6ZkzSa7LQk+9ZJcaJw8mrBX4=";
-
   # Use system openssl.
   env.OPENSSL_NO_VENDOR = 1;
-
-  nativeBuildInputs = [ pkg-config ];
-
-  buildInputs = [ openssl ];
 
   preBuild = ''
     export OPENSSL_DIR=${lib.getDev openssl}
@@ -39,13 +36,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     export GIT_HASH=0000000000000000000000000000000000000000
   '';
 
+  # Tests are long to compile
+  doCheck = false;
+
   cargoBuildFlags = [
     "-p"
     "schema-engine-cli"
   ];
-
-  # Tests are long to compile
-  doCheck = false;
 
   setupHook = ./setup-hook.sh;
 
@@ -53,11 +50,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Collection of engines that power the core stack for Prisma";
     homepage = "https://www.prisma.io/";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
-    mainProgram = "schema-engine";
+
     maintainers = with lib.maintainers; [
       aqrln
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "schema-engine";
   };
 })
 

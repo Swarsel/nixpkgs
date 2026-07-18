@@ -1,12 +1,12 @@
 {
-  buildGoModule,
   lib,
   fetchFromGitHub,
+  buildGoModule,
   fetchYarnDeps,
-  yarn,
+  fetchpatch2,
   fixup-yarn-lock,
   nodejs,
-  fetchpatch2,
+  yarn,
 }:
 
 buildGoModule (finalAttrs: {
@@ -22,17 +22,10 @@ buildGoModule (finalAttrs: {
 
   patches = [
     (fetchpatch2 {
-      url = "https://github.com/ngoduykhanh/wireguard-ui/commit/2fdafd34ca6c8f7f1415a3a1d89498bb575a7171.patch?full_index=1";
       hash = "sha256-nq/TX+TKDB29NcPQ3pLWD0jcXubULuwqisn9IcEW8B8=";
+      url = "https://github.com/ngoduykhanh/wireguard-ui/commit/2fdafd34ca6c8f7f1415a3a1d89498bb575a7171.patch?full_index=1";
     })
   ];
-
-  offlineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-ps/GtdtDKA3y5o1GZpRG+z08lSzk8d9zgxb95kjr/gc=";
-  };
-
-  vendorHash = "sha256-FTjZ6wf0ym6kFJ58Z3E3shmbq9SaMwlXWeueHQXwkX4=";
 
   nativeBuildInputs = [
     yarn
@@ -40,9 +33,7 @@ buildGoModule (finalAttrs: {
     nodejs
   ];
 
-  ldflags = [
-    "-X main.appVersion=v${finalAttrs.version}"
-  ];
+  vendorHash = "sha256-FTjZ6wf0ym6kFJ58Z3E3shmbq9SaMwlXWeueHQXwkX4=";
 
   preConfigure = ''
     # This is what prepare_assets.sh do.
@@ -69,13 +60,22 @@ buildGoModule (finalAttrs: {
     "./assets/plugins/"
   '';
 
+  ldflags = [
+    "-X main.appVersion=v${finalAttrs.version}"
+  ];
+
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-ps/GtdtDKA3y5o1GZpRG+z08lSzk8d9zgxb95kjr/gc=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
+
   meta = {
     description = "Web user interface to manage your WireGuard setup";
-    changelog = "https://github.com/ngoduykhanh/wireguard-ui/releases/tag/v${finalAttrs.version}";
     homepage = "https://github.com/ngoduykhanh/wireguard-ui";
+    changelog = "https://github.com/ngoduykhanh/wireguard-ui/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ bot-wxt1221 ];
+    platforms = lib.platforms.unix;
     mainProgram = "wireguard-ui";
   };
 })

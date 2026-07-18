@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  python3Packages,
   fetchFromGitHub,
   fetchpatch,
-  replaceVars,
   gitMinimal,
-  portaudio,
-  playwright-driver,
   nix-update-script,
+  playwright-driver,
+  portaudio,
+  python3Packages,
+  replaceVars,
 }:
 
 let
@@ -19,9 +19,8 @@ let
 
   version = "0.86.1";
   aider-chat = python3Packages.buildPythonApplication {
-    pname = "aider-chat";
     inherit version;
-    pyproject = true;
+    pname = "aider-chat";
 
     src = fetchFromGitHub {
       owner = "Aider-AI";
@@ -30,14 +29,42 @@ let
       hash = "sha256-UmLcE5gin1iILIY5okl5ac2vtiF30txUFjtC0mouBhs=";
     };
 
-    pythonRelaxDeps = true;
+    patches = [
+      ./fix-tree-sitter.patch
 
-    pythonRemoveDeps = [
-      "importlib-resources"
-      "tree-sitter-c-sharp"
-      "tree-sitter-embedded-template"
-      "tree-sitter-yaml"
+      # https://github.com/Aider-AI/aider/pull/4755
+      ./replace-importlib_resources.patch
+
+      (replaceVars ./fix-flake8-invoke.patch {
+        flake8 = lib.getExe python3Packages.flake8;
+      })
+
+      # https://github.com/Aider-AI/aider/pull/4671
+      (fetchpatch {
+        hash = "sha256-bjL9nbEQGGNkFczm1hDOMP3b48eRJk17zcivXjOdVnw=";
+        name = "add-new-exceptions-to-LiteLLMExceptions.patch";
+        url = "https://github.com/Aider-AI/aider/commit/7201abc56539ae8ee2bf4ea0926f584c9ec5558c.patch";
+      })
+
+      # https://github.com/Aider-AI/aider/commit/38716cc5a2621499c50454aa77ee379aa2b0c590
+      (fetchpatch {
+        hash = "sha256-uDIUHbauAmzCfaqx6aswnkUHcmgJi4X2OdMPyn4NeYU=";
+        name = "add-permission-denied-error-to-litellm-exceptions.patch";
+        url = "https://github.com/Aider-AI/aider/commit/38716cc5a2621499c50454aa77ee379aa2b0c590.patch";
+      })
     ];
+
+    buildInputs = [ portaudio ];
+
+    nativeCheckInputs = [
+      python3Packages.pytestCheckHook
+      gitMinimal
+    ];
+
+    preCheck = ''
+      export HOME=$(mktemp -d)
+      export AIDER_ANALYTICS="false"
+    '';
 
     build-system = with python3Packages; [ setuptools-scm ];
 
@@ -143,38 +170,6 @@ let
       python-dateutil
     ];
 
-    buildInputs = [ portaudio ];
-
-    nativeCheckInputs = [
-      python3Packages.pytestCheckHook
-      gitMinimal
-    ];
-
-    patches = [
-      ./fix-tree-sitter.patch
-
-      # https://github.com/Aider-AI/aider/pull/4755
-      ./replace-importlib_resources.patch
-
-      (replaceVars ./fix-flake8-invoke.patch {
-        flake8 = lib.getExe python3Packages.flake8;
-      })
-
-      # https://github.com/Aider-AI/aider/pull/4671
-      (fetchpatch {
-        name = "add-new-exceptions-to-LiteLLMExceptions.patch";
-        url = "https://github.com/Aider-AI/aider/commit/7201abc56539ae8ee2bf4ea0926f584c9ec5558c.patch";
-        hash = "sha256-bjL9nbEQGGNkFczm1hDOMP3b48eRJk17zcivXjOdVnw=";
-      })
-
-      # https://github.com/Aider-AI/aider/commit/38716cc5a2621499c50454aa77ee379aa2b0c590
-      (fetchpatch {
-        name = "add-permission-denied-error-to-litellm-exceptions.patch";
-        url = "https://github.com/Aider-AI/aider/commit/38716cc5a2621499c50454aa77ee379aa2b0c590.patch";
-        hash = "sha256-uDIUHbauAmzCfaqx6aswnkUHcmgJi4X2OdMPyn4NeYU=";
-      })
-    ];
-
     disabledTestPaths = [
       # Tests require network access
       "tests/scrape/test_scrape.py"
@@ -223,47 +218,62 @@ let
       "false"
     ];
 
-    preCheck = ''
-      export HOME=$(mktemp -d)
-      export AIDER_ANALYTICS="false"
-    '';
-
     optional-dependencies = with python3Packages; {
-      playwright = [
-        greenlet
-        playwright
-        pyee
-        typing-extensions
+      bedrock = [
+        boto3
       ];
+
       browser = [
         streamlit
       ];
+
       help = [
         llama-index-core
         llama-index-embeddings-huggingface
         torch
         nltk
       ];
-      bedrock = [
-        boto3
+
+      playwright = [
+        greenlet
+        playwright
+        pyee
+        typing-extensions
       ];
     };
 
+    pyproject = true;
+    pythonRelaxDeps = true;
+
+    pythonRemoveDeps = [
+      "importlib-resources"
+      "tree-sitter-c-sharp"
+      "tree-sitter-embedded-template"
+      "tree-sitter-yaml"
+    ];
+
     passthru = {
+      updateScript = nix-update-script {
+        extraArgs = [
+          "--version-regex"
+          "^v([0-9.]+)$"
+        ];
+      };
+
       withOptional =
         {
           withAll ? false,
-          withPlaywright ? withAll,
+          withBedrock ? withAll,
           withBrowser ? withAll,
           withHelp ? withAll,
-          withBedrock ? withAll,
+          withPlaywright ? withAll,
           ...
         }:
         aider-chat.overridePythonAttrs (
           {
-            pname,
             dependencies,
             makeWrapperArgs,
+            pname,
             propagatedBuildInputs ? [ ],
             ...
           }:
@@ -276,15 +286,15 @@ let
               + lib.optionalString withHelp "-help"
               + lib.optionalString withBedrock "-bedrock";
 
+            propagatedBuildInputs =
+              propagatedBuildInputs ++ lib.optionals withPlaywright [ playwright-driver.browsers ];
+
             dependencies =
               dependencies
               ++ lib.optionals withPlaywright aider-chat.optional-dependencies.playwright
               ++ lib.optionals withBrowser aider-chat.optional-dependencies.browser
               ++ lib.optionals withHelp aider-chat.optional-dependencies.help
               ++ lib.optionals withBedrock aider-chat.optional-dependencies.bedrock;
-
-            propagatedBuildInputs =
-              propagatedBuildInputs ++ lib.optionals withPlaywright [ playwright-driver.browsers ];
 
             makeWrapperArgs =
               makeWrapperArgs
@@ -303,13 +313,6 @@ let
               ];
           }
         );
-
-      updateScript = nix-update-script {
-        extraArgs = [
-          "--version-regex"
-          "^v([0-9.]+)$"
-        ];
-      };
     };
 
     meta = {
@@ -317,10 +320,12 @@ let
       homepage = "https://github.com/Aider-AI/aider";
       changelog = "https://github.com/Aider-AI/aider/blob/v${version}/HISTORY.md";
       license = lib.licenses.asl20;
+
       maintainers = with lib.maintainers; [
         happysalada
         yzx9
       ];
+
       mainProgram = "aider";
     };
   };

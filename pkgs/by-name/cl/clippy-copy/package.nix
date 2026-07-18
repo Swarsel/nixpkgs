@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,6 +18,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-7do+KgoiIocS+mq2hsgv3NOd+TjMl2I9ew2Emx3/Bbg=";
+  # Tests require access to the system clipboard (unavailable in sandbox)
+  doCheck = false;
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   ldflags = [
     "-s"
@@ -26,16 +31,8 @@ buildGoModule (finalAttrs: {
     "-X=github.com/neilberkman/clippy/cmd/internal/common.Date=1970-01-01T00:00:00Z"
   ];
 
-  # Tests require access to the system clipboard (unavailable in sandbox)
-  doCheck = false;
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "--version";
-
   passthru.updateScript = nix-update-script { };
-
-  __structuredAttrs = true;
 
   meta = {
     description = "Clipboard tool supporting both text and binary files";
@@ -43,7 +40,7 @@ buildGoModule (finalAttrs: {
     changelog = "https://github.com/neilberkman/clippy/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ m4r1vs ];
-    mainProgram = "clippy";
     platforms = lib.platforms.darwin;
+    mainProgram = "clippy";
   };
 })

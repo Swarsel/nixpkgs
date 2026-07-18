@@ -42,10 +42,10 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/christgau/wsdd";
     description = "Web Service Discovery (WSD) host daemon for SMB/Samba";
-    maintainers = with lib.maintainers; [ izorkin ];
+    homepage = "https://github.com/christgau/wsdd";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ izorkin ];
     platforms = lib.platforms.all;
     mainProgram = "wsdd";
   };

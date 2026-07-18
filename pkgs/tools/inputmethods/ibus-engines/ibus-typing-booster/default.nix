@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  python3,
-  ibus,
-  pkg-config,
-  gtk3,
-  m17n_lib,
-  wrapGAppsHook3,
   gobject-introspection,
+  gtk3,
+  ibus,
+  m17n_lib,
+  pkg-config,
+  python3,
+  wrapGAppsHook3,
 }:
 
 let
@@ -40,6 +40,7 @@ stdenv.mkDerivation rec {
     wrapGAppsHook3
     gobject-introspection
   ];
+
   buildInputs = [
     python
     ibus
@@ -52,12 +53,12 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
+    description = "Completion input method for faster typing";
     homepage = "https://mike-fabian.github.io/ibus-typing-booster/";
     license = lib.licenses.gpl3Plus;
-    description = "Completion input method for faster typing";
-    mainProgram = "emoji-picker";
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "emoji-picker";
     isIbusEngine = true;
   };
 }

@@ -13,8 +13,8 @@ let
   version = "0.5";
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "ldm";
   inherit version;
+  pname = "ldm";
 
   # There is a stable release, but we'll use the lvm branch, which
   # contains important fixes for LVM setups.
@@ -24,16 +24,16 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0lxfypnbamfx6p9ar5k9wra20gvwn665l4pp2j4vsx4yi5q7rw2n";
   };
 
-  buildInputs = [
-    udev
-    util-linux
-  ];
-
   postPatch = ''
     substituteInPlace ldm.c \
       --replace "/mnt/" "${mountPath}"
     sed '16i#include <sys/stat.h>' -i ldm.c
   '';
+
+  buildInputs = [
+    udev
+    util-linux
+  ];
 
   buildFlags = [ "ldm" ];
 
@@ -45,8 +45,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Lightweight device mounter, with libudev as only dependency";
     homepage = "https://github.com/LemonBoy/ldm";
-    mainProgram = "ldm";
     license = lib.licenses.mit;
     platforms = lib.platforms.linux;
+    mainProgram = "ldm";
   };
 })

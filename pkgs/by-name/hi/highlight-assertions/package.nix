@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,15 +16,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-egrxcnDVKKgk1sL5WNMIR2FPwQbjjMy20VWizcTBEtM=";
-
   # requires nightly features
   env.RUSTC_BOOTSTRAP = 1;
 
   meta = {
     description = "Tool for unit testing tree sitter highlights for nvim-treesitter";
-    mainProgram = "highlight-assertions";
     homepage = "https://github.com/thehamsta/highlight-assertions";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "highlight-assertions";
   };
 })

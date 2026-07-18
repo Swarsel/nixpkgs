@@ -15,94 +15,103 @@ let
     ;
 in
 {
-  port = 9144;
   extraOpts = {
-    opnsenseServerAddress = mkOption {
+    apiKeyFile = mkOption {
+      description = ''
+        File containing the api key.
+      '';
+
+      type = types.nullOr types.path;
+    };
+
+    apiSecretFile = mkOption {
+      description = ''
+        File containing the api secret.
+      '';
+
+      type = types.nullOr types.path;
+    };
+
+    disabledExporter = mkOption {
+      default = [ ];
+
+      description = ''
+        Collectors to enable or disable.
+        All collectors are enabled by default.
+      '';
+
+      example = [ "disable-openvpn" ];
+      type = types.listOf types.str;
+    };
+
+    enabledExporter = mkOption {
+      default = [ ];
+
+      description = ''
+        Collectors to enable or disable.
+        All collectors are enabled by default.
+      '';
+
+      example = [ "disable-openvpn" ];
+      type = types.listOf types.str;
+    };
+
+    group = mkOption {
+      default = "opnsense";
+
+      description = ''
+        Group under which the opnsense exporter shall be run.
+      '';
+
       type = types.str;
+    };
+
+    opnsenseServerAddress = mkOption {
       default = "192.168.1.1";
-      example = "192.168.100.254";
+
       description = ''
         Opnsense IP address of the opnsense appliance.
         Defaults to 192.168.1.1
       '';
+
+      example = "192.168.100.254";
+      type = types.str;
     };
+
     opnsenseServerProtocol = mkOption {
-      type = types.enum [
-        "http"
-        "https"
-      ];
       default = "https";
-      example = "http";
+
       description = ''
         Opnsense metrics scraper protocol to use.
         Defaults to https.
       '';
+
+      example = "http";
+
+      type = types.enum [
+        "http"
+        "https"
+      ];
     };
-    apiKeyFile = mkOption {
-      type = types.nullOr types.path;
-      description = ''
-        File containing the api key.
-      '';
-    };
-    apiSecretFile = mkOption {
-      type = types.nullOr types.path;
-      description = ''
-        File containing the api secret.
-      '';
-    };
+
     user = mkOption {
-      type = types.str;
       default = "opnsense";
+
       description = ''
         User name under which the opensense exporter shall be run.
       '';
-    };
-    group = mkOption {
+
       type = types.str;
-      default = "opnsense";
-      description = ''
-        Group under which the opnsense exporter shall be run.
-      '';
-    };
-    enabledExporter = mkOption {
-      type = types.listOf types.str;
-      default = [ ];
-      example = [ "disable-openvpn" ];
-      description = ''
-        Collectors to enable or disable.
-        All collectors are enabled by default.
-      '';
-    };
-    disabledExporter = mkOption {
-      type = types.listOf types.str;
-      default = [ ];
-      example = [ "disable-openvpn" ];
-      description = ''
-        Collectors to enable or disable.
-        All collectors are enabled by default.
-      '';
     };
   };
+
+  port = 9144;
+
   serviceOpts = {
     serviceConfig = {
       AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
       CapabilityBoundingSet = [ "CAP_NET_BIND_SERVICE" ];
-      LoadCredential = [
-        "${optionalString (cfg.apiKeyFile != null) "opnsense.api-key=${cfg.apiKeyFile}"}"
-        "${optionalString (cfg.apiSecretFile != null) "opnsense.api-secret=${cfg.apiSecretFile}"}"
-      ];
-      MemoryDenyWriteExecute = true;
-      NoNewPrivileges = true;
-      ProtectClock = true;
-      ProtectSystem = "strict";
-      Restart = "on-failure";
-      RestrictAddressFamilies = [
-        "AF_INET"
-        "AF_INET6"
-        "AF_UNIX"
-      ];
-      RestrictNamespaces = true;
-      RestrictRealtime = true;
+
       ExecStart = ''
         ${lib.getExe pkgs.prometheus-opnsense-exporter} \
           ${concatMapStringsSep " " (x: "--exporter." + x) cfg.enabledExporter} \
@@ -112,6 +121,26 @@ in
           --web.listen-address ${cfg.listenAddress}:${toString cfg.port} \
           ${concatStringsSep " " cfg.extraFlags}
       '';
+
+      LoadCredential = [
+        "${optionalString (cfg.apiKeyFile != null) "opnsense.api-key=${cfg.apiKeyFile}"}"
+        "${optionalString (cfg.apiSecretFile != null) "opnsense.api-secret=${cfg.apiSecretFile}"}"
+      ];
+
+      MemoryDenyWriteExecute = true;
+      NoNewPrivileges = true;
+      ProtectClock = true;
+      ProtectSystem = "strict";
+      Restart = "on-failure";
+
+      RestrictAddressFamilies = [
+        "AF_INET"
+        "AF_INET6"
+        "AF_UNIX"
+      ];
+
+      RestrictNamespaces = true;
+      RestrictRealtime = true;
     };
   };
 }

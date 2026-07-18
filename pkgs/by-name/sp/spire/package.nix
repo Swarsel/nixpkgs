@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
   openssl,
 }:
@@ -10,13 +10,6 @@ buildGoModule (finalAttrs: {
   pname = "spire";
   version = "1.15.2";
 
-  outputs = [
-    "out"
-    "agent"
-    "server"
-    "oidc"
-  ];
-
   src = fetchFromGitHub {
     owner = "spiffe";
     repo = "spire";
@@ -24,25 +17,15 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-Mmjx4moERdYXbGqaGdtHs/uH3Gsm3E6dA50UST5HfRE=";
   };
 
-  # Needed for github.co/google/go-tpm-tools/simulator  which contains non-go files that `go mod vendor` strips
-  proxyVendor = true;
-  vendorHash = "sha256-I2k5XiTkFo/Xn7XdzshjgjiBCQ8llhXnTbPWj4e8fzA=";
+  outputs = [
+    "out"
+    "agent"
+    "server"
+    "oidc"
+  ];
 
   buildInputs = [ openssl ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/spiffe/spire/pkg/common/version.gittag=${finalAttrs.version}"
-  ];
-
-  subPackages = [
-    "cmd/spire-agent"
-    "cmd/spire-server"
-    "support/oidc-discovery-provider"
-  ];
-
-  __darwinAllowLocalNetworking = true;
+  vendorHash = "sha256-I2k5XiTkFo/Xn7XdzshjgjiBCQ8llhXnTbPWj4e8fzA=";
 
   checkFlags =
     let
@@ -72,6 +55,7 @@ buildGoModule (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -86,6 +70,23 @@ buildGoModule (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  __darwinAllowLocalNetworking = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/spiffe/spire/pkg/common/version.gittag=${finalAttrs.version}"
+  ];
+
+  # Needed for github.co/google/go-tpm-tools/simulator  which contains non-go files that `go mod vendor` strips
+  proxyVendor = true;
+
+  subPackages = [
+    "cmd/spire-agent"
+    "cmd/spire-server"
+    "support/oidc-discovery-provider"
+  ];
+
   passthru.tests = {
     inherit (nixosTests) spire;
   };
@@ -93,14 +94,16 @@ buildGoModule (finalAttrs: {
   meta = {
     description = "SPIFFE Runtime Environment";
     homepage = "https://spiffe.io/";
-    downloadPage = "https://github.com/spiffe/spire";
     changelog = "https://github.com/spiffe/spire/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       fkautz
       jk
       mjm
       arianvp
     ];
+
+    downloadPage = "https://github.com/spiffe/spire";
   };
 })

@@ -1,16 +1,17 @@
 {
-  mkKdeDerivation,
-  qtsvg,
-  pkg-config,
   libsodium,
+  mkKdeDerivation,
+  pkg-config,
+  qtsvg,
 }:
 mkKdeDerivation {
   pname = "keysmith";
 
-  extraNativeBuildInputs = [ pkg-config ];
   extraBuildInputs = [
     qtsvg
     libsodium
   ];
+
+  extraNativeBuildInputs = [ pkg-config ];
   meta.mainProgram = "keysmith";
 }

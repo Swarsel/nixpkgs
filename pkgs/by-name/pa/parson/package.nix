@@ -26,7 +26,7 @@ stdenv.mkDerivation {
     description = "Lightweight JSON library written in C";
     homepage = "https://github.com/kgabis/parson";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ sigmanificient ];
+    platforms = lib.platforms.all;
   };
 }

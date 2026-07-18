@@ -15,12 +15,7 @@ stdenv.mkDerivation {
 
   # hcitool is deprecated
   patches = [ ./hcitool.patch ];
-
   buildInputs = [ libusb-compat-0_1 ];
-
-  unpackPhase = ''
-    cp $src sixpair.c
-  '';
 
   buildPhase = ''
     cc -o sixpair sixpair.c -lusb
@@ -31,11 +26,17 @@ stdenv.mkDerivation {
     cp sixpair $out/bin/sixpair
   '';
 
+  unpackPhase = ''
+    cp $src sixpair.c
+  '';
+
   meta = {
     description = "Pair with SIXAXIS controllers over USB";
+
     longDescription = ''
       This command-line utility searches USB buses for SIXAXIS controllers and tells them to connect to a new Bluetooth master.
     '';
+
     homepage = "http://www.pabr.org/sixlinux/";
     license = lib.licenses.gpl2Only;
     maintainers = [ lib.maintainers.tomsmeets ];

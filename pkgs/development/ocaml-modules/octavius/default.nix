@@ -15,9 +15,8 @@ buildDunePackage (finalAttrs: {
     sha256 = "sha256-/S6WpIo1c5J9uM3xgtAM/elhnsl0XimnIFsKy3ootbA=";
   };
 
-  minimalOCamlVersion = "4.03";
-
   doCheck = true;
+  minimalOCamlVersion = "4.03";
 
   meta = {
     description = "Ocamldoc comment syntax parser";

@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  libx11,
   imake,
-  libxt,
+  libx11,
   libxaw,
-  libxpm,
   libxext,
+  libxpm,
+  libxt,
   withNethackLevels ? true,
 }:
 stdenv.mkDerivation rec {
@@ -19,10 +19,7 @@ stdenv.mkDerivation rec {
     sha256 = "0f4z53xsy4w8x8zp5jya689xp3rcfpi5wri2ip0qa8nk3sw7zj73";
   };
 
-  nethackLevels = fetchurl {
-    url = "https://www.electricmonk.nl/data/nethack/nethack.def";
-    sha256 = "057ircp13hfpy513c7wpyp986hsvhqs7km98w4k39f5wkvp3dj02";
-  };
+  nativeBuildInputs = [ imake ];
 
   buildInputs = [
     libx11
@@ -31,8 +28,8 @@ stdenv.mkDerivation rec {
     libxpm
     libxext
   ];
-  nativeBuildInputs = [ imake ];
 
+  makeFlags = [ "BINDIR=$(out)/bin" ];
   env.NIX_CFLAGS_COMPILE = " -isystem ${libxpm.dev}/include/X11 ";
 
   preConfigure = ''
@@ -44,19 +41,22 @@ stdenv.mkDerivation rec {
     sed -e 's/CC = gcc/CC = cc/g' -i src/Imakefile
   '';
 
-  makeFlags = [ "BINDIR=$(out)/bin" ];
-
   postInstall = lib.optionalString withNethackLevels ''
     gzip < ${nethackLevels} > "$out/share/games/lib/xsok/Nethack.def.gz"
     echo Nethack > "$out/share/games/lib/xsok/gametypes"
   '';
 
+  nethackLevels = fetchurl {
+    sha256 = "057ircp13hfpy513c7wpyp986hsvhqs7km98w4k39f5wkvp3dj02";
+    url = "https://www.electricmonk.nl/data/nethack/nethack.def";
+  };
+
   meta = {
     description = "Generic Sokoban game for X11";
-    mainProgram = "xsok";
+    homepage = "https://tracker.debian.org/pkg/xsok";
     license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.raskin ];
     platforms = lib.platforms.unix;
-    homepage = "https://tracker.debian.org/pkg/xsok";
+    mainProgram = "xsok";
   };
 }

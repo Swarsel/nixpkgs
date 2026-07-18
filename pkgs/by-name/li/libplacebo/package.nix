@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  fast-float,
+  lcms2,
+  libGL,
+  libdovi,
+  libunwind,
+  libx11,
   meson,
   ninja,
   pkg-config,
   python3Packages,
+  shaderc,
   vulkan-headers,
   vulkan-loader,
-  shaderc,
-  lcms2,
-  libGL,
-  libx11,
-  libunwind,
-  libdovi,
   xxhash,
-  fast-float,
   vulkanSupport ? true,
 }:
 
@@ -24,12 +24,17 @@ stdenv.mkDerivation (finalAttrs: {
   version = "7.360.1";
 
   src = fetchFromGitLab {
-    domain = "code.videolan.org";
     owner = "videolan";
     repo = "libplacebo";
     tag = "v${finalAttrs.version}";
     hash = "sha256-h8uMWRe4SysbKNLWdGYxAwj2k7yh4sO62/Ca30mRT3g=";
+    domain = "code.videolan.org";
   };
+
+  postPatch = ''
+    substituteInPlace meson.build \
+      --replace 'python_env.append' '#'
+  '';
 
   nativeBuildInputs = [
     meson
@@ -67,19 +72,16 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonEnable "unwind" false) # libplacebo doesn’t build with `darwin.libunwind`
   ];
 
-  postPatch = ''
-    substituteInPlace meson.build \
-      --replace 'python_env.append' '#'
-  '';
-
   meta = {
     description = "Reusable library for GPU-accelerated video/image rendering primitives";
+
     longDescription = ''
       Reusable library for GPU-accelerated image/view processing primitives and
       shaders, as well a batteries-included, extensible, high-quality rendering
       pipeline (similar to mpv's vo_gpu). Supports Vulkan, OpenGL and Metal (via
       MoltenVK).
     '';
+
     homepage = "https://code.videolan.org/videolan/libplacebo";
     changelog = "https://code.videolan.org/videolan/libplacebo/-/tags/v${finalAttrs.version}";
     license = lib.licenses.lgpl21Plus;

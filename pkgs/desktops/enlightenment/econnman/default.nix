@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
+  dbus,
+  directoryListingUpdater,
+  efl,
   makeWrapper,
   pkg-config,
-  dbus,
-  efl,
   python3Packages,
-  directoryListingUpdater,
 }:
 
 stdenv.mkDerivation rec {
@@ -31,26 +31,28 @@ stdenv.mkDerivation rec {
     python3Packages.python
   ];
 
+  postInstall = ''
+    wrapPythonPrograms
+  '';
+
   pythonPath = [
     python3Packages.dbus-python
     python3Packages.pythonefl
   ];
 
-  postInstall = ''
-    wrapPythonPrograms
-  '';
-
   passthru.updateScript = directoryListingUpdater { };
 
   meta = {
     description = "User interface for the connman network connection manager";
-    mainProgram = "econnman-bin";
     homepage = "https://enlightenment.org/";
     license = lib.licenses.lgpl3;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       matejc
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "econnman-bin";
     teams = [ lib.teams.enlightenment ];
   };
 }

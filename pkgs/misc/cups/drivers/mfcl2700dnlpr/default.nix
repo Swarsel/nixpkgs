@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchurl,
   coreutils,
   dpkg,
-  fetchurl,
   ghostscript,
   gnugrep,
   gnused,
@@ -25,8 +25,6 @@ stdenv.mkDerivation rec {
     dpkg
     makeWrapper
   ];
-
-  dontUnpack = true;
 
   installPhase = ''
     dpkg-deb -x $src $out
@@ -55,11 +53,13 @@ stdenv.mkDerivation rec {
     patchelf --set-interpreter "$interpreter" $dir/lpd/rawtobr3
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Brother MFC-L2700DN LPR driver";
     homepage = "http://www.brother.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ lib.maintainers.tv ];
     platforms = [ "i686-linux" ];
   };

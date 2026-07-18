@@ -38,16 +38,16 @@ stdenv.mkDerivation (finalAttrs: {
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-Wno-error=implicit-function-declaration";
 
   passthru.tests.version = testers.testVersion {
-    package = finalAttrs.finalPackage;
     version = "v${finalAttrs.version}";
+    package = finalAttrs.finalPackage;
   };
 
   meta = {
     description = "In-System-Programming (ISP) tool & library for Bouffalo Labs RISC-V Microcontrollers and SoCs";
-    license = lib.licenses.mit;
-    mainProgram = "blisp";
     homepage = "https://github.com/pine64/blisp";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.mit;
     maintainers = [ lib.maintainers.bdd ];
+    platforms = lib.platforms.unix;
+    mainProgram = "blisp";
   };
 })

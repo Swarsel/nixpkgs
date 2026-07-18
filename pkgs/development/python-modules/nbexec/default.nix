@@ -1,15 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  ipykernel,
   # build inputs
   jupyter-client,
-  nbformat,
   nbconvert,
+  nbformat,
   setuptools,
   # check inputs
   unittestCheckHook,
-  ipykernel,
 }:
 let
   pname = "nbexec";
@@ -17,7 +17,6 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jsvine";
@@ -25,14 +24,6 @@ buildPythonPackage {
     tag = "v${version}";
     hash = "sha256-Vv6EHX6WlnSmzQAYlO1mHnz5t078z3RQfVfte1+X2pw=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    jupyter-client
-    nbformat
-    nbconvert
-  ];
 
   # TODO there is a warning about debugpy_stream missing
   nativeCheckInputs = [
@@ -44,22 +35,30 @@ buildPythonPackage {
     export HOME=$(mktemp -d)
   '';
 
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    jupyter-client
+    nbformat
+    nbconvert
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "nbexec" ];
+
   unittestFlagsArray = [
     "-s"
     "test"
     "-v"
   ];
 
-  pythonImportsCheck = [ "nbexec" ];
-
-  __darwinAllowLocalNetworking = true;
-
   meta = {
     description = "Dead-simple tool for executing Jupyter notebooks from the command line";
-    mainProgram = "nbexec";
     homepage = "https://github.com/jsvine/nbexec";
     changelog = "https://github.com/jsvine/nbexec/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ happysalada ];
+    mainProgram = "nbexec";
   };
 }

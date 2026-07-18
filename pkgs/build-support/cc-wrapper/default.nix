@@ -6,35 +6,38 @@
 # compiler and the linker just "work".
 
 {
-  name ? "",
   lib,
-  stdenvNoCC,
-  runtimeShell,
-  cc ? null,
-  libc ? null,
   bintools,
-  coreutils ? null,
-  apple-sdk ? null,
-  nativeTools,
-  noLibc ? false,
+  expand-response-params,
   nativeLibc,
-  nativePrefix ? "",
-  propagateDoc ? cc != null && cc ? man,
-  extraTools ? [ ],
-  extraPackages ? [ ],
+  nativeTools,
+  runtimeShell,
+  stdenvNoCC,
+  apple-sdk ? null,
+  cc ? null,
+  coreutils ? null,
   extraBuildCommands ? "",
-  nixSupport ? { },
-  isGNU ? false,
-  isClang ? cc.isClang or false,
-  isFlang ? cc.isFlang or false,
+  extraPackages ? [ ],
+  extraTools ? [ ],
+  fortify-headers ? null,
+  # the derivation at which the `-B` and `-L` flags added by `useCcForLibs` will point
+  gccForLibs ? if useCcForLibs then cc else null,
+  gnugrep ? null,
+  includeFortifyHeaders ? null,
   isAlireGNAT ? false,
-  isZig ? cc.isZig or false,
   isArocc ? cc.isArocc or false,
   isCcache ? cc.isCcache or false,
-  gnugrep ? null,
-  expand-response-params,
+  isClang ? cc.isClang or false,
+  isFlang ? cc.isFlang or false,
+  isGNU ? false,
+  isZig ? cc.isZig or false,
+  libc ? null,
   libcxx ? null,
-
+  name ? "",
+  nativePrefix ? "",
+  nixSupport ? { },
+  noLibc ? false,
+  propagateDoc ? cc != null && cc ? man,
   # Whether or not to add `-B` and `-L` to `nix-support/cc-{c,ld}flags`
   useCcForLibs ?
 
@@ -71,11 +74,6 @@
     # https://hydra.nixos.org/build/213125495
     else
       false,
-
-  # the derivation at which the `-B` and `-L` flags added by `useCcForLibs` will point
-  gccForLibs ? if useCcForLibs then cc else null,
-  fortify-headers ? null,
-  includeFortifyHeaders ? null,
 }:
 
 assert nativeTools -> !propagateDoc && nativePrefix != "";
@@ -182,34 +180,14 @@ let
     # powerpc does not allow -march=
     else if isGNU then
       {
-        # Generic
-        x86-64-v2 = versionAtLeast ccVersion "11.0";
-        x86-64-v3 = versionAtLeast ccVersion "11.0";
-        x86-64-v4 = versionAtLeast ccVersion "11.0";
-
-        # Intel
-        skylake = true;
-        skylake-avx512 = true;
+        alderlake = versionAtLeast ccVersion "12.0";
         cannonlake = versionAtLeast ccVersion "8.0";
-        icelake-client = versionAtLeast ccVersion "8.0";
-        icelake-server = versionAtLeast ccVersion "8.0";
         cascadelake = versionAtLeast ccVersion "9.0";
         cooperlake = versionAtLeast ccVersion "10.0";
-        tigerlake = versionAtLeast ccVersion "10.0";
-        knm = versionAtLeast ccVersion "8.0";
-        rocketlake = versionAtLeast ccVersion "11.0";
-        alderlake = versionAtLeast ccVersion "12.0";
-        sapphirerapids = versionAtLeast ccVersion "11.0";
         emeraldrapids = versionAtLeast ccVersion "13.0";
-        sierraforest = versionAtLeast ccVersion "13.0";
-
-        # AMD
-        znver1 = true;
-        znver2 = versionAtLeast ccVersion "9.0";
-        znver3 = versionAtLeast ccVersion "11.0";
-        znver4 = versionAtLeast ccVersion "13.0";
-        znver5 = versionAtLeast ccVersion "14.0";
-
+        icelake-client = versionAtLeast ccVersion "8.0";
+        icelake-server = versionAtLeast ccVersion "8.0";
+        knm = versionAtLeast ccVersion "8.0";
         # LoongArch64
         # https://gcc.gnu.org/gcc-12/changes.html#loongarch
         # la464 was added together with loongarch64 support
@@ -217,32 +195,34 @@ let
         "la64v1.0" = versionAtLeast ccVersion "14.0";
         "la64v1.1" = versionAtLeast ccVersion "14.0";
         la664 = versionAtLeast ccVersion "14.0";
+        rocketlake = versionAtLeast ccVersion "11.0";
+        sapphirerapids = versionAtLeast ccVersion "11.0";
+        sierraforest = versionAtLeast ccVersion "13.0";
+        # Intel
+        skylake = true;
+        skylake-avx512 = true;
+        tigerlake = versionAtLeast ccVersion "10.0";
+        # Generic
+        x86-64-v2 = versionAtLeast ccVersion "11.0";
+        x86-64-v3 = versionAtLeast ccVersion "11.0";
+        x86-64-v4 = versionAtLeast ccVersion "11.0";
+        # AMD
+        znver1 = true;
+        znver2 = versionAtLeast ccVersion "9.0";
+        znver3 = versionAtLeast ccVersion "11.0";
+        znver4 = versionAtLeast ccVersion "13.0";
+        znver5 = versionAtLeast ccVersion "14.0";
       }
       .${arch} or true
     else if isClang then
       {
-        #Generic
-        x86-64-v2 = versionAtLeast ccVersion "12.0";
-        x86-64-v3 = versionAtLeast ccVersion "12.0";
-        x86-64-v4 = versionAtLeast ccVersion "12.0";
-
+        alderlake = versionAtLeast ccVersion "16.0";
         # Intel
         cannonlake = versionAtLeast ccVersion "5.0";
+        emeraldrapids = versionAtLeast ccVersion "16.0";
         icelake-client = versionAtLeast ccVersion "7.0";
         icelake-server = versionAtLeast ccVersion "7.0";
         knm = versionAtLeast ccVersion "7.0";
-        rocketlake = versionAtLeast ccVersion "13.0";
-        alderlake = versionAtLeast ccVersion "16.0";
-        sapphirerapids = versionAtLeast ccVersion "12.0";
-        emeraldrapids = versionAtLeast ccVersion "16.0";
-
-        # AMD
-        znver1 = versionAtLeast ccVersion "4.0";
-        znver2 = versionAtLeast ccVersion "9.0";
-        znver3 = versionAtLeast ccVersion "12.0";
-        znver4 = versionAtLeast ccVersion "16.0";
-        znver5 = versionAtLeast ccVersion "19.1";
-
         # LoongArch64
         # https://releases.llvm.org/16.0.0/tools/clang/docs/ReleaseNotes.html#loongarch-support
         # la464 was added together with loongarch64 support
@@ -250,6 +230,18 @@ let
         "la64v1.0" = versionAtLeast ccVersion "19.1";
         "la64v1.1" = versionAtLeast ccVersion "19.1";
         la664 = versionAtLeast ccVersion "19.1";
+        rocketlake = versionAtLeast ccVersion "13.0";
+        sapphirerapids = versionAtLeast ccVersion "12.0";
+        #Generic
+        x86-64-v2 = versionAtLeast ccVersion "12.0";
+        x86-64-v3 = versionAtLeast ccVersion "12.0";
+        x86-64-v4 = versionAtLeast ccVersion "12.0";
+        # AMD
+        znver1 = versionAtLeast ccVersion "4.0";
+        znver2 = versionAtLeast ccVersion "9.0";
+        znver3 = versionAtLeast ccVersion "12.0";
+        znver4 = versionAtLeast ccVersion "16.0";
+        znver5 = versionAtLeast ccVersion "19.1";
       }
       .${arch} or true
     else
@@ -422,10 +414,10 @@ assert nativeLibc == bintools.nativeLibc;
 assert nativePrefix == bintools.nativePrefix;
 
 stdenvNoCC.mkDerivation {
+  # Cannot be in "passthru" due to "substituteAll"
+  inherit isArocc;
   pname = targetPrefix + (if name != "" then name else "${ccName}-wrapper");
   version = optionalString (cc != null) ccVersion;
-
-  preferLocalBuild = true;
 
   outputs = [
     "out"
@@ -435,66 +427,46 @@ stdenvNoCC.mkDerivation {
     "info"
   ];
 
-  # Cannot be in "passthru" due to "substituteAll"
-  inherit isArocc;
+  strictDeps = true;
 
-  passthru = {
-    inherit targetPrefix suffixSalt;
-    # "cc" is the generic name for a C compiler, but there is no one for package
-    # providing the linker and related tools. The two we use now are GNU
-    # Binutils, and Apple's "cctools"; "bintools" as an attempt to find an
-    # unused middle-ground name that evokes both.
-    inherit bintools;
-    inherit
-      cc
-      libc
-      libcxx
-      nativeTools
-      nativeLibc
-      nativePrefix
-      isGNU
-      isClang
-      isZig
-      ;
+  propagatedBuildInputs = [
+    bintools
+  ]
+  ++ extraTools;
 
-    emacsBufferSetup = pkgs: ''
-      ; We should handle propagation here too
-      (mapc
-        (lambda (arg)
-          (when (file-directory-p (concat arg "/include"))
-            (setenv "NIX_CFLAGS_COMPILE_${suffixSalt}" (concat (getenv "NIX_CFLAGS_COMPILE_${suffixSalt}") " -isystem " arg "/include"))))
-        '(${concatStringsSep " " (map (pkg: "\"${pkg}\"") pkgs)}))
-    '';
+  env = {
+    inherit isClang;
+    inherit isFlang;
+    inherit suffixSalt coreutils_bin bintools;
+    inherit libc_bin libc_dev libc_lib;
+    inherit darwinPlatformForCC;
+    inherit useMacroPrefixMap;
 
-    # Expose expand-response-params we are /actually/ using. In stdenv
-    # bootstrapping, expand-response-params usually comes from an earlier stage,
-    # so it is important to expose this for reference checking.
-    inherit expand-response-params;
+    # Wrapped compilers should do something useful even when no SDK is provided at `DEVELOPER_DIR`.
+    ${if stdenvNoCC.targetPlatform.isDarwin && apple-sdk != null then "fallback_sdk" else null} =
+      apple-sdk.__spliced.buildTarget or apple-sdk;
 
-    inherit nixSupport;
+    # stdenv.cc.cc should not be null and we have nothing better for now.
+    # if the native impure bootstrap is gotten rid of this can become `inherit cc;` again.
+    cc = optionalString (!nativeTools) cc;
+    # These will become empty strings when not targeting Darwin.
+    darwinMinVersion = lib.optionalString targetPlatform.isDarwin targetPlatform.darwinMinVersion;
+    darwinMinVersionVariable = lib.optionalString targetPlatform.isDarwin targetPlatform.darwinMinVersionVariable;
+    default_hardening_flags_str = toString defaultHardeningFlags;
 
-    inherit defaultHardeningFlags;
+    # for substitution in utils.bash
+    # TODO(@sternenseemann): invent something cleaner than passing in "" in case of absence
+    expandResponseParams = lib.optionalString (expand-response-params != "") (
+      lib.getExe expand-response-params
+    );
 
-    # So gccgo looks more like go for buildGoModule
-    ${if cc.langGo or false then "GOOS" else null} = targetPlatform.go.GOOS;
-    ${if cc.langGo or false then "GOARCH" else null} = targetPlatform.go.GOARCH;
-    ${if cc.langGo or false then "GOARM" else null} = targetPlatform.go.GOARM;
-    ${if cc.langGo or false then "CGO_ENABLED" else null} = 1;
+    gnugrep_bin = optionalString (!nativeTools) gnugrep;
+    mktemp = if nativeTools then "mktemp" else lib.getExe' coreutils "mktemp";
+    rm = if nativeTools then "rm" else lib.getExe' coreutils "rm";
+    # TODO(@sternenseemann): rename env var via stdenv rebuild
+    shell = getBin runtimeShell + runtimeShell.shellPath or "";
+    wrapperName = "CC_WRAPPER";
   };
-
-  dontBuild = true;
-  dontConfigure = true;
-  enableParallelBuilding = true;
-
-  # TODO(@connorbaker):
-  # This is a quick fix unblock builds broken by https://github.com/NixOS/nixpkgs/pull/370750.
-  dontCheckForBrokenSymlinks = true;
-
-  unpackPhase = ''
-    src=$PWD
-  '';
-
-  wrapper = ./cc-wrapper.sh;
 
   installPhase = ''
     mkdir -p $out/bin $out/nix-support
@@ -613,40 +585,6 @@ stdenvNoCC.mkDerivation {
     wrap ${targetPrefix}gccgo $wrapper $ccPath/${targetPrefix}gccgo
     wrap ${targetPrefix}go ${./go-wrapper.sh} $ccPath/${targetPrefix}go
   '';
-
-  strictDeps = true;
-  propagatedBuildInputs = [
-    bintools
-  ]
-  ++ extraTools;
-  depsTargetTargetPropagated = optional (libcxx != null) libcxx ++ extraPackages;
-
-  setupHooks = [
-    ../setup-hooks/role.bash
-  ]
-  ++ optional (cc.langC or true) ./setup-hook.sh
-  ++ optional (cc.langFortran or false) ./fortran-hook.sh
-  ++ optional (targetPlatform.isWindows || targetPlatform.isCygwin) (
-    stdenvNoCC.mkDerivation {
-      name = "win-dll-hook.sh";
-      dontUnpack = true;
-      installPhase =
-        if targetPlatform.isCygwin then
-          ''
-            echo addToSearchPath "_linkDeps_inputPath" "${cc_solib}/bin" >> $out
-            # Work around build failure caused by the gnulib workaround for
-            # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=114870. remove after
-            # gnulib is updated in core packages (e.g. iconv, gnupatch, gnugrep)
-            echo appendToVar configureFlags gl_cv_clean_version_stddef=yes >> $out
-          ''
-        else
-          ''
-            echo addToSearchPath "LINK_DLL_FOLDERS" "${cc_solib}/lib" > $out
-            echo addToSearchPath "LINK_DLL_FOLDERS" "${cc_solib}/lib64" >> $out
-            echo addToSearchPath "LINK_DLL_FOLDERS" "${cc_solib}/lib32" >> $out
-          '';
-    }
-  );
 
   postFixup =
     # Ensure flags files exists, as some other programs cat them. (That these
@@ -1002,35 +940,89 @@ stdenvNoCC.mkDerivation {
       mapAttrsToList (name: value: "echo ${toString value} >> $out/nix-support/${name}") nixSupport
     );
 
-  env = {
-    inherit isClang;
-    inherit isFlang;
+  depsTargetTargetPropagated = optional (libcxx != null) libcxx ++ extraPackages;
+  dontBuild = true;
+  # TODO(@connorbaker):
+  # This is a quick fix unblock builds broken by https://github.com/NixOS/nixpkgs/pull/370750.
+  dontCheckForBrokenSymlinks = true;
+  dontConfigure = true;
+  enableParallelBuilding = true;
+  preferLocalBuild = true;
 
-    # for substitution in utils.bash
-    # TODO(@sternenseemann): invent something cleaner than passing in "" in case of absence
-    expandResponseParams = lib.optionalString (expand-response-params != "") (
-      lib.getExe expand-response-params
-    );
-    # TODO(@sternenseemann): rename env var via stdenv rebuild
-    shell = getBin runtimeShell + runtimeShell.shellPath or "";
-    gnugrep_bin = optionalString (!nativeTools) gnugrep;
-    rm = if nativeTools then "rm" else lib.getExe' coreutils "rm";
-    mktemp = if nativeTools then "mktemp" else lib.getExe' coreutils "mktemp";
-    # stdenv.cc.cc should not be null and we have nothing better for now.
-    # if the native impure bootstrap is gotten rid of this can become `inherit cc;` again.
-    cc = optionalString (!nativeTools) cc;
-    wrapperName = "CC_WRAPPER";
-    inherit suffixSalt coreutils_bin bintools;
-    inherit libc_bin libc_dev libc_lib;
-    inherit darwinPlatformForCC;
-    default_hardening_flags_str = toString defaultHardeningFlags;
-    inherit useMacroPrefixMap;
-    # These will become empty strings when not targeting Darwin.
-    darwinMinVersion = lib.optionalString targetPlatform.isDarwin targetPlatform.darwinMinVersion;
-    darwinMinVersionVariable = lib.optionalString targetPlatform.isDarwin targetPlatform.darwinMinVersionVariable;
-    # Wrapped compilers should do something useful even when no SDK is provided at `DEVELOPER_DIR`.
-    ${if stdenvNoCC.targetPlatform.isDarwin && apple-sdk != null then "fallback_sdk" else null} =
-      apple-sdk.__spliced.buildTarget or apple-sdk;
+  setupHooks = [
+    ../setup-hooks/role.bash
+  ]
+  ++ optional (cc.langC or true) ./setup-hook.sh
+  ++ optional (cc.langFortran or false) ./fortran-hook.sh
+  ++ optional (targetPlatform.isWindows || targetPlatform.isCygwin) (
+    stdenvNoCC.mkDerivation {
+      installPhase =
+        if targetPlatform.isCygwin then
+          ''
+            echo addToSearchPath "_linkDeps_inputPath" "${cc_solib}/bin" >> $out
+            # Work around build failure caused by the gnulib workaround for
+            # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=114870. remove after
+            # gnulib is updated in core packages (e.g. iconv, gnupatch, gnugrep)
+            echo appendToVar configureFlags gl_cv_clean_version_stddef=yes >> $out
+          ''
+        else
+          ''
+            echo addToSearchPath "LINK_DLL_FOLDERS" "${cc_solib}/lib" > $out
+            echo addToSearchPath "LINK_DLL_FOLDERS" "${cc_solib}/lib64" >> $out
+            echo addToSearchPath "LINK_DLL_FOLDERS" "${cc_solib}/lib32" >> $out
+          '';
+
+      dontUnpack = true;
+      name = "win-dll-hook.sh";
+    }
+  );
+
+  unpackPhase = ''
+    src=$PWD
+  '';
+
+  wrapper = ./cc-wrapper.sh;
+
+  passthru = {
+    inherit targetPrefix suffixSalt;
+    # "cc" is the generic name for a C compiler, but there is no one for package
+    # providing the linker and related tools. The two we use now are GNU
+    # Binutils, and Apple's "cctools"; "bintools" as an attempt to find an
+    # unused middle-ground name that evokes both.
+    inherit bintools;
+
+    inherit
+      cc
+      libc
+      libcxx
+      nativeTools
+      nativeLibc
+      nativePrefix
+      isGNU
+      isClang
+      isZig
+      ;
+
+    # Expose expand-response-params we are /actually/ using. In stdenv
+    # bootstrapping, expand-response-params usually comes from an earlier stage,
+    # so it is important to expose this for reference checking.
+    inherit expand-response-params;
+    inherit nixSupport;
+    inherit defaultHardeningFlags;
+    ${if cc.langGo or false then "CGO_ENABLED" else null} = 1;
+    ${if cc.langGo or false then "GOARCH" else null} = targetPlatform.go.GOARCH;
+    ${if cc.langGo or false then "GOARM" else null} = targetPlatform.go.GOARM;
+    # So gccgo looks more like go for buildGoModule
+    ${if cc.langGo or false then "GOOS" else null} = targetPlatform.go.GOOS;
+
+    emacsBufferSetup = pkgs: ''
+      ; We should handle propagation here too
+      (mapc
+        (lambda (arg)
+          (when (file-directory-p (concat arg "/include"))
+            (setenv "NIX_CFLAGS_COMPILE_${suffixSalt}" (concat (getenv "NIX_CFLAGS_COMPILE_${suffixSalt}") " -isystem " arg "/include"))))
+        '(${concatStringsSep " " (map (pkg: "\"${pkg}\"") pkgs)}))
+    '';
   };
 
   meta =
@@ -1040,7 +1032,7 @@ stdenvNoCC.mkDerivation {
     (optionalAttrs (cc_ ? meta) (removeAttrs cc.meta [ "priority" ]))
     // {
       description = attrByPath [ "meta" "description" ] "System C compiler" cc_ + " (wrapper script)";
-      priority = 10;
       mainProgram = if name != "" then name else "${targetPrefix}${ccName}";
+      priority = 10;
     };
 }

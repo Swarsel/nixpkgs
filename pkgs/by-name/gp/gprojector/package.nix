@@ -1,11 +1,11 @@
 {
-  stdenvNoCC,
   lib,
+  copyDesktopItems,
   fetchzip,
   jre,
   makeDesktopItem,
-  copyDesktopItems,
   makeWrapper,
+  stdenvNoCC,
   extraJavaArgs ? "-Xms512M -Xmx2000M",
 }:
 
@@ -18,26 +18,12 @@ stdenvNoCC.mkDerivation rec {
     sha256 = "sha256-cMmjyitetXxQzfSBh5ry5tIsLWOnBaaYOD1eQg1IX+w=";
   };
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "gprojector";
-      exec = "gprojector";
-      desktopName = "G.Projector";
-      comment = meta.description;
-      categories = [ "Science" ];
-      startupWMClass = "gov-nasa-giss-projector-GProjector";
-    })
-  ];
-
-  buildInputs = [ jre ];
   nativeBuildInputs = [
     makeWrapper
     copyDesktopItems
   ];
 
-  dontConfigure = true;
-  dontBuild = true;
-  dontFixup = true;
+  buildInputs = [ jre ];
 
   installPhase = ''
     runHook preInstall
@@ -47,12 +33,27 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Science" ];
+      comment = meta.description;
+      desktopName = "G.Projector";
+      exec = "gprojector";
+      name = "gprojector";
+      startupWMClass = "gov-nasa-giss-projector-GProjector";
+    })
+  ];
+
+  dontBuild = true;
+  dontConfigure = true;
+  dontFixup = true;
+
   meta = {
+    inherit (jre.meta) platforms;
     description = "G.Projector transforms an input map image into any of about 200 global and regional map projections";
     homepage = "https://www.giss.nasa.gov/tools/gprojector/";
+    license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ pentane ];
-    license = lib.licenses.unfree;
-    inherit (jre.meta) platforms;
   };
 }

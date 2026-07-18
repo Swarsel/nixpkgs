@@ -1,23 +1,23 @@
 {
   lib,
   stdenv,
-  stdenvNoCC,
-  stdenvNoLibc,
-  stdenvLibcMinimal,
-  runCommand,
-  rsync,
-  source,
   bsdSetupHook,
-  netbsdSetupHook,
-  makeMinimal,
-  install,
-  tsort,
-  lorder,
-  mandoc,
-  groff,
-  statHook,
   compatIfNeeded,
   defaultMakeFlags,
+  groff,
+  install,
+  lorder,
+  makeMinimal,
+  mandoc,
+  netbsdSetupHook,
+  rsync,
+  runCommand,
+  source,
+  statHook,
+  stdenvLibcMinimal,
+  stdenvNoCC,
+  stdenvNoLibc,
+  tsort,
   version,
 }:
 
@@ -36,8 +36,9 @@ lib.makeOverridable (
   in
   stdenv'.mkDerivation (
     rec {
-      pname = "${attrs.pname or (baseNameOf attrs.path)}-netbsd";
       inherit version;
+      pname = "${attrs.pname or (baseNameOf attrs.path)}-netbsd";
+
       src = runCommand "${pname}-filtered-src" { nativeBuildInputs = [ rsync ]; } ''
         for p in ${lib.concatStringsSep " " ([ attrs.path ] ++ attrs.extraPaths or [ ])}; do
           set -x
@@ -50,7 +51,7 @@ lib.makeOverridable (
         done
       '';
 
-      extraPaths = [ ];
+      strictDeps = true;
 
       nativeBuildInputs = [
         bsdSetupHook
@@ -63,9 +64,21 @@ lib.makeOverridable (
         groff
         statHook
       ];
-      buildInputs = compatIfNeeded;
 
+      buildInputs = compatIfNeeded;
+      makeFlags = defaultMakeFlags;
+      COMPONENT_PATH = attrs.path;
       HOST_SH = stdenv'.shell;
+
+      MACHINE =
+        {
+          aarch64 = "evbarm64";
+          i486 = "i386";
+          i586 = "i386";
+          i686 = "i386";
+          x86_64 = "amd64";
+        }
+        .${stdenv'.hostPlatform.parsed.cpu.name} or stdenv'.hostPlatform.parsed.cpu.name;
 
       MACHINE_ARCH =
         {
@@ -75,28 +88,16 @@ lib.makeOverridable (
         }
         .${stdenv'.hostPlatform.parsed.cpu.name} or stdenv'.hostPlatform.parsed.cpu.name;
 
-      MACHINE =
-        {
-          x86_64 = "amd64";
-          aarch64 = "evbarm64";
-          i486 = "i386";
-          i586 = "i386";
-          i686 = "i386";
-        }
-        .${stdenv'.hostPlatform.parsed.cpu.name} or stdenv'.hostPlatform.parsed.cpu.name;
-
-      COMPONENT_PATH = attrs.path;
-
-      makeFlags = defaultMakeFlags;
-
-      strictDeps = true;
+      extraPaths = [ ];
 
       meta = {
+        license = lib.licenses.bsd2;
+
         maintainers = with lib.maintainers; [
           qyliss
         ];
+
         platforms = lib.platforms.unix;
-        license = lib.licenses.bsd2;
       };
     }
     // lib.optionalAttrs stdenv'.hasCC {

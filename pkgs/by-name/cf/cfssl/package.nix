@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -16,6 +16,15 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-Xczpv6tLJiy2dXoGJ0QUmXwOn0p6S+lm2oz61oytQec=";
   };
 
+  vendorHash = null;
+  doCheck = false;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/cloudflare/cfssl/cli/version.version=v${finalAttrs.version}"
+  ];
+
   subPackages = [
     "cmd/cfssl"
     "cmd/cfssljson"
@@ -27,21 +36,11 @@ buildGoModule (finalAttrs: {
     "cmd/mkbundle"
   ];
 
-  vendorHash = null;
-
-  doCheck = false;
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/cloudflare/cfssl/cli/version.version=v${finalAttrs.version}"
-  ];
-
   passthru.tests = { inherit (nixosTests) cfssl; };
 
   meta = {
-    homepage = "https://cfssl.org/";
     description = "Cloudflare's PKI and TLS toolkit";
+    homepage = "https://cfssl.org/";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ mbrgm ];
     mainProgram = "cfssl";

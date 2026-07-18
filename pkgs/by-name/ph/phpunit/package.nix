@@ -18,23 +18,24 @@ php.buildComposerProject2 (finalAttrs: {
   };
 
   vendorHash = "sha256-u89MpsCKwYn44/69evX+a+SJtqMctx6uCXnhKEdqhTE=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   passthru = {
     updateScript = nix-update-script { };
   };
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   meta = {
-    changelog = "https://github.com/sebastianbergmann/phpunit/blob/${finalAttrs.version}/ChangeLog-${lib.versions.majorMinor finalAttrs.version}.md";
     description = "PHP Unit Testing framework";
     homepage = "https://phpunit.de";
+    changelog = "https://github.com/sebastianbergmann/phpunit/blob/${finalAttrs.version}/ChangeLog-${lib.versions.majorMinor finalAttrs.version}.md";
     license = lib.licenses.bsd3;
-    mainProgram = "phpunit";
+
     maintainers = with lib.maintainers; [
       onny
       patka
     ];
+
+    mainProgram = "phpunit";
   };
 })

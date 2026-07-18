@@ -9,23 +9,21 @@
 buildPythonPackage {
   inherit (notmuch) pname version src;
 
-  sourceRoot = notmuch.pythonSourceRoot;
-
-  format = "setuptools";
+  postPatch = ''
+    sed -i -e '/CDLL/s@"libnotmuch\.@"${notmuch}/lib/libnotmuch.@' \
+      notmuch/globals.py
+  '';
 
   buildInputs = [
     python
     notmuch
   ];
 
-  postPatch = ''
-    sed -i -e '/CDLL/s@"libnotmuch\.@"${notmuch}/lib/libnotmuch.@' \
-      notmuch/globals.py
-  '';
-
   # no tests
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "notmuch" ];
+  sourceRoot = notmuch.pythonSourceRoot;
 
   meta = {
     description = "Python wrapper around notmuch";

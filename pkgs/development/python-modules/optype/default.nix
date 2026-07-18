@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  uv-build,
-  typing-extensions,
+  beartype,
+  buildPythonPackage,
   numpy,
   numpy-typing-compat,
-  beartype,
   pytestCheckHook,
+  typing-extensions,
+  uv-build,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "optype";
   version = "0.15.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jorenham";
@@ -26,6 +25,13 @@ buildPythonPackage (finalAttrs: {
     substituteInPlace pyproject.toml \
       --replace-fail "uv_build>=0.9.16,<0.10.0" uv_build
   '';
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    numpy
+    numpy-typing-compat
+    beartype
+  ];
 
   build-system = [
     uv-build
@@ -42,15 +48,10 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "optype"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    numpy
-    numpy-typing-compat
-    beartype
   ];
 
   meta = {

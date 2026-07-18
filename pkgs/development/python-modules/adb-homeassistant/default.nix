@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   libusb1,
-  rsa,
+  mock,
   pycryptodome,
   pytest,
-  mock,
+  rsa,
 }:
 buildPythonPackage {
   pname = "adb-homeassistant";
   version = "1.3.1";
-  format = "setuptools";
 
   # pypi does not contain tests, using github sources instead
   src = fetchFromGitHub {
@@ -31,9 +30,12 @@ buildPythonPackage {
     pytest
     mock
   ];
+
   checkPhase = ''
     py.test test
   '';
+
+  format = "setuptools";
 
   meta = {
     description = "Pure python implementation of the Android ADB and Fastboot protocols";

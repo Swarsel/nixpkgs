@@ -1,9 +1,6 @@
 {
   lib,
   stdenv,
-  fetchgit,
-  fetchpatch,
-  fetchzip,
   alsa-lib,
   apple-sdk,
   aubio,
@@ -14,6 +11,9 @@
   darwin,
   dbus,
   doxygen,
+  fetchgit,
+  fetchpatch,
+  fetchzip,
   ffmpeg,
   fftw,
   fftwSinglePrec,
@@ -30,6 +30,7 @@
   kissfft,
   libarchive,
   libjack2,
+  libjpeg,
   liblo,
   libltc,
   libogg,
@@ -42,7 +43,9 @@
   libuv,
   libwebsockets,
   libxi,
+  libxinerama,
   libxml2,
+  libxrandr,
   libxslt,
   lilv,
   lrdf,
@@ -67,9 +70,6 @@
   which,
   writableTmpDirAsHomeHook,
   xjadeo,
-  libxrandr,
-  libxinerama,
-  libjpeg,
   optimize ? true, # disable to print Lua DSP script output to stdout
   videoSupport ? true,
 }:
@@ -80,10 +80,10 @@ let
   ];
 
   bundledContent = fetchzip {
-    url = "https://web.archive.org/web/20221026200824/http://stuff.ardour.org/loops/ArdourBundledMedia.zip";
     hash = "sha256-IbPQWFeyMuvCoghFl1ZwZNNcSvLNsH84rGArXnw+t7A=";
     # archive does not contain a single folder at the root
     stripRoot = false;
+    url = "https://web.archive.org/web/20221026200824/http://stuff.ardour.org/loops/ArdourBundledMedia.zip";
   };
 
   generic = stdenv.mkDerivation (finalAttrs: {
@@ -181,6 +181,30 @@ let
     ]
     ++ lib.optionals videoSupport videoInputs;
 
+    env = {
+      LINKFLAGS = "-lpthread";
+
+      NIX_CFLAGS_COMPILE = toString [
+        # 'ioprio_set' syscall support:
+        # compiler doesn't find headers without these:
+        "-I${lib.getInclude serd}/include/serd-0"
+        "-I${lib.getInclude sratom}/include/sratom-0"
+        "-I${lib.getInclude sord}/include/sord-0"
+      ];
+    };
+
+    doCheck = true;
+
+    checkPhase = ''
+      runHook preHook
+      ./waf test
+      runHook postHook
+    '';
+
+    postInstall = ''
+      installManPage ardour.1
+    '';
+
     wafConfigureFlags = [
       "--cxx17"
       "--docs"
@@ -196,31 +220,9 @@ let
     ++ lib.optional finalAttrs.doCheck "--test"
     ++ lib.optional optimize "--optimize";
 
-    env = {
-      NIX_CFLAGS_COMPILE = toString [
-        # 'ioprio_set' syscall support:
-        # compiler doesn't find headers without these:
-        "-I${lib.getInclude serd}/include/serd-0"
-        "-I${lib.getInclude sratom}/include/sratom-0"
-        "-I${lib.getInclude sord}/include/sord-0"
-      ];
-      LINKFLAGS = "-lpthread";
-    };
-
-    postInstall = ''
-      installManPage ardour.1
-    '';
-
-    doCheck = true;
-
-    checkPhase = ''
-      runHook preHook
-      ./waf test
-      runHook postHook
-    '';
-
     meta = {
       description = "Multi-track hard disk recording software";
+
       longDescription = ''
         Ardour is a digital audio workstation (DAW), you can use it to
         record, edit and mix multi-track audio and midi. Produce your
@@ -230,15 +232,18 @@ let
         Please consider supporting the ardour project financially:
         https://community.ardour.org/donate
       '';
+
       homepage = "https://ardour.org/";
       license = lib.licenses.gpl2Plus;
-      mainProgram = "ardour9";
-      platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
       maintainers = with lib.maintainers; [
         magnetophon
         mitchmindtree
         ryand56
       ];
+
+      platforms = lib.platforms.linux ++ lib.platforms.darwin;
+      mainProgram = "ardour9";
     };
   });
 
@@ -261,7 +266,6 @@ let
         libxrandr
       ];
 
-      wafConfigureFlags = finalAttrs.wafConfigureFlags ++ [ "--freedesktop" ];
       env.NIX_CFLAGS_COMPILE = finalAttrs.env.NIX_CFLAGS_COMPILE + "-D_GNU_SOURCE";
 
       postInstall =
@@ -285,6 +289,8 @@ let
           wrapProgram "$out/bin/ardour${majorVersion}" \
             --prefix PATH : "${lib.makeBinPath videoInputs}"
         '';
+
+      wafConfigureFlags = finalAttrs.wafConfigureFlags ++ [ "--freedesktop" ];
     }
   );
 
@@ -296,10 +302,10 @@ let
     {
       patches = finalAttrs.patches ++ [
         (fetchpatch {
-          # TODO: Remove with the next release of Ardour
-          url = "https://github.com/Ardour/ardour/commit/bff1ebbca2f50f1a0d2285efcf6e0c8237a07d8f.diff";
           hash = "sha256-Ye22S2bmRt+c/GrrvgWCDlzUqSwaOdAh5vFuJb/BqV8=";
           name = "fix-path-to-mo-files.diff";
+          # TODO: Remove with the next release of Ardour
+          url = "https://github.com/Ardour/ardour/commit/bff1ebbca2f50f1a0d2285efcf6e0c8237a07d8f.diff";
         })
       ];
 
@@ -332,13 +338,6 @@ let
       buildInputs = finalAttrs.buildInputs ++ [
         apple-sdk
       ];
-
-      wafBuildTargets = [
-        "build"
-        "i18n"
-      ];
-
-      wafConfigureFlags = finalAttrs.wafConfigureFlags ++ [ "--with-backends=coreaudio,jack,dummy" ];
 
       postBuild = ''
         # NOTE: The .so files are symlinks to the actual .dylib files.
@@ -374,6 +373,13 @@ let
 
         runHook postInstall
       '';
+
+      wafBuildTargets = [
+        "build"
+        "i18n"
+      ];
+
+      wafConfigureFlags = finalAttrs.wafConfigureFlags ++ [ "--with-backends=coreaudio,jack,dummy" ];
     }
   );
 in

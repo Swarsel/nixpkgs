@@ -1,24 +1,24 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchYarnDeps,
-  nodejs,
-  electron_41,
-  yarnConfigHook,
-  copyDesktopItems,
-  vips,
-  ffmpeg,
-  makeWrapper,
   autoPatchelfHook,
-  makeDesktopItem,
-  imagemagick,
-  wasm-pack,
-  rustPlatform,
-  cargo,
-  rustc,
-  wasm-bindgen-cli_0_2_121,
   binaryen,
+  cargo,
+  copyDesktopItems,
+  electron_41,
+  fetchYarnDeps,
+  ffmpeg,
+  imagemagick,
+  makeDesktopItem,
+  makeWrapper,
+  nodejs,
+  rustPlatform,
+  rustc,
+  vips,
+  wasm-bindgen-cli_0_2_121,
+  wasm-pack,
+  yarnConfigHook,
 }:
 let
   electron = electron_41;
@@ -37,40 +37,22 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchFromGitHub {
     owner = "ente";
     repo = "ente";
+    tag = "photosd-v${finalAttrs.version}";
+    hash = "sha256-/dO9qLJKbqR5h/GEJW9rLO1jNTa5GkqnJ9ORPSf5R8o=";
     fetchSubmodules = true;
+
     sparseCheckout = [
       "desktop"
       "web"
       "rust"
     ];
-    tag = "photosd-v${finalAttrs.version}";
-    hash = "sha256-/dO9qLJKbqR5h/GEJW9rLO1jNTa5GkqnJ9ORPSf5R8o=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/desktop";
-  cargoRoot = "../rust";
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      sourceRoot
-      cargoRoot
-      ;
-    hash = "sha256-F+g/6mcMnplOkTlR/vedS3MhimFAbXFZi6CTJ/cqoU0=";
-  };
-  offlineCache = fetchYarnDeps {
-    name = "ente-desktop-${finalAttrs.version}-offline-cache";
-    inherit (finalAttrs) src sourceRoot;
-    hash = "sha256-ne3gyI6psDpYzCPpepIIWao0yBiiv9qXQ+Iri3ELK/U=";
-  };
-  webOfflineCache = fetchYarnDeps {
-    name = "ente-desktop-${finalAttrs.version}-web-offline-cache";
-    inherit (finalAttrs) src;
-    sourceRoot = "${finalAttrs.src.name}/web";
-    hash = "sha256-MqsmOHVyPz+YiwNmrs447wrQ/Nk+t5TrLMsbDITM8p0=";
-  };
+  # Path to vips (otherwise it looks within the electron derivation)
+  postPatch = ''
+    substituteInPlace src/main/services/image.ts src/main.ts \
+      --replace-fail "process.resourcesPath" "\"${resourcesDir}\""
+  '';
 
   nativeBuildInputs = [
     nodejs
@@ -94,12 +76,6 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [
     (lib.getLib stdenv.cc.cc) # for onnxruntime
   ];
-
-  # Path to vips (otherwise it looks within the electron derivation)
-  postPatch = ''
-    substituteInPlace src/main/services/image.ts src/main.ts \
-      --replace-fail "process.resourcesPath" "\"${resourcesDir}\""
-  '';
 
   postConfigure = ''
     chmod u+w -R ..
@@ -168,35 +144,69 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      sourceRoot
+      cargoRoot
+      ;
+
+    hash = "sha256-F+g/6mcMnplOkTlR/vedS3MhimFAbXFZi6CTJ/cqoU0=";
+  };
+
+  cargoRoot = "../rust";
+
   # The desktop item properties should be kept in sync with data from upstream:
   # https://github.com/ente/ente/blob/main/desktop/electron-builder.yml
   desktopItems = lib.optionals (!stdenv.hostPlatform.isDarwin) [
     (makeDesktopItem {
-      name = "ente-desktop";
-      desktopName = "Ente";
-      exec = "ente-desktop %U";
-      terminal = false;
-      type = "Application";
-      icon = "ente-desktop";
-      mimeTypes = [
-        "x-scheme-handler/ente"
-      ];
       categories = [
         "Photography"
       ];
+
+      desktopName = "Ente";
+      exec = "ente-desktop %U";
+      icon = "ente-desktop";
+
+      mimeTypes = [
+        "x-scheme-handler/ente"
+      ];
+
+      name = "ente-desktop";
+      terminal = false;
+      type = "Application";
     })
   ];
+
+  offlineCache = fetchYarnDeps {
+    inherit (finalAttrs) src sourceRoot;
+    hash = "sha256-ne3gyI6psDpYzCPpepIIWao0yBiiv9qXQ+Iri3ELK/U=";
+    name = "ente-desktop-${finalAttrs.version}-offline-cache";
+  };
+
+  sourceRoot = "${finalAttrs.src.name}/desktop";
+
+  webOfflineCache = fetchYarnDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-MqsmOHVyPz+YiwNmrs447wrQ/Nk+t5TrLMsbDITM8p0=";
+    name = "ente-desktop-${finalAttrs.version}-web-offline-cache";
+    sourceRoot = "${finalAttrs.src.name}/web";
+  };
 
   meta = {
     description = "Desktop (Electron) client for Ente Photos";
     homepage = "https://ente.io/";
     changelog = "https://github.com/ente-io/photos-desktop/releases";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       pinpox
       yuka
       Br1ght0ne
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

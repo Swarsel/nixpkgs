@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
+  gtk3,
   libxml2,
   nettle,
+  pkg-config,
   withGTK3 ? !stdenv.hostPlatform.isStatic,
-  gtk3,
 }:
 
 stdenv.mkDerivation rec {

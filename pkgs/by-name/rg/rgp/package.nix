@@ -1,7 +1,6 @@
 {
   lib,
   stdenv,
-  makeWrapper,
   fetchurl,
   autoPatchelfHook,
   dbus,
@@ -9,20 +8,21 @@
   fontconfig,
   freetype,
   glib,
-  libdrm,
   libGLU,
+  libdrm,
   libglvnd,
   libice,
   libkrb5,
   libsm,
   libx11,
   libxcb,
+  libxcb-util,
   libxi,
   libxkbcommon,
   libxml2_13,
+  makeWrapper,
   ncurses,
   wayland,
-  libxcb-util,
   zlib,
   zstd,
 }:
@@ -91,9 +91,9 @@ stdenv.mkDerivation {
   meta = {
     description = "Tool from AMD that allows for deep inspection of GPU workloads";
     homepage = "https://gpuopen.com/rgp/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ Flakebi ];
+    platforms = [ "x86_64-linux" ];
   };
 }

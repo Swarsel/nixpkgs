@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "bnunicodenormalizer";
   version = "0.1.7";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "bnunicodenormalizer" ];
 
   meta = {

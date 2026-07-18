@@ -4,26 +4,26 @@
   future,
   psutil,
   pytest,
-  pytest-shutil,
   pytest-fixture-config,
+  pytest-shutil,
   requests,
   retry,
-  six,
   setuptools,
+  six,
 }:
 
 buildPythonPackage {
-  pname = "pytest-server-fixtures";
   inherit (pytest-fixture-config) version src patches;
-  pyproject = true;
+  pname = "pytest-server-fixtures";
 
   postPatch = ''
     cd pytest-server-fixtures
   '';
 
-  build-system = [ setuptools ];
-
   buildInputs = [ pytest ];
+  # Don't run integration tests
+  doCheck = false;
+  build-system = [ setuptools ];
 
   dependencies = [
     future
@@ -35,8 +35,7 @@ buildPythonPackage {
     six
   ];
 
-  # Don't run integration tests
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "Extensible server fixures for py.test";

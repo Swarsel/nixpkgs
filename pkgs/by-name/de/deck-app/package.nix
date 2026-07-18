@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  undmg,
   nix-update-script,
+  stdenvNoCC,
+  undmg,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -15,9 +15,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-U5iMoQZGycwiiehxKUB3iohvzAh42gkC1sk3AJ62Ujs=";
   };
 
+  strictDeps = true;
   nativeBuildInputs = [ undmg ];
-
-  sourceRoot = ".";
 
   installPhase = ''
     runHook preInstall
@@ -28,22 +27,20 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
   dontBuild = true;
   dontFixup = true;
-  strictDeps = true;
-
-  __structuredAttrs = true;
-
+  sourceRoot = ".";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Deck is a modern, native, privacy-first clipboard manager for macOS.";
     homepage = "https://deckclip.app/";
     changelog = "https://github.com/yuzeguitarist/Deck/releases/tag/v${finalAttrs.version}";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    platforms = lib.platforms.darwin;
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ myzel394 ];
+    platforms = lib.platforms.darwin;
     # Deck provides a CLI tool that can be enabled in the app settings.
     mainProgram = "deckclip";
   };

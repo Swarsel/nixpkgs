@@ -9,32 +9,32 @@
   mkdocs-material,
   nbconvert,
   pygments,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "mkdocs-jupyter";
   version = "0.26.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "mkdocs_jupyter";
     inherit version;
     hash = "sha256-fIDA05U96R5bQKDTIJIzeVyPgAJDqymOTsOOBQTtpjA=";
+    pname = "mkdocs_jupyter";
   };
-
-  pythonRelaxDeps = [
-    "ipykernel"
-    "nbconvert"
-  ];
-
-  build-system = [ hatchling ];
 
   nativeBuildInputs = [
     writableTmpDirAsHomeHook
   ];
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+  ];
+
+  __darwinAllowLocalNetworking = true;
+  build-system = [ hatchling ];
 
   dependencies = [
     ipykernel
@@ -45,14 +45,13 @@ buildPythonPackage rec {
     pygments
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mkdocs_jupyter" ];
 
-  __darwinAllowLocalNetworking = true;
+  pythonRelaxDeps = [
+    "ipykernel"
+    "nbconvert"
+  ];
 
   meta = {
     description = "Use Jupyter Notebook in mkdocs";

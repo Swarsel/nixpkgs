@@ -1,22 +1,20 @@
 {
   lib,
-  runCommand,
-
+  stdenv,
   cacert,
+  closureYaml,
   curl,
+  extraLibs,
   git,
   julia,
-  python3,
-  stdenv,
-
-  closureYaml,
-  extraLibs,
   juliaCpuTarget,
   overridesToml,
   packageImplications,
-  project,
   precompile,
+  project,
+  python3,
   registry,
+  runCommand,
 }:
 
 let
@@ -37,6 +35,8 @@ in
 
 runCommand "julia-depot"
   {
+    inherit precompile project registry;
+
     nativeBuildInputs = [
       curl
       git
@@ -44,7 +44,6 @@ runCommand "julia-depot"
       (python3.withPackages (ps: with ps; [ pyyaml ]))
     ]
     ++ extraLibs;
-    inherit precompile project registry;
   }
   (
     ''

@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "youtube-search-python";
   version = "1.6.6";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,13 +15,11 @@ buildPythonPackage rec {
   };
 
   patches = [ ./fix-httpx-proxies.patch ];
-
   propagatedBuildInputs = [ httpx ];
-
-  pythonImportsCheck = [ "youtubesearchpython" ];
-
   # Project has no tests
   doCheck = false;
+  format = "setuptools";
+  pythonImportsCheck = [ "youtubesearchpython" ];
 
   meta = {
     description = "Search for YouTube videos, channels & playlists & get video information using link without YouTube Data API";

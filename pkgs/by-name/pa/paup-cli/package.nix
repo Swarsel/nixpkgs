@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   autoPatchelfHook,
   curl,
   gfortran,
+  stdenvNoCC,
   zlib,
 }:
 
@@ -17,15 +17,8 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-41dZswlrIQ05f1zJzId78DKmPf0QH1SfrexzvCAUxq8=";
   };
 
-  unpackPhase = ''
-    runHook preUnpack
-
-    gunzip -c $src > paup
-
-    runHook postUnpack
-  '';
-
   nativeBuildInputs = [ autoPatchelfHook ];
+
   buildInputs = [
     curl
     gfortran
@@ -40,13 +33,21 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  unpackPhase = ''
+    runHook preUnpack
+
+    gunzip -c $src > paup
+
+    runHook postUnpack
+  '';
+
   meta = {
     description = "Software package for inferring evolutionary trees";
     homepage = "http://phylosolutions.com/paup-test/";
     license = lib.licenses.unfree;
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = with lib.maintainers; [ pandapip1 ];
-    mainProgram = "paup";
     platforms = [ "x86_64-linux" ];
+    mainProgram = "paup";
   };
 }

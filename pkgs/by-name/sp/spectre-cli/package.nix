@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitLab,
   cmake,
-  libsodium,
-  json_c,
-  ncurses,
-  libxml2,
   jq,
+  json_c,
+  libsodium,
+  libxml2,
+  ncurses,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -69,7 +69,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://spectre.app";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ emmabastas ];
-    mainProgram = "spectre";
     platforms = lib.platforms.all;
+    mainProgram = "spectre";
   };
 })

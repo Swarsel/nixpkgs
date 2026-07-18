@@ -1,10 +1,10 @@
 {
+  lib,
   _cuda,
   config,
-  lib,
-  pkgs,
   # Manually provided arguments
   manifests,
+  pkgs,
 }:
 let
   inherit (lib.customisation) callPackagesWith;
@@ -48,18 +48,17 @@ let
     else
       pkgs.extend (
         final: _: {
-          recurseForDerivations = false;
           # The CUDA package set will be available as cudaPackages_x_y, so we need only update the aliases for the
           # minor-versioned and unversioned package sets.
           # However, if we do not replace the major-minor-versioned CUDA package set with our own, our use of splicing
           # causes the package set to be re-evaluated for each build/host/target!
-
           # cudaPackages_x_y = <package set created in this file>
           ${cudaPackagesMajorMinorVersionedName} = cudaPackages;
           # cudaPackages_x = cudaPackages_x_y
           ${cudaPackagesMajorVersionedName} = final.${cudaPackagesMajorMinorVersionedName};
           # cudaPackages = cudaPackages_x
           ${cudaPackagesUnversionedName} = final.${cudaPackagesMajorVersionedName};
+          recurseForDerivations = false;
         }
       );
 
@@ -75,22 +74,11 @@ let
       # functionality for interpreting configurations, resolving them against data, and constructing package sets.
       # This decision is driven both by a separation of concerns and by "NAMESET STRICTNESS" (see above).
       # Also see the comment in `pkgs/top-level/all-packages.nix` about the `_cuda` attribute.
-
       inherit
         cudaMajorMinorPatchVersion
         cudaMajorMinorVersion
         cudaMajorVersion
         ;
-
-      pkgs = pkgs';
-
-      # Core
-      callPackages = callPackagesWith (pkgs' // finalCudaPackages);
-
-      cudaNamePrefix = "cuda${cudaMajorMinorVersion}";
-
-      cudaOlder = versionOlder cudaMajorMinorVersion;
-      cudaAtLeast = versionAtLeast cudaMajorMinorVersion;
 
       # These must be modified through callPackage, not by overriding the scope, since we cannot
       # depend on them recursively as they are used to add top-level attributes.
@@ -108,6 +96,7 @@ let
           lib
           pkgs
           ;
+
         inherit (pkgs)
           stdenv
           stdenvAdapters
@@ -126,7 +115,6 @@ let
       # backendGccStdenv = finalCudaPackages.callPackage ./packages/backendStdenv.nix {
       #   stdenv = pkgs'.gccStdenv;
       # };
-
       # Must be constructed without `callPackage` to avoid replacing the `override` attribute with that of
       # `callPackage`'s.
       buildRedist = import ./buildRedist {
@@ -134,6 +122,7 @@ let
           _cuda
           lib
           ;
+
         inherit (pkgs)
           autoAddDriverRunpath
           autoPatchelfHook
@@ -142,6 +131,7 @@ let
           stdenv
           stdenvNoCC
           ;
+
         inherit (finalCudaPackages)
           autoAddCudaCompatRunpath
           backendStdenv
@@ -154,6 +144,12 @@ let
           ;
       };
 
+      # Core
+      callPackages = callPackagesWith (pkgs' // finalCudaPackages);
+      cudaAtLeast = versionAtLeast cudaMajorMinorVersion;
+      cudaNamePrefix = "cuda${cudaMajorMinorVersion}";
+      cudaOlder = versionOlder cudaMajorMinorVersion;
+
       flags =
         formatCapabilities {
           inherit (finalCudaPackages.backendStdenv) cudaCapabilities cudaForwardCompat;
@@ -163,11 +159,15 @@ let
         # time to allow users to migrate to cudaLib and backendStdenv.
         // {
           inherit dropDots;
+
           cudaComputeCapabilityToName =
             cudaCapability: _cuda.db.cudaCapabilityToInfo.${cudaCapability}.archName;
+
           dropDot = dropDots;
           isJetsonBuild = finalCudaPackages.backendStdenv.hasJetsonCudaCapability;
         };
+
+      pkgs = pkgs';
     }
     // packagesFromDirectoryRecursive {
       inherit (finalCudaPackages) callPackage;
@@ -185,13 +185,13 @@ let
   cudaPackages =
     lib.makeScopeWithSplicing'
       {
-        splicePackages = pkgs'.splicePackages;
         newScope = pkgs'.newScope;
+        splicePackages = pkgs'.splicePackages;
       }
       {
+        f = extends composedExtensions cudaPackagesFixedPoint;
         # In pkgs', the default CUDA package set is always the one we've constructed here.
         otherSplices = pkgs'.generateSplicesForMkScope [ "cudaPackages" ];
-        f = extends composedExtensions cudaPackagesFixedPoint;
       };
 in
 cudaPackages

@@ -21,15 +21,15 @@ stdenv.mkDerivation {
   buildInputs = [ pidgin ];
 
   env = {
-    PKG_CONFIG_PURPLE_PLUGINDIR = "${placeholder "out"}/lib/purple-2";
     PKG_CONFIG_PURPLE_DATAROOTDIR = "${placeholder "out"}/share";
+    PKG_CONFIG_PURPLE_PLUGINDIR = "${placeholder "out"}/lib/purple-2";
   };
 
   meta = {
-    homepage = "https://github.com/dylex/slack-libpurple";
     description = "Slack plugin for Pidgin";
+    homepage = "https://github.com/dylex/slack-libpurple";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ eyjhb ];
+    platforms = lib.platforms.linux;
   };
 }

@@ -1,22 +1,19 @@
 {
   lib,
-  python,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
-  pytest-qt,
+  buildPythonPackage,
   pyside6,
+  pytest-qt,
+  pytestCheckHook,
+  python,
+  setuptools,
   versionCheckHook,
   which,
 }:
 
 buildPythonPackage (finalAttrs: {
-  __structuredAttrs = true;
-
   pname = "plover-stroke";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openstenoproject";
@@ -24,8 +21,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-A75OMzmEn0VmDAvmQCp6/7uptxzwWJTwsih3kWlYioA=";
   };
-
-  build-system = [ setuptools ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -40,13 +35,16 @@ buildPythonPackage (finalAttrs: {
     which
   ];
 
-  versionCheckProgramArg = "${placeholder "out"}/${python.sitePackages}";
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
 
   preInstallCheck = ''
     versionCheckProgram="$(which ls)"
   '';
 
+  pyproject = true;
   pythonImportsCheck = [ "plover_stroke" ];
+  versionCheckProgramArg = "${placeholder "out"}/${python.sitePackages}";
 
   meta = {
     description = "Helper class for working with steno strokes";

@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,8 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-vZrsMPhuu+xPVAww04nKyoOl7k0upvpIaxeMrCikDio=";
   };
 
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/share
@@ -25,11 +23,13 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Per-directory shell environments sourced from .env file";
     homepage = "https://github.com/hyperupcall/autoenv";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ clebs ];
+    platforms = lib.platforms.all;
   };
 })

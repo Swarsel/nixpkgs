@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "importlab";
   version = "0.8.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -17,21 +16,18 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ networkx ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTestPaths = [ "tests/test_parsepy.py" ];
-
   # Test fails on darwin filesystem
   disabledTests = [ "testIsDir" ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "importlab" ];
 
   meta = {
     description = "Library that automatically infers dependencies for Python files";
-    mainProgram = "importlab";
     homepage = "https://github.com/google/importlab";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ sei40kr ];
+    mainProgram = "importlab";
   };
 }

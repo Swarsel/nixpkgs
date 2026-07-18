@@ -1,14 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication {
   pname = "i3-swallow";
   version = "unstable-2022-02-19";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jamesofarrell";
@@ -29,13 +27,14 @@ python3Packages.buildPythonApplication {
 
   # No tests available
   doCheck = false;
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/jamesofarrell/i3-swallow";
     description = "Swallow a terminal window in i3wm";
+    homepage = "https://github.com/jamesofarrell/i3-swallow";
     license = lib.licenses.mit;
+    maintainers = [ ];
     platforms = lib.platforms.linux;
     mainProgram = "swallow";
-    maintainers = [ ];
   };
 }

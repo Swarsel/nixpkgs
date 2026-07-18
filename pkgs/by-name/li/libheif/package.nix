@@ -3,28 +3,34 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   dav1d,
-  rav1e,
-  libde265,
-  x265,
-  libpng,
-  libjpeg,
-  libaom,
   gdk-pixbuf,
-
   # for passthru.tests
   gimp,
   imagemagick,
   imlib2Full,
   imv,
+  libaom,
+  libde265,
+  libjpeg,
+  libpng,
+  pkg-config,
   python3Packages,
+  rav1e,
   vips,
+  x265,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libheif";
   version = "1.23.1";
+
+  src = fetchFromGitHub {
+    owner = "strukturag";
+    repo = "libheif";
+    rev = "v${finalAttrs.version}";
+    hash = "sha256-o+gQCv/lpRx+IaqpjHACh8ysgl/N4Mo/9zbAI/cnWas=";
+  };
 
   outputs = [
     "bin"
@@ -33,13 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
     "lib"
   ];
-
-  src = fetchFromGitHub {
-    owner = "strukturag";
-    repo = "libheif";
-    rev = "v${finalAttrs.version}";
-    hash = "sha256-o+gQCv/lpRx+IaqpjHACh8ysgl/N4Mo/9zbAI/cnWas=";
-  };
 
   nativeBuildInputs = [
     pkg-config
@@ -80,14 +79,15 @@ stdenv.mkDerivation (finalAttrs: {
       imv
       vips
       ;
+
     inherit (python3Packages) pillow-heif;
   };
 
   meta = {
-    homepage = "http://www.libheif.org/";
     description = "ISO/IEC 23008-12:2017 HEIF image file format decoder and encoder";
+    homepage = "http://www.libheif.org/";
     license = lib.licenses.lgpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ kuflierl ];
+    platforms = lib.platforms.unix;
   };
 })

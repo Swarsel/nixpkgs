@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -27,9 +27,11 @@ buildGoModule (finalAttrs: {
     description = "Pomodoro timer in your terminal";
     homepage = "https://github.com/maaslalani/pom";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       redyf
     ];
+
     mainProgram = "pom";
   };
 })

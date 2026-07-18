@@ -1,6 +1,6 @@
 {
-  vimUtils,
   phpactor,
+  vimUtils,
 }:
 vimUtils.buildVimPlugin {
   inherit (phpactor)
@@ -9,6 +9,7 @@ vimUtils.buildVimPlugin {
     meta
     version
     ;
+
   postPatch = ''
     substituteInPlace plugin/phpactor.vim \
       --replace-fail "g:phpactorpath = expand('<sfile>:p:h') . '/..'" "g:phpactorpath = '${phpactor}'"

@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   weechat,
 }:
@@ -14,12 +14,12 @@ stdenv.mkDerivation {
     sha256 = "0hiay88vvy171jiq6ahflm0ipb7sslfxwhmmm8psv6qk19rv2sxs";
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     mkdir -p $out/share
     cp $src $out/share/colorize_nicks.py
   '';
+
+  dontUnpack = true;
 
   passthru = {
     scripts = [ "colorize_nicks.py" ];

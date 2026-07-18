@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   pyjwt,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "visionpluspython";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Watts-Digital";
@@ -19,6 +18,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-jLn7L9yfyDN+cP5BuQqRQT+krDMLp3OmUOjUpOmFT8U=";
   };
 
+  # no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,15 +27,13 @@ buildPythonPackage (finalAttrs: {
     pyjwt
   ];
 
-  # no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "visionpluspython" ];
 
   meta = {
-    changelog = "https://github.com/Watts-Digital/visionpluspython/releases/tag/${finalAttrs.src.tag}";
     description = "Python API wrapper for Watts Vision+ smart home system";
     homepage = "https://github.com/Watts-Digital/visionpluspython";
+    changelog = "https://github.com/Watts-Digital/visionpluspython/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jamiemagee ];
   };

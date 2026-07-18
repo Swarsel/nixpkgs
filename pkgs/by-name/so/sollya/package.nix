@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  gmp,
-  mpfr,
-  mpfi,
-  libxml2,
   fplll,
+  gmp,
+  libxml2,
+  mpfi,
+  mpfr,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,10 +38,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Tool environment for safe floating-point code development";
-    mainProgram = "sollya";
     homepage = "https://www.sollya.org/";
     license = lib.licenses.cecill-c;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ wegank ];
+    platforms = lib.platforms.unix;
+    mainProgram = "sollya";
   };
 })

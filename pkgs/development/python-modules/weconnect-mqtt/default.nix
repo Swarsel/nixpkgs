@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   paho-mqtt,
   pytest-cov-stub,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "weconnect-mqtt";
   version = "0.49.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tillsteinbach";
@@ -31,7 +30,10 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "required_plugins = pytest-cov" ""
   '';
 
-  pythonRelaxDeps = [ "python-dateutil" ];
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -42,12 +44,9 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ weconnect.optional-dependencies.Images;
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "weconnect_mqtt" ];
+  pythonRelaxDeps = [ "python-dateutil" ];
 
   meta = {
     description = "Python client that publishes data from Volkswagen WeConnect";

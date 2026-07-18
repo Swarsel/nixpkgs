@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  apr,
   qmake,
   qtbase,
   qttools,
   subversion,
-  apr,
 }:
 
 let
   version = "1.0.20";
 in
 stdenv.mkDerivation {
-  pname = "svn-all-fast-export";
   inherit version;
+  pname = "svn-all-fast-export";
 
   src = fetchFromGitHub {
     owner = "svn-all-fast-export";
@@ -27,11 +27,15 @@ stdenv.mkDerivation {
     qmake
     qttools
   ];
+
   buildInputs = [
     apr.dev
     subversion.dev
     qtbase
   ];
+
+  env.NIX_LDFLAGS = "-lsvn_fs-1";
+  dontWrapQtApps = true;
 
   qmakeFlags = [
     "VERSION=${version}"
@@ -39,16 +43,12 @@ stdenv.mkDerivation {
     "SVN_INCLUDE=${subversion.dev}/include/subversion-1"
   ];
 
-  env.NIX_LDFLAGS = "-lsvn_fs-1";
-
-  dontWrapQtApps = true;
-
   meta = {
-    homepage = "https://github.com/svn-all-fast-export/svn2git";
     description = "Fast-import based converter for an svn repo to git repos";
+    homepage = "https://github.com/svn-all-fast-export/svn2git";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.flokli ];
+    platforms = lib.platforms.all;
     mainProgram = "svn-all-fast-export";
   };
 }

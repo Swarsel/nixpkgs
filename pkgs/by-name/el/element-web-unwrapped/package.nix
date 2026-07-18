@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  faketty,
+  fetchPnpmDeps,
+  jitsi-meet,
   jq,
   nodejs,
-  jitsi-meet,
-  fetchPnpmDeps,
-  pnpm_11,
   pnpmConfigHook,
-  faketty,
+  pnpm_11,
 }:
 
 let
@@ -32,14 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "element-web";
     tag = "v${finalAttrs.version}";
     hash = "sha256-IdQZqwGk05APb38hEoin74/5FeRgjCLrdli+R6iaoUA=";
-  };
-
-  pnpmDeps = fetchPnpmDeps {
-    pname = "element";
-    inherit (finalAttrs) version src;
-    inherit pnpm;
-    fetcherVersion = 4;
-    hash = "sha256-WVQaq7kqlEdKodOkErUCeYLh0xnH1NTHzgNyjn1+1y0=";
   };
 
   nativeBuildInputs = [
@@ -74,12 +66,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) version src;
+    inherit pnpm;
+    pname = "element";
+    fetcherVersion = 4;
+    hash = "sha256-WVQaq7kqlEdKodOkErUCeYLh0xnH1NTHzgNyjn1+1y0=";
+  };
+
   meta = {
     description = "Glossy Matrix collaboration client for the web";
     homepage = "https://element.io/";
     changelog = "https://github.com/element-hq/element-web/blob/v${finalAttrs.version}/CHANGELOG.md";
-    teams = [ lib.teams.matrix ];
     license = lib.licenses.agpl3Plus;
     platforms = lib.platforms.all;
+    teams = [ lib.teams.matrix ];
   };
 })

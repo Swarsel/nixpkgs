@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
 }:
@@ -22,7 +22,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "C++11/14/17 header-only cross-platform library for handling CRON expressions";
     homepage = "https://github.com/mariusbancila/croncpp";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ typedrat ];
+    platforms = lib.platforms.all;
   };
 })

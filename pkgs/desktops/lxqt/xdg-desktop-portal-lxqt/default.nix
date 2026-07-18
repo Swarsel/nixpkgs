@@ -3,6 +3,7 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  gitUpdater,
   kwindowsystem,
   libexif,
   libfm-qt,
@@ -10,7 +11,6 @@
   menu-cache,
   qtbase,
   wrapQtAppsHook,
-  gitUpdater,
   extraQtStyles ? [ ],
 }:
 
@@ -43,10 +43,10 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://github.com/lxqt/xdg-desktop-portal-lxqt";
     description = "Backend implementation for xdg-desktop-portal that is using Qt/KF5/libfm-qt";
+    homepage = "https://github.com/lxqt/xdg-desktop-portal-lxqt";
     license = lib.licenses.lgpl21Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.linux;
   };
 })

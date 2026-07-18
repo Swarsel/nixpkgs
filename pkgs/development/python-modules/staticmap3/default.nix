@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cachecontrol,
   filelock,
   mypy,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "staticmap3";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SamR1";
@@ -24,6 +23,10 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-SV9D8wYph82IaITXxraC+8YO+taeEc6g/CPjFITzV5Q=";
   };
+
+  nativeCheckInputs = [
+    unittestCheckHook
+  ];
 
   build-system = [
     poetry-core
@@ -35,19 +38,17 @@ buildPythonPackage rec {
     pillow
   ];
 
-  nativeCheckInputs = [
-    unittestCheckHook
-  ];
-
   optional-dependencies = {
-    filecache = [ filelock ];
     dev = [
       mypy
       ruff
       types-requests
     ];
+
+    filecache = [ filelock ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "staticmap3" ];
 
   meta = {

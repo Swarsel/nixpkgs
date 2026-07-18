@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   bash,
+  makeWrapper,
   subversion,
 }:
 stdenv.mkDerivation {
@@ -17,9 +17,8 @@ stdenv.mkDerivation {
     hash = "sha256-4RTVfcwlYW+KPyPIon0X1d4SPsF6cFkRSXBfe4yzAyQ=";
   };
 
-  buildInputs = [ subversion ];
-
   nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ subversion ];
 
   installPhase = ''
     runHook preInstall
@@ -45,10 +44,12 @@ stdenv.mkDerivation {
     homepage = "https://github.com/nerusuki/thcrap-steam-proton-wrapper";
     license = lib.licenses.unlicense;
     maintainers = with lib.maintainers; [ ashuramaruzxc ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
     mainProgram = "thcrap_proton";
   };
 }

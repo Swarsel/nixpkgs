@@ -2,18 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   SDL2,
   agg,
   alsa-lib,
   desktop-file-utils,
-  wrapGAppsHook3,
+  fetchpatch,
   gtk3,
   intltool,
   libGLU,
-  libxmu,
   libpcap,
   libtool,
+  libxmu,
   lua,
   meson,
   ninja,
@@ -21,6 +20,7 @@
   pkg-config,
   soundtouch,
   tinyxml,
+  wrapGAppsHook3,
   zlib,
 }:
 
@@ -38,14 +38,14 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fix compiling on GCC for AArch64
     (fetchpatch {
-      url = "https://github.com/TASEmulators/desmume/commit/24eb5ed95c6cbdaba8b3c63a99e95e899e8a5061.patch";
       hash = "sha256-J3ZRU1tPTl+4/jg0DBo6ro6DTUZkpQCey+QGF2EugCQ=";
+      url = "https://github.com/TASEmulators/desmume/commit/24eb5ed95c6cbdaba8b3c63a99e95e899e8a5061.patch";
     })
 
     # Fix strdup implicit declaration errors
     (fetchpatch {
-      url = "https://github.com/TASEmulators/desmume/commit/738298a9e887bf7220fed026cb872a544fd60431.patch?full_index=1";
       hash = "sha256-JNq++g6olaKsNa1XIs9Zz1YQxAsN3vAuFkykdlrfzaQ=";
+      url = "https://github.com/TASEmulators/desmume/commit/738298a9e887bf7220fed026cb872a544fd60431.patch?full_index=1";
     })
   ];
 
@@ -74,21 +74,21 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  hardeningDisable = [ "format" ];
-
-  preConfigure = ''
-    cd desmume/src/frontend/posix
-  '';
-
   mesonFlags = [
     "-Db_pie=true"
     "-Dopenal=true"
     "-Dwifi=true"
   ];
 
+  preConfigure = ''
+    cd desmume/src/frontend/posix
+  '';
+
+  hardeningDisable = [ "format" ];
+
   meta = {
-    homepage = "https://www.github.com/TASEmulators/desmume/";
     description = "Open-source Nintendo DS emulator";
+
     longDescription = ''
       DeSmuME is a freeware emulator for the NDS roms & Nintendo DS Lite games
       created by YopYop156 and now maintained by the TASvideos team. It supports
@@ -96,6 +96,8 @@ stdenv.mkDerivation (finalAttrs: {
       demo nds roms. DeSmuME is also able to emulate nearly all of the
       commercial nds rom titles which other DS Emulators aren't.
     '';
+
+    homepage = "https://www.github.com/TASEmulators/desmume/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;

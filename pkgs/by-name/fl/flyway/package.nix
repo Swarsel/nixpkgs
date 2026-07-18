@@ -10,13 +10,14 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "flyway";
   version = "12.10.0";
+
   src = fetchurl {
     url = "https://github.com/flyway/flyway/releases/download/flyway-${finalAttrs.version}/flyway-commandline-${finalAttrs.version}.tar.gz";
     sha256 = "sha256-JZ0qKGqaNzND+oKMn/mQc0SBzNUxpIzX4C86Znl/9Fo=";
   };
+
   nativeBuildInputs = [ makeWrapper ];
-  dontBuild = true;
-  dontStrip = true;
+
   installPhase = ''
     mkdir -p $out/bin $out/share/flyway
     cp -r drivers conf licenses README.txt $out/share/flyway
@@ -29,11 +30,17 @@ stdenv.mkDerivation (finalAttrs: {
       --add-flags "-classpath '$out/share/flyway/lib/*:$out/share/flyway/lib/aad/*:$out/share/flyway/lib/flyway/*:$out/share/flyway/lib/netty/*:$out/share/flyway/drivers/*:$out/share/flyway/drivers/aws/*:$out/share/flyway/drivers/gcp/*:$out/share/flyway/drivers/cassandra/*:$out/share/flyway/drivers/couchbase/*:$out/share/flyway/drivers/mongo/*'" \
       --add-flags "org.flywaydb.commandline.Main"
   '';
+
+  dontBuild = true;
+  dontStrip = true;
+
   passthru.tests = {
     version = testers.testVersion { package = finalAttrs.finalPackage; };
   };
+
   meta = {
     description = "Evolve your Database Schema easily and reliably across all your instances";
+
     longDescription = ''
       The Flyway command-line tool is a standalone Flyway distribution.
       It is primarily meant for users who wish to migrate their database from the command-line
@@ -41,13 +48,14 @@ stdenv.mkDerivation (finalAttrs: {
 
       This package is only the Community Edition of the Flyway command-line tool.
     '';
-    mainProgram = "flyway";
-    downloadPage = "https://github.com/flyway/flyway";
+
     homepage = "https://flywaydb.org/";
     changelog = "https://documentation.red-gate.com/fd/release-notes-for-flyway-engine-179732572.html";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ lib.maintainers.cmcdragonkai ];
+    platforms = lib.platforms.unix;
+    mainProgram = "flyway";
+    downloadPage = "https://github.com/flyway/flyway";
   };
 })

@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
-  yarnInstallHook,
-  nodejs,
   makeWrapper,
+  nodejs,
+  yarnBuildHook,
+  yarnConfigHook,
+  yarnInstallHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,11 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "happy-cli";
     tag = "v${finalAttrs.version}";
     hash = "sha256-WKzbpxHqE3Dxqy/PDj51tM9+Wl2Pallfrc5UU2MxNn8=";
-  };
-
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/yarn.lock";
-    hash = "sha256-3/qcbCJ+Iwc+9zPCHKsCv05QZHPUp0it+QR3z7m+ssw=";
   };
 
   nativeBuildInputs = [
@@ -49,6 +44,11 @@ stdenv.mkDerivation (finalAttrs: {
         ]
       }
   '';
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-3/qcbCJ+Iwc+9zPCHKsCv05QZHPUp0it+QR3z7m+ssw=";
+    yarnLock = finalAttrs.src + "/yarn.lock";
+  };
 
   meta = {
     description = "Mobile and web client wrapper for Claude Code and Codex with end-to-end encryption";

@@ -1,31 +1,26 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  # build-system
-  pdm-backend,
-
+  buildPythonPackage,
+  # tests
+  expecttest,
   # dependencies
   huggingface-hub,
+  # build-system
+  pdm-backend,
+  pytest-timeout,
+  pytestCheckHook,
+  pythonAtLeast,
   pyyaml,
   safetensors,
   torch,
   torchvision,
-
-  # tests
-  expecttest,
-  pytestCheckHook,
-  pytest-timeout,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "timm";
   version = "1.0.27";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "huggingface";
@@ -46,6 +41,13 @@ buildPythonPackage (finalAttrs: {
         "_accelerator_graph_capture_health_check"
   '';
 
+  nativeCheckInputs = [
+    expecttest
+    pytestCheckHook
+    pytest-timeout
+  ];
+
+  __structuredAttrs = true;
   build-system = [ pdm-backend ];
 
   dependencies = [
@@ -56,13 +58,10 @@ buildPythonPackage (finalAttrs: {
     torchvision
   ];
 
-  nativeCheckInputs = [
-    expecttest
-    pytestCheckHook
-    pytest-timeout
+  disabledTestPaths = [
+    # Takes too long and also tries to download models
+    "tests/test_models.py"
   ];
-
-  enabledTestPaths = [ "tests" ];
 
   disabledTests =
     lib.optionals (pythonAtLeast "3.14") [
@@ -83,10 +82,8 @@ buildPythonPackage (finalAttrs: {
       "test_kron"
     ];
 
-  disabledTestPaths = [
-    # Takes too long and also tries to download models
-    "tests/test_models.py"
-  ];
+  enabledTestPaths = [ "tests" ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "timm"

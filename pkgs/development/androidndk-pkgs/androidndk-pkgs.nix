@@ -1,16 +1,16 @@
 {
-  config,
   lib,
   stdenv,
+  androidndk,
+  autoPatchelfHook,
+  buildAndroidndk,
+  config,
+  llvmPackages,
   makeWrapper,
   runCommand,
+  targetAndroidndkPkgs,
   wrapBintoolsWith,
   wrapCCWith,
-  autoPatchelfHook,
-  llvmPackages,
-  buildAndroidndk,
-  androidndk,
-  targetAndroidndkPkgs,
 }:
 
 let
@@ -24,12 +24,6 @@ let
   ndkBuildInfoFun =
     fallback:
     {
-      x86_64-apple-darwin = {
-        double = "darwin-x86_64";
-      };
-      x86_64-unknown-linux-gnu = {
-        double = "linux-x86_64";
-      };
       arm64-apple-darwin = {
         # the difference in `arm64` attribute vs `x86_64` double is purposeful.
         # the Android NDK contains a single Universal 2 Darwin binary
@@ -38,27 +32,38 @@ let
         # is stored under a single directory indicating `x86_64` despite also supporting darwin arm64.
         double = "darwin-x86_64";
       };
+
+      x86_64-apple-darwin = {
+        double = "darwin-x86_64";
+      };
+
+      x86_64-unknown-linux-gnu = {
+        double = "linux-x86_64";
+      };
     }
     .${stdenv.buildPlatform.config} or fallback;
 
   ndkTargetInfoFun =
     fallback:
     {
-      i686-unknown-linux-android = {
-        triple = "i686-linux-android";
-        arch = "x86";
+      aarch64-unknown-linux-android = {
+        arch = "arm64";
+        triple = "aarch64-linux-android";
       };
-      x86_64-unknown-linux-android = {
-        triple = "x86_64-linux-android";
-        arch = "x86_64";
-      };
+
       armv7a-unknown-linux-androideabi = {
         arch = "arm";
         triple = "arm-linux-androideabi";
       };
-      aarch64-unknown-linux-android = {
-        arch = "arm64";
-        triple = "aarch64-linux-android";
+
+      i686-unknown-linux-android = {
+        arch = "x86";
+        triple = "i686-linux-android";
+      };
+
+      x86_64-unknown-linux-android = {
+        arch = "x86_64";
+        triple = "x86_64-linux-android";
       };
     }
     .${stdenv.targetPlatform.config} or fallback;
@@ -94,24 +99,16 @@ else
   lib.recurseIntoAttrs rec {
     # Misc tools
     binaries = stdenv.mkDerivation {
-      pname = "${targetPrefix}ndk-toolchain";
       inherit (androidndk) version;
+      pname = "${targetPrefix}ndk-toolchain";
+
       nativeBuildInputs = [
         makeWrapper
       ]
       ++ lib.optionals stdenv.buildPlatform.isLinux [ autoPatchelfHook ];
+
       propagatedBuildInputs = [ androidndk ];
-      passthru = {
-        inherit targetPrefix;
-        isClang = true; # clang based cc, but bintools ld
-        inherit (llvmPackages.clang.cc) hardeningUnsupportedFlagsByTargetPlatform;
-      };
-      dontUnpack = true;
-      dontBuild = true;
-      dontStrip = true;
-      dontConfigure = true;
-      dontPatch = true;
-      autoPatchelfIgnoreMissingDeps = stdenv.buildPlatform.isLinux;
+
       installPhase = ''
         # https://developer.android.com/ndk/guides/other_build_systems
         mkdir -p $out
@@ -155,6 +152,20 @@ else
 
         patchShebangs $out/bin
       '';
+
+      autoPatchelfIgnoreMissingDeps = stdenv.buildPlatform.isLinux;
+      dontBuild = true;
+      dontConfigure = true;
+      dontPatch = true;
+      dontStrip = true;
+      dontUnpack = true;
+
+      passthru = {
+        inherit targetPrefix;
+        inherit (llvmPackages.clang.cc) hardeningUnsupportedFlagsByTargetPlatform;
+        isClang = true; # clang based cc, but bintools ld
+      };
+
       meta = {
         description = "Android NDK toolchain, tuned for other platforms";
         license = with lib.licenses; [ unfree ];
@@ -168,12 +179,13 @@ else
     };
 
     clang = wrapCCWith {
+      bintools = binutils;
+
       cc = binaries // {
         # for packages expecting libcompiler-rt, etc. to come from here (stdenv.cc.cc.lib)
         lib = targetAndroidndkPkgs.libraries;
       };
-      bintools = binutils;
-      libc = targetAndroidndkPkgs.libraries;
+
       extraBuildCommands = ''
         echo "-D__ANDROID_API__=${stdenv.targetPlatform.androidSdkVersion}" >> $out/nix-support/cc-cflags
         # Android needs executables linked with -pie since version 5.0
@@ -188,6 +200,8 @@ else
           echo "--fix-cortex-a8" >> $out/nix-support/cc-ldflags
         fi
       '';
+
+      libc = targetAndroidndkPkgs.libraries;
     };
 
     # Bionic lib C and other libraries.

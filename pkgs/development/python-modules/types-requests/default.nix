@@ -10,14 +10,15 @@
 buildPythonPackage rec {
   pname = "types-requests";
   version = "2.32.4.20260107";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "types_requests";
     inherit version;
     hash = "sha256-AYoRrBWPgBv6hIV93sFlB1Djk9+KAEqKmuKpvsb8sk8=";
+    pname = "types_requests";
   };
 
+  # Module doesn't have tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -25,9 +26,7 @@ buildPythonPackage rec {
     urllib3
   ];
 
-  # Module doesn't have tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "requests-stubs" ];
 
   meta = {

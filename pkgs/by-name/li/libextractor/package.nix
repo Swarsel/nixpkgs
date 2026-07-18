@@ -2,21 +2,22 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch2,
-  replaceVars,
-  libtool,
-  gettext,
-  zlib,
   bzip2,
-  flac,
-  libvorbis,
   exiv2,
-  libgsf,
-  pkg-config,
-  rpmSupport ? stdenv.hostPlatform.isLinux,
-  rpm,
-  gstreamerSupport ? true,
+  fetchpatch2,
+  flac,
+  gettext,
+  glib,
   gst_all_1,
+  gtk3,
+  libgsf,
+  libmpeg2,
+  libtool,
+  libvorbis,
+  pkg-config,
+  replaceVars,
+  rpm,
+  zlib,
   # ^ Needed e.g. for proper id3 and FLAC support.
   #   Set to `false` to decrease package closure size by about 87 MB (53%).
   gstPlugins ? (
@@ -25,6 +26,7 @@
       gst.gst-plugins-good
     ]
   ),
+  gstreamerSupport ? true,
   # If an application needs additional gstreamer plugins it can also make them
   # available by adding them to the environment variable
   # GST_PLUGIN_SYSTEM_PATH_1_0, e.g. like this:
@@ -33,10 +35,8 @@
   # '';
   # See also <https://nixos.org/nixpkgs/manual/#sec-language-gnome>.
   gtkSupport ? true,
-  glib,
-  gtk3,
+  rpmSupport ? stdenv.hostPlatform.isLinux,
   videoSupport ? true,
-  libmpeg2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -52,8 +52,8 @@ stdenv.mkDerivation (finalAttrs: {
     # 0008513: test_exiv2 fails with Exiv2 0.28
     # https://bugs.gnunet.org/view.php?id=8513
     (fetchpatch2 {
-      url = "https://sources.debian.org/data/main/libe/libextractor/1%3A1.13-4/debian/patches/exiv2-0.28.diff";
       hash = "sha256-Re5iwlSyEpWu3PcHibaRKSfmdyHSZGMOdMZ6svTofvs=";
+      url = "https://sources.debian.org/data/main/libe/libextractor/1%3A1.13-4/debian/patches/exiv2-0.28.diff";
     })
   ]
   ++ lib.optionals gstreamerSupport [
@@ -65,12 +65,6 @@ stdenv.mkDerivation (finalAttrs: {
       ) (gstPlugins gst_all_1);
     })
   ];
-
-  preConfigure = ''
-    echo "patching installation directory in \`extractor.c'..."
-    sed -i "src/main/extractor.c" \
-        -e "s|pexe[[:blank:]]*=.*$|pexe = strdup(\"$out/lib/\");|g"
-  '';
 
   nativeBuildInputs = [ pkg-config ];
 
@@ -92,6 +86,12 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals videoSupport [ libmpeg2 ];
 
+  preConfigure = ''
+    echo "patching installation directory in \`extractor.c'..."
+    sed -i "src/main/extractor.c" \
+        -e "s|pexe[[:blank:]]*=.*$|pexe = strdup(\"$out/lib/\");|g"
+  '';
+
   # Checks need to be run after "make install", otherwise plug-ins are not in
   # the search path, etc.
   doCheck = false;
@@ -100,7 +100,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Simple library for keyword extraction";
-    mainProgram = "extract";
 
     longDescription = ''
       GNU libextractor is a library used to extract meta-data from files
@@ -124,8 +123,8 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
     license = lib.licenses.gpl3Plus;
-
     maintainers = [ lib.maintainers.jorsn ];
     platforms = lib.platforms.unix;
+    mainProgram = "extract";
   };
 })

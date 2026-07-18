@@ -1,17 +1,16 @@
 {
   lib,
-  rel,
-  buildKodiAddon,
-  fetchzip,
   addonUpdateScript,
+  buildKodiAddon,
   dateutil,
+  fetchzip,
+  rel,
   requests,
   xbmcswift2,
 }:
 
 buildKodiAddon rec {
   pname = "arteplussept";
-  namespace = "plugin.video.arteplussept";
   version = "1.4.4";
 
   src = fetchzip {
@@ -25,6 +24,8 @@ buildKodiAddon rec {
     xbmcswift2
   ];
 
+  namespace = "plugin.video.arteplussept";
+
   passthru = {
     updateScript = addonUpdateScript {
       attrPath = "kodi.packages.arteplussept";
@@ -32,8 +33,8 @@ buildKodiAddon rec {
   };
 
   meta = {
-    homepage = "https://github.com/thomas-ernest/plugin.video.arteplussept";
     description = "Watch videos available on Arte+7";
+    homepage = "https://github.com/thomas-ernest/plugin.video.arteplussept";
     license = lib.licenses.mit;
     teams = [ lib.teams.kodi ];
   };

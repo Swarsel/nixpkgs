@@ -16,19 +16,20 @@
 buildPythonPackage (finalAttrs: {
   pname = "google-cloud-bigquery-datatransfer";
   version = "3.21.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_bigquery_datatransfer";
     inherit (finalAttrs) version;
     hash = "sha256-zVgZBASf80Iv4RPHFa9Oy7E8+/UqU+l63UH6nl6+SHA=";
+    pname = "google_cloud_bigquery_datatransfer";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
+  nativeCheckInputs = [
+    mock
+    pytest-asyncio
+    pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     google-api-core
@@ -39,20 +40,20 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  nativeCheckInputs = [
-    mock
-    pytest-asyncio
-    pytestCheckHook
+  disabledTests = [
+    # Tests require project ID
+    "test_list_data_sources"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "google.cloud.bigquery_datatransfer"
     "google.cloud.bigquery_datatransfer_v1"
   ];
 
-  disabledTests = [
-    # Tests require project ID
-    "test_list_data_sources"
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

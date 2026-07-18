@@ -2,9 +2,9 @@
   lib,
   fetchFromGitLab,
   buildDunePackage,
-  findlib,
-  dune-configurator,
   cppo,
+  dune-configurator,
+  findlib,
   graphics,
   lablgtk,
   stdio,
@@ -13,8 +13,6 @@
 buildDunePackage (finalAttrs: {
   pname = "camlimages";
   version = "5.0.5";
-
-  minimalOCamlVersion = "4.07";
 
   src = fetchFromGitLab {
     owner = "camlspotter";
@@ -25,8 +23,8 @@ buildDunePackage (finalAttrs: {
 
   # stdio v0.17 compatibility
   patches = [ ./camlimages.patch ];
-
   nativeBuildInputs = [ cppo ];
+
   buildInputs = [
     dune-configurator
     findlib
@@ -35,14 +33,18 @@ buildDunePackage (finalAttrs: {
     stdio
   ];
 
+  minimalOCamlVersion = "4.07";
+
   meta = {
-    branch = "5.0";
     inherit (finalAttrs.src.meta) homepage;
     description = "OCaml image processing library";
     license = lib.licenses.lgpl2;
+
     maintainers = [
       lib.maintainers.vbgl
       lib.maintainers.mt-caret
     ];
+
+    branch = "5.0";
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   installFonts,
+  stdenvNoCC,
 }:
 
 let
@@ -22,10 +22,10 @@ stdenvNoCC.mkDerivation {
   nativeBuildInputs = [ installFonts ];
 
   meta = {
-    homepage = "https://dotcolon.net/font/melete/";
     description = "Headline typeface that could be used as a movie title";
-    platforms = lib.platforms.all;
-    maintainers = with lib.maintainers; [ minijackson ];
+    homepage = "https://dotcolon.net/font/melete/";
     license = lib.licenses.ofl;
+    maintainers = with lib.maintainers; [ minijackson ];
+    platforms = lib.platforms.all;
   };
 }

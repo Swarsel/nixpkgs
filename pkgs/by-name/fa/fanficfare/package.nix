@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "fanficfare";
   version = "4.54.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -31,13 +30,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
   ];
 
   doCheck = false; # no tests exist
+  pyproject = true;
 
   meta = {
     description = "Tool for making eBooks from fanfiction web sites";
-    mainProgram = "fanficfare";
     homepage = "https://github.com/JimmXinu/FanFicFare";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ dwarfmaster ];
+    platforms = lib.platforms.unix;
+    mainProgram = "fanficfare";
   };
 })

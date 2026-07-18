@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  autoreconfHook,
   fetchurl,
+  autoreconfHook,
   gcc,
   makeWrapper,
   pcre2,
@@ -38,20 +38,19 @@ stdenv.mkDerivation (finalAttrs: {
     tcp_wrappers
   ];
 
+  # Expects pre-GCC5 inline semantics
+  env.NIX_CFLAGS_COMPILE = "-std=gnu89";
+  doCheck = true;
+
   nativeCheckInputs = [
     perl
     ps
   ];
 
-  # Expects pre-GCC5 inline semantics
-  env.NIX_CFLAGS_COMPILE = "-std=gnu89";
-
-  doCheck = true;
-
   meta = {
     description = "Advanced tftp tools";
-    changelog = "https://sourceforge.net/p/atftp/code/ci/v${finalAttrs.version}/tree/Changelog";
     homepage = "https://sourceforge.net/projects/atftp/";
+    changelog = "https://sourceforge.net/p/atftp/code/ci/v${finalAttrs.version}/tree/Changelog";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.linux;

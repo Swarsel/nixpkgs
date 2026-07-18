@@ -1,34 +1,35 @@
 {
-  version,
   dmdHash,
   phobosHash,
+  version,
 }:
 
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  removeReferencesTo,
+  bash,
+  callPackage,
+  curl,
+  fetchpatch,
+  gdb,
+  git,
+  installShellFiles,
   makeWrapper,
+  removeReferencesTo,
+  targetPackages,
+  tzdata,
+  unzip,
   which,
   writeTextFile,
-  curl,
-  tzdata,
-  gdb,
-  callPackage,
-  targetPackages,
-  fetchpatch,
-  bash,
-  installShellFiles,
-  git,
-  unzip,
-  dmdBootstrap ? callPackage ./bootstrap.nix { },
   dmdBin ? "${dmdBootstrap}/bin",
+  dmdBootstrap ? callPackage ./bootstrap.nix { },
 }:
 
 let
   dmdConfFile = writeTextFile {
     name = "dmd.conf";
+
     text = (
       lib.generators.toINI { } {
         Environment = {
@@ -47,50 +48,26 @@ let
 in
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "dmd";
   inherit version;
-
-  enableParallelBuilding = true;
-
-  srcs = [
-    (fetchFromGitHub {
-      owner = "dlang";
-      repo = "dmd";
-      rev = "v${finalAttrs.version}";
-      hash = dmdHash;
-      name = "dmd";
-    })
-    (fetchFromGitHub {
-      owner = "dlang";
-      repo = "phobos";
-      rev = "v${finalAttrs.version}";
-      hash = phobosHash;
-      name = "phobos";
-    })
-  ];
-
-  sourceRoot = ".";
-
-  # https://issues.dlang.org/show_bug.cgi?id=19553
-  hardeningDisable = [ "fortify" ];
+  pname = "dmd";
 
   patches =
     lib.optionals (lib.versionOlder version "2.088.0") [
       # Migrates D1-style operator overloads in DMD source, to allow building with
       # a newer DMD
       (fetchpatch {
-        url = "https://github.com/dlang/dmd/commit/c4d33e5eb46c123761ac501e8c52f33850483a8a.patch";
-        stripLen = 1;
         extraPrefix = "dmd/";
         hash = "sha256-N21mAPfaTo+zGCip4njejasraV5IsWVqlGR5eOdFZZE=";
+        stripLen = 1;
+        url = "https://github.com/dlang/dmd/commit/c4d33e5eb46c123761ac501e8c52f33850483a8a.patch";
       })
     ]
     ++ [
       (fetchpatch {
-        url = "https://github.com/dlang/dmd/commit/fdd25893e0ac04893d6eba8652903d499b7b0dfc.patch";
-        stripLen = 1;
         extraPrefix = "dmd/";
         hash = "sha256-Uccb8rBPBLAEPWbOYWgdR5xN3wJoIkKKhLGu58IK1sM=";
+        stripLen = 1;
+        url = "https://github.com/dlang/dmd/commit/fdd25893e0ac04893d6eba8652903d499b7b0dfc.patch";
       })
     ];
 
@@ -140,13 +117,6 @@ stdenv.mkDerivation (finalAttrs: {
     tzdata
   ];
 
-  nativeCheckInputs = [
-    gdb
-  ]
-  ++ lib.optionals (lib.versionOlder version "2.089.0") [
-    unzip
-  ];
-
   buildFlags = [
     "BUILD=release"
     "ENABLE_RELEASE=1"
@@ -174,8 +144,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
 
-  # many tests are disabled because they are failing
+  nativeCheckInputs = [
+    gdb
+  ]
+  ++ lib.optionals (lib.versionOlder version "2.089.0") [
+    unzip
+  ];
 
+  # many tests are disabled because they are failing
   # NOTE: Purity check is disabled for checkPhase because it doesn't fare well
   # with the DMD linker. See https://github.com/NixOS/nixpkgs/issues/97420
   checkPhase = ''
@@ -221,6 +197,27 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   disallowedReferences = [ dmdBootstrap ];
+  enableParallelBuilding = true;
+  # https://issues.dlang.org/show_bug.cgi?id=19553
+  hardeningDisable = [ "fortify" ];
+  sourceRoot = ".";
+
+  srcs = [
+    (fetchFromGitHub {
+      hash = dmdHash;
+      name = "dmd";
+      owner = "dlang";
+      repo = "dmd";
+      rev = "v${finalAttrs.version}";
+    })
+    (fetchFromGitHub {
+      hash = phobosHash;
+      name = "phobos";
+      owner = "dlang";
+      repo = "phobos";
+      rev = "v${finalAttrs.version}";
+    })
+  ];
 
   passthru = {
     inherit dmdBootstrap;
@@ -233,16 +230,19 @@ stdenv.mkDerivation (finalAttrs: {
     # Everything is now Boost licensed, even the backend.
     # https://github.com/dlang/dmd/pull/6680
     license = lib.licenses.boost;
-    mainProgram = "dmd";
+
     maintainers = with lib.maintainers; [
       lionello
       dukc
       jtbx
     ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
+
+    mainProgram = "dmd";
     # ld: section __DATA/__thread_bss has type zero-fill but non-zero file offset file '/private/tmp/nix-build-dmd-2.109.1.drv-0/.rdmd-301/rdmd-build.d-A1CF043A7D87C5E88A58F3C0EF5A0DF7/objs/build.o' for architecture x86_64
     # clang-16: error: linker command failed with exit code 1 (use -v to see invocation)
     broken = stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64;

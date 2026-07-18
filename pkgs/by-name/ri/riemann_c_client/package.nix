@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  fetchFromGitea,
   autoreconfHook,
   check,
-  pkg-config,
+  fetchFromGitea,
   file,
+  gnutls,
+  json_c,
+  pkg-config,
   protobufc,
   withGnuTLS ? false,
-  gnutls,
   withJSON ? true,
-  json_c,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,11 +18,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.2.2";
 
   src = fetchFromGitea {
-    domain = "git.madhouse-project.org";
     owner = "algernon";
     repo = "riemann-c-client";
     rev = "riemann-c-client-${finalAttrs.version}";
     hash = "sha256-l9iUDhagODi58FDT9vEb90tsiIcrcMmGYCmH3ML3RCM=";
+    domain = "git.madhouse-project.org";
   };
 
   outputs = [
@@ -39,6 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     protobufc
   ];
+
   buildInputs = [
     file
     protobufc
@@ -47,15 +48,14 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional withJSON json_c;
 
   configureFlags = [ ] ++ lib.optional withGnuTLS "--with-tls=gnutls";
-
   doCheck = true;
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://git.madhouse-project.org/algernon/riemann-c-client";
     description = "C client library for the Riemann monitoring system";
-    mainProgram = "riemann-client";
+    homepage = "https://git.madhouse-project.org/algernon/riemann-c-client";
     license = lib.licenses.eupl12;
     platforms = lib.platforms.linux;
+    mainProgram = "riemann-client";
   };
 })

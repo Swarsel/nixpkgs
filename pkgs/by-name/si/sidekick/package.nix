@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  installShellFiles,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
   versionCheckHook,
 }:
 
@@ -19,18 +19,8 @@ buildGoModule (finalAttrs: {
   };
 
   nativeBuildInputs = [ installShellFiles ];
-
-  doInstallCheck = true;
-
-  doCheck = true;
-
   vendorHash = "sha256-35MThhVqCcIFH2oQNw6n73JqNVr2T6mXaIJMK9LiXq8=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/mightymoud/sidekick/cmd.version=${finalAttrs.version}"
-  ];
+  doCheck = true;
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd sidekick \
@@ -39,15 +29,23 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/sidekick completion zsh)
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/mightymoud/sidekick/cmd.version=${finalAttrs.version}"
+  ];
+
   meta = {
     description = "Command-line tool designed to simplify the process of deploying and managing applications on a VPS";
-    mainProgram = "sidekick";
     homepage = "https://github.com/MightyMoud/sidekick";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ nipeharefa ];
+    mainProgram = "sidekick";
   };
 })

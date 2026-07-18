@@ -14,20 +14,24 @@ let
     in
     {
       inherit name;
+
       value = {
         after = [
           "network-online.target"
           "sound.target"
         ];
+
         description = "${name} liquidsoap stream";
-        wantedBy = [ "multi-user.target" ];
         path = [ pkgs.wget ];
+
         serviceConfig = {
           ExecStart = "${pkgs.liquidsoap}/bin/liquidsoap ${stream}";
-          User = "liquidsoap";
           LogsDirectory = "liquidsoap";
           Restart = "always";
+          User = "liquidsoap";
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
     };
 in
@@ -39,12 +43,12 @@ in
 
     services.liquidsoap.streams = lib.mkOption {
 
+      default = { };
+
       description = ''
         Set of Liquidsoap streams to start,
         one systemd service per stream.
       '';
-
-      default = { };
 
       example = lib.literalExpression ''
         {
@@ -58,22 +62,22 @@ in
     };
 
   };
+
   ##### implementation
 
   config = lib.mkIf (builtins.length streams != 0) {
 
-    users.users.liquidsoap = {
-      uid = config.ids.uids.liquidsoap;
-      group = "liquidsoap";
-      extraGroups = [ "audio" ];
-      description = "Liquidsoap streaming user";
-      home = "/var/lib/liquidsoap";
-      createHome = true;
-    };
-
+    systemd.services = builtins.listToAttrs (map streamService streams);
     users.groups.liquidsoap.gid = config.ids.gids.liquidsoap;
 
-    systemd.services = builtins.listToAttrs (map streamService streams);
+    users.users.liquidsoap = {
+      createHome = true;
+      description = "Liquidsoap streaming user";
+      extraGroups = [ "audio" ];
+      group = "liquidsoap";
+      home = "/var/lib/liquidsoap";
+      uid = config.ids.uids.liquidsoap;
+    };
   };
 
 }

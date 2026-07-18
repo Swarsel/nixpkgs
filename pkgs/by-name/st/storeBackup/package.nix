@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  which,
-  coreutils,
-  perl,
   fetchurl,
-  makeWrapper,
-  diffutils,
-  writeScriptBin,
   bzip2,
+  coreutils,
+  diffutils,
+  makeWrapper,
+  perl,
+  which,
+  writeScriptBin,
 }:
 
 # quick usage:
@@ -26,14 +26,8 @@ in
 
 stdenv.mkDerivation (finalAttrs: {
 
-  version = "3.5.2";
-
   pname = "store-backup";
-
-  enableParallelBuilding = true;
-
-  nativeBuildInputs = [ makeWrapper ];
-  buildInputs = [ perl ];
+  version = "3.5.2";
 
   src = fetchurl {
     url = "mirror://savannah/storebackup/storeBackup-${finalAttrs.version}.tar.bz2";
@@ -44,6 +38,9 @@ stdenv.mkDerivation (finalAttrs: {
     # https://www.openwall.com/lists/oss-security/2020/01/20/3
     ./CVE-2020-7040.patch
   ];
+
+  nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ perl ];
 
   installPhase = ''
     mkdir -p $out/scripts
@@ -122,6 +119,8 @@ stdenv.mkDerivation (finalAttrs: {
       backupRestore 'test 4: backup diffutils to same backup locations, restore' ${diffutils}
     }
   '';
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "Backup suite that stores files on other disks";

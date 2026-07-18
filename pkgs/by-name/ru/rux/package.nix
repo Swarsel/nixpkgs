@@ -1,8 +1,8 @@
 {
   lib,
-  llvmPackages_21,
   fetchFromGitHub,
   cmake,
+  llvmPackages_21,
   ninja,
 }:
 
@@ -23,7 +23,6 @@ llvmPackages_21.libcxxStdenv.mkDerivation (finalAttrs: {
   '';
 
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     cmake
@@ -45,15 +44,19 @@ llvmPackages_21.libcxxStdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
   meta = with lib; {
     description = "A fast, compiled, strongly typed, multi-paradigm programming language";
     homepage = "https://rux-lang.dev";
     license = licenses.mit;
+
     maintainers = with maintainers; [
       KirCK
       lukas-sgx
     ];
-    mainProgram = "rux";
+
     platforms = platforms.all;
+    mainProgram = "rux";
   };
 })

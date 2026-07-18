@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,9 +18,9 @@ buildGoModule (finalAttrs: {
   vendorHash = null;
 
   meta = {
+    description = "Command line tool to add customized vocabulary for Rime IME";
     homepage = "https://github.com/puddinging/rime-cli";
     changelog = "https://github.com/puddinging/rime-cli/releases/tag/v${finalAttrs.version}";
-    description = "Command line tool to add customized vocabulary for Rime IME";
     license = lib.licenses.asl20;
     maintainers = [ ];
     mainProgram = "rime-cli";

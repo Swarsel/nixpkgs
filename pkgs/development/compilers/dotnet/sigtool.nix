@@ -1,7 +1,7 @@
 {
+  fetchFromGitHub,
   cctools,
   darwin,
-  fetchFromGitHub,
   makeWrapper,
 }:
 

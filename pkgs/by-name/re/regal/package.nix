@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,9 +17,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-kp0EkieTIzC+nO9fFnUQMP4COCY9wxe4Nb2kSUgnInA=";
 
-  # Only build the main binary, exclude build/lsp/main.go
-  subPackages = [ "." ];
-
   ldflags = [
     "-s"
     "-w"
@@ -27,12 +24,15 @@ buildGoModule (finalAttrs: {
     "-X github.com/open-policy-agent/regal/pkg/version.Commit=${finalAttrs.version}"
   ];
 
+  # Only build the main binary, exclude build/lsp/main.go
+  subPackages = [ "." ];
+
   meta = {
     description = "Linter and language server for Rego";
-    mainProgram = "regal";
     homepage = "https://github.com/open-policy-agent/regal";
     changelog = "https://github.com/open-policy-agent/regal/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ rinx ];
+    mainProgram = "regal";
   };
 })

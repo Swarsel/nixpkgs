@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication {
   pname = "dnsvalidator";
   version = "0.1-unstable-2023-01-17";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vortexau";
@@ -22,8 +21,8 @@ python3.pkgs.buildPythonApplication {
       --replace-fail "'pytest-runner'" ""
   '';
 
-  pythonRemoveDeps = [ "ipaddress" ];
-
+  # Project has no tests
+  doCheck = false;
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -33,10 +32,9 @@ python3.pkgs.buildPythonApplication {
     requests
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "dnsvalidator" ];
+  pythonRemoveDeps = [ "ipaddress" ];
 
   meta = {
     description = "Tool to maintain a list of IPv4 DNS servers";

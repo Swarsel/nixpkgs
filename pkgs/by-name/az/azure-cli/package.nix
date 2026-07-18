@@ -1,39 +1,35 @@
 {
   lib,
-  callPackage,
-  callPackages,
-  stdenvNoCC,
   fetchurl,
   fetchFromGitHub,
-  runCommand,
-  installShellFiles,
-  python3,
-  writeShellScriptBin,
-
+  azure-cli,
   black,
+  callPackage,
+  callPackages,
+  installShellFiles,
   isort,
-  mypy,
   makeWrapper,
-
+  mypy,
+  python3,
+  runCommand,
+  stdenvNoCC,
+  writeShellScriptBin,
+  # List of extensions/plugins to include.
+  withExtensions ? [ ],
   # Whether to include patches that enable placing certain behavior-defining
   # configuration files in the Nix store.
   withImmutableConfig ? true,
-
-  # List of extensions/plugins to include.
-  withExtensions ? [ ],
-
-  azure-cli,
 }:
 
 let
   version = "2.88.0";
 
   src = fetchFromGitHub {
-    name = "azure-cli-${version}-src";
     owner = "Azure";
     repo = "azure-cli";
     tag = "azure-cli-${version}";
     hash = "sha256-9lDDzUuON1fkZzvV6oAzUOZcf+t7biDzPFufZIYQrAY=";
+    name = "azure-cli-${version}-src";
   };
 
   # put packages that needs to be overridden in the py package scope
@@ -43,23 +39,25 @@ let
   # outside of nix would be fetched by the CLI itself from various sources.
   mkAzExtension =
     {
-      pname,
-      version,
-      url,
-      hash,
       description,
+      hash,
+      pname,
+      url,
+      version,
       ...
     }@args:
     let
       self = python3.pkgs.buildPythonPackage (
         {
-          format = "wheel";
           src = fetchurl { inherit url hash; };
+          format = "wheel";
+
           passthru = {
-            updateScript = extensionUpdateScript { inherit pname; };
             tests.azWithExtension = testAzWithExts [ self ];
+            updateScript = extensionUpdateScript { inherit pname; };
           }
           // args.passthru or { };
+
           meta = {
             inherit description;
             inherit (azure-cli.meta) platforms maintainers;
@@ -121,8 +119,6 @@ let
   extensions = extensions-generated // extensions-manual;
 
   extensionDir = stdenvNoCC.mkDerivation {
-    name = "azure-cli-extensions";
-    dontUnpack = true;
     installPhase =
       let
         namePaths = map (p: "${p.pname},${p}/${python3.sitePackages}") withExtensions;
@@ -137,16 +133,16 @@ let
           done
         done
       '';
+
+    dontUnpack = true;
+    name = "azure-cli-extensions";
   };
 in
 
 py.pkgs.toPythonApplication (
   py.pkgs.buildAzureCliPackage rec {
-    pname = "azure-cli";
     inherit version src;
-    format = "setuptools";
-
-    sourceRoot = "${src.name}/src/azure-cli";
+    pname = "azure-cli";
 
     nativeBuildInputs = [
       installShellFiles
@@ -303,6 +299,15 @@ py.pkgs.toPythonApplication (
         rm $out/bin/azps.ps1
       '';
 
+    doInstallCheck = true;
+
+    installCheckPhase = ''
+      export HOME=$TMPDIR
+
+      $out/bin/az --version
+      $out/bin/az self-test
+    '';
+
     # wrap the executable so that the python packages are available
     # it's just a shebang script which calls `python -m azure.cli "$@"`
     postFixup = ''
@@ -318,13 +323,7 @@ py.pkgs.toPythonApplication (
       --set PYTHONPATH "${python3.pkgs.makePythonPath propagatedBuildInputs}:$out/${python3.sitePackages}"
     '';
 
-    doInstallCheck = true;
-    installCheckPhase = ''
-      export HOME=$TMPDIR
-
-      $out/bin/az --version
-      $out/bin/az self-test
-    '';
+    format = "setuptools";
 
     # ensure these namespaces are able to be accessed
     pythonImportsCheck = [
@@ -391,43 +390,16 @@ py.pkgs.toPythonApplication (
       "azure.storage.common"
     ];
 
+    sourceRoot = "${src.name}/src/azure-cli";
+
     passthru = {
       inherit extensions;
-      withExtensions = extensions: azure-cli.override { withExtensions = extensions; };
-      tests = {
-        azWithExtensions = testAzWithExts (
-          with azure-cli.extensions;
-          [
-            aks-preview
-            azure-devops
-            rdbms-connect
-          ]
-        );
-        # Test the package builds with mutable config.
-        # TODO: Maybe we can install an extension from local python wheel to
-        #       check mutable extension install still works.
-        azWithMutableConfig =
-          let
-            az = azure-cli.override { withImmutableConfig = false; };
-          in
-          runCommand "test-az-with-immutable-config" { } ''
-            export HOME=$TMPDIR
-            ${lib.getExe az} --version || exit 1
-            touch $out
-          '';
-
-        # Ensure the extensions-tool builds.
-        inherit (azure-cli) extensions-tool;
-      };
-
-      generate-extensions = writeShellScriptBin "${pname}-update-extensions" ''
-        ${lib.getExe azure-cli.extensions-tool} --cli-version ${azure-cli.version} --commit
-      '';
 
       extensions-tool =
         runCommand "azure-cli-extensions-tool"
           {
             src = ./extensions-tool.py;
+
             nativeBuildInputs = [
               black
               isort
@@ -435,6 +407,7 @@ py.pkgs.toPythonApplication (
               mypy
               python3
             ];
+
             meta.mainProgram = "extensions-tool";
           }
           ''
@@ -456,12 +429,44 @@ py.pkgs.toPythonApplication (
                 )
               }"
           '';
+
+      generate-extensions = writeShellScriptBin "${pname}-update-extensions" ''
+        ${lib.getExe azure-cli.extensions-tool} --cli-version ${azure-cli.version} --commit
+      '';
+
+      tests = {
+        # Ensure the extensions-tool builds.
+        inherit (azure-cli) extensions-tool;
+
+        azWithExtensions = testAzWithExts (
+          with azure-cli.extensions;
+          [
+            aks-preview
+            azure-devops
+            rdbms-connect
+          ]
+        );
+
+        # Test the package builds with mutable config.
+        # TODO: Maybe we can install an extension from local python wheel to
+        #       check mutable extension install still works.
+        azWithMutableConfig =
+          let
+            az = azure-cli.override { withImmutableConfig = false; };
+          in
+          runCommand "test-az-with-immutable-config" { } ''
+            export HOME=$TMPDIR
+            ${lib.getExe az} --version || exit 1
+            touch $out
+          '';
+      };
+
+      withExtensions = extensions: azure-cli.override { withExtensions = extensions; };
     };
 
     meta = {
-      homepage = "https://github.com/Azure/azure-cli";
       description = "Next generation multi-platform command line experience for Azure";
-      downloadPage = "https://github.com/Azure/azure-cli/releases/tag/azure-cli-${version}";
+
       longDescription = ''
         The Azure Command-Line Interface (CLI) is a cross-platform
         command-line tool to connect to Azure and execute administrative
@@ -480,12 +485,15 @@ py.pkgs.toPythonApplication (
         some configuration files were moved into the derivation. This can be disabled by overriding `withImmutableConfig = false`
         when building `azure-cli`.
       '';
+
+      homepage = "https://github.com/Azure/azure-cli";
       changelog = "https://github.com/MicrosoftDocs/azure-docs-cli/blob/main/docs-ref-conceptual/release-notes-azure-cli.md";
-      sourceProvenance = [ lib.sourceTypes.fromSource ];
       license = lib.licenses.mit;
-      mainProgram = "az";
+      sourceProvenance = [ lib.sourceTypes.fromSource ];
       maintainers = with lib.maintainers; [ katexochen ];
       platforms = lib.platforms.all;
+      mainProgram = "az";
+      downloadPage = "https://github.com/Azure/azure-cli/releases/tag/azure-cli-${version}";
     };
   }
 )

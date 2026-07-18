@@ -1,7 +1,7 @@
 {
+  lib,
   gobject-introspection,
   gtk3,
-  lib,
   nmap,
   python3Packages,
   wrapGAppsHook3,
@@ -11,17 +11,11 @@
 python3Packages.buildPythonApplication {
   pname = "zenmap";
   version = nmap.version;
-  pyproject = true;
-
   src = nmap.src;
 
-  prePatch = ''
-    cd zenmap
-  '';
-
-  build-system = with python3Packages; [
-    setuptools
-    setuptools-gettext
+  nativeBuildInputs = [
+    wrapGAppsHook3
+    gobject-introspection
   ];
 
   buildInputs = [
@@ -30,24 +24,19 @@ python3Packages.buildPythonApplication {
     xterm
   ];
 
-  nativeBuildInputs = [
-    wrapGAppsHook3
-    gobject-introspection
-  ];
-
   nativeCheckInputs = [
     nmap
   ];
 
-  dependencies = with python3Packages; [
-    pygobject3
-  ];
+  checkPhase = ''
+    runHook preCheck
 
-  dontWrapGApps = true;
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-    makeWrapperArgs+=(--prefix PATH : ${lib.makeBinPath [ nmap ]})
+    cd test
+    ${python3Packages.python.interpreter} run_tests.py 2>&1 | tee /dev/stderr | tail -n1 | grep '^OK$'
+
+    runHook postCheck
   '';
+
   postInstall = ''
     # Icons
     install -Dm 644 "zenmapCore/data/pixmaps/zenmap.png" -t "$out/share/icons/hicolor/256x256/apps"
@@ -62,18 +51,32 @@ python3Packages.buildPythonApplication {
                       '"${xterm}/bin/xterm"'
   '';
 
-  checkPhase = ''
-    runHook preCheck
-
-    cd test
-    ${python3Packages.python.interpreter} run_tests.py 2>&1 | tee /dev/stderr | tail -n1 | grep '^OK$'
-
-    runHook postCheck
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+    makeWrapperArgs+=(--prefix PATH : ${lib.makeBinPath [ nmap ]})
   '';
+
+  build-system = with python3Packages; [
+    setuptools
+    setuptools-gettext
+  ];
+
+  dependencies = with python3Packages; [
+    pygobject3
+  ];
+
+  dontWrapGApps = true;
+
+  prePatch = ''
+    cd zenmap
+  '';
+
+  pyproject = true;
 
   meta = nmap.meta // {
     description = "Offical nmap Security Scanner GUI";
     homepage = "https://nmap.org/zenmap/";
+
     maintainers = with lib.maintainers; [
       dvaerum
       mymindstorm

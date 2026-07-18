@@ -6,7 +6,6 @@
 
 buildGoModule (finalAttrs: {
   pname = "converged-security-suite";
-
   version = "2.8.2";
 
   src = fetchFromGitHub {
@@ -18,6 +17,15 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-KAtkvlldLb+1vVcec3Q34UNxu1Kj/37bjy8yjPoP5NM=";
 
+  checkPhase = ''
+    go test -v ./pkg/...
+  '';
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   subPackages = [
     "cmd/core/bg-prov"
     "cmd/core/bg-suite"
@@ -27,23 +35,16 @@ buildGoModule (finalAttrs: {
     "cmd/exp/pcr0tool"
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
-  checkPhase = ''
-    go test -v ./pkg/...
-  '';
-
   meta = {
+    description = "Converged Security Suite for Intel & AMD platform security features";
     homepage = "https://github.com/9elements/converged-security-suite";
     changelog = "https://github.com/9elements/converged-security-suite/releases/tag/v${finalAttrs.version}";
-    description = "Converged Security Suite for Intel & AMD platform security features";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       felixsinger
     ];
+
     mainProgram = "bg-prov";
   };
 })

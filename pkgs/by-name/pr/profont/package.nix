@@ -19,16 +19,6 @@ stdenv.mkDerivation {
     }
     + "/profont-x11";
 
-  srcOtb =
-    fetchzip {
-      url = "https://tobiasjung.name/downloadfile.php?file=profont-otb.zip";
-      sha256 = "18rfhfqrsj3510by0w1a7ak5as6r2cxh8xv02xc1y30mfa6g24x6";
-      stripRoot = false;
-    }
-    + "/profont-otb";
-
-  dontBuild = true;
-
   nativeBuildInputs = [ mkfontscale ];
 
   installPhase = ''
@@ -41,11 +31,21 @@ stdenv.mkDerivation {
     mkfontdir "$out/share/fonts/misc"
   '';
 
+  dontBuild = true;
+
+  srcOtb =
+    fetchzip {
+      sha256 = "18rfhfqrsj3510by0w1a7ak5as6r2cxh8xv02xc1y30mfa6g24x6";
+      stripRoot = false;
+      url = "https://tobiasjung.name/downloadfile.php?file=profont-otb.zip";
+    }
+    + "/profont-otb";
+
   meta = {
-    homepage = "https://tobiasjung.name/profont/";
     description = "Monospaced font created to be a most readable font for programming";
-    maintainers = with lib.maintainers; [ myrl ];
+    homepage = "https://tobiasjung.name/profont/";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ myrl ];
     platforms = lib.platforms.all;
   };
 

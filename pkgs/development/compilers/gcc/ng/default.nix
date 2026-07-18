@@ -1,15 +1,15 @@
 {
   lib,
-  callPackage,
   stdenv,
+  binutils,
+  binutilsNoLibc,
+  buildPackages,
+  callPackage,
+  generateSplicesForMkScope,
   stdenvAdapters,
+  targetPackages,
   gccVersions ? { },
   patchesFn ? lib.id,
-  buildPackages,
-  targetPackages,
-  binutilsNoLibc,
-  binutils,
-  generateSplicesForMkScope,
   ...
 }@packageSetArgs:
 let
@@ -20,10 +20,10 @@ let
 
   mkPackage =
     {
-      name ? null,
-      officialRelease ? null,
       gitRelease ? null,
       monorepoSrc ? null,
+      name ? null,
+      officialRelease ? null,
       version ? null,
     }@args:
     let
@@ -47,6 +47,7 @@ let
         callPackage ./common (
           {
             inherit (stdenvAdapters) overrideCC;
+
             inherit
               officialRelease
               gitRelease
@@ -56,8 +57,8 @@ let
               ;
 
             buildGccPackages = buildPackages."gccNGPackages_${attrName}";
-            targetGccPackages = targetPackages."gccNGPackages_${attrName}" or gccPackages."${attrName}";
             otherSplices = generateSplicesForMkScope "gccNGPackages_${attrName}";
+            targetGccPackages = targetPackages."gccNGPackages_${attrName}" or gccPackages."${attrName}";
           }
           // packageSetArgs # Allow overrides.
         )

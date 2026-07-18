@@ -1,17 +1,15 @@
 {
   lib,
   fetchFromGitHub,
-  stdenvNoCC,
-  nix-update-script,
-  python3,
-  jawiki-all-titles-in-ns0,
   ibus-engines,
-
+  jawiki-all-titles-in-ns0,
   mozcdic-ut-jawiki,
   mozcdic-ut-personal-names,
   mozcdic-ut-place-names,
   mozcdic-ut-sudachidict,
-
+  nix-update-script,
+  python3,
+  stdenvNoCC,
   dictionaries ? [
     mozcdic-ut-jawiki
     mozcdic-ut-personal-names

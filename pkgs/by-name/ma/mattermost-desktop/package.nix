@@ -4,9 +4,9 @@
   buildNpmPackage,
   electron_41,
   makeWrapper,
-  testers,
   mattermost-desktop,
   nix-update-script,
+  testers,
 }:
 
 let
@@ -24,14 +24,6 @@ buildNpmPackage rec {
     hash = "sha256-KSyFJrYy+pueSrX20SPBoudWfiHmy5L2O8TdzLJRiYk=";
   };
 
-  npmDepsHash = "sha256-70TBP4iDKuF4X9Tf0tsbUQ3N7bluoPn65OdfdcWin4Y=";
-  npmBuildScript = "build-prod";
-  makeCacheWritable = true;
-
-  nativeBuildInputs = [ makeWrapper ];
-
-  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-
   postPatch = ''
     substituteInPlace webpack.config.base.js \
       --replace-fail \
@@ -40,6 +32,10 @@ buildNpmPackage rec {
     substituteInPlace src/common/config/buildConfig.ts \
       --replace-fail 'enableUpdateNotifications: true,' 'enableUpdateNotifications: false,'
   '';
+
+  nativeBuildInputs = [ makeWrapper ];
+  npmDepsHash = "sha256-70TBP4iDKuF4X9Tf0tsbUQ3N7bluoPn65OdfdcWin4Y=";
+  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
   postBuild = ''
     # electronDist needs to be writable
@@ -82,12 +78,16 @@ buildNpmPackage rec {
     runHook postInstall
   '';
 
+  makeCacheWritable = true;
+  npmBuildScript = "build-prod";
+
   passthru = {
     tests.version = testers.testVersion {
-      package = mattermost-desktop;
       # Invoking with `--version` insists on being able to write to a log file.
       command = "env HOME=/tmp ${meta.mainProgram} --version";
+      package = mattermost-desktop;
     };
+
     updateScript = nix-update-script {
       extraArgs = [ "--version-regex=^v(\\d+\\.\\d+\\.\\d+)$" ];
     };
@@ -95,15 +95,17 @@ buildNpmPackage rec {
 
   meta = {
     description = "Mattermost Desktop client";
-    mainProgram = "mattermost-desktop";
     homepage = "https://about.mattermost.com/";
     changelog = "https://github.com/mattermost/desktop/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
-    platforms = electron.meta.platforms;
+
     maintainers = with lib.maintainers; [
       joko
       liff
       yayayayaka
     ];
+
+    platforms = electron.meta.platforms;
+    mainProgram = "mattermost-desktop";
   };
 }

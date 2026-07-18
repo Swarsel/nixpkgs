@@ -12,15 +12,14 @@
 buildPythonPackage rec {
   pname = "avidtools";
   version = "0.2.1";
-  pyproject = true;
-
-  disabled = pythonOlder "3.12";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-rYkA/+YfFhrS/WSx+jUWCsXDjp03aMoMiGdXeK3Kf4M=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -29,9 +28,8 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  disabled = pythonOlder "3.12";
+  pyproject = true;
   pythonImportsCheck = [ "avidtools" ];
 
   meta = {

@@ -15,6 +15,9 @@ lib.packagesFromDirectoryRecursive {
     inherit (pkgs) codeium;
   };
 
+  # camelCase aliases for some of the kebab-case expressions above
+  colorThemeSolarized = self.color-theme-solarized;
+
   eaf-browser = callPackage ./manual-packages/eaf-browser {
     inherit (pkgs) aria2;
   };
@@ -24,6 +27,7 @@ lib.packagesFromDirectoryRecursive {
   };
 
   elpaca = callPackage ./manual-packages/elpaca { inherit (pkgs) git; };
+  emacsSessionManagement = self.session-management-for-emacs;
 
   lsp-bridge = callPackage ./manual-packages/lsp-bridge {
     inherit (pkgs)
@@ -36,22 +40,13 @@ lib.packagesFromDirectoryRecursive {
   };
 
   lua = callPackage ./manual-packages/lua { inherit (pkgs) lua; };
-
-  straight = callPackage ./manual-packages/straight { inherit (pkgs) git; };
-
-  structured-haskell-mode = self.shm;
-
-  texpresso = callPackage ./manual-packages/texpresso { inherit (pkgs) texpresso; };
-
-  tree-sitter-langs = callPackage ./manual-packages/tree-sitter-langs { final = self; };
-
-  zstd = callPackage ./manual-packages/zstd { inherit (pkgs) zstd; };
-
-  # camelCase aliases for some of the kebab-case expressions above
-  colorThemeSolarized = self.color-theme-solarized;
-  emacsSessionManagement = self.session-management-for-emacs;
   rectMark = self.rect-mark;
+  straight = callPackage ./manual-packages/straight { inherit (pkgs) git; };
+  structured-haskell-mode = self.shm;
   sunriseCommander = self.sunrise-commander;
+  texpresso = callPackage ./manual-packages/texpresso { inherit (pkgs) texpresso; };
+  tree-sitter-langs = callPackage ./manual-packages/tree-sitter-langs { final = self; };
+  zstd = callPackage ./manual-packages/zstd { inherit (pkgs) zstd; };
 }
 ### Aliases
 // lib.optionalAttrs pkgs.config.allowAliases {

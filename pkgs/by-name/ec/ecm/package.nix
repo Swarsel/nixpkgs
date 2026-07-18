@@ -21,6 +21,11 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace test.ecm --replace /bin/rm rm
   '';
 
+  buildInputs = [
+    m4
+    gmp
+  ];
+
   configureFlags = [
     # Otherwise, undesired flags from gmp (such as -std=c99) are leaking
     "-enable-gmp-cflags=false"
@@ -29,19 +34,14 @@ stdenv.mkDerivation (finalAttrs: {
     # See https://trac.sagemath.org/ticket/19233
     lib.optional stdenv.hostPlatform.isDarwin "--disable-asm-redc";
 
-  buildInputs = [
-    m4
-    gmp
-  ];
-
   doCheck = true;
 
   meta = {
     description = "Elliptic Curve Method for Integer Factorization";
-    mainProgram = "ecm";
-    license = lib.licenses.gpl3Only;
     homepage = "https://gitlab.inria.fr/zimmerma/ecm";
+    license = lib.licenses.gpl3Only;
     maintainers = [ lib.maintainers.roconnor ];
     platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "ecm";
   };
 })

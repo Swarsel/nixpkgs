@@ -1,28 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   cython,
   meson-python,
   numpy,
-  setuptools,
-
   # nativeBuildInputs
   pkg-config,
-
-  # dependencies
-  scikit-learn,
-
   # tests
   pytestCheckHook,
+  # dependencies
+  scikit-learn,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "fastcan";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scikit-learn-contrib";
@@ -31,16 +26,11 @@ buildPythonPackage rec {
     hash = "sha256-1ncdzBMJYEwTkpLXS64g+SaEbsiYslX7zN4xbGjUsAA=";
   };
 
-  build-system = [
-    cython
-    meson-python
-    numpy
-    setuptools
-  ];
-
   nativeBuildInputs = [ pkg-config ];
 
-  dependencies = [ scikit-learn ];
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   # Prevent pytest from importing the required python modules from the source instead of $out
   preCheck = ''
@@ -48,10 +38,15 @@ buildPythonPackage rec {
     echo "" > fastcan/narx/__init__.py
   '';
 
-  nativeCheckInputs = [
-    pytestCheckHook
+  build-system = [
+    cython
+    meson-python
+    numpy
+    setuptools
   ];
 
+  dependencies = [ scikit-learn ];
+  pyproject = true;
   pythonImportsCheck = [ "fastcan" ];
 
   meta = {

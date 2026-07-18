@@ -30,9 +30,9 @@ buildGoModule (finalAttrs: {
   '';
 
   meta = {
-    changelog = "https://github.com/containers/gvisor-tap-vsock/releases/tag/${finalAttrs.src.rev}";
     description = "Network stack based on gVisor";
     homepage = "https://github.com/containers/gvisor-tap-vsock";
+    changelog = "https://github.com/containers/gvisor-tap-vsock/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.asl20;
     teams = [ lib.teams.podman ];
   };

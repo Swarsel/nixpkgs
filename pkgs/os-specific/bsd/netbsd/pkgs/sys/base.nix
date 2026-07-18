@@ -1,28 +1,20 @@
 {
   lib,
-  mkDerivation,
-  include,
   bsdSetupHook,
-  netbsdSetupHook,
-  makeMinimal,
-  install,
-  tsort,
-  lorder,
-  statHook,
-  uudecode,
   config,
-  genassym,
   defaultMakeFlags,
+  genassym,
+  include,
+  install,
+  lorder,
+  makeMinimal,
+  mkDerivation,
+  netbsdSetupHook,
+  statHook,
+  tsort,
+  uudecode,
 }:
 {
-  path = "sys";
-
-  # Make the build ignore linker warnings
-  prePatch = ''
-    substituteInPlace sys/conf/Makefile.kern.inc \
-      --replace "-Wa,--fatal-warnings" ""
-  '';
-
   patches = [
     # Fix this error when building bootia32.efi and bootx64.efi:
     # error: PHDR segment not covered by LOAD segment
@@ -40,9 +32,6 @@
     # multiple header dirs, see above
     include.postPatch;
 
-  CONFIG = "GENERIC";
-
-  propagatedBuildInputs = [ include ];
   nativeBuildInputs = [
     bsdSetupHook
     netbsdSetupHook
@@ -56,6 +45,15 @@
     genassym
   ];
 
+  propagatedBuildInputs = [ include ];
+  makeFlags = defaultMakeFlags ++ [ "FIRMWAREDIR=$(out)/libdata/firmware" ];
+
+  env.NIX_CFLAGS_COMPILE = toString [
+    "-Wno-error=array-parameter"
+    "-Wno-error=array-bounds"
+    "-Wa,--no-warn"
+  ];
+
   postConfigure = ''
     pushd arch/$MACHINE/conf
     config $CONFIG
@@ -63,15 +61,6 @@
   ''
   # multiple header dirs, see above
   + include.postConfigure;
-
-  makeFlags = defaultMakeFlags ++ [ "FIRMWAREDIR=$(out)/libdata/firmware" ];
-  hardeningDisable = [ "pic" ];
-  MKKMOD = "no";
-  env.NIX_CFLAGS_COMPILE = toString [
-    "-Wno-error=array-parameter"
-    "-Wno-error=array-bounds"
-    "-Wa,--no-warn"
-  ];
 
   postBuild = ''
     make -C arch/$MACHINE/compile/$CONFIG $makeFlags
@@ -81,13 +70,26 @@
     cp arch/$MACHINE/compile/$CONFIG/netbsd $out
   '';
 
-  postIncludes = ''
-    install $BSDSRCDIR/lib/libossaudio/soundcard.h $out/include/soundcard.h
-  '';
+  CONFIG = "GENERIC";
+  MKKMOD = "no";
 
-  meta.platforms = lib.platforms.netbsd;
   extraPaths = [
     "common"
     "lib/libossaudio"
   ];
+
+  hardeningDisable = [ "pic" ];
+  path = "sys";
+
+  postIncludes = ''
+    install $BSDSRCDIR/lib/libossaudio/soundcard.h $out/include/soundcard.h
+  '';
+
+  # Make the build ignore linker warnings
+  prePatch = ''
+    substituteInPlace sys/conf/Makefile.kern.inc \
+      --replace "-Wa,--fatal-warnings" ""
+  '';
+
+  meta.platforms = lib.platforms.netbsd;
 }

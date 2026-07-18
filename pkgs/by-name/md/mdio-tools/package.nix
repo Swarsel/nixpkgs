@@ -1,10 +1,10 @@
 {
-  autoreconfHook,
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  autoreconfHook,
   libmnl,
   pkg-config,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,16 +18,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-QjBNVXrhIfz9l7ysbHlldCP6VknWolvIs4qCGUOCWx8=";
   };
 
-  nativeBuildInputs = [
-    autoreconfHook
-    pkg-config
-  ];
-  buildInputs = [ libmnl ];
-
   postPatch = ''
     substituteInPlace configure.ac \
       --replace-fail "git describe --always --dirty --tags" "echo ${finalAttrs.version}"
   '';
+
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
+  ];
+
+  buildInputs = [ libmnl ];
 
   meta = {
     description = "Low-level debug tools for MDIO devices";
@@ -35,7 +36,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/wkz/mdio-tools/blob/${finalAttrs.src.rev}/ChangeLog.md";
     license = lib.licenses.gpl2Only;
     maintainers = [ lib.maintainers.jmbaur ];
-    mainProgram = "mdio";
     platforms = lib.platforms.linux;
+    mainProgram = "mdio";
   };
 })

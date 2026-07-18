@@ -1,30 +1,26 @@
 {
   lib,
-  stdenvNoCC,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  # build-system
-  hatchling,
-
-  # dependencies
-  requests,
-
+  buildPythonPackage,
   # testing
   click,
   freezegun,
+  # build-system
+  hatchling,
   mock,
   pytest-vcr,
   pytestCheckHook,
   python-dateutil,
+  pythonAtLeast,
+  # dependencies
+  requests,
+  stdenvNoCC,
   vcrpy,
 }:
 
 buildPythonPackage rec {
   pname = "datadog";
   version = "0.52.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "DataDog";
@@ -32,12 +28,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-ykZb6wm/hwYyQu6+cdtA33J82SLle5iJlmV5mNHTkv0=";
   };
-
-  build-system = [ hatchling ];
-
-  dependencies = [ requests ];
-
-  __darwinAllowLocalNetworking = true;
 
   nativeCheckInputs = [
     click
@@ -48,6 +38,10 @@ buildPythonPackage rec {
     python-dateutil
     vcrpy
   ];
+
+  __darwinAllowLocalNetworking = true;
+  build-system = [ hatchling ];
+  dependencies = [ requests ];
 
   disabledTestPaths = [
     "tests/performance"
@@ -78,6 +72,7 @@ buildPythonPackage rec {
     "test_dedicated_uds_telemetry_dest"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "datadog" ];
 
   meta = {

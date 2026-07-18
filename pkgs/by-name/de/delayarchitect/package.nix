@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libGL,
-  libx11,
-  libxext,
-  libxrandr,
-  libxinerama,
-  libxcursor,
-  freetype,
   alsa-lib,
   cmake,
-  pkg-config,
+  freetype,
   gcc-unwrapped,
+  libGL,
+  libx11,
+  libxcursor,
+  libxext,
+  libxinerama,
+  libxrandr,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -56,10 +56,10 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/jpcima/DelayArchitect";
     description = "Visual, musical editor for delay effects";
+    homepage = "https://github.com/jpcima/DelayArchitect";
+    license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.all;
-    license = lib.licenses.gpl3Plus;
   };
 }

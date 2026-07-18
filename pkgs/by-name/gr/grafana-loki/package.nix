@@ -1,16 +1,16 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  grafana-loki,
   nix-update-script,
   nixosTests,
   testers,
-  grafana-loki,
 }:
 
 buildGoModule (finalAttrs: {
-  version = "3.7.3";
   pname = "grafana-loki";
+  version = "3.7.3";
 
   src = fetchFromGitHub {
     owner = "grafana";
@@ -20,26 +20,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
-
-  subPackages = [
-    # TODO split every executable into its own package
-    "cmd/loki"
-    "cmd/loki-canary"
-    "cmd/logcli"
-    "cmd/lokitool"
-  ];
-
-  passthru = {
-    tests = {
-      inherit (nixosTests) loki;
-      version = testers.testVersion {
-        command = "loki --version";
-        package = grafana-loki;
-      };
-    };
-
-    updateScript = nix-update-script { };
-  };
 
   ldflags =
     let
@@ -55,20 +35,44 @@ buildGoModule (finalAttrs: {
       "-X ${t}.Revision=unknown"
     ];
 
+  subPackages = [
+    # TODO split every executable into its own package
+    "cmd/loki"
+    "cmd/loki-canary"
+    "cmd/logcli"
+    "cmd/lokitool"
+  ];
+
+  passthru = {
+    tests = {
+      inherit (nixosTests) loki;
+
+      version = testers.testVersion {
+        command = "loki --version";
+        package = grafana-loki;
+      };
+    };
+
+    updateScript = nix-update-script { };
+  };
+
   meta = {
     description = "Like Prometheus, but for logs";
-    mainProgram = "loki";
+    homepage = "https://grafana.com/oss/loki/";
+    changelog = "https://github.com/grafana/loki/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       agpl3Only
       asl20
     ];
-    homepage = "https://grafana.com/oss/loki/";
-    changelog = "https://github.com/grafana/loki/releases/tag/v${finalAttrs.version}";
+
     maintainers = with lib.maintainers; [
       globin
       mmahut
       emilylange
       ryan4yin
     ];
+
+    mainProgram = "loki";
   };
 })

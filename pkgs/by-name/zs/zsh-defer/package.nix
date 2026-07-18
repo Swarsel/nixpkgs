@@ -16,18 +16,20 @@ stdenv.mkDerivation {
   };
 
   strictDeps = true;
-  dontConfigure = true;
-  dontBuild = true;
+
   installPhase = ''
     mkdir -p $out/share/zsh-defer
     cp zsh-defer* $out/share/zsh-defer
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "Deferred execution of zsh commands";
     homepage = "https://github.com/romkatv/zsh-defer";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.vinnymeller ];
+    platforms = lib.platforms.unix;
   };
 }

@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  autoreconfHook,
-  versionCheckHook,
   fetchFromGitHub,
-  perl,
+  autoreconfHook,
   nix-update-script,
+  perl,
+  versionCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,11 +39,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [ perl ];
 
-  enableParallelBuilding = true;
-
   postInstall = ''
     cp -r skeletons/standard-modules $out/share/asn1c
   '';
+
+  doInstallCheck = true;
 
   # Barely anyone uses this, so make it a split-output
   # so we don't carry the dependency on perl into bin.
@@ -52,16 +52,15 @@ stdenv.mkDerivation (finalAttrs: {
     mv $out/bin/crfc2asn1.pl $crfc2asn1/bin/crfc2asn1
   '';
 
-  doInstallCheck = true;
-
+  enableParallelBuilding = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    mainProgram = "asn1c";
-    homepage = "https://lionet.info/asn1c/compiler.html";
     description = "Open Source ASN.1 Compiler";
+    homepage = "https://lionet.info/asn1c/compiler.html";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ numinit ];
+    platforms = lib.platforms.unix;
+    mainProgram = "asn1c";
   };
 })

@@ -1,7 +1,7 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
   libiconv,
   libxslt,
   texliveBasic,
@@ -19,6 +19,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-DL5DyfARHHbwWBVHSa/VwHzNaAx/v7EDdnw1GLOk+y0=";
   };
 
+  outputs = [
+    "out"
+    "doc"
+  ];
+
   postPatch =
     lib.optionalString stdenv.cc.isClang ''
       substituteInPlace makefile \
@@ -31,11 +36,6 @@ stdenv.mkDerivation (finalAttrs: {
         --replace-fail '\usepackage[utf8x]{inputenc}' '\usepackage[utf8]{inputenc}'
     '';
 
-  outputs = [
-    "out"
-    "doc"
-  ];
-
   nativeBuildInputs = [
     libxslt
     (texliveBasic.withPackages (ps: [
@@ -43,6 +43,7 @@ stdenv.mkDerivation (finalAttrs: {
       ps.ucs
     ]))
   ];
+
   buildInputs = [ xercesc ] ++ lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
 
   buildFlags = [
@@ -67,8 +68,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://gva.noekeon.org/blahtexml/";
     description = "TeX to MathML converter";
+
     longDescription = ''
       Blahtex is a program written in C++, which converts an equation given in
       a syntax close to TeX into MathML. It is designed by David Harvey and is
@@ -80,6 +81,8 @@ stdenv.mkDerivation (finalAttrs: {
       document. Instead of converting only one formula at a time, blahtexml can
       convert all the formulas of the given XML file into MathML.
     '';
+
+    homepage = "https://gva.noekeon.org/blahtexml/";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.xworld21 ];
     platforms = lib.platforms.all;

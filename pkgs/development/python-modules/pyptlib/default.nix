@@ -2,15 +2,13 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  isPyPy,
   isPy3k,
+  isPyPy,
 }:
 
 buildPythonPackage rec {
   pname = "pyptlib";
   version = "0.0.6";
-  format = "setuptools";
-  disabled = isPyPy || isPy3k;
 
   src = fetchPypi {
     inherit pname version;
@@ -18,10 +16,12 @@ buildPythonPackage rec {
   };
 
   doCheck = false; # No such file or directory errors on 32bit
+  disabled = isPyPy || isPy3k;
+  format = "setuptools";
 
   meta = {
-    homepage = "https://pypi.org/project/pyptlib/";
     description = "Python implementation of the Pluggable Transports for Circumvention specification for Tor";
+    homepage = "https://pypi.org/project/pyptlib/";
     license = lib.licenses.bsd2;
   };
 }

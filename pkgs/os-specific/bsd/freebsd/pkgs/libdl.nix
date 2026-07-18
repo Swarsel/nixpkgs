@@ -1,27 +1,17 @@
 {
-  mkDerivation,
+  csu,
   include,
   libcMinimal,
   libgcc,
   libsys,
-  csu,
+  mkDerivation,
 }:
 
 mkDerivation {
-  path = "lib/libdl";
-  extraPaths = [
-    "libexec/rtld-elf"
-    "lib/libc/gen"
-    "lib/libc/include"
-    "lib/libc/Versions.def"
-  ];
-
   outputs = [
     "out"
     "debug"
   ];
-
-  noLibc = true;
 
   buildInputs = [
     include
@@ -33,4 +23,14 @@ mkDerivation {
   preBuild = ''
     export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE -B${csu}/lib"
   '';
+
+  extraPaths = [
+    "libexec/rtld-elf"
+    "lib/libc/gen"
+    "lib/libc/include"
+    "lib/libc/Versions.def"
+  ];
+
+  noLibc = true;
+  path = "lib/libdl";
 }

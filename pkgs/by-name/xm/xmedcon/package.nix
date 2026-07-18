@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
-  buildPackages,
+  stdenv,
   fetchurl,
-  gtk3,
+  buildPackages,
   glib,
-  pkg-config,
+  gtk3,
   libpng,
-  zlib,
+  pkg-config,
   wrapGAppsHook3,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,16 +20,16 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-r0oDA5wMS2bkKCgM7C+WxUahGvJm7NUA/iUNu2uZJPE=";
   };
 
+  nativeBuildInputs = [
+    pkg-config
+    wrapGAppsHook3
+  ];
+
   buildInputs = [
     gtk3
     glib
     libpng
     zlib
-  ];
-
-  nativeBuildInputs = [
-    pkg-config
-    wrapGAppsHook3
   ];
 
   # xmedcon looks also for a host c compiler when cross-compiling
@@ -43,10 +43,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Open source toolkit for medical image conversion";
     homepage = "https://xmedcon.sourceforge.net/";
     license = lib.licenses.lgpl2Plus;
+
     maintainers = with lib.maintainers; [
       arianvp
       flokli
     ];
+
     platforms = lib.platforms.darwin ++ lib.platforms.linux;
   };
 })

@@ -1,18 +1,16 @@
 {
-  kernel,
-  kernelModuleMakeFlags,
+  lib,
   stdenv,
   basiliskii,
-  lib,
+  kernel,
+  kernelModuleMakeFlags,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  name = "${finalAttrs.pname}-${finalAttrs.version}-${kernel.version}";
   pname = "sheep_net";
   version = basiliskii.version;
   src = basiliskii.src;
-  sourceRoot = "${finalAttrs.src.name}/BasiliskII/src/Unix/Linux/NetDriver";
-
   nativeBuildInputs = kernel.moduleBuildDependencies;
+
   makeFlags = kernelModuleMakeFlags ++ [
     "KERNEL_DIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}"
   ];
@@ -23,6 +21,9 @@ stdenv.mkDerivation (finalAttrs: {
     install -Dm444 sheep_net.ko $out/lib/modules/${kernel.modDirVersion}/drivers/net/sheep_net.ko
     runHook postInstall
   '';
+
+  name = "${finalAttrs.pname}-${finalAttrs.version}-${kernel.version}";
+  sourceRoot = "${finalAttrs.src.name}/BasiliskII/src/Unix/Linux/NetDriver";
 
   meta = {
     homepage = "https://github.com/kanjitalk755/macemu";

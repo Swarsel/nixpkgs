@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   glib,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,11 +19,11 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [ glib ];
 
   meta = {
-    homepage = "http://ctpl.tuxfamily.org/";
     description = "Template engine library written in C";
-    mainProgram = "ctpl";
-    platforms = lib.platforms.linux;
-    maintainers = [ ];
+    homepage = "http://ctpl.tuxfamily.org/";
     license = lib.licenses.gpl3Plus;
+    maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "ctpl";
   };
 })

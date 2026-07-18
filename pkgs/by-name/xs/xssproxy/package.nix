@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  glib,
-  pkg-config,
-  libxscrnsaver,
-  libx11,
   dbus,
+  glib,
+  libx11,
+  libxscrnsaver,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,6 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     glib
     libx11
@@ -35,10 +36,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Forward freedesktop.org Idle Inhibition Service calls to Xss";
-    mainProgram = "xssproxy";
     homepage = "https://github.com/vincentbernat/xssproxy";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ benley ];
     platforms = lib.platforms.unix;
+    mainProgram = "xssproxy";
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  makeWrapper,
   haskellPackages,
+  makeWrapper,
   packages ? (pkgs: [ ]),
 }:
 
@@ -17,14 +17,10 @@ let
 
 in
 stdenv.mkDerivation {
-  pname = "mueval";
   inherit (haskellPackages.mueval) version;
-
   inherit (haskellPackages) mueval;
-
+  pname = "mueval";
   nativeBuildInputs = [ makeWrapper ];
-
-  dontUnpack = true;
 
   buildPhase = ''
     runHook preBuild
@@ -37,6 +33,7 @@ stdenv.mkDerivation {
     runHook postBuild
   '';
 
+  dontUnpack = true;
   passthru = { inherit defaultPkgs; };
   meta.mainProgram = "mueval";
 }

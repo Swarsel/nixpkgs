@@ -7,12 +7,11 @@
 buildPythonPackage rec {
   pname = "pyric";
   version = "0.1.6.3";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "PyRIC";
     inherit version;
     hash = "sha256-tTmwHK/r0kBsAAl/lFJeoPjs0d2S93MfQ+rA7xbCzMk=";
+    pname = "PyRIC";
   };
 
   postPatch = ''
@@ -22,7 +21,7 @@ buildPythonPackage rec {
 
   # Tests are outdated
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pyric" ];
 
   meta = {

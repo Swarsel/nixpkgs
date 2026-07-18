@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  wxwidgets_3_2,
-  texinfo,
-  tetex,
-  wrapGAppsHook3,
   autoconf-archive,
   autoreconfHook,
+  tetex,
+  texinfo,
+  wrapGAppsHook3,
+  wxwidgets_3_2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,7 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/jrincayc/ucblogo-code/blob/${finalAttrs.src.rev}/changes.txt";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ matthewcroughan ];
-    mainProgram = "ucblogo-code";
     platforms = lib.platforms.all;
+    mainProgram = "ucblogo-code";
   };
 })

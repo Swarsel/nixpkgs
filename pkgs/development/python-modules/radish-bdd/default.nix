@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   colorful,
   docopt,
-  fetchFromGitHub,
   freezegun,
   humanize,
   lxml,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "radish-bdd";
   version = "0.18.4";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = pname;
@@ -42,6 +41,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "radish" ];
 
   meta = {
@@ -49,6 +49,7 @@ buildPythonPackage rec {
     homepage = "https://radish-bdd.github.io/";
     changelog = "https://github.com/radish-bdd/radish/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       kalbasit
       l33tname

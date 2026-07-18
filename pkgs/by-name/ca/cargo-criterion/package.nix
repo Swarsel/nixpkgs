@@ -19,15 +19,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Cargo extension for running Criterion.rs benchmarks";
-    mainProgram = "cargo-criterion";
     homepage = "https://github.com/bheisler/cargo-criterion";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
+
     maintainers = with lib.maintainers; [
       humancalico
       matthiasbeyer
     ];
+
+    mainProgram = "cargo-criterion";
   };
 })

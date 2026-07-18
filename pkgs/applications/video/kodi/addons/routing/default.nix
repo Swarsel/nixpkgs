@@ -1,13 +1,12 @@
 {
   lib,
-  rel,
+  addonUpdateScript,
   buildKodiAddon,
   fetchzip,
-  addonUpdateScript,
+  rel,
 }:
 buildKodiAddon rec {
   pname = "routing";
-  namespace = "script.module.routing";
   version = "0.2.3+matrix.1";
 
   src = fetchzip {
@@ -15,16 +14,19 @@ buildKodiAddon rec {
     sha256 = "sha256-piPmY8Q3NyIeImmkYhDwmQhBiwwcV0X532xV1DogF+I=";
   };
 
+  namespace = "script.module.routing";
+
   passthru = {
     pythonPath = "lib";
+
     updateScript = addonUpdateScript {
       attrPath = "kodi.packages.routing";
     };
   };
 
   meta = {
-    homepage = "https://github.com/tamland/kodi-plugin-routing";
     description = "Routing module for kodi plugins";
+    homepage = "https://github.com/tamland/kodi-plugin-routing";
     license = lib.licenses.gpl3Plus;
     teams = [ lib.teams.kodi ];
   };

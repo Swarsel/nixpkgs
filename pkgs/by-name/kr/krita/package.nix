@@ -1,26 +1,25 @@
 {
-  symlinkJoin,
   krita-plugin-gmic,
+  krita-unwrapped,
+  symlinkJoin,
+  wrapGAppsHook3,
   binaryPlugins ? [
     # Default plugins provided by upstream appimage
     krita-plugin-gmic
   ],
-  krita-unwrapped,
-  wrapGAppsHook3,
 }:
 symlinkJoin {
-  pname = "krita";
   inherit (krita-unwrapped)
     version
     buildInputs
     meta
     ;
 
+  pname = "krita";
+
   nativeBuildInputs = krita-unwrapped.nativeBuildInputs ++ [
     wrapGAppsHook3
   ];
-
-  paths = [ krita-unwrapped ] ++ binaryPlugins;
 
   postBuild = ''
     gappsWrapperArgsHook
@@ -29,6 +28,8 @@ symlinkJoin {
       --prefix PYTHONPATH : "$PYTHONPATH" \
       --set KRITA_PLUGIN_PATH "$out/lib/kritaplugins"
   '';
+
+  paths = [ krita-unwrapped ] ++ binaryPlugins;
 
   passthru = {
     inherit binaryPlugins;

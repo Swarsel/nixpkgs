@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
   aiohttp,
-  yarl,
   aioresponses,
+  buildPythonPackage,
+  poetry-core,
   pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
+  yarl,
 }:
 
 buildPythonPackage rec {
   pname = "aiosolaredge";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bdraco";
@@ -23,15 +22,6 @@ buildPythonPackage rec {
     hash = "sha256-1RdkYcdhhU+MaP91iJ1tSrL0OlUi6Il1XBXnmRYhC7g=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    aiohttp
-    yarl
-  ];
-
-  pythonImportsCheck = [ "aiosolaredge" ];
-
   nativeCheckInputs = [
     aioresponses
     pytest-asyncio
@@ -39,10 +29,20 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    aiohttp
+    yarl
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "aiosolaredge" ];
+
   meta = {
-    changelog = "https://github.com/bdraco/aiosolaredge/blob/${src.tag}/CHANGELOG.md";
     description = "Asyncio SolarEdge API client";
     homepage = "https://github.com/bdraco/aiosolaredge";
+    changelog = "https://github.com/bdraco/aiosolaredge/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   nix-update-script,
   versionCheckHook,
@@ -19,19 +19,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-bxyYDCWQJZ+MrfV30Q3xBMggGU+F7Hs486g3BhQlDtI=";
   };
 
-  vendorHash = "sha256-jDp1WVETDbCtSq+v0BrIiTqoR2cnmI7JXdy5ydnt5wA=";
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-jDp1WVETDbCtSq+v0BrIiTqoR2cnmI7JXdy5ydnt5wA=";
 
   # go.mod requires 1.25.6 but nixpkgs has 1.25.5
   preBuild = ''
     substituteInPlace go.mod --replace-fail "go 1.25.6" "go 1.25.5"
   '';
-
-  ldflags = [
-    "-s"
-    "-X main.Version=v${finalAttrs.version}"
-  ];
 
   # Skip DNS test that fails in sandbox
   checkFlags = [ "-skip=^TestRenderWithDNS$" ];
@@ -43,10 +37,16 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/talm completion zsh)
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  ldflags = [
+    "-s"
+    "-X main.Version=v${finalAttrs.version}"
+  ];
 
   passthru.updateScript = nix-update-script { };
 

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -17,9 +17,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-Y32HdEk+9fftDP4cttn6r3GMq3YqeyXpsRaU5ApkGa4=";
-
-  subPackages = [ "cmd/bearer" ];
-
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
@@ -28,7 +26,7 @@ buildGoModule (finalAttrs: {
     "-X=github.com/bearer/bearer/cmd/bearer/build.Version=${finalAttrs.version}"
   ];
 
-  doInstallCheck = true;
+  subPackages = [ "cmd/bearer" ];
 
   meta = {
     description = "Code security scanning tool (SAST) to discover, filter and prioritize security and privacy risks";

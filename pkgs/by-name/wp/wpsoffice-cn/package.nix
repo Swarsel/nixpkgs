@@ -2,32 +2,32 @@
   lib,
   stdenv,
   fetchurl,
-  undmg,
-  autoPatchelfHook,
-  runCommandLocal,
-  curl,
-  coreutils,
-  cacert,
   # wpsoffice dependencies
   alsa-lib,
-  libjpeg,
-  libtool,
-  libxkbcommon,
-  nspr,
-  udev,
-  gtk3,
-  libgbm,
-  libusb1,
-  unixodbc,
-  libmysqlclient,
-  libsForQt5,
-  libxv,
-  libxtst,
-  libxdamage,
+  autoPatchelfHook,
+  cacert,
+  coreutils,
   # wpsoffice runtime dependencies
   cups,
+  curl,
   dbus,
+  gtk3,
+  libgbm,
+  libjpeg,
+  libmysqlclient,
+  libsForQt5,
+  libtool,
+  libusb1,
+  libxdamage,
+  libxkbcommon,
+  libxtst,
+  libxv,
+  nspr,
   pango,
+  runCommandLocal,
+  udev,
+  undmg,
+  unixodbc,
 }:
 
 let
@@ -40,21 +40,20 @@ let
       fetchurl
     else
       {
-        url,
         hash,
+        url,
       }:
       runCommandLocal "wpsoffice-cn-${version}.deb"
         {
-          outputHashAlgo = "sha256";
-          outputHash = hash;
-
           nativeBuildInputs = [
             curl
             coreutils
           ];
 
-          impureEnvVars = lib.fetchers.proxyImpureEnvVars;
           SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
+          impureEnvVars = lib.fetchers.proxyImpureEnvVars;
+          outputHash = hash;
+          outputHashAlgo = "sha256";
         }
         ''
           readonly SECURITY_KEY="7f8faaaa468174dc1c9cd62e5f218a5b"
@@ -77,13 +76,9 @@ let
   meta = {
     description = "Office suite, formerly Kingsoft Office";
     homepage = "https://www.wps.cn";
-    platforms = [
-      "aarch64-darwin"
-      "x86_64-linux"
-    ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    hydraPlatforms = [ ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       mlatus
       th0rgal
@@ -91,6 +86,13 @@ let
       pokon548
       chillcicada
     ];
+
+    platforms = [
+      "aarch64-darwin"
+      "x86_64-linux"
+    ];
+
+    hydraPlatforms = [ ];
   }
   // lib.optionalAttrs stdenv.hostPlatform.isLinux {
     changelog = "https://linux.wps.cn/wpslinuxlog";
@@ -109,7 +111,6 @@ if stdenv.hostPlatform.isDarwin then
       ;
 
     nativeBuildInputs = [ undmg ];
-    sourceRoot = ".";
 
     installPhase = ''
       runHook preInstall
@@ -119,6 +120,8 @@ if stdenv.hostPlatform.isDarwin then
 
       runHook postInstall
     '';
+
+    sourceRoot = ".";
   }
 
 else
@@ -150,28 +153,6 @@ else
       libxv
     ];
 
-    dontWrapQtApps = true;
-
-    stripAllList = [ "opt" ];
-
-    runtimeDependencies = map lib.getLib [
-      cups
-      dbus
-      pango
-    ];
-
-    unpackPhase = ''
-      # Unpack the .deb file
-      ar x $src
-      tar -xf data.tar.xz
-
-      # Remove unneeded files
-      rm -rf usr/share/{fonts,locale,templates}
-      rm -f usr/bin/misc
-      rm -rf opt/kingsoft/wps-office/{desktops,INSTALL,templates}
-      rm -f opt/kingsoft/wps-office/office6/lib{peony-wpsprint-menu-plugin,bz2,jpeg,stdc++,gcc_s,odbc*,dbus-1}.so*
-    '';
-
     installPhase = ''
       runHook preInstall
 
@@ -199,5 +180,27 @@ else
       # libmysqlclient dependency
       patchelf --replace-needed libmysqlclient.so.18 libmysqlclient.so $out/opt/kingsoft/wps-office/office6/libFontWatermark.so
       patchelf --add-rpath ${libmysqlclient}/lib/mariadb $out/opt/kingsoft/wps-office/office6/libFontWatermark.so
+    '';
+
+    dontWrapQtApps = true;
+
+    runtimeDependencies = map lib.getLib [
+      cups
+      dbus
+      pango
+    ];
+
+    stripAllList = [ "opt" ];
+
+    unpackPhase = ''
+      # Unpack the .deb file
+      ar x $src
+      tar -xf data.tar.xz
+
+      # Remove unneeded files
+      rm -rf usr/share/{fonts,locale,templates}
+      rm -f usr/bin/misc
+      rm -rf opt/kingsoft/wps-office/{desktops,INSTALL,templates}
+      rm -f opt/kingsoft/wps-office/office6/lib{peony-wpsprint-menu-plugin,bz2,jpeg,stdc++,gcc_s,odbc*,dbus-1}.so*
     '';
   }

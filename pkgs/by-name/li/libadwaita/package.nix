@@ -2,46 +2,41 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  adwaita-icon-theme,
+  appstream,
+  desktop-file-utils,
+  fribidi,
   gi-docgen,
+  glib,
+  gnome,
+  gobject-introspection,
+  gsettings-desktop-schemas,
+  gtk4,
   meson,
   ninja,
   pkg-config,
   sassc,
-  vala,
-  gobject-introspection,
-  appstream,
-  fribidi,
-  glib,
-  gtk4,
-  gnome,
-  adwaita-icon-theme,
-  gsettings-desktop-schemas,
-  desktop-file-utils,
-  xvfb-run,
   testers,
+  vala,
+  xvfb-run,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libadwaita";
   version = "1.9.1";
 
-  outputs = [
-    "out"
-    "dev"
-    "devdoc"
-  ];
-  outputBin = "devdoc"; # demo app
-
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "GNOME";
     repo = "libadwaita";
     tag = finalAttrs.version;
     hash = "sha256-Oy3WcsymNbbmAacm5hEOrorI1wKXjSp063mh4jCJRAE=";
+    domain = "gitlab.gnome.org";
   };
 
-  depsBuildBuild = [
-    pkg-config
+  outputs = [
+    "out"
+    "dev"
+    "devdoc"
   ];
 
   nativeBuildInputs = [
@@ -55,13 +50,6 @@ stdenv.mkDerivation (finalAttrs: {
     desktop-file-utils # for validate-desktop-file
   ];
 
-  mesonFlags = [
-    "-Ddocumentation=true"
-  ]
-  ++ lib.optionals (!finalAttrs.finalPackage.doCheck) [
-    "-Dtests=false"
-  ];
-
   buildInputs = [
     appstream
     fribidi
@@ -71,11 +59,11 @@ stdenv.mkDerivation (finalAttrs: {
     gtk4
   ];
 
-  nativeCheckInputs = [
-    adwaita-icon-theme
+  mesonFlags = [
+    "-Ddocumentation=true"
   ]
-  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
-    xvfb-run
+  ++ lib.optionals (!finalAttrs.finalPackage.doCheck) [
+    "-Dtests=false"
   ];
 
   # Tests had to be disabled on Darwin because test-button-content fails
@@ -83,7 +71,13 @@ stdenv.mkDerivation (finalAttrs: {
   # not ok /Adwaita/ButtonContent/style_class_button - Gdk-FATAL-CRITICAL:
   # gdk_macos_monitor_get_workarea: assertion 'GDK_IS_MACOS_MONITOR (self)' failed
   doCheck = !stdenv.hostPlatform.isDarwin;
-  separateDebugInfo = true;
+
+  nativeCheckInputs = [
+    adwaita-icon-theme
+  ]
+  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
+    xvfb-run
+  ];
 
   checkPhase = ''
     runHook preCheck
@@ -118,24 +112,32 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
+  outputBin = "devdoc"; # demo app
+  separateDebugInfo = true;
+
   passthru = {
-    updateScript = gnome.updateScript {
-      packageName = finalAttrs.pname;
-    };
     tests.pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
+    };
+
+    updateScript = gnome.updateScript {
+      packageName = finalAttrs.pname;
     };
   };
 
   meta = {
-    changelog = "https://gitlab.gnome.org/GNOME/libadwaita/-/blob/${finalAttrs.src.tag}/NEWS";
     description = "Library to help with developing UI for mobile devices using GTK/GNOME";
-    mainProgram = "adwaita-1-demo";
     homepage = "https://gitlab.gnome.org/GNOME/libadwaita";
+    changelog = "https://gitlab.gnome.org/GNOME/libadwaita/-/blob/${finalAttrs.src.tag}/NEWS";
     license = lib.licenses.lgpl21Plus;
     maintainers = with lib.maintainers; [ dotlambda ];
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.unix;
+    mainProgram = "adwaita-1-demo";
     pkgConfigModules = [ "libadwaita-1" ];
+    teams = [ lib.teams.gnome ];
   };
 })

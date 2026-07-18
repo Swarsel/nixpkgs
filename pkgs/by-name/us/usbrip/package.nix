@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "usbrip";
   version = "0-unstable-2021-07-02";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "snovvcrash";
@@ -23,6 +22,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       --replace-fail "'install': LocalInstallCommand," ""
   '';
 
+  # Project has no tests
+  doCheck = false;
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -31,9 +32,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tqdm
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "usbrip" ];
 
   meta = {
@@ -41,7 +40,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     homepage = "https://github.com/snovvcrash/usbrip";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ fab ];
-    mainProgram = "usbrip";
     platforms = lib.platforms.linux;
+    mainProgram = "usbrip";
   };
 })

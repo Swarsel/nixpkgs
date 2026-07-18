@@ -10,8 +10,8 @@ let
   inherit (buildPackages.buildPackages) ocamlPackages;
 in
 stdenv.mkDerivation {
-  pname = "dune";
   inherit version;
+  pname = "dune";
 
   src = fetchurl {
     url =
@@ -19,31 +19,30 @@ stdenv.mkDerivation {
         sfx = lib.optionalString (lib.versions.major version == "2") "site-";
       in
       "https://github.com/ocaml/dune/releases/download/${version}/dune-${sfx}${version}.tbz";
+
     hash =
       {
-        "3.23.1" = "sha256-k7TnFX9rqP62HPxfhgCO/SxZA3unigF9krSr8wYyNI8=";
-        "3.22.2" = "sha256-wsz4vGsXr6R8RQKXNXSWMDqnyGgOMpt52Yxo41AToRg=";
-        "3.21.1" = "sha256-hPeoLG2ApxJPOEfppInoDPvq+3vtNXOsAShu9W/QjZQ=";
         "2.9.3" = "sha256:1ml8bxym8sdfz25bx947al7cvsi2zg5lcv7x9w6xb01cmdryqr9y";
+        "3.21.1" = "sha256-hPeoLG2ApxJPOEfppInoDPvq+3vtNXOsAShu9W/QjZQ=";
+        "3.22.2" = "sha256-wsz4vGsXr6R8RQKXNXSWMDqnyGgOMpt52Yxo41AToRg=";
+        "3.23.1" = "sha256-k7TnFX9rqP62HPxfhgCO/SxZA3unigF9krSr8wYyNI8=";
       }
       ."${version}";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = with ocamlPackages; [
     ocaml
     findlib
   ];
 
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
-
-  strictDeps = true;
-  __structuredAttrs = true;
-
   buildFlags = [ "release" ];
-
+  __structuredAttrs = true;
+  configurePlatforms = [ ];
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
   dontAddPrefix = true;
   dontAddStaticConfigureFlags = true;
-  configurePlatforms = [ ];
 
   installFlags = [
     "PREFIX=${placeholder "out"}"
@@ -55,12 +54,12 @@ stdenv.mkDerivation {
   };
 
   meta = {
-    homepage = "https://dune.build/";
-    description = "Composable build system";
-    mainProgram = "dune";
-    changelog = "https://github.com/ocaml/dune/raw/${version}/CHANGES.md";
-    maintainers = [ lib.maintainers.vbgl ];
-    license = lib.licenses.mit;
     inherit (ocamlPackages.ocaml.meta) platforms;
+    description = "Composable build system";
+    homepage = "https://dune.build/";
+    changelog = "https://github.com/ocaml/dune/raw/${version}/CHANGES.md";
+    license = lib.licenses.mit;
+    maintainers = [ lib.maintainers.vbgl ];
+    mainProgram = "dune";
   };
 }

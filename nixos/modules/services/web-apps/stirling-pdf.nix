@@ -11,10 +11,21 @@ in
 {
   options.services.stirling-pdf = {
     enable = lib.mkEnableOption "the stirling-pdf service";
-
     package = lib.mkPackageOption pkgs "stirling-pdf" { };
 
     environment = lib.mkOption {
+      default = { };
+
+      description = ''
+        Environment variables for the stirling-pdf app.
+        See <https://github.com/Stirling-Tools/Stirling-PDF#customisation> for available options.
+      '';
+
+      example = {
+        INSTALL_BOOK_AND_ADVANCED_HTML_OPS = true;
+        SERVER_PORT = 8080;
+      };
+
       type = lib.types.attrsOf (
         lib.types.oneOf [
           lib.types.str
@@ -22,24 +33,17 @@ in
           lib.types.bool
         ]
       );
-      default = { };
-      example = {
-        SERVER_PORT = 8080;
-        INSTALL_BOOK_AND_ADVANCED_HTML_OPS = true;
-      };
-      description = ''
-        Environment variables for the stirling-pdf app.
-        See <https://github.com/Stirling-Tools/Stirling-PDF#customisation> for available options.
-      '';
     };
 
     environmentFiles = lib.mkOption {
-      type = lib.types.listOf lib.types.path;
       default = [ ];
+
       description = ''
         Files containing additional environment variables to pass to Stirling PDF.
         Secrets should be added in environmentFiles instead of environment.
       '';
+
+      type = lib.types.listOf lib.types.path;
     };
   };
 
@@ -74,23 +78,15 @@ in
         ]
         ++ lib.optional (cfg.environment.INSTALL_BOOK_AND_ADVANCED_HTML_OPS or "false" == "true") calibre;
 
-      wantedBy = [ "multi-user.target" ];
-
       serviceConfig = {
         BindReadOnlyPaths = [ "${pkgs.tesseract}/share/tessdata:/usr/share/tessdata" ];
         CacheDirectory = "stirling-pdf";
-        Environment = [ "HOME=%S/stirling-pdf" ];
-        EnvironmentFile = cfg.environmentFiles;
-        ExecStart = lib.getExe cfg.package;
-        RuntimeDirectory = "stirling-pdf";
-        StateDirectory = "stirling-pdf";
-        SuccessExitStatus = 143;
-        User = "stirling-pdf";
-        WorkingDirectory = "/var/lib/stirling-pdf";
-
         # Hardening
         CapabilityBoundingSet = "";
         DynamicUser = true;
+        Environment = [ "HOME=%S/stirling-pdf" ];
+        EnvironmentFile = cfg.environmentFiles;
+        ExecStart = lib.getExe cfg.package;
         LockPersonality = true;
         NoNewPrivileges = true;
         PrivateDevices = true;
@@ -104,19 +100,30 @@ in
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
           "AF_UNIX"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
+        RuntimeDirectory = "stirling-pdf";
+        StateDirectory = "stirling-pdf";
+        SuccessExitStatus = 143;
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "~@cpu-emulation @debug @keyring @mount @obsolete @privileged @clock @setuid @chown"
         ];
+
         UMask = "0077";
+        User = "stirling-pdf";
+        WorkingDirectory = "/var/lib/stirling-pdf";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

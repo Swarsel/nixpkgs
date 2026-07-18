@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "xdxf2html";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -17,7 +16,7 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "xdxf2html" ];
 
   meta = {

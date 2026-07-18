@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "rfc3986";
   version = "2.0.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -17,9 +16,8 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ idna ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "rfc3986" ];
 
   meta = {

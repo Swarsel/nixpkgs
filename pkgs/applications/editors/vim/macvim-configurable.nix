@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  callPackage,
-  vimUtils,
   buildEnv,
+  callPackage,
   makeWrapper,
+  vimUtils,
 }:
 
 let
@@ -33,15 +33,8 @@ let
               };
             in
             buildEnv {
-              name = macvim.name;
-              paths = [ macvim ];
-              pathsToLink = [
-                "/"
-                "/bin"
-                "/Applications/MacVim.app/Contents/MacOS"
-                "/Applications/MacVim.app/Contents/bin"
-              ];
               nativeBuildInputs = [ makeWrapper ];
+
               # We need to do surgery on the resulting app. We can't just make a wrapper for vim because this
               # is a GUI app. We need to copy the actual GUI executable image as AppKit uses the loaded image's
               # path to locate the bundle. We can use symlinks for other executables and resources though.
@@ -67,6 +60,17 @@ let
                   done
                 done
               '';
+
+              name = macvim.name;
+              paths = [ macvim ];
+
+              pathsToLink = [
+                "/"
+                "/bin"
+                "/Applications/MacVim.app/Contents/MacOS"
+                "/Applications/MacVim.app/Contents/bin"
+              ];
+
               meta = macvim.meta;
             };
         in

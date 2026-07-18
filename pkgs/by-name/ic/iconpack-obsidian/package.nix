@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  gtk3,
   gnome-icon-theme,
-  mint-x-icons,
+  gtk3,
   hicolor-icon-theme,
+  mint-x-icons,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -26,9 +26,6 @@ stdenvNoCC.mkDerivation rec {
     mint-x-icons
     hicolor-icon-theme
   ];
-  # still missing parent themes: Ambient-MATE, Faenza-Dark, KFaenza
-
-  dontDropIconThemeCache = true;
 
   installPhase = ''
     runHook preInstall
@@ -55,12 +52,15 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  # still missing parent themes: Ambient-MATE, Faenza-Dark, KFaenza
+  dontDropIconThemeCache = true;
+
   meta = {
     description = "Gnome icon pack based upon Faenza";
     homepage = "https://github.com/madmaxms/iconpack-obsidian";
     license = lib.licenses.gpl3Only;
+    maintainers = [ lib.maintainers.romildo ];
     # darwin cannot deal with file names differing only in case
     platforms = lib.platforms.linux;
-    maintainers = [ lib.maintainers.romildo ];
   };
 }

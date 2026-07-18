@@ -3,50 +3,62 @@
   auth = {
     password = null;
   };
+
   binaries = {
     ffmpeg = "ffmpeg";
     ffprobe = "ffprobe";
-    izzyPort = 8000;
+
     imagemagick = {
       convertPath = "convert";
-      montagePath = "montage";
       identifyPath = "identify";
+      montagePath = "montage";
     };
+
+    izzyPort = 8000;
   };
+
   import = {
     images = [
       {
-        path = "/media/porn-vault/images";
-        include = [ ];
+        enable = true;
         exclude = [ ];
+
         extensions = [
           ".jpg"
           ".jpeg"
           ".png"
           ".gif"
         ];
-        enable = true;
+
+        include = [ ];
+        path = "/media/porn-vault/images";
       }
     ];
+
+    scanInterval = 10800000;
+
     videos = [
       {
-        path = "/media/porn-vault/videos";
-        include = [ ];
+        enable = true;
         exclude = [ ];
+
         extensions = [
           ".mp4"
           ".mov"
           ".webm"
         ];
-        enable = true;
+
+        include = [ ];
+        path = "/media/porn-vault/videos";
       }
     ];
-    scanInterval = 10800000;
   };
+
   log = {
     level = "debug";
-    maxSize = "20m";
     maxFiles = "5";
+    maxSize = "20m";
+
     writeFile = [
       {
         level = "debug";
@@ -55,6 +67,7 @@
       }
     ];
   };
+
   matching = {
     applyActorLabels = [
       "event:actor:create"
@@ -66,7 +79,9 @@
       "plugin:marker:create"
       "event:marker:create"
     ];
+
     applySceneLabels = true;
+
     applyStudioLabels = [
       "event:studio:create"
       "event:studio:find-unmatched-scenes"
@@ -74,41 +89,51 @@
       "event:scene:create"
       "plugin:scene:create"
     ];
+
     extractSceneActorsFromFilepath = true;
     extractSceneLabelsFromFilepath = true;
     extractSceneMoviesFromFilepath = true;
     extractSceneStudiosFromFilepath = true;
+    matchCreatedActors = true;
+    matchCreatedLabels = true;
+    matchCreatedStudios = true;
+
     matcher = {
-      type = "word";
       options = {
-        ignoreSingleNames = false;
-        ignoreDiacritics = true;
-        enableWordGroups = true;
-        wordSeparatorFallback = true;
         camelCaseWordGroups = true;
-        overlappingMatchPreference = "longest";
-        groupSeparators = [
-          "[\\s',()[\\]{}*\\.]"
-        ];
-        wordSeparators = [
-          "[-_]"
-        ];
+        enableWordGroups = true;
+
         filepathSeparators = [
           "[/\\\\&]"
         ];
+
+        groupSeparators = [
+          "[\\s',()[\\]{}*\\.]"
+        ];
+
+        ignoreDiacritics = true;
+        ignoreSingleNames = false;
+        overlappingMatchPreference = "longest";
+        wordSeparatorFallback = true;
+
+        wordSeparators = [
+          "[-_]"
+        ];
       };
+
+      type = "word";
     };
-    matchCreatedActors = true;
-    matchCreatedStudios = true;
-    matchCreatedLabels = true;
   };
+
   persistence = {
     backup = {
       enable = true;
       maxAmount = 10;
     };
+
     libraryPath = "/media/porn-vault/lib";
   };
+
   plugins = {
     allowActorThumbnailOverwrite = false;
     allowMovieThumbnailOverwrite = false;
@@ -118,41 +143,48 @@
     createMissingLabels = false;
     createMissingMovies = false;
     createMissingStudios = false;
+
     events = {
       actorCreated = [ ];
       actorCustom = [ ];
+      movieCustom = [ ];
       sceneCreated = [ ];
       sceneCustom = [ ];
-      movieCustom = [ ];
       studioCreated = [ ];
       studioCustom = [ ];
     };
-    register = { };
+
     markerDeduplicationThreshold = 5;
+    register = { };
   };
+
   processing = {
+    generateImageThumbnails = true;
     generatePreviews = true;
     readImagesOnImport = false;
-    generateImageThumbnails = true;
   };
+
   server = {
     https = {
-      certificate = "";
       enable = false;
+      certificate = "";
       key = "";
     };
   };
+
   transcode = {
+    h264 = {
+      crf = 23;
+      preset = "veryfast";
+    };
+
     hwaDriver = null;
     vaapiDevice = "/dev/dri/renderD128";
-    h264 = {
-      preset = "veryfast";
-      crf = 23;
-    };
+
     webm = {
-      deadline = "realtime";
       cpuUsed = 3;
       crf = 31;
+      deadline = "realtime";
     };
   };
 }

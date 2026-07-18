@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "mcp-server-time";
   version = "2026.7.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "modelcontextprotocol";
@@ -16,7 +15,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-rBdJoTC1wOEMbAAeSccFqaHL7lacf2SFfxZ/pp2Lx90=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/src/time/";
+  nativeCheckInputs = with python3Packages; [
+    freezegun
+    pytestCheckHook
+  ];
 
   build-system = with python3Packages; [
     hatchling
@@ -29,20 +31,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tzlocal
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    freezegun
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mcp_server_time" ];
+  sourceRoot = "${finalAttrs.src.name}/src/time/";
 
   meta = {
-    changelog = "https://github.com/modelcontextprotocol/servers/releases/tag/${finalAttrs.version}";
     description = "Model Context Protocol server providing tools for time queries and timezone conversions for LLMs";
     homepage = "https://github.com/modelcontextprotocol/servers";
+    changelog = "https://github.com/modelcontextprotocol/servers/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ drupol ];
-    mainProgram = "mcp-server-time";
     platforms = lib.platforms.all;
+    mainProgram = "mcp-server-time";
   };
 })

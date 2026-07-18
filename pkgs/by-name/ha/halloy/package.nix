@@ -2,9 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  alsa-lib,
   copyDesktopItems,
-  makeDesktopItem,
+  libx11,
+  libxcb,
+  libxcursor,
+  libxi,
   libxkbcommon,
+  makeDesktopItem,
   makeWrapper,
   nix-update-script,
   openssl,
@@ -12,11 +17,6 @@
   rustPlatform,
   vulkan-loader,
   wayland,
-  libxi,
-  libxcursor,
-  libx11,
-  libxcb,
-  alsa-lib,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -29,8 +29,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-+qFHwlwRxVN4W9DG+gY5N6um+JARD+3EiLlsD7R9Tpc=";
   };
-
-  cargoHash = "sha256-/nFtOJXpusIlc7orGv013qzad8fdfQr32c8DAlccHIA=";
 
   nativeBuildInputs = [
     copyDesktopItems
@@ -52,44 +50,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libxcb
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "org.squidowl.halloy";
-      desktopName = "Halloy";
-      comment = "IRC client written in Rust";
-      icon = "org.squidowl.halloy";
-      exec = finalAttrs.meta.mainProgram;
-      terminal = false;
-      mimeTypes = [
-        "x-scheme-handler/irc"
-        "x-scheme-handler/ircs"
-        "x-scheme-handler/halloy"
-      ];
-      categories = [
-        "Network"
-        "IRCClient"
-      ];
-      keywords = [
-        "IM"
-        "Chat"
-      ];
-      startupWMClass = "org.squidowl.halloy";
-    })
-  ];
-
-  postFixup = lib.optional stdenv.hostPlatform.isLinux (
-    let
-      rpathWayland = lib.makeLibraryPath [
-        wayland
-        vulkan-loader
-        libxkbcommon
-      ];
-    in
-    ''
-      rpath=$(patchelf --print-rpath $out/bin/halloy)
-      patchelf --set-rpath "$rpath:${rpathWayland}" $out/bin/halloy
-    ''
-  );
+  cargoHash = "sha256-/nFtOJXpusIlc7orGv013qzad8fdfQr32c8DAlccHIA=";
 
   postInstall = ''
     install -Dm644 assets/linux/icons/hicolor/128x128/apps/org.squidowl.halloy.png \
@@ -108,6 +69,49 @@ rustPlatform.buildRustPackage (finalAttrs: {
     makeWrapper "$out/bin/halloy" "$APP_DIR/MacOS/halloy"
   '';
 
+  postFixup = lib.optional stdenv.hostPlatform.isLinux (
+    let
+      rpathWayland = lib.makeLibraryPath [
+        wayland
+        vulkan-loader
+        libxkbcommon
+      ];
+    in
+    ''
+      rpath=$(patchelf --print-rpath $out/bin/halloy)
+      patchelf --set-rpath "$rpath:${rpathWayland}" $out/bin/halloy
+    ''
+  );
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Network"
+        "IRCClient"
+      ];
+
+      comment = "IRC client written in Rust";
+      desktopName = "Halloy";
+      exec = finalAttrs.meta.mainProgram;
+      icon = "org.squidowl.halloy";
+
+      keywords = [
+        "IM"
+        "Chat"
+      ];
+
+      mimeTypes = [
+        "x-scheme-handler/irc"
+        "x-scheme-handler/ircs"
+        "x-scheme-handler/halloy"
+      ];
+
+      name = "org.squidowl.halloy";
+      startupWMClass = "org.squidowl.halloy";
+      terminal = false;
+    })
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -115,11 +119,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/squidowl/halloy";
     changelog = "https://github.com/squidowl/halloy/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       fab
       iivusly
       ivyfanchiang
     ];
+
     mainProgram = "halloy";
   };
 })

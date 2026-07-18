@@ -1,13 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   httpx,
   pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
   sse-starlette,
   starlette,
 }:
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "httpx-sse";
   version = "0.4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "florimondmanca";
@@ -24,15 +23,6 @@ buildPythonPackage rec {
     hash = "sha256-6DPbfJlbLmws9GkQ2zePGp4g0at4M32vrIDtmUPDkX4=";
   };
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  dependencies = [ httpx ];
-
-  pythonImportsCheck = [ "httpx_sse" ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-cov-stub
@@ -40,6 +30,15 @@ buildPythonPackage rec {
     sse-starlette
     starlette
   ];
+
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [ httpx ];
+  pyproject = true;
+  pythonImportsCheck = [ "httpx_sse" ];
 
   meta = {
     description = "Consume Server-Sent Event (SSE) messages with HTTPX";

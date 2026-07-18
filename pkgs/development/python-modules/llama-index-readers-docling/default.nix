@@ -1,8 +1,8 @@
 {
   lib,
   buildPythonPackage,
-  docling-core,
   docling,
+  docling-core,
   fetchPypi,
   hatchling,
   llama-index-core,
@@ -12,14 +12,15 @@
 buildPythonPackage rec {
   pname = "llama-index-readers-docling";
   version = "0.4.2";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "llama_index_readers_docling";
     inherit version;
     hash = "sha256-mOZtVcvbWkri9SZeWAfGxjgKS9J8uF3sk/O/ydQgj+s=";
+    pname = "llama_index_readers_docling";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -29,10 +30,8 @@ buildPythonPackage rec {
     numpy
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "llama_index.readers.docling" ];
-
-  # Module has no tests
-  doCheck = false;
 
   meta = {
     description = "Llama-index readers docling integration";

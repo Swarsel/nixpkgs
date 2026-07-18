@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
   unstableGitUpdater,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "yapsy";
   version = "1.12.2-unstable-2023-03-28";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tibonihoo";
@@ -19,21 +18,19 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-QKZlUAhYMCCsT/jbEHb39ESZ2+2FZYnhJnc1PgsozBA=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/package";
-
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "yapsy" ];
+  sourceRoot = "${finalAttrs.src.name}/package";
 
   passthru.updateScript = unstableGitUpdater {
     tagPrefix = "release_Yapsy-";
   };
 
   meta = {
-    homepage = "https://yapsy.sourceforge.net/";
     description = "Yet another plugin system";
+    homepage = "https://yapsy.sourceforge.net/";
     license = lib.licenses.bsd2;
   };
 })

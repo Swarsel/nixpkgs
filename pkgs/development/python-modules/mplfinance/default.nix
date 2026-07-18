@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "mplfinance";
   version = "0.12.10b0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -24,7 +23,7 @@ buildPythonPackage rec {
   # tests are only included on GitHub where this version misses a tag
   # and half of them fail
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "mplfinance" ];
 
   meta = {

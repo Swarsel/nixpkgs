@@ -1,34 +1,30 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  cython,
-  setuptools,
-
   # dependencies
   aiohappyeyeballs,
   async-interrupt,
+  buildPythonPackage,
   chacha20poly1305-reuseable,
   cryptography,
+  # build-system
+  cython,
+  # tests
+  mock,
   noiseprotocol,
   protobuf,
+  pytest-asyncio,
+  pytestCheckHook,
+  setuptools,
   tzdata,
   tzlocal,
   zeroconf,
-
-  # tests
-  mock,
-  pytest-asyncio,
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "aioesphomeapi";
   version = "45.3.1"; # must track the major version that home-assistant pins
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "esphome";
@@ -43,14 +39,21 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "Cython>=3.2.5" Cython
   '';
 
+  # Lack of network sandboxing leads to conflicting listeners when testing
+  # this package e.g. in nixpkgs-review on the two suppoted python package sets.
+  doCheck = !stdenv.hostPlatform.isDarwin;
+
+  nativeCheckInputs = [
+    mock
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
+
   build-system = [
     setuptools
     cython
-  ];
-
-  pythonRelaxDeps = [
-    "aiohappyeyeballs"
-    "cryptography"
   ];
 
   dependencies = [
@@ -65,30 +68,25 @@ buildPythonPackage (finalAttrs: {
     zeroconf
   ];
 
-  nativeCheckInputs = [
-    mock
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
-  # Lack of network sandboxing leads to conflicting listeners when testing
-  # this package e.g. in nixpkgs-review on the two suppoted python package sets.
-  doCheck = !stdenv.hostPlatform.isDarwin;
-
   disabledTestPaths = [
     # benchmarking requires pytest-codespeed
     "tests/benchmarks"
   ];
 
-  __darwinAllowLocalNetworking = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "aioesphomeapi" ];
+
+  pythonRelaxDeps = [
+    "aiohappyeyeballs"
+    "cryptography"
+  ];
 
   meta = {
     description = "Python Client for ESPHome native API";
     homepage = "https://github.com/esphome/aioesphomeapi";
     changelog = "https://github.com/esphome/aioesphomeapi/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       fab
       hexa

@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
+  fontforge,
   google-fonts,
   migu,
-  fontforge,
   which,
 }:
 
@@ -16,14 +16,6 @@ stdenv.mkDerivation rec {
     url = "https://rictyfonts.github.io/files/ricty_generator-${version}.sh";
     sha256 = "03fngb8f5hl7ifigdm5yljhs4z2x80cq8y8kna86d07ghknhzgw6";
   };
-
-  unpackPhase = ''
-    install -m 0770 $src ricty_generator.sh
-  '';
-
-  patchPhase = ''
-    sed -i 's/fonts_directories=".*"/fonts_directories="$inconsolata $migu"/' ricty_generator.sh
-  '';
 
   buildInputs = [
     google-fonts
@@ -38,6 +30,14 @@ stdenv.mkDerivation rec {
 
   installPhase = ''
     install -m644 --target $out/share/fonts/truetype/ricty -D Ricty-*.ttf
+  '';
+
+  patchPhase = ''
+    sed -i 's/fonts_directories=".*"/fonts_directories="$inconsolata $migu"/' ricty_generator.sh
+  '';
+
+  unpackPhase = ''
+    install -m 0770 $src ricty_generator.sh
   '';
 
   meta = {

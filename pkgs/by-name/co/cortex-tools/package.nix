@@ -1,12 +1,12 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  gitUpdater,
-  versionCheckHook,
-  installShellFiles,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  gitUpdater,
+  installShellFiles,
   nix-update-script,
+  versionCheckHook,
 }:
 buildGoModule (finalAttrs: {
   pname = "cortex-tools";
@@ -19,28 +19,10 @@ buildGoModule (finalAttrs: {
     hash = "sha256-+GWUC+lnCn5Nw2WytSvW/UsIMmMelCCsnKdBCHuue24=";
   };
 
-  vendorHash = null;
-
-  subPackages = [
-    "cmd/benchtool"
-    "cmd/cortextool"
-    "cmd/e2ealerting"
-    "cmd/logtool"
-  ];
-
-  env.CGO_ENABLED = 0;
-
-  ldflags = [
-    "-X github.com/grafana-cold-storage/cortex-tools/pkg/version.Version=${finalAttrs.src.tag}"
-    "-s"
-    "-w"
-  ];
-
-  doCheck = true;
-
-  passthru.updateScript = nix-update-script { };
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = null;
+  env.CGO_ENABLED = 0;
+  doCheck = true;
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd cortextool \
@@ -57,11 +39,25 @@ buildGoModule (finalAttrs: {
     versionCheckHook
   ];
 
+  ldflags = [
+    "-X github.com/grafana-cold-storage/cortex-tools/pkg/version.Version=${finalAttrs.src.tag}"
+    "-s"
+    "-w"
+  ];
+
+  subPackages = [
+    "cmd/benchtool"
+    "cmd/cortextool"
+    "cmd/e2ealerting"
+    "cmd/logtool"
+  ];
+
   versionCheckProgramArg = "version";
+  passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/grafana-cold-storage/cortex-tools/releases/tag/${finalAttrs.src.tag}";
     description = "Tools used for interacting with Cortex, a Prometheus-compatible server";
+
     longDescription = ''
       Tools used for interacting with Cortex, a horizontally scalable, highly available, multi-tenant, long term Prometheus server:
 
@@ -70,10 +66,12 @@ buildGoModule (finalAttrs: {
       - logtool: Tool which parses Cortex query-frontend logs and formats them for easy analysis.
       - e2ealerting: Tool that helps measure how long an alert takes from scrape of sample to Alertmanager notification delivery.
     '';
+
     homepage = "https://github.com/grafana-cold-storage/cortex-tools";
+    changelog = "https://github.com/grafana-cold-storage/cortex-tools/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux ++ lib.platforms.windows ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ videl ];
+    platforms = lib.platforms.linux ++ lib.platforms.windows ++ lib.platforms.darwin;
     mainProgram = "cortextool";
   };
 })

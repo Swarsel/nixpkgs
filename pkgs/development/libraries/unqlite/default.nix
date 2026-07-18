@@ -19,8 +19,8 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [ cmake ];
 
   meta = {
-    homepage = "https://unqlite.org/";
     description = "Self-contained, serverless, zero-conf, transactional NoSQL DB library";
+
     longDescription = ''
       UnQLite is a in-process software library which implements a
       self-contained, serverless, zero-configuration, transactional NoSQL
@@ -36,7 +36,9 @@ stdenv.mkDerivation rec {
       freely copy a database between 32-bit and 64-bit systems or between
       big-endian and little-endian architectures.
     '';
-    maintainers = [ ];
+
+    homepage = "https://unqlite.org/";
     license = lib.licenses.bsd2;
+    maintainers = [ ];
   };
 }

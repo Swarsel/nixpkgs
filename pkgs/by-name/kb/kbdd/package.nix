@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  dbus-glib,
   autoreconfHook,
+  dbus-glib,
   libx11,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -23,6 +23,7 @@ stdenv.mkDerivation {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     libx11
     dbus-glib
@@ -32,8 +33,8 @@ stdenv.mkDerivation {
     description = "Simple daemon and library to make per window layout using XKB";
     homepage = "https://github.com/qnikst/kbdd";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "kbdd";
   };
 }

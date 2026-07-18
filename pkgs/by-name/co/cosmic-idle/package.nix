@@ -5,13 +5,13 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  libcosmicAppHook,
-  just,
   bash,
+  just,
+  libcosmicAppHook,
   nix-update-script,
   nixosTests,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -30,16 +30,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     substituteInPlace src/main.rs --replace-fail '"/bin/sh"' '"${lib.getExe' bash "sh"}"'
   '';
 
-  cargoHash = "sha256-wAjFC6qAC3nllbnZf0KVaZTEztNYo6GTvwcp5FYmXLw=";
-
-  separateDebugInfo = true;
-  __structuredAttrs = true;
-
   nativeBuildInputs = [
     just
     libcosmicAppHook
   ];
 
+  cargoHash = "sha256-wAjFC6qAC3nllbnZf0KVaZTEztNYo6GTvwcp5FYmXLw=";
+  __structuredAttrs = true;
   dontUseJustBuild = true;
   dontUseJustCheck = true;
 
@@ -51,6 +48,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "cargo-target-dir"
     "target/${stdenv.hostPlatform.rust.cargoShortTarget}"
   ];
+
+  separateDebugInfo = true;
 
   passthru = {
     tests = {
@@ -74,9 +73,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Idle daemon for the COSMIC Desktop Environment";
     homepage = "https://github.com/pop-os/cosmic-idle";
     license = lib.licenses.gpl3Only;
+    sourceProvenance = [ lib.sourceTypes.fromSource ];
+    platforms = lib.platforms.linux;
     mainProgram = "cosmic-idle";
     teams = [ lib.teams.cosmic ];
-    platforms = lib.platforms.linux;
-    sourceProvenance = [ lib.sourceTypes.fromSource ];
   };
 })

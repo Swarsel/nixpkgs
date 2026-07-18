@@ -1,22 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
-  # nativeBuildInputs
-  qt6,
-
   # dependencies
   app-model,
   appdirs,
+  buildPythonPackage,
   cachey,
   certifi,
   dask,
   docstring-parser,
+  # tests
+  hypothesis,
   imageio,
   jsonschema,
   magicgui,
@@ -26,15 +20,26 @@
   pandas,
   pillow,
   pint,
+  pooch,
+  pretend,
   psutil,
+  pyautogui,
   pydantic,
   pydantic-extra-types,
   pydantic-settings,
   pyopengl,
+  pytest-pretty,
+  pytest-qt,
+  pytestCheckHook,
   pyyaml,
+  # nativeBuildInputs
+  qt6,
   requests,
   scikit-image,
   scipy,
+  # build-system
+  setuptools,
+  setuptools-scm,
   superqt,
   tifffile,
   toolz,
@@ -42,15 +47,6 @@
   typing-extensions,
   vispy,
   wrapt,
-
-  # tests
-  hypothesis,
-  pooch,
-  pretend,
-  pyautogui,
-  pytest-pretty,
-  pytest-qt,
-  pytestCheckHook,
   writableTmpDirAsHomeHook,
   xarray,
   zarr,
@@ -59,7 +55,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "napari";
   version = "0.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "napari";
@@ -73,15 +68,36 @@ buildPythonPackage (finalAttrs: {
       --replace-fail '"--maxfail=5", ' ""
   '';
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
   nativeBuildInputs = [ qt6.wrapQtAppsHook ];
 
   buildInputs = [
     qt6.qtbase
+  ];
+
+  nativeCheckInputs = [
+    hypothesis
+    pooch
+    pretend
+    pyautogui
+    pytest-pretty
+    pytest-qt
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+    xarray
+    zarr
+  ];
+
+  preCheck = ''
+    rm src/napari/__init__.py
+  '';
+
+  postFixup = ''
+    wrapQtApp $out/bin/napari
+  '';
+
+  build-system = [
+    setuptools
+    setuptools-scm
   ];
 
   dependencies = [
@@ -119,27 +135,6 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ dask.optional-dependencies.array;
 
-  postFixup = ''
-    wrapQtApp $out/bin/napari
-  '';
-
-  preCheck = ''
-    rm src/napari/__init__.py
-  '';
-
-  nativeCheckInputs = [
-    hypothesis
-    pooch
-    pretend
-    pyautogui
-    pytest-pretty
-    pytest-qt
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-    xarray
-    zarr
-  ];
-
   disabledTestPaths = [
     # Require DISPLAY access
     "src/napari/_qt/"
@@ -163,10 +158,6 @@ buildPythonPackage (finalAttrs: {
     "src/napari/_tests/test_top_level_availability.py"
     "src/napari/_tests/test_with_screenshot.py"
     "src/napari/_vispy/"
-  ];
-
-  enabledTestPaths = [
-    "src/napari/_tests/"
   ];
 
   disabledTests = [
@@ -200,6 +191,12 @@ buildPythonPackage (finalAttrs: {
     "test_sys_info"
     "test_view"
   ];
+
+  enabledTestPaths = [
+    "src/napari/_tests/"
+  ];
+
+  pyproject = true;
 
   meta = {
     description = "Fast, interactive, multi-dimensional image viewer";

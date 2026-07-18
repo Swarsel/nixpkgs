@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  libxml2,
-  wrapGAppsHook3,
+  gsl,
   gtk3-x11,
-  libxt,
-  libxtst,
-  libxpm,
   libx11,
   libxkbcommon,
-  gsl,
+  libxml2,
+  libxpm,
+  libxt,
+  libxtst,
+  pkg-config,
+  wrapGAppsHook3,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xsnow";
@@ -26,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     wrapGAppsHook3
   ];
+
   buildInputs = [
     gtk3-x11
     libxkbcommon
@@ -38,20 +39,21 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   makeFlags = [ "gamesdir=$(out)/bin" ];
-
   enableParallelBuilding = true;
 
   meta = {
     description = "X-windows application that will let it snow on the root, in between and on windows";
-    mainProgram = "xsnow";
     homepage = "https://ratrabbit.nl/ratrabbit/xsnow/";
     changelog = "https://ratrabbit.nl/ratrabbit/xsnow/changelog/index.html";
-    downloadPage = "https://ratrabbit.nl/ratrabbit/xsnow/downloads/index.html";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       robberer
       griffi-gh
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "xsnow";
+    downloadPage = "https://ratrabbit.nl/ratrabbit/xsnow/downloads/index.html";
   };
 })

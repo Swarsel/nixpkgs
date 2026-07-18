@@ -1,8 +1,8 @@
 {
   lib,
+  fetchurl,
   buildDunePackage,
   dyn,
-  fetchurl,
   ppx_expect,
   stdune,
 }:
@@ -21,16 +21,15 @@ buildDunePackage (finalAttrs: {
     dyn
   ];
 
-  checkInputs = [ ppx_expect ];
-
   # Tests are Ocaml version dependent
   # https://github.com/ocaml-dune/fiber/issues/27
   doCheck = false;
+  checkInputs = [ ppx_expect ];
 
   meta = {
     description = "Structured concurrency library";
     homepage = "https://github.com/ocaml-dune/fiber";
-    maintainers = [ ];
     license = lib.licenses.mit;
+    maintainers = [ ];
   };
 })

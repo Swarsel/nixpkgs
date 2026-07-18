@@ -1,23 +1,15 @@
 {
-  symlinkJoin,
   makeWrapper,
+  symlinkJoin,
 }:
 flutter:
 
 let
   self = symlinkJoin {
     inherit (flutter) pname;
-    name = "${flutter.name}-sdk-links";
-    paths = [
-      flutter
-      flutter.cacheDir
-      flutter.sdk
-    ];
-
     strictDeps = true;
-    __structuredAttrs = true;
-
     nativeBuildInputs = [ makeWrapper ];
+
     postBuild = ''
       wrapProgram "$out/bin/flutter" \
         --set-default FLUTTER_ROOT "$out"
@@ -49,6 +41,15 @@ let
       done
       shopt -u globstar
     '';
+
+    __structuredAttrs = true;
+    name = "${flutter.name}-sdk-links";
+
+    paths = [
+      flutter
+      flutter.cacheDir
+      flutter.sdk
+    ];
 
     passthru = flutter.passthru // {
       # Update the SDK attribute.

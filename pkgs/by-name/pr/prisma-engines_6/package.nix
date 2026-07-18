@@ -1,10 +1,10 @@
 {
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
   openssl,
   pkg-config,
   rustPlatform,
-  stdenv,
 }:
 
 # Updating this package will force an update for prisma. The
@@ -21,18 +21,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-z3GdnrLEMJIGPKXXbz2wrbiGpuNlgYxqg3iYINYTnPI=";
   };
 
-  cargoPatches = [
-    ./0001-bump-metrics-to-0.23.1.diff
-  ];
-
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ openssl ];
   cargoHash = "sha256-8sAjYLSmNneQVrNh9iOmk5lVajtiFPWYSC8jfo5CK5U=";
-
   # Use system openssl.
   env.OPENSSL_NO_VENDOR = 1;
-
-  nativeBuildInputs = [ pkg-config ];
-
-  buildInputs = [ openssl ];
 
   preBuild = ''
     export OPENSSL_DIR=${lib.getDev openssl}
@@ -42,6 +35,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     export SQLITE_MAX_EXPR_DEPTH=10000
 
     export GIT_HASH=0000000000000000000000000000000000000000
+  '';
+
+  # Tests are long to compile
+  doCheck = false;
+
+  postInstall = ''
+    mv $out/lib/libquery_engine${stdenv.hostPlatform.extensions.sharedLibrary} $out/lib/libquery_engine.node
   '';
 
   cargoBuildFlags = [
@@ -55,12 +55,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "prisma-fmt"
   ];
 
-  postInstall = ''
-    mv $out/lib/libquery_engine${stdenv.hostPlatform.extensions.sharedLibrary} $out/lib/libquery_engine.node
-  '';
-
-  # Tests are long to compile
-  doCheck = false;
+  cargoPatches = [
+    ./0001-bump-metrics-to-0.23.1.diff
+  ];
 
   setupHook = ./setup-hook.sh;
 
@@ -68,11 +65,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Collection of engines that power the core stack for Prisma";
     homepage = "https://www.prisma.io/";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
-    mainProgram = "prisma";
+
     maintainers = with lib.maintainers; [
       aqrln
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "prisma";
   };
 })
 

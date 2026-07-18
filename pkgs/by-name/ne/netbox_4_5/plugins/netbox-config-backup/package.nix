@@ -1,20 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   netbox,
-  pytestCheckHook,
-  python,
   netbox-napalm-plugin,
   pydriller,
+  pytestCheckHook,
+  python,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "netbox-config-backup";
   version = "2.2.2";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "DanSheps";
@@ -23,24 +21,24 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-PT7/RCpB7SAinQ8McQV59b9ouqqUSoEqEj0ultL37cs=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRemoveDeps = [ "uuid" ]; # python builtin
-
-  dependencies = [
-    netbox-napalm-plugin
-    pydriller
-  ];
-
   nativeCheckInputs = [ netbox ];
 
   preFixup = ''
     export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
   '';
 
-  dontUsePythonImportsCheck = python.pythonVersion != netbox.python.pythonVersion;
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
 
+  dependencies = [
+    netbox-napalm-plugin
+    pydriller
+  ];
+
+  dontUsePythonImportsCheck = python.pythonVersion != netbox.python.pythonVersion;
+  pyproject = true;
   pythonImportsCheck = [ "netbox_config_backup" ];
+  pythonRemoveDeps = [ "uuid" ]; # python builtin
 
   meta = {
     description = "NetBox plugin for configuration backups using napalm";

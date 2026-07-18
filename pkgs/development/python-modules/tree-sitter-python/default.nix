@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   tree-sitter,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "tree-sitter-python";
   version = "0.25.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tree-sitter";
@@ -17,6 +16,9 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-F5XH21PjPpbwYylgKdwD3MZ5o0amDt4xf/e5UikPcxY=";
   };
+
+  # There are no tests
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -28,8 +30,7 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  # There are no tests
-  doCheck = false;
+  pyproject = true;
   pythonImportsCheck = [ "tree_sitter_python" ];
 
   meta = {

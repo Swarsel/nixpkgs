@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  qt6,
   nix-update-script,
+  qt6,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "qlementine";
@@ -25,11 +25,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   dontWrapQtApps = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Modern QStyle for desktop Qt6 applications";
+
     longDescription = ''
       A QStyle for desktop Qt6 applications.
 
@@ -45,6 +45,7 @@ stdenv.mkDerivation (finalAttrs: {
       - A collection of new QWidgets that are missing in Qt's standard
         collection, such as Switch.
     '';
+
     homepage = "https://oclero.github.io/qlementine/";
     changelog = "https://github.com/oclero/qlementine/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;

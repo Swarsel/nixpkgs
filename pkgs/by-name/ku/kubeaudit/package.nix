@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,13 +16,12 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-IxrAJaltg7vo3SQRC7OokSD5SM8xiX7iG8ZxKYEe9/E=";
+  # Tests require a running Kubernetes instance
+  doCheck = false;
 
   postInstall = ''
     mv $out/bin/cmd $out/bin/$pname
   '';
-
-  # Tests require a running Kubernetes instance
-  doCheck = false;
 
   meta = {
     description = "Audit tool for Kubernetes";

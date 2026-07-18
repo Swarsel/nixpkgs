@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
-  requests,
-  python-dateutil,
-  lxml,
   ifaddr,
-  pytestCheckHook,
+  lxml,
   pytest-cov-stub,
+  pytestCheckHook,
+  python-dateutil,
+  requests,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "upnpclient";
   version = "2.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "flyte";
@@ -22,6 +21,11 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-bT7oNCYAKJvhCaSczLWnDAy+ULqhjP+3ZvFnIGAb+Ww=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+  ];
 
   build-system = [ hatchling ];
 
@@ -32,11 +36,7 @@ buildPythonPackage (finalAttrs: {
     ifaddr
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "upnpclient" ];
 
   meta = {

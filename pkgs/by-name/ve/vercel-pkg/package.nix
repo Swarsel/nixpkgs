@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
+  fixup-yarn-lock,
   makeWrapper,
   nodejs,
-  fixup-yarn-lock,
   yarn,
 }:
 
@@ -20,29 +20,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-h3rHR3JE9hVcd3oiE7VL2daYXGTQo7NcOHGC6pmE/xs=";
   };
 
-  offlineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-KesP3X7LwZ7KSIxcCPXdn/sWcX9TJlwT9z/SdotS2ZQ=";
-  };
-
   nativeBuildInputs = [
     makeWrapper
     nodejs
     fixup-yarn-lock
     yarn
   ];
-
-  configurePhase = ''
-    runHook preConfigure
-
-    export HOME=$(mktemp -d)
-    yarn config --offline set yarn-offline-mirror "$offlineCache"
-    fixup-yarn-lock yarn.lock
-    yarn --offline --frozen-lockfile --ignore-platform --ignore-scripts --no-progress --non-interactive install
-    patchShebangs node_modules
-
-    runHook postConfigure
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -66,12 +49,29 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+
+    export HOME=$(mktemp -d)
+    yarn config --offline set yarn-offline-mirror "$offlineCache"
+    fixup-yarn-lock yarn.lock
+    yarn --offline --frozen-lockfile --ignore-platform --ignore-scripts --no-progress --non-interactive install
+    patchShebangs node_modules
+
+    runHook postConfigure
+  '';
+
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-KesP3X7LwZ7KSIxcCPXdn/sWcX9TJlwT9z/SdotS2ZQ=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
+
   meta = {
     description = "Package your Node.js project into an executable";
     homepage = "https://github.com/vercel/pkg";
     license = lib.licenses.mit;
-    mainProgram = "pkg";
     maintainers = with lib.maintainers; [ cmcdragonkai ];
     platforms = lib.platforms.all;
+    mainProgram = "pkg";
   };
 })

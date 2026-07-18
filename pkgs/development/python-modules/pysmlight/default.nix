@@ -1,13 +1,13 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   aiohttp-sse-client2,
   aresponses,
   awesomeversion,
   buildPythonPackage,
-  fetchFromGitHub,
   hatch-vcs,
   hatchling,
-  lib,
   mashumaro,
   pytest-asyncio,
   pytestCheckHook,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "pysmlight";
   version = "0.5.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "smlight-tech";
@@ -25,6 +24,15 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-/FL1iRQAOb+4AdrRpRRkt8NsHpQt4fHfg6qO+aUUZeo=";
   };
+
+  nativeCheckInputs = [
+    aresponses
+    pytest-asyncio
+    pytestCheckHook
+    syrupy
+  ];
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     hatch-vcs
@@ -38,21 +46,13 @@ buildPythonPackage rec {
     mashumaro
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pysmlight" ];
 
-  nativeCheckInputs = [
-    aresponses
-    pytest-asyncio
-    pytestCheckHook
-    syrupy
-  ];
-
-  __darwinAllowLocalNetworking = true;
-
   meta = {
-    changelog = "https://github.com/smlight-tech/pysmlight/releases/tag/${src.tag}";
     description = "Library implementing API control of the SMLIGHT SLZB-06 LAN Coordinators";
     homepage = "https://github.com/smlight-tech/pysmlight";
+    changelog = "https://github.com/smlight-tech/pysmlight/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  qt6,
   cmake,
-  ninja,
   libcprime,
   libcsys,
+  ninja,
+  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,10 +34,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Shows information about apps from the C Suite";
-    mainProgram = "coreuniverse";
     homepage = "https://gitlab.com/cubocore/coreapps/coreuniverse";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "coreuniverse";
   };
 })

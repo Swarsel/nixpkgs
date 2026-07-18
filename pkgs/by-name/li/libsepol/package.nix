@@ -8,7 +8,11 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "libsepol";
   version = "3.10";
-  se_url = "https://github.com/SELinuxProject/selinux/releases/download";
+
+  src = fetchurl {
+    url = "${finalAttrs.se_url}/${finalAttrs.version}/libsepol-${finalAttrs.version}.tar.gz";
+    hash = "sha256-1VVYZ5f6nzg0RJbSp+wRR7bKrz/MRMQtjVFz7denmnE=";
+  };
 
   outputs = [
     "bin"
@@ -16,11 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
     "man"
   ];
-
-  src = fetchurl {
-    url = "${finalAttrs.se_url}/${finalAttrs.version}/libsepol-${finalAttrs.version}.tar.gz";
-    hash = "sha256-1VVYZ5f6nzg0RJbSp+wRR7bKrz/MRMQtjVFz7denmnE=";
-  };
 
   nativeBuildInputs = [ flex ];
 
@@ -38,21 +37,22 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.NIX_CFLAGS_COMPILE = "-Wno-error";
-
   enableParallelBuilding = true;
-
+  se_url = "https://github.com/SELinuxProject/selinux/releases/download";
   passthru = { inherit (finalAttrs) se_url; };
 
   meta = {
     description = "SELinux binary policy manipulation library";
     homepage = "http://userspace.selinuxproject.org";
-    platforms = lib.platforms.linux;
+    license = lib.licenses.gpl2Plus;
+
     # Note: changing maintainers here changes maintainers for all SELinux-related libraries
     maintainers = with lib.maintainers; [
       RossComputerGuy
       numinit
     ];
-    license = lib.licenses.gpl2Plus;
+
+    platforms = lib.platforms.linux;
     pkgConfigModules = [ "libselinux" ];
   };
 })

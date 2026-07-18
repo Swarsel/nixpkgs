@@ -1,22 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  pdm-backend,
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   click,
   maison,
+  # build-system
+  pdm-backend,
   pydantic,
-  ruyaml,
-
   # tests
   pytest-freezegun,
   pytest-xdist,
   pytestCheckHook,
+  ruyaml,
+  setuptools,
   versionCheckHook,
   writableTmpDirAsHomeHook,
 }:
@@ -24,7 +21,6 @@
 buildPythonPackage rec {
   pname = "yamlfix";
   version = "1.19.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lyz-code";
@@ -32,6 +28,14 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-+bD/kKOI19zptPhO6vB2Q0bQWjkBr+vgqBgAyaoSLJc=";
   };
+
+  nativeCheckInputs = [
+    pytest-freezegun
+    pytest-xdist
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+    versionCheckHook
+  ];
 
   build-system = [
     pdm-backend
@@ -45,26 +49,20 @@ buildPythonPackage rec {
     ruyaml
   ];
 
-  nativeCheckInputs = [
-    pytest-freezegun
-    pytest-xdist
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-    versionCheckHook
+  disabledTestPaths = [
+    # Broken since click was updated to 8.2.1 in https://github.com/NixOS/nixpkgs/pull/448189
+    # TypeError: CliRunner.__init__() got an unexpected keyword argument 'mix_stderr'
+    "tests/e2e/test_cli.py"
   ];
 
-  pythonImportsCheck = [ "yamlfix" ];
+  pyproject = true;
 
   pytestFlags = [
     "-Wignore::DeprecationWarning"
     "-Wignore::ResourceWarning"
   ];
 
-  disabledTestPaths = [
-    # Broken since click was updated to 8.2.1 in https://github.com/NixOS/nixpkgs/pull/448189
-    # TypeError: CliRunner.__init__() got an unexpected keyword argument 'mix_stderr'
-    "tests/e2e/test_cli.py"
-  ];
+  pythonImportsCheck = [ "yamlfix" ];
 
   meta = {
     description = "Python YAML formatter that keeps your comments";

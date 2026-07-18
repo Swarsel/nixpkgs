@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -24,9 +24,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Convert JSON to HCL, and vice versa";
-    mainProgram = "json2hcl";
     homepage = "https://github.com/kvz/json2hcl";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "json2hcl";
   };
 })

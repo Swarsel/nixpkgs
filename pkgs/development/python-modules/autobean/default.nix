@@ -1,8 +1,8 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   beancount,
+  buildPythonPackage,
   nix-update-script,
   pdm-pep517,
   pytest-cov-stub,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "autobean";
   version = "0.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SEIAROTg";
@@ -23,6 +22,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-JTxrDER8iSPu9Rp/7Al7KVibWOVBXdHnq6fyGVMedas=";
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [
     pdm-pep517
@@ -35,18 +39,13 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "autobean" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/SEIAROTg/autobean";
     description = "Collection of plugins and scripts that help automating bookkeeping with beancount";
+    homepage = "https://github.com/SEIAROTg/autobean";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ ambroisie ];
   };

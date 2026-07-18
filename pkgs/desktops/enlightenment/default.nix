@@ -3,15 +3,13 @@
 lib.makeScope pkgs.newScope (
   self: with self; {
 
-    #### CORE EFL
-    efl = callPackage ./efl { };
-
-    #### WINDOW MANAGER
-    enlightenment = callPackage ./enlightenment { };
-
     #### APPLICATIONS
     econnman = callPackage ./econnman { };
     ecrire = callPackage ./ecrire { };
+    #### CORE EFL
+    efl = callPackage ./efl { };
+    #### WINDOW MANAGER
+    enlightenment = callPackage ./enlightenment { };
     ephoto = callPackage ./ephoto { };
     evisum = callPackage ./evisum { };
     rage = callPackage ./rage { };

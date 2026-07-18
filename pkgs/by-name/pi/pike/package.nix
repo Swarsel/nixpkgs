@@ -1,45 +1,45 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
-  pkg-config,
+  fetchFromGitHub,
+  SDL2,
+  autoPatchelfHook,
   autoconf,
   automake,
-  libtool,
   bison,
+  bzip2,
+  cairo,
+  dpkg,
+  expat,
   flex,
+  freetype,
+  gdbm,
+  gitUpdater,
+  glib,
   gmp,
-  pcre,
-  nettle,
+  gtk3,
+  libGL,
+  libffi,
   libjpeg,
+  libmysqlclient,
+  libnsl,
   libpng,
   libtiff,
-  freetype,
-  sqlite,
-  libmysqlclient,
-  postgresql,
-  openssl,
-  zlib,
-  bzip2,
-  gdbm,
-  libffi,
-  expat,
+  libtool,
+  libxcrypt-legacy,
   libxml2,
   libxslt,
-  gtk3,
-  pango,
-  cairo,
-  glib,
-  SDL2,
-  libGL,
-  dpkg,
-  autoPatchelfHook,
-  ncurses,
-  libnsl,
-  libxcrypt-legacy,
-  gitUpdater,
   makeBinaryWrapper,
+  ncurses,
+  nettle,
+  openssl,
+  pango,
+  pcre,
+  pkg-config,
+  postgresql,
+  sqlite,
+  zlib,
 }:
 
 let
@@ -69,15 +69,6 @@ let
       libnsl # for libnsl.so
     ];
 
-    # Ignore missing dependencies since this is just for bootstrapping
-    autoPatchelfIgnoreMissingDeps = [
-      "libcrypt.so.1"
-      "libnsl.so.2"
-    ];
-
-    dontBuild = true;
-    dontConfigure = true;
-
     installPhase = ''
       runHook preInstall
       mkdir -p $out
@@ -97,14 +88,27 @@ let
         --add-flags "-m$out/lib/pike8.0/master.pike"
       runHook postInstall
     '';
+
+    # Ignore missing dependencies since this is just for bootstrapping
+    autoPatchelfIgnoreMissingDeps = [
+      "libcrypt.so.1"
+      "libnsl.so.2"
+    ];
+
+    dontBuild = true;
+    dontConfigure = true;
+
     meta = {
       description = "Pike programming language bootstrap";
+
       longDescription = ''
         Pike is a dynamic programming language with a syntax similar to Java and C.
         It is simple to learn, does not require long compilation passes and has
         powerful built-in data types allowing simple and really fast data manipulation.
       '';
+
       homepage = "https://pike.lysator.liu.se/";
+
       license = with lib.licenses; [
         gpl2Only
         # or
@@ -112,6 +116,7 @@ let
         # or
         mpl20
       ];
+
       maintainers = with lib.maintainers; [ siraben ];
       platforms = with lib.platforms; unix ++ windows;
       mainProgram = "pike";
@@ -166,18 +171,6 @@ stdenv.mkDerivation (finalAttrs: {
     libGL
   ];
 
-  # Pike uses a custom build system
-  preConfigure = ''
-    patchShebangs .
-    cd src
-    ./run_autoconfig
-  '';
-
-  env = {
-    RUNPIKE = "${pike-bootstrap}/bin/pike";
-    PIKE = "${pike-bootstrap}/bin/pike";
-  };
-
   configureFlags = [
     "--with-gmp"
     "--with-nettle"
@@ -190,16 +183,31 @@ stdenv.mkDerivation (finalAttrs: {
 
   makeFlags = [ "INSTALLARGS=--traditional" ];
 
+  env = {
+    PIKE = "${pike-bootstrap}/bin/pike";
+    RUNPIKE = "${pike-bootstrap}/bin/pike";
+  };
+
+  # Pike uses a custom build system
+  preConfigure = ''
+    patchShebangs .
+    cd src
+    ./run_autoconfig
+  '';
+
   passthru.updateScript = gitUpdater { allowedVersions = "^8\\..*"; };
 
   meta = {
     description = "Pike programming language";
+
     longDescription = ''
       Pike is a dynamic programming language with a syntax similar to Java and C.
       It is simple to learn, does not require long compilation passes and has
       powerful built-in data types allowing simple and really fast data manipulation.
     '';
+
     homepage = "https://pike.lysator.liu.se/";
+
     license = with lib.licenses; [
       gpl2Only
       # or
@@ -207,6 +215,7 @@ stdenv.mkDerivation (finalAttrs: {
       # or
       mpl20
     ];
+
     maintainers = with lib.maintainers; [ siraben ];
     platforms = with lib.platforms; unix ++ windows;
     mainProgram = "pike";

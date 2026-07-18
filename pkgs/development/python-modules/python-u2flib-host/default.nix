@@ -1,15 +1,14 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
-  requests,
+  fetchPypi,
   hidapi,
+  requests,
 }:
 
 buildPythonPackage rec {
   pname = "python-u2flib-host";
   version = "3.0.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,6 +22,7 @@ buildPythonPackage rec {
 
   # Tests fail: "ValueError: underlying buffer has been detached"
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Python based U2F host library";

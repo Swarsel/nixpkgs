@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aiomcache,
   buildPythonPackage,
-  fetchFromGitHub,
   marshmallow,
   memcachedTestHook,
   msgpack,
@@ -20,21 +20,12 @@
 buildPythonPackage rec {
   pname = "aiocache";
   version = "0.12.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aio-libs";
     repo = "aiocache";
     tag = "v${version}";
     hash = "sha256-4QYCRXMWlt9fsiWgUTc2pKzXG7AG/zGmd4HT5ggIZNM=";
-  };
-
-  build-system = [ setuptools ];
-
-  optional-dependencies = {
-    redis = [ redis ];
-    memcached = [ aiomcache ];
-    msgpack = [ msgpack ];
   };
 
   nativeCheckInputs = [
@@ -49,10 +40,20 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
-  pytestFlags = [
-    "-Wignore::DeprecationWarning"
-    # Tests can time out and leave redis/valkey in an unusable state for later tests
-    "-x"
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  disabledTestPaths = [
+    # Benchmark and performance tests are not relevant for Nixpkgs
+    "tests/performance/"
+    # Full of timing-sensitive tests
+    "tests/ut/backends/test_redis.py"
+
+    # TypeError: object MagicMock can't be used in 'await' expression
+    "tests/ut/backends/test_redis.py::TestRedisBackend::test_close"
+
+    # flaky, see https://github.com/aio-libs/aiocache/issues/587
+    "tests/acceptance/test_lock.py::TestRedLock::test_locking_dogpile"
   ];
 
   disabledTests = [
@@ -69,20 +70,19 @@ buildPythonPackage rec {
     "test_cache_write_doesnt_wait_for_future"
   ];
 
-  disabledTestPaths = [
-    # Benchmark and performance tests are not relevant for Nixpkgs
-    "tests/performance/"
-    # Full of timing-sensitive tests
-    "tests/ut/backends/test_redis.py"
+  optional-dependencies = {
+    memcached = [ aiomcache ];
+    msgpack = [ msgpack ];
+    redis = [ redis ];
+  };
 
-    # TypeError: object MagicMock can't be used in 'await' expression
-    "tests/ut/backends/test_redis.py::TestRedisBackend::test_close"
+  pyproject = true;
 
-    # flaky, see https://github.com/aio-libs/aiocache/issues/587
-    "tests/acceptance/test_lock.py::TestRedLock::test_locking_dogpile"
+  pytestFlags = [
+    "-Wignore::DeprecationWarning"
+    # Tests can time out and leave redis/valkey in an unusable state for later tests
+    "-x"
   ];
-
-  __darwinAllowLocalNetworking = true;
 
   pythonImportsCheck = [ "aiocache" ];
 

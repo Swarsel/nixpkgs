@@ -1,30 +1,23 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
   cmake,
+  fmt_11,
   ninja,
   pkg-config,
-  fmt_11,
   spdlog,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "tt-logger";
   version = "1.1.9";
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "tenstorrent";
     repo = "tt-logger";
     tag = "v${finalAttrs.version}";
     hash = "sha256-Vd/FwjcNZWh/FnP5CwXO4UQtKTq/6GhRSppCYJMj9d4=";
-  };
-
-  cpm = fetchurl {
-    url = "https://github.com/cpm-cmake/CPM.cmake/releases/download/v0.40.2/CPM.cmake";
-    hash = "sha256-yM3DLAOBZTjOInge1ylk3IZLKjSjENO3EEgSpcotg10=";
   };
 
   patches = [
@@ -35,6 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
   postPatch = ''
     cp $cpm cmake/CPM.cmake
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -54,11 +49,18 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "TT_LOGGER_INSTALL" true)
   ];
 
+  __structuredAttrs = true;
+
+  cpm = fetchurl {
+    hash = "sha256-yM3DLAOBZTjOInge1ylk3IZLKjSjENO3EEgSpcotg10=";
+    url = "https://github.com/cpm-cmake/CPM.cmake/releases/download/v0.40.2/CPM.cmake";
+  };
+
   meta = {
     description = "Flexible and performant C++ logging library for Tenstorrent projects";
     homepage = "https://github.com/tenstorrent/tt-logger";
-    maintainers = with lib.maintainers; [ RossComputerGuy ];
     license = with lib.licenses; [ asl20 ];
+    maintainers = with lib.maintainers; [ RossComputerGuy ];
     platforms = lib.platforms.linux;
   };
 })

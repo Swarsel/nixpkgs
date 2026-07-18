@@ -31,20 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
     libsForQt5.qtquickcontrols
   ];
 
-  desktopItem = makeDesktopItem {
-    name = "tensor";
-    exec = "@bin@";
-    icon = "tensor.png";
-    comment = finalAttrs.meta.description;
-    desktopName = "Tensor Matrix Client";
-    genericName = finalAttrs.meta.description;
-    categories = [
-      "Chat"
-      "Utility"
-    ];
-    mimeTypes = [ "application/x-chat" ];
-  };
-
   installPhase =
     if stdenv.hostPlatform.isDarwin then
       ''
@@ -71,12 +57,27 @@ stdenv.mkDerivation (finalAttrs: {
         runHook postInstall
       '';
 
+  desktopItem = makeDesktopItem {
+    categories = [
+      "Chat"
+      "Utility"
+    ];
+
+    comment = finalAttrs.meta.description;
+    desktopName = "Tensor Matrix Client";
+    exec = "@bin@";
+    genericName = finalAttrs.meta.description;
+    icon = "tensor.png";
+    mimeTypes = [ "application/x-chat" ];
+    name = "tensor";
+  };
+
   meta = {
-    homepage = "https://github.com/davidar/tensor";
     description = "Cross-platform Qt5/QML-based Matrix client";
-    mainProgram = "tensor";
+    homepage = "https://github.com/davidar/tensor";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ peterhoeg ];
     platforms = libsForQt5.qtbase.meta.platforms;
+    mainProgram = "tensor";
   };
 })

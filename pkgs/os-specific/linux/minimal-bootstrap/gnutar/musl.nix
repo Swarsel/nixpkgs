@@ -1,14 +1,14 @@
 {
   lib,
-  buildPlatform,
-  hostPlatform,
   fetchurl,
   bash,
+  buildPlatform,
   coreutils,
-  tinycc,
-  gnumake,
   gnugrep,
+  gnumake,
   gnused,
+  hostPlatform,
+  tinycc,
 }:
 let
   # gnutar with musl preserves modify times, allowing make to not try

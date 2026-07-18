@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   cargo,
-  pkg-config,
   glibc,
-  openssl,
   libcap_ng,
-  libepoxy,
   libdrm,
-  pipewire,
-  virglrenderer,
+  libepoxy,
   libkrunfw,
   nix-update-script,
+  openssl,
+  pipewire,
+  pkg-config,
+  rustPlatform,
   rustc,
-  withBlk ? false,
-  withNet ? false,
-  withGpu ? false,
-  withSound ? false,
-  withInput ? false,
-  withTimesync ? false,
+  virglrenderer,
   variant ? null,
+  withBlk ? false,
+  withGpu ? false,
+  withInput ? false,
+  withNet ? false,
+  withSound ? false,
+  withTimesync ? false,
 }:
 
 assert lib.elem variant [
@@ -48,20 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
     "dev"
   ];
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src;
-    hash = "sha256-rxdaqEKDDMxFwRuX6kLhqGyFXJTz+Bx4mJJhYL5nPgU=";
-  };
-
-  # Make sure libkrunfw can be found by dlopen()
-  env.RUSTFLAGS = toString (
-    map (flag: "-C link-arg=" + flag) [
-      "-Wl,--push-state,--no-as-needed"
-      ("-lkrunfw" + lib.optionalString (variant != null) "-${variant}")
-      "-Wl,--pop-state"
-    ]
-  );
 
   nativeBuildInputs = [
     rustPlatform.cargoSetupHook
@@ -97,13 +83,27 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional (variant == "sev") "SEV=1"
   ++ lib.optional (variant == "tdx") "TDX=1";
 
+  env.OPENSSL_NO_VENDOR = true;
+
+  # Make sure libkrunfw can be found by dlopen()
+  env.RUSTFLAGS = toString (
+    map (flag: "-C link-arg=" + flag) [
+      "-Wl,--push-state,--no-as-needed"
+      ("-lkrunfw" + lib.optionalString (variant != null) "-${variant}")
+      "-Wl,--pop-state"
+    ]
+  );
+
   postInstall = ''
     mkdir -p $dev/lib/pkgconfig
     mv $out/lib64/pkgconfig $dev/lib/
     mv $out/include $dev/
   '';
 
-  env.OPENSSL_NO_VENDOR = true;
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src;
+    hash = "sha256-rxdaqEKDDMxFwRuX6kLhqGyFXJTz+Bx4mJJhYL5nPgU=";
+  };
 
   passthru.updateScript = nix-update-script {
     attrPath = "libkrun";
@@ -113,11 +113,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Dynamic library providing Virtualization-based process isolation capabilities";
     homepage = "https://github.com/libkrun/libkrun";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       nickcao
       RossComputerGuy
       nrabulinski
     ];
+
     platforms = libkrunfw'.meta.platforms;
   };
 })

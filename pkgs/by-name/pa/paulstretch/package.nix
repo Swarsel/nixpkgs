@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   audiofile,
-  libvorbis,
-  fltk,
+  fetchpatch,
   fftw,
   fftwFloat,
+  fltk,
+  libjack2,
+  libmad,
+  libsamplerate,
+  libvorbis,
   minixml,
   pkg-config,
-  libmad,
-  libjack2,
   portaudio,
-  libsamplerate,
 }:
 
 stdenv.mkDerivation {
@@ -26,6 +26,14 @@ stdenv.mkDerivation {
     rev = "7f5c3993abe420661ea0b808304b0e2b4b0048c5";
     sha256 = "06dy03dbz1yznhsn0xvsnkpc5drzwrgxbxdx0hfpsjn2xcg0jrnc";
   };
+
+  patches = [
+    # https://github.com/paulnasca/paulstretch_cpp/pull/12
+    (fetchpatch {
+      sha256 = "0lx1rfrs53afkiz1drp456asqgj5yv6hx3lkc01165cv1jsbw6q4";
+      url = "https://github.com/paulnasca/paulstretch_cpp/commit/d8671b36135fe66839b11eadcacb474cc8dae0d1.patch";
+    })
+  ];
 
   nativeBuildInputs = [ pkg-config ];
 
@@ -42,14 +50,6 @@ stdenv.mkDerivation {
     libsamplerate
   ];
 
-  patches = [
-    # https://github.com/paulnasca/paulstretch_cpp/pull/12
-    (fetchpatch {
-      url = "https://github.com/paulnasca/paulstretch_cpp/commit/d8671b36135fe66839b11eadcacb474cc8dae0d1.patch";
-      sha256 = "0lx1rfrs53afkiz1drp456asqgj5yv6hx3lkc01165cv1jsbw6q4";
-    })
-  ];
-
   buildPhase = ''
     bash compile_linux_fftw_jack.sh
   '';
@@ -60,15 +60,17 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Produces high quality extreme sound stretching";
+
     longDescription = ''
       This is a program for stretching the audio. It is suitable only for
       extreme sound stretching of the audio (like 50x) and for applying
       special effects by "spectral smoothing" the sounds.
       It can transform any sound/music to a texture.
     '';
+
     homepage = "https://github.com/paulnasca/paulstretch_cpp/";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl2;
+    platforms = lib.platforms.linux;
     mainProgram = "paulstretch";
   };
 }

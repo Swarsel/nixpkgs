@@ -1,12 +1,12 @@
 {
-  mkDerivation,
   libutil,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "usr.bin/login";
   buildInputs = [
     libutil
   ];
 
+  path = "usr.bin/login";
   meta.mainProgram = "login";
 }

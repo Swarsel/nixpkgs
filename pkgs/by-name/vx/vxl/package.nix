@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  unzip,
   cmake,
-  libtiff,
   expat,
-  zlib,
-  libpng,
   libjpeg,
+  libpng,
+  libtiff,
+  unzip,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     unzip
   ];
+
   buildInputs = [
     libtiff
     expat

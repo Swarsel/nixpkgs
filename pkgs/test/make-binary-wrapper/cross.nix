@@ -1,9 +1,9 @@
 {
-  stdenv,
-  runCommand,
-  makeBinaryWrapper,
-  binutils,
   lib,
+  stdenv,
+  binutils,
+  makeBinaryWrapper,
+  runCommand,
   expectedArch ? stdenv.hostPlatform.parsed.cpu.name,
 }:
 
@@ -13,6 +13,7 @@ runCommand "make-binary-wrapper-test-cross"
       makeBinaryWrapper
       binutils
     ];
+
     # For x86_64-linux the machine field is
     # Advanced Micro Devices X86-64
     # and uses a dash instead of a underscore unlike x86_64-linux in hostPlatform.parsed.cpu.name

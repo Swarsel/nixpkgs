@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "cogapp";
   version = "3.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nedbat";
@@ -18,11 +17,10 @@ buildPythonPackage rec {
     hash = "sha256-46ojLTu1elNcjmWSKJuGKDG4XETLLnJDIpL2Al6/aX0=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "cogapp" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "cogapp" ];
 
   meta = {
     description = "Code generator for executing Python snippets in source files";

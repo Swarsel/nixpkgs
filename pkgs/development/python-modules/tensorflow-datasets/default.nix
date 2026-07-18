@@ -1,41 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build system
-  packaging,
-  setuptools,
-
   # dependencies
   absl-py,
-  array-record,
-  dm-tree,
-  etils,
-  immutabledict,
-  importlib-resources,
-  numpy,
-  promise,
-  protobuf,
-  psutil,
-  pyarrow,
-  requests,
-  simple-parsing,
-  tensorflow-metadata,
-  termcolor,
-  toml,
-  tqdm,
-  wrapt,
-
   # tests
   apache-beam,
+  array-record,
   beautifulsoup4,
+  buildPythonPackage,
   click,
   cloudpickle,
   datasets,
   dill,
+  dm-tree,
+  etils,
   ffmpeg,
   imagemagick,
+  immutabledict,
+  importlib-resources,
   jax,
   jaxlib,
   jinja2,
@@ -47,26 +29,39 @@
   mwxml,
   networkx,
   nltk,
+  numpy,
   opencv4,
+  # build system
+  packaging,
   pandas,
   pillow,
+  promise,
+  protobuf,
+  psutil,
+  pyarrow,
   pycocotools,
   pydub,
   pytest-xdist,
   pytestCheckHook,
+  requests,
   scikit-image,
   scipy,
+  setuptools,
+  simple-parsing,
   sortedcontainers,
   tensorflow,
+  tensorflow-metadata,
+  termcolor,
   tifffile,
+  toml,
+  tqdm,
+  wrapt,
   zarr,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "tensorflow-datasets";
   version = "4.9.10";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "tensorflow";
@@ -74,36 +69,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-nq0c5hBTVwkxCRvWxtnfI+AHD+URY+nNfZAurEGaLXk=";
   };
-
-  build-system = [
-    packaging
-    setuptools
-  ];
-
-  dependencies = [
-    absl-py
-    array-record
-    dm-tree
-    etils
-    immutabledict
-    importlib-resources
-    numpy
-    promise
-    protobuf
-    psutil
-    pyarrow
-    requests
-    simple-parsing
-    tensorflow-metadata
-    termcolor
-    toml
-    tqdm
-    wrapt
-  ]
-  ++ etils.optional-dependencies.epath
-  ++ etils.optional-dependencies.etree;
-
-  pythonImportsCheck = [ "tensorflow_datasets" ];
 
   nativeCheckInputs = [
     apache-beam
@@ -140,12 +105,35 @@ buildPythonPackage (finalAttrs: {
     zarr
   ];
 
-  disabledTests = [
-    # Since updating apache-beam to 2.65.0
-    # RuntimeError: Unable to pickle fn CallableWrapperDoFn...: maximum recursion depth exceeded
-    # https://github.com/tensorflow/datasets/issues/11055
-    "test_download_and_prepare_as_dataset"
+  __structuredAttrs = true;
+
+  build-system = [
+    packaging
+    setuptools
   ];
+
+  dependencies = [
+    absl-py
+    array-record
+    dm-tree
+    etils
+    immutabledict
+    importlib-resources
+    numpy
+    promise
+    protobuf
+    psutil
+    pyarrow
+    requests
+    simple-parsing
+    tensorflow-metadata
+    termcolor
+    toml
+    tqdm
+    wrapt
+  ]
+  ++ etils.optional-dependencies.epath
+  ++ etils.optional-dependencies.etree;
 
   disabledTestPaths = [
     # Sandbox violations: network access, filesystem write attempts outside of build dir, ...
@@ -206,6 +194,16 @@ buildPythonPackage (finalAttrs: {
     "tensorflow_datasets/core/file_adapters_test.py::test_read_write"
     "tensorflow_datasets/text/c4_wsrs/c4_wsrs_test.py::C4WSRSTest"
   ];
+
+  disabledTests = [
+    # Since updating apache-beam to 2.65.0
+    # RuntimeError: Unable to pickle fn CallableWrapperDoFn...: maximum recursion depth exceeded
+    # https://github.com/tensorflow/datasets/issues/11055
+    "test_download_and_prepare_as_dataset"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "tensorflow_datasets" ];
 
   meta = {
     description = "Library of datasets ready to use with TensorFlow";

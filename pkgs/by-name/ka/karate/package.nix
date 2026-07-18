@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   jre,
   makeWrapper,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -14,7 +14,6 @@ stdenvNoCC.mkDerivation rec {
     url = "https://github.com/karatelabs/karate/releases/download/v${version}/karate-${version}.jar";
     sha256 = "sha256-ImFhqjBMYXREOZ+0j0IIARmtNQpCf71m2nUxZQusKKo=";
   };
-  dontUnpack = true;
 
   nativeBuildInputs = [ makeWrapper ];
 
@@ -24,9 +23,11 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "API Test Automation Made Simple";
-    mainProgram = "karate";
+
     longDescription = ''
       Karate is the only open-source tool to combine API
       test-automation, mocks, performance-testing and even UI
@@ -35,10 +36,12 @@ stdenvNoCC.mkDerivation rec {
       non-programmers. Assertions and HTML reports are built-in, and
       you can run tests in parallel for speed.
     '';
+
     homepage = "https://github.com/karatelabs/karate";
     changelog = "https://github.com/karatelabs/karate/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.kephasp ];
     platforms = jre.meta.platforms;
+    mainProgram = "karate";
   };
 }

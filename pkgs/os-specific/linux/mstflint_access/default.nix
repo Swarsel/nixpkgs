@@ -3,17 +3,14 @@
   stdenv,
   fetchurl,
   kernel,
+  kernelModuleMakeFlags,
   kmod,
   mstflint,
-  kernelModuleMakeFlags,
 }:
 
 stdenv.mkDerivation rec {
-  pname = "mstflint_access";
   inherit (mstflint) version src;
-
-  sourceRoot = "source/kernel";
-
+  pname = "mstflint_access";
   nativeBuildInputs = [ kmod ] ++ kernel.moduleBuildDependencies;
 
   makeFlags = kernelModuleMakeFlags ++ [
@@ -23,7 +20,6 @@ stdenv.mkDerivation rec {
 
   enableParallelBuilding = true;
 
-  installTargets = [ "modules_install" ];
   installFlags = [
     "-C"
     "${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
@@ -31,6 +27,9 @@ stdenv.mkDerivation rec {
     "M=$(PWD)"
   ]
   ++ makeFlags;
+
+  installTargets = [ "modules_install" ];
+  sourceRoot = "source/kernel";
 
   meta = {
     description = "Kernel module for Nvidia NIC firmware update";

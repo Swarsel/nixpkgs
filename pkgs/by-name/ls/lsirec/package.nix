@@ -30,9 +30,9 @@ stdenv.mkDerivation {
   meta = {
     description = "LSI SAS2008/SAS2108 low-level recovery tool for Linux";
     homepage = "https://github.com/marcan/lsirec";
-    platforms = lib.platforms.linux;
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ Luflosi ];
+    platforms = lib.platforms.linux;
     # never built on aarch64-linux since first introduction in nixpkgs
     broken = stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64;
   };

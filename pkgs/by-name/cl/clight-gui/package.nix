@@ -23,13 +23,14 @@ stdenv.mkDerivation (finalAttrs: {
                      "cmake_minimum_required(VERSION 3.10)"
   '';
 
-  buildInputs = with libsForQt5; [
-    qtbase
-    qtcharts
-  ];
   nativeBuildInputs = [
     cmake
     libsForQt5.wrapQtAppsHook
+  ];
+
+  buildInputs = with libsForQt5; [
+    qtbase
+    qtcharts
   ];
 
   sourceRoot = "${finalAttrs.src.name}/src";
@@ -39,7 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/nullobsi/clight-gui";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ nickhu ];
-    mainProgram = "clight-gui";
     platforms = lib.platforms.linux;
+    mainProgram = "clight-gui";
   };
 })

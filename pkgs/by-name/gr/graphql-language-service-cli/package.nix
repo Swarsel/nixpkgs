@@ -1,13 +1,13 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
   makeWrapper,
   nodejs,
-  stdenv,
+  versionCheckHook,
   yarnBuildHook,
   yarnConfigHook,
-  versionCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,11 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     ./patches/0001-repurpose-vscode-graphql-build-script.patch
   ];
-
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-ae6KP2sFgw8/8YaTJSPscBlVQ5/bzbvHRZygcMgFAlU=";
-  };
 
   nativeBuildInputs = [
     yarnConfigHook
@@ -57,9 +52,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-ae6KP2sFgw8/8YaTJSPscBlVQ5/bzbvHRZygcMgFAlU=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
 
   passthru = {
     updateScript = ./updater.sh;

@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  glib,
+  gnome-desktop,
+  gnome-settings-daemon,
+  gsettings-desktop-schemas,
+  gtk3,
   meson,
   ninja,
   pkg-config,
-  xdg-desktop-portal,
-  gtk3,
-  gnome-settings-daemon,
-  gnome-desktop,
-  glib,
-  wrapGAppsHook3,
-  gsettings-desktop-schemas,
   runCommand,
+  wrapGAppsHook3,
+  xdg-desktop-portal,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -49,8 +49,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Desktop integration portals for sandboxed apps";
     homepage = "https://github.com/flatpak/xdg-desktop-portal-gtk";
+    license = lib.licenses.lgpl21Plus;
     maintainers = with lib.maintainers; [ jtojnar ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.lgpl21Plus;
   };
 })

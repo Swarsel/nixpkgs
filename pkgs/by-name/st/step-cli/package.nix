@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   openssl,
   unixtools,
@@ -11,14 +11,15 @@ let
   version = "0.30.6";
 in
 buildGoModule {
-  pname = "step-cli";
   inherit version;
+  pname = "step-cli";
 
   src = fetchFromGitHub {
     owner = "smallstep";
     repo = "cli";
     tag = "v${version}";
     hash = "sha256-fMHvv14ToKq73h3aLJBebzhIJQghfBOX6C0hvDODHN8=";
+
     # this file change depending on git branch status (via .gitattributes)
     # https://github.com/NixOS/nixpkgs/issues/84312
     postFetch = ''
@@ -26,10 +27,12 @@ buildGoModule {
     '';
   };
 
-  ldflags = [
-    "-w"
-    "-s"
-    "-X=main.Version=${version}"
+  nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-DTFp9K5iiS50QuD2knN/8miYb2k/7O1d3GyEf79i69Q=";
+
+  nativeCheckInputs = [
+    openssl
+    unixtools.xxd
   ];
 
   preCheck = ''
@@ -39,20 +42,18 @@ buildGoModule {
     patchShebangs integration/openssl-jwt.sh
   '';
 
-  vendorHash = "sha256-DTFp9K5iiS50QuD2knN/8miYb2k/7O1d3GyEf79i69Q=";
-
-  nativeBuildInputs = [ installShellFiles ];
-  nativeCheckInputs = [
-    openssl
-    unixtools.xxd
-  ];
-
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd step \
       --bash <($out/bin/step completion bash) \
       --zsh <($out/bin/step completion zsh) \
       --fish <($out/bin/step completion fish)
   '';
+
+  ldflags = [
+    "-w"
+    "-s"
+    "-X=main.Version=${version}"
+  ];
 
   meta = {
     description = "Zero trust swiss army knife for working with X509, OAuth, JWT, OATH OTP, etc";

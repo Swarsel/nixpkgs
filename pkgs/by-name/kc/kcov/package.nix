@@ -3,15 +3,15 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  zlib,
   curl,
   elfutils,
-  python3,
   libiberty,
   libopcodes,
+  pkg-config,
+  python3,
   runCommandCC,
   rustc,
+  zlib,
 }:
 
 let
@@ -26,7 +26,8 @@ let
       sha256 = "sha256-hRJYuHNSXyRoUDBF/yIPXPcBBxZoTO5cgoB2tBhKPwY=";
     };
 
-    preConfigure = "patchShebangs src/bin-to-c-source.py";
+    strictDeps = true;
+
     nativeBuildInputs = [
       cmake
       pkg-config
@@ -41,7 +42,7 @@ let
       libopcodes
     ];
 
-    strictDeps = true;
+    preConfigure = "patchShebangs src/bin-to-c-source.py";
 
     passthru.tests = {
       works-on-c = runCommandCC "works-on-c" { } ''
@@ -82,12 +83,13 @@ let
       '';
 
       homepage = "http://simonkagstrom.github.io/kcov/index.html";
-      license = lib.licenses.gpl2;
       changelog = "https://github.com/SimonKagstrom/kcov/blob/master/ChangeLog";
+      license = lib.licenses.gpl2;
 
       maintainers = with lib.maintainers; [
         gal_bolle
       ];
+
       platforms = lib.platforms.linux;
     };
   };

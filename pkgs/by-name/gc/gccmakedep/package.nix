@@ -28,6 +28,7 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Creates dependencies in makefiles using 'gcc -M'";
     homepage = "https://gitlab.freedesktop.org/xorg/util/gccmakedep";
+
     license = with lib.licenses; [
       # COPYING file suggests looking at the Copyright headers of every file:
       # upstream issue: https://gitlab.freedesktop.org/xorg/util/gccmakedep/-/issues/1
@@ -52,8 +53,9 @@ stdenv.mkDerivation (finalAttrs: {
 
       # 4. some files don't have any license info, but they are all trivial
     ];
-    mainProgram = "gccmakedep";
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "gccmakedep";
   };
 })

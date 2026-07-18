@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  haskellPackages,
   fetchFromGitHub,
+  haskellPackages,
 }:
 
 stdenv.mkDerivation {
@@ -17,6 +17,7 @@ stdenv.mkDerivation {
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     (haskellPackages.ghcWithPackages (hs: with hs; [ posix-escape ]))
   ];
@@ -29,6 +30,7 @@ stdenv.mkDerivation {
 
     runHook postBuild
   '';
+
   installPhase = ''
     runHook preInstall
 
@@ -41,10 +43,12 @@ stdenv.mkDerivation {
     description = "Shebang for running inside nix-shell";
     homepage = "https://github.com/bennofs/nix-script";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       bennofs
       rnhmjoj
     ];
+
     platforms = haskellPackages.ghc.meta.platforms;
   };
 }

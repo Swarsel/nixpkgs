@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  meson,
-  ninja,
   gettext,
   gitUpdater,
+  meson,
+  ninja,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -24,18 +24,20 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   ];
 
   passthru.updateScript = gitUpdater {
-    url = "https://git.mate-desktop.org/mate-backgrounds";
     odd-unstable = true;
     rev-prefix = "v";
+    url = "https://git.mate-desktop.org/mate-backgrounds";
   };
 
   meta = {
     description = "Background images and data for MATE";
     homepage = "https://mate-desktop.org";
+
     license = with lib.licenses; [
       gpl2Plus
       cc-by-sa-40
     ];
+
     platforms = lib.platforms.unix;
     teams = [ lib.teams.mate ];
   };

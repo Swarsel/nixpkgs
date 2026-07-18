@@ -1,10 +1,10 @@
 {
   lib,
   fetchzip,
+  libx11,
   tcl,
   tcllib,
   tk,
-  libx11,
   zlib,
 }:
 
@@ -17,23 +17,23 @@ tcl.mkTclDerivation rec {
     hash = "sha256-TRtE2/BVrYgkdKtbF06UjLvokokgLGQ/EKDLxhz2Ckw=";
   };
 
-  configureFlags = [
-    "--with-tcl=${tcl}/lib"
-    "--with-tk=${tk}/lib"
-    "--with-tkinclude=${tk.dev}/include"
-  ];
-
   buildInputs = [
     libx11
     tcllib
     zlib
   ];
 
+  configureFlags = [
+    "--with-tcl=${tcl}/lib"
+    "--with-tk=${tk}/lib"
+    "--with-tkinclude=${tk.dev}/include"
+  ];
+
   meta = {
-    homepage = "https://sourceforge.net/projects/tkimg/";
     description = "Img package adds several image formats to Tcl/Tk";
-    maintainers = with lib.maintainers; [ matthewcroughan ];
+    homepage = "https://sourceforge.net/projects/tkimg/";
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ matthewcroughan ];
     platforms = lib.platforms.unix;
     badPlatforms = lib.platforms.darwin;
   };

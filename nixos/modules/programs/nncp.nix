@@ -16,31 +16,34 @@ in
   options.programs.nncp = {
 
     enable = lib.mkEnableOption "NNCP (Node to Node copy) utilities and configuration";
+    package = lib.mkPackageOption pkgs "nncp" { };
 
     group = lib.mkOption {
-      type = lib.types.str;
       default = "uucp";
+
       description = ''
         The group under which NNCP files shall be owned.
         Any member of this group may access the secret keys
         of this NNCP node.
       '';
+
+      type = lib.types.str;
     };
 
-    package = lib.mkPackageOption pkgs "nncp" { };
-
     secrets = lib.mkOption {
-      type = with lib.types; listOf str;
-      example = [ "/run/keys/nncp.hjson" ];
       description = ''
         A list of paths to NNCP configuration files that should not be
         in the Nix store. These files are layered on top of the values at
         [](#opt-programs.nncp.settings).
       '';
+
+      example = [ "/run/keys/nncp.hjson" ];
+      type = with lib.types; listOf str;
     };
 
     settings = lib.mkOption {
-      type = settingsFormat.type;
+      default = { };
+
       description = ''
         NNCP configuration, see
         <http://www.nncpgo.org/Configuration.html>.
@@ -51,7 +54,8 @@ in
         `settings` as they will be leaked into
         `/nix/store`!
       '';
-      default = { };
+
+      type = settingsFormat.type;
     };
 
   };
@@ -59,25 +63,19 @@ in
   config = lib.mkIf programCfg.enable {
 
     environment = {
-      systemPackages = [ pkg ];
       etc."nncp.hjson".source = nncpCfgFile;
+      systemPackages = [ pkg ];
     };
 
     programs.nncp.settings = {
-      spool = lib.mkDefault "/var/spool/nncp";
       log = lib.mkDefault "/var/spool/nncp/log";
+      spool = lib.mkDefault "/var/spool/nncp";
     };
 
-    systemd.tmpfiles.rules = [
-      "d ${programCfg.settings.spool} 0770 root ${programCfg.group}"
-      "f ${programCfg.settings.log} 0770 root ${programCfg.group}"
-    ];
-
     systemd.services.nncp-config = {
-      path = [ pkg ];
       description = "Generate NNCP configuration";
-      wantedBy = [ "basic.target" ];
-      serviceConfig.Type = "oneshot";
+      path = [ pkg ];
+
       script = ''
         umask 127
         rm -f ${nncpCfgFile}
@@ -87,6 +85,14 @@ in
         done |${lib.getExe pkgs.jq} --slurp 'reduce .[] as $x ({}; . * $x)' >${nncpCfgFile}
         chgrp ${programCfg.group} ${nncpCfgFile}
       '';
+
+      serviceConfig.Type = "oneshot";
+      wantedBy = [ "basic.target" ];
     };
+
+    systemd.tmpfiles.rules = [
+      "d ${programCfg.settings.spool} 0770 root ${programCfg.group}"
+      "f ${programCfg.settings.log} 0770 root ${programCfg.group}"
+    ];
   };
 }

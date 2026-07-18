@@ -1,26 +1,28 @@
 {
   lib,
   stdenv,
-  # LLVM version closest to ROCm fork to override
-  llvmPackages_22,
-  overrideCC,
-  lndir,
-  rocm-device-libs,
   fetchFromGitHub,
-  runCommand,
-  symlinkJoin,
-  rdfind,
-  zstd,
+  fetchpatch,
   gcc-unwrapped,
   glibc,
   libffi,
   libxml2,
+  # LLVM version closest to ROCm fork to override
+  llvmPackages_22,
+  lndir,
+  overrideCC,
+  rdfind,
   removeReferencesTo,
-  fetchpatch,
+  rocm-device-libs,
+  runCommand,
+  symlinkJoin,
+  zstd,
   # Build compilers and stdenv suitable for profiling
   # leaving compressed line tables (-g1 -gz) unstripped
   # TODO: Should also apply to downstream packages which use rocmClangStdenv?
   profilableStdenv ? false,
+  # whether rocm stdenv uses libcxx (clang c++ stdlib) instead of gcc stdlibc++
+  withLibcxx ? false,
   # FIXME: proper two-stage bootstrap & PGO/BOLT/LTO
   # LTO currently disabled due to llvm 22 vs 22.1 bitcode mismatch between
   # llvmPackages_22 (22.1) and ROCm LLVM (22.0). Uses new bitcode attr
@@ -31,8 +33,6 @@
   # will outweight that. ~3-4% speedup multiplied by thousands
   # of corehours.
   withLto ? false,
-  # whether rocm stdenv uses libcxx (clang c++ stdlib) instead of gcc stdlibc++
-  withLibcxx ? false,
 }:
 
 let
@@ -75,15 +75,6 @@ let
   ];
   # A prefix for use as the GCC prefix when building rocm-toolchain
   gcc-prefix-headers = symlinkJoin {
-    name = "gcc-prefix-headers";
-    paths = [
-      glibc.dev
-      gcc-unwrapped.out
-    ];
-    disallowedRequisites = [
-      glibc.dev
-      gcc-unwrapped.out
-    ];
     postBuild = ''
       rm -rf $out/{bin,libexec,nix-support,lib64,share,etc}
       rm $out/lib/gcc/x86_64-unknown-linux-gnu/*/plugin/include/auto-host.h
@@ -96,44 +87,58 @@ let
       mv $versionedIncludePath/* $out/include/c++/
       rm -rf $versionedIncludePath/
     '';
-  };
-  gcc-prefix = symlinkJoin {
-    name = "gcc-prefix";
-    paths = [
-      gcc-prefix-headers
-      glibc
-      gcc-unwrapped.lib
-    ];
+
     disallowedRequisites = [
       glibc.dev
       gcc-unwrapped.out
     ];
+
+    name = "gcc-prefix-headers";
+
+    paths = [
+      glibc.dev
+      gcc-unwrapped.out
+    ];
+  };
+  gcc-prefix = symlinkJoin {
     postBuild = ''
       rm -rf $out/{bin,libexec,nix-support,lib64,share,etc}
       rm $out/lib/ld-linux-x86-64.so.2
       ln -s $out $out/x86_64-unknown-linux-gnu
     '';
+
+    disallowedRequisites = [
+      glibc.dev
+      gcc-unwrapped.out
+    ];
+
+    name = "gcc-prefix";
+
+    paths = [
+      gcc-prefix-headers
+      glibc
+      gcc-unwrapped.lib
+    ];
   };
   llvmSrc = fetchFromGitHub {
+    hash = "sha256-TwFvQimbax2E37ZC/52lNkHXCgyBNfSGDBaqmas2x/s=";
     owner = "ROCm";
     repo = "llvm-project";
     rev = "rocm-${version}";
-    hash = "sha256-TwFvQimbax2E37ZC/52lNkHXCgyBNfSGDBaqmas2x/s=";
   };
   llvmMajorVersion = lib.versions.major rocmLlvmVersion;
   # An llvmPackages (pkgs/development/compilers/llvm/) built from ROCm LLVM's source tree
   llvmPackagesRocm = llvmPackages_base.override (_old: {
-    stdenv = stdenvToBuildRocmLlvm;
-
+    # this version determines which patches are applied
+    version = rocmLlvmVersion;
+    src = llvmSrc;
+    doCheck = false;
+    monorepoSrc = llvmSrc;
     # not setting gitRelease = because that causes patch selection logic to use git patches
     # ROCm LLVM is closer to 20 official
     # gitRelease = {}; officialRelease = null;
     officialRelease = { }; # Set but empty because we're overriding everything from it.
-    # this version determines which patches are applied
-    version = rocmLlvmVersion;
-    src = llvmSrc;
-    monorepoSrc = llvmSrc;
-    doCheck = false;
+    stdenv = stdenvToBuildRocmLlvm;
   });
   refsToRemove = builtins.concatStringsSep " -t " [
     stdenvToBuildRocmLlvm
@@ -168,9 +173,9 @@ let
   sysrootCompiler =
     {
       cc,
+      linkPaths,
       name,
       paths,
-      linkPaths,
     }:
     let
       linked = symlinkJoin { inherit name paths; };
@@ -181,9 +186,9 @@ let
         # If this is erroring, try why-depends --precise on the symlinkJoin of inputs to look for the problem
         # nix why-depends --precise .#rocmPackages.llvm.rocm-toolchain.linked /store/path/its/not/allowed
         disallowedRequisites = disallowedRefsForToolchain;
-        passthru.linked = linked;
         linkPaths = linkPaths;
         passAsFile = [ "linkPaths" ];
+        passthru.linked = linked;
         # TODO(@LunNova): Try to use --sysroot with clang in its original location instead of
         # relying on copying the binary?
         # $clang/bin/clang++ --sysroot=$rocm-toolchain is not equivalent
@@ -231,8 +236,8 @@ let
   tablegenUsage = x: !(lib.strings.hasInfix "llvm-tblgen" x);
   llvmTargetsFlag = "-DLLVM_TARGETS_TO_BUILD=AMDGPU;${
     {
-      "x86_64" = "X86";
       "aarch64" = "AArch64";
+      "x86_64" = "X86";
     }
     .${stdenv.targetPlatform.parsed.cpu.name}
       or (throw "Unsupported CPU architecture: ${stdenv.targetPlatform.parsed.cpu.name}")
@@ -292,98 +297,20 @@ let
   inherit (llvmPackagesRocm) libcxx;
 in
 overrideLlvmPackagesRocm (s: {
-  libllvm = (s.prev.libllvm.override { }).overrideAttrs (old: {
-    patches = old.patches ++ [
-      ./perf-increase-namestring-size.patch
-      # v64i8 shuffle lowering inf loop on VBMI targets, hangs whisper-cpp etc
-      # https://github.com/NixOS/nixpkgs/issues/497745
-      (fetchpatch {
-        # https://github.com/llvm/llvm-project/pull/182832
-        name = "llvm-x86-v64i8-add-test-coverage.patch";
-        url = "https://github.com/llvm/llvm-project/commit/0e3a96d0ec01e3575674d72c4e23bf98affdca28.patch";
-        relative = "llvm";
-        hash = "sha256-qhRkB8Fjz/fNacuGv1OFkiTNOQ0/QQ9p4pLFudwrTzM=";
-      })
-      (fetchpatch {
-        # https://github.com/llvm/llvm-project/pull/182852
-        name = "llvm-x86-v64i8-prefer-vpermv3-on-vbmi.patch";
-        url = "https://github.com/llvm/llvm-project/commit/8f5880d3ae4e5dfc748985d90e5413671028aa3e.patch";
-        relative = "llvm";
-        hash = "sha256-4DU6gu/1+iQpzvVYBlTTUKtw77QSRyTja4hdel4D5Cw=";
-      })
-      (fetchpatch {
-        # https://github.com/llvm/llvm-project/pull/183109
-        name = "llvm-x86-v64i8-skip-repeated-mask-lane-permute-on-vbmi.patch";
-        url = "https://github.com/llvm/llvm-project/commit/1b9fea021840f17c41ea980300d0fc45e7285909.patch";
-        relative = "llvm";
-        hash = "sha256-9Akm78QQr8BIMrVWwDG3poWS1HuQ0hpIQWfke3oADgg=";
-      })
-      # TODO: consider reapplying "Don't include aliases in RegisterClassInfo::IgnoreCSRForAllocOrder"
-      # it was reverted as it's a pessimization for non-GPU archs, but this compiler
-      # is used mostly for amdgpu
-    ];
-    dontStrip = profilableStdenv;
-    hardeningDisable = [ "all" ];
-    nativeBuildInputs = old.nativeBuildInputs ++ [ removeReferencesTo ];
-    buildInputs = old.buildInputs ++ [
-      zstd
-    ];
-    preFixup = ''
-      moveToOutput "lib/lib*.a" "$dev"
-      moveToOutput "lib/cmake" "$dev"
-      sed -Ei "s|$lib/lib/(lib[^/]*)\.a|$dev/lib/\1.a|g" $dev/lib/cmake/llvm/*.cmake
-    '';
-    env = (old.env or { }) // {
-      NIX_CFLAGS_COMPILE = "${(old.env or { }).NIX_CFLAGS_COMPILE or ""} ${llvmExtraCflags}";
-    };
-    cmakeFlags = (builtins.filter tablegenUsage old.cmakeFlags) ++ commonCmakeFlags;
-    # Ensure we don't leak refs to compiler that was used to bootstrap this LLVM
-    disallowedReferences = (old.disallowedReferences or [ ]) ++ disallowedRefsForToolchain;
-    postFixup = ''
-      ${old.postFixup or ""}
-      find $lib -type f -exec remove-references-to -t ${refsToRemove} {} +
-    '';
-    meta = old.meta // llvmMeta;
-  });
-  lld =
-    (s.prev.lld.override {
-    }).overrideAttrs
-      (old: {
-        dontStrip = profilableStdenv;
-        hardeningDisable = [ "all" ];
-        nativeBuildInputs = old.nativeBuildInputs ++ [
-          removeReferencesTo
-        ];
-        buildInputs = old.buildInputs ++ [
-          zstd
-        ];
-        env = (old.env or { }) // {
-          NIX_CFLAGS_COMPILE = "${(old.env or { }).NIX_CFLAGS_COMPILE or ""} ${llvmExtraCflags}";
-        };
-        cmakeFlags = (builtins.filter tablegenUsage old.cmakeFlags) ++ commonCmakeFlags;
-        # Ensure we don't leak refs to compiler that was used to bootstrap this LLVM
-        disallowedReferences = (old.disallowedReferences or [ ]) ++ disallowedRefsForToolchain;
-        postFixup = ''
-          ${old.postFixup or ""}
-          find $lib -type f -exec remove-references-to -t ${refsToRemove} {} +
-        '';
-        meta = old.meta // llvmMeta;
-      });
+  clang = s.final.rocm-toolchain;
+
   clang-unwrapped = (
     (s.prev.clang-unwrapped.override {
       enableClangToolsExtra = false;
     }).overrideAttrs
       (old: {
-        passthru = old.passthru // {
-          inherit gcc-prefix;
-        };
         patches = [
           (fetchpatch {
+            hash = "sha256-73IDPGZWKX4vny3x5FJ3/NQw8XRad9UNwfYkvQdMB4s=";
             # [clang][cmake] Add option to control scan-build-py installation (#172727)
             name = "clang-scan-build-py-configurable.patch";
-            url = "https://github.com/llvm/llvm-project/commit/f5759eeb63a3a5ce7d555c13c3126cea84e0c7b1.patch";
             relative = "clang";
-            hash = "sha256-73IDPGZWKX4vny3x5FJ3/NQw8XRad9UNwfYkvQdMB4s=";
+            url = "https://github.com/llvm/llvm-project/commit/f5759eeb63a3a5ce7d555c13c3126cea84e0c7b1.patch";
           })
         ]
         ++ old.patches
@@ -398,10 +325,50 @@ overrideLlvmPackagesRocm (s: {
           (fetchpatch {
             # [ClangOffloadBundler]: Add GetBundleIDsInFile to OffloadBundler
             hash = "sha256-OsarDZXuJ5vAXTP4i0NBUeK/r6tQPumaqmMWkf29UtM=";
-            url = "https://github.com/GZGavinZhao/rocm-llvm-project/commit/c7de294b0d1d25f277f9d1cbb2c9e09c7600e210.patch";
             relative = "clang";
+            url = "https://github.com/GZGavinZhao/rocm-llvm-project/commit/c7de294b0d1d25f277f9d1cbb2c9e09c7600e210.patch";
           })
         ];
+
+        nativeBuildInputs = old.nativeBuildInputs ++ [
+          removeReferencesTo
+        ];
+
+        buildInputs = old.buildInputs ++ [
+          zstd
+        ];
+
+        # https://github.com/llvm/llvm-project/blob/6976deebafa8e7de993ce159aa6b82c0e7089313/clang/cmake/caches/DistributionExample-stage2.cmake#L9-L11
+        cmakeFlags =
+          # TODO: Remove in followup, tblgen now works correctly but would rebuild
+          (builtins.filter tablegenUsage old.cmakeFlags) ++ commonCmakeFlags;
+
+        env = (old.env or { }) // {
+          NIX_CFLAGS_COMPILE = "${(old.env or { }).NIX_CFLAGS_COMPILE or ""} ${llvmExtraCflags}";
+        };
+
+        preFixup = ''
+          ${toString old.preFixup or ""}
+          moveToOutput "lib/lib*.a" "$dev"
+          moveToOutput "lib/cmake" "$dev"
+          mkdir -p $dev/lib/clang/
+          ln -s $lib/lib/clang/${llvmMajorVersion} $dev/lib/clang/
+          sed -Ei "s|$lib/lib/(lib[^/]*)\.a|$dev/lib/\1.a|g" $dev/lib/cmake/clang/*.cmake
+        '';
+
+        postFixup = ''
+          ${toString old.postFixup or ""}
+          find $lib -type f -exec remove-references-to -t ${refsToRemove} {} +
+          find $dev -type f -exec remove-references-to -t ${refsToRemove} {} +
+        '';
+
+        # Enable structured attrs for separateDebugInfo, because it is required with disallowedReferences set
+        __structuredAttrs = true;
+        # Ensure we don't leak refs to compiler that was used to bootstrap this LLVM
+        disallowedReferences = (old.disallowedReferences or [ ]) ++ disallowedRefsForToolchain;
+        dontStrip = profilableStdenv;
+        hardeningDisable = [ "all" ];
+
         # ROCm 7.2 commits 4dda51261a6 "Replace hostexec with upstream rpc"
         # and 2ca1509d6d2 "Put the RTL, Back!", added CGEmitEmissaryExec.cpp which
         # includes ../../openmp/device/include/EmissaryIds.h, breaking
@@ -414,41 +381,153 @@ overrideLlvmPackagesRocm (s: {
           mkdir -p "''${sourceRoot}/openmp/device/include"
           ln -s "${llvmSrc}/openmp/device/include/EmissaryIds.h" "''${sourceRoot}/openmp/device/include/"
         '';
-        hardeningDisable = [ "all" ];
-        nativeBuildInputs = old.nativeBuildInputs ++ [
-          removeReferencesTo
-        ];
-        buildInputs = old.buildInputs ++ [
-          zstd
-        ];
-        env = (old.env or { }) // {
-          NIX_CFLAGS_COMPILE = "${(old.env or { }).NIX_CFLAGS_COMPILE or ""} ${llvmExtraCflags}";
+
+        passthru = old.passthru // {
+          inherit gcc-prefix;
         };
-        dontStrip = profilableStdenv;
-        # Ensure we don't leak refs to compiler that was used to bootstrap this LLVM
-        disallowedReferences = (old.disallowedReferences or [ ]) ++ disallowedRefsForToolchain;
-        # Enable structured attrs for separateDebugInfo, because it is required with disallowedReferences set
-        __structuredAttrs = true;
-        # https://github.com/llvm/llvm-project/blob/6976deebafa8e7de993ce159aa6b82c0e7089313/clang/cmake/caches/DistributionExample-stage2.cmake#L9-L11
-        cmakeFlags =
-          # TODO: Remove in followup, tblgen now works correctly but would rebuild
-          (builtins.filter tablegenUsage old.cmakeFlags) ++ commonCmakeFlags;
-        preFixup = ''
-          ${toString old.preFixup or ""}
-          moveToOutput "lib/lib*.a" "$dev"
-          moveToOutput "lib/cmake" "$dev"
-          mkdir -p $dev/lib/clang/
-          ln -s $lib/lib/clang/${llvmMajorVersion} $dev/lib/clang/
-          sed -Ei "s|$lib/lib/(lib[^/]*)\.a|$dev/lib/\1.a|g" $dev/lib/cmake/clang/*.cmake
-        '';
-        postFixup = ''
-          ${toString old.postFixup or ""}
-          find $lib -type f -exec remove-references-to -t ${refsToRemove} {} +
-          find $dev -type f -exec remove-references-to -t ${refsToRemove} {} +
-        '';
+
         meta = old.meta // llvmMeta;
       })
   );
+
+  compiler-rt = s.final.compiler-rt-libc;
+
+  compiler-rt-libc = s.prev.compiler-rt-libc.overrideAttrs (old: {
+    meta = old.meta // llvmMeta;
+  });
+
+  libllvm = (s.prev.libllvm.override { }).overrideAttrs (old: {
+    patches = old.patches ++ [
+      ./perf-increase-namestring-size.patch
+      # v64i8 shuffle lowering inf loop on VBMI targets, hangs whisper-cpp etc
+      # https://github.com/NixOS/nixpkgs/issues/497745
+      (fetchpatch {
+        hash = "sha256-qhRkB8Fjz/fNacuGv1OFkiTNOQ0/QQ9p4pLFudwrTzM=";
+        # https://github.com/llvm/llvm-project/pull/182832
+        name = "llvm-x86-v64i8-add-test-coverage.patch";
+        relative = "llvm";
+        url = "https://github.com/llvm/llvm-project/commit/0e3a96d0ec01e3575674d72c4e23bf98affdca28.patch";
+      })
+      (fetchpatch {
+        hash = "sha256-4DU6gu/1+iQpzvVYBlTTUKtw77QSRyTja4hdel4D5Cw=";
+        # https://github.com/llvm/llvm-project/pull/182852
+        name = "llvm-x86-v64i8-prefer-vpermv3-on-vbmi.patch";
+        relative = "llvm";
+        url = "https://github.com/llvm/llvm-project/commit/8f5880d3ae4e5dfc748985d90e5413671028aa3e.patch";
+      })
+      (fetchpatch {
+        hash = "sha256-9Akm78QQr8BIMrVWwDG3poWS1HuQ0hpIQWfke3oADgg=";
+        # https://github.com/llvm/llvm-project/pull/183109
+        name = "llvm-x86-v64i8-skip-repeated-mask-lane-permute-on-vbmi.patch";
+        relative = "llvm";
+        url = "https://github.com/llvm/llvm-project/commit/1b9fea021840f17c41ea980300d0fc45e7285909.patch";
+      })
+      # TODO: consider reapplying "Don't include aliases in RegisterClassInfo::IgnoreCSRForAllocOrder"
+      # it was reverted as it's a pessimization for non-GPU archs, but this compiler
+      # is used mostly for amdgpu
+    ];
+
+    nativeBuildInputs = old.nativeBuildInputs ++ [ removeReferencesTo ];
+
+    buildInputs = old.buildInputs ++ [
+      zstd
+    ];
+
+    cmakeFlags = (builtins.filter tablegenUsage old.cmakeFlags) ++ commonCmakeFlags;
+
+    env = (old.env or { }) // {
+      NIX_CFLAGS_COMPILE = "${(old.env or { }).NIX_CFLAGS_COMPILE or ""} ${llvmExtraCflags}";
+    };
+
+    preFixup = ''
+      moveToOutput "lib/lib*.a" "$dev"
+      moveToOutput "lib/cmake" "$dev"
+      sed -Ei "s|$lib/lib/(lib[^/]*)\.a|$dev/lib/\1.a|g" $dev/lib/cmake/llvm/*.cmake
+    '';
+
+    postFixup = ''
+      ${old.postFixup or ""}
+      find $lib -type f -exec remove-references-to -t ${refsToRemove} {} +
+    '';
+
+    # Ensure we don't leak refs to compiler that was used to bootstrap this LLVM
+    disallowedReferences = (old.disallowedReferences or [ ]) ++ disallowedRefsForToolchain;
+    dontStrip = profilableStdenv;
+    hardeningDisable = [ "all" ];
+    meta = old.meta // llvmMeta;
+  });
+
+  lld =
+    (s.prev.lld.override {
+    }).overrideAttrs
+      (old: {
+        nativeBuildInputs = old.nativeBuildInputs ++ [
+          removeReferencesTo
+        ];
+
+        buildInputs = old.buildInputs ++ [
+          zstd
+        ];
+
+        cmakeFlags = (builtins.filter tablegenUsage old.cmakeFlags) ++ commonCmakeFlags;
+
+        env = (old.env or { }) // {
+          NIX_CFLAGS_COMPILE = "${(old.env or { }).NIX_CFLAGS_COMPILE or ""} ${llvmExtraCflags}";
+        };
+
+        postFixup = ''
+          ${old.postFixup or ""}
+          find $lib -type f -exec remove-references-to -t ${refsToRemove} {} +
+        '';
+
+        # Ensure we don't leak refs to compiler that was used to bootstrap this LLVM
+        disallowedReferences = (old.disallowedReferences or [ ]) ++ disallowedRefsForToolchain;
+        dontStrip = profilableStdenv;
+        hardeningDisable = [ "all" ];
+        meta = old.meta // llvmMeta;
+      });
+
+  # AMD has a separate MLIR impl which we package under rocmPackages.rocmlir
+  # It would be an error to rely on the original mlir package from this scope
+  mlir = null;
+
+  # Projects
+  openmp =
+    with s.final;
+    (llvmPackagesRocm.openmp.override {
+      clang-unwrapped = clang-unwrapped;
+      llvm = llvm;
+    }).overrideAttrs
+      (old: {
+        nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [
+          removeReferencesTo
+        ];
+
+        buildInputs = old.buildInputs ++ [
+          clang-unwrapped
+          zstd
+          libxml2
+          libffi
+        ];
+
+        cmakeFlags =
+          old.cmakeFlags
+          ++ commonCmakeFlags
+          ++ [
+            "-DDEVICELIBS_ROOT=${rocm-device-libs.src}"
+            # OMPD support is broken in ROCm 6.3+ Haven't investigated why.
+            "-DLIBOMP_OMPD_SUPPORT:BOOL=FALSE"
+            "-DLIBOMP_OMPD_GDB_SUPPORT:BOOL=FALSE"
+          ];
+
+        postFixup = ''
+          ${old.postFixup or ""}
+          ln -s $out/lib/libomp.so $dev/lib/libomp.so
+        '';
+
+        disallowedReferences = (old.disallowedReferences or [ ]) ++ disallowedRefsForToolchain;
+      });
+
   # A clang that understands standard include searching in a GNU sysroot and will put GPU libs in include path
   # in the right order
   # and expects its libc to be in the sysroot
@@ -456,7 +535,16 @@ overrideLlvmPackagesRocm (s: {
     with s.final;
     (sysrootCompiler {
       cc = clang-unwrapped;
+
+      linkPaths = [
+        bintools.bintools.out
+      ]
+      ++ lib.optionals (!withLibcxx) [
+        gcc-include.out
+      ];
+
       name = "rocm-toolchain";
+
       paths = [
         clang-unwrapped.out
         clang-unwrapped.lib
@@ -472,61 +560,14 @@ overrideLlvmPackagesRocm (s: {
         glibc
         glibc.dev
       ];
-      linkPaths = [
-        bintools.bintools.out
-      ]
-      ++ lib.optionals (!withLibcxx) [
-        gcc-include.out
-      ];
     })
     // {
       version = llvmMajorVersion;
       cc = rocm-toolchain;
-      libllvm = llvm;
       isClang = true;
       isGNU = false;
+      libllvm = llvm;
     };
-  compiler-rt-libc = s.prev.compiler-rt-libc.overrideAttrs (old: {
-    meta = old.meta // llvmMeta;
-  });
-  compiler-rt = s.final.compiler-rt-libc;
-  clang = s.final.rocm-toolchain;
 
   rocmClangStdenv = with s.final; overrideCC (if withLibcxx then libcxxStdenv else stdenv) clang;
-
-  # Projects
-  openmp =
-    with s.final;
-    (llvmPackagesRocm.openmp.override {
-      llvm = llvm;
-      clang-unwrapped = clang-unwrapped;
-    }).overrideAttrs
-      (old: {
-        disallowedReferences = (old.disallowedReferences or [ ]) ++ disallowedRefsForToolchain;
-        nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [
-          removeReferencesTo
-        ];
-        cmakeFlags =
-          old.cmakeFlags
-          ++ commonCmakeFlags
-          ++ [
-            "-DDEVICELIBS_ROOT=${rocm-device-libs.src}"
-            # OMPD support is broken in ROCm 6.3+ Haven't investigated why.
-            "-DLIBOMP_OMPD_SUPPORT:BOOL=FALSE"
-            "-DLIBOMP_OMPD_GDB_SUPPORT:BOOL=FALSE"
-          ];
-        buildInputs = old.buildInputs ++ [
-          clang-unwrapped
-          zstd
-          libxml2
-          libffi
-        ];
-        postFixup = ''
-          ${old.postFixup or ""}
-          ln -s $out/lib/libomp.so $dev/lib/libomp.so
-        '';
-      });
-  # AMD has a separate MLIR impl which we package under rocmPackages.rocmlir
-  # It would be an error to rely on the original mlir package from this scope
-  mlir = null;
 })

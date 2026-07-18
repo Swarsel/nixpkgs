@@ -1,20 +1,19 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  nix-update-script,
   pyqt5,
   pytestCheckHook,
   qt5,
   setuptools,
   writableTmpDirAsHomeHook,
-  nix-update-script,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "anyqt";
   version = "0.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ales-erjavec";
@@ -22,8 +21,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-iDUgu+x9rnpxpHzO7Rf2rJFXsheivrK7HI3FUbomkTU=";
   };
-
-  build-system = [ setuptools ];
 
   nativeCheckInputs = [
     pyqt5
@@ -36,6 +33,8 @@ buildPythonPackage (finalAttrs: {
     export QT_QPA_PLATFORM=offscreen
   '';
 
+  build-system = [ setuptools ];
+
   disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
     "tests/test_qabstractitemview.py"
     "tests/test_qaction_set_menu.py"
@@ -47,8 +46,8 @@ buildPythonPackage (finalAttrs: {
     "tests/test_qtest.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "AnyQt" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

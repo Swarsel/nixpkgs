@@ -1,10 +1,10 @@
 {
   lib,
-  buildDotnetModule,
   fetchFromGitHub,
-  dotnetCorePackages,
   blueprint-compiler,
+  buildDotnetModule,
   chromaprint,
+  dotnetCorePackages,
   glib,
   gtk4,
   libadwaita,
@@ -25,11 +25,6 @@ buildDotnetModule rec {
     hash = "sha256-4OfByQYhLXmeFWxzhqt8d7pLUyuMLhDM20E2YcA9Q3s=";
   };
 
-  projectFile = "NickvisionTagger.GNOME/NickvisionTagger.GNOME.csproj";
-  dotnet-sdk = dotnet.sdk;
-  dotnet-runtime = dotnet.runtime;
-  nugetDeps = ./deps.json;
-
   nativeBuildInputs = [
     blueprint-compiler
   ];
@@ -39,14 +34,6 @@ buildDotnetModule rec {
     libadwaita
   ];
 
-  runtimeDeps = [
-    glib
-    gtk4
-    libadwaita
-  ];
-
-  executables = [ "NickvisionTagger.GNOME" ];
-
   postInstall = ''
     substituteInPlace NickvisionTagger.Shared/Linux/org.nickvision.tagger.desktop.in --replace '@EXEC@' "NickvisionTagger.GNOME"
     install -Dm444 NickvisionTagger.Shared/Resources/org.nickvision.tagger.svg -t $out/share/icons/hicolor/scalable/apps/
@@ -54,15 +41,29 @@ buildDotnetModule rec {
     install -Dm444 NickvisionTagger.Shared/Linux/org.nickvision.tagger.desktop.in -T $out/share/applications/org.nickvision.tagger.desktop
   '';
 
+  dotnet-runtime = dotnet.runtime;
+  dotnet-sdk = dotnet.sdk;
+  executables = [ "NickvisionTagger.GNOME" ];
+  nugetDeps = ./deps.json;
+  projectFile = "NickvisionTagger.GNOME/NickvisionTagger.GNOME.csproj";
+
+  runtimeDeps = [
+    glib
+    gtk4
+    libadwaita
+  ];
+
   meta = {
     description = "Easy-to-use music tag (metadata) editor";
     homepage = "https://github.com/NickvisionApps/Tagger";
-    mainProgram = "NickvisionTagger.GNOME";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       zendo
       ratcornu
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "NickvisionTagger.GNOME";
   };
 }

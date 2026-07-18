@@ -3,26 +3,14 @@
   stdenv,
   fetchFromGitHub,
   fetchFromGitLab,
-  rustPlatform,
-  systemdMinimal,
-  symlinkJoin,
-
-  # nativeBuildInputs
-  blueprint-compiler,
-  cargo,
-  makeWrapper,
-  libxml2,
-  meson,
-  ninja,
-  pkg-config,
-  protobuf,
-  python3,
-  rustc,
-  wrapGAppsHook4,
-
+  # magpie wrapper
+  addDriverRunpath,
   # buildInputs
   appstream-glib,
+  # nativeBuildInputs
+  blueprint-compiler,
   cairo,
+  cargo,
   cmake,
   dbus,
   desktop-file-utils,
@@ -31,21 +19,29 @@
   glib,
   graphene,
   gtk4,
+  libGL,
   libadwaita,
   libdrm,
   libgbm,
+  libxml2,
+  makeWrapper,
+  meson,
+  ninja,
   pango,
+  pkg-config,
+  protobuf,
+  python3,
+  rustPlatform,
+  rustc,
   sqlite,
+  symlinkJoin,
+  systemdMinimal,
   udev,
-  wayland,
-
   # tests
   versionCheckHook,
-
-  # magpie wrapper
-  addDriverRunpath,
-  libGL,
   vulkan-loader,
+  wayland,
+  wrapGAppsHook4,
 }:
 
 # UPDATE PROCESS:
@@ -63,10 +59,10 @@
 
 let
   nvtop = fetchFromGitHub {
+    hash = "sha256-QxGP6lHbjS7GAQGWUnxFdrYgxBVhtuk5CzS2EUVFjOs=";
     owner = "Syllo";
     repo = "nvtop";
     rev = "339ee0b10a64ec51f43d27357b0068a40f16e9e4";
-    hash = "sha256-QxGP6lHbjS7GAQGWUnxFdrYgxBVhtuk5CzS2EUVFjOs=";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -77,8 +73,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "mission-center-devs";
     repo = "mission-center";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-KETaCjKTxEvh3tgLzJw5PLJHAQivqXhGYcluvFhGGd8=";
+    fetchSubmodules = true;
   };
 
   postPatch =
@@ -119,22 +115,6 @@ stdenv.mkDerivation (finalAttrs: {
         --replace-fail "udevadm" "${lib.getExe' systemdMinimal "udevadm"}"
     '';
 
-  cargoDeps = symlinkJoin {
-    name = "cargo-vendor-dir";
-    paths = [
-      (rustPlatform.fetchCargoVendor {
-        inherit (finalAttrs) pname version src;
-        hash = "sha256-XS+/gpCMIqDgFR6AjuT2q+p+85GklUuRhKWzaBfQjZg=";
-      })
-      (rustPlatform.fetchCargoVendor {
-        pname = "${finalAttrs.pname}-magpie";
-        inherit (finalAttrs) version src;
-        sourceRoot = "${finalAttrs.src.name}/subprojects/magpie";
-        hash = "sha256-9YZ2dgIaq0AtS8QsIC/0cJlELIy/UbOvulgZFL/qRRs=";
-      })
-    ];
-  };
-
   nativeBuildInputs = [
     cmake
     addDriverRunpath
@@ -151,7 +131,6 @@ stdenv.mkDerivation (finalAttrs: {
     rustc
     wrapGAppsHook4
   ];
-  dontUseCmakeConfigure = true;
 
   buildInputs = [
     appstream-glib
@@ -173,13 +152,11 @@ stdenv.mkDerivation (finalAttrs: {
     wayland
   ];
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  versionCheckProgram = "${placeholder "out"}/bin/missioncenter";
-  doInstallCheck = true;
-
-  dontWrapGApps = true;
 
   postFixup = ''
     wrapProgram $out/bin/missioncenter \
@@ -201,15 +178,38 @@ stdenv.mkDerivation (finalAttrs: {
       }"
   '';
 
+  cargoDeps = symlinkJoin {
+    name = "cargo-vendor-dir";
+
+    paths = [
+      (rustPlatform.fetchCargoVendor {
+        inherit (finalAttrs) pname version src;
+        hash = "sha256-XS+/gpCMIqDgFR6AjuT2q+p+85GklUuRhKWzaBfQjZg=";
+      })
+      (rustPlatform.fetchCargoVendor {
+        inherit (finalAttrs) version src;
+        pname = "${finalAttrs.pname}-magpie";
+        hash = "sha256-9YZ2dgIaq0AtS8QsIC/0cJlELIy/UbOvulgZFL/qRRs=";
+        sourceRoot = "${finalAttrs.src.name}/subprojects/magpie";
+      })
+    ];
+  };
+
+  dontUseCmakeConfigure = true;
+  dontWrapGApps = true;
+  versionCheckProgram = "${placeholder "out"}/bin/missioncenter";
+
   meta = {
     description = "Monitor your CPU, Memory, Disk, Network and GPU usage";
     homepage = "https://gitlab.com/mission-center-devs/mission-center";
     changelog = "https://gitlab.com/mission-center-devs/mission-center/-/releases/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       getchoo
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "missioncenter";
   };

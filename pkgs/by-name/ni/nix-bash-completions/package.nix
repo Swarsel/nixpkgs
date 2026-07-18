@@ -6,8 +6,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.6.8";
   pname = "nix-bash-completions";
+  version = "0.6.8";
 
   src = fetchFromGitHub {
     owner = "hedning";
@@ -19,8 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fix improper escaping: https://github.com/NixOS/nixpkgs/issues/284162
     (fetchpatch {
-      url = "https://github.com/hedning/nix-bash-completions/pull/28/commits/ef2055aa28754fa9e009bbfebc1491972e4f4e67.patch";
       hash = "sha256-TRkHrk7bX7DX0COzzYR+1pgTqLy7J55BcejNjRwthII=";
+      url = "https://github.com/hedning/nix-bash-completions/pull/28/commits/ef2055aa28754fa9e009bbfebc1491972e4f4e67.patch";
     })
     # Fix completion with Nix 2.4+ on non-NixOS: https://github.com/hedning/nix-bash-completions/pull/26
     # Rebased locally due to conflict with the above patch (https://github.com/hedning/nix-bash-completions/pull/28).
@@ -36,6 +36,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   strictDeps = true;
+
   # To enable lazy loading via bash-completion we need a symlink to the script
   # from every command name.
   installPhase = ''
@@ -56,11 +57,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/hedning/nix-bash-completions";
     description = "Bash completions for Nix, NixOS, and NixOps";
+    homepage = "https://github.com/hedning/nix-bash-completions";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ ncfavier ];
+    platforms = lib.platforms.all;
     # Set a lower priority such that Nix wins in case of conflicts.
     priority = 10;
   };

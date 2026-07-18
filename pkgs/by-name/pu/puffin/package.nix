@@ -20,7 +20,7 @@ buildGoModule (finalAttrs: {
     description = "Beautiful terminal dashboard for hledger";
     homepage = "https://github.com/siddhantac/puffin";
     license = lib.licenses.mit;
-    mainProgram = "puffin";
     maintainers = with lib.maintainers; [ renesat ];
+    mainProgram = "puffin";
   };
 })

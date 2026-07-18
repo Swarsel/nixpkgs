@@ -18,6 +18,13 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
+  makeFlags = [ "CC_EXEC=cc" ];
+
+  installPhase = ''
+    mkdir $out
+    cp -r ../bin $out
+  '';
+
   configurePhase = ''
     runHook preConfigure
 
@@ -27,22 +34,17 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postConfigure
   '';
 
-  makeFlags = [ "CC_EXEC=cc" ];
-
-  installPhase = ''
-    mkdir $out
-    cp -r ../bin $out
-  '';
-
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "High-performance read alignment, quantification and mutation discovery";
+    homepage = "https://subread.sourceforge.net/";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ jbedo ];
+
     platforms = [
       "x86_64-linux"
     ];
-    homepage = "https://subread.sourceforge.net/";
+
+    broken = stdenv.hostPlatform.isDarwin;
   };
 
 })

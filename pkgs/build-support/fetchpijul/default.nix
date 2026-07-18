@@ -1,22 +1,22 @@
 {
   lib,
-  stdenvNoCC,
-  pijul,
   cacert,
+  pijul,
+  stdenvNoCC,
 }:
 
 lib.makeOverridable (
   {
     # Remote to fetch
     url,
+    change ? null,
+    channel ? "main",
+    hash ? "",
     # Additional list of remotes specifying alternative download location to be
     # tried in order, if the prior remote failed to fetch.
     mirrors ? [ ],
-    hash ? "",
-    change ? null,
-    state ? null,
-    channel ? "main",
     name ? "fetchpijul",
+    state ? null,
     # TODO: Changes in pijul are unordered so there's many ways to end up with the same repository state.
     # This makes leaveDotPijul unfeasible to implement until pijul CLI implements
     # a way of reordering changes to sort them in a consistent and deterministic manner.
@@ -27,15 +27,19 @@ lib.makeOverridable (
   else
     stdenvNoCC.mkDerivation {
       inherit name;
+
+      inherit
+        change
+        state
+        channel
+        ;
+
+      strictDeps = true;
+
       nativeBuildInputs = [
         pijul
         cacert
       ];
-      strictDeps = true;
-
-      dontUnpack = true;
-      dontConfigure = true;
-      dontBuild = true;
 
       installPhase = ''
         runHook preInstall
@@ -63,6 +67,10 @@ lib.makeOverridable (
         runHook postInstall
       '';
 
+      dontBuild = true;
+      dontConfigure = true;
+      dontUnpack = true;
+
       fixupPhase = ''
         runHook preFixup
 
@@ -71,18 +79,10 @@ lib.makeOverridable (
         runHook postFixup
       '';
 
+      impureEnvVars = lib.fetchers.proxyImpureEnvVars;
+      outputHash = if hash != "" then hash else lib.fakeHash;
       outputHashAlgo = null;
       outputHashMode = "recursive";
-      outputHash = if hash != "" then hash else lib.fakeHash;
-
-      inherit
-        change
-        state
-        channel
-        ;
-
       remotes = [ url ] ++ mirrors;
-
-      impureEnvVars = lib.fetchers.proxyImpureEnvVars;
     }
 )

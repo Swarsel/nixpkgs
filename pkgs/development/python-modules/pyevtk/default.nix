@@ -2,20 +2,18 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   numpy,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyevtk";
   version = "1.6.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
-
     hash = "sha256-H2vnh2o6AFyCWIYVUdpP5+RP8aLn/yqT1txR3u39pfQ=";
   };
 
@@ -24,14 +22,14 @@ buildPythonPackage (finalAttrs: {
       --replace-fail 'setup_requires=["pytest-runner"],' 'setup_requires=[],'
   '';
 
-  build-system = [ setuptools ];
-  dependencies = [ numpy ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ numpy ];
+  pyproject = true;
   pythonImportsCheck = [ "pyevtk" ];
 
   meta = {

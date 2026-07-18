@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   cmake,
   nix-update-script,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,6 +29,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Fast gradient evaluation in C++ based on Expression Templates";
     homepage = "https://scicomp.rptu.de/software/codi/";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       athas
     ];

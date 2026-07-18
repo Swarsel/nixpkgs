@@ -1,31 +1,31 @@
 {
   lib,
-  rustPlatform,
-  clangStdenv,
+  stdenv,
   fetchFromGitHub,
-  linkFarm,
+  SDL2,
+  cctools,
+  clangStdenv,
   fetchgit,
-  runCommand,
+  fontconfig,
   gn,
+  libglvnd,
+  libx11,
+  libxcursor,
+  libxext,
+  libxi,
+  libxkbcommon,
+  libxrandr,
+  linkFarm,
+  makeWrapper,
   neovim,
   ninja,
-  makeWrapper,
   pkg-config,
   python3,
   removeReferencesTo,
-  cctools,
-  SDL2,
-  fontconfig,
-  libxrandr,
-  libxi,
-  libxext,
-  libxcursor,
-  libx11,
-  stdenv,
-  libglvnd,
-  libxkbcommon,
-  enableWayland ? stdenv.hostPlatform.isLinux,
+  runCommand,
+  rustPlatform,
   wayland,
+  enableWayland ? stdenv.hostPlatform.isLinux,
 }:
 
 rustPlatform.buildRustPackage.override { stdenv = clangStdenv; } (finalAttrs: {
@@ -39,17 +39,36 @@ rustPlatform.buildRustPackage.override { stdenv = clangStdenv; } (finalAttrs: {
     hash = "sha256-mzlyw9NIBb35QJ5L7+ZxgJ5IUoHznAUQOLA0SglJ3bw=";
   };
 
+  nativeBuildInputs = [
+    makeWrapper
+    pkg-config
+    python3 # skia
+    removeReferencesTo
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    cctools.libtool
+  ];
+
+  buildInputs = [
+    SDL2
+    fontconfig
+    rustPlatform.bindgenHook
+  ];
+
   cargoHash = "sha256-WVNmG+KJK93yLrL2/KPc2czAxwt5brKxRkrPB7Bv46M=";
 
   env = {
+    SKIA_GN_COMMAND = "${gn}/bin/gn";
+    SKIA_NINJA_COMMAND = "${ninja}/bin/ninja";
+
     SKIA_SOURCE_DIR =
       let
         repo = fetchFromGitHub {
+          hash = "sha256-9N780AwheKBJRcZC4l/uWFNq+oOyoNp4M6dJAVVAFeo=";
           owner = "rust-skia";
           repo = "skia";
           # see rust-skia:skia-bindings/Cargo.toml#package.metadata skia
           tag = "m145-0.92.0";
-          hash = "sha256-9N780AwheKBJRcZC4l/uWFNq+oOyoNp4M6dJAVVAFeo=";
         };
         # The externals for skia are taken from skia/DEPS
         externals = linkFarm "skia-externals" (
@@ -64,28 +83,24 @@ rustPlatform.buildRustPackage.override { stdenv = clangStdenv; } (finalAttrs: {
         chmod -R +w $out
         ln -s ${externals} $out/third_party/externals
       '';
-
-    SKIA_GN_COMMAND = "${gn}/bin/gn";
-    SKIA_NINJA_COMMAND = "${ninja}/bin/ninja";
   };
-
-  nativeBuildInputs = [
-    makeWrapper
-    pkg-config
-    python3 # skia
-    removeReferencesTo
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    cctools.libtool
-  ];
 
   nativeCheckInputs = [ neovim ];
 
-  buildInputs = [
-    SDL2
-    fontconfig
-    rustPlatform.bindgenHook
-  ];
+  postInstall =
+    lib.optionalString stdenv.hostPlatform.isDarwin ''
+      mkdir -p $out/Applications
+      cp -r extra/osx/Neovide.app $out/Applications
+      ln -s $out/bin $out/Applications/Neovide.app/Contents/MacOS
+    ''
+    + lib.optionalString stdenv.hostPlatform.isLinux ''
+      for n in 16x16 32x32 48x48 256x256; do
+        install -m444 -D "assets/neovide-$n.png" \
+          "$out/share/icons/hicolor/$n/apps/neovide.png"
+      done
+      install -m444 -Dt $out/share/icons/hicolor/scalable/apps assets/neovide.svg
+      install -m444 -Dt $out/share/applications assets/neovide.desktop
+    '';
 
   postFixup =
     let
@@ -112,33 +127,20 @@ rustPlatform.buildRustPackage.override { stdenv = clangStdenv; } (finalAttrs: {
         --prefix LD_LIBRARY_PATH : ${libPath}
     '';
 
-  postInstall =
-    lib.optionalString stdenv.hostPlatform.isDarwin ''
-      mkdir -p $out/Applications
-      cp -r extra/osx/Neovide.app $out/Applications
-      ln -s $out/bin $out/Applications/Neovide.app/Contents/MacOS
-    ''
-    + lib.optionalString stdenv.hostPlatform.isLinux ''
-      for n in 16x16 32x32 48x48 256x256; do
-        install -m444 -D "assets/neovide-$n.png" \
-          "$out/share/icons/hicolor/$n/apps/neovide.png"
-      done
-      install -m444 -Dt $out/share/icons/hicolor/scalable/apps assets/neovide.svg
-      install -m444 -Dt $out/share/applications assets/neovide.desktop
-    '';
-
   disallowedReferences = [ finalAttrs.env.SKIA_SOURCE_DIR ];
 
   meta = {
     description = "Simple, no-nonsense, cross-platform graphical user interface for Neovim";
-    mainProgram = "neovide";
     homepage = "https://neovide.dev/";
     changelog = "https://github.com/neovide/neovide/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       ck3d
       caverav
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "neovide";
   };
 })

@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "baboossh";
   version = "1.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cybiere";
@@ -16,6 +15,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-E/a6dL6BpQ6D8v010d8/qav/fkxpCYNvSvoPAZsm0Hk=";
   };
 
+  # No tests available
+  doCheck = false;
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -25,9 +26,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tabulate
   ];
 
-  # No tests available
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "baboossh" ];
 
   meta = {

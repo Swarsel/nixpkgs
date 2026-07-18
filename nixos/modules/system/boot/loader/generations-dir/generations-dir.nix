@@ -10,17 +10,20 @@ with lib;
 let
 
   generationsDirBuilder = pkgs.replaceVarsWith {
-    src = ./generations-dir-builder.sh;
     isExecutable = true;
+
     replacements = {
       inherit (pkgs) bash;
+      inherit (config.boot.loader.generationsDir) copyKernels;
+
       path = lib.makeBinPath [
         pkgs.coreutils
         pkgs.gnused
         pkgs.gnugrep
       ];
-      inherit (config.boot.loader.generationsDir) copyKernels;
     };
+
+    src = ./generations-dir-builder.sh;
   };
 
 in
@@ -32,7 +35,7 @@ in
 
       enable = mkOption {
         default = false;
-        type = types.bool;
+
         description = ''
           Whether to create symlinks to the system generations under
           `/boot`.  When enabled,
@@ -47,15 +50,19 @@ in
           boot command line is stored in flash memory rather than in a
           menu file.
         '';
+
+        type = types.bool;
       };
 
       copyKernels = mkOption {
         default = false;
-        type = types.bool;
+
         description = ''
           Whether to copy the necessary boot files into /boot, so
           /nix/store is not needed by the boot loader.
         '';
+
+        type = types.bool;
       };
 
     };
@@ -64,8 +71,8 @@ in
 
   config = mkIf config.boot.loader.generationsDir.enable {
 
-    system.build.installBootLoader = generationsDirBuilder;
     system.boot.loader.id = "generationsDir";
+    system.build.installBootLoader = generationsDirBuilder;
 
   };
 }

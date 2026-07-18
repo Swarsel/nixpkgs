@@ -1,30 +1,30 @@
 {
   lib,
   stdenv,
+  ant,
+  copyDesktopItems,
   fetchsvn,
   # jdk8 is needed for building, but the game runs on newer jres as well
   jdk8,
   jre,
-  ant,
-  stripJavaArchivesHook,
-  makeWrapper,
   makeDesktopItem,
-  copyDesktopItems,
+  makeWrapper,
   nixosTests,
+  stripJavaArchivesHook,
 }:
 
 let
   desktopItem = makeDesktopItem {
-    name = "domination";
     desktopName = "Domination";
     exec = "domination";
     icon = "domination";
+    name = "domination";
   };
   editorDesktopItem = makeDesktopItem {
-    name = "domination-map-editor";
     desktopName = "Domination Map Editor";
     exec = "domination-map-editor";
     icon = "domination";
+    name = "domination-map-editor";
   };
 
 in
@@ -59,11 +59,6 @@ stdenv.mkDerivation {
     runHook postBuild
   '';
 
-  desktopItems = [
-    desktopItem
-    editorDesktopItem
-  ];
-
   installPhase = ''
     runHook preInstall
     # Remove unnecessary files and launchers (they'd need to be wrapped anyway)
@@ -94,6 +89,11 @@ stdenv.mkDerivation {
     find $out/share/domination/lib -type f -name '._*.jar' -delete
   '';
 
+  desktopItems = [
+    desktopItem
+    editorDesktopItem
+  ];
+
   passthru.tests = {
     domination-starts = nixosTests.domination;
   };
@@ -101,22 +101,26 @@ stdenv.mkDerivation {
   passthru.updateScript = ./update.tcl;
 
   meta = {
-    homepage = "https://domination.sourceforge.net/";
-    downloadPage = "https://domination.sourceforge.net/download.shtml";
     description = "Game that is a bit like the board game Risk or RisiKo";
+
     longDescription = ''
       Domination is a game that is a bit like the well known board game of Risk
       or RisiKo. It has many game options and includes many maps.
       It includes a map editor, a simple map format, multiplayer network play,
       single player, hotseat, 5 user interfaces and many more features.
     '';
+
+    homepage = "https://domination.sourceforge.net/";
+    license = lib.licenses.gpl3Plus;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # source bundles dependencies as jars
     ];
-    license = lib.licenses.gpl3Plus;
-    mainProgram = "domination";
+
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.all;
+    mainProgram = "domination";
+    downloadPage = "https://domination.sourceforge.net/download.shtml";
   };
 }

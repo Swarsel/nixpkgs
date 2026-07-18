@@ -1,11 +1,11 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
-  python3,
+  fetchFromGitHub,
+  gobject-introspection,
   gtk3,
   libwnck,
-  gobject-introspection,
+  python3,
   wrapGAppsHook3,
 }:
 
@@ -20,9 +20,8 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-MLLkFsBBQtb7RFQN+uoEmuCn5bnbkYsqoyWGZtTCI2U=";
   };
 
-  pythonEnv = python3.withPackages (ps: with ps; [ pygobject3 ]);
-
   nativeBuildInputs = [ gobject-introspection ];
+
   buildInputs = [
     pythonEnv
     gtk3
@@ -36,8 +35,11 @@ stdenv.mkDerivation rec {
     cp clipster $out/bin/
   '';
 
+  pythonEnv = python3.withPackages (ps: with ps; [ pygobject3 ]);
+
   meta = {
     description = "Lightweight python clipboard manager";
+
     longDescription = ''
       Clipster was designed to try to add a good selection of useful features, while avoiding bad design decisions or becoming excessively large.
       Its feature list includes:
@@ -56,10 +58,11 @@ stdenv.mkDerivation rec {
       - Option to ignore clipboard updates form certain applications. (filter_classes)
       - Ability to delete items in clipboard history.
     '';
-    license = lib.licenses.agpl3Only;
+
     homepage = "https://github.com/mrichar1/clipster";
-    platforms = lib.platforms.linux;
+    license = lib.licenses.agpl3Only;
     maintainers = [ lib.maintainers.magnetophon ];
+    platforms = lib.platforms.linux;
     mainProgram = "clipster";
   };
 }

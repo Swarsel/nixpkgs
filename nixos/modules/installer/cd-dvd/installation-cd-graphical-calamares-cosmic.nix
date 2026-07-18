@@ -7,24 +7,32 @@
 
 {
   imports = [ ./installation-cd-graphical-calamares.nix ];
-
-  isoImage.edition = lib.mkDefault "cosmic";
-  isoImage.configurationName = "COSMIC (Linux LTS)";
-
   environment.pathsToLink = [ "/share/calamares" ];
+  isoImage.configurationName = "COSMIC (Linux LTS)";
+  isoImage.edition = lib.mkDefault "cosmic";
 
   services = {
     desktopManager.cosmic.enable = true;
-    displayManager = {
-      # Greeter needs to be enabled to handle an idle logout and login
-      cosmic-greeter.enable = true;
 
+    displayManager = {
       # No need to have a lockscreen on an installer ISO, enable autologin
       autoLogin = {
         enable = true;
         user = "nixos";
       };
+
+      # Greeter needs to be enabled to handle an idle logout and login
+      cosmic-greeter.enable = true;
     };
+  };
+
+  specialisation = {
+    cosmic_latest_kernel.configuration =
+      { config, ... }:
+      {
+        imports = [ ./latest-kernel.nix ];
+        isoImage.configurationName = lib.mkForce "COSMIC (Linux ${config.boot.kernelPackages.kernel.version})";
+      };
   };
 
   systemd.tmpfiles.rules =
@@ -59,13 +67,4 @@
       "d /home/nixos/.config/cosmic/com.system76.CosmicAppList/v1 ${dirsInHomePerms}"
       "L+ /home/nixos/.config/cosmic/com.system76.CosmicAppList/v1/favorites ${filesInHomePerms} ${CosmicAppList_favorites}"
     ];
-
-  specialisation = {
-    cosmic_latest_kernel.configuration =
-      { config, ... }:
-      {
-        imports = [ ./latest-kernel.nix ];
-        isoImage.configurationName = lib.mkForce "COSMIC (Linux ${config.boot.kernelPackages.kernel.version})";
-      };
-  };
 }

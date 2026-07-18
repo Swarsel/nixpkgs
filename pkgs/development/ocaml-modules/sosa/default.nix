@@ -1,7 +1,7 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
   findlib,
   ocaml,
   ocamlbuild,
@@ -25,23 +25,21 @@ stdenv.mkDerivation rec {
     done
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     ocaml
     ocamlbuild
     findlib
   ];
 
-  strictDeps = true;
-
   buildPhase = "make build";
-
+  doCheck = true;
   createFindlibDestdir = true;
 
-  doCheck = true;
-
   meta = {
-    homepage = "http://www.hammerlab.org/docs/sosa/master/index.html";
     description = "Sane OCaml String API";
+    homepage = "http://www.hammerlab.org/docs/sosa/master/index.html";
     license = lib.licenses.isc;
     maintainers = [ ];
     broken = !(lib.versionOlder ocaml.version "4.02");

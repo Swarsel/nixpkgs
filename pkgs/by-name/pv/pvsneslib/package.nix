@@ -18,13 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  nativeBuildInputs = [
-    gcc
-    cmake
-  ];
-
-  dontConfigure = true;
-
   postPatch = ''
     substituteInPlace compiler/wla-dx/CMakeLists.txt \
       --replace-fail "cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)" "cmake_minimum_required(VERSION 3.10)"
@@ -59,6 +52,11 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'sort_anonymous_labels()' 'sort_anonymous_labels(void)'
   '';
 
+  nativeBuildInputs = [
+    gcc
+    cmake
+  ];
+
   preBuild = ''
     export PVSNESLIB_HOME=$(pwd)
   '';
@@ -69,13 +67,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+
   meta = {
     description = "Free and open source development kit for the Nintendo SNES";
     homepage = "https://github.com/alekmaul/pvsneslib";
     changelog = "https://github.com/alekmaul/pvsneslib/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ soyouzpanda ];
-    mainProgram = "pvsneslib";
     platforms = lib.platforms.all;
+    mainProgram = "pvsneslib";
   };
 })

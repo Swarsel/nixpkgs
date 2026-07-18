@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
-  writeText,
-  makeBinaryWrapper,
+  stdenv,
   factor-lang,
   factor-no-gui,
-  librsvg,
   gdk-pixbuf,
+  librsvg,
+  makeBinaryWrapper,
+  writeText,
 }@initAttrs:
 
 drvArgs:
@@ -17,20 +17,8 @@ in
 (stdenv.mkDerivation drvArgs).overrideAttrs (
   finalAttrs:
   {
-    name ? "${finalAttrs.pname}-${finalAttrs.version}",
-    factor-lang ? if enableUI then flang else factor-no-gui,
-    enableUI ? false,
-    # Allow overriding the path to the deployed vocabulary name.  A
-    # $vocabName.factor file must exist!
-    vocabName ? finalAttrs.pname or name,
     # Allow overriding the binary name
     binName ? lib.last (lib.splitString "/" vocabName),
-    # Extra libraries needed
-    extraLibs ? [ ],
-    # Extra binaries in PATH
-    extraPaths ? [ ],
-    # Extra vocabularies needed by this application
-    extraVocabs ? [ ],
     deployScriptText ? /* factor */ ''
       USING: command-line io io.backend io.pathnames kernel namespaces sequences
       tools.deploy tools.deploy.config tools.deploy.backend vocabs.loader
@@ -77,6 +65,18 @@ in
 
       MAIN: deploy-me
     '',
+    enableUI ? false,
+    # Extra libraries needed
+    extraLibs ? [ ],
+    # Extra binaries in PATH
+    extraPaths ? [ ],
+    # Extra vocabularies needed by this application
+    extraVocabs ? [ ],
+    factor-lang ? if enableUI then flang else factor-no-gui,
+    name ? "${finalAttrs.pname}-${finalAttrs.version}",
+    # Allow overriding the path to the deployed vocabulary name.  A
+    # $vocabName.factor file must exist!
+    vocabName ? finalAttrs.pname or name,
     ...
   }@attrs:
   let
@@ -99,6 +99,7 @@ in
       factor-lang
       wrapped-factor
       ;
+
     nativeBuildInputs = [
       makeBinaryWrapper
       (lib.hiPrio finalAttrs.wrapped-factor)
@@ -126,8 +127,6 @@ in
         runHook postBuild
       '';
 
-    __structuredAttrs = true;
-
     installPhase =
       attrs.installPhase or /* bash */ ''
         runHook preInstall
@@ -149,6 +148,8 @@ in
           "''${makeWrapperArgs[@]}"
         runHook postInstall
       '';
+
+    __structuredAttrs = true;
 
     passthru = {
       vocab = finalAttrs.src;

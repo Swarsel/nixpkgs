@@ -1,15 +1,14 @@
 {
   lib,
   fetchFromGitHub,
-  stdenvNoCC,
-  mlton,
   lua5_3,
+  mlton,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
-  version = "0.3.0";
-
   pname = "lunarml";
+  version = "0.3.0";
 
   src = fetchFromGitHub {
     owner = "minoki";
@@ -27,15 +26,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     mlton
   ];
 
-  nativeCheckInputs = [
-    lua5_3
-  ];
-
   postBuild = ''
     make -C thirdparty install
   '';
 
   doCheck = true;
+
+  nativeCheckInputs = [
+    lua5_3
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -50,13 +49,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Standard ML compiler that produces Lua/JavaScript";
-    mainProgram = "lunarml";
     homepage = "https://github.com/minoki/LunarML";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       toastal
       ratsclub
     ];
+
     platforms = mlton.meta.platforms;
+    mainProgram = "lunarml";
   };
 })

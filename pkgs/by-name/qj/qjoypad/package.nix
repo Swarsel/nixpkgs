@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   cmake,
+  libsForQt5,
   libx11,
   libxtst,
-  libsForQt5,
+  pkg-config,
 }:
 stdenv.mkDerivation rec {
   pname = "qjoypad";
@@ -30,6 +30,7 @@ stdenv.mkDerivation rec {
     libsForQt5.qttools
     libsForQt5.wrapQtAppsHook
   ];
+
   buildInputs = [
     libx11
     libxtst
@@ -39,6 +40,7 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Program that lets you use gaming devices anywhere";
+
     longDescription = ''
       A simple Linux/QT program that lets you use your gaming devices
       where you want them: in your games! QJoyPad takes input from a
@@ -55,6 +57,7 @@ stdenv.mkDerivation rec {
       of gaming devices in Linux, and makes the Linux gaming
       experience just a little bit nicer.
     '';
+
     homepage = "https://github.com/panzi/qjoypad/";
     license = lib.licenses.gpl2Only;
     platforms = with lib.platforms; linux;

@@ -64,14 +64,50 @@ in
 {
   options.services.pgadmin = {
     enable = lib.mkEnableOption "PostgreSQL Admin 4";
-
-    port = lib.mkOption {
-      description = "Port for pgadmin4 to run on";
-      type = lib.types.port;
-      default = 5050;
-    };
-
     package = lib.mkPackageOption pkgs "pgadmin4" { };
+
+    emailServer = {
+      enable = lib.mkEnableOption "SMTP email server. This is necessary, if you want to use password recovery or change your own password";
+
+      address = lib.mkOption {
+        default = "localhost";
+        description = "SMTP server for email delivery";
+        type = lib.types.str;
+      };
+
+      passwordFile = lib.mkOption {
+        description = ''
+          Password for SMTP email account.
+          NOTE: Should be string not a store path, to prevent the password from being world readable
+        '';
+
+        type = lib.types.path;
+      };
+
+      port = lib.mkOption {
+        default = 25;
+        description = "SMTP server port for email delivery";
+        type = lib.types.port;
+      };
+
+      sender = lib.mkOption {
+        description = ''
+          SMTP server sender email for email delivery. Some servers require this to be a valid email address from that server
+        '';
+
+        example = "noreply@example.com";
+        type = lib.types.str;
+      };
+
+      useSSL = lib.mkEnableOption "SSL for connecting to the SMTP server";
+      useTLS = lib.mkEnableOption "TLS for connecting to the SMTP server";
+
+      username = lib.mkOption {
+        default = null;
+        description = "SMTP server username for email delivery";
+        type = lib.types.nullOr lib.types.str;
+      };
+    };
 
     initialEmail = lib.mkOption {
       description = "Initial email for the pgAdmin account";
@@ -84,63 +120,53 @@ in
         Please see `services.pgadmin.minimumPasswordLength`.
         NOTE: Should be string not a store path, to prevent the password from being world readable
       '';
+
       type = lib.types.path;
     };
 
     minimumPasswordLength = lib.mkOption {
+      default = 6;
       description = "Minimum length of the password";
       type = lib.types.int;
-      default = 6;
-    };
-
-    emailServer = {
-      enable = lib.mkEnableOption "SMTP email server. This is necessary, if you want to use password recovery or change your own password";
-      address = lib.mkOption {
-        description = "SMTP server for email delivery";
-        type = lib.types.str;
-        default = "localhost";
-      };
-      port = lib.mkOption {
-        description = "SMTP server port for email delivery";
-        type = lib.types.port;
-        default = 25;
-      };
-      useSSL = lib.mkEnableOption "SSL for connecting to the SMTP server";
-      useTLS = lib.mkEnableOption "TLS for connecting to the SMTP server";
-      username = lib.mkOption {
-        description = "SMTP server username for email delivery";
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-      };
-      sender = lib.mkOption {
-        description = ''
-          SMTP server sender email for email delivery. Some servers require this to be a valid email address from that server
-        '';
-        type = lib.types.str;
-        example = "noreply@example.com";
-      };
-      passwordFile = lib.mkOption {
-        description = ''
-          Password for SMTP email account.
-          NOTE: Should be string not a store path, to prevent the password from being world readable
-        '';
-        type = lib.types.path;
-      };
     };
 
     openFirewall = lib.mkEnableOption "firewall passthrough for pgadmin4";
 
+    port = lib.mkOption {
+      default = 5050;
+      description = "Port for pgadmin4 to run on";
+      type = lib.types.port;
+    };
+
     settings = lib.mkOption {
+      default = { };
+
       description = ''
         Settings for pgadmin4.
         [Documentation](https://www.pgadmin.org/docs/pgadmin4/development/config_py.html)
       '';
+
       type = pyType;
-      default = { };
     };
   };
 
   config = lib.mkIf (cfg.enable) {
+    environment.etc."pgadmin/config_system.py" = {
+      group = "pgadmin";
+      mode = "0600";
+
+      text =
+        lib.optionalString cfg.emailServer.enable ''
+          import os
+          with open(os.path.join(os.environ['CREDENTIALS_DIRECTORY'], 'email_password')) as f:
+            pw = f.read()
+          MAIL_PASSWORD = pw
+        ''
+        + formatPy cfg.settings;
+
+      user = "pgadmin";
+    };
+
     networking.firewall.allowedTCPPorts = lib.mkIf (cfg.openFirewall) [ cfg.port ];
 
     services.pgadmin.settings = {
@@ -153,21 +179,16 @@ in
       DEFAULT_SERVER = lib.mkDefault "::";
     })
     // (lib.optionalAttrs cfg.emailServer.enable {
-      MAIL_SERVER = cfg.emailServer.address;
       MAIL_PORT = cfg.emailServer.port;
+      MAIL_SERVER = cfg.emailServer.address;
+      MAIL_USERNAME = cfg.emailServer.username;
       MAIL_USE_SSL = cfg.emailServer.useSSL;
       MAIL_USE_TLS = cfg.emailServer.useTLS;
-      MAIL_USERNAME = cfg.emailServer.username;
       SECURITY_EMAIL_SENDER = cfg.emailServer.sender;
     });
 
     systemd.services.pgadmin = {
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
-      requires = [ "network.target" ];
-      # we're adding this optionally so just in case there's any race it'll be caught
-      # in case postgres doesn't start, pgadmin will just start normally
-      wants = [ "postgresql.target" ];
 
       path = [
         config.services.postgresql.package
@@ -200,25 +221,26 @@ in
         ) | ${cfg.package}/bin/pgadmin4-cli setup-db
       '';
 
+      requires = [ "network.target" ];
+
       restartTriggers = [
         "/etc/pgadmin/config_system.py"
       ];
 
       serviceConfig = {
-        User = "pgadmin";
+        AmbientCapabilities = "";
+        CapabilityBoundingSet = "";
         DynamicUser = true;
-        LogsDirectory = "pgadmin";
-        LogsDirectoryMode = "750";
-        StateDirectory = "pgadmin";
-        StateDirectoryMode = "750";
         ExecStart = "${cfg.package}/bin/pgadmin4";
+
         LoadCredential = [
           "initial_password:${cfg.initialPasswordFile}"
         ]
         ++ lib.optional cfg.emailServer.enable "email_password:${cfg.emailServer.passwordFile}";
-        AmbientCapabilities = "";
-        CapabilityBoundingSet = "";
+
         LockPersonality = true;
+        LogsDirectory = "pgadmin";
+        LogsDirectoryMode = "750";
         MemoryDenyWriteExecute = true;
         MountAPIVFS = true;
         NoNewPrivileges = true;
@@ -236,38 +258,34 @@ in
         ProtectProc = "invisible";
         ProtectSystem = "full";
         RemoveIPC = true;
+
         RestrictAddressFamilies = [
           "AF_UNIX"
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
+        StateDirectory = "pgadmin";
+        StateDirectoryMode = "750";
         SystemCallArchitectures = "native";
         UMask = 27;
+        User = "pgadmin";
       };
-    };
 
-    users.users.pgadmin = {
-      isSystemUser = true;
-      group = "pgadmin";
+      wantedBy = [ "multi-user.target" ];
+      # we're adding this optionally so just in case there's any race it'll be caught
+      # in case postgres doesn't start, pgadmin will just start normally
+      wants = [ "postgresql.target" ];
     };
 
     users.groups.pgadmin = { };
 
-    environment.etc."pgadmin/config_system.py" = {
-      text =
-        lib.optionalString cfg.emailServer.enable ''
-          import os
-          with open(os.path.join(os.environ['CREDENTIALS_DIRECTORY'], 'email_password')) as f:
-            pw = f.read()
-          MAIL_PASSWORD = pw
-        ''
-        + formatPy cfg.settings;
-      mode = "0600";
-      user = "pgadmin";
+    users.users.pgadmin = {
       group = "pgadmin";
+      isSystemUser = true;
     };
   };
 }

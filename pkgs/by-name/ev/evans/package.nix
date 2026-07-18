@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,15 +15,14 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-V5M7vXlBSQFX2YZ+Vjt63hLziWy0yuAbCMmSZFEO0OA=";
   };
 
-  subPackages = [ "." ];
-
   vendorHash = "sha256-oyFPycyQoYnN261kmGhkN9NMPMA6XChf4jXlYezKiCo=";
+  subPackages = [ "." ];
 
   meta = {
     description = "More expressive universal gRPC client";
-    mainProgram = "evans";
     homepage = "https://evans.syfm.me/";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ diogox ];
+    mainProgram = "evans";
   };
 })

@@ -1,11 +1,10 @@
 {
   lib,
-  buildTileSet,
   fetchFromGitHub,
+  buildTileSet,
 }:
 
 buildTileSet {
-  modName = "UndeadPeople";
   version = "2020-07-08";
 
   src = fetchFromGitHub {
@@ -15,6 +14,7 @@ buildTileSet {
     sha256 = "0r06srjr7rq51jk9yfyxz80nfgb98mkn86cbcjfxpibgbqvcp0zm";
   };
 
+  modName = "UndeadPeople";
   modRoot = "MSX++UnDeadPeopleEdition";
 
   meta = {

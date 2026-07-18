@@ -1,49 +1,72 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
-  writeShellScript,
   common-updater-scripts,
   coreutils,
   gitMinimal,
+  python3Packages,
+  writeShellScript,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "nvibrant";
   version = finalAttrs.passthru._version;
+  # replaces code that depends on .git and uses of python -m {ninja,meson}
+  patches = [ ./hatch_build.patch ];
+  nativeBuildInputs = [ gitMinimal ];
+
+  build-system = with python3Packages; [
+    hatchling
+    meson
+    ninja
+  ];
+
+  configurePhase = ''
+    export OLDEST_DRIVER_VERSION=${finalAttrs.passthru.oldestDriverVersion}
+  '';
+
+  dependencies = with python3Packages; [
+    packaging
+  ];
+
+  postUnpack = ''
+    mv open-gpu nvibrant/
+    cd nvibrant
+  '';
+
   pyproject = true;
+  sourceRoot = ".";
+  srcs = lib.attrValues finalAttrs.passthru.srcAttrs;
 
   passthru = {
-    nvibrantVersion = "1.2.1";
-
-    oldestDriverVersion = "515.43.04";
-    latestDriverVersion = "610.43.02";
-
     _version = lib.concatStringsSep "-" [
       finalAttrs.passthru.nvibrantVersion
       "unstable"
       finalAttrs.passthru.latestDriverVersion
     ];
 
+    latestDriverVersion = "610.43.02";
+    nvibrantVersion = "1.2.1";
+    oldestDriverVersion = "515.43.04";
+
     srcAttrs = {
       nvibrant = fetchFromGitHub {
+        hash = "sha256-M83WSQiJwzFZl8ECkZjKigvLTlMkzRa6o2hqPOt1378=";
+        name = "nvibrant";
         owner = "tremeschin";
         repo = "nvibrant";
-        name = "nvibrant";
         tag = "v${finalAttrs.passthru.nvibrantVersion}";
-        hash = "sha256-M83WSQiJwzFZl8ECkZjKigvLTlMkzRa6o2hqPOt1378=";
       };
-      open-gpu = fetchFromGitHub {
-        owner = "nvidia";
-        repo = "open-gpu-kernel-modules";
-        name = "open-gpu";
-        tag = finalAttrs.passthru.oldestDriverVersion;
-        hash = "sha256-MfLR5sYSjBrENWkCChcS9rk1zSlRFfTRpof/4lQ3qow=";
 
+      open-gpu = fetchFromGitHub {
         # since .git isn't deterministic, we can't use it to checkout tags in
         # the build phase, so instead we generate patches for each version
         # upgrade before .git is removed and apply them incrementally
         fetchTags = true;
+        hash = "sha256-MfLR5sYSjBrENWkCChcS9rk1zSlRFfTRpof/4lQ3qow=";
+        name = "open-gpu";
+        owner = "nvidia";
+
         postCheckout = ''
           cd $out
 
@@ -73,6 +96,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
           rm -rf .git
         '';
+
+        repo = "open-gpu-kernel-modules";
+        tag = finalAttrs.passthru.oldestDriverVersion;
       };
     };
 
@@ -112,41 +138,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
     '';
   };
 
-  srcs = lib.attrValues finalAttrs.passthru.srcAttrs;
-  sourceRoot = ".";
-
-  postUnpack = ''
-    mv open-gpu nvibrant/
-    cd nvibrant
-  '';
-
-  # replaces code that depends on .git and uses of python -m {ninja,meson}
-  patches = [ ./hatch_build.patch ];
-
-  configurePhase = ''
-    export OLDEST_DRIVER_VERSION=${finalAttrs.passthru.oldestDriverVersion}
-  '';
-
-  nativeBuildInputs = [ gitMinimal ];
-
-  build-system = with python3Packages; [
-    hatchling
-    meson
-    ninja
-  ];
-
-  dependencies = with python3Packages; [
-    packaging
-  ];
-
   meta = {
     description = "Configure NVIDIA's Digital Vibrance on Wayland";
     homepage = "https://github.com/Tremeschin/nvibrant";
-    mainProgram = "nvibrant";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       mikaeladev
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "nvibrant";
   };
 })

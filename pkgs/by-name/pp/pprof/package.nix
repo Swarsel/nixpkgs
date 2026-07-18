@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   libllvm,
 }:
 
@@ -16,20 +16,19 @@ buildGoModule {
     hash = "sha256-l+D7wbu+Nu8ePmDvhfDgOnu8jcn6mH9Wt3aUPOK+LsM=";
   };
 
-  nativeCheckInputs = [
-    libllvm
-  ];
-
   postPatch = ''
     rm -rf browsertests   # somewhat independent module to ignore.
   '';
 
   vendorHash = "sha256-nGBPg0OV6sOSpKEY+EPt9v5eIm/3OrxNYLJDOcdDwio=";
 
+  nativeCheckInputs = [
+    libllvm
+  ];
+
   meta = {
     description = "Tool for visualization and analysis of profiling data";
-    homepage = "https://github.com/google/pprof";
-    license = lib.licenses.asl20;
+
     longDescription = ''
       pprof reads a collection of profiling samples in profile.proto format and
       generates reports to visualize and help analyze the data. It can generate
@@ -50,7 +49,10 @@ buildGoModule {
 
       This is not an official Google product.
     '';
-    mainProgram = "pprof";
+
+    homepage = "https://github.com/google/pprof";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ hzeller ];
+    mainProgram = "pprof";
   };
 }

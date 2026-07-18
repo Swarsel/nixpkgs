@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "isolyzer";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "KBNLresearch";
@@ -24,11 +23,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     six
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "isolyzer" ];
 
   meta = {
-    homepage = "https://github.com/KBNLresearch/isolyzer";
     description = "Verify size of ISO 9660 image against Volume Descriptor fields";
+    homepage = "https://github.com/KBNLresearch/isolyzer";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ mkg20001 ];
     mainProgram = "isolyzer";

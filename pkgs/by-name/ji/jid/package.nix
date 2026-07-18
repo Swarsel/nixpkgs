@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   jid,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -25,15 +25,15 @@ buildGoModule (finalAttrs: {
   ];
 
   passthru.tests.version = testers.testVersion {
-    package = jid;
     version = "v${finalAttrs.version}";
+    package = jid;
   };
 
   meta = {
     description = "Command-line tool to incrementally drill down JSON";
-    mainProgram = "jid";
     homepage = "https://github.com/simeji/jid";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "jid";
   };
 })

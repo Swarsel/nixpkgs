@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   azure-core,
   azure-datalake-store,
   azure-identity,
   azure-storage-blob,
   buildPythonPackage,
-  fetchFromGitHub,
   fsspec,
   setuptools,
   setuptools-scm,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "adlfs";
   version = "2026.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fsspec";
@@ -23,6 +22,9 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-HscDY/DZZ9/a3NHmE8pSd3alLCJQDG6Fr2l2+DfU/os=";
   };
+
+  # Tests require a running Docker instance
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -38,12 +40,9 @@ buildPythonPackage (finalAttrs: {
     fsspec
   ];
 
-  pythonRelaxDeps = [ "azure-datalake-store" ];
-
-  # Tests require a running Docker instance
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "adlfs" ];
+  pythonRelaxDeps = [ "azure-datalake-store" ];
 
   meta = {
     description = "Filesystem interface to Azure-Datalake Gen1 and Gen2 Storage";

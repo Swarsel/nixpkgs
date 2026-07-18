@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  bzip2,
   glib,
   libgsf,
   libxml2,
-  bzip2,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -20,24 +20,26 @@ stdenv.mkDerivation rec {
 
   patches = [ ./gcc-0.8.patch ];
 
+  nativeBuildInputs = [
+    pkg-config
+    bzip2
+  ];
+
   buildInputs = [
     glib
     libgsf
     libxml2
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-    bzip2
-  ];
-
   meta = {
     description = "Library for importing WordPerfect documents";
     homepage = "https://libwpd.sourceforge.net";
+
     license = with lib.licenses; [
       lgpl21
       mpl20
     ];
+
     platforms = lib.platforms.unix;
   };
 }

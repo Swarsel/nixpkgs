@@ -1,30 +1,29 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
-  wrapGAppsHook4,
   appstream-glib,
   blueprint-compiler,
   desktop-file-utils,
   gettext,
+  gobject-introspection,
   gtk4,
+  jpegoptim,
   libadwaita,
+  libwebp,
   meson,
   ninja,
-  pkg-config,
-  gobject-introspection,
-  jpegoptim,
-  libwebp,
-  optipng,
-  pngquant,
-  oxipng,
   nix-update-script,
+  optipng,
+  oxipng,
+  pkg-config,
+  pngquant,
+  python3,
+  wrapGAppsHook4,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "curtail";
   version = "1.16.1";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "Huluti";
@@ -62,8 +61,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     patchShebangs ../build-aux/meson/postinstall.py
   '';
 
-  dontWrapGApps = true;
-
   preFixup = ''
     makeWrapperArgs+=(
       "''${gappsWrapperArgs[@]}"
@@ -79,15 +76,18 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     )
   '';
 
+  dontWrapGApps = true;
+  pyproject = false;
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Simple & useful image compressor";
-    mainProgram = "curtail";
     homepage = "https://github.com/Huluti/Curtail";
     license = lib.licenses.gpl3Only;
+    mainProgram = "curtail";
     teams = [ lib.teams.gnome-circle ];
   };
 })

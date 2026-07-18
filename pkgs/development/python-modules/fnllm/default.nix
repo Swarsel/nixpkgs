@@ -1,44 +1,47 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  pythonAtLeast,
-
-  # build-system
-  hatchling,
-  uv-dynamic-versioning,
-
   # dependencies
   aiolimiter,
-  httpx,
-  json-repair,
-  pydantic,
-  tenacity,
-
   # optional-dependencies
   # azure
   azure-identity,
   azure-storage-blob,
+  buildPythonPackage,
+  fetchPypi,
+  # build-system
+  hatchling,
+  httpx,
+  json-repair,
   # openai
   openai,
-  tiktoken,
-
   # tests
   polyfactory,
+  pydantic,
   pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
+  pythonAtLeast,
+  tenacity,
+  tiktoken,
+  uv-dynamic-versioning,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "fnllm";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-gKdFBpNpG/CDLhKi1wQgZHv+o1pDy5HEqcteLzkXK1A=";
   };
+
+  nativeCheckInputs = [
+    polyfactory
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
   build-system = [
     hatchling
@@ -52,27 +55,6 @@ buildPythonPackage (finalAttrs: {
     pydantic
     tenacity
   ];
-
-  optional-dependencies = {
-    azure = [
-      azure-identity
-      azure-storage-blob
-    ];
-    openai = [
-      openai
-      tiktoken
-    ];
-  };
-
-  nativeCheckInputs = [
-    polyfactory
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
-
-  pythonImportsCheck = [ "fnllm" ];
 
   disabledTests = [
     # Tests require network access
@@ -94,6 +76,21 @@ buildPythonPackage (finalAttrs: {
     # RuntimeError: There is no current event loop in thread 'MainThread'
     "test_call_batch_raises_if_response_length_mismatch"
   ];
+
+  optional-dependencies = {
+    azure = [
+      azure-identity
+      azure-storage-blob
+    ];
+
+    openai = [
+      openai
+      tiktoken
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "fnllm" ];
 
   meta = {
     description = "Function-based LLM protocol and wrapper";

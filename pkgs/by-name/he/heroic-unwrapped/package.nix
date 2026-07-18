@@ -1,23 +1,23 @@
 {
   lib,
-  callPackage,
   stdenv,
   fetchFromGitHub,
-  # Pinned, because our FODs are not guaranteed to be stable between major versions.
-  pnpm_10,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  nodejs,
-  python3,
-  makeWrapper,
+  callPackage,
+  comet-gog_heroic,
   # Electron updates can break Heroic, so try to use same version as upstream.
   # If the used electron version is higher than upstream's then the node-abi package might need to be updated
   electron,
-  vulkan-helper,
+  fetchPnpmDeps,
   gogdl,
+  makeWrapper,
   nile,
-  comet-gog_heroic,
+  nodejs,
+  pnpmConfigHook,
+  # Pinned, because our FODs are not guaranteed to be stable between major versions.
+  pnpm_10,
+  python3,
   umu-launcher,
+  vulkan-helper,
 }:
 
 let
@@ -38,17 +38,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-RDJDeL5exEzF2BhEWoiXWsTpV5hytrB6RDoXV0mTWTw=";
   };
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      patches
-      ;
-    inherit pnpm;
-    fetcherVersion = 3;
-    hash = "sha256-lPHL6pA39hvEtq5WkcAXfcY3a0VPseQL/nI+oEjIZeE=";
-  };
+  patches = [
+    # Make Heroic create Steam shortcuts (to non-steam games) with the correct path to heroic.
+    ./fix-non-steam-shortcuts.patch
+  ];
 
   nativeBuildInputs = [
     nodejs
@@ -56,11 +49,6 @@ stdenv.mkDerivation (finalAttrs: {
     pnpm
     python3
     makeWrapper
-  ];
-
-  patches = [
-    # Make Heroic create Steam shortcuts (to non-steam games) with the correct path to heroic.
-    ./fix-non-steam-shortcuts.patch
   ];
 
   env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
@@ -130,6 +118,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      patches
+      ;
+
+    inherit pnpm;
+    fetcherVersion = 3;
+    hash = "sha256-lPHL6pA39hvEtq5WkcAXfcY3a0VPseQL/nI+oEjIZeE=";
+  };
+
   passthru = {
     inherit epic-integration legendary;
   };
@@ -139,6 +140,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher";
     changelog = "https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       tomasajt
       iedame
@@ -146,11 +148,13 @@ stdenv.mkDerivation (finalAttrs: {
       DieracDelta
       baksa
     ];
+
     # Heroic may work on nix-darwin, but it needs a dedicated maintainer for the platform.
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ];
+
     mainProgram = "heroic";
   };
 })

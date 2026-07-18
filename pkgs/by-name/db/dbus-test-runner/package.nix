@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
-  fetchbzr,
-  testers,
+  stdenv,
   autoreconfHook,
   bash,
   dbus,
   dbus-glib,
+  fetchbzr,
+  gettext,
   glib,
   intltool,
   pkg-config,
   python3,
+  testers,
   xvfb-run,
-  gettext,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -55,6 +55,8 @@ stdenv.mkDerivation (finalAttrs: {
     glib
   ];
 
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   nativeCheckInputs = [
     bash
     dbus
@@ -66,25 +68,24 @@ stdenv.mkDerivation (finalAttrs: {
     xvfb-run
   ];
 
-  enableParallelBuilding = true;
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
   checkFlags = [
     "XVFB_RUN=${lib.getExe xvfb-run}"
   ];
 
+  enableParallelBuilding = true;
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {
     description = "Small little utility to run a couple of executables under a new DBus session for testing";
-    mainProgram = "dbus-test-runner";
     homepage = "https://launchpad.net/dbus-test-runner";
     license = lib.licenses.gpl3Only;
     platforms = lib.platforms.unix;
-    teams = [ lib.teams.lomiri ];
+    mainProgram = "dbus-test-runner";
+
     pkgConfigModules = [
       "dbustest-1"
     ];
+
+    teams = [ lib.teams.lomiri ];
   };
 })

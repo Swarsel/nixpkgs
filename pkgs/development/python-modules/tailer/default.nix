@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   python,
 }:
 
 buildPythonPackage rec {
   pname = "tailer";
   version = "0.4.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "six8";
@@ -23,13 +22,14 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  format = "setuptools";
   pythonImportsCheck = [ "tailer" ];
 
   meta = {
     description = "Python implementation implementation of GNU tail and head";
-    mainProgram = "pytail";
     homepage = "https://github.com/six8/pytailer";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "pytail";
   };
 }

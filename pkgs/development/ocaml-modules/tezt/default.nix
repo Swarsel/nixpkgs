@@ -12,8 +12,6 @@ buildDunePackage rec {
   pname = "tezt";
   version = "4.3.0";
 
-  minimalOCamlVersion = "4.13";
-
   src = fetchFromGitLab {
     owner = "nomadic-labs";
     repo = "tezt";
@@ -27,6 +25,8 @@ buildDunePackage rec {
     lwt
     re
   ];
+
+  minimalOCamlVersion = "4.13";
 
   meta = {
     description = "Test framework for unit tests, integration tests, and regression tests";

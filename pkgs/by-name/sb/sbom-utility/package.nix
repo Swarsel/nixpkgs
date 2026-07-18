@@ -1,19 +1,19 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  fetchpatch,
-  versionCheckHook,
-  installShellFiles,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  fetchpatch,
+  installShellFiles,
+  versionCheckHook,
 }:
 
 let
   version = "0.19.2";
 in
 buildGoModule {
-  pname = "sbom-utility";
   inherit version;
+  pname = "sbom-utility";
 
   src = fetchFromGitHub {
     owner = "CycloneDX";
@@ -22,20 +22,11 @@ buildGoModule {
     hash = "sha256-xjANZxjPQmaBZPt+yF2UTJ1QL7QN0wSFxNMZ2oF6p7s=";
   };
 
-  vendorHash = "sha256-vyYSir5u6d5nv+2ScrHpasQGER4VFSoLb1FDUDIrtDM=";
-
-  ldflags = [
-    "-X main.Version=${version}"
-  ];
-
   nativeBuildInputs = [
     installShellFiles
   ];
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
+  vendorHash = "sha256-vyYSir5u6d5nv+2ScrHpasQGER4VFSoLb1FDUDIrtDM=";
 
   preCheck = ''
     cd test
@@ -47,6 +38,16 @@ buildGoModule {
         --$shell <($out/bin/sbom-utility -q completion $shell)
     done
   '';
+
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
+  ldflags = [
+    "-X main.Version=${version}"
+  ];
 
   meta = {
     description = "Utility that provides an API platform for validating, querying and managing BOM data";

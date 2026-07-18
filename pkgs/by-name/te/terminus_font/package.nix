@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  python3,
   bdftopcf,
   mkfontscale,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,32 +18,33 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [ ./SOURCE_DATE_EPOCH-for-otb.patch ];
 
+  postPatch = ''
+    substituteInPlace Makefile --replace 'fc-cache' '#fc-cache'
+    substituteInPlace Makefile --replace 'gzip'     'gzip -n'
+  '';
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     python3
     bdftopcf
     mkfontscale
   ];
 
-  strictDeps = true;
-
   enableParallelBuilding = true;
-
-  postPatch = ''
-    substituteInPlace Makefile --replace 'fc-cache' '#fc-cache'
-    substituteInPlace Makefile --replace 'gzip'     'gzip -n'
-  '';
+  # fontdir depends on the previous two targets, but this is not known
+  # to make, so we need to disable parallelism:
+  enableParallelInstalling = false;
 
   installTargets = [
     "install"
     "install-otb"
     "fontdir"
   ];
-  # fontdir depends on the previous two targets, but this is not known
-  # to make, so we need to disable parallelism:
-  enableParallelInstalling = false;
 
   meta = {
     description = "Clean fixed width font";
+
     longDescription = ''
       Terminus Font is designed for long (8 and more hours per day) work
       with computers. Version 4.30 contains 850 characters, covers about
@@ -56,6 +57,7 @@ stdenv.mkDerivation (finalAttrs: {
       16x32. The styles are normal and bold (except for 6x12), plus
       EGA/VGA-bold for 8x14 and 8x16.
     '';
+
     homepage = "https://terminus-font.sourceforge.net/";
     license = lib.licenses.ofl;
     maintainers = with lib.maintainers; [ maevii ];

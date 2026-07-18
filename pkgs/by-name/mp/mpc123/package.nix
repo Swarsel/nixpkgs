@@ -12,11 +12,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.2.4";
 
   src = fetchFromGitLab {
-    domain = "salsa.debian.org";
     owner = "debian";
     repo = "mpc123";
     rev = "upstream/${finalAttrs.version}";
     hash = "sha256-+/yxb19CJzyjQmT3O21pEmPR5YudmyCxWwo+W3uOB9Q=";
+    domain = "salsa.debian.org";
   };
 
   strictDeps = true;
@@ -54,8 +54,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Musepack (.mpc) audio player";
     homepage = "https://github.com/bucciarati/mpc123";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "mpc123";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "mpc123";
   };
 })

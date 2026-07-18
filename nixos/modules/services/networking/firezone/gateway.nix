@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 let
@@ -22,7 +22,7 @@ in
     services.firezone.gateway = {
       enable = mkOption {
         default = false;
-        example = true;
+
         description = ''
           Whether to enable the firezone gateway.
 
@@ -33,28 +33,44 @@ in
 
           See the firezone nixos test in this repository for an nftables based example.
         '';
+
+        example = true;
         type = lib.types.bool;
       };
+
       package = mkPackageOption pkgs "firezone-gateway" { };
 
-      name = mkOption {
-        type = types.str;
-        description = "The name of this gateway as shown in firezone";
-      };
-
       apiUrl = mkOption {
-        type = types.strMatching "^wss://.+/$";
-        example = "wss://firezone.example.com/api/";
         description = ''
           The URL of your firezone server's API. This should be the same
           as your server's setting for {option}`services.firezone.server.settings.api.externalUrl`,
           but with `wss://` instead of `https://`.
         '';
+
+        example = "wss://firezone.example.com/api/";
+        type = types.strMatching "^wss://.+/$";
+      };
+
+      enableTelemetry = mkEnableOption "telemetry";
+
+      logLevel = mkOption {
+        default = "info";
+
+        description = ''
+          The log level for the firezone application. See
+          [RUST_LOG](https://docs.rs/env_logger/latest/env_logger/#enabling-logging)
+          for the format.
+        '';
+
+        type = types.str;
+      };
+
+      name = mkOption {
+        description = "The name of this gateway as shown in firezone";
+        type = types.str;
       };
 
       tokenFile = mkOption {
-        type = types.path;
-        example = "/run/secrets/firezone-gateway-token";
         description = ''
           A file containing the firezone gateway token. Do not use a nix-store path here
           as it will make the token publicly readable!
@@ -62,29 +78,27 @@ in
           This file will be passed via systemd credentials, it should only be accessible
           by the root user.
         '';
-      };
 
-      logLevel = mkOption {
-        type = types.str;
-        default = "info";
-        description = ''
-          The log level for the firezone application. See
-          [RUST_LOG](https://docs.rs/env_logger/latest/env_logger/#enabling-logging)
-          for the format.
-        '';
+        example = "/run/secrets/firezone-gateway-token";
+        type = types.path;
       };
-
-      enableTelemetry = mkEnableOption "telemetry";
     };
   };
 
   config = mkIf cfg.enable {
     systemd.services.firezone-gateway = {
-      description = "Gateway service for the Firezone zero-trust access platform";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Gateway service for the Firezone zero-trust access platform";
+
+      environment = {
+        FIREZONE_API_URL = cfg.apiUrl;
+        FIREZONE_NAME = cfg.name;
+        FIREZONE_NO_TELEMETRY = boolToString (!cfg.enableTelemetry);
+        RUST_LOG = cfg.logLevel;
+      };
 
       path = [ pkgs.util-linux ];
+
       script = ''
         # If FIREZONE_ID is not given by the user, use a persisted (or newly generated) uuid.
         if [[ -z "''${FIREZONE_ID:-}" ]]; then
@@ -98,29 +112,12 @@ in
         exec ${getExe cfg.package}
       '';
 
-      environment = {
-        FIREZONE_API_URL = cfg.apiUrl;
-        FIREZONE_NAME = cfg.name;
-        FIREZONE_NO_TELEMETRY = boolToString (!cfg.enableTelemetry);
-        RUST_LOG = cfg.logLevel;
-      };
-
       serviceConfig = {
-        Type = "exec";
-        DynamicUser = true;
-        User = "firezone-gateway";
-        LoadCredential = [ "firezone-token:${cfg.tokenFile}" ];
-
-        DeviceAllow = "/dev/net/tun";
         AmbientCapabilities = [ "CAP_NET_ADMIN" ];
         CapabilityBoundingSet = [ "CAP_NET_ADMIN" ];
-
-        StateDirectory = "firezone-gateway";
-        WorkingDirectory = "/var/lib/firezone-gateway";
-
-        Restart = "on-failure";
-        RestartSec = 10;
-
+        DeviceAllow = "/dev/net/tun";
+        DynamicUser = true;
+        LoadCredential = [ "firezone-token:${cfg.tokenFile}" ];
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
         NoNewPrivileges = true;
@@ -137,18 +134,28 @@ in
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
         ProtectSystem = "strict";
+        Restart = "on-failure";
+        RestartSec = 10;
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
           "AF_NETLINK"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
+        StateDirectory = "firezone-gateway";
         SystemCallArchitectures = "native";
         SystemCallFilter = "@system-service";
+        Type = "exec";
         UMask = "077";
+        User = "firezone-gateway";
+        WorkingDirectory = "/var/lib/firezone-gateway";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   fuse3,
   pcre,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -19,17 +19,18 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     fuse3
     pcre
   ];
 
+  preConfigure = "substituteInPlace Makefile --replace /usr/local $out";
+
   prePatch = ''
     # do not set sticky bit in nix store
     substituteInPlace Makefile --replace 6755 0755
   '';
-
-  preConfigure = "substituteInPlace Makefile --replace /usr/local $out";
 
   meta = {
     description = "FUSE filesystem intended to be used like Apache mod_rewrite";

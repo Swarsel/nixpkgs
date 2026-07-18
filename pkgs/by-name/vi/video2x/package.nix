@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
-  pkg-config,
-  versionCheckHook,
-  nix-update-script,
   boost,
+  cmake,
   ffmpeg,
   glslang,
   llvmPackages,
   ncnn,
+  nix-update-script,
+  pkg-config,
   spdlog,
+  versionCheckHook,
   vulkan-headers,
   vulkan-loader,
 }:
@@ -26,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-DSsfGAkPOtqqj0FA1N33O+OYmv+CMUsrvmh5SrnF7eA=";
     fetchSubmodules = false;
     leaveDotGit = true;
+
     postFetch = ''
       pushd $out
       git reset --hard HEAD
@@ -72,9 +73,8 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "BUILD_SHARED_LIBS" false)
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   passthru = {
     updateScript = nix-update-script { };
@@ -82,11 +82,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "AI-powered video upscaling tool";
-    changelog = "https://github.com/k4yt3x/video2x/releases/tag/${finalAttrs.version}/CHANGELOG.md";
     homepage = "https://github.com/k4yt3x/video2x";
+    changelog = "https://github.com/k4yt3x/video2x/releases/tag/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.agpl3Plus;
+    maintainers = [ lib.maintainers.matteopacini ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "video2x";
-    maintainers = [ lib.maintainers.matteopacini ];
   };
 })

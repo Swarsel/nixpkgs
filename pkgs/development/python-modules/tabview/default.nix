@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "tabview";
   version = "1.4.4";
-  format = "setuptools";
 
   # newest release only available as wheel on pypi
   src = fetchFromGitHub {
@@ -19,13 +18,14 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ unittestCheckHook ];
+  format = "setuptools";
 
   meta = {
     description = "Python curses command line CSV and tabular data viewer";
-    mainProgram = "tabview";
     homepage = "https://github.com/TabViewer/tabview";
     changelog = "https://github.com/TabViewer/tabview/blob/main/CHANGELOG.rst";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hexa ];
+    mainProgram = "tabview";
   };
 }

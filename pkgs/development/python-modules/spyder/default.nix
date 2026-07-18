@@ -1,23 +1,16 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-
-  # nativeBuildInputs
-  pyqt6-webengine,
-
-  # build-system
-  setuptools,
-
   # dependencies
   aiohttp,
   asyncssh,
   atomicwrites,
   bcrypt,
+  buildPythonPackage,
   chardet,
   cloudpickle,
   cookiecutter,
   diff-match-patch,
+  fetchPypi,
   fzf,
   intervaltree,
   ipython-pygments-lexers,
@@ -37,6 +30,8 @@
   pyls-spyder,
   pyopengl,
   pyqt6,
+  # nativeBuildInputs
+  pyqt6-webengine,
   python-lsp-black,
   python-lsp-ruff,
   python-lsp-server,
@@ -44,25 +39,26 @@
   pyzmq,
   qdarkstyle,
   qstylizer,
+  qt6,
   qtawesome,
   qtconsole,
   qtpy,
   rope,
   rtree,
   scipy,
+  # build-system
+  setuptools,
   spyder-kernels,
   superqt,
   textdistance,
   three-merge,
   watchdog,
   yarl,
-  qt6,
 }:
 
 buildPythonPackage rec {
   pname = "spyder";
   version = "6.1.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -70,21 +66,28 @@ buildPythonPackage rec {
   };
 
   patches = [ ./dont-clear-pythonpath.patch ];
-
   nativeBuildInputs = [ qt6.wrapQtAppsHook ];
-
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "ipython"
-    "jedi"
-    "python-lsp-server"
-  ];
 
   buildInputs = [
     qt6.qtbase
     qt6.qtwayland
   ];
+
+  env.SPYDER_QT_BINDING = "pyqt6";
+  # There is no test for spyder
+  doCheck = false;
+
+  postInstall = ''
+    # Add Python libs to env so Spyder subprocesses
+    # created to run compute kernels don't fail with ImportErrors
+    wrapProgram $out/bin/spyder --prefix PYTHONPATH : "$PYTHONPATH"
+  '';
+
+  preFixup = ''
+    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
+  '';
+
+  build-system = [ setuptools ];
 
   dependencies = [
     aiohttp
@@ -137,36 +140,30 @@ buildPythonPackage rec {
   ]
   ++ python-lsp-server.optional-dependencies.all;
 
-  # There is no test for spyder
-  doCheck = false;
-
-  env.SPYDER_QT_BINDING = "pyqt6";
-
-  postInstall = ''
-    # Add Python libs to env so Spyder subprocesses
-    # created to run compute kernels don't fail with ImportErrors
-    wrapProgram $out/bin/spyder --prefix PYTHONPATH : "$PYTHONPATH"
-  '';
-
   dontWrapQtApps = true;
+  pyproject = true;
 
-  preFixup = ''
-    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
-  '';
+  pythonRelaxDeps = [
+    "ipython"
+    "jedi"
+    "python-lsp-server"
+  ];
 
   meta = {
     description = "Scientific python development environment";
-    mainProgram = "spyder";
+
     longDescription = ''
       Spyder (previously known as Pydee) is a powerful interactive development
       environment for the Python language with advanced editing, interactive
       testing, debugging and introspection features.
     '';
+
     homepage = "https://www.spyder-ide.org/";
-    downloadPage = "https://github.com/spyder-ide/spyder/releases";
     changelog = "https://github.com/spyder-ide/spyder/blob/v${version}/changelogs/Spyder-6.md";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "spyder";
+    downloadPage = "https://github.com/spyder-ide/spyder/releases";
   };
 }

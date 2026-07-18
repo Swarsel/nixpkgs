@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,15 +16,14 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-UJuAT02rYid2IESuABTDEAJiIBOfcyvH7ASOZfgTrZs=";
-
   # The tests try to connect to a Nomad cluster.
   doCheck = false;
 
   meta = {
     description = "Open source templating and deployment tool for HashiCorp Nomad jobs";
-    mainProgram = "levant";
     homepage = "https://github.com/hashicorp/levant";
     license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [ max-niederman ];
+    mainProgram = "levant";
   };
 })

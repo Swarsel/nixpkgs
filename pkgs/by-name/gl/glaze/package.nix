@@ -4,9 +4,9 @@
   fetchFromGitHub,
   cmake,
   openssl,
+  enableInterop ? true,
   enableSIMD ? stdenv.hostPlatform.avx2Support,
   enableSSL ? true,
-  enableInterop ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,14 +32,16 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
+    description = "Extremely fast, in memory, JSON and interface library for modern C++";
     homepage = "https://stephenberry.github.io/glaze/";
     changelog = "https://github.com/stephenberry/glaze/releases/tag/v${finalAttrs.version}";
-    description = "Extremely fast, in memory, JSON and interface library for modern C++";
-    platforms = lib.platforms.all;
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       moni
       miniharinn
     ];
-    license = lib.licenses.mit;
+
+    platforms = lib.platforms.all;
   };
 })

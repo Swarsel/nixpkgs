@@ -15,19 +15,20 @@
 buildPythonPackage rec {
   pname = "google-cloud-speech";
   version = "2.40.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_speech";
     inherit version;
     hash = "sha256-6J5ojkzguSZ1QDi/mS0NDwZcXxw1A7sg5sRtCLY2WPw=";
+    pname = "google_cloud_speech";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
+  nativeCheckInputs = [
+    mock
+    pytest-asyncio
+    pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     google-api-core
@@ -37,21 +38,21 @@ buildPythonPackage rec {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  nativeCheckInputs = [
-    mock
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # Test requires project ID
     "test_list_phrase_set"
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "google.cloud.speech"
     "google.cloud.speech_v1"
     "google.cloud.speech_v1p1beta1"
+  ];
+
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

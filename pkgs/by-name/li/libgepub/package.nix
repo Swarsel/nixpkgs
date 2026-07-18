@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchurl,
+  glib,
+  gnome,
+  gobject-introspection,
+  libarchive,
+  libsoup_3,
+  libxml2,
   meson,
   ninja,
   pkg-config,
-  glib,
-  gobject-introspection,
-  gnome,
   webkitgtk_4_1,
-  libsoup_3,
-  libxml2,
-  libarchive,
 }:
 
 stdenv.mkDerivation rec {

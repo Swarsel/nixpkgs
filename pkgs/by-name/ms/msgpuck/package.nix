@@ -22,11 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
-
   postPatch = ''
     substituteInPlace CMakeLists.txt \
       --replace-fail "cmake_minimum_required(VERSION 2.8.5)" "cmake_minimum_required(VERSION 3.10)"
@@ -34,11 +29,16 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "cmake_policy(SET CMP0037 OLD)" "cmake_policy(SET CMP0037 NEW)"
   '';
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
+
   meta = {
     description = "Simple and efficient MsgPack binary serialization library in a self-contained header file";
     homepage = "https://github.com/rtsisyk/msgpuck";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ izorkin ];
+    platforms = lib.platforms.all;
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -24,6 +24,7 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Fastest and most interactive terminal based UI application for tracking cryptocurrencies";
+
     longDescription = ''
       cointop is a fast and lightweight interactive terminal based UI
       application for tracking and monitoring cryptocurrency coin stats in
@@ -31,9 +32,10 @@ buildGoModule (finalAttrs: {
 
       The interface is inspired by htop and shortcut keys are inspired by vim.
     '';
+
     homepage = "https://cointop.sh";
-    maintainers = with lib.maintainers; [ sarcasticadmin ];
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ sarcasticadmin ];
     mainProgram = "cointop";
   };
 })

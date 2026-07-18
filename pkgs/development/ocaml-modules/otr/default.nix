@@ -1,20 +1,18 @@
 {
   lib,
   fetchurl,
-  buildDunePackage,
-  digestif,
-  sexplib0,
-  mirage-crypto,
-  mirage-crypto-pk,
   astring,
   base64,
+  buildDunePackage,
+  digestif,
+  mirage-crypto,
+  mirage-crypto-pk,
+  sexplib0,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "otr";
   version = "1.0.0";
-
-  minimalOCamlVersion = "4.13";
 
   src = fetchurl {
     url = "https://github.com/hannesm/ocaml-otr/releases/download/v${finalAttrs.version}/otr-${finalAttrs.version}.tbz";
@@ -31,10 +29,11 @@ buildDunePackage (finalAttrs: {
   ];
 
   doCheck = true;
+  minimalOCamlVersion = "4.13";
 
   meta = {
-    homepage = "https://github.com/hannesm/ocaml-otr";
     description = "Off-the-record messaging protocol, purely in OCaml";
+    homepage = "https://github.com/hannesm/ocaml-otr";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ sternenseemann ];
   };

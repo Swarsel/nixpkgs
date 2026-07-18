@@ -17,11 +17,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-qZSjh23snJHWmrIUxRvpu5pZ1G3rJcnl08WGEEM+0Jw=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/c";
-
   patches = [
     ./remove-inexisting-rsumtest.patch
     ./c23.patch
+  ];
+
+  nativeBuildInputs = [
+    autoreconfHook
   ];
 
   makeFlags = [ "AR=${stdenv.cc.bintools.targetPrefix}ar" ];
@@ -38,23 +40,21 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
-  nativeBuildInputs = [
-    autoreconfHook
-  ];
-
   doCheck = true;
-
   nativeCheckInputs = [ perl ];
+  sourceRoot = "${finalAttrs.src.name}/c";
 
   meta = {
     description = "File distribution system using the rsync algorithm";
     homepage = "https://github.com/cph6/zsync";
     changelog = "https://github.com/cph6/zsync/raw/refs/tags/${finalAttrs.src.tag}/c/NEWS";
     license = lib.licenses.artistic2;
+
     maintainers = with lib.maintainers; [
       viric
       ryand56
     ];
+
     platforms = with lib.platforms; all;
   };
 })

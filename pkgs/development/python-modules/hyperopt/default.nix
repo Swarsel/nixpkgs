@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "hyperopt";
   version = "0.2.7";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -39,15 +38,15 @@ buildPythonPackage rec {
 
   # tries to use /homeless-shelter to mimic container usage, etc
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "hyperopt" ];
 
   meta = {
     description = "Distributed Asynchronous Hyperparameter Optimization";
-    mainProgram = "hyperopt-mongo-worker";
     homepage = "http://hyperopt.github.io/hyperopt/";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "hyperopt-mongo-worker";
   };
 }

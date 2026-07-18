@@ -1,15 +1,14 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  fastprogress,
   fastcore,
+  fastprogress,
+  fetchPypi,
 }:
 
 buildPythonPackage rec {
   pname = "fastdownload";
   version = "0.0.7";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,11 +22,12 @@ buildPythonPackage rec {
 
   # no real tests
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "fastdownload" ];
 
   meta = {
-    homepage = "https://github.com/fastai/fastdownload";
     description = "Easily download, verify, and extract archives";
+    homepage = "https://github.com/fastai/fastdownload";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ rxiao ];
   };

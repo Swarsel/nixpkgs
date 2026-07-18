@@ -18,17 +18,28 @@ let
   cfg = config.services.prometheus.exporters.rasdaemon;
 in
 {
-  port = 10029;
   extraOpts = with types; {
     databasePath = mkOption {
-      type = path;
       default = "/var/lib/rasdaemon/ras-mc_event.db";
+
       description = ''
         Path to the RAS daemon machine check event database.
       '';
+
+      type = path;
     };
 
     enabledCollectors = mkOption {
+      default = [
+        "aer"
+        "mce"
+        "mc"
+      ];
+
+      description = ''
+        List of error types to collect from the event database.
+      '';
+
       type = listOf (enum [
         "aer"
         "mce"
@@ -37,16 +48,11 @@ in
         "devlink"
         "disk"
       ]);
-      default = [
-        "aer"
-        "mce"
-        "mc"
-      ];
-      description = ''
-        List of error types to collect from the event database.
-      '';
     };
   };
+
+  port = 10029;
+
   serviceOpts = {
     serviceConfig = {
       ExecStart = escapeSystemdExecArgs (

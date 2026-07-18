@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-  mock,
+  buildPythonPackage,
   jinja2,
-  pygments, # for Erlang support
+  mock,
   pathspec, # for .gitignore support
+  pygments, # for Erlang support
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "lizard";
   version = "1.23.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "terryyin";
@@ -37,15 +36,16 @@ buildPythonPackage rec {
     "test/test_languages/testFortran.py"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "lizard" ];
 
   meta = {
-    changelog = "https://github.com/terryyin/lizard/blob/${src.tag}/CHANGELOG.md";
     description = "Code analyzer without caring the C/C++ header files";
-    mainProgram = "lizard";
-    downloadPage = "https://github.com/terryyin/lizard";
     homepage = "http://www.lizard.ws";
+    changelog = "https://github.com/terryyin/lizard/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jpetrucciani ];
+    mainProgram = "lizard";
+    downloadPage = "https://github.com/terryyin/lizard";
   };
 }

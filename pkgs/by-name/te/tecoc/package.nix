@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   ncurses,
   unstableGitUpdater,
@@ -22,18 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ ncurses ];
-
-  makefile =
-    if stdenv.hostPlatform.isDarwin then
-      "makefile.osx"
-    else if stdenv.hostPlatform.isFreeBSD then
-      "makefile.bsd"
-    else if stdenv.hostPlatform.isOpenBSD then
-      "makefile.bsd"
-    else if stdenv.hostPlatform.isWindows then
-      "makefile.win"
-    else
-      "makefile.linux"; # I think Linux is a safe default...
 
   makeFlags = [
     "CC=${stdenv.cc.targetPrefix}cc"
@@ -60,13 +48,25 @@ stdenv.mkDerivation (finalAttrs: {
     popd
   '';
 
+  makefile =
+    if stdenv.hostPlatform.isDarwin then
+      "makefile.osx"
+    else if stdenv.hostPlatform.isFreeBSD then
+      "makefile.bsd"
+    else if stdenv.hostPlatform.isOpenBSD then
+      "makefile.bsd"
+    else if stdenv.hostPlatform.isWindows then
+      "makefile.win"
+    else
+      "makefile.linux"; # I think Linux is a safe default...
+
   passthru.updateScript = unstableGitUpdater {
     url = finalAttrs.meta.homepage;
   };
 
   meta = {
-    homepage = "https://github.com/blakemcbride/TECOC";
     description = "Clone of the good old TECO editor";
+
     longDescription = ''
       For those who don't know: TECO is the acronym of Tape Editor and COrrector
       (because it was a paper tape edition tool in its debut days). Now the
@@ -81,9 +81,13 @@ stdenv.mkDerivation (finalAttrs: {
 
       TECOC is a portable C implementation of TECO-11.
     '';
+
+    homepage = "https://github.com/blakemcbride/TECOC";
+
     license = {
       url = "https://github.com/blakemcbride/TECOC/blob/${finalAttrs.src.rev}/doc/readme-1st.txt";
     };
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
   };

@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  zlib,
   bzip2,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,14 +23,15 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ autoreconfHook ];
+
   buildInputs = [
     zlib
     bzip2
   ];
 
   meta = {
-    homepage = "https://github.com/RIPE-NCC/bgpdump";
     description = "Analyze dump files produced by Zebra/Quagga or MRT";
+    homepage = "https://github.com/RIPE-NCC/bgpdump";
     license = lib.licenses.hpnd;
     maintainers = with lib.maintainers; [ lewo ];
     platforms = lib.platforms.unix;

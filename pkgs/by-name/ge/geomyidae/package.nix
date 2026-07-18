@@ -15,15 +15,14 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ libressl ];
-
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
 
   meta = {
     description = "Gopher daemon for Linux/BSD";
-    mainProgram = "geomyidae";
     homepage = "gopher://bitreich.org/1/scm/geomyidae";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.athas ];
     platforms = lib.platforms.unix;
+    mainProgram = "geomyidae";
   };
 })

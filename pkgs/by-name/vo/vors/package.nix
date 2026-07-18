@@ -1,24 +1,21 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchurl,
-
-  # buildInputs
-  libogg,
-  opusfile,
-  sox,
-
-  # nativeBuildInputs
-  makeWrapper,
-  perl,
-  pkg-config,
-  zstd,
-
+  buildGoModule,
   # updateScript
   curl,
   genericUpdater,
+  # buildInputs
+  libogg,
+  # nativeBuildInputs
+  makeWrapper,
+  opusfile,
+  perl,
+  pkg-config,
+  sox,
   writeShellScript,
+  zstd,
 }:
 
 buildGoModule (finalAttrs: {
@@ -30,13 +27,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-DpwnhfexF/yw2emn1xrhKbGNbk9Z6wm5A2azQSAdmpA=";
   };
 
-  vendorHash = null;
-  buildInputs = [
-    libogg
-    opusfile
-    sox
-  ];
-
   nativeBuildInputs = [
     makeWrapper
     perl
@@ -44,13 +34,13 @@ buildGoModule (finalAttrs: {
     zstd
   ];
 
-  subPackages = [
-    "cmd/vad"
-    "cmd/keygen"
-    "cmd/server"
-    "cmd/client"
+  buildInputs = [
+    libogg
+    opusfile
+    sox
   ];
 
+  vendorHash = null;
   preConfigure = "export GOCACHE=$NIX_BUILD_TOP/gocache";
 
   preBuild = ''
@@ -74,6 +64,13 @@ buildGoModule (finalAttrs: {
 
   enableParallelBuilding = true;
 
+  subPackages = [
+    "cmd/vad"
+    "cmd/keygen"
+    "cmd/server"
+    "cmd/client"
+  ];
+
   passthru.updateScript = genericUpdater {
     versionLister = writeShellScript "vors-versionLister" ''
       ${curl}/bin/curl -s ${finalAttrs.meta.downloadPage} | ${perl}/bin/perl -lne 'print $1 if /td.*>([0-9.]+)</'
@@ -81,11 +78,8 @@ buildGoModule (finalAttrs: {
   };
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Very simple and usable multi-user VoIP solution";
-    downloadPage = "http://www.vors.stargrave.org/INSTALL.html";
-    homepage = "http://www.vors.stargrave.org/";
-    license = lib.licenses.gpl3Only;
+
     longDescription = ''
       VoRS – Vo(IP) Really Simple. Very simple and usable multi-user
       VoIP solution. Some kind of alternative to Mumble without
@@ -113,9 +107,16 @@ buildGoModule (finalAttrs: {
 
       Maximal easiness of usage: here is your address, key, do me good.
     '';
+
+    homepage = "http://www.vors.stargrave.org/";
+    license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       dvn0
     ];
+
     platforms = lib.platforms.all;
+    broken = stdenv.hostPlatform.isDarwin;
+    downloadPage = "http://www.vors.stargrave.org/INSTALL.html";
   };
 })

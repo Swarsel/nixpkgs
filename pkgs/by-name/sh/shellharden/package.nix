@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -15,19 +15,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-brDqAxY36dl0xSDgzovq/mqvw3eRy+vkuLQozqPsDlc=";
   };
 
-  cargoHash = "sha256-RE1k9G3xKTJ0F79bKrhgS+5O30eqVnA3iLCc+CHfS2Y=";
-
   postPatch = "patchShebangs moduletests/run";
+  cargoHash = "sha256-RE1k9G3xKTJ0F79bKrhgS+5O30eqVnA3iLCc+CHfS2Y=";
 
   meta = {
     description = "Corrective bash syntax highlighter";
-    mainProgram = "shellharden";
+
     longDescription = ''
       Shellharden is a syntax highlighter and a tool to semi-automate the
       rewriting of scripts to ShellCheck conformance, mainly focused on quoting.
     '';
+
     homepage = "https://github.com/anordal/shellharden";
     license = lib.licenses.mpl20;
     maintainers = [ ];
+    mainProgram = "shellharden";
   };
 })

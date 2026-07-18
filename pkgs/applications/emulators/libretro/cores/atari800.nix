@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore rec {
-  core = "atari800";
   version = "0-unstable-2026-07-10";
 
   src = fetchFromGitHub {
@@ -14,8 +13,9 @@ mkLibretroCore rec {
     hash = "sha256-WnozEFNpW6qmSsQGTKzflitG6TVaozyOMcnAka+E1fE=";
   };
 
-  makefile = "Makefile";
   makeFlags = [ "GIT_VERSION=${builtins.substring 0 7 src.rev}" ];
+  core = "atari800";
+  makefile = "Makefile";
 
   meta = {
     description = "Port of Atari800 to libretro";

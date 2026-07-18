@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
-  libdrm,
   amdenc,
   autoPatchelfHook,
+  dpkg,
+  libdrm,
 }:
 
 let
@@ -47,8 +47,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "AMD's closed source Advanced Media Framework (AMF) driver";
     homepage = "https://www.amd.com/en/support/download/drivers.html";
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = with lib.maintainers; [ jopejoe1 ];
+    platforms = [ "x86_64-linux" ];
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  appimageTools,
   fetchurl,
+  appimageTools,
 }:
 let
   pname = "ankama-launcher";
@@ -22,7 +22,6 @@ in
 
 appimageTools.wrapType2 {
   inherit pname version src;
-  extraPkgs = pkgs: [ pkgs.wine ];
 
   extraInstallCommands = ''
     desktop_file="${appimageContents}/zaap.desktop"
@@ -44,16 +43,20 @@ appimageTools.wrapType2 {
     install -m 444 -D ${appimageContents}/zaap.png $out/share/icons/hicolor/256x256/apps/zaap.png
   '';
 
+  extraPkgs = pkgs: [ pkgs.wine ];
+
   meta = {
     description = "Ankama Launcher";
+
     longDescription = ''
       Ankama Launcher is a portal that allows you to access Ankama's video games, VOD animations, webtoons, and livestreams, as well as download updates, stay up to date with the latest news, and chat with your friends.
     '';
+
     homepage = "https://www.ankama.com/en/launcher";
     license = lib.licenses.unfree;
-    mainProgram = "ankama-launcher";
-    maintainers = with lib.maintainers; [ harbiinger ];
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    maintainers = with lib.maintainers; [ harbiinger ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "ankama-launcher";
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   pytestCheckHook,
   typing-extensions,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "aiosqlite";
   version = "0.21.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "omnilib";
@@ -19,15 +18,12 @@ buildPythonPackage rec {
     hash = "sha256-3l/uR97WuLlkAEdogL9iYoXp89bsAcpH6XEtMELsX9o=";
   };
 
-  build-system = [ flit-core ];
-
-  dependencies = [ typing-extensions ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ flit-core ];
+  dependencies = [ typing-extensions ];
   # Tests are not pick-up automatically by the hook
   enabledTestPaths = [ "aiosqlite/tests/*.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "aiosqlite" ];
 
   meta = {

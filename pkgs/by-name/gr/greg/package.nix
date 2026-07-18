@@ -7,9 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "greg";
   version = "0.4.8";
-  format = "setuptools";
-
-  disabled = !python3Packages.isPy3k;
 
   src = fetchFromGitHub {
     owner = "manolomartinez";
@@ -23,11 +20,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     python3Packages.feedparser
   ];
 
+  disabled = !python3Packages.isPy3k;
+  format = "setuptools";
+
   meta = {
-    homepage = "https://github.com/manolomartinez/greg";
     description = "Command-line podcast aggregator";
-    mainProgram = "greg";
+    homepage = "https://github.com/manolomartinez/greg";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ edwtjo ];
+    mainProgram = "greg";
   };
 })

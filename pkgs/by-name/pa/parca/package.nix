@@ -1,35 +1,28 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   buildGoModule,
   faketty,
-  fetchFromGitHub,
-  lib,
-  nodejs,
-  pnpm_9,
   fetchPnpmDeps,
+  nodejs,
   pnpmConfigHook,
-  stdenv,
+  pnpm_9,
 }:
 let
   version = "0.28.0";
 
   parca-src = fetchFromGitHub {
+    hash = "sha256-7ndRiOYa7HiOwwHRXqeCr3A+5EAVvbo4I4vkoqSya+E=";
     owner = "parca-dev";
     repo = "parca";
     tag = "v${version}";
-    hash = "sha256-7ndRiOYa7HiOwwHRXqeCr3A+5EAVvbo4I4vkoqSya+E=";
   };
 
   ui = stdenv.mkDerivation (finalAttrs: {
     inherit version;
     pname = "parca-ui";
     src = "${parca-src}/ui";
-
-    pnpmDeps = fetchPnpmDeps {
-      inherit (finalAttrs) pname src version;
-      pnpm = pnpm_9;
-      fetcherVersion = 3;
-      hash = "sha256-zHdMwJyeafzbIlp+Fhh1khcUVrLsoUg6ViSGm/ByGAA=";
-    };
 
     nativeBuildInputs = [
       faketty
@@ -52,26 +45,31 @@ let
       mv packages/app/web/build $out/share/parca/ui
       runHook postInstall
     '';
+
+    pnpmDeps = fetchPnpmDeps {
+      inherit (finalAttrs) pname src version;
+      fetcherVersion = 3;
+      hash = "sha256-zHdMwJyeafzbIlp+Fhh1khcUVrLsoUg6ViSGm/ByGAA=";
+      pnpm = pnpm_9;
+    };
   });
 in
 
 buildGoModule rec {
   inherit version;
-
   pname = "parca";
   src = parca-src;
-
   vendorHash = "sha256-eZPAgxOi1jgTHmisFG/Sz2y3vhxUu/L3Iodb5mrKnVs=";
-
-  ldflags = [
-    "-X=main.version=${version}"
-    "-X=main.commit=${src.rev}"
-  ];
 
   preBuild = ''
     # Copy the built UI into the right place for the Go build to embed it.
     cp -r ${ui}/share/parca/ui/* ui/packages/app/web/build
   '';
+
+  ldflags = [
+    "-X=main.version=${version}"
+    "-X=main.commit=${src.rev}"
+  ];
 
   passthru = {
     inherit ui;
@@ -79,15 +77,17 @@ buildGoModule rec {
   };
 
   meta = {
-    mainProgram = "parca";
     description = "Continuous profiling for analysis of CPU and memory usage";
     homepage = "https://github.com/parca-dev/parca";
     changelog = "https://github.com/parca-dev/parca/releases/tag/v${version}";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       brancz
       metalmatze
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "parca";
   };
 }

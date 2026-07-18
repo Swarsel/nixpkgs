@@ -1,35 +1,35 @@
 {
   lib,
   stdenv,
-  buildPackages,
   fetchurl,
-  pkg-config,
-  pcre2,
-  libxml2,
-  zlib,
-  bzip2,
-  which,
-  file,
   autoreconfHook,
-  openssl,
-  enableDbi ? false,
-  libdbi,
-  enableMagnet ? false,
-  lua5_1,
-  enableMysql ? false,
-  libmysqlclient,
-  enableLdap ? false,
-  openldap,
-  enablePam ? false,
-  linux-pam,
-  enableSasl ? false,
+  buildPackages,
+  bzip2,
   cyrus_sasl,
-  enableWebDAV ? false,
-  sqlite,
+  file,
+  libdbi,
+  libmysqlclient,
   libuuid,
-  enableExtendedAttrs ? false,
-  perl,
+  libxml2,
+  linux-pam,
+  lua5_1,
   nixosTests,
+  openldap,
+  openssl,
+  pcre2,
+  perl,
+  pkg-config,
+  sqlite,
+  which,
+  zlib,
+  enableDbi ? false,
+  enableExtendedAttrs ? false,
+  enableLdap ? false,
+  enableMagnet ? false,
+  enableMysql ? false,
+  enablePam ? false,
+  enableSasl ? false,
+  enableWebDAV ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -41,18 +41,15 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-GN5Rs5O6xKaCeHnhp/83fBaeQUuuks0kUJHYD8JgHRM=";
   };
 
-  separateDebugInfo = true;
-
   postPatch = ''
     patchShebangs tests
   '';
-
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
 
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     pcre2
     pcre2.dev
@@ -90,8 +87,8 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i "s:/usr/bin/file:${file}/bin/file:g" configure
   '';
 
-  nativeCheckInputs = [ perl ];
   doCheck = true;
+  nativeCheckInputs = [ perl ];
 
   postInstall = ''
     mkdir -p "$out/share/lighttpd/doc/config"
@@ -102,6 +99,9 @@ stdenv.mkDerivation (finalAttrs: {
     rm "$out/share/lighttpd/doc/config/vhosts.d/Makefile"*
   '';
 
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  separateDebugInfo = true;
+
   passthru.tests = {
     inherit (nixosTests) lighttpd;
   };
@@ -110,11 +110,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Lightweight high-performance web server";
     homepage = "http://www.lighttpd.net/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
     maintainers = with lib.maintainers; [
       bjornfor
       brecht
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "lighttpd";
   };
 })

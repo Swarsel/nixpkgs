@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   fetchpatch,
-  qt6,
   ffmpeg_4,
   pkg-config,
+  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,8 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
     # fix build with Qt 6.10, remove after next release
     # https://github.com/gyunaev/karlyriceditor/pull/38
     (fetchpatch {
-      url = "https://github.com/gyunaev/karlyriceditor/commit/1d5e095cc691d4239c919d78209bdd05e57ed2aa.patch";
       hash = "sha256-G93OfcQzgv8PhRQa8aUNsjaIt0GcGQxZGe4Eo0xP7TM=";
+      url = "https://github.com/gyunaev/karlyriceditor/commit/1d5e095cc691d4239c919d78209bdd05e57ed2aa.patch";
     })
   ];
 
@@ -56,10 +56,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Edit and synchronize lyrics with karaoke songs in various formats";
     homepage = "https://github.com/gyunaev/karlyriceditor";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       DPDmancul
     ];
-    mainProgram = "karlyricseditor";
+
     platforms = lib.platforms.linux;
+    mainProgram = "karlyricseditor";
   };
 })

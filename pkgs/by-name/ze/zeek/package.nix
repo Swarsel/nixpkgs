@@ -1,24 +1,24 @@
 {
   lib,
   stdenv,
-  callPackage,
   fetchurl,
-  cmake,
-  flex,
   bison,
-  openssl,
-  libkqueue,
-  libpcap,
-  zlib,
-  file,
+  callPackage,
+  cmake,
+  coreutils,
   curl,
-  libmaxminddb,
+  file,
+  flex,
+  gettext,
   gperftools,
+  libkqueue,
+  libmaxminddb,
+  libpcap,
+  ncurses,
+  openssl,
   python3,
   swig,
-  gettext,
-  coreutils,
-  ncurses,
+  zlib,
 }:
 
 let
@@ -37,11 +37,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Kx3ySPlBmaFoThxGDWTPHF5J10ccK1YvlCrF++mAWJM=";
   };
 
-  strictDeps = true;
-
   patches = [
     ./fix-installation.patch
   ];
+
+  postPatch = ''
+    patchShebangs ./ci/collect-repo-info.py
+    patchShebangs ./auxil/spicy/scripts
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     bison
@@ -69,11 +74,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     gettext
   ];
-
-  postPatch = ''
-    patchShebangs ./ci/collect-repo-info.py
-    patchShebangs ./auxil/spicy/scripts
-  '';
 
   cmakeFlags = [
     "-DBroker_ROOT=${broker}"
@@ -110,11 +110,13 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://www.zeek.org";
     changelog = "https://github.com/zeek/zeek/blob/v${finalAttrs.version}/CHANGES";
     license = lib.licenses.bsd3;
-    mainProgram = "zeek";
+
     maintainers = with lib.maintainers; [
       pSub
       tobim
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "zeek";
   };
 })

@@ -1,14 +1,12 @@
 {
-  buildHomeAssistantComponent,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildHomeAssistantComponent,
   pysolarmanv5,
   pyyaml,
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "StephanJoubert";
-  domain = "solarman";
   version = "1.5.1";
 
   src = fetchFromGitHub {
@@ -23,11 +21,14 @@ buildHomeAssistantComponent rec {
     pyyaml
   ];
 
+  domain = "solarman";
+  owner = "StephanJoubert";
+
   meta = {
     description = "Home Assistant component for Solarman collectors used with a variety of inverters";
-    changelog = "https://github.com/StephanJoubert/home_assistant_solarman/releases/tag/${version}";
     homepage = "https://github.com/StephanJoubert/home_assistant_solarman";
-    maintainers = with lib.maintainers; [ Scrumplex ];
+    changelog = "https://github.com/StephanJoubert/home_assistant_solarman/releases/tag/${version}";
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ Scrumplex ];
   };
 }

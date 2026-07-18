@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  wlroots_0_19,
-  scdoc,
-  pkg-config,
-  wayland,
-  libdrm,
-  libxkbcommon,
-  pixman,
-  wayland-protocols,
   libGL,
+  libdrm,
   libgbm,
   libxcb,
   libxcb-wm,
-  validatePkgConfig,
+  libxkbcommon,
+  meson,
+  ninja,
+  pixman,
+  pkg-config,
+  scdoc,
   testers,
+  validatePkgConfig,
+  wayland,
+  wayland-protocols,
   wayland-scanner,
+  wlroots_0_19,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,8 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
-  depsBuildBuild = [ pkg-config ];
 
   nativeBuildInputs = [
     meson
@@ -58,6 +56,7 @@ stdenv.mkDerivation (finalAttrs: {
     wlroots_0_19
   ];
 
+  depsBuildBuild = [ pkg-config ];
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {
@@ -65,8 +64,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/wlrfx/scenefx";
     license = lib.licenses.mit;
     maintainers = [ ];
+    platforms = lib.platforms.all;
     mainProgram = "scenefx";
     pkgConfigModules = [ "scenefx" ];
-    platforms = lib.platforms.all;
   };
 })

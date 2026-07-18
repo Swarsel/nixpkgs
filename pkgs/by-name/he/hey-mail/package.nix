@@ -2,51 +2,51 @@
   lib,
   stdenv,
   fetchurl,
-  squashfsTools,
-  makeWrapper,
-  autoPatchelfHook,
-  c-ares,
-  gtk3-x11,
-  glib,
-  imagemagick,
-  libevent,
-  libdrm,
-  libvpx,
-  libxslt,
-  libnotify,
-  libappindicator-gtk2,
-  libappindicator-gtk3,
-  libxkbcommon,
-  libGL,
-  wrapGAppsHook3,
-  writeScript,
-  atk,
-  libgbm,
-  cups,
-  systemd,
   alsa-lib,
   at-spi2-atk,
   at-spi2-core,
-  gdk-pixbuf,
-  pango,
+  atk,
+  autoPatchelfHook,
+  c-ares,
   cairo,
-  libxtst,
-  libxrender,
-  libxrandr,
-  libxi,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcursor,
-  libxcomposite,
-  libx11,
-  libxcb,
-  ffmpeg,
-  http-parser,
-  nss,
-  nspr,
+  cups,
   dbus,
   expat,
+  ffmpeg,
+  gdk-pixbuf,
+  glib,
+  gtk3-x11,
+  http-parser,
+  imagemagick,
+  libGL,
+  libappindicator-gtk2,
+  libappindicator-gtk3,
+  libdrm,
+  libevent,
+  libgbm,
+  libnotify,
+  libvpx,
+  libx11,
+  libxcb,
+  libxcomposite,
+  libxcursor,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxi,
+  libxkbcommon,
+  libxrandr,
+  libxrender,
+  libxslt,
+  libxtst,
+  makeWrapper,
+  nspr,
+  nss,
+  pango,
+  squashfsTools,
+  systemd,
+  wrapGAppsHook3,
+  writeScript,
 }:
 let
   deps = [
@@ -95,7 +95,6 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "hey-mail";
   version = "1.3.3";
-  rev = "31";
 
   src = fetchurl {
     url = "https://api.snapcraft.io/api/v1/snaps/download/lfWUNpR7PrPGsDfuxIhVxbj0wZHoH7bK_${finalAttrs.rev}.snap";
@@ -111,13 +110,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = deps;
-
-  unpackPhase = ''
-    runHook preUnpack
-    unsquashfs "$src"
-    cd squashfs-root
-    runHook postUnpack
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -150,6 +142,15 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  rev = "31";
+
+  unpackPhase = ''
+    runHook preUnpack
+    unsquashfs "$src"
+    cd squashfs-root
+    runHook postUnpack
+  '';
+
   passthru.updateScript = writeScript "update-hey-mail" ''
     #!/usr/bin/env nix-shell
     #!nix-shell -i bash -p common-updater-scripts curl jq
@@ -173,11 +174,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://hey.com";
     description = "Desktop client for HEY email";
+    homepage = "https://hey.com";
     license = lib.licenses.unfree;
-    mainProgram = "hey-mail";
     maintainers = [ lib.maintainers.peret ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "hey-mail";
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
 }:
 
 buildGoModule (finalAttrs: {
@@ -23,10 +23,7 @@ buildGoModule (finalAttrs: {
   ];
 
   nativeBuildInputs = [ installShellFiles ];
-
   vendorHash = "sha256-mLOWnHzKw/B+jFNuswejEnYbPxFkk95I/BWeHRTH55I=";
-
-  subPackages = [ "./cmd/hof" ];
 
   postInstall = ''
     local INSTALL="$out/bin/hof"
@@ -36,9 +33,11 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/hof completion zsh)
   '';
 
+  subPackages = [ "./cmd/hof" ];
+
   meta = {
-    homepage = "https://github.com/hofstadter-io/hof";
     description = "Framework that joins data models, schemas, code generation, and a task engine. Language and technology agnostic";
+    homepage = "https://github.com/hofstadter-io/hof";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ jfvillablanca ];
     mainProgram = "hof";

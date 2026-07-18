@@ -1,12 +1,12 @@
 {
   lib,
-  swiftPackages,
+  fetchFromGitHub,
+  nix-update-script,
   swift,
+  swiftPackages,
   swiftpm,
   swiftpm2nix,
-  fetchFromGitHub,
   versionCheckHook,
-  nix-update-script,
 }:
 
 let
@@ -37,6 +37,18 @@ swiftPackages.stdenv.mkDerivation (finalAttrs: {
     swiftPackages.XCTest
   ];
 
+  installPhase = ''
+    mkdir -p $out/bin $out/share/xcodegen
+    cp "$(swiftpmBinPath)/${finalAttrs.pname}" $out/bin/
+    cp -r SettingPresets $out/share/xcodegen/SettingPresets
+  '';
+
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
   # The helper provides a configure snippet that will prepare all dependencies
   # in the correct place, where SwiftPM expects them.
   configurePhase = generated.configure + ''
@@ -45,17 +57,6 @@ swiftPackages.stdenv.mkDerivation (finalAttrs: {
     # Now apply a patch
     patch -p1 -d .build/checkouts/Spectre -i ${./0001-spectre-xct-record.patch}
   '';
-
-  installPhase = ''
-    mkdir -p $out/bin $out/share/xcodegen
-    cp "$(swiftpmBinPath)/${finalAttrs.pname}" $out/bin/
-    cp -r SettingPresets $out/share/xcodegen/SettingPresets
-  '';
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -66,8 +67,8 @@ swiftPackages.stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/yonaskolb/XcodeGen";
     changelog = "https://github.com/yonaskolb/XcodeGen/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    platforms = lib.platforms.darwin;
     maintainers = [ lib.maintainers.samasaur ];
+    platforms = lib.platforms.darwin;
     mainProgram = "xcodegen";
   };
 })

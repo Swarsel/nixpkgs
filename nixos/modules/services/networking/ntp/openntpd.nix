@@ -1,7 +1,7 @@
 {
-  pkgs,
-  lib,
   config,
+  lib,
+  pkgs,
   options,
   ...
 }:
@@ -23,77 +23,83 @@ let
 in
 {
   ###### interface
-
   options.services.openntpd = {
     enable = mkEnableOption "OpenNTP time synchronization server";
 
-    servers = mkOption {
-      default = config.services.ntp.servers;
-      defaultText = literalExpression "config.services.ntp.servers";
-      type = types.listOf types.str;
-      inherit (options.services.ntp.servers) description;
-    };
-
     extraConfig = mkOption {
-      type = with types; lines;
       default = "";
+
+      description = ''
+        Additional text appended to {file}`openntpd.conf`.
+      '';
+
       example = ''
         listen on 127.0.0.1
         listen on ::1
       '';
-      description = ''
-        Additional text appended to {file}`openntpd.conf`.
-      '';
+
+      type = with types; lines;
     };
 
     extraOptions = mkOption {
-      type = with types; separatedString " ";
       default = "";
-      example = "-s";
+
       description = ''
         Extra options used when launching openntpd.
       '';
+
+      example = "-s";
+      type = with types; separatedString " ";
+    };
+
+    servers = mkOption {
+      inherit (options.services.ntp.servers) description;
+      default = config.services.ntp.servers;
+      defaultText = literalExpression "config.services.ntp.servers";
+      type = types.listOf types.str;
     };
   };
 
-  ###### implementation
-
-  meta.maintainers = with lib.maintainers; [ thoughtpolice ];
-
   config = mkIf cfg.enable {
-    services.timesyncd.enable = mkForce false;
-
+    environment.etc."ntpd.conf".text = configFile;
     # Add ntpctl to the environment for status checking
     environment.systemPackages = [ package ];
-
-    environment.etc."ntpd.conf".text = configFile;
-
-    users.users.ntp = {
-      isSystemUser = true;
-      group = "ntp";
-      description = "OpenNTP daemon user";
-      home = "/var/empty";
-    };
-    users.groups.ntp = { };
+    services.timesyncd.enable = mkForce false;
 
     systemd.services.openntpd = {
-      description = "OpenNTP Server";
-      wantedBy = [ "multi-user.target" ];
-      wants = [
-        "network-online.target"
-        "time-sync.target"
-      ];
-      before = [ "time-sync.target" ];
       after = [
         "dnsmasq.service"
         "bind.service"
         "network-online.target"
       ];
+
+      before = [ "time-sync.target" ];
+      description = "OpenNTP Server";
+
       serviceConfig = {
         ExecStart = "${package}/sbin/ntpd -p ${pidFile} ${cfg.extraOptions}";
-        Type = "forking";
         PIDFile = pidFile;
+        Type = "forking";
       };
+
+      wantedBy = [ "multi-user.target" ];
+
+      wants = [
+        "network-online.target"
+        "time-sync.target"
+      ];
+    };
+
+    users.groups.ntp = { };
+
+    users.users.ntp = {
+      description = "OpenNTP daemon user";
+      group = "ntp";
+      home = "/var/empty";
+      isSystemUser = true;
     };
   };
+
+  ###### implementation
+  meta.maintainers = with lib.maintainers; [ thoughtpolice ];
 }

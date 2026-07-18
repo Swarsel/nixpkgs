@@ -1,9 +1,9 @@
 {
   lib,
   fetchCrate,
-  rustPlatform,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "gh-cal";
@@ -14,10 +14,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-x9DekflZoXxH964isWCi6YuV3v/iIyYOuRYVgKaUBx0=";
   };
 
-  cargoHash = "sha256-myfvPAeWuFHQcHXfkTYRfXVQ5ZBrdzQlaqHljbS0ppg=";
-
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ openssl ];
+  cargoHash = "sha256-myfvPAeWuFHQcHXfkTYRfXVQ5ZBrdzQlaqHljbS0ppg=";
 
   meta = {
     description = "GitHub contributions calender terminal viewer";

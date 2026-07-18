@@ -21,15 +21,15 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1qgx9fxwhylgnixzkz2mzv2707f65qq7rar2rsqak536vhig1z9a";
   };
 
-  strictDeps = true;
-  nativeBuildInputs = [ makeWrapper ];
-  buildInputs = [ util-linux ];
-
   postPatch = ''
     cat <<EOF > version.h
     #define VERSION_STR "${finalAttrs.version}"
     EOF
   '';
+
+  strictDeps = true;
+  nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ util-linux ];
 
   installPhase = ''
     mkdir -p $out/bin
@@ -56,10 +56,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/ggrandou/abootimg";
     description = "Manipulate Android Boot Images";
+    homepage = "https://github.com/ggrandou/abootimg";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ flokli ];
+    platforms = lib.platforms.linux;
   };
 })

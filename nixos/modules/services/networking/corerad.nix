@@ -10,13 +10,22 @@ let
 
 in
 {
-  meta.maintainers = with lib.maintainers; [ mdlayher ];
-
   options.services.corerad = {
     enable = lib.mkEnableOption "CoreRAD IPv6 NDP RA daemon";
+    package = lib.mkPackageOption pkgs "corerad" { };
+
+    configFile = lib.mkOption {
+      description = "Path to CoreRAD TOML configuration file.";
+      example = lib.literalExpression ''"''${pkgs.corerad}/etc/corerad/corerad.toml"'';
+      type = lib.types.path;
+    };
 
     settings = lib.mkOption {
-      type = settingsFormat.type;
+      description = ''
+        Configuration for CoreRAD, see <https://github.com/mdlayher/corerad/blob/main/internal/config/reference.toml>
+        for supported values. Ignored if configFile is set.
+      '';
+
       example = lib.literalExpression ''
         {
           interfaces = [
@@ -39,19 +48,9 @@ in
           };
         }
       '';
-      description = ''
-        Configuration for CoreRAD, see <https://github.com/mdlayher/corerad/blob/main/internal/config/reference.toml>
-        for supported values. Ignored if configFile is set.
-      '';
-    };
 
-    configFile = lib.mkOption {
-      type = lib.types.path;
-      example = lib.literalExpression ''"''${pkgs.corerad}/etc/corerad/corerad.toml"'';
-      description = "Path to CoreRAD TOML configuration file.";
+      type = settingsFormat.type;
     };
-
-    package = lib.mkPackageOption pkgs "corerad" { };
   };
 
   config = lib.mkIf cfg.enable {
@@ -59,22 +58,26 @@ in
     services.corerad.configFile = lib.mkDefault (settingsFormat.generate "corerad.toml" cfg.settings);
 
     systemd.services.corerad = {
-      description = "CoreRAD IPv6 NDP RA daemon";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "CoreRAD IPv6 NDP RA daemon";
+
       serviceConfig = {
-        LimitNPROC = 512;
-        LimitNOFILE = 1048576;
-        CapabilityBoundingSet = "CAP_NET_ADMIN CAP_NET_RAW";
         AmbientCapabilities = "CAP_NET_ADMIN CAP_NET_RAW";
-        NoNewPrivileges = true;
+        CapabilityBoundingSet = "CAP_NET_ADMIN CAP_NET_RAW";
         DynamicUser = true;
-        Type = "notify";
-        NotifyAccess = "main";
         ExecStart = "${lib.getBin cfg.package}/bin/corerad -c=${cfg.configFile}";
+        LimitNOFILE = 1048576;
+        LimitNPROC = 512;
+        NoNewPrivileges = true;
+        NotifyAccess = "main";
         Restart = "on-failure";
         RestartKillSignal = "SIGHUP";
+        Type = "notify";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
+
+  meta.maintainers = with lib.maintainers; [ mdlayher ];
 }

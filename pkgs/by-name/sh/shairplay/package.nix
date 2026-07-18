@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   avahi-compat,
   libao,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,14 +29,14 @@ stdenv.mkDerivation (finalAttrs: {
     libao
   ];
 
-  enableParallelBuilding = true;
-
   # the build will fail without complaining about a reference to /tmp
   preFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
     patchelf \
       --set-rpath "${lib.makeLibraryPath finalAttrs.buildInputs}:$out/lib" \
       $out/bin/shairplay
   '';
+
+  enableParallelBuilding = true;
 
   meta = {
     inherit (finalAttrs.src.meta) homepage;

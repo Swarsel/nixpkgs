@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -10,8 +10,8 @@ stdenvNoCC.mkDerivation rec {
 
   src = fetchzip {
     url = "https://github.com/akryukov/theano/releases/download/v${version}/theano-${version}.otf.zip";
-    stripRoot = false;
     hash = "sha256-9wnwHcRHB+AToOvGwZSXvHkQ8hqMd7Sdl26Ty/IwbPw=";
+    stripRoot = false;
   };
 
   installPhase = ''
@@ -26,13 +26,15 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://github.com/akryukov/theano";
     description = "Old-style font designed from historic samples";
+    homepage = "https://github.com/akryukov/theano";
+    license = lib.licenses.ofl;
+
     maintainers = with lib.maintainers; [
       raskin
       rycee
     ];
-    license = lib.licenses.ofl;
+
     platforms = lib.platforms.all;
   };
 }

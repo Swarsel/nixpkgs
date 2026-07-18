@@ -1,11 +1,11 @@
 {
   lib,
   fetchgit,
-  rustPlatform,
-  pkg-config,
-  openssl,
-  protobuf,
   nixosTests,
+  openssl,
+  pkg-config,
+  protobuf,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,10 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-kBy982B9ZY5W02hmdKqlR86ynJAUD98b4UgaYIPaFzM=";
   };
 
-  cargoHash = "sha256-X2zoQSBQaq+W0rT/Y08EA1b81pbePUvH7q+Ccmtbf+Y=";
-
-  __structuredAttrs = true;
-
   nativeBuildInputs = [
     pkg-config
     protobuf
@@ -31,10 +27,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-X2zoQSBQaq+W0rT/Y08EA1b81pbePUvH7q+Ccmtbf+Y=";
   # the tranquil test suite has shown itself virtually impossible to complete on most hardware thus stopping reviews.
   # disable the check phase for now
   doCheck = false;
-
+  __structuredAttrs = true;
   passthru.tests = { inherit (nixosTests) tranquil-pds; };
 
   meta = {

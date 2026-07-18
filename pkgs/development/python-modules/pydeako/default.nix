@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   mock,
   pytest-asyncio,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "pydeako";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "DeakoLights";
@@ -21,19 +20,17 @@ buildPythonPackage rec {
     hash = "sha256-GEYuVKE3DOXJzCqTW2Ngoi6l0e4JvE9lUnZtjrNXTVk=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ zeroconf ];
-
   # Module has no tests
   #doCheck = false;
-
   nativeCheckInputs = [
     mock
     pytest-asyncio
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ zeroconf ];
+  pyproject = true;
   pythonImportsCheck = [ "pydeako" ];
 
   meta = {

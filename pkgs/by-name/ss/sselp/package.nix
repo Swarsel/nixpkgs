@@ -6,8 +6,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.2";
   pname = "sselp";
+  version = "0.2";
 
   src = fetchurl {
     url = "https://dl.suckless.org/tools/sselp-${finalAttrs.version}.tar.gz";
@@ -23,8 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://tools.suckless.org/sselp";
     description = "Prints the X selection to stdout, useful in scripts";
+    homepage = "https://tools.suckless.org/sselp";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.linux;

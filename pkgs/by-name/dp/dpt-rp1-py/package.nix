@@ -1,12 +1,11 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "dpt-rp1-py";
   version = "0.1.19";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "janten";
@@ -33,11 +32,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     zeroconf
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "dptrp1" ];
 
   meta = {
-    homepage = "https://github.com/janten/dpt-rp1-py";
     description = "Python script to manage Sony DPT-RP1 without Digital Paper App";
+    homepage = "https://github.com/janten/dpt-rp1-py";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ mt-caret ];
     mainProgram = "dptrp1";

@@ -1,15 +1,15 @@
 {
   lib,
+  fetchFromGitHub,
   aocd-example-parser,
   beautifulsoup4,
   buildPythonPackage,
-  fetchFromGitHub,
   numpy,
   pebble,
   pook,
+  pytest-cov-stub,
   pytest-freezegun,
   pytest-mock,
-  pytest-cov-stub,
   pytest-raisin,
   pytest-socket,
   pytestCheckHook,
@@ -26,7 +26,6 @@
 buildPythonPackage rec {
   pname = "aocd";
   version = "2.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wimglenn";
@@ -34,6 +33,18 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-Oe+9Ur5O2GSRY7qB8oja7quJqEX/0yXKh4R5+N4kv7Q=";
   };
+
+  nativeCheckInputs = [
+    numpy
+    pook
+    pytest-freezegun
+    pytest-mock
+    pytest-raisin
+    pytest-socket
+    pytestCheckHook
+    pytest-cov-stub
+    requests-mock
+  ];
 
   build-system = [ setuptools ];
 
@@ -48,27 +59,16 @@ buildPythonPackage rec {
     tzlocal
   ];
 
-  nativeCheckInputs = [
-    numpy
-    pook
-    pytest-freezegun
-    pytest-mock
-    pytest-raisin
-    pytest-socket
-    pytestCheckHook
-    pytest-cov-stub
-    requests-mock
+  disabledTests = lib.optionals (pythonAtLeast "3.14") [
+    # argparse prog detection changed in 3.14
+    "test_main_user_ambiguous"
   ];
 
   enabledTestPaths = [
     "tests/"
   ];
 
-  disabledTests = lib.optionals (pythonAtLeast "3.14") [
-    # argparse prog detection changed in 3.14
-    "test_main_user_ambiguous"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "aocd" ];
 
   meta = {

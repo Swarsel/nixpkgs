@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   xz,
 }:
 
@@ -16,9 +16,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-TFnBWylOoyleuBx3yYfHl1kWO6jVBiqsi8AMYLMuuk0=";
   };
 
-  vendorHash = "sha256-XeD47PsFjDT9777SNE8f2LbKZ1cnL5HNPr3Eg7UIpJ0=";
-
   buildInputs = [ xz ];
+  vendorHash = "sha256-XeD47PsFjDT9777SNE8f2LbKZ1cnL5HNPr3Eg7UIpJ0=";
 
   meta = {
     description = "Android OTA payload dumper written in Go";

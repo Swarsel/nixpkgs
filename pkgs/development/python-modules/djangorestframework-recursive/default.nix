@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
   djangorestframework,
-  fetchFromGitHub,
 }:
 
 buildPythonPackage rec {
   pname = "djangorestframework-recursive";
   version = "0.1.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "heywbj";
@@ -25,7 +24,7 @@ buildPythonPackage rec {
 
   # incompatible with newer django versions
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "rest_framework_recursive" ];
 
   meta = {

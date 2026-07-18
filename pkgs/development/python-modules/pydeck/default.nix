@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "pydeck";
   version = "0.9.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -42,19 +41,6 @@ buildPythonPackage rec {
     numpy
   ];
 
-  optional-dependencies = {
-    carto = [
-      # pydeck-carto
-    ];
-    jupyter = [
-      ipykernel
-      ipywidgets
-      traitlets
-    ];
-  };
-
-  pythonImportsCheck = [ "pydeck" ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pandas
@@ -64,10 +50,25 @@ buildPythonPackage rec {
   # tries to start a jupyter server
   disabledTests = [ "test_nbconvert" ];
 
+  optional-dependencies = {
+    carto = [
+      # pydeck-carto
+    ];
+
+    jupyter = [
+      ipykernel
+      ipywidgets
+      traitlets
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "pydeck" ];
+
   meta = {
-    homepage = "https://github.com/visgl/deck.gl/tree/master/bindings/pydeck";
     description = "Large-scale interactive data visualization in Python";
-    maintainers = with lib.maintainers; [ creator54 ];
+    homepage = "https://github.com/visgl/deck.gl/tree/master/bindings/pydeck";
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ creator54 ];
   };
 }

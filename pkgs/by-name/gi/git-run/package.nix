@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
 }:
 
@@ -16,14 +16,11 @@ buildNpmPackage rec {
     hash = "sha256-WPnar87p0GYf6ehhVEUeZd2pTjS95Zl6NpiJuIOQ5Tc=";
   };
 
-  npmDepsHash = "sha256-nHFkkGovO+kCxRlV02PxmKZ0GXYTqqOZd2MBspk59Ew=";
-
   postPatch = ''
     cp ${./package-lock.json} package-lock.json
   '';
 
-  makeCacheWritable = true;
-  dontBuild = true;
+  npmDepsHash = "sha256-nHFkkGovO+kCxRlV02PxmKZ0GXYTqqOZd2MBspk59Ew=";
 
   postInstall = ''
     echo "Removing broken symlinks in node_modules/.bin"
@@ -34,13 +31,15 @@ buildNpmPackage rec {
     rm -f $out/lib/node_modules/${pname}/node_modules/.bin/rimraf
   '';
 
+  dontBuild = true;
+  makeCacheWritable = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Multiple git repository management tool";
     homepage = "https://mixu.net/gr/";
     license = lib.licenses.bsd3;
-    mainProgram = "gr";
     maintainers = [ ];
+    mainProgram = "gr";
   };
 }

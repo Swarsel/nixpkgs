@@ -1,19 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonOlder,
   aiohttp,
-  yarl,
+  buildPythonPackage,
   hatchling,
+  pythonOlder,
+  yarl,
 }:
 
 buildPythonPackage rec {
   pname = "volvocarsapi";
   version = "0.4.3";
-  pyproject = true;
-
-  disabled = pythonOlder "3.12";
 
   src = fetchFromGitHub {
     owner = "thomasddn";
@@ -21,6 +18,9 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-GC2vktTFWh4z/sO+2hhsVKInSl5GQCtzq4q0YtfkfKg=";
   };
+
+  # Package has no tests
+  doCheck = false;
 
   build-system = [
     hatchling
@@ -31,8 +31,8 @@ buildPythonPackage rec {
     yarl
   ];
 
-  # Package has no tests
-  doCheck = false;
+  disabled = pythonOlder "3.12";
+  pyproject = true;
 
   pythonImportsCheck = [
     "volvocarsapi"

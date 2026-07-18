@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   freezegun,
   mock,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "fitbit";
   version = "0.3.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "orcasgit";
@@ -39,6 +38,7 @@ buildPythonPackage rec {
     requests-mock
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "fitbit" ];
 
   meta = {

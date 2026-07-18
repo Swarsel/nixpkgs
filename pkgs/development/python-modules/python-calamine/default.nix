@@ -1,20 +1,19 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cargo,
-  fetchFromGitHub,
   libiconv,
   packaging,
   poetry-core,
   pytestCheckHook,
-  rustc,
   rustPlatform,
+  rustc,
 }:
 
 buildPythonPackage rec {
   pname = "python-calamine";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dimastbk";
@@ -23,12 +22,8 @@ buildPythonPackage rec {
     hash = "sha256-vPI2SWOMwEpN0w7BWvFFz1eeXiU9t4xhdl3TpO39l/Q=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-DR84RulbTpwipYKHLtXdCa8Yr2Irv1W1o3NrCT8FRq4=";
-  };
-
   buildInputs = [ libiconv ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     cargo
@@ -38,10 +33,13 @@ buildPythonPackage rec {
     rustc
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-DR84RulbTpwipYKHLtXdCa8Yr2Irv1W1o3NrCT8FRq4=";
+  };
+
   dependencies = [ packaging ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "python_calamine" ];
 
   meta = {

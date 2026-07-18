@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  exiv2,
-  libxml2,
-  gtk3,
-  libxslt,
-  docbook_xsl,
-  docbook_xml_dtd_42,
   desktop-file-utils,
-  wrapGAppsHook3,
   desktopToDarwinBundle,
+  docbook_xml_dtd_42,
+  docbook_xsl,
+  exiv2,
+  gtk3,
+  libxml2,
+  libxslt,
+  pkg-config,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -75,11 +75,11 @@ stdenv.mkDerivation (finalAttrs: {
       one takes the GPS data in a different format.
     '';
 
-    license = lib.licenses.gpl2Plus;
     homepage = "https://dfandrich.github.io/gpscorrelate/";
     changelog = "https://github.com/dfandrich/gpscorrelate/releases/tag/${finalAttrs.version}";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ sikmir ];
+    platforms = lib.platforms.unix;
     mainProgram = "gpscorrelate";
   };
 })

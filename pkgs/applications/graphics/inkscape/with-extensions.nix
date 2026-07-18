@@ -1,10 +1,10 @@
 {
   lib,
   inkscape,
-  symlinkJoin,
-  makeWrapper,
-  inkscapeExtensions ? [ ],
   inkscape-extensions,
+  makeWrapper,
+  symlinkJoin,
+  inkscapeExtensions ? [ ],
 }:
 
 let
@@ -16,14 +16,13 @@ in
 
 symlinkJoin {
   inherit (inkscape) version;
+  inherit (inkscape) meta;
   pname = "inkscape-with-extensions";
 
   outputs = [
     "out"
     "man"
   ];
-
-  paths = [ inkscape ] ++ selectedExtensions;
 
   nativeBuildInputs = [ makeWrapper ];
 
@@ -34,5 +33,5 @@ symlinkJoin {
     ln -s ${inkscape.man} $man
   '';
 
-  inherit (inkscape) meta;
+  paths = [ inkscape ] ++ selectedExtensions;
 }

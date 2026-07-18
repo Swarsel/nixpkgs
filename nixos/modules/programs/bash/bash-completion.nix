@@ -9,6 +9,13 @@ let
   cfg = config.programs.bash;
 in
 {
+  imports = [
+    (lib.mkRenamedOptionModule
+      [ "programs" "bash" "enableCompletion" ]
+      [ "programs" "bash" "completion" "enable" ]
+    )
+  ];
+
   options.programs.bash.completion = {
     enable = lib.mkEnableOption "Bash completion for all interactive bash shells" // {
       default = true;
@@ -16,13 +23,6 @@ in
 
     package = lib.mkPackageOption pkgs "bash-completion" { };
   };
-
-  imports = [
-    (lib.mkRenamedOptionModule
-      [ "programs" "bash" "enableCompletion" ]
-      [ "programs" "bash" "completion" "enable" ]
-    )
-  ];
 
   config = lib.mkIf cfg.completion.enable {
     programs.bash.promptPluginInit = ''

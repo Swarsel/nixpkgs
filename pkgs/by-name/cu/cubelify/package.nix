@@ -1,7 +1,7 @@
 {
-  appimageTools,
-  fetchurl,
   lib,
+  fetchurl,
+  appimageTools,
   makeWrapper,
 }:
 appimageTools.wrapType2 rec {
@@ -34,8 +34,8 @@ appimageTools.wrapType2 rec {
     description = "Powerful and feature-rich Hypixel anti-sniping stats overlay";
     homepage = "https://cubelify.com/";
     license = with lib.licenses; [ unfree ];
-    mainProgram = "cubelify";
     maintainers = with lib.maintainers; [ yunfachi ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "cubelify";
   };
 }

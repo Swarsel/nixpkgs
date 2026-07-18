@@ -2,13 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  updateAutotoolsGnuConfigScriptsHook,
-  withCMake ? true,
   cmake,
-
   # sensitive downstream packages
   curl,
   grpc, # consumes cmake config
+  updateAutotoolsGnuConfigScriptsHook,
+  withCMake ? true,
 }:
 
 # Note: this package is used for bootstrapping fetchurl, and thus
@@ -19,9 +18,6 @@
 stdenv.mkDerivation rec {
   pname = "c-ares";
   version = "1.34.6";
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   src = fetchurl {
     # Note: tag name varies in some versions, e.g. v1.30.0, c-ares-1_17_0.
@@ -35,6 +31,7 @@ stdenv.mkDerivation rec {
     "man"
   ];
 
+  strictDeps = true;
   nativeBuildInputs = [ updateAutotoolsGnuConfigScriptsHook ] ++ lib.optionals withCMake [ cmake ];
 
   cmakeFlags =
@@ -44,16 +41,17 @@ stdenv.mkDerivation rec {
       "-DCARES_STATIC=ON"
     ];
 
+  preFixup = lib.optionalString withCMake ''
+    substituteInPlace $out/lib/pkgconfig/libcares.pc --replace-fail \''${prefix}/ ""
+  '';
+
+  __structuredAttrs = true;
   enableParallelBuilding = true;
 
   passthru.tests = {
     inherit grpc;
     curl = (curl.override { c-aresSupport = true; }).tests.withCheck;
   };
-
-  preFixup = lib.optionalString withCMake ''
-    substituteInPlace $out/lib/pkgconfig/libcares.pc --replace-fail \''${prefix}/ ""
-  '';
 
   meta = {
     description = "C library for asynchronous DNS requests";

@@ -15,29 +15,35 @@ let
     ;
 in
 {
-  port = 8080;
-
   extraOpts = {
     package = lib.mkPackageOption pkgs "kminion" { };
 
     environmentFile = mkOption {
-      type = with types; nullOr path;
       default = null;
+
       description = ''
         File containing the credentials to access the repository, in the
         format of an EnvironmentFile as described by systemd.exec(5)
       '';
+
+      type = with types; nullOr path;
     };
   };
+
+  port = 8080;
+
   serviceOpts = mkMerge (
     [
       {
         serviceConfig = {
+          EnvironmentFile = mkIf (cfg.environmentFile != null) cfg.environmentFile;
+
           ExecStart = ''
             ${lib.getExe cfg.package}
           '';
-          EnvironmentFile = mkIf (cfg.environmentFile != null) cfg.environmentFile;
+
           RestartSec = "5s";
+
           RestrictAddressFamilies = [
             "AF_INET"
             "AF_INET6"

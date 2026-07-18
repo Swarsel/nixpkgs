@@ -1,23 +1,22 @@
 {
   lib,
   fetchFromGitHub,
-  buildPythonPackage,
-  isPyPy,
-  setuptools,
-  setuptools-scm,
   backports-zstd,
-  flask,
-  flask-caching,
-  zstandard,
   brotli,
   brotlicffi,
+  buildPythonPackage,
+  flask,
+  flask-caching,
+  isPyPy,
   pytestCheckHook,
+  setuptools,
+  setuptools-scm,
+  zstandard,
 }:
 
 buildPythonPackage rec {
-  version = "1.24";
   pname = "flask-compress";
-  pyproject = true;
+  version = "1.24";
 
   src = fetchFromGitHub {
     owner = "colour-science";
@@ -25,6 +24,16 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-JbPBu8FWp/HnYbA2vTKiy2gopS5U0JNDV7ucTAYrLVY=";
   };
+
+  postPatch = ''
+    substituteInPlace pyproject.toml \
+      --replace-fail "setuptools_scm[toml]<8" "setuptools_scm"
+  '';
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    flask-caching
+  ];
 
   build-system = [
     setuptools
@@ -38,17 +47,8 @@ buildPythonPackage rec {
   ++ lib.optionals (!isPyPy) [ brotli ]
   ++ lib.optionals isPyPy [ brotlicffi ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    flask-caching
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "flask_compress" ];
-
-  postPatch = ''
-    substituteInPlace pyproject.toml \
-      --replace-fail "setuptools_scm[toml]<8" "setuptools_scm"
-  '';
 
   meta = {
     description = "Compress responses in your Flask app with gzip, deflate or brotli";

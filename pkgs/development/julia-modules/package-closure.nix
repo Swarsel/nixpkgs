@@ -1,13 +1,12 @@
 {
   lib,
-  julia,
-  python3,
-  runCommand,
-
   augmentedRegistry,
+  julia,
+  packageImplications,
   packageNames,
   packageOverrides,
-  packageImplications,
+  python3,
+  runCommand,
 }:
 
 let

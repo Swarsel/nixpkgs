@@ -1,11 +1,11 @@
 {
+  lib,
+  fetchFromGitHub,
   argon2-cffi,
   bcrypt,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   hatchling,
-  lib,
   pytest-archon,
   pytest-xdist,
   pytestCheckHook,
@@ -15,21 +15,12 @@
 buildPythonPackage rec {
   pname = "libpass";
   version = "1.9.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ThirVondukr";
     repo = "passlib";
     tag = version;
     hash = "sha256-fzI9HpGE3wNK41ZSOeA5NAr5T4r3Jzdqe5+SHoWVXUs=";
-  };
-
-  build-system = [ hatchling ];
-
-  optional-dependencies = {
-    argon2 = [ argon2-cffi ];
-    bcrypt = [ bcrypt ];
-    totp = [ cryptography ];
   };
 
   nativeCheckInputs = [
@@ -39,7 +30,7 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
-  pythonImportsCheck = [ "passlib" ];
+  build-system = [ hatchling ];
 
   disabledTestPaths = [
     # https://github.com/notypecheck/passlib/issues/18
@@ -56,10 +47,19 @@ buildPythonPackage rec {
     "test_encrypt_cost_timing"
   ];
 
+  optional-dependencies = {
+    argon2 = [ argon2-cffi ];
+    bcrypt = [ bcrypt ];
+    totp = [ cryptography ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "passlib" ];
+
   meta = {
-    changelog = "https://github.com/ThirVondukr/passlib/blob/${src.tag}/CHANGELOG.md";
     description = "Comprehensive password hashing framework supporting over 30 schemes";
     homepage = "https://github.com/ThirVondukr/passlib";
+    changelog = "https://github.com/ThirVondukr/passlib/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

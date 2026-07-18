@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "pyscrypt";
   version = "1.6.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -19,9 +18,11 @@ buildPythonPackage rec {
     ${python.interpreter} tests/run-tests-hash.py
   '';
 
+  format = "setuptools";
+
   meta = {
-    homepage = "https://github.com/ricmoo/pyscrypt/";
     description = "Pure-Python implementation of Scrypt PBKDF and scrypt file format library";
+    homepage = "https://github.com/ricmoo/pyscrypt/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ valodim ];
   };

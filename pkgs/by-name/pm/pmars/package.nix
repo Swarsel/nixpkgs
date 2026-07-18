@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchzip,
   installShellFiles,
   libx11,
@@ -25,8 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = fetchzip {
     url = "http://www.koth.org/pmars/pmars-${finalAttrs.version}.zip";
-    stripRoot = false;
     hash = "sha256-p6iZkb0Nrcj7LtAxtS6Ics5CS9taPHbsoIdE5C1QYnI=";
+    stripRoot = false;
   };
 
   patches = [
@@ -61,10 +61,6 @@ stdenv.mkDerivation (finalAttrs: {
     cd src
   '';
 
-  hardeningDisable = [ "format" ];
-
-  enableParallelBuilding = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -81,22 +77,27 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+  hardeningDisable = [ "format" ];
+
   passthru = {
     inherit options;
   };
 
   meta = {
     description = "Official Core War simulator";
+
     longDescription = ''
       Portable MARS is the official Core War simulator of the ICWS and the rec.games.corewar newsgroup. pMARS serves as
       a test bed for new Redcode standards and tournament styles. It has also been used in genetic algorithm experiments
       and as an assembly language teaching aid. pMARS is under active development by a group of Core War enthusiasts who
       put a lot of time into this project.
     '';
+
     homepage = "http://www.koth.org/pmars/";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "pmars";
     maintainers = with lib.maintainers; [ OPNA2608 ];
     platforms = lib.platforms.unix;
+    mainProgram = "pmars";
   };
 })

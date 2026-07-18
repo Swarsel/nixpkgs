@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   mupdf,
   pkg-config,
 }:
@@ -17,8 +17,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-TvfSauT9UWjQjkzQtepEVyxm/LaiCANmxMtVmjiw8kI=";
   };
 
-  vendorHash = "sha256-LCIv135ywuq494hZbrKdbqkGPSsSlSkVQ9hCE8i7www=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -26,6 +24,8 @@ buildGoModule (finalAttrs: {
   buildInputs = [
     mupdf
   ];
+
+  vendorHash = "sha256-LCIv135ywuq494hZbrKdbqkGPSsSlSkVQ9hCE8i7www=";
 
   ldflags = [
     "-s"
@@ -37,7 +37,7 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/Yujonpradhananga/pdf-cli";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ yujonpradhananga ];
-    mainProgram = "pdf-cli";
     platforms = lib.platforms.unix;
+    mainProgram = "pdf-cli";
   };
 })

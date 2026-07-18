@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytestCheckHook,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "cerberus";
   version = "1.3.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyeve";
@@ -19,19 +18,20 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-C7YZjqQtdkakqHXBU3cFUl/gCFvCl3saP14eqt2fdAM=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     poetry-core
     setuptools
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "cerberus" ];
-
   disabledTestPaths = [
     # We don't care about benchmarks
     "cerberus/benchmarks/"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "cerberus" ];
 
   meta = {
     description = "Schema and data validation tool for Python dictionaries";

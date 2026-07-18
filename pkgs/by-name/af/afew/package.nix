@@ -1,31 +1,31 @@
 {
   lib,
-  python3Packages,
+  afew,
   fetchPypi,
   pkgs,
+  python3Packages,
   testers,
-  afew,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "afew";
   version = "3.0.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     sha256 = "0wpfqbqjlfb9z0hafvdhkm7qw56cr9kfy6n8vb0q42dwlghpz1ff";
   };
 
+  outputs = [
+    "out"
+    "doc"
+    "man"
+  ];
+
   nativeBuildInputs = with python3Packages; [
     sphinxHook
     setuptools_80
     setuptools-scm
-  ];
-
-  sphinxBuilders = [
-    "html"
-    "man"
   ];
 
   propagatedBuildInputs = with python3Packages; [
@@ -47,9 +47,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ''--prefix PATH ':' "${pkgs.notmuch}/bin"''
   ];
 
-  outputs = [
-    "out"
-    "doc"
+  pyproject = true;
+
+  sphinxBuilders = [
+    "html"
     "man"
   ];
 
@@ -60,10 +61,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/afewmail/afew";
     description = "Initial tagging script for notmuch mail";
-    mainProgram = "afew";
+    homepage = "https://github.com/afewmail/afew";
     license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ flokli ];
+    mainProgram = "afew";
   };
 })

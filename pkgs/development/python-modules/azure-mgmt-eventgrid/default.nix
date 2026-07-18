@@ -13,14 +13,15 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-eventgrid";
   version = "10.4.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_eventgrid";
     inherit version;
     hash = "sha256-MD5eJ89LteyDO6Tlqe9wtbxBDhkEEuxHzeWdguQT+34=";
+    pname = "azure_mgmt_eventgrid";
   };
 
+  # has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,9 +32,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  # has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.mgmt.eventgrid" ];
 
   meta = {

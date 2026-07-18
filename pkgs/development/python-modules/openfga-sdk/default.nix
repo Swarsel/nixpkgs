@@ -1,24 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-  pytestCheckHook,
   aiohttp,
   build,
+  buildPythonPackage,
+  hatchling,
   mock,
   opentelemetry-api,
   pytest-asyncio,
   pytest-cov-stub,
+  pytestCheckHook,
   python-dateutil,
-  hatchling,
+  pythonAtLeast,
   urllib3,
 }:
 
 buildPythonPackage rec {
   pname = "openfga-sdk";
   version = "0.10.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openfga";
@@ -26,6 +25,13 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-+LVlA+YPDCULpV+1jA+GTNh2YBLD7UrtbYVZemfB0kM=";
   };
+
+  nativeCheckInputs = [
+    mock
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -37,19 +43,13 @@ buildPythonPackage rec {
     urllib3
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "openfga_sdk" ];
 
-  nativeCheckInputs = [
-    mock
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
   meta = {
-    changelog = "https://github.com/openfga/python-sdk/blob/${src.tag}/CHANGELOG.md";
     description = "Fine-Grained Authorization solution for Python";
     homepage = "https://github.com/openfga/python-sdk";
+    changelog = "https://github.com/openfga/python-sdk/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ nicklewis ];
   };

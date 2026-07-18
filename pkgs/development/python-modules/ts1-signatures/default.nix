@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   dpkt,
-  pyyaml,
   pytestCheckHook,
+  pyyaml,
+  setuptools,
 }:
 buildPythonPackage {
   pname = "ts1-signatures";
   version = "0-unstable-2024-08-10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "yifeikong";
@@ -19,6 +18,7 @@ buildPythonPackage {
     hash = "sha256-fz5EFPO5UPPbFnqe4wE1y2lIROPByse9awyBa49o8ZE=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,11 +26,11 @@ buildPythonPackage {
     pyyaml
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTests = [
     "test_nghttpd_log_parsing" # Attempts to load things from logs/ which it cannot find for some reason.
   ];
+
+  pyproject = true;
 
   meta = {
     description = "TLS and HTTP signature and fingerprint library";

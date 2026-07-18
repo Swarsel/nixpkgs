@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  testers,
   cmake,
   cmake-extras,
   dbus,
   dbus-test-runner,
+  gitUpdater,
   glib,
   gtest,
   libqtdbustest,
   lomiri-api,
   pkg-config,
   qtbase,
+  testers,
 }:
 
 let
@@ -43,6 +43,15 @@ stdenv.mkDerivation (finalAttrs: {
     lomiri-api
   ];
 
+  cmakeFlags = [
+    (lib.strings.cmakeBool "enable_tests" finalAttrs.finalPackage.doCheck)
+  ]
+  ++ lib.optionals finalAttrs.finalPackage.doCheck [
+    (lib.strings.cmakeBool "ENABLE_QT6" withQt6)
+  ];
+
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   nativeCheckInputs = [
     dbus
     dbus-test-runner
@@ -54,19 +63,6 @@ stdenv.mkDerivation (finalAttrs: {
     qtbase
   ];
 
-  cmakeFlags = [
-    (lib.strings.cmakeBool "enable_tests" finalAttrs.finalPackage.doCheck)
-  ]
-  ++ lib.optionals finalAttrs.finalPackage.doCheck [
-    (lib.strings.cmakeBool "ENABLE_QT6" withQt6)
-  ];
-
-  dontWrapQtApps = true;
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
-  enableParallelChecking = false;
-
   checkPhase = ''
     runHook preCheck
 
@@ -74,6 +70,9 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postCheck
   '';
+
+  dontWrapQtApps = true;
+  enableParallelChecking = false;
 
   passthru = {
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
@@ -84,10 +83,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Library to test GMenuModel structures";
     homepage = "https://gitlab.com/ubports/development/core/gmenuharness";
     license = lib.licenses.gpl3Only;
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.unix;
+
     pkgConfigModules = [
       "libgmenuharness"
     ];
+
+    teams = [ lib.teams.lomiri ];
   };
 })

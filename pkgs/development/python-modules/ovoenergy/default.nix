@@ -1,19 +1,18 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
   incremental,
-  setuptools,
   pyjwt,
+  setuptools,
   typer,
 }:
 
 buildPythonPackage rec {
   pname = "ovoenergy";
   version = "3.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "timmo001";
@@ -22,12 +21,14 @@ buildPythonPackage rec {
     hash = "sha256-oWJxpiC83C/ghs/Ik8+DrPWtP/j5jWEZ3+9Nqg4ARKU=";
   };
 
+  nativeBuildInputs = [ incremental ];
+  # Project has no tests
+  doCheck = false;
+
   build-system = [
     incremental
     setuptools
   ];
-
-  nativeBuildInputs = [ incremental ];
 
   dependencies = [
     aiohttp
@@ -36,9 +37,7 @@ buildPythonPackage rec {
     typer
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "ovoenergy" ];
 
   meta = {

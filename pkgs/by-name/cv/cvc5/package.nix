@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
+  boost,
+  cadical,
   cmake,
   flex,
-  cadical,
-  cadical' ? cadical.override { version = "2.1.3"; },
-  symfpu,
   gmp,
-  python3,
   gtest,
-  boost,
   jdk,
   libpoly,
+  pkg-config,
+  python3,
+  symfpu,
+  cadical' ? cadical.override { version = "2.1.3"; },
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,7 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-PZcOArSTyJzyd2DKT8K0aFC4RlVXgTCnkoU0f08KPfY=";
   };
 
-  __structuredAttrs = true;
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -41,6 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
       ]
     ))
   ];
+
   buildInputs = [
     cadical'.dev
     symfpu
@@ -51,25 +51,25 @@ stdenv.mkDerivation (finalAttrs: {
     libpoly
   ];
 
-  preConfigure = ''
-    patchShebangs ./src/
-  '';
-
-  cmakeBuildType = "Production";
-
   cmakeFlags = [
     "-DBUILD_SHARED_LIBS=1"
     "-DUSE_POLY=ON"
   ];
 
+  preConfigure = ''
+    patchShebangs ./src/
+  '';
+
   doCheck = true;
+  __structuredAttrs = true;
+  cmakeBuildType = "Production";
 
   meta = {
     description = "High-performance theorem prover and SMT solver";
-    mainProgram = "cvc5";
     homepage = "https://cvc5.github.io";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ shadaj ];
+    platforms = lib.platforms.unix;
+    mainProgram = "cvc5";
   };
 })

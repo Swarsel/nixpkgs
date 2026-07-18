@@ -1,21 +1,20 @@
 {
-  monolithic ? true, # build monolithic Quassel
-  enableDaemon ? false, # build Quassel daemon
-  client ? false, # build Quassel client
-  tag ? "-kf5", # tag added to the package name
-  static ? false, # link statically
-
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  makeWrapper,
-  dconf,
   boost,
-  zlib,
+  cmake,
+  dconf,
   libdbusmenu,
   libsForQt5,
+  makeWrapper,
   openldap,
+  zlib,
+  client ? false, # build Quassel client
+  enableDaemon ? false, # build Quassel daemon
+  monolithic ? true, # build monolithic Quassel
+  static ? false, # link statically
+  tag ? "-kf5", # tag added to the package name
 }:
 
 let
@@ -41,14 +40,12 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-eulhNcyCmy9ryietOhT2yVJeJH+MMZRbTUo2XuTy9qU=";
   };
 
-  # Prevent ``undefined reference to `qt_version_tag''' in SSL check
-  env.NIX_CFLAGS_COMPILE = "-DQT_NO_VERSION_TAGGING=1";
-
   nativeBuildInputs = [
     cmake
     makeWrapper
   ]
   ++ lib.optional buildClient libsForQt5.wrapQtAppsHook;
+
   buildInputs = [
     libsForQt5.qtbase
     boost
@@ -73,7 +70,8 @@ stdenv.mkDerivation rec {
   ++ edf enableDaemon "WITH_LDAP"
   ++ edf client "WANT_QTCLIENT";
 
-  dontWrapQtApps = true;
+  # Prevent ``undefined reference to `qt_version_tag''' in SSL check
+  env.NIX_CFLAGS_COMPILE = "-DQT_NO_VERSION_TAGGING=1";
 
   postFixup =
     lib.optionalString enableDaemon ''
@@ -84,9 +82,12 @@ stdenv.mkDerivation rec {
         --prefix GIO_EXTRA_MODULES : "${dconf}/lib/gio/modules"
     '';
 
+  dontWrapQtApps = true;
+
   meta = {
-    homepage = "https://quassel-irc.org/";
+    inherit (libsForQt5.qtbase.meta) platforms;
     description = "Qt/KDE distributed IRC client supporting a remote daemon";
+
     longDescription = ''
       Quassel IRC is a cross-platform, distributed IRC client,
       meaning that one (or multiple) client(s) can attach to
@@ -94,8 +95,11 @@ stdenv.mkDerivation rec {
       combination of screen and a text-based IRC client such
       as WeeChat, but graphical (based on Qt4/KDE4 or Qt5/KF5).
     '';
+
+    homepage = "https://quassel-irc.org/";
     license = lib.licenses.gpl3;
     maintainers = [ ];
+
     mainProgram =
       if monolithic then
         "quassel"
@@ -103,6 +107,5 @@ stdenv.mkDerivation rec {
         "quasselclient"
       else
         "quasselcore";
-    inherit (libsForQt5.qtbase.meta) platforms;
   };
 }

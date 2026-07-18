@@ -1,12 +1,11 @@
 {
-  buildNpmPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage (finalAttrs: {
   pname = "freifunk-meshviewer";
-
   version = "13.1.0";
 
   src = fetchFromGitHub {
@@ -26,10 +25,12 @@ buildNpmPackage (finalAttrs: {
   meta = {
     homepage = "https://github.com/freifunk/meshviewer";
     changelog = "https://github.com/freifunk/meshviewer/releases/tag/v${finalAttrs.version}";
-    platforms = lib.platforms.linux;
+    license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       felixsinger
     ];
-    license = lib.licenses.agpl3Only;
+
+    platforms = lib.platforms.linux;
   };
 })

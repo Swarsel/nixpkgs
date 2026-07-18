@@ -1,25 +1,21 @@
 {
   buildPythonPackage,
-  python-octaviaclient,
-  python-openstackclient,
-  hacking,
-  requests-mock,
   doc8,
   docutils,
-  pygments,
-  python-subunit,
+  hacking,
   oslotest,
+  pygments,
+  python-octaviaclient,
+  python-openstackclient,
+  python-subunit,
+  requests-mock,
   stestr,
   testscenarios,
 }:
 
 buildPythonPackage {
-  pname = "python-octaviaclient-tests";
   inherit (python-octaviaclient) version src;
-  pyproject = false;
-
-  dontBuild = true;
-  dontInstall = true;
+  pname = "python-octaviaclient-tests";
 
   nativeCheckInputs = [
     python-octaviaclient
@@ -42,4 +38,8 @@ buildPythonPackage {
 
     runHook postCheck
   '';
+
+  dontBuild = true;
+  dontInstall = true;
+  pyproject = false;
 }

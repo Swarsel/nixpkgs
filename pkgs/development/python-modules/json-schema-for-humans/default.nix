@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   beautifulsoup4,
   buildPythonPackage,
   click,
   dataclasses-json,
-  fetchFromGitHub,
   htmlmin,
   jinja2,
   markdown2,
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "json-schema-for-humans";
   version = "1.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "coveooss";
@@ -33,7 +32,10 @@ buildPythonPackage rec {
       --replace-fail 'markdown2 = "^2.5.0"' 'markdown2 = "^2.4.1"'
   '';
 
-  pythonRelaxDeps = [ "dataclasses-json" ];
+  nativeCheckInputs = [
+    beautifulsoup4
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -49,11 +51,6 @@ buildPythonPackage rec {
     requests
   ];
 
-  nativeCheckInputs = [
-    beautifulsoup4
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # Tests require network access
     "test_references_url"
@@ -65,7 +62,9 @@ buildPythonPackage rec {
     "test_config_parameters_with_nonexistent_output_path"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "json_schema_for_humans" ];
+  pythonRelaxDeps = [ "dataclasses-json" ];
 
   meta = {
     description = "Quickly generate HTML documentation from a JSON schema";

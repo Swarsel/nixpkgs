@@ -10,48 +10,63 @@ let
   cfg = config.services.prometheus.exporters.smokeping;
   inherit (lib) mkOption types concatStringsSep;
   goDuration = types.mkOptionType {
-    name = "goDuration";
-    description = "Go duration (https://golang.org/pkg/time/#ParseDuration)";
+    inherit (types.str) merge;
+
     check =
       x: types.str.check x && builtins.match "(-?[0-9]+(\\.[0-9]+)?(ns|us|µs|ms|s|m|h))+" x != null;
-    inherit (types.str) merge;
+
+    description = "Go duration (https://golang.org/pkg/time/#ParseDuration)";
+    name = "goDuration";
   };
 in
 {
-  port = 9374;
   extraOpts = {
-    telemetryPath = mkOption {
-      type = types.str;
-      default = "/metrics";
-      description = ''
-        Path under which to expose metrics.
-      '';
-    };
-    pingInterval = mkOption {
-      type = goDuration;
-      default = "1s";
-      description = ''
-        Interval between pings.
-      '';
-    };
     buckets = mkOption {
-      type = types.commas;
       default = "5e-05,0.0001,0.0002,0.0004,0.0008,0.0016,0.0032,0.0064,0.0128,0.0256,0.0512,0.1024,0.2048,0.4096,0.8192,1.6384,3.2768,6.5536,13.1072,26.2144";
+
       description = ''
         List of buckets to use for the response duration histogram.
       '';
+
+      type = types.commas;
     };
+
     hosts = mkOption {
-      type = with types; listOf str;
       description = ''
         List of endpoints to probe.
       '';
+
+      type = with types; listOf str;
+    };
+
+    pingInterval = mkOption {
+      default = "1s";
+
+      description = ''
+        Interval between pings.
+      '';
+
+      type = goDuration;
+    };
+
+    telemetryPath = mkOption {
+      default = "/metrics";
+
+      description = ''
+        Path under which to expose metrics.
+      '';
+
+      type = types.str;
     };
   };
+
+  port = 9374;
+
   serviceOpts = {
     serviceConfig = {
       AmbientCapabilities = [ "CAP_NET_RAW" ];
       CapabilityBoundingSet = [ "CAP_NET_RAW" ];
+
       ExecStart = ''
         ${pkgs.prometheus-smokeping-prober}/bin/smokeping_prober \
           --web.listen-address ${cfg.listenAddress}:${toString cfg.port} \

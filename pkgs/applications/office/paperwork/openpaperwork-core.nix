@@ -1,46 +1,32 @@
 {
-  buildPythonPackage,
   lib,
+  buildPythonPackage,
   callPackage,
-
+  certifi,
+  distro,
   isPy3k,
   isPyPy,
-
-  distro,
-  setuptools,
-  psutil,
-  certifi,
-  setuptools-scm,
-
   pkgs,
+  psutil,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
-  pname = "openpaperwork-core";
   inherit (callPackage ./src.nix { }) version src;
-  pyproject = true;
+  pname = "openpaperwork-core";
 
-  sourceRoot = "${finalAttrs.src.name}/openpaperwork-core";
-
-  # Python 2.x is not supported.
-  disabled = !isPy3k && !isPyPy;
-
-  patchPhase = ''
-    chmod a+w -R ..
-    patchShebangs ../tools
-  '';
+  nativeBuildInputs = [
+    pkgs.gettext
+    pkgs.which
+    setuptools-scm
+  ];
 
   propagatedBuildInputs = [
     distro
     setuptools
     psutil
     certifi
-  ];
-
-  nativeBuildInputs = [
-    pkgs.gettext
-    pkgs.which
-    setuptools-scm
   ];
 
   preBuild = ''
@@ -51,14 +37,27 @@ buildPythonPackage (finalAttrs: {
     export HOME=$(mktemp -d)
   '';
 
+  # Python 2.x is not supported.
+  disabled = !isPy3k && !isPyPy;
+
+  patchPhase = ''
+    chmod a+w -R ..
+    patchShebangs ../tools
+  '';
+
+  pyproject = true;
+  sourceRoot = "${finalAttrs.src.name}/openpaperwork-core";
+
   meta = {
     description = "Backend part of Paperwork (Python API, no UI)";
     homepage = "https://openpaper.work/";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       aszlig
       symphorien
     ];
+
     platforms = lib.platforms.linux;
   };
 })

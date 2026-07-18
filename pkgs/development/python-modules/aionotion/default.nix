@@ -1,26 +1,25 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   buildPythonPackage,
   certifi,
   ciso8601,
-  fetchFromGitHub,
   frozenlist,
   mashumaro,
   poetry-core,
   pyjwt,
   pytest-aiohttp,
   pytest-asyncio,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
   yarl,
 }:
 
 buildPythonPackage rec {
   pname = "aionotion";
   version = "2025.02.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bachya";
@@ -46,14 +45,6 @@ buildPythonPackage rec {
     yarl
   ];
 
-  pythonRelaxDeps = [
-    "ciso8601"
-    "frozenlist"
-    "mashumaro"
-  ];
-
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [
     aresponses
     pytest-aiohttp
@@ -62,9 +53,16 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  __darwinAllowLocalNetworking = true;
   disabledTestPaths = [ "examples" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "aionotion" ];
+
+  pythonRelaxDeps = [
+    "ciso8601"
+    "frozenlist"
+    "mashumaro"
+  ];
 
   meta = {
     description = "Python library for Notion Home Monitoring";

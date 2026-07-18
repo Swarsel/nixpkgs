@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  makeWrapper,
   fetchFromGitHub,
   gradle,
+  makeWrapper,
   openjdk,
   testers,
 }:
@@ -18,26 +18,14 @@ stdenv.mkDerivation (finalAttrs: {
     # Version 4.3.0 has an extra .0 in the git tag.
     # TODO Remove .0 for later releases if needed.
     tag = "v${finalAttrs.version}.0";
-    fetchSubmodules = true;
     hash = "sha256-yh92JYJFJVp2/rDpz9eAUlNDhtRoRHgCIRYfrADfA/c=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
     gradle
     openjdk
     makeWrapper
-  ];
-
-  mitmCache = gradle.fetchDeps {
-    inherit (finalAttrs) pname;
-    data = ./deps.json;
-  };
-
-  __darwinAllowLocalNetworking = true;
-
-  gradleFlags = [
-    "-x"
-    "submodulesUpdate"
   ];
 
   installPhase = ''
@@ -55,6 +43,18 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __darwinAllowLocalNetworking = true;
+
+  gradleFlags = [
+    "-x"
+    "submodulesUpdate"
+  ];
+
+  mitmCache = gradle.fetchDeps {
+    inherit (finalAttrs) pname;
+    data = ./deps.json;
+  };
+
   postGradleUpdate = ''
     cd thirdparty/idl-parser
     # fix "Task 'submodulesUpdate' not found"
@@ -69,9 +69,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Fast-DDS IDL code generator tool";
-    mainProgram = "fastddsgen";
-    homepage = "https://github.com/eProsima/Fast-DDS-Gen";
-    license = lib.licenses.asl20;
+
     longDescription = ''
       eProsima Fast DDS-Gen is a Java application that generates
       eProsima Fast DDS C++ or Python source code using the data types
@@ -80,7 +78,11 @@ stdenv.mkDerivation (finalAttrs: {
       order to define the data type of a topic, which will later be
       used to publish or subscribe.
     '';
+
+    homepage = "https://github.com/eProsima/Fast-DDS-Gen";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ wentasah ];
     platforms = openjdk.meta.platforms;
+    mainProgram = "fastddsgen";
   };
 })

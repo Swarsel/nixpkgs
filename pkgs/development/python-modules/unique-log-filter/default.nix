@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "unique-log-filter";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "twizmwazin";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
     hash = "sha256-av1pVPDsO2dto5fhBK74jKfVsVY2ChyUE5NNja2B1Qw=";
   };
 
-  build-system = [ flit-core ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ flit-core ];
+  pyproject = true;
   pythonImportsCheck = [ "unique_log_filter" ];
 
   meta = {

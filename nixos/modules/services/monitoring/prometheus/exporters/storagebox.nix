@@ -11,34 +11,41 @@ let
   inherit (lib) mkPackageOption;
 in
 {
-  port = 9509;
   extraOpts = {
     package = mkPackageOption pkgs "prometheus-storagebox-exporter" { };
+
     tokenFile = lib.mkOption {
-      type = lib.types.externalPath;
       description = "File that contains the Hetzner API token to use.";
+      type = lib.types.externalPath;
     };
 
   };
+
+  port = 9509;
+
   serviceOpts = {
     after = [ "network.target" ];
-    wantedBy = [ "multi-user.target" ];
-    script = ''
-      export HETZNER_TOKEN=$(< "''${CREDENTIALS_DIRECTORY}/token")
-      exec ${lib.getExe cfg.package}
-    '';
 
     environment = {
       LISTEN_ADDR = "${toString cfg.listenAddress}:${toString cfg.port}";
     };
 
+    script = ''
+      export HETZNER_TOKEN=$(< "''${CREDENTIALS_DIRECTORY}/token")
+      exec ${lib.getExe cfg.package}
+    '';
+
     serviceConfig = {
       DynamicUser = true;
-      Restart = "always";
-      RestartSec = "10s";
+
       LoadCredential = [
         "token:${cfg.tokenFile}"
       ];
+
+      Restart = "always";
+      RestartSec = "10s";
     };
+
+    wantedBy = [ "multi-user.target" ];
   };
 }

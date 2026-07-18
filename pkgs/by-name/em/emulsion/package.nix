@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  rustPlatform,
   installShellFiles,
+  libGL,
+  libx11,
+  libxcb,
+  libxcursor,
+  libxi,
+  libxkbcommon,
+  libxrandr,
+  libxxf86vm,
   makeWrapper,
   pkg-config,
   python3,
-  libGL,
-  libx11,
-  libxcursor,
-  libxi,
-  libxrandr,
-  libxxf86vm,
-  libxcb,
-  libxkbcommon,
+  rustPlatform,
   wayland,
 }:
 let
@@ -43,8 +43,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-+C4YB5usNKfNydyEyIvaScnjK0h/PKN1x8gnt7Lz2kQ=";
   };
 
-  cargoHash = "sha256-i+lSUSgq98iT9OzsdkZgRidLszc6mJJA1b1Jfq+yk5s=";
-
   nativeBuildInputs = [
     installShellFiles
     makeWrapper
@@ -53,6 +51,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   buildInputs = rpathLibs;
+  cargoHash = "sha256-i+lSUSgq98iT9OzsdkZgRidLszc6mJJA1b1Jfq+yk5s=";
 
   postFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
     patchelf --set-rpath "${lib.makeLibraryPath rpathLibs}" $out/bin/emulsion
@@ -61,9 +60,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Fast and minimalistic image viewer";
     homepage = "https://arturkovacs.github.io/emulsion-website/";
+    license = lib.licenses.mit;
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.mit;
     mainProgram = "emulsion";
   };
 })

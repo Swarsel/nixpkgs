@@ -2,55 +2,35 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
-  makeWrapper,
-  gnused,
-  coreutils,
-  psutils,
-  gnugrep,
-  ghostscript,
-  file,
   a2ps,
+  coreutils,
+  dpkg,
+  file,
   gawk,
-  which,
+  ghostscript,
+  gnugrep,
+  gnused,
+  makeWrapper,
   pkgsi686Linux,
+  psutils,
+  which,
 }:
 
 stdenv.mkDerivation rec {
   pname = "cups-brother-${model}";
   version = "1.1.4-0";
-  lprVersion = "1.1.2-1";
-
-  model = "hl3150cdn";
-  cupsFileNo = "006741";
-  lprFileNo = "100432";
 
   src = fetchurl {
     url = "https://download.brother.com/welcome/dlf${cupsFileNo}/${model}_cupswrapper_GPL_source_${version}.tar.gz";
     hash = "sha256-/I4Wx/L7p1qYJqxyevHq/YbKt+y8Q18k+tYrm+49iuU=";
   };
 
-  lprdeb = fetchurl {
-    url = "https://download.brother.com/welcome/dlf${lprFileNo}/${model}lpr-${lprVersion}.i386.deb";
-    hash = "sha256-SpKW0+UDouNMrN8iRIz7JC68rMrWiwhdn/en3b/4uw0=";
-  };
+  strictDeps = true;
 
   nativeBuildInputs = [
     makeWrapper
     dpkg
   ];
-
-  preUnpack = ''
-    dpkg-deb -x ${lprdeb} $out
-  '';
-
-  prePatch = ''
-    substituteInPlace brcupsconfig/brcups_commands.h \
-      --replace-fail "brprintconf[30]=\"" "brprintconf[130]=\"$out/usr/bin/"
-
-    substituteInPlace brcupsconfig/brcupsconfig.c \
-      --replace-fail "exec[300]" "exec[400]"
-  '';
 
   makeFlags = [ "--directory=brcupsconfig" ];
 
@@ -147,24 +127,50 @@ stdenv.mkDerivation rec {
   '';
 
   __structuredAttrs = true;
-  strictDeps = true;
+  cupsFileNo = "006741";
+  lprFileNo = "100432";
+  lprVersion = "1.1.2-1";
+
+  lprdeb = fetchurl {
+    hash = "sha256-SpKW0+UDouNMrN8iRIz7JC68rMrWiwhdn/en3b/4uw0=";
+    url = "https://download.brother.com/welcome/dlf${lprFileNo}/${model}lpr-${lprVersion}.i386.deb";
+  };
+
+  model = "hl3150cdn";
+
+  prePatch = ''
+    substituteInPlace brcupsconfig/brcups_commands.h \
+      --replace-fail "brprintconf[30]=\"" "brprintconf[130]=\"$out/usr/bin/"
+
+    substituteInPlace brcupsconfig/brcupsconfig.c \
+      --replace-fail "exec[300]" "exec[400]"
+  '';
+
+  preUnpack = ''
+    dpkg-deb -x ${lprdeb} $out
+  '';
 
   meta = {
-    homepage = "https://www.brother.com/";
     description = "Brother ${model} printer driver";
-    sourceProvenance = with lib.sourceTypes; [
-      binaryNativeCode
-      fromSource
-    ];
+    homepage = "https://www.brother.com/";
+
     license = with lib.licenses; [
       unfree
       gpl2Plus
     ];
+
+    sourceProvenance = with lib.sourceTypes; [
+      binaryNativeCode
+      fromSource
+    ];
+
+    maintainers = with lib.maintainers; [ endgame ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
+
     downloadPage = "https://support.brother.com/g/b/downloadlist.aspx?c=us&lang=en&prod=${model}_all&os=128";
-    maintainers = with lib.maintainers; [ endgame ];
   };
 }

@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "simple-term-menu";
   version = "1.6.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "IngoMeyer441";
@@ -18,18 +17,17 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
-  pythonImportsCheck = [ "simple_term_menu" ];
-
   # no unit tests in the upstream
   doCheck = false;
+  pyproject = true;
+  pythonImportsCheck = [ "simple_term_menu" ];
 
   meta = {
     description = "Python package which creates simple interactive menus on the command line";
-    mainProgram = "simple-term-menu";
     homepage = "https://github.com/IngoMeyer441/simple-term-menu";
-    license = lib.licenses.mit;
     changelog = "https://github.com/IngoMeyer441/simple-term-menu/releases/tag/v${version}";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ smrehman ];
+    mainProgram = "simple-term-menu";
   };
 }

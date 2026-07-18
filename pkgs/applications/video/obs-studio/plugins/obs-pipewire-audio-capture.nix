@@ -24,6 +24,7 @@ stdenv.mkDerivation rec {
     ninja
     pkg-config
   ];
+
   buildInputs = [
     obs-studio
     pipewire
@@ -35,13 +36,14 @@ stdenv.mkDerivation rec {
   ];
 
   meta = {
+    inherit (obs-studio.meta) platforms;
     description = "Audio device and application capture for OBS Studio using PipeWire";
     homepage = "https://github.com/dimtpap/obs-pipewire-audio-capture";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       Elinvention
       fazzi
     ];
-    license = lib.licenses.gpl2Plus;
-    inherit (obs-studio.meta) platforms;
   };
 }

@@ -1,19 +1,19 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   SDL2,
   cmake,
-  fetchFromGitHub,
-  ffmpeg,
   discord-rpc,
-  libedit,
   elfutils,
+  ffmpeg,
+  libedit,
   libepoxy,
   libsForQt5,
   libzip,
   lua,
   minizip,
   pkg-config,
-  stdenv,
   wrapGAppsHook3,
   enableDiscordRpc ? false,
 }:
@@ -46,6 +46,8 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     SDL2
     cmake
@@ -76,17 +78,15 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "USE_DISCORD_RPC" enableDiscordRpc)
   ];
 
-  strictDeps = true;
-
-  dontWrapGApps = true;
-
   preFixup = ''
     qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
+  dontWrapGApps = true;
+
   meta = {
-    homepage = "https://mgba.io";
     description = "Modern GBA emulator with a focus on accuracy";
+
     longDescription = ''
       mGBA is a new Game Boy Advance emulator written in C.
 
@@ -101,11 +101,13 @@ stdenv.mkDerivation (finalAttrs: {
       runners, and a modern feature set for emulators that older emulators may
       not support.
     '';
+
+    homepage = "https://mgba.io";
     changelog = "https://raw.githubusercontent.com/mgba-emu/mgba/${finalAttrs.src.rev}/CHANGES";
     license = with lib.licenses; [ mpl20 ];
-    mainProgram = "mgba";
     maintainers = with lib.maintainers; [ Gliczy ];
     platforms = lib.platforms.linux;
+    mainProgram = "mgba";
     broken = enableDiscordRpc; # Some obscure `ld` error
   };
 })

@@ -13,15 +13,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1b01j7nmm3wd92ngvsmn2sbw43sl9fpx4xxmkrink68fz1rx0gbj";
   };
 
-  prePatch = ''
-    substituteInPlace nbench1.h --replace-fail '"NNET.DAT"' "\"$out/NNET.DAT\"" \
-      --replace-fail 'static void adjust_mid_wts();' 'static void adjust_mid_wts(int);'
-    substituteInPlace sysspec.h --replace-fail "malloc.h" "stdlib.h"
-  ''
-  + lib.optionalString stdenv.hostPlatform.isDarwin ''
-    substituteInPlace Makefile --replace-fail "-static" ""
-  '';
-
   buildInputs = lib.optionals stdenv.hostPlatform.isGnu [
     stdenv.cc.libc.static
   ];
@@ -34,11 +25,20 @@ stdenv.mkDerivation (finalAttrs: {
     cp NNET.DAT $out
   '';
 
+  prePatch = ''
+    substituteInPlace nbench1.h --replace-fail '"NNET.DAT"' "\"$out/NNET.DAT\"" \
+      --replace-fail 'static void adjust_mid_wts();' 'static void adjust_mid_wts(int);'
+    substituteInPlace sysspec.h --replace-fail "malloc.h" "stdlib.h"
+  ''
+  + lib.optionalString stdenv.hostPlatform.isDarwin ''
+    substituteInPlace Makefile --replace-fail "-static" ""
+  '';
+
   meta = {
-    homepage = "https://www.math.utah.edu/~mayer/linux/bmark.html";
     description = "Synthetic computing benchmark program";
-    platforms = lib.platforms.unix;
+    homepage = "https://www.math.utah.edu/~mayer/linux/bmark.html";
     maintainers = with lib.maintainers; [ bennofs ];
+    platforms = lib.platforms.unix;
     mainProgram = "nbench";
   };
 })

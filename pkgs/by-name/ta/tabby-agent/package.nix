@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  fetchPnpmDeps,
   nix-update-script,
   nodejs,
-  pnpm_11,
-  fetchPnpmDeps,
   pnpmConfigHook,
+  pnpm_11,
   wrapGAppsHook3,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -51,9 +51,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   pnpmDeps = fetchPnpmDeps {
     inherit (finalAttrs) pname version src;
-    pnpm = pnpm_11;
     fetcherVersion = 4;
     hash = "sha256-idEByCnQmqpnvni0RahZ7qEa0C/0zVPRFv0jaj3BcnM=";
+    pnpm = pnpm_11;
   };
 
   passthru.updateScript = nix-update-script {
@@ -64,11 +64,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "Language server used to communicate with Tabby server";
     homepage = "https://github.com/TabbyML/tabby";
     changelog = "https://github.com/TabbyML/tabby/releases/tag/v${finalAttrs.src.tag}";
-    description = "Language server used to communicate with Tabby server";
-    mainProgram = "tabby-agent";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.skohtv ];
+    mainProgram = "tabby-agent";
   };
 })

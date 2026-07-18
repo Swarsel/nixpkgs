@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  pkg-config,
-  meson,
-  ninja,
-  sassc,
-  vala,
   glib,
+  granite7,
   gtk4,
   libadwaita,
   libgee,
-  granite7,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
+  sassc,
+  vala,
   wrapGAppsHook4,
 }:
 
@@ -26,6 +26,10 @@ stdenv.mkDerivation rec {
     rev = version;
     hash = "sha256-pVXcY/QSjgBcTr0sFQnPxICoQ0tpy2fEJ687zHEDXA0=";
   };
+
+  patches = [
+    ./plugs-path-env.patch
+  ];
 
   nativeBuildInputs = [
     meson
@@ -45,10 +49,6 @@ stdenv.mkDerivation rec {
     libgee
   ];
 
-  patches = [
-    ./plugs-path-env.patch
-  ];
-
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -58,7 +58,7 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/elementary/switchboard";
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.linux;
-    teams = [ lib.teams.pantheon ];
     mainProgram = "io.elementary.settings";
+    teams = [ lib.teams.pantheon ];
   };
 }

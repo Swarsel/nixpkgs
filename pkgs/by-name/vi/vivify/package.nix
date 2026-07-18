@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  nix-update-script,
-  fetchYarnDeps,
   fetchFromGitHub,
-  yarnConfigHook,
-  npmHooks,
-  nodejs,
-  zip,
+  fetchYarnDeps,
   file,
+  nix-update-script,
+  nodejs,
+  npmHooks,
+  yarnConfigHook,
+  zip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,10 +22,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-CszMG+c0bNHfXWqcI3b4iGpeFJ+FmzHDzxflPS+wEe0=";
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-svgEanFiBSQn0TdTuB0CnLR71lkANABEaDiKB+Vc0Rc=";
-  };
+  nativeBuildInputs = [
+    yarnConfigHook
+    npmHooks.npmInstallHook
+    zip
+
+    nodejs
+    file
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -56,28 +60,26 @@ stdenv.mkDerivation (finalAttrs: {
       }
   '';
 
-  nativeBuildInputs = [
-    yarnConfigHook
-    npmHooks.npmInstallHook
-    zip
-
-    nodejs
-    file
-  ];
-
   # Stripping 'unneeded symbols' causes vivify-server executable to break
   # (segmentation fault)
   dontStrip = true;
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-svgEanFiBSQn0TdTuB0CnLR71lkANABEaDiKB+Vc0Rc=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Live Markdown viewer";
+
     longDescription = ''
       Vivify brings your files to life in the browser!
       Vivify is primarily made to render Markdown and Jupyter Notebooks, but will also
       serve as a directory browser and let you view code files with syntax highlighting.
     '';
+
     homepage = "https://github.com/jannis-baum/Vivify";
     changelog = "https://github.com/jannis-baum/Vivify/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3;

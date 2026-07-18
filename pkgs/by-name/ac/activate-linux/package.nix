@@ -1,21 +1,21 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
-  pkg-config,
-  libxt,
-  libxrandr,
+  cairo,
+  libconfig,
+  libx11,
+  libxext,
+  libxfixes,
   libxi,
   libxinerama,
-  libxfixes,
-  libxext,
-  libx11,
-  xorgproto,
-  cairo,
+  libxrandr,
+  libxt,
+  pkg-config,
   wayland,
   wayland-protocols,
   wayland-scanner,
-  libconfig,
+  xorgproto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,8 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-6XnoAoZwAs2hKToWlDqkaGqucmV1VMkEc4QO0G0xmrg=";
   };
-
-  makeFlags = [ "PREFIX=$(out)" ];
 
   nativeBuildInputs = [
     pkg-config
@@ -50,6 +48,8 @@ stdenv.mkDerivation (finalAttrs: {
     wayland-protocols
     libconfig
   ];
+
+  makeFlags = [ "PREFIX=$(out)" ];
 
   installPhase = ''
     runHook preInstall
@@ -72,10 +72,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "\"Activate Windows\" watermark ported to Linux";
     homepage = "https://github.com/MrGlockenspiel/activate-linux";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       alexnortung
       donovanglover
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "activate-linux";
   };

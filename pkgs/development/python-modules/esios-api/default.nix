@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   pytest-asyncio,
   pytest-cov-stub,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "esios-api";
   version = "4.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "chiro79";
@@ -27,10 +26,6 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "poetry_core>=2.4.0" "poetry_core"
   '';
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ aiohttp ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-cov-stub
@@ -38,6 +33,9 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  build-system = [ poetry-core ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "esios_api" ];
 
   meta = {

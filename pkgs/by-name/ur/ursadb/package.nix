@@ -38,8 +38,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/CERT-Polska/ursadb";
     description = "Trigram database written in C++, suited for malware indexing";
+    homepage = "https://github.com/CERT-Polska/ursadb";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ msm ];
     platforms = lib.platforms.unix;

@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule rec {
@@ -17,22 +17,24 @@ buildGoModule rec {
 
   vendorHash = "sha256-+BfxCyg0KkDQpHt/wycy/8CTG6YBA/VJvJFhhzUnSiQ=";
 
-  subPackages = [ "cmd/esbuild" ];
-
   ldflags = [
     "-s"
     "-w"
   ];
+
+  subPackages = [ "cmd/esbuild" ];
 
   meta = {
     description = "Extremely fast JavaScript bundler";
     homepage = "https://esbuild.github.io";
     changelog = "https://github.com/evanw/esbuild/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       lucus16
       undefined-moe
     ];
+
     mainProgram = "esbuild";
   };
 }

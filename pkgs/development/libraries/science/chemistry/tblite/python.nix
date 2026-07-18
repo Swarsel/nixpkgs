@@ -1,21 +1,21 @@
 {
-  buildPythonPackage,
-  meson,
-  ninja,
-  pkg-config,
-  tblite,
-  numpy,
-  simple-dftd3,
-  cffi,
-  gfortran,
   blas,
+  buildPythonPackage,
+  cffi,
+  dftd4,
+  gfortran,
   lapack,
   mctc-lib,
+  meson,
   mstore,
-  toml-f,
   multicharge,
-  dftd4,
+  ninja,
+  numpy,
+  pkg-config,
   setuptools,
+  simple-dftd3,
+  tblite,
+  toml-f,
 }:
 
 buildPythonPackage {
@@ -26,6 +26,11 @@ buildPythonPackage {
     postPatch
     meta
     ;
+
+  patches = [
+    # Add multicharge to the meson deps; otherwise we get missing mod_multicharge errors
+    ./0001-fix-multicharge-dep-needed-for-static-compilation.patch
+  ];
 
   nativeBuildInputs = [
     tblite
@@ -56,15 +61,11 @@ buildPythonPackage {
     numpy
   ];
 
-  patches = [
-    # Add multicharge to the meson deps; otherwise we get missing mod_multicharge errors
-    ./0001-fix-multicharge-dep-needed-for-static-compilation.patch
-  ];
-
+  mesonFlags = [ "-Dpython=true" ];
   pyproject = false;
+
   pythonImportsCheck = [
     "tblite"
     "tblite.interface"
   ];
-  mesonFlags = [ "-Dpython=true" ];
 }

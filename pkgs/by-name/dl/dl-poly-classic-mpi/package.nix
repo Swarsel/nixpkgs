@@ -7,8 +7,8 @@
 }:
 
 stdenv.mkDerivation {
-  version = "1.10";
   pname = "DL_POLY_Classic";
+  version = "1.10";
 
   src = fetchurl {
     url = "https://ccpforge.cse.rl.ac.uk/gf/download/frsrelease/574/8924/dl_class_1.10.tar.gz";
@@ -16,18 +16,7 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ gfortran ];
-
   buildInputs = [ mpi ];
-
-  configurePhase = ''
-    runHook preConfigure
-
-    cd source
-    cp -v ../build/MakePAR Makefile
-
-    runHook postConfigure
-  '';
-
   # https://gitlab.com/DL_POLY_Classic/dl_poly/-/blob/master/README
   env.NIX_CFLAGS_COMPILE = "-fallow-argument-mismatch";
 
@@ -40,12 +29,21 @@ stdenv.mkDerivation {
     cp -v ../execute/DLPOLY.X $out/bin
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+
+    cd source
+    cp -v ../build/MakePAR Makefile
+
+    runHook postConfigure
+  '';
+
   meta = {
-    homepage = "https://www.ccp5.ac.uk/DL_POLY_C";
     description = "DL_POLY Classic is a general purpose molecular dynamics simulation package";
-    mainProgram = "DLPOLY.X";
+    homepage = "https://www.ccp5.ac.uk/DL_POLY_C";
     license = lib.licenses.bsdOriginal;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.costrouc ];
+    platforms = lib.platforms.unix;
+    mainProgram = "DLPOLY.X";
   };
 }

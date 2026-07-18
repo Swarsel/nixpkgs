@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  gobject-introspection,
-  pkg-config,
   cairo,
+  dbus,
   glib,
-  readline,
+  gobject-introspection,
   libsysprof-capture,
-  spidermonkey_140,
+  libxml2,
   meson,
   mesonEmulatorHook,
-  dbus,
   ninja,
+  pkg-config,
+  readline,
+  spidermonkey_140,
   which,
-  libxml2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,6 +32,10 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
     "dev"
   ];
+
+  postPatch = ''
+    patchShebangs --build build/choose-tests-locale.sh
+  '';
 
   strictDeps = true;
 
@@ -67,17 +71,14 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dprofiler=disabled"
   ];
 
-  postPatch = ''
-    patchShebangs --build build/choose-tests-locale.sh
-  '';
-
   meta = {
-    homepage = "https://github.com/linuxmint/cjs";
     description = "JavaScript bindings for Cinnamon";
 
     longDescription = ''
       This module contains JavaScript bindings based on gobject-introspection.
     '';
+
+    homepage = "https://github.com/linuxmint/cjs";
 
     license = with lib.licenses; [
       gpl2Plus

@@ -26,8 +26,8 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "http://comicneue.com/";
     description = "Casual type face: Make your lemonade stand look like a fortune 500 company";
+
     longDescription = ''
       ComicNeue is inspired by Comic Sans but more regular. It was
       designed by Craig Rozynski. It is available in two variants:
@@ -35,8 +35,10 @@ stdenv.mkDerivation rec {
       the latter angular terminals. Both variants come in Light,
       Regular, and Bold weights with Oblique variants.
     '';
+
+    homepage = "http://comicneue.com/";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 }

@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cogapp,
   datasette,
-  fetchFromGitHub,
   pytest-mock,
   pytestCheckHook,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "datasette-publish-fly";
   version = "1.3.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -28,6 +27,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "datasette_publish_fly" ];
 
   meta = {

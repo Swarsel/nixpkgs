@@ -7,15 +7,15 @@
   fontconfig,
   freetype,
   fribidi,
+  libpng,
+  librsvg,
+  libstroke,
   libxcursor,
   libxft,
   libxinerama,
   libxpm,
-  libxt,
-  libpng,
-  librsvg,
-  libstroke,
   libxslt,
+  libxt,
   perl,
   pkg-config,
   python3Packages,
@@ -59,10 +59,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional enableGestures libstroke;
 
-  pythonPath = [
-    python3Packages.pyxdg
-  ];
-
   configureFlags = [
     "--enable-mandoc"
     "--disable-htmldoc"
@@ -78,12 +74,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   enableParallelBuilding = true;
 
+  pythonPath = [
+    python3Packages.pyxdg
+  ];
+
   meta = {
+    description = "Multiple large virtual desktop window manager";
     homepage = "http://fvwm.org";
     changelog = "https://github.com/fvwmorg/fvwm/releases/tag/${finalAttrs.src.rev}";
-    description = "Multiple large virtual desktop window manager";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ edanaher ];
+    platforms = lib.platforms.linux;
   };
 })

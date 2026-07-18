@@ -1,18 +1,15 @@
 {
   lib,
-  buildDartApplication,
   fetchFromGitHub,
-  versionCheckHook,
+  buildDartApplication,
   callPackage,
   testers,
+  versionCheckHook,
   yq-go,
 }:
 buildDartApplication (finalAttrs: {
   pname = "webdev";
   version = "3.8.1";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "dart-lang";
@@ -21,21 +18,8 @@ buildDartApplication (finalAttrs: {
     hash = "sha256-IwH0+J0iCSPxP/FbKPtmhpWjE16SGyYK88xa8ioBC2w=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/webdev";
-
-  dartEntryPoints = {
-    "bin/webdev" = "bin/webdev.dart";
-  };
-
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
-
+  strictDeps = true;
   nativeBuildInputs = [ yq-go ];
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-
-  doInstallCheck = true;
 
   # Remove the dev_dependencies section.
   # Relative path overrides in the monorepo break the Nix build which expects
@@ -44,15 +28,29 @@ buildDartApplication (finalAttrs: {
     yq -i 'del(.dev_dependencies)' pubspec.yaml
   '';
 
-  passthru = {
-    updateScript = lib.getExe (callPackage ./update.nix { });
+  doInstallCheck = true;
 
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
+  __structuredAttrs = true;
+
+  dartEntryPoints = {
+    "bin/webdev" = "bin/webdev.dart";
+  };
+
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
+  sourceRoot = "${finalAttrs.src.name}/webdev";
+
+  passthru = {
     tests = {
       # Basic usage check
       usage = testers.runCommand {
-        name = "webdev-usage-test";
         # Reference the package itself via finalPackage
         buildInputs = [ finalAttrs.finalPackage ];
+        name = "webdev-usage-test";
+
         script = ''
           export HOME=$TMPDIR
           webdev --help > output.txt
@@ -66,20 +64,28 @@ buildDartApplication (finalAttrs: {
         '';
       };
     };
+
+    updateScript = lib.getExe (callPackage ./update.nix { });
   };
 
   meta = {
-    mainProgram = "webdev";
-    homepage = "https://dart.dev/tools/webdev";
     description = "Command-line tool for developing and deploying web applications with Dart";
+
     longDescription = ''
       A CLI for Dart web development. Provides an easy and consistent set of features for users and tools to build and deploy web applications with Dart.
     '';
+
+    homepage = "https://dart.dev/tools/webdev";
+
     changelog = "https://pub.dev/packages/webdev/changelog#${
       lib.replaceString "." "" finalAttrs.version
     }";
+
     license = lib.licenses.bsd3;
     sourceProvenance = with lib.sourceTypes; [ fromSource ];
+    maintainers = with lib.maintainers; [ KristijanZic ];
+    mainProgram = "webdev";
+
     identifiers.cpeParts =
       let
         versionSplit = lib.split "\\+" finalAttrs.version;
@@ -88,11 +94,10 @@ buildDartApplication (finalAttrs: {
           if lib.count (x: lib.isList x) versionSplit > 0 then lib.elemAt versionSplit 2 else "*";
       in
       {
-        vendor = "dart-lang";
-        product = "webdev";
         version = versionPart;
+        product = "webdev";
         update = updatePart;
+        vendor = "dart-lang";
       };
-    maintainers = with lib.maintainers; [ KristijanZic ];
   };
 })

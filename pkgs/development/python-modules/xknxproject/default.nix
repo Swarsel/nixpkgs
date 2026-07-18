@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   pyzipper,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "xknxproject";
   version = "3.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "XKNX";
@@ -20,6 +19,7 @@ buildPythonPackage rec {
     hash = "sha256-IA6rEH7iv5IbmfAvNpuLXQQKdatTOzPXf+PwToBtlcg=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,8 +27,7 @@ buildPythonPackage rec {
     striprtf
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "xknxproject" ];
 
   meta = {

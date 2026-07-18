@@ -1,10 +1,10 @@
 {
+  lib,
+  fetchFromGitHub,
   aiofiles,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   getmac,
-  lib,
   pytest-asyncio,
   pytestCheckHook,
   setuptools,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "python-pooldose";
   version = "0.9.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lmaertin";
@@ -22,6 +21,11 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-eSFe3PRKhVMuwJ7XUHRec8nPilSxGUQ1T2k2loLubUg=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -32,17 +36,13 @@ buildPythonPackage rec {
     websockets
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pooldose" ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
   meta = {
-    changelog = "https://github.com/lmaertin/python-pooldose/blob/${src.tag}/CHANGELOG.md";
     description = "Unoffical async Python client for SEKO PoolDose devices";
     homepage = "https://github.com/lmaertin/python-pooldose";
+    changelog = "https://github.com/lmaertin/python-pooldose/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

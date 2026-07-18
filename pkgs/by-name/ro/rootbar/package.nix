@@ -1,13 +1,13 @@
 {
   lib,
-  gcc14Stdenv,
   fetchhg,
-  pkg-config,
-  meson,
-  ninja,
+  gcc14Stdenv,
   gtk3,
   json_c,
   libpulseaudio,
+  meson,
+  ninja,
+  pkg-config,
   wayland,
   wrapGAppsHook3,
 }:
@@ -37,16 +37,18 @@ gcc14Stdenv.mkDerivation {
   ];
 
   meta = {
-    homepage = "https://hg.sr.ht/~scoopta/rootbar";
     description = "Bar for wlroots-based Wayland compositors";
-    mainProgram = "rootbar";
+
     longDescription = ''
       Root Bar is a bar for wlroots-based Wayland compositors such as Sway and
       was designed to address the lack of good bars for Wayland.
     '';
+
+    homepage = "https://hg.sr.ht/~scoopta/rootbar";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "rootbar";
     broken = gcc14Stdenv.hostPlatform.isDarwin;
   };
 }

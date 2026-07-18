@@ -14,22 +14,15 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "12aql6svkplxq5fjycar18863hcq84c5kx8g6f4rj0lcvigw24di";
   };
 
-  patches = [
-    # Remove once https://sourceforge.net/p/soxr/code/merge-requests/5/ is merged.
-    ./arm64-check.patch
-  ];
-
   outputs = [
     "out"
     "dev"
     "doc"
   ];
 
-  nativeBuildInputs = [ cmake ];
-
-  cmakeFlags = [
-    # Workaround for upstream not using GNUInstallDirs.
-    "-DINCLUDE_INSTALL_DIR=${placeholder "dev"}/include"
+  patches = [
+    # Remove once https://sourceforge.net/p/soxr/code/merge-requests/5/ is merged.
+    ./arm64-check.patch
   ];
 
   # Fix the build with CMake 4.
@@ -40,11 +33,18 @@ stdenv.mkDerivation (finalAttrs: {
         'cmake_minimum_required (VERSION 3.10 FATAL_ERROR)'
   '';
 
+  nativeBuildInputs = [ cmake ];
+
+  cmakeFlags = [
+    # Workaround for upstream not using GNUInstallDirs.
+    "-DINCLUDE_INSTALL_DIR=${placeholder "dev"}/include"
+  ];
+
   meta = {
     description = "Audio resampling library";
     homepage = "https://soxr.sourceforge.net";
     license = lib.licenses.lgpl21Plus;
-    platforms = lib.platforms.unix ++ lib.platforms.windows;
     maintainers = [ ];
+    platforms = lib.platforms.unix ++ lib.platforms.windows;
   };
 })

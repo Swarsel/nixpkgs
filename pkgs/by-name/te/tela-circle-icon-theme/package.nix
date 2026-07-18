@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   adwaita-icon-theme,
-  kdePackages,
+  gitUpdater,
   gtk3,
   hicolor-icon-theme,
   jdupes,
-  gitUpdater,
+  kdePackages,
+  stdenvNoCC,
   allColorVariants ? false,
   circularFolder ? false,
   colorVariants ? [ ], # default is standard
@@ -45,6 +45,10 @@ lib.checkListOfEnum "tela-circle-icon-theme: color variants"
       hash = "sha256-5Kqf6QNM+/JGGp2H3Vcl69Vh1iZYPq3HJxhvSH6k+eQ=";
     };
 
+    postPatch = ''
+      patchShebangs install.sh
+    '';
+
     nativeBuildInputs = [
       gtk3
       jdupes
@@ -55,18 +59,6 @@ lib.checkListOfEnum "tela-circle-icon-theme: color variants"
       kdePackages.breeze-icons
       hicolor-icon-theme
     ];
-
-    dontDropIconThemeCache = true;
-    dontWrapQtApps = true;
-
-    # These fixup steps are slow and unnecessary for this package.
-    # Package may install almost 400 000 small files.
-    dontPatchELF = true;
-    dontRewriteSymlinks = true;
-
-    postPatch = ''
-      patchShebangs install.sh
-    '';
 
     installPhase = ''
       runHook preInstall
@@ -80,13 +72,19 @@ lib.checkListOfEnum "tela-circle-icon-theme: color variants"
       runHook postInstall
     '';
 
+    dontDropIconThemeCache = true;
+    # These fixup steps are slow and unnecessary for this package.
+    # Package may install almost 400 000 small files.
+    dontPatchELF = true;
+    dontRewriteSymlinks = true;
+    dontWrapQtApps = true;
     passthru.updateScript = gitUpdater { };
 
     meta = {
       description = "Flat and colorful personality icon theme";
       homepage = "https://github.com/vinceliuice/Tela-circle-icon-theme";
       license = lib.licenses.gpl3Only;
-      platforms = lib.platforms.linux; # darwin use case-insensitive filesystems that cause hash mismatches
       maintainers = with lib.maintainers; [ romildo ];
+      platforms = lib.platforms.linux; # darwin use case-insensitive filesystems that cause hash mismatches
     };
   }

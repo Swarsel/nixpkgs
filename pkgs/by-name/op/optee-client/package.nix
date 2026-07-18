@@ -1,11 +1,11 @@
 {
-  fetchFromGitHub,
-  isNixOS ? true,
   lib,
+  stdenv,
+  fetchFromGitHub,
   libuuid,
   pkg-config,
-  stdenv,
   which,
+  isNixOS ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,12 +27,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   strictDeps = true;
 
-  enableParallelBuilding = true;
-
   nativeBuildInputs = [
     which
     pkg-config
   ];
+
   buildInputs = [ libuuid ];
 
   makeFlags = [
@@ -57,12 +56,15 @@ stdenv.mkDerivation (finalAttrs: {
     mv "$out/include" "$dev"
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Normal world client for OPTEE OS";
     homepage = "https://github.com/OP-TEE/optee_client";
     changelog = "https://github.com/OP-TEE/optee_client/releases/tag/${finalAttrs.version}";
     license = lib.licenses.bsd2;
     maintainers = [ lib.maintainers.jmbaur ];
+
     platforms = [
       "aarch64-linux"
       "armv7l-linux"

@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  fetchpatch,
   fetchurl,
   bison,
+  fetchpatch,
   perl,
 }:
 
@@ -14,32 +14,24 @@ let
     patchname: hash:
     fetchpatch {
       name = "${patchname}.patch";
-      url = "https://sources.debian.org/data/main/b/bulletml/${version}-${debianRevision}/debian/patches/${patchname}.patch";
       sha256 = hash;
+      url = "https://sources.debian.org/data/main/b/bulletml/${version}-${debianRevision}/debian/patches/${patchname}.patch";
     };
 
   lib_src = fetchurl {
-    url = "http://shinh.skr.jp/libbulletml/libbulletml-${version}.tar.bz2";
     sha256 = "0yda0zgj2ydgkmby5676f5iiawabxadzh5p7bmy42998sp9g6dvw";
+    url = "http://shinh.skr.jp/libbulletml/libbulletml-${version}.tar.bz2";
   };
 
   cpp_src = fetchurl {
-    url = "http://shinh.skr.jp/d/d_cpp.tar.bz2";
     sha256 = "1ly9qmbb8q9nyadmdap1gmxs3vkniqgchlv2hw7riansz4gg1agh";
+    url = "http://shinh.skr.jp/d/d_cpp.tar.bz2";
   };
 in
 
 stdenv.mkDerivation {
-  pname = "bulletml";
   inherit version;
-
-  srcs = [
-    lib_src
-    cpp_src
-  ];
-
-  postUnpack = "mv d_cpp bulletml/";
-  sourceRoot = "bulletml";
+  pname = "bulletml";
 
   patches = [
     (debianPatch "fixes" "0cnr968n0h50fjmjijx7idsa2pg2pv5cwy6nvfbkx9z8w2zf0mkl")
@@ -50,14 +42,14 @@ stdenv.mkDerivation {
     (debianPatch "includes" "1n11j5695hs9pspslf748w2cq5d78s6bwhyl476wp6gcq6jw20bw")
   ];
 
-  makeFlags = [
-    "-C src"
-  ];
   nativeBuildInputs = [
     bison
     perl
   ];
-  hardeningDisable = [ "format" ];
+
+  makeFlags = [
+    "-C src"
+  ];
 
   installPhase = ''
     install -D -m 644 src/bulletml.d "$out"/include/d/bulletml.d
@@ -76,12 +68,23 @@ stdenv.mkDerivation {
     install -m 644 README.en "$out"/share/licenses/libbulletml
   '';
 
+  hardeningDisable = [ "format" ];
+  postUnpack = "mv d_cpp bulletml/";
+  sourceRoot = "bulletml";
+
+  srcs = [
+    lib_src
+    cpp_src
+  ];
+
   meta = {
     description = "C++ library to handle BulletML easily";
+
     longDescription = ''
       BulletML is the Bullet Markup Language. BulletML can describe the barrage
       of bullets in shooting games.
     '';
+
     homepage = "http://www.asahi-net.or.jp/~cs8k-cyu/bulletml/index_e.html";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ fgaz ];

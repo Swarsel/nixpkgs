@@ -1,24 +1,24 @@
 {
   lib,
-  swiftPackages,
   fetchFromGitHub,
-  darwin,
   actool,
+  darwin,
   ibtool,
   # TODO: Clean up on `staging`
   llvmPackages,
   makeWrapper,
   nix-update-script,
+  swiftPackages,
 }:
 
 let
   inherit (swiftPackages) stdenv swift;
 
   masShortcutSrc = fetchFromGitHub {
+    hash = "sha256-EZLt7ph24L1wwFEMlltuPutId09RBug/y9OtDhixIig=";
     owner = "rxhanson";
     repo = "MASShortcut";
     rev = "2f9fbb3f959b7a683c6faaf9638d22afad37a235";
-    hash = "sha256-EZLt7ph24L1wwFEMlltuPutId09RBug/y9OtDhixIig=";
   };
 
   masShortcutSources = [
@@ -70,11 +70,11 @@ let
   # Requires compileIB and installLocalizations shell functions in scope
   mkAppBundle =
     {
-      name,
       binary,
-      sourceDir,
-      plist,
       destDir,
+      name,
+      plist,
+      sourceDir,
       frameworks ? [ ],
     }:
     let
@@ -110,13 +110,13 @@ let
     mkAppPlist {
       CFBundleDevelopmentRegion = "en";
       CFBundleExecutable = "Rectangle";
+      CFBundleIconFile = "AppIcon";
+      CFBundleIconName = "AppIcon";
       CFBundleIdentifier = "com.knollsoft.Rectangle";
       CFBundleName = "Rectangle";
       CFBundleShortVersionString = version;
-      CFBundleVersion = "100";
       CFBundleURLTypes = [ { CFBundleURLSchemes = [ "rectangle" ]; } ];
-      CFBundleIconFile = "AppIcon";
-      CFBundleIconName = "AppIcon";
+      CFBundleVersion = "100";
       LSApplicationCategoryType = "public.app-category.productivity";
       LSUIElement = true;
       NSHumanReadableCopyright = "Copyright © 2019-2026 Ryan Hanson. All rights reserved.";
@@ -154,8 +154,6 @@ stdenv.mkDerivation (finalAttrs: {
     # TODO: Clean up on `staging`
     llvmPackages.lld
   ];
-
-  dontConfigure = true;
 
   buildPhase = ''
     runHook preBuild
@@ -269,22 +267,24 @@ stdenv.mkDerivation (finalAttrs: {
     # Rectangle.app
     app="$out/Applications/Rectangle.app"
     ${mkAppBundle {
-      name = "Rectangle";
       binary = "$buildDir/Rectangle";
-      sourceDir = "Rectangle";
-      plist = mainInfoPlist finalAttrs.version;
       destDir = "$out/Applications";
+
       frameworks = [
         {
-          name = "Sparkle";
           dylib = "$buildDir/libSparkle.dylib";
+          name = "Sparkle";
         }
         {
-          name = "MASShortcut";
           dylib = "$buildDir/libMASShortcut.dylib";
           localizations = "${masShortcutSrc}/Framework/Resources";
+          name = "MASShortcut";
         }
       ];
+
+      name = "Rectangle";
+      plist = mainInfoPlist finalAttrs.version;
+      sourceDir = "Rectangle";
     }}
 
     # Asset catalog
@@ -296,11 +296,11 @@ stdenv.mkDerivation (finalAttrs: {
 
     # RectangleLauncher.app
     ${mkAppBundle {
-      name = "RectangleLauncher";
       binary = "$buildDir/RectangleLauncher";
-      sourceDir = "RectangleLauncher";
-      plist = launcherInfoPlist;
       destDir = "$app/Contents/Library/LoginItems";
+      name = "RectangleLauncher";
+      plist = launcherInfoPlist;
+      sourceDir = "RectangleLauncher";
     }}
 
     makeWrapper "$app/Contents/MacOS/Rectangle" "$out/bin/rectangle"
@@ -308,17 +308,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontConfigure = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Move and resize windows in macOS using keyboard shortcuts or snap areas";
     homepage = "https://rectangleapp.com/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       _4evy
       Intuinewin
       wegank
     ];
+
     platforms = lib.platforms.darwin;
   };
 })

@@ -1,22 +1,11 @@
 {
   lib,
   stdenv,
-  haskellPackages,
   haskell,
-
-  # Which GHC versions this hls can support.
-  # These are looked up in nixpkgs as `pkgs.haskell.packages."ghc${version}`.
-  # Run
-  #  $ nix-instantiate --eval -E 'with import <nixpkgs> {}; builtins.attrNames pkgs.haskell.packages'
-  # to list for your nixpkgs version.
-  supportedGhcVersions ? [
-    (lib.strings.replaceStrings [ "." ] [ "" ] (lib.versions.majorMinor haskellPackages.ghc.version))
-  ],
-
+  haskellPackages,
   # Whether to build hls with the dynamic run-time system.
   # See https://haskell-language-server.readthedocs.io/en/latest/troubleshooting.html#static-binaries for more information.
   dynamic ? true,
-
   # Which formatters are supported. Pass `[]` to remove all formatters.
   #
   # Maintainers: if a new formatter is added, add it here and down in knownFormatters
@@ -25,6 +14,14 @@
     "fourmolu"
     "floskell"
     "stylish-haskell"
+  ],
+  # Which GHC versions this hls can support.
+  # These are looked up in nixpkgs as `pkgs.haskell.packages."ghc${version}`.
+  # Run
+  #  $ nix-instantiate --eval -E 'with import <nixpkgs> {}; builtins.attrNames pkgs.haskell.packages'
+  # to list for your nixpkgs version.
+  supportedGhcVersions ? [
+    (lib.strings.replaceStrings [ "." ] [ "" ] (lib.versions.majorMinor haskellPackages.ghc.version))
   ],
 }:
 
@@ -43,26 +40,33 @@ let
   # - cabal flag to disable
   # - formatter-specific packages that can be stripped from the build of hls if it is disabled
   knownFormatters = {
-    ormolu = {
-      cabalFlag = "ormolu";
-      packages = [
-        "hls-ormolu-plugin"
-      ];
-    };
-    fourmolu = {
-      cabalFlag = "fourmolu";
-      packages = [
-        "hls-fourmolu-plugin"
-      ];
-    };
     floskell = {
       cabalFlag = "floskell";
+
       packages = [
         "hls-floskell-plugin"
       ];
     };
+
+    fourmolu = {
+      cabalFlag = "fourmolu";
+
+      packages = [
+        "hls-fourmolu-plugin"
+      ];
+    };
+
+    ormolu = {
+      cabalFlag = "ormolu";
+
+      packages = [
+        "hls-ormolu-plugin"
+      ];
+    };
+
     stylish-haskell = {
       cabalFlag = "stylishhaskell";
+
       packages = [
         "hls-stylish-haskell-plugin"
       ];
@@ -127,12 +131,13 @@ let
     lib.pipe hsPkgs.haskell-language-server (
       [
         (haskell.lib.compose.overrideCabal (old: {
-          enableSharedExecutables = dynamic;
           ${if !dynamic then "postInstall" else null} = ''
             ${old.postInstall or ""}
 
             remove-references-to -t ${hsPkgs.ghc} $out/bin/haskell-language-server
           '';
+
+          enableSharedExecutables = dynamic;
         }))
         ((if dynamic then enableCabalFlag else disableCabalFlag) "dynamic")
         removeUnnecessaryFormatters
@@ -167,12 +172,13 @@ stdenv.mkDerivation {
   '';
 
   meta = haskellPackages.haskell-language-server.meta // {
-    maintainers = [ lib.maintainers.maralorn ];
     longDescription = ''
       This package provides the executables ${
         lib.concatMapStringsSep ", " (x: lib.concatStringsSep ", " (targets x)) supportedGhcVersions
       } and haskell-language-server-wrapper.
       You can choose for which ghc versions to install hls with pkgs.haskell-language-server.override { supportedGhcVersions = [ "90" "92" ]; }.
     '';
+
+    maintainers = [ lib.maintainers.maralorn ];
   };
 }

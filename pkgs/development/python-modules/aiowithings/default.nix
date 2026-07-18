@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   pytest-asyncio,
   pytest-cov-stub,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "aiowithings";
   version = "3.1.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "joostlek";
@@ -23,13 +22,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-YC1rUyPXWbJ/xfUus5a7vw44gw7PIAdwhrUstXB/+nI=";
   };
-
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    aiohttp
-    yarl
-  ];
 
   nativeCheckInputs = [
     aioresponses
@@ -39,9 +31,12 @@ buildPythonPackage rec {
     syrupy
   ];
 
-  pythonImportsCheck = [ "aiowithings" ];
+  build-system = [ poetry-core ];
 
-  pytestFlags = [ "--snapshot-update" ];
+  dependencies = [
+    aiohttp
+    yarl
+  ];
 
   disabledTests = [
     # Tests require network access
@@ -63,6 +58,10 @@ buildPythonPackage rec {
     "test_timeout"
     "test_unexpected_server_response"
   ];
+
+  pyproject = true;
+  pytestFlags = [ "--snapshot-update" ];
+  pythonImportsCheck = [ "aiowithings" ];
 
   meta = {
     description = "Module to interact with Withings";

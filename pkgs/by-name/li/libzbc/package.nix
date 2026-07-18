@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  autoreconfHook,
   fetchFromGitHub,
+  autoreconfHook,
   gtk3,
   libtool,
   pkg-config,
@@ -27,17 +27,18 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals guiSupport [ pkg-config ];
 
   buildInputs = lib.optionals guiSupport [ gtk3 ];
-
   configureFlags = lib.optional guiSupport "--enable-gui";
 
   meta = {
     description = "ZBC device manipulation library";
     homepage = "https://github.com/westerndigitalcorporation/libzbc";
-    maintainers = [ ];
+
     license = with lib.licenses; [
       bsd2
       lgpl3Plus
     ];
+
+    maintainers = [ ];
     platforms = lib.platforms.linux;
   };
 })

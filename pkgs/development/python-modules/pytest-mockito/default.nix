@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatch-vcs,
   hatchling,
-  pytest,
   mockito,
+  pytest,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-mockito";
   version = "0.0.6.post1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kaste";
@@ -21,18 +20,17 @@ buildPythonPackage rec {
     hash = "sha256-zlErrgVeeVNojZfYYACRx/4sDWaub7EN1bCr4IhtMPg=";
   };
 
+  buildInputs = [ pytest ];
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     hatch-vcs
     hatchling
   ];
 
-  buildInputs = [ pytest ];
-
   dependencies = [ mockito ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pytest_mockito" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   meta = {
     description = "Base fixtures for mockito";

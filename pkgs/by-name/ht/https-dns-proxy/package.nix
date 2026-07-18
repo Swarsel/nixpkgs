@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  gtest,
   c-ares,
+  cmake,
   curl,
+  gtest,
   libev,
 }:
 
@@ -39,6 +39,10 @@ stdenv.mkDerivation rec {
     libev
   ];
 
+  # upstream wants to add tests and the gtest framework is in place, so be ready
+  # for when that happens despite there being none as of right now
+  doCheck = true;
+
   postInstall = ''
     install -Dm444 -t $out/share/doc/${pname} ../{LICENSE,*.md}
     install -Dm444 -t $out/share/${pname}/munin ../munin/*
@@ -46,10 +50,6 @@ stdenv.mkDerivation rec {
     mv $out/lib/systemd $out/share/${pname}
     rmdir $out/lib
   '';
-
-  # upstream wants to add tests and the gtest framework is in place, so be ready
-  # for when that happens despite there being none as of right now
-  doCheck = true;
 
   meta = {
     description = "DNS to DNS over HTTPS (DoH) proxy";

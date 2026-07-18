@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
+  buildPythonPackage,
   pyjwt,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "ha-xthings-cloud";
   version = "1.0.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "XthingsJacobs";
@@ -26,6 +25,7 @@ buildPythonPackage (finalAttrs: {
     pyjwt
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "ha_xthings_cloud" ];
 
   meta = {

@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  nixosTests,
   gitUpdater,
+  nixosTests,
+  stdenvNoCC,
   static ? false, # whether to build the static version of the font
 }:
 
@@ -16,6 +16,7 @@ stdenvNoCC.mkDerivation rec {
     repo = "noto-cjk";
     tag = "Serif${version}";
     hash = "sha256-Bwuu64TAnOnqUgLlBsUw/jnv9emngqFBmVn6zEqySlc=";
+
     sparseCheckout = [
       "Serif/OTC"
       "Serif/Variable/OTC"
@@ -38,7 +39,7 @@ stdenvNoCC.mkDerivation rec {
 
   meta = {
     description = "Beautiful and free fonts for CJK languages";
-    homepage = "https://www.google.com/get/noto/help/cjk/";
+
     longDescription = ''
       Noto Serif CJK is a serif typeface designed as
       an intermediate style between the modern and traditional. It is
@@ -51,12 +52,16 @@ stdenvNoCC.mkDerivation rec {
       Japanese kana, vertical forms, and variant characters (itaiji); it
       supports Korean hangeul — both contemporary and archaic.
     '';
+
+    homepage = "https://www.google.com/get/noto/help/cjk/";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       mathnerd314
       emily
       leana8959
     ];
+
+    platforms = lib.platforms.all;
   };
 }

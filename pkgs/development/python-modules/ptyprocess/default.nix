@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "ptyprocess";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -20,19 +19,18 @@ buildPythonPackage rec {
   patches = [
     # Remove after https://github.com/pexpect/ptyprocess/pull/64 is merged.
     (fetchpatch {
-      url = "https://github.com/pexpect/ptyprocess/commit/40c1ccf3432a6787be1801ced721540e34c6cd87.patch";
       hash = "sha256-IemngBqBq3QRCmVscWtsuXHiFgvTOJIIB9SyAvsqHd0=";
+      url = "https://github.com/pexpect/ptyprocess/commit/40c1ccf3432a6787be1801ced721540e34c6cd87.patch";
     })
     (fetchpatch {
-      url = "https://github.com/pexpect/ptyprocess/commit/a44312974bd9084aa568d2e18ce5b2a7e0e45983.patch";
       hash = "sha256-DEO4FbzKNAXADYocSQhhwjQTGGu9V5pqd38u1sWhpOI=";
+      url = "https://github.com/pexpect/ptyprocess/commit/a44312974bd9084aa568d2e18ce5b2a7e0e45983.patch";
     })
   ];
 
-  build-system = [ flit-core ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ flit-core ];
+  pyproject = true;
   pythonImportsCheck = [ "ptyprocess" ];
 
   meta = {

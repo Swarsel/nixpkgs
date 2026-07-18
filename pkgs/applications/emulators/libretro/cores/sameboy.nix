@@ -6,7 +6,6 @@
   which,
 }:
 mkLibretroCore {
-  core = "sameboy";
   version = "0-unstable-2026-04-20";
 
   src = fetchFromGitHub {
@@ -16,11 +15,14 @@ mkLibretroCore {
     hash = "sha256-sGEISpIGTHsUr4/DxMf5qxyTVdjmvWfqa2hUhj05jBA=";
   };
 
+  preBuild = "cd libretro";
+  core = "sameboy";
+
   extraNativeBuildInputs = [
     which
     hexdump
   ];
-  preBuild = "cd libretro";
+
   makefile = "Makefile";
 
   meta = {

@@ -1,8 +1,6 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   atk,
   cairo,
   gdk-pixbuf,
@@ -10,6 +8,8 @@
   gtk3,
   openssl,
   pango,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -58,12 +58,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "NOAA APT image decoder";
     homepage = "https://noaa-apt.mbernardi.com.ar/";
+    changelog = "https://github.com/martinber/noaa-apt/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       tmarkus
     ];
+
     platforms = lib.platforms.all;
-    changelog = "https://github.com/martinber/noaa-apt/releases/tag/v${finalAttrs.version}";
     mainProgram = "noaa-apt";
   };
 })

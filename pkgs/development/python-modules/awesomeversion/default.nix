@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pytest-codspeed,
   pytest-snapshot,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "awesomeversion";
   version = "25.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ludeeus";
@@ -28,13 +27,14 @@ buildPythonPackage rec {
 
   nativeBuildInputs = [ hatchling ];
 
-  pythonImportsCheck = [ "awesomeversion" ];
-
   nativeCheckInputs = [
     pytest-codspeed
     pytest-snapshot
     pytestCheckHook
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "awesomeversion" ];
 
   meta = {
     description = "Python module to deal with versions";

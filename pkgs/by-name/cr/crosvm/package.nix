@@ -1,22 +1,22 @@
 {
   lib,
-  rustPlatform,
   fetchgit,
-  pkg-config,
-  protobuf,
-  python3,
-  wayland-scanner,
   libcap,
   libdrm,
   libepoxy,
   minijail,
+  nix-update,
+  pkg-config,
+  pkgsCross,
+  protobuf,
+  python3,
+  rustPlatform,
+  unstableGitUpdater,
   virglrenderer,
   wayland,
   wayland-protocols,
+  wayland-scanner,
   writeShellScript,
-  unstableGitUpdater,
-  nix-update,
-  pkgsCross,
 }:
 
 rustPlatform.buildRustPackage {
@@ -29,10 +29,6 @@ rustPlatform.buildRustPackage {
     hash = "sha256-7cfiXOPlNHLIVHBW+y7WnYgdcxErtJeLBxPey/3uA1w=";
     fetchSubmodules = true;
   };
-
-  separateDebugInfo = true;
-
-  cargoHash = "sha256-bXATbiA+cRi9aOxpaTLRadBjl4O89x+J84byJ4CrsqI=";
 
   nativeBuildInputs = [
     pkg-config
@@ -52,42 +48,47 @@ rustPlatform.buildRustPackage {
     wayland-protocols
   ];
 
-  preConfigure = ''
-    patchShebangs third_party/minijail/tools/*.py
-  '';
+  cargoHash = "sha256-bXATbiA+cRi9aOxpaTLRadBjl4O89x+J84byJ4CrsqI=";
 
   env = {
     CROSVM_USE_SYSTEM_MINIGBM = true;
     CROSVM_USE_SYSTEM_VIRGLRENDERER = true;
   };
 
+  preConfigure = ''
+    patchShebangs third_party/minijail/tools/*.py
+  '';
+
   buildFeatures = [ "virgl_renderer" ];
+  separateDebugInfo = true;
 
   passthru = {
-    updateScript = writeShellScript "update-crosvm.sh" ''
-      set -ue
-      ${lib.escapeShellArgs (unstableGitUpdater {
-        url = "https://chromium.googlesource.com/crosvm/crosvm.git";
-        hardcodeZeroVersion = true;
-      })}
-      exec ${lib.getExe nix-update} --version=skip
-    '';
-
     tests = {
       musl = pkgsCross.musl64.crosvm;
     };
+
+    updateScript = writeShellScript "update-crosvm.sh" ''
+      set -ue
+      ${lib.escapeShellArgs (unstableGitUpdater {
+        hardcodeZeroVersion = true;
+        url = "https://chromium.googlesource.com/crosvm/crosvm.git";
+      })}
+      exec ${lib.getExe nix-update} --version=skip
+    '';
   };
 
   meta = {
     description = "Secure virtual machine monitor for KVM";
     homepage = "https://crosvm.dev/";
-    mainProgram = "crosvm";
-    maintainers = with lib.maintainers; [ qyliss ];
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ qyliss ];
+
     platforms = [
       "aarch64-linux"
       "riscv64-linux"
       "x86_64-linux"
     ];
+
+    mainProgram = "crosvm";
   };
 }

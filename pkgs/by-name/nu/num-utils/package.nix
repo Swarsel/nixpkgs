@@ -16,13 +16,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [ perl ];
 
-  patchPhase = ''
-    substituteInPlace Makefile --replace "-o 0 -g 0" "" --replace "\$(RPMDIR)" ""
-  '';
   makeFlags = [
     "TOPDIR=${placeholder "out"}"
     "PERL=${perl}/bin/perl"
   ];
+
+  patchPhase = ''
+    substituteInPlace Makefile --replace "-o 0 -g 0" "" --replace "\$(RPMDIR)" ""
+  '';
 
   meta = {
     description = "Programs for dealing with numbers from the command line";

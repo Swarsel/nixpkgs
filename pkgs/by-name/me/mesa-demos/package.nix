@@ -2,24 +2,24 @@
   lib,
   stdenv,
   fetchurl,
-  libglut,
+  glslang,
   libGL,
   libGLU,
+  libdecor,
+  libgbm,
+  libglut,
   libx11,
   libxcb,
   libxext,
-  libgbm,
+  libxkbcommon,
   mesa,
   meson,
   ninja,
   pkg-config,
-  wayland,
-  wayland-scanner,
-  wayland-protocols,
   vulkan-loader,
-  libxkbcommon,
-  libdecor,
-  glslang,
+  wayland,
+  wayland-protocols,
+  wayland-scanner,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,10 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://archive.mesa3d.org/demos/mesa-demos-${finalAttrs.version}.tar.xz";
     sha256 = "sha256-MEaj0mp7BRr3690lel8jv+sWDK1u2VIynN/x6fHtSWs=";
   };
-
-  depsBuildBuild = [
-    pkg-config
-  ];
 
   nativeBuildInputs = [
     meson
@@ -63,6 +59,10 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonEnable "libdrm" (stdenv.hostPlatform.isLinux))
     (lib.mesonEnable "osmesa" false)
     (lib.mesonEnable "wayland" (lib.meta.availableOn stdenv.hostPlatform wayland))
+  ];
+
+  depsBuildBuild = [
+    pkg-config
   ];
 
   meta = {

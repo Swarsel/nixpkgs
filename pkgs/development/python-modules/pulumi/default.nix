@@ -1,21 +1,21 @@
 {
   lib,
-  pkgs,
-  pulumiPackages,
   buildPythonPackage,
-  hatchling,
-  protobuf,
-  grpcio,
-  dill,
-  six,
-  semver,
-  pyyaml,
   debugpy,
+  dill,
+  grpcio,
+  hatchling,
   pip,
+  pkgs,
+  protobuf,
+  pulumiPackages,
   pytest,
   pytest-asyncio,
   pytest-timeout,
   python,
+  pyyaml,
+  semver,
+  six,
 }:
 let
   inherit (pkgs.pulumi) pname version src;
@@ -35,39 +35,11 @@ buildPythonPackage {
     "dev"
   ];
 
-  pyproject = true;
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    protobuf
-    grpcio
-    dill
-    six
-    semver
-    pyyaml
-    debugpy
-    pip
-  ];
-
-  pythonRelaxDeps = [
-    "protobuf"
-    "grpcio"
-    "pip"
-    "semver"
-  ];
-
   nativeCheckInputs = [
     pytest
     pytest-asyncio
     pytest-timeout
     pulumi-python
-  ];
-
-  disabledTestPaths = [
-    # TODO: remove disabledTestPaths once the test is fixed upstream.
-    # https://github.com/pulumi/pulumi/pull/19080#discussion_r2309611222
-    "lib/test/provider/experimental/test_property_value.py::test_nesting"
   ];
 
   # https://github.com/pulumi/pulumi/blob/0acaf8060640fdd892abccf1ce7435cd6aae69fe/sdk/python/scripts/test_fast.sh#L10-L11
@@ -86,13 +58,40 @@ buildPythonPackage {
 
   # Allow local networking in tests on Darwin
   __darwinAllowLocalNetworking = true;
+  build-system = [ hatchling ];
 
+  dependencies = [
+    protobuf
+    grpcio
+    dill
+    six
+    semver
+    pyyaml
+    debugpy
+    pip
+  ];
+
+  disabledTestPaths = [
+    # TODO: remove disabledTestPaths once the test is fixed upstream.
+    # https://github.com/pulumi/pulumi/pull/19080#discussion_r2309611222
+    "lib/test/provider/experimental/test_property_value.py::test_nesting"
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "pulumi" ];
+
+  pythonRelaxDeps = [
+    "protobuf"
+    "grpcio"
+    "pip"
+    "semver"
+  ];
 
   meta = {
     description = "Modern Infrastructure as Code. Any cloud, any language";
     homepage = "https://www.pulumi.com";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       tie
     ];

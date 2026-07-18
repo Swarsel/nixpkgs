@@ -3,8 +3,8 @@
 {
   config,
   lib,
-  options,
   pkgs,
+  options,
   ...
 }:
 let
@@ -34,8 +34,42 @@ in
 
   options = {
 
+    environment.profileRelativeSessionVariables = lib.mkOption {
+      description = ''
+        Attribute set of environment variable used in the global
+        environment. These variables will be set by PAM early in the
+        login process.
+
+        Variable substitution is available as described in
+        {manpage}`pam_env.conf(5)`.
+
+        Each attribute maps to a list of relative paths. Each relative
+        path is appended to the each profile of
+        {option}`environment.profiles` to form the content of
+        the corresponding environment variable.
+
+        Also, these variables are merged into
+        [](#opt-environment.profileRelativeEnvVars) and it is
+        therefore not possible to use PAM style variables such as
+        `@{HOME}`.
+      '';
+
+      example = {
+        MANPATH = [
+          "/man"
+          "/share/man"
+        ];
+
+        PATH = [ "/bin" ];
+      };
+
+      type = lib.types.attrsOf (lib.types.listOf lib.types.str);
+    };
+
     environment.sessionVariables = lib.mkOption {
+      inherit (options.environment.variables) type apply;
       default = { };
+
       description = ''
         A set of environment variables used in the global environment.
         These variables will be set by PAM early in the login process.
@@ -55,36 +89,6 @@ in
         therefore not possible to use PAM style variables such as
         `@{HOME}`.
       '';
-      inherit (options.environment.variables) type apply;
-    };
-
-    environment.profileRelativeSessionVariables = lib.mkOption {
-      type = lib.types.attrsOf (lib.types.listOf lib.types.str);
-      example = {
-        PATH = [ "/bin" ];
-        MANPATH = [
-          "/man"
-          "/share/man"
-        ];
-      };
-      description = ''
-        Attribute set of environment variable used in the global
-        environment. These variables will be set by PAM early in the
-        login process.
-
-        Variable substitution is available as described in
-        {manpage}`pam_env.conf(5)`.
-
-        Each attribute maps to a list of relative paths. Each relative
-        path is appended to the each profile of
-        {option}`environment.profiles` to form the content of
-        the corresponding environment variable.
-
-        Also, these variables are merged into
-        [](#opt-environment.profileRelativeEnvVars) and it is
-        therefore not possible to use PAM style variables such as
-        `@{HOME}`.
-      '';
     };
 
   };
@@ -93,6 +97,7 @@ in
     environment.etc."environment.d/50-systemd-path.conf".text = ''
       PATH="${lib.concatStringsSep ":" combinedSessionVars.PATH}"
     '';
+
     environment.etc."pam/environment".text =
       let
         # We're trying to use the same syntax for PAM variables and env variables.

@@ -1,23 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonOlder,
-  setuptools_80,
-  aiohttp,
-  mashumaro,
   aiofiles,
+  aiohttp,
   aioresponses,
+  buildPythonPackage,
+  mashumaro,
   pytest-asyncio,
   pytestCheckHook,
+  pythonOlder,
+  setuptools_80,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "airos";
   version = "0.6.11";
-  pyproject = true;
-
-  disabled = pythonOlder "3.13";
 
   src = fetchFromGitHub {
     owner = "CoMPaTech";
@@ -26,13 +23,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-mCa2Mabw+Y5QAdiFquw7NP3K9HgDj+wZJbln2ugTp0Q=";
   };
 
-  build-system = [ setuptools_80 ];
-
-  dependencies = [
-    aiohttp
-    mashumaro
-  ];
-
   nativeCheckInputs = [
     aiofiles
     aioresponses
@@ -40,6 +30,15 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  build-system = [ setuptools_80 ];
+
+  dependencies = [
+    aiohttp
+    mashumaro
+  ];
+
+  disabled = pythonOlder "3.13";
+  pyproject = true;
   pythonImportsCheck = [ "airos" ];
 
   meta = {

@@ -1,21 +1,20 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  pkgs, # Only for pkgs.plantuml,
   lib,
-  plantuml,
+  fetchFromGitHub,
+  buildPythonPackage,
   markdown,
-  requests,
-  six,
-  runCommand,
-  writeText,
+  pkgs, # Only for pkgs.plantuml,
+  plantuml,
   plantuml-markdown,
+  requests,
+  runCommand,
+  six,
+  writeText,
 }:
 
 buildPythonPackage rec {
   pname = "plantuml-markdown";
   version = "3.11.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "mikitex70";
@@ -39,7 +38,7 @@ buildPythonPackage rec {
   # The package uses a custom script that downloads a certain version of plantuml for testing.
   # Missing https://github.com/ezequielramos/http-server-mock which looks unmaintained
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "plantuml_markdown" ];
 
   passthru.tests.example-doc =
@@ -58,10 +57,12 @@ buildPythonPackage rec {
 
   meta = {
     description = "PlantUML plugin for Python-Markdown";
+
     longDescription = ''
       This plugin implements a block extension which can be used to specify a PlantUML
       diagram which will be converted into an image and inserted in the document.
     '';
+
     homepage = "https://github.com/mikitex70/plantuml-markdown";
     changelog = "https://github.com/mikitex70/plantuml-markdown/releases/tag/${src.tag}";
     license = lib.licenses.bsd2;

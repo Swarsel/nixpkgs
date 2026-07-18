@@ -4,21 +4,25 @@
   fetchPypi,
   pytestCheckHook,
   requests,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
   waitress,
 }:
 
 buildPythonPackage rec {
   pname = "requests-unixsocket";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "requests_unixsocket";
     inherit version;
     hash = "sha256-sllhWMNW7O5o0nukaaUiESMKxvsM3otmr7GfDtR6GZU=";
+    pname = "requests_unixsocket";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    waitress
+  ];
 
   build-system = [
     setuptools
@@ -26,12 +30,7 @@ buildPythonPackage rec {
   ];
 
   dependencies = [ requests ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    waitress
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "requests_unixsocket" ];
 
   meta = {

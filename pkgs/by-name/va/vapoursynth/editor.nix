@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   makeWrapper,
-  runCommand,
   python3,
-  vapoursynth,
   qmake,
-  wrapQtAppsHook,
   qtbase,
   qtwebsockets,
+  runCommand,
+  vapoursynth,
+  wrapQtAppsHook,
 }:
 
 let
@@ -40,8 +40,6 @@ let
       qtwebsockets
     ];
 
-    dontWrapQtApps = true;
-
     preConfigure = "cd pro";
 
     preFixup = ''
@@ -62,6 +60,8 @@ let
           wrapQtApp $out/bin/$bin
       done
     '';
+
+    dontWrapQtApps = true;
 
     passthru = {
       inherit withPlugins;
@@ -84,6 +84,7 @@ let
     runCommand "${unwrapped.name}-with-plugins"
       {
         nativeBuildInputs = [ makeWrapper ];
+
         passthru = {
           withPlugins = plugins': withPlugins (plugins ++ plugins');
         };

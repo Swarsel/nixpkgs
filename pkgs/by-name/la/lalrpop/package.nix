@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
   replaceVars,
-  stdenv,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,15 +17,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-/mk4sTgwxBrB+LEBbWv4OQEEh2P2KVSh6v5ry9/Et4s=";
   };
 
-  cargoHash = "sha256-3Lm25X2QQQ4+3Spe6Nz5PkIvFcgwHQ+hqAdjsFesgro=";
-
   patches = [
     (replaceVars ./use-correct-binary-path-in-tests.patch {
       target_triple = stdenv.hostPlatform.rust.rustcTarget;
     })
   ];
 
-  buildAndTestSubdir = "lalrpop";
+  cargoHash = "sha256-3Lm25X2QQQ4+3Spe6Nz5PkIvFcgwHQ+hqAdjsFesgro=";
 
   # there are some tests in lalrpop-test and some in lalrpop
   checkPhase = ''
@@ -33,15 +31,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     cargoCheckHook
   '';
 
+  buildAndTestSubdir = "lalrpop";
+
   meta = {
     description = "LR(1) parser generator for Rust";
     homepage = "https://github.com/lalrpop/lalrpop";
     changelog = "https://github.com/lalrpop/lalrpop/blob/${finalAttrs.src.rev}/RELEASES.md";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
-    mainProgram = "lalrpop";
+
     maintainers = with lib.maintainers; [ chayleaf ];
+    mainProgram = "lalrpop";
   };
 })

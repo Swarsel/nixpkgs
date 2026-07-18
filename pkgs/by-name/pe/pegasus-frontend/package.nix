@@ -1,11 +1,11 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
-  cmake,
+  fetchFromGitHub,
   SDL2,
-  sqlite,
+  cmake,
   libsForQt5,
+  sqlite,
 }:
 
 stdenv.mkDerivation {
@@ -16,8 +16,8 @@ stdenv.mkDerivation {
     owner = "mmatyas";
     repo = "pegasus-frontend";
     rev = "54362976fd4c6260e755178d97e9db51f7a896af";
-    fetchSubmodules = true;
     hash = "sha256-DqtkvDg0oQL9hGB+6rNXe3sDBywvnqy9N31xfyl6nbI=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -41,10 +41,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Cross platform, customizable graphical frontend for launching emulators and managing your game collection";
-    mainProgram = "pegasus-fe";
     homepage = "https://pegasus-frontend.org/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ tengkuizdihar ];
     platforms = lib.platforms.linux;
+    mainProgram = "pegasus-fe";
   };
 }

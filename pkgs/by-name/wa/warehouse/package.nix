@@ -1,8 +1,9 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   blueprint-compiler,
   desktop-file-utils,
-  fetchFromGitHub,
   flatpak,
   flatpak-xdg-utils,
   glib,
@@ -14,7 +15,6 @@
   nix-update-script,
   pkg-config,
   python3,
-  stdenv,
   wrapGAppsHook4,
 }:
 
@@ -61,12 +61,12 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/flattool/warehouse/releases/tag/${finalAttrs.version}";
     description = "Manage all things Flatpak";
     homepage = "https://github.com/flattool/warehouse";
+    changelog = "https://github.com/flattool/warehouse/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "warehouse";
     maintainers = with lib.maintainers; [ michaelgrahamevans ];
     platforms = lib.platforms.linux;
+    mainProgram = "warehouse";
   };
 })

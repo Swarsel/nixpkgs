@@ -6,16 +6,14 @@
 }:
 
 buildDunePackage {
-  pname = "ocamlc-loc";
   inherit (dune) src version;
-
-  dontAddPrefix = true;
-
+  pname = "ocamlc-loc";
   propagatedBuildInputs = [ dyn ];
+  dontAddPrefix = true;
 
   meta = {
     description = "Parse ocaml compiler output into structured form";
-    maintainers = [ lib.maintainers.ulrikstrid ];
     license = lib.licenses.mit;
+    maintainers = [ lib.maintainers.ulrikstrid ];
   };
 }

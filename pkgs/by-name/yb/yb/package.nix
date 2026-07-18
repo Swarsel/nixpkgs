@@ -1,16 +1,16 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
   installShellFiles,
-  versionCheckHook,
-  pcsclite,
-  pkg-config,
-  runCommand,
   llvmPackages,
   nix-update-script,
   nixosTests,
-  stdenv,
+  pcsclite,
+  pkg-config,
+  runCommand,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -24,32 +24,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-gX9s1R/75ipaPJFPTBMR2riIxMmw1KfuURx2Up6ovOM=";
   };
 
-  cargoRoot = "rust";
-
-  cargoHash = "sha256-J91BH0eXuTtGZCSWWLYGM5KHtBjczD1Qu5PxIXAnFRI=";
-
-  # Build and test only the yb crate (not the yb-piv-harness test harness,
-  # which requires a virtual smart card and runs in the NixOS VM test below).
-  buildAndTestSubdir = "rust/yb";
-  cargoBuildFlags = [
-    "-p"
-    "yb"
-    "--features"
-    "self-test"
-  ];
-  cargoTestFlags = [
-    "-p"
-    "yb"
-    "--features"
-    "self-test"
-  ];
-
   nativeBuildInputs = [
     pkg-config
     installShellFiles
   ];
 
   buildInputs = lib.optionals stdenv.isLinux [ pcsclite ];
+  cargoHash = "sha256-J91BH0eXuTtGZCSWWLYGM5KHtBjczD1Qu5PxIXAnFRI=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     # Bash completion: patch two clap_complete quirks:
@@ -73,10 +54,31 @@ rustPlatform.buildRustPackage (finalAttrs: {
     $out/bin/yb-gen-man $out/share/man/man1
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  # Build and test only the yb crate (not the yb-piv-harness test harness,
+  # which requires a virtual smart card and runs in the NixOS VM test below).
+  buildAndTestSubdir = "rust/yb";
+
+  cargoBuildFlags = [
+    "-p"
+    "yb"
+    "--features"
+    "self-test"
+  ];
+
+  cargoRoot = "rust";
+
+  cargoTestFlags = [
+    "-p"
+    "yb"
+    "--features"
+    "self-test"
+  ];
 
   passthru =
     let
@@ -93,7 +95,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
       # Compile the harness test binaries (--no-run: compiled but not executed
       # here; the testScript in tests.nix invokes them directly).
       ybPivHarnessTests = rustPlatform.buildRustPackage {
-        pname = "yb-piv-harness-tests";
         inherit (finalAttrs)
           version
           src
@@ -101,16 +102,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
           cargoHash
           ;
 
-        buildAndTestSubdir = "rust";
+        pname = "yb-piv-harness-tests";
 
         nativeBuildInputs = [
           pkg-config
           llvmPackages.libclang
         ];
-        buildInputs = lib.optionals stdenv.isLinux [ pcsclite ];
 
-        LIBCLANG_PATH = "${llvmPackages.libclang.lib}/lib";
-        BINDGEN_EXTRA_CLANG_ARGS = "-I${llvmPackages.libclang.lib}/lib/clang/${lib.versions.major llvmPackages.release_version}/include";
+        buildInputs = lib.optionals stdenv.isLinux [ pcsclite ];
 
         # Skip the normal build — we only want the test binaries.
         buildPhase = ''
@@ -132,6 +131,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
             cp "$bin" $out/bin/$name
           done)
         '';
+
+        BINDGEN_EXTRA_CLANG_ARGS = "-I${llvmPackages.libclang.lib}/lib/clang/${lib.versions.major llvmPackages.release_version}/include";
+        LIBCLANG_PATH = "${llvmPackages.libclang.lib}/lib";
+        buildAndTestSubdir = "rust";
       };
     in
     {
@@ -142,6 +145,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Secure blob storage on a YubiKey";
+
     longDescription = ''
       Command-line tool for storing encrypted binary blobs on a YubiKey using
       the PIV application. Uses hybrid encryption (ECDH + AES-256-GCM) with
@@ -149,11 +153,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
       (--protect), glob-pattern blob listing, and shell completions for bash,
       zsh, and fish.
     '';
+
     homepage = "https://github.com/douzebis/yb";
     changelog = "https://github.com/douzebis/yb/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ douzebis ];
-    mainProgram = "yb";
     platforms = lib.platforms.unix;
+    mainProgram = "yb";
   };
 })

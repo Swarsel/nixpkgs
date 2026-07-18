@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
   astunparse,
-  grpcio-tools,
+  buildPythonPackage,
   click,
-  pkgs,
-  protobuf,
+  grpcio-tools,
   mypy-protobuf_3_6,
+  pkgs,
+  poetry-core,
+  protobuf,
   pytestCheckHook,
   writableTmpDirAsHomeHook,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "protoletariat";
   version = "3.3.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cpcloud";
@@ -23,6 +22,17 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-oaZmgen/7WkX+nNuphrcyniL7Z/OaeqlcnbCnqR5h0w=";
   };
+
+  postPatch = ''
+    substituteInPlace protoletariat/__main__.py \
+      --replace-fail 'default="protoc",' 'default="${lib.getExe' pkgs.protobuf "protoc"}",'
+  '';
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+    mypy-protobuf_3_6
+  ];
 
   build-system = [ poetry-core ];
 
@@ -33,21 +43,11 @@ buildPythonPackage (finalAttrs: {
     protobuf
   ];
 
-  pythonRelaxDeps = [
-    "protobuf"
-  ];
-
-  postPatch = ''
-    substituteInPlace protoletariat/__main__.py \
-      --replace-fail 'default="protoc",' 'default="${lib.getExe' pkgs.protobuf "protoc"}",'
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "protoletariat" ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-    mypy-protobuf_3_6
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

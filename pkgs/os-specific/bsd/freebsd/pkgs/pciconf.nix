@@ -4,8 +4,6 @@
   pciutils,
 }:
 mkDerivation {
-  path = "usr.sbin/pciconf";
-
   outputs = [
     "out"
     "man"
@@ -28,6 +26,7 @@ mkDerivation {
     cp "${pciutils}/share/pci.ids" "$out/share/pci.ids"
   '';
 
-  meta.platorms = lib.platforms.freebsd;
+  path = "usr.sbin/pciconf";
   meta.mainProgram = "pciconf";
+  meta.platorms = lib.platforms.freebsd;
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   wheel,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "dllogger";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "NVIDIA";
@@ -33,6 +32,7 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  pyproject = true;
   pythonImportsCheck = [ "dllogger" ];
 
   meta = {

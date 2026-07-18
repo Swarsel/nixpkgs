@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
+  file,
   libarchive,
   python3,
-  file,
   which,
 }:
 
@@ -25,23 +25,25 @@ stdenv.mkDerivation (finalAttrs: {
     which
   ];
 
-  dontUnpack = true;
-  dontBuild = true;
-
   installPhase = ''
     mkdir -p $out
     ENVCLEANED=1 $src -y -d $out
   '';
 
+  dontBuild = true;
+  dontUnpack = true;
+
   meta = {
     description = "Toolchain for cross-compiling to reMarkable tablets";
     homepage = "https://remarkable.engineering/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.gpl2Plus;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       nickhu
       siraben
     ];
+
     platforms = [ "x86_64-linux" ];
   };
 })

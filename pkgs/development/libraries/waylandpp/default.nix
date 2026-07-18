@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  buildPackages,
   cmake,
+  doxygen,
+  graphviz,
+  libGL,
+  libffi,
   makeFontsConf,
   pkg-config,
   pugixml,
   wayland,
-  libGL,
-  libffi,
-  buildPackages,
   docSupport ? true,
-  doxygen,
-  graphviz,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,6 +25,33 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-vKYKUXq5lmjQcZ0rD+b2O7N1iCVnpkpKd8Z/RTI083g=";
   };
+
+  outputs = [
+    "bin"
+    "dev"
+    "lib"
+    "out"
+  ]
+  ++ lib.optionals docSupport [
+    "doc"
+    "devman"
+  ];
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ]
+  ++ lib.optionals docSupport [
+    doxygen
+    graphviz
+  ];
+
+  buildInputs = [
+    pugixml
+    wayland
+    libGL
+    libffi
+  ];
 
   cmakeFlags = [
     (lib.cmakeFeature "CMAKE_INSTALL_DATADIR" (placeholder "dev"))
@@ -40,32 +67,6 @@ stdenv.mkDerivation (finalAttrs: {
     };
   };
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ]
-  ++ lib.optionals docSupport [
-    doxygen
-    graphviz
-  ];
-  buildInputs = [
-    pugixml
-    wayland
-    libGL
-    libffi
-  ];
-
-  outputs = [
-    "bin"
-    "dev"
-    "lib"
-    "out"
-  ]
-  ++ lib.optionals docSupport [
-    "doc"
-    "devman"
-  ];
-
   # Resolves the warning "Fontconfig error: No writable cache directories"
   preBuild = ''
     export XDG_CACHE_HOME="$(mktemp -d)"
@@ -73,13 +74,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Wayland C++ binding";
-    mainProgram = "wayland-scanner++";
     homepage = "https://github.com/NilsBrause/waylandpp/";
+
     license = with lib.licenses; [
       bsd2
       hpnd
     ];
+
     maintainers = with lib.maintainers; [ minijackson ];
     platforms = lib.platforms.linux;
+    mainProgram = "wayland-scanner++";
   };
 })

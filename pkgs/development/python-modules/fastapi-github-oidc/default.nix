@@ -1,19 +1,18 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  hatchling,
-  hatch-vcs,
-  fastapi,
-  pyjwt,
-  httpx,
-  requests,
-  pytestCheckHook,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
+  fastapi,
+  hatch-vcs,
+  hatchling,
+  httpx,
+  pyjwt,
+  pytestCheckHook,
+  requests,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "fastapi-github-oidc";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "atopile";
@@ -21,6 +20,8 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-FS50++Hy9h0RFrSnc4PbXFPh/1OO0JOaFdIZwoXa86A=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     hatchling
@@ -34,16 +35,16 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  pythonImportsCheck = [
-    "github_oidc.client"
-    "github_oidc.server"
-  ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTests = [
     "test_with_auth" # calls github api
     "test_no_auth" # returns 401 instead of 403
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "github_oidc.client"
+    "github_oidc.server"
   ];
 
   meta = {

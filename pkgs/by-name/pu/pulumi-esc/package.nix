@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,8 +15,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-hj2eRt/223kEWcgy8UdgQAn3oLS3Rr4A2srN+Iw0fKw=";
   };
 
-  subPackages = "cmd/esc";
-
   vendorHash = "sha256-Va8vcIbNqAcrbJECa+utSg6EZNOTSZalP/W3GC0I2lM=";
 
   ldflags = [
@@ -24,6 +22,8 @@ buildGoModule (finalAttrs: {
     "-w"
     "-X=github.com/pulumi/esc/cmd/esc/cli/version.Version=${finalAttrs.src.rev}"
   ];
+
+  subPackages = "cmd/esc";
 
   meta = {
     description = "Pulumi ESC (Environments, Secrets, and Configuration) for cloud applications and infrastructure";

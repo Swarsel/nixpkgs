@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
   versionCheckHook,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "motioneye";
   version = "0.44.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "motioneye-project";
@@ -16,6 +15,14 @@ python3Packages.buildPythonApplication rec {
     tag = version;
     hash = "sha256-4sXttSSkmMgsoZb7PXEXXh8KNORTSmqq4lYp3JBDmPo=";
   };
+
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+  ];
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
 
   build-system = with python3Packages; [
     setuptools
@@ -31,13 +38,7 @@ python3Packages.buildPythonApplication rec {
     argon2-cffi
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-  ];
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "motioneye"

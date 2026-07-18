@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   versionCheckHook,
 }:
@@ -16,6 +16,10 @@ buildGoModule (finalAttrs: {
     hash = "sha256-feaEnZuELOj8zIXm+Q/7CKbb5aOjixKG6bHAeNGy5cI=";
   };
 
+  vendorHash = "sha256-G8IipSGlui0pDMrPBlixxIC2osGVmKOGu+8WDYpK8Ak=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
   ldflags = [
     "-s"
     "-w"
@@ -26,20 +30,15 @@ buildGoModule (finalAttrs: {
     "-X github.com/prometheus/common/version.Version=${finalAttrs.version}"
   ];
 
-  vendorHash = "sha256-G8IipSGlui0pDMrPBlixxIC2osGVmKOGu+8WDYpK8Ak=";
-
+  versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
   passthru.updateScript = nix-update-script { };
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-  versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
-
   meta = {
-    changelog = "https://github.com/paepckehh/solaredge_exporter/releases/tag/v${finalAttrs.version}";
-    homepage = "https://paepcke.de/solaredge_exporter";
     description = "Prometheus exporter for solaredge solar inverter local tcp modbus interface";
+    homepage = "https://paepcke.de/solaredge_exporter";
+    changelog = "https://github.com/paepckehh/solaredge_exporter/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "solaredge_exporter";
     maintainers = with lib.maintainers; [ paepcke ];
+    mainProgram = "solaredge_exporter";
   };
 })

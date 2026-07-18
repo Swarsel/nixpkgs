@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  perl,
   ncurses,
+  perl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "20210215.5a9cb02";
   pname = "ipbt";
+  version = "20210215.5a9cb02";
 
   src = fetchurl {
     url = "https://www.chiark.greenend.org.uk/~sgtatham/ipbt/ipbt-${finalAttrs.version}.tar.gz";

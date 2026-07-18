@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  appstream-glib,
+  desktop-file-utils,
+  glib,
+  glib-networking,
+  gst_all_1,
+  gtk3,
+  keybinder3,
+  libsoup_3,
   meson,
   ninja,
   pkg-config,
-  glib,
-  glib-networking,
-  gtk3,
-  libsoup_3,
-  keybinder3,
-  gst_all_1,
   wrapGAppsHook3,
-  appstream-glib,
-  desktop-file-utils,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,10 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-KEB6qSbsi+Q8NRHx5O9xOViIhuBDZceto53sWJv7As8=";
   };
+
+  postPatch = ''
+    patchShebangs scripts
+  '';
 
   nativeBuildInputs = [
     meson
@@ -52,15 +56,11 @@ stdenv.mkDerivation (finalAttrs: {
     gst-plugins-ugly
   ]);
 
-  postPatch = ''
-    patchShebangs scripts
-  '';
-
   meta = {
     description = "Lightweight internet radio player";
     homepage = "https://gitlab.com/goodvibes/goodvibes";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ zendo ];
+    platforms = lib.platforms.linux;
   };
 })

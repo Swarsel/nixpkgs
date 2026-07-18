@@ -1,13 +1,13 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   coreutils,
   curl,
-  fetchFromGitHub,
-  unzip,
-  p7zip,
-  gnused,
   gnugrep,
-  stdenv,
+  gnused,
+  p7zip,
+  unzip,
   blacklist ? [ "adwords.google.com" ],
   whitelist ? [
     ".dropbox.com"

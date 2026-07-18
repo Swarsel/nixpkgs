@@ -5,8 +5,8 @@
 }:
 
 buildDunePackage {
-  pname = "caqti-driver-mariadb";
   inherit (caqti) version src;
+  pname = "caqti-driver-mariadb";
 
   propagatedBuildInputs = [
     caqti

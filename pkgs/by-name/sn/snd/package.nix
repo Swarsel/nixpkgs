@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   alsa-lib,
   fftw,
   gsl,
-  motif,
-  libxt,
-  libxpm,
-  libxft,
   libxext,
+  libxft,
+  libxpm,
+  libxt,
+  motif,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -50,9 +50,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Sound editor";
     homepage = "https://ccrma.stanford.edu/software/snd/";
-    platforms = lib.platforms.unix;
     license = lib.licenses.free;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
     mainProgram = "snd";
   };
 })

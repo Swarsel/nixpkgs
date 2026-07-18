@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  poetry-core,
   pytest-asyncio,
   pytestCheckHook,
-  poetry-core,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "aiorwlock";
   version = "1.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aio-libs";
@@ -19,13 +18,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-+favszX1mVuuLWqKCIk+i5frX+y2kOArAUVIAJG1otY=";
   };
 
-  build-system = [ poetry-core ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytestCheckHook
   ];
 
+  build-system = [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "aiorwlock" ];
 
   meta = {

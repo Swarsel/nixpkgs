@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,27 +17,14 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-4d6FP6k1atqCRw4rB1l1N9x8G1MFJiNCfyun85KY4FI=";
   };
 
-  vendorHash = "sha256-NJ/ekcYUT2DUdQygg41tnPRMWtZwNGrZDxbsp2tih9w=";
-
-  subPackages = [
-    "cmd/dyff"
-    "pkg/dyff"
-    "internal/cmd"
-  ];
-
-  nativeBuildInputs = [ installShellFiles ];
-
   # test fails with the injected version
   postPatch = ''
     substituteInPlace internal/cmd/cmds_test.go \
       --replace "version (development)" ${finalAttrs.version}
   '';
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=github.com/homeport/dyff/internal/cmd.version=${finalAttrs.version}"
-  ];
+  nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-NJ/ekcYUT2DUdQygg41tnPRMWtZwNGrZDxbsp2tih9w=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd dyff \
@@ -46,9 +33,21 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/dyff completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=github.com/homeport/dyff/internal/cmd.version=${finalAttrs.version}"
+  ];
+
+  subPackages = [
+    "cmd/dyff"
+    "pkg/dyff"
+    "internal/cmd"
+  ];
+
   meta = {
     description = "Diff tool for YAML files, and sometimes JSON";
-    mainProgram = "dyff";
+
     longDescription = ''
       dyff is inspired by the way the old BOSH v1 deployment output reported
       changes from one version to another by only showing the parts of a YAML
@@ -57,11 +56,15 @@ buildGoModule (finalAttrs: {
       Each difference is referenced by its location in the YAML document by
       using either the Spruce or go-patch path syntax.
     '';
+
     homepage = "https://github.com/homeport/dyff";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       edlimerkaj
       jceb
     ];
+
+    mainProgram = "dyff";
   };
 })

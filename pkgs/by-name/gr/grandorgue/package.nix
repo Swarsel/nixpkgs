@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  wrapGAppsHook3,
-  cmake,
-  pkg-config,
-  fftwFloat,
   alsa-lib,
-  zlib,
-  wavpack,
-  wxwidgets_3_2,
-  udev,
-  jackaudioSupport ? false,
-  libjack2,
+  cmake,
+  fftwFloat,
   imagemagick,
   libicns,
-  yaml-cpp,
+  libjack2,
   makeWrapper,
+  pkg-config,
+  udev,
+  wavpack,
+  wrapGAppsHook3,
+  wxwidgets_3_2,
+  yaml-cpp,
+  zlib,
   includeDemo ? true,
+  jackaudioSupport ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,8 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "GrandOrgue";
     repo = "grandorgue";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-A6Gc9kCtohz1nWj/fmYsyXM0X3uJxEmDK2N2Dr5CW1U=";
+    fetchSubmodules = true;
   };
 
   patches = [ ./darwin-fixes.patch ];
@@ -78,8 +78,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Virtual Pipe Organ Software";
     homepage = "https://github.com/GrandOrgue/grandorgue";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.puzzlewolf ];
+    platforms = lib.platforms.unix;
     mainProgram = "GrandOrgue";
   };
 })

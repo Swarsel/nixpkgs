@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-  setuptools,
+  buildPythonPackage,
   numpy,
   pydicom,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "dicom-numpy";
   version = "0.6.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "innolitics";
@@ -25,10 +24,6 @@ buildPythonPackage rec {
       --replace-fail "pydicom.read_file" "pydicom.dcmread"
   '';
 
-  build-system = [
-    setuptools
-  ];
-
   propagatedBuildInputs = [
     numpy
     pydicom
@@ -36,6 +31,11 @@ buildPythonPackage rec {
 
   nativeCheckInputs = [ pytestCheckHook ];
 
+  build-system = [
+    setuptools
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "dicom_numpy" ];
 
   meta = {

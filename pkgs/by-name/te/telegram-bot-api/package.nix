@@ -5,8 +5,8 @@
   cmake,
   gperf,
   openssl,
-  zlib,
   versionCheckHook,
+  zlib,
 }:
 
 stdenv.mkDerivation {
@@ -32,19 +32,20 @@ stdenv.mkDerivation {
     zlib
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
     description = "Telegram Bot API server";
     homepage = "https://github.com/tdlib/telegram-bot-api";
     license = lib.licenses.boost;
+
     maintainers = with lib.maintainers; [
       Anillc
       Forden
       nartsiss
     ];
+
     platforms = lib.platforms.all;
     mainProgram = "telegram-bot-api";
   };

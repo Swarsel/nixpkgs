@@ -1,30 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   stdenv,
-  fetchPypi,
-
-  # build-system
-  hatchling,
-
-  # dependencies
-  decorator,
-  h11,
-  puremagic,
-  typing-extensions,
-  urllib3,
-
-  # optional-dependencies
-  xxhash,
-  pook,
-
   # tests
   aiohttp,
   asgiref,
+  buildPythonPackage,
+  # dependencies
+  decorator,
   fastapi,
+  fetchPypi,
   gevent,
+  h11,
+  # build-system
+  hatchling,
   httpx,
+  pook,
   psutil,
+  puremagic,
   pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
@@ -32,33 +24,23 @@
   redisTestHook,
   requests,
   sure,
-
+  typing-extensions,
+  urllib3,
+  # optional-dependencies
+  xxhash,
 }:
 
 buildPythonPackage rec {
   pname = "mocket";
   version = "3.14.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-n8SQbK45B+mijEbnc/Otq+8NX0CIxuOQ72FEAhnOCac=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [
-    decorator
-    h11
-    puremagic
-    typing-extensions
-    urllib3
-  ];
-
-  optional-dependencies = {
-    pook = [ pook ];
-    speedups = [ xxhash ];
-  };
+  # Skip http tests, they require network access
+  env.SKIP_TRUE_HTTP = true;
 
   nativeCheckInputs = [
     aiohttp
@@ -77,10 +59,16 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
-  # Skip http tests, they require network access
-  env.SKIP_TRUE_HTTP = true;
-
   __darwinAllowLocalNetworking = true;
+  build-system = [ hatchling ];
+
+  dependencies = [
+    decorator
+    h11
+    puremagic
+    typing-extensions
+    urllib3
+  ];
 
   disabledTests = [
     # tests that require network access (like DNS lookups)
@@ -98,12 +86,18 @@ buildPythonPackage rec {
     "test_httprettish_httpx_session"
   ];
 
+  optional-dependencies = {
+    pook = [ pook ];
+    speedups = [ xxhash ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "mocket" ];
 
   meta = {
-    changelog = "https://github.com/mindflayer/python-mocket/releases/tag/${version}";
     description = "Socket mock framework for all kinds of sockets including web-clients";
     homepage = "https://github.com/mindflayer/python-mocket";
+    changelog = "https://github.com/mindflayer/python-mocket/releases/tag/${version}";
     license = lib.licenses.bsd3;
     maintainers = [ ];
   };

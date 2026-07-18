@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatch-vcs,
   hatchling,
   unittestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyotp";
   version = "2.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyauth";
@@ -19,19 +18,20 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Ol7I3bj2bffKnO0r4VBOy/NvvK4pKbIul4FFlmF+wQU=";
   };
 
+  nativeCheckInputs = [ unittestCheckHook ];
+
   build-system = [
     hatch-vcs
     hatchling
   ];
 
-  nativeCheckInputs = [ unittestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyotp" ];
 
   meta = {
-    changelog = "https://github.com/pyauth/pyotp/blob/v${finalAttrs.version}/Changes.rst";
     description = "Python One Time Password Library";
     homepage = "https://github.com/pyauth/pyotp";
+    changelog = "https://github.com/pyauth/pyotp/blob/v${finalAttrs.version}/Changes.rst";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

@@ -1,13 +1,13 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   docopt,
-  fetchFromGitHub,
   hypothesis,
   passlib,
   poetry-core,
-  pytest-logdog,
   pytest-asyncio,
+  pytest-logdog,
   pytestCheckHook,
   pythonAtLeast,
   pyyaml,
@@ -19,7 +19,6 @@
 buildPythonPackage {
   pname = "amqtt";
   version = "unstable-2022-05-29";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Yakifo";
@@ -52,7 +51,15 @@ buildPythonPackage {
     pytestCheckHook
   ];
 
-  pytestFlags = [ "--asyncio-mode=auto" ];
+  preCheck = ''
+    # Some tests need amqtt
+    export PATH=$out/bin:$PATH
+  '';
+
+  disabledTestPaths = [
+    # Test are not ported from hbmqtt yet
+    "tests/test_client.py"
+  ];
 
   disabledTests = lib.optionals (pythonAtLeast "3.12") [
     # stuck in epoll
@@ -67,16 +74,8 @@ buildPythonPackage {
     "test_start_stop"
   ];
 
-  disabledTestPaths = [
-    # Test are not ported from hbmqtt yet
-    "tests/test_client.py"
-  ];
-
-  preCheck = ''
-    # Some tests need amqtt
-    export PATH=$out/bin:$PATH
-  '';
-
+  pyproject = true;
+  pytestFlags = [ "--asyncio-mode=auto" ];
   pythonImportsCheck = [ "amqtt" ];
 
   meta = {

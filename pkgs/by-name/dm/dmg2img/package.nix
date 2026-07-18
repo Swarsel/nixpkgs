@@ -1,9 +1,9 @@
 {
-  bzip2,
-  fetchFromGitHub,
   lib,
-  openssl,
   stdenv,
+  fetchFromGitHub,
+  bzip2,
+  openssl,
   unstableGitUpdater,
   zlib,
 }:

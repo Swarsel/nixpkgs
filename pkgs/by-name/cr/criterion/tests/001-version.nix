@@ -1,16 +1,13 @@
 {
   stdenv,
-  pkg-config,
   criterion,
+  pkg-config,
 }:
 stdenv.mkDerivation rec {
-  name = "version-tester";
   inherit (criterion) version;
   src = ./test_dummy.c;
-
-  dontUnpack = true;
-  buildInputs = [ criterion ];
   nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ criterion ];
 
   buildPhase = ''
     cc -o ${name} $src `pkg-config --libs criterion`
@@ -21,5 +18,7 @@ stdenv.mkDerivation rec {
     cp ${name} $out/bin/${name}
   '';
 
+  dontUnpack = true;
+  name = "version-tester";
   meta.mainProgram = name;
 }

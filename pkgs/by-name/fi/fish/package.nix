@@ -1,41 +1,36 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   buildPackages,
-  coreutils,
-  darwin,
-  glibcLocales,
-  gnused,
-  gnugrep,
-  gawk,
-  fish,
-  man-db,
-  ninja,
-  getent,
-  libiconv,
-  pcre2,
-  pkg-config,
-  gettext,
-  ncurses,
-  python3,
   cargo,
   cmake,
+  coreutils,
+  darwin,
+  fish,
   fishPlugins,
+  gawk,
+  getent,
+  gettext,
+  glibcLocales,
+  gnugrep,
+  gnused,
+  libiconv,
+  man-db,
+  ncurses,
+  ninja,
+  nix-update-script,
+  nixosTests,
+  pcre2,
+  pkg-config,
   procps,
-  rustc,
+  python3,
+  runCommand,
   rustPlatform,
+  rustc,
   versionCheckHook,
   writableTmpDirAsHomeHook,
-
-  # used to generate autocompletions from manpages and for configuration editing in the browser
-  usePython ? true,
-
-  runCommand,
   writeText,
-  nixosTests,
-  nix-update-script,
-  useOperatingSystemEtc ? true,
   # An optional string containing Fish code that initializes the environment.
   # This is run at the very beginning of initialization. If it sets $NIX_PROFILES
   # then Fish will use that to configure its function, completion, and conf.d paths.
@@ -45,6 +40,9 @@
   # takes a path to a bash file and converts it to fish. For example:
   #   fishEnvPreInit = source: source "${nix}/etc/profile.d/nix-daemon.sh";
   fishEnvPreInit ? null,
+  useOperatingSystemEtc ? true,
+  # used to generate autocompletions from manpages and for configuration editing in the browser
+  usePython ? true,
 }:
 let
   etcConfigAppendix = writeText "config.fish.appendix" ''
@@ -159,18 +157,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ttjLM1uBY8sL+jVcxdHUnHYlRFe5jGjnkgBLy17qGso=";
   };
 
-  env = {
-    FISH_BUILD_VERSION = finalAttrs.version;
-    # Skip tests that are known to be flaky in CI
-    CI = 1;
-    # really skip them all https://github.com/fish-shell/fish-shell/issues/12253#issuecomment-3707996020
-    FISH_CI_SAN = 1;
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src patches;
-    hash = "sha256-w8MuabpZ5ronQL3iaXbLErxPlTe1Mg8OsRb5foR59II=";
-  };
+  outputs = [
+    "out"
+    "doc"
+  ];
 
   patches = [
     # This test fails if the nix sandbox gets created on a filesystem that's
@@ -268,11 +258,6 @@ stdenv.mkDerivation (finalAttrs: {
     tee -a share/__fish_build_paths.fish.in < ${fishPreInitHooks}
   '';
 
-  outputs = [
-    "out"
-    "doc"
-  ];
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -303,6 +288,15 @@ stdenv.mkDerivation (finalAttrs: {
     pcre2
   ];
 
+  # Required binaries during execution
+  propagatedBuildInputs = [
+    coreutils
+    gnugrep
+    gnused
+    gettext
+  ]
+  ++ lib.optional (!stdenv.hostPlatform.isDarwin) man-db;
+
   cmakeFlags = [
     (lib.cmakeFeature "CMAKE_INSTALL_DOCDIR" "${placeholder "doc"}/share/doc/fish")
     (lib.cmakeFeature "Rust_CARGO_TARGET" stdenv.hostPlatform.rust.rustcTarget)
@@ -311,11 +305,13 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "MAC_CODESIGN_ID" false)
   ];
 
-  # Fish’s test suite needs to be able to look up process information and send signals.
-  sandboxProfile = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    (allow mach-lookup mach-task-name)
-    (allow signal (target children))
-  '';
+  env = {
+    # Skip tests that are known to be flaky in CI
+    CI = 1;
+    FISH_BUILD_VERSION = finalAttrs.version;
+    # really skip them all https://github.com/fish-shell/fish-shell/issues/12253#issuecomment-3707996020
+    FISH_CI_SAN = 1;
+  };
 
   # The optional string is kind of an inelegant way to get fish to cross compile.
   # Fish needs coreutils as a runtime dependency, and it gets put into
@@ -328,15 +324,6 @@ stdenv.mkDerivation (finalAttrs: {
   + lib.optionalString (stdenv.hostPlatform != stdenv.buildPlatform) ''
     export CMAKE_PREFIX_PATH=
   '';
-
-  # Required binaries during execution
-  propagatedBuildInputs = [
-    coreutils
-    gnugrep
-    gnused
-    gettext
-  ]
-  ++ lib.optional (!stdenv.hostPlatform.isDarwin) man-db;
 
   # disable darwin checks due to multiple failures
   doCheck = !stdenv.hostPlatform.isDarwin;
@@ -351,17 +338,19 @@ stdenv.mkDerivation (finalAttrs: {
     darwin.system_cmds
   ];
 
-  # we target the top-level make target which runs all the cmake/ctest
-  # tests, including test_cargo-test
-  checkTarget = "fish_run_tests";
   preCheck = ''
     export TERMINFO="${ncurses}/share/terminfo"
   '';
 
+  postInstall = lib.optionalString useOperatingSystemEtc ''
+    tee -a $out/etc/fish/config.fish < ${etcConfigAppendix}
+  '';
+
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   # Ensure that we don't vendor libpcre2, but instead link against the one from nixpkgs
   installCheckPhase = lib.optionalString (stdenv.hostPlatform.libc == "glibc") ''
@@ -373,32 +362,25 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
-  postInstall = lib.optionalString useOperatingSystemEtc ''
-    tee -a $out/etc/fish/config.fish < ${etcConfigAppendix}
-  '';
-
-  meta = {
-    description = "Smart and user-friendly command line shell";
-    homepage = "https://fishshell.com/";
-    changelog = "https://github.com/fish-shell/fish-shell/releases/tag/${finalAttrs.version}";
-    license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.unix;
-    maintainers = with lib.maintainers; [
-      adamcstephens
-      cole-h
-      winter
-      sigmasquadron
-      rvdp
-      lonerOrz
-    ];
-    mainProgram = "fish";
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src patches;
+    hash = "sha256-w8MuabpZ5ronQL3iaXbLErxPlTe1Mg8OsRb5foR59II=";
   };
+
+  # we target the top-level make target which runs all the cmake/ctest
+  # tests, including test_cargo-test
+  checkTarget = "fish_run_tests";
+
+  # Fish’s test suite needs to be able to look up process information and send signals.
+  sandboxProfile = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    (allow mach-lookup mach-task-name)
+    (allow signal (target children))
+  '';
 
   passthru = {
     shellPath = "/bin/fish";
-    tests = {
-      nixos = lib.optionalAttrs stdenv.hostPlatform.isLinux nixosTests.fish;
 
+    tests = {
       # Test the fish_config tool by checking the generated splash page.
       # Since the webserver requires a port to run, it is not started.
       fishConfig =
@@ -436,7 +418,29 @@ stdenv.mkDerivation (finalAttrs: {
           HOME=$(mktemp -d)
           ${finalAttrs.finalPackage}/bin/fish ${fishScript} && touch $out
         '';
+
+      nixos = lib.optionalAttrs stdenv.hostPlatform.isLinux nixosTests.fish;
     };
+
     updateScript = nix-update-script { };
+  };
+
+  meta = {
+    description = "Smart and user-friendly command line shell";
+    homepage = "https://fishshell.com/";
+    changelog = "https://github.com/fish-shell/fish-shell/releases/tag/${finalAttrs.version}";
+    license = lib.licenses.gpl2Only;
+
+    maintainers = with lib.maintainers; [
+      adamcstephens
+      cole-h
+      winter
+      sigmasquadron
+      rvdp
+      lonerOrz
+    ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "fish";
   };
 })

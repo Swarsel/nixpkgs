@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "onionprobe";
   version = "1.4.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -26,6 +25,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pysocks
     cryptography
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Tooling for onion service monitoring";

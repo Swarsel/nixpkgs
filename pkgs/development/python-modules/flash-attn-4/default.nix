@@ -1,29 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  # dependencies
+  apache-tvm-ffi,
+  buildPythonPackage,
+  cuda-bindings,
+  einops,
+  # passthru
+  nix-update-script,
+  nvidia-cutlass-dsl,
+  quack-kernels,
   # build-system
   setuptools,
   setuptools-scm,
-
-  # dependencies
-  apache-tvm-ffi,
-  cuda-bindings,
-  einops,
-  nvidia-cutlass-dsl,
-  quack-kernels,
   torch,
   torch-c-dlpack-ext,
-
-  # passthru
-  nix-update-script,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "flash-attn-4";
   version = "4.0.0.beta20";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Dao-AILab";
@@ -32,9 +27,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Joo6WJHuAlj8icQHFtmd3XxklhGTvOG4Z5r/86KJ9VQ=";
   };
 
-  # FA4 is a separate distribution shipped under flash_attn/cute/ with its own pyproject.toml.
-  # The top-level setup.py builds the classic compiled flash-attn and excludes flash_attn.cute.
-  sourceRoot = "${finalAttrs.src.name}/flash_attn/cute";
+  # No tests
+  doCheck = false;
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -51,10 +46,11 @@ buildPythonPackage (finalAttrs: {
     torch-c-dlpack-ext
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "flash_attn.cute" ];
-
-  # No tests
-  doCheck = false;
+  # FA4 is a separate distribution shipped under flash_attn/cute/ with its own pyproject.toml.
+  # The top-level setup.py builds the classic compiled flash-attn and excludes flash_attn.cute.
+  sourceRoot = "${finalAttrs.src.name}/flash_attn/cute";
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -68,6 +64,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/Dao-AILab/flash-attention/tree/main/flash_attn/cute";
     changelog = "https://github.com/Dao-AILab/flash-attention/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       prince213

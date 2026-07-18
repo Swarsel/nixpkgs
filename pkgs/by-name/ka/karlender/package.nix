@@ -1,16 +1,16 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitLab,
-  pkg-config,
+  cargo-gra,
+  dbus,
+  glib,
   gtk4,
   libadwaita,
-  wrapGAppsHook4,
-  glib,
-  tzdata,
   nix-update-script,
-  dbus,
-  cargo-gra,
+  pkg-config,
+  rustPlatform,
+  tzdata,
+  wrapGAppsHook4,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -24,7 +24,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-PwXSJq4uBtgIA2aQ5AZawEMmHoVS2Z9haVHyJ2oyXUs=";
   };
 
-  cargoHash = "sha256-senSpsmScj1IFXLfvmsllmRNB6FzrALGnQeG7IHw9es=";
+  postPatch = ''
+    substituteInPlace src/domain/time.rs --replace-fail "/usr/share/zoneinfo" "${tzdata}/share/zoneinfo"
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -39,17 +41,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     dbus
   ];
 
-  checkFlags = [
-    "--skip=domain::time::tests::test_get_correct_offset_for_dst" # Need time
-  ];
+  cargoHash = "sha256-senSpsmScj1IFXLfvmsllmRNB6FzrALGnQeG7IHw9es=";
 
   preBuild = ''
     cargo-gra gen
   '';
 
-  postPatch = ''
-    substituteInPlace src/domain/time.rs --replace-fail "/usr/share/zoneinfo" "${tzdata}/share/zoneinfo"
-  '';
+  checkFlags = [
+    "--skip=domain::time::tests::test_get_correct_offset_for_dst" # Need time
+  ];
 
   postInstall = ''
     substituteInPlace target/gra-gen/data/codes.loers.Karlender.desktop \
@@ -71,11 +71,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Mobile-friendly GTK calendar application";
     homepage = "https://gitlab.com/floers/karlender";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "karlender";
+
     maintainers = with lib.maintainers; [
       chuangzhu
       bot-wxt1221
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "karlender";
   };
 })

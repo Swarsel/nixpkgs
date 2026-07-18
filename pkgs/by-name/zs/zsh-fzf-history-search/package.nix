@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
   unstableGitUpdater,
 }:
 
@@ -16,8 +16,6 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-6UWmfFQ9JVyg653bPQCB5M4jJAJO+V85rU7zP4cs1VI=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
   strictDeps = true;
 
   installPhase = ''
@@ -28,13 +26,15 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
   passthru.updateScript = unstableGitUpdater { hardcodeZeroVersion = true; };
 
   meta = {
     description = "Simple zsh plugin that replaces Ctrl+R with an fzf-driven select which includes date/times";
     homepage = "https://github.com/joshskidmore/zsh-fzf-history-search";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.Gliczy ];
+    platforms = lib.platforms.unix;
   };
 }

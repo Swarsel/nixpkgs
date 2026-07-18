@@ -1,20 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  robotframework,
   approvaltests,
+  buildPythonPackage,
   pytest-mockito,
   pytestCheckHook,
+  robotframework,
+  setuptools,
   typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "robotframework-pythonlibcore";
   version = "4.6.0";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "robotframework";
@@ -23,10 +21,6 @@ buildPythonPackage rec {
     hash = "sha256-H13b25M4vEymXZzhAm/EXMx7v5u/9rgkBXv7nBaxAvo=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ robotframework ];
-
   nativeCheckInputs = [
     approvaltests
     pytest-mockito
@@ -34,12 +28,15 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ robotframework ];
+  pyproject = true;
   pythonImportsCheck = [ "robotlibcore" ];
 
   meta = {
-    changelog = "https://github.com/robotframework/PythonLibCore/blob/${src.tag}/docs/PythonLibCore-${src.tag}.rst";
     description = "Tools to ease creating larger test libraries for Robot Framework using Python";
     homepage = "https://github.com/robotframework/PythonLibCore";
+    changelog = "https://github.com/robotframework/PythonLibCore/blob/${src.tag}/docs/PythonLibCore-${src.tag}.rst";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

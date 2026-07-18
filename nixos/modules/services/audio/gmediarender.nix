@@ -1,7 +1,7 @@
 {
-  pkgs,
-  lib,
   config,
+  lib,
+  pkgs,
   utils,
   ...
 }:
@@ -12,73 +12,83 @@ in
   options.services.gmediarender = {
     enable = lib.mkEnableOption "the gmediarender DLNA renderer";
 
-    audioDevice = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
-      default = null;
-      description = ''
-        The audio device to use.
-      '';
-    };
-
-    audioSink = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
-      default = null;
-      description = ''
-        The audio sink to use.
-      '';
-    };
-
-    friendlyName = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
-      default = null;
-      description = ''
-        A "friendly name" for identifying the endpoint.
-      '';
-    };
-
-    initialVolume = lib.mkOption {
-      type = lib.types.nullOr lib.types.int;
-      default = 0;
-      description = ''
-        A default volume attenuation (in dB) for the endpoint.
-      '';
-    };
-
     package = lib.mkPackageOption pkgs "gmediarender" {
       default = "gmrender-resurrect";
     };
 
+    audioDevice = lib.mkOption {
+      default = null;
+
+      description = ''
+        The audio device to use.
+      '';
+
+      type = lib.types.nullOr lib.types.str;
+    };
+
+    audioSink = lib.mkOption {
+      default = null;
+
+      description = ''
+        The audio sink to use.
+      '';
+
+      type = lib.types.nullOr lib.types.str;
+    };
+
+    friendlyName = lib.mkOption {
+      default = null;
+
+      description = ''
+        A "friendly name" for identifying the endpoint.
+      '';
+
+      type = lib.types.nullOr lib.types.str;
+    };
+
+    initialVolume = lib.mkOption {
+      default = 0;
+
+      description = ''
+        A default volume attenuation (in dB) for the endpoint.
+      '';
+
+      type = lib.types.nullOr lib.types.int;
+    };
+
     port = lib.mkOption {
-      type = lib.types.nullOr lib.types.port;
       default = null;
       description = "Port that will be used to accept client connections.";
+      type = lib.types.nullOr lib.types.port;
     };
 
     uuid = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
       default = null;
+
       description = ''
         A UUID for uniquely identifying the endpoint.  If you have
         multiple renderers on your network, you MUST set this.
       '';
+
+      type = lib.types.nullOr lib.types.str;
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd = {
       services.gmediarender = {
-        wants = [ "network-online.target" ];
         after = [ "network-online.target" ];
-        wantedBy = [ "multi-user.target" ];
         description = "gmediarender server daemon";
+
         environment = {
           XDG_CACHE_HOME = "%t/gmediarender";
         };
+
         serviceConfig = {
+          # Security options:
+          CapabilityBoundingSet = "";
           DynamicUser = true;
-          User = "gmediarender";
-          Group = "gmediarender";
-          SupplementaryGroups = [ "audio" ];
+
           ExecStart =
             "${cfg.package}/bin/gmediarender "
             + lib.optionalString (
@@ -96,11 +106,8 @@ in
             + lib.optionalString (cfg.initialVolume != 0) "--initial-volume=${toString cfg.initialVolume} "
             + lib.optionalString (cfg.port != null) "--port=${toString cfg.port} "
             + lib.optionalString (cfg.uuid != null) "--uuid=${utils.escapeSystemdExecArg cfg.uuid} ";
-          Restart = "always";
-          RuntimeDirectory = "gmediarender";
 
-          # Security options:
-          CapabilityBoundingSet = "";
+          Group = "gmediarender";
           LockPersonality = true;
           MemoryDenyWriteExecute = true;
           NoNewPrivileges = true;
@@ -116,16 +123,25 @@ in
           ProtectKernelModules = true;
           ProtectKernelTunables = true;
           ProtectProc = "invisible";
+          Restart = "always";
           RestrictNamespaces = true;
           RestrictRealtime = true;
           RestrictSUIDSGID = true;
+          RuntimeDirectory = "gmediarender";
+          SupplementaryGroups = [ "audio" ];
           SystemCallArchitectures = "native";
+
           SystemCallFilter = [
             "@system-service"
             "~@privileged"
           ];
+
           UMask = 66;
+          User = "gmediarender";
         };
+
+        wantedBy = [ "multi-user.target" ];
+        wants = [ "network-online.target" ];
       };
     };
   };

@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  wheel,
+  buildPythonPackage,
+  fetchpatch2,
   numpy,
   pip,
-  termcolor,
   pytestCheckHook,
+  setuptools,
+  termcolor,
   torch,
-  fetchpatch2,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "rlcard";
   version = "1.0.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "datamllab";
@@ -28,9 +27,9 @@ buildPythonPackage rec {
     # Remove distutils to make it compatible with Python 3.12
     # https://github.com/datamllab/rlcard/pull/323
     (fetchpatch2 {
+      hash = "sha256-aQS4d9ETj6pDv26G77mC+0xHQMA2hjspAxtAyz0rA6Y=";
       name = "remove-distutils.patch";
       url = "https://github.com/datamllab/rlcard/commit/e44378157aaf229ffe2aaef9fafe500c2844045e.patch";
-      hash = "sha256-aQS4d9ETj6pDv26G77mC+0xHQMA2hjspAxtAyz0rA6Y=";
     })
   ];
 
@@ -44,6 +43,11 @@ buildPythonPackage rec {
         "state['obs'].tobytes()"
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    torch
+  ];
+
   build-system = [
     setuptools
     wheel
@@ -54,13 +58,6 @@ buildPythonPackage rec {
     # pip is required at runtime (https://github.com/datamllab/rlcard/blob/1.0.7/rlcard/utils/utils.py#L10)
     pip
     termcolor
-  ];
-
-  pythonImportsCheck = [ "rlcard" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    torch
   ];
 
   disabledTests = [
@@ -83,6 +80,9 @@ buildPythonPackage rec {
     # ValueError: setting an array element with a sequence. The requested array has an inhomogeneous shape after 3 dimensions. The detected shape was (1, 1, 5) + inhomogeneous part.
     "test_reorganize"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "rlcard" ];
 
   meta = {
     description = "Reinforcement Learning / AI Bots in Card (Poker) Games - Blackjack, Leduc, Texas, DouDizhu, Mahjong, UNO";

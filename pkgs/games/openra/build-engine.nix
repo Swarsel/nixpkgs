@@ -1,13 +1,13 @@
 {
   lib,
-  buildDotnetModule,
-  dotnetCorePackages,
   fetchFromGitHub,
   SDL2,
+  buildDotnetModule,
+  dotnetCorePackages,
   freetype,
-  openal,
   lua51Packages,
   openRaUpdater,
+  openal,
 }:
 engine:
 
@@ -20,44 +20,17 @@ buildDotnetModule {
   inherit pname version dotnet-sdk;
 
   src = fetchFromGitHub {
+    inherit (engine) hash;
     owner = "OpenRA";
     repo = "OpenRA";
     rev = if lib.hasAttr "rev" engine then engine.rev else "${engine.build}-${engine.version}";
-    inherit (engine) hash;
   };
-
-  passthru = {
-    updateScript = {
-      command = openRaUpdater engine;
-      supportedFeatures = [ "commit" ];
-    };
-  };
-
-  nugetDeps = engine.deps;
 
   # Retarget from net6.0 to net8.0 (net6.0 is EOL)
   postPatch = ''
     substituteInPlace Directory.Build.props \
       --replace-fail ">net6.0<" ">net8.0<"
   '';
-
-  useAppHost = false;
-
-  dotnetFlags = [ "-p:Version=0.0.0.0" ]; # otherwise dotnet build complains, version is saved in VERSION file anyway
-
-  dotnetBuildFlags = [ "-p:TargetPlaform=unix-generic" ];
-  dotnetInstallFlags = [
-    "-p:TargetPlaform=unix-generic"
-    "-p:CopyGenericLauncher=True"
-    "-p:CopyCncDll=True"
-    "-p:CopyD2kDll=True"
-    "-p:UseAppHost=False"
-  ];
-
-  dontDotnetFixup = true;
-
-  # Microsoft.NET.Publish.targets(248,5): error MSB3021: Unable to copy file "[...]/Newtonsoft.Json.dll" to "[...]/Newtonsoft.Json.dll". Access to the path '[...]Newtonsoft.Json.dll' is denied. [/build/source/OpenRA.Mods.Cnc/OpenRA.Mods.Cnc.csproj]
-  enableParallelBuilding = false;
 
   preBuild = ''
     make VERSION=${engine.build}-${version} version
@@ -94,6 +67,30 @@ buildDotnetModule {
         --prefix "PATH" : "${lib.makeBinPath [ dotnet-sdk.runtime ]}"
     done
   '';
+
+  dontDotnetFixup = true;
+  dotnetBuildFlags = [ "-p:TargetPlaform=unix-generic" ];
+  dotnetFlags = [ "-p:Version=0.0.0.0" ]; # otherwise dotnet build complains, version is saved in VERSION file anyway
+
+  dotnetInstallFlags = [
+    "-p:TargetPlaform=unix-generic"
+    "-p:CopyGenericLauncher=True"
+    "-p:CopyCncDll=True"
+    "-p:CopyD2kDll=True"
+    "-p:UseAppHost=False"
+  ];
+
+  # Microsoft.NET.Publish.targets(248,5): error MSB3021: Unable to copy file "[...]/Newtonsoft.Json.dll" to "[...]/Newtonsoft.Json.dll". Access to the path '[...]Newtonsoft.Json.dll' is denied. [/build/source/OpenRA.Mods.Cnc/OpenRA.Mods.Cnc.csproj]
+  enableParallelBuilding = false;
+  nugetDeps = engine.deps;
+  useAppHost = false;
+
+  passthru = {
+    updateScript = {
+      command = openRaUpdater engine;
+      supportedFeatures = [ "commit" ];
+    };
+  };
 
   meta = {
     description = "Open Source real-time strategy game engine for early Westwood games such as Command & Conquer: Red Alert. ${engine.build} version";

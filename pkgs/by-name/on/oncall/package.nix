@@ -1,17 +1,16 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
   fetchPypi,
-  oncall,
-  nixosTests,
   fetchpatch,
+  nixosTests,
+  oncall,
+  python3,
 }:
 python3.pkgs.buildPythonApplication rec {
   pname = "oncall";
   # Using newer revision for Falcon 4 patch to work
   version = "0-unstable-2025-04-15";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "linkedin";
@@ -34,11 +33,21 @@ python3.pkgs.buildPythonApplication rec {
     # Add support for Falcon 4
     # https://github.com/linkedin/oncall/pull/433
     (fetchpatch {
-      url = "https://github.com/linkedin/oncall/commit/4ccf2239fb8c8aeda376f57735461174f48614f2.patch";
       hash = "sha256-XT7Z6NUg2zxoRtgxaM0ZbBhXtO9xvhKv30Jo1ZaEGMU=";
       name = "falcon_4_support.patch";
+      url = "https://github.com/linkedin/oncall/commit/4ccf2239fb8c8aeda376f57735461174f48614f2.patch";
     })
   ];
+
+  checkInputs = with python3.pkgs; [
+    pytestCheckHook
+    pytest-mock
+  ];
+
+  postInstall = ''
+    mkdir "$out/share"
+    cp -r configs db "$out/share/"
+  '';
 
   dependencies = with python3.pkgs; [
     beaker
@@ -56,16 +65,6 @@ python3.pkgs.buildPythonApplication rec {
     pyyaml
     ujson
     webassets
-  ];
-
-  postInstall = ''
-    mkdir "$out/share"
-    cp -r configs db "$out/share/"
-  '';
-
-  checkInputs = with python3.pkgs; [
-    pytestCheckHook
-    pytest-mock
   ];
 
   disabledTestPaths = [
@@ -88,15 +87,18 @@ python3.pkgs.buildPythonApplication rec {
     "e2e/test_users.py"
   ];
 
+  format = "setuptools";
+
   pythonImportsCheck = [
     "oncall"
   ];
 
   passthru = {
+    pythonPath = "${python3.pkgs.makePythonPath dependencies}:${oncall}/${python3.sitePackages}";
+
     tests = {
       inherit (nixosTests) oncall;
     };
-    pythonPath = "${python3.pkgs.makePythonPath dependencies}:${oncall}/${python3.sitePackages}";
   };
 
   meta = {

@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
 }:
 
 buildPythonPackage rec {
   pname = "pyarrow-hotfix";
   version = "0.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pitrou";
@@ -18,7 +17,7 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ hatchling ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyarrow_hotfix" ];
 
   meta = {

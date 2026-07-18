@@ -1,15 +1,13 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "bird-exporter";
   version = "1.5.0";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "czerwonk";
@@ -19,7 +17,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-anmrvgKfcuzky3tnniVvqdJs8SuJcJJStusVY3q9ago=";
-
+  __structuredAttrs = true;
   passthru.tests = { inherit (nixosTests.prometheus-exporters) bird; };
 
   meta = {

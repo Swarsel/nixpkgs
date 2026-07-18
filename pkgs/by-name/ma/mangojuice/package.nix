@@ -2,26 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  vala,
-  pkg-config,
-  makeBinaryWrapper,
-  replaceVars,
-
+  glib,
   gtk4,
   libadwaita,
-  glib,
   libgee,
-  pciutils,
-  wrapGAppsHook4,
-
+  makeBinaryWrapper,
   mangohud,
   mesa-demos,
-  vulkan-tools,
-  vkbasalt,
-
+  meson,
+  ninja,
   nix-update-script,
+  pciutils,
+  pkg-config,
+  replaceVars,
+  vala,
+  vkbasalt,
+  vulkan-tools,
+  wrapGAppsHook4,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "mangojuice";
@@ -40,6 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
     })
   ];
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     meson
     ninja
@@ -57,9 +56,6 @@ stdenv.mkDerivation (finalAttrs: {
     libgee
   ];
 
-  strictDeps = true;
-  dontWrapGApps = true;
-
   postFixup =
     let
       path = lib.makeBinPath [
@@ -75,6 +71,7 @@ stdenv.mkDerivation (finalAttrs: {
         "''${gappsWrapperArgs[@]}"
     '';
 
+  dontWrapGApps = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -82,10 +79,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/radiolamp/mangojuice";
     changelog = "https://github.com/radiolamp/mangojuice/releases/tag/${finalAttrs.version}";
     license = with lib.licenses; [ gpl3Only ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       pluiedev
       getchoo
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "mame2003";
   version = "0-unstable-2026-06-15";
 
   src = fetchFromGitHub {
@@ -16,7 +15,7 @@ mkLibretroCore {
 
   # Fix build with GCC 14
   env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
-
+  core = "mame2003";
   makefile = "Makefile";
 
   meta = {

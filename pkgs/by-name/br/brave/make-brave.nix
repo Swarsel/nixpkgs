@@ -2,12 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  buildPackages,
+  addDriverRunpath,
+  adwaita-icon-theme,
   alsa-lib,
   at-spi2-atk,
   at-spi2-core,
   atk,
+  buildPackages,
   cairo,
+  coreutils,
   cups,
   dbus,
   dpkg,
@@ -16,70 +19,61 @@
   freetype,
   gdk-pixbuf,
   glib,
-  adwaita-icon-theme,
   gsettings-desktop-schemas,
   gtk3,
   gtk4,
-  qt6,
+  # For GPU acceleration support on Wayland (without the lib it doesn't seem to work)
+  libGL,
+  libdrm,
+  libgbm,
+  libkrb5,
+  libpulseaudio,
+  libuuid,
+  libva,
   libx11,
-  libxscrnsaver,
+  libxcb,
   libxcomposite,
   libxcursor,
   libxdamage,
   libxext,
   libxfixes,
   libxi,
+  libxkbcommon,
   libxrandr,
   libxrender,
-  libxtst,
-  libdrm,
-  libkrb5,
-  libuuid,
-  libxkbcommon,
+  libxscrnsaver,
   libxshmfence,
-  libgbm,
+  libxtst,
+  makeWrapper,
   nspr,
   nss,
   pango,
   pipewire,
+  qt6,
   snappy,
   udev,
-  wayland,
-  xdg-utils,
-  coreutils,
-  libxcb,
-  zlib,
-
   # Darwin dependencies
   unzip,
-  makeWrapper,
-
+  wayland,
+  xdg-utils,
+  zlib,
   # command line arguments which are always set e.g "--disable-gpu"
   commandLineArgs ? "",
-
-  # Necessary for USB audio devices.
-  pulseSupport ? stdenv.hostPlatform.isLinux,
-  libpulseaudio,
-
-  # For GPU acceleration support on Wayland (without the lib it doesn't seem to work)
-  libGL,
-
+  enableVideoAcceleration ? libvaSupport,
+  enableVulkan ? vulkanSupport,
   # For video acceleration via VA-API (--enable-features=AcceleratedVideoDecodeLinuxGL,AcceleratedVideoEncoder)
   libvaSupport ? stdenv.hostPlatform.isLinux,
-  libva,
-  enableVideoAcceleration ? libvaSupport,
-
+  # Necessary for USB audio devices.
+  pulseSupport ? stdenv.hostPlatform.isLinux,
   # For Vulkan support (--enable-features=Vulkan); disabled by default as it seems to break VA-API
   vulkanSupport ? false,
-  addDriverRunpath,
-  enableVulkan ? vulkanSupport,
 }:
 
 {
-  pname,
-  version,
   hash,
+  pname,
   url,
+  version,
 }:
 
 let
@@ -164,11 +158,6 @@ stdenv.mkDerivation {
     inherit url hash;
   };
 
-  dontConfigure = true;
-  dontBuild = true;
-  dontPatchELF = true;
-  doInstallCheck = stdenv.hostPlatform.isLinux;
-
   nativeBuildInputs =
     lib.optionals stdenv.hostPlatform.isLinux [
       dpkg
@@ -251,6 +240,13 @@ stdenv.mkDerivation {
       runHook postInstall
     '';
 
+  doInstallCheck = stdenv.hostPlatform.isLinux;
+
+  installCheckPhase = ''
+    # Bypass upstream wrapper which suppresses errors
+    $out/opt/brave.com/brave/brave --version
+  '';
+
   preFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
     # Add command line args to wrapGApp.
     gappsWrapperArgs+=(
@@ -277,37 +273,42 @@ stdenv.mkDerivation {
     )
   '';
 
-  installCheckPhase = ''
-    # Bypass upstream wrapper which suppresses errors
-    $out/opt/brave.com/brave/brave --version
-  '';
-
+  dontBuild = true;
+  dontConfigure = true;
+  dontPatchELF = true;
   passthru.updateScript = ./update.sh;
 
   meta = {
-    homepage = "https://brave.com/";
     description = "Privacy-oriented browser for Desktop and Laptop computers";
-    changelog =
-      "https://github.com/brave/brave-browser/blob/master/CHANGELOG_DESKTOP.md#"
-      + lib.replaceStrings [ "." ] [ "" ] version;
+
     longDescription = ''
       Brave browser blocks the ads and trackers that slow you down,
       chew up your bandwidth, and invade your privacy. Brave lets you
       contribute to your favorite creators automatically.
     '';
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
+    homepage = "https://brave.com/";
+
+    changelog =
+      "https://github.com/brave/brave-browser/blob/master/CHANGELOG_DESKTOP.md#"
+      + lib.replaceStrings [ "." ] [ "" ] version;
+
     license = lib.licenses.mpl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       uskudnik
       jefflabonte
       nasirhm
       buckley310
     ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
       "aarch64-darwin"
     ];
+
     mainProgram = "brave";
   };
 }

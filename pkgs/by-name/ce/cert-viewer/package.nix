@@ -1,10 +1,10 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   buildGoModule,
   buildPackages,
-  fetchFromGitHub,
-  lib,
   installShellFiles,
-  stdenv,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,11 +18,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-6IPr2BG3y/7cmc2WkeeFDpQ59GNU1eOhhm49HE2w0cA=";
   };
 
-  vendorHash = "sha256-jNT04bYH5L/Zcfvel673zr2UJLayCO443tvBGZjrBZk=";
-
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  vendorHash = "sha256-jNT04bYH5L/Zcfvel673zr2UJLayCO443tvBGZjrBZk=";
 
   postInstall =
     let

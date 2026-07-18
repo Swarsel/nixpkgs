@@ -1,16 +1,15 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  # passthru
+  gitUpdater,
   # build-system
   hatchling,
-
   # dependencies
   langchain-core,
   langgraph-checkpoint,
-
   # tests
   langgraph-checkpoint-postgres,
   langgraph-checkpoint-sqlite,
@@ -24,17 +23,12 @@
   pytestCheckHook,
   syrupy,
   xxhash,
-
-  # passthru
-  gitUpdater,
 }:
 # langgraph-prebuilt isn't meant to be a standalone package but is bundled into langgraph at build time.
 # It exists so the langgraph team can iterate on it without having to rebuild langgraph.
 buildPythonPackage (finalAttrs: {
   pname = "langgraph-prebuilt";
   version = "1.1.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "langchain-ai";
@@ -42,18 +36,6 @@ buildPythonPackage (finalAttrs: {
     tag = "prebuilt==${finalAttrs.version}";
     hash = "sha256-xSYJ9D86GuaJEgQYk+pkJ4O7HK6HXfAOGBv4f1CBY5g=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/libs/prebuilt";
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    langchain-core
-    langgraph-checkpoint
-    langgraph-sdk
-  ];
-
-  skipPythonImportsCheck = true; # This will be packaged with langgraph
 
   # postgresql doesn't play nicely with the darwin sandbox:
   # FATAL:  could not create shared memory segment: Operation not permitted
@@ -78,9 +60,13 @@ buildPythonPackage (finalAttrs: {
     export PYTHONPATH=${finalAttrs.src}/libs/langgraph:$PYTHONPATH
   '';
 
-  pytestFlags = [
-    "-Wignore::pytest.PytestDeprecationWarning"
-    "-Wignore::DeprecationWarning"
+  __structuredAttrs = true;
+  build-system = [ hatchling ];
+
+  dependencies = [
+    langchain-core
+    langgraph-checkpoint
+    langgraph-sdk
   ];
 
   disabledTestPaths = [
@@ -92,12 +78,23 @@ buildPythonPackage (finalAttrs: {
     "tests/conftest.py"
   ];
 
+  pyproject = true;
+
+  pytestFlags = [
+    "-Wignore::pytest.PytestDeprecationWarning"
+    "-Wignore::DeprecationWarning"
+  ];
+
+  skipPythonImportsCheck = true; # This will be packaged with langgraph
+  sourceRoot = "${finalAttrs.src.name}/libs/prebuilt";
+
   passthru = {
     # python updater script sets the wrong tag
     skipBulkUpdate = true;
+
     updateScript = gitUpdater {
-      rev-prefix = "prebuilt==";
       ignoredVersions = "a|b|dev|rc";
+      rev-prefix = "prebuilt==";
     };
   };
 

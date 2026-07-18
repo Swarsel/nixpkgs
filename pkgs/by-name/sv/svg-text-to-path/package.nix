@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
 }:
 
@@ -17,17 +17,16 @@ buildNpmPackage (finalAttrs: {
   };
 
   npmDepsHash = "sha256-x593WtqC9Y8AweL6LOr228p1eAc1rI4C+6Ev1K3pUJo=";
-  npmPackFlags = [ "--ignore-scripts" ];
   dontNpmBuild = true;
-
+  npmPackFlags = [ "--ignore-scripts" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Convert svg nodes to vector font-free elements";
     homepage = "https://github.com/paulzi/svg-text-to-path";
-    maintainers = with lib.maintainers; [ ulysseszhan ];
     license = lib.licenses.mit;
-    mainProgram = "svg-text-to-path";
+    maintainers = with lib.maintainers; [ ulysseszhan ];
     platforms = lib.platforms.unix;
+    mainProgram = "svg-text-to-path";
   };
 })

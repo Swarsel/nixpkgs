@@ -1,22 +1,18 @@
 {
   lib,
   stdenv,
-
   fetchFromGitLab,
-
+  SDL2,
+  bash-completion,
   cmake,
-  pkg-config,
-
   libdrm,
   libgbm,
   libpciaccess,
   llvmPackages,
   nanomsg,
   ncurses,
-  SDL2,
-  bash-completion,
-
   nix-update-script,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,11 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.0.10";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "tomstdenis";
     repo = "umr";
     rev = finalAttrs.version;
     hash = "sha256-i0pTcg1Y+G/nGZSbMtlg37z12gF4heitEl5L4gfVO9c=";
+    domain = "gitlab.freedesktop.org";
   };
 
   nativeBuildInputs = [

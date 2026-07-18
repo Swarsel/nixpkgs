@@ -1,24 +1,24 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
-  gettext,
-  libxml2,
   desktop-file-utils,
-  wrapGAppsHook4,
+  gettext,
   glib,
+  gnome,
   gtk4,
   json-glib,
   libadwaita,
   libgee,
   libgtop,
+  libxml2,
+  meson,
   networkmanager,
-  gnome,
+  ninja,
+  pkg-config,
   tinysparql,
+  vala,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,6 +29,11 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://gnome/sources/gnome-usage/${lib.versions.major finalAttrs.version}/gnome-usage-${finalAttrs.version}.tar.xz";
     hash = "sha256-UB3jxtTWU9Wc4NcHdY3M+D3D6oGi7RSS0vMzFi/uChc=";
   };
+
+  postPatch = ''
+    chmod +x build-aux/meson/postinstall.sh
+    patchShebangs build-aux/meson/postinstall.sh
+  '';
 
   nativeBuildInputs = [
     desktop-file-utils
@@ -52,11 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
     tinysparql
   ];
 
-  postPatch = ''
-    chmod +x build-aux/meson/postinstall.sh
-    patchShebangs build-aux/meson/postinstall.sh
-  '';
-
   passthru = {
     updateScript = gnome.updateScript {
       packageName = "gnome-usage";
@@ -65,10 +65,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Nice way to view information about use of system resources, like memory and disk space";
-    mainProgram = "gnome-usage";
     homepage = "https://gitlab.gnome.org/GNOME/gnome-usage";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "gnome-usage";
     teams = [ lib.teams.gnome ];
   };
 })

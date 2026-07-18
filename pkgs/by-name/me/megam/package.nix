@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  ocaml-ng,
   ncurses,
+  ocaml-ng,
 }:
 
 let
@@ -32,11 +32,9 @@ stdenv.mkDerivation {
     substituteInPlace abffs.ml main.ml --replace-fail create_matrix make_matrix
     substituteInPlace intHashtbl.ml --replace-fail Array.create Array.make
   '';
+
   strictDeps = true;
-  __structuredAttrs = true;
-
   nativeBuildInputs = [ ocaml ];
-
   buildInputs = [ ncurses ];
 
   makeFlags = [
@@ -45,9 +43,6 @@ stdenv.mkDerivation {
     "all"
     "opt"
   ];
-
-  # see https://bugzilla.redhat.com/show_bug.cgi?id=435559
-  dontStrip = true;
 
   installPhase = ''
     runHook preInstall
@@ -58,14 +53,20 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  # see https://bugzilla.redhat.com/show_bug.cgi?id=435559
+  dontStrip = true;
+
   meta = {
     description = "MEGA Model Optimization Package";
+
     longDescription = ''
       The software here is an implementation of maximum likelihood and maximum a
       posterior optimization of the parameters of these models. The algorithms
       used are much more efficient than the iterative scaling techniques used in
       almost every other maxent package out there.
     '';
+
     homepage = "http://www.umiacs.umd.edu/~hal/megam";
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ leixb ];

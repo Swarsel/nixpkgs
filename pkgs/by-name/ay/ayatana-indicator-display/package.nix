@@ -1,14 +1,13 @@
 {
-  stdenv,
   lib,
-  gitUpdater,
+  stdenv,
   fetchFromGitHub,
-  nixosTests,
   accountsservice,
   cmake,
   cppcheck,
   dbus,
   geoclue2,
+  gitUpdater,
   glib,
   gsettings-desktop-schemas,
   gtest,
@@ -20,6 +19,7 @@
   lomiri,
   marco,
   mate-settings-daemon,
+  nixosTests,
   pkg-config,
   properties-cpp,
   python3,
@@ -81,6 +81,15 @@ stdenv.mkDerivation (finalAttrs: {
     mate-settings-daemon # mate mouse schema
   ];
 
+  cmakeFlags = [
+    (lib.cmakeBool "ENABLE_TESTS" finalAttrs.finalPackage.doCheck)
+    (lib.cmakeBool "ENABLE_COLOR_TEMP" true)
+    (lib.cmakeBool "GSETTINGS_LOCALINSTALL" true)
+    (lib.cmakeBool "GSETTINGS_COMPILE" true)
+  ];
+
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   nativeCheckInputs = [
     cppcheck
     dbus
@@ -96,15 +105,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   dontWrapQtApps = true;
 
-  cmakeFlags = [
-    (lib.cmakeBool "ENABLE_TESTS" finalAttrs.finalPackage.doCheck)
-    (lib.cmakeBool "ENABLE_COLOR_TEMP" true)
-    (lib.cmakeBool "GSETTINGS_LOCALINSTALL" true)
-    (lib.cmakeBool "GSETTINGS_COMPILE" true)
-  ];
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
   passthru = {
     ayatana-indicators = {
       ayatana-indicator-display = [
@@ -112,19 +112,23 @@ stdenv.mkDerivation (finalAttrs: {
         "lomiri"
       ];
     };
+
     tests = {
-      startup = nixosTests.ayatana-indicators;
       lomiri = nixosTests.lomiri.desktop-ayatana-indicator-display;
+      startup = nixosTests.ayatana-indicators;
     };
+
     updateScript = gitUpdater { };
   };
 
   meta = {
     description = "Ayatana Indicator for Display configuration";
+
     longDescription = ''
       This Ayatana Indicator is designed to be placed on the right side of a
       panel and give the user easy control for changing their display settings.
     '';
+
     homepage = "https://github.com/AyatanaIndicators/ayatana-indicator-display";
     changelog = "https://github.com/AyatanaIndicators/ayatana-indicator-display/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.gpl3Only;

@@ -5,15 +5,15 @@
   extraModules ? [ ],
 }:
 stdenv.mkDerivation (finalAttrs: {
+  inherit (blender) version meta;
   pname = blender.pname + "-wrapped";
   src = blender;
-
-  inherit (blender) version meta;
 
   nativeBuildInputs = [
     blender.pythonPackages.wrapPython
     makeWrapper
   ];
+
   installPhase = ''
     mkdir $out/bin -p
     cp -r $src/share $out/share

@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  diffutils,
   docbook_xml_dtd_412,
   docbook_xsl,
   perl,
   w3m-batch,
   xmlto,
-  diffutils,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,6 +21,14 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-ZFxBY/QrKlRC7glEGWpB/79Jup0e4RCnS82Ct6lhK4Y=";
   };
 
+  postPatch = ''
+    substituteInPlace Makefile \
+      --replace 'TMPDIR=colordiff-''${VERSION}' ""
+
+    substituteInPlace colordiff.pl \
+      --replace '= "diff";' '= "${diffutils}/bin/diff";'
+  '';
+
   nativeBuildInputs = [
     docbook_xml_dtd_412
     docbook_xsl
@@ -30,14 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ perl ];
-
-  postPatch = ''
-    substituteInPlace Makefile \
-      --replace 'TMPDIR=colordiff-''${VERSION}' ""
-
-    substituteInPlace colordiff.pl \
-      --replace '= "diff";' '= "${diffutils}/bin/diff";'
-  '';
 
   installFlags = [
     "INSTALL_DIR=/bin"
@@ -49,8 +49,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Wrapper for 'diff' that produces the same output but with pretty 'syntax' highlighting";
     homepage = "https://www.colordiff.org/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ SuperSandro2000 ];
+    platforms = lib.platforms.unix;
     mainProgram = "colordiff";
   };
 })

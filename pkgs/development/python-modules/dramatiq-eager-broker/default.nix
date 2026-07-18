@@ -1,17 +1,15 @@
 {
   lib,
   buildPythonPackage,
-  fetchFromCodeberg,
-  uv-build,
   dramatiq,
+  fetchFromCodeberg,
   pytestCheckHook,
+  uv-build,
 }:
 
 buildPythonPackage rec {
   pname = "dramatiq-eager-broker";
   version = "0.3.0";
-
-  pyproject = true;
 
   src = fetchFromCodeberg {
     owner = "yaal";
@@ -20,11 +18,10 @@ buildPythonPackage rec {
     hash = "sha256-tz4Gy31y5oaTHFAzb5L7bg0AhG1U/JKDySGloA7/A/8=";
   };
 
-  build-system = [ uv-build ];
-
-  dependencies = [ dramatiq ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ uv-build ];
+  dependencies = [ dramatiq ];
+  pyproject = true;
 
   meta = {
     description = "An eager broker for Dramatiq that executes tasks synchronously and immediately, without queuing";

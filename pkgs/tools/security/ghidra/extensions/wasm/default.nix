@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
+  ant,
   buildGhidraExtension,
   ghidra,
-  ant,
 }:
 buildGhidraExtension (finalAttrs: {
   pname = "wasm";
@@ -32,10 +32,10 @@ buildGhidraExtension (finalAttrs: {
   meta = {
     description = "Ghidra Wasm plugin with disassembly and decompilation support";
     homepage = "https://github.com/nneonneo/ghidra-wasm-plugin";
-    downloadPage = "https://github.com/nneonneo/ghidra-wasm-plugin/releases/tag/v${finalAttrs.version}";
     changelog = "https://github.com/nneonneo/ghidra-wasm-plugin/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3;
     maintainers = [ lib.maintainers.BonusPlay ];
     broken = true; # Until updated to support 12.1.2
+    downloadPage = "https://github.com/nneonneo/ghidra-wasm-plugin/releases/tag/v${finalAttrs.version}";
   };
 })

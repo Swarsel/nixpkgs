@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   guile,
-  pkg-config,
   guile-fibers,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,19 +16,20 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-5IjFhchBjfbo9HbcqBtykQ8zfJzTYI+0Z95SYABAANY=";
   };
 
-  configureFlags = [ "--localstatedir=/" ];
+  nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
     guile
     guile-fibers
   ];
-  nativeBuildInputs = [ pkg-config ];
+
+  configureFlags = [ "--localstatedir=/" ];
 
   meta = {
-    homepage = "https://www.gnu.org/software/shepherd/";
     description = "Service manager that looks after the herd of system services";
+    homepage = "https://www.gnu.org/software/shepherd/";
     license = with lib.licenses; [ gpl3Plus ];
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ kloenk ];
+    platforms = lib.platforms.unix;
   };
 })

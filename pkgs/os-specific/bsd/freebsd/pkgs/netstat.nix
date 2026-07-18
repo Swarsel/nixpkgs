@@ -1,15 +1,13 @@
 {
   lib,
-  mkDerivation,
-  libxo,
-  libutil,
-  libmemstat,
   libjail,
+  libmemstat,
   libnetgraph,
+  libutil,
+  libxo,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "usr.bin/netstat";
-
   buildInputs = [
     libxo
     libutil
@@ -18,6 +16,7 @@ mkDerivation {
     libnetgraph
   ];
 
-  meta.platforms = lib.platforms.freebsd;
+  path = "usr.bin/netstat";
   meta.mainProgram = "netstat";
+  meta.platforms = lib.platforms.freebsd;
 }

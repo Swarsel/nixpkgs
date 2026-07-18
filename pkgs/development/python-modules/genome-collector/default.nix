@@ -1,8 +1,8 @@
 {
   lib,
-  buildPythonPackage,
   appdirs,
   biopython,
+  buildPythonPackage,
   fetchPypi,
   proglog,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "genome_collector";
   version = "0.1.6";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -25,6 +24,7 @@ buildPythonPackage rec {
 
   # Project hasn't released the tests yet
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "genome_collector" ];
 
   meta = {

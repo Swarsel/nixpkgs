@@ -13,37 +13,67 @@ in
 {
   options.services.rsync = {
     enable = lib.mkEnableOption "periodic directory syncing via rsync";
-
     package = lib.mkPackageOption pkgs "rsync" { };
 
     jobs = lib.mkOption {
+      default = { };
+
       description = ''
         Synchronization jobs to run.
       '';
-      default = { };
+
       type = types.attrsOf (
         types.submodule {
           options = {
-            sources = lib.mkOption {
-              type = types.nonEmptyListOf types.str;
-              example = [
-                "/srv/src1/"
-                "/srv/src2/"
-              ];
-              description = ''
-                Source directories.
-              '';
-            };
-
             destination = lib.mkOption {
-              type = types.str;
-              example = "/srv/dst";
               description = ''
                 Destination directory.
               '';
+
+              example = "/srv/dst";
+              type = types.str;
+            };
+
+            group = lib.mkOption {
+              default = "root";
+
+              description = ''
+                The name of an existing user group under which the rsync process should run.
+              '';
+
+              type = types.str;
+            };
+
+            inhibit = lib.mkOption {
+              default = [ ];
+
+              description = ''
+                Run the rsync process with an inhibition lock taken;
+                see {manpage}`systemd-inhibit(1)` for a list of possible operations.
+              '';
+
+              example = [
+                "sleep"
+              ];
+
+              type = types.listOf (types.strMatching "^[^:]+$");
             };
 
             settings = lib.mkOption {
+              default = { };
+
+              description = ''
+                Settings that should be passed to rsync via long options.
+                See {manpage}`rsync(1)` for available options.
+              '';
+
+              example = {
+                archive = true;
+                delete = true;
+                mkpath = true;
+                verbose = true;
+              };
+
               type =
                 let
                   simples = [
@@ -61,56 +91,42 @@ in
                     ]
                   )
                 );
-              default = { };
-              example = {
-                verbose = true;
-                archive = true;
-                delete = true;
-                mkpath = true;
-              };
-              description = ''
-                Settings that should be passed to rsync via long options.
-                See {manpage}`rsync(1)` for available options.
-              '';
             };
 
-            user = lib.mkOption {
-              type = types.str;
-              default = "root";
+            sources = lib.mkOption {
               description = ''
-                The name of an existing user account under which the rsync process should run.
+                Source directories.
               '';
-            };
 
-            group = lib.mkOption {
-              type = types.str;
-              default = "root";
-              description = ''
-                The name of an existing user group under which the rsync process should run.
-              '';
+              example = [
+                "/srv/src1/"
+                "/srv/src2/"
+              ];
+
+              type = types.nonEmptyListOf types.str;
             };
 
             timerConfig = lib.mkOption {
-              type = types.nullOr (types.attrsOf unitOption);
               default = {
                 OnCalendar = "daily";
                 Persistent = true;
               };
+
               description = ''
                 When to run the job.
               '';
+
+              type = types.nullOr (types.attrsOf unitOption);
             };
 
-            inhibit = lib.mkOption {
-              default = [ ];
-              type = types.listOf (types.strMatching "^[^:]+$");
-              example = [
-                "sleep"
-              ];
+            user = lib.mkOption {
+              default = "root";
+
               description = ''
-                Run the rsync process with an inhibition lock taken;
-                see {manpage}`systemd-inhibit(1)` for a list of possible operations.
+                The name of an existing user account under which the rsync process should run.
               '';
+
+              type = types.str;
             };
           };
         }
@@ -127,20 +143,10 @@ in
           description = "Directory syncing via rsync job ${jobName}";
         in
         {
-          timers.${systemdName} = {
-            wantedBy = [
-              "timers.target"
-            ];
-            inherit description;
-            inherit (job) timerConfig;
-          };
-
           services.${systemdName} = {
             inherit description;
 
             serviceConfig = {
-              Type = "oneshot";
-
               ExecStart =
                 let
                   settingsToCommandLine = lib.cli.toCommandLineGNU {
@@ -170,18 +176,27 @@ in
                 in
                 utils.escapeSystemdExecArgs args;
 
-              User = job.user;
               Group = job.group;
-
+              LockPersonality = true;
+              MemoryDenyWriteExecute = true;
               NoNewPrivileges = true;
               PrivateDevices = true;
-              ProtectSystem = "full";
-              ProtectKernelTunables = true;
-              ProtectKernelModules = true;
               ProtectControlGroups = true;
-              MemoryDenyWriteExecute = true;
-              LockPersonality = true;
+              ProtectKernelModules = true;
+              ProtectKernelTunables = true;
+              ProtectSystem = "full";
+              Type = "oneshot";
+              User = job.user;
             };
+          };
+
+          timers.${systemdName} = {
+            inherit description;
+            inherit (job) timerConfig;
+
+            wantedBy = [
+              "timers.target"
+            ];
           };
         }
       ) cfg.jobs

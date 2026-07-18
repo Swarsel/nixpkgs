@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-  flit-core,
+  buildPythonPackage,
   django,
+  django-filter,
   djangorestframework,
   drf-spectacular,
+  fetchpatch,
+  flit-core,
   inflection,
-  pytestCheckHook,
   pytest-django,
-  django-filter,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "drf-standardized-errors";
   version = "0.15.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ghazi-git";
@@ -25,12 +24,7 @@ buildPythonPackage rec {
     hash = "sha256-OM1bTqM3yQSPuerTrq5FKTf5eKpZsF6/QgupMtnnT4Q=";
   };
 
-  build-system = [ flit-core ];
-
-  dependencies = [
-    django
-    djangorestframework
-  ];
+  env.DJANGO_SETTINGS_MODULE = "tests.settings";
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -39,14 +33,20 @@ buildPythonPackage rec {
     drf-spectacular
   ];
 
-  env.DJANGO_SETTINGS_MODULE = "tests.settings";
+  build-system = [ flit-core ];
 
-  pythonImportsCheck = [ "drf_standardized_errors" ];
+  dependencies = [
+    django
+    djangorestframework
+  ];
 
   optional-dependencies.openapi = [
     drf-spectacular
     inflection
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "drf_standardized_errors" ];
 
   meta = {
     description = "Standardize your DRF API error responses";

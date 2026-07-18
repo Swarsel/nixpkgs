@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  humanfriendly,
-  verboselogs,
+  buildPythonPackage,
   coloredlogs,
-  pytestCheckHook,
+  humanfriendly,
   pytest-cov-stub,
+  pytestCheckHook,
+  verboselogs,
 }:
 
 buildPythonPackage rec {
   pname = "property-manager";
   version = "3.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "xolox";
@@ -26,10 +25,13 @@ buildPythonPackage rec {
     humanfriendly
     verboselogs
   ];
+
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
   ];
+
+  format = "setuptools";
 
   meta = {
     description = "Useful property variants for Python programming";

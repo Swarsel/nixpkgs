@@ -1,6 +1,6 @@
-{ mkDerivation, libufs }:
+{ libufs, mkDerivation }:
 mkDerivation {
-  path = "sbin/newfs";
-  extraPaths = [ "sys/geom" ];
   buildInputs = [ libufs ];
+  extraPaths = [ "sys/geom" ];
+  path = "sbin/newfs";
 }

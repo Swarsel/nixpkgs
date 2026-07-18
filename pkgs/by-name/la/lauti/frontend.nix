@@ -1,22 +1,17 @@
 {
   stdenv,
   fetchYarnDeps,
+  lauti,
+  nodejs,
   src,
   version,
-  nodejs,
-  lauti,
-  yarnConfigHook,
   yarnBuildHook,
+  yarnConfigHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "lauti";
   inherit version src;
-
-  offlineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-RKalgQ6dXNOxMeC6pSKe9Lo0KXN0gfeX0I/pkcv2FXs=";
-  };
+  pname = "lauti";
 
   nativeBuildInputs = [
     yarnConfigHook
@@ -39,6 +34,11 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-RKalgQ6dXNOxMeC6pSKe9Lo0KXN0gfeX0I/pkcv2FXs=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
 
   meta = {
     inherit (lauti.meta)

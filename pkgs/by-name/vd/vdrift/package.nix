@@ -2,31 +2,30 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchsvn,
-  pkg-config,
-  scons,
-  libGLU,
-  libGL,
   SDL2,
   SDL2_image,
-  libvorbis,
-  libx11,
   bullet,
   curl,
+  fetchsvn,
   gettext,
+  libGL,
+  libGLU,
+  libvorbis,
+  libx11,
+  pkg-config,
+  scons,
   writeShellScriptBin,
-
   data ? fetchsvn {
-    url = "svn://svn.code.sf.net/p/vdrift/code/vdrift-data";
     rev = "1446";
     sha256 = "sha256-KEu49GAOfenPyuaUItt6W9pkuqUNpXgmTSFuc7ThljQ=";
+    url = "svn://svn.code.sf.net/p/vdrift/code/vdrift-data";
   },
 }:
 let
   version = "unstable-2021-09-05";
   bin = stdenv.mkDerivation {
-    pname = "vdrift";
     inherit version;
+    pname = "vdrift";
 
     src = fetchFromGitHub {
       owner = "vdrift";
@@ -34,6 +33,10 @@ let
       rev = "7e9e00c8612b2014d491f026dd86b03f9fb04dcd";
       sha256 = "sha256-DrzRF4WzwEXCNALq0jz8nHWZ1oYTEsdrvSYVYI1WkTI=";
     };
+
+    patches = [
+      ./0001-Ignore-missing-data-for-installation.patch
+    ];
 
     postPatch = ''
       substituteInPlace src/SConscript \
@@ -44,6 +47,7 @@ let
       pkg-config
       scons
     ];
+
     buildInputs = [
       libGLU
       libGL
@@ -54,10 +58,6 @@ let
       bullet
       curl
       gettext
-    ];
-
-    patches = [
-      ./0001-Ignore-missing-data-for-installation.patch
     ];
 
     buildPhase = ''
@@ -72,11 +72,11 @@ let
 
     meta = {
       description = "Car racing game";
-      mainProgram = "vdrift";
       homepage = "https://vdrift.net/";
       license = lib.licenses.gpl2Plus;
       maintainers = [ ];
       platforms = lib.platforms.linux;
+      mainProgram = "vdrift";
     };
   };
   wrappedName = "vdrift-${version}-with-data-${toString data.rev}";
@@ -87,10 +87,11 @@ in
 '').overrideAttrs
   (_: {
     inherit (bin) pname version;
+    inherit bin data;
     name = wrappedName;
+    unwrapped = bin;
+
     meta = bin.meta // {
       hydraPlatforms = [ ];
     };
-    unwrapped = bin;
-    inherit bin data;
   })

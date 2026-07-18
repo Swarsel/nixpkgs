@@ -1,44 +1,39 @@
 {
   lib,
   stdenv,
-  targetPackages,
-
   # Build time
   fetchurl,
-  pkg-config,
-  perl,
-  texinfo,
-  setupDebugInfoDirs,
-  buildPackages,
-
   # Run time
   bashNonInteractive,
-  readline,
+  buildPackages,
+  dejagnu,
+  elfutils,
   expat,
+  gmp,
+  guile,
+  libiconv,
   libipt,
+  mpfr,
+  ncurses,
+  perl,
+  pkg-config,
+  python3,
+  readline,
+  setupDebugInfoDirs,
+  sourceHighlight,
+  targetPackages,
+  texinfo,
+  versionCheckHook,
+  writeScript,
+  xxhash,
+  xz,
   zlib,
   zstd,
-  xz,
-  dejagnu,
-  sourceHighlight,
-  libiconv,
-  xxhash,
-
-  withTui ? true,
-  ncurses,
-  withGmp ? true,
-  gmp,
-  withMpfr ? true,
-  mpfr,
-  withGuile ? false,
-  guile,
-  pythonSupport ? stdenv.hostPlatform == stdenv.buildPlatform && !stdenv.hostPlatform.isCygwin,
-  python3,
   enableDebuginfod ? lib.meta.availableOn stdenv.hostPlatform elfutils,
-  elfutils,
-  hostCpuOnly ? false,
   enableSim ? false,
   enableUbsan ? false,
+  hostCpuOnly ? false,
+  pythonSupport ? stdenv.hostPlatform == stdenv.buildPlatform && !stdenv.hostPlatform.isCygwin,
   safePaths ? [
     # $debugdir:$datadir/auto-load are whitelisted by default by GDB
     "$debugdir"
@@ -46,8 +41,10 @@
     # targetPackages so we get the right libc when cross-compiling and using buildPackages.gdb
     (lib.getLib targetPackages.stdenv.cc.cc)
   ],
-  writeScript,
-  versionCheckHook,
+  withGmp ? true,
+  withGuile ? false,
+  withMpfr ? true,
+  withTui ? true,
 }:
 
 let
@@ -74,6 +71,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-HANsDXLks9H7XJTIhjKt1vnXb018TS6nk8EqnxmjIow=";
   };
 
+  patches = [
+    ./debug-info-from-env.patch
+  ]
+  ++ optionals stdenv.hostPlatform.isDarwin [
+    ./darwin-target-match.patch
+  ];
+
   postPatch =
     optionalString stdenv.hostPlatform.isDarwin ''
       substituteInPlace gdb/darwin-nat.c \
@@ -87,12 +91,7 @@ stdenv.mkDerivation (finalAttrs: {
       substituteInPlace sim/ppc/emul_unix.c --replace-fail sys/termios.h termios.h
     '';
 
-  patches = [
-    ./debug-info-from-env.patch
-  ]
-  ++ optionals stdenv.hostPlatform.isDarwin [
-    ./darwin-target-match.patch
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -121,41 +120,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ optional withGuile guile
   ++ optional enableDebuginfod (elfutils.override { enableDebuginfod = true; })
   ++ optional stdenv.hostPlatform.isDarwin libiconv;
-
-  propagatedNativeBuildInputs = [ setupDebugInfoDirs ];
-
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
-
-  strictDeps = true;
-
-  enableParallelBuilding = true;
-
-  # darwin build fails with format hardening since v7.12
-  hardeningDisable = optionals stdenv.hostPlatform.isDarwin [ "format" ];
-
-  env.NIX_CFLAGS_COMPILE = "-Wno-format-nonliteral";
-
-  # Workaround for Apple Silicon, configurePlatforms must be disabled
-  configurePlatforms = optionals (!(stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64)) [
-    "build"
-    "host"
-    "target"
-  ];
-
-  preConfigure = ''
-    # remove precompiled docs, required for man gdbinit to mention /etc/gdb/gdbinit
-    rm gdb/doc/*.info*
-    rm gdb/doc/*.5
-    rm gdb/doc/*.1
-
-    # fix doc build https://sourceware.org/bugzilla/show_bug.cgi?id=27808
-    rm gdb/doc/GDBvn.texi
-
-    # GDB have to be built out of tree.
-    mkdir _build
-    cd _build
-  '';
-  configureScript = "../configure";
 
   configureFlags = [
     # Set the program prefix to the current targetPrefix.
@@ -195,6 +159,22 @@ stdenv.mkDerivation (finalAttrs: {
     stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64
   ) "--target=x86_64-apple-darwin";
 
+  env.NIX_CFLAGS_COMPILE = "-Wno-format-nonliteral";
+
+  preConfigure = ''
+    # remove precompiled docs, required for man gdbinit to mention /etc/gdb/gdbinit
+    rm gdb/doc/*.info*
+    rm gdb/doc/*.5
+    rm gdb/doc/*.1
+
+    # fix doc build https://sourceware.org/bugzilla/show_bug.cgi?id=27808
+    rm gdb/doc/GDBvn.texi
+
+    # GDB have to be built out of tree.
+    mkdir _build
+    cd _build
+  '';
+
   postInstall = ''
     # Remove Info files already provided by Binutils and other packages.
     rm -v $out/share/info/bfd.info
@@ -202,6 +182,20 @@ stdenv.mkDerivation (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+
+  # Workaround for Apple Silicon, configurePlatforms must be disabled
+  configurePlatforms = optionals (!(stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64)) [
+    "build"
+    "host"
+    "target"
+  ];
+
+  configureScript = "../configure";
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  enableParallelBuilding = true;
+  # darwin build fails with format hardening since v7.12
+  hardeningDisable = optionals stdenv.hostPlatform.isDarwin [ "format" ];
+  propagatedNativeBuildInputs = [ setupDebugInfoDirs ];
 
   passthru = {
     updateScript = writeScript "update-gdb" ''
@@ -219,18 +213,22 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "GNU Project debugger";
-    mainProgram = "${targetPrefix}gdb";
+
     longDescription = ''
       GDB, the GNU Project debugger, allows you to see what is going
       on `inside' another program while it executes -- or what another
       program was doing at the moment it crashed.
     '';
+
     homepage = "https://www.gnu.org/software/gdb/";
     license = lib.licenses.gpl3Plus;
-    platforms = with lib.platforms; linux ++ cygwin ++ freebsd ++ darwin;
+
     maintainers = with lib.maintainers; [
       pierron
       globin
     ];
+
+    platforms = with lib.platforms; linux ++ cygwin ++ freebsd ++ darwin;
+    mainProgram = "${targetPrefix}gdb";
   };
 })

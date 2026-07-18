@@ -1,20 +1,19 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   certifi,
   cryptography,
-  fetchFromGitHub,
+  hatch-vcs,
+  hatchling,
   lxml,
   pyopenssl,
   pytestCheckHook,
-  hatchling,
-  hatch-vcs,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "signxml";
   version = "4.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "XML-Security";
@@ -22,6 +21,8 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-0DzHw7E2sAJE3O7io++zjsi07FbkBD24EjGDOVo8/9s=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     hatchling
@@ -35,11 +36,9 @@ buildPythonPackage (finalAttrs: {
     pyopenssl
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "signxml" ];
-
   enabledTestPaths = [ "test/test.py" ];
+  pyproject = true;
+  pythonImportsCheck = [ "signxml" ];
 
   meta = {
     description = "Python XML Signature and XAdES library";

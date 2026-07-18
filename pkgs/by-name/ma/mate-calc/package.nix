@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   gettext,
-  itstool,
+  gitUpdater,
   gtk3,
+  itstool,
   libmpc,
   libxml2,
   mpfr,
+  pkg-config,
   wrapGAppsHook3,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -42,9 +42,9 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   passthru.updateScript = gitUpdater {
-    url = "https://git.mate-desktop.org/mate-calc";
     odd-unstable = true;
     rev-prefix = "v";
+    url = "https://git.mate-desktop.org/mate-calc";
   };
 
   meta = {

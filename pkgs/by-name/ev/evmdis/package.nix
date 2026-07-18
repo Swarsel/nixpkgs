@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -24,10 +24,10 @@ buildGoModule {
   ldflags = [ "-s" ];
 
   meta = {
-    homepage = "https://github.com/Arachnid/evmdis";
     description = "Ethereum EVM disassembler";
-    mainProgram = "evmdis";
+    homepage = "https://github.com/Arachnid/evmdis";
     license = [ lib.licenses.asl20 ];
     maintainers = with lib.maintainers; [ asymmetric ];
+    mainProgram = "evmdis";
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
   replaceVars,
   versionCheckHook,
 }:
@@ -9,7 +9,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "vim-vint";
   version = "0.3.21";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Vimjas";
@@ -36,14 +35,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
         "cmd = ['$out/bin/vint'"
   '';
 
-  build-system = with python3Packages; [ setuptools ];
-
-  dependencies = with python3Packages; [
-    ansicolor
-    chardet
-    pyyaml
-  ];
-
   nativeCheckInputs = [
     versionCheckHook
   ]
@@ -52,12 +43,22 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pytest-cov-stub
   ]);
 
+  build-system = with python3Packages; [ setuptools ];
+
+  dependencies = with python3Packages; [
+    ansicolor
+    chardet
+    pyyaml
+  ];
+
+  pyproject = true;
+
   meta = {
     description = "Fast and Highly Extensible Vim script Language Lint implemented by Python";
     homepage = "https://github.com/Kuniwak/vint";
     license = lib.licenses.mit;
-    mainProgram = "vint";
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "vint";
   };
 })

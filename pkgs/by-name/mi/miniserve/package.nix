@@ -1,15 +1,15 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  pkg-config,
-  installShellFiles,
-  openssl,
-  cacert,
   stdenv,
+  fetchFromGitHub,
+  cacert,
   curl,
-  versionCheckHook,
+  installShellFiles,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -23,14 +23,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-ae2Y51GuFjC65n2JYIPB1D029Zfhy7OvgZeQy+Syzqw=";
   };
 
-  cargoHash = "sha256-KwkmkbQ1E2LJeif7iQmb7pFjZtXhu7BU+YutGb5UmY4=";
-
   nativeBuildInputs = [
     pkg-config
     installShellFiles
   ];
 
   buildInputs = [ openssl ];
+  cargoHash = "sha256-KwkmkbQ1E2LJeif7iQmb7pFjZtXhu7BU+YutGb5UmY4=";
 
   nativeCheckInputs = [
     curl
@@ -55,11 +54,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <($out/bin/miniserve --print-completions zsh)
   '';
 
-  __darwinAllowLocalNetworking = true;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __darwinAllowLocalNetworking = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -67,9 +64,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/svenstaro/miniserve";
     changelog = "https://github.com/svenstaro/miniserve/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = with lib.licenses; [ mit ];
+
     maintainers = with lib.maintainers; [
       defelo
     ];
+
     mainProgram = "miniserve";
   };
 })

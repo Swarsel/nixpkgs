@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  uv-build,
+  buildPythonPackage,
+  faker,
   httpx,
   pydantic,
   pyjwt,
-  pytestCheckHook,
-  faker,
-  respx,
-  pytest-mock,
   pytest-asyncio,
+  pytest-mock,
+  pytestCheckHook,
+  respx,
+  uv-build,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "supabase-auth";
   version = "2.29.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "supabase";
@@ -23,18 +22,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-LaSlAYFvx/HHdfmc9J+KScVQ9JFGS98Yfihzn8F7t3g=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/src/auth";
-
-  build-system = [ uv-build ];
-
-  dependencies = [
-    httpx
-    pydantic
-    pyjwt
-  ]
-  ++ httpx.optional-dependencies.http2
-  ++ pyjwt.optional-dependencies.crypto;
 
   postPatch = ''
     substituteInPlace pyproject.toml \
@@ -49,12 +36,24 @@ buildPythonPackage (finalAttrs: {
     pytest-asyncio
   ];
 
+  build-system = [ uv-build ];
+
+  dependencies = [
+    httpx
+    pydantic
+    pyjwt
+  ]
+  ++ httpx.optional-dependencies.http2
+  ++ pyjwt.optional-dependencies.crypto;
+
   disabledTestPaths = [
     "tests/_sync/"
     "tests/_async/"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "supabase_auth" ];
+  sourceRoot = "${finalAttrs.src.name}/src/auth";
 
   meta = {
     description = "Client library for Supabase Auth";

@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation {
   pname = "nzp-assets";
@@ -38,7 +38,7 @@ stdenvNoCC.mkDerivation {
     description = "Game asset repository for Nazi Zombies: Portable";
     homepage = "https://github.com/nzp-team/assets";
     license = with lib.licenses; [ cc-by-sa-40 ];
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ pluiedev ];
+    platforms = lib.platforms.all;
   };
 }

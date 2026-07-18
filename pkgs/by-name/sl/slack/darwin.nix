@@ -1,12 +1,11 @@
 {
-  pname,
-  version,
-  src,
-  passthru,
   meta,
-
+  passthru,
+  pname,
+  src,
   stdenvNoCC,
   undmg,
+  version,
 }:
 stdenvNoCC.mkDerivation {
   inherit
@@ -19,12 +18,12 @@ stdenvNoCC.mkDerivation {
 
   nativeBuildInputs = [ undmg ];
 
-  sourceRoot = ".";
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/Applications
     cp -a Slack.app $out/Applications
     runHook postInstall
   '';
+
+  sourceRoot = ".";
 }

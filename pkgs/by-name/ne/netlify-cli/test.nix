@@ -1,10 +1,10 @@
 {
+  lib,
+  stdenv,
   curl,
   darwin,
-  lib,
   netlify-cli,
   runCommand,
-  stdenv,
 }:
 
 runCommand "netlify-cli-test"
@@ -16,6 +16,7 @@ runCommand "netlify-cli-test"
     ++ lib.optionals stdenv.hostPlatform.isDarwin [
       darwin.ps
     ];
+
     meta.timeout = 600;
   }
   ''

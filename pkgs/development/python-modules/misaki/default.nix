@@ -1,27 +1,27 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   addict,
   buildPythonPackage,
   espeak-ng,
-  fetchFromGitHub,
   fetchpatch2,
   fugashi,
   hatchling,
   jaconv,
   jamo,
   jieba,
-  lib,
   nltk,
   num2words,
   ordered-set,
   phonemizer,
   pip,
   pypinyin,
+  pytestCheckHook,
   regex,
   replaceVars,
-  spacy-curated-transformers,
   spacy,
-  pytestCheckHook,
-  stdenv,
+  spacy-curated-transformers,
   torch,
   transformers,
   unidic,
@@ -30,7 +30,6 @@
 buildPythonPackage {
   pname = "misaki";
   version = "0-unstable-2025-06-16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hexgrad";
@@ -41,15 +40,19 @@ buildPythonPackage {
 
   patches = [
     (fetchpatch2 {
+      hash = "sha256-N796YWrGe51FYVdxbQ8omJxeGdvOAiKEUKhhm10TQO8=";
       name = "pr82-remove-pip-dependency.patch";
       url = "https://github.com/hexgrad/misaki/commit/7d2fdff9fe046dd52b638bbb1b243fb789f4cb31.patch?full_index=1";
-      hash = "sha256-N796YWrGe51FYVdxbQ8omJxeGdvOAiKEUKhhm10TQO8=";
     })
     (replaceVars ./set-espeak-paths.patch {
-      espeak-library-path = "${lib.getLib espeak-ng}/lib/libespeak-ng${stdenv.hostPlatform.extensions.sharedLibrary}";
       espeak-data-path = "${lib.getLib espeak-ng}/share/espeak-ng-data";
+      espeak-library-path = "${lib.getLib espeak-ng}/lib/libespeak-ng${stdenv.hostPlatform.extensions.sharedLibrary}";
     })
   ];
+
+  # Package does not have tests as of 2025-06-16, but phonemizer is required for
+  # pythonImportsCheck.
+  nativeCheckInputs = [ phonemizer ];
 
   build-system = [
     hatchling
@@ -58,6 +61,13 @@ buildPythonPackage {
   dependencies = [
     addict
     regex
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "misaki"
+    "misaki.espeak"
   ];
 
   # See https://github.com/hexgrad/misaki/blob/main/pyproject.toml#L26
@@ -72,6 +82,7 @@ buildPythonPackage {
       torch
       transformers
     ];
+
     ja = [
       fugashi
       jaconv
@@ -79,10 +90,19 @@ buildPythonPackage {
       unidic
       # pyopenjtalk -- not packaged as of 2025-06-16
     ];
+
     ko = [
       jamo
       nltk
     ];
+
+    vi = [
+      num2words
+      spacy
+      spacy-curated-transformers
+      # underthesea -- not packaged as of 2025-06-16
+    ];
+
     zh = [
       jieba
       ordered-set
@@ -90,23 +110,8 @@ buildPythonPackage {
       # cn2an -- not packaged as of 2025-06-16
       # pypinyin-dict -- not packaged as of 2025-06-16
     ];
-    vi = [
-      num2words
-      spacy
-      spacy-curated-transformers
-      # underthesea -- not packaged as of 2025-06-16
-    ];
     # he = [ mishkal-hebrew ]; -- not packaged as of 2025-06-16
   };
-
-  # Package does not have tests as of 2025-06-16, but phonemizer is required for
-  # pythonImportsCheck.
-  nativeCheckInputs = [ phonemizer ];
-
-  pythonImportsCheck = [
-    "misaki"
-    "misaki.espeak"
-  ];
 
   meta = {
     description = "G2P engine for TTS";

@@ -1,17 +1,15 @@
 {
-  autoreconfHook,
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  autoreconfHook,
+  libiodbc,
   libpq,
   nix-update-script,
   openssl,
-  stdenv,
-
-  withLibiodbc ? false,
-  libiodbc,
-
-  withUnixODBC ? true,
   unixodbc,
+  withLibiodbc ? false,
+  withUnixODBC ? true,
 }:
 
 assert lib.xor withLibiodbc withUnixODBC;
@@ -27,18 +25,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-gCacZjP0FkCEuZRBfawZ2B3BcjR/sV1fypuT8XD2l+A=";
   };
 
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    autoreconfHook
+  ];
+
   buildInputs = [
     libpq
     openssl
   ]
   ++ lib.optional withLibiodbc libiodbc
   ++ lib.optional withUnixODBC unixodbc;
-
-  nativeBuildInputs = [
-    autoreconfHook
-  ];
-
-  strictDeps = true;
 
   configureFlags = [
     "CPPFLAGS=-DSQLCOLATTRIBUTE_SQLLEN" # needed for cross
@@ -53,13 +51,13 @@ stdenv.mkDerivation (finalAttrs: {
     };
   }
   // lib.optionalAttrs withUnixODBC {
-    fancyName = "PostgreSQL";
     driver = "lib/psqlodbcw.so";
+    fancyName = "PostgreSQL";
   };
 
   meta = {
-    homepage = "https://odbc.postgresql.org/";
     description = "ODBC driver for PostgreSQL";
+    homepage = "https://odbc.postgresql.org/";
     license = lib.licenses.lgpl2;
     platforms = lib.platforms.unix;
     teams = libpq.meta.teams;

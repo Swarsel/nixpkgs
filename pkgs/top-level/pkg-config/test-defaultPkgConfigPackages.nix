@@ -2,8 +2,8 @@
 # nix-build -A tests.pkg-config.defaultPkgConfigPackages
 {
   lib,
-  pkg-config,
   defaultPkgConfigPackages,
+  pkg-config,
   runCommand,
   testers,
 }:

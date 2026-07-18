@@ -1,13 +1,13 @@
 {
   lib,
+  fetchFromGitHub,
   anyio,
   buildPythonPackage,
-  fetchFromGitHub,
   hatchling,
   httpcore,
   httpx,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
   starlette,
   trio,
   uvicorn,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "httpx-ws";
   version = "0.8.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "frankie567";
@@ -34,6 +33,14 @@ buildPythonPackage rec {
       --replace-fail '"hatch-regex-commit"' ""
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+    starlette
+    trio
+    uvicorn
+  ];
+
   build-system = [ hatchling ];
 
   dependencies = [
@@ -43,20 +50,13 @@ buildPythonPackage rec {
     wsproto
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-    starlette
-    trio
-    uvicorn
-  ];
-
-  pythonImportsCheck = [ "httpx_ws" ];
-
   disabledTestPaths = [
     # hang
     "tests/test_api.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "httpx_ws" ];
 
   meta = {
     description = "WebSocket support for HTTPX";

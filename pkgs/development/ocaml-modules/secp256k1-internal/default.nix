@@ -1,18 +1,19 @@
 {
   lib,
   fetchFromGitLab,
-  buildDunePackage,
-  gmp,
-  dune-configurator,
-  cstruct,
-  bigstring,
   alcotest,
+  bigstring,
+  buildDunePackage,
+  cstruct,
+  dune-configurator,
+  gmp,
   hex,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "secp256k1-internal";
   version = "0.4";
+
   src = fetchFromGitLab {
     owner = "nomadic-labs";
     repo = "ocaml-secp256k1-internal";
@@ -20,8 +21,9 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-amVtp94cE1NxClWJgcJvRmilnQlC7z44mORUaxvPn00=";
   };
 
-  minimalOCamlVersion = "4.08";
-  duneVersion = "3";
+  buildInputs = [
+    dune-configurator
+  ];
 
   propagatedBuildInputs = [
     gmp
@@ -29,16 +31,15 @@ buildDunePackage (finalAttrs: {
     bigstring
   ];
 
-  buildInputs = [
-    dune-configurator
-  ];
+  doCheck = true;
 
   checkInputs = [
     alcotest
     hex
   ];
 
-  doCheck = true;
+  duneVersion = "3";
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "Bindings to secp256k1 internal functions (generic operations on the curve)";

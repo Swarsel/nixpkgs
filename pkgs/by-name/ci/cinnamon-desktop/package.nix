@@ -1,24 +1,24 @@
 {
+  lib,
+  stdenv,
   fetchFromGitHub,
   gdk-pixbuf,
+  glib,
   gobject-introspection,
   gtk3,
   intltool,
   isocodes,
+  libxext,
+  libxkbfile,
+  libxrandr,
   meson,
   ninja,
   pkg-config,
   pulseaudio,
   python3,
-  lib,
-  stdenv,
   systemd,
-  xkeyboard_config,
-  libxrandr,
-  libxext,
-  libxkbfile,
   wrapGAppsHook3,
-  glib,
+  xkeyboard_config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,10 +37,20 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
-  propagatedBuildInputs = [
-    glib
-    gtk3
-    pulseaudio
+  postPatch = ''
+    chmod +x install-scripts/meson_install_schemas.py # patchShebangs requires executable file
+    patchShebangs install-scripts/meson_install_schemas.py
+    sed "s|/usr/share|/run/current-system/sw/share|g" -i ./schemas/* # NOTE: unless this causes a circular dependency, we could link it to cinnamon/share/cinnamon
+  '';
+
+  nativeBuildInputs = [
+    meson
+    ninja
+    python3
+    wrapGAppsHook3
+    intltool
+    pkg-config
+    gobject-introspection
   ];
 
   buildInputs = [
@@ -53,24 +63,13 @@ stdenv.mkDerivation (finalAttrs: {
     libxrandr
   ];
 
-  nativeBuildInputs = [
-    meson
-    ninja
-    python3
-    wrapGAppsHook3
-    intltool
-    pkg-config
-    gobject-introspection
+  propagatedBuildInputs = [
+    glib
+    gtk3
+    pulseaudio
   ];
 
-  postPatch = ''
-    chmod +x install-scripts/meson_install_schemas.py # patchShebangs requires executable file
-    patchShebangs install-scripts/meson_install_schemas.py
-    sed "s|/usr/share|/run/current-system/sw/share|g" -i ./schemas/* # NOTE: unless this causes a circular dependency, we could link it to cinnamon/share/cinnamon
-  '';
-
   meta = {
-    homepage = "https://github.com/linuxmint/cinnamon-desktop";
     description = "Library and data for various Cinnamon modules";
 
     longDescription = ''
@@ -81,10 +80,13 @@ stdenv.mkDerivation (finalAttrs: {
       gtk-doc.
     '';
 
+    homepage = "https://github.com/linuxmint/cinnamon-desktop";
+
     license = [
       lib.licenses.gpl2
       lib.licenses.lgpl2
     ];
+
     platforms = lib.platforms.linux;
     teams = [ lib.teams.cinnamon ];
   };

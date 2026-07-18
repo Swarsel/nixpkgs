@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "flow_state";
@@ -18,11 +18,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Terminal-based habit tracker designed for neurodivergent users";
-    mainProgram = "flow_state";
     homepage = "https://github.com/Stan-breaks/flow_state";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       overloader
     ];
+
+    mainProgram = "flow_state";
   };
 })

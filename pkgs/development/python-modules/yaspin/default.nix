@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytest-mock,
   pytest-xdist,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "yaspin";
   version = "3.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pavdmyt";
@@ -20,14 +19,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-uHW0lSkmNYZh4OGCFgaiIoqhY6KFojSyyEezTNxYqMw=";
   };
-
-  build-system = [ poetry-core ];
-
-  dependencies = [ termcolor ];
-
-  pythonRelaxDeps = [
-    "termcolor"
-  ];
 
   nativeCheckInputs = [
     pytest-mock
@@ -40,7 +31,14 @@ buildPythonPackage rec {
     export FORCE_COLOR=1
   '';
 
+  build-system = [ poetry-core ];
+  dependencies = [ termcolor ];
+  pyproject = true;
   pythonImportsCheck = [ "yaspin" ];
+
+  pythonRelaxDeps = [
+    "termcolor"
+  ];
 
   meta = {
     description = "Yet Another Terminal Spinner";

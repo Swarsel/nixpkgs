@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   autoPatchelfHook,
-  curl,
   common-updater-scripts,
+  curl,
   jq,
   keyutils,
   libgcc,
@@ -16,11 +16,8 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "proton-pass-cli";
   version = "2.2.3";
-
-  __structuredAttrs = true;
-  strictDeps = true;
-
   src = finalAttrs.passthru.sources.${stdenv.hostPlatform.system};
+  strictDeps = true;
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -34,8 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
     libgcc
   ];
 
-  dontUnpack = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -44,30 +39,37 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  postFixup = ''
-    wrapProgram $out/bin/pass-cli --set PROTON_PASS_NO_UPDATE_CHECK 1
-  '';
-
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
+  postFixup = ''
+    wrapProgram $out/bin/pass-cli --set PROTON_PASS_NO_UPDATE_CHECK 1
+  '';
+
+  __structuredAttrs = true;
+  dontUnpack = true;
+
   passthru = {
     sources = {
       "aarch64-darwin" = fetchurl {
-        url = "https://proton.me/download/pass-cli/${finalAttrs.version}/pass-cli-macos-aarch64";
         hash = "sha256-gxjlrznYmXgCFOxixtHCz9x2KLsgNtuo9yr3TJpjxzI=";
+        url = "https://proton.me/download/pass-cli/${finalAttrs.version}/pass-cli-macos-aarch64";
       };
+
       "aarch64-linux" = fetchurl {
-        url = "https://proton.me/download/pass-cli/${finalAttrs.version}/pass-cli-linux-aarch64";
         hash = "sha256-NdBabzetuIJEbu81Rfg3hUVEw8BJ2A3Who/i08/qwMs=";
+        url = "https://proton.me/download/pass-cli/${finalAttrs.version}/pass-cli-linux-aarch64";
       };
+
       "x86_64-linux" = fetchurl {
-        url = "https://proton.me/download/pass-cli/${finalAttrs.version}/pass-cli-linux-x86_64";
         hash = "sha256-cYjwKnweeahg9xZq0sNPei5slhJltwZ34nBPIW3Rdtk=";
+        url = "https://proton.me/download/pass-cli/${finalAttrs.version}/pass-cli-linux-x86_64";
       };
     };
+
     updateScript = writeShellScript "update-proton-pass-cli" ''
       set -o errexit
       export PATH="${
@@ -92,9 +94,9 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Command-line interface for managing your Proton Pass vaults, items, and secrets";
     homepage = "https://github.com/protonpass/pass-cli";
     license = lib.licenses.unfree;
-    mainProgram = "pass-cli";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ delafthi ];
     platforms = lib.attrNames finalAttrs.passthru.sources;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    mainProgram = "pass-cli";
   };
 })

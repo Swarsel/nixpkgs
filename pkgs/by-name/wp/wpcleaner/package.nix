@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeDesktopItem,
-  copyDesktopItems,
-  makeBinaryWrapper,
-  jdk17,
   ant,
-  stripJavaArchivesHook,
+  copyDesktopItems,
   gettext,
+  jdk17,
+  makeBinaryWrapper,
+  makeDesktopItem,
+  stripJavaArchivesHook,
 }:
 
 let
@@ -25,14 +25,13 @@ in
 stdenv.mkDerivation {
   pname = "wpcleaner";
   version = "2.0.5-unstable-2026-05-11";
+
   src = fetchFromGitHub {
     owner = "WPCleaner";
     repo = "wpcleaner";
     rev = "5d94f34e8aeb1d8353ec1981083acbc50eca10ee";
     hash = "sha256-sUtaDGxoNF3EBvnDSRmFeGhceqLZxboQzU3H7MYOxP4";
   };
-
-  dontConfigure = true;
 
   patches = [
     # The names of the scripts are too generic (e.g. Bot.sh) and the scripts
@@ -96,28 +95,32 @@ stdenv.mkDerivation {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "wpcleaner";
-      desktopName = "WPCleaner";
-      comment = "Perform maintenance on Wikipedia";
-      icon = "wpcleaner";
-      exec = "wpcleaner";
       categories = [ "Utility" ];
+      comment = "Perform maintenance on Wikipedia";
+      desktopName = "WPCleaner";
+      exec = "wpcleaner";
+      icon = "wpcleaner";
       keywords = [ "Wikipedia" ];
+      name = "wpcleaner";
     })
   ];
 
+  dontConfigure = true;
+
   meta = {
     description = "Utility for performing maintenance on Wikipedia";
+
     longDescription = ''
       WPCleaner is a tool designed to help with various maintenance tasks, especially repairing
       links to disambiguation pages, checking Wikipedia, fixing spelling and typography, and
       helping with translation of articles coming from other wikis.
     '';
+
     homepage = "https://wpcleaner.toolforge.org/";
-    downloadPage = "https://github.com/WPCleaner/wpcleaner";
     license = lib.licenses.asl20;
-    mainProgram = "wpcleaner";
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ jeancaspar ];
+    platforms = lib.platforms.all;
+    mainProgram = "wpcleaner";
+    downloadPage = "https://github.com/WPCleaner/wpcleaner";
   };
 }

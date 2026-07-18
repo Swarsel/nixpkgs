@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
-  python,
-  extract-msg,
   fetchFromGitHub,
+  buildPythonPackage,
+  extract-msg,
   hatchling,
   pytest-cov-stub,
   pytest-mock,
   pytestCheckHook,
+  python,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mail-parser";
   version = "4.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SpamScope";
@@ -21,14 +20,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-fuL2cWQSkYQKhG/UVNOp4ch4MrZINizvsPCQUzb3Z9c=";
   };
-
-  build-system = [ hatchling ];
-
-  optional-dependencies = {
-    outlook = [ extract-msg ];
-  };
-
-  pythonImportsCheck = [ "mailparser" ];
 
   nativeCheckInputs = [
     pytest-cov-stub
@@ -46,12 +37,21 @@ buildPythonPackage (finalAttrs: {
     cat tests/mails/mail_malformed_3 | ${python.interpreter} -m mailparser -k -j
   '';
 
+  build-system = [ hatchling ];
+
+  optional-dependencies = {
+    outlook = [ extract-msg ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "mailparser" ];
+
   meta = {
-    changelog = "https://github.com/SpamScope/mail-parser/releases/tag/${finalAttrs.src.tag}";
     description = "Mail parser for python 2 and 3";
-    mainProgram = "mail-parser";
     homepage = "https://github.com/SpamScope/mail-parser";
+    changelog = "https://github.com/SpamScope/mail-parser/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ psyanticy ];
+    mainProgram = "mail-parser";
   };
 })

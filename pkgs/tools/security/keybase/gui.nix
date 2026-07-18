@@ -1,43 +1,43 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   alsa-lib,
   atk,
+  autoPatchelfHook,
   cairo,
   cups,
-  udev,
-  libdrm,
-  libgbm,
   dbus,
   expat,
   fontconfig,
   freetype,
   gdk-pixbuf,
   glib,
+  gsettings-desktop-schemas,
   gtk3,
   libappindicator-gtk3,
+  libdrm,
+  libgbm,
   libnotify,
+  libx11,
+  libxcb,
+  libxcomposite,
+  libxcursor,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxi,
+  libxrandr,
+  libxrender,
+  libxscrnsaver,
+  libxtst,
   nspr,
   nss,
   pango,
-  systemd,
-  libxtst,
-  libxscrnsaver,
-  libxrender,
-  libxrandr,
-  libxi,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcursor,
-  libxcomposite,
-  libx11,
-  libxcb,
-  autoPatchelfHook,
-  wrapGAppsHook3,
   runtimeShell,
-  gsettings-desktop-schemas,
+  systemd,
+  udev,
+  wrapGAppsHook3,
 }:
 
 let
@@ -93,20 +93,6 @@ stdenv.mkDerivation rec {
     libgbm
   ];
 
-  runtimeDependencies = [
-    (lib.getLib udev)
-    libappindicator-gtk3
-  ];
-
-  dontBuild = true;
-  dontConfigure = true;
-  dontPatchELF = true;
-
-  unpackPhase = ''
-    ar xf $src
-    tar xf data.tar.xz
-  '';
-
   installPhase = ''
     mkdir -p $out/bin
     mv usr/share $out/share
@@ -143,11 +129,26 @@ stdenv.mkDerivation rec {
       --replace run_keybase $out/bin/keybase-gui
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontPatchELF = true;
+
+  runtimeDependencies = [
+    (lib.getLib udev)
+    libappindicator-gtk3
+  ];
+
+  unpackPhase = ''
+    ar xf $src
+    tar xf data.tar.xz
+  '';
+
   meta = {
-    homepage = "https://www.keybase.io/";
     description = "Keybase official GUI";
-    mainProgram = "keybase-gui";
-    platforms = [ "x86_64-linux" ];
+    homepage = "https://www.keybase.io/";
+    license = lib.licenses.bsd3;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       avaq
       rvolosatovs
@@ -156,7 +157,8 @@ stdenv.mkDerivation rec {
       shofius
       ryand56
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    license = lib.licenses.bsd3;
+
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "keybase-gui";
   };
 }

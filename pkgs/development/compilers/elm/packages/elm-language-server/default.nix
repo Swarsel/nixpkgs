@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
 }:
 
@@ -17,19 +17,16 @@ buildNpmPackage (finalAttrs: {
   };
 
   npmDepsHash = "sha256-jb59LiP2EZpTkc4o/t+9j287W01tDgbwFpAsWZCCL/k=";
-
   npmBuildScript = "compile";
-
   npmFlags = [ "--ignore-scripts" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/elm-tooling/elm-language-server/blob/${finalAttrs.version}/CHANGELOG.md";
     description = "Language server implementation for Elm";
-    mainProgram = "elm-language-server";
     homepage = "https://github.com/elm-tooling/elm-language-server";
+    changelog = "https://github.com/elm-tooling/elm-language-server/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "elm-language-server";
   };
 })

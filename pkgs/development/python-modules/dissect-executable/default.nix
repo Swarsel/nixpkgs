@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dissect-cstruct,
   dissect-util,
-  fetchFromGitHub,
   setuptools,
   setuptools-scm,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "dissect-executable";
   version = "1.11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fox-it";
@@ -30,6 +29,7 @@ buildPythonPackage rec {
     dissect-util
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "dissect.executable" ];
 
   meta = {

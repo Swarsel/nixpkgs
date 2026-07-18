@@ -1,21 +1,19 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
-  fetchNpmDeps,
   aiofiles,
+  buildHomeAssistantComponent,
+  fetchNpmDeps,
   jinja2,
   joserfc,
   nodejs,
   npmHooks,
-  pytestCheckHook,
-  pytest-homeassistant-custom-component,
   pytest-cov-stub,
+  pytest-homeassistant-custom-component,
+  pytestCheckHook,
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "christaangoossens";
-  domain = "auth_oidc";
   version = "1.1.1";
 
   src = fetchFromGitHub {
@@ -34,22 +32,16 @@ buildHomeAssistantComponent rec {
     done
   '';
 
-  env.npmDeps = fetchNpmDeps {
-    name = "${domain}-npm-deps";
-    inherit src;
-    hash = "sha256-rVBc1RSARmKZhjEAoWtb/kJLbaY0Hxhyj/ZaPJVj3jo=";
-  };
-
   nativeBuildInputs = [
     npmHooks.npmConfigHook
     nodejs
   ];
 
-  dependencies = [
-    aiofiles
-    jinja2
-    joserfc
-  ];
+  env.npmDeps = fetchNpmDeps {
+    inherit src;
+    hash = "sha256-rVBc1RSARmKZhjEAoWtb/kJLbaY0Hxhyj/ZaPJVj3jo=";
+    name = "${domain}-npm-deps";
+  };
 
   postBuild = ''
     npm run css
@@ -61,10 +53,19 @@ buildHomeAssistantComponent rec {
     pytest-cov-stub
   ];
 
+  dependencies = [
+    aiofiles
+    jinja2
+    joserfc
+  ];
+
+  domain = "auth_oidc";
+  owner = "christaangoossens";
+
   meta = {
-    changelog = "https://github.com/christiaangoossens/hass-oidc-auth/releases/tag/v${version}";
     description = "OpenID Connect authentication provider for Home Assistant";
     homepage = "https://github.com/christiaangoossens/hass-oidc-auth";
+    changelog = "https://github.com/christiaangoossens/hass-oidc-auth/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hexa ];
   };

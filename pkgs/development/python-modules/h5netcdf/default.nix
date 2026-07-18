@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   h5py,
   netcdf,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "h5netcdf";
   version = "1.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "h5netcdf";
@@ -21,18 +20,18 @@ buildPythonPackage rec {
     hash = "sha256-m+8vdWOQb9aIg/mPeTrN20EzTj229Cit3nYgrkPlfGA=";
   };
 
+  nativeCheckInputs = [
+    netcdf
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
   dependencies = [ h5py ];
-
-  nativeCheckInputs = [
-    netcdf
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "h5netcdf" ];
 
   meta = {

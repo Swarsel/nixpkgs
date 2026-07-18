@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  installShellFiles,
   makeWrapper,
   perl,
-  installShellFiles,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -16,14 +16,12 @@ stdenvNoCC.mkDerivation rec {
     sha256 = "00333d65ygdbm1hqr4yp2j8vh1cgh3hyfm7iy9y1alf0p0f6aqac";
   };
 
-  buildInputs = [ perl ];
   nativeBuildInputs = [
     makeWrapper
     installShellFiles
   ];
 
-  # There is a Makefile, but we don’t need it, and it prints errors
-  dontBuild = true;
+  buildInputs = [ perl ];
 
   installPhase = ''
     mkdir -p $out/bin $out/share/man/man1
@@ -42,12 +40,17 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     $out/bin/listadmin --help 2> /dev/null
   '';
 
+  # There is a Makefile, but we don’t need it, and it prints errors
+  dontBuild = true;
+
   meta = {
     description = "Command line mailman moderator queue manipulation";
+
     longDescription = ''
       listadmin is a command line tool to manipulate the queues of messages
       held for moderator approval by mailman. It is designed to keep user
@@ -55,10 +58,11 @@ stdenvNoCC.mkDerivation rec {
       the queue. It can use the score from a header added by SpamAssassin to
       filter, or it can match specific senders, subjects, or reasons.
     '';
+
     homepage = "https://sourceforge.net/projects/listadmin/";
     license = lib.licenses.publicDomain;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ nomeata ];
+    platforms = lib.platforms.unix;
     mainProgram = "listadmin";
   };
 }

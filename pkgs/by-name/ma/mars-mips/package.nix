@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  makeBinaryWrapper,
   copyDesktopItems,
-  makeDesktopItem,
   desktopToDarwinBundle,
-  unzip,
   imagemagick,
   jre,
+  makeBinaryWrapper,
+  makeDesktopItem,
+  unzip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,10 +19,9 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://courses.missouristate.edu/KenVollmar/MARS/MARS_${
       lib.replaceStrings [ "." ] [ "_" ] finalAttrs.version
     }_Aug2014/Mars${lib.replaceStrings [ "." ] [ "_" ] finalAttrs.version}.jar";
+
     hash = "sha256-rDQLZ2uitiJGud935i+BrURHvP0ymrU5cWvNCZULcJY=";
   };
-
-  dontUnpack = true;
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -32,20 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     desktopToDarwinBundle
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "mars";
-      desktopName = "MARS";
-      exec = "Mars";
-      icon = "mars";
-      comment = finalAttrs.meta.description;
-      categories = [
-        "Development"
-        "IDE"
-      ];
-    })
   ];
 
   installPhase = ''
@@ -66,13 +51,30 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Development"
+        "IDE"
+      ];
+
+      comment = finalAttrs.meta.description;
+      desktopName = "MARS";
+      exec = "Mars";
+      icon = "mars";
+      name = "mars";
+    })
+  ];
+
+  dontUnpack = true;
+
   meta = {
     description = "IDE for programming in MIPS assembly language intended for educational-level use";
-    mainProgram = "Mars";
     homepage = "https://courses.missouristate.edu/KenVollmar/MARS/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ emilytrau ];
     platforms = lib.platforms.all;
+    mainProgram = "Mars";
   };
 })

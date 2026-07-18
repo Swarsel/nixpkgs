@@ -1,11 +1,11 @@
 {
   lib,
-  buildDotnetModule,
   fetchFromGitHub,
-  dotnetCorePackages,
-  makeDesktopItem,
+  buildDotnetModule,
   copyDesktopItems,
+  dotnetCorePackages,
   iconConvTools,
+  makeDesktopItem,
 }:
 buildDotnetModule rec {
   pname = "skeditor";
@@ -18,13 +18,6 @@ buildDotnetModule rec {
     hash = "sha256-KC9s9FE/6te8JnLcSBZNQ05DpKFG7jT6eHDS6OWsOBU=";
   };
 
-  projectFile = "SkEditor/SkEditor.csproj";
-  executables = [ "SkEditor" ];
-  nugetDeps = ./nuget-deps.json;
-
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-  dotnet-runtime = dotnetCorePackages.runtime_8_0;
-
   nativeBuildInputs = [
     iconConvTools
     copyDesktopItems
@@ -36,25 +29,33 @@ buildDotnetModule rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = pname;
-      desktopName = "SkEditor";
-      exec = meta.mainProgram;
-      icon = "SkEditor";
-      startupWMClass = "SkEditor";
-      genericName = "Skript Editor";
-      keywords = [
-        "skeditor"
-        "SkEditor"
-      ];
       categories = [
         "Utility"
         "TextEditor"
         "Development"
         "IDE"
       ];
+
+      desktopName = "SkEditor";
+      exec = meta.mainProgram;
+      genericName = "Skript Editor";
+      icon = "SkEditor";
+
+      keywords = [
+        "skeditor"
+        "SkEditor"
+      ];
+
+      name = pname;
+      startupWMClass = "SkEditor";
     })
   ];
 
+  dotnet-runtime = dotnetCorePackages.runtime_8_0;
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+  executables = [ "SkEditor" ];
+  nugetDeps = ./nuget-deps.json;
+  projectFile = "SkEditor/SkEditor.csproj";
   passthru.updateScript = ./update.sh;
 
   meta = {
@@ -62,7 +63,7 @@ buildDotnetModule rec {
     homepage = "https://github.com/SkEditorTeam/SkEditor";
     changelog = "https://github.com/SkEditorTeam/SkEditor/releases/tag/v${version}";
     license = lib.licenses.mit;
-    mainProgram = "SkEditor";
     maintainers = with lib.maintainers; [ eveeifyeve ];
+    mainProgram = "SkEditor";
   };
 }

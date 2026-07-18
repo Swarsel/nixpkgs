@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   jdupes,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -32,7 +32,7 @@ stdenvNoCC.mkDerivation {
     description = "Aesthetic, modern fcitx5 theme featuring sharp-edged rectangle design";
     homepage = "https://github.com/sanweiya/fcitx5-inflex-themes";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ Guanran928 ];
+    platforms = lib.platforms.all;
   };
 }

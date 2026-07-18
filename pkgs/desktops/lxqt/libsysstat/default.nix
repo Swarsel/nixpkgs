@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  qtbase,
-  lxqt-build-tools,
-  wrapQtAppsHook,
   gitUpdater,
+  lxqt-build-tools,
+  qtbase,
+  wrapQtAppsHook,
 }:
 
 stdenv.mkDerivation rec {
@@ -33,11 +33,11 @@ stdenv.mkDerivation rec {
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Library used to query system info and statistics";
     homepage = "https://github.com/lxqt/libsysstat";
     license = lib.licenses.lgpl21Plus;
     platforms = with lib.platforms; unix;
+    broken = stdenv.hostPlatform.isDarwin;
     teams = [ lib.teams.lxqt ];
   };
 }

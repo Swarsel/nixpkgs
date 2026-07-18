@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dissect-cstruct,
   dissect-util,
-  fetchFromGitHub,
   google-crc32c,
   python-lzo,
   setuptools,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "dissect-btrfs";
   version = "1.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fox-it";
@@ -33,17 +32,19 @@ buildPythonPackage rec {
     dissect-util
   ];
 
+  # Issue with the test file handling
+  doCheck = false;
+
   optional-dependencies = {
     full = [
       python-lzo
       zstandard
     ];
+
     gcrc32 = [ google-crc32c ];
   };
 
-  # Issue with the test file handling
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "dissect.btrfs" ];
 
   meta = {

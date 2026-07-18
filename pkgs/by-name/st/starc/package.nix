@@ -17,6 +17,7 @@ in
 appimageTools.wrapType2 {
   inherit pname version src;
   nativeBuildInputs = [ makeWrapper ];
+
   extraInstallCommands = ''
     # Fixup desktop item icons
     install -D ${appimageContents}/starc.desktop -t $out/share/applications/
@@ -33,9 +34,9 @@ appimageTools.wrapType2 {
   meta = {
     description = "Intuitive screenwriting app that streamlines the writing process";
     homepage = "https://starc.app/";
-    mainProgram = "starc";
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ pancaek ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "starc";
   };
 }

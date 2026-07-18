@@ -1,47 +1,39 @@
 {
   lib,
-  config,
-  buildPythonPackage,
   fetchFromGitHub,
-  python,
-
-  # build-system
-  cmake,
-  nanobind,
-  setuptools,
-
   # nativeBuildInputs
   autoAddDriverRunpath,
-  cudaPackages,
-
   # buildInputs
   blas,
+  buildPythonPackage,
+  # build-system
+  cmake,
+  config,
+  cudaPackages,
   lapack,
-
+  # passthru
+  libmobility,
+  nanobind,
   # dependencies
   numpy,
-  scipy,
-
   # tests
   pytest-xdist,
   pytestCheckHook,
-
-  # passthru
-  libmobility,
+  python,
+  scipy,
+  setuptools,
 }:
 let
   uammd-src = fetchFromGitHub {
+    hash = "sha256-/7ceXlA96dZQs1WzkV1OpRv61xa0Tdt5gFe17I0s1BI=";
     owner = "RaulPPelaez";
     repo = "uammd";
     tag = "v3.0.1";
-    hash = "sha256-/7ceXlA96dZQs1WzkV1OpRv61xa0Tdt5gFe17I0s1BI=";
   };
 in
 buildPythonPackage.override { stdenv = cudaPackages.backendStdenv; } (finalAttrs: {
   pname = "libmobility";
   version = "1.2.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "stochasticHydroTools";
@@ -85,30 +77,10 @@ buildPythonPackage.override { stdenv = cudaPackages.backendStdenv; } (finalAttrs
         --replace-fail "add_subdirectory(tests/cpp)" ""
     '';
 
-  build-system = [
-    cmake
-    nanobind
-    setuptools
-  ];
-  dontUseCmakeConfigure = true;
-
   nativeBuildInputs = [
     autoAddDriverRunpath
     cudaPackages.cuda_nvcc
   ];
-
-  cmakeFlags = [
-    (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_UAMMD" uammd-src.outPath)
-    (lib.cmakeFeature "nanobind_DIR" "${nanobind}/${python.sitePackages}/nanobind/cmake")
-  ];
-
-  env = {
-    CMAKE_CUDA_ARCHITECTURES = cudaPackages.flags.cmakeCudaArchitecturesString;
-  };
-
-  preBuild = ''
-    export BUILD_JOBS="$NIX_BUILD_CORES"
-  '';
 
   buildInputs = [
     blas
@@ -123,16 +95,38 @@ buildPythonPackage.override { stdenv = cudaPackages.backendStdenv; } (finalAttrs
     libcusolver
   ]);
 
-  dependencies = [
-    numpy
-    scipy
+  cmakeFlags = [
+    (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_UAMMD" uammd-src.outPath)
+    (lib.cmakeFeature "nanobind_DIR" "${nanobind}/${python.sitePackages}/nanobind/cmake")
   ];
 
-  pythonImportsCheck = [ "libMobility" ];
+  env = {
+    CMAKE_CUDA_ARCHITECTURES = cudaPackages.flags.cmakeCudaArchitecturesString;
+  };
+
+  preBuild = ''
+    export BUILD_JOBS="$NIX_BUILD_CORES"
+  '';
+
+  # Tests require GPU access
+  doCheck = false;
 
   nativeCheckInputs = [
     pytest-xdist
     pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
+
+  build-system = [
+    cmake
+    nanobind
+    setuptools
+  ];
+
+  dependencies = [
+    numpy
+    scipy
   ];
 
   disabledTests = [
@@ -151,11 +145,13 @@ buildPythonPackage.override { stdenv = cudaPackages.backendStdenv; } (finalAttrs
     "test_fluctuation_dissipation_linear_displacements"
   ];
 
-  # Tests require GPU access
-  doCheck = false;
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+  pythonImportsCheck = [ "libMobility" ];
+
   passthru.gpuCheck = libmobility.overridePythonAttrs {
-    requiredSystemFeatures = [ "cuda" ];
     doCheck = true;
+    requiredSystemFeatures = [ "cuda" ];
   };
 
   meta = {

@@ -1,20 +1,21 @@
 {
   lib,
-  mlx,
   buildDunePackage,
-  ppxlib,
-  merlin-lib,
   cppo,
   csexp,
   menhir,
+  merlin-lib,
+  mlx,
   odoc,
+  ppxlib,
 }:
 buildDunePackage {
+  inherit (mlx) version src;
   pname = "ocamlmerlin-mlx";
 
-  inherit (mlx) version src;
-
-  minimalOCamlVersion = "4.14";
+  nativeBuildInputs = [
+    cppo
+  ];
 
   buildInputs = [
     ppxlib
@@ -24,9 +25,7 @@ buildDunePackage {
     odoc
   ];
 
-  nativeBuildInputs = [
-    cppo
-  ];
+  minimalOCamlVersion = "4.14";
 
   meta = {
     description = "Merlin support for MLX OCaml dialect";

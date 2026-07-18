@@ -1,27 +1,23 @@
 {
   lib,
-  makeWrapper,
-  tesseractBase,
-  languages,
-  runCommand,
   imagemagick,
-
+  languages,
+  makeWrapper,
+  runCommand,
+  tesseractBase,
   # A list of languages like [ "eng" "spa" … ] or `null` for all available languages
   enableLanguages ? null,
-
+  # This argument is obsolete
+  enableLanguagesHash ? null,
   # A list of files or a directory containing files
   tessdata ? (
     if enableLanguages == null then languages.all else map (lang: languages.${lang}) enableLanguages
   ),
-
-  # This argument is obsolete
-  enableLanguagesHash ? null,
 }:
 
 let
   tesseractWithData = tesseractBase.overrideAttrs (_: {
     inherit tesseractBase tessdata;
-
     nativeBuildInputs = [ makeWrapper ];
 
     buildPhase = ''

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,13 +16,10 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-MPbdJ5BsB6KiinWl1wvcX900hQBiXiZ0zdESKVsxcSI=";
-
   # Tests use network
   doCheck = false;
-
-  subPackages = [ "cmd/oapi-codegen" ];
-
   ldflags = [ "-X main.noVCSVersionOverride=${finalAttrs.version}" ];
+  subPackages = [ "cmd/oapi-codegen" ];
 
   meta = {
     description = "Go client and server OpenAPI 3 generator";

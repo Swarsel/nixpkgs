@@ -1,7 +1,7 @@
 {
-  appimageTools,
-  fetchurl,
   lib,
+  fetchurl,
+  appimageTools,
 }:
 
 let
@@ -21,8 +21,6 @@ in
 appimageTools.wrapType2 {
   inherit pname version src;
 
-  extraPkgs = pkgs: [ pkgs.at-spi2-core ];
-
   extraInstallCommands = ''
     install -m 444 -D ${appimageContents}/irccloud.desktop $out/share/applications/irccloud.desktop
     install -m 444 -D ${appimageContents}/usr/share/icons/hicolor/512x512/apps/irccloud.png \
@@ -31,12 +29,14 @@ appimageTools.wrapType2 {
       --replace 'Exec=AppRun' 'Exec=${pname}'
   '';
 
+  extraPkgs = pkgs: [ pkgs.at-spi2-core ];
+
   meta = {
     description = "Desktop client for IRCCloud";
-    mainProgram = "irccloud";
     homepage = "https://www.irccloud.com";
     license = lib.licenses.asl20;
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ lightbulbjim ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "irccloud";
   };
 }

@@ -1,16 +1,16 @@
 {
   lib,
-  writeTextFile,
-  runtimeShell,
   drawio,
+  runtimeShell,
+  writeTextFile,
   xvfb-run,
 }:
 
 writeTextFile {
+  destination = "/bin/drawio";
+  executable = true;
   name = "${drawio.pname}-headless-${drawio.version}";
 
-  executable = true;
-  destination = "/bin/drawio";
   text = ''
     #!${runtimeShell}
 
@@ -32,14 +32,17 @@ writeTextFile {
 
   meta = {
     description = "xvfb wrapper around drawio";
+
     longDescription = ''
       A wrapper around drawio (draw.io) for running in headless environments.
       Runs drawio under xvfb-run, with configuration going to a temporary
       directory.
     '';
+
     maintainers = with lib.maintainers; [
       tfc
     ];
+
     mainProgram = "drawio";
   };
 }

@@ -34,7 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/lukechilds/gifgen";
     license = lib.licenses.mit;
     maintainers = [ ];
-    mainProgram = "gifgen";
     platforms = lib.platforms.all;
+    mainProgram = "gifgen";
   };
 })

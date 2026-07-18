@@ -3,10 +3,10 @@ args@{
   stdenv,
   fetchFromGitHub,
   cmake,
+  ctestCheckHook,
   hwloc, # Purposefully shadowed below
   ninja,
   pkg-config,
-  ctestCheckHook,
 }:
 let
   # The behavior of OneTBB does not change if it is built with hwloc with support for CUDA.
@@ -19,17 +19,17 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "onetbb";
   version = "2022.3.0";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchFromGitHub {
     owner = "oneapi-src";
     repo = "oneTBB";
     tag = "v${finalAttrs.version}";
     hash = "sha256-HIHF6KHlEI4rgQ9Epe0+DmNe1y95K9iYa4V/wFnJfEU=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     # <https://github.com/uxlfoundation/oneTBB/pull/899>
@@ -46,6 +46,13 @@ stdenv.mkDerivation (finalAttrs: {
     ./fix-libtbbmalloc-dlopen.patch
   ];
 
+  # Disable failing test on musl
+  # test/conformance/conformance_resumable_tasks.cpp:37:24: error: ‘suspend’ is not a member of ‘tbb::v1::task’; did you mean ‘tbb::detail::r1::suspend’?
+  postPatch = lib.optionalString stdenv.hostPlatform.isMusl ''
+    substituteInPlace test/CMakeLists.txt \
+      --replace-fail 'tbb_add_test(SUBDIR conformance NAME conformance_resumable_tasks DEPENDENCIES TBB::tbb)' ""
+  '';
+
   nativeBuildInputs = [
     cmake
     ninja
@@ -57,23 +64,6 @@ stdenv.mkDerivation (finalAttrs: {
     hwloc
   ];
 
-  doCheck = !stdenv.hostPlatform.isStatic;
-
-  dontUseNinjaCheck = true;
-
-  # The memory leak test fails on static Linux, despite passing on
-  # dynamic Musl.
-  disabledTests = lib.optionals (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isStatic) [
-    "test_arena_constraints"
-  ];
-
-  # Disable failing test on musl
-  # test/conformance/conformance_resumable_tasks.cpp:37:24: error: ‘suspend’ is not a member of ‘tbb::v1::task’; did you mean ‘tbb::detail::r1::suspend’?
-  postPatch = lib.optionalString stdenv.hostPlatform.isMusl ''
-    substituteInPlace test/CMakeLists.txt \
-      --replace-fail 'tbb_add_test(SUBDIR conformance NAME conformance_resumable_tasks DEPENDENCIES TBB::tbb)' ""
-  '';
-
   cmakeFlags = [
     (lib.cmakeBool "TBB_DISABLE_HWLOC_AUTOMATIC_SEARCH" false)
     (lib.cmakeBool "TBB_TEST" finalAttrs.finalPackage.doCheck)
@@ -83,6 +73,10 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env = {
+    # Some test fail because hwloc tries to read /sys on non-x86, which doesn't
+    # work in the build sandbox, so provide fake data to satisfy it
+    # See: https://www-lb.open-mpi.org/projects/hwloc/doc/v2.12.2/synthetic.html
+    HWLOC_SYNTHETIC = "node:1 core:1 pu:1";
     # Fix build with modern gcc
     # In member function 'void std::__atomic_base<_IntTp>::store(__int_type, std::memory_order) [with _ITp = bool]',
     NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isGNU "-Wno-error=stringop-overflow";
@@ -91,32 +85,41 @@ stdenv.mkDerivation (finalAttrs: {
     NIX_LDFLAGS = lib.optionalString (
       stdenv.cc.bintools.isLLVM && lib.versionAtLeast stdenv.cc.bintools.version "17"
     ) "--undefined-version";
-
-    # Some test fail because hwloc tries to read /sys on non-x86, which doesn't
-    # work in the build sandbox, so provide fake data to satisfy it
-    # See: https://www-lb.open-mpi.org/projects/hwloc/doc/v2.12.2/synthetic.html
-    HWLOC_SYNTHETIC = "node:1 core:1 pu:1";
   };
+
+  doCheck = !stdenv.hostPlatform.isStatic;
+
+  # The memory leak test fails on static Linux, despite passing on
+  # dynamic Musl.
+  disabledTests = lib.optionals (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isStatic) [
+    "test_arena_constraints"
+  ];
+
+  dontUseNinjaCheck = true;
 
   meta = {
     description = "oneAPI Threading Building Blocks";
-    homepage = "https://uxlfoundation.github.io/oneTBB/";
-    license = lib.licenses.asl20;
+
     longDescription = ''
       oneAPI Threading Building Blocks (oneTBB) is a runtime-based
       parallel programming model for C++ code that uses tasks. The
       template-based runtime library can help you harness the latent
       performance of multi-core processors.
     '';
-    platforms = lib.subtractLists lib.platforms.cygwin lib.platforms.all;
-    # oneTBB does not support static builds
-    # "You are building oneTBB as a static library. This is highly discouraged and such configuration is not supported. Consider building a dynamic library to avoid unforeseen issues."
-    # https://github.com/uxlfoundation/oneTBB/blob/db7891a246cafbb90719c3dee497d96889ca692b/CMakeLists.txt#L160
-    badPlatforms = [ lib.systems.inspect.platformPatterns.isStatic ];
+
+    homepage = "https://uxlfoundation.github.io/oneTBB/";
+    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       silvanshade
       thoughtpolice
       tmarkus
     ];
+
+    platforms = lib.subtractLists lib.platforms.cygwin lib.platforms.all;
+    # oneTBB does not support static builds
+    # "You are building oneTBB as a static library. This is highly discouraged and such configuration is not supported. Consider building a dynamic library to avoid unforeseen issues."
+    # https://github.com/uxlfoundation/oneTBB/blob/db7891a246cafbb90719c3dee497d96889ca692b/CMakeLists.txt#L160
+    badPlatforms = [ lib.systems.inspect.platformPatterns.isStatic ];
   };
 })

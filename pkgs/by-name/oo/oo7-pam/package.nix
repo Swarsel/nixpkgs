@@ -1,4 +1,5 @@
 {
+  stdenv,
   cargo,
   meson,
   ninja,
@@ -6,19 +7,12 @@
   pkg-config,
   rustPlatform,
   rustc,
-  stdenv,
   systemdLibs,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  pname = "oo7-pam";
   inherit (oo7) version src cargoDeps;
-
-  sourceRoot = "${finalAttrs.src.name}/pam";
-  cargoRoot = "../";
-
+  pname = "oo7-pam";
   strictDeps = true;
-  __structuredAttrs = true;
-  separateDebugInfo = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -33,6 +27,11 @@ stdenv.mkDerivation (finalAttrs: {
     systemdLibs
   ];
 
+  __structuredAttrs = true;
+  cargoRoot = "../";
+  separateDebugInfo = true;
+  sourceRoot = "${finalAttrs.src.name}/pam";
+
   meta = {
     inherit (oo7.meta)
       homepage
@@ -41,6 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
       maintainers
       platforms
       ;
+
     description = "${oo7.meta.description} (PAM modules)";
   };
 })

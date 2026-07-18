@@ -3,21 +3,21 @@
   stdenv,
   fetchFromGitHub,
   alsa-lib,
+  cmake,
   ffmpeg,
+  libGL,
+  libGLU,
   libjack2,
+  libpulseaudio,
+  libsForQt5,
+  libv4l,
   libx11,
   libxext,
-  libxinerama,
   libxfixes,
-  libGLU,
-  libGL,
-  pkg-config,
-  libpulseaudio,
-  libv4l,
-  pipewire,
-  libsForQt5,
-  cmake,
+  libxinerama,
   ninja,
+  pipewire,
+  pkg-config,
   unstableGitUpdater,
 }:
 
@@ -31,11 +31,6 @@ stdenv.mkDerivation {
     rev = "ad99c7e855794888101aea2f119cdab1d4aa3073";
     hash = "sha256-Slfte4K1VEUWIWFp7D49SRNEMZY+VVHTWzf966MUR4E=";
   };
-
-  cmakeFlags = [
-    "-DWITH_QT5=TRUE"
-    "-DWITH_GLINJECT=${if stdenv.hostPlatform.isx86 then "TRUE" else "FALSE"}"
-  ];
 
   postPatch = ''
     substituteInPlace scripts/ssr-glinject \
@@ -71,13 +66,18 @@ stdenv.mkDerivation {
     libsForQt5.qtx11extras
   ];
 
+  cmakeFlags = [
+    "-DWITH_QT5=TRUE"
+    "-DWITH_GLINJECT=${if stdenv.hostPlatform.isx86 then "TRUE" else "FALSE"}"
+  ];
+
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "Screen recorder for Linux";
     homepage = "https://www.maartenbaert.be/simplescreenrecorder";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 }

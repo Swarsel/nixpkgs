@@ -1,24 +1,19 @@
 {
-  mkKdeDerivation,
-  pkg-config,
-  shared-mime-info,
-  qtnetworkauth,
-  qtspeech,
-  qtwebengine,
-  cyrus_sasl,
   lib,
+  cyrus_sasl,
   libetebase,
   libkgapi,
   libxslt,
+  mkKdeDerivation,
+  pkg-config,
+  qtnetworkauth,
+  qtspeech,
+  qtwebengine,
+  shared-mime-info,
 }:
 mkKdeDerivation {
   pname = "kdepim-runtime";
 
-  extraNativeBuildInputs = [
-    pkg-config
-    shared-mime-info
-    libxslt
-  ];
   # FIXME: libkolabxml
   extraBuildInputs = [
     qtnetworkauth
@@ -26,6 +21,12 @@ mkKdeDerivation {
     qtwebengine
     cyrus_sasl
     libetebase
+  ];
+
+  extraNativeBuildInputs = [
+    pkg-config
+    shared-mime-info
+    libxslt
   ];
 
   qtWrapperArgs = [

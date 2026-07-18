@@ -1,7 +1,7 @@
 {
-  buildGoModule,
   lib,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,29 +16,30 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
-
-  # This package comes with its own version of goimports, gofmt and goreturns
-  # but these binaries are outdated and are offered by other packages.
-  subPackages = [ "cmd/asmfmt" ];
+  # There are no tests.
+  doCheck = false;
 
   ldflags = [
     "-s"
     "-w"
   ];
 
-  # There are no tests.
-  doCheck = false;
+  # This package comes with its own version of goimports, gofmt and goreturns
+  # but these binaries are outdated and are offered by other packages.
+  subPackages = [ "cmd/asmfmt" ];
 
   meta = {
     description = "Go assembler formatter";
-    mainProgram = "asmfmt";
+
     longDescription = ''
       This will format your assembler code in a similar way that gofmt formats
       your Go code.
     '';
+
     homepage = "https://github.com/klauspost/asmfmt";
     changelog = "https://github.com/klauspost/asmfmt/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kalbasit ];
+    mainProgram = "asmfmt";
   };
 })

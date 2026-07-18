@@ -2,6 +2,6 @@
   mkDerivation,
 }:
 mkDerivation {
-  path = "sbin/swapon";
   MK_TESTS = "no";
+  path = "sbin/swapon";
 }

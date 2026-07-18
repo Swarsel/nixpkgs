@@ -17,17 +17,17 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0xn31hkkqs0kj9203rzx6w4nr0lq8fnrlm5i76g0px3q4v2dzw1s";
   };
 
-  makeFlags = [ "PREFIX=$(out)" ];
-
-  doCheck = true;
-
   nativeBuildInputs = [
     libtool
     which
   ];
 
+  makeFlags = [ "PREFIX=$(out)" ];
+  doCheck = true;
+
   meta = {
     description = "Library and command line tool to detect SHA-1 collision";
+
     longDescription = ''
       This library and command line tool were designed as near drop-in
       replacements for common SHA-1 libraries and sha1sum. They will
@@ -36,9 +36,10 @@ stdenv.mkDerivation (finalAttrs: {
       each file. It is very fast and takes less than twice the amount
       of time as regular SHA-1.
     '';
+
     homepage = "https://github.com/cr-marcstevens/sha1collisiondetection";
-    platforms = lib.platforms.all;
     license = lib.licenses.mit;
+    platforms = lib.platforms.all;
     mainProgram = "sha1dcsum";
   };
 })

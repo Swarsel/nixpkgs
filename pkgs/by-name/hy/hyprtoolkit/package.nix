@@ -1,26 +1,26 @@
 {
   lib,
-  gcc15Stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  hyprwayland-scanner,
-  wayland-scanner,
   aquamarine,
   cairo,
+  cmake,
+  gcc15Stdenv,
   gtest,
   hyprgraphics,
   hyprlang,
   hyprutils,
+  hyprwayland-scanner,
   iniparser,
+  libGL,
   libdrm,
   libgbm,
-  libGL,
   libxkbcommon,
   pango,
   pixman,
+  pkg-config,
   wayland,
   wayland-protocols,
+  wayland-scanner,
 }:
 
 gcc15Stdenv.mkDerivation (finalAttrs: {
@@ -63,7 +63,7 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
     inherit (finalAttrs.src.meta) homepage;
     description = "A modern C++ Wayland-native GUI toolkit";
     license = lib.licenses.bsd3;
-    teams = [ lib.teams.hyprland ];
     platforms = with lib.platforms; linux ++ freebsd;
+    teams = [ lib.teams.hyprland ];
   };
 })

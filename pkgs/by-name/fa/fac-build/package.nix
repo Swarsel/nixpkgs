@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchCrate,
   git,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -12,16 +12,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   src = fetchCrate {
     inherit (finalAttrs) version;
-    crateName = "fac";
     hash = "sha256-+JJVuKUdnjJoQJ4a2EE0O6jZdVoFxPwbPgfD2LfiDPI=";
+    crateName = "fac";
   };
-
-  cargoHash = "sha256-+2j6xH1Ww1WOLfbjknUPvCmYLAl4W3Zp/mQTaL0qnv0=";
-
-  # fac includes a unit test called ls_files_works which assumes it's
-  # running in a git repo. Nix's sandbox runs cargo build outside git,
-  # so this test won't work.
-  checkFlags = [ "--skip=ls_files_works" ];
 
   # fac calls git at runtime, expecting it to be in the PATH,
   # so we need to patch it to call git by absolute path instead.
@@ -34,11 +27,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
         'std::process::Command::new("${git}/bin/git")'
   '';
 
+  cargoHash = "sha256-+2j6xH1Ww1WOLfbjknUPvCmYLAl4W3Zp/mQTaL0qnv0=";
+  # fac includes a unit test called ls_files_works which assumes it's
+  # running in a git repo. Nix's sandbox runs cargo build outside git,
+  # so this test won't work.
+  checkFlags = [ "--skip=ls_files_works" ];
+
   meta = {
-    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
     description = ''
       A build system that uses ptrace to handle dependencies automatically
     '';
+
     longDescription = ''
       Fac is a general-purpose build system inspired by make that utilizes
       ptrace to ensure that all dependences are enumerated and that all
@@ -48,10 +47,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
       only runs on linux systems, but on those systems it is incredibly
       easy to use!
     '';
+
     homepage = "https://physics.oregonstate.edu/~roundyd/fac";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ dpercy ];
+    platforms = lib.platforms.unix;
     mainProgram = "fac";
+    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
   };
 })

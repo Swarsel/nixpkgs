@@ -19,26 +19,91 @@ in
 {
   options.services.linkding = {
     enable = mkEnableOption "linkding, a self-hosted bookmark manager";
-
     package = mkPackageOption pkgs "linkding" { };
 
-    user = mkOption {
+    address = mkOption {
+      default = "127.0.0.1";
+      description = "Address on which linkding listens.";
       type = types.str;
-      default = "linkding";
-      description = ''
-        User account under which linkding runs.
+    };
 
-        ::: {.note}
-        If left as the default value this user will automatically be created
-        on system activation, otherwise you are responsible for ensuring the
-        user exists before the linkding service starts.
-        :::
+    contextPath = mkOption {
+      default = "";
+
+      description = ''
+        Configures a URL context path under which linkding is accessible.
+        When set, linkding is available at `http://host:<port>/<contextPath>`.
+        Must end with a `/` when non-empty.
       '';
+
+      example = "linkding/";
+      type = types.str;
+    };
+
+    dataDir = mkOption {
+      default = "/var/lib/linkding";
+      description = "Directory used for all mutable state: SQLite database, secret key, favicons, previews, and assets.";
+      type = types.path;
+    };
+
+    database = {
+      createLocally = mkOption {
+        default = false;
+        description = "Whether to automatically create a local PostgreSQL database and user.";
+        type = types.bool;
+      };
+
+      host = mkOption {
+        default = "localhost";
+        description = "PostgreSQL server host.";
+        type = types.str;
+      };
+
+      name = mkOption {
+        default = "linkding";
+        description = "PostgreSQL database name.";
+        type = types.str;
+      };
+
+      port = mkOption {
+        default = 5432;
+        description = "PostgreSQL server port.";
+        type = types.port;
+      };
+
+      type = mkOption {
+        default = "sqlite";
+        description = "Database engine to use. Defaults to SQLite.";
+
+        type = types.enum [
+          "sqlite"
+          "postgres"
+        ];
+      };
+
+      user = mkOption {
+        default = "linkding";
+        description = "PostgreSQL user name.";
+        type = types.str;
+      };
+    };
+
+    environmentFile = mkOption {
+      default = null;
+
+      description = ''
+        Path to an environment file loaded by all linkding services.
+        Useful for injecting secrets that should not appear in the Nix store,
+        such as `LD_DB_PASSWORD` or `LD_SUPERUSER_PASSWORD`.
+      '';
+
+      example = "/run/secrets/linkding.env";
+      type = types.nullOr types.path;
     };
 
     group = mkOption {
-      type = types.str;
       default = "linkding";
+
       description = ''
         Group under which linkding runs.
 
@@ -48,108 +113,54 @@ in
         group exists before the linkding service starts.
         :::
       '';
-    };
 
-    dataDir = mkOption {
-      type = types.path;
-      default = "/var/lib/linkding";
-      description = "Directory used for all mutable state: SQLite database, secret key, favicons, previews, and assets.";
-    };
-
-    address = mkOption {
       type = types.str;
-      default = "127.0.0.1";
-      description = "Address on which linkding listens.";
+    };
+
+    openFirewall = mkOption {
+      default = false;
+      description = "Open the linkding port in the firewall.";
+      type = types.bool;
     };
 
     port = mkOption {
-      type = types.port;
       default = 9090;
       description = "Port on which linkding listens.";
-    };
-
-    contextPath = mkOption {
-      type = types.str;
-      default = "";
-      example = "linkding/";
-      description = ''
-        Configures a URL context path under which linkding is accessible.
-        When set, linkding is available at `http://host:<port>/<contextPath>`.
-        Must end with a `/` when non-empty.
-      '';
-    };
-
-    environmentFile = mkOption {
-      type = types.nullOr types.path;
-      default = null;
-      example = "/run/secrets/linkding.env";
-      description = ''
-        Path to an environment file loaded by all linkding services.
-        Useful for injecting secrets that should not appear in the Nix store,
-        such as `LD_DB_PASSWORD` or `LD_SUPERUSER_PASSWORD`.
-      '';
+      type = types.port;
     };
 
     settings = mkOption {
-      type = types.attrsOf types.str;
       default = { };
-      example = {
-        LD_DISABLE_BACKGROUND_TASKS = "True";
-        LD_DISABLE_URL_VALIDATION = "True";
-        LD_ENABLE_OIDC = "True";
-      };
+
       description = ''
         Additional environment variables passed to linkding.
         Refer to the [linkding documentation](https://linkding.link/options/)
         for the full list of supported `LD_*` options.
       '';
+
+      example = {
+        LD_DISABLE_BACKGROUND_TASKS = "True";
+        LD_DISABLE_URL_VALIDATION = "True";
+        LD_ENABLE_OIDC = "True";
+      };
+
+      type = types.attrsOf types.str;
     };
 
-    database = {
-      type = mkOption {
-        type = types.enum [
-          "sqlite"
-          "postgres"
-        ];
-        default = "sqlite";
-        description = "Database engine to use. Defaults to SQLite.";
-      };
+    user = mkOption {
+      default = "linkding";
 
-      host = mkOption {
-        type = types.str;
-        default = "localhost";
-        description = "PostgreSQL server host.";
-      };
+      description = ''
+        User account under which linkding runs.
 
-      port = mkOption {
-        type = types.port;
-        default = 5432;
-        description = "PostgreSQL server port.";
-      };
+        ::: {.note}
+        If left as the default value this user will automatically be created
+        on system activation, otherwise you are responsible for ensuring the
+        user exists before the linkding service starts.
+        :::
+      '';
 
-      name = mkOption {
-        type = types.str;
-        default = "linkding";
-        description = "PostgreSQL database name.";
-      };
-
-      user = mkOption {
-        type = types.str;
-        default = "linkding";
-        description = "PostgreSQL user name.";
-      };
-
-      createLocally = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Whether to automatically create a local PostgreSQL database and user.";
-      };
-    };
-
-    openFirewall = mkOption {
-      type = types.bool;
-      default = false;
-      description = "Open the linkding port in the firewall.";
+      type = types.str;
     };
   };
 
@@ -166,17 +177,17 @@ in
       # Build the environment passed to every linkding process.
       environment = {
         DJANGO_SETTINGS_MODULE = "bookmarks.settings.prod";
-        _NIXOS_LINKDING_DATA_DIR = cfg.dataDir;
         LD_SERVER_PORT = toString cfg.port;
+        _NIXOS_LINKDING_DATA_DIR = cfg.dataDir;
       }
       // optionalAttrs (cfg.contextPath != "") {
         LD_CONTEXT_PATH = cfg.contextPath;
       }
       // optionalAttrs usePostgres {
-        LD_DB_ENGINE = "postgres";
         LD_DB_DATABASE = cfg.database.name;
-        LD_DB_USER = cfg.database.user;
+        LD_DB_ENGINE = "postgres";
         LD_DB_HOST = "/run/postgresql";
+        LD_DB_USER = cfg.database.user;
       }
       // optionalAttrs (usePostgres && !cfg.database.createLocally) {
         LD_DB_HOST = cfg.database.host;
@@ -258,40 +269,44 @@ in
         '';
 
       commonServiceConfig = {
-        Slice = "system-linkding.slice";
-        User = cfg.user;
-        Group = cfg.group;
+        Environment = "PYTHONPATH=${pythonPath}";
+
         EnvironmentFile = [
           environmentFile
         ]
         ++ lib.optional (cfg.environmentFile != null) cfg.environmentFile;
-        Environment = "PYTHONPATH=${pythonPath}";
-        WorkingDirectory = cfg.dataDir;
+
+        Group = cfg.group;
+        # Hardening
+        NoNewPrivileges = true;
+        PrivateDevices = true;
+        PrivateMounts = true;
+        PrivateTmp = true;
+        ProtectClock = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectHostname = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectProc = "invisible";
+        ProtectSystem = "strict";
+        ReadWritePaths = [ cfg.dataDir ];
+        RemoveIPC = true;
+        RestrictRealtime = true;
+        RestrictSUIDSGID = true;
+        Slice = "system-linkding.slice";
+
         StateDirectory = [
           "linkding"
           "linkding/favicons"
           "linkding/previews"
           "linkding/assets"
         ];
+
         StateDirectoryMode = "0750";
-        # Hardening
-        NoNewPrivileges = true;
-        PrivateTmp = true;
-        PrivateDevices = true;
-        ProtectSystem = "strict";
-        ProtectHome = true;
-        ReadWritePaths = [ cfg.dataDir ];
-        PrivateMounts = true;
-        ProtectClock = true;
-        ProtectControlGroups = true;
-        ProtectHostname = true;
-        ProtectKernelLogs = true;
-        ProtectKernelModules = true;
-        ProtectKernelTunables = true;
-        ProtectProc = "invisible";
-        RemoveIPC = true;
-        RestrictRealtime = true;
-        RestrictSUIDSGID = true;
+        User = cfg.user;
+        WorkingDirectory = cfg.dataDir;
       };
     in
     {
@@ -303,12 +318,14 @@ in
         {
           assertion =
             cfg.database.createLocally -> cfg.database.host == "localhost" || cfg.database.host == "";
+
           message = "services.linkding.database.host should be empty or \"localhost\" when createLocally is enabled";
         }
         {
           assertion =
             cfg.database.createLocally
             -> cfg.database.user == cfg.user && cfg.database.user == cfg.database.name;
+
           message = "services.linkding.database.user must match services.linkding.user and services.linkding.database.name when createLocally is enabled";
         }
         {
@@ -317,54 +334,40 @@ in
         }
       ];
 
+      environment.systemPackages = [ linkdingManageScript ];
+
       networking.firewall = mkIf cfg.openFirewall {
         allowedTCPPorts = [ cfg.port ];
       };
 
-      environment.systemPackages = [ linkdingManageScript ];
+      # Automatically provision a local PostgreSQL database when requested.
+      services.postgresql = mkIf cfg.database.createLocally {
+        enable = true;
+        ensureDatabases = [ cfg.database.name ];
 
-      users.users.${cfg.user} = {
-        isSystemUser = true;
-        group = cfg.group;
-        home = cfg.dataDir;
-      };
-
-      users.groups.${cfg.group} = { };
-
-      systemd.slices.system-linkding = {
-        description = "linkding bookmark manager System Slice";
-        documentation = [ "https://linkding.link/" ];
-      };
-
-      # One-shot setup service: run database migrations and first-time
-      # initialization steps taken from the upstream bootstrap.sh.
-      systemd.services.linkding-setup = {
-        description = "linkding database migrations and initialization";
-        after = [
-          "network.target"
-        ]
-        ++ lib.optionals (usePostgres && cfg.database.createLocally) [ "postgresql.target" ];
-        requires = lib.optionals (usePostgres && cfg.database.createLocally) [ "postgresql.target" ];
-
-        serviceConfig = commonServiceConfig // {
-          Type = "oneshot";
-          ExecStart = "${lib.getExe' pkg "linkding-bootstrap"}";
-        };
+        ensureUsers = [
+          {
+            ensureDBOwnership = true;
+            name = cfg.database.user;
+          }
+        ];
       };
 
       # Main WSGI service — starts after setup completes.
       systemd.services.linkding = {
-        description = "linkding bookmark manager";
-        wantedBy = [ "multi-user.target" ];
         after = [ "linkding-setup.service" ];
+        description = "linkding bookmark manager";
         requires = [ "linkding-setup.service" ];
-        startLimitBurst = 5;
-        startLimitIntervalSec = 60;
+
         serviceConfig = commonServiceConfig // {
-          Type = "exec";
           ExecStart = "${lib.getExe pkgs.uwsgi} --ini ${uwsgiIni}";
           Restart = "on-failure";
+          Type = "exec";
         };
+
+        startLimitBurst = 5;
+        startLimitIntervalSec = 60;
+        wantedBy = [ "multi-user.target" ];
       };
 
       # Background task processor (Huey). Can be disabled via
@@ -372,29 +375,48 @@ in
       systemd.services.linkding-background-tasks =
         mkIf ((cfg.settings.LD_DISABLE_BACKGROUND_TASKS or "False") != "True")
           {
-            description = "linkding background task processor";
-            wantedBy = [ "multi-user.target" ];
             after = [ "linkding-setup.service" ];
+            description = "linkding background task processor";
             requires = [ "linkding-setup.service" ];
 
             serviceConfig = commonServiceConfig // {
-              Type = "exec";
               ExecStart = "${lib.getExe' pkg "linkding"} run_huey -f";
               Restart = "on-failure";
               RestartSec = "5s";
+              Type = "exec";
             };
+
+            wantedBy = [ "multi-user.target" ];
           };
 
-      # Automatically provision a local PostgreSQL database when requested.
-      services.postgresql = mkIf cfg.database.createLocally {
-        enable = true;
-        ensureDatabases = [ cfg.database.name ];
-        ensureUsers = [
-          {
-            name = cfg.database.user;
-            ensureDBOwnership = true;
-          }
-        ];
+      # One-shot setup service: run database migrations and first-time
+      # initialization steps taken from the upstream bootstrap.sh.
+      systemd.services.linkding-setup = {
+        after = [
+          "network.target"
+        ]
+        ++ lib.optionals (usePostgres && cfg.database.createLocally) [ "postgresql.target" ];
+
+        description = "linkding database migrations and initialization";
+        requires = lib.optionals (usePostgres && cfg.database.createLocally) [ "postgresql.target" ];
+
+        serviceConfig = commonServiceConfig // {
+          ExecStart = "${lib.getExe' pkg "linkding-bootstrap"}";
+          Type = "oneshot";
+        };
+      };
+
+      systemd.slices.system-linkding = {
+        description = "linkding bookmark manager System Slice";
+        documentation = [ "https://linkding.link/" ];
+      };
+
+      users.groups.${cfg.group} = { };
+
+      users.users.${cfg.user} = {
+        group = cfg.group;
+        home = cfg.dataDir;
+        isSystemUser = true;
       };
     }
   );

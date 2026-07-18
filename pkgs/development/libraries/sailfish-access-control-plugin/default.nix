@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   pkg-config,
   qmake,
   qtbase,
@@ -9,8 +9,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "sailfish-access-control-plugin";
   inherit (sailfish-access-control) version src patches;
+  pname = "sailfish-access-control-plugin";
 
   postPatch = ''
     substituteInPlace qt/qt.pro \
@@ -31,9 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
     sailfish-access-control
   ];
 
-  # Qt plugin
-  dontWrapQtApps = true;
-
   # sourceRoot breaks patches
   preConfigure = ''
     cd qt
@@ -44,8 +41,10 @@ stdenv.mkDerivation (finalAttrs: {
     make qmake_all
   '';
 
+  # Qt plugin
+  dontWrapQtApps = true;
+
   meta = {
-    description = "QML interface for sailfish-access-control";
     inherit (sailfish-access-control.meta)
       homepage
       changelog
@@ -53,5 +52,7 @@ stdenv.mkDerivation (finalAttrs: {
       teams
       platforms
       ;
+
+    description = "QML interface for sailfish-access-control";
   };
 })

@@ -1,7 +1,9 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   autoPatchelfHook,
   coreutils,
-  fetchFromGitHub,
   fontconfig,
   fpc,
   gnugrep,
@@ -9,7 +11,6 @@
   iproute2,
   kmod,
   lazarus-qt6,
-  lib,
   libnotify,
   mangohud,
   nix-update-script,
@@ -18,7 +19,6 @@
   pciutils,
   polkit,
   qt6Packages,
-  stdenv,
   wget,
 }:
 
@@ -54,16 +54,16 @@ stdenv.mkDerivation (finalAttrs: {
     qt6Packages.qtbase
   ];
 
-  installPhase = ''
-    runHook preInstall
-    make prefix=$out install
-    runHook postInstall
-  '';
-
   buildPhase = ''
     runHook preBuild
     HOME=$(mktemp -d) lazbuild --lazarusdir=${lazarus-qt6}/share/lazarus -B goverlay.lpi --bm=Release
     runHook postBuild
+  '';
+
+  installPhase = ''
+    runHook preInstall
+    make prefix=$out install
+    runHook postInstall
   '';
 
   preFixup = ''
@@ -95,7 +95,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/benjamimgois/goverlay/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ RoGreat ];
-    mainProgram = "goverlay";
     platforms = lib.platforms.linux;
+    mainProgram = "goverlay";
   };
 })

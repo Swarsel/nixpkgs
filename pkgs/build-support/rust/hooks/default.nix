@@ -1,87 +1,108 @@
 {
+  lib,
+  stdenv,
   cargo-nextest,
   clang,
   diffutils,
-  lib,
   makeSetupHook,
-  rust,
-  stdenv,
+  pkgsCross,
   pkgsHostTarget,
   pkgsTargetTarget,
-
+  rust,
+  tests,
   # This confusingly-named parameter indicates the *subdirectory of
   # `target/` from which to copy the build artifacts.  It is derived
   # from a stdenv platform (or a JSON file).
   target ? stdenv.targetPlatform.rust.cargoShortTarget,
-  tests,
-  pkgsCross,
 }:
 {
+  bindgenHook = makeSetupHook {
+    name = "rust-bindgen-hook";
+
+    substitutions = {
+      inherit clang;
+      libclang = (lib.getLib clang.cc);
+    };
+
+    meta.license = lib.licenses.mit;
+  } ./rust-bindgen-hook.sh;
+
   cargoBuildHook = makeSetupHook {
     name = "cargo-build-hook.sh";
+
     substitutions = {
       inherit (stdenv.targetPlatform.rust) rustcTargetSpec;
       inherit (rust.envVars) setEnv;
 
     };
+
     passthru.tests = {
-      test = tests.rust-hooks.cargoBuildHook;
       ${if stdenv.hostPlatform.isLinux then "testCross" else null} =
         pkgsCross.riscv64.tests.rust-hooks.cargoBuildHook;
+
+      test = tests.rust-hooks.cargoBuildHook;
     };
+
     meta.license = lib.licenses.mit;
   } ./cargo-build-hook.sh;
 
   cargoCheckHook = makeSetupHook {
     name = "cargo-check-hook.sh";
+
     substitutions = {
       inherit (stdenv.targetPlatform.rust) rustcTargetSpec;
       inherit (rust.envVars) setEnv;
     };
+
     passthru.tests = {
-      test = tests.rust-hooks.cargoCheckHook;
       ${if stdenv.hostPlatform.isLinux then "testCross" else null} =
         pkgsCross.riscv64.tests.rust-hooks.cargoCheckHook;
+
+      test = tests.rust-hooks.cargoCheckHook;
     };
+
     meta.license = lib.licenses.mit;
   } ./cargo-check-hook.sh;
 
   cargoInstallHook = makeSetupHook {
     name = "cargo-install-hook.sh";
+
     substitutions = {
       targetSubdirectory = target;
     };
+
     passthru.tests = {
-      test = tests.rust-hooks.cargoInstallHook;
       ${if stdenv.hostPlatform.isLinux then "testCross" else null} =
         pkgsCross.riscv64.tests.rust-hooks.cargoInstallHook;
+
+      test = tests.rust-hooks.cargoInstallHook;
     };
+
     meta.license = lib.licenses.mit;
   } ./cargo-install-hook.sh;
 
   cargoNextestHook = makeSetupHook {
-    name = "cargo-nextest-hook.sh";
     propagatedBuildInputs = [ cargo-nextest ];
+    name = "cargo-nextest-hook.sh";
+
     substitutions = {
       inherit (stdenv.targetPlatform.rust) rustcTargetSpec;
     };
+
     passthru.tests = {
-      test = tests.rust-hooks.cargoNextestHook;
       ${if stdenv.hostPlatform.isLinux then "testCross" else null} =
         pkgsCross.riscv64.tests.rust-hooks.cargoNextestHook;
+
+      test = tests.rust-hooks.cargoNextestHook;
     };
+
     meta.license = lib.licenses.mit;
   } ./cargo-nextest-hook.sh;
 
   cargoSetupHook = makeSetupHook {
     name = "cargo-setup-hook.sh";
+
     substitutions = {
-      defaultConfig = ../fetchcargo-default-config.toml;
-
-      # Specify the stdenv's `diff` by abspath to ensure that the user's build
-      # inputs do not cause us to find the wrong `diff`.
-      diff = "${lib.getBin diffutils}/bin/diff";
-
       cargoConfig =
         lib.optionalString (stdenv.hostPlatform.config != stdenv.targetPlatform.config) ''
           [target."${stdenv.targetPlatform.rust.rustcTarget}"]
@@ -102,37 +123,38 @@
             lib.optionalString (!stdenv.hostPlatform.isx86_32) ''"-Cforce-frame-pointers=yes"''
           } ]
         '';
+
+      defaultConfig = ../fetchcargo-default-config.toml;
+      # Specify the stdenv's `diff` by abspath to ensure that the user's build
+      # inputs do not cause us to find the wrong `diff`.
+      diff = "${lib.getBin diffutils}/bin/diff";
     };
 
     passthru.tests = {
-      test = tests.rust-hooks.cargoSetupHook;
       ${if stdenv.hostPlatform.isLinux then "testCross" else null} =
         pkgsCross.riscv64.tests.rust-hooks.cargoSetupHook;
+
+      test = tests.rust-hooks.cargoSetupHook;
     };
+
     meta.license = lib.licenses.mit;
   } ./cargo-setup-hook.sh;
 
   maturinBuildHook = makeSetupHook {
-    name = "maturin-build-hook.sh";
     propagatedBuildInputs = [
       pkgsHostTarget.maturin
       pkgsHostTarget.cargo
       pkgsHostTarget.rustc
     ];
+
+    name = "maturin-build-hook.sh";
+
     substitutions = {
       inherit (stdenv.targetPlatform.rust) rustcTargetSpec;
       inherit (rust.envVars) setEnv;
 
     };
+
     meta.license = lib.licenses.mit;
   } ./maturin-build-hook.sh;
-
-  bindgenHook = makeSetupHook {
-    name = "rust-bindgen-hook";
-    substitutions = {
-      libclang = (lib.getLib clang.cc);
-      inherit clang;
-    };
-    meta.license = lib.licenses.mit;
-  } ./rust-bindgen-hook.sh;
 }

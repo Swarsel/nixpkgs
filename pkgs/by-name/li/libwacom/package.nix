@@ -1,29 +1,23 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
   glib,
-  pkg-config,
-  udev,
-  udevCheckHook,
   libevdev,
   libgudev,
-  python3,
-  valgrind,
   libwacom-surface,
+  meson,
+  ninja,
+  pkg-config,
+  python3,
+  udev,
+  udevCheckHook,
+  valgrind,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libwacom";
   version = "2.19.0";
-
-  outputs = [
-    "bin"
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "linuxwacom";
@@ -31,6 +25,12 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "libwacom-${finalAttrs.version}";
     hash = "sha256-0TlTt/9kN8NiWGDhvzMfvgJZnlzwcEFzAOCSzRowX8A=";
   };
+
+  outputs = [
+    "bin"
+    "out"
+    "dev"
+  ];
 
   postPatch = ''
     patchShebangs test/check-files-in-git.sh
@@ -63,7 +63,6 @@ stdenv.mkDerivation (finalAttrs: {
   # Tests are in the `tests` pass-through derivation because one of them is flaky, frequently causing build failures.
   # See https://github.com/NixOS/nixpkgs/issues/328140
   doCheck = false;
-  doInstallCheck = true;
 
   nativeCheckInputs = [
     valgrind
@@ -74,21 +73,25 @@ stdenv.mkDerivation (finalAttrs: {
     ]))
   ];
 
+  doInstallCheck = true;
+
   passthru.tests = {
     inherit libwacom-surface;
     tests = finalAttrs.finalPackage.overrideAttrs { doCheck = true; };
   };
 
   meta = {
-    platforms = lib.platforms.linux;
+    description = "Libraries, configuration, and diagnostic tools for Wacom tablets running under Linux";
     homepage = "https://linuxwacom.github.io/";
     changelog = "https://github.com/linuxwacom/libwacom/blob/${finalAttrs.src.rev}/NEWS";
-    description = "Libraries, configuration, and diagnostic tools for Wacom tablets running under Linux";
-    teams = [ lib.teams.freedesktop ];
     license = lib.licenses.hpnd;
+    platforms = lib.platforms.linux;
+
     badPlatforms = [
       # Mandatory shared library.
       lib.systems.inspect.platformPatterns.isStatic
     ];
+
+    teams = [ lib.teams.freedesktop ];
   };
 })

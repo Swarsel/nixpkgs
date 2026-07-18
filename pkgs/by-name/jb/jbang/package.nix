@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  coreutils,
+  curl,
   fetchzip,
   jdk,
   makeWrapper,
-  coreutils,
-  curl,
 }:
 
 stdenv.mkDerivation rec {
-  version = "0.136.0";
   pname = "jbang";
+  version = "0.136.0";
 
   src = fetchzip {
     url = "https://github.com/jbangdev/jbang/releases/download/v${version}/${pname}-${version}.tar";
@@ -42,17 +42,21 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Run java as scripts anywhere";
-    mainProgram = "jbang";
+
     longDescription = ''
       jbang uses the java language to build scripts similar to groovy scripts. Dependencies are automatically
       downloaded and the java code runs.
     '';
+
     homepage = "https://www.jbang.dev";
+    license = lib.licenses.mit;
+
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
     ];
-    license = lib.licenses.mit;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [ moaxcp ];
+    platforms = lib.platforms.all;
+    mainProgram = "jbang";
   };
 }

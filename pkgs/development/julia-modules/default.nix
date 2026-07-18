@@ -1,28 +1,24 @@
 {
+  lib,
+  stdenv,
+  # Artifacts dependencies
+  fetchurl,
   callPackage,
   fetchgit,
   fontconfig,
+  gcc,
   git,
-  lib,
+  glibc,
+  julia,
   makeWrapper,
+  pkgs,
   python3,
   runCommand,
   writableTmpDirAsHomeHook,
   writeTextFile,
-
-  # Artifacts dependencies
-  fetchurl,
-  gcc,
-  glibc,
-  pkgs,
-  stdenv,
-
-  julia,
-
   # Special registry which is equal to JuliaRegistries/General, but every Versions.toml
   # entry is augmented with a Nix sha256 hash
   augmentedRegistry ? callPackage ./registry.nix { },
-
   # Other overridable arguments
   extraLibs ? [ ],
   juliaCpuTarget ? null,
@@ -58,8 +54,8 @@ let
   juliaWrapped =
     runCommand "julia-${julia.version}-wrapped"
       {
-        nativeBuildInputs = [ makeWrapper ];
         inherit makeWrapperArgs;
+        nativeBuildInputs = [ makeWrapper ];
       }
       ''
         mkdir -p $out/bin
@@ -92,6 +88,7 @@ let
       packageNames
       packageImplications
       ;
+
     packageOverrides = packageOverridesRepoified;
   };
   stdlibInfos = callPackage ./stdlib-infos.nix {
@@ -215,6 +212,10 @@ let
   artifactsNix =
     runCommand "julia-artifacts.nix"
       {
+        nativeBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
+          writableTmpDirAsHomeHook
+        ];
+
         buildInputs = [
           (python3.withPackages (
             ps: with ps; [
@@ -222,10 +223,6 @@ let
               pyyaml
             ]
           ))
-        ];
-
-        nativeBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
-          writableTmpDirAsHomeHook
         ];
       }
       ''
@@ -277,8 +274,9 @@ let
       packageImplications
       precompile
       ;
-    julia = juliaWrapped;
+
     inherit project;
+    julia = juliaWrapped;
     registry = minimalRegistry;
   };
 
@@ -292,7 +290,6 @@ runCommand "julia-${julia.version}-env"
       inherit julia;
       inherit juliaWrapped;
       inherit (julia) pname version meta;
-
       # Expose the steps we used along the way in case the user wants to use them, for example to build
       # expressions and build them separately to avoid IFD.
       inherit dependencies;

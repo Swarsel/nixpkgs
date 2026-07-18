@@ -1,49 +1,29 @@
 {
   lib,
   stdenv,
-  pnpm,
-  pnpmConfigHook,
-  fetchPnpmDeps,
-  rustPlatform,
-  pkg-config,
   bzip2,
-  zstd,
+  cargo,
+  fetchPnpmDeps,
   ironcalc,
   nodejs,
-  cargo,
+  pkg-config,
+  pnpm,
+  pnpmConfigHook,
+  rustPlatform,
   rustc,
   writableTmpDirAsHomeHook,
+  zstd,
 }:
 
 stdenv.mkDerivation {
-  pname = "ironcalc-nodejs";
   inherit (ironcalc) version src;
+  pname = "ironcalc-nodejs";
 
   postPatch = ''
     cd bindings/nodejs
   '';
 
   strictDeps = true;
-  __structuredAttrs = true;
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (ironcalc) src;
-    pname = "ironcalc-nodejs";
-    hash = "sha256-WBISZTISqnti5MiI+/rECZw31YumSm7VPN+MYZNoS28=";
-    fetcherVersion = 4;
-    preInstall = ''
-      cd bindings/nodejs
-    '';
-  };
-
-  makeCacheWritable = true;
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (ironcalc) src;
-    hash = ironcalc.cargoHash;
-  };
-
-  cargoRoot = "../..";
 
   nativeBuildInputs = [
     pkg-config
@@ -77,6 +57,28 @@ stdenv.mkDerivation {
     cp index.js index.d.ts package.json *.node $out/lib/node_modules/@ironcalc/nodejs/
     runHook postInstall
   '';
+
+  __structuredAttrs = true;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (ironcalc) src;
+    hash = ironcalc.cargoHash;
+  };
+
+  cargoRoot = "../..";
+  makeCacheWritable = true;
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (ironcalc) src;
+    pname = "ironcalc-nodejs";
+
+    preInstall = ''
+      cd bindings/nodejs
+    '';
+
+    fetcherVersion = 4;
+    hash = "sha256-WBISZTISqnti5MiI+/rECZw31YumSm7VPN+MYZNoS28=";
+  };
 
   meta = ironcalc.meta // {
     description = "Node.js bindings for IronCalc";

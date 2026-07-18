@@ -1,31 +1,30 @@
 {
   lib,
   stdenv,
-  callPackage,
-  python3Packages,
   fetchFromGitHub,
-  installShellFiles,
-  platformio,
+  callPackage,
   esptool,
   git,
-  versionCheckHook,
+  installShellFiles,
   nixosTests,
+  platformio,
+  python3Packages,
+  versionCheckHook,
 }:
 
 let
   python = python3Packages.python.override {
-    self = python;
     packageOverrides = self: super: {
       esphome-dashboard = self.callPackage ./dashboard.nix { };
-
       paho-mqtt = self.paho-mqtt_1;
     };
+
+    self = python;
   };
 in
 python.pkgs.buildPythonApplication (finalAttrs: {
   pname = "esphome";
   version = "2026.6.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "esphome";
@@ -46,29 +45,56 @@ python.pkgs.buildPythonApplication (finalAttrs: {
     ./platformio-binary-reference.patch
   ];
 
-  build-system = with python.pkgs; [
-    setuptools
-  ];
-
-  nativeBuildInputs = [
-    installShellFiles
-  ];
-
-  pythonRelaxDeps = true;
-
-  pythonRemoveDeps = [
-    "esptool"
-    "platformio"
-  ];
-
   postPatch = ''
     substituteInPlace pyproject.toml \
       --replace-fail "setuptools==82.0.1" "setuptools" \
       --replace-fail "wheel>=0.43,<0.48" "wheel"
   '';
 
+  nativeBuildInputs = [
+    installShellFiles
+  ];
+
   # Remove esptool and platformio from requirements
   env.ESPHOME_USE_SUBPROCESS = "";
+
+  nativeCheckInputs =
+    with python.pkgs;
+    [
+      hypothesis
+      mock
+      pytest-asyncio
+      pytest-cov-stub
+      pytest-mock
+      pytestCheckHook
+    ]
+    ++ [
+      git
+      versionCheckHook
+    ];
+
+  preCheck = ''
+    export PATH=$PATH:$out/bin
+  '';
+
+  postInstall =
+    let
+      argcomplete = lib.getExe' python.pkgs.argcomplete "register-python-argcomplete";
+    in
+    ''
+      installShellCompletion --cmd esphome \
+        --bash <(${argcomplete} --shell bash esphome) \
+        --zsh <(${argcomplete} --shell zsh esphome) \
+        --fish <(${argcomplete} --shell fish esphome)
+    '';
+
+  doInstallCheck = true;
+  # Needed for tests
+  __darwinAllowLocalNetworking = true;
+
+  build-system = with python.pkgs; [
+    setuptools
+  ];
 
   dependencies = with python.pkgs; [
     aioesphomeapi
@@ -102,44 +128,6 @@ python.pkgs.buildPythonApplication (finalAttrs: {
     zeroconf
   ];
 
-  makeWrapperArgs = [
-    # platformio is used in esphome/platformio_api.py
-    # esptool is used in esphome/__main__.py
-    # git is used in esphome/git.py
-    "--prefix PATH : ${
-      lib.makeBinPath [
-        platformio
-        esptool
-        git
-      ]
-    }"
-    # The dashboard requires esphome to be importable
-    # dependencies are added to show better error messages
-    "--prefix PYTHONPATH : $out/${python.sitePackages}:${python.pkgs.makePythonPath finalAttrs.passthru.dependencies}"
-    "--prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [ stdenv.cc.cc ]}"
-    "--set ESPHOME_USE_SUBPROCESS ''"
-    # https://github.com/NixOS/nixpkgs/issues/362193
-    "--set PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION 'python'"
-  ];
-
-  # Needed for tests
-  __darwinAllowLocalNetworking = true;
-
-  nativeCheckInputs =
-    with python.pkgs;
-    [
-      hypothesis
-      mock
-      pytest-asyncio
-      pytest-cov-stub
-      pytest-mock
-      pytestCheckHook
-    ]
-    ++ [
-      git
-      versionCheckHook
-    ];
-
   disabledTestPaths = [
     # platformio builds; requires networking for dependency resolution
     "tests/integration"
@@ -148,23 +136,6 @@ python.pkgs.buildPythonApplication (finalAttrs: {
     "tests/unit_tests/test_writer.py"
     "tests/unit_tests/test_espidf_component.py"
   ];
-
-  preCheck = ''
-    export PATH=$PATH:$out/bin
-  '';
-
-  postInstall =
-    let
-      argcomplete = lib.getExe' python.pkgs.argcomplete "register-python-argcomplete";
-    in
-    ''
-      installShellCompletion --cmd esphome \
-        --bash <(${argcomplete} --shell bash esphome) \
-        --zsh <(${argcomplete} --shell zsh esphome) \
-        --fish <(${argcomplete} --shell fish esphome)
-    '';
-
-  doInstallCheck = true;
 
   disabledTests = [
     # tries to import platformio, which is wrapped in an fhsenv
@@ -188,26 +159,57 @@ python.pkgs.buildPythonApplication (finalAttrs: {
     "test_patch_file_downloader_recovers_against_real_server"
   ];
 
+  makeWrapperArgs = [
+    # platformio is used in esphome/platformio_api.py
+    # esptool is used in esphome/__main__.py
+    # git is used in esphome/git.py
+    "--prefix PATH : ${
+      lib.makeBinPath [
+        platformio
+        esptool
+        git
+      ]
+    }"
+    # The dashboard requires esphome to be importable
+    # dependencies are added to show better error messages
+    "--prefix PYTHONPATH : $out/${python.sitePackages}:${python.pkgs.makePythonPath finalAttrs.passthru.dependencies}"
+    "--prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [ stdenv.cc.cc ]}"
+    "--set ESPHOME_USE_SUBPROCESS ''"
+    # https://github.com/NixOS/nixpkgs/issues/362193
+    "--set PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION 'python'"
+  ];
+
+  pyproject = true;
+  pythonRelaxDeps = true;
+
+  pythonRemoveDeps = [
+    "esptool"
+    "platformio"
+  ];
+
   passthru = {
     dashboard = python.pkgs.esphome-dashboard;
-    updateScript = callPackage ./update.nix { };
     tests = { inherit (nixosTests) esphome; };
+    updateScript = callPackage ./update.nix { };
   };
 
   meta = {
-    changelog = "https://github.com/esphome/esphome/releases/tag/${finalAttrs.src.tag}";
     description = "Make creating custom firmwares for ESP32/ESP8266 super easy";
     homepage = "https://esphome.io/";
+    changelog = "https://github.com/esphome/esphome/releases/tag/${finalAttrs.src.tag}";
+
     license = with lib.licenses; [
       mit # The C++/runtime codebase of the ESPHome project (file extensions .c, .cpp, .h, .hpp, .tcc, .ino)
       gpl3Only # The python codebase and all other parts of this codebase
     ];
+
     maintainers = with lib.maintainers; [
       hexa
       picnoir
       thanegill
       karlbeecken
     ];
+
     mainProgram = "esphome";
   };
 })

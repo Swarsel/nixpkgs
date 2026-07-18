@@ -1,22 +1,22 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  autoreconfHook,
-  pkg-config,
-  wrapGAppsHook3,
-  glib,
-  gtk3,
-  expat,
-  itstool,
-  gnome-doc-utils,
-  which,
   at-spi2-core,
+  autoreconfHook,
   dbus,
-  libxslt,
+  expat,
+  glib,
+  gnome-doc-utils,
+  gtk3,
+  itstool,
   libxml2,
-  speechSupport ? true,
+  libxslt,
+  pkg-config,
   speechd-minimal,
+  which,
+  wrapGAppsHook3,
+  speechSupport ? true,
 }:
 
 stdenv.mkDerivation {
@@ -24,19 +24,12 @@ stdenv.mkDerivation {
   version = "unstable-2021-04-25";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "GNOME";
     repo = "dasher";
     rev = "90c753b87564fa3f42cb2d04e1eb6662dc8e0f8f";
     sha256 = "sha256-aM05CV68pCRlhfIPyhuHWeRL+tDroB3fVsoX08OU8hY=";
+    domain = "gitlab.gnome.org";
   };
-
-  prePatch = ''
-    # tries to invoke git for something, probably fetching the ref
-    echo "true" > build-aux/mkversion
-  '';
-
-  configureFlags = lib.optional (!speechSupport) "--disable-speech";
 
   nativeBuildInputs = [
     autoreconfHook
@@ -60,11 +53,17 @@ stdenv.mkDerivation {
   ]
   ++ lib.optional speechSupport speechd-minimal;
 
+  configureFlags = lib.optional (!speechSupport) "--disable-speech";
   enableParallelBuilding = true;
 
+  prePatch = ''
+    # tries to invoke git for something, probably fetching the ref
+    echo "true" > build-aux/mkversion
+  '';
+
   meta = {
-    homepage = "https://www.inference.org.uk/dasher/";
     description = "Information-efficient text-entry interface, driven by natural continuous pointing gestures";
+    homepage = "https://www.inference.org.uk/dasher/";
     license = lib.licenses.gpl2Only;
     maintainers = [ ];
     platforms = lib.platforms.all;

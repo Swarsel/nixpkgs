@@ -19,12 +19,14 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://serviio.org";
     description = "UPnP Media Streaming Server";
+
     longDescription = ''
       Serviio is a free media server. It allows you to stream your media files (music, video or images)
       to any DLNA-certified renderer device (e.g. a TV set, Bluray player, games console) on your home network.
     '';
+
+    homepage = "https://serviio.org";
     license = lib.licenses.unfree;
     maintainers = [ lib.maintainers.thpham ];
     platforms = lib.platforms.linux;

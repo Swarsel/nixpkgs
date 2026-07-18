@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nixosTests,
   autoreconfHook,
-  pkg-config,
-  libnl,
   iptables,
+  libnl,
+  nixosTests,
+  pkg-config,
 }:
 
 let
@@ -16,20 +16,20 @@ in
 stdenv.mkDerivation {
   pname = "jool-cli";
   version = sourceAttrs.version;
-
   src = sourceAttrs.src;
-
-  patches = [ ./validate-config.patch ];
 
   outputs = [
     "out"
     "man"
   ];
 
+  patches = [ ./validate-config.patch ];
+
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     libnl
     iptables
@@ -49,10 +49,10 @@ stdenv.mkDerivation {
   };
 
   meta = {
-    homepage = "https://www.jool.mx/";
     description = "Fairly compliant SIIT and Stateful NAT64 for Linux - CLI tools";
-    platforms = lib.platforms.linux;
+    homepage = "https://www.jool.mx/";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ fpletz ];
+    platforms = lib.platforms.linux;
   };
 }

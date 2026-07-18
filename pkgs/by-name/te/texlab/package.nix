@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   help2man,
   installShellFiles,
   libiconv,
   nix-update-script,
+  rustPlatform,
 }:
 
 let
@@ -23,15 +23,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-MG9pyjRboXlANhw4sa2WKrHovivtLxLbvyCN+Jy4/Tc=";
   };
 
-  cargoHash = "sha256-rrfVLTyUSxX9AqhcYJ/NzuxjtuojBNkByUrW/LvB7ao=";
-
   outputs = [ "out" ] ++ lib.optional (!isCross) "man";
-
   nativeBuildInputs = [ installShellFiles ] ++ lib.optional (!isCross) help2man;
 
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
     libiconv
   ];
+
+  cargoHash = "sha256-rrfVLTyUSxX9AqhcYJ/NzuxjtuojBNkByUrW/LvB7ao=";
 
   # When we cross compile we cannot run the output executable to
   # generate the man page
@@ -49,10 +48,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/latex-lsp/texlab";
     changelog = "https://github.com/latex-lsp/texlab/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       doronbehar
       kira-bruneau
     ];
+
     platforms = lib.platforms.all;
     mainProgram = "texlab";
   };

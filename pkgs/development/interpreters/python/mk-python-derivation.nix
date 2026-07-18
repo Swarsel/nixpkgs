@@ -2,20 +2,18 @@
 
 {
   lib,
-  config,
-  python,
   # Allow passing in a custom stdenv to buildPython*.override
   stdenv,
-  wrapPython,
-  unzip,
+  config,
+  eggBuildHook,
+  eggInstallHook,
+  eggUnpackHook,
   ensureNewerSourcesForZipFilesHook,
-  # Whether the derivation provides a Python module or not.
-  toPythonModule,
   namePrefix,
   nix-update-script,
-  setuptools,
   pypaBuildHook,
   pypaInstallHook,
+  python,
   pythonCatchConflictsHook,
   pythonImportsCheckHook,
   pythonNamespacesHook,
@@ -24,11 +22,13 @@
   pythonRemoveBinBytecodeHook,
   pythonRemoveTestsDirHook,
   pythonRuntimeDepsCheckHook,
+  setuptools,
   setuptoolsBuildHook,
+  # Whether the derivation provides a Python module or not.
+  toPythonModule,
+  unzip,
   wheelUnpackHook,
-  eggUnpackHook,
-  eggBuildHook,
-  eggInstallHook,
+  wrapPython,
 }:
 
 let
@@ -117,71 +117,29 @@ lib.extendMkDerivation {
   extendDrvArgs =
     finalAttrs:
     {
-      # Build-time dependencies for the package
-      nativeBuildInputs ? [ ],
-
-      # Run-time dependencies for the package
-      buildInputs ? [ ],
-
-      # Dependencies needed for running the checkPhase.
-      # These are added to buildInputs when doCheck = true.
-      checkInputs ? [ ],
-      nativeCheckInputs ? [ ],
-
-      # propagate build dependencies so in case we have A -> B -> C,
-      # C can import package A propagated by B
-      propagatedBuildInputs ? [ ],
-
-      # Python module dependencies.
-      # These are named after PEP-621.
-      dependencies ? [ ],
-      optional-dependencies ? { },
-
       # Python PEP-517 build systems.
       build-system ? [ ],
-
-      # DEPRECATED: use propagatedBuildInputs
-      pythonPath ? [ ],
-
-      # Enabled to detect some (native)BuildInputs mistakes
-      strictDeps ? true,
-
-      outputs ? [ "out" ],
-
-      # used to disable derivation, useful for specific python versions
-      disabled ? false,
-
+      # Run-time dependencies for the package
+      buildInputs ? [ ],
       # Raise an error if two packages are installed with the same name
       # TODO: For cross we probably need a different PYTHONPATH, or not
       # add the runtime deps until after buildPhase.
       catchConflicts ? (python.stdenv.hostPlatform == python.stdenv.buildPlatform),
-
-      # Additional arguments to pass to the makeWrapper function, which wraps
-      # generated binaries.
-      makeWrapperArgs ? [ ],
-
-      # Skip wrapping of python programs altogether
-      dontWrapPythonPrograms ? false,
-
+      # Dependencies needed for running the checkPhase.
+      # These are added to buildInputs when doCheck = true.
+      checkInputs ? [ ],
+      # Python module dependencies.
+      # These are named after PEP-621.
+      dependencies ? [ ],
+      # used to disable derivation, useful for specific python versions
+      disabled ? false,
+      doCheck ? true,
       # Don't use Pip to install a wheel
       # Note this is actually a variable for the pipInstallPhase in pip's setupHook.
       # It's included here to prevent an infinite recursion.
       dontUsePipInstall ? false,
-
-      # Skip setting the PYTHONNOUSERSITE environment variable in wrapped programs
-      permitUserSite ? false,
-
-      # Remove bytecode from bin folder.
-      # When a Python script has the extension `.py`, bytecode is generated
-      # Typically, executables in bin have no extension, so no bytecode is generated.
-      # However, some packages do provide executables with extensions, and thus bytecode is generated.
-      removeBinBytecode ? true,
-
-      # pyproject = true <-> format = "pyproject"
-      # pyproject = false <-> format = "other"
-      # https://github.com/NixOS/nixpkgs/issues/253154
-      pyproject ? null,
-
+      # Skip wrapping of python programs altogether
+      dontWrapPythonPrograms ? false,
       # Several package formats are supported.
       # "setuptools" : Install a common setuptools/distutils based package. This builds a wheel.
       # "wheel" : Install from a pre-compiled wheel.
@@ -189,11 +147,33 @@ lib.extendMkDerivation {
       # "egg": Install a package from an egg.
       # "other" : Provide your own buildPhase and installPhase.
       format ? null,
-
+      # Additional arguments to pass to the makeWrapper function, which wraps
+      # generated binaries.
+      makeWrapperArgs ? [ ],
       meta ? { },
-
-      doCheck ? true,
-
+      # Build-time dependencies for the package
+      nativeBuildInputs ? [ ],
+      nativeCheckInputs ? [ ],
+      optional-dependencies ? { },
+      outputs ? [ "out" ],
+      # Skip setting the PYTHONNOUSERSITE environment variable in wrapped programs
+      permitUserSite ? false,
+      # propagate build dependencies so in case we have A -> B -> C,
+      # C can import package A propagated by B
+      propagatedBuildInputs ? [ ],
+      # pyproject = true <-> format = "pyproject"
+      # pyproject = false <-> format = "other"
+      # https://github.com/NixOS/nixpkgs/issues/253154
+      pyproject ? null,
+      # DEPRECATED: use propagatedBuildInputs
+      pythonPath ? [ ],
+      # Remove bytecode from bin folder.
+      # When a Python script has the extension `.py`, bytecode is generated
+      # Typically, executables in bin have no extension, so no bytecode is generated.
+      # However, some packages do provide executables with extensions, and thus bytecode is generated.
+      removeBinBytecode ? true,
+      # Enabled to detect some (native)BuildInputs mistakes
+      strictDeps ? true,
       ...
     }@attrs:
 
@@ -289,8 +269,10 @@ lib.extendMkDerivation {
     in
     {
       inherit name;
-
       inherit catchConflicts;
+      inherit strictDeps;
+      inherit dontWrapPythonPrograms;
+      outputs = outputs ++ optional withDistOutput "dist";
 
       nativeBuildInputs = [
         python
@@ -381,8 +363,6 @@ lib.extendMkDerivation {
           python
         ];
 
-      inherit strictDeps;
-
       env = {
         LANG = "${if python.stdenv.hostPlatform.isDarwin then "en_US" else "C"}.UTF-8";
       }
@@ -392,9 +372,6 @@ lib.extendMkDerivation {
       doCheck = false;
       doInstallCheck = attrs.doCheck or true;
       nativeInstallCheckInputs = nativeCheckInputs ++ attrs.nativeInstallCheckInputs or [ ];
-      installCheckInputs = checkInputs ++ attrs.installCheckInputs or [ ];
-
-      inherit dontWrapPythonPrograms;
 
       postFixup =
         optionalString (!finalAttrs.dontWrapPythonPrograms) ''
@@ -407,7 +384,7 @@ lib.extendMkDerivation {
         python.pythonOnBuildForHost
       ];
 
-      outputs = outputs ++ optional withDistOutput "dist";
+      installCheckInputs = checkInputs ++ attrs.installCheckInputs or [ ];
 
       passthru = {
         inherit
@@ -417,13 +394,16 @@ lib.extendMkDerivation {
           dependencies
           optional-dependencies
           ;
-        updateScript = nix-update-script { };
+
         # __stdenvPythonCompat[Pos] attributes are here for overrideStdenvCompat in `python-packages-base.nix` to work.
         # They are internal and subject to changes.
         # TODO(@ShamrockLee): Remove when overrideStdenvCompat gets removed.
         ${if attrs ? stdenv then "__stdenvPythonCompat" else null} = attrs.stdenv;
+
         ${if attrs ? stdenv then "__stdenvPythonCompatPos" else null} =
           builtins.unsafeGetAttrPos "stdenv" attrs;
+
+        updateScript = nix-update-script { };
       }
       // attrs.passthru or { };
 

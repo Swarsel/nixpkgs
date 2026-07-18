@@ -2,27 +2,27 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
   apple-sdk,
-  lua,
-  jemalloc,
-  pkg-config,
-  nixosTests,
-  tcl,
-  which,
-  ps,
+  fetchpatch2,
   getconf,
-  systemd,
-  openssl,
-  python3,
+  jemalloc,
+  lua,
   nix-update-script,
+  nixosTests,
+  openssl,
+  pkg-config,
+  ps,
+  python3,
+  systemd,
+  tcl,
   versionCheckHook,
-  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
+  which,
   tlsSupport ? true,
   # Using system jemalloc fixes cross-compilation and various setups.
   # However the experimental 'active defragmentation' feature of redis requires
   # their custom patched version of jemalloc.
   useSystemJemalloc ? true,
+  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,8 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   patches = lib.optional useSystemJemalloc (fetchpatch2 {
-    url = "https://gitlab.archlinux.org/archlinux/packaging/packages/redis/-/raw/102cc861713c796756abd541bf341a4512eb06e6/redis-5.0-use-system-jemalloc.patch";
     hash = "sha256-A9qp+PWQRuNy/xmv9KLM7/XAyL7Tzkyn0scpVCGngcc=";
+    url = "https://gitlab.archlinux.org/archlinux/packaging/packages/redis/-/raw/102cc861713c796756abd541bf341a4512eb06e6/redis-5.0-use-system-jemalloc.patch";
   });
 
   postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
@@ -73,18 +73,17 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withSystemd [ "USE_SYSTEMD=yes" ]
   ++ lib.optionals tlsSupport [ "BUILD_TLS=yes" ];
 
-  enableParallelBuilding = true;
-
   env.NIX_LDFLAGS = lib.optionalString stdenv.hostPlatform.isFreeBSD "-lexecinfo";
-
   # darwin currently lacks a pure `pgrep` which is extensively used here
   doCheck = !stdenv.hostPlatform.isDarwin;
+
   nativeCheckInputs = [
     which
     tcl
     ps
   ]
   ++ lib.optionals stdenv.hostPlatform.isStatic [ getconf ];
+
   checkPhase = ''
     runHook preCheck
 
@@ -123,20 +122,21 @@ stdenv.mkDerivation (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  enableParallelBuilding = true;
   versionCheckProgram = "${placeholder "out"}/bin/redis-server";
 
   passthru = {
-    tests.redis = nixosTests.redis;
     serverBin = "redis-server";
+    tests.redis = nixosTests.redis;
     updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://redis.io";
     description = "Open source, advanced key-value store";
+    homepage = "https://redis.io";
+    changelog = "https://github.com/redis/redis/releases/tag/${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
     platforms = lib.platforms.all;
-    changelog = "https://github.com/redis/redis/releases/tag/${finalAttrs.version}";
     mainProgram = "redis-cli";
     teams = [ lib.teams.redis ];
   };

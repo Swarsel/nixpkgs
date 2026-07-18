@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  gtk3,
-  numix-icon-theme,
-  hicolor-icon-theme,
   gitUpdater,
+  gtk3,
+  hicolor-icon-theme,
+  numix-icon-theme,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -26,9 +26,6 @@ stdenvNoCC.mkDerivation rec {
     hicolor-icon-theme
   ];
 
-  dontDropIconThemeCache = true;
-  dontWrapQtApps = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -46,14 +43,16 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontDropIconThemeCache = true;
+  dontWrapQtApps = true;
   passthru.updateScript = gitUpdater { };
 
   meta = {
     description = "Numix icon theme (circle version)";
     homepage = "https://numixproject.github.io";
     license = lib.licenses.gpl3Only;
+    maintainers = with lib.maintainers; [ romildo ];
     # darwin cannot deal with file names differing only in case
     platforms = lib.platforms.linux;
-    maintainers = with lib.maintainers; [ romildo ];
   };
 }

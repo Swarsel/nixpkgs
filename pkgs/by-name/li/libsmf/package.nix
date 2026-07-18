@@ -8,8 +8,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.3";
   pname = "libsmf";
+  version = "1.3";
 
   src = fetchFromGitHub {
     owner = "stump";
@@ -22,6 +22,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [ glib ];
 
   meta = {
@@ -29,7 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/stump/libsmf";
     license = lib.licenses.bsd2;
     maintainers = [ ];
-    mainProgram = "smfsh";
     platforms = lib.platforms.unix;
+    mainProgram = "smfsh";
   };
 })

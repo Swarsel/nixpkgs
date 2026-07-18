@@ -1,8 +1,8 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
   onlykey-cli,
+  python3Packages,
 }:
 
 let
@@ -11,12 +11,13 @@ let
     buildPythonPackage rec {
       pname = "bech32";
       version = "1.2.0";
-      format = "setuptools";
 
       src = fetchPypi {
         inherit pname version;
         sha256 = "sha256-fW24IUYDvXhx/PpsCCbvaLhbCr2Q+iHChanF4h0r2Jk=";
       };
+
+      format = "setuptools";
     };
 
   # onlykey requires a patched version of libagent
@@ -24,11 +25,13 @@ let
     with python3Packages;
     libagent.overridePythonAttrs (old: rec {
       version = "1.0.6";
+
       src = fetchPypi {
         inherit version;
-        pname = "lib-agent";
         sha256 = "sha256-IrJizIHDIPHo4tVduUat7u31zHo3Nt8gcMOyUUqkNu0=";
+        pname = "lib-agent";
       };
+
       propagatedBuildInputs = old.propagatedBuildInputs or [ ] ++ [
         bech32
         cryptography
@@ -53,7 +56,6 @@ in
 python3Packages.buildPythonApplication rec {
   pname = "onlykey-agent";
   version = "1.1.15";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -66,6 +68,9 @@ python3Packages.buildPythonApplication rec {
     setuptools
   ];
 
+  # no tests
+  doCheck = false;
+
   # move the python library into the sitePackages.
   postInstall = ''
     mkdir $out/${python3Packages.python.sitePackages}/onlykey_agent
@@ -73,8 +78,7 @@ python3Packages.buildPythonApplication rec {
     chmod a-x $out/${python3Packages.python.sitePackages}/onlykey_agent/__init__.py
   '';
 
-  # no tests
-  doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "onlykey_agent" ];
 
   meta = {

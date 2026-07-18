@@ -1,11 +1,11 @@
 {
   lib,
-  python3Packages,
+  stdenv,
   fetchFromGitHub,
   gitMinimal,
-  stdenv,
   installShellFiles,
   nix-update-script,
+  python3Packages,
   versionCheckHook,
   writableTmpDirAsHomeHook,
 }:
@@ -13,7 +13,6 @@
 python3Packages.buildPythonPackage rec {
   pname = "commitizen";
   version = "4.13.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "commitizen-tools";
@@ -27,16 +26,41 @@ python3Packages.buildPythonPackage rec {
       --replace-fail "uv_build >= 0.9.17, <0.10.0" "uv-build"
   '';
 
-  pythonRelaxDeps = [
-    "argcomplete"
-    "decli"
-    "prompt-toolkit"
-    "termcolor"
-  ];
+  nativeBuildInputs = [ installShellFiles ];
+
+  nativeCheckInputs = [
+    gitMinimal
+    versionCheckHook
+    writableTmpDirAsHomeHook
+  ]
+  ++ (with python3Packages; [
+    argcomplete
+    py
+    pytest-freezer
+    pytest-mock
+    pytest-regressions
+    pytestCheckHook
+  ]);
+
+  # The tests require a functional git installation
+  preCheck = ''
+    git config --global user.name "Nix Builder"
+    git config --global user.email "nix-builder@nixos.org"
+    git init .
+  '';
+
+  postInstall =
+    let
+      register-python-argcomplete = lib.getExe' python3Packages.argcomplete "register-python-argcomplete";
+    in
+    lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+      installShellCompletion --cmd cz \
+        --bash <(${register-python-argcomplete} --shell bash $out/bin/cz) \
+        --zsh <(${register-python-argcomplete} --shell zsh $out/bin/cz) \
+        --fish <(${register-python-argcomplete} --shell fish $out/bin/cz)
+    '';
 
   build-system = with python3Packages; [ uv-build ];
-
-  nativeBuildInputs = [ installShellFiles ];
 
   dependencies = with python3Packages; [
     argcomplete
@@ -54,31 +78,6 @@ python3Packages.buildPythonPackage rec {
     tomlkit
   ];
 
-  nativeCheckInputs = [
-    gitMinimal
-    versionCheckHook
-    writableTmpDirAsHomeHook
-  ]
-  ++ (with python3Packages; [
-    argcomplete
-    py
-    pytest-freezer
-    pytest-mock
-    pytest-regressions
-    pytestCheckHook
-  ]);
-
-  versionCheckProgramArg = "version";
-
-  pythonImportsCheck = [ "commitizen" ];
-
-  # The tests require a functional git installation
-  preCheck = ''
-    git config --global user.name "Nix Builder"
-    git config --global user.email "nix-builder@nixos.org"
-    git init .
-  '';
-
   # NB: These tests require complex GnuPG setup
   disabledTests = [
     "test_bump_minor_increment_signed"
@@ -92,16 +91,17 @@ python3Packages.buildPythonPackage rec {
     "test_commitizen_debug_excepthook"
   ];
 
-  postInstall =
-    let
-      register-python-argcomplete = lib.getExe' python3Packages.argcomplete "register-python-argcomplete";
-    in
-    lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-      installShellCompletion --cmd cz \
-        --bash <(${register-python-argcomplete} --shell bash $out/bin/cz) \
-        --zsh <(${register-python-argcomplete} --shell zsh $out/bin/cz) \
-        --fish <(${register-python-argcomplete} --shell fish $out/bin/cz)
-    '';
+  pyproject = true;
+  pythonImportsCheck = [ "commitizen" ];
+
+  pythonRelaxDeps = [
+    "argcomplete"
+    "decli"
+    "prompt-toolkit"
+    "termcolor"
+  ];
+
+  versionCheckProgramArg = "version";
 
   passthru = {
     updateScript = nix-update-script { };
@@ -112,10 +112,12 @@ python3Packages.buildPythonPackage rec {
     homepage = "https://github.com/commitizen-tools/commitizen";
     changelog = "https://github.com/commitizen-tools/commitizen/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "cz";
+
     maintainers = with lib.maintainers; [
       lovesegfault
       anthonyroussel
     ];
+
+    mainProgram = "cz";
   };
 }

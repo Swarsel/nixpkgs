@@ -9,14 +9,14 @@
 }:
 
 stdenv.mkDerivation {
-  pname = "tuxclocker-nvidia-plugin";
-
   inherit (tuxclocker-plugins)
     src
     version
     meta
     nativeBuildInputs
     ;
+
+  pname = "tuxclocker-nvidia-plugin";
 
   buildInputs = [
     boost

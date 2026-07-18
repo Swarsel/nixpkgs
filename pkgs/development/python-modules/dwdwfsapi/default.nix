@@ -1,22 +1,23 @@
 {
   lib,
   buildPythonPackage,
+  ciso8601,
   fetchPypi,
   hatchling,
   requests,
-  ciso8601,
 }:
 
 buildPythonPackage rec {
   pname = "dwdwfsapi";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-7dIVD+4MiYtsjAM5j67MlbiUN2Q5DpK6bUU0ZuHN2rk=";
   };
 
+  # All tests require network access
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -24,9 +25,7 @@ buildPythonPackage rec {
     ciso8601
   ];
 
-  # All tests require network access
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "dwdwfsapi" ];
 
   meta = {

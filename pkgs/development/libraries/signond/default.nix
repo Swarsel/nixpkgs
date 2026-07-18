@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
+  doxygen,
   qmake,
   qtbase,
   wrapQtAppsHook,
-  doxygen,
 }:
 
 stdenv.mkDerivation {
@@ -34,8 +34,8 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://gitlab.com/accounts-sso/signond";
     description = "Signon Daemon for Qt";
+    homepage = "https://gitlab.com/accounts-sso/signond";
     maintainers = [ ];
     platforms = lib.platforms.linux;
   };

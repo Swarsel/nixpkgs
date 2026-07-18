@@ -1,26 +1,26 @@
 {
   lib,
   stdenv,
-  platformdirs,
+  fetchFromGitHub,
   bokeh,
   buildPythonPackage,
   dask,
   entrypoints,
-  fetchFromGitHub,
   fsspec,
   hvplot,
   intake-parquet,
   jinja2,
   msgpack,
   msgpack-numpy,
+  networkx,
   pandas,
   panel,
+  platformdirs,
   pyarrow,
   pytestCheckHook,
   python-snappy,
   pythonAtLeast,
   pyyaml,
-  networkx,
   requests,
   setuptools,
   setuptools-scm,
@@ -30,7 +30,6 @@
 buildPythonPackage rec {
   pname = "intake";
   version = "2.0.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "intake";
@@ -62,30 +61,12 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
-  optional-dependencies = {
-    server = [
-      msgpack
-      python-snappy
-      tornado
-    ];
-    dataframe = [
-      msgpack-numpy
-      pyarrow
-    ];
-    plot = [
-      hvplot
-      bokeh
-      panel
-    ];
-    remote = [ requests ];
-  };
-
-  __darwinAllowLocalNetworking = true;
-
   preCheck = ''
     export HOME=$(mktemp -d);
     export PATH="$PATH:$out/bin";
   '';
+
+  __darwinAllowLocalNetworking = true;
 
   disabledTestPaths = [
     # Missing plusins
@@ -130,6 +111,28 @@ buildPythonPackage rec {
     "test_load"
   ];
 
+  optional-dependencies = {
+    dataframe = [
+      msgpack-numpy
+      pyarrow
+    ];
+
+    plot = [
+      hvplot
+      bokeh
+      panel
+    ];
+
+    remote = [ requests ];
+
+    server = [
+      msgpack
+      python-snappy
+      tornado
+    ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "intake" ];
 
   meta = {

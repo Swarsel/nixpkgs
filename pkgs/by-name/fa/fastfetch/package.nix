@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  runCommand,
   apple-sdk_15,
   chafa,
   dbus,
   dconf,
   ddcutil,
   enlightenment,
+  fastfetch-unwrapped,
   glib,
   imagemagick,
   libdrm,
@@ -22,39 +22,37 @@
   moltenvk,
   ocl-icd,
   rpm,
+  runCommand,
   sqlite,
   vulkan-loader,
   wayland,
   xfconf,
   zfs,
   zlib,
-  fastfetch-unwrapped,
-
   # Runtime dependency selectors. fastfetch-unwrapped is always built with support enabled.
   audioSupport ? true,
   brightnessSupport ? true,
   codecSupport ? true,
   dbusSupport ? true,
-  flashfetchSupport ? false,
-  terminalSupport ? true,
   # NOTE: disabled by default until lib dependency closure is minimal
   enlightenmentSupport ? false,
+  extraRuntimeDependencies ? [ ],
+  extraRuntimePrograms ? [ ],
+  flashfetchSupport ? false,
   gnomeSupport ? true,
   imageSupport ? true,
   openclSupport ? true,
   openglSupport ? true,
   rpmSupport ? false,
+  runtimeDependencies ? null,
+  runtimePrograms ? [ ],
   sqliteSupport ? true,
+  terminalSupport ? true,
   vulkanSupport ? true,
   waylandSupport ? true,
   x11Support ? true,
   xfceSupport ? true,
   zfsSupport ? false,
-
-  runtimeDependencies ? null,
-  extraRuntimeDependencies ? [ ],
-  runtimePrograms ? [ ],
-  extraRuntimePrograms ? [ ],
 }:
 
 let
@@ -161,37 +159,36 @@ let
 in
 runCommand "fastfetch-${unwrapped.version}"
   {
-    pname = "fastfetch";
     inherit (unwrapped) version; # nixpkgs-update: no auto update
-
-    strictDeps = true;
-    __structuredAttrs = true;
+    pname = "fastfetch";
 
     outputs = [
       "out"
       "man"
     ];
 
+    strictDeps = true;
     nativeBuildInputs = [ makeBinaryWrapper ];
+    __structuredAttrs = true;
+    preferLocalBuild = true;
 
     passthru = (removeAttrs unwrapped.passthru [ "updateScript" ]) // {
       inherit unwrapped;
+      minimal = lib.warnOnInstantiate "`fastfetch.minimal` has been renamed to `fastfetch-unwrapped`" unwrapped;
       runtimeDependencies = resolvedRuntimeDependencies;
       runtimePrograms = resolvedRuntimePrograms;
-      minimal = lib.warnOnInstantiate "`fastfetch.minimal` has been renamed to `fastfetch-unwrapped`" unwrapped;
     };
 
     meta = unwrapped.meta // {
-      priority = (unwrapped.meta.priority or lib.meta.defaultPriority) - 1;
       longDescription = ''
         Fast and highly customizable system info script.
 
         This wrapped package makes optional runtime libraries available to the
         full-featured fastfetch-unwrapped binary.
       '';
-    };
 
-    preferLocalBuild = true;
+      priority = (unwrapped.meta.priority or lib.meta.defaultPriority) - 1;
+    };
   }
   ''
     makeWrapperArgs=(--inherit-argv0)

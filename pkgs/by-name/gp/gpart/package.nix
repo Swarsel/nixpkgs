@@ -11,17 +11,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   # GitHub repository 'collating patches for gpart from all distributions':
   src = fetchFromGitHub {
-    sha256 = "1lsd9k876p944k9s6sxqk5yh9yr7m42nbw9vlsllin7pd4djl4ya";
-    rev = finalAttrs.version;
-    repo = "gpart";
     owner = "baruch";
+    repo = "gpart";
+    rev = finalAttrs.version;
+    sha256 = "1lsd9k876p944k9s6sxqk5yh9yr7m42nbw9vlsllin7pd4djl4ya";
   };
-
-  nativeBuildInputs = [ autoreconfHook ];
-
-  enableParallelBuilding = true;
-
-  doCheck = true;
 
   outputs = [
     "out"
@@ -29,15 +23,21 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
+  nativeBuildInputs = [ autoreconfHook ];
+  doCheck = true;
+  enableParallelBuilding = true;
+
   meta = {
     inherit (finalAttrs.src.meta) homepage;
     description = "Guess PC-type hard disk partitions";
+
     longDescription = ''
       Gpart is a tool which tries to guess the primary partition table of a
       PC-type hard disk in case the primary partition table in sector 0 is
       damaged, incorrect or deleted. The guessed table can be written to a file
       or device.
     '';
+
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
     mainProgram = "gpart";

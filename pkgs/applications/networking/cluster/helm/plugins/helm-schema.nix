@@ -1,9 +1,9 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
-  versionCheckHook,
+  fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,14 +17,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-2u3cJaSxfHcP9cNknWMdmWm0OjeQX1N2SdJcDGi69Ls=";
   };
 
-  vendorHash = "sha256-SWzKgQn9s4Nj54s0N6D+onIbpRwXRvJqWVG8LQ31KQA=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X 'main.Version=v${finalAttrs.version}'"
-  ];
-
   postPatch = ''
     # Remove the install and upgrade hooks
     sed -i '/^hooks:/,+2 d' plugin.yaml
@@ -33,6 +25,8 @@ buildGoModule (finalAttrs: {
       --replace-fail '$HELM_PLUGIN_DIR' '${placeholder "out"}/${finalAttrs.pname}/bin'
   '';
 
+  vendorHash = "sha256-SWzKgQn9s4Nj54s0N6D+onIbpRwXRvJqWVG8LQ31KQA=";
+
   postInstall = ''
     install -D plugin.complete -t $out/helm-schema/
     install -m644 plugin.yaml -t $out/helm-schema/
@@ -40,26 +34,33 @@ buildGoModule (finalAttrs: {
     mv $out/bin $out/helm-schema
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
   # Unit tests try to open web server on port 0
   __darwinAllowLocalNetworking = true;
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgram = "${placeholder "out"}/helm-schema/bin/schema";
+  ldflags = [
+    "-s"
+    "-w"
+    "-X 'main.Version=v${finalAttrs.version}'"
+  ];
 
+  versionCheckProgram = "${placeholder "out"}/helm-schema/bin/schema";
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    mainProgram = "schema";
     description = "Helm plugin for generating values.schema.json from multiple values files";
+
     longDescription = ''
       Helm plugin for generating `values.schema.json` from single or
       multiple values files. Schema can be enriched by reading
       annotations from comments. Works only with Helm3 charts.
     '';
+
     homepage = "https://github.com/losisin/helm-values-schema-json";
     changelog = "https://github.com/losisin/helm-values-schema-json/releases/tag/v${finalAttrs.version}";
-    maintainers = with lib.maintainers; [ applejag ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ applejag ];
+    mainProgram = "schema";
   };
 })

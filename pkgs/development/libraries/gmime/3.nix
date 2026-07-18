@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   glib,
-  zlib,
   gnupg,
+  gobject-introspection,
   gpgme,
   libidn2,
   libunistring,
-  gobject-introspection,
+  pkg-config,
   vala,
+  zlib,
 }:
 
 stdenv.mkDerivation rec {
-  version = "3.2.15";
   pname = "gmime";
+  version = "3.2.15";
 
   src = fetchurl {
     # https://github.com/jstedfast/gmime/releases
@@ -28,25 +28,6 @@ stdenv.mkDerivation rec {
     "dev"
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-    gobject-introspection
-    vala
-  ];
-  buildInputs = [
-    zlib
-    gpgme
-    libidn2
-    libunistring
-    vala # for share/vala/Makefile.vapigen
-  ];
-  propagatedBuildInputs = [ glib ];
-  configureFlags = [
-    "--enable-introspection=yes"
-    "--enable-vala=yes"
-  ]
-  ++ lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [ "ac_cv_have_iconv_detect_h=yes" ];
-
   postPatch = ''
     substituteInPlace tests/testsuite.c \
       --replace /bin/rm rm
@@ -56,6 +37,28 @@ stdenv.mkDerivation rec {
     substituteInPlace tests/test-filters.c \
       --replace-fail 'test_charset_conversion (datadir, "japanese", "utf-8", "iso-2022-jp");' ""
   '';
+
+  nativeBuildInputs = [
+    pkg-config
+    gobject-introspection
+    vala
+  ];
+
+  buildInputs = [
+    zlib
+    gpgme
+    libidn2
+    libunistring
+    vala # for share/vala/Makefile.vapigen
+  ];
+
+  propagatedBuildInputs = [ glib ];
+
+  configureFlags = [
+    "--enable-introspection=yes"
+    "--enable-vala=yes"
+  ]
+  ++ lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [ "ac_cv_have_iconv_detect_h=yes" ];
 
   preConfigure = ''
     PKG_CONFIG_VAPIGEN_VAPIGEN="$(type -p vapigen)"
@@ -67,15 +70,13 @@ stdenv.mkDerivation rec {
     } ./iconv-detect.h
   '';
 
-  nativeCheckInputs = [ gnupg ];
-
   doCheck = true;
-
+  nativeCheckInputs = [ gnupg ];
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://github.com/jstedfast/gmime/";
     description = "C/C++ library for creating, editing and parsing MIME messages and structures";
+    homepage = "https://github.com/jstedfast/gmime/";
     license = lib.licenses.lgpl21Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;

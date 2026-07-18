@@ -15,12 +15,22 @@
 buildPythonPackage rec {
   pname = "towncrier";
   version = "25.8.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-7vFtKfgxrVers64yoFZXOYZiGfHr+90pfTKJTrmUDrE=";
   };
+
+  nativeCheckInputs = [
+    git
+    mock
+    twisted
+    pytestCheckHook
+  ];
+
+  preCheck = ''
+    export PATH=$out/bin:$PATH
+  '';
 
   build-system = [ hatchling ];
 
@@ -30,17 +40,7 @@ buildPythonPackage rec {
     jinja2
   ];
 
-  preCheck = ''
-    export PATH=$out/bin:$PATH
-  '';
-
-  nativeCheckInputs = [
-    git
-    mock
-    twisted
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "towncrier" ];
 
   meta = {

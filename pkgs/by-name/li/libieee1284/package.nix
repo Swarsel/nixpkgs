@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
   autoconf,
   automake,
-  libtool,
-  xmlto,
   docbook_xml_dtd_412,
   docbook_xsl,
+  libtool,
+  xmlto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,9 +24,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchurl {
+      hash = "sha256-sNu0OPBMa9GIwSu754noateF4FZC14f+8YRgYUl13KQ=";
       name = "musl.patch";
       url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/sys-libs/libieee1284/files/libieee1284-0.2.11-don-t-blindly-assume-outb_p-to-be-available.patch?id=dec60bb6900d6ebdaaa6aa1dcb845b30b739f9b5";
-      hash = "sha256-sNu0OPBMa9GIwSu754noateF4FZC14f+8YRgYUl13KQ=";
     })
   ];
 
@@ -55,10 +55,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Parallel port communication library";
-    mainProgram = "libieee1284_test";
     homepage = "http://cyberelk.net/tim/software/libieee1284/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ romildo ];
+    platforms = lib.platforms.linux;
+    mainProgram = "libieee1284_test";
   };
 })

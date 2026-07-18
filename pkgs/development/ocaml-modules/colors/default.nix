@@ -1,16 +1,14 @@
 {
   lib,
-  ocaml,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
   mdx,
+  ocaml,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "colors";
   version = "0.0.1";
-
-  minimalOCamlVersion = "4.13";
 
   src = fetchurl {
     url = "https://github.com/leostera/colors/releases/download/${finalAttrs.version}/colors-${finalAttrs.version}.tbz";
@@ -19,13 +17,15 @@ buildDunePackage (finalAttrs: {
 
   doCheck = lib.versionAtLeast ocaml.version "5.1";
 
+  nativeCheckInputs = [
+    mdx.bin
+  ];
+
   checkInputs = [
     mdx
   ];
 
-  nativeCheckInputs = [
-    mdx.bin
-  ];
+  minimalOCamlVersion = "4.13";
 
   meta = {
     description = "Pure OCaml library for manipulating colors across color spaces";

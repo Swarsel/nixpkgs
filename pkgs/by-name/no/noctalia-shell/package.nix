@@ -1,46 +1,42 @@
 {
-  fetchFromGitHub,
   lib,
-  nix-update-script,
-  stdenvNoCC,
-
-  # build
-  qt6,
-  noctalia-qs,
-
+  fetchFromGitHub,
   # runtime deps
   bluez,
   brightnessctl,
   cliphist,
   ddcutil,
-  wlsunset,
-  wl-clipboard,
-  wlr-randr,
-  imagemagick,
-  wget,
-  gpu-screen-recorder,
-  python3,
-  wayland-scanner,
-
   # calendar support
   evolution-data-server,
-  libical,
   glib,
-  libsoup_3,
-  json-glib,
   gobject-introspection,
-
+  gpu-screen-recorder,
+  imagemagick,
+  json-glib,
+  libical,
+  libsoup_3,
+  nix-update-script,
+  noctalia-qs,
+  python3,
+  # build
+  qt6,
+  stdenvNoCC,
+  wayland-scanner,
+  wget,
+  wl-clipboard,
+  wlr-randr,
+  wlsunset,
   bluetoothSupport ? true,
   brightnessctlSupport ? true,
+  calendarSupport ? false,
   cliphistSupport ? true,
   ddcutilSupport ? true,
-  wlsunsetSupport ? true,
-  wl-clipboardSupport ? true,
-  wlr-randrSupport ? true,
-  imagemagickSupport ? true,
-  calendarSupport ? false,
   # gpu-screen-recorder support was moved to an optional plugin in v4.0.0
   gpuScreenRecorderSupport ? false,
+  imagemagickSupport ? true,
+  wl-clipboardSupport ? true,
+  wlr-randrSupport ? true,
+  wlsunsetSupport ? true,
 }:
 let
   runtimeDeps = [
@@ -113,12 +109,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/noctalia-dev/noctalia-shell/releases/tag/v${finalAttrs.version}";
     description = "Sleek and minimal desktop shell thoughtfully crafted for Wayland, built with Quickshell";
     homepage = "https://github.com/noctalia-dev/noctalia-shell";
+    changelog = "https://github.com/noctalia-dev/noctalia-shell/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "noctalia-shell";
     maintainers = with lib.maintainers; [ spacedentist ];
     platforms = noctalia-qs.meta.platforms;
+    mainProgram = "noctalia-shell";
   };
 })

@@ -1,10 +1,10 @@
 {
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
   libpng,
   nix-update-script,
   stb,
-  stdenv,
   testers,
 }:
 
@@ -19,29 +19,28 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-9R43rWfpB2J6TXHoTt0u0LLiTY9XYmmph+pb7Y6aU84=";
   };
 
-  patches = [
-    # https://github.com/phoboslab/qoi/pull/322
-    ./add-install-target-and-pc-module.patch
-  ];
-
   outputs = [
     "out"
     "dev"
   ];
 
+  patches = [
+    # https://github.com/phoboslab/qoi/pull/322
+    ./add-install-target-and-pc-module.patch
+  ];
+
   strictDeps = true;
-  enableParallelBuilding = true;
-
   buildInputs = [ libpng ];
-
-  # Don't bloat the header-only output with binaries
-  propagatedBuildOutputs = [ ];
 
   makeFlags = [
     "CFLAGS=-I${lib.getDev stb}/include/stb"
     "PREFIX=${placeholder "dev"}"
     "BINDIR=${placeholder "out"}/bin"
   ];
+
+  enableParallelBuilding = true;
+  # Don't bloat the header-only output with binaries
+  propagatedBuildOutputs = [ ];
 
   passthru = {
     tests.pkg-config = testers.hasPkgConfigModules { package = finalAttrs.finalPackage; };
@@ -50,11 +49,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "'Quite OK Image Format' for fast, lossless image compression";
-    mainProgram = "qoiconv";
     homepage = "https://qoiformat.org/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hzeller ];
     platforms = lib.platforms.all;
+    mainProgram = "qoiconv";
     pkgConfigModules = [ "qoi" ];
   };
 })

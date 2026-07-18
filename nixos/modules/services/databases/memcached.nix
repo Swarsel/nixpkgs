@@ -14,74 +14,71 @@ in
 
 {
 
-  ###### interface
+  imports = [
+    (lib.mkRemovedOptionModule [ "services" "memcached" "socket" ] ''
+      This option was replaced by a fixed unix socket path at /run/memcached/memcached.sock enabled using services.memcached.enableUnixSocket.
+    '')
+  ];
 
+  ###### interface
   options = {
 
     services.memcached = {
       enable = lib.mkEnableOption "Memcached";
+      enableUnixSocket = lib.mkEnableOption "Unix Domain Socket at /run/memcached/memcached.sock instead of listening on an IP address and port. The `listen` and `port` options are ignored";
 
-      user = lib.mkOption {
-        type = lib.types.str;
-        default = "memcached";
-        description = "The user to run Memcached as";
+      extraOptions = lib.mkOption {
+        default = [ ];
+        description = "A list of extra options that will be added as a suffix when running memcached.";
+        type = lib.types.listOf lib.types.str;
       };
 
       listen = lib.mkOption {
-        type = lib.types.str;
         default = "127.0.0.1";
         description = "The IP address to bind to.";
-      };
-
-      port = lib.mkOption {
-        type = lib.types.port;
-        default = 11211;
-        description = "The port to bind to.";
-      };
-
-      enableUnixSocket = lib.mkEnableOption "Unix Domain Socket at /run/memcached/memcached.sock instead of listening on an IP address and port. The `listen` and `port` options are ignored";
-
-      maxMemory = lib.mkOption {
-        type = lib.types.ints.unsigned;
-        default = 64;
-        description = "The maximum amount of memory to use for storage, in MiB (1024×1024 bytes).";
+        type = lib.types.str;
       };
 
       maxConnections = lib.mkOption {
-        type = lib.types.ints.unsigned;
         default = 1024;
         description = "The maximum number of simultaneous connections.";
+        type = lib.types.ints.unsigned;
       };
 
-      extraOptions = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [ ];
-        description = "A list of extra options that will be added as a suffix when running memcached.";
+      maxMemory = lib.mkOption {
+        default = 64;
+        description = "The maximum amount of memory to use for storage, in MiB (1024×1024 bytes).";
+        type = lib.types.ints.unsigned;
+      };
+
+      port = lib.mkOption {
+        default = 11211;
+        description = "The port to bind to.";
+        type = lib.types.port;
+      };
+
+      user = lib.mkOption {
+        default = "memcached";
+        description = "The user to run Memcached as";
+        type = lib.types.str;
       };
     };
 
   };
 
   ###### implementation
-
   config = lib.mkIf config.services.memcached.enable {
-
-    users.users = lib.optionalAttrs (cfg.user == "memcached") {
-      memcached.description = "Memcached server user";
-      memcached.isSystemUser = true;
-      memcached.group = "memcached";
-    };
-    users.groups = lib.optionalAttrs (cfg.user == "memcached") { memcached = { }; };
 
     environment.systemPackages = [ memcached ];
 
     systemd.services.memcached = {
+      after = [ "network.target" ];
       description = "Memcached server";
 
-      wantedBy = [ "multi-user.target" ];
-      after = [ "network.target" ];
-
       serviceConfig = {
+        # Caps
+        CapabilityBoundingSet = "";
+
         ExecStart =
           let
             networking =
@@ -92,32 +89,34 @@ in
           in
           "${memcached}/bin/memcached ${networking} -m ${toString cfg.maxMemory} -c ${toString cfg.maxConnections} ${lib.concatStringsSep " " cfg.extraOptions}";
 
-        User = cfg.user;
-
-        # Filesystem access
-        ProtectSystem = "strict";
-        ProtectHome = true;
-        PrivateTmp = true;
-        PrivateDevices = true;
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
-        ProtectControlGroups = true;
-        RuntimeDirectory = "memcached";
-        # Caps
-        CapabilityBoundingSet = "";
-        NoNewPrivileges = true;
         # Misc.
         LockPersonality = true;
-        RestrictRealtime = true;
-        PrivateMounts = true;
         MemoryDenyWriteExecute = true;
+        NoNewPrivileges = true;
+        PrivateDevices = true;
+        PrivateMounts = true;
+        PrivateTmp = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        # Filesystem access
+        ProtectSystem = "strict";
+        RestrictRealtime = true;
+        RuntimeDirectory = "memcached";
+        User = cfg.user;
       };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups = lib.optionalAttrs (cfg.user == "memcached") { memcached = { }; };
+
+    users.users = lib.optionalAttrs (cfg.user == "memcached") {
+      memcached.description = "Memcached server user";
+      memcached.group = "memcached";
+      memcached.isSystemUser = true;
     };
   };
-  imports = [
-    (lib.mkRemovedOptionModule [ "services" "memcached" "socket" ] ''
-      This option was replaced by a fixed unix socket path at /run/memcached/memcached.sock enabled using services.memcached.enableUnixSocket.
-    '')
-  ];
 
 }

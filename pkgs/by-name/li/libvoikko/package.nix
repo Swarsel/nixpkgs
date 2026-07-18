@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchFromGitHub,
   autoreconfHook,
   hfst-ospell,
-  fetchFromGitHub,
   pkg-config,
   python3,
 }:
@@ -19,8 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-iWBIXAJKzjSP5mEBSfI+uZl0b2wRsjrYfdX2cHF/uuk=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/libvoikko";
-
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -31,9 +29,11 @@ stdenv.mkDerivation (finalAttrs: {
     hfst-ospell
   ];
 
+  sourceRoot = "${finalAttrs.src.name}/libvoikko";
+
   meta = {
-    homepage = "https://voikko.puimula.org/";
     description = "Finnish language processing library";
+    homepage = "https://voikko.puimula.org/";
     license = lib.licenses.lgpl21Plus;
     maintainers = with lib.maintainers; [ lurkki ];
     platforms = lib.platforms.unix;

@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  desktop-file-utils,
+  exiv2,
+  flex,
+  gtest,
+  itstool,
+  libgsf,
   meson,
   ninja,
   pkg-config,
-  flex,
-  itstool,
-  wrapGAppsHook3,
-  desktop-file-utils,
-  exiv2,
-  libgsf,
-  taglib,
   poppler,
   samba,
-  gtest,
+  taglib,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,11 +22,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.18.5";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "GNOME";
     repo = "gnome-commander";
     tag = finalAttrs.version;
     hash = "sha256-op9EeBj6axgIPvpwoG3aQF3DOQUVGMlBGHhuXsdG+AU=";
+    domain = "gitlab.gnome.org";
   };
 
   # hard-coded schema paths
@@ -56,17 +56,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   mesonFlags = [ (lib.mesonEnable "tests" finalAttrs.finalPackage.doCheck) ];
-
-  checkInputs = [ gtest ];
-
   doCheck = false; # gtest requires C/C++17 but the project is written in C/C++11
+  checkInputs = [ gtest ];
 
   meta = {
     description = "Fast and powerful twin-panel file manager for the Linux desktop";
     homepage = "https://gcmd.github.io";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "gnome-commander";
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.linux;
+    mainProgram = "gnome-commander";
   };
 })

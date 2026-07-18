@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "jinja2-ansible-filters";
   version = "1.3.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,7 +22,7 @@ buildPythonPackage rec {
 
   # no tests include in sdist, and source not available
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "jinja2_ansible_filters" ];
 
   meta = {

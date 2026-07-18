@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
+  freezegun,
   irctokens,
   pendulum,
-  freezegun,
+  setuptools,
   unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "ircstates";
   version = "0.13.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jesopo";
@@ -21,26 +20,26 @@ buildPythonPackage rec {
     hash = "sha256-Mq9aOj6PXzPjaz3ofoPcAbur59oUWffmEg8aHt0v+0Q=";
   };
 
-  build-system = [ setuptools ];
+  nativeCheckInputs = [
+    freezegun
+    unittestCheckHook
+  ];
 
-  pythonRelaxDeps = [ "pendulum" ];
+  build-system = [ setuptools ];
 
   dependencies = [
     irctokens
     pendulum
   ];
 
-  nativeCheckInputs = [
-    freezegun
-    unittestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "ircstates" ];
+  pythonRelaxDeps = [ "pendulum" ];
 
   meta = {
     description = "sans-I/O IRC session state parsing library";
-    license = lib.licenses.mit;
     homepage = "https://github.com/jesopo/ircstates";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hexa ];
   };
 }

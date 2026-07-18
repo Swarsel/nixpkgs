@@ -10,12 +10,13 @@
 # - build time: Tue, 03 Dec 2024 13:59:40 +0000
 {
   bootstrapTools = import <nix/fetchurl.nix> {
-    url = "http://tarballs.nixos.org/stdenv/armv5tel-unknown-linux-gnueabi/029dea9aaacf920ce8f7d89e4cf09da31a38d8e1/bootstrap-tools.tar.xz";
     hash = "sha256-+7cdKUThhOb4pVFBjPWFpBbTfn64A/ezkZnP6hEhMRM=";
+    url = "http://tarballs.nixos.org/stdenv/armv5tel-unknown-linux-gnueabi/029dea9aaacf920ce8f7d89e4cf09da31a38d8e1/bootstrap-tools.tar.xz";
   };
+
   busybox = import <nix/fetchurl.nix> {
-    url = "http://tarballs.nixos.org/stdenv/armv5tel-unknown-linux-gnueabi/029dea9aaacf920ce8f7d89e4cf09da31a38d8e1/busybox";
-    hash = "sha256-vZ3oSKUjGVcx2TJsrKmTX4d+3S4/flD780vFVaaHDGI=";
     executable = true;
+    hash = "sha256-vZ3oSKUjGVcx2TJsrKmTX4d+3S4/flD780vFVaaHDGI=";
+    url = "http://tarballs.nixos.org/stdenv/armv5tel-unknown-linux-gnueabi/029dea9aaacf920ce8f7d89e4cf09da31a38d8e1/busybox";
   };
 }

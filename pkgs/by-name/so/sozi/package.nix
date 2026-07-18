@@ -1,7 +1,7 @@
 {
-  appimageTools,
   lib,
   fetchurl,
+  appimageTools,
 }:
 let
   pname = "sozi";
@@ -19,12 +19,6 @@ in
 appimageTools.wrapType2 {
   inherit pname version src;
 
-  extraPkgs =
-    pkgs: with pkgs; [
-      polkit
-      udev
-    ];
-
   extraInstallCommands = ''
     install -m 444 -D ${appimageContents}/sozi.desktop -t $out/share/applications
     cp -r ${appimageContents}/usr/share/icons $out/share
@@ -32,12 +26,18 @@ appimageTools.wrapType2 {
       --replace 'Exec=AppRun' 'Exec=sozi'
   '';
 
+  extraPkgs =
+    pkgs: with pkgs; [
+      polkit
+      udev
+    ];
+
   meta = {
     description = "Zooming presentation editor and player";
     homepage = "https://sozi.baierouge.fr/";
     license = lib.licenses.mpl20;
-    mainProgram = "sozi";
-    platforms = [ "x86_64-linux" ];
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "sozi";
   };
 }

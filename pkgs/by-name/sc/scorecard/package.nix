@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  installShellFiles,
-  testers,
-  scorecard,
+  buildGoModule,
   gitMinimal,
+  installShellFiles,
+  scorecard,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -23,6 +23,7 @@ buildGoModule (finalAttrs: {
     # this in postFetch we can delete .git afterwards and
     # maintain better reproducibility of the src.
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       git rev-parse HEAD > $out/COMMIT
@@ -31,22 +32,14 @@ buildGoModule (finalAttrs: {
       find "$out" -name .git -print0 | xargs -0 rm -rf
     '';
   };
+
+  nativeBuildInputs = [ installShellFiles ];
+
   vendorHash =
     if stdenv.hostPlatform.isLinux then
       "sha256-hzOGN6l7cxP+m4UWtrHV0Oihx3QIwZ09WR/Vi2HGwIg="
     else
       "sha256-y9URHMmKm4JnTHb7RkrL5LaCrcp6b7DOMwNnVrO1rvo=";
-
-  nativeBuildInputs = [ installShellFiles ];
-
-  subPackages = [ "." ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X sigs.k8s.io/release-utils/version.gitVersion=v${finalAttrs.version}"
-    "-X sigs.k8s.io/release-utils/version.gitTreeState=clean"
-  ];
 
   # ldflags based on metadata from git and source
   preBuild = ''
@@ -54,9 +47,11 @@ buildGoModule (finalAttrs: {
     ldflags+=" -X sigs.k8s.io/release-utils/version.buildDate=$(cat SOURCE_DATE_EPOCH)"
   '';
 
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [ gitMinimal ];
+
+  checkFlags = [
+    "-skip TestCollectDockerfilePinning/Non-pinned_dockerfile|TestMixedPinning"
+  ];
 
   preCheck = ''
     # Feed in all but the e2e tests for testing
@@ -69,10 +64,6 @@ buildGoModule (finalAttrs: {
     export SKIP_GINKGO=1
   '';
 
-  checkFlags = [
-    "-skip TestCollectDockerfilePinning/Non-pinned_dockerfile|TestMixedPinning"
-  ];
-
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd scorecard \
       --bash <($out/bin/scorecard completion bash) \
@@ -81,6 +72,7 @@ buildGoModule (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
     $out/bin/scorecard --help
@@ -88,21 +80,34 @@ buildGoModule (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  __darwinAllowLocalNetworking = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X sigs.k8s.io/release-utils/version.gitVersion=v${finalAttrs.version}"
+    "-X sigs.k8s.io/release-utils/version.gitTreeState=clean"
+  ];
+
+  subPackages = [ "." ];
+
   passthru.tests.version = testers.testVersion {
-    package = scorecard;
-    command = "scorecard version";
     version = "v${finalAttrs.version}";
+    command = "scorecard version";
+    package = scorecard;
   };
 
   meta = {
+    description = "Security health metrics for Open Source";
     homepage = "https://github.com/ossf/scorecard";
     changelog = "https://github.com/ossf/scorecard/releases/tag/v${finalAttrs.version}";
-    description = "Security health metrics for Open Source";
-    mainProgram = "scorecard";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       jk
       developer-guy
     ];
+
+    mainProgram = "scorecard";
   };
 })

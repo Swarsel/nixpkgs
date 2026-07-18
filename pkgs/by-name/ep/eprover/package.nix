@@ -15,13 +15,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-B0yOX8MGJHY0HOeQ/RWtgATTIta2YnhEvSdoqIML1K4=";
   };
 
-  buildInputs = [ which ];
-
   patches = [
     ./fix-cross-toolchains.patch
   ];
 
-  configurePlatforms = [ ];
+  buildInputs = [ which ];
 
   configureFlags = [
     "--exec-prefix=$(out)"
@@ -39,13 +37,17 @@ stdenv.mkDerivation (finalAttrs: {
     makeFlagsArray+=(CC="${stdenv.cc.targetPrefix}cc" AR="${stdenv.cc.targetPrefix}ar rcs")
   '';
 
+  configurePlatforms = [ ];
+
   meta = {
     description = "Automated theorem prover for full first-order logic with equality";
     homepage = "http://www.eprover.org/";
     license = lib.licenses.gpl2;
+
     maintainers = with lib.maintainers; [
       raskin
     ];
+
     platforms = lib.platforms.all;
   };
 })

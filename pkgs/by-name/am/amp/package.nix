@@ -1,13 +1,13 @@
 {
   lib,
-  fetchFromGitHub,
-  rustPlatform,
-  pkgsBuildBuild,
-  oniguruma,
   stdenv,
-  zlib,
+  fetchFromGitHub,
+  oniguruma,
   pkg-config,
+  pkgsBuildBuild,
+  rustPlatform,
   writableTmpDirAsHomeHook,
+  zlib,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,8 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-YK+HSWTtSVLK8n7NDiif3bBqp/dQW2UTYo3yYcZ5cIA=";
   };
 
-  cargoHash = "sha256-6enFOmIAYOgOdoeA+pk37+BobI5AGPBxjp73Gd4C+gI=";
-
   nativeBuildInputs = [
     # git rev-parse --short HEAD
     (pkgsBuildBuild.writeShellScriptBin "git" "echo 0000000")
@@ -35,9 +33,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zlib
   ]);
 
+  cargoHash = "sha256-6enFOmIAYOgOdoeA+pk37+BobI5AGPBxjp73Gd4C+gI=";
   # Needing libgit2 <=1.8.0
   #env.LIBGIT2_NO_VENDOR = 1;
-
   # bundled oniguruma failed on gcc15
   env.RUSTONIG_SYSTEM_LIBONIG = 1;
 
@@ -50,10 +48,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Modern text editor inspired by Vim";
     homepage = "https://amp.rs";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       sb0
       aleksana
     ];
+
     mainProgram = "amp";
   };
 })

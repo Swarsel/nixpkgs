@@ -1,50 +1,51 @@
 {
-  stdenv,
   lib,
-  autoPatchelfHook,
-  versionCheckHook,
-  copyDesktopItems,
-  desktop-file-utils,
-  dbus,
-  dpkg,
+  stdenv,
   fetchurl,
+  autoPatchelfHook,
+  common-updater-scripts,
+  copyDesktopItems,
+  cpio,
+  curl,
+  dbus,
+  desktop-file-utils,
+  dpkg,
   gtk3,
+  jq,
   libpcap,
   makeDesktopItem,
   makeWrapper,
   nftables,
   nss,
   openssl,
-  writeShellApplication,
-  curl,
-  jq,
   ripgrep,
-  common-updater-scripts,
+  versionCheckHook,
+  writeShellApplication,
   xar,
-  cpio,
   headless ? false,
 }:
 
 let
   version = "2026.3.846.0";
   sources = {
-    x86_64-linux = fetchurl {
-      url = "https://pkg.cloudflareclient.com/pool/noble/main/c/cloudflare-warp/cloudflare-warp_${version}_amd64.deb";
-      hash = "sha256-1SKTK0QW+3CcqBLqHbIsPny/6ekyjZe9qRcjYOMnR58=";
-    };
-    aarch64-linux = fetchurl {
-      url = "https://pkg.cloudflareclient.com/pool/noble/main/c/cloudflare-warp/cloudflare-warp_${version}_arm64.deb";
-      hash = "sha256-0zYsyZbX8qq/P+GHW4UHSTy2OsDa4fJAVjHcRbpHtSc=";
-    };
     aarch64-darwin = fetchurl {
-      url = "https://downloads.cloudflareclient.com/v1/download/macos/version/${version}";
       hash = "sha256-cDmoM0nIYYQyurJeeiVSX0IWJdIY0pVLmjIae5mEXI4=";
+      url = "https://downloads.cloudflareclient.com/v1/download/macos/version/${version}";
+    };
+
+    aarch64-linux = fetchurl {
+      hash = "sha256-0zYsyZbX8qq/P+GHW4UHSTy2OsDa4fJAVjHcRbpHtSc=";
+      url = "https://pkg.cloudflareclient.com/pool/noble/main/c/cloudflare-warp/cloudflare-warp_${version}_arm64.deb";
+    };
+
+    x86_64-linux = fetchurl {
+      hash = "sha256-1SKTK0QW+3CcqBLqHbIsPny/6ekyjZe9qRcjYOMnR58=";
+      url = "https://pkg.cloudflareclient.com/pool/noble/main/c/cloudflare-warp/cloudflare-warp_${version}_amd64.deb";
     };
   };
 in
 stdenv.mkDerivation (finalAttrs: {
   inherit version;
-
   pname = "cloudflare-warp" + lib.optionalString headless "-headless";
 
   src =
@@ -80,36 +81,6 @@ stdenv.mkDerivation (finalAttrs: {
       gtk3
     ]
   );
-
-  desktopItems = lib.optionals (!headless) [
-    (makeDesktopItem {
-      name = "com.cloudflare.WarpCli";
-      desktopName = "Cloudflare Zero Trust Team Enrollment";
-      categories = [
-        "Utility"
-        "Security"
-        "ConsoleOnly"
-      ];
-      noDisplay = true;
-      mimeTypes = [ "x-scheme-handler/com.cloudflare.warp" ];
-      exec = "warp-cli --accept-tos registration token %u";
-      startupNotify = false;
-      terminal = true;
-    })
-  ];
-
-  autoPatchelfIgnoreMissingDeps = [
-    "libpcap.so.0.8"
-  ];
-
-  unpackPhase = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    runHook preUnpack
-
-    xar -xf $src
-    zcat < Cloudflare_WARP_${version}.pkg/Payload | cpio -i
-
-    runHook postUnpack
-  '';
 
   installPhase =
     if stdenv.hostPlatform.isDarwin then
@@ -170,10 +141,41 @@ stdenv.mkDerivation (finalAttrs: {
 
   doInstallCheck = stdenv.hostPlatform.isLinux;
 
+  autoPatchelfIgnoreMissingDeps = [
+    "libpcap.so.0.8"
+  ];
+
+  desktopItems = lib.optionals (!headless) [
+    (makeDesktopItem {
+      categories = [
+        "Utility"
+        "Security"
+        "ConsoleOnly"
+      ];
+
+      desktopName = "Cloudflare Zero Trust Team Enrollment";
+      exec = "warp-cli --accept-tos registration token %u";
+      mimeTypes = [ "x-scheme-handler/com.cloudflare.warp" ];
+      name = "com.cloudflare.WarpCli";
+      noDisplay = true;
+      startupNotify = false;
+      terminal = true;
+    })
+  ];
+
   # The Sparkle.framework in the upstream macOS package contains a broken symlink
   # (XPCServices -> Versions/Current/XPCServices) where the target doesn't exist.
   # This is present in the official installed app and doesn't affect functionality.
   dontCheckForBrokenSymlinks = stdenv.hostPlatform.isDarwin;
+
+  unpackPhase = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    runHook preUnpack
+
+    xar -xf $src
+    zcat < Cloudflare_WARP_${version}.pkg/Payload | cpio -i
+
+    runHook postUnpack
+  '';
 
   passthru = {
     inherit sources;
@@ -206,22 +208,26 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/cloudflare/cloudflare-docs/blob/production/src/content/warp-releases/linux/ga/${finalAttrs.version}.yaml";
     description =
       "Replaces the connection between your device and the Internet with a modern, optimized, protocol"
       + lib.optionalString headless " (headless version)";
+
     homepage = "https://pkg.cloudflareclient.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    changelog = "https://github.com/cloudflare/cloudflare-docs/blob/production/src/content/warp-releases/linux/ga/${finalAttrs.version}.yaml";
     license = lib.licenses.unfree;
-    mainProgram = "warp-cli";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       marcusramberg
       anish
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
+    mainProgram = "warp-cli";
   };
 })

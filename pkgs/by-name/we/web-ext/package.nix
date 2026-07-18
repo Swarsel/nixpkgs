@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   runCommand,
   web-ext,
 }:
@@ -18,7 +18,6 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-gd56IoctqidlZbHsYXwiPDZB9WANFl4miqDVcVzpbqg=";
-
   npmBuildFlags = [ "--production" ];
 
   passthru.tests.help = runCommand "${pname}-tests" { } ''
@@ -30,7 +29,7 @@ buildNpmPackage rec {
     description = "Command line tool to help build, run, and test web extensions";
     homepage = "https://github.com/mozilla/web-ext";
     license = lib.licenses.mpl20;
-    mainProgram = "web-ext";
     maintainers = [ ];
+    mainProgram = "web-ext";
   };
 }

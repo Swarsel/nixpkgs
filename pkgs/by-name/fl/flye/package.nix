@@ -1,20 +1,19 @@
 {
   lib,
   fetchFromGitHub,
-  fetchpatch,
-  python3Packages,
-  zlib,
-  curl,
-  libdeflate,
+  addBinToPathHook,
   bash,
   coreutils,
-  addBinToPathHook,
+  curl,
+  fetchpatch,
+  libdeflate,
+  python3Packages,
+  zlib,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "flye";
   version = "2.9.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mikolmogorov";
@@ -25,10 +24,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-Ny2daPt8eYOKnwZ6bdBoCcFWhe9eiIHF4vJU/occwU0=";
       # https://github.com/mikolmogorov/Flye/pull/691
       name = "aarch64-fix.patch";
       url = "https://github.com/mikolmogorov/Flye/commit/e4dcc3fdf0fa1430a974fcd7da31b03ea642df9b.patch";
-      hash = "sha256-Ny2daPt8eYOKnwZ6bdBoCcFWhe9eiIHF4vJU/occwU0=";
     })
   ];
 
@@ -37,28 +36,28 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --replace-fail "/bin/bash" "${lib.getExe bash}"
   '';
 
-  build-system = [ python3Packages.setuptools ];
-
-  propagatedBuildInputs = [ coreutils ];
-
   buildInputs = [
     zlib
     curl
     libdeflate
   ];
 
-  pythonImportsCheck = [ "flye" ];
+  propagatedBuildInputs = [ coreutils ];
 
   nativeCheckInputs = [
     addBinToPathHook
     python3Packages.pytestCheckHook
   ];
 
+  build-system = [ python3Packages.setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "flye" ];
+
   meta = {
     description = "De novo assembler for single molecule sequencing reads using repeat graphs";
     homepage = "https://github.com/mikolmogorov/Flye";
     license = lib.licenses.bsd3;
-    mainProgram = "flye";
     maintainers = with lib.maintainers; [ assistant ];
+    mainProgram = "flye";
   };
 })

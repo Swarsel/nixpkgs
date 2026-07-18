@@ -1,13 +1,13 @@
 {
-  autoreconfHook,
+  lib,
+  stdenv,
   fetchFromGitHub,
+  autoreconfHook,
   fftwMpi,
   gsl,
-  lib,
   llvmPackages,
   pfft,
   precision ? "double",
-  stdenv,
 }:
 
 assert lib.elem precision [
@@ -37,10 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   nativeBuildInputs = [ autoreconfHook ];
-
-  preConfigure = ''
-    export FCFLAGS="-I${lib.getDev fftw'}/include -I${lib.getDev pfft'}/include"
-  '';
+  buildInputs = [ gsl ] ++ lib.optional stdenv.cc.isClang llvmPackages.openmp;
+  propagatedBuildInputs = [ pfft' ];
 
   configureFlags = [
     "--enable-threads"
@@ -48,13 +46,12 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional (precision != "double") "--enable-${precision}";
 
-  buildInputs = [ gsl ] ++ lib.optional stdenv.cc.isClang llvmPackages.openmp;
-
-  propagatedBuildInputs = [ pfft' ];
-
-  enableParallelBuilding = true;
+  preConfigure = ''
+    export FCFLAGS="-I${lib.getDev fftw'}/include -I${lib.getDev pfft'}/include"
+  '';
 
   doCheck = true;
+  enableParallelBuilding = true;
 
   meta = {
     description = "Parallel nonequispaced fast Fourier transforms";

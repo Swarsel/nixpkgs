@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  caddy,
   asciidoctor,
+  caddy,
   file,
   lessc,
-  sass,
-  multimarkdown,
   linkchecker,
+  multimarkdown,
   perlPackages,
   python3Packages,
+  sass,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,16 +24,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-f6iA/nHpKnm3BALoQq8SzdcSzJLCFSferEf69SpgD2Y=";
   };
 
-  server = "${caddy}/bin/caddy";
-  linkcheck = "${linkchecker}/bin/linkchecker";
-
-  nativeBuildInputs = [ asciidoctor ];
-
   outputs = [
     "out"
     "lib"
     "themes"
   ];
+
+  nativeBuildInputs = [ asciidoctor ];
 
   propagatedBuildInputs = [
     file
@@ -75,13 +72,16 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r themes/* $themes
   '';
 
+  linkcheck = "${linkchecker}/bin/linkchecker";
+  server = "${caddy}/bin/caddy";
+
   meta = {
     description = "Nix based static site generator";
-    maintainers = [ ];
     homepage = "https://styx-static.github.io/styx-site/";
-    downloadPage = "https://github.com/styx-static/styx/";
-    platforms = lib.platforms.all;
     license = lib.licenses.mit;
+    maintainers = [ ];
+    platforms = lib.platforms.all;
     mainProgram = "styx";
+    downloadPage = "https://github.com/styx-static/styx/";
   };
 })

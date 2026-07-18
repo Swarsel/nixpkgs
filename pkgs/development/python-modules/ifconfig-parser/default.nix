@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage {
   pname = "ifconfig-parser";
   version = "0.0.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "KnightWhoSayNi";
@@ -17,13 +16,13 @@ buildPythonPackage {
     hash = "sha256-TXa7oQ8AyTIdaSK4SH+RN2bDPtVqNvofPvlqHPKaCx4=";
   };
 
-  build-system = [ setuptools ];
-
   checkPhase = ''
     export PYTHONPATH=$PYTHONPATH:$(pwd)/ifconfigparser:$(pwd)/ifconfigparser/tests
     python -m unittest -v test_ifconfig_parser.TestIfconfigParser
   '';
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "ifconfigparser" ];
 
   meta = {

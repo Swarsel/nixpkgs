@@ -1,7 +1,7 @@
 {
   lib,
-  appimageTools,
   fetchurl,
+  appimageTools,
 }:
 
 let
@@ -29,10 +29,12 @@ appimageTools.wrapType2 {
     description = "Visual IDE for React";
     homepage = "https://www.codux.com";
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
+
     maintainers = with lib.maintainers; [
       kashw2
     ];
+
+    platforms = [ "x86_64-linux" ];
     mainProgram = "codux";
   };
 }

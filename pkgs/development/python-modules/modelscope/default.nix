@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   filelock,
   packaging,
   requests,
+  setuptools,
   tqdm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "modelscope";
   version = "1.37.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "modelscope";
@@ -21,6 +20,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-LNg2JtqqID6RKuFi+j29NfOWuNZhkkTIdKmL9bXzAvs=";
   };
 
+  doCheck = false; # need network
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,19 +31,20 @@ buildPythonPackage (finalAttrs: {
     tqdm
   ];
 
-  doCheck = false; # need network
-
+  pyproject = true;
   pythonImportsCheck = [ "modelscope" ];
 
   meta = {
     description = "Bring the notion of Model-as-a-Service to life";
     homepage = "https://github.com/modelscope/modelscope";
     license = lib.licenses.asl20;
-    mainProgram = "modelscope";
+
     maintainers = with lib.maintainers; [
       kyehn
       doronbehar
       ryan4yin
     ];
+
+    mainProgram = "modelscope";
   };
 })

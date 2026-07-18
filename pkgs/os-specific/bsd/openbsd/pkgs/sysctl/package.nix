@@ -2,7 +2,7 @@
   mkDerivation,
 }:
 mkDerivation {
-  path = "sbin/sysctl";
   patches = [ ./no-perms.patch ];
+  path = "sbin/sysctl";
   meta.mainProgram = "sysctl";
 }

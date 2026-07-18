@@ -1,30 +1,29 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   buildPythonPackage,
+  certifi,
+  filetype,
+  nixosTests,
+  pytest-mock,
+  pytest-trio,
+  pytestCheckHook,
+  python,
+  rich,
   selenium-manager,
   setuptools,
-  certifi,
-  pytestCheckHook,
   trio,
   trio-typing,
   trio-websocket,
   typing-extensions,
-  websocket-client,
   urllib3,
-  filetype,
-  pytest-mock,
-  pytest-trio,
-  rich,
-  nixosTests,
-  stdenv,
-  python,
+  websocket-client,
 }:
 
 buildPythonPackage rec {
   pname = "selenium";
   version = "4.40.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SeleniumHQ";
@@ -38,6 +37,14 @@ buildPythonPackage rec {
   preConfigure = ''
     cd py
   '';
+
+  nativeCheckInputs = [
+    filetype
+    pytestCheckHook
+    pytest-mock
+    pytest-trio
+    rich
+  ];
 
   postInstall = ''
     DST_PREFIX=$out/${python.sitePackages}/selenium/webdriver/
@@ -60,6 +67,7 @@ buildPythonPackage rec {
     ln -s ${lib.getExe selenium-manager} $DST_PREFIX/common/linux/
   '';
 
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -72,19 +80,6 @@ buildPythonPackage rec {
     websocket-client
   ]
   ++ urllib3.optional-dependencies.socks;
-
-  pythonRemoveDeps = [
-    "types-certifi"
-    "types-urllib3"
-  ];
-
-  nativeCheckInputs = [
-    filetype
-    pytestCheckHook
-    pytest-mock
-    pytest-trio
-    rich
-  ];
 
   disabledTestPaths = [
     # ERROR without error context
@@ -110,7 +105,12 @@ buildPythonPackage rec {
     "test_get_connection_manager_for_certs_and_timeout"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+
+  pythonRemoveDeps = [
+    "types-certifi"
+    "types-urllib3"
+  ];
 
   passthru.tests = {
     testing-vaultwarden = nixosTests.vaultwarden;

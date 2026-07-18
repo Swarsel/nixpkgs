@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   utils,
   ...
 }:
@@ -19,8 +19,9 @@ let
   gettyCfg = config.services.getty;
 
   configDir = pkgs.writeTextFile {
-    name = "kmscon-config";
     destination = "/kmscon.conf";
+    name = "kmscon-config";
+
     text =
       let
         mkKeyValue =
@@ -79,6 +80,41 @@ in
 
   options = {
     services.kmscon = {
+      config = mkOption {
+        default = { };
+
+        description = ''
+          Configuration for kmscon. See {manpage}`kmscon.conf(5)`
+          for available options.
+        '';
+
+        type = types.submodule {
+          options = {
+            hwaccel = mkEnableOption "use hardware acceleration for rendering";
+
+            libseat = mkOption {
+              default = true;
+
+              description = ''
+                Whether to use libseat for session management.
+                This is the default for kmscon newer than 10.0.0 and prevents
+                launching another GUI from kmscon by `kmscon-launch-gui`.
+              '';
+
+              type = types.bool;
+            };
+          };
+
+          freeformType =
+            with types;
+            attrsOf (oneOf [
+              bool
+              int
+              str
+            ]);
+        };
+      };
+
       enable = mkEnableOption ''
         use kmscon instead of autovt.
 
@@ -88,47 +124,18 @@ in
 
       package = mkPackageOption pkgs "kmscon" { };
 
+      extraOptions = mkOption {
+        default = "";
+        description = "Extra flags to pass to kmscon.";
+        example = "--term xterm-256color";
+        type = types.separatedString " ";
+      };
+
       useXkbConfig = mkEnableOption ''
         configure keymap from xserver keyboard settings.
 
         If enabled, configurations under `services.xserver.xkb` will be injected into kmscon's configuration
       '';
-
-      config = mkOption {
-        description = ''
-          Configuration for kmscon. See {manpage}`kmscon.conf(5)`
-          for available options.
-        '';
-        default = { };
-        type = types.submodule {
-          freeformType =
-            with types;
-            attrsOf (oneOf [
-              bool
-              int
-              str
-            ]);
-          options = {
-            hwaccel = mkEnableOption "use hardware acceleration for rendering";
-            libseat = mkOption {
-              type = types.bool;
-              default = true;
-              description = ''
-                Whether to use libseat for session management.
-                This is the default for kmscon newer than 10.0.0 and prevents
-                launching another GUI from kmscon by `kmscon-launch-gui`.
-              '';
-            };
-          };
-        };
-      };
-
-      extraOptions = mkOption {
-        description = "Extra flags to pass to kmscon.";
-        type = types.separatedString " ";
-        default = "";
-        example = "--term xterm-256color";
-      };
     };
   };
 
@@ -148,6 +155,58 @@ in
       }
     ];
 
+    environment.systemPackages = [ cfg.package ];
+
+    security.pam.services.kmscon = lib.mkIf cfg.config.libseat {
+      rules = {
+        account = utils.pam.autoOrderRules [
+          {
+            control = "required";
+            modulePath = "${config.security.pam.package}/lib/security/pam_unix.so";
+            name = "unix";
+          }
+        ];
+
+        auth = utils.pam.autoOrderRules [
+          {
+            control = "required";
+            modulePath = "${config.security.pam.package}/lib/security/pam_permit.so";
+            name = "permit";
+          }
+        ];
+
+        session = utils.pam.autoOrderRules [
+          {
+            control = "required";
+            modulePath = "${config.security.pam.package}/lib/security/pam_env.so";
+            name = "env";
+
+            settings = {
+              conffile = "/etc/pam/environment";
+              readenv = 0;
+            };
+          }
+          {
+            control = "required";
+            modulePath = "${config.security.pam.package}/lib/security/pam_unix.so";
+            name = "unix";
+          }
+          {
+            control = "optional";
+            modulePath = "${config.systemd.package}/lib/security/pam_systemd.so";
+            name = "systemd";
+
+            settings = {
+              class = "greeter";
+              type = "tty";
+            };
+          }
+        ];
+      };
+
+      useDefaultRules = false;
+    };
+
     services.kmscon.config = lib.mkIf cfg.useXkbConfig (
       lib.mapAttrs (_: lib.mkDefault) (
         lib.filterAttrs (_: v: v != "") {
@@ -159,14 +218,16 @@ in
       )
     );
 
-    environment.systemPackages = [ cfg.package ];
     systemd.packages = [ cfg.package ];
 
     systemd.services."kmsconvt@" = {
+      # logind spawns autovt@ttyN.service on VT switch; point it at kmscon
+      aliases = [ "autovt@.service" ];
+      restartIfChanged = false;
+
       serviceConfig = {
-        User = lib.mkIf (!cfg.config.libseat) "";
-        PAMName = lib.mkIf (!cfg.config.libseat) "";
         Environment = [ "XKB_CONFIG_ROOT=${config.services.xserver.xkb.dir}" ];
+
         ExecStart = [
           "" # override upstream default with an empty ExecStart
           (builtins.concatStringsSep " " (
@@ -185,65 +246,19 @@ in
             ]
           ))
         ];
-      };
 
-      restartIfChanged = false;
-      # logind spawns autovt@ttyN.service on VT switch; point it at kmscon
-      aliases = [ "autovt@.service" ];
+        PAMName = lib.mkIf (!cfg.config.libseat) "";
+        User = lib.mkIf (!cfg.config.libseat) "";
+      };
     };
+
+    systemd.suppressedSystemUnits = [ "getty@.service" ];
 
     # tty1 is special: logind does not spawn autovt@tty1, it expects a static
     # pull-in via getty.target. With getty@ suppressed, we must replace it.
     systemd.targets.getty.wants = lib.mkIf (!config.services.displayManager.enable) [
       "kmsconvt@tty1.service"
     ];
-
-    systemd.suppressedSystemUnits = [ "getty@.service" ];
-
-    security.pam.services.kmscon = lib.mkIf cfg.config.libseat {
-      useDefaultRules = false;
-      rules = {
-        auth = utils.pam.autoOrderRules [
-          {
-            name = "permit";
-            control = "required";
-            modulePath = "${config.security.pam.package}/lib/security/pam_permit.so";
-          }
-        ];
-        account = utils.pam.autoOrderRules [
-          {
-            name = "unix";
-            control = "required";
-            modulePath = "${config.security.pam.package}/lib/security/pam_unix.so";
-          }
-        ];
-        session = utils.pam.autoOrderRules [
-          {
-            name = "env";
-            control = "required";
-            modulePath = "${config.security.pam.package}/lib/security/pam_env.so";
-            settings = {
-              conffile = "/etc/pam/environment";
-              readenv = 0;
-            };
-          }
-          {
-            name = "unix";
-            control = "required";
-            modulePath = "${config.security.pam.package}/lib/security/pam_unix.so";
-          }
-          {
-            name = "systemd";
-            control = "optional";
-            modulePath = "${config.systemd.package}/lib/security/pam_systemd.so";
-            settings = {
-              type = "tty";
-              class = "greeter";
-            };
-          }
-        ];
-      };
-    };
   };
 
   meta.maintainers = with lib.maintainers; [

@@ -16,11 +16,11 @@ stdenv.mkDerivation (finalAttrs: {
   makeFlags = [ "PREFIX=$(out)" ];
 
   meta = {
-    homepage = "http://mdocml.bsd.lv/";
     description = "Converter from Texinfo into mdoc";
+    homepage = "http://mdocml.bsd.lv/";
     license = lib.licenses.isc;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ ramkromberg ];
+    platforms = lib.platforms.all;
     mainProgram = "texi2mdoc";
   };
 })

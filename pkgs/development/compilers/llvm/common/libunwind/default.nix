@@ -1,25 +1,24 @@
 {
   lib,
   stdenv,
-  release_version,
-  src ? null,
-  llvm_meta,
-  version,
-  monorepoSrc ? null,
-  runCommand,
   cmake,
+  getVersionFile,
+  libcxx,
+  llvm_meta,
   ninja,
   python3,
-  libcxx,
-  enableShared ? !stdenv.hostPlatform.isStatic,
-  doFakeLibgcc ? stdenv.hostPlatform.useLLVM && !stdenv.hostPlatform.isStatic,
+  release_version,
+  runCommand,
+  version,
   devExtraCmakeFlags ? [ ],
-  getVersionFile,
+  doFakeLibgcc ? stdenv.hostPlatform.useLLVM && !stdenv.hostPlatform.isStatic,
+  enableShared ? !stdenv.hostPlatform.isStatic,
+  monorepoSrc ? null,
+  src ? null,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  pname = "libunwind";
-
   inherit version;
+  pname = "libunwind";
 
   src =
     if monorepoSrc != null then
@@ -37,8 +36,6 @@ stdenv.mkDerivation (finalAttrs: {
       ''
     else
       src;
-
-  sourceRoot = "${finalAttrs.src.name}/runtimes";
 
   outputs = [
     "out"
@@ -74,15 +71,19 @@ stdenv.mkDerivation (finalAttrs: {
       ln -s $out/lib/libunwind.dll.a $out/lib/libgcc_s.dll.a
     '';
 
+  sourceRoot = "${finalAttrs.src.name}/runtimes";
+
   meta = llvm_meta // {
-    # Details: https://github.com/llvm/llvm-project/blob/main/libunwind/docs/index.rst
-    homepage = "https://clang.llvm.org/docs/Toolchain.html#unwind-library";
     description = "LLVM's unwinder library";
+
     longDescription = ''
       The unwind library provides a family of _Unwind_* functions implementing
       the language-neutral stack unwinding portion of the Itanium C++ ABI (Level
       I). It is a dependency of the C++ ABI library, and sometimes is a
       dependency of other runtimes.
     '';
+
+    # Details: https://github.com/llvm/llvm-project/blob/main/libunwind/docs/index.rst
+    homepage = "https://clang.llvm.org/docs/Toolchain.html#unwind-library";
   };
 })

@@ -1,26 +1,21 @@
 {
   lib,
   buildPythonPackage,
-  nvidia-cudnn-frontend,
-
   # build-system
   cmake,
-  ninja,
-  pybind11,
-  setuptools,
-
   # nativeBuildInputs
   cudaPackages,
-
   # buildInputs
   dlpack,
-
-  # propagatedBuildInputs
-  nlohmann_json,
-
   # tests
   looseversion,
+  ninja,
+  # propagatedBuildInputs
+  nlohmann_json,
+  nvidia-cudnn-frontend,
+  pybind11,
   pytestCheckHook,
+  setuptools,
   torch,
 }:
 buildPythonPackage.override { stdenv = cudaPackages.backendStdenv; } (finalAttrs: {
@@ -31,8 +26,6 @@ buildPythonPackage.override { stdenv = cudaPackages.backendStdenv; } (finalAttrs
     ;
 
   pname = "nvidia-cudnn-frontend";
-  pyproject = true;
-  __structuredAttrs = true;
 
   postPatch =
     cudaPackages.cudnn-frontend.postPatch
@@ -50,15 +43,6 @@ buildPythonPackage.override { stdenv = cudaPackages.backendStdenv; } (finalAttrs
           '"${lib.getLib cudaPackages.cudnn}/lib/libcudnn.so"'
     '';
 
-  build-system = [
-    cmake
-    ninja
-    pybind11
-    setuptools
-  ];
-
-  dontUseCmakeConfigure = true;
-
   nativeBuildInputs = [
     cudaPackages.cuda_nvcc
   ];
@@ -74,22 +58,35 @@ buildPythonPackage.override { stdenv = cudaPackages.backendStdenv; } (finalAttrs
     nlohmann_json
   ];
 
-  pythonImportsCheck = [ "cudnn" ];
-
   # requires GPU
   doCheck = false;
+
   nativeCheckInputs = [
     looseversion
     pytestCheckHook
     torch
   ];
 
+  __structuredAttrs = true;
+
+  build-system = [
+    cmake
+    ninja
+    pybind11
+    setuptools
+  ];
+
+  dontUseCmakeConfigure = true;
+
   enabledTestPaths = [
     "test/"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "cudnn" ];
+
   passthru.gpuCheck = nvidia-cudnn-frontend.overridePythonAttrs {
-    requiredSystemFeatures = [ "cuda" ];
     doCheck = true;
+    requiredSystemFeatures = [ "cuda" ];
   };
 })

@@ -20,8 +20,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-cC098+W8cbcumBv+3ZFwGYXmens4u0aQSx5Lvw6maYM=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   strictDeps = true;
-  preConfigure = "./bootstrap";
 
   nativeBuildInputs = [
     autoconf
@@ -29,7 +33,16 @@ stdenv.mkDerivation (finalAttrs: {
     bison
     flex
   ];
+
   buildInputs = [ readline ];
+
+  makeFlags = [
+    "CC=${stdenv.cc.targetPrefix}cc"
+    "PREFIX=${placeholder "out"}"
+    "BINDIR=${placeholder "out"}/bin"
+    "MANDIR=${placeholder "out"}/man1"
+    "CATDIR=${placeholder "out"}/cat1"
+  ];
 
   env = {
     NIX_CFLAGS_COMPILE = toString (
@@ -42,28 +55,18 @@ stdenv.mkDerivation (finalAttrs: {
         "-Wno-error=incompatible-function-pointer-types"
       ]
     );
+
     NIX_LDFLAGS = "-lreadline";
   };
 
-  makeFlags = [
-    "CC=${stdenv.cc.targetPrefix}cc"
-    "PREFIX=${placeholder "out"}"
-    "BINDIR=${placeholder "out"}/bin"
-    "MANDIR=${placeholder "out"}/man1"
-    "CATDIR=${placeholder "out"}/cat1"
-  ];
-
+  preConfigure = "./bootstrap";
   doCheck = true;
-  checkTarget = "test";
 
   preInstall = ''
     mkdir -p $out/bin;
   '';
 
-  outputs = [
-    "out"
-    "man"
-  ];
+  checkTarget = "test";
 
   meta = {
     description = "Composing and deciphering C (or C++) declarations or casts, aka 'gibberish'";

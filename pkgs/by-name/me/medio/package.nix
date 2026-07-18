@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   installFonts,
+  stdenvNoCC,
 }:
 
 let
@@ -22,17 +22,21 @@ stdenvNoCC.mkDerivation {
   nativeBuildInputs = [ installFonts ];
 
   meta = {
-    homepage = "https://dotcolon.net/font/medio/";
     description = "Serif font designed by Sora Sagano";
+
     longDescription = ''
       Medio is a serif font designed by Sora Sagano, based roughly
       on the proportions of the font Tenderness (from the same designer),
       but with hairline serifs in the style of a Didone.
     '';
-    platforms = lib.platforms.all;
+
+    homepage = "https://dotcolon.net/font/medio/";
+    license = lib.licenses.cc0;
+
     maintainers = with lib.maintainers; [
       minijackson
     ];
-    license = lib.licenses.cc0;
+
+    platforms = lib.platforms.all;
   };
 }

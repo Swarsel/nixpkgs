@@ -1,24 +1,21 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
   gnome-menus,
+  gobject-introspection,
   gtk3,
   intltool,
-  gobject-introspection,
-  wrapGAppsHook3,
-  nix-update-script,
-  testers,
   menulibre,
+  nix-update-script,
+  python3Packages,
+  testers,
+  wrapGAppsHook3,
   writableTmpDirAsHomeHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "menulibre";
   version = "2.4.0";
-  pyproject = true;
-
-  build-system = with python3Packages; [ setuptools ];
 
   src = fetchFromGitHub {
     owner = "bluesabre";
@@ -27,12 +24,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-IfsuOYP/H3r1GDWMVVSBfYvQS+01VJaAlZu+c05geWg=";
   };
 
-  dependencies = with python3Packages; [
-    pygobject3
-    gnome-menus
-    psutil
-    distutils-extra
-  ];
+  postPatch = ''
+    substituteInPlace setup.py \
+      --replace-fail 'data_dir =' "data_dir = '$out/share/menulibre' #" \
+      --replace-fail 'update_desktop_file(desktop_file, script_path)' ""
+  '';
 
   nativeBuildInputs = [
     gtk3
@@ -42,18 +38,24 @@ python3Packages.buildPythonApplication (finalAttrs: {
     writableTmpDirAsHomeHook
   ];
 
-  postPatch = ''
-    substituteInPlace setup.py \
-      --replace-fail 'data_dir =' "data_dir = '$out/share/menulibre' #" \
-      --replace-fail 'update_desktop_file(desktop_file, script_path)' ""
-  '';
+  build-system = with python3Packages; [ setuptools ];
+
+  dependencies = with python3Packages; [
+    pygobject3
+    gnome-menus
+    psutil
+    distutils-extra
+  ];
+
+  pyproject = true;
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
-      package = menulibre;
       command = "HOME=$TMPDIR menulibre --version | cut -d' ' -f2";
+      package = menulibre;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -61,7 +63,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     homepage = "https://bluesabre.org/projects/menulibre";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ lelgenio ];
-    mainProgram = "menulibre";
     platforms = lib.platforms.linux;
+    mainProgram = "menulibre";
   };
 })

@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,13 +19,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-wJS60bG5eQIEsDdqKxfSVKPaW+EmmtiaW9gbH1wwBQ4=";
   };
 
-  ldflags = [
-    "-X github.com/fosrl/cli/internal/version.Version=${finalAttrs.version}"
-  ];
-
-  vendorHash = "sha256-yHU/xfO+I5YncycGkPkpKGUM11YyMrAkS17N/nAmUc0=";
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-yHU/xfO+I5YncycGkPkpKGUM11YyMrAkS17N/nAmUc0=";
 
   postInstall = ''
     mv $out/bin/cli $out/bin/pangolin
@@ -39,9 +34,13 @@ buildGoModule (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+
+  ldflags = [
+    "-X github.com/fosrl/cli/internal/version.Version=${finalAttrs.version}"
+  ];
+
   versionCheckKeepEnvironment = [ "HOME" ];
   versionCheckProgramArg = "version";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -49,10 +48,12 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/fosrl/cli";
     changelog = "https://github.com/fosrl/cli/releases/tag/${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       water-sucks
       jackr
     ];
+
     mainProgram = "pangolin";
   };
 })

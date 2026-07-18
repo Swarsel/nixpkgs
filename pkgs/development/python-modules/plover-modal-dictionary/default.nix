@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   plover,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
@@ -11,7 +11,6 @@ buildPythonPackage (finalAttrs: {
   # See https://pypi.org/project/plover-modal-dictionary/#history
   # and https://github.com/Kaoffie/plover_modal_dictionary/issues/3
   version = "0.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Kaoffie";
@@ -28,6 +27,8 @@ buildPythonPackage (finalAttrs: {
     plover
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "plover_modal_dictionary"
   ];
@@ -36,6 +37,7 @@ buildPythonPackage (finalAttrs: {
     description = "Modal Dictionaries for Plover";
     homepage = "https://github.com/Kaoffie/plover_modal_dictionary";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       pandapip1
       ShamrockLee

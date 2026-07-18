@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   async-timeout,
   buildPythonPackage,
-  fetchFromGitHub,
   flask,
   httpcore,
   httpx,
@@ -22,7 +22,6 @@
 buildPythonPackage rec {
   pname = "httpx-socks";
   version = "0.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "romis2012";
@@ -30,21 +29,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-/8nz/5LqEuSr8A8/BWzJM9vHuum6fOYIS2rozr4Omi4=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    httpx
-    httpcore
-    python-socks
-  ];
-
-  optional-dependencies = {
-    asyncio = [ async-timeout ];
-    trio = [ trio ];
-  };
-
-  __darwinAllowLocalNetworking = true;
 
   nativeCheckInputs = [
     flask
@@ -58,13 +42,28 @@ buildPythonPackage rec {
     yarl
   ];
 
-  pythonImportsCheck = [ "httpx_socks" ];
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    httpx
+    httpcore
+    python-socks
+  ];
 
   disabledTests = [
     # Tests don't work in the sandbox
     "test_proxy"
     "test_secure_proxy"
   ];
+
+  optional-dependencies = {
+    asyncio = [ async-timeout ];
+    trio = [ trio ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "httpx_socks" ];
 
   meta = {
     description = "Proxy (HTTP, SOCKS) transports for httpx";

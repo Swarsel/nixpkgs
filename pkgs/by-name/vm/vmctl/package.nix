@@ -1,17 +1,17 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  openssh,
-  socat,
-  gawk,
-  cloud-utils,
   cdrtools,
-  qemu,
-  qemu-utils,
+  cloud-utils,
   coreutils,
+  gawk,
   getopt,
   makeWrapper,
+  openssh,
+  qemu,
+  qemu-utils,
+  socat,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -24,8 +24,6 @@ stdenvNoCC.mkDerivation {
     rev = "8cc71d4350f4f5814ffd7a3091a5c1a9d2e25158";
     hash = "sha256-nIJEgd62yq3DKhaMnB2OEaGN/zC5/Z5cTtO3iQEVF44=";
   };
-
-  dontBuild = true;
 
   postPatch = ''
     substituteInPlace vmctl \
@@ -57,11 +55,14 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Command line tool focused on NVMe testing in QEMU";
     homepage = "https://github.com/SamsungDS/vmctl";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ panky ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"

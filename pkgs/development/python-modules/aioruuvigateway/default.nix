@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
   bluetooth-data-tools,
+  buildPythonPackage,
+  hatchling,
   httpx,
   pytest-asyncio,
   pytest-httpx,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "aioruuvigateway";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "akx";
@@ -35,6 +34,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "aioruuvigateway" ];
 
   meta = {

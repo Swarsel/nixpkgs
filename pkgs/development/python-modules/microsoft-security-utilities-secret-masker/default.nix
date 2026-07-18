@@ -9,18 +9,19 @@
 buildPythonPackage rec {
   pname = "microsoft-security-utilities-secret-masker";
   version = "1.0.0b4";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "microsoft_security_utilities_secret_masker";
     inherit version;
     hash = "sha256-owvTYawYyLUvaEQHa8JkZTNZSeqcegBNlfUZbsb97z4=";
+    pname = "microsoft_security_utilities_secret_masker";
   };
 
   build-system = [
     setuptools
     wheel
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "microsoft_security_utilities_secret_masker"

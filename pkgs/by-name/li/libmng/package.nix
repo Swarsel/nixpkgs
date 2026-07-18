@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  zlib,
-  libpng,
-  libjpeg,
   lcms2,
+  libjpeg,
+  libpng,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,7 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
     "devdoc"
   ];
-  outputMan = "devdoc";
 
   propagatedBuildInputs = [
     zlib
@@ -30,6 +29,8 @@ stdenv.mkDerivation (finalAttrs: {
     libjpeg
     lcms2
   ];
+
+  outputMan = "devdoc";
 
   meta = {
     description = "Reference library for reading, displaying, writing and examining Multiple-Image Network Graphics";

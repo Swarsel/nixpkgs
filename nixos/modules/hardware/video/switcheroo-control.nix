@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -15,8 +15,9 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    services.dbus.packages = [ cfg.package ];
     environment.systemPackages = [ cfg.package ];
+    services.dbus.packages = [ cfg.package ];
+
     systemd = {
       packages = [ cfg.package ];
       targets.multi-user.wants = [ "switcheroo-control.service" ];

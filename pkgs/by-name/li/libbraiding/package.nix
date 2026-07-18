@@ -7,8 +7,8 @@
 }:
 
 stdenv.mkDerivation rec {
-  version = "1.3.2";
   pname = "libbraiding";
+  version = "1.3.2";
 
   src = fetchFromGitHub {
     owner = "miguelmarco";
@@ -26,13 +26,15 @@ stdenv.mkDerivation rec {
   doCheck = true;
 
   meta = {
-    homepage = "https://github.com/miguelmarco/libbraiding/";
     description = "C++ library for computations on braid groups";
+
     longDescription = ''
       A library to compute several properties of braids, including centralizer and conjugacy check.
     '';
+
+    homepage = "https://github.com/miguelmarco/libbraiding/";
     license = lib.licenses.gpl3;
-    teams = [ lib.teams.sage ];
     platforms = lib.platforms.all;
+    teams = [ lib.teams.sage ];
   };
 }

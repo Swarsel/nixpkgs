@@ -2,30 +2,30 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  bpftools,
+  clang,
   cmake,
-  kernel,
+  curl,
+  elfutils,
+  gcc,
+  grpc,
   installShellFiles,
-  pkg-config,
+  jq,
+  jsoncpp,
+  kernel,
+  libbpf,
   luajit,
   ncurses,
-  perl,
-  jsoncpp,
-  openssl,
-  curl,
-  jq,
-  gcc,
-  elfutils,
-  onetbb,
-  protobuf,
-  grpc,
-  yaml-cpp,
   nlohmann_json,
+  onetbb,
+  openssl,
+  perl,
+  pkg-config,
+  protobuf,
   re2,
-  zstd,
   uthash,
-  clang,
-  libbpf,
-  bpftools,
+  yaml-cpp,
+  zstd,
 }:
 
 let
@@ -35,25 +35,25 @@ let
 
   # Compare with https://github.com/falcosecurity/libs/blob/0.17.2/cmake/modules/valijson.cmake
   valijson = fetchFromGitHub {
+    hash = "sha256-wvFdjsDtKH7CpbEpQjzWtLC4RVOU9+D2rSK0Xo1cJqo=";
     owner = "tristanpenman";
     repo = "valijson";
     rev = "v1.0.2";
-    hash = "sha256-wvFdjsDtKH7CpbEpQjzWtLC4RVOU9+D2rSK0Xo1cJqo=";
   };
 
   # https://github.com/draios/sysdig/blob/0.40.1/cmake/modules/driver.cmake
   driver = fetchFromGitHub {
+    hash = "sha256-G5MMVNceNa1y7CczfoaRBektc//uUN6ijmcTMnnKMRA=";
     owner = "falcosecurity";
     repo = "libs";
     rev = "8.0.0+driver";
-    hash = "sha256-G5MMVNceNa1y7CczfoaRBektc//uUN6ijmcTMnnKMRA=";
   };
 
   version = "0.40.1";
 in
 stdenv.mkDerivation {
-  pname = "sysdig";
   inherit version;
+  pname = "sysdig";
 
   src = fetchFromGitHub {
     owner = "draios";
@@ -68,6 +68,7 @@ stdenv.mkDerivation {
     installShellFiles
     pkg-config
   ];
+
   buildInputs = [
     luajit
     ncurses
@@ -92,35 +93,6 @@ stdenv.mkDerivation {
     gcc
   ]
   ++ lib.optionals (kernel != null) kernel.moduleBuildDependencies;
-
-  hardeningDisable = [
-    "pic"
-    "zerocallusedregs"
-  ];
-
-  postUnpack = ''
-    cp -r ${
-      fetchFromGitHub {
-        owner = "falcosecurity";
-        repo = "libs";
-        rev = libsRev;
-        hash = libsHash;
-      }
-    } libs
-    chmod -R +w libs
-
-    substituteInPlace libs/userspace/libscap/libscap.pc.in libs/userspace/libsinsp/libsinsp.pc.in \
-      --replace-fail "\''${prefix}/@CMAKE_INSTALL_LIBDIR@" "@CMAKE_INSTALL_FULL_LIBDIR@" \
-      --replace-fail "\''${prefix}/@CMAKE_INSTALL_INCLUDEDIR@" "@CMAKE_INSTALL_FULL_INCLUDEDIR@"
-
-    cp -r ${driver} driver-src
-    chmod -R +w driver-src
-
-    cmakeFlagsArray+=(
-      "-DFALCOSECURITY_LIBS_SOURCE_DIR=$(pwd)/libs"
-      "-DDRIVER_SOURCE_DIR=$(pwd)/driver-src/driver"
-    )
-  '';
 
   cmakeFlags = [
     "-DUSE_BUNDLED_DEPS=OFF"
@@ -178,17 +150,48 @@ stdenv.mkDerivation {
       fi
     '';
 
+  hardeningDisable = [
+    "pic"
+    "zerocallusedregs"
+  ];
+
+  postUnpack = ''
+    cp -r ${
+      fetchFromGitHub {
+        hash = libsHash;
+        owner = "falcosecurity";
+        repo = "libs";
+        rev = libsRev;
+      }
+    } libs
+    chmod -R +w libs
+
+    substituteInPlace libs/userspace/libscap/libscap.pc.in libs/userspace/libsinsp/libsinsp.pc.in \
+      --replace-fail "\''${prefix}/@CMAKE_INSTALL_LIBDIR@" "@CMAKE_INSTALL_FULL_LIBDIR@" \
+      --replace-fail "\''${prefix}/@CMAKE_INSTALL_INCLUDEDIR@" "@CMAKE_INSTALL_FULL_INCLUDEDIR@"
+
+    cp -r ${driver} driver-src
+    chmod -R +w driver-src
+
+    cmakeFlagsArray+=(
+      "-DFALCOSECURITY_LIBS_SOURCE_DIR=$(pwd)/libs"
+      "-DDRIVER_SOURCE_DIR=$(pwd)/driver-src/driver"
+    )
+  '';
+
   meta = {
     description = "Tracepoint-based system tracing tool for Linux (with clients for other OSes)";
+    homepage = "https://sysdig.com/opensource/";
+
     license = with lib.licenses; [
       asl20
       gpl2Only
       mit
     ];
+
     maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
     broken = kernel != null && ((lib.versionOlder kernel.version "4.14") || kernel.isZen);
-    homepage = "https://sysdig.com/opensource/";
     downloadPage = "https://github.com/draios/sysdig/releases";
   };
 }

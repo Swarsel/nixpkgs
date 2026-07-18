@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  pkg-config,
   stdenv,
+  fetchFromGitHub,
   curl,
-  openssl,
   libgit2,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,13 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-NOjkKttA+mwPCpl4uiRIYD58DlMomVFpwnM9KGfWd+w=";
   };
-
-  cargoPatches = [
-    # update Cargo.lock to work with openssl 3
-    ./openssl3-support.patch
-  ];
-
-  cargoHash = "sha256-+5ElAfYuUfosXzR3O2QIFGy4QJuPrWDMg5LacZKi3c8=";
 
   nativeBuildInputs = [
     pkg-config
@@ -42,21 +35,31 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libgit2
   ];
 
+  cargoHash = "sha256-+5ElAfYuUfosXzR3O2QIFGy4QJuPrWDMg5LacZKi3c8=";
+
   env = {
     LIBGIT2_NO_VENDOR = 1;
   };
 
+  cargoPatches = [
+    # update Cargo.lock to work with openssl 3
+    ./openssl3-support.patch
+  ];
+
   meta = {
     description = "Tool to analyze the third-party dependencies imported by a rust crate or rust workspace";
-    mainProgram = "cargo-dephell";
     homepage = "https://github.com/mimoo/cargo-dephell";
+
     license = with lib.licenses; [
       mit # or
       asl20
     ];
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
     ];
+
+    mainProgram = "cargo-dephell";
     broken = stdenv.hostPlatform.isLinux;
   };
 })

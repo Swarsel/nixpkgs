@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,17 +17,17 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-7fyHgbmP+lm1F3wGKrNvhaWyLk10aIu4JSRqSZeGrdU=";
 
-  subPackages = [ "cmd" ];
-
   postInstall = ''
     mv $out/bin/cmd $out/bin/summon
   '';
 
+  subPackages = [ "cmd" ];
+
   meta = {
     description = "CLI that provides on-demand secrets access for common DevOps tools";
-    mainProgram = "summon";
     homepage = "https://cyberark.github.io/summon";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ quentini ];
+    mainProgram = "summon";
   };
 })

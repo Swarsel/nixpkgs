@@ -1,13 +1,12 @@
 {
   buildDunePackage,
-  multipart_form,
   miou,
+  multipart_form,
 }:
 
 buildDunePackage {
-  pname = "multipart_form-miou";
-
   inherit (multipart_form) version src meta;
+  pname = "multipart_form-miou";
 
   propagatedBuildInputs = [
     miou

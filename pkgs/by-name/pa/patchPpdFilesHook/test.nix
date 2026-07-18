@@ -1,9 +1,9 @@
 {
   lib,
-  replaceVars,
-  diffutils,
   stdenv,
+  diffutils,
   patchPpdFilesHook,
+  replaceVars,
 }:
 
 let
@@ -25,21 +25,25 @@ let
 in
 
 stdenv.mkDerivation {
-  name = "${patchPpdFilesHook.name}-test";
-  buildInputs = [ diffutils ];
   nativeBuildInputs = [
     diffutils
     patchPpdFilesHook
   ];
-  dontUnpack = true;
-  dontInstall = true;
-  ppdFileCommands = [ "cmp" ];
+
+  buildInputs = [ diffutils ];
+
   preFixup = ''
     install -D "${input}" "${placeholder "out"}/share/cups/model/test.ppd"
     install -D "${input}" "${placeholder "out"}/share/ppd/test.ppd"
   '';
+
   postFixup = ''
     diff --color --report-identical-files "${output}" "${placeholder "out"}/share/cups/model/test.ppd"
     diff --color --report-identical-files "${output}" "${placeholder "out"}/share/ppd/test.ppd"
   '';
+
+  dontInstall = true;
+  dontUnpack = true;
+  name = "${patchPpdFilesHook.name}-test";
+  ppdFileCommands = [ "cmp" ];
 }

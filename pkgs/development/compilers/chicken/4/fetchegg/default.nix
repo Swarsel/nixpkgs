@@ -3,8 +3,8 @@
 
 {
   lib,
-  stdenvNoCC,
   chicken,
+  stdenvNoCC,
 }:
 {
   name,
@@ -17,17 +17,13 @@ if md5 != "" then
   throw "fetchegg does not support md5 anymore, please use sha256"
 else
   stdenvNoCC.mkDerivation {
-    name = "chicken-${name}-export-${version}";
-    builder = ./builder.sh;
+    inherit version;
     nativeBuildInputs = [ chicken ];
-
+    builder = ./builder.sh;
+    eggName = name;
+    impureEnvVars = lib.fetchers.proxyImpureEnvVars;
+    name = "chicken-${name}-export-${version}";
+    outputHash = sha256;
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
-    outputHash = sha256;
-
-    inherit version;
-
-    eggName = name;
-
-    impureEnvVars = lib.fetchers.proxyImpureEnvVars;
   }

@@ -1,16 +1,16 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   nix-update-script,
+  python3Packages,
 }:
 
 let
   version = "0.3.10";
 in
 python3Packages.buildPythonApplication {
-  pname = "bili-live-tool";
   inherit version;
+  pname = "bili-live-tool";
 
   src = fetchFromGitHub {
     owner = "chenxi-Eumenides";
@@ -26,7 +26,14 @@ python3Packages.buildPythonApplication {
     TOML
   '';
 
-  pyproject = true;
+  nativeCheckInputs = with python3Packages; [ unittestCheckHook ];
+
+  preInstall = ''
+    mkdir -p $out/bin
+    { echo '#!/bin/python'; cat main_cli.py; } > $out/bin/bili-live-tool
+    chmod +x $out/bin/bili-live-tool
+  '';
+
   build-system = with python3Packages; [ setuptools ];
 
   dependencies = with python3Packages; [
@@ -36,13 +43,8 @@ python3Packages.buildPythonApplication {
     requests
   ];
 
-  preInstall = ''
-    mkdir -p $out/bin
-    { echo '#!/bin/python'; cat main_cli.py; } > $out/bin/bili-live-tool
-    chmod +x $out/bin/bili-live-tool
-  '';
+  pyproject = true;
 
-  nativeCheckInputs = with python3Packages; [ unittestCheckHook ];
   unittestFlags = [
     "-s"
     "unittest"

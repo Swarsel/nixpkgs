@@ -1,19 +1,19 @@
 {
   lib,
-  callPackage,
   stdenv,
   fetchFromGitHub,
+  callPackage,
   cmake,
-  pkg-config,
-  python3,
-  jq,
   glslang,
+  jq,
   libffi,
   libx11,
   libxau,
   libxcb,
   libxdmcp,
   libxrandr,
+  pkg-config,
+  python3,
   spirv-headers,
   spirv-tools,
   vulkan-headers,
@@ -74,8 +74,6 @@ stdenv.mkDerivation (finalAttrs: {
   # available in Nix sandbox. Fails with VK_ERROR_INCOMPATIBLE_DRIVER.
   doCheck = false;
 
-  separateDebugInfo = true;
-
   # Include absolute paths to layer libraries in their associated
   # layer definition json files.
   preFixup = ''
@@ -85,11 +83,13 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  separateDebugInfo = true;
+
   meta = {
     description = "Official Khronos Vulkan validation layers";
     homepage = "https://github.com/KhronosGroup/Vulkan-ValidationLayers";
-    platforms = lib.platforms.all;
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.ralith ];
+    platforms = lib.platforms.all;
   };
 })

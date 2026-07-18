@@ -1,9 +1,9 @@
 {
-  fetchurl,
   lib,
+  stdenv,
+  fetchurl,
   net-snmp,
   nix-update-script,
-  stdenv,
   versionCheckHook,
 }:
 stdenv.mkDerivation rec {
@@ -16,10 +16,7 @@ stdenv.mkDerivation rec {
   };
 
   buildInputs = [ net-snmp ];
-
   configureFlags = [ "--libexecdir=${placeholder "out"}/bin" ];
-
-  enableParallelBuilding = true;
 
   postInstall = ''
     # Remove unnecessary header files
@@ -28,18 +25,19 @@ stdenv.mkDerivation rec {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  enableParallelBuilding = true;
 
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://github.com/NETWAYS/check_interfaces/releases/tag/v${version}";
     description = "Icinga check plugin for network hardware interfaces";
     homepage = "https://github.com/NETWAYS/check_interfaces/";
+    changelog = "https://github.com/NETWAYS/check_interfaces/releases/tag/v${version}";
     license = with lib.licenses; [ gpl2Only ];
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ jwillikers ];
+    platforms = lib.platforms.unix;
     mainProgram = "check_interfaces";
   };
 }

@@ -1,12 +1,12 @@
 {
   lib,
-  testers,
   stdenv,
-  buildPackages,
   fetchFromGitHub,
+  buildPackages,
   cmake,
-  freedvSupport ? false,
   lpcnet,
+  testers,
+  freedvSupport ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,15 +20,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-69Mp4o3MgV98Fqfai4txv5jQw2WpoPuoWcwHsNAFPQM=";
   };
 
-  patches = [
-    # Fix nix-store path dupliucations
-    ./fix-pkg-config.patch
-  ];
-
   outputs = [
     "out"
     "lib"
     "dev"
+  ];
+
+  patches = [
+    # Fix nix-store path dupliucations
+    ./fix-pkg-config.patch
   ];
 
   nativeBuildInputs = [
@@ -38,6 +38,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = lib.optionals freedvSupport [
     lpcnet
+  ];
+
+  cmakeFlags = [
+    # RPATH of binary /nix/store/.../bin/freedv_rx contains a forbidden reference to /build/
+    "-DCMAKE_SKIP_BUILD_RPATH=ON"
+    "-DCMAKE_C_COMPILER=${stdenv.cc.targetPrefix}cc"
+    "-DCMAKE_CXX_COMPILER=${stdenv.cc.targetPrefix}c++"
+  ]
+  ++ lib.optionals freedvSupport [
+    "-DLPCNET=ON"
   ];
 
   # we need to unset these variables from stdenv here and then set their equivalents in the cmake flags
@@ -65,24 +75,14 @@ stdenv.mkDerivation (finalAttrs: {
         "\"$dev/include/codec2"
     '';
 
-  cmakeFlags = [
-    # RPATH of binary /nix/store/.../bin/freedv_rx contains a forbidden reference to /build/
-    "-DCMAKE_SKIP_BUILD_RPATH=ON"
-    "-DCMAKE_C_COMPILER=${stdenv.cc.targetPrefix}cc"
-    "-DCMAKE_CXX_COMPILER=${stdenv.cc.targetPrefix}c++"
-  ]
-  ++ lib.optionals freedvSupport [
-    "-DLPCNET=ON"
-  ];
-
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {
     description = "Speech codec designed for communications quality speech at low data rates";
     homepage = "https://www.rowetel.com/codec2.html";
     license = lib.licenses.lgpl21Only;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ markuskowa ];
+    platforms = lib.platforms.unix;
     pkgConfigModules = [ "codec2" ];
   };
 })

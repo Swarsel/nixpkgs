@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,11 +17,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-UGX+Q1AF3Y0EE2+w9fjVwSZdtM3aGlbpQpLO9d5wASo=";
   };
 
-  vendorHash = "sha256-VF0jDOVDOrLZBm8SAe5uGlMUOBBb+0zrnkjKkeK9VjU=";
-
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  vendorHash = "sha256-VF0jDOVDOrLZBm8SAe5uGlMUOBBb+0zrnkjKkeK9VjU=";
+  doCheck = false;
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd gmailctl \
@@ -30,12 +31,11 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/gmailctl completion zsh)
   '';
 
-  doCheck = false;
-
   meta = {
     description = "Declarative configuration for Gmail filters";
     homepage = "https://github.com/mbrt/gmailctl";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       doronbehar
       SuperSandro2000

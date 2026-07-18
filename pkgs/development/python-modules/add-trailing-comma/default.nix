@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
   tokenize-rt,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "add-trailing-comma";
   version = "4.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "asottile";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
     hash = "sha256-Ts04kjhGE0lgrHyT+EuJsVLIYU/842azG1ZUHTyFijc=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ tokenize-rt ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ tokenize-rt ];
+  pyproject = true;
   pythonImportsCheck = [ "add_trailing_comma" ];
 
   meta = {

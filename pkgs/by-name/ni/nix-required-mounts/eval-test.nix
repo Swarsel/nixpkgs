@@ -1,17 +1,19 @@
 {
-  nixos,
   lib,
+  nixos,
   runCommand,
 }:
 let
   base = nixos {
-    services.userborn.enable = true;
+    boot.loader.grub.enable = false;
+    fileSystems."/".device = "/dev/null";
+
     programs.nix-required-mounts = {
       enable = true;
       presets.nvidia-gpu.enable = true;
     };
-    fileSystems."/".device = "/dev/null";
-    boot.loader.grub.enable = false;
+
+    services.userborn.enable = true;
     system.stateVersion = lib.trivial.release;
   };
   machine = base.extendModules {

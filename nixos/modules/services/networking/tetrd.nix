@@ -10,28 +10,42 @@
 
   config = lib.mkIf config.services.tetrd.enable {
     environment = {
-      systemPackages = [ pkgs.tetrd ];
       etc."resolv.conf".source = "/etc/tetrd/resolv.conf";
+      systemPackages = [ pkgs.tetrd ];
     };
 
     # Our resolv.conf will override resolvconf's version.
     networking.resolvconf.enable = false;
 
     systemd = {
-      tmpfiles.rules = [ "f /etc/tetrd/resolv.conf - - -" ];
-
       services.tetrd = {
         description = pkgs.tetrd.meta.description;
-        wantedBy = [ "multi-user.target" ];
 
         serviceConfig = {
-          ExecStart = "${pkgs.tetrd}/opt/Tetrd/bin/tetrd";
-          Restart = "always";
-          RuntimeDirectory = "tetrd";
-          RootDirectory = "/run/tetrd";
-          DynamicUser = true;
-          UMask = "006";
+          AmbientCapabilities = [
+            "CAP_NET_ADMIN"
+          ];
+
+          BindPaths = [
+            "/etc/tetrd/resolv.conf:/etc/resolv.conf"
+            "/run/tetrd:/run"
+          ];
+
+          BindReadOnlyPaths = [
+            builtins.storeDir
+            "/etc/ssl"
+            "/etc/static/ssl"
+            "${pkgs.net-tools}/bin/route:/usr/bin/route"
+            "${pkgs.net-tools}/bin/ifconfig:/usr/bin/ifconfig"
+          ];
+
+          CapabilityBoundingSet = [
+            "CAP_NET_ADMIN"
+          ];
+
           DeviceAllow = "usb_device";
+          DynamicUser = true;
+          ExecStart = "${pkgs.tetrd}/opt/Tetrd/bin/tetrd";
           LockPersonality = true;
           MemoryDenyWriteExecute = true;
           NoNewPrivileges = true;
@@ -49,15 +63,20 @@
           ProtectProc = "invisible";
           ProtectSystem = "strict";
           RemoveIPC = true;
+          Restart = "always";
+
           RestrictAddressFamilies = [
             "AF_UNIX"
             "AF_INET"
             "AF_INET6"
             "AF_NETLINK"
           ];
+
           RestrictNamespaces = true;
           RestrictRealtime = true;
           RestrictSUIDSGID = true;
+          RootDirectory = "/run/tetrd";
+          RuntimeDirectory = "tetrd";
           SystemCallArchitectures = "native";
 
           SystemCallFilter = [
@@ -79,28 +98,13 @@
             "~@sync"
           ];
 
-          BindReadOnlyPaths = [
-            builtins.storeDir
-            "/etc/ssl"
-            "/etc/static/ssl"
-            "${pkgs.net-tools}/bin/route:/usr/bin/route"
-            "${pkgs.net-tools}/bin/ifconfig:/usr/bin/ifconfig"
-          ];
-
-          BindPaths = [
-            "/etc/tetrd/resolv.conf:/etc/resolv.conf"
-            "/run/tetrd:/run"
-          ];
-
-          CapabilityBoundingSet = [
-            "CAP_NET_ADMIN"
-          ];
-
-          AmbientCapabilities = [
-            "CAP_NET_ADMIN"
-          ];
+          UMask = "006";
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
+
+      tmpfiles.rules = [ "f /etc/tetrd/resolv.conf - - -" ];
     };
   };
 }

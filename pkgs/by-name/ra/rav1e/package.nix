@@ -1,14 +1,14 @@
 {
   lib,
-  buildPackages,
   stdenv,
-  rustPlatform,
-  fetchCrate,
+  buildPackages,
   cargo-c,
+  fetchCrate,
   nasm,
   nix-update-script,
-  testers,
   rav1e,
+  rustPlatform,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,13 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     inherit (finalAttrs) pname version;
     hash = "sha256-GCfh2v3w5C8h4GuPKkTMUAhPspT1W0drrRpELCJWeTI=";
   };
-
-  cargoHash = "sha256-KQsAEs608OyzwZtJRXw7Zwh5X+4yFJpacOMoij58vh0=";
-
-  nativeBuildInputs = [
-    cargo-c
-    nasm
-  ];
 
   postPatch = ''
     # remove feature that requires libgit2 and is only used to print a version string
@@ -40,7 +33,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     substituteInPlace Cargo.toml --replace-fail 'lto = "thin"' 'lto = "fat"'
   '';
 
-  checkType = "debug";
+  nativeBuildInputs = [
+    cargo-c
+    nasm
+  ];
+
+  cargoHash = "sha256-KQsAEs608OyzwZtJRXw7Zwh5X+4yFJpacOMoij58vh0=";
 
   postBuild = ''
     ${buildPackages.rust.envVars.setEnv} cargo cbuild --release --frozen --prefix=${placeholder "out"} --target ${stdenv.hostPlatform.rust.rustcTarget}
@@ -50,6 +48,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ${buildPackages.rust.envVars.setEnv} cargo cinstall --release --frozen --prefix=${placeholder "out"} --target ${stdenv.hostPlatform.rust.rustcTarget}
   '';
 
+  checkType = "debug";
+
   passthru = {
     tests.version = testers.testVersion { package = rav1e; };
     updateScript = nix-update-script { };
@@ -57,12 +57,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Fastest and safest AV1 encoder";
+
     longDescription = ''
       rav1e is an AV1 video encoder. It is designed to eventually cover all use
       cases, though in its current form it is most suitable for cases where
       libaom (the reference encoder) is too slow.
       Features: https://github.com/xiph/rav1e#features
     '';
+
     homepage = "https://github.com/xiph/rav1e";
     changelog = "https://github.com/xiph/rav1e/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd2;

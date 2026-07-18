@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   libxcb,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,13 +17,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-yVzVo4l2bMZXrWlDfJXSgHUmic7Fe0Og+I5ROv3iQCQ=";
   };
 
+  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ libxcb ];
   cargoHash = "sha256-M0lI/DAMUVRMNbvoLc2w7PtU0rjjXiMYZM6vzfdEi0s=";
 
-  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ libxcb ];
-
   meta = {
-    homepage = "https://github.com/replydev/cotp";
     description = "Trustworthy, encrypted, command-line TOTP/HOTP authenticator app with import functionality";
+    homepage = "https://github.com/replydev/cotp";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ davsanchez ];
     mainProgram = "cotp";

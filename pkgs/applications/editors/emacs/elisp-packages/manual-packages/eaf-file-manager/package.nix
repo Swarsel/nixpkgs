@@ -1,16 +1,16 @@
 {
   # Basic
   lib,
-  melpaBuild,
   fetchFromGitHub,
   # Dependencies
   fd,
-  # JavaScript dependency
-  nodejs,
   fetchNpmDeps,
-  npmHooks,
+  melpaBuild,
   # Updater
   nix-update-script,
+  # JavaScript dependency
+  nodejs,
+  npmHooks,
 }:
 
 melpaBuild (finalAttrs: {
@@ -25,17 +25,6 @@ melpaBuild (finalAttrs: {
     hash = "sha256-IET9b3nS/Z4dxqFVyNITVoMDo6E/+sm3E7cfO7pozRo=";
   };
 
-  env.npmDeps = fetchNpmDeps {
-    name = "${finalAttrs.pname}-npm-deps";
-    inherit (finalAttrs) src;
-    hash = "sha256-dzfw+CgoM1CulPoa0KEzUX9dlBiquX4BkYNwU3vMb+Q=";
-  };
-
-  nativeBuildInputs = [
-    nodejs
-    npmHooks.npmConfigHook
-  ];
-
   postPatch = ''
     substituteInPlace buffer.py \
       --replace-fail "shutil.which(\"fd\")" \
@@ -44,15 +33,19 @@ melpaBuild (finalAttrs: {
                      "return \"${lib.getExe fd}\""
   '';
 
+  nativeBuildInputs = [
+    nodejs
+    npmHooks.npmConfigHook
+  ];
+
+  env.npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-dzfw+CgoM1CulPoa0KEzUX9dlBiquX4BkYNwU3vMb+Q=";
+    name = "${finalAttrs.pname}-npm-deps";
+  };
+
   postBuild = ''
     npm run build
-  '';
-
-  files = ''
-    ("*.el"
-     "*.py"
-     "*.js"
-     "src")
   '';
 
   postInstall = ''
@@ -62,20 +55,29 @@ melpaBuild (finalAttrs: {
     cp -r dist $LISPDIR/
   '';
 
+  files = ''
+    ("*.el"
+     "*.py"
+     "*.js"
+     "src")
+  '';
+
   passthru = {
-    updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
     eafPythonDeps =
       ps: with ps; [
         pypinyin
         pygments
         exif
       ];
+
+    updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
   };
 
   meta = {
     description = "File manager application for the EAF";
     homepage = "https://github.com/emacs-eaf/eaf-file-manager";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       thattemperature
     ];

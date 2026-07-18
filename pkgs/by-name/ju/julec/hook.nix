@@ -5,9 +5,8 @@
 }:
 
 makeSetupHook {
-  name = "julec-hook";
-
   propagatedBuildInputs = [ julec ];
+  name = "julec-hook";
 
   meta = {
     inherit (julec.meta) maintainers;

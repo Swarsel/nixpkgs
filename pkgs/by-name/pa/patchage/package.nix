@@ -27,6 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     alsa-lib
     boost
@@ -43,8 +44,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Modular patch bay for Jack and ALSA systems";
     homepage = "https://drobilla.net/software/patchage.html";
     license = lib.licenses.lgpl3;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.nico202 ];
+    platforms = lib.platforms.linux;
     mainProgram = "patchage";
   };
 })

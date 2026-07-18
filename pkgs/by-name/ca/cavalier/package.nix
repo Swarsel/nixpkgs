@@ -1,18 +1,18 @@
 {
   lib,
-  buildDotnetModule,
-  dotnetCorePackages,
   fetchFromGitHub,
-  pkg-config,
+  appstream-glib,
   blueprint-compiler,
+  buildDotnetModule,
+  cava,
+  desktop-file-utils,
+  dotnetCorePackages,
   glib,
   gtk4,
-  libadwaita,
-  wrapGAppsHook4,
-  appstream-glib,
-  desktop-file-utils,
-  cava,
   libGL,
+  libadwaita,
+  pkg-config,
+  wrapGAppsHook4,
 }:
 
 buildDotnetModule rec {
@@ -25,13 +25,6 @@ buildDotnetModule rec {
     tag = version;
     hash = "sha256-SFhEKtYrlnkbLMnxU4Uf4jnFsw0MJHstgZgLLnGC2d8=";
   };
-
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-  dotnet-runtime = dotnetCorePackages.runtime_8_0;
-
-  projectFile = "NickvisionCavalier.GNOME/NickvisionCavalier.GNOME.csproj";
-  nugetDeps = ./deps.json;
-  executables = "NickvisionCavalier.GNOME";
 
   nativeBuildInputs = [
     pkg-config
@@ -47,13 +40,6 @@ buildDotnetModule rec {
     libadwaita
   ];
 
-  runtimeDeps = [
-    glib
-    gtk4
-    libadwaita
-    libGL
-  ];
-
   postInstall = ''
     substituteInPlace NickvisionCavalier.Shared/Linux/org.nickvision.cavalier.desktop.in \
       --replace-fail '@EXEC@' "NickvisionCavalier.GNOME"
@@ -62,16 +48,28 @@ buildDotnetModule rec {
     install -Dm444 NickvisionCavalier.Shared/Resources/org.nickvision.cavalier-symbolic.svg -t $out/share/icons/hicolor/symbolic/apps/
   '';
 
+  dotnet-runtime = dotnetCorePackages.runtime_8_0;
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+  executables = "NickvisionCavalier.GNOME";
   makeWrapperArgs = [ "--prefix PATH : ${lib.makeBinPath [ cava ]}" ];
+  nugetDeps = ./deps.json;
+  projectFile = "NickvisionCavalier.GNOME/NickvisionCavalier.GNOME.csproj";
+
+  runtimeDeps = [
+    glib
+    gtk4
+    libadwaita
+    libGL
+  ];
 
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Visualize audio with CAVA";
     homepage = "https://github.com/NickvisionApps/Cavalier";
-    mainProgram = "NickvisionCavalier.GNOME";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ zendo ];
+    platforms = lib.platforms.linux;
+    mainProgram = "NickvisionCavalier.GNOME";
   };
 }

@@ -2,15 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-
-  autoPatchelfHook,
-
   alsa-lib,
+  autoPatchelfHook,
   libxcrypt-legacy,
-  lttng-ust_2_12,
-  libxtst,
-  libxrender,
   libxext,
+  libxrender,
+  libxtst,
+  lttng-ust_2_12,
   zlib,
 }:
 
@@ -44,10 +42,6 @@ stdenv.mkDerivation rec {
     zlib
   ];
 
-  dontConfigure = true;
-
-  dontBuild = true;
-
   installPhase = ''
     mkdir -p $out/bin $out/libexec
     mv * $out/libexec
@@ -61,13 +55,15 @@ stdenv.mkDerivation rec {
     done
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
   dontStrip = true;
 
   meta = {
     description = "Coverity Scan build tools";
     homepage = "https://scan.coverity.com";
     license = lib.licenses.unfreeRedistributable;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.thoughtpolice ];
+    platforms = lib.platforms.linux;
   };
 }

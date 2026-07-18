@@ -7,8 +7,8 @@
   guile-gcrypt,
   guile-gnutls,
   guile-websocket,
-  texinfo,
   pkg-config,
+  texinfo,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "guile-goblins";
@@ -20,22 +20,25 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     guile
     pkg-config
     texinfo
   ];
+
   buildInputs = [
     guile
   ];
+
   propagatedBuildInputs = [
     guile-fibers
     guile-gcrypt
     guile-gnutls
     guile-websocket
   ];
-  makeFlags = [ "GUILE_AUTO_COMPILE=0" ];
 
+  makeFlags = [ "GUILE_AUTO_COMPILE=0" ];
   # tests hang on darwin, and fail randomly on aarch64-linux on ofborg
   doCheck = !stdenv.hostPlatform.isDarwin && !stdenv.hostPlatform.isAarch64;
 

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   inform,
   sly,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "quantiphy-eval";
   version = "0.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "KenKundert";
@@ -33,12 +32,12 @@ buildPythonPackage rec {
 
   # tests require quantiphy import
   doCheck = false;
+  pyproject = true;
 
   # Also affected by the circular dependency on quantiphy
   # pythonImportsCheck = [
   #   "quantiphy_eval"
   # ];
-
   meta = {
     description = "QuantiPhy support for evals in-line";
     homepage = "https://github.com/KenKundert/quantiphy_eval/";

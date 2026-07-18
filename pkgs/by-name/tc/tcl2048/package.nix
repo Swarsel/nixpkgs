@@ -1,9 +1,9 @@
 {
   lib,
   fetchurl,
+  runtimeShell,
   tcl,
   tclPackages,
-  runtimeShell,
 }:
 
 tcl.mkTclDerivation rec {
@@ -16,19 +16,20 @@ tcl.mkTclDerivation rec {
   };
 
   buildInputs = [ tclPackages.tcllib ];
-  dontUnpack = true;
 
   installPhase = ''
     mkdir -pv $out/bin
     install -m 755 $src $out/bin/2048
   '';
 
+  dontUnpack = true;
+
   meta = {
-    homepage = "https://github.com/dbohdan/2048.tcl";
     description = "Game of 2048 implemented in Tcl";
+    homepage = "https://github.com/dbohdan/2048.tcl";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dbohdan ];
-    mainProgram = "2048";
     platforms = lib.platforms.all;
+    mainProgram = "2048";
   };
 }

@@ -1,8 +1,8 @@
 {
-  buildPecl,
   lib,
-  pcre2,
   fetchFromGitHub,
+  buildPecl,
+  pcre2,
 }:
 
 let
@@ -19,18 +19,19 @@ buildPecl {
     sha256 = "sha256-L8bGSPUuBsZXsJdeY6cVA0DvI2+0wEbNHH6IcfT+cFU=";
   };
 
-  buildInputs = [ pcre2 ];
-  doCheck = true;
-  makeFlags = [ "phpincludedir=$(dev)/include" ];
   outputs = [
     "out"
     "dev"
   ];
 
+  buildInputs = [ pcre2 ];
+  makeFlags = [ "phpincludedir=$(dev)/include" ];
+  doCheck = true;
+
   meta = {
-    changelog = "https://github.com/krakjoe/apcu/releases/tag/v${version}";
     description = "Userland cache for PHP";
     homepage = "https://pecl.php.net/package/APCu";
+    changelog = "https://github.com/krakjoe/apcu/releases/tag/v${version}";
     license = lib.licenses.php301;
     teams = [ lib.teams.php ];
   };

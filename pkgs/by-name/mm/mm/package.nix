@@ -18,9 +18,9 @@ buildGoModule {
 
   meta = {
     description = "File system based matrix client";
-    mainProgram = "mm";
     homepage = "https://git.lost.host/meutraa/mm";
     license = lib.licenses.isc;
     maintainers = [ ];
+    mainProgram = "mm";
   };
 }

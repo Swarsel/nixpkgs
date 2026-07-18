@@ -1,12 +1,11 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "pferd";
   version = "3.9.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Garmelon";
@@ -27,9 +26,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     certifi
   ];
 
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/Garmelon/PFERD";
     description = "Tool for downloading course-related files from ILIAS";
+    homepage = "https://github.com/Garmelon/PFERD";
     license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "pferd";

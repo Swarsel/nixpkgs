@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  zip,
-  unzip,
-  makeWrapper,
   installShellFiles,
+  makeWrapper,
   unstableGitUpdater,
+  unzip,
+  zip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -48,6 +48,7 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Tool to statically recompile N64 games into native executables";
     homepage = "https://github.com/N64Recomp/N64Recomp";
+
     license = with lib.licenses; [
       # N64Recomp
       mit
@@ -55,8 +56,9 @@ stdenv.mkDerivation (finalAttrs: {
       # reverse engineering
       unfree
     ];
+
     maintainers = with lib.maintainers; [ qubitnano ];
-    mainProgram = "N64Recomp";
     platforms = lib.platforms.linux;
+    mainProgram = "N64Recomp";
   };
 })

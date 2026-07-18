@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -17,15 +17,14 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-Fg8dDqehART535LYEOLazQntUAKxv9nmBN1RByW4OYE=";
-
   passthru.tests.restic = nixosTests.restic-rest-server;
 
   meta = {
-    changelog = "https://github.com/restic/rest-server/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     description = "High performance HTTP server that implements restic's REST backend API";
-    mainProgram = "rest-server";
     homepage = "https://github.com/restic/rest-server";
+    changelog = "https://github.com/restic/rest-server/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ dotlambda ];
+    mainProgram = "rest-server";
   };
 })

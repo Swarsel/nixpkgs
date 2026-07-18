@@ -1,10 +1,9 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
-
   enableWasmEval ? false,
 }:
 
@@ -23,24 +22,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-f9t/BB0ldSUTaApjM75W9nw7jRC8Hp1t/KFRM/ky67s=";
   };
 
-  vendorHash = "sha256-m+Mb2Llny7O9cfn8Js7MEaeYM9zC/CwWBAuliWE7G1E=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  subPackages = [ "." ];
-
-  ldflags = [
-    "-s"
-    "-X github.com/open-policy-agent/opa/version.Version=${finalAttrs.version}"
-  ];
-
-  tags = lib.optional enableWasmEval (
-    builtins.trace (
-      "Warning: enableWasmEval breaks reproducability, "
-      + "ensure you need wasm evaluation. "
-      + "`opa build` does not need this feature."
-    ) "opa_wasm"
-  );
+  vendorHash = "sha256-m+Mb2Llny7O9cfn8Js7MEaeYM9zC/CwWBAuliWE7G1E=";
 
   checkFlags =
     let
@@ -99,6 +82,7 @@ buildGoModule (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -116,21 +100,40 @@ buildGoModule (finalAttrs: {
   # Required for tests that need networking
   __darwinAllowLocalNetworking = true;
 
+  ldflags = [
+    "-s"
+    "-X github.com/open-policy-agent/opa/version.Version=${finalAttrs.version}"
+  ];
+
+  subPackages = [ "." ];
+
+  tags = lib.optional enableWasmEval (
+    builtins.trace (
+      "Warning: enableWasmEval breaks reproducability, "
+      + "ensure you need wasm evaluation. "
+      + "`opa build` does not need this feature."
+    ) "opa_wasm"
+  );
+
   meta = {
-    mainProgram = "opa";
-    homepage = "https://www.openpolicyagent.org";
-    changelog = "https://github.com/open-policy-agent/opa/blob/v${finalAttrs.version}/CHANGELOG.md";
     description = "General-purpose policy engine";
+
     longDescription = ''
       The Open Policy Agent (OPA, pronounced "oh-pa") is an open source, general-purpose policy engine that unifies
       policy enforcement across the stack. OPA provides a high-level declarative language that let’s you specify policy
       as code and simple APIs to offload policy decision-making from your software. You can use OPA to enforce policies
       in microservices, Kubernetes, CI/CD pipelines, API gateways, and more.
     '';
+
+    homepage = "https://www.openpolicyagent.org";
+    changelog = "https://github.com/open-policy-agent/opa/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       lewo
       jk
     ];
+
+    mainProgram = "opa";
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools-scm,
+  buildPythonPackage,
   setuptools,
+  setuptools-scm,
   toml,
   wheel,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "ctypesgen";
   version = "1.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ctypesgen";
@@ -20,6 +19,9 @@ buildPythonPackage rec {
     hash = "sha256-TwIWPellmjMpTGQ+adJBLNMdAqB0kLOMl4YAubvXKqo=";
   };
 
+  # Various compiler errors
+  doCheck = false;
+
   build-system = [
     setuptools
     setuptools-scm
@@ -27,9 +29,7 @@ buildPythonPackage rec {
     wheel
   ];
 
-  # Various compiler errors
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "ctypesgen" ];
 
   meta = {

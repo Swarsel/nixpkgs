@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   mashumaro,
   pytest-asyncio,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "aiotedee";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zweckj";
@@ -22,6 +21,12 @@ buildPythonPackage rec {
     hash = "sha256-0+wUQRsMb9y8XUwwUX3exIzkaAFLYNUpsAr0MgnkMIo=";
   };
 
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,13 +34,8 @@ buildPythonPackage rec {
     mashumaro
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "aiotedee" ];
-
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Module to interact with Tedee locks";

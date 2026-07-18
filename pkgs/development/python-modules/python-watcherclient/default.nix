@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cliff,
-  fetchFromGitHub,
   keystoneauth1,
   openstackdocstheme,
   osc-lib,
@@ -11,15 +11,14 @@
   oslo-utils,
   pbr,
   setuptools,
-  sphinxcontrib-apidoc,
   sphinxHook,
+  sphinxcontrib-apidoc,
   stestr,
 }:
 
 buildPythonPackage rec {
   pname = "python-watcherclient";
   version = "4.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openstack";
@@ -28,20 +27,25 @@ buildPythonPackage rec {
     hash = "sha256-TYMV55uvTCvHKj5w5QA2zRqVr6pXCXh2Oc07Yo7epjs=";
   };
 
-  env.PBR_VERSION = version;
-
-  build-system = [
-    pbr
-    setuptools
-  ];
-
   nativeBuildInputs = [
     openstackdocstheme
     sphinxcontrib-apidoc
     sphinxHook
   ];
 
-  sphinxBuilders = [ "man" ];
+  env.PBR_VERSION = version;
+  nativeCheckInputs = [ stestr ];
+
+  checkPhase = ''
+    runHook preCheck
+    stestr run
+    runHook postCheck
+  '';
+
+  build-system = [
+    pbr
+    setuptools
+  ];
 
   dependencies = [
     cliff
@@ -52,19 +56,13 @@ buildPythonPackage rec {
     oslo-utils
   ];
 
-  nativeCheckInputs = [ stestr ];
-
-  checkPhase = ''
-    runHook preCheck
-    stestr run
-    runHook postCheck
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "watcherclient" ];
+  sphinxBuilders = [ "man" ];
 
   meta = {
-    homepage = "https://github.com/openstack/python-watcherclient";
     description = "Client library for OpenStack Watcher API";
+    homepage = "https://github.com/openstack/python-watcherclient";
     license = lib.licenses.asl20;
     mainProgram = "watcher";
     teams = [ lib.teams.openstack ];

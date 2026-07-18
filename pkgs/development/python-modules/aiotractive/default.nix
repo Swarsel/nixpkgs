@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   orjson,
   setuptools,
   yarl,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aiotractive";
   version = "1.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zhulik";
@@ -20,9 +19,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-wRV/ZQ2T3Dlrmq6jY5IatrGr07uxPFWcVoMiJN+md88=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = [ setuptools ];
-
-  pythonRelaxDeps = [ "orjson" ];
 
   dependencies = [
     aiohttp
@@ -30,10 +29,9 @@ buildPythonPackage (finalAttrs: {
     yarl
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "aiotractive" ];
+  pythonRelaxDeps = [ "orjson" ];
 
   meta = {
     description = "Python client for the Tractive REST API";

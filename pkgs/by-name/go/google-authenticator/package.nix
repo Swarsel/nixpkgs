@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   autoreconfHook,
   pam,
@@ -32,11 +32,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/google/google-authenticator-libpam";
     description = "Two-step verification, with pam module";
-    mainProgram = "google-authenticator";
+    homepage = "https://github.com/google/google-authenticator-libpam";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ aneeshusa ];
     platforms = lib.platforms.linux;
+    mainProgram = "google-authenticator";
   };
 })

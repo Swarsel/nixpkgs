@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytest,
+  buildPythonPackage,
   click,
+  pytest,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-click";
   version = "1.1.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "Stranger6667";
@@ -20,10 +19,9 @@ buildPythonPackage rec {
   };
 
   buildInputs = [ pytest ];
-
   propagatedBuildInputs = [ click ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
 
   meta = {
     description = "Pytest plugin for click";

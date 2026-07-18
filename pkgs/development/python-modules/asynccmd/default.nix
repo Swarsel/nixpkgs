@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "asynccmd";
   version = "0.2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "valentinmk";
@@ -21,17 +20,16 @@ buildPythonPackage rec {
   patches = [
     # Deprecation of asyncio.Task.all_tasks(), https://github.com/valentinmk/asynccmd/pull/2
     (fetchpatch {
+      hash = "sha256-zhdxEDWn78QTTXkj80VrZpLwfYxIBcBvxjgU+Uaa2lA=";
       name = "deprecation-python-38.patch";
       url = "https://github.com/valentinmk/asynccmd/commit/12afa60ac07db17e96755e266061f2c88cb545ff.patch";
-      hash = "sha256-zhdxEDWn78QTTXkj80VrZpLwfYxIBcBvxjgU+Uaa2lA=";
     })
   ];
 
-  build-system = [ setuptools ];
-
   # Tests are outdated
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "asynccmd" ];
 
   meta = {

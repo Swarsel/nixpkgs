@@ -1,13 +1,13 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  perl,
-  openssh,
-  rsync,
+  fetchurl,
   logger,
-  versionCheckHook,
   nix-update-script,
+  openssh,
+  perl,
+  rsync,
+  versionCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,16 +28,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   configureFlags = [ "--sysconfdir=/etc --prefix=/" ];
   makeFlags = [ "DESTDIR=$(out)" ];
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
 
   patchPhase = ''
     substituteInPlace "Makefile.in" --replace \
       "/usr/bin/pod2man" "${perl}/bin/pod2man"
   '';
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script { };

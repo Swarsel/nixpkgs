@@ -3,16 +3,16 @@
   stdenv,
   fetchFromGitHub,
   eglexternalplatform,
-  pkg-config,
+  libGL,
+  libdrm,
+  libgbm,
   meson,
   ninja,
-  wayland-scanner,
-  libGL,
-  libgbm,
-  libdrm,
+  nix-update-script,
+  pkg-config,
   wayland,
   wayland-protocols,
-  nix-update-script,
+  wayland-scanner,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,9 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Udr+tihx/Si2ynFyM1FW2CIUgTg9SQn7AgrOPpGTxpY=";
   };
 
-  depsBuildBuild = [
-    pkg-config
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -46,10 +44,12 @@ stdenv.mkDerivation (finalAttrs: {
     eglexternalplatform
   ];
 
+  __structuredAttrs = true;
   absolutizeEglExternalPlatformIcdJson = true;
 
-  strictDeps = true;
-  __structuredAttrs = true;
+  depsBuildBuild = [
+    pkg-config
+  ];
 
   passthru.updateScript = nix-update-script { extraArgs = [ "--use-github-releases" ]; };
 
@@ -57,10 +57,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Dma-buf-based Wayland external platform library";
     homepage = "https://github.com/NVIDIA/egl-wayland2/";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       vancluever
       ccicnce113424
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

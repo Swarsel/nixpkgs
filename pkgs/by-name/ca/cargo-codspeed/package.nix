@@ -1,7 +1,7 @@
 {
-  curl,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  curl,
   libgit2,
   openssl,
   pkg-config,
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Zu5PltGimy+8JYTEh8fTflW/L4zTW94IKgldT5kzPjA=";
   };
 
-  cargoHash = "sha256-hihwHbyNAJcl/mUy9obh2UDZfUA9Lq64c1TRZbUr+L0=";
-
   nativeBuildInputs = [
     curl
     pkg-config
@@ -34,8 +32,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zlib
   ];
 
-  cargoBuildFlags = [ "-p=cargo-codspeed" ];
-  cargoTestFlags = finalAttrs.cargoBuildFlags;
+  cargoHash = "sha256-hihwHbyNAJcl/mUy9obh2UDZfUA9Lq64c1TRZbUr+L0=";
+
+  env = {
+    LIBGIT2_NO_VENDOR = 1;
+  };
+
   checkFlags = [
     # requires an extra dependency, blit
     "--skip=test_package_in_deps_build"
@@ -48,19 +50,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=test_criterion_build_and_run_filtered_by_name_single"
   ];
 
-  env = {
-    LIBGIT2_NO_VENDOR = 1;
-  };
+  cargoBuildFlags = [ "-p=cargo-codspeed" ];
+  cargoTestFlags = finalAttrs.cargoBuildFlags;
 
   meta = {
-    changelog = "https://github.com/CodSpeedHQ/codspeed-rust/releases/tag/v${finalAttrs.version}";
     description = "Cargo extension to build & run your codspeed benchmarks";
     homepage = "https://github.com/CodSpeedHQ/codspeed-rust";
+    changelog = "https://github.com/CodSpeedHQ/codspeed-rust/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
-    mainProgram = "cargo-codspeed";
+
     maintainers = with lib.maintainers; [ hythera ];
+    mainProgram = "cargo-codspeed";
   };
 })

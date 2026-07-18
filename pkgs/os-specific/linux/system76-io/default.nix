@@ -9,23 +9,17 @@ let
   hash = "sha256-VE6sCehjXlRuOVcK4EN2H+FhaVaBi/jrAYx4TZjbreA=";
 in
 stdenv.mkDerivation (finalAttrs: {
-  name = "${finalAttrs.pname}-${finalAttrs.version}-${kernel.version}";
   pname = "system76-io-module";
   version = "1.0.4";
 
-  passthru.moduleName = "system76_io";
-
   src = fetchFromGitHub {
+    inherit hash;
     owner = "pop-os";
     repo = "system76-io-dkms";
     rev = finalAttrs.version;
-    inherit hash;
   };
 
-  hardeningDisable = [ "pic" ];
-
   nativeBuildInputs = kernel.moduleBuildDependencies;
-
   makeFlags = kernelModuleMakeFlags;
 
   buildFlags = [
@@ -37,16 +31,22 @@ stdenv.mkDerivation (finalAttrs: {
     install -D system76-thelio-io.ko $out/lib/modules/${kernel.modDirVersion}/misc/system76-thelio-io.ko
   '';
 
+  hardeningDisable = [ "pic" ];
+  name = "${finalAttrs.pname}-${finalAttrs.version}-${kernel.version}";
+  passthru.moduleName = "system76_io";
+
   meta = {
-    maintainers = with lib.maintainers; [ ahoneybun ];
+    description = "DKMS module for controlling System76 Io board";
+    homepage = "https://github.com/pop-os/system76-io-dkms";
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ ahoneybun ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
       "aarch64-linux"
     ];
+
     broken = lib.versionOlder kernel.version "5.10";
-    description = "DKMS module for controlling System76 Io board";
-    homepage = "https://github.com/pop-os/system76-io-dkms";
   };
 })

@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  gtk3,
+  gtklock,
+  libsoup_3,
   meson,
   ninja,
   pkg-config,
-  gtk3,
   playerctl,
-  libsoup_3,
-  gtklock,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

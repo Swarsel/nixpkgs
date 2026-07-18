@@ -1,14 +1,13 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   datasette,
-  fetchFromGitHub,
 }:
 
 buildPythonPackage rec {
   pname = "datasette-template-sql";
   version = "1.0.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ datasette ];
-
   # Tests require a running datasette instance
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "datasette_template_sql" ];
 
   meta = {

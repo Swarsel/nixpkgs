@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   kubeone,
   testers,
@@ -19,7 +19,17 @@ buildGoModule (finalAttrs: {
     hash = "sha256-uh724TvrxAGt6NpArot5PL49yyJF+EUeh2JVoMfR+uw=";
   };
 
+  nativeBuildInputs = [
+    installShellFiles
+  ];
+
   vendorHash = "sha256-kJ4ypt0jNWA/BFiuur/pa/qd87csSdRMcV/IplQRA3I=";
+
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    installShellCompletion --cmd kubeone \
+      --bash <($out/bin/kubeone completion bash) \
+      --zsh <($out/bin/kubeone completion zsh)
+  '';
 
   ldflags = [
     "-s"
@@ -28,19 +38,9 @@ buildGoModule (finalAttrs: {
     "-X k8c.io/kubeone/pkg/cmd.date=unknown"
   ];
 
-  nativeBuildInputs = [
-    installShellFiles
-  ];
-
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    installShellCompletion --cmd kubeone \
-      --bash <($out/bin/kubeone completion bash) \
-      --zsh <($out/bin/kubeone completion zsh)
-  '';
-
   passthru.tests.version = testers.testVersion {
-    package = kubeone;
     command = "kubeone version";
+    package = kubeone;
   };
 
   meta = {

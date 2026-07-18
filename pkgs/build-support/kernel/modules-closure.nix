@@ -4,23 +4,17 @@
 # Also generate an appropriate modules.dep.
 
 {
-  stdenvNoCC,
-  kernel,
   firmware,
+  kernel,
+  kmod,
   nukeReferences,
   rootModules,
-  kmod,
+  stdenvNoCC,
   allowMissing ? false,
   extraFirmwarePaths ? [ ],
 }:
 
 stdenvNoCC.mkDerivation {
-  name = kernel.name + "-shrunk";
-  builder = ./modules-closure.sh;
-  nativeBuildInputs = [
-    nukeReferences
-    kmod
-  ];
   inherit
     kernel
     firmware
@@ -28,5 +22,13 @@ stdenvNoCC.mkDerivation {
     allowMissing
     extraFirmwarePaths
     ;
+
+  nativeBuildInputs = [
+    nukeReferences
+    kmod
+  ];
+
   allowedReferences = [ "out" ];
+  builder = ./modules-closure.sh;
+  name = kernel.name + "-shrunk";
 }

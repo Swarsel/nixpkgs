@@ -11,23 +11,56 @@
   options = {
     environment.enableAllTerminfo = lib.mkOption {
       default = false;
-      type = lib.types.bool;
+
       description = ''
         Whether to install all terminfo outputs
       '';
+
+      type = lib.types.bool;
     };
 
     security.sudo.keepTerminfo = lib.mkOption {
       default = true;
-      type = lib.types.bool;
+
       description = ''
         Whether to preserve the `TERMINFO` and `TERMINFO_DIRS`
         environment variables, for `root` and the `wheel` group.
       '';
+
+      type = lib.types.bool;
     };
   };
 
   config = {
+
+    boot.initrd.systemd.contents = lib.listToAttrs (
+      lib.map
+        (ti: lib.nameValuePair "/etc/terminfo/${ti}" { source = "${pkgs.ncurses}/share/terminfo/${ti}"; })
+        [
+          "l/linux"
+          "v/vt100"
+          "v/vt102"
+          "v/vt220"
+        ]
+    );
+
+    environment.etc.terminfo = {
+      source = "${config.system.path}/share/terminfo";
+    };
+
+    environment.extraInit = ''
+
+      # reset TERM with new TERMINFO available (if any)
+      export TERM=$TERM
+    '';
+
+    environment.pathsToLink = [
+      "/share/terminfo"
+    ];
+
+    environment.profileRelativeSessionVariables = {
+      TERMINFO_DIRS = [ "/share/terminfo" ];
+    };
 
     # This should not contain packages that are broken or can't build, since it
     # will break this expression
@@ -56,35 +89,6 @@
         ]
       )
     );
-
-    environment.pathsToLink = [
-      "/share/terminfo"
-    ];
-
-    environment.etc.terminfo = {
-      source = "${config.system.path}/share/terminfo";
-    };
-
-    boot.initrd.systemd.contents = lib.listToAttrs (
-      lib.map
-        (ti: lib.nameValuePair "/etc/terminfo/${ti}" { source = "${pkgs.ncurses}/share/terminfo/${ti}"; })
-        [
-          "l/linux"
-          "v/vt100"
-          "v/vt102"
-          "v/vt220"
-        ]
-    );
-
-    environment.profileRelativeSessionVariables = {
-      TERMINFO_DIRS = [ "/share/terminfo" ];
-    };
-
-    environment.extraInit = ''
-
-      # reset TERM with new TERMINFO available (if any)
-      export TERM=$TERM
-    '';
 
     security =
       let

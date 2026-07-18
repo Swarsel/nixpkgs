@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -16,14 +16,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-8tQXcbY/sguw42vE0p5Q8/psmwfYQihWcSIsApI4OmE=";
   };
 
-  __structuredAttrs = true;
-
   cargoHash = "sha256-kO6g5JJogNN5xqD5Qoj6Ncd6scA7PFAjg6y0AWnNhAM=";
-
   nativeCheckInputs = [ versionCheckHook ];
-
   doInstallCheck = true;
-
+  __structuredAttrs = true;
   versionCheckProgramArg = [ "-V" ];
 
   meta = {

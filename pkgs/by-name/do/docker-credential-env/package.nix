@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -17,6 +17,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-JTrFRpRjdLXKTvj7I2KYcIsFfuWLHPnjKV+3Q6b6DDs=";
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
 
   ldflags =
     let
@@ -30,15 +35,10 @@ buildGoModule (finalAttrs: {
       "-X=${c}.Revision=${finalAttrs.src.tag}"
     ];
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
-
   meta = {
-    changelog = "https://github.com/isometry/docker-credential-env/releases/tag/${finalAttrs.src.tag}";
     description = "Environment-driven docker credential helper";
     homepage = "https://github.com/isometry/docker-credential-env";
+    changelog = "https://github.com/isometry/docker-credential-env/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ zowoq ];
     mainProgram = "docker-credential-env";

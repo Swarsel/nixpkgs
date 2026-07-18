@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  anthropic,
+  buildPythonPackage,
   json-schema-to-pydantic,
   llm,
   llm-anthropic,
-  anthropic,
-  pytestCheckHook,
   pytest-asyncio,
   pytest-recording,
+  pytestCheckHook,
+  setuptools,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "llm-anthropic";
   version = "0.25.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -24,6 +23,13 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-b9XnPxKDGsiy20Me70sYrkMVO36OF3EwWOHLyEd5z4E=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+    pytest-recording
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [
     setuptools
@@ -35,13 +41,6 @@ buildPythonPackage (finalAttrs: {
     llm
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-    pytest-recording
-    writableTmpDirAsHomeHook
-  ];
-
   disabledTests = [
     # Need to be run as a passthru test
     "test_async_prompt"
@@ -51,8 +50,8 @@ buildPythonPackage (finalAttrs: {
     "test_thinking_prompt"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "llm_anthropic" ];
-
   passthru.tests = llm.mkPluginTest llm-anthropic;
 
   meta = {
@@ -60,6 +59,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/simonw/llm-anthropic";
     changelog = "https://github.com/simonw/llm-anthropic/releases/tag/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       aos
       sarahec

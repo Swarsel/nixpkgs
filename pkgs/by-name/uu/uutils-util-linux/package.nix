@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   coreutils,
-  pkg-config,
-  util-linux,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  util-linux,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -29,20 +29,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --replace-fail '"cut"' '"${lib.getExe' coreutils "cut"}"'
   '';
 
-  cargoHash = "sha256-VHfgoF0Ewti+IKR5FDZDNnk8ZvV6Fe4CPU0X/F3svOk=";
-
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
   ];
 
   buildInputs = [ util-linux ];
+  cargoHash = "sha256-VHfgoF0Ewti+IKR5FDZDNnk8ZvV6Fe4CPU0X/F3svOk=";
 
   preBuild = ''
     export NIX_LDFLAGS="$NIX_LDFLAGS -lsmartcols -lmount"
   '';
-
-  cargoBuildFlags = [ "--workspace" ];
 
   checkFlags = [
     # Operation not supported
@@ -61,6 +58,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=test_lscpu::test_output"
     "--skip=test_lslocks::test_column_headers"
   ];
+
+  cargoBuildFlags = [ "--workspace" ];
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];

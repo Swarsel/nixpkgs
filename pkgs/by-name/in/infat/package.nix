@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "infat";
@@ -17,15 +17,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-XPwhwJNHou5fJZ94RpbOlWUPQjw45PNmYCRzmukrFYo=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "--version";
   # The v3.1.2 tag ships infat-cli/Cargo.toml with version = "3.1.1", so the
   # built binary reports "infat-cli 3.1.1" and versionCheckHook fails. Disable
   # the check until upstream aligns the crate version with the release tag.
   # https://github.com/philocalyst/infat/blob/v3.1.2/infat-cli/Cargo.toml
   doInstallCheck = false;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  versionCheckProgramArg = "--version";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -33,10 +31,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/philocalyst/infat";
     changelog = "https://github.com/philocalyst/infat/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
-    platforms = lib.platforms.darwin;
+
     maintainers = with lib.maintainers; [
       mirkolenz
     ];
+
+    platforms = lib.platforms.darwin;
     mainProgram = "infat";
   };
 })

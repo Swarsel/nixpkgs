@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  jq,
-  element-web-unwrapped,
   config,
+  element-web-unwrapped,
+  jq,
   conf ? config.element-web.conf or { },
 }:
 
@@ -11,11 +11,8 @@ if (conf == { }) then
   element-web-unwrapped
 else
   stdenv.mkDerivation {
-    pname = "${element-web-unwrapped.pname}-wrapped";
     inherit (element-web-unwrapped) version meta;
-
-    dontUnpack = true;
-
+    pname = "${element-web-unwrapped.pname}-wrapped";
     nativeBuildInputs = [ jq ];
 
     installPhase = ''
@@ -28,6 +25,8 @@ else
 
       runHook postInstall
     '';
+
+    dontUnpack = true;
 
     passthru = {
       inherit conf;

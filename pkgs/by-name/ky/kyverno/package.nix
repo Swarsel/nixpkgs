@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
-  testers,
   kyverno,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,19 +19,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-vcZdrvtM9SnjR9MJOGZ892fXtsMDY7V/1gNqvZmB6To=";
   };
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/kyverno/kyverno/pkg/version.BuildVersion=v${finalAttrs.version}"
-    "-X github.com/kyverno/kyverno/pkg/version.BuildHash=${finalAttrs.version}"
-    "-X github.com/kyverno/kyverno/pkg/version.BuildTime=1970-01-01_00:00:00"
-  ];
-
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-xGGpK53FennS28Kw3ZEasr+sN7ZUuL98Bh4KIkr0OOs=";
 
-  subPackages = [ "cmd/cli/kubectl-kyverno" ];
-
-  nativeBuildInputs = [ installShellFiles ];
   postInstall = ''
     # we have no integration between krew and kubectl
     # so better rename binary to kyverno and use as a standalone
@@ -44,21 +34,33 @@ buildGoModule (finalAttrs: {
       --fish <($out/bin/kyverno completion fish)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/kyverno/kyverno/pkg/version.BuildVersion=v${finalAttrs.version}"
+    "-X github.com/kyverno/kyverno/pkg/version.BuildHash=${finalAttrs.version}"
+    "-X github.com/kyverno/kyverno/pkg/version.BuildTime=1970-01-01_00:00:00"
+  ];
+
+  subPackages = [ "cmd/cli/kubectl-kyverno" ];
+
   passthru.tests.version = testers.testVersion {
-    package = kyverno;
-    command = "kyverno version";
     version = "v${finalAttrs.version}"; # needed because testVersion uses grep -Fw
+    command = "kyverno version";
+    package = kyverno;
   };
 
   meta = {
     description = "Kubernetes Native Policy Management";
-    mainProgram = "kyverno";
     homepage = "https://kyverno.io/";
     changelog = "https://github.com/kyverno/kyverno/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       LorenzBischof
       Scrumplex
     ];
+
+    mainProgram = "kyverno";
   };
 })

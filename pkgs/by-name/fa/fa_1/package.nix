@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -18,10 +18,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   nativeBuildInputs = [ installFonts ];
 
   meta = {
-    homepage = "https://dotcolon.net/font/fa_1/";
     description = "Weighted decorative font";
-    platforms = lib.platforms.all;
-    maintainers = with lib.maintainers; [ minijackson ];
+    homepage = "https://dotcolon.net/font/fa_1/";
     license = lib.licenses.ofl;
+    maintainers = with lib.maintainers; [ minijackson ];
+    platforms = lib.platforms.all;
   };
 })

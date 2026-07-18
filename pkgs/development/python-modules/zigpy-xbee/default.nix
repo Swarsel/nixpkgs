@@ -1,11 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pyprojectVersionPatchHook,
+  pyserial-asyncio-fast,
   pytest-asyncio,
   pytestCheckHook,
-  pyserial-asyncio-fast,
   setuptools,
   zigpy,
 }:
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "zigpy-xbee";
   version = "0.21.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zigpy";
@@ -27,14 +26,8 @@ buildPythonPackage rec {
       --replace-fail ', "setuptools-git-versioning<2"' ""
   '';
 
-  build-system = [ setuptools ];
-
   nativeBuildInputs = [
     pyprojectVersionPatchHook
-  ];
-
-  dependencies = [
-    zigpy
   ];
 
   # lacking zigpy 2.0 compat
@@ -47,14 +40,22 @@ buildPythonPackage rec {
     pyserial-asyncio-fast
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    zigpy
+  ];
+
   disabledTests = [
     "test_connect" # Attempts to test ioctl
   ];
 
+  pyproject = true;
+
   meta = {
-    changelog = "https://github.com/zigpy/zigpy-xbee/releases/tag/${version}";
     description = "Library which communicates with XBee radios for zigpy";
     homepage = "https://github.com/zigpy/zigpy-xbee";
+    changelog = "https://github.com/zigpy/zigpy-xbee/releases/tag/${version}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ mvnetbiz ];
     platforms = lib.platforms.linux;

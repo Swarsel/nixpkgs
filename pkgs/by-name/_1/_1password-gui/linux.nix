@@ -1,12 +1,6 @@
 {
   lib,
   stdenv,
-  pname,
-  version,
-  src,
-  meta,
-  makeShellWrapper,
-  wrapGAppsHook3,
   alsa-lib,
   at-spi2-atk,
   at-spi2-core,
@@ -18,26 +12,31 @@
   gdk-pixbuf,
   glib,
   gtk3,
+  libGL,
+  libappindicator-gtk3,
+  libdrm,
+  libgbm,
   libx11,
+  libxcb,
   libxcomposite,
   libxdamage,
   libxext,
   libxfixes,
-  libxrandr,
-  libdrm,
-  libxcb,
   libxkbcommon,
+  libxrandr,
   libxshmfence,
-  libGL,
-  libappindicator-gtk3,
-  libgbm,
+  makeShellWrapper,
+  meta,
   nspr,
   nss,
   pango,
+  pname,
+  src,
   systemd,
   udev,
+  version,
+  wrapGAppsHook3,
   xdg-utils,
-
   # The 1Password polkit file requires a list of users for whom polkit
   # integrations should be enabled. This should be a list of strings that
   # correspond to usernames.
@@ -60,12 +59,8 @@ stdenv.mkDerivation {
     makeShellWrapper
     wrapGAppsHook3
   ];
-  buildInputs = [ glib ];
 
-  dontConfigure = true;
-  dontBuild = true;
-  dontPatchELF = true;
-  dontWrapGApps = true;
+  buildInputs = [ glib ];
 
   installPhase =
     let
@@ -150,5 +145,9 @@ stdenv.mkDerivation {
       --add-flags "\''${NIXOS_OZONE_WL:+--ozone-platform-hint=auto}"
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontPatchELF = true;
+  dontWrapGApps = true;
   passthru.updateScript = ./update.sh;
 }

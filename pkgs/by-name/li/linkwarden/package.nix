@@ -1,21 +1,21 @@
 {
   lib,
-  stdenvNoCC,
-  buildNpmPackage,
-  fetchFromGitHub,
-  yarn-berry,
-  makeBinaryWrapper,
-  nixosTests,
   stdenv,
+  fetchFromGitHub,
   # dependencies
   bash,
+  buildNpmPackage,
+  google-fonts,
+  makeBinaryWrapper,
   monolith,
+  nixosTests,
   nodejs,
   openssl,
-  google-fonts,
   playwright-driver,
-  prisma_6,
   prisma-engines_6,
+  prisma_6,
+  stdenvNoCC,
+  yarn-berry,
 }:
 
 let
@@ -34,11 +34,11 @@ let
 
     npmDepsHash = "sha256-CPXZ/yLEjTBIyTPVrgCvb+UGZJ6yRZUJOvBSZpLSABY=";
 
-    npmBuildScript = "install";
-
     postInstall = ''
       cp -r lib $out/lib/node_modules/bcrypt/
     '';
+
+    npmBuildScript = "install";
   };
 
   google-fonts' = google-fonts.override {
@@ -53,11 +53,11 @@ let
   chrome =
     let
       browsers = playwright-driver.selectBrowsers {
-        withChromiumHeadlessShell = true;
         withChromium = false;
+        withChromiumHeadlessShell = true;
+        withFfmpeg = false;
         withFirefox = false;
         withWebkit = false;
-        withFfmpeg = false;
       };
       chromeDir =
         {
@@ -95,11 +95,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     ./02-yarn-4.14-support.patch
   ];
 
-  missingHashes = ./missing-hashes.json;
-  yarnOfflineCache = yarn-berry.fetchYarnBerryDeps {
-    inherit (finalAttrs) src missingHashes patches;
-    hash = "sha256-riijYhsnIUXwl5AHYfhTiKHZFPc+ORDTLO2GUY7Yl+g=";
-  };
+  postPatch = ''
+    for f in packages/filesystem/*Folder.ts packages/filesystem/*File.ts; do
+      substituteInPlace $f \
+        --replace-fail 'process.cwd(),' "" \
+        --replace-fail '"../..",' ""
+    done
+  '';
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -117,14 +119,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     NODE_ENV = "production";
     YARN_ENABLE_SCRIPTS = 0;
   };
-
-  postPatch = ''
-    for f in packages/filesystem/*Folder.ts packages/filesystem/*File.ts; do
-      substituteInPlace $f \
-        --replace-fail 'process.cwd(),' "" \
-        --replace-fail '"../..",' ""
-    done
-  '';
 
   preBuild = ''
     export PRISMA_CLIENT_ENGINE_TYPE='binary'
@@ -206,6 +200,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  missingHashes = ./missing-hashes.json;
+
+  yarnOfflineCache = yarn-berry.fetchYarnBerryDeps {
+    inherit (finalAttrs) src missingHashes patches;
+    hash = "sha256-riijYhsnIUXwl5AHYfhTiKHZFPc+ORDTLO2GUY7Yl+g=";
+  };
 
   passthru.tests = {
     inherit (nixosTests) linkwarden;

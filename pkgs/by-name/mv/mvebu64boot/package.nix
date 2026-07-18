@@ -1,7 +1,7 @@
 {
-  fetchFromGitHub,
-  stdenv,
   lib,
+  stdenv,
+  fetchFromGitHub,
   ncurses,
 }:
 

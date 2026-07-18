@@ -1,17 +1,17 @@
 {
-  stdenvNoCC,
-  fetchurl,
-  unzip,
   lib,
+  fetchurl,
+  stdenvNoCC,
+  unzip,
 }:
 
 {
   pname,
-  versionPrefix ? "",
   version,
   zipHash,
   meta ? { },
   passthru ? { },
+  versionPrefix ? "",
   ...
 }@args:
 let
@@ -24,22 +24,23 @@ stdenvNoCC.mkDerivation (
     src =
       if lib.isAttrs zipHash then
         fetchurl {
-          name = "${pname}-${versionPrefix}${version}-${plat}.zip";
-          hash = zipHash.${plat} or (throw "Unsupported system: ${plat}");
           url =
             "https://grafana.com/api/plugins/${pname}/versions/${versionPrefix}${version}/download"
             + {
-              x86_64-linux = "?os=linux&arch=amd64";
-              aarch64-linux = "?os=linux&arch=arm64";
               aarch64-darwin = "?os=darwin&arch=arm64";
+              aarch64-linux = "?os=linux&arch=arm64";
+              x86_64-linux = "?os=linux&arch=amd64";
             }
             .${plat} or (throw "Unsupported system: ${plat}");
+
+          hash = zipHash.${plat} or (throw "Unsupported system: ${plat}");
+          name = "${pname}-${versionPrefix}${version}-${plat}.zip";
         }
       else
         fetchurl {
-          name = "${pname}-${versionPrefix}${version}.zip";
-          hash = zipHash;
           url = "https://grafana.com/api/plugins/${pname}/versions/${versionPrefix}${version}/download";
+          hash = zipHash;
+          name = "${pname}-${versionPrefix}${version}.zip";
         };
 
     nativeBuildInputs = [ unzip ];

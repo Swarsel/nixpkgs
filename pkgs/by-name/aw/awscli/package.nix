@@ -1,12 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  awscli,
   groff,
   less,
   nix-update-script,
+  python3Packages,
   testers,
-  awscli,
   versionCheckHook,
 }:
 
@@ -16,7 +16,6 @@ let
     # N.B: if you change this, change botocore and boto3 to a matching version too
     # check e.g. https://github.com/aws/aws-cli/blob/1.33.21/setup.py
     version = "1.44.21";
-    pyproject = true;
 
     src = fetchFromGitHub {
       owner = "aws";
@@ -25,11 +24,30 @@ let
       hash = "sha256-yQFK1YjehmACZGMXfMQLc5OiiIGDO08OtwFSpaRyi58=";
     };
 
-    pythonRelaxDeps = [
-      # botocore must not be relaxed
-      "docutils"
-      "rsa"
+    postInstall = ''
+      mkdir -p $out/share/bash-completion/completions
+      echo "complete -C $out/bin/aws_completer aws" > $out/share/bash-completion/completions/awscli
+
+      mkdir -p $out/share/zsh/site-functions
+      mv $out/bin/aws_zsh_completer.sh $out/share/zsh/site-functions
+
+      rm $out/bin/aws.cmd
+    '';
+
+    doInstallCheck = true;
+
+    nativeInstallCheckInputs = [
+      versionCheckHook
     ];
+
+    installCheckPhase = ''
+      runHook preInstallCheck
+
+      $out/bin/aws --version | grep "${python3Packages.botocore.version}"
+      $out/bin/aws --version | grep "${finalAttrs.version}"
+
+      runHook postInstallCheck
+    '';
 
     build-system = with python3Packages; [
       setuptools
@@ -47,45 +65,29 @@ let
       less
     ];
 
-    postInstall = ''
-      mkdir -p $out/share/bash-completion/completions
-      echo "complete -C $out/bin/aws_completer aws" > $out/share/bash-completion/completions/awscli
+    pyproject = true;
 
-      mkdir -p $out/share/zsh/site-functions
-      mv $out/bin/aws_zsh_completer.sh $out/share/zsh/site-functions
-
-      rm $out/bin/aws.cmd
-    '';
-
-    doInstallCheck = true;
-
-    installCheckPhase = ''
-      runHook preInstallCheck
-
-      $out/bin/aws --version | grep "${python3Packages.botocore.version}"
-      $out/bin/aws --version | grep "${finalAttrs.version}"
-
-      runHook postInstallCheck
-    '';
-
-    nativeInstallCheckInputs = [
-      versionCheckHook
+    pythonRelaxDeps = [
+      # botocore must not be relaxed
+      "docutils"
+      "rsa"
     ];
 
     passthru = {
       python = python3Packages.python; # for aws_shell
+
       updateScript = nix-update-script {
         extraArgs = [ "--version=skip" ];
       };
     };
 
     meta = {
+      description = "Unified tool to manage your AWS services";
       homepage = "https://aws.amazon.com/cli/";
       changelog = "https://github.com/aws/aws-cli/blob/${finalAttrs.src.tag}/CHANGELOG.rst";
-      description = "Unified tool to manage your AWS services";
       license = lib.licenses.asl20;
-      mainProgram = "aws";
       maintainers = with lib.maintainers; [ anthonyroussel ];
+      mainProgram = "aws";
     };
   });
 in

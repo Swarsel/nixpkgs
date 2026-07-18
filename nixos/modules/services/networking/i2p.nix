@@ -14,24 +14,28 @@ in
 
   ###### implementation
   config = lib.mkIf cfg.enable {
-    users.users.i2p = {
-      group = "i2p";
-      description = "i2p User";
-      home = homeDir;
-      createHome = true;
-      uid = config.ids.uids.i2p;
-    };
-    users.groups.i2p.gid = config.ids.gids.i2p;
     systemd.services.i2p = {
-      description = "I2P router with administration interface for hidden services";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "I2P router with administration interface for hidden services";
+
       serviceConfig = {
+        ExecStart = "${pkgs.i2p}/bin/i2prouter";
+        Restart = "on-abort";
         User = "i2p";
         WorkingDirectory = homeDir;
-        Restart = "on-abort";
-        ExecStart = "${pkgs.i2p}/bin/i2prouter";
       };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups.i2p.gid = config.ids.gids.i2p;
+
+    users.users.i2p = {
+      createHome = true;
+      description = "i2p User";
+      group = "i2p";
+      home = homeDir;
+      uid = config.ids.uids.i2p;
     };
   };
 }

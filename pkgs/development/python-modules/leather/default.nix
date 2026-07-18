@@ -1,17 +1,16 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
-  six,
   cssselect,
+  fetchPypi,
   lxml,
   pytestCheckHook,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "leather";
   version = "0.4.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -26,11 +25,13 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  format = "setuptools";
+
   meta = {
-    homepage = "http://leather.rtfd.io";
     description = "Python charting library";
+    homepage = "http://leather.rtfd.io";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 }

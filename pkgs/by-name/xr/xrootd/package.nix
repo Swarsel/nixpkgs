@@ -1,22 +1,23 @@
 {
   lib,
   stdenv,
-  callPackage,
   fetchFromGitHub,
+  callPackage,
   cmake,
-  gtest,
-  makeWrapper,
-  pkg-config,
   curl,
-  isa-l,
   fuse,
+  gtest,
+  isa-l,
   libkrb5,
   libuuid,
   libxcrypt,
   libxml2,
   libzip,
+  makeWrapper,
   openssl,
+  pkg-config,
   readline,
+  removeReferencesTo,
   scitokens-cpp,
   systemd,
   voms,
@@ -25,23 +26,27 @@
   # directory at externalEtc.
   # Otherwise, the program will look for the configuration files under $out/etc."
   externalEtc ? "/etc",
-  removeReferencesTo,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "xrootd";
   version = "6.0.2";
 
-  __structuredAttrs = true;
-  strictDeps = true;
-
   src = fetchFromGitHub {
     owner = "xrootd";
     repo = "xrootd";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-RSODctDfDkdY1YnxFINGwbpNxEkNCYjW1QEDk9VAYFw=";
+    fetchSubmodules = true;
   };
+
+  outputs = [
+    "bin"
+    "out"
+    "dev"
+    "man"
+  ]
+  ++ lib.optional (externalEtc != null) "etc";
 
   postPatch = ''
     patchShebangs genversion.sh
@@ -52,13 +57,7 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i cmake/XRootDOSDefs.cmake -e '/set( MacOSX TRUE )/ainclude( GNUInstallDirs )'
   '';
 
-  outputs = [
-    "bin"
-    "out"
-    "dev"
-    "man"
-  ]
-  ++ lib.optional (externalEtc != null) "etc";
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -89,6 +88,22 @@ stdenv.mkDerivation (finalAttrs: {
     voms # only available on Linux due to gsoap failing to build on Darwin
   ];
 
+  cmakeFlags = [
+    (lib.cmakeFeature "XRootD_VERSION_STRING" finalAttrs.version)
+    (lib.cmakeBool "FORCE_ENABLED" true)
+    (lib.cmakeBool "ENABLE_FUSE" (!stdenv.hostPlatform.isDarwin)) # XRootD doesn't support MacFUSE
+    (lib.cmakeBool "ENABLE_MACAROONS" false)
+    (lib.cmakeBool "ENABLE_PYTHON" false) # built separately
+    (lib.cmakeBool "ENABLE_SCITOKENS" true)
+    (lib.cmakeBool "ENABLE_TESTS" finalAttrs.finalPackage.doCheck)
+    (lib.cmakeBool "ENABLE_VOMS" stdenv.hostPlatform.isLinux)
+    (lib.cmakeBool "ENABLE_XRDEC" (lib.meta.availableOn stdenv.hostPlatform isa-l)) # requires isa-l
+  ];
+
+  # TODO(@ShamrockLee): Enable the checks.
+  doCheck = false;
+  checkInputs = [ gtest ];
+
   # https://github.com/xrootd/xrootd/blob/v6.0.2/config/
   postInstall = ''
     mkdir -p "$out/etc/xrootd"
@@ -118,42 +133,30 @@ stdenv.mkDerivation (finalAttrs: {
     cp ../src/XrdOuc/XrdOucXAttr.hh $dev/include/xrootd/private/XrdOuc/
   '';
 
-  cmakeFlags = [
-    (lib.cmakeFeature "XRootD_VERSION_STRING" finalAttrs.version)
-    (lib.cmakeBool "FORCE_ENABLED" true)
-    (lib.cmakeBool "ENABLE_FUSE" (!stdenv.hostPlatform.isDarwin)) # XRootD doesn't support MacFUSE
-    (lib.cmakeBool "ENABLE_MACAROONS" false)
-    (lib.cmakeBool "ENABLE_PYTHON" false) # built separately
-    (lib.cmakeBool "ENABLE_SCITOKENS" true)
-    (lib.cmakeBool "ENABLE_TESTS" finalAttrs.finalPackage.doCheck)
-    (lib.cmakeBool "ENABLE_VOMS" stdenv.hostPlatform.isLinux)
-    (lib.cmakeBool "ENABLE_XRDEC" (lib.meta.availableOn stdenv.hostPlatform isa-l)) # requires isa-l
-  ];
-
-  # TODO(@ShamrockLee): Enable the checks.
-  doCheck = false;
-  checkInputs = [ gtest ];
-
   postFixup = lib.optionalString (externalEtc != null) ''
     moveToOutput etc "$etc"
     ln -s ${lib.escapeShellArg externalEtc} "$out/etc"
   '';
 
+  __structuredAttrs = true;
   dontPatchELF = true; # shrinking rpath will cause runtime failures in dlopen
 
   passthru = {
     fetchxrd = callPackage ./fetchxrd.nix { xrootd = finalAttrs.finalPackage; };
+
     tests = {
       test-xrdcp = finalAttrs.passthru.fetchxrd {
         pname = "xrootd-test-xrdcp";
+
         # Use the the bin output hash of xrootd as version to ensure that
         # the test gets rebuild everytime xrootd gets rebuild
         version =
           finalAttrs.version
           + "-"
           + builtins.substring (builtins.stringLength builtins.storeDir + 1) 32 "${finalAttrs.finalPackage}";
-        url = "root://eospublic.cern.ch//eos/opendata/alice/2010/LHC10h/000138275/ESD/0000/AliESDs.root";
+
         hash = "sha256-tIcs2oi+8u/Qr+P7AAaPTbQT+DEt26gEdc4VNerlEHY=";
+        url = "root://eospublic.cern.ch//eos/opendata/alice/2010/LHC10h/000138275/ESD/0000/AliESDs.root";
       };
     };
   };
@@ -163,8 +166,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://xrootd.slac.stanford.edu";
     changelog = "https://github.com/xrootd/xrootd/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.lgpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ ShamrockLee ];
+    platforms = lib.platforms.all;
     mainProgram = "xrootd";
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   mashumaro,
   pytest-asyncio,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "hyponcloud";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jcisio";
@@ -21,6 +20,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Mn+OZHpDSMgA3mUi1s2t+HTlsnsN9eFfzdNNddDz6OA=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -32,11 +36,7 @@ buildPythonPackage (finalAttrs: {
     mashumaro
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "hyponcloud" ];
 
   meta = {

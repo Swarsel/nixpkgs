@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  callPackage,
   fetchurl,
+  callPackage,
   fetchpatch,
   tcl,
   ...
@@ -21,10 +21,10 @@ callPackage ./generic.nix (
       # Define MODULE_SCOPE before including tkPort.h
       # https://core.tcl-lang.org/tk/info/dba9f5ce3b
       (fetchpatch {
-        name = "module_scope.patch";
-        url = "https://core.tcl-lang.org/tk/vpatch?from=ef6c6960c53ea30c&to=9b8aa74eebed509a";
         extraPrefix = "";
+        name = "module_scope.patch";
         sha256 = "0crhf4zrzdpc1jdgyv6l6mxqgmny12r3i39y1i0j8q3pbqkd04bv";
+        url = "https://core.tcl-lang.org/tk/vpatch?from=ef6c6960c53ea30c&to=9b8aa74eebed509a";
       })
     ];
 

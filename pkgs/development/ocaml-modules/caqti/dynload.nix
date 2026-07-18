@@ -5,8 +5,8 @@
 }:
 
 buildDunePackage {
-  pname = "caqti-dynload";
   inherit (caqti) version src;
+  pname = "caqti-dynload";
 
   propagatedBuildInputs = [
     caqti

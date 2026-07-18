@@ -19,17 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-0/uHQwgyHwy+5ynRHs0ot0iIBVUckEs65YxkWLQNgbY=";
   };
 
-  nativeBuildInputs = [ gradle ];
-
-  mitmCache = gradle.fetchDeps {
-    pkg = finalAttrs.finalPackage;
-    data = ./deps.json;
-  };
-
-  __darwinAllowLocalNetworking = true;
-
   strictDeps = true;
-  __structuredAttrs = true;
+  nativeBuildInputs = [ gradle ];
 
   installPhase = ''
     runHook preInstall
@@ -37,18 +28,28 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+
+  mitmCache = gradle.fetchDeps {
+    data = ./deps.json;
+    pkg = finalAttrs.finalPackage;
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "Keycloak identity provider extension for Sign in with Apple";
     homepage = "https://github.com/klausbetz/apple-identity-provider-keycloak";
     changelog = "https://github.com/klausbetz/apple-identity-provider-keycloak/releases/tag/${finalAttrs.version}";
-    description = "Keycloak identity provider extension for Sign in with Apple";
     license = lib.licenses.asl20;
-    maintainers = with lib.maintainers; [ anish ];
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # mitm cache
     ];
+
+    maintainers = with lib.maintainers; [ anish ];
     platforms = lib.platforms.unix;
   };
 })

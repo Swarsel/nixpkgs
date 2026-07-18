@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   gforth,
-  writableTmpDirAsHomeHook,
+  makeWrapper,
   unstableGitUpdater,
+  writableTmpDirAsHomeHook,
 }:
 
 stdenv.mkDerivation {
@@ -22,8 +22,6 @@ stdenv.mkDerivation {
   nativeBuildInputs = [
     makeWrapper
   ];
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -47,19 +45,22 @@ stdenv.mkDerivation {
     runHook postInstallCheck
   '';
 
+  dontBuild = true;
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    homepage = "https://gbforth.org/";
     description = "Forth-based Game Boy development kit";
-    mainProgram = "gbforth";
+
     longDescription = ''
       A Forth-based Game Boy development kit.
       It features a Forth-based assembler, a cross-compiler with support for
       lazy code generation and a library of useful words.
     '';
+
+    homepage = "https://gbforth.org/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ fgaz ];
+    platforms = lib.platforms.all;
+    mainProgram = "gbforth";
   };
 }

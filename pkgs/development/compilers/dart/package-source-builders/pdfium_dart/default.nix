@@ -4,12 +4,12 @@
   pdfium-binaries,
 }:
 
-{ version, src, ... }:
+{ src, version, ... }:
 
 stdenv.mkDerivation {
-  pname = "pdfium_dart";
   inherit version src;
   inherit (src) passthru;
+  pname = "pdfium_dart";
 
   postPatch = lib.optionalString (lib.versionAtLeast version "0.2.0") ''
     substitute ${./build.dart} hook/build.dart \

@@ -2,27 +2,25 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  blueprint-compiler,
   cargo,
+  desktop-file-utils,
+  glib-networking,
+  gst_all_1,
+  libadwaita,
   meson,
   ninja,
+  nix-update-script,
   pkg-config,
   rustPlatform,
   rustc,
-  wrapGAppsHook4,
-  blueprint-compiler,
-  desktop-file-utils,
-  libadwaita,
   webkitgtk_6_0,
-  glib-networking,
-  gst_all_1,
-  nix-update-script,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "karere";
   version = "3.1.1";
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "tobagin";
@@ -31,10 +29,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-VJGTpkMkYKvU/I/DoyBMD9deciLzmrs48If1wQutvnE=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-48ai2Jf/Uo+sXsT78v4usVEAn1zV/YVz4FZZs2ZZDa8=";
-  };
+  strictDeps = true;
 
   nativeBuildInputs = [
     cargo
@@ -67,6 +62,13 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
+  __structuredAttrs = true;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-48ai2Jf/Uo+sXsT78v4usVEAn1zV/YVz4FZZs2ZZDa8=";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -74,10 +76,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/tobagin/karere";
     changelog = "https://github.com/tobagin/karere/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       marcel
       aleksana
     ];
+
     mainProgram = "karere";
   };
 })

@@ -19,82 +19,102 @@ in
     programs.atop = {
 
       enable = lib.mkEnableOption "Atop, a tool for monitoring system resources";
-
       package = lib.mkPackageOption pkgs "atop" { };
 
-      netatop = {
-        enable = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = ''
-            Whether to install and enable the netatop kernel module.
-            Note: this sets the kernel taint flag "O" for loading out-of-tree modules.
-          '';
-        };
-        package = lib.mkOption {
-          type = lib.types.package;
-          default = config.boot.kernelPackages.netatop;
-          defaultText = lib.literalExpression "config.boot.kernelPackages.netatop";
-          description = ''
-            Which package to use for netatop.
-          '';
-        };
-      };
-
-      atopgpu.enable = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Whether to install and enable the atopgpud daemon to get information about
-          NVIDIA gpus.
-        '';
-      };
-
-      setuidWrapper.enable = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Whether to install a setuid wrapper for Atop. This is required to use some of
-          the features as non-root user (e.g.: ipc information, netatop, atopgpu).
-          Atop tries to drop the root privileges shortly after starting.
-        '';
-      };
-
-      atopService.enable = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = ''
-          Whether to enable the atop service responsible for storing statistics for
-          long-term analysis.
-        '';
-      };
       atopRotateTimer.enable = lib.mkOption {
-        type = lib.types.bool;
         default = true;
+
         description = ''
           Whether to enable the atop-rotate timer, which restarts the atop service
           daily to make sure the data files are rotate.
         '';
-      };
-      atopacctService.enable = lib.mkOption {
+
         type = lib.types.bool;
+      };
+
+      atopService.enable = lib.mkOption {
         default = true;
+
+        description = ''
+          Whether to enable the atop service responsible for storing statistics for
+          long-term analysis.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      atopacctService.enable = lib.mkOption {
+        default = true;
+
         description = ''
           Whether to enable the atopacct service which manages process accounting.
           This allows Atop to gather data about processes that disappeared in between
           two refresh intervals.
         '';
+
+        type = lib.types.bool;
       };
+
+      atopgpu.enable = lib.mkOption {
+        default = false;
+
+        description = ''
+          Whether to install and enable the atopgpud daemon to get information about
+          NVIDIA gpus.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      netatop = {
+        enable = lib.mkOption {
+          default = false;
+
+          description = ''
+            Whether to install and enable the netatop kernel module.
+            Note: this sets the kernel taint flag "O" for loading out-of-tree modules.
+          '';
+
+          type = lib.types.bool;
+        };
+
+        package = lib.mkOption {
+          default = config.boot.kernelPackages.netatop;
+          defaultText = lib.literalExpression "config.boot.kernelPackages.netatop";
+
+          description = ''
+            Which package to use for netatop.
+          '';
+
+          type = lib.types.package;
+        };
+      };
+
       settings = lib.mkOption {
-        type = lib.types.attrs;
         default = { };
+
+        description = ''
+          Parameters to be written to {file}`/etc/atoprc`.
+        '';
+
         example = {
           flags = "a1f";
           interval = 5;
         };
+
+        type = lib.types.attrs;
+      };
+
+      setuidWrapper.enable = lib.mkOption {
+        default = false;
+
         description = ''
-          Parameters to be written to {file}`/etc/atoprc`.
+          Whether to install a setuid wrapper for Atop. This is required to use some of
+          the features as non-root user (e.g.: ipc information, netatop, atopgpu).
+          Atop tries to drop the root privileges shortly after starting.
         '';
+
+        type = lib.types.bool;
       };
     };
   };
@@ -104,6 +124,8 @@ in
       atop = if cfg.atopgpu.enable then (cfg.package.override { withAtopgpu = true; }) else cfg.package;
     in
     {
+      boot.extraModulePackages = [ (lib.mkIf cfg.netatop.enable cfg.netatop.package) ];
+
       environment.etc = lib.mkIf (cfg.settings != { }) {
         atoprc.text = lib.concatStrings (
           lib.mapAttrsToList (n: v: ''
@@ -111,16 +133,27 @@ in
           '') cfg.settings
         );
       };
+
       environment.systemPackages = [
         atop
         (lib.mkIf cfg.netatop.enable cfg.netatop.package)
       ];
-      boot.extraModulePackages = [ (lib.mkIf cfg.netatop.enable cfg.netatop.package) ];
+
+      security.wrappers = lib.mkIf cfg.setuidWrapper.enable {
+        atop = {
+          group = "root";
+          owner = "root";
+          setuid = true;
+          source = "${atop}/bin/atop";
+        };
+      };
+
       systemd =
         let
           mkSystemd = type: name: restartTriggers: {
             ${name} = {
               inherit restartTriggers;
+
               wantedBy = [
                 (
                   if type == "services" then
@@ -141,6 +174,7 @@ in
             atop
             (lib.mkIf cfg.netatop.enable cfg.netatop.package)
           ];
+
           services = lib.mkMerge [
             (lib.mkIf cfg.atopService.enable (
               lib.recursiveUpdate (mkService "atop" [ atop ]) {
@@ -170,17 +204,9 @@ in
             (lib.mkIf cfg.netatop.enable (mkService "netatop" [ cfg.netatop.package ]))
             (lib.mkIf cfg.atopgpu.enable (mkService "atopgpu" [ atop ]))
           ];
+
           timers = lib.mkIf cfg.atopRotateTimer.enable (mkTimer "atop-rotate" [ atop ]);
         };
-
-      security.wrappers = lib.mkIf cfg.setuidWrapper.enable {
-        atop = {
-          setuid = true;
-          owner = "root";
-          group = "root";
-          source = "${atop}/bin/atop";
-        };
-      };
     }
   );
 }

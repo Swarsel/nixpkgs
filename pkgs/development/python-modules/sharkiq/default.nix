@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   auth0-python,
   buildPythonPackage,
-  fetchFromGitHub,
   requests,
   setuptools,
   setuptools-scm,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "sharkiq";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "JeffResc";
@@ -26,6 +25,9 @@ buildPythonPackage rec {
       --replace-fail "setuptools-scm>=9.2.0" "setuptools-scm"
   '';
 
+  # Module has no tests
+  doCheck = false;
+
   build-system = [
     setuptools
     setuptools-scm
@@ -37,9 +39,7 @@ buildPythonPackage rec {
     requests
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "sharkiq" ];
 
   meta = {

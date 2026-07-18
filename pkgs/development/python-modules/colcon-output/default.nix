@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   colcon,
   pytest-cov-stub,
   pytestCheckHook,
-  setuptools,
   scspell,
+  setuptools,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "colcon-output";
   version = "0.2.14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "colcon";
@@ -22,12 +21,6 @@ buildPythonPackage rec {
     hash = "sha256-Zt8ZG2SZAgS1iXMnu3b2dSoP9IzrwLwMUXVSJWqRV9w=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    colcon
-  ];
-
   nativeCheckInputs = [
     pytest-cov-stub
     pytestCheckHook
@@ -35,19 +28,27 @@ buildPythonPackage rec {
     writableTmpDirAsHomeHook
   ];
 
-  pythonImportsCheck = [
-    "colcon_output"
+  build-system = [ setuptools ];
+
+  dependencies = [
+    colcon
   ];
 
   disabledTestPaths = [
     "test/test_flake8.py"
   ];
 
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "colcon_output"
+  ];
+
   meta = {
     description = "Extension for colcon-core to customize the output in various ways";
-    downloadPage = "https://github.com/colcon/colcon-output";
     homepage = "http://colcon.readthedocs.io/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ guelakais ];
+    downloadPage = "https://github.com/colcon/colcon-output";
   };
 }

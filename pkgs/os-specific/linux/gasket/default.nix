@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   fetchpatch2,
   kernel,
@@ -20,18 +20,18 @@ stdenv.mkDerivation {
 
   patches = [
     (fetchpatch2 {
+      hash = "sha256-UOoOSEnpUMa4QXWVFpGFxBoF5szXaLEfcWtfKatO5XY=";
       # https://github.com/google/gasket-driver/issues/36
       # https://github.com/google/gasket-driver/pull/35
       name = "linux-6.12-compat.patch";
       url = "https://github.com/google/gasket-driver/commit/4b2a1464f3b619daaf0f6c664c954a42c4b7ce00.patch";
-      hash = "sha256-UOoOSEnpUMa4QXWVFpGFxBoF5szXaLEfcWtfKatO5XY=";
     })
     (fetchpatch2 {
+      hash = "sha256-roCo0/ETWuDVtZfbpFbrmy/icNI12A/ozOGQNLTtBUs=";
       # https://github.com/google/gasket-driver/issues/39
       # https://github.com/google/gasket-driver/pull/40
       name = "linux-6.13-compat.patch";
       url = "https://github.com/google/gasket-driver/commit/6fbf8f8f8bcbc0ac9c9bef7a56f495a2c9872652.patch";
-      hash = "sha256-roCo0/ETWuDVtZfbpFbrmy/icNI12A/ozOGQNLTtBUs=";
     })
   ];
 
@@ -39,21 +39,23 @@ stdenv.mkDerivation {
     cd src
   '';
 
+  nativeBuildInputs = kernel.moduleBuildDependencies;
+
   makeFlags = kernelModuleMakeFlags ++ [
     "-C"
     "${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
     "M=$(PWD)"
   ];
-  buildFlags = [ "modules" ];
 
-  installFlags = [ "INSTALL_MOD_PATH=${placeholder "out"}" ];
-  installTargets = [ "modules_install" ];
+  buildFlags = [ "modules" ];
 
   hardeningDisable = [
     "pic"
     "format"
   ];
-  nativeBuildInputs = kernel.moduleBuildDependencies;
+
+  installFlags = [ "INSTALL_MOD_PATH=${placeholder "out"}" ];
+  installTargets = [ "modules_install" ];
 
   meta = {
     description = "Coral Gasket Driver allows usage of the Coral EdgeTPU on Linux systems";

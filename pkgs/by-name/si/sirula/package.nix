@@ -1,11 +1,11 @@
 {
-  nix-update-script,
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  gtk3,
   gtk-layer-shell,
+  gtk3,
+  nix-update-script,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-rBaH2cIIaRoaw8Os60s4MknZywzDuGLagJiAvEYU4m8=";
   };
 
-  cargoHash = "sha256-7trHMGTWtf4IT7efyKIXM7n4x6j7n2V3I7ZXSSwvzys=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -28,6 +26,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     gtk-layer-shell
   ];
 
+  cargoHash = "sha256-7trHMGTWtf4IT7efyKIXM7n4x6j7n2V3I7ZXSSwvzys=";
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pretix-plugin-build,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage {
   pname = "pretix-stretchgoals";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rixx";
@@ -18,12 +17,14 @@ buildPythonPackage {
     hash = "sha256-Sbbxg6viRdALjZwqEmN2Js/qbMShe5xMg00jUccnhsA=";
   };
 
+  doCheck = false; # no tests
+
   build-system = [
     pretix-plugin-build
     setuptools
   ];
 
-  doCheck = false; # no tests
+  pyproject = true;
 
   pythonImportsCheck = [
     "pretix_stretchgoals"

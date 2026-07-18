@@ -19,15 +19,6 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-iKY1w9lmfuyvDblH/TlnUwAnda17qWGxmx1qtmQRENg=";
   };
 
-  nodejs = nodejs_22;
-
-  npmDeps = fetchNpmDeps {
-    name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
-    inherit (finalAttrs) src;
-    npmDepsFetcherVersion = 3;
-    hash = "sha256-V9aRKoJ6+BN/q7NS21eZBopzkWje8sOGGL1AgO4cUM0=";
-  };
-
   postPatch = ''
     jq '.devDependencies |= del(.cypress, ."cypress-localstorage-commands")' package.json | sponge package.json
   '';
@@ -53,11 +44,21 @@ buildNpmPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  nodejs = nodejs_22;
+
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-V9aRKoJ6+BN/q7NS21eZBopzkWje8sOGGL1AgO4cUM0=";
+    name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
+    npmDepsFetcherVersion = 3;
+  };
+
   meta = {
     description = "Frontend for GlitchTip";
     homepage = "https://glitchtip.com";
     changelog = "https://gitlab.com/glitchtip/glitchtip-frontend/-/releases/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       defelo
       felbinger

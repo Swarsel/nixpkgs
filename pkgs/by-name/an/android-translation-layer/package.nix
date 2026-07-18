@@ -1,29 +1,29 @@
 {
+  lib,
   stdenv,
   fetchFromGitLab,
-  ffmpeg,
-  meson,
-  openjdk17,
-  lib,
-  pkg-config,
-  wayland-protocols,
-  wayland,
-  wayland-scanner,
-  gtk4,
-  openxr-loader,
-  libglvnd,
-  libportal-gtk4,
-  sqlite,
-  libdrm,
-  libgudev,
-  webkitgtk_6_0,
-  ninja,
-  art-standalone,
-  bionic-translation,
   alsa-lib,
-  makeWrapper,
-  nixosTests,
+  art-standalone,
   bintools,
+  bionic-translation,
+  ffmpeg,
+  gtk4,
+  libdrm,
+  libglvnd,
+  libgudev,
+  libportal-gtk4,
+  makeWrapper,
+  meson,
+  ninja,
+  nixosTests,
+  openjdk17,
+  openxr-loader,
+  pkg-config,
+  sqlite,
+  wayland,
+  wayland-protocols,
+  wayland-scanner,
+  webkitgtk_6_0,
 }:
 
 stdenv.mkDerivation {
@@ -96,8 +96,8 @@ stdenv.mkDerivation {
     description = "Translation layer that allows running Android apps on a Linux system";
     homepage = "https://gitlab.com/android_translation_layer/android_translation_layer";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ onny ];
+    platforms = lib.platforms.all;
     mainProgram = "android-translation-layer";
   };
 }

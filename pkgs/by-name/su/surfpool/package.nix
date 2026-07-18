@@ -1,25 +1,24 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
   fetchurl,
-  pkg-config,
-  versionCheckHook,
+  fetchFromGitHub,
   openssl,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 let
   studioUiVersion = "v0.1.0";
   studioUi = fetchurl {
-    url = "https://github.com/solana-foundation/surfpool-web-ui/releases/download/${studioUiVersion}/studio-dist.zip";
     hash = "sha256-DeWm2FzZbdaHXaEFA8W/YIIcJx4Z+uFkrxuajTM9n1M=";
+    url = "https://github.com/solana-foundation/surfpool-web-ui/releases/download/${studioUiVersion}/studio-dist.zip";
   };
 in
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "surfpool-cli";
   version = "1.5.0";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "solana-foundation";
@@ -29,25 +28,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
     fetchSubmodules = true;
   };
 
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ openssl ];
   cargoHash = "sha256-eOgPoHQVQVm+aSLsxAokjMyAyZBia/j/Bxux69WfklI=";
 
   env = {
-    RUSTFLAGS = "-Aunused";
     OPENSSL_NO_VENDOR = 1;
+    RUSTFLAGS = "-Aunused";
     STUDIO_UI_DIST = "${studioUi}";
   };
 
-  nativeBuildInputs = [ pkg-config ];
-
-  buildInputs = [ openssl ];
-
   doInstallCheck = true;
-
   nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   meta = {
     description = "Surfpool is where developers start their Solana journey";
-    homepage = "https://www.surfpool.run/";
+
     longDescription = ''
       Surfpool is a drop-in replacement for solana-test-validator that lets
       developers spin up local Solana networks mirroring mainnet state without
@@ -56,6 +53,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
       program deployment, transaction inspection, time travel, cheatcodes, and
       an MCP server for agentic workflows
     '';
+
+    homepage = "https://www.surfpool.run/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ _0xgsvs ];
     mainProgram = "surfpool";

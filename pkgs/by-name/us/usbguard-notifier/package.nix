@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  autoreconfHook,
-  pkg-config,
-  libqb,
-  usbguard,
-  librsvg,
-  libnotify,
-  catch2,
   asciidoc,
+  autoreconfHook,
+  catch2,
+  libnotify,
+  libqb,
+  librsvg,
+  pkg-config,
+  usbguard,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -47,9 +47,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Notifications for detecting usbguard policy and device presence changes";
     homepage = "https://github.com/Cropi/usbguard-notifier";
+    license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ fpletz ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl2Plus;
     mainProgram = "usbguard-notifier";
   };
 })

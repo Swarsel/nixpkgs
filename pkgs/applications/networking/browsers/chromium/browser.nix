@@ -1,8 +1,8 @@
 {
   lib,
-  mkChromiumDerivation,
   chromiumVersionAtLeast,
   enableWideVine,
+  mkChromiumDerivation,
   ungoogled,
 }:
 
@@ -12,19 +12,10 @@ let
 in
 
 mkChromiumDerivation (base: rec {
-  name = "chromium-browser";
-  packageName = "chromium";
-  buildTargets = [
-    "chrome_sandbox"
-    "chrome"
-  ];
-
   outputs = [
     "out"
     "sandbox"
   ];
-
-  sandboxExecutableName = "__chromium-suid-sandbox";
 
   installPhase = ''
     mkdir -p "$libExecPath"
@@ -83,25 +74,37 @@ mkChromiumDerivation (base: rec {
     fi
   '';
 
-  passthru = { inherit sandboxExecutableName; };
+  buildTargets = [
+    "chrome_sandbox"
+    "chrome"
+  ];
 
+  name = "chromium-browser";
+  packageName = "chromium";
   requiredSystemFeatures = [ "big-parallel" ];
+  sandboxExecutableName = "__chromium-suid-sandbox";
+  passthru = { inherit sandboxExecutableName; };
 
   meta = {
     description =
       "Open source web browser from Google"
       + lib.optionalString ungoogled ", with dependencies on Google web services removed";
+
     longDescription = ''
       Chromium is an open source web browser from Google that aims to build a
       safer, faster, and more stable way for all Internet users to experience
       the web. It has a minimalist user interface and provides the vast majority
       of source code for Google Chrome (which has some additional features).
     '';
+
     homepage =
       if ungoogled then
         "https://github.com/ungoogled-software/ungoogled-chromium"
       else
         "https://www.chromium.org/";
+
+    license = if enableWideVine then lib.licenses.unfree else lib.licenses.bsd3;
+
     # Maintainer pings for this derivation are highly unreliable.
     # If you add yourself as maintainer here, please also add yourself as CODEOWNER.
     maintainers =
@@ -116,13 +119,15 @@ mkChromiumDerivation (base: rec {
           networkexception
           emilylange
         ];
-    license = if enableWideVine then lib.licenses.unfree else lib.licenses.bsd3;
+
     platforms = lib.platforms.linux;
     mainProgram = "chromium";
+
     hydraPlatforms = [
       "aarch64-linux"
       "x86_64-linux"
     ];
+
     timeout = 172800; # 48 hours (increased from the Hydra default of 10h)
   };
 })

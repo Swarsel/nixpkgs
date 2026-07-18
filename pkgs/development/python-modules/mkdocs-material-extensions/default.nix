@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "mkdocs-material-extensions";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "facelessuser";
@@ -18,9 +17,8 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ hatchling ];
-
   doCheck = false; # Circular dependency
-
+  pyproject = true;
   pythonImportsCheck = [ "materialx" ];
 
   meta = {

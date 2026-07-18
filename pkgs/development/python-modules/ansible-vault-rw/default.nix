@@ -1,32 +1,30 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-
-  # build-system
-  setuptools,
-
   # dependencies
   ansible-core,
-
+  buildPythonPackage,
+  fetchPypi,
   # tests
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "ansible-vault-rw";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "ansible-vault";
     inherit version;
     hash = "sha256-XOj9tUcPFEm3a/B64qvFZIDa1INWrkBchbaG77ZNvV4";
+    pname = "ansible-vault";
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ ansible-core ];
+  # no tests in sdist, no 2.1.0 tag on git
+  doCheck = false;
+  nativeCheckInputs = [ pytestCheckHook ];
 
   # Otherwise tests will fail to create directory
   # Permission denied: '/homeless-shelter'
@@ -34,10 +32,7 @@ buildPythonPackage rec {
     export HOME=$(mktemp -d)
   '';
 
-  # no tests in sdist, no 2.1.0 tag on git
-  doCheck = false;
-
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   meta = {
     description = "This project aim to R/W an ansible-vault yaml file";

@@ -29,17 +29,18 @@ stdenv.mkDerivation (finalAttrs: {
       INSTALL_USER=$(id -u))
   '';
 
+  enableParallelBuilding = true;
   makefile = "makefile.shared";
 
-  enableParallelBuilding = true;
-
   meta = {
-    homepage = "https://www.libtom.net/LibTomMath/";
     description = "Library for integer-based number-theoretic applications";
+    homepage = "https://www.libtom.net/LibTomMath/";
+
     license = with lib.licenses; [
       publicDomain
       wtfpl
     ];
+
     platforms = lib.platforms.unix;
   };
 })

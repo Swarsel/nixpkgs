@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiofiles,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   flask,
   pytest-asyncio,
   pytest-httpserver,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "vt-py";
   version = "0.22.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "VirusTotal";
@@ -28,7 +27,12 @@ buildPythonPackage rec {
       --replace-fail "pytest-runner" ""
   '';
 
-  pythonRelaxDeps = [ "aiohttp" ];
+  nativeCheckInputs = [
+    flask
+    pytest-asyncio
+    pytest-httpserver
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -37,14 +41,9 @@ buildPythonPackage rec {
     aiohttp
   ];
 
-  nativeCheckInputs = [
-    flask
-    pytest-asyncio
-    pytest-httpserver
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "vt" ];
+  pythonRelaxDeps = [ "aiohttp" ];
 
   meta = {
     description = "Python client library for VirusTotal";

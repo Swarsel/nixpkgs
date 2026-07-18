@@ -9,12 +9,11 @@
 buildPythonPackage rec {
   pname = "sphinxcontrib-apidoc";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "sphinxcontrib_apidoc";
     inherit version;
     hash = "sha256-MpuYENZpiPSOEnpr0YzI77vRzSC43rRpGjVzivSa2I0=";
+    pname = "sphinxcontrib_apidoc";
   };
 
   postPatch = ''
@@ -29,7 +28,7 @@ buildPythonPackage rec {
 
   # Check is disabled due to circular dependency of sphinx
   doCheck = false;
-
+  pyproject = true;
   pythonNamespaces = [ "sphinxcontrib" ];
 
   meta = {

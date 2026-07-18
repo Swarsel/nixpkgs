@@ -9,20 +9,18 @@
 buildPythonPackage rec {
   pname = "python-sql";
   version = "1.7.0";
-  pyproject = true;
 
   src = fetchFromGitLab {
-    domain = "foss.heptapod.net";
     owner = "tryton";
     repo = "python-sql";
     tag = version;
     hash = "sha256-JhMJEng6QftWBmJIC2pYlf9fkHHmSd3k0tSwr35MmVQ=";
+    domain = "foss.heptapod.net";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "sql" ];
 
   meta = {

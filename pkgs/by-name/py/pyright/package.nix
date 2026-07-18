@@ -1,9 +1,9 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  runCommand,
+  buildNpmPackage,
   jq,
+  runCommand,
 }:
 
 let
@@ -29,41 +29,44 @@ let
       '';
 
   pyright-root = buildNpmPackage {
-    pname = "pyright-root";
     inherit version src;
-    sourceRoot = "${src.name}"; # required for update.sh script
-    npmDepsHash = "sha256-EQlF3zBNnEvVGLC6btSkXGRPJHoR+Jz23ay2X9nYZSg=";
-    dontNpmBuild = true;
+    pname = "pyright-root";
+
     postPatch = ''
       cp ${patchedPackageJSON} ./package.json
       cp ${./package-lock.json} ./package-lock.json
     '';
+
+    npmDepsHash = "sha256-EQlF3zBNnEvVGLC6btSkXGRPJHoR+Jz23ay2X9nYZSg=";
+
     installPhase = ''
       runHook preInstall
       cp -r . "$out"
       runHook postInstall
     '';
+
+    dontNpmBuild = true;
+    sourceRoot = "${src.name}"; # required for update.sh script
   };
 
   pyright-internal = buildNpmPackage {
-    pname = "pyright-internal";
     inherit version src;
-    sourceRoot = "${src.name}/packages/pyright-internal";
+    pname = "pyright-internal";
     npmDepsHash = "sha256-h0ZPqVpMMnhfqP+471xzKVhWTgyuyMcfIAcrnBJZsr4=";
-    dontNpmBuild = true;
+
     installPhase = ''
       runHook preInstall
       cp -r . "$out"
       runHook postInstall
     '';
+
+    dontNpmBuild = true;
+    sourceRoot = "${src.name}/packages/pyright-internal";
   };
 in
 buildNpmPackage rec {
-  pname = "pyright";
   inherit version src;
-
-  sourceRoot = "${src.name}/packages/pyright";
-  npmDepsHash = "sha256-mVcK3FzHccBnWzUgrczhwTPhVxyR56E5i8l2GJGYlLo=";
+  pname = "pyright";
 
   postPatch = ''
     chmod +w ../../
@@ -72,16 +75,17 @@ buildNpmPackage rec {
     ln -s ${pyright-internal}/node_modules ../pyright-internal/node_modules
   '';
 
+  npmDepsHash = "sha256-mVcK3FzHccBnWzUgrczhwTPhVxyR56E5i8l2GJGYlLo=";
   dontNpmBuild = true;
-
+  sourceRoot = "${src.name}/packages/pyright";
   passthru.updateScript = ./update.sh;
 
   meta = {
-    changelog = "https://github.com/Microsoft/pyright/releases/tag/${src.tag}";
     description = "Type checker for the Python language";
     homepage = "https://github.com/Microsoft/pyright";
+    changelog = "https://github.com/Microsoft/pyright/releases/tag/${src.tag}";
     license = lib.licenses.mit;
-    mainProgram = "pyright";
     maintainers = with lib.maintainers; [ kalekseev ];
+    mainProgram = "pyright";
   };
 }

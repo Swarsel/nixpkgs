@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "smtp-user-enum";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cytopia";
@@ -16,15 +15,15 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-2GI//nv87H2zDkkgjAHSx2Zm2Sk0EpxmXQAN+I1K65I=";
   };
 
+  # Project has no tests
+  doCheck = false;
+  build-system = with python3.pkgs; [ setuptools ];
+  pyproject = true;
+
   pythonRemoveDeps = [
     # https://github.com/cytopia/smtp-user-enum/pull/21
     "argparse"
   ];
-
-  build-system = with python3.pkgs; [ setuptools ];
-
-  # Project has no tests
-  doCheck = false;
 
   meta = {
     description = "SMTP user enumeration via VRFY, EXPN and RCPT with clever timeout, retry and reconnect functionality";

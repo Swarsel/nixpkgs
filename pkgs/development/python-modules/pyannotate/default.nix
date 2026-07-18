@@ -12,25 +12,18 @@
 buildPythonPackage rec {
   pname = "pyannotate";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-BO1YBLqzgVPVmB/JLYPc9qIog0U3aFYfBX53flwFdZk=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
     six
     mypy-extensions
-  ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [
-    "pyannotate_runtime"
-    "pyannotate_tools"
   ];
 
   disabledTestPaths = [
@@ -40,6 +33,13 @@ buildPythonPackage rec {
     # Tests are using lib2to3
     "pyannotate_tools/fixes/tests/test_annotate*.py"
     "pyannotate_tools/annotations/tests/dundermain_test.py"
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "pyannotate_runtime"
+    "pyannotate_tools"
   ];
 
   meta = {

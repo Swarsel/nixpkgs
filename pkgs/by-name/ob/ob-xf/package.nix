@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  gitUpdater,
-  cmake,
-  pkg-config,
   alsa-lib,
-  freetype,
+  cmake,
   fontconfig,
-  libjack2,
+  freetype,
+  gitUpdater,
   libGL,
+  libjack2,
   libx11,
   libxcursor,
   libxext,
   libxinerama,
   libxrandr,
+  pkg-config,
   writableTmpDirAsHomeHook,
 }:
 
@@ -26,8 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "surge-synthesizer";
     repo = "OB-Xf";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-MeknY3jiUTcnX29AtdYNci4dAF1uFCZRpwrxEH3YEEM=";
+    fetchSubmodules = true;
   };
 
   postPatch = ''
@@ -42,7 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
     EOF
   '';
 
-  __structuredAttrs = true;
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -64,13 +63,10 @@ stdenv.mkDerivation (finalAttrs: {
     libxrandr
   ];
 
-  enableParallelBuilding = true;
-
-  # JUCE dlopen's x11 at runtime, crashes without it
-  env.NIX_LDFLAGS = "-lX11";
-
   # Fontconfig error: Cannot load default config file: No such file: (null)
   env.FONTCONFIG_FILE = "${fontconfig.out}/etc/fonts/fonts.conf";
+  # JUCE dlopen's x11 at runtime, crashes without it
+  env.NIX_LDFLAGS = "-lX11";
 
   installPhase = ''
     runHook preInstall
@@ -89,14 +85,16 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
   passthru.updateScript = gitUpdater { };
 
   meta = {
     description = "Virtual analog synthesizer plug-in inspired by the Oberheim OB-X";
     homepage = "https://surge-synth-team.org/ob-xf/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ magnetophon ];
+    platforms = lib.platforms.linux;
     mainProgram = "OB-Xf";
   };
 })

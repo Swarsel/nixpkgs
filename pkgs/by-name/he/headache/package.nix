@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  darwin,
   nix-update-script,
   ocamlPackages,
-  darwin,
 }:
 
 let
@@ -31,10 +31,10 @@ buildDunePackage rec {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/frama-c/headache";
     description = "Lightweight tool for managing headers in source code files";
-    mainProgram = "headache";
+    homepage = "https://github.com/frama-c/headache";
     license = lib.licenses.lgpl2Plus;
     maintainers = with lib.maintainers; [ niols ];
+    mainProgram = "headache";
   };
 }

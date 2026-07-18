@@ -17,10 +17,6 @@ stdenv.mkDerivation {
     hash = "sha256-imSy1ywpGWbghP65NoPgUJBJmHUY5OsLWmIXk6Q1MQ4=";
   };
 
-  nativeBuildInputs = [ cmake ];
-
-  propagatedBuildInputs = lib.optionals stdenv.cc.isClang [ openmp ];
-
   # Fix the build with CMake 4.
   postPatch = ''
     substituteInPlace CMakeLists.txt \
@@ -28,6 +24,9 @@ stdenv.mkDerivation {
         'cmake_minimum_required (VERSION 2.8.5)' \
         'cmake_minimum_required (VERSION 3.10)'
   '';
+
+  nativeBuildInputs = [ cmake ];
+  propagatedBuildInputs = lib.optionals stdenv.cc.isClang [ openmp ];
 
   meta = {
     description = "Video stabilization library";

@@ -4,6 +4,7 @@
   fetchFromGitHub,
   libGL,
   libspng,
+  libxcb,
   libxkbcommon,
   luajit,
   makeWrapper,
@@ -14,7 +15,6 @@
   wayland,
   wayland-protocols,
   wayland-scanner,
-  libxcb,
   xwayland,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -62,18 +62,22 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Wayland compositor for Minecraft speedrunning";
+
     longDescription = ''
       Waywall is a Wayland compositor that provides various convenient
       features (key rebinding, Ninjabrain Bot support, etc) for Minecraft
       speedrunning. It is designed to be nested within an existing Wayland
       session and is intended as a successor to resetti.
     '';
+
     homepage = "https://tesselslate.github.io/waywall/";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       monkieeboi
       uku3lig
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "waywall";
   };

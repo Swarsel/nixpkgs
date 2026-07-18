@@ -1,29 +1,29 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  android-tools,
   appstream,
-  cmake,
-  desktop-file-utils,
-  glib,
-  gobject-introspection,
-  meson,
-  ninja,
-  pkg-config,
-  wrapGAppsHook4,
   bash,
   bindfs,
+  cmake,
   dbus,
-  android-tools,
+  desktop-file-utils,
   e2fsprogs,
   fakeroot,
+  fetchpatch,
+  glib,
+  gobject-introspection,
   libadwaita,
   libxml2,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
+  python3Packages,
   systemd,
   unzip,
   vte-gtk4,
-  nix-update-script,
-  fetchpatch,
+  wrapGAppsHook4,
 }:
 
 let
@@ -37,16 +37,15 @@ let
   };
 in
 python3Packages.buildPythonApplication {
-  pname = "waydroid-helper";
   inherit version src;
-  pyproject = false; # uses meson
+  pname = "waydroid-helper";
 
   patches = [
     # remove for next release
     (fetchpatch {
+      hash = "sha256-z0PWBZTox3RpPCm8/fGYEukU0v41U7/TFcYE0Ec5Zeg=";
       name = "USE_UMOUNT_NOT_FUSERMOUNT";
       url = "https://github.com/waydroid-helper/waydroid-helper/commit/eb8ccf7a276f95b31972edbd063245704b2b5b2e.patch";
-      hash = "sha256-z0PWBZTox3RpPCm8/fGYEukU0v41U7/TFcYE0Ec5Zeg=";
     })
   ];
 
@@ -65,6 +64,8 @@ python3Packages.buildPythonApplication {
   + ''
     sed -i '/test(/{N;/Validate appstream file/!b;:a;N;/)/!ba;d}' data/meson.build
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     appstream
@@ -87,8 +88,6 @@ python3Packages.buildPythonApplication {
     vte-gtk4
   ];
 
-  dontUseCmakeConfigure = true;
-
   dependencies = with python3Packages; [
     aiofiles
     dbus-python
@@ -98,8 +97,7 @@ python3Packages.buildPythonApplication {
     pywayland
   ];
 
-  strictDeps = true;
-
+  dontUseCmakeConfigure = true;
   dontWrapGApps = true;
 
   makeWrapperArgs = [
@@ -119,15 +117,16 @@ python3Packages.buildPythonApplication {
     mesonCheckPhase
   '';
 
+  pyproject = false; # uses meson
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/ayasa520/waydroid-helper/releases/tag/${src.tag}";
     description = "User-friendly way to configure Waydroid and install extensions, including Magisk and ARM translation";
     homepage = "https://github.com/ayasa520/waydroid-helper";
+    changelog = "https://github.com/ayasa520/waydroid-helper/releases/tag/${src.tag}";
     license = with lib.licenses; [ gpl3Plus ];
-    mainProgram = "waydroid-helper";
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "waydroid-helper";
   };
 }

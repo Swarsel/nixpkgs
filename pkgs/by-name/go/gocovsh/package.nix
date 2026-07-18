@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -17,6 +17,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-Fb7BIWojOSUIlBdjIt57CSvF1a+x33sB45Z0a86JMUg=";
+  nativeCheckInputs = [ versionCheckHook ];
+  doInstallCheck = true;
 
   ldflags = [
     "-s"
@@ -25,17 +27,14 @@ buildGoModule (finalAttrs: {
     "-X main.date=19700101T000000Z"
   ];
 
-  nativeCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-
   meta = {
     description = "Go Coverage in your terminal: a tool for exploring Go Coverage reports from the command line";
     homepage = "https://github.com/orlangure/gocovsh";
     changelog = "https://github.com/orlangure/gocovsh/releases";
     # https://github.com/orlangure/gocovsh/blob/8880bc63283c13a1d630ce3817c7165a6c210d46/.goreleaser.yaml#L33
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ phanirithvij ];
+    platforms = lib.platforms.unix;
     mainProgram = "gocovsh";
   };
 })

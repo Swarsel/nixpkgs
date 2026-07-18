@@ -5,8 +5,8 @@
 }:
 
 buildDunePackage {
-  pname = "ocamlgraph_gtk";
   inherit (ocamlgraph) version src meta;
+  pname = "ocamlgraph_gtk";
 
   propagatedBuildInputs = [
     lablgtk

@@ -2,10 +2,10 @@
   lib,
   stdenv,
   callPackage,
-  symlinkJoin,
-  makeBinaryWrapper,
   desktopToDarwinBundle,
   ghidra,
+  makeBinaryWrapper,
+  symlinkJoin,
 }:
 
 let
@@ -23,12 +23,13 @@ let
   withExtensions =
     f:
     (symlinkJoin {
-      name = "${ghidra.pname}-with-extensions-${lib.getVersion ghidra}";
-      paths = (f allExtensions);
+      inherit (ghidra) meta;
+
       nativeBuildInputs = [
         makeBinaryWrapper
       ]
       ++ lib.optional stdenv.hostPlatform.isDarwin desktopToDarwinBundle;
+
       postBuild = ''
         # Prevent attempted creation of plugin lock files in the Nix store.
         touch $out/lib/ghidra/Ghidra/.dbDirLock
@@ -42,7 +43,9 @@ let
       + lib.optionalString stdenv.hostPlatform.isDarwin ''
         convertDesktopFiles $prefix
       '';
-      inherit (ghidra) meta;
+
+      name = "${ghidra.pname}-with-extensions-${lib.getVersion ghidra}";
+      paths = (f allExtensions);
     });
 in
 withExtensions

@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
 }:
 
 buildPythonPackage {
   pname = "pylibjpeg-data";
   version = "unstable-2024-03-28";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pydicom";
@@ -17,9 +16,9 @@ buildPythonPackage {
     hash = "sha256-TzhiZ4LCFZX75h3YRrEFO5kRVc5VwTOJd+1VFW3LsaQ=";
   };
 
-  build-system = [ flit-core ];
-
   doCheck = false; # no tests
+  build-system = [ flit-core ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "ljdata"

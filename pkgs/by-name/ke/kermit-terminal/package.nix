@@ -4,10 +4,10 @@
   fetchFromGitHub,
   cmake,
   gtk3,
+  nixosTests,
   pcre,
   pkg-config,
   vte,
-  nixosTests,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,12 +40,12 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.tests.test = nixosTests.terminal-emulators.kermit;
 
   meta = {
-    homepage = "https://github.com/orhun/kermit";
     description = "VTE-based, simple and froggy terminal emulator";
+    homepage = "https://github.com/orhun/kermit";
     changelog = "https://github.com/orhun/kermit/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "kermit";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "kermit";
   };
 })

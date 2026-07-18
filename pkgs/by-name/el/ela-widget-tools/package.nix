@@ -1,7 +1,7 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
   cmake,
   qt6,
   ...
@@ -9,6 +9,7 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "ela-widget-tools";
   version = "0-unstable-2025-10-30";
+
   src = fetchFromGitHub {
     owner = "Liniyous";
     repo = "ElaWidgetTools";
@@ -57,10 +58,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    mainProgram = "ElaWidgetToolsExample";
-    maintainers = with lib.maintainers; [ xddxdd ];
     description = "Fluent-UI For QT-Widget";
     homepage = "https://github.com/Liniyous/ElaWidgetTools";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ xddxdd ];
+    mainProgram = "ElaWidgetToolsExample";
   };
 })

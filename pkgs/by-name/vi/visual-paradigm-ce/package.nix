@@ -22,43 +22,12 @@ stdenv.mkDerivation (finalAttrs: {
       url = "https://eu10-dl.visual-paradigm.com/visual-paradigm/vpce${majorMinor}/${suffix}/Visual_Paradigm_CE_${
         builtins.replaceStrings [ "." ] [ "_" ] majorMinor
       }_${suffix}_Linux64_InstallFree.tar.gz";
+
       hash = "sha256-iPRclQO3qZogRojkS1V/+f7wrvsZo1DQZFyfpJO1Cps=";
     };
 
-  passthru.updateScript = writeScript "update-visual-paradigm-ce" ''
-    #!/usr/bin/env nix-shell
-    #!nix-shell -i bash -p curl gnused common-updater-scripts
-
-    set -eu -o pipefail
-
-    version="$(curl -Ls -o /dev/null -w %{url_effective} https://www.visual-paradigm.com/downloads/vpce/checksum.html | sed -E 's#.*/vpce([0-9]+\.[0-9]+)/([0-9]+)/.*#\1.\2#')"
-
-    update-source-version visual-paradigm-ce "$version"
-  '';
-
   nativeBuildInputs = [
     copyDesktopItems
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "visualparadigm";
-      desktopName = "Visual Paradigm";
-      exec = "Visual_Paradigm %f";
-      icon = "vpuml";
-    })
-    (makeDesktopItem {
-      name = "visualparadigmproductselector";
-      desktopName = "Visual Paradigm Product Selector";
-      exec = "Visual_Paradigm_Product_Selector";
-      icon = "ProductSelector";
-    })
-    (makeDesktopItem {
-      name = "visualparadigmshapeeditor";
-      desktopName = "Visual Paradigm Shape Editor";
-      exec = "Visual_Paradigm_Shape_Editor";
-      icon = "vpuml";
-    })
   ];
 
   installPhase = ''
@@ -80,19 +49,54 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      desktopName = "Visual Paradigm";
+      exec = "Visual_Paradigm %f";
+      icon = "vpuml";
+      name = "visualparadigm";
+    })
+    (makeDesktopItem {
+      desktopName = "Visual Paradigm Product Selector";
+      exec = "Visual_Paradigm_Product_Selector";
+      icon = "ProductSelector";
+      name = "visualparadigmproductselector";
+    })
+    (makeDesktopItem {
+      desktopName = "Visual Paradigm Shape Editor";
+      exec = "Visual_Paradigm_Shape_Editor";
+      icon = "vpuml";
+      name = "visualparadigmshapeeditor";
+    })
+  ];
+
+  passthru.updateScript = writeScript "update-visual-paradigm-ce" ''
+    #!/usr/bin/env nix-shell
+    #!nix-shell -i bash -p curl gnused common-updater-scripts
+
+    set -eu -o pipefail
+
+    version="$(curl -Ls -o /dev/null -w %{url_effective} https://www.visual-paradigm.com/downloads/vpce/checksum.html | sed -E 's#.*/vpce([0-9]+\.[0-9]+)/([0-9]+)/.*#\1.\2#')"
+
+    update-source-version visual-paradigm-ce "$version"
+  '';
+
   meta = {
     description = "All-in-one UML CASE tool for software development";
     homepage = "https://www.visual-paradigm.com/";
     license = lib.licenses.unfree;
-    maintainers = with lib.maintainers; [
-      drupol
-      dvdznf
-    ];
-    platforms = lib.platforms.linux;
+
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
       binaryNativeCode
     ];
+
+    maintainers = with lib.maintainers; [
+      drupol
+      dvdznf
+    ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "Visual_Paradigm";
   };
 })

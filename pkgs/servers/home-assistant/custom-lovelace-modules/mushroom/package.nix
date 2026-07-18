@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -27,9 +27,9 @@ buildNpmPackage rec {
   '';
 
   meta = {
-    changelog = "https://github.com/piitaya/lovelace-mushroom/releases/tag/v${version}";
     description = "Mushroom Cards - Build a beautiful dashboard easily";
     homepage = "https://github.com/piitaya/lovelace-mushroom";
+    changelog = "https://github.com/piitaya/lovelace-mushroom/releases/tag/v${version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ hexa ];
   };

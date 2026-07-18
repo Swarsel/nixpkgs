@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
-  sigtool,
   cctools,
+  sigtool,
+  stdenvNoCC,
 }:
 
 let
@@ -9,19 +9,18 @@ let
 in
 
 stdenv.mkDerivation {
-  name = "signing-utils";
-
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
-
-  installPhase = ''
-    substituteAll ${./utils.sh} $out
-  '';
-
   # Substituted variables
   env = {
     inherit sigtool;
     codesignAllocate = "${cctools}/bin/${cctools.targetPrefix}codesign_allocate";
   };
+
+  installPhase = ''
+    substituteAll ${./utils.sh} $out
+  '';
+
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
+  name = "signing-utils";
 }

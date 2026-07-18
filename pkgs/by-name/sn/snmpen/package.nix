@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "snmpen";
   version = "1.1.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fabaff";
@@ -17,6 +16,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-4/QLPq4td2o17lIhktl5aVKz5esWibVoVm8OdVIxWmM=";
   };
 
+  nativeBuildInputs = with python3.pkgs; [
+    pytestCheckHook
+    pytest-asyncio
+  ];
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
   build-system = with python3.pkgs; [ hatchling ];
 
   dependencies = with python3.pkgs; [
@@ -25,16 +31,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     rich
   ];
 
-  nativeBuildInputs = with python3.pkgs; [
-    pytestCheckHook
-    pytest-asyncio
-  ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "snmpen" ];
-
-  doInstallCheck = true;
 
   meta = {
     description = "SNMP Enumeration tool";

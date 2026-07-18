@@ -1,10 +1,10 @@
 {
   lib,
-  ocaml,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   menhir,
   menhirLib,
+  ocaml,
   ppx_deriving_yojson,
   visitors,
 }:
@@ -34,8 +34,8 @@ buildDunePackage (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/colis-anr/morbig";
     description = "Static parser for POSIX Shell";
+    homepage = "https://github.com/colis-anr/morbig";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ niols ];
     broken = lib.versionAtLeast ocaml.version "5.4";

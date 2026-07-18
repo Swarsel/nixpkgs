@@ -1,4 +1,4 @@
-{ runCommand, changelog-d }:
+{ changelog-d, runCommand }:
 
 runCommand "changelog-d-basic-test"
   {

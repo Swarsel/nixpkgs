@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   unstableGitUpdater,
@@ -28,10 +28,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "uTorrent Transport Protocol library";
-    mainProgram = "ucat";
     homepage = "https://github.com/transmission/libutp";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ emilytrau ];
     platforms = lib.platforms.unix;
+    mainProgram = "ucat";
   };
 }

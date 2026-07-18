@@ -1,16 +1,16 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
-  hyprland,
-  jq,
   grim,
-  slurp,
-  wl-clipboard,
-  libnotify,
-  withFreeze ? true,
+  hyprland,
   hyprpicker,
+  jq,
+  libnotify,
   makeWrapper,
+  slurp,
+  stdenvNoCC,
+  wl-clipboard,
+  withFreeze ? true,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -49,14 +49,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/Gustash/hyprshot";
     description = "Utility to easily take screenshots in Hyprland using your mouse";
+    homepage = "https://github.com/Gustash/hyprshot";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       Cryolitia
       ryan4yin
     ];
-    mainProgram = "hyprshot";
+
     platforms = hyprland.meta.platforms;
+    mainProgram = "hyprshot";
   };
 })

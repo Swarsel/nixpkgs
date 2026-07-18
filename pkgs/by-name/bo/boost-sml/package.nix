@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
-  cmake,
+  stdenv,
   fetchFromGitHub,
   boost,
+  cmake,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,8 +17,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-cQRLBqe5TudtISko309mF9Qx7r5Q8L2Z9myvvYyh8NY=";
   };
 
-  buildInputs = [ boost ];
   nativeBuildInputs = [ cmake ];
+  buildInputs = [ boost ];
 
   cmakeFlags = [
     "-DSML_BUILD_BENCHMARKS=OFF"

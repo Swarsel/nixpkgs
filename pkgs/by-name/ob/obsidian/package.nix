@@ -1,15 +1,15 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  lib,
-  makeWrapper,
-  electron,
-  makeDesktopItem,
-  imagemagick,
+  _7zz,
   asar,
   autoPatchelfHook,
+  electron,
+  imagemagick,
+  makeDesktopItem,
+  makeWrapper,
   writeScript,
-  _7zz,
   commandLineArgs ? "",
 }:
 let
@@ -19,9 +19,8 @@ let
   meta = {
     description = "Powerful knowledge base that works on top of a local folder of plain text Markdown files";
     homepage = "https://obsidian.md";
-    downloadPage = "https://github.com/obsidianmd/obsidian-releases/releases";
-    mainProgram = "obsidian";
     license = lib.licenses.obsidian;
+
     maintainers = with lib.maintainers; [
       conradmearns
       zaninime
@@ -35,22 +34,25 @@ let
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
+    mainProgram = "obsidian";
+    downloadPage = "https://github.com/obsidianmd/obsidian-releases/releases";
   };
 
   srcs = {
-    x86_64-linux = fetchurl {
-      url = "https://github.com/obsidianmd/obsidian-releases/releases/download/v${version}/obsidian-${version}.tar.gz";
-      hash = "sha256-/L4IsRHZwf2wm5wIlSsG4cgpxiFj66JYTEtOyFm+B50=";
+    aarch64-darwin = fetchurl {
+      hash = "sha256-O4XBO0zlVRLobhcKfNKklOLbaVrIiMBgHhU8uFt3iBs=";
+      url = "https://github.com/obsidianmd/obsidian-releases/releases/download/v${version}/Obsidian-${version}.dmg";
     };
 
     aarch64-linux = fetchurl {
-      url = "https://github.com/obsidianmd/obsidian-releases/releases/download/v${version}/obsidian-${version}-arm64.tar.gz";
       hash = "sha256-a8hye/27bXMdWvmgb1HW3nBhxoyQjIrotDqe03miAmA=";
+      url = "https://github.com/obsidianmd/obsidian-releases/releases/download/v${version}/obsidian-${version}-arm64.tar.gz";
     };
 
-    aarch64-darwin = fetchurl {
-      url = "https://github.com/obsidianmd/obsidian-releases/releases/download/v${version}/Obsidian-${version}.dmg";
-      hash = "sha256-O4XBO0zlVRLobhcKfNKklOLbaVrIiMBgHhU8uFt3iBs=";
+    x86_64-linux = fetchurl {
+      hash = "sha256-/L4IsRHZwf2wm5wIlSsG4cgpxiFj66JYTEtOyFm+B50=";
+      url = "https://github.com/obsidianmd/obsidian-releases/releases/download/v${version}/obsidian-${version}.tar.gz";
     };
   };
 
@@ -58,18 +60,18 @@ let
     srcs.${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
 
   icon = fetchurl {
-    url = "https://obsidian.md/images/obsidian-logo-gradient.svg";
     hash = "sha256-EZsBuWyZ9zYJh0LDKfRAMTtnY70q6iLK/ggXlplDEoA=";
+    url = "https://obsidian.md/images/obsidian-logo-gradient.svg";
   };
 
   desktopItem = makeDesktopItem {
-    name = "obsidian";
-    desktopName = "Obsidian";
-    comment = "Knowledge base";
-    icon = "obsidian";
-    exec = "obsidian %u";
     categories = [ "Office" ];
+    comment = "Knowledge base";
+    desktopName = "Obsidian";
+    exec = "obsidian %u";
+    icon = "obsidian";
     mimeTypes = [ "x-scheme-handler/obsidian" ];
+    name = "obsidian";
   };
 
   linux = stdenv.mkDerivation {
@@ -81,12 +83,14 @@ let
       icon
       meta
       ;
+
     nativeBuildInputs = [
       autoPatchelfHook
       makeWrapper
       imagemagick
       asar
     ];
+
     installPhase = ''
       runHook preInstall
       mkdir -p $out/bin
@@ -117,6 +121,7 @@ let
 
     passthru = {
       inherit srcs;
+
       updateScript = writeScript "updater" ''
         #!/usr/bin/env nix-shell
         #!nix-shell -i bash -p curl jq common-updater-scripts
@@ -137,11 +142,12 @@ let
       appname
       meta
       ;
-    sourceRoot = "${appname}.app";
+
     nativeBuildInputs = [
       makeWrapper
       _7zz
     ];
+
     installPhase = ''
       runHook preInstall
       mkdir -p $out/{Applications/${appname}.app,bin}
@@ -150,6 +156,8 @@ let
       makeWrapper $out/Applications/${appname}.app/Contents/MacOS/obsidian-cli $out/bin/obsidian-cli
       runHook postInstall
     '';
+
+    sourceRoot = "${appname}.app";
   };
 in
 if stdenv.hostPlatform.isDarwin then darwin else linux

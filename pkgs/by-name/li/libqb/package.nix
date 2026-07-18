@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   autoreconfHook,
-  pkg-config,
+  fetchpatch,
   libxml2,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,6 +16,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "ClusterLabs";
     repo = "libqb";
     tag = "v${finalAttrs.version}";
+    hash = "sha256-raKu1JgaHvi2MHzSkS41UxwOV85RP4sgqBS9WtmX6iI=";
+
     # Upstream uses .gitattributes to inject information about the revision
     # hash and the refname into `configure.ac`, see:
     # - https://git-scm.com/docs/gitattributes#_export_subst and
@@ -27,8 +29,13 @@ stdenv.mkDerivation (finalAttrs: {
         --replace-fail "AC_INIT([libqb]," "AC_INIT([libqb], ${finalAttrs.version},"
       sed -i '/m4_esyscmd(\[build-aux\/git-version-gen/ , /\]),/ d' $out/configure.ac
     '';
-    hash = "sha256-raKu1JgaHvi2MHzSkS41UxwOV85RP4sgqBS9WtmX6iI=";
   };
+
+  # Remove configure check for linker flag `--enable-new-dtags`, which fails
+  # on darwin. The flag is never used by the Makefile anyway.
+  postPatch = ''
+    sed -i '/# --enable-new-dtags:/,/esac/ d' configure.ac
+  '';
 
   nativeBuildInputs = [
     autoreconfHook
@@ -37,15 +44,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [ libxml2 ];
 
-  # Remove configure check for linker flag `--enable-new-dtags`, which fails
-  # on darwin. The flag is never used by the Makefile anyway.
-  postPatch = ''
-    sed -i '/# --enable-new-dtags:/,/esac/ d' configure.ac
-  '';
-
   meta = {
-    homepage = "https://github.com/clusterlabs/libqb";
     description = "Library providing high performance logging, tracing, ipc, and poll";
+    homepage = "https://github.com/clusterlabs/libqb";
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.unix;
   };

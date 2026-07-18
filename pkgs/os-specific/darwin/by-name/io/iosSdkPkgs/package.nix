@@ -1,17 +1,15 @@
 {
   lib,
+  stdenv,
   binutils-unwrapped,
+  buildPackages,
   clang-unwrapped,
   iosSdkPkgs,
   runCommand,
-  stdenv,
+  targetPackages,
   wrapBintoolsWith,
   wrapCCWith,
   xcode,
-
-  buildPackages,
-  targetPackages,
-
   buildIosSdk ? buildPackages.darwin.iosSdkPkgs.sdk,
   targetIosSdkPkgs ? targetPackages.darwin.iosSdkPkgs or iosSdkPkgs,
 }:
@@ -23,28 +21,16 @@ let
 in
 
 rec {
-  sdk = rec {
-    name = "ios-sdk";
-    type = "derivation";
-    outPath =
-      xcode
-      + "/Contents/Developer/Platforms/${platform}.platform/Developer/SDKs/${platform}${version}.sdk";
-
-    platform = stdenv.targetPlatform.xcodePlatform or "";
-    version = stdenv.targetPlatform.sdkVer or "";
-  };
-
   binutils = wrapBintoolsWith {
-    libc = targetIosSdkPkgs.libraries;
     bintools = binutils-unwrapped;
+    libc = targetIosSdkPkgs.libraries;
   };
 
   clang =
     (wrapCCWith {
-      cc = clang-unwrapped;
       bintools = binutils;
-      libc = targetIosSdkPkgs.libraries;
-      extraPackages = [ "${sdk}/System" ];
+      cc = clang-unwrapped;
+
       extraBuildCommands = ''
         tr '\n' ' ' < $out/nix-support/cc-cflags > cc-cflags.tmp
         mv cc-cflags.tmp $out/nix-support/cc-cflags
@@ -52,6 +38,9 @@ rec {
         echo "-isystem ${sdk}/usr/include${lib.optionalString (lib.versionAtLeast "10" sdk.version) " -isystem ${sdk}/usr/include/c++/4.2.1/ -stdlib=libstdc++"}" >> $out/nix-support/cc-cflags
         ${lib.optionalString (lib.versionAtLeast sdk.version "14") "echo -isystem ${xcode}/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 >> $out/nix-support/cc-cflags"}
       '';
+
+      extraPackages = [ "${sdk}/System" ];
+      libc = targetIosSdkPkgs.libraries;
     })
     // {
       inherit sdk;
@@ -74,4 +63,16 @@ rec {
         fi
         ln -s ${sdk}/usr $out
       '';
+
+  sdk = rec {
+    version = stdenv.targetPlatform.sdkVer or "";
+    name = "ios-sdk";
+
+    outPath =
+      xcode
+      + "/Contents/Developer/Platforms/${platform}.platform/Developer/SDKs/${platform}${version}.sdk";
+
+    platform = stdenv.targetPlatform.xcodePlatform or "";
+    type = "derivation";
+  };
 }

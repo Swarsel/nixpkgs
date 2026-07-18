@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "pubs";
   version = "0.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pubs";
@@ -20,14 +19,21 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   patches = [
     # https://github.com/pubs/pubs/pull/278
     (fetchpatch {
-      url = "https://github.com/pubs/pubs/commit/9623d2c3ca8ff6d2bb7f6c8d8624f9a174d831bc.patch";
       hash = "sha256-6qoufKPv3k6C9BQTZ2/175Nk7zWPh89vG+zebx6ZFOk=";
+      url = "https://github.com/pubs/pubs/commit/9623d2c3ca8ff6d2bb7f6c8d8624f9a174d831bc.patch";
     })
     # https://github.com/pubs/pubs/pull/279
     (fetchpatch {
-      url = "https://github.com/pubs/pubs/commit/05e214eb406447196c77c8aa3e4658f70e505f23.patch";
       hash = "sha256-UBkKiYaG6y6z8lsRpdcsaGsoklv6qj07KWdfkQcVl2g=";
+      url = "https://github.com/pubs/pubs/commit/05e214eb406447196c77c8aa3e4658f70e505f23.patch";
     })
+  ];
+
+  nativeCheckInputs = with python3.pkgs; [
+    ddt
+    mock
+    pyfakefs
+    pytestCheckHook
   ];
 
   build-system = with python3.pkgs; [
@@ -47,13 +53,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     standard-pipes # https://github.com/pubs/pubs/issues/282
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    ddt
-    mock
-    pyfakefs
-    pytestCheckHook
-  ];
-
   disabledTestPaths = [
     # Disabling git tests because they expect git to be preconfigured
     # with the user's details. See
@@ -68,18 +67,22 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "test_add_non_standard"
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "pubs"
   ];
 
   meta = {
     description = "Command-line bibliography manager";
-    mainProgram = "pubs";
     homepage = "https://github.com/pubs/pubs";
     changelog = "https://github.com/pubs/pubs/blob/v${finalAttrs.version}/changelog.md";
     license = lib.licenses.lgpl3Only;
+
     maintainers = with lib.maintainers; [
       dotlambda
     ];
+
+    mainProgram = "pubs";
   };
 })

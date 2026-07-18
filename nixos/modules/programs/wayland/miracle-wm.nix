@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -31,11 +31,11 @@ in
 
       (import ./wayland-session.nix {
         inherit lib pkgs;
-        # Hardcoded path in Mir, not really possible to disable
-        enableXWayland = true;
+        enableGtkPortal = false;
         # No portal support yet: https://github.com/mattkae/miracle-wm/issues/164
         enableWlrPortal = false;
-        enableGtkPortal = false;
+        # Hardcoded path in Mir, not really possible to disable
+        enableXWayland = true;
       })
     ]
   );

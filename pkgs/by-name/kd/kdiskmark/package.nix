@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
-  fio,
-  cmake,
+  stdenv,
   fetchFromGitHub,
+  cmake,
+  fio,
   kdePackages,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -44,14 +44,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "HDD and SSD benchmark tool with a friendly graphical user interface";
+
     longDescription = ''
       If kdiskmark is not run as root it can rely on polkit to get the necessary
       privileges. In this case you must install it with `environment.systemPackages`
       on NixOS, nix-env will not work.
     '';
+
     homepage = "https://github.com/JonMagon/KDiskMark";
-    maintainers = [ lib.maintainers.symphorien ];
     license = lib.licenses.gpl3Only;
+    maintainers = [ lib.maintainers.symphorien ];
     platforms = lib.platforms.linux;
     mainProgram = "kdiskmark";
   };

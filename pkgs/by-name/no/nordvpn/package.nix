@@ -1,7 +1,7 @@
 {
-  callPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  callPackage,
   nix-update-script,
   symlinkJoin,
 }:
@@ -18,6 +18,13 @@ let
       hash = "sha256-F7iw856HVLbOz97j9sMkVwyZl0ZDwID1Tf0YwtdvZsU=";
     };
 
+    desktopItemArgs = {
+      categories = [ "Network" ];
+      genericName = "VPN Client";
+      icon = "nordvpn";
+      type = "Application";
+    };
+
     # rec so that changelog can reference homepage
     meta = rec {
       homepage = "https://github.com/NordSecurity/nordvpn-linux";
@@ -26,19 +33,11 @@ let
       maintainers = with lib.maintainers; [ different-error ];
       platforms = lib.platforms.linux;
     };
-
-    desktopItemArgs = {
-      categories = [ "Network" ];
-      genericName = "VPN Client";
-      icon = "nordvpn";
-      type = "Application";
-    };
   };
 in
 symlinkJoin {
-  pname = "nordvpn";
   inherit version;
-
+  pname = "nordvpn";
   strictDeps = true;
   __structuredAttrs = true;
 
@@ -55,6 +54,7 @@ symlinkJoin {
 
   meta = common.meta // {
     description = "NordVPN client and GUI for Linux";
+
     longDescription = ''
       NordVPN CLI and GUI applications for Linux.
       This package currently does not support meshnet.

@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  dos2unix,
   fetchurl,
+  dos2unix,
   unzip,
 }:
 
@@ -15,13 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-tWiUIqCdBarhFDSX0iV55VxOEh7iuAbnOLSDuMAAog8=";
   };
 
-  nativeBuildInputs = [
-    dos2unix
-    unzip
-  ];
-
-  sourceRoot = ".";
-
   postPatch = ''
     dos2unix configure
     patchShebangs configure
@@ -30,20 +23,26 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "extern int putenv (const char *buffer)" "extern int putenv (char *buffer)"
   '';
 
-  env.NIX_CFLAGS_COMPILE = "-std=c89";
+  nativeBuildInputs = [
+    dos2unix
+    unzip
+  ];
 
-  hardeningDisable = [ "format" ];
+  env.NIX_CFLAGS_COMPILE = "-std=c89";
 
   preInstall = ''
     mkdir -p $out/bin
   '';
 
+  hardeningDisable = [ "format" ];
+  sourceRoot = ".";
+
   meta = {
     description = "Bywater BASIC Interpreter";
-    mainProgram = "bwbasic";
+    homepage = "https://sourceforge.net/projects/bwbasic/";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ irenes ];
     platforms = lib.platforms.all;
-    homepage = "https://sourceforge.net/projects/bwbasic/";
+    mainProgram = "bwbasic";
   };
 })

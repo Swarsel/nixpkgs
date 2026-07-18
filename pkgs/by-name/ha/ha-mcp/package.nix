@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   nix-update-script,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "ha-mcp";
   version = "7.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "homeassistant-ai";
@@ -17,11 +16,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-+HhtHeSQlK1jd/4/x1d54Etvrs8e+pQkIGvJV39ZZBw=";
   };
 
+  # Tests require a running Home Assistant instance
+  doCheck = false;
+
   build-system = with python3Packages; [
     setuptools
   ];
-
-  pythonRelaxDeps = true;
 
   dependencies =
     with python3Packages;
@@ -37,8 +37,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ]
     ++ httpx.optional-dependencies.socks;
 
-  # Tests require a running Home Assistant instance
-  doCheck = false;
+  pyproject = true;
+  pythonImportsCheck = [ "ha_mcp" ];
+  pythonRelaxDeps = true;
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -46,8 +47,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
       "--version-regex=^v([0-9]+\\.[0-9]+\\.[0-9]+)$"
     ];
   };
-
-  pythonImportsCheck = [ "ha_mcp" ];
 
   meta = {
     description = "MCP server for controlling Home Assistant via natural language";

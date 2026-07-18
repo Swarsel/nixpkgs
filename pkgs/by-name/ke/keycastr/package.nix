@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
   lib,
   fetchurl,
+  stdenvNoCC,
   unzip,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -13,8 +13,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-yXxj6tv0MEwEgCwMg3XJm1gIRYS+MU6WTINm7KMYt1I=";
   };
 
-  sourceRoot = ".";
-
   nativeBuildInputs = [ unzip ];
 
   installPhase = ''
@@ -24,14 +22,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
   passthru.updateScript = ./update.sh;
 
   meta = {
-    homepage = "https://github.com/keycastr/keycastr";
     description = "Open-source keystroke visualizer";
+    homepage = "https://github.com/keycastr/keycastr";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.darwin;
-    maintainers = with lib.maintainers; [ matteopacini ];
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ matteopacini ];
+    platforms = lib.platforms.darwin;
   };
 })

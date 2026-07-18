@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  perl,
-  gfortran,
-  python3,
   boost,
+  cmake,
   eigen,
+  gfortran,
+  perl,
+  python3,
   zlib,
 }:
 
@@ -42,25 +42,23 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  # Required for build with gcc-14
-  env.NIX_CFLAGS_COMPILE = "-std=c++14 -Wno-template-body";
-
   cmakeFlags = [
     "-DENABLE_OPENMP=ON"
     "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
   ];
 
-  hardeningDisable = [ "format" ];
-
+  # Required for build with gcc-14
+  env.NIX_CFLAGS_COMPILE = "-std=c++14 -Wno-template-body";
   # Requires files, that are not installed.
   doCheck = false;
+  hardeningDisable = [ "format" ];
 
   meta = {
     description = "API for the Polarizable Continuum Model";
-    mainProgram = "run_pcm";
     homepage = "https://pcmsolver.readthedocs.io/en/stable/";
     license = lib.licenses.lgpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.sheepforce ];
+    platforms = lib.platforms.linux;
+    mainProgram = "run_pcm";
   };
 })

@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  tmux,
   installShellFiles,
+  tmux,
 }:
 
 stdenv.mkDerivation {
@@ -35,11 +35,11 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/zolrath/wemux";
     description = "Multi-user tmux made easy";
+    homepage = "https://github.com/zolrath/wemux";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ bsima ];
+    platforms = lib.platforms.all;
     mainProgram = "wemux";
   };
 }

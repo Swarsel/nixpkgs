@@ -2,43 +2,42 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  substitute,
+  SDL2,
+  bzip2,
   cmake,
   coreutils,
-  libpng,
-  bzip2,
   curl,
-  libogg,
-  jsoncpp,
-  libjpeg,
-  libGLU,
-  openal,
-  libvorbis,
-  sqlite,
-  luajit,
+  doxygen,
   freetype,
   gettext,
-  doxygen,
-  ncurses,
-  graphviz,
-  libxi,
-  libx11,
   gmp,
-  libspatialindex,
-  leveldb,
-  libpq,
+  graphviz,
   hiredis,
+  jsoncpp,
+  leveldb,
+  libGLU,
   libiconv,
+  libjpeg,
+  libogg,
+  libpng,
+  libpq,
+  libspatialindex,
+  libvorbis,
+  libx11,
+  libxi,
+  luajit,
+  ncurses,
   ninja,
+  nix-update-script,
+  openal,
   prometheus-cpp,
+  sdl3,
+  sqlite,
+  substitute,
   buildClient ? true,
   buildServer ? true,
-  SDL2,
-  sdl3,
   # Use SDL3 (experimental) instead of SDL2
   useSdl3 ? false,
-
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -55,6 +54,7 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     (substitute {
       src = ./0000-mark-rm-for-substitution.patch;
+
       substitutions = [
         "--subst-var-by"
         "RM_COMMAND"
@@ -66,21 +66,6 @@ stdenv.mkDerivation (finalAttrs: {
   postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
     sed -i '/pagezero_size/d;/fixup_bundle/d' src/CMakeLists.txt
   '';
-
-  cmakeFlags = [
-    (lib.cmakeBool "BUILD_CLIENT" buildClient)
-    (lib.cmakeBool "BUILD_SERVER" buildServer)
-    (lib.cmakeBool "BUILD_UNITTESTS" (finalAttrs.finalPackage.doCheck or false))
-    (lib.cmakeBool "ENABLE_PROMETHEUS" buildServer)
-    (lib.cmakeBool "USE_SDL3" useSdl3)
-    # Ensure we use system libraries
-    (lib.cmakeBool "ENABLE_SYSTEM_GMP" true)
-    (lib.cmakeBool "ENABLE_SYSTEM_JSONCPP" true)
-    # Updates are handled by nix anyway
-    (lib.cmakeBool "ENABLE_UPDATE_CHECKER" false)
-    # ...but make it clear that this is a nix package
-    (lib.cmakeFeature "VERSION_EXTRA" "NixOS")
-  ];
 
   nativeBuildInputs = [
     cmake
@@ -124,6 +109,23 @@ stdenv.mkDerivation (finalAttrs: {
     prometheus-cpp
   ];
 
+  cmakeFlags = [
+    (lib.cmakeBool "BUILD_CLIENT" buildClient)
+    (lib.cmakeBool "BUILD_SERVER" buildServer)
+    (lib.cmakeBool "BUILD_UNITTESTS" (finalAttrs.finalPackage.doCheck or false))
+    (lib.cmakeBool "ENABLE_PROMETHEUS" buildServer)
+    (lib.cmakeBool "USE_SDL3" useSdl3)
+    # Ensure we use system libraries
+    (lib.cmakeBool "ENABLE_SYSTEM_GMP" true)
+    (lib.cmakeBool "ENABLE_SYSTEM_JSONCPP" true)
+    # Updates are handled by nix anyway
+    (lib.cmakeBool "ENABLE_UPDATE_CHECKER" false)
+    # ...but make it clear that this is a nix package
+    (lib.cmakeFeature "VERSION_EXTRA" "NixOS")
+  ];
+
+  doCheck = true;
+
   postInstall =
     lib.optionalString stdenv.hostPlatform.isLinux ''
       patchShebangs $out
@@ -133,20 +135,20 @@ stdenv.mkDerivation (finalAttrs: {
       mv $out/luanti.app $out/Applications
     '';
 
-  doCheck = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://www.luanti.org/";
     description = "Open source voxel game engine (formerly Minetest)";
+    homepage = "https://www.luanti.org/";
     license = lib.licenses.lgpl21Plus;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
     maintainers = with lib.maintainers; [
       fpletz
       fgaz
       jk
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = if buildClient then "luanti" else "luantiserver";
   };
 })

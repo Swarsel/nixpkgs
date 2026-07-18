@@ -3,8 +3,8 @@
   fetchFromGitHub,
   buildDunePackage,
   ocaml,
-  result,
   ppx_derivers,
+  result,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -24,10 +24,10 @@ buildDunePackage (finalAttrs: {
   ];
 
   meta = {
+    inherit (finalAttrs.src.meta) homepage;
     description = "Convert OCaml parsetrees between different major versions";
     license = lib.licenses.lgpl21;
     maintainers = [ lib.maintainers.vbgl ];
-    inherit (finalAttrs.src.meta) homepage;
     broken = lib.versionOlder "4.13" ocaml.version;
   };
 })

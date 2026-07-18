@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
   azure-common,
   azure-mgmt-core,
+  buildPythonPackage,
+  fetchPypi,
   isodate,
   msrest,
   setuptools,
@@ -12,14 +12,15 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-appcontainers";
   version = "4.0.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_appcontainers";
     inherit version;
     hash = "sha256-FzETbKAWbF+8IaWM036nZ4fSCYnn+V3BKuYn768dw6U=";
+    pname = "azure_mgmt_appcontainers";
   };
 
+  # no tests included
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,9 +30,7 @@ buildPythonPackage rec {
     msrest
   ];
 
-  # no tests included
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.mgmt.appcontainers" ];
 
   meta = {

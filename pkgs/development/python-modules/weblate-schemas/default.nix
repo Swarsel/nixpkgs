@@ -1,21 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
+  fedora-messaging,
   fqdn,
   jsonschema,
-  rfc3987,
-  strict-rfc3339,
-  fedora-messaging,
   pytestCheckHook,
+  rfc3987,
+  setuptools,
+  strict-rfc3339,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "weblate-schemas";
   version = "2026.4";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "WeblateOrg";
@@ -24,18 +22,19 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-OPuhRsUmVte54UPNna76N5Kbg1Tl7p8OdKbE6VHWcvg=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    jsonschema
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
     fedora-messaging
   ]
   ++ jsonschema.optional-dependencies.format;
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    jsonschema
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "weblate_schemas" ];
 
   meta = {

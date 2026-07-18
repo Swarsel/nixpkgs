@@ -1,10 +1,10 @@
 {
   lib,
-  aenum,
-  aiohttp-retry,
-  aiohttp,
-  buildPythonPackage,
   fetchFromGitHub,
+  aenum,
+  aiohttp,
+  aiohttp-retry,
+  buildPythonPackage,
   pydantic,
   python-dateutil,
   setuptools,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "weheat";
   version = "2026.4.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wefabricate";
@@ -23,6 +22,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-AJaGedI0ctp0TCgfjB9AkM+VH9zqTqosgWq4nskOMSo=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,9 +35,7 @@ buildPythonPackage (finalAttrs: {
     urllib3
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "weheat" ];
 
   meta = {

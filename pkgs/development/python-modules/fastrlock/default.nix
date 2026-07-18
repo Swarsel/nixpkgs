@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cython,
-  fetchFromGitHub,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "fastrlock";
   version = "0.8.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "scoder";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ cython ];
-
   # Todo: Check why the tests have an import error
   doCheck = false;
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "fastrlock" ];
 
   meta = {

@@ -1,41 +1,36 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  # build-system
-  setuptools,
-
+  # train
+  accelerate,
+  buildPythonPackage,
+  datasets,
   # dependencies
   huggingface-hub,
   numpy,
+  # onnx
+  optimum-onnx,
+  # optional-dependencies
+  # image
+  pillow,
+  pytest-cov-stub,
+  # tests
+  pytestCheckHook,
+  pythonAtLeast,
   scikit-learn,
   scipy,
+  # build-system
+  setuptools,
   torch,
   tqdm,
   transformers,
   typing-extensions,
-
-  # optional-dependencies
-  # image
-  pillow,
-  # train
-  accelerate,
-  datasets,
-  # onnx
-  optimum-onnx,
-
-  # tests
-  pytestCheckHook,
-  pytest-cov-stub,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "sentence-transformers";
   version = "5.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "huggingface";
@@ -43,6 +38,12 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-VZu50DVuU0P7o3+iKVWougui7nWSrnP/eza0Rqtt7ZU=";
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
   build-system = [ setuptools ];
 
@@ -57,28 +58,27 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  optional-dependencies = {
-    image = transformers.optional-dependencies.vision;
-    inherit (transformers.optional-dependencies)
-      audio
-      video
-      ;
-    train = [
-      accelerate
-      datasets
-    ];
-    onnx = [ optimum-onnx ] ++ optimum-onnx.optional-dependencies.onnxruntime;
-    # onnx-gpu = [ optimum-onnx ] ++ optimum-onnx.optional-dependencies.onnxruntime-gpu;
-    # openvino = [ optimum-intel ] ++ optimum-intel.optional-dependencies.openvino;
-  };
-
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
-
-  pythonImportsCheck = [ "sentence_transformers" ];
+  disabledTestPaths = [
+    # Tests require network access
+    "tests/base/modules/"
+    "tests/base/test_model.py"
+    "tests/base/test_model_card.py"
+    "tests/cross_encoder/evaluation/test_reranking.py"
+    "tests/cross_encoder/test_model.py"
+    "tests/cross_encoder/test_model_card.py"
+    "tests/cross_encoder/test_train_stsb.py"
+    "tests/sentence_transformer/test_compute_embeddings.py"
+    "tests/sentence_transformer/test_model.py"
+    "tests/sentence_transformer/test_model_card.py"
+    "tests/sentence_transformer/test_model_card_data.py"
+    "tests/sparse_encoder/modules/test_csr.py"
+    "tests/sparse_encoder/modules/test_sparse_static_embedding.py"
+    "tests/sparse_encoder/test_model.py"
+    "tests/sparse_encoder/test_model_card.py"
+    "tests/sparse_encoder/test_opensearch_models.py"
+    "tests/sparse_encoder/test_pretrained.py"
+    "tests/util/test_hard_negatives.py"
+  ];
 
   disabledTests = [
     # Tests require network access
@@ -154,27 +154,25 @@ buildPythonPackage (finalAttrs: {
     "sim_sparse"
   ];
 
-  disabledTestPaths = [
-    # Tests require network access
-    "tests/base/modules/"
-    "tests/base/test_model.py"
-    "tests/base/test_model_card.py"
-    "tests/cross_encoder/evaluation/test_reranking.py"
-    "tests/cross_encoder/test_model.py"
-    "tests/cross_encoder/test_model_card.py"
-    "tests/cross_encoder/test_train_stsb.py"
-    "tests/sentence_transformer/test_compute_embeddings.py"
-    "tests/sentence_transformer/test_model.py"
-    "tests/sentence_transformer/test_model_card.py"
-    "tests/sentence_transformer/test_model_card_data.py"
-    "tests/sparse_encoder/modules/test_csr.py"
-    "tests/sparse_encoder/modules/test_sparse_static_embedding.py"
-    "tests/sparse_encoder/test_model.py"
-    "tests/sparse_encoder/test_model_card.py"
-    "tests/sparse_encoder/test_opensearch_models.py"
-    "tests/sparse_encoder/test_pretrained.py"
-    "tests/util/test_hard_negatives.py"
-  ];
+  optional-dependencies = {
+    inherit (transformers.optional-dependencies)
+      audio
+      video
+      ;
+
+    image = transformers.optional-dependencies.vision;
+    onnx = [ optimum-onnx ] ++ optimum-onnx.optional-dependencies.onnxruntime;
+
+    train = [
+      accelerate
+      datasets
+    ];
+    # onnx-gpu = [ optimum-onnx ] ++ optimum-onnx.optional-dependencies.onnxruntime-gpu;
+    # openvino = [ optimum-intel ] ++ optimum-intel.optional-dependencies.openvino;
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "sentence_transformers" ];
 
   meta = {
     description = "Multilingual Sentence & Image Embeddings with BERT";

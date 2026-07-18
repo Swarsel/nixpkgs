@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "miniful";
   version = "0.0.6";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,7 +22,7 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "miniful" ];
 
   meta = {

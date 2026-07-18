@@ -1,12 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  hatch-vcs,
   # build-system
   hatchling,
-  hatch-vcs,
-
   # dependencies
   httpx,
   pydantic,
@@ -16,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "atopile-easyeda2kicad";
   version = "0.9.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "atopile";
@@ -24,6 +21,8 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-l5ecNNu9vu073aK85F+tOSodEHk2wso95RYXk9DyTFo=";
   };
+
+  doCheck = false; # no tests
 
   build-system = [
     hatchling
@@ -36,9 +35,8 @@ buildPythonPackage (finalAttrs: {
     truststore
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "easyeda2kicad" ];
-
-  doCheck = false; # no tests
 
   meta = {
     description = "Convert any LCSC components (including EasyEDA) to KiCad library";

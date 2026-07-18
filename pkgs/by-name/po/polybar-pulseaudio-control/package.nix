@@ -1,14 +1,14 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   bash,
   coreutils,
-  fetchFromGitHub,
-  gnused,
-  gnugrep,
   gawk,
+  gnugrep,
+  gnused,
   makeWrapper,
   pulseaudio,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,8 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-egCBCnhnmHHKFeDkpaF9Upv/oZ0K3XGyutnp4slq9Vc=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
   nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
@@ -45,15 +43,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
-    mainProgram = "pulseaudio-control";
     description = "Polybar module to control PulseAudio devices, also known as Pavolume";
     homepage = "https://github.com/marioortizmanero/polybar-pulseaudio-control";
-    platforms = lib.platforms.linux;
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       benlemasurier
       wesleyjrz
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "pulseaudio-control";
   };
 })

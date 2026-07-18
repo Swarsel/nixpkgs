@@ -1,7 +1,7 @@
 {
   lib,
-  buildLakePackage,
   fetchFromGitHub,
+  buildLakePackage,
 }:
 
 buildLakePackage (finalAttrs: {
@@ -16,8 +16,6 @@ buildLakePackage (finalAttrs: {
     hash = "sha256-oMaqHvWlEfk1601JfNKPvkGIWgMW6tiF7Mej7g63vh0=";
   };
 
-  leanPackageName = "Cli";
-
   # Pre-build static library for downstream executables.
   # TODO: upstream this to lean4-cli
   postPatch = ''
@@ -27,6 +25,8 @@ buildLakePackage (finalAttrs: {
     name = "Cli"
     defaultFacets = ["static"]'
   '';
+
+  leanPackageName = "Cli";
 
   meta = {
     description = "Command-line argument parser for Lean 4";

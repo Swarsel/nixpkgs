@@ -13,6 +13,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-iGcxDKl36kbEi+OiH4gB2+HxP37bpqAMZguIXDzq3Jw=";
   };
+
   cargoHash = "sha256-87wfFczmgCft4ke/RQKi54wvqFKGRJMtqhkwQgDCedg=";
 
   meta = {
@@ -20,8 +21,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/lemuray/rustfetch";
     changelog = "https://github.com/lemuray/rustfetch/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ lefaucheur0769 ];
+    platforms = lib.platforms.all;
     mainProgram = "rustfetch";
   };
 })

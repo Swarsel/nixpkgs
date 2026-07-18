@@ -1,19 +1,18 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
+  django,
+  gettext,
+  pillow,
+  pytest-cov-stub,
   pytest-django,
   pytestCheckHook,
   setuptools-scm,
-  pillow,
-  pytest-cov-stub,
-  django,
-  gettext,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "django-stdimage";
   version = "6.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "codingjoe";
@@ -22,16 +21,23 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-uwVU3Huc5fitAweShJjcMW//GBeIpJcxqKKLGo/EdIs=";
   };
 
+  nativeCheckInputs = [
+    gettext
+    pytest-django
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
+  preCheck = ''
+    export DJANGO_SETTINGS_MODULE=tests.settings
+  '';
+
   build-system = [ setuptools-scm ];
 
   dependencies = [
     django
     pillow
   ];
-
-  preCheck = ''
-    export DJANGO_SETTINGS_MODULE=tests.settings
-  '';
 
   disabledTestPaths = [
     # These tests failed on Django 5 or later
@@ -47,17 +53,12 @@ buildPythonPackage (finalAttrs: {
     "tests/test_models.py::TestJPEGField::test_convert_multiple"
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "stdimage"
     "stdimage.validators"
     "stdimage.models"
-  ];
-
-  nativeCheckInputs = [
-    gettext
-    pytest-django
-    pytest-cov-stub
-    pytestCheckHook
   ];
 
   meta = {

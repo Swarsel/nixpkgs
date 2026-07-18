@@ -16,10 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [ liblockfile ];
 
-  preBuild = ''
-    patchShebangs .
-  '';
-
   env.NIX_CFLAGS_COMPILE =
     lib.optionalString stdenv.cc.isGNU (toString [
       # Needed with GCC 12
@@ -28,6 +24,10 @@ stdenv.mkDerivation (finalAttrs: {
     + lib.optionalString stdenv.hostPlatform.isDarwin (toString [
       "-Wno-error=c23-extensions"
     ]);
+
+  preBuild = ''
+    patchShebangs .
+  '';
 
   installPhase = ''
     runHook preInstall

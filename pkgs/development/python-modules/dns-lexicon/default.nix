@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   beautifulsoup4,
   boto3,
   buildPythonPackage,
   cryptography,
   dnspython,
-  fetchFromGitHub,
   localzone,
   oci,
   poetry-core,
@@ -22,7 +22,6 @@
 buildPythonPackage rec {
   pname = "dns_lexicon";
   version = "3.16.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Analogj";
@@ -50,30 +49,11 @@ buildPythonPackage rec {
     tldextract
   ];
 
-  optional-dependencies = {
-    route53 = [ boto3 ];
-    localzone = [ localzone ];
-    softlayer = [ softlayer ];
-    ddns = [ dnspython ];
-    duckdns = [ dnspython ];
-    oci = [ oci ];
-    full = [
-      boto3
-      dnspython
-      localzone
-      oci
-      softlayer
-      zeep
-    ];
-  };
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-vcr
   ]
   ++ optional-dependencies.full;
-
-  enabledTestPaths = [ "tests/" ];
 
   disabledTestPaths = [
     # Needs network access
@@ -92,14 +72,36 @@ buildPythonPackage rec {
     "action_is_correctly"
   ];
 
+  enabledTestPaths = [ "tests/" ];
+
+  optional-dependencies = {
+    ddns = [ dnspython ];
+    duckdns = [ dnspython ];
+
+    full = [
+      boto3
+      dnspython
+      localzone
+      oci
+      softlayer
+      zeep
+    ];
+
+    localzone = [ localzone ];
+    oci = [ oci ];
+    route53 = [ boto3 ];
+    softlayer = [ softlayer ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "lexicon" ];
 
   meta = {
     description = "Manipulate DNS records on various DNS providers in a standardized way";
-    mainProgram = "lexicon";
     homepage = "https://github.com/AnalogJ/lexicon";
     changelog = "https://github.com/AnalogJ/lexicon/blob/v${version}/CHANGELOG.md";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ aviallon ];
+    mainProgram = "lexicon";
   };
 }

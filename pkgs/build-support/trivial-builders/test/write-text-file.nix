@@ -23,9 +23,10 @@ lib.recurseIntoAttrs {
   different-exe-name =
     let
       pkg = writeTextFile {
-        name = "bar";
         destination = "/bin/foo";
         executable = true;
+        name = "bar";
+
         text = ''
           #!${runtimeShell}
           echo hi
@@ -43,9 +44,6 @@ lib.recurseIntoAttrs {
     '';
 
   weird-name = writeTextFile {
-    name = "weird-names";
-    destination = "/etc/${veryWeirdName}";
-    text = "passed!";
     checkPhase = ''
       # intentionally hardcode everything here, to make sure
       # Nix does not mess with file paths
@@ -72,5 +70,9 @@ lib.recurseIntoAttrs {
         exit 2
       fi
     '';
+
+    destination = "/etc/${veryWeirdName}";
+    name = "weird-names";
+    text = "passed!";
   };
 }

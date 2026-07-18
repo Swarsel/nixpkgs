@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  glib,
-  dbus,
-  openobex,
   bluez,
+  dbus,
+  glib,
   libical,
+  openobex,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1i20dnibvnq9lnkkhajr5xx3kxlwf9q5c4jm19kyb0q1klzgzlb8";
   };
 
+  nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     glib
     dbus
@@ -27,11 +29,9 @@ stdenv.mkDerivation (finalAttrs: {
     libical
   ];
 
-  nativeBuildInputs = [ pkg-config ];
-
   meta = {
     homepage = "https://www.bluez.org/";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl3;
+    platforms = lib.platforms.linux;
   };
 })

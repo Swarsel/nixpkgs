@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 
@@ -14,87 +14,19 @@ in
   options.services.fediwall = {
     enable = lib.mkEnableOption "fediwall, a social media wall for the fediverse";
     package = lib.mkPackageOption pkgs "fediwall" { };
+
     hostName = lib.mkOption {
-      type = lib.types.str;
       default = config.networking.fqdnOrHostName;
       defaultText = lib.literalExpression "config.networking.fqdnOrHostName";
-      example = "fediwall.example.org";
       description = "The hostname to serve fediwall on.";
+      example = "fediwall.example.org";
+      type = lib.types.str;
     };
-    settings = lib.mkOption {
-      default = { };
-      description = ''
-        Fediwall configuration. See
-        https://github.com/defnull/fediwall/blob/main/public/wall-config.json.example
-        for information on supported values.
-      '';
-      type = lib.types.submodule {
-        freeformType = format.type;
-        options = {
-          servers = lib.mkOption {
-            type = with lib.types; listOf str;
-            default = [ "mastodon.social" ];
-            description = "Servers to load posts from";
-          };
-          tags = lib.mkOption {
-            type = with lib.types; listOf str;
-            default = [ ];
-            example = lib.literalExpression "[ \"cats\" \"dogs\"]";
-            description = "Tags to follow";
-          };
-          loadPublic = lib.mkOption {
-            type = lib.types.bool;
-            default = false;
-            description = "Load public posts";
-          };
-          loadFederated = lib.mkOption {
-            type = lib.types.bool;
-            default = false;
-            description = "Load federated posts";
-          };
-          loadTrends = lib.mkOption {
-            type = lib.types.bool;
-            default = false;
-            description = "Load trending posts";
-          };
-          hideSensitive = lib.mkOption {
-            type = lib.types.bool;
-            default = true;
-            description = "Hide sensitive (potentially NSFW) posts";
-          };
-          hideBots = lib.mkOption {
-            type = lib.types.bool;
-            default = true;
-            description = "Hide posts from bot accounts";
-          };
-          hideReplies = lib.mkOption {
-            type = lib.types.bool;
-            default = true;
-            description = "Hide replies";
-          };
-          hideBoosts = lib.mkOption {
-            type = lib.types.bool;
-            default = false;
-            description = "Hide boosts";
-          };
-          showMedia = lib.mkOption {
-            type = lib.types.bool;
-            default = true;
-            description = "Show media in posts";
-          };
-          playVideos = lib.mkOption {
-            type = lib.types.bool;
-            default = true;
-            description = "Autoplay videos in posts";
-          };
-        };
-      };
-    };
+
     nginx = lib.mkOption {
-      type = lib.types.submodule (
-        lib.recursiveUpdate (import ../web-servers/nginx/vhost-options.nix { inherit config lib; }) { }
-      );
       default = { };
+      description = "Allows customizing the nginx virtualHost settings";
+
       example = lib.literalExpression ''
         {
           serverAliases = [
@@ -105,22 +37,110 @@ in
           enableACME = true;
         }
       '';
-      description = "Allows customizing the nginx virtualHost settings";
+
+      type = lib.types.submodule (
+        lib.recursiveUpdate (import ../web-servers/nginx/vhost-options.nix { inherit config lib; }) { }
+      );
+    };
+
+    settings = lib.mkOption {
+      default = { };
+
+      description = ''
+        Fediwall configuration. See
+        https://github.com/defnull/fediwall/blob/main/public/wall-config.json.example
+        for information on supported values.
+      '';
+
+      type = lib.types.submodule {
+        options = {
+          hideBoosts = lib.mkOption {
+            default = false;
+            description = "Hide boosts";
+            type = lib.types.bool;
+          };
+
+          hideBots = lib.mkOption {
+            default = true;
+            description = "Hide posts from bot accounts";
+            type = lib.types.bool;
+          };
+
+          hideReplies = lib.mkOption {
+            default = true;
+            description = "Hide replies";
+            type = lib.types.bool;
+          };
+
+          hideSensitive = lib.mkOption {
+            default = true;
+            description = "Hide sensitive (potentially NSFW) posts";
+            type = lib.types.bool;
+          };
+
+          loadFederated = lib.mkOption {
+            default = false;
+            description = "Load federated posts";
+            type = lib.types.bool;
+          };
+
+          loadPublic = lib.mkOption {
+            default = false;
+            description = "Load public posts";
+            type = lib.types.bool;
+          };
+
+          loadTrends = lib.mkOption {
+            default = false;
+            description = "Load trending posts";
+            type = lib.types.bool;
+          };
+
+          playVideos = lib.mkOption {
+            default = true;
+            description = "Autoplay videos in posts";
+            type = lib.types.bool;
+          };
+
+          servers = lib.mkOption {
+            default = [ "mastodon.social" ];
+            description = "Servers to load posts from";
+            type = with lib.types; listOf str;
+          };
+
+          showMedia = lib.mkOption {
+            default = true;
+            description = "Show media in posts";
+            type = lib.types.bool;
+          };
+
+          tags = lib.mkOption {
+            default = [ ];
+            description = "Tags to follow";
+            example = lib.literalExpression "[ \"cats\" \"dogs\"]";
+            type = with lib.types; listOf str;
+          };
+        };
+
+        freeformType = format.type;
+      };
     };
   };
 
   config = lib.mkIf cfg.enable {
     services.nginx = {
       enable = lib.mkDefault true;
+
       virtualHosts."${cfg.hostName}" = lib.mkMerge [
         cfg.nginx
         {
-          root = lib.mkForce "${pkg}";
           locations = {
             "/" = {
               index = "index.html";
             };
           };
+
+          root = lib.mkForce "${pkg}";
         }
       ];
     };

@@ -1,22 +1,22 @@
 {
-  stdenv,
-  rustPlatform,
   lib,
+  stdenv,
   fetchFromGitHub,
   alsa-lib,
   brotli,
   cmake,
   fontconfig,
   libglvnd,
-  libxkbcommon,
   libx11,
   libxcursor,
   libxext,
   libxi,
+  libxkbcommon,
   libxrandr,
   makeWrapper,
   pkg-config,
   python3,
+  rustPlatform,
   wayland,
   zlib,
 }:
@@ -76,12 +76,14 @@ rustPlatform.buildRustPackage {
   meta = {
     description = "Programmable cross-platform sequencer for the Game Boy Advance sound chip";
     homepage = "https://github.com/jturcotte/chiptrack";
+
     license = with lib.licenses; [
       mit # main
       gpl3Only # GPL dependencies
     ];
-    mainProgram = "chiptrack";
+
     maintainers = with lib.maintainers; [ OPNA2608 ];
+    mainProgram = "chiptrack";
     # Various issues with wrong max macOS version & misparsed target conditional checks, can't figure out the magic combination for this
     broken = stdenv.hostPlatform.isDarwin;
   };

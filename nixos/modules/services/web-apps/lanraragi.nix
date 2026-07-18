@@ -1,7 +1,7 @@
 {
-  pkgs,
-  lib,
   config,
+  lib,
+  pkgs,
   ...
 }:
 
@@ -9,51 +9,58 @@ let
   cfg = config.services.lanraragi;
 in
 {
-  meta.maintainers = with lib.maintainers; [ tomasajt ];
-
   options.services = {
     lanraragi = {
       enable = lib.mkEnableOption "LANraragi";
       package = lib.mkPackageOption pkgs "lanraragi" { };
-
-      port = lib.mkOption {
-        type = lib.types.port;
-        default = 3000;
-        description = "Port for LANraragi's web interface.";
-      };
 
       openFirewall = lib.mkEnableOption "" // {
         description = "Open ports in the firewall for LANraragi's web interface.";
       };
 
       passwordFile = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
         default = null;
-        example = "/run/keys/lanraragi-password";
+
         description = ''
           A file containing the password for LANraragi's admin interface.
         '';
+
+        example = "/run/keys/lanraragi-password";
+        type = lib.types.nullOr lib.types.path;
+      };
+
+      port = lib.mkOption {
+        default = 3000;
+        description = "Port for LANraragi's web interface.";
+        type = lib.types.port;
       };
 
       redis = {
-        port = lib.mkOption {
-          type = lib.types.port;
-          default = 6379;
-          description = "Port for LANraragi's Redis server.";
-        };
         passwordFile = lib.mkOption {
-          type = lib.types.nullOr lib.types.path;
           default = null;
-          example = "/run/keys/redis-lanraragi-password";
+
           description = ''
             A file containing the password for LANraragi's Redis server.
           '';
+
+          example = "/run/keys/redis-lanraragi-password";
+          type = lib.types.nullOr lib.types.path;
+        };
+
+        port = lib.mkOption {
+          default = 6379;
+          description = "Port for LANraragi's Redis server.";
+          type = lib.types.port;
         };
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
+    networking.firewall = lib.mkIf cfg.openFirewall {
+      allowedTCPPorts = [ cfg.port ];
+    };
+
     services.redis.servers.lanraragi = {
       enable = true;
       port = cfg.redis.port;
@@ -61,28 +68,20 @@ in
     };
 
     systemd.services.lanraragi = {
-      description = "LANraragi main service";
       after = [
         "network.target"
         "redis-lanraragi.service"
       ];
-      requires = [ "redis-lanraragi.service" ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        ExecStart = lib.getExe cfg.package;
-        DynamicUser = true;
-        StateDirectory = "lanraragi";
-        RuntimeDirectory = "lanraragi";
-        LogsDirectory = "lanraragi";
-        Restart = "on-failure";
-        WorkingDirectory = "/var/lib/lanraragi";
-      };
+
+      description = "LANraragi main service";
+
       environment = {
-        "LRR_TEMP_DIRECTORY" = "/run/lanraragi";
+        "HOME" = "/var/lib/lanraragi";
         "LRR_LOG_DIRECTORY" = "/var/log/lanraragi";
         "LRR_NETWORK" = "http://*:${toString cfg.port}";
-        "HOME" = "/var/lib/lanraragi";
+        "LRR_TEMP_DIRECTORY" = "/run/lanraragi";
       };
+
       preStart = ''
         cat > lrr.conf <<EOF
         {
@@ -105,10 +104,22 @@ in
           HSET LRR_CONFIG password $(${cfg.package}/bin/helpers/lrr-make-password-hash $(head -n1 ${cfg.passwordFile}))
         EOF
       '';
-    };
 
-    networking.firewall = lib.mkIf cfg.openFirewall {
-      allowedTCPPorts = [ cfg.port ];
+      requires = [ "redis-lanraragi.service" ];
+
+      serviceConfig = {
+        DynamicUser = true;
+        ExecStart = lib.getExe cfg.package;
+        LogsDirectory = "lanraragi";
+        Restart = "on-failure";
+        RuntimeDirectory = "lanraragi";
+        StateDirectory = "lanraragi";
+        WorkingDirectory = "/var/lib/lanraragi";
+      };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
+
+  meta.maintainers = with lib.maintainers; [ tomasajt ];
 }

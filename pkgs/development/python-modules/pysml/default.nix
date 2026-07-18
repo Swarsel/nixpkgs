@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pysml";
   version = "0.1.8";
-  pyproject = true;
 
   src = fetchFromCodeberg {
     owner = "obi";
@@ -20,6 +19,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-EdFpRQar5C40GCficd+JH/hcumn9YOdkviONG39HdlE=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -28,9 +29,7 @@ buildPythonPackage (finalAttrs: {
     serialx
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "sml" ];
 
   meta = {

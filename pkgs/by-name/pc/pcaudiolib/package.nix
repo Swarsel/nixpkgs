@@ -1,11 +1,11 @@
 {
-  config,
   lib,
   stdenv,
   fetchFromGitHub,
   alsa-lib,
   autoconf,
   automake,
+  config,
   libpulseaudio,
   libtool,
   pkg-config,
@@ -50,8 +50,8 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
   meta = {
-    homepage = "https://github.com/espeak-ng/pcaudiolib";
     description = "Provides a C API to different audio devices";
+    homepage = "https://github.com/espeak-ng/pcaudiolib";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ aske ];
     platforms = lib.platforms.unix;

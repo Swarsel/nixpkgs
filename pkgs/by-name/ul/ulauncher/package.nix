@@ -1,37 +1,53 @@
 {
   lib,
   fetchurl,
+  adwaita-icon-theme,
+  copyDesktopItems,
   fetchpatch,
-  nix-update-script,
-  python3Packages,
   gdk-pixbuf,
   glib,
-  adwaita-icon-theme,
   gobject-introspection,
   gtk3,
-  wrapGAppsHook3,
-  webkitgtk_4_1,
-  libnotify,
+  intltool,
   keybinder3,
   libappindicator,
-  intltool,
-  wmctrl,
-  xvfb-run,
+  libnotify,
   librsvg,
   libx11,
-  copyDesktopItems,
   makeDesktopItem,
+  nix-update-script,
+  python3Packages,
+  webkitgtk_4_1,
+  wmctrl,
+  wrapGAppsHook3,
+  xvfb-run,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "ulauncher";
   version = "5.15.7";
-  pyproject = true;
 
   src = fetchurl {
     url = "https://github.com/Ulauncher/Ulauncher/releases/download/${finalAttrs.version}/ulauncher_${finalAttrs.version}.tar.gz";
     hash = "sha256-YgOw3Gyy/o8qorWAnAlQrAZ2ZTnyP3PagLs2Qkdg788=";
   };
+
+  patches = [
+    ./fix-path.patch
+    ./fix-extensions.patch
+    (fetchpatch {
+      hash = "sha256-w1c+Yf6SA3fyMrMn1LXzCXf5yuynRYpofkkUqZUKLS8=";
+      name = "support-gir1.2-webkit2-4.1.patch";
+      url = "https://src.fedoraproject.org/rpms/ulauncher/raw/rawhide/f/support-gir1.2-webkit2-4.1.patch";
+    })
+  ];
+
+  postPatch = ''
+    substituteInPlace setup.py --subst-var out
+    patchShebangs bin/ulauncher-toggle
+    substituteInPlace bin/ulauncher-toggle \
+      --replace-fail wmctrl ${wmctrl}/bin/wmctrl
+  '';
 
   nativeBuildInputs = [
     gobject-introspection
@@ -53,23 +69,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     wmctrl
   ];
 
-  build-system = with python3Packages; [
-    setuptools
-    distutils-extra
-  ];
-
-  dependencies = with python3Packages; [
-    mock
-    dbus-python
-    pygobject3
-    pyinotify
-    levenshtein
-    pyxdg
-    pycairo
-    requests
-    semver
-    websocket-client
-  ];
+  # https://github.com/Ulauncher/Ulauncher/issues/390
+  doCheck = false;
 
   nativeCheckInputs = with python3Packages; [
     mock
@@ -77,26 +78,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pytest-mock
     xvfb-run
   ];
-
-  patches = [
-    ./fix-path.patch
-    ./fix-extensions.patch
-    (fetchpatch {
-      name = "support-gir1.2-webkit2-4.1.patch";
-      url = "https://src.fedoraproject.org/rpms/ulauncher/raw/rawhide/f/support-gir1.2-webkit2-4.1.patch";
-      hash = "sha256-w1c+Yf6SA3fyMrMn1LXzCXf5yuynRYpofkkUqZUKLS8=";
-    })
-  ];
-
-  postPatch = ''
-    substituteInPlace setup.py --subst-var out
-    patchShebangs bin/ulauncher-toggle
-    substituteInPlace bin/ulauncher-toggle \
-      --replace-fail wmctrl ${wmctrl}/bin/wmctrl
-  '';
-
-  # https://github.com/Ulauncher/Ulauncher/issues/390
-  doCheck = false;
 
   preCheck = ''
     export PYTHONPATH=$PYTHONPATH:$out/${python3Packages.python.sitePackages}
@@ -115,10 +96,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     runHook postCheck
   '';
 
-  pythonImportsCheck = [ "ulauncher" ];
-
-  # do not double wrap
-  dontWrapGApps = true;
   preFixup = ''
     makeWrapperArgs+=(
      "''${gappsWrapperArgs[@]}"
@@ -128,28 +105,53 @@ python3Packages.buildPythonApplication (finalAttrs: {
     )
   '';
 
-  passthru = {
-    updateScript = nix-update-script { };
-  };
+  build-system = with python3Packages; [
+    setuptools
+    distutils-extra
+  ];
+
+  dependencies = with python3Packages; [
+    mock
+    dbus-python
+    pygobject3
+    pyinotify
+    levenshtein
+    pyxdg
+    pycairo
+    requests
+    semver
+    websocket-client
+  ];
 
   desktopItems = [
     (makeDesktopItem {
-      name = "ulauncher";
+      categories = [ "Utility" ];
       desktopName = "Ulauncher";
       exec = "ulauncher";
-      categories = [ "Utility" ];
       icon = "ulauncher";
+      name = "ulauncher";
     })
   ];
+
+  # do not double wrap
+  dontWrapGApps = true;
+  pyproject = true;
+  pythonImportsCheck = [ "ulauncher" ];
+
+  passthru = {
+    updateScript = nix-update-script { };
+  };
 
   meta = {
     description = "Fast application launcher for Linux, written in Python, using GTK";
     homepage = "https://ulauncher.io/";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
-    mainProgram = "ulauncher";
+
     maintainers = with lib.maintainers; [
       aaronjanse
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "ulauncher";
   };
 })

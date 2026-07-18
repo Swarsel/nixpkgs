@@ -2,32 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  obs-studio,
   cmake,
-  zlib,
   curl,
   dbus,
+  obs-studio,
   pkg-config,
   qtbase,
   wrapQtAppsHook,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "obs-tuna";
   version = "1.9.11";
-
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    wrapQtAppsHook
-  ];
-  buildInputs = [
-    obs-studio
-    qtbase
-    zlib
-    curl
-    dbus
-  ];
 
   src = fetchFromGitHub {
     owner = "univrsal";
@@ -36,6 +23,20 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-XB2qQ96HhZRpONE8EOYHbKWvI52EZwkNCyfBv6UkRjU=";
     fetchSubmodules = true;
   };
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    wrapQtAppsHook
+  ];
+
+  buildInputs = [
+    obs-studio
+    qtbase
+    zlib
+    curl
+    dbus
+  ];
 
   dontWrapQtApps = true;
 

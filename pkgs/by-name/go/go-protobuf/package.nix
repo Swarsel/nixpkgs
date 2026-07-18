@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,9 +18,9 @@ buildGoModule (finalAttrs: {
   vendorHash = "sha256-jGAWUgW0DA7EwmlzVxnBmtbf2dp+P4Qwcb8mTAEhUi4=";
 
   meta = {
-    homepage = "https://github.com/golang/protobuf";
     description = "Go bindings for protocol buffer";
-    maintainers = with lib.maintainers; [ lewo ];
+    homepage = "https://github.com/golang/protobuf";
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ lewo ];
   };
 })

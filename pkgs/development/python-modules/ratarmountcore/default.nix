@@ -1,17 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fsspec,
   indexed-gzip,
   indexed-zstd,
   libarchive-c,
   pytestCheckHook,
   python-xz,
-  writableTmpDirAsHomeHook,
   rapidgzip,
   rarfile,
   setuptools,
+  writableTmpDirAsHomeHook,
   zstandard, # Python bindings
   zstd, # System tool
 }:
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "ratarmountcore";
   version = "0.10.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mxmlnkn";
@@ -29,31 +28,11 @@ buildPythonPackage rec {
     fetchSubmodules = true;
   };
 
-  sourceRoot = "${src.name}/core";
-
   postPatch = ''
     substituteInPlace tests/test_AutoMountLayer.py \
       --replace-fail 'f"tests/{name}.tgz.tgz.gz"' 'os.path.join(os.path.dirname(__file__), f"../../tests/{name}.tgz.tgz.gz")' \
       --replace-fail 'copy_test_file("tests/double-compressed-nested-tar.tgz.tgz")' 'copy_test_file(os.path.join(os.path.dirname(__file__), "../../tests/double-compressed-nested-tar.tgz.tgz"))'
   '';
-
-  build-system = [ setuptools ];
-
-  optional-dependencies = {
-    full = [
-      indexed-gzip
-      indexed-zstd
-      python-xz
-      rapidgzip
-      rarfile
-    ];
-    _7z = [ libarchive-c ];
-    bzip2 = [ rapidgzip ];
-    gzip = [ indexed-gzip ];
-    rar = [ rarfile ];
-    xz = [ python-xz ];
-    zstd = [ indexed-zstd ];
-  };
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -64,7 +43,7 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
-  pythonImportsCheck = [ "ratarmountcore" ];
+  build-system = [ setuptools ];
 
   disabledTestPaths = [
     # Disable this test because for arcane reasons running pytest with nix-build uses 10-100x
@@ -84,6 +63,28 @@ buildPythonPackage rec {
     "test_URLContextManager"
     "test_URL"
   ];
+
+  optional-dependencies = {
+    _7z = [ libarchive-c ];
+    bzip2 = [ rapidgzip ];
+
+    full = [
+      indexed-gzip
+      indexed-zstd
+      python-xz
+      rapidgzip
+      rarfile
+    ];
+
+    gzip = [ indexed-gzip ];
+    rar = [ rarfile ];
+    xz = [ python-xz ];
+    zstd = [ indexed-zstd ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "ratarmountcore" ];
+  sourceRoot = "${src.name}/core";
 
   meta = {
     description = "Library for accessing archives by way of indexing";

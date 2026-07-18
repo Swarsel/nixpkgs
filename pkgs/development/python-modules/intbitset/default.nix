@@ -1,7 +1,7 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,16 +9,15 @@
 buildPythonPackage (finalAttrs: {
   pname = "intbitset";
   version = "4.1.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-+C+v4Ly0/noBDZQgmbWoTXIdN8iXU47WMveIliwUEfg=";
   };
 
-  build-system = [ setuptools ];
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "intbitset" ];
 
   meta = {

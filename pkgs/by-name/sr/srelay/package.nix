@@ -20,16 +20,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ libxcrypt ];
-
   installPhase = "install -D srelay $out/bin/srelay";
 
   meta = {
     description = "SOCKS proxy and relay";
     homepage = "http://socks-relay.sourceforge.net/";
-    platforms = lib.platforms.unix;
     license = lib.licenses.bsd3;
+    platforms = lib.platforms.unix;
+    mainProgram = "srelay";
     # never built on aarch64-linux since first introduction in nixpkgs
     broken = stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64;
-    mainProgram = "srelay";
   };
 })

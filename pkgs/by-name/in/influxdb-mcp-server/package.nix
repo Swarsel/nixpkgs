@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -16,7 +16,6 @@ buildNpmPackage (finalAttrs: {
   };
 
   npmDepsHash = "sha256-83jchkTARy4DxuQmBd5VorWrrQrQccq9lIggAQSk2yE=";
-
   dontNpmBuild = true;
 
   meta = {
@@ -24,7 +23,7 @@ buildNpmPackage (finalAttrs: {
     homepage = "https://github.com/idoru/influxdb-mcp-server";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ drupol ];
-    mainProgram = "influxdb-mcp-server";
     platforms = lib.platforms.all;
+    mainProgram = "influxdb-mcp-server";
   };
 })

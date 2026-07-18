@@ -1,14 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
   # dependencies
   aiohttp,
-
+  buildPythonPackage,
+  # build-system
+  poetry-core,
   # tests
   pytest-asyncio,
   pytestCheckHook,
@@ -17,7 +14,6 @@
 buildPythonPackage rec {
   pname = "pyopenweathermap";
   version = "0.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "freekode";
@@ -27,19 +23,19 @@ buildPythonPackage rec {
     hash = "sha256-i/oqjrViATNR+HuG72ZdPMJF9TJf7B1pi+wqCth34OU=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ aiohttp ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytestCheckHook
   ];
 
+  build-system = [ poetry-core ];
+  dependencies = [ aiohttp ];
+
   disabledTestMarks = [
     "network"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyopenweathermap" ];
 
   meta = {

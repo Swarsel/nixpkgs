@@ -3,22 +3,22 @@
   stdenv,
   fetchFromGitLab,
   asciidoctor,
-  ninja,
-  gperf,
-  gawk,
-  pkg-config,
   boost,
-  luajit_openresty,
-  fmt,
-  meson,
   emilua,
-  qt6Packages,
-  openssl,
-  liburing,
+  fmt,
+  gawk,
   gitUpdater,
+  gperf,
+  liburing,
+  luajit_openresty,
+  meson,
+  ninja,
+  openssl,
+  pkg-config,
+  qt6, # this
+  qt6Packages,
   runCommand,
   xvfb-run,
-  qt6, # this
 }:
 
 stdenv.mkDerivation rec {
@@ -32,17 +32,6 @@ stdenv.mkDerivation rec {
     hash = "sha256-Ch99ntLreiOjACxyJVR4174sHJT8EYXzDGPdysqmBXM=";
   };
 
-  buildInputs = with qt6Packages; [
-    qtbase
-    qtdeclarative
-    boost
-    luajit_openresty
-    emilua
-    fmt
-    openssl
-    liburing
-  ];
-
   nativeBuildInputs = with qt6Packages; [
     qttools
     wrapQtAppsHook
@@ -54,8 +43,18 @@ stdenv.mkDerivation rec {
     ninja
   ];
 
+  buildInputs = with qt6Packages; [
+    qtbase
+    qtdeclarative
+    boost
+    luajit_openresty
+    emilua
+    fmt
+    openssl
+    liburing
+  ];
+
   passthru = {
-    updateScript = gitUpdater { rev-prefix = "v"; };
     tests.basic =
       runCommand "test-basic-qt6"
         {
@@ -67,6 +66,7 @@ stdenv.mkDerivation rec {
             qt6Packages.qtdeclarative
             xvfb-run
           ];
+
           dontWrapQtApps = true;
         }
         ''
@@ -76,16 +76,20 @@ stdenv.mkDerivation rec {
           xvfb-run ./payload
           touch $out
         '';
+
+    updateScript = gitUpdater { rev-prefix = "v"; };
   };
 
   meta = {
     description = "Qt6 bindings for Emilua";
     homepage = "https://emilua.org/";
     license = lib.licenses.boost;
+
     maintainers = with lib.maintainers; [
       manipuladordedados
       lucasew
     ];
+
     platforms = lib.platforms.linux;
   };
 }

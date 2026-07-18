@@ -57,6 +57,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Portable version of Commodore's version of Microsoft BASIC 6502 as found on the Commodore 64";
+
     longDescription = ''
       "Commodore BASIC" (cbmbasic) is a 100% compatible version of Commodore's
       version of Microsoft BASIC 6502 as found on the Commodore 64. You can use
@@ -65,10 +66,11 @@ stdenv.mkDerivation (finalAttrs: {
       This source does not emulate 6502 code; all code is completely native. On
       a 1 GHz CPU you get about 1000x speed compared to a 1 MHz 6502.
     '';
+
     homepage = "https://github.com/mist64/cbmbasic";
     license = lib.licenses.bsd2;
     maintainers = [ lib.maintainers.cafkafk ];
-    mainProgram = "cbmbasic";
     platforms = lib.platforms.all;
+    mainProgram = "cbmbasic";
   };
 })

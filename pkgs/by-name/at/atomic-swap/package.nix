@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  nix-update-script,
+  buildGoModule,
   makeWrapper,
   monero-cli,
+  nix-update-script,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,7 +18,14 @@ buildGoModule (finalAttrs: {
     hash = "sha256-MOylUZ6BrvlxUrsZ5gg3JzW9ROG5UXeGhq3YoPZKdHs=";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
   vendorHash = "sha256-fGQ6MI+3z7wRL0y7AUERVtN0V2rcRa+vqeB8+3FMzzc=";
+  # integration tests require network access
+  doCheck = false;
+
+  postInstall = ''
+    wrapProgram $out/bin/swapd --prefix PATH : ${lib.makeBinPath [ monero-cli ]}
+  '';
 
   subPackages = [
     "cmd/swapcli"
@@ -26,22 +33,14 @@ buildGoModule (finalAttrs: {
     "cmd/bootnode"
   ];
 
-  nativeBuildInputs = [ makeWrapper ];
-
-  postInstall = ''
-    wrapProgram $out/bin/swapd --prefix PATH : ${lib.makeBinPath [ monero-cli ]}
-  '';
-
-  # integration tests require network access
-  doCheck = false;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "ETH-XMR atomic swap implementation";
     homepage = "https://github.com/AthanorLabs/atomic-swap";
     changelog = "https://github.com/AthanorLabs/atomic-swap/releases/tag/v${finalAttrs.version}";
-    description = "ETH-XMR atomic swap implementation";
     license = with lib.licenses; [ lgpl3Only ];
+
     maintainers = with lib.maintainers; [
       happysalada
       lord-valen

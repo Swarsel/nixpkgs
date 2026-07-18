@@ -4,15 +4,15 @@
   fetchFromGitHub,
   cc65,
   lzsa,
-  python3,
   nix-update-script,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "x16-rom";
   version = "48";
-  # nixpkgs-update: no auto update
 
+  # nixpkgs-update: no auto update
   src = fetchFromGitHub {
     owner = "X16Community";
     repo = "x16-rom";
@@ -20,19 +20,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-MXt839wpPdGVFgf1CAqfmWEP2Ws+5uUFOI14vAdUTvk=";
   };
 
-  nativeBuildInputs = [
-    cc65
-    lzsa
-    python3
-  ];
-
   postPatch = ''
     patchShebangs findsymbols scripts/
     substituteInPlace Makefile \
       --replace-fail '/bin/echo' 'echo'
   '';
 
-  dontConfigure = true;
+  nativeBuildInputs = [
+    cc65
+    lzsa
+    python3
+  ];
 
   makeFlags = [ "PRERELEASE_VERSION=${finalAttrs.version}" ];
 
@@ -45,6 +43,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+
   passthru = {
     # upstream project recommends emulator and rom to be synchronized; passing
     # through the version is useful to ensure this
@@ -53,11 +53,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/X16Community/x16-rom";
+    inherit (cc65.meta) platforms;
     description = "ROM file for CommanderX16 8-bit computer";
+    homepage = "https://github.com/X16Community/x16-rom";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ pluiedev ];
-    inherit (cc65.meta) platforms;
     broken = stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64;
   };
 })

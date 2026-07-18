@@ -1,13 +1,13 @@
 {
   lib,
-  callPackage,
   stdenv,
-  chromium,
   fetchFromGitHub,
+  callPackage,
+  chromium,
   fetchYarnDeps,
+  fixup-yarn-lock,
   makeWrapper,
   nodejs,
-  fixup-yarn-lock,
   yarn,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -21,29 +21,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-PvPnqaKD98h3dCjEOwF+Uc86xCJzn2b9XNHHn13h/2Y=";
   };
 
-  offlineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-SXQPRzF6b1FJl5HkyXNm3kGoNSDXux+0RYXBX93mOts=";
-  };
-
   nativeBuildInputs = [
     makeWrapper
     nodejs
     fixup-yarn-lock
     yarn
   ];
-
-  configurePhase = ''
-    runHook preConfigure
-
-    export HOME=$(mktemp -d)
-    yarn config --offline set yarn-offline-mirror "$offlineCache"
-    fixup-yarn-lock yarn.lock
-    yarn --offline --frozen-lockfile --ignore-platform --ignore-scripts --no-progress --non-interactive install
-    patchShebangs node_modules
-
-    runHook postConfigure
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -68,6 +51,23 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+
+    export HOME=$(mktemp -d)
+    yarn config --offline set yarn-offline-mirror "$offlineCache"
+    fixup-yarn-lock yarn.lock
+    yarn --offline --frozen-lockfile --ignore-platform --ignore-scripts --no-progress --non-interactive install
+    patchShebangs node_modules
+
+    runHook postConfigure
+  '';
+
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-SXQPRzF6b1FJl5HkyXNm3kGoNSDXux+0RYXBX93mOts=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
+
   passthru.tests.aws-azure-login = callPackage ./tests.nix {
     package = finalAttrs.finalPackage;
   };
@@ -76,8 +76,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Use Azure AD SSO to log into the AWS via CLI";
     homepage = "https://github.com/aws-azure-login/aws-azure-login";
     license = lib.licenses.mit;
-    mainProgram = "aws-azure-login";
     maintainers = with lib.maintainers; [ l0b0 ];
     platforms = lib.platforms.all;
+    mainProgram = "aws-azure-login";
   };
 })

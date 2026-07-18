@@ -1,43 +1,46 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   fetchFromGitHub,
-  cmake,
-  capnproto,
-  sqlite,
   boost,
-  zlib,
-  rapidjson,
+  capnproto,
+  cmake,
   pandoc,
+  rapidjson,
+  sqlite,
+  zlib,
 }:
 let
   js.vue = fetchurl {
-    url = "https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.12/vue.min.js";
     sha256 = "1hm5kci2g6n5ikrvp1kpkkdzimjgylv1xicg2vnkbvd9rb56qa99";
+    url = "https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.12/vue.min.js";
   };
   js.ansi_up = fetchurl {
-    url = "https://raw.githubusercontent.com/drudru/ansi_up/v4.0.4/ansi_up.js";
     sha256 = "1dx8wn38ds8d01kkih26fx1yrisg3kpz61qynjr4zil03ap0hrlr";
+    url = "https://raw.githubusercontent.com/drudru/ansi_up/v4.0.4/ansi_up.js";
   };
   js.Chart = fetchurl {
-    url = "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js";
     hash = "sha256-+8RZJua0aEWg+QVVKg4LEzEEm/8RFez5Tb4JBNiV5xA=";
+    url = "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "laminar";
   version = "1.3";
-  outputs = [
-    "out"
-    "doc"
-  ];
+
   src = fetchFromGitHub {
     owner = "ohwgiles";
     repo = "laminar";
     rev = finalAttrs.version;
     hash = "sha256-eo5WzvmjBEe0LAfZdQ/U0XepEE2kdWKKiyE4HOi3RXk=";
   };
+
+  outputs = [
+    "out"
+    "doc"
+  ];
+
   patches = [ ./patches/no-network.patch ];
 
   # We need both binary from "capnproto" and library files.
@@ -46,6 +49,7 @@ stdenv.mkDerivation (finalAttrs: {
     pandoc
     capnproto
   ];
+
   buildInputs = [
     capnproto
     sqlite
@@ -53,6 +57,7 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
     rapidjson
   ];
+
   cmakeFlags = [ "-DLAMINAR_VERSION=${finalAttrs.version}" ];
 
   preBuild = ''
@@ -76,10 +81,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Lightweight and modular continuous integration service";
     homepage = "https://laminar.ohwg.net";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       kaction
       maralorn
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

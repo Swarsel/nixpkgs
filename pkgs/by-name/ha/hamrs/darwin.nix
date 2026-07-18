@@ -1,16 +1,17 @@
 {
   lib,
-  stdenvNoCC,
-  pname,
-  version,
-  meta,
   fetchurl,
   _7zz,
+  meta,
+  pname,
+  stdenvNoCC,
   undmg,
+  version,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   inherit pname version;
+  inherit meta;
 
   src = fetchurl {
     url = "https://hamrs-releases.s3.us-east-2.amazonaws.com/${finalAttrs.version}/HAMRS-${finalAttrs.version}.dmg";
@@ -18,8 +19,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ _7zz ];
-
-  sourceRoot = ".";
 
   installPhase = ''
     runHook preInstall
@@ -30,5 +29,5 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  inherit meta;
+  sourceRoot = ".";
 })

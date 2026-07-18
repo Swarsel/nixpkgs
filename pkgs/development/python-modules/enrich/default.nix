@@ -2,16 +2,15 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  pytestCheckHook,
-  setuptools-scm,
-  rich,
   pytest-mock,
+  pytestCheckHook,
+  rich,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "enrich";
   version = "1.2.7";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -19,7 +18,6 @@ buildPythonPackage rec {
   };
 
   buildInputs = [ setuptools-scm ];
-
   propagatedBuildInputs = [ rich ];
 
   nativeCheckInputs = [
@@ -32,6 +30,7 @@ buildPythonPackage rec {
     "test_rich_console_ex"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "enrich" ];
 
   meta = {

@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
   riffdiff,
+  rustPlatform,
   testers,
 }:
 
@@ -30,10 +30,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/walles/riff";
     changelog = "https://github.com/walles/riff/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       johnpyp
       getchoo
     ];
+
     mainProgram = "riff";
   };
 })

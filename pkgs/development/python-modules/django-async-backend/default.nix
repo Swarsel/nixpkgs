@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
   poetry-core,
   postgresql,
   postgresqlTestHook,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "django-async-backend";
   version = "6.0.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Arfey";
@@ -32,24 +31,11 @@ buildPythonPackage rec {
       --replace-fail "new_connection.get_database_version())[0], 15" "new_connection.get_database_version())[0], ${lib.versions.major postgresql.version}"
   '';
 
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    django
-    psycopg
-  ];
-
-  pythonImportsCheck = [ "django_async_backend" ];
-
   env = {
     DJANGO_SETTINGS_MODULE = "settings";
     PGDATABASE = "postgres";
     PGUSER = "postgres";
   };
-
-  preCheck = ''
-    export PYTHONPATH=$PYTHONPATH:$PWD/tests
-  '';
 
   nativeCheckInputs = [
     django # must come first as vtasks only works with django 6
@@ -61,7 +47,20 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  preCheck = ''
+    export PYTHONPATH=$PYTHONPATH:$PWD/tests
+  '';
+
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    django
+    psycopg
+  ];
+
+  pyproject = true;
   pytestFlags = [ "./tests" ];
+  pythonImportsCheck = [ "django_async_backend" ];
 
   meta = {
     description = "Django extension providing async capabilities for database and other components";

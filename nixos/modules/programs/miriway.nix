@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -10,15 +10,7 @@ let
 in
 {
   options.programs.miriway = {
-    enable = lib.mkEnableOption ''
-      Miriway, a Mir based Wayland compositor. You can manually launch Miriway by
-      executing "exec miriway" on a TTY, or launch it from a display manager. Copy
-      /etc/xdg/xdg-miriway/miriway-shell.config to ~/.config/miriway-shell.config
-      to modify the system-wide configuration on a per-user basis. See <https://github.com/Miriway/Miriway>,
-      and "miriway --help" for more information'';
-
     config = lib.mkOption {
-      type = lib.types.lines;
       default = ''
         x11-window-title=Miriway (Mir-on-X)
         idle-timeout=600
@@ -35,6 +27,12 @@ in
         meta=Page_Down:@workspace-down
         ctrl-alt=BackSpace:@exit
       '';
+
+      description = ''
+        Miriway's config. This will be installed system-wide.
+        The default will install the miriway package's barebones example config.
+      '';
+
       example = ''
         idle-timeout=300
         ctrl-alt=t:weston-terminal
@@ -56,33 +54,38 @@ in
         meta=Page_Down:@workspace-down
         ctrl-alt=BackSpace:@exit
       '';
-      description = ''
-        Miriway's config. This will be installed system-wide.
-        The default will install the miriway package's barebones example config.
-      '';
+
+      type = lib.types.lines;
     };
+
+    enable = lib.mkEnableOption ''
+      Miriway, a Mir based Wayland compositor. You can manually launch Miriway by
+      executing "exec miriway" on a TTY, or launch it from a display manager. Copy
+      /etc/xdg/xdg-miriway/miriway-shell.config to ~/.config/miriway-shell.config
+      to modify the system-wide configuration on a per-user basis. See <https://github.com/Miriway/Miriway>,
+      and "miriway --help" for more information'';
   };
 
   config = lib.mkIf cfg.enable {
     environment = {
+      etc = {
+        "xdg/xdg-miriway/miriway-shell.config".text = cfg.config;
+      };
+
       systemPackages = with pkgs; [
         miriway
         vanilla-dmz
       ];
-      etc = {
-        "xdg/xdg-miriway/miriway-shell.config".text = cfg.config;
-      };
     };
 
-    hardware.graphics.enable = lib.mkDefault true;
     fonts.enableDefaultPackages = lib.mkDefault true;
+    hardware.graphics.enable = lib.mkDefault true;
     programs.dconf.enable = lib.mkDefault true;
     programs.xwayland.enable = lib.mkDefault true;
-
     # To make the Miriway session available if a display manager like SDDM is enabled:
     services.displayManager.sessionPackages = [ pkgs.miriway ];
-
     xdg.icons.enable = true;
+
     xdg.icons.fallbackCursorThemes = lib.mkDefault [
       # Miriway looks for "default" theme, fails to start if not present
       # Mir normally looks for DMZ-White theme if none specified, so make that present as the default

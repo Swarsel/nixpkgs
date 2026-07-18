@@ -1,13 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  testers,
   cmake,
   cmake-extras,
   dbus,
   dbus-test-runner,
+  gitUpdater,
   glib,
   gtest,
   intltool,
@@ -25,6 +24,7 @@
   runtimeShell,
   sqlite,
   systemd,
+  testers,
   wrapQtAppsHook,
 }:
 
@@ -103,12 +103,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxkbcommon
   ];
 
-  nativeCheckInputs = [
-    dbus
-    dbus-test-runner
-    sqlite
-  ];
-
   cmakeFlags = [
     (lib.cmakeBool "LOCAL_INSTALL" true)
     (lib.cmakeBool "enable_mirclient" false)
@@ -122,10 +116,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
-  # Tests work with an sqlite db, cannot handle >1 test at the same time
-  enableParallelChecking = false;
-
-  dontWrapQtApps = true;
+  nativeCheckInputs = [
+    dbus
+    dbus-test-runner
+    sqlite
+  ];
 
   preFixup = ''
     substituteInPlace $out/bin/lomiri-url-dispatcher-{dump,gui} \
@@ -154,6 +149,10 @@ stdenv.mkDerivation (finalAttrs: {
     moveToOutput share $out
   '';
 
+  dontWrapQtApps = true;
+  # Tests work with an sqlite db, cannot handle >1 test at the same time
+  enableParallelChecking = false;
+
   passthru = {
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
     updateScript = gitUpdater { };
@@ -161,23 +160,30 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Lomiri operating environment service for requesting URLs to be opened";
+
     longDescription = ''
       Allows applications to request a URL to be opened and handled by another
       process without seeing the list of other applications on the system or
       starting them inside its own Application Confinement.
     '';
+
     homepage = "https://gitlab.com/ubports/development/core/lomiri-url-dispatcher";
+
     changelog = "https://gitlab.com/ubports/development/core/lomiri-url-dispatcher/-/blob/${
       if (!isNull finalAttrs.src.tag) then finalAttrs.src.tag else finalAttrs.src.rev
     }/ChangeLog";
+
     license = with lib.licenses; [
       lgpl3Only
       gpl3Only
     ];
-    teams = [ lib.teams.lomiri ];
+
     platforms = lib.platforms.linux;
+
     pkgConfigModules = [
       "lomiri-url-dispatcher"
     ];
+
+    teams = [ lib.teams.lomiri ];
   };
 })

@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
   boost,
-  rdkafka,
+  cmake,
+  fetchpatch,
   gtest,
   rapidjson,
+  rdkafka,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,36 +15,36 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2023.03.07";
 
   src = fetchFromGitHub {
-    repo = "modern-cpp-kafka";
     owner = "morganstanley";
+    repo = "modern-cpp-kafka";
     rev = "v${finalAttrs.version}";
     hash = "sha256-7hkwM1YbveQpDRqwMZ3MXM88LTwlAT7uB8NL0t409To=";
   };
 
   patches = [
     (fetchpatch {
+      hash = "sha256-UsQcMvJoRTn5kgXhmXOyqfW3n59kGKO596U2WjtdqAY=";
       # https://github.com/morganstanley/modern-cpp-kafka/pull/221
       name = "fix-avoid-overwriting-library-paths.patch";
       url = "https://github.com/morganstanley/modern-cpp-kafka/compare/a146d10bcf166f55299c7a55728abaaea52cb0e5...a0b5ec08315759097ce656813be57b2c38d79091.patch";
-      hash = "sha256-UsQcMvJoRTn5kgXhmXOyqfW3n59kGKO596U2WjtdqAY=";
     })
     (fetchpatch {
+      hash = "sha256-OjoSttnpgEwSZjCVKc888xJb5f1Dulu/rQqoGmqXNM4=";
       # https://github.com/morganstanley/modern-cpp-kafka/pull/222
       name = "add-pkg-config-cmake-config.patch";
       url = "https://github.com/morganstanley/modern-cpp-kafka/commit/edc576ab83710412f6201e2bb8de5cb41682ee4a.patch";
-      hash = "sha256-OjoSttnpgEwSZjCVKc888xJb5f1Dulu/rQqoGmqXNM4=";
     })
     # Fix gcc-13 build failure:
     #   https://github.com/morganstanley/modern-cpp-kafka/pull/229
     (fetchpatch {
+      hash = "sha256-cy568TQUu08sadq79hDz9jMvDqiDjfr+1cLMxFWGm1Q=";
       name = "add-pkg-config-cmake-config.patch";
       url = "https://github.com/morganstanley/modern-cpp-kafka/commit/236f8f91f5c3ad6e1055a6f55cd3aebd218e1226.patch";
-      hash = "sha256-cy568TQUu08sadq79hDz9jMvDqiDjfr+1cLMxFWGm1Q=";
     })
     (fetchpatch {
+      hash = "sha256-Te3GwAVRDyb6GFWlvkq1mIcNeXCtMyLr+/w1LilUYbE=";
       name = "macos-find-dylib.patch";
       url = "https://github.com/morganstanley/modern-cpp-kafka/commit/dc2753cd95b607a7202b40bad3aad472558bf350.patch";
-      hash = "sha256-Te3GwAVRDyb6GFWlvkq1mIcNeXCtMyLr+/w1LilUYbE=";
     })
   ];
 

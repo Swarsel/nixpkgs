@@ -1,18 +1,17 @@
 {
   lib,
+  babel,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
-  babel,
-  translationstring,
   iso8601,
   pytestCheckHook,
+  setuptools,
+  translationstring,
 }:
 
 buildPythonPackage rec {
   pname = "colander";
   version = "2.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -29,9 +28,9 @@ buildPythonPackage rec {
     iso8601
   ];
 
-  pythonImportsCheck = [ "colander" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
+  pythonImportsCheck = [ "colander" ];
 
   meta = {
     description = "Simple schema-based serialization and deserialization library";

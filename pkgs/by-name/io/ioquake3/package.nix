@@ -2,24 +2,24 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  which,
-  copyDesktopItems,
-  makeBinaryWrapper,
   SDL2,
-  libGL,
-  openal,
+  bc,
+  copyDesktopItems,
   curl,
-  speex,
-  opusfile,
+  freetype,
+  libGL,
+  libjpeg,
   libogg,
   libvorbis,
-  libjpeg,
+  makeBinaryWrapper,
   makeDesktopItem,
-  freetype,
   mumble,
+  openal,
+  opusfile,
+  pkg-config,
+  speex,
   unstableGitUpdater,
-  bc,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -55,8 +55,6 @@ stdenv.mkDerivation (finalAttrs: {
     mumble
   ];
 
-  enableParallelBuilding = true;
-
   preConfigure = ''
     cp ${./Makefile.local} ./Makefile.local
   '';
@@ -90,10 +88,6 @@ stdenv.mkDerivation (finalAttrs: {
     ./make-macosx.sh ${stdenv.hostPlatform.darwinArch}
   '';
 
-  installTargets = [ "copyfiles" ];
-
-  installFlags = [ "COPYDIR=$(out)/share/ioquake3" ];
-
   postInstall = ''
     install -Dm644 misc/quake3.svg $out/share/icons/hicolor/scalable/apps/ioquake3.svg
 
@@ -107,28 +101,34 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "IOQuake3";
-      exec = "ioquake3";
-      icon = "ioquake3";
-      comment = finalAttrs.meta.description;
-      desktopName = "ioquake3";
       categories = [
         "Game"
         "ActionGame"
       ];
+
+      comment = finalAttrs.meta.description;
+      desktopName = "ioquake3";
+      exec = "ioquake3";
+      icon = "ioquake3";
+      name = "IOQuake3";
     })
   ];
 
+  enableParallelBuilding = true;
+  installFlags = [ "COPYDIR=$(out)/share/ioquake3" ];
+  installTargets = [ "copyfiles" ];
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    homepage = "https://ioquake3.org/";
     description = "Fast-paced 3D first-person shooter, a community effort to continue supporting/developing id's Quake III Arena";
+    homepage = "https://ioquake3.org/";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "ioquake3";
+
     maintainers = with lib.maintainers; [
       rvolosatovs
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "ioquake3";
   };
 })

@@ -3,14 +3,13 @@
   buildPythonPackage,
   fetchPypi,
   fetchpatch,
-  setuptools,
   numpy,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "biopython";
   version = "1.86";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -20,16 +19,10 @@ buildPythonPackage rec {
   patches = [
     # Numpy 2.4 compatibility
     (fetchpatch {
-      url = "https://github.com/biopython/biopython/pull/5161.patch";
       hash = "sha256-oN0nNlhvshIgNrmm+tIeCAJx1U/OqhdL4tj51DV2CHU=";
+      url = "https://github.com/biopython/biopython/pull/5161.patch";
     })
   ];
-
-  build-system = [ setuptools ];
-
-  dependencies = [ numpy ];
-
-  pythonImportsCheck = [ "Bio" ];
 
   checkPhase = ''
     runHook preCheck
@@ -41,8 +34,14 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [ setuptools ];
+  dependencies = [ numpy ];
+  pyproject = true;
+  pythonImportsCheck = [ "Bio" ];
+
   meta = {
     description = "Python library for bioinformatics";
+
     longDescription = ''
       Biopython is a set of freely available tools for biological computation
       written in Python by an international team of developers. It is a
@@ -50,8 +49,9 @@ buildPythonPackage rec {
       applications which address the needs of current and future work in
       bioinformatics.
     '';
+
     homepage = "https://biopython.org/wiki/Documentation";
-    maintainers = with lib.maintainers; [ luispedro ];
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ luispedro ];
   };
 }

@@ -1,10 +1,10 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cmsis-svd,
-  fetchFromGitHub,
   fetchPypi,
   ipython,
-  lib,
   prompt-toolkit,
   pyfwup,
   pygreat,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "greatfet";
   version = "2026.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "greatscottgadgets";
@@ -26,24 +25,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-qXPNatakMVtvl26FG1bx+ngCeqRpg1So6qFamKK8WWk=";
   };
-
-  # The prebuilt LPC firmware image (greatfet_usb.bin) and the DFU recovery
-  # stub (flash_stub.bin) are release artifacts cross-compiled from firmware/.
-  # They are absent from the git checkout (their build inputs are now-empty
-  # submodules) but are shipped in the upstream wheel. Without them
-  # `greatfet_firmware --autoflash` and DFU-mode firmware recovery are
-  # unavailable, so vendor them from the wheel to match `pip install greatfet`.
-  firmwareAssets = fetchPypi {
-    inherit pname version;
-    format = "wheel";
-    dist = "py3";
-    python = "py3";
-    hash = "sha256-sH1FAkfdC0HxRLZjfx7b2AYWMh4rtSijFgsU/YnVKq0=";
-  };
-
-  sourceRoot = "${src.name}/host";
-
-  nativeBuildInputs = [ unzip ];
 
   postPatch = ''
     substituteInPlace pyproject.toml \
@@ -59,9 +40,11 @@ buildPythonPackage rec {
       -d greatfet/assets/
   '';
 
+  nativeBuildInputs = [ unzip ];
+  # Tests seem to require devices (or simulators) which are
+  # not available in the build sandbox.
+  doCheck = false;
   build-system = [ setuptools ];
-
-  pythonRelaxDeps = [ "ipython" ];
 
   dependencies = [
     cmsis-svd
@@ -74,19 +57,35 @@ buildPythonPackage rec {
     tqdm
   ];
 
-  # Tests seem to require devices (or simulators) which are
-  # not available in the build sandbox.
-  doCheck = false;
+  # The prebuilt LPC firmware image (greatfet_usb.bin) and the DFU recovery
+  # stub (flash_stub.bin) are release artifacts cross-compiled from firmware/.
+  # They are absent from the git checkout (their build inputs are now-empty
+  # submodules) but are shipped in the upstream wheel. Without them
+  # `greatfet_firmware --autoflash` and DFU-mode firmware recovery are
+  # unavailable, so vendor them from the wheel to match `pip install greatfet`.
+  firmwareAssets = fetchPypi {
+    inherit pname version;
+    dist = "py3";
+    format = "wheel";
+    hash = "sha256-sH1FAkfdC0HxRLZjfx7b2AYWMh4rtSijFgsU/YnVKq0=";
+    python = "py3";
+  };
+
+  pyproject = true;
+  pythonRelaxDeps = [ "ipython" ];
+  sourceRoot = "${src.name}/host";
 
   meta = {
     description = "Hardware hacking with the greatfet";
     homepage = "https://greatscottgadgets.com/greatfet";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
-    mainProgram = "gf";
+
     maintainers = with lib.maintainers; [
       mog
       msanft
     ];
+
+    platforms = lib.platforms.all;
+    mainProgram = "gf";
   };
 }

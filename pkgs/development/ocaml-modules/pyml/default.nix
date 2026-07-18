@@ -1,10 +1,10 @@
 {
-  buildDunePackage,
   lib,
   fetchFromGitHub,
-  utop,
+  buildDunePackage,
   python3,
   stdcompat,
+  utop,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -18,6 +18,8 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-WPtmj9EEs7P72OXWJg1syIrbLuh7u4V4W4nyozXmSa0=";
   };
 
+  strictDeps = true;
+
   buildInputs = [
     utop
   ];
@@ -27,15 +29,14 @@ buildDunePackage (finalAttrs: {
     stdcompat
   ];
 
+  doCheck = true;
+
   nativeCheckInputs = [
     python3.pkgs.numpy
     python3.pkgs.ipython
   ];
 
-  strictDeps = true;
   __structuredAttrs = true;
-
-  doCheck = true;
 
   meta = {
     description = "OCaml bindings for Python";

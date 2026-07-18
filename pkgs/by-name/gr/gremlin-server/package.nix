@@ -1,7 +1,7 @@
 {
-  fetchzip,
   lib,
   stdenv,
+  fetchzip,
   makeWrapper,
   openjdk11,
 }:
@@ -11,6 +11,7 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "gremlin-server";
   version = "3.7.0";
+
   src = fetchzip {
     url = "https://downloads.apache.org/tinkerpop/${finalAttrs.version}/apache-tinkerpop-gremlin-server-${finalAttrs.version}-bin.zip";
     sha256 = "sha256-cS7R7Raz5tkrr5DNeW7jbEYDee2OgE4htTXJRnqXlqI=";
@@ -33,8 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://tinkerpop.apache.org/";
     description = "Server of the Apache TinkerPop graph computing framework";
+    homepage = "https://tinkerpop.apache.org/";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.jrpotter ];
     platforms = lib.platforms.all;

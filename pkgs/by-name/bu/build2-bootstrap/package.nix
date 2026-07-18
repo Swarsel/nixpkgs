@@ -3,26 +3,22 @@
   stdenv,
   fetchurl,
   buildPackages,
-  fixDarwinDylibNames,
   fetchpatch,
+  fixDarwinDylibNames,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "build2-bootstrap";
   version = "0.18.1";
+
   src = fetchurl {
     url = "https://download.build2.org/${finalAttrs.version}/build2-toolchain-${finalAttrs.version}.tar.xz";
     hash = "sha256-pfPqudRSK8InBImVk91scBM0mhuMNyeMiyMhBz4l/xY=";
   };
+
   patches = [
     # Pick up sysdirs from NIX_LDFLAGS
     ./nix-ldflags-sysdirs.patch
   ];
-
-  sourceRoot = "build2-toolchain-${finalAttrs.version}/build2";
-  makefile = "bootstrap.gmake";
-  enableParallelBuilding = true;
-
-  setupHook = ./setup-hook.sh;
 
   strictDeps = true;
 
@@ -35,6 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
+
   checkPhase = ''
     runHook preCheck
     b/b-boot --version
@@ -52,6 +49,11 @@ stdenv.mkDerivation (finalAttrs: {
       --subst-var-by isTargetDarwin '${toString stdenv.targetPlatform.isDarwin}'
   '';
 
+  enableParallelBuilding = true;
+  makefile = "bootstrap.gmake";
+  setupHook = ./setup-hook.sh;
+  sourceRoot = "build2-toolchain-${finalAttrs.version}/build2";
+
   passthru = {
     configSharedStatic =
       enableShared: enableStatic:
@@ -66,14 +68,16 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://www.build2.org/";
     description = "Bootstrap for the 'build2' package, you most likely want to use that one";
-    license = lib.licenses.mit;
+    homepage = "https://www.build2.org/";
     changelog = "https://git.build2.org/cgit/build2/tree/NEWS";
-    platforms = lib.platforms.all;
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       hiro98
       r-burns
     ];
+
+    platforms = lib.platforms.all;
   };
 })

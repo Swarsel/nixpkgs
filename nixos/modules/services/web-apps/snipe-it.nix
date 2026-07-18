@@ -42,266 +42,9 @@ in
 {
   options.services.snipe-it = {
 
-    enable = mkEnableOption "snipe-it, a free open source IT asset/license management system";
-
-    user = mkOption {
-      default = "snipeit";
-      description = "User snipe-it runs as.";
-      type = types.str;
-    };
-
-    group = mkOption {
-      default = "snipeit";
-      description = "Group snipe-it runs as.";
-      type = types.str;
-    };
-
-    appKeyFile = mkOption {
-      description = ''
-        A file containing the Laravel APP_KEY - a 32 character long,
-        base64 encoded key used for encryption where needed. Can be
-        generated with `head -c 32 /dev/urandom | base64`.
-      '';
-      example = "/run/keys/snipe-it/appkey";
-      type = types.path;
-    };
-
-    hostName = lib.mkOption {
-      type = lib.types.str;
-      default = config.networking.fqdnOrHostName;
-      defaultText = lib.literalExpression "config.networking.fqdnOrHostName";
-      example = "snipe-it.example.com";
-      description = ''
-        The hostname to serve Snipe-IT on.
-      '';
-    };
-
-    appURL = mkOption {
-      description = ''
-        The root URL that you want to host Snipe-IT on. All URLs in Snipe-IT will be generated using this value.
-        If you change this in the future you may need to run a command to update stored URLs in the database.
-        Command example: `snipe-it snipe-it:update-url https://old.example.com https://new.example.com`
-      '';
-      default = "http${lib.optionalString tlsEnabled "s"}://${cfg.hostName}";
-      defaultText = ''
-        http''${lib.optionalString tlsEnabled "s"}://''${cfg.hostName}
-      '';
-      example = "https://example.com";
-      type = types.str;
-    };
-
-    dataDir = mkOption {
-      description = "snipe-it data directory";
-      default = "/var/lib/snipe-it";
-      type = types.path;
-    };
-
-    database = {
-      host = mkOption {
-        type = types.str;
-        default = "localhost";
-        description = "Database host address.";
-      };
-      port = mkOption {
-        type = types.port;
-        default = 3306;
-        description = "Database host port.";
-      };
-      name = mkOption {
-        type = types.str;
-        default = "snipeit";
-        description = "Database name.";
-      };
-      user = mkOption {
-        type = types.str;
-        default = user;
-        defaultText = literalExpression "user";
-        description = "Database username.";
-      };
-      passwordFile = mkOption {
-        type = with types; nullOr path;
-        default = null;
-        example = "/run/keys/snipe-it/dbpassword";
-        description = ''
-          A file containing the password corresponding to
-          {option}`database.user`.
-        '';
-      };
-      createLocally = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Create the database and database user locally.";
-      };
-    };
-
-    mail = {
-      driver = mkOption {
-        type = types.enum [
-          "smtp"
-          "sendmail"
-        ];
-        default = "smtp";
-        description = "Mail driver to use.";
-      };
-      host = mkOption {
-        type = types.str;
-        default = "localhost";
-        description = "Mail host address.";
-      };
-      port = mkOption {
-        type = types.port;
-        default = 1025;
-        description = "Mail host port.";
-      };
-      encryption = mkOption {
-        type =
-          with types;
-          nullOr (enum [
-            "tls"
-            "ssl"
-          ]);
-        default = null;
-        description = "SMTP encryption mechanism to use.";
-      };
-      user = mkOption {
-        type = with types; nullOr str;
-        default = null;
-        example = "snipeit";
-        description = "Mail username.";
-      };
-      passwordFile = mkOption {
-        type = with types; nullOr path;
-        default = null;
-        example = "/run/keys/snipe-it/mailpassword";
-        description = ''
-          A file containing the password corresponding to
-          {option}`mail.user`.
-        '';
-      };
-      backupNotificationAddress = mkOption {
-        type = types.str;
-        default = "backup@example.com";
-        description = "Email Address to send Backup Notifications to.";
-      };
-      from = {
-        name = mkOption {
-          type = types.str;
-          default = "Snipe-IT Asset Management";
-          description = "Mail \"from\" name.";
-        };
-        address = mkOption {
-          type = types.str;
-          default = "mail@example.com";
-          description = "Mail \"from\" address.";
-        };
-      };
-      replyTo = {
-        name = mkOption {
-          type = types.str;
-          default = "Snipe-IT Asset Management";
-          description = "Mail \"reply-to\" name.";
-        };
-        address = mkOption {
-          type = types.str;
-          default = "mail@example.com";
-          description = "Mail \"reply-to\" address.";
-        };
-      };
-    };
-
-    maxUploadSize = mkOption {
-      type = types.str;
-      default = "18M";
-      example = "1G";
-      description = "The maximum size for uploads (e.g. images).";
-    };
-
-    poolConfig = mkOption {
-      type =
-        with types;
-        attrsOf (oneOf [
-          str
-          int
-          bool
-        ]);
-      default = {
-        "pm" = "dynamic";
-        "pm.max_children" = 32;
-        "pm.start_servers" = 2;
-        "pm.min_spare_servers" = 2;
-        "pm.max_spare_servers" = 4;
-        "pm.max_requests" = 500;
-      };
-      description = ''
-        Options for the snipe-it PHP pool. See the documentation on `php-fpm.conf`
-        for details on configuration directives.
-      '';
-    };
-
-    nginx = mkOption {
-      type = types.submodule (
-        recursiveUpdate (import ../web-servers/nginx/vhost-options.nix { inherit config lib; }) { }
-      );
-      default = { };
-      example = literalExpression ''
-        {
-          serverAliases = [
-            "snipe-it.''${config.networking.domain}"
-          ];
-          # To enable encryption and let let's encrypt take care of certificate
-          forceSSL = true;
-          enableACME = true;
-        }
-      '';
-      description = ''
-        With this option, you can customize the nginx virtualHost settings.
-      '';
-    };
-
     config = mkOption {
-      type =
-        with types;
-        attrsOf (
-          nullOr (
-            either
-              (oneOf [
-                bool
-                int
-                port
-                path
-                str
-              ])
-              (submodule {
-                options = {
-                  _secret = mkOption {
-                    type = nullOr (oneOf [
-                      str
-                      path
-                    ]);
-                    description = ''
-                      The path to a file containing the value the
-                      option should be set to in the final
-                      configuration file.
-                    '';
-                  };
-                };
-              })
-          )
-        );
       default = { };
-      example = literalExpression ''
-        {
-          ALLOWED_IFRAME_HOSTS = "https://example.com";
-          WKHTMLTOPDF = "''${pkgs.wkhtmltopdf}/bin/wkhtmltopdf";
-          AUTH_METHOD = "oidc";
-          OIDC_NAME = "MyLogin";
-          OIDC_DISPLAY_NAME_CLAIMS = "name";
-          OIDC_CLIENT_ID = "snipe-it";
-          OIDC_CLIENT_SECRET = {_secret = "/run/keys/oidc_secret"};
-          OIDC_ISSUER = "https://keycloak.example.com/auth/realms/My%20Realm";
-          OIDC_ISSUER_DISCOVER = true;
-        }
-      '';
+
       description = ''
         Snipe-IT configuration options to set in the
         {file}`.env` file.
@@ -317,6 +60,299 @@ in
         contents of the {file}`/run/keys/oidc_secret`
         file.
       '';
+
+      example = literalExpression ''
+        {
+          ALLOWED_IFRAME_HOSTS = "https://example.com";
+          WKHTMLTOPDF = "''${pkgs.wkhtmltopdf}/bin/wkhtmltopdf";
+          AUTH_METHOD = "oidc";
+          OIDC_NAME = "MyLogin";
+          OIDC_DISPLAY_NAME_CLAIMS = "name";
+          OIDC_CLIENT_ID = "snipe-it";
+          OIDC_CLIENT_SECRET = {_secret = "/run/keys/oidc_secret"};
+          OIDC_ISSUER = "https://keycloak.example.com/auth/realms/My%20Realm";
+          OIDC_ISSUER_DISCOVER = true;
+        }
+      '';
+
+      type =
+        with types;
+        attrsOf (
+          nullOr (
+            either
+              (oneOf [
+                bool
+                int
+                port
+                path
+                str
+              ])
+              (submodule {
+                options = {
+                  _secret = mkOption {
+                    description = ''
+                      The path to a file containing the value the
+                      option should be set to in the final
+                      configuration file.
+                    '';
+
+                    type = nullOr (oneOf [
+                      str
+                      path
+                    ]);
+                  };
+                };
+              })
+          )
+        );
+    };
+
+    enable = mkEnableOption "snipe-it, a free open source IT asset/license management system";
+
+    appKeyFile = mkOption {
+      description = ''
+        A file containing the Laravel APP_KEY - a 32 character long,
+        base64 encoded key used for encryption where needed. Can be
+        generated with `head -c 32 /dev/urandom | base64`.
+      '';
+
+      example = "/run/keys/snipe-it/appkey";
+      type = types.path;
+    };
+
+    appURL = mkOption {
+      default = "http${lib.optionalString tlsEnabled "s"}://${cfg.hostName}";
+
+      defaultText = ''
+        http''${lib.optionalString tlsEnabled "s"}://''${cfg.hostName}
+      '';
+
+      description = ''
+        The root URL that you want to host Snipe-IT on. All URLs in Snipe-IT will be generated using this value.
+        If you change this in the future you may need to run a command to update stored URLs in the database.
+        Command example: `snipe-it snipe-it:update-url https://old.example.com https://new.example.com`
+      '';
+
+      example = "https://example.com";
+      type = types.str;
+    };
+
+    dataDir = mkOption {
+      default = "/var/lib/snipe-it";
+      description = "snipe-it data directory";
+      type = types.path;
+    };
+
+    database = {
+      createLocally = mkOption {
+        default = false;
+        description = "Create the database and database user locally.";
+        type = types.bool;
+      };
+
+      host = mkOption {
+        default = "localhost";
+        description = "Database host address.";
+        type = types.str;
+      };
+
+      name = mkOption {
+        default = "snipeit";
+        description = "Database name.";
+        type = types.str;
+      };
+
+      passwordFile = mkOption {
+        default = null;
+
+        description = ''
+          A file containing the password corresponding to
+          {option}`database.user`.
+        '';
+
+        example = "/run/keys/snipe-it/dbpassword";
+        type = with types; nullOr path;
+      };
+
+      port = mkOption {
+        default = 3306;
+        description = "Database host port.";
+        type = types.port;
+      };
+
+      user = mkOption {
+        default = user;
+        defaultText = literalExpression "user";
+        description = "Database username.";
+        type = types.str;
+      };
+    };
+
+    group = mkOption {
+      default = "snipeit";
+      description = "Group snipe-it runs as.";
+      type = types.str;
+    };
+
+    hostName = lib.mkOption {
+      default = config.networking.fqdnOrHostName;
+      defaultText = lib.literalExpression "config.networking.fqdnOrHostName";
+
+      description = ''
+        The hostname to serve Snipe-IT on.
+      '';
+
+      example = "snipe-it.example.com";
+      type = lib.types.str;
+    };
+
+    mail = {
+      backupNotificationAddress = mkOption {
+        default = "backup@example.com";
+        description = "Email Address to send Backup Notifications to.";
+        type = types.str;
+      };
+
+      driver = mkOption {
+        default = "smtp";
+        description = "Mail driver to use.";
+
+        type = types.enum [
+          "smtp"
+          "sendmail"
+        ];
+      };
+
+      encryption = mkOption {
+        default = null;
+        description = "SMTP encryption mechanism to use.";
+
+        type =
+          with types;
+          nullOr (enum [
+            "tls"
+            "ssl"
+          ]);
+      };
+
+      from = {
+        address = mkOption {
+          default = "mail@example.com";
+          description = "Mail \"from\" address.";
+          type = types.str;
+        };
+
+        name = mkOption {
+          default = "Snipe-IT Asset Management";
+          description = "Mail \"from\" name.";
+          type = types.str;
+        };
+      };
+
+      host = mkOption {
+        default = "localhost";
+        description = "Mail host address.";
+        type = types.str;
+      };
+
+      passwordFile = mkOption {
+        default = null;
+
+        description = ''
+          A file containing the password corresponding to
+          {option}`mail.user`.
+        '';
+
+        example = "/run/keys/snipe-it/mailpassword";
+        type = with types; nullOr path;
+      };
+
+      port = mkOption {
+        default = 1025;
+        description = "Mail host port.";
+        type = types.port;
+      };
+
+      replyTo = {
+        address = mkOption {
+          default = "mail@example.com";
+          description = "Mail \"reply-to\" address.";
+          type = types.str;
+        };
+
+        name = mkOption {
+          default = "Snipe-IT Asset Management";
+          description = "Mail \"reply-to\" name.";
+          type = types.str;
+        };
+      };
+
+      user = mkOption {
+        default = null;
+        description = "Mail username.";
+        example = "snipeit";
+        type = with types; nullOr str;
+      };
+    };
+
+    maxUploadSize = mkOption {
+      default = "18M";
+      description = "The maximum size for uploads (e.g. images).";
+      example = "1G";
+      type = types.str;
+    };
+
+    nginx = mkOption {
+      default = { };
+
+      description = ''
+        With this option, you can customize the nginx virtualHost settings.
+      '';
+
+      example = literalExpression ''
+        {
+          serverAliases = [
+            "snipe-it.''${config.networking.domain}"
+          ];
+          # To enable encryption and let let's encrypt take care of certificate
+          forceSSL = true;
+          enableACME = true;
+        }
+      '';
+
+      type = types.submodule (
+        recursiveUpdate (import ../web-servers/nginx/vhost-options.nix { inherit config lib; }) { }
+      );
+    };
+
+    poolConfig = mkOption {
+      default = {
+        "pm" = "dynamic";
+        "pm.max_children" = 32;
+        "pm.max_requests" = 500;
+        "pm.max_spare_servers" = 4;
+        "pm.min_spare_servers" = 2;
+        "pm.start_servers" = 2;
+      };
+
+      description = ''
+        Options for the snipe-it PHP pool. See the documentation on `php-fpm.conf`
+        for details on configuration directives.
+      '';
+
+      type =
+        with types;
+        attrsOf (oneOf [
+          str
+          int
+          bool
+        ]);
+    };
+
+    user = mkOption {
+      default = "snipeit";
+      description = "User snipe-it runs as.";
+      type = types.str;
     };
   };
 
@@ -335,76 +371,42 @@ in
 
     environment.systemPackages = [ artisan ];
 
-    services.snipe-it.config = {
-      APP_ENV = "production";
-      APP_KEY._secret = cfg.appKeyFile;
-      APP_URL = cfg.appURL;
-      DB_HOST = db.host;
-      DB_PORT = db.port;
-      DB_DATABASE = db.name;
-      DB_USERNAME = db.user;
-      DB_PASSWORD._secret = db.passwordFile;
-      MAIL_DRIVER = mail.driver;
-      MAIL_FROM_NAME = mail.from.name;
-      MAIL_FROM_ADDR = mail.from.address;
-      MAIL_REPLYTO_NAME = mail.from.name;
-      MAIL_REPLYTO_ADDR = mail.from.address;
-      MAIL_BACKUP_NOTIFICATION_ADDRESS = mail.backupNotificationAddress;
-      MAIL_HOST = mail.host;
-      MAIL_PORT = mail.port;
-      MAIL_USERNAME = mail.user;
-      MAIL_ENCRYPTION = mail.encryption;
-      MAIL_PASSWORD._secret = mail.passwordFile;
-      APP_SERVICES_CACHE = "/run/snipe-it/cache/services.php";
-      APP_PACKAGES_CACHE = "/run/snipe-it/cache/packages.php";
-      APP_CONFIG_CACHE = "/run/snipe-it/cache/config.php";
-      APP_ROUTES_CACHE = "/run/snipe-it/cache/routes-v7.php";
-      APP_EVENTS_CACHE = "/run/snipe-it/cache/events.php";
-      SECURE_COOKIES = tlsEnabled;
-    };
-
     services.mysql = mkIf db.createLocally {
       enable = true;
       package = mkDefault pkgs.mariadb;
       ensureDatabases = [ db.name ];
+
       ensureUsers = [
         {
-          name = db.user;
           ensurePermissions = {
             "${db.name}.*" = "ALL PRIVILEGES";
           };
+
+          name = db.user;
         }
       ];
     };
 
-    services.phpfpm.pools.snipe-it = {
-      inherit user group phpPackage;
-      phpOptions = ''
-        post_max_size = ${cfg.maxUploadSize}
-        upload_max_filesize = ${cfg.maxUploadSize}
-      '';
-      settings = {
-        "listen.mode" = "0660";
-        "listen.owner" = user;
-        "listen.group" = group;
-      }
-      // cfg.poolConfig;
-    };
-
     services.nginx = {
       enable = mkDefault true;
+
       virtualHosts."${cfg.hostName}" = mkMerge [
         cfg.nginx
         {
-          root = mkForce "${snipe-it}/share/php/snipe-it/public";
           extraConfig = optionalString (
             cfg.nginx.addSSL || cfg.nginx.forceSSL || cfg.nginx.onlySSL || cfg.nginx.enableACME
           ) "fastcgi_param HTTPS on;";
+
           locations = {
             "/" = {
-              index = "index.php";
               extraConfig = "try_files $uri $uri/ /index.php?$query_string;";
+              index = "index.php";
             };
+
+            "~ \\.(js|css|gif|png|ico|jpg|jpeg)$" = {
+              extraConfig = "expires 365d;";
+            };
+
             "~ \\.php$" = {
               extraConfig = ''
                 try_files $uri $uri/ /index.php?$query_string;
@@ -417,31 +419,67 @@ in
                 ) "fastcgi_param HTTPS on;"}
               '';
             };
-            "~ \\.(js|css|gif|png|ico|jpg|jpeg)$" = {
-              extraConfig = "expires 365d;";
-            };
           };
+
+          root = mkForce "${snipe-it}/share/php/snipe-it/public";
         }
       ];
     };
 
+    services.phpfpm.pools.snipe-it = {
+      inherit user group phpPackage;
+
+      phpOptions = ''
+        post_max_size = ${cfg.maxUploadSize}
+        upload_max_filesize = ${cfg.maxUploadSize}
+      '';
+
+      settings = {
+        "listen.group" = group;
+        "listen.mode" = "0660";
+        "listen.owner" = user;
+      }
+      // cfg.poolConfig;
+    };
+
+    services.snipe-it.config = {
+      APP_CONFIG_CACHE = "/run/snipe-it/cache/config.php";
+      APP_ENV = "production";
+      APP_EVENTS_CACHE = "/run/snipe-it/cache/events.php";
+      APP_KEY._secret = cfg.appKeyFile;
+      APP_PACKAGES_CACHE = "/run/snipe-it/cache/packages.php";
+      APP_ROUTES_CACHE = "/run/snipe-it/cache/routes-v7.php";
+      APP_SERVICES_CACHE = "/run/snipe-it/cache/services.php";
+      APP_URL = cfg.appURL;
+      DB_DATABASE = db.name;
+      DB_HOST = db.host;
+      DB_PASSWORD._secret = db.passwordFile;
+      DB_PORT = db.port;
+      DB_USERNAME = db.user;
+      MAIL_BACKUP_NOTIFICATION_ADDRESS = mail.backupNotificationAddress;
+      MAIL_DRIVER = mail.driver;
+      MAIL_ENCRYPTION = mail.encryption;
+      MAIL_FROM_ADDR = mail.from.address;
+      MAIL_FROM_NAME = mail.from.name;
+      MAIL_HOST = mail.host;
+      MAIL_PASSWORD._secret = mail.passwordFile;
+      MAIL_PORT = mail.port;
+      MAIL_REPLYTO_ADDR = mail.from.address;
+      MAIL_REPLYTO_NAME = mail.from.name;
+      MAIL_USERNAME = mail.user;
+      SECURE_COOKIES = tlsEnabled;
+    };
+
     systemd.services.snipe-it-setup = {
-      description = "Preparation tasks for snipe-it";
-      before = [ "phpfpm-snipe-it.service" ];
       after = optional db.createLocally "mysql.service";
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-        User = user;
-        WorkingDirectory = snipe-it;
-        RuntimeDirectory = "snipe-it/cache";
-        RuntimeDirectoryMode = "0700";
-      };
+      before = [ "phpfpm-snipe-it.service" ];
+      description = "Preparation tasks for snipe-it";
+
       path = [
         pkgs.replace-secret
         artisan
       ];
+
       script =
         let
           isSecret = v: isAttrs v && v ? _secret && (isString v._secret || builtins.isPath v._secret);
@@ -523,6 +561,17 @@ in
               cp ${snipe-it}/share/snipe-it/invalid_barcode.gif "$invalid_barcode_location"
           fi
         '';
+
+      serviceConfig = {
+        RemainAfterExit = true;
+        RuntimeDirectory = "snipe-it/cache";
+        RuntimeDirectoryMode = "0700";
+        Type = "oneshot";
+        User = user;
+        WorkingDirectory = snipe-it;
+      };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.tmpfiles.rules = [
@@ -557,15 +606,17 @@ in
     ];
 
     users = {
+      groups = mkIf (group == "snipeit") {
+        snipeit = { };
+      };
+
       users = mkIf (user == "snipeit") {
+        "${config.services.nginx.user}".extraGroups = [ group ];
+
         snipeit = {
           inherit group;
           isSystemUser = true;
         };
-        "${config.services.nginx.user}".extraGroups = [ group ];
-      };
-      groups = mkIf (group == "snipeit") {
-        snipeit = { };
       };
     };
 

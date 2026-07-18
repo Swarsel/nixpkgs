@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   makeBinaryWrapper,
   nix-update-script,
+  stdenvNoCC,
   undmg,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -14,8 +14,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     url = "https://download.kiwix.org/release/kiwix-macos/kiwix-macos_${finalAttrs.version}.dmg";
     hash = "sha256-3wZ7zavLmLyPYGrdFpnhd8a1paI65yHFdL6JzL1e0e0=";
   };
-
-  sourceRoot = ".";
 
   strictDeps = true;
 
@@ -30,6 +28,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     makeWrapper $out/Applications/Kiwix.app/Contents/MacOS/Kiwix $out/bin/${finalAttrs.meta.mainProgram}
   '';
 
+  sourceRoot = ".";
+
   passthru.updateScript = nix-update-script {
     extraArgs = [
       "--url=https://github.com/kiwix/kiwix-apple"
@@ -38,14 +38,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/kiwix/kiwix-apple/blob/${finalAttrs.version}/CHANGELOG.md";
     description = "Offline reader for Web content";
-    downloadPage = "https://get.kiwix.org/en/solutions/applications/kiwix-reader/";
     homepage = "https://get.kiwix.org/en/solutions/applications/";
+    changelog = "https://github.com/kiwix/kiwix-apple/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "kiwix";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ MysteryBlokHed ];
     platforms = lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    mainProgram = "kiwix";
+    downloadPage = "https://get.kiwix.org/en/solutions/applications/kiwix-reader/";
   };
 })

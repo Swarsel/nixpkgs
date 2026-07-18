@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pandas,
+  setuptools,
   streamlit,
 }:
 
 buildPythonPackage rec {
   pname = "streamlit-kpi-card";
   version = "0.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pjoachims";
@@ -24,6 +23,8 @@ buildPythonPackage rec {
       --replace-fail "setuptools>=45,<70" "setuptools"
   '';
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,10 +32,8 @@ buildPythonPackage rec {
     streamlit
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "streamlit_kpi_card" ];
-
-  # Module has no tests
-  doCheck = false;
 
   meta = {
     description = "KPI cards for Streamlit";

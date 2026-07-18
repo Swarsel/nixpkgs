@@ -17,18 +17,13 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "148361pixrm94q6v04k13s1msa04bx9yc3djb0lxpa7dlw19vhcd";
   };
 
-  env.NIX_CFLAGS_COMPILE = toString (
-    [
-      "-Wno-error=parentheses"
-      # Needed with GCC 12
-      "-Wno-error=deprecated-declarations"
-      "-Wno-error=nonnull"
-    ]
-    ++ lib.optionals stdenv.cc.isClang [
-      # Needed with Clang 16
-      "-Wno-error=deprecated-builtins"
-    ]
-  );
+  # CMake 2.8 is deprecated and is no longer supported by CMake > 4
+  # https://github.com/NixOS/nixpkgs/issues/445447
+  postPatch = ''
+    substituteInPlace CMakeLists.txt --replace-fail \
+      "cmake_minimum_required(VERSION 2.8)" \
+      "cmake_minimum_required(VERSION 3.10)"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -41,13 +36,18 @@ stdenv.mkDerivation (finalAttrs: {
     "-DBUILD_SHARED_LIBS=ON"
   ];
 
-  # CMake 2.8 is deprecated and is no longer supported by CMake > 4
-  # https://github.com/NixOS/nixpkgs/issues/445447
-  postPatch = ''
-    substituteInPlace CMakeLists.txt --replace-fail \
-      "cmake_minimum_required(VERSION 2.8)" \
-      "cmake_minimum_required(VERSION 3.10)"
-  '';
+  env.NIX_CFLAGS_COMPILE = toString (
+    [
+      "-Wno-error=parentheses"
+      # Needed with GCC 12
+      "-Wno-error=deprecated-declarations"
+      "-Wno-error=nonnull"
+    ]
+    ++ lib.optionals stdenv.cc.isClang [
+      # Needed with Clang 16
+      "-Wno-error=deprecated-builtins"
+    ]
+  );
 
   postBuild = "make doc";
 

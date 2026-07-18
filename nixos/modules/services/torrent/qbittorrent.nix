@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   utils,
   ...
 }:
@@ -58,46 +58,39 @@ in
 {
   options.services.qbittorrent = {
     enable = mkEnableOption "qbittorrent, BitTorrent client";
-
     package = mkPackageOption pkgs "qbittorrent-nox" { };
 
-    user = mkOption {
-      type = str;
-      default = "qbittorrent";
-      description = "User account under which qbittorrent runs.";
+    extraArgs = mkOption {
+      default = [ ];
+
+      description = ''
+        Extra arguments passed to qbittorrent. See `qbittorrent -h`, or the [source code](https://github.com/qbittorrent/qBittorrent/blob/master/src/app/cmdoptions.cpp), for the available arguments.
+      '';
+
+      example = [
+        "--confirm-legal-notice"
+      ];
+
+      type = listOf str;
     };
 
     group = mkOption {
-      type = str;
       default = "qbittorrent";
       description = "Group under which qbittorrent runs.";
-    };
-
-    profileDir = mkOption {
-      type = path;
-      default = "/var/lib/qBittorrent/";
-      description = "the path passed to qbittorrent via --profile.";
+      type = str;
     };
 
     openFirewall = mkEnableOption "opening both the webuiPort and torrentPort over TCP in the firewall";
 
-    webuiPort = mkOption {
-      default = 8080;
-      type = nullOr port;
-      description = "the port passed to qbittorrent via `--webui-port`";
-    };
-
-    torrentingPort = mkOption {
-      default = null;
-      type = nullOr port;
-      description = "the port passed to qbittorrent via `--torrenting-port`";
+    profileDir = mkOption {
+      default = "/var/lib/qBittorrent/";
+      description = "the path passed to qbittorrent via --profile.";
+      type = path;
     };
 
     serverConfig = mkOption {
       default = { };
-      type = submodule {
-        freeformType = attrsOf (attrsOf anything);
-      };
+
       description = ''
         Free-form settings mapped to the {file}`qBittorrent.conf` file in the profile.
         Refer to [Explanation-of-Options-in-qBittorrent](https://github.com/qbittorrent/qBittorrent/wiki/Explanation-of-Options-in-qBittorrent).
@@ -117,6 +110,7 @@ in
         ];
         ```
       '';
+
       example = literalExpression ''
         {
           LegalNotice.Accepted = true;
@@ -129,53 +123,50 @@ in
           };
         }
       '';
+
+      type = submodule {
+        freeformType = attrsOf (attrsOf anything);
+      };
     };
 
-    extraArgs = mkOption {
-      type = listOf str;
-      default = [ ];
-      description = ''
-        Extra arguments passed to qbittorrent. See `qbittorrent -h`, or the [source code](https://github.com/qbittorrent/qBittorrent/blob/master/src/app/cmdoptions.cpp), for the available arguments.
-      '';
-      example = [
-        "--confirm-legal-notice"
-      ];
+    torrentingPort = mkOption {
+      default = null;
+      description = "the port passed to qbittorrent via `--torrenting-port`";
+      type = nullOr port;
+    };
+
+    user = mkOption {
+      default = "qbittorrent";
+      description = "User account under which qbittorrent runs.";
+      type = str;
+    };
+
+    webuiPort = mkOption {
+      default = 8080;
+      description = "the port passed to qbittorrent via `--webui-port`";
+      type = nullOr port;
     };
   };
+
   config = mkIf cfg.enable {
+    networking.firewall.allowedTCPPorts = mkIf cfg.openFirewall (
+      optionals (cfg.webuiPort != null) [ cfg.webuiPort ]
+      ++ optionals (cfg.torrentingPort != null) [ cfg.torrentingPort ]
+    );
+
     systemd = {
-      tmpfiles.settings = {
-        qbittorrent = {
-          "${cfg.profileDir}/qBittorrent/"."d" = {
-            mode = "755";
-            inherit (cfg) user group;
-          };
-          "${cfg.profileDir}/qBittorrent/config/"."d" = {
-            mode = "755";
-            inherit (cfg) user group;
-          };
-        };
-      };
       services.qbittorrent = {
-        description = "qbittorrent BitTorrent client";
-        wants = [ "network-online.target" ];
         after = [
           "local-fs.target"
           "network-online.target"
           "nss-lookup.target"
         ];
-        wantedBy = [ "multi-user.target" ];
+
+        description = "qbittorrent BitTorrent client";
         restartTriggers = optionals (cfg.serverConfig != { }) [ configFile ];
 
         serviceConfig = {
-          Type = "simple";
-          User = cfg.user;
-          Group = cfg.group;
-
-          # the config file has to be writable, so we have to do this weird dance
-          ExecStartPre = lib.mkIf (cfg.serverConfig != { }) ''
-            ${pkgs.coreutils}/bin/install -Dm600 ${configFile} "${cfg.profileDir}/qBittorrent/config/qBittorrent.conf"
-          '';
+          CapabilityBoundingSet = "";
 
           ExecStart = utils.escapeSystemdExecArgs (
             [
@@ -186,58 +177,80 @@ in
             ++ optionals (cfg.torrentingPort != null) [ "--torrenting-port=${toString cfg.torrentingPort}" ]
             ++ cfg.extraArgs
           );
-          TimeoutStopSec = 1800;
 
-          # https://github.com/qbittorrent/qBittorrent/pull/6806#discussion_r121478661
-          PrivateTmp = false;
+          # the config file has to be writable, so we have to do this weird dance
+          ExecStartPre = lib.mkIf (cfg.serverConfig != { }) ''
+            ${pkgs.coreutils}/bin/install -Dm600 ${configFile} "${cfg.profileDir}/qBittorrent/config/qBittorrent.conf"
+          '';
 
-          PrivateNetwork = false;
-          RemoveIPC = true;
+          Group = cfg.group;
+          LockPersonality = true;
+          MemoryDenyWriteExecute = true;
           NoNewPrivileges = true;
           PrivateDevices = true;
+          PrivateNetwork = false;
+          # https://github.com/qbittorrent/qBittorrent/pull/6806#discussion_r121478661
+          PrivateTmp = false;
           PrivateUsers = true;
-          ProtectHome = "yes";
-          ProtectProc = "invisible";
           ProcSubset = "pid";
-          ProtectSystem = "full";
           ProtectClock = true;
+          ProtectControlGroups = true;
+          ProtectHome = "yes";
           ProtectHostname = true;
           ProtectKernelLogs = true;
           ProtectKernelModules = true;
           ProtectKernelTunables = true;
-          ProtectControlGroups = true;
+          ProtectProc = "invisible";
+          ProtectSystem = "full";
+          RemoveIPC = true;
+
           RestrictAddressFamilies = [
             "AF_INET"
             "AF_INET6"
             "AF_NETLINK"
           ];
+
           RestrictNamespaces = true;
           RestrictRealtime = true;
           RestrictSUIDSGID = true;
-          LockPersonality = true;
-          MemoryDenyWriteExecute = true;
           SystemCallArchitectures = "native";
-          CapabilityBoundingSet = "";
           SystemCallFilter = [ "@system-service" ];
+          TimeoutStopSec = 1800;
+          Type = "simple";
+          User = cfg.user;
+        };
+
+        wantedBy = [ "multi-user.target" ];
+        wants = [ "network-online.target" ];
+      };
+
+      tmpfiles.settings = {
+        qbittorrent = {
+          "${cfg.profileDir}/qBittorrent/"."d" = {
+            inherit (cfg) user group;
+            mode = "755";
+          };
+
+          "${cfg.profileDir}/qBittorrent/config/"."d" = {
+            inherit (cfg) user group;
+            mode = "755";
+          };
         };
       };
     };
 
     users = {
+      groups = mkIf (cfg.group == "qbittorrent") { qbittorrent = { }; };
+
       users = mkIf (cfg.user == "qbittorrent") {
         qbittorrent = {
           inherit (cfg) group;
           isSystemUser = true;
         };
       };
-      groups = mkIf (cfg.group == "qbittorrent") { qbittorrent = { }; };
     };
-
-    networking.firewall.allowedTCPPorts = mkIf cfg.openFirewall (
-      optionals (cfg.webuiPort != null) [ cfg.webuiPort ]
-      ++ optionals (cfg.torrentingPort != null) [ cfg.torrentingPort ]
-    );
   };
+
   meta.maintainers = with maintainers; [
     fsnkty
     undefined-landmark

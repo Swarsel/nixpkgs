@@ -1,7 +1,7 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
   autogen,
 }:
 
@@ -15,7 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ autogen ];
-
   doCheck = true;
 
   meta = {
@@ -27,11 +26,9 @@ stdenv.mkDerivation (finalAttrs: {
       addresses several issues not considered in that scoring scheme.
     '';
 
-    license = lib.licenses.gpl3Plus;
-
     homepage = "https://www.gnu.org/software/complexity/";
-
-    platforms = lib.platforms.gnu ++ lib.platforms.linux;
+    license = lib.licenses.gpl3Plus;
     maintainers = [ ];
+    platforms = lib.platforms.gnu ++ lib.platforms.linux;
   };
 })

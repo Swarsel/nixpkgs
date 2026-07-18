@@ -1,29 +1,19 @@
 {
   lib,
   buildPythonPackage,
-  pythonAtLeast,
-
-  # build-system
-  setuptools,
-
   # dependencies
   hydra-core,
   joblib,
-
   # test
   pytestCheckHook,
+  pythonAtLeast,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
-  pname = "hydra-joblib-launcher";
-  pyproject = true;
-
   inherit (hydra-core) version src;
-
-  # _pickle.PicklingError: Could not pickle the task to send it to the workers
-  disabled = pythonAtLeast "3.14";
-
-  sourceRoot = "${finalAttrs.src.name}/plugins/hydra_joblib_launcher";
+  pname = "hydra-joblib-launcher";
 
   # get rid of deprecated "read_version" dependency, no longer in Nixpkgs:
   postPatch = ''
@@ -32,6 +22,10 @@ buildPythonPackage (finalAttrs: {
       --replace-fail 'from read_version import read_version' ""  \
       --replace-fail 'version=read_version("hydra_plugins/hydra_joblib_launcher", "__init__.py"),' 'version="${finalAttrs.version}",'
   '';
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -42,12 +36,12 @@ buildPythonPackage (finalAttrs: {
     joblib
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
+  # _pickle.PicklingError: Could not pickle the task to send it to the workers
+  disabled = pythonAtLeast "3.14";
+  pyproject = true;
   # tries to write to source directory otherwise:
   pytestFlags = [ "-pno:cacheprovider" ];
+  sourceRoot = "${finalAttrs.src.name}/plugins/hydra_joblib_launcher";
 
   meta = {
     inherit (hydra-core.meta) changelog license;

@@ -9,20 +9,17 @@
 buildPythonPackage (finalAttrs: {
   pname = "pysensibo";
   version = "1.2.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-Otk5W3VTbOAeZOVnXvW8VSxU1nHa8zUvmvduRTdlwVs=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ aiohttp ];
-
   # No tests implemented
   doCheck = false;
-
+  build-system = [ poetry-core ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "pysensibo" ];
 
   meta = {

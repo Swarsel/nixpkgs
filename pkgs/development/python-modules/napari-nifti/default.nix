@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   medvol,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "napari-nifti";
   version = "0.0.17";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "MIC-DKFZ";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-JDyJMg6rsGkfEHBwqKc2L6oRO5Y1MJJlEjUuuqp7URQ=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ medvol ];
-
-  pythonImportsCheck = [ "napari_nifti" ];
-
   doCheck = false; # no tests
+  build-system = [ setuptools ];
+  dependencies = [ medvol ];
+  pyproject = true;
+  pythonImportsCheck = [ "napari_nifti" ];
 
   meta = {
     description = "Napari plugin for reading and writing NIFTI files";

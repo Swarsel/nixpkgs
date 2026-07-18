@@ -1,18 +1,18 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   abseil-cpp,
   chromium,
   cmake,
-  fetchFromGitHub,
   gbenchmark,
   grpc,
   gtest,
   haskellPackages,
   icu,
-  lib,
   mercurial,
   ninja,
   python3Packages,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -62,17 +62,21 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Regular expression library";
+
     longDescription = ''
       RE2 is a fast, safe, thread-friendly alternative to backtracking regular
       expression engines like those used in PCRE, Perl, and Python. It is a C++
       library.
     '';
-    license = lib.licenses.bsd3;
+
     homepage = "https://github.com/google/re2";
+    license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       azahi
       networkexception
     ];
+
     platforms = lib.platforms.all;
   };
 })

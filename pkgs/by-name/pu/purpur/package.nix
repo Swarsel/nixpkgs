@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  nixosTests,
   jre_headless,
   makeWrapper,
+  nixosTests,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,12 +15,11 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://api.purpurmc.org/v2/purpur/${
       builtins.replaceStrings [ "r" ] [ "/" ] finalAttrs.version
     }/download";
+
     sha256 = "sha256-QVl4Nnewi2OVeC5hUMsoZGxw7ZiLeUjAngGqWl6Q9Ug=";
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
-  preferLocalBuild = true;
 
   installPhase = ''
     mkdir -p $out/bin $out/lib/minecraft
@@ -31,6 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   dontUnpack = true;
+  preferLocalBuild = true;
 
   passthru = {
     tests = { inherit (nixosTests) minecraft-server; };
@@ -38,15 +38,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Drop-in replacement for Minecraft Paper servers";
+
     longDescription = ''
       Purpur is a drop-in replacement for Minecraft Paper servers designed for configurability, new fun and exciting
       gameplay features, and performance built on top of Airplane.
     '';
+
     homepage = "https://purpurmc.org/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ ];
+    platforms = lib.platforms.unix;
     mainProgram = "minecraft-server";
   };
 })

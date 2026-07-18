@@ -1,6 +1,6 @@
 {
-  buildPythonPackage,
   asgiref,
+  buildPythonPackage,
   hatchling,
   opentelemetry-api,
   opentelemetry-instrumentation,
@@ -14,10 +14,6 @@ buildPythonPackage {
   # This package is in the same repository as `opentelemetry-api`,
   # but its version is synchronized with `opentelemetry-instrumentation` in another repository.
   version = opentelemetry-instrumentation.version;
-  pyproject = true;
-
-  sourceRoot = "${opentelemetry-api.src.name}/tests/opentelemetry-test-utils";
-
   build-system = [ hatchling ];
 
   dependencies = [
@@ -27,10 +23,12 @@ buildPythonPackage {
     requests
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "opentelemetry.test" ];
+  sourceRoot = "${opentelemetry-api.src.name}/tests/opentelemetry-test-utils";
 
   meta = opentelemetry-api.meta // {
-    homepage = "https://github.com/open-telemetry/opentelemetry-python/tree/main/tests/opentelemetry-test-utils";
     description = "Test utilities for OpenTelemetry unit tests";
+    homepage = "https://github.com/open-telemetry/opentelemetry-python/tree/main/tests/opentelemetry-test-utils";
   };
 }

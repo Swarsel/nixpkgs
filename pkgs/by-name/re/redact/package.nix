@@ -16,7 +16,6 @@ let
 in
 appimageTools.wrapType2 {
   inherit pname version src;
-
   nativeBuildInputs = [ makeWrapper ];
 
   extraInstallCommands = ''
@@ -49,9 +48,9 @@ appimageTools.wrapType2 {
     description = "Only platform that allows you to automatically clean up your old posts from services like Twitter, Reddit, Facebook, Discord, and more, all in one place";
     homepage = "https://redact.dev/";
     license = lib.licenses.unfree;
-    maintainers = with lib.maintainers; [ reputable2772 ];
-    mainProgram = "redact";
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ reputable2772 ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "redact";
   };
 }

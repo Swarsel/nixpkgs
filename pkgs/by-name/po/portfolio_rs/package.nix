@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,10 +17,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-SuukTNEfPOCCE5bg08/K7M68R2dAe75cch39whtcSWg=";
   };
 
-  cargoHash = "sha256-L14Cu/Gex6FGeSEL7zcY+E6khtkH6fwzqkjHm67ALUw=";
-
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ openssl ];
+  cargoHash = "sha256-L14Cu/Gex6FGeSEL7zcY+E6khtkH6fwzqkjHm67ALUw=";
 
   # Skip network-dependent tests during build
   checkFlags = [

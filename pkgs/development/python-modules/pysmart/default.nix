@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   chardet,
   humanfriendly,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "pysmart";
   version = "1.4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "truenas";
@@ -26,15 +25,15 @@ buildPythonPackage rec {
       --replace "which('smartctl')" '"${smartmontools}/bin/smartctl"'
   '';
 
+  nativeBuildInputs = [ setuptools-scm ];
+
   propagatedBuildInputs = [
     chardet
     humanfriendly
   ];
 
-  nativeBuildInputs = [ setuptools-scm ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pySMART" ];
 
   meta = {

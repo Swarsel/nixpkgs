@@ -1,8 +1,8 @@
 {
+  lib,
   stdenv,
   fetchzip,
   openssl,
-  lib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,11 +15,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-xL/1os17agwFtdq0snS3ZJzwJhk22ujxfWLH65IMMEM=";
   };
 
-  makeFlags = [ "INSTALLLOCATION=${placeholder "out"}/bin/" ];
-
   buildInputs = [ openssl ];
-
+  makeFlags = [ "INSTALLLOCATION=${placeholder "out"}/bin/" ];
   doCheck = true;
+
   checkPhase = ''
     runHook preCheck
     ./hashpump --test

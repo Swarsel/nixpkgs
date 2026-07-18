@@ -1,9 +1,9 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  tk,
+  fetchurl,
   makeWrapper,
+  tk,
 }:
 
 stdenv.mkDerivation rec {
@@ -16,7 +16,6 @@ stdenv.mkDerivation rec {
   };
 
   patches = [ ./backslashes-quotes.diff ];
-
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ tk ];
 
@@ -30,14 +29,10 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Tcl/Tk GUI front-end to cscope";
-    mainProgram = "cbrowser";
-
-    license = lib.licenses.gpl2Plus;
-
     homepage = "https://sourceforge.net/projects/cbrowser/";
-
+    license = lib.licenses.gpl2Plus;
     maintainers = [ ];
-
     platforms = with lib.platforms; linux;
+    mainProgram = "cbrowser";
   };
 }

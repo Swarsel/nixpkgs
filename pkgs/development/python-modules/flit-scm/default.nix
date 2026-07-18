@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitLab,
+  buildPythonPackage,
   flit-core,
   setuptools-scm,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "flit-scm";
   version = "1.7.0";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "WillDaSilva";
@@ -28,9 +27,9 @@ buildPythonPackage (finalAttrs: {
     setuptools-scm
   ];
 
-  pythonImportsCheck = [ "flit_scm" ];
-
   doCheck = false; # no tests
+  pyproject = true;
+  pythonImportsCheck = [ "flit_scm" ];
 
   meta = {
     description = "PEP 518 build backend that uses setuptools_scm to generate a version file from your version control system, then flit to build the package";

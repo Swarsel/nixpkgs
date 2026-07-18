@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
-  testers,
   sptlrx,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,11 +20,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-2QbGrQwFA+YeoVt4se2silLYbg7cQGY/fCTQb2bXWAM=";
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   checkFlags =
     let
       # Requires network access
@@ -32,12 +27,18 @@ buildGoModule (finalAttrs: {
     in
     [ "-skip=^${lib.concatStringsSep "$|^" skippedTests}$" ];
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
-      package = sptlrx;
       version = "v${finalAttrs.version}"; # needed because testVersion uses grep -Fw
+      package = sptlrx;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {

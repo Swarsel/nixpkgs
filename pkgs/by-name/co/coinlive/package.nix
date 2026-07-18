@@ -18,15 +18,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-FQAxY0ZiC8bkp1s2CIpQeC6ZBNKm5/qmaebPuDcHtd4=";
   };
 
-  cargoHash = "sha256-1mzfuH5988PDKBsbKl0R1v/3/3Hk3LJtklqMA83tEOY=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
     openssl
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  cargoHash = "sha256-1mzfuH5988PDKBsbKl0R1v/3/3Hk3LJtklqMA83tEOY=";
 
   checkFlags = [
     # Test requires network access
@@ -34,6 +32,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
     description = "Live cryptocurrency prices CLI";

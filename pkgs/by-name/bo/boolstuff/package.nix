@@ -20,7 +20,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "http://perso.b2b2c.ca/~sarrazip/dev/boolstuff.html";
     license = lib.licenses.gpl2Only;
     maintainers = [ ];
-    mainProgram = "booldnf";
     platforms = lib.platforms.all;
+    mainProgram = "booldnf";
   };
 })

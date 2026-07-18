@@ -3,17 +3,17 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  intltool,
-  pkg-config,
-  python3,
-  wrapGAppsHook3,
   glib,
   gtk3,
   ibus,
+  intltool,
   lua,
+  nix-update-script,
+  pkg-config,
+  python3,
   pyzy,
   sqlite,
-  nix-update-script,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation rec {
@@ -47,11 +47,11 @@ stdenv.mkDerivation rec {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    isIbusEngine = true;
     description = "PinYin engine for IBus";
     homepage = "https://github.com/ibus/ibus-pinyin";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ azuwis ];
     platforms = lib.platforms.linux;
+    isIbusEngine = true;
   };
 }

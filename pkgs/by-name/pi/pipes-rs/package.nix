@@ -1,7 +1,7 @@
 {
-  rustPlatform,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,7 +16,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-TIVWl/9xSFsSXD9XzOHBvc/1HvI/radas00p4fZ/AzM=";
-
   doInstallCheck = true;
 
   installCheckPhase = ''
@@ -30,9 +29,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Over-engineered rewrite of pipes.sh in Rust";
-    mainProgram = "pipes-rs";
     homepage = "https://github.com/lhvy/pipes-rs";
     license = lib.licenses.blueOak100;
     maintainers = [ lib.maintainers.vanilla ];
+    mainProgram = "pipes-rs";
   };
 })

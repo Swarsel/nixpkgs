@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
-  fetchFromGitHub,
+  stdenv,
   fetchurl,
-  fetchpatch,
+  fetchFromGitHub,
   autoPatchelfHook,
-  makeWrapper,
-  nix-update-script,
-  glibcLocales,
-  python3Packages,
+  dconf,
   dotnetCorePackages,
+  fetchpatch,
+  glibcLocales,
   gtk-sharp-3_0,
   gtk3-x11,
-  dconf,
+  makeWrapper,
+  nix-update-script,
+  python3Packages,
 }:
 
 let
@@ -38,12 +38,13 @@ let
           rev = "v6.1";
           hash = "sha256-l1VupBKi52UWqJMisT2CVnXph3fGxB63mBVvYdM1NWE=";
         };
+
         patches = (oldAttrs.patches or [ ]) ++ [
           (fetchpatch {
+            hash = "sha256-aSaror26x4kVkLVetPEbrJG4H1zstHsNWqmwqOys3zo=";
             # utest: Improve filtering of output sugar for Python 3.13+
             name = "python3.13-support.patch";
             url = "https://github.com/robotframework/robotframework/commit/921e352556dc8538b72de1e693e2a244d420a26d.patch";
-            hash = "sha256-aSaror26x4kVkLVetPEbrJG4H1zstHsNWqmwqOys3zo=";
           })
         ];
       }))
@@ -58,6 +59,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-YmKcqjMe1L1Ot6vhPuLkg0+8qnDeSS2zll+vpO3FaU8=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     autoPatchelfHook
     makeWrapper
@@ -66,8 +69,6 @@ stdenv.mkDerivation (finalAttrs: {
   propagatedBuildInputs = [
     gtk-sharp-3_0
   ];
-
-  strictDeps = true;
 
   installPhase = ''
     runHook preInstall
@@ -102,10 +103,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Virtual development framework for complex embedded systems";
     homepage = "https://renode.io";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       otavio
       znaniye
     ];
+
     platforms = [ "x86_64-linux" ];
   };
 })

@@ -7,8 +7,8 @@
   imageio,
   imutils,
   requests,
-  urllib3,
   tqdm,
+  urllib3,
   validators,
   yarl,
 }:
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "dremel3dpy";
   version = "2.1.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -37,7 +36,7 @@ buildPythonPackage (finalAttrs: {
 
   # Module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "dremel3dpy" ];
 
   meta = {

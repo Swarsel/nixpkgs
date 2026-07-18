@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  makeWrapper,
   jre,
+  makeWrapper,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -36,9 +36,9 @@ stdenvNoCC.mkDerivation rec {
   meta = {
     description = "netCDF, HDF and GRIB Data Viewer";
     homepage = "https://www.giss.nasa.gov/tools/panoply";
-    platforms = lib.platforms.linux;
-    maintainers = [ lib.maintainers.markuskowa ];
     license = lib.licenses.unfree; # Package does not state a license
+    maintainers = [ lib.maintainers.markuskowa ];
+    platforms = lib.platforms.linux;
     mainProgram = "panoply";
   };
 }

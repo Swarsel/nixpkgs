@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   gotools,
 }:
 
@@ -16,11 +16,15 @@ buildGoModule (finalAttrs: {
     hash = "sha256-mLYyrscvT/VK9ehwkPUq4RbwHb+6Wjvt7ZXk/fI0HT4=";
   };
 
-  vendorHash = null;
-
   nativeBuildInputs = [ gotools ];
-
+  vendorHash = null;
   postConfigure = "go generate ./...";
+
+  postInstall = ''
+    mkdir -p $out/etc $out/libexec
+    $out/bin/jobbermaster defprefs --libexec $out/libexec > $out/etc/jobber.conf
+    mv $out/bin/jobber{master,runner} $out/libexec/
+  '';
 
   ldflags = [
     "-s"
@@ -29,16 +33,10 @@ buildGoModule (finalAttrs: {
     "-X github.com/dshearer/jobber/common.etcDirPath=${placeholder "out"}/etc"
   ];
 
-  postInstall = ''
-    mkdir -p $out/etc $out/libexec
-    $out/bin/jobbermaster defprefs --libexec $out/libexec > $out/etc/jobber.conf
-    mv $out/bin/jobber{master,runner} $out/libexec/
-  '';
-
   meta = {
+    description = "Alternative to cron, with sophisticated status-reporting and error-handling";
     homepage = "https://dshearer.github.io/jobber";
     changelog = "https://github.com/dshearer/jobber/releases/tag/v${finalAttrs.version}";
-    description = "Alternative to cron, with sophisticated status-reporting and error-handling";
     license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "jobber";

@@ -1,8 +1,8 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,23 +16,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-4m/YYyQtz/Nj94vIUxChgmDsJVZqtzmp7qsSiuZVB38=";
   };
 
-  proxyVendor = true;
-  vendorHash = "sha256-8riGHomL3wKqBOPOzgE13jWYjJT03tqz1UMWR/01pcE=";
-
   # skipping: end-to-end tests require a docker daemon
   postPatch = ''
     rm -r tests/gomigrations
   '';
 
-  subPackages = [
-    "cmd/goose"
-  ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=main.version=${finalAttrs.version}"
-  ];
+  vendorHash = "sha256-8riGHomL3wKqBOPOzgE13jWYjJT03tqz1UMWR/01pcE=";
+  doCheck = !stdenv.hostPlatform.isDarwin;
 
   checkFlags = [
     # NOTE:
@@ -41,7 +31,17 @@ buildGoModule (finalAttrs: {
     "-skip=TestClickUpDown|TestClickHouseFirstThree|TestLockModeAdvisorySession|TestDialectStore|TestGoMigrationStats|TestPostgresSessionLocker"
   ];
 
-  doCheck = !stdenv.hostPlatform.isDarwin;
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=main.version=${finalAttrs.version}"
+  ];
+
+  proxyVendor = true;
+
+  subPackages = [
+    "cmd/goose"
+  ];
 
   meta = {
     description = "Database migration tool which supports SQL migrations and Go functions";

@@ -19,8 +19,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  dontConfigure = true;
-  dontBuild = true;
+
   installPhase = ''
     mkdir -p $out/share/jq-zsh-plugin/
     cp jq.plugin.zsh $out/share/jq-zsh-plugin
@@ -32,13 +31,15 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace $out/share/jq-zsh-plugin/bin/jq-repl-preview --replace-fail ":-jq" ":-${jq}/bin/jq"
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Interactively build jq expressions in Zsh";
     homepage = "https://github.com/reegnz/jq-zsh-plugin";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.vinnymeller ];
+    platforms = lib.platforms.unix;
   };
 })

@@ -1,58 +1,58 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
+  accountsservice,
   atk,
   cacert,
-  dbus,
+  cairo,
   cinnamon-control-center,
   cinnamon-desktop,
   cinnamon-menus,
   cinnamon-session,
   cinnamon-translations,
   cjs,
+  dbus,
   evolution-data-server,
-  fetchFromGitHub,
   fetchpatch,
   gcr,
   gdk-pixbuf,
   gettext,
-  libgnomekbd,
   glib,
+  glib-networking,
+  gnome-online-accounts,
   gobject-introspection,
+  graphene,
   gsound,
+  gst_all_1,
+  gtk-doc,
   gtk3,
   ibus,
   json-glib,
+  keybinder3,
+  libgbm,
+  libgnomekbd,
+  libnma,
+  libnotify,
   libsecret,
   libstartup_notification,
-  libxtst,
   libxdamage,
-  libgbm,
+  libxml2,
+  libxtst,
+  meson,
   muffin,
+  nemo,
   networkmanager,
+  ninja,
+  pciutils,
+  perl,
   pkg-config,
   polkit,
-  lib,
-  stdenv,
-  wrapGAppsHook3,
-  libxml2,
-  gtk-doc,
   python3,
-  keybinder3,
-  cairo,
-  xapp,
-  upower,
-  nemo,
-  libnotify,
-  accountsservice,
-  gnome-online-accounts,
-  glib-networking,
-  graphene,
-  pciutils,
   timezonemap,
-  libnma,
-  meson,
-  ninja,
-  gst_all_1,
-  perl,
+  upower,
+  wrapGAppsHook3,
+  xapp,
 }:
 
 let
@@ -90,15 +90,59 @@ stdenv.mkDerivation (finalAttrs: {
 
     # util.js: Adapt to GIR 2.0
     (fetchpatch {
-      url = "https://github.com/linuxmint/cinnamon/commit/3a2d558aa575f0ea364c5b4e30d2eb3ee604ee58.patch";
       hash = "sha256-+uAGuQJ0VsIvMvPFafyoXmU4MiHfbbRXLzeW/n62ucw=";
+      url = "https://github.com/linuxmint/cinnamon/commit/3a2d558aa575f0ea364c5b4e30d2eb3ee604ee58.patch";
     })
 
     # cinnamon-calendar-server.py: Allow ICal 4.0
     (fetchpatch {
-      url = "https://github.com/linuxmint/cinnamon/commit/dcf2d986c1ec167b0a8005ef2ca427317438c8d7.patch";
       hash = "sha256-4sCZShUOXPaJoumiuEG558e0l8CIehH0P+C9OouG3vI=";
+      url = "https://github.com/linuxmint/cinnamon/commit/dcf2d986c1ec167b0a8005ef2ca427317438c8d7.patch";
     })
+  ];
+
+  postPatch = ''
+    find . -type f -exec sed -i \
+      -e s,/usr/share/cinnamon,$out/share/cinnamon,g \
+      -e s,/usr/share/locale,/run/current-system/sw/share/locale,g \
+      {} +
+
+    # All optional and may introduce circular dependency.
+    find ./files/usr/share/cinnamon/applets -type f -exec sed -i \
+      -e '/^#/!s,/usr/bin,/run/current-system/sw/bin,g' \
+      {} +
+
+    pushd ./files/usr/share/cinnamon/cinnamon-settings
+      substituteInPlace ./bin/capi.py                     --replace-fail '"/usr/lib"' '"${cinnamon-control-center}/lib"'
+      substituteInPlace ./bin/SettingsWidgets.py          --replace-fail "/usr/share/sounds" "/run/current-system/sw/share/sounds"
+      substituteInPlace ./bin/Spices.py                   --replace-fail "subprocess.run(['/usr/bin/" "subprocess.run(['" \
+                                                          --replace-fail 'subprocess.run(["/usr/bin/' 'subprocess.run(["' \
+                                                          --replace-fail "msgfmt" "${gettext}/bin/msgfmt"
+      substituteInPlace ./modules/cs_info.py              --replace-fail "lspci" "${pciutils}/bin/lspci"
+      substituteInPlace ./modules/cs_themes.py            --replace-fail "$out/share/cinnamon/styles.d" "/run/current-system/sw/share/cinnamon/styles.d"
+      substituteInPlace ./modules/cs_user.py              --replace-fail "/usr/bin/passwd" "/run/wrappers/bin/passwd"
+    popd
+
+    # In preFixup we make these executable.
+    substituteInPlace ./files/usr/share/cinnamon/applets/printers@cinnamon.org/applet.js \
+      --replace-fail "Util.spawn_async(['python3'," "Util.spawn_async(["
+
+    substituteInPlace ./files/usr/bin/cinnamon-session-{cinnamon,cinnamon2d} \
+      --replace-fail "exec cinnamon-session" "exec ${cinnamon-session}/bin/cinnamon-session"
+
+    patchShebangs src/data-to-c.pl
+  '';
+
+  nativeBuildInputs = [
+    gobject-introspection
+    meson
+    ninja
+    wrapGAppsHook3
+    gtk-doc
+    perl
+    python3.pkgs.libsass # for pysassc
+    python3.pkgs.wrapPython
+    pkg-config
   ];
 
   buildInputs = [
@@ -147,50 +191,6 @@ stdenv.mkDerivation (finalAttrs: {
     glib-networking # for goa
   ];
 
-  nativeBuildInputs = [
-    gobject-introspection
-    meson
-    ninja
-    wrapGAppsHook3
-    gtk-doc
-    perl
-    python3.pkgs.libsass # for pysassc
-    python3.pkgs.wrapPython
-    pkg-config
-  ];
-
-  postPatch = ''
-    find . -type f -exec sed -i \
-      -e s,/usr/share/cinnamon,$out/share/cinnamon,g \
-      -e s,/usr/share/locale,/run/current-system/sw/share/locale,g \
-      {} +
-
-    # All optional and may introduce circular dependency.
-    find ./files/usr/share/cinnamon/applets -type f -exec sed -i \
-      -e '/^#/!s,/usr/bin,/run/current-system/sw/bin,g' \
-      {} +
-
-    pushd ./files/usr/share/cinnamon/cinnamon-settings
-      substituteInPlace ./bin/capi.py                     --replace-fail '"/usr/lib"' '"${cinnamon-control-center}/lib"'
-      substituteInPlace ./bin/SettingsWidgets.py          --replace-fail "/usr/share/sounds" "/run/current-system/sw/share/sounds"
-      substituteInPlace ./bin/Spices.py                   --replace-fail "subprocess.run(['/usr/bin/" "subprocess.run(['" \
-                                                          --replace-fail 'subprocess.run(["/usr/bin/' 'subprocess.run(["' \
-                                                          --replace-fail "msgfmt" "${gettext}/bin/msgfmt"
-      substituteInPlace ./modules/cs_info.py              --replace-fail "lspci" "${pciutils}/bin/lspci"
-      substituteInPlace ./modules/cs_themes.py            --replace-fail "$out/share/cinnamon/styles.d" "/run/current-system/sw/share/cinnamon/styles.d"
-      substituteInPlace ./modules/cs_user.py              --replace-fail "/usr/bin/passwd" "/run/wrappers/bin/passwd"
-    popd
-
-    # In preFixup we make these executable.
-    substituteInPlace ./files/usr/share/cinnamon/applets/printers@cinnamon.org/applet.js \
-      --replace-fail "Util.spawn_async(['python3'," "Util.spawn_async(["
-
-    substituteInPlace ./files/usr/bin/cinnamon-session-{cinnamon,cinnamon2d} \
-      --replace-fail "exec cinnamon-session" "exec ${cinnamon-session}/bin/cinnamon-session"
-
-    patchShebangs src/data-to-c.pl
-  '';
-
   postInstall = ''
     # Use locales from cinnamon-translations.
     ln -s ${cinnamon-translations}/share/locale $out/share/locale
@@ -222,8 +222,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/linuxmint/cinnamon";
     description = "Cinnamon desktop environment";
+    homepage = "https://github.com/linuxmint/cinnamon";
     license = [ lib.licenses.gpl2 ];
     platforms = lib.platforms.linux;
     teams = [ lib.teams.cinnamon ];

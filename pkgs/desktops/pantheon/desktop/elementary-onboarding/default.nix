@@ -2,12 +2,6 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
-  wrapGAppsHook4,
   appcenter,
   elementary-settings-daemon,
   glib,
@@ -16,7 +10,13 @@
   gtk4,
   libadwaita,
   libgee,
+  meson,
+  ninja,
+  nix-update-script,
   pantheon-wayland,
+  pkg-config,
+  vala,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation rec {
@@ -59,7 +59,7 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/elementary/onboarding";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
-    teams = [ lib.teams.pantheon ];
     mainProgram = "io.elementary.onboarding";
+    teams = [ lib.teams.pantheon ];
   };
 }

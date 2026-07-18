@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  autoreconfHook,
   SDL,
   SDL_net,
   SDL_sound,
+  autoreconfHook,
+  binutils,
   copyDesktopItems,
+  fetchpatch,
   graphicsmagick,
   libGL,
   libGLU,
   libpng,
-  binutils,
   makeDesktopItem,
 }:
 
@@ -27,9 +27,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/joncampbell123/dosbox-x/commit/006d5727d36d1ec598e387f2f1a3c521e3673dcb.patch";
-      includes = [ "src/gui/render_templates_sai.h" ];
       hash = "sha256-HSO29/LgZRKQ3HQBA0QF5henG8pCSoe1R2joYNPcUcE=";
+      includes = [ "src/gui/render_templates_sai.h" ];
+      url = "https://github.com/joncampbell123/dosbox-x/commit/006d5727d36d1ec598e387f2f1a3c521e3673dcb.patch";
     })
   ];
 
@@ -40,10 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
     copyDesktopItems
     graphicsmagick
     SDL
-  ];
-
-  depsBuildBuild = lib.optionals (!stdenv.buildPlatform.isDarwin) [
-    binutils # build calls `ar`
   ];
 
   buildInputs = [
@@ -57,39 +53,41 @@ stdenv.mkDerivation (finalAttrs: {
     libGLU
   ];
 
+  configureFlags = lib.optional stdenv.hostPlatform.isDarwin "--disable-sdltest";
   # Tests for SDL_net.h for modem & IPX support, not automatically picked up due to being in SDL subdirectory
   env.NIX_CFLAGS_COMPILE = "-I${lib.getDev SDL_net}/include/SDL";
-
-  hardeningDisable = [ "format" ];
-
-  configureFlags = lib.optional stdenv.hostPlatform.isDarwin "--disable-sdltest";
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "dosbox";
-      exec = "dosbox";
-      icon = "dosbox";
-      comment = "x86 dos emulator";
-      desktopName = "DOSBox";
-      genericName = "DOS emulator";
-      categories = [
-        "Emulator"
-        "Game"
-      ];
-    })
-  ];
 
   postInstall = ''
     mkdir -p $out/share/icons/hicolor/256x256/apps
     gm convert src/dosbox.ico $out/share/icons/hicolor/256x256/apps/dosbox.png
   '';
 
+  depsBuildBuild = lib.optionals (!stdenv.buildPlatform.isDarwin) [
+    binutils # build calls `ar`
+  ];
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Emulator"
+        "Game"
+      ];
+
+      comment = "x86 dos emulator";
+      desktopName = "DOSBox";
+      exec = "dosbox";
+      genericName = "DOS emulator";
+      icon = "dosbox";
+      name = "dosbox";
+    })
+  ];
+
   enableParallelBuilding = true;
+  hardeningDisable = [ "format" ];
 
   meta = {
-    homepage = "http://www.dosbox.com/";
-    changelog = "https://www.dosbox.com/wiki/Releases";
     description = "DOS emulator";
+
     longDescription = ''
       DOSBox is an emulator that recreates a MS-DOS compatible environment
       (complete with Sound, Input, Graphics and even basic networking). This
@@ -97,6 +95,9 @@ stdenv.mkDerivation (finalAttrs: {
       unmodified. In order to utilize all of DOSBox's features you need to first
       understand some basic concepts about the MS-DOS environment.
     '';
+
+    homepage = "http://www.dosbox.com/";
+    changelog = "https://www.dosbox.com/wiki/Releases";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;

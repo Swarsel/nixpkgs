@@ -2,18 +2,17 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
+  c-siphash,
+  cython,
   meson,
   meson-python,
-  cython,
   pkg-config,
-  c-siphash,
   pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
-  version = "1.8";
   pname = "siphash24";
-  pyproject = true;
+  version = "1.8";
 
   src = fetchFromGitHub {
     owner = "dnicolodi";
@@ -24,27 +23,28 @@ buildPythonPackage (finalAttrs: {
 
   nativeBuildInputs = [ pkg-config ];
 
+  buildInputs = [
+    c-siphash
+  ];
+
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     meson
     meson-python
     cython
   ];
 
-  buildInputs = [
-    c-siphash
-  ];
+  enabledTestPaths = [ "test.py" ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "siphash24"
   ];
 
-  enabledTestPaths = [ "test.py" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   meta = {
-    homepage = "https://github.com/dnicolodi/python-siphash24";
     description = "Streaming-capable SipHash Implementation";
+    homepage = "https://github.com/dnicolodi/python-siphash24";
     changelog = "https://github.com/dnicolodi/python-siphash24/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.lgpl2Plus;
     maintainers = with lib.maintainers; [ qbisi ];

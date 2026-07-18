@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   exiftool,
-  setuptools,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyexiftool";
   version = "0.5.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sylikc";
@@ -26,19 +25,20 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ setuptools ];
-
+  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
   pythonImportsCheck = [ "exiftool" ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   meta = {
-    changelog = "https://github.com/sylikc/pyexiftool/blob/${src.rev}/CHANGELOG.md";
     description = "Python wrapper for exiftool";
     homepage = "https://github.com/sylikc/pyexiftool";
+    changelog = "https://github.com/sylikc/pyexiftool/blob/${src.rev}/CHANGELOG.md";
+
     license = with lib.licenses; [
       bsd3 # or
       gpl3Plus
     ];
+
     maintainers = with lib.maintainers; [ dotlambda ];
   };
 }

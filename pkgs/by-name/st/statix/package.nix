@@ -1,15 +1,14 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  withJson ? true,
   nix-update-script,
+  rustPlatform,
+  withJson ? true,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "statix";
   version = "0.5.8-unstable-2026-07-10";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "molybdenumsoftware";
@@ -19,7 +18,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-Ed0eSGhx0D1oZS44ObS3j1TuM3A1HnDKzDjDVYlX1jM=";
-
+  __structuredAttrs = true;
   buildFeatures = lib.optional withJson "json";
 
   passthru.updateScript = nix-update-script {
@@ -30,11 +29,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Lints and suggestions for the nix programming language";
     homepage = "https://github.com/molybdenumsoftware/statix";
     license = lib.licenses.mit;
-    mainProgram = "statix";
+
     maintainers = with lib.maintainers; [
       mightyiam
       nerdypepper
       progrm_jarvis
     ];
+
+    mainProgram = "statix";
   };
 })

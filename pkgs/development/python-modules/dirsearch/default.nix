@@ -1,9 +1,6 @@
 {
   lib,
   fetchFromGitHub,
-  buildPythonPackage,
-  python,
-  pytestCheckHook,
   # deps
   /*
     ntlm-auth is in the requirements.txt, however nixpkgs tells me
@@ -14,6 +11,7 @@
   #ntlm-auth,
   #pyspnego,
   beautifulsoup4,
+  buildPythonPackage,
   certifi,
   cffi,
   chardet,
@@ -27,6 +25,8 @@
   pyopenssl,
   pyparsing,
   pysocks,
+  pytestCheckHook,
+  python,
   requests,
   requests-ntlm,
   setuptools,
@@ -51,7 +51,21 @@ buildPythonPackage (finalAttrs: {
       --replace-fail 'shutil.copytree(os.path.abspath(os.getcwd()), os.path.join(env_dir, "dirsearch"))' ""
   '';
 
-  pyproject = true;
+  # tests
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
+  # the library files get installed in the wrong location
+  # and dirsearch.py, __init__.py and db/ are missing
+  postInstall = ''
+    dirsearchpath=$out/lib/python${lib.versions.majorMinor python.version}/site-packages/
+    mkdir -p $dirsearchpath/dirsearch
+    mv $dirsearchpath/{lib,dirsearch}
+    cp $src/{dirsearch,__init__}.py $dirsearchpath/dirsearch
+    cp -r $src/db $dirsearchpath/dirsearch
+  '';
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -78,32 +92,18 @@ buildPythonPackage (finalAttrs: {
     urllib3
   ];
 
-  # the library files get installed in the wrong location
-  # and dirsearch.py, __init__.py and db/ are missing
-  postInstall = ''
-    dirsearchpath=$out/lib/python${lib.versions.majorMinor python.version}/site-packages/
-    mkdir -p $dirsearchpath/dirsearch
-    mv $dirsearchpath/{lib,dirsearch}
-    cp $src/{dirsearch,__init__}.py $dirsearchpath/dirsearch
-    cp -r $src/db $dirsearchpath/dirsearch
-  '';
-
-  # tests
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
   disabledTestPaths = [
     # needs network?
     "tests/reports/test_reports.py"
   ];
+
   disabledTests = [
     # failing for unknown reason
     "test_detect_scheme"
   ];
-  pythonRemoveDeps = [
-    # not available, see above
-    "ntlm_auth"
-  ];
+
+  pyproject = true;
+
   pythonRelaxDeps = [
     # version checker doesn't recognize 0.8.0.rc2 as >=0.7.0
     "defusedxml"
@@ -113,12 +113,17 @@ buildPythonPackage (finalAttrs: {
     "charset_normalizer"
   ];
 
+  pythonRemoveDeps = [
+    # not available, see above
+    "ntlm_auth"
+  ];
+
   meta = {
-    changelog = "https://github.com/maurosoria/dirsearch/releases/tag/${finalAttrs.src.tag}";
     description = "Command-line tool for brute-forcing directories and files in webservers, AKA a web path scanner";
     homepage = "https://github.com/maurosoria/dirsearch";
+    changelog = "https://github.com/maurosoria/dirsearch/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl2Only;
-    mainProgram = "dirsearch";
     maintainers = with lib.maintainers; [ quantenzitrone ];
+    mainProgram = "dirsearch";
   };
 })

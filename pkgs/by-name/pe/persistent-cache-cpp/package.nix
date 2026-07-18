@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  testers,
   boost,
   cmake,
   doxygen,
+  gitUpdater,
   gtest,
   leveldb,
   lomiri,
   pkg-config,
   python3,
+  testers,
   validatePkgConfig,
 }:
 
@@ -58,14 +58,6 @@ stdenv.mkDerivation (finalAttrs: {
     leveldb
   ];
 
-  nativeCheckInputs = [
-    python3
-  ];
-
-  checkInputs = [
-    gtest
-  ];
-
   cmakeFlags = [
     # error: 'old_version' may be used uninitialized
     (lib.cmakeBool "Werror" false)
@@ -75,27 +67,40 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
+  nativeCheckInputs = [
+    python3
+  ];
+
+  checkInputs = [
+    gtest
+  ];
+
   passthru = {
     tests.pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
       versionCheck = true;
     };
+
     updateScript = gitUpdater { };
   };
 
   meta = {
     description = "Cache of key-value pairs with persistent storage for C++ 11";
+
     longDescription = ''
       A persistent cache for arbitrary (possibly large amount of data, such as
       image files) that is fast, scalable, and crash-proof.
     '';
+
     homepage = "https://gitlab.com/ubports/development/core/lib-cpp/persistent-cache-cpp";
     changelog = "https://gitlab.com/ubports/development/core/lib-cpp/persistent-cache-cpp/-/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.lgpl3Only;
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.unix;
+
     pkgConfigModules = [
       "libpersistent-cache-cpp"
     ];
+
+    teams = [ lib.teams.lomiri ];
   };
 })

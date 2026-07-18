@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 let
@@ -11,12 +11,11 @@ in
   options = {
     services.zfs.autoReplication = {
       enable = lib.mkEnableOption "ZFS snapshot replication";
-
       package = lib.mkPackageOption pkgs "zfs-replicate" { };
 
       followDelete = lib.mkOption {
-        description = "Remove remote snapshots that don't have a local correspondent.";
         default = true;
+        description = "Remove remote snapshots that don't have a local correspondent.";
         type = lib.types.bool;
       };
 
@@ -38,16 +37,16 @@ in
         type = lib.types.str;
       };
 
+      recursive = lib.mkOption {
+        default = true;
+        description = "Recursively discover snapshots to send.";
+        type = lib.types.bool;
+      };
+
       remoteFilesystem = lib.mkOption {
         description = "Remote ZFS filesystem where snapshots should be sent.";
         example = "pool/file/path";
         type = lib.types.str;
-      };
-
-      recursive = lib.mkOption {
-        description = "Recursively discover snapshots to send.";
-        default = true;
-        type = lib.types.bool;
       };
 
       username = lib.mkOption {
@@ -71,11 +70,15 @@ in
         "zfs-snapshot-monthly.service"
         "zfs-snapshot-weekly.service"
       ];
+
       description = "ZFS Snapshot Replication";
+
       documentation = [
         "https://github.com/alunduil/zfs-replicate"
       ];
+
       restartIfChanged = false;
+
       serviceConfig.ExecStart =
         let
           args = lib.map lib.escapeShellArg (
@@ -94,6 +97,7 @@ in
           );
         in
         "${lib.getExe cfg.package} ${lib.concatStringsSep " " args}";
+
       wantedBy = [
         "zfs-snapshot-daily.service"
         "zfs-snapshot-frequent.service"

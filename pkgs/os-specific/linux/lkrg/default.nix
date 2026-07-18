@@ -11,7 +11,6 @@ let
     && (kernel.structuredExtraConfig.PREEMPT_RT == lib.kernel.yes);
 in
 stdenv.mkDerivation (finalAttrs: {
-  name = "${finalAttrs.pname}-${finalAttrs.version}-${kernel.version}";
   pname = "lkrg";
   version = "1.0.0";
 
@@ -22,25 +21,25 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Eb0+rgbI+gbY1NjVyPLB6kZgDsYoSCxjy162GophiMI=";
   };
 
-  hardeningDisable = [ "pic" ];
-
   nativeBuildInputs = kernel.moduleBuildDependencies;
 
   makeFlags = kernelModuleMakeFlags ++ [
     "KERNEL=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
   ];
 
-  enableParallelBuilding = true;
-  dontConfigure = true;
-
-  prePatch = ''
-    substituteInPlace Makefile --replace "KERNEL := " "KERNEL ?= "
-  '';
-
   installPhase = ''
     runHook preInstall
     install -D lkrg.ko $out/lib/modules/${kernel.modDirVersion}/extra/lkrg.ko
     runHook postInstall
+  '';
+
+  dontConfigure = true;
+  enableParallelBuilding = true;
+  hardeningDisable = [ "pic" ];
+  name = "${finalAttrs.pname}-${finalAttrs.version}-${kernel.version}";
+
+  prePatch = ''
+    substituteInPlace Makefile --replace "KERNEL := " "KERNEL ?= "
   '';
 
   meta = {

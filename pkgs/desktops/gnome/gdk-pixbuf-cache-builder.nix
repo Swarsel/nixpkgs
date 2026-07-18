@@ -1,9 +1,9 @@
 {
-  runCommand,
-  gdk-pixbuf,
   lib,
   stdenv,
   buildPackages,
+  gdk-pixbuf,
+  runCommand,
 }:
 
 {

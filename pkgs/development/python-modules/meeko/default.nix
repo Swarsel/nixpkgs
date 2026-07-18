@@ -1,26 +1,22 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   gemmi,
   numpy,
-  rdkit,
-  scipy,
-
   # tests
   pytestCheckHook,
+  rdkit,
+  scipy,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "meeko";
   version = "0.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "forlilab";
@@ -28,6 +24,8 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-ObGUUNzfK2k37uJ/aY3DHf9BlJ1nzqTe6tHvV2rj1og=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -39,8 +37,6 @@ buildPythonPackage rec {
     rdkit
     scipy
   ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   disabledTests = [
     # Require internet connection
@@ -77,6 +73,7 @@ buildPythonPackage rec {
     "test_altloc"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "meeko" ];
 
   meta = {

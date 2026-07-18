@@ -1,13 +1,13 @@
 {
   lib,
+  stdenv,
   bison,
   buildPackages,
   flex,
   meson,
   mkAppleDerivation,
-  sourceRelease,
   replaceVars,
-  stdenv,
+  sourceRelease,
   stdenvNoCC,
 }:
 
@@ -16,13 +16,13 @@ let
   xnu = sourceRelease "xnu";
 
   privateHeaders = stdenvNoCC.mkDerivation {
-    name = "adv_cmds-deps-private-headers";
-
     buildCommand = ''
       install -D -t "$out/include/os" \
         '${Libc}/os/assumes.h' \
         '${xnu}/libkern/os/base_private.h'
     '';
+
+    name = "adv_cmds-deps-private-headers";
   };
 
   # bootstrap_cmds is used to build libkrb5, which is a transitive dependency of Meson due to OpenLDAP.
@@ -32,15 +32,10 @@ let
   };
 in
 mkAppleDerivation' {
-  releaseName = "bootstrap_cmds";
-
   outputs = [
     "out"
     "man"
   ];
-
-  xcodeHash = "sha256-N28WLkFo8fXiQqqpmRmOBE3BzqXHIy94fhZIxEkmOw4=";
-  xcodeProject = "mig.xcodeproj";
 
   patches = [
     # Make sure that `mig` in nixpkgs uses the correct clang
@@ -58,12 +53,12 @@ mkAppleDerivation' {
       --replace-fail 'y.tab.h' 'parser.tab.h'
   '';
 
-  env.NIX_CFLAGS_COMPILE = "-I${privateHeaders}/include";
-
   nativeBuildInputs = [
     bison
     flex
   ];
+
+  env.NIX_CFLAGS_COMPILE = "-I${privateHeaders}/include";
 
   postInstall = ''
     mv "$out/bin/mig.sh" "$out/bin/mig"
@@ -76,5 +71,8 @@ mkAppleDerivation' {
       --replace-fail '/usr/bin/xcrun' '${buildPackages.xcbuild.xcrun}/bin/xcrun'
   '';
 
+  releaseName = "bootstrap_cmds";
+  xcodeHash = "sha256-N28WLkFo8fXiQqqpmRmOBE3BzqXHIy94fhZIxEkmOw4=";
+  xcodeProject = "mig.xcodeproj";
   meta.description = "Contains mig command for generating headers from definitions";
 }

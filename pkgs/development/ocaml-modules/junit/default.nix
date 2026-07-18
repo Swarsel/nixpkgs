@@ -24,8 +24,8 @@ buildDunePackage (finalAttrs: {
 
   meta = {
     description = "OCaml package for the creation of JUnit XML reports, proving a typed API to produce valid reports acceptable to Jenkins, comes with packages supporting OUnit and Alcotest";
+    homepage = "https://github.com/Khady/ocaml-junit";
     license = lib.licenses.lgpl3Plus;
     maintainers = [ ];
-    homepage = "https://github.com/Khady/ocaml-junit";
   };
 })

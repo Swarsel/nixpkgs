@@ -2,28 +2,28 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
-  cmake,
-  rocm-cmake,
-  rocm-smi,
-  rocm-core,
-  pkg-config,
+  autoPatchelfHook,
+  chrpath,
   clr,
-  mscclpp,
-  perl,
-  hipify,
-  python3,
+  cmake,
   fmt,
   gtest,
-  chrpath,
-  roctracer,
-  rocprofiler,
-  rocprofiler-register,
-  autoPatchelfHook,
-  buildTests ? false,
-  gpuTargets ? (clr.localGpuTargets or [ ]),
+  hipify,
+  mscclpp,
+  perl,
+  pkg-config,
+  python3,
   # for passthru.tests
   rccl,
+  rocm-cmake,
+  rocm-core,
+  rocm-smi,
+  rocmUpdateScript,
+  rocprofiler,
+  rocprofiler-register,
+  roctracer,
+  buildTests ? false,
+  gpuTargets ? (clr.localGpuTargets or [ ]),
 }:
 
 let
@@ -42,6 +42,13 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "rccl${clr.gpuArchSuffix}";
   version = "7.2.3";
 
+  src = fetchFromGitHub {
+    owner = "ROCm";
+    repo = "rccl";
+    rev = "rocm-${finalAttrs.version}";
+    hash = "sha256-A1IQYIDWqu3JLiPQ70G52s1/0ZweQxFlgMUH81qJWmU=";
+  };
+
   outputs = [
     "out"
   ]
@@ -54,14 +61,13 @@ stdenv.mkDerivation (finalAttrs: {
     ./fix_hw_reg_hw_id_gt_gfx10.patch
   ];
 
-  src = fetchFromGitHub {
-    owner = "ROCm";
-    repo = "rccl";
-    rev = "rocm-${finalAttrs.version}";
-    hash = "sha256-A1IQYIDWqu3JLiPQ70G52s1/0ZweQxFlgMUH81qJWmU=";
-  };
-
-  requiredSystemFeatures = [ "big-parallel" ]; # Very resource intensive LTO
+  postPatch = ''
+    patchShebangs src tools
+    substituteInPlace CMakeLists.txt \
+      --replace-fail '${"\${HOST_OS_ID}"}' '"ubuntu"' \
+      --replace-fail 'target_include_directories(rccl PRIVATE ''${ROCM_SMI_INCLUDE_DIR})' \
+      'target_include_directories(rccl PRIVATE ''${ROCM_SMI_INCLUDE_DIRS})'
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -120,13 +126,6 @@ stdenv.mkDerivation (finalAttrs: {
   env.CFLAGS = "-I${clr}/include -I${roctracer}/include -O2 -fno-strict-aliasing ${san}-fno-omit-frame-pointer -momit-leaf-frame-pointer";
   env.CXXFLAGS = "-I${clr}/include -I${roctracer}/include -O2 -fno-strict-aliasing ${san}-fno-omit-frame-pointer -momit-leaf-frame-pointer";
   env.LDFLAGS = "${san}";
-  postPatch = ''
-    patchShebangs src tools
-    substituteInPlace CMakeLists.txt \
-      --replace-fail '${"\${HOST_OS_ID}"}' '"ubuntu"' \
-      --replace-fail 'target_include_directories(rccl PRIVATE ''${ROCM_SMI_INCLUDE_DIR})' \
-      'target_include_directories(rccl PRIVATE ''${ROCM_SMI_INCLUDE_DIRS})'
-  '';
 
   postInstall =
     lib.optionalString useAsan ''
@@ -138,7 +137,7 @@ stdenv.mkDerivation (finalAttrs: {
       rmdir $out/bin
     '';
 
-  passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
+  requiredSystemFeatures = [ "big-parallel" ]; # Very resource intensive LTO
 
   # This package with sanitizers + manual integration test binaries built
   # must be ran manually
@@ -146,14 +145,18 @@ stdenv.mkDerivation (finalAttrs: {
     buildTests = true;
   };
 
+  passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
+
   meta = {
     description = "ROCm communication collectives library";
     homepage = "https://github.com/ROCm/rccl";
+
     license = with lib.licenses; [
       bsd2
       bsd3
     ];
-    teams = [ lib.teams.rocm ];
+
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

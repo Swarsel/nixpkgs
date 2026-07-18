@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   cargo-about,
+  clang,
+  elfutils,
+  libbpf,
+  libseccomp,
   nix-update-script,
   pkg-config,
-  libbpf,
-  elfutils,
-  libseccomp,
+  rustPlatform,
   zlib,
-  clang,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -23,10 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rev = "ecbda651a4006789debf565376cd6f37241dec3e";
     hash = "sha256-wP7jAGoWgvm3/4XBHr27MD8M9qwyVpuDVR96S8+I3eo=";
   };
-
-  cargoHash = "sha256-kJrWAyRcU5eEfTwaAxcN6oE5KHgBdjznWeI21/3c/UE=";
-
-  hardeningDisable = [ "zerocallusedregs" ];
 
   nativeBuildInputs = [
     cargo-about
@@ -41,10 +37,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zlib
   ];
 
-  cargoBuildFlags = [
-    "--no-default-features"
-    "--features=recommended"
-  ];
+  cargoHash = "sha256-kJrWAyRcU5eEfTwaAxcN6oE5KHgBdjznWeI21/3c/UE=";
 
   preBuild = ''
     sed -i '1ino-clearly-defined = true' about.toml  # disable network requests
@@ -65,19 +58,27 @@ rustPlatform.buildRustPackage (finalAttrs: {
     install -Dm644 THIRD_PARTY_LICENSES.HTML -t "$out/share/licenses/tracexec/"
   '';
 
+  cargoBuildFlags = [
+    "--no-default-features"
+    "--features=recommended"
+  ];
+
+  hardeningDisable = [ "zerocallusedregs" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/kxxt/tracexec/blob/v${finalAttrs.version}/CHANGELOG.md";
     description = "Small utility for tracing execve{,at} and pre-exec behavior";
     homepage = "https://github.com/kxxt/tracexec";
+    changelog = "https://github.com/kxxt/tracexec/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "tracexec";
+
     maintainers = with lib.maintainers; [
       fpletz
       kxxt
       nh2
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "tracexec";
   };
 })

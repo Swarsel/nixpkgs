@@ -15,8 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-SW0U483eHptkYw+yJV/2cImfK3uEjkl8ma54yeagF6s=";
   };
 
-  dontUnpack = true;
-
   nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
@@ -28,13 +26,15 @@ stdenv.mkDerivation (finalAttrs: {
       --set _JAVA_AWT_WM_NONREPARENTING 1
   '';
 
+  dontUnpack = true;
+
   meta = {
-    homepage = "https://github.com/kspalaiologos/kamilalisp";
-    description = "Functional, flexible, and concise Lisp";
-    mainProgram = "kamilalisp";
-    license = lib.licenses.gpl3Plus;
     inherit (jre.meta) platforms;
-    maintainers = with lib.maintainers; [ cafkafk ];
+    description = "Functional, flexible, and concise Lisp";
+    homepage = "https://github.com/kspalaiologos/kamilalisp";
+    license = lib.licenses.gpl3Plus;
     sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
+    maintainers = with lib.maintainers; [ cafkafk ];
+    mainProgram = "kamilalisp";
   };
 })

@@ -1,27 +1,32 @@
 {
-  stdenv,
   lib,
-  ocaml,
+  stdenv,
   findlib,
-  zarith,
+  ocaml,
   z3,
+  zarith,
 }:
 
 let
   z3-with-ocaml = (
     z3.override {
-      ocamlBindings = true;
       inherit ocaml findlib zarith;
+      ocamlBindings = true;
     }
   );
 in
 
 stdenv.mkDerivation {
 
-  pname = "ocaml${ocaml.version}-z3";
   inherit (z3-with-ocaml) version;
+  pname = "ocaml${ocaml.version}-z3";
+  strictDeps = true;
+  nativeBuildInputs = [ findlib ];
 
-  dontUnpack = true;
+  propagatedBuildInputs = [
+    z3-with-ocaml.lib
+    zarith
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -31,13 +36,7 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
-  nativeBuildInputs = [ findlib ];
-  propagatedBuildInputs = [
-    z3-with-ocaml.lib
-    zarith
-  ];
-
-  strictDeps = true;
+  dontUnpack = true;
 
   meta = z3.meta // {
     description = "Z3 Theorem Prover (OCaml API)";

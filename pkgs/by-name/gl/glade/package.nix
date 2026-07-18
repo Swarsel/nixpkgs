@@ -1,28 +1,28 @@
 {
-  stdenv,
   lib,
-  gettext,
+  stdenv,
   fetchurl,
-  python3,
+  adwaita-icon-theme,
+  docbook-xsl-nons,
+  docbook_xml_dtd_42,
+  gdk-pixbuf,
+  gettext,
+  gjs,
+  glib,
+  gnome,
+  gobject-introspection,
+  gsettings-desktop-schemas,
+  gtk3,
+  itstool,
+  libxml2,
+  libxslt,
   meson,
   ninja,
   pkg-config,
-  gtk3,
-  glib,
-  gjs,
-  enableWebkit2gtk ? stdenv.hostPlatform.isLinux,
+  python3,
   webkitgtk_4_1,
-  gobject-introspection,
   wrapGAppsHook3,
-  itstool,
-  libxml2,
-  docbook-xsl-nons,
-  docbook_xml_dtd_42,
-  gnome,
-  adwaita-icon-theme,
-  gdk-pixbuf,
-  libxslt,
-  gsettings-desktop-schemas,
+  enableWebkit2gtk ? stdenv.hostPlatform.isLinux,
 }:
 
 stdenv.mkDerivation rec {
@@ -33,6 +33,11 @@ stdenv.mkDerivation rec {
     url = "mirror://gnome/sources/glade/${lib.versions.majorMinor version}/glade-${version}.tar.xz";
     sha256 = "McmtrqhJlyq5UXtWThmsGZd8qXdYsQntwxZwCPU+PZw=";
   };
+
+  postPatch = ''
+    substituteInPlace meson.build \
+      --replace 'webkit2gtk-4.0' 'webkit2gtk-4.1'
+  '';
 
   nativeBuildInputs = [
     meson
@@ -67,11 +72,6 @@ stdenv.mkDerivation rec {
     (lib.mesonEnable "webkit2gtk" enableWebkit2gtk)
   ];
 
-  postPatch = ''
-    substituteInPlace meson.build \
-      --replace 'webkit2gtk-4.0' 'webkit2gtk-4.1'
-  '';
-
   passthru = {
     updateScript = gnome.updateScript {
       packageName = pname;
@@ -79,10 +79,10 @@ stdenv.mkDerivation rec {
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/glade";
     description = "User interface designer for GTK applications";
-    teams = [ lib.teams.gnome ];
+    homepage = "https://gitlab.gnome.org/GNOME/glade";
     license = lib.licenses.lgpl2;
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.gnome ];
   };
 }

@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
-  django-stubs,
-  django,
   fetchFromGitHub,
+  buildPythonPackage,
+  django,
+  django-stubs,
+  hatch-vcs,
+  hatchling,
   parameterized,
   pytest-cov-stub,
   pytest-django,
   pytestCheckHook,
-  hatchling,
-  hatch-vcs,
 }:
 
 buildPythonPackage rec {
   pname = "django-modeltranslation";
   version = "0.20.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "deschler";
@@ -23,13 +22,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-DlghTCh2bcY+jHOYhQWVzMRGNKRIiQkLt4ZHDLVxUUs=";
   };
-
-  build-system = [
-    hatchling
-    hatch-vcs
-  ];
-
-  dependencies = [ django ];
 
   nativeCheckInputs = [
     django-stubs
@@ -39,6 +31,13 @@ buildPythonPackage rec {
     parameterized
   ];
 
+  build-system = [
+    hatchling
+    hatch-vcs
+  ];
+
+  dependencies = [ django ];
+  pyproject = true;
   pythonImportsCheck = [ "modeltranslation" ];
 
   meta = {

@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   fetchpatch,
-  flavour ? [ "frappe" ],
+  stdenvNoCC,
   accents ? [ "blue" ],
+  flavour ? [ "frappe" ],
   winDecStyles ? [ "modern" ],
 }:
 
@@ -64,8 +64,8 @@ lib.checkListOfEnum "Invalid accent, valid accents are ${toString validAccents}"
 
     patches = [
       (fetchpatch {
-        url = "https://github.com/GiggleSquid/catppuccin-kde/commit/f0291c17d2e4711b0d0aac00e3dbb94ee89b4a82.patch";
         hash = "sha256-iD+mEX2LRFmrCwLr3VAs6kzcTuZ231TKDn+U188iOss=";
+        url = "https://github.com/GiggleSquid/catppuccin-kde/commit/f0291c17d2e4711b0d0aac00e3dbb94ee89b4a82.patch";
       })
     ];
 
@@ -89,6 +89,7 @@ lib.checkListOfEnum "Invalid accent, valid accents are ${toString validAccents}"
       description = "Soothing pastel theme for KDE";
       homepage = "https://github.com/catppuccin/kde";
       license = lib.licenses.mit;
+
       maintainers = with lib.maintainers; [
         michaelBelsanti
         gigglesquid

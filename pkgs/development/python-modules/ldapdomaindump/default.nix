@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   dnspython,
   ldap3,
   pycryptodome,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "ldapdomaindump";
   version = "0.10.0-unstable-2025-04-06";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dirkjanm";
@@ -20,6 +19,8 @@ buildPythonPackage rec {
     hash = "sha256-gb/3gtXPQ86bkvunvj1wonxYAFHKkCh2H5dmSNTgz5g=";
   };
 
+  # Tests require LDAP server
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,9 +29,7 @@ buildPythonPackage rec {
     pycryptodome
   ];
 
-  # Tests require LDAP server
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "ldapdomaindump" ];
 
   meta = {

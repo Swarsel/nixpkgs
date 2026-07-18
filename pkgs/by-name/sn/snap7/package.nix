@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchzip,
   p7zip,
 }:
@@ -12,6 +12,7 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchzip {
     url = "mirror://sourceforge/snap7/${finalAttrs.version}/snap7-full-${finalAttrs.version}.7z";
     sha256 = "1n5gs8bwb6g9vfllf3x12r5yzqzapmlq1bmc6hl854b8vkg30y8c";
+
     postFetch = ''
       ${p7zip}/bin/7z x $downloadedFile
       mkdir $out
@@ -25,10 +26,9 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
   ];
 
-  makefile = "x86_64_linux.mk";
   makeFlags = [ "LibInstall=$(out)/lib" ];
-
   preBuild = "cd build/unix";
+
   preInstall = ''
     mkdir -p $out/lib
     mkdir -p $dev/include
@@ -37,9 +37,11 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r $src/doc $doc/share/
   '';
 
+  makefile = "x86_64_linux.mk";
+
   meta = {
-    homepage = "https://snap7.sourceforge.net/";
     description = "Step7 Open Source Ethernet Communication Suite";
+    homepage = "https://snap7.sourceforge.net/";
     license = lib.licenses.lgpl3;
     maintainers = [ ];
     platforms = lib.platforms.linux;

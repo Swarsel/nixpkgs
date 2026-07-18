@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "speedtest-cli";
   version = "2.1.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -18,11 +17,13 @@ buildPythonPackage rec {
 
   # tests require working internet connection
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Command line interface for testing internet bandwidth using speedtest.net";
     homepage = "https://github.com/sivel/speedtest-cli";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       makefu
     ];

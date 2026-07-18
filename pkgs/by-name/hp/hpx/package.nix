@@ -5,8 +5,8 @@
   asio,
   boost,
   cmake,
-  hwloc,
   gperftools,
+  hwloc,
   pkg-config,
   python3,
 }:
@@ -28,25 +28,27 @@ stdenv.mkDerivation (finalAttrs: {
     ./remove_deprecated_asio_features.patch
   ];
 
-  propagatedBuildInputs = [ hwloc ];
-  buildInputs = [
-    asio
-    boost
-    gperftools
-  ];
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     pkg-config
     python3
   ];
 
-  strictDeps = true;
+  buildInputs = [
+    asio
+    boost
+    gperftools
+  ];
+
+  propagatedBuildInputs = [ hwloc ];
 
   meta = {
     description = "C++ standard library for concurrency and parallelism";
     homepage = "https://github.com/TheHPXProject/hpx";
     license = lib.licenses.boost;
-    platforms = [ "x86_64-linux" ]; # lib.platforms.linux;
     maintainers = with lib.maintainers; [ bobakker ];
+    platforms = [ "x86_64-linux" ]; # lib.platforms.linux;
   };
 })

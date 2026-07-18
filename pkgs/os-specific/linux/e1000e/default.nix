@@ -8,7 +8,6 @@
 assert lib.versionOlder kernel.version "4.10";
 
 stdenv.mkDerivation rec {
-  name = "e1000e-${version}-${kernel.version}";
   version = "3.8.4";
 
   src = fetchurl {
@@ -16,7 +15,9 @@ stdenv.mkDerivation rec {
     sha256 = "1q8dbqh14c7r15q6k6iv5k0d6xpi74i71d5r54py60gr099m2ha4";
   };
 
-  hardeningDisable = [ "pic" ];
+  installPhase = ''
+    install -v -D -m 644 e1000e.ko "$out/lib/modules/$kernel_version/kernel/drivers/net/e1000e/e1000e.ko"
+  '';
 
   configurePhase = ''
     cd src
@@ -26,13 +27,10 @@ stdenv.mkDerivation rec {
     export makeFlags="BUILD_KERNEL=$kernel_version"
   '';
 
-  installPhase = ''
-    install -v -D -m 644 e1000e.ko "$out/lib/modules/$kernel_version/kernel/drivers/net/e1000e/e1000e.ko"
-  '';
-
   dontStrip = true;
-
   enableParallelBuilding = true;
+  hardeningDisable = [ "pic" ];
+  name = "e1000e-${version}-${kernel.version}";
 
   meta = {
     description = "Linux kernel drivers for Intel Ethernet adapters and LOMs (LAN On Motherboard)";

@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  mfcj470dwlpr,
-  makeWrapper,
   bash,
+  makeWrapper,
+  mfcj470dwlpr,
 }:
 
 stdenv.mkDerivation rec {
@@ -15,17 +15,6 @@ stdenv.mkDerivation rec {
     url = "https://download.brother.com/welcome/dlf006866/mfcj470dw_cupswrapper_GPL_source_${version}.tar.gz";
     sha256 = "b88f9b592723a00c024129560367f40a560ca3cba06fd99512ab368dd6855853";
   };
-
-  nativeBuildInputs = [ makeWrapper ];
-  buildInputs = [
-    bash # shebang
-  ];
-
-  makeFlags = [
-    "-C"
-    "brcupsconfpt1"
-    "all"
-  ];
 
   postPatch = ''
     WRAPPER=cupswrapper/cupswrappermfcj470dw
@@ -38,6 +27,18 @@ stdenv.mkDerivation rec {
     substituteInPlace $WRAPPER \
       --replace-fail "cp " "cp -p "
   '';
+
+  nativeBuildInputs = [ makeWrapper ];
+
+  buildInputs = [
+    bash # shebang
+  ];
+
+  makeFlags = [
+    "-C"
+    "brcupsconfpt1"
+    "all"
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -60,11 +61,11 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "http://www.brother.com/";
     description = "Brother MFC-J470DW CUPS wrapper driver";
+    homepage = "http://www.brother.com/";
     license = lib.licenses.gpl2Plus;
+    maintainers = [ lib.maintainers.yochai ];
     platforms = lib.platforms.linux;
     downloadPage = "http://support.brother.com/g/b/downloadlist.aspx?c=us&lang=en&prod=mfcj470dw_us_eu_as&os=128";
-    maintainers = [ lib.maintainers.yochai ];
   };
 }

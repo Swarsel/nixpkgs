@@ -3,24 +3,24 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
+  boringssl,
+  curl,
+  ffmpeg,
   gengetopt,
   glib,
-  libconfig,
-  libnice,
   jansson,
-  boringssl,
-  zlib,
-  srtp,
-  libuv,
+  libconfig,
   libmicrohttpd,
-  curl,
-  libwebsockets,
-  sofia_sip,
+  libnice,
   libogg,
   libopus,
+  libuv,
+  libwebsockets,
+  pkg-config,
+  sofia_sip,
+  srtp,
   usrsctp,
-  ffmpeg,
+  zlib,
 }:
 
 let
@@ -42,6 +42,13 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-/201zFwahtN9cH+iHqeAi5FCTXUE3Z6J1G5Xh0xzc3Q=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+    "doc"
+    "man"
+  ];
 
   nativeBuildInputs = [
     autoreconfHook
@@ -68,8 +75,6 @@ stdenv.mkDerivation (finalAttrs: {
     ffmpeg
   ];
 
-  enableParallelBuilding = true;
-
   configureFlags = [
     "--enable-boringssl=${lib.getDev boringssl}"
     "--enable-libsrtp2"
@@ -86,24 +91,19 @@ stdenv.mkDerivation (finalAttrs: {
     "CCLD=${stdenv.cc.targetPrefix}c++"
   ];
 
-  outputs = [
-    "out"
-    "dev"
-    "doc"
-    "man"
-  ];
-
   postInstall = ''
     moveToOutput share/janus "$doc"
     moveToOutput etc "$doc"
   '';
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "General purpose WebRTC server";
     homepage = "https://janus.conf.meetecho.com/";
     changelog = "https://github.com/meetecho/janus-gateway/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ fpletz ];
+    platforms = lib.platforms.linux;
   };
 })

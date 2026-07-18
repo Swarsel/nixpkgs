@@ -1,20 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  flit,
-  setuptools,
-
   # dependencies
   boltons,
   bottleneck,
+  buildPythonPackage,
   cf-xarray,
   cftime,
   click,
   dask,
   filelock,
+  # build-system
+  flit,
   jsonpickle,
   numba,
   packaging,
@@ -26,17 +23,16 @@
   pyyaml,
   scikit-learn,
   scipy,
+  setuptools,
   statsmodels,
-  xarray,
-  yamale,
-
   # test
   versionCheckHook,
+  xarray,
+  yamale,
 }:
 buildPythonPackage rec {
   pname = "xclim";
   version = "0.61.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Ouranosinc";
@@ -44,6 +40,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-a1RjI8Gz2B60FEWx+PFz8RHKJlV3HRR1tIqzKudOvRE=";
   };
+
+  # No python test hooks has been added as all tests seems to be relying on network data
+  # https://github.com/Ouranosinc/xclim/blob/e8ce9bf37083832517afb3375acc853191782d8f/tests/conftest.py#L314
+  nativeCheckInputs = [
+    versionCheckHook
+  ];
 
   build-system = [
     flit
@@ -74,19 +76,15 @@ buildPythonPackage rec {
     yamale
   ];
 
-  # No python test hooks has been added as all tests seems to be relying on network data
-  # https://github.com/Ouranosinc/xclim/blob/e8ce9bf37083832517afb3375acc853191782d8f/tests/conftest.py#L314
-  nativeCheckInputs = [
-    versionCheckHook
-  ];
-
-  versionCheckProgramArg = "--version";
+  pyproject = true;
 
   pythonImportsCheck = [
     "xclim"
     "xclim.ensembles"
     "xclim.indices"
   ];
+
+  versionCheckProgramArg = "--version";
 
   meta = {
     description = "Operational Python library supporting climate services, based on xarray";

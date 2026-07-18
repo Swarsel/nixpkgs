@@ -1,13 +1,13 @@
 {
-  useNixpkgsEngine ? false,
-  callPackage,
-  fetchzip,
-  fetchFromGitHub,
-  dart,
-  dart-bin,
   lib,
   stdenv,
+  fetchFromGitHub,
+  callPackage,
+  dart,
+  dart-bin,
+  fetchzip,
   runCommand,
+  useNixpkgsEngine ? false,
 }:
 let
   mkCustomFlutter = args: callPackage ./flutter.nix args;
@@ -20,19 +20,19 @@ let
     if (builtins.pathExists dir) then map (f: dir + ("/" + f)) files else [ ];
   mkFlutter =
     {
-      version,
-      engineVersion,
-      engineSwiftShaderHash,
-      engineSwiftShaderRev,
-      engineHashes,
-      enginePatches,
-      dartVersion,
-      flutterHash,
-      dartHash,
-      patches,
-      pubspecLock,
       artifactHashes,
       channel,
+      dartHash,
+      dartVersion,
+      engineHashes,
+      enginePatches,
+      engineSwiftShaderHash,
+      engineSwiftShaderRev,
+      engineVersion,
+      flutterHash,
+      patches,
+      pubspecLock,
+      version,
     }:
     let
       args = {
@@ -50,6 +50,29 @@ let
           channel
           ;
 
+        src =
+          let
+            source = fetchFromGitHub {
+              hash = flutterHash;
+              owner = "flutter";
+              repo = "flutter";
+              tag = version;
+            };
+          in
+          (
+            if lib.versionAtLeast version "3.32" then
+              # # Could not determine engine revision
+              (runCommand source.name { } ''
+                cp --recursive ${source} $out
+                chmod +w $out/bin
+                mkdir $out/bin/cache
+                cp $out/bin/internal/engine.version $out/bin/cache/engine.stamp
+                touch $out/bin/cache/engine.realm
+              '')
+            else
+              source
+          );
+
         dart =
           let
             hash =
@@ -60,6 +83,7 @@ let
             if lib.versionAtLeast version "3.41" then
               (dart-bin.overrideAttrs (oldAttrs: {
                 version = dartVersion;
+
                 src = oldAttrs.src.overrideAttrs (_: {
                   inherit hash;
                 });
@@ -77,34 +101,13 @@ let
                   };
                 })
           );
-        src =
-          let
-            source = fetchFromGitHub {
-              owner = "flutter";
-              repo = "flutter";
-              tag = version;
-              hash = flutterHash;
-            };
-          in
-          (
-            if lib.versionAtLeast version "3.32" then
-              # # Could not determine engine revision
-              (runCommand source.name { } ''
-                cp --recursive ${source} $out
-                chmod +w $out/bin
-                mkdir $out/bin/cache
-                cp $out/bin/internal/engine.version $out/bin/cache/engine.stamp
-                touch $out/bin/cache/engine.realm
-              '')
-            else
-              source
-          );
       };
     in
     (mkCustomFlutter args).overrideAttrs (
       prev: next: {
         passthru = next.passthru // {
           inherit wrapFlutter mkCustomFlutter mkFlutter;
+
           buildFlutterApplication = callPackage ./build-support/build-flutter-application.nix {
             flutter = wrapFlutter (mkCustomFlutter args);
           };

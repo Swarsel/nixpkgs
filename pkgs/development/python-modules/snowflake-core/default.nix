@@ -1,27 +1,28 @@
 {
   lib,
   buildPythonPackage,
-  pydantic,
-  python-dateutil,
-  requests,
-  snowflake-connector-python,
-  pyyaml,
-  urllib3,
   fetchPypi,
   hatchling,
+  pydantic,
+  python-dateutil,
+  pyyaml,
+  requests,
+  snowflake-connector-python,
+  urllib3,
 }:
 
 buildPythonPackage rec {
   pname = "snowflake-core";
   version = "1.12.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "snowflake_core";
     inherit version;
     hash = "sha256-bLECcQHXxtoS/vZQQf8qUahaOU27HwrAlQAMoFTyan4=";
+    pname = "snowflake_core";
   };
 
+  # Tests require access to Snowflake
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -33,15 +34,14 @@ buildPythonPackage rec {
     urllib3
   ];
 
-  pythonRelaxDeps = [
-    "pyopenssl"
-  ];
-
-  # Tests require access to Snowflake
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "snowflake.core"
+  ];
+
+  pythonRelaxDeps = [
+    "pyopenssl"
   ];
 
   meta = {

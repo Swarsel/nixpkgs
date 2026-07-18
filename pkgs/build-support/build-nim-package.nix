@@ -1,20 +1,39 @@
 {
   lib,
+  stdenv,
+  buildNimPackage,
   buildPackages,
   callPackage,
-  stdenv,
   nim,
-  nim_builder,
   nimOverrides,
-  buildNimPackage,
+  nim_builder,
 }:
 
 let
   baseAttrs = {
     strictDeps = true;
-    enableParallelBuilding = true;
-    __structuredAttrs = true;
+
+    buildPhase = ''
+      runHook preBuild
+      nim_builder --phase:build
+      runHook postBuild
+    '';
+
     doCheck = true;
+
+    checkPhase = ''
+      runHook preCheck
+      nim_builder --phase:check
+      runHook postCheck
+    '';
+
+    installPhase = ''
+      runHook preInstall
+      nim_builder --phase:install
+      runHook postInstall
+    '';
+
+    __structuredAttrs = true;
 
     configurePhase = ''
       runHook preConfigure
@@ -22,21 +41,8 @@ let
       nim_builder --phase:configure
       runHook postConfigure
     '';
-    buildPhase = ''
-      runHook preBuild
-      nim_builder --phase:build
-      runHook postBuild
-    '';
-    checkPhase = ''
-      runHook preCheck
-      nim_builder --phase:check
-      runHook postCheck
-    '';
-    installPhase = ''
-      runHook preInstall
-      nim_builder --phase:install
-      runHook postInstall
-    '';
+
+    enableParallelBuilding = true;
     meta = { inherit (nim.meta) maintainers platforms; };
   };
 
@@ -44,11 +50,12 @@ let
     let
       methods = {
         fetchzip =
-          { url, sha256, ... }:
+          { sha256, url, ... }:
           buildPackages.fetchzip {
-            name = "source";
             inherit url sha256;
+            name = "source";
           };
+
         git =
           {
             fetchSubmodules,
@@ -107,10 +114,10 @@ let
 
       finalOverride =
         {
+          depsBuildBuild ? [ ],
+          nativeBuildInputs ? [ ],
           nimFlags ? [ ],
           passthru ? { },
-          nativeBuildInputs ? [ ],
-          depsBuildBuild ? [ ],
           ...
         }@args:
         (
@@ -133,6 +140,7 @@ let
           nativeBuildInputs = [ nim ] ++ nativeBuildInputs;
           depsBuildBuild = [ nim_builder ] ++ depsBuildBuild;
           nimFlags = lockFileNimFlags ++ nimFlags;
+
           passthru = passthru // {
 
             # allow overriding the result of buildNimPackageArgs before this composition is applied

@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  mkDerivation,
-  libcMinimal,
-  include,
-  libgcc,
-  makeMinimal,
   bsdSetupHook,
-  freebsdSetupHook,
   compatIfNeeded,
   csu,
+  freebsdSetupHook,
+  include,
+  libcMinimal,
+  libgcc,
+  makeMinimal,
+  mkDerivation,
   # this is set to true when used as the dependency of install
   # this is set to false when used as the dependency of libc
   bootstrapInstallation ? false,
@@ -19,24 +19,12 @@
 mkDerivation (
   {
     pname = "libmd" + lib.optionalString bootstrapInstallation "-boot";
-    path = "lib/libmd";
-    extraPaths = [
-      "sys/crypto"
-      "sys/sys"
-      "sys/kern"
-      "lib/libc/Versions.def"
-    ]
-    ++ extraSrc;
 
     outputs = [
       "out"
       "man"
       "debug"
     ];
-
-    noLibc = !bootstrapInstallation;
-
-    MK_TESTS = "no";
 
     buildInputs =
       lib.optionals (!bootstrapInstallation) [
@@ -70,6 +58,19 @@ mkDerivation (
             cp "$f" "$man/share/man/$f"
           done
         '';
+
+    MK_TESTS = "no";
+
+    extraPaths = [
+      "sys/crypto"
+      "sys/sys"
+      "sys/kern"
+      "lib/libc/Versions.def"
+    ]
+    ++ extraSrc;
+
+    noLibc = !bootstrapInstallation;
+    path = "lib/libmd";
   }
   // lib.optionalAttrs bootstrapInstallation {
     nativeBuildInputs = [

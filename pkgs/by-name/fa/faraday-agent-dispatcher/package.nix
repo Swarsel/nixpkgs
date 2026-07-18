@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "faraday-agent-dispatcher";
   version = "3.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "infobyte";
@@ -21,18 +20,15 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     substituteInPlace setup.py \
       --replace-fail '"pytest-runner",' ""  '';
 
-  pythonRelaxDeps = [
-    "pytenable"
-    "python-socketio"
-  ];
+  nativeBuildInputs = with python3.pkgs; [ python-owasp-zap-v2-4 ];
 
-  pythonRemoveDeps = [
-    "python-owasp-zap-v2.4"
+  nativeCheckInputs = with python3.pkgs; [
+    pytest-asyncio
+    pytestCheckHook
+    writableTmpDirAsHomeHook
   ];
 
   build-system = with python3.pkgs; [ setuptools-scm ];
-
-  nativeBuildInputs = with python3.pkgs; [ python-owasp-zap-v2-4 ];
 
   dependencies = with python3.pkgs; [
     aiohttp
@@ -52,10 +48,10 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     websockets
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    pytest-asyncio
-    pytestCheckHook
-    writableTmpDirAsHomeHook
+  disabledTestPaths = [
+    # Tests require a running Docker instance
+    "tests/plugins-docker/test_executors.py"
+    "tests/unittests/test_import_official_executors.py"
   ];
 
   disabledTests = [
@@ -63,13 +59,17 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "SSL"
   ];
 
-  disabledTestPaths = [
-    # Tests require a running Docker instance
-    "tests/plugins-docker/test_executors.py"
-    "tests/unittests/test_import_official_executors.py"
+  pyproject = true;
+  pythonImportsCheck = [ "faraday_agent_dispatcher" ];
+
+  pythonRelaxDeps = [
+    "pytenable"
+    "python-socketio"
   ];
 
-  pythonImportsCheck = [ "faraday_agent_dispatcher" ];
+  pythonRemoveDeps = [
+    "python-owasp-zap-v2.4"
+  ];
 
   meta = {
     description = "Tool to send result from tools to the Faraday Platform";

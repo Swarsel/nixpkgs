@@ -21,6 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [
     pkg-config
   ];
+
   buildInputs = [
     gperf
     guile
@@ -28,16 +29,16 @@ stdenv.mkDerivation (finalAttrs: {
     libffi
   ];
 
+  configureFlags = [ "--with-guilemoduledir=$(out)/${guile.siteDir}" ];
+
   env = {
     GUILE_SITE = "${guile-lib}/${guile.siteDir}";
     NIX_CFLAGS_COMPILE = "-Wno-error=implicit-function-declaration";
   };
 
-  configureFlags = [ "--with-guilemoduledir=$(out)/${guile.siteDir}" ];
-
   meta = {
-    homepage = "https://www.nongnu.org/guile-reader/";
     description = "Simple framework for building readers for GNU Guile";
+
     longDescription = ''
       Guile-Reader is a simple framework for building readers for GNU Guile.
 
@@ -47,6 +48,8 @@ stdenv.mkDerivation (finalAttrs: {
       Scheme readers. For example, it is used to implement Skribilo's
       R5RS-derived document syntax.
     '';
+
+    homepage = "https://www.nongnu.org/guile-reader/";
     license = lib.licenses.lgpl3Plus;
     maintainers = [ ];
     platforms = guile.meta.platforms;

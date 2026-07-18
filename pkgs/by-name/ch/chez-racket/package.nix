@@ -37,12 +37,8 @@ let
   # stdenv abstractions.
   forBoot = {
     pname = "chez-scheme-racket-boot";
-    configurePhase = ''
-      runHook preConfigure
-      ./configure --pb ZLIB=$ZLIB LZ4=$LZ4
-      runHook postConfigure
-    '';
     makeFlags = [ "${chezSystem}.bootquick" ];
+
     installPhase = ''
       runHook preInstall
       mkdir -p $out
@@ -51,22 +47,32 @@ let
       popd
       runHook postInstall
     '';
+
+    configurePhase = ''
+      runHook preConfigure
+      ./configure --pb ZLIB=$ZLIB LZ4=$LZ4
+      runHook postConfigure
+    '';
   };
   boot = buildPackages.callPackage (import ./shared.nix forBoot) { };
   forFinal = {
     pname = "chez-scheme-racket";
+
+    preBuild = ''
+      pushd ${chezSystem}/c
+    '';
+
+    postBuild = ''
+      popd
+    '';
+
     configurePhase = ''
       runHook preConfigure
       cp -r ${boot}/* -t ./boot
       ./configure -m=${chezSystem} --installprefix=$out --installman=$out/share/man ZLIB=$ZLIB LZ4=$LZ4
       runHook postConfigure
     '';
-    preBuild = ''
-      pushd ${chezSystem}/c
-    '';
-    postBuild = ''
-      popd
-    '';
+
     setupHook = ./setup-hook.sh;
   };
   final = callPackage (import ./shared.nix forFinal) { };

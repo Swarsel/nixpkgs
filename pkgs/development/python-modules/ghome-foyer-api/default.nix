@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   grpcio,
-  hatchling,
   hatch-vcs,
+  hatchling,
   protobuf,
 }:
 
 buildPythonPackage rec {
   pname = "ghome-foyer-api";
   version = "1.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "KapJI";
@@ -25,13 +24,14 @@ buildPythonPackage rec {
     hatch-vcs
   ];
 
+  doCheck = false; # no tests
+
   dependencies = [
     grpcio
     protobuf
   ];
 
-  doCheck = false; # no tests
-
+  pyproject = true;
   pythonRelaxDeps = [ "protobuf" ];
 
   meta = {
@@ -39,6 +39,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/KapJI/ghome-foyer-api";
     changelog = "https://github.com/KapJI/ghome-foyer-api/releases/tag/${src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       hensoko
     ];

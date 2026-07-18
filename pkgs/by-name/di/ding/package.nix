@@ -1,19 +1,20 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   aspell,
   aspellDicts,
   buildEnv,
-  fetchurl,
   fortune,
   gnugrep,
   makeWrapper,
-  lib,
-  stdenv,
   tk,
   tre,
 }:
 let
   aspellEnv = buildEnv {
     name = "env-ding-aspell";
+
     paths = [
       aspell
       aspellDicts.de
@@ -30,7 +31,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-aabIH894WihsBTo1LzIBzIZxxyhRYVxLcHpDQwmwmOU=";
   };
 
+  patches = [ ./dict.patch ];
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     aspellEnv
     fortune
@@ -38,8 +41,6 @@ stdenv.mkDerivation (finalAttrs: {
     tk
     tre
   ];
-
-  patches = [ ./dict.patch ];
 
   installPhase = ''
     mkdir -p $out/bin
@@ -74,10 +75,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Simple and fast dictionary lookup tool";
-    mainProgram = "ding";
     homepage = "https://www-user.tu-chemnitz.de/~fri/ding/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux; # homepage says: unix-like except darwin
     maintainers = [ lib.maintainers.exi ];
+    platforms = lib.platforms.linux; # homepage says: unix-like except darwin
+    mainProgram = "ding";
   };
 })

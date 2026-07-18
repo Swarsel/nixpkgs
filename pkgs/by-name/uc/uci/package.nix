@@ -3,8 +3,8 @@
   stdenv,
   cmake,
   fetchgit,
-  pkg-config,
   libubox,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -17,20 +17,21 @@ stdenv.mkDerivation {
     hash = "sha256-/Ian7WoBvm9nmniHdVTEIyRW1BPTmOe3O0v59aDaXc0=";
   };
 
-  hardeningDisable = [ "all" ];
-  cmakeFlags = [ "-DBUILD_LUA=OFF" ];
-  buildInputs = [ libubox ];
   nativeBuildInputs = [
     cmake
     pkg-config
   ];
 
+  buildInputs = [ libubox ];
+  cmakeFlags = [ "-DBUILD_LUA=OFF" ];
+  hardeningDisable = [ "all" ];
+
   meta = {
     description = "OpenWrt Unified Configuration Interface";
-    mainProgram = "uci";
     homepage = "https://git.openwrt.org/?p=project/uci.git;a=summary";
     license = lib.licenses.lgpl21Only;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ mkg20001 ];
+    platforms = lib.platforms.all;
+    mainProgram = "uci";
   };
 }

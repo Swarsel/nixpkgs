@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeBinaryWrapper,
-  nodejs,
   git,
   haskellPackages,
+  makeBinaryWrapper,
+  nodejs,
   versionCheckHook,
 }:
 
@@ -20,9 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-GLqDBTNu7jTy+WTbPrK7d/AIjHKWTidsf19AP4WwEQo=";
   };
 
-  buildInputs = [ nodejs ];
-
   nativeBuildInputs = [ makeBinaryWrapper ];
+  buildInputs = [ nodejs ];
 
   installPhase = ''
     runHook preInstall
@@ -50,11 +49,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Programming language for simple and correct applications";
     homepage = "https://gren-lang.org";
     license = lib.licenses.bsd3;
-    platforms = lib.intersectLists haskellPackages.ghc.meta.platforms nodejs.meta.platforms;
-    mainProgram = "gren";
+
     maintainers = with lib.maintainers; [
       robinheghan
       tomasajt
     ];
+
+    platforms = lib.intersectLists haskellPackages.ghc.meta.platforms nodejs.meta.platforms;
+    mainProgram = "gren";
   };
 })

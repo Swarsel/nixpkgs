@@ -2,11 +2,11 @@
 {
   lib,
   stdenv,
+  cacert,
+  caddy,
+  git,
   go,
   xcaddy,
-  cacert,
-  git,
-  caddy,
 }:
 
 let
@@ -28,8 +28,8 @@ in
 # pkgs.caddy.withPlugins args
 {
   plugins,
-  hash ? fakeHash,
   doInstallCheck ? true,
+  hash ? fakeHash,
 }:
 
 let
@@ -49,20 +49,11 @@ assert assertMsg (
 
 caddy.overrideAttrs (
   finalAttrs: prevAttrs: {
-    vendorHash = null;
-    subPackages = [ "." ];
+    # xcaddy built output always uses pseudo-version number
+    # we enforce user provided plugins are present and have matching tags here
+    inherit doInstallCheck;
 
     src = stdenv.mkDerivation {
-      pname = "caddy-src-with-plugins-${pluginsHash}";
-      version = finalAttrs.version;
-
-      nativeBuildInputs = [
-        go
-        xcaddy
-        cacert
-        git
-      ];
-      dontUnpack = true;
       buildPhase =
         let
           withArgs = concatMapStrings (plugin: "--with ${plugin} ") pluginsSorted;
@@ -73,18 +64,29 @@ caddy.overrideAttrs (
           XCADDY_SKIP_BUILD=1 TMPDIR="$PWD" xcaddy build v${finalAttrs.version} ${withArgs}
           (cd buildenv* && go mod vendor)
         '';
+
+      dontUnpack = true;
+
       installPhase = ''
         mv buildenv* $out
       '';
 
-      outputHashMode = "recursive";
+      nativeBuildInputs = [
+        go
+        xcaddy
+        cacert
+        git
+      ];
+
       outputHash = hash;
       outputHashAlgo = "sha256";
+      outputHashMode = "recursive";
+      pname = "caddy-src-with-plugins-${pluginsHash}";
+      version = finalAttrs.version;
     };
 
-    # xcaddy built output always uses pseudo-version number
-    # we enforce user provided plugins are present and have matching tags here
-    inherit doInstallCheck;
+    vendorHash = null;
+
     installCheckPhase = ''
       runHook preInstallCheck
 
@@ -153,5 +155,7 @@ caddy.overrideAttrs (
 
       runHook postInstallCheck
     '';
+
+    subPackages = [ "." ];
   }
 )

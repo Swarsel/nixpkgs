@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  bison,
-  flex,
-  dos2unix,
-  gperf,
   adms,
+  bison,
+  cmake,
+  dos2unix,
+  flex,
+  gperf,
   withAdms ? false,
 }:
 
@@ -47,8 +47,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "RF circuit simulation kernel for Qucs-S";
     homepage = "https://github.com/ra3xdh/qucsator_rf";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "qucsator_rf";
     maintainers = with lib.maintainers; [ thomaslepoix ];
     platforms = lib.platforms.unix;
+    mainProgram = "qucsator_rf";
   };
 })

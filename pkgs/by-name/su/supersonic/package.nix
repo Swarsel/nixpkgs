@@ -1,24 +1,24 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  makeDesktopItem,
+  buildGoModule,
   copyDesktopItems,
-  pkg-config,
   desktopToDarwinBundle,
-  libxxf86vm,
-  libxrandr,
+  libglvnd,
+  libx11,
+  libxcursor,
+  libxext,
   libxi,
   libxinerama,
-  libxext,
-  libxcursor,
-  libx11,
+  libxkbcommon,
+  libxrandr,
+  libxxf86vm,
+  makeDesktopItem,
+  mpv-unwrapped,
+  pkg-config,
   wayland,
   wayland-protocols,
-  libxkbcommon,
-  libglvnd,
-  mpv-unwrapped,
   waylandSupport ? false,
 }:
 
@@ -33,8 +33,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-jKmkj7Y3D2Af7XNOkLY3sknOelvId649NZXpu/fU7ko=";
   };
 
-  vendorHash = "sha256-Qg5OWg+iFcGuD8E3/7YwmmciiRGdUFNSHLrEAaqRmnQ=";
-
   nativeBuildInputs = [
     copyDesktopItems
     pkg-config
@@ -42,9 +40,6 @@ buildGoModule (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     desktopToDarwinBundle
   ];
-
-  # go-glfw doesn't support both X11 and Wayland in single build
-  tags = [ "migrated_fynedo" ] ++ lib.optionals waylandSupport [ "wayland" ];
 
   buildInputs = [
     libglvnd
@@ -67,6 +62,8 @@ buildGoModule (finalAttrs: {
     libxkbcommon
   ];
 
+  vendorHash = "sha256-Qg5OWg+iFcGuD8E3/7YwmmciiRGdUFNSHLrEAaqRmnQ=";
+
   postInstall = ''
     for dimension in 128 256 512;do
         dimensions=''${dimension}x''${dimension}
@@ -80,31 +77,37 @@ buildGoModule (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = finalAttrs.meta.mainProgram;
-      exec = finalAttrs.meta.mainProgram;
-      icon = finalAttrs.meta.mainProgram;
-      desktopName = "Supersonic" + lib.optionalString waylandSupport " (Wayland)";
-      genericName = "Subsonic Client";
-      comment = finalAttrs.meta.description;
-      type = "Application";
       categories = [
         "Audio"
         "AudioVideo"
       ];
+
+      comment = finalAttrs.meta.description;
+      desktopName = "Supersonic" + lib.optionalString waylandSupport " (Wayland)";
+      exec = finalAttrs.meta.mainProgram;
+      genericName = "Subsonic Client";
+      icon = finalAttrs.meta.mainProgram;
+      name = finalAttrs.meta.mainProgram;
+      type = "Application";
     })
   ];
 
+  # go-glfw doesn't support both X11 and Wayland in single build
+  tags = [ "migrated_fynedo" ] ++ lib.optionals waylandSupport [ "wayland" ];
+
   meta = {
-    mainProgram = "supersonic" + lib.optionalString waylandSupport "-wayland";
     description = "Lightweight cross-platform desktop client for Subsonic music servers";
     homepage = "https://github.com/dweymouth/supersonic";
     changelog = "https://github.com/dweymouth/supersonic/releases/tag/${finalAttrs.src.tag}";
-    platforms = lib.platforms.linux ++ lib.optionals (!waylandSupport) lib.platforms.darwin;
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       zane
       sochotnicky
       toasteruwu
     ];
+
+    platforms = lib.platforms.linux ++ lib.optionals (!waylandSupport) lib.platforms.darwin;
+    mainProgram = "supersonic" + lib.optionalString waylandSupport "-wayland";
   };
 })

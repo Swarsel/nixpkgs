@@ -1,16 +1,16 @@
 {
   lib,
   fetchFromGitHub,
-  python3,
   fetchpatch2,
-  plugins ? _ps: [ ],
-  nixosTests,
   nix-update-script,
+  nixosTests,
+  python3,
+  plugins ? _ps: [ ],
 }:
 let
   py = python3.override {
-    self = py;
     packageOverrides = _final: prev: { django = prev.django_5; };
+    self = py;
   };
 
   extraBuildInputs = plugins py.pkgs;
@@ -18,7 +18,6 @@ in
 py.pkgs.buildPythonApplication rec {
   pname = "netbox";
   version = "4.5.9";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "netbox-community";
@@ -31,11 +30,31 @@ py.pkgs.buildPythonApplication rec {
     ./custom-static-root.patch
     # TODO: check if change is applied upstream before upgrading to NetBox v4.6
     (fetchpatch2 {
+      hash = "sha256-6/wdd8wDVT4eqDKMNx8tmoPTDvw8OE7atf9nzg3LZzk=";
       name = "upgrade-django-tables2-v3.0.patch";
       url = "https://github.com/netbox-community/netbox/commit/d57346d9f0eef8126eafcd5033ea43864faeaf0d.patch";
-      hash = "sha256-6/wdd8wDVT4eqDKMNx8tmoPTDvw8OE7atf9nzg3LZzk=";
     })
   ];
+
+  nativeBuildInputs = with py.pkgs; [
+    mkdocs-material
+    mkdocs-material-extensions
+    mkdocstrings
+    mkdocstrings-python
+  ];
+
+  postBuild = ''
+    PYTHONPATH=$PYTHONPATH:netbox/
+    ${py.interpreter} -m mkdocs build
+  '';
+
+  installPhase = ''
+    mkdir -p $out/opt/netbox
+    cp -r . $out/opt/netbox
+    chmod +x $out/opt/netbox/netbox/manage.py
+    makeWrapper $out/opt/netbox/netbox/manage.py $out/bin/netbox \
+      --prefix PYTHONPATH : "$PYTHONPATH"
+  '';
 
   dependencies =
     (
@@ -92,36 +111,11 @@ py.pkgs.buildPythonApplication rec {
     )
     ++ extraBuildInputs;
 
-  nativeBuildInputs = with py.pkgs; [
-    mkdocs-material
-    mkdocs-material-extensions
-    mkdocstrings
-    mkdocstrings-python
-  ];
-
-  postBuild = ''
-    PYTHONPATH=$PYTHONPATH:netbox/
-    ${py.interpreter} -m mkdocs build
-  '';
-
-  installPhase = ''
-    mkdir -p $out/opt/netbox
-    cp -r . $out/opt/netbox
-    chmod +x $out/opt/netbox/netbox/manage.py
-    makeWrapper $out/opt/netbox/netbox/manage.py $out/bin/netbox \
-      --prefix PYTHONPATH : "$PYTHONPATH"
-  '';
+  pyproject = false;
 
   passthru = {
-    python = py;
-    # PYTHONPATH of all dependencies used by the package
-    pythonPath = py.pkgs.makePythonPath dependencies;
     inherit (py.pkgs) gunicorn;
-    tests = {
-      netbox = nixosTests.netbox_4_5;
-      inherit (nixosTests) netbox-upgrade;
-    };
-    updateScript = nix-update-script { };
+
     plugins = lib.recurseIntoAttrs (
       lib.makeExtensible (
         self:
@@ -131,17 +125,30 @@ py.pkgs.buildPythonApplication rec {
         }
       )
     );
+
+    python = py;
+    # PYTHONPATH of all dependencies used by the package
+    pythonPath = py.pkgs.makePythonPath dependencies;
+
+    tests = {
+      inherit (nixosTests) netbox-upgrade;
+      netbox = nixosTests.netbox_4_5;
+    };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
+    description = "IP address management (IPAM) and data center infrastructure management (DCIM) tool";
     homepage = "https://github.com/netbox-community/netbox";
     changelog = "https://github.com/netbox-community/netbox/blob/${src.tag}/docs/release-notes/version-${lib.versions.majorMinor version}.md";
-    description = "IP address management (IPAM) and data center infrastructure management (DCIM) tool";
-    mainProgram = "netbox";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       minijackson
       transcaffeine
     ];
+
+    mainProgram = "netbox";
   };
 }

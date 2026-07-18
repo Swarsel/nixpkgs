@@ -1,10 +1,10 @@
 {
+  kitemmodels,
   mkKdeDerivation,
   qthttpserver,
   qtsvg,
   qtwebchannel,
   qtwebengine,
-  kitemmodels,
 }:
 mkKdeDerivation {
   pname = "arianna";
@@ -16,5 +16,6 @@ mkKdeDerivation {
     qtwebengine
     kitemmodels
   ];
+
   meta.mainProgram = "arianna";
 }

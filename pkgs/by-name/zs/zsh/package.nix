@@ -3,21 +3,27 @@
   stdenv,
   fetchurl,
   autoreconfHook,
-  yodl,
-  perl,
-  groff,
-  util-linuxMinimal,
-  texinfo,
-  ncurses,
-  pcre2,
-  pkg-config,
   buildPackages,
+  groff,
+  ncurses,
   nixosTests,
+  pcre2,
+  perl,
+  pkg-config,
+  texinfo,
+  util-linuxMinimal,
+  yodl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "zsh";
   version = "5.9.1";
+
+  src = fetchurl {
+    url = "mirror://sourceforge/zsh/zsh-${finalAttrs.version}.tar.xz";
+    sha256 = "sha256-XSC+wD+YHcTpoJ7CRedBU4j/ZB95xcXEFrUELljYKA0=";
+  };
+
   outputs = [
     "out"
     "doc"
@@ -25,17 +31,13 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
-  src = fetchurl {
-    url = "mirror://sourceforge/zsh/zsh-${finalAttrs.version}.tar.xz";
-    sha256 = "sha256-XSC+wD+YHcTpoJ7CRedBU4j/ZB95xcXEFrUELljYKA0=";
-  };
-
   patches = [
     # fix location of timezone data for TZ= completion
     ./tz_completion.patch
   ];
 
   strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     perl
@@ -52,8 +54,6 @@ stdenv.mkDerivation (finalAttrs: {
     ncurses
     pcre2
   ];
-
-  env.PCRE_CONFIG = lib.getExe' (lib.getDev pcre2) "pcre2-config";
 
   configureFlags = [
     "--enable-maildir-support"
@@ -76,6 +76,7 @@ stdenv.mkDerivation (finalAttrs: {
     "zsh_cv_sys_dynamic_strip_lib=yes"
   ];
 
+  env.PCRE_CONFIG = lib.getExe' (lib.getDev pcre2) "pcre2-config";
   # the zsh/zpty module is not available on hydra
   # so skip groups Y Z
   checkFlags = map (T: "TESTNUM=${T}") (lib.stringToCharacters "ABCDEVW");
@@ -124,14 +125,23 @@ stdenv.mkDerivation (finalAttrs: {
         mkdir -p $out/share/doc/
         mv $out/share/zsh/htmldoc $out/share/doc/zsh-${finalAttrs.version}
   '';
-  # XXX: patch zsh to take zwc if newer _or equal_
 
+  # XXX: patch zsh to take zwc if newer _or equal_
   postFixup = ''
     HOST_PATH=$out/bin:$HOST_PATH patchShebangs --host $out/share/zsh/*/functions
   '';
 
+  passthru = {
+    shellPath = "/bin/zsh";
+
+    tests = {
+      inherit (nixosTests) oh-my-zsh;
+    };
+  };
+
   meta = {
     description = "Z shell";
+
     longDescription = ''
       Zsh is a UNIX command interpreter (shell) usable as an interactive login
       shell and as a shell script command processor.  Of the standard shells,
@@ -140,20 +150,16 @@ stdenv.mkDerivation (finalAttrs: {
       completion, shell functions (with autoloading), a history mechanism, and
       a host of other features.
     '';
-    license = lib.licenses.mit-modern;
+
     homepage = "https://www.zsh.org/";
+    license = lib.licenses.mit-modern;
+
     maintainers = with lib.maintainers; [
       pSub
       artturin
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "zsh";
-  };
-
-  passthru = {
-    shellPath = "/bin/zsh";
-    tests = {
-      inherit (nixosTests) oh-my-zsh;
-    };
   };
 })

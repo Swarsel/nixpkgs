@@ -10,17 +10,12 @@
 buildPythonPackage rec {
   pname = "scikit-fmm";
   version = "2025.6.23";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "scikit_fmm";
     inherit version;
     hash = "sha256-oyCPXziB5At4eNESG6ObjVfxvDj7Tl8NnRxmqbAH5E8=";
+    pname = "scikit_fmm";
   };
-
-  build-system = [ meson-python ];
-
-  dependencies = [ numpy ];
 
   checkPhase = ''
     runHook preCheck
@@ -31,6 +26,10 @@ buildPythonPackage rec {
     )
     runHook postCheck
   '';
+
+  build-system = [ meson-python ];
+  dependencies = [ numpy ];
+  pyproject = true;
 
   meta = {
     description = "Python extension module which implements the fast marching method";

@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  llvmPackages_18,
-  ncurses,
   cmake,
-  libxml2,
-  symlinkJoin,
   cudaPackages,
-  enableCUDA ? false,
   libffi,
   libpfm,
+  libxml2,
+  llvmPackages_18,
+  ncurses,
+  symlinkJoin,
+  enableCUDA ? false,
 }:
 
 let
@@ -18,15 +18,16 @@ let
   luajitBase = "LuaJIT-${luajitRev}";
   luajitArchive = "${luajitBase}.tar.gz";
   luajitSrc = fetchFromGitHub {
+    hash = "sha256-L9T6lc32dDLAp9hPI5mKOzT0c4juW9JHA3FJCpm7HNQ=";
     owner = "LuaJIT";
     repo = "LuaJIT";
     rev = luajitRev;
-    hash = "sha256-L9T6lc32dDLAp9hPI5mKOzT0c4juW9JHA3FJCpm7HNQ=";
   };
 
   llvmPackages = llvmPackages_18;
   llvmMerged = symlinkJoin {
     name = "llvmClangMerged";
+
     paths = with llvmPackages; [
       llvm.out
       llvm.dev
@@ -53,7 +54,22 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-CukNCvTHZUhjdHyvDUSH0YCVNkThUFPaeyLepyEKodA=";
   };
 
+  outputs = [
+    "bin"
+    "dev"
+    "out"
+    "static"
+  ];
+
+  patches = [ ./nix-cflags.patch ];
+
+  postPatch = ''
+    substituteInPlace src/terralib.lua \
+      --subst-var-by NIX_LIBC_INCLUDE ${lib.getDev stdenv.cc.libc}/include
+  '';
+
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     llvmMerged
     ncurses
@@ -76,28 +92,14 @@ stdenv.mkDerivation (finalAttrs: {
     ]
     ++ lib.optional enableCUDA "-DTERRA_ENABLE_CUDA=ON";
 
-  doCheck = true;
-  hardeningDisable = [ "fortify" ];
-  outputs = [
-    "bin"
-    "dev"
-    "out"
-    "static"
-  ];
-
-  patches = [ ./nix-cflags.patch ];
-
-  postPatch = ''
-    substituteInPlace src/terralib.lua \
-      --subst-var-by NIX_LIBC_INCLUDE ${lib.getDev stdenv.cc.libc}/include
-  '';
-
   preConfigure = ''
     mkdir -p build
     ln -s ${luajitSrc} build/${luajitBase}
     tar --mode="a+rwX" -chzf build/${luajitArchive} -C build ${luajitBase}
     rm build/${luajitBase}
   '';
+
+  doCheck = true;
 
   installPhase = ''
     install -Dm755 -t $bin/bin bin/terra
@@ -108,17 +110,21 @@ stdenv.mkDerivation (finalAttrs: {
     cp -rv include/terra $dev/include
   '';
 
+  hardeningDisable = [ "fortify" ];
+
   meta = {
     description = "Low-level counterpart to Lua";
     homepage = "https://terralang.org/";
-    platforms = lib.platforms.all;
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       jb55
       seylerius
       thoughtpolice
       elliottslaughter
     ];
-    license = lib.licenses.mit;
+
+    platforms = lib.platforms.all;
     # never built on aarch64-darwin since first introduction in nixpkgs
     # Linux Aarch64 broken above LLVM11
     # https://github.com/terralang/terra/issues/597

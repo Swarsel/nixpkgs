@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  gnum4,
   autoreconfHook,
   gitUpdater,
+  gnum4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -12,11 +12,12 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.6.1";
 
   src = fetchurl {
+    hash = "sha256-cTizeJt1Br1oP0UdT32FMHepGAO3s12G7GZ/D5zUAc0=";
+
     urls = [
       "https://www.chiark.greenend.org.uk/~ian/adns/ftp/adns-${finalAttrs.version}.tar.gz"
       "mirror://gnu/adns/adns-${finalAttrs.version}.tar.gz"
     ];
-    hash = "sha256-cTizeJt1Br1oP0UdT32FMHepGAO3s12G7GZ/D5zUAc0=";
   };
 
   patches = lib.optionals stdenv.hostPlatform.isDarwin [ ./darwin.patch ];
@@ -27,12 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   configureFlags = lib.optional stdenv.hostPlatform.isStatic "--disable-dynamic";
-
-  enableParallelBuilding = true;
-
   # https://www.mail-archive.com/nix-dev@cs.uu.nl/msg01347.html for details.
   doCheck = false;
-
   doInstallCheck = true;
 
   installCheckPhase = ''
@@ -45,20 +42,24 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  enableParallelBuilding = true;
+
   passthru.updateScript = gitUpdater {
-    url = "https://www.chiark.greenend.org.uk/ucgi/~ianmdlvl/githttp/adns.git";
     rev-prefix = "adns-";
+    url = "https://www.chiark.greenend.org.uk/ucgi/~ianmdlvl/githttp/adns.git";
   };
 
   meta = {
-    homepage = "http://www.chiark.greenend.org.uk/~ian/adns/";
     description = "Asynchronous DNS resolver library";
+    homepage = "http://www.chiark.greenend.org.uk/~ian/adns/";
+
     license = [
       lib.licenses.gpl3Plus
 
       # `adns.h` only
       lib.licenses.lgpl2Plus
     ];
+
     platforms = lib.platforms.unix;
   };
 })

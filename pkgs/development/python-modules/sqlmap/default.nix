@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "sqlmap";
   version = "1.10.6";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -26,11 +25,10 @@ buildPythonPackage (finalAttrs: {
     echo 'LAST_UPDATE_NAGGING_DAYS = float("inf")' >> sqlmap/lib/core/settings.py
   '';
 
-  build-system = [ setuptools ];
-
   # No tests in archive
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "sqlmap" ];
 
   meta = {

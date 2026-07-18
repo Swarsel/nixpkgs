@@ -1,17 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-  hatch-vcs,
-
   # dependencies
   boost-histogram,
+  buildPythonPackage,
   dask,
   dask-awkward,
-
+  hatch-vcs,
+  # build-system
+  hatchling,
   # tests
   pytestCheckHook,
 }:
@@ -19,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "dask-histogram";
   version = "2026.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dask-contrib";
@@ -27,6 +23,8 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-F48mFKP3XLYOn4TuiU3HGHTd089kPk0dF2XnJot5s+I=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     hatchling
@@ -39,8 +37,7 @@ buildPythonPackage (finalAttrs: {
     dask-awkward
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "dask_histogram" ];
 
   meta = {

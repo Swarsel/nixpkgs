@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aiointercept,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   orjson,
   poetry-core,
   propcache,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "nexia";
   version = "2.13.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bdraco";
@@ -23,6 +22,13 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-jkyosr829jyR/aSDL9L+8xYZwwja0/TRETYFFBbwiFg=";
   };
+
+  nativeCheckInputs = [
+    aiointercept
+    aioresponses
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -32,13 +38,7 @@ buildPythonPackage (finalAttrs: {
     propcache
   ];
 
-  nativeCheckInputs = [
-    aiointercept
-    aioresponses
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "nexia" ];
 
   meta = {

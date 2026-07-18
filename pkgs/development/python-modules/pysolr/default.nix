@@ -2,15 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools-scm,
-  requests,
   mock,
+  requests,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "pysolr";
   version = "3.11.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -18,12 +17,10 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools-scm ];
-
   propagatedBuildInputs = [ requests ];
-
-  nativeCheckInputs = [ mock ];
-
   doCheck = false; # requires network access
+  nativeCheckInputs = [ mock ];
+  format = "setuptools";
 
   meta = {
     description = "Lightweight Python wrapper for Apache Solr";

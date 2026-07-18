@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
-  rich,
   pytestCheckHook,
+  rich,
 }:
 
 buildPythonPackage rec {
   pname = "rich-argparse-plus";
   version = "0.3.1.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "michelcrypt4d4mus";
@@ -20,12 +19,8 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ flit-core ];
-
   propagatedBuildInputs = [ rich ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "rich_argparse_plus" ];
 
   disabledTests = [
     # Tests are comparing CLI output
@@ -36,6 +31,9 @@ buildPythonPackage rec {
     "test_text_highlighter"
     "test_default_highlights"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "rich_argparse_plus" ];
 
   meta = {
     description = "Library to help formatting argparse";

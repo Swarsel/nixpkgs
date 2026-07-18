@@ -1,7 +1,7 @@
 {
-  pkgs,
-  stdenv,
   lib,
+  stdenv,
+  pkgs,
   python,
 }:
 
@@ -46,9 +46,10 @@ let
       if lib.isAttrs result then
         result
         // {
-          overridePythonAttrs = newArgs: makeOverridablePythonPackage f (overrideWith newArgs);
           overrideAttrs =
             newArgs: makeOverridablePythonPackage (args: (f args).overrideAttrs newArgs) origArgs;
+
+          overridePythonAttrs = newArgs: makeOverridablePythonPackage f (overrideWith newArgs);
         }
       else
         result
@@ -121,9 +122,9 @@ let
   buildPythonApplication = makeOverridablePythonPackage (
     overrideStdenvCompat (
       callPackage mkPythonDerivation {
+        inherit (python) stdenv;
         namePrefix = ""; # Python applications should not have any prefix
         toPythonModule = x: x; # Application does not provide modules.
-        inherit (python) stdenv;
       }
     )
   );
@@ -159,6 +160,7 @@ let
       passthru = (oldAttrs.passthru or { }) // {
         pythonModule = python;
         pythonPath = [ ]; # Deprecated, for compatibility.
+
         requiredPythonModules = builtins.addErrorContext "while calculating requiredPythonModules for ${drv.name or drv.pname}:" (
           requiredPythonModules drv.propagatedBuildInputs
         );
@@ -189,6 +191,7 @@ let
 in
 {
   inherit lib pkgs stdenv;
+
   inherit (python.passthru)
     isPy311
     isPy312
@@ -199,7 +202,9 @@ in
     pythonAtLeast
     pythonOlder
     ;
+
   inherit buildPythonPackage buildPythonApplication;
+
   inherit
     hasPythonModule
     requiredPythonModules
@@ -207,11 +212,10 @@ in
     disabled
     disabledIf
     ;
+
   inherit toPythonModule toPythonApplication;
   inherit mkPythonMetaPackage mkPythonEditablePackage;
-
   python = toPythonModule python;
-
   # Don't take pythonPackages from "global" pkgs scope to avoid mixing python versions.
   pythonPackages = self;
 }

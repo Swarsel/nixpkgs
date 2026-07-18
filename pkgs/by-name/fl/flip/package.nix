@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
 }:
@@ -26,8 +26,8 @@ stdenv.mkDerivation {
     description = "Tool for visualizing and communicating the errors in rendered images";
     homepage = "https://github.com/NVlabs/flip";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ zmitchell ];
+    platforms = lib.platforms.unix;
     mainProgram = "flip";
   };
 }

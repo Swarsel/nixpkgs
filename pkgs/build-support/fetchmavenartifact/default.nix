@@ -2,8 +2,8 @@
 
 {
   lib,
-  fetchurl,
   stdenv,
+  fetchurl,
 }:
 let
   defaultRepos = [
@@ -15,14 +15,16 @@ let
 in
 
 args@{
-  # Example: "org.apache.httpcomponents"
-  groupId,
   # Example: "httpclient"
   artifactId,
+  # Example: "org.apache.httpcomponents"
+  groupId,
   # Example: "4.3.6"
   version,
   # Example: "jdk11"
   classifier ? null,
+  # Metadata
+  meta ? { },
   # List of maven repositories from where to fetch the artifact.
   # Example: [ http://oss.sonatype.org/content/repositories/public ].
   repos ? defaultRepos,
@@ -31,8 +33,6 @@ args@{
   # and `urls` can be specified, not both.
   url ? "",
   urls ? [ ],
-  # Metadata
-  meta ? { },
   # The rest of the arguments are just forwarded to `fetchurl`.
   ...
 }:
@@ -76,20 +76,22 @@ let
       "meta"
     ]
     // {
-      urls = urls_;
       name = "${pname}-${version}.jar";
+      urls = urls_;
     }
   );
 in
 stdenv.mkDerivation {
   inherit pname version meta;
-  dontUnpack = true;
+
   # By moving the jar to $out/share/java we make it discoverable by java
   # packages packages that mention this derivation in their buildInputs.
   installPhase = ''
     mkdir -p $out/share/java
     ln -s ${jar} $out/share/java/${filename}
   '';
+
+  dontUnpack = true;
   # We also add a `jar` attribute that can be used to easily obtain the path
   # to the downloaded jar file.
   passthru.jar = jar;

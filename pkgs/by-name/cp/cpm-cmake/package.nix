@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -21,9 +21,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --replace-fail "set(CURRENT_CPM_VERSION 1.0.0-development-version)" "set(CURRENT_CPM_VERSION ${finalAttrs.version})"
   '';
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -34,17 +31,21 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/cpm-cmake/CPM.cmake";
     description = "CMake's missing package manager";
+
     longDescription = ''
       CPM.cmake is a cross-platform CMake script that adds dependency
       management capabilities to CMake. It's built as a thin wrapper around
       CMake's FetchContent module that adds version control, caching, a
       simple API and more.
     '';
+
+    homepage = "https://github.com/cpm-cmake/CPM.cmake";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ pandapip1 ];
     platforms = lib.platforms.all;

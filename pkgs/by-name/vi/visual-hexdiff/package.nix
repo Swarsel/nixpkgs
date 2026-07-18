@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   fetchpatch,
   ncurses,
@@ -18,11 +18,11 @@ stdenv.mkDerivation {
     # Some changes the debian/ubuntu developers made over the original source code
     # See https://changelogs.ubuntu.com/changelogs/pool/universe/h/hexdiff/hexdiff_0.0.53-0ubuntu4/changelog
     (fetchpatch {
-      url = "mirror://ubuntu/pool/universe/h/hexdiff/hexdiff_0.0.53-0ubuntu4.diff.gz";
-      sha256 = "sha256-X5ONNp9jeACxsulyowDQJ6REX6bty6L4in0/+rq8Wz4=";
       decode = "gunzip --stdout";
       name = "hexdiff_0.0.53-0ubuntu4.diff";
+      sha256 = "sha256-X5ONNp9jeACxsulyowDQJ6REX6bty6L4in0/+rq8Wz4=";
       stripLen = 1;
+      url = "mirror://ubuntu/pool/universe/h/hexdiff/hexdiff_0.0.53-0ubuntu4.diff.gz";
     })
   ];
 
@@ -38,19 +38,18 @@ stdenv.mkDerivation {
   '';
 
   buildInputs = [ ncurses ];
+  makeFlags = [ "PREFIX=$(out)" ];
 
   preInstall = ''
     mkdir -p $out/bin/
   '';
-
-  makeFlags = [ "PREFIX=$(out)" ];
 
   meta = {
     description = "Visual hexadecimal difference editor";
     homepage = "http://tboudet.free.fr/hexdiff/";
     license = lib.licenses.wtfpl;
     maintainers = with lib.maintainers; [ erictapen ];
-    mainProgram = "hexdiff";
     platforms = lib.platforms.unix;
+    mainProgram = "hexdiff";
   };
 }

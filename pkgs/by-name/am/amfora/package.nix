@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   buildGoModule,
 }:
@@ -25,10 +25,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Fancy terminal browser for the Gemini protocol";
-    mainProgram = "amfora";
     homepage = "https://github.com/makew0rld/amfora";
+    changelog = "https://github.com/makew0rld/amfora/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = with lib.licenses; [ gpl3 ];
     maintainers = with lib.maintainers; [ deifactor ];
-    changelog = "https://github.com/makew0rld/amfora/blob/v${finalAttrs.version}/CHANGELOG.md";
+    mainProgram = "amfora";
   };
 })

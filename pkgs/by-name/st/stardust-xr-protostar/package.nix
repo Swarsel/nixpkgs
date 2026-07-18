@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,9 +16,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-9KJO1Z3Aq0+hh9QqufWBxpMmfFOmdgMUJxfgGZMg2n4=";
   };
 
-  env.STARDUST_RES_PREFIXES = "${finalAttrs.src}/res";
-
   cargoHash = "sha256-9XJ+nnvpTzr/3ii9dFkfZDex/++W5Mq9k0bh2Y6tueA=";
+  env.STARDUST_RES_PREFIXES = "${finalAttrs.src}/res";
 
   checkFlags = [
     # ---- xdg::test_get_desktop_files stdout ----
@@ -47,10 +46,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Prototype application launchers for Stardust XR";
     homepage = "https://stardustxr.org";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       pandapip1
       technobaboo
     ];
+
     platforms = lib.platforms.linux;
   };
 })

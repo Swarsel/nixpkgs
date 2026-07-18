@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytest-asyncio,
   pytest-cov-stub,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "async-interrupt";
   version = "1.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bdraco";
@@ -20,14 +19,14 @@ buildPythonPackage rec {
     hash = "sha256-M0ftyHstBP7+6M2b6yV33mSuO4B8QF3ixRvNJ/WeSEA=";
   };
 
-  build-system = [ poetry-core ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-cov-stub
     pytestCheckHook
   ];
 
+  build-system = [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "async_interrupt" ];
 
   meta = {

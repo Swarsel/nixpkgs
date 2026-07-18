@@ -1,25 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cython,
   joblib,
   matplotlib,
   meson-python,
   numpy,
   pandas,
+  pytestCheckHook,
+  python,
   scikit-learn,
   scipy,
   statsmodels,
   urllib3,
-  python,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pmdarima";
   version = "2.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "alkaline-ml";
@@ -36,14 +35,20 @@ buildPythonPackage rec {
     GITHUB_REF = "refs/tags/v${version}";
   };
 
+  nativeCheckInputs = [
+    matplotlib
+    pytestCheckHook
+  ];
+
+  # Make sure we're running the tests for the actually installed
+  # package, so that cython's compiled files are available.
+  preCheck = ''
+    cd $out/${python.sitePackages}
+  '';
+
   build-system = [
     cython
     meson-python
-  ];
-
-  pythonRemoveDeps = [
-    # https://github.com/alkaline-ml/pmdarima/pull/616
-    "setuptools"
   ];
 
   dependencies = [
@@ -56,23 +61,18 @@ buildPythonPackage rec {
     urllib3
   ];
 
-  # Make sure we're running the tests for the actually installed
-  # package, so that cython's compiled files are available.
-  preCheck = ''
-    cd $out/${python.sitePackages}
-  '';
-
-  nativeCheckInputs = [
-    matplotlib
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # touches internet
     "test_load_from_web"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pmdarima" ];
+
+  pythonRemoveDeps = [
+    # https://github.com/alkaline-ml/pmdarima/pull/616
+    "setuptools"
+  ];
 
   meta = {
     description = "Statistical library designed to fill the void in Python's time series analysis capabilities, including the equivalent of R's auto.arima function";

@@ -14,21 +14,21 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-UYZGHrSkoQwJ4siaob2XGD8YoKHRPKCSfwa7CPW18DQ=";
   };
 
-  buildInputs = [
-    expat
-  ];
-
   patches = [
     ./server-gcc5.patch
     ./bloodspilot-server-strcpy-fix.patch
   ];
 
+  buildInputs = [
+    expat
+  ];
+
   meta = {
     description = "Multiplayer X11 space combat game (server part)";
-    mainProgram = "xpilots";
     homepage = "http://bloodspilot.sf.net/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.linux;
+    mainProgram = "xpilots";
   };
 })

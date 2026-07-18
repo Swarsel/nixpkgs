@@ -1,33 +1,27 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  removeReferencesTo,
-  tzdata,
-  wire,
-  yarn-berry_4,
-  yarn-berry_4-fetcher,
+  buildGoModule,
   buildPackages,
-  python3,
+  faketty,
   jq,
   moreutils,
   nix-update-script,
   nixosTests,
-  xcbuild,
-  faketty,
   nodejs,
+  python3,
+  removeReferencesTo,
+  tzdata,
+  wire,
+  xcbuild,
+  yarn-berry_4,
+  yarn-berry_4-fetcher,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "grafana";
   version = "13.1.0";
-
-  subPackages = [
-    "pkg/cmd/grafana"
-    "pkg/cmd/grafana-server"
-    "pkg/cmd/grafana-cli"
-  ];
 
   src = fetchFromGitHub {
     owner = "grafana";
@@ -35,26 +29,6 @@ buildGoModule (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-FyrClHQwkwNW9bFbFLyuE4s9Gg0tbg7v/s1I/4XaWmM=";
   };
-
-  # borrowed from: https://github.com/NixOS/nixpkgs/blob/d70d9425f49f9aba3c49e2c389fe6d42bac8c5b0/pkgs/development/tools/analysis/snyk/default.nix#L20-L22
-  env = {
-    CYPRESS_INSTALL_BINARY = 0;
-    PUPPETEER_SKIP_DOWNLOAD = 1;
-
-    # The build OOMs on memory constrained aarch64 without this
-    NODE_OPTIONS = "--max_old_space_size=4096";
-  };
-
-  missingHashes = ./missing-hashes.json;
-  # Since this is not a dependency attribute the buildPackages has to be specified.
-  offlineCache = buildPackages.yarn-berry_4-fetcher.fetchYarnBerryDeps {
-    inherit (finalAttrs) src missingHashes;
-    hash = "sha256-TAJYJ9oMVl9cT4Vs1SZVbhKuuWp/WxM99Wt7QzLq1WQ=";
-  };
-
-  disallowedRequisites = [ finalAttrs.offlineCache ];
-
-  vendorHash = "sha256-2OsgW52vQbeQu88eyoWsD8784gzI7/5SbLY62jYxukQ=";
 
   # Grafana seems to just set it to the latest version available
   # nowadays.
@@ -70,10 +44,6 @@ buildGoModule (finalAttrs: {
     find . \( -name go.mod -or -name "go.work" \) -type f -exec sed -i -e 's/^go .*/go ${finalAttrs.passthru.go.version}/g' {} \;
   '';
 
-  proxyVendor = true;
-
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
-
   nativeBuildInputs = [
     wire
     jq
@@ -88,15 +58,15 @@ buildGoModule (finalAttrs: {
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ xcbuild.xcbuild ];
 
-  # We have to remove this setupHook, otherwise it also runs in the `goModules`
-  # derivation and fails because `offlineCache` is missing there.
-  overrideModAttrs = (
-    old: {
-      nativeBuildInputs = lib.filter (
-        x: lib.getName x != (lib.getName buildPackages.yarn-berry_4-fetcher.yarnBerryConfigHook)
-      ) old.nativeBuildInputs;
-    }
-  );
+  vendorHash = "sha256-2OsgW52vQbeQu88eyoWsD8784gzI7/5SbLY62jYxukQ=";
+
+  # borrowed from: https://github.com/NixOS/nixpkgs/blob/d70d9425f49f9aba3c49e2c389fe6d42bac8c5b0/pkgs/development/tools/analysis/snyk/default.nix#L20-L22
+  env = {
+    CYPRESS_INSTALL_BINARY = 0;
+    # The build OOMs on memory constrained aarch64 without this
+    NODE_OPTIONS = "--max_old_space_size=4096";
+    PUPPETEER_SKIP_DOWNLOAD = 1;
+  };
 
   postConfigure = ''
     # Generate DI code that's required to compile the package.
@@ -122,16 +92,6 @@ buildGoModule (finalAttrs: {
     yarn run plugins:build-bundled
   '';
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version}"
-  ];
-
-  # Tests start http servers which need to bind to local addresses:
-  # panic: httptest: failed to listen on a port: listen tcp6 [::1]:0: bind: operation not permitted
-  __darwinAllowLocalNetworking = true;
-
   # On Darwin, files under /usr/share/zoneinfo exist, but fail to open in sandbox:
   # TestValueAsTimezone: date_formats_test.go:33: Invalid has err for input "Europe/Amsterdam": operation not permitted
   preCheck = ''
@@ -149,6 +109,44 @@ buildGoModule (finalAttrs: {
     done < <(find $out -type f -name '*.js.map' -or -name '*.js')
   '';
 
+  # Tests start http servers which need to bind to local addresses:
+  # panic: httptest: failed to listen on a port: listen tcp6 [::1]:0: bind: operation not permitted
+  __darwinAllowLocalNetworking = true;
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  disallowedRequisites = [ finalAttrs.offlineCache ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version}"
+  ];
+
+  missingHashes = ./missing-hashes.json;
+
+  # Since this is not a dependency attribute the buildPackages has to be specified.
+  offlineCache = buildPackages.yarn-berry_4-fetcher.fetchYarnBerryDeps {
+    inherit (finalAttrs) src missingHashes;
+    hash = "sha256-TAJYJ9oMVl9cT4Vs1SZVbhKuuWp/WxM99Wt7QzLq1WQ=";
+  };
+
+  # We have to remove this setupHook, otherwise it also runs in the `goModules`
+  # derivation and fails because `offlineCache` is missing there.
+  overrideModAttrs = (
+    old: {
+      nativeBuildInputs = lib.filter (
+        x: lib.getName x != (lib.getName buildPackages.yarn-berry_4-fetcher.yarnBerryConfigHook)
+      ) old.nativeBuildInputs;
+    }
+  );
+
+  proxyVendor = true;
+
+  subPackages = [
+    "pkg/cmd/grafana"
+    "pkg/cmd/grafana-server"
+    "pkg/cmd/grafana-cli"
+  ];
+
   passthru = {
     tests = { inherit (nixosTests) grafana; };
     updateScript = nix-update-script { };
@@ -156,8 +154,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Gorgeous metric viz, dashboards & editors for Graphite, InfluxDB & OpenTSDB";
-    license = lib.licenses.agpl3Only;
     homepage = "https://grafana.com";
+    license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       fpletz
       globin
@@ -165,12 +164,14 @@ buildGoModule (finalAttrs: {
       Frostman
       ryan4yin
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
       "riscv64-linux"
     ];
+
     mainProgram = "grafana";
   };
 })

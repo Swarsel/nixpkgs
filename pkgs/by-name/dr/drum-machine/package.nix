@@ -1,9 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   appstream,
   blueprint-compiler,
   desktop-file-utils,
-  fetchFromGitHub,
+  ffmpeg-headless,
   glib,
   gobject-introspection,
   gtk4,
@@ -14,13 +15,11 @@
   pkg-config,
   python3Packages,
   wrapGAppsHook4,
-  ffmpeg-headless,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "drum-machine";
   version = "2.2.0";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "Revisto";
@@ -67,6 +66,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     mesonCheckPhase
   '';
 
+  pyproject = false;
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -76,7 +77,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     homepage = "https://apps.gnome.org/DrumMachine";
     changelog = "https://github.com/Revisto/drum-machine/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Plus;
-    teams = [ lib.teams.gnome-circle ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.gnome-circle ];
   };
 })

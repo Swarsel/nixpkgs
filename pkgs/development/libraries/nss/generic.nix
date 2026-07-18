@@ -1,65 +1,52 @@
 {
-  version,
-  hash,
   filename,
+  hash,
+  version,
   versionRegex,
 }:
 {
   lib,
   stdenv,
   fetchFromGitHub,
-  nspr,
-  perl,
-  installShellFiles,
-  zlib,
-  sqlite,
-  ninja,
+  buildPackages,
   cctools,
   fixDarwinDylibNames,
-  buildPackages,
-  useP11kit ? true,
+  installShellFiles,
+  ninja,
+  nix-update-script,
+  nixosTests,
+  nspr,
+  nss_latest,
   p11-kit,
+  perl,
+  sqlite,
+  zlib,
   # allow FIPS mode. Note that this makes the output non-reproducible.
   # https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/NSS_Tech_Notes/nss_tech_note6
   enableFIPS ? false,
-  nixosTests,
-  nss_latest,
-  nix-update-script,
+  useP11kit ? true,
 }:
 
 let
   underscoreVersion = lib.replaceStrings [ "." ] [ "_" ] version;
 in
 stdenv.mkDerivation rec {
-  pname = "nss";
   inherit version;
+  pname = "nss";
 
   src = fetchFromGitHub {
+    inherit hash;
     owner = "nss-dev";
     repo = "nss";
     rev = "NSS_${lib.replaceStrings [ "." ] [ "_" ] version}_RTM";
-    inherit hash;
   };
 
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
-
-  nativeBuildInputs = [
-    perl
-    ninja
-    (buildPackages.python3.withPackages (ps: with ps; [ gyp ]))
-    installShellFiles
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    cctools
-    fixDarwinDylibNames
+  outputs = [
+    "out"
+    "dev"
+    "tools"
+    "man"
   ];
-
-  buildInputs = [
-    zlib
-    sqlite
-  ];
-
-  propagatedBuildInputs = [ nspr ];
 
   patches = [
     # Based on http://patch-tracker.debian.org/patch/series/dl/nss/2:3.15.4-1/85_security_load.patch
@@ -81,12 +68,44 @@ stdenv.mkDerivation rec {
     substituteInPlace coreconf/config.gypi --replace "'DYLIB_INSTALL_NAME_BASE': '@executable_path'" "'DYLIB_INSTALL_NAME_BASE': '$out/lib'"
   '';
 
-  outputs = [
-    "out"
-    "dev"
-    "tools"
-    "man"
+  nativeBuildInputs = [
+    perl
+    ninja
+    (buildPackages.python3.withPackages (ps: with ps; [ gyp ]))
+    installShellFiles
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    cctools
+    fixDarwinDylibNames
   ];
+
+  buildInputs = [
+    zlib
+    sqlite
+  ];
+
+  propagatedBuildInputs = [ nspr ];
+
+  env.NIX_CFLAGS_COMPILE = toString (
+    [
+      "-Wno-error"
+      "-DNIX_NSS_LIBDIR=\"${placeholder "out"}/lib/\""
+    ]
+    ++ lib.optionals stdenv.hostPlatform.is64bit [
+      "-DNSS_USE_64=1"
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isILP32 [
+      "-DNS_PTR_LE_32=1" # See RNG_RandomUpdate() in drdbg.c
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+      "-D_XOPEN_SOURCE=700"
+      "-D__BSD_VISIBLE"
+      # uses compiler intrinsics gated behind runtime checks for cpu feature flags
+      "-mavx2"
+      "-maes"
+      "-mpclmul"
+    ]
+  );
 
   buildPhase =
     let
@@ -144,27 +163,6 @@ stdenv.mkDerivation rec {
 
       runHook postBuild
     '';
-
-  env.NIX_CFLAGS_COMPILE = toString (
-    [
-      "-Wno-error"
-      "-DNIX_NSS_LIBDIR=\"${placeholder "out"}/lib/\""
-    ]
-    ++ lib.optionals stdenv.hostPlatform.is64bit [
-      "-DNSS_USE_64=1"
-    ]
-    ++ lib.optionals stdenv.hostPlatform.isILP32 [
-      "-DNS_PTR_LE_32=1" # See RNG_RandomUpdate() in drdbg.c
-    ]
-    ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
-      "-D_XOPEN_SOURCE=700"
-      "-D__BSD_VISIBLE"
-      # uses compiler intrinsics gated behind runtime checks for cpu feature flags
-      "-mavx2"
-      "-maes"
-      "-mpclmul"
-    ]
-  );
 
   installPhase = ''
     runHook preInstall
@@ -240,14 +238,7 @@ stdenv.mkDerivation rec {
       runHook postInstall
     '';
 
-  passthru.updateScript = nix-update-script {
-    extraArgs = [
-      "--override-filename"
-      "pkgs/development/libraries/nss/${filename}"
-      "--version-regex"
-      versionRegex
-    ];
-  };
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
 
   passthru.tests =
     lib.optionalAttrs (lib.versionOlder version nss_latest.version) {
@@ -257,15 +248,26 @@ stdenv.mkDerivation rec {
       inherit (nixosTests) firefox;
     };
 
+  passthru.updateScript = nix-update-script {
+    extraArgs = [
+      "--override-filename"
+      "pkgs/development/libraries/nss/${filename}"
+      "--version-regex"
+      versionRegex
+    ];
+  };
+
   meta = {
-    homepage = "https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS";
     description = "Set of libraries for development of security-enabled client and server applications";
+    homepage = "https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS";
     changelog = "https://github.com/nss-dev/nss/blob/master/doc/rst/releases/nss_${underscoreVersion}.rst";
+    license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       hexa
       ajs124
     ];
-    license = lib.licenses.mpl20;
+
     platforms = lib.platforms.all;
   };
 }

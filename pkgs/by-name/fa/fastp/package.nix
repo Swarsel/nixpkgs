@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  zlib,
-  libdeflate,
   isa-l,
+  libdeflate,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,10 +30,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Ultra-fast all-in-one FASTQ preprocessor";
-    mainProgram = "fastp";
-    license = lib.licenses.mit;
     homepage = "https://github.com/OpenGene/fastp";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jbedo ];
     platforms = lib.platforms.x86_64;
+    mainProgram = "fastp";
   };
 })

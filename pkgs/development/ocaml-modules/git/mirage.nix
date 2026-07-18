@@ -1,43 +1,40 @@
 {
-  buildDunePackage,
-  git,
-  mimic,
-  mimic-happy-eyeballs,
-  base64,
-  git-paf,
+  alcotest,
+  alcotest-lwt,
   awa,
   awa-mirage,
-  tls,
-  tls-mirage,
-  uri,
-  happy-eyeballs-mirage,
-  happy-eyeballs,
+  base64,
+  bigstringaf,
+  buildDunePackage,
   ca-certs-nss,
-  mirage-crypto,
-  ptime,
-  x509,
   cstruct,
-  tcpip,
   domain-name,
   fmt,
+  git,
+  git-paf,
+  happy-eyeballs,
+  happy-eyeballs-mirage,
   ipaddr,
+  ke,
+  logs,
   lwt,
+  mimic,
+  mimic-happy-eyeballs,
+  mirage-crypto,
   mirage-flow,
   mirage-ptime,
   mirage-sleep,
-  alcotest,
-  alcotest-lwt,
-  bigstringaf,
-  logs,
-  ke,
+  ptime,
+  tcpip,
+  tls,
+  tls-mirage,
+  uri,
+  x509,
 }:
 
 buildDunePackage {
-  pname = "git-mirage";
-
   inherit (git) version src;
-
-  minimalOCamlVersion = "4.08";
+  pname = "git-mirage";
 
   buildInputs = [
     happy-eyeballs-mirage
@@ -77,6 +74,8 @@ buildDunePackage {
     logs
     ke
   ];
+
+  minimalOCamlVersion = "4.08";
 
   meta = git.meta // {
     description = "Package to use ocaml-git with MirageOS backend";

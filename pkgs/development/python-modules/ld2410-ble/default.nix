@@ -1,10 +1,10 @@
 {
   lib,
-  async-timeout,
-  bleak-retry-connector,
-  bleak,
-  buildPythonPackage,
   fetchFromGitHub,
+  async-timeout,
+  bleak,
+  bleak-retry-connector,
+  buildPythonPackage,
   poetry-core,
   pytest-cov-stub,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "ld2410-ble";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "930913";
@@ -21,6 +20,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-wQnE2hNT0UOnPJbHq1eayIO8g0XRZvEH6V19DL6RqoA=";
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -30,11 +34,7 @@ buildPythonPackage (finalAttrs: {
     bleak-retry-connector
   ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "ld2410_ble" ];
 
   meta = {

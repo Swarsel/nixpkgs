@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pylint,
   pytestCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pylint-plugin-utils";
   version = "0.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "PyCQA";
@@ -28,7 +27,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pylint_plugin_utils" ];
 
   meta = {

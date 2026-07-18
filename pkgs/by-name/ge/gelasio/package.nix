@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -15,8 +15,6 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-GfJjpiTBayNfGULf3vqFOvQw9rqXIe8JJmF3fI9Km+Y=";
   };
 
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -26,16 +24,20 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Font which is metric-compatible with Microsoft's Georgia";
+
     longDescription = ''
       Gelasio is an original typeface which is metrics compatible with Microsoft's
       Georgia in its Regular, Bold, Italic and Bold Italic weights. Interpolated
       Medium, medium Italic, SemiBold and SemiBold Italic have now been added as well.
     '';
+
     homepage = "https://github.com/SorkinType/Gelasio";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ colemickens ];
+    platforms = lib.platforms.all;
   };
 }

@@ -10,15 +10,12 @@
 buildPythonPackage rec {
   pname = "llama-index-instrumentation";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "llama_index_instrumentation";
     inherit version;
     hash = "sha256-7rckZIsl0UneiCpayeIcWssc54DaIUvaKwdTQa8prY4=";
+    pname = "llama_index_instrumentation";
   };
-
-  pythonRelaxDeps = [ "pydantic" ];
 
   build-system = [ hatchling ];
 
@@ -27,7 +24,9 @@ buildPythonPackage rec {
     pydantic
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "llama_index_instrumentation" ];
+  pythonRelaxDeps = [ "pydantic" ];
 
   meta = {
     description = "Support for instrumentation in LlamaIndex applications";

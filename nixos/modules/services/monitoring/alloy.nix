@@ -1,28 +1,20 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 let
   cfg = config.services.alloy;
 in
 {
-  meta = {
-    maintainers = with lib.maintainers; [
-      flokli
-      hbjydev
-    ];
-  };
-
   options.services.alloy = {
     enable = lib.mkEnableOption "Grafana Alloy";
-
     package = lib.mkPackageOption pkgs "grafana-alloy" { };
 
     configPath = lib.mkOption {
-      type = lib.types.path;
       default = "/etc/alloy";
+
       description = ''
         Alloy configuration file/directory path.
 
@@ -46,55 +38,74 @@ in
         the nature of the failure. When this happens, Alloy will continue
         functioning in the last valid state.
       '';
+
+      type = lib.types.path;
     };
 
     environmentFile = lib.mkOption {
-      type = with lib.types; nullOr path;
       default = null;
-      example = "/run/secrets/alloy.env";
+
       description = ''
         EnvironmentFile as defined in {manpage}`systemd.exec(5)`.
       '';
+
+      example = "/run/secrets/alloy.env";
+      type = with lib.types; nullOr path;
     };
 
     extraFlags = lib.mkOption {
-      type = with lib.types; listOf str;
       default = [ ];
-      example = [
-        "--server.http.listen-addr=127.0.0.1:12346"
-        "--disable-reporting"
-      ];
+
       description = ''
         Extra command-line flags passed to {command}`alloy run`.
 
         See <https://grafana.com/docs/alloy/latest/reference/cli/run/>
       '';
+
+      example = [
+        "--server.http.listen-addr=127.0.0.1:12346"
+        "--disable-reporting"
+      ];
+
+      type = with lib.types; listOf str;
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.alloy = {
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+
       reloadTriggers = lib.mapAttrsToList (_: v: v.source or null) (
         lib.filterAttrs (n: _: lib.hasPrefix "alloy/" n && lib.hasSuffix ".alloy" n) config.environment.etc
       );
+
       serviceConfig = {
-        Restart = "always";
+        ConfigurationDirectory = "alloy";
         DynamicUser = true;
+        EnvironmentFile = lib.mkIf (cfg.environmentFile != null) [ cfg.environmentFile ];
+        ExecReload = "${pkgs.coreutils}/bin/kill -SIGHUP $MAINPID";
+        ExecStart = "${lib.getExe cfg.package} run ${cfg.configPath} ${lib.escapeShellArgs cfg.extraFlags}";
+        Restart = "always";
         RestartSec = 2;
+        StateDirectory = "alloy";
+
         SupplementaryGroups = [
           # allow to read the systemd journal for loki log forwarding
           "systemd-journal"
         ];
-        ExecStart = "${lib.getExe cfg.package} run ${cfg.configPath} ${lib.escapeShellArgs cfg.extraFlags}";
-        ExecReload = "${pkgs.coreutils}/bin/kill -SIGHUP $MAINPID";
-        ConfigurationDirectory = "alloy";
-        StateDirectory = "alloy";
-        WorkingDirectory = "%S/alloy";
+
         Type = "simple";
-        EnvironmentFile = lib.mkIf (cfg.environmentFile != null) [ cfg.environmentFile ];
+        WorkingDirectory = "%S/alloy";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
+  };
+
+  meta = {
+    maintainers = with lib.maintainers; [
+      flokli
+      hbjydev
+    ];
   };
 }

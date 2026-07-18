@@ -1,28 +1,27 @@
 {
   lib,
+  fetchFromGitHub,
   anyio,
   beartype,
   buildPythonPackage,
-  hatchling,
-  hatch-mypyc,
-  hatch-vcs,
-  types-deprecated,
   deprecated,
   exceptiongroup,
-  fetchFromGitHub,
+  hatch-mypyc,
+  hatch-vcs,
+  hatchling,
   packaging,
   pytest-asyncio,
   pytest-lazy-fixtures,
   pytest-mock,
   pytestCheckHook,
   redis,
+  types-deprecated,
   typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "coredis";
   version = "6.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "alisaifee";
@@ -38,6 +37,14 @@ buildPythonPackage (finalAttrs: {
     substituteInPlace pyproject.toml \
       --replace-fail '"-K"' ""
   '';
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    redis
+    pytest-asyncio
+    pytest-lazy-fixtures
+    pytest-mock
+  ];
 
   build-system = [
     hatchling
@@ -55,16 +62,6 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    redis
-    pytest-asyncio
-    pytest-lazy-fixtures
-    pytest-mock
-  ];
-
-  pythonImportsCheck = [ "coredis" ];
-
   enabledTestPaths = [
     # All other tests require Docker
     "tests/test_lru_cache.py"
@@ -72,6 +69,9 @@ buildPythonPackage (finalAttrs: {
     "tests/test_retry.py"
     "tests/test_utils.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "coredis" ];
 
   meta = {
     description = "Async redis client with support for redis server, cluster & sentinel";

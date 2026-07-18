@@ -1,26 +1,23 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  setuptools,
   ansi2html,
-  libtmux,
-  weasyprint,
+  buildPythonPackage,
   dataclass-wizard,
+  fetchPypi,
+  libtmux,
+  setuptools,
+  weasyprint,
 }:
 
 buildPythonPackage rec {
   pname = "presenterm-export";
   version = "0.2.7";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "presenterm_export";
     inherit version;
     hash = "sha256-9TkZ52lA1l3PYs2DTgji0LDrG5kixnFffuMIfhILY1E=";
+    pname = "presenterm_export";
   };
-
-  pythonRelaxDeps = true;
 
   build-system = [
     setuptools
@@ -33,7 +30,9 @@ buildPythonPackage rec {
     dataclass-wizard
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "presenterm_export" ];
+  pythonRelaxDeps = true;
 
   meta = {
     description = "PDF exporter for presenterm";

@@ -1,16 +1,15 @@
 {
   lib,
-  bleak,
-  click,
-  buildPythonPackage,
   fetchFromGitHub,
+  bleak,
+  buildPythonPackage,
+  click,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyzerproc";
   version = "0.4.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "emlove";
@@ -20,7 +19,7 @@ buildPythonPackage rec {
   };
 
   patches = [ ./bleak-compat.patch ];
-
+  doCheck = false; # tries to access dbus, which leads to FileNotFoundError
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,16 +27,15 @@ buildPythonPackage rec {
     click
   ];
 
-  doCheck = false; # tries to access dbus, which leads to FileNotFoundError
-
+  pyproject = true;
   pythonImportsCheck = [ "pyzerproc" ];
 
   meta = {
     description = "Python library to control Zerproc Bluetooth LED smart string lights";
-    mainProgram = "pyzerproc";
     homepage = "https://github.com/emlove/pyzerproc";
     license = with lib.licenses; [ asl20 ];
     maintainers = with lib.maintainers; [ fab ];
     platforms = lib.platforms.linux;
+    mainProgram = "pyzerproc";
   };
 }

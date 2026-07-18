@@ -7,10 +7,7 @@
 {
   pname = "gerbil-persist";
   version = "unstable-2023-11-29";
-  git-version = "0.2-6-g8a5e40d";
-  softwareName = "Gerbil-persist";
   gerbil-package = "clan/persist";
-  version-path = "version";
 
   gerbilInputs = with gerbilPackages; [
     gerbil-utils
@@ -18,6 +15,8 @@
     gerbil-poo
     gerbil-leveldb
   ];
+
+  git-version = "0.2-6-g8a5e40d";
 
   pre-src = {
     fun = fetchFromGitHub;
@@ -27,11 +26,14 @@
     sha256 = "1c1h1yp7gf23r3asxppgga4j4jmy4l9rlbb7vw9jcwvl8d30yrab";
   };
 
+  softwareName = "Gerbil-persist";
+  version-path = "version";
+
   meta = {
     description = "Gerbil Persist: Persistent data and activities";
     homepage = "https://github.com/fare/gerbil-persist";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ fare ];
+    platforms = lib.platforms.unix;
   };
 }

@@ -1,26 +1,25 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonOlder,
-  installShellFiles,
-  setuptools-scm,
-  shtab,
+  buildPythonPackage,
   importlib-metadata,
+  installShellFiles,
   jaraco-classes,
   jaraco-context,
   jaraco-functools,
   jeepney,
-  secretstorage,
   pyfakefs,
   pytestCheckHook,
+  pythonOlder,
+  secretstorage,
+  setuptools-scm,
+  shtab,
 }:
 
 buildPythonPackage rec {
   pname = "keyring";
   version = "25.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jaraco";
@@ -34,12 +33,23 @@ buildPythonPackage rec {
       --replace-fail '"coherent.licensed",' ""
   '';
 
-  build-system = [ setuptools-scm ];
-
   nativeBuildInputs = [
     installShellFiles
     shtab
   ];
+
+  nativeCheckInputs = [
+    pyfakefs
+    pytestCheckHook
+  ];
+
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    installShellCompletion --cmd keyring \
+      --bash <($out/bin/keyring --print-completion bash) \
+      --zsh <($out/bin/keyring --print-completion zsh)
+  '';
+
+  build-system = [ setuptools-scm ];
 
   dependencies = [
     jaraco-classes
@@ -52,37 +62,30 @@ buildPythonPackage rec {
   ]
   ++ lib.optionals (pythonOlder "3.12") [ importlib-metadata ];
 
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    installShellCompletion --cmd keyring \
-      --bash <($out/bin/keyring --print-completion bash) \
-      --zsh <($out/bin/keyring --print-completion zsh)
-  '';
-
-  pythonImportsCheck = [
-    "keyring"
-    "keyring.backend"
-  ];
-
-  nativeCheckInputs = [
-    pyfakefs
-    pytestCheckHook
-  ];
-
   disabledTestPaths = [
     "tests/backends/test_macOS.py"
   ]
   # These tests fail when sandboxing is enabled because they are unable to get a password from keychain.
   ++ lib.optional stdenv.hostPlatform.isDarwin "tests/test_multiprocess.py";
 
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "keyring"
+    "keyring.backend"
+  ];
+
   meta = {
     description = "Store and access your passwords safely";
     homepage = "https://github.com/jaraco/keyring";
     changelog = "https://github.com/jaraco/keyring/blob/${src.tag}/NEWS.rst";
     license = lib.licenses.mit;
-    mainProgram = "keyring";
+
     maintainers = with lib.maintainers; [
       dotlambda
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "keyring";
   };
 }

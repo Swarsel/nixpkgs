@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   cryptography,
   pydantic,
-  typing-extensions,
-  pytestCheckHook,
   pytest-asyncio,
   pytest-cov-stub,
+  pytestCheckHook,
+  setuptools,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "doubleratchet";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Syndace";
@@ -24,6 +23,12 @@ buildPythonPackage rec {
   };
 
   strictDeps = true;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+    pytest-cov-stub
+  ];
 
   build-system = [
     setuptools
@@ -35,12 +40,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-    pytest-cov-stub
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "doubleratchet" ];
 
   meta = {
@@ -48,7 +48,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/Syndace/python-doubleratchet";
     changelog = "https://github.com/Syndace/python-doubleratchet/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    teams = with lib.teams; [ ngi ];
     maintainers = with lib.maintainers; [ axler1 ];
+    teams = with lib.teams; [ ngi ];
   };
 }

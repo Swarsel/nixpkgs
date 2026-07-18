@@ -21,7 +21,6 @@
 buildPythonPackage rec {
   pname = "recordlinkage";
   version = "0.16";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -50,7 +49,7 @@ buildPythonPackage rec {
   # pytestCheckHook does not work
   # Reusing their CI setup which involves 'rm -rf recordlinkage' in preCheck phase do not work too.
   nativeCheckInputs = [ pytest ];
-
+  pyproject = true;
   pythonImportsCheck = [ "recordlinkage" ];
 
   meta = {

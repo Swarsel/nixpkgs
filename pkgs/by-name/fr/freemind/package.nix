@@ -18,13 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-AYKFEmsn6uc5K4w7+1E/Jb1wuZB0QOXrggnyC0+9hhk=";
   };
 
-  nativeBuildInputs = [
-    ant
-    jdk8
-    makeWrapper
-    stripJavaArchivesHook
-  ];
-
   postPatch = ''
     # disable the <buildnumer> task because it would edit version.properties
     # and add a "last edited" header to it, which is non-deterministic
@@ -35,14 +28,21 @@ stdenv.mkDerivation (finalAttrs: {
         --replace-fail "which" "type -p"
   '';
 
-  preConfigure = ''
-    chmod +x *.sh
-    patchShebangs *.sh
-  '';
+  nativeBuildInputs = [
+    ant
+    jdk8
+    makeWrapper
+    stripJavaArchivesHook
+  ];
 
   # Workaround for javac encoding errors
   # Note: not sure if this is still needed
   env.JAVA_TOOL_OPTIONS = "-Dfile.encoding=UTF8";
+
+  preConfigure = ''
+    chmod +x *.sh
+    patchShebangs *.sh
+  '';
 
   buildPhase = ''
     runHook preBuild
@@ -64,13 +64,15 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Mind-mapping software";
     homepage = "https://freemind.sourceforge.net/wiki/index.php/Main_Page";
-    mainProgram = "freemind";
-    maintainers = with lib.maintainers; [ tomasajt ];
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # source bundles dependencies as jars
     ];
+
+    maintainers = with lib.maintainers; [ tomasajt ];
+    platforms = lib.platforms.linux;
+    mainProgram = "freemind";
   };
 })

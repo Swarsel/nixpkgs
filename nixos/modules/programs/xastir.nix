@@ -15,11 +15,12 @@ in
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = with pkgs; [ xastir ];
+
     security.wrappers.xastir = {
-      source = "${pkgs.xastir}/bin/xastir";
       capabilities = "cap_net_raw+p";
-      owner = "root";
       group = "root";
+      owner = "root";
+      source = "${pkgs.xastir}/bin/xastir";
     };
   };
 }

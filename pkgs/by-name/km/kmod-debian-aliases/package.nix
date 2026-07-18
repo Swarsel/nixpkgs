@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  lib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,13 +18,15 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://packages.debian.org/source/sid/kmod";
     description = "Linux configuration file for modprobe";
-    maintainers = with lib.maintainers; [ mathnerd314 ];
-    platforms = with lib.platforms; linux;
+    homepage = "https://packages.debian.org/source/sid/kmod";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl21Plus
     ];
+
+    maintainers = with lib.maintainers; [ mathnerd314 ];
+    platforms = with lib.platforms; linux;
   };
 })

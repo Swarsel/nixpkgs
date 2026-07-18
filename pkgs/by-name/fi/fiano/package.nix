@@ -1,12 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "fiano";
-
   version = "1.2.0";
 
   src = fetchFromGitHub {
@@ -15,6 +14,13 @@ buildGoModule (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-QX0XMec99YbYWyfRThhwDaNjKstkUEz6wsisBynprmg=";
   };
+
+  vendorHash = "sha256-00ZSAVEmk2pNjv6fo++gnpIheK8lo4AVWf+ghXappnI=";
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
 
   subPackages = [
     "cmds/cbfs"
@@ -25,13 +31,6 @@ buildGoModule (finalAttrs: {
     "cmds/guid2english"
     "cmds/microcode"
     "cmds/utk"
-  ];
-
-  vendorHash = "sha256-00ZSAVEmk2pNjv6fo++gnpIheK8lo4AVWf+ghXappnI=";
-
-  ldflags = [
-    "-s"
-    "-w"
   ];
 
   meta = {

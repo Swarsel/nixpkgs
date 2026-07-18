@@ -17,8 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-OKi4sC4fmKtkJkkpHZ6OfeIDaBafVrJXGXh1R6gLPFY=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/src";
-
   buildPhase = ''
     runHook preBuild
 
@@ -33,23 +31,26 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   enableParallelBuilding = true;
+  sourceRoot = "${finalAttrs.src.name}/src";
 
   passthru.tests.version = testers.testVersion {
-    package = vpcs;
     command = "vpcs -v";
+    package = vpcs;
   };
 
   meta = {
+    inherit (finalAttrs.src.meta) homepage;
     description = "Simple virtual PC simulator";
+
     longDescription = ''
       The VPCS (Virtual PC Simulator) can simulate up to 9 PCs. You can
       ping/traceroute them, or ping/traceroute the other hosts/routers from the
       VPCS when you study the Cisco routers in the dynamips.
     '';
-    inherit (finalAttrs.src.meta) homepage;
+
     license = lib.licenses.bsd2;
+    maintainers = with lib.maintainers; [ anthonyroussel ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "vpcs";
-    maintainers = with lib.maintainers; [ anthonyroussel ];
   };
 })

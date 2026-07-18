@@ -1,37 +1,32 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   albucore,
-  numpy,
-  opencv-python,
-  pydantic,
-  pyyaml,
-  scipy,
-
-  # optional dependencies
-  huggingface-hub,
-  pillow,
-  torch,
-
+  buildPythonPackage,
   # tests
   deepdiff,
-  pytestCheckHook,
+  # optional dependencies
+  huggingface-hub,
+  numpy,
+  opencv-python,
+  pillow,
+  pydantic,
   pytest-mock,
+  pytestCheckHook,
+  pyyaml,
   scikit-image,
   scikit-learn,
+  scipy,
+  # build-system
+  setuptools,
+  torch,
   torchvision,
 }:
 
 buildPythonPackage rec {
   pname = "albumentations";
   version = "2.0.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "albumentations-team";
@@ -44,7 +39,15 @@ buildPythonPackage rec {
     ./dont-check-for-updates.patch
   ];
 
-  pythonRelaxDeps = [ "opencv-python" ];
+  nativeCheckInputs = [
+    deepdiff
+    pytestCheckHook
+    pytest-mock
+    scikit-image
+    scikit-learn
+    torch
+    torchvision
+  ];
 
   build-system = [ setuptools ];
 
@@ -57,22 +60,6 @@ buildPythonPackage rec {
     scipy
   ];
 
-  optional-dependencies = {
-    hub = [ huggingface-hub ];
-    pytorch = [ torch ];
-    text = [ pillow ];
-  };
-
-  nativeCheckInputs = [
-    deepdiff
-    pytestCheckHook
-    pytest-mock
-    scikit-image
-    scikit-learn
-    torch
-    torchvision
-  ];
-
   disabledTests = [
     "test_pca_inverse_transform"
     # these tests hang
@@ -80,7 +67,15 @@ buildPythonPackage rec {
     "test_multiprocessing_support"
   ];
 
+  optional-dependencies = {
+    hub = [ huggingface-hub ];
+    pytorch = [ torch ];
+    text = [ pillow ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "albumentations" ];
+  pythonRelaxDeps = [ "opencv-python" ];
 
   meta = {
     description = "Fast image augmentation library and easy to use wrapper around other libraries";

@@ -1,25 +1,21 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-
-  # buildInputs
-  rust-jemalloc-sys,
-
+  buildPackages,
   # nativeBuildInputs
   installShellFiles,
-
-  buildPackages,
-  versionCheckHook,
-  python3Packages,
   nix-update-script,
+  python3Packages,
+  # buildInputs
+  rust-jemalloc-sys,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "uv";
   version = "0.11.26";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "astral-sh";
@@ -28,19 +24,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-p9JOn28Mf2bbDqIR3z4pKmcIw54hKEINnz5KeD4ASRo=";
   };
 
-  cargoHash = "sha256-EIRWisiPt+YaZsK5PgYP7nZ+3ZeaXkx5ThxD+o0Ehyg=";
+  nativeBuildInputs = [ installShellFiles ];
 
   buildInputs = [
     rust-jemalloc-sys
   ];
 
-  nativeBuildInputs = [ installShellFiles ];
-
-  cargoBuildFlags = [
-    "--package"
-    "uv"
-  ];
-
+  cargoHash = "sha256-EIRWisiPt+YaZsK5PgYP7nZ+3ZeaXkx5ThxD+o0Ehyg=";
   # Tests require python3
   doCheck = false;
 
@@ -56,8 +46,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ''
   );
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+
+  cargoBuildFlags = [
+    "--package"
+    "uv"
+  ];
 
   passthru = {
     tests.uv-python = python3Packages.uv;
@@ -66,6 +62,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Extremely fast Python package installer and resolver, written in Rust";
+
     longDescription = ''
       `uv` manages project dependencies and environments, with support for lockfiles, workspaces, and more.
 
@@ -77,20 +74,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
       For building Python projects with `uv` and Nix outside of nixpkgs, check out `uv2nix` at https://github.com/pyproject-nix/uv2nix.
     '';
+
     homepage = "https://github.com/astral-sh/uv";
     changelog = "https://github.com/astral-sh/uv/blob/${finalAttrs.version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [
       bengsparks
       GaetanLepage
       prince213
       miniharinn
     ];
-    mainProgram = "uv";
 
+    mainProgram = "uv";
     # Builds on 32-bit platforms fails with "out of memory" since at least 0.8.6.
     # We don't place this in `badPlatforms` because cross-compilation on 64-bit
     # machine may work, e.g. `pkgsCross.gnu32.uv`.

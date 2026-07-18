@@ -32,33 +32,13 @@ in
 assert isILP64 -> lapackImplementation == "mkl" || lapackProvider'.blas64;
 
 stdenv.mkDerivation {
-  pname = "lapack";
   inherit version;
+  pname = "lapack";
 
   outputs = [
     "out"
     "dev"
   ];
-
-  meta = (lapackProvider'.meta or { }) // {
-    description = "${lib.getName lapackProvider'} with just the LAPACK C and FORTRAN ABI";
-  };
-
-  passthru = {
-    inherit isILP64;
-    provider = lapackProvider';
-    implementation = lapackImplementation;
-  };
-
-  # TODO: drop this forced rebuild, as it was needed just once.
-  rebuild_salt =
-    if stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64 then "J4AQ" else null;
-
-  dontBuild = true;
-  dontConfigure = true;
-  unpackPhase = "src=$PWD";
-
-  dontPatchELF = true;
 
   installPhase = (
     ''
@@ -133,4 +113,24 @@ stdenv.mkDerivation {
       ln -sf ${lapackProvider'}/include/* $dev/include
     ''
   );
+
+  dontBuild = true;
+  dontConfigure = true;
+  dontPatchELF = true;
+
+  # TODO: drop this forced rebuild, as it was needed just once.
+  rebuild_salt =
+    if stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64 then "J4AQ" else null;
+
+  unpackPhase = "src=$PWD";
+
+  passthru = {
+    inherit isILP64;
+    implementation = lapackImplementation;
+    provider = lapackProvider';
+  };
+
+  meta = (lapackProvider'.meta or { }) // {
+    description = "${lib.getName lapackProvider'} with just the LAPACK C and FORTRAN ABI";
+  };
 }

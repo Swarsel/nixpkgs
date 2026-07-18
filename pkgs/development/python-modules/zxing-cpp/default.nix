@@ -1,21 +1,18 @@
 {
   buildPythonPackage,
   cmake,
-  setuptools-scm,
+  libzint,
+  libzxing-cpp,
   numpy,
   pillow,
   pybind11,
-  libzxing-cpp,
   pytestCheckHook,
-  libzint,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
-  pname = "zxing-cpp";
   inherit (libzxing-cpp) src version meta;
-  pyproject = true;
-
-  sourceRoot = "${src.name}/wrappers/python";
+  pname = "zxing-cpp";
 
   # we don't need pybind11 in the root environment
   # https://pybind11.readthedocs.io/en/stable/installing.html#include-with-pypi
@@ -28,15 +25,6 @@ buildPythonPackage rec {
       --replace-fail " '-DVERSION_INFO=' + self.distribution.get_version()]" " '-DVERSION_INFO=' + self.distribution.get_version(), '-DZXING_DEPENDENCIES=LOCAL', '-DZXING_USE_BUNDLED_ZINT=OFF']"
   '';
 
-  dontUseCmakeConfigure = true;
-
-  build-system = [
-    setuptools-scm
-    pybind11
-  ];
-
-  dependencies = [ numpy ];
-
   nativeBuildInputs = [
     cmake
   ];
@@ -48,7 +36,15 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  enabledTestPaths = [ "test.py" ];
+  build-system = [
+    setuptools-scm
+    pybind11
+  ];
 
+  dependencies = [ numpy ];
+  dontUseCmakeConfigure = true;
+  enabledTestPaths = [ "test.py" ];
+  pyproject = true;
   pythonImportsCheck = [ "zxingcpp" ];
+  sourceRoot = "${src.name}/wrappers/python";
 }

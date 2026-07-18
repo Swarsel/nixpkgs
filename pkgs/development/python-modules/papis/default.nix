@@ -1,56 +1,50 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
   # dependencies
   arxiv,
   beautifulsoup4,
   bibtexparser,
+  buildPythonPackage,
+  # optional dependencies
+  chardet,
+  citeproc-py,
   click,
   colorama,
+  # tests
+  docutils,
   dominate,
   filetype,
+  git,
   habanero,
+  # build-system
+  hatchling,
   isbnlib,
+  jinja2,
   lxml,
+  markdownify,
   platformdirs,
   prompt-toolkit,
   pygments,
   pyparsing,
+  pytest-cov-stub,
+  pytestCheckHook,
   python-doi,
   python-slugify,
   pyyaml,
   requests,
-  stevedore,
-
-  # optional dependencies
-  chardet,
-  citeproc-py,
-  jinja2,
-  markdownify,
-  whoosh,
-
-  # switch for optional dependencies
-  withOptDeps ? false,
-
-  # tests
-  docutils,
-  git,
-  pytestCheckHook,
-  pytest-cov-stub,
   sphinx,
   sphinx-click,
+  stevedore,
+  whoosh,
   writableTmpDirAsHomeHook,
+  # switch for optional dependencies
+  withOptDeps ? false,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "papis";
   version = "0.15.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "papis";
@@ -58,6 +52,16 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-G+ryUMBUEbGxUG+u2YwZbT04IAzOmajtIPXP12MaXsY=";
   };
+
+  nativeCheckInputs = [
+    docutils
+    git
+    pytestCheckHook
+    pytest-cov-stub
+    sphinx
+    sphinx-click
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -84,33 +88,6 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.optionals withOptDeps finalAttrs.passthru.optional-dependencies.complete;
 
-  optional-dependencies = {
-    complete = [
-      chardet
-      citeproc-py
-      jinja2
-      markdownify
-      whoosh
-    ];
-  };
-
-  pythonImportsCheck = [ "papis" ];
-
-  nativeCheckInputs = [
-    docutils
-    git
-    pytestCheckHook
-    pytest-cov-stub
-    sphinx
-    sphinx-click
-    writableTmpDirAsHomeHook
-  ];
-
-  enabledTestPaths = [
-    "papis"
-    "tests"
-  ];
-
   disabledTestPaths = [
     # Require network access
     "tests/downloaders"
@@ -132,15 +109,35 @@ buildPythonPackage (finalAttrs: {
     "test_csl_style_download"
   ];
 
+  enabledTestPaths = [
+    "papis"
+    "tests"
+  ];
+
+  optional-dependencies = {
+    complete = [
+      chardet
+      citeproc-py
+      jinja2
+      markdownify
+      whoosh
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "papis" ];
+
   meta = {
     description = "Powerful command-line document and bibliography manager";
-    mainProgram = "papis";
     homepage = "https://papis.readthedocs.io/";
     changelog = "https://github.com/papis/papis/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       nico202
       teto
     ];
+
+    mainProgram = "papis";
   };
 })

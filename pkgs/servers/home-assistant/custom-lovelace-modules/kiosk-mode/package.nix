@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   fetchPnpmDeps,
+  nodejs,
   pnpmConfigHook,
   pnpm_10,
-  nodejs,
+  stdenvNoCC,
 }:
 let
   pnpm = pnpm_10;
@@ -19,13 +19,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     repo = "kiosk-mode";
     tag = "v${finalAttrs.version}";
     hash = "sha256-eQ2dYXmx4nnk/1bbTayPezPyghBo5UbNWf3USY20ePg=";
-  };
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    fetcherVersion = 3;
-    hash = "sha256-bCtk+cqWnYvPo4VsvLaN+m0LIlP8jgb951aIf1emGZg=";
   };
 
   nativeBuildInputs = [
@@ -50,6 +43,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 3;
+    hash = "sha256-bCtk+cqWnYvPo4VsvLaN+m0LIlP8jgb951aIf1emGZg=";
+  };
 
   meta = {
     description = "Hides the Home Assistant header and/or sidebar";

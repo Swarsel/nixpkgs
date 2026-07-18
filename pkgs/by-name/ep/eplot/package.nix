@@ -17,14 +17,7 @@ stdenv.mkDerivation {
     sha256 = "0y9x82i3sfpgxsqz2w42r6iad6ph7vxb7np1xbwapx5iipciclw5";
   };
 
-  ecSrc = fetchurl {
-    url = "http://liris.cnrs.fr/christian.wolf/software/eplot/download/ec";
-    sha256 = "0fg31g8mrcx14h2rjcf091cbd924n19z55iscaiflspifya30yhd";
-  };
-
   buildInputs = [ ruby ];
-
-  dontUnpack = true;
 
   installPhase = ''
     runHook preInstall
@@ -39,8 +32,16 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
+  ecSrc = fetchurl {
+    sha256 = "0fg31g8mrcx14h2rjcf091cbd924n19z55iscaiflspifya30yhd";
+    url = "http://liris.cnrs.fr/christian.wolf/software/eplot/download/ec";
+  };
+
   meta = {
     description = "Create plots quickly with gnuplot";
+
     longDescription = ''
       eplot ("easy gnuplot") is a ruby script which allows to pipe data easily
       through gnuplot and create plots quickly, which can be saved in
@@ -50,11 +51,14 @@ stdenv.mkDerivation {
       This package also includes the complementary 'ec' tool (say "extract
       column").
     '';
+
     homepage = "https://perso.liris.cnrs.fr/christian.wolf/software/eplot/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       bjornfor
     ];
+
+    platforms = lib.platforms.all;
   };
 }

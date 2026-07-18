@@ -1,15 +1,14 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
-  setuptools,
+  fetchPypi,
   pyserial,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "dt8852";
   version = "1.1.0";
-  pyproject = true;
 
   # Not using Codeberg because there's no tagged release there.
   src = fetchPypi {
@@ -17,15 +16,15 @@ buildPythonPackage rec {
     hash = "sha256-3WiHJQnlP39CGzxu/sZ1jWcP40tyr2G62H4yYuwS0wA=";
   };
 
+  # No tests available on PyPi and Codeberg source.
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
     pyserial
   ];
 
-  # No tests available on PyPi and Codeberg source.
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "dt8852" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   html5lib,
   unittestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "microdata";
   version = "0.8.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "edsu";
@@ -19,16 +18,15 @@ buildPythonPackage (finalAttrs: {
   };
 
   propagatedBuildInputs = [ html5lib ];
-
   nativeCheckInputs = [ unittestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "microdata" ];
 
   meta = {
     description = "Library for extracting html microdata";
-    mainProgram = "microdata";
     homepage = "https://github.com/edsu/microdata";
     license = lib.licenses.cc0;
     maintainers = with lib.maintainers; [ ambroisie ];
+    mainProgram = "microdata";
   };
 })

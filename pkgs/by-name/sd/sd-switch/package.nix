@@ -1,16 +1,16 @@
 {
   lib,
   fetchFromSourcehut,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
 }:
 
 let
   version = "0.6.4";
 in
 rustPlatform.buildRustPackage {
-  pname = "sd-switch";
   inherit version;
+  pname = "sd-switch";
 
   src = fetchFromSourcehut {
     owner = "~rycee";
@@ -27,11 +27,11 @@ rustPlatform.buildRustPackage {
 
   meta = {
     description = "Systemd unit switcher for Home Manager";
-    mainProgram = "sd-switch";
     homepage = "https://git.sr.ht/~rycee/sd-switch";
     changelog = "https://git.sr.ht/~rycee/sd-switch/refs/${version}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ rycee ];
     platforms = lib.platforms.linux;
+    mainProgram = "sd-switch";
   };
 }

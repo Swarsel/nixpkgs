@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  pytestCheckHook,
+  requests,
+  requests-mock,
   setuptools,
   setuptools-scm,
-  requests,
-  pytestCheckHook,
-  requests-mock,
 }:
 
 buildPythonPackage rec {
   pname = "liblistenbrainz";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "metabrainz";
@@ -21,18 +20,18 @@ buildPythonPackage rec {
     hash = "sha256-fZgIVGDUJ4Dh/7CIOugvpRP7FoijpsgA3bBKJMmDd7o=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    requests-mock
+  ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
   dependencies = [ requests ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    requests-mock
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "liblistenbrainz" ];
 
   meta = {

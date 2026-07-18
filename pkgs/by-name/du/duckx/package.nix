@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  ninja,
   gitUpdater,
+  ninja,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "duckx";
@@ -17,6 +17,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-qRqYcBi/a2tUSlLAa7DKPqwQsctw5/0hjV/Og1pHPQU=";
   };
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 3.0)" "cmake_minimum_required(VERSION 3.10)"
+    # CMake 3.0 is deprecated and is no longer supported by CMake > 4
+    # https://github.com/NixOS/nixpkgs/issues/445447
+  '';
+
   nativeBuildInputs = [
     cmake
     ninja
@@ -26,13 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
     # https://github.com/amiremohamadi/DuckX/issues/92
     (lib.cmakeFeature "CMAKE_CXX_STANDARD" "14")
   ];
-
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 3.0)" "cmake_minimum_required(VERSION 3.10)"
-    # CMake 3.0 is deprecated and is no longer supported by CMake > 4
-    # https://github.com/NixOS/nixpkgs/issues/445447
-  '';
 
   passthru = {
     updateScript = gitUpdater { rev-prefix = "v"; };

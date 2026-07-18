@@ -21,11 +21,13 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Program that adds error correction blocks";
     homepage = "http://members.tripod.com/professor_tom/archives/index.html";
-    maintainers = [ lib.maintainers.ar1a ];
+
     license = with lib.licenses; [
       gpl2 # for vdmfec
       bsd2 # for fec
     ];
+
+    maintainers = [ lib.maintainers.ar1a ];
     platforms = lib.platforms.all;
   };
 })

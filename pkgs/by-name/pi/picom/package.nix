@@ -1,17 +1,21 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   asciidoctor,
   dbus,
   docbook_xml_dtd_45,
   docbook_xsl,
-  fetchFromGitHub,
-  lib,
+  libGL,
   libconfig,
   libdrm,
-  libev,
-  libGL,
   libepoxy,
+  libev,
   libx11,
   libxcb,
+  libxcb-image,
+  libxcb-render-util,
+  libxcb-util,
   libxdg_basedir,
   libxext,
   libxml2,
@@ -19,19 +23,15 @@
   makeWrapper,
   meson,
   ninja,
+  nix-update-script,
   pcre2,
   pixman,
   pkg-config,
-  stdenv,
   uthash,
-  libxcb-util,
-  libxcb-image,
-  libxcb-render-util,
+  versionCheckHook,
   xorgproto,
   xwininfo,
   withDebug ? false,
-  versionCheckHook,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -80,16 +80,9 @@ stdenv.mkDerivation (finalAttrs: {
     xorgproto
   ];
 
-  # Use "debugoptimized" instead of "debug" so perhaps picom works better in
-  # normal usage too, not just temporary debugging.
-  mesonBuildType = if withDebug then "debugoptimized" else "release";
-  dontStrip = withDebug;
-
   mesonFlags = [
     "-Dwith_docs=true"
   ];
-
-  installFlags = [ "PREFIX=$(out)" ];
 
   # In debug mode, also copy src directory to store. If you then run `gdb picom`
   # in the bin directory of picom store path, gdb finds the source files.
@@ -101,11 +94,17 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r ../src $out/
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
-  doInstallCheck = true;
+  dontStrip = withDebug;
+  installFlags = [ "PREFIX=$(out)" ];
+  # Use "debugoptimized" instead of "debug" so perhaps picom works better in
+  # normal usage too, not just temporary debugging.
+  mesonBuildType = if withDebug then "debugoptimized" else "release";
 
   passthru = {
     updateScript = nix-update-script { };
@@ -113,7 +112,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Fork of XCompMgr, a sample compositing manager for X servers";
-    license = lib.licenses.mit;
+
     longDescription = ''
       A fork of XCompMgr, which is a sample compositing manager for X
       servers supporting the XFIXES, DAMAGE, RENDER, and COMPOSITE
@@ -128,13 +127,17 @@ stdenv.mkDerivation (finalAttrs: {
       For gdb to find the source files, you need to run gdb in the bin directory
       of picom package in the nix store.
     '';
+
     homepage = "https://github.com/yshui/picom";
-    mainProgram = "picom";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       gepbird
       thiagokokada
       twey
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "picom";
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   gitUpdater,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -33,7 +33,7 @@ stdenvNoCC.mkDerivation rec {
     description = "Libretro's core info files";
     homepage = "https://libretro.com";
     license = lib.licenses.mit;
-    teams = [ lib.teams.libretro ];
     platforms = lib.platforms.all;
+    teams = [ lib.teams.libretro ];
   };
 }

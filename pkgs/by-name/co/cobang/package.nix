@@ -1,11 +1,10 @@
 {
   lib,
-  python3Packages,
+  fetchFromGitHub,
   blueprint-compiler,
   desktop-file-utils,
-  fetchFromGitHub,
-  gst_all_1,
   gobject-introspection,
+  gst_all_1,
   libadwaita,
   libportal-gtk4,
   meson,
@@ -13,13 +12,13 @@
   ninja,
   pipewire,
   pkg-config,
+  python3Packages,
   wrapGAppsHook4,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "cobang";
   version = "2.5.2";
-  pyproject = false; # Built with meson
 
   src = fetchFromGitHub {
     owner = "hongquan";
@@ -51,6 +50,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pipewire
   ];
 
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
   dependencies = with python3Packages; [
     logbook
     # Needed as a gobject namespace and to fix 'Caps' object is not subscriptable
@@ -64,20 +67,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   # Wrapping this manually for SVG recognition
   dontWrapGApps = true;
-
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
+  pyproject = false; # Built with meson
 
   meta = {
     description = "QR code scanner desktop app for Linux";
     homepage = "https://github.com/hongquan/CoBang";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       aleksana
       dvaerum
     ];
-    mainProgram = "cobang";
+
     platforms = lib.platforms.linux;
+    mainProgram = "cobang";
   };
 })

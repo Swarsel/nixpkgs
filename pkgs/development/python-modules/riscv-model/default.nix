@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  setuptools-scm,
+  buildPythonPackage,
   pytestCheckHook,
   pyyaml,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "riscv-model";
   version = "0.6.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wallento";
@@ -19,6 +18,10 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-H4N9Z8aK/xV5gCCdsL+oiR+XQfYtCfBRBGLqvuztX+o=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -29,9 +32,7 @@ buildPythonPackage (finalAttrs: {
     pyyaml
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "riscvmodel"

@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
   beautifulsoup4,
-  requests,
+  buildPythonPackage,
   click,
+  fetchPypi,
   poetry-core,
+  requests,
 }:
 
 buildPythonPackage rec {
   pname = "deep-translator";
   version = "1.11.4";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "deep_translator";
     inherit version;
     hash = "sha256-gBJgxpIxE4cH6oiglV5ITbfUDiEMngrg93Ny/9pfS/U=";
+    pname = "deep_translator";
   };
 
   nativeBuildInputs = [ poetry-core ];
@@ -31,10 +30,10 @@ buildPythonPackage rec {
   # APIs and the build environment is isolated (#148572 for details).
   # After built, it works as intended.
   #pythonImportsCheck = [ "deep_translator" ];
-
   # Again, initializing an instance needs network connection.
   # Tests will fail.
   doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "Python tool to translate between different languages by using multiple translators";

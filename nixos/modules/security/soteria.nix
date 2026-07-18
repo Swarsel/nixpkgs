@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 
@@ -22,27 +22,28 @@ in
         :::
       '';
     };
+
     package = lib.mkPackageOption pkgs "soteria" { };
   };
 
   config = lib.mkIf cfg.enable {
-    security.polkit.enable = true;
     environment.systemPackages = [ cfg.package ];
+    security.polkit.enable = true;
 
     systemd.user.services.polkit-soteria = {
-      description = "Soteria, Polkit authentication agent for any desktop environment";
-
-      wantedBy = [ "graphical-session.target" ];
-      wants = [ "graphical-session.target" ];
       after = [ "graphical-session.target" ];
+      description = "Soteria, Polkit authentication agent for any desktop environment";
 
       serviceConfig = {
         ExecStart = lib.getExe cfg.package;
-        Type = "simple";
         Restart = "on-failure";
         RestartSec = 1;
         TimeoutStopSec = 10;
+        Type = "simple";
       };
+
+      wantedBy = [ "graphical-session.target" ];
+      wants = [ "graphical-session.target" ];
     };
   };
 

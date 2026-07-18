@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -15,8 +15,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-/ZUmMLEqlpqu+Ja/3XjFJf+OFZJCz7rp5MrQBEjwsXs=";
   };
 
-  cargoHash = "sha256-NNQhU6NVacRCzFp2hWcBvHvD6zPOlTvII8n7k505HrY=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -24,6 +22,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = [
     openssl
   ];
+
+  cargoHash = "sha256-NNQhU6NVacRCzFp2hWcBvHvD6zPOlTvII8n7k505HrY=";
 
   meta = {
     description = "Current stars history tells only half the story";

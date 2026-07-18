@@ -3,31 +3,43 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  nix-update-script,
-  pkg-config,
-  zlib,
-  pcre2,
-  utf8proc,
   expat,
-  sqlite,
-  openssl,
-  unixodbc,
   libmysqlclient,
   libpng,
+  nix-update-script,
+  openssl,
+  pcre2,
+  pkg-config,
+  sqlite,
+  unixodbc,
+  utf8proc,
   writableTmpDirAsHomeHook,
+  zlib,
 }:
 
 stdenv.mkDerivation rec {
   pname = "poco";
-
   version = "1.15.3";
 
   src = fetchFromGitHub {
     owner = "pocoproject";
     repo = "poco";
-    hash = "sha256-mUONqjbKHvdsTM6zk9/QLEr1lVV6f9I/shLW2B8iqMk=";
     tag = "poco-${version}-release";
+    hash = "sha256-mUONqjbKHvdsTM6zk9/QLEr1lVV6f9I/shLW2B8iqMk=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
+
+  patches =
+    lib.optionals stdenv.hostPlatform.isDarwin [
+      ./disable-broken-tests-darwin.patch
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isLinux [
+      ./disable-broken-tests-linux.patch
+    ];
 
   nativeBuildInputs = [
     cmake
@@ -48,16 +60,6 @@ stdenv.mkDerivation rec {
     sqlite
     openssl
   ];
-
-  outputs = [
-    "out"
-    "dev"
-  ];
-
-  env = {
-    MYSQL_DIR = libmysqlclient;
-    MYSQL_INCLUDE_DIR = "${env.MYSQL_DIR}/include/mysql";
-  };
 
   cmakeFlags =
     let
@@ -80,15 +82,13 @@ stdenv.mkDerivation rec {
       (lib.cmakeFeature "CMAKE_CTEST_ARGUMENTS" "--exclude-regex;'${excludeTestsRegex}'")
     ];
 
-  patches =
-    lib.optionals stdenv.hostPlatform.isDarwin [
-      ./disable-broken-tests-darwin.patch
-    ]
-    ++ lib.optionals stdenv.hostPlatform.isLinux [
-      ./disable-broken-tests-linux.patch
-    ];
+  env = {
+    MYSQL_DIR = libmysqlclient;
+    MYSQL_INCLUDE_DIR = "${env.MYSQL_DIR}/include/mysql";
+  };
 
   doCheck = true;
+
   nativeCheckInputs = [
     # workaround for some tests trying to write to /homeless-shelter
     writableTmpDirAsHomeHook
@@ -106,13 +106,15 @@ stdenv.mkDerivation rec {
   };
 
   meta = {
-    homepage = "https://pocoproject.org/";
     description = "Cross-platform C++ libraries with a network/internet focus";
+    homepage = "https://pocoproject.org/";
     license = lib.licenses.boost;
+
     maintainers = with lib.maintainers; [
       hythera
       tomodachi94
     ];
+
     platforms = lib.platforms.unix;
   };
 }

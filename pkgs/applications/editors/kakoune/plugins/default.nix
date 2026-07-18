@@ -1,8 +1,8 @@
 {
+  lib,
   callPackage,
   config,
   kakouneUtils,
-  lib,
 }:
 
 let

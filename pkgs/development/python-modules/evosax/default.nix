@@ -1,22 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   dotmap,
   flax,
   jax,
   matplotlib,
   numpy,
-
   # tests
   # brax, (unpackaged)
   # gymnax, (unpackaged)
   pytestCheckHook,
+  # build-system
+  setuptools,
   torch,
   torchvision,
   writableTmpDirAsHomeHook,
@@ -25,7 +22,6 @@
 buildPythonPackage rec {
   pname = "evosax";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "RobertTLange";
@@ -33,6 +29,15 @@ buildPythonPackage rec {
     tag = "v.${version}";
     hash = "sha256-ye5IHM8Pn/+BXI9kcB3W281Gna9hXV8DwsaJ9Xu06fU=";
   };
+
+  nativeCheckInputs = [
+    # brax
+    # gymnax
+    pytestCheckHook
+    torch
+    torchvision
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -42,17 +47,6 @@ buildPythonPackage rec {
     jax
     matplotlib
     numpy
-  ];
-
-  pythonImportsCheck = [ "evosax" ];
-
-  nativeCheckInputs = [
-    # brax
-    # gymnax
-    pytestCheckHook
-    torch
-    torchvision
-    writableTmpDirAsHomeHook
   ];
 
   disabledTests = [
@@ -76,6 +70,9 @@ buildPythonPackage rec {
     "test_torchvision_problem_sample"
     "test_vision_fitness"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "evosax" ];
 
   meta = {
     description = "Evolution Strategies in JAX";

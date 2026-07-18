@@ -15,7 +15,7 @@
 dhallPackage:
 let
   drv = stdenv.mkDerivation {
-    name = "dhall-compiled-package.nix";
+    nativeBuildInputs = [ dhall-nix ];
 
     buildCommand = ''
       # Dhall requires that the cache is writable, even if it is never written to.
@@ -28,7 +28,7 @@ let
       dhall-to-nix <<< "${dhallPackage}/binary.dhall" > $out
     '';
 
-    nativeBuildInputs = [ dhall-nix ];
+    name = "dhall-compiled-package.nix";
   };
 
 in

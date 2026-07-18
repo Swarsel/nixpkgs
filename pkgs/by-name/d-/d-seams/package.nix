@@ -1,27 +1,25 @@
 {
-  clangStdenv,
+  lib,
   fetchFromGitHub,
-  fetchpatch,
+  blas,
+  boost,
   catch2,
-  rang,
-  fmt,
-  yaml-cpp,
+  clangStdenv,
   cmake,
   eigen,
+  fetchpatch,
+  fmt,
+  gsl,
+  liblapack,
   lua,
   luaPackages,
-  liblapack,
-  blas,
-  lib,
-  boost,
-  gsl,
+  rang,
+  yaml-cpp,
 }:
 
 clangStdenv.mkDerivation rec {
-  version = "1.0.1";
   pname = "d-SEAMS";
-
-  strictDeps = false;
+  version = "1.0.1";
 
   src = fetchFromGitHub {
     owner = "d-SEAMS";
@@ -32,22 +30,27 @@ clangStdenv.mkDerivation rec {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-PLbT1lqdw+69lIHH96MPcGRjfIeZyb88vc875QLYyqw=";
       name = "use_newer_cxxopts_which_builds_with_clang11.patch";
       url = "https://github.com/d-SEAMS/seams-core/commit/f6156057e43d0aa1a0df9de67d8859da9c30302d.patch";
-      hash = "sha256-PLbT1lqdw+69lIHH96MPcGRjfIeZyb88vc875QLYyqw=";
     })
     # Add missing <cstdint> include for uint8_t in vendored cxxopts.
     ./cxxopts-cstdint.patch
   ];
+
   postPatch = ''
     substituteInPlace CMakeLists.txt \
       --replace-fail "cmake_minimum_required(VERSION 3.0 FATAL_ERROR)" "cmake_minimum_required(VERSION 3.10)"
   '';
+
+  strictDeps = false;
+
   nativeBuildInputs = [
     cmake
     lua
     luaPackages.luafilesystem
   ];
+
   buildInputs = [
     fmt
     rang
@@ -62,7 +65,7 @@ clangStdenv.mkDerivation rec {
 
   meta = {
     description = "Deferred Structural Elucidation Analysis for Molecular Simulations";
-    mainProgram = "yodaStruct";
+
     longDescription = ''
       d-SEAMS, is a free and open-source postprocessing engine for the analysis
       of molecular dynamics trajectories, which is specifically able to
@@ -70,9 +73,11 @@ clangStdenv.mkDerivation rec {
       systems. The engine is in C++, with extensions via the Lua scripting
       interface.
     '';
+
     homepage = "https://dseams.info";
     license = lib.licenses.gpl3Plus;
-    platforms = [ "x86_64-linux" ];
     maintainers = [ ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "yodaStruct";
   };
 }

@@ -11,6 +11,7 @@ let
   cfg = config.services.elasticsearch-curator;
   curatorConfig = pkgs.writeTextFile {
     name = "config.yaml";
+
     text = ''
       ---
       # Remember, leave a key empty if there is no value.  None will be a string,
@@ -44,24 +45,10 @@ in
   options.services.elasticsearch-curator = {
 
     enable = mkEnableOption "elasticsearch curator";
-    interval = mkOption {
-      description = "The frequency to run curator, a systemd.time such as 'hourly'";
-      default = "hourly";
-      type = types.str;
-    };
-    hosts = mkOption {
-      description = "a list of elasticsearch hosts to connect to";
-      type = types.listOf types.str;
-      default = [ "localhost" ];
-    };
-    port = mkOption {
-      description = "the port that elasticsearch is listening on";
-      type = types.port;
-      default = 9200;
-    };
+
     actionYAML = mkOption {
       description = "curator action.yaml file contents, alternatively use curator-cli which takes a simple action command";
-      type = types.lines;
+
       example = ''
         ---
         actions:
@@ -85,16 +72,37 @@ in
               unit: days
               unit_count: 45
       '';
+
+      type = types.lines;
+    };
+
+    hosts = mkOption {
+      default = [ "localhost" ];
+      description = "a list of elasticsearch hosts to connect to";
+      type = types.listOf types.str;
+    };
+
+    interval = mkOption {
+      default = "hourly";
+      description = "The frequency to run curator, a systemd.time such as 'hourly'";
+      type = types.str;
+    };
+
+    port = mkOption {
+      default = 9200;
+      description = "the port that elasticsearch is listening on";
+      type = types.port;
     };
   };
 
   config = mkIf cfg.enable {
     systemd.services.elasticsearch-curator = {
-      startAt = cfg.interval;
       serviceConfig = {
         ExecStart =
           "${pkgs.elasticsearch-curator}/bin/curator" + " --config ${curatorConfig} ${curatorAction}";
       };
+
+      startAt = cfg.interval;
     };
   };
 }

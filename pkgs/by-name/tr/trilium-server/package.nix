@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  autoPatchelfHook,
+  stdenv,
   fetchurl,
+  autoPatchelfHook,
   makeBinaryWrapper,
 }:
 
@@ -23,9 +23,8 @@ let
       throw "${stdenv.hostPlatform.config} not supported by trilium-server";
 in
 stdenv.mkDerivation {
-  pname = "trilium-server";
   inherit version;
-
+  pname = "trilium-server";
   src = fetchurl serverSource;
 
   nativeBuildInputs = [
@@ -36,9 +35,6 @@ stdenv.mkDerivation {
   buildInputs = [
     (lib.getLib stdenv.cc.cc)
   ];
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -53,19 +49,25 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "Hierarchical note taking application with focus on building large personal knowledge bases";
     homepage = "https://github.com/TriliumNext/Trilium";
     license = lib.licenses.agpl3Plus;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    platforms = [
-      "x86_64-linux"
-      "aarch64-linux"
-    ];
+
     maintainers = with lib.maintainers; [
       eliandoran
       fliegendewurst
     ];
+
+    platforms = [
+      "x86_64-linux"
+      "aarch64-linux"
+    ];
+
     mainProgram = "trilium-server";
   };
 }

@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   networkx,
   numpy,
   pytest7CheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "colormath2";
   version = "3.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bkmgit";
@@ -20,6 +19,7 @@ buildPythonPackage rec {
     hash = "sha256-G8b0L8A2RzbVQFPNg2fuBklqTNjo3yqvek/+GnqtsHc=";
   };
 
+  nativeCheckInputs = [ pytest7CheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,8 +27,7 @@ buildPythonPackage rec {
     numpy
   ];
 
-  nativeCheckInputs = [ pytest7CheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "colormath2" ];
 
   meta = {

@@ -1,10 +1,10 @@
 {
   lib,
+  coreutils,
+  gnugrep,
   pythonOnBuildForHost,
   runCommand,
   writeShellScript,
-  coreutils,
-  gnugrep,
 }:
 let
 
@@ -39,14 +39,16 @@ let
     pythonPkgs.buildPythonPackage (
       {
         version = "1.0.0";
+
         src = runCommand "my-project-source" { } ''
           mkdir -p $out/src
           cp ${pyprojectToml args.pname} $out/pyproject.toml
           touch $out/src/__init__.py
         '';
-        pyproject = true;
-        catchConflicts = true;
+
         buildInputs = [ pythonPkgs.setuptools ];
+        catchConflicts = true;
+        pyproject = true;
       }
       // args
     );
@@ -72,97 +74,6 @@ let
 in
 {
 
-  ### TEST CASES
-
-  # Test case which must not trigger any conflicts.
-  # This derivation has runtime dependencies on custom versions of multiple build tools.
-  # This scenario is relevant for lang2nix tools which do not override the nixpkgs fix-point.
-  # see https://github.com/NixOS/nixpkgs/issues/283695
-  ignores-build-time-deps = generatePythonPackage {
-    pname = "ignores-build-time-deps";
-    buildInputs = [
-      pythonPkgs.build
-      pythonPkgs.packaging
-      pythonPkgs.setuptools
-      pythonPkgs.wheel
-    ];
-    propagatedBuildInputs = [
-      # Add customized versions of build tools as runtime deps
-      (customize pythonPkgs.packaging)
-      (customize pythonPkgs.setuptools)
-      (customize pythonPkgs.wheel)
-    ];
-  };
-
-  # multi-output derivation with dependency on itself must not crash
-  cyclic-dependencies = generatePythonPackage {
-    pname = "cyclic-dependencies";
-    preFixup = ''
-      appendToVar propagatedBuildInputs "$out"
-    '';
-  };
-
-  # Simplest test case that should trigger a conflict
-  catches-simple-conflict =
-    let
-      # this build must fail due to conflicts
-      package = pythonPkgs.buildPythonPackage rec {
-        pname = "catches-simple-conflict";
-        version = "0.0.0";
-        src = projectSource pname;
-        pyproject = true;
-        catchConflicts = true;
-        buildInputs = [
-          pythonPkgs.setuptools
-        ];
-        # depend on two different versions of packaging
-        # (an actual runtime dependency conflict)
-        propagatedBuildInputs = [
-          pythonPkgs.packaging
-          (customize pythonPkgs.packaging)
-        ];
-      };
-    in
-    expectFailure package "Found duplicated packages in closure for dependency 'packaging'";
-
-  /*
-    More complex test case with a transitive conflict
-
-    Test sets up this dependency tree:
-
-      toplevel
-      ├── dep1
-      │   └── leaf
-      └── dep2
-          └── leaf (customized version -> conflicting)
-  */
-  catches-transitive-conflict =
-    let
-      # package depending on both dependency1 and dependency2
-      toplevel = generatePythonPackage {
-        pname = "catches-transitive-conflict";
-        propagatedBuildInputs = [
-          dep1
-          dep2
-        ];
-      };
-      # dep1 package depending on leaf
-      dep1 = generatePythonPackage {
-        pname = "dependency1";
-        propagatedBuildInputs = [ leaf ];
-      };
-      # dep2 package depending on conflicting version of leaf
-      dep2 = generatePythonPackage {
-        pname = "dependency2";
-        propagatedBuildInputs = [ (customize leaf) ];
-      };
-      # some leaf package
-      leaf = generatePythonPackage {
-        pname = "leaf";
-      };
-    in
-    expectFailure toplevel "Found duplicated packages in closure for dependency 'leaf'";
-
   /*
     Transitive conflict with multiple dependency chains leading to the
     conflicting package.
@@ -182,6 +93,7 @@ in
       # package depending on dependency1, dependency2 and dependency3
       toplevel = generatePythonPackage {
         pname = "catches-conflict-multiple-chains";
+
         propagatedBuildInputs = [
           dep1
           dep2
@@ -209,4 +121,101 @@ in
       };
     in
     expectFailure toplevel "Found duplicated packages in closure for dependency 'leaf'";
+
+  # Simplest test case that should trigger a conflict
+  catches-simple-conflict =
+    let
+      # this build must fail due to conflicts
+      package = pythonPkgs.buildPythonPackage rec {
+        pname = "catches-simple-conflict";
+        version = "0.0.0";
+        src = projectSource pname;
+
+        buildInputs = [
+          pythonPkgs.setuptools
+        ];
+
+        # depend on two different versions of packaging
+        # (an actual runtime dependency conflict)
+        propagatedBuildInputs = [
+          pythonPkgs.packaging
+          (customize pythonPkgs.packaging)
+        ];
+
+        catchConflicts = true;
+        pyproject = true;
+      };
+    in
+    expectFailure package "Found duplicated packages in closure for dependency 'packaging'";
+
+  /*
+    More complex test case with a transitive conflict
+
+    Test sets up this dependency tree:
+
+      toplevel
+      ├── dep1
+      │   └── leaf
+      └── dep2
+          └── leaf (customized version -> conflicting)
+  */
+  catches-transitive-conflict =
+    let
+      # package depending on both dependency1 and dependency2
+      toplevel = generatePythonPackage {
+        pname = "catches-transitive-conflict";
+
+        propagatedBuildInputs = [
+          dep1
+          dep2
+        ];
+      };
+      # dep1 package depending on leaf
+      dep1 = generatePythonPackage {
+        pname = "dependency1";
+        propagatedBuildInputs = [ leaf ];
+      };
+      # dep2 package depending on conflicting version of leaf
+      dep2 = generatePythonPackage {
+        pname = "dependency2";
+        propagatedBuildInputs = [ (customize leaf) ];
+      };
+      # some leaf package
+      leaf = generatePythonPackage {
+        pname = "leaf";
+      };
+    in
+    expectFailure toplevel "Found duplicated packages in closure for dependency 'leaf'";
+
+  # multi-output derivation with dependency on itself must not crash
+  cyclic-dependencies = generatePythonPackage {
+    pname = "cyclic-dependencies";
+
+    preFixup = ''
+      appendToVar propagatedBuildInputs "$out"
+    '';
+  };
+
+  ### TEST CASES
+  # Test case which must not trigger any conflicts.
+  # This derivation has runtime dependencies on custom versions of multiple build tools.
+  # This scenario is relevant for lang2nix tools which do not override the nixpkgs fix-point.
+  # see https://github.com/NixOS/nixpkgs/issues/283695
+  ignores-build-time-deps = generatePythonPackage {
+    pname = "ignores-build-time-deps";
+
+    buildInputs = [
+      pythonPkgs.build
+      pythonPkgs.packaging
+      pythonPkgs.setuptools
+      pythonPkgs.wheel
+    ];
+
+    propagatedBuildInputs = [
+      # Add customized versions of build tools as runtime deps
+      (customize pythonPkgs.packaging)
+      (customize pythonPkgs.setuptools)
+      (customize pythonPkgs.wheel)
+    ];
+  };
 }

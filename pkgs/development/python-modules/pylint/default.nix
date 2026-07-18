@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   astroid,
   buildPythonPackage,
   dill,
-  fetchFromGitHub,
   gitpython,
   isort,
   mccabe,
@@ -24,7 +24,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pylint";
   version = "4.0.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pylint-dev";
@@ -32,17 +31,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-vg33n+MHCQTYeiMYmKJ7wORLx7Z/wv4t8v3u7k1keh4=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    astroid
-    dill
-    isort
-    mccabe
-    platformdirs
-    tomlkit
-  ];
 
   nativeCheckInputs = [
     gitpython
@@ -56,13 +44,15 @@ buildPythonPackage (finalAttrs: {
     writableTmpDirAsHomeHook
   ];
 
-  pytestFlags = [
-    # DeprecationWarning: pyreverse will drop support for resolving and
-    # displaying implemented interfaces in pylint 3.0. The
-    # implementation relies on the '__implements__'  attribute proposed
-    # in PEP 245, which was rejected in 2006.
-    "-Wignore::DeprecationWarning"
-    "-v"
+  build-system = [ setuptools ];
+
+  dependencies = [
+    astroid
+    dill
+    isort
+    mccabe
+    platformdirs
+    tomlkit
   ];
 
   disabledTestPaths = [
@@ -98,10 +88,20 @@ buildPythonPackage (finalAttrs: {
     "test_py3k_jobs_option"
   ];
 
+  pyproject = true;
+
+  pytestFlags = [
+    # DeprecationWarning: pyreverse will drop support for resolving and
+    # displaying implemented interfaces in pylint 3.0. The
+    # implementation relies on the '__implements__'  attribute proposed
+    # in PEP 245, which was rejected in 2006.
+    "-Wignore::DeprecationWarning"
+    "-v"
+  ];
+
   meta = {
     description = "Bug and style checker for Python";
-    homepage = "https://pylint.readthedocs.io/en/stable/";
-    changelog = "https://github.com/pylint-dev/pylint/releases/tag/${finalAttrs.src.tag}";
+
     longDescription = ''
       Pylint is a Python static code analysis tool which looks for programming errors,
       helps enforcing a coding standard, sniffs for code smells and offers simple
@@ -111,6 +111,9 @@ buildPythonPackage (finalAttrs: {
       - symilar: an independent similarities checker
       - epylint: Emacs and Flymake compatible Pylint
     '';
+
+    homepage = "https://pylint.readthedocs.io/en/stable/";
+    changelog = "https://github.com/pylint-dev/pylint/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     mainProgram = "pylint";

@@ -2,30 +2,30 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nixosTests,
-  which,
-  pcre2,
-  withPython3 ? true,
-  python3,
   ncurses,
-  withPHP82 ? true,
-  php82,
-  withPerl ? true,
+  nixosTests,
+  pcre2,
   perl,
-  withSSL ? true,
+  php82,
+  python3,
+  which,
   openssl ? null,
-  withIPv6 ? true,
   withDebug ? false,
+  withIPv6 ? true,
+  withPHP82 ? true,
+  withPerl ? true,
+  withPython3 ? true,
+  withSSL ? true,
 }:
 
 let
   phpConfig = {
-    embedSupport = true;
     apxs2Support = false;
-    systemdSupport = false;
-    phpdbgSupport = false;
     cgiSupport = false;
+    embedSupport = true;
     fpmSupport = false;
+    phpdbgSupport = false;
+    systemdSupport = false;
   };
 
   php82-unit = php82.override phpConfig;
@@ -33,8 +33,8 @@ let
   inherit (lib) optional optionals optionalString;
 in
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.35.0";
   pname = "unit";
+  version = "1.35.0";
 
   src = fetchFromGitHub {
     owner = "nginx";
@@ -66,8 +66,10 @@ stdenv.mkDerivation (finalAttrs: {
   ++ optional (!withIPv6) "--no-ipv6"
   ++ optional withDebug "--debug";
 
-  # Optionally add the PHP derivations used so they can be addressed in the configs
-  usedPhp82 = optionals withPHP82 php82-unit;
+  env.NIX_CFLAGS_COMPILE = toString [
+    # 'EVP_PKEY_asn1_find_str' is deprecated since OpenSSL 3.6
+    "-Wno-error=deprecated-declarations"
+  ];
 
   postConfigure = ''
     ${optionalString withPython3 "./configure python --module=python3  --config=python3-config  --lib-path=${python3}/lib"}
@@ -75,10 +77,8 @@ stdenv.mkDerivation (finalAttrs: {
     ${optionalString withPerl "./configure perl   --module=perl     --perl=${perl}/bin/perl"}
   '';
 
-  env.NIX_CFLAGS_COMPILE = toString [
-    # 'EVP_PKEY_asn1_find_str' is deprecated since OpenSSL 3.6
-    "-Wno-error=deprecated-declarations"
-  ];
+  # Optionally add the PHP derivations used so they can be addressed in the configs
+  usedPhp82 = optionals withPHP82 php82-unit;
 
   passthru.tests = {
     unit-perl = nixosTests.unit-perl;
@@ -87,10 +87,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Dynamic web and application server, designed to run applications in multiple languages";
-    mainProgram = "unitd";
     homepage = "https://unit.nginx.org/";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ izorkin ];
+    platforms = lib.platforms.linux;
+    mainProgram = "unitd";
   };
 })

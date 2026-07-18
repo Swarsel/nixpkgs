@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   go,
+  rustPlatform,
+  versionCheckHook,
   writableTmpDirAsHomeHook,
 }:
 
@@ -20,14 +20,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-ZoGS2DlLeAhTTa0TZi8Jh7bVbWdat2p7oWciRY5KUcE=";
 
-  preCheck = ''
-    export NO_COLOR=true
-  '';
-
   nativeCheckInputs = [
     go
     writableTmpDirAsHomeHook
   ];
+
+  preCheck = ''
+    export NO_COLOR=true
+  '';
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];

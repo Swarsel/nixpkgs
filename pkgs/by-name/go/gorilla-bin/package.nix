@@ -1,16 +1,16 @@
 {
-  fetchurl,
-  makeWrapper,
-  patchelf,
   lib,
   stdenv,
-  libxft,
-  libx11,
-  freetype,
+  fetchurl,
   fontconfig,
+  freetype,
+  libx11,
+  libxext,
+  libxft,
   libxrender,
   libxscrnsaver,
-  libxext,
+  makeWrapper,
+  patchelf,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,20 +18,15 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.5.3.7";
 
   src = fetchurl {
-    name = "gorilla1537_64.bin";
     url = "https://gorilla.dp100.com/downloads/gorilla1537_64.bin";
     sha256 = "19ir6x4c01825hpx2wbbcxkk70ymwbw4j03v8b2xc13ayylwzx0r";
+    name = "gorilla1537_64.bin";
   };
 
   nativeBuildInputs = [
     patchelf
     makeWrapper
   ];
-
-  unpackCmd = ''
-    mkdir gorilla;
-    cp $curSrc gorilla/gorilla-${finalAttrs.version};
-  '';
 
   installPhase =
     let
@@ -56,13 +51,18 @@ stdenv.mkDerivation (finalAttrs: {
         --prefix LD_LIBRARY_PATH : "${libPath}"
     '';
 
+  unpackCmd = ''
+    mkdir gorilla;
+    cp $curSrc gorilla/gorilla-${finalAttrs.version};
+  '';
+
   meta = {
     description = "Password Gorilla is a Tk based password manager";
-    mainProgram = "gorilla";
     homepage = "https://github.com/zdia/gorilla/wiki";
+    license = lib.licenses.gpl2Plus;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ lib.maintainers.namore ];
     platforms = [ "x86_64-linux" ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    license = lib.licenses.gpl2Plus;
+    mainProgram = "gorilla";
   };
 })

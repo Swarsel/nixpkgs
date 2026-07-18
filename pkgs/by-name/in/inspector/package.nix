@@ -2,25 +2,24 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  coreutils,
+  desktop-file-utils,
+  gettext,
+  gobject-introspection,
+  iproute2,
+  libadwaita,
   meson,
   ninja,
-  gettext,
-  wrapGAppsHook4,
-  desktop-file-utils,
-  gobject-introspection,
-  libadwaita,
-  python3Packages,
-  iproute2,
-  util-linux,
-  coreutils,
-  usbutils,
   pciutils,
+  python3Packages,
+  usbutils,
+  util-linux,
+  wrapGAppsHook4,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "inspector";
   version = "0.2.0";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "Nokse22";
@@ -28,6 +27,8 @@ python3Packages.buildPythonApplication rec {
     rev = "v${version}";
     hash = "sha256-tjQCF2Tyv7/NWgrwHu+JPpnLECfDmQS77EVLBt+cRTs=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -51,17 +52,19 @@ python3Packages.buildPythonApplication rec {
     pciutils
   ];
 
-  strictDeps = true;
+  pyproject = false;
 
   meta = {
-    homepage = "https://github.com/Nokse22/inspector";
     description = "Gtk4 Libadwaita wrapper for various system info cli commands";
+    homepage = "https://github.com/Nokse22/inspector";
+
     license = with lib.licenses; [
       gpl3Plus
       cc0
     ];
+
+    maintainers = with lib.maintainers; [ mksafavi ];
     platforms = lib.platforms.linux;
     mainProgram = "inspector";
-    maintainers = with lib.maintainers; [ mksafavi ];
   };
 }

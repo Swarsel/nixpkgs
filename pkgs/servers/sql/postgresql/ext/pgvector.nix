@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   postgresql,
   postgresqlBuildExtension,
 }:
@@ -21,7 +21,7 @@ postgresqlBuildExtension (finalAttrs: {
     homepage = "https://github.com/pgvector/pgvector";
     changelog = "https://github.com/pgvector/pgvector/raw/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.postgresql;
-    platforms = postgresql.meta.platforms;
     maintainers = [ ];
+    platforms = postgresql.meta.platforms;
   };
 })

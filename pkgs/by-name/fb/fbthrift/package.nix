@@ -1,31 +1,33 @@
 {
   lib,
   stdenv,
-
   fetchFromGitHub,
-  fetchpatch,
-
   cmake,
-  ninja,
-
-  openssl,
+  fetchpatch,
+  fizz,
+  folly,
   gflags,
   glog,
-  folly,
-  fizz,
+  mvfst,
+  ninja,
+  nix-update-script,
+  openssl,
   wangle,
+  xxhash,
   zlib,
   zstd,
-  xxhash,
-
-  mvfst,
-
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "fbthrift";
   version = "2026.01.19.00";
+
+  src = fetchFromGitHub {
+    owner = "facebook";
+    repo = "fbthrift";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-jx2jSMeoRBYG7xCWKTzaIpNjrGnbPLiR9vQVO7m3if0=";
+  };
 
   outputs = [
     # Trying to split this up further into `bin`, `out`, and `dev`
@@ -34,13 +36,6 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
     "lib"
   ];
-
-  src = fetchFromGitHub {
-    owner = "facebook";
-    repo = "fbthrift";
-    tag = "v${finalAttrs.version}";
-    hash = "sha256-jx2jSMeoRBYG7xCWKTzaIpNjrGnbPLiR9vQVO7m3if0=";
-  };
 
   patches = [
     # Map `$NIX_BUILD_TOP` to `/build` in the Thrift compiler output to
@@ -53,6 +48,14 @@ stdenv.mkDerivation (finalAttrs: {
 
     ./glog-0.7.patch
   ];
+
+  # Fix a typo introduced by the following commit that causes hundreds
+  # of pointless rebuilds when installing:
+  # <https://github.com/facebook/fbthrift/commit/58038399cefc0c2256ce4ef5444dee37147cbf07>
+  postPatch = ''
+    substituteInPlace ThriftLibrary.cmake \
+      --replace-fail .tcch .tcc
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -95,14 +98,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "CMAKE_SHARED_LINKER_FLAGS" "-Wl,-undefined,dynamic_lookup")
   ];
 
-  # Fix a typo introduced by the following commit that causes hundreds
-  # of pointless rebuilds when installing:
-  # <https://github.com/facebook/fbthrift/commit/58038399cefc0c2256ce4ef5444dee37147cbf07>
-  postPatch = ''
-    substituteInPlace ThriftLibrary.cmake \
-      --replace-fail .tcch .tcc
-  '';
-
   # Copied from Homebrew; fixes the following build error:
   #
   #     [ERROR:/nix/var/nix/b/5f3kn8spg6j0z0xlags8va6sq7/source/thrift/lib/thrift/RpcMetadata.thrift:1] unordered_map::at: key not found
@@ -121,15 +116,13 @@ stdenv.mkDerivation (finalAttrs: {
   # that scare me. I don’t have very much fun with these libraries, to
   # be honest with you.
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-fno-assume-unique-vtables";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Facebook's branch of Apache Thrift";
-    mainProgram = "thrift1";
     homepage = "https://github.com/facebook/fbthrift";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       pierreis
       kylesferrazza
@@ -137,5 +130,8 @@ stdenv.mkDerivation (finalAttrs: {
       techknowlogick
       lf-
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "thrift1";
   };
 })

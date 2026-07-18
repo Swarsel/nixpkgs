@@ -1,24 +1,24 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  autoreconfHook,
   autoconf-archive,
-  pkg-config,
-  doxygen,
-  perl,
-  openssl,
-  json_c,
-  curl,
-  libgcrypt,
+  autoreconfHook,
   cmocka,
-  uthash,
-  swtpm,
+  curl,
+  doxygen,
   iproute2,
-  procps,
-  which,
-  libuuid,
+  json_c,
+  libgcrypt,
   libtpms,
+  libuuid,
+  openssl,
+  perl,
+  pkg-config,
+  procps,
+  swtpm,
+  uthash,
+  which,
 }:
 let
   # Avoid a circular dependency on Linux systems (systemd depends on tpm2-tss,
@@ -45,43 +45,6 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
     "dev"
   ];
-
-  nativeBuildInputs = [
-    autoreconfHook
-    autoconf-archive
-    pkg-config
-    doxygen
-    perl
-  ];
-
-  buildInputs = [
-    openssl
-    json_c
-    curl
-    libgcrypt
-    uthash
-    libuuid
-    libtpms
-  ]
-  # cmocka is checked in the configure script
-  # when unit and/or integration testing is enabled
-  # cmocka doesn't build with pkgsStatic, and we don't need it anyway
-  # when tests are not run
-  ++ lib.optional finalAttrs.doInstallCheck cmocka;
-
-  nativeInstallCheckInputs = lib.optionals finalAttrs.doInstallCheck [
-    cmocka
-    which
-    openssl
-    procps_pkg
-    iproute2
-    swtpm
-  ];
-
-  strictDeps = true;
-  preAutoreconf = "./bootstrap";
-
-  enableParallelBuilding = true;
 
   patches = [
     # Do not rely on dynamic loader path
@@ -131,6 +94,31 @@ stdenv.mkDerivation (finalAttrs: {
     }' Makefile-test.am
   '';
 
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    autoreconfHook
+    autoconf-archive
+    pkg-config
+    doxygen
+    perl
+  ];
+
+  buildInputs = [
+    openssl
+    json_c
+    curl
+    libgcrypt
+    uthash
+    libuuid
+    libtpms
+  ]
+  # cmocka is checked in the configure script
+  # when unit and/or integration testing is enabled
+  # cmocka doesn't build with pkgsStatic, and we don't need it anyway
+  # when tests are not run
+  ++ lib.optional finalAttrs.doInstallCheck cmocka;
+
   configureFlags =
     lib.optionals finalAttrs.doInstallCheck [
       "--enable-unit"
@@ -145,6 +133,8 @@ stdenv.mkDerivation (finalAttrs: {
       # uses fallocate
       "--disable-tcti-libtpms"
     ];
+
+  doCheck = false;
 
   postInstall = ''
     # Do not install the upstream udev rules, they rely on specific
@@ -162,7 +152,6 @@ stdenv.mkDerivation (finalAttrs: {
     EOF
   '';
 
-  doCheck = false;
   doInstallCheck =
     stdenv.buildPlatform.canExecute stdenv.hostPlatform
     && !stdenv.hostPlatform.isDarwin
@@ -170,19 +159,33 @@ stdenv.mkDerivation (finalAttrs: {
     && !stdenv.hostPlatform.isStatic
     # swtpm does not build on 32-bit targets
     && !stdenv.hostPlatform.is32bit;
+
+  nativeInstallCheckInputs = lib.optionals finalAttrs.doInstallCheck [
+    cmocka
+    which
+    openssl
+    procps_pkg
+    iproute2
+    swtpm
+  ];
+
+  enableParallelBuilding = true;
   # Since we rewrote the load path in the dynamic loader for the TCTI
   # The various tcti implementation should be placed in their target directory
   # before we could run tests, so we make turn checkPhase into installCheckPhase
   installCheckTarget = "check";
+  preAutoreconf = "./bootstrap";
 
   meta = {
     description = "OSS implementation of the TCG TPM2 Software Stack (TSS2)";
     homepage = "https://github.com/tpm2-software/tpm2-tss";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       baloo
       scottstephens
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

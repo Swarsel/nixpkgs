@@ -1,10 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-
   openssl,
   pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,8 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-nXuMyHV5Sln3qWXIhIDdV0thSY4YbvzGqNWGIw4QLdM=";
   };
 
-  cargoHash = "sha256-AiOVIDfARztwQxOzBFWc8NXEEsxEvKAStCokcRrJyOE=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -28,13 +25,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-AiOVIDfARztwQxOzBFWc8NXEEsxEvKAStCokcRrJyOE=";
+
   meta = {
     description = "Integrate large language models into the command line";
     homepage = "https://github.com/efugier/smartcat";
     changelog = "https://github.com/efugier/smartcat/releases/tag/${finalAttrs.version}";
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ lpchaim ];
     platforms = lib.platforms.unix;
     mainProgram = "sc";
-    maintainers = with lib.maintainers; [ lpchaim ];
   };
 })

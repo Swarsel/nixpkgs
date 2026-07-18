@@ -20,6 +20,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     llvmPackages.openmp
     openblas
@@ -31,10 +32,10 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/yahoojapan/NGT";
     description = "Nearest Neighbor Search with Neighborhood Graph and Tree for High-dimensional Data";
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    homepage = "https://github.com/yahoojapan/NGT";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ tomberek ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

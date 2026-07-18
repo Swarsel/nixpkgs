@@ -1,9 +1,9 @@
 {
-  autoPatchelfHook,
-  buildFHSEnv,
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
+  autoPatchelfHook,
+  buildFHSEnv,
   zlib,
 }:
 
@@ -17,25 +17,14 @@ let
   };
 
   buildEnv = buildFHSEnv {
-    pname = "msecli-buildEnv";
     inherit version;
+    pname = "msecli-buildEnv";
   };
 in
 stdenv.mkDerivation {
   inherit pname version src;
-
-  buildInputs = [ zlib ];
-
   nativeBuildInputs = [ autoPatchelfHook ];
-
-  unpackPhase = ''
-    runHook preUnpack
-
-    cp "$src" ${src.name}
-    chmod +x ${src.name}
-
-    runHook postUnpack
-  '';
+  buildInputs = [ zlib ];
 
   buildPhase = ''
     runHook preBuild
@@ -56,13 +45,22 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  unpackPhase = ''
+    runHook preUnpack
+
+    cp "$src" ${src.name}
+    chmod +x ${src.name}
+
+    runHook postUnpack
+  '';
+
   meta = {
     description = "Micron Storage Executive CLI";
     homepage = "https://www.micron.com/sales-support/downloads/software-drivers/storage-executive-software";
     license = lib.licenses.unfree;
-    mainProgram = "msecli";
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = with lib.maintainers; [ diadatp ];
     platforms = [ "x86_64-linux" ];
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    mainProgram = "msecli";
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,8 +19,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Simple command line tool for converting Chinese characters to space-separate pinyin words";
-    mainProgram = "pinyin-tool";
     homepage = "https://github.com/briankung/pinyin-tool";
     license = lib.licenses.mit;
+    mainProgram = "pinyin-tool";
   };
 })

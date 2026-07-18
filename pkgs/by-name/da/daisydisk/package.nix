@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
-  fetchzip,
-  curl,
   cacert,
-  xmlstarlet,
   common-updater-scripts,
+  curl,
+  fetchzip,
+  stdenvNoCC,
   writeShellApplication,
+  xmlstarlet,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "daisydisk";
@@ -18,11 +18,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     stripRoot = false;
   };
 
-  dontPatch = true;
-  dontConfigure = true;
-  dontBuild = true;
-  dontFixup = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -32,14 +27,21 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontFixup = true;
+  dontPatch = true;
+
   passthru.updateScript = lib.getExe (writeShellApplication {
     name = "daisydisk-update-script";
+
     runtimeInputs = [
       curl
       cacert
       xmlstarlet
       common-updater-scripts
     ];
+
     text = ''
       url="https://daisydiskapp.com/downloads/appcastFeed.php"
       version=$(curl -s "$url" |  xmlstarlet sel -t -v 'rss/channel/item[1]/enclosure/@sparkle:version' -n)

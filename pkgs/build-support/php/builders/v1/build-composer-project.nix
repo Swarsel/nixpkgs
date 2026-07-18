@@ -1,8 +1,8 @@
 {
-  nix-update-script,
-  stdenvNoCC,
   lib,
+  nix-update-script,
   php,
+  stdenvNoCC,
 }:
 
 let
@@ -14,11 +14,8 @@ let
       composer = finalAttrs.composer or phpDrv.packages.composer-local-repo-plugin;
     in
     {
-      composerLock = previousAttrs.composerLock or null;
-      composerNoDev = previousAttrs.composerNoDev or true;
-      composerNoPlugins = previousAttrs.composerNoPlugins or true;
-      composerNoScripts = previousAttrs.composerNoScripts or true;
-      composerStrictValidation = previousAttrs.composerStrictValidation or true;
+      patches = previousAttrs.patches or [ ];
+      strictDeps = previousAttrs.strictDeps or true;
 
       nativeBuildInputs = (previousAttrs.nativeBuildInputs or [ ]) ++ [
         composer
@@ -28,17 +25,6 @@ let
 
       buildInputs = (previousAttrs.buildInputs or [ ]) ++ [ phpDrv ];
 
-      patches = previousAttrs.patches or [ ];
-      strictDeps = previousAttrs.strictDeps or true;
-
-      # Should we keep these empty phases?
-      configurePhase =
-        previousAttrs.configurePhase or ''
-          runHook preConfigure
-
-          runHook postConfigure
-        '';
-
       buildPhase =
         previousAttrs.buildPhase or ''
           runHook preBuild
@@ -47,6 +33,7 @@ let
         '';
 
       doCheck = previousAttrs.doCheck or true;
+
       checkPhase =
         previousAttrs.checkPhase or ''
           runHook preCheck
@@ -62,6 +49,7 @@ let
         '';
 
       doInstallCheck = previousAttrs.doInstallCheck or false;
+
       installCheckPhase =
         previousAttrs.installCheckPhase or ''
           runHook preInstallCheck
@@ -69,9 +57,15 @@ let
           runHook postInstallCheck
         '';
 
+      composerLock = previousAttrs.composerLock or null;
+      composerNoDev = previousAttrs.composerNoDev or true;
+      composerNoPlugins = previousAttrs.composerNoPlugins or true;
+      composerNoScripts = previousAttrs.composerNoScripts or true;
+
       composerRepository =
         previousAttrs.composerRepository or (phpDrv.mkComposerRepository {
           inherit composer;
+
           inherit (finalAttrs)
             patches
             pname
@@ -86,6 +80,16 @@ let
           composerNoScripts = previousAttrs.composerNoScripts or true;
           composerStrictValidation = previousAttrs.composerStrictValidation or true;
         });
+
+      composerStrictValidation = previousAttrs.composerStrictValidation or true;
+
+      # Should we keep these empty phases?
+      configurePhase =
+        previousAttrs.configurePhase or ''
+          runHook preConfigure
+
+          runHook postConfigure
+        '';
 
       # Projects providing a lockfile from upstream can be automatically updated.
       passthru = previousAttrs.passthru or { } // {

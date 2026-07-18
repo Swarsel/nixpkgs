@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  pkgs,
   appimageTools,
+  pkgs,
 }:
 let
   pname = "pinokio";
@@ -12,8 +12,8 @@ let
     fetchurl
       {
         x86_64-linux = {
-          url = "https://github.com/pinokiocomputer/pinokio/releases/download/${version}/Pinokio-${version}.AppImage";
           hash = "sha256-/E/IAOUgxH9RWpE2/vLlQy92LOgwpHF79K/1XEtSpXI=";
+          url = "https://github.com/pinokiocomputer/pinokio/releases/download/${version}/Pinokio-${version}.AppImage";
         };
       }
       .${stdenv.system} or (throw "Unsupported system: ${stdenv.system}");
@@ -21,15 +21,17 @@ let
   appimageContents = appimageTools.extractType2 { inherit pname version src; };
 
   meta = {
-    homepage = "https://pinokio.computer";
     description = "Browser to install, run, and programmatically control ANY application automatically";
+    homepage = "https://pinokio.computer";
     license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ ByteSudoer ];
+
     platforms = [
       "x86_64-linux"
     ];
+
     mainProgram = "pinokio";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 in
 
@@ -42,8 +44,6 @@ if stdenv.hostPlatform.isDarwin then
       meta
       ;
 
-    sourceRoot = ".";
-
     nativeBuildInputs = with pkgs; [ undmg ];
 
     installPhase = ''
@@ -52,6 +52,8 @@ if stdenv.hostPlatform.isDarwin then
       mv Pinokio.app $out/Applications/
       runHook postInstall
     '';
+
+    sourceRoot = ".";
   }
 else
   appimageTools.wrapType2 {

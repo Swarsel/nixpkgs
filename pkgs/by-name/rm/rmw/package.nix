@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  canfigger,
+  gettext,
   meson,
+  ncurses,
   ninja,
   pkg-config,
-  canfigger,
-  ncurses,
-  gettext,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

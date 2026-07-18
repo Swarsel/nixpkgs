@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "json-rpc";
   version = "1.15.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
 
   meta = {
     description = "JSON-RPC 1/2 transport implementation";

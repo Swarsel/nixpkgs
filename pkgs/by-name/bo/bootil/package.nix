@@ -17,8 +17,6 @@ stdenv.mkDerivation {
     sha256 = "1njdj6nvmwf7j2fwqbyvd1cf5l52797vk2wnsliylqdzqcjmfpij";
   };
 
-  enableParallelBuilding = true;
-
   # Avoid guessing where files end up. Just use current directory.
   postPatch = ''
     substituteInPlace projects/premake4.lua \
@@ -33,12 +31,13 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = [ premake4 ];
 
-  premakefile = "projects/premake4.lua";
-
   installPhase = ''
     install -D libbootil_static.a $out/lib/libbootil_static.a
     cp -r include $out
   '';
+
+  enableParallelBuilding = true;
+  premakefile = "projects/premake4.lua";
 
   meta = {
     description = "Garry Newman's personal utility library";

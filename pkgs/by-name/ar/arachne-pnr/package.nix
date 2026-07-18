@@ -16,20 +16,21 @@ stdenv.mkDerivation rec {
     sha256 = "0lg9rccr486cvips3jf289af2b4a2j9chc8iqnkhykgi1hw4pszc";
   };
 
-  enableParallelBuilding = true;
-  makeFlags = [
-    "PREFIX=$(out)"
-    "ICEBOX=${icestorm}/share/icebox"
-  ];
-
   postPatch = ''
     substituteInPlace ./Makefile \
       --replace 'echo UNKNOWN' 'echo ${lib.substring 0 10 src.rev}'
   '';
 
+  makeFlags = [
+    "PREFIX=$(out)"
+    "ICEBOX=${icestorm}/share/icebox"
+  ];
+
+  enableParallelBuilding = true;
+
   meta = {
     description = "Place and route tool for FPGAs";
-    mainProgram = "arachne-pnr";
+
     longDescription = ''
       Arachne-pnr implements the place and route step of
       the hardware compilation process for FPGAs. It
@@ -40,12 +41,16 @@ stdenv.mkDerivation rec {
       is a textual bitstream representation for assembly by
       the IceStorm [2] icepack command.
     '';
+
     homepage = "https://github.com/cseed/arachne-pnr";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       shell
       thoughtpolice
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "arachne-pnr";
   };
 }

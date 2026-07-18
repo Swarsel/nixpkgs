@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   distutils,
   django,
   djangorestframework,
-  fetchFromGitHub,
   persisting-theory,
   pytest-django,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "django-dynamic-preferences";
   version = "1.17.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "agateblue";
@@ -23,14 +22,8 @@ buildPythonPackage rec {
     hash = "sha256-irnwoWqQQxPueglI86ZIOt8wZcEHneY3eyATBXOuk9Y=";
   };
 
-  build-system = [
-    setuptools
-    distutils
-  ];
-
   buildInputs = [ django ];
-
-  dependencies = [ persisting-theory ];
+  env.DJANGO_SETTINGS = "tests.settings";
 
   nativeCheckInputs = [
     djangorestframework
@@ -38,14 +31,19 @@ buildPythonPackage rec {
     pytest-django
   ];
 
-  pythonImportsCheck = [ "dynamic_preferences" ];
+  build-system = [
+    setuptools
+    distutils
+  ];
 
-  env.DJANGO_SETTINGS = "tests.settings";
+  dependencies = [ persisting-theory ];
+  pyproject = true;
+  pythonImportsCheck = [ "dynamic_preferences" ];
 
   meta = {
     description = "Dynamic global and instance settings for your django project";
-    changelog = "https://github.com/agateblue/django-dynamic-preferences/blob/${version}/HISTORY.rst";
     homepage = "https://github.com/agateblue/django-dynamic-preferences";
+    changelog = "https://github.com/agateblue/django-dynamic-preferences/blob/${version}/HISTORY.rst";
     license = lib.licenses.bsd3;
     maintainers = [ ];
   };

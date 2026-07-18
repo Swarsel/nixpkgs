@@ -1,31 +1,32 @@
 {
+  lib,
   stdenv,
   buildPythonPackage,
-  lib,
-  pythonAtLeast,
   fetchPypi,
-  poetry-core,
-  setuptools,
-  setuptools-scm,
   ipykernel,
   networkx,
   numpy,
   packaging,
   pint,
+  poetry-core,
   pydantic,
   pytestCheckHook,
+  pythonAtLeast,
   scipy,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "qcelemental";
   version = "0.50.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-jVOCbTP/FXyqL1yJbBkxHPPJ2vcZyrjG+GBg+V1fdEs=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ] ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [
     poetry-core
@@ -39,21 +40,6 @@ buildPythonPackage rec {
     pint
     pydantic
   ];
-
-  optional-dependencies = {
-    viz = [
-      # TODO: nglview
-      ipykernel
-    ];
-    align = [
-      networkx
-      scipy
-    ];
-  };
-
-  nativeCheckInputs = [ pytestCheckHook ] ++ lib.concatAttrValues optional-dependencies;
-
-  pythonImportsCheck = [ "qcelemental" ];
 
   # These tests require network access
   disabledTestPaths = [
@@ -72,12 +58,27 @@ buildPythonPackage rec {
     "qcelemental/tests/test_zqcschema.py"
   ];
 
+  optional-dependencies = {
+    align = [
+      networkx
+      scipy
+    ];
+
+    viz = [
+      # TODO: nglview
+      ipykernel
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "qcelemental" ];
+
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Periodic table, physical constants and molecule parsing for quantum chemistry";
     homepage = "https://github.com/MolSSI/QCElemental";
     changelog = "https://github.com/MolSSI/QCElemental/blob/v${version}/docs/changelog.rst";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ sheepforce ];
+    broken = stdenv.hostPlatform.isDarwin;
   };
 }

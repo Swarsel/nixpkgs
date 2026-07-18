@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
   autoreconfHook,
-  makeWrapper,
-  nodejs,
+  fetchFromCodeberg,
   guile,
-  guile-websocket,
   guile-fibers,
   guile-gnutls,
+  guile-websocket,
+  makeWrapper,
+  nix-update-script,
+  nodejs,
   pkg-config,
   texinfo,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,6 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ZzWGdLKiJF9lBKrlX7jCKnPlmWRi1dDB4zrfkIOMpQU=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     makeWrapper
     autoreconfHook
@@ -33,11 +35,18 @@ stdenv.mkDerivation (finalAttrs: {
     texinfo
     nodejs
   ];
+
+  buildInputs = [
+    guile
+  ];
+
   propagatedBuildInputs = [
     guile-fibers
     guile-websocket
     guile-gnutls
   ];
+
+  makeFlags = [ "GUILE_AUTO_COMPILE=0" ];
 
   postInstall =
     let
@@ -50,22 +59,17 @@ stdenv.mkDerivation (finalAttrs: {
         --prefix GUILE_LOAD_COMPILED_PATH : ${lib.makeSearchPath guile.siteCcacheDir libs}
     '';
 
-  buildInputs = [
-    guile
-  ];
-  strictDeps = true;
-
-  makeFlags = [ "GUILE_AUTO_COMPILE=0" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Scheme to WebAssembly compiler backend for GNU Guile and a general purpose WASM toolchain";
     homepage = "https://codeberg.org/spritely/hoot";
+
     license = with lib.licenses; [
       asl20
       lgpl3Plus
     ];
+
     maintainers = with lib.maintainers; [ jinser ];
     platforms = lib.platforms.unix;
     mainProgram = "hoot";

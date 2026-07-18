@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  bzip2,
   cmake,
   libcap,
-  zlib,
-  bzip2,
   perl,
   quilt,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,36 +15,16 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.1.11-4";
 
   src = fetchFromGitLab {
-    domain = "salsa.debian.org";
     owner = "debian";
     repo = "cdrkit";
     rev = "debian/9%${finalAttrs.version}";
     hash = "sha256-oOqvSA2MAURf0YOrWM5Ft6Ln43gXw7SEvNxxRrDs8sI=";
+    domain = "salsa.debian.org";
   };
 
   patches = [
     ./cmake-4.patch
   ];
-
-  nativeBuildInputs = [
-    cmake
-    quilt
-  ];
-  buildInputs = [
-    zlib
-    bzip2
-    perl
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [ libcap ];
-
-  env.NIX_CFLAGS_COMPILE = toString (
-    lib.optionals stdenv.hostPlatform.isMusl [
-      "-D__THROW="
-    ]
-    ++ lib.optionals stdenv.cc.isClang [
-      "-Wno-error=int-conversion"
-    ]
-  );
 
   postPatch = ''
     QUILT_PATCHES=debian/patches quilt push -a
@@ -62,6 +42,30 @@ stdenv.mkDerivation (finalAttrs: {
       --replace "__THROW" ""
   '';
 
+  nativeBuildInputs = [
+    cmake
+    quilt
+  ];
+
+  buildInputs = [
+    zlib
+    bzip2
+    perl
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [ libcap ];
+
+  cmakeFlags = lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [ "-DBITFIELDS_HTOL=0" ];
+  makeFlags = [ "PREFIX=\$(out)" ];
+
+  env.NIX_CFLAGS_COMPILE = toString (
+    lib.optionals stdenv.hostPlatform.isMusl [
+      "-D__THROW="
+    ]
+    ++ lib.optionals stdenv.cc.isClang [
+      "-Wno-error=int-conversion"
+    ]
+  );
+
   preConfigure = lib.optionalString stdenv.hostPlatform.isMusl ''
     substituteInPlace include/xconfig.h.in \
         --replace "#define HAVE_RCMD 1" "#undef HAVE_RCMD"
@@ -77,10 +81,6 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/bin/genisoimage $out/bin/mkisofs
     ln -s $out/bin/wodim $out/bin/cdrecord
   '';
-
-  cmakeFlags = lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [ "-DBITFIELDS_HTOL=0" ];
-
-  makeFlags = [ "PREFIX=\$(out)" ];
 
   meta = {
     description = "Portable command-line CD/DVD recorder software, mostly compatible with cdrtools";

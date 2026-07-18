@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  # Build system
-  hatchling,
   # Dependencies
   argparse-manpage,
+  buildPythonPackage,
+  # Build system
+  hatchling,
   rich,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "hatch-argparse-manpage";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "damonlynch";
@@ -29,6 +28,8 @@ buildPythonPackage (finalAttrs: {
     argparse-manpage
     rich
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "hatch_argparse_manpage"

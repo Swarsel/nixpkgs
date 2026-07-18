@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "trueseeing";
   version = "2.2.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "alterakey";
@@ -16,11 +15,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-EDnE1BK/nl3nqkan4gmSsP7vqkuMNJ5+oN09ZnQzsy0=";
   };
 
+  # Project has no tests
+  doCheck = false;
+
   build-system = with python3.pkgs; [
     flit-core
   ];
-
-  pythonRelaxDeps = true;
 
   dependencies = with python3.pkgs; [
     aiohttp
@@ -38,12 +38,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     zstandard
   ];
 
-  # Project has no tests
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "trueseeing"
   ];
+
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Non-decompiling Android vulnerability scanner";

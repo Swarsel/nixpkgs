@@ -46,7 +46,9 @@ let
   # here and add the additional programs.  The ServerBin directive in
   # cups-files.conf tells cupsd to use this tree.
   bindir = pkgs.buildEnv {
+    ignoreCollisions = true;
     name = "cups-progs";
+
     paths = [
       cups.out
       additionalBackends
@@ -56,13 +58,14 @@ let
     ]
     ++ lib.optional cfg.browsed.enable cfg.browsed.package
     ++ cfg.drivers;
+
     pathsToLink = [
       "/lib"
       "/share/cups"
       "/bin"
     ];
+
     postBuild = cfg.bindirCmds;
-    ignoreCollisions = true;
   };
 
   writeConf =
@@ -117,7 +120,9 @@ let
   browsedFile = writeConf "cups-browsed.conf" cfg.browsedConf;
 
   rootdir = pkgs.buildEnv {
+    ignoreCollisions = true;
     name = "cups-progs";
+
     paths = [
       cupsFilesFile
       cupsdFile
@@ -126,8 +131,8 @@ let
     ]
     ++ optional cfg.browsed.enable browsedFile
     ++ cfg.drivers;
+
     pathsToLink = [ "/etc/cups" ];
-    ignoreCollisions = true;
   };
 
   filterGutenprint = filter (pkg: pkg.meta.isGutenprint or false == true);
@@ -164,178 +169,108 @@ in
     services.printing = {
 
       enable = mkOption {
-        type = types.bool;
         default = false;
+
         description = ''
           Whether to enable printing support through the CUPS daemon.
         '';
+
+        type = types.bool;
       };
 
       package = lib.mkPackageOption pkgs "cups" { };
 
-      stateless = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          If set, all state directories relating to CUPS will be removed on
-          startup of the service.
-        '';
-      };
-
-      startWhenNeeded = mkOption {
-        type = types.bool;
-        default = true;
-        description = ''
-          If set, CUPS is socket-activated; that is,
-          instead of having it permanently running as a daemon,
-          systemd will start it on the first incoming connection.
-        '';
-      };
-
-      listenAddresses = mkOption {
-        type = types.listOf types.str;
-        default = [ "localhost:631" ];
-        example = [ "*:631" ];
-        description = ''
-          A list of addresses and ports on which to listen.
-        '';
-      };
-
       allowFrom = mkOption {
-        type = types.listOf types.str;
-        default = [ "localhost" ];
-        example = [ "all" ];
         apply = concatMapStringsSep "\n" (x: "Allow ${x}");
+        default = [ "localhost" ];
+
         description = ''
           From which hosts to allow unconditional access.
         '';
-      };
 
-      openFirewall = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Whether to open the firewall for TCP ports specified in
-          listenAddresses option.
-        '';
+        example = [ "all" ];
+        type = types.listOf types.str;
       };
 
       bindirCmds = mkOption {
-        type = types.lines;
-        internal = true;
         default = "";
+
         description = ''
           Additional commands executed while creating the directory
           containing the CUPS server binaries.
         '';
-      };
 
-      defaultShared = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Specifies whether local printers are shared by default.
-        '';
-      };
-
-      browsing = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Specifies whether shared printers are advertised.
-        '';
-      };
-
-      webInterface = mkOption {
-        type = types.bool;
-        default = true;
-        description = ''
-          Specifies whether the web interface is enabled.
-        '';
-      };
-
-      logLevel = mkOption {
-        type = types.str;
-        default = "info";
-        example = "debug";
-        description = ''
-          Specifies the cupsd logging verbosity.
-        '';
-      };
-
-      extraFilesConf = mkOption {
+        internal = true;
         type = types.lines;
-        default = "";
-        description = ''
-          Extra contents of the configuration file of the CUPS daemon
-          ({file}`cups-files.conf`).
-        '';
-      };
-
-      extraConf = mkOption {
-        type = types.lines;
-        default = "";
-        example = ''
-          BrowsePoll cups.example.com
-          MaxCopies 42
-        '';
-        description = ''
-          Extra contents of the configuration file of the CUPS daemon
-          ({file}`cupsd.conf`).
-        '';
-      };
-
-      clientConf = mkOption {
-        type = types.lines;
-        default = "";
-        example = ''
-          ServerName server.example.com
-          Encryption Never
-        '';
-        description = ''
-          The contents of the client configuration.
-          ({file}`client.conf`)
-        '';
       };
 
       browsed.enable = mkOption {
-        type = types.bool;
         default = config.services.avahi.enable;
         defaultText = literalExpression "config.services.avahi.enable";
+
         description = ''
           Whether to enable the CUPS Remote Printer Discovery (browsed) daemon.
         '';
+
+        type = types.bool;
       };
 
       browsed.package = lib.mkPackageOption pkgs "cups-browsed" { };
 
       browsedConf = mkOption {
-        type = types.lines;
         default = "";
-        example = ''
-          BrowsePoll cups.example.com
-        '';
+
         description = ''
           The contents of the configuration. file of the CUPS Browsed daemon
           ({file}`cups-browsed.conf`)
         '';
+
+        example = ''
+          BrowsePoll cups.example.com
+        '';
+
+        type = types.lines;
       };
 
-      snmpConf = mkOption {
-        type = types.lines;
-        default = ''
-          Address @LOCAL
-        '';
+      browsing = mkOption {
+        default = false;
+
         description = ''
-          The contents of {file}`/etc/cups/snmp.conf`. See "man
-          cups-snmp.conf" for a complete description.
+          Specifies whether shared printers are advertised.
         '';
+
+        type = types.bool;
+      };
+
+      clientConf = mkOption {
+        default = "";
+
+        description = ''
+          The contents of the client configuration.
+          ({file}`client.conf`)
+        '';
+
+        example = ''
+          ServerName server.example.com
+          Encryption Never
+        '';
+
+        type = types.lines;
+      };
+
+      defaultShared = mkOption {
+        default = false;
+
+        description = ''
+          Specifies whether local printers are shared by default.
+        '';
+
+        type = types.bool;
       };
 
       drivers = mkOption {
-        type = types.listOf types.path;
         default = [ ];
-        example = literalExpression "with pkgs; [ gutenprint hplip splix ]";
+
         description = ''
           CUPS drivers to use. Drivers provided by CUPS, cups-filters,
           Ghostscript and Samba are added unconditionally. If this list contains
@@ -344,15 +279,126 @@ in
           {file}`/var/lib/cups/ppd` will be updated automatically
           to avoid errors due to incompatible versions.
         '';
+
+        example = literalExpression "with pkgs; [ gutenprint hplip splix ]";
+        type = types.listOf types.path;
+      };
+
+      extraConf = mkOption {
+        default = "";
+
+        description = ''
+          Extra contents of the configuration file of the CUPS daemon
+          ({file}`cupsd.conf`).
+        '';
+
+        example = ''
+          BrowsePoll cups.example.com
+          MaxCopies 42
+        '';
+
+        type = types.lines;
+      };
+
+      extraFilesConf = mkOption {
+        default = "";
+
+        description = ''
+          Extra contents of the configuration file of the CUPS daemon
+          ({file}`cups-files.conf`).
+        '';
+
+        type = types.lines;
+      };
+
+      listenAddresses = mkOption {
+        default = [ "localhost:631" ];
+
+        description = ''
+          A list of addresses and ports on which to listen.
+        '';
+
+        example = [ "*:631" ];
+        type = types.listOf types.str;
+      };
+
+      logLevel = mkOption {
+        default = "info";
+
+        description = ''
+          Specifies the cupsd logging verbosity.
+        '';
+
+        example = "debug";
+        type = types.str;
+      };
+
+      openFirewall = mkOption {
+        default = false;
+
+        description = ''
+          Whether to open the firewall for TCP ports specified in
+          listenAddresses option.
+        '';
+
+        type = types.bool;
+      };
+
+      snmpConf = mkOption {
+        default = ''
+          Address @LOCAL
+        '';
+
+        description = ''
+          The contents of {file}`/etc/cups/snmp.conf`. See "man
+          cups-snmp.conf" for a complete description.
+        '';
+
+        type = types.lines;
+      };
+
+      startWhenNeeded = mkOption {
+        default = true;
+
+        description = ''
+          If set, CUPS is socket-activated; that is,
+          instead of having it permanently running as a daemon,
+          systemd will start it on the first incoming connection.
+        '';
+
+        type = types.bool;
+      };
+
+      stateless = mkOption {
+        default = false;
+
+        description = ''
+          If set, all state directories relating to CUPS will be removed on
+          startup of the service.
+        '';
+
+        type = types.bool;
       };
 
       tempDir = mkOption {
-        type = types.path;
         default = "/tmp";
-        example = "/tmp/cups";
+
         description = ''
           CUPSd temporary directory.
         '';
+
+        example = "/tmp/cups";
+        type = types.path;
+      };
+
+      webInterface = mkOption {
+        default = true;
+
+        description = ''
+          Specifies whether the web interface is enabled.
+        '';
+
+        type = types.bool;
       };
     };
 
@@ -362,16 +408,14 @@ in
 
   config = mkIf config.services.printing.enable {
 
-    users = {
-      users.cups = {
-        uid = config.ids.uids.cups;
-        group = "lp";
-        description = "CUPS printing services";
-      };
-
-      # It seems that groups provided for `SystemGroup` must exist
-      groups.lpadmin = { };
-    };
+    # Cups uses libusb to talk to printers, and does not use the
+    # linux kernel driver. If the driver is not in a black list, it
+    # gets loaded, and then cups cannot access the printers.
+    boot.blacklistedKernelModules = [ "usblp" ];
+    environment.etc.cups.source = "/var/lib/cups";
+    # Some programs like print-manager rely on this value to get
+    # printer test pages.
+    environment.sessionVariables.CUPS_DATADIR = "${bindir}/share/cups";
 
     # We need xdg-open (part of xdg-utils) for the desktop-file to proper open the users default-browser when opening "Manage Printing"
     # https://github.com/NixOS/nixpkgs/pull/237994#issuecomment-1597510969
@@ -380,10 +424,16 @@ in
       xdg-utils
     ]
     ++ optional polkitEnabled cups-pk-helper;
-    environment.etc.cups.source = "/var/lib/cups";
 
-    services.dbus.packages = [ cups.out ] ++ optional polkitEnabled cups-pk-helper;
-    services.udev.packages = cfg.drivers;
+    networking.firewall =
+      let
+        listenPorts = parsePorts cfg.listenAddresses;
+      in
+      mkIf cfg.openFirewall {
+        allowedTCPPorts = listenPorts;
+      };
+
+    security.pam.services.cups = { };
 
     # Allow passwordless printer admin for members of wheel group
     security.polkit.extraConfig = mkIf polkitEnabled ''
@@ -395,33 +445,56 @@ in
       });
     '';
 
-    # Cups uses libusb to talk to printers, and does not use the
-    # linux kernel driver. If the driver is not in a black list, it
-    # gets loaded, and then cups cannot access the printers.
-    boot.blacklistedKernelModules = [ "usblp" ];
+    services.dbus.packages = [ cups.out ] ++ optional polkitEnabled cups-pk-helper;
 
-    # Some programs like print-manager rely on this value to get
-    # printer test pages.
-    environment.sessionVariables.CUPS_DATADIR = "${bindir}/share/cups";
+    services.printing.extraConf = ''
+      DefaultAuthType Basic
 
+      <Location />
+        Order allow,deny
+        ${cfg.allowFrom}
+      </Location>
+
+      <Location /admin>
+        Order allow,deny
+        ${cfg.allowFrom}
+      </Location>
+
+      <Location /admin/conf>
+        AuthType Basic
+        Require user @SYSTEM
+        Order allow,deny
+        ${cfg.allowFrom}
+      </Location>
+
+      <Policy default>
+        <Limit Send-Document Send-URI Hold-Job Release-Job Restart-Job Purge-Jobs Set-Job-Attributes Create-Job-Subscription Renew-Subscription Cancel-Subscription Get-Notifications Reprocess-Job Cancel-Current-Job Suspend-Current-Job Resume-Job CUPS-Move-Job>
+          Require user @OWNER @SYSTEM
+          Order deny,allow
+        </Limit>
+
+        <Limit Pause-Printer Resume-Printer Set-Printer-Attributes Enable-Printer Disable-Printer Pause-Printer-After-Current-Job Hold-New-Jobs Release-Held-New-Jobs Deactivate-Printer Activate-Printer Restart-Printer Shutdown-Printer Startup-Printer Promote-Job Schedule-Job-After CUPS-Add-Printer CUPS-Delete-Printer CUPS-Add-Class CUPS-Delete-Class CUPS-Accept-Jobs CUPS-Reject-Jobs CUPS-Set-Default>
+          AuthType Basic
+          Require user @SYSTEM
+          Order deny,allow
+        </Limit>
+
+        <Limit Cancel-Job CUPS-Authenticate-Job>
+          Require user @OWNER @SYSTEM
+          Order deny,allow
+        </Limit>
+
+        <Limit All>
+          Order deny,allow
+        </Limit>
+      </Policy>
+    '';
+
+    services.udev.packages = cfg.drivers;
     systemd.packages = [ cups.out ];
 
-    systemd.sockets.cups = mkIf cfg.startWhenNeeded {
-      wantedBy = [ "sockets.target" ];
-      listenStreams = [
-        ""
-        "/run/cups/cups.sock"
-      ]
-      ++ map (
-        x: replaceStrings [ "localhost" ] [ "127.0.0.1" ] (removePrefix "*:" x)
-      ) cfg.listenAddresses;
-    };
-
     systemd.services.cups = {
-      wantedBy = optionals (!cfg.startWhenNeeded) [ "multi-user.target" ];
-      wants = [ "network.target" ];
       after = [ "network.target" ];
-
       path = [ cups.out ];
 
       preStart =
@@ -470,76 +543,44 @@ in
         '';
 
       serviceConfig.PrivateTmp = true;
+      wantedBy = optionals (!cfg.startWhenNeeded) [ "multi-user.target" ];
+      wants = [ "network.target" ];
     };
 
     systemd.services.cups-browsed = mkIf cfg.browsed.enable {
+      after = [ "avahi-daemon.service" ] ++ optional (!cfg.startWhenNeeded) "cups.service";
+      bindsTo = [ "avahi-daemon.service" ] ++ optional (!cfg.startWhenNeeded) "cups.service";
       description = "CUPS Remote Printer Discovery";
-
+      partOf = [ "avahi-daemon.service" ] ++ optional (!cfg.startWhenNeeded) "cups.service";
+      path = [ cups ];
+      restartTriggers = [ browsedFile ];
+      serviceConfig.ExecStart = "${cfg.browsed.package}/bin/cups-browsed";
       wantedBy = [ "multi-user.target" ];
       wants = [ "avahi-daemon.service" ] ++ optional (!cfg.startWhenNeeded) "cups.service";
-      bindsTo = [ "avahi-daemon.service" ] ++ optional (!cfg.startWhenNeeded) "cups.service";
-      partOf = [ "avahi-daemon.service" ] ++ optional (!cfg.startWhenNeeded) "cups.service";
-      after = [ "avahi-daemon.service" ] ++ optional (!cfg.startWhenNeeded) "cups.service";
-
-      path = [ cups ];
-
-      serviceConfig.ExecStart = "${cfg.browsed.package}/bin/cups-browsed";
-
-      restartTriggers = [ browsedFile ];
     };
 
-    services.printing.extraConf = ''
-      DefaultAuthType Basic
+    systemd.sockets.cups = mkIf cfg.startWhenNeeded {
+      listenStreams = [
+        ""
+        "/run/cups/cups.sock"
+      ]
+      ++ map (
+        x: replaceStrings [ "localhost" ] [ "127.0.0.1" ] (removePrefix "*:" x)
+      ) cfg.listenAddresses;
 
-      <Location />
-        Order allow,deny
-        ${cfg.allowFrom}
-      </Location>
+      wantedBy = [ "sockets.target" ];
+    };
 
-      <Location /admin>
-        Order allow,deny
-        ${cfg.allowFrom}
-      </Location>
+    users = {
+      # It seems that groups provided for `SystemGroup` must exist
+      groups.lpadmin = { };
 
-      <Location /admin/conf>
-        AuthType Basic
-        Require user @SYSTEM
-        Order allow,deny
-        ${cfg.allowFrom}
-      </Location>
-
-      <Policy default>
-        <Limit Send-Document Send-URI Hold-Job Release-Job Restart-Job Purge-Jobs Set-Job-Attributes Create-Job-Subscription Renew-Subscription Cancel-Subscription Get-Notifications Reprocess-Job Cancel-Current-Job Suspend-Current-Job Resume-Job CUPS-Move-Job>
-          Require user @OWNER @SYSTEM
-          Order deny,allow
-        </Limit>
-
-        <Limit Pause-Printer Resume-Printer Set-Printer-Attributes Enable-Printer Disable-Printer Pause-Printer-After-Current-Job Hold-New-Jobs Release-Held-New-Jobs Deactivate-Printer Activate-Printer Restart-Printer Shutdown-Printer Startup-Printer Promote-Job Schedule-Job-After CUPS-Add-Printer CUPS-Delete-Printer CUPS-Add-Class CUPS-Delete-Class CUPS-Accept-Jobs CUPS-Reject-Jobs CUPS-Set-Default>
-          AuthType Basic
-          Require user @SYSTEM
-          Order deny,allow
-        </Limit>
-
-        <Limit Cancel-Job CUPS-Authenticate-Job>
-          Require user @OWNER @SYSTEM
-          Order deny,allow
-        </Limit>
-
-        <Limit All>
-          Order deny,allow
-        </Limit>
-      </Policy>
-    '';
-
-    security.pam.services.cups = { };
-
-    networking.firewall =
-      let
-        listenPorts = parsePorts cfg.listenAddresses;
-      in
-      mkIf cfg.openFirewall {
-        allowedTCPPorts = listenPorts;
+      users.cups = {
+        description = "CUPS printing services";
+        group = "lp";
+        uid = config.ids.uids.cups;
       };
+    };
 
   };
 

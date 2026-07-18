@@ -1,21 +1,25 @@
 {
   lib,
-  python3Packages,
   fetchFromGitLab,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "onionbalance";
   version = "0.2.4";
 
-  pyproject = true;
   src = fetchFromGitLab {
-    domain = "gitlab.torproject.org";
     owner = "tpo";
     repo = "onion-services/onionbalance";
     tag = finalAttrs.version;
     hash = "sha256-amwKP9LJ7aHPECNUNTluFpgIFSRLxR7eHQxBxW5574I=";
+    domain = "gitlab.torproject.org";
   };
+
+  build-system = with python3Packages; [
+    setuptools
+  ];
+
   dependencies = with python3Packages; [
     cryptography
     pycryptodomex
@@ -23,9 +27,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     setproctitle
     stem
   ];
-  build-system = with python3Packages; [
-    setuptools
-  ];
+
+  pyproject = true;
 
   meta = {
     description = "Tool for loadbalancing onion services";

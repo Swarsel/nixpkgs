@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  pkg-config,
-  cmake,
   arpa2cm,
   arpa2common,
-  quickmem,
+  cmake,
   cyrus_sasl,
-  quickder,
-  libkrb5,
-  libev,
   e2fsprogs,
+  libev,
+  libkrb5,
   nix-update-script,
+  pkg-config,
+  quickder,
+  quickmem,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -51,9 +51,9 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.com/arpa2/Quick-SASL";
     changelog = "https://gitlab.com/arpa2/Quick-SASL/-/blob/v${finalAttrs.version}/CHANGES";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.linux;
-    teams = with lib.teams; [ ngi ];
     maintainers = with lib.maintainers; [ ethancedwards8 ];
+    platforms = lib.platforms.linux;
     mainProgram = "qsasl-server";
+    teams = with lib.teams; [ ngi ];
   };
 })

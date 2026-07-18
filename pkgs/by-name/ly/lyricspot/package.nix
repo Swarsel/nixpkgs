@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  stdenvNoCC,
   makeWrapper,
-  python3,
   playerctl,
+  python3,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "lyricspot";
@@ -18,8 +18,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
-
   nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
@@ -35,14 +33,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       }
   '';
 
+  __structuredAttrs = true;
+
   meta = {
-    homepage = "https://github.com/vlensys/lyricspot";
     description = "Good old live synced lyrics in your terminal";
+    homepage = "https://github.com/vlensys/lyricspot";
     license = lib.licenses.gpl3Only;
-    mainProgram = "lyricspot";
+
     maintainers = with lib.maintainers; [
       yarn
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "lyricspot";
   };
 })

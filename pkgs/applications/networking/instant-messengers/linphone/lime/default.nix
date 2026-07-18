@@ -1,10 +1,10 @@
 {
-  bctoolbox,
-  belle-sip,
   lib,
   bc-soci,
-  sqlite,
+  bctoolbox,
+  belle-sip,
   mkLinphoneDerivation,
+  sqlite,
 }:
 mkLinphoneDerivation {
   pname = "lime";

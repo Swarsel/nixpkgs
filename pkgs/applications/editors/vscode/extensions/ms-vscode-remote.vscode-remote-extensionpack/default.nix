@@ -5,10 +5,10 @@
 
 vscode-utils.buildVscodeMarketplaceExtension {
   mktplcRef = {
-    name = "vscode-remote-extensionpack";
-    publisher = "ms-vscode-remote";
     version = "0.26.0";
     hash = "sha256-YUo0QbJILa9BzWub6Wi6cDD/Zsy/H8LZ8j+9H+5pVHY=";
+    name = "vscode-remote-extensionpack";
+    publisher = "ms-vscode-remote";
   };
 
   meta = {

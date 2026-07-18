@@ -24,8 +24,8 @@ stdenv.mkDerivation (finalAttrs: {
   ";
 
   meta = {
-    platforms = lib.platforms.linux;
-    license = lib.licenses.gpl2Only;
     homepage = "http://www.marcuscom.com/downloads/";
+    license = lib.licenses.gpl2Only;
+    platforms = lib.platforms.linux;
   };
 })

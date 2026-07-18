@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pillow,
 }:
 
 buildPythonPackage rec {
   pname = "colorthief";
   version = "0.2.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "fengsp";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ pillow ];
-
   # no tests implemented
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "colorthief" ];
 
   meta = {

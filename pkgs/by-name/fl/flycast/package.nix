@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  makeWrapper,
+  SDL2,
   alsa-lib,
+  cmake,
   curl,
   libao,
   libpulseaudio,
   libzip,
   lua,
+  makeWrapper,
   miniupnpc,
-  SDL2,
+  pkg-config,
   systemdLibs,
   vulkan-loader,
 }:
@@ -56,12 +56,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
+    description = "Multi-platform Sega Dreamcast, Naomi and Atomiswave emulator";
     homepage = "https://github.com/flyinghead/flycast";
     changelog = "https://github.com/flyinghead/flycast/releases/tag/v${finalAttrs.version}";
-    description = "Multi-platform Sega Dreamcast, Naomi and Atomiswave emulator";
-    mainProgram = "flycast";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "flycast";
   };
 })

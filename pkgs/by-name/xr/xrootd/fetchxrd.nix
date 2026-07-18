@@ -5,21 +5,21 @@
 }:
 
 {
+  hash ? lib.fakeHash,
   name ? "",
   pname ? "",
-  version ? "",
-  urls ? [ ],
   url ? if urls == [ ] then abort "Expect either non-empty `urls` or `url`" else builtins.head urls,
-  hash ? lib.fakeHash,
+  urls ? [ ],
+  version ? "",
 }:
 
 (runCommandLocal name
   {
+    inherit url;
     nativeBuildInputs = [ xrootd ];
+    outputHash = hash;
     outputHashAlgo = null;
     outputHashMode = "flat";
-    outputHash = hash;
-    inherit url;
     urls = if urls == [ ] then lib.singleton url else urls;
   }
   ''

@@ -1,20 +1,19 @@
 {
   lib,
+  desktop-file-utils,
   fetchFromCodeberg,
-  python3Packages,
-  wrapGAppsHook4,
   gobject-introspection,
   libadwaita,
   meson,
   ninja,
   pkg-config,
-  desktop-file-utils,
+  python3Packages,
+  wrapGAppsHook4,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "censor";
   version = "0.7.2";
-  pyproject = false;
 
   src = fetchFromCodeberg {
     owner = "censor";
@@ -36,16 +35,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
     libadwaita
   ];
 
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
   dependencies = with python3Packages; [
     pygobject3
     pymupdf
   ];
 
   dontWrapGApps = true;
-
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
+  pyproject = false;
 
   meta = {
     description = "PDF document redaction for the GNOME desktop";

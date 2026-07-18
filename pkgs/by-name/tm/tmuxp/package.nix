@@ -8,26 +8,13 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "tmuxp";
   version = "1.74.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-ngSA6gEpmWAmNYh+BGHTlcLYqm42qFtabR1l3NbHgJw=";
   };
 
-  build-system = with python3Packages; [
-    hatchling
-    shtab
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
-
-  dependencies = with python3Packages; [
-    colorama
-    libtmux
-    pyyaml
-  ];
-
   # No tests in archive
   doCheck = false;
 
@@ -36,6 +23,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --bash <(shtab --shell=bash -u tmuxp.cli.create_parser) \
       --zsh <(shtab --shell=zsh -u tmuxp.cli.create_parser)
   '';
+
+  build-system = with python3Packages; [
+    hatchling
+    shtab
+  ];
+
+  dependencies = with python3Packages; [
+    colorama
+    libtmux
+    pyyaml
+  ];
+
+  pyproject = true;
 
   meta = {
     description = "tmux session manager";

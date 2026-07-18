@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   mdformat,
   mdit-py-plugins,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "mdformat-footnote";
   version = "0.1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "executablebooks";
@@ -26,6 +25,7 @@ buildPythonPackage rec {
     mdit-py-plugins
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "mdformat_footnote" ];
 
   meta = {

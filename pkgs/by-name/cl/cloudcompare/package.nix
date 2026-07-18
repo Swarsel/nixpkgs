@@ -2,24 +2,24 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
-  makeDesktopItem,
-  copyDesktopItems,
-  cmake,
   boost,
   cgal,
+  cmake,
+  copyDesktopItems,
   eigen,
+  fetchpatch2,
   flann,
   gdal,
   gmp,
   laszip,
-  mpfr,
-  pcl,
   libsForQt5,
+  makeDesktopItem,
+  mpfr,
   nixosTests,
   onetbb,
-  xercesc,
+  pcl,
   wrapGAppsHook3,
+  xercesc,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,8 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # https://github.com/CloudCompare/CloudCompare/pull/2208
     (fetchpatch2 {
-      url = "https://github.com/CloudCompare/CloudCompare/commit/8e1c0562a7c19fd26ccd0c23bb05fb7c36980e0c.patch?full_index=1";
       hash = "sha256-DARxLiRjcBJEo63o92ujjxBU42Y8CY2c7px8Y9UD5A4=";
+      url = "https://github.com/CloudCompare/CloudCompare/commit/8e1c0562a7c19fd26ccd0c23bb05fb7c36980e0c.patch?full_index=1";
     })
   ];
 
@@ -107,8 +107,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.strings.cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "3.5")
   ];
 
-  dontWrapGApps = true;
-
   postInstall = ''
     install -Dm444 $src/qCC/images/icon/cc_icon_16.png $out/share/icons/hicolor/16x16/apps/CloudCompare.png
     install -Dm444 $src/qCC/images/icon/cc_icon_32.png $out/share/icons/hicolor/32x32/apps/CloudCompare.png
@@ -128,41 +126,48 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "CloudCompare";
-      desktopName = "CloudCompare";
-      comment = "3D point cloud and mesh processing software";
-      exec = "CloudCompare";
-      terminal = false;
       categories = [
         "Graphics"
         "3DGraphics"
         "Viewer"
       ];
+
+      comment = "3D point cloud and mesh processing software";
+      desktopName = "CloudCompare";
+      exec = "CloudCompare";
+      icon = "CloudCompare";
+
       keywords = [
         "3d"
         "processing"
       ];
-      icon = "CloudCompare";
+
+      name = "CloudCompare";
+      terminal = false;
     })
     (makeDesktopItem {
-      name = "ccViewer";
-      desktopName = "CloudCompare Viewer";
-      comment = "3D point cloud and mesh processing software";
-      exec = "ccViewer";
-      terminal = false;
       categories = [
         "Graphics"
         "3DGraphics"
         "Viewer"
       ];
+
+      comment = "3D point cloud and mesh processing software";
+      desktopName = "CloudCompare Viewer";
+      exec = "ccViewer";
+      icon = "ccViewer";
+
       keywords = [
         "3d"
         "viewer"
       ];
-      icon = "ccViewer";
+
+      name = "ccViewer";
+      terminal = false;
     })
   ];
 
+  dontWrapGApps = true;
   passthru.tests = nixosTests.cloudcompare;
 
   meta = {
@@ -170,8 +175,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://cloudcompare.org";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ nh2 ];
-    teams = [ lib.teams.geospatial ];
-    mainProgram = "CloudCompare";
     platforms = with lib.platforms; linux; # only tested here; might work on others
+    mainProgram = "CloudCompare";
+    teams = [ lib.teams.geospatial ];
   };
 })

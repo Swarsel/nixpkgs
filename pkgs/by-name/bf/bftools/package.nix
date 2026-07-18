@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
-  makeWrapper,
+  stdenv,
   fetchzip,
   jre,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -14,6 +14,8 @@ stdenv.mkDerivation (finalAttrs: {
     url = "http://downloads.openmicroscopy.org/bio-formats/${finalAttrs.version}/artifacts/bftools.zip";
     hash = "sha256-EQ7P07d53e6Q/9Wt2Pa1h0TfuYblOZeByGW30oE3i6M=";
   };
+
+  nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
     find . -maxdepth 1 -perm -111 -type f -not -name "*.sh" \
@@ -35,15 +37,13 @@ stdenv.mkDerivation (finalAttrs: {
     wrapProgram $out/libexec/bf.sh --prefix PATH : "${lib.makeBinPath [ jre ]}"
   '';
 
-  nativeBuildInputs = [ makeWrapper ];
-
   meta = {
     description = "Bundle of scripts for using Bio-Formats on the command line with bioformats_package.jar already included";
-    mainProgram = "showinf";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
-    license = lib.licenses.gpl2;
-    platforms = lib.platforms.all;
     homepage = "https://www.openmicroscopy.org/bio-formats/";
+    license = lib.licenses.gpl2;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ ];
+    platforms = lib.platforms.all;
+    mainProgram = "showinf";
   };
 })

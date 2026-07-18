@@ -2,25 +2,21 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-
   # build-system
   cython,
   git,
+  libusb-compat-0_1,
+  # tests
+  mock,
+  # dependneices
+  numpy,
   pkgconfig,
+  pytestCheckHook,
+  # optional-dependencies
+  pyusb,
   setuptools,
   setuptools-scm,
   udevCheckHook,
-
-  # dependneices
-  numpy,
-  libusb-compat-0_1,
-
-  # optional-dependencies
-  pyusb,
-
-  # tests
-  mock,
-  pytestCheckHook,
   zipp,
 }:
 
@@ -32,7 +28,6 @@
 buildPythonPackage rec {
   pname = "seabreeze";
   version = "2.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ap--";
@@ -41,8 +36,6 @@ buildPythonPackage rec {
     hash = "sha256-PplymlXZlRt+BzhCzIYRMjr+rMFf+XfSq846QAlbRi0=";
     leaveDotGit = true;
   };
-
-  enableParallelBuilding = true;
 
   postPatch = ''
     # pkgconfig cant find libusb, doing it manually
@@ -65,15 +58,6 @@ buildPythonPackage rec {
     libusb-compat-0_1
   ];
 
-  optional-dependencies = {
-    pyseabreeze = [ pyusb ];
-  };
-
-  postInstall = ''
-    mkdir -p $out/etc/udev/rules.d
-    cp os_support/10-oceanoptics.rules $out/etc/udev/rules.d/10-oceanoptics.rules
-  '';
-
   # few backends enabled, but still some tests
   nativeCheckInputs = [
     pytestCheckHook
@@ -82,14 +66,25 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
-  disabledTests = [ "TestHardware" ];
+  postInstall = ''
+    mkdir -p $out/etc/udev/rules.d
+    cp os_support/10-oceanoptics.rules $out/etc/udev/rules.d/10-oceanoptics.rules
+  '';
 
+  disabledTests = [ "TestHardware" ];
+  enableParallelBuilding = true;
+
+  optional-dependencies = {
+    pyseabreeze = [ pyusb ];
+  };
+
+  pyproject = true;
   setupPyBuildFlags = [ "--without-cseabreeze" ];
 
   meta = {
-    homepage = "https://github.com/ap--/python-seabreeze";
     description = "Python library to access Ocean Optics spectrometers";
-    maintainers = [ ];
+    homepage = "https://github.com/ap--/python-seabreeze";
     license = lib.licenses.mit;
+    maintainers = [ ];
   };
 }

@@ -1,11 +1,11 @@
 {
+  lib,
+  stdenv,
   fetchFromGitHub,
   buildNpmPackage,
-  python3,
-  stdenv,
-  makeWrapper,
-  lib,
   ffmpeg,
+  makeWrapper,
+  python3,
 }:
 let
   version = "0.2.4.8";
@@ -18,12 +18,9 @@ let
   };
 
   frontend = buildNpmPackage {
-    pname = "bambuddy-frontend";
     inherit version src;
-
-    sourceRoot = "${src.name}/frontend";
+    pname = "bambuddy-frontend";
     npmDepsHash = "sha256-/22FkXus5f3wYivyadZWU6ZKPYFLF8xA8mkVGxvdXm0=";
-
     preBuild = "chmod -R u+w ../static";
 
     installPhase = ''
@@ -34,6 +31,8 @@ let
 
       runHook postInstall
     '';
+
+    sourceRoot = "${src.name}/frontend";
   };
 
   # https://github.com/maziggy/bambuddy/blob/main/requirements.txt
@@ -81,12 +80,9 @@ let
   );
 in
 stdenv.mkDerivation {
-  pname = "bambuddy";
   inherit version src;
-
+  pname = "bambuddy";
   strictDeps = true;
-  __structuredAttrs = true;
-
   nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
@@ -109,13 +105,15 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
   meta = {
     description = "Self-hosted command center for Bambu Lab";
     homepage = "https://bambuddy.cool/";
     changelog = "https://github.com/maziggy/bambuddy/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ onatustun ];
-    mainProgram = "bambuddy";
     platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "bambuddy";
   };
 }

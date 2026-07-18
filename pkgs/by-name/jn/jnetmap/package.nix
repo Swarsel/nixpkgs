@@ -9,7 +9,6 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "jnetmap";
   version = "0.5.5";
-  versionSuffix = "-703";
 
   src = fetchurl {
     url = "mirror://sourceforge/project/jnetmap/jNetMap%20${finalAttrs.version}/jNetMap-${finalAttrs.version}${finalAttrs.versionSuffix}.jar";
@@ -18,8 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ jre ];
-
-  dontUnpack = true;
 
   installPhase = ''
     runHook preInstall
@@ -34,14 +31,17 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+  versionSuffix = "-703";
+
   meta = {
     description = "Graphical network monitoring and documentation tool";
-    mainProgram = "jnetmap";
     homepage = "http://www.rakudave.ch/jnetmap/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.gpl3Plus;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    maintainers = [ lib.maintainers.bjornfor ];
     # Upstream supports macOS and Windows too.
     platforms = lib.platforms.linux;
-    maintainers = [ lib.maintainers.bjornfor ];
+    mainProgram = "jnetmap";
   };
 })

@@ -1,25 +1,27 @@
 {
   lib,
   stdenv,
-  ocaml,
-  findlib,
   dune_2,
   dune_3,
+  findlib,
+  ocaml,
 }:
 
 lib.extendMkDerivation {
   constructDrv = stdenv.mkDerivation;
+
   excludeDrvArgNames = [
     "minimalOCamlVersion"
     "duneVersion"
   ];
+
   extendDrvArgs =
     finalAttrs:
     {
       pname,
       version,
-      nativeBuildInputs ? [ ],
       enableParallelBuilding ? true,
+      nativeBuildInputs ? [ ],
       ...
     }@args:
 
@@ -40,13 +42,8 @@ lib.extendMkDerivation {
       throw "${pname}-${version} is not available for OCaml ${ocaml.version}"
     else
       {
-        name = "ocaml${ocaml.version}-${pname}-${version}";
-
-        strictDeps = true;
-
         inherit enableParallelBuilding;
-        dontAddStaticConfigureFlags = true;
-        configurePlatforms = [ ];
+        strictDeps = true;
 
         nativeBuildInputs = [
           ocaml
@@ -62,6 +59,13 @@ lib.extendMkDerivation {
             runHook postBuild
           '';
 
+        checkPhase =
+          args.checkPhase or ''
+            runHook preCheck
+            dune runtest -p ${pname} ''${enableParallelBuilding:+-j $NIX_BUILD_CORES}
+            runHook postCheck
+          '';
+
         installPhase =
           args.installPhase or ''
             runHook preInstall
@@ -75,12 +79,9 @@ lib.extendMkDerivation {
             runHook postInstall
           '';
 
-        checkPhase =
-          args.checkPhase or ''
-            runHook preCheck
-            dune runtest -p ${pname} ''${enableParallelBuilding:+-j $NIX_BUILD_CORES}
-            runHook postCheck
-          '';
+        configurePlatforms = [ ];
+        dontAddStaticConfigureFlags = true;
+        name = "ocaml${ocaml.version}-${pname}-${version}";
 
         meta = (args.meta or { }) // {
           platforms = args.meta.platforms or ocaml.meta.platforms;

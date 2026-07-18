@@ -1,7 +1,7 @@
 {
   lib,
-  swiftPackages,
   fetchFromGitHub,
+  swiftPackages,
 }:
 
 let
@@ -20,7 +20,6 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ swift ];
-
   makeFlags = [ "openwith_${darwinArch}" ];
 
   installPhase = ''
@@ -34,6 +33,7 @@ stdenv.mkDerivation {
     homepage = "https://github.com/jdek/openwith";
     license = lib.licenses.unlicense;
     maintainers = with lib.maintainers; [ zowoq ];
+
     platforms = [
       "aarch64-darwin"
     ];

@@ -14,19 +14,20 @@
 buildPythonPackage (finalAttrs: {
   pname = "google-cloud-websecurityscanner";
   version = "1.21.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_websecurityscanner";
     inherit (finalAttrs) version;
     hash = "sha256-8/JJV9O7aUxPJIjypmyvaAyOgGD9fvMnYrlmaAvrtcg=";
+    pname = "google_cloud_websecurityscanner";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
+  nativeCheckInputs = [
+    mock
+    pytest-asyncio
+    pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     google-api-core
@@ -35,15 +36,15 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  nativeCheckInputs = [
-    mock
-    pytest-asyncio
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "google.cloud.websecurityscanner_v1alpha"
     "google.cloud.websecurityscanner_v1beta"
+  ];
+
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

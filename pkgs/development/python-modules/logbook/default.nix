@@ -1,17 +1,17 @@
 {
   lib,
+  fetchFromGitHub,
   brotli,
   buildPythonPackage,
   cargo,
   execnet,
-  fetchFromGitHub,
   jinja2,
-  pytestCheckHook,
   pytest-rerunfailures,
+  pytestCheckHook,
   pyzmq,
   redis,
-  rustc,
   rustPlatform,
+  rustc,
   setuptools,
   setuptools-rust,
   sqlalchemy,
@@ -20,7 +20,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "logbook";
   version = "1.9.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "getlogbook";
@@ -29,38 +28,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-/oaBUIMsDwyxjQU57BpwXQfDMBNSDAI7fqtem/4QqKw=";
   };
 
-  build-system = [
-    setuptools
-    setuptools-rust
-  ];
-
   nativeBuildInputs = [
     cargo
     rustc
     rustPlatform.cargoSetupHook
   ];
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-xIjcK69rwtE86DfvD9qXEn8MDIvU0Dl+d4Fmw9BUuCM=";
-  };
-
-  optional-dependencies = {
-    execnet = [ execnet ];
-    sqlalchemy = [ sqlalchemy ];
-    redis = [ redis ];
-    zmq = [ pyzmq ];
-    compression = [ brotli ];
-    jinja = [ jinja2 ];
-    all = [
-      brotli
-      execnet
-      jinja2
-      pyzmq
-      redis
-      sqlalchemy
-    ];
-  };
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -71,12 +43,41 @@ buildPythonPackage (finalAttrs: {
   # Some of the tests use localhost networking.
   __darwinAllowLocalNetworking = true;
 
-  pythonImportsCheck = [ "logbook" ];
+  build-system = [
+    setuptools
+    setuptools-rust
+  ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-xIjcK69rwtE86DfvD9qXEn8MDIvU0Dl+d4Fmw9BUuCM=";
+  };
 
   disabledTests = [
     # Test require Redis instance
     "test_redis_handler"
   ];
+
+  optional-dependencies = {
+    all = [
+      brotli
+      execnet
+      jinja2
+      pyzmq
+      redis
+      sqlalchemy
+    ];
+
+    compression = [ brotli ];
+    execnet = [ execnet ];
+    jinja = [ jinja2 ];
+    redis = [ redis ];
+    sqlalchemy = [ sqlalchemy ];
+    zmq = [ pyzmq ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "logbook" ];
 
   meta = {
     description = "Logging replacement for Python";

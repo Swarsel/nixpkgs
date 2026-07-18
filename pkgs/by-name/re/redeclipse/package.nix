@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchurl,
-  curl,
-  ed,
-  pkg-config,
-  freetype,
-  zlib,
-  libGL,
-  libx11,
   SDL2,
   SDL2_image,
   SDL2_mixer,
+  curl,
+  ed,
+  freetype,
+  libGL,
+  libx11,
+  pkg-config,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "143i713ggbk607qr4n39pi0pn8d93x9x6fcbh8rc51jb9qhi8p5i";
   };
 
+  nativeBuildInputs = [
+    curl
+    ed
+    pkg-config
+  ];
+
   buildInputs = [
     libGL
     libx11
@@ -33,39 +39,36 @@ stdenv.mkDerivation (finalAttrs: {
     SDL2_mixer
   ];
 
-  nativeBuildInputs = [
-    curl
-    ed
-    pkg-config
-  ];
-
   makeFlags = [
     "-C"
     "src/"
     "prefix=$(out)"
   ];
 
-  enableParallelBuilding = true;
-
-  installTargets = [ "system-install" ];
-
   postInstall = ''
     cp -R -t $out/share/redeclipse/data/ data/*
   '';
 
+  enableParallelBuilding = true;
+  installTargets = [ "system-install" ];
+
   meta = {
     description = "First person arena shooter, featuring parkour, impulse boosts, and more";
+
     longDescription = ''
       Red Eclipse is a fun-filled new take on the first person arena shooter,
       featuring parkour, impulse boosts, and more. The development is geared
       toward balanced gameplay, with a general theme of agility in a variety of
       environments.
     '';
+
     homepage = "https://www.redeclipse.net";
+
     license = with lib.licenses; [
       lib.licenses.zlib
       cc-by-sa-30
     ];
+
     maintainers = with lib.maintainers; [ lambda-11235 ];
     platforms = lib.platforms.linux;
     hydraPlatforms = [ ];

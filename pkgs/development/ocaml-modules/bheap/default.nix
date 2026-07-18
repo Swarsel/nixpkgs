@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
   stdlib-shims,
 }:
 
@@ -15,14 +15,15 @@ buildDunePackage (finalAttrs: {
   };
 
   doCheck = true;
+
   checkInputs = [
     stdlib-shims
   ];
 
   meta = {
     description = "OCaml binary heap implementation by Jean-Christophe Filliâtre";
+    homepage = "https://github.com/backtracking/bheap";
     license = lib.licenses.lgpl21Only;
     maintainers = [ lib.maintainers.sternenseemann ];
-    homepage = "https://github.com/backtracking/bheap";
   };
 })

@@ -1,22 +1,22 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  pkg-config,
-  protobuf,
-  bzip2,
-  openssl,
-  sqlite,
-  foundationdb,
-  zstd,
   stdenv,
+  fetchFromGitHub,
+  buildPackages,
+  bzip2,
+  callPackage,
+  foundationdb,
   nix-update-script,
   nixosTests,
+  openssl,
+  pkg-config,
+  protobuf,
   rocksdb,
-  callPackage,
-  withFoundationdb ? false,
+  rustPlatform,
+  sqlite,
+  zstd,
   stalwartEnterprise ? false,
-  buildPackages,
+  withFoundationdb ? false,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -29,14 +29,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-T7ft+GQLLPWgVFoo3m3pLDwgXRwa5idRFlhKjDLkQaw=";
   };
-
-  __structuredAttrs = true;
-  cargoHash = "sha256-WneUROKV+uLX1d5TIOanO0jhHLsHHpFcXKUB6zdbSzA=";
-
-  depsBuildBuild = [
-    pkg-config
-    zstd
-  ];
 
   nativeBuildInputs = [
     protobuf
@@ -51,39 +43,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ]
   ++ lib.optionals (stdenv.hostPlatform.isLinux && withFoundationdb) [ foundationdb ];
 
-  nativeCheckInputs = [
-    openssl
-  ];
-
-  # Issue: https://github.com/stalwartlabs/stalwart/issues/1104
-  buildNoDefaultFeatures = true;
-  buildFeatures = [
-    "sqlite"
-    "postgres"
-    "mysql"
-    "rocks"
-    "s3"
-    "redis"
-    "azure"
-    "nats"
-  ]
-  ++ lib.optionals withFoundationdb [ "foundationdb" ]
-  ++ lib.optionals stalwartEnterprise [ "enterprise" ];
-
-  cargoBuildFlags = [
-    "-p"
-    "stalwart"
-  ];
-  cargoTestFlags = finalAttrs.cargoBuildFlags;
+  cargoHash = "sha256-WneUROKV+uLX1d5TIOanO0jhHLsHHpFcXKUB6zdbSzA=";
 
   env = {
-    # https://docs.rs/openssl/latest/openssl/#manual
-    OPENSSL_NO_VENDOR = true;
     OPENSSL_DIR = lib.getDev openssl;
     OPENSSL_LIB_DIR = "${lib.getLib openssl}/lib";
-    ZSTD_SYS_USE_PKG_CONFIG = true;
+    # https://docs.rs/openssl/latest/openssl/#manual
+    OPENSSL_NO_VENDOR = true;
     ROCKSDB_INCLUDE_DIR = "${rocksdb}/include";
     ROCKSDB_LIB_DIR = "${rocksdb}/lib";
+    ZSTD_SYS_USE_PKG_CONFIG = true;
   }
   //
     lib.optionalAttrs
@@ -92,14 +61,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
         JEMALLOC_SYS_WITH_LG_PAGE = 16;
       };
 
-  postInstall = ''
-    mkdir -p $out/etc/stalwart
+  doCheck = !(stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
 
-    mkdir -p $out/lib/systemd/system
-
-    substitute resources/systemd/stalwart-mail.service $out/lib/systemd/system/stalwart.service \
-      --replace-fail "__PATH__" "$out"
-  '';
+  nativeCheckInputs = [
+    openssl
+  ];
 
   checkFlags = lib.forEach [
     # Require running mysql, postgresql daemon
@@ -187,39 +153,77 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "store::search_tests"
   ] (test: "--skip=${test}");
 
-  doCheck = !(stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
+  postInstall = ''
+    mkdir -p $out/etc/stalwart
+
+    mkdir -p $out/lib/systemd/system
+
+    substitute resources/systemd/stalwart-mail.service $out/lib/systemd/system/stalwart.service \
+      --replace-fail "__PATH__" "$out"
+  '';
 
   # Allow network access during tests on Darwin/macOS
   __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+
+  buildFeatures = [
+    "sqlite"
+    "postgres"
+    "mysql"
+    "rocks"
+    "s3"
+    "redis"
+    "azure"
+    "nats"
+  ]
+  ++ lib.optionals withFoundationdb [ "foundationdb" ]
+  ++ lib.optionals stalwartEnterprise [ "enterprise" ];
+
+  # Issue: https://github.com/stalwartlabs/stalwart/issues/1104
+  buildNoDefaultFeatures = true;
+
+  cargoBuildFlags = [
+    "-p"
+    "stalwart"
+  ];
+
+  cargoTestFlags = finalAttrs.cargoBuildFlags;
+
+  depsBuildBuild = [
+    pkg-config
+    zstd
+  ];
 
   passthru = {
     inherit rocksdb; # make used rocksdb version available (e.g., for backup scripts)
-    webadmin = buildPackages.callPackage ./webadmin.nix { };
     spam-filter = callPackage ./spam-filter.nix { };
-    updateScript = nix-update-script { };
     tests.stalwart = nixosTests.stalwart;
+    updateScript = nix-update-script { };
+    webadmin = buildPackages.callPackage ./webadmin.nix { };
   };
 
   meta = {
     description = "Secure, modern, all-in-one mail and collaboration server";
+
     longDescription = ''
       Secure, scalable and fluent in every protocol (IMAP, JMAP, SMTP, CalDAV, CardDAV, WebDAV).
     '';
+
     homepage = "https://github.com/stalwartlabs/stalwart";
     changelog = "https://github.com/stalwartlabs/stalwart/blob/main/CHANGELOG.md";
+
     license = [
       lib.licenses.agpl3Only
     ]
     ++ lib.optionals stalwartEnterprise [
       {
-        fullName = "Stalwart Enterprise License 1.0 (SELv1) Agreement";
-        url = "https://github.com/stalwartlabs/stalwart/blob/main/LICENSES/LicenseRef-SEL.txt";
         free = false;
+        fullName = "Stalwart Enterprise License 1.0 (SELv1) Agreement";
         redistributable = false;
+        url = "https://github.com/stalwartlabs/stalwart/blob/main/LICENSES/LicenseRef-SEL.txt";
       }
     ];
 
-    mainProgram = "stalwart";
     maintainers = with lib.maintainers; [
       happysalada
       onny
@@ -228,5 +232,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
       norpol
       debtquity
     ];
+
+    mainProgram = "stalwart";
   };
 })

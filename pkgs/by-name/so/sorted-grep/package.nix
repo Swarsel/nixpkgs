@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  lib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,6 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -43,19 +45,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
-  doInstallCheck = true;
-
   meta = {
-    homepage = "https://sgrep.sourceforge.net/";
     description = "Sgrep (sorted grep) searches sorted input files for lines that match a search key";
-    mainProgram = "sgrep";
+
     longDescription = ''
       Sgrep (sorted grep) searches sorted input files for lines that match a search
       key and outputs the matching lines. When searching large files sgrep is much
       faster than traditional Unix grep, but with significant restrictions.
     '';
-    platforms = lib.platforms.unix;
+
+    homepage = "https://sgrep.sourceforge.net/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "sgrep";
   };
 })

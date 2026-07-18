@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromSourcehut,
-  nix-update-script,
-  testers,
   kak-tree-sitter-unwrapped,
+  nix-update-script,
+  rustPlatform,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,15 +21,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
   cargoHash = "sha256-5hCBFQsZpUyPlgO/iUmBXmdcC5ceG1w4IiB27oBxRxQ=";
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion { package = kak-tree-sitter-unwrapped; };
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://git.sr.ht/~hadronized/kak-tree-sitter";
     description = "Server that interfaces tree-sitter with kakoune";
-    mainProgram = "kak-tree-sitter";
+    homepage = "https://git.sr.ht/~hadronized/kak-tree-sitter";
     license = with lib.licenses; [ bsd3 ];
     maintainers = with lib.maintainers; [ lelgenio ];
+    mainProgram = "kak-tree-sitter";
   };
 })

@@ -1,34 +1,21 @@
 {
   lib,
   stdenv,
-
   fetchFromGitHub,
-
   cmake,
-  ninja,
-
+  ctestCheckHook,
+  fizz,
   folly,
   gflags,
   glog,
-
-  fizz,
-
-  ctestCheckHook,
-
   gtest,
-
+  ninja,
   nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "mvfst";
   version = "2026.01.19.00";
-
-  outputs = [
-    "bin"
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "facebook";
@@ -37,9 +24,20 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-K4rskeF66EHchsBj8wIP3BYBa7SvQ1ohnOV0HPu+y80=";
   };
 
+  outputs = [
+    "bin"
+    "out"
+    "dev"
+  ];
+
   patches = [
     ./glog-0.7.patch
   ];
+
+  postPatch = ''
+    # Make sure the libraries the `tperf` binary uses are installed.
+    printf 'install(TARGETS mvfst_test_utils)\n' >> quic/common/test/CMakeLists.txt
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -54,21 +52,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   propagatedBuildInputs = [
     fizz
-  ];
-
-  nativeCheckInputs = [
-    ctestCheckHook
-  ];
-
-  checkInputs = [
-    gtest
-  ];
-
-  hardeningDisable = [
-    # causes test failures on aarch64
-    "pacret"
-    # causes empty cmake files to be generated
-    "trivialautovarinit"
   ];
 
   cmakeFlags = [
@@ -86,16 +69,17 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "CMAKE_SHARED_LINKER_FLAGS" "-Wl,-undefined,dynamic_lookup")
   ];
 
-  __darwinAllowLocalNetworking = true;
-
   doCheck = true;
 
-  dontUseNinjaCheck = true;
+  nativeCheckInputs = [
+    ctestCheckHook
+  ];
 
-  postPatch = ''
-    # Make sure the libraries the `tperf` binary uses are installed.
-    printf 'install(TARGETS mvfst_test_utils)\n' >> quic/common/test/CMakeLists.txt
-  '';
+  checkInputs = [
+    gtest
+  ];
+
+  __darwinAllowLocalNetworking = true;
 
   disabledTests = [
     "*/QuicClientTransportIntegrationTest.NetworkTest/*"
@@ -114,18 +98,29 @@ stdenv.mkDerivation (finalAttrs: {
     "*/QuicClientTransportIntegrationTest.TestStatelessResetToken/*"
   ];
 
+  dontUseNinjaCheck = true;
+
+  hardeningDisable = [
+    # causes test failures on aarch64
+    "pacret"
+    # causes empty cmake files to be generated
+    "trivialautovarinit"
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Implementation of the QUIC transport protocol";
     homepage = "https://github.com/facebook/mvfst";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       ris
       emily
       techknowlogick
       lf-
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

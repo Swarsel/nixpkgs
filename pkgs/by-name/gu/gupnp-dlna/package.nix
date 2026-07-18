@@ -1,23 +1,28 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  docbook-xsl-nons,
+  docbook_xml_dtd_412,
+  gnome,
+  gobject-introspection,
+  gst_all_1,
+  gtk-doc,
+  libxml2,
   meson,
   ninja,
   pkg-config,
-  gobject-introspection,
   vala,
-  gtk-doc,
-  docbook-xsl-nons,
-  docbook_xml_dtd_412,
-  libxml2,
-  gst_all_1,
-  gnome,
 }:
 
 stdenv.mkDerivation rec {
   pname = "gupnp-dlna";
   version = "0.12.0";
+
+  src = fetchurl {
+    url = "mirror://gnome/sources/gupnp-dlna/${lib.versions.majorMinor version}/gupnp-dlna-${version}.tar.xz";
+    sha256 = "PVO5b4W8VijTPjZ+yb8q2zjvKzTXrQQ0proM9K2QSOY=";
+  };
 
   outputs = [
     "out"
@@ -25,10 +30,10 @@ stdenv.mkDerivation rec {
     "devdoc"
   ];
 
-  src = fetchurl {
-    url = "mirror://gnome/sources/gupnp-dlna/${lib.versions.majorMinor version}/gupnp-dlna-${version}.tar.xz";
-    sha256 = "PVO5b4W8VijTPjZ+yb8q2zjvKzTXrQQ0proM9K2QSOY=";
-  };
+  postPatch = ''
+    chmod +x tests/test-discoverer.sh.in
+    patchShebangs tests/test-discoverer.sh.in
+  '';
 
   nativeBuildInputs = [
     meson
@@ -52,11 +57,6 @@ stdenv.mkDerivation rec {
 
   doCheck = true;
 
-  postPatch = ''
-    chmod +x tests/test-discoverer.sh.in
-    patchShebangs tests/test-discoverer.sh.in
-  '';
-
   passthru = {
     updateScript = gnome.updateScript {
       packageName = pname;
@@ -65,8 +65,8 @@ stdenv.mkDerivation rec {
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/gupnp-dlna";
     description = "Library to ease DLNA-related bits for applications using GUPnP";
+    homepage = "https://gitlab.gnome.org/GNOME/gupnp-dlna";
     license = lib.licenses.lgpl2Plus;
     platforms = lib.platforms.unix;
   };

@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -75,9 +75,9 @@ let
         map (
           name:
           nameValuePair name (mkOption {
-            type = bool;
             default = false;
             description = "Enable ${desc} for ${name} codec.";
+            type = bool;
           })
         ) list
       );
@@ -87,105 +87,45 @@ in
   options = {
     services.jellyfin = {
       enable = mkEnableOption "Jellyfin Media Server";
-
       package = mkPackageOption pkgs "jellyfin" { };
 
-      user = mkOption {
-        type = str;
-        default = "jellyfin";
-        description = "User account under which Jellyfin runs.";
-      };
-
-      group = mkOption {
-        type = str;
-        default = "jellyfin";
-        description = "Group under which jellyfin runs.";
-      };
-
-      dataDir = mkOption {
-        type = path;
-        default = "/var/lib/jellyfin";
-        description = ''
-          Base data directory,
-          passed with `--datadir` see [#data-directory](https://jellyfin.org/docs/general/administration/configuration/#data-directory)
-        '';
-      };
-
-      configDir = mkOption {
-        type = path;
-        default = "${cfg.dataDir}/config";
-        defaultText = literalExpression ''"''${cfg.dataDir}/config"'';
-        description = ''
-          Directory containing the server configuration files,
-          passed with `--configdir` see [configuration-directory](https://jellyfin.org/docs/general/administration/configuration/#configuration-directory)
-        '';
-      };
-
       cacheDir = mkOption {
-        type = path;
         default = "/var/cache/jellyfin";
+
         description = ''
           Directory containing the jellyfin server cache,
           passed with `--cachedir` see [#cache-directory](https://jellyfin.org/docs/general/administration/configuration/#cache-directory)
         '';
-      };
 
-      logDir = mkOption {
         type = path;
-        default = "${cfg.dataDir}/log";
-        defaultText = literalExpression ''"''${cfg.dataDir}/log"'';
-        description = ''
-          Directory where the Jellyfin logs will be stored,
-          passed with `--logdir` see [#log-directory](https://jellyfin.org/docs/general/administration/configuration/#log-directory)
-        '';
       };
 
-      openFirewall = mkOption {
-        type = bool;
-        default = false;
+      configDir = mkOption {
+        default = "${cfg.dataDir}/config";
+        defaultText = literalExpression ''"''${cfg.dataDir}/config"'';
+
         description = ''
-          Open the default ports in the firewall for the media server. The
-          HTTP/HTTPS ports can be changed in the Web UI, so this option should
-          only be used if they are unchanged, see [Port Bindings](https://jellyfin.org/docs/general/networking/#port-bindings).
+          Directory containing the server configuration files,
+          passed with `--configdir` see [configuration-directory](https://jellyfin.org/docs/general/administration/configuration/#configuration-directory)
         '';
+
+        type = path;
       };
 
-      hardwareAcceleration = {
-        enable = mkEnableOption "hardware acceleration for video transcoding";
+      dataDir = mkOption {
+        default = "/var/lib/jellyfin";
 
-        device = mkOption {
-          type = nullOr path;
-          default = null;
-          example = "/dev/dri/renderD128";
-          description = ''
-            Path to the hardware acceleration device that Jellyfin should use.
-            For obscure configurations, additional devices can be added via
-            {option}`systemd.services.jellyfin.serviceConfig.DeviceAllow`.
-          '';
-        };
+        description = ''
+          Base data directory,
+          passed with `--datadir` see [#data-directory](https://jellyfin.org/docs/general/administration/configuration/#data-directory)
+        '';
 
-        # see MediaBrowser.Model/Entities/HardwareAccelerationType.cs in jellyfin source
-        type = mkOption {
-          type = enum [
-            "none"
-            "amf"
-            "qsv"
-            "nvenc"
-            "v4l2m2m"
-            "vaapi"
-            # videotoolbox is MacOS-only
-            "rkmpp"
-          ];
-          default = "none";
-          description = ''
-            The method of hardware acceleration. See [Hardware Acceleration](https://jellyfin.org/docs/general/post-install/transcoding/hardware-acceleration) for more details.
-          '';
-        };
+        type = path;
       };
 
       forceEncodingConfig = mkOption {
-        type = bool;
         default = false;
+
         description = ''
           Whether to overwrite Jellyfin's `encoding.xml` configuration file on each service start.
 
@@ -203,91 +143,137 @@ in
           exists yet. This allows settings to be changed through Jellyfin's web dashboard and persist
           across restarts, but means the NixOS configuration options will be ignored after the initial setup.
         '';
+
+        type = bool;
+      };
+
+      group = mkOption {
+        default = "jellyfin";
+        description = "Group under which jellyfin runs.";
+        type = str;
+      };
+
+      hardwareAcceleration = {
+        enable = mkEnableOption "hardware acceleration for video transcoding";
+
+        device = mkOption {
+          default = null;
+
+          description = ''
+            Path to the hardware acceleration device that Jellyfin should use.
+            For obscure configurations, additional devices can be added via
+            {option}`systemd.services.jellyfin.serviceConfig.DeviceAllow`.
+          '';
+
+          example = "/dev/dri/renderD128";
+          type = nullOr path;
+        };
+
+        # see MediaBrowser.Model/Entities/HardwareAccelerationType.cs in jellyfin source
+        type = mkOption {
+          default = "none";
+
+          description = ''
+            The method of hardware acceleration. See [Hardware Acceleration](https://jellyfin.org/docs/general/post-install/transcoding/hardware-acceleration) for more details.
+          '';
+
+          type = enum [
+            "none"
+            "amf"
+            "qsv"
+            "nvenc"
+            "v4l2m2m"
+            "vaapi"
+            # videotoolbox is MacOS-only
+            "rkmpp"
+          ];
+        };
+      };
+
+      logDir = mkOption {
+        default = "${cfg.dataDir}/log";
+        defaultText = literalExpression ''"''${cfg.dataDir}/log"'';
+
+        description = ''
+          Directory where the Jellyfin logs will be stored,
+          passed with `--logdir` see [#log-directory](https://jellyfin.org/docs/general/administration/configuration/#log-directory)
+        '';
+
+        type = path;
+      };
+
+      openFirewall = mkOption {
+        default = false;
+
+        description = ''
+          Open the default ports in the firewall for the media server. The
+          HTTP/HTTPS ports can be changed in the Web UI, so this option should
+          only be used if they are unchanged, see [Port Bindings](https://jellyfin.org/docs/general/networking/#port-bindings).
+        '';
+
+        type = bool;
       };
 
       transcoding = {
-        maxConcurrentStreams = mkOption {
-          type = nullOr ints.positive;
-          default = null;
-          example = 2;
+        deleteSegments = mkOption {
+          default = true;
+
           description = ''
-            Maximum number of concurrent transcoding streams.
-            Set to null for unlimited (limited by hardware capabilities).
+            Delete transcoding segments when finished.
           '';
+
+          type = bool;
         };
 
-        enableToneMapping = mkOption {
-          type = bool;
-          default = true;
+        enableHardwareEncoding = mkOption {
+          default = false;
+
           description = ''
-            Enable tone mapping when transcoding HDR content.
+            Enable hardware encoding for video transcoding.
           '';
+
+          type = bool;
+        };
+
+        enableIntelLowPowerEncoding = mkOption {
+          default = false;
+
+          description = ''
+            Enable low-power encoding mode for Intel Quick Sync Video.
+            Requires i915 HuC firmware to be configured.
+          '';
+
+          type = bool;
         };
 
         enableSubtitleExtraction = mkOption {
-          type = bool;
           default = true;
+
           description = ''
             Embedded subtitles can be extracted from videos and delivered to clients in plain text, in order to help prevent video transcoding. On some systems this can take a long time and cause video playback to stall during the extraction process. Disable this to have embedded subtitles burned in with video transcoding when they are not natively supported by the client device.
           '';
-        };
 
-        throttleTranscoding = mkOption {
           type = bool;
-          default = false;
-          description = ''
-            When a transcode or remux gets far enough ahead from the current playback position, pause the process so it will consume fewer resources. This is most useful when watching without seeking often. Turn this off if you experience playback issues.
-          '';
         };
 
-        threadCount = mkOption {
-          type = nullOr ints.positive;
-          default = null;
-          example = 4;
-          description = ''
-            Number of threads to use when transcoding.
-            Set to null to use automatic detection.
-          '';
-        };
+        enableToneMapping = mkOption {
+          default = true;
 
-        hardwareDecodingCodecs = mkOption {
-          type = codecListToType "hardware decoding" [
-            "h264"
-            "hevc"
-            "mpeg2"
-            "vc1"
-            "vp8"
-            "vp9"
-            "av1"
-            "hevc10bit"
-            "hevcRExt10bit"
-            "hevcRExt12bit"
-          ];
-          default = { };
-          example = {
-            vp9 = true;
-            h264 = true;
-          };
           description = ''
-            Which codecs to enable for hardware decoding.
+            Enable tone mapping when transcoding HDR content.
           '';
-        };
 
-        hardwareEncodingCodecs = mkOption {
-          type = codecListToType "hardware encoding" [
-            "hevc"
-            "av1"
-          ];
-          default = { };
-          example = {
-            av1 = true;
-          };
-          description = ''
-            Which codecs to enable for hardware encoding. h264 is always enabled.
-          '';
+          type = bool;
         };
 
         encodingPreset = mkOption {
+          default = "auto";
+
+          description = ''
+            Encoder preset for transcoding.
+            Lower presets sacrifice quality for speed, higher presets optimize quality.
+          '';
+
           type = enum [
             "auto"
             "veryslow"
@@ -300,53 +286,110 @@ in
             "superfast"
             "ultrafast"
           ];
-          default = "auto";
-          description = ''
-            Encoder preset for transcoding.
-            Lower presets sacrifice quality for speed, higher presets optimize quality.
-          '';
-        };
-
-        deleteSegments = mkOption {
-          type = bool;
-          default = true;
-          description = ''
-            Delete transcoding segments when finished.
-          '';
         };
 
         h264Crf = mkOption {
-          type = ints.between 0 51;
           default = 23;
+
           description = ''
             Constant Rate Factor (CRF) for H.264 encoding. Lower values result in better quality. Range: 0-51.
           '';
+
+          type = ints.between 0 51;
         };
 
         h265Crf = mkOption {
-          type = ints.between 0 51;
           default = 28;
+
           description = ''
             Constant Rate Factor (CRF) for H.265 encoding. Lower values result in better quality. Range: 0-51.
           '';
+
+          type = ints.between 0 51;
         };
 
-        enableHardwareEncoding = mkOption {
-          type = bool;
-          default = false;
+        hardwareDecodingCodecs = mkOption {
+          default = { };
+
           description = ''
-            Enable hardware encoding for video transcoding.
+            Which codecs to enable for hardware decoding.
           '';
+
+          example = {
+            h264 = true;
+            vp9 = true;
+          };
+
+          type = codecListToType "hardware decoding" [
+            "h264"
+            "hevc"
+            "mpeg2"
+            "vc1"
+            "vp8"
+            "vp9"
+            "av1"
+            "hevc10bit"
+            "hevcRExt10bit"
+            "hevcRExt12bit"
+          ];
         };
 
-        enableIntelLowPowerEncoding = mkOption {
-          type = bool;
-          default = false;
+        hardwareEncodingCodecs = mkOption {
+          default = { };
+
           description = ''
-            Enable low-power encoding mode for Intel Quick Sync Video.
-            Requires i915 HuC firmware to be configured.
+            Which codecs to enable for hardware encoding. h264 is always enabled.
           '';
+
+          example = {
+            av1 = true;
+          };
+
+          type = codecListToType "hardware encoding" [
+            "hevc"
+            "av1"
+          ];
         };
+
+        maxConcurrentStreams = mkOption {
+          default = null;
+
+          description = ''
+            Maximum number of concurrent transcoding streams.
+            Set to null for unlimited (limited by hardware capabilities).
+          '';
+
+          example = 2;
+          type = nullOr ints.positive;
+        };
+
+        threadCount = mkOption {
+          default = null;
+
+          description = ''
+            Number of threads to use when transcoding.
+            Set to null to use automatic detection.
+          '';
+
+          example = 4;
+          type = nullOr ints.positive;
+        };
+
+        throttleTranscoding = mkOption {
+          default = false;
+
+          description = ''
+            When a transcode or remux gets far enough ahead from the current playback position, pause the process so it will consume fewer resources. This is most useful when watching without seeking often. Turn this off if you experience playback issues.
+          '';
+
+          type = bool;
+        };
+      };
+
+      user = mkOption {
+        default = "jellyfin";
+        description = "User account under which Jellyfin runs.";
+        type = str;
       };
     };
   };
@@ -359,30 +402,23 @@ in
       }
     ];
 
+    networking.firewall = mkIf cfg.openFirewall {
+      # from https://jellyfin.org/docs/general/networking/index.html
+      allowedTCPPorts = [
+        8096
+        8920
+      ];
+
+      allowedUDPPorts = [
+        1900
+        7359
+      ];
+    };
+
     systemd = {
-      tmpfiles.settings.jellyfinDirs = {
-        "${cfg.dataDir}"."d" = {
-          mode = "700";
-          inherit (cfg) user group;
-        };
-        "${cfg.configDir}"."d" = {
-          mode = "700";
-          inherit (cfg) user group;
-        };
-        "${cfg.logDir}"."d" = {
-          mode = "700";
-          inherit (cfg) user group;
-        };
-        "${cfg.cacheDir}"."d" = {
-          mode = "700";
-          inherit (cfg) user group;
-        };
-      };
       services.jellyfin = {
-        description = "Jellyfin Media Server";
         after = [ "network-online.target" ];
-        wants = [ "network-online.target" ];
-        wantedBy = [ "multi-user.target" ];
+        description = "Jellyfin Media Server";
 
         preStart = mkIf cfg.hardwareAcceleration.enable (
           ''
@@ -428,23 +464,31 @@ in
         # This is mostly follows: https://github.com/jellyfin/jellyfin/blob/master/fedora/jellyfin.service
         # Upstream also disable some hardenings when running in LXC, we do the same with the isContainer option
         serviceConfig = {
-          Type = "simple";
-          User = cfg.user;
-          Group = cfg.group;
-          UMask = "0077";
-          WorkingDirectory = cfg.dataDir;
-          ExecStart = "${getExe cfg.package} --datadir '${cfg.dataDir}' --configdir '${cfg.configDir}' --cachedir '${cfg.cacheDir}' --logdir '${cfg.logDir}'";
-          Restart = "on-failure";
-          TimeoutSec = 15;
-          SuccessExitStatus = [
-            "0"
-            "143"
-          ];
-
           # Security options:
           CapabilityBoundingSet = [ "" ];
+          DeviceAllow = mkIf cfg.hardwareAcceleration.enable [ "${cfg.hardwareAcceleration.device} rw" ];
+          ExecStart = "${getExe cfg.package} --datadir '${cfg.dataDir}' --configdir '${cfg.configDir}' --cachedir '${cfg.cacheDir}' --logdir '${cfg.logDir}'";
+          Group = cfg.group;
+          LockPersonality = true;
           NoNewPrivileges = true;
-          SystemCallArchitectures = "native";
+          # needed for hardware acceleration
+          # PrivateDevices defaults to false for backwards compatibility - users may have
+          # hardware acceleration set up outside of NixOS configuration
+          PrivateDevices = mkDefault false;
+          PrivateTmp = !config.boot.isContainer;
+          PrivateUsers = true;
+          ProcSubset = "pid";
+          ProtectClock = true;
+          ProtectControlGroups = !config.boot.isContainer;
+          ProtectHostname = true;
+          ProtectKernelLogs = !config.boot.isContainer;
+          ProtectKernelModules = !config.boot.isContainer;
+          ProtectKernelTunables = !config.boot.isContainer;
+          ProtectProc = "invisible";
+          ProtectSystem = true;
+          RemoveIPC = true;
+          Restart = "on-failure";
+
           # AF_NETLINK needed because Jellyfin monitors the network connection
           RestrictAddressFamilies = [
             "AF_UNIX"
@@ -452,46 +496,61 @@ in
             "AF_INET6"
             "AF_NETLINK"
           ];
+
           RestrictNamespaces = !config.boot.isContainer;
           RestrictRealtime = true;
           RestrictSUIDSGID = true;
-          ProcSubset = "pid";
-          ProtectControlGroups = !config.boot.isContainer;
-          ProtectClock = true;
-          ProtectHostname = true;
-          ProtectKernelLogs = !config.boot.isContainer;
-          ProtectKernelModules = !config.boot.isContainer;
-          ProtectKernelTunables = !config.boot.isContainer;
-          ProtectProc = "invisible";
-          ProtectSystem = true;
-          LockPersonality = true;
-          PrivateTmp = !config.boot.isContainer;
-          # needed for hardware acceleration
-          # PrivateDevices defaults to false for backwards compatibility - users may have
-          # hardware acceleration set up outside of NixOS configuration
-          PrivateDevices = mkDefault false;
-          DeviceAllow = mkIf cfg.hardwareAcceleration.enable [ "${cfg.hardwareAcceleration.device} rw" ];
-          PrivateUsers = true;
-          RemoveIPC = true;
+
+          SuccessExitStatus = [
+            "0"
+            "143"
+          ];
+
+          SystemCallArchitectures = "native";
+          SystemCallErrorNumber = "EPERM";
 
           SystemCallFilter = [
             "@system-service"
             "~@privileged"
           ];
-          SystemCallErrorNumber = "EPERM";
+
+          TimeoutSec = 15;
+          Type = "simple";
+          UMask = "0077";
+          User = cfg.user;
+          WorkingDirectory = cfg.dataDir;
         };
+
         unitConfig.RequiresMountsFor = [
           cfg.configDir
           cfg.logDir
           cfg.cacheDir
         ];
-      };
-    };
 
-    users.users = mkIf (cfg.user == "jellyfin") {
-      jellyfin = {
-        inherit (cfg) group;
-        isSystemUser = true;
+        wantedBy = [ "multi-user.target" ];
+        wants = [ "network-online.target" ];
+      };
+
+      tmpfiles.settings.jellyfinDirs = {
+        "${cfg.cacheDir}"."d" = {
+          inherit (cfg) user group;
+          mode = "700";
+        };
+
+        "${cfg.configDir}"."d" = {
+          inherit (cfg) user group;
+          mode = "700";
+        };
+
+        "${cfg.dataDir}"."d" = {
+          inherit (cfg) user group;
+          mode = "700";
+        };
+
+        "${cfg.logDir}"."d" = {
+          inherit (cfg) user group;
+          mode = "700";
+        };
       };
     };
 
@@ -499,16 +558,11 @@ in
       jellyfin = { };
     };
 
-    networking.firewall = mkIf cfg.openFirewall {
-      # from https://jellyfin.org/docs/general/networking/index.html
-      allowedTCPPorts = [
-        8096
-        8920
-      ];
-      allowedUDPPorts = [
-        1900
-        7359
-      ];
+    users.users = mkIf (cfg.user == "jellyfin") {
+      jellyfin = {
+        inherit (cfg) group;
+        isSystemUser = true;
+      };
     };
 
   };

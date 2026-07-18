@@ -1,34 +1,39 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   chardet,
   click,
   flex,
+  openapi-spec-validator,
   packaging,
   pyicu,
+  pytest-cov-stub,
+  pytestCheckHook,
   requests,
   ruamel-yaml,
   setuptools-scm,
   six,
   swagger-spec-validator,
-  pytest-cov-stub,
-  pytestCheckHook,
-  openapi-spec-validator,
 }:
 
 buildPythonPackage rec {
   pname = "prance";
   version = "25.04.08.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "RonnyPfannschmidt";
     repo = "prance";
     tag = "v${version}";
-    fetchSubmodules = true;
     hash = "sha256-71M9ufxb0aaSgokThlsTS4ElOJLZntF2TYIErPccQbU=";
+    fetchSubmodules = true;
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [ setuptools-scm ];
 
@@ -40,6 +45,16 @@ buildPythonPackage rec {
     six
   ];
 
+  # Disable tests that require network
+  disabledTestPaths = [ "tests/test_convert.py" ];
+
+  disabledTests = [
+    "test_convert_defaults"
+    "test_convert_output"
+    "test_fetch_url_http"
+    "test_openapi_spec_validator_validate_failure"
+  ];
+
   optional-dependencies = {
     cli = [ click ];
     flex = [ flex ];
@@ -48,20 +63,7 @@ buildPythonPackage rec {
     ssv = [ swagger-spec-validator ];
   };
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
-  # Disable tests that require network
-  disabledTestPaths = [ "tests/test_convert.py" ];
-  disabledTests = [
-    "test_convert_defaults"
-    "test_convert_output"
-    "test_fetch_url_http"
-    "test_openapi_spec_validator_validate_failure"
-  ];
+  pyproject = true;
   pythonImportsCheck = [ "prance" ];
 
   meta = {

@@ -1,16 +1,14 @@
 # Static arguments
 {
   lib,
-  runCommandCC,
   cmake,
+  runCommandCC,
 }:
 
 # Tester arguments
 {
-  package,
   moduleNames,
-  # Extra nativeBuildInputs needed to pass the cmake find_package test, e.g. pkg-config.
-  nativeBuildInputs ? [ ],
+  package,
   # buildInputs is used to help pass the cmake find_package test.
   # The purpose of buildInputs here is to allow us to iteratively add
   # any missing dependencies required by the *Config.cmake module
@@ -22,6 +20,8 @@
   # Extra cmakeFlags needed to pass the cmake find_package test.
   # Can be used to set verbose/debug flags.
   cmakeFlags ? [ ],
+  # Extra nativeBuildInputs needed to pass the cmake find_package test, e.g. pkg-config.
+  nativeBuildInputs ? [ ],
   testName ? "check-cmake-config-${package.pname or package.name}",
   version ? package.version or null,
   versionCheck ? false,
@@ -31,11 +31,14 @@ runCommandCC testName
   {
     inherit moduleNames versionCheck cmakeFlags;
     version = if versionCheck then version else null;
+
     nativeBuildInputs = [
       cmake
     ]
     ++ nativeBuildInputs;
+
     buildInputs = [ package ] ++ buildInputs;
+
     meta = {
       description = "Test whether ${package.name} exposes cmake-config modules ${lib.concatStringsSep ", " moduleNames}";
     }
@@ -43,13 +46,13 @@ runCommandCC testName
     # as hydra can't check this meta info in dependencies.
     # The test itself is just Nixpkgs, with MIT license.
     // builtins.intersectAttrs {
+      license = throw "unused";
+      maintainers = throw "unused";
+      platforms = throw "unused";
       available = throw "unused";
       broken = throw "unused";
       insecure = throw "unused";
-      license = throw "unused";
-      maintainers = throw "unused";
       teams = throw "unused";
-      platforms = throw "unused";
       unfree = throw "unused";
       unsupported = throw "unused";
     } package.meta;

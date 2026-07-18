@@ -18,7 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ luaPackages.fennel ];
-
   buildInputs = [ lua ];
 
   makeFlags = [
@@ -27,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -40,8 +40,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = finalAttrs.src.meta.homepage;
     changelog = "${finalAttrs.src.meta.homepage}/tree/${finalAttrs.version}/changelog.md";
     license = lib.licenses.mit;
-    platforms = lua.meta.platforms;
     maintainers = with lib.maintainers; [ chiroptical ];
+    platforms = lua.meta.platforms;
     mainProgram = "fnlfmt";
   };
 })

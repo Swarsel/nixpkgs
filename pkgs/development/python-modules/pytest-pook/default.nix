@@ -11,7 +11,6 @@
 buildPythonPackage {
   pname = "pytest-pook";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromSourcehut {
     owner = "~sara";
@@ -20,16 +19,8 @@ buildPythonPackage {
     hash = "sha256-q2HaoIB2CW5LaRggLlmar2AEa4X8cI/aY2Sz/Y7LWMs=";
   };
 
-  build-system = [
-    hatchling
-  ];
-
   buildInputs = [
     pytest
-  ];
-
-  dependencies = [
-    (pook.overridePythonAttrs { doCheck = false; })
   ];
 
   # fails in various ways
@@ -38,6 +29,16 @@ buildPythonPackage {
   nativeCheckInputs = [
     pytestCheckHook
   ];
+
+  build-system = [
+    hatchling
+  ];
+
+  dependencies = [
+    (pook.overridePythonAttrs { doCheck = false; })
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "pytest_pook"

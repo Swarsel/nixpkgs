@@ -1,36 +1,26 @@
 {
-  copyDesktopItems,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  copyDesktopItems,
   makeDesktopItem,
   python3Packages,
   qt6,
+  udevCheckHook,
   wrapGAppsHook3,
   writeText,
   xvfb-run,
-  udevCheckHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "streamdeck-ui";
   version = "4.1.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
-    repo = "streamdeck-linux-gui";
     owner = "streamdeck-linux-gui";
+    repo = "streamdeck-linux-gui";
     rev = "v${finalAttrs.version}";
     hash = "sha256-XRtIkDyLick9Pq55Br7lQb6FoygMs4DZEJoAD2/o+pQ=";
   };
-
-  pythonRelaxDeps = [
-    "importlib-metadata"
-    "pillow"
-  ];
-
-  build-system = [
-    python3Packages.poetry-core
-  ];
 
   nativeBuildInputs = [
     copyDesktopItems
@@ -92,15 +82,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
       cp streamdeck_ui/logo.png $out/share/pixmaps/streamdeck-ui.png
     '';
 
+  build-system = [
+    python3Packages.poetry-core
+  ];
+
   desktopItems =
     let
       common = {
-        name = "streamdeck-ui";
-        desktopName = "Stream Deck UI";
-        icon = "streamdeck-ui";
-        exec = "streamdeck";
-        comment = "UI for the Elgato Stream Deck";
         categories = [ "Utility" ];
+        comment = "UI for the Elgato Stream Deck";
+        desktopName = "Stream Deck UI";
+        exec = "streamdeck";
+        icon = "streamdeck-ui";
+        name = "streamdeck-ui";
       };
     in
     map makeDesktopItem [
@@ -108,27 +102,35 @@ python3Packages.buildPythonApplication (finalAttrs: {
       (
         common
         // {
-          name = "${common.name}-noui";
           exec = "${common.exec} --no-ui";
+          name = "${common.name}-noui";
           noDisplay = true;
         }
       )
     ];
 
-  dontWrapQtApps = true;
   dontWrapGApps = true;
+  dontWrapQtApps = true;
+
   makeWrapperArgs = [
     "\${qtWrapperArgs[@]}"
     "\${gappsWrapperArgs[@]}"
   ];
 
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "importlib-metadata"
+    "pillow"
+  ];
+
   meta = {
-    changelog = "https://github.com/streamdeck-linux-gui/streamdeck-linux-gui/releases/tag/v${finalAttrs.version}";
     description = "Linux compatible UI for the Elgato Stream Deck";
-    downloadPage = "https://github.com/streamdeck-linux-gui/streamdeck-linux-gui/";
     homepage = "https://streamdeck-linux-gui.github.io/streamdeck-linux-gui/";
+    changelog = "https://github.com/streamdeck-linux-gui/streamdeck-linux-gui/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "streamdeck";
     maintainers = with lib.maintainers; [ majiir ];
+    mainProgram = "streamdeck";
+    downloadPage = "https://github.com/streamdeck-linux-gui/streamdeck-linux-gui/";
   };
 })

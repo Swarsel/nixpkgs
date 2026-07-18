@@ -1,17 +1,16 @@
 {
-  stdenv,
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
+  buildPythonPackage,
+  libiconv,
   pytestCheckHook,
   rustPlatform,
-  libiconv,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "evtx";
   version = "0.12.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "omerbenamram";
@@ -20,20 +19,20 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-pPWZOnBlHtt2xVGXYfh06GF3JyoB5wSLeZvC1gUdejk=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-D27XBfc5ZdkVKfv373NXm0W1WqZksUdmxs0FCGsx6Js=";
-  };
-
   nativeBuildInputs = with rustPlatform; [
     cargoSetupHook
     maturinBuildHook
   ];
 
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
-
   nativeCheckInputs = [ pytestCheckHook ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-D27XBfc5ZdkVKfv373NXm0W1WqZksUdmxs0FCGsx6Js=";
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "evtx" ];
 
   meta = {

@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
-  gcc,
   asciidoc,
   autoreconfHook,
+  gcc,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,10 +38,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Programming language for the analysis and transformation of computer languages";
-    mainProgram = "colm";
     homepage = "http://www.colm.net/open-source/colm";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ pSub ];
+    platforms = lib.platforms.unix;
+    mainProgram = "colm";
   };
 })

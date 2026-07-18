@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: MIT
 {
   lib,
-  buildDotnetModule,
   fetchFromGitHub,
-  dotnet-sdk_8,
+  buildDotnetModule,
   dotnet-aspnetcore_8,
+  dotnet-sdk_8,
   nix-update-script,
 }:
 
@@ -25,25 +25,24 @@ buildDotnetModule (finalAttrs: {
     ./nozip.patch
   ];
 
-  dotnet-sdk = dotnet-sdk_8;
   dotnet-runtime = dotnet-aspnetcore_8;
-
+  dotnet-sdk = dotnet-sdk_8;
+  executables = [ ];
   nugetDeps = ./deps.json;
   projectFile = "LuaRenamer/LuaRenamer.csproj";
-
-  executables = [ ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    inherit (dotnet-sdk_8.meta) platforms;
+    description = "Plugin for Shoko that allows users to rename their collection using Lua";
     homepage = "https://github.com/Mik1ll/LuaRenamer";
     changelog = "https://github.com/Mik1ll/LuaRenamer/releases/tag/${finalAttrs.src.tag}";
-    description = "Plugin for Shoko that allows users to rename their collection using Lua";
+
     license = [
       lib.licenses.gpl3
       lib.licenses.lgpl3
     ];
+
     maintainers = with lib.maintainers; [ nanoyaki ];
-    inherit (dotnet-sdk_8.meta) platforms;
   };
 })

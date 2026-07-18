@@ -1,7 +1,7 @@
 {
-  buildOctavePackage,
   lib,
   fetchFromGitHub,
+  buildOctavePackage,
   nix-update-script,
 }:
 
@@ -24,9 +24,9 @@ buildOctavePackage rec {
   };
 
   meta = {
+    description = "Low level I/O functions for serial, i2c, spi, parallel, tcp, gpib, vxi11, udp and usbtmc interfaces";
     homepage = "https://gnu-octave.github.io/packages/instrument-control/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ ravenjoad ];
-    description = "Low level I/O functions for serial, i2c, spi, parallel, tcp, gpib, vxi11, udp and usbtmc interfaces";
   };
 }

@@ -11,12 +11,11 @@
 buildPythonPackage rec {
   pname = "cloudsmith-api";
   version = "2.0.23";
-  format = "wheel";
 
   src = fetchPypi {
-    pname = "cloudsmith_api";
     inherit format version;
     hash = "sha256-CfNgISONtTrabCoNUzHbMMVKDwGj8fdmSwh1FfzH10g=";
+    pname = "cloudsmith_api";
   };
 
   propagatedBuildInputs = [
@@ -28,7 +27,7 @@ buildPythonPackage rec {
 
   # Wheels have no tests
   doCheck = false;
-
+  format = "wheel";
   pythonImportsCheck = [ "cloudsmith_api" ];
 
   meta = {

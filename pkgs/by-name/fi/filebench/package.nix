@@ -2,10 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-
   autoreconfHook,
   bison,
+  fetchpatch,
   flex,
 }:
 
@@ -22,9 +21,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-Uf4DrHZl94m502C7MynMtYpon1886RLbXGKW6lYq1SI=";
       name = "gcc-15.patch";
       url = "https://github.com/filebench/filebench/commit/82191902e44b7a136adb9285bcce3d4a52551b9e.patch?full_index=1";
-      hash = "sha256-Uf4DrHZl94m502C7MynMtYpon1886RLbXGKW6lYq1SI=";
     })
   ];
 

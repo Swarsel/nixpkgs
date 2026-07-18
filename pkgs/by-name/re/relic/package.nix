@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   relic,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,6 +18,9 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-3ERGIZZM8hNbt8kYApcqaL2LJ3V5aloSsmJavX2VSpw=";
+  # Some of the tests use localhost networking. See discussion:
+  # https://github.com/NixOS/nixpkgs/pull/374824
+  __darwinAllowLocalNetworking = true;
 
   ldflags = [
     "-s"
@@ -32,15 +35,11 @@ buildGoModule (finalAttrs: {
     };
   };
 
-  # Some of the tests use localhost networking. See discussion:
-  # https://github.com/NixOS/nixpkgs/pull/374824
-  __darwinAllowLocalNetworking = true;
-
   meta = {
-    homepage = "https://github.com/sassoftware/relic";
     description = "Service and a tool for adding digital signatures to operating system packages for Linux and Windows";
-    mainProgram = "relic";
+    homepage = "https://github.com/sassoftware/relic";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ strager ];
+    mainProgram = "relic";
   };
 })

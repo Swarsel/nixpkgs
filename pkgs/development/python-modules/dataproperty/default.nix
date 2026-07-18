@@ -1,11 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools-scm,
+  buildPythonPackage,
   loguru,
   mbstrdecoder,
   pytestCheckHook,
+  setuptools-scm,
   tcolorpy,
   termcolor,
   typepy,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "dataproperty";
   version = "1.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "thombashi";
@@ -22,6 +21,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-PLXF9g0VIkmsRLl5+KvXcbbwVwaJSYjWB7l8xz1mPZM=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    termcolor
+  ];
 
   build-system = [ setuptools-scm ];
 
@@ -36,11 +40,7 @@ buildPythonPackage rec {
     logging = [ loguru ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    termcolor
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "dataproperty" ];
 
   meta = {

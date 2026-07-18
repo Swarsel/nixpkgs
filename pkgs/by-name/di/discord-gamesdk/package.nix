@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchzip,
   autoPatchelfHook,
+  fetchzip,
 }:
 
 stdenv.mkDerivation rec {
@@ -20,9 +20,8 @@ stdenv.mkDerivation rec {
     "dev"
   ];
 
-  buildInputs = [ (stdenv.cc.cc.libgcc or null) ];
-
   nativeBuildInputs = lib.optional stdenv.hostPlatform.isLinux autoPatchelfHook;
+  buildInputs = [ (stdenv.cc.cc.libgcc or null) ];
 
   installPhase =
     let
@@ -40,11 +39,12 @@ stdenv.mkDerivation rec {
     '';
 
   meta = {
-    homepage = "https://discord.com/developers/docs/game-sdk/sdk-starter-guide";
     description = "Library to allow other programs to interact with the Discord desktop application";
+    homepage = "https://discord.com/developers/docs/game-sdk/sdk-starter-guide";
     license = lib.licenses.unfree;
-    maintainers = with lib.maintainers; [ tomodachi94 ];
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ tomodachi94 ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-darwin"

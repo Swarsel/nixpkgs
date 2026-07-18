@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   versionCheckHook,
 }:
 
@@ -15,10 +15,6 @@ buildNpmPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-AvEzwUMXZZRexlcYbD4iW2GYmndN0usFxYJclXst57g=";
   };
-
-  npmDepsHash = "sha256-f+1KRqPIufMoSv6pa7CAd8fvG8uigNjr6QE6leVCtUI=";
-
-  env.PUPPETEER_SKIP_DOWNLOAD = "true";
 
   postPatch = ''
     # The build script fetches AsyncAPI examples from the internet.
@@ -37,6 +33,8 @@ buildNpmPackage (finalAttrs: {
         "fs.mkdirSync(logDir, { recursive: true })"
   '';
 
+  npmDepsHash = "sha256-f+1KRqPIufMoSv6pa7CAd8fvG8uigNjr6QE6leVCtUI=";
+  env.PUPPETEER_SKIP_DOWNLOAD = "true";
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 

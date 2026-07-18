@@ -1,21 +1,20 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
-  wrapGAppsHook4,
   blueprint-compiler,
   desktop-file-utils,
   libadwaita,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  python3Packages,
+  wrapGAppsHook4,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "serigy";
   version = "2.1.1";
-  pyproject = false; # uses meson
 
   src = fetchFromGitHub {
     owner = "CleoMenezesJr";
@@ -23,6 +22,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-WOourIlF2Z1YP34d9VCuX7kysJxeMBz2enOaGu73r8o=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -34,27 +35,23 @@ python3Packages.buildPythonApplication (finalAttrs: {
   ];
 
   buildInputs = [ libadwaita ];
-
   dependencies = with python3Packages; [ pygobject3 ];
-
-  strictDeps = true;
+  dontWrapGApps = true;
+  makeWrapperArgs = [ "\${gappsWrapperArgs[@]}" ];
 
   postInstallCheck = ''
     mesonCheckPhase
   '';
 
-  dontWrapGApps = true;
-
-  makeWrapperArgs = [ "\${gappsWrapperArgs[@]}" ];
-
+  pyproject = false; # uses meson
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/CleoMenezesJr/Serigy";
     description = "Store important information from your clipboard selectively and securely";
-    mainProgram = "serigy";
+    homepage = "https://github.com/CleoMenezesJr/Serigy";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "serigy";
   };
 })

@@ -2,19 +2,16 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-
-  # dependencies
-  torch,
-  scipy,
-
   # tests
   pytestCheckHook,
+  scipy,
+  # dependencies
+  torch,
 }:
 
 buildPythonPackage rec {
   pname = "torchdiffeq";
   version = "0.2.5";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -26,12 +23,11 @@ buildPythonPackage rec {
     scipy
   ];
 
-  pythonImportsCheck = [ "torchdiffeq" ];
-
   # no tests in sdist, no tags on git
   doCheck = false;
-
   nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
+  pythonImportsCheck = [ "torchdiffeq" ];
 
   meta = {
     description = "Differentiable ODE solvers with full GPU support and O(1)-memory backpropagation";

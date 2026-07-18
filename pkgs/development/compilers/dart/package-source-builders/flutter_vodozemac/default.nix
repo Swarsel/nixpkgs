@@ -1,18 +1,16 @@
 {
   lib,
+  stdenv,
   rustPlatform,
   writeText,
-  stdenv,
 }:
 
-{ version, src, ... }:
+{ src, version, ... }:
 
 let
   rustDep = rustPlatform.buildRustPackage {
-    pname = "flutter_vodozemac-rs";
     inherit version src;
-
-    sourceRoot = "${src.name}/rust";
+    pname = "flutter_vodozemac-rs";
 
     cargoHash =
       {
@@ -27,6 +25,7 @@ let
         is the same with existing versions, add an alias here.
       '');
 
+    sourceRoot = "${src.name}/rust";
     passthru.libraryPath = "lib/libvodozemac_bindings_dart.so";
   };
 
@@ -50,12 +49,8 @@ let
   '';
 in
 stdenv.mkDerivation {
-  pname = "flutter_vodozemac";
   inherit version src;
-  passthru = src.passthru // {
-    # vodozemac-wasm in fluffychat will make use of it
-    inherit (rustDep) cargoDeps;
-  };
+  pname = "flutter_vodozemac";
 
   installPhase = ''
     runHook preInstall
@@ -72,4 +67,9 @@ stdenv.mkDerivation {
 
     runHook postInstall
   '';
+
+  passthru = src.passthru // {
+    # vodozemac-wasm in fluffychat will make use of it
+    inherit (rustDep) cargoDeps;
+  };
 }

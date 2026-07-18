@@ -1,22 +1,21 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
-  whey,
-  whey-pth,
   jinja2,
   markupsafe,
   standard-imghdr,
-  lib,
+  whey,
+  whey-pth,
 }:
 buildPythonPackage rec {
   pname = "sphinx-jinja2-compat";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "sphinx_jinja2_compat";
     hash = "sha256-AYjwgC1Cw9pymXUztVoAgVZZp40/gdS0dHsfsVpXKOY=";
+    pname = "sphinx_jinja2_compat";
   };
 
   postPatch = ''
@@ -36,6 +35,7 @@ buildPythonPackage rec {
     standard-imghdr
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "sphinx_jinja2_compat" ];
 
   meta = {

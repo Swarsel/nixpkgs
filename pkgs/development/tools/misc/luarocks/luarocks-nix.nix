@@ -1,9 +1,9 @@
 {
-  luarocks_bootstrap,
   fetchFromGitHub,
-  unstableGitUpdater,
-  nurl,
   file,
+  luarocks_bootstrap,
+  nurl,
+  unstableGitUpdater,
 }:
 
 luarocks_bootstrap.overrideAttrs (old: {
@@ -17,14 +17,13 @@ luarocks_bootstrap.overrideAttrs (old: {
     hash = "sha256-6DLy1scf6K1fWDgrORcd1gtymgxtPwwAMIzMG2Bn1Pw=";
   };
 
+  patches = [ ];
+  doInstallCheck = false;
+
   propagatedNativeBuildInputs = old.propagatedNativeBuildInputs ++ [
     file
     nurl
   ];
-
-  patches = [ ];
-
-  doInstallCheck = false;
 
   passthru = {
     updateScript = unstableGitUpdater {
@@ -41,6 +40,7 @@ luarocks_bootstrap.overrideAttrs (old: {
       maintainers
       platforms
       ;
+
     homepage = "https://github.com/nix-community/luarocks-nix";
     mainProgram = "luarocks";
   };

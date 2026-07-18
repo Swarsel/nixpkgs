@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  poetry-core,
   pytestCheckHook,
   regex,
   typer,
-  poetry-core,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "python-obfuscator";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "davidteather";
@@ -20,8 +19,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-ddFmlNBtITMPJszLjD2FNjSFF8TrawOv0q7iB3EIdAY=";
   };
 
-  pythonRelaxDeps = [ "typer" ];
-
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -29,9 +27,9 @@ buildPythonPackage (finalAttrs: {
     typer
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "python_obfuscator" ];
+  pythonRelaxDeps = [ "typer" ];
 
   meta = {
     description = "Module to obfuscate code";

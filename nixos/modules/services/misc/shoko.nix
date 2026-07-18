@@ -1,6 +1,6 @@
 {
-  lib,
   config,
+  lib,
   pkgs,
   ...
 }:
@@ -28,27 +28,32 @@ in
   options = {
     services.shoko = {
       enable = mkEnableOption "Shoko";
-
       package = mkPackageOption pkgs "shoko" { };
-      webui = mkPackageOption pkgs "shoko-webui" { nullable = true; };
+
+      openFirewall = mkOption {
+        default = false;
+
+        description = ''
+          Open ports in the firewall for the ShokoAnime api and web interface.
+        '';
+
+        type = types.bool;
+      };
+
       plugins = mkOption {
-        type = types.listOf types.package;
         default = [ ];
+
         description = ''
           The plugins to install.
 
           Note that if there are plugins installed imperatively when this
           option is used, they will be deleted.
         '';
+
+        type = types.listOf types.package;
       };
 
-      openFirewall = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Open ports in the firewall for the ShokoAnime api and web interface.
-        '';
-      };
+      webui = mkPackageOption pkgs "shoko-webui" { nullable = true; };
     };
   };
 
@@ -56,10 +61,8 @@ in
     networking.firewall.allowedTCPPorts = mkIf cfg.openFirewall [ 8111 ];
 
     systemd.services.shoko = {
-      description = "Shoko Server";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
-
+      description = "Shoko Server";
       # Not that it should be done, but this makes it easier to override the
       # StateDirectory option, if the user really wants to.
       environment.SHOKO_HOME = "/var/lib/${config.systemd.services.shoko.serviceConfig.StateDirectory}";
@@ -78,15 +81,15 @@ in
         '';
 
       serviceConfig = {
-        Type = "simple";
-
         DynamicUser = true;
-        StateDirectory = "shoko";
-        StateDirectoryMode = 750;
-
         ExecStart = getExe cfg.package;
         Restart = "on-failure";
+        StateDirectory = "shoko";
+        StateDirectoryMode = 750;
+        Type = "simple";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

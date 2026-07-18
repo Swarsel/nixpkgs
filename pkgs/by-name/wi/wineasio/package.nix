@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   libjack2,
   pkg-config,
-  wineWow64Packages,
   python3,
   python3Packages,
   qt6,
+  wineWow64Packages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,34 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  wineasio-settings = python3Packages.buildPythonApplication {
-    inherit (finalAttrs) src version;
-    pname = "wineasio-settings";
-    pyproject = false;
-
-    sourceRoot = "${finalAttrs.src.name}/gui";
-
-    postPatch = ''
-      patchShebangs wineasio-settings
-      substituteInPlace wineasio-settings \
-        --replace-fail /usr/bin/python3 ${python3}/bin/python3
-    '';
-
-    nativeBuildInputs = [ qt6.wrapQtAppsHook ];
-    buildInputs = [ qt6.qtbase ];
-    dependencies = with python3Packages; [ pyqt6 ];
-
-    makeFlags = [ "PREFIX=$(out)" ];
-
-    dontWrapQtApps = true;
-    dontWrapPythonPrograms = true;
-
-    postFixup = ''
-      wrapQtApp $out/bin/wineasio-settings \
-        --prefix PYTHONPATH : "$PYTHONPATH"
-    '';
-  };
-
   nativeBuildInputs = [
     pkg-config
     wineWow64Packages.stable
@@ -58,8 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [
     libjack2
   ];
-
-  dontConfigure = true;
 
   makeFlags = [ "PREFIX=${wineWow64Packages.stable}" ];
 
@@ -81,18 +51,49 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+
+  wineasio-settings = python3Packages.buildPythonApplication {
+    inherit (finalAttrs) src version;
+    pname = "wineasio-settings";
+
+    postPatch = ''
+      patchShebangs wineasio-settings
+      substituteInPlace wineasio-settings \
+        --replace-fail /usr/bin/python3 ${python3}/bin/python3
+    '';
+
+    nativeBuildInputs = [ qt6.wrapQtAppsHook ];
+    buildInputs = [ qt6.qtbase ];
+    makeFlags = [ "PREFIX=$(out)" ];
+
+    postFixup = ''
+      wrapQtApp $out/bin/wineasio-settings \
+        --prefix PYTHONPATH : "$PYTHONPATH"
+    '';
+
+    dependencies = with python3Packages; [ pyqt6 ];
+    dontWrapPythonPrograms = true;
+    dontWrapQtApps = true;
+    pyproject = false;
+    sourceRoot = "${finalAttrs.src.name}/gui";
+  };
+
   meta = {
+    description = "ASIO to JACK driver for WINE";
     homepage = "https://github.com/wineasio/wineasio";
     changelog = "https://github.com/wineasio/wineasio/releases/tag/${finalAttrs.src.tag}";
-    description = "ASIO to JACK driver for WINE";
+
     license = with lib.licenses; [
       gpl2
       lgpl21
     ];
+
     maintainers = with lib.maintainers; [
       lovesegfault
       thunze
     ];
+
     platforms = [ "x86_64-linux" ];
   };
 })

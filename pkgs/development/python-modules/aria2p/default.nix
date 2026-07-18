@@ -1,32 +1,30 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  pdm-backend,
-  loguru,
-  platformdirs,
-  requests,
-  setuptools,
-  toml,
-  websocket-client,
-  asciimatics,
-  pyperclip,
   aria2,
+  asciimatics,
+  buildPythonPackage,
   fastapi,
+  loguru,
+  pdm-backend,
+  platformdirs,
   psutil,
+  pyperclip,
   pytest-xdist,
   pytestCheckHook,
+  requests,
   responses,
+  setuptools,
+  toml,
   uvicorn,
-
+  websocket-client,
   withTui ? true,
 }:
 
 buildPythonPackage rec {
   pname = "aria2p";
   version = "0.12.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pawamoy";
@@ -34,6 +32,21 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-JEXTCDfFjxI1hooiEQq0KIGGoS2F7fyzOM0GMl+Jr7w=";
   };
+
+  nativeCheckInputs = [
+    aria2
+    fastapi
+    pytest-xdist
+    pytestCheckHook
+    responses
+    psutil
+    uvicorn
+  ]
+  ++ optional-dependencies.tui;
+
+  preCheck = ''
+    export HOME=$TMPDIR
+  '';
 
   build-system = [ pdm-backend ];
 
@@ -47,28 +60,6 @@ buildPythonPackage rec {
   ]
   ++ lib.optionals withTui optional-dependencies.tui;
 
-  optional-dependencies = {
-    tui = [
-      asciimatics
-      pyperclip
-    ];
-  };
-
-  preCheck = ''
-    export HOME=$TMPDIR
-  '';
-
-  nativeCheckInputs = [
-    aria2
-    fastapi
-    pytest-xdist
-    pytestCheckHook
-    responses
-    psutil
-    uvicorn
-  ]
-  ++ optional-dependencies.tui;
-
   disabledTests = [
     # require a running display server
     "test_add_downloads_torrents_and_metalinks"
@@ -80,17 +71,27 @@ buildPythonPackage rec {
     "test_resume_method"
   ];
 
+  optional-dependencies = {
+    tui = [
+      asciimatics
+      pyperclip
+    ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "aria2p" ];
 
   meta = {
+    description = "Command-line tool and library to interact with an aria2c daemon process with JSON-RPC";
     homepage = "https://github.com/pawamoy/aria2p";
     changelog = "https://github.com/pawamoy/aria2p/blob/${src.tag}/CHANGELOG.md";
-    description = "Command-line tool and library to interact with an aria2c daemon process with JSON-RPC";
-    mainProgram = "aria2p";
     license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ koral ];
+
     badPlatforms = [
       lib.systems.inspect.patterns.isDarwin
     ];
+
+    mainProgram = "aria2p";
   };
 }

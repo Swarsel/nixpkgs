@@ -1,24 +1,26 @@
 {
   lib,
   buildPythonPackage,
+  cachetools,
   fetchPypi,
   hatchling,
-  cachetools,
   pandas,
-  requests,
   pytestCheckHook,
+  requests,
 }:
 
 buildPythonPackage rec {
   pname = "world-bank-data";
   version = "0.1.4";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "world_bank_data";
     inherit version;
     hash = "sha256-UidtJovurzrZKWeI7n1bV0vluc5pSg92zKFELvZE9fw=";
+    pname = "world_bank_data";
   };
+
+  # Tests require a HTTP connection
+  doCheck = false;
 
   build-system = [
     hatchling
@@ -30,8 +32,7 @@ buildPythonPackage rec {
     requests
   ];
 
-  # Tests require a HTTP connection
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "world_bank_data"

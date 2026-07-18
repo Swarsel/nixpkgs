@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  wrapGAppsNoGuiHook,
-  meson,
-  ninja,
-  pkg-config,
-  gnome,
   gdk-pixbuf,
   glib,
+  gnome,
   libarchive,
   librsvg,
   libxml2,
+  meson,
+  ninja,
+  pkg-config,
+  wrapGAppsNoGuiHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -48,7 +48,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Thumbnailer for EPub and MOBI books";
     homepage = "https://gitlab.gnome.org/GNOME/gnome-epub-thumbnailer";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.gnome ];
   };
 })

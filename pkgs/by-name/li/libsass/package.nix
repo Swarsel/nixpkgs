@@ -3,12 +3,11 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  testers,
-
   # for passthru.tests
   gtk3,
   gtk4,
   sassc,
+  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +19,7 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "libsass";
     rev = finalAttrs.version;
     hash = "sha256-FkLL3OAJXDptRQY6ZkYbss2pcc40f/wasIvEIyHRQFo=";
+
     # Remove unicode file names which leads to different checksums on HFS+
     # vs. other filesystems because of unicode normalisation.
     postFetch = ''
@@ -27,11 +27,11 @@ stdenv.mkDerivation (finalAttrs: {
     '';
   };
 
+  nativeBuildInputs = [ autoreconfHook ];
+
   preConfigure = ''
     export LIBSASS_VERSION=${finalAttrs.version}
   '';
-
-  nativeBuildInputs = [ autoreconfHook ];
 
   enableParallelBuilding = true;
 
@@ -44,9 +44,11 @@ stdenv.mkDerivation (finalAttrs: {
     description = "C/C++ implementation of a Sass compiler";
     homepage = "https://github.com/sass/libsass";
     license = lib.licenses.mit;
+
     maintainers = [
     ];
-    pkgConfigModules = [ "libsass" ];
+
     platforms = lib.platforms.unix;
+    pkgConfigModules = [ "libsass" ];
   };
 })

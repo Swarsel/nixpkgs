@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   uv-build,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "weblate-fonts";
   version = "2026.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "WeblateOrg";
@@ -28,16 +27,19 @@ buildPythonPackage (finalAttrs: {
     uv-build
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "weblate_fonts" ];
 
   meta = {
     description = "Weblate fonts collection";
     homepage = "https://github.com/WeblateOrg/fonts";
     changelog = "https://github.com/WeblateOrg/fonts/releases/tag/${finalAttrs.src.tag}";
+
     license = with lib.licenses; [
       cc0
       ofl
     ];
+
     maintainers = with lib.maintainers; [ GaetanLepage ];
   };
 })

@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  autoPatchelfHook,
   cairo,
-  pango,
-  libpng,
   expat,
   fontconfig,
   gtk2,
+  libpng,
   libsm,
-  autoPatchelfHook,
+  pango,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "hterm";
@@ -29,7 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
         url = "https://www.der-hammer.info/terminal/hterm${versionWithoutDots}-linux-32.tgz";
         hash = "sha256-7wJFCpeXNMX94tk0QVc0T22cbv3ODIswFge5Cs0JhI8=";
       };
-  sourceRoot = ".";
 
   nativeBuildInputs = [ autoPatchelfHook ];
 
@@ -51,22 +50,26 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
+
   passthru = {
     updateScript = ./update.sh;
   };
 
   meta = {
+    description = "Terminal program for serial communication";
     homepage = "https://www.der-hammer.info/pages/terminal.html";
     changelog = "https://www.der-hammer.info/terminal/CHANGELOG.txt";
-    description = "Terminal program for serial communication";
     # See https://www.der-hammer.info/terminal/LICENSE.txt
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ zebreus ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
-    maintainers = with lib.maintainers; [ zebreus ];
+
     mainProgram = "hterm";
   };
 })

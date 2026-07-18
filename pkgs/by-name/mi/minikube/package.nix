@@ -1,29 +1,23 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  installShellFiles,
-  pkg-config,
-  which,
-  libvirt,
-  withQemu ? false,
-  qemu,
-  makeWrapper,
-  writableTmpDirAsHomeHook,
   OVMF,
+  buildGoModule,
+  installShellFiles,
+  libvirt,
+  makeWrapper,
+  pkg-config,
+  qemu,
   versionCheckHook,
+  which,
+  writableTmpDirAsHomeHook,
+  withQemu ? false,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "minikube";
   version = "1.38.1";
-
-  __structuredAttrs = true;
-
-  vendorHash = "sha256-Oy8cM/foZKC83PxqkJW+o8vVYJhszKxXs9l2eks7FN4=";
-
-  doCheck = false;
 
   src = fetchFromGitHub {
     owner = "kubernetes";
@@ -31,6 +25,7 @@ buildGoModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-1unwbu2pJviHXukQKalJLgrkHpjf0sRR2nCm2gKv2VU=";
   };
+
   postPatch = ''
     substituteInPlace Makefile \
       --replace-fail "export GOTOOLCHAIN := go\$(GO_VERSION)" "export GOTOOLCHAIN := local"
@@ -57,6 +52,7 @@ buildGoModule (finalAttrs: {
   ];
 
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ libvirt ];
+  vendorHash = "sha256-Oy8cM/foZKC83PxqkJW+o8vVYJhszKxXs9l2eks7FN4=";
 
   buildPhase = ''
     runHook preBuild
@@ -65,6 +61,8 @@ buildGoModule (finalAttrs: {
 
     runHook postBuild
   '';
+
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -82,23 +80,28 @@ buildGoModule (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
     writableTmpDirAsHomeHook
   ];
+
+  __structuredAttrs = true;
   versionCheckKeepEnvironment = [ "HOME" ];
   versionCheckProgramArg = "version";
-  doInstallCheck = true;
 
   meta = {
-    homepage = "https://minikube.sigs.k8s.io";
     description = "Tool that makes it easy to run Kubernetes locally";
-    mainProgram = "minikube";
+    homepage = "https://minikube.sigs.k8s.io";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       vdemeester
       atkinschang
       Chili-Man
     ];
+
+    mainProgram = "minikube";
   };
 })

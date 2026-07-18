@@ -2,15 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeDesktopItem,
-  copyDesktopItems,
-
-  ncurses,
   SDL2,
   SDL2_image,
-
-  terminal ? false,
+  copyDesktopItems,
+  makeDesktopItem,
+  ncurses,
   graphics ? true,
+  terminal ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -53,21 +51,6 @@ stdenv.mkDerivation (finalAttrs: {
     make Brogue.app $makeFlags
   '';
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "brogue-ce";
-      desktopName = "Brogue CE";
-      genericName = "Roguelike";
-      comment = "Brave the Dungeons of Doom!";
-      icon = "brogue-ce";
-      exec = "brogue-ce";
-      categories = [
-        "Game"
-        "AdventureGame"
-      ];
-    })
-  ];
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/opt
@@ -82,14 +65,32 @@ stdenv.mkDerivation (finalAttrs: {
     mv Brogue.app "$out/Applications/Brogue CE.app"
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Game"
+        "AdventureGame"
+      ];
+
+      comment = "Brave the Dungeons of Doom!";
+      desktopName = "Brogue CE";
+      exec = "brogue-ce";
+      genericName = "Roguelike";
+      icon = "brogue-ce";
+      name = "brogue-ce";
+    })
+  ];
+
   meta = {
     description = "Community-lead fork of the minimalist roguelike game Brogue";
-    mainProgram = "brogue-ce";
     homepage = "https://github.com/tmewett/BrogueCE";
     license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       fgaz
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "brogue-ce";
   };
 })

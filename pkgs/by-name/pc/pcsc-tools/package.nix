@@ -1,24 +1,23 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   autoconf-archive,
   autoreconfHook,
+  coreutils,
+  dbus,
   gobject-introspection,
   makeWrapper,
-  pkg-config,
-  wrapGAppsHook3,
-  systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemd,
-  systemd,
-  dbusSupport ? stdenv.hostPlatform.isLinux,
-  dbus,
-  pcsclite,
-  wget,
-  coreutils,
-  perlPackages,
-  testers,
   nix-update-script,
-
+  pcsclite,
+  perlPackages,
+  pkg-config,
+  systemd,
+  testers,
+  wget,
+  wrapGAppsHook3,
+  dbusSupport ? stdenv.hostPlatform.isLinux,
+  systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemd,
   # gui does not cross compile properly
   withGui ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
 }:
@@ -36,8 +35,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-xakJwBzsZfqSLZ2wwwQoWtNIC82zOwOtm5CEVx4d+q4=";
   };
 
-  configureFlags = [
-    "--datarootdir=${placeholder "out"}/share"
+  nativeBuildInputs = [
+    autoconf-archive
+    autoreconfHook
+    makeWrapper
+    pkg-config
+  ]
+  ++ lib.optionals withGui [
+    gobject-introspection
+    wrapGAppsHook3
   ];
 
   buildInputs =
@@ -50,20 +56,9 @@ stdenv.mkDerivation (finalAttrs: {
     ]
     ++ lib.optional systemdSupport systemd;
 
-  nativeBuildInputs = [
-    autoconf-archive
-    autoreconfHook
-    makeWrapper
-    pkg-config
-  ]
-  ++ lib.optionals withGui [
-    gobject-introspection
-    wrapGAppsHook3
+  configureFlags = [
+    "--datarootdir=${placeholder "out"}/share"
   ];
-
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
 
   postInstall = ''
     wrapProgram $out/bin/scriptor \
@@ -115,11 +110,16 @@ stdenv.mkDerivation (finalAttrs: {
     install -Dm444 -t $out/share/pcsc smartcard_list.txt
   '';
 
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
   passthru = {
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       command = "pcsc_scan -V";
+      package = finalAttrs.finalPackage;
     };
+
     updateScript = nix-update-script { };
   };
 
@@ -128,11 +128,13 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://pcsc-tools.apdu.fr/";
     changelog = "https://github.com/LudovicRousseau/pcsc-tools/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "pcsc_scan";
+
     maintainers = with lib.maintainers; [
       peterhoeg
       anthonyroussel
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "pcsc_scan";
   };
 })

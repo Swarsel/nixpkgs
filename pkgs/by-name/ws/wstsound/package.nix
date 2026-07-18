@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   gtest,
-  tinycmmc,
   libmodplug,
   libogg,
+  libopus,
   libvorbis,
   mpg123,
   openal,
   opusfile,
-  libopus,
+  tinycmmc,
 }:
 
 stdenv.mkDerivation {
@@ -25,11 +25,18 @@ stdenv.mkDerivation {
     sha256 = "sha256-fus1ydypnDDHsQwMkYyZuRikZLbZXLlc/cY8Qol5Hwo=";
   };
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "COMMAND openal_info" "COMMAND openal-info"
+  '';
+
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     gtest
     tinycmmc
   ];
+
   propagatedBuildInputs = [
     libmodplug
     libogg
@@ -50,16 +57,11 @@ stdenv.mkDerivation {
   # Test "openal_info fails"
   doCheck = false;
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "COMMAND openal_info" "COMMAND openal-info"
-  '';
-
   meta = {
     description = "Windstille Sound Library";
     homepage = "https://github.com/WindstilleTeam/wstsound";
+    license = lib.licenses.free;
     maintainers = [ lib.maintainers.SchweGELBin ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.free;
   };
 }

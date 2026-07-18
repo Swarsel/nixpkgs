@@ -1,16 +1,15 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  colorama,
+  fetchPypi,
   lxml,
   pycryptodome,
-  colorama,
 }:
 
 buildPythonPackage rec {
   pname = "libkeepass";
   version = "0.3.1.post1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -25,10 +24,11 @@ buildPythonPackage rec {
 
   # No tests on PyPI
   doCheck = false;
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/libkeepass/libkeepass";
     description = "Library to access KeePass 1.x/KeePassX (v3) and KeePass 2.x (v4) files";
+    homepage = "https://github.com/libkeepass/libkeepass";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ jqueiroz ];
   };

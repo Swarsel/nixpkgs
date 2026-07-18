@@ -28,8 +28,8 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://www.gnu.org/software/marst/";
     description = "Algol-60-to-C translator";
+
     longDescription = ''
       MARST is an Algol-to-C translator. It automatically translates programs
       written on the algorithmic language Algol 60 to the C programming
@@ -48,6 +48,8 @@ stdenv.mkDerivation rec {
       - the converter, MACVT, that allows to convert existing Algol 60 programs
         from some other representations to MARST representation.
     '';
+
+    homepage = "https://www.gnu.org/software/marst/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;

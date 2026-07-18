@@ -11,25 +11,22 @@
 buildPythonPackage rec {
   pname = "bitlist";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-mbXSvIUYsnZy/pmZLFXa1bqrwK+JZ2eySuDRCVAs1zk=";
   };
 
-  pythonRelaxDeps = [ "parts" ];
-
-  build-system = [ setuptools ];
-
-  dependencies = [ parts ];
-
   nativeCheckInputs = [
     pytest-cov-stub
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ parts ];
+  pyproject = true;
   pythonImportsCheck = [ "bitlist" ];
+  pythonRelaxDeps = [ "parts" ];
 
   meta = {
     description = "Python library for working with little-endian list representation of bit strings";

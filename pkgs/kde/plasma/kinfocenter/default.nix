@@ -1,16 +1,16 @@
 {
+  lib,
   aha,
   clinfo,
   dmidecode,
   iproute2,
-  lib,
   libdisplay-info,
   libusb1,
   lm_sensors,
   mesa-demos,
   mkKdeDerivation,
-  pkg-config,
   pciutils,
+  pkg-config,
   pulseaudio,
   qttools,
   replaceVars,
@@ -30,8 +30,8 @@ let
     glxinfo = lib.getExe' mesa-demos "glxinfo";
     ip = lib.getExe' iproute2 "ip";
     lsblk = lib.getExe' util-linux "lsblk";
-    lspci = lib.getExe' pciutils "lspci";
     lscpu = lib.getExe' util-linux "lscpu";
+    lspci = lib.getExe' pciutils "lspci";
     pactl = lib.getExe' pulseaudio "pactl";
     qdbus = lib.getExe' qttools "qdbus";
     sensors = lib.getExe' lm_sensors "sensors";
@@ -59,11 +59,6 @@ mkKdeDerivation {
       --replace-fail " aha " " ${lib.getExe aha} "
   '';
 
-  extraNativeBuildInputs = [ pkg-config ];
-  extraBuildInputs = [ libusb1 ];
-
-  qtWrapperArgs = [ "--inherit-argv0" ];
-
   # fix wrong symlink of infocenter pointing to a 'systemsettings5' binary in
   # the same directory, while it is actually located in a completely different
   # store path
@@ -77,5 +72,8 @@ mkKdeDerivation {
     echo "${lib.concatStringsSep ":" (lib.attrValues tools)}" > $out/nix-support/depends
   '';
 
+  extraBuildInputs = [ libusb1 ];
+  extraNativeBuildInputs = [ pkg-config ];
+  qtWrapperArgs = [ "--inherit-argv0" ];
   meta.mainProgram = "kinfocenter";
 }

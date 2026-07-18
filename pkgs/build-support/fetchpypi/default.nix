@@ -15,10 +15,10 @@ let
         {
           pname,
           version,
-          dist ? "py2.py3",
-          python ? "py2.py3",
           abi ? "none",
+          dist ? "py2.py3",
           platform ? "any",
+          python ? "py2.py3",
         }:
         # Fetch a wheel. By default we fetch an universal wheel.
         # See https://www.python.org/dev/peps/pep-0427/#file-name-convention for details regarding the optional arguments.
@@ -48,11 +48,11 @@ let
 in
 lib.makeOverridable (
   {
-    format ? "setuptools",
-    sha256 ? "",
-    hash ? "",
     pname,
     version,
+    format ? "setuptools",
+    hash ? "",
+    sha256 ? "",
     ...
   }@attrs:
   let
@@ -64,9 +64,9 @@ lib.makeOverridable (
     );
     meta = {
       identifiers.purlParts = {
-        type = "pypi";
         # https://github.com/package-url/purl-spec/blob/18fd3e395dda53c00bc8b11fe481666dc7b3807a/types-doc/pypi-definition.md
         spec = "${pname}@${version}";
+        type = "pypi";
       };
     };
   in

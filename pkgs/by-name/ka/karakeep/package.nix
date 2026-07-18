@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  nixosTests,
-  nodejs,
-  node-gyp,
+  fetchPnpmDeps,
   gnutar,
   inter,
-  python3,
-  srcOnly,
-  removeReferencesTo,
-  pnpm_9,
-  fetchPnpmDeps,
+  nix-update-script,
+  nixosTests,
+  node-gyp,
+  nodejs,
   pnpmConfigHook,
+  pnpm_9,
+  python3,
+  removeReferencesTo,
+  srcOnly,
   versionCheckHook,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -51,17 +51,6 @@ stdenv.mkDerivation (finalAttrs: {
     gnutar
   ];
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      patches
-      ;
-    pnpm = pnpm_9;
-    fetcherVersion = 3;
-    hash = "sha256-aT4JPx3iYw4kw8GHXKWMnelSVT0q2S3PK8DgSCQCyKQ=";
-  };
   buildPhase = ''
     runHook preBuild
 
@@ -136,6 +125,12 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
   postFixup = ''
     # Remove large dependencies that are not necessary during runtime
     rm -rf $out/lib/karakeep/node_modules/{@next,next,@swc,react-native,monaco-editor,faker,@typescript-eslint,@microsoft,@typescript-eslint,pdfjs-dist}
@@ -144,26 +139,34 @@ stdenv.mkDerivation (finalAttrs: {
     find $out -type l ! -exec test -e {} \; -delete
   '';
 
-  doInstallCheck = true;
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      patches
+      ;
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
+    fetcherVersion = 3;
+    hash = "sha256-aT4JPx3iYw4kw8GHXKWMnelSVT0q2S3PK8DgSCQCyKQ=";
+    pnpm = pnpm_9;
+  };
 
   passthru = {
     tests = {
       inherit (nixosTests) karakeep;
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
+    description = "Self-hostable bookmark-everything app (links, notes and images) with AI-based automatic tagging and full text search";
     homepage = "https://karakeep.app/";
     changelog = "https://github.com/karakeep-app/karakeep/releases/tag/v${finalAttrs.version}";
-    description = "Self-hostable bookmark-everything app (links, notes and images) with AI-based automatic tagging and full text search";
     license = lib.licenses.agpl3Only;
     maintainers = [ lib.maintainers.three ];
-    mainProgram = "karakeep";
     platforms = lib.platforms.linux;
+    mainProgram = "karakeep";
   };
 })

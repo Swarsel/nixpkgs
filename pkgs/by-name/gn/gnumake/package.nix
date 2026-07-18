@@ -6,12 +6,12 @@
   gettext,
   gnumake,
   guile,
-  guileSupport ? false,
-  # avoid guile depend on bootstrap to prevent dependency cycles
-  inBootstrap ? false,
   pkg-config,
   texinfo,
   versionCheckHook,
+  guileSupport ? false,
+  # avoid guile depend on bootstrap to prevent dependency cycles
+  inBootstrap ? false,
 }:
 
 let
@@ -26,6 +26,13 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-3Rb7HWe/q3mnL16DkHNcSePo5wtJRaFasfgd23hlj7M=";
   };
 
+  outputs = [
+    "out"
+    "man"
+    "info"
+  ]
+  ++ lib.optionals (!inBootstrap) [ "doc" ];
+
   # To update patches:
   #  $ version=4.4.1
   #  $ git clone https://git.savannah.gnu.org/git/make.git
@@ -38,7 +45,6 @@ stdenv.mkDerivation (finalAttrs: {
   # convenient to keep them in a separate directory but we can defer listing the
   # directory until derivation realization to avoid unnecessary Nix evaluations.
   patches = lib.filesystem.listFilesRecursive ./patches;
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -55,27 +61,20 @@ stdenv.mkDerivation (finalAttrs: {
     # fnmatch.c:124:14: error: conflicting types for 'getenv'; have 'char *(void)'
     ++ lib.optional stdenv.hostPlatform.isCygwin "CFLAGS=-std=gnu17";
 
-  outputs = [
-    "out"
-    "man"
-    "info"
-  ]
-  ++ lib.optionals (!inBootstrap) [ "doc" ];
-
   postBuild = lib.optionalString (!inBootstrap) ''
     makeinfo --html --no-split doc/make.texi
   '';
+
+  doCheck = true;
 
   postInstall = lib.optionalString (!inBootstrap) ''
     install -Dm644 make.html \
       --target-directory="$doc"/share/doc/"$pname"-"$version"
   '';
 
-  separateDebugInfo = true;
-
-  doCheck = true;
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  separateDebugInfo = true;
 
   passthru.tests = {
     # make sure that the override doesn't break bootstrapping
@@ -84,6 +83,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Tool to control the generation of non-source files from sources";
+
     longDescription = ''
       Make is a tool which controls the generation of executables and
       other non-source files of a program from the program's source
@@ -95,10 +95,11 @@ stdenv.mkDerivation (finalAttrs: {
       program, you should write a makefile for it, so that it is
       possible to use Make to build and install the program.
     '';
+
     homepage = "https://www.gnu.org/software/make/";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "make";
     maintainers = with lib.maintainers; [ mdaniels5757 ];
     platforms = lib.platforms.all;
+    mainProgram = "make";
   };
 })

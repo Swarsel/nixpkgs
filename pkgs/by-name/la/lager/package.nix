@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   boost,
-  cereal,
-  immer,
-  zug,
   catch2,
+  cereal,
+  cmake,
+  immer,
   qt5,
+  zug,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,7 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ cmake ];
 
   buildInputs = [
@@ -31,11 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
     cereal
     immer
     zug
-  ];
-
-  checkInputs = [
-    catch2
-    qt5.qtdeclarative
   ];
 
   cmakeFlags = [
@@ -52,12 +46,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
 
+  checkInputs = [
+    catch2
+    qt5.qtdeclarative
+  ];
+
   dontWrapQtApps = true;
 
   meta = {
-    changelog = "https://github.com/arximboldi/lager/releases/tag/${finalAttrs.src.tag}";
     description = "C++ library for value-oriented design using the unidirectional data-flow architecture — Redux for C++";
     homepage = "https://sinusoid.es/lager/";
+    changelog = "https://github.com/arximboldi/lager/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

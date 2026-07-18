@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
   pyyaml,
 }:
 
 buildPythonPackage rec {
   pname = "tinydb";
   version = "4.8.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "msiemens";
@@ -20,16 +19,17 @@ buildPythonPackage rec {
     hash = "sha256-N/45XB7ZuZiq25v6DQx4K9NRVnBbUHPeiKKbxQ9YB3E=";
   };
 
-  build-system = [
-    poetry-core
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
     pyyaml
   ];
 
+  build-system = [
+    poetry-core
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "tinydb" ];
 
   meta = {

@@ -1,72 +1,83 @@
 {
-  version,
-  rev ? null,
   sha256,
+  version,
+  postFetch ? null,
+  rev ? null,
   url ?
     if rev != null then
       "https://gitlab.haskell.org/ghc/ghc.git"
     else
       "https://downloads.haskell.org/ghc/${version}/ghc-${version}-src.tar.xz",
-  postFetch ? null,
 }:
 
 {
   lib,
   stdenv,
-  stdenvNoCC,
-  pkgsBuildTarget,
-  pkgsHostTarget,
-  buildPackages,
-  targetPackages,
-  fetchpatch,
-
+  fetchurl,
+  autoSignDarwinBinariesHook,
+  autoreconfHook,
+  bash,
   # build-tools
   bootPkgs,
-  autoreconfHook,
-  coreutils,
-  fetchurl,
-  fetchgit,
-  perl,
-  python3,
-  sphinx,
-  xattr,
-  autoSignDarwinBinariesHook,
-  bash,
-  srcOnly,
-
-  libiconv ? null,
-  ncurses,
-
-  # GHC can be built with system libffi or a bundled one.
-  libffi ? null,
-
-  useLLVM ? !(import ./common-have-ncg.nix { inherit lib stdenv version; }),
+  buildPackages,
   # LLVM is conceptually a run-time-only dependency, but for
   # non-x86, we need LLVM to bootstrap later stages, so it becomes a
   # build-time dependency too.
   buildTargetLlvmPackages,
+  coreutils,
+  elfutils,
+  fetchgit,
+  fetchpatch,
+  gmp,
   llvmPackages,
-
+  ncurses,
+  numactl,
+  perl,
+  pkgsBuildTarget,
+  pkgsHostTarget,
+  python3,
+  sphinx,
+  srcOnly,
+  stdenvNoCC,
+  targetPackages,
+  xattr,
+  # Whether to disable the large address space allocator
+  # necessary fix for iOS: https://www.reddit.com/r/haskell/comments/4ttdz1/building_an_osxi386_to_iosarm64_cross_compiler/d5qvd67/
+  disableLargeAddressSpace ? stdenv.targetPlatform.isiOS,
+  #  Whether to build sphinx documentation.
+  # TODO(@sternenseemann): Hadrian ignores the --docs flag if finalStage = Stage1
+  enableDocs ? (
+    # Docs disabled if we are building on musl because it's a large task to keep
+    # all `sphinx` dependencies building in this environment.
+    !stdenv.buildPlatform.isMusl
+  ),
+  # Libdw.c only supports x86_64, i686 and s390x as of 2022-08-04
+  enableDwarf ?
+    (stdenv.targetPlatform.isx86 || (stdenv.targetPlatform.isS390 && stdenv.targetPlatform.is64bit))
+    && lib.meta.availableOn stdenv.hostPlatform elfutils
+    && lib.meta.availableOn stdenv.targetPlatform elfutils
+    &&
+      # HACK: elfutils is marked as broken on static platforms
+      # which availableOn can't tell.
+      !stdenv.targetPlatform.isStatic
+    && !stdenv.hostPlatform.isStatic,
   # If enabled, GHC will be built with the GPL-free but slightly slower native
   # bignum backend instead of the faster but GPLed gmp backend.
   enableNativeBignum ?
     stdenv.targetPlatform.isGhcjs
     || !(lib.meta.availableOn stdenv.hostPlatform gmp)
     || !(lib.meta.availableOn stdenv.targetPlatform gmp),
-  gmp,
-
-  # If enabled, use -fPIC when compiling static libs.
-  enableRelocatedStaticLibs ?
-    stdenv.targetPlatform != stdenv.hostPlatform && !stdenv.targetPlatform.isWindows,
-
+  # Enable NUMA support in RTS
+  enableNuma ? lib.meta.availableOn stdenv.targetPlatform numactl,
   # Exceeds Hydra output limit (at the time of writing ~3GB) when cross compiled to riscv64.
   # A riscv64 cross-compiler fits into the limit comfortably.
   enableProfiledLibs ? !stdenv.hostPlatform.isRiscV64,
-
+  # If enabled, use -fPIC when compiling static libs.
+  enableRelocatedStaticLibs ?
+    stdenv.targetPlatform != stdenv.hostPlatform && !stdenv.targetPlatform.isWindows,
   # Whether to build dynamic libs for the standard library (on the target
   # platform). Static libs are always built.
   enableShared ? with stdenv.targetPlatform; !isWindows && !useiOSPrebuilt && !isStatic && !isGhcjs,
-
   # Whether to build terminfo.
   enableTerminfo ?
     !(
@@ -82,23 +93,11 @@
         )
       )
     ),
-
-  # Libdw.c only supports x86_64, i686 and s390x as of 2022-08-04
-  enableDwarf ?
-    (stdenv.targetPlatform.isx86 || (stdenv.targetPlatform.isS390 && stdenv.targetPlatform.is64bit))
-    && lib.meta.availableOn stdenv.hostPlatform elfutils
-    && lib.meta.availableOn stdenv.targetPlatform elfutils
-    &&
-      # HACK: elfutils is marked as broken on static platforms
-      # which availableOn can't tell.
-      !stdenv.targetPlatform.isStatic
-    && !stdenv.hostPlatform.isStatic,
-  elfutils,
-
-  # Enable NUMA support in RTS
-  enableNuma ? lib.meta.availableOn stdenv.targetPlatform numactl,
-  numactl,
-
+  # Whether to build an unregisterised version of GHC.
+  # GHC will normally auto-detect whether it can do a registered build, but this
+  # option will force it to do an unregistered build when set to true.
+  # See https://gitlab.haskell.org/ghc/ghc/-/wikis/building/unregisterised
+  enableUnregisterised ? false,
   # What flavour to build. Flavour string may contain a flavour and flavour
   # transformers as accepted by hadrian.
   ghcFlavour ?
@@ -121,7 +120,191 @@
         ++ (if stdenv.targetPlatform.isWindows then [ "no_split_sections" ] else [ "split_sections" ]);
     in
     baseFlavour + lib.concatMapStrings (t: "+${t}") transformers,
+  ghcSrc ? srcOnly {
+    src = (if rev != null then fetchgit else fetchurl) (
+      {
+        inherit url sha256;
+      }
+      // lib.optionalAttrs (rev != null) {
+        inherit rev;
+      }
+      // lib.optionalAttrs (postFetch != null) {
+        inherit postFetch;
+      }
+    );
 
+    patches =
+      let
+        enableHyperlinkedSource =
+          # Disable haddock generating pretty source listings to stay under 3GB on aarch64-linux
+          !(stdenv.hostPlatform.isAarch64 && stdenv.hostPlatform.isLinux)
+          # 9.8 and 9.10 don't run into this problem for some reason
+          || (lib.versionAtLeast version "9.8" && lib.versionOlder version "9.11");
+      in
+
+      lib.optionals (lib.versionOlder version "9.8") [
+        # Fix unlit being installed under a different name than is used in the
+        # settings file: https://gitlab.haskell.org/ghc/ghc/-/issues/23317 krank:ignore-line
+        (fetchpatch {
+          hash = "sha256-3+CyRBpebEZi8YpS22SsdGQHqi0drR7cCKPtKbR3zyE=";
+          name = "ghc-9.6-fix-unlit-path.patch";
+          url = "https://gitlab.haskell.org/ghc/ghc/-/commit/8fde4ac84ec7b1ead238cb158bbef48555d12af9.patch";
+        })
+      ]
+      ++ lib.optionals (stdenv.targetPlatform.isDarwin && stdenv.targetPlatform.isAarch64) [
+        # Prevent the paths module from emitting symbols that we don't use
+        # when building with separate outputs.
+        #
+        # These cause problems as they're not eliminated by GHC's dead code
+        # elimination on aarch64-darwin. (see
+        # https://github.com/NixOS/nixpkgs/issues/140774 for details). krank:ignore-line
+        (
+          if lib.versionOlder version "9.10" then
+            ./Cabal-at-least-3.6-paths-fix-cycle-aarch64-darwin.patch
+          else if lib.versionOlder version "9.14" then
+            ./Cabal-3.12-paths-fix-cycle-aarch64-darwin.patch
+          else
+            ./Cabal-3.16-paths-fix-cycle-aarch64-darwin.patch
+        )
+      ]
+      # Prevents passing --hyperlinked-source to haddock. Note that this can
+      # be configured via a user defined flavour now. Unfortunately, it is
+      # impossible to import an existing flavour in UserSettings, so patching
+      # the defaults is actually simpler and less maintenance intensive
+      # compared to keeping an entire flavour definition in sync with upstream
+      # manually.
+      # See also https://gitlab.haskell.org/ghc/ghc/-/issues/23625 krank:ignore-line
+      ++ lib.optionals (!enableHyperlinkedSource) [
+        (
+          if lib.versionOlder version "9.8" then
+            ../../tools/haskell/hadrian/disable-hyperlinked-source-pre-9.8.patch
+          else
+            ../../tools/haskell/hadrian/disable-hyperlinked-source-extra-args.patch
+        )
+      ]
+      ++ lib.optionals (lib.versionAtLeast version "9.8" && lib.versionOlder version "9.12") [
+        (fetchpatch {
+          hash = "sha256-L3FQvcm9QB59BOiR2g5/HACAufIG08HiT53EIOjj64g=";
+          includes = [ "configure.ac" ];
+          name = "enable-ignore-build-platform-mismatch.patch";
+          url = "https://gitlab.haskell.org/ghc/ghc/-/commit/4ee094d46effd06093090fcba70f0a80d2a57e6c.patch";
+        })
+      ]
+      ++ lib.optionals (lib.versionOlder version "9.12") [
+        (fetchpatch {
+          hash =
+            if lib.versionOlder version "9.10" then
+              "sha256-5SVSW1aYoItqHli5QjnudH4zGporYNLDeEo4gZksBZw="
+            else
+              "sha256-vtjT+TL/7sYPu4rcVV3xCqJQ+uqkyBbf9l0KIi97j/0=";
+
+          name = "ghc-ppc-support-elf-v2-on-powerpc64-big-endian.patch";
+
+          # ghc-platform was split out of ghc-boot in ddcdd88c2c95445a87ee028f215d1e876939a4d9
+          postFetch = lib.optionalString (lib.versionOlder version "9.10") ''
+            substituteInPlace $out \
+              --replace-fail 'libraries/ghc-platform/src/GHC' 'libraries/ghc-boot/GHC'
+          '';
+
+          url = "https://gitlab.haskell.org/ghc/ghc/-/commit/ead75532c9dc915bfa9ebaef0ef5d148e793cc0a.patch";
+        })
+      ]
+      ++ lib.optionals (lib.versionOlder version "9.12") [
+        (fetchpatch {
+          hash = "sha256-xP5v3cKhXeTRSFvRiKEn9hPxGXgVgykjTILKjh/pdDU=";
+          name = "ghc-rts-Fix-compile-on-powerpc64-elf-v1.patch";
+          url = "https://gitlab.haskell.org/ghc/ghc/-/commit/05e5785a3157c71e327a8e9bdc80fa7082918739.patch";
+        })
+      ]
+      # Fix build with gcc15
+      # https://gitlab.haskell.org/ghc/ghc/-/issues/25662
+      # https://gitlab.haskell.org/ghc/ghc/-/merge_requests/13863
+      ++ lib.optionals (lib.versionOlder version "9.10") [
+        (fetchpatch {
+          hash = "sha256-Vr5wkiSE1S5e+cJ8pWUvG9KFpxtmvQ8wAy08ElGNp5E=";
+          name = "ghc-hp2ps-c-gnu17.patch";
+          url = "https://src.fedoraproject.org/rpms/ghc/raw/9c26d7c3c3de73509a25806e5663b37bcf2e0b4e/f/hp2ps-C-gnu17.patch";
+        })
+      ]
+      # Fix subword division regression in 9.12.3 https://gitlab.haskell.org/ghc/ghc/-/merge_requests/15264
+      ++ lib.optionals (version == "9.12.3") [
+        (fetchpatch {
+          hash = "sha256-GMnD0StBTRynl2Lels1L0u1bo7HscLGPUAv+rTJ98QQ=";
+          name = "ghc-9.12.3-fix-subword-division.patch";
+          url = "https://gitlab.haskell.org/ghc/ghc/-/commit/65370007e2d9f1976fbcfbb514917fb111117148.patch";
+        })
+      ]
+      # Fixes stack overrun in rts which crashes an process whenever
+      # freeHaskellFunPtr is called with nixpkgs' hardening flags.
+      # https://gitlab.haskell.org/ghc/ghc/-/issues/25485 krank:ignore-line
+      # https://gitlab.haskell.org/ghc/ghc/-/merge_requests/13599
+      ++ lib.optionals (lib.versionOlder version "9.13") [
+        (fetchpatch {
+          name = "ghc-rts-adjustor-fix-i386-stack-overrun.patch";
+          sha256 = "0w5fx413z924bi2irsy1l4xapxxhrq158b5gn6jzrbsmhvmpirs0";
+          url = "https://gitlab.haskell.org/ghc/ghc/-/commit/39bb6e583d64738db51441a556d499aa93a4fc4a.patch";
+        })
+      ]
+
+      # Unreleased or still in-progress upstream cross fixes
+      ++ lib.optionals (lib.versionAtLeast version "9.10" && lib.versionOlder version "9.15") [
+        # https://gitlab.haskell.org/ghc/ghc/-/merge_requests/13919
+        (fetchpatch {
+          hash = "sha256-sb+AHdkGkCu8MW0xoQIpD5kEc0zYX8udAMDoC+TWc0Q=";
+          name = "include-modern-utimbuf.patch";
+          url = "https://gitlab.haskell.org/ghc/ghc/-/commit/7e75928ed0f1c4654de6ddd13d0b00bf4b5c6411.patch";
+        })
+
+        # https://gitlab.haskell.org/ghc/ghc/-/issues/26290 krank:ignore-line
+        ./export-heap-methods.patch
+      ]
+      ++ lib.optionals (lib.versionAtLeast version "9.10.3") [
+        # https://gitlab.haskell.org/ghc/ghc/-/issues/26518 krank:ignore-line
+        ./ghc-define-undefined-elf-st-visibility.patch
+      ]
+
+      # Fix docs build with Sphinx >= 9 https://gitlab.haskell.org/ghc/ghc/-/issues/26810
+      ++
+        lib.optionals
+          (
+            lib.versionOlder version "9.12.4"
+            || (lib.versionAtLeast version "9.14" && lib.versionOlder version "9.15.20260129")
+          )
+          [
+            ./ghc-9.6-or-later-docs-sphinx-9.patch
+          ]
+
+      # Fixes rts/Types.h missing from the install when targeting javascript
+      # See https://gitlab.haskell.org/ghc/ghc/-/merge_requests/15740, krank:ignore-line
+      # https://gitlab.haskell.org/ghc/ghc/-/issues/27033. krank:ignore-line
+      ++
+        lib.optionals
+          (
+            version == "9.12.3"
+            # TODO(@sternenseemann): 9.14.2 will likely also have this patch
+            || (lib.versionAtLeast version "9.14" && lib.versionOlder version "9.15.20260127")
+          )
+          [
+            (fetchpatch {
+              hash = "sha256-pv4NDyQ6FlZgmTYZ4Ghis4qggt7nCDMhqGaFxTxVPac=";
+              includes = [ "rts/rts.cabal" ];
+              name = "ghc-9.12.3-ghcjs-install-rts-types.h.patch";
+              url = "https://gitlab.haskell.org/ghc/ghc/-/commit/5b1be555be4f0989d78c274991c5046d7ac6d25e.patch";
+            })
+          ]
+
+      ++ (import ./common-llvm-patches.nix { inherit lib version fetchpatch; });
+
+    name = "ghc-${version}"; # -source appended by srcOnly
+    stdenv = stdenvNoCC;
+  },
+  # GHC's build system hadrian built from the GHC-to-build's source tree
+  # using our bootstrap GHC.
+  hadrian ? import ../../tools/haskell/hadrian/make-hadrian.nix { inherit bootPkgs lib; } {
+    inherit ghcSrc;
+    ghcVersion = version;
+    userSettings = hadrianUserSettings;
+  },
   # Contents of the UserSettings.hs file to use when compiling hadrian.
   hadrianUserSettings ? ''
     module UserSettings (
@@ -166,208 +349,10 @@
         verbosity <- expr getVerbosity
         return $ verbosity >= Verbose
   '',
-
-  ghcSrc ? srcOnly {
-    name = "ghc-${version}"; # -source appended by srcOnly
-    src = (if rev != null then fetchgit else fetchurl) (
-      {
-        inherit url sha256;
-      }
-      // lib.optionalAttrs (rev != null) {
-        inherit rev;
-      }
-      // lib.optionalAttrs (postFetch != null) {
-        inherit postFetch;
-      }
-    );
-
-    patches =
-      let
-        enableHyperlinkedSource =
-          # Disable haddock generating pretty source listings to stay under 3GB on aarch64-linux
-          !(stdenv.hostPlatform.isAarch64 && stdenv.hostPlatform.isLinux)
-          # 9.8 and 9.10 don't run into this problem for some reason
-          || (lib.versionAtLeast version "9.8" && lib.versionOlder version "9.11");
-      in
-
-      lib.optionals (lib.versionOlder version "9.8") [
-        # Fix unlit being installed under a different name than is used in the
-        # settings file: https://gitlab.haskell.org/ghc/ghc/-/issues/23317 krank:ignore-line
-        (fetchpatch {
-          name = "ghc-9.6-fix-unlit-path.patch";
-          url = "https://gitlab.haskell.org/ghc/ghc/-/commit/8fde4ac84ec7b1ead238cb158bbef48555d12af9.patch";
-          hash = "sha256-3+CyRBpebEZi8YpS22SsdGQHqi0drR7cCKPtKbR3zyE=";
-        })
-      ]
-      ++ lib.optionals (stdenv.targetPlatform.isDarwin && stdenv.targetPlatform.isAarch64) [
-        # Prevent the paths module from emitting symbols that we don't use
-        # when building with separate outputs.
-        #
-        # These cause problems as they're not eliminated by GHC's dead code
-        # elimination on aarch64-darwin. (see
-        # https://github.com/NixOS/nixpkgs/issues/140774 for details). krank:ignore-line
-        (
-          if lib.versionOlder version "9.10" then
-            ./Cabal-at-least-3.6-paths-fix-cycle-aarch64-darwin.patch
-          else if lib.versionOlder version "9.14" then
-            ./Cabal-3.12-paths-fix-cycle-aarch64-darwin.patch
-          else
-            ./Cabal-3.16-paths-fix-cycle-aarch64-darwin.patch
-        )
-      ]
-      # Prevents passing --hyperlinked-source to haddock. Note that this can
-      # be configured via a user defined flavour now. Unfortunately, it is
-      # impossible to import an existing flavour in UserSettings, so patching
-      # the defaults is actually simpler and less maintenance intensive
-      # compared to keeping an entire flavour definition in sync with upstream
-      # manually.
-      # See also https://gitlab.haskell.org/ghc/ghc/-/issues/23625 krank:ignore-line
-      ++ lib.optionals (!enableHyperlinkedSource) [
-        (
-          if lib.versionOlder version "9.8" then
-            ../../tools/haskell/hadrian/disable-hyperlinked-source-pre-9.8.patch
-          else
-            ../../tools/haskell/hadrian/disable-hyperlinked-source-extra-args.patch
-        )
-      ]
-      ++ lib.optionals (lib.versionAtLeast version "9.8" && lib.versionOlder version "9.12") [
-        (fetchpatch {
-          name = "enable-ignore-build-platform-mismatch.patch";
-          url = "https://gitlab.haskell.org/ghc/ghc/-/commit/4ee094d46effd06093090fcba70f0a80d2a57e6c.patch";
-          includes = [ "configure.ac" ];
-          hash = "sha256-L3FQvcm9QB59BOiR2g5/HACAufIG08HiT53EIOjj64g=";
-        })
-      ]
-      ++ lib.optionals (lib.versionOlder version "9.12") [
-        (fetchpatch {
-          name = "ghc-ppc-support-elf-v2-on-powerpc64-big-endian.patch";
-          url = "https://gitlab.haskell.org/ghc/ghc/-/commit/ead75532c9dc915bfa9ebaef0ef5d148e793cc0a.patch";
-          # ghc-platform was split out of ghc-boot in ddcdd88c2c95445a87ee028f215d1e876939a4d9
-          postFetch = lib.optionalString (lib.versionOlder version "9.10") ''
-            substituteInPlace $out \
-              --replace-fail 'libraries/ghc-platform/src/GHC' 'libraries/ghc-boot/GHC'
-          '';
-          hash =
-            if lib.versionOlder version "9.10" then
-              "sha256-5SVSW1aYoItqHli5QjnudH4zGporYNLDeEo4gZksBZw="
-            else
-              "sha256-vtjT+TL/7sYPu4rcVV3xCqJQ+uqkyBbf9l0KIi97j/0=";
-        })
-      ]
-      ++ lib.optionals (lib.versionOlder version "9.12") [
-        (fetchpatch {
-          name = "ghc-rts-Fix-compile-on-powerpc64-elf-v1.patch";
-          url = "https://gitlab.haskell.org/ghc/ghc/-/commit/05e5785a3157c71e327a8e9bdc80fa7082918739.patch";
-          hash = "sha256-xP5v3cKhXeTRSFvRiKEn9hPxGXgVgykjTILKjh/pdDU=";
-        })
-      ]
-      # Fix build with gcc15
-      # https://gitlab.haskell.org/ghc/ghc/-/issues/25662
-      # https://gitlab.haskell.org/ghc/ghc/-/merge_requests/13863
-      ++ lib.optionals (lib.versionOlder version "9.10") [
-        (fetchpatch {
-          name = "ghc-hp2ps-c-gnu17.patch";
-          url = "https://src.fedoraproject.org/rpms/ghc/raw/9c26d7c3c3de73509a25806e5663b37bcf2e0b4e/f/hp2ps-C-gnu17.patch";
-          hash = "sha256-Vr5wkiSE1S5e+cJ8pWUvG9KFpxtmvQ8wAy08ElGNp5E=";
-        })
-      ]
-      # Fix subword division regression in 9.12.3 https://gitlab.haskell.org/ghc/ghc/-/merge_requests/15264
-      ++ lib.optionals (version == "9.12.3") [
-        (fetchpatch {
-          name = "ghc-9.12.3-fix-subword-division.patch";
-          url = "https://gitlab.haskell.org/ghc/ghc/-/commit/65370007e2d9f1976fbcfbb514917fb111117148.patch";
-          hash = "sha256-GMnD0StBTRynl2Lels1L0u1bo7HscLGPUAv+rTJ98QQ=";
-        })
-      ]
-      # Fixes stack overrun in rts which crashes an process whenever
-      # freeHaskellFunPtr is called with nixpkgs' hardening flags.
-      # https://gitlab.haskell.org/ghc/ghc/-/issues/25485 krank:ignore-line
-      # https://gitlab.haskell.org/ghc/ghc/-/merge_requests/13599
-      ++ lib.optionals (lib.versionOlder version "9.13") [
-        (fetchpatch {
-          name = "ghc-rts-adjustor-fix-i386-stack-overrun.patch";
-          url = "https://gitlab.haskell.org/ghc/ghc/-/commit/39bb6e583d64738db51441a556d499aa93a4fc4a.patch";
-          sha256 = "0w5fx413z924bi2irsy1l4xapxxhrq158b5gn6jzrbsmhvmpirs0";
-        })
-      ]
-
-      # Unreleased or still in-progress upstream cross fixes
-      ++ lib.optionals (lib.versionAtLeast version "9.10" && lib.versionOlder version "9.15") [
-        # https://gitlab.haskell.org/ghc/ghc/-/merge_requests/13919
-        (fetchpatch {
-          name = "include-modern-utimbuf.patch";
-          url = "https://gitlab.haskell.org/ghc/ghc/-/commit/7e75928ed0f1c4654de6ddd13d0b00bf4b5c6411.patch";
-          hash = "sha256-sb+AHdkGkCu8MW0xoQIpD5kEc0zYX8udAMDoC+TWc0Q=";
-        })
-
-        # https://gitlab.haskell.org/ghc/ghc/-/issues/26290 krank:ignore-line
-        ./export-heap-methods.patch
-      ]
-      ++ lib.optionals (lib.versionAtLeast version "9.10.3") [
-        # https://gitlab.haskell.org/ghc/ghc/-/issues/26518 krank:ignore-line
-        ./ghc-define-undefined-elf-st-visibility.patch
-      ]
-
-      # Fix docs build with Sphinx >= 9 https://gitlab.haskell.org/ghc/ghc/-/issues/26810
-      ++
-        lib.optionals
-          (
-            lib.versionOlder version "9.12.4"
-            || (lib.versionAtLeast version "9.14" && lib.versionOlder version "9.15.20260129")
-          )
-          [
-            ./ghc-9.6-or-later-docs-sphinx-9.patch
-          ]
-
-      # Fixes rts/Types.h missing from the install when targeting javascript
-      # See https://gitlab.haskell.org/ghc/ghc/-/merge_requests/15740, krank:ignore-line
-      # https://gitlab.haskell.org/ghc/ghc/-/issues/27033. krank:ignore-line
-      ++
-        lib.optionals
-          (
-            version == "9.12.3"
-            # TODO(@sternenseemann): 9.14.2 will likely also have this patch
-            || (lib.versionAtLeast version "9.14" && lib.versionOlder version "9.15.20260127")
-          )
-          [
-            (fetchpatch {
-              name = "ghc-9.12.3-ghcjs-install-rts-types.h.patch";
-              url = "https://gitlab.haskell.org/ghc/ghc/-/commit/5b1be555be4f0989d78c274991c5046d7ac6d25e.patch";
-              hash = "sha256-pv4NDyQ6FlZgmTYZ4Ghis4qggt7nCDMhqGaFxTxVPac=";
-              includes = [ "rts/rts.cabal" ];
-            })
-          ]
-
-      ++ (import ./common-llvm-patches.nix { inherit lib version fetchpatch; });
-
-    stdenv = stdenvNoCC;
-  },
-
-  # GHC's build system hadrian built from the GHC-to-build's source tree
-  # using our bootstrap GHC.
-  hadrian ? import ../../tools/haskell/hadrian/make-hadrian.nix { inherit bootPkgs lib; } {
-    inherit ghcSrc;
-    ghcVersion = version;
-    userSettings = hadrianUserSettings;
-  },
-
-  #  Whether to build sphinx documentation.
-  # TODO(@sternenseemann): Hadrian ignores the --docs flag if finalStage = Stage1
-  enableDocs ? (
-    # Docs disabled if we are building on musl because it's a large task to keep
-    # all `sphinx` dependencies building in this environment.
-    !stdenv.buildPlatform.isMusl
-  ),
-
-  # Whether to disable the large address space allocator
-  # necessary fix for iOS: https://www.reddit.com/r/haskell/comments/4ttdz1/building_an_osxi386_to_iosarm64_cross_compiler/d5qvd67/
-  disableLargeAddressSpace ? stdenv.targetPlatform.isiOS,
-
-  # Whether to build an unregisterised version of GHC.
-  # GHC will normally auto-detect whether it can do a registered build, but this
-  # option will force it to do an unregistered build when set to true.
-  # See https://gitlab.haskell.org/ghc/ghc/-/wikis/building/unregisterised
-  enableUnregisterised ? false,
+  # GHC can be built with system libffi or a bundled one.
+  libffi ? null,
+  libiconv ? null,
+  useLLVM ? !(import ./common-have-ncg.nix { inherit lib stdenv version; }),
 }:
 
 assert !enableNativeBignum -> gmp != null;
@@ -454,36 +439,31 @@ let
     let
       tools =
         {
-          "cc" = cc;
-          "c++" = cc;
-          as = cc.bintools;
-
           ar = cc.bintools;
-          ranlib = cc.bintools;
-          nm = cc.bintools;
-          readelf = cc.bintools;
-          objdump = cc.bintools;
-
-          ld = cc.bintools;
-          "ld.gold" = cc.bintools;
-
-          windres = cc.bintools;
-
-          otool = cc.bintools.bintools;
-
+          as = cc.bintools;
+          "c++" = cc;
+          "cc" = cc;
+          # clang is used as an assembler on darwin with the LLVM backend
+          clang = cc;
           # GHC needs install_name_tool on all darwin platforms. The same one can
           # be used on both platforms. It is safe to use with linker-generated
           # signatures because it will update the signatures automatically after
           # modifying the target binary.
           install_name_tool = cc.bintools.bintools;
+          ld = cc.bintools;
+          "ld.gold" = cc.bintools;
+          nm = cc.bintools;
+          objdump = cc.bintools;
+          otool = cc.bintools.bintools;
+          ranlib = cc.bintools;
+          readelf = cc.bintools;
 
           # strip on darwin is wrapped to enable deterministic mode.
           strip =
             # TODO(@sternenseemann): also use wrapper if linker == "bfd" or "gold"
             if stdenv.targetPlatform.isDarwin then cc.bintools else cc.bintools.bintools;
 
-          # clang is used as an assembler on darwin with the LLVM backend
-          clang = cc;
+          windres = cc.bintools;
         }
         .${name};
     in
@@ -541,19 +521,111 @@ in
 
 stdenv.mkDerivation (
   {
-    pname = "${targetPrefix}ghc${variantSuffix}";
     inherit version;
-
-    # Useful as hadrianSettings often have spaces in them
-    __structuredAttrs = true;
-
+    pname = "${targetPrefix}ghc${variantSuffix}";
     src = ghcSrc;
 
-    enableParallelBuilding = true;
+    outputs = [
+      "out"
+      "doc"
+    ];
 
     postPatch = ''
       patchShebangs --build .
     '';
+
+    # Make sure we never relax`$PATH` and hooks support for compatibility.
+    strictDeps = true;
+
+    nativeBuildInputs = [
+      autoreconfHook
+      perl
+      hadrian
+      bootPkgs.alex
+      bootPkgs.happy
+      bootPkgs.hscolour
+      # Python is used in a few scripts invoked by hadrian to generate e.g. rts headers.
+      python3
+      # Tool used to update GHC's settings file in postInstall
+      bootPkgs.ghc-settings-edit
+    ]
+    ++ lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) [
+      autoSignDarwinBinariesHook
+    ]
+    ++ lib.optionals enableDocs [
+      sphinx
+    ];
+
+    buildInputs = [ bash ] ++ (libDeps hostPlatform);
+
+    # `--with` flags for libraries needed for RTS linker
+    configureFlags = [
+      "--datadir=$doc/share/doc/ghc"
+    ]
+    # ghc 9.10 and later use c17 by default. we use gnu17 on darwin for older
+    # ghc versions to match this and fix build issues with newer clang.
+    ++ lib.optionals (hostPlatform.isDarwin && lib.versionOlder version "9.10") [
+      "CFLAGS=-std=gnu17"
+    ]
+    ++ lib.optionals enableTerminfo [
+      "--with-curses-includes=${lib.getDev targetLibs.ncurses}/include"
+      "--with-curses-libraries=${lib.getLib targetLibs.ncurses}/lib"
+    ]
+    ++ lib.optionals (libffi != null && !targetPlatform.isGhcjs) [
+      "--with-system-libffi"
+      "--with-ffi-includes=${targetLibs.libffi.dev}/include"
+      "--with-ffi-libraries=${targetLibs.libffi.out}/lib"
+    ]
+    ++ lib.optionals (!enableNativeBignum) [
+      "--with-gmp-includes=${targetLibs.gmp.dev}/include"
+      "--with-gmp-libraries=${targetLibs.gmp.out}/lib"
+    ]
+    ++
+      lib.optionals
+        (targetPlatform == hostPlatform && hostPlatform.libc != "glibc" && !targetPlatform.isWindows)
+        [
+          "--with-iconv-includes=${libiconv}/include"
+          "--with-iconv-libraries=${libiconv}/lib"
+        ]
+    ++ lib.optionals (targetPlatform != hostPlatform) [
+      "--enable-bootstrap-with-devel-snapshot"
+    ]
+    ++ lib.optionals useLdGold [
+      "CFLAGS=-fuse-ld=gold"
+      "CONF_GCC_LINKER_OPTS_STAGE1=-fuse-ld=gold"
+      "CONF_GCC_LINKER_OPTS_STAGE2=-fuse-ld=gold"
+    ]
+    ++ lib.optionals disableLargeAddressSpace [
+      "--disable-large-address-space"
+    ]
+    ++ lib.optionals enableDwarf [
+      "--enable-dwarf-unwind"
+      "--with-libdw-includes=${lib.getDev targetLibs.elfutils}/include"
+      "--with-libdw-libraries=${lib.getLib targetLibs.elfutils}/lib"
+    ]
+    ++ lib.optionals enableNuma [
+      "--enable-numa"
+      "--with-libnuma-includes=${lib.getDev targetLibs.numactl}/include"
+      "--with-libnuma-libraries=${lib.getLib targetLibs.numactl}/lib"
+    ]
+    ++ lib.optionals targetPlatform.isDarwin [
+      # Darwin uses llvm-ar. GHC will try to use `-L` with `ar` when it is `llvm-ar`
+      # but it doesn’t currently work because Cabal never uses `-L` on Darwin. See:
+      # https://gitlab.haskell.org/ghc/ghc/-/issues/23188
+      # https://github.com/haskell/cabal/issues/8882
+      "fp_cv_prog_ar_supports_dash_l=no"
+    ]
+    ++ lib.optionals enableUnregisterised [
+      "--enable-unregisterised"
+    ]
+    ++
+      lib.optionals
+        (stdenv.buildPlatform.isAarch64 && stdenv.buildPlatform.isMusl && lib.versionOlder version "9.12")
+        [
+          # The bootstrap binaries for aarch64 musl were built for the wrong triple.
+          # https://gitlab.haskell.org/ghc/ghc/-/merge_requests/13182
+          "--enable-ignore-build-platform-mismatch"
+        ];
 
     # GHC is a bit confused on its cross terminology.
     # TODO(@sternenseemann): investigate coreutils dependencies and pass absolute paths
@@ -671,153 +743,6 @@ stdenv.mkDerivation (
       hadrianFlags+=("-j$NIX_BUILD_CORES")
     '';
 
-    ${if targetPlatform.isGhcjs then "configureScript" else null} = "emconfigure ./configure";
-    # GHC currently ships an edited config.sub so ghcjs is accepted which we can not rollback
-    ${if targetPlatform.isGhcjs then "dontUpdateAutotoolsGnuConfigScripts" else null} = true;
-
-    # TODO(@Ericson2314): Always pass "--target" and always prefix.
-    configurePlatforms = [
-      "build"
-      "host"
-    ]
-    ++ lib.optional (targetPlatform != hostPlatform) "target";
-
-    # `--with` flags for libraries needed for RTS linker
-    configureFlags = [
-      "--datadir=$doc/share/doc/ghc"
-    ]
-    # ghc 9.10 and later use c17 by default. we use gnu17 on darwin for older
-    # ghc versions to match this and fix build issues with newer clang.
-    ++ lib.optionals (hostPlatform.isDarwin && lib.versionOlder version "9.10") [
-      "CFLAGS=-std=gnu17"
-    ]
-    ++ lib.optionals enableTerminfo [
-      "--with-curses-includes=${lib.getDev targetLibs.ncurses}/include"
-      "--with-curses-libraries=${lib.getLib targetLibs.ncurses}/lib"
-    ]
-    ++ lib.optionals (libffi != null && !targetPlatform.isGhcjs) [
-      "--with-system-libffi"
-      "--with-ffi-includes=${targetLibs.libffi.dev}/include"
-      "--with-ffi-libraries=${targetLibs.libffi.out}/lib"
-    ]
-    ++ lib.optionals (!enableNativeBignum) [
-      "--with-gmp-includes=${targetLibs.gmp.dev}/include"
-      "--with-gmp-libraries=${targetLibs.gmp.out}/lib"
-    ]
-    ++
-      lib.optionals
-        (targetPlatform == hostPlatform && hostPlatform.libc != "glibc" && !targetPlatform.isWindows)
-        [
-          "--with-iconv-includes=${libiconv}/include"
-          "--with-iconv-libraries=${libiconv}/lib"
-        ]
-    ++ lib.optionals (targetPlatform != hostPlatform) [
-      "--enable-bootstrap-with-devel-snapshot"
-    ]
-    ++ lib.optionals useLdGold [
-      "CFLAGS=-fuse-ld=gold"
-      "CONF_GCC_LINKER_OPTS_STAGE1=-fuse-ld=gold"
-      "CONF_GCC_LINKER_OPTS_STAGE2=-fuse-ld=gold"
-    ]
-    ++ lib.optionals disableLargeAddressSpace [
-      "--disable-large-address-space"
-    ]
-    ++ lib.optionals enableDwarf [
-      "--enable-dwarf-unwind"
-      "--with-libdw-includes=${lib.getDev targetLibs.elfutils}/include"
-      "--with-libdw-libraries=${lib.getLib targetLibs.elfutils}/lib"
-    ]
-    ++ lib.optionals enableNuma [
-      "--enable-numa"
-      "--with-libnuma-includes=${lib.getDev targetLibs.numactl}/include"
-      "--with-libnuma-libraries=${lib.getLib targetLibs.numactl}/lib"
-    ]
-    ++ lib.optionals targetPlatform.isDarwin [
-      # Darwin uses llvm-ar. GHC will try to use `-L` with `ar` when it is `llvm-ar`
-      # but it doesn’t currently work because Cabal never uses `-L` on Darwin. See:
-      # https://gitlab.haskell.org/ghc/ghc/-/issues/23188
-      # https://github.com/haskell/cabal/issues/8882
-      "fp_cv_prog_ar_supports_dash_l=no"
-    ]
-    ++ lib.optionals enableUnregisterised [
-      "--enable-unregisterised"
-    ]
-    ++
-      lib.optionals
-        (stdenv.buildPlatform.isAarch64 && stdenv.buildPlatform.isMusl && lib.versionOlder version "9.12")
-        [
-          # The bootstrap binaries for aarch64 musl were built for the wrong triple.
-          # https://gitlab.haskell.org/ghc/ghc/-/merge_requests/13182
-          "--enable-ignore-build-platform-mismatch"
-        ];
-
-    # Make sure we never relax`$PATH` and hooks support for compatibility.
-    strictDeps = true;
-
-    # Don’t add -liconv to LDFLAGS automatically so that GHC will add it itself.
-    dontAddExtraLibs = true;
-
-    nativeBuildInputs = [
-      autoreconfHook
-      perl
-      hadrian
-      bootPkgs.alex
-      bootPkgs.happy
-      bootPkgs.hscolour
-      # Python is used in a few scripts invoked by hadrian to generate e.g. rts headers.
-      python3
-      # Tool used to update GHC's settings file in postInstall
-      bootPkgs.ghc-settings-edit
-    ]
-    ++ lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) [
-      autoSignDarwinBinariesHook
-    ]
-    ++ lib.optionals enableDocs [
-      sphinx
-    ];
-
-    # For building runtime libs
-    depsBuildTarget = toolsForTarget;
-    # Everything the stage0 compiler needs to build stage1: CC, bintools, extra libs.
-    # See also GHC, {CC,LD,AR}_STAGE0 in preConfigure.
-    depsBuildBuild = [
-      # N.B. We do not declare bootPkgs.ghc in any of the stdenv.mkDerivation
-      # dependency lists to prevent the bintools setup hook from adding ghc's
-      # lib directory to the linker flags. Instead we tell configure about it
-      # via the GHC environment variable.
-      buildCC
-      # stage0 builds terminfo unconditionally, so we always need ncurses
-      ncurses
-    ];
-
-    # Prevent stage0 ghc from leaking into the final result. This was an issue
-    # with GHC 9.6.
-    disallowedReferences = [
-      bootPkgs.ghc
-    ];
-
-    buildInputs = [ bash ] ++ (libDeps hostPlatform);
-
-    # stage0:ghc (i.e. stage1) doesn't need to link against libnuma, so it's target specific
-    depsTargetTarget = map lib.getDev (
-      libDeps targetPlatform ++ lib.optionals enableNuma [ targetLibs.numactl ]
-    );
-    depsTargetTargetPropagated = map (lib.getOutput "out") (
-      libDeps targetPlatform ++ lib.optionals enableNuma [ targetLibs.numactl ]
-    );
-
-    hadrianFlags = [
-      "--flavour=${ghcFlavour}"
-      "--bignum=${if enableNativeBignum then "native" else "gmp"}"
-      "--docs=${if enableDocs then "no-sphinx-pdfs" else "no-sphinx"}"
-    ]
-    ++ lib.optionals (lib.versionAtLeast version "9.8") [
-      # In 9.14 this will be default with release flavour.
-      # See https://gitlab.haskell.org/ghc/ghc/-/merge_requests/13444
-      "--hash-unit-ids"
-    ]
-    ++ hadrianSettings;
-
     buildPhase = ''
       runHook preBuild
 
@@ -828,25 +753,6 @@ stdenv.mkDerivation (
 
       runHook postBuild
     '';
-
-    # required, because otherwise all symbols from HSffi.o are stripped, and
-    # that in turn causes GHCi to abort
-    stripDebugFlags = [ "-S" ] ++ lib.optional (!targetPlatform.isDarwin) "--keep-file-symbols";
-
-    checkTarget = "test";
-
-    hardeningDisable = [
-      "format"
-    ];
-
-    # big-parallel allows us to build with more than 2 cores on
-    # Hydra which already warrants a significant speedup
-    requiredSystemFeatures = [ "big-parallel" ];
-
-    outputs = [
-      "out"
-      "doc"
-    ];
 
     # We need to configure the bindist *again* before installing
     # https://gitlab.haskell.org/ghc/ghc/-/issues/22058
@@ -922,32 +828,101 @@ stdenv.mkDerivation (
       install -Dm 644 utils/completion/ghc.bash $out/share/bash-completion/completions/${targetPrefix}ghc
     '';
 
+    ${if targetPlatform.isGhcjs then "configureScript" else null} = "emconfigure ./configure";
+    # GHC currently ships an edited config.sub so ghcjs is accepted which we can not rollback
+    ${if targetPlatform.isGhcjs then "dontUpdateAutotoolsGnuConfigScripts" else null} = true;
+    # Useful as hadrianSettings often have spaces in them
+    __structuredAttrs = true;
+    checkTarget = "test";
+
+    # TODO(@Ericson2314): Always pass "--target" and always prefix.
+    configurePlatforms = [
+      "build"
+      "host"
+    ]
+    ++ lib.optional (targetPlatform != hostPlatform) "target";
+
+    # Everything the stage0 compiler needs to build stage1: CC, bintools, extra libs.
+    # See also GHC, {CC,LD,AR}_STAGE0 in preConfigure.
+    depsBuildBuild = [
+      # N.B. We do not declare bootPkgs.ghc in any of the stdenv.mkDerivation
+      # dependency lists to prevent the bintools setup hook from adding ghc's
+      # lib directory to the linker flags. Instead we tell configure about it
+      # via the GHC environment variable.
+      buildCC
+      # stage0 builds terminfo unconditionally, so we always need ncurses
+      ncurses
+    ];
+
+    # For building runtime libs
+    depsBuildTarget = toolsForTarget;
+
+    # stage0:ghc (i.e. stage1) doesn't need to link against libnuma, so it's target specific
+    depsTargetTarget = map lib.getDev (
+      libDeps targetPlatform ++ lib.optionals enableNuma [ targetLibs.numactl ]
+    );
+
+    depsTargetTargetPropagated = map (lib.getOutput "out") (
+      libDeps targetPlatform ++ lib.optionals enableNuma [ targetLibs.numactl ]
+    );
+
+    # Prevent stage0 ghc from leaking into the final result. This was an issue
+    # with GHC 9.6.
+    disallowedReferences = [
+      bootPkgs.ghc
+    ];
+
+    # Don’t add -liconv to LDFLAGS automatically so that GHC will add it itself.
+    dontAddExtraLibs = true;
+    dontStrip = targetPlatform.useAndroidPrebuilt || targetPlatform.isWasm;
+    enableParallelBuilding = true;
+
+    hadrianFlags = [
+      "--flavour=${ghcFlavour}"
+      "--bignum=${if enableNativeBignum then "native" else "gmp"}"
+      "--docs=${if enableDocs then "no-sphinx-pdfs" else "no-sphinx"}"
+    ]
+    ++ lib.optionals (lib.versionAtLeast version "9.8") [
+      # In 9.14 this will be default with release flavour.
+      # See https://gitlab.haskell.org/ghc/ghc/-/merge_requests/13444
+      "--hash-unit-ids"
+    ]
+    ++ hadrianSettings;
+
+    hardeningDisable = [
+      "format"
+    ];
+
+    # big-parallel allows us to build with more than 2 cores on
+    # Hydra which already warrants a significant speedup
+    requiredSystemFeatures = [ "big-parallel" ];
+    # required, because otherwise all symbols from HSffi.o are stripped, and
+    # that in turn causes GHCi to abort
+    stripDebugFlags = [ "-S" ] ++ lib.optional (!targetPlatform.isDarwin) "--keep-file-symbols";
+
     passthru = {
       inherit bootPkgs targetPrefix haskellCompilerName;
-
       inherit llvmPackages;
       inherit enableShared;
       inherit hasHaddock;
-
       # Expose hadrian used for bootstrapping, for debugging purposes
       inherit hadrian;
-
       bootstrapAvailable = lib.meta.availableOn stdenv.buildPlatform bootPkgs.ghc;
     };
 
     meta = {
-      homepage = "http://haskell.org/ghc";
+      inherit (bootPkgs.ghc.meta) license;
       description = "Glasgow Haskell Compiler";
+      homepage = "http://haskell.org/ghc";
+
       maintainers = with lib.maintainers; [
         guibou
       ];
+
+      platforms = lib.platforms.all;
       teams = [ lib.teams.haskell ];
       timeout = 24 * 3600;
-      platforms = lib.platforms.all;
-      inherit (bootPkgs.ghc.meta) license;
     };
-
-    dontStrip = targetPlatform.useAndroidPrebuilt || targetPlatform.isWasm;
   }
   // lib.optionalAttrs targetPlatform.useAndroidPrebuilt {
     dontPatchELF = true;

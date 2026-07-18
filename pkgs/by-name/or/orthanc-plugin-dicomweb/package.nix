@@ -1,40 +1,40 @@
 {
   lib,
   stdenv,
-  fetchhg,
   fetchurl,
-  orthanc,
+  boost,
   cmake,
-  python3,
-  unzip,
+  fetchhg,
   gtest,
   jsoncpp,
-  boost,
-  pugixml,
   libuuid,
+  orthanc,
+  pugixml,
+  python3,
+  unzip,
   zlib,
 }:
 
 let
   bootstrap = fetchurl {
-    url = "https://orthanc.uclouvain.be/downloads/third-party-downloads/bootstrap-5.3.3.zip";
     hash = "sha256-VdfxznlQQK+4MR3wnSnQ00ZIQAweqrstCi7SIWs9sF0=";
+    url = "https://orthanc.uclouvain.be/downloads/third-party-downloads/bootstrap-5.3.3.zip";
   };
   vuejs = fetchurl {
-    url = "https://orthanc.uclouvain.be/downloads/third-party-downloads/dicom-web/vuejs-2.6.10.tar.gz";
     hash = "sha256-49kAzZJmtb7Zu21XX8mrZ4fnnnrSHAHuEne/9UUxIfI=";
+    url = "https://orthanc.uclouvain.be/downloads/third-party-downloads/dicom-web/vuejs-2.6.10.tar.gz";
   };
   axios = fetchurl {
-    url = "https://orthanc.uclouvain.be/downloads/third-party-downloads/dicom-web/axios-0.19.0.tar.gz";
     hash = "sha256-KVd8YIWwkLTkqZOS/N1YL7a7y0myqvLMe3+jh0Ups4A=";
+    url = "https://orthanc.uclouvain.be/downloads/third-party-downloads/dicom-web/axios-0.19.0.tar.gz";
   };
   font-awesome = fetchurl {
-    url = "https://orthanc.uclouvain.be/downloads/third-party-downloads/dicom-web/Font-Awesome-4.7.0.tar.gz";
     hash = "sha256-3lEroOHerTgrv843LN50s/GJcdh2//tjXukzPw2wXUM=";
+    url = "https://orthanc.uclouvain.be/downloads/third-party-downloads/dicom-web/Font-Awesome-4.7.0.tar.gz";
   };
   babel-polyfill = fetchurl {
-    url = "https://orthanc.uclouvain.be/downloads/third-party-downloads/dicom-web/babel-polyfill-6.26.0.min.js.gz";
     hash = "sha256-CH09LWISr7QY9QSRhY9/BVy1Te+2NR1sXQCPZioqlcI=";
+    url = "https://orthanc.uclouvain.be/downloads/third-party-downloads/dicom-web/babel-polyfill-6.26.0.min.js.gz";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -59,6 +59,8 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "cmake_minimum_required(VERSION 2.8)" "cmake_minimum_required(VERSION 3.10)"
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     python3
@@ -76,13 +78,6 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  strictDeps = true;
-
-  env.NIX_LDFLAGS = toString [
-    "-L${lib.getLib gtest}"
-    "-lgtest"
-  ];
-
   cmakeFlags = [
     "-DCMAKE_BUILD_TYPE=Release"
     "-DSTATIC_BUILD=OFF"
@@ -90,12 +85,19 @@ stdenv.mkDerivation (finalAttrs: {
     "-DORTHANC_FRAMEWORK_ROOT=${orthanc.framework}/include/orthanc-framework"
   ];
 
+  env.NIX_LDFLAGS = toString [
+    "-L${lib.getLib gtest}"
+    "-lgtest"
+  ];
+
   meta = {
     description = "Plugin that extends Orthanc with support for the DICOMweb protocols";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       dvcorreia
     ];
+
     platforms = lib.platforms.linux;
   };
 })

@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  ninja,
   SDL2,
-  zmusic,
-  libvpx,
-  pkg-config,
-  makeWrapper,
   bzip2,
-  gtk3,
+  cmake,
   fluidsynth,
-  openal,
+  gtk3,
   libGL,
+  libvpx,
+  makeWrapper,
+  ninja,
+  openal,
+  pkg-config,
   vulkan-loader,
+  zmusic,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,12 +27,20 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "76fe82f5eb318fdeb30ba9fb27093a9a10bc3821";
     hash = "sha256-QCxszreIExqWVVJL8GFNzfayeSwaelhGpimqn3spEJY=";
     leaveDotGit = true;
+
     postFetch = ''
       cd $out
       git rev-parse HEAD > COMMIT
       rm -rf .git
     '';
   };
+
+  postPatch = ''
+    substituteInPlace tools/updaterevision/gitinfo.h.in \
+      --replace-fail "@Tag@" "${finalAttrs.version}" \
+      --replace-fail "@Hash@" "$(cat COMMIT)" \
+      --replace-fail "@Timestamp@" "1970-01-01 00:00:01 +0000"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -58,13 +66,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "DYN_OPENAL" false)
   ];
 
-  postPatch = ''
-    substituteInPlace tools/updaterevision/gitinfo.h.in \
-      --replace-fail "@Tag@" "${finalAttrs.version}" \
-      --replace-fail "@Hash@" "$(cat COMMIT)" \
-      --replace-fail "@Timestamp@" "1970-01-01 00:00:01 +0000"
-  '';
-
   postInstall = ''
     mv $out/bin/raze $out/share/raze
     makeWrapper $out/share/raze/raze $out/bin/raze \
@@ -76,15 +77,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Build engine port backed by GZDoom tech";
+
     longDescription = ''
       Raze is a fork of Build engine games backed by GZDoom tech and combines
       Duke Nukem 3D, Blood, Redneck Rampage, Shadow Warrior and Exhumed/Powerslave
       in a single package. It is also capable of playing Nam and WW2 GI.
     '';
+
     homepage = "https://github.com/ZDoom/Raze";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ qubitnano ];
-    mainProgram = "raze";
     platforms = [ "x86_64-linux" ];
+    mainProgram = "raze";
   };
 })

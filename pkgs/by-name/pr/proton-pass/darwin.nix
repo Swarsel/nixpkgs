@@ -1,10 +1,10 @@
 {
   stdenv,
-  undmg,
-  pname,
-  version,
-  passthru,
   meta,
+  passthru,
+  pname,
+  undmg,
+  version,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,10 +16,7 @@ stdenv.mkDerivation (finalAttrs: {
     ;
 
   src = passthru.sources.${stdenv.hostPlatform.system};
-
   nativeBuildInputs = [ undmg ];
-
-  sourceRoot = ".";
 
   installPhase = ''
     runHook preInstall
@@ -29,4 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  sourceRoot = ".";
 })

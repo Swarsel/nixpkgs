@@ -1,9 +1,9 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
   nixosTests,
   perl,
+  python3,
   radicale,
   versionCheckHook,
   which,
@@ -13,7 +13,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "calendar-cli";
   version = "1.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pycalendar";
@@ -27,22 +26,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     substituteInPlace tests/test_calendar-cli.sh \
       --replace-fail "../bin/calendar-cli.py" "$out/bin/calendar-cli"
   '';
-
-  build-system = with python3.pkgs; [
-    hatch-vcs
-    hatchling
-  ];
-
-  dependencies = with python3.pkgs; [
-    icalendar
-    caldav
-    pytz
-    pyyaml
-    tzlocal
-    click
-    six
-    vobject
-  ];
 
   nativeCheckInputs = [
     perl
@@ -64,16 +47,34 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  build-system = with python3.pkgs; [
+    hatch-vcs
+    hatchling
+  ];
+
+  dependencies = with python3.pkgs; [
+    icalendar
+    caldav
+    pytz
+    pyyaml
+    tzlocal
+    click
+    six
+    vobject
+  ];
+
+  pyproject = true;
+
   passthru.tests = {
     inherit (nixosTests) radicale;
   };
 
   meta = {
-    changelog = "https://github.com/pycalendar/calendar-cli/releases/tag/${finalAttrs.src.tag}";
     description = "Simple command-line CalDav client";
     homepage = "https://github.com/pycalendar/calendar-cli";
+    changelog = "https://github.com/pycalendar/calendar-cli/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "calendar-cli";
     maintainers = with lib.maintainers; [ dotlambda ];
+    mainProgram = "calendar-cli";
   };
 })

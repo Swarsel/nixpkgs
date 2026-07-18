@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  perlPackages,
   makeWrapper,
   openssl,
+  perlPackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,10 +16,9 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-yjeK/CjFSjjymriVb41AWy0SSJ5mwPp6T+asyHaeX5E=";
   };
 
-  makeFlags = [ "PREFIX=$(out)" ];
-
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ perlPackages.perl ];
+  makeFlags = [ "PREFIX=$(out)" ];
 
   postInstall = ''
     wrapProgram $out/bin/sslmate --prefix PERL5LIB : \
@@ -35,11 +34,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://sslmate.com";
-    maintainers = [ ];
     description = "Easy to buy, deploy, and manage your SSL certs";
-    mainProgram = "sslmate";
-    platforms = lib.platforms.unix;
+    homepage = "https://sslmate.com";
     license = lib.licenses.mit; # X11
+    maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "sslmate";
   };
 })

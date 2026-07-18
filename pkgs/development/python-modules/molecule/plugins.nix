@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools-scm,
-  python-vagrant,
+  buildPythonPackage,
   docker,
+  python-vagrant,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "molecule-plugins";
   version = "25.8.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ansible-community";
@@ -19,27 +18,27 @@ buildPythonPackage rec {
     hash = "sha256-wTvJ+cjZMTOyaqqDZsA1wsKCpu2FEi69IBlSTxNs3/M=";
   };
 
-  # reverse the dependency
-  pythonRemoveDeps = [ "molecule" ];
-
   nativeBuildInputs = [
     setuptools-scm
   ];
+
+  # Tests require container runtimes
+  doCheck = false;
 
   optional-dependencies = {
     docker = [ docker ];
     vagrant = [ python-vagrant ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "molecule_plugins" ];
-
-  # Tests require container runtimes
-  doCheck = false;
+  # reverse the dependency
+  pythonRemoveDeps = [ "molecule" ];
 
   meta = {
     description = "Collection on molecule plugins";
     homepage = "https://github.com/ansible-community/molecule-plugins";
-    maintainers = [ ];
     license = lib.licenses.mit;
+    maintainers = [ ];
   };
 }

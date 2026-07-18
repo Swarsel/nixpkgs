@@ -1,18 +1,17 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   backoff,
   buildPythonPackage,
-  fetchFromGitHub,
   fetchpatch,
-  yarl,
   setuptools,
+  yarl,
 }:
 
 buildPythonPackage rec {
   pname = "toonapi";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "frenck";
@@ -24,12 +23,14 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/frenck/python-toonapi/pull/15
     (fetchpatch {
+      hash = "sha256-EMK11M+2OTnIB7oWavpQKNQq0ZLuSxYQlC6On7ob1xU=";
       name = "replace-async-timeout-with-asyncio.timeout.patch";
       url = "https://github.com/frenck/python-toonapi/commit/a04f1d8bcbcf48889dae49219d2edadbeb2dfa01.patch";
-      hash = "sha256-EMK11M+2OTnIB7oWavpQKNQq0ZLuSxYQlC6On7ob1xU=";
     })
   ];
 
+  # Project has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -38,9 +39,7 @@ buildPythonPackage rec {
     yarl
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "toonapi" ];
 
   meta = {

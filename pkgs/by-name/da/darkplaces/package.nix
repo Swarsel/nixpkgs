@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  zlib,
-  libjpeg,
   SDL2,
+  libjpeg,
   libvorbis,
   libx11,
+  zlib,
 }:
 stdenv.mkDerivation {
   pname = "darkplaces";
@@ -46,16 +46,18 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://www.icculus.org/twilight/darkplaces/";
     description = "Quake 1 engine implementation by LadyHavoc";
+
     longDescription = ''
       A game engine based on the Quake 1 engine by id Software.
       It improves and builds upon the original 1996 engine by adding modern
       rendering features, and expanding upon the engine's native game code
       language QuakeC, as well as supporting additional map and model formats.
     '';
-    maintainers = with lib.maintainers; [ necrophcodr ];
+
+    homepage = "https://www.icculus.org/twilight/darkplaces/";
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ necrophcodr ];
     platforms = lib.platforms.linux;
   };
 }

@@ -1,37 +1,31 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pyprojectVersionPatchHook,
-
-  # build-system
-  setuptools,
-
   # dependencies
   aiohttp,
   av,
+  buildPythonPackage,
   mashumaro,
+  # meta
+  music-assistant,
+  nixosTests,
   numpy,
   orjson,
   pillow,
-  zeroconf,
-
+  pyprojectVersionPatchHook,
   # test dependencies
   pytest-aiohttp,
   pytest-cov-stub,
   pytest-xdist,
   pytestCheckHook,
-
-  # meta
-  music-assistant,
-
-  nixosTests,
+  # build-system
+  setuptools,
+  zeroconf,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "aiosendspin";
   version = "6.0.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Sendspin";
@@ -45,13 +39,21 @@ buildPythonPackage (finalAttrs: {
     sed -i "/addopts/d" pyproject.toml
   '';
 
-  build-system = [
-    setuptools
-  ];
-
   nativeBuildInputs = [
     # https://github.com/Sendspin/aiosendspin/blob/5.3.0/pyproject.toml#L27
     pyprojectVersionPatchHook
+  ];
+
+  nativeCheckInputs = [
+    pytest-aiohttp
+    pytest-cov-stub
+    pytest-xdist
+    pytestCheckHook
+  ]
+  ++ finalAttrs.passthru.optional-dependencies.server;
+
+  build-system = [
+    setuptools
   ];
 
   dependencies = [
@@ -69,13 +71,7 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = [
-    pytest-aiohttp
-    pytest-cov-stub
-    pytest-xdist
-    pytestCheckHook
-  ]
-  ++ finalAttrs.passthru.optional-dependencies.server;
+  pyproject = true;
 
   pythonImportsCheck = [
     "aiosendspin"
@@ -88,10 +84,10 @@ buildPythonPackage (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/Sendspin/aiosendspin/releases/tag/${finalAttrs.src.tag}";
+    inherit (music-assistant.meta) maintainers;
     description = "Async Python library implementing the Sendspin Protocol";
     homepage = "https://github.com/Sendspin/aiosendspin";
+    changelog = "https://github.com/Sendspin/aiosendspin/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
-    inherit (music-assistant.meta) maintainers;
   };
 })

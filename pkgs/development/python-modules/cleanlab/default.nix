@@ -1,18 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  numpy,
-  scikit-learn,
-  termcolor,
-  tqdm,
-  pandas,
-
+  buildPythonPackage,
   # tests
   cleanvision,
   datasets,
@@ -20,20 +9,27 @@
   hypothesis,
   keras,
   matplotlib,
-  pytestCheckHook,
+  # dependencies
+  numpy,
+  pandas,
   pytest-lazy-fixture,
+  pytestCheckHook,
+  pythonAtLeast,
+  scikit-learn,
+  # build-system
+  setuptools,
   skorch,
   tensorflow,
+  termcolor,
   torch,
   torchvision,
+  tqdm,
   wget,
-  pythonAtLeast,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "cleanlab";
   version = "2.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cleanlab";
@@ -46,18 +42,6 @@ buildPythonPackage (finalAttrs: {
     substituteInPlace pyproject.toml \
       --replace-fail "setuptools>=65.0,<70.0" "setuptools"
   '';
-
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    numpy
-    scikit-learn
-    termcolor
-    tqdm
-    pandas
-  ];
 
   nativeCheckInputs = [
     cleanvision
@@ -73,6 +57,27 @@ buildPythonPackage (finalAttrs: {
     torch
     torchvision
     wget
+  ];
+
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    numpy
+    scikit-learn
+    termcolor
+    tqdm
+    pandas
+  ];
+
+  disabledTestPaths = [
+    # Requires internet
+    "tests/test_dataset.py"
+    # Requires the datasets we just prevented from downloading
+    "tests/datalab/test_cleanvision_integration.py"
+    # Fails because of issues with the keras derivation
+    "tests/test_frameworks.py"
   ];
 
   disabledTests = [
@@ -101,14 +106,7 @@ buildPythonPackage (finalAttrs: {
     "test_custom_issue_manager_not_registered"
   ];
 
-  disabledTestPaths = [
-    # Requires internet
-    "tests/test_dataset.py"
-    # Requires the datasets we just prevented from downloading
-    "tests/datalab/test_cleanvision_integration.py"
-    # Fails because of issues with the keras derivation
-    "tests/test_frameworks.py"
-  ];
+  pyproject = true;
 
   meta = {
     description = "Standard data-centric AI package for data quality and machine learning with messy, real-world data and labels";

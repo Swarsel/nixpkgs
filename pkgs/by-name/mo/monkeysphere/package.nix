@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
-  perl,
+  coreutils,
+  cpio,
+  gnupg,
+  hexdump,
   libassuan,
   libgcrypt,
-  perlPackages,
   lockfile-progs,
-  gnupg,
-  coreutils,
+  makeWrapper,
   # For the tests:
   openssh,
-  which,
-  socat,
-  cpio,
-  hexdump,
-  procps,
   openssl,
+  perl,
+  perlPackages,
+  procps,
+  socat,
+  which,
 }:
 
 let
@@ -32,9 +32,6 @@ stdenv.mkDerivation rec {
   pname = "monkeysphere";
   version = "0.44";
 
-  # The patched OpenSSH binary MUST NOT be used (except in the check phase):
-  disallowedRequisites = [ opensshUnsafe ];
-
   src = fetchurl {
     url = "http://archive.monkeysphere.info/debian/pool/monkeysphere/m/monkeysphere/monkeysphere_${version}.orig.tar.gz";
     sha256 = "1ah7hy8r9gj96pni8azzjb85454qky5l17m3pqn37854l6grgika";
@@ -47,6 +44,7 @@ stdenv.mkDerivation rec {
   '';
 
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     perl
     libassuan
@@ -78,6 +76,7 @@ stdenv.mkDerivation rec {
   # but they aren't enabled by default because they "drain" entropy (GnuPG
   # still uses /dev/random).
   doCheck = false;
+
   preCheck = lib.optionalString doCheck ''
     patchShebangs tests/
     patchShebangs src/
@@ -122,9 +121,12 @@ stdenv.mkDerivation rec {
       done
     '';
 
+  # The patched OpenSSH binary MUST NOT be used (except in the check phase):
+  disallowedRequisites = [ opensshUnsafe ];
+
   meta = {
-    homepage = "http://web.monkeysphere.info/";
     description = "Leverage the OpenPGP web of trust for SSH and TLS authentication";
+
     longDescription = ''
       The Monkeysphere project's goal is to extend OpenPGP's web of
       trust to new areas of the Internet to help us securely identify
@@ -134,8 +136,10 @@ stdenv.mkDerivation rec {
       TLS/SSL communications through the normal use of tools you are
       familiar with, such as your web browser0 or secure shell.
     '';
+
+    homepage = "http://web.monkeysphere.info/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 }

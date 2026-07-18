@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  desktop-file-utils,
+  gcr_4,
   gjs,
   glib,
   gobject-introspection,
   gtk3,
   gtk4,
-  gcr_4,
   libadwaita,
   meson,
   ninja,
   pango,
   pkg-config,
   vala,
-  desktop-file-utils,
   wrapGAppsHook3,
 }:
 
@@ -79,13 +79,13 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
+    description = "Clipboard management system with GNOME integration";
     homepage = "https://github.com/Keruspe/GPaste";
     changelog = "https://github.com/Keruspe/GPaste/blob/v${finalAttrs.version}/NEWS";
-    description = "Clipboard management system with GNOME integration";
-    mainProgram = "gpaste-client";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.linux;
-    teams = [ lib.teams.gnome ];
     maintainers = with lib.maintainers; [ fabiob ];
+    platforms = lib.platforms.linux;
+    mainProgram = "gpaste-client";
+    teams = [ lib.teams.gnome ];
   };
 })

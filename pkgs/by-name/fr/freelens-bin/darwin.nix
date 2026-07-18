@@ -1,12 +1,12 @@
 {
-  stdenvNoCC,
-  pname,
-  version,
-  src,
-  passthru,
-  meta,
   _7zz,
   autoSignDarwinBinariesHook,
+  meta,
+  passthru,
+  pname,
+  src,
+  stdenvNoCC,
+  version,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -17,8 +17,6 @@ stdenvNoCC.mkDerivation {
     passthru
     meta
     ;
-
-  sourceRoot = ".";
 
   # APFS format is unsupported by undmg
   nativeBuildInputs = [
@@ -34,4 +32,6 @@ stdenvNoCC.mkDerivation {
 
     runHook postInstall
   '';
+
+  sourceRoot = ".";
 }

@@ -17,21 +17,21 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-Y5ZQYWOiG3QZZsr+d7olUDGAQ1LhRG9X2hBNQDx+Ztw=";
   };
 
-  buildInputs = [ ncurses ];
   nativeBuildInputs = [ pkg-config ];
-
-  enableParallelBuilding = true;
+  buildInputs = [ ncurses ];
 
   preInstall = ''
     mkdir -p $out/bin
   '';
+
+  enableParallelBuilding = true;
   installFlags = [ "PREFIX=$(out)" ];
 
   meta = {
     inherit (finalAttrs.src.meta) homepage;
     description = "Animated console version of the 2048 game";
-    mainProgram = "2048-in-terminal";
     license = lib.licenses.mit;
     platforms = lib.platforms.unix;
+    mainProgram = "2048-in-terminal";
   };
 })

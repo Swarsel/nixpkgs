@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   jdupes,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -32,10 +32,12 @@ stdenvNoCC.mkDerivation {
     description = "Aesthetic, modern fcitx5 theme featuring rounded rectangle design";
     homepage = "https://github.com/sanweiya/fcitx5-mellow-themes";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       Guanran928
       zendo
     ];
+
+    platforms = lib.platforms.all;
   };
 }

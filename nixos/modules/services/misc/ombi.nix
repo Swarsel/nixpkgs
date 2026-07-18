@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -22,68 +22,69 @@ in
       package = lib.mkPackageOption pkgs "ombi" { };
 
       dataDir = lib.mkOption {
-        type = lib.types.str;
         default = "/var/lib/ombi";
         description = "The directory where Ombi stores its data files.";
-      };
-
-      port = lib.mkOption {
-        type = lib.types.port;
-        default = 5000;
-        description = "The port for the Ombi web interface.";
-      };
-
-      openFirewall = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Open ports in the firewall for the Ombi web interface.";
-      };
-
-      user = lib.mkOption {
         type = lib.types.str;
-        default = "ombi";
-        description = "User account under which Ombi runs.";
       };
 
       group = lib.mkOption {
-        type = lib.types.str;
         default = "ombi";
         description = "Group under which Ombi runs.";
+        type = lib.types.str;
+      };
+
+      openFirewall = lib.mkOption {
+        default = false;
+        description = "Open ports in the firewall for the Ombi web interface.";
+        type = lib.types.bool;
+      };
+
+      port = lib.mkOption {
+        default = 5000;
+        description = "The port for the Ombi web interface.";
+        type = lib.types.port;
+      };
+
+      user = lib.mkOption {
+        default = "ombi";
+        description = "User account under which Ombi runs.";
+        type = lib.types.str;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    systemd.tmpfiles.rules = [
-      "d '${cfg.dataDir}' 0700 ${cfg.user} ${cfg.group} - -"
-    ];
-
-    systemd.services.ombi = {
-      description = "Ombi";
-      after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
-
-      serviceConfig = {
-        Type = "simple";
-        User = cfg.user;
-        Group = cfg.group;
-        ExecStart = "${lib.getExe cfg.package} --storage '${cfg.dataDir}' --host 'http://*:${toString cfg.port}'";
-        Restart = "on-failure";
-      };
-    };
-
     networking.firewall = lib.mkIf cfg.openFirewall {
       allowedTCPPorts = [ cfg.port ];
     };
 
-    users.users = lib.mkIf (cfg.user == "ombi") {
-      ombi = {
-        isSystemUser = true;
-        group = cfg.group;
-        home = cfg.dataDir;
+    systemd.services.ombi = {
+      after = [ "network.target" ];
+      description = "Ombi";
+
+      serviceConfig = {
+        ExecStart = "${lib.getExe cfg.package} --storage '${cfg.dataDir}' --host 'http://*:${toString cfg.port}'";
+        Group = cfg.group;
+        Restart = "on-failure";
+        Type = "simple";
+        User = cfg.user;
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
+    systemd.tmpfiles.rules = [
+      "d '${cfg.dataDir}' 0700 ${cfg.user} ${cfg.group} - -"
+    ];
+
     users.groups = lib.mkIf (cfg.group == "ombi") { ombi = { }; };
+
+    users.users = lib.mkIf (cfg.user == "ombi") {
+      ombi = {
+        group = cfg.group;
+        home = cfg.dataDir;
+        isSystemUser = true;
+      };
+    };
   };
 }

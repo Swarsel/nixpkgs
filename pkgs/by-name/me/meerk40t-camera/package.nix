@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonPackage rec {
   pname = "meerk40t-camera";
   version = "0.1.9";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -18,19 +17,21 @@ python3Packages.buildPythonPackage rec {
     sed -i '/meerk40t/d' setup.py
   '';
 
+  doCheck = false;
+
   dependencies = with python3Packages; [
     opencv4
   ];
+
+  format = "setuptools";
 
   pythonImportsCheck = [
     "camera"
   ];
 
-  doCheck = false;
-
   meta = {
     description = "MeerK40t camera plugin";
-    license = lib.licenses.mit;
     homepage = "https://github.com/meerk40t/meerk40t-camera";
+    license = lib.licenses.mit;
   };
 }

@@ -1,10 +1,10 @@
 {
-  pkgs,
   lib,
   cmake,
   ninja,
-  sphinx,
+  pkgs,
   python3Packages,
+  sphinx,
 }:
 
 pkgs.stdenv.mkDerivation {
@@ -26,6 +26,15 @@ pkgs.stdenv.mkDerivation {
     "out"
   ];
 
+  postPatch = ''
+    cd doc
+    make singlehtml
+    mkdir -p $doc/share/doc
+    mv _build/singlehtml $doc/share/doc/ckdl
+
+    cd ..
+  '';
+
   nativeBuildInputs = [
     cmake
     ninja
@@ -36,15 +45,6 @@ pkgs.stdenv.mkDerivation {
   cmakeFlags = [
     (lib.cmakeBool "BUILD_TESTS" true)
   ];
-
-  postPatch = ''
-    cd doc
-    make singlehtml
-    mkdir -p $doc/share/doc
-    mv _build/singlehtml $doc/share/doc/ckdl
-
-    cd ..
-  '';
 
   postInstall = ''
     mkdir -p $bin/bin

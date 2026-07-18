@@ -1,9 +1,9 @@
 {
+  lib,
   fetchurl,
   perlPackages,
-  lib,
-  runCommand,
   postfix,
+  runCommand,
 }:
 
 let
@@ -31,15 +31,17 @@ in
 runCommand "${pname}-${version}"
   {
     inherit pname version;
+
     src = fetchurl {
       url = "https://postgrey.schweikert.ch/pub/${pname}-${version}.tar.gz";
       sha256 = "1xx51xih4711vrvc6d57il9ccallbljj5zhgqdb07jzmz11rakgz";
     };
+
     meta = {
       description = "Postfix policy server to provide greylisting";
       homepage = "https://postgrey.schweikert.ch/";
-      platforms = postfix.meta.platforms;
       license = lib.licenses.gpl2Plus;
+      platforms = postfix.meta.platforms;
     };
   }
   ''

@@ -18,8 +18,8 @@ buildDunePackage (finalAttrs: {
   doCheck = true;
 
   meta = {
-    homepage = "https://github.com/Lysxia/pure-splitmix";
     description = "Purely functional splittable PRNG";
+    homepage = "https://github.com/Lysxia/pure-splitmix";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.ulrikstrid ];
   };

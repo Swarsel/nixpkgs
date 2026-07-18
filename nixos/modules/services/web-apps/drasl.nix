@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 let
@@ -36,24 +36,26 @@ in
     enable = lib.mkEnableOption "Drasl";
     package = lib.mkPackageOption pkgs "drasl" { };
     enableDebug = lib.mkEnableOption "debugging";
+
     settings = lib.mkOption {
       description = ''
         Configuration for Drasl. See the
         [Drasl documentation](https://github.com/unmojang/drasl/blob/master/doc/configuration.md)
         for possible options.
       '';
+
       type = lib.types.submodule {
-        freeformType = format.type;
         options = {
           RegistrationOIDC = lib.mkOption {
             default = [ ];
             description = "List of OpenID connect providers.";
+
             type = lib.types.listOf (
               lib.types.submodule {
-                freeformType = format.type;
                 options = {
                   ClientSecretFile = lib.mkOption {
                     default = null;
+
                     description = ''
                       Path to a file containing the OIDC client secret.
 
@@ -63,16 +65,22 @@ in
                       readable by the root user.
                       :::
                     '';
+
                     type = lib.types.nullOr lib.types.path;
                   };
                 };
+
+                freeformType = format.type;
               }
             );
           };
         };
+
+        freeformType = format.type;
       };
     };
   };
+
   config = lib.mkIf cfg.enable {
     assertions = [
       {
@@ -83,35 +91,40 @@ in
         assertion = lib.all (
           x: (lib.hasAttr "ClientSecretFile" (filterAttrs x)) -> !(lib.hasAttr "ClientSecret" (filterAttrs x))
         ) cfg.settings.RegistrationOIDC;
+
         message =
           "Do not set both `services.drasl.settings.RegistrationOIDC.*.ClientSecret` "
           + "and `services.drasl.settings.RegistrationOIDC.*.ClientSecretFile`";
       }
     ];
+
     systemd.services.drasl = {
-      description = "Drasl";
       after = [
         "network-online.target"
         "nss-lookup.target"
       ];
-      wants = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
+
+      description = "Drasl";
       environment = lib.mkIf cfg.enableDebug { DRASL_DEBUG = "1"; };
+
       serviceConfig = {
-        ExecStart = "${lib.getExe cfg.package} -config ${settings}";
+        AmbientCapabilities = "CAP_NET_BIND_SERVICE";
+        CapabilityBoundingSet = "CAP_NET_BIND_SERVICE";
         DynamicUser = true;
-        RuntimeDirectory = "drasl";
-        RuntimeDirectoryMode = "0700";
-        StateDirectory = "drasl";
+        ExecStart = "${lib.getExe cfg.package} -config ${settings}";
+
         LoadCredential = lib.mkIf (secretFiles != [ ]) (
           map (x: "${getIndex x}:${x.ClientSecretFile}") secretFiles
         );
+
         # Hardening
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
         NoNewPrivileges = true;
         PrivateDevices = true;
         PrivateMounts = true;
+        PrivateTmp = "disconnected";
+        ProcSubset = "pid";
         ProtectClock = true;
         ProtectControlGroups = true;
         ProtectHome = true;
@@ -119,19 +132,15 @@ in
         ProtectKernelLogs = true;
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
-        RemoveIPC = true;
-        RestrictRealtime = true;
-        RestrictSUIDSGID = true;
-        CapabilityBoundingSet = "CAP_NET_BIND_SERVICE";
-        AmbientCapabilities = "CAP_NET_BIND_SERVICE";
-        PrivateTmp = "disconnected";
-        ProcSubset = "pid";
         ProtectProc = "invisible";
         ProtectSystem = "strict";
+        RemoveIPC = true;
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = [
           "~cgroup"
           "~ipc"
@@ -141,7 +150,14 @@ in
           "~user"
           "~uts"
         ];
+
+        RestrictRealtime = true;
+        RestrictSUIDSGID = true;
+        RuntimeDirectory = "drasl";
+        RuntimeDirectoryMode = "0700";
+        StateDirectory = "drasl";
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "~@clock"
           "~@cpu-emulation"
@@ -155,8 +171,12 @@ in
           "~@resources"
           "~@swap"
         ];
+
         UMask = "0077";
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
   };
 

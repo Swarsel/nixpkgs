@@ -1,4 +1,6 @@
 {
+  lib,
+  stdenv,
   fetchurl,
   fontconfig,
   freetype,
@@ -6,14 +8,12 @@
   gsettings-desktop-schemas,
   gtk3,
   jdk17,
-  lib,
   libx11,
   libxrender,
   libxtst,
   makeDesktopItem,
   makeWrapper,
   shared-mime-info,
-  stdenv,
   unzip,
   webkitgtk_4_1,
   zlib,
@@ -37,19 +37,25 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-icmo5zdK0XaH32kXwZUVaQ0VPSGEgvlLr7v7PtdbmCg=";
   };
 
-  desktopItem = makeDesktopItem {
-    name = "eclipse-mat";
-    exec = "eclipse-mat";
-    icon = "eclipse";
-    comment = "Eclipse Memory Analyzer";
-    desktopName = "Eclipse MAT";
-    genericName = "Java Memory Analyzer";
-    categories = [ "Development" ];
-  };
+  nativeBuildInputs = [
+    unzip
+    makeWrapper
+  ];
 
-  unpackPhase = ''
-    unzip $src
-  '';
+  buildInputs = [
+    fontconfig
+    freetype
+    glib
+    gsettings-desktop-schemas
+    gtk3
+    jdk
+    libx11
+    libxrender
+    libxtst
+    zlib
+    shared-mime-info
+    webkitgtk_4_1
+  ];
 
   buildCommand = ''
     mkdir -p $out
@@ -92,31 +98,26 @@ stdenv.mkDerivation rec {
     mv $out/share/pixmaps/eclipse64.png $out/share/pixmaps/eclipse.png
   '';
 
-  nativeBuildInputs = [
-    unzip
-    makeWrapper
-  ];
-  buildInputs = [
-    fontconfig
-    freetype
-    glib
-    gsettings-desktop-schemas
-    gtk3
-    jdk
-    libx11
-    libxrender
-    libxtst
-    zlib
-    shared-mime-info
-    webkitgtk_4_1
-  ];
+  desktopItem = makeDesktopItem {
+    categories = [ "Development" ];
+    comment = "Eclipse Memory Analyzer";
+    desktopName = "Eclipse MAT";
+    exec = "eclipse-mat";
+    genericName = "Java Memory Analyzer";
+    icon = "eclipse";
+    name = "eclipse-mat";
+  };
 
   dontBuild = true;
   dontConfigure = true;
 
+  unpackPhase = ''
+    unzip $src
+  '';
+
   meta = {
     description = "Fast and feature-rich Java heap analyzer";
-    mainProgram = "eclipse-mat";
+
     longDescription = ''
       The Eclipse Memory Analyzer is a tool that helps you find memory
       leaks and reduce memory consumption. Use the Memory Analyzer to
@@ -125,11 +126,13 @@ stdenv.mkDerivation rec {
       who is preventing the Garbage Collector from collecting objects,
       run a report to automatically extract leak suspects.
     '';
+
     homepage = "https://www.eclipse.org/mat";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.epl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ lib.maintainers.ktor ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "eclipse-mat";
   };
 
 }

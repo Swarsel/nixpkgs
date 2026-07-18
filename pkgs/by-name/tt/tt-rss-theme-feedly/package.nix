@@ -1,8 +1,8 @@
 {
   lib,
-  nixosTests,
   stdenv,
   fetchFromGitHub,
+  nixosTests,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,13 +16,13 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-3mD1aY7gjdvucRzY7sLmZ1RsHtraAg1RGE/3uDp6/o4=";
   };
 
-  dontBuild = true;
-
   installPhase = ''
     mkdir $out
 
     cp -ra feedly *.css $out
   '';
+
+  dontBuild = true;
 
   passthru = {
     tests = { inherit (nixosTests) tt-rss; };
@@ -30,8 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Feedly theme for Tiny Tiny RSS";
-    license = lib.licenses.mit;
     homepage = "https://github.com/levito/tt-rss-feedly-theme";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ das_j ];
     platforms = lib.platforms.all;
   };

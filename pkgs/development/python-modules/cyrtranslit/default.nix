@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   unittestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "cyrtranslit";
   version = "1.2.0";
-  pyproject = true;
 
   # Pypi tarball doesn't contain tests/
   src = fetchFromGitHub {
@@ -19,10 +18,9 @@ buildPythonPackage rec {
     hash = "sha256-hE5fru9Y5gU4zG2Kz76w5HbVXKBua/cJdhItz3ou0kY=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ unittestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "cyrtranslit" ];
 
   meta = {

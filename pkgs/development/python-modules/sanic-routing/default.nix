@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   pytest-asyncio,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "sanic-routing";
   version = "23.12.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "sanic-org";
@@ -23,6 +22,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "sanic_routing" ];
 
   meta = {

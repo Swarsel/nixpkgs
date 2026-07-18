@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -10,16 +10,18 @@ in
 {
   options.services.psd = with lib.types; {
     enable = lib.mkOption {
-      type = bool;
       default = false;
+
       description = ''
         Whether to enable the Profile Sync daemon.
       '';
+
+      type = bool;
     };
+
     resyncTimer = lib.mkOption {
-      type = str;
       default = "1h";
-      example = "1h 30min";
+
       description = ''
         The amount of time to wait before syncing browser profiles back to the
         disk.
@@ -27,6 +29,9 @@ in
         Takes a systemd.unit time span. The time unit defaults to seconds if
         omitted.
       '';
+
+      example = "1h 30min";
+      type = str;
     };
   };
 
@@ -37,8 +42,7 @@ in
           psd = {
             enable = true;
             description = "Profile Sync daemon";
-            wants = [ "psd-resync.service" ];
-            wantedBy = [ "default.target" ];
+
             path = with pkgs; [
               rsync
               kmod
@@ -47,24 +51,28 @@ in
               util-linux
               profile-sync-daemon
             ];
+
+            serviceConfig = {
+              ExecStart = "${pkgs.profile-sync-daemon}/bin/profile-sync-daemon sync";
+              ExecStop = "${pkgs.profile-sync-daemon}/bin/profile-sync-daemon unsync";
+              RemainAfterExit = "yes";
+              Type = "oneshot";
+            };
+
             unitConfig = {
               RequiresMountsFor = [ "/home/" ];
             };
-            serviceConfig = {
-              Type = "oneshot";
-              RemainAfterExit = "yes";
-              ExecStart = "${pkgs.profile-sync-daemon}/bin/profile-sync-daemon sync";
-              ExecStop = "${pkgs.profile-sync-daemon}/bin/profile-sync-daemon unsync";
-            };
+
+            wantedBy = [ "default.target" ];
+            wants = [ "psd-resync.service" ];
           };
 
           psd-resync = {
             enable = true;
-            description = "Timed profile resync";
             after = [ "psd.service" ];
-            wants = [ "psd-resync.timer" ];
+            description = "Timed profile resync";
             partOf = [ "psd.service" ];
-            wantedBy = [ "default.target" ];
+
             path = with pkgs; [
               rsync
               kmod
@@ -73,15 +81,20 @@ in
               util-linux
               profile-sync-daemon
             ];
+
             serviceConfig = {
-              Type = "oneshot";
               ExecStart = "${pkgs.profile-sync-daemon}/bin/profile-sync-daemon resync";
+              Type = "oneshot";
             };
+
+            wantedBy = [ "default.target" ];
+            wants = [ "psd-resync.timer" ];
           };
         };
 
         timers.psd-resync = {
           description = "Timer for profile sync daemon - ${cfg.resyncTimer}";
+
           partOf = [
             "psd-resync.service"
             "psd.service"

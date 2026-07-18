@@ -1,55 +1,54 @@
 {
-  buildPythonPackage,
   lib,
-  setuptools,
   stdenv,
   fetchFromGitHub,
-  pythonAtLeast,
-  installShellFiles,
-  git,
-  versioneer,
-  # core
-  platformdirs,
-  chardet,
-  iso8601,
-  humanize,
-  fasteners,
-  packaging,
-  patool,
-  tqdm,
   annexremote,
-  looseversion,
-  git-annex,
-  # downloaders
-  boto3,
-  keyrings-alt,
-  keyring,
-  msgpack,
-  requests,
-  # publish
-  python-gitlab,
   # misc
   argcomplete,
-  pyperclip,
-  python-dateutil,
-  # duecredit
-  duecredit,
-  distro,
+  # downloaders
+  boto3,
+  buildPythonPackage,
+  chardet,
   # win
   colorama,
+  curl,
+  distro,
+  # duecredit
+  duecredit,
+  fasteners,
+  git,
+  git-annex,
+  httpretty,
+  humanize,
+  installShellFiles,
+  iso8601,
+  keyring,
+  keyrings-alt,
+  looseversion,
+  msgpack,
+  p7zip,
+  packaging,
+  patool,
+  # core
+  platformdirs,
+  pyperclip,
   # tests
   pytest-retry,
   pytest-xdist,
   pytestCheckHook,
-  p7zip,
-  curl,
-  httpretty,
+  python-dateutil,
+  # publish
+  python-gitlab,
+  pythonAtLeast,
+  requests,
+  setuptools,
+  tqdm,
+  versioneer,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "datalad";
   version = "1.3.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "datalad";
@@ -68,49 +67,21 @@ buildPythonPackage (finalAttrs: {
     git
   ];
 
-  build-system = [
-    setuptools
-    versioneer
+  nativeCheckInputs = [
+    p7zip
+    pytest-retry
+    pytest-xdist
+    pytestCheckHook
+    git-annex
+    curl
+    httpretty
   ];
 
-  dependencies =
-    finalAttrs.passthru.optional-dependencies.core
-    ++ finalAttrs.passthru.optional-dependencies.downloaders
-    ++ finalAttrs.passthru.optional-dependencies.publish;
-
-  optional-dependencies = {
-    core = [
-      platformdirs
-      chardet
-      distro
-      iso8601
-      humanize
-      fasteners
-      packaging
-      patool
-      tqdm
-      annexremote
-      looseversion
-    ]
-    ++ lib.optionals stdenv.hostPlatform.isWindows [ colorama ];
-    downloaders = [
-      boto3
-      keyrings-alt
-      keyring
-      msgpack
-      requests
-    ];
-    downloaders-extra = [
-      # requests-ftp # not in nixpkgs yet
-    ];
-    publish = [ python-gitlab ];
-    misc = [
-      argcomplete
-      pyperclip
-      python-dateutil
-    ];
-    duecredit = [ duecredit ];
-  };
+  preCheck = ''
+    export HOME=$TMPDIR
+    export DATALAD_TESTS_NONETWORK=1
+    export PATH="$PATH:$out/bin"
+  '';
 
   postInstall = ''
     installShellCompletion --cmd datalad \
@@ -121,11 +92,18 @@ buildPythonPackage (finalAttrs: {
       --prefix PYTHONPATH : "$PYTHONPATH"
   '';
 
-  preCheck = ''
-    export HOME=$TMPDIR
-    export DATALAD_TESTS_NONETWORK=1
-    export PATH="$PATH:$out/bin"
-  '';
+  # Tests use ports on localhost
+  __darwinAllowLocalNetworking = true;
+
+  build-system = [
+    setuptools
+    versioneer
+  ];
+
+  dependencies =
+    finalAttrs.passthru.optional-dependencies.core
+    ++ finalAttrs.passthru.optional-dependencies.downloaders
+    ++ finalAttrs.passthru.optional-dependencies.publish;
 
   disabledTestMarks = [
     "flaky"
@@ -157,23 +135,51 @@ buildPythonPackage (finalAttrs: {
     "test_keyring"
   ];
 
-  nativeCheckInputs = [
-    p7zip
-    pytest-retry
-    pytest-xdist
-    pytestCheckHook
-    git-annex
-    curl
-    httpretty
-  ];
+  optional-dependencies = {
+    core = [
+      platformdirs
+      chardet
+      distro
+      iso8601
+      humanize
+      fasteners
+      packaging
+      patool
+      tqdm
+      annexremote
+      looseversion
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isWindows [ colorama ];
+
+    downloaders = [
+      boto3
+      keyrings-alt
+      keyring
+      msgpack
+      requests
+    ];
+
+    downloaders-extra = [
+      # requests-ftp # not in nixpkgs yet
+    ];
+
+    duecredit = [ duecredit ];
+
+    misc = [
+      argcomplete
+      pyperclip
+      python-dateutil
+    ];
+
+    publish = [ python-gitlab ];
+  };
+
+  pyproject = true;
 
   pytestFlags = [
     # Deprecated in 3.13. Use exc_type_str instead.
     "-Wignore::DeprecationWarning"
   ];
-
-  # Tests use ports on localhost
-  __darwinAllowLocalNetworking = true;
 
   pythonImportsCheck = [ "datalad" ];
 
@@ -182,6 +188,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://www.datalad.org";
     changelog = "https://github.com/datalad/datalad/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       renesat
       malik

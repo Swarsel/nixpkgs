@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,13 +17,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Cargo command to create the README.md from your crate's documentation";
-    mainProgram = "cargo-rdme";
     homepage = "https://github.com/orium/cargo-rdme";
     changelog = "https://github.com/orium/cargo-rdme/blob/v${finalAttrs.version}/release-notes.md";
     license = with lib.licenses; [ mpl20 ];
+
     maintainers = with lib.maintainers; [
       GoldsteinE
       chrjabs
     ];
+
+    mainProgram = "cargo-rdme";
   };
 })

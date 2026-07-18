@@ -2,6 +2,7 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  coreutils,
   fuse3,
   help2man,
   makeWrapper,
@@ -12,7 +13,6 @@
   pkg-config,
   python3,
   util-linux,
-  coreutils,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -42,6 +42,7 @@ stdenv.mkDerivation (finalAttrs: {
     (python3.pythonOnBuildForHost.withPackages (p: [ p.jinja2 ]))
     pkg-config
   ];
+
   buildInputs = [ fuse3 ];
 
   preConfigure = ''
@@ -80,11 +81,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "FUSE filesystem for LXC";
-    mainProgram = "lxcfs";
     homepage = "https://linuxcontainers.org/lxcfs";
     changelog = "https://github.com/lxc/lxcfs/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     platforms = lib.platforms.linux;
+    mainProgram = "lxcfs";
     teams = [ lib.teams.lxc ];
   };
 })

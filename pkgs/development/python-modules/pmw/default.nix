@@ -8,18 +8,17 @@
 buildPythonPackage rec {
   pname = "pmw";
   version = "2.1.1";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "Pmw";
     inherit version;
     hash = "sha256-lIQSRXz8zwx3XdCOCRP7APkIlqM8eXN9VxxzEq6vVcY=";
+    pname = "Pmw";
   };
 
   propagatedBuildInputs = [ tkinter ];
-
   # Disable tests due to their xserver requirement
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Toolkit for building high-level compound widgets in Python using the Tkinter module";

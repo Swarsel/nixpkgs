@@ -7,13 +7,9 @@
 }:
 
 buildPythonPackage {
-  pname = "openvino-tokenizers";
   inherit (openvino-tokenizers-native) version;
-  pyproject = false;
-
+  pname = "openvino-tokenizers";
   src = openvino-tokenizers-native.src;
-
-  dependencies = [ openvino ];
 
   installPhase = ''
     runHook preInstall
@@ -34,6 +30,8 @@ buildPythonPackage {
     runHook postInstall
   '';
 
+  dependencies = [ openvino ];
+  pyproject = false;
   pythonImportsCheck = [ "openvino_tokenizers" ];
 
   meta = {

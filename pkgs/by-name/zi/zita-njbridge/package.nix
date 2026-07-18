@@ -7,8 +7,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.4.8";
   pname = "zita-njbridge";
+  version = "0.4.8";
 
   src = fetchurl {
     url = "https://kokkinizita.linuxaudio.org/linuxaudio/downloads/zita-njbridge-${finalAttrs.version}.tar.bz2";
@@ -20,15 +20,15 @@ stdenv.mkDerivation (finalAttrs: {
     zita-resampler
   ];
 
-  preConfigure = ''
-    cd ./source/
-  '';
-
   makeFlags = [
     "PREFIX=$(out)"
     "MANDIR=$(out)"
     "SUFFIX=''"
   ];
+
+  preConfigure = ''
+    cd ./source/
+  '';
 
   meta = {
     description = "Command line Jack clients to transmit full quality multichannel audio over a local IP network";

@@ -2,36 +2,36 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  ncurses,
-  bzip2,
-  zlib,
   brotli,
-  zstd,
-  xz,
-  openssl,
-  meson,
-  ninja,
-  gettext,
-  python3,
-  pkg-config,
-  xmlto,
-  docbook_xml_dtd_42,
-  gpm,
-  libidn2,
-  tre,
-  expat,
-  lua,
+  bzip2,
   curl,
+  docbook_xml_dtd_42,
+  expat,
+  gettext,
+  gpm,
   libcss,
   libdom,
+  libidn2,
+  lua,
+  meson,
+  ncurses,
+  ninja,
   nix-update-script,
+  openssl,
+  pkg-config,
+  python3,
+  tre,
+  xmlto,
+  xz,
+  zlib,
+  zstd,
   # Incompatible licenses, LGPLv3 - GPLv2
   enableGuile ? false,
-  guile ? null,
-  enablePython ? false,
-  python ? null,
   enablePerl ? (!stdenv.hostPlatform.isDarwin) && (stdenv.hostPlatform == stdenv.buildPlatform),
+  enablePython ? false,
+  guile ? null,
   perl ? null,
+  python ? null,
   # re-add javascript support when upstream supports modern spidermonkey
 }:
 
@@ -55,6 +55,24 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
   ];
 
+  postPatch = ''
+    patchShebangs doc/tools
+    substituteInPlace doc/tools/asciidoc/docbook.conf \
+      --replace-fail "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" "${docbook_xml_dtd_42}/xml/dtd/docbook/docbookx.dtd"
+  '';
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    meson
+    ninja
+    gettext
+    perl
+    python3
+    pkg-config
+    xmlto
+  ];
+
   buildInputs = [
     ncurses
     bzip2
@@ -75,28 +93,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional enableGuile guile
   ++ lib.optional enablePython python
   ++ lib.optional enablePerl perl;
-
-  nativeBuildInputs = [
-    meson
-    ninja
-    gettext
-    perl
-    python3
-    pkg-config
-    xmlto
-  ];
-
-  env =
-    lib.optionalAttrs stdenv.hostPlatform.isLinux {
-      C_INCLUDE_PATH = "${lib.getInclude gpm}/include";
-      LIBRARY_PATH = "${lib.getLib gpm}/lib";
-    }
-    // lib.optionalAttrs stdenv.hostPlatform.isDarwin {
-      LDFLAGS = "-liconv";
-    };
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   mesonFlags =
     (map (f: lib.mesonBool f true) [
@@ -121,26 +117,32 @@ stdenv.mkDerivation (finalAttrs: {
       (lib.mesonBool "perl" enablePerl)
     ];
 
-  postPatch = ''
-    patchShebangs doc/tools
-    substituteInPlace doc/tools/asciidoc/docbook.conf \
-      --replace-fail "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" "${docbook_xml_dtd_42}/xml/dtd/docbook/docbookx.dtd"
-  '';
+  env =
+    lib.optionalAttrs stdenv.hostPlatform.isLinux {
+      C_INCLUDE_PATH = "${lib.getInclude gpm}/include";
+      LIBRARY_PATH = "${lib.getLib gpm}/lib";
+    }
+    // lib.optionalAttrs stdenv.hostPlatform.isDarwin {
+      LDFLAGS = "-liconv";
+    };
 
   preConfigure = ''
     mesonFlags+=("-Dsource-date-epoch=$SOURCE_DATE_EPOCH")
   '';
 
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { extraArgs = [ "--use-github-releases" ]; };
 
   meta = {
     description = "Full-featured text-mode web browser";
-    mainProgram = "elinks";
     homepage = "https://github.com/rkd77/elinks";
     license = lib.licenses.gpl2Only;
-    platforms = with lib.platforms; linux ++ darwin;
+
     maintainers = with lib.maintainers; [
       iblech
     ];
+
+    platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "elinks";
   };
 })

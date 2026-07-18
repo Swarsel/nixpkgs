@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   gitMinimal,
 }:
 buildGoModule (finalAttrs: {
@@ -16,13 +16,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-Hid9OK91LNjLmDHam0ZlrVQopVOsqbZ+BH2rfQi5lS0=";
-
   nativeCheckInputs = [ gitMinimal ];
-
-  ldflags = [
-    "-X main.GitExactTag=${finalAttrs.version}"
-    "-X main.GitLastTag=${finalAttrs.version}"
-  ];
 
   preCheck = ''
     export HOME=$(mktemp -d)
@@ -30,13 +24,20 @@ buildGoModule (finalAttrs: {
     git config --global user.email 'nobody@localhost'
   '';
 
+  ldflags = [
+    "-X main.GitExactTag=${finalAttrs.version}"
+    "-X main.GitLastTag=${finalAttrs.version}"
+  ];
+
   meta = {
     description = "Tool for upgrading repositories using git-bug to new versions";
     homepage = "https://github.com/git-bug/git-bug-migration";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       DeeUnderscore
     ];
+
     mainProgram = "git-bug-migration";
   };
 })

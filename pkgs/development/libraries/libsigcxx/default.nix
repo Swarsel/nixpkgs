@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  gnome,
   meson,
   ninja,
-  gnome,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -32,16 +32,16 @@ stdenv.mkDerivation rec {
 
   passthru = {
     updateScript = gnome.updateScript {
-      packageName = "libsigc++";
       attrPath = "libsigcxx";
-      versionPolicy = "odd-unstable";
       freeze = "2.99.1";
+      packageName = "libsigc++";
+      versionPolicy = "odd-unstable";
     };
   };
 
   meta = {
-    homepage = "https://libsigcplusplus.github.io/libsigcplusplus/";
     description = "Typesafe callback system for standard C++";
+    homepage = "https://libsigcplusplus.github.io/libsigcplusplus/";
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.all;
   };

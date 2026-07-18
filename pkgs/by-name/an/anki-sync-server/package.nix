@@ -1,15 +1,13 @@
 {
   lib,
-  rustPlatform,
   anki,
-
+  buildPackages,
   openssl,
   pkg-config,
-  buildPackages,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
-  pname = "anki-sync-server";
   inherit (anki)
     version
     src
@@ -17,17 +15,7 @@ rustPlatform.buildRustPackage {
     patches
     ;
 
-  # only build sync server
-  cargoBuildFlags = [
-    "--bin"
-    "anki-sync-server"
-  ];
-
-  checkFlags = [
-    # this test is flaky, see https://github.com/ankitects/anki/issues/3619
-    # also remove from anki when removing this
-    "--skip=deckconfig::update::test::should_keep_at_least_one_remaining_relearning_step"
-  ];
+  pname = "anki-sync-server";
 
   nativeBuildInputs = [
     pkg-config
@@ -39,7 +27,19 @@ rustPlatform.buildRustPackage {
 
   env.PROTOC = lib.getExe buildPackages.protobuf;
 
+  checkFlags = [
+    # this test is flaky, see https://github.com/ankitects/anki/issues/3619
+    # also remove from anki when removing this
+    "--skip=deckconfig::update::test::should_keep_at_least_one_remaining_relearning_step"
+  ];
+
   __darwinAllowLocalNetworking = true;
+
+  # only build sync server
+  cargoBuildFlags = [
+    "--bin"
+    "anki-sync-server"
+  ];
 
   meta = {
     description = "Standalone official anki sync server";

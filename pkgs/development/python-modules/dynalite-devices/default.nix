@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest-asyncio,
   pytestCheckHook,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "dynalite-devices";
   version = "0.1.48";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ziv1234";
@@ -30,10 +29,9 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  pyproject = true;
   pytestFlags = [ "--asyncio-mode=auto" ];
-
   pythonImportsCheck = [ "dynalite_devices_lib" ];
-
   # it would use the erroneous tag v0.47
   passthru.skipBulkUpdate = true;
 

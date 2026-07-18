@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,14 +18,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-7kzG0x5UQvF7MRu9tnrnJdhm4zYqrSfUa8mTrnfcIqs=";
 
-  cargoBuildFlags = [ "--workspace" ];
-
   checkFlags = [
     # Operation not supported
     "--skip=common::util::tests::test_compare_xattrs"
     # assertion failed
     "--skip=test_setfacl::test_invalid_arg"
   ];
+
+  cargoBuildFlags = [ "--workspace" ];
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];

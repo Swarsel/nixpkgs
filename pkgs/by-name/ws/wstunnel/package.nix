@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  nixosTests,
   nix-update-script,
+  nixosTests,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -18,12 +18,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-iQ1GmLhljUnf4FiK21phPxKUP5Wn0Si3ldC9Coxnv2E=";
   };
 
-  cargoHash = "sha256-hBzaMhNV1fat0I2UCcXndA/DOQkK96SVBm69VQlvBtY=";
-
-  cargoBuildFlags = [ "--package wstunnel-cli" ];
-
   nativeBuildInputs = [ versionCheckHook ];
-  doInstallCheck = true;
+  cargoHash = "sha256-hBzaMhNV1fat0I2UCcXndA/DOQkK96SVBm69VQlvBtY=";
 
   checkFlags = [
     # Tries to launch a test container
@@ -31,11 +27,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=protocols::tcp::server::tests::test_proxy_connection"
   ];
 
+  doInstallCheck = true;
+  cargoBuildFlags = [ "--package wstunnel-cli" ];
+
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       nixosTest = nixosTests.wstunnel;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -43,11 +43,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/erebe/wstunnel";
     changelog = "https://github.com/erebe/wstunnel/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       raylas
       rvdp
       neverbehave
     ];
+
     mainProgram = "wstunnel";
   };
 })

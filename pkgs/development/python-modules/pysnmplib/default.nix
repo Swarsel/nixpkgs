@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pycryptodomex,
   pysnmp-pyasn1,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pysnmplib";
   version = "5.0.24";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pysnmp";
@@ -30,7 +29,7 @@ buildPythonPackage rec {
 
   # Module has no test, examples are used for testing
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pysnmp" ];
 
   meta = {

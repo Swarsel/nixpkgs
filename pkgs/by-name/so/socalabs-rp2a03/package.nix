@@ -1,29 +1,29 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
-  cmake,
-  pkg-config,
   alsa-lib,
+  cmake,
   copyDesktopItems,
-  makeDesktopItem,
+  curl,
+  expat,
+  fontconfig,
+  freetype,
+  libGL,
+  libjack2,
   libx11,
   libxcomposite,
   libxcursor,
+  libxdmcp,
+  libxext,
   libxinerama,
   libxrandr,
   libxtst,
-  libxdmcp,
-  libxext,
-  xvfb,
-  freetype,
-  fontconfig,
-  expat,
-  libGL,
-  libjack2,
-  curl,
+  makeDesktopItem,
   ninja,
+  pkg-config,
   writableTmpDirAsHomeHook,
+  xvfb,
   # Disable VST building by default, since its unfree
   enableVST2 ? false,
 }:
@@ -39,20 +39,12 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  desktopItems = [
-    (makeDesktopItem {
-      type = "Application";
-      name = "socalabs-rp2a03";
-      desktopName = "Socalabs RP2A03";
-      comment = "Socalabs NES Ricoh 2A03 Emulation Plugin (Standalone)";
-      icon = "RP2A03";
-      exec = "RP2A03";
-      categories = [
-        "Audio"
-        "AudioVideo"
-      ];
-    })
-  ];
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+    --replace-fail 'FORMATS Standalone VST VST3 AU LV2' 'FORMATS Standalone ${lib.optionalString enableVST2 "VST"} VST3 LV2'
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     writableTmpDirAsHomeHook
@@ -86,12 +78,16 @@ stdenv.mkDerivation (finalAttrs: {
     "--preset ninja-gcc"
   ];
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-    --replace-fail 'FORMATS Standalone VST VST3 AU LV2' 'FORMATS Standalone ${lib.optionalString enableVST2 "VST"} VST3 LV2'
-  '';
-
-  strictDeps = true;
+  env.NIX_LDFLAGS = toString [
+    "-lX11"
+    "-lXext"
+    "-lXcomposite"
+    "-lXcursor"
+    "-lXinerama"
+    "-lXrandr"
+    "-lXtst"
+    "-lXdmcp"
+  ];
 
   preBuild = ''
     cd ../Builds/ninja-gcc
@@ -117,23 +113,28 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  env.NIX_LDFLAGS = toString [
-    "-lX11"
-    "-lXext"
-    "-lXcomposite"
-    "-lXcursor"
-    "-lXinerama"
-    "-lXrandr"
-    "-lXtst"
-    "-lXdmcp"
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Audio"
+        "AudioVideo"
+      ];
+
+      comment = "Socalabs NES Ricoh 2A03 Emulation Plugin (Standalone)";
+      desktopName = "Socalabs RP2A03";
+      exec = "RP2A03";
+      icon = "RP2A03";
+      name = "socalabs-rp2a03";
+      type = "Application";
+    })
   ];
 
   meta = {
     description = "Socalabs NES Ricoh 2A03 Emulation Plugin";
     homepage = "https://socalabs.com/synths/rp2a03/";
-    mainProgram = "RP2A03";
-    platforms = lib.platforms.linux;
     license = [ lib.licenses.lgpl21 ] ++ lib.optional enableVST2 lib.licenses.unfree;
     maintainers = [ lib.maintainers.l1npengtul ];
+    platforms = lib.platforms.linux;
+    mainProgram = "RP2A03";
   };
 })

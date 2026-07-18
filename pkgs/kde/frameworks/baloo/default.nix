@@ -1,7 +1,7 @@
 {
+  lmdb,
   mkKdeDerivation,
   qtdeclarative,
-  lmdb,
 }:
 mkKdeDerivation {
   pname = "baloo";

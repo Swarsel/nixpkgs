@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 
@@ -16,6 +16,10 @@ let
   cfg = config.services.c2fmzq-server;
 
   argsFormat = {
+    generate = lib.cli.toCommandLineShellGNU {
+      explicitBool = true;
+    };
+
     type =
       with lib.types;
       attrsOf (
@@ -25,90 +29,87 @@ let
           str
         ])
       );
-    generate = lib.cli.toCommandLineShellGNU {
-      explicitBool = true;
-    };
   };
 in
 {
   options.services.c2fmzq-server = {
     enable = mkEnableOption "c2fmzq-server";
+    package = mkPackageOption pkgs "c2fmzq" { };
 
     bindIP = mkOption {
-      type = types.str;
       default = "127.0.0.1";
       description = "The local address to use.";
-    };
-
-    port = mkOption {
-      type = types.port;
-      default = 8080;
-      description = "The local port to use.";
+      type = types.str;
     };
 
     passphraseFile = mkOption {
-      type = types.str;
-      example = "/run/secrets/c2fmzq/pwfile";
       description = "Path to file containing the database passphrase";
+      example = "/run/secrets/c2fmzq/pwfile";
+      type = types.str;
     };
 
-    package = mkPackageOption pkgs "c2fmzq" { };
+    port = mkOption {
+      default = 8080;
+      description = "The local port to use.";
+      type = types.port;
+    };
 
     settings = mkOption {
-      type = types.submodule {
-        freeformType = argsFormat.type;
-
-        options = {
-          address = mkOption {
-            internal = true;
-            type = types.str;
-            default = "${cfg.bindIP}:${toString cfg.port}";
-          };
-
-          database = mkOption {
-            type = types.str;
-            default = "%S/c2fmzq-server/data";
-            description = "Path of the database";
-          };
-
-          verbose = mkOption {
-            type = types.ints.between 1 3;
-            default = 2;
-            description = "The level of logging verbosity: 1:Error 2:Info 3:Debug";
-          };
-        };
-      };
       description = ''
         Configuration for c2FmZQ-server passed as CLI arguments.
         Run {command}`c2FmZQ-server help` for supported values.
       '';
+
       example = {
-        verbose = 3;
         allow-new-accounts = true;
         auto-approve-new-accounts = true;
-        encrypt-metadata = true;
         enable-webapp = true;
+        encrypt-metadata = true;
+        verbose = 3;
+      };
+
+      type = types.submodule {
+        options = {
+          address = mkOption {
+            default = "${cfg.bindIP}:${toString cfg.port}";
+            internal = true;
+            type = types.str;
+          };
+
+          database = mkOption {
+            default = "%S/c2fmzq-server/data";
+            description = "Path of the database";
+            type = types.str;
+          };
+
+          verbose = mkOption {
+            default = 2;
+            description = "The level of logging verbosity: 1:Error 2:Info 3:Debug";
+            type = types.ints.between 1 3;
+          };
+        };
+
+        freeformType = argsFormat.type;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.c2fmzq-server = {
-      description = "c2FmZQ-server";
-      documentation = [ "https://github.com/c2FmZQ/c2FmZQ/blob/main/README.md" ];
-      wantedBy = [ "multi-user.target" ];
-      wants = [ "network-online.target" ];
       after = [
         "network.target"
         "network-online.target"
       ];
 
+      description = "c2FmZQ-server";
+      documentation = [ "https://github.com/c2FmZQ/c2FmZQ/blob/main/README.md" ];
+
       serviceConfig = {
-        ExecStart = "${lib.getExe cfg.package} ${argsFormat.generate cfg.settings}";
         AmbientCapabilities = "";
         CapabilityBoundingSet = "";
         DynamicUser = true;
         Environment = "C2FMZQ_PASSPHRASE_FILE=%d/passphrase-file";
+        ExecStart = "${lib.getExe cfg.package} ${argsFormat.generate cfg.settings}";
         IPAccounting = true;
         IPAddressAllow = cfg.bindIP;
         IPAddressDeny = "any";
@@ -130,10 +131,12 @@ in
         ProtectProc = "invisible";
         ProtectSystem = "strict";
         RemoveIPC = true;
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
@@ -141,11 +144,15 @@ in
         SocketBindDeny = "any";
         StateDirectory = "c2fmzq-server";
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged @obsolete"
         ];
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
   };
 

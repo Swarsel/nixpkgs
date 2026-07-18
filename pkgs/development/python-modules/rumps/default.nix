@@ -1,7 +1,7 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   pyobjc-framework-Cocoa,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage {
   pname = "rumps";
   version = "unstable-2025-02-02";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jaredks";
@@ -20,14 +19,14 @@ buildPythonPackage {
 
   build-system = [ setuptools ];
   dependencies = [ pyobjc-framework-Cocoa ];
-
+  pyproject = true;
   pythonImportsCheck = [ "rumps" ];
 
   meta = {
     description = "Ridiculously Uncomplicated macOS Python Statusbar apps";
     homepage = "https://github.com/jaredks/rumps";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.darwin;
     maintainers = with lib.maintainers; [ samuela ];
+    platforms = lib.platforms.darwin;
   };
 }

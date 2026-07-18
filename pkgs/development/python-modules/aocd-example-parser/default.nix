@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
 }:
 
 buildPythonPackage {
   pname = "aocd-example-parser";
   version = "2025.12.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wimglenn";
@@ -18,9 +17,9 @@ buildPythonPackage {
   };
 
   build-system = [ flit-core ];
+  pyproject = true;
 
   # Circular dependency with aocd
-
   meta = {
     description = "Default implementation of an example parser plugin for advent-of-code-data";
     homepage = "https://github.com/wimglenn/aocd-example-parser";

@@ -1,8 +1,8 @@
 {
   lib,
-  python3Packages,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
+  python3Packages,
   youtube-dl,
 }:
 
@@ -10,22 +10,21 @@ let
   install-freedesktop = python3Packages.buildPythonPackage rec {
     pname = "install-freedesktop";
     version = "0.1.2-1-g2673e8d";
-    format = "setuptools";
 
     src = fetchurl {
-      name = "Thann-install_freedesktop-${version}.tar.gz";
       url = "https://github.com/thann/install_freedesktop/tarball/2673e8da4a67bee0ffc52a0ea381a541b4becdd4";
       hash = "sha256-O08G0iMGsF1DSyliXOHTIsOxDdJPBabNLXRhz5osDUk=";
+      name = "Thann-install_freedesktop-${version}.tar.gz";
     };
 
     # package has no tests
     doCheck = false;
+    format = "setuptools";
   };
 in
 python3Packages.buildPythonApplication {
   pname = "play-with-mpv";
   version = "unstable-2021-04-02";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "thann";
@@ -52,6 +51,7 @@ python3Packages.buildPythonApplication {
 
   # package has no tests
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Chrome extension and python server that allows you to play videos in webpages with MPV instead";

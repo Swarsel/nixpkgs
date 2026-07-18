@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   libxkbcommon,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,12 +18,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-SWykTlj51lrPz7c9TfNOhMEZcpi8NMLDx50ZqnNlfsU=";
   };
 
-  cargoHash = "sha256-vrCxtbhCFtHRvqwDow7njz/V2QWzs7p/28MTZL4XsBc=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ libxkbcommon ];
-
+  cargoHash = "sha256-vrCxtbhCFtHRvqwDow7njz/V2QWzs7p/28MTZL4XsBc=";
   passthru.updateScript = nix-update-script { };
 
   meta = {

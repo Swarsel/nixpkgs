@@ -1,17 +1,17 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dateparser,
   defusedxml,
-  fetchFromGitHub,
   importlib-metadata,
   numpy,
   pytestCheckHook,
   python-dateutil,
   pytz,
   remotezip,
-  requests-mock,
   requests,
+  requests-mock,
   setuptools-scm,
   shapely,
   tenacity,
@@ -20,7 +20,6 @@
 buildPythonPackage rec {
   pname = "asf-search";
   version = "11.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "asfadmin";
@@ -29,7 +28,12 @@ buildPythonPackage rec {
     hash = "sha256-Z6DZOjXpziCAn9ZqbRa1c0cAVAbPEt5Go63BlA4Umog=";
   };
 
-  pythonRelaxDeps = [ "tenacity" ];
+  nativeCheckInputs = [
+    defusedxml
+    pytestCheckHook
+    requests-mock
+    tenacity
+  ];
 
   build-system = [ setuptools-scm ];
 
@@ -44,13 +48,6 @@ buildPythonPackage rec {
     shapely
   ];
 
-  nativeCheckInputs = [
-    defusedxml
-    pytestCheckHook
-    requests-mock
-    tenacity
-  ];
-
   disabledTestPaths = [
     # requires asf_enumeration, not packaged
     "tests/BaselineSearch/test_baseline_search.py"
@@ -58,7 +55,9 @@ buildPythonPackage rec {
     "tests/Pair/test_Pair.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "asf_search" ];
+  pythonRelaxDeps = [ "tenacity" ];
 
   meta = {
     description = "Python wrapper for the ASF SearchAPI";

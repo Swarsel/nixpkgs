@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   unittestCheckHook,
   zhon,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "hanzidentifier";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tsroten";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
     hash = "sha256-SXIMk5Pr2jqoWOjKfVVhe6fHdbh3j+5Lnlru7St8bgA=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ zhon ];
-
   nativeCheckInputs = [ unittestCheckHook ];
-
+  build-system = [ hatchling ];
+  dependencies = [ zhon ];
+  pyproject = true;
   pythonImportsCheck = [ "hanzidentifier" ];
 
   meta = {

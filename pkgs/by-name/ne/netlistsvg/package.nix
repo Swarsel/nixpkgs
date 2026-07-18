@@ -1,9 +1,9 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  runCommandLocal,
+  buildNpmPackage,
   netlistsvg,
+  runCommandLocal,
   yosys,
 }:
 
@@ -23,9 +23,6 @@ buildNpmPackage rec {
   '';
 
   npmDepsHash = "sha256-fESWYTx4cotURIjndLa5W+fCYJ12KwlDGXOPkzKmnTI=";
-
-  dontNpmBuild = true;
-
   doCheck = true;
 
   checkPhase = ''
@@ -35,6 +32,8 @@ buildNpmPackage rec {
 
     runHook postCheck
   '';
+
+  dontNpmBuild = true;
 
   # An integration test: Synthesize a circuit from hdl and generate a diagram
   passthru.tests.netlistsvg-yosys-integration-test =

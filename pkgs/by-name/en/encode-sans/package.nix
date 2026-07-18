@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -22,6 +22,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Versatile sans serif font family";
+
     longDescription = ''
       The Encode Sans family is a versatile workhorse. Featuring a huge range of
       weights and widths, it's ready for all kind of typographic challenges. It
@@ -30,6 +31,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
       Designed by Pablo Impallari and Andres Torresi.
     '';
+
     homepage = "https://github.com/impallari/Encode-Sans";
     license = lib.licenses.ofl;
     maintainers = with lib.maintainers; [ pancaek ];

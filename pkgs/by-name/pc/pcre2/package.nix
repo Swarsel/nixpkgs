@@ -17,6 +17,15 @@ stdenv.mkDerivation rec {
     hash = "sha256-FfvFq6a+7gsXrssEYCrjlDI5OroevY45t8q/fbiDKZ8=";
   };
 
+  outputs = [
+    "bin"
+    "dev"
+    "out"
+    "doc"
+    "man"
+    "devdoc"
+  ];
+
   nativeBuildInputs = [ updateAutotoolsGnuConfigScriptsHook ];
 
   configureFlags = [
@@ -28,31 +37,23 @@ stdenv.mkDerivation rec {
   # fix pcre jit in systemd units that set MemoryDenyWriteExecute=true like gitea
   ++ lib.optional withJitSealloc "--enable-jit-sealloc";
 
-  outputs = [
-    "bin"
-    "dev"
-    "out"
-    "doc"
-    "man"
-    "devdoc"
-  ];
-
   postFixup = ''
     moveToOutput bin/pcre2-config "$dev"
   '';
 
   meta = {
-    homepage = "https://www.pcre.org/";
     description = "Perl Compatible Regular Expressions";
+    homepage = "https://www.pcre.org/";
     license = lib.licenses.bsd3;
     maintainers = [ ];
     platforms = lib.platforms.all;
+    identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "pcre" version;
+
     pkgConfigModules = [
       "libpcre2-posix"
       "libpcre2-8"
       "libpcre2-16"
       "libpcre2-32"
     ];
-    identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "pcre" version;
   };
 }

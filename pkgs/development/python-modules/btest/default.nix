@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   multiprocess,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "btest";
   version = "1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zeek";
@@ -18,12 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-hd/o79GFlmSS4u1IeEkK6l+apw8pinINxPkAZUe8U9U=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ multiprocess ];
-
   # No tests available and no module to import
   doCheck = false;
+  build-system = [ setuptools ];
+  dependencies = [ multiprocess ];
+  pyproject = true;
 
   meta = {
     description = "Generic Driver for Powerful System Tests";

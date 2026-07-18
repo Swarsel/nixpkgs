@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
-  yarnInstallHook,
-  nodejs,
   gitUpdater,
+  nodejs,
+  yarnBuildHook,
+  yarnConfigHook,
+  yarnInstallHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,13 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "webpack-cli";
     tag = "webpack-cli@${finalAttrs.version}";
     hash = "sha256-teQWaWWt3rKHEVbj3twt8WQXQO9HuzIBNuvFUfRmxqY=";
-  };
-
-  yarnKeepDevDeps = true;
-
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/yarn.lock";
-    hash = "sha256-iYyH1/ZyNKq4MqMcCl7y5WvDnuGnRY0sj8hHsQhe7z4=";
   };
 
   nativeBuildInputs = [
@@ -52,14 +45,21 @@ stdenv.mkDerivation (finalAttrs: {
     mv $out/bin/webpack-cli $out/bin/webpack
   '';
 
+  yarnKeepDevDeps = true;
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-iYyH1/ZyNKq4MqMcCl7y5WvDnuGnRY0sj8hHsQhe7z4=";
+    yarnLock = finalAttrs.src + "/yarn.lock";
+  };
+
   passthru.updateScript = gitUpdater {
     rev-prefix = "webpack-cli@";
   };
 
   meta = {
-    changelog = "https://github.com/webpack/webpack-cli/blob/webpack-cli%40${finalAttrs.version}/CHANGELOG.md";
     description = "Webpack's Command Line Interface";
     homepage = "https://webpack.js.org/api/cli/";
+    changelog = "https://github.com/webpack/webpack-cli/blob/webpack-cli%40${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "webpack";

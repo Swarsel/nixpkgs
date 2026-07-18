@@ -1,15 +1,15 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   alsa-lib,
   cmake,
-  fetchFromGitHub,
   glslang,
-  lib,
   libglvnd,
   libx11,
   libxcursor,
   makeWrapper,
   ninja,
-  stdenv,
   vulkan-headers,
   vulkan-loader,
   vulkan-validation-layers,
@@ -22,8 +22,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "Try";
     repo = "OpenGothic";
     rev = "refs/tags/v0.92";
-    fetchSubmodules = true;
     hash = "sha256-6HCBmSjzV3nVDuD/7im6NtWLkDu+V+in2lUloEhp3Cc=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [

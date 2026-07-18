@@ -10,17 +10,17 @@
 }:
 
 {
-  name ? null,
-  pname ? null,
-  version ? null,
-  attrPath ? null,
   versionLister,
   allowedVersions ? "",
+  attrPath ? null,
   ignoredVersions ? "",
-  rev-prefix ? "",
-  rev-suffix ? "",
+  name ? null,
   odd-unstable ? false,
   patchlevel-unstable ? false,
+  pname ? null,
+  rev-prefix ? "",
+  rev-suffix ? "",
+  version ? null,
 }:
 
 let
@@ -141,7 +141,6 @@ let
 
 in
 {
-  name = "generic-update-script";
   command = [
     updateScript
     name
@@ -156,6 +155,9 @@ in
     odd-unstable
     patchlevel-unstable
   ];
+
+  name = "generic-update-script";
+
   supportedFeatures = [
     # Stdout must contain output according to the updateScript commit protocol when the update script finishes with a non-zero exit code.
     "commit"

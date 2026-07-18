@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,6 +16,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-gV/PJFcANeYTYUJG3PYNsApYaeBLx76+vVBvcuKDYO4=";
+  # test require internet access
+  doCheck = false;
 
   ldflags = [
     "-s"
@@ -23,16 +25,15 @@ buildGoModule (finalAttrs: {
     "-X=ktbs.dev/teler/common.Version=${finalAttrs.version}"
   ];
 
-  # test require internet access
-  doCheck = false;
-
   meta = {
     description = "Real-time HTTP Intrusion Detection";
+
     longDescription = ''
       teler is an real-time intrusion detection and threat alert
       based on web log that runs in a terminal with resources that
       we collect and provide by the community.
     '';
+
     homepage = "https://github.com/kitabisa/teler";
     changelog = "https://github.com/kitabisa/teler/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;

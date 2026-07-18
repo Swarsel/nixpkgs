@@ -1,9 +1,9 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
-  zig_0_15,
+  fetchFromGitHub,
   callPackage,
+  zig_0_15,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,15 +17,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-5+F0DKb4LXtcMXNutUSJuIe7cdBoFUoJhCs8vbm20jg=";
   };
 
+  nativeBuildInputs = [ zig_0_15 ];
+  env.VERSION = finalAttrs.version;
+
   deps = callPackage ./build.zig.zon.nix {
     zig = zig_0_15;
   };
 
-  nativeBuildInputs = [ zig_0_15 ];
-
-  passthru.updateScript = ./update.sh;
-
   dontSetZigDefaultFlags = true;
+
   zigBuildFlags = [
     "--system"
     "${finalAttrs.deps}"
@@ -33,7 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
     "-Doptimize=ReleaseFast"
   ];
 
-  env.VERSION = finalAttrs.version;
+  passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Programmer's text editor";

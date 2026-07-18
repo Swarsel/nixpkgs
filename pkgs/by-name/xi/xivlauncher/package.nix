@@ -1,19 +1,19 @@
 {
   lib,
-  buildDotnetModule,
   fetchFromGitHub,
+  aria2,
+  buildDotnetModule,
+  copyDesktopItems,
   dotnetCorePackages,
-  sdl3,
-  libdecor,
-  libsecret,
   glib,
   gnutls,
-  aria2,
-  steam,
   gst_all_1,
-  copyDesktopItems,
+  libdecor,
+  libsecret,
   makeDesktopItem,
   makeWrapper,
+  sdl3,
+  steam,
   useSteamRun ? true,
 }:
 
@@ -25,12 +25,17 @@ buildDotnetModule rec {
   version = rev;
 
   src = fetchFromGitHub {
+    inherit rev;
     owner = "goatcorp";
     repo = "XIVLauncher.Core";
-    inherit rev;
     hash = "sha256-kEMqqwlp+ZHjrEz6K7nYXyi0L8VAy1rHW2bOHEk1F6M=";
     fetchSubmodules = true;
   };
+
+  postPatch = ''
+    substituteInPlace lib/FFXIVQuickLauncher/src/XIVLauncher.Common/Game/Patch/Acquisition/Aria/AriaPatchAcquisition.cs \
+      --replace-fail 'ariaPath = "aria2c"' 'ariaPath = "${aria2}/bin/aria2c"'
+  '';
 
   nativeBuildInputs = [
     copyDesktopItems
@@ -46,30 +51,6 @@ buildDotnetModule rec {
     gst-libav
   ];
 
-  projectFile = "src/XIVLauncher.Core/XIVLauncher.Core.csproj";
-  nugetDeps = ./deps.json; # File generated with `nix-build -A xivlauncher.passthru.fetch-deps`
-
-  # please do not unpin these even if they match the defaults, xivlauncher is sensitive to .NET versions
-  dotnet-sdk =
-    with dotnetCorePackages;
-    sdk_10_0
-    // {
-      inherit (sdk_9_0)
-        packages
-        targetPackages
-        ;
-    };
-
-  dotnetFlags = [
-    "-p:BuildHash=${rev}"
-    "-p:PublishSingleFile=false"
-  ];
-
-  postPatch = ''
-    substituteInPlace lib/FFXIVQuickLauncher/src/XIVLauncher.Common/Game/Patch/Acquisition/Aria/AriaPatchAcquisition.cs \
-      --replace-fail 'ariaPath = "aria2c"' 'ariaPath = "${aria2}/bin/aria2c"'
-  '';
-
   postInstall = ''
     mkdir -p $out/share/pixmaps
     cp src/XIVLauncher.Core/Resources/logo.png $out/share/pixmaps/xivlauncher.png
@@ -81,6 +62,7 @@ buildDotnetModule rec {
         steam-run =
           (steam.override {
             extraPkgs = pkgs: [ pkgs.libunwind ];
+
             extraProfile = ''
               unset TZ
             '';
@@ -98,7 +80,37 @@ buildDotnetModule rec {
       echo ${aria2} >> $out/nix-support/depends
     '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = meta.description;
+      desktopName = "XIVLauncher";
+      exec = "XIVLauncher.Core";
+      icon = "xivlauncher";
+      name = "xivlauncher";
+      startupWMClass = "XIVLauncher.Core";
+    })
+  ];
+
+  # please do not unpin these even if they match the defaults, xivlauncher is sensitive to .NET versions
+  dotnet-sdk =
+    with dotnetCorePackages;
+    sdk_10_0
+    // {
+      inherit (sdk_9_0)
+        packages
+        targetPackages
+        ;
+    };
+
+  dotnetFlags = [
+    "-p:BuildHash=${rev}"
+    "-p:PublishSingleFile=false"
+  ];
+
   executables = [ "XIVLauncher.Core" ];
+  nugetDeps = ./deps.json; # File generated with `nix-build -A xivlauncher.passthru.fetch-deps`
+  projectFile = "src/XIVLauncher.Core/XIVLauncher.Core.csproj";
 
   runtimeDeps = [
     sdl3
@@ -108,27 +120,17 @@ buildDotnetModule rec {
     gnutls
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "xivlauncher";
-      exec = "XIVLauncher.Core";
-      icon = "xivlauncher";
-      desktopName = "XIVLauncher";
-      comment = meta.description;
-      categories = [ "Game" ];
-      startupWMClass = "XIVLauncher.Core";
-    })
-  ];
-
   meta = {
     description = "Custom launcher for FFXIV";
     homepage = "https://github.com/goatcorp/XIVLauncher.Core";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       blooym
       keysmashes
       witchof0x20
     ];
+
     platforms = [ "x86_64-linux" ];
     mainProgram = "XIVLauncher.Core";
   };

@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "arsenal";
   version = "1.2.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Orange-Cyberdefense";
@@ -16,6 +15,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     sha256 = "sha256-C8DEB/xojU7vGvmeBF+PBD6KWMaJgwa7PpRS5+YzQ6c=";
   };
+
+  nativeCheckInputs = [ versionCheckHook ];
 
   build-system = with python3.pkgs; [
     setuptools
@@ -29,7 +30,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pyyaml
   ];
 
-  nativeCheckInputs = [ versionCheckHook ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "arsenal"

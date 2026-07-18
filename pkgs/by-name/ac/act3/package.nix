@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -17,17 +17,15 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-+WSWlmxQTryLrpeloYdupyMibsgFYpjSuDvW+if3IHE=";
-
   __structuredAttrs = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Glance at the last 3 runs of your GitHub Actions workflows";
     homepage = "https://github.com/dhth/act3";
     license = lib.licenses.mit;
-    mainProgram = "act3";
     maintainers = with lib.maintainers; [ phanirithvij ];
     platforms = lib.platforms.unix;
+    mainProgram = "act3";
   };
 })

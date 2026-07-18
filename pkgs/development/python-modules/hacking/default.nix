@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "hacking";
   version = "8.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -23,13 +22,6 @@ buildPythonPackage rec {
   postPatch = ''
     sed -i 's/flake8.*/flake8/' requirements.txt
   '';
-
-  build-system = [
-    pbr
-    setuptools
-  ];
-
-  dependencies = [ flake8 ];
 
   nativeCheckInputs = [
     ddt
@@ -43,6 +35,13 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [
+    pbr
+    setuptools
+  ];
+
+  dependencies = [ flake8 ];
+  pyproject = true;
   pythonImportsCheck = [ "hacking" ];
 
   meta = {

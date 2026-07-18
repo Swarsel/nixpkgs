@@ -2,10 +2,10 @@
   lib,
   fetchurl,
   buildDunePackage,
-  menhir,
-  menhirLib,
   fmt,
   hmap,
+  menhir,
+  menhirLib,
   qcheck,
 }:
 
@@ -19,6 +19,7 @@ buildDunePackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ menhir ];
+
   propagatedBuildInputs = [
     menhirLib
     fmt
@@ -27,13 +28,12 @@ buildDunePackage (finalAttrs: {
 
   # Tests fail with menhir ≥ 20260122
   doCheck = false;
-
   checkInputs = [ qcheck ];
 
   meta = {
     description = "OCaml library providing clean and flexible parsers for input languages";
+    homepage = "https://github.com/Gbury/dolmen";
     license = lib.licenses.bsd2;
     maintainers = [ lib.maintainers.vbgl ];
-    homepage = "https://github.com/Gbury/dolmen";
   };
 })

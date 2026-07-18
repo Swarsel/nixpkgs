@@ -1,16 +1,16 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  wrapGAppsHook3,
   atk,
   cairo,
   gdk-pixbuf,
   glib,
+  gtk-layer-shell,
   gtk3,
   pango,
-  gtk-layer-shell,
+  pkg-config,
+  rustPlatform,
+  wrapGAppsHook3,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -23,8 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-ogqstgJqUczn0LDwpOAppC1J/Cs0IEOAXjNAnbiKn6M=";
   };
-
-  cargoHash = "sha256-VxcMHh1eIiHugpTFpclwuO0joY95bPz6hVIBHQwB6ZA=";
 
   nativeBuildInputs = [
     pkg-config
@@ -40,6 +38,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     gtk-layer-shell
     pango
   ];
+
+  cargoHash = "sha256-VxcMHh1eIiHugpTFpclwuO0joY95bPz6hVIBHQwB6ZA=";
 
   meta = {
     description = "Tool to help efficiently focus windows in Sway, inspired by i3-easyfocus";

@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "cssmin";
   version = "0.2.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,11 +15,12 @@ buildPythonPackage rec {
 
   # no tests
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Python port of the YUI CSS compression algorithm";
-    mainProgram = "cssmin";
     homepage = "https://github.com/zacharyvoase/cssmin";
     license = lib.licenses.bsd3;
+    mainProgram = "cssmin";
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -16,7 +16,10 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-c8F7BgjbR/w2JH8lE2t93s8gj6cWbTQGIkgYTQp9R3U=";
   };
 
+  strictDeps = true;
   vendorHash = "sha256-7xSMToc5rlxogS0N9H6siauu8i33zUA5/omqXAszDOg=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
@@ -29,20 +32,17 @@ buildGoModule (finalAttrs: {
     "-X main.treeState=clean"
   ];
 
-  strictDeps = true;
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   meta = {
     description = "Numeric file shortcuts for common git commands";
     homepage = "https://github.com/mroth/scmpuff";
     changelog = "https://github.com/mroth/scmpuff/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       cpcloud
       christoph-heiss
     ];
+
     mainProgram = "scmpuff";
   };
 })

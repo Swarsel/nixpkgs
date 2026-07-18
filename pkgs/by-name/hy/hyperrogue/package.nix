@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeDesktopItem,
-  copyDesktopItems,
-  pkg-config,
   SDL,
-  SDL_ttf,
   SDL_gfx,
   SDL_mixer,
-  libpng,
-  glew,
+  SDL_ttf,
+  copyDesktopItems,
   fontconfig,
-  versionCheckHook,
+  glew,
+  libpng,
+  makeDesktopItem,
   nix-update-script,
+  pkg-config,
+  versionCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,19 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "hyperrogue";
     tag = "v${finalAttrs.version}";
     sha256 = "sha256-JFSPbcbPuTKq9TNMCwpjDOEaI3SdAfcnSIi/uZkYT7w=";
-  };
-
-  env = {
-    FONTCONFIG = 1;
-    HYPERROGUE_USE_GLEW = 1;
-    HYPERROGUE_USE_PNG = 1;
-    HYPERROGUE_USE_ROGUEVIZ = 1;
-
-    CXXFLAGS = toString [
-      "-I${lib.getDev SDL}/include/SDL"
-      "-DHYPERPATH='\"${placeholder "out"}/share/hyperrogue/\"'"
-      "-DRESOURCEDESTDIR=HYPERPATH"
-    ];
   };
 
   nativeBuildInputs = [
@@ -55,20 +42,18 @@ stdenv.mkDerivation (finalAttrs: {
     fontconfig
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "hyperrogue";
-      desktopName = "HyperRogue";
-      genericName = "HyperRogue";
-      comment = finalAttrs.meta.description;
-      icon = "hyperrogue";
-      exec = "hyperrogue";
-      categories = [
-        "Game"
-        "AdventureGame"
-      ];
-    })
-  ];
+  env = {
+    CXXFLAGS = toString [
+      "-I${lib.getDev SDL}/include/SDL"
+      "-DHYPERPATH='\"${placeholder "out"}/share/hyperrogue/\"'"
+      "-DRESOURCEDESTDIR=HYPERPATH"
+    ];
+
+    FONTCONFIG = 1;
+    HYPERROGUE_USE_GLEW = 1;
+    HYPERROGUE_USE_PNG = 1;
+    HYPERROGUE_USE_ROGUEVIZ = 1;
+  };
 
   installPhase = ''
     runHook preInstall
@@ -96,13 +81,29 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  enableParallelBuilding = true;
+  doInstallCheck = !stdenv.hostPlatform.isDarwin;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
-  doInstallCheck = !stdenv.hostPlatform.isDarwin;
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Game"
+        "AdventureGame"
+      ];
+
+      comment = finalAttrs.meta.description;
+      desktopName = "HyperRogue";
+      exec = "hyperrogue";
+      genericName = "HyperRogue";
+      icon = "hyperrogue";
+      name = "hyperrogue";
+    })
+  ];
+
+  enableParallelBuilding = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -112,9 +113,9 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Roguelike game set in hyperbolic geometry";
     homepage = "https://www.roguetemple.com/z/hyper/";
     changelog = "https://github.com/zenorogue/hyperrogue/releases/tag/v${finalAttrs.version}";
-    mainProgram = "hyperrogue";
-    maintainers = [ ];
     license = lib.licenses.gpl2Plus;
+    maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "hyperrogue";
   };
 })

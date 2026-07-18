@@ -1,18 +1,17 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   blas,
   cmake,
   doxygen,
   example-robot-data,
-  fetchFromGitHub,
   ffmpeg,
   ipopt,
   lapack,
   llvmPackages,
-  lib,
   pinocchio,
   pkg-config,
-  stdenv,
-
   withMultithread ? true,
 }:
 
@@ -40,20 +39,16 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
   ];
 
+  buildInputs = lib.optionals (stdenv.hostPlatform.isDarwin && withMultithread) [
+    llvmPackages.openmp
+  ];
+
   propagatedBuildInputs = [
     blas
     ipopt
     lapack
     example-robot-data
     pinocchio
-  ];
-
-  buildInputs = lib.optionals (stdenv.hostPlatform.isDarwin && withMultithread) [
-    llvmPackages.openmp
-  ];
-
-  checkInputs = [
-    ffmpeg
   ];
 
   cmakeFlags = [
@@ -63,7 +58,11 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "BUILD_WITH_MULTITHREADS" withMultithread)
   ];
 
-  passthru = { inherit withMultithread; };
+  doCheck = true;
+
+  checkInputs = [
+    ffmpeg
+  ];
 
   prePatch = ''
     substituteInPlace \
@@ -72,17 +71,19 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail /bin/bash ${stdenv.shell}
   '';
 
-  doCheck = true;
+  passthru = { inherit withMultithread; };
 
   meta = {
     description = "Crocoddyl optimal control library";
     homepage = "https://github.com/loco-3d/crocoddyl";
     changelog = "https://github.com/loco-3d/crocoddyl/blob/devel/CHANGELOG.md";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       nim65s
       wegank
     ];
+
     platforms = lib.platforms.unix;
   };
 })

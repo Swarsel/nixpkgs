@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   attrs,
   buildPythonPackage,
   cattrs,
-  fetchFromGitHub,
   flit-core,
   importlib-resources,
   jsonschema,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "lsprotocol";
   version = "2025.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "microsoft";
@@ -23,7 +22,17 @@ buildPythonPackage rec {
     hash = "sha256-DrWXHMgDZSQQ6vsmorThMrUTX3UQU+DajSEOdxoXrFQ=";
   };
 
-  sourceRoot = "${src.name}/packages/python";
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  checkInputs = [
+    importlib-resources
+    jsonschema
+    pyhamcrest
+  ];
+
+  preCheck = ''
+    cd ../../
+  '';
 
   build-system = [
     flit-core
@@ -32,14 +41,6 @@ buildPythonPackage rec {
   dependencies = [
     attrs
     cattrs
-  ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  checkInputs = [
-    importlib-resources
-    jsonschema
-    pyhamcrest
   ];
 
   disabledTests = [
@@ -51,17 +52,16 @@ buildPythonPackage rec {
     "test_notebook_sync_options"
   ];
 
-  preCheck = ''
-    cd ../../
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "lsprotocol" ];
+  sourceRoot = "${src.name}/packages/python";
 
   meta = {
     description = "Python implementation of the Language Server Protocol";
     homepage = "https://github.com/microsoft/lsprotocol";
     changelog = "https://github.com/microsoft/lsprotocol/releases/tag/${src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       doronbehar
       fab

@@ -30,8 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "CPU usage monitoring tool";
     homepage = "https://github.com/ColinIanKing/cpustat";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "cpustat";
   };
 })

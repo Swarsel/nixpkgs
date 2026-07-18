@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
+  libffi,
   libsm,
   libx11,
   libxt,
-  libffi,
   ncurses,
 }:
 
@@ -27,9 +27,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "http://2484.de/yabasic/";
     description = "Yet another BASIC";
-    mainProgram = "yabasic";
+
     longDescription = ''
       Yabasic is a traditional basic-interpreter. It comes with goto and various
       loops and allows to define subroutines and libraries. It does simple
@@ -38,9 +37,12 @@ stdenv.mkDerivation (finalAttrs: {
       and has a comprehensive documentation; it is small, simple, open-source
       and free.
     '';
+
+    homepage = "http://2484.de/yabasic/";
     changelog = "https://2484.de/yabasic/whatsnew.html";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "yabasic";
   };
 })

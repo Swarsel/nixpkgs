@@ -1,29 +1,30 @@
 {
+  lib,
+  beautifulsoup4,
   buildPythonPackage,
   fetchPypi,
-  lib,
   poetry-core,
   sphinx,
-  beautifulsoup4,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "sphinxawesome-theme";
   version = "5.3.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) version;
-    pname = "sphinxawesome_theme";
     hash = "sha256-BinTi4Cu/CebEYbFOnpvryHnIbWy7NoU9IjKEHTiYx8=";
+    pname = "sphinxawesome_theme";
   };
 
   build-system = [ poetry-core ];
+
   dependencies = [
     sphinx
     beautifulsoup4
   ];
 
+  pyproject = true;
   pythonRelaxDeps = [ "sphinx" ];
 
   meta = {

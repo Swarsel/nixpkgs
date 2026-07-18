@@ -1,13 +1,13 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  electron,
+  buildNpmPackage,
   copyDesktopItems,
-  makeDesktopItem,
-  nix-update-script,
-  makeWrapper,
+  electron,
   kopia,
+  makeDesktopItem,
+  makeWrapper,
+  nix-update-script,
 }:
 let
   version = "0.23.1";
@@ -19,28 +19,24 @@ let
   };
 in
 buildNpmPackage {
-  pname = "kopia-ui";
   inherit version src;
+  pname = "kopia-ui";
+  patches = [ ./fix-paths.patch ];
 
-  sourceRoot = "${src.name}/app";
-
-  npmDepsHash = "sha256-yj5+qiLfy6CjAOXIzT9OMu860Pefwn+HuJNoBAizb/0=";
-  makeCacheWritable = true;
+  postPatch = ''
+    substituteInPlace public/utils.js --replace-fail KOPIA ${lib.getExe kopia}
+  '';
 
   nativeBuildInputs = [
     copyDesktopItems
     makeWrapper
   ];
 
+  npmDepsHash = "sha256-yj5+qiLfy6CjAOXIzT9OMu860Pefwn+HuJNoBAizb/0=";
+
   env = {
     ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
   };
-
-  patches = [ ./fix-paths.patch ];
-
-  postPatch = ''
-    substituteInPlace public/utils.js --replace-fail KOPIA ${lib.getExe kopia}
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -69,26 +65,28 @@ buildNpmPackage {
 
   desktopItems = [
     (makeDesktopItem {
+      categories = [ "Utility" ];
+      comment = "Fast and secure open source backup.";
+      desktopName = "KopiaUI";
+      exec = "kopia-ui";
+      icon = "kopia";
       name = "kopia-ui";
       type = "Application";
-      desktopName = "KopiaUI";
-      comment = "Fast and secure open source backup.";
-      icon = "kopia";
-      exec = "kopia-ui";
-      categories = [ "Utility" ];
     })
   ];
 
+  makeCacheWritable = true;
+  sourceRoot = "${src.name}/app";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Cross-platform backup tool with fast, incremental backups, client-side end-to-end encryption, compression and data deduplication";
-    mainProgram = "kopia-ui";
     homepage = "https://kopia.io";
-    downloadPage = "https://github.com/kopia/kopia";
     changelog = "https://github.com/kopia/kopia/releases/tag/v${version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ kilyanni ];
     platforms = lib.platforms.linux;
+    mainProgram = "kopia-ui";
+    downloadPage = "https://github.com/kopia/kopia";
   };
 }

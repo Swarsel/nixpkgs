@@ -1,11 +1,10 @@
 {
   stdenv,
-  python,
   flit-core,
+  python,
 }:
 
 stdenv.mkDerivation {
-  pname = "${python.libPrefix}-bootstrap-${flit-core.pname}";
   inherit (flit-core)
     version
     src
@@ -13,6 +12,7 @@ stdenv.mkDerivation {
     meta
     ;
 
+  pname = "${python.libPrefix}-bootstrap-${flit-core.pname}";
   postPatch = "cd flit_core";
 
   buildPhase = ''

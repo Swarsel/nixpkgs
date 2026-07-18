@@ -1,35 +1,22 @@
 {
   lib,
-  jdk,
   stdenv,
-  gradle,
-  makeWrapper,
   fetchFromGitHub,
+  gradle,
+  jdk,
+  makeWrapper,
 }:
 stdenv.mkDerivation (finalAttrs: rec {
   pname = "groovy-language-server";
   version = "0-unstable-2025-12-03";
 
   src = fetchFromGitHub {
-    name = "${pname}-${version}";
     owner = "GroovyLanguageServer";
     repo = "groovy-language-server";
     rev = "0746b250604c0a75bf620f7257aed8df12d025c3";
     hash = "sha256-rLi6xvGFVRvAVmP59Te1MxKA6HzQ+qPtEC5lMws5tFQ=";
+    name = "${pname}-${version}";
   };
-
-  mitmCache = gradle.fetchDeps {
-    pkg = finalAttrs.finalPackage;
-    data = ./deps.json;
-  };
-
-  __darwinAllowLocalNetworking = true;
-
-  gradleFlags = [ "-Dfile.encoding=utf-8" ];
-
-  gradleBuildTask = "shadowJar";
-
-  doCheck = true;
 
   nativeBuildInputs = [
     gradle
@@ -39,6 +26,8 @@ stdenv.mkDerivation (finalAttrs: rec {
   buildInputs = [
     jdk
   ];
+
+  doCheck = true;
 
   installPhase = ''
     runHook preInstall
@@ -55,12 +44,21 @@ stdenv.mkDerivation (finalAttrs: rec {
     runHook postInstall
   '';
 
+  __darwinAllowLocalNetworking = true;
+  gradleBuildTask = "shadowJar";
+  gradleFlags = [ "-Dfile.encoding=utf-8" ];
+
+  mitmCache = gradle.fetchDeps {
+    data = ./deps.json;
+    pkg = finalAttrs.finalPackage;
+  };
+
   meta = with lib; {
-    homepage = "https://github.com/GroovyLanguageServer/groovy-language-server";
     description = "Groovy Language Server";
     longDescription = "Groovy Language Server";
+    homepage = "https://github.com/GroovyLanguageServer/groovy-language-server";
     license = licenses.asl20;
-    platforms = platforms.all;
     maintainers = [ maintainers.guilvareux ];
+    platforms = platforms.all;
   };
 })

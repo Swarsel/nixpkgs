@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "favicon";
   version = "0.7.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -32,6 +31,7 @@ buildPythonPackage rec {
     requests-mock
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "favicon" ];
 
   meta = {

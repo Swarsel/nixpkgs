@@ -1,17 +1,16 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pillow,
   python-xlib,
-  xvfb-run,
   scrot,
+  xvfb-run,
 }:
 buildPythonPackage {
   pname = "pyscreeze";
   version = "0.1.26";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "asweigart";
@@ -20,19 +19,22 @@ buildPythonPackage {
     hash = "sha256-gn3ydjf/msdhIhngGlhK+jhEyFy0qGeDr58E7kM2YZs=";
   };
 
-  pythonImportsCheck = [ "pyscreeze" ];
+  propagatedBuildInputs = [ pillow ];
   doCheck = stdenv.hostPlatform.isLinux;
+
   nativeCheckInputs = lib.optionals stdenv.hostPlatform.isLinux [
     scrot
     python-xlib
     xvfb-run
   ];
+
   checkPhase = lib.optionalString stdenv.hostPlatform.isLinux ''
     python -m unittest tests.test_pillow_unavailable
     xvfb-run python -m unittest tests.test_pyscreeze
   '';
 
-  propagatedBuildInputs = [ pillow ];
+  format = "setuptools";
+  pythonImportsCheck = [ "pyscreeze" ];
 
   meta = {
     description = "PyScreeze is a simple, cross-platform screenshot module for Python 2 and 3";

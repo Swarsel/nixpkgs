@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  boost,
   meson,
   ninja,
-  pkg-config,
-  boost,
-  vapoursynth,
-  opencl-headers,
   ocl-icd,
+  opencl-headers,
+  pkg-config,
+  vapoursynth,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,6 +22,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-zW/qEtZTDJOTarXbXhv+nks25eePutLDpLck4TuMKUk=";
   };
 
+  postPatch = ''
+    substituteInPlace meson.build \
+      --replace-fail "vapoursynth_dep.get_pkgconfig_variable('libdir')" "get_option('libdir')"
+  '';
+
   nativeBuildInputs = [
     meson
     ninja
@@ -34,11 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
     ocl-icd
     opencl-headers
   ];
-
-  postPatch = ''
-    substituteInPlace meson.build \
-      --replace-fail "vapoursynth_dep.get_pkgconfig_variable('libdir')" "get_option('libdir')"
-  '';
 
   meta = {
     description = "Filter for VapourSynth";

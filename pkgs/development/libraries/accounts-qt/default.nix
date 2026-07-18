@@ -1,11 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  testers,
-  gitUpdater,
   dbus-test-runner,
   doxygen,
+  gitUpdater,
   glib,
   graphviz,
   libaccounts-glib,
@@ -13,6 +12,7 @@
   qmake,
   qtbase,
   qttools,
+  testers,
   writableTmpDirAsHomeHook,
 }:
 
@@ -76,12 +76,8 @@ stdenv.mkDerivation (finalAttrs: {
     libaccounts-glib
   ];
 
-  nativeCheckInputs = [
-    dbus-test-runner
-  ];
-
-  # Library
-  dontWrapQtApps = true;
+  # For qhelpgenerator to find minimal plugin
+  env.QT_PLUGIN_PATH = "${lib.getBin qtbase}/${qtbase.qtPluginPrefix}";
 
   # Configure *now*
   postConfigure = ''
@@ -94,14 +90,19 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
-  # For qhelpgenerator to find minimal plugin
-  env.QT_PLUGIN_PATH = "${lib.getBin qtbase}/${qtbase.qtPluginPrefix}";
+  nativeCheckInputs = [
+    dbus-test-runner
+  ];
+
+  # Library
+  dontWrapQtApps = true;
 
   passthru = {
     tests.pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
       versionCheck = true;
     };
+
     updateScript = gitUpdater {
       rev-prefix = "VERSION_";
     };
@@ -113,6 +114,7 @@ stdenv.mkDerivation (finalAttrs: {
     license = lib.licenses.lgpl21Only;
     maintainers = [ lib.maintainers.OPNA2608 ];
     platforms = lib.platforms.linux;
+
     pkgConfigModules = [
       "accounts-qt${lib.versions.major qtbase.version}"
     ];

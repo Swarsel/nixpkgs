@@ -1,22 +1,19 @@
 {
   lib,
+  fetchFromGitHub,
   astroid,
   buildPythonPackage,
-  fetchFromGitHub,
   fetchpatch,
   packaging,
   poetry-core,
-  semver,
   pytestCheckHook,
   pythonOlder,
+  semver,
 }:
 
 buildPythonPackage rec {
   pname = "requirements-detector";
   version = "1.3.2";
-  pyproject = true;
-
-  disabled = pythonOlder "3.12";
 
   src = fetchFromGitHub {
     owner = "landscapeio";
@@ -28,12 +25,13 @@ buildPythonPackage rec {
   patches = [
     # Remove duplicate import, https://github.com/prospector-dev/requirements-detector/pull/53
     (fetchpatch {
+      hash = "sha256-IskSs3BZ1pTeqjtCUksC8wL+3fOYqAi7nw/QD0zsie4=";
       name = "remove-import.patch";
       url = "https://github.com/prospector-dev/requirements-detector/commit/be412669f53a78b3376cac712c84f158fbb1374a.patch";
-      hash = "sha256-IskSs3BZ1pTeqjtCUksC8wL+3fOYqAi7nw/QD0zsie4=";
     })
   ];
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -42,8 +40,8 @@ buildPythonPackage rec {
     semver
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  disabled = pythonOlder "3.12";
+  pyproject = true;
   pythonImportsCheck = [ "requirements_detector" ];
 
   meta = {

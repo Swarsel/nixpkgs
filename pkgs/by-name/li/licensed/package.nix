@@ -5,9 +5,8 @@
 }:
 bundlerApp {
   pname = "licensed";
-  gemdir = ./.;
   exes = [ "licensed" ];
-
+  gemdir = ./.;
   passthru.updateScript = bundlerUpdateScript "licensed";
 
   meta = {

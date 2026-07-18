@@ -1,15 +1,14 @@
 {
-  fetchFromGitHub,
-  gradle,
   lib,
+  fetchFromGitHub,
   REAndroidLibrary,
+  gradle,
 }:
 
 let
   self = REAndroidLibrary {
     pname = "smali";
     version = "0-unstable-2024-11-24";
-    projectName = "smali";
 
     src = fetchFromGitHub {
       owner = "REAndroid";
@@ -27,17 +26,20 @@ let
       ./fix-gradle.patch
     ];
 
-    mitmCache = gradle.fetchDeps {
-      pkg = self;
-      data = ./deps.json;
-    };
-    gradleBuildTask = "build";
-
     installPhase = ''
       runHook preInstall
       install -Dm644 smali/build/libs/*-fat.jar $out/${self.outJar}
       runHook postInstall
     '';
+
+    gradleBuildTask = "build";
+
+    mitmCache = gradle.fetchDeps {
+      data = ./deps.json;
+      pkg = self;
+    };
+
+    projectName = "smali";
 
     # This fork deleted the NOTICE file from the original repo:
     # https://github.com/REAndroid/smali-lib/commit/40c075a1ff5fa8e29f339f4e71f45c028789c86c#diff-dfb14fbb9e7d095209ec4cfd621069437bf9c442ff9de9d4ce889781bd0fefcf

@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  opusfile,
-  libogg,
   SDL2,
-  openal,
+  curl,
   freetype,
   libjpeg,
-  curl,
+  libogg,
   makeWrapper,
+  openal,
+  opusfile,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,18 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'constexpr' 'const_expr'
   '';
 
-  enableParallelBuilding = true;
-
-  sourceRoot = "${finalAttrs.src.name}/SP";
-
-  makeFlags = [
-    "USE_INTERNAL_LIBS=0"
-    "COPYDIR=${placeholder "out"}/opt/iortcw"
-    "USE_OPENAL_DLOPEN=0"
-    "USE_CURL_DLOPEN=0"
-  ];
-
-  installTargets = [ "copyfiles" ];
+  nativeBuildInputs = [ makeWrapper ];
 
   buildInputs = [
     opusfile
@@ -52,13 +41,20 @@ stdenv.mkDerivation (finalAttrs: {
     openal
     curl
   ];
-  nativeBuildInputs = [ makeWrapper ];
+
+  makeFlags = [
+    "USE_INTERNAL_LIBS=0"
+    "COPYDIR=${placeholder "out"}/opt/iortcw"
+    "USE_OPENAL_DLOPEN=0"
+    "USE_CURL_DLOPEN=0"
+  ];
 
   env = {
     NIX_CFLAGS_COMPILE = toString [
       "-I${lib.getInclude SDL2}/include/SDL2"
       "-I${opusfile.dev}/include/opus"
     ];
+
     NIX_CFLAGS_LINK = toString [
       "-lSDL2"
     ];
@@ -70,11 +66,15 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  enableParallelBuilding = true;
+  installTargets = [ "copyfiles" ];
+  sourceRoot = "${finalAttrs.src.name}/SP";
+
   meta = {
     description = "Single player version of game engine for Return to Castle Wolfenstein";
     homepage = finalAttrs.src.meta.homepage;
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ rjpcasalino ];
+    platforms = lib.platforms.linux;
   };
 })

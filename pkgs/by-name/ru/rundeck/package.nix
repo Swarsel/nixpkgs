@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
-  jdk17,
-  which,
   coreutils,
+  jdk17,
+  makeWrapper,
   openssh,
+  which,
   writeScript,
 }:
 
@@ -21,8 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ jdk17 ];
-
-  dontUnpack = true;
 
   installPhase = ''
     runHook preInstall
@@ -44,6 +42,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   passthru.updateScript = writeScript "update-rundeck" ''
     #!/usr/bin/env nix-shell
     #!nix-shell -i bash -p common-updater-scripts curl jq
@@ -62,17 +62,19 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Job scheduler and runbook automation";
+
     longDescription = ''
       Rundeck is an open source automation service with a web console,
       command line tools and a WebAPI. It lets you easily run automation tasks
       across a set of nodes.
     '';
+
     homepage = "https://www.rundeck.com/";
     changelog = "https://docs.rundeck.com/docs/history/";
-    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
+    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
     maintainers = with lib.maintainers; [ liberodark ];
+    platforms = lib.platforms.unix;
     mainProgram = "rundeck";
   };
 })

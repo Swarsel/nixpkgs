@@ -18,22 +18,20 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-eM7O/skOcxkKV4utlC7G9FvMO+d2yZm5D0BoIUhAPXo=";
   };
 
-  patches = lib.optionals withOpenMP [ ./openmp.patch ];
-
-  buildInputs = lib.optionals (stdenv.cc.isClang && withOpenMP) [ llvmPackages.openmp ];
-
-  buildFlags = [
-    "lib"
-    "all"
-  ];
-
   outputs = [
     "out"
     "bin"
     "dev"
   ];
 
+  patches = lib.optionals withOpenMP [ ./openmp.patch ];
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ fixDarwinDylibNames ];
+  buildInputs = lib.optionals (stdenv.cc.isClang && withOpenMP) [ llvmPackages.openmp ];
+
+  buildFlags = [
+    "lib"
+    "all"
+  ];
 
   installPhase =
     let

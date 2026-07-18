@@ -1,21 +1,21 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  makeDesktopItem,
+  buildNpmPackage,
   copyDesktopItems,
-  makeWrapper,
   electron,
+  makeDesktopItem,
+  makeWrapper,
   python3,
 }:
 
 let
   version = "1.2.50";
   electronSrc = fetchFromGitHub {
+    hash = "sha256-SVVzrgK4VdkMEVRQ9PUftB4ktchTq7JgawVz8AxMSZs=";
     owner = "threema-ch";
     repo = "threema-web-electron";
     tag = version;
-    hash = "sha256-SVVzrgK4VdkMEVRQ9PUftB4ktchTq7JgawVz8AxMSZs=";
   };
 
   threema-web = buildNpmPackage rec {
@@ -29,17 +29,16 @@ let
       hash = "sha256-yDJbTkeCsQ3ToEpLoPC9ow0fbJhrvyrkrtYqIFEuhBU=";
     };
 
-    npmDepsHash = "sha256-g6NqQYhGuMSwVq94CCDOUzC4e0GdWKqDBfQY2pfitsw=";
-    npmBuildScript = "dist";
+    patches = [
+      "${electronSrc}/tools/patches/patch-user-agent.patch"
+      "${electronSrc}/tools/patches/patch-looks.patch"
+    ];
 
     nativeBuildInputs = [
       (python3.withPackages (ps: [ ps.setuptools ])) # Used by gyp
     ];
 
-    patches = [
-      "${electronSrc}/tools/patches/patch-user-agent.patch"
-      "${electronSrc}/tools/patches/patch-looks.patch"
-    ];
+    npmDepsHash = "sha256-g6NqQYhGuMSwVq94CCDOUzC4e0GdWKqDBfQY2pfitsw=";
 
     postInstall = ''
       # Content of ${electronSrc}/tools/patches/post-patch-threema-web.sh
@@ -47,35 +46,37 @@ let
       sed -i.bak -E "s/IN_MEMORY_SESSION_PASSWORD:(true|false|0|1|\!0|\!1)/IN_MEMORY_SESSION_PASSWORD:true/g" -- release/$threema_web_version/*.bundle.js
       cp -r . "$out"
     '';
+
+    npmBuildScript = "dist";
   };
 
   consumer = buildNpmPackage rec {
-    pname = "threema-desktop-consumer";
     inherit version;
+    pname = "threema-desktop-consumer";
     src = electronSrc;
-    sourceRoot = "${src.name}/app";
     npmDepsHash = "sha256-zSrW8/XBJejYWKuDMIkZLYnFd3M9JG8/mjxuvGWfQqw=";
     env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
+
+    postInstall = ''
+      cp -r . "$out"
+    '';
+
     dontNpmBuild = true;
+
     prePatch = ''
       rm -r dependencies/threema-web
       cp -r ${threema-web} dependencies/threema-web
       chmod +w dependencies/threema-web
     '';
-    postInstall = ''
-      cp -r . "$out"
-    '';
+
+    sourceRoot = "${src.name}/app";
   };
 
 in
 buildNpmPackage rec {
-  pname = "threema-desktop";
   inherit version;
+  pname = "threema-desktop";
   src = electronSrc;
-
-  npmDepsHash = "sha256-5HDYcJAZ06lI3ZCO2zHi3FCNUUe06vy/Vggo0K1P7q8=";
-
-  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
   postPatch = ''
     rm -r app
@@ -83,25 +84,13 @@ buildNpmPackage rec {
     chmod +w app
   '';
 
-  npmBuildScript = "app:build:electron:main";
-
-  # We need to install the consumer
-  dontNpmInstall = true;
-
   nativeBuildInputs = [
     copyDesktopItems
     makeWrapper
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "threema-desktop";
-      exec = meta.mainProgram;
-      icon = "threema";
-      desktopName = "Threema Desktop";
-      comment = meta.description;
-    })
-  ];
+  npmDepsHash = "sha256-5HDYcJAZ06lI3ZCO2zHi3FCNUUe06vy/Vggo0K1P7q8=";
+  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
   postInstall = ''
     mkdir -p $out/opt
@@ -117,12 +106,26 @@ buildNpmPackage rec {
       --add-flags $out/opt/threema/dist/src/main.js
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      comment = meta.description;
+      desktopName = "Threema Desktop";
+      exec = meta.mainProgram;
+      icon = "threema";
+      name = "threema-desktop";
+    })
+  ];
+
+  # We need to install the consumer
+  dontNpmInstall = true;
+  npmBuildScript = "app:build:electron:main";
+
   meta = {
     description = "Desktop client for Threema, a privacy-focused end-to-end encrypted mobile messenger";
     homepage = "https://threema.ch";
     license = lib.licenses.agpl3Only;
-    mainProgram = "threema";
     maintainers = [ lib.maintainers.jonhermansen ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "threema";
   };
 }

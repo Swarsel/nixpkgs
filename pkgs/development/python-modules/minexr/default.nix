@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   numpy,
   pillow,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "minexr";
   version = "1.0.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "cheind";
@@ -21,11 +20,13 @@ buildPythonPackage rec {
 
   propagatedBuildInputs = [ numpy ];
 
-  pythonImportsCheck = [ "minexr" ];
   nativeCheckInputs = [
     pytestCheckHook
     pillow
   ];
+
+  format = "setuptools";
+  pythonImportsCheck = [ "minexr" ];
 
   meta = {
     description = "Minimal, standalone OpenEXR reader for single-part, uncompressed scan line files";

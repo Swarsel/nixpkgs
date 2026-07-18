@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,14 +17,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-JqAzBPYbJq52exCpVTdhd90BQGsbfMOx68PD1xUripg=";
   };
 
-  cargoHash = "sha256-zndBkOJ/U6lLaOJn273TabMAPbz96hQeWs4cPKFDGro=";
-
   patches = [
     # Backport fix for build error for lightningcss-napi
     # see https://github.com/parcel-bundler/lightningcss/pull/713
     # FIXME: remove when merged upstream
     ./0001-napi-fix-build-error-in-cargo-auditable.patch
   ];
+
+  cargoHash = "sha256-zndBkOJ/U6lLaOJn273TabMAPbz96hQeWs4cPKFDGro=";
 
   buildFeatures = [
     "cli"
@@ -46,11 +46,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://lightningcss.dev/";
     changelog = "https://github.com/parcel-bundler/lightningcss/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       johnrtitor
       toastal
     ];
-    mainProgram = "lightningcss";
+
     platforms = lib.platforms.all;
+    mainProgram = "lightningcss";
   };
 })

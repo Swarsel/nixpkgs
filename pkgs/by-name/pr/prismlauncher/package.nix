@@ -1,4 +1,6 @@
 {
+  lib,
+  stdenv,
   addDriverRunpath,
   alsa-lib,
   flite,
@@ -9,28 +11,25 @@
   jdk25,
   jdk8,
   kdePackages,
-  lib,
   libGL,
+  libjack2,
+  libpulseaudio,
+  libusb1,
   libx11,
   libxcursor,
   libxext,
   libxrandr,
   libxxf86vm,
-  libjack2,
-  libpulseaudio,
-  libusb1,
   openal,
   pciutils,
   pipewire,
   prismlauncher-unwrapped,
-  stdenv,
   symlinkJoin,
   udev,
   vulkan-loader,
   wayland,
   wrapGAppsHook3,
   xrandr,
-
   additionalLibs ? [ ],
   additionalPrograms ? [ ],
   controllerSupport ? stdenv.hostPlatform.isLinux,
@@ -58,10 +57,8 @@ let
 in
 
 symlinkJoin {
-  pname = "prismlauncher";
   inherit (prismlauncher') version;
-
-  paths = [ prismlauncher' ];
+  pname = "prismlauncher";
 
   nativeBuildInputs = [
     kdePackages.wrapQtAppsHook
@@ -82,6 +79,8 @@ symlinkJoin {
 
     wrapQtAppsHook
   '';
+
+  paths = [ prismlauncher' ];
 
   qtWrapperArgs =
     let

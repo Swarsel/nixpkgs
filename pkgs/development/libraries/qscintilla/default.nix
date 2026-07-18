@@ -1,13 +1,12 @@
 {
   lib,
   stdenv,
-
   fetchurl,
-  unzip,
-  qtbase,
-  qtmacextras ? null,
-  qmake,
   fixDarwinDylibNames,
+  qmake,
+  qtbase,
+  unzip,
+  qtmacextras ? null,
 }:
 
 let
@@ -22,17 +21,23 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-3+E8asydhd/Lp2zMgGHnGiI5V6bALzw0OzCp1DpM3U0=";
   };
 
-  sourceRoot = "QScintilla_src-${finalAttrs.version}/src";
-
-  buildInputs = [ qtbase ];
-
-  propagatedBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ qtmacextras ];
-
   nativeBuildInputs = [
     unzip
     qmake
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ fixDarwinDylibNames ];
+
+  buildInputs = [ qtbase ];
+  propagatedBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ qtmacextras ];
+
+  preConfigure = ''
+    substituteInPlace qscintilla.pro \
+      --replace '$$[QT_INSTALL_LIBS]'         $out/lib \
+      --replace '$$[QT_INSTALL_HEADERS]'      $out/include \
+      --replace '$$[QT_INSTALL_TRANSLATIONS]' $out/translations \
+      --replace '$$[QT_HOST_DATA]/mkspecs'    $out/mkspecs \
+      --replace '$$[QT_INSTALL_DATA]'         $out/share
+  '';
 
   # Make sure that libqscintilla2.so is available in $out/lib since it is expected
   # by some packages such as sqlitebrowser
@@ -45,18 +50,11 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
   dontWrapQtApps = true;
-
-  preConfigure = ''
-    substituteInPlace qscintilla.pro \
-      --replace '$$[QT_INSTALL_LIBS]'         $out/lib \
-      --replace '$$[QT_INSTALL_HEADERS]'      $out/include \
-      --replace '$$[QT_INSTALL_TRANSLATIONS]' $out/translations \
-      --replace '$$[QT_HOST_DATA]/mkspecs'    $out/mkspecs \
-      --replace '$$[QT_INSTALL_DATA]'         $out/share
-  '';
+  sourceRoot = "QScintilla_src-${finalAttrs.version}/src";
 
   meta = {
     description = "Qt port of the Scintilla text editing library";
+
     longDescription = ''
       QScintilla is a port to Qt of Neil Hodgson's Scintilla C++ editor
       control.
@@ -71,6 +69,7 @@ stdenv.mkDerivation (finalAttrs: {
       proportional fonts, bold and italics, multiple foreground and
       background colours and multiple fonts.
     '';
+
     homepage = "https://www.riverbankcomputing.com/software/qscintilla/intro";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ peterhoeg ];

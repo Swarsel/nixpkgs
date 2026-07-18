@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -32,28 +32,29 @@ in
 {
   options.services.duckdns = {
     enable = lib.mkEnableOption "DuckDNS Dynamic DNS Client";
-    tokenFile = lib.mkOption {
-      default = null;
-      type = lib.types.path;
-      description = ''
-        The path to a file containing the token
-        used to authenticate with DuckDNS.
-      '';
-    };
 
     domains = lib.mkOption {
       default = null;
-      type = lib.types.nullOr (lib.types.listOf lib.types.str);
-      example = [ "examplehost" ];
+
       description = ''
         The domain(s) to update in DuckDNS
         (without the .duckdns.org suffix)
       '';
+
+      example = [ "examplehost" ];
+      type = lib.types.nullOr (lib.types.listOf lib.types.str);
     };
 
     domainsFile = lib.mkOption {
       default = null;
-      type = lib.types.nullOr lib.types.path;
+
+      description = ''
+        The path to a file containing a
+        newline-separated list of DuckDNS
+        domain(s) to be updated
+        (without the .duckdns.org suffix)
+      '';
+
       example = lib.literalExpression ''
         pkgs.writeText "duckdns-domains.txt" '''
           examplehost
@@ -61,12 +62,19 @@ in
           examplehost3
         '''
       '';
+
+      type = lib.types.nullOr lib.types.path;
+    };
+
+    tokenFile = lib.mkOption {
+      default = null;
+
       description = ''
-        The path to a file containing a
-        newline-separated list of DuckDNS
-        domain(s) to be updated
-        (without the .duckdns.org suffix)
+        The path to a file containing the token
+        used to authenticate with DuckDNS.
       '';
+
+      type = lib.types.path;
     };
 
   };
@@ -90,10 +98,9 @@ in
     environment.systemPackages = [ duckdns ];
 
     systemd.services.duckdns = {
-      description = "DuckDNS Dynamic DNS Client";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
-      startAt = "*:0/5";
+      description = "DuckDNS Dynamic DNS Client";
+
       path = [
         pkgs.gnused
         pkgs.systemd
@@ -101,14 +108,7 @@ in
         pkgs.gawk
         duckdns
       ];
-      serviceConfig = {
-        Type = "simple";
-        LoadCredential = [
-          "DUCKDNS_TOKEN_FILE:${cfg.tokenFile}"
-        ]
-        ++ lib.optionals (cfg.domainsFile != null) [ "DUCKDNS_DOMAINS_FILE:${cfg.domainsFile}" ];
-        DynamicUser = true;
-      };
+
       script = ''
         export DUCKDNS_TOKEN=$(systemd-creds cat DUCKDNS_TOKEN_FILE)
         ${lib.optionalString (cfg.domains != null) ''
@@ -119,6 +119,20 @@ in
         ''}
         exec ${lib.getExe duckdns}
       '';
+
+      serviceConfig = {
+        DynamicUser = true;
+
+        LoadCredential = [
+          "DUCKDNS_TOKEN_FILE:${cfg.tokenFile}"
+        ]
+        ++ lib.optionals (cfg.domainsFile != null) [ "DUCKDNS_DOMAINS_FILE:${cfg.domainsFile}" ];
+
+        Type = "simple";
+      };
+
+      startAt = "*:0/5";
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

@@ -1,17 +1,17 @@
 {
   lib,
-  gcc15Stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   aquamarine,
   cairo,
+  cmake,
+  gcc15Stdenv,
   hyprgraphics,
   hyprtoolkit,
   hyprutils,
   libdrm,
   pipewire,
   pixman,
+  pkg-config,
 }:
 
 gcc15Stdenv.mkDerivation (finalAttrs: {
@@ -45,8 +45,8 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
     inherit (finalAttrs.src.meta) homepage;
     description = "A GUI Pipewire control center";
     license = lib.licenses.bsd3;
-    teams = [ lib.teams.hyprland ];
     platforms = with lib.platforms; linux ++ freebsd;
     mainProgram = "hyprpwcenter";
+    teams = [ lib.teams.hyprland ];
   };
 })

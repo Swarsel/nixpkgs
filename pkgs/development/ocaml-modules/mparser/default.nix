@@ -17,8 +17,8 @@ buildDunePackage (finalAttrs: {
 
   meta = {
     description = "Simple monadic parser combinator OCaml library";
-    license = lib.licenses.lgpl21Plus;
     homepage = "https://github.com/murmour/mparser";
+    license = lib.licenses.lgpl21Plus;
     maintainers = [ lib.maintainers.vbgl ];
   };
 })

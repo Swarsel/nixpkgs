@@ -1,14 +1,14 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   buildPackages,
+  glibcLocales,
+  installShellFiles,
+  nix-update-script,
   pkgsCross,
   rustPlatform,
-  stdenv,
-  glibcLocales,
-  fetchFromGitHub,
-  installShellFiles,
   versionCheckHook,
-  nix-update-script,
 }:
 
 let
@@ -25,9 +25,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-xgJIJUk9T7zUbr1MqN89mbt6IY4J4lG9uCzWrsmOW0Q=";
   };
 
+  nativeBuildInputs = [ installShellFiles ] ++ lib.optional (!canExecuteHost) buildPackages.argc;
   cargoHash = "sha256-5en2517Xgn+4FYeTcpj6m2ZN/MTItiu2g9g/UEJAEiw=";
 
-  nativeBuildInputs = [ installShellFiles ] ++ lib.optional (!canExecuteHost) buildPackages.argc;
+  env = {
+    LANG = "C.UTF-8";
+  }
+  // lib.optionalAttrs (glibcLocales != null) {
+    LOCALE_ARCHIVE = "${glibcLocales}/lib/locale/locale-archive";
+  };
 
   postInstall = ''
     ARGC=${if canExecuteHost then "\${!outputBin}/bin/argc" else "argc"}
@@ -38,21 +44,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <("$ARGC" --argc-completions zsh)
   '';
 
-  disallowedReferences = lib.optional (!canExecuteHost) buildPackages.argc;
-
-  env = {
-    LANG = "C.UTF-8";
-  }
-  // lib.optionalAttrs (glibcLocales != null) {
-    LOCALE_ARCHIVE = "${glibcLocales}/lib/locale/locale-archive";
-  };
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  disallowedReferences = lib.optional (!canExecuteHost) buildPackages.argc;
   versionCheckProgramArg = "--argc-version";
 
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       cross =
         (
@@ -64,18 +61,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
             pkgsCross.aarch64-multiplatform
         ).argc;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Command-line options, arguments and sub-commands parser for bash";
-    mainProgram = "argc";
     homepage = "https://github.com/sigoden/argc";
     changelog = "https://github.com/sigoden/argc/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       mit
       # or
       asl20
     ];
+
     maintainers = [ lib.maintainers.progrm_jarvis ];
+    mainProgram = "argc";
   };
 })

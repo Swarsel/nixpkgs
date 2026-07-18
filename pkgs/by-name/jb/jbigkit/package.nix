@@ -17,42 +17,35 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Archlinux patch: this helps users to reduce denial-of-service risks, as in CVE-2017-9937
     (fetchpatch {
-      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/jbigkit/-/raw/main/0013-new-jbig.c-limit-s-maxmem-maximum-decoded-image-size.patch";
       hash = "sha256-Yq5qCTF7KZTrm4oeWbpctb+QLt3shJUGEReZvd0ey9k=";
+      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/jbigkit/-/raw/main/0013-new-jbig.c-limit-s-maxmem-maximum-decoded-image-size.patch";
     })
     # Archlinux patch: fix heap overflow
     (fetchpatch {
-      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/jbigkit/-/raw/main/0015-jbg_newlen-check-for-end-of-file-within-MARKER_NEWLE.patch";
       hash = "sha256-F3qA/btR9D9NfzrNY76X4Z6vG6NrisI36SjCDjS+F5s=";
+      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/jbigkit/-/raw/main/0015-jbg_newlen-check-for-end-of-file-within-MARKER_NEWLE.patch";
     })
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [
     # Archlinux patch: build shared object
     (fetchpatch {
-      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/jbigkit/-/raw/main/jbigkit-2.1-shared_lib.patch";
       hash = "sha256-+efeeKg3FJ/TjSOj58kD+DwnaCm3zhGzKLfUes/d5rg=";
+      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/jbigkit/-/raw/main/jbigkit-2.1-shared_lib.patch";
     })
     (fetchpatch {
-      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/jbigkit/-/raw/main/jbigkit-2.1-ldflags.patch";
       hash = "sha256-ik3NifyuhDHnIMTrNLAKInPgu2F5u6Gvk9daqrn8ZhY=";
+      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/jbigkit/-/raw/main/jbigkit-2.1-ldflags.patch";
     })
     # Archlinux patch: update coverity
     (fetchpatch {
-      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/jbigkit/-/raw/main/jbigkit-2.1-coverity.patch";
       hash = "sha256-APm9A2f4sMufuY3cnL9HOcSCa9ov3pyzgQTTKLd49/E=";
+      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/jbigkit/-/raw/main/jbigkit-2.1-coverity.patch";
     })
     # Archlinux patch: fix build warnings
     (fetchpatch {
-      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/jbigkit/-/raw/main/jbigkit-2.1-build_warnings.patch";
       hash = "sha256-lDEJ1bvZ+zR7K4CiTq+aXJ8PGjILE3W13kznLLlGOOg=";
+      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/jbigkit/-/raw/main/jbigkit-2.1-build_warnings.patch";
     })
-  ];
-
-  makeFlags = [
-    "AR=${lib.getBin stdenv.cc.bintools.bintools}/bin/${stdenv.cc.targetPrefix}ar"
-    "CC=${stdenv.cc}/bin/${stdenv.cc.targetPrefix}cc"
-    "DESTDIR=${placeholder "out"}"
-    "RANLIB=${lib.getBin stdenv.cc.bintools.bintools}/bin/${stdenv.cc.targetPrefix}ranlib"
   ];
 
   postPatch = ''
@@ -62,6 +55,15 @@ stdenv.mkDerivation (finalAttrs: {
         sed -i -E 's/\bar /$(AR) /g;s/\branlib /$(RANLIB) /g' "$f"
     done
   '';
+
+  makeFlags = [
+    "AR=${lib.getBin stdenv.cc.bintools.bintools}/bin/${stdenv.cc.targetPrefix}ar"
+    "CC=${stdenv.cc}/bin/${stdenv.cc.targetPrefix}cc"
+    "DESTDIR=${placeholder "out"}"
+    "RANLIB=${lib.getBin stdenv.cc.bintools.bintools}/bin/${stdenv.cc.targetPrefix}ranlib"
+  ];
+
+  doCheck = true;
 
   installPhase = ''
     runHook preInstall
@@ -84,8 +86,6 @@ stdenv.mkDerivation (finalAttrs: {
   + ''
     runHook postInstall
   '';
-
-  doCheck = true;
 
   # Testing deletes all files on each test, causes test failures.
   enableParallelChecking = false;

@@ -18,13 +18,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-nbHSrILQT4541cPGUpqKmTLKnXnXYCAHBjkC4vIbT9g=";
-
   passthru.tests.version = testers.testVersion { package = stu; };
 
   meta = {
     description = "Terminal file explorer for S3 buckets";
-    changelog = "https://github.com/lusingander/stu/releases/tag/v${finalAttrs.version}";
     homepage = "https://lusingander.github.io/stu/";
+    changelog = "https://github.com/lusingander/stu/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.Nebucatnetzer ];
     mainProgram = "stu";

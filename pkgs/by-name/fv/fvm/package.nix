@@ -1,11 +1,11 @@
 {
   lib,
-  buildDartApplication,
   fetchFromGitHub,
+  _experimental-update-script-combinators,
+  buildDartApplication,
+  nix-update-script,
   runCommand,
   yq-go,
-  _experimental-update-script-combinators,
-  nix-update-script,
 }:
 
 let
@@ -19,9 +19,8 @@ let
   };
 in
 buildDartApplication {
-  pname = "fvm";
   inherit version src;
-
+  pname = "fvm";
   pubspecLock = lib.importJSON ./pubspec.lock.json;
 
   passthru = {
@@ -34,6 +33,7 @@ buildDartApplication {
         ''
           yq eval --output-format=json --prettyPrint $src/pubspec.lock > "$out"
         '';
+
     updateScript = _experimental-update-script-combinators.sequence [
       (nix-update-script { })
       (
@@ -49,7 +49,7 @@ buildDartApplication {
     description = "Simple CLI to manage Flutter SDK versions";
     homepage = "https://github.com/leoafarias/fvm";
     license = lib.licenses.mit;
-    mainProgram = "fvm";
     maintainers = [ ];
+    mainProgram = "fvm";
   };
 }

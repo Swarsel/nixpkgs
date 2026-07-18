@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
   django-formtools,
   django-otp,
   django-phonenumber-field,
-  fetchFromGitHub,
   phonenumbers,
   pydantic,
   qrcode,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "django-two-factor-auth";
   version = "1.18.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jazzband";
@@ -26,12 +25,9 @@ buildPythonPackage rec {
     hash = "sha256-rhcEVmh5Am1TKO+01rb9VBKJdFVa8uRdTimEKq2pA7w=";
   };
 
+  # Tests require internet connection
+  doCheck = false;
   build-system = [ setuptools-scm ];
-
-  pythonRelaxDeps = [
-    "django-phonenumber-field"
-    "qrcode"
-  ];
 
   dependencies = [
     django
@@ -43,24 +39,28 @@ buildPythonPackage rec {
 
   optional-dependencies = {
     call = [ twilio ];
-    sms = [ twilio ];
-    webauthn = [
-      pydantic
-      webauthn
-    ];
     # yubikey = [
     #   django-otp-yubikey
     # ];
     phonenumbers = [ phonenumbers ];
+    sms = [ twilio ];
+
+    webauthn = [
+      pydantic
+      webauthn
+    ];
     # phonenumberslite = [
     #   phonenumberslite
     # ];
   };
 
-  # Tests require internet connection
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "two_factor" ];
+
+  pythonRelaxDeps = [
+    "django-phonenumber-field"
+    "qrcode"
+  ];
 
   meta = {
     description = "Complete Two-Factor Authentication for Django";

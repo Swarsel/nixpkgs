@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
   fftw,
   hamlib,
-  libpulseaudio,
   libGL,
+  libpulseaudio,
   libx11,
   liquid-dsp,
   pkg-config,
@@ -30,10 +30,15 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fix for liquid-dsp v1.50
     (fetchpatch {
-      url = "https://github.com/cjcliffe/CubicSDR/commit/0e3a785bd2af56d18ff06b56579197b3e89b34ab.patch";
       sha256 = "sha256-mPfNZcV3FnEtGVX4sCMSs+Qc3VeSBIRkpCyx24TKkcU=";
+      url = "https://github.com/cjcliffe/CubicSDR/commit/0e3a785bd2af56d18ff06b56579197b3e89b34ab.patch";
     })
   ];
+
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required (VERSION 2.8)" "cmake_minimum_required (VERSION 3.10)"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -55,18 +60,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   cmakeFlags = [ "-DUSE_HAMLIB=ON" ] ++ lib.optional enableDigitalLab "-DENABLE_DIGITAL_LAB=ON";
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required (VERSION 2.8)" "cmake_minimum_required (VERSION 3.10)"
-  '';
-
   postFixup = lib.optionalString stdenv.hostPlatform.isDarwin ''
     install_name_tool -change libliquid.dylib ${lib.getLib liquid-dsp}/lib/libliquid.dylib ''${out}/bin/CubicSDR
   '';
 
   meta = {
-    homepage = "https://cubicsdr.com";
     description = "Software Defined Radio application";
+    homepage = "https://cubicsdr.com";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ lasandell ];
     platforms = lib.platforms.unix;

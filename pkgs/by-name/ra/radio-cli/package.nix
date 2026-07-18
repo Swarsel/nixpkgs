@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   makeWrapper,
-  pkg-config,
-  openssl,
   mpv,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "radio-cli";
@@ -18,14 +18,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-De/3tkvHf8dp04A0hug+aCbiXUc+XUYeHWYOiJ/bac0=";
   };
 
-  cargoHash = "sha256-mxSlyQpMzLbiIbcVQUILHDyLsCf/9fanX9/yf0hyXHA=";
-
-  buildInputs = [ openssl ];
-
   nativeBuildInputs = [
     pkg-config
     makeWrapper
   ];
+
+  buildInputs = [ openssl ];
+  cargoHash = "sha256-mxSlyQpMzLbiIbcVQUILHDyLsCf/9fanX9/yf0hyXHA=";
 
   postInstall = ''
     wrapProgram "$out/bin/radio-cli" \
@@ -38,7 +37,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     changelog = "https://github.com/margual56/radio-cli/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ luftmensch-luftmensch ];
-    mainProgram = "radio-cli";
     platforms = lib.platforms.unix;
+    mainProgram = "radio-cli";
   };
 })

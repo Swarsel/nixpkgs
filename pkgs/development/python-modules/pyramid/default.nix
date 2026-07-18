@@ -1,27 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  webtest,
-  zope-component,
+  buildPythonPackage,
   hupper,
   pastedeploy,
   plaster,
   plaster-pastedeploy,
+  pytestCheckHook,
   repoze-lru,
   setuptools_80,
   translationstring,
   venusian,
   webob,
+  webtest,
+  zope-component,
   zope-deprecation,
   zope-interface,
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyramid";
   version = "2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Pylons";
@@ -29,6 +28,12 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-N0zH0BpS9ImSTWeADBOBSgLYI062sdLxTzwBENAawFc=";
   };
+
+  nativeCheckInputs = [
+    webtest
+    zope-component
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools_80 ];
 
@@ -45,12 +50,7 @@ buildPythonPackage (finalAttrs: {
     zope-interface
   ];
 
-  nativeCheckInputs = [
-    webtest
-    zope-component
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyramid" ];
 
   meta = {

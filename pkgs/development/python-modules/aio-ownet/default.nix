@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
-  lib,
   poetry-core,
   pytestCheckHook,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "aio-ownet";
   version = "0.0.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hacf-fr";
@@ -19,22 +18,23 @@ buildPythonPackage rec {
     hash = "sha256-KgQasltfoffVjCDX9s98qnZrv+VLiEffLi9FnUD5vXc=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [ poetry-core ];
 
   optional-dependencies = {
     cli = [ click ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "aio_ownet" ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
   meta = {
-    changelog = "https://github.com/hacf-fr/aio-ownet/releases/tag/${src.tag}";
     description = "Asynchronous OWFS (owserver network protocol) client library";
     homepage = "https://github.com/hacf-fr/aio-ownet";
+    changelog = "https://github.com/hacf-fr/aio-ownet/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.dotlambda ];
   };

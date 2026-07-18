@@ -22,11 +22,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/WhyNotHugo/kbdlight";
     description = "Very simple application that changes MacBooks' keyboard backlight level";
-    mainProgram = "kbdlight";
+    homepage = "https://github.com/WhyNotHugo/kbdlight";
     license = lib.licenses.isc;
     maintainers = [ lib.maintainers.womfoo ];
     platforms = lib.platforms.linux;
+    mainProgram = "kbdlight";
   };
 })

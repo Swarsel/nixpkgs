@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   gprolog,
 }:
@@ -36,8 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "System Information Fetcher Written in GNU/Prolog";
     homepage = "https://github.com/RustemB/profetch";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.vel ];
+    platforms = lib.platforms.all;
     mainProgram = "profetch";
   };
 })

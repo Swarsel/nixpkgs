@@ -1,8 +1,8 @@
 {
   lib,
-  buildPythonPackage,
-  branca,
   fetchFromGitHub,
+  branca,
+  buildPythonPackage,
   fetchpatch2,
   geodatasets,
   geopandas,
@@ -23,7 +23,6 @@
 buildPythonPackage rec {
   pname = "folium";
   version = "0.20.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-visualization";
@@ -35,10 +34,21 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/python-visualization/folium/pull/2223
     (fetchpatch2 {
+      hash = "sha256-e6PFvK/qAfVTPs8LF2XgojwFJ/s2PDrIuwEkxRUzSkE=";
       name = "folium-fix-tests-proj-9.8.1";
       url = "https://github.com/python-visualization/folium/commit/b4ea8aa12d0808536c4f50b63eddd006e68680cb.patch?full_index=1";
-      hash = "sha256-e6PFvK/qAfVTPs8LF2XgojwFJ/s2PDrIuwEkxRUzSkE=";
     })
+  ];
+
+  nativeCheckInputs = [
+    geodatasets
+    geopandas
+    nbconvert
+    pandas
+    pillow
+    pixelmatch
+    pytestCheckHook
+    selenium
   ];
 
   build-system = [
@@ -54,15 +64,10 @@ buildPythonPackage rec {
     xyzservices
   ];
 
-  nativeCheckInputs = [
-    geodatasets
-    geopandas
-    nbconvert
-    pandas
-    pillow
-    pixelmatch
-    pytestCheckHook
-    selenium
+  disabledTestPaths = [
+    # Selenium cannot find chrome driver, even with chromedriver package
+    "tests/snapshots/test_snapshots.py"
+    "tests/selenium"
   ];
 
   disabledTests = [
@@ -76,12 +81,7 @@ buildPythonPackage rec {
     "test_timedynamic_geo_json"
   ];
 
-  disabledTestPaths = [
-    # Selenium cannot find chrome driver, even with chromedriver package
-    "tests/snapshots/test_snapshots.py"
-    "tests/selenium"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "folium" ];
 
   meta = {

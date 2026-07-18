@@ -18,12 +18,11 @@
 buildPythonPackage rec {
   pname = "python-rtmidi";
   version = "1.5.8";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "python_rtmidi";
     inherit version;
     hash = "sha256-f5reaLBorgkADstWKulSHaOiNDYa1USeg/xzRUTQBPo=";
+    pname = "python_rtmidi";
   };
 
   nativeBuildInputs = [
@@ -47,6 +46,7 @@ buildPythonPackage rec {
     alabaster
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "rtmidi" ];
 
   meta = {

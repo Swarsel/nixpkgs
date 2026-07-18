@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchurl,
   fetchFromGitHub,
-  rustPlatform,
+  buildPythonPackage,
   pytestCheckHook,
+  rustPlatform,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "kanalizer";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "VOICEVOX";
@@ -19,15 +18,32 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-6GxTVlc0Ec80LYQoGgLVRVoi05u6vwt5WGkd4UYX2Lg=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/infer";
+  nativeBuildInputs = [
+    rustPlatform.cargoSetupHook
+    rustPlatform.maturinBuildHook
+  ];
+
+  nativeCheckInputs = [ pytestCheckHook ];
+  buildAndTestSubdir = "crates/kanalizer-py";
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      sourceRoot
+      ;
+
+    hash = "sha256-2vnld5ReLsjm0kRoRAXhm+d0yj7AjfEr83xXhuyPbOU=";
+  };
 
   model =
     let
       modelTag = "v5";
     in
     fetchurl {
-      url = "https://huggingface.co/VOICEVOX/kanalizer-model/resolve/${modelTag}/model/c2k.safetensors";
       hash = "sha256-sKhunAsN9Uwz2O1+eFQN8fh09eq67cFotTtLHsWJBRM=";
+      url = "https://huggingface.co/VOICEVOX/kanalizer-model/resolve/${modelTag}/model/c2k.safetensors";
     };
 
   prePatch = ''
@@ -37,35 +53,20 @@ buildPythonPackage (finalAttrs: {
     ln -s "$model" crates/kanalizer-rs/models/model-c2k.safetensors
   '';
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      sourceRoot
-      ;
-    hash = "sha256-2vnld5ReLsjm0kRoRAXhm+d0yj7AjfEr83xXhuyPbOU=";
-  };
-
-  buildAndTestSubdir = "crates/kanalizer-py";
-
-  nativeBuildInputs = [
-    rustPlatform.cargoSetupHook
-    rustPlatform.maturinBuildHook
-  ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "kanalizer" ];
+  sourceRoot = "${finalAttrs.src.name}/infer";
 
   meta = {
     description = "Library that guesses the Japanese pronounciation of English words";
     homepage = "https://github.com/VOICEVOX/kanalizer";
     license = lib.licenses.mit;
-    maintainers = with lib.maintainers; [ tomasajt ];
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryNativeCode # the model file
     ];
+
+    maintainers = with lib.maintainers; [ tomasajt ];
   };
 })

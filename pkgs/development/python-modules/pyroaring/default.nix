@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cython,
-  setuptools,
   hypothesis,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyroaring";
   version = "1.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Ezibenroc";
@@ -20,17 +19,18 @@ buildPythonPackage rec {
     hash = "sha256-7oHnYN44NVf2mjvHXaRgKtHFHMTQohpGEuQJjc9NGzw=";
   };
 
+  nativeCheckInputs = [
+    hypothesis
+    pytestCheckHook
+  ];
+
   build-system = [
     cython
     setuptools
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyroaring" ];
-
-  nativeCheckInputs = [
-    hypothesis
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Python library for handling efficiently sorted integer sets";

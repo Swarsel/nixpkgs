@@ -1,8 +1,8 @@
 {
   lib,
   buildGoModule,
-  fetchFromCodeberg,
   callPackage,
+  fetchFromCodeberg,
   nixosTests,
 }:
 
@@ -18,17 +18,9 @@ let
 in
 
 buildGoModule rec {
-  pname = "lauti";
   inherit version src;
-
+  pname = "lauti";
   vendorHash = "sha256-XO2Fo4rH6YDlj8x9f0847OEBLLpLlzFpK72uOEgW65o=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${version}"
-    "-X main.revision=${src.rev}"
-  ];
 
   preConfigure = ''
     cp -R ${frontend}/. backstage/
@@ -39,6 +31,13 @@ buildGoModule rec {
     rm cmd/lauti/main_test.go
     rm service/email/email_test.go
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${version}"
+    "-X main.revision=${src.rev}"
+  ];
 
   passthru.tests = {
     inherit (nixosTests) lauti;

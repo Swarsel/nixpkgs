@@ -1,24 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   hatchling,
-
-  # dependencies
-  sortedcontainers,
-
   # tests
   pytest-benchmark,
   pytestCheckHook,
+  # dependencies
+  sortedcontainers,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "portion";
   version = "2.6.2";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "AlexandreDecan";
@@ -27,16 +22,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-ns9kUoSufegx0I3ag/KVl68ZviEIRx+zPA+BSWq3k80=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ sortedcontainers ];
-
-  pythonImportsCheck = [ "portion" ];
-
   nativeCheckInputs = [
     pytest-benchmark
     pytestCheckHook
   ];
+
+  __structuredAttrs = true;
+  build-system = [ hatchling ];
+  dependencies = [ sortedcontainers ];
+  pyproject = true;
+  pythonImportsCheck = [ "portion" ];
 
   meta = {
     description = "Python library providing data structure and operations for intervals";

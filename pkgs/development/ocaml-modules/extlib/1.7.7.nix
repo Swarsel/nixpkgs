@@ -2,12 +2,12 @@
 # Older version of extlib for Haxe 4.0 and 4.1.
 # May be replaceable by the next extlib + extlib-base64 release.
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  ocaml,
-  findlib,
   cppo,
+  findlib,
+  ocaml,
   # De facto, option minimal seems to be the default. See the README.
   minimal ? true,
 }:
@@ -21,23 +21,22 @@ stdenv.mkDerivation rec {
     sha256 = "1sxmzc1mx3kg62j8kbk0dxkx8mkf1rn70h542cjzrziflznap0s1";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     ocaml
     findlib
     cppo
   ];
 
-  strictDeps = true;
-
+  makeFlags = lib.optional minimal "minimal=1";
   createFindlibDestdir = true;
 
-  makeFlags = lib.optional minimal "minimal=1";
-
   meta = {
-    homepage = "https://github.com/ygrek/ocaml-extlib";
-    description = "Enhancements to the OCaml Standard Library modules";
-    license = lib.licenses.lgpl21Only;
     inherit (ocaml.meta) platforms;
+    description = "Enhancements to the OCaml Standard Library modules";
+    homepage = "https://github.com/ygrek/ocaml-extlib";
+    license = lib.licenses.lgpl21Only;
     maintainers = [ lib.maintainers.sternenseemann ];
     broken = lib.versionAtLeast ocaml.version "4.12";
   };

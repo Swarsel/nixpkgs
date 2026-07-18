@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   bash,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -24,11 +24,13 @@ rustPlatform.buildRustPackage rec {
 
   meta = {
     description = "Automatic Nix development environments for your shell";
+
     longDescription = ''
       Envoluntary seamlessly loads and unloads Nix development environments based on directory
       patterns, eliminating the need for per-project .envrc / flake.nix files while giving you
       centralized control over your development tooling.
     '';
+
     homepage = "https://github.com/dfrankland/envoluntary";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ blemouzy ];

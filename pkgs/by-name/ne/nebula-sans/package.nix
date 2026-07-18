@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -10,8 +10,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   src = fetchzip {
     url = "https://nebulasans.com/download/NebulaSans-${finalAttrs.version}.zip";
-    stripRoot = false;
     hash = "sha256-jFoHgxczU7VdZcVj7HI4OOjK28jcptu8sGOrs3O+0S0=";
+    stripRoot = false;
   };
 
   installPhase = ''
@@ -25,9 +25,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Versatile, modern, humanist sans-serif with a neutral aesthetic, designed for legibility in both digital and print applications";
-    maintainers = [ lib.maintainers.colemickens ];
-    platforms = lib.platforms.all;
     homepage = "https://nebulasans.com/";
     license = lib.licenses.ofl;
+    maintainers = [ lib.maintainers.colemickens ];
+    platforms = lib.platforms.all;
   };
 })

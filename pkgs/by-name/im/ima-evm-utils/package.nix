@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  autoreconfHook,
-  pkg-config,
-  openssl,
-  tpm2-tss,
-  keyutils,
   asciidoc,
-  libxslt,
+  autoreconfHook,
   docbook_xsl,
+  keyutils,
+  libxslt,
+  openssl,
+  pkg-config,
+  tpm2-tss,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -42,13 +42,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Utility to manage digital signatures of the Linux kernel integrity subsystem (IMA/EVM)";
-    mainProgram = "evmctl";
     homepage = "https://github.com/linux-integrity/ima-evm-utils";
+
     license = with lib.licenses; [
       lgpl2Plus # libimaevm
       gpl2Plus # evmctl
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [ nickcao ];
+    platforms = lib.platforms.linux;
+    mainProgram = "evmctl";
   };
 })

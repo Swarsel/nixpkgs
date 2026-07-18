@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -28,17 +28,21 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/powerline/fonts";
     description = "Patched fonts for Powerline users";
+
     longDescription = ''
       Pre-patched and adjusted fonts for usage with the Powerline plugin.
     '';
+
+    homepage = "https://github.com/powerline/fonts";
+
     license = with lib.licenses; [
       asl20
       free
       ofl
     ];
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [ malyn ];
+    platforms = lib.platforms.all;
   };
 }

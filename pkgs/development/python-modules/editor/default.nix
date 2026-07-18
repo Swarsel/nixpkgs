@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
-  runs,
-  xmod,
   pytestCheckHook,
+  runs,
   tdir,
+  xmod,
 }:
 
 buildPythonPackage rec {
   pname = "editor";
   version = "1.6.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rec";
@@ -33,6 +32,7 @@ buildPythonPackage rec {
     tdir
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "editor" ];
 
   meta = {

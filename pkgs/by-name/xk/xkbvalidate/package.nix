@@ -1,20 +1,20 @@
 {
   lib,
-  runCommandCC,
   libxkbcommon,
+  runCommandCC,
 }:
 
 runCommandCC "xkbvalidate"
   {
     pname = "xkbvalidate";
     version = lib.trivial.release;
-
     buildInputs = [ libxkbcommon ];
+
     meta = {
       description = "NixOS tool to validate X keyboard configuration";
       license = lib.licenses.mit;
-      platforms = lib.platforms.unix;
       maintainers = [ lib.maintainers.aszlig ];
+      platforms = lib.platforms.unix;
       mainProgram = "xkbvalidate";
     };
   }

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   asouldocs,
   buildGoModule,
-  fetchFromGitHub,
   testers,
 }:
 
@@ -20,8 +20,8 @@ buildGoModule (finalAttrs: {
   vendorHash = "sha256-T/KLiSK6bxXGkmVJ5aGrfHTUfLs/ElGyWSoCL5kb/KU=";
 
   passthru.tests.version = testers.testVersion {
-    package = asouldocs;
     command = "asouldocs --version";
+    package = asouldocs;
   };
 
   meta = {

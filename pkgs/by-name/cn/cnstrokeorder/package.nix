@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -13,8 +13,6 @@ stdenvNoCC.mkDerivation rec {
     hash = "sha256-YYtOcUvt1V0DwAs/vf9KltcmYCFJNirvwjGyOK4JpIY=";
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -22,6 +20,8 @@ stdenvNoCC.mkDerivation rec {
 
     runHook postInstall
   '';
+
+  dontUnpack = true;
 
   meta = {
     description = "Chinese font that shows stroke order for HSK 1-4";

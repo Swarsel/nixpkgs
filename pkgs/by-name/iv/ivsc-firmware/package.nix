@@ -15,8 +15,6 @@ stdenv.mkDerivation {
     hash = "sha256-kHYfeftMtoOsOtVN6+XoDMDHP7uTEztbvjQLpCnKCh0=";
   };
 
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -34,13 +32,17 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Firmware binaries for the Intel Vision Sensing Controller";
     homepage = "https://github.com/intel/ivsc-firmware";
     license = lib.licenses.issl;
+
     sourceProvenance = with lib.sourceTypes; [
       binaryFirmware
     ];
+
     maintainers = [ ];
     platforms = [ "x86_64-linux" ];
   };

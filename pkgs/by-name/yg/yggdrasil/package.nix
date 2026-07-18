@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -18,12 +18,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-viQ70685CpvxK/lXu/2hQEebcX0Xu7g+tlSNXayArEM=";
 
-  subPackages = [
-    "cmd/genkeys"
-    "cmd/yggdrasil"
-    "cmd/yggdrasilctl"
-  ];
-
   ldflags = [
     "-X github.com/yggdrasil-network/yggdrasil-go/src/version.buildVersion=${finalAttrs.version}"
     "-X github.com/yggdrasil-network/yggdrasil-go/src/version.buildName=yggdrasil"
@@ -32,17 +26,25 @@ buildGoModule (finalAttrs: {
     "-w"
   ];
 
+  subPackages = [
+    "cmd/genkeys"
+    "cmd/yggdrasil"
+    "cmd/yggdrasilctl"
+  ];
+
   passthru.tests.basic = nixosTests.yggdrasil;
 
   meta = {
     description = "Experiment in scalable routing as an encrypted IPv6 overlay network";
     homepage = "https://yggdrasil-network.github.io/";
     license = lib.licenses.lgpl3;
-    mainProgram = "yggdrasil";
+
     maintainers = with lib.maintainers; [
       gazally
       lassulus
       peigongdsd
     ];
+
+    mainProgram = "yggdrasil";
   };
 })

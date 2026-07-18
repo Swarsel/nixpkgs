@@ -9,12 +9,11 @@
 buildPythonPackage rec {
   pname = "opsdroid-get-image-size";
   version = "0.2.2";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "opsdroid_get_image_size";
     inherit version;
     hash = "sha256-Cp2tvsdCZ+/86DF7FRNwx5diGcUWLYcFwQns7nYXkog=";
+    pname = "opsdroid_get_image_size";
   };
 
   postPatch = ''
@@ -22,13 +21,11 @@ buildPythonPackage rec {
     rm versioneer.py
   '';
 
-  build-system = [ setuptools ];
-
   nativeBuildInputs = [ versioneer ];
-
   # Test data not included on PyPI
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "get_image_size" ];
 
   meta = {

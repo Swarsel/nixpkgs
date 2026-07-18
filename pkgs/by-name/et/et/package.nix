@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  libnotify,
   gdk-pixbuf,
+  libnotify,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,11 +18,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0i0lgmnly8n7y4y6pb10pxgxyz8s5zk26k8z1g1578v1wan01lnq";
   };
 
+  nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libnotify
     gdk-pixbuf
   ];
-  nativeBuildInputs = [ pkg-config ];
 
   installPhase = ''
     mkdir -p $out/bin
@@ -34,7 +35,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Minimal libnotify-based (egg) timer";
     homepage = "https://github.com/oxzi/et";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

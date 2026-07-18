@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   python-dateutil,
   setuptools,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "idstools";
   version = "0.6.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jasonish";
@@ -21,6 +20,7 @@ buildPythonPackage rec {
     hash = "sha256-sDar3piE9elMKQ6sg+gUw95Rr/RJOSCfV0VFiBURNg4=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,8 +29,7 @@ buildPythonPackage rec {
     sphinxcontrib-programoutput
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "idstools" ];
 
   meta = {

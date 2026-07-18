@@ -1,34 +1,33 @@
 {
   lib,
-  buildPythonPackage,
   fetchurl,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # tests
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "python-hostlist";
   version = "2.3.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchurl {
     url = "https://www.nsc.liu.se/~kent/python-hostlist/python_hostlist-${finalAttrs.version}.tar.gz";
     hash = "sha256-4aCxjlJaX8pXPLmGJ5nxGz8r07p67HDE7Ni5U0G7ceo=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
+
   build-system = [
     setuptools
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "hostlist" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Python module for hostlist handling";

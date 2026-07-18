@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
+  gettext,
+  gitUpdater,
   meson,
   ninja,
   python3,
-  gettext,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation rec {
@@ -14,11 +14,11 @@ stdenv.mkDerivation rec {
   version = "0.311";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "GNOME";
     repo = "cantarell-fonts";
     tag = version;
     hash = "sha256-FR53OZxJ7WRUDqMB2GriQ3UOxozWwbFiz3/9VaUWYrc=";
+    domain = "gitlab.gnome.org";
   };
 
   nativeBuildInputs = [
@@ -36,11 +36,11 @@ stdenv.mkDerivation rec {
   };
 
   meta = {
-    changelog = "https://gitlab.gnome.org/GNOME/cantarell-fonts/-/blob/${src.tag}/NEWS";
     description = "Default typeface used in the user interface of GNOME since version 3.0";
     homepage = "https://cantarell.gnome.org/";
-    platforms = lib.platforms.all;
+    changelog = "https://gitlab.gnome.org/GNOME/cantarell-fonts/-/blob/${src.tag}/NEWS";
     license = lib.licenses.ofl;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 }

@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  validatePkgConfig,
   libpq,
   sqlite,
+  validatePkgConfig,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,12 +29,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Loadable dynamic extension to both SQLite and SpatiaLite";
     homepage = "https://www.gaia-gis.it/fossil/virtualpg";
+
     license = with lib.licenses; [
       mpl11
       gpl2Plus
       lgpl21Plus
     ];
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [ sikmir ];
+    platforms = lib.platforms.unix;
   };
 })

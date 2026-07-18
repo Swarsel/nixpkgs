@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -25,8 +25,8 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://tty-share.com";
     description = "Share terminal via browser for remote work or shared sessions";
+    homepage = "https://tty-share.com";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ andys8 ];
     mainProgram = "tty-share";

@@ -3,31 +3,31 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  ninja,
-  pkg-config,
+  doxygen,
+  gdk-pixbuf,
   gtest,
+  lerc,
   libei,
+  libnotify,
   libportal,
+  libsysprof-capture,
   libx11,
-  libxkbfile,
-  libxtst,
-  libxinerama,
   libxi,
-  libxrandr,
+  libxinerama,
   libxkbcommon,
+  libxkbfile,
+  libxrandr,
+  libxtst,
+  ninja,
+  nix-update-script,
+  pkg-config,
   pugixml,
   python3,
-  gdk-pixbuf,
-  libnotify,
   qt6,
-  xkeyboard_config,
-  wayland-protocols,
   wayland,
-  libsysprof-capture,
-  lerc,
-  doxygen,
+  wayland-protocols,
   writableTmpDirAsHomeHook,
-  nix-update-script,
+  xkeyboard_config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -48,6 +48,8 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'message(FATAL_ERROR "Unable to read file /etc/os-release")' 'set(RELEASE_FILE_CONTENTS "")'
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     ninja
@@ -55,13 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.wrapQtAppsHook
     doxygen # docs
   ];
-
-  cmakeFlags = [
-    "-DCMAKE_SKIP_RPATH=ON" # Avoid generating incorrect RPATH
-    "-DSKIP_BUILD_TESTS=ON" # Perform unit tests in `checkPhase` manually, with one job at a time.
-  ];
-
-  strictDeps = true;
 
   buildInputs = [
     gtest
@@ -88,12 +83,12 @@ stdenv.mkDerivation (finalAttrs: {
     lerc
   ];
 
-  qtWrapperArgs = [
-    "--set QT_QPA_PLATFORM_PLUGIN_PATH ${qt6.qtwayland}/${qt6.qtbase.qtPluginPrefix}/platforms"
+  cmakeFlags = [
+    "-DCMAKE_SKIP_RPATH=ON" # Avoid generating incorrect RPATH
+    "-DSKIP_BUILD_TESTS=ON" # Perform unit tests in `checkPhase` manually, with one job at a time.
   ];
 
   doCheck = true;
-
   nativeCheckInputs = [ writableTmpDirAsHomeHook ];
 
   checkPhase = ''
@@ -110,6 +105,10 @@ stdenv.mkDerivation (finalAttrs: {
     install -Dm644 ../README.md ../doc/user/configuration.md -t $out/share/doc/deskflow
   '';
 
+  qtWrapperArgs = [
+    "--set QT_QPA_PLATFORM_PLUGIN_PATH ${qt6.qtwayland}/${qt6.qtbase.qtPluginPrefix}/platforms"
+  ];
+
   passthru.updateScript = nix-update-script {
     extraArgs = [
       "--version-regex"
@@ -118,15 +117,17 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/deskflow/deskflow";
     description = "Share one mouse and keyboard between multiple computers on Windows, macOS and Linux";
-    mainProgram = "deskflow";
-    maintainers = with lib.maintainers; [ flacks ];
+    homepage = "https://github.com/deskflow/deskflow";
+
     license = with lib.licenses; [
       gpl2Plus
       openssl
       mit # share/applications/org.deskflow.deskflow.desktop
     ];
+
+    maintainers = with lib.maintainers; [ flacks ];
     platforms = lib.platforms.linux;
+    mainProgram = "deskflow";
   };
 })

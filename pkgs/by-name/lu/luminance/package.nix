@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  ddcutil,
   fetchFromGitHub,
+  ddcutil,
   gtk4,
   installShellFiles,
-  wrapGAppsHook4,
   libadwaita,
   nix-update-script,
   pkg-config,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -66,22 +66,22 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     ddcbc-api = fetchFromGitHub {
+      hash = "sha256-ViKik3468AHjE7NxdfrKicDNA0ENG6DmIplYtKVqduw=";
       owner = "ahshabbir";
       repo = "ddcbc-api";
       rev = "f54500284fcfc2f140d5ae01df779f3f47c9b563";
-      hash = "sha256-ViKik3468AHjE7NxdfrKicDNA0ENG6DmIplYtKVqduw=";
     };
 
     updateScript = nix-update-script { };
   };
 
   meta = {
+    inherit (ddcutil.meta) platforms;
     description = "Simple GTK application to control brightness of displays including external displays supporting DDC/CI";
     homepage = "https://github.com/sidevesh/Luminance";
     changelog = "https://github.com/sidevesh/Luminance/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ getchoo ];
-    inherit (ddcutil.meta) platforms;
     mainProgram = "com.sidevesh.Luminance";
   };
 })

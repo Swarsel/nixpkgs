@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   makeWrapper,
-  nixosTests,
   nix-update-script,
+  nixosTests,
 }:
 
 buildGoModule {
@@ -18,9 +18,8 @@ buildGoModule {
     hash = "sha256-yWkEHBWVLEofC6to60R6nMtF4mpMxHMDO22QntNkYGY=";
   };
 
-  vendorHash = "sha256-gNXu1yfvJnviPDeG0oNJ9MD5R93rjEV/n8hrADi8ZnM=";
-
   nativeBuildInputs = [ makeWrapper ];
+  vendorHash = "sha256-gNXu1yfvJnviPDeG0oNJ9MD5R93rjEV/n8hrADi8ZnM=";
 
   postInstall = ''
     install -D html/* -t $out/share/echoip/html
@@ -37,11 +36,13 @@ buildGoModule {
     description = "IP address lookup service";
     homepage = "https://github.com/mpolden/echoip";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       rvolosatovs
       SuperSandro2000
       defelo
     ];
+
     mainProgram = "echoip";
   };
 }

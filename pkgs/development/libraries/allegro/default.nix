@@ -2,25 +2,25 @@
   lib,
   stdenv,
   fetchurl,
-  texinfo,
-  libxext,
-  xorgproto,
-  libx11,
-  libxpm,
-  libxt,
-  libxcursor,
   alsa-lib,
   cmake,
-  pkg-config,
-  zlib,
+  libGL,
+  libGLU,
   libpng,
   libvorbis,
+  libx11,
+  libxcursor,
+  libxext,
+  libxpm,
+  libxt,
   libxxf86dga,
   libxxf86misc,
   libxxf86vm,
   openal,
-  libGLU,
-  libGL,
+  pkg-config,
+  texinfo,
+  xorgproto,
+  zlib,
 }:
 
 stdenv.mkDerivation rec {
@@ -41,6 +41,7 @@ stdenv.mkDerivation rec {
     cmake
     pkg-config
   ];
+
   buildInputs = [
     texinfo
     libxext
@@ -61,12 +62,12 @@ stdenv.mkDerivation rec {
     libGL
   ];
 
-  hardeningDisable = [ "format" ];
-
   cmakeFlags = [
     "-DCMAKE_SKIP_RPATH=ON"
     "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
   ];
+
+  hardeningDisable = [ "format" ];
 
   meta = {
     description = "Game programming library";

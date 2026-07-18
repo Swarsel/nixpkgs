@@ -1,16 +1,16 @@
 {
-  config,
   lib,
   stdenv,
   fetchFromGitHub,
   fetchFromGitLab,
+  android-tools,
   applyPatches,
   autoAddDriverRunpath,
-  android-tools,
   avahi,
   boost,
   cli11,
   cmake,
+  config,
   eigen,
   ffmpeg,
   freetype,
@@ -21,9 +21,9 @@
   harfbuzz,
   hexdump,
   kdePackages,
+  libGL,
   libarchive,
   libdrm,
-  libGL,
   libnotify,
   libpulseaudio,
   librsvg,
@@ -47,12 +47,12 @@
   vulkan-loader,
   x264,
   xrizer,
-  cudaSupport ? config.cudaSupport,
-  # WiVRn defaults to the first path but the others can be manually selected
-  ovrCompatSearchPaths ? "${xrizer}/lib/xrizer:${opencomposite}/lib/opencomposite",
   # Only build the OpenXR client library. Useful for building the client library for a different architecture,
   # e.g. 32-bit library while running 64-bit service on host, so 32-bit apps can connect to the runtime
   clientLibOnly ? false,
+  cudaSupport ? config.cudaSupport,
+  # WiVRn defaults to the first path but the others can be manually selected
+  ovrCompatSearchPaths ? "${xrizer}/lib/xrizer:${opencomposite}/lib/opencomposite",
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "wivrn";
@@ -65,33 +65,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-5e0XeP5DCdVrSQeDgNuCZP5McRbwybnpKuJw9cxHNPI=";
   };
 
-  monado = applyPatches {
-    src = fetchFromGitLab {
-      domain = "gitlab.freedesktop.org";
-      owner = "monado";
-      repo = "monado";
-      rev = "1b526bb3a0ff326ecd05af4c2c541407f53c6d4b";
-      hash = "sha256-SzuCQ1uX15vFGwGt3gswlVF2Su8sIND4R3tsTJ4T1LY=";
-    };
-
-    postPatch = ''
-      ${finalAttrs.src}/patches/apply.sh ${finalAttrs.src}/patches/monado/*
-    '';
-  };
-
   strictDeps = true;
-
-  # Let's make sure our monado source revision matches what is used by WiVRn upstream
-  postUnpack = ''
-    ourMonadoRev="${finalAttrs.monado.src.rev}"
-    theirMonadoRev=$(cat ${finalAttrs.src.name}/monado-rev)
-    if [ ! "$theirMonadoRev" == "$ourMonadoRev" ]; then
-      echo "Our Monado source revision doesn't match CMakeLists.txt." >&2
-      echo "  theirs: $theirMonadoRev" >&2
-      echo "    ours: $ourMonadoRev" >&2
-      return 1
-    fi
-  '';
 
   nativeBuildInputs = [
     cmake
@@ -176,8 +150,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "OVR_COMPAT_SEARCH_PATH" ovrCompatSearchPaths)
   ];
 
-  dontWrapQtApps = true;
-
   preFixup = lib.optional (!clientLibOnly) ''
     wrapProgram "$out/bin/wivrn-server" \
       --prefix LD_LIBRARY_PATH : ${
@@ -193,16 +165,44 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = lib.optionals (!clientLibOnly) [
     (makeDesktopItem {
-      name = "WiVRn Server";
-      desktopName = "WiVRn Server";
-      genericName = "WiVRn Server";
-      comment = "Play your PC VR games on a standalone headset";
-      icon = "io.github.wivrn.wivrn";
-      exec = "wivrn-dashboard";
-      type = "Application";
       categories = [ "Network" ];
+      comment = "Play your PC VR games on a standalone headset";
+      desktopName = "WiVRn Server";
+      exec = "wivrn-dashboard";
+      genericName = "WiVRn Server";
+      icon = "io.github.wivrn.wivrn";
+      name = "WiVRn Server";
+      type = "Application";
     })
   ];
+
+  dontWrapQtApps = true;
+
+  monado = applyPatches {
+    src = fetchFromGitLab {
+      owner = "monado";
+      repo = "monado";
+      rev = "1b526bb3a0ff326ecd05af4c2c541407f53c6d4b";
+      hash = "sha256-SzuCQ1uX15vFGwGt3gswlVF2Su8sIND4R3tsTJ4T1LY=";
+      domain = "gitlab.freedesktop.org";
+    };
+
+    postPatch = ''
+      ${finalAttrs.src}/patches/apply.sh ${finalAttrs.src}/patches/monado/*
+    '';
+  };
+
+  # Let's make sure our monado source revision matches what is used by WiVRn upstream
+  postUnpack = ''
+    ourMonadoRev="${finalAttrs.monado.src.rev}"
+    theirMonadoRev=$(cat ${finalAttrs.src.name}/monado-rev)
+    if [ ! "$theirMonadoRev" == "$ourMonadoRev" ]; then
+      echo "Our Monado source revision doesn't match CMakeLists.txt." >&2
+      echo "  theirs: $theirMonadoRev" >&2
+      echo "    ours: $ourMonadoRev" >&2
+      return 1
+    fi
+  '';
 
   passthru.updateScript = nix-update-script { };
 
@@ -211,12 +211,14 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/WiVRn/WiVRn/";
     changelog = "https://github.com/WiVRn/WiVRn/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
+    sourceProvenance = [ lib.sourceTypes.fromSource ];
+
     maintainers = with lib.maintainers; [
       ImSapphire
       passivelemon
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "wivrn-server";
-    sourceProvenance = [ lib.sourceTypes.fromSource ];
   };
 })

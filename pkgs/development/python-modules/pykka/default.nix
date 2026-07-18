@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pydantic,
-  pytestCheckHook,
   pytest-mock,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pykka";
   version = "4.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jodal";
@@ -20,21 +19,21 @@ buildPythonPackage rec {
     hash = "sha256-ij5djc+6CjIC9HLxOJorMFdNRnxOoS37+oAmI8Lo5pc=";
   };
 
-  build-system = [ hatchling ];
-
   nativeCheckInputs = [
     pydantic
     pytestCheckHook
     pytest-mock
   ];
 
+  build-system = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "pykka" ];
 
   meta = {
-    homepage = "https://www.pykka.org/";
     description = "Python implementation of the actor model";
+    homepage = "https://www.pykka.org/";
     changelog = "https://github.com/jodal/pykka/releases/tag/${src.tag}";
-    maintainers = [ ];
     license = lib.licenses.asl20;
+    maintainers = [ ];
   };
 }

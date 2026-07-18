@@ -1,23 +1,17 @@
 {
+  stdenv,
+  fetchYarnDeps,
+  nodejs-slim,
   src,
   version,
-  stdenv,
-  yarnConfigHook,
   yarnBuildHook,
-  nodejs-slim,
-  fetchYarnDeps,
+  yarnConfigHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "gotify-ui";
   inherit version;
-
+  pname = "gotify-ui";
   src = src + "/ui";
-
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-MKHpdRxL12T4/JVPCUE7nQresxnRBs9kvWGvfAhMESM=";
-  };
 
   nativeBuildInputs = [
     yarnConfigHook
@@ -34,4 +28,9 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-MKHpdRxL12T4/JVPCUE7nQresxnRBs9kvWGvfAhMESM=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
 })

@@ -1,25 +1,24 @@
 {
-  stdenv,
   lib,
-  rustPlatform,
-  openssl,
-  nushell,
-  pkg-config,
+  stdenv,
   nix-update-script,
+  nushell,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
-  pname = "nu_plugin_polars";
   inherit (nushell) version src cargoHash;
-
+  pname = "nu_plugin_polars";
   nativeBuildInputs = [ pkg-config ] ++ lib.optionals stdenv.cc.isClang [ rustPlatform.bindgenHook ];
   buildInputs = [ openssl ];
-
-  buildAndTestSubdir = "crates/nu_plugin_polars";
 
   checkFlags = [
     "--skip=dataframe::command::core::to_repr::test::test_examples"
   ];
+
+  buildAndTestSubdir = "crates/nu_plugin_polars";
 
   passthru.updateScript = nix-update-script {
     # Skip the version check and only check the hash because we inherit version from nushell.
@@ -28,9 +27,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Nushell dataframe plugin commands based on polars";
-    mainProgram = "nu_plugin_polars";
     homepage = "https://github.com/nushell/nushell/tree/${finalAttrs.version}/crates/nu_plugin_polars";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ joaquintrinanes ];
+    mainProgram = "nu_plugin_polars";
   };
 })

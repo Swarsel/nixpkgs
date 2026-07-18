@@ -2,20 +2,19 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  hypothesis,
+  matplotlib,
+  numpy,
+  pytestCheckHook,
+  schema,
   setuptools,
   versioningit,
   wheel,
-  numpy,
-  matplotlib,
-  schema,
-  hypothesis,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "broadbean";
   version = "0.14.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -44,11 +43,12 @@ buildPythonPackage rec {
     "test_points"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "broadbean" ];
 
   meta = {
-    homepage = "https://qcodes.github.io/broadbean";
     description = "Library for making pulses that can be leveraged with QCoDeS";
+    homepage = "https://qcodes.github.io/broadbean";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ evilmav ];
   };

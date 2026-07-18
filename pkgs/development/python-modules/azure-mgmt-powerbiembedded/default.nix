@@ -11,13 +11,14 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-powerbiembedded";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-yz2D3WfQKEdkTm10ZKIhZMi4y6GF6yz+L1+nB/VFofo=";
   };
 
+  # Module has only tests in mono-repo
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,8 +27,7 @@ buildPythonPackage rec {
     isodate
   ];
 
-  # Module has only tests in mono-repo
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "This is the Microsoft Azure Power BI Embedded Management Client Library";

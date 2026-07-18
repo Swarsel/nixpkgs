@@ -3,11 +3,11 @@
   stdenv,
   cmake,
   fetchgit,
+  json_c,
+  libubox,
   pkg-config,
   ubus,
-  libubox,
   ucode,
-  json_c,
 }:
 
 stdenv.mkDerivation {
@@ -20,6 +20,11 @@ stdenv.mkDerivation {
     hash = "sha256-Zcbbo7Jo7JxNSjUlbB2m2Id8crdxzKc/QFeduPGvows=";
   };
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
+
   buildInputs = [
     ubus
     libubox
@@ -27,17 +32,12 @@ stdenv.mkDerivation {
     json_c
   ];
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
-
   meta = {
     description = "OpenWrt debugging helper library/service";
-    mainProgram = "udebugd";
     homepage = "https://git.openwrt.org/?p=project/udebug.git;a=summary";
     license = lib.licenses.free;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ mkg20001 ];
+    platforms = lib.platforms.unix;
+    mainProgram = "udebugd";
   };
 }

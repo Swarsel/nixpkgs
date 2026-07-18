@@ -1,26 +1,27 @@
 {
   lib,
+  azure-cli,
+  azure-common,
+  azure-mgmt-core,
   buildPythonPackage,
   fetchPypi,
-  azure-mgmt-core,
-  azure-common,
   isodate,
   setuptools,
   typing-extensions,
-  azure-cli,
 }:
 
 buildPythonPackage rec {
   pname = "azure-mgmt-resource-deployments";
   version = "1.0.0b2";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_resource_deployments";
     inherit version;
     hash = "sha256-RVBRTFK4uwZH213SRLSUs0gl0cV8CRph0RZOGQQOw+I=";
+    pname = "azure_mgmt_resource_deployments";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,17 +31,16 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  # Module has no tests
-  doCheck = false;
-
-  pythonNamespaces = [
-    "azure.mgmt"
-    "azure.mgmt.resource"
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "azure.mgmt.resource.deployments"
     "azure.mgmt.resource.deployments.models"
+  ];
+
+  pythonNamespaces = [
+    "azure.mgmt"
+    "azure.mgmt.resource"
   ];
 
   meta = {

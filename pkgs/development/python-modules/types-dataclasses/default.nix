@@ -8,18 +8,16 @@
 buildPythonPackage rec {
   pname = "types-dataclasses";
   version = "0.6.6";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-S1ovz45WjVoZdM1pAQ4yDhr4JRF37JaN57m7SapJ97k=";
   };
 
-  build-system = [ setuptools ];
-
   # Modules doesn't have tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "dataclasses-stubs" ];
 
   meta = {

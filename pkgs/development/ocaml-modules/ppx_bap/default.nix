@@ -1,26 +1,24 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   fetchpatch,
-  ppx_assert ? null,
-  ppx_bench ? null,
-  ppx_bin_prot ? null,
-  ppx_compare ? null,
-  ppx_enumerate ? null,
   ppx_expect,
   ppx_hash,
   ppx_here,
   ppx_optcomp,
   ppx_sexp_conv,
+  ppx_assert ? null,
+  ppx_bench ? null,
+  ppx_bin_prot ? null,
+  ppx_compare ? null,
+  ppx_enumerate ? null,
   ppx_sexp_value ? null,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "ppx_bap";
   version = "0.14";
-
-  minimalOCamlVersion = "4.07";
 
   src = fetchFromGitHub {
     owner = "BinaryAnalysisPlatform";
@@ -31,8 +29,8 @@ buildDunePackage (finalAttrs: {
 
   # Support ppx_expect
   patches = fetchpatch {
-    url = "https://github.com/BinaryAnalysisPlatform/ppx_bap/commit/7f197648978758fbcbf553da50d7a9248d34f7e4.patch";
     hash = "sha256-oOdcA06mb0W5jDhF4nutEijy6yu/6kMjKOUcNxUSk6k=";
+    url = "https://github.com/BinaryAnalysisPlatform/ppx_bap/commit/7f197648978758fbcbf553da50d7a9248d34f7e4.patch";
   };
 
   buildInputs = [
@@ -52,9 +50,11 @@ buildDunePackage (finalAttrs: {
     ppx_sexp_conv
   ];
 
+  minimalOCamlVersion = "4.07";
+
   meta = {
-    description = "Set of ppx rewriters for BAP";
     inherit (finalAttrs.src.meta) homepage;
+    description = "Set of ppx rewriters for BAP";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.vbgl ];
     mainProgram = "ppx-bap";

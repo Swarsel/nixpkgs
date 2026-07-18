@@ -1,13 +1,13 @@
 {
   lib,
+  curl, # Note that `curl' may be `null', in case of the native stdenvNoCC.
+  hashedMirrors,
+  rewriteURL,
+  stdenvNoCC,
   buildPackages ? {
     inherit stdenvNoCC;
   },
-  stdenvNoCC,
-  curl, # Note that `curl' may be `null', in case of the native stdenvNoCC.
   cacert ? null,
-  rewriteURL,
-  hashedMirrors,
 }:
 
 let
@@ -40,9 +40,9 @@ let
   # turn makes nix-env/nix-instantiate faster.
   mirrorsFile = buildPackages.stdenvNoCC.mkDerivation (
     {
-      name = "mirrors-list";
       strictDeps = true;
       builder = ./write-mirror-list.sh;
+      name = "mirrors-list";
       preferLocalBuild = true;
     }
     // mirrors
@@ -139,81 +139,62 @@ lib.extendMkDerivation {
   extendDrvArgs =
     finalAttrs:
     {
-      # URL to fetch.
-      url ? "",
-
-      # Alternatively, a list of URLs specifying alternative download
-      # locations.  They are tried in order.
-      urls ? [ ],
-
       # Additional curl options needed for the download to succeed.
       # Warning: Each space (no matter the escaping) will start a new argument.
       # If you wish to pass arguments with spaces, use `curlOptsList`
       curlOpts ? "",
-
       # Additional curl options needed for the download to succeed.
       curlOptsList ? [ ],
-
-      # Name of the file when pname + version is unspecified.
-      # Default to the basename of `url' (or of the first element of `urls').
-      name ? null,
-
-      # for versioned downloads optionally take pname + version.
-      pname ? null,
-      version ? null,
-
-      # SRI hash.
-      hash ? "",
-
-      # Legacy ways of specifying the hash.
-      outputHash ? "",
-      outputHashAlgo ? "",
-      sha1 ? "",
-      sha256 ? "",
-      sha512 ? "",
-
-      recursiveHash ? false,
-
-      # Shell code to build a netrc file for BASIC auth
-      netrcPhase ? null,
-
-      # Impure env vars (https://nixos.org/nix/manual/#sec-advanced-attributes)
-      # needed for netrcPhase
-      netrcImpureEnvVars ? [ ],
-
-      # Shell code executed after the file has been fetched
-      # successfully. This can do things like check or transform the file.
-      postFetch ? "",
-
-      # Whether to download to a temporary path rather than $out. Useful
-      # in conjunction with postFetch. The location of the temporary file
-      # is communicated to postFetch via $downloadedFile.
-      downloadToTemp ? false,
-
-      # If true, set executable bit on downloaded file
-      executable ? false,
-
-      # If set, don't download the file, but write a list of all possible
-      # URLs (resulting from resolving mirror:// URLs) to $out.
-      showURLs ? false,
-
-      # Meta information, if any.
-      meta ? { },
-
-      # Passthru information, if any.
-      passthru ? { },
-
-      # Doing the download on a remote machine just duplicates network
-      # traffic, so don't do that by default
-      preferLocalBuild ? true,
-
-      # Additional packages needed as part of a fetch
-      nativeBuildInputs ? [ ],
-
       # Additional stdenvNoCC.mkDerivation arguments.
       # It is typically for derived fetchers to pass down additional arguments,
       # and the specified arguments have lower precedence than other mkDerivation arguments.
       derivationArgs ? { },
+      # Whether to download to a temporary path rather than $out. Useful
+      # in conjunction with postFetch. The location of the temporary file
+      # is communicated to postFetch via $downloadedFile.
+      downloadToTemp ? false,
+      # If true, set executable bit on downloaded file
+      executable ? false,
+      # SRI hash.
+      hash ? "",
+      # Meta information, if any.
+      meta ? { },
+      # Name of the file when pname + version is unspecified.
+      # Default to the basename of `url' (or of the first element of `urls').
+      name ? null,
+      # Additional packages needed as part of a fetch
+      nativeBuildInputs ? [ ],
+      # Impure env vars (https://nixos.org/nix/manual/#sec-advanced-attributes)
+      # needed for netrcPhase
+      netrcImpureEnvVars ? [ ],
+      # Shell code to build a netrc file for BASIC auth
+      netrcPhase ? null,
+      # Legacy ways of specifying the hash.
+      outputHash ? "",
+      outputHashAlgo ? "",
+      # Passthru information, if any.
+      passthru ? { },
+      # for versioned downloads optionally take pname + version.
+      pname ? null,
+      # Shell code executed after the file has been fetched
+      # successfully. This can do things like check or transform the file.
+      postFetch ? "",
+      # Doing the download on a remote machine just duplicates network
+      # traffic, so don't do that by default
+      preferLocalBuild ? true,
+      recursiveHash ? false,
+      sha1 ? "",
+      sha256 ? "",
+      sha512 ? "",
+      # If set, don't download the file, but write a list of all possible
+      # URLs (resulting from resolving mirror:// URLs) to $out.
+      showURLs ? false,
+      # URL to fetch.
+      url ? "",
+      # Alternatively, a list of URLs specifying alternative download
+      # locations.  They are tried in order.
+      urls ? [ ],
+      version ? null,
     }@args:
 
     let
@@ -246,8 +227,8 @@ lib.extendMkDerivation {
 
         if hash != "" then
           {
-            outputHashAlgo = null;
             outputHash = hash;
+            outputHashAlgo = null;
           }
         else if outputHash != "" then
           if outputHashAlgo != "" then
@@ -256,23 +237,23 @@ lib.extendMkDerivation {
             throw "fetchurl was passed outputHash without outputHashAlgo: ${lib.generators.toPretty { } urls_}"
         else if sha512 != "" then
           {
-            outputHashAlgo = "sha512";
             outputHash = sha512;
+            outputHashAlgo = "sha512";
           }
         else if sha256 != "" then
           {
-            outputHashAlgo = "sha256";
             outputHash = sha256;
+            outputHashAlgo = "sha256";
           }
         else if sha1 != "" then
           {
-            outputHashAlgo = "sha1";
             outputHash = sha1;
+            outputHashAlgo = "sha1";
           }
         else if cacert != null then
           {
-            outputHashAlgo = null;
             outputHash = fakeHash;
+            outputHashAlgo = null;
           }
         else
           throw "fetchurl requires a hash for fixed-output derivation: ${lib.generators.toPretty { } urls_}";
@@ -283,46 +264,19 @@ lib.extendMkDerivation {
 
     derivationArgs
     // {
-      __structuredAttrs = true;
+      inherit
+        curlOptsList
+        downloadToTemp
+        executable
+        mirrorsFile
+        postFetch
+        showURLs
+        ;
 
-      name =
-        if finalAttrs.pname or null != null && finalAttrs.version or null != null then
-          "${finalAttrs.pname}-${finalAttrs.version}"
-        else if showURLs then
-          "urls"
-        else if name != null then
-          name
-        else
-          baseNameOf (toString (head urls_));
-
-      builder = ./builder.sh;
-
+      inherit nixpkgsVersion;
+      inherit preferLocalBuild;
+      inherit meta;
       nativeBuildInputs = defaultNativeBuildInputs ++ nativeBuildInputs;
-
-      urls = urls_;
-
-      # If set, prefer the content-addressable mirrors
-      # (http://tarballs.nixos.org) over the original URLs.
-      preferHashedMirrors = false;
-
-      # New-style output content requirements.
-      hash =
-        if
-          hash_.outputHashAlgo == null
-          || hash_.outputHash == ""
-          || hasPrefix hash_.outputHashAlgo hash_.outputHash
-        then
-          hash_.outputHash
-        else
-          "${hash_.outputHashAlgo}:${hash_.outputHash}";
-      outputHashAlgo = if finalHashHasColon then head finalHashColonMatch else null;
-      outputHash =
-        if finalAttrs.hash == "" then
-          fakeHash
-        else if finalHashHasColon then
-          elemAt finalHashColonMatch 1
-        else
-          finalAttrs.hash;
 
       # Disable TLS verification only when we know the hash and no credentials are
       # needed to access the resource
@@ -340,7 +294,8 @@ lib.extendMkDerivation {
         else
           "/no-cert-file.crt";
 
-      outputHashMode = if (recursiveHash || executable) then "recursive" else "flat";
+      __structuredAttrs = true;
+      builder = ./builder.sh;
 
       curlOpts =
         if isList curlOpts then
@@ -364,22 +319,44 @@ lib.extendMkDerivation {
         else
           curlOpts;
 
-      inherit
-        curlOptsList
-        downloadToTemp
-        executable
-        mirrorsFile
-        postFetch
-        showURLs
-        ;
+      # New-style output content requirements.
+      hash =
+        if
+          hash_.outputHashAlgo == null
+          || hash_.outputHash == ""
+          || hasPrefix hash_.outputHashAlgo hash_.outputHash
+        then
+          hash_.outputHash
+        else
+          "${hash_.outputHashAlgo}:${hash_.outputHash}";
 
       impureEnvVars = impureEnvVars ++ netrcImpureEnvVars;
 
-      inherit nixpkgsVersion;
+      name =
+        if finalAttrs.pname or null != null && finalAttrs.version or null != null then
+          "${finalAttrs.pname}-${finalAttrs.version}"
+        else if showURLs then
+          "urls"
+        else if name != null then
+          name
+        else
+          baseNameOf (toString (head urls_));
 
-      inherit preferLocalBuild;
+      outputHash =
+        if finalAttrs.hash == "" then
+          fakeHash
+        else if finalHashHasColon then
+          elemAt finalHashColonMatch 1
+        else
+          finalAttrs.hash;
 
-      inherit meta;
+      outputHashAlgo = if finalHashHasColon then head finalHashColonMatch else null;
+      outputHashMode = if (recursiveHash || executable) then "recursive" else "flat";
+      # If set, prefer the content-addressable mirrors
+      # (http://tarballs.nixos.org) over the original URLs.
+      preferHashedMirrors = false;
+      urls = urls_;
+
       passthru = {
         inherit url;
         resolvedUrl = head (resolveUrl url);

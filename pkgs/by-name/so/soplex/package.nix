@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
+  cmake,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,18 +16,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-v2lDtnY3O1nP8RYALqpeO8q4b3bUAKZe4b3QhtnGiGg=";
   };
 
-  nativeBuildInputs = [ cmake ];
-
   strictDeps = true;
-
+  nativeBuildInputs = [ cmake ];
   doCheck = true;
 
   meta = {
-    homepage = "https://scipopt.org";
     description = "Sequential object-oriented simPlex";
+    homepage = "https://scipopt.org";
     license = with lib.licenses; [ asl20 ];
-    mainProgram = "soplex";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "soplex";
   };
 })

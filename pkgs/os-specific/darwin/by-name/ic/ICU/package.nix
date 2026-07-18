@@ -15,8 +15,6 @@
 # - https://github.com/apple-oss-distributions/ICU/blob/main/makefile
 let
   privateHeaders = stdenvNoCC.mkDerivation {
-    name = "ICU-deps-private-headers";
-
     buildCommand = ''
       mkdir -p "$out/include/os"
       cat <<EOF > "$out/include/os/feature_private.h"
@@ -25,6 +23,8 @@ let
       #define os_feature_enabled(a, b) _os_feature_enabled_impl(#a, #b)
       EOF
     '';
+
+    name = "ICU-deps-private-headers";
   };
 
   stdenv = bootstrapStdenv;
@@ -34,25 +34,12 @@ let
   nativeBuildRoot = buildPackages.darwin.ICU.buildRootOnly;
 
   baseAttrs = finalAttrs: {
-    releaseName = "ICU";
-
-    sourceRoot = "${finalAttrs.src.name}/icu/icu4c/source";
-
     patches = [
       # Skip MessageFormatTest test, which is known to crash sometimes and should be suppressed if it does.
       ./patches/0001-suppress-icu-check-crash.patch
     ];
 
-    patchFlags = [ "-p4" ];
-
-    preConfigure = ''
-      sed -i -e "s|/bin/sh|${stdenv.shell}|" configure
-      patchShebangs --build .
-      # $(includedir) is different from $(prefix)/include due to multiple outputs
-      sed -i -e 's|^\(CPPFLAGS = .*\) -I\$(prefix)/include|\1 -I$(includedir)|' config/Makefile.inc.in
-    '';
-
-    dontDisableStatic = withStatic;
+    nativeBuildInputs = [ python3 ];
 
     configureFlags = [
       (lib.enableFeature false "debug")
@@ -69,10 +56,6 @@ let
     ]
     ++ lib.optionals withStatic [ (lib.enableFeature true "static") ];
 
-    nativeBuildInputs = [ python3 ];
-
-    enableParallelBuilding = true;
-
     # Per the source-release makefile, these are enabled.
     env.NIX_CFLAGS_COMPILE = toString [
       "-DU_SHOW_CPLUSPLUS_API=1"
@@ -80,19 +63,33 @@ let
       "-I${privateHeaders}/include"
     ];
 
-    passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+    preConfigure = ''
+      sed -i -e "s|/bin/sh|${stdenv.shell}|" configure
+      patchShebangs --build .
+      # $(includedir) is different from $(prefix)/include due to multiple outputs
+      sed -i -e 's|^\(CPPFLAGS = .*\) -I\$(prefix)/include|\1 -I$(includedir)|' config/Makefile.inc.in
+    '';
+
+    dontDisableStatic = withStatic;
+    enableParallelBuilding = true;
+    patchFlags = [ "-p4" ];
+    releaseName = "ICU";
+    sourceRoot = "${finalAttrs.src.name}/icu/icu4c/source";
     passthru.buildRootOnly = mkWithAttrs buildRootOnlyAttrs;
+    passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
     meta = {
       description = "Unicode and globalization support library with Apple customizations";
       license = [ lib.licenses.icu ];
-      teams = [ lib.teams.darwin ];
       platforms = lib.platforms.darwin;
+
       pkgConfigModules = [
         "icu-i18n"
         "icu-io"
         "icu-uc"
       ];
+
+      teams = [ lib.teams.darwin ];
     };
   };
 
@@ -102,7 +99,6 @@ let
       "dev"
     ]
     ++ lib.optional withStatic "static";
-    outputBin = "dev";
 
     postPatch = lib.optionalString self.finalPackage.doCheck ''
       # Skip test for missing encodingSamples data.
@@ -136,6 +132,15 @@ let
       substituteInPlace common/unicode/uversion.h \
         --replace-fail U_DISABLE_RENAMING 0
     '';
+
+    doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+    nativeCheckInputs = [ python3 ];
+
+    # Some tests use `log(name)`, which clang identifies as potentially insecure.
+    checkFlags = [
+      "CFLAGS+=-Wno-format-security"
+      "CXXFLAGS+=-Wno-format-security"
+    ];
 
     # remove dependency on bootstrap-tools in early stdenv build
     postInstall =
@@ -198,17 +203,8 @@ let
       );
 
     postFixup = ''moveToOutput lib/icu "$dev" '';
-
-    doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
-    nativeCheckInputs = [ python3 ];
-
-    # Some tests use `log(name)`, which clang identifies as potentially insecure.
-    checkFlags = [
-      "CFLAGS+=-Wno-format-security"
-      "CXXFLAGS+=-Wno-format-security"
-    ];
     checkTarget = "check";
+    outputBin = "dev";
   };
 
   buildRootOnlyAttrs = self: super: {

@@ -1,17 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-
+  buildPythonPackage,
   python-xlib,
+  setuptools,
   typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
-  version = "0.2";
   pname = "ewmhlib";
-  pyproject = true;
+  version = "0.2";
 
   src = fetchFromGitHub {
     owner = "Kalmat";
@@ -20,6 +18,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-NELOgUV8KuN+CqmoSbLYImguHlp8dyhGmJtoxJjOBkA=";
   };
 
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,14 +26,14 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
+  pyproject = true;
   # requires x session (call to defaultDisplay.screen() on import)
   pythonImportsCheck = [ ];
-  doCheck = false;
 
   meta = {
+    description = "Extended Window Manager Hints implementation in Python 3";
     homepage = "https://github.com/Kalmat/EWMHlib";
     license = lib.licenses.bsd3;
-    description = "Extended Window Manager Hints implementation in Python 3";
     maintainers = with lib.maintainers; [ sigmanificient ];
   };
 })

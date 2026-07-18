@@ -6,22 +6,21 @@
 }:
 
 {
-  pname,
-  version ? defaultVersion,
   hash,
-  minimalOCamlVersion ? "4.08",
-  doCheck ? true,
+  pname,
   buildInputs ? [ ],
+  doCheck ? true,
+  minimalOCamlVersion ? "4.08",
+  version ? defaultVersion,
   ...
 }@args:
 
 buildDunePackage (
   args
   // {
-    duneVersion = "3";
     inherit version buildInputs;
-
     inherit minimalOCamlVersion;
+    inherit doCheck;
 
     src = fetchFromGitHub {
       owner = "janestreet";
@@ -30,11 +29,11 @@ buildDunePackage (
       sha256 = hash;
     };
 
-    inherit doCheck;
+    duneVersion = "3";
 
     meta = {
-      license = lib.licenses.mit;
       homepage = "https://github.com/janestreet/${pname}";
+      license = lib.licenses.mit;
     }
     // args.meta;
   }

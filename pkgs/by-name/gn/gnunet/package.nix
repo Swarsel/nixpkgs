@@ -2,14 +2,6 @@
   lib,
   stdenv,
   fetchurl,
-
-  # build-time deps
-  libtool,
-  makeWrapper,
-  meson,
-  ninja,
-  pkg-config,
-
   # runtime deps
   adns,
   bashNonInteractive,
@@ -25,16 +17,21 @@
   libmicrohttpd,
   libogg,
   libopus,
+  libpq,
   libpulseaudio,
   libsodium,
+  # build-time deps
+  libtool,
   libunistring,
   libxml2,
+  makeWrapper,
+  meson,
   ncurses,
+  ninja,
+  pkg-config,
   sqlite,
   zlib,
-
   postgresqlSupport ? true,
-  libpq,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -46,7 +43,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-d7fjcM2EA39XktgSU2vFoQNUCeajSqBo0Iyegb6Ak4k=";
   };
 
-  enableParallelBuilding = true;
+  strictDeps = true;
 
   nativeBuildInputs = [
     gettext # msgfmt
@@ -81,8 +78,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional postgresqlSupport libpq;
 
-  strictDeps = true;
-
   preConfigure = ''
     # Brute force: since nix-worker chroots don't provide
     # /etc/{resolv.conf,hosts}, replace all references to `localhost'
@@ -98,11 +93,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   # unfortunately, there's still a few failures with impure tests
   doCheck = false;
+
   checkPhase = ''
     export GNUNET_PREFIX="$out"
     export PATH="$out/bin:$PATH"
     make -k check
   '';
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "GNU's decentralized anonymous and censorship-resistant P2P framework";
@@ -123,12 +121,12 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
     homepage = "https://gnunet.org/";
+    changelog = "https://git-www.taler.net/gnunet.git/tree/NEWS/?h=v${finalAttrs.version}";
     license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ pstn ];
-    teams = with lib.teams; [ ngi ];
     platforms = lib.platforms.unix;
-    changelog = "https://git-www.taler.net/gnunet.git/tree/NEWS/?h=v${finalAttrs.version}";
     # meson: "Can not run test applications in this cross environment." (for dane_verify_crt_raw)
     broken = !stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+    teams = with lib.teams; [ ngi ];
   };
 })

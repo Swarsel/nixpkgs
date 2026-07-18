@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
   nixosTests,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,9 +19,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-dPTrIc/hTbMlFDXYMk/dTjqaNECazldfW43egDOwyLM=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   passthru = {
     tests = { inherit (nixosTests) kanidm-provisioning; };
@@ -31,10 +30,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Small utility to help with kanidm provisioning";
     homepage = "https://github.com/oddlama/kanidm-provision";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ oddlama ];
     mainProgram = "kanidm-provision";
   };

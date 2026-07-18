@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -22,8 +22,8 @@ buildGoModule {
     description = "xmonad DBus monitoring solution";
     homepage = "https://github.com/xintron/xmonad-log";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ joko ];
+    platforms = lib.platforms.unix;
     mainProgram = "xmonad-log";
   };
 }

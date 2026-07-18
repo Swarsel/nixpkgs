@@ -10,22 +10,18 @@
 buildPythonPackage rec {
   pname = "libais";
   version = "0.17";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-6yrqIpjF6XaSfXSOTA0B4f3aLcHXkgA/3WBZBBNQ018=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ six ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   # data files missing
   doCheck = false;
-
+  nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  dependencies = [ six ];
+  pyproject = true;
   pythonImportsCheck = [ "ais" ];
 
   meta = {

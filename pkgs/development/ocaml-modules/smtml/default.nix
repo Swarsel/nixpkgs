@@ -1,32 +1,32 @@
 {
   lib,
   stdenv,
-  buildDunePackage,
-  ocaml,
   fetchFromGitHub,
-  menhir,
-  darwin,
   bitwuzla-cxx,
   bos,
+  buildDunePackage,
   cmdliner,
+  darwin,
   dolmen_model,
   dolmen_type,
   dune-build-info,
   dune-site,
   fpath,
   hc,
+  mdx,
+  menhir,
   menhirLib,
   mtime,
-  # fix eval on legacy ocaml versions
-  ocaml_intrinsics ? null,
-  prelude,
+  ocaml,
+  ounit2,
   ppx_enumerate,
+  prelude,
   scfg,
   yojson,
   z3,
   zarith,
-  mdx,
-  ounit2,
+  # fix eval on legacy ocaml versions
+  ocaml_intrinsics ? null,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -39,8 +39,6 @@ buildDunePackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-TZMBUnw1AtsVUfLLQJ/gs0CBtnphBiREH99QP3VuAL0=";
   };
-
-  minimalOCamlVersion = "4.14";
 
   nativeBuildInputs = [
     menhir
@@ -73,15 +71,6 @@ buildDunePackage (finalAttrs: {
     zarith
   ];
 
-  checkInputs = [
-    mdx
-    ounit2
-  ];
-
-  nativeCheckInputs = [
-    mdx.bin
-  ];
-
   doCheck =
     # Checks fail with cmdliner ≥ 2.0
     false
@@ -91,16 +80,29 @@ buildDunePackage (finalAttrs: {
       || stdenv.hostPlatform.isDarwin
     );
 
+  nativeCheckInputs = [
+    mdx.bin
+  ];
+
+  checkInputs = [
+    mdx
+    ounit2
+  ];
+
+  minimalOCamlVersion = "4.14";
+
   meta = {
     description = "SMT solver frontend for OCaml";
     homepage = "https://formalsec.github.io/smtml/smtml/";
-    downloadPage = "https://github.com/formalsec/smtml";
     changelog = "https://github.com/formalsec/smtml/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    teams = with lib.teams; [ ngi ];
+
     maintainers = with lib.maintainers; [
       ethancedwards8
       redianthus
     ];
+
+    downloadPage = "https://github.com/formalsec/smtml";
+    teams = with lib.teams; [ ngi ];
   };
 })

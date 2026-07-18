@@ -1,16 +1,15 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  rs-reticulum,
-  versionCheckHook,
   nix-update-script,
+  rs-reticulum,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "rs-lxmf";
   version = "1.0.1";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "ratspeak";
@@ -27,16 +26,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   cargoHash = "sha256-qMDqCH2oCZDJ8TQTDtgxooL1Ltn4khVyXr186NfWtKY=";
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/ratspeak/rsLXMF/releases/tag/${finalAttrs.src.tag}";
     description = "Rust implementation of LXMF for Reticulum";
     homepage = "https://github.com/ratspeak/rsLXMF";
+    changelog = "https://github.com/ratspeak/rsLXMF/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ drupol ];
     mainProgram = "lxmd-rs";

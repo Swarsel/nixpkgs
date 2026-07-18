@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
 }:
 
@@ -20,18 +20,13 @@ buildNpmPackage (finalAttrs: {
     cp ${./package-lock.json} package-lock.json
   '';
 
-  forceEmptyCache = true;
-  dontNpmBuild = true;
-
   npmDepsHash = "sha256-D0DAjK/u59rOKNf5kCu/OYkch+4lZYgdHkuib0sqtIw=";
-
   doCheck = true;
-
+  checkPhase = "npm test";
   # Tests use local mock servers.
   __darwinAllowLocalNetworking = true;
-
-  checkPhase = "npm test";
-
+  dontNpmBuild = true;
+  forceEmptyCache = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -39,7 +34,7 @@ buildNpmPackage (finalAttrs: {
     homepage = "https://github.com/TKasperczyk/thunderbird-mcp";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ drupol ];
-    mainProgram = "thunderbird-mcp";
     platforms = lib.platforms.all;
+    mainProgram = "thunderbird-mcp";
   };
 })

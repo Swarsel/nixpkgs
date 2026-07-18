@@ -6,10 +6,10 @@
   lhapdf,
   ncurses,
   perl,
-  python ? null,
   swig,
   yoda,
   zlib,
+  python ? null,
   withPython ? false,
 }:
 
@@ -22,6 +22,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-7aIMYCOkHC/17CHYiEfrxvtSJxTDivrS7BQ32cGiEy0=";
   };
 
+  patches = [
+    # Compatibility with YODA 2.x
+    ./yoda2_support.patch
+  ];
+
   postPatch = ''
     substituteInPlace py-compile \
       --replace-fail "import sys, os, py_compile, imp" "import sys, os, py_compile, importlib" \
@@ -29,10 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "hasattr(imp" "hasattr(importlib"
   '';
 
-  patches = [
-    # Compatibility with YODA 2.x
-    ./yoda2_support.patch
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     lhapdf # lhapdf-config
@@ -48,11 +50,19 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional withPython python
   ++ lib.optional (withPython && python.isPy3k) ncurses;
 
-  propagatedNativeBuildInputs = lib.optional withPython swig;
   propagatedBuildInputs = [
     zlib
   ]
   ++ lib.optional withPython python.pkgs.distutils;
+
+  configureFlags = [
+    "--with-yoda=${yoda}"
+  ]
+  ++ lib.optional withPython "--enable-pyext";
+
+  # None of our currently packaged versions of swig are C++17-friendly
+  # Use a workaround from https://github.com/swig/swig/issues/1538
+  env.CXXFLAGS = "-D_LIBCPP_ENABLE_CXX17_REMOVED_FEATURES";
 
   preConfigure = ''
     substituteInPlace ./fastnlotoolkit/Makefile.in \
@@ -63,32 +73,24 @@ stdenv.mkDerivation (finalAttrs: {
     chmod +x check/fnlo-tk-stattest.pl.in
   '';
 
-  configureFlags = [
-    "--with-yoda=${yoda}"
-  ]
-  ++ lib.optional withPython "--enable-pyext";
-
-  strictDeps = true;
-
-  enableParallelBuilding = true;
-
   doCheck = true;
+
   nativeCheckInputs = [
     perl
     lhapdf.pdf_sets.CT10nlo
   ];
+
   preCheck = ''
     patchShebangs --build check
   '';
-  enableParallelChecking = false;
 
-  # None of our currently packaged versions of swig are C++17-friendly
-  # Use a workaround from https://github.com/swig/swig/issues/1538
-  env.CXXFLAGS = "-D_LIBCPP_ENABLE_CXX17_REMOVED_FEATURES";
+  enableParallelBuilding = true;
+  enableParallelChecking = false;
+  propagatedNativeBuildInputs = lib.optional withPython swig;
 
   meta = {
-    homepage = "http://fastnlo.hepforge.org";
     description = "Fast pQCD calculations for hadron-induced processes";
+
     longDescription = ''
       The fastNLO project provides computer code to create and evaluate fast
       interpolation tables of pre-computed coefficients in perturbation theory
@@ -100,6 +102,8 @@ stdenv.mkDerivation (finalAttrs: {
       in PDF fits or in systematic studies. Very time consuming complete
       recalculations are thus avoided.
     '';
+
+    homepage = "http://fastnlo.hepforge.org";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ veprbl ];
     platforms = lib.platforms.unix;

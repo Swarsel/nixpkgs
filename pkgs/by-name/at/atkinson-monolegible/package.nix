@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -22,10 +22,10 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/Hylian/atkinson-monolegible";
     description = "Mono variant of the Atkinson Hyperlegible typeface";
+    homepage = "https://github.com/Hylian/atkinson-monolegible";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ Gliczy ];
+    platforms = lib.platforms.all;
   };
 }

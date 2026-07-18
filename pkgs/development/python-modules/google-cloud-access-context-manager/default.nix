@@ -10,19 +10,16 @@
 buildPythonPackage (finalAttrs: {
   pname = "google-cloud-access-context-manager";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_access_context_manager";
     inherit (finalAttrs) version;
     hash = "sha256-dgJn+6H4voY24qjXwwICfzECYP/4BRxGuLCbl9VGjuA=";
+    pname = "google_cloud_access_context_manager";
   };
 
+  # No tests in repo
+  doCheck = false;
   build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
-  ];
 
   dependencies = [
     google-api-core
@@ -30,10 +27,12 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  # No tests in repo
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "google.identity.accesscontextmanager" ];
+
+  pythonRelaxDeps = [
+    "protobuf"
+  ];
 
   meta = {
     description = "Protobufs for Google Access Context Manager";

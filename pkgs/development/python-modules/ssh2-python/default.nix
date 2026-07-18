@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   cython,
-  openssl,
-  zlib,
   libssh2,
+  openssl,
+  setuptools,
+  zlib,
 }:
 
 buildPythonPackage rec {
   pname = "ssh2-python";
   version = "1.2.0.post1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "ParallelSSH";
@@ -21,10 +20,10 @@ buildPythonPackage rec {
     hash = "sha256-GhkVie+UPjM1C1Jb3/ef59kuJRYmIkauTCaoksqu1LM=";
   };
 
-  build-system = [ setuptools ];
   nativeBuildInputs = [
     cython
   ];
+
   buildInputs = [
     openssl
     zlib
@@ -35,6 +34,8 @@ buildPythonPackage rec {
     SYSTEM_LIBSSH2 = true;
   };
 
+  build-system = [ setuptools ];
+  format = "setuptools";
   pythonImportsCheck = [ "ssh2" ];
 
   meta = {

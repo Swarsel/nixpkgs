@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation {
   pname = "catppuccin-qt5ct";
@@ -26,10 +26,12 @@ stdenvNoCC.mkDerivation {
     description = "Soothing pastel theme for qt5ct & qt6ct";
     homepage = "https://github.com/catppuccin/qt5ct";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       pluiedev
       nullcube
     ];
+
     platforms = lib.platforms.all;
   };
 }

@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  ocamlPackages,
   alt-ergo,
   darwin,
+  ocamlPackages,
   why3,
 }:
 
@@ -13,11 +13,11 @@ ocamlPackages.buildDunePackage (finalAttrs: {
   version = "1.3.0";
 
   src = fetchFromGitLab {
-    domain = "git.frama-c.com";
     owner = "pub";
     repo = "why3find";
     tag = finalAttrs.version;
     hash = "sha256-G1Cmmo83Le1WRBTeit2NvyXvWpw0yJtd2kRiGMKSPrs=";
+    domain = "git.frama-c.com";
   };
 
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [

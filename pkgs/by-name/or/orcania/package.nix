@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   check,
+  cmake,
   subunit,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -18,12 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
-
-  nativeCheckInputs = [
-    check
-    subunit
-  ];
-
   cmakeFlags = [ "-DBUILD_ORCANIA_TESTING=on" ];
 
   env.NIX_CFLAGS_COMPILE = toString (
@@ -34,11 +28,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
 
+  nativeCheckInputs = [
+    check
+    subunit
+  ];
+
   meta = {
     description = "Potluck with different functions for different purposes that can be shared among C programs";
-    mainProgram = "base64url";
     homepage = "https://github.com/babelouest/orcania";
     license = lib.licenses.lgpl21;
     maintainers = with lib.maintainers; [ johnazoidberg ];
+    mainProgram = "base64url";
   };
 })

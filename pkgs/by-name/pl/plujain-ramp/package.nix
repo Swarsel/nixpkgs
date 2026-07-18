@@ -6,8 +6,8 @@
 }:
 
 stdenv.mkDerivation {
-  version = "1.1.3";
   pname = "plujain-ramp";
+  version = "1.1.3";
 
   src = fetchFromGitHub {
     owner = "Houston4444";
@@ -26,7 +26,7 @@ stdenv.mkDerivation {
     description = "Mono rhythmic tremolo LV2 Audio Plugin";
     homepage = "https://github.com/Houston4444/plujain-ramp";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.hirenashah ];
+    platforms = lib.platforms.linux;
   };
 }

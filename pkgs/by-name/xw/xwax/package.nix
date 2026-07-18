@@ -5,11 +5,11 @@
   SDL,
   SDL_ttf,
   alsa-lib,
-  jack2,
-  libmpg123,
-  ffmpeg,
   cdparanoia,
   dejavu_fonts,
+  ffmpeg,
+  jack2,
+  libmpg123,
   versionCheckHook,
 }:
 
@@ -63,22 +63,21 @@ stdenv.mkDerivation (finalAttrs: {
     "--enable-jack"
   ];
 
-  enableParallelBuilding = true;
-
   makeFlags = [
     "PREFIX=${placeholder "out"}"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "-h";
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  enableParallelBuilding = true;
+  versionCheckProgramArg = "-h";
 
   meta = {
-    homepage = "https://xwax.org";
     description = "Digital vinyl on Linux";
-    mainProgram = "xwax";
+    homepage = "https://xwax.org";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ obsoleszenz ];
     platforms = lib.platforms.linux;
+    mainProgram = "xwax";
   };
 })

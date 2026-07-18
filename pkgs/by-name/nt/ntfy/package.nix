@@ -1,21 +1,19 @@
 {
   lib,
   stdenv,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
   writableTmpDirAsHomeHook,
-  withMatrix ? true,
-  withSlack ? true,
-  withEmoji ? true,
-  withPid ? true,
   withDbus ? stdenv.hostPlatform.isLinux,
+  withEmoji ? true,
+  withMatrix ? true,
+  withPid ? true,
+  withSlack ? true,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "ntfy";
   version = "2.7.1";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dschep";
@@ -29,6 +27,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     substituteInPlace setup.py \
       --replace-fail "':sys_platform == \"darwin\"'" "'darwin'"
   '';
+
+  nativeCheckInputs = with python3Packages; [
+    mock
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = with python3Packages; [ setuptools ];
 
@@ -58,10 +62,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
       ]
     );
 
-  nativeCheckInputs = with python3Packages; [
-    mock
-    pytestCheckHook
-    writableTmpDirAsHomeHook
+  disabledTestPaths = [
+    "tests/test_xmpp.py"
   ];
 
   disabledTests = [
@@ -72,16 +74,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "test_xmpp"
   ];
 
-  disabledTestPaths = [
-    "tests/test_xmpp.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "ntfy" ];
 
   meta = {
-    changelog = "https://github.com/dschep/ntfy/releases/tag/${finalAttrs.src.tag}";
     description = "Utility for sending notifications, on demand and when commands finish";
     homepage = "https://ntfy.readthedocs.io/en/latest/";
+    changelog = "https://github.com/dschep/ntfy/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ kamilchm ];
     mainProgram = "ntfy";

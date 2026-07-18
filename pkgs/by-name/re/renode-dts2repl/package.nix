@@ -1,14 +1,13 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
   unstableGitUpdater,
 }:
 
 python3.pkgs.buildPythonApplication {
   pname = "renode-dts2repl";
   version = "0-unstable-2026-06-29";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "antmicro";
@@ -22,8 +21,8 @@ python3.pkgs.buildPythonApplication {
     python3.pkgs.wheel
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "dts2repl" ];
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {

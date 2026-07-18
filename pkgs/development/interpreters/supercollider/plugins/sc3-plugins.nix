@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
-  fetchpatch2,
+  stdenv,
   fetchurl,
   cmake,
-  supercollider,
+  fetchpatch2,
   fftw,
   fftwFloat,
   gitUpdater,
+  supercollider,
 }:
 
 stdenv.mkDerivation rec {
@@ -20,7 +20,6 @@ stdenv.mkDerivation rec {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ cmake ];
 
   buildInputs = [
@@ -40,18 +39,20 @@ stdenv.mkDerivation rec {
   ];
 
   passthru.updateScript = gitUpdater {
-    url = "https://github.com/supercollider/sc3-plugins.git";
-    rev-prefix = "Version-";
     ignoredVersions = "rc|beta";
+    rev-prefix = "Version-";
+    url = "https://github.com/supercollider/sc3-plugins.git";
   };
 
   meta = {
     description = "Community plugins for SuperCollider";
     homepage = "https://supercollider.github.io/sc3-plugins/";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       pretentiousUsername
     ];
-    license = lib.licenses.gpl2Plus;
+
     platforms = lib.platforms.linux;
   };
 }

@@ -1,9 +1,9 @@
 {
   lib,
-  newScope,
   fetchFromGitHub,
-  unzip,
+  newScope,
   stdenvNoCC,
+  unzip,
 }:
 let
   base = {
@@ -11,29 +11,32 @@ let
     nativeBuildInputs = [ unzip ];
     dontBuild = true;
     dontFixup = true;
+
     meta = {
       description = "NLTK Data";
       homepage = "https://github.com/nltk/nltk_data";
       license = lib.licenses.asl20;
-      platforms = lib.platforms.all;
+
       maintainers = with lib.maintainers; [
         bengsparks
         happysalada
       ];
+
+      platforms = lib.platforms.all;
     };
   };
   makeNltkDataPackage =
     {
-      pname,
-      location,
       hash,
+      location,
+      pname,
     }:
     let
       src = fetchFromGitHub {
+        inherit hash;
         owner = "nltk";
         repo = "nltk_data";
         rev = "cfe82914f3c2d24363687f1db3b05e8b9f687e2b";
-        inherit hash;
         sparseCheckout = [ "packages/${location}/${pname}.zip" ];
       };
     in
@@ -42,6 +45,7 @@ let
       // {
         inherit pname src;
         inherit (base) version;
+
         installPhase = ''
           runHook preInstall
 
@@ -59,84 +63,90 @@ let
     pname:
     makeNltkDataPackage {
       inherit pname;
-      location = "chunkers";
       hash = "sha256-kemjqaCM9hlKAdMw8oVJnp62EAC9rMQ50dKg7wlAwEc=";
+      location = "chunkers";
     };
 
   makeCorpus =
     pname:
     makeNltkDataPackage {
       inherit pname;
-      location = "corpora";
       hash = "sha256-8lMjW5YI8h6dHJ/83HVY2OYGDyKPpgkUAKPISiAKqqk=";
+      location = "corpora";
     };
 
   makeGrammar =
     pname:
     makeNltkDataPackage {
       inherit pname;
-      location = "grammars";
       hash = "sha256-pyLEcX3Azv8j1kCGvVYonuiNgVJxtWt7veU0S/yNbIM=";
+      location = "grammars";
     };
 
   makeHelp =
     pname:
     makeNltkDataPackage {
       inherit pname;
-      location = "help";
       hash = "sha256-97mYLNES5WujLF5gD8Ul4cJ6LqSzz+jDzclUsdBeHNE=";
+      location = "help";
     };
 
   makeMisc =
     pname:
     makeNltkDataPackage {
       inherit pname;
-      location = "misc";
       hash = "sha256-XtizfEsc8TYWqvvC/eSFdha2ClC5/ZiJM8nue0vXLb4=";
+      location = "misc";
     };
 
   makeModel =
     pname:
     makeNltkDataPackage {
       inherit pname;
-      location = "models";
       hash = "sha256-iq3weEgCci6rgLW2j28F2eRLprJtInGXKe/awJPSVG4=";
+      location = "models";
     };
 
   makeTagger =
     pname:
     makeNltkDataPackage {
       inherit pname;
-      location = "taggers";
       hash = "sha256-tl3Cn2okhBkUtTXvAmFRx72Brez6iTGRdmFTwFmpk3M=";
+      location = "taggers";
     };
 
   makeTokenizer =
     pname:
     makeNltkDataPackage {
       inherit pname;
-      location = "tokenizers";
       hash = "sha256-OzMkruoYbFKqzuimOXIpE5lhHz8tmSqOFoLT+fjdTVg=";
+      location = "tokenizers";
     };
 
   makeStemmer =
     pname:
     makeNltkDataPackage {
       inherit pname;
-      location = "stemmers";
       hash = "sha256-mNefwOPVJGz9kXV3LV4DuV7FJpNir/Nwg4ujd0CogEk=";
+      location = "stemmers";
     };
 in
 lib.makeScope newScope (self: {
-  ## Chunkers
-  maxent-ne-chunker = makeChunker "maxent_ne_chunker";
-  maxent-ne-chunker-tab = makeChunker "maxent_ne_chunker_tab";
-
   ## Corpora
   abc = makeCorpus "abc";
   alpino = makeCorpus "alpino";
+  ## Taggers
+  averaged-perceptron-tagger = makeTagger "averaged_perceptron_tagger";
+  averaged-perceptron-tagger-eng = makeTagger "averaged_perceptron_tagger_eng";
+  averaged-perceptron-tagger-ru = makeTagger "averaged_perceptron_tagger_ru";
+  averaged-perceptron-tagger-rus = makeTagger "averaged_perceptron_tagger_rus";
+  ## Grammars
+  basque-grammars = makeGrammar "basque_grammars";
   bcp47 = makeCorpus "bcp47";
   biocreative-ppi = makeCorpus "biocreative_ppi";
+  ## Models
+  bllip-wsj-no-aux = makeModel "bllip_wsj_no_aux";
+  book-grammars = makeGrammar "book_grammars";
   brown = makeCorpus "brown";
   brown-tei = makeCorpus "brown_tei";
   cess-cat = makeCorpus "cess_cat";
@@ -166,12 +176,21 @@ lib.makeScope newScope (self: {
   jeita = makeCorpus "jeita";
   kimmo = makeCorpus "kimmo";
   knbc = makeCorpus "knbc";
+  large-grammars = makeGrammar "large_grammars";
   lin-thesaurus = makeCorpus "lin_thesaurus";
   mac-morpho = makeCorpus "mac_morpho";
   machado = makeCorpus "machado";
   masc-tagged = makeCorpus "masc_tagged";
+  ## Chunkers
+  maxent-ne-chunker = makeChunker "maxent_ne_chunker";
+  maxent-ne-chunker-tab = makeChunker "maxent_ne_chunker_tab";
+  maxent-treebank-pos-tagger = makeTagger "maxent_treebank_pos_tagger";
+  maxent-treebank-pos-tagger-tab = makeTagger "maxent_treebank_pos_tagger_tab";
+  moses-sample = makeModel "moses_sample";
   movie-reviews = makeCorpus "movie_reviews";
   mte-teip5 = makeCorpus "mte_teip5";
+  ## Misc
+  mwa-ppdb = makeMisc "mwa_ppdb";
   names = makeCorpus "names";
   nombank-1-0 = makeCorpus "nombank.1.0";
   nonbreaking-prefixes = makeCorpus "nonbreaking_prefixes";
@@ -182,8 +201,11 @@ lib.makeScope newScope (self: {
   panlex-swadesh = makeCorpus "panlex_swadesh";
   paradigms = makeCorpus "paradigms";
   pe08 = makeCorpus "pe08";
+  perluniprops = makeMisc "perluniprops";
   pil = makeCorpus "pil";
   pl196x = makeCorpus "pl196x";
+  ## Stemmers
+  porter-test = makeStemmer "porter_test";
   ppattach = makeCorpus "ppattach";
   problem-reports = makeCorpus "problem_reports";
   product-reviews-1 = makeCorpus "product_reviews_1";
@@ -191,9 +213,14 @@ lib.makeScope newScope (self: {
   propbank = makeCorpus "propbank";
   pros-cons = makeCorpus "pros_cons";
   ptb = makeCorpus "ptb";
+  ## Tokenizers
+  punkt = makeTokenizer "punkt";
+  punkt-tab = makeTokenizer "punkt_tab";
   qc = makeCorpus "qc";
   reuters = makeCorpus "reuters";
+  rslp = makeStemmer "rslp";
   rte = makeCorpus "rte";
+  sample-grammars = makeGrammar "sample_grammars";
   semcor = makeCorpus "semcor";
   senseval = makeCorpus "senseval";
   sentence-polarity = makeCorpus "sentence_polarity";
@@ -201,11 +228,15 @@ lib.makeScope newScope (self: {
   shakespeare = makeCorpus "shakespeare";
   sinica-treebank = makeCorpus "sinica_treebank";
   smultron = makeCorpus "smultron";
+  snowball-data = makeStemmer "snowball_data";
+  spanish-grammars = makeGrammar "spanish_grammars";
   state-union = makeCorpus "state_union";
   stopwords = makeCorpus "stopwords";
   subjectivity = makeCorpus "subjectivity";
   swadesh = makeCorpus "swadesh";
   switchboard = makeCorpus "switchboard";
+  ## Help
+  tagsets-json = makeHelp "tagsets_json";
   timit = makeCorpus "timit";
   toolbox = makeCorpus "toolbox";
   treebank = makeCorpus "treebank";
@@ -213,10 +244,13 @@ lib.makeScope newScope (self: {
   udhr = makeCorpus "udhr";
   udhr2 = makeCorpus "udhr2";
   unicode-samples = makeCorpus "unicode_samples";
+  universal-tagset = makeTagger "universal_tagset";
   universal-treebanks-v20 = makeCorpus "universal_treebanks_v20";
   verbnet = makeCorpus "verbnet";
   verbnet3 = makeCorpus "verbnet3";
   webtext = makeCorpus "webtext";
+  wmt15-eval = makeModel "wmt15_eval";
+  word2vec-sample = makeModel "word2vec_sample";
   wordnet = makeCorpus "wordnet";
   wordnet-ic = makeCorpus "wordnet_ic";
   wordnet2021 = makeCorpus "wordnet2021";
@@ -224,42 +258,4 @@ lib.makeScope newScope (self: {
   wordnet31 = makeCorpus "wordnet31";
   words = makeCorpus "words";
   ycoe = makeCorpus "ycoe";
-
-  ## Grammars
-  basque-grammars = makeGrammar "basque_grammars";
-  book-grammars = makeGrammar "book_grammars";
-  large-grammars = makeGrammar "large_grammars";
-  sample-grammars = makeGrammar "sample_grammars";
-  spanish-grammars = makeGrammar "spanish_grammars";
-
-  ## Help
-  tagsets-json = makeHelp "tagsets_json";
-
-  ## Misc
-  mwa-ppdb = makeMisc "mwa_ppdb";
-  perluniprops = makeMisc "perluniprops";
-
-  ## Models
-  bllip-wsj-no-aux = makeModel "bllip_wsj_no_aux";
-  moses-sample = makeModel "moses_sample";
-  wmt15-eval = makeModel "wmt15_eval";
-  word2vec-sample = makeModel "word2vec_sample";
-
-  ## Taggers
-  averaged-perceptron-tagger = makeTagger "averaged_perceptron_tagger";
-  averaged-perceptron-tagger-eng = makeTagger "averaged_perceptron_tagger_eng";
-  averaged-perceptron-tagger-ru = makeTagger "averaged_perceptron_tagger_ru";
-  averaged-perceptron-tagger-rus = makeTagger "averaged_perceptron_tagger_rus";
-  maxent-treebank-pos-tagger = makeTagger "maxent_treebank_pos_tagger";
-  maxent-treebank-pos-tagger-tab = makeTagger "maxent_treebank_pos_tagger_tab";
-  universal-tagset = makeTagger "universal_tagset";
-
-  ## Tokenizers
-  punkt = makeTokenizer "punkt";
-  punkt-tab = makeTokenizer "punkt_tab";
-
-  ## Stemmers
-  porter-test = makeStemmer "porter_test";
-  rslp = makeStemmer "rslp";
-  snowball-data = makeStemmer "snowball_data";
 })

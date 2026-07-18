@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
-  pkg-config,
   gtk3,
   librsvg,
+  makeWrapper,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,20 +18,15 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1qc58l3rkr37cj6vhf8c7bnwbz93nscyraz7jxqwjq6k4gj0cjw3";
   };
 
-  sourceRoot = "howl-${finalAttrs.version}/src";
-
-  # The Makefile uses "/usr/local" if not explicitly overridden
-  installFlags = [ "PREFIX=$(out)" ];
-
   nativeBuildInputs = [
     makeWrapper
     pkg-config
   ];
+
   buildInputs = [
     gtk3
     librsvg
   ];
-  enableParallelBuilding = true;
 
   # Required for the program to properly load its SVG assets
   postInstall = ''
@@ -39,17 +34,23 @@ stdenv.mkDerivation (finalAttrs: {
       --set GDK_PIXBUF_MODULE_FILE "$GDK_PIXBUF_MODULE_FILE"
   '';
 
+  enableParallelBuilding = true;
+  # The Makefile uses "/usr/local" if not explicitly overridden
+  installFlags = [ "PREFIX=$(out)" ];
+  sourceRoot = "howl-${finalAttrs.version}/src";
+
   meta = {
-    homepage = "https://howl.io/";
     description = "General purpose, fast and lightweight editor with a keyboard-centric minimalistic user interface";
+    homepage = "https://howl.io/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ euxane ];
-    mainProgram = "howl";
 
     # Howl builds fail for aarch64-linux
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ];
+
+    mainProgram = "howl";
   };
 })

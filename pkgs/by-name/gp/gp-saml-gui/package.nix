@@ -2,17 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3Packages,
-  webkitgtk_4_1,
-  wrapGAppsHook3,
   glib-networking,
   gobject-introspection,
   openconnect,
+  python3Packages,
+  webkitgtk_4_1,
+  wrapGAppsHook3,
 }:
 python3Packages.buildPythonPackage rec {
   pname = "gp-saml-gui";
   version = "0.1+20240731-${lib.strings.substring 0 7 src.rev}";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "dlenski";
@@ -21,13 +20,19 @@ python3Packages.buildPythonPackage rec {
     hash = "sha256-4MFHad1cuCWawy2hrqdXOgud0pXpYiV9J3Jwqyg4Udk=";
   };
 
-  buildInputs = lib.optional stdenv.hostPlatform.isLinux glib-networking;
-
   nativeBuildInputs = [
     wrapGAppsHook3
     gobject-introspection
     glib-networking
   ];
+
+  buildInputs = lib.optional stdenv.hostPlatform.isLinux glib-networking;
+
+  preFixup = ''
+    gappsWrapperArgs+=(
+      --set WEBKIT_DISABLE_COMPOSITING_MODE "1"
+    )
+  '';
 
   dependencies =
     with python3Packages;
@@ -40,17 +45,13 @@ python3Packages.buildPythonPackage rec {
     ]
     ++ lib.optional stdenv.hostPlatform.isLinux webkitgtk_4_1;
 
-  preFixup = ''
-    gappsWrapperArgs+=(
-      --set WEBKIT_DISABLE_COMPOSITING_MODE "1"
-    )
-  '';
+  format = "setuptools";
 
   meta = {
     description = "Interactively authenticate to GlobalProtect VPNs that require SAML";
-    mainProgram = "gp-saml-gui";
     homepage = "https://github.com/dlenski/gp-saml-gui";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ pallix ];
+    mainProgram = "gp-saml-gui";
   };
 }

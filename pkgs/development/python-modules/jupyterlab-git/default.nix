@@ -1,19 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   git,
   gitMinimal,
-  nodejs,
-  writableTmpDirAsHomeHook,
-  yarn-berry_3,
-  jupyter-server,
   hatch-jupyter-builder,
   hatch-nodejs-version,
   hatchling,
+  jupyter-server,
   jupyterlab,
   nbdime,
   nbformat,
+  nodejs,
   packaging,
   pexpect,
   pytest-asyncio,
@@ -21,12 +19,13 @@
   pytest-tornasync,
   pytestCheckHook,
   traitlets,
+  writableTmpDirAsHomeHook,
+  yarn-berry_3,
 }:
 
 buildPythonPackage rec {
   pname = "jupyterlab-git";
   version = "0.52.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jupyterlab";
@@ -40,10 +39,18 @@ buildPythonPackage rec {
     yarn-berry_3.yarnBerryConfigHook
   ];
 
-  offlineCache = yarn-berry_3.fetchYarnBerryDeps {
-    inherit src;
-    hash = "sha256-3pVc4xz5ilamCg97wdaLQliBHeSr3mPYwhgnz/lvfj0=";
-  };
+  propagatedBuildInputs = [ git ];
+
+  nativeCheckInputs = [
+    gitMinimal
+    pytest-asyncio
+    pytest-jupyter
+    pytest-tornasync
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     hatch-jupyter-builder
@@ -61,17 +68,6 @@ buildPythonPackage rec {
     traitlets
   ];
 
-  propagatedBuildInputs = [ git ];
-
-  nativeCheckInputs = [
-    gitMinimal
-    pytest-asyncio
-    pytest-jupyter
-    pytest-tornasync
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
   disabledTestPaths = [
     "jupyterlab_git/tests/test_handlers.py"
   ];
@@ -81,9 +77,13 @@ buildPythonPackage rec {
     "test_Git_get_nbdiff_dict"
   ];
 
-  pythonImportsCheck = [ "jupyterlab_git" ];
+  offlineCache = yarn-berry_3.fetchYarnBerryDeps {
+    inherit src;
+    hash = "sha256-3pVc4xz5ilamCg97wdaLQliBHeSr3mPYwhgnz/lvfj0=";
+  };
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+  pythonImportsCheck = [ "jupyterlab_git" ];
 
   meta = {
     description = "Jupyter lab extension for version control with Git";

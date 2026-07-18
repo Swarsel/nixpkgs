@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
   versionCheckHook,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "rclip";
   version = "3.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "yurijmikhalevich";
@@ -20,6 +19,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     substituteInPlace pyproject.toml \
       --replace-fail "uv_build>=0.11.12,<0.12.0" uv_build
   '';
+
+  nativeCheckInputs = [
+    versionCheckHook
+    python3Packages.jinja2
+  ]
+  ++ (with python3Packages; [ pytestCheckHook ]);
 
   build-system = with python3Packages; [
     uv-build
@@ -38,23 +43,18 @@ python3Packages.buildPythonApplication (finalAttrs: {
     rawpy
   ];
 
+  disabledTestPaths = [
+    # requires network
+    "tests/e2e/test_rclip.py"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "rclip" ];
+
   pythonRelaxDeps = [
     "numpy"
     "pillow"
     "rawpy"
-  ];
-
-  pythonImportsCheck = [ "rclip" ];
-
-  nativeCheckInputs = [
-    versionCheckHook
-    python3Packages.jinja2
-  ]
-  ++ (with python3Packages; [ pytestCheckHook ]);
-
-  disabledTestPaths = [
-    # requires network
-    "tests/e2e/test_rclip.py"
   ];
 
   meta = {

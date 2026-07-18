@@ -2,69 +2,69 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
-  glib,
-  systemd,
-  fmt,
-  buildPackages,
-  # Inputs
-  curl,
-  libcdio,
-  libcdio-paranoia,
-  libmms,
-  libnfs,
-  liburing,
-  samba,
-  # Archive support
-  bzip2,
-  zziplib,
+  # Outputs
+  alsa-lib,
   # Codecs
   audiofile,
+  avahi,
+  buildPackages,
+  # Archive support
+  bzip2,
+  # Inputs
+  curl,
+  dbus,
+  # For documentation
+  doxygen,
+  expat,
   faad2,
   ffmpeg,
   flac,
   fluidsynth,
+  fmt,
   game-music-emu,
-  libmad,
-  libmikmod,
-  mpg123,
-  libopus,
-  libvorbis,
-  lame,
-  # Filters
-  libsamplerate,
-  soxr,
-  # Outputs
-  alsa-lib,
-  libao,
-  libjack2,
-  libpulseaudio,
-  libshout,
-  pipewire,
-  # Misc
-  icu,
-  sqlite,
-  avahi,
-  dbus,
-  pcre2,
-  libgcrypt,
-  expat,
-  nlohmann_json,
-  zlib,
-  libupnp,
-  # Client support
-  libmpdclient,
-  # Tag support
-  libid3tag,
-  nixosTests,
-  # For documentation
-  doxygen,
-  python3Packages, # for sphinx-build
+  glib,
   # For tests
   gtest,
+  # Misc
+  icu,
+  lame,
+  libao,
+  libcdio,
+  libcdio-paranoia,
+  libgcrypt,
+  # Tag support
+  libid3tag,
+  libjack2,
+  libmad,
+  libmikmod,
+  libmms,
+  # Client support
+  libmpdclient,
+  libnfs,
+  libopus,
+  libpulseaudio,
+  # Filters
+  libsamplerate,
+  libshout,
+  libupnp,
+  liburing,
+  libvorbis,
+  meson,
+  mpg123,
+  ninja,
+  nixosTests,
+  nlohmann_json,
+  pcre2,
+  pipewire,
+  pkg-config,
+  python3Packages, # for sphinx-build
+  samba,
+  soxr,
+  sqlite,
+  systemd,
   zip,
+  zlib,
+  zziplib,
   # Features list
   features ? null,
 }:
@@ -73,78 +73,89 @@ let
   concatAttrVals = nameList: set: lib.concatMap (x: set.${x} or [ ]) nameList;
 
   featureDependencies = {
-    # Storage plugins
-    udisks = [ dbus ];
-    webdav = [
-      curl
-      expat
-    ];
+    # Output plugins
+    alsa = [ alsa-lib ];
+    ao = [ libao ];
+    # Decoder plugins
+    audiofile = [ audiofile ];
+    # Archive support
+    bzip2 = [ bzip2 ];
+
     # Input plugins
     cdio_paranoia = [
       libcdio
       libcdio-paranoia
     ];
+
     curl = [ curl ];
-    io_uring = [ liburing ];
-    mms = [ libmms ];
-    nfs = [ libnfs ];
-    smbclient = [ samba ];
-    # Archive support
-    bzip2 = [ bzip2 ];
-    zzip = [ zziplib ];
-    # Decoder plugins
-    audiofile = [ audiofile ];
+    # Misc
+    dbus = [ dbus ];
+    expat = [ expat ];
     faad = [ faad2 ];
     ffmpeg = [ ffmpeg ];
     flac = [ flac ];
     fluidsynth = [ fluidsynth ];
     gme = [ game-music-emu ];
+    icu = [ icu ];
+
+    # Tag support
+    id3tag = [
+      libid3tag
+      zlib
+    ];
+
+    io_uring = [ liburing ];
+    jack = [ libjack2 ];
+    lame = [ lame ];
+    # Client support
+    libmpdclient = [ libmpdclient ];
+    # Filter plugins
+    libsamplerate = [ libsamplerate ];
     mad = [ libmad ];
     mikmod = [ libmikmod ];
+    mms = [ libmms ];
+
     mpg123 = [
       libid3tag
       mpg123
     ];
+
+    nfs = [ libnfs ];
     opus = [ libopus ];
-    vorbis = [ libvorbis ];
-    # Encoder plugins
-    vorbisenc = [ libvorbis ];
-    lame = [ lame ];
-    # Filter plugins
-    libsamplerate = [ libsamplerate ];
-    soxr = [ soxr ];
-    # Output plugins
-    alsa = [ alsa-lib ];
-    ao = [ libao ];
-    jack = [ libjack2 ];
+    pcre = [ pcre2 ];
     pipewire = [ pipewire ];
     pulse = [ libpulseaudio ];
-    shout = [ libshout ];
+
     # Commercial services
     qobuz = [
       curl
       libgcrypt
       nlohmann_json
     ];
-    # Client support
-    libmpdclient = [ libmpdclient ];
-    # Tag support
-    id3tag = [
-      libid3tag
-      zlib
-    ];
-    # Misc
-    dbus = [ dbus ];
-    expat = [ expat ];
-    icu = [ icu ];
-    pcre = [ pcre2 ];
+
+    shout = [ libshout ];
+    smbclient = [ samba ];
+    soxr = [ soxr ];
     sqlite = [ sqlite ];
     syslog = [ ];
     systemd = [ systemd ];
+    # Storage plugins
+    udisks = [ dbus ];
+    vorbis = [ libvorbis ];
+    # Encoder plugins
+    vorbisenc = [ libvorbis ];
+
+    webdav = [
+      curl
+      expat
+    ];
+
     zeroconf = [
       avahi
       dbus
     ];
+
+    zzip = [ zziplib ];
   };
 
   nativeFeatureDependencies = {
@@ -206,26 +217,11 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-ZcSMd+PhO8sWGA96GtwM3ykPS//8SpqDh9lLh3unB8Q=";
   };
 
-  buildInputs = [
-    glib
-    fmt
-    # According to the configurePhase of meson, gtest is considered a
-    # runtime dependency. Quoting:
-    #
-    #    Run-time dependency GTest found: YES 1.10.0
-    gtest
-    libupnp
+  outputs = [
+    "out"
+    "doc"
   ]
-  ++ concatAttrVals features_ featureDependencies;
-
-  nativeBuildInputs = [
-    meson
-    ninja
-    pkg-config
-  ]
-  ++ concatAttrVals features_ nativeFeatureDependencies;
-
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  ++ lib.optional (builtins.elem "documentation" features_) "man";
 
   postPatch =
     lib.optionalString
@@ -242,26 +238,24 @@ stdenv.mkDerivation (finalAttrs: {
           sed -i "/subdir('time')/d" test/meson.build
         '';
 
-  # Otherwise, the meson log says:
-  #
-  #    Program zip found: NO
-  nativeCheckInputs = [ zip ];
-
-  doCheck = true;
-
-  mesonAutoFeatures = "disabled";
-
-  outputs = [
-    "out"
-    "doc"
+  nativeBuildInputs = [
+    meson
+    ninja
+    pkg-config
   ]
-  ++ lib.optional (builtins.elem "documentation" features_) "man";
+  ++ concatAttrVals features_ nativeFeatureDependencies;
 
-  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
-    CXXFLAGS = toString [
-      "-D__ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES=0"
-    ];
-  };
+  buildInputs = [
+    glib
+    fmt
+    # According to the configurePhase of meson, gtest is considered a
+    # runtime dependency. Quoting:
+    #
+    #    Run-time dependency GTest found: YES 1.10.0
+    gtest
+    libupnp
+  ]
+  ++ concatAttrVals features_ featureDependencies;
 
   mesonFlags = [
     (lib.mesonBool "test" true)
@@ -278,23 +272,39 @@ stdenv.mkDerivation (finalAttrs: {
   )
   ++ lib.optional (builtins.elem "qobuz" features_) (lib.mesonEnable "nlohmann_json" true);
 
+  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
+    CXXFLAGS = toString [
+      "-D__ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES=0"
+    ];
+  };
+
+  doCheck = true;
+  # Otherwise, the meson log says:
+  #
+  #    Program zip found: NO
+  nativeCheckInputs = [ zip ];
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  mesonAutoFeatures = "disabled";
   passthru.tests.nixos = nixosTests.mpd;
 
   meta = {
     description = "Flexible, powerful daemon for playing music";
-    homepage = "https://www.musicpd.org/";
-    license = lib.licenses.gpl2Only;
-    maintainers = with lib.maintainers; [
-      tobim
-      doronbehar
-    ];
-    platforms = lib.platforms.unix;
-    mainProgram = "mpd";
 
     longDescription = ''
       Music Player Daemon (MPD) is a flexible, powerful daemon for playing
       music. Through plugins and libraries it can play a variety of sound
       files while being controlled by its network protocol.
     '';
+
+    homepage = "https://www.musicpd.org/";
+    license = lib.licenses.gpl2Only;
+
+    maintainers = with lib.maintainers; [
+      tobim
+      doronbehar
+    ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "mpd";
   };
 })

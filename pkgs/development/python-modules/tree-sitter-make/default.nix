@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cargo,
   rustPlatform,
   rustc,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "tree-sitter-make";
   version = "1.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tree-sitter-grammars";
@@ -20,10 +19,8 @@ buildPythonPackage rec {
     hash = "sha256-WiuhAp9JZKLd0wKCui9MV7AYFOW9dCbUp+kkVl1OEz0=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-75jtur5rmG4zpNXSE3OpPVR+/lf4SICsh+kgzIKfbd4=";
-  };
+  # There are no tests
+  doCheck = false;
 
   build-system = [
     cargo
@@ -32,8 +29,13 @@ buildPythonPackage rec {
     setuptools
   ];
 
-  # There are no tests
-  doCheck = false;
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-75jtur5rmG4zpNXSE3OpPVR+/lf4SICsh+kgzIKfbd4=";
+  };
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "tree_sitter_make"
   ];

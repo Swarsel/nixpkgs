@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  flit-core,
+  buildPythonPackage,
   django,
   djangorestframework,
-  pytestCheckHook,
+  flit-core,
   pytest-django,
+  pytestCheckHook,
   pytz,
 }:
 
 buildPythonPackage rec {
   pname = "django-filter";
   version = "25.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "carltongibson";
@@ -22,11 +21,7 @@ buildPythonPackage rec {
     hash = "sha256-hufqurodhd+cKs8UHvxbn62nfcZRg2Hcv2v/inkUoVg=";
   };
 
-  build-system = [ flit-core ];
-
-  dependencies = [ django ];
-
-  pythonImportsCheck = [ "django_filters" ];
+  env.DJANGO_SETTINGS_MODULE = "tests.settings";
 
   nativeCheckInputs = [
     djangorestframework
@@ -35,7 +30,10 @@ buildPythonPackage rec {
     pytz
   ];
 
-  env.DJANGO_SETTINGS_MODULE = "tests.settings";
+  build-system = [ flit-core ];
+  dependencies = [ django ];
+  pyproject = true;
+  pythonImportsCheck = [ "django_filters" ];
 
   meta = {
     description = "Reusable Django application for allowing users to filter querysets dynamically";

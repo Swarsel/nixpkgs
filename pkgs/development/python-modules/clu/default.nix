@@ -1,37 +1,32 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   absl-py,
+  buildPythonPackage,
+  # tests
+  chex,
   etils,
   flax,
   jax,
   jaxlib,
+  keras,
   ml-collections,
   numpy,
   packaging,
-  typing-extensions,
-  wrapt,
-
-  # tests
-  chex,
-  keras,
   pytestCheckHook,
+  # build-system
+  setuptools,
   tensorflow,
   tensorflow-datasets,
   torch,
+  typing-extensions,
+  wrapt,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "clu";
   version = "0.0.12";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "google";
@@ -48,6 +43,17 @@ buildPythonPackage (finalAttrs: {
         "variance = jnp.clip(variance, a_min=0.0)" \
         "variance = jnp.clip(variance, min=0.0)"
   '';
+
+  nativeCheckInputs = [
+    chex
+    keras
+    pytestCheckHook
+    tensorflow
+    tensorflow-datasets
+    torch
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -67,23 +73,15 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ etils.optional-dependencies.epath;
 
-  pythonImportsCheck = [ "clu" ];
-
-  nativeCheckInputs = [
-    chex
-    keras
-    pytestCheckHook
-    tensorflow
-    tensorflow-datasets
-    torch
-  ];
-
   disabledTests = [
     # AssertionError: [Chex] Assertion assert_trees_all_close failed
     "test_collection_mixed_async"
     # flaky under load
     "test_async_execution"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "clu" ];
 
   meta = {
     description = "Common training loops in JAX";

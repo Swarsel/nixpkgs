@@ -15,13 +15,14 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyvizio";
   version = "0.1.64";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-P31vxmpaaPYxpKZPXoXDmNi4iNycTJdlXLGa7XjRLeY=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,9 +35,7 @@ buildPythonPackage (finalAttrs: {
     zeroconf
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyvizio" ];
 
   meta = {

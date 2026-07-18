@@ -36,52 +36,47 @@ in
       apply =
         pkg:
         pkg.override {
+          basePath = cfg.settings.BASE_PATH;
+
           collectApiEndpoint = optionalString (
             cfg.settings.COLLECT_API_ENDPOINT != null
           ) cfg.settings.COLLECT_API_ENDPOINT;
+
           trackerScriptNames = cfg.settings.TRACKER_SCRIPT_NAME;
-          basePath = cfg.settings.BASE_PATH;
         };
     };
 
     createPostgresqlDatabase = mkOption {
-      type = types.bool;
       default = true;
-      example = false;
+
       description = ''
         Whether to automatically create the database for Umami using PostgreSQL.
         Both the database name and username will be `umami`, and the connection is
         made through unix sockets using peer authentication.
       '';
+
+      example = false;
+      type = types.bool;
     };
 
     settings = mkOption {
+      default = { };
+
       description = ''
         Additional configuration (environment variables) for Umami, see
         <https://umami.is/docs/environment-variables> for supported values.
       '';
 
-      type = types.submodule {
-        freeformType =
-          with types;
-          attrsOf (oneOf [
-            bool
-            int
-            str
-          ]);
+      example = {
+        APP_SECRET_FILE = "/run/secrets/umamiAppSecret";
+        DISABLE_TELEMETRY = true;
+      };
 
+      type = types.submodule {
         options = {
           APP_SECRET_FILE = mkOption {
-            type = types.nullOr (
-              types.str
-              // {
-                # We don't want users to be able to pass a path literal here but
-                # it should look like a path.
-                check = it: isString it && types.path.check it;
-              }
-            );
             default = null;
-            example = "/run/secrets/umamiAppSecret";
+
             description = ''
               A file containing a secure random string. This is used for signing user sessions.
               The contents of the file are read through systemd credentials, therefore the
@@ -89,28 +84,9 @@ in
               If you wish to set this to a string instead (not recommended since it will be
               placed world-readable in the Nix store), you can use the APP_SECRET option.
             '';
-          };
-          DATABASE_URL = mkOption {
-            type = types.nullOr (
-              types.str
-              // {
-                check = it: isString it && ((hasPrefix "postgresql://" it) || (hasPrefix "postgres://" it));
-              }
-            );
-            # For some reason, Prisma requires the username in the connection string
-            # and can't derive it from the current user.
-            default =
-              if cfg.createPostgresqlDatabase then
-                "postgresql://umami@localhost/umami?host=/run/postgresql"
-              else
-                null;
-            defaultText = literalExpression ''if config.services.umami.createPostgresqlDatabase then "postgresql://umami@localhost/umami?host=/run/postgresql" else null'';
-            example = "postgresql://root:root@localhost/umami";
-            description = ''
-              Connection string for the database. Must start with `postgresql://` or `postgres://`.
-            '';
-          };
-          DATABASE_URL_FILE = mkOption {
+
+            example = "/run/secrets/umamiAppSecret";
+
             type = types.nullOr (
               types.str
               // {
@@ -119,81 +95,142 @@ in
                 check = it: isString it && types.path.check it;
               }
             );
+          };
+
+          BASE_PATH = mkOption {
+            default = "";
+
+            description = ''
+              Allows you to host Umami under a subdirectory.
+              You may need to update your reverse proxy settings to correctly handle the BASE_PATH prefix.
+            '';
+
+            example = "/analytics";
+            type = types.str;
+          };
+
+          COLLECT_API_ENDPOINT = mkOption {
             default = null;
-            example = "/run/secrets/umamiDatabaseUrl";
+
+            description = ''
+              Allows you to send metrics to a location different than the default `/api/send`.
+            '';
+
+            example = "/api/alternate-send";
+            type = types.nullOr types.str;
+          };
+
+          DATABASE_URL = mkOption {
+            # For some reason, Prisma requires the username in the connection string
+            # and can't derive it from the current user.
+            default =
+              if cfg.createPostgresqlDatabase then
+                "postgresql://umami@localhost/umami?host=/run/postgresql"
+              else
+                null;
+
+            defaultText = literalExpression ''if config.services.umami.createPostgresqlDatabase then "postgresql://umami@localhost/umami?host=/run/postgresql" else null'';
+
+            description = ''
+              Connection string for the database. Must start with `postgresql://` or `postgres://`.
+            '';
+
+            example = "postgresql://root:root@localhost/umami";
+
+            type = types.nullOr (
+              types.str
+              // {
+                check = it: isString it && ((hasPrefix "postgresql://" it) || (hasPrefix "postgres://" it));
+              }
+            );
+          };
+
+          DATABASE_URL_FILE = mkOption {
+            default = null;
+
             description = ''
               A file containing a connection string for the database. The connection string
               must start with `postgresql://` or `postgres://`.
               The contents of the file are read through systemd credentials, therefore the
               user running umami does not need permissions to read the file.
             '';
+
+            example = "/run/secrets/umamiDatabaseUrl";
+
+            type = types.nullOr (
+              types.str
+              // {
+                # We don't want users to be able to pass a path literal here but
+                # it should look like a path.
+                check = it: isString it && types.path.check it;
+              }
+            );
           };
-          COLLECT_API_ENDPOINT = mkOption {
-            type = types.nullOr types.str;
-            default = null;
-            example = "/api/alternate-send";
-            description = ''
-              Allows you to send metrics to a location different than the default `/api/send`.
-            '';
-          };
-          TRACKER_SCRIPT_NAME = mkOption {
-            type = types.listOf types.str;
-            default = [ ];
-            example = [ "tracker.js" ];
-            description = ''
-              Allows you to assign a custom name to the tracker script different from the default `script.js`.
-            '';
-          };
-          BASE_PATH = mkOption {
-            type = types.str;
-            default = "";
-            example = "/analytics";
-            description = ''
-              Allows you to host Umami under a subdirectory.
-              You may need to update your reverse proxy settings to correctly handle the BASE_PATH prefix.
-            '';
-          };
-          DISABLE_UPDATES = mkOption {
-            type = types.bool;
-            default = true;
-            example = false;
-            description = ''
-              Disables the check for new versions of Umami.
-            '';
-          };
+
           DISABLE_TELEMETRY = mkOption {
-            type = types.bool;
             default = false;
-            example = true;
+
             description = ''
               Umami collects completely anonymous telemetry data in order help improve the application.
               You can choose to disable this if you don't want to participate.
             '';
+
+            example = true;
+            type = types.bool;
           };
+
+          DISABLE_UPDATES = mkOption {
+            default = true;
+
+            description = ''
+              Disables the check for new versions of Umami.
+            '';
+
+            example = false;
+            type = types.bool;
+          };
+
           HOSTNAME = mkOption {
-            type = types.str;
             default = "127.0.0.1";
-            example = "0.0.0.0";
+
             description = ''
               The address to listen on.
             '';
+
+            example = "0.0.0.0";
+            type = types.str;
           };
+
           PORT = mkOption {
-            type = types.port;
             default = 3000;
-            example = 3010;
+
             description = ''
               The port to listen on.
             '';
+
+            example = 3010;
+            type = types.port;
+          };
+
+          TRACKER_SCRIPT_NAME = mkOption {
+            default = [ ];
+
+            description = ''
+              Allows you to assign a custom name to the tracker script different from the default `script.js`.
+            '';
+
+            example = [ "tracker.js" ];
+            type = types.listOf types.str;
           };
         };
-      };
 
-      default = { };
-
-      example = {
-        APP_SECRET_FILE = "/run/secrets/umamiAppSecret";
-        DISABLE_TELEMETRY = true;
+        freeformType =
+          with types;
+          attrsOf (oneOf [
+            bool
+            int
+            str
+          ]);
       };
     };
   };
@@ -212,6 +249,7 @@ in
         assertion =
           cfg.createPostgresqlDatabase
           -> cfg.settings.DATABASE_URL == "postgresql://umami@localhost/umami?host=/run/postgresql";
+
         message = "The option config.services.umami.createPostgresqlDatabase is enabled, but config.services.umami.settings.DATABASE_URL has been modified.";
       }
       {
@@ -223,21 +261,20 @@ in
     services.postgresql = mkIf cfg.createPostgresqlDatabase {
       enable = true;
       ensureDatabases = [ "umami" ];
+
       ensureUsers = [
         {
-          name = "umami";
-          ensureDBOwnership = true;
           ensureClauses.login = true;
+          ensureDBOwnership = true;
+          name = "umami";
         }
       ];
     };
 
     systemd.services.umami = {
-      environment = mapAttrs (_: toString) nonFileSettings;
-
-      description = "Umami: a simple, fast, privacy-focused alternative to Google Analytics";
       after = [ "network.target" ] ++ (optional (cfg.createPostgresqlDatabase) "postgresql.service");
-      wantedBy = [ "multi-user.target" ];
+      description = "Umami: a simple, fast, privacy-focused alternative to Google Analytics";
+      environment = mapAttrs (_: toString) nonFileSettings;
 
       script =
         let
@@ -255,9 +292,8 @@ in
         '';
 
       serviceConfig = {
-        Type = "simple";
-        Restart = "on-failure";
-        RestartSec = 3;
+        # Hardening
+        CapabilityBoundingSet = "";
         DynamicUser = true;
 
         LoadCredential =
@@ -266,13 +302,11 @@ in
             cfg.settings.DATABASE_URL_FILE != null
           ) "databaseUrl:${cfg.settings.DATABASE_URL_FILE}");
 
-        # Hardening
-        CapabilityBoundingSet = "";
         NoNewPrivileges = true;
-        PrivateUsers = true;
-        PrivateTmp = true;
         PrivateDevices = true;
         PrivateMounts = true;
+        PrivateTmp = true;
+        PrivateUsers = true;
         ProtectClock = true;
         ProtectControlGroups = true;
         ProtectHome = true;
@@ -280,14 +314,21 @@ in
         ProtectKernelLogs = true;
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
+        Restart = "on-failure";
+        RestartSec = 3;
+
         RestrictAddressFamilies = (optional cfg.createPostgresqlDatabase "AF_UNIX") ++ [
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
+        Type = "simple";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

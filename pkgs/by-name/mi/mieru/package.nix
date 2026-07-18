@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,12 +16,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-pKcdvP38fZ2KFYNDx6I4TfmnnvWKzFDvz80xMkUojqM=";
-  proxyVendor = true;
 
   ldflags = [
     "-s"
     "-w"
   ];
+
+  proxyVendor = true;
 
   meta = {
     description = "Socks5 / HTTP / HTTPS proxy to bypass censorship";

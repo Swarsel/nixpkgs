@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   kernel,
   kernelModuleMakeFlags,
@@ -21,10 +21,6 @@ stdenv.mkDerivation rec {
     sed -i 's|depmod|#depmod|' Makefile
   '';
 
-  hardeningDisable = [
-    "pic"
-    "format"
-  ];
   nativeBuildInputs = kernel.moduleBuildDependencies;
 
   makeFlags = kernelModuleMakeFlags ++ [
@@ -32,18 +28,25 @@ stdenv.mkDerivation rec {
     "KDIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
     "INSTALL_MOD_PATH=$(out)"
   ];
+
+  hardeningDisable = [
+    "pic"
+    "format"
+  ];
+
   installTargets = [ "install" ];
 
   meta = {
     description = "PIDFF driver with useful patches for initialization of FFB devices";
     homepage = "https://github.com/JacKeTUs/universal-pidff";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       computerdane
       racci
     ];
-    platforms = lib.platforms.linux;
 
+    platforms = lib.platforms.linux;
     # Broken due to missing linux/minmax.h
     broken = kernel.kernelOlder "5.10";
   };

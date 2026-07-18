@@ -1,15 +1,13 @@
 {
   lib,
   stdenv,
-  fetchpatch,
+  fetchFromGitHub,
+  bcrypt,
   buildPythonPackage,
   callPackage,
-  setuptools,
-  bcrypt,
   certifi,
   cffi,
-  cryptography-vectors ? (callPackage ./vectors.nix { }),
-  fetchFromGitHub,
+  fetchpatch,
   isPyPy,
   libiconv,
   openssl,
@@ -18,12 +16,13 @@
   pytest-xdist,
   pytestCheckHook,
   rustPlatform,
+  setuptools,
+  cryptography-vectors ? (callPackage ./vectors.nix { }),
 }:
 
 buildPythonPackage rec {
   pname = "cryptography";
   version = "49.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyca";
@@ -32,17 +31,12 @@ buildPythonPackage rec {
     hash = "sha256-yHUIGauFZYnjcoROvocT1UqQ0B8ZuVTaJ0ZAfri6T1E=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-yMCBu/RGRcEQST8tEWCNgVvlQsp2KamOqt60qvOYdt8=";
-  };
-
   patches = [
     (fetchpatch {
+      hash = "sha256-06Z+sk2JTJ50CCnPf2vXyPL5BZeI98oc43LpccenzNg=";
       # Add test marks where malloc failure is expected on systems with overcommit enabled
       name = "malloc-overcommit-mark.patch";
       url = "https://github.com/pyca/cryptography/commit/2efeba9cc67809b67e659bea8eaea680df2135e8.patch";
-      hash = "sha256-06Z+sk2JTJ50CCnPf2vXyPL5BZeI98oc43LpccenzNg=";
     })
   ];
 
@@ -51,24 +45,12 @@ buildPythonPackage rec {
       --replace-fail "--benchmark-disable" ""
   '';
 
-  build-system = [
-    rustPlatform.cargoSetupHook
-    rustPlatform.maturinBuildHook
-    pkg-config
-    setuptools
-  ]
-  ++ lib.optionals (!isPyPy) [ cffi ];
-
   buildInputs = [
     openssl
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     libiconv
   ];
-
-  dependencies = lib.optionals (!isPyPy) [ cffi ];
-
-  optional-dependencies.ssh = [ bcrypt ];
 
   nativeCheckInputs = [
     certifi
@@ -79,12 +61,29 @@ buildPythonPackage rec {
   ]
   ++ optional-dependencies.ssh;
 
-  pytestFlags = [ "--disable-pytest-warnings" ];
+  build-system = [
+    rustPlatform.cargoSetupHook
+    rustPlatform.maturinBuildHook
+    pkg-config
+    setuptools
+  ]
+  ++ lib.optionals (!isPyPy) [ cffi ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-yMCBu/RGRcEQST8tEWCNgVvlQsp2KamOqt60qvOYdt8=";
+  };
+
+  dependencies = lib.optionals (!isPyPy) [ cffi ];
 
   disabledTestPaths = [
     # save compute time by not running benchmarks
     "tests/bench"
   ];
+
+  optional-dependencies.ssh = [ bcrypt ];
+  pyproject = true;
+  pytestFlags = [ "--disable-pytest-warnings" ];
 
   passthru = {
     vectors = cryptography-vectors;
@@ -92,18 +91,22 @@ buildPythonPackage rec {
 
   meta = {
     description = "Package which provides cryptographic recipes and primitives";
+
     longDescription = ''
       Cryptography includes both high level recipes and low level interfaces to
       common cryptographic algorithms such as symmetric ciphers, message
       digests, and key derivation functions.
     '';
+
     homepage = "https://github.com/pyca/cryptography";
     changelog = "https://cryptography.io/en/latest/changelog/#v" + lib.replaceString "." "-" version;
+
     license = with lib.licenses; [
       asl20
       bsd3
       psfl
     ];
+
     maintainers = with lib.maintainers; [ mdaniels5757 ];
   };
 }

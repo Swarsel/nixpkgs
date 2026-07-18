@@ -6,11 +6,9 @@
 }:
 
 bundlerEnv {
-  pname = "license_finder";
-
   inherit ruby;
+  pname = "license_finder";
   gemdir = ./.;
-
   passthru.updateScript = bundlerUpdateScript "license_finder";
 
   meta = {

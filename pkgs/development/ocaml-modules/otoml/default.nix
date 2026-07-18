@@ -20,7 +20,6 @@ buildDunePackage (finalAttrs: {
 
   # Compatibility with menhir ≥ 20260122
   patches = [ ./menhir.patch ];
-
   nativeBuildInputs = [ menhir ];
 
   propagatedBuildInputs = [
@@ -30,9 +29,9 @@ buildDunePackage (finalAttrs: {
 
   meta = {
     description = "TOML parsing and manipulation library for OCaml";
+    homepage = "https://github.com/dmbaturin/otoml/";
     changelog = "https://github.com/dmbaturin/otoml/raw/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.vbgl ];
-    homepage = "https://github.com/dmbaturin/otoml/";
   };
 })

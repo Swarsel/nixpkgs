@@ -2,32 +2,31 @@
   lib,
   stdenv,
   fetchurl,
-  autoPatchelfHook,
-  squashfsTools,
-  makeBinaryWrapper,
   alsa-lib,
-  atk,
   at-spi2-atk,
+  atk,
+  autoPatchelfHook,
   cups,
   gtk3,
-  libdrm,
-  libsecret,
-  libxkbcommon,
-  libgbm,
   libGL,
-  pango,
-  sqlite,
-  systemd,
-  wayland,
-  libxext,
+  libdrm,
+  libgbm,
+  libsecret,
   libx11,
   libxcb,
+  libxext,
+  libxkbcommon,
+  makeBinaryWrapper,
+  pango,
+  sqlite,
+  squashfsTools,
+  systemd,
+  wayland,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "tradingview";
   version = "3.2.0";
-  revision = "71";
 
   src = fetchurl {
     url = "https://api.snapcraft.io/api/v1/snaps/download/nJdITJ6ZJxdvfu8Ch7n5kH5P99ClzBYV_${finalAttrs.revision}.snap";
@@ -61,14 +60,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxext
   ];
 
-  unpackPhase = ''
-    runHook preUnpack
-
-    unsquashfs $src
-
-    runHook postUnpack
-  '';
-
   installPhase = ''
     runHook preInstall
 
@@ -90,14 +81,24 @@ stdenv.mkDerivation (finalAttrs: {
     patchelf --add-needed libGL.so.1 $out/share/tradingview/tradingview
   '';
 
+  revision = "71";
+
+  unpackPhase = ''
+    runHook preUnpack
+
+    unsquashfs $src
+
+    runHook postUnpack
+  '';
+
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Charting platform for traders and investors";
     homepage = "https://www.tradingview.com/desktop/";
     changelog = "https://www.tradingview.com/support/solutions/43000673888/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "tradingview";

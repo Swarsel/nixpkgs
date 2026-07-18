@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  dart-sass,
   fetchNpmDeps,
+  ffmpeg,
+  makeBinaryWrapper,
+  nix-update-script,
+  nixosTests,
   nodejs,
   npmHooks,
-  dart-sass,
-  makeBinaryWrapper,
   python313,
-  ffmpeg,
   unar,
-  nixosTests,
-  nix-update-script,
 }:
 let
   python = python313.withPackages (ps: [
@@ -32,14 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "bazarr";
     tag = "v${finalAttrs.version}";
     hash = "sha256-r3H0JEcGYzQOTHVR/zONmtOIF+LnJd+qn2pcAj8vdOA=";
-  };
-
-  npmRoot = "frontend";
-  npmDeps = fetchNpmDeps {
-    name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
-    inherit (finalAttrs) src;
-    sourceRoot = "${finalAttrs.src.name}/frontend";
-    hash = "sha256-cb++eqVtKZer9B1rwJ9WR4mZImnASeFU2MojgXAPWf4=";
   };
 
   nativeBuildInputs = [
@@ -72,10 +64,10 @@ stdenv.mkDerivation (finalAttrs: {
 
     printf '%s' "${
       lib.generators.toKeyValue { } {
+        packageauthor = "nixpkgs";
+        packageversion = finalAttrs.version;
         updatemethod = "External";
         updatemethodmessage = "Bazarr is managed by Nix. Update it through your system configuration.";
-        packageversion = finalAttrs.version;
-        packageauthor = "nixpkgs";
       }
     }" > $out/share/bazarr/package_info
 
@@ -91,6 +83,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-cb++eqVtKZer9B1rwJ9WR4mZImnASeFU2MojgXAPWf4=";
+    name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
+    sourceRoot = "${finalAttrs.src.name}/frontend";
+  };
+
+  npmRoot = "frontend";
+
   passthru = {
     tests.smoke-test = nixosTests.bazarr;
     updateScript = nix-update-script { };
@@ -100,13 +101,15 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Subtitle manager for Sonarr and Radarr";
     homepage = "https://www.bazarr.media/";
     changelog = "https://github.com/morpheus65535/bazarr/releases/tag/v${finalAttrs.version}";
-    sourceProvenance = with lib.sourceTypes; [ fromSource ];
     license = lib.licenses.gpl3Only;
+    sourceProvenance = with lib.sourceTypes; [ fromSource ];
+
     maintainers = with lib.maintainers; [
       connor-grady
       diogotcorreia
     ];
-    mainProgram = "bazarr";
+
     platforms = lib.platforms.unix;
+    mainProgram = "bazarr";
   };
 })

@@ -41,94 +41,99 @@ in
   options = {
     services.llama-cpp = {
       enable = lib.mkEnableOption "llama.cpp HTTP server";
-
       package = lib.mkPackageOption pkgs "llama-cpp" { };
 
-      settings = lib.mkOption {
-        type = lib.types.submodule {
-          freeformType = lib.types.attrs;
-          options = {
-            host = lib.mkOption {
-              type = lib.types.str;
-              default = "127.0.0.1";
-              example = "0.0.0.0";
-              description = ''
-                IP address on which the server should listen on.
-              '';
-            };
+      openFirewall = lib.mkOption {
+        default = false;
 
-            port = lib.mkOption {
-              type = lib.types.port;
-              default = 8080;
-              example = 1337;
-              description = ''
-                Port on which the server should listen on.
-              '';
-            };
-          };
-        };
+        description = ''
+          Open ports in the firewall for the server.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      settings = lib.mkOption {
         default = { };
-        example = {
-          host = "0.0.0.0";
-          port = 1337;
-          model = "/mnt/llms/Foo3.6-27B-UD-Q4_K_XL.gguf";
-          ctx-size = 252144;
-          temp = 0.6;
-          top-k = 20;
-          top-p = 0.95;
-          batch-size = 512;
-          ubatch-size = 256;
-          spec-type = "draft-mtp";
-          spec-draft-n-max = 2;
-          flash-attn = "on";
-        };
+
         description = ''
           Command-line arguments for `llama-server`.
 
           See <https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md>
           for the full list of options.
         '';
-      };
 
-      openFirewall = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Open ports in the firewall for the server.
-        '';
+        example = {
+          batch-size = 512;
+          ctx-size = 252144;
+          flash-attn = "on";
+          host = "0.0.0.0";
+          model = "/mnt/llms/Foo3.6-27B-UD-Q4_K_XL.gguf";
+          port = 1337;
+          spec-draft-n-max = 2;
+          spec-type = "draft-mtp";
+          temp = 0.6;
+          top-k = 20;
+          top-p = 0.95;
+          ubatch-size = 256;
+        };
+
+        type = lib.types.submodule {
+          options = {
+            host = lib.mkOption {
+              default = "127.0.0.1";
+
+              description = ''
+                IP address on which the server should listen on.
+              '';
+
+              example = "0.0.0.0";
+              type = lib.types.str;
+            };
+
+            port = lib.mkOption {
+              default = 8080;
+
+              description = ''
+                Port on which the server should listen on.
+              '';
+
+              example = 1337;
+              type = lib.types.port;
+            };
+          };
+
+          freeformType = lib.types.attrs;
+        };
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
+    networking.firewall.allowedTCPPorts = lib.optional cfg.openFirewall cfg.settings.port;
+
     systemd.services.llama-cpp = {
-      description = "llama.cpp HTTP server";
-      wants = [ "network.target" ];
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "llama.cpp HTTP server";
 
       serviceConfig = {
+        AmbientCapabilities = [ "" ];
+        CacheDirectory = "llama-cpp";
+        CapabilityBoundingSet = [ "" ];
+        DynamicUser = true;
+        Environment = [ "LLAMA_CACHE=/var/cache/llama-cpp" ];
+        ExecReload = "${lib.getExe' pkgs.coreutils "kill"} -HUP $MAINPID";
+
         ExecStart = toString [
           (lib.getExe' cfg.package "llama-server")
           (lib.cli.toCommandLine (optionName: {
-            option = if builtins.stringLength optionName > 1 then "--${optionName}" else "-${optionName}";
-            sep = " ";
             explicitBool = false;
             formatArg = lib.generators.mkValueStringDefault { };
+            option = if builtins.stringLength optionName > 1 then "--${optionName}" else "-${optionName}";
+            sep = " ";
           }) cfg.settings)
         ];
-        ExecReload = "${lib.getExe' pkgs.coreutils "kill"} -HUP $MAINPID";
-        Restart = "on-failure";
-        RestartSec = 300;
 
-        DynamicUser = true;
-        StateDirectory = "llama-cpp";
-        CacheDirectory = "llama-cpp";
-        WorkingDirectory = "/var/lib/llama-cpp";
-        Environment = [ "LLAMA_CACHE=/var/cache/llama-cpp" ];
-
-        AmbientCapabilities = [ "" ];
-        CapabilityBoundingSet = [ "" ];
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
         NoNewPrivileges = true;
@@ -147,24 +152,33 @@ in
         ProtectProc = "invisible";
         ProtectSystem = "strict";
         RemoveIPC = true;
+        Restart = "on-failure";
+        RestartSec = 300;
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
           "AF_UNIX"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
+        StateDirectory = "llama-cpp";
         SystemCallArchitectures = "native";
         SystemCallErrorNumber = "EPERM";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
         ];
-      };
-    };
 
-    networking.firewall.allowedTCPPorts = lib.optional cfg.openFirewall cfg.settings.port;
+        WorkingDirectory = "/var/lib/llama-cpp";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network.target" ];
+    };
   };
 
   meta.maintainers = with lib.maintainers; [

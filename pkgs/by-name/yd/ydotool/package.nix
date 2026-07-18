@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
   cmake,
+  fetchpatch2,
+  nixosTests,
   scdoc,
   util-linux,
   xinput,
-  nixosTests,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,9 +23,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch2 {
-      url = "https://github.com/ReimuNotMoe/ydotool/commit/58fde33d9a8b393fd59348f71e80c56177b62706.patch?full_index=1";
       hash = "sha256-Ga9DPCzpJwtYVHWwKKl3kzn2BPEZBZ7uzbEY/eFXGs4=";
       includes = [ "CMakeLists.txt" ];
+      url = "https://github.com/ReimuNotMoe/ydotool/commit/58fde33d9a8b393fd59348f71e80c56177b62706.patch?full_index=1";
     })
   ];
 
@@ -37,6 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     scdoc
@@ -48,10 +49,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Generic Linux command-line automation tool";
     homepage = "https://github.com/ReimuNotMoe/ydotool";
     license = lib.licenses.agpl3Plus;
-    mainProgram = "ydotool";
+
     maintainers = with lib.maintainers; [
       kraem
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "ydotool";
   };
 })

@@ -1,14 +1,13 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
-  lib,
   six,
 }:
 
 buildPythonPackage rec {
   pname = "dictionaries";
   version = "0.0.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
   };
 
   buildInputs = [ six ];
+  format = "setuptools";
 
   meta = {
     description = "Dict implementations with attribute access";

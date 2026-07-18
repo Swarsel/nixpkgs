@@ -1,24 +1,24 @@
 {
   lib,
   stdenv,
-  fetchpatch,
   fetchurl,
-  unzip,
-  ldc,
-  libGL,
-  libGLU,
   SDL,
   SDL_mixer,
   bulletml,
+  fetchpatch,
+  ldc,
+  libGL,
+  libGLU,
+  unzip,
 }:
 
 let
   debianPatch =
     patchname: hash:
     fetchpatch {
+      inherit hash;
       name = "${patchname}.patch";
       url = "https://sources.debian.org/data/main/t/titanion/0.3.dfsg1-8/debian/patches/${patchname}";
-      inherit hash;
     };
 
 in
@@ -30,6 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://abagames.sakura.ne.jp/windows/ttn${
       lib.replaceStrings [ "." ] [ "_" ] finalAttrs.version
     }.zip";
+
     hash = "sha256-fR0cufi6dU898wP8KGl/vxbfQJzMmMxlYZ3QNGLajfM=";
   };
 
@@ -84,11 +85,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://www.asahi-net.or.jp/~cs8k-cyu/windows/ttn_e.html";
     description = "Strike down super high-velocity swooping insects";
-    mainProgram = "titanion";
+    homepage = "http://www.asahi-net.or.jp/~cs8k-cyu/windows/ttn_e.html";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.all;
+    mainProgram = "titanion";
   };
 })

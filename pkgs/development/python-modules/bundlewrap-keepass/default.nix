@@ -1,16 +1,15 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  setuptools,
   bundlewrap,
+  fetchPypi,
   pykeepass,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "bundlewrap-keepass";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -26,12 +25,12 @@ buildPythonPackage rec {
 
   # upstream has no checks
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "bwkeepass" ];
 
   meta = {
-    homepage = "https://pypi.org/project/bundlewrap-keepass";
     description = "Use secrets from keepass in your BundleWrap repo";
+    homepage = "https://pypi.org/project/bundlewrap-keepass";
     license = lib.licenses.gpl3;
     maintainers = [ ];
   };

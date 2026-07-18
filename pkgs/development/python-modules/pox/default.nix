@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "pox";
   version = "0.3.7";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,14 +15,14 @@ buildPythonPackage rec {
 
   # Test sare failing the sandbox
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pox" ];
 
   meta = {
     description = "Utilities for filesystem exploration and automated builds";
-    mainProgram = "pox";
     homepage = "https://pox.readthedocs.io/";
     license = lib.licenses.bsd3;
     maintainers = [ ];
+    mainProgram = "pox";
   };
 }

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   cairo,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -18,7 +18,6 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ cairo ];
 
   installPhase = ''

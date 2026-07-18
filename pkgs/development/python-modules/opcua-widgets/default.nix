@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pyqt5,
   asyncua,
+  buildPythonPackage,
+  pyqt5,
 }:
 
 buildPythonPackage rec {
   pname = "opcua-widgets";
   version = "0.6.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "FreeOpcUa";
@@ -23,10 +22,10 @@ buildPythonPackage rec {
     asyncua
   ];
 
-  pythonImportsCheck = [ "uawidgets" ];
-
   #This test is broken, when updating this package check if the test was fixed.
   doCheck = false;
+  format = "setuptools";
+  pythonImportsCheck = [ "uawidgets" ];
 
   meta = {
     description = "Common widgets for opcua-modeler og opcua-client-gui";

@@ -1,14 +1,13 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cachetools,
-  fetchFromGitHub,
-  lib,
 }:
 
 buildPythonPackage rec {
   pname = "coapthon3";
   version = "1.0.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "Tanganelli";
@@ -18,9 +17,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ cachetools ];
-
   # tests take in the order of 10 minutes to execute and sometimes hang forever on tear-down
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "coapthon" ];
 
   meta = {

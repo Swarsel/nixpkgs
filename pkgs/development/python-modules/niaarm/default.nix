@@ -1,29 +1,25 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
+  buildPythonPackage,
   # dependencies
   niapy,
   nltk,
   numpy,
   pandas,
   plotly,
-  scikit-learn,
-
+  # build-system
+  poetry-core,
   # tests
   pytestCheckHook,
+  scikit-learn,
 }:
 
 buildPythonPackage rec {
   pname = "niaarm";
   # nixpkgs-update: no auto update
   version = "0.13.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "firefly-cpp";
@@ -32,12 +28,12 @@ buildPythonPackage rec {
     hash = "sha256-524rJ5b9e0U1rqu1iCGMA3Tgnn9bO4biCC1FMoGNqms=";
   };
 
-  pythonRelaxDeps = [
-    "numpy"
-    "plotly"
-    "scikit-learn"
-  ];
+  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
+    # Prevents 'Fatal Python error: Aborted' on darwin during checkPhase
+    MPLBACKEND = "Agg";
+  };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -49,26 +45,26 @@ buildPythonPackage rec {
     scikit-learn
   ];
 
-  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
-    # Prevents 'Fatal Python error: Aborted' on darwin during checkPhase
-    MPLBACKEND = "Agg";
-  };
-
   disabledTests = [
     # Test requires extra nltk data dependency
     "test_text_mining"
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "niaarm" ];
+
+  pythonRelaxDeps = [
+    "numpy"
+    "plotly"
+    "scikit-learn"
+  ];
 
   meta = {
     description = "Minimalistic framework for Numerical Association Rule Mining";
-    mainProgram = "niaarm";
     homepage = "https://github.com/firefly-cpp/NiaARM";
     changelog = "https://github.com/firefly-cpp/NiaARM/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ firefly-cpp ];
+    mainProgram = "niaarm";
   };
 }

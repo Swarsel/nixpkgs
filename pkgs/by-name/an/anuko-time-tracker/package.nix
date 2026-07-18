@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   nixosTests,
   php,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -21,13 +21,13 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-ZRF9FFbntYY01JflCXkYZyXfyu/x7LNdyOB94UkVFR0=";
   };
 
-  # There's nothing to build.
-  dontBuild = true;
-
   installPhase = ''
     mkdir $out/
     cp -R ./* $out
   '';
+
+  # There's nothing to build.
+  dontBuild = true;
 
   passthru.tests = {
     inherit (nixosTests) anuko-time-tracker;
@@ -35,9 +35,9 @@ stdenvNoCC.mkDerivation {
 
   meta = {
     description = "Simple, easy to use, open source time tracking system";
-    license = lib.licenses.sspl;
     homepage = "https://github.com/anuko/timetracker/";
-    platforms = php.meta.platforms;
+    license = lib.licenses.sspl;
     maintainers = [ ];
+    platforms = php.meta.platforms;
   };
 }

@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
   gnupg,
   installShellFiles,
+  python3Packages,
 }:
 
 let
@@ -18,13 +18,11 @@ let
   };
 in
 python3Packages.buildPythonApplication {
-  pyproject = true;
   inherit pname version src;
 
-  nativeBuildInputs = [ installShellFiles ];
-
-  build-system = with python3Packages; [
-    setuptools
+  outputs = [
+    "out"
+    "man"
   ];
 
   postPatch = ''
@@ -35,6 +33,9 @@ python3Packages.buildPythonApplication {
       --replace-fail /usr/bin/gpgv "${lib.getBin gnupg}/bin/gpgv"
   '';
 
+  nativeBuildInputs = [ installShellFiles ];
+  doCheck = false; # API incompatibilities, maybe?
+
   postInstall = ''
     installManPage apt-offline.8
   '';
@@ -43,21 +44,19 @@ python3Packages.buildPythonApplication {
     rm "$out/bin/apt-offline-gui" "$out/bin/apt-offline-gui-pkexec"
   '';
 
-  doCheck = false; # API incompatibilities, maybe?
-
-  pythonImportsCheck = [ "apt_offline_core" ];
-
-  outputs = [
-    "out"
-    "man"
+  build-system = with python3Packages; [
+    setuptools
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "apt_offline_core" ];
+
   meta = {
-    homepage = "https://github.com/rickysarraf/apt-offline";
     description = "Offline APT package manager";
+    homepage = "https://github.com/rickysarraf/apt-offline";
     license = with lib.licenses; [ gpl3Plus ];
-    mainProgram = "apt-offline";
     maintainers = [ ];
+    mainProgram = "apt-offline";
   };
 }
 # TODO: verify GUI and pkexec

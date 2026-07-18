@@ -1,30 +1,19 @@
 {
   lib,
-  makeDesktopItem,
-  copyDesktopItems,
-  wrapGAppsHook3,
-  glib,
   adwaita-icon-theme,
-  mkCoqDerivation,
+  copyDesktopItems,
   coq,
+  glib,
+  makeDesktopItem,
+  mkCoqDerivation,
+  wrapGAppsHook3,
   version ? null,
 }:
 
 mkCoqDerivation rec {
-  pname = "coqide";
   inherit version;
-
   inherit (coq) src;
-  release."${coq.version}" = { };
-
-  defaultVersion = if lib.versions.range "8.14" "8.20" coq.version then coq.version else null;
-
-  preConfigure = ''
-    patchShebangs dev/tools/
-  '';
-  prefixKey = "-prefix ";
-
-  useDune = true;
+  pname = "coqide";
 
   buildInputs = [
     copyDesktopItems
@@ -34,24 +23,26 @@ mkCoqDerivation rec {
     adwaita-icon-theme
   ];
 
+  preConfigure = ''
+    patchShebangs dev/tools/
+  '';
+
   buildPhase = ''
     runHook preBuild
     dune build -p ${pname} -j $NIX_BUILD_CORES
     runHook postBuild
   '';
+
   installPhase = ''
     runHook preInstall
     dune install --prefix $out ${pname}
     runHook postInstall
   '';
 
+  defaultVersion = if lib.versions.range "8.14" "8.20" coq.version then coq.version else null;
+
   desktopItems = [
     (makeDesktopItem {
-      name = "coqide";
-      exec = "coqide";
-      icon = "coq";
-      desktopName = "CoqIDE";
-      comment = "Graphical interface for the Coq proof assistant";
       categories = [
         "Development"
         "Science"
@@ -59,14 +50,24 @@ mkCoqDerivation rec {
         "IDE"
         "GTK"
       ];
+
+      comment = "Graphical interface for the Coq proof assistant";
+      desktopName = "CoqIDE";
+      exec = "coqide";
+      icon = "coq";
+      name = "coqide";
     })
   ];
 
+  prefixKey = "-prefix ";
+  release."${coq.version}" = { };
+  useDune = true;
+
   meta = {
-    homepage = "https://coq.inria.fr";
     description = "CoqIDE user interface for the Coq proof assistant";
-    mainProgram = "coqide";
+    homepage = "https://coq.inria.fr";
     license = lib.licenses.lgpl21Plus;
     maintainers = [ lib.maintainers.Zimmi48 ];
+    mainProgram = "coqide";
   };
 }

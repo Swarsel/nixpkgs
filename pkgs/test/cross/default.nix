@@ -1,7 +1,7 @@
 {
-  pkgs,
-  config,
   lib,
+  config,
+  pkgs,
 }:
 
 let
@@ -20,11 +20,11 @@ let
 
   compareTest =
     {
-      emulator,
-      pkgFun,
-      hostPkgs,
       crossPkgs,
+      emulator,
       exec,
+      hostPkgs,
+      pkgFun,
       args ? [ ],
     }:
     let
@@ -80,9 +80,9 @@ let
         name: system:
         lib.recurseIntoAttrs (test rec {
           crossPkgs = import pkgs.path {
-            localSystem = { inherit (pkgs.stdenv.hostPlatform) config; };
-            crossSystem = crossSystemFun system;
             inherit config;
+            crossSystem = crossSystemFun system;
+            localSystem = { inherit (pkgs.stdenv.hostPlatform) config; };
           };
 
           emulator = crossPkgs.stdenv.hostPlatform.emulator pkgs;
@@ -107,50 +107,53 @@ let
 
     file =
       {
-        platformFun,
         crossPkgs,
         emulator,
+        platformFun,
       }:
       compareTest {
         inherit emulator crossPkgs;
-        hostPkgs = pkgs;
-        exec = "/bin/file";
+
         args = [
           "${pkgs.file}/share/man/man1/file.1.gz"
           "${pkgs.dejavu_fonts}/share/fonts/truetype/DejaVuMathTeXGyre.ttf"
         ];
+
+        exec = "/bin/file";
+        hostPkgs = pkgs;
         pkgFun = pkgs: platformFun pkgs.file;
       };
 
     hello =
       {
-        platformFun,
         crossPkgs,
         emulator,
+        platformFun,
       }:
       compareTest {
         inherit emulator crossPkgs;
-        hostPkgs = pkgs;
         exec = "/bin/hello";
+        hostPkgs = pkgs;
         pkgFun = pkgs: pkgs.hello;
       };
 
     pkg-config =
       {
-        platformFun,
         crossPkgs,
         emulator,
+        platformFun,
       }:
       crossPkgs.runCommand "test-pkg-config-${crossPkgs.stdenv.hostPlatform.config}"
         {
-          depsBuildBuild = [ crossPkgs.pkgsBuildBuild.pkg-config ];
           nativeBuildInputs = [
             crossPkgs.pkgsBuildHost.pkg-config
             crossPkgs.buildPackages.zlib
           ];
-          depsBuildTarget = [ crossPkgs.pkgsBuildTarget.pkg-config ];
+
           buildInputs = [ crossPkgs.zlib ];
           NIX_DEBUG = 7;
+          depsBuildBuild = [ crossPkgs.pkgsBuildBuild.pkg-config ];
+          depsBuildTarget = [ crossPkgs.pkgsBuildTarget.pkg-config ];
         }
         ''
           mkdir $out
@@ -219,12 +222,13 @@ let
 
 in
 {
+  inherit mbuffer sanity;
+
   gcc = lib.recurseIntoAttrs (
     lib.mapAttrs (_: mapMultiPlatformTest (system: system // { useLLVM = false; })) tests
   );
+
   llvm = lib.recurseIntoAttrs (
     lib.mapAttrs (_: mapMultiPlatformTest (system: system // { useLLVM = true; })) tests
   );
-
-  inherit mbuffer sanity;
 }

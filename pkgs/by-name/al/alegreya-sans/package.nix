@@ -1,18 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "alegreya-sans";
   version = "2.008";
-
-  outputs = [
-    "out"
-    "webfont"
-  ];
 
   src = fetchFromGitHub {
     owner = "huertatipografica";
@@ -21,10 +16,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     sha256 = "0xz5lq9fh0pj02ifazhddzh792qkxkz1z6ylj26d93wshc90jl5g";
   };
 
+  outputs = [
+    "out"
+    "webfont"
+  ];
+
   nativeBuildInputs = [ installFonts ];
 
   meta = {
     description = "Humanist sans serif family with a calligraphic feeling";
+
     longDescription = ''
       Alegreya Sans is a humanist sans serif family with a calligraphic feeling that conveys a dynamic and varied rhythm. This gives a pleasant feeling to readers of long texts.
 
@@ -34,9 +35,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
       The Alegreya type system is a "super family", originally intended for literature, and includes sans and serif sister families.
     '';
+
     homepage = "https://www.huertatipografica.com/en/fonts/alegreya-sans-ht";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ Thra11 ];
+    platforms = lib.platforms.all;
   };
 })

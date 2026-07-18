@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "mergedb";
   version = "0.1.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -30,14 +29,14 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "mergedb" ];
 
   meta = {
     description = "Tool/library for deep merging YAML files";
-    mainProgram = "mergedb";
     homepage = "https://github.com/graysonhead/mergedb";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ graysonhead ];
+    mainProgram = "mergedb";
   };
 }

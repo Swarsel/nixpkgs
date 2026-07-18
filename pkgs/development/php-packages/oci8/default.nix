@@ -1,6 +1,6 @@
 {
-  buildPecl,
   lib,
+  buildPecl,
   oracle-instantclient,
   php,
 }:
@@ -24,21 +24,20 @@ let
       };
 in
 buildPecl {
-  pname = "oci8";
-
   inherit (versionData) version sha256;
-
-  buildInputs = [ oracle-instantclient ];
-  configureFlags = [ "--with-oci8=shared,instantclient,${oracle-instantclient.lib}/lib" ];
+  pname = "oci8";
 
   postPatch = ''
     sed -i -e 's|OCISDKMANINC=`.*$|OCISDKMANINC="${oracle-instantclient.dev}/include"|' config.m4
   '';
 
+  buildInputs = [ oracle-instantclient ];
+  configureFlags = [ "--with-oci8=shared,instantclient,${oracle-instantclient.lib}/lib" ];
+
   meta = {
     description = "Extension for Oracle Database";
-    license = lib.licenses.php301;
     homepage = "https://pecl.php.net/package/oci8";
+    license = lib.licenses.php301;
     teams = [ lib.teams.php ];
   };
 }

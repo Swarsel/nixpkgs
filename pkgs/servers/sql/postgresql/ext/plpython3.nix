@@ -11,16 +11,16 @@ let
     let
       python = python3.withPackages f;
       finalPackage = buildEnv {
-        pname = "${postgresql.pname}-plpython3";
         inherit (postgresql) version;
+        pname = "${postgresql.pname}-plpython3";
         paths = [ postgresql.plpython3 ];
+
         passthru = {
           inherit withPackages;
-          wrapperArgs = [
-            ''--set PYTHONPATH "${python}/${python.sitePackages}"''
-          ];
+
           tests.extension = postgresqlTestExtension {
             finalPackage = finalPackage.withPackages (ps: [ ps.base58 ]);
+
             sql = ''
               CREATE EXTENSION plpython3u;
               DO LANGUAGE plpython3u $$
@@ -28,7 +28,12 @@ let
               $$;
             '';
           };
+
+          wrapperArgs = [
+            ''--set PYTHONPATH "${python}/${python.sitePackages}"''
+          ];
         };
+
         meta = {
           inherit (postgresql.meta)
             homepage
@@ -37,6 +42,7 @@ let
             teams
             platforms
             ;
+
           description = "PL/Python - Python Procedural Language";
         };
       };

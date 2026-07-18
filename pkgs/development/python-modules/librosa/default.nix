@@ -1,54 +1,49 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   audioread,
+  buildPythonPackage,
   decorator,
+  # tests
+  ffmpeg-headless,
   joblib,
   lazy-loader,
   matplotlib,
   msgpack,
   numba,
   numpy,
+  packaging,
   pooch,
+  pytest-cov-stub,
+  pytest-mpl,
+  pytestCheckHook,
+  pythonAtLeast,
+  resampy,
+  samplerate,
   scikit-learn,
   scipy,
+  # build-system
+  setuptools,
   soundfile,
   soxr,
   standard-aifc,
   standard-sunau,
   typing-extensions,
-
-  # tests
-  ffmpeg-headless,
-  packaging,
-  pytest-cov-stub,
-  pytest-mpl,
-  pytestCheckHook,
-  resampy,
-  samplerate,
   writableTmpDirAsHomeHook,
-  pythonAtLeast,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "librosa";
   version = "0.11.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "librosa";
     repo = "librosa";
     tag = finalAttrs.version;
-    fetchSubmodules = true; # for test data
     hash = "sha256-T58J/Gi3tHzelr4enbYJi1KmO46QxE5Zlhkc0+EgvRg=";
+    fetchSubmodules = true; # for test data
   };
 
   patches = [
@@ -56,6 +51,19 @@ buildPythonPackage (finalAttrs: {
     ./fix-with-numba-0.62.0.patch
   ];
 
+  nativeCheckInputs = [
+    ffmpeg-headless
+    packaging
+    pytest-cov-stub
+    pytest-mpl
+    pytestCheckHook
+    resampy
+    samplerate
+    writableTmpDirAsHomeHook
+  ]
+  ++ finalAttrs.passthru.optional-dependencies.matplotlib;
+
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -76,22 +84,10 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  optional-dependencies.matplotlib = [ matplotlib ];
-
-  # check that import works, this allows to capture errors like https://github.com/librosa/librosa/issues/1160
-  pythonImportsCheck = [ "librosa" ];
-
-  nativeCheckInputs = [
-    ffmpeg-headless
-    packaging
-    pytest-cov-stub
-    pytest-mpl
-    pytestCheckHook
-    resampy
-    samplerate
-    writableTmpDirAsHomeHook
-  ]
-  ++ finalAttrs.passthru.optional-dependencies.matplotlib;
+  disabledTestPaths = [
+    # matplotlib 3.11 exceeds tolerances for image comparison
+    "tests/test_display.py"
+  ];
 
   disabledTests = [
     # requires network access
@@ -143,10 +139,10 @@ buildPythonPackage (finalAttrs: {
     "test_resample_stereo"
   ];
 
-  disabledTestPaths = [
-    # matplotlib 3.11 exceeds tolerances for image comparison
-    "tests/test_display.py"
-  ];
+  optional-dependencies.matplotlib = [ matplotlib ];
+  pyproject = true;
+  # check that import works, this allows to capture errors like https://github.com/librosa/librosa/issues/1160
+  pythonImportsCheck = [ "librosa" ];
 
   meta = {
     description = "Python library for audio and music analysis";

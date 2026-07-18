@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "ndspy";
   version = "4.2.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "RoadrunnerWMC";
@@ -19,11 +18,12 @@ buildPythonPackage rec {
 
   nativeCheckInputs = [ pytestCheckHook ];
 
-  pythonImportsCheck = [ "ndspy" ];
-
   preCheck = ''
     cd tests
   '';
+
+  format = "setuptools";
+  pythonImportsCheck = [ "ndspy" ];
 
   meta = {
     description = "Python library for many Nintendo DS file formats";

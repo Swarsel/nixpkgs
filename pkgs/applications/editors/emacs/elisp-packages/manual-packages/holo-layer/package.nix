@@ -1,13 +1,13 @@
 {
   # Basic
   lib,
-  melpaBuild,
   fetchFromGitHub,
-  # Python dependency
-  python3,
   # Emacs dependencies
   markdown-mode,
+  melpaBuild,
   posframe,
+  # Python dependency
+  python3,
   # Updater
   unstableGitUpdater,
 }:
@@ -40,11 +40,6 @@ melpaBuild {
     hash = "sha256-80uGyQltHBtrEtG/hkhHP5qbBfShw5BDyfR3GUHlhJk=";
   };
 
-  packageRequires = [
-    markdown-mode
-    posframe
-  ];
-
   postPatch = ''
     substituteInPlace holo-layer.el \
       --replace-fail "\"python3\"" \
@@ -60,12 +55,18 @@ melpaBuild {
      "swaymsg-treefetch")
   '';
 
+  packageRequires = [
+    markdown-mode
+    posframe
+  ];
+
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "Display and animation extension for Emacs";
     homepage = "https://github.com/manateelazycat/holo-layer";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       thattemperature
     ];

@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  libuuid,
-  libselinux,
   e2fsprogs,
+  libselinux,
+  libuuid,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,11 +19,10 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-9IUuam5g24+eywEeNZET8TAvKJVevJBwHTHSwN9Tz58=";
   };
 
-  nativeBuildInputs = [ autoreconfHook ];
-
-  buildInputs = [
-    libuuid
-    libselinux
+  outputs = [
+    "out"
+    "man"
+    "dev"
   ];
 
   postPatch = ''
@@ -32,15 +31,17 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace sbin/mkfs/mkfs.c --replace /sbin/ ${lib.getBin e2fsprogs}/bin/
   '';
 
+  nativeBuildInputs = [ autoreconfHook ];
+
+  buildInputs = [
+    libuuid
+    libselinux
+  ];
+
   # According to upstream, libmount should be detected automatically but the
   # build system fails to do this. This is likely a bug with their build system
   # hence it is explicitly enabled here.
   configureFlags = [ "--with-libmount" ];
-
-  installFlags = [
-    "sysconfdir=${placeholder "out"}/etc"
-    "root_sbindir=${placeholder "out"}/sbin"
-  ];
 
   # FIXME: https://github.com/NixOS/patchelf/pull/98 is in, but stdenv
   # still doesn't use it
@@ -51,21 +52,22 @@ stdenv.mkDerivation (finalAttrs: {
     find . -name .libs -exec rm -rf -- {} +
   '';
 
-  outputs = [
-    "out"
-    "man"
-    "dev"
+  installFlags = [
+    "sysconfdir=${placeholder "out"}/etc"
+    "root_sbindir=${placeholder "out"}/sbin"
   ];
 
   meta = {
     description = "NILFS utilities";
     homepage = "https://github.com/nilfs-dev/nilfs-utils";
-    maintainers = [ lib.maintainers.raskin ];
-    platforms = lib.platforms.linux;
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl21
     ];
+
+    maintainers = [ lib.maintainers.raskin ];
+    platforms = lib.platforms.linux;
     downloadPage = "http://nilfs.sourceforge.net/en/download.html";
   };
 })

@@ -1,20 +1,20 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  blas,
+  buildGoModule,
   callPackage,
-  makeWrapper,
-  pkg-config,
+  darktable,
   # Native dependencies for image processing and face recognition
   dlib,
-  libjpeg,
-  libheif,
-  blas,
-  lapack,
   # Runtime dependencies
   exiftool,
-  darktable,
   ffmpeg,
+  lapack,
+  libheif,
+  libjpeg,
+  makeWrapper,
+  pkg-config,
 }:
 
 buildGoModule (finalAttrs: {
@@ -28,10 +28,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-ZfvBdQlyqONsrviZGL22Kt+AiPaVWwdoREDUrHDYyIs=";
   };
 
-  vendorHash = "sha256-Tn4OxSV41s/4n2Q3teJRJNc39s6eKW4xE9wW/CIR5Fg=";
-
-  modRoot = "api";
-
   nativeBuildInputs = [
     pkg-config
     makeWrapper
@@ -44,6 +40,8 @@ buildGoModule (finalAttrs: {
     blas
     lapack
   ];
+
+  vendorHash = "sha256-Tn4OxSV41s/4n2Q3teJRJNc39s6eKW4xE9wW/CIR5Fg=";
 
   postInstall = ''
     # Install face recognition models
@@ -68,6 +66,7 @@ buildGoModule (finalAttrs: {
       }
   '';
 
+  modRoot = "api";
   passthru.ui = callPackage ./ui.nix { inherit (finalAttrs) src version; };
 
   meta = {
@@ -75,7 +74,7 @@ buildGoModule (finalAttrs: {
     homepage = "https://photoview.github.io/";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ nettika ];
-    mainProgram = "photoview";
     platforms = lib.platforms.linux;
+    mainProgram = "photoview";
   };
 })

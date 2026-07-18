@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   nixosTests,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -37,12 +37,14 @@ stdenvNoCC.mkDerivation rec {
 
   meta = {
     description = "Collaborative editing software that runs Wikipedia";
-    license = lib.licenses.gpl2Plus;
     homepage = "https://www.mediawiki.org/";
-    platforms = lib.platforms.all;
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       # for the C3D2
       SuperSandro2000
     ];
+
+    platforms = lib.platforms.all;
   };
 }

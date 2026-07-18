@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonApplication,
   fetchFromGitHub,
-  unstableGitUpdater,
-  poetry-core,
-  sphinx,
+  buildPythonApplication,
+  nixosTests,
   pluggy,
+  poetry-core,
   prettytable,
+  sphinx,
   typeguard,
   typing-extensions,
-  nixosTests,
+  unstableGitUpdater,
 }:
 
 buildPythonApplication rec {
   pname = "nixops";
   version = "2.0.0-unstable-2025-12-28";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "NixOS";
@@ -50,10 +49,12 @@ buildPythonApplication rec {
     sphinx-build -b html -d $doc_cache doc/ $out/share/nixops/doc
   '';
 
+  pyproject = true;
   pythonImportsCheck = [ "nixops" ];
 
   passthru = {
     tests.nixos = nixosTests.nixops.unstable;
+
     updateScript = unstableGitUpdater {
       tagPrefix = "v";
     };
@@ -63,10 +64,12 @@ buildPythonApplication rec {
     description = "Tool for deploying to NixOS machines in a network or cloud";
     homepage = "https://github.com/NixOS/nixops";
     license = lib.licenses.lgpl3Only;
+
     maintainers = with lib.maintainers; [
       aminechikhaoui
       roberth
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "nixops";
   };

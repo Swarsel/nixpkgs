@@ -6,12 +6,8 @@
 }:
 
 buildPythonPackage {
-  pname = "stevedore-tests";
   inherit (stevedore) version src;
-  pyproject = false;
-
-  dontBuild = true;
-  dontInstall = true;
+  pname = "stevedore-tests";
 
   nativeCheckInputs = [
     sphinx
@@ -24,4 +20,8 @@ buildPythonPackage {
     stestr run
     runHook postCheck
   '';
+
+  dontBuild = true;
+  dontInstall = true;
+  pyproject = false;
 }

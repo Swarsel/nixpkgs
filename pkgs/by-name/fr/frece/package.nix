@@ -19,10 +19,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Maintain a database sorted by frecency (frequency + recency)";
-    mainProgram = "frece";
     homepage = "https://github.com/YodaEmbedding/frece";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "frece";
   };
 })

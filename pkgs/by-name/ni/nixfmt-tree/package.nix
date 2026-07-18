@@ -1,18 +1,16 @@
 {
   lib,
-  runCommand,
-  treefmt,
+  git,
   nixfmt,
   nixfmt-tree,
-  git,
+  runCommand,
+  treefmt,
   writableTmpDirAsHomeHook,
-
-  settings ? { },
-  runtimeInputs ? [ ],
   nixfmtPackage ? nixfmt,
-
+  runtimeInputs ? [ ],
   # NOTE: `runtimePackages` is deprecated. Use `nixfmtPackage` and/or `runtimeInputs`.
   runtimePackages ? [ nixfmtPackage ],
+  settings ? { },
 }@args:
 let
   allRuntimeInputs = runtimePackages ++ runtimeInputs;
@@ -23,28 +21,6 @@ let
   treefmtWithConfig = treefmt.withConfig {
     name = "nixfmt-tree";
 
-    settings = lib.mkMerge [
-      # Default settings
-      {
-        _file = ./package.nix;
-
-        # Log level for files treefmt won't format
-        # The default is warn, which would be too annoying for people who just care about Nix
-        on-unmatched = lib.mkOptionDefault "info";
-
-        # NOTE: The `mkIf` condition should not be needed once `runtimePackages` is removed.
-        formatter.nixfmt = lib.mkIf (lib.any isNixfmt allRuntimeInputs) {
-          command = "nixfmt";
-          includes = [ "*.nix" ];
-        };
-      }
-      # User supplied settings
-      {
-        _file = "<nixfmt-tree args>";
-        imports = lib.toList settings;
-      }
-    ];
-
     runtimeInputs =
       # Handle `runtimePackages` deprecation (added 2025-04-01)
       lib.warnIf (args ? runtimePackages) ''
@@ -52,72 +28,31 @@ let
         Note: you do not need to supply a nixfmt package when using `runtimeInputs`, however you can override `nixfmtPackage` to a different nixfmt package.
         For additional flexibility, or to configure treefmt without nixfmt, consider using `treefmt.withConfig` instead of `nixfmt-tree`.
       '' allRuntimeInputs;
+
+    settings = lib.mkMerge [
+      # Default settings
+      {
+        _file = ./package.nix;
+
+        # NOTE: The `mkIf` condition should not be needed once `runtimePackages` is removed.
+        formatter.nixfmt = lib.mkIf (lib.any isNixfmt allRuntimeInputs) {
+          command = "nixfmt";
+          includes = [ "*.nix" ];
+        };
+
+        # Log level for files treefmt won't format
+        # The default is warn, which would be too annoying for people who just care about Nix
+        on-unmatched = lib.mkOptionDefault "info";
+      }
+      # User supplied settings
+      {
+        _file = "<nixfmt-tree args>";
+        imports = lib.toList settings;
+      }
+    ];
   };
 in
 treefmtWithConfig.overrideAttrs (prevAttrs: {
-  meta = {
-    mainProgram = "treefmt";
-    description = "Official Nix formatter zero-setup starter using treefmt";
-    longDescription = ''
-      A zero-setup [treefmt](https://treefmt.com/) starter to get started using the [official Nix formatter](https://github.com/NixOS/nixfmt).
-
-      - For `nix fmt` to format all Nix files, add this to the `flake.nix` outputs:
-
-        ```nix
-        formatter.''${system} = nixpkgs.legacyPackages.''${system}.nixfmt-tree;
-        ```
-
-      - The same can be done more efficiently with the `treefmt` command,
-        which you can get in `nix-shell`/`nix develop` by extending `mkShell` using
-
-        ```nix
-        mkShell {
-          packages = [ pkgs.nixfmt-tree ];
-        }
-        ```
-
-        You can then also use `treefmt` in a pre-commit/pre-push [Git hook](https://git-scm.com/docs/githooks)
-        and with your editor's format-on-save feature.
-
-      - To check formatting in CI, run the following in a checkout of your Git repository:
-        ```
-        treefmt --ci
-        ```
-
-      For more flexibility, you can customise this package using
-      ```nix
-      pkgs.nixfmt-tree.override {
-        settings = { /* additional treefmt config */ };
-        runtimeInputs = [ /* additional formatter packages */ ];
-      }
-      ```
-
-      You can achieve similar results by manually configuring `treefmt`:
-      ```nix
-      pkgs.treefmt.withConfig {
-        runtimeInputs = [ pkgs.nixfmt ];
-
-        settings = {
-          # Log level for files treefmt won't format
-          on-unmatched = "info";
-
-          # Configure nixfmt for .nix files
-          formatter.nixfmt = {
-            command = "nixfmt";
-            includes = [ "*.nix" ];
-          };
-        };
-      }
-      ```
-
-      Alternatively you can switch to the more fully-featured [treefmt-nix](https://github.com/numtide/treefmt-nix).
-    '';
-    # All the code is in this file, so same license as Nixpkgs
-    license = lib.licenses.mit;
-    teams = [ lib.teams.formatter ];
-    platforms = lib.platforms.all;
-  };
-
   passthru = prevAttrs.passthru // {
     tests.simple =
       runCommand "nixfmt-tree-test-simple"
@@ -178,5 +113,70 @@ treefmtWithConfig.overrideAttrs (prevAttrs: {
 
           touch $out
         '';
+  };
+
+  meta = {
+    description = "Official Nix formatter zero-setup starter using treefmt";
+
+    longDescription = ''
+      A zero-setup [treefmt](https://treefmt.com/) starter to get started using the [official Nix formatter](https://github.com/NixOS/nixfmt).
+
+      - For `nix fmt` to format all Nix files, add this to the `flake.nix` outputs:
+
+        ```nix
+        formatter.''${system} = nixpkgs.legacyPackages.''${system}.nixfmt-tree;
+        ```
+
+      - The same can be done more efficiently with the `treefmt` command,
+        which you can get in `nix-shell`/`nix develop` by extending `mkShell` using
+
+        ```nix
+        mkShell {
+          packages = [ pkgs.nixfmt-tree ];
+        }
+        ```
+
+        You can then also use `treefmt` in a pre-commit/pre-push [Git hook](https://git-scm.com/docs/githooks)
+        and with your editor's format-on-save feature.
+
+      - To check formatting in CI, run the following in a checkout of your Git repository:
+        ```
+        treefmt --ci
+        ```
+
+      For more flexibility, you can customise this package using
+      ```nix
+      pkgs.nixfmt-tree.override {
+        settings = { /* additional treefmt config */ };
+        runtimeInputs = [ /* additional formatter packages */ ];
+      }
+      ```
+
+      You can achieve similar results by manually configuring `treefmt`:
+      ```nix
+      pkgs.treefmt.withConfig {
+        runtimeInputs = [ pkgs.nixfmt ];
+
+        settings = {
+          # Log level for files treefmt won't format
+          on-unmatched = "info";
+
+          # Configure nixfmt for .nix files
+          formatter.nixfmt = {
+            command = "nixfmt";
+            includes = [ "*.nix" ];
+          };
+        };
+      }
+      ```
+
+      Alternatively you can switch to the more fully-featured [treefmt-nix](https://github.com/numtide/treefmt-nix).
+    '';
+
+    # All the code is in this file, so same license as Nixpkgs
+    license = lib.licenses.mit;
+    platforms = lib.platforms.all;
+    mainProgram = "treefmt";
+    teams = [ lib.teams.formatter ];
   };
 })

@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3,
   cmake,
-  libglvnd,
   libGLU,
+  libglvnd,
+  python3,
   unstableGitUpdater,
 }:
 
@@ -24,6 +24,7 @@ stdenv.mkDerivation {
     python3
     cmake
   ];
+
   # gl3w installs a CMake config that when included expects to be able to
   # build and link against both of these libraries
   # (the gl3w generated C file gets compiled into the downstream target)
@@ -31,8 +32,6 @@ stdenv.mkDerivation {
     libglvnd
     libGLU
   ];
-
-  dontUseCmakeBuildDir = true;
 
   # These files must be copied rather than linked since they are considered
   # outputs for the custom command, and CMake expects to be able to touch them
@@ -42,6 +41,7 @@ stdenv.mkDerivation {
     cp ${libglvnd.dev}/include/KHR/khrplatform.h include/KHR/khrplatform.h
   '';
 
+  dontUseCmakeBuildDir = true;
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {

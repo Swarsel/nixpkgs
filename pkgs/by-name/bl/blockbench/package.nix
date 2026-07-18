@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  buildNpmPackage,
   fetchFromGitHub,
-  makeWrapper,
-  imagemagick,
+  buildNpmPackage,
   copyDesktopItems,
-  makeDesktopItem,
   electron,
+  imagemagick,
+  makeDesktopItem,
+  makeWrapper,
 }:
 
 buildNpmPackage rec {
@@ -37,16 +37,12 @@ buildNpmPackage rec {
   ];
 
   npmDepsHash = "sha256-RmUUdHSVrZYc4F1Qtkbvn/2oKspM/3SnCuT3McKlMn0=";
-  makeCacheWritable = true;
-
   env.ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
 
   # disable notarization logic
   postConfigure = lib.optionalString stdenv.hostPlatform.isDarwin ''
     sed -i "/afterSign/d" package.json
   '';
-
-  npmBuildScript = "build-electron";
 
   postBuild = ''
     # electronDist needs to be modifiable on Darwin
@@ -89,23 +85,26 @@ buildNpmPackage rec {
   # based on desktop file found in the published AppImage archive
   desktopItems = [
     (makeDesktopItem {
-      name = "blockbench";
+      categories = [ "3DGraphics" ];
+      comment = meta.description;
+      desktopName = "Blockbench";
       exec = "blockbench %U";
       icon = "blockbench";
-      desktopName = "Blockbench";
-      comment = meta.description;
-      categories = [ "3DGraphics" ];
+      name = "blockbench";
       startupWMClass = "Blockbench";
       terminal = false;
     })
   ];
 
+  makeCacheWritable = true;
+  npmBuildScript = "build-electron";
+
   meta = {
-    changelog = "https://github.com/JannisX11/blockbench/releases/tag/v${version}";
     description = "Low-poly 3D modeling and animation software";
     homepage = "https://blockbench.net/";
+    changelog = "https://github.com/JannisX11/blockbench/releases/tag/v${version}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "blockbench";
     maintainers = with lib.maintainers; [ tomasajt ];
+    mainProgram = "blockbench";
   };
 }

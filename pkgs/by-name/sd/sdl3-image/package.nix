@@ -1,32 +1,26 @@
 {
   lib,
-  sdl3,
-  libavif,
-  libtiff,
-  libwebp,
   stdenv,
-  cmake,
   fetchFromGitHub,
-  validatePkgConfig,
-  libpng,
+  cmake,
+  libavif,
   libjpeg,
   libjxl,
+  libpng,
+  libtiff,
+  libwebp,
   nix-update-script,
+  sdl3,
+  validatePkgConfig,
+  enableImageIO ? stdenv.hostPlatform.isDarwin,
+  enableSTB ? true,
   # Boolean flags
   enableTests ? true,
-  enableSTB ? true,
-  enableImageIO ? stdenv.hostPlatform.isDarwin,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "sdl3-image";
   version = "3.4.4";
-
-  outputs = [
-    "lib"
-    "dev"
-    "out"
-  ];
 
   src = fetchFromGitHub {
     owner = "libsdl-org";
@@ -35,8 +29,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ttnoe9bTtA8+eUMOs55v58xb+cWpNEiiTDEeX9GBxaw=";
   };
 
+  outputs = [
+    "lib"
+    "dev"
+    "out"
+  ];
+
   strictDeps = true;
-  doCheck = true;
 
   nativeBuildInputs = [
     cmake
@@ -70,6 +69,8 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "SDLIMAGE_AVIF" (!stdenv.hostPlatform.isDarwin))
   ];
 
+  doCheck = true;
+
   passthru.updateScript = nix-update-script {
     extraArgs = [
       "--version-regex"
@@ -78,11 +79,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    inherit (sdl3.meta) platforms;
     description = "SDL image library";
     homepage = "https://github.com/libsdl-org/SDL_image";
     license = lib.licenses.zlib;
     maintainers = [ lib.maintainers.evythedemon ];
     teams = [ lib.teams.sdl ];
-    inherit (sdl3.meta) platforms;
   };
 })

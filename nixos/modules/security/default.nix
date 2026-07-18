@@ -9,11 +9,13 @@ in
 {
   options = {
     security.lsm = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
       default = [ ];
+
       description = ''
         A list of the LSMs to initialize in order.
       '';
+
+      type = lib.types.listOf lib.types.str;
     };
   };
 

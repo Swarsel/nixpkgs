@@ -1,9 +1,9 @@
 {
-  cups,
-  fetchurl,
   lib,
-  pkg-config,
   stdenv,
+  fetchurl,
+  cups,
+  pkg-config,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "rollo-printer";
@@ -14,8 +14,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-v61/5HY25cvhVbHF+dXOOGrDfZZzvvicJEy7MKTAG10=";
   };
 
+  strictDeps = true;
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ cups ];
 
   # configure unconditionally derives CUPS_DATADIR/CUPS_SERVERBIN from
@@ -26,7 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     "CUPS_SERVERBIN=${placeholder "out"}/lib/cups"
   ];
 
-  strictDeps = true;
   __structuredAttrs = true;
 
   meta = {

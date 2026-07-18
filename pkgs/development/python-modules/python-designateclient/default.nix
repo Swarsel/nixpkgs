@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   debtcollector,
-  fetchFromGitHub,
   jsonschema,
   keystoneauth1,
   openstackdocstheme,
@@ -11,8 +11,8 @@
   oslo-utils,
   oslotest,
   pbr,
-  requests-mock,
   requests,
+  requests-mock,
   setuptools,
   sphinxHook,
   sphinxcontrib-apidoc,
@@ -22,7 +22,6 @@
 buildPythonPackage rec {
   pname = "python-designateclient";
   version = "6.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openstack";
@@ -31,15 +30,25 @@ buildPythonPackage rec {
     hash = "sha256-OBvPdulj2lg2FCyMDOp1iw12MxLre0/jkMdc7syJatc=";
   };
 
-  env.PBR_VERSION = version;
-
   nativeBuildInputs = [
     openstackdocstheme
     sphinxHook
     sphinxcontrib-apidoc
   ];
 
-  sphinxBuilders = [ "man" ];
+  env.PBR_VERSION = version;
+
+  nativeCheckInputs = [
+    oslotest
+    requests-mock
+    stestr
+  ];
+
+  checkPhase = ''
+    runHook preCheck
+    stestr run
+    runHook postCheck
+  '';
 
   build-system = [
     pbr
@@ -56,23 +65,13 @@ buildPythonPackage rec {
     requests
   ];
 
-  nativeCheckInputs = [
-    oslotest
-    requests-mock
-    stestr
-  ];
-
-  checkPhase = ''
-    runHook preCheck
-    stestr run
-    runHook postCheck
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "designateclient" ];
+  sphinxBuilders = [ "man" ];
 
   meta = {
-    homepage = "https://opendev.org/openstack/python-designateclient";
     description = "Client library for OpenStack Designate API";
+    homepage = "https://opendev.org/openstack/python-designateclient";
     license = lib.licenses.asl20;
     teams = [ lib.teams.openstack ];
   };

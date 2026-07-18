@@ -1,11 +1,11 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   ocaml,
+  ounit2,
   uchar,
   uutf,
-  ounit2,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -24,12 +24,12 @@ buildDunePackage (finalAttrs: {
     uutf
   ];
 
-  checkInputs = [ ounit2 ];
   doCheck = true;
+  checkInputs = [ ounit2 ];
 
   meta = {
-    homepage = "https://github.com/aantron/markup.ml/";
     description = "Pair of best-effort parsers implementing the HTML5 and XML specifications";
+    homepage = "https://github.com/aantron/markup.ml/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ gal_bolle ];
   };

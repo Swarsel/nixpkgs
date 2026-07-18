@@ -1,7 +1,7 @@
 {
-  maven,
   lib,
   fetchFromGitHub,
+  maven,
 }:
 
 maven.buildMavenPackage rec {
@@ -15,17 +15,17 @@ maven.buildMavenPackage rec {
     hash = "sha256-nQ2AwXhSUu5RY/BbxXE2OXgEb7Zf6FfrGP5tfbgAXk8=";
   };
 
-  mvnHash = "sha256-32un0gcpFI5wU9eShASzVnXmdhu3e+55iC3GBX/2yko=";
-
   installPhase = ''
     runHook preInstall
     install -Dm444 -t "$out" target/keycloak-restrict-client-auth.jar
     runHook postInstall
   '';
 
+  mvnHash = "sha256-32un0gcpFI5wU9eShASzVnXmdhu3e+55iC3GBX/2yko=";
+
   meta = {
-    homepage = "https://github.com/sventorben/keycloak-restrict-client-auth";
     description = "Keycloak authenticator to restrict authorization on clients";
+    homepage = "https://github.com/sventorben/keycloak-restrict-client-auth";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ leona ];
   };

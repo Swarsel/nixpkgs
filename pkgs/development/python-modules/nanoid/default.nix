@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "nanoid";
   version = "2.0.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,9 +15,8 @@ buildPythonPackage rec {
   };
 
   doCheck = false; # tests not in sdist, git not tagged
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "nanoid" ];
 
   meta = {

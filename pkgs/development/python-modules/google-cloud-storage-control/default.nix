@@ -1,12 +1,12 @@
 {
-  buildPythonPackage,
+  lib,
   fetchFromGitHub,
+  buildPythonPackage,
   gitUpdater,
   google-api-core,
   google-auth,
   grpc-google-iam-v1,
   grpcio,
-  lib,
   proto-plus,
   protobuf,
   pytest-asyncio,
@@ -17,7 +17,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "google-cloud-storage-control";
   version = "1.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googleapis";
@@ -26,7 +25,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-M/7uDWWz4YCfxa4gyM9BaAo10iyTMvtR2MhNpdFYnis=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/packages/google-cloud-storage-control";
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -40,28 +42,28 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "google.cloud.storage_control"
     "google.cloud.storage_control_v2"
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
+  sourceRoot = "${finalAttrs.src.name}/packages/google-cloud-storage-control";
 
   passthru = {
     # bulk updater selects wrong tag
     skipBulkUpdate = true;
+
     updateScript = gitUpdater {
       rev-prefix = "google-cloud-storage-control-v";
     };
   };
 
   meta = {
-    changelog = "https://github.com/googleapis/google-cloud-python/blob/${finalAttrs.src.tag}/packages/google-cloud-storage-control/CHANGELOG.md";
     description = "Google Cloud Storage Control API client library";
     homepage = "https://github.com/googleapis/google-cloud-python/tree/main/packages/google-cloud-storage-control";
+    changelog = "https://github.com/googleapis/google-cloud-python/blob/${finalAttrs.src.tag}/packages/google-cloud-storage-control/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.dotlambda ];
   };

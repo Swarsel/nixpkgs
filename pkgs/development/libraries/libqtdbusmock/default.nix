@@ -1,8 +1,7 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  testers,
   cmake,
   cmake-extras,
   dbus,
@@ -14,6 +13,7 @@
   procps,
   python3,
   qtbase,
+  testers,
 }:
 
 let
@@ -53,6 +53,12 @@ stdenv.mkDerivation (finalAttrs: {
     qtbase
   ];
 
+  cmakeFlags = [
+    (lib.cmakeBool "ENABLE_QT6" withQt6)
+  ];
+
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   nativeCheckInputs = [
     dbus
     dbus-test-runner
@@ -68,16 +74,6 @@ stdenv.mkDerivation (finalAttrs: {
     gtest
   ];
 
-  dontWrapQtApps = true;
-
-  cmakeFlags = [
-    (lib.cmakeBool "ENABLE_QT6" withQt6)
-  ];
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
-  enableParallelChecking = false;
-
   checkPhase = ''
     runHook preCheck
 
@@ -86,19 +82,25 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postCheck
   '';
 
+  dontWrapQtApps = true;
+  enableParallelChecking = false;
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {
     description = "Library for mocking DBus interactions using Qt";
     homepage = "https://gitlab.com/ubports/development/core/libqtdbusmock";
+
     changelog = "https://gitlab.com/ubports/development/core/libqtdbusmock/-/blob/${
       if (!isNull finalAttrs.src.tag) then finalAttrs.src.tag else finalAttrs.src.rev
     }/ChangeLog";
+
     license = lib.licenses.lgpl3Only;
     platforms = lib.platforms.unix;
-    teams = [ lib.teams.lomiri ];
+
     pkgConfigModules = [
       "libqtdbusmock${lib.optionalString withQt6 "-qt6"}-1"
     ];
+
+    teams = [ lib.teams.lomiri ];
   };
 })

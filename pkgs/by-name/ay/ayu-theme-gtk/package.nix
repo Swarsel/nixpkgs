@@ -1,13 +1,13 @@
 {
+  lib,
   stdenv,
-  autoreconfHook,
   fetchFromGitHub,
+  autoreconfHook,
   gnome-shell,
   gnome-themes-extra,
   gtk-engine-murrine,
   gtk3,
   inkscape,
-  lib,
   optipng,
   pkg-config,
   sassc,
@@ -38,32 +38,32 @@ stdenv.mkDerivation rec {
     sassc
   ];
 
-  propagatedUserEnvPkgs = [
-    gnome-themes-extra
-    gtk-engine-murrine
+  configureFlags = [
+    "--with-gnome-shell=${gnome-shell.version}"
+    "--disable-unity"
   ];
-
-  enableParallelBuilding = true;
 
   preBuild = ''
     # Shut up inkscape's warnings about creating profile directory
     export HOME="$NIX_BUILD_ROOT"
   '';
 
-  configureFlags = [
-    "--with-gnome-shell=${gnome-shell.version}"
-    "--disable-unity"
-  ];
-
   postInstall = ''
     install -Dm644 -t $out/share/doc/${pname} AUTHORS *.md
   '';
+
+  enableParallelBuilding = true;
+
+  propagatedUserEnvPkgs = [
+    gnome-themes-extra
+    gtk-engine-murrine
+  ];
 
   meta = {
     description = "Ayu colored GTK and Kvantum themes based on Arc";
     homepage = "https://github.com/dnordstrom/ayu-theme/";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ lovesegfault ];
+    platforms = lib.platforms.linux;
   };
 }

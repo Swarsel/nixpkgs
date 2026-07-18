@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "pdd";
   version = "1.7";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "jarun";
@@ -27,12 +26,12 @@ python3Packages.buildPythonApplication rec {
   '';
 
   dependencies = with python3Packages; [ python-dateutil ];
-
   installFlags = [ "PREFIX=$(out)" ];
+  pyproject = false;
 
   meta = {
-    homepage = "https://github.com/jarun/pdd";
     description = "Tiny date, time diff calculator";
+
     longDescription = ''
       There are times you want to check how old you are (in years, months, days)
       or how long you need to wait for the next flash sale or the number of days
@@ -41,8 +40,10 @@ python3Packages.buildPythonApplication rec {
       program arguments are specified it shows the current date, time and
       timezone.
     '';
-    maintainers = [ ];
+
+    homepage = "https://github.com/jarun/pdd";
     license = lib.licenses.gpl3Plus;
+    maintainers = [ ];
     mainProgram = "pdd";
   };
 }

@@ -2,34 +2,42 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  intltool,
-  meson,
-  mesonEmulatorHook,
-  ninja,
-  pkg-config,
-  gtk-doc,
+  avahi,
   docbook-xsl-nons,
   docbook_xml_dtd_412,
-  glib,
-  json-glib,
-  libsoup_3,
-  libnotify,
   gdk-pixbuf,
-  modemmanager,
-  avahi,
+  glib,
   glib-networking,
-  python3,
-  wrapGAppsHook3,
   gobject-introspection,
-  vala,
-  withDemoAgent ? false,
+  gtk-doc,
+  intltool,
+  json-glib,
+  libnotify,
+  libsoup_3,
+  meson,
+  mesonEmulatorHook,
+  modemmanager,
+  ninja,
   nix-update-script,
   nixosTests,
+  pkg-config,
+  python3,
+  vala,
+  wrapGAppsHook3,
+  withDemoAgent ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "geoclue";
   version = "2.7.2";
+
+  src = fetchFromGitLab {
+    owner = "geoclue";
+    repo = "geoclue";
+    tag = finalAttrs.version;
+    hash = "sha256-LwL1WtCdHb/NwPr3/OLISwaAwplhJwiZT9vUdX29Bbs=";
+    domain = "gitlab.freedesktop.org";
+  };
 
   outputs = [
     "out"
@@ -37,19 +45,14 @@ stdenv.mkDerivation (finalAttrs: {
     "devdoc"
   ];
 
-  src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
-    owner = "geoclue";
-    repo = "geoclue";
-    tag = finalAttrs.version;
-    hash = "sha256-LwL1WtCdHb/NwPr3/OLISwaAwplhJwiZT9vUdX29Bbs=";
-  };
-
   patches = [
     ./add-option-for-installation-sysconfdir.patch
   ];
 
-  separateDebugInfo = true;
+  postPatch = ''
+    chmod +x demo/install-file.py
+    patchShebangs demo/install-file.py
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -102,28 +105,28 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dnmea-source=false"
   ];
 
-  postPatch = ''
-    chmod +x demo/install-file.py
-    patchShebangs demo/install-file.py
-  '';
+  separateDebugInfo = true;
 
   passthru = {
     tests = {
       inherit (nixosTests) geoclue2;
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin && withDemoAgent;
     description = "Geolocation framework and some data providers";
     homepage = "https://gitlab.freedesktop.org/geoclue/geoclue/wikis/home";
     changelog = "https://gitlab.freedesktop.org/geoclue/geoclue/-/blob/${finalAttrs.version}/NEWS";
+    license = lib.licenses.lgpl2Plus;
+
     maintainers = with lib.maintainers; [
       raskin
       mimame
     ];
+
     platforms = with lib.platforms; linux ++ darwin;
-    license = lib.licenses.lgpl2Plus;
+    broken = stdenv.hostPlatform.isDarwin && withDemoAgent;
   };
 })

@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication {
   pname = "ntlm-challenger";
   version = "0-unstable-2022-11-10";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "nopfor";
@@ -29,11 +28,13 @@ python3.pkgs.buildPythonApplication {
     runHook postInstall
   '';
 
+  pyproject = false;
+
   meta = {
     description = "Parse NTLM challenge messages over HTTP and SMB";
-    mainProgram = "ntlm_challenger";
     homepage = "https://github.com/nopfor/ntlm_challenger";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.crem ];
+    mainProgram = "ntlm_challenger";
   };
 }

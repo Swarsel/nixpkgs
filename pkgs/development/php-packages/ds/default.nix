@@ -1,9 +1,9 @@
 {
-  buildPecl,
   lib,
+  fetchFromGitHub,
+  buildPecl,
   pcre2,
   php,
-  fetchFromGitHub,
 }:
 
 let
@@ -23,10 +23,10 @@ buildPecl {
   buildInputs = [ pcre2 ];
 
   meta = {
-    changelog = "https://github.com/php-ds/ext-ds/releases/tag/v${version}";
     description = "Extension providing efficient data structures for PHP";
-    license = lib.licenses.mit;
     homepage = "https://github.com/php-ds/ext-ds";
+    changelog = "https://github.com/php-ds/ext-ds/releases/tag/v${version}";
+    license = lib.licenses.mit;
     teams = [ lib.teams.php ];
   };
 }

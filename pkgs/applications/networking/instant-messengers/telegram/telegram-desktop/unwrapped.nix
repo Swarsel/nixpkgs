@@ -2,40 +2,40 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  callPackage,
-  pkg-config,
-  cmake,
-  ninja,
-  clang,
-  python3,
-  qtshadertools,
-  tdlib,
-  tg_owt ? callPackage ./tg_owt.nix { inherit stdenv; },
-  qtbase,
-  qtsvg,
-  qtwayland,
-  kcoreaddons,
-  lz4,
-  xxhash,
-  ffmpeg_6,
-  protobuf,
-  openal-soft,
-  minizip-ng-compat,
-  range-v3,
-  tl-expected,
-  hunspell,
-  gobject-introspection,
-  rnnoise,
-  microsoft-gsl,
-  boost,
   ada,
+  apple-sdk_15,
+  boost,
+  callPackage,
+  clang,
+  cmake,
+  ffmpeg_6,
+  gobject-introspection,
+  hunspell,
+  kcoreaddons,
   libavif,
   libheif,
-  libjxl,
   libicns,
-  apple-sdk_15,
+  libjxl,
   llvmPackages,
+  lz4,
+  microsoft-gsl,
+  minizip-ng-compat,
+  ninja,
   nix-update-script,
+  openal-soft,
+  pkg-config,
+  protobuf,
+  python3,
+  qtbase,
+  qtshadertools,
+  qtsvg,
+  qtwayland,
+  range-v3,
+  rnnoise,
+  tdlib,
+  tl-expected,
+  xxhash,
+  tg_owt ? callPackage ./tg_owt.nix { inherit stdenv; },
 }:
 
 # Main reference:
@@ -53,8 +53,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "telegramdesktop";
     repo = "tdesktop";
     rev = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-QCGtESg+38lHWCFcsevHdc0kQ7LKJQmJjUJWszphah8=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -106,14 +106,6 @@ stdenv.mkDerivation (finalAttrs: {
     libjxl
   ];
 
-  dontWrapQtApps = true;
-
-  # Work around ld64's libc++ hardening issue causing Trace/BPT trap: 5
-  # TODO: Remove once nixpkgs#536365 reaches this branch.
-  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
-    NIX_CFLAGS_LINK = "-fuse-ld=lld";
-  };
-
   cmakeFlags = [
     # We're allowed to used the API ID of the Snap package:
     (lib.cmakeFeature "TDESKTOP_API_ID" "611335")
@@ -121,6 +113,12 @@ stdenv.mkDerivation (finalAttrs: {
     # swift 6 is not available in nixpkgs
     (lib.cmakeBool "DESKTOP_APP_DISABLE_SWIFT6" true)
   ];
+
+  # Work around ld64's libc++ hardening issue causing Trace/BPT trap: 5
+  # TODO: Remove once nixpkgs#536365 reaches this branch.
+  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
+    NIX_CFLAGS_LINK = "-fuse-ld=lld";
+  };
 
   installPhase = lib.optionalString stdenv.hostPlatform.isDarwin ''
     runHook preInstall
@@ -132,6 +130,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontWrapQtApps = true;
+
   passthru = {
     inherit tg_owt;
     updateScript = nix-update-script { };
@@ -139,15 +139,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Telegram Desktop messaging app";
+
     longDescription = ''
       Desktop client for the Telegram messenger, based on the Telegram API and
       the MTProto secure protocol.
     '';
-    license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.all;
+
     homepage = "https://desktop.telegram.org/";
     changelog = "https://github.com/telegramdesktop/tdesktop/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ nickcao ];
+    platforms = lib.platforms.all;
     mainProgram = "Telegram";
   };
 })

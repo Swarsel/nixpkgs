@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiocoap,
+  buildPythonPackage,
   dtlssocket,
   pydantic,
   pytest-asyncio,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pytradfri";
   version = "14.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "home-assistant-libs";
@@ -22,8 +21,13 @@ buildPythonPackage rec {
     hash = "sha256-oYYi1P0Zu9PLsacUW//BlJlLmeOVvHgb/lR52KwZ7N8=";
   };
 
-  build-system = [ setuptools ];
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ]
+  ++ optional-dependencies.async;
 
+  build-system = [ setuptools ];
   dependencies = [ pydantic ];
 
   optional-dependencies = {
@@ -33,12 +37,7 @@ buildPythonPackage rec {
     ];
   };
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ]
-  ++ optional-dependencies.async;
-
+  pyproject = true;
   pythonImportsCheck = [ "pytradfri" ];
 
   meta = {

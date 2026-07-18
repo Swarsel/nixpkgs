@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "scour";
   version = "0.38.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,15 +15,15 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ six ];
-
   # No tests included in archive
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "SVG Optimizer / Cleaner";
-    mainProgram = "scour";
     homepage = "https://github.com/scour-project/scour";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ worldofpeace ];
+    mainProgram = "scour";
   };
 }

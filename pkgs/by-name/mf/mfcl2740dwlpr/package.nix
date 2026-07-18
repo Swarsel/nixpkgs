@@ -1,16 +1,16 @@
 {
-  pkgsi686Linux,
   lib,
   stdenv,
   fetchurl,
-  dpkg,
-  makeWrapper,
   coreutils,
+  dpkg,
   ghostscript,
   gnugrep,
   gnused,
-  which,
+  makeWrapper,
   perl,
+  pkgsi686Linux,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,8 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     dpkg
     makeWrapper
   ];
-
-  unpackPhase = "dpkg-deb -x $src $out";
 
   installPhase = ''
     dir=$out/opt/brother/Printers/MFCL2740DW
@@ -55,15 +53,18 @@ stdenv.mkDerivation (finalAttrs: {
     patchelf --set-interpreter "$interpreter" $dir/lpd/rawtobr3
   '';
 
+  unpackPhase = "dpkg-deb -x $src $out";
+
   meta = {
     description = "Brother MFC-L2740DW lpr driver";
     homepage = "http://www.brother.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = [ ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
-    maintainers = [ ];
   };
 })

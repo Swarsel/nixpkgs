@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -18,8 +18,8 @@ buildDunePackage (finalAttrs: {
   minimalOCamlVersion = "4.14";
 
   meta = {
-    homepage = "https://github.com/savonet/ocaml-metadata";
     description = "Library to read metadata from files in various formats";
+    homepage = "https://github.com/savonet/ocaml-metadata";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ dandellion ];
   };

@@ -2,25 +2,26 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   ipykernel,
   ipywidgets,
   jupyter-console,
   jupyterlab,
   nbconvert,
   notebook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "jupyter";
   version = "1.1.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-1VRnvOq96knX42JK9+M9WcN//1PtOjUOGslXvtcx3no=";
   };
 
+  # Meta-package, no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -32,10 +33,8 @@ buildPythonPackage rec {
     notebook
   ];
 
-  # Meta-package, no tests
-  doCheck = false;
-
   dontUsePythonImportsCheck = true;
+  pyproject = true;
 
   meta = {
     description = "Installs all the Jupyter components in one go";

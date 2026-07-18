@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  apple-sdk,
+  blas,
   cmake,
   curl,
-  apple-sdk,
+  dcw-gmt,
   fftwSinglePrec,
+  gdal,
+  ghostscript,
+  gshhg-gmt,
+  lapack,
+  libxml2,
   netcdf,
   pcre2,
-  gdal,
-  blas,
-  lapack,
-  ghostscript,
-  dcw-gmt,
-  gshhg-gmt,
-  libxml2,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "gmt";
@@ -28,15 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
-
-  env = {
-    NIX_LDFLAGS = "-lxml2 -L${lib.getLib libxml2}/lib";
-    NIX_CFLAGS_COMPILE =
-      lib.optionalString stdenv.cc.isClang "-Wno-implicit-function-declaration "
-      + lib.optionalString (
-        stdenv.hostPlatform.isDarwin && lib.versionOlder apple-sdk.version "13.3"
-      ) "-D__LAPACK_int=int";
-  };
 
   buildInputs = [
     curl
@@ -76,9 +67,19 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "BLAS_LIBRARY" "${lib.getLib blas}/lib/libblas.so")
   ]);
 
+  env = {
+    NIX_CFLAGS_COMPILE =
+      lib.optionalString stdenv.cc.isClang "-Wno-implicit-function-declaration "
+      + lib.optionalString (
+        stdenv.hostPlatform.isDarwin && lib.versionOlder apple-sdk.version "13.3"
+      ) "-D__LAPACK_int=int";
+
+    NIX_LDFLAGS = "-lxml2 -L${lib.getLib libxml2}/lib";
+  };
+
   meta = {
-    homepage = "https://www.generic-mapping-tools.org";
     description = "Tools for manipulating geographic and cartesian data sets";
+
     longDescription = ''
       GMT is an open-source collection of command-line tools for manipulating
       geographic and Cartesian data sets (including filtering, trend fitting,
@@ -88,8 +89,10 @@ stdenv.mkDerivation (finalAttrs: {
       transformations and includes supporting data such as coastlines, rivers,
       and political boundaries and optionally country polygons.
     '';
-    platforms = lib.platforms.unix;
+
+    homepage = "https://www.generic-mapping-tools.org";
     license = lib.licenses.lgpl3Plus;
     maintainers = with lib.maintainers; [ tviti ];
+    platforms = lib.platforms.unix;
   };
 })

@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  writeTextFile,
-  cmake,
   alsa-lib,
+  cmake,
   freepats,
+  writeTextFile,
 }:
 
 let
@@ -29,6 +29,10 @@ stdenv.mkDerivation rec {
     stdenv.cc.libc # couldn't find libm
   ];
 
+  cmakeFlags = [
+    "-DWILDMIDI_CFG=${defaultCfgPath}"
+  ];
+
   preConfigure = ''
     # https://github.com/Mindwerks/wildmidi/issues/236
     substituteInPlace src/wildmidi.pc.in \
@@ -36,14 +40,11 @@ stdenv.mkDerivation rec {
       --replace '$'{exec_prefix}/@CMAKE_INSTALL_INCLUDEDIR@ @CMAKE_INSTALL_FULL_INCLUDEDIR@
   '';
 
-  cmakeFlags = [
-    "-DWILDMIDI_CFG=${defaultCfgPath}"
-  ];
-
   postInstall =
     let
       defaultCfg = writeTextFile {
         name = "wildmidi.cfg";
+
         text = ''
           dir ${freepats}
           source ${freepats}/freepats.cfg
@@ -57,15 +58,17 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Software MIDI player and library";
-    mainProgram = "wildmidi";
+
     longDescription = ''
       WildMIDI is a simple software midi player which has a core softsynth
       library that can be use with other applications.
     '';
+
     homepage = "https://wildmidi.sourceforge.net/";
     # The library is LGPLv3, the wildmidi executable is GPLv3
     license = lib.licenses.lgpl3;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.unix;
+    mainProgram = "wildmidi";
   };
 }

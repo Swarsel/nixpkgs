@@ -1,13 +1,11 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
-  __structuredAttrs = true;
-
   pname = "rawst";
   version = "0.8.1";
 
@@ -20,7 +18,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-wS1dR6r3/4sg4DCMR8QZjbHgiSEhuu/v4MqJ6LxEKtY=";
   env.RUSTC_BOOTSTRAP = true;
-
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

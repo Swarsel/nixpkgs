@@ -1,12 +1,12 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  git,
   makeWrapper,
   mercurial,
-  git,
-  openssh,
   nixosTests,
+  openssh,
 }:
 
 buildGoModule (finalAttrs: {
@@ -26,10 +26,8 @@ buildGoModule (finalAttrs: {
     ./check-config-flag.diff
   ];
 
-  vendorHash = "sha256-0psvz4bnhGuwwSAXvQp0ju0GebxoUyY2Rjp/D43KF78=";
-
   nativeBuildInputs = [ makeWrapper ];
-
+  vendorHash = "sha256-0psvz4bnhGuwwSAXvQp0ju0GebxoUyY2Rjp/D43KF78=";
   # requires network access
   doCheck = false;
 
@@ -49,6 +47,7 @@ buildGoModule (finalAttrs: {
     description = "Lightning fast code searching made easy";
     homepage = "https://github.com/hound-search/hound";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       SuperSandro2000
     ];

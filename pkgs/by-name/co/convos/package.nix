@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  makeWrapper,
+  nixosTests,
+  openssl,
   perl,
   perlPackages,
-  makeWrapper,
-  openssl,
-  nixosTests,
 }:
 
 perlPackages.buildPerlPackage rec {
@@ -19,6 +19,10 @@ perlPackages.buildPerlPackage rec {
     rev = "v${version}";
     sha256 = "sha256-dBvXo8y4OMKcb0imgnnzoklnPN3YePHDvy5rIBOkTfs=";
   };
+
+  postPatch = ''
+    patchShebangs script/convos
+  '';
 
   nativeBuildInputs = [ makeWrapper ];
 
@@ -49,12 +53,7 @@ perlPackages.buildPerlPackage rec {
   ];
 
   propagatedBuildInputs = [ openssl ];
-
   nativeCheckInputs = with perlPackages; [ TestDeep ];
-
-  postPatch = ''
-    patchShebangs script/convos
-  '';
 
   preCheck = ''
     # Remove unstable test (PR #176640)
@@ -111,10 +110,10 @@ perlPackages.buildPerlPackage rec {
   passthru.tests = nixosTests.convos;
 
   meta = {
-    homepage = "https://convos.chat";
     description = "IRC browser client";
-    mainProgram = "convos";
+    homepage = "https://convos.chat";
     license = lib.licenses.artistic2;
     maintainers = with lib.maintainers; [ sgo ];
+    mainProgram = "convos";
   };
 }

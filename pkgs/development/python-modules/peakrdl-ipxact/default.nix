@@ -1,8 +1,8 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  gitUpdater,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
+  gitUpdater,
   setuptools,
   setuptools-scm,
   systemrdl-compiler,
@@ -11,8 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "peakrdl-ipxact";
   version = "3.5.0";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SystemRDL";
@@ -27,7 +25,7 @@ buildPythonPackage (finalAttrs: {
   ];
 
   dependencies = [ systemrdl-compiler ];
-
+  pyproject = true;
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {

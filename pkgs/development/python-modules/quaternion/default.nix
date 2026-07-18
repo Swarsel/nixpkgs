@@ -1,25 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   hatchling,
   numpy,
-  setuptools,
-
-  # dependencies
-  scipy,
-
   # tests
   pytest-cov-stub,
   pytestCheckHook,
+  # dependencies
+  scipy,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "quaternion";
   version = "2024.0.13";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "moble";
@@ -27,6 +23,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-W35R+S6yzcKTpKtemjiLzH9v5owduUtos9DyoY28qbc=";
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [
     hatchling
@@ -39,12 +40,8 @@ buildPythonPackage rec {
     scipy
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "quaternion" ];
-
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Package add built-in support for quaternions to numpy";

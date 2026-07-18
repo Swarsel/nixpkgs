@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
-  fetchFromSourcehut,
-  pkg-config,
+  stdenv,
   cmake,
-  meson,
-  ninja,
   faust,
+  fetchFromSourcehut,
   fontconfig,
   glew,
   libvterm-neovim,
+  libx11,
+  libxext,
   lv2,
   lv2lint,
+  meson,
+  ninja,
+  pkg-config,
   sord,
-  libxext,
-  libx11,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,11 +22,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.18.2";
 
   src = fetchFromSourcehut {
-    domain = "open-music-kontrollers.ch";
     owner = "~hp";
     repo = "mephisto.lv2";
     rev = finalAttrs.version;
     hash = "sha256-ab6OGt1XVgynKNdszzdXwJ/jVKJSzgSmAv6j1U3/va0=";
+    domain = "open-music-kontrollers.ch";
   };
 
   nativeBuildInputs = [

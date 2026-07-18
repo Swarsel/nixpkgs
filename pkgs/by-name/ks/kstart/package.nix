@@ -22,6 +22,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-MGWL4oNc0MZTGWqBEt2wRTkqoagiUTDrS0kz4ewbZZA=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   nativeBuildInputs = [
     autoreconfHook
     perl
@@ -46,23 +51,20 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doCheck = true;
+
   preCheck = ''
     patchShebangs tests
   '';
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
   meta = {
-    outputsToInstall = [
-      "out"
-      "man"
-    ];
     description = "Modified version of kerberos tools that support automatic ticket refresh";
     homepage = "https://github.com/rra/kstart";
     license = lib.licenses.mit;
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
+    outputsToInstall = [
+      "out"
+      "man"
+    ];
   };
 })

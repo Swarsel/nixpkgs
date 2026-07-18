@@ -1,29 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonOlder,
-
+  buildPythonPackage,
   # build-system
   cmake,
-  scikit-build-core,
-  numpy,
   ninja,
+  numpy,
   pybind11,
-  setuptools-scm,
-
-  # dependencies
-  typing-extensions,
-
   # tests
   pytestCheckHook,
+  pythonOlder,
   pyyaml,
+  scikit-build-core,
+  setuptools-scm,
+  # dependencies
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "spglib";
   version = "2.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "spglib";
@@ -31,6 +27,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-RFvd/j/14YRIcQTpnYPx5edeF3zbHbi90jb32i3ZU/c=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pyyaml
+  ];
 
   build-system = [
     cmake
@@ -41,8 +42,6 @@ buildPythonPackage rec {
     setuptools-scm
   ];
 
-  dontUseCmakeConfigure = true;
-
   dependencies = [
     numpy
   ]
@@ -50,11 +49,8 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pyyaml
-  ];
-
+  dontUseCmakeConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "spglib" ];
 
   meta = {

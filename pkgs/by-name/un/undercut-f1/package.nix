@@ -2,24 +2,25 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  autoPatchelfHook,
   buildDotnetModule,
   dotnetCorePackages,
   ffmpeg,
-  mpg123,
-  webkitgtk_4_1,
-  nix-update-script,
-  versionCheckHook,
-  autoPatchelfHook,
-  makeWrapper,
   gtk3,
-  openssl,
-  krb5,
   icu,
+  krb5,
+  makeWrapper,
+  mpg123,
+  nix-update-script,
+  openssl,
+  versionCheckHook,
+  webkitgtk_4_1,
   zlib,
 }:
 buildDotnetModule rec {
   pname = "undercut-f1";
   version = "4.0.89";
+
   src = fetchFromGitHub {
     owner = "JustAman62";
     repo = "undercut-f1";
@@ -27,14 +28,13 @@ buildDotnetModule rec {
     hash = "sha256-JAyOSoiaV+US6liqfci0gIgULdgwd7o8VtlJZfGPHFc=";
   };
 
-  projectFile = "UndercutF1.Console/UndercutF1.Console.csproj";
-
-  executables = [ "undercutf1" ];
-
-  dotnet-sdk = dotnetCorePackages.sdk_10_0;
-  dotnet-runtime = dotnetCorePackages.sdk_10_0;
-
-  nugetDeps = ./deps.json;
+  postPatch = ''
+      rm -f .config/dotnet-tools.json
+      substituteInPlace UndercutF1.Console/UndercutF1.Console.csproj --replace-fail \
+        "<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>" \
+        "<EnableCompressionInSingleFile>false</EnableCompressionInSingleFile><DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>"
+  '';
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -51,12 +51,11 @@ buildDotnetModule rec {
     zlib
   ];
 
-  postPatch = ''
-      rm -f .config/dotnet-tools.json
-      substituteInPlace UndercutF1.Console/UndercutF1.Console.csproj --replace-fail \
-        "<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>" \
-        "<EnableCompressionInSingleFile>false</EnableCompressionInSingleFile><DebugType>none</DebugType>
-    <DebugSymbols>false</DebugSymbols>"
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  installCheckPhase = ''
+    $out/bin/undercutf1 --version | grep -q "${version}"
   '';
 
   postFixup = ''
@@ -68,6 +67,9 @@ buildDotnetModule rec {
         ]
       }
   '';
+
+  dotnet-runtime = dotnetCorePackages.sdk_10_0;
+  dotnet-sdk = dotnetCorePackages.sdk_10_0;
 
   dotnetBuildFlags = [
     "-p:DebugType=None"
@@ -82,14 +84,9 @@ buildDotnetModule rec {
     "-p:OverridePackageVersion=${version}"
   ];
 
-  doInstallCheck = true;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  installCheckPhase = ''
-    $out/bin/undercutf1 --version | grep -q "${version}"
-  '';
-
+  executables = [ "undercutf1" ];
+  nugetDeps = ./deps.json;
+  projectFile = "UndercutF1.Console/UndercutF1.Console.csproj";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -98,7 +95,7 @@ buildDotnetModule rec {
     changelog = "https://github.com/JustAman62/undercut-f1/releases/tag/v${version}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ linuxmobile ];
-    mainProgram = "undercutf1";
     platforms = lib.platforms.linux;
+    mainProgram = "undercutf1";
   };
 }

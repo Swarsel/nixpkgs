@@ -1,15 +1,14 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
-  lib,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "goslide-api";
   version = "0.7.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ualex73";
@@ -18,14 +17,12 @@ buildPythonPackage rec {
     hash = "sha256-Z3+GijoI+351zV7IpLSBQu6LE2OhhXho4ygNMVbg2xs=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
-  pythonImportsCheck = [ "goslideapi" ];
-
   # upstream has no tests
   doCheck = false;
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
+  pythonImportsCheck = [ "goslideapi" ];
 
   meta = {
     description = "Python API to utilise the Slide Open Cloud and Local API";

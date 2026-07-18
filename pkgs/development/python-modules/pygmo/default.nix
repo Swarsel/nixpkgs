@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  toPythonModule,
   fetchFromGitHub,
-  cmake,
   boost,
-  pagmo2,
-  python,
   cloudpickle,
+  cmake,
   ipyparallel,
   numba,
   numpy,
+  pagmo2,
   pybind11,
+  python,
+  toPythonModule,
 }:
 
 toPythonModule (
@@ -26,9 +26,13 @@ toPythonModule (
       hash = "sha256-279KNnP11f5ob2senIVmbnlmhRp2p3RoZLsQRE6yJ5Q=";
     };
 
-    cmakeFlags = [ "-DPYGMO_INSTALL_PATH=${placeholder "out"}/${python.sitePackages}" ];
-
     nativeBuildInputs = [ cmake ];
+
+    buildInputs = [
+      boost
+      pagmo2
+      pybind11
+    ];
 
     propagatedBuildInputs = [
       cloudpickle
@@ -38,12 +42,7 @@ toPythonModule (
       python
     ];
 
-    buildInputs = [
-      boost
-      pagmo2
-      pybind11
-    ];
-
+    cmakeFlags = [ "-DPYGMO_INSTALL_PATH=${placeholder "out"}/${python.sitePackages}" ];
     doCheck = true;
 
     meta = {

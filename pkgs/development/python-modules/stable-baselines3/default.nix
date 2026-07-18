@@ -1,32 +1,27 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  # tests
+  ale-py,
+  buildPythonPackage,
   # dependencies
   cloudpickle,
   gymnasium,
   matplotlib,
   numpy,
   pandas,
-  torch,
-
-  # tests
-  ale-py,
   pytestCheckHook,
   rich,
+  # build-system
+  setuptools,
   tensorboard,
+  torch,
   tqdm,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "stable-baselines3";
   version = "2.9.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "DLR-RM";
@@ -34,20 +29,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-vKbILFjQuD2gAkl3J3RA/vEo5UYqWttJ99kZdlEsqkY=";
   };
-
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "gymnasium"
-  ];
-  dependencies = [
-    cloudpickle
-    gymnasium
-    matplotlib
-    numpy
-    pandas
-    torch
-  ];
 
   nativeCheckInputs = [
     ale-py
@@ -57,7 +38,17 @@ buildPythonPackage (finalAttrs: {
     tqdm
   ];
 
-  pythonImportsCheck = [ "stable_baselines3" ];
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    cloudpickle
+    gymnasium
+    matplotlib
+    numpy
+    pandas
+    torch
+  ];
 
   disabledTestPaths = [
     # Tests starts training a model, which takes too long
@@ -89,6 +80,13 @@ buildPythonPackage (finalAttrs: {
     # Doesn't manage to find tqdm and rich from nativeCheckInputs
     # ImportError: You must install tqdm and rich in order to use the progress bar callback
     "test_callbacks"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "stable_baselines3" ];
+
+  pythonRelaxDeps = [
+    "gymnasium"
   ];
 
   meta = {

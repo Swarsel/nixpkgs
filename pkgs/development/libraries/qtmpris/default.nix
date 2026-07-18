@@ -1,7 +1,7 @@
 {
   lib,
-  mkDerivation,
   fetchFromGitHub,
+  mkDerivation,
   qmake,
   qtbase,
 }:

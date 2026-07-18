@@ -1,10 +1,10 @@
 {
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
   libnl,
   libpcap,
   pkg-config,
-  stdenv,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "nmrpflash";
@@ -38,7 +38,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/jclehner/nmrpflash";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ dadada ];
-    mainProgram = "nmrpflash";
     platforms = lib.platforms.unix;
+    mainProgram = "nmrpflash";
   };
 })

@@ -7,8 +7,8 @@
   dm-haiku,
   dm-sonnet,
   dm-tree,
-  fetchpatch,
   fetchPypi,
+  fetchpatch,
   frozendict,
   gym,
   matplotlib,
@@ -31,7 +31,6 @@ let
   bsuite = buildPythonPackage rec {
     pname = "bsuite";
     version = "0.3.5";
-    pyproject = true;
 
     src = fetchPypi {
       inherit pname version;
@@ -41,15 +40,28 @@ let
     patches = [
       # Convert np.int -> np.int32 since np.int is deprecated, https://github.com/google-deepmind/bsuite/pull/48
       (fetchpatch {
-        url = "https://github.com/google-deepmind/bsuite/pull/48/commits/f8d81b2f1c27ef2c8c71ae286001ed879ea306ab.patch";
         hash = "sha256-FXtvVS+U8brulq8Z27+yWIimB+kigGiUOIv1SHb1TA8=";
+        url = "https://github.com/google-deepmind/bsuite/pull/48/commits/f8d81b2f1c27ef2c8c71ae286001ed879ea306ab.patch";
       })
       # Replace imp with importlib, https://github.com/google-deepmind/bsuite/pull/50
       (fetchpatch {
+        hash = "sha256-V5p/6edNXTpEckuSuxJ/mvfJng5yE/pfeMoYbvlNpEo=";
         name = "replace-imp.patch";
         url = "https://github.com/google-deepmind/bsuite/commit/d08b63655c7efa5b5bb0f35e825e17549d23e812.patch";
-        hash = "sha256-V5p/6edNXTpEckuSuxJ/mvfJng5yE/pfeMoYbvlNpEo=";
       })
+    ];
+
+    # Escape infinite recursion with rlax
+    doCheck = false;
+
+    nativeCheckInputs = [
+      distrax
+      dm-haiku
+      dm-sonnet
+      optax
+      pytestCheckHook
+      rlax
+      tensorflow-probability
     ];
 
     build-system = [ setuptools ];
@@ -71,18 +83,6 @@ let
       termcolor
     ];
 
-    nativeCheckInputs = [
-      distrax
-      dm-haiku
-      dm-sonnet
-      optax
-      pytestCheckHook
-      rlax
-      tensorflow-probability
-    ];
-
-    pythonImportsCheck = [ "bsuite" ];
-
     disabledTests = [
       # Tests require network connection
       "test_run9"
@@ -102,8 +102,8 @@ let
       "test_episode_truncation"
     ];
 
-    # Escape infinite recursion with rlax
-    doCheck = false;
+    pyproject = true;
+    pythonImportsCheck = [ "bsuite" ];
 
     passthru.tests = {
       check = bsuite.overridePythonAttrs (_: {

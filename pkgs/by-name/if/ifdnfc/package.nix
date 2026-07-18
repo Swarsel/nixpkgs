@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  pcsclite,
   autoreconfHook,
   libnfc,
+  pcsclite,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -18,16 +18,19 @@ stdenv.mkDerivation {
     rev = "0e48e8e107dc42f68fb472bb06d257503ad45b1d";
     sha256 = "1cxnvhhlcbm8h49rlw5racspb85fmwqqhd3gzzpzy68vrs0b37vg";
   };
+
   nativeBuildInputs = [
     pkg-config
     autoreconfHook
   ];
+
   buildInputs = [
     pcsclite
     libnfc
   ];
 
   configureFlags = [ "--prefix=$(out)" ];
+
   makeFlags = [
     "DESTDIR=/"
     "usbdropdir=$(out)/pcsc/drivers"
@@ -35,7 +38,7 @@ stdenv.mkDerivation {
 
   meta = {
     description = "PC/SC IFD Handler based on libnfc";
-    mainProgram = "ifdnfc-activate";
+
     longDescription = ''
       libnfc Interface Plugin to be used in <code>services.pcscd.plugins</code>.
       It provides support for all readers which are not supported by ccid but by libnfc.
@@ -50,9 +53,11 @@ stdenv.mkDerivation {
       Supports the pn533 smart-card reader chip which is for example used in
       the SCM SCL3711.
     '';
+
     homepage = "https://github.com/nfc-tools/ifdnfc";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ makefu ];
+    platforms = lib.platforms.linux;
+    mainProgram = "ifdnfc-activate";
   };
 }

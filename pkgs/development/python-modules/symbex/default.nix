@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   click,
+  pytest-icdiff,
   pytestCheckHook,
   pyyaml,
-  pytest-icdiff,
+  setuptools,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "symbex";
   version = "2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -22,18 +21,15 @@ buildPythonPackage rec {
     hash = "sha256-swg98z4DpQJ5rq7tdsd3FofbYF7O5S+9ZR0weoM2DoI=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ click ];
-
-  pythonImportsCheck = [ "symbex" ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pyyaml
     pytest-icdiff
     writableTmpDirAsHomeHook
   ];
+
+  build-system = [ setuptools ];
+  dependencies = [ click ];
 
   disabledTests = [
     # Fails with `TypeError: CliRunner.__init__() got an unexpected keyword argument 'mix_std...`
@@ -42,6 +38,9 @@ buildPythonPackage rec {
     # Fails with AssertionError (SystemExit(1).stdout is '' not the expected message)
     "test_output"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "symbex" ];
 
   meta = {
     description = "Find the Python code for specified symbols";

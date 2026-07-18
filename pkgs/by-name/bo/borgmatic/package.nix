@@ -1,32 +1,29 @@
 {
+  lib,
+  stdenv,
   borgbackup,
   borgmatic,
   coreutils,
-  enableSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
   fetchPypi,
-  nix-update-script,
   installShellFiles,
-  lib,
+  nix-update-script,
+  nixosTests,
   python3Packages,
-  stdenv,
   systemd,
   testers,
-  nixosTests,
+  enableSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "borgmatic";
   version = "2.1.6";
-  pyproject = true;
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-Mgx8PnGfTa5j6+53RVntPHa5EDJAY2NQC3fvmyRj24Y=";
   };
 
-  passthru.updateScript = nix-update-script { };
+  strictDeps = true;
+  nativeBuildInputs = [ installShellFiles ];
 
   nativeCheckInputs =
     with python3Packages;
@@ -39,40 +36,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ]
     ++ finalAttrs.passthru.optional-dependencies.apprise
     ++ finalAttrs.passthru.optional-dependencies.browse;
-
-  # - test_borgmatic_version_matches_news_version
-  #   NEWS file is available on the pypi source, but the test requires a
-  #   borgmatic executable. Which it can't find in difference to all the
-  #   other tests.
-  # - test_log_outputs_includes_error_output_in_exception
-  #   TOCTOU race in log_outputs(): process.poll() returns None in
-  #   raise_for_process_errors but non-None in the while-loop exit check,
-  #   so the error is never raised. Timing-dependent; fails on x86_64-darwin.
-  disabledTests = [
-    "test_borgmatic_version_matches_news_version"
-    "test_log_outputs_includes_error_output_in_exception"
-  ];
-
-  nativeBuildInputs = [ installShellFiles ];
-
-  build-system = [ python3Packages.setuptools ];
-
-  dependencies = with python3Packages; [
-    borgbackup
-    colorama
-    jsonschema
-    packaging
-    requests
-    ruamel-yaml
-  ];
-
-  optional-dependencies = {
-    apprise = [ python3Packages.apprise ];
-    browse = with python3Packages; [
-      binaryornot
-      textual
-    ];
-  };
 
   postInstall =
     lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
@@ -92,23 +55,62 @@ python3Packages.buildPythonApplication (finalAttrs: {
         --replace-fail "sleep " "${coreutils}/bin/sleep "
     '';
 
-  passthru.tests = {
-    version = testers.testVersion { package = borgmatic; };
-    inherit (nixosTests) borgmatic;
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+  build-system = [ python3Packages.setuptools ];
+
+  dependencies = with python3Packages; [
+    borgbackup
+    colorama
+    jsonschema
+    packaging
+    requests
+    ruamel-yaml
+  ];
+
+  # - test_borgmatic_version_matches_news_version
+  #   NEWS file is available on the pypi source, but the test requires a
+  #   borgmatic executable. Which it can't find in difference to all the
+  #   other tests.
+  # - test_log_outputs_includes_error_output_in_exception
+  #   TOCTOU race in log_outputs(): process.poll() returns None in
+  #   raise_for_process_errors but non-None in the while-loop exit check,
+  #   so the error is never raised. Timing-dependent; fails on x86_64-darwin.
+  disabledTests = [
+    "test_borgmatic_version_matches_news_version"
+    "test_log_outputs_includes_error_output_in_exception"
+  ];
+
+  optional-dependencies = {
+    apprise = [ python3Packages.apprise ];
+
+    browse = with python3Packages; [
+      binaryornot
+      textual
+    ];
   };
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+
+  passthru.tests = {
+    inherit (nixosTests) borgmatic;
+    version = testers.testVersion { package = borgmatic; };
+  };
+
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Simple, configuration-driven backup software for servers and workstations";
     homepage = "https://torsion.org/borgmatic/";
     changelog = "https://projects.torsion.org/borgmatic-collective/borgmatic/src/tag/${finalAttrs.version}/NEWS";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
-    mainProgram = "borgmatic";
+
     maintainers = with lib.maintainers; [
       imlonghao
       x123
     ];
+
+    platforms = lib.platforms.all;
+    mainProgram = "borgmatic";
   };
 })

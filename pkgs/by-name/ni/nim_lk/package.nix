@@ -2,11 +2,11 @@
   lib,
   buildNimSbom,
   fetchFromSourcehut,
+  makeWrapper,
   nim,
   nix-prefetch,
   nix-prefetch-git,
   openssl,
-  makeWrapper,
 }:
 
 let
@@ -20,12 +20,12 @@ buildNimSbom (finalAttrs: {
     hash = "sha256-BZNQs8zMtBMcqafvU+WyjtBZQJ8zhQIPSR51j7C9Z6g=";
   };
 
-  buildInputs = [ openssl ];
-  nativeBuildInputs = [ makeWrapper ];
-
   patches = [
     ./nil.patch
   ];
+
+  nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ openssl ];
 
   postFixup = ''
     wrapProgram $out/bin/nim_lk \
@@ -41,8 +41,8 @@ buildNimSbom (finalAttrs: {
   meta = finalAttrs.src.meta // {
     description = "Generate Nix specific lock files for Nim packages";
     homepage = "https://git.sr.ht/~ehmry/nim_lk";
-    mainProgram = "nim_lk";
     license = lib.licenses.bsd3;
     platforms = lib.platforms.unix;
+    mainProgram = "nim_lk";
   };
 }) ./sbom.json

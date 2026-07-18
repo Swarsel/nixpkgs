@@ -1,24 +1,18 @@
 {
-  rust-bindgen-unwrapped,
-  zlib,
   bash,
   runCommand,
   runCommandCC,
+  rust-bindgen-unwrapped,
+  zlib,
 }:
 let
   clang = rust-bindgen-unwrapped.clang;
   self =
     runCommand "rust-bindgen-${rust-bindgen-unwrapped.version}"
       {
-        pname = "rust-bindgen";
         inherit (rust-bindgen-unwrapped) version;
-        meta = rust-bindgen-unwrapped.meta // {
-          longDescription = rust-bindgen-unwrapped.meta.longDescription + ''
-            This version of bindgen is wrapped with the required compiler flags
-            required to find the c and c++ standard library, as well as the libraries
-            specified in the buildInputs of your derivation.
-          '';
-        };
+        pname = "rust-bindgen";
+
         passthru.tests = {
           simple-c = runCommandCC "simple-c-bindgen-tests" { } ''
             echo '#include <stdlib.h>' > a.c
@@ -26,17 +20,27 @@ let
             grep atoi output
             touch $out
           '';
+
           simple-cpp = runCommandCC "simple-cpp-bindgen-tests" { } ''
             echo '#include <cmath>' > a.cpp
             ${self}/bin/bindgen a.cpp --allowlist-function erf -- -xc++ | tee output
             grep erf output
             touch $out
           '';
+
           with-lib = runCommandCC "zlib-bindgen-tests" { buildInputs = [ zlib ]; } ''
             echo '#include <zlib.h>' > a.c
             ${self}/bin/bindgen a.c --allowlist-function compress | tee output
             grep compress output
             touch $out
+          '';
+        };
+
+        meta = rust-bindgen-unwrapped.meta // {
+          longDescription = rust-bindgen-unwrapped.meta.longDescription + ''
+            This version of bindgen is wrapped with the required compiler flags
+            required to find the c and c++ standard library, as well as the libraries
+            specified in the buildInputs of your derivation.
           '';
         };
       }

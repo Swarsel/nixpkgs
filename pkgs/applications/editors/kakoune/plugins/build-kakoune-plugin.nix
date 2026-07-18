@@ -6,15 +6,15 @@
 rec {
   buildKakounePlugin =
     attrs@{
+      src,
+      buildPhase ? "",
+      configurePhase ? "",
       name ? "${attrs.pname}-${attrs.version}",
       namePrefix ? "kakplugin-",
-      src,
-      unpackPhase ? "",
-      configurePhase ? "",
-      buildPhase ? "",
-      preInstall ? "",
-      postInstall ? "",
       path ? lib.getName name,
+      postInstall ? "",
+      preInstall ? "",
+      unpackPhase ? "",
       ...
     }:
     stdenv.mkDerivation (
@@ -23,8 +23,6 @@ rec {
         "path"
       ])
       // {
-        name = namePrefix + name;
-
         installPhase = ''
           runHook preInstall
 
@@ -34,6 +32,8 @@ rec {
 
           runHook postInstall
         '';
+
+        name = namePrefix + name;
       }
     );
 

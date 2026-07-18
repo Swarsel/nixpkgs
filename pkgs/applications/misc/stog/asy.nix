@@ -1,14 +1,12 @@
 {
   buildDunePackage,
-  stog,
   ocf_ppx,
+  stog,
 }:
 
 buildDunePackage {
-  pname = "stog_asy";
-
   inherit (stog) version src;
-
+  pname = "stog_asy";
   buildInputs = [ ocf_ppx ];
   propagatedBuildInputs = [ stog ];
 

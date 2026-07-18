@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
   installShellFiles,
-  stdenv,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,9 +17,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-D1uecxrRR49EUa2fHm/ieQ4Gp0m5p0ncj5YiINwlvN8=";
   };
 
-  cargoHash = "sha256-lX/bb6RGcsfgfjhK7SwwcY9R7USSEdG5VLK6v2LOvas=";
-
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-lX/bb6RGcsfgfjhK7SwwcY9R7USSEdG5VLK6v2LOvas=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     $out/bin/genact --print-manpage > genact.1

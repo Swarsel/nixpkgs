@@ -1,10 +1,10 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
   cmake,
-  linphoneSdkVersion,
   linphoneSdkHash,
+  linphoneSdkVersion,
 }:
 let
   # linphone-sdk is hosted on BC's Gitlab instance, however since it imposes
@@ -16,6 +16,7 @@ let
     tag = linphoneSdkVersion;
     hash = linphoneSdkHash;
     leaveDotGit = true;
+
     postFetch = ''
       cd $out
       git remote add origin https://github.com/BelledonneCommunications/linphone-sdk.git
@@ -44,35 +45,36 @@ lib.extendMkDerivation {
   extendDrvArgs =
     finalAttrs:
     {
-      sourceRoot ? finalAttrs.pname,
-      nativeBuildInputs ? [ ],
       cmakeFlags ? [ ],
+      nativeBuildInputs ? [ ],
+      sourceRoot ? finalAttrs.pname,
       ...
     }@args:
     {
-      version = linphoneSdkVersion;
-
       inherit src;
+      version = linphoneSdkVersion;
 
       nativeBuildInputs = [
         cmake
       ]
       ++ nativeBuildInputs;
 
-      sourceRoot = "${finalAttrs.src.name}/${sourceRoot}";
-
       cmakeFlags = [
         "-DBUILD_SHARED_LIBS=ON"
       ]
       ++ cmakeFlags;
 
+      sourceRoot = "${finalAttrs.src.name}/${sourceRoot}";
+
       meta = {
         homepage = "https://gitlab.linphone.org/BC/public/linphone-sdk";
+
         # maintainers for all linphone packages
         maintainers = [
           lib.maintainers.jluttine
           lib.maintainers.naxdy
         ];
+
         platforms = lib.platforms.all;
       }
       // (lib.optionalAttrs (args ? meta) args.meta);

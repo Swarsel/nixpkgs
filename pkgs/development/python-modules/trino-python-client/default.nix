@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   boto3,
   buildPythonPackage,
-  fetchFromGitHub,
   httpretty,
   keyring,
   lz4,
@@ -10,9 +10,9 @@
   pytestCheckHook,
   python-dateutil,
   pytz,
+  requests,
   requests-gssapi,
   requests-kerberos,
-  requests,
   setuptools,
   sqlalchemy,
   testcontainers,
@@ -23,14 +23,21 @@
 buildPythonPackage rec {
   pname = "trino-python-client";
   version = "0.338.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
-    repo = "trino-python-client";
     owner = "trinodb";
+    repo = "trino-python-client";
     tag = version;
     hash = "sha256-kWbqzdeOkzjhcaQOS4bCUnXFILpurtVE3N3KLoqSeds=";
   };
+
+  nativeCheckInputs = [
+    boto3
+    httpretty
+    pytestCheckHook
+    testcontainers
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [ setuptools ];
 
@@ -44,23 +51,7 @@ buildPythonPackage rec {
     zstandard
   ];
 
-  optional-dependencies = lib.fix (self: {
-    kerberos = [ requests-kerberos ];
-    gsaapi = [ requests-gssapi ];
-    sqlalchemy = [ sqlalchemy ];
-    external-authentication-token-cache = [ keyring ];
-    all = self.kerberos ++ self.sqlalchemy;
-  });
-
-  nativeCheckInputs = [
-    boto3
-    httpretty
-    pytestCheckHook
-    testcontainers
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
-  pythonImportsCheck = [ "trino" ];
+  disabledTestMarks = [ "auth" ];
 
   disabledTestPaths = [
     # Tests require a running trino instance
@@ -69,8 +60,6 @@ buildPythonPackage rec {
     "tests/integration/test_sqlalchemy_integration.py"
   ];
 
-  disabledTestMarks = [ "auth" ];
-
   disabledTests = [
     # Tests require a running trino instance
     "test_oauth2"
@@ -78,11 +67,23 @@ buildPythonPackage rec {
     "test_multithreaded_oauth2_authentication_flow"
   ];
 
+  optional-dependencies = lib.fix (self: {
+    all = self.kerberos ++ self.sqlalchemy;
+    external-authentication-token-cache = [ keyring ];
+    gsaapi = [ requests-gssapi ];
+    kerberos = [ requests-kerberos ];
+    sqlalchemy = [ sqlalchemy ];
+  });
+
+  pyproject = true;
+  pythonImportsCheck = [ "trino" ];
+
   meta = {
-    changelog = "https://github.com/trinodb/trino-python-client/blob/${src.tag}/CHANGES.md";
     description = "Client for the Trino distributed SQL Engine";
     homepage = "https://github.com/trinodb/trino-python-client";
+    changelog = "https://github.com/trinodb/trino-python-client/blob/${src.tag}/CHANGES.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       cpcloud
       flokli

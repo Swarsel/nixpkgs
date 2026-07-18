@@ -1,16 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   nix-update-script,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "credspy";
   version = "1.0.0-unstable-2026-06-22";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "RedByte1337";
@@ -20,15 +17,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-PHSLke90obZw2cwY7zqp1DNnG26Hf+ixHunMwQHoU3o=";
   };
 
-  build-system = with python3Packages; [ hatchling ];
-
-  dependencies = with python3Packages; [ requests ];
-
-  pythonImportsCheck = [ "credspy" ];
-
   # Project has no tests
   doCheck = false;
-
+  __structuredAttrs = true;
+  build-system = with python3Packages; [ hatchling ];
+  dependencies = with python3Packages; [ requests ];
+  pyproject = true;
+  pythonImportsCheck = [ "credspy" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

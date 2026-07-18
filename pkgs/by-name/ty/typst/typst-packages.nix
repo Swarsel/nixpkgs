@@ -17,14 +17,16 @@ lib.makeScope newScope (
       name = toPackageName pname version;
 
       value = buildUniversePackage {
-        homepage = packageSpec.homepage or null;
         inherit pname version;
+
         inherit (packageSpec)
           hash
           description
           license
           typstDeps
           ;
+
+        homepage = packageSpec.homepage or null;
       };
     };
 

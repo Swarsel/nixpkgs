@@ -1,5 +1,6 @@
 {
   lib,
+  fetchFromGitHub,
   aiosqlite,
   anyio,
   asgi-lifespan,
@@ -7,7 +8,6 @@
   buildPythonPackage,
   daphne,
   fastapi,
-  fetchFromGitHub,
   granian,
   httpx,
   portend,
@@ -25,33 +25,12 @@
 buildPythonPackage rec {
   pname = "sse-starlette";
   version = "3.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sysid";
     repo = "sse-starlette";
     tag = "v${version}";
     hash = "sha256-SqYLwbl+AyeqgYIwAd/Z39BSPXaYSXMnM6DAGUv3vQ8=";
-  };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    anyio
-  ];
-
-  optional-dependencies = {
-    daphne = [ daphne ];
-    examples = [
-      aiosqlite
-      fastapi
-      sqlalchemy
-      starlette
-      uvicorn
-    ]
-    ++ sqlalchemy.optional-dependencies.asyncio;
-    granian = [ granian ];
-    uvicorn = [ uvicorn ];
   };
 
   nativeCheckInputs = [
@@ -68,7 +47,12 @@ buildPythonPackage rec {
     uvicorn
   ];
 
-  pythonImportsCheck = [ "sse_starlette" ];
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    anyio
+  ];
 
   disabledTests = [
     # AssertionError
@@ -77,7 +61,24 @@ buildPythonPackage rec {
     "test_sse_server_termination"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  optional-dependencies = {
+    daphne = [ daphne ];
+
+    examples = [
+      aiosqlite
+      fastapi
+      sqlalchemy
+      starlette
+      uvicorn
+    ]
+    ++ sqlalchemy.optional-dependencies.asyncio;
+
+    granian = [ granian ];
+    uvicorn = [ uvicorn ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "sse_starlette" ];
 
   meta = {
     description = "Server Sent Events for Starlette and FastAPI";

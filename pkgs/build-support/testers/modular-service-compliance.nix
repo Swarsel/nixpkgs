@@ -2,9 +2,9 @@
   lib,
   coreutils,
   gnugrep,
-  writeShellScript,
-  writeShellApplication,
   stdenvNoCC,
+  writeShellApplication,
+  writeShellScript,
 }:
 
 /**
@@ -27,24 +27,28 @@ let
   evalResult = evalConfig {
     services = {
       svc = {
-        process.argv = [ "${coreutils}/bin/true" ];
         assertions = [
           {
             assertion = true;
             message = "compliance test assertion";
           }
         ];
-        warnings = [ "compliance test warning" ];
+
+        process.argv = [ "${coreutils}/bin/true" ];
+
         services.child = {
-          process.argv = [ "${coreutils}/bin/true" ];
           assertions = [
             {
               assertion = true;
               message = "compliance child assertion";
             }
           ];
+
+          process.argv = [ "${coreutils}/bin/true" ];
           warnings = [ "compliance child warning" ];
         };
+
+        warnings = [ "compliance test warning" ];
       };
     };
   };
@@ -54,63 +58,67 @@ let
       c = evalResult.config.svc;
     in
     {
-      testProcessArgv = {
-        expr = c.process.argv;
-        expected = [ "${coreutils}/bin/true" ];
-      };
-
-      testSubServiceArgv = {
-        expr = c.services.child.process.argv;
-        expected = [ "${coreutils}/bin/true" ];
-      };
-
       testAssertions = {
+        expected = true;
+
         expr = builtins.elem {
           assertion = true;
           message = "compliance test assertion";
         } c.assertions;
-        expected = true;
-      };
-
-      testWarnings = {
-        expr = builtins.elem "compliance test warning" c.warnings;
-        expected = true;
-      };
-
-      testSubServiceAssertions = {
-        expr = builtins.elem {
-          assertion = true;
-          message = "compliance child assertion";
-        } c.services.child.assertions;
-        expected = true;
-      };
-
-      testSubServiceWarnings = {
-        expr = builtins.elem "compliance child warning" c.services.child.warnings;
-        expected = true;
       };
 
       # Separate eval for a failing assertion — checkDrv would fail here,
       # so we only access config.
       testFailingAssertionValue = {
+        expected = true;
+
         expr = builtins.elem {
           assertion = false;
           message = "compliance failing assertion";
         } failingEval.config.failing.assertions;
+      };
+
+      testProcessArgv = {
+        expected = [ "${coreutils}/bin/true" ];
+        expr = c.process.argv;
+      };
+
+      testSubServiceArgv = {
+        expected = [ "${coreutils}/bin/true" ];
+        expr = c.services.child.process.argv;
+      };
+
+      testSubServiceAssertions = {
         expected = true;
+
+        expr = builtins.elem {
+          assertion = true;
+          message = "compliance child assertion";
+        } c.services.child.assertions;
+      };
+
+      testSubServiceWarnings = {
+        expected = true;
+        expr = builtins.elem "compliance child warning" c.services.child.warnings;
+      };
+
+      testWarnings = {
+        expected = true;
+        expr = builtins.elem "compliance test warning" c.warnings;
       };
     };
 
   failingEval = evalConfig {
     services = {
       failing = {
-        process.argv = [ "${coreutils}/bin/true" ];
         assertions = [
           {
             assertion = false;
             message = "compliance failing assertion";
           }
         ];
+
+        process.argv = [ "${coreutils}/bin/true" ];
       };
     };
   };
@@ -163,16 +171,34 @@ let
   mkTestScript =
     name: text:
     lib.getExe (writeShellApplication {
+      inherit text;
       name = "${namePrefix}-${name}";
+
       runtimeInputs = [
         coreutils
         gnugrep
       ];
-      inherit text;
     });
 
 in
 {
+  # Integration tests: verify that services actually run.
+  basic-argv = mkTest {
+    name = "${namePrefix}-basic-argv";
+
+    services.test.process.argv = mkArgv "test" [
+      "--greeting"
+      "hello"
+    ];
+
+    testExe = mkTestScript "basic-argv" (
+      waitAndCheck "test" [
+        "--greeting"
+        "hello"
+      ]
+    );
+  };
+
   # Eval-level tests: config structure, evaluated in the integration's
   # full context (one whole-system eval).
   # TODO: generalize with
@@ -180,15 +206,7 @@ in
   #   - pkgs/test/overriding.nix
   eval = stdenvNoCC.mkDerivation (finalAttrs: {
     __structuredAttrs = true;
-    name = "${namePrefix}-eval-report";
-    # Depend on the integration's representative derivation to prove that
-    # the system builds with these services.
-    representative = evalResult.checkDrv;
-    passthru = {
-      tests = evalTestDefs;
-      failures = lib.runTests finalAttrs.passthru.tests;
-    };
-    testResults = lib.mapAttrs (_: test: test.expr == test.expected) finalAttrs.passthru.tests;
+
     buildCommand = ''
       touch $out
       for testName in "''${!testResults[@]}"; do
@@ -213,39 +231,36 @@ in
       } >&2
       exit 1
     '';
+
+    name = "${namePrefix}-eval-report";
+    # Depend on the integration's representative derivation to prove that
+    # the system builds with these services.
+    representative = evalResult.checkDrv;
+    testResults = lib.mapAttrs (_: test: test.expr == test.expected) finalAttrs.passthru.tests;
+
+    passthru = {
+      failures = lib.runTests finalAttrs.passthru.tests;
+      tests = evalTestDefs;
+    };
   });
-
-  # Integration tests: verify that services actually run.
-
-  basic-argv = mkTest {
-    name = "${namePrefix}-basic-argv";
-    services.test.process.argv = mkArgv "test" [
-      "--greeting"
-      "hello"
-    ];
-    testExe = mkTestScript "basic-argv" (
-      waitAndCheck "test" [
-        "--greeting"
-        "hello"
-      ]
-    );
-  };
 
   sub-services = mkTest {
     name = "${namePrefix}-sub-services";
+
     services.a = {
       process.argv = mkArgv "a" [ "--depth=0" ];
+
       services.b = {
         process.argv = mkArgv "b" [ "--depth=1" ];
         services.c.process.argv = mkArgv "c" [ "--depth=2" ];
       };
     };
+
     testExe = mkTestScript "sub-services" ''
       ${waitAndCheck "a" [ "--depth=0" ]}
       ${waitAndCheck "b" [ "--depth=1" ]}
       ${waitAndCheck "c" [ "--depth=2" ]}
     '';
   };
-
   # See also the manual compliance items in doc/build-helpers/testers.chapter.md.
 }

@@ -1,28 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
-  # dependencies
-  equinox,
-  jax,
-  jaxtyping,
-  typing-extensions,
-
   # tests
   beartype,
+  buildPythonPackage,
+  # dependencies
+  equinox,
+  # build-system
+  hatchling,
+  jax,
+  jaxtyping,
   pytest,
   python,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "lineax";
   version = "0.1.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "patrick-kidger";
@@ -30,17 +25,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-qclL/IE/+gLeBL4huy07npXR3sDlbrTlFfib3qVKupk=";
   };
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    equinox
-    jax
-    jaxtyping
-    typing-extensions
-  ];
-
-  pythonImportsCheck = [ "lineax" ];
 
   nativeCheckInputs = [
     beartype
@@ -56,6 +40,19 @@ buildPythonPackage (finalAttrs: {
 
     runHook postCheck
   '';
+
+  __structuredAttrs = true;
+  build-system = [ hatchling ];
+
+  dependencies = [
+    equinox
+    jax
+    jaxtyping
+    typing-extensions
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "lineax" ];
 
   meta = {
     description = "Linear solvers in JAX and Equinox";

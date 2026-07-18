@@ -1,24 +1,27 @@
 {
-  deployAndroidPackage,
   lib,
-  package,
-  autoPatchelfHook,
-  makeWrapper,
-  os,
-  arch,
-  pkgs,
   stdenv,
-  postInstall,
+  arch,
+  autoPatchelfHook,
+  deployAndroidPackage,
+  makeWrapper,
   meta,
+  os,
+  package,
+  pkgs,
+  postInstall,
 }:
 
 deployAndroidPackage {
-  name = "androidsdk";
   inherit package os arch;
+  inherit meta;
+
   nativeBuildInputs = [
     makeWrapper
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
+
+  name = "androidsdk";
 
   patchInstructions = ''
     ${lib.optionalString (os == "linux") ''
@@ -50,6 +53,4 @@ deployAndroidPackage {
     cd "$ANDROID_HOME"
     ${postInstall}
   '';
-
-  inherit meta;
 }

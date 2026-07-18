@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatch-docstring-description,
   hatch-vcs,
   hatchling,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "legacy-api-wrap";
   version = "1.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "flying-sheep";
@@ -20,17 +19,19 @@ buildPythonPackage rec {
     hash = "sha256-UvOkVNtH3MbD+ExF0dQ+XAfDx9v7YD3GCNUsEaH7zzM=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     hatch-docstring-description
     hatch-vcs
     hatchling
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "legacy_api_wrap"
   ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   meta = {
     description = "Wrap legacy APIs in python projects";

@@ -1,8 +1,8 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   click,
+  fetchPypi,
   pytest,
   setuptools,
 }:
@@ -10,19 +10,17 @@
 buildPythonPackage rec {
   pname = "click-plugins";
   version = "1.1.1.2";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "click_plugins";
     inherit version;
     sha256 = "sha256-1685hKmdJDwTGqGoKDMedjD0qIqXQf0FySeyBLz5ImE=";
+    pname = "click_plugins";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ click ];
-
   nativeCheckInputs = [ pytest ];
+  build-system = [ setuptools ];
+  dependencies = [ click ];
+  pyproject = true;
 
   meta = {
     description = "Extension module for click to enable registering CLI commands";

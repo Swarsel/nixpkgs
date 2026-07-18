@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   mock,
   setuptools,
   tox,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "routeros-api";
   version = "0.21.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "socialwifi";
@@ -19,13 +18,13 @@ buildPythonPackage rec {
     hash = "sha256-1g37fDB+/6bVwgtgE1YzGnUpDaLEfwDpQWoqjHgeeqk=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     mock
     tox
   ];
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "routeros_api" ];
 
   meta = {

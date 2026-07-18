@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  rpmextract,
-  libjpeg,
   cups,
+  libjpeg,
+  rpmextract,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "epson_201310w";
@@ -21,14 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     libjpeg
     cups
   ];
-
-  unpackPhase = ''
-    runHook preUnpack
-    rpmextract $src
-    tar -zxf epson-inkjet-printer-201310w-1.0.1.tar.gz
-    tar -zxf epson-inkjet-printer-filter-1.0.2.tar.gz
-    runHook postUnpack
-  '';
 
   preConfigure = ''
     cd epson-inkjet-printer-filter-1.0.2
@@ -49,9 +41,17 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "Epson_201310w.1.data" "$out/resource/Epson_201310w.1.data"
   '';
 
+  unpackPhase = ''
+    runHook preUnpack
+    rpmextract $src
+    tar -zxf epson-inkjet-printer-201310w-1.0.1.tar.gz
+    tar -zxf epson-inkjet-printer-filter-1.0.2.tar.gz
+    runHook postUnpack
+  '';
+
   meta = {
-    homepage = "https://www.epson.eu/en_EU/support/sc/epson-l120/s/s1346";
     description = "Epson printer driver for L120 series inkjet printers";
+
     longDescription = ''
       This software is a filter program used with the Common UNIX Printing
       System (CUPS) under Linux. It supplies high quality printing with
@@ -63,10 +63,14 @@ stdenv.mkDerivation (finalAttrs: {
           drivers = [ pkgs.epson_201310w ];
         };
     '';
+
+    homepage = "https://www.epson.eu/en_EU/support/sc/epson-l120/s/s1346";
+
     license = with lib.licenses; [
       lgpl21
       epson
     ];
+
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = with lib.maintainers; [ nukdokplex ];
     platforms = [ "x86_64-linux" ];

@@ -2,31 +2,31 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  llvmPackages,
-  libsForQt5,
-  libGLU,
-  lib3ds,
-  lib3mf,
+  boost,
   bzip2,
-  muparser,
+  cgal,
+  cmake,
+  corto,
   eigen,
+  embree,
   glew,
   gmp,
   levmar,
-  qhull,
-  cmake,
-  cgal,
-  boost,
-  mpfr,
-  xercesc,
-  onetbb,
-  embree,
-  vcg,
+  lib3ds,
+  lib3mf,
+  libGLU,
   libigl,
-  corto,
+  libsForQt5,
+  llvmPackages,
+  mpfr,
+  muparser,
+  onetbb,
   openctm,
+  qhull,
   structuresynth,
+  vcg,
   vclab-nexus,
+  xercesc,
 }:
 
 let
@@ -60,6 +60,19 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "MeshLab-${finalAttrs.version}";
     hash = "sha256-6BozYzPCbBZ+btL4FCdzKlwKqTsvFWDfOXizzJSYo9s=";
   };
+
+  patches = [
+    # CMake: use system dependencies, install exports
+    # ref. https://github.com/cnr-isti-vclab/meshlab/pull/1617
+    # merged upstream
+    ./1617_cmake-use-system-dependencies-install-exports.patch
+
+    ./no-plist.patch
+  ];
+
+  postPatch = lib.optionalString stdenv.hostPlatform.isLinux ''
+    substituteAll ${./meshlab.desktop} resources/linux/meshlab.desktop
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -102,19 +115,6 @@ stdenv.mkDerivation (finalAttrs: {
     llvmPackages.openmp
   ];
 
-  patches = [
-    # CMake: use system dependencies, install exports
-    # ref. https://github.com/cnr-isti-vclab/meshlab/pull/1617
-    # merged upstream
-    ./1617_cmake-use-system-dependencies-install-exports.patch
-
-    ./no-plist.patch
-  ];
-
-  postPatch = lib.optionalString stdenv.hostPlatform.isLinux ''
-    substituteAll ${./meshlab.desktop} resources/linux/meshlab.desktop
-  '';
-
   cmakeFlags = cmakeFlagsDisallowDownload;
 
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
@@ -126,15 +126,6 @@ stdenv.mkDerivation (finalAttrs: {
       "{_IMPORT_PREFIX}/meshlab.app" \
       "{_IMPORT_PREFIX}/Applications/meshlab.app"
   '';
-
-  # The hook will wrap all the plugin binaries, make they are not a
-  # valid plugin. So we have to wrap the main app manually.
-  # See: https://github.com/NixOS/nixpkgs/pull/396295#issuecomment-3137779781
-  dontWrapQtApps = stdenv.hostPlatform.isDarwin;
-
-  # display a black screen on wayland, so force XWayland for now.
-  # Might be fixed when upstream will be ready for Qt6.
-  qtWrapperArgs = lib.optional stdenv.hostPlatform.isLinux "--set QT_QPA_PLATFORM xcb";
 
   postFixup =
     lib.optionalString stdenv.hostPlatform.isLinux ''
@@ -149,16 +140,26 @@ stdenv.mkDerivation (finalAttrs: {
         "$out/Applications/meshlab.app/Contents/PlugIns/libio_ctm.so"
     '';
 
+  # The hook will wrap all the plugin binaries, make they are not a
+  # valid plugin. So we have to wrap the main app manually.
+  # See: https://github.com/NixOS/nixpkgs/pull/396295#issuecomment-3137779781
+  dontWrapQtApps = stdenv.hostPlatform.isDarwin;
+  # display a black screen on wayland, so force XWayland for now.
+  # Might be fixed when upstream will be ready for Qt6.
+  qtWrapperArgs = lib.optional stdenv.hostPlatform.isLinux "--set QT_QPA_PLATFORM xcb";
+
   meta = {
     description = "System for processing and editing 3D triangular meshes";
-    mainProgram = "meshlab";
     homepage = "https://www.meshlab.net/";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       nim65s
       yzx9
     ];
-    teams = [ lib.teams.geospatial ];
+
     platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "meshlab";
+    teams = [ lib.teams.geospatial ];
   };
 })

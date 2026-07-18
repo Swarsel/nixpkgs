@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  python3Packages,
   nix-update-script,
+  python3Packages,
 }:
 
 let
@@ -29,18 +29,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ opencv4WithGtk ];
-
   cmakeFlags = [ (lib.cmakeBool "BUILD_EXAMPLES" true) ];
-
   doCheck = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Visual fiducial system popular for robotics research";
     homepage = "https://april.eecs.umich.edu/software/apriltag";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ phodina ];
+    platforms = lib.platforms.all;
   };
 })

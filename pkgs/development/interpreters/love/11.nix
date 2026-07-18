@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   SDL2,
-  libGLU,
-  libGL,
-  openal,
-  luajit,
+  cmake,
   freetype,
-  physfs,
+  libGL,
+  libGLU,
   libmodplug,
-  mpg123,
-  libvorbis,
   libogg,
   libtheora,
-  which,
   libtool,
+  libvorbis,
   libx11,
-  cmake,
+  luajit,
+  mpg123,
+  openal,
+  physfs,
+  pkg-config,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,6 +36,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     cmake
   ];
+
   buildInputs = [
     SDL2
     openal
@@ -105,11 +106,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://love2d.org";
     description = "Lua-based 2D game engine/scripting language";
-    mainProgram = "love";
+    homepage = "https://love2d.org";
     license = lib.licenses.zlib;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = [ lib.maintainers.raskin ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "love";
   };
 })

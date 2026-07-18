@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
   vdr,
 }:
 stdenv.mkDerivation rec {
@@ -15,8 +15,9 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-l+0JHjzuCx/UDbrDz+PSarG6IIwlUcPTgXUDypM4tds=";
   };
 
-  # configure don't accept argument --prefix
-  dontAddPrefix = true;
+  buildInputs = [
+    vdr
+  ];
 
   makeFlags = [
     "DESTDIR=$(out)"
@@ -24,17 +25,15 @@ stdenv.mkDerivation rec {
     "LOCDIR=/share/locale"
   ];
 
+  # configure don't accept argument --prefix
+  dontAddPrefix = true;
   enableParallelBuilding = true;
-
-  buildInputs = [
-    vdr
-  ];
 
   meta = {
     inherit (src.meta) homepage;
-    description = "This PlugIn is a VDR implementation of the VTP (Video Transfer Protocol) Version 0.0.3 (see file PROTOCOL) and a basic HTTP Streaming Protocol";
-    maintainers = [ lib.maintainers.ck3d ];
-    license = lib.licenses.gpl2;
     inherit (vdr.meta) platforms;
+    description = "This PlugIn is a VDR implementation of the VTP (Video Transfer Protocol) Version 0.0.3 (see file PROTOCOL) and a basic HTTP Streaming Protocol";
+    license = lib.licenses.gpl2;
+    maintainers = [ lib.maintainers.ck3d ];
   };
 }

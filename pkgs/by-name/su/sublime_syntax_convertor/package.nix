@@ -6,9 +6,8 @@
 
 bundlerApp rec {
   pname = "sublime_syntax_convertor";
-  gemdir = ./.;
   exes = [ "sublime_syntax_convertor" ];
-
+  gemdir = ./.;
   passthru.updateScript = bundlerUpdateScript pname;
 
   meta = {

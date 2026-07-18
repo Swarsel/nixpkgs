@@ -1,16 +1,16 @@
 {
   lib,
-  fetchgit,
   fetchFromGitHub,
   fetchFromGitLab,
-  fetchFromGitea,
-  stdenvNoCC,
   callPackage,
   ensureNewerSourcesForZipFilesHook,
-  maubot,
-  python3,
-  poetry,
+  fetchFromGitea,
+  fetchgit,
   formats,
+  maubot,
+  poetry,
+  python3,
+  stdenvNoCC,
 }:
 
 let
@@ -19,27 +19,14 @@ let
   # other attributes are passed directly to stdenv.mkDerivation (you at least need src)
   buildMaubotPlugin =
     attrs@{
-      version,
       pname,
+      version,
       base_config ? null,
       ...
     }:
     stdenvNoCC.mkDerivation (
       removeAttrs attrs [ "base_config" ]
       // {
-        pluginName = "${pname}-v${version}.mbp";
-        nativeBuildInputs = (attrs.nativeBuildInputs or [ ]) ++ [
-          ensureNewerSourcesForZipFilesHook
-          maubot
-        ];
-        buildPhase = ''
-          runHook preBuild
-
-          mbc build
-
-          runHook postBuild
-        '';
-
         postPatch =
           lib.optionalString (base_config != null) ''
             [ -e base-config.yaml ] || (echo "base-config.yaml doesn't exist, can't override it" && exit 1)
@@ -54,6 +41,19 @@ let
           ''
           + attrs.postPatch or "";
 
+        nativeBuildInputs = (attrs.nativeBuildInputs or [ ]) ++ [
+          ensureNewerSourcesForZipFilesHook
+          maubot
+        ];
+
+        buildPhase = ''
+          runHook preBuild
+
+          mbc build
+
+          runHook postBuild
+        '';
+
         installPhase = ''
           runHook preInstall
 
@@ -62,6 +62,8 @@ let
 
           runHook postInstall
         '';
+
+        pluginName = "${pname}-v${version}.mbp";
       }
     );
 

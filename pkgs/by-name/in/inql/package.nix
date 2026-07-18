@@ -7,7 +7,7 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "inql";
   version = "4.0.6";
-  pyproject = true;
+
   src = fetchFromGitHub {
     owner = "doyensec";
     repo = "inql";
@@ -21,6 +21,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       --replace-fail "version=version()," "version='${finalAttrs.version}',"
   '';
 
+  # Project has no tests
+  doCheck = false;
+
   build-system = with python3.pkgs; [
     setuptools
   ];
@@ -29,8 +32,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     stickytape
   ];
 
-  # Project has no tests
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "inql"
@@ -38,10 +40,10 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   meta = {
     description = "Security testing tool for GraphQL";
-    mainProgram = "inql";
     homepage = "https://github.com/doyensec/inql";
     changelog = "https://github.com/doyensec/inql/releases/tag/v${finalAttrs.version}";
     license = with lib.licenses; [ asl20 ];
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "inql";
   };
 })

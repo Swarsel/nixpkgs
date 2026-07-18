@@ -1,8 +1,8 @@
 {
-  callPackage,
-  fetchFromGitHub,
-  installShellFiles,
   lib,
+  fetchFromGitHub,
+  callPackage,
+  installShellFiles,
   makeWrapper,
   nix-update-script,
   ocaml-ng,
@@ -36,11 +36,6 @@ ocamlPackages.buildDunePackage (finalAttrs: {
     makeWrapper
     removeReferencesTo
   ];
-
-  prePatch = ''
-    patchShebangs .scripts/*.sh
-    patchShebangs ulib/ml/app/ints/mk_int_file.sh
-  '';
 
   buildInputs = with ocamlPackages; [
     memtrace
@@ -101,6 +96,11 @@ ocamlPackages.buildDunePackage (finalAttrs: {
 
   enableParallelBuilding = true;
 
+  prePatch = ''
+    patchShebangs .scripts/*.sh
+    patchShebangs ulib/ml/app/ints/mk_int_file.sh
+  '';
+
   passthru = {
     updateScript = nix-update-script {
       extraArgs = [
@@ -108,6 +108,7 @@ ocamlPackages.buildDunePackage (finalAttrs: {
         "^v([0-9]{4}\\.[0-9]{2}\\.[0-9]{2})$"
       ];
     };
+
     z3 = fstarZ3;
   };
 
@@ -116,10 +117,12 @@ ocamlPackages.buildDunePackage (finalAttrs: {
     homepage = "https://www.fstar-lang.org";
     changelog = "https://github.com/FStarLang/FStar/raw/v${finalAttrs.version}/CHANGES.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       numinit
     ];
-    mainProgram = "fstar.exe";
+
     platforms = with lib.platforms; darwin ++ linux;
+    mainProgram = "fstar.exe";
   };
 })

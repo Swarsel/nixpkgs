@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
   nixosTests,
 }:
@@ -20,15 +20,15 @@ buildNpmPackage rec {
   npmDepsHash = "sha256-HoIiO7cj4JNY+sJEuH1v0AgagDuBTySJaoVo/4SsfIc=";
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.cross-seed = nixosTests.cross-seed;
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Fully-automatic torrent cross-seeding with Torznab";
     homepage = "https://cross-seed.org";
     license = lib.licenses.asl20;
-    mainProgram = "cross-seed";
     maintainers = with lib.maintainers; [ mkez ];
+    mainProgram = "cross-seed";
   };
 }

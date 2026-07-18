@@ -4,10 +4,10 @@
   fetchFromGitHub,
   alsa-lib,
   cmake,
-  pkg-config,
   glib,
-  tracingSupport ? true,
+  pkg-config,
   logToStderr ? true,
+  tracingSupport ? true,
 }:
 
 let

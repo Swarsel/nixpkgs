@@ -17,12 +17,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-10gm6YphZrpLShj3NUj/AG24dSVLZAZbbnXr7GiF4DI=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     meson
     ninja
   ];
-
-  strictDeps = true;
 
   __structuredAttrs = true;
 
@@ -30,7 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Andri's Main Loop";
     homepage = "https://github.com/any1/aml";
     license = lib.licenses.isc;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ nickcao ];
+    platforms = lib.platforms.linux;
   };
 })

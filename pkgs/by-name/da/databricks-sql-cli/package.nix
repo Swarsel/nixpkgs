@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication rec {
   pname = "databricks-sql-cli";
   version = "0.3.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "databricks";
@@ -18,13 +17,6 @@ python3.pkgs.buildPythonApplication rec {
 
   nativeBuildInputs = with python3.pkgs; [
     poetry-core
-  ];
-
-  pythonRelaxDeps = [
-    "pandas"
-    "databricks-sql-connector"
-    "sqlparse"
-    "numpy"
   ];
 
   propagatedBuildInputs = with python3.pkgs; [
@@ -42,12 +34,21 @@ python3.pkgs.buildPythonApplication rec {
     pytestCheckHook
   ];
 
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "pandas"
+    "databricks-sql-connector"
+    "sqlparse"
+    "numpy"
+  ];
+
   meta = {
     description = "CLI for querying Databricks SQL";
-    mainProgram = "dbsqlcli";
     homepage = "https://github.com/databricks/databricks-sql-cli";
     changelog = "https://github.com/databricks/databricks-sql-cli/releases/tag/v${version}";
     license = lib.licenses.databricks;
     maintainers = with lib.maintainers; [ kfollesdal ];
+    mainProgram = "dbsqlcli";
   };
 }

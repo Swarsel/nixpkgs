@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  pnpm_10,
+  buildGoModule,
+  copyDesktopItems,
   fetchPnpmDeps,
-  pnpmConfigHook,
-  wails,
-  wrapGAppsHook3,
   glib-networking,
   makeDesktopItem,
-  copyDesktopItems,
+  pnpmConfigHook,
+  pnpm_10,
+  wails,
+  wrapGAppsHook3,
 }:
 let
   pnpm = pnpm_10;
@@ -52,6 +52,8 @@ buildGoModule rec {
     glib-networking
   ];
 
+  vendorHash = "sha256-LvDftUsmvrIY2WkC2pFxRasUGwytEE6ObhzDlrdgpB4=";
+
   # we use env because buildGoModule doesn't forward all normal attrs
   # this is pretty hacky
   env = {
@@ -62,24 +64,14 @@ buildGoModule rec {
         src
         pnpm
         ;
-      sourceRoot = "${src.name}/frontend";
+
       fetcherVersion = 3;
       hash = "sha256-p0PFIqnIDZPffKaACWWDUvdBN+a0aMbZTUvz9wRTY+k=";
+      sourceRoot = "${src.name}/frontend";
     };
 
     pnpmRoot = "frontend";
   };
-
-  # running this caches some additional dependencies for the FOD
-  overrideModAttrs = {
-    preBuild = ''
-      wails build -tags webkit2_41 # 4.0 EOL
-    '';
-  };
-
-  proxyVendor = true;
-
-  vendorHash = "sha256-LvDftUsmvrIY2WkC2pFxRasUGwytEE6ObhzDlrdgpB4=";
 
   buildPhase = ''
     runHook preBuild
@@ -99,23 +91,32 @@ buildGoModule rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "SatisfactoryModManager";
+      categories = [ "Game" ];
       desktopName = "Satisfactory Mod Manager";
       exec = "SatisfactoryModManager %u";
-      mimeTypes = [ "x-scheme-handler/smmanager" ];
       icon = "SatisfactoryModManager";
+      mimeTypes = [ "x-scheme-handler/smmanager" ];
+      name = "SatisfactoryModManager";
       terminal = false;
-      categories = [ "Game" ];
     })
   ];
 
+  # running this caches some additional dependencies for the FOD
+  overrideModAttrs = {
+    preBuild = ''
+      wails build -tags webkit2_41 # 4.0 EOL
+    '';
+  };
+
+  proxyVendor = true;
+
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Mod manager and modloader for Satisfactory";
     homepage = "https://github.com/satisfactorymodding/SatisfactoryModManager";
     license = lib.licenses.gpl3Only;
-    mainProgram = "SatisfactoryModManager";
     maintainers = with lib.maintainers; [ tomasajt ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "SatisfactoryModManager";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 }

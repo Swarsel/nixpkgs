@@ -2,10 +2,10 @@
   lib,
   fetchFromGitHub,
   callPackage,
-  rustPlatform,
-  replaceVars,
   openssl,
   python3Packages,
+  replaceVars,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {

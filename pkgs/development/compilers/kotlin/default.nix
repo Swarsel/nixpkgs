@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   jre,
+  makeWrapper,
   unzip,
 }:
 
@@ -16,11 +16,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-Rz3WbHo+9LGCBls9pnBGbBvydzqduw7Yszo5/p1Ph20=";
   };
 
-  propagatedBuildInputs = [ jre ];
   nativeBuildInputs = [
     makeWrapper
     unzip
   ];
+
+  propagatedBuildInputs = [ jre ];
 
   installPhase = ''
     mkdir -p $out
@@ -39,12 +40,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "General purpose programming language";
+
     longDescription = ''
       Kotlin is a statically typed language that targets the JVM and JavaScript.
       It is a general-purpose language intended for industry use.
       It is developed by a team at JetBrains although it is an OSS language
       and has external contributors.
     '';
+
     homepage = "https://kotlinlang.org/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ SubhrajyotiSen ];

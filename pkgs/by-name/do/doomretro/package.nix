@@ -1,12 +1,12 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   SDL2,
   SDL2_image,
   SDL2_mixer,
   cmake,
-  fetchFromGitHub,
   pkg-config,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-tFRDfiHsRNrhmKHYpV88G2W5Ww7r8D9Neu/zbln0DGc=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -31,11 +33,9 @@ stdenv.mkDerivation (finalAttrs: {
     SDL2_mixer
   ];
 
-  strictDeps = true;
-
   meta = {
-    homepage = "https://www.doomretro.com/";
     description = "Classic, refined DOOM source port";
+
     longDescription = ''
       DOOM Retro is the classic, refined DOOM source port for Windows PC. It
       represents how I like my DOOM to be today, in all its dark and gritty,
@@ -66,9 +66,11 @@ stdenv.mkDerivation (finalAttrs: {
       to no support is provided, DOOM Retro's source code may also be compiled
       and run under Linux and macOS.
     '';
+
+    homepage = "https://www.doomretro.com/";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "doomretro";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "doomretro";
   };
 })

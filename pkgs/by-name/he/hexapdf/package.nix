@@ -6,12 +6,10 @@
 }:
 
 bundlerApp {
+  inherit ruby;
   pname = "hexapdf";
   exes = [ "hexapdf" ];
-
-  inherit ruby;
   gemdir = ./.;
-
   passthru.updateScript = bundlerUpdateScript "hexapdf";
 
   meta = {

@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitLab,
   qmake,
-  wrapQtAppsHook,
   qtbase,
+  wrapQtAppsHook,
 }:
 
 stdenv.mkDerivation rec {
@@ -12,17 +12,12 @@ stdenv.mkDerivation rec {
   version = "2.1.24";
 
   src = fetchFromGitLab {
-    domain = "git.sailfishos.org";
     owner = "mer-core";
     repo = "nemo-qml-plugin-dbus";
     rev = version;
     sha256 = "1ilg929456d3k0xkvxa5r4k7i4kkw9i8kgah5xx1yq0d9wka0l77";
+    domain = "git.sailfishos.org";
   };
-
-  nativeBuildInputs = [
-    qmake
-    wrapQtAppsHook
-  ];
 
   postPatch = ''
     substituteInPlace dbus.pro --replace ' tests' ""
@@ -32,6 +27,11 @@ stdenv.mkDerivation rec {
     substituteInPlace src/plugin/plugin.pro \
       --replace '$$[QT_INSTALL_QML]' $out'/${qtbase.qtQmlPrefix}'
   '';
+
+  nativeBuildInputs = [
+    qmake
+    wrapQtAppsHook
+  ];
 
   meta = {
     description = "Nemo DBus plugin for qml";

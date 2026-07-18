@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  pytestCheckHook,
+  python-dateutil,
+  requests,
   setuptools,
   sqlalchemy,
-  requests,
-  python-dateutil,
   tqdm,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "idbutils";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tcgoetz";
@@ -21,6 +20,8 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-niscY7sURrJ7YcPKbI6ByU03po6Hfxm0gHbvmDa6TgM=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -33,14 +34,13 @@ buildPythonPackage rec {
     tqdm
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "idbutils" ];
 
   meta = {
     description = "Python utilities useful for database and internal apps";
-    license = lib.licenses.gpl2Only;
     homepage = "https://github.com/tcgoetz/utilities";
+    license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ ethancedwards8 ];
   };
 }

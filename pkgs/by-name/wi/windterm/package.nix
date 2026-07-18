@@ -2,28 +2,28 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
+  alsa-lib,
+  atk,
   autoPatchelfHook,
+  cairo,
   fontconfig,
   freetype,
-  libGL,
-  glib,
-  alsa-lib,
-  pulseaudio,
-  libxcb-util,
-  libxcb-render-util,
-  libxcb-keysyms,
-  libxcb-image,
-  libxtst,
-  libxcb,
-  gtk3,
-  atk,
-  pango,
   gdk-pixbuf,
-  cairo,
+  glib,
   gst_all_1,
-  makeWrapper,
+  gtk3,
+  libGL,
   libsForQt5,
+  libxcb,
+  libxcb-image,
+  libxcb-keysyms,
+  libxcb-render-util,
+  libxcb-util,
+  libxtst,
+  makeWrapper,
+  pango,
+  pulseaudio,
+  unzip,
   profiles ? {
     path = "~";
   },
@@ -68,8 +68,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.getLib stdenv.cc.cc)
   ];
 
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -88,8 +86,6 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  dontWrapQtApps = true;
-
   postFixup = ''
     mkdir $out/bin
     makeWrapper $out/app/windterm/WindTerm $out/bin/windterm \
@@ -97,13 +93,16 @@ stdenv.mkDerivation (finalAttrs: {
       ''${qtWrapperArgs[@]}
   '';
 
+  dontBuild = true;
+  dontWrapQtApps = true;
+
   meta = {
     description = "Professional cross-platform SSH/Sftp/Shell/Telnet/Serial terminal";
     homepage = "https://github.com/kingToolbox/WindTerm";
-    mainProgram = "windterm";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "windterm";
   };
 })

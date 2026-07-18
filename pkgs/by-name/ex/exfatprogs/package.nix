@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   autoreconfHook,
   file,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,15 +18,15 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-eXJg4mMYydOpYVgOup7WJze0qx6RVkia0xSZOlG+IOQ=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   nativeBuildInputs = [
     pkg-config
     autoreconfHook
     file
-  ];
-
-  outputs = [
-    "out"
-    "man"
   ];
 
   meta = {

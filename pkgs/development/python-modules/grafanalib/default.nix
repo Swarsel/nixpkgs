@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchFromGitHub,
   attrs,
   buildPythonPackage,
-  fetchFromGitHub,
-  lib,
   pytestCheckHook,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "grafanalib";
   version = "0.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "weaveworks";
@@ -20,11 +19,9 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ attrs ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "grafanalib" ];
 
   meta = {

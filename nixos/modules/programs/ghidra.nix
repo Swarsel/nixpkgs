@@ -11,22 +11,21 @@ in
 {
   options.programs.ghidra = {
     enable = lib.mkEnableOption "Ghidra, a software reverse engineering (SRE) suite of tools";
+    package = lib.mkPackageOption pkgs "ghidra" { example = "ghidra-bin"; };
 
     gdb = lib.mkOption {
       default = true;
-      type = lib.types.bool;
+
       description = ''
         Whether to add to gdbinit the python modules required to make Ghidra's debugger work.
       '';
-    };
 
-    package = lib.mkPackageOption pkgs "ghidra" { example = "ghidra-bin"; };
+      type = lib.types.bool;
+    };
   };
 
   config = lib.mkIf cfg.enable {
     environment = {
-      systemPackages = [ cfg.package ];
-
       etc = lib.mkIf cfg.gdb {
         "gdb/gdbinit.d/ghidra-modules.gdb".text = with pkgs.python3.pkgs; ''
           python
@@ -40,6 +39,8 @@ in
           end
         '';
       };
+
+      systemPackages = [ cfg.package ];
     };
   };
 

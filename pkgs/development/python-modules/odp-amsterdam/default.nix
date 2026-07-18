@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   pytest-asyncio,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "odp-amsterdam";
   version = "6.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "klaasnicolaas";
@@ -29,17 +28,6 @@ buildPythonPackage rec {
     sed -i '/addopts/d' pyproject.toml
   '';
 
-  build-system = [
-    poetry-core
-  ];
-
-  pythonRelaxDeps = [ "pytz" ];
-
-  dependencies = [
-    aiohttp
-    pytz
-  ];
-
   nativeCheckInputs = [
     aresponses
     pytest-asyncio
@@ -47,7 +35,18 @@ buildPythonPackage rec {
     syrupy
   ];
 
+  build-system = [
+    poetry-core
+  ];
+
+  dependencies = [
+    aiohttp
+    pytz
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "odp_amsterdam" ];
+  pythonRelaxDeps = [ "pytz" ];
 
   meta = {
     description = "Python client for getting garage occupancy in Amsterdam";

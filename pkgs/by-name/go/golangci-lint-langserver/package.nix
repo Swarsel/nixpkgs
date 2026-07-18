@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildGoModule,
   golangci-lint,
   writableTmpDirAsHomeHook,
-  fetchFromGitHub,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,12 +19,12 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-kbGTORTTxfftdU8ffsfh53nT7wZldOnBZ/1WWzN89Uc=";
 
-  subPackages = [ "." ];
-
   nativeCheckInputs = [
     golangci-lint
     writableTmpDirAsHomeHook
   ];
+
+  subPackages = [ "." ];
 
   meta = {
     description = "Language server for golangci-lint";

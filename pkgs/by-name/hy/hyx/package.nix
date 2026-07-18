@@ -24,10 +24,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Minimalistic but powerful Linux console hex editor";
-    mainProgram = "hyx";
     homepage = "https://yx7.cc/code/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fpletz ];
     platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "hyx";
   };
 })

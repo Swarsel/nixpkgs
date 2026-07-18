@@ -43,7 +43,7 @@ stdenv.mkDerivation {
     description = "Informative, fancy bash prompt for Git users";
     homepage = "https://github.com/magicmonty/bash-git-prompt";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.parrot7483 ];
+    platforms = lib.platforms.all;
   };
 }

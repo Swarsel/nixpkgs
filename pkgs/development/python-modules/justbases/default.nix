@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  unittestCheckHook,
+  buildPythonPackage,
   hypothesis,
+  unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "justbases";
   version = "0.15.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "mulkieran";
@@ -22,6 +21,8 @@ buildPythonPackage rec {
     unittestCheckHook
     hypothesis
   ];
+
+  format = "setuptools";
 
   meta = {
     description = "Conversion of ints and rationals to any base";

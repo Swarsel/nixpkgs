@@ -1,19 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  imagemagick,
-  gettext,
-  glibcLocalesUtf8,
-  libpng,
   SDL2,
   SDL2_image,
   SDL2_mixer,
   SDL2_ttf,
-  zlib,
-  libiconv,
-
+  gettext,
   gitUpdater,
+  glibcLocalesUtf8,
+  imagemagick,
+  libiconv,
+  libpng,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -45,8 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
     "FHEROES2_DATA=\"${placeholder "out"}/share/fheroes2\""
   ];
 
-  enableParallelBuilding = true;
-
   postBuild = ''
     # Pick guaranteed to be present UTF-8 locale.
     # Otherwise `iconv` calls fail to produce valid translations.
@@ -71,6 +68,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   passthru = {
     updateScript = gitUpdater {
       url = "https://github.com/ihhub/fheroes2.git";
@@ -78,16 +77,18 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/ihhub/fheroes2";
     description = "Free implementation of Heroes of Might and Magic II game engine";
-    mainProgram = "fheroes2";
+
     longDescription = ''
       In order to play this game, an original game data is required.
       Please refer to README of the project for instructions.
       On linux, the data can be placed in ~/.local/share/fheroes2 folder.
     '';
+
+    homepage = "https://github.com/ihhub/fheroes2";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "fheroes2";
   };
 })

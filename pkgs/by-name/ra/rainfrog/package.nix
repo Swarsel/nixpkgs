@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  testers,
   nix-update-script,
-  rustPlatform,
   rainfrog,
+  rustPlatform,
+  testers,
 }:
 let
   version = "0.3.20";
@@ -24,22 +24,22 @@ rustPlatform.buildRustPackage {
 
   passthru = {
     tests.version = testers.testVersion {
-      package = rainfrog;
-
       command = ''
         RAINFROG_DATA="$(mktemp -d)" rainfrog --version
       '';
+
+      package = rainfrog;
     };
 
     updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://github.com/achristmascarl/rainfrog/releases/tag/v${version}";
     description = "Database management TUI for postgres";
     homepage = "https://github.com/achristmascarl/rainfrog";
+    changelog = "https://github.com/achristmascarl/rainfrog/releases/tag/v${version}";
     license = lib.licenses.mit;
-    mainProgram = "rainfrog";
     maintainers = with lib.maintainers; [ patka ];
+    mainProgram = "rainfrog";
   };
 }

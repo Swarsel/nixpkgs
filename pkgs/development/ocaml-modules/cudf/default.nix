@@ -1,17 +1,15 @@
 {
   lib,
-  buildDunePackage,
-  ocaml,
   fetchFromGitLab,
+  buildDunePackage,
   extlib,
+  ocaml,
   ounit2,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "cudf";
   version = "0.10";
-
-  minimalOCamlVersion = "4.07";
 
   src = fetchFromGitLab {
     owner = "irill";
@@ -24,16 +22,19 @@ buildDunePackage (finalAttrs: {
     extlib
   ];
 
+  doCheck = lib.versionAtLeast ocaml.version "4.08";
+
   checkInputs = [
     ounit2
   ];
-  doCheck = lib.versionAtLeast ocaml.version "4.08";
+
+  minimalOCamlVersion = "4.07";
 
   meta = {
     description = "Library for CUDF format";
     homepage = "https://www.mancoosi.org/cudf/";
-    downloadPage = "https://gforge.inria.fr/projects/cudf/";
     license = lib.licenses.lgpl3;
     maintainers = [ ];
+    downloadPage = "https://gforge.inria.fr/projects/cudf/";
   };
 })

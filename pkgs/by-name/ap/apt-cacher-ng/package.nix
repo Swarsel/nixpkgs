@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
+  fetchurl,
   bzip2,
+  c-ares,
   cmake,
   doxygen,
-  fetchurl,
   fuse3,
   libevent,
-  xz,
   openssl,
   pkg-config,
   systemd,
   tcp_wrappers,
+  xz,
   zlib,
-  c-ares,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,6 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     doxygen
     pkg-config
   ];
+
   buildInputs = [
     bzip2
     fuse3
@@ -44,10 +45,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Caching proxy specialized for Linux distribution files";
-    mainProgram = "apt-cacher-ng";
     homepage = "https://www.unix-ag.uni-kl.de/~bloch/acng/";
     license = lib.licenses.bsdOriginal;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.makefu ];
+    platforms = lib.platforms.linux;
+    mainProgram = "apt-cacher-ng";
   };
 })

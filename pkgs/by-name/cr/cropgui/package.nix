@@ -1,10 +1,10 @@
 {
   lib,
-  python3Packages,
-  fetchFromCodeberg,
-  makeWrapper,
-  libjpeg,
   exiftool,
+  fetchFromCodeberg,
+  libjpeg,
+  makeWrapper,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
@@ -18,15 +18,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-pmo36mWTwDzqE5osXUsM3YzOAPXewLjfrDHIg6hCYjY=";
   };
 
-  pyproject = false;
-
   nativeBuildInputs = [
     makeWrapper
-  ];
-
-  dependencies = with python3Packages; [
-    pillow
-    tkinter
   ];
 
   installPhase = ''
@@ -51,12 +44,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
     runHook postInstall
   '';
 
+  dependencies = with python3Packages; [
+    pillow
+    tkinter
+  ];
+
+  pyproject = false;
+
   meta = {
     description = "Gtk frontend for lossless cropping of jpeg images";
     homepage = "https://codeberg.org/jepler/cropgui";
     license = lib.licenses.gpl2Only;
     maintainers = [ lib.maintainers.dwoffinden ];
-    mainProgram = "cropgui";
     platforms = lib.platforms.all;
+    mainProgram = "cropgui";
   };
 })

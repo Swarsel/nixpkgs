@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  libusb-compat-0_1,
-  glib,
-  dbus-glib,
   bluez,
-  openobex,
   dbus,
+  dbus-glib,
+  glib,
+  libusb-compat-0_1,
+  openobex,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,11 +20,14 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0kq940wqs9j8qjnl58d6l3zhx0jaszci356xprx23l6nvdfld6dk";
   };
 
+  patches = [ ./obex-data-server-0.4.6-build-fixes-1.patch ];
   strictDeps = true;
+
   nativeBuildInputs = [
     pkg-config
     dbus-glib # required for dbus-binding-tool
   ];
+
   buildInputs = [
     libusb-compat-0_1
     glib
@@ -34,8 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
     dbus
   ];
 
-  patches = [ ./obex-data-server-0.4.6-build-fixes-1.patch ];
-
   preConfigure = ''
     addToSearchPath PKG_CONFIG_PATH ${openobex}/lib64/pkgconfig
     export PKG_CONFIG_PATH="${dbus.dev}/lib/pkgconfig:$PKG_CONFIG_PATH"
@@ -43,7 +44,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     homepage = "http://wiki.muiline.com/obex-data-server";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.linux;
   };
 })

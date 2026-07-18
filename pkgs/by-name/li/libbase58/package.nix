@@ -30,7 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/bitcoin/libbase58";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ nagy ];
-    mainProgram = "base58";
     platforms = lib.platforms.all;
+    mainProgram = "base58";
   };
 })

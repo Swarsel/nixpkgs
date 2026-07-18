@@ -1,11 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   cdcs,
   datamodeldict,
@@ -15,17 +11,17 @@
   pandas,
   pillow,
   pymongo,
-  tqdm,
-
   # tests
   pytestCheckHook,
+  # build-system
+  setuptools,
+  tqdm,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "yabadaba";
   version = "0.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "usnistgov";
@@ -33,6 +29,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-ZVV/2/RyDj707OEWcwFgQjJImgoiv91ZEutT3RBuWus=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -48,11 +49,7 @@ buildPythonPackage rec {
     tqdm
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "yabadaba" ];
 
   meta = {

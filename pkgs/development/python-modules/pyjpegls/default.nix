@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   charls,
   cython,
   numpy,
   pillow,
-  setuptools,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyjpegls";
   version = "1.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pydicom";
@@ -28,7 +27,7 @@ buildPythonPackage rec {
     cp -ar ${charls.src} lib/charls
   '';
 
-  pythonRelaxDeps = [ "numpy" ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     cython
@@ -41,9 +40,9 @@ buildPythonPackage rec {
     pillow
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "jpeg_ls" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
+  pythonRelaxDeps = [ "numpy" ];
 
   meta = {
     description = "JPEG-LS for Python via CharLS C++ Library";

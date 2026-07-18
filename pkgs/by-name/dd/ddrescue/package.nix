@@ -14,19 +14,19 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ImRiLTCdbIehz8GRSCkriFmmiOm8AtRwL1zU8oh0VUI=";
   };
 
-  nativeBuildInputs = [ lzip ];
-
-  doCheck = true; # not cross;
-  configureFlags = [ "CXX=${stdenv.cc.targetPrefix}c++" ];
-
   outputs = [
     "out"
     "man"
     "info"
   ];
 
+  nativeBuildInputs = [ lzip ];
+  configureFlags = [ "CXX=${stdenv.cc.targetPrefix}c++" ];
+  doCheck = true; # not cross;
+
   meta = {
     description = "GNU ddrescue, a data recovery tool";
+
     longDescription = ''
       GNU ddrescue is a data recovery tool.  It copies data from one file
       or block device (hard disc, cdrom, etc) to another, trying hard to
@@ -49,11 +49,14 @@ stdenv.mkDerivation (finalAttrs: {
       low.  Using the logfile, only the needed blocks are read from the
       second and successive copies.
     '';
+
     homepage = "https://www.gnu.org/software/ddrescue/ddrescue.html";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       fpletz
     ];
+
+    platforms = lib.platforms.all;
   };
 })

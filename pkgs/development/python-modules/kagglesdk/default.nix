@@ -1,11 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   hatchling,
-
   # dependencies
   protobuf,
   requests,
@@ -14,8 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "kagglesdk";
   version = "0.1.30";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Kaggle";
@@ -23,6 +19,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-7YjbJ6uo6R3jpo25wlHftYAA+0t7oUXc432N/REeCzU=";
   };
+
+  # The two available tests fail with:
+  # AssertionError: 'https://api.kaggle.com' != 'https://www.kaggle.com'
+  doCheck = false;
+  __structuredAttrs = true;
 
   build-system = [
     hatchling
@@ -33,11 +34,8 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "kagglesdk" ];
-
-  # The two available tests fail with:
-  # AssertionError: 'https://api.kaggle.com' != 'https://www.kaggle.com'
-  doCheck = false;
 
   meta = {
     description = "Bindings to access Kaggle endpoints";

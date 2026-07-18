@@ -2,28 +2,21 @@
   lib,
   stdenv,
   fetchurl,
-  ncurses5,
+  darwin,
   libxcrypt-legacy,
+  makeBinaryWrapper,
+  ncurses5,
   xz,
   zstd,
-  makeBinaryWrapper,
-  darwin,
 }:
 
 stdenv.mkDerivation rec {
   pname = "gcc-arm-embedded";
   version = "13.3.rel1";
 
-  platform =
-    {
-      aarch64-darwin = "darwin-arm64";
-      aarch64-linux = "aarch64";
-      x86_64-linux = "x86_64";
-    }
-    .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
-
   src = fetchurl {
     url = "https://developer.arm.com/-/media/Files/downloads/gnu/${version}/binrel/arm-gnu-toolchain-${version}-${platform}-arm-none-eabi.tar.xz";
+
     # hashes obtained from location ${url}.sha256asc
     sha256 =
       {
@@ -44,11 +37,6 @@ stdenv.mkDerivation rec {
     makeBinaryWrapper
     darwin.sigtool
   ];
-
-  dontConfigure = true;
-  dontBuild = true;
-  dontPatchELF = true;
-  dontStrip = true;
 
   installPhase = ''
     mkdir -p $out
@@ -84,9 +72,23 @@ stdenv.mkDerivation rec {
       done
     '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontPatchELF = true;
+  dontStrip = true;
+
+  platform =
+    {
+      aarch64-darwin = "darwin-arm64";
+      aarch64-linux = "aarch64";
+      x86_64-linux = "x86_64";
+    }
+    .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
+
   meta = {
     description = "Pre-built GNU toolchain from ARM Cortex-M & Cortex-R processors";
     homepage = "https://developer.arm.com/open-source/gnu-toolchain/gnu-rm";
+
     license = with lib.licenses; [
       bsd2
       gpl2
@@ -95,15 +97,18 @@ stdenv.mkDerivation rec {
       lgpl3
       mit
     ];
+
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       prusnak
       prtzl
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 }

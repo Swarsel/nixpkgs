@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   python,
 }:
 
 buildPythonPackage rec {
   pname = "ibis";
   version = "3.3.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "dmulholl";
@@ -21,6 +20,7 @@ buildPythonPackage rec {
     ${python.interpreter} test_ibis.py
   '';
 
+  format = "setuptools";
   pythonImportsCheck = [ "ibis" ];
 
   meta = {

@@ -20,8 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://github.com/animetosho/par2cmdline-turbo";
     description = "par2cmdline × ParPar: speed focused par2cmdline fork";
+    homepage = "https://github.com/animetosho/par2cmdline-turbo";
     license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.proglottis ];
     platforms = lib.platforms.all;

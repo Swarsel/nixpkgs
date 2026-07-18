@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,15 +19,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Count the number of lines of LLVM IR across all instantiations of a generic function";
-    mainProgram = "cargo-llvm-lines";
     homepage = "https://github.com/dtolnay/cargo-llvm-lines";
     changelog = "https://github.com/dtolnay/cargo-llvm-lines/releases/tag/${finalAttrs.src.rev}";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
     ];
+
+    mainProgram = "cargo-llvm-lines";
   };
 })

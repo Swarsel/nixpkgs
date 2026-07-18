@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
   meson,
   ninja,
 }:
@@ -23,8 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/dloebl/cgif";
     description = "GIF encoder written in C";
+    homepage = "https://github.com/dloebl/cgif";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.unix;

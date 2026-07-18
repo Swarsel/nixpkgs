@@ -1,9 +1,9 @@
 {
   lib,
-  fetchpatch,
   stdenv,
   fetchFromGitHub,
   cmake,
+  fetchpatch,
   gitUpdater,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -20,18 +20,18 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # cmake: Set minimum required version to 3.5 for CMake 4+
     (fetchpatch {
-      url = "https://github.com/Gregwar/fatcat/commit/2e3476a84cbe32598d36b5506c21025b3f94eb03.patch";
       hash = "sha256-e5qGcpdHhbp2mZ7O3vBAJnSW5K2aXEfNVUfK/brx9a8=";
+      url = "https://github.com/Gregwar/fatcat/commit/2e3476a84cbe32598d36b5506c21025b3f94eb03.patch";
     })
+  ];
+
+  nativeBuildInputs = [
+    cmake
   ];
 
   env = {
     CXXFLAGS = "-std=c++11";
   };
-
-  nativeBuildInputs = [
-    cmake
-  ];
 
   passthru.updateScript = gitUpdater {
     rev-prefix = "v";
@@ -39,9 +39,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "FAT filesystems explore, extract, repair, and forensic tool";
-    mainProgram = "fatcat";
     homepage = "https://github.com/Gregwar/fatcat";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ cynerd ];
+    mainProgram = "fatcat";
   };
 })

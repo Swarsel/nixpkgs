@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  runCommand,
   buildEnv,
+  makeWrapper,
+  runCommand,
   vscode,
   vscode-utils,
-  makeWrapper,
   writeTextFile,
   vscodeExtensions ? [ ],
 }:
@@ -61,8 +61,8 @@ let
   wrappedPkgName = lib.removeSuffix "-${wrappedPkgVersion}" vscode.name;
 
   extensionJsonFile = writeTextFile {
-    name = "vscode-extensions-json";
     destination = "/share/vscode/extensions/extensions.json";
+    name = "vscode-extensions-json";
     text = vscode-utils.toExtensionJson vscodeExtensions;
   };
 

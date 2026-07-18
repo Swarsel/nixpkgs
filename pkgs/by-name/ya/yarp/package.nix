@@ -2,15 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   ace,
-  ycm-cmake-modules,
+  cmake,
   nix-update-script,
+  ycm-cmake-modules,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "yarp";
   version = "3.12.2";
+
   src = fetchFromGitHub {
     owner = "robotology";
     repo = "yarp";
@@ -18,15 +19,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Lx9ZCTFrSvO/PCB9lrz3f0avBzDAzEZINoqzlH2F6Xw=";
   };
 
-  nativeBuildInputs = [ cmake ];
-  buildInputs = [
-    ace
-    ycm-cmake-modules
-  ];
-
   patches = [
     # Weird string interpolation causes compilation to fail due to -Wformat-security.
     ./0001-format-security.patch
+  ];
+
+  nativeBuildInputs = [ cmake ];
+
+  buildInputs = [
+    ace
+    ycm-cmake-modules
   ];
 
   cmakeFlags = [
@@ -37,14 +39,13 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   postInstall = "mv ./$out/lib/*.so $out/lib/";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Yet Another Robot Platform";
     homepage = "http://yarp.it";
     license = lib.licenses.lgpl21;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.nico202 ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -1,25 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  flit-core,
-
   # dependencies
   absl-py,
+  buildPythonPackage,
+  # tests
+  callPackage,
+  # build-system
+  flit-core,
   jax,
   jaxlib,
   numpy,
-
-  # tests
-  callPackage,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "optax";
   version = "0.2.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "deepmind";
@@ -33,6 +29,14 @@ buildPythonPackage (finalAttrs: {
     "testsout"
   ];
 
+  # check in passthru.tests.pytest to escape infinite recursion with flax
+  doCheck = false;
+
+  postInstall = ''
+    mkdir $testsout
+    cp -R examples $testsout/examples
+  '';
+
   build-system = [ flit-core ];
 
   dependencies = [
@@ -42,15 +46,8 @@ buildPythonPackage (finalAttrs: {
     numpy
   ];
 
-  postInstall = ''
-    mkdir $testsout
-    cp -R examples $testsout/examples
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "optax" ];
-
-  # check in passthru.tests.pytest to escape infinite recursion with flax
-  doCheck = false;
 
   passthru.tests = {
     pytest = callPackage ./tests.nix { };

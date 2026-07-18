@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   faust2jaqt,
   faust2lv2,
+  fetchpatch,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "MBdistortion";
@@ -19,8 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/magnetophon/MBdistortion/commit/10e35084b88c559f1b63760cf40fd5ef5a6745a5.patch";
       sha256 = "0hwjl3rzvn3id0sr0qs8f37jdmr915mdan8miaf78ra0ir3wnk76";
+      url = "https://github.com/magnetophon/MBdistortion/commit/10e35084b88c559f1b63760cf40fd5ef5a6745a5.patch";
     })
   ];
 
@@ -28,8 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
     faust2jaqt
     faust2lv2
   ];
-
-  dontWrapQtApps = true;
 
   buildPhase = ''
     faust2jaqt -time -vec -t 99999 MBdistortion.dsp
@@ -44,6 +42,8 @@ stdenv.mkDerivation (finalAttrs: {
     mkdir -p $out/lib/lv2
     cp -r MBdistortion.lv2/ $out/lib/lv2
   '';
+
+  dontWrapQtApps = true;
 
   meta = {
     description = "Mid-side multiband distortion for jack and lv2";

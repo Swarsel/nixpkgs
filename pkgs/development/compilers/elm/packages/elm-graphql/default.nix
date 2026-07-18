@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   elmPackages,
 }:
 
@@ -21,13 +21,11 @@ buildNpmPackage (finalAttrs: {
       --replace-fail "elm-tooling install" "true"
   '';
 
-  npmDepsHash = "sha256-Fx0ylqXHdu48mZSMtedyLyb4+Ssn4DrQ34pTJAy2x7c=";
-
   nativeBuildInputs = [
     elmPackages.elm
   ];
 
-  npmFlags = [ "--ignore-scripts" ];
+  npmDepsHash = "sha256-Fx0ylqXHdu48mZSMtedyLyb4+Ssn4DrQ34pTJAy2x7c=";
 
   postConfigure = (
     elmPackages.fetchElmDeps {
@@ -37,6 +35,7 @@ buildNpmPackage (finalAttrs: {
     }
   );
 
+  npmFlags = [ "--ignore-scripts" ];
   passthru.updateScript = ./update.sh;
 
   meta = {

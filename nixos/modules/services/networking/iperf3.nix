@@ -11,55 +11,65 @@ let
   api = {
     enable = mkEnableOption "iperf3 network throughput testing server";
     package = mkPackageOption pkgs "iperf3" { };
-    port = mkOption {
-      type = types.port;
-      default = 5201;
-      description = "Server port to listen on for iperf3 client requests.";
-    };
+
     affinity = mkOption {
-      type = types.nullOr types.ints.unsigned;
       default = null;
       description = "CPU affinity for the process.";
+      type = types.nullOr types.ints.unsigned;
     };
-    bind = mkOption {
-      type = types.nullOr types.str;
-      default = null;
-      description = "Bind to the specific interface associated with the given address.";
-    };
-    openFirewall = mkOption {
-      type = types.bool;
-      default = false;
-      description = "Open ports in the firewall for iperf3.";
-    };
-    verbose = mkOption {
-      type = types.bool;
-      default = false;
-      description = "Give more detailed output.";
-    };
-    forceFlush = mkOption {
-      type = types.bool;
-      default = false;
-      description = "Force flushing output at every interval.";
-    };
-    debug = mkOption {
-      type = types.bool;
-      default = false;
-      description = "Emit debugging output.";
-    };
-    rsaPrivateKey = mkOption {
-      type = types.nullOr types.path;
-      default = null;
-      description = "Path to the RSA private key (not password-protected) used to decrypt authentication credentials from the client.";
-    };
+
     authorizedUsersFile = mkOption {
-      type = types.nullOr types.path;
       default = null;
       description = "Path to the configuration file containing authorized users credentials to run iperf tests.";
+      type = types.nullOr types.path;
     };
+
+    bind = mkOption {
+      default = null;
+      description = "Bind to the specific interface associated with the given address.";
+      type = types.nullOr types.str;
+    };
+
+    debug = mkOption {
+      default = false;
+      description = "Emit debugging output.";
+      type = types.bool;
+    };
+
     extraFlags = mkOption {
-      type = types.listOf types.str;
       default = [ ];
       description = "Extra flags to pass to iperf3(1).";
+      type = types.listOf types.str;
+    };
+
+    forceFlush = mkOption {
+      default = false;
+      description = "Force flushing output at every interval.";
+      type = types.bool;
+    };
+
+    openFirewall = mkOption {
+      default = false;
+      description = "Open ports in the firewall for iperf3.";
+      type = types.bool;
+    };
+
+    port = mkOption {
+      default = 5201;
+      description = "Server port to listen on for iperf3 client requests.";
+      type = types.port;
+    };
+
+    rsaPrivateKey = mkOption {
+      default = null;
+      description = "Path to the RSA private key (not password-protected) used to decrypt authentication credentials from the client.";
+      type = types.nullOr types.path;
+    };
+
+    verbose = mkOption {
+      default = false;
+      description = "Give more detailed output.";
+      type = types.bool;
     };
   };
 
@@ -70,18 +80,13 @@ let
     };
 
     systemd.services.iperf3 = {
-      description = "iperf3 daemon";
-      unitConfig.Documentation = "man:iperf3(1) https://iperf.fr/iperf-doc.php";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "iperf3 daemon";
 
       serviceConfig = {
-        Restart = "on-failure";
-        RestartSec = 2;
-        DynamicUser = true;
-        PrivateDevices = true;
         CapabilityBoundingSet = "";
-        NoNewPrivileges = true;
+        DynamicUser = true;
+
         ExecStart = ''
           ${lib.getExe cfg.package} \
             --server \
@@ -99,7 +104,15 @@ let
             ${optionalString cfg.forceFlush "--forceflush"} \
             ${escapeShellArgs cfg.extraFlags}
         '';
+
+        NoNewPrivileges = true;
+        PrivateDevices = true;
+        Restart = "on-failure";
+        RestartSec = 2;
       };
+
+      unitConfig.Documentation = "man:iperf3(1) https://iperf.fr/iperf-doc.php";
+      wantedBy = [ "multi-user.target" ];
     };
   };
 in

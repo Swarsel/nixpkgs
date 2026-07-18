@@ -1,13 +1,12 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
-  lib,
 }:
 
 buildPythonPackage rec {
   pname = "spinners";
   version = "0.0.24";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
 
   # Tests are not included in the PyPI distribution and the git repo does not have tagged releases
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "spinners" ];
 
   meta = {

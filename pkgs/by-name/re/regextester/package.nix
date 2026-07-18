@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  vala,
+  desktop-file-utils,
   gettext,
-  libxml2,
-  pkg-config,
   glib,
-  gtk3,
-  libgee,
-  meson,
-  ninja,
   gobject-introspection,
   gsettings-desktop-schemas,
-  desktop-file-utils,
+  gtk3,
+  libgee,
+  libxml2,
+  meson,
+  ninja,
   pantheon,
+  pkg-config,
+  vala,
   wrapGAppsHook3,
 }:
 
@@ -55,10 +55,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Desktop application to test regular expressions interactively";
-    mainProgram = "com.github.artemanufrij.regextester";
     homepage = "https://github.com/artemanufrij/regextester";
+    license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ samdroid-apps ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl2Plus;
+    mainProgram = "com.github.artemanufrij.regextester";
   };
 })

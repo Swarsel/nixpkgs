@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   branca,
   buildPythonPackage,
-  fetchFromGitHub,
   folium,
   jinja2,
   pytest-playwright,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "streamlit-folium";
   version = "0.27.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "randyzwitch";
@@ -30,6 +29,18 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "uv_build>=0.8.4,<0.9" "uv_build"
   '';
 
+  nativeCheckInputs = [
+    pytest-playwright
+    pytest-rerunfailures
+    pytestCheckHook
+    streamlit
+    writableTmpDirAsHomeHook
+  ];
+
+  preCheck = ''
+    export PATH="$PATH:$out/bin";
+  '';
+
   build-system = [ uv-build ];
 
   dependencies = [
@@ -39,24 +50,13 @@ buildPythonPackage (finalAttrs: {
     streamlit
   ];
 
-  nativeCheckInputs = [
-    pytest-playwright
-    pytest-rerunfailures
-    pytestCheckHook
-    streamlit
-    writableTmpDirAsHomeHook
-  ];
-
-  pythonImportsCheck = [ "streamlit_folium" ];
-
-  preCheck = ''
-    export PATH="$PATH:$out/bin";
-  '';
-
   disabledTestPaths = [
     # Don't run tests that require chromium
     "tests/test_frontend.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "streamlit_folium" ];
 
   meta = {
     description = "Streamlit Component for rendering Folium maps";

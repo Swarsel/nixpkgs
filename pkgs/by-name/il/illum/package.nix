@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   fetchpatch,
-  pkg-config,
-  ninja,
-  libevdev,
   libev,
+  libevdev,
+  ninja,
+  pkg-config,
   udev,
 }:
 
@@ -25,18 +25,24 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     (fetchpatch {
       name = "prevent-unplug-segfault"; # See https://github.com/codyps/illum/issues/19
-      url = "https://github.com/codyps/illum/commit/47b7cd60ee892379e5d854f79db343a54ae5a3cc.patch";
       sha256 = "sha256-hIBBCIJXAt8wnZuyKye1RiEfOCelP3+4kcGrM43vFOE=";
+      url = "https://github.com/codyps/illum/commit/47b7cd60ee892379e5d854f79db343a54ae5a3cc.patch";
     })
   ];
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     ninja
     libevdev
     libev
     udev
   ];
+
+  installPhase = ''
+    mkdir -p $out/bin
+    mv illum-d $out/bin
+  '';
 
   configurePhase = ''
     runHook preConfigure
@@ -46,17 +52,12 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postConfigure
   '';
 
-  installPhase = ''
-    mkdir -p $out/bin
-    mv illum-d $out/bin
-  '';
-
   meta = {
-    homepage = "https://github.com/codyps/illum";
     description = "Daemon that wires button presses to screen backlight level";
-    platforms = lib.platforms.linux;
-    maintainers = [ lib.maintainers.dancek ];
+    homepage = "https://github.com/codyps/illum";
     license = lib.licenses.agpl3Plus;
+    maintainers = [ lib.maintainers.dancek ];
+    platforms = lib.platforms.linux;
     mainProgram = "illum-d";
   };
 })

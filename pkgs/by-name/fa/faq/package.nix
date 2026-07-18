@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   jq,
   oniguruma,
 }:
@@ -17,12 +17,14 @@ buildGoModule (finalAttrs: {
     rev = "594bb8e15dc4070300f39c168354784988646231";
     sha256 = "1lqrchj4sj16n6y5ljsp8v4xmm57gzkavbddq23dhlgkg2lfyn91";
   };
-  vendorHash = "sha256-731eINkboZiuPXX/HQ4r/8ogLedKBWx1IV7BZRKwU3A";
 
   buildInputs = [
     jq
     oniguruma
   ];
+
+  vendorHash = "sha256-731eINkboZiuPXX/HQ4r/8ogLedKBWx1IV7BZRKwU3A";
+  doCheck = true;
 
   ldflags = [
     "-s"
@@ -30,21 +32,19 @@ buildGoModule (finalAttrs: {
     "-X github.com/jzelinskie/faq/internal/version.Version=${finalAttrs.version}"
   ];
 
-  tags = [
-    "netgo"
-  ];
-
   subPackages = [
     "cmd/faq"
   ];
 
-  doCheck = true;
+  tags = [
+    "netgo"
+  ];
 
   meta = {
     description = "Intended to be a more flexible jq, supporting additional formats";
-    mainProgram = "faq";
     homepage = "https://github.com/jzelinskie/faq";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ quentin-m ];
+    mainProgram = "faq";
   };
 })

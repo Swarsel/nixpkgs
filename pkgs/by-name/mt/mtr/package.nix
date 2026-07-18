@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
+  gtk3,
+  jansson,
   libcap,
   ncurses,
-  jansson,
+  pkg-config,
   withGtk ? false,
-  gtk3,
 }:
 
 stdenv.mkDerivation rec {
@@ -22,18 +22,15 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-Oit0jEm1g+jYCIoTak/mcdlF14GDkDOAWKmX2mYw30M=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   # we need this before autoreconfHook does its thing
   postPatch = ''
     echo ${version} > .tarball-version
   '';
-
-  # and this after autoreconfHook has generated Makefile.in
-  preConfigure = ''
-    substituteInPlace Makefile.in \
-      --replace ' install-exec-hook' ""
-  '';
-
-  configureFlags = lib.optional (!withGtk) "--without-gtk";
 
   nativeBuildInputs = [
     autoreconfHook
@@ -47,24 +44,29 @@ stdenv.mkDerivation rec {
   ++ lib.optional withGtk gtk3
   ++ lib.optional stdenv.hostPlatform.isLinux libcap;
 
-  enableParallelBuilding = true;
+  configureFlags = lib.optional (!withGtk) "--without-gtk";
 
-  outputs = [
-    "out"
-    "man"
-  ];
+  # and this after autoreconfHook has generated Makefile.in
+  preConfigure = ''
+    substituteInPlace Makefile.in \
+      --replace ' install-exec-hook' ""
+  '';
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "Network diagnostics tool";
     homepage = "https://www.bitwizard.nl/mtr/";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       koral
       raskin
       globin
       ryan4yin
     ];
-    mainProgram = "mtr";
+
     platforms = lib.platforms.unix;
+    mainProgram = "mtr";
   };
 }

@@ -1,29 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  llm,
-
+  buildPythonPackage,
   # dependencies
   click,
+  llm,
+  llm-ollama,
   ollama,
   pydantic,
-
-  # tests
-  pytestCheckHook,
   pytest-asyncio,
   pytest-mock,
+  # tests
+  pytestCheckHook,
+  # build-system
+  setuptools,
   writableTmpDirAsHomeHook,
-  llm-ollama,
 }:
 
 buildPythonPackage rec {
   pname = "llm-ollama";
   version = "0.16.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "taketwo";
@@ -31,6 +27,13 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-PoFn/nl7CU9I3ssBMpkUMp0akQxQDz1bbht9ko+Tpc0=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+    pytest-mock
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -41,12 +44,7 @@ buildPythonPackage rec {
     pydantic
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-    pytest-mock
-    writableTmpDirAsHomeHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "llm_ollama"

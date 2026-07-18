@@ -1,19 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   ast-serialize,
+  buildPythonPackage,
   mypy,
-  setuptools,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pytokens";
   version = "0.4.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "tusharsadhwani";
@@ -22,25 +20,29 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-DOCOoZ3T7qh8me1vn7qYlEMiyc31d77sf1/5RsW5sUg=";
   };
 
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
+
   build-system = [
     ast-serialize
     mypy
     setuptools
   ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "pytokens"
   ];
 
   meta = {
-    changelog = "https://github.com/tusharsadhwani/pytokens/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "Fast, spec compliant Python 3.14+ tokenizer that runs on older Pythons";
     homepage = "https://github.com/tusharsadhwani/pytokens";
+    changelog = "https://github.com/tusharsadhwani/pytokens/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hexa ];
   };

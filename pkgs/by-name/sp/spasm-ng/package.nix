@@ -2,16 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  gmp,
   gcc,
+  gmp,
+  makeWrapper,
   openssl,
   zlib,
 }:
 
 stdenv.mkDerivation {
   pname = "spasm-ng";
-
   version = "0.5-beta.3-unstable-2022-07-05";
 
   src = fetchFromGitHub {
@@ -26,13 +25,12 @@ stdenv.mkDerivation {
     makeWrapper
     gcc
   ];
+
   buildInputs = [
     gmp
     openssl
     zlib
   ];
-
-  enableParallelBuilding = true;
 
   installPhase = ''
     runHook preInstall
@@ -47,12 +45,14 @@ stdenv.mkDerivation {
     wrapProgram $out/bin/spasm --add-flags "-I $out/include"
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://github.com/alberthdev/spasm-ng";
     description = "Z80 assembler with extra features to support development for TI calculators";
-    mainProgram = "spasm";
+    homepage = "https://github.com/alberthdev/spasm-ng";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ siraben ];
     platforms = lib.platforms.unix;
+    mainProgram = "spasm";
   };
 }

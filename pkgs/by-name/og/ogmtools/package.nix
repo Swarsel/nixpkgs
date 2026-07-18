@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
+  libdvdread,
   libogg,
   libvorbis,
-  libdvdread,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,11 +26,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Tools for modifying and inspecting OGG media streams";
+
     longDescription = ''
       These tools allow information about (ogminfo) or extraction from
       (ogmdemux) or creation of (ogmmerge) OGG media streams. Includes dvdxchap
       tool for extracting chapter information from DVD.
     '';
+
     homepage = "https://www.bunkus.org/videotools/ogmtools/";
     license = lib.licenses.gpl2;
     platforms = lib.platforms.linux;

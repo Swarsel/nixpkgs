@@ -1,31 +1,31 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   alsa-lib,
-  libuuid,
+  at-spi2-core,
+  autoPatchelfHook,
   cups,
   dpkg,
-  fetchurl,
   glib,
-  libssh2,
   gtk3,
-  lib,
+  libGL,
   libayatana-appindicator,
   libdrm,
+  libgbm,
   libgcrypt,
   libkrb5,
   libnotify,
-  libgbm,
   libpulseaudio,
-  libGL,
-  nss,
+  libssh2,
+  libuuid,
   libxdamage,
-  systemd,
-  stdenv,
-  undmg,
-  at-spi2-core,
-  autoPatchelfHook,
-  writeShellScript,
   makeShellWrapper,
+  nss,
+  systemd,
+  undmg,
   wrapGAppsHook3,
+  writeShellScript,
   commandLineArgs ? "",
   disableAutoUpdate ? true,
 }:
@@ -42,20 +42,22 @@ let
     updateScript = ./update.sh;
   };
   meta = {
-    homepage = "https://im.qq.com/index/";
     description = "Messaging app";
-    platforms = [
-      "aarch64-darwin"
-      "aarch64-linux"
-      "x86_64-linux"
-    ];
+    homepage = "https://im.qq.com/index/";
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       bot-wxt1221
       fee1-dead
       prince213
       ryan4yin
+    ];
+
+    platforms = [
+      "aarch64-darwin"
+      "aarch64-linux"
+      "x86_64-linux"
     ];
   };
 in
@@ -70,7 +72,6 @@ if stdenv.hostPlatform.isDarwin then
       ;
 
     nativeBuildInputs = [ undmg ];
-    sourceRoot = ".";
 
     installPhase = ''
       runHook preInstall
@@ -80,6 +81,8 @@ if stdenv.hostPlatform.isDarwin then
 
       runHook postInstall
     '';
+
+    sourceRoot = ".";
   }
 else
   stdenv.mkDerivation {
@@ -111,13 +114,6 @@ else
       libgbm
       nss
       libxdamage
-    ];
-
-    dontWrapGApps = true;
-
-    runtimeDependencies = map lib.getLib [
-      systemd
-      libkrb5
     ];
 
     installPhase =
@@ -210,4 +206,11 @@ else
 
         runHook postInstall
       '';
+
+    dontWrapGApps = true;
+
+    runtimeDependencies = map lib.getLib [
+      systemd
+      libkrb5
+    ];
   }

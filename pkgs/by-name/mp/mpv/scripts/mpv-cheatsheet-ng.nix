@@ -1,13 +1,12 @@
 {
   lib,
-  buildLua,
   fetchFromGitHub,
+  buildLua,
   gitUpdater,
 }:
 buildLua (finalAttrs: {
   pname = "mpv-cheatsheet-ng";
   version = "0.1.0";
-  scriptPath = "cheatsheet.lua";
 
   src = fetchFromGitHub {
     owner = "ambroisie";
@@ -16,6 +15,7 @@ buildLua (finalAttrs: {
     hash = "sha256-5CVEf5SPNiYaKKp0tn4zhwUvP5R75HU5/B+l8KCXJNg=";
   };
 
+  scriptPath = "cheatsheet.lua";
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {

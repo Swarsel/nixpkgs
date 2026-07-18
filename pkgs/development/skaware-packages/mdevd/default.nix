@@ -1,16 +1,12 @@
 {
   lib,
-  skawarePackages,
   skalibs,
+  skawarePackages,
 }:
 
 skawarePackages.buildPackage {
   pname = "mdevd";
   version = "0.1.8.2";
-  sha256 = "sha256-zhrgFJtqV6NPYIIY/WGBqmqmgTXKwvTZMbW0F7By4kQ=";
-
-  description = "mdev-compatible Linux hotplug manager daemon";
-  platforms = lib.platforms.linux;
 
   outputs = [
     "bin"
@@ -33,4 +29,8 @@ skawarePackages.buildPackage {
     mv doc $doc/share/doc/mdevd/html
     mv examples $doc/share/doc/mdevd/examples
   '';
+
+  description = "mdev-compatible Linux hotplug manager daemon";
+  platforms = lib.platforms.linux;
+  sha256 = "sha256-zhrgFJtqV6NPYIIY/WGBqmqmgTXKwvTZMbW0F7By4kQ=";
 }

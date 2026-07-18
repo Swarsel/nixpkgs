@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "lavacli";
   version = "2.9.0";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "lava";
@@ -15,6 +14,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-yDcvOuU/SxrQz8VN1ellf9Do7Sjw4/RwXpzOe0+5oAo=";
   };
+
+  nativeCheckInputs = with python3.pkgs; [
+    pytestCheckHook
+    pyzmq
+  ];
 
   build-system = with python3.pkgs; [
     setuptools
@@ -28,10 +32,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     voluptuous
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    pytestCheckHook
-    pyzmq
-  ];
+  pyproject = true;
 
   meta = {
     description = "Command line tool to interact with one or many LAVA instances using XML-RPC";

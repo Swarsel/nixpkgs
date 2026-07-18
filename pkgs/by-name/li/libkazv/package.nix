@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  fetchgit,
   boost,
   catch2_3,
   cmake,
   cryptopp,
+  fetchgit,
   immer,
   lager,
   libcpr_1_10_5,
   libhttpserver,
   libmicrohttpd,
   nlohmann_json,
-  vodozemac-bindings-cpp,
   pkg-config,
+  vodozemac-bindings-cpp,
   zug,
 }:
 
@@ -27,6 +27,8 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-rXQLbYPmD9UH0iXXqrAQSPF3KgIvjEyZ/97Q+/tl9Ec=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -46,12 +48,8 @@ stdenv.mkDerivation (finalAttrs: {
     zug
   ];
 
-  strictDeps = true;
-
   cmakeFlags = [ (lib.cmakeBool "libkazv_BUILD_TESTS" finalAttrs.finalPackage.doCheck) ];
-
   doCheck = true;
-
   checkInputs = [ catch2_3 ];
 
   meta = {

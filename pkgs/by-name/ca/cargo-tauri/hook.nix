@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  makeSetupHook,
   cargo,
   cargo-tauri,
+  makeSetupHook,
   rust,
   # The subdirectory of `target/` from which to copy the build artifacts
   targetSubdirectory ? stdenv.hostPlatform.rust.cargoShortTarget,
@@ -13,8 +13,6 @@ let
   kernelName = stdenv.hostPlatform.parsed.kernel.name;
 in
 makeSetupHook {
-  name = "tauri-hook";
-
   propagatedBuildInputs = [
     cargo
     cargo-tauri
@@ -22,6 +20,8 @@ makeSetupHook {
   ++ lib.optionals stdenv.hostPlatform.isLinux [
     cargo-tauri.gst-plugin
   ];
+
+  name = "tauri-hook";
 
   substitutions = {
     inherit targetSubdirectory;
@@ -75,8 +75,8 @@ makeSetupHook {
 
   meta = {
     inherit (cargo-tauri.meta) maintainers broken;
+    license = lib.licenses.mit;
     # Platforms that Tauri supports bundles for
     platforms = lib.platforms.darwin ++ lib.platforms.linux;
-    license = lib.licenses.mit;
   };
 } ./hook.sh

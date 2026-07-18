@@ -1,8 +1,8 @@
 {
-  fetchFromGitHub,
   lib,
-  nix-update-script,
   stdenv,
+  fetchFromGitHub,
+  nix-update-script,
   swift,
   swiftPackages,
   swiftpm,
@@ -23,19 +23,11 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "1cf63741ddc0a5070680cb1339ad0abff0b7d69b";
     hash = "sha256-+qgvl5y9ipVQIZlLZbkzkqb9bO7X9VGDvVsloOLZU/k=";
   };
+
   nativeBuildInputs = [
     swift
     swiftpm
   ];
-
-  configurePhase = generated.configure;
-
-  installPhase = ''
-    runHook preInstall
-    mkdir -p $out/bin
-    cp $(swiftpmBinPath)/cgtcalc $out/bin/
-    runHook postInstall
-  '';
 
   buildInputs = [
     swiftPackages.XCTest
@@ -44,6 +36,15 @@ stdenv.mkDerivation (finalAttrs: {
   # libIndexStore.so: cannot open shared object file: No such file or directory
   # https://github.com/NixOS/nixpkgs/issues/379859
   doCheck = false;
+
+  installPhase = ''
+    runHook preInstall
+    mkdir -p $out/bin
+    cp $(swiftpmBinPath)/cgtcalc $out/bin/
+    runHook postInstall
+  '';
+
+  configurePhase = generated.configure;
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];
@@ -54,7 +55,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/mattjgalloway/cgtcalc";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.dwoffinden ];
-    mainProgram = "cgtcalc";
     platforms = lib.platforms.all;
+    mainProgram = "cgtcalc";
   };
 })

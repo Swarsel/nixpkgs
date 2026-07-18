@@ -2,63 +2,63 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchzip,
-  autoPatchelfHook,
+  amf-headers,
+  apple-sdk_15,
   autoAddDriverRunpath,
-  makeWrapper,
-  buildNpmPackage,
-  nixosTests,
-  cmake,
+  autoPatchelfHook,
   avahi,
-  libevdev,
-  libpulseaudio,
-  libxtst,
-  libxrandr,
-  libxi,
-  libxfixes,
-  libxdmcp,
-  libx11,
-  libxcb,
-  openssl,
-  libopus,
   boost,
-  pkg-config,
-  libdrm,
-  wayland,
-  wayland-scanner,
-  libffi,
-  libcap,
-  libgbm,
+  buildNpmPackage,
+  cmake,
+  config,
+  coreutils,
   curl,
-  pcre2,
-  python3,
-  libuuid,
+  darwinMinVersionHook,
+  fetchzip,
+  libappindicator,
+  libcap,
+  libdatrie,
+  libdrm,
+  libepoxy,
+  libevdev,
+  libffi,
+  libgbm,
+  libglvnd,
+  libnotify,
+  libopus,
+  libpulseaudio,
   libselinux,
   libsepol,
   libthai,
-  libdatrie,
-  libxkbcommon,
-  libepoxy,
+  libuuid,
   libva,
   libvdpau,
-  libglvnd,
-  numactl,
-  amf-headers,
-  svt-av1,
-  shaderc,
-  vulkan-loader,
-  libappindicator,
-  libnotify,
-  pipewire,
+  libx11,
+  libxcb,
+  libxdmcp,
+  libxfixes,
+  libxi,
+  libxkbcommon,
+  libxrandr,
+  libxtst,
+  makeWrapper,
   miniupnpc,
+  nixosTests,
   nlohmann_json,
-  config,
-  coreutils,
+  numactl,
+  openssl,
+  pcre2,
+  pipewire,
+  pkg-config,
+  python3,
+  shaderc,
+  svt-av1,
   udevCheckHook,
-  cudaSupport ? config.cudaSupport,
+  vulkan-loader,
+  wayland,
+  wayland-scanner,
   cudaPackages ? { },
-  apple-sdk_15,
-  darwinMinVersionHook,
+  cudaSupport ? config.cudaSupport,
 }:
 let
   inherit (stdenv.hostPlatform) isDarwin isLinux;
@@ -72,25 +72,26 @@ let
   buildDepsTag = "v2026.516.30821";
   ffmpegArch =
     {
-      x86_64-linux = "Linux-x86_64";
-      aarch64-linux = "Linux-aarch64";
       aarch64-darwin = "Darwin-arm64";
+      aarch64-linux = "Linux-aarch64";
+      x86_64-linux = "Linux-x86_64";
     }
     .${stdenv.hostPlatform.system}
       or (throw "sunshine: unsupported system ${stdenv.hostPlatform.system} for prebuilt ffmpeg");
   ffmpegPrebuilt = fetchzip {
-    url = "https://github.com/LizardByte/build-deps/releases/download/${buildDepsTag}/${ffmpegArch}-ffmpeg.tar.gz";
     # stripRoot defaults to true; the hash here matches what
     # `nix-prefetch-url --unpack` produces, so the updater can refresh it
     # with the built-in command (which also caches downloads by URL,
     # unlike the empty-hash trick).
     hash =
       {
-        x86_64-linux = "sha256-VT+4qP2FaizCoIBBbBkzbYw4YOvGhuBUoZxWL0IYVZo=";
-        aarch64-linux = "sha256-X5v/GsJy8G3/LHW/8s0VAS0Vegr7JhZSqYotXL/s81o=";
         aarch64-darwin = "sha256-xkfwLJgb7uz1H7mJrQFW79w2T/T/Zv7biXlvXz5UvXc=";
+        aarch64-linux = "sha256-X5v/GsJy8G3/LHW/8s0VAS0Vegr7JhZSqYotXL/s81o=";
+        x86_64-linux = "sha256-VT+4qP2FaizCoIBBbBkzbYw4YOvGhuBUoZxWL0IYVZo=";
       }
       .${stdenv.hostPlatform.system};
+
+    url = "https://github.com/LizardByte/build-deps/releases/download/${buildDepsTag}/${ffmpegArch}-ffmpeg.tar.gz";
   };
 
 in
@@ -98,31 +99,12 @@ stdenv'.mkDerivation (finalAttrs: {
   pname = "sunshine";
   version = "2026.516.143833";
 
-  __structuredAttrs = true;
-  strictDeps = true;
-
   src = fetchFromGitHub {
     owner = "LizardByte";
     repo = "Sunshine";
     tag = "v${finalAttrs.version}";
     hash = "sha256-3yuhOyW1Rqz4ddZ40z2ZzpAReZQFva0SL595XrnFB60=";
     fetchSubmodules = true;
-  };
-
-  # build webui
-  ui = buildNpmPackage {
-    inherit (finalAttrs) src version;
-    pname = "sunshine-ui";
-    npmDepsHash = "sha256-YnNnuAdj/S5LGNytqIsmCApIec8DTWKF6VIJ7AXUctU=";
-
-    installPhase = ''
-      runHook preInstall
-
-      mkdir -p "$out"
-      cp -a . "$out"/
-
-      runHook postInstall
-    '';
   };
 
   postPatch = # don't look for npm since we build webui separately
@@ -153,6 +135,8 @@ stdenv'.mkDerivation (finalAttrs: {
     substituteInPlace packaging/linux/app-dev.lizardbyte.app.Sunshine.service.in \
       --replace-fail '/bin/sleep' '${lib.getExe' coreutils "sleep"}'
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -230,14 +214,6 @@ stdenv'.mkDerivation (finalAttrs: {
     (darwinMinVersionHook "14.2")
   ];
 
-  runtimeDependencies = lib.optionals isLinux [
-    avahi
-    libgbm
-    libxrandr
-    libxcb
-    libglvnd
-  ];
-
   cmakeFlags = [
     "-Wno-dev"
     (lib.cmakeBool "BOOST_USE_STATIC" false)
@@ -270,10 +246,14 @@ stdenv'.mkDerivation (finalAttrs: {
     (lib.cmakeBool "SUNSHINE_BUILD_HOMEBREW" true)
   ];
 
+  buildFlags = [
+    "sunshine"
+  ];
+
   env = {
+    BRANCH = "master";
     # needed to trigger CMake version configuration
     BUILD_VERSION = finalAttrs.version;
-    BRANCH = "master";
     COMMIT = finalAttrs.src.rev;
   };
 
@@ -281,10 +261,6 @@ stdenv'.mkDerivation (finalAttrs: {
   preBuild = ''
     cp -r ${finalAttrs.ui}/build ../
   '';
-
-  buildFlags = [
-    "sunshine"
-  ];
 
   # redefine installPhase to avoid attempt to build webui
   installPhase = ''
@@ -295,15 +271,40 @@ stdenv'.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = isLinux;
+  nativeInstallCheckInputs = lib.optionals isLinux [ udevCheckHook ];
+
   # allow Sunshine to find libvulkan
   postFixup = lib.optionalString cudaSupport ''
     wrapProgram $out/bin/sunshine \
       --set LD_LIBRARY_PATH ${lib.makeLibraryPath [ vulkan-loader ]}
   '';
 
-  doInstallCheck = isLinux;
+  __structuredAttrs = true;
 
-  nativeInstallCheckInputs = lib.optionals isLinux [ udevCheckHook ];
+  runtimeDependencies = lib.optionals isLinux [
+    avahi
+    libgbm
+    libxrandr
+    libxcb
+    libglvnd
+  ];
+
+  # build webui
+  ui = buildNpmPackage {
+    inherit (finalAttrs) src version;
+    pname = "sunshine-ui";
+    npmDepsHash = "sha256-YnNnuAdj/S5LGNytqIsmCApIec8DTWKF6VIJ7AXUctU=";
+
+    installPhase = ''
+      runHook preInstall
+
+      mkdir -p "$out"
+      cp -a . "$out"/
+
+      runHook postInstall
+    '';
+  };
 
   passthru = {
     tests = { inherit (nixosTests) sunshine; };
@@ -314,11 +315,13 @@ stdenv'.mkDerivation (finalAttrs: {
     description = "Game stream host for Moonlight";
     homepage = "https://github.com/LizardByte/Sunshine";
     license = lib.licenses.gpl3Only;
-    mainProgram = "sunshine";
+
     maintainers = with lib.maintainers; [
       devusb
       anish
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "sunshine";
   };
 })

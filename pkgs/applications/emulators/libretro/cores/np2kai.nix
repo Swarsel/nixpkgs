@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore rec {
-  core = "np2kai";
   version = "0-unstable-2026-06-19";
 
   src = fetchFromGitHub {
@@ -28,6 +27,7 @@ mkLibretroCore rec {
   ];
 
   preBuild = "cd sdl";
+  core = "np2kai";
 
   meta = {
     description = "Neko Project II kai libretro port";

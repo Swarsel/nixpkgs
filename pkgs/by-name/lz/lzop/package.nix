@@ -17,10 +17,10 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [ lzo ];
 
   meta = {
-    homepage = "http://www.lzop.org";
     description = "Fast file compressor";
-    maintainers = [ ];
+    homepage = "http://www.lzop.org";
     license = lib.licenses.gpl2Plus;
+    maintainers = [ ];
     platforms = lib.platforms.unix;
     mainProgram = "lzop";
   };

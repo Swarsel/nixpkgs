@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -21,8 +21,6 @@ buildNpmPackage rec {
 
   npmDepsHash = "sha256-UvErPy3jgbaGBZnqix6fm8BhZp1he0z5JJj8kzE+Sbc=";
 
-  npmBuildScript = "rollup";
-
   installPhase = ''
     runHook preInstall
 
@@ -32,13 +30,14 @@ buildNpmPackage rec {
     runHook postInstall
   '';
 
+  npmBuildScript = "rollup";
   passthru.entrypoint = "scheduler-card.js";
 
   meta = with lib; {
     description = "HA Lovelace card for control of scheduler entities";
     homepage = "https://github.com/nielsfaber/scheduler-card";
     changelog = "https://github.com/nielsfaber/scheduler-card/releases/tag/v${version}";
-    maintainers = with maintainers; [ SuperSandro2000 ];
     license = licenses.gpl3Plus;
+    maintainers = with maintainers; [ SuperSandro2000 ];
   };
 }

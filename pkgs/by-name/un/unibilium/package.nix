@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  libtool,
-  pkg-config,
-  perl,
-  ncurses,
   autoreconfHook,
+  libtool,
+  ncurses,
+  perl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,7 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  enableParallelBuilding = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -29,13 +28,15 @@ stdenv.mkDerivation (finalAttrs: {
     perl
     libtool
   ];
+
   buildInputs = [ ncurses ];
+  enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://github.com/neovim/unibilium";
     description = "Very basic terminfo library";
+    homepage = "https://github.com/neovim/unibilium";
     license = lib.licenses.lgpl3Plus;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ pSub ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

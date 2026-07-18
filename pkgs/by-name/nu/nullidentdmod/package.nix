@@ -23,10 +23,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Simple identd that just replies with a random string or customized userid";
-    mainProgram = "nullidentdmod";
-    license = lib.licenses.gpl2Plus;
     homepage = "https://github.com/Ranthrall/nullidentdmod";
+    license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ das_j ];
     platforms = lib.platforms.linux; # Must be run by systemd
+    mainProgram = "nullidentdmod";
   };
 })

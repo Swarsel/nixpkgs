@@ -1,7 +1,7 @@
 {
-  buildPecl,
   lib,
   fetchFromGitHub,
+  buildPecl,
   judy,
 }:
 
@@ -22,6 +22,7 @@ buildPecl {
   buildInputs = [
     judy
   ];
+
   configureFlags = [
     "--with-judy-dir=${lib.getDev judy}"
   ];
@@ -29,9 +30,9 @@ buildPecl {
   doCheck = true;
 
   meta = {
-    changelog = "https://github.com/arnaud-lb/php-memory-profiler/releases/tag/${version}";
     description = "Memory profiler for PHP. Helps finding memory leaks in PHP scripts";
     homepage = "https://github.com/arnaud-lb/php-memory-profiler";
+    changelog = "https://github.com/arnaud-lb/php-memory-profiler/releases/tag/${version}";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
   setuptools-scm,
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "nocasedict";
   version = "2.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pywbem";
@@ -19,13 +18,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-e3APYlmeoby0CGoEh4g6ZK27DwWi4EZdpwsRORxly+w=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "nocasedict" ];
 
   meta = {

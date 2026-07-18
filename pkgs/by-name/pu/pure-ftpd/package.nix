@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
+  libxcrypt,
   openssl,
   pam,
-  libxcrypt,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
-  makeWrapper,
   coreutils,
+  dpkg,
   gnugrep,
   gnused,
+  makeWrapper,
   mfc465cnlpr,
   pkgsi686Linux,
   psutils,
@@ -21,16 +21,10 @@ stdenv.mkDerivation rec {
     sha256 = "59a62ed3cf10f1565c08ace55832bd48bd5034f7067662870edf7ff3bf0cb76a";
   };
 
-  unpackPhase = ''
-    dpkg-deb -x $src $out
-  '';
-
   nativeBuildInputs = [
     dpkg
     makeWrapper
   ];
-
-  dontBuild = true;
 
   installPhase = ''
     lpr=${mfc465cnlpr}/usr/local/Brother/Printer/mfc465cn
@@ -78,12 +72,18 @@ stdenv.mkDerivation rec {
     chmod 755 $out/lib/cups/filter/brlpdwrappermfc465cn
   '';
 
+  dontBuild = true;
+
+  unpackPhase = ''
+    dpkg-deb -x $src $out
+  '';
+
   meta = {
     description = "Brother MFC-465CN CUPS wrapper driver";
     homepage = "http://www.brother.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ phrogg ];
+    platforms = lib.platforms.linux;
   };
 }

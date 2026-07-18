@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "faraday-cli";
   version = "2.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "infobyte";
@@ -16,12 +15,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-OQhwohRtBLwVWEJhyGBs/ktOL5SH+jM9A9/HnyheJYE=";
   };
 
-  pythonRelaxDeps = [
-    "cmd2"
-    "httpx"
-    "validators"
-  ];
-
+  # Tests requires credentials
+  doCheck = false;
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -43,10 +38,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     validators
   ];
 
-  # Tests requires credentials
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "faraday_cli" ];
+
+  pythonRelaxDeps = [
+    "cmd2"
+    "httpx"
+    "validators"
+  ];
 
   meta = {
     description = "Command Line Interface for Faraday";

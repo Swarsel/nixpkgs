@@ -5,13 +5,13 @@
   autoreconfHook,
   doxygen,
   pkg-config,
-  enableUdev ?
-    stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isStatic && !stdenv.hostPlatform.isAndroid,
   udev,
   udevCheckHook,
+  enableUdev ?
+    stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isStatic && !stdenv.hostPlatform.isAndroid,
+  withDocs ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
   withExamples ? false,
   withStatic ? false,
-  withDocs ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,16 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
   ]
   ++ lib.optionals withDocs [ doxygen ];
+
   propagatedBuildInputs = lib.optional enableUdev udev;
-
-  # Many dependents are dealing with hardware devices, exposing udev rules for them.
-  # Checking these by propagated hook might improve discoverability
-  propagatedNativeBuildInputs = lib.optional enableUdev udevCheckHook;
-
-  dontDisableStatic = withStatic;
-
-  # libusb-1.0.rc:11: fatal error: opening dependency file .deps/libusb-1.0.Tpo: No such file or directory
-  dontAddDisableDepTrack = stdenv.hostPlatform.isWindows;
 
   configureFlags =
     lib.optional (!enableUdev) "--disable-udev" ++ lib.optional withExamples "--enable-examples-build";
@@ -56,27 +48,38 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r doc/api-1.0/* "$doc/share/doc/libusb/"
   '';
 
-  preFixup = lib.optionalString enableUdev ''
-    sed 's,-ludev,-L${lib.getLib udev}/lib -ludev,' -i $out/lib/libusb-1.0.la
-  '';
-
   postInstall = lib.optionalString withExamples ''
     mkdir -p $out/{bin,sbin,examples/bin}
     cp -r examples/.libs/* $out/examples/bin
     ln -s $out/examples/bin/fxload $out/sbin/fxload
   '';
 
+  preFixup = lib.optionalString enableUdev ''
+    sed 's,-ludev,-L${lib.getLib udev}/lib -ludev,' -i $out/lib/libusb-1.0.la
+  '';
+
+  # libusb-1.0.rc:11: fatal error: opening dependency file .deps/libusb-1.0.Tpo: No such file or directory
+  dontAddDisableDepTrack = stdenv.hostPlatform.isWindows;
+  dontDisableStatic = withStatic;
+  # Many dependents are dealing with hardware devices, exposing udev rules for them.
+  # Checking these by propagated hook might improve discoverability
+  propagatedNativeBuildInputs = lib.optional enableUdev udevCheckHook;
+
   meta = {
-    homepage = "https://libusb.info/";
     description = "Cross-platform user-mode USB device library";
+
     longDescription = ''
       libusb is a cross-platform user-mode library that provides access to USB devices.
     '';
-    platforms = lib.platforms.all;
+
+    homepage = "https://libusb.info/";
     license = lib.licenses.lgpl21Plus;
+
     maintainers = with lib.maintainers; [
       prusnak
       logger
     ];
+
+    platforms = lib.platforms.all;
   };
 })

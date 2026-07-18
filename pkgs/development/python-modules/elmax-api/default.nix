@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   httpx,
   pyjwt,
+  setuptools,
   websockets,
   yarl,
 }:
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "elmax-api";
   version = "0.0.6.4rc0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "albertogeniola";
@@ -21,6 +20,8 @@ buildPythonPackage rec {
     hash = "sha256-BYVfP8B+p4J4gW+64xh9bT9sDcu/lk0R+MvLsYLwRfQ=";
   };
 
+  # Test require network access
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,9 +31,7 @@ buildPythonPackage rec {
     yarl
   ];
 
-  # Test require network access
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "elmax_api" ];
 
   meta = {

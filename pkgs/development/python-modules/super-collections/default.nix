@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   hjson,
   pytestCheckHook,
-  rich,
   pyyaml,
+  rich,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "super-collections";
   version = "0.6.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fralau";
@@ -20,6 +19,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-7QW5cL+TZlPX8ZMNNH+xZSGNIGr8Cy2jP1oSWy5tKaY=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    rich
+    pyyaml
+  ];
 
   build-system = [
     setuptools
@@ -29,11 +34,7 @@ buildPythonPackage rec {
     hjson
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    rich
-    pyyaml
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "super_collections"

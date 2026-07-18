@@ -2,15 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3Packages,
   libsForQt5,
+  python3Packages,
 }:
 
 python3Packages.buildPythonPackage rec {
   pname = "qnotero";
-
   version = "2.3.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "ealbiter";
@@ -24,17 +22,8 @@ python3Packages.buildPythonPackage rec {
     libsForQt5.wrapQtAppsHook
   ];
 
-  patchPhase = ''
-    substituteInPlace ./setup.py \
-      --replace "/usr/share" "usr/share"
-
-    substituteInPlace ./libqnotero/_themes/light.py \
-       --replace "/usr/share" "$out/usr/share"
-  '';
-
-  preFixup = ''
-    wrapQtApp "$out"/bin/qnotero
-  '';
+  # no tests executed
+  doCheck = false;
 
   postInstall = ''
     mkdir $out/share
@@ -48,16 +37,27 @@ python3Packages.buildPythonPackage rec {
       $out/share/icons/hicolor/64x64/apps/qnotero.png
   '';
 
-  # no tests executed
-  doCheck = false;
+  preFixup = ''
+    wrapQtApp "$out"/bin/qnotero
+  '';
+
+  format = "setuptools";
+
+  patchPhase = ''
+    substituteInPlace ./setup.py \
+      --replace "/usr/share" "usr/share"
+
+    substituteInPlace ./libqnotero/_themes/light.py \
+       --replace "/usr/share" "$out/usr/share"
+  '';
 
   meta = {
     description = "Quick access to Zotero references";
-    mainProgram = "qnotero";
     homepage = "https://www.cogsci.nl/software/qnotero";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.unix;
-    broken = stdenv.hostPlatform.isDarwin; # Build fails even after adding cx-freeze to `buildInputs`
     maintainers = [ lib.maintainers.nico202 ];
+    platforms = lib.platforms.unix;
+    mainProgram = "qnotero";
+    broken = stdenv.hostPlatform.isDarwin; # Build fails even after adding cx-freeze to `buildInputs`
   };
 }

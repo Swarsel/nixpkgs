@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -25,8 +25,8 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://black-foundry.com/work/inria";
     description = "Inria Sans and Inria Serif";
+
     longDescription = ''
       Inria Sans and Inria Serif are the two members of a type family
       design for the communication of Inria, the French national institute
@@ -37,6 +37,8 @@ stdenvNoCC.mkDerivation rec {
       Sans-serif part and a more rational axis and drawing for the
       serif. Both members comes in 3 weights with matching italics.
     '';
+
+    homepage = "https://black-foundry.com/work/inria";
     license = lib.licenses.ofl;
     platforms = lib.platforms.all;
   };

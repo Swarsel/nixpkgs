@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   defusedxml,
   dissect-cstruct,
   dissect-target,
-  fetchFromGitHub,
   minio,
   pycryptodome,
   pytestCheckHook,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "acquire";
   version = "3.22";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fox-it";
@@ -26,6 +25,8 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-CtzVHnQALqA5D0wJQ74lAw9HunVFZEkKvij6RQaQrBE=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ] ++ optional-dependencies.full;
 
   build-system = [
     setuptools
@@ -36,6 +37,14 @@ buildPythonPackage rec {
     defusedxml
     dissect-cstruct
     dissect-target
+  ];
+
+  disabledTests = [
+    "output_encrypt"
+    "test_collector_collect_glob"
+    "test_collector_collect_path_with_dir"
+    "test_misc_osx"
+    "test_misc_unix"
   ];
 
   optional-dependencies = {
@@ -50,16 +59,7 @@ buildPythonPackage rec {
     ++ dissect-target.optional-dependencies.full;
   };
 
-  nativeCheckInputs = [ pytestCheckHook ] ++ optional-dependencies.full;
-
-  disabledTests = [
-    "output_encrypt"
-    "test_collector_collect_glob"
-    "test_collector_collect_path_with_dir"
-    "test_misc_osx"
-    "test_misc_unix"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "acquire" ];
 
   meta = {

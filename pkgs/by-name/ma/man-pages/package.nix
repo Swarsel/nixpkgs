@@ -6,13 +6,18 @@
   gawk,
   groff,
   man,
-  pcre2,
   nixosTests,
+  pcre2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "man-pages";
   version = "6.18";
+
+  src = fetchurl {
+    url = "mirror://kernel/linux/docs/man-pages/man-pages-${finalAttrs.version}.tar.xz";
+    hash = "sha256-yTT63ItZdIxoIno09lgdLd+Cgrc83NUlRsjNiLdLJNE=";
+  };
 
   # `man` is first: most people installing `man-pages` want man pages.
   # The binaries could be split to a seperate package (as upstream suggests),
@@ -23,27 +28,12 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
   ];
 
-  src = fetchurl {
-    url = "mirror://kernel/linux/docs/man-pages/man-pages-${finalAttrs.version}.tar.xz";
-    hash = "sha256-yTT63ItZdIxoIno09lgdLd+Cgrc83NUlRsjNiLdLJNE=";
-  };
-
   # See https://git.kernel.org/pub/scm/docs/man-pages/man-pages.git/tree/man/man7/man.7,
   # https://github.com/NixOS/nixpkgs/issues/498875
   postPatch = ''
     substituteInPlace man/man7/man.7 \
       --replace-fail '.so man7/groff_man.7' '.so ${lib.getMan groff}/share/man/man7/groff_man.7'
   '';
-
-  nativeInstallCheckInputs = [
-    gawk
-    man
-    pcre2
-  ];
-
-  dontBuild = true;
-  enableParallelInstalling = true;
-  doInstallCheck = true;
 
   makeFlags = [
     "-R"
@@ -63,6 +53,14 @@ stdenv.mkDerivation (finalAttrs: {
     export DISTDATE="$(date --utc --date="@$SOURCE_DATE_EPOCH")"
   '';
 
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    gawk
+    man
+    pcre2
+  ];
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -74,8 +72,12 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  dontBuild = true;
+  enableParallelInstalling = true;
+
   passthru = {
     tests = { inherit (nixosTests) man; };
+
     updateScript = directoryListingUpdater {
       url = "https://www.kernel.org/pub/linux/docs/man-pages/";
     };
@@ -83,12 +85,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Linux development manual pages";
+
     longDescription = ''
       This package provides the manual pages in its "man" output,
       and various utility programs in its "out" output.
 
       Only the "man" output is installed by default.
     '';
+
     homepage = "https://www.kernel.org/doc/man-pages/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ mdaniels5757 ];

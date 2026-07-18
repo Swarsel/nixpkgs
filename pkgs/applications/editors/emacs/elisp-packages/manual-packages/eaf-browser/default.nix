@@ -1,16 +1,16 @@
 {
   # Basic
   lib,
-  melpaBuild,
   fetchFromGitHub,
   # Dependencies
   aria2,
-  # JavaScript dependency
-  nodejs,
   fetchNpmDeps,
-  npmHooks,
+  melpaBuild,
   # Updater
   nix-update-script,
+  # JavaScript dependency
+  nodejs,
+  npmHooks,
 }:
 
 melpaBuild (finalAttrs: {
@@ -25,21 +25,27 @@ melpaBuild (finalAttrs: {
     hash = "sha256-DsPrctB1bSGBPQLI2LsnSUtqnzWpZRrWrVZM8lS9fms=";
   };
 
-  env.npmDeps = fetchNpmDeps {
-    name = "${finalAttrs.pname}-npm-deps";
-    inherit (finalAttrs) src;
-    hash = "sha256-UfQL7rN47nI1FyhgBlzH4QtyVCn0wGV3Rv5Y+aidRNE=";
-  };
+  postPatch = ''
+    substituteInPlace buffer.py \
+      --replace-fail "aria2_args = [\"aria2c\"]" \
+                     "aria2_args = [\"${lib.getExe aria2}\"]"
+  '';
 
   nativeBuildInputs = [
     nodejs
     npmHooks.npmConfigHook
   ];
 
-  postPatch = ''
-    substituteInPlace buffer.py \
-      --replace-fail "aria2_args = [\"aria2c\"]" \
-                     "aria2_args = [\"${lib.getExe aria2}\"]"
+  env.npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-UfQL7rN47nI1FyhgBlzH4QtyVCn0wGV3Rv5Y+aidRNE=";
+    name = "${finalAttrs.pname}-npm-deps";
+  };
+
+  postInstall = ''
+    LISPDIR=$out/share/emacs/site-lisp/elpa/${finalAttrs.ename}-${finalAttrs.melpaVersion}
+    touch node_modules/.nosearch
+    cp -r node_modules $LISPDIR/
   '';
 
   files = ''
@@ -49,25 +55,21 @@ melpaBuild (finalAttrs: {
      "aria2-ng")
   '';
 
-  postInstall = ''
-    LISPDIR=$out/share/emacs/site-lisp/elpa/${finalAttrs.ename}-${finalAttrs.melpaVersion}
-    touch node_modules/.nosearch
-    cp -r node_modules $LISPDIR/
-  '';
-
   passthru = {
-    updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
     eafPythonDeps =
       ps: with ps; [
         pysocks
         pycookiecheat
       ];
+
+    updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
   };
 
   meta = {
     description = "Modern browser in Emacs";
     homepage = "https://github.com/emacs-eaf/eaf-browser";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       thattemperature
     ];

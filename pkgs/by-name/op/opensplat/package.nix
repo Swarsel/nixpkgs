@@ -1,23 +1,23 @@
 {
   lib,
   stdenv,
-  cmake,
-  ninja,
   fetchFromGitHub,
-  python3,
-  opencv,
-  nlohmann_json,
-  nanoflann,
-  glm,
-  cxxopts,
-  nix-update-script,
-  config,
-  cudaSupport ? config.cudaSupport,
-  cudaPackages,
-  rocmSupport ? config.rocmSupport,
-  rocmPackages,
   autoAddDriverRunpath,
+  cmake,
+  config,
+  cudaPackages,
+  cxxopts,
   fetchpatch2,
+  glm,
+  nanoflann,
+  ninja,
+  nix-update-script,
+  nlohmann_json,
+  opencv,
+  python3,
+  rocmPackages,
+  cudaSupport ? config.cudaSupport,
+  rocmSupport ? config.rocmSupport,
 }:
 let
   torch = python3.pkgs.torch.override { inherit cudaSupport rocmSupport; };
@@ -29,9 +29,6 @@ stdenv'.mkDerivation (finalAttrs: {
   pname = "opensplat";
   version = "1.1.4";
 
-  __structuredAttrs = true;
-  strictDeps = true;
-
   src = fetchFromGitHub {
     owner = "pierotofy";
     repo = "OpenSplat";
@@ -41,8 +38,8 @@ stdenv'.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch2 {
-      url = "https://github.com/pierotofy/OpenSplat/commit/7fb96e86a43ac6cfd3eb3a7f6be190c5f2dbeb73.patch";
       hash = "sha256-hWJWU/n1pRAAbExAYUap6CoSjIu2dzCToUmacSSpa0I=";
+      url = "https://github.com/pierotofy/OpenSplat/commit/7fb96e86a43ac6cfd3eb3a7f6be190c5f2dbeb73.patch";
     })
   ];
 
@@ -74,6 +71,8 @@ stdenv'.mkDerivation (finalAttrs: {
       find_package(Torch REQUIRED)"
     ''
   );
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -113,19 +112,6 @@ stdenv'.mkDerivation (finalAttrs: {
     cudaPackages.cuda_cudart
   ];
 
-  env =
-    lib.optionalAttrs cudaSupport {
-      TORCH_CUDA_ARCH_LIST = "${lib.concatStringsSep ";" python3.pkgs.torch.cudaCapabilities}";
-      NIX_LDFLAGS = "-L${lib.getOutput "stubs" cudaPackages.cuda_cudart}/lib/stubs"; # fixes -lcuda not found
-    }
-    // lib.optionalAttrs rocmSupport {
-      PYTORCH_ROCM_ARCH = torch.gpuTargetString;
-      HIPFLAGS = toString [
-        "-I${lib.getInclude rocmPackages.rocprim}/include"
-        "-I${lib.getInclude rocmPackages.rocthrust}/include"
-      ];
-    };
-
   cmakeFlags = [
     (lib.cmakeBool "CMAKE_SKIP_RPATH" true)
     (lib.cmakeFeature "FETCHCONTENT_TRY_FIND_PACKAGE_MODE" "ALWAYS")
@@ -138,21 +124,39 @@ stdenv'.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "CUDA_TOOLKIT_ROOT_DIR" "${cudaPackages.cudatoolkit}/")
   ];
 
+  env =
+    lib.optionalAttrs cudaSupport {
+      NIX_LDFLAGS = "-L${lib.getOutput "stubs" cudaPackages.cuda_cudart}/lib/stubs"; # fixes -lcuda not found
+      TORCH_CUDA_ARCH_LIST = "${lib.concatStringsSep ";" python3.pkgs.torch.cudaCapabilities}";
+    }
+    // lib.optionalAttrs rocmSupport {
+      HIPFLAGS = toString [
+        "-I${lib.getInclude rocmPackages.rocprim}/include"
+        "-I${lib.getInclude rocmPackages.rocthrust}/include"
+      ];
+
+      PYTORCH_ROCM_ARCH = torch.gpuTargetString;
+    };
+
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Production-grade 3D gaussian splatting";
     homepage = "https://github.com/pierotofy/OpenSplat/";
+
     license = [
       # main
       lib.licenses.agpl3Only
       # vendored+modified gsplat
       lib.licenses.asl20
     ];
+
     maintainers = [
       lib.maintainers.jcaesar
       lib.maintainers.LunNova
     ];
+
     platforms = lib.platforms.linux ++ lib.optionals (!cudaSupport) lib.platforms.darwin;
   };
 })

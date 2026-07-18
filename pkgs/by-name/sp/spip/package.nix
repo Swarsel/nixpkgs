@@ -1,11 +1,11 @@
 {
-  fetchFromGitHub,
-  fetchurl,
   lib,
+  stdenv,
+  fetchurl,
+  fetchFromGitHub,
   makeWrapper,
   rPackages,
   rWrapper,
-  stdenv,
 }:
 
 let
@@ -19,13 +19,13 @@ let
   transcriptome-url = "https://kumisystems.dl.sourceforge.net/project/splicing-prediction-pipeline/transcriptome/";
 
   transcriptome19 = fetchurl {
-    url = transcriptome-url + "/transcriptome_hg19.RData";
     hash = "sha256-E8UmHoNoySSIde+TRE6bxVP0PrccpKDvIHBGCvWnYOw=";
+    url = transcriptome-url + "/transcriptome_hg19.RData";
   };
 
   transcriptome38 = fetchurl {
-    url = transcriptome-url + "/transcriptome_hg38.RData";
     hash = "sha256-mQMMZVN1byXMYjFoRdezmoZtnhUur2CHOP/j/pmw8as=";
+    url = transcriptome-url + "/transcriptome_hg38.RData";
   };
 
 in
@@ -42,7 +42,6 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-  buildInput = [ my-r-packages ];
 
   installPhase = ''
     runHook preInstall
@@ -58,10 +57,12 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  buildInput = [ my-r-packages ];
+
   meta = {
     description = "Random forest model for splice prediction in genomics";
-    license = lib.licenses.mit;
     homepage = "https://github.com/raphaelleman/SPiP";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ apraga ];
     platforms = lib.platforms.unix;
     mainProgram = "spip";

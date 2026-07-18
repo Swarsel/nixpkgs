@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "py-ubjson";
   version = "0.16.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "Iotic-Labs";
@@ -25,7 +24,7 @@ buildPythonPackage rec {
   ];
 
   enabledTestPaths = [ "test/test.py" ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "ubjson" ];
 
   meta = {

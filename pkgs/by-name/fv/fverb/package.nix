@@ -18,13 +18,12 @@ stdenv.mkDerivation {
     fetchSubmodules = true;
   };
 
-  nativeBuildInputs = [ pkg-config ];
-
-  makeFlags = [ "PREFIX=${placeholder "out"}" ];
-
   postPatch = ''
     patchShebangs ./dpf/utils/generate-ttl.sh
   '';
+
+  nativeBuildInputs = [ pkg-config ];
+  makeFlags = [ "PREFIX=${placeholder "out"}" ];
 
   meta = {
     description = "Stereo variant of the reverberator by Jon Dattorro, for lv2";

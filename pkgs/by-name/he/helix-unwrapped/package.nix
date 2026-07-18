@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  runCommand,
   installShellFiles,
   mdbook,
+  runCommand,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -20,11 +20,6 @@ rustPlatform.buildRustPackage (
     pname = "helix-unwrapped";
     version = "25.07.1";
 
-    outputs = [
-      "out"
-      "doc"
-    ];
-
     src = fetchFromGitHub {
       owner = "helix-editor";
       repo = "helix";
@@ -32,7 +27,10 @@ rustPlatform.buildRustPackage (
       hash = "sha256-RFSzGAcB0mMg/02ykYfTWXzQjLFu2CJ4BkS5HZ/6pBo=";
     };
 
-    cargoHash = "sha256-Mf0nrgMk1MlZkSyUN6mlM5lmTcrOHn3xBNzmVGtApEU=";
+    outputs = [
+      "out"
+      "doc"
+    ];
 
     patches = [
       # Support mdbook 0.5.x: escape HTML tags in command descriptions
@@ -50,10 +48,12 @@ rustPlatform.buildRustPackage (
       mdbook
     ];
 
+    cargoHash = "sha256-Mf0nrgMk1MlZkSyUN6mlM5lmTcrOHn3xBNzmVGtApEU=";
+
     env = {
+      HELIX_DEFAULT_RUNTIME = defaultRuntimeDir;
       # disable fetching and building of tree-sitter grammars in the helix-term build.rs
       HELIX_DISABLE_AUTO_GRAMMAR_BUILD = "1";
-      HELIX_DEFAULT_RUNTIME = defaultRuntimeDir;
     };
 
     postBuild = ''
@@ -69,22 +69,26 @@ rustPlatform.buildRustPackage (
       cp -r ../book-html $doc/share/doc/$name
     '';
 
+    doInstallCheck = true;
+
     nativeInstallCheckInputs = [
       versionCheckHook
     ];
+
     versionCheckProgram = "${placeholder "out"}/bin/hx";
-    doInstallCheck = true;
 
     meta = {
       description = "Post-modern modal text editor";
       homepage = "https://helix-editor.com";
       changelog = "https://github.com/helix-editor/helix/blob/${finalAttrs.version}/CHANGELOG.md";
       license = lib.licenses.mpl20;
-      mainProgram = "hx";
+
       maintainers = with lib.maintainers; [
         aciceri
         yusdacra
       ];
+
+      mainProgram = "hx";
     };
   }
 )

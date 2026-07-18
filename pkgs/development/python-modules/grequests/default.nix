@@ -2,27 +2,27 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  requests,
   gevent,
+  requests,
 }:
 
 buildPythonPackage rec {
   pname = "grequests";
   version = "0.7.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-XDPxQmjfW4+hEH2FN4Fb5v67rW7FYFJNakBLd3jPa6Y=";
   };
 
-  # No tests in archive
-  doCheck = false;
-
   propagatedBuildInputs = [
     requests
     gevent
   ];
+
+  # No tests in archive
+  doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Asynchronous HTTP requests";

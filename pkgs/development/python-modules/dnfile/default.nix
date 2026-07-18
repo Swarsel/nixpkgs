@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pefile,
   pytestCheckHook,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "dnfile";
   version = "0.18.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "malwarefrank";
@@ -20,12 +19,10 @@ buildPythonPackage (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pefile ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ pefile ];
+  pyproject = true;
   pythonImportsCheck = [ "dnfile" ];
 
   meta = {

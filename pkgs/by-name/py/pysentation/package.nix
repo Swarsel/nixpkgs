@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "pysentation";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mimseyedi";
@@ -20,18 +19,19 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     setuptools
   ];
 
-  pythonRelaxDeps = [
-    "click"
-    "rich"
-  ];
-
   propagatedBuildInputs = with python3.pkgs; [
     click
     getkey
     rich
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pysentation" ];
+
+  pythonRelaxDeps = [
+    "click"
+    "rich"
+  ];
 
   meta = {
     description = "CLI for displaying Python presentations";

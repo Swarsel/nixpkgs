@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pamqp,
   uv-build,
   yarl,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "aiormq";
   version = "9.6.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mosquito";
@@ -24,8 +23,9 @@ buildPythonPackage rec {
       --replace "uv_build>=0.10.4,<0.11.0" uv_build
   '';
 
-  pythonRelaxDeps = [ "pamqp" ];
-
+  # Tests require running a RabbitMQ server.
+  # They rely on having AMQP_URL set or running Docker.
+  doCheck = false;
   build-system = [ uv-build ];
 
   dependencies = [
@@ -33,11 +33,9 @@ buildPythonPackage rec {
     yarl
   ];
 
-  # Tests require running a RabbitMQ server.
-  # They rely on having AMQP_URL set or running Docker.
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "aiormq" ];
+  pythonRelaxDeps = [ "pamqp" ];
 
   meta = {
     description = "AMQP 0.9.1 asynchronous client library";

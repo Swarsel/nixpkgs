@@ -1,7 +1,5 @@
 {
   lib,
-  buildDunePackage,
-  ocaml,
   alcotest,
   atd,
   atd-jsonlike,
@@ -10,13 +8,15 @@
   atdgen-runtime,
   atdml,
   biniou,
+  buildDunePackage,
+  ocaml,
   re,
   yamlx,
 }:
 
 buildDunePackage {
-  pname = "atdgen";
   inherit (atdgen-codec-runtime) version src;
+  pname = "atdgen";
 
   buildInputs = [
     atd
@@ -24,13 +24,14 @@ buildDunePackage {
   ];
 
   propagatedBuildInputs = [ atdgen-runtime ];
-
   doCheck = lib.versionAtLeast ocaml.version "4.14";
+
   nativeCheckInputs = [
     atd
     atdml
     biniou
   ];
+
   checkInputs = [
     alcotest
     atdgen-codec-runtime

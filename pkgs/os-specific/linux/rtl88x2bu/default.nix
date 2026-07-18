@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  bc,
   kernel,
   kernelModuleMakeFlags,
-  bc,
 }:
 
 stdenv.mkDerivation {
@@ -18,10 +18,15 @@ stdenv.mkDerivation {
     hash = "sha256-MkvVCWyMOCBzCRufbKMuaaFOPhokZdFnXHYnrAwBe6M=";
   };
 
-  hardeningDisable = [ "pic" ];
-
   nativeBuildInputs = [ bc ] ++ kernel.moduleBuildDependencies;
   makeFlags = kernelModuleMakeFlags;
+
+  preInstall = ''
+    mkdir -p "$out/lib/modules/${kernel.modDirVersion}/kernel/net/wireless/"
+  '';
+
+  enableParallelBuilding = true;
+  hardeningDisable = [ "pic" ];
 
   prePatch = ''
     substituteInPlace ./Makefile \
@@ -30,21 +35,17 @@ stdenv.mkDerivation {
       --replace '$(MODDESTDIR)' "$out/lib/modules/${kernel.modDirVersion}/kernel/net/wireless/"
   '';
 
-  preInstall = ''
-    mkdir -p "$out/lib/modules/${kernel.modDirVersion}/kernel/net/wireless/"
-  '';
-
-  enableParallelBuilding = true;
-
   meta = {
     description = "Realtek rtl88x2bu driver";
     homepage = "https://github.com/RinCat/RTL88x2BU-Linux-Driver";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       otavio
       claymorwan
     ];
+
+    platforms = lib.platforms.linux;
     broken = kernel.kernelOlder "5.11";
   };
 }

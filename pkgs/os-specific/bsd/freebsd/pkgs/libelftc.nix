@@ -1,22 +1,23 @@
 {
-  mkDerivation,
-  libelf,
   compatIfNeeded,
+  libelf,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "lib/libelftc";
-  extraPaths = [
-    "contrib/elftoolchain"
-    "sys/sys/elf_common.h"
-  ];
+  postPatch = ''
+    sed -E -i -e '/INTERNALLIB/d' lib/libelftc/Makefile
+  '';
 
   buildInputs = compatIfNeeded ++ [
     libelf
   ];
 
-  postPatch = ''
-    sed -E -i -e '/INTERNALLIB/d' lib/libelftc/Makefile
-  '';
-
   alwaysKeepStatic = true;
+
+  extraPaths = [
+    "contrib/elftoolchain"
+    "sys/sys/elf_common.h"
+  ];
+
+  path = "lib/libelftc";
 }

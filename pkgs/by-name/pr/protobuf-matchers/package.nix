@@ -1,10 +1,10 @@
 {
-  cmake,
-  fetchFromGitHub,
-  gtest,
   lib,
-  protobuf,
   stdenv,
+  fetchFromGitHub,
+  cmake,
+  gtest,
+  protobuf,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,6 +32,7 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [
     cmake
   ];
+
   buildInputs = [
     gtest
     protobuf

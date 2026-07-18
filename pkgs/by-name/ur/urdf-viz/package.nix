@@ -1,15 +1,15 @@
 {
-  autoPatchelfHook,
-  fetchFromGitHub,
-  rustPlatform,
+  lib,
   stdenv,
+  fetchFromGitHub,
+  autoPatchelfHook,
   libGL,
-  libxrandr,
+  libx11,
+  libxcursor,
   libxi,
   libxinerama,
-  libxcursor,
-  libx11,
-  lib,
+  libxrandr,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "urdf-viz";
@@ -28,13 +28,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   postPatch = ''
     ln -s ${./Cargo.lock} Cargo.lock
   '';
-  cargoLock =
-    let
-      fixupLockFile = path: (builtins.readFile path);
-    in
-    {
-      lockFileContents = fixupLockFile ./Cargo.lock;
-    };
 
   # Add all buildtime dependencies
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
@@ -49,6 +42,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libxinerama
     libxi
   ];
+
+  cargoLock =
+    let
+      fixupLockFile = path: (builtins.readFile path);
+    in
+    {
+      lockFileContents = fixupLockFile ./Cargo.lock;
+    };
 
   # Tell autopatchelf about the dependency that is linked through dlopen
   runtimeDependencies = [

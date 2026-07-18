@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   buildGoModule,
-  nodejs-slim_22,
-  pnpm_9,
   fetchPnpmDeps,
+  nodejs-slim_22,
   pnpmConfigHook,
+  pnpm_9,
   testers,
 }:
 
@@ -22,31 +22,8 @@ let
   };
 
   remark42-web = stdenv.mkDerivation (finalAttrs: {
-    pname = "remark42-web";
     inherit version src;
-
-    strictDeps = true;
-
-    sourceRoot = "${src.name}/frontend";
-
-    nativeBuildInputs = [
-      nodejs-slim_22
-      pnpm
-      pnpmConfigHook
-    ];
-
-    pnpmDeps = fetchPnpmDeps {
-      inherit (finalAttrs)
-        pname
-        version
-        src
-        sourceRoot
-        postPatch
-        ;
-      inherit pnpm;
-      fetcherVersion = 4;
-      hash = "sha256-wFrMoSeD87H1yfMD0jBcw60DKDeh4yjka5aWyHuQssA=";
-    };
+    pname = "remark42-web";
 
     postPatch = ''
       substituteInPlace "package.json" "apps/remark42/package.json" \
@@ -55,6 +32,14 @@ let
       substituteInPlace "apps/remark42/package.json" \
         --replace-fail '"pnpm": "8.*"' '"pnpm": "9.*"'
     '';
+
+    strictDeps = true;
+
+    nativeBuildInputs = [
+      nodejs-slim_22
+      pnpm
+      pnpmConfigHook
+    ];
 
     buildPhase = ''
       runHook preBuild
@@ -72,18 +57,29 @@ let
 
       runHook postInstall
     '';
+
+    pnpmDeps = fetchPnpmDeps {
+      inherit (finalAttrs)
+        pname
+        version
+        src
+        sourceRoot
+        postPatch
+        ;
+
+      inherit pnpm;
+      fetcherVersion = 4;
+      hash = "sha256-wFrMoSeD87H1yfMD0jBcw60DKDeh4yjka5aWyHuQssA=";
+    };
+
+    sourceRoot = "${src.name}/frontend";
   });
 in
 buildGoModule (finalAttrs: {
-  pname = "remark42";
   inherit version src;
-
+  pname = "remark42";
   strictDeps = true;
-
-  modRoot = "backend";
-
-  # build the main package in ./backend/app
-  subPackages = [ "app" ];
+  vendorHash = null;
 
   preBuild = ''
     rm -rf app/cmd/web
@@ -91,7 +87,9 @@ buildGoModule (finalAttrs: {
     cp -r ${remark42-web}/web/. app/cmd/web/
   '';
 
-  vendorHash = null;
+  postInstall = ''
+    mv "$out/bin/app" "$out/bin/remark42"
+  '';
 
   # set the version string in the built binary.
   ldflags = [
@@ -101,22 +99,22 @@ buildGoModule (finalAttrs: {
     "main.revision=v${version}"
   ];
 
-  postInstall = ''
-    mv "$out/bin/app" "$out/bin/remark42"
-  '';
+  modRoot = "backend";
+  # build the main package in ./backend/app
+  subPackages = [ "app" ];
 
   passthru.tests.version = testers.testVersion {
-    package = finalAttrs.finalPackage;
-    command = "remark42 --help";
     version = "v${finalAttrs.version}";
+    command = "remark42 --help";
+    package = finalAttrs.finalPackage;
   };
 
   meta = {
     description = "Self-hosted comment engine that embeds a statically built frontend";
     homepage = "https://remark42.com/";
     license = lib.licenses.mit;
-    mainProgram = "remark42";
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ janhencic ];
+    platforms = lib.platforms.unix;
+    mainProgram = "remark42";
   };
 })

@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  flit-core,
-  wagtail,
+  buildPythonPackage,
   dj-database-url,
+  flit-core,
   python,
+  wagtail,
 }:
 
 buildPythonPackage rec {
   pname = "wagtail-modeladmin";
   version = "2.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wagtail-nest";
@@ -32,15 +31,7 @@ buildPythonPackage rec {
         "def no_test_model_with_two_tabbed_panels_only("
   '';
 
-  build-system = [ flit-core ];
-
-  dependencies = [
-    wagtail
-  ];
-
   nativeCheckInputs = [ dj-database-url ];
-
-  pythonImportsCheck = [ "wagtail_modeladmin" ];
 
   checkPhase = ''
     runHook preCheck
@@ -52,6 +43,15 @@ buildPythonPackage rec {
 
     runHook postCheck
   '';
+
+  build-system = [ flit-core ];
+
+  dependencies = [
+    wagtail
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "wagtail_modeladmin" ];
 
   meta = {
     description = "Add any model in your project to the Wagtail admin. Formerly wagtail.contrib.modeladmin";

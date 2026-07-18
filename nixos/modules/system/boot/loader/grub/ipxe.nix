@@ -30,12 +30,13 @@ in
 {
   options = {
     boot.loader.grub.ipxe = mkOption {
-      type = types.attrsOf (types.either types.path types.str);
+      default = { };
+
       description = ''
         Set of iPXE scripts available for
         booting from the GRUB boot menu.
       '';
-      default = { };
+
       example = literalExpression ''
         { demo = '''
             #!ipxe
@@ -44,6 +45,8 @@ in
           ''';
         }
       '';
+
+      type = types.attrsOf (types.either types.path types.str);
     };
   };
 

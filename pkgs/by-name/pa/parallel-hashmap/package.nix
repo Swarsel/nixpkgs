@@ -33,18 +33,18 @@ stdenv.mkDerivation (finalAttrs: {
     "-DPHMAP_BUILD_EXAMPLES=OFF"
   ];
 
+  doCheck = true;
+
   nativeCheckInputs = [
     gtest
   ];
-
-  doCheck = true;
 
   meta = {
     description = "Family of header-only, very fast and memory-friendly hashmap and btree containers";
     homepage = "https://github.com/greg7mdp/parallel-hashmap";
     changelog = "https://github.com/greg7mdp/parallel-hashmap/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ natsukium ];
+    platforms = lib.platforms.unix;
   };
 })

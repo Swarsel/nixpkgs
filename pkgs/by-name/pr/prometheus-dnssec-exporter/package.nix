@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule {
   pname = "prometheus-dnssec-exporter";
@@ -17,8 +17,8 @@ buildGoModule {
   vendorHash = "sha256-u7X8v7h1aL8B1el4jFzGRKHvnaK+Rz0OCitaC6xgyjw=";
 
   meta = {
-    homepage = "https://github.com/chrj/prometheus-dnssec-exporter";
     description = "DNSSEC Exporter for Prometheus";
+    homepage = "https://github.com/chrj/prometheus-dnssec-exporter";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ swendel ];
   };

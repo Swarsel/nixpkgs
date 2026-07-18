@@ -3,26 +3,25 @@
   stdenv,
   fetchurl,
   fetchFromGitHub,
-  flutter335,
-  copyDesktopItems,
-  makeDesktopItem,
-  undmg,
-  makeBinaryWrapper,
-
   alsa-lib,
+  copyDesktopItems,
+  flutter335,
   libdisplay-info,
+  libepoxy,
   libxpresent,
   libxscrnsaver,
-  libepoxy,
+  makeBinaryWrapper,
+  makeDesktopItem,
   mpv-unwrapped,
-
-  targetFlutterPlatform ? "linux",
+  undmg,
   baseUrl ? null,
+  targetFlutterPlatform ? "linux",
 }:
 
 let
   flutter = flutter335;
   sourceBuild = flutter.buildFlutterApplication (finalAttrs: {
+    inherit targetFlutterPlatform;
     pname = "fladder";
     version = "0.10.3";
 
@@ -32,12 +31,6 @@ let
       tag = "v${finalAttrs.version}";
       hash = "sha256-0eFHylRi2UVaKRG7K3tDZVscgoiL5xFrtFhZiJxj4Mk=";
     };
-
-    inherit targetFlutterPlatform;
-
-    pubspecLock = lib.importJSON ./pubspec.lock.json;
-
-    gitHashes = lib.importJSON ./git-hashes.json;
 
     nativeBuildInputs = lib.optionals (targetFlutterPlatform == "linux") [
       copyDesktopItems
@@ -71,38 +64,43 @@ let
 
     desktopItems = lib.optionals (targetFlutterPlatform == "linux") [
       (makeDesktopItem {
-        name = "fladder";
-        desktopName = "Fladder";
-        genericName = "Jellyfin Client";
-        exec = "Fladder";
-        icon = "fladder";
-        comment = "Simple Jellyfin Frontend built on top of Flutter";
         categories = [
           "AudioVideo"
           "Video"
           "Player"
         ];
+
+        comment = "Simple Jellyfin Frontend built on top of Flutter";
+        desktopName = "Fladder";
+        exec = "Fladder";
+        genericName = "Jellyfin Client";
+        icon = "fladder";
+        name = "fladder";
       })
     ];
 
+    gitHashes = lib.importJSON ./git-hashes.json;
+    pubspecLock = lib.importJSON ./pubspec.lock.json;
     passthru.updateScript = ./update.sh;
 
     meta = {
       description = "Simple Jellyfin Frontend built on top of Flutter";
       homepage = "https://github.com/DonutWare/Fladder";
-      downloadPage = "https://github.com/DonutWare/Fladder/releases";
       license = lib.licenses.gpl3Only;
+
       maintainers = with lib.maintainers; [
         ratcornu
         schembriaiden
       ];
+
       mainProgram = "Fladder";
+      downloadPage = "https://github.com/DonutWare/Fladder/releases";
     };
   });
 
   darwin = stdenv.mkDerivation {
-    pname = sourceBuild.pname;
     inherit (sourceBuild) version;
+    pname = sourceBuild.pname;
 
     src = fetchurl {
       url = "https://github.com/DonutWare/Fladder/releases/download/v${sourceBuild.version}/Fladder-macOS-${sourceBuild.version}.dmg";
@@ -114,8 +112,6 @@ let
       makeBinaryWrapper
     ];
 
-    sourceRoot = ".";
-
     installPhase = ''
       runHook preInstall
 
@@ -125,6 +121,8 @@ let
 
       runHook postInstall
     '';
+
+    sourceRoot = ".";
 
     meta = sourceBuild.meta // {
       sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];

@@ -3,13 +3,13 @@
   stdenv,
   cmake,
   fetchgit,
+  json_c,
   libnl-tiny,
   libubox,
-  uci,
-  ubus,
-  ucode,
-  json_c,
   pkg-config,
+  ubus,
+  uci,
+  ucode,
   udebug,
 }:
 
@@ -23,6 +23,20 @@ stdenv.mkDerivation {
     hash = "sha256-R/ryiFiKNM7zrIgzlalAK0lNJF/vzWL56E9CbptJtmI=";
   };
 
+  postPatch = ''
+    # by default this assumes the build directory is the source directory
+    # since we let cmake build in it's own build directory, we need to use
+    # $PWD (which at the time of this script being run is the directory with the source code)
+    # to adjust the paths
+    sed "s|./make_ethtool_modes_h.sh|$PWD/make_ethtool_modes_h.sh|g" -i CMakeLists.txt
+    sed "s|./ethtool-modes.h|$PWD/ethtool-modes.h|g" -i CMakeLists.txt
+  '';
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
+
   buildInputs = [
     libnl-tiny
     libubox
@@ -32,20 +46,6 @@ stdenv.mkDerivation {
     json_c
     udebug
   ];
-
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
-
-  postPatch = ''
-    # by default this assumes the build directory is the source directory
-    # since we let cmake build in it's own build directory, we need to use
-    # $PWD (which at the time of this script being run is the directory with the source code)
-    # to adjust the paths
-    sed "s|./make_ethtool_modes_h.sh|$PWD/make_ethtool_modes_h.sh|g" -i CMakeLists.txt
-    sed "s|./ethtool-modes.h|$PWD/ethtool-modes.h|g" -i CMakeLists.txt
-  '';
 
   cmakeFlags = [
     (lib.cmakeFeature "LIBNL_LIBS" "-lnl-tiny")
@@ -57,8 +57,8 @@ stdenv.mkDerivation {
     description = "OpenWrt Network interface configuration daemon";
     homepage = "https://git.openwrt.org/?p=project/netifd.git;a=summary";
     license = lib.licenses.lgpl21Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ mkg20001 ];
+    platforms = lib.platforms.linux;
     mainProgram = "netifd";
   };
 }

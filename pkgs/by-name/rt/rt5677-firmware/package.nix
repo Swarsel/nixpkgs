@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -24,8 +24,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Firmware for Realtek rt5677 device";
     homepage = "https://github.com/raphael/linux-samus";
     license = lib.licenses.unfreeRedistributableFirmware;
+    sourceProvenance = with lib.sourceTypes; [ binaryFirmware ];
     maintainers = with lib.maintainers; [ zohl ];
     platforms = lib.platforms.linux;
-    sourceProvenance = with lib.sourceTypes; [ binaryFirmware ];
   };
 })

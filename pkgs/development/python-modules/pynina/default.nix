@@ -9,23 +9,19 @@
 buildPythonPackage (finalAttrs: {
   pname = "pynina";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-ypbfvhXKu4pKr/DrWFnAhwMoqShJzWLqlA7/YQzJ9r4=";
   };
 
-  pythonRelaxDeps = [ "aiohttp" ];
-
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
   # Project has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "pynina" ];
+  pythonRelaxDeps = [ "aiohttp" ];
 
   meta = {
     description = "Python API wrapper to retrieve warnings from the german NINA app";

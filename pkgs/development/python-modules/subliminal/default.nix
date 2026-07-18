@@ -1,47 +1,43 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-  hatch-vcs,
-
   # dependencies
   babelfish,
   beautifulsoup4,
+  buildPythonPackage,
   chardet,
   click,
   click-option-group,
+  # nativeCheckInputs
+  colorama,
   defusedxml,
   dogpile-cache,
   enzyme,
   guessit,
+  hatch-vcs,
+  # build-system
+  hatchling,
   knowit,
-  srt,
-  pysubs2,
-  rarfile,
-  requests,
+  mypy,
   platformdirs,
-  stevedore,
-  tomli,
-  tomlkit,
-
-  # nativeCheckInputs
-  colorama,
   pypandoc,
-  pytestCheckHook,
+  pysubs2,
   pytest-cov-stub,
   pytest-xdist,
-  mypy,
+  pytestCheckHook,
+  rarfile,
+  requests,
+  srt,
+  stevedore,
   sympy,
+  tomli,
+  tomlkit,
   vcrpy,
 }:
 
 buildPythonPackage rec {
   pname = "subliminal";
   version = "2.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Diaoul";
@@ -49,11 +45,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-fNrWdj8jnTH8O7mrltyApgBOd7zMA5wcaMizG6/Z0BU=";
   };
-
-  build-system = [
-    hatchling
-    hatch-vcs
-  ];
 
   propagatedBuildInputs = [
     babelfish
@@ -87,7 +78,10 @@ buildPythonPackage rec {
     vcrpy
   ];
 
-  pythonImportsCheck = [ "subliminal" ];
+  build-system = [
+    hatchling
+    hatch-vcs
+  ];
 
   disabledTests = [
     # Tests require network access
@@ -100,12 +94,15 @@ buildPythonPackage rec {
     "test_hash"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "subliminal" ];
+
   meta = {
     description = "Python library to search and download subtitles";
-    mainProgram = "subliminal";
     homepage = "https://github.com/Diaoul/subliminal";
     changelog = "https://github.com/Diaoul/subliminal/blob/${src.tag}/HISTORY.rst";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ doronbehar ];
+    mainProgram = "subliminal";
   };
 }

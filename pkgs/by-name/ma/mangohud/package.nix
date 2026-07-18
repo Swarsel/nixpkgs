@@ -1,41 +1,41 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
-  replaceVars,
-  coreutils,
-  curl,
-  gnugrep,
-  gnused,
-  xdg-utils,
-  dbus,
-  libGL,
-  libx11,
-  hwdata,
-  pkgsi686Linux,
+  fetchFromGitHub,
   addDriverRunpath,
   appstream,
+  coreutils,
+  curl,
+  dbus,
+  glfw,
   glslang,
-  python3Packages,
+  gnugrep,
+  gnused,
+  hwdata,
+  libGL,
+  libx11,
+  libxkbcommon,
+  libxrandr,
+  linuxPackages,
   meson,
   ninja,
+  nix-update-script,
   pkg-config,
+  pkgsi686Linux,
+  python3Packages,
+  replaceVars,
+  spdlog,
   unzip,
   wayland,
-  linuxPackages,
-  spdlog,
-  libxkbcommon,
-  glfw,
-  libxrandr,
-  x11Support ? true,
-  waylandSupport ? true,
-  nvidiaSupport ? lib.meta.availableOn stdenv.hostPlatform linuxPackages.nvidia_x11.settings.libXNVCtrl,
+  xdg-utils,
   gamescopeSupport ? true,
+  lowerBitnessSupport ? stdenv.hostPlatform.isx86_64, # Support 32 bit on 64bit
   mangoappSupport ? gamescopeSupport,
   mangohudctlSupport ? gamescopeSupport,
-  lowerBitnessSupport ? stdenv.hostPlatform.isx86_64, # Support 32 bit on 64bit
-  nix-update-script,
+  nvidiaSupport ? lib.meta.availableOn stdenv.hostPlatform linuxPackages.nvidia_x11.settings.libXNVCtrl,
+  waylandSupport ? true,
+  x11Support ? true,
 }:
 
 assert lib.assertMsg (
@@ -49,36 +49,41 @@ let
   # Derived from subprojects/imgui.wrap
   imgui = rec {
     version = "1.91.6";
+
     src = fetchFromGitHub {
       owner = "ocornut";
       repo = "imgui";
       tag = "v${version}";
       hash = "sha256-CLS26CRzzY4vUBgILjSQVvziHMyPGK4fwwcLZcOAzPw=";
     };
+
     patch = fetchurl {
-      url = "https://wrapdb.mesonbuild.com/v2/imgui_${version}-3/get_patch";
       hash = "sha256-L3l3EUugfQZVmq+IkKkqTr0lGGWS1ER5VGBaryJEY00=";
+      url = "https://wrapdb.mesonbuild.com/v2/imgui_${version}-3/get_patch";
     };
   };
 
   # Derived from subprojects/implot.wrap
   implot = rec {
     version = "0.16";
+
     src = fetchFromGitHub {
       owner = "epezent";
       repo = "implot";
       tag = "v${version}";
       hash = "sha256-/wkVsgz3wiUVZBCgRl2iDD6GWb+AoHN+u0aeqHHgem0=";
     };
+
     patch = fetchurl {
-      url = "https://wrapdb.mesonbuild.com/v2/implot_${version}-1/get_patch";
       hash = "sha256-HGsUYgZqVFL6UMHaHdR/7YQfKCMpcsgtd48pYpNlaMc=";
+      url = "https://wrapdb.mesonbuild.com/v2/implot_${version}-1/get_patch";
     };
   };
 
   # Derived from subprojects/vulkan-headers.wrap
   vulkan-headers = rec {
     version = "1.4.346";
+
     src = fetchFromGitHub {
       owner = "KhronosGroup";
       repo = "Vulkan-Headers";
@@ -90,6 +95,7 @@ let
   # Derived from subprojects/vulkan-headers.wrap
   vulkan-utility-libraries = rec {
     version = "1.4.346";
+
     src = fetchFromGitHub {
       owner = "KhronosGroup";
       repo = "Vulkan-Utility-Libraries";
@@ -110,8 +116,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "flightlessmango";
     repo = "MangoHud";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-DKmVC/YCKQp1XTdGCqZtAqoUuMhE+WUDEEETvcXbn1Y=";
+    fetchSubmodules = true;
   };
 
   outputs = [
@@ -119,17 +125,6 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
     "man"
   ];
-
-  # Unpack subproject sources
-  postUnpack = ''
-    (
-      cd "$sourceRoot/subprojects"
-      cp -R --no-preserve=mode,ownership ${imgui.src} imgui-${imgui.version}
-      cp -R --no-preserve=mode,ownership ${implot.src} implot-${implot.version}
-      cp -R --no-preserve=mode,ownership ${vulkan-headers.src} Vulkan-Headers-${vulkan-headers.version}
-      cp -R --no-preserve=mode,ownership ${vulkan-utility-libraries.src} Vulkan-Utility-Libraries-${vulkan-utility-libraries.version}
-    )
-  '';
 
   patches = [
     # Add @libraryPath@ template variable to fix loading the preload
@@ -140,6 +135,11 @@ stdenv.mkDerivation (finalAttrs: {
     # Hard code dependencies. Can't use makeWrapper since the Vulkan
     # layer can be used without the mangohud executable by setting MANGOHUD=1.
     (replaceVars ./hardcode-dependencies.patch {
+      inherit hwdata;
+      libGL = libGL;
+      libX11 = libx11;
+      libdbus = dbus.lib;
+
       path = lib.makeBinPath [
         coreutils
         curl
@@ -147,11 +147,6 @@ stdenv.mkDerivation (finalAttrs: {
         gnused
         xdg-utils
       ];
-
-      libdbus = dbus.lib;
-      libGL = libGL;
-      libX11 = libx11;
-      inherit hwdata;
     })
   ];
 
@@ -176,16 +171,6 @@ stdenv.mkDerivation (finalAttrs: {
       cp -R --no-preserve=mode,ownership packagefiles/vulkan-utility-libraries/* ${vulkan-utility-libraries.src} Vulkan-Utility-Libraries-${vulkan-utility-libraries.version}
     )
   '';
-
-  mesonFlags = [
-    "-Duse_system_spdlog=enabled"
-    "-Dtests=disabled" # amdgpu test segfaults in nix sandbox
-    (lib.mesonEnable "with_x11" x11Support)
-    (lib.mesonEnable "with_wayland" waylandSupport)
-    (lib.mesonEnable "with_xnvctrl" nvidiaSupport)
-    (lib.mesonBool "mangoapp" mangoappSupport)
-    (lib.mesonBool "mangohudctl" mangohudctlSupport)
-  ];
 
   strictDeps = true;
 
@@ -212,6 +197,16 @@ stdenv.mkDerivation (finalAttrs: {
     libxrandr
   ];
 
+  mesonFlags = [
+    "-Duse_system_spdlog=enabled"
+    "-Dtests=disabled" # amdgpu test segfaults in nix sandbox
+    (lib.mesonEnable "with_x11" x11Support)
+    (lib.mesonEnable "with_wayland" waylandSupport)
+    (lib.mesonEnable "with_xnvctrl" nvidiaSupport)
+    (lib.mesonBool "mangoapp" mangoappSupport)
+    (lib.mesonBool "mangohudctl" mangohudctlSupport)
+  ];
+
   doCheck = true;
 
   nativeCheckInputs = [
@@ -228,8 +223,8 @@ stdenv.mkDerivation (finalAttrs: {
   postFixup =
     let
       archMap = {
-        "x86_64-linux" = "x86_64";
         "i686-linux" = "x86";
+        "x86_64-linux" = "x86_64";
       };
       layerPlatform = archMap."${stdenv.hostPlatform.system}" or null;
     in
@@ -249,18 +244,31 @@ stdenv.mkDerivation (finalAttrs: {
       addDriverRunpath "$out/bin/mangoapp"
     '';
 
+  # Unpack subproject sources
+  postUnpack = ''
+    (
+      cd "$sourceRoot/subprojects"
+      cp -R --no-preserve=mode,ownership ${imgui.src} imgui-${imgui.version}
+      cp -R --no-preserve=mode,ownership ${implot.src} implot-${implot.version}
+      cp -R --no-preserve=mode,ownership ${vulkan-headers.src} Vulkan-Headers-${vulkan-headers.version}
+      cp -R --no-preserve=mode,ownership ${vulkan-utility-libraries.src} Vulkan-Utility-Libraries-${vulkan-utility-libraries.version}
+    )
+  '';
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Vulkan and OpenGL overlay for monitoring FPS, temperatures, CPU/GPU load and more";
     homepage = "https://github.com/flightlessmango/MangoHud";
     changelog = "https://github.com/flightlessmango/MangoHud/releases/tag/v${finalAttrs.version}";
-    platforms = lib.platforms.linux;
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       kira-bruneau
       zeratax
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "mangohud";
   };
 })

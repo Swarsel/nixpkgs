@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   glib,
   nixos-artwork,
@@ -11,11 +11,12 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.9.3";
 
   src = fetchurl {
+    hash = "sha256-XH3RZq9ls0e9mM7cZhCSkNMUwMJyBeFTdfn006PaqNg=";
+
     urls = [
       "http://packages.linuxmint.com/pool/main/m/mint-artwork/mint-artwork_${finalAttrs.version}.tar.xz"
       "https://web.archive.org/web/20251218152602/http://packages.linuxmint.com/pool/main/m/mint-artwork/mint-artwork_${finalAttrs.version}.tar.xz"
     ];
-    hash = "sha256-XH3RZq9ls0e9mM7cZhCSkNMUwMJyBeFTdfn006PaqNg=";
   };
 
   nativeBuildInputs = [
@@ -44,12 +45,14 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/linuxmint/mint-artwork";
     description = "Artwork for the cinnamon desktop";
+    homepage = "https://github.com/linuxmint/mint-artwork";
+
     license = with lib.licenses; [
       gpl3Plus
       cc-by-40
     ]; # from debian/copyright
+
     platforms = lib.platforms.linux;
     teams = [ lib.teams.cinnamon ];
   };

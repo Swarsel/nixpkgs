@@ -1,32 +1,34 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  vscode-utils,
   autoPatchelfHook,
-  icu,
-  openssl,
-  libz,
-  glibc,
-  libkrb5,
   coreutils,
+  fetchzip,
+  glibc,
+  icu,
   jq,
+  libkrb5,
+  libz,
+  openssl,
   patchelf,
+  vscode-utils,
 }:
 let
   extInfo = (
     {
-      x86_64-linux = {
-        arch = "linux-x64";
-        hash = "sha256-FTS8cK9ovmxGLnywOGTIP7oUOHZ4RLE5t7lfhltdmIc=";
+      aarch64-darwin = {
+        arch = "darwin-arm64";
+        hash = "sha256-KCIkjBmYZPiuFmQ3/aDycARYIHPyDTmMkoGcuG5DQX8=";
       };
+
       aarch64-linux = {
         arch = "linux-arm64";
         hash = "sha256-EV3745OXbwrRmc8P5e13DZbomyJGcYQUF07WflRWU1Q=";
       };
-      aarch64-darwin = {
-        arch = "darwin-arm64";
-        hash = "sha256-KCIkjBmYZPiuFmQ3/aDycARYIHPyDTmMkoGcuG5DQX8=";
+
+      x86_64-linux = {
+        arch = "linux-x64";
+        hash = "sha256-FTS8cK9ovmxGLnywOGTIP7oUOHZ4RLE5t7lfhltdmIc=";
       };
     }
     .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}")
@@ -37,26 +39,27 @@ let
   #       ideally should be done at the vscode-extensions level for
   #       everyone to reuse.
   roslyn-copilot = fetchzip {
-    url = "https://roslyn.blob.core.windows.net/releases/Microsoft.VisualStudio.Copilot.Roslyn.LanguageServer-18.3.72-alpha.zip";
     hash = "sha256-Eh1XaF9eCN5saTrIf4NeZZKDeiEvrTo0m+vOiM5QZoI=";
+
     postFetch = ''
       touch install.Lock
     '';
+
+    url = "https://roslyn.blob.core.windows.net/releases/Microsoft.VisualStudio.Copilot.Roslyn.LanguageServer-18.3.72-alpha.zip";
   };
 in
 vscode-utils.buildVscodeMarketplaceExtension {
-  mktplcRef = {
-    name = "csharp";
-    publisher = "ms-dotnettools";
-    version = "2.140.8";
-    inherit (extInfo) hash arch;
-  };
+  postPatch = ''
+    substituteInPlace dist/extension.js \
+      --replace-fail 'uname -m' '${lib.getExe' coreutils "uname"} -m'
+  '';
 
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     autoPatchelfHook
     jq
     patchelf
   ];
+
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     (lib.getLib glibc) # libgcc_s.so.1
     (lib.getLib icu) # libicui18n.so libicuuc.so
@@ -65,11 +68,6 @@ vscode-utils.buildVscodeMarketplaceExtension {
     (lib.getLib openssl) # libopenssl.so.3
     (lib.getLib stdenv.cc.cc) # libstdc++.so.6
   ];
-
-  postPatch = ''
-    substituteInPlace dist/extension.js \
-      --replace-fail 'uname -m' '${lib.getExe' coreutils "uname"} -m'
-  '';
 
   postInstall = ''
     ln -s ${roslyn-copilot} "$out"/share/vscode/extensions/ms-dotnettools.csharp/.roslynCopilot
@@ -147,11 +145,19 @@ vscode-utils.buildVscodeMarketplaceExtension {
     )
   '';
 
+  mktplcRef = {
+    inherit (extInfo) hash arch;
+    version = "2.140.8";
+    name = "csharp";
+    publisher = "ms-dotnettools";
+  };
+
   meta = {
     description = "Official C# support for Visual Studio Code";
     homepage = "https://github.com/dotnet/vscode-csharp";
     license = lib.licenses.unfree;
     maintainers = [ ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"

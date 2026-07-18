@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   numpy,
-  setuptools,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyquaternion";
   version = "0.9.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "KieranWynn";
@@ -32,14 +31,11 @@ buildPythonPackage rec {
     echo "${version}" > VERSION.txt
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ numpy ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ numpy ];
   enabledTestPaths = [ "pyquaternion/test/" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyquaternion" ];
 
   meta = {

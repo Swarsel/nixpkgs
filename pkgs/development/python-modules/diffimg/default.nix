@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pillow,
-  unittestCheckHook,
   pythonAtLeast,
+  unittestCheckHook,
 }:
 
 buildPythonPackage {
   pname = "diffimg";
   version = "0.3.0"; # github recognized 0.1.3, there's a v0.1.5 tag and setup.py says 0.3.0
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "nicolashahn";
@@ -31,10 +30,9 @@ buildPythonPackage {
   '';
 
   propagatedBuildInputs = [ pillow ];
-
-  pythonImportsCheck = [ "diffimg" ];
-
   nativeCheckInputs = [ unittestCheckHook ];
+  format = "setuptools";
+  pythonImportsCheck = [ "diffimg" ];
 
   meta = {
     description = "Differentiate images in python - get a ratio or percentage difference, and generate a diff image";

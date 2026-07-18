@@ -1,12 +1,12 @@
 {
-  deadbeef,
+  lib,
+  stdenv,
   fetchFromGitHub,
+  deadbeef,
   fftw,
   glib,
   gtk3,
-  lib,
   pkg-config,
-  stdenv,
 }:
 
 stdenv.mkDerivation {
@@ -21,14 +21,15 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     deadbeef
     fftw
     glib
     gtk3
   ];
-  makeFlags = [ "gtk3" ];
 
+  makeFlags = [ "gtk3" ];
   env.NIX_CFLAGS_COMPILE = "-Wno-incompatible-pointer-types";
 
   installPhase = ''
@@ -44,7 +45,7 @@ stdenv.mkDerivation {
     description = "Musical spectrum plugin for the DeaDBeeF music player";
     homepage = "https://github.com/cboxdoerfer/ddb_musical_spectrum";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.ddelabru ];
+    platforms = lib.platforms.linux;
   };
 }

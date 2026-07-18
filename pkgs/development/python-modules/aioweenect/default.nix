@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   hatchling,
   pytest-asyncio,
   pytest-cov-stub,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "aioweenect";
   version = "1.1.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "eifinger";
@@ -27,12 +26,6 @@ buildPythonPackage rec {
       --replace-fail "--asyncio-mode=auto" ""
   '';
 
-  pythonRelaxDeps = [ "aiohttp" ];
-
-  build-system = [ hatchling ];
-
-  dependencies = [ aiohttp ];
-
   nativeCheckInputs = [
     aresponses
     pytest-asyncio
@@ -41,8 +34,11 @@ buildPythonPackage rec {
   ];
 
   __darwinAllowLocalNetworking = true;
-
+  build-system = [ hatchling ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "aioweenect" ];
+  pythonRelaxDeps = [ "aiohttp" ];
 
   meta = {
     description = "Library for the weenect API";

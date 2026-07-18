@@ -1,24 +1,23 @@
 {
   lib,
-  buildPythonPackage,
-  fetchFromGitHub,
-  fetchpatch,
-  replaceVars,
-  cmdstan,
-  setuptools,
-  pandas,
-  numpy,
-  tqdm,
-  stanio,
-  xarray,
-  pytestCheckHook,
   stdenv,
+  fetchFromGitHub,
+  buildPythonPackage,
+  cmdstan,
+  fetchpatch,
+  numpy,
+  pandas,
+  pytestCheckHook,
+  replaceVars,
+  setuptools,
+  stanio,
+  tqdm,
+  xarray,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "cmdstanpy";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "stan-dev";
@@ -33,12 +32,12 @@ buildPythonPackage (finalAttrs: {
     })
     # Fix tests for cmdstan 2.39.0
     (fetchpatch {
-      url = "https://github.com/stan-dev/cmdstanpy/commit/5ef72db67660b8fb0ea0ba25bef9667e88aafc5f.patch";
       hash = "sha256-BZcJiRAluItsfzvGJ2yJVDHuUp92AI19x7d06wRGzY4=";
+      url = "https://github.com/stan-dev/cmdstanpy/commit/5ef72db67660b8fb0ea0ba25bef9667e88aafc5f.patch";
     })
     (fetchpatch {
-      url = "https://github.com/stan-dev/cmdstanpy/commit/f08c69835d2d4a69c7e526d939757b8f609da8f6.patch";
       hash = "sha256-3o8d5h0eRkghav2vuG6eERf6u6GJSKEaqmnGhfBXbjk=";
+      url = "https://github.com/stan-dev/cmdstanpy/commit/f08c69835d2d4a69c7e526d939757b8f609da8f6.patch";
     })
   ];
 
@@ -58,17 +57,11 @@ buildPythonPackage (finalAttrs: {
     stanio
   ];
 
-  optional-dependencies = {
-    all = [ xarray ];
-  };
-
-  pythonRelaxDeps = [ "stanio" ];
+  nativeCheckInputs = [ pytestCheckHook ] ++ finalAttrs.passthru.optional-dependencies.all;
 
   preCheck = ''
     export HOME=$(mktemp -d)
   '';
-
-  nativeCheckInputs = [ pytestCheckHook ] ++ finalAttrs.passthru.optional-dependencies.all;
 
   disabledTestPaths = [
     # No need to test these when using Nix
@@ -89,11 +82,17 @@ buildPythonPackage (finalAttrs: {
     "test_init_types" # CmdStan error: error during processing Operation not permitted
   ];
 
+  optional-dependencies = {
+    all = [ xarray ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "cmdstanpy" ];
+  pythonRelaxDeps = [ "stanio" ];
 
   meta = {
-    homepage = "https://github.com/stan-dev/cmdstanpy";
     description = "Lightweight interface to Stan for Python users";
+    homepage = "https://github.com/stan-dev/cmdstanpy";
     changelog = "https://github.com/stan-dev/cmdstanpy/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ tomasajt ];

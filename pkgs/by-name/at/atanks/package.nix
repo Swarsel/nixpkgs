@@ -24,10 +24,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Atomic Tanks ballistics game";
-    mainProgram = "atanks";
     homepage = "http://atanks.sourceforge.net/";
+    license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.raskin ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl2Plus;
+    mainProgram = "atanks";
   };
 })

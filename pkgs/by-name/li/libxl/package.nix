@@ -13,20 +13,20 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-U8hXoqBzjSGigOXc29LZQk3KrGiYvBPBJPg5qihcAsY=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     mkdir $out
     cp -rva include_c include_cpp license.txt $out/
     cp -rva lib64 $out/lib
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "Library for parsing Excel files";
     homepage = "https://www.libxl.com/";
     license = lib.licenses.unfree;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 }

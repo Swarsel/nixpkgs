@@ -1,28 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  rustPlatform,
+  buildPythonPackage,
   pytestCheckHook,
+  rustPlatform,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "bittensor-drand";
   version = "2.0.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "latent-to";
     repo = "bittensor-drand";
     tag = "v${finalAttrs.version}";
     hash = "sha256-c1dAbHlVpQ9+x8ASmOO3zAwJLvyJBTzti1qEOfoKzxg=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-XpAuoJfBpXNgI3MeMXuMOi9l91oJDb0qfbQ1acflM9s=";
   };
 
   nativeBuildInputs = with rustPlatform; [
@@ -36,6 +28,13 @@ buildPythonPackage (finalAttrs: {
   preCheck = ''
     rm -rf bittensor_drand
   '';
+
+  __structuredAttrs = true;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-XpAuoJfBpXNgI3MeMXuMOi9l91oJDb0qfbQ1acflM9s=";
+  };
 
   # All tests in test_commit_reveal.py and most in test_all_functions.py call
   # the live drand network beacon, which is unavailable in the build sandbox.
@@ -51,6 +50,7 @@ buildPythonPackage (finalAttrs: {
     "test_get_encrypted_commits"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "bittensor_drand" ];
 
   meta = {

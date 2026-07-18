@@ -1,10 +1,10 @@
 {
   lib,
+  dbus,
   fetchCrate,
-  rustPlatform,
   nix-update-script,
   pkg-config,
-  dbus,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,11 +16,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-lAfbr2D6dITdlFCbz++OVz2SxYGapiZtrNjeBruBDJ8=";
   };
 
-  cargoHash = "sha256-80B47vRUgb+QWYoxqPWk1gCdWFM5bIxq0tR5FpssRQ4=";
-  cargoDepsName = finalAttrs.pname;
-
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ dbus ];
+  cargoHash = "sha256-80B47vRUgb+QWYoxqPWk1gCdWFM5bIxq0tR5FpssRQ4=";
+  cargoDepsName = finalAttrs.pname;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -31,7 +30,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://crates.io/crates/asahi-btsync";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ lukaslihotzki ];
-    mainProgram = "asahi-btsync";
     platforms = lib.platforms.linux;
+    mainProgram = "asahi-btsync";
   };
 })

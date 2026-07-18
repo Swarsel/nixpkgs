@@ -1,10 +1,10 @@
 {
-  clang,
-  fetchFromGitHub,
   lib,
-  lzo,
-  lz4,
   stdenv,
+  fetchFromGitHub,
+  clang,
+  lz4,
+  lzo,
   ucl,
   unstableGitUpdater,
   zlib,
@@ -21,6 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-vFiMKcPfowLQQZXlXbq5ZR1X6zr7u3iQwz3o4A6aQMY=";
   };
 
+  patches = [ ./package.patch ];
   nativeBuildInputs = [ clang ];
 
   buildInputs = [
@@ -30,18 +31,16 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  postUnpack = ''
-    rm ${finalAttrs.src.name}/{dumpifs,exMifsLzo,uuu,zzz}
-  '';
-
-  patches = [ ./package.patch ];
-
   installPhase = ''
     runHook preInstall
 
     install -Dm755 dumpifs exMifsLz4 exMifsLzo fixdecifs fixencifs uuu zzz -t $out/bin
 
     runHook postInstall
+  '';
+
+  postUnpack = ''
+    rm ${finalAttrs.src.name}/{dumpifs,exMifsLzo,uuu,zzz}
   '';
 
   passthru.updateScript = unstableGitUpdater { };

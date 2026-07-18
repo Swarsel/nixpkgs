@@ -1,12 +1,12 @@
 {
   lib,
   appimageTools,
+  cacert,
+  curl,
+  dpkg,
+  gnugrep,
   makeWrapper,
   runCommand,
-  curl,
-  gnugrep,
-  cacert,
-  dpkg,
 }:
 let
   version = "2.1.3";
@@ -19,6 +19,7 @@ let
           cacert
           dpkg
         ];
+
         outputHash = "sha256-7S0nnEwtGKKKNPZL2pb5Z8bKKB5eWvymSS2pQo9cJa0=";
         outputHashMode = "recursive";
       }
@@ -30,12 +31,10 @@ let
       '';
 in
 appimageTools.wrapType1 {
-  pname = "pureref";
   inherit version;
-
-  nativeBuildInputs = [ makeWrapper ];
-
+  pname = "pureref";
   src = "${deb}/usr/bin/PureRef";
+  nativeBuildInputs = [ makeWrapper ];
 
   extraInstallCommands = ''
     mv $out/bin/pureref $out/bin/PureRef
@@ -47,12 +46,14 @@ appimageTools.wrapType1 {
     description = "Reference Image Viewer";
     homepage = "https://www.pureref.com";
     license = lib.licenses.unfree;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       elnudev
       husjon
     ];
+
     platforms = [ "x86_64-linux" ];
     mainProgram = "PureRef";
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
   };
 }

@@ -2,10 +2,10 @@
   lib,
   fetchFromGitHub,
   installShellFiles,
-  rustPlatform,
-  ronn,
-  pkg-config,
   libsodium,
+  pkg-config,
+  ronn,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "bupstash";
@@ -18,14 +18,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-Ekjxna3u+71s1q7jjXp7PxYUQIfbp2E+jAqKGuszU6g=";
   };
 
-  cargoHash = "sha256-kWUAI25ag9ghIhn36NF+SunRtmbS0HzsZsxGJujmuG4=";
-
   nativeBuildInputs = [
     ronn
     pkg-config
     installShellFiles
   ];
+
   buildInputs = [ libsodium ];
+  cargoHash = "sha256-kWUAI25ag9ghIhn36NF+SunRtmbS0HzsZsxGJujmuG4=";
 
   postBuild = ''
     RUBYOPT="-KU -E utf-8:utf-8" ronn -r doc/man/*.md
@@ -39,8 +39,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Easy and efficient encrypted backups";
     homepage = "https://bupstash.io";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
     mainProgram = "bupstash";
   };
 })

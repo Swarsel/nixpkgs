@@ -1,21 +1,21 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
   versionCheckHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "rshell";
   version = "0.0.36";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-SmbYNSB0eVUOWdDdPoMAPQTE7KeKTkklD4h+0t1LC/U=";
   };
+
+  nativeCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   build-system = [
     python3Packages.setuptools
@@ -26,11 +26,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pyudev
   ];
 
-  nativeCheckInputs = [ versionCheckHook ];
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/dhylands/rshell";
     description = "Remote Shell for MicroPython";
+    homepage = "https://github.com/dhylands/rshell";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ c0deaddict ];
     mainProgram = "rshell";

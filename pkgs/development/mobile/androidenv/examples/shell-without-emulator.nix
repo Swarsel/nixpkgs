@@ -1,6 +1,6 @@
 {
+  licenseAccepted ? pkgs.callPackage ../license.nix { },
   # To test your changes in androidEnv run `nix-shell android-sdk-with-emulator-shell.nix`
-
   # If you copy this example out of nixpkgs, use these lines instead of the next.
   # This example pins nixpkgs: https://nix.dev/tutorials/first-steps/towards-reproducibility-pinning-nixpkgs.html
   /*
@@ -13,13 +13,10 @@
       config.allowUnfree = true;
     },
   */
-
   # If you want to use the in-tree version of nixpkgs:
   pkgs ? import ../../../../.. {
     config.allowUnfree = true;
   },
-
-  licenseAccepted ? pkgs.callPackage ../license.nix { },
 }:
 
 # Copy this file to your Android project.
@@ -46,18 +43,6 @@ let
   };
 
   sdkArgs = {
-    includeNDK = false;
-    includeSystemImages = false;
-    includeEmulator = false;
-
-    platformVersions = [
-      "UpsideDownCake"
-      "36"
-      "36x"
-      "latest"
-      "CANARY"
-    ];
-
     # Accepting more licenses declaratively:
     extraLicenses = [
       # Already accepted for you with the global accept_license = true or
@@ -73,6 +58,18 @@ let
       "intel-android-sysimage-license"
       "mips-android-sysimage-license"
     ];
+
+    includeEmulator = false;
+    includeNDK = false;
+    includeSystemImages = false;
+
+    platformVersions = [
+      "UpsideDownCake"
+      "36"
+      "36x"
+      "latest"
+      "CANARY"
+    ];
   };
 
   androidComposition = androidEnv.composeAndroidPackages sdkArgs;
@@ -84,18 +81,17 @@ let
   jdk = pkgs.jdk;
 in
 pkgs.mkShell {
+  ANDROID_HOME = "${androidSdk}/libexec/android-sdk";
+  JAVA_HOME = jdk.home;
+  LANG = "C.UTF-8";
+  LC_ALL = "C.UTF-8";
   name = "androidenv-example-without-emulator-demo";
+
   packages = [
     androidSdk
     platformTools
     jdk
   ];
-
-  LANG = "C.UTF-8";
-  LC_ALL = "C.UTF-8";
-  JAVA_HOME = jdk.home;
-
-  ANDROID_HOME = "${androidSdk}/libexec/android-sdk";
 
   shellHook = ''
     # Write out local.properties for Android Studio.
@@ -106,6 +102,32 @@ pkgs.mkShell {
   '';
 
   passthru.tests = {
+    shell-without-emulator-sdkmanager-excluded-packages-test =
+      pkgs.runCommand "shell-without-emulator-sdkmanager-excluded-packages-test"
+        {
+          nativeBuildInputs = [
+            androidSdk
+            jdk
+          ];
+        }
+        ''
+          output="$(sdkmanager --list)"
+          installed_packages_section=$(echo "''${output%%Available Packages*}" | awk 'NR>4 {print $1}')
+
+          excluded_packages=(
+            "emulator" "ndk"
+          )
+
+          for package in "''${excluded_packages[@]}"; do
+            if [[ $installed_packages_section =~ "$package" ]]; then
+              echo "$package package was installed, while it was excluded!"
+              exit 1
+            fi
+          done
+
+          touch "$out"
+        '';
+
     shell-without-emulator-sdkmanager-packages-test =
       pkgs.runCommand "shell-without-emulator-sdkmanager-packages-test"
         {
@@ -127,32 +149,6 @@ pkgs.mkShell {
           for package in "''${packages[@]}"; do
             if [[ ! $installed_packages_section =~ "$package" ]]; then
               echo "$package package was not installed."
-              exit 1
-            fi
-          done
-
-          touch "$out"
-        '';
-
-    shell-without-emulator-sdkmanager-excluded-packages-test =
-      pkgs.runCommand "shell-without-emulator-sdkmanager-excluded-packages-test"
-        {
-          nativeBuildInputs = [
-            androidSdk
-            jdk
-          ];
-        }
-        ''
-          output="$(sdkmanager --list)"
-          installed_packages_section=$(echo "''${output%%Available Packages*}" | awk 'NR>4 {print $1}')
-
-          excluded_packages=(
-            "emulator" "ndk"
-          )
-
-          for package in "''${excluded_packages[@]}"; do
-            if [[ $installed_packages_section =~ "$package" ]]; then
-              echo "$package package was installed, while it was excluded!"
               exit 1
             fi
           done

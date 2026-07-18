@@ -15,8 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "07qkz8s1wjh5xwqlq1b4lpihr1zah3kh6bnqvfwvncld8l9wjqfk";
   };
 
-  sourceRoot = "${finalAttrs.version}/fonts";
-
   outputs = [
     "out"
     "webfont"
@@ -27,11 +25,15 @@ stdenv.mkDerivation (finalAttrs: {
     installFonts
   ];
 
+  sourceRoot = "${finalAttrs.version}/fonts";
+
   meta = {
     description = "Replace Font Awesome with modern line icons";
+
     longDescription = ''
       This package includes only the TTF, WOFF and WOFF2 fonts. For full CSS etc. see the project website.
     '';
+
     homepage = "https://icons8.com/line-awesome";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ puzzlewolf ];

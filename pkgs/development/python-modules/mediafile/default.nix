@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   filetype,
   mutagen,
+  poetry-core,
   pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mediafile";
   version = "0.17.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "beetbox";
@@ -20,6 +19,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-FujuFkZH0wjZcd3wIpJw8mDvE/2/mew5tfxAyxA2RkI=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -27,8 +27,7 @@ buildPythonPackage (finalAttrs: {
     mutagen
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mediafile" ];
 
   meta = {

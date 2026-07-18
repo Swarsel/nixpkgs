@@ -1,21 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFrom9Front,
-  unstableGitUpdater,
   installShellFiles,
-  makeWrapper,
-  libxt,
+  libdecor,
   libx11,
-  pkg-config,
-  wayland-scanner,
+  libxkbcommon,
+  libxt,
+  makeWrapper,
+  nixosTests,
   pipewire,
+  pkg-config,
+  pulseaudio,
+  unstableGitUpdater,
   wayland,
   wayland-protocols,
-  libxkbcommon,
-  libdecor,
-  pulseaudio,
-  nixosTests,
+  wayland-scanner,
   withWayland ? false,
 }:
 let
@@ -32,8 +32,8 @@ stdenv.mkDerivation {
     hash = "sha256-z0V3TM34yRpHYznQsniwyuxtVD2TtqgwIbEZTltxQ+o=";
   };
 
-  enableParallelBuilding = true;
   strictDeps = true;
+
   nativeBuildInputs = [
     installShellFiles
     makeWrapper
@@ -83,9 +83,11 @@ stdenv.mkDerivation {
     ln -s $out/Applications/drawterm.app/drawterm $out/bin/
   '';
 
+  enableParallelBuilding = true;
+
   passthru = {
-    updateScript = unstableGitUpdater { shallowClone = false; };
     tests = nixosTests.drawterm;
+    updateScript = unstableGitUpdater { shallowClone = false; };
   };
 
   meta = {

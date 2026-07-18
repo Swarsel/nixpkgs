@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   curl,
-  jq,
   gnugrep,
+  jq,
   libnotify,
+  makeWrapper,
   scrot,
   which,
   xclip,
@@ -24,8 +24,8 @@ let
   ];
 in
 stdenv.mkDerivation (finalAttrs: {
-  version = "2.0.0";
   pname = "imgur-screenshot";
+  version = "2.0.0";
 
   src = fetchFromGitHub {
     owner = "jomo";
@@ -44,9 +44,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Tool for easy screencapping and uploading to imgur";
     homepage = "https://github.com/jomo/imgur-screenshot/";
-    platforms = lib.platforms.linux;
     license = lib.licenses.mit;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "imgur-screenshot";
   };
 })

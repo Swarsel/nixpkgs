@@ -1,39 +1,36 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  rustPlatform,
   fetchFromGitHub,
-  protobuf,
-
   # nativeBuildInputs
   cmake,
-  perl,
-  pkg-config,
   darwin,
-
+  fetchzip,
+  nix-update-script,
   # buildInputs
   openssl,
+  perl,
+  pkg-config,
+  protobuf,
   rdkafka,
-
+  rustPlatform,
   versionCheckHook,
-  nix-update-script,
 }:
 
 let
   fetchNpmPackage =
     {
+      hash,
+      js_dev_file,
+      js_prod_file,
       name,
       version,
-      hash,
-      js_prod_file,
-      js_dev_file,
       ...
     }@args:
     let
       package = fetchzip {
-        url = "https://registry.npmjs.org/${name}/-/${baseNameOf name}-${version}.tgz";
         inherit hash;
+        url = "https://registry.npmjs.org/${name}/-/${baseNameOf name}-${version}.tgz";
       };
 
       files =
@@ -79,7 +76,7 @@ let
     in
     lib.concatStringsSep "\n" (
       lib.forEach files (
-        { src, dst }:
+        { dst, src }:
         ''
           mkdir -p "${dirOf dst}"
           cp "${package}/${src}" "${dst}"
@@ -110,20 +107,6 @@ rustPlatform.buildRustPackage rec {
       --replace-fail '&[ ' '&["."'
   '';
 
-  env = {
-    MZ_DEV_BUILD_SHA = "000000000000000000000000000000000000000000000000000";
-    # needed for internal protobuf c wrapper library
-    PROTOC = lib.getExe protobuf;
-    PROTOC_INCLUDE = "${protobuf}/include";
-
-    # needed to dynamically link rdkafka
-    CARGO_FEATURE_DYNAMIC_LINKING = 1;
-    # Needed to get openssl-sys to use pkg-config.
-    OPENSSL_NO_VENDOR = 1;
-  };
-
-  cargoHash = "sha256-+OREisZ/vw3Oi5MNCYn7u06pZKtf+2trlGyn//uAGws=";
-
   nativeBuildInputs = [
     cmake
     perl
@@ -137,6 +120,19 @@ rustPlatform.buildRustPackage rec {
     openssl
     rdkafka
   ];
+
+  cargoHash = "sha256-+OREisZ/vw3Oi5MNCYn7u06pZKtf+2trlGyn//uAGws=";
+
+  env = {
+    # needed to dynamically link rdkafka
+    CARGO_FEATURE_DYNAMIC_LINKING = 1;
+    MZ_DEV_BUILD_SHA = "000000000000000000000000000000000000000000000000000";
+    # Needed to get openssl-sys to use pkg-config.
+    OPENSSL_NO_VENDOR = 1;
+    # needed for internal protobuf c wrapper library
+    PROTOC = lib.getExe protobuf;
+    PROTOC_INCLUDE = "${protobuf}/include";
+  };
 
   # the check phase requires linking with rocksdb which can be a problem since
   # the rust rocksdb crate is not updated very often.
@@ -154,31 +150,33 @@ rustPlatform.buildRustPackage rec {
     "--skip=test_tls"
   ];
 
+  postInstall = ''
+    install --mode=444 -D ./misc/dist/materialized.service $out/etc/systemd/system/materialized.service
+  '';
+
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
   cargoBuildFlags = [
     "--bin=clusterd"
     "--bin=environmentd"
   ];
 
-  postInstall = ''
-    install --mode=444 -D ./misc/dist/materialized.service $out/etc/systemd/system/materialized.service
-  '';
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
   versionCheckProgram = "${placeholder "out"}/bin/environmentd";
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://materialize.com";
     description = "Streaming SQL materialized view engine for real-time applications";
+    homepage = "https://materialize.com";
     license = lib.licenses.bsl11;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ petrosagg ];
+    platforms = lib.platforms.unix;
     mainProgram = "environmentd";
   };
 }

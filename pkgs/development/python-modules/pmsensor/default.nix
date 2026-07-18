@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "pmsensor";
   version = "0.4";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,9 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ pyserial ];
-
   # no tests implemented
   doCheck = false;
+  format = "setuptools";
 
   pythonImportsCheck = [
     "pmsensor.co2sensor"

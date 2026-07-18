@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   makeWrapper,
-  unstableGitUpdater,
-  pkg-config,
   openssl,
+  pkg-config,
   rust-jemalloc-sys,
+  rustPlatform,
+  unstableGitUpdater,
 }:
 
 rustPlatform.buildRustPackage {
@@ -22,8 +22,6 @@ rustPlatform.buildRustPackage {
     fetchSubmodules = true;
   };
 
-  cargoHash = "sha256-JIHkFokaZ+nt1hW+gRxFrb1DVZcm4jsZKT12gx/BRCA=";
-
   nativeBuildInputs = [
     makeWrapper
     pkg-config
@@ -34,8 +32,8 @@ rustPlatform.buildRustPackage {
     rust-jemalloc-sys # transitive dependency via the hayabusa-evtx crate
   ];
 
+  cargoHash = "sha256-JIHkFokaZ+nt1hW+gRxFrb1DVZcm4jsZKT12gx/BRCA=";
   env.OPENSSL_NO_VENDOR = true;
-
   # Several checks panic
   # Skipping individual checks causes failure as `--skip` flags
   # end up passed to executing `hayabusa`
@@ -55,9 +53,11 @@ rustPlatform.buildRustPackage {
     description = "Sigma-based threat hunting and fast forensics timeline generator for Windows event logs";
     homepage = "https://github.com/Yamato-Security/hayabusa";
     license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       jk
     ];
+
     mainProgram = "hayabusa";
   };
 }

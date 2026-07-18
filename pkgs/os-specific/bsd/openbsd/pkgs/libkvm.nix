@@ -2,7 +2,6 @@
   mkDerivation,
 }:
 mkDerivation {
-  path = "lib/libkvm";
-
   libcMinimal = true;
+  path = "lib/libkvm";
 }

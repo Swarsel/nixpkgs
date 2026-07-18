@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  go-md2man,
-  installShellFiles,
-  pkg-config,
-  gpgme,
-  lvm2,
   btrfs-progs,
+  buildGoModule,
+  go-md2man,
+  gpgme,
+  installShellFiles,
   libapparmor,
-  libselinux,
   libseccomp,
-  writableTmpDirAsHomeHook,
+  libselinux,
+  lvm2,
+  pkg-config,
   versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -32,10 +32,6 @@ buildGoModule (finalAttrs: {
     "man"
   ];
 
-  vendorHash = null;
-
-  doCheck = false;
-
   nativeBuildInputs = [
     go-md2man
     installShellFiles
@@ -53,6 +49,8 @@ buildGoModule (finalAttrs: {
     lvm2
   ];
 
+  vendorHash = null;
+
   buildPhase = ''
     runHook preBuild
     patchShebangs .
@@ -60,6 +58,8 @@ buildGoModule (finalAttrs: {
     make -C docs GOMD2MAN="go-md2man"
     runHook postBuild
   '';
+
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -70,18 +70,20 @@ buildGoModule (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     writableTmpDirAsHomeHook
     versionCheckHook
   ];
+
   versionCheckKeepEnvironment = [ "HOME" ];
 
   meta = {
     description = "Tool which facilitates building OCI images";
-    mainProgram = "buildah";
     homepage = "https://buildah.io/";
     changelog = "https://github.com/podman-container-tools/buildah/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+    mainProgram = "buildah";
     teams = [ lib.teams.podman ];
   };
 })

@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   attrs,
   backoff,
   boto3,
   buildPythonPackage,
   cattrs,
-  fetchFromGitHub,
   hatchling,
   pytest-asyncio,
   pytestCheckHook,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyoverkiz";
   version = "2.0.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "iMicknl";
@@ -24,6 +23,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-LdOVhOWxejTXhgUwlbucYNDqhKJDov56IaEcvJvEBQ4=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -41,11 +45,7 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyoverkiz" ];
 
   meta = {

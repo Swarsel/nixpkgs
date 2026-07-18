@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-  hamlib_4,
+  alsa-lib,
   fltk_1_3,
+  gettext,
+  hamlib_4,
   libjpeg,
   libpng,
-  portaudio,
-  libsndfile,
-  libsamplerate,
   libpulseaudio,
+  libsamplerate,
+  libsndfile,
   libxinerama,
-  gettext,
   pkg-config,
-  alsa-lib,
+  portaudio,
   udev,
 }:
 
@@ -60,9 +60,11 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Digital modem program";
     homepage = "https://sourceforge.net/projects/fldigi/";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       relrod
     ];
+
     platforms = lib.platforms.unix;
   };
 })

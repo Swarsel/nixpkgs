@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
   ocplib-endian,
   yojson,
 }:
@@ -9,8 +9,6 @@
 buildDunePackage (finalAttrs: {
   pname = "cbor";
   version = "0.5";
-
-  minimalOCamlVersion = "4.07.0";
 
   src = fetchurl {
     url = "https://github.com/ygrek/ocaml-cbor/releases/download/${finalAttrs.version}/ocaml-cbor-${finalAttrs.version}.tar.gz";
@@ -22,9 +20,12 @@ buildDunePackage (finalAttrs: {
   ];
 
   doCheck = true;
+
   checkInputs = [
     yojson
   ];
+
+  minimalOCamlVersion = "4.07.0";
 
   meta = {
     description = "CBOR encoder/decoder (RFC 7049) - native OCaml implementation";

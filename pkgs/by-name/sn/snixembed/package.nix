@@ -1,11 +1,11 @@
 {
+  lib,
+  stdenv,
   fetchFromSourcehut,
   gtk3,
-  lib,
   libdbusmenu-gtk3,
   nix-update-script,
   pkg-config,
-  stdenv,
   vala,
   versionCheckHook,
 }:
@@ -26,17 +26,14 @@ stdenv.mkDerivation (finalAttrs: {
     vala
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   buildInputs = [
     gtk3
     libdbusmenu-gtk3
   ];
 
-  doInstallCheck = true;
-
   makeFlags = [ "PREFIX=$(out)" ];
-
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -44,10 +41,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://git.sr.ht/~steef/snixembed";
     changelog = "https://git.sr.ht/~steef/snixembed/refs/${finalAttrs.version}";
     license = lib.licenses.isc;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       nick-linux
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "snixembed";
   };
 })

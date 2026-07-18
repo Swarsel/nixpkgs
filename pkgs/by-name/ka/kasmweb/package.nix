@@ -1,21 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchzip,
 }:
 
 stdenv.mkDerivation rec {
   pname = "kasmweb";
   version = "1.15.0";
-  build = "06fdc8";
 
   src = fetchzip {
     url = "https://kasm-static-content.s3.amazonaws.com/kasm_release_${version}.${build}.tar.gz";
     sha256 = "sha256-7z5lc4QEpQQdVGMEMc04wXlJTK5VXJ4rufZmDEflJLw=";
   };
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -27,9 +23,13 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  build = "06fdc8";
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://www.kasmweb.com/";
     description = "Streaming containerized apps and desktops to end-users";
+    homepage = "https://www.kasmweb.com/";
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ s1341 ];
   };

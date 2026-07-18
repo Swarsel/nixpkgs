@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -16,25 +16,24 @@ buildGoModule (finalAttrs: {
     hash = "sha256-LnNd4rAMJliWKbL4uVl11BAa9FPUcLwVSWnFe1vEk7g=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-lzukgI/7gxlWHY81MkK1CzpUUaZ4B+4xZ0RSZUpL62c=";
+
+  preBuild = ''
+    rm -rf fixtures
+  '';
+
+  doCheck = false;
+
+  postInstall = ''
+    installManPage ets.1
+  '';
 
   ldflags = [
     "-s"
     "-w"
     "-X main.version=v${finalAttrs.version}-nixpkgs"
   ];
-
-  nativeBuildInputs = [ installShellFiles ];
-
-  preBuild = ''
-    rm -rf fixtures
-  '';
-
-  postInstall = ''
-    installManPage ets.1
-  '';
-
-  doCheck = false;
 
   meta = {
     description = "Command output timestamper";

@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "xortool";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hellman";
@@ -16,6 +15,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-KakpXRhBVgUtIiqqvq30u7sIIeXe9vr5aqndOb0cR64=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = with python3Packages; [ poetry-core ];
 
   dependencies = with python3Packages; [
@@ -23,9 +24,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     importlib-metadata
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "xortool" ];
 
   meta = {

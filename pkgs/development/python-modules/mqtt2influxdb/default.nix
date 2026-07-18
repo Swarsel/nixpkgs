@@ -1,25 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  click,
+  hatchling,
   influxdb,
+  influxdb3-python,
   jsonpath-ng,
   paho-mqtt,
   py-expression-eval,
   pyaml,
   pycron,
+  pydantic,
   pytestCheckHook,
   schema,
-  hatchling,
-  click,
-  influxdb3-python,
-  pydantic,
 }:
 
 buildPythonPackage rec {
   pname = "mqtt2influxdb";
   version = "2.0.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hardwario";
@@ -28,6 +27,7 @@ buildPythonPackage rec {
     hash = "sha256-DS1k3JcTUK0yXRkJSFMeIZHSXpiIgSXJPZb3+72Wqko=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ hatchling ];
 
   dependencies = [
@@ -43,8 +43,7 @@ buildPythonPackage rec {
     pydantic
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mqtt2influxdb" ];
 
   meta = {

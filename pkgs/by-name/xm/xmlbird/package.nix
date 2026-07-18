@@ -1,11 +1,11 @@
 {
+  lib,
+  stdenv,
   fetchurl,
   glib,
   gobject-introspection,
-  lib,
   pkg-config,
   python3,
-  stdenv,
   vala,
 }:
 
@@ -18,6 +18,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-8GX4ijF+AxaGGFlSxRPOAoUezRG6592jOrifz/mWTRM=";
   };
 
+  postPatch = ''
+    substituteInPlace configure \
+      --replace-fail 'platform.version()' '"Nix"'
+    patchShebangs .
+  '';
+
   nativeBuildInputs = [
     gobject-introspection
     pkg-config
@@ -26,17 +32,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ glib ];
-
-  postPatch = ''
-    substituteInPlace configure \
-      --replace-fail 'platform.version()' '"Nix"'
-    patchShebangs .
-  '';
-
   configureFlags = [ "--cc=${stdenv.cc.targetPrefix}cc" ];
-
   buildPhase = "./build.py";
-
   installPhase = "./install.py";
 
   meta = {

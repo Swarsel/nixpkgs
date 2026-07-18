@@ -1,18 +1,18 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   autoconf,
   automake,
   cups,
-  fetchFromGitHub,
-  lib,
-  stdenv,
 }:
 
 let
   version = "0.1.4.2-GxB";
 in
 stdenv.mkDerivation {
-  pname = "canon-capt";
   inherit version;
+  pname = "canon-capt";
 
   src = fetchFromGitHub {
     owner = "mounaiban";
@@ -27,20 +27,10 @@ stdenv.mkDerivation {
   ];
 
   buildInputs = [ cups ];
-
   # Fix for 'ppdc: Unable to find include file "<font.defs>"', which blocks '*.ppd' generation.
   # Issue occurs in hermetic sandbox; this workaround is the current solution.
   # Source: https://github.com/NixOS/nixpkgs/blob/9997402000a82eda4327fde36291234118c7515e/pkgs/misc/drivers/hplip/default.nix#L160
   env.CUPS_DATADIR = "${cups}/share/cups";
-
-  configurePhase = ''
-    runHook preConfigure
-    aclocal
-    autoconf
-    automake --add-missing
-    ./configure --prefix=$out/usr
-    runHook postConfigure
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -59,6 +49,15 @@ stdenv.mkDerivation {
     install -D -m 644 ./ppd/CanonLBP-3010-3018-3050.ppd $out/share/cups/model/canon/CanonLBP-3010-3018-3050.ppd
 
     runHook postInstall
+  '';
+
+  configurePhase = ''
+    runHook preConfigure
+    aclocal
+    autoconf
+    automake --add-missing
+    ./configure --prefix=$out/usr
+    runHook postConfigure
   '';
 
   meta = {

@@ -18,14 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     unzip
   ];
 
-  sourceRoot = "source";
-
-  unpackPhase = ''
-    runHook preUnpack
-    unzip $src -d $sourceRoot
-    runHook postUnpack
-  '';
-
   installPhase = ''
     runHook preInstall
 
@@ -33,6 +25,14 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r * $out/share/unicode
 
     runHook postInstall
+  '';
+
+  sourceRoot = "source";
+
+  unpackPhase = ''
+    runHook preUnpack
+    unzip $src -d $sourceRoot
+    runHook postUnpack
   '';
 
   meta = {

@@ -1,9 +1,7 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  testers,
   accountsservice,
   biometryd,
   cmake,
@@ -12,6 +10,7 @@
   deviceinfo,
   geonames,
   gettext,
+  gitUpdater,
   glib,
   gnome-desktop,
   gsettings-qt,
@@ -20,8 +19,8 @@
   intltool,
   json-glib,
   libqofono,
-  libqtdbustest,
   libqtdbusmock,
+  libqtdbustest,
   lomiri-content-hub,
   lomiri-indicator-datetime,
   lomiri-indicator-network,
@@ -37,6 +36,7 @@
   qtbase,
   qtdeclarative,
   qtmultimedia,
+  testers,
   trust-store,
   ubports-click,
   upower,
@@ -141,6 +141,17 @@ stdenv.mkDerivation (finalAttrs: {
     qtmultimedia
   ];
 
+  cmakeFlags = [
+    (lib.cmakeBool "ENABLE_LIBDEVICEINFO" true)
+    (lib.cmakeBool "ENABLE_TESTS" finalAttrs.finalPackage.doCheck)
+    (lib.cmakeFeature "LOMIRI_KEYBOARD_PLUGIN_PATH" "${lib.getLib maliit-keyboard}/lib/maliit/keyboard2/languages")
+  ];
+
+  # The linking for this normally ignores missing symbols, which is inconvenient for figuring out why subpages may be
+  # failing to load their library modules. Force it to report them at linktime instead of runtime.
+  env.NIX_LDFLAGS = "--unresolved-symbols=report-all";
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   nativeCheckInputs = [
     dbus
     mesa.llvmpipeHook # ShapeMaterial needs an OpenGL context: https://gitlab.com/ubports/development/core/lomiri-ui-toolkit/-/issues/35
@@ -152,24 +163,6 @@ stdenv.mkDerivation (finalAttrs: {
     libqtdbustest
     libqtdbusmock
   ];
-
-  # Not wrapping in this derivation
-  dontWrapQtApps = true;
-
-  cmakeFlags = [
-    (lib.cmakeBool "ENABLE_LIBDEVICEINFO" true)
-    (lib.cmakeBool "ENABLE_TESTS" finalAttrs.finalPackage.doCheck)
-    (lib.cmakeFeature "LOMIRI_KEYBOARD_PLUGIN_PATH" "${lib.getLib maliit-keyboard}/lib/maliit/keyboard2/languages")
-  ];
-
-  # The linking for this normally ignores missing symbols, which is inconvenient for figuring out why subpages may be
-  # failing to load their library modules. Force it to report them at linktime instead of runtime.
-  env.NIX_LDFLAGS = "--unresolved-symbols=report-all";
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
-  # Parallelism breaks D-Bus tests
-  enableParallelChecking = false;
 
   preCheck = ''
     export QT_PLUGIN_PATH=${lib.getBin qtbase}/${qtbase.qtPluginPrefix}
@@ -195,6 +188,11 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/share/lomiri-system-settings/screenshot.png $out/share/lomiri-app-launch/screenshot/lomiri-system-settings.png
   '';
 
+  # Not wrapping in this derivation
+  dontWrapQtApps = true;
+  # Parallelism breaks D-Bus tests
+  enableParallelChecking = false;
+
   passthru = {
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
     updateScript = gitUpdater { };
@@ -203,13 +201,15 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "System Settings application for Lomiri";
     homepage = "https://gitlab.com/ubports/development/core/lomiri-system-settings";
+
     changelog = "https://gitlab.com/ubports/development/core/lomiri-system-settings/-/blob/${
       if (!isNull finalAttrs.src.tag) then finalAttrs.src.tag else finalAttrs.src.rev
     }/ChangeLog";
+
     license = lib.licenses.gpl3Only;
-    mainProgram = "lomiri-system-settings";
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.linux;
+    mainProgram = "lomiri-system-settings";
     pkgConfigModules = [ "LomiriSystemSettings" ];
+    teams = [ lib.teams.lomiri ];
   };
 })

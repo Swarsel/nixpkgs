@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   bash,
-  python3,
   makeWrapper,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,6 +22,8 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace src/GridPDF.cc --replace '#include <locale>' '#include <xlocale.h>'
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     bash
     makeWrapper
@@ -29,15 +31,18 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals (python3 != null && lib.versionAtLeast python3.version "3.10") [
     python3.pkgs.cython
   ];
-  buildInputs = [ python3 ];
 
+  buildInputs = [ python3 ];
   configureFlags = lib.optionals (python3 == null) [ "--disable-python" ];
 
   preBuild = lib.optionalString (python3 != null && lib.versionAtLeast python3.version "3.10") ''
     rm wrappers/python/lhapdf.cpp
   '';
 
-  strictDeps = true;
+  postInstall = ''
+    patchShebangs --build $out/bin/lhapdf-config
+    wrapProgram $out/bin/lhapdf --prefix PYTHONPATH : "$(toPythonPath "$out")"
+  '';
 
   enableParallelBuilding = true;
 
@@ -45,16 +50,11 @@ stdenv.mkDerivation (finalAttrs: {
     pdf_sets = import ./pdf_sets.nix { inherit lib stdenv fetchurl; };
   };
 
-  postInstall = ''
-    patchShebangs --build $out/bin/lhapdf-config
-    wrapProgram $out/bin/lhapdf --prefix PYTHONPATH : "$(toPythonPath "$out")"
-  '';
-
   meta = {
     description = "General purpose interpolator, used for evaluating Parton Distribution Functions from discretised data files";
-    license = lib.licenses.gpl3;
     homepage = "https://www.lhapdf.org";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ veprbl ];
+    platforms = lib.platforms.unix;
   };
 })

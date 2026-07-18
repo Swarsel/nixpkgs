@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  validatePkgConfig,
   expat,
-  minizip,
-  zlib,
   libiconv,
+  minizip,
+  validatePkgConfig,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,20 +27,21 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional stdenv.hostPlatform.isDarwin libiconv;
 
-  enableParallelBuilding = true;
-
   doCheck = true;
+  enableParallelBuilding = true;
 
   meta = {
     description = "Library to extract valid data from within an Excel (.xls) spreadsheet";
     homepage = "https://www.gaia-gis.it/fossil/freexl";
+
     # They allow any of these
     license = with lib.licenses; [
       gpl2Plus
       lgpl21Plus
       mpl11
     ];
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [ sikmir ];
+    platforms = lib.platforms.unix;
   };
 })

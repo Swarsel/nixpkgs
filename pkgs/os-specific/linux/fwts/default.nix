@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  autoreconfHook,
-  pkg-config,
-  glib,
-  pcre,
-  json_c,
-  flex,
-  bison,
-  dtc,
-  pciutils,
-  dmidecode,
   acpica-tools,
+  autoreconfHook,
+  bison,
+  dmidecode,
+  dtc,
+  fetchzip,
+  flex,
+  glib,
+  json_c,
   libbsd,
+  pciutils,
+  pcre,
+  pkg-config,
   zlib,
 }:
 
@@ -27,7 +27,20 @@ stdenv.mkDerivation (finalAttrs: {
     stripRoot = false;
   };
 
-  sourceRoot = "${finalAttrs.src.name}/fwts-${finalAttrs.version}";
+  postPatch = ''
+    substituteInPlace src/lib/include/fwts_binpaths.h \
+      --replace-fail "/usr/bin/lspci"      "${pciutils}/bin/lspci" \
+      --replace-fail "/usr/sbin/dmidecode" "${dmidecode}/bin/dmidecode" \
+      --replace-fail "/usr/bin/iasl"       "${acpica-tools}/bin/iasl"
+
+    substituteInPlace src/lib/src/fwts_devicetree.c \
+                      src/devicetree/dt_base/dt_base.c \
+      --replace-fail "dtc -I" "${dtc}/bin/dtc -I"
+
+    # libfwts uses gzopen/gzclose/gzgets but does not link zlib.
+    substituteInPlace src/lib/src/Makefile.am \
+      --replace-fail "-lm -lpthread -lbsd" "-lm -lpthread -lbsd -lz"
+  '';
 
   nativeBuildInputs = [
     autoreconfHook
@@ -48,28 +61,14 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  postPatch = ''
-    substituteInPlace src/lib/include/fwts_binpaths.h \
-      --replace-fail "/usr/bin/lspci"      "${pciutils}/bin/lspci" \
-      --replace-fail "/usr/sbin/dmidecode" "${dmidecode}/bin/dmidecode" \
-      --replace-fail "/usr/bin/iasl"       "${acpica-tools}/bin/iasl"
-
-    substituteInPlace src/lib/src/fwts_devicetree.c \
-                      src/devicetree/dt_base/dt_base.c \
-      --replace-fail "dtc -I" "${dtc}/bin/dtc -I"
-
-    # libfwts uses gzopen/gzclose/gzgets but does not link zlib.
-    substituteInPlace src/lib/src/Makefile.am \
-      --replace-fail "-lm -lpthread -lbsd" "-lm -lpthread -lbsd -lz"
-  '';
-
   enableParallelBuilding = true;
+  sourceRoot = "${finalAttrs.src.name}/fwts-${finalAttrs.version}";
 
   meta = {
-    homepage = "https://wiki.ubuntu.com/FirmwareTestSuite";
     description = "Firmware Test Suite";
-    platforms = lib.platforms.linux;
+    homepage = "https://wiki.ubuntu.com/FirmwareTestSuite";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ tadfisher ];
+    platforms = lib.platforms.linux;
   };
 })

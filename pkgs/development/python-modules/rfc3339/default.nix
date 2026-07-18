@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "rfc3339";
   version = "6.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
 
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "rfc3339" ];
 
   meta = {

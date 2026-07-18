@@ -1,16 +1,14 @@
 {
-  buildPecl,
-  pkg-config,
   lib,
+  buildPecl,
   grpc,
   php,
+  pkg-config,
 }:
 
 buildPecl {
-  pname = "grpc";
   inherit (grpc) version src;
-
-  sourceRoot = "${grpc.src.name}/src/php/ext/grpc";
+  pname = "grpc";
 
   patches = [
     ./use-pkgconfig.patch # https://github.com/grpc/grpc/pull/35404
@@ -19,8 +17,8 @@ buildPecl {
 
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ grpc ];
-
   doCheck = true;
+  sourceRoot = "${grpc.src.name}/src/php/ext/grpc";
 
   meta = {
     description = "High performance, open source, general RPC framework that puts mobile and HTTP/2 first";

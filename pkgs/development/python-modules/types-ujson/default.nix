@@ -8,19 +8,17 @@
 buildPythonPackage rec {
   pname = "types-ujson";
   version = "5.10.0.20250822";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "types_ujson";
     inherit version;
     hash = "sha256-CnlVWOH3hTI3PPPwPzWx8IvGDVLZJBh7l5le41l7oAY=";
+    pname = "types_ujson";
   };
-
-  build-system = [ setuptools ];
 
   # Module has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "ujson-stubs" ];
 
   meta = {

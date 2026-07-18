@@ -1,25 +1,24 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  setuptools,
-  wheel,
   azure-common,
   azure-mgmt-core,
+  buildPythonPackage,
+  fetchPypi,
   isodate,
   msrest,
+  setuptools,
   typing-extensions,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "azure-mgmt-postgresqlflexibleservers";
   version = "3.0.0b1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_postgresqlflexibleservers";
     inherit version;
     hash = "sha256-Vo1/vuxAAgVznCppDZCTygNFAMl5uopc3QbiEeFbLv8=";
+    pname = "azure_mgmt_postgresqlflexibleservers";
   };
 
   build-system = [
@@ -34,6 +33,8 @@ buildPythonPackage rec {
     msrest
     typing-extensions
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "azure.mgmt.postgresqlflexibleservers"

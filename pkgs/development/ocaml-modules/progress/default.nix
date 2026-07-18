@@ -1,5 +1,7 @@
 {
   lib,
+  alcotest,
+  astring,
   buildDunePackage,
   fmt,
   logs,
@@ -7,16 +9,11 @@
   optint,
   terminal,
   vector,
-  alcotest,
-  astring,
 }:
 
 buildDunePackage {
-  pname = "progress";
-
-  minimalOCamlVersion = "4.08";
-
   inherit (terminal) version src;
+  pname = "progress";
 
   propagatedBuildInputs = [
     fmt
@@ -28,10 +25,13 @@ buildDunePackage {
   ];
 
   doCheck = true;
+
   checkInputs = [
     alcotest
     astring
   ];
+
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "Progress bar library for OCaml";

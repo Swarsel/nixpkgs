@@ -3,16 +3,16 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  parallel,
-  sassc,
-  inkscape,
-  libxml2,
-  glib,
   gdk-pixbuf,
-  librsvg,
-  gtk-engine-murrine,
+  glib,
   gnome-shell,
+  gtk-engine-murrine,
+  inkscape,
+  librsvg,
+  libxml2,
+  parallel,
+  pkg-config,
+  sassc,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,7 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "19skrhp10xx07hbd0lr3d619vj2im35d8p9rmb4v4zacci804q04";
   };
 
-  preferLocalBuild = true;
+  postPatch = "patchShebangs .";
 
   nativeBuildInputs = [
     autoreconfHook
@@ -44,24 +44,25 @@ stdenv.mkDerivation (finalAttrs: {
     librsvg
   ];
 
-  propagatedUserEnvPkgs = [ gtk-engine-murrine ];
-
-  postPatch = "patchShebangs .";
-
   configureFlags = [
     "--disable-gtk_legacy"
     "--disable-gtk_next"
     "--disable-unity"
   ];
 
+  preferLocalBuild = true;
+  propagatedUserEnvPkgs = [ gtk-engine-murrine ];
+
   meta = {
     description = "Adaptive GTK theme based on Material Design Guidelines";
     homepage = "https://github.com/adapta-project/adapta-gtk-theme";
+
     license = with lib.licenses; [
       gpl2
       cc-by-sa-30
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [ romildo ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -1,7 +1,7 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   pythonOlder,
   setuptools,
@@ -10,9 +10,6 @@
 buildPythonPackage rec {
   pname = "standard-mailcap";
   version = "3.13.0";
-  pyproject = true;
-
-  disabled = pythonOlder "3.13";
 
   src = fetchFromGitHub {
     owner = "youknowone";
@@ -22,11 +19,12 @@ buildPythonPackage rec {
     sparseCheckout = [ "mailcap" ];
   };
 
-  build-system = [ setuptools ];
-  sourceRoot = "${src.name}/mailcap";
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  disabled = pythonOlder "3.13";
+  pyproject = true;
   pythonImportsCheck = [ "mailcap" ];
+  sourceRoot = "${src.name}/mailcap";
 
   meta = {
     description = "Standard library mailcap redistribution";

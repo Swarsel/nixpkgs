@@ -1,7 +1,7 @@
 {
   lib,
-  melpaBuild,
   fetchzip,
+  melpaBuild,
 }:
 
 melpaBuild (finalAttrs: {
@@ -14,8 +14,8 @@ melpaBuild (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://gitweb.gentoo.org/proj/ebuild-mode.git/";
     description = "Major modes for Gentoo package files";
+    homepage = "https://gitweb.gentoo.org/proj/ebuild-mode.git/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
   };

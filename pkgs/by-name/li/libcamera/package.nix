@@ -1,28 +1,28 @@
 {
-  stdenv,
-  fetchgit,
   lib,
-  meson,
-  ninja,
-  pkg-config,
-  makeFontsConf,
-  openssl,
-  libdrm,
-  libevent,
-  libyaml,
+  stdenv,
+  doxygen,
+  fetchgit,
+  graphviz,
   gst_all_1,
   gtest,
-  graphviz,
-  doxygen,
+  libdrm,
+  libevent,
+  libpisp,
+  libtiff, # withQcam
+  libyaml,
+  lttng-ust, # withTracing
+  makeFontsConf,
+  meson,
+  ninja,
+  openssl,
+  pkg-config,
   python3,
   python3Packages,
-  udev,
-  libpisp,
-  withTracing ? lib.meta.availableOn stdenv.hostPlatform lttng-ust,
-  lttng-ust, # withTracing
-  withQcam ? false,
   qt6, # withQcam
-  libtiff, # withQcam
+  udev,
+  withQcam ? false,
+  withTracing ? lib.meta.availableOn stdenv.hostPlatform lttng-ust,
 }:
 
 stdenv.mkDerivation rec {
@@ -44,23 +44,22 @@ stdenv.mkDerivation rec {
     patchShebangs src/py/ utils/
   '';
 
-  # libcamera signs the IPA module libraries at install time, but they are then
-  # modified by stripping and RPATH fixup. Therefore, we need to generate the
-  # signatures again ourselves. For reproducibility, we use a static private key.
-  #
-  # If this is not done, libcamera will still try to load them, but it will
-  # isolate them in separate processes, which can cause crashes for IPA modules
-  # that are not designed for this (notably ipa_rpi.so).
-  preBuild = ''
-    ninja src/ipa-priv-key.pem
-    install -D ${./ipa-priv-key.pem} src/ipa-priv-key.pem
-  '';
-
-  postFixup = ''
-    ../src/ipa/ipa-sign-install.sh src/ipa-priv-key.pem $out/lib/libcamera/ipa/ipa_*.so
-  '';
-
   strictDeps = true;
+
+  nativeBuildInputs = [
+    meson
+    ninja
+    pkg-config
+    python3
+    python3Packages.jinja2
+    python3Packages.pyyaml
+    python3Packages.ply
+    python3Packages.sphinx
+    graphviz
+    doxygen
+    openssl
+  ]
+  ++ lib.optional withQcam qt6.wrapQtAppsHook;
 
   buildInputs = [
     # IPA and signing
@@ -93,21 +92,6 @@ stdenv.mkDerivation rec {
     qt6.qttools
   ];
 
-  nativeBuildInputs = [
-    meson
-    ninja
-    pkg-config
-    python3
-    python3Packages.jinja2
-    python3Packages.pyyaml
-    python3Packages.ply
-    python3Packages.sphinx
-    graphviz
-    doxygen
-    openssl
-  ]
-  ++ lib.optional withQcam qt6.wrapQtAppsHook;
-
   mesonFlags = [
     "-Dv4l2=true"
     (lib.mesonEnable "tracing" withTracing)
@@ -128,12 +112,27 @@ stdenv.mkDerivation rec {
   ];
 
   env = {
-    # Fixes error on a deprecated declaration
-    NIX_CFLAGS_COMPILE = "-Wno-error=deprecated-declarations";
-
     # Silence fontconfig warnings about missing config
     FONTCONFIG_FILE = makeFontsConf { fontDirectories = [ ]; };
+    # Fixes error on a deprecated declaration
+    NIX_CFLAGS_COMPILE = "-Wno-error=deprecated-declarations";
   };
+
+  # libcamera signs the IPA module libraries at install time, but they are then
+  # modified by stripping and RPATH fixup. Therefore, we need to generate the
+  # signatures again ourselves. For reproducibility, we use a static private key.
+  #
+  # If this is not done, libcamera will still try to load them, but it will
+  # isolate them in separate processes, which can cause crashes for IPA modules
+  # that are not designed for this (notably ipa_rpi.so).
+  preBuild = ''
+    ninja src/ipa-priv-key.pem
+    install -D ${./ipa-priv-key.pem} src/ipa-priv-key.pem
+  '';
+
+  postFixup = ''
+    ../src/ipa/ipa-sign-install.sh src/ipa-priv-key.pem $out/lib/libcamera/ipa/ipa_*.so
+  '';
 
   meta = {
     description = "Open source camera stack and framework for Linux, Android, and ChromeOS";
@@ -142,6 +141,7 @@ stdenv.mkDerivation rec {
     license = lib.licenses.lgpl2Plus;
     maintainers = with lib.maintainers; [ citadelcore ];
     platforms = lib.platforms.linux;
+
     badPlatforms = [
       # Mandatory shared libraries.
       lib.systems.inspect.platformPatterns.isStatic

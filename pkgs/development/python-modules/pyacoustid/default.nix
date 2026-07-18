@@ -1,19 +1,18 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   audioread,
   buildPythonPackage,
-  fetchFromGitHub,
   pkgs,
   poetry-core,
   pytestCheckHook,
   requests,
-  stdenv,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyacoustid";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "beetbox";
@@ -27,6 +26,10 @@ buildPythonPackage (finalAttrs: {
       --replace "ctypes.CDLL(name" 'ctypes.CDLL("${lib.getLib pkgs.chromaprint}/lib/libchromaprint${stdenv.hostPlatform.extensions.sharedLibrary}"'
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     poetry-core
   ];
@@ -36,10 +39,7 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "acoustid" ];
 
   meta = {

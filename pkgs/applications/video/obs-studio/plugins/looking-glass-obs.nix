@@ -1,23 +1,20 @@
 {
   lib,
   stdenv,
-  cmake,
-  libbfd,
   SDL2,
+  cmake,
   libGL,
-  obs-studio,
+  libbfd,
   looking-glass-client,
+  obs-studio,
 }:
 
 stdenv.mkDerivation {
   pname = "looking-glass-obs";
   version = looking-glass-client.version;
-
   src = looking-glass-client.src;
-
-  sourceRoot = "${looking-glass-client.src.name}/obs";
-
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     obs-studio
     libbfd
@@ -31,6 +28,8 @@ stdenv.mkDerivation {
     mkdir -p $out/lib/obs-plugins/
     mv liblooking-glass-obs.so $out/lib/obs-plugins/
   '';
+
+  sourceRoot = "${looking-glass-client.src.name}/obs";
 
   meta = {
     description = "Plugin for OBS Studio for efficient capturing of looking-glass";

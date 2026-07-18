@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  perl,
   librsvg,
+  perl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,6 +15,8 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "071fj2jm5kydlz02ic5sylhmw6h2p3cgrm3gwdfabinqkqcv4jh4";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     (perl.withPackages (p: [ p.XMLSimple ]))
   ];
@@ -23,11 +25,9 @@ stdenv.mkDerivation (finalAttrs: {
     librsvg
   ];
 
-  strictDeps = true;
-
   meta = {
     homepage = "https://tango.freedesktop.org/Standard_Icon_Naming_Specification";
-    platforms = with lib.platforms; linux ++ darwin;
     license = lib.licenses.gpl2;
+    platforms = with lib.platforms; linux ++ darwin;
   };
 })

@@ -1,8 +1,8 @@
 {
   config,
   lib,
-  utils,
   pkgs,
+  utils,
   ...
 }:
 let
@@ -162,34 +162,131 @@ in
 
   options.services.pgbouncer = {
     enable = lib.mkEnableOption "PostgreSQL connection pooler";
-
     package = lib.mkPackageOption pkgs "pgbouncer" { };
 
+    group = lib.mkOption {
+      default = "pgbouncer";
+
+      description = ''
+        The group pgbouncer is run as.
+      '';
+
+      type = lib.types.str;
+    };
+
+    homeDir = lib.mkOption {
+      default = "/var/lib/pgbouncer";
+
+      description = ''
+        Specifies the home directory.
+      '';
+
+      type = lib.types.path;
+    };
+
+    # Linux settings
+    openFilesLimit = lib.mkOption {
+      default = 65536;
+
+      description = ''
+        Maximum number of open files.
+      '';
+
+      type = lib.types.int;
+    };
+
     openFirewall = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         Whether to automatically open the specified TCP port in the firewall.
       '';
+
+      type = lib.types.bool;
     };
 
     settings = lib.mkOption {
+      default = { };
+
+      description = ''
+        Configuration for PgBouncer, see <https://www.pgbouncer.org/config.html>
+        for supported values.
+      '';
+
       type = lib.types.submodule {
-        freeformType = settingsFormat.type;
         options = {
+          databases = lib.mkOption {
+            default = { };
+
+            description = ''
+              Detailed information about PostgreSQL database definitions:
+              <https://www.pgbouncer.org/config.html#section-databases>
+            '';
+
+            example = {
+              bardb = "host=localhost dbname=bazdb";
+              exampledb = "host=/run/postgresql/ port=5432 auth_user=exampleuser dbname=exampledb sslmode=require";
+              foodb = "host=host1.example.com port=5432";
+            };
+
+            type = lib.types.attrsOf lib.types.str;
+          };
+
+          peers = lib.mkOption {
+            default = { };
+
+            description = ''
+              Optional.
+
+              Detailed information about PostgreSQL database definitions:
+              <https://www.pgbouncer.org/config.html#section-peers>
+            '';
+
+            example = {
+              "1" = "host=host1.example.com";
+              "2" = "host=/tmp/pgbouncer-2 port=5555";
+            };
+
+            type = lib.types.attrsOf lib.types.str;
+          };
+
           pgbouncer = {
-            listen_port = lib.mkOption {
-              type = lib.types.port;
-              default = 6432;
+            default_pool_size = lib.mkOption {
+              default = 20;
+
               description = ''
-                Which port to listen on. Applies to both TCP and Unix sockets.
+                How many server connections to allow per user/database pair.
+                Can be overridden in the per-database configuration.
               '';
+
+              type = lib.types.int;
+            };
+
+            ignore_startup_parameters = lib.mkOption {
+              default = null;
+
+              description = ''
+                By default, PgBouncer allows only parameters it can keep track of in startup packets:
+                client_encoding, datestyle, timezone and standard_conforming_strings.
+
+                All others parameters will raise an error.
+                To allow others parameters, they can be specified here, so that PgBouncer knows that
+                they are handled by the admin and it can ignore them.
+
+                If you need to specify multiple values, use a comma-separated list.
+
+                IMPORTANT: When using prometheus-pgbouncer-exporter, you need:
+                extra_float_digits
+                <https://github.com/prometheus-community/pgbouncer_exporter#pgbouncer-configuration>
+              '';
+
+              example = "extra_float_digits";
+              type = lib.types.nullOr lib.types.commas;
             };
 
             listen_addr = lib.mkOption {
-              type = lib.types.nullOr lib.types.commas;
-              example = "*";
               default = null;
+
               description = ''
                 Specifies a list (comma-separated) of addresses where to listen for TCP connections.
                 You may also use * meaning “listen on all addresses”.
@@ -197,31 +294,24 @@ in
 
                 Addresses can be specified numerically (IPv4/IPv6) or by name.
               '';
+
+              example = "*";
+              type = lib.types.nullOr lib.types.commas;
             };
 
-            pool_mode = lib.mkOption {
-              type = lib.types.enum [
-                "session"
-                "transaction"
-                "statement"
-              ];
-              default = "session";
-              description = ''
-                Specifies when a server connection can be reused by other clients.
+            listen_port = lib.mkOption {
+              default = 6432;
 
-                session
-                    Server is released back to pool after client disconnects. Default.
-                transaction
-                    Server is released back to pool after transaction finishes.
-                statement
-                    Server is released back to pool after query finishes.
-                    Transactions spanning multiple statements are disallowed in this mode.
+              description = ''
+                Which port to listen on. Applies to both TCP and Unix sockets.
               '';
+
+              type = lib.types.port;
             };
 
             max_client_conn = lib.mkOption {
-              type = lib.types.int;
               default = 100;
+
               description = ''
                 Maximum number of client connections allowed.
 
@@ -238,20 +328,13 @@ in
                 The theoretical maximum should never be reached, unless somebody deliberately crafts a special load for it.
                 Still, it means you should set the number of file descriptors to a safely high number.
               '';
-            };
 
-            default_pool_size = lib.mkOption {
               type = lib.types.int;
-              default = 20;
-              description = ''
-                How many server connections to allow per user/database pair.
-                Can be overridden in the per-database configuration.
-              '';
             };
 
             max_db_connections = lib.mkOption {
-              type = lib.types.int;
               default = 0;
+
               description = ''
                 Do not allow more than this many server connections per database (regardless of user).
                 This considers the PgBouncer database that the client has connected to,
@@ -267,11 +350,13 @@ in
 
                 0 = unlimited
               '';
+
+              type = lib.types.int;
             };
 
             max_user_connections = lib.mkOption {
-              type = lib.types.int;
               default = 0;
+
               description = ''
                 Do not allow more than this many server connections per user (regardless of database).
                 This considers the PgBouncer user that is associated with a pool,
@@ -288,150 +373,108 @@ in
 
                 0 = unlimited
               '';
+
+              type = lib.types.int;
             };
 
-            ignore_startup_parameters = lib.mkOption {
-              type = lib.types.nullOr lib.types.commas;
-              example = "extra_float_digits";
-              default = null;
+            pool_mode = lib.mkOption {
+              default = "session";
+
               description = ''
-                By default, PgBouncer allows only parameters it can keep track of in startup packets:
-                client_encoding, datestyle, timezone and standard_conforming_strings.
+                Specifies when a server connection can be reused by other clients.
 
-                All others parameters will raise an error.
-                To allow others parameters, they can be specified here, so that PgBouncer knows that
-                they are handled by the admin and it can ignore them.
-
-                If you need to specify multiple values, use a comma-separated list.
-
-                IMPORTANT: When using prometheus-pgbouncer-exporter, you need:
-                extra_float_digits
-                <https://github.com/prometheus-community/pgbouncer_exporter#pgbouncer-configuration>
+                session
+                    Server is released back to pool after client disconnects. Default.
+                transaction
+                    Server is released back to pool after transaction finishes.
+                statement
+                    Server is released back to pool after query finishes.
+                    Transactions spanning multiple statements are disallowed in this mode.
               '';
+
+              type = lib.types.enum [
+                "session"
+                "transaction"
+                "statement"
+              ];
             };
           };
-          databases = lib.mkOption {
-            type = lib.types.attrsOf lib.types.str;
-            default = { };
-            example = {
-              exampledb = "host=/run/postgresql/ port=5432 auth_user=exampleuser dbname=exampledb sslmode=require";
-              bardb = "host=localhost dbname=bazdb";
-              foodb = "host=host1.example.com port=5432";
-            };
-            description = ''
-              Detailed information about PostgreSQL database definitions:
-              <https://www.pgbouncer.org/config.html#section-databases>
-            '';
-          };
+
           users = lib.mkOption {
-            type = lib.types.attrsOf lib.types.str;
             default = { };
-            example = {
-              user1 = "pool_mode=session";
-            };
+
             description = ''
               Optional.
 
               Detailed information about PostgreSQL user definitions:
               <https://www.pgbouncer.org/config.html#section-users>
             '';
-          };
 
-          peers = lib.mkOption {
-            type = lib.types.attrsOf lib.types.str;
-            default = { };
             example = {
-              "1" = "host=host1.example.com";
-              "2" = "host=/tmp/pgbouncer-2 port=5555";
+              user1 = "pool_mode=session";
             };
-            description = ''
-              Optional.
 
-              Detailed information about PostgreSQL database definitions:
-              <https://www.pgbouncer.org/config.html#section-peers>
-            '';
+            type = lib.types.attrsOf lib.types.str;
           };
         };
-      };
-      default = { };
-      description = ''
-        Configuration for PgBouncer, see <https://www.pgbouncer.org/config.html>
-        for supported values.
-      '';
-    };
 
-    # Linux settings
-    openFilesLimit = lib.mkOption {
-      type = lib.types.int;
-      default = 65536;
-      description = ''
-        Maximum number of open files.
-      '';
+        freeformType = settingsFormat.type;
+      };
     };
 
     user = lib.mkOption {
-      type = lib.types.str;
       default = "pgbouncer";
+
       description = ''
         The user pgbouncer is run as.
       '';
-    };
 
-    group = lib.mkOption {
       type = lib.types.str;
-      default = "pgbouncer";
-      description = ''
-        The group pgbouncer is run as.
-      '';
-    };
-
-    homeDir = lib.mkOption {
-      type = lib.types.path;
-      default = "/var/lib/pgbouncer";
-      description = ''
-        Specifies the home directory.
-      '';
     };
   };
 
   config = lib.mkIf cfg.enable {
-    users.groups.${cfg.group} = { };
-    users.users.${cfg.user} = {
-      description = "PgBouncer service user";
-      group = cfg.group;
-      home = cfg.homeDir;
-      createHome = true;
-      isSystemUser = true;
-    };
-
     environment.etc.${configPath}.source = configFile;
-
-    # Default to RuntimeDirectory instead of /tmp.
-    services.pgbouncer.settings.pgbouncer.unix_socket_dir = lib.mkDefault "/run/pgbouncer";
-
-    systemd.services.pgbouncer = {
-      description = "PgBouncer - PostgreSQL connection pooler";
-      wants = [ "network-online.target" ];
-      after = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
-      reloadTriggers = [ configFile ];
-      serviceConfig = {
-        Type = "notify-reload";
-        User = cfg.user;
-        Group = cfg.group;
-        ExecStart = utils.escapeSystemdExecArgs [
-          (lib.getExe cfg.package)
-          "/etc/${configPath}"
-        ];
-        RuntimeDirectory = "pgbouncer";
-        LimitNOFILE = cfg.openFilesLimit;
-      };
-    };
 
     networking.firewall = lib.mkIf cfg.openFirewall {
       allowedTCPPorts = [
         (cfg.settings.pgbouncer.listen_port or 6432)
       ];
+    };
+
+    # Default to RuntimeDirectory instead of /tmp.
+    services.pgbouncer.settings.pgbouncer.unix_socket_dir = lib.mkDefault "/run/pgbouncer";
+
+    systemd.services.pgbouncer = {
+      after = [ "network-online.target" ];
+      description = "PgBouncer - PostgreSQL connection pooler";
+      reloadTriggers = [ configFile ];
+
+      serviceConfig = {
+        ExecStart = utils.escapeSystemdExecArgs [
+          (lib.getExe cfg.package)
+          "/etc/${configPath}"
+        ];
+
+        Group = cfg.group;
+        LimitNOFILE = cfg.openFilesLimit;
+        RuntimeDirectory = "pgbouncer";
+        Type = "notify-reload";
+        User = cfg.user;
+      };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
+    };
+
+    users.groups.${cfg.group} = { };
+
+    users.users.${cfg.user} = {
+      createHome = true;
+      description = "PgBouncer service user";
+      group = cfg.group;
+      home = cfg.homeDir;
+      isSystemUser = true;
     };
   };
 

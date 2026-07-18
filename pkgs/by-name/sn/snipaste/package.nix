@@ -1,11 +1,11 @@
 {
-  appimageTools,
   lib,
-  fetchurl,
   stdenv,
+  fetchurl,
+  appimageTools,
+  makeWrapper,
   stdenvNoCC,
   undmg,
-  makeWrapper,
 }:
 
 let
@@ -24,16 +24,19 @@ let
     description = "Screenshot tools";
     homepage = "https://www.snipaste.com/";
     license = lib.licenses.unfree;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       luftmensch-luftmensch
       ltrump
     ];
-    mainProgram = "snipaste";
+
     platforms = [
       "aarch64-darwin"
       "x86_64-linux"
     ];
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
+    mainProgram = "snipaste";
   };
 in
 if stdenv.hostPlatform.isDarwin then
@@ -51,8 +54,6 @@ if stdenv.hostPlatform.isDarwin then
       makeWrapper
     ];
 
-    sourceRoot = ".";
-
     installPhase = ''
       runHook preInstall
 
@@ -62,6 +63,8 @@ if stdenv.hostPlatform.isDarwin then
 
       runHook postInstall
     '';
+
+    sourceRoot = ".";
   }
 else
   let

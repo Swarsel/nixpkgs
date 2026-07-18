@@ -10,17 +10,14 @@ let
 in
 
 stdenv.mkDerivation {
+  inherit (gcc.cc) src;
   pname = "libiberty";
   version = "${gcc.cc.version}";
-
-  inherit (gcc.cc) src;
 
   outputs = [
     "out"
     "dev"
   ];
-
-  postUnpack = "sourceRoot=\${sourceRoot}/libiberty";
 
   # needed until config scripts are updated to not use /usr/bin/uname on FreeBSD native
   # updateAutotoolsGnuConfigScriptsHook doesn't seem to work here
@@ -34,13 +31,17 @@ stdenv.mkDerivation {
     cp pic/libiberty.a $out/lib*/libiberty.a
   '';
 
+  postUnpack = "sourceRoot=\${sourceRoot}/libiberty";
+
   meta = {
+    description = "Collection of subroutines used by various GNU programs";
     homepage = "https://gcc.gnu.org/";
     license = lib.licenses.lgpl2;
-    description = "Collection of subroutines used by various GNU programs";
+
     maintainers = with lib.maintainers; [
       ericson2314
     ];
+
     platforms = lib.platforms.unix;
   };
 }

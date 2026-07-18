@@ -1,8 +1,8 @@
 {
   lib,
-  ruby,
   bundlerApp,
   bundlerUpdateScript,
+  ruby,
 }:
 
 let
@@ -13,7 +13,6 @@ bundlerApp {
   pname = "brakeman";
   exes = [ "brakeman" ];
   gemdir = ./.;
-
   passthru.updateScript = bundlerUpdateScript "brakeman";
 
   meta = {
@@ -21,8 +20,8 @@ bundlerApp {
     homepage = "https://brakemanscanner.org/";
     changelog = "https://github.com/presidentbeef/brakeman/blob/v${version}/CHANGES.md";
     license = lib.licenses.unfreeRedistributable;
-    platforms = ruby.meta.platforms;
     maintainers = [ ];
+    platforms = ruby.meta.platforms;
     mainProgram = "brakeman";
   };
 }

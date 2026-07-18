@@ -1,27 +1,28 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   atk,
   autoPatchelfHook,
   cairo,
   copyDesktopItems,
-  freetype,
   fontconfig,
-  lib,
-  stdenv,
-  fetchurl,
-  gtk2,
-  glib,
+  freetype,
   gdk-pixbuf,
-  makeWrapper,
+  glib,
+  gtk2,
+  libx11,
   makeDesktopItem,
+  makeWrapper,
   pango,
   unzip,
-  libx11,
   zlib,
 }:
 stdenv.mkDerivation (finalAttrs: {
 
   pname = "mricron";
   version = "1.0.20190902";
+
   src = fetchurl {
     url = "https://github.com/neurolabusc/MRIcron/releases/download/v${finalAttrs.version}/MRIcron_linux.zip";
     hash = "sha256-C155u9dvYEyWRfTv3KNQFI6aMWIAjgvdSIqMuYVIOQA=";
@@ -57,23 +58,26 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      type = "Application";
-      name = "mricron";
-      desktopName = "MRIcron";
-      comment = "Application to display NIfTI medical imaging data";
-      exec = "mricron %U";
-      icon = "mricron";
       categories = [
         "Graphics"
         "MedicalSoftware"
         "Science"
       ];
-      terminal = false;
+
+      comment = "Application to display NIfTI medical imaging data";
+      desktopName = "MRIcron";
+      exec = "mricron %U";
+      icon = "mricron";
+
       keywords = [
         "medical"
         "imaging"
         "nifti"
       ];
+
+      name = "mricron";
+      terminal = false;
+      type = "Application";
     })
   ];
 
@@ -82,8 +86,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://people.cas.sc.edu/rorden/mricron/index.HTML";
     license = lib.licenses.bsd1;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ adriangl ];
+    platforms = lib.platforms.linux;
     mainProgram = "mricron";
   };
 })

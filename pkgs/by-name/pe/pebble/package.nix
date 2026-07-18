@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -25,14 +25,14 @@ buildGoModule (finalAttrs: {
   ];
 
   passthru.tests = {
-    smoke-test-http = nixosTests.acme.http01-builtin;
     smoke-test-dns = nixosTests.acme.dns01;
+    smoke-test-http = nixosTests.acme.http01-builtin;
   };
 
   meta = {
-    homepage = "https://github.com/letsencrypt/pebble";
     description = "Small RFC 8555 ACME test server";
     longDescription = "Miniature version of Boulder, Pebble is a small RFC 8555 ACME test server not suited for a production CA";
+    homepage = "https://github.com/letsencrypt/pebble";
     license = [ lib.licenses.mpl20 ];
     mainProgram = "pebble";
     teams = [ lib.teams.acme ];

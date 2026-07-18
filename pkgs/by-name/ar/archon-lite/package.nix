@@ -1,7 +1,7 @@
 {
   lib,
-  appimageTools,
   fetchurl,
+  appimageTools,
   nix-update-script,
 }:
 let
@@ -34,14 +34,16 @@ appimageTools.wrapType2 {
   meta = {
     description = "Application for uploading MMORPG combat logs";
     homepage = "https://www.archon.gg/download";
-    downloadPage = "https://github.com/RPGLogs/Uploaders-archon-lite/releases/tag/v${version}";
     license = lib.licenses.unfree; # no license listed
-    mainProgram = "archon-lite";
-    platforms = lib.platforms.linux;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       hekazu
       sophiebsw
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "archon-lite";
+    downloadPage = "https://github.com/RPGLogs/Uploaders-archon-lite/releases/tag/v${version}";
   };
 }

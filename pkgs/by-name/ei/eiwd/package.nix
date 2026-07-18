@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
+  docutils, # for manpages
+  openssl, # for tests
   pkg-config,
   python3Packages, # for tests
-  openssl, # for tests
   enableManpages ? true,
-  docutils, # for manpages
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,21 +33,12 @@ stdenv.mkDerivation (finalAttrs: {
     "test"
   ];
 
-  postUnpack = ''
-    patchShebangs .
-  '';
-
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
   ]
   ++ lib.optionals enableManpages [
     docutils # only for the man pages
-  ];
-
-  checkInputs = [
-    python3Packages.python
-    (lib.getBin openssl)
   ];
 
   configureFlags = [
@@ -57,10 +48,13 @@ stdenv.mkDerivation (finalAttrs: {
     "--disable-manual-pages"
   ];
 
-  enableParallelBuilding = true;
-
   # override this to false if you don't want to build python3
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  checkInputs = [
+    python3Packages.python
+    (lib.getBin openssl)
+  ];
 
   # prevent the `install-data-local` Makefile rule from running;
   # all it does is attempt to `mkdir` the `localstatedir`.
@@ -81,9 +75,15 @@ stdenv.mkDerivation (finalAttrs: {
     cp -a test/* $test/bin/
   '';
 
+  enableParallelBuilding = true;
+
+  postUnpack = ''
+    patchShebangs .
+  '';
+
   meta = {
-    homepage = "https://github.com/illiliti/eiwd/";
     description = "Fork of iwd (wifi daemon) which does not require dbus";
+    homepage = "https://github.com/illiliti/eiwd/";
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.linux;
   };

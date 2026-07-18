@@ -19,31 +19,13 @@ let
   };
 
   templates = fetchurl {
-    url = "https://cdn.functions.azure.com/public/TemplatesApi/${templatesVersion}.zip";
     hash = "sha256-YYKBwd69TIHQKF1r8BzlzIyDLJBcCqtAbK3FhNvA+5s=";
+    url = "https://cdn.functions.azure.com/public/TemplatesApi/${templatesVersion}.zip";
   };
 in
 buildDotnetModule {
-  pname = "azure-functions-core-tools";
   inherit src version;
-  projectFile = "src/Cli/func/Azure.Functions.Cli.csproj";
-  executables = [ "func" ];
-
-  nugetDeps = ./deps.json;
-  dotnet-sdk = dotnetCorePackages.sdk_10_0 // {
-    inherit
-      (dotnetCorePackages.combinePackages [
-        dotnetCorePackages.sdk_9_0
-        dotnetCorePackages.sdk_8_0
-      ])
-      packages
-      targetPackages
-      ;
-  };
-  nativeBuildInputs = [ go ];
-
-  linkNuGetPackagesAndSources = true;
-  useDotnetFromEnv = true;
+  pname = "azure-functions-core-tools";
 
   postPatch = ''
     templates_path="./out/obj/Azure.Functions.Cli/templates-staging"
@@ -54,18 +36,40 @@ buildDotnetModule {
       --replace-fail "CheckExitCode(\"/bin/bash" "CheckExitCode(\"${stdenv.shell}"
   '';
 
+  nativeBuildInputs = [ go ];
+
+  dotnet-sdk = dotnetCorePackages.sdk_10_0 // {
+    inherit
+      (dotnetCorePackages.combinePackages [
+        dotnetCorePackages.sdk_9_0
+        dotnetCorePackages.sdk_8_0
+      ])
+      packages
+      targetPackages
+      ;
+  };
+
+  executables = [ "func" ];
+  linkNuGetPackagesAndSources = true;
+  nugetDeps = ./deps.json;
+  projectFile = "src/Cli/func/Azure.Functions.Cli.csproj";
+  useDotnetFromEnv = true;
+
   meta = {
-    homepage = "https://github.com/Azure/azure-functions-core-tools";
     description = "Command line tools for Azure Functions";
-    mainProgram = "func";
+    homepage = "https://github.com/Azure/azure-functions-core-tools";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       mdarocha
       detegr
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-darwin"
     ];
+
+    mainProgram = "func";
   };
 }

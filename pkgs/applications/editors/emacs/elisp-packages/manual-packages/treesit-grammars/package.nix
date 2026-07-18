@@ -1,4 +1,4 @@
-{ pkgs, lib }:
+{ lib, pkgs }:
 
 let
   libExt = pkgs.stdenv.hostPlatform.extensions.sharedLibrary;
@@ -8,6 +8,7 @@ let
         lib.strings.removeSuffix "-grammar" (lib.strings.getName drv)
       )
     }${libExt}";
+
     path = "${drv}/parser";
   };
 

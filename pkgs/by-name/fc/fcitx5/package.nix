@@ -3,44 +3,44 @@
   stdenv,
   fetchurl,
   fetchFromGitHub,
-  pkg-config,
   buildPackages,
-  cmake,
-  kdePackages,
-  wayland-scanner,
   cairo,
-  pango,
+  cmake,
+  enchant,
   expat,
   fribidi,
-  wayland,
-  systemd,
-  wayland-protocols,
-  nlohmann_json,
-  isocodes,
-  xkeyboard_config,
-  enchant,
   gdk-pixbuf,
+  gettext,
+  isocodes,
+  kdePackages,
   libGL,
-  libuuid,
-  libselinux,
-  libxdmcp,
-  libsepol,
-  libxkbcommon,
-  libthai,
   libdatrie,
+  libselinux,
+  libsepol,
+  libthai,
+  libuuid,
   libxcb-keysyms,
   libxcb-util,
   libxcb-wm,
-  xcb-imdkit,
+  libxdmcp,
+  libxkbcommon,
   libxkbfile,
   nixosTests,
-  gettext,
+  nlohmann_json,
+  pango,
+  pkg-config,
+  systemd,
+  wayland,
+  wayland-protocols,
+  wayland-scanner,
+  xcb-imdkit,
+  xkeyboard_config,
 }:
 let
   enDictVer = "20121020";
   enDict = fetchurl {
-    url = "https://download.fcitx-im.org/data/en_dict-${enDictVer}.tar.gz";
     hash = "sha256-xEpdeEeSXuqeTS0EdI1ELNKN2SmaC1cu99kerE9abOs=";
+    url = "https://download.fcitx-im.org/data/en_dict-${enDictVer}.tar.gz";
   };
 in
 stdenv.mkDerivation rec {
@@ -55,9 +55,7 @@ stdenv.mkDerivation rec {
     fetchSubmodules = true;
   };
 
-  prePatch = ''
-    ln -s ${enDict} src/modules/spell/$(stripHash ${enDict})
-  '';
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -100,21 +98,24 @@ stdenv.mkDerivation rec {
     (lib.cmakeFeature "CMAKE_CROSSCOMPILING_EMULATOR" (stdenv.hostPlatform.emulator buildPackages))
   ];
 
-  strictDeps = true;
+  prePatch = ''
+    ln -s ${enDict} src/modules/spell/$(stripHash ${enDict})
+  '';
 
   passthru = {
-    updateScript = ./update.py;
     tests = {
       inherit (nixosTests) fcitx5;
     };
+
+    updateScript = ./update.py;
   };
 
   meta = {
     description = "Next generation of fcitx";
     homepage = "https://github.com/fcitx/fcitx5";
     license = lib.licenses.lgpl21Plus;
-    mainProgram = "fcitx5";
     maintainers = with lib.maintainers; [ poscat ];
     platforms = lib.platforms.linux;
+    mainProgram = "fcitx5";
   };
 }

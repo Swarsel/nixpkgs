@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
   dacite,
-  fetchFromGitHub,
   hatchling,
   pytest-asyncio,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyintelliclima";
   version = "0.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dvdinth";
@@ -22,7 +21,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-EHcnrynvNIfo31vZyh8tS/5JfFuEQGVlYzu4XyD3XCI=";
   };
 
-  pythonRelaxDeps = [ "dacite" ];
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [
     hatchling
@@ -34,12 +36,9 @@ buildPythonPackage (finalAttrs: {
     dacite
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyintelliclima" ];
+  pythonRelaxDeps = [ "dacite" ];
 
   meta = {
     description = "Python module for a HTTP API to communicate with the IntelliClima device server";

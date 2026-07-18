@@ -1,14 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
   pkgs,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication {
   pname = "dr14_tmeter";
   version = "1.0.16-unstable-2025-09-27";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "hboetes";
@@ -29,12 +28,13 @@ python3Packages.buildPythonApplication {
 
   # There are no tests
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Compute the DR14 of a given audio file according to the procedure described by the Pleasurize Music Foundation";
-    mainProgram = "dr14_tmeter";
     homepage = "https://github.com/hboetes/dr14_t.meter";
-    maintainers = with lib.maintainers; [ sciencentistguy ];
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ sciencentistguy ];
+    mainProgram = "dr14_tmeter";
   };
 }

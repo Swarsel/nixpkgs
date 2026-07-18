@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
   lib,
   fetchurl,
+  stdenvNoCC,
   unzip,
 }:
 
@@ -14,8 +14,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-Vvc432P7VQxCVcS7i7JwOx7ByhX+Ea0Oz7ogvAH8Xoo=";
   };
 
-  sourceRoot = ".";
-
   nativeBuildInputs = [ unzip ];
 
   installPhase = ''
@@ -25,12 +23,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
+
   meta = {
     description = "Visual tool to view, edit, and model Realm databases";
     homepage = "https://www.mongodb.com/docs/atlas/device-sdks/studio/";
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ matteopacini ];
     platforms = lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  zlib,
-  python3,
   bzip2,
+  python3,
   xz,
+  zlib,
 }:
 
 stdenv.mkDerivation rec {
@@ -31,15 +31,15 @@ stdenv.mkDerivation rec {
     xz
   ];
 
-  cxx = if stdenv.cc.isClang then "clang++" else "g++";
-  cc = if stdenv.cc.isClang then "clang" else "gcc";
   buildPhase = "make prefix=$out SHELL=${stdenv.shell} CXX=${cxx} CC=${cc} -j $NIX_BUILD_CORES";
   installPhase = "make prefix=$out SHELL=${stdenv.shell} CXX=${cxx} CC=${cc} install";
+  cc = if stdenv.cc.isClang then "clang" else "gcc";
+  cxx = if stdenv.cc.isClang then "clang++" else "g++";
 
   meta = {
     description = "Powerful toolset for genome arithmetic";
-    license = lib.licenses.gpl2;
     homepage = "https://bedtools.readthedocs.io/en/latest/";
+    license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ jbedo ];
     platforms = lib.platforms.unix;
   };

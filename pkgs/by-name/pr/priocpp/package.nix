@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   fmt,
   gtest,
-  logmich,
-  tinycmmc,
   jsoncpp,
+  logmich,
+  pkg-config,
   sexp-cpp,
+  tinycmmc,
 }:
 
 stdenv.mkDerivation {
@@ -27,6 +27,7 @@ stdenv.mkDerivation {
     cmake
     pkg-config
   ];
+
   propagatedBuildInputs = [
     fmt
     gtest
@@ -48,8 +49,8 @@ stdenv.mkDerivation {
   meta = {
     description = "Property I/O for C++";
     homepage = "https://github.com/Grumbel/priocpp";
+    license = lib.licenses.free;
     maintainers = [ lib.maintainers.SchweGELBin ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.free;
   };
 }

@@ -1,10 +1,10 @@
 {
-  python,
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
   cmake,
   ninja,
+  python,
   qt5,
   shiboken2,
 }:
@@ -45,13 +45,6 @@ stdenv.mkDerivation rec {
     done
   '';
 
-  cmakeFlags = [
-    "-DBUILD_TESTS=OFF"
-    "-DPYTHON_EXECUTABLE=${python.interpreter}"
-  ];
-
-  env.NIX_CFLAGS_COMPILE = "-I${qt5.qtdeclarative.dev}/include/QtQuick/${qt5.qtdeclarative.version}/QtQuick";
-
   nativeBuildInputs = [
     cmake
     ninja
@@ -84,7 +77,12 @@ stdenv.mkDerivation rec {
 
   propagatedBuildInputs = [ shiboken2 ];
 
-  dontWrapQtApps = true;
+  cmakeFlags = [
+    "-DBUILD_TESTS=OFF"
+    "-DPYTHON_EXECUTABLE=${python.interpreter}"
+  ];
+
+  env.NIX_CFLAGS_COMPILE = "-I${qt5.qtdeclarative.dev}/include/QtQuick/${qt5.qtdeclarative.version}/QtQuick";
 
   postInstall = ''
     cd ../../..
@@ -92,10 +90,12 @@ stdenv.mkDerivation rec {
     cp -r PySide2.egg-info $out/${python.sitePackages}/
   '';
 
+  dontWrapQtApps = true;
+
   meta = {
     description = "LGPL-licensed Python bindings for Qt";
-    license = lib.licenses.lgpl21;
     homepage = "https://wiki.qt.io/Qt_for_Python";
+    license = lib.licenses.lgpl21;
     maintainers = [ ];
     platforms = lib.platforms.all;
     broken = stdenv.hostPlatform.isDarwin;

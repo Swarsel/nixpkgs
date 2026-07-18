@@ -1,16 +1,15 @@
 {
-  buildDunePackage,
-  multipart_form,
   angstrom,
   bigstringaf,
+  buildDunePackage,
   eio,
   ke,
+  multipart_form,
 }:
 
 buildDunePackage {
-  pname = "multipart_form-eio";
-
   inherit (multipart_form) version src meta;
+  pname = "multipart_form-eio";
 
   propagatedBuildInputs = [
     angstrom

@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  flex,
   bison,
   fftw,
-  withNgshared ? true,
+  flex,
   libxaw,
   libxext,
   llvmPackages,
   readline,
+  withNgshared ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -70,14 +70,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Next Generation Spice (Electronic Circuit Simulator)";
-    mainProgram = "ngspice";
     homepage = "http://ngspice.sourceforge.net";
+
     license = with lib.licenses; [
       bsd3
       gpl2Plus
       lgpl2Plus
     ]; # See https://sourceforge.net/p/ngspice/ngspice/ci/master/tree/COPYING
+
     maintainers = with lib.maintainers; [ bgamari ];
     platforms = lib.platforms.unix;
+    mainProgram = "ngspice";
   };
 })

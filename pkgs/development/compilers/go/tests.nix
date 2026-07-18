@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  go,
+  bintools,
   buildGoModule,
+  go,
+  runCommand,
   # A package that relies on CGO
   skopeo,
   testers,
-  runCommand,
-  bintools,
   # A package with CGO_ENABLED=0
   uplosi,
 }:
@@ -18,12 +18,13 @@ let
   expectedCgoDisabledType = "EXE";
 in
 {
-  skopeo = testers.testVersion { package = skopeo'; };
   version = testers.testVersion {
-    package = go;
-    command = "go version";
     version = "go${go.version}";
+    command = "go version";
+    package = go;
   };
+
+  skopeo = testers.testVersion { package = skopeo'; };
   uplosi = testers.testVersion { package = uplosi'; };
 }
 # bin type tests assume ELF file + linux-specific exe types
@@ -41,6 +42,7 @@ in
       exit 1
     fi
   '';
+
   uplosi-bin-type = runCommand "uplosi-bin-type" { meta.broken = stdenv.hostPlatform.isStatic; } ''
     bin="${lib.getExe uplosi'}"
     ${lib.optionalString (stdenv.buildPlatform == stdenv.targetPlatform) ''

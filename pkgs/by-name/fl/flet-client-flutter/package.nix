@@ -1,20 +1,20 @@
 {
   lib,
   fetchFromGitHub,
-  pkg-config,
+  _experimental-update-script-combinators,
   flutter338,
+  gitUpdater,
   gst_all_1,
+  libplacebo,
   libunwind,
   makeWrapper,
   mimalloc,
-  orc,
-  python3,
-  nix,
-  gitUpdater,
-  nix-prefetch-git,
   mpv-unwrapped,
-  libplacebo,
-  _experimental-update-script-combinators,
+  nix,
+  nix-prefetch-git,
+  orc,
+  pkg-config,
+  python3,
   fletTarget ? "linux",
 }:
 
@@ -28,18 +28,6 @@ flutter338.buildFlutterApplication rec {
     tag = "v${version}";
     hash = "sha256-PxSFDWo5qN9RB/E+vLu1xYttJ8CQdy86OStyLMRn6Lo=";
   };
-
-  sourceRoot = "${src.name}/client";
-
-  gitHashes = lib.importJSON ./git_hashes.json;
-
-  cmakeFlags = [
-    "-DMIMALLOC_LIB=${mimalloc}/lib/mimalloc.o"
-  ];
-
-  targetFlutterPlatform = fletTarget;
-
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
 
   nativeBuildInputs = [
     makeWrapper
@@ -60,9 +48,18 @@ flutter338.buildFlutterApplication rec {
   ++ mpv-unwrapped.buildInputs
   ++ libplacebo.buildInputs;
 
+  cmakeFlags = [
+    "-DMIMALLOC_LIB=${mimalloc}/lib/mimalloc.o"
+  ];
+
   env.NIX_CFLAGS_COMPILE = toString [
     "-Wno-error=nontrivial-memcall"
   ];
+
+  gitHashes = lib.importJSON ./git_hashes.json;
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
+  sourceRoot = "${src.name}/client";
+  targetFlutterPlatform = fletTarget;
 
   passthru = {
     updateScript = _experimental-update-script-combinators.sequence [
@@ -80,6 +77,7 @@ flutter338.buildFlutterApplication rec {
           "python3"
           ./update-lockfiles.py
         ];
+
         supportedFeatures = [ "silent" ];
       }
     ];
@@ -90,9 +88,11 @@ flutter338.buildFlutterApplication rec {
     homepage = "https://flet.dev/";
     changelog = "https://github.com/flet-dev/flet/releases/tag/v${version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       heyimnova
     ];
+
     mainProgram = "flet";
   };
 }

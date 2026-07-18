@@ -2,33 +2,33 @@
   lib,
   stdenv,
   fetchurl,
-  replaceVars,
-  pkg-config,
   autoreconfHook,
-  gobject-introspection,
-  wrapGAppsHook3,
+  avahi,
+  bash,
   cups,
-  zlib,
-  libjpeg,
-  libusb1,
-  python3Packages,
-  sane-backends,
   dbus,
   file,
   ghostscript,
-  usbutils,
+  gobject-introspection,
+  libjpeg,
+  libusb1,
   net-snmp,
+  net-tools,
   openssl,
   perl,
-  net-tools,
-  avahi,
-  bash,
-  util-linux,
+  pkg-config,
+  python3Packages,
+  qt5,
   # To remove references to gcc-unwrapped
   removeReferencesTo,
-  qt5,
-  withQt5 ? true,
+  replaceVars,
+  sane-backends,
+  usbutils,
+  util-linux,
+  wrapGAppsHook3,
+  zlib,
   withPlugin ? false,
+  withQt5 ? true,
   withStaticPPDInstall ? false,
 }:
 
@@ -43,13 +43,14 @@ let
   };
 
   plugin = fetchurl {
-    url = "https://developers.hp.com/sites/default/files/2026-05/hplip-${version}-plugin.run";
     # HTTP 403 otherwise
     curlOptsList = [
       "--user-agent"
       "Mozilla/5.0 Gecko/20100101 Firefox/150.0"
     ];
+
     hash = "sha256-GZ94+K9/NolNcYDpCQljziVQp17HAfikujdmWpdG/fA=";
+    url = "https://developers.hp.com/sites/default/files/2026-05/hplip-${version}-plugin.run";
   };
 
   hplipState = replaceVars ./hplip.state {
@@ -57,11 +58,11 @@ let
   };
 
   hplipPlatforms = {
-    i686-linux = "x86_32";
-    x86_64-linux = "x86_64";
+    aarch64-linux = "arm64";
     armv6l-linux = "arm32";
     armv7l-linux = "arm32";
-    aarch64-linux = "arm64";
+    i686-linux = "x86_32";
+    x86_64-linux = "x86_64";
   };
 
   hplipArch =
@@ -79,69 +80,6 @@ in
 
 python3Packages.buildPythonApplication {
   inherit pname version;
-  pyproject = false;
-
-  srcs = [ src ] ++ lib.optional withPlugin plugin;
-
-  unpackCmd = lib.optionalString withPlugin ''
-    if ! [[ "$curSrc" =~ -plugin\.run$ ]]; then return 1; fi # fallback to regular unpackCmdHooks
-
-    # Unpack plugin shar
-    sh "$curSrc" --noexec --keep
-  '';
-
-  sourceRoot = "hplip-${version}";
-
-  buildInputs = [
-    libjpeg
-    cups
-    libusb1
-    sane-backends
-    dbus
-    file
-    ghostscript
-    net-snmp
-    openssl
-    perl
-    zlib
-    avahi
-  ]
-  ++ lib.optionals withQt5 [
-    qt5.qtwayland
-  ];
-
-  nativeBuildInputs = [
-    pkg-config
-    removeReferencesTo
-    autoreconfHook
-    gobject-introspection
-    wrapGAppsHook3
-  ]
-  ++ lib.optional withQt5 qt5.wrapQtAppsHook;
-
-  pythonPath =
-    with python3Packages;
-    [
-      dbus
-      pillow
-      pygobject3
-      reportlab
-      usbutils
-      dbus-python
-      distro
-      distutils
-    ]
-    ++ lib.optionals withQt5 [
-      pyqt5
-      pyqt5-sip
-    ];
-
-  makeWrapperArgs = [
-    "--prefix"
-    "PATH"
-    ":"
-    "${net-tools}/bin"
-  ];
 
   patches = [
     # HPLIP's getSystemPPDs() function relies on searching for PPDs below common FHS
@@ -154,8 +92,8 @@ python3Packages.buildPythonApplication {
 
     # Remove all ImageProcessor functionality since that is closed source
     (fetchurl {
-      url = "https://web.archive.org/web/20230226174550/https://sources.debian.org/data/main/h/hplip/3.22.10+dfsg0-1/debian/patches/0028-Remove-ImageProcessor-binary-installs.patch";
       hash = "sha256-tNYccuwrcx5WCe7ULk8r8J6MVcUytGspiW64zAvO0qI=";
+      url = "https://web.archive.org/web/20230226174550/https://sources.debian.org/data/main/h/hplip/3.22.10+dfsg0-1/debian/patches/0028-Remove-ImageProcessor-binary-installs.patch";
     })
   ];
 
@@ -185,6 +123,33 @@ python3Packages.buildPythonApplication {
 
     echo 'AUTOMAKE_OPTIONS = foreign' >> Makefile.am
   '';
+
+  nativeBuildInputs = [
+    pkg-config
+    removeReferencesTo
+    autoreconfHook
+    gobject-introspection
+    wrapGAppsHook3
+  ]
+  ++ lib.optional withQt5 qt5.wrapQtAppsHook;
+
+  buildInputs = [
+    libjpeg
+    cups
+    libusb1
+    sane-backends
+    dbus
+    file
+    ghostscript
+    net-snmp
+    openssl
+    perl
+    zlib
+    avahi
+  ]
+  ++ lib.optionals withQt5 [
+    qt5.qtwayland
+  ];
 
   configureFlags =
     let
@@ -223,15 +188,6 @@ python3Packages.buildPythonApplication {
       "hplip_statedir=${out}/var/lib/hp"
     ];
 
-  postConfigure = ''
-    # don't save timestamp, in order to improve reproducibility
-    substituteInPlace Makefile \
-      --replace "GZIP_ENV = --best" "GZIP_ENV = --best -n"
-  '';
-
-  enableParallelBuilding = true;
-  enableParallelInstalling = false;
-
   env = {
     # Prevent 'ppdc: Unable to find include file "<font.defs>"' which prevent
     # generation of '*.ppd' files.
@@ -247,6 +203,12 @@ python3Packages.buildPythonApplication {
       "-Wno-error=incompatible-pointer-types"
     ];
   };
+
+  postConfigure = ''
+    # don't save timestamp, in order to improve reproducibility
+    substituteInPlace Makefile \
+      --replace "GZIP_ENV = --best" "GZIP_ENV = --best -n"
+  '';
 
   #
   # Running `hp-diagnose_plugin -g` can be used to diagnose
@@ -300,16 +262,6 @@ python3Packages.buildPythonApplication {
     popd
   '';
 
-  # The installed executables are just symlinks into $out/share/hplip,
-  # but wrapPythonPrograms ignores symlinks. We cannot replace the Python
-  # modules in $out/share/hplip with wrapper scripts because they import
-  # each other as libraries. Instead, we emulate wrapPythonPrograms by
-  # 1. Calling patchPythonProgram on the original script in $out/share/hplip
-  # 2. Making our own wrapper pointing directly to the original script.
-  dontWrapPythonPrograms = true;
-  # We also avoid double (or triple in case qt5 support is added) wrapping
-  dontWrapGApps = true;
-  dontWrapQtApps = true;
   preFixup = ''
     buildPythonPath "$out ''${pythonPath[*]}"
 
@@ -339,6 +291,48 @@ python3Packages.buildPythonApplication {
     remove-references-to -t ${stdenv.cc.cc} $(readlink -f $out/lib/*.so)
   '';
 
+  # We also avoid double (or triple in case qt5 support is added) wrapping
+  dontWrapGApps = true;
+  # The installed executables are just symlinks into $out/share/hplip,
+  # but wrapPythonPrograms ignores symlinks. We cannot replace the Python
+  # modules in $out/share/hplip with wrapper scripts because they import
+  # each other as libraries. Instead, we emulate wrapPythonPrograms by
+  # 1. Calling patchPythonProgram on the original script in $out/share/hplip
+  # 2. Making our own wrapper pointing directly to the original script.
+  dontWrapPythonPrograms = true;
+  dontWrapQtApps = true;
+  enableParallelBuilding = true;
+  enableParallelInstalling = false;
+
+  makeWrapperArgs = [
+    "--prefix"
+    "PATH"
+    ":"
+    "${net-tools}/bin"
+  ];
+
+  pyproject = false;
+
+  pythonPath =
+    with python3Packages;
+    [
+      dbus
+      pillow
+      pygobject3
+      reportlab
+      usbutils
+      dbus-python
+      distro
+      distutils
+    ]
+    ++ lib.optionals withQt5 [
+      pyqt5
+      pyqt5-sip
+    ];
+
+  sourceRoot = "hplip-${version}";
+  srcs = [ src ] ++ lib.optional withPlugin plugin;
+
   # There are some binaries there, which reference gcc-unwrapped otherwise.
   stripDebugList = [
     "share/hplip"
@@ -348,10 +342,17 @@ python3Packages.buildPythonApplication {
     "lib/sane"
   ];
 
+  unpackCmd = lib.optionalString withPlugin ''
+    if ! [[ "$curSrc" =~ -plugin\.run$ ]]; then return 1; fi # fallback to regular unpackCmdHooks
+
+    # Unpack plugin shar
+    sh "$curSrc" --noexec --keep
+  '';
+
   meta = {
     description = "Print, scan and fax HP drivers for Linux";
     homepage = "https://developers.hp.com/hp-linux-imaging-and-printing";
-    downloadPage = "https://sourceforge.net/projects/hplip/files/hplip/";
+
     license =
       if withPlugin then
         lib.licenses.unfree
@@ -362,7 +363,9 @@ python3Packages.buildPythonApplication {
           bsd2
           gpl2Plus
         ];
-    platforms = lib.attrNames hplipPlatforms;
+
     maintainers = [ ];
+    platforms = lib.attrNames hplipPlatforms;
+    downloadPage = "https://sourceforge.net/projects/hplip/files/hplip/";
   };
 }

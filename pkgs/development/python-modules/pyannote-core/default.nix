@@ -1,24 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   hatch-vcs,
   hatchling,
-
   # dependencies
   numpy,
   pandas,
-  sortedcontainers,
-
   pytestCheckHook,
+  sortedcontainers,
 }:
 
 buildPythonPackage rec {
   pname = "pyannote-core";
   version = "6.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyannote";
@@ -26,6 +22,10 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-r5NkOAzrQGcb6LPi4/DA0uT9R0ELiYuwQkbT1l6R8Mw=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     hatch-vcs
@@ -38,10 +38,7 @@ buildPythonPackage rec {
     sortedcontainers
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyannote.core" ];
 
   meta = {

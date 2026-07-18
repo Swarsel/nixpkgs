@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   scdoc,
@@ -27,9 +27,9 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
+    description = "Simple named pipe management utility";
     homepage = "https://github.com/Ferdi265/pipectl";
     license = lib.licenses.gpl3;
-    description = "Simple named pipe management utility";
     maintainers = [ ];
     mainProgram = "pipectl";
   };

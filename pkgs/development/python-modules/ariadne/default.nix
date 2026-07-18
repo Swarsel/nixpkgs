@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   freezegun,
   graphql-core,
   hatchling,
@@ -20,7 +20,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "ariadne";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mirumee";
@@ -28,14 +27,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-V5/4kLdb3Apnnq91HQ3eApl1R2+pqeWhWi5Y0ULqJrI=";
   };
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    graphql-core
-    starlette
-    typing-extensions
-  ];
 
   nativeCheckInputs = [
     freezegun
@@ -49,13 +40,22 @@ buildPythonPackage (finalAttrs: {
     werkzeug
   ];
 
-  pythonImportsCheck = [ "ariadne" ];
+  build-system = [ hatchling ];
+
+  dependencies = [
+    graphql-core
+    starlette
+    typing-extensions
+  ];
 
   disabledTestPaths = [
     # missing graphql-sync-dataloader test dep
     "tests/test_dataloaders.py"
     "tests/wsgi/test_configuration.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "ariadne" ];
 
   meta = {
     description = "Python library for implementing GraphQL servers using schema-first approach";

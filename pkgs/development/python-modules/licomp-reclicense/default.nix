@@ -1,24 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  jsonschema,
   # dependencies
   licomp,
-
   # tests
   pytestCheckHook,
-  jsonschema,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "licomp-reclicense";
   version = "0.5.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "hesa";
@@ -26,6 +21,13 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-dCUsSZ70iKNCk8QcTtQ6Kn8BdyqK2E3Arkfx4aHmhmM=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    jsonschema
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -35,10 +37,7 @@ buildPythonPackage (finalAttrs: {
     licomp
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    jsonschema
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "licomp_reclicense"
@@ -48,10 +47,12 @@ buildPythonPackage (finalAttrs: {
     description = "Implementation of Licomp using the Recliense matrix";
     homepage = "https://github.com/hesa/licomp-reclicense";
     changelog = "https://github.com/hesa/licomp-reclicense/releases/tag/${finalAttrs.src.tag}";
+
     license = with lib.licenses; [
       gpl3Plus
       mulan-psl2
     ];
+
     maintainers = with lib.maintainers; [ eljamm ];
     teams = with lib.teams; [ ngi ];
   };

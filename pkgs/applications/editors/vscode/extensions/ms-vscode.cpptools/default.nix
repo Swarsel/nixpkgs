@@ -1,16 +1,16 @@
 {
   lib,
-  vscode-utils,
-  jq,
-  clang-tools,
-  gdbUseFixed ? true,
-  gdb, # The gdb default setting will be fixed to specified. Use version from `PATH` otherwise.
-  autoPatchelfHook,
-  makeWrapper,
   stdenv,
-  lttng-ust,
+  autoPatchelfHook,
+  clang-tools,
+  gdb, # The gdb default setting will be fixed to specified. Use version from `PATH` otherwise.
+  jq,
   libkrb5,
+  lttng-ust,
+  makeWrapper,
+  vscode-utils,
   zlib,
+  gdbUseFixed ? true,
 }:
 
 /*
@@ -41,17 +41,19 @@ let
   isx86Linux = stdenv.hostPlatform.system == "x86_64-linux";
   isDarwin = stdenv.hostPlatform.isDarwin;
   supported = {
-    x86_64-linux = {
-      hash = "sha256-KTGDbX/T1BhoYxEjqPmPTAkyNjGDEV1Ao4nMIhHpGys=";
-      arch = "linux-x64";
-    };
-    aarch64-linux = {
-      hash = "sha256-4gl6sVgWAkV2XJFOipVbBUDGG1ncm41TjSoFnRW78m0=";
-      arch = "linux-arm64";
-    };
     aarch64-darwin = {
-      hash = "sha256-EMkq7Y0Eo629GzW6pDL1UYijyvLU6sp7YxPaKm0va6s=";
       arch = "darwin-arm64";
+      hash = "sha256-EMkq7Y0Eo629GzW6pDL1UYijyvLU6sp7YxPaKm0va6s=";
+    };
+
+    aarch64-linux = {
+      arch = "linux-arm64";
+      hash = "sha256-4gl6sVgWAkV2XJFOipVbBUDGG1ncm41TjSoFnRW78m0=";
+    };
+
+    x86_64-linux = {
+      arch = "linux-x64";
+      hash = "sha256-KTGDbX/T1BhoYxEjqPmPTAkyNjGDEV1Ao4nMIhHpGys=";
     };
   };
 
@@ -60,27 +62,6 @@ let
       or (throw "unsupported platform ${stdenv.hostPlatform.system}");
 in
 vscode-utils.buildVscodeMarketplaceExtension {
-  mktplcRef = base // {
-    name = "cpptools";
-    publisher = "ms-vscode";
-    version = "1.32.2";
-  };
-
-  nativeBuildInputs = [
-    autoPatchelfHook
-    makeWrapper
-  ];
-
-  buildInputs = [
-    jq
-    libkrb5
-    zlib
-    (lib.getLib stdenv.cc.cc)
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [ lttng-ust ];
-
-  dontAutoPatchelf = isx86Linux || isDarwin;
-
   postPatch = ''
     mv ./package.json ./package_orig.json
 
@@ -112,6 +93,19 @@ vscode-utils.buildVscodeMarketplaceExtension {
     chmod +x debugAdapters/lldb-mi/bin/lldb-mi
   '';
 
+  nativeBuildInputs = [
+    autoPatchelfHook
+    makeWrapper
+  ];
+
+  buildInputs = [
+    jq
+    libkrb5
+    zlib
+    (lib.getLib stdenv.cc.cc)
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [ lttng-ust ];
+
   # On aarch64 the binaries are statically linked
   # but on x86 they are not.
   postFixup =
@@ -126,19 +120,29 @@ vscode-utils.buildVscodeMarketplaceExtension {
       wrapProgram $out/share/vscode/extensions/ms-vscode.cpptools/debugAdapters/bin/OpenDebugAD7 --prefix PATH : ${lib.makeBinPath [ gdb ]}
     '';
 
+  dontAutoPatchelf = isx86Linux || isDarwin;
+
+  mktplcRef = base // {
+    version = "1.32.2";
+    name = "cpptools";
+    publisher = "ms-vscode";
+  };
+
   meta = {
     description = "C/C++ extension adds language support for C/C++ to Visual Studio Code, including features such as IntelliSense and debugging";
     homepage = "https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools";
     license = lib.licenses.unfree;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       jraygauthier
       stargate01
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
   };
 }

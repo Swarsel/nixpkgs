@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  cmake,
+  stdenv,
   fetchFromGitHub,
+  cmake,
 }:
 
 stdenv.mkDerivation {
@@ -16,13 +16,12 @@ stdenv.mkDerivation {
     hash = "sha256-Cj0n7fwFAu6+3ojgczL0Unobdx/XzGNFvNVMXdyHXE4=";
   };
 
-  nativeBuildInputs = [ cmake ];
-
-  cmakeFlags = [ "-DENABLE_SHARED=ON" ];
-
   patches = [
     ./cmake4.patch
   ];
+
+  nativeBuildInputs = [ cmake ];
+  cmakeFlags = [ "-DENABLE_SHARED=ON" ];
 
   meta = {
     description = "Fastest Fourier Transform in the South";

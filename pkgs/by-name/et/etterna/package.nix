@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeDesktopItem,
-  copyDesktopItems,
+  alsa-lib,
   # deps
   cmake,
-  pkg-config,
-  openssl,
+  copyDesktopItems,
   libGLU,
-  libxvmc,
-  libxrandr,
-  libxinerama,
-  libxext,
-  libx11,
-  alsa-lib,
   libjack2,
-  libpulseaudio,
   libogg,
+  libpulseaudio,
+  libx11,
+  libxext,
+  libxinerama,
+  libxrandr,
+  libxvmc,
+  makeDesktopItem,
+  openssl,
+  pkg-config,
   sse2neon,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -61,23 +61,7 @@ stdenv.mkDerivation (finalAttrs: {
     libxvmc
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "etterna";
-      desktopName = "Etterna";
-      genericName = "Rhythm and dance game";
-      icon = "etterna";
-      tryExec = "etterna";
-      exec = "etterna";
-      categories = [
-        "Application"
-        "Game"
-        "ArcadeGame"
-      ];
-      comment = "A cross-platform rhythm video game.";
-      terminal = false;
-    })
-  ];
+  cmakeFlags = [ "-D WITH_CRASHPAD=OFF" ];
 
   installPhase = ''
     runHook preInstall
@@ -106,7 +90,24 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  cmakeFlags = [ "-D WITH_CRASHPAD=OFF" ];
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Application"
+        "Game"
+        "ArcadeGame"
+      ];
+
+      comment = "A cross-platform rhythm video game.";
+      desktopName = "Etterna";
+      exec = "etterna";
+      genericName = "Rhythm and dance game";
+      icon = "etterna";
+      name = "etterna";
+      terminal = false;
+      tryExec = "etterna";
+    })
+  ];
 
   meta = {
     description = "Advanced cross-platform rhythm game focused on keyboard play";
@@ -114,10 +115,12 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/etternagame/etterna/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ alikindsys ];
-    mainProgram = "etterna";
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
+    mainProgram = "etterna";
   };
 })

@@ -2,30 +2,30 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
-  cmake,
-  rocm-cmake,
-  clr,
-  pkg-config,
-  rpp,
-  rocblas,
-  miopen,
-  migraphx,
-  openmp,
-  protobuf,
-  qtcreator,
-  opencv,
-  ffmpeg,
   boost,
+  clr,
+  cmake,
+  ffmpeg,
   half,
   lmdb,
-  rapidjson,
-  rocm-docs-core,
+  migraphx,
+  miopen,
+  opencv,
+  openmp,
+  pkg-config,
+  protobuf,
   python3Packages,
-  useOpenCL ? false,
-  useCPU ? false,
+  qtcreator,
+  rapidjson,
+  rocblas,
+  rocm-cmake,
+  rocm-docs-core,
+  rocmUpdateScript,
+  rpp,
   buildDocs ? false, # Needs internet
   gpuTargets ? clr.localGpuTargets or [ ],
+  useCPU ? false,
+  useOpenCL ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -52,6 +52,15 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     ./0001-set-__STDC_CONSTANT_MACROS-to-make-rocAL-compile.patch
   ];
+
+  postPatch = ''
+    ${lib.optionalString (!useOpenCL && !useCPU) ''
+      # Properly find miopen
+      substituteInPlace amd_openvx_extensions/CMakeLists.txt \
+        --replace-fail "miopen     PATHS \''${ROCM_PATH} QUIET" "miopen PATHS ${miopen} QUIET" \
+        --replace-fail "\''${ROCM_PATH}/include/miopen/config.h" "${miopen}/include/miopen/config.h"
+    ''}
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -112,15 +121,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-DBACKEND=CPU"
   ];
 
-  postPatch = ''
-    ${lib.optionalString (!useOpenCL && !useCPU) ''
-      # Properly find miopen
-      substituteInPlace amd_openvx_extensions/CMakeLists.txt \
-        --replace-fail "miopen     PATHS \''${ROCM_PATH} QUIET" "miopen PATHS ${miopen} QUIET" \
-        --replace-fail "\''${ROCM_PATH}/include/miopen/config.h" "${miopen}/include/miopen/config.h"
-    ''}
-  '';
-
   postBuild = lib.optionalString buildDocs ''
     python3 -m sphinx -T -E -b html -d _build/doctrees -D language=en ../docs _build/html
   '';
@@ -131,8 +131,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Set of comprehensive computer vision and machine intelligence libraries, utilities, and applications";
     homepage = "https://github.com/ROCm/MIVisionX";
     license = with lib.licenses; [ mit ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
     broken = useOpenCL;
+    teams = [ lib.teams.rocm ];
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   dacite,
   orjson,
   pytest-asyncio,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "zadnegoale";
   version = "0.7.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "bieniu";
@@ -36,6 +35,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "zadnegoale" ];
 
   meta = {

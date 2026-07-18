@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  installShellFiles,
   gnumake,
-  pkg-config,
-  libusb1,
   hidapi,
+  installShellFiles,
+  libusb1,
+  pkg-config,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "icesprog";
@@ -19,7 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-LGmT+GEZvo0oxmr2kMfSztutnguPpNt2QJfVyBJo82w=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/tools/src";
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -41,11 +40,13 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/tools/src";
+
   meta = {
     description = "iCESugar FPGA flash utility";
-    mainProgram = "icesprog";
+    homepage = "https://github.com/wuxx/icesugar";
     license = with lib.licenses; [ gpl2Only ];
     maintainers = with lib.maintainers; [ RossComputerGuy ];
-    homepage = "https://github.com/wuxx/icesugar";
+    mainProgram = "icesprog";
   };
 })

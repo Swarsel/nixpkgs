@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   kdePackages,
@@ -18,7 +18,10 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  dontWrapQtApps = true;
+  nativeBuildInputs = [
+    cmake
+    kdePackages.extra-cmake-modules
+  ];
 
   buildInputs = with kdePackages; [
     ki18n
@@ -29,25 +32,21 @@ stdenv.mkDerivation (finalAttrs: {
     kcmutils
   ];
 
-  nativeBuildInputs = [
-    cmake
-    kdePackages.extra-cmake-modules
-  ];
-
   cmakeFlags = [
     "-DBUILD_TESTING=OFF"
     "-DBUILD_WITH_QT6=ON"
     "-DQT_MAJOR_VERSION=6"
   ];
 
+  dontWrapQtApps = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    inherit (kdePackages.krunner.meta) platforms;
     description = "Krunner Plugin which allows you to open your recent JetBrains projects";
     homepage = "https://github.com/alex1701c/JetBrainsRunner";
-    sourceProvenance = with lib.sourceTypes; [ fromSource ];
     license = lib.licenses.lgpl3Only;
+    sourceProvenance = with lib.sourceTypes; [ fromSource ];
     maintainers = with lib.maintainers; [ js6pak ];
-    inherit (kdePackages.krunner.meta) platforms;
   };
 })

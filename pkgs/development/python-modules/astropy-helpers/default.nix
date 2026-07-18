@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "astropy-helpers";
   version = "4.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "astropy";
@@ -23,7 +22,7 @@ buildPythonPackage rec {
   ];
 
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "astropy_helpers" ];
 
   meta = {

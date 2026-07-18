@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "xxhash";
   version = "3.6.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "xxhash" ];
 
   meta = {

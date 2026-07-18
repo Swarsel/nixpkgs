@@ -15,14 +15,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchurl {
-      url = "https://github.com/Homebrew/formula-patches/raw/bb92449ad6b3878b4d6f472237152df28080df86/uni2ascii/uni2ascii-4.20.patch";
       hash = "sha256-JQpSntoTbQ7fnmO5Km/pX071360/lOb9jYdxOK2oV/g=";
+      url = "https://github.com/Homebrew/formula-patches/raw/bb92449ad6b3878b4d6f472237152df28080df86/uni2ascii/uni2ascii-4.20.patch";
     })
   ];
 
   meta = {
-    license = lib.licenses.gpl3;
-    homepage = "http://billposer.org/Software/uni2ascii.html";
     description = "Converts between UTF-8 and many 7-bit ASCII equivalents and back";
 
     longDescription = ''
@@ -46,6 +44,9 @@ stdenv.mkDerivation (finalAttrs: {
       It also provides ways of converting non-ASCII characters to
       similar ASCII characters, e.g. by stripping diacritics.
     '';
+
+    homepage = "http://billposer.org/Software/uni2ascii.html";
+    license = lib.licenses.gpl3;
     maintainers = [ ];
     platforms = lib.platforms.all;
   };

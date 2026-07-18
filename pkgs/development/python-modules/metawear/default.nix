@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  cython,
-  boost,
   bluez,
+  boost,
+  buildPythonPackage,
+  cython,
+  fetchPypi,
   nlohmann_json,
   pyserial,
   requests,
@@ -14,12 +14,18 @@
 buildPythonPackage rec {
   pname = "metawear";
   version = "1.0.8";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-gNEI6P6GslNd1DzFwCFndVIfUvSTPYollGdqkZhQ4Y8=";
   };
+
+  postPatch = ''
+    # remove vendored nlohmann_json
+    rm MetaWear-SDK-Cpp/src/metawear/dfu/cpp/json.hpp
+    substituteInPlace MetaWear-SDK-Cpp/src/metawear/dfu/cpp/file_operations.cpp \
+        --replace '#include "json.hpp"' '#include <nlohmann/json.hpp>'
+  '';
 
   nativeBuildInputs = [ cython ];
 
@@ -29,13 +35,6 @@ buildPythonPackage rec {
     nlohmann_json
   ];
 
-  postPatch = ''
-    # remove vendored nlohmann_json
-    rm MetaWear-SDK-Cpp/src/metawear/dfu/cpp/json.hpp
-    substituteInPlace MetaWear-SDK-Cpp/src/metawear/dfu/cpp/file_operations.cpp \
-        --replace '#include "json.hpp"' '#include <nlohmann/json.hpp>'
-  '';
-
   propagatedBuildInputs = [
     pyserial
     requests
@@ -43,6 +42,7 @@ buildPythonPackage rec {
   ];
 
   enableParallelBuilding = true;
+  format = "setuptools";
 
   pythonImportsCheck = [
     "mbientlab"

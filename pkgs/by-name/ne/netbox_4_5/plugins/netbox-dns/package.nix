@@ -1,15 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   dnspython,
+  setuptools,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "netbox-plugin-dns";
   version = "1.5.10";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "peteeckel";
@@ -18,20 +16,22 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-wxTW/qiwp+1CXUeCDJnllEW2oCTjlFVUot7JfWPooaw=";
   };
 
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
     dnspython
   ];
 
-  # pythonImportsCheck fails due to improperly configured django app
+  pyproject = true;
 
+  # pythonImportsCheck fails due to improperly configured django app
   meta = {
     description = "Netbox plugin for managing DNS data";
     homepage = "https://github.com/peteeckel/netbox-plugin-dns";
     changelog = "https://github.com/peteeckel/netbox-plugin-dns/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ felbinger ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,14 +16,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-+19Xu42Tp0WkhdmhfFOAbSrTZ3SSQRgbOQwZY8KrFJg=";
   };
 
-  cargoHash = "sha256-HdYBWbyl5FSOf/hgtXV3BbjpXfrM/6EJpDese5hBNzk=";
-
-  nativeBuildInputs = [ installShellFiles ];
-
   postPatch = ''
     chmod +x scripts/*.bash
     patchShebangs scripts/*.bash
   '';
+
+  nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-HdYBWbyl5FSOf/hgtXV3BbjpXfrM/6EJpDese5hBNzk=";
 
   postInstall = ''
     installManPage httm.1

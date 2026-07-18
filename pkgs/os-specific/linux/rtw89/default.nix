@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   kernel,
   kernelModuleMakeFlags,
@@ -21,11 +21,10 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = kernel.moduleBuildDependencies;
+
   makeFlags = kernelModuleMakeFlags ++ [
     "KSRC=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
   ];
-
-  enableParallelBuilding = true;
 
   installPhase = ''
     runHook preInstall
@@ -36,6 +35,8 @@ stdenv.mkDerivation {
 
     runHook postInstall
   '';
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "Driver for Realtek 8852AE, 8852BE, and 8853CE, 802.11ax devices";

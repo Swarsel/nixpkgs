@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
+  buildGoModule,
   fetchpatch,
   libiconv,
-  buildGoModule,
   pkg-config,
+  rustPlatform,
 }:
 
 let
@@ -14,12 +14,14 @@ let
   flux = rustPlatform.buildRustPackage rec {
     pname = "libflux";
     version = "${libflux_version}";
+
     src = fetchFromGitHub {
       owner = "influxdata";
       repo = "flux";
       tag = "v${libflux_version}";
       hash = "sha256-v9MUR+PcxAus91FiHYrMN9MbNOTWewh7MT6/t/QWQcM=";
     };
+
     patches = [
       # This fixes a linting error due to an unneeded call to `.clone()`
       # that gets enforced by a strict `deny(warnings)` build config.
@@ -36,24 +38,17 @@ let
       # https://github.com/influxdata/flux/pull/5273
       # fix compile error with Rust 1.64
       (fetchpatch {
-        url = "https://github.com/influxdata/flux/commit/20ca62138a0669f2760dd469ca41fc333e04b8f2.patch";
-        stripLen = 2;
         extraPrefix = "";
         hash = "sha256-Fb4CuH9ZvrPha249dmLLI8MqSNQRKqKPxPbw2pjqwfY=";
+        stripLen = 2;
+        url = "https://github.com/influxdata/flux/commit/20ca62138a0669f2760dd469ca41fc333e04b8f2.patch";
       })
     ];
-    sourceRoot = "${src.name}/libflux";
 
-    cargoHash = "sha256-kbI1uUDE8JyFFtwV5k0EeeNGCZFQLXLobW/MilHX2Sg=";
     nativeBuildInputs = [ rustPlatform.bindgenHook ];
     buildInputs = lib.optional stdenv.hostPlatform.isDarwin libiconv;
-    pkgcfg = ''
-      Name: flux
-      Version: ${libflux_version}
-      Description: Library for the InfluxData Flux engine
-      Cflags: -I/out/include
-      Libs: -L/out/lib -lflux -lpthread
-    '';
+    cargoHash = "sha256-kbI1uUDE8JyFFtwV5k0EeeNGCZFQLXLobW/MilHX2Sg=";
+
     postInstall = ''
       mkdir -p $out/include $out/pkgconfig
       cp -r $NIX_BUILD_TOP/source/libflux/include/influxdata $out/include
@@ -66,6 +61,16 @@ let
     '';
 
     __structuredAttrs = true;
+
+    pkgcfg = ''
+      Name: flux
+      Version: ${libflux_version}
+      Description: Library for the InfluxData Flux engine
+      Cflags: -I/out/include
+      Libs: -L/out/lib -lflux -lpthread
+    '';
+
+    sourceRoot = "${src.name}/libflux";
   };
 in
 buildGoModule rec {
@@ -79,10 +84,8 @@ buildGoModule rec {
     hash = "sha256-vxaLfJq0NFAJst0/AEhNJUl9dAaZY3blZAFthseMSX0=";
   };
 
-  vendorHash = "sha256-myToEgta8R5R4v2/nZqtQQvNdy1kWgwklbQeFxzIdgs=";
-
   nativeBuildInputs = [ pkg-config ];
-
+  vendorHash = "sha256-myToEgta8R5R4v2/nZqtQQvNdy1kWgwklbQeFxzIdgs=";
   env.PKG_CONFIG_PATH = "${flux}/pkgconfig";
 
   # Check that libflux is at the right version
@@ -92,12 +95,6 @@ buildGoModule rec {
       echo "go.mod wants libflux $flux_ver, but nix derivation provides ${libflux_version}"
       exit 1
     fi
-  '';
-
-  # Remove failing server tests
-  preCheck = ''
-    rm server/server_test.go
-    rm pipeline/tick/*test.go
   '';
 
   checkFlags =
@@ -110,6 +107,12 @@ buildGoModule rec {
       "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$"
     ];
 
+  # Remove failing server tests
+  preCheck = ''
+    rm server/server_test.go
+    rm pipeline/tick/*test.go
+  '';
+
   # Tests start http servers which need to bind to local addresses,
   # but that fails in the Darwin sandbox by default unless this option is turned on
   # Error is: panic: httptest: failed to listen on a port: listen tcp6 [::1]:0: bind: operation not permitted
@@ -119,11 +122,13 @@ buildGoModule rec {
   meta = {
     description = "Open source framework for processing, monitoring, and alerting on time series data";
     homepage = "https://influxdata.com/time-series-platform/kapacitor/";
-    downloadPage = "https://github.com/influxdata/kapacitor/releases";
-    license = lib.licenses.mit;
     changelog = "https://github.com/influxdata/kapacitor/blob/master/CHANGELOG.md";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       totoroot
     ];
+
+    downloadPage = "https://github.com/influxdata/kapacitor/releases";
   };
 }

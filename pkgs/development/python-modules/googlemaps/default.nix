@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest-cov-stub,
   pytestCheckHook,
   requests,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "googlemaps";
   version = "4.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googlemaps";
@@ -21,16 +20,16 @@ buildPythonPackage rec {
     hash = "sha256-8oGZEMKUGaDHKq4qIZy10cbLNMmVclJnQE/dx877pNQ=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    requests
-  ];
-
   nativeCheckInputs = [
     pytest-cov-stub
     pytestCheckHook
     responses
+  ];
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    requests
   ];
 
   disabledTests = [
@@ -39,6 +38,7 @@ buildPythonPackage rec {
     "test_transit_without_time"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "googlemaps" ];
 
   meta = {

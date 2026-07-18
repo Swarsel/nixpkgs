@@ -1,15 +1,17 @@
 {
+  lib,
+  fetchurl,
   alcotest,
   buildDunePackage,
-  fetchurl,
+  dune-site,
   eio-ssl,
+  eio_main,
   faraday,
   h2-eio,
   httpun-eio,
   httpun-ws,
   ipaddr,
   ke,
-  lib,
   logs,
   magic-mime,
   pecu,
@@ -17,8 +19,6 @@
   unstrctrd,
   uri,
   uutf,
-  dune-site,
-  eio_main,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -48,6 +48,7 @@ buildDunePackage (finalAttrs: {
 
   # Some test cases fail
   doCheck = false;
+
   checkInputs = [
     alcotest
     dune-site

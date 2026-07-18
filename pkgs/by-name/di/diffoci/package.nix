@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  buildPackages,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  buildPackages,
   installShellFiles,
 }:
 
@@ -18,15 +18,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-rOgnFqjA78JhW3oo3tHDsIjz8GzwK6Og7BqOTEj5fn4=";
   };
 
-  vendorHash = "sha256-IQrPFZPL6KOnU75tT/YWUGN1oasCOTLzVG2ZllgWhJE=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=github.com/reproducible-containers/diffoci/cmd/diffoci/version.Version=v${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-IQrPFZPL6KOnU75tT/YWUGN1oasCOTLzVG2ZllgWhJE=";
 
   postInstall =
     let
@@ -42,6 +35,12 @@ buildGoModule (finalAttrs: {
         --fish <(${diffoci}/bin/diffoci completion fish) \
         --zsh <(${diffoci}/bin/diffoci completion zsh)
     '';
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=github.com/reproducible-containers/diffoci/cmd/diffoci/version.Version=v${finalAttrs.version}"
+  ];
 
   meta = {
     description = "Diff for Docker and OCI container images";

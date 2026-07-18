@@ -29,9 +29,9 @@
 
 {
   lib,
+  stdenv,
   pkg-config,
   rustPlatform,
-  stdenv,
   writeShellScriptBin,
 }:
 
@@ -58,14 +58,14 @@ lib.extendMkDerivation {
   extendDrvArgs =
     finalAttrs:
     {
-      buildAndTestSubdir ? null,
-      buildType ? "release",
-      buildFeatures ? [ ],
-      cargoBuildFlags ? [ ],
-      cargoPgrxFlags ? [ ],
       # pinned dependencies
       cargo-pgrx,
       postgresql,
+      buildAndTestSubdir ? null,
+      buildFeatures ? [ ],
+      buildType ? "release",
+      cargoBuildFlags ? [ ],
+      cargoPgrxFlags ? [ ],
       # cargo-pgrx calls rustfmt on generated bindings, this is not strictly necessary, so we avoid the
       # dependency here. Set to false and provide rustfmt in nativeBuildInputs, if you need it, e.g.
       # if you include the generated code in the output via postInstall.
@@ -124,8 +124,6 @@ lib.extendMkDerivation {
       cargoPgrxFlags' = lib.escapeShellArgs cargoPgrxFlags;
     in
     {
-      buildInputs = (args.buildInputs or [ ]);
-
       nativeBuildInputs =
         (args.nativeBuildInputs or [ ])
         ++ [
@@ -135,6 +133,14 @@ lib.extendMkDerivation {
           rustPlatform.bindgenHook
         ]
         ++ lib.optionals useFakeRustfmt [ fakeRustfmt ];
+
+      buildInputs = (args.buildInputs or [ ]);
+
+      env = args.env or { } // {
+        CARGO_BUILD_INCREMENTAL = "false";
+        PGRX_PG_SYS_SKIP_BINDING_REWRITE = "1";
+        RUST_BACKTRACE = "full";
+      };
 
       buildPhase = ''
         runHook preBuild
@@ -176,17 +182,12 @@ lib.extendMkDerivation {
         runHook postInstall
       '';
 
-      env = args.env or { } // {
-        PGRX_PG_SYS_SKIP_BINDING_REWRITE = "1";
-        CARGO_BUILD_INCREMENTAL = "false";
-        RUST_BACKTRACE = "full";
-      };
-
-      checkNoDefaultFeatures = true;
       checkFeatures =
         (args.checkFeatures or [ ])
         ++ (lib.optionals usePgTestCheckFeature [ "pg_test" ])
         ++ [ "pg${pgrxPostgresMajor}" ];
+
+      checkNoDefaultFeatures = true;
 
       meta = (args.meta or { }) // {
         # See comment in postgresql's generic.nix doInstallCheck section

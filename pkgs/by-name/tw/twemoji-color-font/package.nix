@@ -27,6 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Color emoji SVGinOT font using Twitter Unicode 15 emoji with diversity and country flags";
+
     longDescription = ''
       A color and B&W emoji SVGinOT font built from the Twitter Emoji for
       Everyone artwork with support for ZWJ, skin tone diversity and country
@@ -38,12 +39,15 @@ stdenv.mkDerivation (finalAttrs: {
       systems and applications. Regular B&W outline emoji are included for
       backwards/fallback compatibility.
     '';
+
     homepage = "https://github.com/13rac1/twemoji-color-font";
-    downloadPage = "https://github.com/13rac1/twemoji-color-font/releases";
+
     license = with lib.licenses; [
       cc-by-40
       mit
     ];
+
     maintainers = [ lib.maintainers.fgaz ];
+    downloadPage = "https://github.com/13rac1/twemoji-color-font/releases";
   };
 })

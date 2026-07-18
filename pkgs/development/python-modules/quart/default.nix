@@ -1,37 +1,33 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  flit-core,
-
   # propagates
   aiofiles,
   blinker,
+  buildPythonPackage,
   click,
   flask,
+  # build-system
+  flit-core,
   hypercorn,
+  # tests
+  hypothesis,
   itsdangerous,
   jinja2,
   markupsafe,
-  pydata-sphinx-theme,
-  python-dotenv,
-  werkzeug,
-
-  # tests
-  hypothesis,
   mock,
   py,
+  pydata-sphinx-theme,
   pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
+  python-dotenv,
+  werkzeug,
 }:
 
 buildPythonPackage rec {
   pname = "quart";
   version = "0.20.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pallets";
@@ -39,6 +35,15 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-NApev3nRBS4QDMGq8++rSmK5YgeljkaVAsdezsTbZr4=";
   };
+
+  nativeCheckInputs = [
+    hypothesis
+    mock
+    py
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [ flit-core ];
 
@@ -56,23 +61,15 @@ buildPythonPackage rec {
     werkzeug
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "quart" ];
-
-  nativeCheckInputs = [
-    hypothesis
-    mock
-    py
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Async Python micro framework for building web applications";
-    mainProgram = "quart";
     homepage = "https://github.com/pallets/quart/";
     changelog = "https://github.com/pallets/quart/blob/${src.tag}/CHANGES.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hexa ];
+    mainProgram = "quart";
   };
 }

@@ -14,13 +14,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-f8a3sLcN6GMPV/8E/faqMYkJdUa7WqmQBrehH6kCJtc=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/source";
-
   buildInputs = [ fftwFloat ];
-
-  patchPhase = ''
-    sed -e "s@ldconfig@@" -i Makefile
-  '';
 
   makeFlags = [
     "PREFIX=$(out)"
@@ -33,6 +27,12 @@ stdenv.mkDerivation (finalAttrs: {
      $out/lib/libzita-convolver.so.${finalAttrs.version} \
      $out/lib/libzita-convolver.so.${lib.versions.major finalAttrs.version}
   '';
+
+  patchPhase = ''
+    sed -e "s@ldconfig@@" -i Makefile
+  '';
+
+  sourceRoot = "${finalAttrs.src.name}/source";
 
   meta = {
     description = "Convolution library by Fons Adriaensen";

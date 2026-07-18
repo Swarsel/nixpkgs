@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  yt-dlp,
+  buildGoModule,
   ffmpeg,
   mpv,
+  yt-dlp,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,10 +18,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-C465lzbZIh8LYDUHNa5u66nFteFsKAffilvy1Danfpg=";
   };
 
-  vendorHash = "sha256-C7O2GJuEdO8geRPfHx1Sq6ZveDE/u65JBx/Egh3cnK4=";
-
-  doCheck = true;
-
   postPatch = ''
     substituteInPlace cmd/flags.go \
       --replace "\"ffmpeg\"" "\"${lib.getBin ffmpeg}/bin/ffmpeg\"" \
@@ -29,9 +25,12 @@ buildGoModule (finalAttrs: {
       --replace "\"yt-dlp\"" "\"${lib.getBin yt-dlp}/bin/yt-dlp\""
   '';
 
+  vendorHash = "sha256-C7O2GJuEdO8geRPfHx1Sq6ZveDE/u65JBx/Egh3cnK4=";
+  doCheck = true;
+
   meta = {
-    homepage = "https://darkhz.github.io/invidtui/";
     description = "Invidious TUI client";
+    homepage = "https://darkhz.github.io/invidtui/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ rettetdemdativ ];
     mainProgram = "invidtui";

@@ -1,7 +1,7 @@
 {
   lib,
-  mkDerivation,
   fetchFromGitHub,
+  mkDerivation,
   nixosTests,
 }:
 
@@ -10,23 +10,26 @@ mkDerivation rec {
   version = "2.3";
 
   src = fetchFromGitHub {
-    repo = "agda-stdlib";
     owner = "agda";
+    repo = "agda-stdlib";
     rev = "v${version}";
     hash = "sha256-JOeoek6OfyIk9vwTj5QUJU6LnRzwfiG0e0ysW6zbhZ8=";
   };
 
   passthru.tests = { inherit (nixosTests) agda; };
+
   meta = {
-    homepage = "https://wiki.portal.chalmers.se/agda/pmwiki.php?n=Libraries.StandardLibrary";
     description = "Standard library for use with the Agda compiler";
+    homepage = "https://wiki.portal.chalmers.se/agda/pmwiki.php?n=Libraries.StandardLibrary";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       jwiegley
       mudri
       alexarice
       turion
     ];
+
+    platforms = lib.platforms.unix;
   };
 }

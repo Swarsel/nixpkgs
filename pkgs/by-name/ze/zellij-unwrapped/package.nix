@@ -1,22 +1,21 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  mandown,
-  installShellFiles,
-  pkg-config,
   curl,
-  openssl,
-  writableTmpDirAsHomeHook,
-  versionCheckHook,
+  installShellFiles,
+  mandown,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "zellij-unwrapped";
   version = "0.44.3";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "zellij-org";
@@ -32,10 +31,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --replace-fail ', "vendored_curl"' ""
   '';
 
-  cargoHash = "sha256-966FpfSsF9I10SrYe3+YNsfM2kLLv+gd0/Aw8vLp4Lk=";
-
-  env.OPENSSL_NO_VENDOR = 1;
-
   nativeBuildInputs = [
     mandown
     installShellFiles
@@ -48,23 +43,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-966FpfSsF9I10SrYe3+YNsfM2kLLv+gd0/Aw8vLp4Lk=";
+  env.OPENSSL_NO_VENDOR = 1;
+
   nativeCheckInputs = [
     writableTmpDirAsHomeHook
   ];
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
-
-  # Ensure that we don't vendor curl, but instead link against the libcurl from nixpkgs
-  installCheckPhase = lib.optionalString (stdenv.hostPlatform.libc == "glibc") ''
-    runHook preInstallCheck
-
-    ldd "$out/bin/zellij" | grep libcurl.so
-
-    runHook postInstallCheck
-  '';
 
   postInstall = ''
     mandown docs/MANPAGE.md > zellij.1
@@ -77,6 +61,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <($out/bin/zellij setup --generate-completion zsh)
   '';
 
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
+  # Ensure that we don't vendor curl, but instead link against the libcurl from nixpkgs
+  installCheckPhase = lib.optionalString (stdenv.hostPlatform.libc == "glibc") ''
+    runHook preInstallCheck
+
+    ldd "$out/bin/zellij" | grep libcurl.so
+
+    runHook postInstallCheck
+  '';
+
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -84,6 +84,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://zellij.dev/";
     changelog = "https://github.com/zellij-org/zellij/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = with lib.licenses; [ mit ];
+
     maintainers = with lib.maintainers; [
       therealansh
       _0x4A6F
@@ -91,6 +92,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
       matthiasbeyer
       ryan4yin
     ];
+
     mainProgram = "zellij";
   };
 })

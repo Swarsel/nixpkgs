@@ -1,14 +1,14 @@
 {
   lib,
-  buildPythonPackage,
-  hatchling,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   doubles,
+  hatchling,
   msgspec,
   numpy,
   pandas,
   pydantic,
+  pytestCheckHook,
   scikit-learn,
   scipy,
   toolz,
@@ -25,7 +25,9 @@ buildPythonPackage rec {
     hash = "sha256-3KcCiGgcJ+1WLQPvxDJyGrn8TEiBVIh/9TsCMkku3ls=";
   };
 
-  pyproject = true;
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     hatchling
@@ -47,15 +49,13 @@ buildPythonPackage rec {
     "benchmark_test.py"
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
-  pythonRelaxDeps = true;
+  pyproject = true;
 
   pythonImportsCheck = [
     "saiph"
   ];
+
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Package enabling to project data";

@@ -1,45 +1,36 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  squashfsTools,
+  alsa-lib,
   autoPatchelfHook,
   copyDesktopItems,
-  alsa-lib,
-  nss,
+  libGL,
   libdrm,
   libgbm,
-  libGL,
   libxkbcommon,
-  pcsclite,
   makeDesktopItem,
   makeWrapper,
+  nss,
+  pcsclite,
+  squashfsTools,
+  udev,
   wrapGAppsHook3,
   writeScript,
-  udev,
 }:
 
 stdenv.mkDerivation rec {
   pname = "tk-safe";
   version = "26.2.4";
-  revision = "28";
 
   src = fetchurl {
     url = "https://api.snapcraft.io/api/v1/snaps/download/rLNeIGEaag0TKFQLO0TxF3ARXg3rcTNx_${revision}.snap";
     hash = "sha512-5C0J4WFrlBUCGnNhHfi4TrZmDnu/ws/+ATSP2LmoPRhmjoJkW0WFmkwMzaEkbsrunpyK2g5c3gGFvuVlHJwTFQ==";
   };
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "tk-safe";
-      icon = "tk-safe";
-      exec = "tk-safe";
-      desktopName = "TK-Safe";
-      comment = meta.description;
-      genericName = "Eletronic medical record (ePA)";
-      categories = [ "Utility" ];
-    })
-  ];
+  postPatch = ''
+    rm -rf lib usr
+  '';
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -48,20 +39,6 @@ stdenv.mkDerivation rec {
     squashfsTools
     wrapGAppsHook3
   ];
-
-  unpackPhase = ''
-    runHook preUnpack
-
-    unsquashfs $src
-
-    runHook postUnpack
-  '';
-
-  sourceRoot = "squashfs-root";
-
-  postPatch = ''
-    rm -rf lib usr
-  '';
 
   buildInputs = [
     alsa-lib
@@ -91,6 +68,29 @@ stdenv.mkDerivation rec {
       --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ libGL ]}"
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Utility" ];
+      comment = meta.description;
+      desktopName = "TK-Safe";
+      exec = "tk-safe";
+      genericName = "Eletronic medical record (ePA)";
+      icon = "tk-safe";
+      name = "tk-safe";
+    })
+  ];
+
+  revision = "28";
+  sourceRoot = "squashfs-root";
+
+  unpackPhase = ''
+    runHook preUnpack
+
+    unsquashfs $src
+
+    runHook postUnpack
+  '';
+
   passthru.updateScript = writeScript "update-tk-safe" ''
     #!/usr/bin/env nix-shell
     #!nix-shell -i bash -p common-updater-scripts curl jq
@@ -117,10 +117,10 @@ stdenv.mkDerivation rec {
     description = "Electronic medical record (ePA) by Techniker Krankenkasse (TK)";
     homepage = "https://snapcraft.io/tk-safe";
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
     # Vendored copy of Electron.
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ felschr ];
+    platforms = [ "x86_64-linux" ];
     mainProgram = "tk-safe";
   };
 }

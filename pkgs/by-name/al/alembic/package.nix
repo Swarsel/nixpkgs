@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  openexr,
   hdf5-threadsafe,
+  openexr,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,8 +26,10 @@ stdenv.mkDerivation (finalAttrs: {
     "lib"
   ];
 
-  # Prevent cycle between bin and dev (only occurs on Darwin for some reason)
-  propagatedBuildOutputs = [ "lib" ];
+  postPatch = ''
+    find bin/ -type f -name CMakeLists.txt -print -exec \
+      sed -i 's/INSTALL(TARGETS \([a-zA-Z ]*\) DESTINATION bin)/INSTALL(TARGETS \1)/' {} \;
+  '';
 
   nativeBuildInputs = [ cmake ];
 
@@ -44,7 +46,6 @@ stdenv.mkDerivation (finalAttrs: {
   # - dev (headers): Uses CMAKE_INSTALL_PREFIX
   #   (this works because every other install rule uses an absolute DESTINATION)
   # - dev (CMake files): Uses ConfigPackageLocation
-
   cmakeFlags = [
     "-DUSE_HDF5=ON"
     "-DUSE_TESTS=ON"
@@ -54,22 +55,21 @@ stdenv.mkDerivation (finalAttrs: {
     "-DQUIET=ON"
   ];
 
-  postPatch = ''
-    find bin/ -type f -name CMakeLists.txt -print -exec \
-      sed -i 's/INSTALL(TARGETS \([a-zA-Z ]*\) DESTINATION bin)/INSTALL(TARGETS \1)/' {} \;
-  '';
-
   doCheck = true;
   enableParallelChecking = false;
+  # Prevent cycle between bin and dev (only occurs on Darwin for some reason)
+  propagatedBuildOutputs = [ "lib" ];
 
   meta = {
     description = "Open framework for storing and sharing scene data";
     homepage = "http://alembic.io/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       guibou
       tmarkus
     ];
+
+    platforms = lib.platforms.all;
   };
 })

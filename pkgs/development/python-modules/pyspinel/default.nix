@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pyserial,
 }:
 
 buildPythonPackage {
   pname = "pyspinel";
   version = "unstable-2021-08-19";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "openthread";
@@ -18,10 +17,9 @@ buildPythonPackage {
   };
 
   propagatedBuildInputs = [ pyserial ];
-
   # Tests are out-dated
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "spinel" ];
 
   meta = {

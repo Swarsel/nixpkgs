@@ -2,59 +2,59 @@ let
   # shared across all versions
   generic =
     {
-      version,
-      hash,
       lib,
       stdenv,
       fetchurl,
-      nixosTests,
-      buildPackages,
       # Native buildInputs components
       bison,
       boost,
-      cmake,
-      fixDarwinDylibNames,
-      flex,
-      makeWrapper,
-      pkg-config,
-      # Common components
-      curl,
-      libiconv,
-      ncurses,
-      openssl,
-      pcre2,
-      libkrb5,
-      libaio,
-      liburing,
-      systemd,
-      cctools,
-      perl,
-      jemalloc,
-      less,
-      libedit,
+      buildPackages,
       # Server components
       bzip2,
-      lz4,
-      lzo,
-      snappy,
-      xz,
-      zlib,
-      zstd,
+      cctools,
+      cmake,
       cracklib,
+      # Common components
+      curl,
+      fixDarwinDylibNames,
+      flex,
+      fmt,
+      hash,
+      jemalloc,
       judy,
+      kytea,
+      less,
+      libaio,
+      libedit,
       libevent,
+      libiconv,
+      libkrb5,
+      libsodium,
+      liburing,
       libxml2,
       linux-pam,
-      numactl,
-      fmt,
-      withStorageMroonga ? true,
-      kytea,
-      libsodium,
+      lz4,
+      lzo,
+      makeWrapper,
       msgpack-cxx,
+      ncurses,
+      nixosTests,
+      numactl,
+      openssl,
+      pcre2,
+      perl,
+      pkg-config,
+      snappy,
+      systemd,
+      version,
+      xz,
       zeromq,
-      withStorageRocks ? true,
+      zlib,
+      zstd,
       withEmbedded ? false,
       withNuma ? false,
+      withStorageMroonga ? true,
+      withStorageRocks ? true,
     }:
 
     let
@@ -75,14 +75,25 @@ let
         inherit version;
 
         src = fetchurl {
-          url = "https://archive.mariadb.org/mariadb-${version}/source/mariadb-${version}.tar.gz";
           inherit hash;
+          url = "https://archive.mariadb.org/mariadb-${version}/source/mariadb-${version}.tar.gz";
         };
 
         outputs = [
           "out"
           "man"
         ];
+
+        patches = [
+          ./patch/cmake-includedir.patch
+          # patch for musl compatibility
+          ./patch/include-cstdint-full.patch
+        ]
+        # Fixes a build issue as documented on
+        # https://jira.mariadb.org/browse/MDEV-26769?focusedCommentId=206073&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-206073
+        ++ lib.optional (
+          !stdenv.hostPlatform.isLinux && lib.versionAtLeast version "10.6"
+        ) ./patch/macos-MDEV-26769-regression-fix.patch;
 
         nativeBuildInputs = [
           cmake
@@ -112,30 +123,6 @@ let
           libedit
         ]
         ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [ jemalloc ];
-
-        prePatch = ''
-          sed -i 's,[^"]*/var/log,/var/log,g' storage/mroonga/vendor/groonga/CMakeLists.txt
-        '';
-        env =
-          lib.optionalAttrs (stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isGnu) {
-            # MariaDB uses non-POSIX fopen64, which musl only conditionally defines.
-            NIX_CFLAGS_COMPILE = "-D_LARGEFILE64_SOURCE";
-          }
-          // lib.optionalAttrs (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64) {
-            # Detection of netdb.h doesnt work for some reason on x86_64-darwin
-            NIX_CFLAGS_COMPILE = "-DHAVE_NETDB_H";
-          };
-
-        patches = [
-          ./patch/cmake-includedir.patch
-          # patch for musl compatibility
-          ./patch/include-cstdint-full.patch
-        ]
-        # Fixes a build issue as documented on
-        # https://jira.mariadb.org/browse/MDEV-26769?focusedCommentId=206073&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-206073
-        ++ lib.optional (
-          !stdenv.hostPlatform.isLinux && lib.versionAtLeast version "10.6"
-        ) ./patch/macos-MDEV-26769-regression-fix.patch;
 
         cmakeFlags = [
           "-DBUILD_CONFIG=mysql_release"
@@ -185,6 +172,16 @@ let
           "-DCMAKE_CROSSCOMPILING_EMULATOR=${stdenv.hostPlatform.emulator buildPackages}"
         ];
 
+        env =
+          lib.optionalAttrs (stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isGnu) {
+            # MariaDB uses non-POSIX fopen64, which musl only conditionally defines.
+            NIX_CFLAGS_COMPILE = "-D_LARGEFILE64_SOURCE";
+          }
+          // lib.optionalAttrs (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64) {
+            # Detection of netdb.h doesnt work for some reason on x86_64-darwin
+            NIX_CFLAGS_COMPILE = "-DHAVE_NETDB_H";
+          };
+
         postInstall = lib.optionalString (!withEmbedded) ''
           # Remove Development components. Need to use libmysqlclient.
           rm "$out"/lib/mysql/plugin/daemon_example.ini
@@ -204,6 +201,10 @@ let
           }
         '';
 
+        prePatch = ''
+          sed -i 's,[^"]*/var/log,/var/log,g' storage/mroonga/vendor/groonga/CMakeLists.txt
+        '';
+
         passthru.tests =
           let
             testVersion = "mariadb_${builtins.replaceStrings [ "." ] [ "" ] (lib.versions.majorMinor version)}";
@@ -220,12 +221,14 @@ let
           description = "Enhanced, drop-in replacement for MySQL";
           homepage = "https://mariadb.org/";
           license = lib.licenses.gpl2Plus;
+
           maintainers = with lib.maintainers; [
             conni2461
             das_j
             helsinki-Jo
             thoughtpolice
           ];
+
           platforms = lib.platforms.all;
         };
       };
@@ -266,6 +269,11 @@ let
       // {
         pname = "mariadb-server";
 
+        postPatch = ''
+          substituteInPlace scripts/galera_new_cluster.sh \
+            --replace ":-mariadb" ":-mysql"
+        '';
+
         nativeBuildInputs = common.nativeBuildInputs ++ [
           bison
           boost.dev
@@ -298,11 +306,6 @@ let
           ++ lib.optionals (lib.versionAtLeast common.version "10.11") [ fmt ];
 
         propagatedBuildInputs = lib.optional withNuma numactl;
-
-        postPatch = ''
-          substituteInPlace scripts/galera_new_cluster.sh \
-            --replace ":-mariadb" ":-mysql"
-        '';
 
         cmakeFlags =
           common.cmakeFlags
@@ -345,6 +348,12 @@ let
             "-DWITHOUT_PLUGIN_S3=1"
           ];
 
+        env =
+          lib.optionalAttrs stdenv.hostPlatform.isi686 {
+            CXXFLAGS = "-fpermissive";
+          }
+          // (common.env or { });
+
         preConfigure = lib.optionalString (!stdenv.hostPlatform.isDarwin) ''
           patchShebangs scripts/mytop.sh
         '';
@@ -377,12 +386,6 @@ let
             rm -r "$out"/OFF
           '';
 
-        env =
-          lib.optionalAttrs stdenv.hostPlatform.isi686 {
-            CXXFLAGS = "-fpermissive";
-          }
-          // (common.env or { });
-
         passthru = {
           inherit client;
           server = finalAttrs.finalPackage;
@@ -391,22 +394,25 @@ let
     );
 in
 self: {
+  mariadb_1011 = self.callPackage generic {
+    # Supported until 2028-02-16
+    version = "10.11.18";
+    hash = "sha256-pGhSxoB1vnwxx7M/7iM8W1oAyMKBF/UgTRJOTy/Vb6g=";
+  };
+
   # see https://mariadb.org/about/#maintenance-policy for EOLs
   mariadb_106 = self.callPackage generic {
     # Supported until 2026-07-06
     version = "10.6.27";
     hash = "sha256-jrdq07Gz0UxWYRzMkQQoFB/lYWAEOBnmR0FgOF9pZl4=";
   };
-  mariadb_1011 = self.callPackage generic {
-    # Supported until 2028-02-16
-    version = "10.11.18";
-    hash = "sha256-pGhSxoB1vnwxx7M/7iM8W1oAyMKBF/UgTRJOTy/Vb6g=";
-  };
+
   mariadb_114 = self.callPackage generic {
     # Supported until 2029-05-29
     version = "11.4.12";
     hash = "sha256-WreIPbUZv86/3SqsCbxVRKEs4yjznt1G0L8BaQYV72w=";
   };
+
   mariadb_118 = self.callPackage generic {
     # Supported until 2028-06-04
     version = "11.8.8";

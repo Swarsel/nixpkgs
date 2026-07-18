@@ -16,6 +16,10 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ installShellFiles ];
+  # Ignore errors since gcc-14.
+  #   i810switch.c:251:34: error: passing argument 2 of 'getline' from incompatible pointer type [-Wincompatible-pointer-types]
+  #   i810switch.c:296:34: error: passing argument 2 of 'getline' from incompatible pointer type [-Wincompatible-pointer-types]
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
 
   preBuild = ''
     make clean
@@ -34,16 +38,11 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   ";
 
-  # Ignore errors since gcc-14.
-  #   i810switch.c:251:34: error: passing argument 2 of 'getline' from incompatible pointer type [-Wincompatible-pointer-types]
-  #   i810switch.c:296:34: error: passing argument 2 of 'getline' from incompatible pointer type [-Wincompatible-pointer-types]
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
-
   meta = {
     description = "Utility for switching between the LCD and external VGA display on Intel graphics cards";
     homepage = "http://www16.plala.or.jp/mano-a-mano/i810switch.html";
-    maintainers = [ ];
     license = lib.licenses.gpl2Only;
+    maintainers = [ ];
     platforms = lib.platforms.linux;
     mainProgram = "i810switch";
   };

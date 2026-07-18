@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  coreutils,
-  installShellFiles,
-  makeWrapper,
-  gitMinimal,
-  writeShellScript,
-  curl,
-  jq,
   common-updater-scripts,
+  coreutils,
+  curl,
+  fetchzip,
+  gitMinimal,
+  installShellFiles,
+  jq,
+  makeWrapper,
+  writeShellScript,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -46,6 +46,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   installCheckPhase = ''
     OUTPUT="$(
       HOME="$(mktemp --directory)" \
@@ -65,42 +66,49 @@ stdenv.mkDerivation (finalAttrs: {
         base_url = "https://github.com/gitkraken/gk-cli/releases/download/v${finalAttrs.version}/gk_${finalAttrs.version}_";
       in
       {
-        aarch64-linux = fetchzip {
-          url = "${base_url}linux_arm64.zip";
-          hash = "sha256-aYgHLpG4nX3Op0+j733jYbK4ZwVKkctMkDPweNTJWso=";
-          stripRoot = false;
-        };
-        x86_32-linux = fetchzip {
-          url = "${base_url}linux_386.zip";
-          hash = "sha256-lVu25S7e6a/kHmiD5dxGAlHMQ5yN46+SdFpt8lghejM=";
-          stripRoot = false;
-        };
-        x86_64-linux = fetchzip {
-          url = "${base_url}linux_amd64.zip";
-          hash = "sha256-/z2G//Zh8lTHkeJPahyld1EEXXhd/cgIvCojUmzFX8E=";
-          stripRoot = false;
-        };
         aarch64-darwin = fetchzip {
-          url = "${base_url}darwin_arm64.zip";
           hash = "sha256-nDVehD0TTNTvhuDU8RB4lZiVcEJpB+l6EGkzckC7JuU=";
           stripRoot = false;
+          url = "${base_url}darwin_arm64.zip";
         };
+
+        aarch64-linux = fetchzip {
+          hash = "sha256-aYgHLpG4nX3Op0+j733jYbK4ZwVKkctMkDPweNTJWso=";
+          stripRoot = false;
+          url = "${base_url}linux_arm64.zip";
+        };
+
         aarch64-windows = fetchzip {
-          url = "${base_url}windows_arm64.zip";
           hash = "sha256-sXHeqR4AW/sRPp74PieXI1n4VGV94CnrcMF1ovAek8E=";
           stripRoot = false;
+          url = "${base_url}windows_arm64.zip";
         };
+
         i686-windows = fetchzip {
-          url = "${base_url}windows_386.zip";
           hash = "sha256-u6DyHoYIaExS2CHu20odDVJxzI4k9PpdFQf6UDPAzz0=";
           stripRoot = false;
+          url = "${base_url}windows_386.zip";
         };
+
+        x86_32-linux = fetchzip {
+          hash = "sha256-lVu25S7e6a/kHmiD5dxGAlHMQ5yN46+SdFpt8lghejM=";
+          stripRoot = false;
+          url = "${base_url}linux_386.zip";
+        };
+
+        x86_64-linux = fetchzip {
+          hash = "sha256-/z2G//Zh8lTHkeJPahyld1EEXXhd/cgIvCojUmzFX8E=";
+          stripRoot = false;
+          url = "${base_url}linux_amd64.zip";
+        };
+
         x86_64-windows = fetchzip {
-          url = "${base_url}windows_amd64.zip";
           hash = "sha256-nh+JPR95IWLm7CTrS8qK2dP3c4SH/zm1oIS5GNgxcyo=";
           stripRoot = false;
+          url = "${base_url}windows_amd64.zip";
         };
       };
+
     updateScript = writeShellScript "update-gk-cli" ''
       set -o errexit
       export PATH="${
@@ -127,7 +135,7 @@ stdenv.mkDerivation (finalAttrs: {
     license = lib.licenses.unfree;
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = [ ];
-    mainProgram = "gk";
     platforms = builtins.attrNames finalAttrs.passthru.sources;
+    mainProgram = "gk";
   };
 })

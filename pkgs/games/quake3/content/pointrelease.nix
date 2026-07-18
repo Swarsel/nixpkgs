@@ -8,8 +8,8 @@ let
   version = "1.32b-3";
 in
 stdenv.mkDerivation {
-  pname = "quake3-pointrelease";
   inherit version;
+  pname = "quake3-pointrelease";
 
   src = fetchurl {
     url = "https://ftp.gwdg.de/pub/misc/ftp.idsoftware.com/idstuff/quake3/linux/linuxq3apoint-${version}.x86.run";
@@ -28,7 +28,7 @@ stdenv.mkDerivation {
   meta = {
     description = "Quake 3 Arena point release";
     license = lib.licenses.unfreeRedistributable;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 }

@@ -1,8 +1,8 @@
 {
   lib,
-  wakatime-cli,
-  buildFishPlugin,
   fetchFromGitHub,
+  buildFishPlugin,
+  wakatime-cli,
 }:
 
 buildFishPlugin rec {

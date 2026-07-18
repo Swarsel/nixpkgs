@@ -24,10 +24,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Universal Association Rule Mining Solver";
-    mainProgram = "uARMSolver";
     homepage = "https://github.com/firefly-cpp/uARMSolver";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ firefly-cpp ];
+    platforms = lib.platforms.linux;
+    mainProgram = "uARMSolver";
   };
 })

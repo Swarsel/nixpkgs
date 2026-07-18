@@ -2,8 +2,8 @@
   lib,
   buildPythonPackage,
   click,
-  fetchpatch2,
   fetchPypi,
+  fetchpatch2,
   ratelim,
   requests,
   setuptools,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "geocoder";
   version = "1.38.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -23,12 +22,14 @@ buildPythonPackage (finalAttrs: {
   patches = [
     # Remove future package to address CVE-2025-50817, https://github.com/DenisCarriere/geocoder/pull/488
     (fetchpatch2 {
+      hash = "sha256-v1sFe8xMzJjaPkRVdzW8MK3eYgFORxl+iug/qHvc26U=";
       name = "remove-future.patch";
       url = "https://github.com/DenisCarriere/geocoder/commit/b15f3bb227414e90020a560176eb06fd39660df5.patch";
-      hash = "sha256-v1sFe8xMzJjaPkRVdzW8MK3eYgFORxl+iug/qHvc26U=";
     })
   ];
 
+  # Tests are outdated
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -38,9 +39,7 @@ buildPythonPackage (finalAttrs: {
     six
   ];
 
-  # Tests are outdated
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "geocoder" ];
 
   meta = {

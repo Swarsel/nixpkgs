@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  makeWrapper,
   coreutils,
   curl,
   gawk,
   gnugrep,
   gnused,
   gzip,
+  makeWrapper,
   sysctl,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -22,9 +22,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-fBvbt/1ukpvcu8Aa/uAmVzw0ms8Sp35WLJPvHs9E9Bc=";
   };
 
-  nativeBuildInputs = [ makeWrapper ];
-
   patches = [ ./gsed.patch ];
+  nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
     runHook preInstall
@@ -55,7 +54,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     inherit (finalAttrs.src.meta) homepage;
-
     description = "Bash command line scripts to dump & restore a couchdb database";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ DamienCassou ];

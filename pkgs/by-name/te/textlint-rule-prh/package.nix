@@ -1,15 +1,15 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   fetchYarnDeps,
   nodejs,
   npmHooks,
-  yarnBuildHook,
-  yarnConfigHook,
   runCommand,
+  stdenvNoCC,
   textlint,
   textlint-rule-prh,
+  yarnBuildHook,
+  yarnConfigHook,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -28,17 +28,17 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --replace-fail "git config --local core.hooksPath .githooks" ""
   '';
 
-  offlineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-tZMMadWue85L+5c7swKgFqUsLSARjS4EK0Cwi1FjX88=";
-  };
-
   nativeBuildInputs = [
     nodejs
     npmHooks.npmInstallHook
     yarnBuildHook
     yarnConfigHook
   ];
+
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-tZMMadWue85L+5c7swKgFqUsLSARjS4EK0Cwi1FjX88=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
 
   passthru.tests = {
     "textlint-rule-prh-test" =

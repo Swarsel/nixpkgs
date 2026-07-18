@@ -1,18 +1,17 @@
 {
   lib,
-  cmake,
   fetchFromGitHub,
+  cmake,
   libGL,
   libGLU,
+  libx11,
   libzip,
   mkLibretroCore,
   pkg-config,
   python3,
   snappy,
-  libx11,
 }:
 mkLibretroCore {
-  core = "ppsspp";
   version = "0-unstable-2026-07-08";
 
   src = fetchFromGitHub {
@@ -23,19 +22,6 @@ mkLibretroCore {
     fetchSubmodules = true;
   };
 
-  extraNativeBuildInputs = [
-    cmake
-    pkg-config
-    python3
-  ];
-  extraBuildInputs = [
-    libGLU
-    libGL
-    libzip
-    snappy
-    libx11
-  ];
-  makefile = "Makefile";
   cmakeFlags = [
     "-DLIBRETRO=ON"
     # USE_SYSTEM_FFMPEG=ON causes several glitches during video playback
@@ -45,12 +31,31 @@ mkLibretroCore {
     "-DUSE_SYSTEM_LIBZIP=ON"
     "-DOpenGL_GL_PREFERENCE=GLVND"
   ];
+
   postBuild = "cd lib";
+  core = "ppsspp";
+
+  extraBuildInputs = [
+    libGLU
+    libGL
+    libzip
+    snappy
+    libx11
+  ];
+
+  extraNativeBuildInputs = [
+    cmake
+    pkg-config
+    python3
+  ];
+
+  makefile = "Makefile";
 
   meta = {
     description = "PPSSPP libretro port";
     homepage = "https://github.com/hrydgard/ppsspp";
     license = lib.licenses.gpl2Plus;
+
     badPlatforms = [
       # error: cannot convert 'uint32x4_t' to 'int' in initialization
       "aarch64-linux"

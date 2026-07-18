@@ -3,10 +3,10 @@
   stdenv,
   fetchurl,
   autoconf,
-  libtool,
+  automake,
   bison,
   flex,
-  automake,
+  libtool,
   udevCheckHook,
 }:
 

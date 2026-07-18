@@ -1,7 +1,7 @@
 {
-  clangStdenv,
   lib,
   fetchFromGitHub,
+  clangStdenv,
   cmake,
 }:
 
@@ -28,11 +28,17 @@ clangStdenv.mkDerivation (finalAttrs: {
         "cmake_minimum_required(VERSION 3.13)"
   '';
 
+  nativeBuildInputs = [ cmake ];
   # Fix GCC 15 compatibility
   # error: unknown type name 'uint32_t'
   env.CXXFLAGS = "-include cstdint";
+  doCheck = true;
 
-  nativeBuildInputs = [ cmake ];
+  checkPhase = ''
+    runHook preCheck
+    ./armipstests ..
+    runHook postCheck
+  '';
 
   installPhase = ''
     runHook preInstall
@@ -43,19 +49,11 @@ clangStdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  doCheck = true;
-
-  checkPhase = ''
-    runHook preCheck
-    ./armipstests ..
-    runHook postCheck
-  '';
-
   meta = {
-    homepage = "https://github.com/Kingcom/armips";
     description = "Assembler for various ARM and MIPS platforms";
-    mainProgram = "armips";
+    homepage = "https://github.com/Kingcom/armips";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ marius851000 ];
+    mainProgram = "armips";
   };
 })

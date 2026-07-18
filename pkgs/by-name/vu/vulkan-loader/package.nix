@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  addDriverRunpath,
   cmake,
-  pkg-config,
   libx11,
   libxcb,
   libxrandr,
-  wayland,
   moltenvk,
-  vulkan-headers,
-  addDriverRunpath,
-  enableX11 ? stdenv.hostPlatform.isLinux,
+  pkg-config,
   testers,
+  vulkan-headers,
+  wayland,
+  enableX11 ? stdenv.hostPlatform.isLinux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,12 +26,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-jgibBetbMpqRJ+OJpJgNxgC6phECewNqtla9CCJj56U=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [ ./fix-pkgconfig.patch ];
 
   nativeBuildInputs = [
     cmake
     pkg-config
   ];
+
   buildInputs = [
     vulkan-headers
   ]
@@ -53,11 +59,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional stdenv.hostPlatform.isLinux "-DSYSCONFDIR=${addDriverRunpath.driverLink}/share"
   ++ lib.optional (stdenv.buildPlatform != stdenv.hostPlatform) "-DUSE_GAS=OFF";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   doInstallCheck = true;
 
   installCheckPhase = ''
@@ -76,9 +77,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "LunarG Vulkan loader";
     homepage = "https://www.lunarg.com";
-    platforms = lib.platforms.unix ++ lib.platforms.windows;
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.ralith ];
+    platforms = lib.platforms.unix ++ lib.platforms.windows;
     broken = finalAttrs.version != vulkan-headers.version;
     pkgConfigModules = [ "vulkan" ];
   };

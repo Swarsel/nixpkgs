@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   paramiko,
 }:
 
 buildPythonPackage rec {
   pname = "spur";
   version = "0.3.23";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "mwilliamson";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ paramiko ];
-
   # Tests require a running SSH server
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "spur" ];
 
   meta = {

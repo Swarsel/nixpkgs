@@ -2,29 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   autoreconfHook,
   bison,
   check,
+  fetchpatch,
   flex,
   gitUpdater,
   gmp,
   gtk3,
-  pkg-config,
   libsForQt5,
-
+  pkg-config,
   withGUI ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "mpsolve";
   version = "3.2.2";
-
-  outputs = [
-    "out"
-    "dev"
-    "man"
-  ];
 
   src = fetchFromGitHub {
     owner = "robol";
@@ -33,11 +26,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-BGXvNxWUbto0yMIpEIxZ9wOYv9w0ev4OgVcniNYIKoU=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+    "man"
+  ];
+
   patches = [
     (fetchpatch {
+      hash = "sha256-ODWpp966S1SsSN8hf7yuYgJR44GgbLwSxui280WWGmM=";
       name = "include-cmath-in-c++-before-defining-isnan-macro.patch";
       url = "https://github.com/robol/MPSolve/commit/260432c9d1002261f60159d0520af7862d4471ed.patch";
-      hash = "sha256-ODWpp966S1SsSN8hf7yuYgJR44GgbLwSxui280WWGmM=";
     })
   ];
 
@@ -66,19 +65,15 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.enableFeature withGUI "ui")
   ];
 
-  enableParallelBuilding = true;
-
   doCheck = true;
-
   checkInputs = [ check ];
-
   checkTarget = "check";
-
+  enableParallelBuilding = true;
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://numpi.dm.unipi.it/scientific-computing-libraries/mpsolve/";
     description = "Multiprecision Polynomial Solver";
+    homepage = "https://numpi.dm.unipi.it/scientific-computing-libraries/mpsolve/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ kilianar ];
     mainProgram = "mpsolve";

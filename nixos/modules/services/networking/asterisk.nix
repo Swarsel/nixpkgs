@@ -34,20 +34,20 @@ let
       ${cfg.extraConfig}
     '';
 
-    # Loading all modules by default is considered sensible by the authors of
-    # "Asterisk: The Definitive Guide". Secure sites will likely want to
-    # specify their own "modules.conf" in the confFiles option.
-    "modules.conf".text = ''
-      [modules]
-      autoload=yes
-    '';
-
     # Use syslog for logging so logs can be viewed with journalctl
     "logger.conf".text = ''
       [general]
 
       [logfiles]
       syslog.local0 => notice,warning,error
+    '';
+
+    # Loading all modules by default is considered sensible by the authors of
+    # "Asterisk: The Definitive Guide". Secure sites will likely want to
+    # specify their own "modules.conf" in the confFiles option.
+    "modules.conf".text = ''
+      [modules]
+      autoload=yes
     '';
   }
   // lib.mapAttrs (name: text: { inherit text; }) cfg.confFiles
@@ -61,30 +61,36 @@ in
   options = {
     services.asterisk = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to enable the Asterisk PBX server.
         '';
+
+        type = lib.types.bool;
       };
 
-      extraConfig = lib.mkOption {
-        default = "";
-        type = lib.types.lines;
-        example = ''
-          [options]
-          verbose=3
-          debug=3
-        '';
-        description = ''
-          Extra configuration options appended to the default
-          {file}`asterisk.conf` file.
-        '';
-      };
+      package = lib.mkPackageOption pkgs "asterisk" { };
 
       confFiles = lib.mkOption {
         default = { };
-        type = lib.types.attrsOf lib.types.str;
+
+        description = ''
+          Sets the content of config files (typically ending with
+          `.conf`) in the Asterisk configuration directory.
+
+          Note that if you want to change {file}`asterisk.conf`, it
+          is preferable to use the {option}`services.asterisk.extraConfig`
+          option over this option. If `"asterisk.conf"` is
+          specified with the {option}`confFiles` option (not recommended),
+          you must be prepared to set your own `astetcdir`
+          path.
+
+          See
+          <https://www.asterisk.org/community/documentation/>
+          for more examples of what is possible here.
+        '';
+
         example = lib.literalExpression ''
           {
             "extensions.conf" = '''
@@ -130,21 +136,41 @@ in
             ''';
           }
         '';
+
+        type = lib.types.attrsOf lib.types.str;
+      };
+
+      extraArguments = lib.mkOption {
+        default = [ ];
+
         description = ''
-          Sets the content of config files (typically ending with
-          `.conf`) in the Asterisk configuration directory.
-
-          Note that if you want to change {file}`asterisk.conf`, it
-          is preferable to use the {option}`services.asterisk.extraConfig`
-          option over this option. If `"asterisk.conf"` is
-          specified with the {option}`confFiles` option (not recommended),
-          you must be prepared to set your own `astetcdir`
-          path.
-
-          See
-          <https://www.asterisk.org/community/documentation/>
-          for more examples of what is possible here.
+          Additional command line arguments to pass to Asterisk.
         '';
+
+        example = [
+          "-vvvddd"
+          "-e"
+          "1024"
+        ];
+
+        type = lib.types.listOf lib.types.str;
+      };
+
+      extraConfig = lib.mkOption {
+        default = "";
+
+        description = ''
+          Extra configuration options appended to the default
+          {file}`asterisk.conf` file.
+        '';
+
+        example = ''
+          [options]
+          verbose=3
+          debug=3
+        '';
+
+        type = lib.types.lines;
       };
 
       useTheseDefaultConfFiles = lib.mkOption {
@@ -176,63 +202,34 @@ in
           "udptl.conf"
           "unistim.conf"
         ];
-        type = lib.types.listOf lib.types.str;
-        example = [
-          "sip.conf"
-          "dundi.conf"
-        ];
+
         description = ''
           Sets these config files to the default content. The default value for
                     this option contains all necesscary files to avoid errors at startup.
                     This does not override settings via {option}`services.asterisk.confFiles`.
         '';
-      };
 
-      extraArguments = lib.mkOption {
-        default = [ ];
-        type = lib.types.listOf lib.types.str;
         example = [
-          "-vvvddd"
-          "-e"
-          "1024"
+          "sip.conf"
+          "dundi.conf"
         ];
-        description = ''
-          Additional command line arguments to pass to Asterisk.
-        '';
+
+        type = lib.types.listOf lib.types.str;
       };
-      package = lib.mkPackageOption pkgs "asterisk" { };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ cfg.package ];
-
     environment.etc = lib.mapAttrs' (
       name: value: lib.nameValuePair "asterisk/${name}" value
     ) allConfFiles;
 
-    users.users.asterisk = {
-      name = asteriskUser;
-      group = asteriskGroup;
-      uid = config.ids.uids.asterisk;
-      description = "Asterisk daemon user";
-      home = varlibdir;
-    };
-
-    users.groups.asterisk = {
-      name = asteriskGroup;
-      gid = config.ids.gids.asterisk;
-    };
+    environment.systemPackages = [ cfg.package ];
 
     systemd.services.asterisk = {
       description = ''
         Asterisk PBX server
       '';
-
-      wantedBy = [ "multi-user.target" ];
-
-      # Do not restart, to avoid disruption of running calls. Restart unit by yourself!
-      restartIfChanged = false;
 
       preStart = ''
         # Copy skeleton directory tree to /var
@@ -247,19 +244,39 @@ in
         done
       '';
 
+      # Do not restart, to avoid disruption of running calls. Restart unit by yourself!
+      restartIfChanged = false;
+
       serviceConfig = {
+        ExecReload = ''
+          ${cfg.package}/bin/asterisk -C /etc/asterisk/asterisk.conf -x "core reload"
+        '';
+
         ExecStart =
           let
             # FIXME: This doesn't account for arguments with spaces
             argString = lib.concatStringsSep " " cfg.extraArguments;
           in
           "${cfg.package}/bin/asterisk -U ${asteriskUser} -C /etc/asterisk/asterisk.conf ${argString} -F";
-        ExecReload = ''
-          ${cfg.package}/bin/asterisk -C /etc/asterisk/asterisk.conf -x "core reload"
-        '';
-        Type = "forking";
+
         PIDFile = "/run/asterisk/asterisk.pid";
+        Type = "forking";
       };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups.asterisk = {
+      gid = config.ids.gids.asterisk;
+      name = asteriskGroup;
+    };
+
+    users.users.asterisk = {
+      description = "Asterisk daemon user";
+      group = asteriskGroup;
+      home = varlibdir;
+      name = asteriskUser;
+      uid = config.ids.uids.asterisk;
     };
   };
 }

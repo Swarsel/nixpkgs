@@ -74,32 +74,34 @@ in
 
     installer.cloneConfig = mkOption {
       default = true;
+
       description = ''
         Try to clone the installation-device configuration by re-using it's
         profile from the list of imported modules.
       '';
     };
 
-    installer.cloneConfigIncludes = mkOption {
-      default = [ ];
-      example = [ "./nixos/modules/hardware/network/rt73.nix" ];
-      description = ''
-        List of modules used to re-build this installation device profile.
-      '';
-    };
-
     installer.cloneConfigExtra = mkOption {
       default = "";
+
       description = ''
         Extra text to include in the cloned configuration.nix included in this
         installer.
       '';
     };
+
+    installer.cloneConfigIncludes = mkOption {
+      default = [ ];
+
+      description = ''
+        List of modules used to re-build this installation device profile.
+      '';
+
+      example = [ "./nixos/modules/hardware/network/rt73.nix" ];
+    };
   };
 
   config = {
-
-    installer.cloneConfigIncludes = relocatedModuleFiles.nixos ++ relocatedModuleFiles.others;
 
     boot.postBootCommands = ''
       # Provide a mount point for nixos-install.
@@ -114,6 +116,8 @@ in
         fi
       ''}
     '';
+
+    installer.cloneConfigIncludes = relocatedModuleFiles.nixos ++ relocatedModuleFiles.others;
 
   };
 

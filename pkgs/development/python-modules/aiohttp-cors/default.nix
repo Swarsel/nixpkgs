@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
   aiohttp,
-  pytestCheckHook,
+  buildPythonPackage,
+  fetchpatch,
   pytest-aiohttp,
+  pytestCheckHook,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "aiohttp-cors";
   version = "0.8.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aio-libs";
@@ -24,22 +23,21 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/aio-libs/aiohttp-cors/pull/563
     (fetchpatch {
+      hash = "sha256-BvE5qqAx83+084khkHt4zjXgR7Bu/ceqMOOh/6fe5TA=";
       name = "replace-deprecated-asyncio.iscoroutinefunction-with-its-counterpart-from-inspect.patch";
       url = "https://github.com/aio-libs/aiohttp-cors/commit/efafc0f780a494377910f2328057f83e95f8bf74.patch";
-      hash = "sha256-BvE5qqAx83+084khkHt4zjXgR7Bu/ceqMOOh/6fe5TA=";
     })
   ];
-
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
-  pythonImportsCheck = [ "aiohttp_cors" ];
 
   nativeCheckInputs = [
     pytestCheckHook
     pytest-aiohttp
   ];
+
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  # interactive browser tests using selenium
+  disabledTestPaths = [ "tests/integration" ];
 
   disabledTests = [
     # async def functions are not natively supported and have been skipped.
@@ -49,13 +47,13 @@ buildPythonPackage rec {
     "test_raises_when_handler_not_extend"
   ];
 
-  # interactive browser tests using selenium
-  disabledTestPaths = [ "tests/integration" ];
+  pyproject = true;
+  pythonImportsCheck = [ "aiohttp_cors" ];
 
   meta = {
-    changelog = "https://github.com/aio-libs/aiohttp-cors/blob/${src.tag}/CHANGES.rst";
     description = "CORS support for aiohttp";
     homepage = "https://github.com/aio-libs/aiohttp-cors";
+    changelog = "https://github.com/aio-libs/aiohttp-cors/blob/${src.tag}/CHANGES.rst";
     license = lib.licenses.asl20;
     maintainers = [ ];
   };

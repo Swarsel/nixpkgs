@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   git,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,14 +19,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  dontBuild = true;
-
   installPhase = ''
     install -Dm755 -t $out/bin git-standup
 
     wrapProgram $out/bin/git-standup \
       --prefix PATH : "${lib.makeBinPath [ git ]}"
   '';
+
+  dontBuild = true;
 
   meta = {
     description = "Recall what you did on the last working day";

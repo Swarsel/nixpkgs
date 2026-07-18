@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  python3,
   fetchPypi,
   openssl,
+  python3,
   # Many Salt modules require various Python modules to be installed,
   # passing them in this array enables Salt to find them.
   extraInputs ? [ ],
@@ -12,7 +12,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "salt";
   version = "3008.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -60,17 +59,17 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   # Don't use fixed dependencies on Darwin
   env.USE_STATIC_REQUIREMENTS = "0";
-
   # The tests fail due to socket path length limits at the very least;
   # possibly there are more issues but I didn't leave the test suite running
   # as is it rather long.
   doCheck = false;
+  format = "setuptools";
 
   meta = {
+    description = "Portable, distributed, remote execution and configuration management system";
     homepage = "https://saltproject.io/";
     changelog = "https://docs.saltproject.io/en/latest/topics/releases/${finalAttrs.version}.html";
-    description = "Portable, distributed, remote execution and configuration management system";
-    maintainers = with lib.maintainers; [ Flakebi ];
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ Flakebi ];
   };
 })

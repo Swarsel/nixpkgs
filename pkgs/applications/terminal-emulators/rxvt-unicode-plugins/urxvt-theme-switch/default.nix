@@ -8,8 +8,6 @@ stdenv.mkDerivation {
   pname = "urxvt-theme-switch";
   version = "unstable-2014-12-21";
 
-  dontPatchShebangs = true;
-
   src = fetchFromGitHub {
     owner = "felixr";
     repo = "urxvt-theme-switch";
@@ -22,6 +20,8 @@ stdenv.mkDerivation {
     sed -i -e "s|/usr/bin/env||" color-themes
     cp color-themes $out/lib/urxvt/perl
   '';
+
+  dontPatchShebangs = true;
 
   meta = {
     description = "urxvt plugin that allows to switch color themes during runtime";

@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeDesktopItem,
-  copyDesktopItems,
-  openal,
-  pkg-config,
-  libogg,
-  libvorbis,
   SDL2,
   SDL2_image,
-  libGL,
-  libx11,
-  makeWrapper,
-  zlib,
+  copyDesktopItems,
   file,
+  libGL,
+  libogg,
+  libvorbis,
+  libx11,
+  makeDesktopItem,
+  makeWrapper,
+  openal,
+  pkg-config,
+  zlib,
   client ? true,
   server ? true,
 }:
@@ -57,22 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals server [ "server" ]
   ++ lib.optionals client [ "client" ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "assaultcube";
-      desktopName = "AssaultCube";
-      comment = "A multiplayer, first-person shooter game, based on the CUBE engine. Fast, arcade gameplay.";
-      genericName = "First-person shooter";
-      categories = [
-        "Game"
-        "ActionGame"
-        "Shooter"
-      ];
-      icon = "assaultcube";
-      exec = "assaultcube";
-    })
-  ];
-
   installPhase = ''
     runHook preInstall
 
@@ -98,11 +82,28 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Game"
+        "ActionGame"
+        "Shooter"
+      ];
+
+      comment = "A multiplayer, first-person shooter game, based on the CUBE engine. Fast, arcade gameplay.";
+      desktopName = "AssaultCube";
+      exec = "assaultcube";
+      genericName = "First-person shooter";
+      icon = "assaultcube";
+      name = "assaultcube";
+    })
+  ];
+
   meta = {
     description = "Fast and fun first-person-shooter based on the Cube fps";
     homepage = "https://assault.cubers.net";
-    platforms = lib.platforms.linux; # should work on darwin with a little effort.
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ darkonion0 ];
+    platforms = lib.platforms.linux; # should work on darwin with a little effort.
   };
 })

@@ -1,6 +1,7 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   ailment,
   archinfo,
   buildPythonPackage,
@@ -12,7 +13,6 @@
   cppheaderparser,
   cxxheaderparser,
   dpkt,
-  fetchFromGitHub,
   gitpython,
   itanium-demangler,
   mulpyplexer,
@@ -22,8 +22,8 @@
   protobuf,
   psutil,
   pycparser,
-  pyformlang,
   pydemumble,
+  pyformlang,
   pyvex,
   rich,
   rpyc,
@@ -38,7 +38,6 @@
 buildPythonPackage rec {
   pname = "angr";
   version = "9.2.193";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "angr";
@@ -47,8 +46,9 @@ buildPythonPackage rec {
     hash = "sha256-7wBfxHWD5FRin8pfKup4izJBQzFN5N5dQZqIto5y83k=";
   };
 
-  pythonRelaxDeps = [ "capstone" ];
-
+  # Tests have additional requirements, e.g., pypcode and angr binaries
+  # cle is executing the tests with the angr binaries
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -86,14 +86,7 @@ buildPythonPackage rec {
     unicorn = [ unicorn-angr ];
   };
 
-  setupPyBuildFlags = lib.optionals stdenv.hostPlatform.isLinux [
-    "--plat-name"
-    "linux"
-  ];
-
-  # Tests have additional requirements, e.g., pypcode and angr binaries
-  # cle is executing the tests with the angr binaries
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "angr"
@@ -101,6 +94,13 @@ buildPythonPackage rec {
     "cle"
     "pyvex"
     "archinfo"
+  ];
+
+  pythonRelaxDeps = [ "capstone" ];
+
+  setupPyBuildFlags = lib.optionals stdenv.hostPlatform.isLinux [
+    "--plat-name"
+    "linux"
   ];
 
   meta = {

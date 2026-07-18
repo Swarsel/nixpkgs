@@ -46,10 +46,10 @@ in
 optionalDeprecationWarning stdenvNoCC.mkDerivation (
   {
     inherit name;
-    builder = ./substitute.sh;
     inherit (args) src;
-    preferLocalBuild = true;
     allowSubstitutes = false;
+    builder = ./substitute.sh;
+    preferLocalBuild = true;
   }
   // args
   // lib.optionalAttrs (args ? substitutions) {

@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication {
   pname = "swaggerhole";
   version = "1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Liodeus";
@@ -17,6 +16,8 @@ python3.pkgs.buildPythonApplication {
     hash = "sha256-3HmIpn1A86PXZRL+SqMdr84O16hW1mCUWHKnOVolmx8=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -24,8 +25,7 @@ python3.pkgs.buildPythonApplication {
     whispers
   ];
 
-  # Project has no tests
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "swaggerhole"
@@ -33,9 +33,9 @@ python3.pkgs.buildPythonApplication {
 
   meta = {
     description = "Tool to searching for secret on swaggerhub";
-    mainProgram = "swaggerhole";
     homepage = "https://github.com/Liodeus/swaggerHole";
     license = with lib.licenses; [ gpl3Plus ];
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "swaggerhole";
   };
 }

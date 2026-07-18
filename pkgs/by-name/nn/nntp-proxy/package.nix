@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   libconfig,
-  pkg-config,
   libevent,
-  openssl,
   libxcrypt,
+  openssl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -21,6 +21,7 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libconfig
     libevent

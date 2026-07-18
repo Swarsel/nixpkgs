@@ -1,19 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   blurhash,
+  buildPythonPackage,
   cryptography,
   decorator,
   graphemeu,
   http-ece,
-  python-dateutil,
-  python-magic,
-  requests,
-  pytestCheckHook,
   pytest-cov-stub,
   pytest-mock,
   pytest-vcr,
+  pytestCheckHook,
+  python-dateutil,
+  python-magic,
+  requests,
   requests-mock,
   setuptools,
 }:
@@ -21,7 +21,6 @@
 buildPythonPackage rec {
   pname = "mastodon-py";
   version = "2.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "halcy";
@@ -29,6 +28,15 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-RsSM7TkNwsirT1ksaXP/IKOmrpPrNGh/16S77Up+3MM=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+    pytest-mock
+    pytest-vcr
+    requests-mock
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [ setuptools ];
 
@@ -43,27 +51,20 @@ buildPythonPackage rec {
   optional-dependencies = {
     blurhash = [ blurhash ];
     grapheme = [ graphemeu ];
+
     webpush = [
       http-ece
       cryptography
     ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-    pytest-mock
-    pytest-vcr
-    requests-mock
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "mastodon" ];
 
   meta = {
-    changelog = "https://github.com/halcy/Mastodon.py/blob/${src.tag}/CHANGELOG.rst";
     description = "Python wrapper for the Mastodon API";
     homepage = "https://github.com/halcy/Mastodon.py";
+    changelog = "https://github.com/halcy/Mastodon.py/blob/${src.tag}/CHANGELOG.rst";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

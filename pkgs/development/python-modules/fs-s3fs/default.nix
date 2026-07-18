@@ -1,16 +1,15 @@
 {
+  lib,
+  boto3,
   buildPythonPackage,
   fetchPypi,
-  lib,
   fs,
   six,
-  boto3,
 }:
 
 buildPythonPackage rec {
   pname = "fs-s3fs";
   version = "1.1.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -25,11 +24,12 @@ buildPythonPackage rec {
 
   # tests try to integrate an s3 bucket which can't be tested properly in an isolated environment.
   doCheck = false;
+  format = "setuptools";
 
   meta = {
+    description = "Amazon S3 filesystem for PyFilesystem2";
     homepage = "https://pypi.org/project/fs-s3fs/";
     license = lib.licenses.mit;
-    description = "Amazon S3 filesystem for PyFilesystem2";
     maintainers = [ ];
   };
 }

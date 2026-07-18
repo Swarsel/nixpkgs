@@ -2,34 +2,30 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  # tests
+  addBinToPathHook,
   buildPythonPackage,
-  pythonAtLeast,
-
-  # build-system
-  setuptools,
-
   # dependencies
   flask,
   matplotlib,
   numpy,
   pillow,
   psycopg2,
-  scipy,
-  tkinter,
-  typing-extensions,
-
-  # tests
-  addBinToPathHook,
-  pytestCheckHook,
   pytest-mock,
   pytest-xdist,
+  pytestCheckHook,
+  pythonAtLeast,
+  scipy,
+  # build-system
+  setuptools,
+  tkinter,
+  typing-extensions,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "ase";
   version = "3.29.0";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "ase";
@@ -37,6 +33,14 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-hMeGeQFoC+eWfHkJize21IdxLKAR7Oc0Txwg2BQIvWg=";
   };
+
+  nativeCheckInputs = [
+    addBinToPathHook
+    pytestCheckHook
+    pytest-mock
+    pytest-xdist
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -53,18 +57,6 @@ buildPythonPackage rec {
     tkinter
   ];
 
-  nativeCheckInputs = [
-    addBinToPathHook
-    pytestCheckHook
-    pytest-mock
-    pytest-xdist
-    writableTmpDirAsHomeHook
-  ];
-
-  pytestFlags = [
-    "-Wignore::DeprecationWarning"
-  ];
-
   disabledTests = [
     "test_fundamental_params"
     "test_ase_bandstructure"
@@ -78,6 +70,12 @@ buildPythonPackage rec {
     "test_ipi_protocol" # flaky
   ]
   ++ lib.optionals (pythonAtLeast "3.12") [ "test_info_calculators" ];
+
+  pyproject = true;
+
+  pytestFlags = [
+    "-Wignore::DeprecationWarning"
+  ];
 
   pythonImportsCheck = [ "ase" ];
 

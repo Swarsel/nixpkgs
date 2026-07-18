@@ -3,11 +3,11 @@
   stdenv,
   fetchurl,
   fetchpatch,
-  perl,
-  pkg-config,
-  netsurf-buildsystem,
   libparserutils,
   libwapcaplet,
+  netsurf-buildsystem,
+  perl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -53,15 +53,17 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://www.netsurf-browser.org/projects/libcss/";
+    inherit (netsurf-buildsystem.meta) maintainers platforms;
     description = "Cascading Style Sheets library for netsurf browser";
+
     longDescription = ''
       LibCSS is a CSS parser and selection engine. It aims to parse the forward
       compatible CSS grammar. It was developed as part of the NetSurf project
       and is available for use by other software, under a more permissive
       license.
     '';
+
+    homepage = "https://www.netsurf-browser.org/projects/libcss/";
     license = lib.licenses.mit;
-    inherit (netsurf-buildsystem.meta) maintainers platforms;
   };
 })

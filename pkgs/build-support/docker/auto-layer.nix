@@ -1,6 +1,6 @@
 {
-  jq,
   lib,
+  jq,
   python3,
   runCommand,
   writeText,
@@ -8,22 +8,24 @@
 
 {
   closureRoots,
-  excludePaths ? [ ],
-  maxLayers ? 100,
-  fromImage ? null,
   debug ? false,
+  excludePaths ? [ ],
+  fromImage ? null,
+  maxLayers ? 100,
 }:
 
 runCommand "layers.json"
   {
-    __structuredAttrs = true;
-    exportReferencesGraph.graph = closureRoots;
     inherit fromImage maxLayers;
+
     nativeBuildInputs = [
       jq
       python3
     ];
+
+    __structuredAttrs = true;
     excludePathsFile = writeText "excludePaths" (lib.concatMapStrings (x: x + "\n") excludePaths);
+    exportReferencesGraph.graph = closureRoots;
   }
   ''
     # Compute the number of layers that are already used by a potential

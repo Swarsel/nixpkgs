@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -23,13 +23,15 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/museoa/nixops-dns";
     description = "DNS server for resolving NixOps machines";
-    mainProgram = "nixops-dns";
+    homepage = "https://github.com/museoa/nixops-dns";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       kamilchm
       sorki
     ];
+
+    mainProgram = "nixops-dns";
   };
 })

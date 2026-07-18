@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  fetchzip,
   autoreconfHook,
   dos2unix,
+  fetchzip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,8 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://www.libpgf.org/";
     description = "Progressive Graphics Format";
+    homepage = "https://www.libpgf.org/";
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.unix;
   };

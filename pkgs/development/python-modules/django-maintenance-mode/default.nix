@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
   python,
   python-fsutil,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "django-maintenance-mode";
   version = "0.22.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fabiocaccamo";
@@ -35,6 +34,7 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  pyproject = true;
   pythonImportsCheck = [ "maintenance_mode" ];
 
   meta = {

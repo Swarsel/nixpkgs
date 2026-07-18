@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -23,8 +23,8 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/shoenig/marathonctl";
     description = "CLI tool for Marathon";
+    homepage = "https://github.com/shoenig/marathonctl";
     license = lib.licenses.mit;
     mainProgram = "marathonctl";
   };

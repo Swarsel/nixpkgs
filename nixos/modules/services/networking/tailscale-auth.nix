@@ -20,66 +20,45 @@ in
 {
   options.services.tailscaleAuth = {
     enable = mkEnableOption "tailscale.nginx-auth, to authenticate users via tailscale";
-
     package = mkPackageOption pkgs "tailscale-nginx-auth" { };
 
-    user = mkOption {
-      type = types.str;
-      default = "tailscale-nginx-auth";
-      description = "User which runs tailscale-nginx-auth";
-    };
-
     group = mkOption {
-      type = types.str;
       default = "tailscale-nginx-auth";
       description = "Group which runs tailscale-nginx-auth";
+      type = types.str;
     };
 
     socketPath = mkOption {
       default = "/run/tailscale-nginx-auth/tailscale-nginx-auth.sock";
-      type = types.path;
+
       description = ''
         Path of the socket listening to authorization requests.
       '';
+
+      type = types.path;
+    };
+
+    user = mkOption {
+      default = "tailscale-nginx-auth";
+      description = "User which runs tailscale-nginx-auth";
+      type = types.str;
     };
   };
 
   config = mkIf cfg.enable {
     services.tailscale.enable = true;
 
-    users.users.${cfg.user} = {
-      isSystemUser = true;
-      inherit (cfg) group;
-    };
-    users.groups.${cfg.group} = { };
-
-    systemd.sockets.tailscale-nginx-auth = {
-      description = "Tailscale NGINX Authentication socket";
-      partOf = [ "tailscale-nginx-auth.service" ];
-      wantedBy = [ "sockets.target" ];
-      listenStreams = [ cfg.socketPath ];
-      socketConfig = {
-        SocketMode = "0660";
-        SocketUser = cfg.user;
-        SocketGroup = cfg.group;
-      };
-    };
-
     systemd.services.tailscale-nginx-auth = {
+      after = [ "tailscaled.service" ];
       description = "Tailscale NGINX Authentication service";
       requires = [ "tailscale-nginx-auth.socket" ];
-      after = [ "tailscaled.service" ];
 
       serviceConfig = {
-        ExecStart = getExe cfg.package;
-        RuntimeDirectory = "tailscale-nginx-auth";
-        User = cfg.user;
-        Group = cfg.group;
-
         BindPaths = [ "/run/tailscale/tailscaled.sock" ];
-
         CapabilityBoundingSet = "";
         DeviceAllow = "";
+        ExecStart = getExe cfg.package;
+        Group = cfg.group;
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
         PrivateDevices = true;
@@ -91,13 +70,15 @@ in
         ProtectKernelLogs = true;
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
-        RestrictNamespaces = true;
+        Restart = "on-failure";
         RestrictAddressFamilies = [ "AF_UNIX" ];
+        RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
-
+        RuntimeDirectory = "tailscale-nginx-auth";
         SystemCallArchitectures = "native";
         SystemCallErrorNumber = "EPERM";
+
         SystemCallFilter = [
           "@system-service"
           "~@cpu-emulation"
@@ -109,8 +90,29 @@ in
           "~@setuid"
         ];
 
-        Restart = "on-failure";
+        User = cfg.user;
       };
+    };
+
+    systemd.sockets.tailscale-nginx-auth = {
+      description = "Tailscale NGINX Authentication socket";
+      listenStreams = [ cfg.socketPath ];
+      partOf = [ "tailscale-nginx-auth.service" ];
+
+      socketConfig = {
+        SocketGroup = cfg.group;
+        SocketMode = "0660";
+        SocketUser = cfg.user;
+      };
+
+      wantedBy = [ "sockets.target" ];
+    };
+
+    users.groups.${cfg.group} = { };
+
+    users.users.${cfg.user} = {
+      inherit (cfg) group;
+      isSystemUser = true;
     };
   };
 

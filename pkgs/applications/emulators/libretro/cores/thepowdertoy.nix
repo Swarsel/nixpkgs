@@ -1,11 +1,10 @@
 {
   lib,
-  cmake,
   fetchFromGitHub,
+  cmake,
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "thepowdertoy";
   version = "0-unstable-2026-04-20";
 
   src = fetchFromGitHub {
@@ -14,8 +13,6 @@ mkLibretroCore {
     rev = "dcb5e41f1f9800192ea07ea43459413c5a065d9f";
     hash = "sha256-FDotG/ngmrxgyN7YQ8SK/ZQHKWkwZ5hhg0qsNNXmaNc=";
   };
-
-  extraNativeBuildInputs = [ cmake ];
 
   cmakeFlags = with lib.strings; [
     # Workaround the following error:
@@ -30,9 +27,10 @@ mkLibretroCore {
     (cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "3.5")
   ];
 
-  makefile = "Makefile";
-
   postBuild = "cd src";
+  core = "thepowdertoy";
+  extraNativeBuildInputs = [ cmake ];
+  makefile = "Makefile";
 
   meta = {
     description = "Port of The Powder Toy to libretro";

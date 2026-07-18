@@ -1,35 +1,25 @@
 {
   lib,
   stdenv,
-  # The unwrapped gnuradio derivation
-  unwrapped,
-  # If it's a minimal build, we don't want to wrap it with lndir and
-  # wrapProgram..
-  doWrap ? true,
-  # For the wrapper
-  makeWrapper,
-  # For lndir
-  lndir,
-  # To define a the gnuradio.pkgs scope
-  newScope,
-  # For Emulating wrapGAppsHook3
-  gsettings-desktop-schemas,
-  glib,
-  hicolor-icon-theme,
-  pango,
-  json-glib,
-  dconf,
-  gobject-introspection,
-  librsvg,
-  gdk-pixbuf,
-  harfbuzz,
   at-spi2-core,
   atk,
-  # For Adding additional GRC blocks
-  extraPackages ? [ ],
-  # For Adding additional python packaages
-  extraPythonPackages ? [ ],
-  soapysdr, # For it's passthru.searchPath
+  dconf,
+  gdk-pixbuf,
+  glib,
+  gobject-introspection,
+  # For Emulating wrapGAppsHook3
+  gsettings-desktop-schemas,
+  harfbuzz,
+  hicolor-icon-theme,
+  json-glib,
+  librsvg,
+  # For lndir
+  lndir,
+  # For the wrapper
+  makeWrapper,
+  # To define a the gnuradio.pkgs scope
+  newScope,
+  pango,
   # soapysdr plugins we add by default. Ideally, we should have a
   # soapysdrPackages = soapysdr.pkgs attribute set, but until now this wasn't
   # crucial.
@@ -40,7 +30,19 @@
   soapyplutosdr,
   soapyremote,
   soapyrtlsdr,
+  soapysdr, # For it's passthru.searchPath
   soapyuhd,
+  # The unwrapped gnuradio derivation
+  unwrapped,
+  # If it's a minimal build, we don't want to wrap it with lndir and
+  # wrapProgram..
+  doWrap ? true,
+  # Allow to add whatever you want to the wrapper
+  extraMakeWrapperArgs ? [ ],
+  # For Adding additional GRC blocks
+  extraPackages ? [ ],
+  # For Adding additional python packaages
+  extraPythonPackages ? [ ],
   # For adding / changing soapysdr packages, like soapsdr-with-plugins does
   extraSoapySdrPackages ? [
     soapyairspy
@@ -54,8 +56,6 @@
   ++ lib.optionals (unwrapped.hasFeature "gr-uhd") [
     soapyuhd
   ],
-  # Allow to add whatever you want to the wrapper
-  extraMakeWrapperArgs ? [ ],
   packageOverrides ? (self: super: { }),
 }:
 
@@ -198,6 +198,7 @@ let
       newScope
       packageOverrides
       ;
+
     gnuradio = unwrapped;
   };
   passthru = unwrapped.passthru // {
@@ -206,6 +207,7 @@ let
       pythonPkgs
       unwrapped
       ;
+
     pkgs = packages;
   };
   self =
@@ -217,10 +219,14 @@ let
           version
           passthru
           ;
+
+        inherit (unwrapped) meta;
+
         nativeBuildInputs = [
           makeWrapper
           lndir
         ];
+
         buildCommand = ''
           ${builtins.concatStringsSep "\n" (
             map (output: ''
@@ -251,7 +257,6 @@ let
             wrapProgram "$i" ${makeWrapperArgs}
           done
         '';
-        inherit (unwrapped) meta;
       }
     else
       unwrapped.overrideAttrs (_: {

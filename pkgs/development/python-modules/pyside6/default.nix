@@ -3,14 +3,14 @@
   stdenv,
   cmake,
   cups,
+  fetchpatch,
+  llvmPackages,
+  moveBuildTree,
   ninja,
   python,
   pythonImportsCheckHook,
-  moveBuildTree,
   shiboken6,
-  llvmPackages,
   symlinkJoin,
-  fetchpatch,
 }:
 let
   packages = with python.pkgs.qt6; [
@@ -53,21 +53,18 @@ let
 in
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "pyside6";
-
   inherit (shiboken6) version src;
-
-  sourceRoot = "${finalAttrs.src.name}/sources/pyside6";
-
-  patches = [
-    ./fix-paths.patch
-  ];
+  pname = "pyside6";
 
   # Qt Designer plugin moved to a separate output to reduce closure size
   # for downstream things
   outputs = [
     "out"
     "devtools"
+  ];
+
+  patches = [
+    ./fix-paths.patch
   ];
 
   # cmake/Macros/PySideModules.cmake supposes that all Qt frameworks on macOS
@@ -85,11 +82,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail \
         "Designer" ""
   '';
-
-  # "Couldn't find libclang.dylib You will likely need to add it manually to PATH to ensure the build succeeds."
-  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
-    LLVM_INSTALL_DIR = "${lib.getLib llvmPackages.libclang}/lib";
-  };
 
   nativeBuildInputs = [
     cmake
@@ -119,7 +111,10 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dis_pyside6_superproject_build=1"
   ];
 
-  dontWrapQtApps = true;
+  # "Couldn't find libclang.dylib You will likely need to add it manually to PATH to ensure the build succeeds."
+  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
+    LLVM_INSTALL_DIR = "${lib.getLib llvmPackages.libclang}/lib";
+  };
 
   postInstall = ''
     cd ../../..
@@ -131,17 +126,21 @@ stdenv.mkDerivation (finalAttrs: {
     moveToOutput "${python.pkgs.qt6.qtbase.qtPluginPrefix}/designer" "$devtools"
   '';
 
+  dontWrapQtApps = true;
   pythonImportsCheck = [ "PySide6" ];
+  sourceRoot = "${finalAttrs.src.name}/sources/pyside6";
 
   meta = {
     description = "Python bindings for Qt";
+    homepage = "https://wiki.qt.io/Qt_for_Python";
+    changelog = "https://code.qt.io/cgit/pyside/pyside-setup.git/tree/doc/changelogs/changes-${finalAttrs.version}?h=v${finalAttrs.version}";
+
     license = with lib.licenses; [
       lgpl3Only
       gpl2Only
       gpl3Only
     ];
-    homepage = "https://wiki.qt.io/Qt_for_Python";
-    changelog = "https://code.qt.io/cgit/pyside/pyside-setup.git/tree/doc/changelogs/changes-${finalAttrs.version}?h=v${finalAttrs.version}";
+
     maintainers = [ ];
     platforms = lib.platforms.all;
   };

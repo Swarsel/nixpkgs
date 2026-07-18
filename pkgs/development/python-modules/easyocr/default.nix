@@ -1,27 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   hdf5,
   numpy,
   opencv-python-headless,
   pillow,
   pyaml,
   pyclipper,
+  python,
   python-bidi,
   scikit-image,
   scipy,
+  setuptools,
   shapely,
   torch,
   torchvision,
-  python,
 }:
 
 buildPythonPackage rec {
   pname = "easyocr";
   version = "1.7.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "JaidedAI";
@@ -30,16 +29,22 @@ buildPythonPackage rec {
     hash = "sha256-9mrAxt2lphYtLW81lGO5SYHsnMnSA/VpHiY2NffD/Js=";
   };
 
+  # downloads detection model from the internet
+  doCheck = false;
+
+  checkPhase = ''
+    runHook preCheck
+
+    export HOME="$(mktemp -d)"
+    pushd unit_test
+    ${python.interpreter} run_unit_test.py --easyocr "$out/${python.sitePackages}/easyocr"
+    popd
+
+    runHook postCheck
+  '';
+
   build-system = [
     setuptools
-  ];
-
-  pythonRelaxDeps = [
-    "torchvision"
-  ];
-
-  pythonRemoveDeps = [
-    "ninja"
   ];
 
   dependencies = [
@@ -57,28 +62,23 @@ buildPythonPackage rec {
     torchvision
   ];
 
-  checkPhase = ''
-    runHook preCheck
-
-    export HOME="$(mktemp -d)"
-    pushd unit_test
-    ${python.interpreter} run_unit_test.py --easyocr "$out/${python.sitePackages}/easyocr"
-    popd
-
-    runHook postCheck
-  '';
-
-  # downloads detection model from the internet
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "easyocr" ];
+
+  pythonRelaxDeps = [
+    "torchvision"
+  ];
+
+  pythonRemoveDeps = [
+    "ninja"
+  ];
 
   meta = {
     description = "Ready-to-use OCR with 80+ supported languages and all popular writing scripts";
-    mainProgram = "easyocr";
     homepage = "https://github.com/JaidedAI/EasyOCR";
     changelog = "https://github.com/JaidedAI/EasyOCR/releases/tag/v${version}";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "easyocr";
   };
 }

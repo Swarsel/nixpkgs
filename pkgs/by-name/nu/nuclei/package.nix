@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -17,11 +17,9 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-CKb1RUk3Qdmj6umXBWfoQSaqIwNMbcia5XeO08xNCa4=";
-
-  proxyVendor = true; # hash mismatch between Linux and Darwin
-
-  subPackages = [ "cmd/nuclei/" ];
-
+  # Test files are not part of the release tarball
+  doCheck = false;
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
@@ -29,15 +27,13 @@ buildGoModule (finalAttrs: {
     "-s"
   ];
 
-  # Test files are not part of the release tarball
-  doCheck = false;
-
-  doInstallCheck = true;
-
+  proxyVendor = true; # hash mismatch between Linux and Darwin
+  subPackages = [ "cmd/nuclei/" ];
   versionCheckProgramArg = "-version";
 
   meta = {
     description = "Tool for configurable targeted scanning";
+
     longDescription = ''
       Nuclei is used to send requests across targets based on a template
       leading to zero false positives and providing effective scanning
@@ -45,13 +41,16 @@ buildGoModule (finalAttrs: {
       reconnaissance phase to quickly check for low hanging fruits or
       CVEs across targets that are known and easily detectable.
     '';
+
     homepage = "https://github.com/projectdiscovery/nuclei";
     changelog = "https://github.com/projectdiscovery/nuclei/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       fab
       Misaka13514
     ];
+
     mainProgram = "nuclei";
   };
 })

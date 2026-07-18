@@ -1,7 +1,7 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
   cmake,
 }:
 
@@ -28,6 +28,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Lightweight library to simplify and generalize unit tests for C";
+
     longDescription = ''
       There are a variety of C unit testing frameworks available however
       many of them are fairly complex and require the latest compiler
@@ -53,11 +54,14 @@ stdenv.mkDerivation (finalAttrs: {
 
       This is the successor of Google's Cmockery.
     '';
+
     homepage = "https://cmocka.org/";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       kragniz
     ];
+
+    platforms = lib.platforms.all;
   };
 })

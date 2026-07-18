@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -10,11 +10,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   src = fetchzip {
     url = "https://github.com/rektdeckard/departure-mono/releases/download/v${finalAttrs.version}/DepartureMono-${finalAttrs.version}.zip";
-    stripRoot = false;
     hash = "sha256-XYL76L266MKqClxfbPn/C6+x/vcs7AD56DtiDmQam2A=";
+    stripRoot = false;
   };
-
-  sourceRoot = "${finalAttrs.src.name}/DepartureMono-${finalAttrs.version}";
 
   installPhase = ''
     runHook preInstall
@@ -26,12 +24,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/DepartureMono-${finalAttrs.version}";
+
   meta = {
-    changelog = "https://github.com/rektdeckard/departure-mono/releases/tag/v${finalAttrs.version}";
     description = "Departure Mono is a monospaced pixel font with a lo-fi technical vibe";
     homepage = "https://departuremono.com/";
+    changelog = "https://github.com/rektdeckard/departure-mono/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 })

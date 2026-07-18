@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchurl,
+  buildPythonPackage,
   numpy,
   torch,
 }:
@@ -15,14 +15,13 @@ buildPythonPackage rec {
     hash = "sha256-IHVCXnkVy3lXw22ISpeMdt5T7UZSzHp8sbWGF/emwGw=";
   };
 
-  format = "wheel";
-
-  dontBuild = true;
-
   dependencies = [
     numpy
     torch
   ];
+
+  dontBuild = true;
+  format = "wheel";
 
   pythonImportsCheck = [
     "nvidia_dlprof_pytorch_nvtx"

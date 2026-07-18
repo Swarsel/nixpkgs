@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest,
   pytestCheckHook,
   uv-build,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pytest-insta";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vberlier";
@@ -25,17 +24,13 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "uv_build>=0.9.8,<0.10.0" "uv_build"
   '';
 
-  pythonRelaxDeps = [ "wrapt" ];
-
-  build-system = [ uv-build ];
-
   buildInputs = [ pytest ];
-
-  dependencies = [ wrapt ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ uv-build ];
+  dependencies = [ wrapt ];
+  pyproject = true;
   pythonImportsCheck = [ "pytest_insta" ];
+  pythonRelaxDeps = [ "wrapt" ];
 
   meta = {
     description = "Pytest plugin for snapshot testing";

@@ -25,20 +25,33 @@ in
   options = {
     services.rsnapshot = {
       enable = lib.mkEnableOption "rsnapshot backups";
+
+      cronIntervals = lib.mkOption {
+        default = { };
+
+        description = ''
+          Periodicity at which intervals should be run by cron.
+          Note that the intervals also have to exist in configuration
+          as retain options.
+        '';
+
+        example = {
+          daily = "50 21 * * *";
+          hourly = "0 * * * *";
+        };
+
+        type = lib.types.attrsOf lib.types.str;
+      };
+
       enableManualRsnapshot = lib.mkOption {
-        description = "Whether to enable manual usage of the rsnapshot command with this module.";
         default = true;
+        description = "Whether to enable manual usage of the rsnapshot command with this module.";
         type = lib.types.bool;
       };
 
       extraConfig = lib.mkOption {
         default = "";
-        example = ''
-          retains	hourly	24
-          retain	daily	365
-          backup	/home/	localhost/
-        '';
-        type = lib.types.lines;
+
         description = ''
           rsnapshot configuration option in addition to the defaults from
           rsnapshot and this module.
@@ -49,20 +62,14 @@ in
           The "extra" in the option name might be a little misleading right
           now, as it is required to get a functional configuration.
         '';
-      };
 
-      cronIntervals = lib.mkOption {
-        default = { };
-        example = {
-          hourly = "0 * * * *";
-          daily = "50 21 * * *";
-        };
-        type = lib.types.attrsOf lib.types.str;
-        description = ''
-          Periodicity at which intervals should be run by cron.
-          Note that the intervals also have to exist in configuration
-          as retain options.
+        example = ''
+          retains	hourly	24
+          retain	daily	365
+          backup	/home/	localhost/
         '';
+
+        type = lib.types.lines;
       };
     };
   };
@@ -75,8 +82,8 @@ in
         ) cfg.cronIntervals;
       }
       (lib.mkIf cfg.enableManualRsnapshot {
-        environment.systemPackages = [ pkgs.rsnapshot ];
         environment.etc."rsnapshot.conf".source = cfgfile;
+        environment.systemPackages = [ pkgs.rsnapshot ];
       })
     ]
   );

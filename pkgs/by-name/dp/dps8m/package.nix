@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  libuv,
   coreutils-full,
-  pkg-config,
   gnugrep,
   gnused,
+  libuv,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,13 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  env = {
-    ENV = "${coreutils-full}/bin/env";
-    GREP = "${gnugrep}/bin/grep";
-    SED = "${gnused}/bin/sed";
-    PREFIX = placeholder "out";
-  };
-
   nativeBuildInputs = [
     coreutils-full
     pkg-config
@@ -37,16 +30,25 @@ stdenv.mkDerivation (finalAttrs: {
     libuv
   ];
 
+  env = {
+    ENV = "${coreutils-full}/bin/env";
+    GREP = "${gnugrep}/bin/grep";
+    PREFIX = placeholder "out";
+    SED = "${gnused}/bin/sed";
+  };
+
   meta = {
     description = "GE / Honeywell / Bull DPS-8/M mainframe simulator";
     homepage = "https://gitlab.com/dps8m/dps8m";
     changelog = "https://gitlab.com/dps8m/dps8m/-/wikis/DPS8M-${finalAttrs.src.rev}-Release-Notes";
     license = lib.licenses.icu;
+
     maintainers = with lib.maintainers; [
       matthewcroughan
       sarcasticadmin
     ];
-    mainProgram = "dps8m";
+
     platforms = lib.platforms.all;
+    mainProgram = "dps8m";
   };
 })

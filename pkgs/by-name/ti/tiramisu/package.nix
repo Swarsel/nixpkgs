@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   glib,
+  pkg-config,
   vala,
 }:
 
@@ -18,29 +18,32 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-owYk/YFwJbqO6/dbGKPE8SnmmH4KvH+o6uWptqQtpfI=";
   };
 
-  buildInputs = [ glib ];
-
   nativeBuildInputs = [
     pkg-config
     vala
   ];
 
+  buildInputs = [ glib ];
   makeFlags = [ "PREFIX=$(out)" ];
 
   meta = {
     description = "Desktop notifications, the UNIX way";
+
     longDescription = ''
       tiramisu is a notification daemon based on dunst that outputs notifications
       to STDOUT in order to allow the user to process notifications any way they
       prefer.
     '';
+
     homepage = "https://github.com/Sweets/tiramisu";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       wishfort36
       moni
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "tiramisu";
   };
 })

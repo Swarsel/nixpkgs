@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  virtualenv,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
+  virtualenv,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "virtualenv-clone";
   version = "0.5.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "edwardgeorge";
@@ -23,8 +22,6 @@ buildPythonPackage (finalAttrs: {
     # https://github.com/edwardgeorge/virtualenv-clone/pull/84
     ./fix-pyvenv-cfg-path.patch
   ];
-
-  build-system = [ setuptools ];
 
   postPatch = ''
     substituteInPlace tests/__init__.py \
@@ -43,16 +40,17 @@ buildPythonPackage (finalAttrs: {
         "pth = '$(mktemp -d)/test_fixup_pth_file.pth'"
   '';
 
-  dependencies = [ virtualenv ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  dependencies = [ virtualenv ];
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/edwardgeorge/virtualenv-clone";
     description = "Script to clone virtualenvs";
-    mainProgram = "virtualenv-clone";
+    homepage = "https://github.com/edwardgeorge/virtualenv-clone";
     changelog = "https://github.com/edwardgeorge/virtualenv-clone/blob/${finalAttrs.src.tag}/changelog.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ skohtv ];
+    mainProgram = "virtualenv-clone";
   };
 })

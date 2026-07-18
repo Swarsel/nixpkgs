@@ -1,29 +1,29 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitLab,
-  openssl,
-  libGL,
-  vulkan-loader,
-  wayland,
-  wayland-protocols,
-  libxkbcommon,
-  libx11,
-  libxrandr,
-  libxi,
-  libxcursor,
-  udev,
-  alsa-lib,
   stdenv,
-  libxcb,
+  fetchFromGitLab,
+  alsa-lib,
   bzip2,
   cmake,
   fontconfig,
   freetype,
-  pkg-config,
+  libGL,
+  libx11,
+  libxcb,
+  libxcursor,
+  libxi,
+  libxkbcommon,
+  libxrandr,
   makeWrapper,
-  writeShellScript,
+  openssl,
   patchelf,
+  pkg-config,
+  rustPlatform,
+  udev,
+  vulkan-loader,
+  wayland,
+  wayland-protocols,
+  writeShellScript,
 }:
 let
   version = "0.17.0";
@@ -58,8 +58,8 @@ let
     '';
 in
 rustPlatform.buildRustPackage {
-  pname = "airshipper";
   inherit version;
+  pname = "airshipper";
 
   src = fetchFromGitLab {
     owner = "Veloren";
@@ -68,7 +68,11 @@ rustPlatform.buildRustPackage {
     hash = "sha256-M89RswC08MZnNfk2T1+rtDajTpDGTnJoZ2U8bU5U2+0=";
   };
 
-  cargoHash = "sha256-ry0hFvMDnotDQu6mqgyt+6hKOvGRJLmZKs3SxEVtDRg=";
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    makeWrapper
+  ];
 
   buildInputs = [
     fontconfig
@@ -81,13 +85,10 @@ rustPlatform.buildRustPackage {
     libxi
     libxcursor
   ];
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    makeWrapper
-  ];
 
+  cargoHash = "sha256-ry0hFvMDnotDQu6mqgyt+6hKOvGRJLmZKs3SxEVtDRg=";
   env.RUSTC_BOOTSTRAP = 1; # We need rust unstable features
+  doCheck = false;
 
   postInstall = ''
     install -Dm444 -t "$out/share/applications" "client/assets/net.veloren.airshipper.desktop"
@@ -119,11 +120,11 @@ rustPlatform.buildRustPackage {
         --prefix LD_LIBRARY_PATH : "${libPath}"
     '';
 
-  doCheck = false;
   cargoBuildFlags = [
     "--package"
     "airshipper"
   ];
+
   cargoTestFlags = [
     "--package"
     "airshipper"
@@ -131,9 +132,9 @@ rustPlatform.buildRustPackage {
 
   meta = {
     description = "Provides automatic updates for the voxel RPG Veloren";
-    mainProgram = "airshipper";
     homepage = "https://www.veloren.net";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ yusdacra ];
+    mainProgram = "airshipper";
   };
 }

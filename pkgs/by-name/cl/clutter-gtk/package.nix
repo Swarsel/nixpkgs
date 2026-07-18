@@ -1,22 +1,22 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  pkg-config,
+  fetchurl,
+  clutter,
+  gnome,
+  gobject-introspection,
+  gtk3,
   meson,
   ninja,
-  gobject-introspection,
-  clutter,
-  gtk3,
-  gnome,
+  pkg-config,
 }:
 
 let
   version = "1.8.4";
 in
 stdenv.mkDerivation rec {
-  pname = "clutter-gtk";
   inherit version;
+  pname = "clutter-gtk";
 
   src = fetchurl {
     url = "mirror://gnome/sources/clutter-gtk/${lib.versions.majorMinor version}/clutter-gtk-${version}.tar.xz";
@@ -28,10 +28,12 @@ stdenv.mkDerivation rec {
     "dev"
   ];
 
-  propagatedBuildInputs = [
-    clutter
-    gtk3
-  ];
+  postPatch = ''
+    # ld: malformed 32-bit x.y.z version number: =1
+    substituteInPlace meson.build \
+      --replace "host_system == 'darwin'" "false"
+  '';
+
   nativeBuildInputs = [
     meson
     ninja
@@ -39,11 +41,10 @@ stdenv.mkDerivation rec {
     gobject-introspection
   ];
 
-  postPatch = ''
-    # ld: malformed 32-bit x.y.z version number: =1
-    substituteInPlace meson.build \
-      --replace "host_system == 'darwin'" "false"
-  '';
+  propagatedBuildInputs = [
+    clutter
+    gtk3
+  ];
 
   postBuild = "rm -rf $out/share/gtk-doc";
 

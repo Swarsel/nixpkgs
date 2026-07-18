@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   beautifulsoup4,
   buildPythonPackage,
-  fetchFromGitHub,
   fetchpatch,
   filelock,
   lxml,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "snscrape";
   version = "0.7.0.20230622";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "JustAnotherArchivist";
@@ -25,11 +24,17 @@ buildPythonPackage rec {
   patches = [
     # Fix find_module deprecation, https://github.com/JustAnotherArchivist/snscrape/pull/1036
     (fetchpatch {
+      hash = "sha256-6O9bZ5GlTPuR0MML/O4DDRBcDX/CJbU54ZE551cfPHo=";
       name = "fix-find-module.patch";
       url = "https://github.com/JustAnotherArchivist/snscrape/commit/7f4717aaaaa8d4c96fa1dbe72ded799a722732ee.patch";
-      hash = "sha256-6O9bZ5GlTPuR0MML/O4DDRBcDX/CJbU54ZE551cfPHo=";
     })
   ];
+
+  # There are no tests; make sure the executable works.
+  checkPhase = ''
+    export PATH=$PATH:$out/bin
+    snscrape --help
+  '';
 
   build-system = [ setuptools-scm ];
 
@@ -41,12 +46,7 @@ buildPythonPackage rec {
   ]
   ++ requests.optional-dependencies.socks;
 
-  # There are no tests; make sure the executable works.
-  checkPhase = ''
-    export PATH=$PATH:$out/bin
-    snscrape --help
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "snscrape" ];
 
   meta = {

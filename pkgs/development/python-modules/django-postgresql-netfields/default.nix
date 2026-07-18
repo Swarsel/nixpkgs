@@ -1,24 +1,23 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
-  netaddr,
-  six,
-  fetchFromGitHub,
   djangorestframework,
+  netaddr,
   # required for tests
   postgresql,
   postgresqlTestHook,
   psycopg2,
-  pytestCheckHook,
   pytest-django,
+  pytestCheckHook,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "django-postgresql-netfields";
   version = "1.4.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "jimfunk";
@@ -33,6 +32,7 @@ buildPythonPackage rec {
     six
   ];
 
+  env.DJANGO_SETTINGS_MODULE = "testsettings";
   doCheck = !stdenv.hostPlatform.isDarwin; # could not create shared memory segment: Operation not permitted
 
   nativeCheckInputs = [
@@ -44,8 +44,8 @@ buildPythonPackage rec {
     pytest-django
   ];
 
+  format = "setuptools";
   postgresqlTestUserOptions = "LOGIN SUPERUSER";
-  env.DJANGO_SETTINGS_MODULE = "testsettings";
 
   meta = {
     description = "Django PostgreSQL netfields implementation";

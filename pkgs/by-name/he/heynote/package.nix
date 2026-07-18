@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchurl,
   appimageTools,
   desktop-file-utils,
-  fetchurl,
-  lib,
   nix-update-script,
 }:
 let
@@ -21,7 +21,6 @@ let
 in
 appimageTools.wrapType2 {
   inherit pname version src;
-
   nativeBuildInputs = [ desktop-file-utils ];
 
   extraInstallCommands = ''
@@ -39,15 +38,17 @@ appimageTools.wrapType2 {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    mainProgram = "heynote";
     description = "Dedicated scratchpad for developers";
     homepage = "https://heynote.com/";
     changelog = "https://github.com/heyman/heynote/releases/v${version}";
+
     license = with lib.licenses; [
       mit
       commons-clause
     ];
+
     maintainers = with lib.maintainers; [ jasoncrevier ];
     platforms = lib.platforms.x86_64;
+    mainProgram = "heynote";
   };
 }

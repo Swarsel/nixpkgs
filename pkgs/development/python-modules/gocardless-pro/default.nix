@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  requests,
-  six,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  requests,
   responses,
+  setuptools,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "gocardless-pro";
   version = "3.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gocardless";
@@ -21,19 +20,19 @@ buildPythonPackage rec {
     hash = "sha256-XD5GUiSHTq/DLrKo6FY4moNnbFpXkVJWM13Yu6c+tZw=";
   };
 
-  build-system = [ setuptools ];
-
   propagatedBuildInputs = [
     requests
     six
   ];
 
-  pythonImportsCheck = [ "gocardless_pro" ];
-
   nativeCheckInputs = [
     pytestCheckHook
     responses
   ];
+
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "gocardless_pro" ];
 
   meta = {
     description = "Client library for the GoCardless Pro API";

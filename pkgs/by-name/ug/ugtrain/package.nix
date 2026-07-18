@@ -8,8 +8,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.4.1";
   pname = "ugtrain";
+  version = "0.4.1";
 
   src = fetchFromGitHub {
     owner = "ugtrain";
@@ -25,10 +25,10 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/ugtrain/ugtrain";
     description = "Universal Elite Game Trainer for CLI (Linux game trainer research project)";
+    homepage = "https://github.com/ugtrain/ugtrain";
+    license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ mtrsk ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl3Only;
   };
 })

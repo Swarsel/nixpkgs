@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   django,
-  six,
   pytest-django,
-  setuptools,
   pytestCheckHook,
+  setuptools,
+  six,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "django-annoying";
   version = "0.10.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "skorokithakis";
@@ -21,6 +20,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-zBOHVar4iKb+BioIwmDosNZKi/0YcjYfBusn0Lv8pMw=";
   };
 
+  env.DJANGO_SETTINGS_MODULE = "tests.settings";
+
+  nativeCheckInputs = [
+    pytest-django
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,12 +34,7 @@ buildPythonPackage (finalAttrs: {
     six
   ];
 
-  env.DJANGO_SETTINGS_MODULE = "tests.settings";
-
-  nativeCheckInputs = [
-    pytest-django
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   meta = {
     description = "Django application that tries to eliminate annoying things in the Django framework";

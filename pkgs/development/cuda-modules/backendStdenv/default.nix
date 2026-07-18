@@ -6,12 +6,12 @@
 # E.g. for cudaPackages_12_9 we use gcc14 with gcc's libstdc++
 # Cf. https://github.com/NixOS/nixpkgs/pull/218265 for context
 {
+  lib,
+  stdenv,
   _cuda,
   config,
   cudaMajorMinorVersion,
-  lib,
   pkgs,
-  stdenv,
   stdenvAdapters,
 }:
 let
@@ -60,11 +60,35 @@ let
   ) allSortedCudaCapabilities;
 
   passthruExtra = {
-    nvccHostCCMatchesStdenvCC = backendStdenv.cc == stdenv.cc;
+    # The resolved requested or default CUDA capabilities.
+    cudaCapabilities =
+      if config.cudaCapabilities or [ ] != [ ] then
+        config.cudaCapabilities
+      else
+        passthruExtra.defaultCudaCapabilities;
 
+    # Sets whether packages should be built with forward compatibility.
+    # TODO(@connorbaker): If the requested CUDA capabilities are not supported by the current CUDA version,
+    # should we throw an evaluation warning and build with forward compatibility?
+    cudaForwardCompat = config.cudaForwardCompat or true;
+
+    # Find the default set of capabilities for this CUDA version using the list of supported capabilities.
+    # Includes only baseline capabilities.
+    defaultCudaCapabilities = filter (
+      cudaCapability:
+      _cudaCapabilityIsDefault cudaMajorMinorVersion cudaCapabilityToInfo.${cudaCapability}
+    ) passthruExtra.supportedCudaCapabilities;
+
+    # Whether the requested CUDA capabilities include architecture-specific CUDA capabilities.
+    hasArchitectureSpecificCudaCapability =
+      passthruExtra.requestedArchitectureSpecificCudaCapabilities != [ ];
+
+    # Whether the requested CUDA capabilities include family-specific CUDA capabilities.
+    hasFamilySpecificCudaCapability = passthruExtra.requestedFamilySpecificCudaCapabilities != [ ];
+    # Whether the requested CUDA capabilities include Jetson CUDA capabilities.
+    hasJetsonCudaCapability = passthruExtra.requestedJetsonCudaCapabilities != [ ];
     # TODO(@connorbaker): Does it make sense to expose the `stdenv` we were called with and the `stdenv` selected
     # prior to using `stdenvAdapters.useLibsFrom`?
-
     # The Nix system of the host platform.
     hostNixSystem = stdenv.hostPlatform.system;
 
@@ -75,49 +99,19 @@ let
       inherit (stdenv.hostPlatform) system;
     };
 
-    # Sets whether packages should be built with forward compatibility.
-    # TODO(@connorbaker): If the requested CUDA capabilities are not supported by the current CUDA version,
-    # should we throw an evaluation warning and build with forward compatibility?
-    cudaForwardCompat = config.cudaForwardCompat or true;
+    nvccHostCCMatchesStdenvCC = backendStdenv.cc == stdenv.cc;
+    # Requested architecture-specific CUDA capabilities.
+    requestedArchitectureSpecificCudaCapabilities = intersectLists architectureSpecificCudaCapabilities passthruExtra.cudaCapabilities;
+    # Requested family-specific CUDA capabilities.
+    requestedFamilySpecificCudaCapabilities = intersectLists familySpecificCudaCapabilities passthruExtra.cudaCapabilities;
+    # Requested Jetson CUDA capabilities.
+    requestedJetsonCudaCapabilities = intersectLists jetsonCudaCapabilities passthruExtra.cudaCapabilities;
 
     # CUDA capabilities which are supported by the current CUDA version.
     supportedCudaCapabilities = filter (
       cudaCapability:
       _cudaCapabilityIsSupported cudaMajorMinorVersion cudaCapabilityToInfo.${cudaCapability}
     ) allSortedCudaCapabilities;
-
-    # Find the default set of capabilities for this CUDA version using the list of supported capabilities.
-    # Includes only baseline capabilities.
-    defaultCudaCapabilities = filter (
-      cudaCapability:
-      _cudaCapabilityIsDefault cudaMajorMinorVersion cudaCapabilityToInfo.${cudaCapability}
-    ) passthruExtra.supportedCudaCapabilities;
-
-    # The resolved requested or default CUDA capabilities.
-    cudaCapabilities =
-      if config.cudaCapabilities or [ ] != [ ] then
-        config.cudaCapabilities
-      else
-        passthruExtra.defaultCudaCapabilities;
-
-    # Requested architecture-specific CUDA capabilities.
-    requestedArchitectureSpecificCudaCapabilities = intersectLists architectureSpecificCudaCapabilities passthruExtra.cudaCapabilities;
-
-    # Whether the requested CUDA capabilities include architecture-specific CUDA capabilities.
-    hasArchitectureSpecificCudaCapability =
-      passthruExtra.requestedArchitectureSpecificCudaCapabilities != [ ];
-
-    # Requested family-specific CUDA capabilities.
-    requestedFamilySpecificCudaCapabilities = intersectLists familySpecificCudaCapabilities passthruExtra.cudaCapabilities;
-
-    # Whether the requested CUDA capabilities include family-specific CUDA capabilities.
-    hasFamilySpecificCudaCapability = passthruExtra.requestedFamilySpecificCudaCapabilities != [ ];
-
-    # Requested Jetson CUDA capabilities.
-    requestedJetsonCudaCapabilities = intersectLists jetsonCudaCapabilities passthruExtra.cudaCapabilities;
-
-    # Whether the requested CUDA capabilities include Jetson CUDA capabilities.
-    hasJetsonCudaCapability = passthruExtra.requestedJetsonCudaCapabilities != [ ];
   };
 
   assertions =
@@ -149,44 +143,48 @@ let
     in
     [
       {
-        message = "Requested unrecognized CUDA capabilities: ${toJSON unrecognizedCudaCapabilities}";
         assertion = unrecognizedCudaCapabilities == [ ];
+        message = "Requested unrecognized CUDA capabilities: ${toJSON unrecognizedCudaCapabilities}";
       }
       {
-        message = "Requested CUDA capabilities which are too old for CUDA ${cudaMajorMinorVersion}: ${toJSON tooOldCudaCapabilities}";
         assertion = tooOldCudaCapabilities == [ ];
+        message = "Requested CUDA capabilities which are too old for CUDA ${cudaMajorMinorVersion}: ${toJSON tooOldCudaCapabilities}";
       }
       {
-        message = "Requested CUDA capabilities which are too new for CUDA ${cudaMajorMinorVersion}: ${toJSON tooNewCudaCapabilities}";
         assertion = tooNewCudaCapabilities == [ ];
+        message = "Requested CUDA capabilities which are too new for CUDA ${cudaMajorMinorVersion}: ${toJSON tooNewCudaCapabilities}";
       }
       {
+        assertion = passthruExtra.hasJetsonCudaCapability -> passthruExtra.hostNixSystem == "aarch64-linux";
+
         message =
           "Requested Jetson CUDA capabilities (${toJSON passthruExtra.requestedJetsonCudaCapabilities}) require "
           + "hostPlatform (${passthruExtra.hostNixSystem}) to be aarch64-linux";
-        assertion = passthruExtra.hasJetsonCudaCapability -> passthruExtra.hostNixSystem == "aarch64-linux";
       }
       {
-        message =
-          "Requested pre-SBSA (${sbsaJetsonCapability}) Jetson CUDA capabilities (${toJSON preSbsaJetsonCudaCapabilities}) cannot be "
-          + "specified with other capabilities (${toJSON (subtractLists preSbsaJetsonCudaCapabilities passthruExtra.cudaCapabilities)})";
         assertion =
           # If there are preThorJetsonCudaCapabilities, they must be the only requested capabilities.
           preSbsaJetsonCudaCapabilities != [ ]
           -> preSbsaJetsonCudaCapabilities == passthruExtra.cudaCapabilities;
+
+        message =
+          "Requested pre-SBSA (${sbsaJetsonCapability}) Jetson CUDA capabilities (${toJSON preSbsaJetsonCudaCapabilities}) cannot be "
+          + "specified with other capabilities (${toJSON (subtractLists preSbsaJetsonCudaCapabilities passthruExtra.cudaCapabilities)})";
       }
       {
+        assertion =
+          preSbsaJetsonCudaCapabilities != [ ] -> passthruExtra.hostRedistSystem == "linux-aarch64";
+
         message =
           "Requested pre-SBSA (${sbsaJetsonCapability}) Jetson CUDA capabilities (${toJSON preSbsaJetsonCudaCapabilities}) require "
           + "computed NVIDIA hostRedistSystem (${passthruExtra.hostRedistSystem}) to be linux-aarch64";
-        assertion =
-          preSbsaJetsonCudaCapabilities != [ ] -> passthruExtra.hostRedistSystem == "linux-aarch64";
       }
       {
+        assertion = postSbsaJetsonCudaCapabilities != [ ] -> passthruExtra.hostRedistSystem == "linux-sbsa";
+
         message =
           "Requested post-SBSA (${sbsaJetsonCapability}) Jetson CUDA capabilities (${toJSON postSbsaJetsonCudaCapabilities}) require "
           + "computed NVIDIA hostRedistSystem (${passthruExtra.hostRedistSystem}) to be linux-sbsa";
-        assertion = postSbsaJetsonCudaCapabilities != [ ] -> passthruExtra.hostRedistSystem == "linux-sbsa";
       }
     ];
 

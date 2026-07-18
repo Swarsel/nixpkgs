@@ -1,23 +1,22 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   callPackage,
-  fetchFromGitHub,
   click,
   h11,
+  hatchling,
   httptools,
   python-dotenv,
   pyyaml,
   uvloop,
   watchfiles,
   websockets,
-  hatchling,
 }:
 
 buildPythonPackage rec {
   pname = "uvicorn";
   version = "0.46.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "encode";
@@ -30,6 +29,14 @@ buildPythonPackage rec {
     "out"
     "testsout"
   ];
+
+  # check in passthru.tests.pytest to escape infinite recursion with httpx/httpcore
+  doCheck = false;
+
+  postInstall = ''
+    mkdir $testsout
+    cp -R tests $testsout/tests
+  '';
 
   build-system = [ hatchling ];
 
@@ -47,26 +54,19 @@ buildPythonPackage rec {
     websockets
   ];
 
-  postInstall = ''
-    mkdir $testsout
-    cp -R tests $testsout/tests
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "uvicorn" ];
-
-  # check in passthru.tests.pytest to escape infinite recursion with httpx/httpcore
-  doCheck = false;
 
   passthru.tests = {
     pytest = callPackage ./tests.nix { };
   };
 
   meta = {
+    description = "Lightning-fast ASGI server";
     homepage = "https://www.uvicorn.org/";
     changelog = "https://github.com/encode/uvicorn/blob/${src.tag}/CHANGELOG.md";
-    description = "Lightning-fast ASGI server";
-    mainProgram = "uvicorn";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ wd15 ];
+    mainProgram = "uvicorn";
   };
 }

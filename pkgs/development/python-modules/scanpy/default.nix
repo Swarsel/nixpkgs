@@ -1,20 +1,28 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonOlder,
-
+  # dependencies
+  anndata,
+  buildPythonPackage,
+  certifi,
+  # optional-attrs
+  # dask
+  dask,
+  # dask-ml
+  dask-ml,
+  # tests
+  dependency-groups,
+  fast-array-utils,
+  h5py,
   # build-system
   hatch-vcs,
   hatchling,
-
-  # dependencies
-  anndata,
-  certifi,
-  fast-array-utils,
-  h5py,
+  # leiden
+  igraph,
+  jinja2,
   joblib,
   legacy-api-wrap,
+  leidenalg,
   matplotlib,
   natsort,
   networkx,
@@ -24,40 +32,28 @@
   pandas,
   patsy,
   pynndescent,
-  scikit-learn,
-  scipy,
-  scverse-misc,
-  seaborn,
-  session-info2,
-  statsmodels,
-  tqdm,
-  umap-learn,
-  # python<3.13 only:
-  typing-extensions,
-
-  # optional-attrs
-  # dask
-  dask,
-  # dask-ml
-  dask-ml,
-  # leiden
-  igraph,
-  leidenalg,
-  # scrublet
-  scikit-image,
-  # skmisc
-  scikit-misc,
-
-  # tests
-  dependency-groups,
-  jinja2,
   pytest-cov-stub,
   pytest-mock,
   pytest-randomly,
   pytest-rerunfailures,
   pytest-xdist,
   pytestCheckHook,
+  pythonOlder,
+  # scrublet
+  scikit-image,
+  scikit-learn,
+  # skmisc
+  scikit-misc,
+  scipy,
+  scverse-misc,
+  seaborn,
+  session-info2,
+  statsmodels,
+  tqdm,
   tuna,
+  # python<3.13 only:
+  typing-extensions,
+  umap-learn,
   writableTmpDirAsHomeHook,
   zarr,
 }:
@@ -65,8 +61,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "scanpy";
   version = "1.12.2";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "scverse";
@@ -83,6 +77,26 @@ buildPythonPackage (finalAttrs: {
         'assert "scanpy" not in sys.modules,' \
         'assert True,'
   '';
+
+  nativeCheckInputs = [
+    dependency-groups
+    jinja2
+    pytest-cov-stub
+    pytest-mock
+    pytest-randomly
+    pytest-rerunfailures
+    pytest-xdist
+    pytestCheckHook
+    tuna
+    writableTmpDirAsHomeHook
+    zarr
+  ];
+
+  preCheck = ''
+    export NUMBA_CACHE_DIR=$(mktemp -d);
+  '';
+
+  __structuredAttrs = true;
 
   build-system = [
     hatch-vcs
@@ -118,75 +132,6 @@ buildPythonPackage (finalAttrs: {
   ++ fast-array-utils.optional-dependencies.sparse
   ++ lib.optionals (pythonOlder "3.13") [
     typing-extensions
-  ];
-
-  optional-dependencies = {
-    # commented attributes are due to some dependencies not being in Nixpkgs
-    #bbknn = [
-    #  bbknn
-    #];
-    dask = [
-      anndata
-      dask
-    ];
-    dask-ml = [
-      dask-ml
-    ];
-    #harmony = [
-    #  harmonypy
-    #];
-    leiden = [
-      igraph
-      leidenalg
-    ];
-    #louvain = [
-    #  igraph
-    #  louvain
-    #];
-    #magic = [
-    #  magic-impute
-    #];
-    paga = [
-      igraph
-    ];
-    #rapids = [
-    #  cudf
-    #  cugraph
-    #  cuml
-    #];
-    #scanorama = [
-    #  scanorama
-    #];
-    scrublet = [
-      scikit-image
-    ];
-    skmisc = [
-      scikit-misc
-    ];
-  };
-
-  nativeCheckInputs = [
-    dependency-groups
-    jinja2
-    pytest-cov-stub
-    pytest-mock
-    pytest-randomly
-    pytest-rerunfailures
-    pytest-xdist
-    pytestCheckHook
-    tuna
-    writableTmpDirAsHomeHook
-    zarr
-  ];
-
-  preCheck = ''
-    export NUMBA_CACHE_DIR=$(mktemp -d);
-  '';
-
-  pytestFlags = [
-    # UserWarning: 'where' used without 'out', expect unitialized memory in output.
-    # If this is intentional, use out=None.
-    "-Wignore::UserWarning"
   ];
 
   disabledTestPaths = [
@@ -244,6 +189,64 @@ buildPythonPackage (finalAttrs: {
     "scanpy.datasets._datasets.krumsiek11"
     "scanpy.datasets._datasets.toggleswitch"
     "scanpy.preprocessing._simple.filter_cells"
+  ];
+
+  optional-dependencies = {
+    # commented attributes are due to some dependencies not being in Nixpkgs
+    #bbknn = [
+    #  bbknn
+    #];
+    dask = [
+      anndata
+      dask
+    ];
+
+    dask-ml = [
+      dask-ml
+    ];
+
+    #harmony = [
+    #  harmonypy
+    #];
+    leiden = [
+      igraph
+      leidenalg
+    ];
+
+    #louvain = [
+    #  igraph
+    #  louvain
+    #];
+    #magic = [
+    #  magic-impute
+    #];
+    paga = [
+      igraph
+    ];
+
+    #rapids = [
+    #  cudf
+    #  cugraph
+    #  cuml
+    #];
+    #scanorama = [
+    #  scanorama
+    #];
+    scrublet = [
+      scikit-image
+    ];
+
+    skmisc = [
+      scikit-misc
+    ];
+  };
+
+  pyproject = true;
+
+  pytestFlags = [
+    # UserWarning: 'where' used without 'out', expect unitialized memory in output.
+    # If this is intentional, use out=None.
+    "-Wignore::UserWarning"
   ];
 
   pythonImportsCheck = [ "scanpy" ];

@@ -1,35 +1,35 @@
 {
   lib,
-  stdenv_32bit,
-  makeWrapper,
   fetchFromGitHub,
   cabextract,
+  curl,
   gettext,
+  glib,
   gnupg,
+  # needed for avoiding crash on file selector
+  gsettings-desktop-schemas,
+  hicolor-icon-theme,
   icoutils,
   imagemagick,
+  jq,
+  libGL,
+  libx11,
+  makeWrapper,
   mesa-demos,
   netcat-gnu,
   p7zip,
-  python312,
-  unzip,
-  wget,
-  wine,
-  xdg-user-dirs,
-  xterm,
   pkgs,
   pkgsi686Linux,
-  which,
-  curl,
-  jq,
-  libx11,
-  libGL,
+  python312,
+  stdenv_32bit,
   steam-run,
-  # needed for avoiding crash on file selector
-  gsettings-desktop-schemas,
-  glib,
+  unzip,
+  wget,
+  which,
+  wine,
   wrapGAppsHook3,
-  hicolor-icon-theme,
+  xdg-user-dirs,
+  xterm,
 }:
 
 let
@@ -95,14 +95,16 @@ stdenv.mkDerivation (finalAttrs: {
     ./0001-fix-locale.patch
   ];
 
+  postPatch = ''
+    substituteAllInPlace python/lib/lng.py
+    patchShebangs python tests/python
+    sed -i "s/ %F//g" etc/PlayOnLinux.desktop
+  '';
+
   nativeBuildInputs = [
     makeWrapper
     wrapGAppsHook3
   ];
-
-  preBuild = ''
-    makeFlagsArray+=(PYTHON="python -m py_compile")
-  '';
 
   buildInputs = [
     glib
@@ -113,10 +115,8 @@ stdenv.mkDerivation (finalAttrs: {
     hicolor-icon-theme
   ];
 
-  postPatch = ''
-    substituteAllInPlace python/lib/lng.py
-    patchShebangs python tests/python
-    sed -i "s/ %F//g" etc/PlayOnLinux.desktop
+  preBuild = ''
+    makeFlagsArray+=(PYTHON="python -m py_compile")
   '';
 
   installPhase = ''
@@ -154,7 +154,6 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  dontWrapGApps = true;
   postFixup = ''
     makeWrapper $out/share/playonlinux/playonlinux{,-wrapped} \
       --prefix PATH : ${binpath} \
@@ -163,16 +162,20 @@ stdenv.mkDerivation (finalAttrs: {
       --add-flags $out/share/playonlinux/playonlinux-wrapped
   '';
 
+  dontWrapGApps = true;
+
   meta = {
     description = "GUI for managing Windows programs under linux";
     homepage = "https://www.playonlinux.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.gpl3;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ lib.maintainers.pasqui23 ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
+
     mainProgram = "playonlinux";
   };
 })

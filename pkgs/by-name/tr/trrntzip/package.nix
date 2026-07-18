@@ -27,11 +27,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
-
   buildInputs = [ zlib ];
 
   meta = {
     description = "Goal of the program is to use standard values when creating zips to create identical files over multiple systems";
+
     longDescription = ''
       Torrentzip converts zip archives to a standard format with some
       pre-defined values, sorting the files, and using particular compression
@@ -41,14 +41,17 @@ stdenv.mkDerivation (finalAttrs: {
 
       This is a revival of https://sourceforge.net/projects/trrntzip.
     '';
+
     homepage = "https://github.com/0-wiz-0/trrntzip";
+
     license = with lib.licenses; [
       # "This software includes code from minizip, which is part of zlib"
       lib.licenses.zlib
 
       gpl2Plus
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

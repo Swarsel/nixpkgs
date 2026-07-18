@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  libtool,
-  gettext,
-  libpng,
-  libjpeg,
-  libxinerama,
-  freetype,
   SDL,
-  libGL,
-  libmysqlclient,
   fontconfig,
+  freetype,
+  gettext,
+  libGL,
+  libjpeg,
+  libmysqlclient,
+  libpng,
+  libtool,
+  libxinerama,
   perl,
+  pkg-config,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libagar";
@@ -23,18 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://stable.hypertriton.com/agar/agar-${finalAttrs.version}.tar.gz";
     hash = "sha256-0euZTIJizXDfHU2UYsVFMInbXcgV0BtXZ1CMKSOlllw=";
   };
-
-  preConfigure = ''
-    substituteInPlace configure \
-      --replace-fail '_BSD_SOURCE' '_DEFAULT_SOURCE'
-  '';
-
-  configureFlags = [
-    "--enable-nls=no"
-    "--with-jpeg=${libjpeg.dev}"
-    "--with-gl=${libGL}"
-    "--with-mysql=${libmysqlclient}"
-  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -53,6 +41,18 @@ stdenv.mkDerivation (finalAttrs: {
     libjpeg
     fontconfig
   ];
+
+  configureFlags = [
+    "--enable-nls=no"
+    "--with-jpeg=${libjpeg.dev}"
+    "--with-gl=${libGL}"
+    "--with-mysql=${libmysqlclient}"
+  ];
+
+  preConfigure = ''
+    substituteInPlace configure \
+      --replace-fail '_BSD_SOURCE' '_DEFAULT_SOURCE'
+  '';
 
   meta = {
     description = "Cross-platform GUI toolkit";

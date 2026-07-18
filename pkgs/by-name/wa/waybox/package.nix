@@ -4,11 +4,11 @@
   fetchFromGitHub,
   cmake,
   libGL,
+  libevdev,
+  libgbm,
+  libinput,
   libxkbcommon,
   libxml2,
-  libevdev,
-  libinput,
-  libgbm,
   meson,
   ninja,
   pixman,
@@ -31,9 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-xrjOZzexQSPTKsQstMa0/UYX5A70N5zkO3NIBDnEy68=";
   };
 
-  depsBuildBuild = [
-    pkg-config
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -57,18 +55,19 @@ stdenv.mkDerivation (finalAttrs: {
     wlroots_0_19
   ];
 
-  strictDeps = true;
+  depsBuildBuild = [
+    pkg-config
+  ];
 
   dontUseCmakeConfigure = true;
-
   passthru.providedSessions = [ "waybox" ];
 
   meta = {
-    homepage = "https://github.com/wizbright/waybox";
-    description = "Openbox clone on Wayland";
-    license = lib.licenses.mit;
-    mainProgram = "waybox";
-    maintainers = [ ];
     inherit (wayland.meta) platforms;
+    description = "Openbox clone on Wayland";
+    homepage = "https://github.com/wizbright/waybox";
+    license = lib.licenses.mit;
+    maintainers = [ ];
+    mainProgram = "waybox";
   };
 })

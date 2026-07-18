@@ -1,29 +1,29 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitLab,
-  setuptools,
-  setuptools-scm,
+  buildPythonPackage,
   celery,
   flask,
   humanize,
   importlib-metadata,
   pika,
-  psycopg,
-  tabulate,
-  swh-storage,
   plotille,
   postgresql,
   postgresqlTestHook,
-  pytestCheckHook,
+  psycopg,
   pytest-mock,
   pytest-postgresql,
   pytest-shared-session-scope,
   pytest-xdist,
+  pytestCheckHook,
   requests-mock,
+  setuptools,
+  setuptools-scm,
   simpy,
   swh-journal,
+  swh-storage,
+  tabulate,
   types-python-dateutil,
   types-pyyaml,
   types-requests,
@@ -32,34 +32,15 @@
 buildPythonPackage (finalAttrs: {
   pname = "swh-scheduler";
   version = "3.3.2";
-  pyproject = true;
 
   src = fetchFromGitLab {
-    domain = "gitlab.softwareheritage.org";
-    group = "swh";
     owner = "devel";
     repo = "swh-scheduler";
     tag = "v${finalAttrs.version}";
     hash = "sha256-ELjxZKWCsAQte+KtSdwseMGnMdw65H9PrjuJP0PHtIM=";
+    domain = "gitlab.softwareheritage.org";
+    group = "swh";
   };
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  dependencies = [
-    celery
-    flask
-    humanize
-    importlib-metadata
-    pika
-    psycopg
-    tabulate
-    swh-storage
-  ];
-
-  pythonImportsCheck = [ "swh.scheduler" ];
 
   # Many broken tests on Darwin. Disabling them for now.
   doCheck = !stdenv.hostPlatform.isDarwin;
@@ -81,15 +62,34 @@ buildPythonPackage (finalAttrs: {
     types-requests
   ];
 
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [
+    celery
+    flask
+    humanize
+    importlib-metadata
+    pika
+    psycopg
+    tabulate
+    swh-storage
+  ];
+
   disabledTests = [
     "test_setup_log_handler_with_env_configuration"
     "test_task_exception"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "swh.scheduler" ];
+
   meta = {
-    changelog = "https://gitlab.softwareheritage.org/swh/devel/swh-scheduler/-/tags/${finalAttrs.src.tag}";
     description = "Job scheduler for the Software Heritage project";
     homepage = "https://gitlab.softwareheritage.org/swh/devel/swh-scheduler";
+    changelog = "https://gitlab.softwareheritage.org/swh/devel/swh-scheduler/-/tags/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ drupol ];
   };

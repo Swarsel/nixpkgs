@@ -2,15 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  functiontrace-server,
   setuptools,
   toml,
-  functiontrace-server,
 }:
 
 buildPythonPackage rec {
   pname = "functiontrace";
   version = "0.5.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -22,8 +21,6 @@ buildPythonPackage rec {
     toml
   ];
 
-  pythonImportsCheck = [ "functiontrace" ];
-
   # `functiontrace` needs `functiontrace-server` in its path.
   # Technically we also need this when running via a Python import, such as for
   # `python3 -m functiontrace`, but that's a less common use-case.
@@ -32,10 +29,14 @@ buildPythonPackage rec {
       --prefix PATH : ${lib.makeBinPath [ functiontrace-server ]}
   '';
 
+  pyproject = true;
+  pythonImportsCheck = [ "functiontrace" ];
+
   meta = {
-    homepage = "https://functiontrace.com";
     description = "Python module for Functiontrace";
+    homepage = "https://functiontrace.com";
     license = lib.licenses.prosperity30;
+
     maintainers = with lib.maintainers; [
       mathiassven
       tehmatt

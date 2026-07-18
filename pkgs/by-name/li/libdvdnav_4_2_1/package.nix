@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libdvdread_4_9_9,
+  pkg-config,
 }:
 let
   libdvdread = libdvdread_4_9_9;
@@ -20,14 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ libdvdread ];
 
-  # The upstream supports two configuration workflow:
-  # one is to generate ./configure via `autoconf`,
-  # the other is to run ./configure2.
-  # ./configure2 is a configuration script included in the upstream source
-  # that supports common "--<name>" flags and generates config.mak and config.h.
-  # See INSTALL inside the upstream source for detail.
-  configureScript = "./configure2";
-
   configureFlags = [
     "--cc=${stdenv.cc.targetPrefix}cc"
     # Let's strip the binaries ourselves,
@@ -35,24 +27,31 @@ stdenv.mkDerivation (finalAttrs: {
     "--disable-strip"
   ];
 
-  preConfigure = ''
-    mkdir -p $out
-  '';
-
   makeFlags = [
     "AR=${stdenv.cc.targetPrefix}ar"
     "LD=${stdenv.cc.targetPrefix}ld"
     "RANLIB=${stdenv.cc.targetPrefix}ranlib"
   ];
 
+  preConfigure = ''
+    mkdir -p $out
+  '';
+
+  # The upstream supports two configuration workflow:
+  # one is to generate ./configure via `autoconf`,
+  # the other is to run ./configure2.
+  # ./configure2 is a configuration script included in the upstream source
+  # that supports common "--<name>" flags and generates config.mak and config.h.
+  # See INSTALL inside the upstream source for detail.
+  configureScript = "./configure2";
+  passthru = { inherit libdvdread; };
+
   meta = {
-    homepage = "http://dvdnav.mplayerhq.hu/";
     description = "Library that implements DVD navigation features such as DVD menus";
-    mainProgram = "dvdnav-config";
+    homepage = "http://dvdnav.mplayerhq.hu/";
     license = lib.licenses.gpl2;
     maintainers = [ lib.maintainers.wmertens ];
     platforms = lib.platforms.linux;
+    mainProgram = "dvdnav-config";
   };
-
-  passthru = { inherit libdvdread; };
 })

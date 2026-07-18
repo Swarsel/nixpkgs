@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "appium-python-client";
   version = "5.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "appium";
@@ -19,9 +18,8 @@ buildPythonPackage (finalAttrs: {
   };
 
   build-system = [ hatchling ];
-
   dependencies = [ selenium ];
-
+  pyproject = true;
   pythonImportsCheck = [ "appium" ];
 
   meta = {

@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  gettext,
-  pkg-config,
-  wrapGAppsHook3,
   anthy,
-  ibus,
+  gettext,
   glib,
   gobject-introspection,
   gtk3,
+  ibus,
+  pkg-config,
   python3,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation rec {
@@ -21,6 +21,13 @@ stdenv.mkDerivation rec {
     url = "https://github.com/ibus/ibus-anthy/releases/download/${version}/${pname}-${version}.tar.gz";
     sha256 = "sha256-nh0orX2ivl4NnA6w2Pt1V/yJdwqiI3Jy3r4Ze9YavUA=";
   };
+
+  nativeBuildInputs = [
+    gettext
+    gobject-introspection
+    pkg-config
+    wrapGAppsHook3
+  ];
 
   buildInputs = [
     anthy
@@ -33,13 +40,6 @@ stdenv.mkDerivation rec {
     ]))
   ];
 
-  nativeBuildInputs = [
-    gettext
-    gobject-introspection
-    pkg-config
-    wrapGAppsHook3
-  ];
-
   configureFlags = [
     "--with-anthy-zipcode=${anthy}/share/anthy/zipcode.t"
   ];
@@ -49,11 +49,11 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    isIbusEngine = true;
     description = "IBus interface to the anthy input method";
     homepage = "https://github.com/fujiwarat/ibus-anthy";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    isIbusEngine = true;
   };
 }

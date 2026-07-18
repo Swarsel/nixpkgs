@@ -1,13 +1,13 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  multimarkdown,
-  libnotify,
-  udev,
-  systemdLibs,
   glib,
+  libnotify,
+  multimarkdown,
   pkg-config,
-  lib,
+  systemdLibs,
+  udev,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "udev-block-notify";
@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
     multimarkdown
     pkg-config
   ];
+
   buildInputs = [
     libnotify
     udev
@@ -44,11 +45,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/eworm-de/udev-block-notify";
     description = "Notify about udev block events";
-    mainProgram = "udev-block-notify";
+    homepage = "https://github.com/eworm-de/udev-block-notify";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ danbulant ];
     platforms = lib.platforms.linux;
+    mainProgram = "udev-block-notify";
   };
 })

@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
-  pkg-config,
   boost,
+  cmake,
+  fetchpatch,
   freetype,
-  libuuid,
-  ois,
-  withOgre ? false,
-  ogre,
   libGL,
   libGLU,
+  libuuid,
   libx11,
+  ogre,
+  ois,
+  pkg-config,
+  withOgre ? false,
 }:
 
 let
@@ -22,9 +22,6 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "mygui";
   version = "3.4.3";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "MyGUI";
@@ -36,10 +33,12 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     (fetchpatch {
       name = "darwin-mygui-framework-fix.patch";
-      url = "https://gitlab.com/OpenMW/openmw-dep/-/raw/ade30e6e98c051ac2a505f6984518f5f41fa87a5/macos/mygui.patch";
       sha256 = "sha256-Tk+O4TFgPZOqWAY4c0Q69bZfvIB34wN9e7h0tXhLULU=";
+      url = "https://gitlab.com/OpenMW/openmw-dep/-/raw/ade30e6e98c051ac2a505f6984518f5f41fa87a5/macos/mygui.patch";
     })
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -71,14 +70,15 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "MYGUI_RENDERSYSTEM" renderSystem)
   ];
 
+  __structuredAttrs = true;
+
   meta = {
+    description = "Library for creating GUIs for games and 3D applications";
     homepage = "http://mygui.info/";
     changelog = "https://github.com/MyGUI/mygui/releases/tag/MyGUI${finalAttrs.version}";
-    description = "Library for creating GUIs for games and 3D applications";
-    maintainers = with lib.maintainers; [ sigmasquadron ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ sigmasquadron ];
     platforms = lib.platforms.unix;
-
     # error: implicit instantiation of undefined template 'std::char_traits'
     badPlatforms = lib.platforms.darwin;
   };

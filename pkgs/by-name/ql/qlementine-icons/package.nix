@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  qt6,
   nix-update-script,
+  qt6,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "qlementine-icons";
@@ -25,11 +25,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   dontWrapQtApps = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Vector icon set for modern desktop Qt5/Qt6 applications";
+
     longDescription = ''
       An icon set aimed to be used in conjunction with the Qlementine Qt library.
 
@@ -40,6 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
       loosing any quality. However, they've been designed to be used in
       `16×16` pixels, to be pixel-perfect.
     '';
+
     homepage = "https://github.com/oclero/qlementine-icons";
     changelog = "https://github.com/oclero/qlementine-icons/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;

@@ -1,17 +1,17 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
-  nix-update-script,
-  makeWrapper,
+  ant,
+  coreutils,
   glib,
+  gnugrep,
   gtk2,
   gtk3,
-  ant,
   jdk,
   libxtst,
-  coreutils,
-  gnugrep,
+  makeWrapper,
+  nix-update-script,
   zulu,
   preferGtk3 ? true,
   preferZulu ? false,
@@ -32,15 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-kIDAMVenUzc7tIC49yzc1MzqNa9B7nNlX1bzwpG8Vp0=";
   };
 
-  buildPhase = ''
-    runHook preBuild
-
-    ant prepare-dist
-    sed -i -e '/^JAVA_OPTS/d' ./dist/davmail
-
-    runHook postBuild
-  '';
-
   nativeBuildInputs = [
     makeWrapper
     ant
@@ -49,6 +40,15 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [
     jre'
   ];
+
+  buildPhase = ''
+    runHook preBuild
+
+    ant prepare-dist
+    sed -i -e '/^JAVA_OPTS/d' ./dist/davmail
+
+    runHook postBuild
+  '';
 
   installPhase = ''
     runHook preInstall
@@ -82,11 +82,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Java application which presents a Microsoft Exchange server as local CALDAV, IMAP and SMTP servers";
     homepage = "https://davmail.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       peterhoeg
       doronbehar
       shymega
     ];
+
     platforms = lib.platforms.all;
     mainProgram = "davmail";
   };

@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  libsForQt5,
-  zlib,
   freetype,
   libjpeg,
-  libtiff,
   libpng,
+  libsForQt5,
+  libtiff,
+  zlib,
 }:
 
 stdenv.mkDerivation rec {
@@ -38,19 +38,19 @@ stdenv.mkDerivation rec {
     libpng
   ];
 
-  dontWrapQtApps = true;
-
   cmakeFlags = [
     "-DUSE_BUNDLED=OFF"
     # Use bundled LibAesgm
     "-DUSE_UNBUNDLED_FALLBACK_BUNDLED=ON"
   ];
 
+  dontWrapQtApps = true;
+
   meta = {
     description = "Fast and Free C++ Library for Creating, Parsing an Manipulating PDF Files and Streams";
     homepage = "https://www.pdfhummus.com";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ wineee ];
+    platforms = lib.platforms.linux;
   };
 }

@@ -1,5 +1,6 @@
 {
-  mkDerivation,
+  lib,
+  QuickCheck,
   aeson,
   aeson-pretty,
   ansi-terminal,
@@ -18,13 +19,12 @@
   hspec,
   hspec-core,
   hspec-expectations,
-  lib,
+  mkDerivation,
   mtl,
   network-uri,
   optparse-applicative,
   postgresql-libpq,
   postgresql-simple,
-  QuickCheck,
   random,
   resourcet,
   statistics,
@@ -43,8 +43,33 @@ mkDerivation {
   pname = "codd";
   version = "0.1.8";
   src = ./.;
-  isLibrary = true;
+
+  benchmarkHaskellDepends = [
+    aeson
+    base
+    criterion-measurement
+    deepseq
+    hspec
+    hspec-core
+    hspec-expectations
+    statistics
+    streaming
+    text
+    vector
+  ];
+
+  executableHaskellDepends = [
+    base
+    optparse-applicative
+    postgresql-simple
+    text
+    time
+  ];
+
+  homepage = "https://github.com/mzabani/codd#readme";
   isExecutable = true;
+  isLibrary = true;
+
   libraryHaskellDepends = [
     aeson
     aeson-pretty
@@ -75,13 +100,10 @@ mkDerivation {
     uuid
     vector
   ];
-  executableHaskellDepends = [
-    base
-    optparse-applicative
-    postgresql-simple
-    text
-    time
-  ];
+
+  license = lib.licenses.bsd3;
+  mainProgram = "codd";
+
   testHaskellDepends = [
     aeson
     attoparsec
@@ -104,20 +126,4 @@ mkDerivation {
     unliftio
     uuid
   ];
-  benchmarkHaskellDepends = [
-    aeson
-    base
-    criterion-measurement
-    deepseq
-    hspec
-    hspec-core
-    hspec-expectations
-    statistics
-    streaming
-    text
-    vector
-  ];
-  homepage = "https://github.com/mzabani/codd#readme";
-  license = lib.licenses.bsd3;
-  mainProgram = "codd";
 }

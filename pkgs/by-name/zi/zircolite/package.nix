@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "zircolite";
   version = "2.40.0";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "wagga40";
@@ -16,6 +15,19 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-11jNd7Ids2aB+R+Hv6n8Wfm2hDuKCxC0EMZSBWJfDos=";
   };
+
+  installPhase = ''
+    runHook preInstall
+
+    mkdir -p $out/bin $out/share $out/share/zircolite
+    cp -R . $out/share/zircolite
+
+    makeWrapper ${python3.interpreter} $out/bin/zircolite \
+      --set PYTHONPATH "$PYTHONPATH:$out/bin/zircolite.py" \
+      --add-flags "$out/share/zircolite/zircolite.py"
+
+    runHook postInstall
+  '';
 
   __darwinAllowLocalNetworking = true;
 
@@ -41,25 +53,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ]
     ++ elasticsearch.optional-dependencies.async;
 
-  installPhase = ''
-    runHook preInstall
-
-    mkdir -p $out/bin $out/share $out/share/zircolite
-    cp -R . $out/share/zircolite
-
-    makeWrapper ${python3.interpreter} $out/bin/zircolite \
-      --set PYTHONPATH "$PYTHONPATH:$out/bin/zircolite.py" \
-      --add-flags "$out/share/zircolite/zircolite.py"
-
-    runHook postInstall
-  '';
+  pyproject = false;
 
   meta = {
     description = "SIGMA-based detection tool for EVTX, Auditd, Sysmon and other logs";
-    mainProgram = "zircolite";
     homepage = "https://github.com/wagga40/Zircolite";
     changelog = "https://github.com/wagga40/Zircolite/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "zircolite";
   };
 })

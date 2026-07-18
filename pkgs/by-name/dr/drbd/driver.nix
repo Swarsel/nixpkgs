@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  coccinelle,
+  flex,
   kernel,
   kernelModuleMakeFlags,
   nixosTests,
-  flex,
-  coccinelle,
   python3,
 }:
 
@@ -19,15 +19,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-2ff9XtSlUnJG5y6qrRYGTgQiZdEnzywKaKR96ItF8Zw=";
   };
 
-  hardeningDisable = [ "pic" ];
+  postPatch = ''
+    patchShebangs .
+    substituteInPlace Makefile --replace 'SHELL=/bin/bash' 'SHELL=${builtins.getEnv "SHELL"}'
+  '';
 
   nativeBuildInputs = kernel.moduleBuildDependencies ++ [
     flex
     coccinelle
     python3
   ];
-
-  enableParallelBuilding = true;
 
   makeFlags = kernelModuleMakeFlags ++ [
     "KDIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
@@ -37,25 +38,23 @@ stdenv.mkDerivation (finalAttrs: {
     "SPAAS=false"
   ];
 
+  enableParallelBuilding = true;
+  hardeningDisable = [ "pic" ];
   installFlags = [ "INSTALL_MOD_PATH=${placeholder "out"}" ];
-
-  postPatch = ''
-    patchShebangs .
-    substituteInPlace Makefile --replace 'SHELL=/bin/bash' 'SHELL=${builtins.getEnv "SHELL"}'
-  '';
-
   passthru.tests.drbd-driver = nixosTests.drbd-driver;
 
   meta = {
-    homepage = "https://github.com/LINBIT/drbd";
     description = "LINBIT DRBD kernel module";
-    license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
-    maintainers = with lib.maintainers; [ birkb ];
+
     longDescription = ''
       DRBD is a software-based, shared-nothing, replicated storage solution
       mirroring the content of block devices (hard disks, partitions, logical volumes, and so on) between hosts.
     '';
+
+    homepage = "https://github.com/LINBIT/drbd";
+    license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ birkb ];
+    platforms = lib.platforms.linux;
     broken = kernel.kernelOlder "5.11";
   };
 })

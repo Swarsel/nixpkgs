@@ -1,20 +1,16 @@
 {
   lib,
   stdenv,
-
   fetchFromGitHub,
-  makeDesktopItem,
-
   copyDesktopItems,
+  electron,
+  makeDesktopItem,
   makeWrapper,
+  nix-update-script,
   nodejs,
   yarn-berry_4,
   zip,
-
-  electron,
   commandLineArgs ? "",
-
-  nix-update-script,
 }:
 
 let
@@ -28,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "ytmdesktop";
     repo = "ytmdesktop";
     tag = "v${finalAttrs.version}";
+    hash = "sha256-3gUEdkTFaO6WT13HyVssVX0qSmluOPm4AAy1dovHw6g=";
     leaveDotGit = true;
 
     postFetch = ''
@@ -35,8 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
       git rev-parse HEAD > .COMMIT
       find -name .git -print0 | xargs -0 rm -rf
     '';
-
-    hash = "sha256-3gUEdkTFaO6WT13HyVssVX0qSmluOPm4AAy1dovHw6g=";
   };
 
   patches = [
@@ -60,13 +55,6 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace src/main/index.ts \
       --replace-fail "process.resourcesPath" "'$out/share/ytmdesktop/resources'"
   '';
-
-  missingHashes = ./missing-hashes.json;
-
-  yarnOfflineCache = yarn-berry.fetchYarnBerryDeps {
-    inherit (finalAttrs) src missingHashes patches;
-    hash = "sha256-VpNK+44/FwHxZ+Hyx0QShpZ9fdP06VhhpoXxMFeLUzE=";
-  };
 
   nativeBuildInputs = [
     copyDesktopItems
@@ -135,31 +123,39 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      desktopName = "YouTube Music Desktop App";
-      exec = "ytmdesktop";
-      icon = "ytmdesktop";
-      name = "ytmdesktop";
-      genericName = finalAttrs.meta.description;
-      mimeTypes = [ "x-scheme-handler/ytmd" ];
       categories = [
         "AudioVideo"
         "Audio"
       ];
+
+      desktopName = "YouTube Music Desktop App";
+      exec = "ytmdesktop";
+      genericName = finalAttrs.meta.description;
+      icon = "ytmdesktop";
+      mimeTypes = [ "x-scheme-handler/ytmd" ];
+      name = "ytmdesktop";
       startupNotify = true;
       startupWMClass = "YouTube Music Desktop App";
     })
   ];
 
+  missingHashes = ./missing-hashes.json;
+
+  yarnOfflineCache = yarn-berry.fetchYarnBerryDeps {
+    inherit (finalAttrs) src missingHashes patches;
+    hash = "sha256-VpNK+44/FwHxZ+Hyx0QShpZ9fdP06VhhpoXxMFeLUzE=";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/ytmdesktop/ytmdesktop/releases/tag/v${finalAttrs.version}";
-    description = "Desktop App for YouTube Music";
-    downloadPage = "https://github.com/ytmdesktop/ytmdesktop/releases";
-    homepage = "https://ytmdesktop.app/";
-    license = lib.licenses.gpl3Only;
-    mainProgram = "ytmdesktop";
-    maintainers = [ lib.maintainers.cjshearer ];
     inherit (electron.meta) platforms;
+    description = "Desktop App for YouTube Music";
+    homepage = "https://ytmdesktop.app/";
+    changelog = "https://github.com/ytmdesktop/ytmdesktop/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.gpl3Only;
+    maintainers = [ lib.maintainers.cjshearer ];
+    mainProgram = "ytmdesktop";
+    downloadPage = "https://github.com/ytmdesktop/ytmdesktop/releases";
   };
 })

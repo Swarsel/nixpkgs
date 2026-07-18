@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   bash,
   docker,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,10 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  patchPhase = ''
-    substituteInPlace vackup --replace-fail "/bin/bash" "${lib.getExe bash}"
-  '';
-
   installPhase = ''
     runHook preInstall
 
@@ -33,6 +29,10 @@ stdenv.mkDerivation (finalAttrs: {
       --suffix PATH : ${lib.makeBinPath [ docker ]}
 
     runHook postInstall
+  '';
+
+  patchPhase = ''
+    substituteInPlace vackup --replace-fail "/bin/bash" "${lib.getExe bash}"
   '';
 
   meta = {

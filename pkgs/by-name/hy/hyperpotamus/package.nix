@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -16,14 +16,13 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-cH0VEhs4q13gnFKQmmu8fXjueBu/u7xtySE6HTm+bik=";
-
   dontNpmBuild = true;
 
   meta = {
     description = "YAML based HTTP script processing engine";
     homepage = "https://github.com/pmarkert/hyperpotamus";
     license = lib.licenses.mit;
-    mainProgram = "hyperpotamus";
     maintainers = with lib.maintainers; [ onny ];
+    mainProgram = "hyperpotamus";
   };
 }

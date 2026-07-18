@@ -1,15 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 buildGoModule rec {
-  subPackages = [ "cmd" ];
-  postInstall = ''
-    mv $out/bin/cmd $out/bin/script_exporter
-  '';
-
   pname = "script_exporter";
   version = "3.2.0";
 
@@ -28,14 +23,19 @@ buildGoModule rec {
 
   vendorHash = "sha256-g7Sd8rMqxFTNi3XsO05gyQ1d1icENx9FZthnGC2qQbM=";
 
+  postInstall = ''
+    mv $out/bin/cmd $out/bin/script_exporter
+  '';
+
+  subPackages = [ "cmd" ];
   passthru.tests = { inherit (nixosTests.prometheus-exporters) script; };
 
   meta = {
     description = "Shell script prometheus exporter";
-    mainProgram = "script_exporter";
     homepage = "https://github.com/ricoberger/script_exporter";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ Flakebi ];
     platforms = lib.platforms.linux;
+    mainProgram = "script_exporter";
   };
 }

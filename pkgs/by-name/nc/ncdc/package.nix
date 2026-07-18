@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchurl,
-  ncurses,
-  zlib,
   bzip2,
-  sqlite,
-  pkg-config,
   glib,
   gnutls,
-  perl,
   libmaxminddb,
+  ncurses,
+  perl,
+  pkg-config,
+  sqlite,
   versionCheckHook,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,6 +29,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     versionCheckHook
   ];
+
   buildInputs = [
     ncurses
     zlib
@@ -40,13 +41,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   configureFlags = [ "--with-geoip" ];
-
   doInstallCheck = true;
 
   meta = {
-    changelog = "https://dev.yorhel.nl/ncdc/changes";
     description = "Modern and lightweight direct connect client with a friendly ncurses interface";
     homepage = "https://dev.yorhel.nl/ncdc";
+    changelog = "https://dev.yorhel.nl/ncdc/changes";
     license = lib.licenses.mit;
     mainProgram = "ncdc";
   };

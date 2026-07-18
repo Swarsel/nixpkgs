@@ -30,9 +30,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Guile-based library for supporting flexible control files in scientific simulations";
-    mainProgram = "gen-ctl-io";
     homepage = "https://github.com/NanoComp/libctl";
     license = lib.licenses.gpl2Only;
     maintainers = [ ];
+    mainProgram = "gen-ctl-io";
   };
 })

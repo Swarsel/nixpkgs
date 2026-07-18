@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
   hopcroftkarp,
+  hypothesis,
   multiset,
   pytestCheckHook,
-  hypothesis,
   setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "matchpy";
   version = "0.5.5"; # Don't upgrade to 4.3.1, this tag is very old
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "HPAC";
@@ -25,9 +24,9 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/HPAC/matchpy/pull/77
     (fetchpatch {
+      hash = "sha256-xXADCSIhq1ARny2twzrhR1J8LkMFWFl6tmGxrM8RvkU=";
       name = "fix-versioneer-py312.patch";
       url = "https://github.com/HPAC/matchpy/commit/965d7c39689b9f2473a78ed06b83f2be701e234d.patch";
-      hash = "sha256-xXADCSIhq1ARny2twzrhR1J8LkMFWFl6tmGxrM8RvkU=";
     })
   ];
 
@@ -50,6 +49,7 @@ buildPythonPackage rec {
     hypothesis
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "matchpy" ];
 
   meta = {

@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
-  wayland,
-  wayland-scanner,
-  wayland-protocols,
-  unstableGitUpdater,
-  pixman,
   fcft,
+  pixman,
+  pkg-config,
+  unstableGitUpdater,
+  wayland,
+  wayland-protocols,
+  wayland-scanner,
   writeText,
-  # Boolean flags
-  withCustomConfigH ? (configH != null),
   # Configurable options
   configH ? null,
+  # Boolean flags
+  withCustomConfigH ? (configH != null),
 }:
 
 stdenv.mkDerivation {
@@ -27,16 +27,9 @@ stdenv.mkDerivation {
     hash = "sha256-S0jkoELkF+oEmXqiWZ8KJYtWAHEXR/Y93jl5yHgUuSM=";
   };
 
-  nativeBuildInputs = [
-    pkg-config
-  ];
-
-  buildInputs = [
-    wayland-scanner
-    wayland-protocols
-    pixman
-    fcft
-    wayland
+  outputs = [
+    "out"
+    "man"
   ];
 
   # Allow alternative config.def.h usage. Taken from dwl.nix.
@@ -50,14 +43,21 @@ stdenv.mkDerivation {
     in
     lib.optionalString withCustomConfigH "cp ${configFile} config.h";
 
+  nativeBuildInputs = [
+    pkg-config
+  ];
+
+  buildInputs = [
+    wayland-scanner
+    wayland-protocols
+    pixman
+    fcft
+    wayland
+  ];
+
   env = {
     PREFIX = placeholder "out";
   };
-
-  outputs = [
-    "out"
-    "man"
-  ];
 
   passthru.updateScript = unstableGitUpdater { };
 
@@ -65,11 +65,13 @@ stdenv.mkDerivation {
     description = "Fast, feature-complete bar for dwl";
     homepage = "https://github.com/kolunmi/dwlb";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "dwlb";
+
     maintainers = with lib.maintainers; [
       bot-wxt1221
       lonyelon
     ];
+
     platforms = wayland.meta.platforms;
+    mainProgram = "dwlb";
   };
 }

@@ -1,16 +1,18 @@
 {
-  mkKdeDerivation,
-  qtwebview,
-  pkg-config,
-  qcoro,
   discount,
   flatpak,
   fwupd,
+  mkKdeDerivation,
+  pkg-config,
+  qcoro,
+  qtwebview,
 }:
 mkKdeDerivation {
   pname = "discover";
+  # The PackageKit backend doesn't work for us and causes Discover
+  # to freak out when loading. Disable it to not confuse users.
+  excludeDependencies = [ "packagekit-qt" ];
 
-  extraNativeBuildInputs = [ pkg-config ];
   extraBuildInputs = [
     qtwebview
 
@@ -21,7 +23,5 @@ mkKdeDerivation {
     fwupd
   ];
 
-  # The PackageKit backend doesn't work for us and causes Discover
-  # to freak out when loading. Disable it to not confuse users.
-  excludeDependencies = [ "packagekit-qt" ];
+  extraNativeBuildInputs = [ pkg-config ];
 }

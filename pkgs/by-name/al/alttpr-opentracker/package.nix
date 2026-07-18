@@ -1,22 +1,22 @@
 {
   lib,
   stdenv,
-  buildDotnetModule,
   fetchFromGitHub,
   autoPatchelfHook,
-  wrapGAppsHook3,
+  buildDotnetModule,
   dotnetCorePackages,
   fontconfig,
   gtk3,
   icu,
-  libkrb5,
-  libunwind,
-  openssl,
-  xinput,
-  libxi,
-  libx11,
-  libsm,
   libice,
+  libkrb5,
+  libsm,
+  libunwind,
+  libx11,
+  libxi,
+  openssl,
+  wrapGAppsHook3,
+  xinput,
 }:
 buildDotnetModule rec {
   pname = "opentracker";
@@ -28,13 +28,6 @@ buildDotnetModule rec {
     tag = version;
     hash = "sha256-4EBn3BX5tX+yPUjoNFQSls9CwTCd6MpvcBoUKwRndRo=";
   };
-
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-
-  nugetDeps = ./deps.json;
-
-  projectFile = "src/OpenTracker/OpenTracker.csproj";
-  executables = [ "OpenTracker" ];
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -51,6 +44,16 @@ buildDotnetModule rec {
     openssl
   ];
 
+  autoPatchelfIgnoreMissingDeps = [
+    "libc.musl-x86_64.so.1"
+    "libintl.so.8"
+  ];
+
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+  executables = [ "OpenTracker" ];
+  nugetDeps = ./deps.json;
+  projectFile = "src/OpenTracker/OpenTracker.csproj";
+
   runtimeDeps = [
     gtk3
     openssl
@@ -61,23 +64,20 @@ buildDotnetModule rec {
     libxi
   ];
 
-  autoPatchelfIgnoreMissingDeps = [
-    "libc.musl-x86_64.so.1"
-    "libintl.so.8"
-  ];
-
   meta = {
     description = "Tracking application for A Link to the Past Randomizer";
     homepage = "https://github.com/trippsc2/OpenTracker";
+    license = lib.licenses.mit;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       # deps
       binaryBytecode
       binaryNativeCode
     ];
-    license = lib.licenses.mit;
+
     maintainers = [ ];
-    mainProgram = "OpenTracker";
     platforms = [ "x86_64-linux" ];
+    mainProgram = "OpenTracker";
   };
 }

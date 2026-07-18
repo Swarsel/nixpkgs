@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   docker,
-  fetchFromGitHub,
   poetry-core,
   pytestCheckHook,
   requests,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "securityreporter";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dongit-org";
@@ -26,22 +25,22 @@ buildPythonPackage (finalAttrs: {
       --replace-fail 'version = "0.0.0"' 'version = "${finalAttrs.version}"'
   '';
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ requests ];
-
   nativeCheckInputs = [
     docker
     pytestCheckHook
     responses
   ];
 
-  pythonImportsCheck = [ "reporter" ];
+  build-system = [ poetry-core ];
+  dependencies = [ requests ];
 
   disabledTestPaths = [
     # Test require a running Docker instance
     "tests/functional/"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "reporter" ];
 
   meta = {
     description = "Python wrapper for the Reporter API";

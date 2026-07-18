@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,15 +16,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-cgRf8zpl2hOhaGew4dwzuwdy0+7wSvMtYN3llVi3uYw=";
-
   postInstall = "make PREFIX=$out copy-data";
 
   meta = {
     description = "CLI program for produce fake datas";
     homepage = "https://github.com/mothsart/pouf";
     changelog = "https://github.com/mothsart/pouf/releases/tag/${finalAttrs.version}";
-    maintainers = with lib.maintainers; [ mothsart ];
     license = with lib.licenses; [ mit ];
+    maintainers = with lib.maintainers; [ mothsart ];
     mainProgram = "pouf";
   };
 })

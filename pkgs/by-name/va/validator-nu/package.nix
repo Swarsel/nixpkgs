@@ -1,7 +1,8 @@
 {
+  lib,
+  fetchFromGitHub,
   ant,
   cacert,
-  fetchFromGitHub,
   git,
   installShellFiles,
   jdk_headless,
@@ -10,7 +11,6 @@
   pandoc,
   python3,
   stdenvNoCC,
-  lib,
   testers,
 }:
 
@@ -26,15 +26,8 @@ let
   };
 
   deps = stdenvNoCC.mkDerivation {
-    pname = "${pname}-deps";
     inherit version src;
-
-    nativeBuildInputs = [
-      ant
-      cacert
-      jdk_headless
-      python3
-    ];
+    pname = "${pname}-deps";
 
     postPatch = ''
       substituteInPlace build/build.xml \
@@ -42,6 +35,13 @@ let
         'src="https://html.spec.whatwg.org/"' \
         'src="https://html.spec.whatwg.org/commit-snapshots/0aa021ab4f21a6550f1591a9cc98449aaea9eefa/"'
     '';
+
+    nativeBuildInputs = [
+      ant
+      cacert
+      jdk_headless
+      python3
+    ];
 
     buildPhase = ''
       python checker.py dldeps
@@ -53,13 +53,19 @@ let
       mv build/html5spec "$out/build"
     '';
 
-    outputHashMode = "recursive";
     outputHash = "sha256-8cMoLeOnKNqisezkVS2UeVW11gtkGmhvQWrbSVuqbb8=";
+    outputHashMode = "recursive";
   };
 
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
   inherit pname version src;
+
+  postPatch = ''
+    substituteInPlace build/build.py --replace-fail \
+      'validatorVersion = "%s.%s.%s" % (year, month, day)' \
+      'validatorVersion = "${finalAttrs.version}"'
+  '';
 
   nativeBuildInputs = [
     ant
@@ -69,12 +75,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     pandoc
     python3
   ];
-
-  postPatch = ''
-    substituteInPlace build/build.py --replace-fail \
-      'validatorVersion = "%s.%s.%s" % (year, month, day)' \
-      'validatorVersion = "${finalAttrs.version}"'
-  '';
 
   buildPhase = ''
     ln -s '${deps}/dependencies' '${deps}/extras' .
@@ -103,14 +103,17 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Helps you catch problems in your HTML/CSS/SVG";
     homepage = "https://validator.github.io/validator/";
     license = lib.licenses.mit;
-    maintainers = with lib.maintainers; [
-      andersk
-    ];
-    mainProgram = "vnu";
-    platforms = lib.platforms.all;
+
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
       fromSource
     ];
+
+    maintainers = with lib.maintainers; [
+      andersk
+    ];
+
+    platforms = lib.platforms.all;
+    mainProgram = "vnu";
   };
 })

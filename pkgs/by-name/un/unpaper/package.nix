@@ -2,22 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-
-  # build
-  meson,
-  ninja,
-  pkg-config,
-
-  # docs
-  sphinx,
-
   # runtime
   buildPackages,
   ffmpeg-headless,
-
+  # build
+  meson,
+  ninja,
   # tests
   nixosTests,
+  pkg-config,
   python3Packages,
+  # docs
+  sphinx,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -46,13 +42,13 @@ stdenv.mkDerivation (finalAttrs: {
     ffmpeg-headless
   ];
 
+  doCheck = true;
+
   nativeCheckInputs = with python3Packages; [
     pytest
     pytest-xdist
     pillow
   ];
-
-  doCheck = true;
 
   # Tests take quite a long time
   # Using pytest-xdist, we launch multiple workers
@@ -66,12 +62,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "Post-processing tool for scanned sheets of paper";
     homepage = "https://www.flameeyes.eu/projects/unpaper";
     changelog = "https://github.com/unpaper/unpaper/blob/unpaper-${finalAttrs.version}/NEWS";
-    description = "Post-processing tool for scanned sheets of paper";
     license = lib.licenses.gpl2Only;
+    maintainers = [ lib.maintainers.rycee ];
     platforms = lib.platforms.all;
     mainProgram = "unpaper";
-    maintainers = [ lib.maintainers.rycee ];
   };
 })

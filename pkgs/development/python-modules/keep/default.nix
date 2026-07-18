@@ -12,13 +12,14 @@
 buildPythonPackage rec {
   pname = "keep";
   version = "2.11";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-Brwvu/Zevr8sOE3KAwakDDzVMc2VoFxIb1orXAes2U0=";
   };
 
+  # Module no tests
+  doCheck = false;
   build-system = [ flit-core ];
 
   dependencies = [
@@ -28,9 +29,7 @@ buildPythonPackage rec {
     terminaltables3
   ];
 
-  # Module no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "keep" ];
 
   meta = {

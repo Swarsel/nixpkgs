@@ -3,32 +3,27 @@
   stdenv,
   fetchurl,
   autoPatchelfHook,
-  makeWrapper,
-  xdg-utils,
+  coreutils,
   dbus,
   getconf,
   glibc,
-  libxrandr,
-  libx11,
-  libxext,
-  libxdamage,
-  libxtst,
-  libsm,
-  libxfixes,
-  coreutils,
-  libsForQt5,
   icu63,
-  nss,
+  libsForQt5,
+  libsm,
+  libx11,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxrandr,
+  libxtst,
+  makeWrapper,
   minizip,
+  nss,
+  xdg-utils,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "teamviewer";
-  # teamviewer itself has not development files but the dev output removes propagated other dev outputs from runtime
-  outputs = [
-    "out"
-    "dev"
-  ];
   version = "15.78.3";
 
   src =
@@ -36,27 +31,30 @@ stdenv.mkDerivation (finalAttrs: {
       base_url = "https://dl.teamviewer.com/download/linux/version_${lib.versions.major finalAttrs.version}x";
     in
     {
-      x86_64-linux = fetchurl {
-        url = "${base_url}/teamviewer_${finalAttrs.version}_amd64.deb";
-        hash = "sha256-wrmLIr8qNLvfW5MMj6faF/uhldg9Dj+eDmlckEOqnmo=";
-      };
       aarch64-linux = fetchurl {
-        url = "${base_url}/teamviewer_${finalAttrs.version}_arm64.deb";
         hash = "sha256-RAPTxDs6jcMar74M25+j/gzIt0B1JnF+mOVROO98h0k=";
+        url = "${base_url}/teamviewer_${finalAttrs.version}_arm64.deb";
+      };
+
+      x86_64-linux = fetchurl {
+        hash = "sha256-wrmLIr8qNLvfW5MMj6faF/uhldg9Dj+eDmlckEOqnmo=";
+        url = "${base_url}/teamviewer_${finalAttrs.version}_amd64.deb";
       };
     }
     .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
 
-  unpackPhase = ''
-    ar x $src
-    tar xf data.tar.*
-  '';
+  # teamviewer itself has not development files but the dev output removes propagated other dev outputs from runtime
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     autoPatchelfHook
     makeWrapper
     libsForQt5.wrapQtAppsHook
   ];
+
   buildInputs = [
     minizip
     icu63
@@ -113,6 +111,17 @@ stdenv.mkDerivation (finalAttrs: {
       --replace '/var/run/' '/run/'
   '';
 
+  postFixup = ''
+    wrapProgram $out/share/teamviewer/tv_bin/teamviewerd ''${makeWrapperArgs[@]}
+    # tv_bin/script/teamviewer runs tvw_main which runs tv_bin/TeamViewer
+    wrapProgram $out/share/teamviewer/tv_bin/script/teamviewer ''${makeWrapperArgs[@]} ''${qtWrapperArgs[@]}
+    wrapProgram $out/share/teamviewer/tv_bin/teamviewer-config ''${makeWrapperArgs[@]} ''${qtWrapperArgs[@]}
+    wrapProgram $out/share/teamviewer/tv_bin/TeamViewer_Desktop ''${makeWrapperArgs[@]} ''${qtWrapperArgs[@]}
+  '';
+
+  dontStrip = true;
+  dontWrapQtApps = true;
+
   makeWrapperArgs = [
     "--prefix PATH : ${
       lib.makeBinPath [
@@ -135,33 +144,30 @@ stdenv.mkDerivation (finalAttrs: {
     }"
   ];
 
-  postFixup = ''
-    wrapProgram $out/share/teamviewer/tv_bin/teamviewerd ''${makeWrapperArgs[@]}
-    # tv_bin/script/teamviewer runs tvw_main which runs tv_bin/TeamViewer
-    wrapProgram $out/share/teamviewer/tv_bin/script/teamviewer ''${makeWrapperArgs[@]} ''${qtWrapperArgs[@]}
-    wrapProgram $out/share/teamviewer/tv_bin/teamviewer-config ''${makeWrapperArgs[@]} ''${qtWrapperArgs[@]}
-    wrapProgram $out/share/teamviewer/tv_bin/TeamViewer_Desktop ''${makeWrapperArgs[@]} ''${qtWrapperArgs[@]}
-  '';
-
-  dontStrip = true;
-  dontWrapQtApps = true;
   preferLocalBuild = true;
+
+  unpackPhase = ''
+    ar x $src
+    tar xf data.tar.*
+  '';
 
   passthru.updateScript = ./update-teamviewer.sh;
 
   meta = {
-    homepage = "https://www.teamviewer.com";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    license = lib.licenses.unfree;
     description = "Desktop sharing application, providing remote support and online meetings";
-    platforms = [
-      "x86_64-linux"
-      "aarch64-linux"
-    ];
+    homepage = "https://www.teamviewer.com";
+    license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       jraygauthier
       gador
       c4patino
+    ];
+
+    platforms = [
+      "x86_64-linux"
+      "aarch64-linux"
     ];
   };
 })

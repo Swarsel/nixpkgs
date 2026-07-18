@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -17,19 +17,19 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-h6r13xxPRTlSdTwi88ITra7SizU1z4pXWsmqlG2frU8=";
-
-  passthru.updateScript = nix-update-script { };
-
   allowGoReference = true;
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Detect ineffectual assignments in Go code";
-    mainProgram = "ineffassign";
     homepage = "https://github.com/gordonklaus/ineffassign";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       kalbasit
       bot-wxt1221
     ];
+
+    mainProgram = "ineffassign";
   };
 })

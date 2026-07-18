@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  shared-mime-info,
-  libiconv,
   installShellFiles,
+  libiconv,
+  rustPlatform,
+  shared-mime-info,
 }:
 
 rustPlatform.buildRustPackage {
@@ -19,13 +19,13 @@ rustPlatform.buildRustPackage {
     sha256 = "sha256-wENhlUBwfNg/r7yMKa1cQI1fbFw+qowwK8EdO912Yys=";
   };
 
-  cargoHash = "sha256-/Kk2vuFkgtHarLrjqc5PkRZL2pV1Y7Gb02mWwtaVpDI=";
-
   nativeBuildInputs = [
     installShellFiles
     shared-mime-info
   ];
+
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
+  cargoHash = "sha256-/Kk2vuFkgtHarLrjqc5PkRZL2pV1Y7Gb02mWwtaVpDI=";
 
   preCheck = ''
     export HOME=$TEMPDIR

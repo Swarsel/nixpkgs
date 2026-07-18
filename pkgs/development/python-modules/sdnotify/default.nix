@@ -7,12 +7,13 @@
 buildPythonPackage rec {
   pname = "sdnotify";
   version = "0.3.2";
-  format = "setuptools";
 
   src = fetchPypi {
-    sha256 = "1wdrdg2j16pmqhk0ify20s5pngijh7zc6hyxhh8w8v5k8v3pz5vk";
     inherit pname version;
+    sha256 = "1wdrdg2j16pmqhk0ify20s5pngijh7zc6hyxhh8w8v5k8v3pz5vk";
   };
+
+  format = "setuptools";
 
   meta = {
     description = "Pure Python implementation of systemd's service notification protocol";

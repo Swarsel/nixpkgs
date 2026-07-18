@@ -13,14 +13,15 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-web";
   version = "10.1.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_web";
     inherit version;
     hash = "sha256-JtNZS74bMFibcpIsNYVbxbdMFR8CJBR6YNGnUjSFkiY=";
+    pname = "azure_mgmt_web";
   };
 
+  # has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,8 +32,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  # has no tests
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "This is the Microsoft Azure Web Apps Management Client Library";

@@ -1,19 +1,19 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  cacert,
   common-updater-scripts,
   coreutils,
+  curl,
   git,
   gnused,
+  jdk25,
+  jq,
   makeWrapper,
   nix,
-  jdk25,
-  writeScript,
   nixosTests,
-  jq,
-  cacert,
-  curl,
+  stdenvNoCC,
+  writeScript,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -77,14 +77,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   meta = {
     description = "Extendable open source continuous integration server";
     homepage = "https://jenkins.io/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    changelog = "https://www.jenkins.io/changelog-stable/#v${finalAttrs.version}";
     license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       earldouglas
       felixsinger
     ];
-    changelog = "https://www.jenkins.io/changelog-stable/#v${finalAttrs.version}";
-    mainProgram = "jenkins-cli";
+
     platforms = lib.platforms.all;
+    mainProgram = "jenkins-cli";
   };
 })

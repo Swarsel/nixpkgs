@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pyserial,
   sockio,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "serialio";
   version = "2.4.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "tiagocoutinho";
@@ -25,7 +24,7 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "serialio" ];
 
   meta = {

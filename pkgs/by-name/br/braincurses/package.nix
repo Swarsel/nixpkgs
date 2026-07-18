@@ -24,11 +24,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/bderrly/braincurses";
     description = "Version of the classic game Mastermind";
-    mainProgram = "braincurses";
+    homepage = "https://github.com/bderrly/braincurses";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ dotlambda ];
     platforms = lib.platforms.linux;
+    mainProgram = "braincurses";
   };
 })

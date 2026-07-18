@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
+  ffmpeg_6,
   installShellFiles,
   libdrm,
-  ffmpeg_6,
-  wayland,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  wayland,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,8 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-sLuhVeyzFp6sFKGK7Y7DPAPk7IdFAqAtjm56zhrX3fA=";
   };
 
-  cargoHash = "sha256-atfWEAo6tMLEzFtiLlxp8fyVKa1cF/4SZFMYStDYZwU=";
-
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
@@ -36,6 +34,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ffmpeg_6
   ];
 
+  cargoHash = "sha256-atfWEAo6tMLEzFtiLlxp8fyVKa1cF/4SZFMYStDYZwU=";
   doCheck = false; # tests use host compositor, etc
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
@@ -51,8 +50,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "High performance wlroots screen recording, featuring hardware encoding";
     homepage = "https://github.com/russelltg/wl-screenrec";
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ colemickens ];
     platforms = lib.platforms.linux;
     mainProgram = "wl-screenrec";
-    maintainers = with lib.maintainers; [ colemickens ];
   };
 })

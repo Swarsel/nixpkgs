@@ -1,7 +1,5 @@
 {
   lib,
-  symlinkJoin,
-  the-neue-black,
   blackout,
   chunk,
   fanwood,
@@ -19,6 +17,8 @@
   raleway,
   sniglet,
   sorts-mill-goudy,
+  symlinkJoin,
+  the-neue-black,
 }:
 
 symlinkJoin {
@@ -55,13 +55,13 @@ symlinkJoin {
     '';
 
     homepage = "https://www.theleagueofmoveabletype.com/";
-
     license = lib.licenses.ofl;
 
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [
       bergey
       minijackson
     ];
+
+    platforms = lib.platforms.all;
   };
 }

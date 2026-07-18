@@ -14,10 +14,10 @@
   lhapdf,
   libtirpc,
   libyaml,
-  yaml-cpp,
   pkg-config,
   qcdnum,
   root,
+  yaml-cpp,
   zlib,
 }:
 
@@ -29,8 +29,8 @@ stdenv.mkDerivation {
     owner = "fitters";
     repo = "xfitter";
     tag = "2.2.0_Future_Freeze";
-    domain = "gitlab.cern.ch";
     hash = "sha256-wanxgldvBEuAEOeVok3XgRVStcn9APd+Nj7vpRZUtGs=";
+    domain = "gitlab.cern.ch";
   };
 
   patches = [
@@ -43,6 +43,7 @@ stdenv.mkDerivation {
     gfortran
     pkg-config
   ];
+
   buildInputs = [
     apfel
     apfelgrid
@@ -60,29 +61,29 @@ stdenv.mkDerivation {
   ]
   ++ lib.optional (stdenv.hostPlatform.libc == "glibc") libtirpc;
 
+  env = lib.optionalAttrs (stdenv.hostPlatform.libc == "glibc") {
+    NIX_CFLAGS_COMPILE = "-I${libtirpc.dev}/include/tirpc";
+    NIX_LDFLAGS = "-ltirpc";
+  };
+
   preConfigure = ''
     substituteInPlace "CMakeLists.txt" \
       --replace-fail 'cmake_minimum_required(VERSION 2.8.12.2)' \
                      'cmake_minimum_required(VERSION 3.10)'
   '';
 
-  env = lib.optionalAttrs (stdenv.hostPlatform.libc == "glibc") {
-    NIX_CFLAGS_COMPILE = "-I${libtirpc.dev}/include/tirpc";
-    NIX_LDFLAGS = "-ltirpc";
-  };
-
-  hardeningDisable = [ "format" ];
-
   # workaround wrong library IDs
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     ln -sv "$out/lib/xfitter/"* "$out/lib/"
   '';
 
+  hardeningDisable = [ "format" ];
+
   meta = {
     description = "Open source QCD fit framework designed to extract PDFs and assess the impact of new data";
-    license = lib.licenses.gpl3;
     homepage = "https://www.xfitter.org/xFitter";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ veprbl ];
+    platforms = lib.platforms.unix;
   };
 }

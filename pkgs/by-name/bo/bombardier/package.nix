@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
   bombardier,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  testers,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,10 +20,9 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-SezGoDM4xzOj1y/qmvlngYKOVdJnxBD4l9LPVErevUI=";
-
-  subPackages = [
-    "."
-  ];
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __darwinAllowLocalNetworking = true;
 
   ldflags = [
     "-s"
@@ -31,17 +30,18 @@ buildGoModule (finalAttrs: {
     "-X=main.version=${finalAttrs.version}"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  subPackages = [
+    "."
+  ];
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "--version";
 
   passthru.tests = {
-    updateScript = nix-update-script { };
     version = testers.testVersion {
       package = bombardier;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {

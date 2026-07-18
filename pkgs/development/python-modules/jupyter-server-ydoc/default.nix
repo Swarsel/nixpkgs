@@ -2,33 +2,32 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-
   # build-system
   hatchling,
-
   # dependencies
   jsonschema,
+  jupyter-collaboration,
   jupyter-events,
   jupyter-server,
   jupyter-server-fileid,
   jupyter-ydoc,
   pycrdt,
   pycrdt-websocket,
-  jupyter-collaboration,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "jupyter-server-ydoc";
   version = "2.4.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "jupyter_server_ydoc";
     inherit (finalAttrs) version;
     hash = "sha256-dGMfR6Vdna333JGNeKCD/q7MbDavTS/N8mwO42v3A3I=";
+    pname = "jupyter_server_ydoc";
   };
 
+  # no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -41,11 +40,8 @@ buildPythonPackage (finalAttrs: {
     pycrdt-websocket
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "jupyter_server_ydoc" ];
-
-  # no tests
-  doCheck = false;
-
   passthru.tests = jupyter-collaboration;
 
   meta = {

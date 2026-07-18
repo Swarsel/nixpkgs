@@ -1,8 +1,8 @@
 {
+  lib,
+  stdenv,
   fetchgit,
   pkg-config,
-  stdenv,
-  lib,
   # Package dependencies
   qt5,
 }:
@@ -23,9 +23,17 @@ stdenv.mkDerivation {
     pkg-config
     qt5.qttools
   ];
+
   buildInputs = [
     qt5.qtwebsockets
   ];
+
+  installPhase = ''
+    runHook preInstall
+    mkdir -p $out/bin
+    mv fgqcanvas $out/bin/
+    runHook postInstall
+  '';
 
   configurePhase = ''
     runHook preConfigure
@@ -36,19 +44,12 @@ stdenv.mkDerivation {
     runHook postConfigure
   '';
 
-  installPhase = ''
-    runHook preInstall
-    mkdir -p $out/bin
-    mv fgqcanvas $out/bin/
-    runHook postInstall
-  '';
-
   meta = {
-    homepage = "https://sourceforge.net/p/flightgear/flightgear/ci/next/tree/utils/fgqcanvas/README.md";
     description = "Qt-based remote canvas application for FlightGear";
+    homepage = "https://sourceforge.net/p/flightgear/flightgear/ci/next/tree/utils/fgqcanvas/README.md";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "fgqcanvas";
   };
 }

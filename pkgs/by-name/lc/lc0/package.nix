@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  abseil-cpp,
+  eigen,
+  gtest,
   meson,
   ninja,
   pkg-config,
   python3,
   zlib,
-  gtest,
-  eigen,
-  abseil-cpp,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,14 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "absl = subproject('abseil-cpp', default_options : ['warning_level=0', 'cpp_std=c++20'])" "" \
       --replace-fail "deps += absl.get_variable('absl_container_dep').as_system()" "deps += [dependency('absl_flat_hash_map'), dependency('absl_cleanup'), dependency('absl_base')]" \
       --replace-fail "if eigen_dep.found() and cc.has_header('Eigen/Core')" "if eigen_dep.found()"
-  '';
-
-  patchPhase = ''
-    runHook prePatch
-
-    patchShebangs --build scripts/*
-
-    runHook postPatch
   '';
 
   strictDeps = true;
@@ -64,19 +56,28 @@ stdenv.mkDerivation (finalAttrs: {
   # in version 31 this option will be required
   ++ lib.optionals (lib.versionAtLeast finalAttrs.version "0.31") [ "-Dnative_cuda=false" ];
 
+  doCheck = true;
   enableParallelBuilding = true;
 
-  doCheck = true;
+  patchPhase = ''
+    runHook prePatch
+
+    patchShebangs --build scripts/*
+
+    runHook postPatch
+  '';
 
   meta = {
-    homepage = "https://lczero.org/";
     description = "Open source neural network based chess engine";
+
     longDescription = ''
       Lc0 is a UCI-compliant chess engine designed to play chess via neural network, specifically those of the LeelaChessZero project.
     '';
+
+    homepage = "https://lczero.org/";
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ _9glenda ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.gpl3Plus;
     broken = stdenv.hostPlatform.isDarwin;
   };
 

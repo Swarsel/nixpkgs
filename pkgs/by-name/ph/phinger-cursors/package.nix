@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -13,8 +13,6 @@ stdenvNoCC.mkDerivation rec {
     sha256 = "sha256-3bcxDGK/jg4nmKJPioZ+Svexejl1e6RcheE/OYj2Rvw=";
   };
 
-  sourceRoot = ".";
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/share/icons
@@ -22,11 +20,13 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
+
   meta = {
     description = "Most over-engineered cursor theme";
     homepage = "https://github.com/phisch/phinger-cursors";
-    platforms = lib.platforms.unix;
     license = lib.licenses.cc-by-sa-40;
     maintainers = with lib.maintainers; [ moni ];
+    platforms = lib.platforms.unix;
   };
 }

@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  fetchpatch,
-  gitUpdater,
-  testers,
   cmake,
   cmake-extras,
   dbus,
   dbus-test-runner,
+  fetchpatch,
+  gitUpdater,
   gtest,
   pkg-config,
   procps,
   python3,
   qtbase,
+  testers,
 }:
 
 let
@@ -33,23 +33,23 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Disable QProcess start timeout
     (fetchpatch {
-      url = "https://salsa.debian.org/ubports-team/libqtdbustest/-/raw/debian/0.3.2-3/debian/patches/1003_no-QProcess-waitForstarted-timeout.patch";
       hash = "sha256-ThDbn6URvkj5ARDMj+xO0fb1Qh2YQRzVy24O03KglHI=";
+      url = "https://salsa.debian.org/ubports-team/libqtdbustest/-/raw/debian/0.3.2-3/debian/patches/1003_no-QProcess-waitForstarted-timeout.patch";
     })
 
     # More robust dbus address reading
     (fetchpatch {
-      url = "https://salsa.debian.org/ubports-team/libqtdbustest/-/raw/debian/0.3.2-3/debian/patches/1004_make-reading-address-from-dbus-daemon-more-robust.patch";
       hash = "sha256-hq8pdducp/udxoGWGt1dgL/7VHcbJO/oT1dOY1zew8M=";
+      url = "https://salsa.debian.org/ubports-team/libqtdbustest/-/raw/debian/0.3.2-3/debian/patches/1004_make-reading-address-from-dbus-daemon-more-robust.patch";
     })
   ];
-
-  strictDeps = true;
 
   postPatch = lib.optionalString (!finalAttrs.finalPackage.doCheck) ''
     # Don't build tests when we're not running them
     sed -i -e '/add_subdirectory(tests)/d' CMakeLists.txt
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -60,6 +60,12 @@ stdenv.mkDerivation (finalAttrs: {
     cmake-extras
     qtbase
   ];
+
+  cmakeFlags = [
+    (lib.cmakeBool "ENABLE_QT6" withQt6)
+  ];
+
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
   nativeCheckInputs = [
     dbus
@@ -76,16 +82,6 @@ stdenv.mkDerivation (finalAttrs: {
     gtest
   ];
 
-  dontWrapQtApps = true;
-
-  cmakeFlags = [
-    (lib.cmakeBool "ENABLE_QT6" withQt6)
-  ];
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
-  enableParallelChecking = false;
-
   checkPhase = ''
     runHook preCheck
 
@@ -93,6 +89,9 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postCheck
   '';
+
+  dontWrapQtApps = true;
+  enableParallelChecking = false;
 
   passthru = {
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
@@ -104,10 +103,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.com/ubports/development/core/libqtdbustest";
     license = lib.licenses.lgpl3Only;
     platforms = lib.platforms.unix;
-    teams = [ lib.teams.lomiri ];
     mainProgram = "qdbus-simple-test-runner";
+
     pkgConfigModules = [
       "libqtdbustest-${if withQt6 then "qt6" else "1"}"
     ];
+
+    teams = [ lib.teams.lomiri ];
   };
 })

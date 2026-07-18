@@ -1,11 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   decorator,
   lxml,
@@ -13,13 +9,14 @@
   numpy,
   requests,
   scipy,
+  # build-system
+  setuptools,
   sqlalchemy,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "obspy";
   version = "1.4.2-unstable-2025-08-21";
-  pyproject = true;
 
   # Applies a gcc fix that can't be applied as a patch due to other repo changes
   src = fetchFromGitHub {
@@ -29,9 +26,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-B55tVae8NRZZclekTvnxiFUk/bVijk7GpaccPFh15Xc=";
   };
 
+  # Tests require Internet access.
+  doCheck = false;
   build-system = [ setuptools ];
-
-  pythonRelaxDeps = [ "sqlalchemy" ];
 
   dependencies = [
     decorator
@@ -43,10 +40,9 @@ buildPythonPackage (finalAttrs: {
     sqlalchemy
   ];
 
-  # Tests require Internet access.
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "obspy" ];
+  pythonRelaxDeps = [ "sqlalchemy" ];
 
   meta = {
     description = "Python framework for seismological observatories";

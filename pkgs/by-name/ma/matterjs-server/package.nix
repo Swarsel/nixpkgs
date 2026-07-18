@@ -1,20 +1,18 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   makeBinaryWrapper,
+  nix-update-script,
+  nixosTests,
   nodejs,
   udev,
   versionCheckHook,
-  nix-update-script,
-  nixosTests,
 }:
 
 buildNpmPackage (finalAttrs: {
   pname = "matterjs-server";
   version = "1.2.5";
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "matter-js";
@@ -23,7 +21,7 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-IXYq4Ppz61+8PeGUgmBcENkL3o6JFrJaIwFjr77uOhg=";
   };
 
-  npmDepsHash = "sha256-HrBtwT61RnHSuUCGH9I6vcigzpZdwp6HS5dc0v3EVnQ=";
+  strictDeps = true;
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -31,18 +29,9 @@ buildNpmPackage (finalAttrs: {
   ];
 
   buildInputs = [ udev ];
-
+  npmDepsHash = "sha256-HrBtwT61RnHSuUCGH9I6vcigzpZdwp6HS5dc0v3EVnQ=";
   env.CXXFLAGS = "-std=c++20";
-
   preBuild = "npm run version -- --apply";
-
-  dontNpmInstall = true;
-
-  makeWrapperArgs = [
-    "--set"
-    "NODE_OPTIONS"
-    "--enable-source-maps"
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -60,6 +49,15 @@ buildNpmPackage (finalAttrs: {
   '';
 
   doInstallCheck = true;
+  __structuredAttrs = true;
+  dontNpmInstall = true;
+
+  makeWrapperArgs = [
+    "--set"
+    "NODE_OPTIONS"
+    "--enable-source-maps"
+  ];
+
   versionCheckProgramArg = "--version";
 
   passthru = {
@@ -72,11 +70,13 @@ buildNpmPackage (finalAttrs: {
     homepage = "https://github.com/matter-js/matterjs-server";
     changelog = "https://github.com/matter-js/matterjs-server/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       kranzes
       marie
     ];
-    mainProgram = "matterjs-server";
+
     platforms = lib.platforms.linux;
+    mainProgram = "matterjs-server";
   };
 })

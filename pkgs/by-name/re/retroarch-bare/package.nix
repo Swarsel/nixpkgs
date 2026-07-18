@@ -1,19 +1,24 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
+  SDL2,
   # deps
   alsa-lib,
   dbus,
-  fetchFromGitHub,
   ffmpeg_7,
   flac,
   freetype,
   gamemode,
   gitUpdater,
-  libdrm,
   libGL,
   libGLU,
+  libdrm,
+  libgbm,
   libpulseaudio,
+  # wrapper deps
+  libretro,
+  libretro-core-info,
   libv4l,
   libx11,
   libxdmcp,
@@ -23,29 +28,24 @@
   libxxf86vm,
   makeBinaryWrapper,
   mbedtls,
-  libgbm,
   nixosTests,
   nvidia_cg_toolkit,
   pipewire,
   pkg-config,
   python3,
   qt6,
-  SDL2,
+  retroarch-assets,
+  retroarch-bare,
+  retroarch-joypad-autoconfig,
   spirv-tools,
+  symlinkJoin,
   udev,
   vulkan-loader,
   wayland,
   wayland-scanner,
   wrapGAppsHook3,
-  zlib,
-  # wrapper deps
-  libretro,
-  libretro-core-info,
-  retroarch-assets,
-  retroarch-bare,
-  retroarch-joypad-autoconfig,
   writeText,
-  symlinkJoin,
+  zlib,
   # params
   enableNvidiaCgToolkit ? false,
   withGamemode ? stdenv.hostPlatform.isLinux,
@@ -64,8 +64,8 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchFromGitHub {
     owner = "libretro";
     repo = "RetroArch";
-    hash = "sha256-+3jgoh6OVbPzW5/nCvpB1CRgkMTBxLkYMm6UV16/cfU=";
     rev = "v${finalAttrs.version}";
+    hash = "sha256-+3jgoh6OVbPzW5/nCvpB1CRgkMTBxLkYMm6UV16/cfU=";
   };
 
   nativeBuildInputs = [
@@ -112,8 +112,6 @@ stdenv.mkDerivation (finalAttrs: {
     udev
   ];
 
-  enableParallelBuilding = true;
-
   configureFlags = [
     "--disable-update_cores"
     "--disable-builtinmbedtls"
@@ -149,11 +147,15 @@ stdenv.mkDerivation (finalAttrs: {
     rm $out/share/man/man6/retroarch-cg2glsl.6*
   '';
 
+  enableParallelBuilding = true;
+
   passthru = {
     tests = nixosTests.retroarch;
+
     updateScript = gitUpdater {
       rev-prefix = "v";
     };
+
     wrapper =
       {
         cores ? [ ],
@@ -169,6 +171,7 @@ stdenv.mkDerivation (finalAttrs: {
           symlinkJoin
           cores
           ;
+
         settings = {
           assets_directory = "${retroarch-assets}/share/retroarch/assets";
           joypad_autoconfig_dir = "${retroarch-joypad-autoconfig}/share/libretro/autoconfig";
@@ -179,20 +182,22 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://libretro.com";
     description = "Multi-platform emulator frontend for libretro cores";
-    license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
+    homepage = "https://libretro.com";
     changelog = "https://github.com/libretro/RetroArch/blob/v${finalAttrs.version}/CHANGES.md";
+    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       kolbycrouch
     ];
-    teams = [ lib.teams.libretro ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "retroarch";
     # If you want to (re)-add support for macOS, see:
     # https://docs.libretro.com/development/retroarch/compilation/osx/
     # and
     # https://github.com/libretro/RetroArch/blob/71eb74d256cb4dc5b8b43991aec74980547c5069/.gitlab-ci.yml#L330
     broken = stdenv.hostPlatform.isDarwin;
+    teams = [ lib.teams.libretro ];
   };
 })

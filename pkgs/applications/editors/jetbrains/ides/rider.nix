@@ -1,56 +1,51 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  mkJetBrainsProduct,
-  libdbm,
+  dotnetCorePackages,
+  expat,
   fsnotifier,
-  patchSharedLibs,
-  openssl,
-  libxcrypt,
-  lttng-ust_2_12,
-  musl,
+  libdbm,
   libice,
   libsm,
   libx11,
-  dotnetCorePackages,
   libxcb-keysyms,
-  expat,
+  libxcrypt,
   libxml2,
+  lttng-ust_2_12,
+  mkJetBrainsProduct,
+  musl,
+  openssl,
+  patchSharedLibs,
   xz,
 }:
 let
   system = stdenv.hostPlatform.system;
   # update-script-start: urls
   urls = {
-    x86_64-linux = {
-      url = "https://download.jetbrains.com/rider/JetBrains.Rider-2026.1.4.tar.gz";
-      hash = "sha256-K+X2M4idv+oDqC/dkbzMTX3W3zx0b0e8ZTsxkP7rAfI=";
-    };
-    aarch64-linux = {
-      url = "https://download.jetbrains.com/rider/JetBrains.Rider-2026.1.4-aarch64.tar.gz";
-      hash = "sha256-GXmyBrqxUpwK4djjwllvK+pnfktDrDHpLJKoe4D2xFo=";
-    };
     aarch64-darwin = {
-      url = "https://download.jetbrains.com/rider/JetBrains.Rider-2026.1.4-aarch64.dmg";
       hash = "sha256-cfwT22BN1jzKZzrZHMQqYFJPGuRwta/sqoOJOp+PfBE=";
+      url = "https://download.jetbrains.com/rider/JetBrains.Rider-2026.1.4-aarch64.dmg";
+    };
+
+    aarch64-linux = {
+      hash = "sha256-GXmyBrqxUpwK4djjwllvK+pnfktDrDHpLJKoe4D2xFo=";
+      url = "https://download.jetbrains.com/rider/JetBrains.Rider-2026.1.4-aarch64.tar.gz";
+    };
+
+    x86_64-linux = {
+      hash = "sha256-K+X2M4idv+oDqC/dkbzMTX3W3zx0b0e8ZTsxkP7rAfI=";
+      url = "https://download.jetbrains.com/rider/JetBrains.Rider-2026.1.4.tar.gz";
     };
   };
   # update-script-end: urls
 in
 (mkJetBrainsProduct {
   inherit libdbm fsnotifier;
-
   pname = "rider";
-
-  wmClass = "jetbrains-rider";
-  product = "Rider";
-
   # update-script-start: version
   version = "2026.1.4";
-  buildNumber = "261.26222.60";
   # update-script-end: version
-
   src = fetchurl (urls.${system} or (throw "Unsupported system: ${system}"));
 
   # TODO: Some of these dependencies should probably also be added on Darwin - however it seems that JetBrains bundles them all? Unclear.
@@ -68,6 +63,9 @@ in
       libxml2
       xz
     ];
+
+  buildNumber = "261.26222.60";
+
   extraLdPath = lib.optionals (stdenv.hostPlatform.isLinux) [
     # Avalonia dependencies needed for dotMemory
     libice
@@ -75,22 +73,29 @@ in
     libx11
   ];
 
+  product = "Rider";
+  wmClass = "jetbrains-rider";
+
   # NOTE: meta attrs are used for the Linux desktop entries and may cause rebuilds when changed
   meta = {
-    homepage = "https://www.jetbrains.com/rider/";
     description = ".NET IDE from JetBrains";
+
     longDescription = ''
       JetBrains Rider is a new .NET IDE based on the IntelliJ platform and ReSharper.
       Rider supports .NET Core, .NET Framework and Mono based projects.
       This lets you develop a wide array of applications including .NET desktop apps, services and libraries, Unity games, ASP.NET and ASP.NET Core web applications.
     '';
-    maintainers = with lib.maintainers; [ raphaelr ];
+
+    homepage = "https://www.jetbrains.com/rider/";
     license = lib.licenses.unfree;
+
     sourceProvenance =
       if stdenv.hostPlatform.isDarwin then
         [ lib.sourceTypes.binaryNativeCode ]
       else
         [ lib.sourceTypes.binaryBytecode ];
+
+    maintainers = with lib.maintainers; [ raphaelr ];
   };
 }).overrideAttrs
   (attrs: {

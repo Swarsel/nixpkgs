@@ -1,19 +1,15 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
+  lwt,
   mirage-xen,
   parse-argv,
-  lwt,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "mirage-bootvar-xen";
   version = "0.8.0";
-
-  minimalOCamlVersion = "4.08";
-
-  duneVersion = "3";
 
   src = fetchurl {
     url = "https://github.com/mirage/mirage-bootvar-xen/releases/download/v${finalAttrs.version}/mirage-bootvar-xen-v${finalAttrs.version}.tbz";
@@ -26,10 +22,13 @@ buildDunePackage (finalAttrs: {
     parse-argv
   ];
 
+  duneVersion = "3";
+  minimalOCamlVersion = "4.08";
+
   meta = {
     description = "Handle boot-time arguments for Xen platform";
+    homepage = "https://github.com/mirage/mirage-bootvar-xen";
     license = lib.licenses.isc;
     maintainers = [ lib.maintainers.sternenseemann ];
-    homepage = "https://github.com/mirage/mirage-bootvar-xen";
   };
 })

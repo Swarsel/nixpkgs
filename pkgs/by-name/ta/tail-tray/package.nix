@@ -1,11 +1,11 @@
 {
   lib,
-  fetchFromGitHub,
-  davfs2,
-  cmake,
   stdenv,
-  pkg-config,
+  fetchFromGitHub,
+  cmake,
+  davfs2,
   kdePackages,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -42,9 +42,9 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Tray icon to manage Tailscale";
     homepage = "https://github.com/SneWs/tail-tray";
     changelog = "https://github.com/SneWs/tail-tray/releases/tag/${finalAttrs.src.tag}";
-    mainProgram = "tail-tray";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ Svenum ];
     platforms = lib.platforms.linux;
+    mainProgram = "tail-tray";
   };
 })

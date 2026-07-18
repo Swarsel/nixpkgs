@@ -19,9 +19,6 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ ocaml ];
 
-  # build fails otherwise
-  enableParallelBuilding = false;
-
   preBuild = ''
     mv config/Makefile.unix config/Makefile
     substituteInPlace config/Makefile --replace BINDIR=/usr/local/bin BINDIR=$out
@@ -44,6 +41,9 @@ stdenv.mkDerivation rec {
     ln -s $out/camlidl $out/bin
   '';
 
+  # build fails otherwise
+  enableParallelBuilding = false;
+
   setupHook = writeText "setupHook.sh" ''
     export NIX_CFLAGS_COMPILE+=" -isystem $1/lib/ocaml/${ocaml.version}/site-lib/camlidl"
     export NIX_LDFLAGS+=" -L $1/lib/ocaml/${ocaml.version}/site-lib/camlidl"
@@ -51,10 +51,10 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Stub code generator and COM binding for Objective Caml";
-    mainProgram = "camlidl";
     homepage = "https://xavierleroy.org/camlidl/";
     license = lib.licenses.lgpl21;
     maintainers = [ lib.maintainers.roconnor ];
+    mainProgram = "camlidl";
     broken = !(lib.versionAtLeast ocaml.version "4.03");
   };
 }

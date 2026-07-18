@@ -4,16 +4,14 @@
   fetchPypi,
   genshi,
   lxml,
-  pyyaml,
-  python-magic,
   pytestCheckHook,
+  python-magic,
+  pyyaml,
 }:
 
 buildPythonPackage rec {
   pname = "relatorio";
   version = "0.11.1";
-
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -25,24 +23,26 @@ buildPythonPackage rec {
     lxml
   ];
 
+  nativeCheckInputs = [ pytestCheckHook ] ++ optional-dependencies.fodt;
+  format = "setuptools";
+
   optional-dependencies = {
     chart = [
       # pycha
       pyyaml
     ];
+
     fodt = [ python-magic ];
   };
-
-  nativeCheckInputs = [ pytestCheckHook ] ++ optional-dependencies.fodt;
 
   pythonImportsCheck = [ "relatorio" ];
 
   meta = {
+    description = "Templating library able to output odt and pdf files";
     homepage = "https://relatorio.tryton.org/";
     changelog = "https://hg.tryton.org/relatorio/file/${version}/CHANGELOG";
-    description = "Templating library able to output odt and pdf files";
-    mainProgram = "relatorio-render";
-    maintainers = with lib.maintainers; [ johbo ];
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ johbo ];
+    mainProgram = "relatorio-render";
   };
 }

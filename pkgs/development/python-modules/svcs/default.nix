@@ -1,17 +1,16 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  # test dependencies
+  aiohttp,
   attrs,
+  buildPythonPackage,
+  fastapi,
+  flask,
   hatch-fancy-pypi-readme,
   hatch-vcs,
   hatchling,
-  # test dependencies
-  aiohttp,
-  fastapi,
-  flask,
   httpx,
   pyramid,
   pytest-asyncio,
@@ -23,7 +22,6 @@
 buildPythonPackage rec {
   pname = "svcs";
   version = "25.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hynek";
@@ -31,16 +29,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-dDPmOKGifAGmAH3TD0NzJvR8lUB5qDWbxIwzHtNeF+4=";
   };
-
-  build-system = [
-    hatch-fancy-pypi-readme
-    hatch-vcs
-    hatchling
-  ];
-
-  dependencies = [
-    attrs
-  ];
 
   nativeCheckInputs = [
     aiohttp
@@ -54,6 +42,16 @@ buildPythonPackage rec {
     sybil
   ];
 
+  build-system = [
+    hatch-fancy-pypi-readme
+    hatch-vcs
+    hatchling
+  ];
+
+  dependencies = [
+    attrs
+  ];
+
   disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
     "test_aclose_registry_ok"
     "test_registrations"
@@ -61,6 +59,7 @@ buildPythonPackage rec {
     "test_client_pool_register_value"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "svcs" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,9 +19,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Command line tool to translate morse code input to text in real time";
-    mainProgram = "morsel";
     homepage = "https://github.com/SamLee514/morsel";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ siraben ];
+    mainProgram = "morsel";
   };
 })

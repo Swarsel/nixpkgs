@@ -1,6 +1,6 @@
-{ mkDerivation, libutil }:
+{ libutil, mkDerivation }:
 mkDerivation {
-  path = "usr.bin/limits";
   buildInputs = [ libutil ];
   MK_TESTS = "no";
+  path = "usr.bin/limits";
 }

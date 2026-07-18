@@ -1,7 +1,7 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
 }:
 
 stdenv.mkDerivation {
@@ -22,11 +22,11 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/clarkwang/passh";
     description = "Sshpass alternative for non-interactive ssh auth";
+    homepage = "https://github.com/clarkwang/passh";
     license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.lovesegfault ];
-    mainProgram = "passh";
     platforms = lib.platforms.unix;
+    mainProgram = "passh";
   };
 }

@@ -9,14 +9,14 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "randomX";
   version = "1.2.1";
 
-  nativeBuildInputs = [ cmake ];
-
   src = fetchFromGitHub {
     owner = "tevador";
     repo = "randomX";
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-dfImzwbEfJQcaPZCoWypHiI6dishVRdqS/r+n3tfjvM=";
   };
+
+  nativeBuildInputs = [ cmake ];
 
   meta = {
     description = "Proof of work algorithm based on random code execution";

@@ -1,17 +1,17 @@
 {
-  fetchFromGitHub,
-  git,
   lib,
-  nodejs,
-  pnpm_10,
-  fetchPnpmDeps,
-  pnpmConfigHook,
   stdenv,
-  nix-update-script,
+  fetchFromGitHub,
   discord,
-  discord-ptb,
   discord-canary,
   discord-development,
+  discord-ptb,
+  fetchPnpmDeps,
+  git,
+  nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_10,
   buildWebExtension ? false,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -29,13 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-m/BdSErumQrWCSyejRFm5HcSR4FwDS2JkAXvy9PejmI=";
   };
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm_10;
-    fetcherVersion = 3;
-    hash = "sha256-RwppRWrEzIKZDb3QLVAMd1bHXyFwiatYNiNccVgrcWA=";
-  };
-
   nativeBuildInputs = [
     git
     nodejs
@@ -44,8 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env = {
-    EQUICORD_REMOTE = "${finalAttrs.src.owner}/${finalAttrs.src.repo}";
     EQUICORD_HASH = "${finalAttrs.src.tag}";
+    EQUICORD_REMOTE = "${finalAttrs.src.owner}/${finalAttrs.src.repo}";
   };
 
   buildPhase = ''
@@ -65,25 +58,35 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 3;
+    hash = "sha256-RwppRWrEzIKZDb3QLVAMd1bHXyFwiatYNiNccVgrcWA=";
+    pnpm = pnpm_10;
+  };
+
   passthru = {
+    tests = lib.genAttrs' [ discord discord-ptb discord-canary discord-development ] (
+      p: lib.nameValuePair p.pname p.tests.withEquicord
+    );
+
     updateScript = nix-update-script {
       extraArgs = [
         "--version-regex"
         "^(\\d{4}-\\d{2}-\\d{2})$"
       ];
     };
-    tests = lib.genAttrs' [ discord discord-ptb discord-canary discord-development ] (
-      p: lib.nameValuePair p.pname p.tests.withEquicord
-    );
   };
 
   meta = {
     description = "Other cutest Discord client mod";
     homepage = "https://github.com/Equicord/Equicord";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.unix;
+
     maintainers = [
       lib.maintainers.NotAShelf
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

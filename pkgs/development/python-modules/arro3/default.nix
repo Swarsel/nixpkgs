@@ -1,13 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  rustPlatform,
-  pytestCheckHook,
+  buildPythonPackage,
   geoarrow-types,
-  pyarrow,
   numpy,
   pandas,
+  pyarrow,
+  pytestCheckHook,
+  rustPlatform,
 }:
 let
   version = "0.8.1";
@@ -26,18 +26,18 @@ let
   };
 
   commonMeta = {
-    homepage = "https://github.com/kylebarron/arro3";
     changelog = "https://github.com/kylebarron/arro3/releases/tag/py-v${version}";
+    homepage = "https://github.com/kylebarron/arro3";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.mslingsby ];
   };
 
   buildArro3Package =
     {
-      pname,
-      subdir,
       description,
+      pname,
       pythonImportsCheck,
+      subdir,
       dependencies ? [ ],
     }:
     buildPythonPackage {
@@ -49,10 +49,6 @@ let
         dependencies
         pythonImportsCheck
         ;
-      pyproject = true;
-
-      sourceRoot = "${src.name}/${subdir}";
-      cargoRoot = "..";
 
       nativeBuildInputs = with rustPlatform; [
         cargoSetupHook
@@ -63,6 +59,9 @@ let
         CARGO_TARGET_DIR = "./target";
       };
 
+      cargoRoot = "..";
+      pyproject = true;
+      sourceRoot = "${src.name}/${subdir}";
       # Avoid infinite recursion in tests.
       # arro3-core tests depends on arro3-compute and arro3-compute depends on arro3-core
       passthru.tests = { inherit arro3-tests; };
@@ -74,36 +73,31 @@ let
 
   arro3-core = buildArro3Package {
     pname = "arro3-core";
-    subdir = "arro3-core";
     description = "Core library for representing Arrow data in Python";
     pythonImportsCheck = [ "arro3.core" ];
+    subdir = "arro3-core";
   };
 
   arro3-compute = buildArro3Package {
     pname = "arro3-compute";
-    subdir = "arro3-compute";
+    dependencies = [ arro3-core ];
     description = "Rust-based compute kernels for Arrow in Python";
     pythonImportsCheck = [ "arro3.compute" ];
-    dependencies = [ arro3-core ];
+    subdir = "arro3-compute";
   };
 
   arro3-io = buildArro3Package {
     pname = "arro3-io";
-    subdir = "arro3-io";
+    dependencies = [ arro3-core ];
     description = "Rust-based readers and writers for Arrow in Python";
     pythonImportsCheck = [ "arro3.io" ];
-    dependencies = [ arro3-core ];
+    subdir = "arro3-io";
   };
 
   arro3-tests = buildPythonPackage {
+    inherit src;
     pname = "arro3-tests";
     version = arro3-core.version;
-
-    pyproject = false;
-    dontBuild = true;
-    dontInstall = true;
-
-    inherit src;
 
     nativeCheckInputs = [
       pytestCheckHook
@@ -115,6 +109,10 @@ let
       arro3-compute
       arro3-io
     ];
+
+    dontBuild = true;
+    dontInstall = true;
+    pyproject = false;
   };
 in
 {

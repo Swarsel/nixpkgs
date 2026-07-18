@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools-scm,
+  buildPythonPackage,
   getmac,
-  requests,
-  semver,
   pytestCheckHook,
+  requests,
   responses,
+  semver,
   setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "vilfo-api-client";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ManneW";
@@ -22,6 +21,11 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-ZlmriBd+M+54ux/UNYa355mkz808/NxSz7IzmWouA0c=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    responses
+  ];
 
   build-system = [
     setuptools
@@ -34,11 +38,7 @@ buildPythonPackage (finalAttrs: {
     semver
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    responses
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "vilfo" ];
 
   meta = {

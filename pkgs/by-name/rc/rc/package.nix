@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
-  pkgsStatic,
   byacc,
   ed,
-  ncurses,
-  readline,
+  fetchpatch2,
   installShellFiles,
+  ncurses,
+  pkgsStatic,
+  readline,
   historySupport ? true,
-  readlineSupport ? true,
   lineEditingLibrary ?
     if (stdenv.hostPlatform.isDarwin || stdenv.hostPlatform.isStatic) then "null" else "readline",
+  readlineSupport ? true,
 }:
 
 assert lib.elem lineEditingLibrary [
@@ -60,6 +60,8 @@ stdenv.mkDerivation (finalAttrs: {
     EOS
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     byacc
     ed
@@ -72,8 +74,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals readlineSupport [
     readline
   ];
-
-  strictDeps = true;
 
   makeFlags = [
     "CC=${stdenv.cc.targetPrefix}cc"
@@ -100,11 +100,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/rakitzis/rc";
     description = "Plan 9 shell";
+    homepage = "https://github.com/rakitzis/rc";
     license = [ lib.licenses.zlib ];
-    mainProgram = "rc";
     maintainers = with lib.maintainers; [ ramkromberg ];
     platforms = lib.platforms.unix;
+    mainProgram = "rc";
   };
 })

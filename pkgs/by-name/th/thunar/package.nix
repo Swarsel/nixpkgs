@@ -15,10 +15,6 @@ if thunarPlugins == [ ] then
 
 else
   symlinkJoin {
-    name = "thunar-with-plugins-${thunar.version}";
-
-    paths = [ thunar ] ++ thunarPlugins;
-
     nativeBuildInputs = [ makeWrapper ];
 
     postBuild = ''
@@ -44,6 +40,9 @@ else
           --replace "${thunar}" "$out"
       done
     '';
+
+    name = "thunar-with-plugins-${thunar.version}";
+    paths = [ thunar ] ++ thunarPlugins;
 
     meta = {
       inherit (thunar.meta)

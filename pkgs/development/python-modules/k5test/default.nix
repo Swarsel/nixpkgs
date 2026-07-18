@@ -4,14 +4,13 @@
   fetchPypi,
   findutils,
   krb5-c,
-  setuptools,
   replaceVars,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "k5test";
   version = "0.10.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -28,10 +27,9 @@ buildPythonPackage rec {
   ];
 
   nativeBuildInputs = [ setuptools ];
-
   # No tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "k5test" ];
 
   meta = {

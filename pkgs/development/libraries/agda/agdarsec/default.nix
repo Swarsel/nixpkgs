@@ -1,7 +1,7 @@
 {
   lib,
-  mkDerivation,
   fetchFromGitHub,
+  mkDerivation,
   standard-library,
 }:
 
@@ -23,10 +23,10 @@ mkDerivation {
   buildInputs = [ standard-library ];
 
   meta = {
-    homepage = "https://gallais.github.io/agdarsec/";
     description = "Total Parser Combinators in Agda";
+    homepage = "https://gallais.github.io/agdarsec/";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ turion ];
+    platforms = lib.platforms.unix;
   };
 }

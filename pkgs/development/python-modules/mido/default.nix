@@ -1,34 +1,27 @@
 {
-  stdenv,
   lib,
+  stdenv,
   buildPythonPackage,
   fetchPypi,
+  # dependencies
+  packaging,
+  # native dependencies
+  portmidi,
+  # optional-dependencies
+  pygame,
+  # tests
+  pytestCheckHook,
+  python-rtmidi,
   replaceVars,
-
+  rtmidi-python,
   # build-system
   setuptools,
   setuptools-scm,
-
-  # dependencies
-  packaging,
-
-  # native dependencies
-  portmidi,
-
-  # optional-dependencies
-  pygame,
-  python-rtmidi,
-  rtmidi-python,
-
-  # tests
-  pytestCheckHook,
-
 }:
 
 buildPythonPackage rec {
   pname = "mido";
   version = "1.3.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -41,12 +34,12 @@ buildPythonPackage rec {
     })
   ];
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
-
-  pythonRelaxDeps = [ "packaging" ];
 
   dependencies = [ packaging ];
 
@@ -56,9 +49,9 @@ buildPythonPackage rec {
     ports-rtmidi-python = [ rtmidi-python ];
   };
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mido" ];
+  pythonRelaxDeps = [ "packaging" ];
 
   meta = {
     description = "MIDI Objects for Python";

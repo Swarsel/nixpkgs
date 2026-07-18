@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  responses,
+  buildPythonPackage,
   pytestCheckHook,
+  responses,
 }:
 
 buildPythonPackage rec {
   pname = "openrouteservice";
   version = "2.3.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "GIScience";
@@ -30,9 +29,11 @@ buildPythonPackage rec {
     "test_raise_timeout_retriable_requests"
   ];
 
+  format = "setuptools";
+
   meta = {
-    homepage = "https://github.com/GIScience/openrouteservice-py";
     description = "Python API to consume openrouteservice(s) painlessly";
+    homepage = "https://github.com/GIScience/openrouteservice-py";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ Scriptkiddi ];
   };

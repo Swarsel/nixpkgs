@@ -16,9 +16,13 @@
 buildPythonPackage {
   inherit (opentelemetry-instrumentation) version src;
   pname = "opentelemetry-instrumentation-fastapi";
-  pyproject = true;
 
-  sourceRoot = "${opentelemetry-instrumentation.src.name}/instrumentation/opentelemetry-instrumentation-fastapi";
+  nativeCheckInputs = [
+    httpx
+    opentelemetry-test-utils
+    pytestCheckHook
+    requests
+  ];
 
   build-system = [ hatchling ];
 
@@ -31,14 +35,9 @@ buildPythonPackage {
     opentelemetry-util-http
   ];
 
-  nativeCheckInputs = [
-    httpx
-    opentelemetry-test-utils
-    pytestCheckHook
-    requests
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "opentelemetry.instrumentation.fastapi" ];
+  sourceRoot = "${opentelemetry-instrumentation.src.name}/instrumentation/opentelemetry-instrumentation-fastapi";
 
   meta = opentelemetry-instrumentation.meta // {
     description = "OpenTelemetry Instrumentation for fastapi";

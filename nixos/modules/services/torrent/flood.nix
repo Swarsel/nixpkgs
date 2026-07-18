@@ -10,45 +10,49 @@ let
   cfg = config.services.flood;
 in
 {
-  meta.maintainers = with lib.maintainers; [ thiagokokada ];
-
   options.services.flood = {
     enable = lib.mkEnableOption "flood";
     package = lib.mkPackageOption pkgs "flood" { };
+
+    extraArgs = lib.mkOption {
+      default = [ ];
+      description = "Extra arguments passed to `flood`.";
+      example = [ "--baseuri=/" ];
+      type = with lib.types; listOf str;
+    };
+
+    host = lib.mkOption {
+      default = "localhost";
+      description = "Host to bind webserver.";
+      example = "::";
+      type = lib.types.str;
+    };
+
     openFirewall = lib.mkEnableOption "" // {
       description = "Whether to open the firewall for the port in {option}`services.flood.port`.";
     };
+
     port = lib.mkOption {
-      type = lib.types.port;
-      description = "Port to bind webserver.";
       default = 3000;
+      description = "Port to bind webserver.";
       example = 3001;
-    };
-    host = lib.mkOption {
-      type = lib.types.str;
-      description = "Host to bind webserver.";
-      default = "localhost";
-      example = "::";
-    };
-    extraArgs = lib.mkOption {
-      type = with lib.types; listOf str;
-      description = "Extra arguments passed to `flood`.";
-      default = [ ];
-      example = [ "--baseuri=/" ];
+      type = lib.types.port;
     };
   };
 
   config = lib.mkIf cfg.enable {
+    networking.firewall.allowedTCPPorts = lib.mkIf cfg.openFirewall [
+      cfg.port
+    ];
+
     systemd.services.flood = {
-      description = "A modern web UI for various torrent clients.";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
-      unitConfig = {
-        Documentation = "https://github.com/jesec/flood/wiki";
-      };
+      description = "A modern web UI for various torrent clients.";
+
       serviceConfig = {
-        Restart = "on-failure";
-        RestartSec = "3s";
+        CapabilityBoundingSet = [ "" ];
+        DynamicUser = true;
+
         ExecStart = utils.escapeSystemdExecArgs (
           [
             (lib.getExe cfg.package)
@@ -61,8 +65,6 @@ in
           ++ cfg.extraArgs
         );
 
-        CapabilityBoundingSet = [ "" ];
-        DynamicUser = true;
         LockPersonality = true;
         NoNewPrivileges = true;
         PrivateDevices = true;
@@ -76,27 +78,36 @@ in
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
         ProtectSystem = "strict";
+        Restart = "on-failure";
+        RestartSec = "3s";
+
         RestrictAddressFamilies = [
           "AF_UNIX"
           "AF_INET"
           "AF_INET6"
           "AF_NETLINK"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
         StateDirectory = "flood";
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "@pkey"
           "~@privileged"
         ];
       };
-    };
 
-    networking.firewall.allowedTCPPorts = lib.mkIf cfg.openFirewall [
-      cfg.port
-    ];
+      unitConfig = {
+        Documentation = "https://github.com/jesec/flood/wiki";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
   };
+
+  meta.maintainers = with lib.maintainers; [ thiagokokada ];
 }

@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  ocaml,
   findlib,
+  ocaml,
   ocamlbuild,
 }:
 
@@ -18,20 +18,21 @@ stdenv.mkDerivation rec {
     sha256 = "0m1ldah5r9gcq09d9jh8lhvr77910dygx5m309k1jm60ah9mdcab";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     ocaml
     findlib
     ocamlbuild
   ];
-  strictDeps = true;
 
   createFindlibDestdir = true;
 
   meta = {
+    inherit (src.meta) homepage;
+    inherit (ocaml.meta) platforms;
     description = "Easy process control in OCaml";
     license = lib.licenses.isc;
     maintainers = [ lib.maintainers.vbgl ];
-    inherit (src.meta) homepage;
-    inherit (ocaml.meta) platforms;
   };
 }

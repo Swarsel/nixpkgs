@@ -1,21 +1,20 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
-  unittestCheckHook,
-  rustPlatform,
   fetchFromGitHub,
-  rustc,
+  buildPythonPackage,
   cargo,
   libiconv,
+  rustPlatform,
+  rustc,
   setuptools,
   setuptools-rust,
+  unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "nlpo3";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "PyThaiNLP";
@@ -29,17 +28,6 @@ buildPythonPackage rec {
       --replace-fail "data/test_dict.txt" "$src/nlpo3-python/tests/data/test_dict.txt"
   '';
 
-  sourceRoot = "${src.name}/nlpo3-python";
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit src sourceRoot;
-    hash = "sha256-Kp2FL6GXb5g5jqvFWZxZUy7OuGaavN9DZkp9kdI4d/4=";
-  };
-
-  preCheck = ''
-    rm -r nlpo3
-  '';
-
   nativeBuildInputs = [
     rustPlatform.cargoSetupHook
     rustc
@@ -47,21 +35,31 @@ buildPythonPackage rec {
   ];
 
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
+  nativeCheckInputs = [ unittestCheckHook ];
+
+  preCheck = ''
+    rm -r nlpo3
+  '';
 
   build-system = [
     setuptools
     setuptools-rust
   ];
 
-  nativeCheckInputs = [ unittestCheckHook ];
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit src sourceRoot;
+    hash = "sha256-Kp2FL6GXb5g5jqvFWZxZUy7OuGaavN9DZkp9kdI4d/4=";
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "nlpo3" ];
+  sourceRoot = "${src.name}/nlpo3-python";
 
   unittestFlagsArray = [
     "-s"
     "tests"
     "-v"
   ];
-
-  pythonImportsCheck = [ "nlpo3" ];
 
   meta = {
     description = "Thai Natural Language Processing library in Rust, with Python and Node bindings";

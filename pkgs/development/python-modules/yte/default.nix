@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   argparse-dataclass,
   buildPythonPackage,
   dpath,
-  fetchFromGitHub,
   numpy,
   pytestCheckHook,
   pyyaml,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "yte";
   version = "1.9.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "koesterlab";
@@ -21,6 +20,16 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-TpY13HYBZ4qL2W6sPdoM+bpHcEOi0rwubCbFa4zm2I0=";
   };
+
+  nativeCheckInputs = [
+    numpy
+    pytestCheckHook
+  ];
+
+  preCheck = ''
+    # The CLI test need yte on the PATH
+    export PATH=$out/bin:$PATH
+  '';
 
   build-system = [ uv-build ];
 
@@ -30,17 +39,8 @@ buildPythonPackage rec {
     pyyaml
   ];
 
-  nativeCheckInputs = [
-    numpy
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "yte" ];
-
-  preCheck = ''
-    # The CLI test need yte on the PATH
-    export PATH=$out/bin:$PATH
-  '';
 
   meta = {
     description = "YAML template engine with Python expressions";

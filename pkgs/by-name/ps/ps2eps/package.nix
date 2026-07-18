@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  perlPackages,
-  replaceVars,
   ghostscript,
   installShellFiles,
+  perlPackages,
+  replaceVars,
 }:
 
 perlPackages.buildPerlPackage rec {
@@ -17,20 +17,25 @@ perlPackages.buildPerlPackage rec {
     rev = "v${version}";
     hash = "sha256-SPLwsGKLVhANoqSQ/GJ938cYjbjMbUOXkNn9so3aJTA=";
   };
+
+  # Override buildPerlPackage's outputs setting
+  outputs = [
+    "out"
+    "man"
+  ];
+
   patches = [
     (replaceVars ./hardcode-deps.patch {
-      gs = "${ghostscript}/bin/gs";
       # bbox cannot be substituted here because replaceVars doesn't know what
       # will be the $out path of the main derivation
       bbox = null;
+      gs = "${ghostscript}/bin/gs";
     })
   ];
 
   nativeBuildInputs = [
     installShellFiles
   ];
-
-  configurePhase = "true";
 
   buildPhase = ''
     runHook preBuild
@@ -43,11 +48,6 @@ perlPackages.buildPerlPackage rec {
     runHook postBuild
   '';
 
-  # Override buildPerlPackage's outputs setting
-  outputs = [
-    "out"
-    "man"
-  ];
   installPhase = ''
     runHook preInstall
 
@@ -61,11 +61,13 @@ perlPackages.buildPerlPackage rec {
     runHook postInstall
   '';
 
+  configurePhase = "true";
+
   meta = {
     inherit (src.meta) homepage;
     description = "Calculate correct bounding boxes for PostScript and PDF files";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.doronbehar ];
+    platforms = lib.platforms.unix;
   };
 }

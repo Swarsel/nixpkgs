@@ -3,23 +3,23 @@
 # by running `autoreconf', `configure' and `make dist'.
 
 {
-  officialRelease ? false,
-  buildInputs ? [ ],
-  name ? "source-tarball",
-  version ? "0",
-  versionSuffix ? if officialRelease then "" else "pre${toString (src.rev or src.revCount or "")}",
-  src,
   lib,
   stdenv,
   autoconf,
   automake,
   libtool,
+  src,
   # By default, provide all the GNU Build System as input.
   bootstrapBuildInputs ? [
     autoconf
     automake
     libtool
   ],
+  buildInputs ? [ ],
+  name ? "source-tarball",
+  officialRelease ? false,
+  version ? "0",
+  versionSuffix ? if officialRelease then "" else "pre${toString (src.rev or src.revCount or "")}",
   ...
 }@args:
 
@@ -27,21 +27,6 @@ stdenv.mkDerivation (
 
   # First, attributes that can be overridden by the caller (via args):
   {
-    # By default, only configure and build a source distribution.
-    # Some packages can only build a distribution after a general
-    # `make' (or even `make install').
-    dontBuild = true;
-    dontInstall = true;
-    doDist = true;
-
-    # If we do install, install to a dummy location.
-    useTempPrefix = true;
-
-    showBuildStats = true;
-
-    preConfigurePhases = [ "autoconfPhase" ];
-    postPhases = [ "finalPhase" ];
-
     # Autoconfiscate the sources.
     autoconfPhase = ''
       export VERSION=${version}
@@ -68,6 +53,13 @@ stdenv.mkDerivation (
       eval "$postAutoconf"
     '';
 
+    doDist = true;
+    # By default, only configure and build a source distribution.
+    # Some packages can only build a distribution after a general
+    # `make' (or even `make install').
+    dontBuild = true;
+    dontInstall = true;
+
     failureHook = ''
       if test -n "$succeedOnFailure"; then
           if test -n "$keepBuildDirectory"; then
@@ -78,6 +70,12 @@ stdenv.mkDerivation (
           fi
       fi
     '';
+
+    postPhases = [ "finalPhase" ];
+    preConfigurePhases = [ "autoconfPhase" ];
+    showBuildStats = true;
+    # If we do install, install to a dummy location.
+    useTempPrefix = true;
   }
 
   # Then, the caller-supplied attributes.
@@ -86,13 +84,20 @@ stdenv.mkDerivation (
 
     # And finally, our own stuff.
     {
-      name = name + "-" + version + versionSuffix;
-
       buildInputs = buildInputs ++ bootstrapBuildInputs;
 
-      preUnpack = ''
-        mkdir -p $out/nix-support
+      finalPhase = ''
+        for i in "$out/tarballs/"*; do
+            echo "file source-dist $i" >> $out/nix-support/hydra-build-products
+        done
+
+        # Try to figure out the release name.
+        releaseName=$( (cd $out/tarballs && ls) | head -n 1 | sed -e 's^\.[a-z].*^^')
+        test -n "$releaseName" && (echo "$releaseName" >> $out/nix-support/hydra-release-name)
       '';
+
+      name = name + "-" + version + versionSuffix;
+      nextPostUnpack = if args ? postUnpack then args.postUnpack else "";
 
       postUnpack = ''
         # Set all source files to the current date.  This is because Nix
@@ -106,20 +111,12 @@ stdenv.mkDerivation (
         eval "$nextPostUnpack"
       '';
 
-      nextPostUnpack = if args ? postUnpack then args.postUnpack else "";
+      preUnpack = ''
+        mkdir -p $out/nix-support
+      '';
 
       # Cause distPhase to copy tar.bz2 in addition to tar.gz.
       tarballs = "*.tar.gz *.tar.bz2 *.tar.xz";
-
-      finalPhase = ''
-        for i in "$out/tarballs/"*; do
-            echo "file source-dist $i" >> $out/nix-support/hydra-build-products
-        done
-
-        # Try to figure out the release name.
-        releaseName=$( (cd $out/tarballs && ls) | head -n 1 | sed -e 's^\.[a-z].*^^')
-        test -n "$releaseName" && (echo "$releaseName" >> $out/nix-support/hydra-release-name)
-      '';
 
       passthru = {
         inherit src;
@@ -128,7 +125,6 @@ stdenv.mkDerivation (
 
       meta = (lib.optionalAttrs (args ? meta) args.meta) // {
         description = "Source distribution";
-
         # Tarball builds are generally important, so give them a high
         # default priority.
         schedulingPriority = 200;

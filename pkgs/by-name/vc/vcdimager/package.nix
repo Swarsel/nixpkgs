@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   fetchpatch,
-  pkg-config,
   libcdio,
-  libxml2,
-  popt,
   libiconv,
+  libxml2,
+  pkg-config,
+  popt,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,8 +22,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fix build with libxml 2.14
     (fetchpatch {
-      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/vcdimager/-/raw/88dc511b7f3dea8fb45e0c2bfa1345a75a088848/libxml214.diff";
       hash = "sha256-gGD6gKsbR76zkQsT6RWo7zJpOQSbR8f0ZTyzwZ2oDJY=";
+      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/vcdimager/-/raw/88dc511b7f3dea8fb45e0c2bfa1345a75a088848/libxml214.diff";
     })
   ];
 
@@ -38,9 +38,9 @@ stdenv.mkDerivation (finalAttrs: {
   propagatedBuildInputs = [ libcdio ];
 
   meta = {
-    homepage = "https://www.gnu.org/software/vcdimager/";
     description = "Full-featured mastering suite for authoring, disassembling and analyzing Video CDs and Super Video CDs";
-    platforms = lib.platforms.unix;
+    homepage = "https://www.gnu.org/software/vcdimager/";
     license = lib.licenses.gpl2;
+    platforms = lib.platforms.unix;
   };
 })

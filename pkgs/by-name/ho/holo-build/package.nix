@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  file,
   installShellFiles,
   perl,
-  file,
 }:
 
 buildGoModule (finalAttrs: {
@@ -25,20 +25,12 @@ buildGoModule (finalAttrs: {
       --replace '/usr/lib/holo/holo-build' '${placeholder "out"}/lib/holo/holo-build'
   '';
 
-  vendorHash = null;
-
   nativeBuildInputs = [
     installShellFiles
     perl
   ];
 
-  subPackages = [ "src/holo-build" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/holocm/holo-build/src/holo-build/common.version=${finalAttrs.version}"
-  ];
+  vendorHash = null;
 
   postBuild = ''
     make build/man/holo-build.8 VERSION=${finalAttrs.version}
@@ -63,6 +55,14 @@ buildGoModule (finalAttrs: {
     mv $out/bin/holo-build $out/lib/holo/holo-build
     cp src/holo-build.sh $out/bin/holo-build
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/holocm/holo-build/src/holo-build/common.version=${finalAttrs.version}"
+  ];
+
+  subPackages = [ "src/holo-build" ];
 
   meta = {
     description = "Cross-distribution system package compiler";

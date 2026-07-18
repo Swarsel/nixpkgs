@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "extract-dtb";
   version = "1.2.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -17,6 +16,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
   build-system = with python3Packages; [
     setuptools
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Extract device tree blobs (dtb) from kernel images";

@@ -1,19 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # tests
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "dedupe-levenshtein-search";
   version = "1.4.5";
-  pyproject = true;
 
   # NOTE: This is a fork of mattandahalfew/Levenshtein_search created for MIT licensing.
   # TODO: Evaluate if upstream version could be used instead.
@@ -24,13 +21,15 @@ buildPythonPackage rec {
     hash = "sha256-YhsZA28H4OUkQEBtJ+9OXJld4Z/PJbOPqAQQ9qaXSjk=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "Levenshtein_search"

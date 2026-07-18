@@ -1,14 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  python312,
   libxcb-cursor,
+  python312,
 }:
 
 python312.pkgs.buildPythonApplication (finalAttrs: {
   pname = "angr-management";
   version = "9.2.154";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "angr";
@@ -17,14 +16,7 @@ python312.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-ZaQRXCt6u5FGApiXTToJdIXBnBLv3emo13YG5ip0lJA=";
   };
 
-  pythonRelaxDeps = [
-    "angr"
-    "binsync"
-    "qtawesome"
-  ];
-
   buildInputs = [ libxcb-cursor ];
-
   build-system = with python312.pkgs; [ setuptools ];
 
   dependencies =
@@ -59,17 +51,26 @@ python312.pkgs.buildPythonApplication (finalAttrs: {
       ++ thefuzz.optional-dependencies.speedup
     );
 
+  pyproject = true;
   pythonImportsCheck = [ "angrmanagement" ];
+
+  pythonRelaxDeps = [
+    "angr"
+    "binsync"
+    "qtawesome"
+  ];
 
   meta = {
     description = "Graphical binary analysis tool powered by the angr binary analysis platform";
     homepage = "https://github.com/angr/angr-management";
     changelog = "https://github.com/angr/angr-management/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       connornelson
       scoder12
     ];
+
     mainProgram = "angr-management";
   };
 })

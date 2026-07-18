@@ -1,15 +1,14 @@
 {
   lib,
   buildPythonPackage,
+  certifi,
   fetchPypi,
   setuptools-scm,
-  certifi,
 }:
 
 buildPythonPackage rec {
   pname = "twitter";
   version = "1.19.6";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -17,11 +16,9 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools-scm ];
-
   propagatedBuildInputs = [ certifi ];
-
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "twitter" ];
 
   meta = {

@@ -1,19 +1,19 @@
 {
   lib,
-  nixosTests,
   fetchFromGitHub,
   beam27Packages,
-  gitMinimal,
-  pnpm_9,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  nodejs,
-  tailwindcss_3,
   esbuild,
-
+  fetchPnpmDeps,
+  gitMinimal,
+  nixosTests,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_9,
+  tailwindcss_3,
   mixReleaseName ? "domain", # "domain" "web" or "api"
 }:
 beam27Packages.mixRelease rec {
+  inherit mixReleaseName;
   pname = "firezone-server-${mixReleaseName}";
   version = "0-unstable-2025-08-31";
 
@@ -32,14 +32,11 @@ beam27Packages.mixRelease rec {
     }
   }/elixir";
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit pname version;
-    pnpm = pnpm_9;
-    src = "${src}/apps/web/assets";
-    fetcherVersion = 3;
-    hash = "sha256-tB0y3T/dZBe8BHz7AV913zQ4oQu7VLyqHCnzBycNg18=";
-  };
-  pnpmRoot = "apps/web/assets";
+  nativeBuildInputs = [
+    pnpmConfigHook
+    pnpm_9
+    nodejs
+  ];
 
   preBuild = ''
     cat >> config/config.exs <<EOF
@@ -61,19 +58,21 @@ beam27Packages.mixRelease rec {
     popd
   '';
 
-  nativeBuildInputs = [
-    pnpmConfigHook
-    pnpm_9
-    nodejs
-  ];
-
-  inherit mixReleaseName;
-
   mixFodDeps = beam27Packages.fetchMixDeps {
-    pname = "mix-deps-${pname}-${version}";
     inherit src version;
+    pname = "mix-deps-${pname}-${version}";
     hash = "sha256-h3l7HK9dxNmkHWfJyCOCXmCvFOK+mZtmszhRv0zxqoo=";
   };
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit pname version;
+    src = "${src}/apps/web/assets";
+    fetcherVersion = 3;
+    hash = "sha256-tB0y3T/dZBe8BHz7AV913zQ4oQu7VLyqHCnzBycNg18=";
+    pnpm = pnpm_9;
+  };
+
+  pnpmRoot = "apps/web/assets";
 
   passthru.tests = {
     inherit (nixosTests) firezone;
@@ -83,11 +82,13 @@ beam27Packages.mixRelease rec {
     description = "Backend server for the Firezone zero-trust access platform";
     homepage = "https://github.com/firezone/firezone";
     license = lib.licenses.elastic20;
+
     maintainers = with lib.maintainers; [
       oddlama
       patrickdag
     ];
-    mainProgram = mixReleaseName;
+
     platforms = lib.platforms.linux;
+    mainProgram = mixReleaseName;
   };
 }

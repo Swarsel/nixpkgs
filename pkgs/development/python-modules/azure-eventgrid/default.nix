@@ -11,14 +11,15 @@
 buildPythonPackage rec {
   pname = "azure-eventgrid";
   version = "4.22.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_eventgrid";
     inherit version;
     hash = "sha256-SrR+DVDqSf/4PbA1giwzZ8oc79YCSQm6EJdSzFS/DmM=";
+    pname = "azure_eventgrid";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,9 +28,7 @@ buildPythonPackage rec {
     isodate
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.eventgrid" ];
 
   meta = {

@@ -1,6 +1,6 @@
 {
-  runCommand,
   flang,
+  runCommand,
 }:
 let
   flangExe = "${flang}/bin/flang";

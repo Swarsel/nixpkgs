@@ -17,16 +17,16 @@ stdenv.mkDerivation rec {
     hash = "sha256-p4TooWUOWPfNdePE18ESmRJezPDAl9nLb55LQtkJiSg=";
   };
 
+  postPatch = ''
+    sed -i ./Makefile -e '/depmod/d'
+  '';
+
   nativeBuildInputs = kernel.moduleBuildDependencies;
 
   makeFlags = kernelModuleMakeFlags ++ [
     "VERSION=${version}"
     "KDIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
   ];
-
-  postPatch = ''
-    sed -i ./Makefile -e '/depmod/d'
-  '';
 
   installFlags = [ "INSTALL_MOD_PATH=${placeholder "out"}" ];
 

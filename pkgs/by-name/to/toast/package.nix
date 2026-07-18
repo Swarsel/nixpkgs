@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,14 +16,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-zo+KTtCJkCjG9j/VgUcnTZfRyJLj0C3BvKRREAjyeb8=";
-
   checkFlags = [ "--skip=format::tests::code_str_display" ]; # fails
 
   meta = {
     description = "Containerize your development and continuous integration environments";
-    mainProgram = "toast";
     homepage = "https://github.com/stepchowfun/toast";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "toast";
   };
 })

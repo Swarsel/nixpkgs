@@ -1,26 +1,23 @@
 {
   lib,
   stdenv,
-  llvmPackages_19,
   fetchFromGitHub,
-
-  gtest,
-  makeWrapper,
-  meson,
-  ninja,
-  pkg-config,
-  python3,
-
   curl,
+  gtest,
   libarchive,
   libossp_uuid,
   libpkgconf,
   libuuid,
-  nlohmann_json,
-  pkgsStatic,
-
+  llvmPackages_19,
+  makeWrapper,
+  meson,
   mesonlsp,
+  ninja,
   nix-update-script,
+  nlohmann_json,
+  pkg-config,
+  pkgsStatic,
+  python3,
   testers,
 }:
 
@@ -39,6 +36,13 @@ stdenv'.mkDerivation (finalAttrs: {
   };
 
   patches = [ ./disable-tests-that-require-network-access.patch ];
+
+  postPatch = ''
+    substituteInPlace subprojects/muon/include/compilers.h \
+      --replace-fail 'compiler_language new' 'compiler_language new_'
+
+    patchShebangs src/libtypenamespace
+  '';
 
   nativeBuildInputs = [
     gtest
@@ -62,60 +66,58 @@ stdenv'.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isLinux [ libuuid ];
 
   mesonFlags = [ "-Dbenchmarks=false" ];
-
-  mesonCheckFlags = [ "--print-errorlogs" ];
-
   doCheck = true;
+  mesonCheckFlags = [ "--print-errorlogs" ];
 
   postUnpack =
     let
       ada = fetchFromGitHub {
+        hash = "sha256-V5LwL03x7/a9Lvg1gPvgGipo7IICU7xyO2D3GqP6Lbw=";
         owner = "ada-url";
         repo = "ada";
         rev = "v2.7.4";
-        hash = "sha256-V5LwL03x7/a9Lvg1gPvgGipo7IICU7xyO2D3GqP6Lbw=";
       };
 
       muon = fetchFromGitHub {
+        hash = "sha256-k883mKwuP35f0WtwX8ybl9uYbvA3y6Vxtv2EJMpZDEs=";
         owner = "JCWasmx86";
         repo = "muon";
         rev = "62af239567ec3b086bae7f02d4aed3a545949155";
-        hash = "sha256-k883mKwuP35f0WtwX8ybl9uYbvA3y6Vxtv2EJMpZDEs=";
       };
 
       sha256 = fetchFromGitHub {
+        hash = "sha256-X9M/ZATYXUiE4oGorPBnsdaKnKaObarnMRh6QEfkBls=";
         owner = "amosnier";
         repo = "sha-2";
         rev = "49265c656f9b370da660531db8cc6bf0a2e110a6";
-        hash = "sha256-X9M/ZATYXUiE4oGorPBnsdaKnKaObarnMRh6QEfkBls=";
       };
 
       tomlplusplus = fetchFromGitHub {
+        hash = "sha256-h5tbO0Rv2tZezY58yUbyRVpsfRjY3i+5TPkkxr6La8M=";
         owner = "marzer";
         repo = "tomlplusplus";
         rev = "v3.4.0";
-        hash = "sha256-h5tbO0Rv2tZezY58yUbyRVpsfRjY3i+5TPkkxr6La8M=";
       };
 
       tree-sitter = fetchFromGitHub {
+        hash = "sha256-278zU5CLNOwphGBUa4cGwjBqRJ87dhHMzFirZB09gYM=";
         owner = "tree-sitter";
         repo = "tree-sitter";
         rev = "v0.20.8";
-        hash = "sha256-278zU5CLNOwphGBUa4cGwjBqRJ87dhHMzFirZB09gYM=";
       };
 
       tree-sitter-ini = fetchFromGitHub {
+        hash = "sha256-1hHjtghBIf7lOPpupT1pUCZQCnzUi4Qt/yHSCdjMhCU=";
         owner = "JCWasmx86";
         repo = "tree-sitter-ini";
         rev = "20aa563306e9406ac55babb4474521060df90a30";
-        hash = "sha256-1hHjtghBIf7lOPpupT1pUCZQCnzUi4Qt/yHSCdjMhCU=";
       };
 
       tree-sitter-meson = fetchFromGitHub {
+        hash = "sha256-ice2NdK1/U3NylIQDnNCN41rK/G6uqFOX+OeNf3zm18=";
         owner = "JCWasmx86";
         repo = "tree-sitter-meson";
         rev = "09665faff74548820c10d77dd8738cd76d488572";
-        hash = "sha256-ice2NdK1/U3NylIQDnNCN41rK/G6uqFOX+OeNf3zm18=";
       };
     in
     ''
@@ -143,19 +145,13 @@ stdenv'.mkDerivation (finalAttrs: {
       )
     '';
 
-  postPatch = ''
-    substituteInPlace subprojects/muon/include/compilers.h \
-      --replace-fail 'compiler_language new' 'compiler_language new_'
-
-    patchShebangs src/libtypenamespace
-  '';
-
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
-      package = mesonlsp;
       version = "v${finalAttrs.version}";
+      package = mesonlsp;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -163,9 +159,9 @@ stdenv'.mkDerivation (finalAttrs: {
     homepage = "https://github.com/JCWasmx86/mesonlsp";
     changelog = "https://github.com/JCWasmx86/mesonlsp/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "mesonlsp";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "mesonlsp";
     # ../src/liblog/log.cpp:41:7: error: call to 'format' is ambiguous
     broken = stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64;
   };

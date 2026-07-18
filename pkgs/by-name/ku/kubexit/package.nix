@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,15 +16,17 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-RA3+S5Pad+4mNUgcZ2Z0K0FKA3Za5o1ko049GM4yQQ8=";
+
   ldflags = [
     "-s"
     "-w"
   ];
+
   meta = {
     description = "Command supervisor for coordinated Kubernetes pod container termination";
-    mainProgram = "kubexit";
     homepage = "https://github.com/karlkfi/kubexit/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ qjoly ];
+    mainProgram = "kubexit";
   };
 })

@@ -11,8 +11,8 @@ let
 in
 
 stdenv.mkDerivation {
-  pname = "gordonflashtool";
   inherit version;
+  pname = "gordonflashtool";
 
   src = fetchFromGitHub {
     owner = "marmolak";
@@ -40,10 +40,10 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/marmolak/GordonFlashTool";
     description = "Toolset for Gotek SFR1M44-U100 formatted usb flash drives";
-    maintainers = with lib.maintainers; [ marmolak ];
+    homepage = "https://github.com/marmolak/GordonFlashTool";
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ marmolak ];
     platforms = lib.platforms.all;
     mainProgram = "gordon";
   };

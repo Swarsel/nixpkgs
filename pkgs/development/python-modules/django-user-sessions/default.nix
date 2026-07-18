@@ -1,16 +1,15 @@
 {
+  lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools-scm,
-  lib,
   django,
-  pytestCheckHook,
   pytest-django,
+  pytestCheckHook,
+  setuptools-scm,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "django-user-sessions";
   version = "3.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jazzband";
@@ -18,12 +17,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-vHLeEmlVil1iJi+YkxL5c04Vq/b5b43tjC2ZcjH4/Ys=";
   };
-
-  build-system = [ setuptools-scm ];
-
-  dependencies = [
-    django
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -33,6 +26,12 @@ buildPythonPackage (finalAttrs: {
   preCheck = ''
     export DJANGO_SETTINGS_MODULE=tests.settings
   '';
+
+  build-system = [ setuptools-scm ];
+
+  dependencies = [
+    django
+  ];
 
   disabledTestPaths = [
     # AssertionError: UserWarning not triggered
@@ -46,6 +45,8 @@ buildPythonPackage (finalAttrs: {
     "tests/test_views.py::ViewsTest::test_delete_some_other"
     "tests/test_views.py::ViewsTest::test_list"
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Extend Django sessions with a foreign key back to the user, allowing enumerating all user's sessions";

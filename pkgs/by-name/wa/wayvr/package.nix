@@ -1,13 +1,14 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   alsa-lib,
   dbus,
-  fetchFromGitHub,
-  lib,
   libx11,
-  libxext,
-  libxrandr,
   libxcb,
+  libxext,
   libxkbcommon,
+  libxrandr,
   nix-update-script,
   openssl,
   openvr,
@@ -18,7 +19,6 @@
   pulseaudio,
   rustPlatform,
   shaderc,
-  stdenv,
   testers,
   wayvr,
   withOpenVR ? !stdenv.hostPlatform.isAarch64,
@@ -34,7 +34,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-v1Wkelru825KV+ciXD9esLq39oTyMm/Z4rRbN+jjviY=";
   };
 
-  cargoHash = "sha256-d6iRaOHq+4j90L76bx7+EwCLOY4MxPeqm3ELJ5H9O+8=";
+  postPatch = ''
+    substituteAllInPlace dash-frontend/src/util/pactl_wrapper.rs \
+      --replace-fail '"pactl"' '"${lib.getExe' pulseaudio "pactl"}"'
+
+    # steam_utils also calls xdg-open as well as steam. Those should probably be pulled from the environment
+    substituteInPlace dash-frontend/src/util/steam_utils.rs \
+      --replace-fail '"pkill"' '"${lib.getExe' procps "pkill"}"'
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -55,18 +62,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ]
   ++ lib.optionals withOpenVR [ openvr ];
 
+  cargoHash = "sha256-d6iRaOHq+4j90L76bx7+EwCLOY4MxPeqm3ELJ5H9O+8=";
   env.SHADERC_LIB_DIR = "${lib.getLib shaderc}/lib";
 
-  postPatch = ''
-    substituteAllInPlace dash-frontend/src/util/pactl_wrapper.rs \
-      --replace-fail '"pactl"' '"${lib.getExe' pulseaudio "pactl"}"'
-
-    # steam_utils also calls xdg-open as well as steam. Those should probably be pulled from the environment
-    substituteInPlace dash-frontend/src/util/steam_utils.rs \
-      --replace-fail '"pkill"' '"${lib.getExe' procps "pkill"}"'
+  postInstall = ''
+    install -D wayvr/wayvr.desktop -t $out/share/applications
+    install -D wayvr/wayvr.svg -t $out/share/icons/hicolor/scalable/apps
   '';
 
-  buildNoDefaultFeatures = true;
   buildFeatures = [
     "openxr"
     "osc"
@@ -75,27 +78,25 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ]
   ++ lib.optionals withOpenVR [ "openvr" ];
 
-  postInstall = ''
-    install -D wayvr/wayvr.desktop -t $out/share/applications
-    install -D wayvr/wayvr.svg -t $out/share/icons/hicolor/scalable/apps
-  '';
+  buildNoDefaultFeatures = true;
 
   passthru = {
     tests.testVersion = testers.testVersion { package = wayvr; };
-
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Your way to enjoy VR on Linux! Access your Wayland/X11 desktop from SteamVR/Monado (OpenVR+OpenXR support)";
     homepage = "https://github.com/wlx-team/wayvr";
+
     license = with lib.licenses; [
       gpl3Only
       mit # wayvr-ipc
     ];
+
     maintainers = with lib.maintainers; [ Scrumplex ];
     platforms = lib.platforms.linux;
-    broken = stdenv.hostPlatform.isAarch64 && withOpenVR;
     mainProgram = "wayvr";
+    broken = stdenv.hostPlatform.isAarch64 && withOpenVR;
   };
 })

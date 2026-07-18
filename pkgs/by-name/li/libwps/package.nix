@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   boost,
-  pkg-config,
   librevenge,
+  pkg-config,
   zlib,
 }:
 
@@ -18,6 +18,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     boost
     librevenge
@@ -27,9 +28,9 @@ stdenv.mkDerivation (finalAttrs: {
   env.NIX_CFLAGS_COMPILE = "-Wno-error=implicit-fallthrough";
 
   meta = {
-    homepage = "https://libwps.sourceforge.net/";
     description = "Microsoft Works document format import filter library";
-    platforms = lib.platforms.unix;
+    homepage = "https://libwps.sourceforge.net/";
     license = lib.licenses.lgpl21;
+    platforms = lib.platforms.unix;
   };
 })

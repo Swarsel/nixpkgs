@@ -2,32 +2,30 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cudaSupport ? opencv.cudaSupport or false,
-
-  # build
-  scons,
   addDriverRunpath,
   autoPatchelfHook,
   cmake,
-  git,
-  libarchive,
-  patchelf,
-  pkg-config,
-  python3Packages,
-
+  cudaPackages,
   # runtime
   flatbuffers,
   gflags,
+  git,
   level-zero,
+  libarchive,
   libusb1,
   libxml2,
   ocl-icd,
+  onetbb,
   opencv,
+  patchelf,
+  pkg-config,
   protobuf,
   pugixml,
+  python3Packages,
+  # build
+  scons,
   snappy,
-  onetbb,
-  cudaPackages,
+  cudaSupport ? opencv.cudaSupport or false,
 }:
 
 let
@@ -61,8 +59,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "openvinotoolkit";
     repo = "openvino";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-66g+v+L0BPNW6HvmWMHAHoNEFn9SUPrmZDyDjES6K1I=";
+    fetchSubmodules = true;
   };
 
   outputs = [
@@ -70,6 +68,11 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
     "lib"
     "python"
+  ];
+
+  patches = [
+    # https://aur.archlinux.org/cgit/aur.git/tree/010-openvino-change-install-paths.patch?h=openvino
+    ./cmake-install-paths.patch
   ];
 
   nativeBuildInputs = [
@@ -89,14 +92,21 @@ stdenv.mkDerivation (finalAttrs: {
     cudaPackages.cuda_nvcc
   ];
 
-  patches = [
-    # https://aur.archlinux.org/cgit/aur.git/tree/010-openvino-change-install-paths.patch?h=openvino
-    ./cmake-install-paths.patch
+  buildInputs = [
+    flatbuffers
+    gflags
+    level-zero
+    libusb1
+    libxml2
+    ocl-icd
+    opencv
+    pugixml
+    snappy
+    onetbb
+  ]
+  ++ lib.optionals cudaSupport [
+    cudaPackages.cuda_cudart
   ];
-
-  dontUseSconsCheck = true;
-  dontUseSconsBuild = true;
-  dontUseSconsInstall = true;
 
   cmakeFlags = [
     "-Wno-dev"
@@ -149,24 +159,6 @@ stdenv.mkDerivation (finalAttrs: {
   # src/graph/src/plugins/intel_gpu/src/graph/include/reorder_inst.h:24:8: error: type 'struct typed_program_node' violates the C++ One Definition Rule [-Werror=odr]
   env.NIX_CFLAGS_COMPILE = "-Wno-odr";
 
-  buildInputs = [
-    flatbuffers
-    gflags
-    level-zero
-    libusb1
-    libxml2
-    ocl-icd
-    opencv
-    pugixml
-    snappy
-    onetbb
-  ]
-  ++ lib.optionals cudaSupport [
-    cudaPackages.cuda_cudart
-  ];
-
-  enableParallelBuilding = true;
-
   postInstall = ''
     mkdir -p $python/lib
     mv $lib/lib/python* $python/lib/
@@ -178,9 +170,14 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "exec_prefix=\''${prefix}/" "exec_prefix="
   '';
 
+  dontUseSconsBuild = true;
+  dontUseSconsCheck = true;
+  dontUseSconsInstall = true;
+  enableParallelBuilding = true;
+
   meta = {
-    changelog = "https://github.com/openvinotoolkit/openvino/releases/tag/${finalAttrs.src.tag}";
     description = "Open-source toolkit for optimizing and deploying AI inference";
+
     longDescription = ''
       This toolkit allows developers to deploy pre-trained deep learning models through a high-level C++ Inference Engine API integrated with application logic.
 
@@ -188,7 +185,9 @@ stdenv.mkDerivation (finalAttrs: {
       multi device and heterogeneous plugins to accelerate deep learning inferencing on Intel® CPUs and Intel® Processor Graphics.
       It supports pre-trained models from the Open Model Zoo, along with 100+ open source and public models in popular formats such as Caffe*, TensorFlow*, MXNet* and ONNX*.
     '';
+
     homepage = "https://docs.openvinotoolkit.org/";
+    changelog = "https://github.com/openvinotoolkit/openvino/releases/tag/${finalAttrs.src.tag}";
     license = with lib.licenses; [ asl20 ];
     platforms = lib.platforms.all;
     broken = stdenv.hostPlatform.isDarwin; # Cannot find macos sdk

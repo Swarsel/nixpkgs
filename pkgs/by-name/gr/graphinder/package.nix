@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "graphinder";
   version = "2.0.0b4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Escape-Technologies";
@@ -15,6 +14,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-emBWhEJxYRAw3WTd8t+lurnHX8SeCcLBHGH9B+Owuag=";
   };
+
+  nativeCheckInputs = with python3.pkgs; [
+    pytest-asyncio
+    pytest-mock
+    pytestCheckHook
+  ];
 
   build-system = with python3.pkgs; [ poetry-core ];
 
@@ -25,16 +30,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     setuptools
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    pytest-asyncio
-    pytest-mock
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [
-    "graphinder"
-  ];
-
   disabledTests = [
     # Tests require network access
     "test_domain_class"
@@ -43,6 +38,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "test_full_run"
     "test_init_domain_tasks"
     "test_is_gql_endpoint"
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "graphinder"
   ];
 
   meta = {

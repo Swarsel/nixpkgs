@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "refurb";
   version = "2.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dosisod";
@@ -48,15 +47,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "test_mypy_consistence" # broken by new mypy release
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "refurb"
   ];
 
   meta = {
     description = "Tool for refurbishing and modernizing Python codebases";
-    mainProgram = "refurb";
     homepage = "https://github.com/dosisod/refurb";
     license = with lib.licenses; [ gpl3Only ];
     maintainers = [ ];
+    mainProgram = "refurb";
   };
 })

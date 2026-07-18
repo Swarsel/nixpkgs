@@ -1,9 +1,9 @@
 {
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
   moarvm,
   perl,
-  stdenv,
   versionCheckHook,
 }:
 
@@ -16,11 +16,10 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "Raku";
     repo = "nqp";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-zEnUbVLrWCkRq28L6LFc7ryEZS6tFMy8sGnVlDTwkj8=";
+    fetchSubmodules = true;
   };
 
-  configureScript = "${lib.getExe perl} ./Configure.pl";
   configureFlags = [
     "--backends=moar"
     "--with-moar=${lib.getExe moarvm}"
@@ -36,17 +35,20 @@ stdenv.mkDerivation (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  configureScript = "${lib.getExe perl} ./Configure.pl";
 
   meta = {
     description = "Lightweight Raku-like environment for virtual machines";
     homepage = "https://github.com/Raku/nqp";
     license = lib.licenses.artistic2;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
       sgo
       prince213
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "nqp";
   };
 })

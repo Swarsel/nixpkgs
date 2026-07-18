@@ -1,13 +1,10 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  alsa-lib,
   cmake,
   copyDesktopItems,
-  makeDesktopItem,
-  makeWrapper,
-  pkg-config,
-  alsa-lib,
   curl,
   gtkmm3,
   libhandy,
@@ -15,8 +12,11 @@
   libpulseaudio,
   libsecret,
   libsodium,
+  makeDesktopItem,
+  makeWrapper,
   nlohmann_json,
   pcre2,
+  pkg-config,
   spdlog,
   sqlite,
 }:
@@ -74,25 +74,26 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = finalAttrs.pname;
-      exec = finalAttrs.pname;
-      desktopName = "Abaddon";
-      genericName = finalAttrs.meta.description;
-      startupWMClass = finalAttrs.pname;
       categories = [
         "Network"
         "InstantMessaging"
       ];
+
+      desktopName = "Abaddon";
+      exec = finalAttrs.pname;
+      genericName = finalAttrs.meta.description;
       mimeTypes = [ "x-scheme-handler/discord" ];
+      name = finalAttrs.pname;
+      startupWMClass = finalAttrs.pname;
     })
   ];
 
   meta = {
     description = "Discord client reimplementation, written in C++";
-    mainProgram = "abaddon";
     homepage = "https://github.com/uowuo/abaddon";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ choco98 ];
     platforms = lib.platforms.linux;
+    mainProgram = "abaddon";
   };
 })

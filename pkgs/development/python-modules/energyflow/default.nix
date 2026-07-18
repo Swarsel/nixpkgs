@@ -1,33 +1,28 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  # dependencies
+  h5py,
   # build-system
   hatch-vcs,
   hatchling,
-
-  # dependencies
-  h5py,
-  numpy,
-  wasserstein,
-
   # optional-dependencies
   igraph,
-  scikit-learn,
-  tensorflow,
-
+  numpy,
   # tests
   pot,
   pytestCheckHook,
+  scikit-learn,
+  tensorflow,
   tf-keras,
+  wasserstein,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "energyflow";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pkomiske";
@@ -35,6 +30,13 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-4RzhpeOOty8IaVGByHD+PyeaeWgR7ZF98mSCJYoM9wY=";
   };
+
+  nativeCheckInputs = [
+    pot
+    pytestCheckHook
+    tf-keras
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
   build-system = [
     hatch-vcs
@@ -46,26 +48,6 @@ buildPythonPackage (finalAttrs: {
     numpy
     wasserstein
   ];
-
-  optional-dependencies = {
-    all = [
-      igraph
-      scikit-learn
-      tensorflow
-    ];
-    archs = [
-      scikit-learn
-      tensorflow
-    ];
-    generation = [ igraph ];
-  };
-
-  nativeCheckInputs = [
-    pot
-    pytestCheckHook
-    tf-keras
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
   disabledTests = [
     # Issues with array
@@ -86,6 +68,22 @@ buildPythonPackage (finalAttrs: {
     "test_emde"
   ];
 
+  optional-dependencies = {
+    all = [
+      igraph
+      scikit-learn
+      tensorflow
+    ];
+
+    archs = [
+      scikit-learn
+      tensorflow
+    ];
+
+    generation = [ igraph ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "energyflow" ];
 
   meta = {

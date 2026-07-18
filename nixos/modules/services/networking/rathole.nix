@@ -1,7 +1,7 @@
 {
-  pkgs,
-  lib,
   config,
+  lib,
+  pkgs,
   ...
 }:
 
@@ -49,59 +49,64 @@ in
   options = {
     services.rathole = {
       enable = lib.mkEnableOption "Rathole";
-
       package = lib.mkPackageOption pkgs "rathole" { };
 
-      role = lib.mkOption {
-        type = lib.types.enum [
-          "server"
-          "client"
-        ];
-        description = ''
-          Select whether rathole needs to be run as a `client` or a `server`.
-          Server is a machine with a public IP and client is a device behind NAT,
-          but running some services that need to be exposed to the Internet.
-        '';
-      };
-
       credentialsFile = lib.mkOption {
-        type = lib.types.path;
         default = "/dev/null";
+
         description = ''
           Path to a TOML file to be merged with the settings.
           Useful to set secret config parameters like tokens, which
           should not appear in the Nix Store.
         '';
+
         example = "/var/lib/secrets/rathole/config.toml";
+        type = lib.types.path;
+      };
+
+      role = lib.mkOption {
+        description = ''
+          Select whether rathole needs to be run as a `client` or a `server`.
+          Server is a machine with a public IP and client is a device behind NAT,
+          but running some services that need to be exposed to the Internet.
+        '';
+
+        type = lib.types.enum [
+          "server"
+          "client"
+        ];
       };
 
       settings = lib.mkOption {
-        type = settingsFormat.type;
         default = { };
+
         description = ''
           Rathole configuration, for options reference
           see the [example](https://github.com/rapiz1/rathole?tab=readme-ov-file#configuration) on GitHub.
           Both server and client configurations can be specified at the same time, regardless of the selected role.
         '';
+
         example = {
           server = {
             bind_addr = "0.0.0.0:2333";
+
             services.my_nas_ssh = {
-              token = "use_a_secret_that_only_you_know";
               bind_addr = "0.0.0.0:5202";
+              token = "use_a_secret_that_only_you_know";
             };
           };
         };
+
+        type = settingsFormat.type;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.rathole = {
-      requires = [ "network.target" ];
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
       description = "Rathole ${cfg.role} Service";
+      requires = [ "network.target" ];
 
       serviceConfig =
         let
@@ -119,18 +124,13 @@ in
           mergedConfigName = "merged.toml";
         in
         {
-          Type = "simple";
-          Restart = "on-failure";
-          RestartSec = 5;
-          ExecStartPre = ratholePrestart;
-          ExecStart = "${lib.getExe cfg.package} --${cfg.role} ${runtimeDir}/${mergedConfigName}";
-          DynamicUser = true;
-          LimitNOFILE = "1048576";
-          RuntimeDirectory = name;
-          RuntimeDirectoryMode = "0700";
           # Hardening
           AmbientCapabilities = "CAP_NET_BIND_SERVICE";
           CapabilityBoundingSet = "CAP_NET_BIND_SERVICE";
+          DynamicUser = true;
+          ExecStart = "${lib.getExe cfg.package} --${cfg.role} ${runtimeDir}/${mergedConfigName}";
+          ExecStartPre = ratholePrestart;
+          LimitNOFILE = "1048576";
           LockPersonality = true;
           MemoryDenyWriteExecute = true;
           PrivateDevices = true;
@@ -148,16 +148,25 @@ in
           ProtectProc = "invisible";
           ProtectSystem = "strict";
           RemoveIPC = true;
+          Restart = "on-failure";
+          RestartSec = 5;
+
           RestrictAddressFamilies = [
             "AF_INET"
             "AF_INET6"
           ];
+
           RestrictNamespaces = true;
           RestrictRealtime = true;
           RestrictSUIDSGID = true;
+          RuntimeDirectory = name;
+          RuntimeDirectoryMode = "0700";
           SystemCallArchitectures = "native";
+          Type = "simple";
           UMask = "0066";
         };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

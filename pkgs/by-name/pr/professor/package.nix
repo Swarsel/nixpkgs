@@ -16,6 +16,7 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "professor";
     tag = "professor-${finalAttrs.version}";
     hash = "sha256-q1OxYnsr4xE7NSZekQq9AeMFPv1B+/VMu6ZttKPQsBs=";
+
     # workaround unpacking to case-sensitive filesystems
     postFetch = ''
       rm -rf $out/[Dd]ocker
@@ -35,10 +36,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail '-shared -o' '-shared -install_name "$(out)/$@" -o'
   '';
 
-  configureFlags = [ "--with-eigen=${eigen}" ];
-
-  env.PYTHON = "python3";
-
   nativeBuildInputs = [
     python3
     python3.pkgs.cython
@@ -47,16 +44,21 @@ stdenv.mkDerivation (finalAttrs: {
     python3.pkgs.wheel
     makeWrapper
   ];
+
   buildInputs = [
     python3
     eigen
   ];
+
   propagatedBuildInputs = with python3.pkgs; [
     iminuit
     numpy
     matplotlib
     yoda
   ];
+
+  configureFlags = [ "--with-eigen=${eigen}" ];
+  env.PYTHON = "python3";
 
   postInstall = ''
     for prog in "$out"/bin/*; do

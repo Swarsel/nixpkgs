@@ -1,10 +1,10 @@
 {
-  appimageTools,
   lib,
   fetchurl,
+  appimageTools,
+  makeWrapper,
   nix-update-script,
   stdenvNoCC,
-  makeWrapper,
   undmg,
 }:
 
@@ -13,13 +13,14 @@ let
   version = "5.3.8";
 
   sources = {
-    x86_64-linux = fetchurl {
-      url = "https://github.com/vladimiry/ElectronMail/releases/download/v${version}/electron-mail-${version}-linux-x86_64.AppImage";
-      hash = "sha256-twqB1D3zLlZJuxQWD4dGF70w57yYv6i3abGBidERsss=";
-    };
     aarch64-darwin = fetchurl {
-      url = "https://github.com/vladimiry/ElectronMail/releases/download/v${version}/electron-mail-${version}-mac-arm64.dmg";
       hash = "sha256-V32Wi0oCU9dLfzqxg3OdseiILX7wPiBGNz7KuG0vlZY=";
+      url = "https://github.com/vladimiry/ElectronMail/releases/download/v${version}/electron-mail-${version}-mac-arm64.dmg";
+    };
+
+    x86_64-linux = fetchurl {
+      hash = "sha256-twqB1D3zLlZJuxQWD4dGF70w57yYv6i3abGBidERsss=";
+      url = "https://github.com/vladimiry/ElectronMail/releases/download/v${version}/electron-mail-${version}-linux-x86_64.AppImage";
     };
   };
 
@@ -31,18 +32,21 @@ let
 
   meta = {
     description = "Unofficial Election-based ProtonMail desktop client";
-    mainProgram = "electron-mail";
     homepage = "https://github.com/vladimiry/ElectronMail";
+    changelog = "https://github.com/vladimiry/ElectronMail/releases/tag/v${version}";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       princemachiavelli
       BatteredBunny
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-darwin"
     ];
-    changelog = "https://github.com/vladimiry/ElectronMail/releases/tag/v${version}";
+
+    mainProgram = "electron-mail";
   };
 
   linux = appimageTools.wrapType2 {
@@ -76,7 +80,6 @@ let
       meta
       ;
 
-    sourceRoot = ".";
     nativeBuildInputs = [
       undmg
       makeWrapper
@@ -91,6 +94,8 @@ let
 
       runHook postInstall
     '';
+
+    sourceRoot = ".";
   };
 in
 if stdenvNoCC.hostPlatform.isDarwin then darwin else linux

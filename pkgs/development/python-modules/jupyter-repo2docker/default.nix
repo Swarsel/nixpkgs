@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   chardet,
   docker,
   entrypoints,
   escapism,
-  fetchFromGitHub,
   iso8601,
   jinja2,
   pkgs-docker,
@@ -22,7 +22,6 @@
 buildPythonPackage rec {
   pname = "jupyter-repo2docker";
   version = "2025.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jupyterhub";
@@ -30,6 +29,9 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-9ZRew9DspRENxhqpWFTSdP8KcQQHA4vMMECLikt+nsw=";
   };
+
+  # Tests require a running Docker instance
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -52,8 +54,7 @@ buildPythonPackage rec {
     traitlets
   ];
 
-  # Tests require a running Docker instance
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "repo2docker"

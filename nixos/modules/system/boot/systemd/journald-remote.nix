@@ -23,7 +23,6 @@ let
   '';
 in
 {
-  meta.maintainers = [ ];
   imports = [
     (lib.mkRemovedOptionModule [
       "services"
@@ -38,7 +37,7 @@ in
 
     output = lib.mkOption {
       default = "/var/log/journal/remote/";
-      type = lib.types.str;
+
       description = ''
         The location of the output journal.
 
@@ -48,14 +47,18 @@ in
         escaped hostname of the source endpoint of the connection, or the
         numerical address if the hostname cannot be determined.
       '';
+
+      type = lib.types.str;
     };
 
     port = lib.mkOption {
       default = 19532;
-      type = lib.types.port;
+
       description = ''
         The port to listen to.
       '';
+
+      type = lib.types.port;
     };
 
     settings = lib.mkOption {
@@ -67,33 +70,38 @@ in
       '';
 
       type = lib.types.submodule {
-        freeformType = format.type;
-
         options.Remote = {
           Seal = lib.mkOption {
             default = false;
-            example = true;
-            type = lib.types.bool;
+
             description = ''
               Periodically sign the data in the journal using Forward Secure
               Sealing.
             '';
+
+            example = true;
+            type = lib.types.bool;
           };
 
           SplitMode = lib.mkOption {
             default = "host";
-            example = "none";
-            type = lib.types.enum [
-              "host"
-              "none"
-            ];
+
             description = ''
               With "host", a separate output file is used, based on the
               hostname of the other endpoint of a connection. With "none", only
               one output journal file is used.
             '';
+
+            example = "none";
+
+            type = lib.types.enum [
+              "host"
+              "none"
+            ];
           };
         };
+
+        freeformType = format.type;
       };
     };
   };
@@ -103,6 +111,7 @@ in
       map
         (key: {
           assertion = !(cfg.settings ? Remote.${key});
+
           message = ''
             The option definition `services.journald.remote.settings.Remote.${key}'
             no longer has any effect; please remove it.
@@ -114,6 +123,9 @@ in
           "ServerCertificateFile"
           "TrustedCertificateFile"
         ];
+
+    environment.etc."systemd/journal-remote.conf".source =
+      format.generate "journal-remote.conf" cfg.settings;
 
     systemd.additionalUpstreamSystemUnits = [
       "systemd-journal-remote.service"
@@ -127,22 +139,23 @@ in
     ];
 
     systemd.sockets.systemd-journal-remote = {
-      wantedBy = [ "sockets.target" ];
       listenStreams = [
         # Clear the default port
         ""
         (toString cfg.port)
       ];
+
+      wantedBy = [ "sockets.target" ];
     };
 
     # User and group used by systemd-journal-remote.service
     users.groups.systemd-journal-remote = { };
-    users.users.systemd-journal-remote = {
-      isSystemUser = true;
-      group = "systemd-journal-remote";
-    };
 
-    environment.etc."systemd/journal-remote.conf".source =
-      format.generate "journal-remote.conf" cfg.settings;
+    users.users.systemd-journal-remote = {
+      group = "systemd-journal-remote";
+      isSystemUser = true;
+    };
   };
+
+  meta.maintainers = [ ];
 }

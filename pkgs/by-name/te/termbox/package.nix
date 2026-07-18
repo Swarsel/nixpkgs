@@ -7,6 +7,7 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "termbox";
   version = "1.1.4";
+
   src = fetchFromGitHub {
     owner = "termbox";
     repo = "termbox";
@@ -18,9 +19,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Library for writing text-based user interfaces";
-    license = lib.licenses.mit;
     homepage = "https://github.com/termbox/termbox#readme";
-    downloadPage = "https://github.com/termbox/termbox/releases";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fgaz ];
+    downloadPage = "https://github.com/termbox/termbox/releases";
   };
 })

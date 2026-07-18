@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  gitUpdater,
-  pytestCheckHook,
-  fonttools,
-  hatchling,
   biplist,
+  buildPythonPackage,
+  fonttools,
+  gitUpdater,
+  hatchling,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "opentype-feature-freezer";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "twardoch";
@@ -21,16 +20,16 @@ buildPythonPackage rec {
     hash = "sha256-8aJYQyUpcEOyzVHZ0LXfGJ1Tsxe5HICcfkFUdsI+/GI=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    biplist
+  ];
+
   build-system = [
     hatchling
   ];
 
   dependencies = [ fonttools ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    biplist
-  ];
 
   disabledTestPaths = [
     # import file mismatch
@@ -50,13 +49,14 @@ buildPythonPackage rec {
     "test_warn_substituting_glyphs_without_unicode"
   ];
 
+  pyproject = true;
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
     description = "Permanently \"apply\" OpenType features to fonts, by remapping their Unicode assignments";
     homepage = "https://github.com/twardoch/fonttools-opentype-feature-freezer";
     license = lib.licenses.asl20;
-    mainProgram = "pyftfeatfreeze";
     maintainers = with lib.maintainers; [ jopejoe1 ];
+    mainProgram = "pyftfeatfreeze";
   };
 }

@@ -6,7 +6,7 @@
 
 bundlerApp {
   pname = "riemann-tools";
-  gemdir = ./.;
+
   exes = [
     "riemann-apache-status"
     "riemann-bench"
@@ -30,14 +30,16 @@ bundlerApp {
     "riemann-zookeeper"
   ];
 
+  gemdir = ./.;
   passthru.updateScript = bundlerUpdateScript "riemann-tools";
 
   meta = {
     description = "Tools to submit data to Riemann";
     homepage = "https://riemann.io";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       nicknovitski
     ];
-    license = lib.licenses.mit;
   };
 }

@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-  pytest,
+  buildPythonPackage,
   pudb,
+  pytest,
+  pytestCheckHook,
 }:
 
 buildPythonPackage {
   pname = "pytest-pudb";
   version = "0.8.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "wronglink";
@@ -21,19 +20,17 @@ buildPythonPackage {
   };
 
   buildInputs = [ pytest ];
-
   propagatedBuildInputs = [ pudb ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "pytest_pudb" ];
 
   meta = {
-    # https://github.com/wronglink/pytest-pudb/issues/28
-    broken = lib.versionAtLeast pytest.version "8.4.0";
     description = "Pytest PuDB debugger integration";
     homepage = "https://github.com/wronglink/pytest-pudb";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ thornycrackers ];
+    # https://github.com/wronglink/pytest-pudb/issues/28
+    broken = lib.versionAtLeast pytest.version "8.4.0";
   };
 }

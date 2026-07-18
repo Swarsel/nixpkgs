@@ -1,32 +1,27 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
+  buildPythonPackage,
   # dependencies
   cyclebane,
-
-  # tests
-  pytestCheckHook,
-  pytest-randomly,
-  rich,
   dask,
   graphviz,
   jsonschema,
   numpy,
   pandas,
   pydantic,
+  pytest-randomly,
+  # tests
+  pytestCheckHook,
+  rich,
+  # build-system
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "sciline";
   version = "25.11.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "scipp";
@@ -34,15 +29,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-BTdvPAeI7SWV8gNfXVC63YKghZOfJ9eFousOqycpTAw=";
   };
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  dependencies = [
-    cyclebane
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -55,6 +41,19 @@ buildPythonPackage (finalAttrs: {
     pydantic
     rich
   ];
+
+  __structuredAttrs = true;
+
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [
+    cyclebane
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "sciline"

@@ -1,26 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  btrees,
+  buildPythonPackage,
+  pytz,
   setuptools,
+  unittestCheckHook,
   zope-component,
+  zope-configuration,
+  zope-exceptions,
   zope-i18nmessageid,
   zope-interface,
   zope-location,
   zope-proxy,
   zope-schema,
-  pytz,
-  zope-configuration,
-  btrees,
-  unittestCheckHook,
-  zope-exceptions,
   zope-testing,
 }:
 
 buildPythonPackage rec {
   pname = "zope-security";
   version = "8.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zopefoundation";
@@ -28,6 +27,21 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-iSWSBjtJe4iEvm+VUEWDvRCBdRz1R6m9mlfPLwh01Sk=";
   };
+
+  nativeCheckInputs = [
+    btrees
+    unittestCheckHook
+    zope-exceptions
+    zope-testing
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
+
+  # Import process is too complex and some tests fail
+  preCheck = ''
+    rm -r src/zope/security/tests/test_metaconfigure.py
+    rm -r src/zope/security/tests/test_proxy.py
+    rm -r src/zope/security/tests/test_zcml_functest.py
+  '';
 
   build-system = [
     setuptools
@@ -49,26 +63,10 @@ buildPythonPackage rec {
     zcml = [ zope-configuration ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "zope.security" ];
-
-  nativeCheckInputs = [
-    btrees
-    unittestCheckHook
-    zope-exceptions
-    zope-testing
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
-  # Import process is too complex and some tests fail
-  preCheck = ''
-    rm -r src/zope/security/tests/test_metaconfigure.py
-    rm -r src/zope/security/tests/test_proxy.py
-    rm -r src/zope/security/tests/test_zcml_functest.py
-  '';
-
-  unittestFlagsArray = [ "src/zope/security/tests" ];
-
   pythonNamespaces = [ "zope" ];
+  unittestFlagsArray = [ "src/zope/security/tests" ];
 
   meta = {
     description = "Zope Security Framework";

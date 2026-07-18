@@ -1,17 +1,21 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   bison,
   buildPackages,
   cairo,
   check,
-  fetchFromGitHub,
   flex,
   git,
   glib,
   librsvg,
   libstartup_notification,
   libxcb,
+  libxcb-cursor,
+  libxcb-keysyms,
+  libxcb-util,
+  libxcb-wm,
   libxkbcommon,
   meson,
   ninja,
@@ -24,10 +28,6 @@
   wayland-scanner,
   which,
   xcb-imdkit,
-  libxcb-util,
-  libxcb-cursor,
-  libxcb-keysyms,
-  libxcb-wm,
   xcbutilxrm,
   waylandSupport ? true,
   x11Support ? true,
@@ -41,19 +41,10 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "davatorium";
     repo = "rofi";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-akKwIYH9OoCh4ZE/bxKPCppxXsUhplvfRjSGsdthFk4=";
+    fetchSubmodules = true;
   };
 
-  preConfigure = ''
-    patchShebangs "script"
-  '';
-
-  depsBuildBuild = [
-    buildPackages.stdenv.cc
-    glib
-    pkg-config
-  ];
   nativeBuildInputs = [
     bison
     flex
@@ -66,6 +57,7 @@ stdenv.mkDerivation (finalAttrs: {
     wayland-protocols
     wayland-scanner
   ];
+
   buildInputs = [
     cairo
     check
@@ -96,23 +88,36 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonEnable "xcb" x11Support)
   ];
 
+  preConfigure = ''
+    patchShebangs "script"
+  '';
+
   doCheck = true;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
+  depsBuildBuild = [
+    buildPackages.stdenv.cc
+    glib
+    pkg-config
+  ];
+
   versionCheckProgramArg = "-version";
-  doInstallCheck = true;
 
   meta = {
     description = "Window switcher, run dialog and dmenu replacement";
     homepage = "https://github.com/davatorium/rofi";
     changelog = "https://github.com/davatorium/rofi/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       bew
       SchweGELBin
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "rofi";
   };

@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   ffmpeg-headless,
-  libpng,
   libjpeg,
+  libpng,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,12 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-h8B12FItvSrYgy6t78A02DL96Az4BxtW8brFKkZLH9o=";
   };
+
+  # https://github.com/dirkvdb/ffmpegthumbnailer/issues/215
+  postPatch = ''
+    substituteInPlace libffmpegthumbnailer.pc.in \
+      --replace '$'{exec_prefix}/@CMAKE_INSTALL_LIBDIR@ @CMAKE_INSTALL_FULL_LIBDIR@
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -36,12 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-DENABLE_AUDIO_THUMBNAILER=ON"
   ];
 
-  # https://github.com/dirkvdb/ffmpegthumbnailer/issues/215
-  postPatch = ''
-    substituteInPlace libffmpegthumbnailer.pc.in \
-      --replace '$'{exec_prefix}/@CMAKE_INSTALL_LIBDIR@ @CMAKE_INSTALL_FULL_LIBDIR@
-  '';
-
   postInstall = ''
     substituteInPlace $out/share/thumbnailers/ffmpegthumbnailer.thumbnailer \
       --replace-fail '=ffmpegthumbnailer' "=$out/bin/ffmpegthumbnailer"
@@ -49,6 +49,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Lightweight video thumbnailer";
+
     longDescription = "FFmpegthumbnailer is a lightweight video
         thumbnailer that can be used by file managers to create thumbnails
         for your video files. The thumbnailer uses ffmpeg to decode frames
@@ -57,6 +58,7 @@ stdenv.mkDerivation (finalAttrs: {
         This thumbnailer was designed to be as fast and lightweight as possible.
         The only dependencies are ffmpeg and libpng/libjpeg.
     ";
+
     homepage = "https://github.com/dirkvdb/ffmpegthumbnailer";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;

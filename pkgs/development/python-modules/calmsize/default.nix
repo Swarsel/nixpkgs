@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "calmsize";
   version = "0.1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Stonesjtu";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
     hash = "sha256-D4UMzgYq++w6+Od0t9mDP4S+3Tc/ME5++NOlozXXALQ=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "calmsize" ];
 
   meta = {

@@ -1,43 +1,41 @@
 {
   lib,
+  coq,
   fetchzip,
   mkCoqDerivation,
-  coq,
   version ? null,
 }:
 
 let
   fetcher =
     {
-      rev,
-      repo,
-      owner,
-      hash,
       domain,
+      hash,
+      owner,
+      repo,
+      rev,
       ...
     }:
     fetchzip {
-      url = "https://${domain}/${owner}/${repo}/download/${repo}-${rev}.zip";
       inherit hash;
+      url = "https://${domain}/${owner}/${repo}/download/${repo}-${rev}.zip";
     };
 in
 mkCoqDerivation {
-  pname = "heq";
-  repo = "Heq";
-  owner = "gil.hur";
-  domain = "sf.snu.ac.kr";
   inherit version fetcher;
-  defaultVersion = if lib.versions.isLt "8.8" coq.coq-version then "0.92" else null;
-  release."0.92".hash = "sha256:0cf8y6728n81wwlbpq3vi7l2dbzi7759klypld4gpsjjp1y1fj74";
-
-  mlPlugin = true;
+  pname = "heq";
   preBuild = "cd src";
-
+  defaultVersion = if lib.versions.isLt "8.8" coq.coq-version then "0.92" else null;
+  domain = "sf.snu.ac.kr";
   extraInstallFlags = [ "COQLIB=$(out)/lib/coq/${coq.coq-version}/" ];
+  mlPlugin = true;
+  owner = "gil.hur";
+  release."0.92".hash = "sha256:0cf8y6728n81wwlbpq3vi7l2dbzi7759klypld4gpsjjp1y1fj74";
+  repo = "Heq";
 
   meta = {
-    homepage = "https://ropas.snu.ac.kr/~gil.hur/Heq/";
     description = "Heq : a Coq library for Heterogeneous Equality";
+    homepage = "https://ropas.snu.ac.kr/~gil.hur/Heq/";
     maintainers = with lib.maintainers; [ jwiegley ];
   };
 }

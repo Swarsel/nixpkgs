@@ -1,18 +1,18 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pandoc,
-  pkg-config,
-  openssl,
-  installShellFiles,
   copyDesktopItems,
+  fend,
+  installShellFiles,
   makeDesktopItem,
   nix-update-script,
+  openssl,
+  pandoc,
+  pkg-config,
+  runCommand,
+  rustPlatform,
   testers,
   writeText,
-  runCommand,
-  fend,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -26,8 +26,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-XIdz7s8DCmXSeFIC06C+/wLDyMBcqIrjDSQUAhxX72s=";
   };
 
-  cargoHash = "sha256-mDsAZvnBGXhEl2Qbww2svPznl6k9b44zGdMkeejIWVU=";
-
   nativeBuildInputs = [
     pandoc
     installShellFiles
@@ -40,13 +38,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-mDsAZvnBGXhEl2Qbww2svPznl6k9b44zGdMkeejIWVU=";
+
   postBuild = ''
     patchShebangs --build ./documentation/build.sh
     ./documentation/build.sh
   '';
 
-  preFixup = ''
-    installManPage documentation/fend.1
+  postInstall = ''
+    install -D -m 444 $src/icon/icon.svg $out/share/icons/hicolor/scalable/apps/fend.svg
   '';
 
   doInstallCheck = true;
@@ -55,41 +55,46 @@ rustPlatform.buildRustPackage (finalAttrs: {
     [[ "$($out/bin/fend "1 km to m")" = "1000 m" ]]
   '';
 
-  postInstall = ''
-    install -D -m 444 $src/icon/icon.svg $out/share/icons/hicolor/scalable/apps/fend.svg
+  preFixup = ''
+    installManPage documentation/fend.1
   '';
 
   desktopItems = [
     (makeDesktopItem {
-      name = "fend";
-      desktopName = "fend";
-      genericName = "Calculator";
-      comment = "Arbitrary-precision unit-aware calculator";
-      icon = "fend";
-      exec = "fend";
-      terminal = true;
       categories = [
         "Utility"
         "Calculator"
         "ConsoleOnly"
       ];
+
+      comment = "Arbitrary-precision unit-aware calculator";
+      desktopName = "fend";
+      exec = "fend";
+      genericName = "Calculator";
+      icon = "fend";
+      name = "fend";
+      terminal = true;
     })
   ];
 
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       version = testers.testVersion { package = fend; };
+
       units = testers.testEqualContents {
-        assertion = "fend does simple math and unit conversions";
-        expected = writeText "expected" ''
-          36 kph
-        '';
         actual = runCommand "actual" { } ''
           ${lib.getExe fend} '(100 meters) / (10 seconds) to kph' > $out
         '';
+
+        assertion = "fend does simple math and unit conversions";
+
+        expected = writeText "expected" ''
+          36 kph
+        '';
       };
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -97,10 +102,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/printfn/fend";
     changelog = "https://github.com/printfn/fend/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       djanatyn
       liff
     ];
+
     mainProgram = "fend";
   };
 })

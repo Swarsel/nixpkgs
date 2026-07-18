@@ -1,11 +1,11 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   apacheHttpd,
   directoryListingUpdater,
-  fetchurl,
-  lib,
   nixosTests,
   perl,
-  stdenv,
 }:
 
 stdenv.mkDerivation rec {
@@ -37,22 +37,23 @@ stdenv.mkDerivation rec {
     rm $out/nix -rf
   '';
 
+  __darwinAllowLocalNetworking = true;
+
   passthru = {
+    tests = nixosTests.mod_perl;
+
     updateScript = directoryListingUpdater {
       url = "https://archive.apache.org/dist/perl/";
     };
-    tests = nixosTests.mod_perl;
   };
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Integration of perl with the Apache2 web server";
     homepage = "https://perl.apache.org/download/index.html";
     changelog = "https://github.com/apache/mod_perl/blob/trunk/Changes";
     license = lib.licenses.asl20;
-    mainProgram = "mp2bug";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "mp2bug";
   };
 }

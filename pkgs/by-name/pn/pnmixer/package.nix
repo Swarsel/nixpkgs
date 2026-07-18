@@ -2,23 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  gettext,
   alsa-lib,
-  gtk3,
+  cmake,
+  gettext,
   glib,
+  gtk3,
   libnotify,
   libx11,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "pnmixer";
   version = "0.7.2";
-
-  strictDeps = true;
-  __structuredAttrs = true;
-  enableParallelBuilding = true;
 
   src = fetchFromGitHub {
     owner = "nicklan";
@@ -31,6 +27,8 @@ stdenv.mkDerivation (finalAttrs: {
     # https://github.com/nicklan/pnmixer/pull/197
     ./fix-cmake-version.patch
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -46,15 +44,20 @@ stdenv.mkDerivation (finalAttrs: {
     libx11
   ];
 
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://github.com/nicklan/pnmixer";
     description = "ALSA volume mixer for the system tray";
+    homepage = "https://github.com/nicklan/pnmixer";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       campadrenalin
       romildo
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "pnmixer";
   };
 })

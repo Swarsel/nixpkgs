@@ -1,12 +1,12 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  guile_2_2,
+  fetchurl,
+  glib,
   guile-lib,
+  guile_2_2,
   libffi,
   pkg-config,
-  glib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,22 +29,22 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   propagatedBuildInputs = [ libffi ];
-
   env.NIX_CFLAGS_COMPILE = "-Wno-error=deprecated-declarations";
-
   doCheck = true;
 
   meta = {
     description = "Wrapper generator for Guile";
-    mainProgram = "g-wrap-config";
+
     longDescription = ''
       G-Wrap is a tool (and Guile library) for generating function wrappers for
       inter-language calls.  It currently only supports generating Guile
       wrappers for C functions.
     '';
+
     homepage = "https://www.nongnu.org/g-wrap/";
     license = lib.licenses.lgpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "g-wrap-config";
   };
 })

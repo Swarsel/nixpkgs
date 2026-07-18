@@ -17,23 +17,26 @@ in
       enable = lib.mkEnableOption "auto-cpufreq daemon";
 
       settings = lib.mkOption {
+        default = { };
+
         description = ''
           Configuration for `auto-cpufreq`.
 
           The available options can be found in [the example configuration file](https://github.com/AdnanHodzic/auto-cpufreq/blob/v${pkgs.auto-cpufreq.version}/auto-cpufreq.conf-example).
         '';
 
-        default = { };
         example = {
-          charger = {
-            governor = "performance";
-            turbo = "auto";
-          };
           battery = {
             governor = "powersave";
             turbo = "never";
           };
+
+          charger = {
+            governor = "performance";
+            turbo = "auto";
+          };
         };
+
         type = lib.types.submodule { freeformType = format.type; };
       };
     };
@@ -44,9 +47,8 @@ in
 
     systemd = {
       packages = [ pkgs.auto-cpufreq ];
+
       services.auto-cpufreq = {
-        # Workaround for https://github.com/NixOS/nixpkgs/issues/81138
-        wantedBy = [ "multi-user.target" ];
         path = with pkgs; [
           bash
           coreutils
@@ -54,11 +56,14 @@ in
           kmod
         ];
 
-        serviceConfig.WorkingDirectory = "";
         serviceConfig.ExecStart = [
           ""
           "${lib.getExe pkgs.auto-cpufreq} --daemon --config ${cfgFile}"
         ];
+
+        serviceConfig.WorkingDirectory = "";
+        # Workaround for https://github.com/NixOS/nixpkgs/issues/81138
+        wantedBy = [ "multi-user.target" ];
       };
     };
   };

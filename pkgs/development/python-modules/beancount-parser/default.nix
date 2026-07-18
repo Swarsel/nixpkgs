@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "beancount-parser";
   version = "1.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "LaunchPlatform";
@@ -20,11 +19,9 @@ buildPythonPackage (finalAttrs: {
   };
 
   buildInputs = [ poetry-core ];
-
   propagatedBuildInputs = [ lark ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "beancount_parser" ];
 
   meta = {

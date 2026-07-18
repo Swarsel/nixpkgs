@@ -1,31 +1,36 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromSourcehut,
-  pkg-config,
+  gtk3,
+  installShellFiles,
   meson,
   ninja,
+  pkg-config,
   wayland,
-  gtk3,
   wrapGAppsHook3,
-  installShellFiles,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "wofi";
   version = "1.5.3";
+
+  src = fetchFromSourcehut {
+    owner = "~scoopta";
+    repo = "wofi";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-rMvDWJx07Q19ieFlt0e3/zx2ZP0jJfURIwMiGFPmLis=";
+    vc = "hg";
+  };
 
   outputs = [
     "out"
     "dev"
   ];
 
-  src = fetchFromSourcehut {
-    repo = "wofi";
-    owner = "~scoopta";
-    tag = "v${finalAttrs.version}";
-    hash = "sha256-rMvDWJx07Q19ieFlt0e3/zx2ZP0jJfURIwMiGFPmLis=";
-    vc = "hg";
-  };
+  patches = [
+    # https://todo.sr.ht/~scoopta/wofi/121
+    ./do_not_follow_symlinks.patch
+  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -34,14 +39,10 @@ stdenv.mkDerivation (finalAttrs: {
     wrapGAppsHook3
     installShellFiles
   ];
+
   buildInputs = [
     wayland
     gtk3
-  ];
-
-  patches = [
-    # https://todo.sr.ht/~scoopta/wofi/121
-    ./do_not_follow_symlinks.patch
   ];
 
   postInstall = ''

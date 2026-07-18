@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -17,7 +17,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-FXV+wP22R3gPAMGbhyz/v1Rk7w6z2ovoWirbLM1Wl24=";
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 

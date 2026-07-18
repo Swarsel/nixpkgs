@@ -1,14 +1,13 @@
 {
+  lib,
   fetchFromGitHub,
   gitUpdater,
-  lib,
   python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "ubi_reader";
   version = "0.8.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "onekey-sec";
@@ -17,17 +16,16 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-fXJiQZ1QWUmkRM+WI8DSIsay9s1w3hKloRuCcUNwZjM=";
   };
 
-  build-system = [ python3.pkgs.poetry-core ];
-
-  dependencies = [ python3.pkgs.lzallright ];
-
   # There are no tests in the source
   doCheck = false;
+  build-system = [ python3.pkgs.poetry-core ];
+  dependencies = [ python3.pkgs.lzallright ];
+  pyproject = true;
 
   passthru = {
     updateScript = gitUpdater {
-      rev-prefix = "v";
       ignoredVersions = "_[a-z]+$";
+      rev-prefix = "v";
     };
   };
 

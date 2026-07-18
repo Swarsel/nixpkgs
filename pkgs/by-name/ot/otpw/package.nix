@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchurl,
   coreutils,
   fetchDebianPatch,
-  fetchurl,
   libxcrypt,
   pam,
   procps,
@@ -26,8 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
       pname = "otpw";
       version = "1.5";
       debianRevision = "6";
-      patch = "gcc15.patch";
       hash = "sha256-lR/FZannn9YVCTj+DWZvIyu99lmkaUxG48TGzckyolU=";
+      patch = "gcc15.patch";
     })
   ];
 
@@ -55,8 +55,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-Wno-error=int-conversion"
   ];
 
-  enableParallelBuilding = true;
-
   installPhase = ''
     mkdir -p $out/bin $out/lib/security $out/share/man/man{1,8}
     cp pam_*.so $out/lib/security
@@ -65,20 +63,22 @@ stdenv.mkDerivation (finalAttrs: {
     cp *.8 $out/share/man/man8
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  enableParallelBuilding = true;
+
   hardeningDisable = [
     "stackprotector"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
-  doInstallCheck = true;
 
   meta = {
     description = "One-time password login package";
-    mainProgram = "otpw-gen";
     homepage = "http://www.cl.cam.ac.uk/~mgk25/otpw.html";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "otpw-gen";
   };
 })

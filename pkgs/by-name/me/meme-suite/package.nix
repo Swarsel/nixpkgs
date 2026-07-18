@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  python3,
   perl,
+  python3,
   zlib,
 }:
 
@@ -16,11 +16,12 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-BAb7ex3Cf2qrPW06KezfYXu92UZpDPqXyiEpvCEL/RI=";
   };
 
-  buildInputs = [ zlib ];
   nativeBuildInputs = [
     perl
     python3
   ];
+
+  buildInputs = [ zlib ];
 
   meta = {
     description = "Motif-based sequence analysis tools";

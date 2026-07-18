@@ -18,26 +18,17 @@ stdenv.mkDerivation (finalAttrs: {
     v4l-utils
   ];
 
-  sourceRoot = "usr/share/dvb";
-
   makeFlags = [
     "PREFIX=$(out)"
   ];
 
   allowedReferences = [ ];
+  sourceRoot = "usr/share/dvb";
 
   meta = {
-    # git repo with current revision is here:
-    #downloadPage = "https://git.linuxtv.org/dtv-scan-tables.git";
-    # Weekly releases are supposed to be here
-    downloadPage = "https://linuxtv.org/downloads/dtv-scan-tables/";
     # but sometimes they lag behind several weeks or even months.
     description = "Digital TV (DVB) channel/transponder scan tables";
-    homepage = "https://www.linuxtv.org/wiki/index.php/Dtv-scan-tables";
-    license = with lib.licenses; [
-      gpl2Only
-      lgpl21Only
-    ];
+
     longDescription = ''
       When scanning for dvb channels,
       most applications require an initial set of
@@ -47,6 +38,18 @@ stdenv.mkDerivation (finalAttrs: {
       The package delivers a collection of transponder
       tables ready to be used by software like "dvbv5-scan".
     '';
+
+    homepage = "https://www.linuxtv.org/wiki/index.php/Dtv-scan-tables";
+
+    license = with lib.licenses; [
+      gpl2Only
+      lgpl21Only
+    ];
+
     maintainers = with lib.maintainers; [ yarny ];
+    # git repo with current revision is here:
+    #downloadPage = "https://git.linuxtv.org/dtv-scan-tables.git";
+    # Weekly releases are supposed to be here
+    downloadPage = "https://linuxtv.org/downloads/dtv-scan-tables/";
   };
 })

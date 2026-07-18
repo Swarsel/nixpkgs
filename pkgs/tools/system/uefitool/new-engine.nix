@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  cmake,
   qt6,
   wrapGAppsHook3,
-  cmake,
   zip,
 }:
 
@@ -19,7 +19,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-XZGddj0i/r1rqntEcqU2AK6ihvqwN031TR12qmEmKLk=";
   };
 
-  buildInputs = [ qt6.qtbase ];
+  patches = lib.optionals stdenv.hostPlatform.isDarwin [ ./bundle-destination.patch ];
 
   nativeBuildInputs = [
     cmake
@@ -28,13 +28,13 @@ stdenv.mkDerivation (finalAttrs: {
     wrapGAppsHook3
   ];
 
-  patches = lib.optionals stdenv.hostPlatform.isDarwin [ ./bundle-destination.patch ];
-
-  dontWrapGApps = true;
+  buildInputs = [ qt6.qtbase ];
 
   preFixup = ''
     qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
+
+  dontWrapGApps = true;
 
   meta = {
     description = "UEFI firmware image viewer and editor";

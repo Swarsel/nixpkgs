@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   ffmpeg,
+  jq,
+  makeWrapper,
+  nixosTests,
   vlc,
+  x264,
   vlc' ? vlc.overrideAttrs (old: {
     buildInputs = old.buildInputs ++ [ x264 ];
   }),
-  jq,
-  x264,
-  nixosTests,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,10 +24,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-nxsIMJjacxM0PtcopZCojz9gIa20TdKJiOyeUNHQA2o=";
   };
 
-  nativeBuildInputs = [ makeWrapper ];
-
   strictDeps = true;
-  __structuredAttrs = true;
+  nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
     mkdir -p $out/bin
@@ -43,6 +41,8 @@ stdenv.mkDerivation (finalAttrs: {
         ]
       }
   '';
+
+  __structuredAttrs = true;
 
   passthru.tests = {
     inherit (nixosTests) gopro-tool;

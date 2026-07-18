@@ -1,12 +1,12 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   v2ray-domain-list-community,
 }:
 buildGoModule (finalAttrs: {
-  pname = "sing-geosite";
   inherit (v2ray-domain-list-community) version;
+  pname = "sing-geosite";
 
   src = fetchFromGitHub {
     owner = "SagerNet";
@@ -16,6 +16,18 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-35sCpEfelXcx8jQaOx7TO+X39NPuhStFmbLyLFooQcc=";
+
+  buildPhase = ''
+    runHook preBuild
+    go run -v .
+    runHook postBuild
+  '';
+
+  installPhase = ''
+    runHook preInstall
+    install -Dm644 rule-set/* -t $out/share/sing-box/rule-set
+    runHook postInstall
+  '';
 
   patchPhase = ''
     sed -i main.go \
@@ -33,23 +45,11 @@ buildGoModule (finalAttrs: {
     EOF
   '';
 
-  buildPhase = ''
-    runHook preBuild
-    go run -v .
-    runHook postBuild
-  '';
-
-  installPhase = ''
-    runHook preInstall
-    install -Dm644 rule-set/* -t $out/share/sing-box/rule-set
-    runHook postInstall
-  '';
-
   meta = {
     description = "Community managed domain list";
     homepage = "https://github.com/SagerNet/sing-geosite";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ linsui ];
+    platforms = lib.platforms.all;
   };
 })

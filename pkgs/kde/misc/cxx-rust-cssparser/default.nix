@@ -1,12 +1,12 @@
 {
   lib,
-  mkKdeDerivation,
   fetchFromGitLab,
+  cargo,
+  corrosion,
+  cxx-rs,
+  mkKdeDerivation,
   rustPlatform,
   rustc,
-  cargo,
-  cxx-rs,
-  corrosion,
 }:
 
 mkKdeDerivation rec {
@@ -14,25 +14,12 @@ mkKdeDerivation rec {
   version = "1.0.0";
 
   src = fetchFromGitLab {
-    domain = "invent.kde.org";
     owner = "libraries";
     repo = "cxx-rust-cssparser";
     tag = "v${version}";
     hash = "sha256-zYY9GmQb/Qbbu8AhOGHfrrQ563cIrnx9KMGkdledURw=";
+    domain = "invent.kde.org";
   };
-
-  extraNativeBuildInputs = [
-    rustPlatform.cargoSetupHook
-    rustc
-    cargo
-    cxx-rs
-  ];
-
-  extraBuildInputs = [
-    corrosion
-  ];
-
-  cargoRoot = "rust";
 
   cargoDeps = rustPlatform.fetchCargoVendor {
     inherit
@@ -41,10 +28,23 @@ mkKdeDerivation rec {
       src
       cargoRoot
       ;
+
     hash = "sha256-CdOvP7VxS2JMD3MlRtc6QNUCGiVMGxiKayLG6vn6n+8=";
   };
 
+  cargoRoot = "rust";
   dontWrapQtApps = true;
+
+  extraBuildInputs = [
+    corrosion
+  ];
+
+  extraNativeBuildInputs = [
+    rustPlatform.cargoSetupHook
+    rustc
+    cargo
+    cxx-rs
+  ];
 
   meta.license = with lib.licenses; [
     bsd2

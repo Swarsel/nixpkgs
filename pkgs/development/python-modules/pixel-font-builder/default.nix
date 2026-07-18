@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-  nix-update-script,
-  uv-build,
-  fonttools,
-  brotli,
   bdffont,
+  brotli,
+  buildPythonPackage,
+  fonttools,
+  nix-update-script,
   pcffont,
   pypng,
+  pytestCheckHook,
+  uv-build,
 }:
 
 buildPythonPackage rec {
   pname = "pixel-font-builder";
   version = "0.0.47";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "TakWolf";
@@ -24,6 +23,7 @@ buildPythonPackage rec {
     hash = "sha256-a25JKZy5XaBfpeFwH7YnSTY28hQF8dLa/AGEOXHN94I=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ uv-build ];
 
   dependencies = [
@@ -34,20 +34,20 @@ buildPythonPackage rec {
     pypng
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pixel_font_builder" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/TakWolf/pixel-font-builder";
     description = "Library that helps create pixel style fonts";
-    platforms = lib.platforms.all;
+    homepage = "https://github.com/TakWolf/pixel-font-builder";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       TakWolf
       h7x4
     ];
+
+    platforms = lib.platforms.all;
   };
 }

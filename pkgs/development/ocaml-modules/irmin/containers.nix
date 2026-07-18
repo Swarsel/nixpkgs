@@ -1,19 +1,18 @@
 {
-  buildDunePackage,
-  irmin,
-  irmin-fs,
-  ppx_irmin,
-  lwt,
-  mtime,
   alcotest,
   alcotest-lwt,
+  buildDunePackage,
   cacert,
+  irmin,
+  irmin-fs,
+  lwt,
+  mtime,
+  ppx_irmin,
 }:
 
 buildDunePackage {
-  pname = "irmin-containers";
-
   inherit (ppx_irmin) src version;
+  pname = "irmin-containers";
 
   nativeBuildInputs = [
     ppx_irmin
@@ -28,6 +27,7 @@ buildDunePackage {
   ];
 
   doCheck = true;
+
   checkInputs = [
     alcotest
     alcotest-lwt

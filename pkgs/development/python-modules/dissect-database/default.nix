@@ -1,18 +1,17 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dissect-cstruct,
   dissect-util,
-  fetchFromGitHub,
   pytestCheckHook,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "dissect-database";
   version = "1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fox-it";
@@ -20,6 +19,10 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-z3Ra8BjPGozcx5bF+FKcA/bnsO8F++UBUEQ2tBd+X5Q=";
   };
+
+  # Test files are not ready
+  doCheck = false;
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -31,11 +34,7 @@ buildPythonPackage (finalAttrs: {
     dissect-util
   ];
 
-  # Test files are not ready
-  doCheck = false;
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "dissect.database" ];
 
   meta = {

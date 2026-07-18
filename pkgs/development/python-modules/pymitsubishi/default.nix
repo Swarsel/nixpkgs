@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  requests,
+  buildPythonPackage,
   pycryptodome,
   pytest-cov-stub,
   pytestCheckHook,
+  requests,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pymitsubishi";
   version = "0.5.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pymitsubishi";
@@ -26,6 +25,11 @@ buildPythonPackage (finalAttrs: {
     grep -qF 'version = "${finalAttrs.version}"' pyproject.toml
   '';
 
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,11 +37,7 @@ buildPythonPackage (finalAttrs: {
     pycryptodome
   ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pymitsubishi" ];
 
   meta = {

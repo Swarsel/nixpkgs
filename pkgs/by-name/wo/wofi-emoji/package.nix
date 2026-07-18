@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   fetchFromGitHub,
   jq,
+  wl-clipboard,
   wofi,
   wtype,
-  wl-clipboard,
 }:
 
 let
   emojiJSON = fetchurl {
-    url = "https://raw.githubusercontent.com/muan/emojilib/v4.0.0/dist/emoji-en-US.json";
     hash = "sha256-IoU9ZPCqvSPX4DmfC+r5MiglhFc41XMRrbJRL9ZNrvs=";
+    url = "https://raw.githubusercontent.com/muan/emojilib/v4.0.0/dist/emoji-en-US.json";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -26,14 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-NHiAAPRbIz0sC5yh9DTDmIU3zDBFIlUsbpW4HAPr5C8=";
   };
 
-  nativeBuildInputs = [ jq ];
-
-  buildInputs = [
-    wofi
-    wtype
-    wl-clipboard
-  ];
-
   postPatch = ''
     substituteInPlace build.sh \
       --replace-fail 'curl ${emojiJSON.url}' 'cat ${emojiJSON}'
@@ -42,6 +34,14 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'wtype' '${wtype}/bin/wtype' \
       --replace-fail 'wl-copy' '${wl-clipboard}/bin/wl-copy'
   '';
+
+  nativeBuildInputs = [ jq ];
+
+  buildInputs = [
+    wofi
+    wtype
+    wl-clipboard
+  ];
 
   buildPhase = ''
     runHook preBuild
@@ -64,9 +64,11 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Simple emoji selector for Wayland using wofi and wl-clipboard";
     homepage = "https://github.com/Zeioth/wofi-emoji";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       johnrtitor
     ];
+
     platforms = lib.platforms.all;
     mainProgram = "wofi-emoji";
   };

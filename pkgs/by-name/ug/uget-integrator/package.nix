@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  uget,
-  python3Packages,
   installShellFiles,
+  python3Packages,
+  uget,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -44,10 +44,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Native messaging host to integrate uGet Download Manager with web browsers";
-    mainProgram = "uget-integrator";
     homepage = "https://github.com/ugetdm/uget-integrator";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.linux;
+    mainProgram = "uget-integrator";
   };
 })

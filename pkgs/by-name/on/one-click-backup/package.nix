@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitLab,
   cmake,
+  kdePackages,
   ninja,
   qt6,
-  kdePackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,8 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://gitlab.com/dev-nis/nis-one-click-backup-qt/-/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ NIS ];
-    mainProgram = "NIS_One-Click-Backup_Qt";
     platforms = lib.platforms.all;
+    mainProgram = "NIS_One-Click-Backup_Qt";
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

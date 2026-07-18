@@ -5,15 +5,14 @@
 }:
 
 stdenv.mkDerivation {
-  pname = "coq-simple-io-test";
   inherit (simple-io) src version;
+  pname = "coq-simple-io-test";
+  doCheck = true;
+
   nativeCheckInputs = [
     coq
     simple-io
   ];
-  dontConfigure = true;
-  dontBuild = true;
-  doCheck = true;
 
   checkPhase = ''
     cd test
@@ -24,5 +23,7 @@ stdenv.mkDerivation {
   '';
 
   installPhase = "touch $out";
+  dontBuild = true;
+  dontConfigure = true;
 
 }

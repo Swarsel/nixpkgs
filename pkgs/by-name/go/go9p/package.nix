@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,8 +21,8 @@ buildGoModule (finalAttrs: {
     description = "Implementation of the 9p2000 protocol in Go";
     homepage = "https://github.com/knusbaum/go9p";
     license = lib.licenses.mit;
-    mainProgram = "mount9p";
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.unix;
+    mainProgram = "mount9p";
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
   versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,9 +17,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-6qjk6f7mclRI1X91JNlKCWonSANb2R757r5/MBPRmRA=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   passthru = {
     updateScript = nix-update-script { };
@@ -29,12 +28,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Add-on Compiler for the Bedrock Edition of Minecraft";
     homepage = "https://github.com/ink0rr/rgl";
     changelog = "https://github.com/ink0rr/rgl/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       unfree
       mit
     ];
-    mainProgram = "rgl";
-    platforms = lib.platforms.unix ++ lib.platforms.windows;
+
     maintainers = with lib.maintainers; [ eveeifyeve ];
+    platforms = lib.platforms.unix ++ lib.platforms.windows;
+    mainProgram = "rgl";
   };
 })

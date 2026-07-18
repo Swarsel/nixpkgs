@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   buildGo126Module,
   installShellFiles,
@@ -19,28 +19,9 @@ buildGo126Module (finalAttrs: {
     hash = "sha256-CKsEPVzAYYQE+g3PTqiWKh+I7c2LOU9logpPIabUp2E=";
   };
 
-  vendorHash = "sha256-tQcl40u8otGohEguPJCTk6JuuWlLB4hrdSsNPQ1ygIw=";
-
-  env.CGO_ENABLED = 0;
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.Version=${finalAttrs.src.tag}"
-    "-X main.GitCommit=${finalAttrs.src.rev}"
-    "-X main.GitBranch=HEAD"
-    "-X main.BuildDate=1970-01-01T00:00:00Z"
-  ];
-
-  subPackages = [
-    "cmd/scw"
-    "commands/..."
-    "core/..."
-    "internal/..."
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  vendorHash = "sha256-tQcl40u8otGohEguPJCTk6JuuWlLB4hrdSsNPQ1ygIw=";
+  env.CGO_ENABLED = 0;
   nativeCheckInputs = [ writableTmpDirAsHomeHook ];
 
   checkFlags = [
@@ -62,19 +43,38 @@ buildGo126Module (finalAttrs: {
   '';
 
   doInstallCheck = true;
-  versionCheckProgramArg = "version";
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
   __darwinAllowLocalNetworking = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.Version=${finalAttrs.src.tag}"
+    "-X main.GitCommit=${finalAttrs.src.rev}"
+    "-X main.GitBranch=HEAD"
+    "-X main.BuildDate=1970-01-01T00:00:00Z"
+  ];
+
+  subPackages = [
+    "cmd/scw"
+    "commands/..."
+    "core/..."
+    "internal/..."
+  ];
+
+  versionCheckProgramArg = "version";
 
   meta = {
     description = "Command Line Interface for Scaleway";
     homepage = "https://github.com/scaleway/scaleway-cli";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       nickhu
       techknowlogick
       kashw2
     ];
+
     mainProgram = "scw";
   };
 })

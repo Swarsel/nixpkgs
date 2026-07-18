@@ -4,15 +4,14 @@
 # Creates a symlink at /etc/systemd-static/${namespace} for slightly
 # improved atomicity.
 {
-  writeScriptBin,
+  lib,
   bash,
   coreutils,
-  systemd,
   runCommand,
-  lib,
+  systemd,
+  writeScriptBin,
 }:
 {
-  units,
   # : { [String] :: Path | { path :: Path; wanted-by :: [String]; } }
   # ^ A set whose names are unit names and values are
   # either paths to the corresponding unit files or a set
@@ -22,6 +21,7 @@
   # The names should include the unit suffix
   # (e.g. ".service")
   namespace,
+  units,
   # : String
   # The namespace for the unit files, to allow for
   # multiple independent unit sets managed by

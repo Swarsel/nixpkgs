@@ -1,26 +1,26 @@
 {
+  lib,
   stdenv,
   erlang,
-  rebar3WithPlugins,
   openssl,
-  lib,
+  rebar3WithPlugins,
 }:
 
 {
   pname,
-  version,
+  releaseType,
   src,
+  version,
   beamDeps ? [ ],
+  buildInputs ? [ ],
+  buildPhase ? null,
   buildPlugins ? [ ],
   checkouts ? null,
-  releaseType,
-  buildInputs ? [ ],
-  setupHook ? null,
-  profile ? "default",
-  installPhase ? null,
-  buildPhase ? null,
   configurePhase ? null,
+  installPhase ? null,
   meta ? { },
+  profile ? "default",
+  setupHook ? null,
   ...
 }@attrs:
 
@@ -28,8 +28,8 @@ let
   shell =
     drv:
     stdenv.mkDerivation {
-      name = "interactive-shell-${drv.pname}";
       buildInputs = [ drv ];
+      name = "interactive-shell-${drv.pname}";
     };
 
   customPhases = lib.filterAttrs (_: v: v != null) {
@@ -58,6 +58,7 @@ let
       // {
 
         inherit version pname;
+        inherit src;
 
         buildInputs =
           buildInputs
@@ -68,20 +69,9 @@ let
           ]
           ++ beamDeps;
 
-        # ensure we strip any native binaries (eg. NIFs, ports)
-        stripDebugList = lib.optional (releaseType == "release") "rel";
-
-        inherit src;
-
         env = (attrs.env or { }) // {
           REBAR_IGNORE_DEPS = beamDeps != [ ];
         };
-
-        configurePhase = ''
-          runHook preConfigure
-          ${lib.optionalString (checkouts != null) "cp --no-preserve=all -R ${checkouts}/_checkouts ."}
-          runHook postConfigure
-        '';
 
         buildPhase = ''
           runHook preBuild
@@ -110,18 +100,27 @@ let
           done
         '';
 
+        configurePhase = ''
+          runHook preConfigure
+          ${lib.optionalString (checkouts != null) "cp --no-preserve=all -R ${checkouts}/_checkouts ."}
+          runHook postConfigure
+        '';
+
+        # ensure we strip any native binaries (eg. NIFs, ports)
+        stripDebugList = lib.optional (releaseType == "release") "rel";
+
+        passthru = (
+          {
+            env = shell self;
+            packageName = pname;
+          }
+          // (if attrs ? passthru then attrs.passthru else { })
+        );
+
         meta = {
           inherit (erlang.meta) platforms;
         }
         // meta;
-
-        passthru = (
-          {
-            packageName = pname;
-            env = shell self;
-          }
-          // (if attrs ? passthru then attrs.passthru else { })
-        );
       }
       // customPhases
     );

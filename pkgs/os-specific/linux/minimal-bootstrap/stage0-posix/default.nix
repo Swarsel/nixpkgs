@@ -14,18 +14,7 @@ lib.makeScope newScope (
       ;
 
     inherit (self.callPackage ./bootstrap-sources.nix { }) version minimal-bootstrap-sources;
-
-    src = minimal-bootstrap-sources;
-
-    m2libc = src + "/M2libc";
-
-    hex0 = callPackage ./hex0.nix { };
     inherit (self.hex0) hex0-seed;
-
-    kaem = callPackage ./kaem { };
-    kaem-minimal = callPackage ./kaem/minimal.nix { };
-
-    mescc-tools-boot = callPackage ./mescc-tools-boot.nix { };
 
     inherit (self.mescc-tools-boot)
       blood-elf-0
@@ -35,8 +24,13 @@ lib.makeScope newScope (
       M2
       ;
 
+    src = minimal-bootstrap-sources;
+    hex0 = callPackage ./hex0.nix { };
+    kaem = callPackage ./kaem { };
+    kaem-minimal = callPackage ./kaem/minimal.nix { };
+    m2libc = src + "/M2libc";
     mescc-tools = callPackage ./mescc-tools { };
-
+    mescc-tools-boot = callPackage ./mescc-tools-boot.nix { };
     mescc-tools-extra = callPackage ./mescc-tools-extra { };
   }
 )

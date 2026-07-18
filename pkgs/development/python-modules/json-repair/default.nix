@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "json-repair";
   version = "0.55.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mangiucugna";
@@ -18,15 +17,15 @@ buildPythonPackage rec {
     hash = "sha256-CzoGu6JNOaqdLZK4DyDUv+TMIA+k9AlZZy1fKnpMbkE=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
 
   disabledTestPaths = [
     # Disable benchmark tests
     "tests/test_performance.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "json_repair" ];
 
   meta = {

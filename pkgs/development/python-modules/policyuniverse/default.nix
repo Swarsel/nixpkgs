@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "policyuniverse";
   version = "1.5.1.20231109";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
 
   # Tests are not shipped and there are no GitHub tags
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "policyuniverse" ];
 
   meta = {

@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
-  spicetify-cli,
-  nodejs,
+  buildGoModule,
   esbuild,
+  nodejs,
+  spicetify-cli,
+  testers,
 }:
 buildGoModule (finalAttrs: {
   pname = "spicetify-cli";
@@ -18,22 +18,17 @@ buildGoModule (finalAttrs: {
     hash = "sha256-4RRy1mmqjKxDUqSV7W6KHZZcbsJvnB2hZpys1MPip3E=";
   };
 
-  vendorHash = "sha256-FTTJJrPFqqWLBBQ6pQ0RZRaWUZ4MxsV5e9HGPOp2jOY=";
-
   postPatch = ''
     substituteInPlace src/preprocess/preprocess.go \
       --replace-fail 'version != "Dev"' 'version != "${finalAttrs.version}"'
   '';
 
-  ldflags = [
-    "-s -w"
-    "-X 'main.version=${finalAttrs.version}'"
-  ];
-
   nativeBuildInputs = [
     nodejs
     esbuild
   ];
+
+  vendorHash = "sha256-FTTJJrPFqqWLBBQ6pQ0RZRaWUZ4MxsV5e9HGPOp2jOY=";
 
   postBuild = ''
     esbuild ./src/jsHelper/spicetifyWrapper/index.js \
@@ -61,16 +56,23 @@ buildGoModule (finalAttrs: {
       ln -s $out/share/spicetify/spicetify $out/bin/spicetify
     '';
 
+  ldflags = [
+    "-s -w"
+    "-X 'main.version=${finalAttrs.version}'"
+  ];
+
   passthru.tests.version = testers.testVersion { package = spicetify-cli; };
 
   meta = {
     description = "Command-line tool to customize Spotify client";
     homepage = "https://github.com/spicetify/cli";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       mdarocha
       gerg-l
     ];
+
     mainProgram = "spicetify";
   };
 })

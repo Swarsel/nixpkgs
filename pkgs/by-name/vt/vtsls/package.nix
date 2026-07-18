@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  nodejs-slim_22,
+  fetchPnpmDeps,
   gitMinimal,
   gitSetupHook,
-  pnpm_11,
-  fetchPnpmDeps,
-  pnpmConfigHook,
   nix-update-script,
-  vtsls,
+  nodejs-slim_22,
+  pnpmConfigHook,
+  pnpm_11,
   runCommand,
+  vtsls,
 }:
 let
   pnpm' = pnpm_11.override { nodejs-slim = nodejs-slim_22; };
@@ -27,6 +27,9 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
+  # Patches to get submodule sha from file instead of 'git submodule status'
+  patches = [ ./vtsls-build-patch.patch ];
+
   nativeBuildInputs = [
     nodejs-slim_22
     # patches are applied with git during build
@@ -37,28 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ nodejs-slim_22 ];
-
-  pnpmWorkspaces = [
-    "@vtsls/language-server"
-    "@vtsls/language-service"
-    "@vtsls/vscode-fuzzy"
-  ];
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pnpmWorkspaces
-      pname
-      src
-      version
-      ;
-    pnpm = pnpm';
-    fetcherVersion = 4;
-    hash = "sha256-jYh79MtcfW/p6twuDM1JDwukSnn2/TJQYvHBlut0QnE=";
-  };
-
-  # Patches to get submodule sha from file instead of 'git submodule status'
-  patches = [ ./vtsls-build-patch.patch ];
-
   # Skips manual confirmations during build
   env.CI = true;
 
@@ -94,9 +75,26 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  passthru = {
-    updateScript = nix-update-script { };
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pnpmWorkspaces
+      pname
+      src
+      version
+      ;
 
+    fetcherVersion = 4;
+    hash = "sha256-jYh79MtcfW/p6twuDM1JDwukSnn2/TJQYvHBlut0QnE=";
+    pnpm = pnpm';
+  };
+
+  pnpmWorkspaces = [
+    "@vtsls/language-server"
+    "@vtsls/language-service"
+    "@vtsls/vscode-fuzzy"
+  ];
+
+  passthru = {
     tests.smoke =
       runCommand "vtsls-smoke-test"
         {
@@ -115,6 +113,8 @@ stdenv.mkDerivation (finalAttrs: {
           echo "$RESPONSE" | grep -q '"capabilities"'
           touch $out
         '';
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -122,7 +122,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/yioneko/vtsls";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kuglimon ];
-    mainProgram = "vtsls";
     platforms = lib.platforms.all;
+    mainProgram = "vtsls";
   };
 })

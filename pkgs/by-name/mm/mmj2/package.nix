@@ -1,9 +1,9 @@
 {
   lib,
-  maven,
   fetchFromGitHub,
   jre,
   makeWrapper,
+  maven,
 }:
 
 let
@@ -12,7 +12,6 @@ let
 in
 maven.buildMavenPackage {
   pname = "mmj2";
-
   # The latest stable version is from 2017 and doesn't include the mmj2jar/mmj2
   # wrapper script, so use the unstable one for now
   version = "${lastVersion}-unstable-2023-06-27";
@@ -20,12 +19,10 @@ maven.buildMavenPackage {
   src = fetchFromGitHub {
     owner = "digama0";
     repo = "mmj2";
-    fetchSubmodules = true;
     rev = "1cd95c1fe4435899c8575644fccb412dd77d79e4";
     hash = "sha256-WYBrLY04+bJGzjRMs8LgHnI6lMRhQKyz15DIoLeiE2s=";
+    fetchSubmodules = true;
   };
-
-  mvnHash = "sha256-MTI393L/t9AXYbE9hvkIQ28WzYmjt9B22XbFSlLQQUk=";
 
   nativeBuildInputs = [ makeWrapper ];
 
@@ -43,14 +40,18 @@ maven.buildMavenPackage {
     runHook postInstall
   '';
 
+  mvnHash = "sha256-MTI393L/t9AXYbE9hvkIQ28WzYmjt9B22XbFSlLQQUk=";
+
   meta = {
     description = "GUI Proof Assistant for the Metamath project";
+
     longDescription = ''
       mmj2 is a proof assistant for the Metamath language. Metamath is a
       language that lets you express mathematical axioms and theorems. The proof
       assistant includes a GUI for creating proofs, proof verification tools,
       and grammatical/syntax analysis.
     '';
+
     homepage = "https://github.com/digama0/mmj2";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ io12 ];

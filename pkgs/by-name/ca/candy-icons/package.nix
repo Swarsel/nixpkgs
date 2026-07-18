@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  unstableGitUpdater,
   gtk3,
+  stdenvNoCC,
+  unstableGitUpdater,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -19,8 +19,6 @@ stdenvNoCC.mkDerivation {
 
   nativeBuildInputs = [ gtk3 ];
 
-  dontDropIconThemeCache = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -31,16 +29,19 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontDropIconThemeCache = true;
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    homepage = "https://github.com/EliverLara/candy-icons";
     description = "Icon theme colored with sweet gradients";
+    homepage = "https://github.com/EliverLara/candy-icons";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       clr-cera
       arunoruto
     ];
+
+    platforms = lib.platforms.linux;
   };
 }

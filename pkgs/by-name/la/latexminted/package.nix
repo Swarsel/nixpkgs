@@ -1,15 +1,14 @@
 {
   lib,
   fetchPypi,
-  python3Packages,
   latexminted,
+  python3Packages,
   testers,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "latexminted";
   version = "0.7.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -26,6 +25,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     latexrestricted
   ];
 
+  pyproject = true;
+
   passthru = {
     tests.version = testers.testVersion { package = latexminted; };
   };
@@ -34,7 +35,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     description = "Python executable for LaTeX minted package";
     homepage = "https://pypi.org/project/latexminted";
     license = lib.licenses.lppl13c;
-    mainProgram = "latexminted";
     maintainers = with lib.maintainers; [ romildo ];
+    mainProgram = "latexminted";
   };
 })

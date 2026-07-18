@@ -36,27 +36,20 @@ in
 
     extraSessionCommands = lib.mkOption {
       default = "";
-      type = lib.types.lines;
+
       description = ''
         Shell commands executed just before dwl is started.
       '';
+
+      type = lib.types.lines;
     };
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ cfg.package ];
-
-    # Create systemd target for dwl session
-    systemd.user.targets.dwl-session = {
-      description = "dwl compositor session";
-      documentation = [ "man:systemd.special(7)" ];
-      bindsTo = [ "graphical-session.target" ];
-      wants = [ "graphical-session-pre.target" ];
-      after = [ "graphical-session-pre.target" ];
-    };
-
     # Create wrapper script for dwl
     environment.etc."xdg/dwl-session" = {
+      mode = "0755"; # Make it executable
+
       text = ''
         #!${pkgs.runtimeShell}
         # Import environment variables
@@ -67,15 +60,17 @@ in
         # Start dwl
         exec ${lib.getExe cfg.package}
       '';
-      mode = "0755"; # Make it executable
     };
+
+    environment.systemPackages = [ cfg.package ];
 
     # Create desktop entry for display managers
     services.displayManager.sessionPackages =
       let
         dwlDesktopFile = pkgs.writeTextFile {
-          name = "dwl-desktop-entry";
           destination = "/share/wayland-sessions/dwl.desktop";
+          name = "dwl-desktop-entry";
+
           text = ''
             [Desktop Entry]
             Name=dwl
@@ -87,11 +82,20 @@ in
 
         dwlSession = pkgs.symlinkJoin {
           name = "dwl-session";
-          paths = [ dwlDesktopFile ];
           passthru.providedSessions = [ "dwl" ];
+          paths = [ dwlDesktopFile ];
         };
       in
       [ dwlSession ];
+
+    # Create systemd target for dwl session
+    systemd.user.targets.dwl-session = {
+      after = [ "graphical-session-pre.target" ];
+      bindsTo = [ "graphical-session.target" ];
+      description = "dwl compositor session";
+      documentation = [ "man:systemd.special(7)" ];
+      wants = [ "graphical-session-pre.target" ];
+    };
 
     # Configure XDG portal for dwl (minimal configuration)
     xdg.portal.config.dwl.default = lib.mkDefault [

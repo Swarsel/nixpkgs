@@ -2,24 +2,24 @@
   lib,
   stdenv,
   fetchurl,
-  meson,
-  mdbook,
-  pkg-config,
-  ninja,
-  wayland-scanner,
-  withTests ? stdenv.hostPlatform.isLinux,
-  libffi,
-  epoll-shim,
-  withDocumentation ? stdenv.hostPlatform == stdenv.buildPlatform,
-  graphviz-nox,
-  doxygen,
-  libxslt,
-  xmlto,
-  python3,
-  docbook_xsl,
-  docbook_xml_dtd_45,
   docbook_xml_dtd_42,
+  docbook_xml_dtd_45,
+  docbook_xsl,
+  doxygen,
+  epoll-shim,
+  graphviz-nox,
+  libffi,
+  libxslt,
+  mdbook,
+  meson,
+  ninja,
+  pkg-config,
+  python3,
   testers,
+  wayland-scanner,
+  xmlto,
+  withDocumentation ? stdenv.hostPlatform == stdenv.buildPlatform,
+  withTests ? stdenv.hostPlatform.isLinux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,12 +30,9 @@ stdenv.mkDerivation (finalAttrs: {
     url =
       with finalAttrs;
       "https://gitlab.freedesktop.org/wayland/wayland/-/releases/${version}/downloads/${pname}-${version}.tar.xz";
+
     hash = "sha256-wGXwQK/f8xd2gGAPJJcn5Boa/CL8zyciLxX1MG+qHwM=";
   };
-
-  postPatch = lib.optionalString withDocumentation ''
-    patchShebangs doc/doxygen/gen-doxygen.py
-  '';
 
   outputs = [
     "out"
@@ -45,17 +42,10 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
     "man"
   ];
-  separateDebugInfo = true;
 
-  mesonFlags = [
-    (lib.mesonBool "documentation" withDocumentation)
-    (lib.mesonBool "tests" withTests)
-    (lib.mesonBool "scanner" false) # wayland-scanner is a separate derivation
-  ];
-
-  depsBuildBuild = [
-    pkg-config
-  ];
+  postPatch = lib.optionalString withDocumentation ''
+    patchShebangs doc/doxygen/gen-doxygen.py
+  '';
 
   nativeBuildInputs = [
     meson
@@ -86,6 +76,18 @@ stdenv.mkDerivation (finalAttrs: {
     docbook_xml_dtd_42
   ];
 
+  mesonFlags = [
+    (lib.mesonBool "documentation" withDocumentation)
+    (lib.mesonBool "tests" withTests)
+    (lib.mesonBool "scanner" false) # wayland-scanner is a separate derivation
+  ];
+
+  depsBuildBuild = [
+    pkg-config
+  ];
+
+  separateDebugInfo = true;
+
   passthru = {
     tests.pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
@@ -94,6 +96,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Core Wayland window system code and protocol";
+
     longDescription = ''
       Wayland is a project to define a protocol for a compositor to talk to its
       clients as well as a library implementation of the protocol.
@@ -102,17 +105,21 @@ stdenv.mkDerivation (finalAttrs: {
       and other interactions that must go through the compositor (but not
       rendering).
     '';
+
     homepage = "https://wayland.freedesktop.org/";
     license = lib.licenses.mit; # Expat version
+
+    maintainers = with lib.maintainers; [
+      qyliss
+    ];
+
     platforms = lib.platforms.unix;
     # Builds with a large downstream patch, but breaks at least the
     # `qt6Packages.qtbase` build. Please audit Wayland availability
     # checks throughout the tree before enabling (and work with
     # upstream if you want sustainable Wayland support on macOS).
     badPlatforms = lib.platforms.darwin;
-    maintainers = with lib.maintainers; [
-      qyliss
-    ];
+
     pkgConfigModules = [
       "wayland-client"
       "wayland-cursor"

@@ -1,14 +1,13 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   testers,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "protoc-gen-go-grpc";
   version = "1.6.2";
-  modRoot = "cmd/protoc-gen-go-grpc";
 
   src = fetchFromGitHub {
     owner = "grpc";
@@ -24,9 +23,12 @@ buildGoModule (finalAttrs: {
     "-w"
   ];
 
+  modRoot = "cmd/protoc-gen-go-grpc";
+
   passthru.tests.version = testers.testVersion {
     package = finalAttrs.finalPackage;
   };
+
   passthru.updateScript = ./update.py;
 
   meta = {

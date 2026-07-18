@@ -1,45 +1,45 @@
 {
   lib,
   stdenv,
-  makeWrapper,
   fetchurl,
-  fetchzip,
-  wrapGAppsHook3,
-  glib,
-  gtk3,
-  gtk4,
-  unzip,
-  at-spi2-atk,
-  libdrm,
-  libgbm,
-  libxkbcommon,
-  libxshmfence,
-  libGL,
-  vulkan-loader,
   alsa-lib,
+  at-spi2-atk,
   cairo,
   cups,
   dbus,
   expat,
+  fetchzip,
   gdk-pixbuf,
-  nss,
-  nspr,
-  libxrandr,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcomposite,
-  libx11,
-  libxkbfile,
-  libxcb,
-  pango,
-  systemd,
-  pciutils,
+  glib,
+  gtk3,
+  gtk4,
+  libGL,
+  libdrm,
+  libgbm,
   libnotify,
-  pipewire,
-  libsecret,
   libpulseaudio,
+  libsecret,
+  libx11,
+  libxcb,
+  libxcomposite,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxkbcommon,
+  libxkbfile,
+  libxrandr,
+  libxshmfence,
+  makeWrapper,
+  nspr,
+  nss,
+  pango,
+  pciutils,
+  pipewire,
   speechd-minimal,
+  systemd,
+  unzip,
+  vulkan-loader,
+  wrapGAppsHook3,
 }:
 
 version: hashes:
@@ -50,39 +50,41 @@ let
     description = "Cross platform desktop application shell";
     homepage = "https://github.com/electron/electron";
     license = lib.licenses.mit;
-    mainProgram = "electron";
-    teams = [ lib.teams.electron ];
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     platforms = [
       "x86_64-linux"
       "armv7l-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
+    mainProgram = "electron";
     # https://www.electronjs.org/docs/latest/tutorial/electron-timelines
     knownVulnerabilities = lib.optional (lib.versionOlder version "41.0.0") "Electron version ${version} is EOL";
+    teams = [ lib.teams.electron ];
   };
 
   fetcher =
     vers: tag: hash:
     fetchurl {
-      url = "https://github.com/electron/electron/releases/download/v${vers}/electron-v${vers}-${tag}.zip";
       sha256 = hash;
+      url = "https://github.com/electron/electron/releases/download/v${vers}/electron-v${vers}-${tag}.zip";
     };
 
   headersFetcher =
     vers: hash:
     fetchzip {
       name = "electron-${vers}-headers";
-      url = "https://artifacts.electronjs.org/headers/dist/v${vers}/node-v${vers}-headers.tar.gz";
       sha256 = hash;
+      url = "https://artifacts.electronjs.org/headers/dist/v${vers}/node-v${vers}-headers.tar.gz";
     };
 
   tags = {
-    x86_64-linux = "linux-x64";
-    armv7l-linux = "linux-armv7l";
-    aarch64-linux = "linux-arm64";
     aarch64-darwin = "darwin-arm64";
+    aarch64-linux = "linux-arm64";
+    armv7l-linux = "linux-armv7l";
+    x86_64-linux = "linux-x64";
   };
 
   get = as: platform: as.${platform.system} or (throw "Unsupported system: ${platform.system}");
@@ -132,11 +134,7 @@ let
   ];
 
   linux = finalAttrs: {
-    buildInputs = [
-      glib
-      gtk3
-      gtk4
-    ];
+    strictDeps = true;
 
     nativeBuildInputs = [
       unzip
@@ -144,17 +142,17 @@ let
       wrapGAppsHook3
     ];
 
-    dontUnpack = true;
-    dontBuild = true;
+    buildInputs = [
+      glib
+      gtk3
+      gtk4
+    ];
 
     installPhase = ''
       mkdir -p $out/libexec/electron
       unzip -d $out/libexec/electron $src
       chmod u-x $out/libexec/electron/*.so*
     '';
-
-    # We don't want to wrap the contents of $out/libexec automatically
-    dontWrapGApps = true;
 
     preFixup = ''
       makeWrapper "$out/libexec/electron/electron" $out/bin/electron \
@@ -184,10 +182,12 @@ let
       ln -s -t "$out/libexec/electron" "${lib.getLib vulkan-loader}/lib/libvulkan.so.1"
     '';
 
-    passthru.dist = finalAttrs.finalPackage + "/libexec/electron";
-
     __structuredAttrs = true;
-    strictDeps = true;
+    dontBuild = true;
+    dontUnpack = true;
+    # We don't want to wrap the contents of $out/libexec automatically
+    dontWrapGApps = true;
+    passthru.dist = finalAttrs.finalPackage + "/libexec/electron";
   };
 
   darwin = finalAttrs: {

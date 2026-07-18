@@ -21,6 +21,7 @@ in
 
 lib.extendMkDerivation {
   constructDrv = genericBuild;
+
   extendDrvArgs =
     finalAttrs:
 
@@ -32,8 +33,6 @@ lib.extendMkDerivation {
     }@args:
 
     {
-
-      elpa2nix = args.elpa2nix or ./elpa2nix.el;
 
       inherit dontUnpack;
 
@@ -49,6 +48,8 @@ lib.extendMkDerivation {
 
           runHook postInstall
         '';
+
+      elpa2nix = args.elpa2nix or ./elpa2nix.el;
 
       meta = {
         homepage = args.src.meta.homepage or "https://elpa.gnu.org/packages/${pname}.html";

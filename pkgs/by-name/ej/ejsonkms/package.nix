@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   ejsonkms,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,6 +18,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-6C/hZwqB6yqFjfDe+KQAY+ja41v/FVaEmPEUXb0FZTA=";
+  doCheck = false;
 
   ldflags = [
     "-X main.version=v${finalAttrs.version}"
@@ -25,12 +26,10 @@ buildGoModule (finalAttrs: {
     "-w"
   ];
 
-  doCheck = false;
-
   passthru.tests = {
     version = testers.testVersion {
-      package = ejsonkms;
       version = "v${finalAttrs.version}";
+      package = ejsonkms;
     };
   };
 

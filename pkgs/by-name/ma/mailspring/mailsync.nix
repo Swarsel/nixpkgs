@@ -1,16 +1,10 @@
 {
   lib,
   stdenv,
-  callPackage,
-
-  src,
-  version,
-
   autoPatchelfHook,
-  cmake,
-  pkg-config,
-
   c-ares,
+  callPackage,
+  cmake,
   curl,
   cyrus_sasl,
   glib,
@@ -22,7 +16,10 @@
   libuuid,
   libxml2,
   pcre2,
+  pkg-config,
   sqlite,
+  src,
+  version,
   xz,
   zlib,
 }:
@@ -33,56 +30,8 @@ let
   mailspring-mailcore2 = callPackage ./mailcore2.nix { inherit src version mailspring-libetpan; };
 in
 stdenv.mkDerivation {
-  pname = "mailspring-sync";
   inherit src version;
-
-  sourceRoot = "${src.name}/mailsync";
-
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ]
-  ++ lib.optionals stdenv.isLinux [
-    autoPatchelfHook
-  ];
-
-  buildInputs = [
-    c-ares
-    curl
-    cyrus_sasl
-    glib
-    html-tidy
-    icu
-    libctemplate
-    libsysprof-capture
-    libuuid
-    libxml2
-    mailspring-libetpan
-    mailspring-mailcore2
-    pcre2
-    sqlite
-    xz
-    zlib
-  ]
-  ++ lib.optionals stdenv.isDarwin [
-    libiconv
-  ];
-
-  runtimeDependencies = [
-    html-tidy
-  ];
-
-  env =
-    let
-      FLAGS = toString [
-        "-Wno-error=deprecated-declarations"
-        "-Wno-error=incompatible-pointer-types"
-      ];
-    in
-    {
-      CFLAGS = FLAGS;
-      CXXFLAGS = FLAGS;
-    };
+  pname = "mailspring-sync";
 
   postPatch = ''
     substituteInPlace CMakeLists.txt \
@@ -114,6 +63,48 @@ stdenv.mkDerivation {
       'target_link_libraries(mailsync pthread sasl2 ssl crypto curl dl tidy iconv "-framework Foundation" "-framework CoreFoundation" "-framework Security" "-framework CoreServices" "-framework SystemConfiguration")'
   '';
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ]
+  ++ lib.optionals stdenv.isLinux [
+    autoPatchelfHook
+  ];
+
+  buildInputs = [
+    c-ares
+    curl
+    cyrus_sasl
+    glib
+    html-tidy
+    icu
+    libctemplate
+    libsysprof-capture
+    libuuid
+    libxml2
+    mailspring-libetpan
+    mailspring-mailcore2
+    pcre2
+    sqlite
+    xz
+    zlib
+  ]
+  ++ lib.optionals stdenv.isDarwin [
+    libiconv
+  ];
+
+  env =
+    let
+      FLAGS = toString [
+        "-Wno-error=deprecated-declarations"
+        "-Wno-error=incompatible-pointer-types"
+      ];
+    in
+    {
+      CFLAGS = FLAGS;
+      CXXFLAGS = FLAGS;
+    };
+
   installPhase = ''
     runHook preInstall
 
@@ -124,10 +115,17 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  runtimeDependencies = [
+    html-tidy
+  ];
+
+  sourceRoot = "${src.name}/mailsync";
+
   meta = {
     description = "Email synchronization engine for Mailspring";
     homepage = "https://github.com/Foundry376/Mailspring-Sync";
     license = lib.licenses.gpl3Plus;
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"

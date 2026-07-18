@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
 }:
 
 buildPythonPackage rec {
   pname = "liblp";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sebaubuntu-python";
@@ -17,11 +16,10 @@ buildPythonPackage rec {
     hash = "sha256-F30D2mYUYPupbr8OsrcrN6wQ639L5OlzQw/FrxPCsC4=";
   };
 
-  build-system = [ poetry-core ];
-
   # Module has no tests
   doCheck = false;
-
+  build-system = [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "liblp" ];
 
   meta = {

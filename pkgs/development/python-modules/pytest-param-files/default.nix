@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
-  ruamel-yaml,
   pytest,
   pytestCheckHook,
+  ruamel-yaml,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-param-files";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "chrisjsewell";
@@ -21,14 +20,11 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ flit-core ];
-
   buildInputs = [ pytest ];
-
   propagatedBuildInputs = [ ruamel-yaml ];
-
-  pythonImportsCheck = [ "pytest_param_files" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
+  pythonImportsCheck = [ "pytest_param_files" ];
 
   meta = {
     description = "Package to generate parametrized pytests from external files";

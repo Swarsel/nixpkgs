@@ -1,10 +1,10 @@
 {
   lib,
-  runCommand,
-  prisma_7,
-  prisma-engines_7,
-  sqlite-interactive,
   openssl,
+  prisma-engines_7,
+  prisma_7,
+  runCommand,
+  sqlite-interactive,
 }:
 
 let
@@ -18,6 +18,7 @@ runCommand "prisma-cli-tests"
       sqlite-interactive
       openssl
     ];
+
     meta.timeout = 60;
   }
   ''

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   simplejson,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "python3-nmap";
   version = "1.9.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nmmapper";
@@ -18,14 +17,12 @@ buildPythonPackage rec {
     hash = "sha256-d/rH3aRNh9SDyVvbiTFCQyfZ6amtnH2iSwKqTOlVLNY=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ simplejson ];
-
-  pythonImportsCheck = [ "nmap3" ];
-
   # Module has no tests
   doCheck = false;
+  build-system = [ setuptools ];
+  dependencies = [ simplejson ];
+  pyproject = true;
+  pythonImportsCheck = [ "nmap3" ];
 
   meta = {
     description = "Library which helps in using nmap port scanner";

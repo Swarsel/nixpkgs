@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
-  writeScript,
-  curl,
-  jq,
   common-updater-scripts,
+  curl,
+  dpkg,
+  jq,
+  writeScript,
 }:
 
 # The raw package that fetches and extracts the Plex RPM. Override the source
@@ -14,8 +14,8 @@
 # server, and the FHS userenv and corresponding NixOS module should
 # automatically pick up the changes.
 stdenv.mkDerivation rec {
-  version = "1.43.2.10687-563d026ea";
   pname = "plexmediaserver";
+  version = "1.43.2.10687-563d026ea";
 
   # Fetch the source
   src =
@@ -29,6 +29,7 @@ stdenv.mkDerivation rec {
         url = "https://downloads.plex.tv/plex-media-server-new/${version}/debian/plexmediaserver_${version}_amd64.deb";
         sha256 = "13mfmlwvpimyrm3dkdlsr0b9qpbyy5l62q2ckh1xvzgj978j62bn";
       };
+
   outputs = [
     "out"
     "basedb"
@@ -54,11 +55,11 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontAutoPatchelf = true;
+  dontPatchELF = true;
   # We're running in a FHS userenv; don't patch anything
   dontPatchShebangs = true;
   dontStrip = true;
-  dontPatchELF = true;
-  dontAutoPatchelf = true;
 
   passthru.updateScript = writeScript "${pname}-updater" ''
     #!${stdenv.shell}
@@ -85,13 +86,17 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
+    description = "Media library streaming server";
+
+    longDescription = ''
+      Plex is a media server which allows you to store your media and play it
+      back across many different devices.
+    '';
+
     homepage = "https://plex.tv/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
-    platforms = [
-      "x86_64-linux"
-      "aarch64-linux"
-    ];
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       badmutex
       forkk
@@ -99,10 +104,10 @@ stdenv.mkDerivation rec {
       thoughtpolice
       MayNiklas
     ];
-    description = "Media library streaming server";
-    longDescription = ''
-      Plex is a media server which allows you to store your media and play it
-      back across many different devices.
-    '';
+
+    platforms = [
+      "x86_64-linux"
+      "aarch64-linux"
+    ];
   };
 }

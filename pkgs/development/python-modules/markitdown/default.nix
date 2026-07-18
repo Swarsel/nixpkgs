@@ -1,18 +1,18 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
   # dependencies
   azure-ai-documentintelligence,
   azure-identity,
   beautifulsoup4,
+  buildPythonPackage,
   charset-normalizer,
   defusedxml,
+  # passthru
+  gitUpdater,
+  # build-system
+  hatchling,
   lxml,
   magika,
   mammoth,
@@ -23,17 +23,13 @@
   pdfminer-six,
   pdfplumber,
   pydub,
+  # tests
+  pytestCheckHook,
   python-pptx,
   requests,
   speechrecognition,
   xlrd,
   youtube-transcript-api,
-
-  # tests
-  pytestCheckHook,
-
-  # passthru
-  gitUpdater,
 }:
 
 let
@@ -42,7 +38,6 @@ in
 buildPythonPackage (finalAttrs: {
   pname = "markitdown";
   version = "0.1.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "microsoft";
@@ -51,15 +46,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-pLL44w2jVj5X5/TmPqSveQe/9WLj0ddDUYPoSQlz+9E=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/packages/markitdown";
-
+  doCheck = isNotAarch64Linux;
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ hatchling ];
 
-  pythonRelaxDeps = [
-    "magika"
-    "mammoth"
-    "youtube-transcript-api"
-  ];
   dependencies = [
     azure-ai-documentintelligence
     azure-identity
@@ -83,15 +73,6 @@ buildPythonPackage (finalAttrs: {
     youtube-transcript-api
   ];
 
-  # aarch64-linux fails cpuinfo test, because /sys/devices/system/cpu/ does not exist in the sandbox:
-  # terminate called after throwing an instance of 'onnxruntime::OnnxRuntimeException'
-  #
-  # -> Skip all tests that require importing markitdown
-  pythonImportsCheck = lib.optionals isNotAarch64Linux [ "markitdown" ];
-  doCheck = isNotAarch64Linux;
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTests = [
     # Require network access
     "test_markitdown_remote"
@@ -105,11 +86,26 @@ buildPythonPackage (finalAttrs: {
     "test_cu_registered_before_docintel"
   ];
 
+  pyproject = true;
+  # aarch64-linux fails cpuinfo test, because /sys/devices/system/cpu/ does not exist in the sandbox:
+  # terminate called after throwing an instance of 'onnxruntime::OnnxRuntimeException'
+  #
+  # -> Skip all tests that require importing markitdown
+  pythonImportsCheck = lib.optionals isNotAarch64Linux [ "markitdown" ];
+
+  pythonRelaxDeps = [
+    "magika"
+    "mammoth"
+    "youtube-transcript-api"
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/packages/markitdown";
+
   passthru.updateScript = gitUpdater {
-    # Drop the "v" tag prefix before version comparison.
-    rev-prefix = "v";
     # Skip PEP 440 pre-release tags.
     ignoredVersions = "(a|b|rc)[0-9]+$";
+    # Drop the "v" tag prefix before version comparison.
+    rev-prefix = "v";
   };
 
   meta = {

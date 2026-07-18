@@ -198,11 +198,7 @@ in
 
       enable = mkEnableOption "PostgreSQL Server";
 
-      enableJIT = mkEnableOption "JIT support";
-
       package = mkOption {
-        type = types.package;
-        example = literalExpression "pkgs.postgresql_15";
         defaultText = literalExpression ''
           if versionAtLeast config.system.stateVersion "26.11" then
             pkgs.postgresql_18
@@ -215,14 +211,182 @@ in
           else
             pkgs.postgresql_14
         '';
+
         description = ''
           The package being used by postgresql.
         '';
+
+        example = literalExpression "pkgs.postgresql_15";
+        type = types.package;
+      };
+
+      authentication = mkOption {
+        default = "";
+
+        description = ''
+          Defines how users authenticate themselves to the server. See the
+          [PostgreSQL documentation for pg_hba.conf](https://www.postgresql.org/docs/current/auth-pg-hba-conf.html)
+          for details on the expected format of this option. By default,
+          peer based authentication will be used for users connecting
+          via the Unix socket, and md5 password authentication will be
+          used for users connecting via TCP. Any added rules will be
+          inserted above the default rules. If you'd like to replace the
+          default rules entirely, you can use `lib.mkForce` in your
+          module.
+        '';
+
+        type = types.lines;
+      };
+
+      checkConfig = mkOption {
+        default = true;
+        description = "Check the syntax of the configuration file at compile time";
+        type = types.bool;
+      };
+
+      dataDir = mkOption {
+        defaultText = literalExpression ''"/var/lib/postgresql/''${config.services.postgresql.package.psqlSchema}"'';
+
+        description = ''
+          The data directory for PostgreSQL. If left as the default value
+          this directory will automatically be created before the PostgreSQL server starts, otherwise
+          the sysadmin is responsible for ensuring the directory exists with appropriate ownership
+          and permissions.
+        '';
+
+        example = "/var/lib/postgresql/15";
+        type = types.path;
+      };
+
+      enableJIT = mkEnableOption "JIT support";
+
+      enableTCPIP = mkOption {
+        default = false;
+
+        description = ''
+          Whether PostgreSQL should listen on all network interfaces.
+          If disabled, the database can only be accessed via its Unix
+          domain socket or via TCP connections to localhost.
+        '';
+
+        type = types.bool;
+      };
+
+      ensureDatabases = mkOption {
+        default = [ ];
+
+        description = ''
+          Ensures that the specified databases exist.
+          This option will never delete existing databases, especially not when the value of this
+          option is changed. This means that databases created once through this option or
+          otherwise have to be removed manually.
+        '';
+
+        example = [
+          "gitea"
+          "nextcloud"
+        ];
+
+        type = types.listOf types.str;
+      };
+
+      ensureUsers = mkOption {
+        default = [ ];
+
+        description = ''
+          Ensures that the specified users exist.
+          The PostgreSQL users will be identified using peer authentication. This authenticates the Unix user with the
+          same name only, and that without the need for a password.
+          This option will never delete existing users or remove DB ownership of databases
+          once granted with `ensureDBOwnership = true;`. This means that this must be
+          cleaned up manually when changing after changing the config in here.
+        '';
+
+        example = literalExpression ''
+          [
+            {
+              name = "nextcloud";
+            }
+            {
+              name = "superuser";
+              ensureDBOwnership = true;
+            }
+          ]
+        '';
+
+        type = types.listOf (
+          types.submodule {
+            options = {
+              ensureClauses = mkOption {
+                default = { };
+
+                description = ''
+                  An attrset of clauses to grant to the user. Under the hood this uses the
+                  [ALTER USER syntax](https://www.postgresql.org/docs/current/sql-alteruser.html) for each attrName where
+                  the attrValue is true in the attrSet:
+                  `ALTER USER user.name WITH attrName`
+                '';
+
+                example = literalExpression ''
+                  {
+                    superuser = true;
+                    createrole = true;
+                    createdb = true;
+                    connection_limit = 5;
+
+                    # SCRAM-SHA-256 hashed password for "password"
+                    # Generate hashes using PostgreSQL or a dedicated script rather than storing passwords in plain text.
+                    password = "SCRAM-SHA-256$4096:SZEJF5Si4QZ6l4fedrZZWQ==$6u3PWVcz+dts+NdpByPIjKa4CaSnoXGG3M2vpo76bVU=:WSZ0iGUCmVtKYVvNX0pFOp/60IgsdJ+90Y67Eun+QE0=";
+                  }
+                '';
+
+                type = types.submodule {
+                  freeformType = types.attrsOf (
+                    types.oneOf [
+                      types.str
+                      types.int
+                      types.bool
+                    ]
+                  );
+                };
+              };
+
+              ensureDBOwnership = mkOption {
+                default = false;
+
+                description = ''
+                  Grants the user ownership to a database with the same name.
+                  This database must be defined manually in
+                  [](#opt-services.postgresql.ensureDatabases).
+                '';
+
+                type = types.bool;
+              };
+
+              name = mkOption {
+                description = ''
+                  Name of the user to ensure.
+                '';
+
+                type = types.str;
+              };
+            };
+          }
+        );
+      };
+
+      extensions = mkOption {
+        default = _: [ ];
+
+        description = ''
+          List of PostgreSQL extensions to install.
+        '';
+
+        example = literalExpression "ps: with ps; [ postgis pg_repack ]";
+        type = with types; coercedTo (listOf path) (path: _ignorePg: path) (functionTo (listOf path));
       };
 
       finalPackage = mkOption {
-        type = types.package;
-        readOnly = true;
         default =
           let
             # ensure that
@@ -235,59 +399,160 @@ in
             withJitAndPackages = if cfg.extensions == [ ] then withJit else withJit.withPackages cfg.extensions;
           in
           withJitAndPackages;
+
         defaultText = "with config.services.postgresql; package.withPackages extensions";
+
         description = ''
           The postgresql package that will effectively be used in the system.
           It consists of the base package with plugins applied to it.
         '';
+
+        readOnly = true;
+        type = types.package;
+      };
+
+      identMap = mkOption {
+        default = "";
+
+        description = ''
+          Defines the mapping from system users to database users.
+
+          See the [auth doc](https://postgresql.org/docs/current/auth-username-maps.html).
+
+          There is a default map "postgres" which is used for local peer authentication
+          as the postgres superuser role.
+          For example, to allow the root user to login as the postgres superuser, add:
+
+          ```
+          postgres root postgres
+          ```
+        '';
+
+        example = ''
+          map-name-0 system-username-0 database-username-0
+          map-name-1 system-username-1 database-username-1
+        '';
+
+        type = types.lines;
+      };
+
+      initdbArgs = mkOption {
+        default = [ ];
+
+        description = ''
+          Additional arguments passed to `initdb` during data dir
+          initialisation.
+        '';
+
+        example = [
+          "--data-checksums"
+          "--allow-group-access"
+        ];
+
+        type = with types; listOf str;
+      };
+
+      initialScript = mkOption {
+        default = null;
+
+        description = ''
+          A file containing SQL statements to execute on first startup.
+        '';
+
+        example = literalExpression ''
+          pkgs.writeText "init-sql-script" '''
+            alter user postgres with password 'myPassword';
+          ''';'';
+
+        type = types.nullOr types.path;
+      };
+
+      settings = mkOption {
+        default = { };
+
+        description = ''
+          PostgreSQL configuration. Refer to
+          <https://www.postgresql.org/docs/current/config-setting.html#CONFIG-SETTING-CONFIGURATION-FILE>
+          for an overview of {file}`postgresql.conf`.
+
+          ::: {.note}
+          String values will automatically be enclosed in single quotes. Single quotes will be
+          escaped with two single quotes as described by the upstream documentation linked above.
+          :::
+        '';
+
+        example = literalExpression ''
+          {
+            log_connections = true;
+            log_statement = "all";
+            logging_collector = true;
+            log_disconnections = true;
+            log_destination = lib.mkForce "syslog";
+          }
+        '';
+
+        type =
+          with types;
+          submodule {
+            options = {
+              log_line_prefix = mkOption {
+                default = "[%p] ";
+
+                description = ''
+                  A printf-style string that is output at the beginning of each log line.
+                  Upstream default is `'%m [%p] '`, i.e. it includes the timestamp. We do
+                  not include the timestamp, because journal has it anyway.
+                '';
+
+                example = "%m [%p] ";
+                type = types.str;
+              };
+
+              port = mkOption {
+                default = 5432;
+
+                description = ''
+                  The port on which PostgreSQL listens.
+                '';
+
+                type = types.port;
+              };
+
+              shared_preload_libraries = mkOption {
+                default = null;
+
+                description = ''
+                  List of libraries to be preloaded.
+                '';
+
+                example = literalExpression ''[ "auto_explain" "anon" ]'';
+                type = nullOr (coercedTo (listOf str) (concatStringsSep ",") commas);
+              };
+            };
+
+            freeformType = attrsOf (oneOf [
+              bool
+              float
+              int
+              str
+            ]);
+          };
+      };
+
+      superUser = mkOption {
+        default = "postgres";
+
+        description = ''
+          PostgreSQL superuser account to use for various operations. Internal since changing
+          this value would lead to breakage while setting up databases.
+        '';
+
+        internal = true;
+        readOnly = true;
+        type = types.str;
       };
 
       systemCallFilter = mkOption {
-        type = types.attrsOf (
-          types.coercedTo types.bool (enable: { inherit enable; }) (
-            types.submodule (
-              { name, ... }:
-              {
-                options = {
-                  enable = mkEnableOption "${name} in postgresql's syscall filter";
-                  priority = mkOption {
-                    default =
-                      if hasPrefix "@" name then
-                        500
-                      else if hasPrefix "~@" name then
-                        1000
-                      else
-                        1500;
-                    defaultText = literalExpression ''
-                      if hasPrefix "@" name then 500 else if hasPrefix "~@" name then 1000 else 1500
-                    '';
-                    type = types.int;
-                    description = ''
-                      Set the priority of the system call filter setting. Later declarations
-                      override earlier ones, e.g.
-
-                      ```ini
-                      [Service]
-                      SystemCallFilter=~read write
-                      SystemCallFilter=write
-                      ```
-
-                      results in a service where _only_ `read` is not allowed.
-
-                      The ordering in the unit file is controlled by this option: the higher
-                      the number, the later it will be added to the filterset.
-
-                      By default, depending on the prefix a priority is assigned: usually, call-groups
-                      (starting with `@`) are used to allow/deny a larger set of syscalls and later
-                      on single syscalls are configured for exceptions. Hence, syscall groups
-                      and negative groups are placed before individual syscalls by default.
-                    '';
-                  };
-                };
-              }
-            )
-          )
-        );
         defaultText = literalExpression ''
           {
             "@system-service" = true;
@@ -295,6 +560,7 @@ in
             "~@resources" = true;
           }
         '';
+
         description = ''
           Configures the syscall filter for `postgresql.service`. The keys are
           declarations for `SystemCallFilter` as described in {manpage}`systemd.exec(5)`.
@@ -334,271 +600,56 @@ in
           _before_ negated groups (i.e. `~@` as prefix) _before_ syscall names
           and negations.
         '';
-      };
 
-      checkConfig = mkOption {
-        type = types.bool;
-        default = true;
-        description = "Check the syntax of the configuration file at compile time";
-      };
+        type = types.attrsOf (
+          types.coercedTo types.bool (enable: { inherit enable; }) (
+            types.submodule (
+              { name, ... }:
+              {
+                options = {
+                  enable = mkEnableOption "${name} in postgresql's syscall filter";
 
-      dataDir = mkOption {
-        type = types.path;
-        defaultText = literalExpression ''"/var/lib/postgresql/''${config.services.postgresql.package.psqlSchema}"'';
-        example = "/var/lib/postgresql/15";
-        description = ''
-          The data directory for PostgreSQL. If left as the default value
-          this directory will automatically be created before the PostgreSQL server starts, otherwise
-          the sysadmin is responsible for ensuring the directory exists with appropriate ownership
-          and permissions.
-        '';
-      };
+                  priority = mkOption {
+                    default =
+                      if hasPrefix "@" name then
+                        500
+                      else if hasPrefix "~@" name then
+                        1000
+                      else
+                        1500;
 
-      authentication = mkOption {
-        type = types.lines;
-        default = "";
-        description = ''
-          Defines how users authenticate themselves to the server. See the
-          [PostgreSQL documentation for pg_hba.conf](https://www.postgresql.org/docs/current/auth-pg-hba-conf.html)
-          for details on the expected format of this option. By default,
-          peer based authentication will be used for users connecting
-          via the Unix socket, and md5 password authentication will be
-          used for users connecting via TCP. Any added rules will be
-          inserted above the default rules. If you'd like to replace the
-          default rules entirely, you can use `lib.mkForce` in your
-          module.
-        '';
-      };
+                    defaultText = literalExpression ''
+                      if hasPrefix "@" name then 500 else if hasPrefix "~@" name then 1000 else 1500
+                    '';
 
-      identMap = mkOption {
-        type = types.lines;
-        default = "";
-        example = ''
-          map-name-0 system-username-0 database-username-0
-          map-name-1 system-username-1 database-username-1
-        '';
-        description = ''
-          Defines the mapping from system users to database users.
+                    description = ''
+                      Set the priority of the system call filter setting. Later declarations
+                      override earlier ones, e.g.
 
-          See the [auth doc](https://postgresql.org/docs/current/auth-username-maps.html).
+                      ```ini
+                      [Service]
+                      SystemCallFilter=~read write
+                      SystemCallFilter=write
+                      ```
 
-          There is a default map "postgres" which is used for local peer authentication
-          as the postgres superuser role.
-          For example, to allow the root user to login as the postgres superuser, add:
+                      results in a service where _only_ `read` is not allowed.
 
-          ```
-          postgres root postgres
-          ```
-        '';
-      };
+                      The ordering in the unit file is controlled by this option: the higher
+                      the number, the later it will be added to the filterset.
 
-      initdbArgs = mkOption {
-        type = with types; listOf str;
-        default = [ ];
-        example = [
-          "--data-checksums"
-          "--allow-group-access"
-        ];
-        description = ''
-          Additional arguments passed to `initdb` during data dir
-          initialisation.
-        '';
-      };
+                      By default, depending on the prefix a priority is assigned: usually, call-groups
+                      (starting with `@`) are used to allow/deny a larger set of syscalls and later
+                      on single syscalls are configured for exceptions. Hence, syscall groups
+                      and negative groups are placed before individual syscalls by default.
+                    '';
 
-      initialScript = mkOption {
-        type = types.nullOr types.path;
-        default = null;
-        example = literalExpression ''
-          pkgs.writeText "init-sql-script" '''
-            alter user postgres with password 'myPassword';
-          ''';'';
-
-        description = ''
-          A file containing SQL statements to execute on first startup.
-        '';
-      };
-
-      ensureDatabases = mkOption {
-        type = types.listOf types.str;
-        default = [ ];
-        description = ''
-          Ensures that the specified databases exist.
-          This option will never delete existing databases, especially not when the value of this
-          option is changed. This means that databases created once through this option or
-          otherwise have to be removed manually.
-        '';
-        example = [
-          "gitea"
-          "nextcloud"
-        ];
-      };
-
-      ensureUsers = mkOption {
-        type = types.listOf (
-          types.submodule {
-            options = {
-              name = mkOption {
-                type = types.str;
-                description = ''
-                  Name of the user to ensure.
-                '';
-              };
-
-              ensureDBOwnership = mkOption {
-                type = types.bool;
-                default = false;
-                description = ''
-                  Grants the user ownership to a database with the same name.
-                  This database must be defined manually in
-                  [](#opt-services.postgresql.ensureDatabases).
-                '';
-              };
-
-              ensureClauses = mkOption {
-                description = ''
-                  An attrset of clauses to grant to the user. Under the hood this uses the
-                  [ALTER USER syntax](https://www.postgresql.org/docs/current/sql-alteruser.html) for each attrName where
-                  the attrValue is true in the attrSet:
-                  `ALTER USER user.name WITH attrName`
-                '';
-                example = literalExpression ''
-                  {
-                    superuser = true;
-                    createrole = true;
-                    createdb = true;
-                    connection_limit = 5;
-
-                    # SCRAM-SHA-256 hashed password for "password"
-                    # Generate hashes using PostgreSQL or a dedicated script rather than storing passwords in plain text.
-                    password = "SCRAM-SHA-256$4096:SZEJF5Si4QZ6l4fedrZZWQ==$6u3PWVcz+dts+NdpByPIjKa4CaSnoXGG3M2vpo76bVU=:WSZ0iGUCmVtKYVvNX0pFOp/60IgsdJ+90Y67Eun+QE0=";
-                  }
-                '';
-                default = { };
-                type = types.submodule {
-                  freeformType = types.attrsOf (
-                    types.oneOf [
-                      types.str
-                      types.int
-                      types.bool
-                    ]
-                  );
+                    type = types.int;
+                  };
                 };
-              };
-            };
-          }
+              }
+            )
+          )
         );
-        default = [ ];
-        description = ''
-          Ensures that the specified users exist.
-          The PostgreSQL users will be identified using peer authentication. This authenticates the Unix user with the
-          same name only, and that without the need for a password.
-          This option will never delete existing users or remove DB ownership of databases
-          once granted with `ensureDBOwnership = true;`. This means that this must be
-          cleaned up manually when changing after changing the config in here.
-        '';
-        example = literalExpression ''
-          [
-            {
-              name = "nextcloud";
-            }
-            {
-              name = "superuser";
-              ensureDBOwnership = true;
-            }
-          ]
-        '';
-      };
-
-      enableTCPIP = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Whether PostgreSQL should listen on all network interfaces.
-          If disabled, the database can only be accessed via its Unix
-          domain socket or via TCP connections to localhost.
-        '';
-      };
-
-      extensions = mkOption {
-        type = with types; coercedTo (listOf path) (path: _ignorePg: path) (functionTo (listOf path));
-        default = _: [ ];
-        example = literalExpression "ps: with ps; [ postgis pg_repack ]";
-        description = ''
-          List of PostgreSQL extensions to install.
-        '';
-      };
-
-      settings = mkOption {
-        type =
-          with types;
-          submodule {
-            freeformType = attrsOf (oneOf [
-              bool
-              float
-              int
-              str
-            ]);
-            options = {
-              shared_preload_libraries = mkOption {
-                type = nullOr (coercedTo (listOf str) (concatStringsSep ",") commas);
-                default = null;
-                example = literalExpression ''[ "auto_explain" "anon" ]'';
-                description = ''
-                  List of libraries to be preloaded.
-                '';
-              };
-
-              log_line_prefix = mkOption {
-                type = types.str;
-                default = "[%p] ";
-                example = "%m [%p] ";
-                description = ''
-                  A printf-style string that is output at the beginning of each log line.
-                  Upstream default is `'%m [%p] '`, i.e. it includes the timestamp. We do
-                  not include the timestamp, because journal has it anyway.
-                '';
-              };
-
-              port = mkOption {
-                type = types.port;
-                default = 5432;
-                description = ''
-                  The port on which PostgreSQL listens.
-                '';
-              };
-            };
-          };
-        default = { };
-        description = ''
-          PostgreSQL configuration. Refer to
-          <https://www.postgresql.org/docs/current/config-setting.html#CONFIG-SETTING-CONFIGURATION-FILE>
-          for an overview of {file}`postgresql.conf`.
-
-          ::: {.note}
-          String values will automatically be enclosed in single quotes. Single quotes will be
-          escaped with two single quotes as described by the upstream documentation linked above.
-          :::
-        '';
-        example = literalExpression ''
-          {
-            log_connections = true;
-            log_statement = "all";
-            logging_collector = true;
-            log_disconnections = true;
-            log_destination = lib.mkForce "syslog";
-          }
-        '';
-      };
-
-      superUser = mkOption {
-        type = types.str;
-        default = "postgres";
-        internal = true;
-        readOnly = true;
-        description = ''
-          PostgreSQL superuser account to use for various operations. Internal since changing
-          this value would lead to breakage while setting up databases.
-        '';
       };
     };
 
@@ -608,24 +659,11 @@ in
 
   config = mkIf cfg.enable {
 
-    warnings = (
-      let
-        unstableState =
-          if lib.hasInfix "beta" cfg.package.version then
-            "in beta"
-          else if lib.hasInfix "rc" cfg.package.version then
-            "a release candidate"
-          else
-            null;
-      in
-      lib.optional (unstableState != null)
-        "PostgreSQL ${lib.versions.major cfg.package.version} is currently ${unstableState}, and is not advised for use in production environments."
-    );
-
     assertions = map (
-      { name, ensureDBOwnership, ... }:
+      { ensureDBOwnership, name, ... }:
       {
         assertion = ensureDBOwnership -> elem name cfg.ensureDatabases;
+
         message = ''
           For each database user defined with `services.postgresql.ensureUsers` and
           `ensureDBOwnership = true;`, a database with the same name must be defined
@@ -636,13 +674,31 @@ in
       }
     ) cfg.ensureUsers;
 
-    services.postgresql.settings = {
-      hba_file = "${pkgs.writeText "pg_hba.conf" cfg.authentication}";
-      ident_file = "${pkgs.writeText "pg_ident.conf" cfg.identMap}";
-      log_destination = "stderr";
-      listen_addresses = if cfg.enableTCPIP then "*" else "localhost";
-      jit = mkDefault (if cfg.enableJIT then "on" else "off");
-    };
+    environment.pathsToLink = [
+      "/share/postgresql"
+    ];
+
+    environment.systemPackages = [ cfg.finalPackage ];
+
+    services.postgresql.authentication = mkMerge [
+      (mkBefore "# Generated file; do not edit!")
+      (mkAfter ''
+        # default value of services.postgresql.authentication
+        local all postgres         peer map=postgres
+        local all all              peer
+        host  all all 127.0.0.1/32 md5
+        host  all all ::1/128      md5
+      '')
+    ];
+
+    services.postgresql.dataDir = mkDefault "/var/lib/postgresql/${cfg.package.psqlSchema}";
+
+    # The default allows to login with the same database username as the current system user.
+    # This is the default for peer authentication without a map, but needs to be made explicit
+    # once a map is used.
+    services.postgresql.identMap = mkAfter ''
+      postgres postgres postgres
+    '';
 
     services.postgresql.package =
       let
@@ -683,25 +739,13 @@ in
       # systems!
       mkDefault (if cfg.enableJIT then base.withJIT else base);
 
-    services.postgresql.dataDir = mkDefault "/var/lib/postgresql/${cfg.package.psqlSchema}";
-
-    services.postgresql.authentication = mkMerge [
-      (mkBefore "# Generated file; do not edit!")
-      (mkAfter ''
-        # default value of services.postgresql.authentication
-        local all postgres         peer map=postgres
-        local all all              peer
-        host  all all 127.0.0.1/32 md5
-        host  all all ::1/128      md5
-      '')
-    ];
-
-    # The default allows to login with the same database username as the current system user.
-    # This is the default for peer authentication without a map, but needs to be made explicit
-    # once a map is used.
-    services.postgresql.identMap = mkAfter ''
-      postgres postgres postgres
-    '';
+    services.postgresql.settings = {
+      hba_file = "${pkgs.writeText "pg_hba.conf" cfg.authentication}";
+      ident_file = "${pkgs.writeText "pg_ident.conf" cfg.identMap}";
+      jit = mkDefault (if cfg.enableJIT then "on" else "off");
+      listen_addresses = if cfg.enableTCPIP then "*" else "localhost";
+      log_destination = "stderr";
+    };
 
     services.postgresql.systemCallFilter = mkMerge [
       (mapAttrs (const mkDefault) {
@@ -715,23 +759,6 @@ in
       })
     ];
 
-    users.users.postgres = {
-      name = "postgres";
-      uid = config.ids.uids.postgres;
-      group = "postgres";
-      description = "PostgreSQL server user";
-      home = "${cfg.dataDir}";
-      useDefaultShell = true;
-    };
-
-    users.groups.postgres.gid = config.ids.gids.postgres;
-
-    environment.systemPackages = [ cfg.finalPackage ];
-
-    environment.pathsToLink = [
-      "/share/postgresql"
-    ];
-
     system.checks =
       lib.optional (
         cfg.checkConfig && pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform
@@ -740,30 +767,11 @@ in
         cfg.ensureUsers != [ ] && pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform
       ) validateUserClauses;
 
-    systemd.targets.postgresql = {
-      description = "PostgreSQL";
-      wantedBy = [ "multi-user.target" ];
-      requires = [
-        "postgresql.service"
-        "postgresql-setup.service"
-      ];
-    };
-
     systemd.services.postgresql = {
-      description = "PostgreSQL Server";
-
       after = [ "network.target" ];
-
-      # To trigger the .target also on "systemctl start postgresql" as well as on
-      # restarts & stops.
-      # Please note that postgresql.service & postgresql.target binding to
-      # each other makes the Restart=always rule racy and results
-      # in sometimes the service not being restarted.
-      wants = [ "postgresql.target" ];
-      partOf = [ "postgresql.target" ];
-
+      description = "PostgreSQL Server";
       environment.PGDATA = cfg.dataDir;
-
+      partOf = [ "postgresql.target" ];
       path = [ cfg.finalPackage ];
 
       preStart = ''
@@ -783,62 +791,61 @@ in
 
       serviceConfig = mkMerge [
         {
-          ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
-          User = "postgres";
-          Group = "postgres";
-          RuntimeDirectory = "postgresql";
-          Type = if versionAtLeast cfg.package.version "9.6" then "notify" else "simple";
-
-          # Shut down Postgres using SIGINT ("Fast Shutdown mode").  See
-          # https://www.postgresql.org/docs/current/server-shutdown.html
-          KillSignal = "SIGINT";
-          KillMode = "mixed";
-
-          # Give Postgres a decent amount of time to clean up after
-          # receiving systemd's SIGINT.
-          TimeoutSec = 120;
-
-          ExecStart = "${cfg.finalPackage}/bin/postgres";
-
-          Restart = "always";
-
           # Hardening
           CapabilityBoundingSet = [ "" ];
           DevicePolicy = "closed";
-          PrivateTmp = true;
-          ProtectHome = true;
-          ProtectSystem = "strict";
+          ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+          ExecStart = "${cfg.finalPackage}/bin/postgres";
+          Group = "postgres";
+          KillMode = "mixed";
+          # Shut down Postgres using SIGINT ("Fast Shutdown mode").  See
+          # https://www.postgresql.org/docs/current/server-shutdown.html
+          KillSignal = "SIGINT";
+          LockPersonality = true;
           MemoryDenyWriteExecute = lib.mkDefault (cfg.settings.jit == "off");
           NoNewPrivileges = true;
-          LockPersonality = true;
           PrivateDevices = true;
           PrivateMounts = true;
+          PrivateTmp = true;
           ProcSubset = "pid";
           ProtectClock = true;
           ProtectControlGroups = true;
+          ProtectHome = true;
           ProtectHostname = true;
           ProtectKernelLogs = true;
           ProtectKernelModules = true;
           ProtectKernelTunables = true;
           ProtectProc = "invisible";
+          ProtectSystem = "strict";
           RemoveIPC = true;
+          Restart = "always";
+
           RestrictAddressFamilies = [
             "AF_INET"
             "AF_INET6"
             "AF_NETLINK" # used for network interface enumeration
             "AF_UNIX"
           ];
+
           RestrictNamespaces = true;
           RestrictRealtime = true;
           RestrictSUIDSGID = true;
+          RuntimeDirectory = "postgresql";
           SystemCallArchitectures = "native";
+
           SystemCallFilter = pipe cfg.systemCallFilter [
             (mapAttrsToList (name: v: v // { inherit name; }))
             (filter (getAttr "enable"))
             sortProperties
             (map (getAttr "name"))
           ];
+
+          # Give Postgres a decent amount of time to clean up after
+          # receiving systemd's SIGINT.
+          TimeoutSec = 120;
+          Type = if versionAtLeast cfg.package.version "9.6" then "notify" else "simple";
           UMask = if groupAccessAvailable then "0027" else "0077";
+          User = "postgres";
         }
         (mkIf (cfg.dataDir != "/var/lib/postgresql/${cfg.package.psqlSchema}") {
           # The user provides their own data directory
@@ -859,29 +866,26 @@ in
         in
         {
           RequiresMountsFor = "${cfg.dataDir}";
-
+          StartLimitBurst = maxTries;
           # The max. time needed to perform `maxTries` start attempts of systemd
           # plus a bit of buffer time (bufferSec) on top.
           StartLimitIntervalSec = TimeoutSec * maxTries + bufferSec;
-          StartLimitBurst = maxTries;
         };
+
+      # To trigger the .target also on "systemctl start postgresql" as well as on
+      # restarts & stops.
+      # Please note that postgresql.service & postgresql.target binding to
+      # each other makes the Restart=always rule racy and results
+      # in sometimes the service not being restarted.
+      wants = [ "postgresql.target" ];
     };
 
     systemd.services.postgresql-setup = {
-      description = "PostgreSQL Setup Scripts";
-
-      requires = [ "postgresql.service" ];
       after = [ "postgresql.service" ];
-
-      serviceConfig = {
-        User = "postgres";
-        Group = "postgres";
-        Type = "oneshot";
-        RemainAfterExit = true;
-      };
-
-      path = [ cfg.finalPackage ];
+      description = "PostgreSQL Setup Scripts";
       environment.PGPORT = toString cfg.settings.port;
+      path = [ cfg.finalPackage ];
+      requires = [ "postgresql.service" ];
 
       # Wait for PostgreSQL to be ready to accept connections.
       script = ''
@@ -919,7 +923,50 @@ in
       + ''
         ${concatMapStrings generateUserSetupScript cfg.ensureUsers}
       '';
+
+      serviceConfig = {
+        Group = "postgres";
+        RemainAfterExit = true;
+        Type = "oneshot";
+        User = "postgres";
+      };
     };
+
+    systemd.targets.postgresql = {
+      description = "PostgreSQL";
+
+      requires = [
+        "postgresql.service"
+        "postgresql-setup.service"
+      ];
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups.postgres.gid = config.ids.gids.postgres;
+
+    users.users.postgres = {
+      description = "PostgreSQL server user";
+      group = "postgres";
+      home = "${cfg.dataDir}";
+      name = "postgres";
+      uid = config.ids.uids.postgres;
+      useDefaultShell = true;
+    };
+
+    warnings = (
+      let
+        unstableState =
+          if lib.hasInfix "beta" cfg.package.version then
+            "in beta"
+          else if lib.hasInfix "rc" cfg.package.version then
+            "a release candidate"
+          else
+            null;
+      in
+      lib.optional (unstableState != null)
+        "PostgreSQL ${lib.versions.major cfg.package.version} is currently ${unstableState}, and is not advised for use in production environments."
+    );
   };
 
   meta.doc = ./postgresql.md;

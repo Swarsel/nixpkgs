@@ -1,13 +1,21 @@
 {
   lib,
+  installShellFiles,
   replaceVarsWith,
   runtimeShell,
-  installShellFiles,
   util-linuxMinimal,
 }:
 replaceVarsWith {
-  name = "nixos-enter";
   src = ./nixos-enter.sh;
+  nativeBuildInputs = [ installShellFiles ];
+
+  postInstall = ''
+    installManPage ${./nixos-enter.8}
+  '';
+
+  dir = "bin";
+  isExecutable = true;
+  name = "nixos-enter";
 
   replacements = {
     inherit runtimeShell;
@@ -16,15 +24,6 @@ replaceVarsWith {
       util-linuxMinimal
     ];
   };
-
-  dir = "bin";
-  isExecutable = true;
-
-  nativeBuildInputs = [ installShellFiles ];
-
-  postInstall = ''
-    installManPage ${./nixos-enter.8}
-  '';
 
   meta = {
     description = "Run a command in a NixOS chroot environment";

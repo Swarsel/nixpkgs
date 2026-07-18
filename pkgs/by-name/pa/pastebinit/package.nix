@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3,
-  libxslt,
+  callPackage,
   docbook_xsl,
   installShellFiles,
-  callPackage,
+  libxslt,
+  python3,
 }:
 stdenv.mkDerivation rec {
-  version = "1.6.2";
   pname = "pastebinit";
+  version = "1.6.2";
 
   src = fetchFromGitHub {
     owner = "pastebinit";
@@ -47,13 +47,15 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://stgraber.org/category/pastebinit/";
     description = "Software that lets you send anything you want directly to a pastebin from the command line";
+    homepage = "https://stgraber.org/category/pastebinit/";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       raboof
       samuel-martineau
     ];
-    license = lib.licenses.gpl2Plus;
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 }

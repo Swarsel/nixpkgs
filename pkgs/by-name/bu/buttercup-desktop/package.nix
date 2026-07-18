@@ -17,8 +17,6 @@ in
 appimageTools.wrapType2 {
   inherit pname src version;
 
-  extraPkgs = pkgs: [ pkgs.libsecret ];
-
   extraInstallCommands = ''
     install -m 444 -D ${appimageContents}/buttercup.desktop -t $out/share/applications
     substituteInPlace $out/share/applications/buttercup.desktop \
@@ -26,12 +24,14 @@ appimageTools.wrapType2 {
     cp -r ${appimageContents}/usr/share/icons $out/share
   '';
 
+  extraPkgs = pkgs: [ pkgs.libsecret ];
+
   meta = {
     description = "Cross-Platform Passwords & Secrets Vault";
-    mainProgram = "buttercup-desktop";
     homepage = "https://buttercup.pw";
     license = lib.licenses.gpl3Only;
     maintainers = [ ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "buttercup-desktop";
   };
 }

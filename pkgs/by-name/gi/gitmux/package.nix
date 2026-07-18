@@ -1,9 +1,9 @@
 {
+  lib,
   fetchFromGitHub,
   buildGoModule,
-  lib,
-  testers,
   git,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,23 +18,19 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-MvvJGB9KPMYeqYclmAAF6qlU7vrJFMPToogbGDRoCpU=";
-
-  nativeCheckInputs = [ git ];
-
   # After bump of Go toolchain to version >1.22, tests fail with:
   #   vendor/github.com/rogpeppe/go-internal/testscript/exe_go118.go:14:27:
   #   cannot use nopTestDeps{} (value of struct type nopTestDeps) as testing.testDeps value in argument to testing.MainStart:
   #   nopTestDeps does not implement testing.testDeps (missing method InitRuntimeCoverage)'.
   doCheck = false;
-
+  nativeCheckInputs = [ git ];
   ldflags = [ "-X main.version=${finalAttrs.version}" ];
+  subPackages = [ "." ];
 
   passthru.tests.version = testers.testVersion {
-    package = finalAttrs.finalPackage;
     command = "gitmux -V";
+    package = finalAttrs.finalPackage;
   };
-
-  subPackages = [ "." ];
 
   meta = {
     description = "Git in your tmux status bar";

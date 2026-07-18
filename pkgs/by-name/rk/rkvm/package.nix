@@ -1,12 +1,12 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
   libevdev,
-  openssl,
   makeWrapper,
   nixosTests,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,14 +20,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-pGCoNmGOeV7ND4kcRjlJZbEMnmKQhlCtyjMoWIwVZrM=";
   };
 
-  cargoHash = "sha256-2vioqALLeLFFmdZPwdTXCWJJkpQMWdi7KQ7mxO0Sviw=";
-
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
     makeWrapper
   ];
+
   buildInputs = [ libevdev ];
+  cargoHash = "sha256-2vioqALLeLFFmdZPwdTXCWJJkpQMWdi7KQ7mxO0Sviw=";
 
   postInstall = ''
     install -Dm444 -t "$out/lib/systemd/system" systemd/rkvm-*.service
@@ -46,7 +46,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/htrefil/rkvm";
     changelog = "https://github.com/htrefil/rkvm/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

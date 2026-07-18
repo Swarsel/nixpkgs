@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioitertools,
   buildPythonPackage,
   django,
   falcon,
   fastapi,
-  fetchFromGitHub,
   flask,
   httpx,
   isodate,
@@ -21,8 +21,8 @@
   pytest-aiohttp,
   pytest-cov-stub,
   pytestCheckHook,
-  responses,
   requests,
+  responses,
   starlette,
   webob,
   werkzeug,
@@ -31,7 +31,6 @@
 buildPythonPackage rec {
   pname = "openapi-core";
   version = "0.23.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "p1c2u";
@@ -40,11 +39,18 @@ buildPythonPackage rec {
     hash = "sha256-wGaRx+IEqsvs7ygCDgh1H4di662SQhjmpB9LMP/YGKM=";
   };
 
-  build-system = [ poetry-core ];
+  nativeCheckInputs = [
+    httpx
+    pytest-aiohttp
+    pytest-cov-stub
+    pytestCheckHook
+    responses
+    webob
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
-  pythonRelaxDeps = [
-    "jsonschema-path"
-  ];
+  __darwinAllowLocalNetworking = true;
+  build-system = [ poetry-core ];
 
   dependencies = [
     isodate
@@ -57,34 +63,6 @@ buildPythonPackage rec {
     jsonschema
   ];
 
-  optional-dependencies = {
-    aiohttp = [
-      aiohttp
-      multidict
-    ];
-    django = [ django ];
-    falcon = [ falcon ];
-    fastapi = [ fastapi ];
-    flask = [ flask ];
-    requests = [ requests ];
-    starlette = [
-      aioitertools
-      starlette
-    ];
-  };
-
-  __darwinAllowLocalNetworking = true;
-
-  nativeCheckInputs = [
-    httpx
-    pytest-aiohttp
-    pytest-cov-stub
-    pytestCheckHook
-    responses
-    webob
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
   disabledTestPaths = [
     # Requires secrets and additional configuration
     "tests/integration/contrib/django/"
@@ -95,16 +73,40 @@ buildPythonPackage rec {
     "test_returns_default_server"
   ];
 
+  optional-dependencies = {
+    aiohttp = [
+      aiohttp
+      multidict
+    ];
+
+    django = [ django ];
+    falcon = [ falcon ];
+    fastapi = [ fastapi ];
+    flask = [ flask ];
+    requests = [ requests ];
+
+    starlette = [
+      aioitertools
+      starlette
+    ];
+  };
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "openapi_core"
     "openapi_core.validation.request.validators"
     "openapi_core.validation.response.validators"
   ];
 
+  pythonRelaxDeps = [
+    "jsonschema-path"
+  ];
+
   meta = {
-    changelog = "https://github.com/python-openapi/openapi-core/releases/tag/${version}";
     description = "Client-side and server-side support for the OpenAPI Specification v3";
     homepage = "https://github.com/python-openapi/openapi-core";
+    changelog = "https://github.com/python-openapi/openapi-core/releases/tag/${version}";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

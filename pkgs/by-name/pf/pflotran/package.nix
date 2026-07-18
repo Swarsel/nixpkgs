@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  blas,
   fetchFromBitbucket,
   fetchzip,
   gfortran,
-  mpi,
-  petsc,
-  blas,
-  lapack,
-  parmetis,
   hdf5-fortran-mpi,
+  lapack,
+  mpi,
   mpiCheckPhaseHook,
+  parmetis,
+  petsc,
   python312Packages,
 }:
 
@@ -23,15 +23,16 @@ let
   petsc' =
     (petsc.overrideAttrs rec {
       version = "3.21.4";
+
       src = fetchzip {
         url = "https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-${version}.tar.gz";
         hash = "sha256-l7v+ASBL9FLbBmBGTRWDwBihjwLe3uLz+GwXtn8u7e0=";
       };
     }).override
       {
+        python3Packages = python312Packages;
         withMetis = true;
         withParmetis = true;
-        python3Packages = python312Packages;
       };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -46,7 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   patches = [ ./make.patch ];
-
   nativeBuildInputs = [ gfortran ];
 
   buildInputs = [
@@ -58,10 +58,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   propagatedBuildInputs = [ mpi ];
-  propagatedUserEnvPkgs = [ mpi ];
-  passthru = { inherit mpi; };
-
-  enableParallelBuilding = true;
 
   /*
     Pflotran does not use a "real" autotools configure script, but a simple bash
@@ -74,6 +70,10 @@ stdenv.mkDerivation (finalAttrs: {
       --subst-var-by "HDF5_FORTRAN_LIBS" "${lib.getLib hdf5-fortran-mpi}/lib" \
       --subst-var-by "HDF5_FORTRAN_INCLUDE" "${lib.getDev hdf5-fortran-mpi}/include"
   '';
+
+  enableParallelBuilding = true;
+  propagatedUserEnvPkgs = [ mpi ];
+  passthru = { inherit mpi; };
 
   meta = {
     description = "Parallel, multi-physics simulation code for subsurface flow and transport";

@@ -1,43 +1,27 @@
 {
   lib,
   stdenv,
-  stdenv_32bit,
-  pkgsi686Linux,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
+  pkgsi686Linux,
+  stdenv_32bit,
 }:
 
 stdenv.mkDerivation rec {
   pname = "red";
   version = "0.6.4";
+
   src = fetchFromGitHub {
-    rev = "755eb943ccea9e78c2cab0f20b313a52404355cb";
     owner = "red";
     repo = "red";
+    rev = "755eb943ccea9e78c2cab0f20b313a52404355cb";
     sha256 = "sha256:045rrg9666zczgrwyyyglivzdzja103s52b0fzj7hqmr1fz68q37";
-  };
-
-  rebol = fetchurl {
-    url = "http://www.rebol.com/downloads/v278/rebol-core-278-4-2.tar.gz";
-    sha256 = "1c1v0pyhf3d8z98qc93a5zmx0bbl0qq5lr8mbkdgygqsq2bv2xbz";
-    meta.license = lib.licenses.unfree; # https://www.rebol.com/license.html
   };
 
   buildInputs = [
     pkgsi686Linux.curl
     stdenv_32bit
   ];
-
-  r2 = "./rebol/releases/rebol-core/rebol";
-
-  configurePhase = ''
-    # Download rebol
-    mkdir rebol/
-    tar -xzvf ${rebol} -C rebol/
-    patchelf --set-interpreter \
-        ${stdenv_32bit.cc.libc.out}/lib/32/ld-linux.so.2 \
-        ${r2}
-  '';
 
   buildPhase = ''
     # Do tests
@@ -88,6 +72,23 @@ stdenv.mkDerivation rec {
 
   '';
 
+  configurePhase = ''
+    # Download rebol
+    mkdir rebol/
+    tar -xzvf ${rebol} -C rebol/
+    patchelf --set-interpreter \
+        ${stdenv_32bit.cc.libc.out}/lib/32/ld-linux.so.2 \
+        ${r2}
+  '';
+
+  r2 = "./rebol/releases/rebol-core/rebol";
+
+  rebol = fetchurl {
+    sha256 = "1c1v0pyhf3d8z98qc93a5zmx0bbl0qq5lr8mbkdgygqsq2bv2xbz";
+    url = "http://www.rebol.com/downloads/v278/rebol-core-278-4-2.tar.gz";
+    meta.license = lib.licenses.unfree; # https://www.rebol.com/license.html
+  };
+
   meta = {
     description = ''
       New programming language strongly inspired by Rebol, but with a
@@ -95,13 +96,16 @@ stdenv.mkDerivation rec {
       programming to high-level scripting, while providing modern support for
       concurrency and multi-core CPUs
     '';
-    mainProgram = "red";
+
+    homepage = "https://www.red-lang.org/";
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ uralbash ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ];
-    license = lib.licenses.bsd3;
-    homepage = "https://www.red-lang.org/";
+
+    mainProgram = "red";
   };
 }

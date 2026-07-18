@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchurl,
-  isPyPy,
+  buildPythonPackage,
   isPy3k,
+  isPyPy,
 }:
 
 buildPythonPackage rec {
-  version = "0.4.10";
-  format = "setuptools";
   pname = "mmpython";
+  version = "0.4.10";
 
   src = fetchurl {
     url = "https://sourceforge.net/projects/mmpython/files/latest/download";
@@ -18,6 +17,7 @@ buildPythonPackage rec {
   };
 
   disabled = isPyPy || isPy3k;
+  format = "setuptools";
 
   meta = {
     description = "Media Meta Data retrieval framework";

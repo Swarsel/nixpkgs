@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   boost,
+  cmake,
   libxmlxx,
   pkg-config,
   zlib,
@@ -20,24 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-xc2dpMse4SozYEV/w3rXCrh1LKpTThq5nHB2y5uAD0A=";
   };
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
-  buildInputs = [
-    boost
-    libxmlxx
-    zlib
-  ];
-
-  cmakeFlags = [ "-DCMAKE_CTEST_ARGUMENTS=--exclude-regex;'big|datatype-md5'" ];
-
-  # error: no member named 'file_string' in 'boost::filesystem::path';
-  # error: 'class boost::filesystem::path' has no member named 'normalize', resp.
-  env.NIX_CFLAGS_COMPILE = "-UCIFTILIB_BOOST_NO_FSV3 -UCIFTILIB_BOOST_NO_CANONICAL";
-
-  doCheck = true;
-
   postPatch = ''
     substituteInPlace CMakeLists.txt \
       --replace-fail "CMAKE_MINIMUM_REQUIRED(VERSION 2.6)" "cmake_minimum_required(VERSION 3.10)" \
@@ -47,12 +29,29 @@ stdenv.mkDerivation (finalAttrs: {
                      "FIND_PACKAGE(Boost REQUIRED COMPONENTS filesystem)"
   '';
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
+
+  buildInputs = [
+    boost
+    libxmlxx
+    zlib
+  ];
+
+  cmakeFlags = [ "-DCMAKE_CTEST_ARGUMENTS=--exclude-regex;'big|datatype-md5'" ];
+  # error: no member named 'file_string' in 'boost::filesystem::path';
+  # error: 'class boost::filesystem::path' has no member named 'normalize', resp.
+  env.NIX_CFLAGS_COMPILE = "-UCIFTILIB_BOOST_NO_FSV3 -UCIFTILIB_BOOST_NO_CANONICAL";
+  doCheck = true;
+
   meta = {
-    homepage = "https://github.com/Washington-University/CiftiLib";
     description = "Library for reading and writing CIFTI files";
+    homepage = "https://github.com/Washington-University/CiftiLib";
+    license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ bcdarwin ];
     platforms = lib.platforms.unix;
     broken = stdenv.hostPlatform.isDarwin;
-    license = lib.licenses.bsd2;
   };
 })

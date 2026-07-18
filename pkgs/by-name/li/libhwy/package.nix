@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  cmake,
-  ninja,
-  gtest,
   fetchFromGitHub,
+  cmake,
+  gtest,
+  ninja,
 }:
 
 stdenv.mkDerivation rec {
@@ -18,19 +18,10 @@ stdenv.mkDerivation rec {
     hash = "sha256-YUYZO9KLffczjwIz3mBBceD6oM1giLCFLDHgDCevdRA=";
   };
 
-  hardeningDisable = lib.optionals stdenv.hostPlatform.isAarch64 [
-    # aarch64-specific code gets:
-    # __builtin_clear_padding not supported for variable length aggregates
-    "trivialautovarinit"
-  ];
-
   nativeBuildInputs = [
     cmake
     ninja
   ];
-
-  # Required for case-insensitive filesystems ("BUILD" exists)
-  dontUseCmakeBuildDir = true;
 
   cmakeFlags =
     let
@@ -68,15 +59,25 @@ stdenv.mkDerivation rec {
 
   # hydra's darwin machines run into https://github.com/libjxl/libjxl/issues/408
   doCheck = !stdenv.hostPlatform.isDarwin;
+  # Required for case-insensitive filesystems ("BUILD" exists)
+  dontUseCmakeBuildDir = true;
+
+  hardeningDisable = lib.optionals stdenv.hostPlatform.isAarch64 [
+    # aarch64-specific code gets:
+    # __builtin_clear_padding not supported for variable length aggregates
+    "trivialautovarinit"
+  ];
 
   meta = {
     description = "Performance-portable, length-agnostic SIMD with runtime dispatch";
     homepage = "https://github.com/google/highway";
+
     license = with lib.licenses; [
       asl20
       bsd3
     ];
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [ zhaofengli ];
+    platforms = lib.platforms.unix;
   };
 }

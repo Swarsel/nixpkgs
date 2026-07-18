@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  fetchpatch,
-  cmake,
-  installShellFiles,
   bison,
   boost,
+  cmake,
+  fetchpatch,
   flex,
   gmp,
+  installShellFiles,
   libxml2,
   mpfi,
   mpfr,
@@ -32,17 +32,19 @@ stdenv.mkDerivation {
   patches = [
     (fetchpatch {
       name = "fix-clang-error-sin-cos.patch";
-      url = "https://gitlab.com/flopoco/flopoco/-/commit/de3aa60ad19333952c176c2a2e51f12653ca736b.patch";
+
       postFetch = ''
         substituteInPlace $out \
           --replace 'FixSinCosCORDIC.hpp' 'CordicSinCos.hpp'
       '';
+
       sha256 = "sha256-BlamA/MZuuqqvGYto+jPeQPop6gwva0y394Odw8pdwg=";
+      url = "https://gitlab.com/flopoco/flopoco/-/commit/de3aa60ad19333952c176c2a2e51f12653ca736b.patch";
     })
     (fetchpatch {
       name = "fix-clang-error-atan2.patch";
-      url = "https://gitlab.com/flopoco/flopoco/-/commit/a3ffe2436c1b59ee0809b3772b74f2d43c6edb99.patch";
       sha256 = "sha256-dSYcufLHDL0p1V1ghmy6X6xse5f6mjUqckaVqLZnTaA=";
+      url = "https://gitlab.com/flopoco/flopoco/-/commit/a3ffe2436c1b59ee0809b3772b74f2d43c6edb99.patch";
     })
   ];
 
@@ -70,13 +72,13 @@ stdenv.mkDerivation {
     wcpg
   ];
 
-  postBuild = ''
-    ./flopoco BuildAutocomplete
-  '';
-
   cmakeFlags = [
     (lib.cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "3.5")
   ];
+
+  postBuild = ''
+    ./flopoco BuildAutocomplete
+  '';
 
   installPhase = ''
     runHook preInstall
@@ -92,7 +94,7 @@ stdenv.mkDerivation {
     description = "FloPoCo arithmetic core generator";
     homepage = "https://flopoco.org/";
     license = lib.licenses.unfree;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ wegank ];
+    platforms = lib.platforms.unix;
   };
 }

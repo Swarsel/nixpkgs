@@ -1,16 +1,14 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "just-lsp";
   version = "0.4.8";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "terror";
@@ -20,12 +18,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-z0Gyh44/9nAz505k4B7sZN8BO3kyUutnfivj3QaTi3c=";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

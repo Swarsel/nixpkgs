@@ -2,8 +2,6 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
-  setuptools-scm,
   fire,
   fugashi,
   jaconv,
@@ -11,6 +9,8 @@
   numpy,
   pillow,
   pyperclip,
+  setuptools,
+  setuptools-scm,
   torch,
   transformers,
   unidic-lite,
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "manga-ocr";
   version = "0.1.14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kha-white";
@@ -46,12 +45,14 @@ buildPythonPackage rec {
     unidic-lite
   ];
 
+  pyproject = true;
+
   meta = {
-    mainProgram = "manga_ocr";
     description = "Optical character recognition for Japanese text, with the main focus being Japanese manga";
     homepage = "https://github.com/kha-white/manga-ocr";
     changelog = "https://github.com/kha-white/manga-ocr/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "manga_ocr";
   };
 }

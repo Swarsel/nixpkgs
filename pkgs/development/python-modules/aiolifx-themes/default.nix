@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiolifx,
   async-timeout,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   pytest-asyncio,
   pytest-cov-stub,
@@ -14,9 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aiolifx-themes";
   version = "1.0.4";
-  pyproject = true;
-
-  disabled = pythonOlder "3.12";
 
   src = fetchFromGitHub {
     owner = "Djelibeybi";
@@ -25,10 +22,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-FTQu8dvm3myRsMC2SKlvIk0MkRIuDPVv5Zxnw5IrPv4=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ aiolifx ];
-
   nativeCheckInputs = [
     async-timeout
     pytestCheckHook
@@ -36,6 +29,10 @@ buildPythonPackage (finalAttrs: {
     pytest-cov-stub
   ];
 
+  build-system = [ poetry-core ];
+  dependencies = [ aiolifx ];
+  disabled = pythonOlder "3.12";
+  pyproject = true;
   pythonImportsCheck = [ "aiolifx_themes" ];
 
   meta = {

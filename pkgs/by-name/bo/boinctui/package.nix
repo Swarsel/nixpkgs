@@ -19,27 +19,28 @@ stdenv.mkDerivation {
     hash = "sha256-MsSTvlTt54ukQXyVi8LiMFIkv8FQJOt0q30iDxf4TsE=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   # Fix wrong path; @docdir@ already gets replaced with the correct store path
   postPatch = ''
     substituteInPlace Makefile.in \
       --replace 'DOCDIR = $(DATAROOTDIR)@docdir@' 'DOCDIR = @docdir@'
   '';
 
-  outputs = [
-    "out"
-    "man"
-  ];
-  separateDebugInfo = stdenv.hostPlatform.isLinux;
-
-  enableParallelBuilding = true;
-
-  configureFlags = [ "--without-gnutls" ];
   nativeBuildInputs = [ autoreconfHook ];
+
   buildInputs = [
     expat
     ncurses
     openssl
   ];
+
+  configureFlags = [ "--without-gnutls" ];
+  enableParallelBuilding = true;
+  separateDebugInfo = stdenv.hostPlatform.isLinux;
 
   meta = {
     description = "Curses based fullscreen BOINC manager";

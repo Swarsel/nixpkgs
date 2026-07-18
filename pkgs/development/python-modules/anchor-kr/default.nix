@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 buildPythonPackage {
   pname = "anchor-kr";
   version = "0.1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "justfoolingaround";
@@ -18,7 +17,7 @@ buildPythonPackage {
   };
 
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "anchor" ];
 
   meta = {

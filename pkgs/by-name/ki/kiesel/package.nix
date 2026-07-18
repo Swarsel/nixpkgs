@@ -1,12 +1,12 @@
 {
+  lib,
+  stdenv,
   callPackage,
   cargo,
   fetchFromCodeberg,
-  lib,
   nix-update-script,
-  rustc,
   rustPlatform,
-  stdenv,
+  rustc,
   zig_0_16,
 }:
 let
@@ -23,12 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-bddGd3LPmVV8wwoVHYJJKoHS6ssYyU1hQBTGJBQJPgc=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    src = "${finalAttrs.src}/pkg/zement";
-    hash = "sha256-SOp8UW0iKniXwzEGGtzX5rFAdVQKDHoEvCupquusvmo=";
-  };
-  cargoRoot = "pkg/zement";
-  deps = callPackage ./deps.nix { };
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -38,19 +32,28 @@ stdenv.mkDerivation (finalAttrs: {
     zig.hook
   ];
 
+  __structuredAttrs = true;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    src = "${finalAttrs.src}/pkg/zement";
+    hash = "sha256-SOp8UW0iKniXwzEGGtzX5rFAdVQKDHoEvCupquusvmo=";
+  };
+
+  cargoRoot = "pkg/zement";
+  deps = callPackage ./deps.nix { };
+
   zigBuildFlags = [
     "--system"
     "${finalAttrs.deps}"
   ];
 
-  __structuredAttrs = true;
   passthru.tests.run = callPackage ./test.nix { kiesel = finalAttrs.finalPackage; };
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "JavaScript engine written in Zig";
-    license = lib.licenses.mit;
     homepage = "https://kiesel.dev";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ cvengler ];
     platforms = lib.platforms.all;
     mainProgram = "kiesel";

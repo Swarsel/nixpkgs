@@ -1,21 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   setuptools,
-  versioneer,
-
   # tests
   twisted,
+  versioneer,
 }:
 
 let
   self = buildPythonPackage rec {
     pname = "constantly";
     version = "23.10.4";
-    pyproject = true;
 
     src = fetchFromGitHub {
       owner = "twisted";
@@ -31,7 +28,6 @@ let
 
     # would create dependency loop with twisted
     doCheck = false;
-
     nativeCheckInputs = [ twisted ];
 
     checkPhase = ''
@@ -40,8 +36,8 @@ let
       runHook postCheck
     '';
 
+    pyproject = true;
     pythonImportsCheck = [ "constantly" ];
-
     passthru.tests.constantly = self.overridePythonAttrs { doCheck = true; };
 
     meta = {

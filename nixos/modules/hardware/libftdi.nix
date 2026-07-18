@@ -15,8 +15,8 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    users.groups.ftdi = { };
     services.udev.packages = [ cfg.package ];
+    users.groups.ftdi = { };
   };
 
   meta.maintainers = with lib.maintainers; [ felixsinger ];

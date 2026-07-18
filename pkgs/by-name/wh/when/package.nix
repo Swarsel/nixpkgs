@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
-  perl,
-  installShellFiles,
   fetchFromBitbucket,
+  installShellFiles,
+  perl,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -11,15 +11,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   version = "1.1.45";
 
   src = fetchFromBitbucket {
-    repo = "when";
     owner = "ben-crowell";
+    repo = "when";
     rev = finalAttrs.version;
     hash = "sha256-+ggYjY6/aTUrdvREn0TTQ4Pu/VR4QTjflDaicRXuOMs=";
   };
 
-  buildInputs = [ perl ];
-
   nativeBuildInputs = [ installShellFiles ];
+  buildInputs = [ perl ];
 
   postBuild = ''
     pod2man $src/when when.1
@@ -38,8 +37,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Extremely simple personal calendar program";
     homepage = "https://www.lightandmatter.com/when/when.html";
     license = lib.licenses.gpl2Only;
-    mainProgram = "when";
     maintainers = with lib.maintainers; [ vonixxx ];
     platforms = lib.platforms.all;
+    mainProgram = "when";
   };
 })

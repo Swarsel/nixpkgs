@@ -1,25 +1,28 @@
 {
   lib,
-  buildDotnetModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildDotnetModule,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildDotnetModule (finalAttrs: {
   pname = "obj2tiles";
   version = "1.0.13";
+
   src = fetchFromGitHub {
     owner = "OpenDroneMap";
     repo = "Obj2Tiles";
     tag = "v${finalAttrs.version}";
     hash = "sha256-GLMLBmkVhuh8iYAxjD2XXnOvkw8dMuKTH49vvvSNHBI=";
   };
-  projectFile = "Obj2Tiles/Obj2Tiles.csproj";
-  nugetDeps = ./deps.json;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgram = "${placeholder "out"}/bin/Obj2Tiles";
+
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  nugetDeps = ./deps.json;
+  projectFile = "Obj2Tiles/Obj2Tiles.csproj";
+  versionCheckProgram = "${placeholder "out"}/bin/Obj2Tiles";
+
   meta = {
     description = "Converts OBJ files to OGC 3D tiles by performing splitting, decimation and conversion";
     homepage = "https://github.com/OpenDroneMap/Obj2Tiles";

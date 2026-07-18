@@ -2,35 +2,44 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   autoPatchelfHook,
+  copyDesktopItems,
+  glibc,
+  imagemagick,
+  libglvnd,
   libx11,
   libxext,
-  libxrandr,
   libxinerama,
-  libglvnd,
-  openal,
-  glibc,
+  libxrandr,
   makeDesktopItem,
-  copyDesktopItems,
-  imagemagick,
+  makeWrapper,
+  openal,
 }:
 let
   version = "1.3";
 in
 stdenv.mkDerivation {
-  pname = "unigine-tropics";
   inherit version;
+  pname = "unigine-tropics";
 
   src = fetchurl {
     url = "https://assets.unigine.com/d/Unigine_Tropics-${version}.run";
     sha256 = "sha256-/eA1i42/PMcoBbUJIGS66j7QpZ13oPkOi1Y6Q27TikU=";
   };
 
-  libPath = lib.makeLibraryPath [
-    libglvnd
-    openal
-    glibc
+  nativeBuildInputs = [
+    autoPatchelfHook
+    makeWrapper
+    imagemagick
+    copyDesktopItems
+  ];
+
+  buildInputs = [
+    stdenv.cc.cc
+    libx11
+    libxext
+    libxrandr
+    libxinerama
   ];
 
   installPhase = ''
@@ -61,41 +70,34 @@ stdenv.mkDerivation {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "Tropics";
+      desktopName = "Tropics Benchmark";
       exec = "Tropics";
       genericName = "A GPU Stress test tool from the UNIGINE";
       icon = "Tropics";
-      desktopName = "Tropics Benchmark";
+      name = "Tropics";
     })
-  ];
-
-  nativeBuildInputs = [
-    autoPatchelfHook
-    makeWrapper
-    imagemagick
-    copyDesktopItems
-  ];
-
-  buildInputs = [
-    stdenv.cc.cc
-    libx11
-    libxext
-    libxrandr
-    libxinerama
   ];
 
   dontUnpack = true;
 
+  libPath = lib.makeLibraryPath [
+    libglvnd
+    openal
+    glibc
+  ];
+
   meta = {
     description = "Unigine Heaven GPU benchmarking tool";
     homepage = "https://benchmark.unigine.com/tropics";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
+
     mainProgram = "Tropics";
   };
 }

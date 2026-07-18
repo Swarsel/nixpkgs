@@ -1,16 +1,15 @@
 {
   lib,
-  bleak-retry-connector,
-  bleak,
-  buildPythonPackage,
   fetchFromGitHub,
+  bleak,
+  bleak-retry-connector,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "py-improv-ble-client";
   version = "2.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "home-assistant-libs";
@@ -25,6 +24,8 @@ buildPythonPackage rec {
       --replace-fail "wheel>=0.37.1,<0.46.0" "wheel"
   '';
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -32,9 +33,7 @@ buildPythonPackage rec {
     bleak-retry-connector
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "improv_ble_client" ];
 
   meta = {

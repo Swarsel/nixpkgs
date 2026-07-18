@@ -19,6 +19,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ autoreconfHook ];
+
   buildInputs = [
     libpcap
     pcre2
@@ -37,6 +38,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Network packet analyzer";
+
     longDescription = ''
       ngrep strives to provide most of GNU grep's common features, applying
       them to the network layer. ngrep is a pcap-aware tool that will allow you
@@ -46,13 +48,16 @@ stdenv.mkDerivation (finalAttrs: {
       null interfaces, and understands BPF filter logic in the same fashion as
       more common packet sniffing tools, such as tcpdump and snoop.
     '';
+
     homepage = "https://github.com/jpr5/ngrep/";
+
     license = lib.licenses.AND [
       lib.licenses.ngrep
       lib.licenses.bsd3
     ];
-    platforms = with lib.platforms; linux ++ darwin;
+
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = with lib.platforms; linux ++ darwin;
     mainProgram = "ngrep";
   };
 })

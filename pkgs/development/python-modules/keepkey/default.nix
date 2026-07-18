@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "keepkey";
   version = "7.2.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "keepkey";
@@ -21,6 +20,9 @@ buildPythonPackage rec {
     rev = "v${version}";
     sha256 = "00hqppdj3s9y25x4ad59y8axq94dd4chhw9zixq32sdrd9v8z55a";
   };
+
+  # Remove impossible dependency constraint
+  postPatch = "sed -i -e 's|hidapi==|hidapi>=|' setup.py";
 
   propagatedBuildInputs = [
     ecdsa
@@ -30,19 +32,16 @@ buildPythonPackage rec {
     protobuf
   ];
 
-  nativeCheckInputs = [ pytest ];
-
   # tests requires hardware
   doCheck = false;
-
-  # Remove impossible dependency constraint
-  postPatch = "sed -i -e 's|hidapi==|hidapi>=|' setup.py";
+  nativeCheckInputs = [ pytest ];
+  format = "setuptools";
 
   meta = {
     description = "KeepKey Python client";
-    mainProgram = "keepkeyctl";
     homepage = "https://github.com/keepkey/python-keepkey";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ np ];
+    mainProgram = "keepkeyctl";
   };
 }

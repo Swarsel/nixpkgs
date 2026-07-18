@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildPythonPackage,
   defusedxml,
   deprecated,
-  fetchFromGitHub,
   lxml,
   paramiko,
   psutil,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "ospd";
   version = "21.4.4";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "greenbone";
@@ -32,7 +31,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "ospd" ];
 
   meta = {

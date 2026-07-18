@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   SDL2,
   SDL2_image,
   SDL2_mixer,
   cmake,
   gtk3-x11,
-  python3,
+  pkg-config,
   protobuf,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,8 +17,8 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.4.0";
 
   src = fetchFromGitHub {
-    repo = "cdogs-sdl";
     owner = "cxong";
+    repo = "cdogs-sdl";
     tag = finalAttrs.version;
     hash = "sha256-588bPis3n9BZnEywLmgouRgpiEvB+sKp6/xhUDhfddQ=";
   };
@@ -26,16 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
   postPatch = ''
     patchShebangs src/proto/nanopb/generator/*
   '';
-
-  cmakeFlags = [
-    "-DCDOGS_DATA_DIR=${placeholder "out"}/"
-    "-DCMAKE_C_FLAGS=-Wno-error=array-bounds"
-  ];
-
-  env.NIX_CFLAGS_COMPILE = toString [
-    # Needed with GCC 12
-    "-Wno-error=stringop-overflow"
-  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -56,12 +46,22 @@ stdenv.mkDerivation (finalAttrs: {
     protobuf
   ];
 
+  cmakeFlags = [
+    "-DCDOGS_DATA_DIR=${placeholder "out"}/"
+    "-DCMAKE_C_FLAGS=-Wno-error=array-bounds"
+  ];
+
+  env.NIX_CFLAGS_COMPILE = toString [
+    # Needed with GCC 12
+    "-Wno-error=stringop-overflow"
+  ];
+
   # inlining failed in call to 'tinydir_open': --param max-inline-insns-single limit reached
   hardeningDisable = [ "fortify3" ];
 
   meta = {
-    homepage = "https://cxong.github.io/cdogs-sdl";
     description = "Open source classic overhead run-and-gun game";
+    homepage = "https://cxong.github.io/cdogs-sdl";
     license = lib.licenses.gpl2Only;
     maintainers = [ ];
     platforms = lib.platforms.unix;

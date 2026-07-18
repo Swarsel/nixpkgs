@@ -1,14 +1,14 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  replaceVars,
-  writeShellScript,
-  steam,
   fetchpatch2,
-  winetricks,
-  yad,
   nix-update-script,
+  python3Packages,
+  replaceVars,
+  steam,
+  winetricks,
+  writeShellScript,
+  yad,
   extraCompatPaths ? "",
 }:
 
@@ -26,7 +26,6 @@ in
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "protontricks";
   version = "1.14.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Matoking";
@@ -38,19 +37,28 @@ python3Packages.buildPythonApplication (finalAttrs: {
   patches = [
     # Use steam-run to run Proton binaries
     (replaceVars ./steam-run.patch {
-      steamRun = lib.getExe steam-run;
       bash = writeShellScript "steam-run-bash" ''
         exec ${lib.getExe steam-run} bash "$@"
       '';
+
+      steamRun = lib.getExe steam-run;
     })
 
     # Revert vendored vdf since our vdf includes `appinfo.vdf` v29 support
     (fetchpatch2 {
-      url = "https://github.com/Matoking/protontricks/commit/4198b7ea82369a91e3084d6e185f9b370f78eaec.patch";
-      revert = true;
       hash = "sha256-1U/LiAliKtk3ygbIBsmoavXN0RSykiiegtml+bO8CnI=";
+      revert = true;
+      url = "https://github.com/Matoking/protontricks/commit/4198b7ea82369a91e3084d6e185f9b370f78eaec.patch";
     })
   ];
+
+  nativeCheckInputs = with python3Packages; [ pytestCheckHook ];
+
+  # From 1.6.0 release notes (https://github.com/Matoking/protontricks/releases/tag/1.6.0):
+  # In most cases the script is unnecessary and should be removed as part of the packaging process.
+  postInstall = ''
+    rm "$out/bin/protontricks-desktop-install"
+  '';
 
   build-system = with python3Packages; [ setuptools-scm ];
 
@@ -71,16 +79,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
   ]
   ++ lib.optional (extraCompatPaths != "") "--set STEAM_EXTRA_COMPAT_TOOLS_PATHS ${extraCompatPaths}";
 
-  nativeCheckInputs = with python3Packages; [ pytestCheckHook ];
-
-  # From 1.6.0 release notes (https://github.com/Matoking/protontricks/releases/tag/1.6.0):
-  # In most cases the script is unnecessary and should be removed as part of the packaging process.
-  postInstall = ''
-    rm "$out/bin/protontricks-desktop-install"
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "protontricks" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -89,6 +89,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     changelog = "https://github.com/Matoking/protontricks/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ kira-bruneau ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"

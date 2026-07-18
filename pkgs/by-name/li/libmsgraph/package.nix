@@ -1,35 +1,35 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   gi-docgen,
+  glib,
+  gnome,
+  gnome-online-accounts,
   gobject-introspection,
+  json-glib,
+  libsoup_3,
+  libxml2,
   meson,
   ninja,
   pkg-config,
   uhttpmock,
-  libxml2,
-  glib,
-  gnome-online-accounts,
-  json-glib,
-  libsoup_3,
-  gnome,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libmsgraph";
   version = "0.3.4";
 
+  src = fetchurl {
+    url = "mirror://gnome/sources/msgraph/${lib.versions.majorMinor finalAttrs.version}/msgraph-${finalAttrs.version}.tar.xz";
+    hash = "sha256-BzHs5rArMu7/u72Y79x3vAPd0gZR7q46Q0Pwh5sE1sc=";
+  };
+
   outputs = [
     "out"
     "dev"
     "devdoc"
   ];
-
-  src = fetchurl {
-    url = "mirror://gnome/sources/msgraph/${lib.versions.majorMinor finalAttrs.version}/msgraph-${finalAttrs.version}.tar.xz";
-    hash = "sha256-BzHs5rArMu7/u72Y79x3vAPd0gZR7q46Q0Pwh5sE1sc=";
-  };
 
   nativeBuildInputs = [
     gi-docgen
@@ -68,7 +68,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.gnome.org/GNOME/msgraph";
     changelog = "https://gitlab.gnome.org/GNOME/msgraph/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
     license = lib.licenses.lgpl3Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.gnome ];
   };
 })

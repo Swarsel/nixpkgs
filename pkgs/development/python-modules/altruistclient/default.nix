@@ -1,9 +1,9 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
-  lib,
   poetry-core,
   pytest-asyncio,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "altruistclient";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "LoSk-p";
@@ -22,6 +21,12 @@ buildPythonPackage rec {
     hash = "sha256-36qqB9e53eZgMgwXzrXlMOySnuqmT3vLiU02NL9xtko=";
   };
 
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -29,18 +34,13 @@ buildPythonPackage rec {
     zeroconf
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "altruistclient" ];
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
   meta = {
-    changelog = "https://github.com/LoSk-p/altruistclient/releases/tag/${src.tag}";
     description = "Async library for discovering and fetching data from Altruist sensors";
     homepage = "https://github.com/LoSk-p/altruistclient";
+    changelog = "https://github.com/LoSk-p/altruistclient/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

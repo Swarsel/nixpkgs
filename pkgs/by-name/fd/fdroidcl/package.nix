@@ -1,8 +1,8 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
   android-tools,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,21 +16,20 @@ buildGoModule (finalAttrs: {
     hash = "sha256-SmPtMNHxktyhc0/izWmAzcfCXqF2BpPNJjsrqRlU1K0=";
   };
 
-  vendorHash = "sha256-PNj5gkFj+ruxv1I4SezJxebDO2e1qGTYp3ZgekRLNt0=";
-
   postPatch = ''
     substituteInPlace adb/{server,device}.go \
       --replace 'exec.Command("adb"' 'exec.Command("${android-tools}/bin/adb"'
   '';
 
+  vendorHash = "sha256-PNj5gkFj+ruxv1I4SezJxebDO2e1qGTYp3ZgekRLNt0=";
   # TestScript/search attempts to connect to fdroid
   doCheck = false;
 
   meta = {
     description = "F-Droid command line interface written in Go";
-    mainProgram = "fdroidcl";
     homepage = "https://github.com/Hoverth/fdroidcl";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ aleksana ];
+    mainProgram = "fdroidcl";
   };
 })

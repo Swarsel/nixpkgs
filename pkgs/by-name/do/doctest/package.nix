@@ -27,11 +27,11 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = true;
 
   meta = {
-    changelog = "https://github.com/doctest/doctest/releases/tag/${finalAttrs.src.tag}";
-    homepage = "https://github.com/doctest/doctest";
     description = "Fastest feature-rich C++11/14/17/20 single-header testing framework";
-    platforms = lib.platforms.all;
+    homepage = "https://github.com/doctest/doctest";
+    changelog = "https://github.com/doctest/doctest/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.nim65s ];
+    platforms = lib.platforms.all;
   };
 })

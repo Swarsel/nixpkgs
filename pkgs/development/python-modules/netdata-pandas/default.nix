@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  asks,
+  buildPythonPackage,
   pandas,
   requests,
+  setuptools,
   trio,
-  asks,
 }:
 
 buildPythonPackage rec {
   pname = "netdata-pandas";
   version = "0.0.41";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "netdata";
@@ -32,6 +31,7 @@ buildPythonPackage rec {
     asks
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "netdata_pandas" ];
 
   meta = {

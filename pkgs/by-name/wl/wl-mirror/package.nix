@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  bash,
   cmake,
+  installShellFiles,
+  libGL,
+  libgbm,
+  makeWrapper,
+  pipectl,
   pkg-config,
+  scdoc,
+  slurp,
   wayland,
   wayland-protocols,
   wayland-scanner,
   wlr-protocols,
-  libGL,
-  libgbm,
-  bash,
   installExampleScripts ? true,
-  makeWrapper,
-  installShellFiles,
-  pipectl,
-  slurp,
-  scdoc,
 }:
 
 let
@@ -38,8 +38,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-KUS0mN9JpLFBDeztzn+3NnJWQZSDZjeqKTFwhRJf+hI=";
   };
 
+  postPatch = ''
+    echo 'v${finalAttrs.version}' > version.txt
+    substituteInPlace CMakeLists.txt \
+      --replace 'WL_PROTOCOL_DIR "/usr' 'WL_PROTOCOL_DIR "${wayland-protocols}' \
+      --replace 'WLR_PROTOCOL_DIR "/usr' 'WLR_PROTOCOL_DIR "${wlr-protocols}'
+  '';
+
   strictDeps = true;
-  depsBuildBuild = [ pkg-config ];
+
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -48,6 +55,7 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
     installShellFiles
   ];
+
   buildInputs = [
     libGL
     libgbm
@@ -56,13 +64,6 @@ stdenv.mkDerivation (finalAttrs: {
     wlr-protocols
     bash
   ];
-
-  postPatch = ''
-    echo 'v${finalAttrs.version}' > version.txt
-    substituteInPlace CMakeLists.txt \
-      --replace 'WL_PROTOCOL_DIR "/usr' 'WL_PROTOCOL_DIR "${wayland-protocols}' \
-      --replace 'WLR_PROTOCOL_DIR "/usr' 'WLR_PROTOCOL_DIR "${wlr-protocols}'
-  '';
 
   cmakeFlags = [
     "-DINSTALL_EXAMPLE_SCRIPTS=${if installExampleScripts then "ON" else "OFF"}"
@@ -83,12 +84,14 @@ stdenv.mkDerivation (finalAttrs: {
     wrapProgram $out/bin/wl-present --prefix PATH ":" ${wl-present-binpath}
   '';
 
+  depsBuildBuild = [ pkg-config ];
+
   meta = {
-    mainProgram = "wl-mirror";
-    homepage = "https://github.com/Ferdi265/wl-mirror";
     description = "Simple Wayland output mirror client";
+    homepage = "https://github.com/Ferdi265/wl-mirror";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ ninelore ];
     platforms = lib.platforms.linux;
+    mainProgram = "wl-mirror";
   };
 })

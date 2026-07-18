@@ -1,17 +1,17 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  withMySQL ? true,
-  withPSQL ? false,
-  withSQLite ? false,
+  findutils,
+  gawk,
+  gnugrep,
+  gnused,
   mariadb,
   postgresql,
   sqlite,
-  gawk,
-  gnugrep,
-  findutils,
-  gnused,
-  lib,
+  withMySQL ? true,
+  withPSQL ? false,
+  withSQLite ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,8 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "15ry1d51d6dlzzzhck2x57wrq48vs4n9pp20bv2sz6nk92fva5l5";
   };
-
-  makeFlags = [ "PREFIX=$(out)" ];
 
   postPatch = ''
     patchShebangs .
@@ -40,15 +38,17 @@ stdenv.mkDerivation (finalAttrs: {
       --replace "sed" "${gnused}/bin/sed"
   '';
 
+  makeFlags = [ "PREFIX=$(out)" ];
+
   preBuild = ''
     mkdir -p $out/bin
   '';
 
   meta = {
     description = "Minimalistic database migration tool with MySQL, PostgreSQL and SQLite support";
-    mainProgram = "shmig";
     homepage = "https://github.com/mbucc/shmig";
     license = lib.licenses.bsd3;
     maintainers = [ ];
+    mainProgram = "shmig";
   };
 })

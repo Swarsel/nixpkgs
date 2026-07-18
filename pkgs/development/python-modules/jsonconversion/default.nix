@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   numpy,
   pdm-backend,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "jsonconversion";
   version = "1.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "DLR-RM";
@@ -21,25 +20,23 @@ buildPythonPackage rec {
     hash = "sha256-yWRpILAkwCvgh5bMiN9/XmS6U9zIQdDS8KVeTYxzDDw=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ pdm-backend ];
-
-  pythonRemoveDeps = [
-    "pytest-runner"
-    "pytest"
-  ];
-
-  pythonRelaxDeps = [ "numpy" ];
 
   dependencies = [
     numpy
     setuptools
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "jsonconversion" ];
-
   disabledTests = lib.optionals (pythonAtLeast "3.13") [ "test_dict" ];
+  pyproject = true;
+  pythonImportsCheck = [ "jsonconversion" ];
+  pythonRelaxDeps = [ "numpy" ];
+
+  pythonRemoveDeps = [
+    "pytest-runner"
+    "pytest"
+  ];
 
   meta = {
     description = "This python module helps converting arbitrary Python objects into JSON strings and back";

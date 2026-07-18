@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 buildGoModule (finalAttrs: {
@@ -16,6 +16,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-khw9K4sKhubhkccoC4f923Aw2Cj9eKpVqLHZICdkTXw=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-w"
@@ -25,18 +27,18 @@ buildGoModule (finalAttrs: {
     "-X=github.com/Adversis/tailsnitch/cmd.BuildDate=1970-01-01T00:00:00Z"
   ];
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "--version";
 
   meta = {
+    description = "Security auditor for Tailscale configurations. Scans your tailnet for misconfigurations, overly permissive access controls, and security best practice violations";
     homepage = "https://github.com/Adversis/tailsnitch";
     changelog = "https://github.com/Adversis/tailsnitch/releases/tag/v${finalAttrs.version}";
-    description = "Security auditor for Tailscale configurations. Scans your tailnet for misconfigurations, overly permissive access controls, and security best practice violations";
-    mainProgram = "tailsnitch";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       yethal
     ];
+
+    mainProgram = "tailsnitch";
   };
 })

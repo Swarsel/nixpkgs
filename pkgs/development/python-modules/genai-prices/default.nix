@@ -1,20 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  uv-build,
-
+  buildPythonPackage,
   # dependencies
   httpx2,
   pydantic,
+  # build-system
+  uv-build,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "genai-prices";
   version = "0.0.71";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pydantic";
@@ -23,7 +20,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-IFBdpXJ0AE3UNNqUlOrYMIgRGeB87BYbNqb4GvtJkl0=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/packages/python";
+  doCheck = false; # no tests
 
   build-system = [
     uv-build
@@ -34,11 +31,13 @@ buildPythonPackage (finalAttrs: {
     pydantic
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "genai_prices"
   ];
 
-  doCheck = false; # no tests
+  sourceRoot = "${finalAttrs.src.name}/packages/python";
 
   meta = {
     description = "Calculate prices for calling LLM inference APIs";

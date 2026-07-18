@@ -3,18 +3,18 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  enableVTK ? true,
-  vtk,
+  ctestCheckHook,
   darwin, # sw_vers
-  enablePython ? false,
-  python ? null,
-  swig,
   expat,
   libuuid,
   openjpeg,
-  zlib,
   pkg-config,
-  ctestCheckHook,
+  swig,
+  vtk,
+  zlib,
+  enablePython ? false,
+  enableVTK ? true,
+  python ? null,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,6 +27,26 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-j4n/IOLQiw+9j2hAS/fN2zWJI1xItFgm0BquPOZJr9E=";
   };
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ]
+  ++ lib.optional stdenv.hostPlatform.isDarwin darwin.DarwinTools;
+
+  buildInputs = [
+    expat
+    libuuid
+    openjpeg
+    zlib
+  ]
+  ++ lib.optionals enableVTK [
+    vtk
+  ]
+  ++ lib.optionals enablePython [
+    swig
+    python
+  ];
 
   cmakeFlags = [
     "-DGDCM_BUILD_APPLICATIONS=ON"
@@ -49,24 +69,10 @@ stdenv.mkDerivation (finalAttrs: {
     "-DGDCM_INSTALL_PYTHONMODULE_DIR=${placeholder "out"}/${python.sitePackages}/python_gdcm"
   ];
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ]
-  ++ lib.optional stdenv.hostPlatform.isDarwin darwin.DarwinTools;
+  doCheck = true;
 
-  buildInputs = [
-    expat
-    libuuid
-    openjpeg
-    zlib
-  ]
-  ++ lib.optionals enableVTK [
-    vtk
-  ]
-  ++ lib.optionals enablePython [
-    swig
-    python
+  nativeCheckInputs = [
+    ctestCheckHook
   ];
 
   postInstall = lib.optionalString enablePython ''
@@ -94,25 +100,23 @@ stdenv.mkDerivation (finalAttrs: {
     "TestRescaler2"
   ];
 
-  nativeCheckInputs = [
-    ctestCheckHook
-  ];
-
-  doCheck = true;
   # note that when the test data is available to the build via `fetchSubmodules = true`,
   # a number of additional but much slower tests are enabled
-
   meta = {
     description = "Grassroots cross-platform DICOM implementation";
+
     longDescription = ''
       Grassroots DICOM (GDCM) is an implementation of the DICOM standard designed to be open source so that researchers may access clinical data directly.
       GDCM includes a file format definition and a network communications protocol, both of which should be extended to provide a full set of tools for a researcher or small medical imaging vendor to interface with an existing medical database.
     '';
+
     homepage = "https://gdcm.sourceforge.net";
+
     license = with lib.licenses; [
       bsd3
       asl20
     ];
+
     maintainers = with lib.maintainers; [ bcdarwin ];
     platforms = lib.platforms.all;
   };

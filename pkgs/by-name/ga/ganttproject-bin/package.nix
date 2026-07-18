@@ -17,8 +17,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = fetchzip {
     url = "https://dl.ganttproject.biz/ganttproject-${finalAttrs.version}/ganttproject-${finalAttrs.version}.zip";
-    stripRoot = false;
     hash = "sha256-tiEq/xdC0gXiUInLS9xGR/vI/BpdSA+mSf5yukuejc4=";
+    stripRoot = false;
   };
 
   nativeBuildInputs = [ makeWrapper ];
@@ -28,13 +28,13 @@ stdenv.mkDerivation (finalAttrs: {
     let
 
       desktopItem = makeDesktopItem {
-        name = "ganttproject";
-        exec = "ganttproject";
-        icon = "ganttproject";
-        desktopName = "GanttProject";
-        genericName = "Shedule and manage projects";
-        comment = finalAttrs.meta.description;
         categories = [ "Office" ];
+        comment = finalAttrs.meta.description;
+        desktopName = "GanttProject";
+        exec = "ganttproject";
+        genericName = "Shedule and manage projects";
+        icon = "ganttproject";
+        name = "ganttproject";
       };
 
       javaOptions = [
@@ -59,11 +59,11 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Project scheduling and management";
     homepage = "https://www.ganttproject.biz/";
-    downloadPage = "https://www.ganttproject.biz/download";
     # GanttProject itself is GPL3+. All bundled libraries are declared
     # ‘GPL3-compatible’. See ${downloadPage} for detailed information.
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
     mainProgram = "ganttproject";
+    downloadPage = "https://www.ganttproject.biz/download";
   };
 })

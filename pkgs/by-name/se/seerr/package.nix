@@ -1,17 +1,17 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   fetchPnpmDeps,
+  makeWrapper,
+  nix-update-script,
+  nixosTests,
+  nodejs-slim_22,
   pnpmConfigHook,
   pnpm_10,
-  fetchFromGitHub,
-  stdenv,
-  makeWrapper,
-  nodejs-slim_22,
   python3,
   python3Packages,
   sqlite,
-  nix-update-script,
-  nixosTests,
 }:
 
 let
@@ -29,15 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-L3gIpkxWIPvAz2o4gDS41w4GyCEfdVVrIQE6hNBLz90=";
   };
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    fetcherVersion = 3;
-    hash = "sha256-WFbTBk2U0KS65LauKcqtD+y6RlcIMnN4tUWYM2WOUnQ=";
-  };
-
-  buildInputs = [ sqlite ];
-
   nativeBuildInputs = [
     python3
     python3Packages.distutils
@@ -46,6 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
     pnpmConfigHook
     pnpm
   ];
+
+  buildInputs = [ sqlite ];
 
   preBuild = ''
     export npm_config_nodedir=${nodejs-slim}
@@ -83,6 +76,13 @@ stdenv.mkDerivation (finalAttrs: {
       --set NODE_ENV production
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 3;
+    hash = "sha256-WFbTBk2U0KS65LauKcqtD+y6RlcIMnN4tUWYM2WOUnQ=";
+  };
+
   passthru = {
     inherit (nixosTests) seerr;
     updateScript = nix-update-script { };
@@ -92,10 +92,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Open-source media request and discovery manager for Jellyfin, Plex, and Emby";
     homepage = "https://github.com/seerr-team/seerr";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       camillemndn
       fallenbagel
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "seerr";
   };

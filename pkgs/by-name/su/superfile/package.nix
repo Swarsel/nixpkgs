@@ -1,36 +1,29 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  exiftool,
   nix-update-script,
   writableTmpDirAsHomeHook,
-  exiftool,
 }:
 let
   version = "1.3.3";
   tag = "v${version}";
 in
 buildGoModule {
-  pname = "superfile";
   inherit version;
+  pname = "superfile";
 
   src = fetchFromGitHub {
+    inherit tag;
     owner = "yorukot";
     repo = "superfile";
-    inherit tag;
     hash = "sha256-A1SWsBcPtGNbSReslp5L3Gg4hy3lDSccqGxFpLfVPrk=";
   };
 
-  vendorHash = "sha256-sqt0BzJW1nu6gYAhscrXlTAbwIoUY7JAOuzsenHpKEI=";
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   nativeBuildInputs = [ exiftool ];
-
+  vendorHash = "sha256-sqt0BzJW1nu6gYAhscrXlTAbwIoUY7JAOuzsenHpKEI=";
   nativeCheckInputs = [ writableTmpDirAsHomeHook ];
 
   # Upstream notes that this could be flaky, and it consistently fails for me.
@@ -43,6 +36,11 @@ buildGoModule {
     "-skip=^TestCompressSelectedFiles"
   ];
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -50,9 +48,11 @@ buildGoModule {
     homepage = "https://github.com/yorukot/superfile";
     changelog = "https://github.com/yorukot/superfile/blob/${tag}/changelog.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       redyf
     ];
+
     mainProgram = "superfile";
   };
 }

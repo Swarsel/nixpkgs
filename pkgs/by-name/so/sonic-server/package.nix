@@ -20,20 +20,21 @@ rustPlatform.buildRustPackage rec {
     hash = "sha256-PTujR3ciLRvbpiqStNMx3W5fkUdW2dsGmCj/iFRTKJM=";
   };
 
-  cargoHash = "sha256-RO4wY7FMwczZeR4GOxA3mwfBJZKPToOJJKGZb48yHJA=";
-
-  nativeBuildInputs = [
-    rustPlatform.bindgenHook
-  ];
-
   postPatch = ''
     substituteInPlace src/main.rs \
       --replace-fail "./config.cfg" "$out/etc/sonic/config.cfg"
   '';
 
+  nativeBuildInputs = [
+    rustPlatform.bindgenHook
+  ];
+
+  cargoHash = "sha256-RO4wY7FMwczZeR4GOxA3mwfBJZKPToOJJKGZb48yHJA=";
   # Fix GCC 15 compatibility
   # error: unknown type name 'uint32_t'
   env.CXXFLAGS = "-include cstdint";
+  # Found argument '--test-threads' which wasn't expected, or isn't valid in this context
+  doCheck = false;
 
   postInstall = ''
     install -Dm444 -t $out/etc/sonic config.cfg
@@ -44,17 +45,16 @@ rustPlatform.buildRustPackage rec {
       --replace-fail /etc/sonic.cfg $out/etc/sonic/config.cfg
   '';
 
-  # Found argument '--test-threads' which wasn't expected, or isn't valid in this context
-  doCheck = false;
-
   passthru = {
     tests = {
       inherit (nixosTests) sonic-server;
+
       version = testers.testVersion {
         command = "sonic --version";
         package = sonic-server;
       };
     };
+
     updateScript = nix-update-script { };
   };
 
@@ -63,8 +63,8 @@ rustPlatform.buildRustPackage rec {
     homepage = "https://github.com/valeriansaliou/sonic";
     changelog = "https://github.com/valeriansaliou/sonic/releases/tag/v${version}";
     license = lib.licenses.mpl20;
+    maintainers = with lib.maintainers; [ anthonyroussel ];
     platforms = lib.platforms.unix;
     mainProgram = "sonic";
-    maintainers = with lib.maintainers; [ anthonyroussel ];
   };
 }

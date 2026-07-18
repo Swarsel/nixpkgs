@@ -1,14 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   buildGoModule,
   fetchpatch,
-  fetchFromGitHub,
   git,
   groff,
   installShellFiles,
   makeWrapper,
-  unixtools,
   nixosTests,
+  unixtools,
 }:
 
 buildGoModule (finalAttrs: {
@@ -26,14 +26,14 @@ buildGoModule (finalAttrs: {
     # Fix `fish` completions
     # https://github.com/mislav/hub/pull/3036
     (fetchpatch {
-      url = "https://github.com/mislav/hub/commit/439b7699e79471fc789929bcdea2f30bd719963e.patch";
       hash = "sha256-pR/OkGa2ICR4n1pLNx8E2UTtLeDwFtXxeeTB94KFjC4=";
+      url = "https://github.com/mislav/hub/commit/439b7699e79471fc789929bcdea2f30bd719963e.patch";
     })
     # Fix `bash` completions
     # https://github.com/mislav/hub/pull/2948
     (fetchpatch {
-      url = "https://github.com/mislav/hub/commit/64b291006f208fc7db1d5be96ff7db5535f1d853.patch";
       hash = "sha256-jGFFIvSKEIpTQY0Wz63cqciUk25MzPHv5Z1ox8l7wmo=";
+      url = "https://github.com/mislav/hub/commit/64b291006f208fc7db1d5be96ff7db5535f1d853.patch";
     })
   ];
 
@@ -42,16 +42,17 @@ buildGoModule (finalAttrs: {
     sed -i 's/^var Version = "[^"]\+"$/var Version = "${finalAttrs.version}"/' version/version.go
   '';
 
-  vendorHash = "sha256-wQH8V9jRgh45JGs4IfYS1GtmCIYdo93JG1UjJ0BGxXk=";
-
-  # Only needed to build the man-pages
-  excludedPackages = [ "github.com/github/hub/md2roff-bin" ];
-
   nativeBuildInputs = [
     groff
     installShellFiles
     makeWrapper
     unixtools.col
+  ];
+
+  vendorHash = "sha256-wQH8V9jRgh45JGs4IfYS1GtmCIYdo93JG1UjJ0BGxXk=";
+
+  nativeCheckInputs = [
+    git
   ];
 
   postInstall = ''
@@ -67,10 +68,8 @@ buildGoModule (finalAttrs: {
       --suffix PATH : ${lib.makeBinPath [ git ]}
   '';
 
-  nativeCheckInputs = [
-    git
-  ];
-
+  # Only needed to build the man-pages
+  excludedPackages = [ "github.com/github/hub/md2roff-bin" ];
   passthru.tests = { inherit (nixosTests) hub; };
 
   meta = {

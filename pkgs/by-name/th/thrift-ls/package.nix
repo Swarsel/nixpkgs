@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -30,10 +30,12 @@ buildGoModule (finalAttrs: {
     description = "Thrift Language Server";
     homepage = "https://github.com/joyme123/thrift-ls";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       callumio
       hughmandalidis
     ];
+
     mainProgram = "thriftls";
   };
 })

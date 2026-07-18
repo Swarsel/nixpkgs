@@ -1,26 +1,26 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
+  clutter,
   fetchpatch,
+  garcon,
+  gettext,
+  gitUpdater,
+  glib,
+  gtk3,
+  libwnck,
+  libx11,
+  libxcomposite,
+  libxdamage,
+  libxfce4ui,
+  libxfce4util,
+  libxinerama,
   meson,
   ninja,
   pkg-config,
   wrapGAppsHook3,
-  clutter,
-  gettext,
-  libxcomposite,
-  libxinerama,
-  libxdamage,
-  libx11,
-  libwnck,
-  libxfce4ui,
-  libxfce4util,
-  garcon,
   xfconf,
-  gtk3,
-  glib,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,24 +28,24 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.1.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.xfce.org";
     owner = "apps";
     repo = "xfdashboard";
     tag = "xfdashboard-${finalAttrs.version}";
     hash = "sha256-D8Tue+45CO5yy7sxealKQoFQZobCiDUzoxCsDksTTxI=";
+    domain = "gitlab.xfce.org";
   };
 
   patches = [
     # Exit early if not on X11
     (fetchpatch {
-      url = "https://gitlab.xfce.org/apps/xfdashboard/-/commit/7452a7074dfc36c5af42c4105aadaac8656c2f60.patch";
       hash = "sha256-u0djTProV3On0uutg89Q+psgmVGJS768KwiYxZ7dhrE=";
+      url = "https://gitlab.xfce.org/apps/xfdashboard/-/commit/7452a7074dfc36c5af42c4105aadaac8656c2f60.patch";
     })
 
     # build: Fix version/so_version inversion
     (fetchpatch {
-      url = "https://gitlab.xfce.org/apps/xfdashboard/-/commit/20f23e62576d186fada6688af3bb05bc7f223f44.patch";
       hash = "sha256-C2oIBi9tfoQF123Ez3YbFUs8vX2DeYdr3BDc85ExTgQ=";
+      url = "https://gitlab.xfce.org/apps/xfdashboard/-/commit/20f23e62576d186fada6688af3bb05bc7f223f44.patch";
     })
   ];
 
@@ -81,8 +81,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "GNOME shell like dashboard";
     homepage = "https://gitlab.xfce.org/apps/xfdashboard";
     license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.linux;
     mainProgram = "xfdashboard";
     teams = [ lib.teams.xfce ];
-    platforms = lib.platforms.linux;
   };
 })

@@ -1,38 +1,39 @@
 {
   lib,
   fetchFromGitLab,
-  buildDunePackage,
   alcotest,
+  buildDunePackage,
   qcheck,
   qcheck-alcotest,
 }:
 
 buildDunePackage (finalAttrs: {
-  version = "5.0.1";
   pname = "pratter";
-
-  minimalOCamlVersion = "4.10";
+  version = "5.0.1";
 
   src = fetchFromGitLab {
-    domain = "forge.tedomum.net";
     owner = "koizel";
     repo = "pratter";
     tag = finalAttrs.version;
     hash = "sha256-Ib7EplEvOuYcAS9cfzo5994SqCv2eiysLekYfH09IMw=";
+    domain = "forge.tedomum.net";
   };
+
+  doCheck = true;
 
   checkInputs = [
     alcotest
     qcheck
     qcheck-alcotest
   ];
-  doCheck = true;
+
+  minimalOCamlVersion = "4.10";
 
   meta = {
     description = "Extended Pratt parser";
     homepage = "https://github.com/gabrielhdt/pratter";
-    license = lib.licenses.bsd3;
     changelog = "https://github.com/gabrielhdt/pratter/raw/${finalAttrs.version}/CHANGELOG.md";
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ bcdarwin ];
   };
 })

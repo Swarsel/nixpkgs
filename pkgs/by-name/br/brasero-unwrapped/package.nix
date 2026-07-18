@@ -1,21 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  pkg-config,
-  gtk3,
-  itstool,
-  gst_all_1,
-  libxml2,
-  libnotify,
-  libcanberra-gtk3,
-  intltool,
   dvdauthor,
+  gst_all_1,
+  gtk3,
+  hicolor-icon-theme,
+  intltool,
+  itstool,
   libburn,
+  libcanberra-gtk3,
   libisofs,
+  libnotify,
+  libxml2,
+  pkg-config,
   vcdimager,
   wrapGAppsHook3,
-  hicolor-icon-theme,
 }:
 
 let
@@ -28,13 +28,17 @@ let
 
 in
 stdenv.mkDerivation (finalAttrs: {
-  version = "${major}.${minor}";
   pname = "brasero";
+  version = "${major}.${minor}";
 
   src = fetchurl {
     url = "mirror://gnome/sources/brasero/${major}/brasero-${finalAttrs.version}.tar.xz";
     hash = "sha256-h3SerjOhQSB9GwC+IzttgEWYLtMkntS5ja4fOpdf6hU=";
   };
+
+  # brasero checks that the applications it uses aren't symlinks, but this
+  # will obviously not work on nix
+  patches = [ ./remove-symlink-check.patch ];
 
   nativeBuildInputs = [
     pkg-config
@@ -59,30 +63,26 @@ stdenv.mkDerivation (finalAttrs: {
     gst_all_1.gst-libav
   ];
 
-  # brasero checks that the applications it uses aren't symlinks, but this
-  # will obviously not work on nix
-  patches = [ ./remove-symlink-check.patch ];
-
-  enableParallelBuilding = true;
-
   configureFlags = [
     "--with-girdir=$out/share/gir-1.0"
     "--with-typelibdir=$out/lib/girepository-1.0"
   ];
 
-  preFixup = ''
-    gappsWrapperArgs+=(--prefix PATH : "${binpath}")
-  '';
-
   env = lib.optionalAttrs stdenv.cc.isGNU {
     NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
   };
 
+  preFixup = ''
+    gappsWrapperArgs+=(--prefix PATH : "${binpath}")
+  '';
+
+  enableParallelBuilding = true;
+
   meta = {
     description = "Gnome CD/DVD Burner";
     homepage = "https://gitlab.gnome.org/GNOME/brasero";
-    maintainers = [ lib.maintainers.bdimcheff ];
     license = lib.licenses.gpl2Plus;
+    maintainers = [ lib.maintainers.bdimcheff ];
     platforms = lib.platforms.linux;
     mainProgram = "brasero";
   };

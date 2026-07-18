@@ -1,20 +1,20 @@
 {
   lib,
-  gccStdenv,
-  fetchzip,
-  pkgs,
   boost,
   cmake,
+  fetchzip,
+  gccStdenv,
   jq,
   ncurses,
+  pkgs,
   python3,
   versionCheckHook,
-  z3Support ? true,
-  z3 ? null,
-  cvc4Support ? gccStdenv.hostPlatform.isLinux,
-  cvc4 ? null,
   cln ? null,
+  cvc4 ? null,
+  cvc4Support ? gccStdenv.hostPlatform.isLinux,
   gmp ? null,
+  z3 ? null,
+  z3Support ? true,
 }:
 
 # compiling source/libsmtutil/CVC4Interface.cpp breaks on clang on Darwin,
@@ -39,6 +39,7 @@ let
     homepage = "https://github.com/ethereum/solidity";
     changelog = "https://github.com/ethereum/solidity/releases/tag/v${version}";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       dbrock
       akru
@@ -64,6 +65,18 @@ let
           hash = linuxHash;
         };
 
+        nativeBuildInputs = [ cmake ];
+
+        buildInputs = [
+          boost
+        ]
+        ++ lib.optionals z3Support [ z3 ]
+        ++ lib.optionals cvc4Support [
+          cvc4
+          cln
+          gmp
+        ];
+
         cmakeFlags = [
           "-DBoost_USE_STATIC_LIBS=OFF"
 
@@ -82,16 +95,9 @@ let
           "-DUSE_CVC4=OFF"
         ];
 
-        nativeBuildInputs = [ cmake ];
-        buildInputs = [
-          boost
-        ]
-        ++ lib.optionals z3Support [ z3 ]
-        ++ lib.optionals cvc4Support [
-          cvc4
-          cln
-          gmp
-        ];
+        # tests take 60+ minutes to complete, only run as part of passthru tests
+        doCheck = false;
+
         nativeCheckInputs = [
           jq
           ncurses
@@ -109,11 +115,6 @@ let
             ]
           ))
         ]; # contextlib2 glob2 textwrap3 traceback2 urllib3
-
-        enableParallelBuilding = true;
-
-        # tests take 60+ minutes to complete, only run as part of passthru tests
-        doCheck = false;
 
         checkPhase = ''
           pushd ..
@@ -135,6 +136,8 @@ let
           runHook postInstallCheck
         '';
 
+        enableParallelBuilding = true;
+
         passthru.tests = {
           solcWithTests = solc.overrideAttrs (attrs: {
             doCheck = true;
@@ -155,7 +158,6 @@ let
           url = "https://github.com/ethereum/solidity/releases/download/v${version}/solc-macos";
           hash = darwinHash;
         };
-        dontUnpack = true;
 
         installPhase = ''
           runHook preInstall
@@ -166,6 +168,8 @@ let
 
           runHook postInstall
         '';
+
+        dontUnpack = true;
       };
 in
 solc

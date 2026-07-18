@@ -1,9 +1,9 @@
 {
   lib,
+  minijail,
+  pkgsBuildTarget,
   python3,
   python3Packages,
-  pkgsBuildTarget,
-  minijail,
 }:
 
 let
@@ -11,17 +11,12 @@ let
 in
 
 python3Packages.buildPythonApplication {
-  pyproject = true;
-  pname = "minijail-tools";
   inherit (minijail) version src;
+  pname = "minijail-tools";
 
   postPatch = ''
     substituteInPlace Makefile --replace-fail /bin/echo echo
   '';
-
-  build-system = [
-    python3Packages.setuptools
-  ];
 
   postConfigure = ''
     substituteInPlace tools/compile_seccomp_policy.py \
@@ -42,10 +37,16 @@ python3Packages.buildPythonApplication {
     cp -v constants.json $out/share/constants.json
   '';
 
+  build-system = [
+    python3Packages.setuptools
+  ];
+
+  pyproject = true;
+
   meta = {
-    homepage = "https://android.googlesource.com/platform/external/minijail/+/refs/heads/master/tools/";
-    description = "Set of tools for minijail";
-    license = lib.licenses.asl20;
     inherit (minijail.meta) maintainers platforms;
+    description = "Set of tools for minijail";
+    homepage = "https://android.googlesource.com/platform/external/minijail/+/refs/heads/master/tools/";
+    license = lib.licenses.asl20;
   };
 }

@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  gobject-introspection,
+  gtk3,
   meson,
   ninja,
   pkg-config,
-  gobject-introspection,
   vala,
-  gtk3,
-  wayland-scanner,
   wayland,
+  wayland-scanner,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,6 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     meson
     ninja
@@ -44,8 +46,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   # Tests are not fully prepared, but may be enabled in later versions
   doCheck = false;
-
-  strictDeps = true;
 
   meta = {
     description = "Library to use GTK 3 to build screen lockers using ext-session-lock-v1 protocol";

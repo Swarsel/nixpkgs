@@ -29,6 +29,16 @@ let
   version = "2.0.0-indev+${dateString}";
 in
 writeShellApplication {
+  derivationArgs = {
+    inherit version;
+    pname = "nzportable";
+
+    passthru = {
+      inherit assets quakec fteqw;
+      updateScript = callPackage ./update.nix { };
+    };
+  };
+
   name = "nzportable";
 
   text = ''
@@ -64,15 +74,6 @@ writeShellApplication {
 
     exec ${lib.getExe fteqw} -basedir "$runDir" "$@"
   '';
-
-  derivationArgs = {
-    pname = "nzportable";
-    inherit version;
-    passthru = {
-      updateScript = callPackage ./update.nix { };
-      inherit assets quakec fteqw;
-    };
-  };
 
   meta = {
     inherit (fteqw.meta) platforms;

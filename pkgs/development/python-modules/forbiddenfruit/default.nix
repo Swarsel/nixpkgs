@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
-  version = "0.1.4";
   pname = "forbiddenfruit";
-  pyproject = true;
+  version = "0.1.4";
 
   src = fetchFromGitHub {
     owner = "clarete";
@@ -17,22 +16,22 @@ buildPythonPackage rec {
     hash = "sha256-yHIZsVn2UVmWeBNIzWDE6AOwAXZilPqXo+bVtXqGkJk=";
   };
 
-  build-system = [ setuptools ];
-
   env.FFRUIT_EXTENSION = "true";
-
-  pythonImportsCheck = [ "forbiddenfruit" ];
-
   doCheck = false; # uses nose
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "forbiddenfruit" ];
 
   meta = {
     description = "Patch python built-in objects";
     homepage = "https://github.com/clarete/forbiddenfruit";
     changelog = "https://github.com/clarete/forbiddenfruit/releases/tag/${version}";
+
     license = with lib.licenses; [
       mit
       gpl3Plus
     ];
+
     maintainers = [ ];
   };
 }

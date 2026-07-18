@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nodejs,
-  pnpm_9,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  makeWrapper,
-  electron,
-  nix-update-script,
-  makeDesktopItem,
   copyDesktopItems,
+  electron,
+  fetchPnpmDeps,
+  makeDesktopItem,
+  makeWrapper,
+  nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_9,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,13 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     ./fix_appid.patch
   ];
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm_9;
-    fetcherVersion = 3;
-    hash = "sha256-oBwqYOx2KEtF0qdMKEIgdArZ4xs/AyeOqFoU4nHl3xY=";
-  };
-
   nativeBuildInputs = [
     nodejs
     pnpm_9
@@ -46,23 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ finalAttrs.pnpmDeps ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "aonsoku";
-      desktopName = "Aonsoku";
-      comment = "Modern desktop client for Navidrome/Subsonic servers";
-      exec = "Aonsoku";
-      icon = "aonsoku";
-      categories = [
-        "AudioVideo"
-        "Audio"
-        "Music"
-        "Player"
-      ];
-      startupWMClass = "Aonsoku";
-    })
-  ];
 
   preConfigure = ''
     export ELECTRON_SKIP_BINARY_DOWNLOAD=1
@@ -97,6 +73,31 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "AudioVideo"
+        "Audio"
+        "Music"
+        "Player"
+      ];
+
+      comment = "Modern desktop client for Navidrome/Subsonic servers";
+      desktopName = "Aonsoku";
+      exec = "Aonsoku";
+      icon = "aonsoku";
+      name = "aonsoku";
+      startupWMClass = "Aonsoku";
+    })
+  ];
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 3;
+    hash = "sha256-oBwqYOx2KEtF0qdMKEIgdArZ4xs/AyeOqFoU4nHl3xY=";
+    pnpm = pnpm_9;
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -104,10 +105,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/victoralvesf/aonsoku";
     changelog = "https://github.com/victoralvesf/aonsoku/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       autrimpo
       genga898
     ];
+
     mainProgram = "Aonsoku";
   };
 })

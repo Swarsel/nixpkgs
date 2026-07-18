@@ -1,14 +1,12 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
 }:
 
 buildDunePackage rec {
   pname = "telemetry";
   version = "0.0.1";
-
-  minimalOCamlVersion = "4.12";
 
   src = fetchurl {
     url = "https://github.com/leostera/telemetry/releases/download/${version}/telemetry-${version}.tbz";
@@ -16,6 +14,7 @@ buildDunePackage rec {
   };
 
   doCheck = true;
+  minimalOCamlVersion = "4.12";
 
   meta = {
     description = "Lightweight library for dispatching and handling events, with a focus on metrics and instrumentation";

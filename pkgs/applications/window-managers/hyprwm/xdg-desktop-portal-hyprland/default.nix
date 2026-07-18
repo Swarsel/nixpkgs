@@ -3,10 +3,6 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  makeWrapper,
-  pkg-config,
-  wrapQtAppsHook,
-  nix-update-script,
   grim,
   hyprland,
   hyprland-protocols,
@@ -15,7 +11,10 @@
   hyprwayland-scanner,
   libdrm,
   libgbm,
+  makeWrapper,
+  nix-update-script,
   pipewire,
+  pkg-config,
   qtbase,
   qttools,
   qtwayland,
@@ -24,6 +23,7 @@
   wayland,
   wayland-protocols,
   wayland-scanner,
+  wrapQtAppsHook,
   debug ? false,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -36,10 +36,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-B7nwX0PE0KBo1/ZtuwJtA7dBG6gdPW5tSBb0skY8DHA=";
   };
-
-  depsBuildBuild = [
-    pkg-config
-  ];
 
   nativeBuildInputs = [
     cmake
@@ -65,13 +61,6 @@ stdenv.mkDerivation (finalAttrs: {
     wayland-scanner
   ];
 
-  cmakeBuildType = if debug then "Debug" else "RelWithDebInfo";
-
-  dontStrip = debug;
-  separateDebugInfo = !debug;
-
-  dontWrapQtApps = true;
-
   postInstall = ''
     wrapProgramShell $out/bin/hyprland-share-picker \
       "''${qtWrapperArgs[@]}" \
@@ -91,6 +80,16 @@ stdenv.mkDerivation (finalAttrs: {
       }
   '';
 
+  cmakeBuildType = if debug then "Debug" else "RelWithDebInfo";
+
+  depsBuildBuild = [
+    pkg-config
+  ];
+
+  dontStrip = debug;
+  dontWrapQtApps = true;
+  separateDebugInfo = !debug;
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -99,9 +98,9 @@ stdenv.mkDerivation (finalAttrs: {
     description = "xdg-desktop-portal backend for Hyprland";
     homepage = "https://github.com/hyprwm/xdg-desktop-portal-hyprland";
     changelog = "https://github.com/hyprwm/xdg-desktop-portal-hyprland/releases/tag/v${finalAttrs.version}";
-    mainProgram = "hyprland-share-picker";
     license = lib.licenses.bsd3;
-    teams = [ lib.teams.hyprland ];
     platforms = lib.platforms.linux;
+    mainProgram = "hyprland-share-picker";
+    teams = [ lib.teams.hyprland ];
   };
 })

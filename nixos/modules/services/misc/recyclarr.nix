@@ -18,32 +18,17 @@ in
 {
   options.services.recyclarr = {
     enable = lib.mkEnableOption "recyclarr service";
-
     package = lib.mkPackageOption pkgs "recyclarr" { };
 
+    command = lib.mkOption {
+      default = "sync";
+      description = "The recyclarr command to run (e.g., sync).";
+      type = lib.types.str;
+    };
+
     configuration = lib.mkOption {
-      type = format.type;
       default = { };
-      example = {
-        sonarr = {
-          sonarr-main = {
-            instance_name = "main";
-            base_url = "http://localhost:8989";
-            api_key = {
-              _secret = "/run/credentials/recyclarr.service/sonarr-api_key";
-            };
-          };
-        };
-        radarr = {
-          radarr-main = {
-            instance_name = "main";
-            base_url = "http://localhost:7878";
-            api_key = {
-              _secret = "/run/credentials/recyclarr.service/radarr-api_key";
-            };
-          };
-        };
-      };
+
       description = ''
         Recyclarr YAML configuration as a Nix attribute set.
 
@@ -53,104 +38,122 @@ in
         The configuration is processed using [utils.genJqSecretsReplacement](https://github.com/NixOS/nixpkgs/blob/master/nixos/lib/utils.nix#L232-L331) to handle secret substitution.
         ```
       '';
-    };
 
-    schedule = lib.mkOption {
-      type = lib.types.str;
-      default = "daily";
-      description = "When to run recyclarr in systemd calendar format.";
-    };
+      example = {
+        radarr = {
+          radarr-main = {
+            api_key = {
+              _secret = "/run/credentials/recyclarr.service/radarr-api_key";
+            };
 
-    command = lib.mkOption {
-      type = lib.types.str;
-      default = "sync";
-      description = "The recyclarr command to run (e.g., sync).";
-    };
+            base_url = "http://localhost:7878";
+            instance_name = "main";
+          };
+        };
 
-    user = lib.mkOption {
-      type = lib.types.str;
-      default = "recyclarr";
-      description = "User account under which recyclarr runs.";
+        sonarr = {
+          sonarr-main = {
+            api_key = {
+              _secret = "/run/credentials/recyclarr.service/sonarr-api_key";
+            };
+
+            base_url = "http://localhost:8989";
+            instance_name = "main";
+          };
+        };
+      };
+
+      type = format.type;
     };
 
     group = lib.mkOption {
-      type = lib.types.str;
       default = "recyclarr";
       description = "Group under which recyclarr runs.";
+      type = lib.types.str;
+    };
+
+    schedule = lib.mkOption {
+      default = "daily";
+      description = "When to run recyclarr in systemd calendar format.";
+      type = lib.types.str;
+    };
+
+    user = lib.mkOption {
+      default = "recyclarr";
+      description = "User account under which recyclarr runs.";
+      type = lib.types.str;
     };
   };
 
   config = lib.mkIf cfg.enable {
 
-    users.users = lib.mkIf (cfg.user == "recyclarr") {
-      recyclarr = {
-        isSystemUser = true;
-        description = "recyclarr user";
-        home = stateDir;
-        group = cfg.group;
-      };
-    };
-
-    users.groups = lib.mkIf (cfg.group == "recyclarr") {
-      ${cfg.group} = { };
-    };
-
     systemd.services.recyclarr = {
       description = "Recyclarr Service";
-
       preStart = secretsReplacement.script;
 
       serviceConfig = {
-        Type = "oneshot";
-        User = cfg.user;
-        Group = cfg.group;
-        StateDirectory = "recyclarr";
+        CapabilityBoundingSet = "";
+
         Environment = [
           "RECYCLARR_CONFIG_DIR=${stateDir}"
           "RECYCLARR_DATA_DIR=${stateDir}"
         ];
+
         ExecStart = "${lib.getExe cfg.package} ${cfg.command} --config ${configPath}";
+        Group = cfg.group;
         LoadCredential = secretsReplacement.credentials;
-
-        ProtectSystem = "strict";
-        ProtectHome = true;
-        PrivateTmp = true;
+        LockPersonality = true;
+        NoNewPrivileges = true;
         PrivateDevices = true;
-        ProtectHostname = true;
-        ProtectClock = true;
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
-        ProtectKernelLogs = true;
-        ProtectControlGroups = true;
-
         PrivateNetwork = false;
+        PrivateTmp = true;
+        ProtectClock = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectHostname = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectSystem = "strict";
+        ReadWritePaths = [ stateDir ];
+        RemoveIPC = true;
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
 
-        NoNewPrivileges = true;
-        RestrictSUIDSGID = true;
-        RemoveIPC = true;
-
-        ReadWritePaths = [ stateDir ];
-
-        CapabilityBoundingSet = "";
-
-        LockPersonality = true;
         RestrictRealtime = true;
+        RestrictSUIDSGID = true;
+        StateDirectory = "recyclarr";
+        Type = "oneshot";
+        User = cfg.user;
       };
     };
 
     systemd.timers.recyclarr = {
       description = "Recyclarr Timer";
-      wantedBy = [ "timers.target" ];
       partOf = [ "recyclarr.service" ];
 
       timerConfig = {
         OnCalendar = cfg.schedule;
         Persistent = true;
         RandomizedDelaySec = "5m";
+      };
+
+      wantedBy = [ "timers.target" ];
+    };
+
+    users.groups = lib.mkIf (cfg.group == "recyclarr") {
+      ${cfg.group} = { };
+    };
+
+    users.users = lib.mkIf (cfg.user == "recyclarr") {
+      recyclarr = {
+        description = "recyclarr user";
+        group = cfg.group;
+        home = stateDir;
+        isSystemUser = true;
       };
     };
   };

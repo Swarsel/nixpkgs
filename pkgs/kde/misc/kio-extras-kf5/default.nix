@@ -1,20 +1,20 @@
 {
   stdenv,
   fetchurl,
-  kio-extras,
   cmake,
-  pkg-config,
   extra-cmake-modules,
-  libsForQt5,
-  samba,
-  libssh,
-  libmtp,
-  libimobiledevice,
   gperf,
+  kio-extras,
+  libappimage,
+  libimobiledevice,
+  libmtp,
+  libsForQt5,
+  libssh,
   libtirpc,
   openexr,
+  pkg-config,
+  samba,
   taglib,
-  libappimage,
 }:
 # kio-extras-kf5 is kind of part of Gear, but also not released all the time,
 # so handle it separately.
@@ -33,12 +33,6 @@ stdenv.mkDerivation rec {
     extra-cmake-modules
     libsForQt5.wrapQtAppsHook
   ];
-
-  # override ECM defaults that assume Qt6
-  # this can't be cmakeFlags because we need this to be set last so it wins
-  preConfigure = ''
-    appendToVar cmakeFlags "-DKDE_INSTALL_LOGGINGCATEGORIESDIR=${placeholder "out"}/share/qlogging-categories5"
-  '';
 
   buildInputs =
     with libsForQt5;
@@ -74,6 +68,12 @@ stdenv.mkDerivation rec {
       taglib
       libappimage
     ];
+
+  # override ECM defaults that assume Qt6
+  # this can't be cmakeFlags because we need this to be set last so it wins
+  preConfigure = ''
+    appendToVar cmakeFlags "-DKDE_INSTALL_LOGGINGCATEGORIESDIR=${placeholder "out"}/share/qlogging-categories5"
+  '';
 
   meta = kio-extras.meta;
 }

@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "jnitrace";
   version = "3.3.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -25,13 +24,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     setuptools # pkg_resources is imported during runtime
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "jnitrace" ];
 
   meta = {
     description = "Frida based tool that traces usage of the JNI API in Android apps";
     homepage = "https://github.com/chame1eon/jnitrace";
-    maintainers = [ lib.maintainers.axka ];
     license = lib.licenses.mit;
+    maintainers = [ lib.maintainers.axka ];
     mainProgram = "jnitrace";
   };
 })

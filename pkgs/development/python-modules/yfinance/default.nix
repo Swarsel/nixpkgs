@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   beautifulsoup4,
   buildPythonPackage,
   cryptography,
   curl-cffi,
-  fetchFromGitHub,
   frozendict,
   html5lib,
   lxml,
@@ -15,9 +15,9 @@
   platformdirs,
   protobuf,
   pytz,
+  requests,
   requests-cache,
   requests-ratelimiter,
-  requests,
   scipy,
   setuptools,
   websockets,
@@ -26,7 +26,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "yfinance";
   version = "1.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ranaroussi";
@@ -35,6 +34,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-5ynbdBys7uTcvsKQB44aoe8PmQgqP28wPtOATcv8I7g=";
   };
 
+  # Tests require internet access
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -55,20 +56,18 @@ buildPythonPackage (finalAttrs: {
     websockets
   ];
 
-  pythonRelaxDeps = [ "curl_cffi" ];
-
   optional-dependencies = {
     nospam = [
       requests-cache
       requests-ratelimiter
     ];
+
     repair = [ scipy ];
   };
 
-  # Tests require internet access
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "yfinance" ];
+  pythonRelaxDeps = [ "curl_cffi" ];
 
   meta = {
     description = "Module to doiwnload Yahoo! Finance market data";

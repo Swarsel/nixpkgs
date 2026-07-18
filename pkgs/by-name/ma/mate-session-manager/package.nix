@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  gettext,
-  xtrans,
   dbus-glib,
-  systemd,
-  libsm,
-  libxtst,
+  fetchpatch,
+  gettext,
+  gitUpdater,
   glib,
   gtk3,
-  libepoxy,
-  polkit,
   hicolor-icon-theme,
+  libepoxy,
+  libsm,
+  libxtst,
   mate-desktop,
   mate-screensaver,
+  pkg-config,
+  polkit,
+  systemd,
   wrapGAppsHook3,
-  fetchpatch,
-  gitUpdater,
+  xtrans,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,8 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # allow turning on debugging from environment variable
     (fetchpatch {
-      url = "https://github.com/mate-desktop/mate-session-manager/commit/3ab6fbfc811d00100d7a2959f8bbb157b536690d.patch";
       sha256 = "0yjaklq0mp44clymyhy240kxlw95z3azmravh4f5pfm9dys33sg0";
+      url = "https://github.com/mate-desktop/mate-session-manager/commit/3ab6fbfc811d00100d7a2959f8bbb157b536690d.patch";
     })
   ];
 
@@ -58,8 +58,6 @@ stdenv.mkDerivation (finalAttrs: {
     polkit
   ];
 
-  enableParallelBuilding = true;
-
   env.NIX_CFLAGS_COMPILE = "-I${glib.dev}/include/gio-unix-2.0";
 
   postFixup = ''
@@ -67,21 +65,24 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "Exec=mate-session" "Exec=$out/bin/mate-session"
   '';
 
+  enableParallelBuilding = true;
   passthru.providedSessions = [ "mate" ];
 
   passthru.updateScript = gitUpdater {
-    url = "https://git.mate-desktop.org/mate-session-manager";
     odd-unstable = true;
     rev-prefix = "v";
+    url = "https://git.mate-desktop.org/mate-session-manager";
   };
 
   meta = {
     description = "MATE Desktop session manager";
     homepage = "https://github.com/mate-desktop/mate-session-manager";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl2Plus
     ];
+
     platforms = lib.platforms.unix;
     teams = [ lib.teams.mate ];
   };

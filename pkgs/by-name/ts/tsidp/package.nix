@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 buildGoModule (finalAttrs: {
@@ -16,15 +16,14 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-sycTIr6cRY2BLve23vvpk7mhiV/jrP26SoLHxY7tznw=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "Simple OIDC / OAuth Identity Provider (IdP) server for your tailnet";
     homepage = "https://github.com/tailscale/tsidp";
     changelog = "https://github.com/tailscale/tsidp/releases/tag/v${finalAttrs.version}";
-    description = "Simple OIDC / OAuth Identity Provider (IdP) server for your tailnet";
     license = lib.licenses.bsd3;
-    mainProgram = "tsidp";
     maintainers = with lib.maintainers; [ akotro ];
+    mainProgram = "tsidp";
   };
 })

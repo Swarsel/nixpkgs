@@ -1,11 +1,18 @@
 {
-  mkDerivation,
-  libnetbsd,
   compatIfNeeded,
+  libnetbsd,
   libsbuf,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "usr.sbin/makefs";
+  buildInputs = compatIfNeeded ++ [
+    libnetbsd
+    libsbuf
+  ];
+
+  MK_PIE = "no";
+  MK_TESTS = "no";
+
   extraPaths = [
     "stand/libsa"
     "sys/cddl/boot"
@@ -15,10 +22,6 @@ mkDerivation {
     "contrib/mknod"
     "sys/fs/cd9660"
   ];
-  buildInputs = compatIfNeeded ++ [
-    libnetbsd
-    libsbuf
-  ];
-  MK_TESTS = "no";
-  MK_PIE = "no";
+
+  path = "usr.sbin/makefs";
 }

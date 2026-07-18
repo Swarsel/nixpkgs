@@ -11,12 +11,13 @@
 buildPythonPackage rec {
   pname = "nocaselist";
   version = "2.2.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-sGs9b+wavAXGB6qOgTWZOIcnoI4YwiNDHXRpz26wwGo=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -24,9 +25,7 @@ buildPythonPackage rec {
   ];
 
   dependencies = [ six ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "nocaselist" ];
 
   meta = {

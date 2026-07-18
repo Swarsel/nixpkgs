@@ -1,15 +1,15 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  nix-update-script,
-  pkg-config,
-  versionCheckHook,
+  clangStdenv,
   elfutils,
-  zlib,
   libbpf,
   libpcap,
-  clangStdenv,
+  nix-update-script,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
+  zlib,
 }:
 let
   pname = "rustnet";
@@ -17,7 +17,6 @@ let
 in
 rustPlatform.buildRustPackage.override { stdenv = clangStdenv; } {
   inherit pname version;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "domcyrus";
@@ -25,8 +24,6 @@ rustPlatform.buildRustPackage.override { stdenv = clangStdenv; } {
     tag = "v${version}";
     hash = "sha256-E2ItYSnT3WRSgPb5B+HDAlAPPmSLdt8qnE+2TiXHPk8=";
   };
-
-  cargoHash = "sha256-B1IdFOKYNaLiq6t64mdR3zUUcvojevcV6/nqYGbsbAY=";
 
   nativeBuildInputs = [
     pkg-config
@@ -40,20 +37,24 @@ rustPlatform.buildRustPackage.override { stdenv = clangStdenv; } {
     zlib
   ];
 
-  # Required for libbpf-sys to build correctly
-  hardeningDisable = [
-    "zerocallusedregs"
-  ];
+  cargoHash = "sha256-B1IdFOKYNaLiq6t64mdR3zUUcvojevcV6/nqYGbsbAY=";
 
   # Set environment variables for libbpf-sys
   env = {
-    LIBBPF_SYS_LIBRARY_PATH = "${libbpf}/lib";
     LIBBPF_SYS_INCLUDE_PATH = "${libbpf}/include";
+    LIBBPF_SYS_LIBRARY_PATH = "${libbpf}/lib";
   };
 
   checkFlags = [
     "--skip=network::platform::linux::interface_stats::tests::test_get_all_stats"
     "--skip=network::platform::linux::interface_stats::tests::test_list_interfaces"
+  ];
+
+  __structuredAttrs = true;
+
+  # Required for libbpf-sys to build correctly
+  hardeningDisable = [
+    "zerocallusedregs"
   ];
 
   passthru.updateScript = nix-update-script { };
@@ -64,7 +65,7 @@ rustPlatform.buildRustPackage.override { stdenv = clangStdenv; } {
     changelog = "https://github.com/domcyrus/rustnet/releases/tag/v${version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dvaerum ];
-    mainProgram = "rustnet";
     platforms = lib.platforms.linux;
+    mainProgram = "rustnet";
   };
 }

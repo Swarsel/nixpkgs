@@ -21,9 +21,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     "doc"
   ];
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -33,17 +30,21 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    homepage = "https://github.com/plexus/chemacs2";
     description = "Emacs version switcher, improved";
+
     longDescription = ''
       Chemacs 2 is an Emacs profile switcher, it makes it easy to run multiple
       Emacs configurations side by side.
 
       Think of it as a bootloader for Emacs.
     '';
+
+    homepage = "https://github.com/plexus/chemacs2";
     license = with lib.licenses; [ gpl3Plus ];
     maintainers = [ ];
     platforms = lib.platforms.all;

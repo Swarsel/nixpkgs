@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   loguru,
   niapy,
   numpy,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "niaaml";
   version = "2.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "firefly-cpp";
@@ -27,10 +26,15 @@ buildPythonPackage rec {
     hash = "sha256-j3vnslVvktfhtRsR1hw+WfLGbhmjdUzhY+HLR9EWD7o=";
   };
 
-  pythonRelaxDeps = [
-    "numpy"
-    "pandas"
-    "typer"
+  # create scikit-learn and niapy deps version consistent
+  preBuild = ''
+    toml-adapt -path pyproject.toml -a change -dep scikit-learn -ver X
+    toml-adapt -path pyproject.toml -a change -dep niapy -ver X
+  '';
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    writableTmpDirAsHomeHook
   ];
 
   build-system = [
@@ -48,18 +52,14 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  # create scikit-learn and niapy deps version consistent
-  preBuild = ''
-    toml-adapt -path pyproject.toml -a change -dep scikit-learn -ver X
-    toml-adapt -path pyproject.toml -a change -dep niapy -ver X
-  '';
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "niaaml" ];
+
+  pythonRelaxDeps = [
+    "numpy"
+    "pandas"
+    "typer"
+  ];
 
   meta = {
     description = "Python automated machine learning framework";

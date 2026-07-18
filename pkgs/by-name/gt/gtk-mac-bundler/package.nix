@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
 }:
 
@@ -27,9 +27,9 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Helper script that creates application bundles form GTK executables for macOS";
-    maintainers = [ ];
-    platforms = lib.platforms.darwin;
     homepage = "https://gitlab.gnome.org/GNOME/gtk-mac-bundler";
     license = lib.licenses.gpl2;
+    maintainers = [ ];
+    platforms = lib.platforms.darwin;
   };
 }

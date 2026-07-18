@@ -1,6 +1,6 @@
 {
-  buildPythonPackage,
   lib,
+  buildPythonPackage,
   fetchPypi,
   requests,
 }:
@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "pyepsg";
   version = "0.4.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,13 +15,13 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ requests ];
-
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Simple Python interface to epsg.io";
-    license = lib.licenses.lgpl3;
     homepage = "https://pyepsg.readthedocs.io/en/latest/";
+    license = lib.licenses.lgpl3;
     maintainers = [ ];
   };
 }

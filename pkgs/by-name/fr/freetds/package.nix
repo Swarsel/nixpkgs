@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   autoreconfHook,
-  pkg-config,
   openssl,
+  pkg-config,
   odbcSupport ? true,
   unixodbc ? null,
 }:
@@ -26,15 +26,15 @@ stdenv.mkDerivation (finalAttrs: {
     ./gettext-0.25.patch
   ];
 
-  buildInputs = [
-    openssl
-  ]
-  ++ lib.optional odbcSupport unixodbc;
-
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
   ];
+
+  buildInputs = [
+    openssl
+  ]
+  ++ lib.optional odbcSupport unixodbc;
 
   meta = {
     description = "Libraries to natively talk to Microsoft SQL Server and Sybase databases";

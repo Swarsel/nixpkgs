@@ -1,21 +1,20 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   numba,
   numpy,
   optuna,
   pytest-cov-stub,
   pytestCheckHook,
-  setuptools,
   scipy,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "resampy";
   version = "0.4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bmcfee";
@@ -24,19 +23,17 @@ buildPythonPackage rec {
     hash = "sha256-LOWpOPAEK+ga7c3bR15QvnHmON6ARS1Qee/7U/VMlTY=";
   };
 
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+    scipy
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
     numpy
     numba
-  ];
-
-  optional-dependencies.design = [ optuna ];
-
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-    scipy
   ];
 
   disabledTests = lib.optionals (stdenv.hostPlatform.system == "aarch64-linux") [
@@ -45,6 +42,8 @@ buildPythonPackage rec {
     "test_resample_nu_quality_sine_parallel"
   ];
 
+  optional-dependencies.design = [ optuna ];
+  pyproject = true;
   pythonImportsCheck = [ "resampy" ];
 
   meta = {

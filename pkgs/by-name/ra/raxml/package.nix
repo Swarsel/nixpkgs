@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  useMpi ? false,
   mpi,
+  useMpi ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,6 +18,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = lib.optionals useMpi [ mpi ];
+  # Fix build with gcc15 (-std=gnu23)
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isGNU "-std=gnu17";
 
   # TODO darwin, AVX and AVX2 makefile targets
   buildPhase =
@@ -29,9 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
       ''
         make -f Makefile.SSE3.PTHREADS.gcc
       '';
-
-  # Fix build with gcc15 (-std=gnu23)
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isGNU "-std=gnu17";
 
   installPhase =
     if useMpi then
@@ -45,9 +44,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Tool for Phylogenetic Analysis and Post-Analysis of Large Phylogenies";
-    license = lib.licenses.gpl3;
     homepage = "https://sco.h-its.org/exelixis/web/software/raxml/";
+    license = lib.licenses.gpl3;
     maintainers = [ lib.maintainers.unode ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"

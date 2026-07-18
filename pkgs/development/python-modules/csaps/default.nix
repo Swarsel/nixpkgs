@@ -1,21 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-
-  poetry-core,
-  setuptools,
-
-  typing-extensions,
+  buildPythonPackage,
   numpy,
+  poetry-core,
+  pytestCheckHook,
   scipy,
+  setuptools,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "csaps";
   version = "1.3.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "espdev";
@@ -23,6 +20,10 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-1pNJaNExhcRWDjJenEKp1eJ4wZMFXxwWcmepEt6/p0s=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     poetry-core
@@ -35,10 +36,7 @@ buildPythonPackage rec {
     scipy
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "csaps" ];
 
   meta = {

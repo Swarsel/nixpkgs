@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   packaging,
   pretend,
   pytestCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "packaging-legacy";
   version = "23.0.post0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "di";
@@ -20,15 +19,14 @@ buildPythonPackage rec {
     hash = "sha256-2TnJjxasC8+c+qHY60e6Jyqhf1nQJfj/tmIA/LvUsT8=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ packaging ];
-
   nativeCheckInputs = [
     pretend
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ packaging ];
+  pyproject = true;
   pythonImportsCheck = [ "packaging_legacy" ];
 
   meta = {

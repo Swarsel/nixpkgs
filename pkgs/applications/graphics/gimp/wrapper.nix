@@ -1,9 +1,9 @@
 {
   lib,
-  symlinkJoin,
-  makeWrapper,
   gimpPlugins,
   gnome-themes-extra,
+  makeWrapper,
+  symlinkJoin,
   plugins ? null,
 }:
 
@@ -22,15 +22,13 @@ let
 
 in
 symlinkJoin {
-  pname = "gimp-with-plugins";
   inherit (gimp) version;
+  pname = "gimp-with-plugins";
 
   outputs = [
     "out"
     "man"
   ];
-
-  paths = [ gimp ] ++ selectedPlugins;
 
   nativeBuildInputs = [ makeWrapper ];
 
@@ -49,8 +47,11 @@ symlinkJoin {
     ln -s ${gimp.man} $man
   '';
 
+  paths = [ gimp ] ++ selectedPlugins;
+
   meta = gimp.meta // {
     description = "${gimp.meta.description} with plugins";
+
     longDescription = ''
       Plugins:
 

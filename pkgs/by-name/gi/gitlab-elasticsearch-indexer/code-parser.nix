@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitLab,
-  rustPlatform,
-  pkg-config,
-  openssl,
   clang,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,16 +18,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-H2C/OgTdIDuCX2tkDb/kJclrLBaSjkqbRtCNf/OYE4Q=";
   };
 
-  cargoHash = "sha256-xOiUO/qGliZwHeGVmr/v318tlO5RvDBoF5cz8BYwXZY=";
-
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
     clang
   ];
+
   buildInputs = [
     openssl.dev
   ];
+
+  cargoHash = "sha256-xOiUO/qGliZwHeGVmr/v318tlO5RvDBoF5cz8BYwXZY=";
 
   preInstall = ''
     mkdir -p $out/include

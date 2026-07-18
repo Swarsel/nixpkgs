@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication {
   pname = "nbutools";
   version = "0-unstable-2023-06-06";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "airbus-seclab";
@@ -16,6 +15,8 @@ python3.pkgs.buildPythonApplication {
     hash = "sha256-YOiFlTIDpeTFOHPU37v0pYf8s3HdaE/4pnd9qrsFtSI=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -32,8 +33,7 @@ python3.pkgs.buildPythonApplication {
     tabulate
   ];
 
-  # Project has no tests
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "Tools for offensive security of NetBackup infrastructures";

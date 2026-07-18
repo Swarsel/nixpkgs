@@ -4,14 +4,14 @@
   fetchurl,
   gitUpdater,
   jre,
-  makeWrapper,
-  mysqlSupport ? true,
-  mysql_jdbc,
-  postgresqlSupport ? true,
-  postgresql_jdbc,
-  redshiftSupport ? true,
-  redshift_jdbc,
   liquibase_redshift_extension,
+  makeWrapper,
+  mysql_jdbc,
+  postgresql_jdbc,
+  redshift_jdbc,
+  mysqlSupport ? true,
+  postgresqlSupport ? true,
+  redshiftSupport ? true,
 }:
 
 let
@@ -35,8 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ jre ];
-
-  sourceRoot = ".";
 
   installPhase =
     let
@@ -77,23 +75,25 @@ stdenv.mkDerivation (finalAttrs: {
       chmod +x $out/bin/liquibase
     '';
 
+  sourceRoot = ".";
+
   passthru.updateScript = gitUpdater {
-    url = "https://github.com/liquibase/liquibase";
-    rev-prefix = "v";
     # The latest versions are in the 4.xx series.  I am not sure where
     # 10.10.10 and 5.0.0 came from, though it appears like they are
     # for the commercial product.
     ignoredVersions = "10.10.10|5.0.0|.*-beta.*";
+    rev-prefix = "v";
+    url = "https://github.com/liquibase/liquibase";
   };
 
   meta = {
     description = "Version Control for your database";
-    mainProgram = "liquibase";
     homepage = "https://www.liquibase.org/";
     changelog = "https://raw.githubusercontent.com/liquibase/liquibase/v${finalAttrs.version}/changelog.txt";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ jsoo1 ];
     platforms = with lib.platforms; unix;
+    mainProgram = "liquibase";
   };
 })

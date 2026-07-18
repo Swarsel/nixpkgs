@@ -5,62 +5,214 @@
 }:
 {
   options.services.github-runners = lib.mkOption {
+    default = { };
+
     description = ''
       Multiple GitHub Runners.
     '';
+
     example = {
       runner1 = {
         enable = true;
-        url = "https://github.com/owner/repo";
         name = "runner1";
         tokenFile = "/secrets/token1";
+        url = "https://github.com/owner/repo";
       };
 
       runner2 = {
         enable = true;
-        url = "https://github.com/owner/repo";
         name = "runner2";
         tokenFile = "/secrets/token2";
+        url = "https://github.com/owner/repo";
       };
     };
-    default = { };
+
     type = lib.types.attrsOf (
       lib.types.submodule (
-        { name, config, ... }:
+        { config, name, ... }:
         {
           options = {
             enable = lib.mkOption {
               default = false;
-              example = true;
+
               description = ''
                 Whether to enable GitHub Actions runner.
 
                 Note: GitHub recommends using self-hosted runners with private repositories only. Learn more here:
                 [About self-hosted runners](https://docs.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners).
               '';
+
+              example = true;
               type = lib.types.bool;
             };
 
-            url = lib.mkOption {
-              type = lib.types.str;
+            package = lib.mkPackageOption pkgs "github-runner" { } // {
+              apply = pkg: pkg.override { inherit (config) nodeRuntimes; };
+            };
+
+            ephemeral = lib.mkOption {
+              default = false;
+
               description = ''
-                Repository to add the runner to.
+                If enabled, causes the following behavior:
+
+                - Passes the `--ephemeral` flag to the runner configuration script
+                - De-registers and stops the runner with GitHub after it has processed one job
+                - On stop, systemd wipes the runtime directory (this always happens, even without using the ephemeral option)
+                - Restarts the service after its successful exit
+                - On start, wipes the state directory and configures a new runner
+
+                You should only enable this option if `tokenFile` points to a file which contains a
+                personal access token (PAT). If you're using the option with a registration token, restarting the
+                service will fail as soon as the registration token expired.
 
                 Changing this option triggers a new runner registration.
-
-                IMPORTANT: If your token is org-wide (not per repository), you need to
-                provide a github org link, not a single repository, so do it like this
-                `https://github.com/nixos`, not like this
-                `https://github.com/nixos/nixpkgs`.
-                Otherwise, you are going to get a `404 NotFound`
-                from `POST https://api.github.com/actions/runner-registration`
-                in the configure script.
               '';
-              example = "https://github.com/nixos/nixpkgs";
+
+              type = lib.types.bool;
+            };
+
+            extraEnvironment = lib.mkOption {
+              default = { };
+
+              description = ''
+                Extra environment variables to set for the runner, as an attrset.
+              '';
+
+              example = {
+                GIT_CONFIG = "/path/to/git/config";
+              };
+
+              type = lib.types.attrs;
+            };
+
+            extraLabels = lib.mkOption {
+              default = [ ];
+
+              description = ''
+                Extra labels in addition to the default (unless disabled through the `noDefaultLabels` option).
+
+                Changing this option triggers a new runner registration.
+              '';
+
+              example = lib.literalExpression ''[ "nixos" ]'';
+              type = lib.types.listOf lib.types.str;
+            };
+
+            extraPackages = lib.mkOption {
+              default = [ ];
+
+              description = ''
+                Extra packages to add to `PATH` of the service to make them available to workflows.
+              '';
+
+              type = lib.types.listOf lib.types.package;
+            };
+
+            group = lib.mkOption {
+              default = null;
+              defaultText = lib.literalExpression "groupname";
+
+              description = ''
+                Group under which to run the service.
+
+                The effect of this option depends on the value of the `user` option:
+
+                - `group == null` and `user == null`:
+                  The service runs with a dynamically allocated user and group.
+                - `group == null` and `user != null`:
+                  The service runs as the given user and its default group.
+                - `group != null` and `user == null`:
+                  This configuration is invalid. In this case, the service would use the given group
+                  but run as root implicitly. If this is really what you want, set `user = "root"` explicitly.
+              '';
+
+              type = lib.types.nullOr lib.types.str;
+            };
+
+            name = lib.mkOption {
+              default = name;
+
+              description = ''
+                Name of the runner to configure. If null, defaults to the hostname.
+
+                Changing this option triggers a new runner registration.
+              '';
+
+              example = "nixos";
+              type = lib.types.nullOr lib.types.str;
+            };
+
+            noDefaultLabels = lib.mkOption {
+              default = false;
+
+              description = ''
+                Disables adding the default labels. Also see the `extraLabels` option.
+
+                Changing this option triggers a new runner registration.
+              '';
+
+              type = lib.types.bool;
+            };
+
+            nodeRuntimes = lib.mkOption {
+              default = [
+                "node24"
+              ];
+
+              description = ''
+                List of Node.js runtimes the runner should support.
+              '';
+
+              type =
+                with lib.types;
+                nonEmptyListOf (enum [
+                  "node20"
+                  "node24"
+                ]);
+            };
+
+            replace = lib.mkOption {
+              default = false;
+
+              description = ''
+                Replace any existing runner with the same name.
+
+                Without this flag, registering a new runner with the same name fails.
+              '';
+
+              type = lib.types.bool;
+            };
+
+            runnerGroup = lib.mkOption {
+              default = null;
+
+              description = ''
+                Name of the runner group to add this runner to (defaults to the default runner group).
+
+                Changing this option triggers a new runner registration.
+              '';
+
+              type = lib.types.nullOr lib.types.str;
+            };
+
+            serviceOverrides = lib.mkOption {
+              default = { };
+
+              description = ''
+                Modify the systemd service. Can be used to, e.g., adjust the sandboxing options.
+                See {manpage}`systemd.exec(5)` for more options.
+              '';
+
+              example = {
+                ProtectHome = false;
+                RestrictAddressFamilies = [ "AF_PACKET" ];
+              };
+
+              type = lib.types.attrs;
             };
 
             tokenFile = lib.mkOption {
-              type = lib.types.path;
               description = ''
                 The full path to a file which contains either
 
@@ -99,15 +251,14 @@
                 Nothing special needs to be done, but updating will break after one hour,
                 so these are not recommended.
               '';
+
               example = "/run/secrets/github-runner/nixos.token";
+              type = lib.types.path;
             };
 
             tokenType = lib.mkOption {
-              type = lib.types.enum [
-                "auto"
-                "access"
-                "registration"
-              ];
+              default = "auto";
+
               description = ''
                 Type of token to use for runner registration.
 
@@ -122,120 +273,39 @@
                 The default `auto` attempts to detect the token type automatically based on its
                 format.
               '';
+
               example = "registration";
-              default = "auto";
+
+              type = lib.types.enum [
+                "auto"
+                "access"
+                "registration"
+              ];
             };
 
-            name = lib.mkOption {
-              type = lib.types.nullOr lib.types.str;
+            url = lib.mkOption {
               description = ''
-                Name of the runner to configure. If null, defaults to the hostname.
+                Repository to add the runner to.
 
                 Changing this option triggers a new runner registration.
+
+                IMPORTANT: If your token is org-wide (not per repository), you need to
+                provide a github org link, not a single repository, so do it like this
+                `https://github.com/nixos`, not like this
+                `https://github.com/nixos/nixpkgs`.
+                Otherwise, you are going to get a `404 NotFound`
+                from `POST https://api.github.com/actions/runner-registration`
+                in the configure script.
               '';
-              example = "nixos";
-              default = name;
-            };
 
-            runnerGroup = lib.mkOption {
-              type = lib.types.nullOr lib.types.str;
-              description = ''
-                Name of the runner group to add this runner to (defaults to the default runner group).
-
-                Changing this option triggers a new runner registration.
-              '';
-              default = null;
-            };
-
-            extraLabels = lib.mkOption {
-              type = lib.types.listOf lib.types.str;
-              description = ''
-                Extra labels in addition to the default (unless disabled through the `noDefaultLabels` option).
-
-                Changing this option triggers a new runner registration.
-              '';
-              example = lib.literalExpression ''[ "nixos" ]'';
-              default = [ ];
-            };
-
-            noDefaultLabels = lib.mkOption {
-              type = lib.types.bool;
-              description = ''
-                Disables adding the default labels. Also see the `extraLabels` option.
-
-                Changing this option triggers a new runner registration.
-              '';
-              default = false;
-            };
-
-            replace = lib.mkOption {
-              type = lib.types.bool;
-              description = ''
-                Replace any existing runner with the same name.
-
-                Without this flag, registering a new runner with the same name fails.
-              '';
-              default = false;
-            };
-
-            extraPackages = lib.mkOption {
-              type = lib.types.listOf lib.types.package;
-              description = ''
-                Extra packages to add to `PATH` of the service to make them available to workflows.
-              '';
-              default = [ ];
-            };
-
-            extraEnvironment = lib.mkOption {
-              type = lib.types.attrs;
-              description = ''
-                Extra environment variables to set for the runner, as an attrset.
-              '';
-              example = {
-                GIT_CONFIG = "/path/to/git/config";
-              };
-              default = { };
-            };
-
-            serviceOverrides = lib.mkOption {
-              type = lib.types.attrs;
-              description = ''
-                Modify the systemd service. Can be used to, e.g., adjust the sandboxing options.
-                See {manpage}`systemd.exec(5)` for more options.
-              '';
-              example = {
-                ProtectHome = false;
-                RestrictAddressFamilies = [ "AF_PACKET" ];
-              };
-              default = { };
-            };
-
-            package = lib.mkPackageOption pkgs "github-runner" { } // {
-              apply = pkg: pkg.override { inherit (config) nodeRuntimes; };
-            };
-
-            ephemeral = lib.mkOption {
-              type = lib.types.bool;
-              description = ''
-                If enabled, causes the following behavior:
-
-                - Passes the `--ephemeral` flag to the runner configuration script
-                - De-registers and stops the runner with GitHub after it has processed one job
-                - On stop, systemd wipes the runtime directory (this always happens, even without using the ephemeral option)
-                - Restarts the service after its successful exit
-                - On start, wipes the state directory and configures a new runner
-
-                You should only enable this option if `tokenFile` points to a file which contains a
-                personal access token (PAT). If you're using the option with a registration token, restarting the
-                service will fail as soon as the registration token expired.
-
-                Changing this option triggers a new runner registration.
-              '';
-              default = false;
+              example = "https://github.com/nixos/nixpkgs";
+              type = lib.types.str;
             };
 
             user = lib.mkOption {
-              type = lib.types.nullOr lib.types.str;
+              default = null;
+              defaultText = lib.literalExpression "username";
+
               description = ''
                 User under which to run the service.
 
@@ -244,31 +314,13 @@
 
                 Also see the `group` option for an overview on the effects of the `user` and `group` settings.
               '';
-              default = null;
-              defaultText = lib.literalExpression "username";
-            };
 
-            group = lib.mkOption {
               type = lib.types.nullOr lib.types.str;
-              description = ''
-                Group under which to run the service.
-
-                The effect of this option depends on the value of the `user` option:
-
-                - `group == null` and `user == null`:
-                  The service runs with a dynamically allocated user and group.
-                - `group == null` and `user != null`:
-                  The service runs as the given user and its default group.
-                - `group != null` and `user == null`:
-                  This configuration is invalid. In this case, the service would use the given group
-                  but run as root implicitly. If this is really what you want, set `user = "root"` explicitly.
-              '';
-              default = null;
-              defaultText = lib.literalExpression "groupname";
             };
 
             workDir = lib.mkOption {
-              type = with lib.types; nullOr str;
+              default = null;
+
               description = ''
                 Working directory, available as `$GITHUB_WORKSPACE` during workflow runs
                 and used as a default for [repository checkouts](https://github.com/actions/checkout).
@@ -278,22 +330,8 @@
 
                 Changing this option triggers a new runner registration.
               '';
-              default = null;
-            };
 
-            nodeRuntimes = lib.mkOption {
-              type =
-                with lib.types;
-                nonEmptyListOf (enum [
-                  "node20"
-                  "node24"
-                ]);
-              default = [
-                "node24"
-              ];
-              description = ''
-                List of Node.js runtimes the runner should support.
-              '';
+              type = with lib.types; nullOr str;
             };
           };
         }

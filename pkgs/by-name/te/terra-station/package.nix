@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
-  makeWrapper,
-  electron,
   asar,
+  dpkg,
+  electron,
+  makeWrapper,
 }:
 
 let
@@ -32,8 +32,8 @@ stdenv.mkDerivation rec {
   version = "1.2.0";
 
   src = fetchurl {
-    url = "https://github.com/terra-money/station-desktop/releases/download/v${version}/Terra.Station_${version}_${arch}.deb";
     inherit sha256;
+    url = "https://github.com/terra-money/station-desktop/releases/download/v${version}/Terra.Station_${version}_${arch}.deb";
   };
 
   nativeBuildInputs = [
@@ -41,9 +41,6 @@ stdenv.mkDerivation rec {
     asar
     dpkg
   ];
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -71,13 +68,16 @@ stdenv.mkDerivation rec {
       --add-flags $out/share/${pname}/resources/app.aasar
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "Terra station is the official wallet of the Terra blockchain";
     homepage = "https://station.money/";
     license = lib.licenses.isc;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = [ lib.maintainers.peterwilli ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "terra-station";
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
   };
 }

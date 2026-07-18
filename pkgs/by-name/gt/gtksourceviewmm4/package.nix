@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  gtkmm3,
   glibmm,
-  gtksourceview4,
   gnome,
+  gtkmm3,
+  gtksourceview4,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,6 +18,14 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "088p2ch1b4fvzl9416nw3waj0pqgp31cd5zj4lx5hzzrq2afgapy";
   };
 
+  nativeBuildInputs = [ pkg-config ];
+
+  propagatedBuildInputs = [
+    glibmm
+    gtkmm3
+    gtksourceview4
+  ];
+
   passthru = {
     updateScript = gnome.updateScript {
       attrPath = "gtksourceviewmm4";
@@ -26,18 +34,11 @@ stdenv.mkDerivation (finalAttrs: {
     };
   };
 
-  nativeBuildInputs = [ pkg-config ];
-  propagatedBuildInputs = [
-    glibmm
-    gtkmm3
-    gtksourceview4
-  ];
-
   meta = {
-    platforms = lib.platforms.linux;
-    homepage = "https://gitlab.gnome.org/GNOME/gtksourceviewmm";
     description = "C++ wrapper for gtksourceview";
+    homepage = "https://gitlab.gnome.org/GNOME/gtksourceviewmm";
     license = lib.licenses.lgpl2;
+    platforms = lib.platforms.linux;
     teams = [ lib.teams.gnome ];
   };
 })

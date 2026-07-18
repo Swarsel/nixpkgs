@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   buildPythonPackage,
   certifi,
-  fetchFromGitHub,
   poetry-core,
   pydantic,
   pytest-aiohttp,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "aiopurpleair";
   version = "2025.08.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bachya";
@@ -24,6 +23,14 @@ buildPythonPackage rec {
     hash = "sha256-VmKIIgfZFk9z8WORDHA4ibL4FZchiRrT6L0rCkxosoc=";
   };
 
+  nativeCheckInputs = [
+    aresponses
+    pytest-aiohttp
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -32,20 +39,12 @@ buildPythonPackage rec {
     certifi
   ];
 
-  __darwinAllowLocalNetworking = true;
-
-  nativeCheckInputs = [
-    aresponses
-    pytest-aiohttp
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
   disabledTestPaths = [
     # Ignore the examples directory as the files are prefixed with test_.
     "examples/"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "aiopurpleair" ];
 
   meta = {

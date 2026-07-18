@@ -1,18 +1,17 @@
 {
   lib,
   buildPythonPackage,
+  callPackage,
   fetchPypi,
   fixtures,
   pbr,
-  six,
   python-subunit,
-  callPackage,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "oslotest";
   version = "6.1.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -29,12 +28,12 @@ buildPythonPackage rec {
 
   # check in passthru.tests.pytest to escape infinite recursion with other oslo components
   doCheck = false;
+  format = "setuptools";
+  pythonImportsCheck = [ "oslotest" ];
 
   passthru.tests = {
     tests = callPackage ./tests.nix { };
   };
-
-  pythonImportsCheck = [ "oslotest" ];
 
   meta = {
     description = "Oslo test framework";

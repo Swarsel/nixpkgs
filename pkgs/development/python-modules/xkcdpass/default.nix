@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "xkcdpass";
   version = "1.30.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -18,22 +17,22 @@ buildPythonPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ installShellFiles ];
-
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
 
-  pythonImportsCheck = [ "xkcdpass" ];
+  postInstall = ''
+    installManPage *.?
+    install -Dm444 -t $out/share/doc/${finalAttrs.pname} README*
+  '';
+
+  build-system = [ setuptools ];
 
   disabledTests = [
     # AssertionError: 29611 != 5670
     "test_loadwordfile"
   ];
 
-  postInstall = ''
-    installManPage *.?
-    install -Dm444 -t $out/share/doc/${finalAttrs.pname} README*
-  '';
+  pyproject = true;
+  pythonImportsCheck = [ "xkcdpass" ];
 
   meta = {
     description = "Generate secure multiword passwords/passphrases, inspired by XKCD";

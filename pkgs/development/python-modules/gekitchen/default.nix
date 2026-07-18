@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   bidict,
   buildPythonPackage,
-  fetchFromGitHub,
   humanize,
   lxml,
   pytestCheckHook,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "gekitchen";
   version = "0.2.19";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "ajmarks";
@@ -35,7 +34,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "gekitchen" ];
 
   meta = {

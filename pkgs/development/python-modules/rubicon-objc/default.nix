@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "rubicon-objc";
   version = "0.5.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "beeware";
@@ -24,20 +23,21 @@ buildPythonPackage rec {
     sed -i 's/"setuptools_scm==.*"/"setuptools_scm"/' pyproject.toml
   '';
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
   preCheck = ''
     make -C tests/objc
   '';
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "rubicon.objc" ];
-
   __darwinAllowLocalNetworking = true;
+
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "rubicon.objc" ];
 
   meta = {
     description = "Bridge interface between Python and Objective-C";

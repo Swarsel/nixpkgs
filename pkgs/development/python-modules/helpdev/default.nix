@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "helpdev";
   version = "0.7.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,10 +22,11 @@ buildPythonPackage rec {
 
   # No tests included in archive
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Extracts information about the Python environment easily";
-    mainProgram = "helpdev";
     license = lib.licenses.mit;
+    mainProgram = "helpdev";
   };
 }

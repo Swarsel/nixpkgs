@@ -1,15 +1,15 @@
 {
+  lib,
   fetchzip,
   repoRevToNameMaybe,
-  lib,
 }:
 
 lib.makeOverridable (
   {
     url,
+    name ? repoRevToNameMaybe url (lib.revOrTag rev tag) "gitiles",
     rev ? null,
     tag ? null,
-    name ? repoRevToNameMaybe url (lib.revOrTag rev tag) "gitiles",
     ...
   }@args:
 
@@ -25,8 +25,8 @@ lib.makeOverridable (
   fetchzip (
     {
       inherit name;
-      url = "${url}/+archive/${realrev}.tar.gz";
       stripRoot = false;
+      url = "${url}/+archive/${realrev}.tar.gz";
       meta.homepage = url;
     }
     // removeAttrs args [

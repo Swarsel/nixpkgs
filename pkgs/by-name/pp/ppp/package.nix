@@ -1,23 +1,23 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   autoreconfHook,
   bash,
-  fetchFromGitHub,
   fetchpatch,
-  lib,
   libpcap,
   libxcrypt,
   linux-pam,
   nixosTests,
   openssl,
   pkg-config,
-  stdenv,
-  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemdMinimal,
   systemdMinimal,
+  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemdMinimal,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "2.5.2";
   pname = "ppp";
+  version = "2.5.2";
 
   src = fetchFromGitHub {
     owner = "ppp-project";
@@ -30,17 +30,19 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix build with gcc15
     # https://github.com/ppp-project/ppp/pull/548
     (fetchpatch {
-      url = "https://github.com/ppp-project/ppp/commit/05361692ee7d6260ce5c04c9fa0e5a1aa7565323.patch";
       hash = "sha256-ybuWyA1t9IJ1Sg06a0b0tin4qssr0qzmenfGoA1X0BE=";
+      url = "https://github.com/ppp-project/ppp/commit/05361692ee7d6260ce5c04c9fa0e5a1aa7565323.patch";
     })
   ];
 
-  configureFlags = [
-    "--localstatedir=/var"
-    "--sysconfdir=/etc"
-    "--with-openssl=${openssl.dev}"
-    (lib.enableFeature withSystemd "systemd")
-  ];
+  postPatch = ''
+    for file in $(find -name Makefile.linux); do
+      substituteInPlace "$file" --replace '-m 4550' '-m 550'
+    done
+
+    patchShebangs --host \
+      scripts/{pon,poff,plog}
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -58,26 +60,18 @@ stdenv.mkDerivation (finalAttrs: {
     systemdMinimal
   ];
 
-  postPatch = ''
-    for file in $(find -name Makefile.linux); do
-      substituteInPlace "$file" --replace '-m 4550' '-m 550'
-    done
-
-    patchShebangs --host \
-      scripts/{pon,poff,plog}
-  '';
-
-  enableParallelBuilding = true;
+  configureFlags = [
+    "--localstatedir=/var"
+    "--sysconfdir=/etc"
+    "--with-openssl=${openssl.dev}"
+    (lib.enableFeature withSystemd "systemd")
+  ];
 
   makeFlags = [
     "CC=${stdenv.cc.targetPrefix}cc"
   ];
 
   env.NIX_LDFLAGS = "-lcrypt";
-
-  installFlags = [
-    "sysconfdir=$(out)/etc"
-  ];
 
   postInstall = ''
     install -Dm755 -t $out/bin scripts/{pon,poff,plog}
@@ -87,20 +81,28 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace "$out/bin/pon" --replace "/usr/sbin" "$out/bin"
   '';
 
+  enableParallelBuilding = true;
+
+  installFlags = [
+    "sysconfdir=$(out)/etc"
+  ];
+
   passthru.tests = {
     inherit (nixosTests) pppd;
   };
 
   meta = {
-    homepage = "https://ppp.samba.org";
     description = "Point-to-point implementation to provide Internet connections over serial lines";
+    homepage = "https://ppp.samba.org";
+
     license = with lib.licenses; [
       bsdOriginal
       publicDomain
       gpl2Only
       lgpl2
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [ stv0g ];
+    platforms = lib.platforms.linux;
   };
 })

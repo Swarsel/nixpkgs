@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  autoreconfHook,
   autoconf-archive,
-  pkg-config,
-  glib,
-  which,
+  autoreconfHook,
   bison,
-  flex,
   docbook2x,
   docbook_sgml_dtd_41,
   docbook_sgml_dtd_45,
-  nixosTests,
+  fetchpatch,
+  flex,
+  glib,
+  gnutls,
   libnl,
   linuxHeaders,
-  gnutls,
+  nixosTests,
+  pkg-config,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,8 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fix nbd device parsing
     (fetchpatch {
-      url = "https://github.com/NetworkBlockDevice/nbd/commit/a80304e10e9709d4100c935bc4cdc9086e86d5ff.patch";
       hash = "sha256-PMgVz2a8cwv1tO8ac5Wrf8ZFvOmCq+mC5bysJJGhpGc=";
+      url = "https://github.com/NetworkBlockDevice/nbd/commit/a80304e10e9709d4100c935bc4cdc9086e86d5ff.patch";
     })
   ];
 
@@ -63,19 +63,19 @@ stdenv.mkDerivation (finalAttrs: {
     linuxHeaders
   ];
 
-  nativeCheckInputs = [
-    which
-  ];
-
   configureFlags = [
     "--sysconfdir=/etc"
   ];
 
-  doCheck = !stdenv.hostPlatform.isDarwin;
-
   env.SGML_CATALOG_FILES = lib.concatStringsSep ":" [
     "${docbook_sgml_dtd_41}/sgml/dtd/docbook-4.1/docbook.cat"
     "${docbook_sgml_dtd_45}/sgml/dtd/docbook-4.5/docbook.cat"
+  ];
+
+  doCheck = !stdenv.hostPlatform.isDarwin;
+
+  nativeCheckInputs = [
+    which
   ];
 
   passthru.tests = {
@@ -83,10 +83,10 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://nbd.sourceforge.io/";
     description = "Map arbitrary files as block devices over the network";
+    homepage = "https://nbd.sourceforge.io/";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ nickcao ];
+    platforms = lib.platforms.unix;
   };
 })

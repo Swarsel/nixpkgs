@@ -3,12 +3,12 @@
   stdenv,
 }:
 
-{ version, src, ... }:
+{ src, version, ... }:
 
 stdenv.mkDerivation {
-  pname = "volume_controller";
   inherit version src;
   inherit (src) passthru;
+  pname = "volume_controller";
 
   postPatch = lib.optionalString (lib.versionAtLeast version "3.4.0") ''
     substituteInPlace linux/CMakeLists.txt \

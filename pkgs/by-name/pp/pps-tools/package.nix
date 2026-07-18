@@ -34,7 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "User-space tools for LinuxPPS";
     homepage = "http://linuxpps.org/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ sorki ];
+    platforms = lib.platforms.linux;
   };
 })

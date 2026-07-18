@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 buildGoModule rec {
@@ -21,16 +21,16 @@ buildGoModule rec {
     "-s"
     "-w"
   ];
-  subPackages = [ "cmd/eigenlayer" ];
 
+  subPackages = [ "cmd/eigenlayer" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "Utility that manages core operator functionalities like local keys, operator registration and updates";
     homepage = "https://www.eigenlayer.xyz/";
     changelog = "https://github.com/Layr-Labs/eigenlayer-cli/releases/tag/${src.rev}";
-    description = "Utility that manages core operator functionalities like local keys, operator registration and updates";
-    mainProgram = "eigenlayer";
     license = lib.licenses.bsl11;
     maintainers = with lib.maintainers; [ selfuryon ];
+    mainProgram = "eigenlayer";
   };
 }

@@ -1,8 +1,8 @@
 {
   config,
   lib,
-  options,
   pkgs,
+  options,
   ...
 }:
 let
@@ -14,122 +14,58 @@ in
     services.gocd-agent = {
       enable = lib.mkEnableOption "gocd-agent";
 
-      user = lib.mkOption {
-        default = "gocd-agent";
-        type = lib.types.str;
-        description = ''
-          User the Go.CD agent should execute under.
-        '';
-      };
-
-      group = lib.mkOption {
-        default = "gocd-agent";
-        type = lib.types.str;
-        description = ''
-          If the default user "gocd-agent" is configured then this is the primary
-          group of that user.
-        '';
-      };
-
-      extraGroups = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [ ];
-        example = [
-          "wheel"
-          "docker"
-        ];
-        description = ''
-          List of extra groups that the "gocd-agent" user should be a part of.
-        '';
-      };
-
-      packages = lib.mkOption {
-        default = [
-          pkgs.stdenv
-          pkgs.jre
-          pkgs.git
-          config.programs.ssh.package
-          pkgs.nix
-        ];
-        defaultText = lib.literalExpression "[ pkgs.stdenv pkgs.jre pkgs.git config.programs.ssh.package pkgs.nix ]";
-        type = lib.types.listOf lib.types.package;
-        description = ''
-          Packages to add to PATH for the Go.CD agent process.
-        '';
-      };
-
       agentConfig = lib.mkOption {
         default = "";
-        type = lib.types.str;
+
+        description = ''
+          Agent registration configuration.
+        '';
+
         example = ''
           agent.auto.register.resources=ant,java
           agent.auto.register.environments=QA,Performance
           agent.auto.register.hostname=Agent01
         '';
-        description = ''
-          Agent registration configuration.
-        '';
-      };
 
-      goServer = lib.mkOption {
-        default = "https://127.0.0.1:8154/go";
         type = lib.types.str;
-        description = ''
-          URL of the GoCD Server to attach the Go.CD Agent to.
-        '';
       };
 
-      workDir = lib.mkOption {
-        default = "/var/lib/go-agent";
-        type = lib.types.str;
+      environment = lib.mkOption {
+        default = { };
+
         description = ''
-          Specifies the working directory in which the Go.CD agent java archive resides.
+          Additional environment variables to be passed to the Go.CD agent process.
+          As a base environment, Go.CD agent receives NIX_PATH from
+          {option}`environment.sessionVariables`, NIX_REMOTE is set to
+          "daemon".
         '';
+
+        type = with lib.types; attrsOf str;
       };
 
-      initialJavaHeapSize = lib.mkOption {
-        default = "128m";
-        type = lib.types.str;
-        description = ''
-          Specifies the initial java heap memory size for the Go.CD agent java process.
-        '';
-      };
+      extraGroups = lib.mkOption {
+        default = [ ];
 
-      maxJavaHeapMemory = lib.mkOption {
-        default = "256m";
-        type = lib.types.str;
         description = ''
-          Specifies the java maximum heap memory size for the Go.CD agent java process.
+          List of extra groups that the "gocd-agent" user should be a part of.
         '';
-      };
 
-      startupOptions = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [
-          "-Xms${cfg.initialJavaHeapSize}"
-          "-Xmx${cfg.maxJavaHeapMemory}"
-          "-Djava.io.tmpdir=/tmp"
-          "-Dcruise.console.publish.interval=10"
-          "-Djava.security.egd=file:/dev/./urandom"
+        example = [
+          "wheel"
+          "docker"
         ];
-        defaultText = lib.literalExpression ''
-          [
-            "-Xms''${config.${opt.initialJavaHeapSize}}"
-            "-Xmx''${config.${opt.maxJavaHeapMemory}}"
-            "-Djava.io.tmpdir=/tmp"
-            "-Dcruise.console.publish.interval=10"
-            "-Djava.security.egd=file:/dev/./urandom"
-          ]
-        '';
-        description = ''
-          Specifies startup command line arguments to pass to Go.CD agent
-          java process.
-        '';
+
+        type = lib.types.listOf lib.types.str;
       };
 
       extraOptions = lib.mkOption {
         default = [ ];
-        type = lib.types.listOf lib.types.str;
+
+        description = ''
+          Specifies additional command line arguments to pass to Go.CD agent
+          java process.  Example contains debug and gcLog arguments.
+        '';
+
         example = [
           "-X debug"
           "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5006"
@@ -140,46 +76,122 @@ in
           "-XX:+PrintGCDetails"
           "-XX:+PrintGC"
         ];
-        description = ''
-          Specifies additional command line arguments to pass to Go.CD agent
-          java process.  Example contains debug and gcLog arguments.
-        '';
+
+        type = lib.types.listOf lib.types.str;
       };
 
-      environment = lib.mkOption {
-        default = { };
-        type = with lib.types; attrsOf str;
+      goServer = lib.mkOption {
+        default = "https://127.0.0.1:8154/go";
+
         description = ''
-          Additional environment variables to be passed to the Go.CD agent process.
-          As a base environment, Go.CD agent receives NIX_PATH from
-          {option}`environment.sessionVariables`, NIX_REMOTE is set to
-          "daemon".
+          URL of the GoCD Server to attach the Go.CD Agent to.
         '';
+
+        type = lib.types.str;
+      };
+
+      group = lib.mkOption {
+        default = "gocd-agent";
+
+        description = ''
+          If the default user "gocd-agent" is configured then this is the primary
+          group of that user.
+        '';
+
+        type = lib.types.str;
+      };
+
+      initialJavaHeapSize = lib.mkOption {
+        default = "128m";
+
+        description = ''
+          Specifies the initial java heap memory size for the Go.CD agent java process.
+        '';
+
+        type = lib.types.str;
+      };
+
+      maxJavaHeapMemory = lib.mkOption {
+        default = "256m";
+
+        description = ''
+          Specifies the java maximum heap memory size for the Go.CD agent java process.
+        '';
+
+        type = lib.types.str;
+      };
+
+      packages = lib.mkOption {
+        default = [
+          pkgs.stdenv
+          pkgs.jre
+          pkgs.git
+          config.programs.ssh.package
+          pkgs.nix
+        ];
+
+        defaultText = lib.literalExpression "[ pkgs.stdenv pkgs.jre pkgs.git config.programs.ssh.package pkgs.nix ]";
+
+        description = ''
+          Packages to add to PATH for the Go.CD agent process.
+        '';
+
+        type = lib.types.listOf lib.types.package;
+      };
+
+      startupOptions = lib.mkOption {
+        default = [
+          "-Xms${cfg.initialJavaHeapSize}"
+          "-Xmx${cfg.maxJavaHeapMemory}"
+          "-Djava.io.tmpdir=/tmp"
+          "-Dcruise.console.publish.interval=10"
+          "-Djava.security.egd=file:/dev/./urandom"
+        ];
+
+        defaultText = lib.literalExpression ''
+          [
+            "-Xms''${config.${opt.initialJavaHeapSize}}"
+            "-Xmx''${config.${opt.maxJavaHeapMemory}}"
+            "-Djava.io.tmpdir=/tmp"
+            "-Dcruise.console.publish.interval=10"
+            "-Djava.security.egd=file:/dev/./urandom"
+          ]
+        '';
+
+        description = ''
+          Specifies startup command line arguments to pass to Go.CD agent
+          java process.
+        '';
+
+        type = lib.types.listOf lib.types.str;
+      };
+
+      user = lib.mkOption {
+        default = "gocd-agent";
+
+        description = ''
+          User the Go.CD agent should execute under.
+        '';
+
+        type = lib.types.str;
+      };
+
+      workDir = lib.mkOption {
+        default = "/var/lib/go-agent";
+
+        description = ''
+          Specifies the working directory in which the Go.CD agent java archive resides.
+        '';
+
+        type = lib.types.str;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    users.groups = lib.optionalAttrs (cfg.group == "gocd-agent") {
-      gocd-agent.gid = config.ids.gids.gocd-agent;
-    };
-
-    users.users = lib.optionalAttrs (cfg.user == "gocd-agent") {
-      gocd-agent = {
-        description = "gocd-agent user";
-        createHome = true;
-        home = cfg.workDir;
-        group = cfg.group;
-        extraGroups = cfg.extraGroups;
-        useDefaultShell = true;
-        uid = config.ids.uids.gocd-agent;
-      };
-    };
-
     systemd.services.gocd-agent = {
-      description = "GoCD Agent";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "GoCD Agent";
 
       environment =
         let
@@ -189,11 +201,11 @@ in
         in
         selectedSessionVars
         // {
-          NIX_REMOTE = "daemon";
-          AGENT_WORK_DIR = cfg.workDir;
           AGENT_STARTUP_ARGS = "${lib.concatStringsSep " " cfg.startupOptions}";
+          AGENT_WORK_DIR = cfg.workDir;
           LOG_DIR = cfg.workDir;
           LOG_FILE = "${cfg.workDir}/go-agent-start.log";
+          NIX_REMOTE = "daemon";
         }
         // cfg.environment;
 
@@ -221,10 +233,28 @@ in
       '';
 
       serviceConfig = {
+        Restart = "on-failure";
+        RestartSec = 30;
         User = cfg.user;
         WorkingDirectory = cfg.workDir;
-        RestartSec = 30;
-        Restart = "on-failure";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups = lib.optionalAttrs (cfg.group == "gocd-agent") {
+      gocd-agent.gid = config.ids.gids.gocd-agent;
+    };
+
+    users.users = lib.optionalAttrs (cfg.user == "gocd-agent") {
+      gocd-agent = {
+        createHome = true;
+        description = "gocd-agent user";
+        extraGroups = cfg.extraGroups;
+        group = cfg.group;
+        home = cfg.workDir;
+        uid = config.ids.uids.gocd-agent;
+        useDefaultShell = true;
       };
     };
   };

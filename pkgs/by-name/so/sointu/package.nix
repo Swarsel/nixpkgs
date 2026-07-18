@@ -1,18 +1,18 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
-  pkg-config,
-  nix-update-script,
+  fetchFromGitHub,
   alsa-lib,
+  buildGoModule,
   libGL,
+  libx11,
   libxcb,
+  libxcursor,
+  libxfixes,
   libxkbcommon,
+  nix-update-script,
+  pkg-config,
   vulkan-headers,
   wayland,
-  libxfixes,
-  libxcursor,
-  libx11,
 }:
 
 buildGoModule (finalAttrs: {
@@ -42,8 +42,8 @@ buildGoModule (finalAttrs: {
     libxfixes
   ];
 
-  proxyVendor = true;
   vendorHash = "sha256-GFLfUd8Y4TFfdej/zy3VkCUwme2S2uAP39TcfZEv1Bg=";
+  proxyVendor = true;
 
   subPackages = [
     "cmd/sointu-track"
@@ -55,9 +55,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Fork of 4klang that can target 386, amd64 and WebAssembly";
-    mainProgram = "sointu-track";
     homepage = "https://github.com/vsariola/sointu";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ martinimoe ];
+    mainProgram = "sointu-track";
   };
 })

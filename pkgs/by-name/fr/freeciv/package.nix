@@ -2,34 +2,34 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  SDL2,
+  SDL2_gfx,
+  SDL2_image,
+  SDL2_mixer,
+  SDL2_ttf,
   autoreconfHook,
+  bzip2,
+  curl,
+  fluidsynth,
+  freetype,
+  gettext,
+  gtk3,
+  icu,
+  libiconv,
   lua5_3,
   pkg-config,
   python3,
-  zlib,
-  bzip2,
-  curl,
-  xz,
-  gettext,
-  libiconv,
-  icu,
-  SDL2,
-  SDL2_mixer,
-  SDL2_image,
-  SDL2_ttf,
-  SDL2_gfx,
-  freetype,
-  fluidsynth,
-  sdl2Client ? false,
-  gtkClient ? true,
-  gtk3,
-  wrapGAppsHook3,
-  qtClient ? false,
   qt5,
-  server ? true,
   readline,
-  enableSqlite ? true,
   sqlite,
+  wrapGAppsHook3,
+  xz,
+  zlib,
+  enableSqlite ? true,
+  gtkClient ? true,
+  qtClient ? false,
+  sdl2Client ? false,
+  server ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -84,14 +84,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional server readline
   ++ lib.optional enableSqlite sqlite;
 
-  dontWrapQtApps = true;
-  dontWrapGApps = true;
-
-  # configure is not smart enough to look for SDL2 headers under
-  # .../SDL2, but thankfully $SDL2_PATH is almost exactly what we want
-  preConfigure = ''
-    export CPPFLAGS="$(echo $SDL2_PATH | sed 's#/nix/store/#-I/nix/store/#g')"
-  '';
   configureFlags = [
     "--enable-shared"
   ]
@@ -109,6 +101,12 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional (!gtkClient) "--enable-fcmp=cli"
   ++ lib.optional (!server) "--disable-server";
 
+  # configure is not smart enough to look for SDL2 headers under
+  # .../SDL2, but thankfully $SDL2_PATH is almost exactly what we want
+  preConfigure = ''
+    export CPPFLAGS="$(echo $SDL2_PATH | sed 's#/nix/store/#-I/nix/store/#g')"
+  '';
+
   postFixup =
     lib.optionalString qtClient ''
       wrapQtApp $out/bin/freeciv-qt
@@ -117,21 +115,25 @@ stdenv.mkDerivation (finalAttrs: {
       wrapGApp $out/bin/freeciv-gtk3.22
     '';
 
+  dontWrapGApps = true;
+  dontWrapQtApps = true;
   enableParallelBuilding = true;
 
   meta = {
     description = "Multiplayer (or single player), turn-based strategy game";
+
     longDescription = ''
       Freeciv is a Free and Open Source empire-building strategy game
       inspired by the history of human civilization. The game commences in
       prehistory and your mission is to lead your tribe from the stone age
       to the space age...
     '';
+
     homepage = "https://freeciv.org/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ pierron ];
     platforms = lib.platforms.unix;
-    hydraPlatforms = lib.platforms.linux; # sdl-config times out on darwin
     broken = qtClient && stdenv.hostPlatform.isDarwin; # Missing Qt5 development files
+    hydraPlatforms = lib.platforms.linux; # sdl-config times out on darwin
   };
 })

@@ -1,7 +1,7 @@
 {
-  mkDerivation,
-  stdenv,
   lib,
+  stdenv,
+  mkDerivation,
 }:
 # this package is quite different from stock libcxxrt.
 # as of FreeBSD 14.0, it is vendored from APPROXIMATELY libcxxrt
@@ -10,18 +10,20 @@
 # symbol versions not specified on any version of libcxxrt.
 mkDerivation {
   pname = "libcxxrt";
-  path = "lib/libcxxrt";
-  extraPaths = [ "contrib/libcxxrt" ];
+
   outputs = [
     "out"
     "dev"
     "debug"
   ];
-  noLibcxx = true;
-  libName = "cxxrt";
 
   # they already fixed the undefined symbols in the version map upstream. it'll be released probably in 15.0
   preBuild = ''
     export NIX_LDFLAGS="$NIX_LDFLAGS --undefined-version"
   '';
+
+  extraPaths = [ "contrib/libcxxrt" ];
+  libName = "cxxrt";
+  noLibcxx = true;
+  path = "lib/libcxxrt";
 }

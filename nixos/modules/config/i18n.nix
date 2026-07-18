@@ -35,72 +35,33 @@ in
   options = {
 
     i18n = {
-      glibcLocales = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
-        default =
-          if pkgs.glibcLocales != null then
-            pkgs.glibcLocales.override {
-              allLocales = lib.elem "all" cfg.supportedLocales;
-              locales = cfg.supportedLocales;
-            }
-          else
-            null;
-        defaultText = lib.literalExpression ''
-          if pkgs.glibcLocales != null then
-            pkgs.glibcLocales.override {
-              allLocales = lib.elem "all" config.i18n.supportedLocales;
-              locales = config.i18n.supportedLocales;
-            }
-          else
-            null
-        '';
-        example = lib.literalExpression "pkgs.glibcLocales";
-        description = ''
-          Customized pkg.glibcLocales package.
+      defaultCharset = lib.mkOption {
+        default = "UTF-8";
 
-          Changing this option can disable handling of i18n.defaultLocale
-          and supportedLocale.
+        description = ''
+          The default locale character set.
         '';
+
+        example = "ISO-8859-8";
+        type = lib.types.str;
       };
 
       defaultLocale = lib.mkOption {
-        type = lib.types.str;
         default = "en_US.UTF-8";
-        example = "nl_NL.UTF-8";
+
         description = ''
           The default locale. It determines the language for program messages,
           the format for dates and times, sort order, and so on. Setting the
           default character set is done via {option}`i18n.defaultCharset`.
         '';
-      };
-      defaultCharset = lib.mkOption {
-        type = lib.types.str;
-        default = "UTF-8";
-        example = "ISO-8859-8";
-        description = ''
-          The default locale character set.
-        '';
-      };
 
-      extraLocales = lib.mkOption {
-        type = lib.types.either (lib.types.listOf lib.types.str) (lib.types.enum [ "all" ]);
-        default = [ ];
-        example = [ "nl_NL.UTF-8/UTF-8" ];
-        description = ''
-          Additional locales that the system should support, besides the ones
-          configured with {option}`i18n.defaultLocale` and
-          {option}`i18n.extraLocaleSettings`.
-          Set this to `"all"` to install all available locales.
-        '';
+        example = "nl_NL.UTF-8";
+        type = lib.types.str;
       };
 
       extraLocaleSettings = lib.mkOption {
-        type = lib.types.attrsOf lib.types.str;
         default = { };
-        example = {
-          LC_MESSAGES = "en_US.UTF-8";
-          LC_TIME = "de_DE.UTF-8";
-        };
+
         description = ''
           A set of additional system-wide locale settings other than `LANG`
           which can be configured with {option}`i18n.defaultLocale`. Note that
@@ -115,44 +76,58 @@ in
           required to be installed, because the possible values of this key are
           more diverse and flexible then the others.
         '';
-      };
-      localeCharsets = lib.mkOption {
-        type = lib.types.attrsOf lib.types.str;
-        default = { };
+
         example = {
-          LC_MESSAGES = "ISO-8859-15";
-          LC_TIME = "ISO-8859-1";
+          LC_MESSAGES = "en_US.UTF-8";
+          LC_TIME = "de_DE.UTF-8";
         };
-        description = ''
-          Per each {option}`i18n.extraLocaleSettings`, choose the character set
-          to use for it. Essentially defaults to UTF-8 for all of them.
 
-          Note that for a locale category that uses the `C` locale, setting a
-          character set to it via this setting is ignored.
-        '';
+        type = lib.types.attrsOf lib.types.str;
       };
 
-      supportedLocales = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        visible = false;
-        default = lib.unique (
-          [
-            "C.UTF-8/UTF-8"
-            "en_US.UTF-8/UTF-8"
-          ]
-          ++ aggregatedLocales
-        );
-        example = [
-          "en_US.UTF-8/UTF-8"
-          "nl_NL.UTF-8/UTF-8"
-          "nl_NL/ISO-8859-1"
-        ];
+      extraLocales = lib.mkOption {
+        default = [ ];
+
         description = ''
-          List of locales that the system should support.  The value
-          `"all"` means that all locales supported by
-          Glibc will be installed.  A full list of supported locales
-          can be found at <https://sourceware.org/git/?p=glibc.git;a=blob;f=localedata/SUPPORTED>.
+          Additional locales that the system should support, besides the ones
+          configured with {option}`i18n.defaultLocale` and
+          {option}`i18n.extraLocaleSettings`.
+          Set this to `"all"` to install all available locales.
         '';
+
+        example = [ "nl_NL.UTF-8/UTF-8" ];
+        type = lib.types.either (lib.types.listOf lib.types.str) (lib.types.enum [ "all" ]);
+      };
+
+      glibcLocales = lib.mkOption {
+        default =
+          if pkgs.glibcLocales != null then
+            pkgs.glibcLocales.override {
+              allLocales = lib.elem "all" cfg.supportedLocales;
+              locales = cfg.supportedLocales;
+            }
+          else
+            null;
+
+        defaultText = lib.literalExpression ''
+          if pkgs.glibcLocales != null then
+            pkgs.glibcLocales.override {
+              allLocales = lib.elem "all" config.i18n.supportedLocales;
+              locales = config.i18n.supportedLocales;
+            }
+          else
+            null
+        '';
+
+        description = ''
+          Customized pkg.glibcLocales package.
+
+          Changing this option can disable handling of i18n.defaultLocale
+          and supportedLocale.
+        '';
+
+        example = lib.literalExpression "pkgs.glibcLocales";
+        type = lib.types.nullOr lib.types.path;
       };
 
       imperativeLocale = lib.mkEnableOption ''
@@ -165,6 +140,51 @@ in
         and {option}`console.keyMap`.
       '';
 
+      localeCharsets = lib.mkOption {
+        default = { };
+
+        description = ''
+          Per each {option}`i18n.extraLocaleSettings`, choose the character set
+          to use for it. Essentially defaults to UTF-8 for all of them.
+
+          Note that for a locale category that uses the `C` locale, setting a
+          character set to it via this setting is ignored.
+        '';
+
+        example = {
+          LC_MESSAGES = "ISO-8859-15";
+          LC_TIME = "ISO-8859-1";
+        };
+
+        type = lib.types.attrsOf lib.types.str;
+      };
+
+      supportedLocales = lib.mkOption {
+        default = lib.unique (
+          [
+            "C.UTF-8/UTF-8"
+            "en_US.UTF-8/UTF-8"
+          ]
+          ++ aggregatedLocales
+        );
+
+        description = ''
+          List of locales that the system should support.  The value
+          `"all"` means that all locales supported by
+          Glibc will be installed.  A full list of supported locales
+          can be found at <https://sourceware.org/git/?p=glibc.git;a=blob;f=localedata/SUPPORTED>.
+        '';
+
+        example = [
+          "en_US.UTF-8/UTF-8"
+          "nl_NL.UTF-8/UTF-8"
+          "nl_NL/ISO-8859-1"
+        ];
+
+        type = lib.types.listOf lib.types.str;
+        visible = false;
+      };
+
     };
 
   };
@@ -172,6 +192,40 @@ in
   ###### implementation
 
   config = {
+    # ‘/etc/locale.conf’ is used by systemd.
+    # If imperative, see below
+    environment.etc."locale.conf" = lib.mkIf (!cfg.imperativeLocale) {
+      source = localeConf;
+    };
+
+    environment.sessionVariables = {
+      LOCALE_ARCHIVE = "/run/current-system/sw/lib/locale/locale-archive";
+    }
+    # When imperative, leave LANG/LC_* to pam_systemd so /etc/set-environment
+    # does not override what localectl wrote to /etc/locale.conf.
+    // lib.optionalAttrs (!cfg.imperativeLocale) (
+      {
+        LANG = cfg.defaultLocale;
+      }
+      // cfg.extraLocaleSettings
+    );
+
+    environment.systemPackages =
+      # We increase the priority a little, so that plain glibc in systemPackages can't win.
+      lib.optional (cfg.glibcLocales != null && cfg.supportedLocales != [ ]) (
+        lib.setPrio (-1) cfg.glibcLocales
+      );
+
+    systemd.globalEnvironment = lib.mkIf (cfg.glibcLocales != null && cfg.supportedLocales != [ ]) {
+      LOCALE_ARCHIVE = "${cfg.glibcLocales}/lib/locale/locale-archive";
+    };
+
+    # When imperative, seed /etc/locale.conf on first boot from declared defaults
+    # so the system doesn’t fall back to C.UTF-8
+    systemd.tmpfiles.rules = lib.mkIf cfg.imperativeLocale [
+      "C /etc/locale.conf - - - - ${localeConf}"
+    ];
+
     warnings =
       lib.optional
         (
@@ -190,39 +244,5 @@ in
           `i18n.defaultLocale` or `i18n.extraLocaleSettings`, consider adding
           only those locales to `i18n.extraLocales`.
         '';
-
-    environment.systemPackages =
-      # We increase the priority a little, so that plain glibc in systemPackages can't win.
-      lib.optional (cfg.glibcLocales != null && cfg.supportedLocales != [ ]) (
-        lib.setPrio (-1) cfg.glibcLocales
-      );
-
-    environment.sessionVariables = {
-      LOCALE_ARCHIVE = "/run/current-system/sw/lib/locale/locale-archive";
-    }
-    # When imperative, leave LANG/LC_* to pam_systemd so /etc/set-environment
-    # does not override what localectl wrote to /etc/locale.conf.
-    // lib.optionalAttrs (!cfg.imperativeLocale) (
-      {
-        LANG = cfg.defaultLocale;
-      }
-      // cfg.extraLocaleSettings
-    );
-
-    systemd.globalEnvironment = lib.mkIf (cfg.glibcLocales != null && cfg.supportedLocales != [ ]) {
-      LOCALE_ARCHIVE = "${cfg.glibcLocales}/lib/locale/locale-archive";
-    };
-
-    # ‘/etc/locale.conf’ is used by systemd.
-    # If imperative, see below
-    environment.etc."locale.conf" = lib.mkIf (!cfg.imperativeLocale) {
-      source = localeConf;
-    };
-
-    # When imperative, seed /etc/locale.conf on first boot from declared defaults
-    # so the system doesn’t fall back to C.UTF-8
-    systemd.tmpfiles.rules = lib.mkIf cfg.imperativeLocale [
-      "C /etc/locale.conf - - - - ${localeConf}"
-    ];
   };
 }

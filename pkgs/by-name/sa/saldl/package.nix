@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  wafHook,
-  python3,
   asciidoc,
+  curl,
   docbook_xml_dtd_45,
   docbook_xsl,
+  fetchpatch,
+  libevent,
   libxml2,
   libxslt,
-  curl,
-  libevent,
-  fetchpatch,
+  pkg-config,
+  python3,
+  wafHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,11 +26,16 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-PAX2MUyBWWU8kGkaeoCJteidgszh7ipwDJbrLXzVsn0=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   patches = [
     (fetchpatch {
+      hash = "sha256-RBMnsUtd0BaZe/EXypDCK4gpUU0dgucWmOcJRn5/iTA=";
       name = "update-waf-to-2-0-24.patch";
       url = "https://github.com/saldl/saldl/commit/360c29d6c8cee5f7e608af42237928be429c3407.patch";
-      hash = "sha256-RBMnsUtd0BaZe/EXypDCK4gpUU0dgucWmOcJRn5/iTA=";
     })
   ];
 
@@ -53,11 +58,6 @@ stdenv.mkDerivation (finalAttrs: {
   wafConfigureFlags = [
     "--saldl-version ${finalAttrs.version}"
     "--no-werror"
-  ];
-
-  outputs = [
-    "out"
-    "man"
   ];
 
   meta = {

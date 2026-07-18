@@ -1,34 +1,27 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # patches
-  replaceVars,
   antlr4,
-  fetchpatch,
-
-  # nativeBuildInputs
-  jre_headless,
-
   # dependencies
   antlr4-python3-runtime,
+  buildPythonPackage,
+  fetchpatch,
+  # nativeBuildInputs
+  jre_headless,
   omegaconf,
   packaging,
-
   # tests
   pytest8_3CheckHook,
   pythonAtLeast,
+  # patches
+  replaceVars,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "hydra-core";
   version = "1.3.4";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "facebookresearch";
@@ -43,9 +36,9 @@ buildPythonPackage (finalAttrs: {
     })
     # https://github.com/facebookresearch/hydra/pull/2731
     (fetchpatch {
+      hash = "sha256-oUfHlJP653o3RDtknfb8HaaF4fpebdR/OcbKHzJFK/Q=";
       name = "setuptools-67.5.0-test-compatibility.patch";
       url = "https://github.com/facebookresearch/hydra/commit/25873841ed8159ab25a0c652781c75cc4a9d6e08.patch";
-      hash = "sha256-oUfHlJP653o3RDtknfb8HaaF4fpebdR/OcbKHzJFK/Q=";
     })
   ];
 
@@ -55,14 +48,12 @@ buildPythonPackage (finalAttrs: {
     rm -v build_helpers/bin/antlr*-complete.jar
   '';
 
+  nativeBuildInputs = [ jre_headless ];
+  nativeCheckInputs = [ pytest8_3CheckHook ];
+  __structuredAttrs = true;
+
   build-system = [
     setuptools
-  ];
-
-  nativeBuildInputs = [ jre_headless ];
-
-  pythonRelaxDeps = [
-    "antlr4-python3-runtime"
   ];
 
   dependencies = [
@@ -71,10 +62,19 @@ buildPythonPackage (finalAttrs: {
     packaging
   ];
 
-  nativeCheckInputs = [ pytest8_3CheckHook ];
-
-  pytestFlags = [
-    "-Wignore::UserWarning"
+  disabledTestPaths = [
+    "tests/test_hydra.py"
+  ]
+  ++ lib.optionals (pythonAtLeast "3.14") [
+    # ValueError: badly formed help string
+    "tests/test_callbacks.py"
+    "tests/test_env_defaults.py"
+    "tests/test_examples/test_advanced_package_overrides.py"
+    "tests/test_examples/test_basic_sweep.py"
+    "tests/test_examples/test_configure_hydra.py"
+    "tests/test_examples/test_experimental.py"
+    "tests/test_examples/test_instantiate_examples.py"
+    "tests/test_examples/test_structured_configs_tutorial.py"
   ];
 
   # Test environment setup broken under Nix for a few tests:
@@ -123,25 +123,20 @@ buildPythonPackage (finalAttrs: {
     "test_with_flags"
   ];
 
-  disabledTestPaths = [
-    "tests/test_hydra.py"
-  ]
-  ++ lib.optionals (pythonAtLeast "3.14") [
-    # ValueError: badly formed help string
-    "tests/test_callbacks.py"
-    "tests/test_env_defaults.py"
-    "tests/test_examples/test_advanced_package_overrides.py"
-    "tests/test_examples/test_basic_sweep.py"
-    "tests/test_examples/test_configure_hydra.py"
-    "tests/test_examples/test_experimental.py"
-    "tests/test_examples/test_instantiate_examples.py"
-    "tests/test_examples/test_structured_configs_tutorial.py"
+  pyproject = true;
+
+  pytestFlags = [
+    "-Wignore::UserWarning"
   ];
 
   pythonImportsCheck = [
     "hydra"
     # See https://github.com/NixOS/nixpkgs/issues/208843
     "hydra.version"
+  ];
+
+  pythonRelaxDeps = [
+    "antlr4-python3-runtime"
   ];
 
   meta = {

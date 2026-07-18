@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
   anyio,
+  buildPythonPackage,
+  hatchling,
   pytestCheckHook,
   trio,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "sqlite-anyio";
   version = "0.2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "davidbrochart";
@@ -20,16 +19,15 @@ buildPythonPackage rec {
     hash = "sha256-1riZiLBccg7Vqq+a8xT5Lr4vxjkeMbf1wqXnTTgY8iY=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ anyio ];
-
-  pythonImportsCheck = [ "sqlite_anyio" ];
-
   nativeCheckInputs = [
     pytestCheckHook
     trio
   ];
+
+  build-system = [ hatchling ];
+  dependencies = [ anyio ];
+  pyproject = true;
+  pythonImportsCheck = [ "sqlite_anyio" ];
 
   meta = {
     description = "Asynchronous client for SQLite using AnyIO";

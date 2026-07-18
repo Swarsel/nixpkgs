@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "standard-chunk";
   version = "3.13.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "youknowone";
@@ -17,11 +16,10 @@ buildPythonPackage rec {
     hash = "sha256-vhGFTd1yXL4Frqli5D1GwOatwByDjvcP8sxgkdu6Jqg=";
   };
 
-  sourceRoot = "${src.name}/chunk";
-
-  build-system = [ setuptools ];
-
   doCheck = false; # no tests
+  build-system = [ setuptools ];
+  pyproject = true;
+  sourceRoot = "${src.name}/chunk";
 
   meta = {
     description = "Python dead batteries. See PEP 594";

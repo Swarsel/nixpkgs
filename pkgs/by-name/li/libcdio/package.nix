@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
   autoreconfHook,
+  help2man,
+  libcddb,
+  libiconv,
+  ncurses,
+  nix-update-script,
+  pkg-config,
   testers,
   texinfo,
-  libcddb,
-  pkg-config,
-  ncurses,
-  help2man,
-  libiconv,
   withMan ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
 }:
 
@@ -25,9 +25,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-NZj6sMIhBORh2ZBs/WGI4BYri1REog4ovUug1t5p8Y8=";
   };
 
-  env = lib.optionalAttrs stdenv.hostPlatform.is32bit {
-    NIX_CFLAGS_COMPILE = "-D_LARGEFILE64_SOURCE";
-  };
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+    "info"
+  ]
+  ++ lib.optionals withMan [
+    "man"
+  ];
 
   postPatch = ''
     patchShebangs .
@@ -47,17 +53,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'man_iso_read     = iso-read.1' ""
   '';
 
-  configureFlags = [
-    (lib.enableFeature withMan "maintainer-mode")
-    "CFLAGS=-std=gnu17"
-  ];
-
-  # autoconf 2.73's AM_ICONV "working iconv" runtime probe reports "no" on
-  # Darwin's libiconv; skip it via the cache variable. Refs #511329.
-  preConfigure = ''
-    export am_cv_func_iconv_works=yes
-  '';
-
   nativeBuildInputs = [
     pkg-config
     autoreconfHook
@@ -73,19 +68,23 @@ stdenv.mkDerivation (finalAttrs: {
     ncurses
   ];
 
-  enableParallelBuilding = true;
+  configureFlags = [
+    (lib.enableFeature withMan "maintainer-mode")
+    "CFLAGS=-std=gnu17"
+  ];
+
+  env = lib.optionalAttrs stdenv.hostPlatform.is32bit {
+    NIX_CFLAGS_COMPILE = "-D_LARGEFILE64_SOURCE";
+  };
+
+  # autoconf 2.73's AM_ICONV "working iconv" runtime probe reports "no" on
+  # Darwin's libiconv; skip it via the cache variable. Refs #511329.
+  preConfigure = ''
+    export am_cv_func_iconv_works=yes
+  '';
 
   doCheck = !stdenv.hostPlatform.isDarwin;
-
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-    "info"
-  ]
-  ++ lib.optionals withMan [
-    "man"
-  ];
+  enableParallelBuilding = true;
 
   passthru = {
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
@@ -94,14 +93,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Library for OS-independent CD-ROM and CD image access";
+
     longDescription = ''
       GNU libcdio is a library for OS-independent CD-ROM and
       CD image access.  It includes a library for working with
       ISO-9660 filesystems (libiso9660), as well as utility
       programs such as an audio CD player and an extractor.
     '';
+
     homepage = "https://www.gnu.org/software/libcdio/";
     license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.unix;
+
     pkgConfigModules = [
       "libcdio"
       "libcdio++"
@@ -109,6 +112,5 @@ stdenv.mkDerivation (finalAttrs: {
       "libiso9660++"
       "libudf"
     ];
-    platforms = lib.platforms.unix;
   };
 })

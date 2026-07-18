@@ -16,14 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-aIGYv8UAC3toQe21xdtPUnsnrJhzbvQLfN/pPU3L2J0=";
   };
 
-  buildInputs = [
-    python3
-  ];
-
-  makeFlags = [
-    "prefix=$(out)"
-  ];
-
   # fix the plugins directory
   postPatch = ''
     substituteInPlace dool \
@@ -31,6 +23,14 @@ stdenv.mkDerivation (finalAttrs: {
         "os.path.dirname(os.path.abspath(__file__)) + '/plugins/'" \
         "'$out/share/dool/'"
   '';
+
+  buildInputs = [
+    python3
+  ];
+
+  makeFlags = [
+    "prefix=$(out)"
+  ];
 
   meta = {
     description = "Python3 compatible clone of dstat";

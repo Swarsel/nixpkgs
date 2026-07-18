@@ -2,49 +2,49 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  cmake,
-  ninja,
-  pkg-config,
-  wrapGAppsHook3,
-  curl,
-  fuse3,
-  desktopToDarwinBundle,
-  glib,
-  gtk3,
-  gettext,
-  libxkbfile,
-  libx11,
-  python3,
-  freerdp,
-  libssh,
-  libgcrypt,
-  gnutls,
-  pcre2,
-  libdbusmenu-gtk3,
-  libappindicator-gtk3,
-  libvncserver,
-  libpthread-stubs,
-  libxdmcp,
-  libxkbcommon,
-  libsecret,
-  libsoup_3,
-  spice-protocol,
-  spice-gtk,
-  libepoxy,
-  at-spi2-core,
-  openssl,
-  gsettings-desktop-schemas,
-  json-glib,
-  libsodium,
-  harfbuzz,
-  wayland,
   # The themes here are soft dependencies; only icons are missing without them.
   adwaita-icon-theme,
-  withLibsecret ? stdenv.hostPlatform.isLinux,
-  withWebkitGtk ? false,
-  webkitgtk_4_1,
-  withVte ? true,
+  at-spi2-core,
+  cmake,
+  curl,
+  desktopToDarwinBundle,
+  freerdp,
+  fuse3,
+  gettext,
+  glib,
+  gnutls,
+  gsettings-desktop-schemas,
+  gtk3,
+  harfbuzz,
+  json-glib,
+  libappindicator-gtk3,
+  libdbusmenu-gtk3,
+  libepoxy,
+  libgcrypt,
+  libpthread-stubs,
+  libsecret,
+  libsodium,
+  libsoup_3,
+  libssh,
+  libvncserver,
+  libx11,
+  libxdmcp,
+  libxkbcommon,
+  libxkbfile,
+  ninja,
+  openssl,
+  pcre2,
+  pkg-config,
+  python3,
+  spice-gtk,
+  spice-protocol,
   vte,
+  wayland,
+  webkitgtk_4_1,
+  wrapGAppsHook3,
+  withLibsecret ? stdenv.hostPlatform.isLinux,
+  withVte ? true,
+  withWebkitGtk ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -105,8 +105,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withWebkitGtk [ webkitgtk_4_1 ]
   ++ lib.optionals withVte [ vte ];
 
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
-
   cmakeFlags = [
     "-DWITH_FREERDP3=ON"
     "-DWITH_VTE=${if withVte then "ON" else "OFF"}"
@@ -124,7 +122,7 @@ stdenv.mkDerivation (finalAttrs: {
     "-DPYTHON_LIBRARY=${python3}/lib/libpython${python3.pythonVersion}${stdenv.hostPlatform.extensions.sharedLibrary}"
   ];
 
-  dontWrapQtApps = true;
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
 
   preFixup = ''
     gappsWrapperArgs+=(
@@ -137,19 +135,25 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
+  dontWrapQtApps = true;
+
   meta = {
-    license = lib.licenses.gpl2Plus;
+    description = "Remote desktop client written in GTK";
     homepage = "https://gitlab.com/Remmina/Remmina";
+
     changelog = "https://gitlab.com/Remmina/Remmina/-/blob/master/CHANGELOG.md#${
       lib.replaceStrings [ "." ] [ "" ] finalAttrs.src.rev
     }";
-    description = "Remote desktop client written in GTK";
-    mainProgram = "remmina";
+
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       bbigras
       melsigl
       ryantm
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "remmina";
   };
 })

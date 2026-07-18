@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   objprint,
   pdm-backend,
   pygments,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "marko";
   version = "2.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "frostming";
@@ -20,6 +19,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-EuLir4Nws39B3onmWnnvEzp5W8934K89/WHOVHxVVKM=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
   build-system = [ pdm-backend ];
 
@@ -29,12 +33,8 @@ buildPythonPackage (finalAttrs: {
     toc = [ python-slugify ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "marko" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
   meta = {
     description = "Markdown parser with high extensibility";

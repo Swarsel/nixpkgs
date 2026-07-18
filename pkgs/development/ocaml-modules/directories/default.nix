@@ -9,8 +9,6 @@ buildDunePackage (finalAttrs: {
   pname = "directories";
   version = "0.7";
 
-  minimalOCamlVersion = "4.14";
-
   src = fetchFromGitHub {
     owner = "OCamlPro";
     repo = "directories";
@@ -22,9 +20,11 @@ buildDunePackage (finalAttrs: {
     fpath
   ];
 
+  minimalOCamlVersion = "4.14";
+
   meta = {
-    homepage = "https://github.com/OCamlPro/directories";
     description = "OCaml library that provides configuration, cache and data paths (and more!) following the suitable conventions on Linux, macOS and Windows";
+
     longDescription = ''
       directories is an OCaml library that provides configuration, cache and
       data paths (and more!) following the suitable conventions on Linux, macOS
@@ -35,8 +35,11 @@ buildDunePackage (finalAttrs: {
       xdg-user-dirs on Linux, Known Folders on Windows, Standard Directories on
       macOS.
     '';
+
+    homepage = "https://github.com/OCamlPro/directories";
     changelog = "https://raw.githubusercontent.com/OCamlPro/directories/${finalAttrs.version}/CHANGES.md";
     license = lib.licenses.isc;
+
     maintainers = with lib.maintainers; [
       bcc32
       redianthus

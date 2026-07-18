@@ -1,18 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   mock,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "utils";
   version = "1.0.1";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "haaksmash";
@@ -21,13 +18,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-eb2trh3eawdAcPo3De9NgYN2HT1+FGju/F4V7lga+R4=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     mock
     pytestCheckHook
   ];
 
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "utils" ];
 
   meta = {

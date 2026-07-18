@@ -1,15 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   nix-update-script,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "rnmon";
   version = "0.3.4";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "lbatalha";
@@ -17,6 +15,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-3ou2F8ePKzh6g63X0l9iX1fTSVe9misGBkPlCUEWpiU=";
   };
+
+  # No tests in the repository
+  doCheck = false;
+  __structuredAttrs = true;
 
   build-system = [
     python3Packages.hatchling
@@ -28,12 +30,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     rns
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "rnmon"
   ];
-
-  # No tests in the repository
-  doCheck = false;
 
   passthru.updateScript = nix-update-script { };
 

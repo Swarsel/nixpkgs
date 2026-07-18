@@ -28,62 +28,65 @@ in
 
     services.octoprint = {
 
+      enable = lib.mkEnableOption "OctoPrint, web interface for 3D printers";
       package = lib.mkPackageOption pkgs "octoprint" { };
 
-      enable = lib.mkEnableOption "OctoPrint, web interface for 3D printers";
-
-      host = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        description = ''
-          Host to bind OctoPrint to.
-        '';
-      };
-
-      port = lib.mkOption {
-        type = lib.types.port;
-        default = 5000;
-        description = ''
-          Port to bind OctoPrint to.
-        '';
-      };
-
-      openFirewall = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Open ports in the firewall for OctoPrint.";
-      };
-
-      user = lib.mkOption {
-        type = lib.types.str;
-        default = "octoprint";
-        description = "User for the daemon.";
+      extraConfig = lib.mkOption {
+        default = { };
+        description = "Extra options which are added to OctoPrint's YAML configuration file.";
+        type = lib.types.attrs;
       };
 
       group = lib.mkOption {
-        type = lib.types.str;
         default = "octoprint";
         description = "Group for the daemon.";
+        type = lib.types.str;
       };
 
-      stateDir = lib.mkOption {
-        type = lib.types.path;
-        default = "/var/lib/octoprint";
-        description = "State directory of the daemon.";
+      host = lib.mkOption {
+        default = null;
+
+        description = ''
+          Host to bind OctoPrint to.
+        '';
+
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      openFirewall = lib.mkOption {
+        default = false;
+        description = "Open ports in the firewall for OctoPrint.";
+        type = lib.types.bool;
       };
 
       plugins = lib.mkOption {
-        type = lib.types.functionTo (lib.types.listOf lib.types.package);
         default = plugins: [ ];
         defaultText = lib.literalExpression "plugins: []";
-        example = lib.literalExpression "plugins: with plugins; [ themeify stlviewer ]";
         description = "Additional plugins to be used. Available plugins are passed through the plugins input.";
+        example = lib.literalExpression "plugins: with plugins; [ themeify stlviewer ]";
+        type = lib.types.functionTo (lib.types.listOf lib.types.package);
       };
 
-      extraConfig = lib.mkOption {
-        type = lib.types.attrs;
-        default = { };
-        description = "Extra options which are added to OctoPrint's YAML configuration file.";
+      port = lib.mkOption {
+        default = 5000;
+
+        description = ''
+          Port to bind OctoPrint to.
+        '';
+
+        type = lib.types.port;
+      };
+
+      stateDir = lib.mkOption {
+        default = "/var/lib/octoprint";
+        description = "State directory of the daemon.";
+        type = lib.types.path;
+      };
+
+      user = lib.mkOption {
+        default = "octoprint";
+        description = "User for the daemon.";
+        type = lib.types.str;
       };
 
     };
@@ -94,28 +97,11 @@ in
 
   config = lib.mkIf cfg.enable {
 
-    users.users = lib.optionalAttrs (cfg.user == "octoprint") {
-      octoprint = {
-        group = cfg.group;
-        uid = config.ids.uids.octoprint;
-      };
-    };
-
-    users.groups = lib.optionalAttrs (cfg.group == "octoprint") {
-      octoprint.gid = config.ids.gids.octoprint;
-    };
-
-    systemd.tmpfiles.rules = [
-      "d '${cfg.stateDir}' - ${cfg.user} ${cfg.group} - -"
-      # this will allow octoprint access to raspberry specific hardware to check for throttling
-      # read-only will not work: "VCHI initialization failed" error
-      "a /dev/vchiq - - - - u:octoprint:rw"
-    ];
+    networking.firewall.allowedTCPPorts = lib.mkIf cfg.openFirewall [ cfg.port ];
 
     systemd.services.octoprint = {
-      description = "OctoPrint, web interface for 3D printers";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "OctoPrint, web interface for 3D printers";
       path = [ pluginsEnv ];
 
       preStart = ''
@@ -130,14 +116,34 @@ in
 
       serviceConfig = {
         ExecStart = "${pluginsEnv}/bin/octoprint serve -b ${cfg.stateDir}";
-        User = cfg.user;
         Group = cfg.group;
+
         SupplementaryGroups = [
           "dialout"
         ];
+
+        User = cfg.user;
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
-    networking.firewall.allowedTCPPorts = lib.mkIf cfg.openFirewall [ cfg.port ];
+    systemd.tmpfiles.rules = [
+      "d '${cfg.stateDir}' - ${cfg.user} ${cfg.group} - -"
+      # this will allow octoprint access to raspberry specific hardware to check for throttling
+      # read-only will not work: "VCHI initialization failed" error
+      "a /dev/vchiq - - - - u:octoprint:rw"
+    ];
+
+    users.groups = lib.optionalAttrs (cfg.group == "octoprint") {
+      octoprint.gid = config.ids.gids.octoprint;
+    };
+
+    users.users = lib.optionalAttrs (cfg.user == "octoprint") {
+      octoprint = {
+        group = cfg.group;
+        uid = config.ids.uids.octoprint;
+      };
+    };
   };
 }

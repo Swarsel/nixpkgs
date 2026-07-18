@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  lib,
   mitschemeX11,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -14,15 +14,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ mitschemeX11 ];
-
-  configurePhase = ''
-    runHook preConfigure
-    ln -r -s kernel/ghelper-pro.scm kernel/ghelper.scm
-    ln -r -s solve/nnsolve.scm solve/solve.scm
-    substituteInPlace load.scm \
-      --replace-fail '/usr/local/scmutils/' "$out/lib/mit-scheme/"
-    runHook postConfigure
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -49,6 +40,15 @@ stdenv.mkDerivation (finalAttrs: {
     chmod uog+rx "$out/bin/scmutils" "$out/bin/edwin-scmutils"
     ln -r -s "$out/bin/edwin-scmutils" "$out/bin/mechanics"
     runHook postInstall
+  '';
+
+  configurePhase = ''
+    runHook preConfigure
+    ln -r -s kernel/ghelper-pro.scm kernel/ghelper.scm
+    ln -r -s solve/nnsolve.scm solve/solve.scm
+    substituteInPlace load.scm \
+      --replace-fail '/usr/local/scmutils/' "$out/lib/mit-scheme/"
+    runHook postConfigure
   '';
 
   meta = {

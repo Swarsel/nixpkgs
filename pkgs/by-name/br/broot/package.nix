@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  installShellFiles,
-  makeBinaryWrapper,
-  pkg-config,
-  libgit2,
-  zlib,
   buildPackages,
-  versionCheckHook,
+  installShellFiles,
+  libgit2,
+  makeBinaryWrapper,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
+  zlib,
   withClipboard ? true,
 }:
 
@@ -25,7 +25,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-uRMa8zaXXM8KWUplYMyOLic/WITLU0eAbZ2VDgM/PBw=";
   };
 
-  cargoHash = "sha256-p4R8+PcRmjy/2q7lpfUevuYROPrCQEffmXx5vRrjwKs=";
+  postPatch = ''
+    # Fill the version stub in the man page. We can't fill the date
+    # stub reproducibly.
+    substitute man/page man/broot.1 \
+      --replace-fail "#version" "${finalAttrs.version}"
+  '';
 
   nativeBuildInputs = [
     installShellFiles
@@ -34,17 +39,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   buildInputs = [ libgit2 ] ++ lib.optionals stdenv.hostPlatform.isDarwin [ zlib ];
-
-  buildFeatures = lib.optionals withClipboard [ "clipboard" ];
-
+  cargoHash = "sha256-p4R8+PcRmjy/2q7lpfUevuYROPrCQEffmXx5vRrjwKs=";
   env.RUSTONIG_SYSTEM_LIBONIG = true;
-
-  postPatch = ''
-    # Fill the version stub in the man page. We can't fill the date
-    # stub reproducibly.
-    substitute man/page man/broot.1 \
-      --replace-fail "#version" "${finalAttrs.version}"
-  '';
 
   postInstall =
     lib.optionalString (stdenv.hostPlatform.emulatorAvailable buildPackages) ''
@@ -79,15 +75,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
+  buildFeatures = lib.optionals withClipboard [ "clipboard" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Interactive tree view, a fuzzy search, a balanced BFS descent and customizable commands";
     homepage = "https://dystroy.org/broot/";
     changelog = "https://github.com/Canop/broot/releases/tag/v${finalAttrs.version}";
-    maintainers = with lib.maintainers; [ dywedir ];
     license = with lib.licenses; [ mit ];
+    maintainers = with lib.maintainers; [ dywedir ];
     mainProgram = "broot";
   };
 })

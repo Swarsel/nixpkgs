@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
-  fetchFromGitHub,
-  scikit-build-core,
-  cmake,
-  ninja,
   stdenv,
-  llvmPackages,
+  fetchFromGitHub,
   boost,
+  buildPythonPackage,
+  cmake,
+  llvmPackages,
+  ninja,
   python,
+  scikit-build-core,
 }:
 
 buildPythonPackage rec {
   pname = "opencamlib";
   version = "2023.01.11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aewallin";
@@ -23,8 +22,14 @@ buildPythonPackage rec {
     hash = "sha256-pUj71PdWo902dqF9O6SLnpvFooFU2OfLBv8hAVsH/iA=";
   };
 
-  build-system = [
-    scikit-build-core
+  postPatch = ''
+    substituteInPlace pyproject.toml \
+      --replace-fail 'version = "2022.12.18"' 'version = "${version}"'
+  '';
+
+  nativeBuildInputs = [
+    cmake
+    ninja
   ];
 
   buildInputs = [
@@ -32,20 +37,7 @@ buildPythonPackage rec {
   ]
   ++ lib.optionals stdenv.cc.isClang [ llvmPackages.openmp ];
 
-  nativeBuildInputs = [
-    cmake
-    ninja
-  ];
-
-  postPatch = ''
-    substituteInPlace pyproject.toml \
-      --replace-fail 'version = "2022.12.18"' 'version = "${version}"'
-  '';
-
-  dontUseCmakeConfigure = true;
   env.CMAKE_ARGS = "-DVERSION_STRING=${version} -DBoost_USE_STATIC_LIBS=OFF";
-
-  pythonImportsCheck = [ "opencamlib" ];
 
   checkPhase = ''
     runHook preCheck
@@ -58,9 +50,17 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [
+    scikit-build-core
+  ];
+
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+  pythonImportsCheck = [ "opencamlib" ];
+
   meta = {
-    homepage = "https://github.com/aewallin/opencamlib";
     description = "Open source computer aided manufacturing algorithms library";
+    homepage = "https://github.com/aewallin/opencamlib";
     # from src/deb/debian_copyright.txt
     license = lib.licenses.lgpl21Plus;
     maintainers = with lib.maintainers; [ tomjnixon ];

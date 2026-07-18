@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  libsForQt5,
   dpkg,
+  libbfio,
+  libewf-legacy,
+  libguytools,
+  libsForQt5,
   parted,
   udev,
-  libewf-legacy,
-  libbfio,
-  libguytools,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,23 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/project/guymager/guymager/LatestSource/guymager-${finalAttrs.version}.tar.gz";
     hash = "sha256-xDsQ/d6fyfLOr4uXpdoqMljfFrVgQTUu0t2e5opcaRg=";
   };
-
-  enableParallelBuilding = true;
-
-  nativeBuildInputs = [
-    dpkg
-    libsForQt5.qmake
-    libsForQt5.qttools
-    libsForQt5.wrapQtAppsHook
-  ];
-  buildInputs = [
-    libsForQt5.qtbase
-    libewf-legacy
-    libbfio
-    libguytools
-    parted
-    udev
-  ];
 
   postPatch = ''
     patchShebangs compileinfo.sh
@@ -57,6 +40,22 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail /usr $out
   '';
 
+  nativeBuildInputs = [
+    dpkg
+    libsForQt5.qmake
+    libsForQt5.qttools
+    libsForQt5.wrapQtAppsHook
+  ];
+
+  buildInputs = [
+    libsForQt5.qtbase
+    libewf-legacy
+    libbfio
+    libguytools
+    parted
+    udev
+  ];
+
   installPhase = ''
     runHook preInstall
     mkdir -p $out/{bin,share}
@@ -67,13 +66,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Forensic imager for media acquisition";
-    mainProgram = "guymager";
     homepage = "https://guymager.sourceforge.io";
+    license = lib.licenses.gpl2Only;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
     platforms = lib.platforms.linux;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    license = lib.licenses.gpl2Only;
+    mainProgram = "guymager";
   };
 })

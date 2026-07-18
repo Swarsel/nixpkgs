@@ -1,27 +1,26 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  hatchling,
-  setuptools,
   # Python deps
   cachetools,
   cardano-tools,
   coloredlogs,
+  fetchPypi,
+  hatchling,
   orjson,
   pydantic,
+  setuptools,
   websockets,
 }:
 
 buildPythonPackage rec {
   pname = "ogmios";
   version = "1.4.3";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "ogmios";
     inherit version;
     hash = "sha256-+edW34O+OF+JyCoZSjxRwKS6JeXfaZ38+ykUpXwBJ1Q=";
+    pname = "ogmios";
   };
 
   build-system = [
@@ -38,6 +37,7 @@ buildPythonPackage rec {
     websockets
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "ogmios" ];
 
   meta = {

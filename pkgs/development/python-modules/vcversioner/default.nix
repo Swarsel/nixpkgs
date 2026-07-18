@@ -8,18 +8,16 @@
 buildPythonPackage (finalAttrs: {
   pname = "vcversioner";
   version = "2.16.0.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "vcversioner";
     inherit (finalAttrs) version;
     hash = "sha256-2uYMF6R5eB9EpAEHAYM/GCkUCx7szSWHYqdJdKoG4Zs=";
+    pname = "vcversioner";
   };
 
+  __structuredAttrs = true;
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "vcversioner" ];
 
   meta = {

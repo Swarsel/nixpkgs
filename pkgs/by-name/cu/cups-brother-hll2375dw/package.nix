@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
   autoPatchelfHook,
+  coreutils,
+  dpkg,
+  file,
+  ghostscript,
+  gnugrep,
+  gnused,
   makeWrapper,
   perl,
-  gnused,
-  ghostscript,
-  file,
-  coreutils,
-  gnugrep,
   which,
 }:
 
@@ -35,13 +35,6 @@ stdenv.mkDerivation rec {
   pname = "cups-brother-hll2375dw";
   version = "4.0.0-1";
 
-  nativeBuildInputs = [
-    dpkg
-    makeWrapper
-    autoPatchelfHook
-  ];
-  buildInputs = [ perl ];
-
   src = fetchurl {
     url = "https://download.brother.com/welcome/dlf103535//hll2375dwpdrv-${version}.i386.deb";
     hash = "sha256-N5VCBZLFrfw29QjjzlSvQ12urvyaf7ez/RJ08UwqHdk=";
@@ -55,6 +48,14 @@ stdenv.mkDerivation rec {
     # it shouldn't be a security concern.
     ./fix-perm.patch
   ];
+
+  nativeBuildInputs = [
+    dpkg
+    makeWrapper
+    autoPatchelfHook
+  ];
+
+  buildInputs = [ perl ];
 
   installPhase = ''
     runHook preInstall
@@ -102,10 +103,10 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "http://www.brother.com/";
     description = "Brother HLL2375DW printer driver";
+    homepage = "http://www.brother.com/";
     license = lib.licenses.unfree;
-    platforms = map (arch: "${arch}-linux") arches;
     maintainers = [ lib.maintainers.gador ];
+    platforms = map (arch: "${arch}-linux") arches;
   };
 }

@@ -1,21 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
   pname = "prociono";
   version = "2011-05-25";
-
-  outputs = [
-    "out"
-    "webfont"
-  ];
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "theleagueof";
@@ -24,15 +16,24 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-gC5E0Z0O2cnthoBEu+UOQLsr3/a/3/JPIx3WCPsXXtk=";
   };
 
+  outputs = [
+    "out"
+    "webfont"
+  ];
+
+  strictDeps = true;
   nativeBuildInputs = [ installFonts ];
+  __structuredAttrs = true;
 
   meta = {
     description = "Roman serif with blackletter elements";
+
     longDescription = ''
       "Prociono" (pro-tsee-O-no) is an Esperanto word meaning either the star
       Procyon or the animal species known as the raccoon. It is a roman serif
       with blackletter elements.
     '';
+
     homepage = "https://www.theleagueofmoveabletype.com/prociono";
     license = lib.licenses.ofl;
     maintainers = with lib.maintainers; [ minijackson ];

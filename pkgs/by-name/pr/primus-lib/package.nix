@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   fetchpatch,
-  libx11,
   libGL,
+  libglvnd,
+  libx11,
   linuxPackages,
   nvidia_x11 ? linuxPackages.nvidia_x11.override { libsOnly = true; },
-  libglvnd,
 }:
 
 let
@@ -34,8 +34,8 @@ stdenv.mkDerivation {
   patches = [
     # Bump buffer size for long library paths.
     (fetchpatch {
-      url = "https://github.com/abbradar/primus/commit/2f429e232581c556df4f4bf210aee8a0c99c60b7.patch";
       sha256 = "1da6ynz7r7x98495i329sf821308j1rpy8prcdraqahz7p4c89nc";
+      url = "https://github.com/abbradar/primus/commit/2f429e232581c556df4f4bf210aee8a0c99c60b7.patch";
     })
   ];
 
@@ -59,11 +59,12 @@ stdenv.mkDerivation {
   meta = {
     description = "Low-overhead client-side GPU offloading";
     homepage = "https://github.com/amonakov/primus";
+    license = lib.licenses.bsd2;
+    maintainers = [ ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ];
-    license = lib.licenses.bsd2;
-    maintainers = [ ];
   };
 }

@@ -1,13 +1,13 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   coreutils,
-  pkg-config,
+  nix-update-script,
+  openssh,
   openssl,
   pam,
-  openssh,
-  nix-update-script,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,8 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  cargoHash = "sha256-d/N7ec8/Khv9oWwEXapc6Nb+j/7XTDxBLeFHO9nqHLk=";
-
   postPatch = ''
     substituteInPlace src/auth_keys.rs \
       --replace '/bin/echo' '${coreutils}/bin/echo' \
@@ -37,16 +35,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     pam
   ];
 
+  cargoHash = "sha256-d/N7ec8/Khv9oWwEXapc6Nb+j/7XTDxBLeFHO9nqHLk=";
+  env.USER = "nixbld";
+  nativeCheckInputs = [ openssh ];
+
   checkFlags = [
     # Fails because it tries finding authorized_keys in /home/$USER.
     "--skip=tests::parse_user_authorized_keys"
     # Skip unsupported DSA keys since OpenSSH v10.
     "--skip=sign_verify::test_dsa_sign_verify"
   ];
-
-  nativeCheckInputs = [ openssh ];
-
-  env.USER = "nixbld";
 
   # Copied from https://github.com/z4yx/pam_rssh/blob/main/.github/workflows/rust.yml.
   preCheck = ''
@@ -72,9 +70,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "PAM module for authenticating via ssh-agent, written in Rust";
     homepage = "https://github.com/z4yx/pam_rssh";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       xyenon
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

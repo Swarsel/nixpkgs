@@ -1,16 +1,14 @@
 {
+  amqp-client,
   buildDunePackage,
+  ezxmlm,
   lwt,
   lwt_log,
-  amqp-client,
   uri,
-  ezxmlm,
 }:
 buildDunePackage {
-  pname = "amqp-client-lwt";
-
   inherit (amqp-client) version src;
-
+  pname = "amqp-client-lwt";
   buildInputs = [ ezxmlm ];
 
   propagatedBuildInputs = [

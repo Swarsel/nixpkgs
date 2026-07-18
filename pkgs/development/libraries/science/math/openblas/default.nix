@@ -2,12 +2,31 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
+  R,
+  buildPackages,
+  # for passthru.tests
+  ceres-solver,
   cmake,
+  fetchpatch,
+  flint,
+  giac,
+  octave,
+  opencv,
+  python3,
+  testers,
   # Most packages depending on openblas expect integer width to match
   # pointer width, but some expect to use 32-bit integers always
   # (for compatibility with reference BLAS).
   blas64 ? null,
+  # Select whether DYNAMIC_ARCH is enabled or not.
+  dynamicArch ? null,
+  # enable AVX512 optimized kernels.
+  # These kernels have been a source of trouble in the past.
+  # Use with caution.
+  enableAVX512 ? false,
+  enableShared ? !stdenv.hostPlatform.isStatic,
+  enableStatic ? stdenv.hostPlatform.isStatic,
+  openmp ? null,
   # Multi-threaded applications must not call a threaded OpenBLAS
   # (the only exception is when an application uses OpenMP as its
   # *only* form of multi-threading). See
@@ -16,29 +35,9 @@
   # This flag builds a single-threaded OpenBLAS using the flags
   # stated in thre.
   singleThreaded ? false,
-  buildPackages,
   # Select a specific optimization target (other than the default)
   # See https://github.com/OpenMathLib/OpenBLAS/blob/develop/TargetList.txt
   target ? null,
-  # Select whether DYNAMIC_ARCH is enabled or not.
-  dynamicArch ? null,
-  # enable AVX512 optimized kernels.
-  # These kernels have been a source of trouble in the past.
-  # Use with caution.
-  enableAVX512 ? false,
-  enableStatic ? stdenv.hostPlatform.isStatic,
-  enableShared ? !stdenv.hostPlatform.isStatic,
-
-  # for passthru.tests
-  ceres-solver,
-  flint,
-  giac,
-  octave,
-  opencv,
-  python3,
-  R,
-  openmp ? null,
-  testers,
 }:
 
 let
@@ -51,98 +50,98 @@ let
 
   # To add support for a new platform, add an element to this set.
   configs = {
+    aarch64-darwin = {
+      BINARY = 64;
+      DYNAMIC_ARCH = setDynamicArch true;
+      MACOSX_DEPLOYMENT_TARGET = "11.0";
+      TARGET = setTarget "VORTEX";
+      USE_OPENMP = false;
+    };
+
+    aarch64-linux = {
+      BINARY = 64;
+      DYNAMIC_ARCH = setDynamicArch true;
+      TARGET = setTarget "ARMV8";
+      USE_OPENMP = true;
+    };
+
     armv6l-linux = {
       BINARY = 32;
-      TARGET = setTarget "ARMV6";
       DYNAMIC_ARCH = setDynamicArch false;
+      TARGET = setTarget "ARMV6";
       USE_OPENMP = true;
     };
 
     armv7l-linux = {
       BINARY = 32;
-      TARGET = setTarget "ARMV7";
       DYNAMIC_ARCH = setDynamicArch false;
-      USE_OPENMP = true;
-    };
-
-    aarch64-darwin = {
-      BINARY = 64;
-      TARGET = setTarget "VORTEX";
-      DYNAMIC_ARCH = setDynamicArch true;
-      USE_OPENMP = false;
-      MACOSX_DEPLOYMENT_TARGET = "11.0";
-    };
-
-    aarch64-linux = {
-      BINARY = 64;
-      TARGET = setTarget "ARMV8";
-      DYNAMIC_ARCH = setDynamicArch true;
+      TARGET = setTarget "ARMV7";
       USE_OPENMP = true;
     };
 
     i686-linux = {
       BINARY = 32;
-      TARGET = setTarget "P2";
       DYNAMIC_ARCH = setDynamicArch true;
+      TARGET = setTarget "P2";
       USE_OPENMP = true;
     };
 
-    x86_64-linux = {
-      BINARY = 64;
-      TARGET = setTarget "ATHLON";
-      DYNAMIC_ARCH = setDynamicArch true;
-      NO_AVX512 = !enableAVX512;
-      USE_OPENMP = !stdenv.hostPlatform.isMusl;
-    };
-
-    x86_64-windows = {
-      BINARY = 64;
-      TARGET = setTarget "ATHLON";
-      DYNAMIC_ARCH = setDynamicArch true;
-      NO_AVX512 = !enableAVX512;
-      USE_OPENMP = false;
+    loongarch64-linux = {
+      DYNAMIC_ARCH = setDynamicArch false;
+      TARGET = setTarget "LA64_GENERIC";
+      USE_OPENMP = true;
     };
 
     powerpc64-linux = {
       BINARY = 64;
-      TARGET = setTarget "POWER4";
       DYNAMIC_ARCH = setDynamicArch false;
+      TARGET = setTarget "POWER4";
       USE_OPENMP = !stdenv.hostPlatform.isMusl;
     };
 
     powerpc64le-linux = {
       BINARY = 64;
-      TARGET = setTarget "POWER5";
       DYNAMIC_ARCH = setDynamicArch true;
+      TARGET = setTarget "POWER5";
       USE_OPENMP = !stdenv.hostPlatform.isMusl;
     };
 
     riscv64-linux = {
       BINARY = 64;
+      DYNAMIC_ARCH = setDynamicArch false;
       TARGET = setTarget "RISCV64_GENERIC";
-      DYNAMIC_ARCH = setDynamicArch false;
-      USE_OPENMP = true;
-    };
-
-    loongarch64-linux = {
-      TARGET = setTarget "LA64_GENERIC";
-      DYNAMIC_ARCH = setDynamicArch false;
       USE_OPENMP = true;
     };
 
     s390x-linux = {
       BINARY = 64;
-      TARGET = setTarget "ZARCH_GENERIC";
       DYNAMIC_ARCH = setDynamicArch true;
+      TARGET = setTarget "ZARCH_GENERIC";
       USE_OPENMP = true;
     };
 
     x86_64-freebsd = {
       BINARY = 64;
-      TARGET = setTarget "ATHLON";
       DYNAMIC_ARCH = setDynamicArch true;
       NO_AVX512 = !enableAVX512;
+      TARGET = setTarget "ATHLON";
       USE_OPENMP = true;
+    };
+
+    x86_64-linux = {
+      BINARY = 64;
+      DYNAMIC_ARCH = setDynamicArch true;
+      NO_AVX512 = !enableAVX512;
+      TARGET = setTarget "ATHLON";
+      USE_OPENMP = !stdenv.hostPlatform.isMusl;
+    };
+
+    x86_64-windows = {
+      BINARY = 64;
+      DYNAMIC_ARCH = setDynamicArch true;
+      NO_AVX512 = !enableAVX512;
+      TARGET = setTarget "ATHLON";
+      USE_OPENMP = false;
     };
   };
 in
@@ -160,13 +159,9 @@ let
 
 in
 stdenv.mkDerivation (finalAttrs: {
+  inherit blas64;
   pname = "openblas";
   version = "0.3.33";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "OpenMathLib";
@@ -174,6 +169,11 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-EArf0K2Gs+w8IRD5wkMOQv79e8yMoTgQfa9kzjXKn3Y=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     # Fix broken cmake config file path when CMAKE_INSTALL_INCLUDEDIR is an absolute path
@@ -183,40 +183,16 @@ stdenv.mkDerivation (finalAttrs: {
     ./cmake-include-fixes.patch
     # This was an attempted fix for the below commit but still leaves some scipy tests failing.
     (fetchpatch {
-      url = "https://github.com/OpenMathLib/OpenBLAS/commit/e3ce4623c299068bbd47c35ee87aab334bac73b1.patch";
-      revert = true;
       hash = "sha256-WrP3RCDk/EbpqVOw9XGLnFI+6/bBGJTIrt2TRYGLVQ4=";
+      revert = true;
+      url = "https://github.com/OpenMathLib/OpenBLAS/commit/e3ce4623c299068bbd47c35ee87aab334bac73b1.patch";
     })
     # This commit led to miscompilation of certain ASIMD extensions code paths.
     (fetchpatch {
-      url = "https://github.com/OpenMathLib/OpenBLAS/commit/3f6e928d34aca977bd5d4191e6d2c2338a342.patch";
-      revert = true;
       hash = "sha256-EccgzxgyfAjVbV+HPemGHmzkRe0kpixu3eS3BZWr0g4=";
+      revert = true;
+      url = "https://github.com/OpenMathLib/OpenBLAS/commit/3f6e928d34aca977bd5d4191e6d2c2338a342.patch";
     })
-  ];
-
-  inherit blas64;
-
-  # Some hardening features are disabled due to sporadic failures in
-  # OpenBLAS-based programs. The problem may not be with OpenBLAS itself, but
-  # with how these flags interact with hardening measures used downstream.
-  # In either case, OpenBLAS must only be used by trusted code--it is
-  # inherently unsuitable for security-conscious applications--so there should
-  # be no objection to disabling these hardening measures.
-  hardeningDisable = [
-    # don't modify or move the stack
-    "stackprotector"
-    "pic"
-    # don't alter index arithmetic
-    "strictoverflow"
-    # don't interfere with dynamic target detection
-    "relro"
-    "bindnow"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isAarch64 [
-    # "__builtin_clear_padding not supported for variable length aggregates"
-    # in aarch64-specific code
-    "trivialautovarinit"
   ];
 
   nativeBuildInputs = [
@@ -224,11 +200,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = lib.optional (stdenv.cc.isClang && config.USE_OPENMP) openmp;
-
-  depsBuildBuild = [
-    buildPackages.gfortran
-    buildPackages.stdenv.cc
-  ];
 
   cmakeFlags = [
     (lib.cmakeFeature "TARGET" config.TARGET)
@@ -306,8 +277,36 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/lib/libopenblas.a $out/lib/liblapacke.a
   '';
 
+  depsBuildBuild = [
+    buildPackages.gfortran
+    buildPackages.stdenv.cc
+  ];
+
+  # Some hardening features are disabled due to sporadic failures in
+  # OpenBLAS-based programs. The problem may not be with OpenBLAS itself, but
+  # with how these flags interact with hardening measures used downstream.
+  # In either case, OpenBLAS must only be used by trusted code--it is
+  # inherently unsuitable for security-conscious applications--so there should
+  # be no objection to disabling these hardening measures.
+  hardeningDisable = [
+    # don't modify or move the stack
+    "stackprotector"
+    "pic"
+    # don't alter index arithmetic
+    "strictoverflow"
+    # don't interfere with dynamic target detection
+    "relro"
+    "bindnow"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isAarch64 [
+    # "__builtin_clear_padding not supported for variable length aggregates"
+    # in aarch64-specific code
+    "trivialautovarinit"
+  ];
+
   passthru.tests = {
     inherit (python3.pkgs) numpy scipy scikit-learn;
+
     inherit
       ceres-solver
       flint
@@ -316,21 +315,24 @@ stdenv.mkDerivation (finalAttrs: {
       opencv
       R
       ;
-    pkg-config = testers.hasPkgConfigModules {
+
+    cmake = testers.hasCmakeConfigModules {
+      moduleNames = [ "OpenBLAS" ];
       package = finalAttrs.finalPackage;
     };
-    cmake = testers.hasCmakeConfigModules {
+
+    pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
-      moduleNames = [ "OpenBLAS" ];
     };
   };
 
   meta = {
     description = "Basic Linear Algebra Subprograms";
-    license = lib.licenses.bsd3;
     homepage = "https://github.com/OpenMathLib/OpenBLAS";
-    platforms = lib.attrNames configs;
+    license = lib.licenses.bsd3;
     maintainers = [ ];
+    platforms = lib.attrNames configs;
+
     pkgConfigModules = [
       "openblas"
       "blas"

@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   buildGoModule,
-  installShellFiles,
-  nixosTests,
-  makeWrapper,
   gawk,
   glibc,
+  installShellFiles,
+  makeWrapper,
+  nixosTests,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,26 +21,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-s6Muogxe+jvre1qZYRiSGTDgMf0+BVsSOwyxF6+Aa2o=";
   };
 
-  vendorHash = "sha256-utF/CgWNtJNin5NIq7ZGjNc7YbjAuN5nm/G57uQal94=";
-
-  proxyVendor = true;
-
-  subPackages = [ "." ];
-
   nativeBuildInputs = [
     installShellFiles
     makeWrapper
   ];
 
-  tags = [ "vault" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/hashicorp/vault/sdk/version.GitCommit=${finalAttrs.src.rev}"
-    "-X github.com/hashicorp/vault/sdk/version.Version=${finalAttrs.version}"
-    "-X github.com/hashicorp/vault/sdk/version.VersionPrerelease="
-  ];
+  vendorHash = "sha256-utF/CgWNtJNin5NIq7ZGjNc7YbjAuN5nm/G57uQal94=";
 
   postInstall = ''
     echo "complete -C $out/bin/vault vault" > vault.bash
@@ -56,6 +42,18 @@ buildGoModule (finalAttrs: {
       }
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/hashicorp/vault/sdk/version.GitCommit=${finalAttrs.src.rev}"
+    "-X github.com/hashicorp/vault/sdk/version.Version=${finalAttrs.version}"
+    "-X github.com/hashicorp/vault/sdk/version.VersionPrerelease="
+  ];
+
+  proxyVendor = true;
+  subPackages = [ "." ];
+  tags = [ "vault" ];
+
   passthru.tests = {
     inherit (nixosTests)
       vault
@@ -66,15 +64,17 @@ buildGoModule (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://developer.hashicorp.com/vault";
     description = "Tool for managing secrets";
+    homepage = "https://developer.hashicorp.com/vault";
     changelog = "https://github.com/hashicorp/vault/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.bsl11;
-    mainProgram = "vault";
+
     maintainers = with lib.maintainers; [
       rushmorem
       Chili-Man
       techknowlogick
     ];
+
+    mainProgram = "vault";
   };
 })

@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchurl,
-  libx11,
   SDL,
-  libGLU,
-  libGL,
-  expat,
-  zlib,
-  SDL_ttf,
   SDL_image,
+  SDL_ttf,
+  expat,
+  libGL,
+  libGLU,
+  libx11,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.5.0";
   pname = "bloodspilot-client";
+  version = "1.5.0";
 
   src = fetchurl {
     url = "mirror://sourceforge/project/bloodspilot/client-sdl/v${finalAttrs.version}/bloodspilot-client-sdl-${finalAttrs.version}.tar.gz";
@@ -38,10 +38,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Multiplayer space combat game (client part)";
-    mainProgram = "bloodspilot-client-sdl";
     homepage = "http://bloodspilot.sf.net/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.linux;
+    mainProgram = "bloodspilot-client-sdl";
   };
 })

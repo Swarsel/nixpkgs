@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   gobject-introspection,
   intltool,
@@ -11,14 +11,13 @@
 python3.pkgs.buildPythonApplication rec {
   pname = "onioncircuits";
   version = "0.8.2";
-  pyproject = true;
 
   src = fetchFromGitLab {
-    domain = "gitlab.tails.boum.org";
     owner = "tails";
     repo = "onioncircuits";
     rev = version;
     sha256 = "sha256-hk4pwPTtj4wt58Wn3NbGc5yQt/FJGdcZC9BbNgvaMqY=";
+    domain = "gitlab.tails.boum.org";
   };
 
   nativeBuildInputs = [
@@ -26,6 +25,12 @@ python3.pkgs.buildPythonApplication rec {
     intltool
     wrapGAppsHook3
   ];
+
+  postInstall = ''
+    mkdir -p $out/etc/apparmor.d
+
+    cp apparmor/usr.bin.onioncircuits $out/etc/apparmor.d
+  '';
 
   build-system = with python3.pkgs; [
     setuptools
@@ -38,17 +43,13 @@ python3.pkgs.buildPythonApplication rec {
     pycountry
   ];
 
-  postInstall = ''
-    mkdir -p $out/etc/apparmor.d
-
-    cp apparmor/usr.bin.onioncircuits $out/etc/apparmor.d
-  '';
+  pyproject = true;
 
   meta = {
-    homepage = "https://tails.boum.org";
     description = "GTK application to display Tor circuits and streams";
-    mainProgram = "onioncircuits";
+    homepage = "https://tails.boum.org";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ wattmto ];
+    mainProgram = "onioncircuits";
   };
 }

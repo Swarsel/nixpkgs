@@ -2,17 +2,15 @@
   lib,
   stdenv,
   fetchFromCodeberg,
-  nix-update-script,
   meson,
   ninja,
+  nix-update-script,
   pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libudev-garden";
   version = "0.2.1";
-
-  __structuredAttrs = true;
 
   src = fetchFromCodeberg {
     owner = "Gardenhouse";
@@ -29,17 +27,20 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
   ];
 
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://codeberg.org/Gardenhouse/libudev-garden";
     description = "Daemonless replacement for libudev for use with gardendevd";
+    homepage = "https://codeberg.org/Gardenhouse/libudev-garden";
+    license = lib.licenses.isc;
+
     maintainers = with lib.maintainers; [
       aanderse
       choco98
     ];
-    license = lib.licenses.isc;
-    pkgConfigModules = [ "libudev" ];
+
     platforms = lib.platforms.linux;
+    pkgConfigModules = [ "libudev" ];
   };
 })

@@ -15,7 +15,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-pi9QMEdgJ5HYn7MNulsQ3kn93OtBGad8Ehojc8apAEs=";
   };
 
-  pyproject = true;
   build-system = [ python3Packages.setuptools ];
 
   dependencies = with python3Packages; [
@@ -32,17 +31,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
     requests
   ];
 
-  pythonImportsCheck = [ "minimax_mcp" ];
-
   dontCheckRuntimeDeps = true;
+  pyproject = true;
+  pythonImportsCheck = [ "minimax_mcp" ];
 
   meta = {
     description = "MiniMax MCP Server for text-to-speech, voice cloning, image and video generation";
+
     longDescription = ''
       A Model Context Protocol (MCP) server for MiniMax that enables
       text-to-speech, voice cloning, image generation, and video generation
       capabilities. Works with MCP clients like Claude Desktop, Cursor, and OpenCode.
     '';
+
     homepage = "https://github.com/MiniMax-AI/MiniMax-MCP";
     license = lib.licenses.mit;
     maintainers = [ ];

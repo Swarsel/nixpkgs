@@ -26,28 +26,24 @@ stdenv.mkDerivation rec {
     "dev"
     "info"
   ];
-  setOutputFlags = false; # $dev gets into the library otherwise
 
-  # GCC 4.6 raises a number of set-but-unused warnings.
-  configureFlags = [
-    "--disable-error-on-warning"
-  ]
-  # Guile needs patching to preset results for the configure tests about
-  # pthreads, which work only in native builds.
-  ++ lib.optional (stdenv.hostPlatform != stdenv.buildPlatform) "--with-threads=no";
+  patches = [
+    # Fix doc snarfing with GCC 4.5.
+    ./cpp-4.5.patch
+    # Self explanatory
+    ./CVE-2016-8605.patch
+  ];
 
-  depsBuildBuild = [
-    buildPackages.stdenv.cc
-  ]
-  ++ lib.optional (stdenv.hostPlatform != stdenv.buildPlatform) pkgsBuildBuild.guile_1_8;
   nativeBuildInputs = [
     makeWrapper
     pkg-config
   ];
+
   buildInputs = [
     libtool
     readline
   ];
+
   propagatedBuildInputs = [
     gmp
 
@@ -58,12 +54,13 @@ stdenv.mkDerivation rec {
     libtool
   ];
 
-  patches = [
-    # Fix doc snarfing with GCC 4.5.
-    ./cpp-4.5.patch
-    # Self explanatory
-    ./CVE-2016-8605.patch
-  ];
+  # GCC 4.6 raises a number of set-but-unused warnings.
+  configureFlags = [
+    "--disable-error-on-warning"
+  ]
+  # Guile needs patching to preset results for the configure tests about
+  # pthreads, which work only in native builds.
+  ++ lib.optional (stdenv.hostPlatform != stdenv.buildPlatform) "--with-threads=no";
 
   env = {
     NIX_CFLAGS_COMPILE = "-std=gnu17";
@@ -72,6 +69,12 @@ stdenv.mkDerivation rec {
   preBuild = ''
     sed -e '/lt_dlinit/a  lt_dladdsearchdir("'$out/lib'");' -i libguile/dynl.c
   '';
+
+  # One test fails.
+  # ERROR: file: "libtest-asmobs", message: "file not found"
+  # This is fixed here:
+  # <https://git.savannah.gnu.org/cgit/guile.git/commit/?h=branch_release-1-8&id=a0aa1e5b69d6ef0311aeea8e4b9a94eae18a1aaf>.
+  doCheck = false;
 
   postInstall = ''
     wrapProgram $out/bin/guile-snarf --prefix PATH : "${gawk}/bin"
@@ -84,13 +87,14 @@ stdenv.mkDerivation rec {
         -e "s|-lltdl|-L${libtool.lib}/lib -lltdl|g"
   '';
 
-  # One test fails.
-  # ERROR: file: "libtest-asmobs", message: "file not found"
-  # This is fixed here:
-  # <https://git.savannah.gnu.org/cgit/guile.git/commit/?h=branch_release-1-8&id=a0aa1e5b69d6ef0311aeea8e4b9a94eae18a1aaf>.
-  doCheck = false;
   doInstallCheck = doCheck;
 
+  depsBuildBuild = [
+    buildPackages.stdenv.cc
+  ]
+  ++ lib.optional (stdenv.hostPlatform != stdenv.buildPlatform) pkgsBuildBuild.guile_1_8;
+
+  setOutputFlags = false; # $dev gets into the library otherwise
   setupHook = ./setup-hook-1.8.sh;
 
   passthru = {
@@ -100,8 +104,8 @@ stdenv.mkDerivation rec {
   };
 
   meta = {
-    homepage = "https://www.gnu.org/software/guile/";
     description = "Embeddable Scheme implementation";
+
     longDescription = ''
       GNU Guile is an implementation of the Scheme programming language, with
       support for many SRFIs, packaged for use in a wide variety of
@@ -110,6 +114,8 @@ stdenv.mkDerivation rec {
       system calls, networking support, multiple threads, dynamic linking, a
       foreign function call interface, and powerful string processing.
     '';
+
+    homepage = "https://www.gnu.org/software/guile/";
     license = lib.licenses.lgpl3Plus;
     maintainers = with lib.maintainers; [ ludo ];
     platforms = lib.platforms.all;

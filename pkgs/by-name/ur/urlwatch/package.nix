@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "urlwatch";
   version = "2.29";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "thp";
@@ -16,6 +15,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-X1UR9JrQuujOIUg87W0YqfXsM3A5nttWjjJMIe3hgk8=";
   };
 
+  # no tests
+  doCheck = false;
   build-system = with python3Packages; [ setuptools ];
 
   dependencies = with python3Packages; [
@@ -37,9 +38,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     requests
   ];
 
-  # no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "urlwatch" ];
 
   meta = {
@@ -47,10 +46,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     homepage = "https://thp.io/2008/urlwatch/";
     changelog = "https://github.com/thp/urlwatch/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       kmein
       tv
     ];
+
     mainProgram = "urlwatch";
   };
 })

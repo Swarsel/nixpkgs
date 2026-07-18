@@ -1,13 +1,13 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  libfido2,
   makeWrapper,
+  nixosTests,
   openssl,
   pandoc,
   pkg-config,
-  libfido2,
-  nixosTests,
 }:
 
 buildGoModule (finalAttrs: {
@@ -23,8 +23,6 @@ buildGoModule (finalAttrs: {
 
   patches = [ ./0001-mount.go-try-fusermount3-suid-wrapper-and-fallback-t.patch ];
 
-  vendorHash = "sha256-dvOROh5TsMl+52RvKmDG4ftNv3WF19trgttu5BGWktU=";
-
   nativeBuildInputs = [
     makeWrapper
     pkg-config
@@ -32,20 +30,8 @@ buildGoModule (finalAttrs: {
   ];
 
   buildInputs = [ openssl ];
-
   propagatedBuildInputs = [ libfido2 ];
-
-  ldflags = [
-    "-X main.GitVersion=${finalAttrs.version}"
-    "-X main.GitVersionFuse=[vendored]"
-    "-X main.BuildDate=unknown"
-  ];
-
-  subPackages = [
-    "."
-    "gocryptfs-xray"
-    "contrib/statfs"
-  ];
+  vendorHash = "sha256-dvOROh5TsMl+52RvKmDG4ftNv3WF19trgttu5BGWktU=";
 
   postBuild = ''
     pushd Documentation/
@@ -61,16 +47,30 @@ buildGoModule (finalAttrs: {
     ln -s $out/bin/gocryptfs $out/bin/mount.fuse.gocryptfs
   '';
 
+  ldflags = [
+    "-X main.GitVersion=${finalAttrs.version}"
+    "-X main.GitVersionFuse=[vendored]"
+    "-X main.BuildDate=unknown"
+  ];
+
+  subPackages = [
+    "."
+    "gocryptfs-xray"
+    "contrib/statfs"
+  ];
+
   passthru.tests.gocryptfs = nixosTests.gocryptfs;
 
   meta = {
     description = "Encrypted overlay filesystem written in Go";
-    license = lib.licenses.mit;
     homepage = "https://nuetzlich.net/gocryptfs/";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       flokli
       prusnak
     ];
+
     platforms = lib.platforms.unix;
   };
 })

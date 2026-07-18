@@ -1,6 +1,6 @@
 {
-  fetchCrate,
   lib,
+  fetchCrate,
   rustPlatform,
 }:
 
@@ -13,17 +13,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-R3a87nXCnGhdeyR7409hFR5Cj3TFUWqaLNOtlXPsvto=";
   };
 
+  cargoHash = "sha256-FPCLy4mIuUeHMuYgYGTs/fn8tUf55LVWBwrrA5hiG2k=";
+
   cargoPatches = [
     ./0001-update-time-rs.patch
   ];
 
-  cargoHash = "sha256-FPCLy4mIuUeHMuYgYGTs/fn8tUf55LVWBwrrA5hiG2k=";
-
   meta = {
     description = "Converts cargo's json output (from stdin) to JUnit XML (to stdout)";
-    mainProgram = "cargo2junit";
     homepage = "https://github.com/johnterickson/cargo2junit";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ alekseysidorov ];
+    mainProgram = "cargo2junit";
   };
 })

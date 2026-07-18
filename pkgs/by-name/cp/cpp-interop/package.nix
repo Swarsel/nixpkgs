@@ -1,21 +1,19 @@
 {
   lib,
   fetchFromGitHub,
-  cmake,
-  ninja,
-  python3,
-  llvmPackages_21,
   cling,
+  cmake,
   gcc-unwrapped,
-  libffi,
-  libxml2,
-  ncurses,
-  zlib,
-  zstd,
-
   # tests
   gtest,
-
+  libffi,
+  libxml2,
+  llvmPackages_21,
+  ncurses,
+  ninja,
+  python3,
+  zlib,
+  zstd,
   # Which interpreter backend to build against. CppInterOp can use either
   # clang-repl (from upstream LLVM/Clang) or Cling. They are mutually exclusive.
   backend ? "clang-repl", # "clang-repl" | "cling"
@@ -78,8 +76,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-am2WObER9dlNQU/VMTY2ScMe/w8c4N8m/DVyNwHiBnw=";
   };
 
+  # Upstream's unittests/CMakeLists.txt only fetches GoogleTest over the network
+  # (forbidden in the sandbox) when no gtest target exists; point it at the
+  # nixpkgs gtest instead so the tests can build offline.
+  postPatch = ''
+    substituteInPlace unittests/CMakeLists.txt \
+      --replace-fail "include(GoogleTest)" "find_package(GTest REQUIRED)"
+  '';
+
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     cmake
@@ -103,14 +108,6 @@ stdenv.mkDerivation (finalAttrs: {
         clang
       ]
   );
-
-  # Upstream's unittests/CMakeLists.txt only fetches GoogleTest over the network
-  # (forbidden in the sandbox) when no gtest target exists; point it at the
-  # nixpkgs gtest instead so the tests can build offline.
-  postPatch = ''
-    substituteInPlace unittests/CMakeLists.txt \
-      --replace-fail "include(GoogleTest)" "find_package(GTest REQUIRED)"
-  '';
 
   cmakeFlags = [
     (lib.cmakeBool "BUILD_SHARED_LIBS" true)
@@ -136,6 +133,7 @@ stdenv.mkDerivation (finalAttrs: {
   # the Cling backend skips many of these tests upstream.
   doCheck = !useCling;
   checkInputs = [ gtest ];
+
   checkPhase = ''
     runHook preCheck
 
@@ -150,6 +148,7 @@ stdenv.mkDerivation (finalAttrs: {
   # Smoke test: drive the backend to JIT-compile and run a function, proving
   # the installed library, headers and runtime linking all work together.
   doInstallCheck = !useCling;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -174,6 +173,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  __structuredAttrs = true;
+
   passthru = {
     inherit backend resourceDir interpreterArgs;
   };
@@ -182,10 +183,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Clang-based C++ interoperability library (${backend} backend)";
     homepage = "https://github.com/compiler-research/CppInterOp";
     changelog = "https://github.com/compiler-research/CppInterOp/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       asl20
       llvm-exception
     ];
+
     maintainers = with lib.maintainers; [ thomasjm ];
     platforms = lib.platforms.unix;
   };

@@ -2,16 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  net-tools,
   iproute2,
   judy,
+  net-tools,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.2.6";
   pname = "miredo";
-
-  buildInputs = [ judy ];
+  version = "1.2.6";
 
   src = fetchurl {
     url = "https://www.remlab.net/files/miredo/miredo-${finalAttrs.version}.tar.xz";
@@ -25,6 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace misc/client-hook.iproute --replace '/sbin/ip' '${iproute2}/bin/ip'
   '';
 
+  buildInputs = [ judy ];
   configureFlags = [ "--with-Judy" ];
 
   postInstall = ''

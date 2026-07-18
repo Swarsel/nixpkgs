@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3,
   makeWrapper,
+  python3,
 }:
 
 stdenv.mkDerivation {
@@ -34,7 +34,7 @@ stdenv.mkDerivation {
     homepage = "https://github.com/0xNinjaCyclone/hellMaker";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ tochiaha ];
-    mainProgram = "hellmaker";
     platforms = lib.platforms.all;
+    mainProgram = "hellmaker";
   };
 }

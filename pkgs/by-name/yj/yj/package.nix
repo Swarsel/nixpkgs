@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -25,9 +25,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Convert YAML <=> TOML <=> JSON <=> HCL";
-    license = lib.licenses.asl20;
-    mainProgram = "yj";
-    maintainers = with lib.maintainers; [ xyenon ];
     homepage = "https://github.com/sclevine/yj";
+    license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ xyenon ];
+    mainProgram = "yj";
   };
 })

@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  lib,
   nixosTests,
 }:
 
@@ -14,6 +14,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-J87NrQ+zkUlREe0lGERFFAEW8EFysK5RJhM6OUVI1J0=";
   };
 
+  installPhase = ''
+    runHook preInstall
+
+    mkdir $out
+    cp -r . $out
+
+    runHook postInstall
+  '';
+
+  dontBuild = true;
+
   # Unpack the tarball into a subdir. All the contents are copied into `$out`.
   # Unpacking into the parent directory would also copy `env-vars` into `$out`
   # in the `installPhase` which ultimately means that the package retains
@@ -25,24 +36,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   sourceRoot = ".";
 
-  dontBuild = true;
-  installPhase = ''
-    runHook preInstall
-
-    mkdir $out
-    cp -r . $out
-
-    runHook postInstall
-  '';
-
   passthru = {
     tests = { inherit (nixosTests) wiki-js; };
     updateScript = ./update.sh;
   };
 
   meta = {
-    homepage = "https://js.wiki/";
     description = "Modern and powerful wiki app built on Node.js";
+    homepage = "https://js.wiki/";
     license = lib.licenses.agpl3Only;
     maintainers = [ ];
   };

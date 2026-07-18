@@ -3,15 +3,22 @@
   stdenv,
   fetchFromGitHub,
   libx11,
+  libxext,
+  libxfixes,
   libxi,
   libxt,
-  libxfixes,
-  libxext,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.8";
   pname = "xbanish";
+  version = "1.8";
+
+  src = fetchFromGitHub {
+    owner = "jcs";
+    repo = "xbanish";
+    rev = "v${finalAttrs.version}";
+    sha256 = "sha256-jwCoJ2shFGuJHhmXmlw/paFpMl5ARD6e5zDnDZHlsoo=";
+  };
 
   buildInputs = [
     libx11
@@ -21,13 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxext
   ];
 
-  src = fetchFromGitHub {
-    owner = "jcs";
-    repo = "xbanish";
-    rev = "v${finalAttrs.version}";
-    sha256 = "sha256-jwCoJ2shFGuJHhmXmlw/paFpMl5ARD6e5zDnDZHlsoo=";
-  };
-
   makeFlags = [ "PREFIX=$(out)" ];
 
   preInstall = ''
@@ -36,6 +36,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Hides mouse pointer while not in use";
+
     longDescription = ''
       xbanish hides the mouse cursor when you start typing, and shows it again when
       the mouse cursor moves or a mouse button is pressed.  This is similar to
@@ -48,6 +49,7 @@ stdenv.mkDerivation (finalAttrs: {
       The name comes from ratpoison's "banish" command that sends the cursor to the
       corner of the screen.
     '';
+
     homepage = "https://github.com/jcs/xbanish";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.choochootrain ];

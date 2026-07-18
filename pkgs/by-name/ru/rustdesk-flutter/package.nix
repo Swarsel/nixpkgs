@@ -1,37 +1,37 @@
 {
   lib,
-  clangStdenv,
-  cargo,
-  copyDesktopItems,
   fetchFromGitHub,
-  flutter329,
+  addDriverRunpath,
+  callPackage,
+  cargo,
+  cargo-expand,
+  clangStdenv,
+  copyDesktopItems,
   ffmpeg_7,
-  gst_all_1,
+  flutter329,
   fuse3,
-  libxtst,
+  gst_all_1,
   libaom,
+  libayatana-appindicator,
   libopus,
   libpulseaudio,
   libva,
   libvdpau,
   libvpx,
   libxkbcommon,
+  libxtst,
   libyuv,
-  pam,
   makeDesktopItem,
+  openssl,
+  pam,
+  perl,
+  pipewire,
   rustPlatform,
-  libayatana-appindicator,
   rustc,
   rustfmt,
-  xdotool,
   xdg-user-dirs,
-  pipewire,
-  cargo-expand,
+  xdotool,
   yq,
-  callPackage,
-  addDriverRunpath,
-  perl,
-  openssl,
 }:
 let
   flutterRustBridge = rustPlatform.buildRustPackage rec {
@@ -50,11 +50,12 @@ let
     ];
 
     cargoHash = "sha256-4khuq/DK4sP98AMHyr/lEo1OJdqLujOIi8IgbKBY60Y=";
+    doCheck = false;
+
     cargoBuildFlags = [
       "--package"
       "flutter_rust_bridge_codegen"
     ];
-    doCheck = false;
   };
 
   ffigen = callPackage ./ffigen {
@@ -72,40 +73,29 @@ flutter329.buildFlutterApplication rec {
     owner = "rustdesk";
     repo = "rustdesk";
     tag = version;
-    fetchSubmodules = true;
     hash = "sha256-FRtYafsIKHnGPV8NaiaHxIHkon8/T2P83uq9taUD1Xc=";
+    fetchSubmodules = true;
   };
+
+  patches = [
+    ./make-build-reproducible.patch
+  ];
+
+  postPatch = ''
+    cd flutter
+    if [ $cargoDepsCopy ]; then # That will be inherited to buildDartPackage and it doesn't have cargoDepsCopy
+      substituteInPlace $cargoDepsCopy/*/libappindicator-sys-*/src/lib.rs \
+        --replace-fail "libayatana-appindicator3.so.1" "${lib.getLib libayatana-appindicator}/lib/libayatana-appindicator3.so.1"
+      # Disable static linking of ffmpeg since https://github.com/21pages/hwcodec/commit/1873c34e3da070a462540f61c0b782b7ab15dc84
+      sed -i 's/static=//g' $cargoDepsCopy/*/hwcodec-*/build.rs
+      sed -e '1i #include <cstdint>' -i $cargoDepsCopy/*/webm-1.1.0/src/sys/libwebm/mkvparser/mkvparser.cc
+      sed -e '1i #include <cstdint>' -i $cargoDepsCopy/*/webm-sys-1.0.4/libwebm/mkvparser/mkvparser.cc
+    fi
+
+    substituteInPlace ../Cargo.toml --replace-fail ", \"staticlib\", \"rlib\"" ""
+  '';
 
   strictDeps = true;
-  env.VCPKG_ROOT = "/homeless-shelter"; # idk man, makes the build go since https://github.com/21pages/hwcodec/commit/1873c34e3da070a462540f61c0b782b7ab15dc84
-  env.OPENSSL_NO_VENDOR = true;
-
-  # Configure the Flutter/Dart build
-  sourceRoot = "${src.name}/flutter";
-  # curl https://raw.githubusercontent.com/rustdesk/rustdesk/1.4.1/flutter/pubspec.lock | yq > pubspec.lock.json
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
-  gitHashes = lib.importJSON ./git-hashes.json;
-
-  # Configure the Rust build
-  cargoRoot = "..";
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit
-      pname
-      version
-      src
-      patches
-      ;
-    hash = "sha256-mEtTo1ony5w/dzJcHieG9WywHirBoQ/C0WpiAr7pUVc=";
-  };
-
-  dontCargoBuild = true;
-  cargoBuildFlags = "--lib";
-  cargoBuildType = "release";
-  cargoBuildFeatures = [
-    "flutter"
-    "hwcodec"
-    "linux-pkg-config"
-  ];
 
   nativeBuildInputs = [
     # flutter_rust_bridge_codegen
@@ -142,36 +132,8 @@ flutter329.buildFlutterApplication rec {
     openssl
   ];
 
-  prePatch = ''
-    chmod -R +w ..
-    cd ..
-  '';
-
-  patches = [
-    ./make-build-reproducible.patch
-  ];
-
-  prepareBuildRunner = ''
-    cp ${./build-runner.sh} build_runner
-    substituteInPlace build_runner \
-      --replace-fail "@bash@" "$SHELL"
-    chmod +x build_runner
-    export PATH=$PATH:$PWD
-  '';
-
-  postPatch = ''
-    cd flutter
-    if [ $cargoDepsCopy ]; then # That will be inherited to buildDartPackage and it doesn't have cargoDepsCopy
-      substituteInPlace $cargoDepsCopy/*/libappindicator-sys-*/src/lib.rs \
-        --replace-fail "libayatana-appindicator3.so.1" "${lib.getLib libayatana-appindicator}/lib/libayatana-appindicator3.so.1"
-      # Disable static linking of ffmpeg since https://github.com/21pages/hwcodec/commit/1873c34e3da070a462540f61c0b782b7ab15dc84
-      sed -i 's/static=//g' $cargoDepsCopy/*/hwcodec-*/build.rs
-      sed -e '1i #include <cstdint>' -i $cargoDepsCopy/*/webm-1.1.0/src/sys/libwebm/mkvparser/mkvparser.cc
-      sed -e '1i #include <cstdint>' -i $cargoDepsCopy/*/webm-sys-1.0.4/libwebm/mkvparser/mkvparser.cc
-    fi
-
-    substituteInPlace ../Cargo.toml --replace-fail ", \"staticlib\", \"rlib\"" ""
-  '';
+  env.OPENSSL_NO_VENDOR = true;
+  env.VCPKG_ROOT = "/homeless-shelter"; # idk man, makes the build go since https://github.com/21pages/hwcodec/commit/1873c34e3da070a462540f61c0b782b7ab15dc84
 
   preBuild = ''
     # Build the Flutter/Rust bridge bindings
@@ -202,57 +164,106 @@ flutter329.buildFlutterApplication rec {
     cp ../res/scalable.svg $out/share/icons/hicolor/scalable/apps/rustdesk.svg
   '';
 
-  extraWrapProgramArgs = ''
-    --prefix LD_LIBRARY_PATH : ${addDriverRunpath.driverLink}/lib \
-    --prefix PATH : ${lib.makeBinPath [ xdg-user-dirs ]}
-  '';
+  cargoBuildFeatures = [
+    "flutter"
+    "hwcodec"
+    "linux-pkg-config"
+  ];
+
+  cargoBuildFlags = "--lib";
+  cargoBuildType = "release";
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit
+      pname
+      version
+      src
+      patches
+      ;
+
+    hash = "sha256-mEtTo1ony5w/dzJcHieG9WywHirBoQ/C0WpiAr7pUVc=";
+  };
+
+  # Configure the Rust build
+  cargoRoot = "..";
 
   desktopItems = [
     (makeDesktopItem {
-      name = "rustdesk";
-      desktopName = "RustDesk";
-      genericName = "Remote Desktop";
-      comment = "Remote Desktop";
-      exec = "rustdesk %u";
-      icon = "rustdesk";
-      terminal = false;
-      type = "Application";
-      startupNotify = true;
+      actions.new-window = {
+        exec = "rustdesk %u";
+        name = "Open a New Window";
+      };
+
       categories = [
         "Network"
         "RemoteAccess"
         "GTK"
       ];
-      keywords = [ "internet" ];
-      actions.new-window = {
-        name = "Open a New Window";
-        exec = "rustdesk %u";
-      };
-    })
-    (makeDesktopItem {
-      name = "rustdesk-link";
-      desktopName = "RustDeskURL Scheme Handler";
-      noDisplay = true;
-      mimeTypes = [ "x-scheme-handler/rustdesk" ];
-      tryExec = "rustdesk";
+
+      comment = "Remote Desktop";
+      desktopName = "RustDesk";
       exec = "rustdesk %u";
+      genericName = "Remote Desktop";
       icon = "rustdesk";
+      keywords = [ "internet" ];
+      name = "rustdesk";
+      startupNotify = true;
       terminal = false;
       type = "Application";
+    })
+    (makeDesktopItem {
+      desktopName = "RustDeskURL Scheme Handler";
+      exec = "rustdesk %u";
+      icon = "rustdesk";
+      mimeTypes = [ "x-scheme-handler/rustdesk" ];
+      name = "rustdesk-link";
+      noDisplay = true;
       startupNotify = false;
+      terminal = false;
+      tryExec = "rustdesk";
+      type = "Application";
     })
   ];
+
+  dontCargoBuild = true;
+
+  extraWrapProgramArgs = ''
+    --prefix LD_LIBRARY_PATH : ${addDriverRunpath.driverLink}/lib \
+    --prefix PATH : ${lib.makeBinPath [ xdg-user-dirs ]}
+  '';
+
+  gitHashes = lib.importJSON ./git-hashes.json;
+
+  prePatch = ''
+    chmod -R +w ..
+    cd ..
+  '';
+
+  prepareBuildRunner = ''
+    cp ${./build-runner.sh} build_runner
+    substituteInPlace build_runner \
+      --replace-fail "@bash@" "$SHELL"
+    chmod +x build_runner
+    export PATH=$PATH:$PWD
+  '';
+
+  # curl https://raw.githubusercontent.com/rustdesk/rustdesk/1.4.1/flutter/pubspec.lock | yq > pubspec.lock.json
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
+  # Configure the Flutter/Dart build
+  sourceRoot = "${src.name}/flutter";
 
   meta = {
     description = "Virtual / remote desktop infrastructure for everyone! Open source TeamViewer / Citrix alternative";
     homepage = "https://rustdesk.com";
     changelog = "https://github.com/rustdesk/rustdesk/releases/${version}";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       das_j
       helsinki-Jo
     ];
-    mainProgram = "rustdesk";
+
     platforms = lib.platforms.linux; # should work on darwin as well but I have no machine to test with
+    mainProgram = "rustdesk";
   };
 }

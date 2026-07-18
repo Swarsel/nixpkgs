@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   promscale,
   testers,
 }:
@@ -19,17 +19,12 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-lnyKsipr/f9W9LWLb2lizKGLvIbS3XnSlOH1u1B87OY=";
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/timescale/promscale/pkg/version.Version=${finalAttrs.version}"
-    "-X github.com/timescale/promscale/pkg/version.CommitHash=${finalAttrs.src.rev}"
-  ];
   preBuild = ''
     # Without this build fails with
     # main module (github.com/timescale/promscale) does not contain package github.com/timescale/promscale/migration-tool/cmd/prom-migrator
     rm -r migration-tool
   '';
+
   checkPhase = ''
     runHook preCheck
 
@@ -41,20 +36,29 @@ buildGoModule (finalAttrs: {
     runHook postCheck
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/timescale/promscale/pkg/version.Version=${finalAttrs.version}"
+    "-X github.com/timescale/promscale/pkg/version.CommitHash=${finalAttrs.src.rev}"
+  ];
+
   passthru.tests.version = testers.testVersion {
-    package = promscale;
     command = "promscale -version";
+    package = promscale;
   };
 
   meta = {
     description = "Open-source analytical platform for Prometheus metrics";
-    mainProgram = "promscale";
     homepage = "https://github.com/timescale/promscale";
     changelog = "https://github.com/timescale/promscale/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       _0x4A6F
       anpin
     ];
+
+    mainProgram = "promscale";
   };
 })

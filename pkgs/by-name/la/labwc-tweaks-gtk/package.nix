@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  gtk3,
+  libxml2,
   meson,
   ninja,
   pkg-config,
-  gtk3,
-  libxml2,
-  xkeyboard_config,
-  wrapGAppsHook3,
   unstableGitUpdater,
+  wrapGAppsHook3,
+  xkeyboard_config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Sd3crtELVFkvPMPLL9hXifwgeOhlj1Hlgm3V6EPfT3I=";
   };
 
+  postPatch = ''
+    substituteInPlace stack-lang.c --replace /usr/share/X11/xkb ${xkeyboard_config}/share/X11/xkb
+    substituteInPlace theme.c --replace /usr/share /run/current-system/sw/share
+  '';
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     meson
     ninja
@@ -35,21 +42,14 @@ stdenv.mkDerivation (finalAttrs: {
     libxml2
   ];
 
-  strictDeps = true;
-
-  postPatch = ''
-    substituteInPlace stack-lang.c --replace /usr/share/X11/xkb ${xkeyboard_config}/share/X11/xkb
-    substituteInPlace theme.c --replace /usr/share /run/current-system/sw/share
-  '';
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    homepage = "https://github.com/labwc/labwc-tweaks-gtk";
     description = "Configuration gui app for labwc; gtk fork";
-    mainProgram = "labwc-tweaks-gtk";
+    homepage = "https://github.com/labwc/labwc-tweaks-gtk";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ romildo ];
+    platforms = lib.platforms.unix;
+    mainProgram = "labwc-tweaks-gtk";
   };
 })

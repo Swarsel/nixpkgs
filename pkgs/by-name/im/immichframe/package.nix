@@ -1,13 +1,13 @@
 {
+  lib,
+  fetchFromGitHub,
   buildDotnetModule,
   dotnet-sdk,
-  fetchFromGitHub,
   fetchNpmDeps,
-  lib,
+  nix-update-script,
   nixosTests,
   nodejs,
   npmHooks,
-  nix-update-script,
 }:
 
 buildDotnetModule (finalAttrs: {
@@ -21,21 +21,10 @@ buildDotnetModule (finalAttrs: {
     hash = "sha256-VET0em+CyJzXPlCXjozj6SDhjD26lH94AETFKGG895I=";
   };
 
-  projectFile = "ImmichFrame.WebApi/ImmichFrame.WebApi.csproj";
-  nugetDeps = ./deps.json;
-  dotnet-runtime = dotnet-sdk.aspnetcore;
-
   nativeBuildInputs = [
     npmHooks.npmConfigHook
     nodejs
   ];
-
-  npmRoot = "immichFrame.Web";
-
-  npmDeps = fetchNpmDeps {
-    src = "${finalAttrs.src}/${finalAttrs.npmRoot}";
-    hash = "sha256-RyMY5ooC6Q+W+Y24ILv+WCcWLMDToZ52yefFuoAYubY=";
-  };
 
   preBuild = ''
     pushd ${finalAttrs.npmRoot}
@@ -47,22 +36,33 @@ buildDotnetModule (finalAttrs: {
     cp -r ${finalAttrs.npmRoot}/build/* $out/lib/immichframe/wwwroot/
   '';
 
+  dotnet-runtime = dotnet-sdk.aspnetcore;
+
   makeWrapperArgs = [
     "--chdir ${placeholder "out"}/lib/immichframe"
   ];
 
+  npmDeps = fetchNpmDeps {
+    src = "${finalAttrs.src}/${finalAttrs.npmRoot}";
+    hash = "sha256-RyMY5ooC6Q+W+Y24ILv+WCcWLMDToZ52yefFuoAYubY=";
+  };
+
+  npmRoot = "immichFrame.Web";
+  nugetDeps = ./deps.json;
+  projectFile = "ImmichFrame.WebApi/ImmichFrame.WebApi.csproj";
+
   passthru = {
-    updateScript = nix-update-script { };
     tests = { inherit (nixosTests) immichframe; };
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://github.com/immichFrame/ImmichFrame/releases/tag/${finalAttrs.src.tag}";
     description = "Display your photos from Immich as a digital photo frame";
     homepage = "https://immichframe.dev";
+    changelog = "https://github.com/immichFrame/ImmichFrame/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "ImmichFrame.WebApi";
     maintainers = with lib.maintainers; [ jfly ];
     platforms = lib.platforms.all;
+    mainProgram = "ImmichFrame.WebApi";
   };
 })

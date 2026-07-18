@@ -1,42 +1,32 @@
 {
   lib,
-  mkDerivation,
-  defaultMakeFlags,
   bsdSetupHook,
-  netbsdSetupHook,
-  makeMinimal,
-  install,
-  mandoc,
-  groff,
-  flex,
   byacc,
+  csu,
+  defaultMakeFlags,
+  flex,
   genassym,
   gencat,
-  lorder,
-  tsort,
-  statHook,
-  rpcgen,
-  csu,
+  groff,
   headers,
+  install,
+  lorder,
+  makeMinimal,
+  mandoc,
+  mkDerivation,
+  netbsdSetupHook,
+  rpcgen,
+  statHook,
+  tsort,
 }:
 
 mkDerivation {
-  noLibc = true;
-  path = "lib/libc";
   pname = "libcMinimal-netbsd";
+
   outputs = [
     "out"
     "dev"
     "man"
-  ];
-  USE_FORT = "yes";
-  MKPROFILE = "no";
-  extraPaths = [
-    "common"
-    "lib/i18n_module"
-    "libexec/ld.elf_so"
-    "sys"
-    "external/bsd/jemalloc"
   ];
 
   patches = [
@@ -46,6 +36,10 @@ mkDerivation {
     # attachment so I am not sure how to programmatically download it.
     ./0001-Allow-building-libc-without-generating-tags.patch
   ];
+
+  postPatch = ''
+    sed -i 's,/usr\(/include/sys/syscall.h\),${headers}\1,g' lib/lib*/sys/Makefile.inc
+  '';
 
   nativeBuildInputs = [
     bsdSetupHook
@@ -67,14 +61,8 @@ mkDerivation {
     csu
   ];
 
-  env.NIX_CFLAGS_COMPILE = "-B${csu}/lib -fcommon";
-
-  SHLIBINSTALLDIR = "$(out)/lib";
-  MKPICINSTALL = "yes";
-  MK_LIBC_TAGS = "no";
-  NLSDIR = "$(out)/share/nls";
-
   makeFlags = defaultMakeFlags ++ [ "FILESDIR=$(out)/var/db" ];
+  env.NIX_CFLAGS_COMPILE = "-B${csu}/lib -fcommon";
 
   postInstall = ''
     pushd ${headers}
@@ -88,9 +76,22 @@ mkDerivation {
     popd
   '';
 
-  postPatch = ''
-    sed -i 's,/usr\(/include/sys/syscall.h\),${headers}\1,g' lib/lib*/sys/Makefile.inc
-  '';
+  MKPICINSTALL = "yes";
+  MKPROFILE = "no";
+  MK_LIBC_TAGS = "no";
+  NLSDIR = "$(out)/share/nls";
+  SHLIBINSTALLDIR = "$(out)/lib";
+  USE_FORT = "yes";
 
+  extraPaths = [
+    "common"
+    "lib/i18n_module"
+    "libexec/ld.elf_so"
+    "sys"
+    "external/bsd/jemalloc"
+  ];
+
+  noLibc = true;
+  path = "lib/libc";
   meta.platforms = lib.platforms.netbsd;
 }

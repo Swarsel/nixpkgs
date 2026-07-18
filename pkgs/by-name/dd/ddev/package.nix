@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildGoModule,
   docker-buildx,
-  fetchFromGitHub,
   installShellFiles,
   makeBinaryWrapper,
   versionCheckHook,
@@ -39,13 +39,6 @@ buildGoModule (finalAttrs: {
   ];
 
   vendorHash = null;
-
-  ldflags = [
-    "-extldflags -static"
-    "-X github.com/ddev/ddev/pkg/versionconstants.DdevVersion=v${finalAttrs.version}"
-    "-X github.com/ddev/ddev/pkg/versionconstants.SegmentKey=v${finalAttrs.version}"
-  ];
-
   # Tests need docker.
   doCheck = false;
 
@@ -67,18 +60,26 @@ buildGoModule (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
     writableTmpDirAsHomeHook
   ];
+
+  ldflags = [
+    "-extldflags -static"
+    "-X github.com/ddev/ddev/pkg/versionconstants.DdevVersion=v${finalAttrs.version}"
+    "-X github.com/ddev/ddev/pkg/versionconstants.SegmentKey=v${finalAttrs.version}"
+  ];
+
   versionCheckKeepEnvironment = [ "HOME" ];
 
   meta = {
     description = "Docker-based local PHP+Node.js web development environments";
     homepage = "https://ddev.com/";
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ remyvv ];
     platforms = lib.platforms.unix;
     mainProgram = "ddev";
-    maintainers = with lib.maintainers; [ remyvv ];
   };
 })

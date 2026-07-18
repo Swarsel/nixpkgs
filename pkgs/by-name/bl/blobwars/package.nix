@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  pkg-config,
-  gettext,
   SDL2,
   SDL2_image,
   SDL2_mixer,
   SDL2_net,
   SDL2_ttf,
+  gettext,
+  pkg-config,
   zlib,
 }:
 
@@ -27,6 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     gettext
   ];
+
   buildInputs = [
     SDL2
     SDL2_image
@@ -35,12 +36,13 @@ stdenv.mkDerivation (finalAttrs: {
     SDL2_ttf
     zlib
   ];
-  env.NIX_CFLAGS_COMPILE = toString [ "-Wno-error" ];
 
   makeFlags = [
     "PREFIX=$(out)"
     "RELEASE=1"
   ];
+
+  env.NIX_CFLAGS_COMPILE = toString [ "-Wno-error" ];
 
   postInstall = ''
     install -Dm755 $out/games/blobwars -t $out/bin
@@ -53,13 +55,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Platform action game featuring a blob with lots of weapons";
-    mainProgram = "blobwars";
     homepage = "https://www.parallelrealities.co.uk/games/metalBlobSolid/";
+
     license = with lib.licenses; [
       gpl2Plus
       free
     ];
+
     maintainers = with lib.maintainers; [ iblech ];
     platforms = lib.platforms.unix;
+    mainProgram = "blobwars";
   };
 })

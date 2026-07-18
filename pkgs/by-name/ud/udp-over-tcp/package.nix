@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   nixosTests,
   rustPlatform,
 }:
@@ -16,6 +16,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-s72C+7q56dSwrmkUBy871rF1MvPkhg8780S+dN/ETh0=";
+
   cargoBuildFlags = [
     "--bins"
     "--features"
@@ -27,12 +28,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/mullvad/udp-over-tcp";
     description = "Proxy UDP traffic over a TCP stream";
+    homepage = "https://github.com/mullvad/udp-over-tcp";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ timschumi ];
     # No single mainProgram is listed here because tcp2udp and udp2tcp are equally important.
   };

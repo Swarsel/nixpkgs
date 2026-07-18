@@ -1,14 +1,14 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   ncurses,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "dijo";
   version = "0.2.7";
-  buildInputs = [ ncurses ];
+
   src = fetchFromGitHub {
     owner = "oppiliappan";
     repo = "dijo";
@@ -16,6 +16,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-g+A8BJxqoAvm9LTLrLnClVGtFJCQ2gT0mDGAov/6vXE=";
   };
 
+  buildInputs = [ ncurses ];
   cargoHash = "sha256-Pny/RBtr65jKu2DdyIrluZWeZIgGb8Ev7mxvTMWPlyI=";
 
   meta = {

@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
   ujson,
 }:
 
 buildPythonPackage rec {
   pname = "demoji";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bsolomon1124";
@@ -24,14 +23,14 @@ buildPythonPackage rec {
       --replace-fail "pytest-runner" ""
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   optional-dependencies = {
     ujson = [ ujson ];
   };
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "demoji" ];
 
   meta = {

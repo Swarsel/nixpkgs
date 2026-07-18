@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   asgiref,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
   pytest-django,
   pytestCheckHook,
   setuptools,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "django-cors-headers";
   version = "4.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "adamchainz";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     hash = "sha256-YtBMTmUOqozJksUgF4XJO+cQaFVt49qa0YKHlcXM1nU=";
   };
 
+  nativeCheckInputs = [
+    pytest-django
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,11 +32,7 @@ buildPythonPackage rec {
     django
   ];
 
-  nativeCheckInputs = [
-    pytest-django
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "corsheaders" ];
 
   meta = {

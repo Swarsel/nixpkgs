@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  ninja,
   go,
-  protobuf_21,
+  ninja,
   openssl,
+  protobuf_21,
 }:
 let
   protobuf = protobuf_21;
@@ -28,19 +28,17 @@ stdenv.mkDerivation (finalAttrs: {
     go
   ];
 
+  buildInputs = [ protobuf ];
+  propagatedBuildInputs = [ openssl ];
   cmakeFlags = [ "-G Ninja" ];
-
   # tmp home for go
   preBuild = "export HOME=\"$TMPDIR\"";
 
-  buildInputs = [ protobuf ];
-  propagatedBuildInputs = [ openssl ];
-
   meta = {
+    inherit (finalAttrs.src.meta) homepage;
     description = "GameNetworkingSockets is a basic transport layer for games";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
-    inherit (finalAttrs.src.meta) homepage;
     maintainers = [ lib.maintainers.sternenseemann ];
+    platforms = lib.platforms.unix;
   };
 })

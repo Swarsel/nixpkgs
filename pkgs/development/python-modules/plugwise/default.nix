@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiofiles,
   aiohttp,
   buildPythonPackage,
   defusedxml,
-  fetchFromGitHub,
   freezegun,
   jsonpickle,
   munch,
@@ -18,7 +18,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "plugwise";
   version = "1.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "plugwise";
@@ -32,6 +31,15 @@ buildPythonPackage (finalAttrs: {
     sed -i -e "s/~=[0-9.]*//g" pyproject.toml
   '';
 
+  nativeCheckInputs = [
+    freezegun
+    jsonpickle
+    pytest-aiohttp
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -42,17 +50,8 @@ buildPythonPackage (finalAttrs: {
     python-dateutil
   ];
 
-  nativeCheckInputs = [
-    freezegun
-    jsonpickle
-    pytest-aiohttp
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "plugwise" ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Python module for Plugwise Smiles, Stretch and USB stick";

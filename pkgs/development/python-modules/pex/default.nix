@@ -1,8 +1,8 @@
 {
   lib,
+  fetchurl,
   buildPythonPackage,
   fetchPypi,
-  fetchurl,
   setuptools,
 }:
 let
@@ -13,31 +13,30 @@ let
     # Taken from https://github.com/pex-tool/pex/blob/2c66932d6645e8e542e5386eae08b9cc2dbb2a21/pex/windows/__init__.py#L45
     version = "0.5.29";
 
-    aarch64-gui = fetchurl {
-      url = "https://raw.githubusercontent.com/astral-sh/uv/refs/tags/${uv-trampoline.version}/crates/uv-trampoline/trampolines/uv-trampoline-aarch64-gui.exe";
-      hash = "sha256-mb8x1FpyH+wy11X5YgWfqh/VUwBb62M4Zf9aFr5V4EE=";
-    };
-
     aarch64-console = fetchurl {
-      url = "https://raw.githubusercontent.com/astral-sh/uv/refs/tags/${uv-trampoline.version}/crates/uv-trampoline/trampolines/uv-trampoline-aarch64-console.exe";
       hash = "sha256-1S2aM+6CV7rKz+3ncM5X7kk7uDQeuha1+8lUEMYC75k=";
+      url = "https://raw.githubusercontent.com/astral-sh/uv/refs/tags/${uv-trampoline.version}/crates/uv-trampoline/trampolines/uv-trampoline-aarch64-console.exe";
     };
 
-    x86_64-gui = fetchurl {
-      url = "https://raw.githubusercontent.com/astral-sh/uv/refs/tags/${uv-trampoline.version}/crates/uv-trampoline/trampolines/uv-trampoline-x86_64-gui.exe";
-      hash = "sha256-icnp1oXrOZpc+dHTGvDbTHjr+D8M0eamvRrC9bPI/KI=";
+    aarch64-gui = fetchurl {
+      hash = "sha256-mb8x1FpyH+wy11X5YgWfqh/VUwBb62M4Zf9aFr5V4EE=";
+      url = "https://raw.githubusercontent.com/astral-sh/uv/refs/tags/${uv-trampoline.version}/crates/uv-trampoline/trampolines/uv-trampoline-aarch64-gui.exe";
     };
 
     x86_64-console = fetchurl {
-      url = "https://raw.githubusercontent.com/astral-sh/uv/refs/tags/${uv-trampoline.version}/crates/uv-trampoline/trampolines/uv-trampoline-x86_64-console.exe";
       hash = "sha256-nLopBrlCMMFjkKVRlY7Ke2zFGpQOyF5mSlLs0d7+HRQ=";
+      url = "https://raw.githubusercontent.com/astral-sh/uv/refs/tags/${uv-trampoline.version}/crates/uv-trampoline/trampolines/uv-trampoline-x86_64-console.exe";
+    };
+
+    x86_64-gui = fetchurl {
+      hash = "sha256-icnp1oXrOZpc+dHTGvDbTHjr+D8M0eamvRrC9bPI/KI=";
+      url = "https://raw.githubusercontent.com/astral-sh/uv/refs/tags/${uv-trampoline.version}/crates/uv-trampoline/trampolines/uv-trampoline-x86_64-gui.exe";
     };
   };
 in
 buildPythonPackage rec {
   pname = "pex";
   version = "2.38.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -52,11 +51,10 @@ buildPythonPackage rec {
     cp ${uv-trampoline.x86_64-console} pex/windows/stubs/uv-trampoline-x86_64-console.exe
   '';
 
-  build-system = [ setuptools ];
-
   # A few more dependencies I don't want to handle right now...
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "pex" ];
 
   meta = {

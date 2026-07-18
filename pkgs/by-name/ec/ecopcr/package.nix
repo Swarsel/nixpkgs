@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   gcc,
-  zlib,
   python3,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -41,6 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Electronic PCR software tool";
+
     longDescription = ''
       ecoPCR is an electronic PCR software developed by the LECA. It
       helps you estimate Barcode primers quality. In conjunction with
@@ -48,6 +49,7 @@ stdenv.mkDerivation (finalAttrs: {
       coverage and barcode specificity. New barcode primers can be
       developed using the ecoPrimers software.
     '';
+
     homepage = "https://git.metabarcoding.org/obitools/ecopcr/wikis/home";
     license = lib.licenses.cecill20;
     maintainers = [ ];

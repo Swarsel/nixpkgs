@@ -1,19 +1,19 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  flex,
+  fetchurl,
   bison,
-  pkg-config,
+  flex,
   libmnl,
-  libnfnetlink,
   libnetfilter_conntrack,
-  libnetfilter_queue,
-  libnetfilter_cttimeout,
   libnetfilter_cthelper,
+  libnetfilter_cttimeout,
+  libnetfilter_queue,
+  libnfnetlink,
   libtirpc,
-  systemdSupport ? true,
+  pkg-config,
   systemdLibs,
+  systemdSupport ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,6 +24,12 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://www.netfilter.org/projects/conntrack-tools/files/conntrack-tools-${finalAttrs.version}.tar.xz";
     hash = "sha256-BnZ39MX2VkgZ547TqdSomAk16pJz86uyKkIOowq13tY=";
   };
+
+  nativeBuildInputs = [
+    flex
+    bison
+    pkg-config
+  ];
 
   buildInputs = [
     libmnl
@@ -37,22 +43,17 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals systemdSupport [
     systemdLibs
   ];
-  nativeBuildInputs = [
-    flex
-    bison
-    pkg-config
-  ];
 
   configureFlags = [
     (lib.enableFeature systemdSupport "systemd")
   ];
 
   meta = {
-    homepage = "https://conntrack-tools.netfilter.org/";
     description = "Connection tracking userspace tools";
-    platforms = lib.platforms.linux;
+    homepage = "https://conntrack-tools.netfilter.org/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ fpletz ];
+    platforms = lib.platforms.linux;
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "netfilter" finalAttrs.version;
   };
 })

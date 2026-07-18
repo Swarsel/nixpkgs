@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -29,8 +29,8 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/goreleaser/chglog";
     changelog = "https://github.com/goreleaser/chglog/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ wineee ];
+    platforms = lib.platforms.unix;
     mainProgram = "chglog";
   };
 })

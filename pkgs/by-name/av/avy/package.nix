@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  fetchgit,
-  cmake,
-  zlib,
   boost,
+  cmake,
+  fetchgit,
+  zlib,
 }:
 
 stdenv.mkDerivation {
@@ -19,6 +19,7 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     zlib
     boost.out
@@ -36,6 +37,11 @@ stdenv.mkDerivation {
     ]
   );
 
+  installPhase = ''
+    mkdir -p $out/bin
+    cp avy/src/{avy,avybmc} $out/bin/
+  '';
+
   prePatch = ''
     sed -i -e '1i#include <stdint.h>' abc/src/bdd/dsd/dsd.h
     substituteInPlace abc/src/bdd/dsd/dsd.h --replace \
@@ -51,11 +57,6 @@ stdenv.mkDerivation {
 
     patch -p1 -d minisat -i ${./minisat-fenv.patch}
     patch -p1 -d glucose -i ${./glucose-fenv.patch}
-  '';
-
-  installPhase = ''
-    mkdir -p $out/bin
-    cp avy/src/{avy,avybmc} $out/bin/
   '';
 
   meta = {

@@ -11,17 +11,16 @@ let
   # missing test file
   multiscriptBltxml =
     (fetchFromGitHub {
+      hash = "sha256-QnN6Iyw6iOjfTX7DLVptsfAO/QNn9vOIk5IZlI15EvQ=";
       owner = "plk";
       repo = "biber";
       rev = "e8d056433063add7800f24589de76f89c4b64c20";
-      hash = "sha256-QnN6Iyw6iOjfTX7DLVptsfAO/QNn9vOIk5IZlI15EvQ=";
     })
     + "/t/tdata/multiscript.bltxml";
 in
 
 perlPackages.buildPerlModule {
   inherit (biberSource) pname version;
-
   src = "${biberSource}/source/bibtex/biber-ms/biblatex-biber-ms.tar.gz";
 
   # from META.json
@@ -89,8 +88,8 @@ perlPackages.buildPerlModule {
   meta = {
     description = "Backend for BibLaTeX (multiscript version)";
     license = biberSource.meta.license;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.xworld21 ];
+    platforms = lib.platforms.unix;
     mainProgram = "biber-ms";
   };
 }

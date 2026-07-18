@@ -18,71 +18,97 @@ let
     ;
 in
 {
-  port = 9131;
   extraOpts = {
-    noExit = mkOption {
-      type = types.bool;
-      default = false;
-      description = ''
-        Do not exit server on Varnish scrape errors.
-      '';
-    };
-    withGoMetrics = mkOption {
-      type = types.bool;
-      default = false;
-      description = ''
-        Export go runtime and http handler metrics.
-      '';
-    };
-    verbose = mkOption {
-      type = types.bool;
-      default = false;
-      description = ''
-        Enable verbose logging.
-      '';
-    };
-    raw = mkOption {
-      type = types.bool;
-      default = false;
-      description = ''
-        Enable raw stdout logging without timestamps.
-      '';
-    };
-    varnishStatPath = mkOption {
-      type = types.str;
-      default = "varnishstat";
-      description = ''
-        Path to varnishstat.
-      '';
-    };
-    instance = mkOption {
-      type = types.nullOr types.str;
-      default = config.services.varnish.stateDir;
-      defaultText = lib.literalExpression "config.services.varnish.stateDir";
-      description = ''
-        varnishstat -n value.
-      '';
-    };
     healthPath = mkOption {
-      type = types.nullOr types.str;
       default = null;
+
       description = ''
         Path under which to expose healthcheck. Disabled unless configured.
       '';
+
+      type = types.nullOr types.str;
     };
+
+    instance = mkOption {
+      default = config.services.varnish.stateDir;
+      defaultText = lib.literalExpression "config.services.varnish.stateDir";
+
+      description = ''
+        varnishstat -n value.
+      '';
+
+      type = types.nullOr types.str;
+    };
+
+    noExit = mkOption {
+      default = false;
+
+      description = ''
+        Do not exit server on Varnish scrape errors.
+      '';
+
+      type = types.bool;
+    };
+
+    raw = mkOption {
+      default = false;
+
+      description = ''
+        Enable raw stdout logging without timestamps.
+      '';
+
+      type = types.bool;
+    };
+
     telemetryPath = mkOption {
-      type = types.str;
       default = "/metrics";
+
       description = ''
         Path under which to expose metrics.
       '';
+
+      type = types.str;
+    };
+
+    varnishStatPath = mkOption {
+      default = "varnishstat";
+
+      description = ''
+        Path to varnishstat.
+      '';
+
+      type = types.str;
+    };
+
+    verbose = mkOption {
+      default = false;
+
+      description = ''
+        Enable verbose logging.
+      '';
+
+      type = types.bool;
+    };
+
+    withGoMetrics = mkOption {
+      default = false;
+
+      description = ''
+        Export go runtime and http handler metrics.
+      '';
+
+      type = types.bool;
     };
   };
+
+  port = 9131;
+
   serviceOpts = {
     path = [ config.services.varnish.package ];
+
     serviceConfig = {
-      RestartSec = mkDefault 1;
       DynamicUser = false;
+
       ExecStart = ''
         ${pkgs.prometheus-varnish-exporter}/bin/prometheus_varnish_exporter \
           --web.listen-address ${cfg.listenAddress}:${toString cfg.port} \
@@ -98,6 +124,8 @@ in
             ++ optional cfg.raw "--raw"
           )}
       '';
+
+      RestartSec = mkDefault 1;
     };
   };
 }

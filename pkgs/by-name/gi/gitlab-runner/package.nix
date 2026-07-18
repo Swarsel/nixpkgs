@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitLab,
   bash,
   buildGoModule,
-  fetchFromGitLab,
   gitMinimal,
   nix-update-script,
   versionCheckHook,
@@ -21,15 +21,56 @@ buildGoModule (finalAttrs: {
     hash = "sha256-uScTzj4pSRtSFCMxoOR5KqipCbPknwnydPYG6xU5dOo=";
   };
 
-  vendorHash = "sha256-QqqTkIgR9ca1dYQ32SG7C+SpEIA07Hlf8x3lVhZ5vRQ=";
-
-  # For patchShebangs
-  buildInputs = [ bash ];
-
   patches = [
     ./fix-shell-path.patch
     ./remove-bash-test.patch
   ];
+
+  postPatch = ''
+    patchShebangs --build helpers/docker/auth/testdata/docker-credential-bin.sh
+  '';
+
+  # For patchShebangs
+  buildInputs = [ bash ];
+  vendorHash = "sha256-QqqTkIgR9ca1dYQ32SG7C+SpEIA07Hlf8x3lVhZ5vRQ=";
+
+  nativeCheckInputs = [
+    gitMinimal
+    writableTmpDirAsHomeHook
+  ];
+
+  preCheck = ''
+    # Make the tests pass outside of GitLab CI
+    export CI=0
+  '';
+
+  postInstall = ''
+    install packaging/root/usr/share/gitlab-runner/clear-docker-cache $out/bin
+  '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  # Many tests start servers which bind to ports
+  __darwinAllowLocalNetworking = true;
+
+  excludedPackages = [
+    # Nested dependency Go module, used with go.mod replace directive
+    #
+    # https://gitlab.com/gitlab-org/gitlab-runner/-/commit/57ea9df5d8a8deb78c8d1972930bbeaa80d05e78
+    "./helpers/runner_wrapper/api"
+    # Helper scripts for upstream Make targets, not intended for downstream consumers
+    "./scripts"
+  ];
+
+  ldflags =
+    let
+      ldflagsPackageVariablePrefix = "gitlab.com/gitlab-org/gitlab-runner/common";
+    in
+    [
+      "-X ${ldflagsPackageVariablePrefix}.NAME=gitlab-runner"
+      "-X ${ldflagsPackageVariablePrefix}.VERSION=${finalAttrs.version}"
+      "-X ${ldflagsPackageVariablePrefix}.REVISION=v${finalAttrs.version}"
+    ];
 
   prePatch = ''
     # Remove some tests that can't work during a nix build
@@ -72,50 +113,6 @@ buildGoModule (finalAttrs: {
       --replace-fail "func TestClientInvalidSSL" "func OFF_TestClientInvalidSSL"
   '';
 
-  postPatch = ''
-    patchShebangs --build helpers/docker/auth/testdata/docker-credential-bin.sh
-  '';
-
-  excludedPackages = [
-    # Nested dependency Go module, used with go.mod replace directive
-    #
-    # https://gitlab.com/gitlab-org/gitlab-runner/-/commit/57ea9df5d8a8deb78c8d1972930bbeaa80d05e78
-    "./helpers/runner_wrapper/api"
-    # Helper scripts for upstream Make targets, not intended for downstream consumers
-    "./scripts"
-  ];
-
-  ldflags =
-    let
-      ldflagsPackageVariablePrefix = "gitlab.com/gitlab-org/gitlab-runner/common";
-    in
-    [
-      "-X ${ldflagsPackageVariablePrefix}.NAME=gitlab-runner"
-      "-X ${ldflagsPackageVariablePrefix}.VERSION=${finalAttrs.version}"
-      "-X ${ldflagsPackageVariablePrefix}.REVISION=v${finalAttrs.version}"
-    ];
-
-  nativeCheckInputs = [
-    gitMinimal
-    writableTmpDirAsHomeHook
-  ];
-
-  preCheck = ''
-    # Make the tests pass outside of GitLab CI
-    export CI=0
-  '';
-
-  # Many tests start servers which bind to ports
-  __darwinAllowLocalNetworking = true;
-
-  postInstall = ''
-    install packaging/root/usr/share/gitlab-runner/clear-docker-cache $out/bin
-  '';
-
-  doInstallCheck = true;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -125,8 +122,8 @@ buildGoModule (finalAttrs: {
     homepage = "https://docs.gitlab.com/runner";
     changelog = "https://gitlab.com/gitlab-org/gitlab-runner/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "gitlab-runner";
     maintainers = with lib.maintainers; [ zimbatm ];
+    mainProgram = "gitlab-runner";
     teams = [ lib.teams.gitlab ];
   };
 })

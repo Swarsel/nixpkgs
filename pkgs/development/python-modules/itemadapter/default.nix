@@ -11,13 +11,14 @@
 buildPythonPackage rec {
   pname = "itemadapter";
   version = "0.13.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-+hOce+KqgPiHSy8j0WXV1KpHxLhcVKtTC1Z/1faE8bQ=";
   };
 
+  # Infinite recursion with Scrapy
+  doCheck = false;
   build-system = [ hatchling ];
 
   optional-dependencies = {
@@ -26,9 +27,7 @@ buildPythonPackage rec {
     scrapy = [ scrapy ];
   };
 
-  # Infinite recursion with Scrapy
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "itemadapter" ];
 
   meta = {

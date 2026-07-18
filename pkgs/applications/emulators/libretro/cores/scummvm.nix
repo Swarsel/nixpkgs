@@ -3,28 +3,27 @@
   fetchFromGitHub,
   libGL,
   libGLU,
+  mkLibretroCore,
   which,
   zip,
-  mkLibretroCore,
 }:
 let
   # https://github.com/libretro/scummvm/blob/master/backends/platform/libretro/dependencies.mk#L8-L14
   libretro-common-src = fetchFromGitHub {
+    hash = "sha256-ItsUNbJCK/m/3VprK/zHD2UF5MhPC8b7jM3qS/oHU2A=";
     owner = "libretro";
     repo = "libretro-common";
     rev = "70ed90c42ddea828f53dd1b984c6443ddb39dbd6";
-    hash = "sha256-ItsUNbJCK/m/3VprK/zHD2UF5MhPC8b7jM3qS/oHU2A=";
   };
 
   libretro-deps-src = fetchFromGitHub {
+    hash = "sha256-tdGytbSNMCfMuXIAUunOSVw9qFq2rRaruELhZwEmhWE=";
     owner = "libretro";
     repo = "libretro-deps";
     rev = "abf5246b016569759e7d1b0ea91bb98c2e34d160";
-    hash = "sha256-tdGytbSNMCfMuXIAUunOSVw9qFq2rRaruELhZwEmhWE=";
   };
 in
 mkLibretroCore {
-  core = "scummvm";
   version = "0-unstable-2025-12-24";
 
   src = fetchFromGitHub {
@@ -33,14 +32,6 @@ mkLibretroCore {
     rev = "b56c0d796ebcb4a3a8ea966cc3b8ec3e02b452be";
     hash = "sha256-CPYKOqyEDRdA2D1+eomrsb7w8pDWyxtqmGZF8j15OJU=";
   };
-
-  extraBuildInputs = [
-    libGL
-    libGLU
-    zip
-  ];
-
-  extraNativeBuildInputs = [ which ];
 
   preConfigure = "cd backends/platform/libretro";
 
@@ -56,6 +47,15 @@ mkLibretroCore {
     patchShebangs ./scripts/*
   '';
 
+  core = "scummvm";
+
+  extraBuildInputs = [
+    libGL
+    libGLU
+    zip
+  ];
+
+  extraNativeBuildInputs = [ which ];
   makefile = "Makefile";
 
   meta = {

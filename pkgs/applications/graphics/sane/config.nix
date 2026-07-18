@@ -36,9 +36,6 @@ let
   '';
 in
 stdenv.mkDerivation {
-  name = "sane-config";
-  dontUnpack = true;
-
   installPhase = ''
     function symlink () {
       local target=$1 linkname=$2
@@ -52,4 +49,7 @@ stdenv.mkDerivation {
   ''
   + (lib.concatMapStrings installSanePath paths)
   + (lib.concatMapStrings disableBackend disabledDefaultBackends);
+
+  dontUnpack = true;
+  name = "sane-config";
 }

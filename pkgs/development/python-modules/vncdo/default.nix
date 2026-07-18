@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pexpect,
   pillow,
   pycryptodomex,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "vncdo";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sibson";
@@ -37,6 +36,7 @@ buildPythonPackage rec {
     pyvirtualdisplay
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "vncdotool" ];
 
   meta = {
@@ -45,7 +45,7 @@ buildPythonPackage rec {
     changelog = "https://github.com/sibson/vncdotool/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = [ ];
-    mainProgram = "vncdo";
     platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "vncdo";
   };
 }

@@ -18,15 +18,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-5I916T70sH4UAq5EGRjR7lnRBbPqMJIxaXwUCJQ4DcM=";
   };
 
-  vendorHash = "sha256-2lJmPNLpI1ksFb0EtcjPjyTy7eX1DKeX0F80k9FtGno=";
-
-  env.CGO_ENABLED = "0";
-  ldflags = [
-    "-s"
-    "-X main.version=${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-2lJmPNLpI1ksFb0EtcjPjyTy7eX1DKeX0F80k9FtGno=";
+  env.CGO_ENABLED = "0";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd uplosi \
@@ -35,6 +29,11 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/uplosi completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-X main.version=${finalAttrs.version}"
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -42,12 +41,14 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/edgelesssys/uplosi";
     changelog = "https://github.com/edgelesssys/uplosi/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    mainProgram = "uplosi";
+
     maintainers = with lib.maintainers; [
       katexochen
       malt3
       charludo
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "uplosi";
   };
 })

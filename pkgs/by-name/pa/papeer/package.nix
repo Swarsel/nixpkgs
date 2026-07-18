@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,13 +16,12 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-xlZWA87dRWU+dnmf4RqqkrIXVyI2Sg/odwPe7GQbgn8=";
-
   doCheck = false; # uses network
 
   meta = {
     description = "Convert websites into ebooks and markdown";
-    mainProgram = "papeer";
     homepage = "https://papeer.tech/";
     license = lib.licenses.gpl3Plus;
+    mainProgram = "papeer";
   };
 })

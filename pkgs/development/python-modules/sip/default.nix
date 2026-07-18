@@ -2,25 +2,26 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
-  setuptools-scm,
   packaging,
-
   # tests
   poppler-qt5,
   qgis,
   qgis-ltr,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "sip";
   version = "6.15.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-3C5YwXmKdOGzHCjoNzOYIv6PpVKIrjDomG6ygQDrylo=";
   };
+
+  # There aren't tests
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -32,9 +33,7 @@ buildPythonPackage rec {
     setuptools
   ];
 
-  # There aren't tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "sipbuild" ];
 
   passthru.tests = {

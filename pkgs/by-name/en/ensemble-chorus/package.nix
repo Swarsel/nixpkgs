@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fltk,
   alsa-lib,
-  freetype,
-  libxrandr,
-  libxinerama,
-  libxcursor,
-  lv2,
-  libjack2,
   cmake,
+  fltk,
+  freetype,
+  libjack2,
+  libxcursor,
+  libxinerama,
+  libxrandr,
+  lv2,
   pkg-config,
 }:
 
@@ -32,6 +32,18 @@ stdenv.mkDerivation {
     ./add-missing-cstdint-includes.patch
   ];
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt --replace-fail \
+      'cmake_minimum_required(VERSION "3.3")' \
+      'cmake_minimum_required(VERSION 4.0)'
+    substituteInPlace thirdparty/gsl-lite/CMakeLists.txt --replace-fail \
+      'cmake_minimum_required( VERSION 3.0 FATAL_ERROR )' \
+      'cmake_minimum_required(VERSION 4.0)'
+    substituteInPlace thirdparty/jsl/CMakeLists.txt --replace-fail \
+      'cmake_minimum_required(VERSION 3.3)' \
+      'cmake_minimum_required(VERSION 4.0)'
+  '';
+
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -48,23 +60,11 @@ stdenv.mkDerivation {
     libjack2
   ];
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt --replace-fail \
-      'cmake_minimum_required(VERSION "3.3")' \
-      'cmake_minimum_required(VERSION 4.0)'
-    substituteInPlace thirdparty/gsl-lite/CMakeLists.txt --replace-fail \
-      'cmake_minimum_required( VERSION 3.0 FATAL_ERROR )' \
-      'cmake_minimum_required(VERSION 4.0)'
-    substituteInPlace thirdparty/jsl/CMakeLists.txt --replace-fail \
-      'cmake_minimum_required(VERSION 3.3)' \
-      'cmake_minimum_required(VERSION 4.0)'
-  '';
-
   meta = {
-    homepage = "https://github.com/jpcima/ensemble-chorus";
     description = "Digital model of electronic string ensemble chorus";
+    homepage = "https://github.com/jpcima/ensemble-chorus";
+    license = lib.licenses.boost;
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.boost;
   };
 }

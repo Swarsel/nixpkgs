@@ -1,6 +1,6 @@
 {
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 with python3Packages;

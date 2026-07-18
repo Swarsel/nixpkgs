@@ -1,32 +1,25 @@
 {
   lib,
-  buildPythonPackage,
+  # dependencies
+  fetchurl,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   cython,
-  setuptools,
-
-  # nativeBuildInputs
-  pkg-config,
-
   # buildInputs
   ffmpeg-headless,
-
-  # dependencies
-
-  fetchurl,
   linkFarm,
   numpy,
   pillow,
+  # nativeBuildInputs
+  pkg-config,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "av";
   version = "17.0.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "PyAV-Org";
@@ -35,14 +28,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-IS+qSwvpNbhOazkgZh9hzzaTLxSgU7uZjGmaOIkhskc=";
   };
 
-  build-system = [
-    cython
-    setuptools
-  ];
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ ffmpeg-headless ];
+
+  nativeCheckInputs = [
+    numpy
+    pillow
+    pytestCheckHook
+  ];
 
   preCheck =
     let
@@ -57,10 +50,12 @@ buildPythonPackage (finalAttrs: {
       ln -s ${testSamples} tests/assets
     '';
 
-  nativeCheckInputs = [
-    numpy
-    pillow
-    pytestCheckHook
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+
+  build-system = [
+    cython
+    setuptools
   ];
 
   disabledTests = [
@@ -68,7 +63,7 @@ buildPythonPackage (finalAttrs: {
     "test_index_entries_len_webm"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
 
   pythonImportsCheck = [
     "av"
@@ -96,10 +91,10 @@ buildPythonPackage (finalAttrs: {
 
   meta = {
     description = "Pythonic bindings for FFmpeg";
-    mainProgram = "pyav";
     homepage = "https://github.com/PyAV-Org/PyAV";
     changelog = "https://github.com/PyAV-Org/PyAV/blob/${finalAttrs.src.tag}/CHANGELOG.rst";
     license = lib.licenses.bsd2;
     maintainers = [ ];
+    mainProgram = "pyav";
   };
 })

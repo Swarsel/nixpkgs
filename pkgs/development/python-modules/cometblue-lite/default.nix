@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   bleak,
   bleak-retry-connector,
   buildPythonPackage,
-  fetchFromGitHub,
 }:
 
 buildPythonPackage rec {
   pname = "cometblue-lite";
   version = "0.7.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "neffs";
@@ -25,7 +24,7 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "cometblue_lite" ];
 
   meta = {

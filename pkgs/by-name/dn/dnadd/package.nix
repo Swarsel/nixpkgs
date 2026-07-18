@@ -19,10 +19,10 @@ stdenv.mkDerivation (finalAttrs: {
   makeFlags = [ "PREFIX=$(out)" ];
 
   meta = {
-    homepage = "https://github.com/joelancaster/dnadd";
     description = "Adds packages declaratively on the command line";
-    mainProgram = "dnadd";
+    homepage = "https://github.com/joelancaster/dnadd";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ joelancaster ];
+    mainProgram = "dnadd";
   };
 })

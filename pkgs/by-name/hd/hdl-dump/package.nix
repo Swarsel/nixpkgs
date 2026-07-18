@@ -22,11 +22,11 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/ps2homebrew/hdl-dump";
     description = "PlayStation 2 HDLoader image dump/install utility";
-    platforms = lib.platforms.linux;
+    homepage = "https://github.com/ps2homebrew/hdl-dump";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ makefu ];
+    platforms = lib.platforms.linux;
     mainProgram = "hdl_dump";
   };
 }

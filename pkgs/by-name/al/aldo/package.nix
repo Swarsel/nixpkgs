@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  autoreconfHook,
   fetchgit,
   libao,
-  autoreconfHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,7 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ autoreconfHook ];
-
   buildInputs = [ libao ];
 
   meta = {

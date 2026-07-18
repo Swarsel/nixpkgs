@@ -1,9 +1,9 @@
 {
+  lib,
+  fetchFromGitHub,
   callPackage,
   cargo,
   cmake,
-  fetchFromGitHub,
-  lib,
   llvmPackages_19,
   makeRustPlatform,
   makeWrapper,
@@ -36,13 +36,6 @@ let
 
   adapter = (
     callPackage ./adapter.nix {
-      # The adapter is meant to be compiled with clang++,
-      # based on the provided CMake toolchain files.
-      # <https://github.com/vadimcn/codelldb/tree/master/cmake>
-      rustPlatform = makeRustPlatform {
-        inherit stdenv cargo rustc;
-      };
-
       inherit
         pname
         src
@@ -51,6 +44,13 @@ let
         cargoHash
         codelldb-launch
         ;
+
+      # The adapter is meant to be compiled with clang++,
+      # based on the provided CMake toolchain files.
+      # <https://github.com/vadimcn/codelldb/tree/master/cmake>
+      rustPlatform = makeRustPlatform {
+        inherit stdenv cargo rustc;
+      };
     }
   );
 
@@ -66,37 +66,36 @@ let
 
   codelldb-types = (
     callPackage ./codelldb-types.nix {
-      rustPlatform = makeRustPlatform {
-        inherit stdenv cargo rustc;
-      };
-
       inherit
         pname
         src
         version
         cargoHash
         ;
+
+      rustPlatform = makeRustPlatform {
+        inherit stdenv cargo rustc;
+      };
     }
   );
 
   codelldb-launch = (
     callPackage ./codelldb-launch.nix {
-      rustPlatform = makeRustPlatform {
-        inherit stdenv cargo rustc;
-      };
-
       inherit
         pname
         src
         version
         cargoHash
         ;
+
+      rustPlatform = makeRustPlatform {
+        inherit stdenv cargo rustc;
+      };
     }
   );
 
 in
 stdenv.mkDerivation {
-  pname = "vscode-extension-${publisher}-${pname}";
   inherit
     src
     version
@@ -105,7 +104,8 @@ stdenv.mkDerivation {
     vscodeExtName
     ;
 
-  installPrefix = "share/vscode/extensions/${vscodeExtUniqueId}";
+  pname = "vscode-extension-${publisher}-${pname}";
+  patches = [ ./patches/cmake-build-extension-only.patch ];
 
   nativeBuildInputs = [
     cmake
@@ -116,7 +116,12 @@ stdenv.mkDerivation {
     codelldb-launch
   ];
 
-  patches = [ ./patches/cmake-build-extension-only.patch ];
+  cmakeFlags = [
+    # Do not append timestamp to version.
+    "-DVERSION_SUFFIX="
+  ];
+
+  makeFlags = [ "vsix_bootstrap" ];
 
   # Make devDependencies available to tools/prep-package.js
   preConfigure = ''
@@ -130,12 +135,6 @@ stdenv.mkDerivation {
     export HOME="$TMPDIR/home"
     mkdir $HOME
   '';
-
-  cmakeFlags = [
-    # Do not append timestamp to version.
-    "-DVERSION_SUFFIX="
-  ];
-  makeFlags = [ "vsix_bootstrap" ];
 
   preBuild = lib.optionalString stdenv.hostPlatform.isDarwin ''
     export HOME=$TMPDIR
@@ -170,6 +169,8 @@ stdenv.mkDerivation {
       --prefix PATH : "${python3}/bin" \
       --prefix LD_LIBRARY_PATH : "${python3}/lib"
   '';
+
+  installPrefix = "share/vscode/extensions/${vscodeExtUniqueId}";
 
   passthru = {
     inherit lldb;

@@ -1,11 +1,11 @@
 {
-  mkDerivation,
   lib,
   fetchurl,
+  mkDerivation,
+  qmake,
   qtbase,
   qtsvg,
   qttools,
-  qmake,
 }:
 
 let
@@ -40,9 +40,9 @@ mkDerivation rec {
   meta = {
     description = "Qt5 Configuration Tool";
     homepage = "https://sourceforge.net/projects/qt5ct/";
-    platforms = lib.platforms.linux;
     license = lib.licenses.bsd2;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "qt5ct";
   };
 }

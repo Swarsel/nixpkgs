@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  curl,
-  tzdata,
   autoPatchelfHook,
+  curl,
   fixDarwinDylibNames,
   glibc,
-  version,
   hashes,
+  tzdata,
+  version,
 }:
 
 let
@@ -21,17 +21,14 @@ in
 # and can't build `dmd`.
 assert hostPlatform.isLinux -> (stdenv.cc.cc ? libgcc);
 stdenv.mkDerivation {
-  pname = "dmd-bootstrap";
   inherit version;
+  pname = "dmd-bootstrap";
 
   src = fetchurl rec {
-    name = "dmd.${version}.${OS}.tar.xz";
     url = "http://downloads.dlang.org/releases/2.x/${version}/${name}";
     sha256 = hashes.${OS} or (throw "missing bootstrap sha256 for OS ${OS}");
+    name = "dmd.${version}.${OS}.tar.xz";
   };
-
-  dontConfigure = true;
-  dontBuild = true;
 
   nativeBuildInputs =
     lib.optionals hostPlatform.isLinux [
@@ -40,6 +37,7 @@ stdenv.mkDerivation {
     ++ lib.optionals hostPlatform.isDarwin [
       fixDarwinDylibNames
     ];
+
   propagatedBuildInputs = [
     curl
     tzdata
@@ -73,6 +71,8 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
   # Stripping on Darwin started to break libphobos2.a
   # Undefined symbols for architecture x86_64:
   #   "_rt_envvars_enabled", referenced from:
@@ -81,10 +81,11 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Digital Mars D Compiler Package";
+    homepage = "https://dlang.org/";
     # As of 2.075 all sources and binaries use the boost license
     license = lib.licenses.boost;
     maintainers = [ lib.maintainers.lionello ];
-    homepage = "https://dlang.org/";
+
     platforms = [
       "i686-linux"
       "x86_64-linux"

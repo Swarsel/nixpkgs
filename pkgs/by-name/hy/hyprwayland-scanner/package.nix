@@ -1,11 +1,11 @@
 {
   lib,
-  gcc15Stdenv,
   fetchFromGitHub,
   cmake,
+  gcc15Stdenv,
+  nix-update-script,
   pkg-config,
   pugixml,
-  nix-update-script,
 }:
 gcc15Stdenv.mkDerivation (finalAttrs: {
   pname = "hyprwayland-scanner";
@@ -28,16 +28,15 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/hyprwm/hyprwayland-scanner";
     description = "Hyprland version of wayland-scanner in and for C++";
+    homepage = "https://github.com/hyprwm/hyprwayland-scanner";
     changelog = "https://github.com/hyprwm/hyprwayland-scanner/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
-    teams = [ lib.teams.hyprland ];
-    mainProgram = "hyprwayland-scanner";
     platforms = lib.platforms.linux;
+    mainProgram = "hyprwayland-scanner";
+    teams = [ lib.teams.hyprland ];
   };
 })

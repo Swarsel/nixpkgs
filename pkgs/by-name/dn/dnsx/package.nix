@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -17,9 +17,9 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-ng0S/oFnrSlJ6a2UIZ3IrZx0Tb8Mru9BOuHBqH/1ctU=";
-
-  subPackages = [ "cmd/dnsx" ];
-
+  # Tests require network access
+  doCheck = false;
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
@@ -27,21 +27,19 @@ buildGoModule (finalAttrs: {
     "-w"
   ];
 
-  # Tests require network access
-  doCheck = false;
-
-  doInstallCheck = true;
-
+  subPackages = [ "cmd/dnsx" ];
   versionCheckProgramArg = "-version";
 
   meta = {
     description = "Fast and multi-purpose DNS toolkit";
+
     longDescription = ''
       dnsx is a fast and multi-purpose DNS toolkit allow to run multiple
       probers using retryabledns library, that allows you to perform
       multiple DNS queries of your choice with a list of user supplied
       resolvers.
     '';
+
     homepage = "https://github.com/projectdiscovery/dnsx";
     changelog = "https://github.com/projectdiscovery/dnsx/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;

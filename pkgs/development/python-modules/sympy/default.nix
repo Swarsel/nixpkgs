@@ -1,26 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  mpmath,
-
+  buildPythonPackage,
   # tests
   glibcLocales,
-
+  # dependencies
+  mpmath,
   # Reverse dependency
   sage,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "sympy";
   version = "1.14.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "sympy";
@@ -29,21 +23,25 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-aSMQ/H5agjsa+Lp7o15/irLSTLtmF/VEqMCBGbXbvmM=";
   };
 
+  # tests take ~1h
+  doCheck = false;
+  nativeCheckInputs = [ glibcLocales ];
+  __structuredAttrs = true;
+
   build-system = [
     setuptools
   ];
 
-  pythonRelaxDeps = [
-    "mpmath"
-  ];
   dependencies = [
     mpmath
   ];
 
-  # tests take ~1h
-  doCheck = false;
-  nativeCheckInputs = [ glibcLocales ];
+  pyproject = true;
   pythonImportsCheck = [ "sympy" ];
+
+  pythonRelaxDeps = [
+    "mpmath"
+  ];
 
   passthru.tests = {
     inherit sage;
@@ -51,14 +49,16 @@ buildPythonPackage (finalAttrs: {
 
   meta = {
     description = "Python library for symbolic mathematics";
-    mainProgram = "isympy";
     homepage = "https://www.sympy.org/";
-    downloadPage = "https://github.com/sympy/sympy";
     changelog = "https://github.com/sympy/sympy/wiki/Release-Notes-for-${finalAttrs.version}";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       GaetanLepage
     ];
+
+    mainProgram = "isympy";
+    downloadPage = "https://github.com/sympy/sympy";
     teams = [ lib.teams.sage ];
   };
 })

@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   versionCheckHook,
 }:
@@ -23,6 +23,17 @@ buildGoModule rec {
   ];
 
   vendorHash = null;
+  doCheck = true;
+
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    installShellCompletion --cmd hubble \
+      --bash <($out/bin/hubble completion bash) \
+      --fish <($out/bin/hubble completion fish) \
+      --zsh <($out/bin/hubble completion zsh)
+  '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
@@ -32,28 +43,19 @@ buildGoModule rec {
     "-X=github.com/cilium/cilium/hubble/pkg.Version=${version}"
   ];
 
-  doCheck = true;
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "version";
-
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    installShellCompletion --cmd hubble \
-      --bash <($out/bin/hubble completion bash) \
-      --fish <($out/bin/hubble completion fish) \
-      --zsh <($out/bin/hubble completion zsh)
-  '';
 
   meta = {
     description = "Network, Service & Security Observability for Kubernetes using eBPF";
     homepage = "https://github.com/cilium/hubble/";
     changelog = "https://github.com/cilium/hubble/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       humancalico
       FKouhai
     ];
+
     mainProgram = "hubble";
   };
 }

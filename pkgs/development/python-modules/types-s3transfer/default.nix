@@ -8,19 +8,17 @@
 buildPythonPackage rec {
   pname = "types-s3transfer";
   version = "0.16.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "types_s3transfer";
     inherit version;
     hash = "sha256-tGNkcgJMXitiJ4xbdZZh7+tSqBhRzeXwkvJBALHstEM=";
+    pname = "types_s3transfer";
   };
-
-  build-system = [ setuptools ];
 
   # Module has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "s3transfer-stubs" ];
 
   meta = {

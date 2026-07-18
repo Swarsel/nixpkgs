@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,9 +18,9 @@ buildGoModule (finalAttrs: {
   vendorHash = "sha256-ImV/jxCYIWObN+jCSbXhuzR4TuRc/EgQ8SIV6x+wEpA=";
 
   meta = {
-    license = lib.licenses.mit;
-    homepage = "https://github.com/fleaz/r53-ddns";
     description = "DIY DynDNS tool based on Route53";
+    homepage = "https://github.com/fleaz/r53-ddns";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fleaz ];
     mainProgram = "r53-ddns";
   };

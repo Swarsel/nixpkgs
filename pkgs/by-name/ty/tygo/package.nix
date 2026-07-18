@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,7 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-XQS+P+vPt2rH0SD0srFSnqjupIeu5XgFi3iVzq/ovmg=";
-
   env.CGO_ENABLED = 0;
 
   ldflags = [

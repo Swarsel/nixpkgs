@@ -1,18 +1,18 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
+  buildNpmPackage,
+  cctools,
   makeBinaryWrapper,
-  nodejs_24,
   matrix-sdk-crypto-nodejs,
+  nix-update-script,
+  nixosTests,
+  nodejs_24,
   python3,
+  removeReferencesTo,
   sqlite,
   srcOnly,
-  removeReferencesTo,
-  buildNpmPackage,
-  stdenv,
-  cctools,
-  nixosTests,
-  nix-update-script,
 }:
 let
   nodeSources = srcOnly nodejs_24;
@@ -86,7 +86,7 @@ buildNpmPackage (finalAttrs: {
 
   meta = {
     description = "Moderation tool for Matrix";
-    homepage = "https://github.com/the-draupnir-project/Draupnir";
+
     longDescription = ''
       As an all-in-one moderation tool, it can protect your server from
       malicious invites, spam messages, and whatever else you don't want.
@@ -101,6 +101,8 @@ buildNpmPackage (finalAttrs: {
       A Synapse module is also available to apply the same rulesets the bot
       uses across an entire homeserver.
     '';
+
+    homepage = "https://github.com/the-draupnir-project/Draupnir";
     license = lib.licenses.afl3;
     maintainers = with lib.maintainers; [ RorySys ];
     mainProgram = "draupnir";

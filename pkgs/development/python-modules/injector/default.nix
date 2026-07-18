@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   pytest-cov-stub,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "injector";
   version = "0.24.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "python-injector";
@@ -23,12 +22,13 @@ buildPythonPackage rec {
     pytest-cov-stub
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "injector" ];
 
   meta = {
     description = "Python dependency injection framework, inspired by Guice";
     homepage = "https://github.com/alecthomas/injector";
-    maintainers = [ ];
     license = lib.licenses.bsd3;
+    maintainers = [ ];
   };
 }

@@ -9,19 +9,16 @@
 buildPythonPackage rec {
   pname = "phonenumbers";
   version = "9.0.22";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-7/mFxlV1dJ0dVOB8VsNRfVJD4D4I5KYZF2HfmqsiePI=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
   enabledTestPaths = [ "tests/*.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "phonenumbers" ];
 
   meta = {

@@ -1,42 +1,36 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  cairo,
   cmake,
-  pkg-config,
-  zlib,
-  libjpeg,
-  libpng,
+  doxygen,
   fontconfig,
   freetype,
-  libx11,
-  libxext,
-  libxinerama,
-  libxfixes,
-  libxcursor,
-  libxft,
-  libxrender,
-
-  withGL ? true,
+  glew,
+  graphviz,
   libGL,
   libGLU,
-  glew,
-
-  withCairo ? true,
-  cairo,
-
-  withDocs ? true,
-  doxygen,
-  graphviz,
-
-  withXorg ? stdenv.hostPlatform.isLinux,
-
-  withExamples ? (stdenv.buildPlatform == stdenv.hostPlatform),
-  withShared ? true,
-
-  nix-update-script,
+  libjpeg,
+  libpng,
+  libx11,
+  libxcursor,
+  libxext,
+  libxfixes,
+  libxft,
+  libxinerama,
+  libxrender,
   # TODO: Clean up on `staging`
   llvmPackages,
+  nix-update-script,
+  pkg-config,
+  zlib,
+  withCairo ? true,
+  withDocs ? true,
+  withExamples ? (stdenv.buildPlatform == stdenv.hostPlatform),
+  withGL ? true,
+  withShared ? true,
+  withXorg ? stdenv.hostPlatform.isLinux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -51,9 +45,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   outputs = [ "out" ] ++ lib.optional withExamples "bin" ++ lib.optional withDocs "doc";
-
-  # Manually move example & test binaries to $bin to avoid cyclic dependencies on dev binaries
-  outputBin = lib.optionalString withExamples "out";
 
   patches = lib.optionals stdenv.hostPlatform.isDarwin [
     ./nsosv.patch
@@ -194,6 +185,9 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "/$out/" "/"
   '';
 
+  # Manually move example & test binaries to $bin to avoid cyclic dependencies on dev binaries
+  outputBin = lib.optionalString withExamples "out";
+
   passthru.updateScript = nix-update-script {
     extraArgs = [
       "--version-regex"
@@ -204,9 +198,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "C++ cross-platform lightweight GUI library";
     homepage = "https://www.fltk.org";
-    platforms = lib.platforms.unix;
     # LGPL2 with static linking exception
     # https://www.fltk.org/COPYING.php
     license = lib.licenses.lgpl2Only;
+    platforms = lib.platforms.unix;
   };
 })

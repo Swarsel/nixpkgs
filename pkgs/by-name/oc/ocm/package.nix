@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
-  testers,
   ocm,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,25 +19,18 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-/WSWifl5UH34d2/I/874ZTHzJwI0QyoXq5QGuz4dzZE=";
   };
 
-  vendorHash = "sha256-1+H2DoSsPqg6JXWLVFyQ4eBTU3EqySTA2fe9BBWbjMg=";
-
-  # Strip the final binary.
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
-
-  # Tests expect the binary to be located in the root directory.
-  preCheck = ''
-    ln -s $GOPATH/bin/ocm ocm
-  '';
+  vendorHash = "sha256-1+H2DoSsPqg6JXWLVFyQ4eBTU3EqySTA2fe9BBWbjMg=";
 
   checkFlags = [
     # Disable integration tests which require networking and gnupg which has issues in the sandbox
     "-skip=^TestCLI$"
   ];
+
+  # Tests expect the binary to be located in the root directory.
+  preCheck = ''
+    ln -s $GOPATH/bin/ocm ocm
+  '';
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd ocm \
@@ -46,19 +39,27 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/ocm completion zsh)
   '';
 
+  # Strip the final binary.
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   passthru.tests.version = testers.testVersion {
-    package = ocm;
     command = "ocm version";
+    package = ocm;
   };
 
   meta = {
     description = "CLI for the Red Hat OpenShift Cluster Manager";
-    mainProgram = "ocm";
-    license = lib.licenses.asl20;
     homepage = "https://github.com/openshift-online/ocm-cli";
+    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       stehessel
       jfchevrette
     ];
+
+    mainProgram = "ocm";
   };
 })

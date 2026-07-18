@@ -1,16 +1,13 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  pkgsBuildBuild,
-
-  go,
+  buildGoModule,
   darwin,
-  nixosTests,
-
+  go,
   nix-update-script,
-
+  nixosTests,
+  pkgsBuildBuild,
   target ? "syncthing",
 }:
 
@@ -31,8 +28,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-tR4yXoEYbCi8Uh3wCyATc+J4+cGvD7k0d9egjHS5H4k=";
   };
 
-  vendorHash = "sha256-t2wjl4eWvcUHMaBS7KEPzZejqrlI+7c5fRqWqxuCZy8=";
-
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
     # Recent versions of macOS seem to require binaries to be signed when
     # run from Launch Agents/Daemons, even on x86 devices where it has a
@@ -42,11 +37,11 @@ buildGoModule (finalAttrs: {
     darwin.autoSignDarwinBinariesHook
   ];
 
-  doCheck = false;
+  vendorHash = "sha256-t2wjl4eWvcUHMaBS7KEPzZejqrlI+7c5fRqWqxuCZy8=";
 
   env = {
-    BUILD_USER = "nix";
     BUILD_HOST = "nix";
+    BUILD_USER = "nix";
   };
 
   buildPhase = ''
@@ -59,6 +54,8 @@ buildGoModule (finalAttrs: {
     ./build -goos ${go.GOOS} -goarch ${go.GOARCH} -no-upgrade -version v${finalAttrs.version} build ${target}
     runHook postBuild
   '';
+
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -108,21 +105,24 @@ buildGoModule (finalAttrs: {
         syncthing-relay
         ;
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://syncthing.net/";
     description = "Open Source Continuous File Synchronization";
-    donationPage = "https://syncthing.net/donations/";
+    homepage = "https://syncthing.net/";
     changelog = "https://github.com/syncthing/syncthing/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       joko
       peterhoeg
       zainkergaye
     ];
-    mainProgram = target;
+
     platforms = lib.platforms.unix;
+    mainProgram = target;
+    donationPage = "https://syncthing.net/donations/";
   };
 })

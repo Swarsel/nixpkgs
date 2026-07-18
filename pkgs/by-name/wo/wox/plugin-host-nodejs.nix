@@ -1,32 +1,19 @@
 {
   lib,
   stdenv,
-  wox,
   fetchPnpmDeps,
   nodejs,
   pnpmConfigHook,
   pnpm_11,
+  wox,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  pname = "wox-plugin-host-nodejs";
   inherit (wox)
     version
     src
     ;
 
-  sourceRoot = "${finalAttrs.src.name}/wox.plugin.host.nodejs";
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      sourceRoot
-      ;
-    pnpm = pnpm_11;
-    fetcherVersion = 4;
-    hash = "sha256-6zQDbNUxysqwrRaEMp8Sb5Vcf2HdkkdrdCpJwG8pHSs=";
-  };
+  pname = "wox-plugin-host-nodejs";
 
   nativeBuildInputs = [
     nodejs
@@ -49,6 +36,21 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      sourceRoot
+      ;
+
+    fetcherVersion = 4;
+    hash = "sha256-6zQDbNUxysqwrRaEMp8Sb5Vcf2HdkkdrdCpJwG8pHSs=";
+    pnpm = pnpm_11;
+  };
+
+  sourceRoot = "${finalAttrs.src.name}/wox.plugin.host.nodejs";
 
   meta = {
     inherit (wox.meta)

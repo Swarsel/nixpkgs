@@ -30,13 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
     ./make-byte-order-checks-portable.patch
   ];
 
-  nativeBuildInputs = [
-    meson
-    ninja
-  ];
-
-  mesonBuildType = "release";
-
   # The upstream build system is tied to AOSP, so we use our own Meson
   # definitions to replace it.
   postPatch = ''
@@ -51,12 +44,19 @@ stdenv.mkDerivation (finalAttrs: {
     ' src/ldacBT_api.c > VERSION
   '';
 
+  nativeBuildInputs = [
+    meson
+    ninja
+  ];
+
+  mesonBuildType = "release";
+
   meta = {
     description = "Sony LDAC Bluetooth decoder library (from AOSP via open-vela)";
     homepage = "https://github.com/open-vela/external_libldac";
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ qweered ];
     # libldac code detects & #error's out on non-LE byte order
     platforms = lib.platforms.littleEndian;
-    maintainers = with lib.maintainers; [ qweered ];
   };
 })

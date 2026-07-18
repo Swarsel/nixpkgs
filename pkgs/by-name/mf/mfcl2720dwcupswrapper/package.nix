@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
-  makeWrapper,
   coreutils,
+  dpkg,
   gnugrep,
   gnused,
-  perl,
+  makeWrapper,
   mfcl2720dwlpr,
+  perl,
 }:
 
 stdenv.mkDerivation rec {
@@ -24,8 +24,6 @@ stdenv.mkDerivation rec {
     dpkg
     makeWrapper
   ];
-
-  dontUnpack = true;
 
   installPhase = ''
     dpkg-deb -x $src $out
@@ -57,14 +55,17 @@ stdenv.mkDerivation rec {
     ln $dir/cupswrapper/brother-MFCL2720DW-cups-en.ppd $out/share/cups/model
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Brother MFC-L2720DW CUPS wrapper driver";
     homepage = "http://www.brother.com/";
     license = lib.licenses.gpl2Plus;
+    maintainers = [ lib.maintainers.xeji ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
-    maintainers = [ lib.maintainers.xeji ];
   };
 }

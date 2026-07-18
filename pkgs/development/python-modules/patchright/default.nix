@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   playwright,
   setuptools,
   toml,
@@ -10,9 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "patchright";
   version = "1.58.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Kaliiiiiiiiii-Vinyzu";
@@ -21,6 +18,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-msV0CbVbTDSAB1BgxkUOpuzQDr8vMK2/wxJy1SSUU80=";
   };
 
+  # Module has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,9 +28,7 @@ buildPythonPackage (finalAttrs: {
     toml
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   # pythonImportsCheck disabled: module attempts filesystem writes at import time
   pythonImportsCheck = [ ];
 

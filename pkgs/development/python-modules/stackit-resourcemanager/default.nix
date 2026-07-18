@@ -13,16 +13,16 @@
 buildPythonPackage (finalAttrs: {
   pname = "stackit-resourcemanager";
   version = "0.8.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "stackit_resourcemanager";
     inherit (finalAttrs) version;
     hash = "sha256-9EVCvqtBMIV/Wn9GXPAt7+72V732PBvusxAvC6PAA/4=";
+    pname = "stackit_resourcemanager";
   };
 
+  # Module has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -32,11 +32,8 @@ buildPythonPackage (finalAttrs: {
     stackit-core
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "stackit.resourcemanager" ];
-
-  # Module has no tests
-  doCheck = false;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -17,20 +17,19 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-jp7VHT08Rhw5nUtNpqkRHDHT0R51PCBy0cKb1sI6zkg=";
   };
 
-  strictDeps = true;
+  postPatch = ''
+    substituteInPlace Makefile \
+      --replace-fail '-I/usr/local/include/PCSC/' '-I${lib.getDev pcsclite}/include/PCSC/' \
+      --replace-fail '-L/usr/local/lib/pth' '-I${pth}/lib/'
+  '';
 
+  strictDeps = true;
   nativeBuildInputs = [ python3Packages.wrapPython ];
 
   buildInputs = [
     pcsclite
     pth
   ];
-
-  postPatch = ''
-    substituteInPlace Makefile \
-      --replace-fail '-I/usr/local/include/PCSC/' '-I${lib.getDev pcsclite}/include/PCSC/' \
-      --replace-fail '-L/usr/local/lib/pth' '-I${pth}/lib/'
-  '';
 
   installPhase = ''
     mkdir -p $out/bin $out/lib $out/sbin $out/man

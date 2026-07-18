@@ -1,13 +1,13 @@
 {
+  base64,
   buildDunePackage,
   pbrt,
-  base64,
   yojson,
 }:
 
 buildDunePackage {
-  pname = "pbrt_yojson";
   inherit (pbrt) version src;
+  pname = "pbrt_yojson";
 
   propagatedBuildInputs = [
     pbrt

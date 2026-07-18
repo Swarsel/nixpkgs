@@ -1,37 +1,37 @@
 {
   lib,
-  config,
   stdenv,
   fetchFromGitHub,
   abseil-cpp,
   buildPackages,
   cmake,
+  config,
   cpuinfo,
+  darwinMinVersionHook,
   eigen,
   flatbuffers_23,
   glibcLocales,
   gtest,
   howard-hinnant-date,
   libpng,
-  nlohmann_json,
-  pkg-config,
-  python3Packages,
-  removeReferencesTo,
-  re2,
-  zlib,
-  protobuf,
   microsoft-gsl,
-  darwinMinVersionHook,
-  pythonSupport ? (stdenv.buildPlatform.canExecute stdenv.hostPlatform),
+  nlohmann_json,
+  openvino,
+  pkg-config,
+  protobuf,
+  python3Packages,
+  re2,
+  removeReferencesTo,
+  rocmPackages,
+  zlib,
+  coremlSupport ? stdenv.hostPlatform.isDarwin,
+  cudaPackages ? { },
   cudaSupport ? config.cudaSupport,
   ncclSupport ? cudaSupport && cudaPackages.nccl.meta.available,
   openvinoSupport ? stdenv.isLinux,
+  pythonSupport ? (stdenv.buildPlatform.canExecute stdenv.hostPlatform),
   rocmSupport ? config.rocmSupport,
-  coremlSupport ? stdenv.hostPlatform.isDarwin,
   withFullProtobuf ? false,
-  cudaPackages ? { },
-  openvino,
-  rocmPackages,
 }@inputs:
 
 let
@@ -45,67 +45,67 @@ let
   # https://github.com/microsoft/onnxruntime/blob/v<VERSION>/cmake/deps.txt
 
   mp11-src = fetchFromGitHub {
+    hash = "sha256-cLPvjkf2Au+B19PJNrUkTW/VPxybi1MpPxnIl4oo4/o=";
     name = "mp11-src";
     owner = "boostorg";
     repo = "mp11";
     tag = "boost-1.82.0";
-    hash = "sha256-cLPvjkf2Au+B19PJNrUkTW/VPxybi1MpPxnIl4oo4/o=";
   };
 
   safeint-src = fetchFromGitHub {
+    hash = "sha256-pjwjrqq6dfiVsXIhbBtbolhiysiFlFTnx5XcX77f+C0=";
     name = "safeint-src";
     owner = "dcleblanc";
     repo = "safeint";
     tag = "3.0.28";
-    hash = "sha256-pjwjrqq6dfiVsXIhbBtbolhiysiFlFTnx5XcX77f+C0=";
   };
 
   onnx-src = fetchFromGitHub {
+    hash = "sha256-eF6BdTwTuHh6ckuLGN1d6z2GLU47lPqtzu4zIv8+cTs=";
     name = "onnx-src";
     owner = "onnx";
     repo = "onnx";
     tag = "v1.21.0";
-    hash = "sha256-eF6BdTwTuHh6ckuLGN1d6z2GLU47lPqtzu4zIv8+cTs=";
   };
 
   cutlass-src = fetchFromGitHub {
+    hash = "sha256-0q9Ad0Z6E/rO2PdM4uQc8H0E0qs9uKc3reHepiHhjEc=";
     name = "cutlass-src";
     owner = "NVIDIA";
     repo = "cutlass";
     tag = "v4.4.2";
-    hash = "sha256-0q9Ad0Z6E/rO2PdM4uQc8H0E0qs9uKc3reHepiHhjEc=";
   };
 
   dlpack-src = fetchFromGitHub {
+    hash = "sha256-YqgzCyNywixebpHGx16tUuczmFS5pjCz5WjR89mv9eI=";
     name = "dlpack-src";
     owner = "dmlc";
     repo = "dlpack";
     rev = "5c210da409e7f1e51ddf445134a4376fdbd70d7d";
-    hash = "sha256-YqgzCyNywixebpHGx16tUuczmFS5pjCz5WjR89mv9eI=";
   };
 
   coremltools-src = fetchFromGitHub {
+    hash = "sha256-kajQFHpl+4UK6fp+rM8TP0GiqIFYXPVFc2x1p19rBSw=";
     name = "coremltools-src";
     owner = "apple";
     repo = "coremltools";
     tag = "7.1";
-    hash = "sha256-kajQFHpl+4UK6fp+rM8TP0GiqIFYXPVFc2x1p19rBSw=";
   };
 
   fp16-src = fetchFromGitHub {
+    hash = "sha256-m2d9bqZoGWzuUPGkd29MsrdscnJRtuIkLIMp3fMmtRY=";
     name = "fp16-src";
     owner = "Maratyszcza";
     repo = "FP16";
     rev = "0a92994d729ff76a58f692d3028ca1b64b145d91";
-    hash = "sha256-m2d9bqZoGWzuUPGkd29MsrdscnJRtuIkLIMp3fMmtRY=";
   };
 
   psimd-src = fetchFromGitHub {
+    hash = "sha256-lV+VZi2b4SQlRYrhKx9Dxc6HlDEFz3newvcBjTekupo=";
     name = "psimd-src";
     owner = "Maratyszcza";
     repo = "psimd";
     rev = "072586a71b55b7f8c584153d223e95687148a900";
-    hash = "sha256-lV+VZi2b4SQlRYrhKx9Dxc6HlDEFz3newvcBjTekupo=";
   };
 
   isCudaJetson = cudaSupport && cudaPackages.flags.isJetsonBuild;
@@ -118,9 +118,17 @@ effectiveStdenv.mkDerivation (finalAttrs: {
     owner = "microsoft";
     repo = "onnxruntime";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-+9M4mEPLLJ5N+JomoXIKcUBV85lr6lFJjJQ3qsMRrQY=";
+    fetchSubmodules = true;
   };
+
+  # TODO: build server, and move .so's to lib output
+  # Python's wheel is stored in a separate dist output
+  outputs = [
+    "out"
+    "dev"
+  ]
+  ++ lib.optionals pythonSupport [ "dist" ];
 
   patches = [
     # Skip execinfo include on musl
@@ -162,9 +170,7 @@ effectiveStdenv.mkDerivation (finalAttrs: {
     rm -v onnxruntime/test/optimizer/nhwc_transformer_test.cc
   '';
 
-  postBuild = lib.optionalString pythonSupport ''
-    ${python3Packages.python.interpreter} ../setup.py bdist_wheel
-  '';
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -249,33 +255,6 @@ effectiveStdenv.mkDerivation (finalAttrs: {
     (darwinMinVersionHook "13.3")
   ];
 
-  nativeCheckInputs = lib.optionals pythonSupport (
-    with python3Packages;
-    [
-      onnx
-      pytest
-      sympy
-    ]
-  );
-
-  checkInputs = [
-    gtest
-  ];
-
-  # TODO: build server, and move .so's to lib output
-  # Python's wheel is stored in a separate dist output
-  outputs = [
-    "out"
-    "dev"
-  ]
-  ++ lib.optionals pythonSupport [ "dist" ];
-
-  separateDebugInfo = true;
-
-  enableParallelBuilding = true;
-
-  cmakeDir = "../cmake";
-
   cmakeFlags = [
     # Library updates and similar often cause build failures with -Werror.
     # There is utility in this for upstream, but for Nixpkgs it mostly causes
@@ -350,7 +329,6 @@ effectiveStdenv.mkDerivation (finalAttrs: {
       NIX_LDFLAGS = "-z,noexecstack";
     }
     // lib.optionalAttrs rocmSupport {
-      MIOPEN_PATH = rocmPackages.miopen;
       # HIP steps fail to find ROCm libs when not in HIPFLAGS, causing
       # fatal error: 'rocrand/rocrand.h' file not found
       HIPFLAGS = lib.concatMapStringsSep " " (pkg: "-I${lib.getInclude pkg}/include") [
@@ -363,11 +341,17 @@ effectiveStdenv.mkDerivation (finalAttrs: {
         rocmPackages.rocrand
         rocmPackages.rocthrust
       ];
+
+      MIOPEN_PATH = rocmPackages.miopen;
     }
     // lib.optionalAttrs effectiveStdenv.hostPlatform.isMusl {
-      NIX_CFLAGS_COMPILE = "-DFLATBUFFERS_LOCALE_INDEPENDENT=0";
       GTEST_FILTER = "*:-ContribOpTest.StringNormalizer*";
+      NIX_CFLAGS_COMPILE = "-DFLATBUFFERS_LOCALE_INDEPENDENT=0";
     };
+
+  postBuild = lib.optionalString pythonSupport ''
+    ${python3Packages.python.interpreter} ../setup.py bdist_wheel
+  '';
 
   doCheck =
     !(
@@ -385,12 +369,18 @@ effectiveStdenv.mkDerivation (finalAttrs: {
       ]
     );
 
-  requiredSystemFeatures = lib.optionals (cudaSupport || rocmSupport) [ "big-parallel" ];
+  nativeCheckInputs = lib.optionals pythonSupport (
+    with python3Packages;
+    [
+      onnx
+      pytest
+      sympy
+    ]
+  );
 
-  hardeningEnable = lib.optionals (effectiveStdenv.hostPlatform.system == "loongarch64-linux") [
-    "nostrictaliasing"
+  checkInputs = [
+    gtest
   ];
-  hardeningDisable = lib.optional effectiveStdenv.hostPlatform.isMusl "fortify";
 
   # perform parts of `tools/ci_build/github/linux/copy_strip_binary.sh`
   postInstall = ''
@@ -401,19 +391,28 @@ effectiveStdenv.mkDerivation (finalAttrs: {
       ../include/onnxruntime/core/providers/coreml/coreml_provider_factory.h
   '';
 
-  strictDeps = true;
-
   # See comments in `cudaPackages.nccl`
   postFixup = lib.optionalString cudaSupport ''
     remove-references-to -t "${lib.getBin cuda_nvcc}" ''${!outputLib}/lib/libonnxruntime_providers_cuda.so
   '';
-  disallowedRequisites = lib.optionals cudaSupport [ (lib.getBin cuda_nvcc) ];
 
   __structuredAttrs = true;
+  cmakeDir = "../cmake";
+  disallowedRequisites = lib.optionals cudaSupport [ (lib.getBin cuda_nvcc) ];
+  enableParallelBuilding = true;
+  hardeningDisable = lib.optional effectiveStdenv.hostPlatform.isMusl "fortify";
+
+  hardeningEnable = lib.optionals (effectiveStdenv.hostPlatform.system == "loongarch64-linux") [
+    "nostrictaliasing"
+  ];
+
+  requiredSystemFeatures = lib.optionals (cudaSupport || rocmSupport) [ "big-parallel" ];
+  separateDebugInfo = true;
 
   passthru = {
     inherit cudaSupport cudaPackages ncclSupport; # for the python module
     inherit protobuf;
+
     tests = lib.optionalAttrs pythonSupport {
       python = python3Packages.onnxruntime;
     };
@@ -421,6 +420,7 @@ effectiveStdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Cross-platform, high performance scoring engine for ML models";
+
     longDescription = ''
       ONNX Runtime is a performance-focused complete scoring engine
       for Open Neural Network Exchange (ONNX) models, with an open
@@ -430,15 +430,18 @@ effectiveStdenv.mkDerivation (finalAttrs: {
       supports all ONNX releases (1.2+) with both future and backwards
       compatibility.
     '';
+
     homepage = "https://github.com/microsoft/onnxruntime";
     changelog = "https://github.com/microsoft/onnxruntime/releases/tag/${finalAttrs.src.tag}";
-    # https://github.com/microsoft/onnxruntime/blob/master/BUILD.md#architectures
-    platforms = lib.platforms.unix;
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       puffnfresh
       ck3d
     ];
+
+    # https://github.com/microsoft/onnxruntime/blob/master/BUILD.md#architectures
+    platforms = lib.platforms.unix;
     #  [libprotobuf ERROR /build/source/src/google/protobuf/descriptor_database.cc:642] File already
     # exists in database: onnx/onnx-ml.proto
     # https://github.com/onnx/onnx/issues/6094

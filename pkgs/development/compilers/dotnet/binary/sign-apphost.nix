@@ -1,6 +1,6 @@
 {
-  replaceVars,
   callPackage,
+  replaceVars,
 }:
 let
   sigtool = callPackage ../sigtool.nix { };

@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,16 +16,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-zXYjR9ZFNX2guUSeMN/G77oBIlW3AowFWA4gwID2jQs=";
   };
 
-  cargoHash = "sha256-JM7m/VdaXpUlPOi+N7gue6mlQuxvRFU6++SaSq45Ntg=";
-
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-JM7m/VdaXpUlPOi+N7gue6mlQuxvRFU6++SaSq45Ntg=";
+  env.GEN_ARTIFACTS = "artifacts";
 
   postInstall = ''
     installManPage artifacts/sagoin.1
     installShellCompletion artifacts/sagoin.{bash,fish} --zsh artifacts/_sagoin
   '';
-
-  env.GEN_ARTIFACTS = "artifacts";
 
   meta = {
     description = "Command-line submission tool for the UMD CS Submit Server";

@@ -1,23 +1,23 @@
 {
   lib,
   stdenv,
-  gitUpdater,
-  testers,
   fetchFromGitHub,
+  bison,
+  flex,
+  gitUpdater,
+  libiconv,
+  libjpeg,
+  libpng,
+  libwebp,
   meson,
   ninja,
   pkg-config,
-  bison,
-  flex,
-  libiconv,
-  libpng,
-  libjpeg,
-  libwebp,
+  qt5,
+  qt6,
+  testers,
   zlib,
   withQt5 ? false,
-  qt5,
   withQt6 ? false,
-  qt6,
 }:
 
 assert !(withQt5 && withQt6);
@@ -34,8 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "nunuhara";
     repo = "alice-tools";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-DazWnBeI5XShkIx41GFZLP3BbE0O8T9uflvKIZUXCHo=";
+    fetchSubmodules = true;
   };
 
   postPatch = lib.optionalString (withGUI && withQt6) ''
@@ -46,11 +46,6 @@ stdenv.mkDerivation (finalAttrs: {
     # For some reason Meson uses QMake instead of pkg-config detection method for Qt6 on Darwin, which gives wrong search paths for tools
     export PATH=${qt.qtbase.dev}/libexec:$PATH
   '';
-
-  mesonFlags = lib.optionals (withGUI && withQt6) [
-    # Qt6 requires at least C++17, project uses compiler's default, default too old on Darwin & aarch64-linux
-    "-Dcpp_std=c++17"
-  ];
 
   nativeBuildInputs = [
     meson
@@ -74,7 +69,10 @@ stdenv.mkDerivation (finalAttrs: {
     qt.qtbase
   ];
 
-  dontWrapQtApps = true;
+  mesonFlags = lib.optionals (withGUI && withQt6) [
+    # Qt6 requires at least C++17, project uses compiler's default, default too old on Darwin & aarch64-linux
+    "-Dcpp_std=c++17"
+  ];
 
   # Default install step only installs a static library of a build dependency
   installPhase = ''
@@ -91,23 +89,27 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontWrapQtApps = true;
+
   passthru = {
-    updateScript = gitUpdater { };
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       command =
         lib.optionalString withGUI "env QT_QPA_PLATFORM=minimal "
         + "${lib.getExe finalAttrs.finalPackage} --version";
+
+      package = finalAttrs.finalPackage;
     };
+
+    updateScript = gitUpdater { };
   };
 
   meta = {
     description = "Tools for extracting/editing files from AliceSoft games";
     homepage = "https://github.com/nunuhara/alice-tools";
-    license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.all;
-    maintainers = with lib.maintainers; [ OPNA2608 ];
     changelog = "https://github.com/nunuhara/alice-tools/releases/tag/${finalAttrs.src.tag}";
+    license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ OPNA2608 ];
+    platforms = lib.platforms.all;
     mainProgram = if withGUI then "galice" else "alice";
   };
 })

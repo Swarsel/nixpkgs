@@ -1,12 +1,12 @@
 {
   lib,
-  bleak-retry-connector,
+  fetchFromGitHub,
   bleak,
+  bleak-retry-connector,
   bluetooth-data-tools,
   bluetooth-sensor-state-data,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   home-assistant-bluetooth,
   orjson,
   poetry-core,
@@ -19,7 +19,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "xiaomi-ble";
   version = "1.15.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Bluetooth-Devices";
@@ -28,9 +27,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-I0Lifki39TLbtnITADtmPygwKq11sugTDdveqpLQ/n0=";
   };
 
-  build-system = [ poetry-core ];
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
-  pythonRelaxDeps = [ "pycryptodomex" ];
+  build-system = [ poetry-core ];
 
   dependencies = [
     bleak
@@ -44,12 +46,9 @@ buildPythonPackage (finalAttrs: {
     sensor-state-data
   ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "xiaomi_ble" ];
+  pythonRelaxDeps = [ "pycryptodomex" ];
 
   meta = {
     description = "Library for Xiaomi BLE devices";

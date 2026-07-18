@@ -1,14 +1,14 @@
 {
   lib,
-  autoPatchelfHook,
+  stdenv,
   fetchurl,
+  autoPatchelfHook,
   gmp,
   less,
-  makeWrapper,
   libb2,
+  makeWrapper,
   ncurses6,
   openssl,
-  stdenv,
   zlib,
 }:
 
@@ -19,29 +19,27 @@ stdenv.mkDerivation (finalAttrs: {
   src =
     {
       aarch64-darwin = fetchurl {
-        url = "https://github.com/unisonweb/unison/releases/download/release/${finalAttrs.version}/ucm-macos-arm64.tar.gz";
         hash = "sha256-DBNZx90rLqeRrjAnscamI8sduIH966az+AfMpWzberk=";
+        url = "https://github.com/unisonweb/unison/releases/download/release/${finalAttrs.version}/ucm-macos-arm64.tar.gz";
       };
+
       aarch64-linux = fetchurl {
-        url = "https://github.com/unisonweb/unison/releases/download/release/${finalAttrs.version}/ucm-linux-arm64.tar.gz";
         hash = "sha256-6XRr8IOwRhZlGFD9xb29cvqqYVjZFzSvh3S52Cq4HMo=";
+        url = "https://github.com/unisonweb/unison/releases/download/release/${finalAttrs.version}/ucm-linux-arm64.tar.gz";
       };
+
       x86_64-linux = fetchurl {
-        url = "https://github.com/unisonweb/unison/releases/download/release/${finalAttrs.version}/ucm-linux-x64.tar.gz";
         hash = "sha256-DFLiI3Rro2ApmT84xndGdaLWH/Ad/HXEY6bj331tQzs=";
+        url = "https://github.com/unisonweb/unison/releases/download/release/${finalAttrs.version}/ucm-linux-x64.tar.gz";
       };
     }
     .${stdenv.hostPlatform.system} or (throw "Unsupported platform ${stdenv.hostPlatform.system}");
-
-  # The tarball is just the prebuilt binary, in the archive root.
-  sourceRoot = ".";
-  dontBuild = true;
-  dontConfigure = true;
 
   nativeBuildInputs = [
     makeWrapper
   ]
   ++ lib.optional (!stdenv.hostPlatform.isDarwin) autoPatchelfHook;
+
   buildInputs = lib.optionals (!stdenv.hostPlatform.isDarwin) [
     gmp
     ncurses6
@@ -65,26 +63,35 @@ stdenv.mkDerivation (finalAttrs: {
       --set UCM_WEB_UI "$out/ui"
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  # The tarball is just the prebuilt binary, in the archive root.
+  sourceRoot = ".";
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Modern, statically-typed purely functional language";
     homepage = "https://unisonweb.org/";
+
     license = [
       lib.licenses.mit
       lib.licenses.bsd3
     ];
-    mainProgram = "ucm";
+
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     maintainers = [
       lib.maintainers.ceedubs
       lib.maintainers.sellout
       lib.maintainers.virusdave
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-darwin"
       "aarch64-linux"
     ];
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
+    mainProgram = "ucm";
   };
 })

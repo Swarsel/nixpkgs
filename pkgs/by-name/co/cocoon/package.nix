@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  nix-update-script,
   nixosTests,
   stdenvNoCC,
-  nix-update-script,
 }:
 buildGoModule (finalAttrs: {
   pname = "cocoon";
@@ -17,13 +17,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-SvLXtn4Nr8zcvvjGarNLYeKqyniI6eg50cnqV6Q+3/s=";
   };
 
+  vendorHash = "sha256-Vkf5XyJA/Vdufa1OpCzgIGSQa5pVsFCTfaAVI7l947E=";
+
   ldflags = [
     "-s"
     "-w"
     "-X main.Version=${finalAttrs.version}"
   ];
-
-  vendorHash = "sha256-Vkf5XyJA/Vdufa1OpCzgIGSQa5pVsFCTfaAVI7l947E=";
 
   passthru = {
     tests = lib.optionalAttrs stdenvNoCC.hostPlatform.isLinux { inherit (nixosTests) cocoon; };
@@ -32,8 +32,8 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "ATProtocol Personal Data Server written in Go with a SQLite block and blob store";
-    changelog = "https://github.com/haileyok/cocoon/releases/v${finalAttrs.version}";
     homepage = "https://github.com/haileyok/cocoon";
+    changelog = "https://github.com/haileyok/cocoon/releases/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ isabelroses ];
     mainProgram = "cocoon";

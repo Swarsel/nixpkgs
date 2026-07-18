@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   hatchling,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "rendercv-fonts";
   version = "0.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rendercv";
@@ -17,8 +16,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-rwMiDoa/93FY3DFDxzR3sPyB8tCJzOnNbMZq8mBcx7M=";
   };
-
-  build-system = [ hatchling ];
 
   # pythonRelaxDeps seems not taking effect for the build-system dependencies
   postPatch = ''
@@ -30,6 +27,8 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "rendercv_fonts" ];
 
   meta = {

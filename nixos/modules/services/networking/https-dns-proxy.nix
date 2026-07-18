@@ -21,31 +21,39 @@ let
         "1.1.1.1"
         "1.0.0.1"
       ];
+
       url = "https://cloudflare-dns.com/dns-query";
     };
+
+    custom = {
+      inherit (cfg.provider) ips url;
+    };
+
     google = {
       ips = [
         "8.8.8.8"
         "8.8.4.4"
       ];
+
       url = "https://dns.google/dns-query";
     };
-    quad9 = {
-      ips = [
-        "9.9.9.9"
-        "149.112.112.112"
-      ];
-      url = "https://dns.quad9.net/dns-query";
-    };
+
     opendns = {
       ips = [
         "208.67.222.222"
         "208.67.220.220"
       ];
+
       url = "https://doh.opendns.com/dns-query";
     };
-    custom = {
-      inherit (cfg.provider) ips url;
+
+    quad9 = {
+      ips = [
+        "9.9.9.9"
+        "149.112.112.112"
+      ];
+
+      url = "https://dns.quad9.net/dns-query";
     };
   };
 
@@ -60,27 +68,48 @@ let
 
 in
 {
-  meta.maintainers = with lib.maintainers; [ peterhoeg ];
-
   ###### interface
-
   options.services.https-dns-proxy = {
     enable = mkEnableOption "https-dns-proxy daemon";
 
     address = mkOption {
+      default = "127.0.0.1";
       description = "The address on which to listen";
       type = types.str;
-      default = "127.0.0.1";
+    };
+
+    extraArgs = mkOption {
+      default = [ "-v" ];
+      description = "Additional arguments to pass to the process.";
+      type = types.listOf types.str;
     };
 
     port = mkOption {
+      default = 5053;
       description = "The port on which to listen";
       type = types.port;
-      default = 5053;
+    };
+
+    preferIPv4 = mkOption {
+      default = true;
+
+      description = ''
+        https_dns_proxy will by default use IPv6 and fail if it is not available.
+        To play it safe, we choose IPv4.
+      '';
+
+      type = types.bool;
     };
 
     provider = {
+      ips = mkOption {
+        description = "The custom provider IPs";
+        type = types.listOf types.str;
+      };
+
       kind = mkOption {
+        default = defaultProvider;
+
         description = ''
           The upstream provider to use or custom in case you do not trust any of
           the predefined providers or just want to use your own.
@@ -94,13 +123,8 @@ in
           If you pick the custom provider, you will need to provide the
           bootstrap IP addresses as well as the resolver https URL.
         '';
-        type = types.enum (builtins.attrNames providers);
-        default = defaultProvider;
-      };
 
-      ips = mkOption {
-        description = "The custom provider IPs";
-        type = types.listOf types.str;
+        type = types.enum (builtins.attrNames providers);
       };
 
       url = mkOption {
@@ -108,37 +132,19 @@ in
         type = types.str;
       };
     };
-
-    preferIPv4 = mkOption {
-      description = ''
-        https_dns_proxy will by default use IPv6 and fail if it is not available.
-        To play it safe, we choose IPv4.
-      '';
-      type = types.bool;
-      default = true;
-    };
-
-    extraArgs = mkOption {
-      description = "Additional arguments to pass to the process.";
-      type = types.listOf types.str;
-      default = [ "-v" ];
-    };
   };
 
   ###### implementation
-
   config = lib.mkIf cfg.enable {
     systemd.services.https-dns-proxy = {
+      after = [ "network.target" ];
+      before = [ "nss-lookup.target" ];
       description = "DNS to DNS over HTTPS (DoH) proxy";
       requires = [ "network.target" ];
-      after = [ "network.target" ];
-      wants = [ "nss-lookup.target" ];
-      before = [ "nss-lookup.target" ];
-      wantedBy = [ "multi-user.target" ];
+
       serviceConfig = {
-        Type = "exec";
         DynamicUser = true;
-        ProtectHome = "tmpfs";
+
         ExecStart = lib.concatStringsSep " " (
           [
             (lib.getExe pkgs.https-dns-proxy)
@@ -150,8 +156,16 @@ in
           ++ lib.optional cfg.preferIPv4 "-4"
           ++ cfg.extraArgs
         );
+
+        ProtectHome = "tmpfs";
         Restart = "on-failure";
+        Type = "exec";
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "nss-lookup.target" ];
     };
   };
+
+  meta.maintainers = with lib.maintainers; [ peterhoeg ];
 }

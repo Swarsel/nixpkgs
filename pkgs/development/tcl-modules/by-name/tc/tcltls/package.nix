@@ -24,10 +24,10 @@ mkTclDerivation rec {
   tclRequiresCheck = [ "tls" ];
 
   meta = {
-    homepage = "https://core.tcl-lang.org/tcltls/index";
     description = "OpenSSL / RSA-bsafe Tcl extension";
-    maintainers = [ lib.maintainers.agbrooks ];
+    homepage = "https://core.tcl-lang.org/tcltls/index";
     license = lib.licenses.tcltk;
+    maintainers = [ lib.maintainers.agbrooks ];
     platforms = lib.platforms.unix;
     broken = tcl.isTcl9;
   };

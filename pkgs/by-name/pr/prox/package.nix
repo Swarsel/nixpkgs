@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,18 +16,18 @@ buildGoModule (finalAttrs: {
     hash = "sha256-KSHTlcAmnuU8F17N0LBS0s5b/k6Of0OEHVd3v50bH3g=";
   };
 
-  vendorHash = "sha256-i4QJ84Tne1E8s2Fprd5xeWlTQBIb/9tvwws80yHXhbg=";
-
   postPatch = ''
     substituteInPlace cmd/prox/version.go \
       --replace '0.0.0-unknown' '${finalAttrs.version}'
   '';
 
+  vendorHash = "sha256-i4QJ84Tne1E8s2Fprd5xeWlTQBIb/9tvwws80yHXhbg=";
+
   meta = {
-    homepage = "https://github.com/fgrosse/prox";
     description = "Process runner for Procfile-based applications";
-    mainProgram = "prox";
+    homepage = "https://github.com/fgrosse/prox";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ lucperkins ];
+    mainProgram = "prox";
   };
 })

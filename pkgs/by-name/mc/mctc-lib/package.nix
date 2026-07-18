@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  cmake,
   gfortran,
-  buildType ? "meson",
+  jonquil,
   meson,
   ninja,
-  cmake,
+  openmpCheckPhaseHook,
   pkg-config,
   python3,
-  jonquil,
-  openmpCheckPhaseHook,
+  buildType ? "meson",
 }:
 
 assert (
@@ -31,6 +31,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-rlwUNeuLzgSWZXDKCFS/H82+oH23tEzhhILqC/ZV6PI=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     # Allow dynamically linked jonquil as dependency. That then additionally
     # requires linking in toml-f
@@ -39,6 +44,10 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix wrong generation of package config include paths
     ./cmake.patch
   ];
+
+  postPatch = ''
+    patchShebangs --build config/install-mod.py
+  '';
 
   nativeBuildInputs = [
     gfortran
@@ -58,23 +67,14 @@ stdenv.mkDerivation (finalAttrs: {
     jonquil
   ];
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   doCheck = true;
-
-  postPatch = ''
-    patchShebangs --build config/install-mod.py
-  '';
 
   meta = {
     description = "Modular computation tool chain library";
-    mainProgram = "mctc-convert";
     homepage = "https://github.com/grimme-lab/mctc-lib";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.sheepforce ];
+    platforms = lib.platforms.linux;
+    mainProgram = "mctc-convert";
   };
 })

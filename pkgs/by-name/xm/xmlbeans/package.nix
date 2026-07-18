@@ -43,8 +43,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Java library for accessing XML by binding it to Java types";
     homepage = "https://xmlbeans.apache.org/";
-    downloadPage = "https://dlcdn.apache.org/poi/xmlbeans/release/bin/";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    downloadPage = "https://dlcdn.apache.org/poi/xmlbeans/release/bin/";
   };
 })

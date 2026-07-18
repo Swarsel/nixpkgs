@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   git,
-  nix-update-script,
   installShellFiles,
+  nix-update-script,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,22 +19,10 @@ buildGoModule (finalAttrs: {
     hash = "sha256-3VHT9/oCQaySWPAfnZYRxSsKCz8S8As685V3wvpqip8=";
   };
 
-  vendorHash = "sha256-xcU0B+ju1f/JfNVKpXkIy5SO9rd3O9Nl0FizW3kVgI0=";
-
-  subPackages = [ "." ];
-
   nativeBuildInputs = [ installShellFiles ];
-
-  nativeCheckInputs = [ git ];
-
   buildInputs = [ git ];
-
-  ldflags = [
-    "-s"
-    "-X=main._version=${finalAttrs.version}"
-  ];
-
-  __darwinAllowLocalNetworking = true;
+  vendorHash = "sha256-xcU0B+ju1f/JfNVKpXkIy5SO9rd3O9Nl0FizW3kVgI0=";
+  nativeCheckInputs = [ git ];
 
   preCheck = lib.optionalString (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64) ''
     # timeout
@@ -49,6 +37,14 @@ buildGoModule (finalAttrs: {
       --fish <($out/bin/gs shell completion fish)
   '';
 
+  __darwinAllowLocalNetworking = true;
+
+  ldflags = [
+    "-s"
+    "-X=main._version=${finalAttrs.version}"
+  ];
+
+  subPackages = [ "." ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

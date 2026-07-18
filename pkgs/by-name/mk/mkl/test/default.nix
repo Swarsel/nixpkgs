@@ -1,8 +1,7 @@
 {
   stdenv,
-  pkg-config,
   mkl,
-
+  pkg-config,
   enableStatic ? false,
   execution ? "seq",
 }:
@@ -13,16 +12,8 @@ in
 stdenv.mkDerivation {
   pname = "mkl-test";
   version = mkl.version;
-
-  unpackPhase = ''
-    cp ${./test.c} test.c
-  '';
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ (mkl.override { inherit enableStatic; }) ];
-
-  doCheck = true;
 
   buildPhase = ''
     # Check regular Nix build.
@@ -35,11 +26,17 @@ stdenv.mkDerivation {
       gcc test.c -o test $(pkg-config --cflags --libs mkl-${linkType}-ilp64-${execution})
   '';
 
+  doCheck = true;
+
+  checkPhase = ''
+    ./test
+  '';
+
   installPhase = ''
     touch $out
   '';
 
-  checkPhase = ''
-    ./test
+  unpackPhase = ''
+    cp ${./test.c} test.c
   '';
 }

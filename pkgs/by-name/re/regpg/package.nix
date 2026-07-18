@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   gnupg,
+  makeWrapper,
   perl,
 }:
 
@@ -21,11 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "2ea99950804078190e1cc2a76d4740e3fdd5395a9043db3f3fe86bf2477d3a7d";
   };
 
-  nativeBuildInputs = [
-    makeWrapper
-    perlEnv
-  ];
-
   postPatch = ''
     patchShebangs ./util/insert-here.pl ./util/markdown.pl
     substituteInPlace ./Makefile \
@@ -36,7 +31,10 @@ stdenv.mkDerivation (finalAttrs: {
       --replace 'qx(git describe)' '"regpg-${finalAttrs.version}"'
   '';
 
-  dontConfigure = true;
+  nativeBuildInputs = [
+    makeWrapper
+    perlEnv
+  ];
 
   makeFlags = [ "prefix=$(out)" ];
 
@@ -46,12 +44,14 @@ stdenv.mkDerivation (finalAttrs: {
       "${lib.makeBinPath [ gnupg ]}"
   '';
 
+  dontConfigure = true;
+
   meta = {
     description = "GPG wrapper utility for storing secrets in VCS";
-    mainProgram = "regpg";
     homepage = "https://dotat.at/prog/regpg";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ _0xC45 ];
+    platforms = lib.platforms.all;
+    mainProgram = "regpg";
   };
 })

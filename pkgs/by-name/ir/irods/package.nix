@@ -1,23 +1,23 @@
 {
   lib,
-  llvmPackages,
   fetchFromGitHub,
-  cmake,
-  ninja,
   bison,
-  flex,
-  libarchive,
-  pam,
-  unixodbc,
-  jsoncons,
-  curl,
-  systemdLibs,
-  openssl,
   boost183,
-  nlohmann_json,
-  nanodbc,
+  cmake,
+  curl,
+  flex,
   fmt,
+  jsoncons,
+  libarchive,
+  llvmPackages,
+  nanodbc,
+  ninja,
+  nlohmann_json,
+  openssl,
+  pam,
   spdlog,
+  systemdLibs,
+  unixodbc,
 }:
 
 llvmPackages.stdenv.mkDerivation (finalAttrs: {
@@ -30,6 +30,14 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-gYwuXWRf5MZv3CTUq/RDlU9Ekbw4jZJmSgWRBKqdKJo=";
   };
+
+  postPatch = ''
+    patchShebangs ./test
+    substituteInPlace plugins/database/CMakeLists.txt --replace-fail \
+      'COMMAND cpp -E -P -D''${plugin} "''${CMAKE_CURRENT_BINARY_DIR}/src/icatSysTables.sql.pp" ' \
+      'COMMAND cpp -E -P -D''${plugin} "''${CMAKE_CURRENT_BINARY_DIR}/src/icatSysTables.sql.pp" -o '
+    substituteInPlace server/auth/CMakeLists.txt --replace-fail SETUID ""
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -67,14 +75,6 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "IRODS_EXTERNALS_FULLPATH_JSONCONS" "${jsoncons}")
   ];
 
-  postPatch = ''
-    patchShebangs ./test
-    substituteInPlace plugins/database/CMakeLists.txt --replace-fail \
-      'COMMAND cpp -E -P -D''${plugin} "''${CMAKE_CURRENT_BINARY_DIR}/src/icatSysTables.sql.pp" ' \
-      'COMMAND cpp -E -P -D''${plugin} "''${CMAKE_CURRENT_BINARY_DIR}/src/icatSysTables.sql.pp" -o '
-    substituteInPlace server/auth/CMakeLists.txt --replace-fail SETUID ""
-  '';
-
   passthru = {
     commonCmakeFlags = [
       # We already use Clang in the `stdenv`.
@@ -91,6 +91,7 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Integrated Rule-Oriented Data System (iRODS)";
+
     longDescription = ''
       The Integrated Rule-Oriented Data System (iRODS) is open source data management
       software used by research organizations and government agencies worldwide.
@@ -102,6 +103,7 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
       testing on supported platforms; plug-in support for microservices, storage resources,
       drivers, and databases; and extensive documentation, training and support services.
     '';
+
     homepage = "https://irods.org";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.bzizou ];

@@ -2,13 +2,7 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
   desktop-file-utils,
-  wrapGAppsHook4,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
   glib,
   glib-networking,
   gtk4,
@@ -17,6 +11,12 @@
   libarchive,
   libgee,
   libsoup_3,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
+  vala,
+  wrapGAppsHook4,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "protonplus";
@@ -54,12 +54,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    mainProgram = "protonplus";
     description = "Simple Wine and Proton-based compatibility tools manager";
     homepage = "https://github.com/Vysp3r/ProtonPlus";
     changelog = "https://github.com/Vysp3r/ProtonPlus/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ getchoo ];
     platforms = lib.platforms.linux;
+    mainProgram = "protonplus";
   };
 })

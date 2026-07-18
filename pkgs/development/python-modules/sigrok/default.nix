@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  libsigrok,
-  toPythonModule,
-  python,
   autoreconfHook,
-  pythonImportsCheckHook,
-  pythonCatchConflictsHook,
-  swig,
-  setuptools,
+  libsigrok,
   numpy,
   pygobject3,
+  python,
+  pythonCatchConflictsHook,
+  pythonImportsCheckHook,
+  setuptools,
+  swig,
+  toPythonModule,
 }:
 
 # build libsigrok plus its Python bindings. Unfortunately it does not appear

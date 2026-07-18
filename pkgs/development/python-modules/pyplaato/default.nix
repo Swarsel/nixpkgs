@@ -1,15 +1,14 @@
 {
   lib,
+  aiohttp,
   buildPythonPackage,
   fetchPypi,
-  aiohttp,
   python-dateutil,
 }:
 
 buildPythonPackage rec {
   pname = "pyplaato";
   version = "0.0.19";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,7 +22,7 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pyplaato" ];
 
   meta = {

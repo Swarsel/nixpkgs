@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  unstableGitUpdater,
   buildLua,
+  unstableGitUpdater,
   xclip,
 }:
 
@@ -19,21 +19,22 @@ let
           repo = "mpv-scripts";
           rev = "b9e63743a858766c9cc7a801d77313b0cecdb049";
           hash = "sha256-ohUZH6m+5Sk3VKi9qqEgwhgn2DMOFIvvC41pMkV6oPw=";
+
           # avoid downloading screenshots and videos
           sparseCheckout = [
             "scripts/"
             "script-opts/"
           ];
         };
+
+        # Sadly needed to make `common-updaters` work here
+        pos = builtins.unsafeGetAttrPos "version" self;
         passthru.updateScript = unstableGitUpdater { };
 
         meta = {
           homepage = "https://github.com/Eisa01/mpv-scripts";
           license = lib.licenses.bsd2;
         };
-
-        # Sadly needed to make `common-updaters` work here
-        pos = builtins.unsafeGetAttrPos "version" self;
       };
     in
     buildLua (lib.attrsets.recursiveUpdate self args);
@@ -41,21 +42,9 @@ in
 lib.recurseIntoAttrs (
   lib.mapAttrs (name: lib.makeOverridable (mkScript name)) {
 
-    # Usage: `pkgs.mpv.override { scripts = [ pkgs.mpvScripts.seekTo ]; }`
-    smart-copy-paste-2 = {
-      scriptPath = "scripts/SmartCopyPaste_II.lua";
-      prePatch = ''
-        substituteInPlace $scriptPath --replace-fail 'xclip' "${lib.getExe xclip}"
-      '';
-
-      meta = {
-        description = "Smart copy paste with logging and clipboard support";
-        maintainers = with lib.maintainers; [ luftmensch-luftmensch ];
-      };
-    };
-
     simplebookmark = {
       scriptPath = "scripts/SimpleBookmark.lua";
+
       meta = {
         description = "Simple bookmarks script based on assigning keys";
         maintainers = with lib.maintainers; [ luftmensch-luftmensch ];
@@ -64,14 +53,30 @@ lib.recurseIntoAttrs (
 
     simplehistory = {
       scriptPath = "scripts/SimpleHistory.lua";
+
       meta = {
         description = "Store videos in a history file, continue watching your last played or resume previously played videos, manage and play from your history, and more";
         maintainers = with lib.maintainers; [ luftmensch-luftmensch ];
       };
     };
 
+    # Usage: `pkgs.mpv.override { scripts = [ pkgs.mpvScripts.seekTo ]; }`
+    smart-copy-paste-2 = {
+      prePatch = ''
+        substituteInPlace $scriptPath --replace-fail 'xclip' "${lib.getExe xclip}"
+      '';
+
+      scriptPath = "scripts/SmartCopyPaste_II.lua";
+
+      meta = {
+        description = "Smart copy paste with logging and clipboard support";
+        maintainers = with lib.maintainers; [ luftmensch-luftmensch ];
+      };
+    };
+
     smartskip = {
       scriptPath = "scripts/SmartSkip.lua";
+
       meta = {
         description = "Automatically or manually skip opening, intro, outro, and preview";
         maintainers = with lib.maintainers; [ iynaix ];
@@ -80,6 +85,7 @@ lib.recurseIntoAttrs (
 
     undoredo = {
       scriptPath = "scripts/UndoRedo.lua";
+
       meta = {
         description = "Undo / redo any accidental time jumps";
         maintainers = with lib.maintainers; [ iynaix ];

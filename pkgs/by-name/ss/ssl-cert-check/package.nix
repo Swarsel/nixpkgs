@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  coreutils,
   fetchFromGitHub,
+  coreutils,
   findutils,
   gawk,
   gnugrep,
@@ -39,10 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
     which
   ];
 
-  prePatch = ''
-    substituteInPlace $pname --replace PATH= NOT_PATH=
-  '';
-
   installPhase = ''
     mkdir -p $out/bin
     cp $pname $out/bin/$pname
@@ -50,12 +46,16 @@ stdenv.mkDerivation (finalAttrs: {
       --set PATH "${lib.makeBinPath finalAttrs.buildInputs}"
   '';
 
+  prePatch = ''
+    substituteInPlace $pname --replace PATH= NOT_PATH=
+  '';
+
   meta = {
     description = "Bourne shell script that can be used to report on expiring SSL certificates";
-    mainProgram = "ssl-cert-check";
     homepage = "https://github.com/Matty9191/ssl-cert-check";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ ryantm ];
     platforms = lib.platforms.linux;
+    mainProgram = "ssl-cert-check";
   };
 })

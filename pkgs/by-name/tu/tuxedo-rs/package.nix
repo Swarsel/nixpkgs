@@ -17,22 +17,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-+NzwUs8TZsA0us9hI1UmEKdiOo9IqTRmTOHs4xmC7MY=";
   };
 
+  cargoHash = "sha256-EkTLL7thZ/bBpY7TwfEsPOjJxzQ3vpxDi+sYPNAK6og=";
   # Some of the tests are impure and rely on files in /etc/tailord
   doCheck = false;
-
-  cargoHash = "sha256-EkTLL7thZ/bBpY7TwfEsPOjJxzQ3vpxDi+sYPNAK6og=";
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
 
   postInstall = ''
     install -Dm444 tailord/com.tux.Tailor.conf -t $out/share/dbus-1/system.d
   '';
 
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
+  versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
+
   meta = {
     description = "Rust utilities for interacting with hardware from TUXEDO Computers";
+
     longDescription = ''
       An alternative to the TUXEDO Control Center daemon.
 
@@ -40,11 +41,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
       - tailord: Daemon handling fan, keyboard and general HW support for Tuxedo laptops
       - tailor: CLI
     '';
+
     homepage = "https://github.com/AaronErhardt/tuxedo-rs";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       xaverdh
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "tailor";
   };

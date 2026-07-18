@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   docker,
-  fetchFromGitHub,
   pytest,
   pytestCheckHook,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pytest-docker-tools";
   version = "3.1.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Jc2k";
@@ -20,15 +19,12 @@ buildPythonPackage rec {
     hash = "sha256-WYfgO7Ch1hCj9cE43jgI+2JEwDOzNvuMtkVV3PdMiBs=";
   };
 
-  build-system = [ setuptools ];
-
   buildInputs = [ pytest ];
-
-  dependencies = [ docker ];
-
   # Tests require a Docker setup
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ docker ];
+  pyproject = true;
   pythonImportsCheck = [ "pytest_docker_tools" ];
 
   meta = {

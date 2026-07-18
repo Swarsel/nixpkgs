@@ -31,88 +31,28 @@ in
     services.mirakurun = {
       enable = mkEnableOption "the Mirakurun DVR Tuner Server";
 
-      port = mkOption {
-        type = with types; nullOr port;
-        default = 40772;
-        description = ''
-          Port to listen on. If `null`, it won't listen on
-          any port.
-        '';
-      };
-
-      openFirewall = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Open ports in the firewall for Mirakurun.
-
-          ::: {.warning}
-          Exposing Mirakurun to the open internet is generally advised
-          against. Only use it inside a trusted local network, or
-          consider putting it behind a VPN if you want remote access.
-          :::
-        '';
-      };
-
-      unixSocket = mkOption {
-        type = with types; nullOr path;
-        default = "/var/run/mirakurun/mirakurun.sock";
-        description = ''
-          Path to unix socket to listen on. If `null`, it
-          won't listen on any unix sockets.
-        '';
-      };
-
       allowSmartCardAccess = mkOption {
-        type = types.bool;
         default = true;
+
         description = ''
           Install polkit rules to allow Mirakurun to access smart card readers
           which is commonly used along with tuner devices.
         '';
-      };
 
-      serverSettings = mkOption {
-        type = settingsFmt.type;
-        default = { };
-        example = literalExpression ''
-          {
-            highWaterMark = 25165824;
-            overflowTimeLimit = 30000;
-          };
-        '';
-        description = ''
-          Options for server.yml.
-
-          Documentation:
-          <https://github.com/Chinachu/Mirakurun/blob/master/doc/Configuration.md>
-        '';
-      };
-
-      tunerSettings = mkOption {
-        type = with types; nullOr settingsFmt.type;
-        default = null;
-        example = literalExpression ''
-          [
-            {
-              name = "tuner-name";
-              types = [ "GR" "BS" "CS" "SKY" ];
-              dvbDevicePath = "/dev/dvb/adapterX/dvrX";
-            }
-          ];
-        '';
-        description = ''
-          Options which are added to tuners.yml. If none is specified, it will
-          automatically be generated at runtime.
-
-          Documentation:
-          <https://github.com/Chinachu/Mirakurun/blob/master/doc/Configuration.md>
-        '';
+        type = types.bool;
       };
 
       channelSettings = mkOption {
-        type = with types; nullOr settingsFmt.type;
         default = null;
+
+        description = ''
+          Options which are added to channels.yml. If none is specified, it
+          will automatically be generated at runtime.
+
+          Documentation:
+          <https://github.com/Chinachu/Mirakurun/blob/master/doc/Configuration.md>
+        '';
+
         example = literalExpression ''
           [
             {
@@ -122,46 +62,117 @@ in
             }
           ];
         '';
+
+        type = with types; nullOr settingsFmt.type;
+      };
+
+      openFirewall = mkOption {
+        default = false;
+
         description = ''
-          Options which are added to channels.yml. If none is specified, it
-          will automatically be generated at runtime.
+          Open ports in the firewall for Mirakurun.
+
+          ::: {.warning}
+          Exposing Mirakurun to the open internet is generally advised
+          against. Only use it inside a trusted local network, or
+          consider putting it behind a VPN if you want remote access.
+          :::
+        '';
+
+        type = types.bool;
+      };
+
+      port = mkOption {
+        default = 40772;
+
+        description = ''
+          Port to listen on. If `null`, it won't listen on
+          any port.
+        '';
+
+        type = with types; nullOr port;
+      };
+
+      serverSettings = mkOption {
+        default = { };
+
+        description = ''
+          Options for server.yml.
 
           Documentation:
           <https://github.com/Chinachu/Mirakurun/blob/master/doc/Configuration.md>
         '';
+
+        example = literalExpression ''
+          {
+            highWaterMark = 25165824;
+            overflowTimeLimit = 30000;
+          };
+        '';
+
+        type = settingsFmt.type;
+      };
+
+      tunerSettings = mkOption {
+        default = null;
+
+        description = ''
+          Options which are added to tuners.yml. If none is specified, it will
+          automatically be generated at runtime.
+
+          Documentation:
+          <https://github.com/Chinachu/Mirakurun/blob/master/doc/Configuration.md>
+        '';
+
+        example = literalExpression ''
+          [
+            {
+              name = "tuner-name";
+              types = [ "GR" "BS" "CS" "SKY" ];
+              dvbDevicePath = "/dev/dvb/adapterX/dvrX";
+            }
+          ];
+        '';
+
+        type = with types; nullOr settingsFmt.type;
+      };
+
+      unixSocket = mkOption {
+        default = "/var/run/mirakurun/mirakurun.sock";
+
+        description = ''
+          Path to unix socket to listen on. If `null`, it
+          won't listen on any unix sockets.
+        '';
+
+        type = with types; nullOr path;
       };
     };
   };
 
   config = mkIf cfg.enable {
-    environment.systemPackages = [ mirakurun ] ++ optional cfg.allowSmartCardAccess polkitRule;
     environment.etc = {
-      "mirakurun/server.yml".source = settingsFmt.generate "server.yml" cfg.serverSettings;
-      "mirakurun/tuners.yml" = mkIf (cfg.tunerSettings != null) {
-        source = settingsFmt.generate "tuners.yml" cfg.tunerSettings;
-        mode = "0644";
-        user = username;
-        group = groupname;
-      };
       "mirakurun/channels.yml" = mkIf (cfg.channelSettings != null) {
-        source = settingsFmt.generate "channels.yml" cfg.channelSettings;
-        mode = "0644";
-        user = username;
         group = groupname;
+        mode = "0644";
+        source = settingsFmt.generate "channels.yml" cfg.channelSettings;
+        user = username;
+      };
+
+      "mirakurun/server.yml".source = settingsFmt.generate "server.yml" cfg.serverSettings;
+
+      "mirakurun/tuners.yml" = mkIf (cfg.tunerSettings != null) {
+        group = groupname;
+        mode = "0644";
+        source = settingsFmt.generate "tuners.yml" cfg.tunerSettings;
+        user = username;
       };
     };
+
+    environment.systemPackages = [ mirakurun ] ++ optional cfg.allowSmartCardAccess polkitRule;
 
     networking.firewall = mkIf cfg.openFirewall {
       allowedTCPPorts = mkIf (cfg.port != null) [ cfg.port ];
-    };
-
-    users.users.mirakurun = {
-      description = "Mirakurun user";
-      group = "video";
-      isSystemUser = true;
-
-      # npm insists on creating ~/.npm
-      home = "/var/cache/mirakurun";
     };
 
     services.mirakurun.serverSettings = {
@@ -170,35 +181,18 @@ in
       port = mkIf (cfg.port != null) cfg.port;
     };
 
-    systemd.tmpfiles.settings."10-mirakurun"."/etc/mirakurun".d = {
-      user = username;
-      group = groupname;
-    };
-
     systemd.services.mirakurun = {
-      description = mirakurun.meta.description;
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
-      serviceConfig = {
-        ExecStart = "${mirakurun}/bin/mirakurun start";
-        User = username;
-        Group = groupname;
-        CacheDirectory = "mirakurun";
-        RuntimeDirectory = "mirakurun";
-        StateDirectory = "mirakurun";
-        Nice = -10;
-        IOSchedulingClass = "realtime";
-        IOSchedulingPriority = 7;
-      };
+      description = mirakurun.meta.description;
 
       environment = {
-        SERVER_CONFIG_PATH = "/etc/mirakurun/server.yml";
-        TUNERS_CONFIG_PATH = "/etc/mirakurun/tuners.yml";
         CHANNELS_CONFIG_PATH = "/etc/mirakurun/channels.yml";
-        SERVICES_DB_PATH = "/var/lib/mirakurun/services.json";
-        PROGRAMS_DB_PATH = "/var/lib/mirakurun/programs.json";
         LOGO_DATA_DIR_PATH = "/var/lib/mirakurun/logos";
         NODE_ENV = "production";
+        PROGRAMS_DB_PATH = "/var/lib/mirakurun/programs.json";
+        SERVER_CONFIG_PATH = "/etc/mirakurun/server.yml";
+        SERVICES_DB_PATH = "/var/lib/mirakurun/services.json";
+        TUNERS_CONFIG_PATH = "/etc/mirakurun/tuners.yml";
       };
 
       restartTriggers =
@@ -211,6 +205,33 @@ in
           ++ optional (cfg.channelSettings != null) "channels";
         in
         (map getconf targets);
+
+      serviceConfig = {
+        CacheDirectory = "mirakurun";
+        ExecStart = "${mirakurun}/bin/mirakurun start";
+        Group = groupname;
+        IOSchedulingClass = "realtime";
+        IOSchedulingPriority = 7;
+        Nice = -10;
+        RuntimeDirectory = "mirakurun";
+        StateDirectory = "mirakurun";
+        User = username;
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    systemd.tmpfiles.settings."10-mirakurun"."/etc/mirakurun".d = {
+      group = groupname;
+      user = username;
+    };
+
+    users.users.mirakurun = {
+      description = "Mirakurun user";
+      group = "video";
+      # npm insists on creating ~/.npm
+      home = "/var/cache/mirakurun";
+      isSystemUser = true;
     };
   };
 }

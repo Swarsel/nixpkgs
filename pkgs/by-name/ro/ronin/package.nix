@@ -11,31 +11,33 @@
 bundlerEnv rec {
   pname = "ronin";
   version = "2.1.1";
-  gemdir = ./.;
-
-  gemConfig = defaultGemConfig // {
-    ronin-code-asm = attrs: {
-      dontBuild = false;
-      postPatch = ''
-        substituteInPlace lib/ronin/code/asm/program.rb \
-          --replace "YASM::Command.run(" "YASM::Command.run(
-          command_path: '${yasm}/bin/yasm',"
-      '';
-    };
-  };
 
   postBuild = ''
     shopt -s extglob
     rm -f $out/bin/!(ronin*)
   '';
 
-  passthru.updateScript = bundlerUpdateScript "ronin";
+  gemConfig = defaultGemConfig // {
+    ronin-code-asm = attrs: {
+      postPatch = ''
+        substituteInPlace lib/ronin/code/asm/program.rb \
+          --replace "YASM::Command.run(" "YASM::Command.run(
+          command_path: '${yasm}/bin/yasm',"
+      '';
+
+      dontBuild = false;
+    };
+  };
+
+  gemdir = ./.;
 
   passthru.tests.version = testers.testVersion {
-    package = ronin;
-    command = "ronin --version";
     version = "ronin ${version}";
+    command = "ronin --version";
+    package = ronin;
   };
+
+  passthru.updateScript = bundlerUpdateScript "ronin";
 
   meta = {
     description = "Free and Open Source Ruby toolkit for security research and development";

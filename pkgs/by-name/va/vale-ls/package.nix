@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   makeWrapper,
-  rustPlatform,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
   vale,
 }:
 
@@ -30,6 +30,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-KPgi0wZh1+PTKUmvCkLGPf+DZW5Tt4dQVK/cdxjm/1A=";
+  env.OPENSSL_NO_VENDOR = true;
+
   checkFlags = [
     # The following tests are reaching to the network.
     "--skip=vale::tests"
@@ -40,10 +43,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=utils::tests::arch"
   ];
 
-  env.OPENSSL_NO_VENDOR = true;
-
-  cargoHash = "sha256-KPgi0wZh1+PTKUmvCkLGPf+DZW5Tt4dQVK/cdxjm/1A=";
-
   postInstall = ''
     wrapProgram $out/bin/vale-ls \
       --suffix PATH : ${lib.makeBinPath [ vale ]}
@@ -53,9 +52,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "LSP implementation for the Vale command-line tool";
     homepage = "https://github.com/errata-ai/vale-ls";
     license = lib.licenses.mit;
-    mainProgram = "vale-ls";
+
     maintainers = with lib.maintainers; [
       jansol
     ];
+
+    mainProgram = "vale-ls";
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
   alcotest,
+  buildDunePackage,
   pkg-config,
 }:
 
@@ -15,16 +15,15 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-L1IKxHAFTjNYg+upJUvyi2Z23bV3U8+1iyLPhK4aZuA=";
   };
 
-  minimalOCamlVersion = "4.08";
-  duneVersion = "3";
-
   nativeBuildInputs = [ pkg-config ];
-  checkInputs = [ alcotest ];
   doCheck = true;
+  checkInputs = [ alcotest ];
+  duneVersion = "3";
+  minimalOCamlVersion = "4.08";
 
   meta = {
-    homepage = "https://github.com/dinosaure/overlap";
     description = "Minimal library to know that 2 bigarray share physically the same memory or not";
+    homepage = "https://github.com/dinosaure/overlap";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.sternenseemann ];
   };

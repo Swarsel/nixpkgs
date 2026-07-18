@@ -20,12 +20,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "CLI tool to drive test-driven Rust workshops";
     homepage = "https://github.com/mainmatter/rust-workshop-runner";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [ RaghavSood ];
+    platforms = lib.platforms.unix;
     mainProgram = "wr";
   };
 })

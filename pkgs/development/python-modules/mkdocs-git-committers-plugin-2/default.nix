@@ -1,22 +1,19 @@
 {
   # Evaluation
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # Build
-  setuptools,
-
+  buildPythonPackage,
   # Dependencies
   gitpython,
   mkdocs,
   requests,
+  # Build
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "mkdocs-git-committers-plugin-2";
   version = "2.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ojacques";
@@ -24,6 +21,9 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-PpXgY5RlOeb0mB46gcNVWkSGMZa4WPkCwDUXMxCUjsI=";
   };
+
+  # Upstream has no tests
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -35,8 +35,7 @@ buildPythonPackage rec {
     requests
   ];
 
-  # Upstream has no tests
-  doCheck = false;
+  pyproject = true;
   pythonImportsCheck = [ "mkdocs_git_committers_plugin_2" ];
 
   meta = {

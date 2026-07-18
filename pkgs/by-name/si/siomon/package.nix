@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,11 +18,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-dUAuoIOW3pQKvb4LbJTss4RWLwHNrGefNzrV+eMjcO4=";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru.updateScript = nix-update-script { };
 
@@ -31,8 +31,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/level1techs/siomon";
     changelog = "https://github.com/level1techs/siomon/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ sheevy ];
+    platforms = lib.platforms.linux;
     mainProgram = "sio";
   };
 })

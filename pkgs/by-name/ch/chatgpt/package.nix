@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   _7zz,
+  stdenvNoCC,
   undmg,
 }:
 
@@ -10,16 +10,13 @@ let
   source = import ./source.nix;
 in
 stdenvNoCC.mkDerivation {
-  pname = "chatgpt";
   inherit (source) version;
-
+  pname = "chatgpt";
   src = fetchurl source.src;
 
   nativeBuildInputs = [
     undmg
   ];
-
-  sourceRoot = ".";
 
   installPhase = ''
     runHook preInstall
@@ -32,6 +29,7 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
   passthru.updateScript = ./update.sh;
 
   meta = {
@@ -39,9 +37,9 @@ stdenvNoCC.mkDerivation {
     homepage = "https://openai.com/chatgpt/desktop/";
     changelog = "https://help.openai.com/en/articles/9703738-macos-app-release-notes";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ wattmto ];
     platforms = lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     mainProgram = "ChatGPT";
   };
 }

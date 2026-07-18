@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  perl,
-  kmod,
   coreutils,
+  kmod,
+  perl,
 }:
 
 # Requires the acpi_call kernel module in order to run.
@@ -19,6 +19,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-9XnvVNdgB5VeI3juZfc8N5weEyULXuqu1IDChZfQqFk=";
   };
 
+  postPatch = ''
+    substituteInPlace tpacpi-bat \
+      --replace modprobe ${kmod}/bin/modprobe \
+      --replace cat ${coreutils}/bin/cat
+  '';
+
   buildInputs = [ perl ];
 
   installPhase = ''
@@ -26,18 +32,12 @@ stdenv.mkDerivation (finalAttrs: {
     cp tpacpi-bat $out/bin
   '';
 
-  postPatch = ''
-    substituteInPlace tpacpi-bat \
-      --replace modprobe ${kmod}/bin/modprobe \
-      --replace cat ${coreutils}/bin/cat
-  '';
-
   meta = {
-    maintainers = [ lib.maintainers.orbekk ];
-    platforms = lib.platforms.linux;
     description = "Tool to set battery charging thresholds on Lenovo Thinkpad";
     homepage = "https://github.com/teleshoes/tpacpi-bat";
-    mainProgram = "tpacpi-bat";
     license = lib.licenses.gpl3Plus;
+    maintainers = [ lib.maintainers.orbekk ];
+    platforms = lib.platforms.linux;
+    mainProgram = "tpacpi-bat";
   };
 })

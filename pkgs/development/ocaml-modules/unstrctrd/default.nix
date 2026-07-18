@@ -1,4 +1,5 @@
 {
+  lib,
   alcotest,
   angstrom,
   bigstringaf,
@@ -8,7 +9,6 @@
   fmt,
   hxd,
   ke,
-  lib,
   rresult,
   uutf,
 }:
@@ -27,6 +27,8 @@ buildDunePackage rec {
     uutf
   ];
 
+  doCheck = true;
+
   checkInputs = [
     alcotest
     bigstringaf
@@ -36,7 +38,6 @@ buildDunePackage rec {
     ke
     rresult
   ];
-  doCheck = true;
 
   meta = {
     description = "Library for parsing email headers";

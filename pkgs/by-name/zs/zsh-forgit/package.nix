@@ -1,10 +1,9 @@
 {
-  stdenvNoCC,
   lib,
+  fetchFromGitHub,
   bash,
   coreutils,
   findutils,
-  fetchFromGitHub,
   fzf,
   gawk,
   git,
@@ -12,6 +11,7 @@
   gnused,
   makeWrapper,
   perl,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -25,15 +25,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-Ks/kUuQLtzKLjwIDpfkh6pL90aII8Rfh8ijxDmlFvmg=";
   };
 
-  strictDeps = true;
-
   postPatch = ''
     substituteInPlace forgit.plugin.zsh \
       --replace-fail "\$FORGIT_INSTALL_DIR/bin/git-forgit" "$out/bin/git-forgit"
   '';
 
-  dontBuild = true;
-
+  strictDeps = true;
   nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
@@ -60,12 +57,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
-    homepage = "https://github.com/wfxr/forgit";
     description = "Utility tool powered by fzf for using git interactively";
-    mainProgram = "git-forgit";
+    homepage = "https://github.com/wfxr/forgit";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ deejayem ];
     platforms = lib.platforms.all;
+    mainProgram = "git-forgit";
   };
 })

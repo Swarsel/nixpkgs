@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchurl,
   fetchFromGitHub,
   rustPlatform,
-  fetchurl,
-  lib,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,8 +21,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   preBuild =
     let
       webBundle = fetchurl {
-        url = "https://github.com/sorz/moproxy-web/releases/download/v0.1.8/build.zip";
         hash = "sha256-bLC76LnTWR2/xnDcZtX/t0OUmP7vdI/o3TCRzG9eH/g=";
+        url = "https://github.com/sorz/moproxy-web/releases/download/v0.1.8/build.zip";
       };
     in
     ''
@@ -33,11 +33,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     '';
 
   meta = {
-    homepage = "https://github.com/sorz/moproxy";
     description = "Transparent TCP to SOCKSv5/HTTP proxy on Linux written in Rust";
+    homepage = "https://github.com/sorz/moproxy";
     license = lib.licenses.mit;
-    mainProgram = "moproxy";
     maintainers = with lib.maintainers; [ oluceps ];
     platforms = lib.platforms.linux;
+    mainProgram = "moproxy";
   };
 })

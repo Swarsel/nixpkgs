@@ -5,10 +5,10 @@
 
 let
   testPackage = buildGoModule {
-    name = "build-test-binaries";
     src = ./.;
     vendorHash = null;
     buildTestBinaries = true;
+    name = "build-test-binaries";
   };
 in
 

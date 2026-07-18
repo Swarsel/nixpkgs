@@ -1,15 +1,15 @@
 {
   lib,
+  fetchFromGitHub,
   aiodns,
   aiofiles,
-  aiohttp-socks,
   aiohttp,
+  aiohttp-socks,
   aresponses,
   babel,
   buildPythonPackage,
   certifi,
   cryptography,
-  fetchFromGitHub,
   gitUpdater,
   hatchling,
   magic-filter,
@@ -29,7 +29,6 @@
 buildPythonPackage rec {
   pname = "aiogram";
   version = "3.29.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aiogram";
@@ -38,9 +37,19 @@ buildPythonPackage rec {
     hash = "sha256-Wn36YvuQ9geCAD0froVq2KulyeRWnc2AKX4FPCCKG8I=";
   };
 
-  build-system = [ hatchling ];
+  nativeCheckInputs = [
+    aresponses
+    pycryptodomex
+    pytest-aiohttp
+    pytest-asyncio
+    pytest-lazy-fixture
+    pytestCheckHook
+    pytz
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
-  pythonRelaxDeps = [ "aiohttp" ];
+  __darwinAllowLocalNetworking = true;
+  build-system = [ hatchling ];
 
   dependencies = [
     aiofiles
@@ -55,26 +64,20 @@ buildPythonPackage rec {
       aiodns
       uvloop
     ];
+
+    i18n = [ babel ];
+
     mongo = [
       motor
       pymongo
     ];
-    redis = [ redis ];
+
     proxy = [ aiohttp-socks ];
-    i18n = [ babel ];
+    redis = [ redis ];
     signature = [ cryptography ];
   };
 
-  nativeCheckInputs = [
-    aresponses
-    pycryptodomex
-    pytest-aiohttp
-    pytest-asyncio
-    pytest-lazy-fixture
-    pytestCheckHook
-    pytz
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
+  pyproject = true;
 
   pytestFlags = [
     # DeprecationWarning: 'asyncio.get_event_loop_policy' is deprecated and slate...
@@ -82,13 +85,12 @@ buildPythonPackage rec {
   ];
 
   pythonImportsCheck = [ "aiogram" ];
+  pythonRelaxDeps = [ "aiohttp" ];
 
   passthru.updateScript = gitUpdater {
-    rev-prefix = "v";
     ignoredVersions = "4.1";
+    rev-prefix = "v";
   };
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Modern and fully asynchronous framework for Telegram Bot API";

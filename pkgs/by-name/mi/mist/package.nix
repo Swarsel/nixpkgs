@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  undmg,
   nix-update-script,
+  stdenvNoCC,
+  undmg,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "mist";
@@ -14,11 +14,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-J3Oxtw+yFV2Mpzqc6NqPPJR76r0DwywJdAU1FSvbYKE=";
   };
 
-  sourceRoot = ".";
-
-  __structuredAttrs = true;
   strictDeps = true;
-
   nativeBuildInputs = [ undmg ];
 
   installPhase = ''
@@ -30,14 +26,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  sourceRoot = ".";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Utility that automatically downloads macOS firmwares and installers";
     homepage = "https://github.com/ninxsoft/Mist";
     license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ ojsef39 ];
     platforms = lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

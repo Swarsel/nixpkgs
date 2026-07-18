@@ -22,19 +22,23 @@ in
 
   config = lib.mkIf config.services.das_watchdog.enable {
     environment.systemPackages = [ das_watchdog ];
+
     systemd.services.das_watchdog = {
-      description = "Watchdog to ensure a realtime process won't hang the machine";
       after = [
         "multi-user.target"
         "sound.target"
       ];
-      wantedBy = [ "multi-user.target" ];
+
+      description = "Watchdog to ensure a realtime process won't hang the machine";
+
       serviceConfig = {
-        User = "root";
-        Type = "simple";
         ExecStart = "${das_watchdog}/bin/das_watchdog";
         RemainAfterExit = true;
+        Type = "simple";
+        User = "root";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

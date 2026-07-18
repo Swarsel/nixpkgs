@@ -1,9 +1,9 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
   cmake,
   ninja,
-  lib,
   nix-update-script,
 }:
 
@@ -18,23 +18,25 @@ stdenv.mkDerivation {
     hash = "sha256-mBnpoTG2c6RrTjOYSIeIANQKE6Uvd3/dnBGDnw3AfSA=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     ninja
   ];
 
-  strictDeps = true;
-
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
   meta = {
     description = "Machine code generation for C++";
+
     longDescription = ''
       AsmJit is a lightweight library for machine code generation written in
       C++ language. It can generate machine code for X86, X86_64, and AArch64
       architectures and supports baseline instructions and all recent
       extensions.
     '';
+
     homepage = "https://asmjit.com/";
     license = lib.licenses.zlib;
     maintainers = with lib.maintainers; [ thillux ];

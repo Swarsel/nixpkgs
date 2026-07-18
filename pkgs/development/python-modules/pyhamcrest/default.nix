@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatch-vcs,
   hatchling,
   numpy,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "pyhamcrest";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hamcrest";
@@ -31,15 +30,15 @@ buildPythonPackage rec {
       --replace 'dynamic = ["version"]' 'version = "${version}"'
   '';
 
-  build-system = [
-    hatch-vcs
-    hatchling
-  ];
-
   nativeCheckInputs = [
     numpy
     pytest-xdist
     pytestCheckHook
+  ];
+
+  build-system = [
+    hatch-vcs
+    hatchling
   ];
 
   disabledTests = [
@@ -49,6 +48,7 @@ buildPythonPackage rec {
     "test_numpy_numeric_type_int"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "hamcrest" ];
 
   meta = {

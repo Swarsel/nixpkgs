@@ -27,12 +27,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
+    description = "OpenType to BDF font converter";
     #homepage = "http://sofia.nmsu.edu/~mleisher/Software/otf2bdf/";  # timeout
     homepage = "https://github.com/jirutka/otf2bdf";
-    description = "OpenType to BDF font converter";
     license = lib.licenses.mit0;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ hzeller ];
+    platforms = lib.platforms.all;
     mainProgram = "otf2bdf";
   };
 })

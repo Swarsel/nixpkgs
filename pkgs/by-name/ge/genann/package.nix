@@ -15,7 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0z45ndpd4a64i6jayr4yxfcr5h87bsmhm7lfgnbp35pnfywiclmq";
   };
 
-  dontBuild = true;
   doCheck = true;
 
   # Nix doesn't seem to recognize this by default.
@@ -28,9 +27,11 @@ stdenv.mkDerivation (finalAttrs: {
     cp ./genann.{h,c} $out/include
   '';
 
+  dontBuild = true;
+
   meta = {
-    homepage = "https://github.com/codeplea/genann";
     description = "Simple neural network library in ANSI C";
+    homepage = "https://github.com/codeplea/genann";
     license = lib.licenses.zlib;
     maintainers = [ ];
     platforms = lib.platforms.all;

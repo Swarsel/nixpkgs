@@ -1,18 +1,18 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  libtool,
+  fetchurl,
   gettext,
-  zlib,
-  readline,
+  groff,
   gsasl,
   guile,
-  python3,
-  pcre2,
   libffi,
-  groff,
+  libtool,
   libxcrypt,
+  pcre2,
+  python3,
+  readline,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,8 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-couJxQ4JC/+Dno97MEO1xwI/hhqSEckwSLQqtFWGavc=";
   };
 
-  hardeningDisable = [ "format" ];
-
+  strictDeps = true;
   nativeBuildInputs = [ groff ];
 
   buildInputs = [
@@ -41,17 +40,12 @@ stdenv.mkDerivation (finalAttrs: {
     libxcrypt
   ];
 
-  strictDeps = true;
-
   # ERROR: All 188 tests were run, 90 failed unexpectedly.
   doCheck = !stdenv.hostPlatform.isDarwin;
+  hardeningDisable = [ "format" ];
 
   meta = {
     description = "Flexible dictionary server and client implementing RFC 2229";
-    homepage = "https://www.gnu.org/software/dico/";
-    license = lib.licenses.gpl3Plus;
-    maintainers = [ ];
-    platforms = lib.platforms.unix;
 
     longDescription = ''
       GNU Dico is a flexible modular implementation of DICT server
@@ -72,5 +66,10 @@ stdenv.mkDerivation (finalAttrs: {
       The package also includes a console client program for querying
       remote dictionary servers.
     '';
+
+    homepage = "https://www.gnu.org/software/dico/";
+    license = lib.licenses.gpl3Plus;
+    maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

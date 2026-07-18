@@ -9,20 +9,13 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "olm";
   version = "3.2.16";
 
-  __structuredAttrs = true;
-  strictDeps = true;
-
   src = fetchFromGitLab {
-    domain = "gitlab.matrix.org";
     owner = "matrix-org";
     repo = "olm";
     tag = finalAttrs.version;
     hash = "sha256-JX20mpuLO+UoNc8iQlXEHAbH9sfblkBbM1gE27Ve0ac=";
+    domain = "gitlab.matrix.org";
   };
-
-  nativeBuildInputs = [ cmake ];
-
-  doCheck = true;
 
   postPatch = ''
     substituteInPlace olm.pc.in \
@@ -41,13 +34,20 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "T * const other_pos = other._data;" "T const * other_pos = other._data;"
   '';
 
+  strictDeps = true;
+  nativeBuildInputs = [ cmake ];
+  doCheck = true;
+  __structuredAttrs = true;
+
   meta = {
     description = "Implements double cryptographic ratchet and Megolm ratchet";
     homepage = "https://gitlab.matrix.org/matrix-org/olm";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       tilpner
     ];
+
     knownVulnerabilities = [
       ''
         The libolm end‐to‐end encryption library used in many Matrix

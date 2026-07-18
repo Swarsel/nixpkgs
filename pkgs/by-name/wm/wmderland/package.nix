@@ -5,8 +5,8 @@
   cmake,
   libnotify,
   libx11,
-  xorgproto,
   nixosTests,
+  xorgproto,
 }:
 
 stdenv.mkDerivation {
@@ -20,18 +20,16 @@ stdenv.mkDerivation {
     sha256 = "0npmlnybblp82mfpinjbz7dhwqgpdqc1s63wc1zs8mlcs19pdh98";
   };
 
-  nativeBuildInputs = [
-    cmake
-  ];
-
-  cmakeBuildType = "MinSizeRel";
-
   patches = [ ./0001-remove-flto.patch ];
 
   postPatch = ''
     substituteInPlace src/util.cc \
       --replace "notify-send" "${libnotify}/bin/notify-send"
   '';
+
+  nativeBuildInputs = [
+    cmake
+  ];
 
   buildInputs = [
     libx11
@@ -43,17 +41,19 @@ stdenv.mkDerivation {
     install -Dm0644 -t $out/share/xsessions $src/example/wmderland.desktop
   '';
 
+  cmakeBuildType = "MinSizeRel";
+
   passthru = {
-    tests.basic = nixosTests.wmderland;
     providedSessions = [ "wmderland" ];
+    tests.basic = nixosTests.wmderland;
   };
 
   meta = {
     description = "Modern and minimal X11 tiling window manager";
     homepage = "https://github.com/aesophor/wmderland";
     license = lib.licenses.mit;
-    platforms = libx11.meta.platforms;
     maintainers = with lib.maintainers; [ takagiy ];
+    platforms = libx11.meta.platforms;
     mainProgram = "wmderland";
   };
 }

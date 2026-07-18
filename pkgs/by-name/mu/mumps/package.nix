@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  mpi,
-  gfortran,
-  fixDarwinDylibNames,
   blas,
+  fetchzip,
+  fixDarwinDylibNames,
+  gfortran,
   lapack,
+  metis,
+  mpi,
+  mpiCheckPhaseHook,
+  parmetis,
   scalapack,
   scotch,
-  metis,
-  parmetis,
-  mpiCheckPhaseHook,
-  static ? stdenv.hostPlatform.isStatic,
   mpiSupport ? false,
+  static ? stdenv.hostPlatform.isStatic,
   withParmetis ? false, # default to false due to unfree license
   withPtScotch ? mpiSupport,
 }:
@@ -50,11 +50,6 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "mumps";
   version = "5.9.0";
-  # makeFlags contain space and one should use makeFlagsArray+
-  # Setting this magic var is an optional solution
-  __structuredAttrs = true;
-
-  strictDeps = true;
 
   src = fetchzip {
     url = "https://mumps-solver.org/MUMPS_${finalAttrs.version}.tar.gz";
@@ -67,11 +62,22 @@ stdenv.mkDerivation (finalAttrs: {
       "-Wl,-install_name,$out/lib/libmumps_common"
   '';
 
-  configurePhase = ''
-    cp Make.inc/Makefile.${profile} ./Makefile.inc
-  '';
+  strictDeps = true;
 
-  enableParallelBuilding = true;
+  nativeBuildInputs = [
+    gfortran
+  ]
+  ++ lib.optional mpiSupport mpi
+  ++ lib.optional stdenv.hostPlatform.isDarwin fixDarwinDylibNames;
+
+  buildInputs = [
+    blas
+    lapack
+    metis
+    scotch'
+  ]
+  ++ lib.optional mpiSupport scalapack
+  ++ lib.optional withParmetis parmetis;
 
   makeFlags =
     lib.optionals stdenv.hostPlatform.isDarwin [
@@ -102,23 +108,7 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/include/mumps_seq/mpi.h $out/include/mumps_mpi.h
   '';
 
-  nativeBuildInputs = [
-    gfortran
-  ]
-  ++ lib.optional mpiSupport mpi
-  ++ lib.optional stdenv.hostPlatform.isDarwin fixDarwinDylibNames;
-
-  buildInputs = [
-    blas
-    lapack
-    metis
-    scotch'
-  ]
-  ++ lib.optional mpiSupport scalapack
-  ++ lib.optional withParmetis parmetis;
-
   doInstallCheck = true;
-
   nativeInstallCheckInputs = lib.optional mpiSupport mpiCheckPhaseHook;
 
   installCheckPhase = ''
@@ -142,6 +132,16 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  # makeFlags contain space and one should use makeFlagsArray+
+  # Setting this magic var is an optional solution
+  __structuredAttrs = true;
+
+  configurePhase = ''
+    cp Make.inc/Makefile.${profile} ./Makefile.inc
+  '';
+
+  enableParallelBuilding = true;
+
   passthru = {
     inherit withParmetis withPtScotch mpiSupport;
   };
@@ -151,10 +151,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://mumps-solver.org/";
     changelog = "https://mumps-solver.org/index.php?page=dwnld#cl";
     license = lib.licenses.cecill-c;
+
     maintainers = with lib.maintainers; [
       nim65s
       qbisi
     ];
+
     platforms = lib.platforms.unix;
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "ziggo-mediabox-xl";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "b10m";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-ElULsHfZXYTZ1cFEdAjhURWGOmJw2uJWMy49whGAV7g=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   # Tests require network access
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "ziggo_mediabox_xl" ];
 
   meta = {

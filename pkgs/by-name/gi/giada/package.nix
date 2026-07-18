@@ -2,30 +2,30 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  fltk,
-  fontconfig,
-  fmt,
-  rtmidi,
-  libsamplerate,
-  libmpg123,
-  libsndfile,
-  jack2,
   alsa-lib,
+  cmake,
+  curl,
+  expat,
+  flac,
+  fltk,
+  fmt,
+  fontconfig,
+  gtk3,
+  jack2,
+  libGL,
+  libmpg123,
+  libogg,
+  libopus,
   libpulseaudio,
+  libsamplerate,
+  libsndfile,
+  libvorbis,
   libxpm,
   libxrandr,
-  flac,
-  libogg,
-  libvorbis,
-  libopus,
   nlohmann_json,
-  expat,
-  libGL,
-  curl,
+  pkg-config,
+  rtmidi,
   webkitgtk_4_1,
-  gtk3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,15 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-AceH2FO75WF/Cmk3wd6u495M277iuZp/21nBl3K4jHU=";
     fetchSubmodules = true;
   };
-
-  env.NIX_CFLAGS_COMPILE = toString [
-    "-w"
-    "-Wno-error"
-  ];
-
-  cmakeFlags = [
-    "-DCMAKE_INSTALL_BINDIR=bin"
-  ];
 
   nativeBuildInputs = [
     cmake
@@ -81,12 +72,21 @@ stdenv.mkDerivation (finalAttrs: {
     fontconfig
   ];
 
+  cmakeFlags = [
+    "-DCMAKE_INSTALL_BINDIR=bin"
+  ];
+
+  env.NIX_CFLAGS_COMPILE = toString [
+    "-w"
+    "-Wno-error"
+  ];
+
   meta = {
     description = "Free, minimal, hardcore audio tool for DJs, live performers and electronic musicians";
-    mainProgram = "giada";
     homepage = "https://giadamusic.com/";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ kashw2 ];
     platforms = lib.platforms.all;
+    mainProgram = "giada";
   };
 })

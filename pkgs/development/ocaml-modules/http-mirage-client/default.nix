@@ -1,24 +1,20 @@
 {
   lib,
   fetchurl,
+  alcotest-lwt,
   buildDunePackage,
-  h2,
   h1,
+  h2,
   mimic-happy-eyeballs,
+  mirage-crypto-rng,
   paf,
   tcpip,
   x509,
-  alcotest-lwt,
-  mirage-crypto-rng,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "http-mirage-client";
   version = "0.0.10";
-
-  minimalOCamlVersion = "4.08";
-
-  __darwinAllowLocalNetworking = true;
 
   src = fetchurl {
     url = "https://github.com/robur-coop/http-mirage-client/releases/download/v${finalAttrs.version}/http-mirage-client-${finalAttrs.version}.tbz";
@@ -35,10 +31,14 @@ buildDunePackage (finalAttrs: {
   ];
 
   doCheck = true;
+
   checkInputs = [
     alcotest-lwt
     mirage-crypto-rng
   ];
+
+  __darwinAllowLocalNetworking = true;
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "HTTP client for MirageOS";

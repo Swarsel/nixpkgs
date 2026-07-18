@@ -1,32 +1,32 @@
 {
   lib,
   stdenv,
-  llvm_meta,
-  release_version,
-  monorepoSrc ? null,
-  src ? null,
-  runCommand,
-  cmake,
-  ninja,
-  llvm,
-  lit,
   clang-unwrapped,
+  cmake,
+  getVersionFile,
+  lit,
+  llvm,
+  llvm_meta,
+  ninja,
+  openmpCheckPhaseHook,
   perl,
   pkg-config,
   python3,
+  release_version,
+  runCommand,
   version,
   devExtraCmakeFlags ? [ ],
-  ompdSupport ? true,
+  monorepoSrc ? null,
   ompdGdbSupport ? ompdSupport,
-  getVersionFile,
-  openmpCheckPhaseHook,
+  ompdSupport ? true,
+  src ? null,
 }:
 
 assert lib.assertMsg (ompdGdbSupport -> ompdSupport) "OMPD GDB support requires OMPD support!";
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "openmp";
   inherit version;
+  pname = "openmp";
 
   src =
     if monorepoSrc != null then
@@ -37,8 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
       ''
     else
       src;
-
-  sourceRoot = "${finalAttrs.src.name}/openmp";
 
   outputs = [
     "out"
@@ -58,10 +56,6 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
     pkg-config
     lit
-  ];
-
-  propagatedNativeBuildInputs = [
-    openmpCheckPhaseHook
   ];
 
   buildInputs = [
@@ -85,15 +79,21 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = false;
 
-  checkTarget = "check-openmp";
-
   preCheck = ''
     patchShebangs ../tools/archer/tests/deflake.bash
   '';
 
+  checkTarget = "check-openmp";
+
+  propagatedNativeBuildInputs = [
+    openmpCheckPhaseHook
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/openmp";
+
   meta = llvm_meta // {
-    homepage = "https://openmp.llvm.org/";
     description = "Support for the OpenMP language";
+
     longDescription = ''
       The OpenMP subproject of LLVM contains the components required to build an
       executable OpenMP program that are outside the compiler itself.
@@ -101,6 +101,9 @@ stdenv.mkDerivation (finalAttrs: {
       "clang -fopenmp" must be linked before it can run and the library that
       supports offload to target devices.
     '';
+
+    homepage = "https://openmp.llvm.org/";
+
     # "All of the code is dual licensed under the MIT license and the UIUC
     # License (a BSD-like license)":
     license = with lib.licenses; [

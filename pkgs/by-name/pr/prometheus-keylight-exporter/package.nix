@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -17,14 +17,13 @@ buildGoModule rec {
   };
 
   vendorHash = "sha256-0QSsGgokErRNIHQIjZQn5t1dvc306uZck8uLSgjcrck=";
-
   passthru.tests = { inherit (nixosTests.prometheus-exporters) keylight; };
 
   meta = {
-    homepage = "https://github.com/mdlayher/keylight_exporter";
     description = "Prometheus exporter for Elgato Key Light devices";
-    mainProgram = "keylight_exporter";
+    homepage = "https://github.com/mdlayher/keylight_exporter";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ mdlayher ];
+    mainProgram = "keylight_exporter";
   };
 }

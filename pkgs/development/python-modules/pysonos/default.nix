@@ -1,24 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  isPy3k,
-  xmltodict,
+  buildPythonPackage,
   ifaddr,
-  requests,
-
+  isPy3k,
+  mock,
   # Test dependencies
   pytestCheckHook,
-  mock,
+  requests,
   requests-mock,
+  xmltodict,
 }:
 
 buildPythonPackage rec {
   pname = "pysonos";
   version = "0.0.54";
-  format = "setuptools";
-
-  disabled = !isPy3k;
 
   # pypi package is missing test fixtures
   src = fetchFromGitHub {
@@ -40,9 +36,13 @@ buildPythonPackage rec {
     requests-mock
   ];
 
+  disabled = !isPy3k;
+
   disabledTests = [
     "test_desc_from_uri" # test requires network access
   ];
+
+  format = "setuptools";
 
   meta = {
     description = "SoCo fork with fixes for Home Assistant";

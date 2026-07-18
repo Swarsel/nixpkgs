@@ -1,23 +1,12 @@
 {
   lib,
-  mkDerivation,
   stdenv,
   bsdSetupHook,
+  mkDerivation,
   netbsdSetupHook,
 }:
 
 mkDerivation {
-  path = "share/mk";
-  noCC = true;
-
-  buildInputs = [ ];
-  nativeBuildInputs = [
-    bsdSetupHook
-    netbsdSetupHook
-  ];
-
-  dontBuild = true;
-
   postPatch = ''
     substituteInPlace $BSDSRCDIR/share/mk/bsd.doc.mk \
       --replace '-o ''${DOCOWN}' "" \
@@ -63,7 +52,18 @@ mkDerivation {
       --replace '-Wl,--warn-shared-textrel' ""
   '';
 
+  nativeBuildInputs = [
+    bsdSetupHook
+    netbsdSetupHook
+  ];
+
+  buildInputs = [ ];
+
   installPhase = ''
     cp -r . $out
   '';
+
+  dontBuild = true;
+  noCC = true;
+  path = "share/mk";
 }

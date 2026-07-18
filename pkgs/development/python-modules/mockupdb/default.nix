@@ -3,17 +3,13 @@
   buildPythonPackage,
   fetchPypi,
   pymongo,
-  pythonAtLeast,
   pytestCheckHook,
+  pythonAtLeast,
 }:
 
 buildPythonPackage rec {
   pname = "mockupdb";
   version = "1.8.1";
-  format = "setuptools";
-
-  # use the removed ssl.wrap_socket function
-  disabled = pythonAtLeast "3.12";
 
   src = fetchPypi {
     inherit pname version;
@@ -21,10 +17,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ pymongo ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "mockupdb" ];
+  # use the removed ssl.wrap_socket function
+  disabled = pythonAtLeast "3.12";
 
   disabledTests = [
     # AssertionError: expected to receive Request(), got nothing
@@ -35,10 +30,13 @@ buildPythonPackage rec {
     "test_unix_domain_socket"
   ];
 
+  format = "setuptools";
+  pythonImportsCheck = [ "mockupdb" ];
+
   meta = {
     description = "Simulate a MongoDB server";
-    license = lib.licenses.asl20;
     homepage = "https://github.com/ajdavis/mongo-mockup-db";
+    license = lib.licenses.asl20;
     maintainers = [ ];
   };
 }

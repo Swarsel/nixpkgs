@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  fftwFloat,
   meson,
   ninja,
   pkg-config,
-  fftwFloat,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
     pkg-config
   ];
+
   buildInputs = [
     fftwFloat
   ];

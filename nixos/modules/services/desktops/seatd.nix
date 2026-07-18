@@ -10,30 +10,31 @@ let
   inherit (lib) mkEnableOption mkOption types;
 in
 {
-  meta.maintainers = with lib.maintainers; [ sinanmohd ];
-
   options.services.seatd = {
     enable = mkEnableOption "seatd";
 
-    user = mkOption {
-      type = types.str;
-      default = "root";
-      description = "User to own the seatd socket";
-    };
     group = mkOption {
-      type = types.str;
       default = "seat";
       description = "Group to own the seatd socket";
+      type = types.str;
     };
+
     logLevel = mkOption {
+      default = "info";
+      description = "Logging verbosity";
+
       type = types.enum [
         "debug"
         "info"
         "error"
         "silent"
       ];
-      default = "info";
-      description = "Logging verbosity";
+    };
+
+    user = mkOption {
+      default = "root";
+      description = "User to own the seatd socket";
+      type = types.str;
     };
   };
 
@@ -42,23 +43,26 @@ in
       seatd
       sdnotify-wrapper
     ];
-    users.groups.seat = lib.mkIf (cfg.group == "seat") { };
 
     systemd.services.seatd = {
       description = "Seat management daemon";
       documentation = [ "man:seatd(1)" ];
-
-      wantedBy = [ "multi-user.target" ];
       restartIfChanged = false;
 
       serviceConfig = {
-        Type = "notify";
-        NotifyAccess = "all";
-        SyslogIdentifier = "seatd";
         ExecStart = "${pkgs.sdnotify-wrapper}/bin/sdnotify-wrapper ${pkgs.seatd.bin}/bin/seatd -n 1 -u ${cfg.user} -g ${cfg.group} -l ${cfg.logLevel}";
-        RestartSec = 1;
+        NotifyAccess = "all";
         Restart = "always";
+        RestartSec = 1;
+        SyslogIdentifier = "seatd";
+        Type = "notify";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
+
+    users.groups.seat = lib.mkIf (cfg.group == "seat") { };
   };
+
+  meta.maintainers = with lib.maintainers; [ sinanmohd ];
 }

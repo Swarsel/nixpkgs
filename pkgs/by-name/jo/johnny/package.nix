@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  qt5,
-  john,
-  imagemagick,
-  makeWrapper,
-  makeDesktopItem,
   copyDesktopItems,
+  imagemagick,
+  john,
+  makeDesktopItem,
+  makeWrapper,
+  qt5,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,16 +21,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-fwRvyQbRO63iVt9AHlfl+Cv4NRFQmyVsZUQLxmzGjAY=";
   };
 
-  buildInputs = [
-    john
-    qt5.qtbase
-  ];
   nativeBuildInputs = [
     makeWrapper
     copyDesktopItems
     qt5.wrapQtAppsHook
     qt5.qmake
     imagemagick
+  ];
+
+  buildInputs = [
+    john
+    qt5.qtbase
   ];
 
   installPhase = ''
@@ -47,26 +48,27 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "Johnny";
-      desktopName = "Johnny";
-      comment = "A GUI for John the Ripper";
-      icon = "johnny";
-      exec = "johnny";
-      terminal = false;
       categories = [
         "Application"
         "System"
       ];
+
+      comment = "A GUI for John the Ripper";
+      desktopName = "Johnny";
+      exec = "johnny";
+      icon = "johnny";
+      name = "Johnny";
       startupNotify = true;
+      terminal = false;
     })
   ];
 
   meta = {
-    homepage = "https://openwall.info/wiki/john/johnny";
     description = "Open Source GUI frontend for John the Ripper";
-    mainProgram = "johnny";
+    homepage = "https://openwall.info/wiki/john/johnny";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ Misaka13514 ];
     platforms = lib.platforms.linux;
+    mainProgram = "johnny";
   };
 })

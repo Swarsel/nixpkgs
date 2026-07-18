@@ -10,18 +10,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  curl,
-  makeWrapper,
-  which,
-  unzip,
-  lua,
-  versionCheckHook,
-  # for 'luarocks pack'
-  zip,
-  nix-update-script,
   # some packages need to be compiled with cmake
   cmake,
+  curl,
   installShellFiles,
+  lua,
+  makeWrapper,
+  nix-update-script,
+  unzip,
+  versionCheckHook,
+  which,
+  # for 'luarocks pack'
+  zip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -43,9 +43,18 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace src/luarocks/core/cfg.lua --subst-var-by 'darwinMinVersion' '${stdenv.targetPlatform.darwinMinVersion}'
   '';
 
-  # Manually written ./configure does not support --build= or --host=:
-  #   Error: Unknown flag: --build=x86_64-unknown-linux-gnu
-  configurePlatforms = [ ];
+  nativeBuildInputs = [
+    makeWrapper
+    installShellFiles
+    lua
+    unzip
+    versionCheckHook
+  ];
+
+  buildInputs = [
+    curl
+    which
+  ];
 
   preConfigure = ''
     lua -e "" || {
@@ -63,19 +72,6 @@ stdenv.mkDerivation (finalAttrs: {
         appendToVar configureFlags "--with-lua-lib=$lua_lib"
     fi
   '';
-
-  nativeBuildInputs = [
-    makeWrapper
-    installShellFiles
-    lua
-    unzip
-    versionCheckHook
-  ];
-
-  buildInputs = [
-    curl
-    which
-  ];
 
   postInstall = ''
     sed -e "1s@.*@#! ${lua}/bin/lua$LUA_SUFFIX@" -i "$out"/bin/*
@@ -106,29 +102,33 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  doInstallCheck = true;
+  # Manually written ./configure does not support --build= or --host=:
+  #   Error: Unknown flag: --build=x86_64-unknown-linux-gnu
+  configurePlatforms = [ ];
+
+  disallowedReferences = lib.optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
+    lua.luaOnBuild
+  ];
+
+  # cmake is just to compile packages with "cmake" buildType, not luarocks itself
+  dontUseCmakeConfigure = true;
+
   propagatedNativeBuildInputs = [
     zip
     unzip
     cmake
   ];
 
-  doInstallCheck = true;
-  versionCheckProgram = "${placeholder "out"}/bin/luarocks";
-
   # unpack hook for src.rock and rockspec files
   setupHook = ./setup-hook.sh;
-
-  # cmake is just to compile packages with "cmake" buildType, not luarocks itself
-  dontUseCmakeConfigure = true;
 
   shellHook = ''
     export PATH="src/bin:''${PATH:-}"
     export LUA_PATH="src/?.lua;''${LUA_PATH:-}"
   '';
 
-  disallowedReferences = lib.optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
-    lua.luaOnBuild
-  ];
+  versionCheckProgram = "${placeholder "out"}/bin/luarocks";
 
   passthru = {
     updateScript = nix-update-script { };
@@ -138,12 +138,14 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Package manager for Lua";
     homepage = "https://github.com/luarocks/luarocks";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       raskin
       teto
     ];
-    mainProgram = "luarocks";
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "luarocks";
     downloadPage = "http://luarocks.org/releases/";
   };
 })

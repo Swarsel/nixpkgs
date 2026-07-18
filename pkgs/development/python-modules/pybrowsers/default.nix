@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pybrowsers";
   version = "1.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "roniemartinez";
@@ -17,11 +16,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-MpTCeu2rxIx6JByosL2C3hayrMIfKD/2kZT3AJpjKZw=";
   };
 
-  build-system = [ poetry-core ];
-
   # Tests want to interact with actual browsers
   doCheck = false;
-
+  build-system = [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "browsers" ];
 
   meta = {

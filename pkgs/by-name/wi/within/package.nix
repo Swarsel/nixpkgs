@@ -1,17 +1,14 @@
 {
-  fetchFromCodeberg,
   lib,
   stdenv,
-  versionCheckHook,
+  fetchFromCodeberg,
   nix-update-script,
   runCommand,
+  versionCheckHook,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "within";
   version = "1.1.4";
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   src = fetchFromCodeberg {
     owner = "sjmulder";
@@ -20,19 +17,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-UyOgEe07K1LW5IbB7ngxelp+9Njq/NPPkWw3sxAQyVY=";
   };
 
+  strictDeps = true;
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+  dontVersionCheck = lib.hasInfix "unstable" finalAttrs.version;
+  installFlags = [ "PREFIX:=$(out)" ];
 
   preVersionCheck = ''
     versionCheckProgram=$(type -P echo)
     versionCheckProgramArg=$(head -n 1 CHANGELOG.md)
   '';
-
-  dontVersionCheck = lib.hasInfix "unstable" finalAttrs.version;
-
-  installFlags = [ "PREFIX:=$(out)" ];
 
   passthru = {
     tests.within =
@@ -51,8 +47,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://codeberg.org/sjmulder/within";
     description = "Run a command in other directories";
+    homepage = "https://codeberg.org/sjmulder/within";
     changelog = "https://codeberg.org/sjmulder/within/src/tag/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.bsd2;
     maintainers = [ lib.maintainers.examosa ];

@@ -1,25 +1,22 @@
 {
   lib,
   stdenv,
-  python3,
   fetchPypi,
-  llvmPackages,
   libbpf,
   libnotify,
+  llvmPackages,
   makeWrapper,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication rec {
   pname = "picosnitch";
   version = "2.1.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     sha256 = "sha256-JTvuZOPgSjdD5jJYLmsqzy8ATzuhtoAu+uGvOVsChks=";
   };
-
-  build-system = with python3.pkgs; [ hatchling ];
 
   nativeBuildInputs = [
     # Unwrapped clang/llvm: cc-wrapper injects flags (hardening,
@@ -30,6 +27,15 @@ python3.pkgs.buildPythonApplication rec {
   ];
 
   buildInputs = [ libbpf ];
+
+  # The build hook keys the wheel platform tag and BPF target arch off this var.
+  env.PICOSNITCH_BPF_TARGET_ARCH =
+    if stdenv.hostPlatform.isAarch64 then
+      "aarch64"
+    else if stdenv.hostPlatform.isx86_64 then
+      "x86_64"
+    else
+      throw "picosnitch: unsupported platform ${stdenv.hostPlatform.system}";
 
   # The sdist ships vendored vmlinux_{x86,arm64}.h, so the BPF compile is
   # fully offline. Pre-build the .bpf.o here with an explicit libbpf include
@@ -47,17 +53,6 @@ python3.pkgs.buildPythonApplication rec {
     llvm-strip -g src/picosnitch/bpf/picosnitch.bpf.o || true
   '';
 
-  # The build hook keys the wheel platform tag and BPF target arch off this var.
-  env.PICOSNITCH_BPF_TARGET_ARCH =
-    if stdenv.hostPlatform.isAarch64 then
-      "aarch64"
-    else if stdenv.hostPlatform.isx86_64 then
-      "x86_64"
-    else
-      throw "picosnitch: unsupported platform ${stdenv.hostPlatform.system}";
-
-  pythonImportsCheck = [ "picosnitch" ];
-
   # picosnitch loads libbpf via ctypes and shells out to `notify-send`.
   postFixup = ''
     wrapProgram $out/bin/picosnitch \
@@ -65,16 +60,22 @@ python3.pkgs.buildPythonApplication rec {
       --prefix PATH : ${lib.makeBinPath [ libnotify ]}
   '';
 
+  build-system = with python3.pkgs; [ hatchling ];
+  pyproject = true;
+  pythonImportsCheck = [ "picosnitch" ];
+
   meta = {
     description = "Monitor network traffic per executable using BPF";
-    mainProgram = "picosnitch";
     homepage = "https://github.com/elesiuta/picosnitch";
     changelog = "https://github.com/elesiuta/picosnitch/releases";
     license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.elesiuta ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
+    mainProgram = "picosnitch";
   };
 }

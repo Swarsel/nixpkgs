@@ -1,18 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
-
+  buildPythonPackage,
   coqpit,
   fsspec,
-  torch,
-  tensorboard,
+  hatchling,
   protobuf,
   psutil,
-
   pytestCheckHook,
   soundfile,
+  tensorboard,
+  torch,
   torchvision,
 }:
 
@@ -22,7 +20,6 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "idiap";
@@ -53,6 +50,7 @@ buildPythonPackage {
     torchvision
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "trainer" ];
 
   meta = {

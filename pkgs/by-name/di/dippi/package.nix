@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  appstream-glib,
   blueprint-compiler,
+  desktop-file-utils,
+  glib,
+  gtk4,
+  libadwaita,
   meson,
   ninja,
   pkg-config,
   vala,
-  glib,
-  gtk4,
-  libadwaita,
   wrapGAppsHook4,
-  appstream-glib,
-  desktop-file-utils,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -46,9 +46,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Calculate display info like DPI and aspect ratio";
     homepage = "https://github.com/cassidyjames/dippi";
-    mainProgram = "com.cassidyjames.dippi";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ zendo ];
+    platforms = lib.platforms.linux;
+    mainProgram = "com.cassidyjames.dippi";
   };
 })

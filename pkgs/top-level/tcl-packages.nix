@@ -5,9 +5,9 @@ in
 {
   lib,
   newScope,
+  pkgs,
   tcl,
   tk,
-  pkgs,
 }:
 
 lib.makeScope newScope (

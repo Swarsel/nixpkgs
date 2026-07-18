@@ -6,24 +6,28 @@
   jaraco-classes,
   more-itertools,
   pytestCheckHook,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "jaraco-functools";
   version = "4.4.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "jaraco_functools";
     inherit version;
     hash = "sha256-2iGTOwQXuJUVViZWVHp3tJMfmBdusXNkTA01Ayoz1rs=";
+    pname = "jaraco_functools";
   };
 
   postPatch = ''
     sed -i "/coherent\.licensed/d" pyproject.toml
   '';
+
+  nativeCheckInputs = [
+    jaraco-classes
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -31,18 +35,11 @@ buildPythonPackage rec {
   ];
 
   dependencies = [ more-itertools ];
-
-  nativeCheckInputs = [
-    jaraco-classes
-    pytestCheckHook
-  ];
-
   # test is flaky on darwin
   disabledTests = if stdenv.hostPlatform.isDarwin then [ "test_function_throttled" ] else null;
-
-  pythonNamespaces = [ "jaraco" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "jaraco.functools" ];
+  pythonNamespaces = [ "jaraco" ];
 
   meta = {
     description = "Additional functools in the spirit of stdlib's functools";

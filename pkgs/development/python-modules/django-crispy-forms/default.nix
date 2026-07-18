@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   django,
-  setuptools,
-  pytestCheckHook,
   pytest-django,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "django-crispy-forms";
   version = "2.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "django-crispy-forms";
@@ -33,12 +32,14 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
-  pytestFlags = [
-    "--ds=crispy_forms.tests.test_settings"
-  ];
-
   enabledTestPaths = [
     "crispy_forms/tests/"
+  ];
+
+  pyproject = true;
+
+  pytestFlags = [
+    "--ds=crispy_forms.tests.test_settings"
   ];
 
   pythonImportsCheck = [ "crispy_forms" ];

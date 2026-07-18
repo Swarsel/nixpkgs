@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
   cmake,
-  rocm-cmake,
   gfortran,
+  rocm-cmake,
+  rocmUpdateScript,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,6 +18,20 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "rocm-${finalAttrs.version}";
     hash = "sha256-XaB4jauCN41tgD1YHHA2td/yckwfMBemBe/iL0SCxQo=";
   };
+
+  postPatch = ''
+    patchShebangs bin
+
+    substituteInPlace bin/hipfc bin/mymcpu \
+      --replace "/bin/cat" "cat"
+
+    substituteInPlace bin/CMakeLists.txt \
+      --replace "/bin/mkdir" "mkdir" \
+      --replace "/bin/cp" "cp" \
+      --replace "/bin/sed" "sed" \
+      --replace "/bin/chmod" "chmod" \
+      --replace "/bin/ln" "ln"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -36,27 +50,13 @@ stdenv.mkDerivation (finalAttrs: {
     "-DCMAKE_INSTALL_INCLUDEDIR=include"
   ];
 
-  postPatch = ''
-    patchShebangs bin
-
-    substituteInPlace bin/hipfc bin/mymcpu \
-      --replace "/bin/cat" "cat"
-
-    substituteInPlace bin/CMakeLists.txt \
-      --replace "/bin/mkdir" "mkdir" \
-      --replace "/bin/cp" "cp" \
-      --replace "/bin/sed" "sed" \
-      --replace "/bin/chmod" "chmod" \
-      --replace "/bin/ln" "ln"
-  '';
-
   passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
 
   meta = {
     description = "Fortran interfaces for ROCm libraries";
     homepage = "https://github.com/ROCm/hipfort";
     license = with lib.licenses; [ mit ]; # mitx11
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

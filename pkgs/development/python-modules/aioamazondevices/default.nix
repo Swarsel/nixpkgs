@@ -1,11 +1,11 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   beautifulsoup4,
   buildPythonPackage,
-  fetchFromGitHub,
   httpx,
   langcodes,
-  lib,
   orjson,
   poetry-core,
   pytest-cov-stub,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aioamazondevices";
   version = "14.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "chemelli74";
@@ -24,6 +23,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-KP1Rc+8c5RNTtCmuNjbjVhNEElwMKOGvumdWF+BIn0I=";
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -37,17 +41,13 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ httpx.optional-dependencies.http2;
 
+  pyproject = true;
   pythonImportsCheck = [ "aioamazondevices" ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
   meta = {
-    changelog = "https://github.com/chemelli74/aioamazondevices/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "Python library to control Amazon devices";
     homepage = "https://github.com/chemelli74/aioamazondevices";
+    changelog = "https://github.com/chemelli74/aioamazondevices/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

@@ -1,8 +1,8 @@
 {
   lib,
   buildPythonPackage,
-  fetchpatch,
   fetchPypi,
+  fetchpatch,
   ipywidgets,
   looseversion,
   notebook,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "qgrid";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -24,8 +23,8 @@ buildPythonPackage rec {
     # Fixes compatibility of qgrid with ipywidgets >= 8.0.0
     # See https://github.com/quantopian/qgrid/pull/331
     (fetchpatch {
-      url = "https://github.com/quantopian/qgrid/pull/331/commits/8cc50d5117d4208a9dd672418021c59898e2d1b2.patch";
       hash = "sha256-+NLz4yBUGUXKyukPVE4PehenPzjnfljR5RAX7CEtpV4=";
+      url = "https://github.com/quantopian/qgrid/pull/331/commits/8cc50d5117d4208a9dd672418021c59898e2d1b2.patch";
     })
   ];
 
@@ -34,14 +33,14 @@ buildPythonPackage rec {
       --replace-fail "from distutils.version import LooseVersion" "from looseversion import LooseVersion"
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   dependencies = [
     ipywidgets
     looseversion
     notebook
     pandas
   ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   # Those tests are also failing upstream
   disabledTests = [
@@ -53,6 +52,7 @@ buildPythonPackage rec {
     "test_add_row_button"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "qgrid" ];
 
   meta = {

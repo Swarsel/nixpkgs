@@ -16,11 +16,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ZVzFGe3ItWsN23iyGpxZEN2KtviYKI8x/sDa2MRio/Y=";
   };
 
-  strictDeps = true;
-
   postPatch = ''
     patchShebangs tools/*.sh
   '';
+
+  strictDeps = true;
 
   installPhase = ''
     runHook preInstall
@@ -51,7 +51,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Full-featured & carefully designed adaptive prompt for Bash & Zsh";
     homepage = "https://github.com/liquidprompt/liquidprompt";
     license = lib.licenses.agpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ gerschtli ];
+    platforms = lib.platforms.all;
   };
 })

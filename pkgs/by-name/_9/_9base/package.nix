@@ -3,10 +3,10 @@
   stdenv,
   fetchgit,
   pkg-config,
-  unstableGitUpdater,
-  patches ? [ ],
   pkgsBuildHost,
+  unstableGitUpdater,
   enableStatic ? stdenv.hostPlatform.isStatic,
+  patches ? [ ],
 }:
 
 stdenv.mkDerivation {
@@ -18,6 +18,12 @@ stdenv.mkDerivation {
     rev = "63916da7bd6d73d9a405ce83fc4ca34845667cce";
     hash = "sha256-CNK7Ycmcl5vkmtA5VKwKxGZz8AoIG1JH/LTKoYmWSBI=";
   };
+
+  outputs = [
+    "out"
+    "man"
+    "troff"
+  ];
 
   patches = [
     # expects to be used with getcallerpc macro or stub patch
@@ -37,15 +43,15 @@ stdenv.mkDerivation {
   ]
   ++ patches;
 
-  # the 9yacc script needs to be executed to build other items
-  preBuild = lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    substituteInPlace ./yacc/9yacc \
-      --replace-fail "../yacc/yacc" "${lib.getExe' pkgsBuildHost._9base "yacc"}"
-  '';
-
-  enableParallelBuilding = true;
   strictDeps = true;
   nativeBuildInputs = [ pkg-config ];
+
+  makeFlags = [
+    "PREFIX=${placeholder "out"}"
+  ];
+
+  env.LDFLAGS = lib.optionalString enableStatic "-static";
+
   env.NIX_CFLAGS_COMPILE = toString [
     # workaround build failure on -fno-common toolchains like upstream
     # gcc-10. Otherwise build fails as:
@@ -57,35 +63,38 @@ stdenv.mkDerivation {
     # error: call to undeclared function 'p9mbtowc'; ISO C99 and later do not support implicit function declarations
     "-Wno-error=implicit-function-declaration"
   ];
-  env.LDFLAGS = lib.optionalString enableStatic "-static";
-  makeFlags = [
-    "PREFIX=${placeholder "out"}"
-  ];
+
+  # the 9yacc script needs to be executed to build other items
+  preBuild = lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    substituteInPlace ./yacc/9yacc \
+      --replace-fail "../yacc/yacc" "${lib.getExe' pkgsBuildHost._9base "yacc"}"
+  '';
+
+  enableParallelBuilding = true;
+
   installFlags = [
     "PREFIX_TROFF=${placeholder "troff"}"
-  ];
-
-  outputs = [
-    "out"
-    "man"
-    "troff"
   ];
 
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    homepage = "https://tools.suckless.org/9base/";
     description = "Port of various original Plan 9 tools for Unix, based on plan9port";
+
     longDescription = ''
       9base is a port of various original Plan 9 tools for Unix, based on plan9port.
       It also contains the Plan 9 libc, libbio, libregexp, libfmt and libutf.
       The overall SLOC is about 66kSLOC, so this userland + all libs is much smaller than, e.g. bash.
       9base can be used to run werc instead of the full blown plan9port.
     '';
+
+    homepage = "https://tools.suckless.org/9base/";
+
     license = with lib.licenses; [
       mit # and
       lpl-102
     ];
+
     maintainers = with lib.maintainers; [ jk ];
     platforms = lib.platforms.unix;
     # needs additional work to support aarch64-darwin

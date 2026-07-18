@@ -1,8 +1,8 @@
 {
   lib,
-  runCommand,
-  pulumi,
   jq,
+  pulumi,
+  runCommand,
 }:
 {
   package,
@@ -11,18 +11,20 @@
 }:
 runCommand "pulumi-resource-${name}-schema-version-check"
   {
-    resourceName = name;
-    expectedVersion = if version != null then version else "null";
     nativeBuildInputs = [
       jq
       pulumi
       package
     ];
+
     env = {
-      PULUMI_SKIP_UPDATE_CHECK = "1";
       PULUMI_DISABLE_AUTOMATIC_PLUGIN_ACQUISITION = "1";
+      PULUMI_SKIP_UPDATE_CHECK = "1";
     };
+
     __darwinAllowLocalNetworking = true;
+    expectedVersion = if version != null then version else "null";
+    resourceName = name;
     meta.timeout = 120;
   }
   ''

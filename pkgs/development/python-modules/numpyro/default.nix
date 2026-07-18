@@ -1,38 +1,33 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  jax,
-  jaxlib,
-  multipledispatch,
-  numpy,
-  tqdm,
-
+  buildPythonPackage,
   # tests
   dm-haiku,
   equinox,
   flax,
   funsor,
   graphviz,
+  # dependencies
+  jax,
+  jaxlib,
+  multipledispatch,
+  numpy,
   optax,
   pyro-api,
   pytest-xdist,
   pytestCheckHook,
   scikit-learn,
+  # build-system
+  setuptools,
   tensorflow-probability,
+  tqdm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "numpyro";
   version = "0.21.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "pyro-ppl";
@@ -40,16 +35,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-4NA1m2N0AZy3ausAZc6+PPw175joGC7WwfZr0Ri0uK8=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    jax
-    jaxlib
-    multipledispatch
-    numpy
-    tqdm
-  ];
 
   nativeCheckInputs = [
     dm-haiku
@@ -65,20 +50,20 @@ buildPythonPackage (finalAttrs: {
     tensorflow-probability
   ];
 
-  pythonImportsCheck = [ "numpyro" ];
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
 
-  pytestFlags = [
-    # Tests memory consumption grows significantly with the number of parallel processes (reaches ~200GB with 80 jobs)
-    "--maxprocesses=8"
+  dependencies = [
+    jax
+    jaxlib
+    multipledispatch
+    numpy
+    tqdm
+  ];
 
-    # A few tests fail with:
-    # UserWarning: There are not enough devices to run parallel chains: expected 2 but got 1.
-    # Chains will be drawn sequentially. If you are running MCMC in CPU, consider using `numpyro.set_host_device_count(2)` at the beginning of your program.
-    # You can double-check how many devices are available in your system using `jax.local_device_count()`.
-    "-Wignore::UserWarning"
-
-    # FutureWarning: In the future `np.object` will be defined as the corresponding NumPy scalar.
-    "-Wignore::FutureWarning"
+  disabledTestPaths = [
+    # Require internet access
+    "test/test_example_utils.py"
   ];
 
   disabledTests = [
@@ -118,10 +103,23 @@ buildPythonPackage (finalAttrs: {
     "test_functional_map"
   ];
 
-  disabledTestPaths = [
-    # Require internet access
-    "test/test_example_utils.py"
+  pyproject = true;
+
+  pytestFlags = [
+    # Tests memory consumption grows significantly with the number of parallel processes (reaches ~200GB with 80 jobs)
+    "--maxprocesses=8"
+
+    # A few tests fail with:
+    # UserWarning: There are not enough devices to run parallel chains: expected 2 but got 1.
+    # Chains will be drawn sequentially. If you are running MCMC in CPU, consider using `numpyro.set_host_device_count(2)` at the beginning of your program.
+    # You can double-check how many devices are available in your system using `jax.local_device_count()`.
+    "-Wignore::UserWarning"
+
+    # FutureWarning: In the future `np.object` will be defined as the corresponding NumPy scalar.
+    "-Wignore::FutureWarning"
   ];
+
+  pythonImportsCheck = [ "numpyro" ];
 
   meta = {
     description = "Library for probabilistic programming with NumPy";

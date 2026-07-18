@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   kvrocks,
   nix-update-script,
 }:
@@ -18,22 +18,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-QVbcHQQr6o3jnF3CWw2NCCeRkGBDdA8OkmDd/GPfHuI=";
-
-  __structuredAttrs = true;
-
-  ldflags = [
-    "-X main.BuildVersion=${finalAttrs.version}"
-    "-X main.BuildCommitSha=unknown"
-    "-X main.BuildDate=unknown"
-  ];
-
   nativeCheckInputs = [ kvrocks.hook ];
-
-  preCheck = ''
-    export TEST_REDIS_URI="redis://127.0.0.1:6666"
-  '';
-
-  __darwinAllowLocalNetworking = true;
 
   checkFlags =
     let
@@ -62,6 +47,19 @@ buildGoModule (finalAttrs: {
       ];
     in
     [ "-skip=^(${builtins.concatStringsSep "|" skippedTests})$" ];
+
+  preCheck = ''
+    export TEST_REDIS_URI="redis://127.0.0.1:6666"
+  '';
+
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+
+  ldflags = [
+    "-X main.BuildVersion=${finalAttrs.version}"
+    "-X main.BuildCommitSha=unknown"
+    "-X main.BuildDate=unknown"
+  ];
 
   passthru.updateScript = nix-update-script { };
 

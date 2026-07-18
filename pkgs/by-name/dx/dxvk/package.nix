@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
+  bash,
   overrideCC,
   pkgsCross,
-  bash,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (
@@ -28,8 +28,8 @@ stdenvNoCC.mkDerivation (
     dxvk32 =
       if stdenvNoCC.hostPlatform.isDarwin then
         pkgsCross.mingw32.dxvk_1.override {
-          stdenv = mingw32Stdenv;
           enableMoltenVKCompat = true;
+          stdenv = mingw32Stdenv;
         }
       else
         pkgsCross.mingw32.dxvk_2.override { stdenv = mingw32Stdenv; };
@@ -37,15 +37,15 @@ stdenvNoCC.mkDerivation (
     dxvk64 =
       if stdenvNoCC.hostPlatform.isDarwin then
         pkgsCross.mingwW64.dxvk_1.override {
-          stdenv = mingwW64Stdenv;
           enableMoltenVKCompat = true;
+          stdenv = mingwW64Stdenv;
         }
       else
         pkgsCross.mingwW64.dxvk_2.override { stdenv = mingwW64Stdenv; };
   in
   {
-    pname = "dxvk";
     inherit (dxvk64) version;
+    pname = "dxvk";
 
     outputs = [
       "out"
@@ -54,6 +54,7 @@ stdenvNoCC.mkDerivation (
     ];
 
     strictDeps = true;
+    __structuredAttrs = true;
 
     buildCommand = ''
       mkdir -p $out/bin $bin $lib
@@ -74,19 +75,19 @@ stdenvNoCC.mkDerivation (
       inherit dxvk32 dxvk64;
     };
 
-    __structuredAttrs = true;
-
     meta = {
       description = "Setup script for DXVK";
-      mainProgram = "setup_dxvk.sh";
       homepage = "https://github.com/doitsujin/dxvk";
       changelog = "https://github.com/doitsujin/dxvk/releases";
-      maintainers = [ lib.maintainers.reckenrode ];
       license = lib.licenses.zlib;
+      maintainers = [ lib.maintainers.reckenrode ];
+
       platforms = [
         "i686-linux"
         "x86_64-linux"
       ];
+
+      mainProgram = "setup_dxvk.sh";
     };
   }
 )

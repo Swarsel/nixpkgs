@@ -1,12 +1,12 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
-  makeWrapper,
-  python3,
-  openssh,
-  rsync,
+  fetchFromGitHub,
   findutils,
+  makeWrapper,
+  openssh,
+  python3,
+  rsync,
   which,
 }:
 
@@ -21,14 +21,14 @@ stdenv.mkDerivation {
     hash = "sha256-k25MjLis0/dp1TTS4aFeJZq/c0T01LmNcWtC+dw/kKY=";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ python3 ];
+
   installPhase = ''
     runHook preInstall
     install -Dm555 bsync -t $out/bin
     runHook postInstall
   '';
-
-  nativeBuildInputs = [ makeWrapper ];
-  buildInputs = [ python3 ];
 
   fixupPhase = ''
     runHook preFixup
@@ -48,8 +48,8 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/dooblem/bsync";
     description = "Bidirectional Synchronization using Rsync";
+    homepage = "https://github.com/dooblem/bsync";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ dietmarw ];
     platforms = lib.platforms.unix;

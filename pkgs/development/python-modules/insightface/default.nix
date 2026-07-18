@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   albumentations,
   buildPythonPackage,
   cython,
@@ -15,24 +16,24 @@
   pyside6,
   reportlab,
   requests,
-  setuptools,
-  scipy,
   scikit-image,
   scikit-learn,
+  scipy,
+  setuptools,
   testers,
   tqdm,
-  stdenv,
 }:
 
 buildPythonPackage rec {
   pname = "insightface";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-J68kiRu7pHDLNXOzZqD8yomJ/IUDyfjygejLpv1xYHU=";
   };
+
+  doCheck = false; # Upstream has no tests
 
   build-system = [
     cython
@@ -51,32 +52,25 @@ buildPythonPackage rec {
     tqdm
   ];
 
+  # aarch64-linux tries to get cpu information from /sys, which isn't available
+  # inside the nix build sandbox.
+  dontUsePythonImportsCheck = stdenv.buildPlatform.system == "aarch64-linux";
+
   optional-dependencies = {
+    face3d = [
+      albumentations
+      matplotlib
+    ];
+
     gui = [
       pillow
       pyside6
       reportlab
       scikit-learn
     ];
-    face3d = [
-      albumentations
-      matplotlib
-    ];
   };
 
-  # aarch64-linux tries to get cpu information from /sys, which isn't available
-  # inside the nix build sandbox.
-  dontUsePythonImportsCheck = stdenv.buildPlatform.system == "aarch64-linux";
-
-  passthru.tests = lib.optionalAttrs (stdenv.buildPlatform.system != "aarch64-linux") {
-    version = testers.testVersion {
-      package = insightface;
-      command = "insightface-cli --help";
-      # Doesn't support --version but we still want to make sure the cli is executable
-      # and returns the help output
-      version = "help";
-    };
-  };
+  pyproject = true;
 
   pythonImportsCheck = [
     "insightface"
@@ -84,13 +78,21 @@ buildPythonPackage rec {
     "insightface.data"
   ];
 
-  doCheck = false; # Upstream has no tests
+  passthru.tests = lib.optionalAttrs (stdenv.buildPlatform.system != "aarch64-linux") {
+    version = testers.testVersion {
+      # Doesn't support --version but we still want to make sure the cli is executable
+      # and returns the help output
+      version = "help";
+      command = "insightface-cli --help";
+      package = insightface;
+    };
+  };
 
   meta = {
     description = "State-of-the-art 2D and 3D Face Analysis Project";
-    mainProgram = "insightface-cli";
     homepage = "https://github.com/deepinsight/insightface";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ oddlama ];
+    mainProgram = "insightface-cli";
   };
 }

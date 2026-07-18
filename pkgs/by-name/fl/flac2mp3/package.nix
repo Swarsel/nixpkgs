@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   fetchpatch,
+  flac,
+  lame,
   makeWrapper,
   perl,
   perlPackages,
-  flac,
-  lame,
 }:
 
 let
@@ -29,13 +29,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/sktt/flac2mp3/commit/c81cb6f300445f2383562991b35d8622197635d7.patch";
       hash = "sha256-vLXo+PfRQ97cNQnMoBrxA7K35C1EdedXXSL8wmWpPOs=";
+      url = "https://github.com/sktt/flac2mp3/commit/c81cb6f300445f2383562991b35d8622197635d7.patch";
     })
   ];
 
   nativeBuildInputs = [ makeWrapper ];
-
   buildInputs = [ perl ];
 
   installPhase = ''
@@ -59,11 +58,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    mainProgram = "flac2mp3";
     description = "Tool to convert audio files from flac to mp3 format including the copying of tags";
     homepage = "https://github.com/robinbowes/flac2mp3";
     changelog = "https://github.com/robinbowes/flac2mp3/releases/tag/${finalAttrs.version}";
     license = with lib.licenses; [ gpl3Plus ];
     maintainers = with lib.maintainers; [ lilahummel ];
+    mainProgram = "flac2mp3";
   };
 })

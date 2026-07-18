@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   findlib,
   ocaml,
@@ -12,14 +12,16 @@ let
   minimumSupportedOcamlVersion = "4.02.0";
 in
 stdenv.mkDerivation rec {
+  inherit (topkg) installPhase;
   pname = "hmap";
   version = "0.8.1";
-  name = "ocaml${ocaml.version}-${pname}-${version}";
 
   src = fetchurl {
     url = "https://erratique.ch/software/hmap/releases/${pname}-${version}.tbz";
     sha256 = "10xyjy4ab87z7jnghy0wnla9wrmazgyhdwhr4hdmxxdn28dxn03a";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     ocaml
@@ -27,17 +29,12 @@ stdenv.mkDerivation rec {
     findlib
     topkg
   ];
+
   buildInputs = [ topkg ];
-
-  strictDeps = true;
-
-  inherit (topkg) installPhase;
-
   buildPhase = "${topkg.run} build --tests true";
-
   doCheck = true;
-
   checkPhase = "${topkg.run} test";
+  name = "ocaml${ocaml.version}-${pname}-${version}";
 
   meta = {
     description = "Heterogeneous value maps for OCaml";

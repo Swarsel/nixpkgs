@@ -1,8 +1,9 @@
 {
+  lib,
+  fetchFromGitHub,
   bash,
   bc,
   coreutils,
-  fetchFromGitHub,
   ffmpeg,
   findutils,
   gawk,
@@ -10,7 +11,6 @@
   gnused,
   jq,
   lame,
-  lib,
   mediainfo,
   mp4v2,
   ncurses,
@@ -42,11 +42,13 @@ resholve.mkDerivation (finalAttrs: {
   '';
 
   solutions.default = {
-    scripts = [
-      "bin/aaxtomp3"
-      "bin/interactiveaaxtomp3"
-    ];
-    interpreter = "${bash}/bin/bash";
+    fix = {
+      "$AAXTOMP3" = [ "${placeholder "out"}/bin/aaxtomp3" ];
+      "$FIND" = [ "find" ];
+      "$GREP" = [ "grep" ];
+      "$SED" = [ "sed" ];
+    };
+
     inputs = [
       bc
       coreutils
@@ -61,13 +63,14 @@ resholve.mkDerivation (finalAttrs: {
       mp4v2
       ncurses
     ];
+
+    interpreter = "${bash}/bin/bash";
     keep."$call" = true;
-    fix = {
-      "$AAXTOMP3" = [ "${placeholder "out"}/bin/aaxtomp3" ];
-      "$FIND" = [ "find" ];
-      "$GREP" = [ "grep" ];
-      "$SED" = [ "sed" ];
-    };
+
+    scripts = [
+      "bin/aaxtomp3"
+      "bin/interactiveaaxtomp3"
+    ];
   };
 
   meta = {

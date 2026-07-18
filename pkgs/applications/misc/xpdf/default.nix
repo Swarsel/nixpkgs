@@ -1,19 +1,19 @@
 {
+  lib,
+  stdenv,
+  cmake,
+  fetchzip,
+  libpng,
+  makeDesktopItem,
+  wrapQtAppsHook,
+  zlib,
+  cups ? null,
   enableGUI ? true,
   enablePDFtoPPM ? true,
   enablePrinting ? true,
-  lib,
-  stdenv,
-  fetchzip,
-  cmake,
-  makeDesktopItem,
-  zlib,
-  libpng,
-  cups ? null,
   freetype ? null,
   qtbase ? null,
   qtsvg ? null,
-  wrapQtAppsHook,
 }:
 
 assert enableGUI -> qtbase != null && qtsvg != null && freetype != null;
@@ -25,11 +25,12 @@ stdenv.mkDerivation rec {
   version = "4.06";
 
   src = fetchzip {
+    hash = "sha256-n8Qeb1OKELzkjK+wqWlKbjt2XVX/+6hfbbFvw3EzS1w=";
+
     urls = [
       "https://dl.xpdfreader.com/xpdf-${version}.tar.gz"
       "https://dl.xpdfreader.com/old/xpdf-${version}.tar.gz"
     ];
-    hash = "sha256-n8Qeb1OKELzkjK+wqWlKbjt2XVX/+6hfbbFvw3EzS1w=";
   };
 
   # Fix "No known features for CXX compiler", see
@@ -42,13 +43,6 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ cmake ] ++ lib.optional enableGUI wrapQtAppsHook;
 
-  cmakeFlags = [
-    "-DSYSTEM_XPDFRC=/etc/xpdfrc"
-    "-DA4_PAPER=ON"
-    "-DOPI_SUPPORT=ON"
-  ]
-  ++ lib.optional (!enablePrinting) "-DXPDFWIDGET_PRINTING=OFF";
-
   buildInputs = [
     zlib
     libpng
@@ -57,23 +51,30 @@ stdenv.mkDerivation rec {
   ++ lib.optional enablePrinting cups
   ++ lib.optional enablePDFtoPPM freetype;
 
-  desktopItem = makeDesktopItem {
-    name = "xpdf";
-    desktopName = "Xpdf";
-    comment = "Views Adobe PDF files";
-    icon = "xpdf";
-    exec = "xpdf %f";
-    categories = [ "Office" ];
-  };
+  cmakeFlags = [
+    "-DSYSTEM_XPDFRC=/etc/xpdfrc"
+    "-DA4_PAPER=ON"
+    "-DOPI_SUPPORT=ON"
+  ]
+  ++ lib.optional (!enablePrinting) "-DXPDFWIDGET_PRINTING=OFF";
 
   postInstall = lib.optionalString (!stdenv.hostPlatform.isDarwin) ''
     install -Dm644 ${desktopItem}/share/applications/xpdf.desktop -t $out/share/applications
     install -Dm644 $src/xpdf-qt/xpdf-icon.svg $out/share/pixmaps/xpdf.svg
   '';
 
+  desktopItem = makeDesktopItem {
+    categories = [ "Office" ];
+    comment = "Views Adobe PDF files";
+    desktopName = "Xpdf";
+    exec = "xpdf %f";
+    icon = "xpdf";
+    name = "xpdf";
+  };
+
   meta = {
-    homepage = "https://www.xpdfreader.com";
     description = "Viewer for Portable Document Format (PDF) files";
+
     longDescription = ''
       XPDF includes multiple tools for viewing and processing PDF files.
         xpdf:      PDF viewer (with Graphical Interface)
@@ -87,12 +88,17 @@ stdenv.mkDerivation rec {
         pdffonts:  lists fonts used in PDF files
         pdfdetach: extracts attached files from PDF files
     '';
+
+    homepage = "https://www.xpdfreader.com";
+
     license = with lib.licenses; [
       gpl2Only
       gpl3Only
     ];
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [ sikmir ];
+    platforms = lib.platforms.unix;
+
     knownVulnerabilities = [
       "CVE-2023-26930"
     ];

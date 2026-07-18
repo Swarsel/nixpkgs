@@ -1,12 +1,11 @@
 {
   lib,
-  cmake,
   fetchFromGitHub,
+  cmake,
   mkLibretroCore,
   pkg-config,
 }:
 mkLibretroCore {
-  core = "tic80";
   version = "0-unstable-2026-04-20";
 
   src = fetchFromGitHub {
@@ -16,13 +15,6 @@ mkLibretroCore {
     hash = "sha256-rjfdqCf4CFZnTpaHcW3wVNc6cphr9GEpJAp541aW3PQ=";
     fetchSubmodules = true;
   };
-
-  extraNativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
-
-  makefile = "Makefile";
 
   cmakeFlags = with lib.strings; [
     (cmakeBool "BUILD_LIBRETRO" true)
@@ -44,8 +36,15 @@ mkLibretroCore {
   ];
 
   preConfigure = "cd core";
-
   postBuild = "cd lib";
+  core = "tic80";
+
+  extraNativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
+
+  makefile = "Makefile";
 
   meta = {
     description = "Port of TIC-80 to libretro";

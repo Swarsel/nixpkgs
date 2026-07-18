@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -17,15 +17,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-KBQP4fFs6P6I+ch1n4Raeu1or2wWhFeTv1b3DpIWAP8=";
-
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
     "-w"
   ];
-
-  doInstallCheck = true;
 
   meta = {
     description = "IIS short filename enumeration tool";

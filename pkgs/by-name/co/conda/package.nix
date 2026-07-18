@@ -2,21 +2,19 @@
   lib,
   stdenv,
   fetchurl,
-  runCommand,
-  makeWrapper,
   buildFHSEnv,
-  libselinux,
-  libarchive,
   libGL,
-  libxrender,
-  libxi,
-  libxau,
-  libx11,
-  libsm,
+  libarchive,
   libice,
+  libselinux,
+  libsm,
+  libx11,
+  libxau,
+  libxi,
+  libxrender,
+  makeWrapper,
+  runCommand,
   zlib,
-  # Conda installs its packages and environments under this directory
-  installationPath ? "~/.conda",
   # Conda manages most pkgs itself, but expects a few to be on the system.
   condaDeps ? [
     stdenv.cc
@@ -32,6 +30,8 @@
   ],
   # Any extra nixpkgs you'd like available in the FHS env for Conda to use
   extraPkgs ? [ ],
+  # Conda installs its packages and environments under this directory
+  installationPath ? "~/.conda",
   runScript ? "bash -l",
 }:
 
@@ -58,15 +58,16 @@ let
         attrs.${stdenv.hostPlatform.system}
           or (throw "conda: ${stdenv.hostPlatform.system} is not supported");
       arch = selectSystem {
-        x86_64-linux = "x86_64";
         aarch64-linux = "aarch64";
+        x86_64-linux = "x86_64";
       };
     in
     fetchurl {
       url = "https://repo.anaconda.com/miniconda/Miniconda3-py313_${version}-Linux-${arch}.sh";
+
       hash = selectSystem {
-        x86_64-linux = "sha256-9t+1tZYU/XspVrJAsldanVggPsf3qZ+FEoFYoP3Fwdc=";
         aarch64-linux = "sha256-B8grWuwE1fDz5LJGg1tryF4QSCHLywoFnH6oDwKFA/Q=";
+        x86_64-linux = "sha256-9t+1tZYU/XspVrJAsldanVggPsf3qZ+FEoFYoP3Fwdc=";
       };
     };
 
@@ -99,16 +100,8 @@ let
 in
 
 buildFHSEnv {
-  pname = "conda-shell";
   inherit version runScript;
-
-  targetPkgs =
-    pkgs:
-    (builtins.concatLists [
-      [ conda ]
-      condaDeps
-      extraPkgs
-    ]);
+  pname = "conda-shell";
 
   profile =
     let
@@ -131,19 +124,29 @@ buildFHSEnv {
       source ${condaSh}
     '';
 
+  targetPkgs =
+    pkgs:
+    (builtins.concatLists [
+      [ conda ]
+      condaDeps
+      extraPkgs
+    ]);
+
   passthru = {
     inherit src;
   };
 
   meta = {
     description = "Package manager for Python";
-    mainProgram = "conda-shell";
     homepage = "https://conda.io";
+    license = with lib.licenses; [ bsd3 ];
+    maintainers = with lib.maintainers; [ jluttine ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ];
-    license = with lib.licenses; [ bsd3 ];
-    maintainers = with lib.maintainers; [ jluttine ];
+
+    mainProgram = "conda-shell";
   };
 }

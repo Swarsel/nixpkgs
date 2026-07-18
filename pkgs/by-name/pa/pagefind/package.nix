@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  rustPlatform,
-  fetchFromGitHub,
-  fetchNpmDeps,
   fetchurl,
+  fetchFromGitHub,
   binaryen,
+  fetchNpmDeps,
   gzip,
   nodejs,
   npmHooks,
   python3,
+  rustPlatform,
   rustc,
   versionCheckHook,
   wasm-bindgen-cli_0_2_117,
@@ -27,30 +27,34 @@ let
   # To find these urls:
   #   rg -A5 download_urls $(nix-build . -A pagefind.cargoDeps --no-out-link)/*/lindera-*/build.rs
   lindera-srcs = {
-    unidic-mecab = fetchurl {
-      passthru.vendorDir = "lindera-unidic-*";
-      url = "https://Lindera.dev/unidic-mecab-2.1.2.tar.gz";
-      hash = "sha256-JKx1/k5E2XO1XmWEfDX6Suwtt6QaB7ScoSUUbbn8EYk=";
-    };
-    mecab-ko-dic = fetchurl {
-      passthru.vendorDir = "lindera-ko-dic-*";
-      url = "https://Lindera.dev/mecab-ko-dic-2.1.1-20180720.tar.gz";
-      hash = "sha256-cCztIcYWfp2a68Z0q17lSvWNREOXXylA030FZ8AgWRo=";
-    };
-    ipadic = fetchurl {
-      passthru.vendorDir = "lindera-ipadic-0.*";
-      url = "https://Lindera.dev/mecab-ipadic-2.7.0-20070801.tar.gz";
-      hash = "sha256-CZ5G6A1V58DWkGeDr/cTdI4a6Q9Gxe+W7BU7vwm/VVA=";
-    };
     cc-cedict = fetchurl {
-      passthru.vendorDir = "lindera-cc-cedict-*";
-      url = "https://lindera.dev/CC-CEDICT-MeCab-0.1.0-20200409.tar.gz";
       hash = "sha256-7Tz54+yKgGR/DseD3Ana1DuMytLplPXqtv8TpB0JFsg=";
+      url = "https://lindera.dev/CC-CEDICT-MeCab-0.1.0-20200409.tar.gz";
+      passthru.vendorDir = "lindera-cc-cedict-*";
     };
+
+    ipadic = fetchurl {
+      hash = "sha256-CZ5G6A1V58DWkGeDr/cTdI4a6Q9Gxe+W7BU7vwm/VVA=";
+      url = "https://Lindera.dev/mecab-ipadic-2.7.0-20070801.tar.gz";
+      passthru.vendorDir = "lindera-ipadic-0.*";
+    };
+
     ipadic-neologd = fetchurl {
-      passthru.vendorDir = "lindera-ipadic-neologd-*";
-      url = "https://lindera.dev/mecab-ipadic-neologd-0.0.7-20200820.tar.gz";
       hash = "sha256-1VwCwgSTKFixeQUFVCdqMzZKne/+FTgM56xT7etqjqI=";
+      url = "https://lindera.dev/mecab-ipadic-neologd-0.0.7-20200820.tar.gz";
+      passthru.vendorDir = "lindera-ipadic-neologd-*";
+    };
+
+    mecab-ko-dic = fetchurl {
+      hash = "sha256-cCztIcYWfp2a68Z0q17lSvWNREOXXylA030FZ8AgWRo=";
+      url = "https://Lindera.dev/mecab-ko-dic-2.1.1-20180720.tar.gz";
+      passthru.vendorDir = "lindera-ko-dic-*";
+    };
+
+    unidic-mecab = fetchurl {
+      hash = "sha256-JKx1/k5E2XO1XmWEfDX6Suwtt6QaB7ScoSUUbbn8EYk=";
+      url = "https://Lindera.dev/unidic-mecab-2.1.2.tar.gz";
+      passthru.vendorDir = "lindera-unidic-*";
     };
   };
 
@@ -58,7 +62,6 @@ in
 
 rustPlatform.buildRustPackage (finalAttrs: {
   inherit enableExtended;
-
   pname = "pagefind" + lib.optionalString (finalAttrs.enableExtended) "-extended";
   version = "1.5.2";
 
@@ -68,47 +71,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-/4nHUEcNQ66M5+x85xiIUUA/Nt+YQCrwn7HIo3olCMM=";
   };
-
-  cargoHash = "sha256-RdU6ZF32kyRC9C0J7NfscNhrs+NjfE5jppIt6u47fcw=";
-
-  env.cargoDeps_web = rustPlatform.fetchCargoVendor {
-    name = "cargo-deps-web-${finalAttrs.version}";
-    inherit (finalAttrs) src;
-    sourceRoot = "${finalAttrs.src.name}/pagefind_web";
-    hash = "sha256-8DqD5QVoHOBtV11UKrunlzR7i+8PTeJGulzN6d2vqks=";
-  };
-  env.npmDeps_web_js = fetchNpmDeps {
-    name = "pagefind-npm-deps-web-js-${finalAttrs.version}";
-    inherit (finalAttrs) src;
-    sourceRoot = "${finalAttrs.src.name}/pagefind_web_js";
-    hash = "sha256-vrPdlvd6doaIKiawsvJLnhIPhC35/qzdgUhkfMZrcP8=";
-  };
-  env.npmDeps_ui_default = fetchNpmDeps {
-    name = "pagefind-npm-deps-ui-default-${finalAttrs.version}";
-    inherit (finalAttrs) src;
-    sourceRoot = "${finalAttrs.src.name}/pagefind_ui/default";
-    hash = "sha256-78Qyk18IzekdP6l8pkWxhGeKEST2Ju/AUBASycbggRQ=";
-  };
-  env.npmDeps_ui_modular = fetchNpmDeps {
-    name = "pagefind-npm-deps-ui-modular-${finalAttrs.version}";
-    inherit (finalAttrs) src;
-    sourceRoot = "${finalAttrs.src.name}/pagefind_ui/modular";
-    hash = "sha256-Ja9s9EX2b9TviLA/NxwQ3Z7RMjL8LIUJAuE63EyBbN4=";
-  };
-  env.npmDeps_ui_component = fetchNpmDeps {
-    name = "pagefind-npm-deps-ui-component-${finalAttrs.version}";
-    inherit (finalAttrs) src;
-    sourceRoot = "${finalAttrs.src.name}/pagefind_ui/component";
-    hash = "sha256-ZSsXn+A8VVGSCjP2J7ql4rIoOto7a/vzRcVhxuo5Ngk=";
-  };
-  env.npmDeps_playground = fetchNpmDeps {
-    name = "pagefind-npm-deps-playground-${finalAttrs.version}";
-    inherit (finalAttrs) src;
-    sourceRoot = "${finalAttrs.src.name}/pagefind_playground";
-    hash = "sha256-JO2VRDxsKxYIMZKZ8UilJp76jihRHrD1IeTRfoff/+s=";
-  };
-
-  env.GIT_VERSION = finalAttrs.version;
 
   postPatch = ''
     # Set the correct version, e.g. for `pagefind --version`
@@ -169,8 +131,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --replace-fail ' -Z build-std-features=panic_immediate_abort' ""
   '';
 
-  __darwinAllowLocalNetworking = true;
-
   nativeBuildInputs = [
     binaryen
     gzip
@@ -183,6 +143,51 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ++ lib.optionals stdenv.buildPlatform.isDarwin [
     python3
   ];
+
+  cargoHash = "sha256-RdU6ZF32kyRC9C0J7NfscNhrs+NjfE5jppIt6u47fcw=";
+  env.GIT_VERSION = finalAttrs.version;
+
+  env.cargoDeps_web = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src;
+    hash = "sha256-8DqD5QVoHOBtV11UKrunlzR7i+8PTeJGulzN6d2vqks=";
+    name = "cargo-deps-web-${finalAttrs.version}";
+    sourceRoot = "${finalAttrs.src.name}/pagefind_web";
+  };
+
+  env.npmDeps_playground = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-JO2VRDxsKxYIMZKZ8UilJp76jihRHrD1IeTRfoff/+s=";
+    name = "pagefind-npm-deps-playground-${finalAttrs.version}";
+    sourceRoot = "${finalAttrs.src.name}/pagefind_playground";
+  };
+
+  env.npmDeps_ui_component = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-ZSsXn+A8VVGSCjP2J7ql4rIoOto7a/vzRcVhxuo5Ngk=";
+    name = "pagefind-npm-deps-ui-component-${finalAttrs.version}";
+    sourceRoot = "${finalAttrs.src.name}/pagefind_ui/component";
+  };
+
+  env.npmDeps_ui_default = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-78Qyk18IzekdP6l8pkWxhGeKEST2Ju/AUBASycbggRQ=";
+    name = "pagefind-npm-deps-ui-default-${finalAttrs.version}";
+    sourceRoot = "${finalAttrs.src.name}/pagefind_ui/default";
+  };
+
+  env.npmDeps_ui_modular = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-Ja9s9EX2b9TviLA/NxwQ3Z7RMjL8LIUJAuE63EyBbN4=";
+    name = "pagefind-npm-deps-ui-modular-${finalAttrs.version}";
+    sourceRoot = "${finalAttrs.src.name}/pagefind_ui/modular";
+  };
+
+  env.npmDeps_web_js = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-vrPdlvd6doaIKiawsvJLnhIPhC35/qzdgUhkfMZrcP8=";
+    name = "pagefind-npm-deps-web-js-${finalAttrs.version}";
+    sourceRoot = "${finalAttrs.src.name}/pagefind_web_js";
+  };
 
   # build wasm and js assets
   # based on "test-and-build" in https://github.com/CloudCannon/pagefind/blob/main/.github/workflows/release.yml
@@ -226,19 +231,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
     )
   '';
 
-  buildFeatures = lib.optionals finalAttrs.enableExtended [ "extended" ];
-
   doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
+  __darwinAllowLocalNetworking = true;
+  buildFeatures = lib.optionals finalAttrs.enableExtended [ "extended" ];
+
   passthru = {
     inherit lindera-srcs;
+
     tests.extended = finalAttrs.finalPackage.overrideAttrs {
       enableExtended = true;
     };
+
     tests.non-extended = finalAttrs.finalPackage.overrideAttrs {
       enableExtended = false;
     };

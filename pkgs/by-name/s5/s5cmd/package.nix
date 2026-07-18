@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -17,22 +17,18 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
-
-  ldflags = [ "-X github.com/peak/s5cmd/v2/version.Version=v${finalAttrs.version}" ];
-
-  # Skip e2e tests requiring network access
-  excludedPackages = [ "./e2e" ];
-
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
   # Fix tests creating network sockets on macOS
   __darwinAllowLocalNetworking = true;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
+  # Skip e2e tests requiring network access
+  excludedPackages = [ "./e2e" ];
+  ldflags = [ "-X github.com/peak/s5cmd/v2/version.Version=v${finalAttrs.version}" ];
   versionCheckProgramArg = [ "version" ];
 
   meta = {
-    homepage = "https://github.com/peak/s5cmd";
     description = "Parallel S3 and local filesystem execution tool";
+    homepage = "https://github.com/peak/s5cmd";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ tomberek ];
     mainProgram = "s5cmd";

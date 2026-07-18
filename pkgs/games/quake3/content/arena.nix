@@ -9,12 +9,12 @@ let
   version = "1.32c";
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "quake3arenadata";
   inherit version;
+  pname = "quake3arenadata";
 
   src = requireFile rec {
-    name = "pak0.pk3";
     hash = "sha256-fOizkQYgzVCgnk8RAPQm6MYYD2iJXVifgOa9la9UvK4=";
+
     message = ''
       Quake 3 Arena requires the original ${name} file, from any legal source of the game.
 
@@ -34,6 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
 
       nix-prefetch-url file:///path/to/baseq3/${name}
     '';
+
+    name = "pak0.pk3";
   };
 
   buildCommand = ''
@@ -46,6 +48,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Quake 3 Arena content";
+
     longDescription = ''
       Quake III Arena and it's demo don't offer current wide screen resolutions in the menu.
 
@@ -57,9 +60,10 @@ stdenv.mkDerivation (finalAttrs: {
 
       $ quake3 +set r_mode -1 +set r_customwidth 2560 +set r_customheight 1440 +set r_fullscreen 1
     '';
+
     homepage = "https://www.idsoftware.com/";
     license = lib.licenses.unfreeRedistributable;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 })

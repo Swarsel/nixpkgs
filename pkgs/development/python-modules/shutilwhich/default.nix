@@ -1,17 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "shutilwhich";
   version = "1.1.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "mbr";
@@ -20,16 +17,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-QNbEPJ37vrTIuhxS4NrUaUTH2A87EjBZvhxxg6xk3BU=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "shutilwhich" ];
 
   meta = {
     description = "Backport of shutil.which";
-    license = lib.licenses.psfl;
     homepage = "https://github.com/mbr/shutilwhich";
+    license = lib.licenses.psfl;
     maintainers = with lib.maintainers; [ multun ];
   };
 })

@@ -18,17 +18,20 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [ python3 ];
 
-  dontBuild = true;
   installPhase = ''
     mkdir -p $out/bin
     cp export-chrome-bookmarks export-chrome-history $out/bin
     mkdir -p $out/share/man/man1
     cp man_pages/*.1 $out/share/man/man1
   '';
+
   doInstallCheck = true;
+
   installCheckPhase = ''
     bash test/run_tests $out/bin
   '';
+
+  dontBuild = true;
 
   meta = {
     description = "Scripts to save Google Chrome's bookmarks and history as HTML bookmarks files";

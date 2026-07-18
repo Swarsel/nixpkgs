@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   gnugrep,
+  installShellFiles,
+  libpq,
   ncurses,
   pkg-config,
-  installShellFiles,
   readline,
-  libpq,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,6 +25,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     installShellFiles
   ];
+
   buildInputs = [
     gnugrep
     libpq
@@ -40,11 +41,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/okbob/pspg";
     description = "Postgres Pager";
+    homepage = "https://github.com/okbob/pspg";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.jlesquembre ];
+    platforms = lib.platforms.unix;
     mainProgram = "pspg";
   };
 })

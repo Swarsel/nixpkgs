@@ -1,8 +1,8 @@
 {
-  rustPlatform,
-  fetchFromSourcehut,
   lib,
+  fetchFromSourcehut,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,16 +17,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-roPPL9zR8JBr3Ya2IhkvIOfnKxuRSXdxxaJ80ZUK87M=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "FiLe InteRacT, the file interaction tool for your command line";
     homepage = "https://git.sr.ht/~hadronized/flirt";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       adda
     ];
+
     mainProgram = "flirt";
   };
 })

@@ -1,19 +1,19 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  wrapGAppsHook4,
-  pkg-config,
   fuse3,
   glib,
   gtk4,
   hicolor-icon-theme,
   libadwaita,
-  oniguruma,
-  pango,
-  webkitgtk_6_0,
   nix-update-script,
   nixosTests,
+  oniguruma,
+  pango,
+  pkg-config,
+  rustPlatform,
+  webkitgtk_6_0,
+  wrapGAppsHook4,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -26,14 +26,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-utbey8DFXUWU6u2H2unNjCHE3/bwhPdrxAOApC+unGA=";
   };
-
-  # Avoiding optimizations for reproducibility
-  prePatch = ''
-    substituteInPlace .cargo/config.toml \
-      --replace-fail '"-C", "target-cpu=native", ' ""
-  '';
-
-  cargoHash = "sha256-rwf9jdr+RDpUcTEG7Xhpph0zuyz6tdFx6hWEZRuxkTY=";
 
   nativeBuildInputs = [
     wrapGAppsHook4
@@ -51,6 +43,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     webkitgtk_6_0
   ];
 
+  cargoHash = "sha256-rwf9jdr+RDpUcTEG7Xhpph0zuyz6tdFx6hWEZRuxkTY=";
   # use system oniguruma since the bundled one fails to build with gcc15
   env.RUSTONIG_SYSTEM_LIBONIG = 1;
 
@@ -61,9 +54,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     cp -r ${finalAttrs.src}/data/hicolor $out/share/icons
   '';
 
+  # Avoiding optimizations for reproducibility
+  prePatch = ''
+    substituteInPlace .cargo/config.toml \
+      --replace-fail '"-C", "target-cpu=native", ' ""
+  '';
+
   passthru = {
-    updateScript = nix-update-script { };
     tests = { inherit (nixosTests) oku; };
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -72,8 +71,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     changelog = "https://github.com/OkuBrowser/oku/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ ethancedwards8 ];
-    teams = with lib.teams; [ ngi ];
-    mainProgram = "oku";
     platforms = lib.platforms.linux;
+    mainProgram = "oku";
+    teams = with lib.teams; [ ngi ];
   };
 })

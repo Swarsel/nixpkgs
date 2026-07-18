@@ -1,14 +1,12 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "gendarme";
   version = "0.4";
-
-  minimalOCamlVersion = "4.13";
 
   src = fetchFromGitHub {
     owner = "bensmrs";
@@ -16,6 +14,8 @@ buildDunePackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-yiHBAhnWYntv+5fKG7Sa1RqsnvWIsW0YDqp+uAzpg/s=";
   };
+
+  minimalOCamlVersion = "4.13";
 
   meta = {
     description = "Marshalling library for OCaml";

@@ -26,13 +26,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "USB programmer for downloading and uploading firmware to/from USB devices";
+
     longDescription = ''
       wb32-dfu-updater is a host tool used to download and upload firmware to/from WB32 MCU via USB. (wb32-dfu-updater_cli is the command line version).
     '';
+
     homepage = "https://github.com/WestberryTech/wb32-dfu-updater";
     license = lib.licenses.asl20;
     maintainers = [ ];
-    mainProgram = "wb32-dfu-updater_cli";
     platforms = lib.platforms.all;
+    mainProgram = "wb32-dfu-updater_cli";
   };
 })

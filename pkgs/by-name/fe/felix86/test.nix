@@ -4,6 +4,12 @@
 }:
 
 pkgs.testers.nixosTest {
+  interactive.nodes.machine = {
+    environment.systemPackages = [ pkgs.binutils ];
+    virtualisation.graphics = false;
+  };
+
+  interactive.sshBackdoor.enable = true;
   name = "felix86";
 
   nodes.machine =
@@ -26,10 +32,4 @@ pkgs.testers.nixosTest {
       machine.wait_for_unit("multi-user.target")
       machine.succeed("felix86 --help")
     '';
-
-  interactive.nodes.machine = {
-    virtualisation.graphics = false;
-    environment.systemPackages = [ pkgs.binutils ];
-  };
-  interactive.sshBackdoor.enable = true;
 }

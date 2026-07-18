@@ -44,15 +44,15 @@ let
     lib.any (
       {
         base_class ? default,
-        sub_class ? default,
-        vendor ? default,
-        sub_vendor ? default,
-        device ? default,
-        sub_device ? default,
-        revision ? default,
         bus_type ? {
           name = "";
         },
+        device ? default,
+        revision ? default,
+        sub_class ? default,
+        sub_device ? default,
+        sub_vendor ? default,
+        vendor ? default,
         ...
       }:
       let
@@ -91,6 +91,7 @@ in
 
   config.hardware.ipu6 = lib.mkIf detected.camera.ipu6.enable {
     enable = true;
+
     platform =
       if isTigerLake then
         "ipu6"

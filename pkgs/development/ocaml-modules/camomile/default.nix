@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
-  darwin,
+  stdenv,
   fetchFromGitHub,
   buildDunePackage,
-  ocaml,
-  cppo,
   camlp-streams,
+  cppo,
+  darwin,
   dune-site,
+  ocaml,
   version ? if lib.versionAtLeast ocaml.version "4.08" then "2.0.0" else "1.0.2",
 }:
 
@@ -26,14 +26,14 @@ let
 
           nativeBuildInputs = [ cppo ];
 
+          postInstall = ''
+            echo "version = \"${version}\"" >> $out/lib/ocaml/${ocaml.version}/site-lib/camomile/META
+          '';
+
           configurePhase = ''
             runHook preConfigure
             ocaml configure.ml --share $out/share/camomile
             runHook postConfigure
-          '';
-
-          postInstall = ''
-            echo "version = \"${version}\"" >> $out/lib/ocaml/${ocaml.version}/site-lib/camomile/META
           '';
 
         };
@@ -59,14 +59,14 @@ in
 buildDunePackage (
   params."${version}"
   // {
-    pname = "camomile";
     inherit version;
+    pname = "camomile";
 
     meta = {
-      homepage = "https://github.com/ocaml-community/Camomile";
-      maintainers = [ lib.maintainers.vbgl ];
-      license = lib.licenses.lgpl21;
       description = "Unicode library for OCaml";
+      homepage = "https://github.com/ocaml-community/Camomile";
+      license = lib.licenses.lgpl21;
+      maintainers = [ lib.maintainers.vbgl ];
     };
   }
 )

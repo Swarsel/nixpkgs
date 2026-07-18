@@ -13,17 +13,20 @@
 let
   cfg = config.programs.command-not-found;
   commandNotFound = pkgs.replaceVarsWith {
-    name = "command-not-found";
     dir = "bin";
-    src = ./command-not-found.pl;
     isExecutable = true;
+    name = "command-not-found";
+
     replacements = {
       inherit (cfg) dbPath;
+
       perl = pkgs.perl.withPackages (p: [
         p.DBDSQLite
         p.StringShellQuote
       ]);
     };
+
+    src = ./command-not-found.pl;
   };
 
 in
@@ -32,11 +35,12 @@ in
   options.programs.command-not-found = {
 
     enable = lib.mkOption {
-      type = lib.types.bool;
       default = builtins.pathExists config.programs.command-not-found.dbPath;
+
       defaultText = lib.literalExpression ''
         builtins.pathExists config.programs.command-not-found.dbPath
       '';
+
       description = ''
         Whether interactive shells should show which Nix package (if
         any) provides a missing command.
@@ -45,14 +49,17 @@ in
 
         Additionally, having the env var NIX_AUTO_RUN set will automatically run the matching package, and with NIX_AUTO_RUN_INTERACTIVE it will confirm the package before running.
       '';
+
+      type = lib.types.bool;
     };
 
     dbPath = lib.mkOption {
-      type = lib.types.path;
       default = pkgs.path + "/programs.sqlite";
+
       defaultText = lib.literalExpression ''
         pkgs.path + "/programs.sqlite"
       '';
+
       description = ''
         Absolute path to `programs.sqlite`, which contains mappings from binary names to package names.
 
@@ -62,18 +69,16 @@ in
         `/nix/var/nix/profiles/per-user/root/channels/nixos/programs.sqlite`.
         If you do so, you can update it with `sudo nix-channels --update`.
       '';
+
+      type = lib.types.path;
     };
   };
 
   config = lib.mkIf cfg.enable {
+    environment.systemPackages = [ commandNotFound ];
+
     programs.bash.interactiveShellInit = ''
       command_not_found_handle() {
-        '${commandNotFound}/bin/command-not-found' "$@"
-      }
-    '';
-
-    programs.zsh.interactiveShellInit = ''
-      command_not_found_handler() {
         '${commandNotFound}/bin/command-not-found' "$@"
       }
     '';
@@ -85,6 +90,10 @@ in
       end
     '';
 
-    environment.systemPackages = [ commandNotFound ];
+    programs.zsh.interactiveShellInit = ''
+      command_not_found_handler() {
+        '${commandNotFound}/bin/command-not-found' "$@"
+      }
+    '';
   };
 }

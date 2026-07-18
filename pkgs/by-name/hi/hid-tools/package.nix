@@ -1,22 +1,25 @@
 {
-  python3,
   lib,
   fetchFromGitLab,
+  python3,
 }:
 
 python3.pkgs.buildPythonPackage rec {
   pname = "hid-tools";
   version = "0.7";
 
-  pyproject = true;
-
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "libevdev";
     repo = "hid-tools";
     rev = version;
     hash = "sha256-h880jJcZDc9pIPf+nr30wu2i9y3saAKFZpooJ4MF67E=";
+    domain = "gitlab.freedesktop.org";
   };
+
+  postPatch = ''
+    substituteInPlace pyproject.toml \
+      --replace-fail "pypandoc_binary" "pypandoc"
+  '';
 
   nativeBuildInputs = with python3.pkgs; [
     hatchling
@@ -32,18 +35,15 @@ python3.pkgs.buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    pytestCheckHook
-  ];
-
   # Tests require /dev/uhid
   # https://gitlab.freedesktop.org/libevdev/hid-tools/-/issues/18#note_166353
   doCheck = false;
 
-  postPatch = ''
-    substituteInPlace pyproject.toml \
-      --replace-fail "pypandoc_binary" "pypandoc"
-  '';
+  nativeCheckInputs = with python3.pkgs; [
+    pytestCheckHook
+  ];
+
+  pyproject = true;
 
   meta = {
     description = "Python scripts to manipulate HID data";

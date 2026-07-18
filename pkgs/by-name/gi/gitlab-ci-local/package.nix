@@ -1,14 +1,14 @@
 {
-  stdenv,
-  buildNpmPackage,
-  fetchFromGitHub,
   lib,
-  nix-update-script,
-  gitlab-ci-local,
-  testers,
-  makeBinaryWrapper,
-  rsync,
+  stdenv,
+  fetchFromGitHub,
+  buildNpmPackage,
   gitMinimal,
+  gitlab-ci-local,
+  makeBinaryWrapper,
+  nix-update-script,
+  rsync,
+  testers,
 }:
 
 buildNpmPackage rec {
@@ -22,12 +22,6 @@ buildNpmPackage rec {
     hash = "sha256-scZ6KqpO/E3Ycu6Nn5o/4LaEpSAOWim8mOqpByjZlZE=";
   };
 
-  npmDepsHash = "sha256-IoycsUU+7o4A3d+pGQvyBvaIqg7fdvwS8Pay9MmRqM4=";
-
-  nativeBuildInputs = [
-    makeBinaryWrapper
-  ];
-
   postPatch = ''
     # remove cleanup which runs git commands
     substituteInPlace package.json \
@@ -37,6 +31,12 @@ buildNpmPackage rec {
     substituteInPlace src/handler.ts src/index.ts \
       --replace-fail 'yargs(process.argv.slice(2))' 'yargs(process.argv.slice(2)).scriptName("gitlab-ci-local")'
   '';
+
+  nativeBuildInputs = [
+    makeBinaryWrapper
+  ];
+
+  npmDepsHash = "sha256-IoycsUU+7o4A3d+pGQvyBvaIqg7fdvwS8Pay9MmRqM4=";
 
   postInstall = ''
     wrapProgram $out/bin/gitlab-ci-local \
@@ -54,23 +54,26 @@ buildNpmPackage rec {
   '';
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
       package = gitlab-ci-local;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Run gitlab pipelines locally as shell executor or docker executor";
-    mainProgram = "gitlab-ci-local";
+
     longDescription = ''
       Tired of pushing to test your .gitlab-ci.yml?
       Run gitlab pipelines locally as shell executor or docker executor.
       Get rid of all those dev specific shell scripts and make files.
     '';
+
     homepage = "https://github.com/firecow/gitlab-ci-local";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ pineapplehunter ];
     platforms = lib.platforms.all;
+    mainProgram = "gitlab-ci-local";
   };
 }

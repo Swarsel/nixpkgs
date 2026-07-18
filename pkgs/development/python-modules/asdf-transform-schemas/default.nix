@@ -9,21 +9,18 @@
 buildPythonPackage (finalAttrs: {
   pname = "asdf-transform-schemas";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "asdf_transform_schemas";
     inherit (finalAttrs) version;
     hash = "sha256-D1D44Jb//S0UucgplZASZu8lsj0N/8MK1Bu6RoUalzI=";
+    pname = "asdf_transform_schemas";
   };
-
-  build-system = [ setuptools-scm ];
-
-  dependencies = [ asdf-standard ];
 
   # Circular dependency on asdf
   doCheck = false;
-
+  build-system = [ setuptools-scm ];
+  dependencies = [ asdf-standard ];
+  pyproject = true;
   pythonImportsCheck = [ "asdf_transform_schemas" ];
 
   meta = {

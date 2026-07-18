@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  udev,
-  qrtr,
   qmic,
+  qrtr,
+  udev,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,10 +27,10 @@ stdenv.mkDerivation (finalAttrs: {
   installFlags = [ "prefix=$(out)" ];
 
   meta = {
-    maintainers = with lib.maintainers; [ matthewcroughan ];
     description = "Qualcomm Remote Filesystem Service";
     homepage = "https://github.com/linux-msm/rmtfs";
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ matthewcroughan ];
     platforms = lib.platforms.aarch64;
     mainProgram = "rmtfs";
   };

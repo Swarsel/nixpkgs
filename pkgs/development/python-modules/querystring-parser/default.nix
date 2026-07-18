@@ -9,21 +9,18 @@
 buildPythonPackage rec {
   pname = "querystring-parser";
   version = "1.2.4";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "querystring_parser";
     inherit version;
     hash = "sha256-ZE/OHP/gUwRTtDqDo4CU2+QizLqMmy8qHAAoDhTKimI=";
+    pname = "querystring_parser";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ six ];
 
   # https://github.com/bernii/querystring-parser/issues/35
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ six ];
+  pyproject = true;
   pythonImportsCheck = [ "querystring_parser" ];
 
   meta = {

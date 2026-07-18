@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
-  rustPlatform,
   fetchFromGitHub,
-  libiconv,
+  buildPythonPackage,
   dirty-equals,
-  pytestCheckHook,
+  libiconv,
   nix-update-script,
+  pytestCheckHook,
+  rustPlatform,
 }:
 
 buildPythonPackage rec {
   pname = "jiter";
   version = "0.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pydantic";
@@ -25,23 +24,19 @@ buildPythonPackage rec {
     cp ${./Cargo.lock} Cargo.lock
   '';
 
-  cargoDeps = rustPlatform.importCargoLock { lockFile = ./Cargo.lock; };
-
-  buildAndTestSubdir = "crates/jiter-python";
-
   nativeBuildInputs = [ rustPlatform.cargoSetupHook ];
-
-  build-system = [ rustPlatform.maturinBuildHook ];
-
   buildInputs = [ libiconv ];
-
-  pythonImportsCheck = [ "jiter" ];
 
   nativeCheckInputs = [
     dirty-equals
     pytestCheckHook
   ];
 
+  build-system = [ rustPlatform.maturinBuildHook ];
+  buildAndTestSubdir = "crates/jiter-python";
+  cargoDeps = rustPlatform.importCargoLock { lockFile = ./Cargo.lock; };
+  pyproject = true;
+  pythonImportsCheck = [ "jiter" ];
   passthru.updateScript = nix-update-script { extraArgs = [ "--generate-lockfile" ]; };
 
   meta = {

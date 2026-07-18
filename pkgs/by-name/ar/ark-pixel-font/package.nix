@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   nix-update-script,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "ark-pixel-font";
   version = "2025.08.24";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "TakWolf";
@@ -16,19 +15,6 @@ python3Packages.buildPythonApplication rec {
     tag = version;
     hash = "sha256-kxct994UmZhJBMlXZmayN24eiKqeG9T7GdyfsjBYpn0=";
   };
-
-  dependencies = with python3Packages; [
-    pixel-font-builder
-    pixel-font-knife
-    unidata-blocks
-    character-encoding-utils
-    pyyaml
-    pillow
-    beautifulsoup4
-    jinja2
-    loguru
-    cyclopts
-  ];
 
   buildPhase = ''
     runHook preBuild
@@ -52,6 +38,20 @@ python3Packages.buildPythonApplication rec {
     runHook postInstall
   '';
 
+  dependencies = with python3Packages; [
+    pixel-font-builder
+    pixel-font-knife
+    unidata-blocks
+    character-encoding-utils
+    pyyaml
+    pillow
+    beautifulsoup4
+    jinja2
+    loguru
+    cyclopts
+  ];
+
+  pyproject = false;
   passthru.updateScript = nix-update-script { };
 
   meta = {

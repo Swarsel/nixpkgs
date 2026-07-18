@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "termineter";
   version = "1.0.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rsmusllp";
@@ -28,6 +27,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     termcolor
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "termineter" ];
 
   meta = {

@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   SDL2,
-  libGL,
   cmake,
+  libGL,
   makeWrapper,
   unstableGitUpdater,
 }:
@@ -25,6 +25,7 @@ stdenv.mkDerivation {
     cmake
     makeWrapper
   ];
+
   buildInputs = [
     SDL2
     libGL
@@ -46,15 +47,17 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Port of Nanosaur, a 1998 Macintosh game by Pangea Software, for modern operating systems";
+
     longDescription = ''
       Nanosaur is a 1998 Macintosh game by Pangea Software.
       In it, you’re a cybernetic dinosaur from the future who’s sent back in time 20 minutes before a giant asteroid hits the Earth.
       And you get to shoot at T-Rexes with nukes.
     '';
+
     homepage = "https://github.com/jorio/Nanosaur";
     license = lib.licenses.cc-by-sa-40;
-    mainProgram = "Nanosaur";
     maintainers = with lib.maintainers; [ lux ];
     platforms = lib.platforms.linux;
+    mainProgram = "Nanosaur";
   };
 }

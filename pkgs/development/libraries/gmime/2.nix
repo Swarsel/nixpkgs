@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   glib,
-  zlib,
   gnupg,
-  libgpg-error,
   gobject-introspection,
+  libgpg-error,
+  pkg-config,
+  zlib,
 }:
 
 stdenv.mkDerivation rec {
-  version = "2.6.23";
   pname = "gmime";
+  version = "2.6.23";
 
   src = fetchurl {
     url = "mirror://gnome/sources/gmime/2.6/${pname}-${version}.tar.xz";
@@ -24,20 +24,6 @@ stdenv.mkDerivation rec {
     "dev"
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-    gobject-introspection
-  ];
-  propagatedBuildInputs = [
-    glib
-    zlib
-    libgpg-error
-  ];
-  configureFlags = [
-    "--enable-introspection=yes"
-  ]
-  ++ lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [ "ac_cv_have_iconv_detect_h=yes" ];
-
   postPatch = ''
     substituteInPlace tests/testsuite.c \
       --replace /bin/rm rm \
@@ -47,6 +33,22 @@ stdenv.mkDerivation rec {
       --replace /bin/mkdir mkdir
   '';
 
+  nativeBuildInputs = [
+    pkg-config
+    gobject-introspection
+  ];
+
+  propagatedBuildInputs = [
+    glib
+    zlib
+    libgpg-error
+  ];
+
+  configureFlags = [
+    "--enable-introspection=yes"
+  ]
+  ++ lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [ "ac_cv_have_iconv_detect_h=yes" ];
+
   preConfigure = lib.optionalString (stdenv.buildPlatform != stdenv.hostPlatform) ''
     cp ${
       if stdenv.hostPlatform.isMusl then ./musl-iconv-detect.h else ./iconv-detect.h
@@ -54,12 +56,11 @@ stdenv.mkDerivation rec {
   '';
 
   nativeCheckInputs = [ gnupg ];
-
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://github.com/jstedfast/gmime/";
     description = "C/C++ library for creating, editing and parsing MIME messages and structures";
+    homepage = "https://github.com/jstedfast/gmime/";
     license = lib.licenses.lgpl21Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;

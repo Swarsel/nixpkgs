@@ -1,26 +1,26 @@
 {
   lib,
   stdenv,
-  cmake,
-  zlib,
-  zstd,
   fetchFromGitHub,
-  re2,
   abseil-cpp,
-  protobuf,
   capstone,
+  cmake,
   gtest,
-  pkg-config,
   lit,
   llvmPackages,
+  pkg-config,
+  protobuf,
+  re2,
+  zlib,
+  zstd,
 }:
 let
   # Old vendored package which has no other use than here, so not packaged in nixpkgs.
   demumble = fetchFromGitHub {
+    hash = "sha256-JNSSvYE5bh/9RVLQXVNmWRKAzidg4ktmqLI7pcUATDs=";
     owner = "nico";
     repo = "demumble";
     rev = "10e00fb708a3d24c1bb16682cac76925ffb76af5";
-    hash = "sha256-JNSSvYE5bh/9RVLQXVNmWRKAzidg4ktmqLI7pcUATDs=";
   };
 in
 stdenv.mkDerivation {
@@ -33,12 +33,6 @@ stdenv.mkDerivation {
     rev = "4a601b636e2347322d0371c8bf8ca5eaeaca4bac";
     hash = "sha256-16Ic2x5JctSCuHJZjK96xkgJw8qyy8GqFupwWuc2U/k=";
   };
-
-  cmakeFlags = [
-    "-DLIT_EXECUTABLE=${lit}/bin/lit"
-    "-DFILECHECK_EXECUTABLE=${llvmPackages.libllvm}/bin/FileCheck"
-    "-DYAML2OBJ_EXECUTABLE=${llvmPackages.libllvm}/bin/yaml2obj"
-  ];
 
   postPatch = ''
     # Build system relies on some of those source files
@@ -70,6 +64,12 @@ stdenv.mkDerivation {
     llvmPackages.libllvm
   ];
 
+  cmakeFlags = [
+    "-DLIT_EXECUTABLE=${lit}/bin/lit"
+    "-DFILECHECK_EXECUTABLE=${llvmPackages.libllvm}/bin/FileCheck"
+    "-DYAML2OBJ_EXECUTABLE=${llvmPackages.libllvm}/bin/yaml2obj"
+  ];
+
   doCheck = true;
 
   postCheck = ''
@@ -77,16 +77,17 @@ stdenv.mkDerivation {
     # See https://github.com/google/bloaty/blob/main/tests/README.md
     cmake --build . --target check-bloaty
   '';
+
   installPhase = ''
     install -Dm755 {.,$out/bin}/bloaty
   '';
 
   meta = {
     description = "Size profiler for binaries";
-    mainProgram = "bloaty";
     homepage = "https://github.com/google/bloaty";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "bloaty";
   };
 }

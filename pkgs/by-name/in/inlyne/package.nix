@@ -1,22 +1,22 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  installShellFiles,
   stdenv,
-  pkg-config,
+  fetchFromGitHub,
   fontconfig,
-  libxrandr,
-  libxi,
-  libxcursor,
+  installShellFiles,
+  libGL,
   libx11,
   libxcb,
+  libxcursor,
+  libxi,
   libxkbcommon,
-  wayland,
-  libGL,
-  openssl,
+  libxrandr,
   oniguruma,
+  openssl,
+  pkg-config,
+  rustPlatform,
   vulkan-loader,
+  wayland,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -29,8 +29,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-bUM9Mn/C9l6s6ucoLRo25m4PbbW3gp5d3AvO/9GTJcI=";
   };
-
-  cargoHash = "sha256-IaaojW5PYSUwyh1iv2HrDidIV8keEykKHY61rpcCAPc=";
 
   nativeBuildInputs = [
     installShellFiles
@@ -51,6 +49,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-IaaojW5PYSUwyh1iv2HrDidIV8keEykKHY61rpcCAPc=";
   # use system oniguruma since the bundled one fails to build with gcc15
   env.RUSTONIG_SYSTEM_LIBONIG = 1;
 

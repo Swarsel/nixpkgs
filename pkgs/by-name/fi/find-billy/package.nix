@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromCodeberg,
   godot_4,
-  makeWrapper,
-  just,
-  inkscape,
   imagemagick,
+  inkscape,
+  just,
+  makeWrapper,
   nix-update-script,
 }:
 
@@ -21,6 +21,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-jKN3lEnLy0aN98S8BN3dcoOgc0RrxNoqfQdeCawKQaU=";
   };
 
+  postPatch = ''
+    substituteInPlace export_presets.cfg --replace-fail 'res://build/icons/usr/share/icons/hicolor' $out/share/icons/hicolor
+    substituteInPlace project.godot --replace-fail 'res://build/icons/usr/share/icons/hicolor' $out/share/icons/hicolor
+
+    substituteInPlace justfile --replace-fail '{{build_icons_dir}}/usr' $out
+  '';
+
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -30,13 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
     inkscape
     imagemagick
   ];
-
-  postPatch = ''
-    substituteInPlace export_presets.cfg --replace-fail 'res://build/icons/usr/share/icons/hicolor' $out/share/icons/hicolor
-    substituteInPlace project.godot --replace-fail 'res://build/icons/usr/share/icons/hicolor' $out/share/icons/hicolor
-
-    substituteInPlace justfile --replace-fail '{{build_icons_dir}}/usr' $out
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -72,10 +72,11 @@ stdenv.mkDerivation (finalAttrs: {
     description = "2 dimensional Pixel Art Jump & Run";
     homepage = "https://codeberg.org/annaaurora/Find-Billy";
     license = lib.licenses.gpl3Plus;
+    maintainers = [ lib.maintainers.annaaurora ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
-    maintainers = [ lib.maintainers.annaaurora ];
   };
 })

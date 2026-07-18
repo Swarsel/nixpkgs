@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,8 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-vP6d5HxlfLSIobWm7h34ttHjzpx+UZKE6Iyj9QfTRl0=";
   };
 
-  cargoHash = "sha256-Pw/Y3STSzOtgWYu1OnmdV2Ybxl1WuIwqfGKbmRruR7w=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -26,6 +24,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = [
     openssl
   ];
+
+  cargoHash = "sha256-Pw/Y3STSzOtgWYu1OnmdV2Ybxl1WuIwqfGKbmRruR7w=";
 
   meta = {
     description = "Rust application which displays your currently playing song / album / artist from MPD in Discord using Rich Presence";

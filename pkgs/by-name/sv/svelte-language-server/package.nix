@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   fetchPnpmDeps,
-  pnpmConfigHook,
-  pnpm_10,
-  nodejs,
   makeBinaryWrapper,
   nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_10,
 }:
 let
   pnpm = pnpm_10;
@@ -21,20 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "language-tools";
     tag = "svelte-language-server@${finalAttrs.version}";
     hash = "sha256-YKWH0LCZuNrOJFxQLDzY0pMDNFmwPML86KzbuFozrZA=";
-  };
-
-  pnpmWorkspaces = [ "svelte-language-server..." ];
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      pnpmWorkspaces
-      ;
-    inherit pnpm;
-    fetcherVersion = 3;
-    hash = "sha256-PLbmxjqfS5HHU8EKFdZwSNzN4Yl1ShTilqvpwap5noI=";
   };
 
   nativeBuildInputs = [
@@ -68,6 +54,21 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      pnpmWorkspaces
+      ;
+
+    inherit pnpm;
+    fetcherVersion = 3;
+    hash = "sha256-PLbmxjqfS5HHU8EKFdZwSNzN4Yl1ShTilqvpwap5noI=";
+  };
+
+  pnpmWorkspaces = [ "svelte-language-server..." ];
+
   passthru.updateScript = nix-update-script {
     extraArgs = [
       "--use-github-releases"
@@ -78,10 +79,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Language server (implementing the language server protocol) for Svelte";
-    downloadPage = "https://www.npmjs.com/package/svelte-language-server";
     homepage = "https://github.com/sveltejs/language-tools";
     license = lib.licenses.mit;
-    mainProgram = "svelteserver";
     maintainers = [ ];
+    mainProgram = "svelteserver";
+    downloadPage = "https://www.npmjs.com/package/svelte-language-server";
   };
 })

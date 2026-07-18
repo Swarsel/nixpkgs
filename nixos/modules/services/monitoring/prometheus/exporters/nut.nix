@@ -16,19 +16,20 @@ let
     ;
 in
 {
-  port = 9199;
   extraOpts = {
     nutServer = mkOption {
-      type = types.str;
       default = "127.0.0.1";
+
       description = ''
         Hostname or address of the NUT server
       '';
-    };
-    nutUser = mkOption {
+
       type = types.str;
+    };
+
+    nutUser = mkOption {
       default = "";
-      example = "nut";
+
       description = ''
         The user to log in into NUT server. If set, passwordPath should
         also be set.
@@ -36,19 +37,14 @@ in
         Default NUT configs usually permit reading variables without
         authentication.
       '';
+
+      example = "nut";
+      type = types.str;
     };
-    passwordPath = mkOption {
-      type = types.nullOr types.path;
-      default = null;
-      apply = final: if final == null then null else toString final;
-      description = ''
-        A run-time path to the nutUser password file, which should be
-        provisioned outside of Nix store.
-      '';
-    };
+
     nutVariables = mkOption {
-      type = types.listOf types.str;
       default = [ ];
+
       description = ''
         List of NUT variable names to monitor.
 
@@ -56,8 +52,25 @@ in
         See the [upstream docs](https://github.com/DRuggeri/nut_exporter?tab=readme-ov-file#variables-and-information)
         for more information.
       '';
+
+      type = types.listOf types.str;
+    };
+
+    passwordPath = mkOption {
+      apply = final: if final == null then null else toString final;
+      default = null;
+
+      description = ''
+        A run-time path to the nutUser password file, which should be
+        provisioned outside of Nix store.
+      '';
+
+      type = types.nullOr types.path;
     };
   };
+
+  port = 9199;
+
   serviceOpts = {
     script = ''
       ${optionalString (

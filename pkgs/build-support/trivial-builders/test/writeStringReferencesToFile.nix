@@ -1,11 +1,11 @@
 {
-  callPackage,
   lib,
+  callPackage,
   pkgs,
   runCommand,
   samples,
-  writeText,
   writeStringReferencesToFile,
+  writeText,
 }:
 let
   samplePaths = lib.unique (lib.attrValues samples);

@@ -3,13 +3,13 @@
   stdenv,
   fetchurl,
   fetchFromGitHub,
+  copyDesktopItems,
+  gradle_8,
   jdk11,
   jdk17,
-  gradle_8,
-  metasploit,
-  makeWrapper,
   makeDesktopItem,
-  copyDesktopItems,
+  makeWrapper,
+  metasploit,
   writeDarwinBundle,
 }:
 
@@ -26,24 +26,24 @@ let
 
   patches = [
     (fetchurl {
+      hash = "sha256-VUey/e8kcBWqAxYTfIXoyTAoDR/UKZKqBJAKmdabArY=";
       name = "Remove-mentions-of-old-metasploit-versions.patch";
       url = "https://gitlab.com/kalilinux/packages/armitage/-/raw/042beb7494a10227761ecb3ddabf4019bbb78681/debian/patches/Remove-mentions-of-old-metasploit-versions.patch";
-      hash = "sha256-VUey/e8kcBWqAxYTfIXoyTAoDR/UKZKqBJAKmdabArY=";
     })
     (fetchurl {
+      hash = "sha256-ZPvcRoUCrq32g0Mw8+EhNl8DlI+jMYUlFyPW1VScgzc=";
       name = "Update-postgresql-version-to-support-scram-sha-256.patch";
       url = "https://gitlab.com/kalilinux/packages/armitage/-/raw/042beb7494a10227761ecb3ddabf4019bbb78681/debian/patches/Update-postgresql-version-to-support-scram-sha-256.patch";
-      hash = "sha256-ZPvcRoUCrq32g0Mw8+EhNl8DlI+jMYUlFyPW1VScgzc=";
     })
     (fetchurl {
+      hash = "sha256-I6T7iwShQLn+ZHuKa117VOlItXjY4/51RDbjvNJEW/4=";
       name = "fix-launch-script.patch";
       url = "https://gitlab.com/kalilinux/packages/armitage/-/raw/042beb7494a10227761ecb3ddabf4019bbb78681/debian/patches/fix-launch-script.patch";
-      hash = "sha256-I6T7iwShQLn+ZHuKa117VOlItXjY4/51RDbjvNJEW/4=";
     })
     (fetchurl {
+      hash = "sha256-p4fs5xFdC2apW0U8x8u9S4p5gq3Eiv+0E4CGccQZYKY=";
       name = "fix-meterpreter.patch";
       url = "https://gitlab.com/kalilinux/packages/armitage/-/raw/042beb7494a10227761ecb3ddabf4019bbb78681/debian/patches/fix-meterpreter.patch";
-      hash = "sha256-p4fs5xFdC2apW0U8x8u9S4p5gq3Eiv+0E4CGccQZYKY=";
     })
     # Update for Gradle 8 (https://github.com/r00t0v3rr1d3/armitage/pull/1)
     ./gradle-8.patch
@@ -61,21 +61,6 @@ stdenv.mkDerivation (finalAttrs: {
     patches
     ;
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "armitage";
-      desktopName = "Armitage";
-      exec = "armitage";
-      icon = "armitage";
-      comment = finalAttrs.meta.description;
-      categories = [
-        "Network"
-        "Security"
-      ];
-      startupNotify = false;
-    })
-  ];
-
   nativeBuildInputs = [
     jdk17
     gradle
@@ -85,13 +70,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     writeDarwinBundle
   ];
-
-  mitmCache = gradle.fetchDeps {
-    inherit pname;
-    data = ./deps.json;
-  };
-
-  __darwinAllowLocalNetworking = true;
 
   installPhase = ''
     runHook preInstall
@@ -131,6 +109,29 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  __darwinAllowLocalNetworking = true;
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Network"
+        "Security"
+      ];
+
+      comment = finalAttrs.meta.description;
+      desktopName = "Armitage";
+      exec = "armitage";
+      icon = "armitage";
+      name = "armitage";
+      startupNotify = false;
+    })
+  ];
+
+  mitmCache = gradle.fetchDeps {
+    inherit pname;
+    data = ./deps.json;
+  };
 
   meta = {
     description = "Graphical cyber attack management tool for Metasploit";

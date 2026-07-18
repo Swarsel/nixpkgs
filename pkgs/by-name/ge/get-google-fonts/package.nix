@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   fetchpatch,
 }:
 
@@ -20,20 +20,19 @@ buildNpmPackage {
     # update lock file to contain all necessary information
     # https://github.com/MrMaxie/get-google-fonts/pull/27
     (fetchpatch {
-      url = "https://github.com/MrMaxie/get-google-fonts/commit/f2c818fc7c9ee228db020305f432fd08eda7dc5f.patch";
       hash = "sha256-BszZdAZWpnkNETKYvSElg0lCjgcP7BNeXfMvePKAio4=";
+      url = "https://github.com/MrMaxie/get-google-fonts/commit/f2c818fc7c9ee228db020305f432fd08eda7dc5f.patch";
     })
   ];
 
   npmDepsHash = "sha256-VUphB0Qq94rlcGrrsO2Nat/bD2IZTtdevGKsXFu/YdQ=";
-
   dontBuild = true;
 
   meta = {
     description = "Downloads and adapts Google fonts to working offline";
-    mainProgram = "get-google-fonts";
     homepage = "https://github.com/MrMaxie/get-google-fonts";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ SuperSandro2000 ];
+    mainProgram = "get-google-fonts";
   };
 }

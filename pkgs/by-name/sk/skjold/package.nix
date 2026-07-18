@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "skjold";
   version = "0.6.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "twu";
@@ -16,7 +15,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-/ltaRs2WZXbrG3cVez+QIwupJrsV550TjOALbHX9Z0I=";
   };
 
-  pythonRelaxDeps = [ "packaging" ];
+  nativeCheckInputs = with python3.pkgs; [
+    pytest-mock
+    pytest-watch
+    pytestCheckHook
+  ];
 
   build-system = with python3.pkgs; [ poetry-core ];
 
@@ -25,12 +28,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     packaging
     pyyaml
     toml
-  ];
-
-  nativeCheckInputs = with python3.pkgs; [
-    pytest-mock
-    pytest-watch
-    pytestCheckHook
   ];
 
   disabledTestPaths = [
@@ -51,7 +48,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "urllib3"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "skjold" ];
+  pythonRelaxDeps = [ "packaging" ];
 
   meta = {
     description = "Tool to Python dependencies against security advisory databases";

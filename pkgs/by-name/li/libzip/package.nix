@@ -1,20 +1,20 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchurl,
-  perl,
-  zlib,
-  groff,
-  withBzip2 ? true,
   bzip2,
-  withLZMA ? true,
-  xz,
-  withOpenssl ? false,
+  cmake,
+  groff,
   openssl,
-  withZstd ? true,
-  zstd,
+  perl,
   testers,
+  xz,
+  zlib,
+  zstd,
+  withBzip2 ? true,
+  withLZMA ? true,
+  withOpenssl ? false,
+  withZstd ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,13 +37,14 @@ stdenv.mkDerivation (finalAttrs: {
     perl
     groff
   ];
-  propagatedBuildInputs = [ zlib ];
+
   buildInputs =
     lib.optionals withLZMA [ xz ]
     ++ lib.optionals withBzip2 [ bzip2 ]
     ++ lib.optionals withOpenssl [ openssl ]
     ++ lib.optionals withZstd [ zstd ];
 
+  propagatedBuildInputs = [ zlib ];
   # Don't build the regression tests because they don't build with
   # pkgsStatic and are not executed anyway.
   cmakeFlags = [ "-DBUILD_REGRESS=0" ];
@@ -56,11 +57,11 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {
-    homepage = "https://libzip.org/";
     description = "C library for reading, creating and modifying zip archives";
-    license = lib.licenses.bsd3;
-    pkgConfigModules = [ "libzip" ];
-    platforms = lib.platforms.unix;
+    homepage = "https://libzip.org/";
     changelog = "https://github.com/nih-at/libzip/blob/v${finalAttrs.version}/NEWS.md";
+    license = lib.licenses.bsd3;
+    platforms = lib.platforms.unix;
+    pkgConfigModules = [ "libzip" ];
   };
 })

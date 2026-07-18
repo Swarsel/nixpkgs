@@ -1,14 +1,14 @@
 {
   lib,
-  gccStdenv,
   fetchurl,
+  SDL,
   autoconf,
   automake,
-  libtool,
-  pkg-config,
   freetype,
-  SDL,
+  gccStdenv,
+  libtool,
   libx11,
+  pkg-config,
 }:
 let
   stdenv = gccStdenv;
@@ -16,16 +16,24 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "agg";
   version = "2.5";
+
   src = fetchurl {
     url = "https://www.antigrain.com/agg-${finalAttrs.version}.tar.gz";
     sha256 = "07wii4i824vy9qsvjsgqxppgqmfdxq0xa87i5yk53fijriadq7mb";
   };
+
+  postPatch = ''
+    substituteInPlace include/agg_renderer_outline_aa.h \
+      --replace-fail 'line_profile_aa& profile() {' 'const line_profile_aa& profile() {'
+  '';
+
   nativeBuildInputs = [
     pkg-config
     autoconf
     automake
     libtool
   ];
+
   buildInputs = [
     freetype
     SDL
@@ -33,17 +41,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isLinux [
     libx11
   ];
-
-  postPatch = ''
-    substituteInPlace include/agg_renderer_outline_aa.h \
-      --replace-fail 'line_profile_aa& profile() {' 'const line_profile_aa& profile() {'
-  '';
-
-  # fix build with new automake, from Gentoo ebuild
-  preConfigure = ''
-    sed -i '/^AM_C_PROTOTYPES/d' configure.in
-    sh autogen.sh
-  '';
 
   configureFlags = [
     (lib.enableFeature stdenv.hostPlatform.isLinux "platform")
@@ -56,6 +53,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.NIX_CFLAGS_COMPILE = toString [ "-fpermissive" ];
+
+  # fix build with new automake, from Gentoo ebuild
+  preConfigure = ''
+    sed -i '/^AM_C_PROTOTYPES/d' configure.in
+    sh autogen.sh
+  '';
 
   # libtool --tag=CXX --mode=link g++ -g -O2 libexamples.la ../src/platform/X11/libaggplatformX11.la ../src/libagg.la -o alpha_mask2 alpha_mask2.o
   # libtool: error: cannot find the library 'libexamples.la'
@@ -74,8 +77,8 @@ stdenv.mkDerivation (finalAttrs: {
       of course, AGG can do much more than that.
     '';
 
-    license = lib.licenses.gpl2Plus;
     homepage = "https://agg.sourceforge.net/antigrain.com/index.html";
+    license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
     hydraPlatforms = lib.platforms.linux; # build hangs on both Darwin platforms, needs investigation
   };

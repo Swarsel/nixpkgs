@@ -1,14 +1,14 @@
 {
   lib,
-  mihomo,
-  callPackage,
-  fetchFromGitHub,
-  dbip-country-lite,
   stdenv,
-  wrapGAppsHook3,
-  v2ray-geoip,
-  v2ray-domain-list-community,
+  fetchFromGitHub,
+  callPackage,
+  dbip-country-lite,
   libsoup_3,
+  mihomo,
+  v2ray-domain-list-community,
+  v2ray-geoip,
+  wrapGAppsHook3,
 }:
 let
   pname = "clash-verge-rev";
@@ -45,17 +45,21 @@ let
 
   meta = {
     description = "Clash GUI based on tauri";
-    homepage = "https://github.com/clash-verge-rev/clash-verge-rev";
+
     longDescription = ''
       Clash GUI based on tauri
       Setting NixOS option `programs.clash-verge.enable = true` is recommended.
     '';
+
+    homepage = "https://github.com/clash-verge-rev/clash-verge-rev";
     license = lib.licenses.gpl3Only;
-    mainProgram = "clash-verge";
+
     maintainers = with lib.maintainers; [
       hhr2020
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "clash-verge";
   };
 in
 stdenv.mkDerivation {
@@ -86,6 +90,7 @@ stdenv.mkDerivation {
 
     runHook postInstall
   '';
+
   # For testing convenience
   passthru = { inherit unwrapped service; };
 }

@@ -1,17 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  pyyaml,
-  unicode-rbnf,
-
+  buildPythonPackage,
   # tests
   pytestCheckHook,
+  # dependencies
+  pyyaml,
+  # build-system
+  setuptools,
+  unicode-rbnf,
 }:
 
 let
@@ -20,7 +17,6 @@ let
 in
 buildPythonPackage rec {
   inherit pname version;
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "OHF-Voice";
@@ -29,6 +25,7 @@ buildPythonPackage rec {
     hash = "sha256-b+ykT6P9yG8jZZN92K76uBaKTJpV6lkcqP3AAYbj3dU=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -36,19 +33,19 @@ buildPythonPackage rec {
     unicode-rbnf
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTestPaths = [
     # infinite recursion with home-assistant.intents
     "tests/test_fuzzy.py"
   ];
 
+  pyproject = true;
+
   meta = {
-    changelog = "https://github.com/OHF-Voice/hassil/blob/${src.tag}/CHANGELOG.md";
     description = "Intent parsing for Home Assistant";
-    mainProgram = "hassil";
     homepage = "https://github.com/OHF-Voice/hassil";
+    changelog = "https://github.com/OHF-Voice/hassil/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.asl20;
+    mainProgram = "hassil";
     teams = [ lib.teams.home-assistant ];
   };
 }

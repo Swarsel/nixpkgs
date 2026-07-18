@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -16,14 +16,12 @@ buildGoModule rec {
     sha256 = "sha256-dxXBhrZdYM+mH73K/cdaSmfzbzZaPJYCTzcfXGYMlyY=";
   };
 
-  vendorHash = "sha256-3uhwP8WgZ+zmP6Ex1xcQIj/qGoAot/YC3Vu+leMqEQ4=";
-
   postPatch = ''
     substituteInPlace proc/read_test.go --replace /bin/cat cat
   '';
 
+  vendorHash = "sha256-3uhwP8WgZ+zmP6Ex1xcQIj/qGoAot/YC3Vu+leMqEQ4=";
   doCheck = true;
-
   passthru.tests = { inherit (nixosTests.prometheus-exporters) process; };
 
   meta = {

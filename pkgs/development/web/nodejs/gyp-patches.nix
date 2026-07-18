@@ -11,17 +11,17 @@ lib.optionals patch_tools [
   # Fixes builds with Nix sandbox on Darwin for gyp.
   (fetchpatch2 {
     inherit url;
+    extraPrefix = "tools/gyp/";
     hash = "sha256-kvCMpedjrY64BlaC1R0NVjk/vIVivYAGVgWwMEGeP6k=";
     stripLen = 1;
-    extraPrefix = "tools/gyp/";
   })
 ]
 ++ lib.optionals patch_npm [
   (fetchpatch2 {
     inherit url;
+    extraPrefix = "deps/npm/node_modules/node-gyp/gyp/";
     hash = "sha256-cXTwmCRHrNhuY1+3cD/EvU0CJ+1Nk4TRh6c3twvfaW8=";
     stripLen = 1;
-    extraPrefix = "deps/npm/node_modules/node-gyp/gyp/";
   })
 ]
 ++ [

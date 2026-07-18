@@ -41,6 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Pulseaudio command line mixer";
+
     longDescription = ''
       Features:
         - Get the current volume of the default sink, the default source or a selected one by its id
@@ -50,9 +51,10 @@ stdenv.mkDerivation (finalAttrs: {
         - Increase / Decrease the volume for a device
         - Mute or unmute a device
     '';
+
     homepage = "https://github.com/cdemoulins/pamixer";
-    maintainers = with lib.maintainers; [ thiagokokada ];
     license = lib.licenses.gpl3;
+    maintainers = with lib.maintainers; [ thiagokokada ];
     platforms = lib.platforms.linux;
     mainProgram = "pamixer";
   };

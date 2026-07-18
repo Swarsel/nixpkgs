@@ -1,8 +1,8 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
   arp,
+  buildDunePackage,
   ethernet,
   ipaddr,
   tcpip,
@@ -11,8 +11,6 @@
 buildDunePackage (finalAttrs: {
   pname = "mirage-protocols";
   version = "8.0.0";
-
-  duneVersion = "3";
 
   src = fetchurl {
     url = "https://github.com/mirage/mirage-protocols/releases/download/v${finalAttrs.version}/mirage-protocols-v${finalAttrs.version}.tbz";
@@ -25,6 +23,8 @@ buildDunePackage (finalAttrs: {
     ipaddr
     tcpip
   ];
+
+  duneVersion = "3";
 
   meta = {
     description = "MirageOS signatures for network protocols";

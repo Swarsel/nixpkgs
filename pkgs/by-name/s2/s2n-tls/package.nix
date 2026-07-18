@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  openssl,
   nix,
+  openssl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,14 +18,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-oqWTcUGutEn5cOggiY1yPUlVWiHYKjnwBCCrEeWYn0A=";
   };
 
-  nativeBuildInputs = [ cmake ];
-
   outputs = [
     "out"
     "dev"
   ];
 
+  nativeBuildInputs = [ cmake ];
   buildInputs = [ openssl ]; # s2n-config has find_dependency(LibCrypto).
+  propagatedBuildInputs = [ openssl ]; # s2n-config has find_dependency(LibCrypto).
 
   cmakeFlags = [
     "-DBUILD_SHARED_LIBS=ON"
@@ -35,8 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
     # See https://github.com/aws/s2n-tls/issues/1592 and https://github.com/aws/s2n-tls/pull/1609
     "-DS2N_NO_PQ=ON"
   ];
-
-  propagatedBuildInputs = [ openssl ]; # s2n-config has find_dependency(LibCrypto).
 
   postInstall = ''
     # Glob for 'shared' or 'static' subdir
@@ -54,7 +52,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "C99 implementation of the TLS/SSL protocols";
     homepage = "https://github.com/aws/s2n-tls";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

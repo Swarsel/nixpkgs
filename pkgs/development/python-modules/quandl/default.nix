@@ -21,12 +21,11 @@
 buildPythonPackage (finalAttrs: {
   pname = "quandl";
   version = "3.7.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit (finalAttrs) version;
-    pname = "Quandl";
     hash = "sha256-bguC+8eGFhCzV3xTlyd8QiDgZe7g/tTkbNa2AhZVtkw=";
+    pname = "Quandl";
   };
 
   patches = [ ./pandas2-datetime-removal.patch ];
@@ -51,6 +50,7 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "quandl" ];
 
   meta = {

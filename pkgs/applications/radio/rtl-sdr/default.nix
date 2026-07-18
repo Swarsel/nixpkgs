@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  fetchFromGitea,
   fetchFromGitHub,
   cmake,
-  pkg-config,
+  fetchFromGitea,
   libusb1,
+  pkg-config,
 }:
 let
   generic =
     {
-      version,
+      meta,
       pname,
       src,
-      meta,
+      version,
     }:
     stdenv.mkDerivation {
       inherit version pname src;
@@ -22,6 +22,15 @@ let
         "out"
         "dev"
       ];
+
+      postPatch = ''
+        substituteInPlace CMakeLists.txt \
+          --replace '/etc/udev/rules.d' "$out/etc/udev/rules.d" \
+          --replace "VERSION_INFO_PATCH_VERSION git" "VERSION_INFO_PATCH_VERSION ${lib.versions.patch version}"
+
+        substituteInPlace rtl-sdr.rules \
+          --replace 'MODE:="0666"' 'ENV{ID_SOFTWARE_RADIO}="1", MODE="0660", GROUP="plugdev"'
+      '';
 
       nativeBuildInputs = [
         pkg-config
@@ -37,44 +46,41 @@ let
 
       doInstallCheck = true;
 
-      postPatch = ''
-        substituteInPlace CMakeLists.txt \
-          --replace '/etc/udev/rules.d' "$out/etc/udev/rules.d" \
-          --replace "VERSION_INFO_PATCH_VERSION git" "VERSION_INFO_PATCH_VERSION ${lib.versions.patch version}"
-
-        substituteInPlace rtl-sdr.rules \
-          --replace 'MODE:="0666"' 'ENV{ID_SOFTWARE_RADIO}="1", MODE="0660", GROUP="plugdev"'
-      '';
-
       meta = {
         inherit (meta) longDescription homepage;
         description = "Software to turn the RTL2832U into a SDR receiver";
         license = lib.licenses.gpl2Plus;
+
         maintainers = with lib.maintainers; [
           bjornfor
           skovati
           Tungsten842
         ];
+
         platforms = lib.platforms.unix;
         mainProgram = "rtl_sdr";
       };
     };
 in
 {
-  rtl-sdr-osmocom = generic rec {
-    pname = "rtl-sdr-osmocom";
-    version = "2.0.1";
+  rtl-sdr-blog = generic rec {
+    pname = "rtl-sdr-blog";
+    version = "1.3.5";
 
-    src = fetchFromGitea {
-      domain = "gitea.osmocom.org";
-      owner = "sdr";
-      repo = "rtl-sdr";
-      rev = "v${version}";
-      hash = "sha256-+RYSCn+wAkb9e7NRI5kLY8a6OXtJu7QcSUht1R6wDX0=";
+    src = fetchFromGitHub {
+      owner = "rtlsdrblog";
+      repo = "rtl-sdr-blog";
+      rev = version;
+      hash = "sha256-7FpT+BoQ2U8KiKwX4NfEwrO3lMBti7RX8uKtT5dFH8M=";
     };
+
     meta = {
-      longDescription = "Rtl-sdr library by the Osmocom project";
-      homepage = "https://gitea.osmocom.org/sdr/rtl-sdr";
+      longDescription = ''
+        Fork of the rtl-sdr library by the Osmocom project. A list of differences
+        can be found here: https://github.com/rtlsdrblog/rtl-sdr-blog/blob/master/README
+      '';
+
+      homepage = "https://github.com/rtlsdrblog/rtl-sdr-blog";
     };
   };
 
@@ -88,31 +94,32 @@ in
       rev = "v${version}";
       hash = "sha256-I1rbywQ0ZBw26wZdtMBkfpj7+kv09XKrrcoDuhIkRmw=";
     };
+
     meta = {
       longDescription = ''
         Fork of the rtl-sdr library by the Osmocom project. A list of differences
         can be found here: https://github.com/librtlsdr/librtlsdr/blob/master/README_improvements.md
       '';
+
       homepage = "https://github.com/librtlsdr/librtlsdr";
     };
   };
 
-  rtl-sdr-blog = generic rec {
-    pname = "rtl-sdr-blog";
-    version = "1.3.5";
+  rtl-sdr-osmocom = generic rec {
+    pname = "rtl-sdr-osmocom";
+    version = "2.0.1";
 
-    src = fetchFromGitHub {
-      owner = "rtlsdrblog";
-      repo = "rtl-sdr-blog";
-      rev = version;
-      hash = "sha256-7FpT+BoQ2U8KiKwX4NfEwrO3lMBti7RX8uKtT5dFH8M=";
+    src = fetchFromGitea {
+      owner = "sdr";
+      repo = "rtl-sdr";
+      rev = "v${version}";
+      hash = "sha256-+RYSCn+wAkb9e7NRI5kLY8a6OXtJu7QcSUht1R6wDX0=";
+      domain = "gitea.osmocom.org";
     };
+
     meta = {
-      longDescription = ''
-        Fork of the rtl-sdr library by the Osmocom project. A list of differences
-        can be found here: https://github.com/rtlsdrblog/rtl-sdr-blog/blob/master/README
-      '';
-      homepage = "https://github.com/rtlsdrblog/rtl-sdr-blog";
+      longDescription = "Rtl-sdr library by the Osmocom project";
+      homepage = "https://gitea.osmocom.org/sdr/rtl-sdr";
     };
   };
 

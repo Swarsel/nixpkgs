@@ -1,14 +1,14 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   coreutils,
   curl,
-  fetchFromGitHub,
   gawk,
   gnutar,
-  stdenv,
+  nix-update-script,
   unixtools,
   writeShellApplication,
-  nix-update-script,
   displays ? { },
 }:
 
@@ -30,20 +30,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-kdGUAbdlS736iB9oGo46HLK3ne3BV4LmUv/3fliyQBA=";
   };
 
-  fetch = lib.getExe (writeShellApplication {
-    name = "linuxhw-edid-fetch";
-    runtimeInputs = [
-      gawk
-      coreutils
-      unixtools.xxd
-      curl
-      gnutar
-    ];
-    text = ''
-      repo="''${repo:-"${finalAttrs.src}"}"
-      ${builtins.readFile ./linuxhw-edid-fetch.sh}
-    '';
-  });
+  installPhase = ''
+    mkdir -p "$out/bin"
+    ln -s "$fetch" "$out/bin/"
+    ${lib.optionalString (displays != { }) ''
+      install -D --mode=444 --target-directory="$out/lib/firmware/edid" *.bin
+    ''}
+  '';
 
   configurePhase = lib.pipe displays [
     (lib.mapAttrsToList (
@@ -54,13 +47,22 @@ stdenv.mkDerivation (finalAttrs: {
     (builtins.concatStringsSep "\n")
   ];
 
-  installPhase = ''
-    mkdir -p "$out/bin"
-    ln -s "$fetch" "$out/bin/"
-    ${lib.optionalString (displays != { }) ''
-      install -D --mode=444 --target-directory="$out/lib/firmware/edid" *.bin
-    ''}
-  '';
+  fetch = lib.getExe (writeShellApplication {
+    name = "linuxhw-edid-fetch";
+
+    runtimeInputs = [
+      gawk
+      coreutils
+      unixtools.xxd
+      curl
+      gnutar
+    ];
+
+    text = ''
+      repo="''${repo:-"${finalAttrs.src}"}"
+      ${builtins.readFile ./linuxhw-edid-fetch.sh}
+    '';
+  });
 
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch=master" ]; };
 

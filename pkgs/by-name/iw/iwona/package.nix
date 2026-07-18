@@ -6,9 +6,7 @@
 
 stdenvNoCC.mkDerivation rec {
   inherit (src) pname version;
-
   src = texlive.pkgs.iwona;
-  dontUnpack = true;
 
   installPhase = ''
     runHook preInstall
@@ -17,6 +15,8 @@ stdenvNoCC.mkDerivation rec {
 
     runHook postInstall
   '';
+
+  dontUnpack = true;
 
   meta = {
     description = "Two-element sans-serif typeface, created by Małgorzata Budyta";

@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   breezy,
   build,
   buildPythonPackage,
-  fetchFromGitHub,
   git,
   pep517,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "check-manifest";
   version = "0.51";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mgedmin";
@@ -22,6 +21,12 @@ buildPythonPackage rec {
     hash = "sha256-tT6xQZwqJIsyrO9BjWweIeNgYaopziewerVBk0mFVYg=";
   };
 
+  nativeCheckInputs = [
+    git
+    pytestCheckHook
+  ];
+
+  checkInputs = [ breezy ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,18 +35,12 @@ buildPythonPackage rec {
     setuptools
   ];
 
-  nativeCheckInputs = [
-    git
-    pytestCheckHook
-  ];
-
-  checkInputs = [ breezy ];
-
   disabledTests = [
     # Test wants to setup a venv
     "test_build_sdist_pep517_isolated"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "check_manifest" ];
 
   meta = {

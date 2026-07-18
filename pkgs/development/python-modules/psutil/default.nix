@@ -1,19 +1,18 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
+  buildPythonPackage,
+  gitUpdater,
   pytest-instafail,
   pytest-xdist,
-  gitUpdater,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "psutil";
   version = "7.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "giampaolo";
@@ -30,7 +29,9 @@ buildPythonPackage rec {
       --replace-fail kIOMainPortDefault kIOMasterPortDefault
   '';
 
-  build-system = [ setuptools ];
+  # Segfaults on darwin:
+  # https://github.com/giampaolo/psutil/issues/1715
+  doCheck = !stdenv.hostPlatform.isDarwin;
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -38,18 +39,11 @@ buildPythonPackage rec {
     pytest-xdist
   ];
 
-  # Segfaults on darwin:
-  # https://github.com/giampaolo/psutil/issues/1715
-  doCheck = !stdenv.hostPlatform.isDarwin;
+  preCheck = ''
+    rm -rf psutil
+  '';
 
-  # In addition to the issues listed above there are some that occure due to
-  # our sandboxing which we can work around by disabling some tests:
-  # - cpu_times was flaky on darwin
-  # - the other disabled tests are likely due to sandboxing (missing specific errors)
-  enabledTestPaths = [
-    # Note: $out must be referenced as test import paths are relative
-    "tests/test_system.py"
-  ];
+  build-system = [ setuptools ];
 
   disabledTests = [
     # Some of the tests have build-system hardware-based impurities (like
@@ -64,10 +58,16 @@ buildPythonPackage rec {
     "test_disk_partitions" # problematic on Hydra's Linux builders, apparently
   ];
 
-  preCheck = ''
-    rm -rf psutil
-  '';
+  # In addition to the issues listed above there are some that occure due to
+  # our sandboxing which we can work around by disabling some tests:
+  # - cpu_times was flaky on darwin
+  # - the other disabled tests are likely due to sandboxing (missing specific errors)
+  enabledTestPaths = [
+    # Note: $out must be referenced as test import paths are relative
+    "tests/test_system.py"
+  ];
 
+  pyproject = true;
   pythonImportsCheck = [ "psutil" ];
 
   passthru.updateScript = gitUpdater {

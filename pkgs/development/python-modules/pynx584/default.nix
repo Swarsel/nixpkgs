@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   flask,
   mock,
   prettytable,
   pyserial,
   pytestCheckHook,
   requests,
+  setuptools,
   stevedore,
 }:
 
 buildPythonPackage {
   pname = "pynx584";
   version = "0.8.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kk7ds";
@@ -23,6 +22,11 @@ buildPythonPackage {
     tag = "0.8.2";
     hash = "sha256-q5ra7tH4kaBrw0VAiyMsmWOkVhA7Y6bRuFP8dlxQjsE=";
   };
+
+  nativeCheckInputs = [
+    mock
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -34,11 +38,7 @@ buildPythonPackage {
     stevedore
   ];
 
-  nativeCheckInputs = [
-    mock
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "nx584" ];
 
   meta = {

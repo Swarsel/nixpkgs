@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "djlint";
   version = "1.36.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "djlint";
@@ -18,11 +17,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   build-system = with python3.pkgs; [
     hatchling
-  ];
-
-  pythonRelaxDeps = [
-    "pathspec"
-    "regex"
   ];
 
   dependencies = with python3.pkgs; [
@@ -38,14 +32,20 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tqdm
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "djlint" ];
+
+  pythonRelaxDeps = [
+    "pathspec"
+    "regex"
+  ];
 
   meta = {
     description = "HTML Template Linter and Formatter. Django - Jinja - Nunjucks - Handlebars - GoLang";
-    mainProgram = "djlint";
     homepage = "https://github.com/djlint/djLint";
-    license = lib.licenses.gpl3Only;
     changelog = "https://github.com/djlint/djLint/blob/v${finalAttrs.version}/CHANGELOG.md";
+    license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ traxys ];
+    mainProgram = "djlint";
   };
 })

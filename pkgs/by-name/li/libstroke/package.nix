@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  automake,
   autoconf,
+  automake,
   libx11,
 }:
 
@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
     automake
     autoconf
   ];
+
   buildInputs = [ libx11 ];
 
   # libstroke ships with an ancient config.sub that doesn't know about x86_64, so regenerate it.
@@ -36,8 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Library for simple gesture recognition";
-    homepage = "https://web.archive.org/web/20161204100704/http://etla.net/libstroke/";
-    license = lib.licenses.gpl2;
 
     longDescription = ''
       libstroke, last updated in 2001, still successfully provides a basic
@@ -45,6 +44,8 @@ stdenv.mkDerivation (finalAttrs: {
       easy to work with, and notably used by FVWM.
     '';
 
+    homepage = "https://web.archive.org/web/20161204100704/http://etla.net/libstroke/";
+    license = lib.licenses.gpl2;
     platforms = lib.platforms.linux;
   };
 })

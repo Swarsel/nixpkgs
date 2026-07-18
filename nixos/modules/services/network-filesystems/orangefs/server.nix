@@ -85,70 +85,46 @@ in
     services.orangefs.server = {
       enable = lib.mkEnableOption "OrangeFS server";
 
-      logType = lib.mkOption {
-        type =
-          with lib.types;
-          enum [
-            "file"
-            "syslog"
-          ];
-        default = "syslog";
-        description = "Destination for log messages.";
-      };
-
-      dataStorageSpace = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        example = "/data/storage";
-        description = "Directory for data storage.";
-      };
-
-      metadataStorageSpace = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        example = "/data/meta";
-        description = "Directory for meta data storage.";
-      };
-
       BMIModules = lib.mkOption {
-        type = with lib.types; listOf str;
         default = [ "bmi_tcp" ];
+        description = "List of BMI modules to load.";
+
         example = [
           "bmi_tcp"
           "bmi_ib"
         ];
-        description = "List of BMI modules to load.";
+
+        type = with lib.types; listOf str;
       };
 
-      extraDefaults = lib.mkOption {
-        type = lib.types.lines;
-        default = "";
-        description = "Extra config for `<Defaults>` section.";
+      dataStorageSpace = lib.mkOption {
+        default = null;
+        description = "Directory for data storage.";
+        example = "/data/storage";
+        type = lib.types.nullOr lib.types.str;
       };
 
       extraConfig = lib.mkOption {
-        type = lib.types.lines;
         default = "";
         description = "Extra config for the global section.";
+        type = lib.types.lines;
       };
 
-      servers = lib.mkOption {
-        type = with lib.types; attrsOf lib.types.str;
-        default = { };
-        example = {
-          node1 = "tcp://node1:3334";
-          node2 = "tcp://node2:3334";
-        };
-        description = "URLs for storage server including port. The attribute names define the server alias.";
+      extraDefaults = lib.mkOption {
+        default = "";
+        description = "Extra config for `<Defaults>` section.";
+        type = lib.types.lines;
       };
 
       fileSystems = lib.mkOption {
-        description = ''
-          These options will create the `<FileSystem>` sections of config file.
-        '';
         default = {
           orangefs = { };
         };
+
+        description = ''
+          These options will create the `<FileSystem>` sections of config file.
+        '';
+
         example = lib.literalExpression ''
           {
             fs1 = {
@@ -160,6 +136,7 @@ in
             };
           }
         '';
+
         type =
           with lib.types;
           attrsOf (
@@ -167,45 +144,76 @@ in
               { ... }:
               {
                 options = {
-                  id = lib.mkOption {
-                    type = lib.types.int;
-                    default = 1;
-                    description = "File system ID (must be unique within configuration).";
-                  };
-
-                  rootHandle = lib.mkOption {
-                    type = lib.types.int;
-                    default = 3;
-                    description = "File system root ID.";
-                  };
-
                   extraConfig = lib.mkOption {
-                    type = lib.types.lines;
                     default = "";
                     description = "Extra config for `<FileSystem>` section.";
-                  };
-
-                  troveSyncMeta = lib.mkOption {
-                    type = lib.types.bool;
-                    default = true;
-                    description = "Sync meta data.";
-                  };
-
-                  troveSyncData = lib.mkOption {
-                    type = lib.types.bool;
-                    default = false;
-                    description = "Sync data.";
+                    type = lib.types.lines;
                   };
 
                   extraStorageHints = lib.mkOption {
-                    type = lib.types.lines;
                     default = "";
                     description = "Extra config for `<StorageHints>` section.";
+                    type = lib.types.lines;
+                  };
+
+                  id = lib.mkOption {
+                    default = 1;
+                    description = "File system ID (must be unique within configuration).";
+                    type = lib.types.int;
+                  };
+
+                  rootHandle = lib.mkOption {
+                    default = 3;
+                    description = "File system root ID.";
+                    type = lib.types.int;
+                  };
+
+                  troveSyncData = lib.mkOption {
+                    default = false;
+                    description = "Sync data.";
+                    type = lib.types.bool;
+                  };
+
+                  troveSyncMeta = lib.mkOption {
+                    default = true;
+                    description = "Sync meta data.";
+                    type = lib.types.bool;
                   };
                 };
               }
             )
           );
+      };
+
+      logType = lib.mkOption {
+        default = "syslog";
+        description = "Destination for log messages.";
+
+        type =
+          with lib.types;
+          enum [
+            "file"
+            "syslog"
+          ];
+      };
+
+      metadataStorageSpace = lib.mkOption {
+        default = null;
+        description = "Directory for meta data storage.";
+        example = "/data/meta";
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      servers = lib.mkOption {
+        default = { };
+        description = "URLs for storage server including port. The attribute names define the server alias.";
+
+        example = {
+          node1 = "tcp://node1:3334";
+          node2 = "tcp://node2:3334";
+        };
+
+        type = with lib.types; attrsOf lib.types.str;
       };
     };
   };
@@ -213,26 +221,18 @@ in
   ###### implementation
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ pkgs.orangefs ];
-
-    # orangefs daemon will run as user
-    users.users.orangefs = {
-      isSystemUser = true;
-      group = "orangefs";
-    };
-    users.groups.orangefs = { };
-
     # To format the file system the config file is needed.
     environment.etc."orangefs/server.conf" = {
+      group = "orangefs";
       text = configFile;
       user = "orangefs";
-      group = "orangefs";
     };
 
+    environment.systemPackages = [ pkgs.orangefs ];
+
     systemd.services.orangefs-server = {
-      wantedBy = [ "multi-user.target" ];
-      requires = [ "network-online.target" ];
       after = [ "network-online.target" ];
+      requires = [ "network-online.target" ];
 
       serviceConfig = {
         # Run as "simple" in foreground mode.
@@ -241,10 +241,21 @@ in
           ${pkgs.orangefs}/bin/pvfs2-server -d \
             /etc/orangefs/server.conf
         '';
+
+        Group = "orangefs";
         TimeoutStopSec = "120";
         User = "orangefs";
-        Group = "orangefs";
       };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups.orangefs = { };
+
+    # orangefs daemon will run as user
+    users.users.orangefs = {
+      group = "orangefs";
+      isSystemUser = true;
     };
   };
 

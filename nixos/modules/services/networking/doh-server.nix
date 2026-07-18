@@ -12,85 +12,33 @@ in
 {
   options.services.doh-server = {
     enable = lib.mkEnableOption "DNS-over-HTTPS server";
-
     package = lib.mkPackageOption pkgs "dns-over-https" { };
 
+    configFile = lib.mkOption {
+      description = ''
+        The config file for the doh-server.
+        Setting this option will override any configuration applied by the `settings` option.
+      '';
+
+      example = "/path/to/doh-server.conf";
+      type = lib.types.path;
+    };
+
     settings = lib.mkOption {
+      default = { };
+      description = "Configuration of doh-server in toml. See example in <https://github.com/m13253/dns-over-https/blob/master/doh-server/doh-server.conf>";
+
+      example = {
+        listen = [ ":8153" ];
+        upstream = [ "udp:127.0.0.1:53" ];
+      };
+
       type = lib.types.submodule {
-        freeformType = toml.type;
         options = {
 
-          listen = lib.mkOption {
-            type = lib.types.listOf lib.types.str;
-            default = [
-              "127.0.0.1:8053"
-              "[::1]:8053"
-            ];
-            example = [ ":443" ];
-            description = "HTTP listen address and port";
-          };
-
-          path = lib.mkOption {
-            type = lib.types.str;
-            default = "/dns-query";
-            example = "/dns-query";
-            description = "HTTP path for resolve application";
-          };
-
-          upstream = lib.mkOption {
-            type = lib.types.listOf lib.types.str;
-            default = [
-              "udp:1.1.1.1:53"
-              "udp:1.0.0.1:53"
-              "udp:8.8.8.8:53"
-              "udp:8.8.4.4:53"
-            ];
-            example = [ "udp:127.0.0.1:53" ];
-            description = ''
-              Upstream DNS resolver.
-              If multiple servers are specified, a random one will be chosen each time.
-              You can use "udp", "tcp" or "tcp-tls" for the type prefix.
-              For "udp", UDP will first be used, and switch to TCP when the server asks to or the response is too large.
-              For "tcp", only TCP will be used.
-              For "tcp-tls", DNS-over-TLS (RFC 7858) will be used to secure the upstream connection.
-            '';
-          };
-
-          timeout = lib.mkOption {
-            type = lib.types.int;
-            default = 10;
-            example = 15;
-            description = "Upstream timeout";
-          };
-
-          tries = lib.mkOption {
-            type = lib.types.int;
-            default = 3;
-            example = 5;
-            description = "Number of tries if upstream DNS fails";
-          };
-
-          verbose = lib.mkOption {
-            type = lib.types.bool;
-            default = false;
-            example = true;
-            description = "Enable logging";
-          };
-
-          log_guessed_client_ip = lib.mkOption {
-            type = lib.types.bool;
-            default = false;
-            example = true;
-            description = ''
-              Enable log IP from HTTPS-reverse proxy header: X-Forwarded-For or X-Real-IP
-              Note: http uri/useragent log cannot be controlled by this config
-            '';
-          };
-
           ecs_allow_non_global_ip = lib.mkOption {
-            type = lib.types.bool;
             default = false;
-            example = true;
+
             description = ''
               By default, non global IP addresses are never forwarded to upstream servers.
               This is to prevent two things from happening:
@@ -99,47 +47,115 @@ in
                   or even fail to provide any result.
               However, if you are deploying a split tunnel corporation network environment, or for any other reason you want to inhibit this behavior and allow local (eg RFC1918) address to be forwarded, change the following option to "true".
             '';
+
+            example = true;
+            type = lib.types.bool;
           };
 
           ecs_use_precise_ip = lib.mkOption {
-            type = lib.types.bool;
             default = false;
-            example = true;
+
             description = ''
               If ECS is added to the request, let the full IP address or cap it to 24 or 128 mask. This option is to be used only on private networks where knowledge of the terminal endpoint may be required for security purposes (eg. DNS Firewalling). Not a good option on the internet where IP address may be used to identify the user and not only the approximate location.
             '';
+
+            example = true;
+            type = lib.types.bool;
+          };
+
+          listen = lib.mkOption {
+            default = [
+              "127.0.0.1:8053"
+              "[::1]:8053"
+            ];
+
+            description = "HTTP listen address and port";
+            example = [ ":443" ];
+            type = lib.types.listOf lib.types.str;
+          };
+
+          log_guessed_client_ip = lib.mkOption {
+            default = false;
+
+            description = ''
+              Enable log IP from HTTPS-reverse proxy header: X-Forwarded-For or X-Real-IP
+              Note: http uri/useragent log cannot be controlled by this config
+            '';
+
+            example = true;
+            type = lib.types.bool;
+          };
+
+          path = lib.mkOption {
+            default = "/dns-query";
+            description = "HTTP path for resolve application";
+            example = "/dns-query";
+            type = lib.types.str;
+          };
+
+          timeout = lib.mkOption {
+            default = 10;
+            description = "Upstream timeout";
+            example = 15;
+            type = lib.types.int;
+          };
+
+          tries = lib.mkOption {
+            default = 3;
+            description = "Number of tries if upstream DNS fails";
+            example = 5;
+            type = lib.types.int;
+          };
+
+          upstream = lib.mkOption {
+            default = [
+              "udp:1.1.1.1:53"
+              "udp:1.0.0.1:53"
+              "udp:8.8.8.8:53"
+              "udp:8.8.4.4:53"
+            ];
+
+            description = ''
+              Upstream DNS resolver.
+              If multiple servers are specified, a random one will be chosen each time.
+              You can use "udp", "tcp" or "tcp-tls" for the type prefix.
+              For "udp", UDP will first be used, and switch to TCP when the server asks to or the response is too large.
+              For "tcp", only TCP will be used.
+              For "tcp-tls", DNS-over-TLS (RFC 7858) will be used to secure the upstream connection.
+            '';
+
+            example = [ "udp:127.0.0.1:53" ];
+            type = lib.types.listOf lib.types.str;
+          };
+
+          verbose = lib.mkOption {
+            default = false;
+            description = "Enable logging";
+            example = true;
+            type = lib.types.bool;
           };
         };
+
+        freeformType = toml.type;
       };
-      default = { };
-      example = {
-        listen = [ ":8153" ];
-        upstream = [ "udp:127.0.0.1:53" ];
-      };
-      description = "Configuration of doh-server in toml. See example in <https://github.com/m13253/dns-over-https/blob/master/doh-server/doh-server.conf>";
     };
 
     useACMEHost = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
       default = null;
-      example = "doh.example.com";
+
       description = ''
         A host of an existing Let's Encrypt certificate to use.
         *Note that this option does not create any certificates, nor it does add subdomains to existing ones – you will need to create them manually using [](#opt-security.acme.certs).*
       '';
-    };
 
-    configFile = lib.mkOption {
-      type = lib.types.path;
-      example = "/path/to/doh-server.conf";
-      description = ''
-        The config file for the doh-server.
-        Setting this option will override any configuration applied by the `settings` option.
-      '';
+      example = "doh.example.com";
+      type = lib.types.nullOr lib.types.str;
     };
   };
+
   config = lib.mkIf cfg.enable {
     services.doh-server.configFile = lib.mkDefault (toml.generate "doh-server.conf" cfg.settings);
+
     services.doh-server.settings = lib.mkIf (cfg.useACMEHost != null) (
       let
         sslCertDir = config.security.acme.certs.${cfg.useACMEHost}.directory;
@@ -149,28 +165,32 @@ in
         key = "${sslCertDir}/key.pem";
       }
     );
+
     systemd.services.doh-server = {
-      description = "DNS-over-HTTPS Server";
-      documentation = [ "https://github.com/m13253/dns-over-https" ];
       after = [
         "network.target"
       ]
       ++ lib.optional (cfg.useACMEHost != null) "acme-${cfg.useACMEHost}.service";
-      wants = lib.optional (cfg.useACMEHost != null) "acme-${cfg.useACMEHost}.service";
-      wantedBy = [ "multi-user.target" ];
+
+      description = "DNS-over-HTTPS Server";
+      documentation = [ "https://github.com/m13253/dns-over-https" ];
+
       serviceConfig = {
         AmbientCapabilities = "CAP_NET_BIND_SERVICE";
+        DynamicUser = true;
         ExecStart = "${cfg.package}/bin/doh-server -conf ${cfg.configFile}";
         LimitNOFILE = 1048576;
         Restart = "always";
         RestartSec = 3;
-        Type = "simple";
-        DynamicUser = true;
         SupplementaryGroups = lib.optional (cfg.useACMEHost != null) "acme";
+        Type = "simple";
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = lib.optional (cfg.useACMEHost != null) "acme-${cfg.useACMEHost}.service";
     };
   };
 
-  meta.maintainers = with lib.maintainers; [ DictXiong ];
   meta.doc = ./doh-server.md;
+  meta.maintainers = with lib.maintainers; [ DictXiong ];
 }

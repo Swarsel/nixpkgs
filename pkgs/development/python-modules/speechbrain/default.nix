@@ -1,11 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   huggingface-hub,
   hyperpyyaml,
@@ -15,6 +11,8 @@
   requests,
   scipy,
   sentencepiece,
+  # build-system
+  setuptools,
   soundfile,
   torch,
   torchaudio,
@@ -24,7 +22,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "speechbrain";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "speechbrain";
@@ -33,6 +30,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-98g9HSCD6ahsmCSKSKIY1okYOuzUqVuJO9N9WUiZMPk=";
   };
 
+  doCheck = false; # requires sox backend
   build-system = [ setuptools ];
 
   dependencies = [
@@ -50,9 +48,8 @@ buildPythonPackage (finalAttrs: {
     tqdm
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "speechbrain" ];
-
-  doCheck = false; # requires sox backend
 
   meta = {
     description = "PyTorch-based Speech Toolkit";

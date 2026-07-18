@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
-  autoPatchelfHook,
-  makeWrapper,
   alsa-lib,
+  autoPatchelfHook,
+  dpkg,
   gtk3,
-  libxshmfence,
-  libgbm,
   libGL,
+  libgbm,
+  libxshmfence,
+  makeWrapper,
   musl,
   nss,
   systemd,
@@ -40,8 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
     nss
   ];
 
-  runtimeDependencies = [ systemd ];
-
   installPhase = ''
     runHook preInstall
 
@@ -59,11 +57,13 @@ stdenv.mkDerivation (finalAttrs: {
     patchelf --add-needed libGL.so.1 $out/libexec/thedesk/thedesk-next
   '';
 
+  runtimeDependencies = [ systemd ];
+
   meta = {
     description = "Mastodon/Misskey Client for PC";
     homepage = "https://thedesk.top";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.gpl3Only;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "thedesk";

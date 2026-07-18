@@ -1,12 +1,12 @@
 {
-  stdenv,
-  callPackage,
-  sasl,
-  boost,
-  cctools,
-  avxSupport ? stdenv.hostPlatform.avxSupport,
-  nixosTests,
   lib,
+  stdenv,
+  boost,
+  callPackage,
+  cctools,
+  nixosTests,
+  sasl,
+  avxSupport ? stdenv.hostPlatform.avxSupport,
 }:
 
 let
@@ -22,7 +22,7 @@ in
 buildMongoDB {
   inherit avxSupport;
   version = "7.0.37";
-  hash = "sha256-oDBNZTeM3UkXIfhG9IHnZYECVq4+n7pLUtYa8a5ki7E=";
+
   patches = [
     # ModuleNotFoundError: No module named 'mongo_tooling_metrics':
     # NameError: name 'SConsToolingMetrics' is not defined:
@@ -36,6 +36,8 @@ buildMongoDB {
     # https://github.com/GermanAizek/mongodb-without-avx/issues/16
   ]
   ++ lib.optionals (!avxSupport) [ ./mozjs-noavx.patch ];
+
+  hash = "sha256-oDBNZTeM3UkXIfhG9IHnZYECVq4+n7pLUtYa8a5ki7E=";
 
   passthru.tests = {
     inherit (nixosTests) mongodb;

@@ -1,29 +1,26 @@
 {
   lib,
+  aiohttp,
   buildPythonPackage,
   fetchPypi,
-  aiohttp,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "smarthab";
   version = "0.21";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "SmartHab";
     inherit version;
     hash = "sha256-v5KUVaL3zB4nWzMd5z2YNYcTio2ReVdJiLoF+hUtPM8=";
+    pname = "SmartHab";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
 
   # no tests on PyPI, no tags on GitLab
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "pysmarthab" ];
 
   meta = {

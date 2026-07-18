@@ -1,16 +1,13 @@
 {
-  julec,
   clangStdenv,
+  julec,
 }:
 
 clangStdenv.mkDerivation (finalAttrs: {
-  pname = "hello-jule";
   inherit (julec) version;
-
+  pname = "hello-jule";
   src = ./hello-jule;
-
   nativeBuildInputs = [ julec.hook ];
-
   doCheck = true;
 
   meta = {

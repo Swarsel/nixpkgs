@@ -1,13 +1,13 @@
 {
-  cmake,
+  lib,
+  stdenv,
   fetchFromGitHub,
+  SDL2,
+  cmake,
   fetchpatch2,
   fpattern,
-  lib,
-  SDL2,
-  stdenv,
-  writeShellScript,
   nix-update-script,
+  writeShellScript,
 }:
 
 let
@@ -57,22 +57,19 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fix case-sensitive filesystems issue when save/load games
     (fetchpatch2 {
-      url = "https://github.com/alexbatalov/fallout1-ce/commit/fbd25f00e9ccfb5391e394272d536206bb86678b.patch?full_index=1";
       sha256 = "sha256-MylI1DZwaANuScyRJ7fXch3aym8n6BDRhccAXAyvU70=";
+      url = "https://github.com/alexbatalov/fallout1-ce/commit/fbd25f00e9ccfb5391e394272d536206bb86678b.patch?full_index=1";
     })
   ];
-
-  nativeBuildInputs = [ cmake ];
-
-  buildInputs = [ SDL2 ];
-
-  hardeningDisable = [ "format" ];
 
   postPatch = ''
     substituteInPlace third_party/fpattern/CMakeLists.txt \
       --replace-fail "FetchContent_Populate" "#FetchContent_Populate" \
       --replace-fail "\''${fpattern_SOURCE_DIR}" "${fpattern}/include"
   '';
+
+  nativeBuildInputs = [ cmake ];
+  buildInputs = [ SDL2 ];
 
   installPhase = ''
     runHook preInstall
@@ -84,14 +81,17 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  hardeningDisable = [ "format" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Fallout for modern operating systems";
+
     longDescription = ''
       Fully working re-implementation of Fallout, with the same original gameplay, engine bugfixes, and some quality of life improvements.
       You must own the game and copy the files to the specified folder to play.
     '';
+
     homepage = "https://github.com/alexbatalov/fallout1-ce";
     license = lib.licenses.sustainableUse;
     maintainers = with lib.maintainers; [ hughobrien ];

@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
   installShellFiles,
-  stdenv,
+  rustPlatform,
   unixtools,
 }:
 
@@ -18,19 +18,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-tJ95rvYjqQn0ZTlEdqfs/LbyfBP7PqnevxX8b1VfokA=";
   };
 
-  cargoHash = "sha256-sJdZjTzfawwBK8KxQP7zvn+kByCMSxrrQjY1t9RWmhU=";
-
   patches = [
     # patch tests to point to the correct target directory
     ./fix-target-dir.patch
   ];
 
+  postPatch = ''
+    substituteInPlace src/helper/args/mod.rs \
+      --subst-var-by releaseDir target/${stdenv.hostPlatform.rust.rustcTargetSpec}/$cargoCheckType
+  '';
+
   nativeBuildInputs = [ installShellFiles ];
-
-  nativeCheckInputs = [ unixtools.script ];
-
+  cargoHash = "sha256-sJdZjTzfawwBK8KxQP7zvn+kByCMSxrrQjY1t9RWmhU=";
   # tests are failing on darwin
   doCheck = !stdenv.hostPlatform.isDarwin;
+  nativeCheckInputs = [ unixtools.script ];
 
   checkFlags = [
     # requires internet access
@@ -39,11 +41,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=helper::docs::cheatsheets::tests::test_fetch_cheatsheets"
     "--skip=helper::docs::eg::tests::test_eg_page_fetch"
   ];
-
-  postPatch = ''
-    substituteInPlace src/helper/args/mod.rs \
-      --subst-var-by releaseDir target/${stdenv.hostPlatform.rust.rustcTargetSpec}/$cargoCheckType
-  '';
 
   preCheck = ''
     export NO_COLOR=1
@@ -68,10 +65,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "CLI tool to get help with CLI tools";
     homepage = "https://github.com/orhun/halp";
     changelog = "https://github.com/orhun/halp/blob/v${finalAttrs.version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = [ ];
     mainProgram = "halp";
   };

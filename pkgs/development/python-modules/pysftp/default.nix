@@ -9,8 +9,6 @@
 buildPythonPackage rec {
   pname = "pysftp";
   version = "0.2.9";
-  format = "setuptools";
-  disabled = isPyPy;
 
   src = fetchPypi {
     inherit pname version;
@@ -18,15 +16,19 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ paramiko ];
+  disabled = isPyPy;
+  format = "setuptools";
 
   meta = {
-    homepage = "https://bitbucket.org/dundeemt/pysftp";
     description = "Friendly face on SFTP";
-    license = lib.licenses.mit;
+
     longDescription = ''
       A simple interface to SFTP. The module offers high level abstractions
       and task based routines to handle your SFTP needs. Checkout the Cook
       Book, in the docs, to see what pysftp can do for you.
     '';
+
+    homepage = "https://bitbucket.org/dundeemt/pysftp";
+    license = lib.licenses.mit;
   };
 }

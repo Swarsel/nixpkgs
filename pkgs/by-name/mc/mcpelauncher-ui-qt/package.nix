@@ -1,28 +1,28 @@
 {
   lib,
   stdenv,
-  mcpelauncher-client,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  zlib,
-  libzip,
   curl,
+  glfw,
+  libzip,
+  mcpelauncher-client,
+  pkg-config,
   protobuf,
   qt6,
-  glfw,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "mcpelauncher-ui-qt";
   inherit (mcpelauncher-client) version;
+  pname = "mcpelauncher-ui-qt";
 
   src = fetchFromGitHub {
     owner = "minecraft-linux";
     repo = "mcpelauncher-ui-manifest";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-9NeUiiQ595lE6M/tD5G20l5W9PoInSPM2DgRqK92Bsk=";
+    fetchSubmodules = true;
   };
 
   patches = [

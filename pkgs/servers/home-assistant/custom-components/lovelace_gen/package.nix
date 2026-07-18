@@ -1,13 +1,11 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
+  buildHomeAssistantComponent,
   jinja2,
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "thomasloven";
-  domain = "lovelace_gen";
   version = "0.1.3";
 
   src = fetchFromGitHub {
@@ -18,11 +16,13 @@ buildHomeAssistantComponent rec {
   };
 
   dependencies = [ jinja2 ];
+  domain = "lovelace_gen";
+  owner = "thomasloven";
 
   meta = with lib; {
-    changelog = "https://github.com/thomasloven/hass-lovelace_gen/releases/tag/${version}";
     description = "Improve the lovelace yaml parser for Home Assistant";
     homepage = "https://github.com/thomasloven/hass-lovelace_gen";
+    changelog = "https://github.com/thomasloven/hass-lovelace_gen/releases/tag/${version}";
     license = licenses.mit;
     maintainers = with maintainers; [ jpinz ];
   };

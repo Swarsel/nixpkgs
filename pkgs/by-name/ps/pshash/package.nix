@@ -1,11 +1,12 @@
 {
-  haskellPackages,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  haskellPackages,
 }:
 haskellPackages.mkDerivation rec {
   pname = "pshash";
   version = "0.1.16.0";
+
   src = fetchFromGitHub {
     owner = "thornoar";
     repo = "pshash";
@@ -17,8 +18,6 @@ haskellPackages.mkDerivation rec {
     patchShebangs --build test/output.sh
   '';
 
-  isLibrary = false;
-  isExecutable = true;
   doCheck = true;
 
   checkPhase = ''
@@ -27,15 +26,18 @@ haskellPackages.mkDerivation rec {
     runHook postCheck
   '';
 
+  description = "Functional pseudo-hash password creation tool";
+
   executableHaskellDepends = with haskellPackages; [
     base
     containers
     directory
   ];
 
-  license = lib.licenses.mit;
-  description = "Functional pseudo-hash password creation tool";
   homepage = "https://github.com/thornoar/pshash";
-  maintainers = with lib.maintainers; [ thornoar ];
+  isExecutable = true;
+  isLibrary = false;
+  license = lib.licenses.mit;
   mainProgram = "pshash";
+  maintainers = with lib.maintainers; [ thornoar ];
 }

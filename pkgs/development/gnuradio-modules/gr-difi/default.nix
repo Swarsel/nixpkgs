@@ -1,10 +1,10 @@
 {
+  lib,
+  fetchFromGitHub,
   boost,
   cmake,
-  fetchFromGitHub,
   gmp,
   gnuradio,
-  lib,
   mkDerivation,
   pkg-config,
   python,
@@ -23,6 +23,11 @@ mkDerivation {
     hash = "sha256-zztnTaeYEWw9OAvgvy99aoj5UiJ/dOKQQWF+7Lfp59A=";
   };
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
+
   buildInputs = [
     boost
     gmp
@@ -32,11 +37,6 @@ mkDerivation {
   ++ lib.optionals (gnuradio.hasFeature "python-support") [
     python.pkgs.pybind11
     python.pkgs.numpy
-  ];
-
-  nativeBuildInputs = [
-    cmake
-    pkg-config
   ];
 
   passthru.updateScript = unstableGitUpdater {

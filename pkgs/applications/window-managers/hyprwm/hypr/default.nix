@@ -8,15 +8,15 @@
   gtkmm3,
   harfbuzz,
   libx11,
-  libxdmcp,
   libxcb,
+  libxcb-cursor,
+  libxcb-keysyms,
+  libxcb-util,
+  libxcb-wm,
+  libxdmcp,
   makeWrapper,
   pcre2,
   pkg-config,
-  libxcb-cursor,
-  libxcb-keysyms,
-  libxcb-wm,
-  libxcb-util,
   xmodmap,
 }:
 
@@ -34,6 +34,11 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     ./000-dont-set-compiler.diff
   ];
+
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 3.4)" "cmake_minimum_required(VERSION 3.10)"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -67,21 +72,16 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 3.4)" "cmake_minimum_required(VERSION 3.10)"
-  '';
-
   postFixup = ''
     wrapProgram $out/bin/Hypr --prefix PATH : ${lib.makeBinPath [ xmodmap ]}
   '';
 
   meta = {
     inherit (finalAttrs.src.meta) homepage;
+    inherit (libx11.meta) platforms;
     description = "Tiling X11 window manager written in modern C++";
     license = lib.licenses.bsd3;
     maintainers = [ ];
-    inherit (libx11.meta) platforms;
     mainProgram = "Hypr";
   };
 })

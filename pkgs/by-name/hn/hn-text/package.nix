@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -29,7 +29,7 @@ buildGoModule (finalAttrs: {
     description = "Fast, easy-to-use and distraction-free Hacker News terminal client";
     homepage = "https://github.com/piqoni/hn-text";
     license = lib.licenses.mit;
-    mainProgram = "hn-text";
     maintainers = with lib.maintainers; [ Guanran928 ];
+    mainProgram = "hn-text";
   };
 })

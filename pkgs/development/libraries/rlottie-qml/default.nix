@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  fetchpatch,
   cmake,
+  fetchpatch,
   pkg-config,
   qtbase,
   qtdeclarative,

@@ -1,8 +1,8 @@
 {
   config,
   lib,
-  options,
   pkgs,
+  options,
   ...
 }:
 let
@@ -14,125 +14,152 @@ in
 
       enable = lib.mkEnableOption "Ergo IRC daemon";
 
-      openFilesLimit = lib.mkOption {
-        type = lib.types.int;
-        default = 1024;
-        description = ''
-          Maximum number of open files. Limits the clients and server connections.
-        '';
-      };
-
       configFile = lib.mkOption {
-        type = lib.types.path;
         default = (pkgs.formats.yaml { }).generate "ergo.conf" cfg.settings;
         defaultText = lib.literalMD "generated config file from `settings`";
+
         description = ''
           Path to configuration file.
           Setting this will skip any configuration done via `settings`
         '';
+
+        type = lib.types.path;
+      };
+
+      openFilesLimit = lib.mkOption {
+        default = 1024;
+
+        description = ''
+          Maximum number of open files. Limits the clients and server connections.
+        '';
+
+        type = lib.types.int;
       };
 
       settings = lib.mkOption {
-        type = (pkgs.formats.yaml { }).type;
-        description = ''
-          Ergo IRC daemon configuration file.
-          https://raw.githubusercontent.com/ergochat/ergo/master/default.yaml
-        '';
         default = {
-          network = {
-            name = "testnetwork";
-          };
-          server = {
-            name = "example.com";
-            listeners = {
-              ":6667" = { };
+          accounts = {
+            authentication-enabled = true;
+
+            multiclient = {
+              allowed-by-default = true;
+              always-on = "opt-out";
+              auto-away = "opt-out";
+              enabled = true;
             };
-            casemapping = "permissive";
-            enforce-utf = true;
-            lookup-hostnames = false;
-            ip-cloaking = {
-              enabled = false;
-            };
-            forward-confirm-hostnames = false;
-            check-ident = false;
-            relaymsg = {
-              enabled = false;
-            };
-            max-sendq = "1M";
-            ip-limits = {
-              count = false;
-              throttle = false;
+
+            registration = {
+              allow-before-connect = true;
+              bcrypt-cost = 4;
+              email-verification.enabled = false;
+              enabled = true;
+
+              throttling = {
+                duration = "10m";
+                enabled = true;
+                max-attempts = 30;
+              };
             };
           };
+
+          channels = {
+            default-modes = "+ntC";
+
+            registration = {
+              enabled = true;
+            };
+          };
+
           datastore = {
             autoupgrade = true;
             # this points to the StateDirectory of the systemd service
             path = "/var/lib/ergo/ircd.db";
           };
-          accounts = {
-            authentication-enabled = true;
-            registration = {
-              enabled = true;
-              allow-before-connect = true;
-              throttling = {
-                enabled = true;
-                duration = "10m";
-                max-attempts = 30;
-              };
-              bcrypt-cost = 4;
-              email-verification.enabled = false;
-            };
-            multiclient = {
-              enabled = true;
-              allowed-by-default = true;
-              always-on = "opt-out";
-              auto-away = "opt-out";
-            };
-          };
-          channels = {
-            default-modes = "+ntC";
-            registration = {
-              enabled = true;
-            };
-          };
-          limits = {
-            nicklen = 32;
-            identlen = 20;
-            channellen = 64;
-            awaylen = 390;
-            kicklen = 390;
-            topiclen = 390;
-          };
+
           history = {
-            enabled = true;
-            channel-length = 2048;
-            client-length = 256;
-            autoresize-window = "3d";
             autoreplay-on-join = 0;
+            autoresize-window = "3d";
+            channel-length = 2048;
             chathistory-maxmessages = 100;
-            znc-maxmessages = 2048;
+            client-length = 256;
+            enabled = true;
+
             restrictions = {
               expire-time = "1w";
-              query-cutoff = "none";
               grace-period = "1h";
+              query-cutoff = "none";
             };
+
             retention = {
               allow-individual-delete = false;
               enable-account-indexing = false;
             };
+
             tagmsg-storage = {
               default = false;
+
               whitelist = [
                 "+draft/react"
                 "+react"
               ];
             };
+
+            znc-maxmessages = 2048;
+          };
+
+          limits = {
+            awaylen = 390;
+            channellen = 64;
+            identlen = 20;
+            kicklen = 390;
+            nicklen = 32;
+            topiclen = 390;
+          };
+
+          network = {
+            name = "testnetwork";
+          };
+
+          server = {
+            casemapping = "permissive";
+            check-ident = false;
+            enforce-utf = true;
+            forward-confirm-hostnames = false;
+
+            ip-cloaking = {
+              enabled = false;
+            };
+
+            ip-limits = {
+              count = false;
+              throttle = false;
+            };
+
+            listeners = {
+              ":6667" = { };
+            };
+
+            lookup-hostnames = false;
+            max-sendq = "1M";
+            name = "example.com";
+
+            relaymsg = {
+              enabled = false;
+            };
           };
         };
+
+        description = ''
+          Ergo IRC daemon configuration file.
+          https://raw.githubusercontent.com/ergochat/ergo/master/default.yaml
+        '';
+
+        type = (pkgs.formats.yaml { }).type;
       };
 
     };
   };
+
   config = lib.mkIf cfg.enable {
 
     environment.etc."ergo.yaml".source = cfg.configFile;
@@ -144,18 +171,21 @@ in
 
     systemd.services.ergochat = {
       description = "Ergo IRC daemon";
-      wantedBy = [ "multi-user.target" ];
       reloadTriggers = [ cfg.configFile ];
+
       serviceConfig = {
-        Type = "notify-reload";
-        ExecStart = "${pkgs.ergochat}/bin/ergo run --conf /etc/ergo.yaml";
         DynamicUser = true;
-        StateDirectory = "ergo";
+        ExecStart = "${pkgs.ergochat}/bin/ergo run --conf /etc/ergo.yaml";
         LimitNOFILE = toString cfg.openFilesLimit;
+        StateDirectory = "ergo";
+        Type = "notify-reload";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
   };
+
   meta.maintainers = with lib.maintainers; [
     lassulus
     tv

@@ -1,7 +1,7 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
   withServer ? false,
 }:
 
@@ -25,9 +25,8 @@ let
 in
 with python3.pkgs;
 buildPythonApplication (finalAttrs: {
-  version = "5.1.1";
   pname = "buku";
-  pyproject = true;
+  version = "5.1.1";
 
   src = fetchFromGitHub {
     owner = "jarun";
@@ -39,6 +38,15 @@ buildPythonApplication (finalAttrs: {
   nativeBuildInputs = [
     setuptools
   ];
+
+  propagatedBuildInputs = [
+    cryptography
+    beautifulsoup4
+    certifi
+    urllib3
+    html5lib
+  ]
+  ++ lib.optionals withServer serverRequire;
 
   nativeCheckInputs = [
     hypothesis
@@ -57,15 +65,6 @@ buildPythonApplication (finalAttrs: {
     pytest-timeout
   ];
 
-  propagatedBuildInputs = [
-    cryptography
-    beautifulsoup4
-    certifi
-    urllib3
-    html5lib
-  ]
-  ++ lib.optionals withServer serverRequire;
-
   preCheck = lib.optionalString (!withServer) ''
     rm tests/test_{server,views}.py
   '';
@@ -82,12 +81,14 @@ buildPythonApplication (finalAttrs: {
     rm $out/bin/bukuserver
   '';
 
+  pyproject = true;
+
   meta = {
     description = "Private cmdline bookmark manager";
-    mainProgram = "buku";
     homepage = "https://github.com/jarun/Buku";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ matthiasbeyer ];
+    platforms = lib.platforms.unix;
+    mainProgram = "buku";
   };
 })

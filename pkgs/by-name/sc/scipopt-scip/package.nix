@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  zlib,
-  readline,
-  gmp,
-  scipopt-soplex,
-  scipopt-papilo,
-  scipopt-zimpl,
-  ipopt,
-  onetbb,
   boost,
-  gfortran,
+  cmake,
   criterion,
+  gfortran,
+  gmp,
+  ipopt,
   mpfr,
+  onetbb,
+  readline,
+  scipopt-papilo,
+  scipopt-soplex,
+  scipopt-zimpl,
+  zlib,
   enableZimpl ? (!stdenv.hostPlatform.isDarwin),
 }:
 
@@ -45,18 +45,16 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional enableZimpl scipopt-zimpl;
 
-  cmakeFlags = lib.optional (!enableZimpl) "-DZIMPL=OFF";
-
   propagatedBuildInputs = [ mpfr ];
-
+  cmakeFlags = lib.optional (!enableZimpl) "-DZIMPL=OFF";
   doCheck = true;
 
   meta = {
-    maintainers = with lib.maintainers; [ pmeinhold ];
-    changelog = "https://scipopt.org/doc-${finalAttrs.version}/html/RN${lib.versions.major finalAttrs.version}.php";
     description = "Solving Constraint Integer Programs";
-    license = lib.licenses.asl20;
     homepage = "https://github.com/scipopt/scip";
+    changelog = "https://scipopt.org/doc-${finalAttrs.version}/html/RN${lib.versions.major finalAttrs.version}.php";
+    license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ pmeinhold ];
     mainProgram = "scip";
   };
 })

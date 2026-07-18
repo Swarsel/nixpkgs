@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   makeWrapper,
   nodejs,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -17,14 +17,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-2S675ru67bcSSXGLEWfPkyW+U+cHzKs/HbM8ZSWMcEs=";
   };
 
-  nativeBuildInputs = [ makeWrapper ];
-
-  buildInputs = [ nodejs ];
-
   patches = [
     # Creates a @libbqn@ substitution variable, to be filled in postFixup
     ./001-libbqn-path.patch
   ];
+
+  strictDeps = true;
+  nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ nodejs ];
 
   installPhase = ''
     runHook preInstall
@@ -46,18 +46,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --subst-var-by "libbqn" "$out/share/bqn/libbqn.js"
   '';
 
+  dontBuild = true;
   dontConfigure = true;
 
-  dontBuild = true;
-
-  strictDeps = true;
-
   meta = {
-    homepage = "https://github.com/mlochbaum/BQN/";
+    inherit (nodejs.meta) platforms;
     description = "Original BQN implementation in Javascript";
+    homepage = "https://github.com/mlochbaum/BQN/";
     license = lib.licenses.isc;
     maintainers = [ ];
-    inherit (nodejs.meta) platforms;
   };
 })
 # TODO: install docs and other stuff

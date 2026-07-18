@@ -1,30 +1,28 @@
 {
-  stdenv,
   lib,
-  callPackage,
-
+  stdenv,
+  fetchFromGitHub,
   abseil-cpp_202508,
   bzip2,
+  callPackage,
   cbc,
   cmake,
   eigen,
   ensureNewerSourcesForZipFilesHook,
-  fetchFromGitHub,
   fetchpatch,
-  gtest,
   gbenchmark,
   glpk,
+  gtest,
   highs,
   pkg-config,
-  protobuf_32,
   protobuf-matchers,
+  protobuf_32,
   python3,
   re2,
+  scipopt-scip,
   swig,
   unzip,
   zlib,
-
-  scipopt-scip,
   withScip ? true,
 }:
 
@@ -35,8 +33,8 @@ let
   # future upgrades *will* break the build.
   abseil-cpp' = abseil-cpp_202508;
   gtest' = gtest.override {
-    withAbseil = true;
     abseil-cpp = abseil-cpp';
+    withAbseil = true;
   };
   protobuf' = protobuf_32.override { abseil-cpp = abseil-cpp'; };
   protobuf-matchers' = protobuf-matchers.override { protobuf = protobuf'; };
@@ -51,11 +49,12 @@ let
       pytestCheckHook
       setuptools
       ;
+
     python = python3;
   };
   pybind11-abseil' = python3.pkgs.pybind11-abseil.override {
-    pybind11 = pybind11';
     abseil-cpp = abseil-cpp';
+    pybind11 = pybind11';
   };
   pybind11-protobuf' = callPackage ./pybind11-protobuf.nix {
     inherit (python3.pkgs) buildPythonPackage;
@@ -72,6 +71,7 @@ let
       # and updated with https://github.com/google/or-tools/pull/4932/files#diff-e6b0a69b2e4b97ec922abc459d909483d440a1e0d2868bed263927b106b6efe6
       ./scip.patch
     ];
+
     # Their patch forgets to find_package() soplex, bring it back.
     postPatch = (old.postPatch or "") + ''
       substituteInPlace CMakeLists.txt \
@@ -91,13 +91,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-9+tvgP/+/VY6wu7lzTdP4xfiJIgPSLVR9lEdZjQCZkE=";
   };
 
+  outputs = [
+    "out"
+    "python"
+  ];
+
   patches = [
     # Rebased from https://build.opensuse.org/public/source/science/google-or-tools/0001-Do-not-try-to-copy-pybind11_abseil-status-extension-.patch?rev=19
     ./0001-Do-not-try-to-copy-pybind11_abseil-status-extension-.patch
     (fetchpatch {
+      hash = "sha256-BNB3KlgjpWcZtb9e68Jkc/4xC4K0c+Iisw0eS6ltYXE=";
       name = "0001-Revert-python-Fix-python-install-on-windows-breaks-L.patch";
       url = "https://build.opensuse.org/public/source/science/google-or-tools/0001-Revert-python-Fix-python-install-on-windows-breaks-L.patch?rev=19";
-      hash = "sha256-BNB3KlgjpWcZtb9e68Jkc/4xC4K0c+Iisw0eS6ltYXE=";
     })
     ./0001-Fix-up-broken-CMake-rules-for-bundled-pybind-stuff.patch
   ];
@@ -117,6 +122,58 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i -e 's/TARGET pybind11_native_proto_caster/TARGET pybind11_protobuf::pybind11_native_proto_caster/' cmake/check_deps.cmake
     sed -i -e "/protobuf/ { s/.*,/'protobuf >= 5.26',/ }" ortools/python/setup.py.in
   '';
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    cmake
+    ensureNewerSourcesForZipFilesHook
+    pkg-config
+    python3.pythonOnBuildForHost
+    swig
+    unzip
+  ]
+  ++ (with python3.pythonOnBuildForHost.pkgs; [
+    pip
+    mypy-protobuf
+    mypy
+  ]);
+
+  buildInputs = [
+    abseil-cpp'
+    bzip2
+    cbc
+    eigen
+    glpk
+    gbenchmark
+    gtest'
+    highs
+    protobuf-matchers'
+    python3.pkgs.absl-py
+    pybind11'
+    pybind11-abseil'
+    pybind11-protobuf'
+    python3.pkgs.pytest
+    python3.pkgs.scipy
+    python3.pkgs.setuptools
+    python3.pkgs.wheel
+    re2'
+    zlib
+  ];
+
+  propagatedBuildInputs = [
+    abseil-cpp'
+    highs
+    protobuf'
+    python-protobuf'
+    python3.pkgs.immutabledict
+    python3.pkgs.numpy
+    python3.pkgs.pandas
+  ]
+  ++ lib.optionals withScip [
+    # Needed for downstream cmake consumers to not need to set SCIP_ROOT explicitly
+    scipopt-scip'
+  ];
 
   cmakeFlags = [
     (lib.cmakeBool "BUILD_DEPS" false)
@@ -141,55 +198,8 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "CMAKE_BUILD_WITH_INSTALL_NAME_DIR" true)
   ];
 
-  strictDeps = true;
-
-  nativeBuildInputs = [
-    cmake
-    ensureNewerSourcesForZipFilesHook
-    pkg-config
-    python3.pythonOnBuildForHost
-    swig
-    unzip
-  ]
-  ++ (with python3.pythonOnBuildForHost.pkgs; [
-    pip
-    mypy-protobuf
-    mypy
-  ]);
-  buildInputs = [
-    abseil-cpp'
-    bzip2
-    cbc
-    eigen
-    glpk
-    gbenchmark
-    gtest'
-    highs
-    protobuf-matchers'
-    python3.pkgs.absl-py
-    pybind11'
-    pybind11-abseil'
-    pybind11-protobuf'
-    python3.pkgs.pytest
-    python3.pkgs.scipy
-    python3.pkgs.setuptools
-    python3.pkgs.wheel
-    re2'
-    zlib
-  ];
-  propagatedBuildInputs = [
-    abseil-cpp'
-    highs
-    protobuf'
-    python-protobuf'
-    python3.pkgs.immutabledict
-    python3.pkgs.numpy
-    python3.pkgs.pandas
-  ]
-  ++ lib.optionals withScip [
-    # Needed for downstream cmake consumers to not need to set SCIP_ROOT explicitly
-    scipopt-scip'
-  ];
+  # some tests hang on darwin
+  doCheck = stdenv.hostPlatform.isLinux;
 
   nativeCheckInputs = [
     python3.pkgs.matplotlib
@@ -199,9 +209,6 @@ stdenv.mkDerivation (finalAttrs: {
     python3.pkgs.svgwrite
     python3.pkgs.virtualenv
   ];
-
-  # some tests hang on darwin
-  doCheck = stdenv.hostPlatform.isLinux;
 
   preCheck = ''
     patchShebangs examples/python
@@ -229,21 +236,16 @@ stdenv.mkDerivation (finalAttrs: {
     pip install --no-index --no-build-isolation --prefix="$python" python/
   '';
 
-  outputs = [
-    "out"
-    "python"
-  ];
-
   meta = {
-    homepage = "https://github.com/google/or-tools";
-    license = lib.licenses.asl20;
     description = ''
       Google's software suite for combinatorial optimization.
     '';
-    mainProgram = "fzn-cp-sat";
+
+    homepage = "https://github.com/google/or-tools";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ andersk ];
     platforms = with lib.platforms; linux ++ darwin;
-
+    mainProgram = "fzn-cp-sat";
     # Only version 9.15 adds support for Python 3.14: https://github.com/google/or-tools/releases/tag/v9.15
     # Also this package is tied to pybind 2.13.6, and only 3.0.0 supports Python 3.14: https://github.com/pybind/pybind11/releases/tag/v3.0.0
     # Also, nix review fails to build python314Packages.ortools

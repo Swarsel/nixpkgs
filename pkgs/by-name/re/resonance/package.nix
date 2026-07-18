@@ -1,9 +1,10 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   cargo,
   dbus,
   desktop-file-utils,
-  fetchFromGitHub,
   glib,
   gst_all_1,
   gtk4,
@@ -19,7 +20,6 @@
   rustPlatform,
   rustc,
   sqlite,
-  stdenv,
   wrapGAppsHook4,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -31,11 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "resonance";
     rev = "97826093e22418c0efdb4e61cc75d981bb82c120";
     hash = "sha256-DgNUjb8+2WTw91OGgFf97YL6lnODtkftYAP/c05RUPI=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    src = finalAttrs.src;
-    hash = "sha256-g0gNgTw9zpC9sWAKy/jFNGVtPH/6a84v6r6pRuS0NpU=";
   };
 
   nativeBuildInputs = [
@@ -81,14 +76,19 @@ stdenv.mkDerivation (finalAttrs: {
     })
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    src = finalAttrs.src;
+    hash = "sha256-g0gNgTw9zpC9sWAKy/jFNGVtPH/6a84v6r6pRuS0NpU=";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Intuitive GTK4/LibAdwaita music player";
     homepage = "https://github.com/nate-xyz/resonance";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "resonance";
     maintainers = with lib.maintainers; [ Guanran928 ];
     platforms = lib.platforms.linux;
+    mainProgram = "resonance";
   };
 })

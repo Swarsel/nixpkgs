@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -12,15 +12,16 @@ in
   options = {
     programs.alvr = {
       enable = lib.mkEnableOption "ALVR, the VR desktop streamer";
-
       package = lib.mkPackageOption pkgs "alvr" { };
 
       openFirewall = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to open the default ports in the firewall for the ALVR server.
         '';
+
+        type = lib.types.bool;
       };
     };
   };
@@ -33,6 +34,7 @@ in
         9943
         9944
       ];
+
       allowedUDPPorts = [
         9943
         9944

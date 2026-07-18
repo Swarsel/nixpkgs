@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -27,24 +27,10 @@ in
 
   options = {
     services.sniproxy = {
-      enable = mkEnableOption "sniproxy server";
-
-      user = mkOption {
-        type = types.str;
-        default = "sniproxy";
-        description = "User account under which sniproxy runs.";
-      };
-
-      group = mkOption {
-        type = types.str;
-        default = "sniproxy";
-        description = "Group under which sniproxy runs.";
-      };
-
       config = mkOption {
-        type = types.lines;
         default = "";
         description = "sniproxy.conf configuration excluding the daemon username and pid file.";
+
         example = ''
           error_log {
             filename /var/log/sniproxy/error.log
@@ -60,6 +46,22 @@ in
             example.net 192.0.2.20
           }
         '';
+
+        type = types.lines;
+      };
+
+      enable = mkEnableOption "sniproxy server";
+
+      group = mkOption {
+        default = "sniproxy";
+        description = "Group under which sniproxy runs.";
+        type = types.str;
+      };
+
+      user = mkOption {
+        default = "sniproxy";
+        description = "User account under which sniproxy runs.";
+        type = types.str;
       };
     };
 
@@ -67,16 +69,23 @@ in
 
   config = mkIf cfg.enable {
     systemd.services.sniproxy = {
-      description = "sniproxy server";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "sniproxy server";
 
       serviceConfig = {
-        Type = "forking";
         ExecStart = "${pkgs.sniproxy}/bin/sniproxy -c ${configFile}";
         LogsDirectory = "sniproxy";
         LogsDirectoryMode = "0640";
         Restart = "always";
+        Type = "forking";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups = mkIf (cfg.group == "sniproxy") {
+      sniproxy = {
+        gid = config.ids.gids.sniproxy;
       };
     };
 
@@ -84,12 +93,6 @@ in
       sniproxy = {
         group = cfg.group;
         uid = config.ids.uids.sniproxy;
-      };
-    };
-
-    users.groups = mkIf (cfg.group == "sniproxy") {
-      sniproxy = {
-        gid = config.ids.gids.sniproxy;
       };
     };
 

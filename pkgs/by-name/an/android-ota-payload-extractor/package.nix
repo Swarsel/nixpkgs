@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finallAttrs: {
@@ -27,7 +27,7 @@ buildGoModule (finallAttrs: {
     homepage = "https://github.com/tobyxdd/android-ota-payload-extractor";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ matthewcroughan ];
-    teams = with lib.teams; [ android ];
     mainProgram = "android-ota-payload-extractor";
+    teams = with lib.teams; [ android ];
   };
 })

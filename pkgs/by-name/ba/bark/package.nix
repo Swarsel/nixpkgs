@@ -1,19 +1,20 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  fetchpatch,
   alsa-lib,
-  libopus,
-  soxr,
   cmake,
-  pkg-config,
-  versionCheckHook,
+  fetchpatch,
+  libopus,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  soxr,
+  versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "bark";
   version = "0.6.0";
+
   src = fetchFromGitHub {
     owner = "haileys";
     repo = "bark";
@@ -21,14 +22,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-JaUIWGCYhasM0DgqL+DiG2rE1OWVg/N66my/4RWDN1E=";
   };
 
-  cargoHash = "sha256-LcmX8LbK8UHDDeqwLTFEUuRBv9GgDiCpXP4bmIR3gME=";
-
   # Broken rustdoc comment
   patches = [
     (fetchpatch {
-      url = "https://patch-diff.githubusercontent.com/raw/haileys/bark/pull/13.patch";
       hash = "sha256-cA1bqc7XhJ2cxOYvjIJ9oopzBZ9I4rGERkiwDAUh3V4";
+      url = "https://patch-diff.githubusercontent.com/raw/haileys/bark/pull/13.patch";
     })
+  ];
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
   ];
 
   buildInputs = [
@@ -37,15 +41,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     soxr
   ];
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
+  cargoHash = "sha256-LcmX8LbK8UHDDeqwLTFEUuRBv9GgDiCpXP4bmIR3gME=";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru.updateScript = nix-update-script { };
 

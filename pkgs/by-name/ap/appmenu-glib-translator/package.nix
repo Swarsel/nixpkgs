@@ -1,7 +1,7 @@
 {
   lib,
-  fetchFromGitLab,
   stdenv,
+  fetchFromGitLab,
   glib,
   gobject-introspection,
   meson,
@@ -20,8 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-v5J3nwViNiSKRPdJr+lhNUdKaPG82fShPDlnmix5tlY=";
   };
 
-  sourceRoot = "source/subprojects/appmenu-glib-translator";
-
   nativeBuildInputs = [
     meson
     ninja
@@ -32,6 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   propagatedBuildInputs = [ glib ];
+  sourceRoot = "source/subprojects/appmenu-glib-translator";
 
   meta = {
     description = "Library for translating from DBusMenu to GMenuModel";

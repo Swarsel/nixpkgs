@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,12 +17,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-ZOY0cr0uO5ls3tj80PZqzbdjhcw9jKRJvHC60JaBOm0=";
   };
 
-  cargoHash = "sha256-0PfePGkMOSbHemc8gWnQR7W4/R5EMuXBKaFntL6dSPI=";
-
   nativeBuildInputs = [
     installShellFiles
   ];
 
+  cargoHash = "sha256-0PfePGkMOSbHemc8gWnQR7W4/R5EMuXBKaFntL6dSPI=";
   # cargo test has an x86-only dependency
   doCheck = stdenv.hostPlatform.isx86;
 
@@ -38,10 +37,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Simple, secure and modern encryption tool with small explicit keys, no config options, and UNIX-style composability";
     homepage = "https://github.com/str4d/rage";
     changelog = "https://github.com/str4d/rage/blob/v${finalAttrs.version}/rage/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20
       mit
     ]; # either at your option
+
     maintainers = with lib.maintainers; [ ryantm ];
     mainProgram = "rage";
   };

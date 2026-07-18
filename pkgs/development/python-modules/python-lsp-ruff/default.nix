@@ -1,23 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  ruff,
-
+  buildPythonPackage,
   # dependencies
   cattrs,
   lsprotocol,
-  python-lsp-server,
-
   # checks
   pytestCheckHook,
+  python-lsp-server,
+  ruff,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "python-lsp-ruff";
   version = "2.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-lsp";
@@ -54,10 +50,7 @@ buildPythonPackage (finalAttrs: {
         --replace-fail "workspace.root_path" '"/tmp/"'
     '';
 
-  pythonRemoveDeps = [
-    # ruff binary is used directly, the ruff python package is not needed
-    "ruff"
-  ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
   dependencies = [
     cattrs
@@ -65,11 +58,16 @@ buildPythonPackage (finalAttrs: {
     python-lsp-server
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
+
+  pythonRemoveDeps = [
+    # ruff binary is used directly, the ruff python package is not needed
+    "ruff"
+  ];
 
   meta = {
-    homepage = "https://github.com/python-lsp/python-lsp-ruff";
     description = "Ruff linting plugin for pylsp";
+    homepage = "https://github.com/python-lsp/python-lsp-ruff";
     changelog = "https://github.com/python-lsp/python-lsp-ruff/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ linsui ];

@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 
@@ -29,11 +29,21 @@ in
 {
   options.services.tinyauth = {
     enable = mkEnableOption "Tinyauth server";
-
     package = mkPackageOption pkgs "tinyauth" { };
 
-    environmentFile = mkOption {
+    dataDir = mkOption {
+      default = "/var/lib/tinyauth";
+
+      description = ''
+        The directory where Tinyauth will store its data.
+      '';
+
       type = types.path;
+    };
+
+    environmentFile = mkOption {
+      default = "/dev/null";
+
       description = ''
         Path to an environment file loaded for Tinyauth.
 
@@ -45,81 +55,18 @@ in
         TINYAUTH_OAUTH_PROVIDERS_GOOGLE_CLIENTSECRET=client-secret
         ```
       '';
-      default = "/dev/null";
+
       example = "/var/lib/secrets/tinyauth";
+      type = types.path;
+    };
+
+    group = mkOption {
+      default = "tinyauth";
+      description = "Group account under which Tinyauth runs.";
+      type = types.str;
     };
 
     settings = mkOption {
-      type = types.submodule {
-        freeformType = format.type;
-
-        options = {
-          SERVER_ADDRESS = mkOption {
-            type = types.str;
-            description = ''
-              Address to bind the server to.
-            '';
-            default = "0.0.0.0";
-          };
-
-          SERVER_PORT = mkOption {
-            type = types.port;
-            description = ''
-              The port to run the server on.
-            '';
-            default = 3000;
-          };
-
-          APPURL = mkOption {
-            type = types.str;
-            description = ''
-              URL of the app.
-            '';
-            example = "https://auth.example.com";
-          };
-
-          ANALYTICS_ENABLED = mkOption {
-            type = types.bool;
-            description = ''
-              Whether to enable anonymous version collection.
-            '';
-            default = false;
-          };
-
-          RESOURCES_ENABLED = mkOption {
-            type = types.bool;
-            description = ''
-              Whether to enable the resources server.
-            '';
-            default = true;
-          };
-
-          AUTH_LOGINMAXRETRIES = mkOption {
-            type = types.ints.unsigned;
-            description = ''
-              Maximum login attempts before timeout (0 to disable).
-            '';
-            default = 3;
-          };
-
-          AUTH_LOGINTIMEOUT = mkOption {
-            type = types.ints.unsigned;
-            description = ''
-              Login timeout in seconds after max retries reached (0 to disable).
-            '';
-            default = 300;
-          };
-
-          AUTH_TRUSTEDPROXIES = mkOption {
-            type = types.str;
-            description = ''
-              Comma-separated list of trusted proxy addresses.
-            '';
-            default = "";
-          };
-        };
-      };
-
       default = { };
 
       description = ''
@@ -128,47 +75,104 @@ in
         See [configuration options](https://tinyauth.app/docs/reference/configuration)
         for supported values.
       '';
-    };
 
-    dataDir = mkOption {
-      type = types.path;
-      default = "/var/lib/tinyauth";
-      description = ''
-        The directory where Tinyauth will store its data.
-      '';
+      type = types.submodule {
+        options = {
+          ANALYTICS_ENABLED = mkOption {
+            default = false;
+
+            description = ''
+              Whether to enable anonymous version collection.
+            '';
+
+            type = types.bool;
+          };
+
+          APPURL = mkOption {
+            description = ''
+              URL of the app.
+            '';
+
+            example = "https://auth.example.com";
+            type = types.str;
+          };
+
+          AUTH_LOGINMAXRETRIES = mkOption {
+            default = 3;
+
+            description = ''
+              Maximum login attempts before timeout (0 to disable).
+            '';
+
+            type = types.ints.unsigned;
+          };
+
+          AUTH_LOGINTIMEOUT = mkOption {
+            default = 300;
+
+            description = ''
+              Login timeout in seconds after max retries reached (0 to disable).
+            '';
+
+            type = types.ints.unsigned;
+          };
+
+          AUTH_TRUSTEDPROXIES = mkOption {
+            default = "";
+
+            description = ''
+              Comma-separated list of trusted proxy addresses.
+            '';
+
+            type = types.str;
+          };
+
+          RESOURCES_ENABLED = mkOption {
+            default = true;
+
+            description = ''
+              Whether to enable the resources server.
+            '';
+
+            type = types.bool;
+          };
+
+          SERVER_ADDRESS = mkOption {
+            default = "0.0.0.0";
+
+            description = ''
+              Address to bind the server to.
+            '';
+
+            type = types.str;
+          };
+
+          SERVER_PORT = mkOption {
+            default = 3000;
+
+            description = ''
+              The port to run the server on.
+            '';
+
+            type = types.port;
+          };
+        };
+
+        freeformType = format.type;
+      };
     };
 
     user = mkOption {
-      type = types.str;
       default = "tinyauth";
       description = "User account under which Tinyauth runs.";
-    };
-
-    group = mkOption {
       type = types.str;
-      default = "tinyauth";
-      description = "Group account under which Tinyauth runs.";
     };
   };
 
   config = mkIf cfg.enable {
-    systemd.tmpfiles.settings.tinyauth = {
-      "${cfg.dataDir}".d = {
-        mode = "0750";
-        user = cfg.user;
-        group = cfg.group;
-      };
-    };
-
     systemd.services.tinyauth = {
-      description = "Tinyauth";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
-      restartTriggers = [
-        cfg.package
-        cfg.environmentFile
-        settingsFile
-      ];
+      description = "Tinyauth";
 
       environment = {
         GIN_MODE = "release";
@@ -176,22 +180,24 @@ in
         TINYAUTH_RESOURCES_PATH = "${cfg.dataDir}/resources";
       };
 
+      restartTriggers = [
+        cfg.package
+        cfg.environmentFile
+        settingsFile
+      ];
+
       serviceConfig = {
-        Type = "simple";
-        User = cfg.user;
-        Group = cfg.group;
-        WorkingDirectory = cfg.dataDir;
-        ExecStart = getExe cfg.package;
-        Restart = "always";
+        # Hardening
+        AmbientCapabilities = "";
+        CapabilityBoundingSet = "";
 
         EnvironmentFile = [
           cfg.environmentFile
           settingsFile
         ];
 
-        # Hardening
-        AmbientCapabilities = "";
-        CapabilityBoundingSet = "";
+        ExecStart = getExe cfg.package;
+        Group = cfg.group;
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
         NoNewPrivileges = true;
@@ -210,35 +216,53 @@ in
         ProtectSystem = "strict";
         ReadWritePaths = [ cfg.dataDir ];
         RemoveIPC = true;
+        Restart = "always";
+
         RestrictAddressFamilies = [
           "AF_UNIX"
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
           "~@resources"
         ];
+
+        Type = "simple";
         UMask = "0077";
+        User = cfg.user;
+        WorkingDirectory = cfg.dataDir;
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
-    users.users = optionalAttrs (cfg.user == "tinyauth") {
-      tinyauth = {
-        isSystemUser = true;
+    systemd.tmpfiles.settings.tinyauth = {
+      "${cfg.dataDir}".d = {
         group = cfg.group;
-        description = "Tinyauth user";
-        home = cfg.dataDir;
+        mode = "0750";
+        user = cfg.user;
       };
     };
 
     users.groups = optionalAttrs (cfg.group == "tinyauth") {
       tinyauth = { };
+    };
+
+    users.users = optionalAttrs (cfg.user == "tinyauth") {
+      tinyauth = {
+        description = "Tinyauth user";
+        group = cfg.group;
+        home = cfg.dataDir;
+        isSystemUser = true;
+      };
     };
   };
 

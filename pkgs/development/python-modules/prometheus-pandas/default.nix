@@ -2,15 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   numpy,
   pandas,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "prometheus-pandas";
   version = "0.3.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -26,13 +25,13 @@ buildPythonPackage (finalAttrs: {
 
   # There are no tests. :(
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "prometheus_pandas" ];
 
   meta = {
+    description = "Pandas integration for Prometheus";
     homepage = "https://github.com/dcoles/prometheus-pandas";
     license = lib.licenses.mit;
-    description = "Pandas integration for Prometheus";
     maintainers = with lib.maintainers; [ viktornordling ];
   };
 })

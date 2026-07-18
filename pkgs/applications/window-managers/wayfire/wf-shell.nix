@@ -1,34 +1,35 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  alsa-lib,
+  gtk-layer-shell,
+  gtkmm3,
+  libdbusmenu-gtk3,
   meson,
   ninja,
   pkg-config,
-  wayland-scanner,
-  wayfire,
-  alsa-lib,
-  gtkmm3,
-  gtk-layer-shell,
   pulseaudio,
-  libdbusmenu-gtk3,
+  wayfire,
+  wayland-scanner,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "wf-shell";
   version = "0.10.0";
-  outputs = [
-    "out"
-    "man"
-  ];
 
   src = fetchFromGitHub {
     owner = "WayfireWM";
     repo = "wf-shell";
     rev = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-PLTeFGecxVwU2LdwnDwiWB1OcbaZjJemMpT0pcCFf/w=";
+    fetchSubmodules = true;
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
 
   nativeBuildInputs = [
     meson
@@ -49,13 +50,15 @@ stdenv.mkDerivation (finalAttrs: {
   mesonFlags = [ "--sysconfdir /etc" ];
 
   meta = {
-    homepage = "https://github.com/WayfireWM/wf-shell";
     description = "GTK3-based panel for Wayfire";
+    homepage = "https://github.com/WayfireWM/wf-shell";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       wucke13
       wineee
     ];
+
     platforms = lib.platforms.unix;
   };
 })

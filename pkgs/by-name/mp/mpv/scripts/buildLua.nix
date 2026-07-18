@@ -41,16 +41,6 @@ lib.makeOverridable (
         scriptPath = args.scriptPath or "./${scriptName}";
       in
       {
-        dontBuild = true;
-        preferLocalBuild = true;
-
-        # Prevent `patch` from emitting `.orig` files (that end up in the output)
-        patchFlags = [
-          "--no-backup-if-mismatch"
-          "-p1"
-        ];
-
-        outputHashMode = "recursive";
         installPhase = ''
           runHook preInstall
 
@@ -76,6 +66,17 @@ lib.makeOverridable (
           runHook postInstall
         '';
 
+        dontBuild = true;
+        outputHashMode = "recursive";
+
+        # Prevent `patch` from emitting `.orig` files (that end up in the output)
+        patchFlags = [
+          "--no-backup-if-mismatch"
+          "-p1"
+        ];
+
+        preferLocalBuild = true;
+
         passthru = {
           inherit scriptName;
         }
@@ -88,6 +89,7 @@ lib.makeOverridable (
           ]
           ++ args.passthru.extraWrapperArgs or [ ];
         };
+
         meta = {
           platforms = lib.platforms.all;
         }

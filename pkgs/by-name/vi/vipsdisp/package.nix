@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   fetchpatch2,
+  gtk4,
   meson,
   ninja,
   pkg-config,
-  wrapGAppsHook4,
-  vips,
-  gtk4,
   python3,
+  vips,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation rec {
@@ -45,11 +45,11 @@ stdenv.mkDerivation rec {
   doCheck = false;
 
   meta = {
-    homepage = "https://github.com/jcupitt/vipsdisp";
     description = "Tiny image viewer with libvips";
+    homepage = "https://github.com/jcupitt/vipsdisp";
     license = lib.licenses.mit;
-    mainProgram = "vipsdisp";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "vipsdisp";
   };
 }

@@ -1,21 +1,18 @@
 {
   lib,
   stdenv,
-  swi-prolog,
-  makeWrapper,
   fetchFromGitHub,
-  lexiconPath ? "prolog/lexicon/clex_lexicon.pl",
-  pname ? "ape",
+  makeWrapper,
+  swi-prolog,
   description ? "Parser for Attempto Controlled English (ACE)",
+  lexiconPath ? "prolog/lexicon/clex_lexicon.pl",
   license ? lib.licenses.lgpl3,
+  pname ? "ape",
 }:
 
 stdenv.mkDerivation {
   inherit pname;
   version = "2019-08-10";
-
-  nativeBuildInputs = [ makeWrapper ];
-  buildInputs = [ swi-prolog ];
 
   src = fetchFromGitHub {
     owner = "Attempto";
@@ -24,12 +21,8 @@ stdenv.mkDerivation {
     sha256 = "0xyvna2fbr18hi5yvm0zwh77q02dfna1g4g53z9mn2rmlfn2mhjh";
   };
 
-  patchPhase = ''
-    # We move the file first to avoid "same file" error in the default case
-    cp ${lexiconPath} new_lexicon.pl
-    rm prolog/lexicon/clex_lexicon.pl
-    cp new_lexicon.pl prolog/lexicon/clex_lexicon.pl
-  '';
+  nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ swi-prolog ];
 
   buildPhase = ''
     make SHELL=${stdenv.shell} build
@@ -41,12 +34,19 @@ stdenv.mkDerivation {
     makeWrapper $out/ape.exe $out/bin/ape --add-flags ace
   '';
 
+  patchPhase = ''
+    # We move the file first to avoid "same file" error in the default case
+    cp ${lexiconPath} new_lexicon.pl
+    rm prolog/lexicon/clex_lexicon.pl
+    cp new_lexicon.pl prolog/lexicon/clex_lexicon.pl
+  '';
+
   meta = {
     description = description;
     homepage = "https://github.com/Attempto/APE";
     license = license;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ yrashk ];
+    platforms = lib.platforms.unix;
     mainProgram = "ape";
   };
 }

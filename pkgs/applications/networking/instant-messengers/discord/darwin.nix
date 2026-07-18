@@ -1,29 +1,29 @@
 {
-  pname,
-  source,
-  meta,
-  stdenv,
-  binaryName,
-  desktopName,
-  self,
   lib,
+  stdenv,
   fetchurl,
-  makeWrapper,
-  writeScript,
-  writeShellScript,
+  binaryName,
+  branch,
   brotli,
+  desktopName,
+  equicord,
+  makeWrapper,
+  meta,
+  moonlight,
+  openasar,
+  pname,
   python3,
   runCommand,
-  branch,
-  withOpenASAR ? false,
-  openasar,
-  withVencord ? false,
+  self,
+  source,
   vencord,
-  withEquicord ? false,
-  equicord,
-  withMoonlight ? false,
-  moonlight,
+  writeScript,
+  writeShellScript,
   commandLineArgs ? "",
+  withEquicord ? false,
+  withMoonlight ? false,
+  withOpenASAR ? false,
+  withVencord ? false,
 }:
 
 let
@@ -76,8 +76,8 @@ let
   disableBreakingUpdates =
     runCommand "disable-breaking-updates.py"
       {
-        pythonInterpreter = "${python3.interpreter}";
         configDirName = lib.toLower binaryName;
+        pythonInterpreter = "${python3.interpreter}";
         skipModuleUpdate = lib.boolToString withOpenASAR;
         meta.mainProgram = "disable-breaking-updates.py";
       }
@@ -103,11 +103,6 @@ stdenv.mkDerivation {
     brotli
     makeWrapper
   ];
-
-  sourceRoot = ".";
-
-  dontUnpack = true;
-  dontStrip = true;
 
   installPhase = ''
     runHook preInstall
@@ -170,25 +165,33 @@ stdenv.mkDerivation {
       echo 'require("${moonlight}/injector.js").inject(require("path").join(__dirname, "../_app.asar"));' > "$out/Applications/${desktopName}.app/Contents/Resources/app.asar/injector.js"
     '';
 
+  dontStrip = true;
+  dontUnpack = true;
+  sourceRoot = ".";
+
   passthru = {
     # make it possible to run disableBreakingUpdates standalone
     inherit disableBreakingUpdates;
     inherit source;
-    updateScript = ./update.py;
 
     tests = {
-      withVencord = self.override {
-        withVencord = true;
-      };
       withEquicord = self.override {
         withEquicord = true;
       };
+
       withMoonlight = self.override {
         withMoonlight = true;
       };
+
       withOpenASAR = self.override {
         withOpenASAR = true;
       };
+
+      withVencord = self.override {
+        withVencord = true;
+      };
     };
+
+    updateScript = ./update.py;
   };
 }

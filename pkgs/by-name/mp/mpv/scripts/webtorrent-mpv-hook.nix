@@ -1,13 +1,13 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  gitUpdater,
-  nodejs,
+  buildNpmPackage,
   cmake,
-  pkg-config,
-  openssl,
+  gitUpdater,
   libdatachannel,
+  nodejs,
+  openssl,
+  pkg-config,
   plog,
 }:
 
@@ -24,12 +24,6 @@ let
       hash = "sha256-r5tBg645ikIWm+RU7Muw/JYyd7AMpkImD0Xygtm1MUk=";
     };
 
-    npmFlags = [ "--ignore-scripts" ];
-
-    makeCacheWritable = true;
-
-    npmDepsHash = "sha256-1ZJd0Y45B3CT2YPXDYfCuFMBo5uggWRuDH11eCobyyY=";
-
     nativeBuildInputs = [
       cmake
       pkg-config
@@ -41,8 +35,7 @@ let
       plog
     ];
 
-    dontUseCmakeConfigure = true;
-
+    npmDepsHash = "sha256-1ZJd0Y45B3CT2YPXDYfCuFMBo5uggWRuDH11eCobyyY=";
     env.NIX_CFLAGS_COMPILE = "-I${nodejs}/include/node";
 
     preBuild = ''
@@ -63,6 +56,10 @@ let
       install -Dm755 build/Release/*.node -t $out/build/Release
       runHook postInstall
     '';
+
+    dontUseCmakeConfigure = true;
+    makeCacheWritable = true;
+    npmFlags = [ "--ignore-scripts" ];
   };
 in
 
@@ -76,7 +73,6 @@ buildNpmPackage rec {
     rev = "v${version}";
     hash = "sha256-p4Mggt3J8QOok/uj97eCchT7H9HPuDjoyV82MHHkkZM=";
   };
-  passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   postPatch = ''
     substituteInPlace src/webtorrent.ts --replace-fail "node_path: 'node'" "node_path: '${lib.getExe nodejs}'"
@@ -86,23 +82,26 @@ buildNpmPackage rec {
   '';
 
   npmDepsHash = "sha256-tL+MAgiKhwygoAtZaA4nZJ5bq5W5jkYYxOF8Du0rBl8=";
-  makeCacheWritable = true;
-  npmFlags = [ "--ignore-scripts" ];
 
   postConfigure = ''
     # manually place our prebuilt `node-datachannel` binary into its place, since we used '--ignore-scripts'
     ln -s ${nodeDatachannel}/build node_modules/node-datachannel/build
   '';
+
   postInstall = ''
     mkdir -p $out/share/mpv/scripts/
     ln -s $out/lib/node_modules/webtorrent-mpv-hook/build/webtorrent.js $out/share/mpv/scripts/
   '';
+
+  makeCacheWritable = true;
+  npmFlags = [ "--ignore-scripts" ];
   passthru.scriptName = "webtorrent.js";
+  passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
     description = "Adds a hook that allows mpv to stream torrents";
     homepage = "https://github.com/mrxdst/webtorrent-mpv-hook";
-    maintainers = [ lib.maintainers.chuangzhu ];
     license = lib.licenses.isc;
+    maintainers = [ lib.maintainers.chuangzhu ];
   };
 }

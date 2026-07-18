@@ -1,25 +1,24 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
   fetchFromGitHub,
   brotli,
+  buildPythonPackage,
+  fetchPypi,
   lz4,
   setuptools,
 }:
 
 let
   kaitai_compress = fetchFromGitHub {
+    hash = "sha256-l3rGbblUgxO6Y7grlsMEiT3nRIgUZV1VqTyjIgIDtyA=";
     owner = "kaitai-io";
     repo = "kaitai_compress";
     rev = "12f4cffb45d95b17033ee4f6679987656c6719cc";
-    hash = "sha256-l3rGbblUgxO6Y7grlsMEiT3nRIgUZV1VqTyjIgIDtyA=";
   };
 in
 buildPythonPackage rec {
   pname = "kaitaistruct";
   version = "0.11";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -28,18 +27,18 @@ buildPythonPackage rec {
 
   patches = [ ./01-add-kaitai-compress.patch ];
 
-  preBuild = ''
-    ln -s ${kaitai_compress}/python/kaitai kaitai
-  '';
-
-  build-system = [ setuptools ];
-
   propagatedBuildInputs = [
     brotli
     lz4
   ];
 
+  preBuild = ''
+    ln -s ${kaitai_compress}/python/kaitai kaitai
+  '';
+
   doCheck = false; # no tests in upstream
+  build-system = [ setuptools ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "kaitaistruct"

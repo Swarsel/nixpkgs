@@ -1,19 +1,12 @@
 {
   lib,
-  buildLua,
   fetchFromGitHub,
+  buildLua,
   mpvScripts,
 }:
 buildLua (finalAttrs: {
   pname = "mpv-osc-tethys";
   version = "0-unstable-2024-08-19";
-
-  scriptPath = "osc_tethys.lua";
-  extraScriptsToCopy = [ "mpv_thumbnail_script_server.lua" ];
-  extraScriptsToLoad = [ "mpv_thumbnail_script_server.lua" ];
-
-  # FIXME?: collides with mpvScripts.thumbnail, this one yields since it is unfree
-  passthru.dontCollideCheck = lib.hasAttr "thumbnail" mpvScripts;
 
   src = fetchFromGitHub {
     owner = "Zren";
@@ -21,6 +14,12 @@ buildLua (finalAttrs: {
     rev = "c4167f88a0e9944738419e90a71f1f80fba39ccb";
     hash = "sha256-eAY+ZUuOxPJiNCuL7lqMBU4iURCMz12LQdfaYj4WFQc=";
   };
+
+  extraScriptsToCopy = [ "mpv_thumbnail_script_server.lua" ];
+  extraScriptsToLoad = [ "mpv_thumbnail_script_server.lua" ];
+  scriptPath = "osc_tethys.lua";
+  # FIXME?: collides with mpvScripts.thumbnail, this one yields since it is unfree
+  passthru.dontCollideCheck = lib.hasAttr "thumbnail" mpvScripts;
 
   meta = {
     description = "OSC UI replacement for MPV with icons from the bomi video player";

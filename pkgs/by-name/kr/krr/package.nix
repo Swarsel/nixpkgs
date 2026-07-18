@@ -1,15 +1,14 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
-  testers,
   krr,
+  python3,
+  testers,
 }:
 
 python3.pkgs.buildPythonPackage (finalAttrs: {
   pname = "krr";
   version = "1.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "robusta-dev";
@@ -47,23 +46,27 @@ python3.pkgs.buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "robusta_krr"
   ];
 
   passthru.tests.version = testers.testVersion {
-    package = krr;
     command = "krr version";
+    package = krr;
   };
 
   meta = {
     description = "Prometheus-based Kubernetes resource recommendations";
+
     longDescription = ''
       Robusta KRR (Kubernetes Resource Recommender) is a CLI tool for optimizing
       resource allocation in Kubernetes clusters. It gathers Pod usage data from
       Prometheus and recommends requests and limits for CPU and memory. This
       reduces costs and improves performance.
     '';
+
     homepage = "https://github.com/robusta-dev/krr";
     changelog = "https://github.com/robusta-dev/krr/releases/tag/v${finalAttrs.src.rev}";
     license = lib.licenses.mit;

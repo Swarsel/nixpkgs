@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,19 +17,19 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-tOt6Uxo4Z2zJrTjyTPoqHGfUgxFmtB+xP+kB+S6ez84=";
 
-  subPackages = [ "entproto/cmd/protoc-gen-entgrpc" ];
-
   ldflags = [
     "-s"
     "-w"
   ];
 
+  subPackages = [ "entproto/cmd/protoc-gen-entgrpc" ];
+
   meta = {
     description = "Generator of an implementation of the service interface for ent protobuff";
+    homepage = "https://entgo.io/";
+    license = lib.licenses.asl20;
+    maintainers = [ ];
     mainProgram = "protoc-gen-entgrpc";
     downloadPage = "https://github.com/ent/contrib/";
-    license = lib.licenses.asl20;
-    homepage = "https://entgo.io/";
-    maintainers = [ ];
   };
 })

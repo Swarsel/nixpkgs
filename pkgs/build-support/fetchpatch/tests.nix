@@ -1,32 +1,56 @@
-{ testers, fetchpatch, ... }:
+{ fetchpatch, testers, ... }:
 
 let
   isFetchpatch2 = fetchpatch.version == 2;
 in
 
 {
-  simple = testers.invalidateFetcherByDrvHash fetchpatch {
-    url = "https://github.com/facebook/zstd/commit/e1f85dbca3a0ed5ef06c8396912a0914db8dea6a.patch?full_index=1";
+  decode = testers.invalidateFetcherByDrvHash fetchpatch {
+    decode = "base64 -d";
+    name = "gcc.patch";
+
     sha256 =
       if isFetchpatch2 then
-        "sha256-2kFh8FC96njAKH69uJp1vZSye47Suf76RfBodqosLU0="
+        "sha256-oMvPlmzE51ArI+EvFxONXkqmNee39106/O1ikG0Bdso="
       else
-        "sha256-PuYAqnJWAE+L9bsroOnnBGJhERW8LHrGSLtIEkKU9vg=";
+        "sha256-SJHk8XrutqAyoIdORlhCpBCN626P+uzed7mjKz5eQYY=";
+
+    url = "https://chromium.googlesource.com/aosp/platform/external/libchrome/+/f37ae3b1a873d74182a2ac31d96742ead9c1f523^!?format=TEXT";
   };
 
-  relative = testers.invalidateFetcherByDrvHash fetchpatch {
-    url = "https://github.com/boostorg/math/commit/7d482f6ebc356e6ec455ccb5f51a23971bf6ce5b.patch?full_index=1";
-    relative = "include";
+  fileWithApostrophe = testers.invalidateFetcherByDrvHash fetchpatch {
     sha256 =
       if isFetchpatch2 then
-        "sha256-NS1CH+V5I29Yc0PHXdVxAn5tAHTvnGphRjhv4hZGYIo="
+        "sha256-CrQFmVvLEvWpo2ucVrWyLb5qk2GVOxyUbFN3hp9sV68="
       else
-        "sha256-KlmIbixcds6GyKYt1fx5BxDIrU7msrgDdYo9Va/KJR4=";
+        "sha256-CrQFmVvLEvWpo2ucVrWyLb5qk2GVOxyUbFN3hp9sV68=";
+
+    url = "https://github.com/jfly/annoying-filenames/commit/8b6d8f8d7094ce646523b3369cfdf5030289c66c.patch";
+  };
+
+  fileWithSpace = testers.invalidateFetcherByDrvHash fetchpatch {
+    sha256 =
+      if isFetchpatch2 then
+        "sha256-HIS/I7tLl/XYcyLuyjrIkPmLPxJPAuAguMUmhL9Ei8g="
+      else
+        "sha256-aptUvVojqIIIVNuHqkl+C+dZBGFfs+1MUd0FNV+4j4E=";
+
+    url = "https://github.com/jfly/annoying-filenames/commit/1e86a219f5fc9c4137b409bc9c38036f3922724b.patch?full_index=1";
+  };
+
+  full = testers.invalidateFetcherByDrvHash fetchpatch {
+    excludes = [ "foo/bar/bernoulli_no_atomic_mp.cpp" ];
+    extraPrefix = "foo/bar/";
+    # Should result in no change.
+    hunks = [ "1-" ];
+    relative = "test";
+    revert = true;
+    sha256 = "sha256-+UKmEbr2rIAweCav/hR/7d4ZrYV84ht/domTrHtm8sM=";
+    stripLen = 1;
+    url = "https://github.com/boostorg/math/commit/7d482f6ebc356e6ec455ccb5f51a23971bf6ce5b.patch?full_index=1";
   };
 
   hunks = testers.invalidateFetcherByDrvHash fetchpatch {
-    url = "https://github.com/openssh/openssh-portable/commit/35d5917652106aede47621bb3f64044604164043.patch?full_index=1";
-    stripLen = 1;
     hunks = [
       2
       3
@@ -35,51 +59,36 @@ in
       6
       7
     ];
+
     sha256 =
       if isFetchpatch2 then
         "sha256-2eiufShDHVpiK9DaGUzfu1MlGrgE9OJAhmQcEcAViQw="
       else
         "sha256-MV7uGgA1ESMR7W6H5FjAIxKcpySdQjWB+L2zaHjd96M=";
-  };
 
-  full = testers.invalidateFetcherByDrvHash fetchpatch {
-    url = "https://github.com/boostorg/math/commit/7d482f6ebc356e6ec455ccb5f51a23971bf6ce5b.patch?full_index=1";
-    relative = "test";
     stripLen = 1;
-    extraPrefix = "foo/bar/";
-    excludes = [ "foo/bar/bernoulli_no_atomic_mp.cpp" ];
-    # Should result in no change.
-    hunks = [ "1-" ];
-    revert = true;
-    sha256 = "sha256-+UKmEbr2rIAweCav/hR/7d4ZrYV84ht/domTrHtm8sM=";
+    url = "https://github.com/openssh/openssh-portable/commit/35d5917652106aede47621bb3f64044604164043.patch?full_index=1";
   };
 
-  decode = testers.invalidateFetcherByDrvHash fetchpatch {
-    name = "gcc.patch";
-    url = "https://chromium.googlesource.com/aosp/platform/external/libchrome/+/f37ae3b1a873d74182a2ac31d96742ead9c1f523^!?format=TEXT";
-    decode = "base64 -d";
+  relative = testers.invalidateFetcherByDrvHash fetchpatch {
+    relative = "include";
+
     sha256 =
       if isFetchpatch2 then
-        "sha256-oMvPlmzE51ArI+EvFxONXkqmNee39106/O1ikG0Bdso="
+        "sha256-NS1CH+V5I29Yc0PHXdVxAn5tAHTvnGphRjhv4hZGYIo="
       else
-        "sha256-SJHk8XrutqAyoIdORlhCpBCN626P+uzed7mjKz5eQYY=";
+        "sha256-KlmIbixcds6GyKYt1fx5BxDIrU7msrgDdYo9Va/KJR4=";
+
+    url = "https://github.com/boostorg/math/commit/7d482f6ebc356e6ec455ccb5f51a23971bf6ce5b.patch?full_index=1";
   };
 
-  fileWithSpace = testers.invalidateFetcherByDrvHash fetchpatch {
-    url = "https://github.com/jfly/annoying-filenames/commit/1e86a219f5fc9c4137b409bc9c38036f3922724b.patch?full_index=1";
+  simple = testers.invalidateFetcherByDrvHash fetchpatch {
     sha256 =
       if isFetchpatch2 then
-        "sha256-HIS/I7tLl/XYcyLuyjrIkPmLPxJPAuAguMUmhL9Ei8g="
+        "sha256-2kFh8FC96njAKH69uJp1vZSye47Suf76RfBodqosLU0="
       else
-        "sha256-aptUvVojqIIIVNuHqkl+C+dZBGFfs+1MUd0FNV+4j4E=";
-  };
+        "sha256-PuYAqnJWAE+L9bsroOnnBGJhERW8LHrGSLtIEkKU9vg=";
 
-  fileWithApostrophe = testers.invalidateFetcherByDrvHash fetchpatch {
-    url = "https://github.com/jfly/annoying-filenames/commit/8b6d8f8d7094ce646523b3369cfdf5030289c66c.patch";
-    sha256 =
-      if isFetchpatch2 then
-        "sha256-CrQFmVvLEvWpo2ucVrWyLb5qk2GVOxyUbFN3hp9sV68="
-      else
-        "sha256-CrQFmVvLEvWpo2ucVrWyLb5qk2GVOxyUbFN3hp9sV68=";
+    url = "https://github.com/facebook/zstd/commit/e1f85dbca3a0ed5ef06c8396912a0914db8dea6a.patch?full_index=1";
   };
 }

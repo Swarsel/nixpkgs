@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "tidal-dl";
   version = "2022.10.31.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -15,10 +14,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
   };
 
   propagatedBuildInputs = with python3Packages; [ aigpy ];
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/yaronzz/Tidal-Media-Downloader";
     description = "Application that lets you download videos and tracks from Tidal";
+    homepage = "https://github.com/yaronzz/Tidal-Media-Downloader";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.misterio77 ];
     platforms = lib.platforms.all;

@@ -1,10 +1,10 @@
 {
   lib,
-  makeSetupHook,
-  jq,
-  writeShellApplication,
-  cacert,
   buildPackages,
+  cacert,
+  jq,
+  makeSetupHook,
+  writeShellApplication,
 }:
 
 let
@@ -15,51 +15,63 @@ let
   };
 in
 {
-  composerRepositoryHook = makeSetupHook {
-    name = "composer-repository-hook.sh";
-    propagatedNativeBuildInputs = [
-      jq
-    ];
-    propagatedBuildInputs = [
-      cacert
-    ];
-    substitutions = {
-      phpScriptUtils = lib.getExe php-script-utils;
-    };
-    meta.license = lib.licenses.mit;
-  } ./composer-repository-hook.sh;
-
   composerInstallHook = makeSetupHook {
-    name = "composer-install-hook.sh";
-    propagatedNativeBuildInputs = [
-      jq
-    ];
     propagatedBuildInputs = [
       cacert
     ];
+
+    name = "composer-install-hook.sh";
+
+    propagatedNativeBuildInputs = [
+      jq
+    ];
+
     substitutions = {
       # Specify the stdenv's `diff` by abspath to ensure that the user's build
       # inputs do not cause us to find the wrong `diff`.
       cmp = "${lib.getBin buildPackages.diffutils}/bin/cmp";
       phpScriptUtils = lib.getExe php-script-utils;
     };
+
     meta.license = lib.licenses.mit;
   } ./composer-install-hook.sh;
 
-  composerWithPluginVendorHook = makeSetupHook {
-    name = "composer-with-plugin-vendor-hook.sh";
-    propagatedNativeBuildInputs = [
-      jq
-    ];
+  composerRepositoryHook = makeSetupHook {
     propagatedBuildInputs = [
       cacert
     ];
+
+    name = "composer-repository-hook.sh";
+
+    propagatedNativeBuildInputs = [
+      jq
+    ];
+
+    substitutions = {
+      phpScriptUtils = lib.getExe php-script-utils;
+    };
+
+    meta.license = lib.licenses.mit;
+  } ./composer-repository-hook.sh;
+
+  composerWithPluginVendorHook = makeSetupHook {
+    propagatedBuildInputs = [
+      cacert
+    ];
+
+    name = "composer-with-plugin-vendor-hook.sh";
+
+    propagatedNativeBuildInputs = [
+      jq
+    ];
+
     substitutions = {
       # Specify the stdenv's `diff` by abspath to ensure that the user's build
       # inputs do not cause us to find the wrong `diff`.
       cmp = "${lib.getBin buildPackages.diffutils}/bin/cmp";
       phpScriptUtils = lib.getExe php-script-utils;
     };
+
     meta.license = lib.licenses.mit;
   } ./composer-with-plugin-vendor-hook.sh;
 }

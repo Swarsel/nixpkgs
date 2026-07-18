@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  fetchpatch,
   fetchurl,
   boost183,
   cmake,
+  fetchpatch,
   libuuid,
   python3,
   ruby,
@@ -19,21 +19,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-eYDQ6iHVV1WUFFdyHGnbqGIjE9CrhHzh0jP7amjoDSE=";
   };
 
-  nativeBuildInputs = [
-    cmake
-    python3
-  ];
-  buildInputs = [
-    boost183
-    libuuid
-    ruby
-  ];
-
   patches = [
     (fetchpatch {
+      hash = "sha256-pV6xx8Nrys/ZxIO0Z/fARH0ELqcSdTXLPsVXYUd3f70=";
       name = "python3-managementgen";
       url = "https://github.com/apache/qpid-cpp/commit/0e558866e90ef3d5becbd2f6d5630a6a6dc43a5d.patch";
-      hash = "sha256-pV6xx8Nrys/ZxIO0Z/fARH0ELqcSdTXLPsVXYUd3f70=";
     })
   ];
 
@@ -50,6 +40,17 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "cmake_policy(SET CMP0022 OLD)" ""
   '';
 
+  nativeBuildInputs = [
+    cmake
+    python3
+  ];
+
+  buildInputs = [
+    boost183
+    libuuid
+    ruby
+  ];
+
   env.NIX_CFLAGS_COMPILE = toString (
     [
       "-Wno-error=maybe-uninitialized"
@@ -60,10 +61,10 @@ stdenv.mkDerivation (finalAttrs: {
   );
 
   meta = {
-    homepage = "https://qpid.apache.org";
     description = "AMQP message broker and a C++ messaging API";
+    homepage = "https://qpid.apache.org";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

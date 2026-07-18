@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   bison,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
   fetchpatch2,
   flex,
   gnupg,
@@ -16,9 +16,8 @@
 }:
 
 buildPythonPackage rec {
-  version = "3.2.3";
   pname = "beancount";
-  pyproject = true;
+  version = "3.2.3";
 
   src = fetchFromGitHub {
     owner = "beancount";
@@ -33,17 +32,6 @@ buildPythonPackage rec {
       --replace-fail "'flex-bin ; sys_platform == \"linux\" or sys_platform == \"darwin\"'," "" \
       --replace-fail "'bison-bin ; sys_platform == \"linux\" or sys_platform == \"darwin\"'," ""
   '';
-
-  build-system = [
-    meson
-    meson-python
-  ];
-
-  dependencies = [
-    click
-    python-dateutil
-    regex
-  ];
 
   nativeBuildInputs = [
     bison
@@ -60,23 +48,37 @@ buildPythonPackage rec {
     mv beancount tests
   '';
 
+  build-system = [
+    meson
+    meson-python
+  ];
+
+  dependencies = [
+    click
+    python-dateutil
+    regex
+  ];
+
   disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
     # Cannot run the gpg-agent. If needed, implement as passthru tests.
     "test_read_encrypted_file"
     "test_include_encrypted"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "beancount" ];
 
   meta = {
-    homepage = "https://github.com/beancount/beancount";
-    changelog = "https://github.com/beancount/beancount/releases/tag/${src.tag}";
     description = "Double-entry bookkeeping computer language";
+
     longDescription = ''
       A double-entry bookkeeping computer language that lets you define
       financial transaction records in a text file, read them in memory,
       generate a variety of reports from them, and provides a web interface.
     '';
+
+    homepage = "https://github.com/beancount/beancount";
+    changelog = "https://github.com/beancount/beancount/releases/tag/${src.tag}";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ alapshin ];
   };

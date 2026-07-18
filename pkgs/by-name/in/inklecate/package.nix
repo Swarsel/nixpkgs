@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildDotnetModule,
   dotnetCorePackages,
-  fetchFromGitHub,
 }:
 
 buildDotnetModule rec {
@@ -24,25 +24,25 @@ buildDotnetModule rec {
   '';
 
   buildInputs = [ (lib.getLib stdenv.cc.cc) ];
-
-  projectFile = "inklecate/inklecate.csproj";
-  nugetDeps = ./deps.json;
-  executables = [ "inklecate" ];
-
   dotnet-sdk = dotnetCorePackages.sdk_8_0;
+  executables = [ "inklecate" ];
+  nugetDeps = ./deps.json;
+  projectFile = "inklecate/inklecate.csproj";
 
   meta = {
     description = "Compiler for ink, inkle's scripting language";
-    mainProgram = "inklecate";
+
     longDescription = ''
       Inklecate is a command-line compiler for ink, inkle's open source
       scripting language for writing interactive narrative
     '';
+
     homepage = "https://www.inklestudios.com/ink/";
-    downloadPage = "https://github.com/inkle/ink/";
     license = lib.licenses.mit;
+    maintainers = [ ];
     platforms = lib.platforms.unix;
     badPlatforms = lib.platforms.aarch64;
-    maintainers = [ ];
+    mainProgram = "inklecate";
+    downloadPage = "https://github.com/inkle/ink/";
   };
 }

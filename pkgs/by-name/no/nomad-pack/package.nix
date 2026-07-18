@@ -16,11 +16,10 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-jCgH9uHjUkLDDrOWgVofzriwx5eXh9+YNx0toGGu9T0=";
-
   # skip running go tests as they require network access
   doCheck = false;
-
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
     $out/bin/nomad-pack --version
@@ -28,9 +27,9 @@ buildGoModule (finalAttrs: {
   '';
 
   meta = {
+    description = "Nomad Pack is a templating and packaging tool used with HashiCorp Nomad";
     homepage = "https://github.com/hashicorp/nomad-pack";
     changelog = "https://github.com/hashicorp/nomad-pack/blob/main/CHANGELOG.md";
-    description = "Nomad Pack is a templating and packaging tool used with HashiCorp Nomad";
     license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [ techknowlogick ];
   };

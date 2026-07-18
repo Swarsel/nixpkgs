@@ -1,13 +1,13 @@
 {
   lib,
-  gnuradioMinimal,
-  thrift,
   fetchFromGitHub,
-  pkg-config,
   cmake,
   fftwFloat,
-  qt5,
+  gnuradioMinimal,
   liquid-dsp,
+  pkg-config,
+  qt5,
+  thrift,
 }:
 
 gnuradioMinimal.pkgs.mkDerivation rec {
@@ -44,10 +44,10 @@ gnuradioMinimal.pkgs.mkDerivation rec {
 
   meta = {
     description = "Tool for analysing captured signals from sdr receivers";
-    mainProgram = "inspectrum";
     homepage = "https://github.com/miek/inspectrum";
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ mog ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl3Plus;
+    mainProgram = "inspectrum";
   };
 }

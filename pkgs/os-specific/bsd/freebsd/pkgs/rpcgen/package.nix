@@ -1,11 +1,10 @@
 {
   lib,
-  mkDerivation,
   stdenv,
+  mkDerivation,
 }:
 
 mkDerivation {
-  path = "usr.bin/rpcgen";
   patches = lib.optionals (stdenv.hostPlatform.libc == "glibc") [
     # `WUNTRACED` is defined privately `bits/waitflags.h` in glibc.
     # But instead of having a regular header guard, it has some silly
@@ -23,4 +22,6 @@ mkDerivation {
     # the problem is fixed properly in glibc.
     ./rpcgen-glibc-hack.patch
   ];
+
+  path = "usr.bin/rpcgen";
 }

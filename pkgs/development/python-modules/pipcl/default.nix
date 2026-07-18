@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pipcl";
   version = "11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ArtifexSoftware";
@@ -20,6 +19,8 @@ buildPythonPackage (finalAttrs: {
   build-system = [
     setuptools
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "pipcl"

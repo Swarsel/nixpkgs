@@ -1,5 +1,6 @@
 {
   lib,
+  fetchFromGitHub,
   aioquic_1_2,
   argon2-cffi,
   asgiref,
@@ -8,7 +9,6 @@
   buildPythonPackage,
   certifi,
   cryptography,
-  fetchFromGitHub,
   flask,
   h11,
   h2,
@@ -41,7 +41,6 @@
 buildPythonPackage rec {
   pname = "mitmproxy";
   version = "12.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mitmproxy";
@@ -50,21 +49,27 @@ buildPythonPackage rec {
     hash = "sha256-YgM8GjWmWKxOZcahR3+9XO2Xyfu9v8rNgxKn/2oL35Y=";
   };
 
-  pythonRelaxDeps = [
-    # requested by maintainer
-    "brotli"
-    # just keep those
-    "typing-extensions"
+  postPatch = ''
+    # Rename to fix pytest exception
+    substituteInPlace pyproject.toml \
+      --replace-warn "[tool.pytest.individual_coverage]" "[tool.mitmproxy.individual_coverage]"
+  '';
 
-    "asgiref"
-    "cryptography"
-    "pyparsing"
-    "ruamel.yaml"
-    "tornado"
-    "urwid"
-    "wsproto"
+  nativeCheckInputs = [
+    hypothesis
+    pytest-asyncio
+    pytest-cov-stub
+    pytest-timeout
+    pytest-xdist
+    pytestCheckHook
+    requests
   ];
 
+  preCheck = ''
+    export HOME=$(mktemp -d)
+  '';
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -95,27 +100,16 @@ buildPythonPackage rec {
     zstandard
   ];
 
-  nativeCheckInputs = [
-    hypothesis
-    pytest-asyncio
-    pytest-cov-stub
-    pytest-timeout
-    pytest-xdist
-    pytestCheckHook
-    requests
+  disabledTestPaths = [
+    # test require a DNS server
+    # RuntimeError: failed to get dns servers: io error: entity not found
+    "test/mitmproxy/addons/test_dns_resolver.py"
+    "test/mitmproxy/tools/test_dump.py"
+    "test/mitmproxy/tools/test_main.py"
+    "test/mitmproxy/tools/web/test_app.py"
+    "test/mitmproxy/tools/web/test_app.py" # 2 out of 31 tests work
+    "test/mitmproxy/tools/web/test_master.py"
   ];
-
-  __darwinAllowLocalNetworking = true;
-
-  postPatch = ''
-    # Rename to fix pytest exception
-    substituteInPlace pyproject.toml \
-      --replace-warn "[tool.pytest.individual_coverage]" "[tool.mitmproxy.individual_coverage]"
-  '';
-
-  preCheck = ''
-    export HOME=$(mktemp -d)
-  '';
 
   disabledTests = [
     # Tests require a git repository
@@ -144,20 +138,24 @@ buildPythonPackage rec {
     "test_exception_handler"
   ];
 
-  disabledTestPaths = [
-    # test require a DNS server
-    # RuntimeError: failed to get dns servers: io error: entity not found
-    "test/mitmproxy/addons/test_dns_resolver.py"
-    "test/mitmproxy/tools/test_dump.py"
-    "test/mitmproxy/tools/test_main.py"
-    "test/mitmproxy/tools/web/test_app.py"
-    "test/mitmproxy/tools/web/test_app.py" # 2 out of 31 tests work
-    "test/mitmproxy/tools/web/test_master.py"
-  ];
-
   dontUsePytestXdist = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "mitmproxy" ];
+
+  pythonRelaxDeps = [
+    # requested by maintainer
+    "brotli"
+    # just keep those
+    "typing-extensions"
+
+    "asgiref"
+    "cryptography"
+    "pyparsing"
+    "ruamel.yaml"
+    "tornado"
+    "urwid"
+    "wsproto"
+  ];
 
   passthru.tests = {
     inherit (nixosTests) mitmproxy;

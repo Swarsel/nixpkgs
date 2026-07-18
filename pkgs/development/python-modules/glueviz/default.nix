@@ -1,8 +1,8 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   astropy,
+  buildPythonPackage,
   dill,
   echo,
   fast-histogram,
@@ -26,7 +26,6 @@
 buildPythonPackage rec {
   pname = "glueviz";
   version = "1.24.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "glue-viz";
@@ -35,9 +34,16 @@ buildPythonPackage rec {
     hash = "sha256-21XFH1fIt8vLd0blZJn6ZRmLJaof/E30zHrBVLjXOaA=";
   };
 
-  buildInputs = [ pyqt-builder ];
-
   nativeBuildInputs = [ qt6.wrapQtAppsHook ];
+  buildInputs = [ pyqt-builder ];
+  # collecting ... qt.qpa.xcb: could not connect to display
+  # qt.qpa.plugin: Could not load the Qt platform plugin "xcb" in "" even though it was found.
+  doCheck = false;
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  preFixup = ''
+    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
+  '';
 
   build-system = [
     setuptools
@@ -63,24 +69,13 @@ buildPythonPackage rec {
   ];
 
   dontConfigure = true;
-
-  # collecting ... qt.qpa.xcb: could not connect to display
-  # qt.qpa.plugin: Could not load the Qt platform plugin "xcb" in "" even though it was found.
-  doCheck = false;
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  dontWrapQtApps = true;
+  pyproject = true;
   pythonImportsCheck = [ "glue" ];
 
-  dontWrapQtApps = true;
-
-  preFixup = ''
-    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
-  '';
-
   meta = {
-    homepage = "https://glueviz.org";
     description = "Linked Data Visualizations Across Multiple Files";
+    homepage = "https://glueviz.org";
     license = lib.licenses.bsd3; # https://github.com/glue-viz/glue/blob/main/LICENSE
     maintainers = with lib.maintainers; [ ifurther ];
   };

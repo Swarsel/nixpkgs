@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   httpx,
+  poetry-core,
   pytest-asyncio,
   pytest-httpx,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "netdata";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "home-assistant-ecosystem";
@@ -22,6 +21,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-rffqpvqVvCi7CKjDchgRzUWDNxsA7C37UHvbELewR0E=";
   };
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-httpx
+    pytestCheckHook
+  ];
+
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -29,12 +34,7 @@ buildPythonPackage (finalAttrs: {
     yarl
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-httpx
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "netdata" ];
 
   meta = {

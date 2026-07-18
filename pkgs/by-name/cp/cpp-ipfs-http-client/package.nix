@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  curl,
   cmake,
+  curl,
   nlohmann_json,
 }:
 
@@ -39,9 +39,11 @@ stdenv.mkDerivation {
     description = "IPFS C++ API client library";
     homepage = "https://github.com/vasild/cpp-ipfs-http-client";
     license = lib.licenses.mit;
+
     platforms = [
       "x86_64-linux"
     ];
+
     # The last successful Darwin Hydra build was in 2023
     broken = stdenv.hostPlatform.isDarwin;
   };

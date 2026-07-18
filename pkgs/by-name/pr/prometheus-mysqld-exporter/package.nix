@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,6 +17,11 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-fM3CqyOEKYJOFkEwBE7/yIQEKUUIbBIbmHQp12/psas=";
 
+  # skips tests with external dependencies, e.g. on mysqld
+  checkFlags = [
+    "-short"
+  ];
+
   ldflags =
     let
       t = "github.com/prometheus/common/version";
@@ -31,20 +36,17 @@ buildGoModule (finalAttrs: {
       "-X ${t}.BuildDate=unknown"
     ];
 
-  # skips tests with external dependencies, e.g. on mysqld
-  checkFlags = [
-    "-short"
-  ];
-
   meta = {
-    changelog = "https://github.com/prometheus/mysqld_exporter/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "Prometheus exporter for MySQL server metrics";
-    mainProgram = "mysqld_exporter";
     homepage = "https://github.com/prometheus/mysqld_exporter";
+    changelog = "https://github.com/prometheus/mysqld_exporter/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       benley
       globin
     ];
+
+    mainProgram = "mysqld_exporter";
   };
 })

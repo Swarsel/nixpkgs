@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  runCommand,
   buildNpmPackage,
   clang,
   go,
   qt5,
   qt6,
+  runCommand,
   udevCheckHook,
 }:
 
@@ -27,8 +27,8 @@ stdenv.mkDerivation rec {
     owner = "BitBoxSwiss";
     repo = "bitbox-wallet-app";
     tag = "v${version}";
-    fetchSubmodules = true;
     hash = "sha256-JdUoV4bp+pI8neyxHte1z7CULBwdNdLG/CaZFPmvDeg=";
+    fetchSubmodules = true;
   };
 
   postPatch = ''
@@ -36,16 +36,15 @@ stdenv.mkDerivation rec {
         --replace-fail 'Exec=BitBox %u' 'Exec=bitbox %u'
   '';
 
-  dontConfigure = true;
+  nativeBuildInputs = [
+    clang
+    go
+    qt6.wrapQtAppsHook
+    rcc
+    udevCheckHook
+  ];
 
-  passthru.web = buildNpmPackage {
-    pname = "bitbox-web";
-    inherit version;
-    inherit src;
-    sourceRoot = "${src.name}/frontends/web";
-    npmDepsHash = "sha256-kIYyUeaTgj4dJXfAJ1+3WDIYSADFcs5ypRGTODlxwDI=";
-    installPhase = "cp -r build $out";
-  };
+  buildInputs = [ qt6.qtwebengine ];
 
   buildPhase = ''
     runHook preBuild
@@ -77,29 +76,31 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
-  buildInputs = [ qt6.qtwebengine ];
-
-  nativeBuildInputs = [
-    clang
-    go
-    qt6.wrapQtAppsHook
-    rcc
-    udevCheckHook
-  ];
-
   doInstallCheck = true;
+  dontConfigure = true;
+
+  passthru.web = buildNpmPackage {
+    inherit version;
+    inherit src;
+    pname = "bitbox-web";
+    npmDepsHash = "sha256-kIYyUeaTgj4dJXfAJ1+3WDIYSADFcs5ypRGTODlxwDI=";
+    installPhase = "cp -r build $out";
+    sourceRoot = "${src.name}/frontends/web";
+  };
 
   meta = {
     description = "Companion app for the BitBox02 hardware wallet";
     homepage = "https://bitbox.swiss/app/";
-    downloadPage = "https://github.com/BitBoxSwiss/bitbox-wallet-app";
+
     changelog = "https://github.com/BitBoxSwiss/bitbox-wallet-app/blob/master/CHANGELOG.md#${
       builtins.replaceStrings [ "." ] [ "" ] version
     }";
+
     license = lib.licenses.asl20;
-    maintainers = [ lib.maintainers.tensor5 ];
-    mainProgram = "bitbox";
     sourceProvenance = [ lib.sourceTypes.fromSource ];
+    maintainers = [ lib.maintainers.tensor5 ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "bitbox";
+    downloadPage = "https://github.com/BitBoxSwiss/bitbox-wallet-app";
   };
 }

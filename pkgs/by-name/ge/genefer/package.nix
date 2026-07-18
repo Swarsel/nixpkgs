@@ -1,11 +1,11 @@
 {
-  fetchFromGitHub,
-  gmp,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  boinc,
+  gmp,
   ocl-icd,
   opencl-headers,
-  stdenv,
-  boinc,
   versionCheckHook,
 }:
 
@@ -20,14 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-dyrg9Yf1Ko8vfV4oH7yVTFfLkCHWeJlm2xjEqjiwHBg=";
   };
 
-  enableParallelBuilding = true;
-  buildInputs = [
-    gmp
-    ocl-icd
-    opencl-headers
-    boinc
-  ];
-
   # remove the static flags
   # fix BOINC path
   postPatch = ''
@@ -40,7 +32,12 @@ stdenv.mkDerivation (finalAttrs: {
         --replace-fail '$(BOINC_DIR)/lib' '${boinc}/include/boinc'
   '';
 
-  makefile = if stdenv.hostPlatform.isAarch64 then "Makefile_linuxARM64" else "Makefile_linux64";
+  buildInputs = [
+    gmp
+    ocl-icd
+    opencl-headers
+    boinc
+  ];
 
   makeFlags = [
     "-C genefer"
@@ -63,22 +60,28 @@ stdenv.mkDerivation (finalAttrs: {
       runHook postInstall
     '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  enableParallelBuilding = true;
+  makefile = if stdenv.hostPlatform.isAarch64 then "Makefile_linuxARM64" else "Makefile_linux64";
 
   meta = {
     description = "Generalized Fermat Prime search program";
+
     longDescription = ''
       genefer is an OpenMP® application on CPU and an OpenCL™ application on GPU.
       It performs a fast probable primality test for numbers of the form b^2n + 1 with the Fermat test.
     '';
+
     homepage = "https://github.com/galloty/genefer22";
-    maintainers = with lib.maintainers; [ dstremur ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ dstremur ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ];
+
     mainProgram = "genefer22";
   };
 })

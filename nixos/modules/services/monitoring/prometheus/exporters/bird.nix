@@ -15,36 +15,45 @@ let
     ;
 in
 {
-  port = 9324;
   extraOpts = {
+    birdSocket = mkOption {
+      default = "/run/bird/bird.ctl";
+
+      description = ''
+        Path to BIRD2 (or BIRD1 v4) socket.
+      '';
+
+      type = types.path;
+    };
+
     birdVersion = mkOption {
+      default = 2;
+
+      description = ''
+        Specifies whether BIRD1 or BIRD2 is in use.
+      '';
+
       type = types.enum [
         1
         2
       ];
-      default = 2;
-      description = ''
-        Specifies whether BIRD1 or BIRD2 is in use.
-      '';
     };
-    birdSocket = mkOption {
-      type = types.path;
-      default = "/run/bird/bird.ctl";
-      description = ''
-        Path to BIRD2 (or BIRD1 v4) socket.
-      '';
-    };
+
     newMetricFormat = mkOption {
-      type = types.bool;
       default = true;
+
       description = ''
         Enable the new more-generic metric format.
       '';
+
+      type = types.bool;
     };
   };
+
+  port = 9324;
+
   serviceOpts = {
     serviceConfig = {
-      SupplementaryGroups = "bird";
       ExecStart = ''
         ${pkgs.prometheus-bird-exporter}/bin/bird_exporter \
           -web.listen-address ${cfg.listenAddress}:${toString cfg.port} \
@@ -53,10 +62,13 @@ in
           -format.new=${if cfg.newMetricFormat then "true" else "false"} \
           ${concatStringsSep " \\\n  " cfg.extraFlags}
       '';
+
       RestrictAddressFamilies = [
         # Need AF_UNIX to collect data
         "AF_UNIX"
       ];
+
+      SupplementaryGroups = "bird";
     };
   };
 }

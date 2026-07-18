@@ -2,17 +2,16 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pytestCheckHook,
   python-dateutil,
   pytz,
+  setuptools,
   tzlocal,
 }:
 
 buildPythonPackage rec {
   pname = "croniter";
   version = "6.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -31,6 +30,7 @@ buildPythonPackage rec {
     tzlocal
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "croniter" ];
 
   meta = {

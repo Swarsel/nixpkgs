@@ -3,15 +3,14 @@
   buildPythonPackage,
   fetchPypi,
   lxml,
-  robotframework,
   pytestCheckHook,
+  robotframework,
   six,
 }:
 
 buildPythonPackage rec {
   pname = "robotsuite";
   version = "3.0.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -25,6 +24,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
 
   meta = {
     description = "Python unittest test suite for Robot Framework";

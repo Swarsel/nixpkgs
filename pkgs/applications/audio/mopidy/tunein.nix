@@ -1,19 +1,18 @@
 {
   lib,
-  pythonPackages,
   fetchPypi,
   mopidy,
+  pythonPackages,
 }:
 
 pythonPackages.buildPythonApplication (finalAttrs: {
   pname = "mopidy-tunein";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) version;
-    pname = "Mopidy-TuneIn";
     sha256 = "01y1asylscr73yqx071imhrzfzlg07wmqqzkdvpgm6r35marc2li";
+    pname = "Mopidy-TuneIn";
   };
 
   build-system = [
@@ -24,6 +23,7 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     mopidy
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "mopidy_tunein.tunein" ];
 
   meta = {

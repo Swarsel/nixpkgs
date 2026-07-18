@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  libcosmicAppHook,
-  just,
-  pkg-config,
-  glib,
-  libinput,
   fontconfig,
   freetype,
-  nixosTests,
+  glib,
+  just,
+  libcosmicAppHook,
+  libinput,
   nix-update-script,
+  nixosTests,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -30,13 +30,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     substituteInPlace justfile --replace-fail '#!/usr/bin/env' "#!$(command -v env)"
   '';
 
-  cargoHash = "sha256-/OnmUO7WFXvZPq+0nPe2BKbYZRR0Ku+V8+qeLWnYHPQ=";
-
-  separateDebugInfo = true;
-  __structuredAttrs = true;
-
-  env.VERGEN_GIT_SHA = finalAttrs.src.tag;
-
   nativeBuildInputs = [
     just
     pkg-config
@@ -50,6 +43,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     freetype
   ];
 
+  cargoHash = "sha256-/OnmUO7WFXvZPq+0nPe2BKbYZRR0Ku+V8+qeLWnYHPQ=";
+  env.VERGEN_GIT_SHA = finalAttrs.src.tag;
+  __structuredAttrs = true;
   dontUseJustBuild = true;
   dontUseJustCheck = true;
 
@@ -61,6 +57,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "cargo-target-dir"
     "target/${stdenv.hostPlatform.rust.cargoShortTarget}"
   ];
+
+  separateDebugInfo = true;
 
   passthru = {
     tests = {
@@ -81,11 +79,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/pop-os/cosmic-edit";
     description = "Text Editor for the COSMIC Desktop Environment";
-    mainProgram = "cosmic-edit";
+    homepage = "https://github.com/pop-os/cosmic-edit";
     license = lib.licenses.gpl3Only;
-    teams = [ lib.teams.cosmic ];
     platforms = lib.platforms.linux;
+    mainProgram = "cosmic-edit";
+    teams = [ lib.teams.cosmic ];
   };
 })

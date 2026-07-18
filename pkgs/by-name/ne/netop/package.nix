@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   libpcap,
   rustPlatform,
-  fetchFromGitHub,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,20 +16,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Rnp2VNAi8BNbKqkGFoYUb4C5db5BS1P1cqpWlroTmdQ=";
   };
 
+  cargoHash = "sha256-WGwtRMARwRvcUflN3JYL32aib+IG1Q0j0D9BEfaiME4=";
+
   env = {
     LIBPCAP_LIBDIR = lib.makeLibraryPath [ libpcap ];
     LIBPCAP_VER = libpcap.version;
   };
 
-  cargoHash = "sha256-WGwtRMARwRvcUflN3JYL32aib+IG1Q0j0D9BEfaiME4=";
-
   meta = {
-    changelog = "https://github.com/ZingerLittleBee/netop/raw/v${finalAttrs.version}/CHANGELOG.md";
     description = "Network monitor using bpf";
     homepage = "https://github.com/ZingerLittleBee/netop";
+    changelog = "https://github.com/ZingerLittleBee/netop/raw/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "netop";
     maintainers = [ lib.maintainers.marcusramberg ];
     platforms = lib.platforms.linux;
+    mainProgram = "netop";
   };
 })

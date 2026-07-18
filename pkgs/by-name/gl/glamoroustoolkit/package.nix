@@ -2,36 +2,36 @@
   lib,
   stdenv,
   fetchurl,
-  fetchzip,
-  wrapGAppsHook3,
   cairo,
   copyDesktopItems,
   dbus,
+  fetchzip,
   fontconfig,
   freetype,
   glib,
   gtk3,
+  harfbuzz,
+  libgit2,
+  libglvnd,
+  libsoup_3,
+  libuuid,
   libx11,
+  libxcb,
   libxcursor,
   libxext,
   libxi,
+  libxkbcommon,
   libxrandr,
   libxrender,
-  libxkbcommon,
-  libgit2,
-  libglvnd,
-  libuuid,
-  libxcb,
   makeDesktopItem,
-  harfbuzz,
-  libsoup_3,
   webkitgtk_4_1,
+  wrapGAppsHook3,
   zenity,
 }:
 let
   gkIcon = fetchurl {
-    url = "https://gist.githubusercontent.com/qbit/cb52e6cd193c410e0b0aee8a216f6574/raw/2b042bde1dc4cbd30457f14c9d18c889444bf3d0/glamoroustoolkit.svg";
     sha256 = "sha256-Trfo8P01anLq9yTFzwqIfsyidLGyuZDg48YQPrGBkgs=";
+    url = "https://gist.githubusercontent.com/qbit/cb52e6cd193c410e0b0aee8a216f6574/raw/2b042bde1dc4cbd30457f14c9d18c889444bf3d0/glamoroustoolkit.svg";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -40,29 +40,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = fetchzip {
     url = "https://github.com/feenkcom/gtoolkit-vm/releases/download/v${finalAttrs.version}/GlamorousToolkit-x86_64-unknown-linux-gnu.zip";
-    stripRoot = false;
     hash = "sha256-UVbtUnTEyghbmnWErNmZhZ5/PgiLlmLRjZjVIvzMcYo=";
+    stripRoot = false;
   };
 
   nativeBuildInputs = [
     wrapGAppsHook3
     copyDesktopItems
-  ];
-
-  sourceRoot = ".";
-
-  dontConfigure = true;
-  dontBuild = true;
-  dontPatchELF = true;
-  dontStrip = true;
-
-  desktopItems = with finalAttrs; [
-    (makeDesktopItem {
-      name = pname;
-      desktopName = "GlamorousToolkit";
-      exec = "GlamorousToolkit";
-      icon = "GlamorousToolkit";
-    })
   ];
 
   installPhase = ''
@@ -139,12 +123,27 @@ stdenv.mkDerivation (finalAttrs: {
       )
     '';
 
+  desktopItems = with finalAttrs; [
+    (makeDesktopItem {
+      desktopName = "GlamorousToolkit";
+      exec = "GlamorousToolkit";
+      icon = "GlamorousToolkit";
+      name = pname;
+    })
+  ];
+
+  dontBuild = true;
+  dontConfigure = true;
+  dontPatchELF = true;
+  dontStrip = true;
+  sourceRoot = ".";
+
   meta = {
-    homepage = "https://gtoolkit.com";
     description = "GlamorousToolkit Development Environment";
+    homepage = "https://gtoolkit.com";
     license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ lib.maintainers.akgrant43 ];
     platforms = [ "x86_64-linux" ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

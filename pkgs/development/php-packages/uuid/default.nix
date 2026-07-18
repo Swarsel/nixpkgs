@@ -1,8 +1,8 @@
 {
-  buildPecl,
   lib,
-  libuuid,
   fetchFromGitHub,
+  buildPecl,
+  libuuid,
 }:
 
 let
@@ -21,16 +21,15 @@ buildPecl {
 
   buildInputs = [ libuuid ];
   makeFlags = [ "phpincludedir=$(dev)/include" ];
+  env.PHP_UUID_DIR = libuuid;
   doCheck = true;
 
-  env.PHP_UUID_DIR = libuuid;
-
   meta = {
-    changelog = "https://github.com/php/pecl-networking-uuid/releases/tag/v${version}";
     description = "Wrapper around Universally Unique IDentifier library (libuuid)";
-    license = lib.licenses.php301;
     homepage = "https://github.com/php/pecl-networking-uuid";
-    teams = [ lib.teams.php ];
+    changelog = "https://github.com/php/pecl-networking-uuid/releases/tag/v${version}";
+    license = lib.licenses.php301;
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.php ];
   };
 }

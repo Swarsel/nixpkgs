@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  perl,
+  coreutils,
   gcc,
+  gmp,
+  libffi,
+  libiconv,
   ncurses5,
   ncurses6,
-  gmp,
-  libiconv,
   numactl,
-  libffi,
-  coreutils,
+  perl,
   targetPackages,
 }:
 
@@ -25,31 +25,34 @@ let
   ghcDebs = {
     powerpc64-linux = {
       src = {
+        sha256 = "722cc301b6ba70b342e5e3d9d0671440bcd749cd2f13dcccbd23c3f6a6060171";
+
         urls = [
           "http://ftp.ports.debian.org/debian-ports/pool-ppc64/main/g/ghc/ghc_9.6.6-4_ppc64.deb"
           "https://snapshot.debian.org/archive/debian-ports/20250917T193713Z/pool-ppc64/main/g/ghc/ghc_9.6.6-4_ppc64.deb"
         ];
-        sha256 = "722cc301b6ba70b342e5e3d9d0671440bcd749cd2f13dcccbd23c3f6a6060171";
       };
-      exePathForLibraryCheck = null;
+
       archSpecificLibraries = [
         {
+          fileToCheckFor = null;
           nixPackage = gmp;
-          fileToCheckFor = null;
         }
         {
-          nixPackage = ncurses6;
           fileToCheckFor = "libtinfo.so.6";
+          nixPackage = ncurses6;
         }
         {
+          fileToCheckFor = null;
           nixPackage = numactl;
-          fileToCheckFor = null;
         }
         {
-          nixPackage = libffi;
           fileToCheckFor = null;
+          nixPackage = libffi;
         }
       ];
+
+      exePathForLibraryCheck = null;
     };
   };
 
@@ -69,9 +72,9 @@ let
   ];
 
   extraLibraryMapping = {
+    ffi = libffi;
     gmp = gmpUsed;
     numa = numactl;
-    ffi = libffi;
   };
 
 in
@@ -79,24 +82,104 @@ in
 stdenv.mkDerivation (finalAttrs: {
   inherit version;
   pname = "ghc-debian-binary";
-
   src = fetchurl debUsed.src;
-
   nativeBuildInputs = [ perl ];
 
-  sourceRoot = "${finalAttrs.pname}-${finalAttrs.version}";
+  # Install prebuilt GHC files
+  installPhase = ''
+    runHook preInstall
 
-  # Custom unpack phase to handle .deb files
-  unpackPhase = ''
-    runHook preUnpack
+    mkdir -p $out
 
-    ar x $src
-    tar xf data.tar.xz
-    mkdir -p ${finalAttrs.sourceRoot}
-    mv -t ${finalAttrs.sourceRoot}/ usr var
+    cp -t $out/ -a usr/*
+    rm -f $out/lib/ghc/lib/package.conf.d
+    find var -name "package.conf.d" -type d -exec cp -a {} $out/lib/ghc/lib/ \;
 
-    runHook postUnpack
+    runHook postInstall
   '';
+
+  postInstall =
+    # Patch scripts to include runtime dependencies in $PATH.
+    ''
+      for i in "$out/bin/"*; do
+        test ! -h "$i" || continue
+        isScript "$i" || continue
+        sed -i -e '2i export PATH="${lib.makeBinPath runtimeDeps}:$PATH"' "$i"
+      done
+    ''
+
+    # Patch /usr paths
+    + ''
+      for i in "$out/bin/"*; do
+        test ! -h "$i" || continue
+        isScript "$i" || continue
+        substituteInPlace "$i" \
+          --replace-fail '="/usr' '="${placeholder "out"}'
+      done
+      find "$out/lib/ghc/lib/package.conf.d" -type f -name '*.conf' \
+        -exec sed -i "s|/usr/|$out/|g" {} +
+    ''
+
+    # Patch ghc settings
+    + ''
+      substituteInPlace $out/lib/ghc/lib/settings \
+        --replace-fail powerpc64-linux-gnu-gcc gcc \
+        --replace-fail powerpc64-linux-gnu-g++ g++ \
+        --replace-fail powerpc64-linux-gnu-ld ld \
+        --replace-fail powerpc64-linux-gnu-ar ar \
+        --replace-fail powerpc64-linux-gnu-ranlib ranlib \
+        --replace-fail llc-18 llc \
+        --replace-fail opt-18 opt
+    '';
+
+  doInstallCheck = true;
+
+  installCheckPhase = ''
+    # Sanity check, can ghc create executables?
+    cd $TMP
+    mkdir test-ghc; cd test-ghc
+    cat > main.hs << EOF
+      {-# LANGUAGE TemplateHaskell #-}
+      module Main where
+      main = putStrLn \$([|"yes"|])
+    EOF
+    env -i $out/bin/ghc --make main.hs || exit 1
+    echo compilation ok
+    [ $(./main) == "yes" ]
+  '';
+
+  # On Linux, use patchelf to modify the executables so that they can
+  # find editline/gmp.
+  postFixup =
+    lib.optionalString (stdenv.hostPlatform.isLinux && !(debUsed.isStatic or false))
+      # Keep rpath as small as possible, running autoPatchelf makes everything segfault (maybe similar to patchelf#244).
+      # All Elfs are 2 directories deep from $out/lib, so pooling symlinks there makes a short rpath.
+      ''
+        (cd $out/lib; ln -s ${ncurses6.out}/lib/libtinfo.so.6)
+        (cd $out/lib; ln -s ${lib.getLib gmpUsed}/lib/libgmp.so.10)
+        (cd $out/lib; ln -s ${numactl.out}/lib/libnuma.so.1)
+        (cd $out/lib; ln -s ${libffi.out}/lib/libffi.so.8)
+        for p in $(find "$out/lib" -type f -name "*\.so*"); do
+          (cd $out/lib; ln -s $p)
+        done
+
+        for p in $(find "$out/lib" -type f -executable); do
+          if isELF "$p"; then
+            echo "Patchelfing $p"
+            patchelf --set-rpath "\$ORIGIN:\$ORIGIN/../.." $p
+          fi
+        done
+      ''
+    # Recache package db which needs to happen because
+    # we modify the package db
+    + ''
+      "$out/bin/ghc-pkg" --package-db=$out/lib/ghc/lib/package.conf.d recache
+    '';
+
+  # Not a bindist, it's already built
+  dontBuild = true;
+  # Not a bindist, nothing to configure
+  dontConfigure = true;
 
   postUnpack =
     # Verify our assumptions of which `libtinfo.so` (ncurses) version is used,
@@ -147,123 +230,38 @@ stdenv.mkDerivation (finalAttrs: {
             --interpreter ${stdenv.cc.bintools.dynamicLinker} {} \;
       '';
 
-  # Not a bindist, nothing to configure
-  dontConfigure = true;
+  sourceRoot = "${finalAttrs.pname}-${finalAttrs.version}";
 
-  # Not a bindist, it's already built
-  dontBuild = true;
+  # Custom unpack phase to handle .deb files
+  unpackPhase = ''
+    runHook preUnpack
 
-  # Install prebuilt GHC files
-  installPhase = ''
-    runHook preInstall
+    ar x $src
+    tar xf data.tar.xz
+    mkdir -p ${finalAttrs.sourceRoot}
+    mv -t ${finalAttrs.sourceRoot}/ usr var
 
-    mkdir -p $out
-
-    cp -t $out/ -a usr/*
-    rm -f $out/lib/ghc/lib/package.conf.d
-    find var -name "package.conf.d" -type d -exec cp -a {} $out/lib/ghc/lib/ \;
-
-    runHook postInstall
-  '';
-
-  postInstall =
-    # Patch scripts to include runtime dependencies in $PATH.
-    ''
-      for i in "$out/bin/"*; do
-        test ! -h "$i" || continue
-        isScript "$i" || continue
-        sed -i -e '2i export PATH="${lib.makeBinPath runtimeDeps}:$PATH"' "$i"
-      done
-    ''
-
-    # Patch /usr paths
-    + ''
-      for i in "$out/bin/"*; do
-        test ! -h "$i" || continue
-        isScript "$i" || continue
-        substituteInPlace "$i" \
-          --replace-fail '="/usr' '="${placeholder "out"}'
-      done
-      find "$out/lib/ghc/lib/package.conf.d" -type f -name '*.conf' \
-        -exec sed -i "s|/usr/|$out/|g" {} +
-    ''
-
-    # Patch ghc settings
-    + ''
-      substituteInPlace $out/lib/ghc/lib/settings \
-        --replace-fail powerpc64-linux-gnu-gcc gcc \
-        --replace-fail powerpc64-linux-gnu-g++ g++ \
-        --replace-fail powerpc64-linux-gnu-ld ld \
-        --replace-fail powerpc64-linux-gnu-ar ar \
-        --replace-fail powerpc64-linux-gnu-ranlib ranlib \
-        --replace-fail llc-18 llc \
-        --replace-fail opt-18 opt
-    '';
-
-  # On Linux, use patchelf to modify the executables so that they can
-  # find editline/gmp.
-  postFixup =
-    lib.optionalString (stdenv.hostPlatform.isLinux && !(debUsed.isStatic or false))
-      # Keep rpath as small as possible, running autoPatchelf makes everything segfault (maybe similar to patchelf#244).
-      # All Elfs are 2 directories deep from $out/lib, so pooling symlinks there makes a short rpath.
-      ''
-        (cd $out/lib; ln -s ${ncurses6.out}/lib/libtinfo.so.6)
-        (cd $out/lib; ln -s ${lib.getLib gmpUsed}/lib/libgmp.so.10)
-        (cd $out/lib; ln -s ${numactl.out}/lib/libnuma.so.1)
-        (cd $out/lib; ln -s ${libffi.out}/lib/libffi.so.8)
-        for p in $(find "$out/lib" -type f -name "*\.so*"); do
-          (cd $out/lib; ln -s $p)
-        done
-
-        for p in $(find "$out/lib" -type f -executable); do
-          if isELF "$p"; then
-            echo "Patchelfing $p"
-            patchelf --set-rpath "\$ORIGIN:\$ORIGIN/../.." $p
-          fi
-        done
-      ''
-    # Recache package db which needs to happen because
-    # we modify the package db
-    + ''
-      "$out/bin/ghc-pkg" --package-db=$out/lib/ghc/lib/package.conf.d recache
-    '';
-
-  doInstallCheck = true;
-  installCheckPhase = ''
-    # Sanity check, can ghc create executables?
-    cd $TMP
-    mkdir test-ghc; cd test-ghc
-    cat > main.hs << EOF
-      {-# LANGUAGE TemplateHaskell #-}
-      module Main where
-      main = putStrLn \$([|"yes"|])
-    EOF
-    env -i $out/bin/ghc --make main.hs || exit 1
-    echo compilation ok
-    [ $(./main) == "yes" ]
+    runHook postUnpack
   '';
 
   passthru = {
-    targetPrefix = "";
     enableShared = true;
-
-    llvmPackages = null;
-
-    # Our Cabal compiler name
-    haskellCompilerName = "ghc-${version}";
-
     # Normal GHC derivations expose the hadrian derivation used to build them
     # here. In the case of debs we just make sure that the attribute exists,
     # as it is used for checking if a GHC derivation has been built with hadrian.
     hadrian = null;
+    # Our Cabal compiler name
+    haskellCompilerName = "ghc-${version}";
+    llvmPackages = null;
+    targetPrefix = "";
   };
 
   meta = {
-    homepage = "http://haskell.org/ghc";
     description = "Glasgow Haskell Compiler";
+    homepage = "http://haskell.org/ghc";
     license = lib.licenses.bsd3;
-    platforms = builtins.attrNames ghcDebs;
     maintainers = [ lib.maintainers.OPNA2608 ];
+    platforms = builtins.attrNames ghcDebs;
     teams = [ lib.teams.haskell ];
   };
 })

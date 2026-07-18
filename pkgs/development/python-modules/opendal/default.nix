@@ -1,18 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  rustPlatform,
-
+  buildPythonPackage,
   # tests
   pytest-asyncio,
   pytestCheckHook,
   python-dotenv,
+  rustPlatform,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "opendal";
   version = "0.46.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "apache";
@@ -21,32 +19,32 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-OQGpz6o4R0Yp+1vAgFtik/l7wvHwJNcB1BhZLk+BFPg=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/bindings/python";
-
   postPatch = ''
     ln -s ${./Cargo.lock} Cargo.lock
   '';
 
-  cargoDeps = rustPlatform.importCargoLock {
-    lockFile = ./Cargo.lock;
-  };
-
   env = {
     PYO3_USE_ABI3_FORWARD_COMPATIBILITY = 1;
   };
-
-  build-system = [
-    rustPlatform.cargoSetupHook
-    rustPlatform.maturinBuildHook
-  ];
-
-  pythonImportsCheck = [ "opendal" ];
 
   nativeCheckInputs = [
     pytest-asyncio
     pytestCheckHook
     python-dotenv
   ];
+
+  build-system = [
+    rustPlatform.cargoSetupHook
+    rustPlatform.maturinBuildHook
+  ];
+
+  cargoDeps = rustPlatform.importCargoLock {
+    lockFile = ./Cargo.lock;
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "opendal" ];
+  sourceRoot = "${finalAttrs.src.name}/bindings/python";
 
   meta = {
     description = "native Python binding for Apache OpenDAL";

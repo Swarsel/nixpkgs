@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchurl,
+  acl,
   autoreconfHook,
-  pkg-config,
+  dbus,
   glib,
   jansson,
-  udev,
+  libdrm,
   libgudev,
   libusb1,
-  libdrm,
-  libxrandr,
   libxext,
-  acl,
-  dbus,
+  libxrandr,
+  pkg-config,
+  udev,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -43,16 +43,16 @@ stdenv.mkDerivation (finalAttrs: {
     udev
   ];
 
-  enableParallelBuilding = true;
   doInstallCheck = true;
+  enableParallelBuilding = true;
 
   meta = {
-    homepage = "http://www.ddcutil.com/";
     description = "Query and change Linux monitor settings using DDC/CI and USB";
-    license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
-    maintainers = with lib.maintainers; [ rnhmjoj ];
+    homepage = "http://www.ddcutil.com/";
     changelog = "https://github.com/rockowitz/ddcutil/blob/v${finalAttrs.version}/CHANGELOG.md";
+    license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ rnhmjoj ];
+    platforms = lib.platforms.linux;
     mainProgram = "ddcutil";
   };
 })

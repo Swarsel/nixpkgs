@@ -1,9 +1,9 @@
 {
+  lib,
+  stdenv,
   fetchgit,
   gnucap,
   installShellFiles,
-  lib,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,8 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [
     installShellFiles
   ];
-  propagatedBuildInputs = [ gnucap ];
 
+  propagatedBuildInputs = [ gnucap ];
   doCheck = true;
 
   preInstall = ''
@@ -38,9 +38,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "gnucap modelgen to preprocess, parse and dump vams files";
     homepage = "http://www.gnucap.org/";
-    mainProgram = "gnucap-mg-vams";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.raboof ];
+    platforms = lib.platforms.all;
+    mainProgram = "gnucap-mg-vams";
   };
 })

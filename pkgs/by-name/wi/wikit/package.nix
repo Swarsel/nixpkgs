@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
+  installShellFiles,
+  nodejs,
   yarnConfigHook,
   yarnInstallHook,
-  nodejs,
-  installShellFiles,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "wikit";
@@ -19,11 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-WCKLqxNtO+iECfBzQwMn31Pcz/cGWMihTvoHPaQAmak=";
   };
 
-  offlineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-UAqMpb7zM/oVxE6gNkjk6IUoufATc0q2TM10P/A1Rqs=";
-  };
-
   nativeBuildInputs = [
     yarnConfigHook
     yarnInstallHook
@@ -34,6 +29,11 @@ stdenv.mkDerivation (finalAttrs: {
   postInstall = ''
     installManPage ${finalAttrs.src}/data/wikit.1
   '';
+
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-UAqMpb7zM/oVxE6gNkjk6IUoufATc0q2TM10P/A1Rqs=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
 
   meta = {
     description = "Command line program for getting Wikipedia summaries";

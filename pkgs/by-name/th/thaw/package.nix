@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
-  unzip,
   fetchurl,
   nix-update-script,
+  stdenvNoCC,
+  unzip,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -15,10 +15,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-1n9NMe+foFeEmphUC4EM+kLgvGYBnTYFq9CORcaaoG8=";
   };
 
-  __structuredAttrs = true;
   strictDeps = true;
-  sourceRoot = ".";
-
   nativeBuildInputs = [ unzip ];
 
   installPhase = ''
@@ -28,14 +25,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  sourceRoot = ".";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Menu bar manager for macOS 26";
     homepage = "https://github.com/stonerl/Thaw";
     license = lib.licenses.gpl3;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ Br1ght0ne ];
     platforms = lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

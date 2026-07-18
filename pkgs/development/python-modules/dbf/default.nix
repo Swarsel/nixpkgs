@@ -1,15 +1,14 @@
 {
   lib,
-  fetchPypi,
-  buildPythonPackage,
   aenum,
+  buildPythonPackage,
+  fetchPypi,
   python,
 }:
 
 buildPythonPackage rec {
   pname = "dbf";
   version = "0.99.11";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -18,7 +17,6 @@ buildPythonPackage rec {
 
   # Workaround for https://github.com/ethanfurman/dbf/issues/48
   patches = lib.optional python.stdenv.hostPlatform.isDarwin ./darwin.patch;
-
   propagatedBuildInputs = [ aenum ];
 
   checkPhase = ''
@@ -27,6 +25,7 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  format = "setuptools";
   pythonImportsCheck = [ "dbf" ];
 
   meta = {

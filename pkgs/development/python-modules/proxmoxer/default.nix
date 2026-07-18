@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   paramiko,
   pytestCheckHook,
   requests,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "proxmoxer";
   version = "2.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "proxmoxer";
@@ -22,17 +21,17 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-v/QqNCzkcYk2pqr9tTeyvEEeXt4nzqooHAQEIiJitZ4=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    requests-toolbelt
+    responses
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
     paramiko
     requests
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    requests-toolbelt
-    responses
   ];
 
   disabledTestPaths = [
@@ -48,6 +47,7 @@ buildPythonPackage (finalAttrs: {
     "test_timeout"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "proxmoxer" ];
 
   meta = {

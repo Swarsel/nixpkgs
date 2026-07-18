@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   autoconf-archive,
   autoreconfHook,
-  fetchFromGitHub,
   gtk3,
   libtool,
   pkg-config,
@@ -29,18 +29,19 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals guiSupport [ pkg-config ];
 
   buildInputs = lib.optionals guiSupport [ gtk3 ];
-
   configureFlags = lib.optional guiSupport "--enable-gui";
 
   meta = {
     description = "Zoned block device manipulation library and tools";
-    mainProgram = "zbd";
     homepage = "https://github.com/westerndigitalcorporation/libzbd";
-    maintainers = [ ];
+
     license = with lib.licenses; [
       lgpl3Plus
       gpl3Plus
     ];
+
+    maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "zbd";
   };
 })

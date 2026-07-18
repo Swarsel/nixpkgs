@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -17,17 +17,15 @@ buildGoModule rec {
   };
 
   vendorHash = "sha256-6wBA9OZcjGsbIgWzMXlcT2571sFvtYqIsHRfLAz/o60=";
-
   # Irrelevant tools dependencies.
   excludedPackages = [ "./tools" ];
-
   passthru.tests = { inherit (nixosTests.prometheus-exporters) lnd; };
 
   meta = {
-    homepage = "https://github.com/lightninglabs/lndmon";
     description = "Prometheus exporter for lnd (Lightning Network Daemon)";
-    mainProgram = "lndmon";
+    homepage = "https://github.com/lightninglabs/lndmon";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ mmilata ];
+    mainProgram = "lndmon";
   };
 }

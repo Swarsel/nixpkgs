@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   cmake,
   libpulseaudio,
   ncurses,
   nix-update-script,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,10 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-7UPz6YpsnZHpW7sOJdJU2wQ5jyFPWTHxoknago0W+Ss=";
   };
-
-  preConfigure = ''
-    substituteInPlace CMakeLists.txt --replace-fail "/etc" "$out/etc/xdg"
-  '';
 
   patches = [
     # fix for CMake v4
@@ -40,6 +36,10 @@ stdenv.mkDerivation (finalAttrs: {
     ncurses
   ];
 
+  preConfigure = ''
+    substituteInPlace CMakeLists.txt --replace-fail "/etc" "$out/etc/xdg"
+  '';
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -47,8 +47,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/patroclos/PAmix";
     changelog = "https://github.com/patroclos/PAmix/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "pamix";
   };
 })

@@ -1,21 +1,25 @@
 {
   lib,
-  callPackage,
   buildPythonPackage,
+  callPackage,
   fetchPypi,
-  replaceVars,
   hatchling,
+  replaceVars,
 }:
 
 buildPythonPackage rec {
   pname = "attrs";
   version = "26.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-0DzricsyKo/XBtT7kZQHN7ZkKqNpmP4TCpvJbJhe/zI=";
   };
+
+  outputs = [
+    "out"
+    "testout"
+  ];
 
   patches = [
     (replaceVars ./remove-hatch-plugins.patch {
@@ -25,11 +29,9 @@ buildPythonPackage rec {
   ];
 
   nativeBuildInputs = [ hatchling ];
-
-  outputs = [
-    "out"
-    "testout"
-  ];
+  # pytest depends on attrs, so we can't do this out-of-the-box.
+  # Instead, we do this as a passthru.tests test.
+  doCheck = false;
 
   postInstall = ''
     # Install tests as the tests output.
@@ -37,11 +39,8 @@ buildPythonPackage rec {
     cp -R tests $testout
   '';
 
+  pyproject = true;
   pythonImportsCheck = [ "attr" ];
-
-  # pytest depends on attrs, so we can't do this out-of-the-box.
-  # Instead, we do this as a passthru.tests test.
-  doCheck = false;
 
   passthru.tests = {
     pytest = callPackage ./tests.nix { };

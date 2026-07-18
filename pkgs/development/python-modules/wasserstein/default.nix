@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
-  numpy,
   llvmPackages,
-  wurlitzer,
+  numpy,
   pytestCheckHook,
+  wurlitzer,
 }:
 
 buildPythonPackage rec {
   pname = "wasserstein";
   version = "1.1.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "pkomiske";
@@ -23,19 +22,20 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/thaler-lab/Wasserstein/commit/8667d59dfdf89eabf01f3ae93b23a30a27c21c58.patch";
       hash = "sha256-jp5updB3E1MYgLhBJwmBMTwBiFXtABMwTxt0G6xhoyA=";
+      url = "https://github.com/thaler-lab/Wasserstein/commit/8667d59dfdf89eabf01f3ae93b23a30a27c21c58.patch";
     })
   ];
 
   buildInputs = [ llvmPackages.openmp ];
+
   propagatedBuildInputs = [
     numpy
     wurlitzer
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-  enabledTestPaths = [ "wasserstein/tests" ];
+
   disabledTestPaths = [
     "wasserstein/tests/test_emd.py" # requires "ot"
     # cyclic dependency on energyflow
@@ -43,6 +43,8 @@ buildPythonPackage rec {
     "wasserstein/tests/test_pairwiseemd.py"
   ];
 
+  enabledTestPaths = [ "wasserstein/tests" ];
+  format = "setuptools";
   pythonImportsCheck = [ "wasserstein" ];
 
   meta = {

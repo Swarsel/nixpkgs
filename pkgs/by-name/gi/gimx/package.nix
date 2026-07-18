@@ -1,24 +1,24 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  curl,
-  libusb1,
   bluez,
-  libxml2,
-  ncurses5,
+  curl,
   libmhash,
-  libxi,
+  libusb1,
   libx11,
+  libxi,
+  libxml2,
+  makeWrapper,
+  ncurses5,
 }:
 
 let
   gimx-config = fetchFromGitHub {
+    hash = "sha256-t/Ttlvc9LCRW624oSsFaP8EmswJ3OAn86QgF1dCUjAs=";
     owner = "matlo";
     repo = "GIMX-configurations";
     rev = "c20300f24d32651d369e2b27614b62f4b856e4a0";
-    hash = "sha256-t/Ttlvc9LCRW624oSsFaP8EmswJ3OAn86QgF1dCUjAs=";
   };
 
 in
@@ -30,15 +30,13 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "matlo";
     repo = "GIMX";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-BcFLdQgEAi6Sxyb5/P9YAIkmeXNZXrKcOa/6g817xQg=";
+    fetchSubmodules = true;
   };
 
-  env.NIX_CFLAGS_COMPILE = "-Wno-error";
   patches = [ ./conf.patch ];
-  makeFlags = [ "build-core" ];
-
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     curl
     libusb1
@@ -49,6 +47,9 @@ stdenv.mkDerivation (finalAttrs: {
     libx11
     libxi
   ];
+
+  makeFlags = [ "build-core" ];
+  env.NIX_CFLAGS_COMPILE = "-Wno-error";
 
   installPhase = ''
     runHook preInstall
@@ -69,8 +70,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/matlo/GIMX";
     description = "Game Input Multiplexer";
+    homepage = "https://github.com/matlo/GIMX";
     license = lib.licenses.gpl3Only;
     platforms = lib.platforms.linux;
   };

@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  centrifugo,
   nix-update-script,
   nixosTests,
   testers,
-  centrifugo,
 }:
 let
   # Inspect build flags with `go version -m centrifugo`.
@@ -27,6 +27,10 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-K/90YrXkwiDt9Zm6h5nVo34WjtQQKBCNigJguwAdW5E=";
 
+  excludedPackages = [
+    "./internal/gen/api"
+  ];
+
   ldflags = [
     "-s"
     "-w"
@@ -35,20 +39,18 @@ buildGoModule (finalAttrs: {
     "-X=github.com/centrifugal/centrifugo/v6/internal/build.UsageStatsToken=${statsToken}"
   ];
 
-  excludedPackages = [
-    "./internal/gen/api"
-  ];
-
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       inherit (nixosTests) centrifugo;
+
       version = testers.testVersion {
-        package = centrifugo;
-        command = "centrifugo version";
         version = "v${finalAttrs.version}";
+        command = "centrifugo version";
+        package = centrifugo;
       };
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -56,10 +58,12 @@ buildGoModule (finalAttrs: {
     homepage = "https://centrifugal.dev";
     changelog = "https://github.com/centrifugal/centrifugo/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = [
       lib.maintainers.tie
       lib.maintainers.valodim
     ];
+
     mainProgram = "centrifugo";
   };
 })

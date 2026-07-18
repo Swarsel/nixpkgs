@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pysigma,
   pytestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pysigma-backend-loki";
   version = "0.13.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "grafana";
@@ -19,20 +18,18 @@ buildPythonPackage rec {
     hash = "sha256-36fdFuvUSAeGyV5z55/MGcdMiCNz12EbiRw87MjmaKY=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ pysigma ];
-
-  pythonRelaxDeps = [ "pysigma" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "sigma.backends.loki" ];
+  build-system = [ poetry-core ];
+  dependencies = [ pysigma ];
 
   disabledTestPaths = [
     # Tests are out-dated
     "tests/test_backend_loki_field_modifiers.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "sigma.backends.loki" ];
+  pythonRelaxDeps = [ "pysigma" ];
 
   meta = {
     description = "Library to support the loki backend for pySigma";

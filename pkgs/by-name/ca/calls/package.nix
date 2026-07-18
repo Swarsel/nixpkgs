@@ -2,36 +2,36 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  meson,
-  mesonEmulatorHook,
-  ninja,
-  pkg-config,
-  libadwaita,
-  libsecret,
-  modemmanager,
-  gtk4,
-  gom,
-  gsound,
-  feedbackd,
-  callaudiod,
-  evolution-data-server-gtk4,
-  folks,
-  desktop-file-utils,
   appstream-glib,
-  libpeas2,
-  dbus,
-  vala,
-  wrapGAppsHook4,
-  xvfb-run,
-  gtk-doc,
   bubblewrap,
+  callaudiod,
+  dbus,
+  desktop-file-utils,
   docbook-xsl-nons,
   docbook_xml_dtd_43,
   docutils,
+  evolution-data-server-gtk4,
+  feedbackd,
+  folks,
+  gom,
+  gsound,
   gst_all_1,
+  gtk-doc,
+  gtk4,
+  libadwaita,
+  libpeas2,
+  libsecret,
+  meson,
+  mesonEmulatorHook,
+  modemmanager,
+  ninja,
+  pkg-config,
   shared-mime-info,
   sofia_sip,
+  vala,
+  wrapGAppsHook4,
   writeShellScriptBin,
+  xvfb-run,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,18 +39,20 @@ stdenv.mkDerivation (finalAttrs: {
   version = "49.1.1";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "GNOME";
     repo = "calls";
     rev = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-fqvfzdk1szNFm4aRRGNDaA/AmjJdQjBsMhvEolEetE0=";
+    fetchSubmodules = true;
+    domain = "gitlab.gnome.org";
   };
 
   outputs = [
     "out"
     "devdoc"
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -89,6 +91,13 @@ stdenv.mkDerivation (finalAttrs: {
     sofia_sip
   ];
 
+  mesonFlags = [
+    (lib.mesonBool "gtk_doc" true)
+    (lib.mesonBool "tests" finalAttrs.finalPackage.doCheck)
+  ];
+
+  doCheck = true;
+
   nativeCheckInputs = [
     (writeShellScriptBin "dbus-run-session" ''
       # tests invoke `dbus-run-session` directly, but without the necessary `--config-file` argument
@@ -100,18 +109,6 @@ stdenv.mkDerivation (finalAttrs: {
     xvfb-run
   ];
 
-  mesonFlags = [
-    (lib.mesonBool "gtk_doc" true)
-    (lib.mesonBool "tests" finalAttrs.finalPackage.doCheck)
-  ];
-
-  strictDeps = true;
-  doCheck = true;
-
-  preFixup = ''
-    gappsWrapperArgs+=(--prefix XDG_DATA_DIRS : "${shared-mime-info}/share")
-  '';
-
   checkPhase = ''
     runHook preCheck
 
@@ -121,6 +118,10 @@ stdenv.mkDerivation (finalAttrs: {
       meson test --no-rebuild --print-errorlogs
 
     runHook postCheck
+  '';
+
+  preFixup = ''
+    gappsWrapperArgs+=(--prefix XDG_DATA_DIRS : "${shared-mime-info}/share")
   '';
 
   meta = {

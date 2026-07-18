@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
   libusb1,
   setuptools-scm,
 }:
@@ -10,14 +10,11 @@
 buildPythonPackage rec {
   pname = "pyusb";
   version = "1.3.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     sha256 = "sha256-OvBwtgdGfBwWT0nVsMqr6Kx42+2SmNcDqNv530BS0X4=";
   };
-
-  nativeBuildInputs = [ setuptools-scm ];
 
   # Fix the USB backend library lookup
   postPatch = ''
@@ -26,9 +23,10 @@ buildPythonPackage rec {
     sed -i -e "s|find_library=None|find_library=lambda _:\"$libusb\"|" usb/backend/libusb1.py
   '';
 
+  nativeBuildInputs = [ setuptools-scm ];
   # No tests included
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "usb" ];
 
   meta = {

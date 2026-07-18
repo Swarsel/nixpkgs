@@ -1,17 +1,17 @@
 {
-  fetchurl,
-  fetchpatch,
   lib,
   stdenv,
-  libGLU,
-  libGL,
-  libglut,
+  fetchurl,
   SDL,
-  libxi,
+  fetchpatch,
+  libGL,
+  libGLU,
+  libglut,
   libsm,
-  libxmu,
-  libxext,
   libx11,
+  libxext,
+  libxi,
+  libxmu,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,23 +26,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://sources.debian.net/data/main/p/plib/1.8.5-7/debian/patches/04_CVE-2011-4620.diff";
       sha256 = "1b7y0vqqdzd48q68ldlzw0zzqy9mg4c10a754r4hi3ldjmcplf0j";
+      url = "https://sources.debian.net/data/main/p/plib/1.8.5-7/debian/patches/04_CVE-2011-4620.diff";
     })
     (fetchpatch {
-      url = "https://sources.debian.net/data/main/p/plib/1.8.5-7/debian/patches/05_CVE-2012-4552.diff";
       sha256 = "0b6cwdwii5b5vy78sbw5cw1s96l4jyzr4dk69v63pa0wwi2b5dki";
+      url = "https://sources.debian.net/data/main/p/plib/1.8.5-7/debian/patches/05_CVE-2012-4552.diff";
     })
     (fetchpatch {
-      url = "https://sources.debian.org/data/main/p/plib/1.8.5-13/debian/patches/08_CVE-2021-38714.patch";
       sha256 = "sha256-3f1wZn0QqK/hPWCg1KEzbB95IGoxBjLZoCOFlW98t5w=";
+      url = "https://sources.debian.org/data/main/p/plib/1.8.5-13/debian/patches/08_CVE-2021-38714.patch";
     })
     ./darwin-ssgloadflt-uint.patch
-  ];
-
-  configureFlags = lib.optionals stdenv.hostPlatform.isDarwin [
-    "--disable-sl"
-    "--disable-pw"
   ];
 
   propagatedBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
@@ -59,6 +54,11 @@ stdenv.mkDerivation (finalAttrs: {
     libx11
   ];
 
+  configureFlags = lib.optionals stdenv.hostPlatform.isDarwin [
+    "--disable-sl"
+    "--disable-pw"
+  ];
+
   meta = {
     description = "Suite of portable game libraries";
 
@@ -73,9 +73,8 @@ stdenv.mkDerivation (finalAttrs: {
       GLUT, or FLTK instead of PLIB's 'PW' windowing library, you can.
     '';
 
-    license = lib.licenses.lgpl2Plus;
-
     homepage = "https://plib.sourceforge.net/";
+    license = lib.licenses.lgpl2Plus;
     platforms = lib.platforms.unix;
   };
 })

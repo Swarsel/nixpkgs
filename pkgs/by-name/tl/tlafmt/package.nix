@@ -1,7 +1,7 @@
 {
-  rustPlatform,
   lib,
   fetchFromGitHub,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "tlafmt";

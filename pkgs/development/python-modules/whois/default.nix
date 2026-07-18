@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   inetutils,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "whois";
   version = "0.99.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "DannyCork";
@@ -27,7 +26,7 @@ buildPythonPackage rec {
 
   # Tests require network access
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "whois" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   lightwalletd,
   testers,
 }:
@@ -19,6 +19,12 @@ buildGoModule rec {
 
   vendorHash = "sha256-bV1nJ1HUpYdziV42/ug3X+/jAdw3Wq7MdcnX327MD/w=";
 
+  excludedPackages = [
+    "genblocks"
+    "testclient"
+    "zap"
+  ];
+
   ldflags = [
     "-s"
     "-w"
@@ -28,23 +34,17 @@ buildGoModule rec {
     "-X github.com/zcash/lightwalletd/common.BuildUser=nixbld"
   ];
 
-  excludedPackages = [
-    "genblocks"
-    "testclient"
-    "zap"
-  ];
-
   passthru.tests.version = testers.testVersion {
-    package = lightwalletd;
-    command = "lightwalletd version";
     version = "v${lightwalletd.version}";
+    command = "lightwalletd version";
+    package = lightwalletd;
   };
 
   meta = {
     description = "Backend service that provides a bandwidth-efficient interface to the Zcash blockchain";
     homepage = "https://github.com/zcash/lightwalletd";
-    maintainers = with lib.maintainers; [ centromere ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ centromere ];
     mainProgram = "lightwalletd";
   };
 }

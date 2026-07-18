@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   authcaptureproxy,
   backoff,
   beautifulsoup4,
   buildPythonPackage,
-  fetchFromGitHub,
   httpx,
   orjson,
   poetry-core,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "teslajsonpy";
   version = "3.13.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zabuldon";
@@ -26,6 +25,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-tlw5m8RsBGwVx3h+JlY9rwINMDR6csAt2XefK6AaQWE=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -40,11 +44,7 @@ buildPythonPackage rec {
     wrapt
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "teslajsonpy" ];
 
   meta = {

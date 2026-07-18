@@ -1,37 +1,31 @@
 {
   lib,
   stdenv,
-  cmake,
-  git,
-  ninja,
   fetchFromGitHub,
   SDL2,
-  wget,
-  which,
-  ffmpeg,
   autoAddDriverRunpath,
-  makeWrapper,
-  nix-update-script,
-
-  metalSupport ? stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64,
-  coreMLSupport ? stdenv.hostPlatform.isDarwin && true,
-
+  cmake,
   config,
-  cudaSupport ? config.cudaSupport,
-  cudaPackages ? { },
-
-  rocmSupport ? config.rocmSupport,
-  rocmPackages ? { },
-  rocmGpuTargets ? builtins.concatStringsSep ";" rocmPackages.clr.gpuTargets,
-
-  vulkanSupport ? false,
+  ffmpeg,
+  git,
+  makeWrapper,
+  ninja,
+  nix-update-script,
   shaderc,
   vulkan-headers,
   vulkan-loader,
-
-  withSDL ? true,
-
+  wget,
+  which,
+  coreMLSupport ? stdenv.hostPlatform.isDarwin && true,
+  cudaPackages ? { },
+  cudaSupport ? config.cudaSupport,
+  metalSupport ? stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64,
+  rocmGpuTargets ? builtins.concatStringsSep ";" rocmPackages.clr.gpuTargets,
+  rocmPackages ? { },
+  rocmSupport ? config.rocmSupport,
+  vulkanSupport ? false,
   withFFmpegSupport ? stdenv.hostPlatform.isLinux,
+  withSDL ? true,
 }:
 
 assert metalSupport -> stdenv.hostPlatform.isDarwin;
@@ -175,8 +169,6 @@ effectiveStdenv.mkDerivation (finalAttrs: {
       --prefix PATH : ${lib.makeBinPath [ ffmpeg ]}
   '';
 
-  requiredSystemFeatures = optionals rocmSupport [ "big-parallel" ]; # rocmSupport multiplies build time by the number of GPU targets, which takes arround 30 minutes on a 16-cores system to build
-
   # libcuda.so is provided by the driver at runtime and is not available in the sandbox
   # /nix/store/...-whisper-cpp-1.8.3/bin/whisper-cli: error while loading shared libraries: libcuda.so.1: cannot open shared object file: No such file or directory
   # NOTE: it is unclear why this isn't an issue on x86_64-linux
@@ -193,22 +185,27 @@ effectiveStdenv.mkDerivation (finalAttrs: {
       --replace-fail '//' '/'
   '';
 
+  requiredSystemFeatures = optionals rocmSupport [ "big-parallel" ]; # rocmSupport multiplies build time by the number of GPU targets, which takes arround 30 minutes on a 16-cores system to build
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Port of OpenAI's Whisper model in C/C++";
+
     longDescription = ''
       To download the models as described in the project's readme, you may
       use the `whisper-cpp-download-ggml-model` binary from this package.
     '';
+
     homepage = "https://github.com/ggerganov/whisper.cpp";
     license = lib.licenses.mit;
-    mainProgram = "whisper-cli";
-    platforms = lib.platforms.all;
-    badPlatforms = optionals cudaSupport lib.platforms.darwin;
+
     maintainers = with lib.maintainers; [
       hughobrien
       aviallon
     ];
+
+    platforms = lib.platforms.all;
+    badPlatforms = optionals cudaSupport lib.platforms.darwin;
+    mainProgram = "whisper-cli";
   };
 })

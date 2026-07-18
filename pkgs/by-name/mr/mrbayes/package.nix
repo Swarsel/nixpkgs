@@ -17,7 +17,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Bayesian Inference of Phylogeny";
-    mainProgram = "mb";
+
     longDescription = ''
       Bayesian inference of phylogeny is based upon a
       quantity called the posterior probability distribution of trees, which is
@@ -27,9 +27,11 @@ stdenv.mkDerivation (finalAttrs: {
       MrBayes uses a simulation technique called Markov chain Monte Carlo (or
       MCMC) to approximate the posterior probabilities of trees.
     '';
-    maintainers = [ ];
-    license = lib.licenses.gpl2Plus;
+
     homepage = "https://nbisweden.github.io/MrBayes/";
+    license = lib.licenses.gpl2Plus;
+    maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "mb";
   };
 })

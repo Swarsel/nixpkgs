@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 with lib;
@@ -35,31 +35,9 @@ in
   options.services.sogo = with types; {
     enable = mkEnableOption "SOGo groupware";
 
-    vhostName = mkOption {
-      description = "Name of the nginx vhost";
-      type = str;
-      default = "sogo";
-    };
-
-    timezone = mkOption {
-      description = "Timezone of your SOGo instance";
-      type = str;
-      example = "America/Montreal";
-    };
-
-    language = mkOption {
-      description = "Language of SOGo";
-      type = str;
-      default = "English";
-    };
-
-    ealarmsCredFile = mkOption {
-      description = "Optional path to a credentials file for email alarms";
-      type = nullOr str;
-      default = null;
-    };
-
     configReplaces = mkOption {
+      default = { };
+
       description = ''
         Replacement-filepath mapping for sogo.conf.
         Every key is replaced with the contents of the file specified as value.
@@ -67,23 +45,46 @@ in
         In the example, every occurrence of LDAP_BINDPW will be replaced with the text of the
         specified file.
       '';
-      type = attrsOf str;
-      default = { };
+
       example = {
         LDAP_BINDPW = "/var/lib/secrets/sogo/ldappw";
       };
+
+      type = attrsOf str;
+    };
+
+    ealarmsCredFile = mkOption {
+      default = null;
+      description = "Optional path to a credentials file for email alarms";
+      type = nullOr str;
     };
 
     extraConfig = mkOption {
+      default = "";
       description = "Extra sogo.conf configuration lines";
       type = lines;
-      default = "";
+    };
+
+    language = mkOption {
+      default = "English";
+      description = "Language of SOGo";
+      type = str;
+    };
+
+    timezone = mkOption {
+      description = "Timezone of your SOGo instance";
+      example = "America/Montreal";
+      type = str;
+    };
+
+    vhostName = mkOption {
+      default = "sogo";
+      description = "Name of the nginx vhost";
+      type = str;
     };
   };
 
   config = mkIf cfg.enable {
-    environment.systemPackages = [ pkgs.sogo ];
-
     environment.etc."sogo/sogo.conf.raw".text = ''
       {
         // Mandatory parameters
@@ -101,143 +102,22 @@ in
       }
     '';
 
-    systemd.services.sogo = {
-      description = "SOGo groupware";
-      after = [
-        "postgresql.target"
-        "mysql.service"
-        "memcached.service"
-        "openldap.service"
-        "dovecot2.service"
-      ];
-      wantedBy = [ "multi-user.target" ];
-      restartTriggers = [ config.environment.etc."sogo/sogo.conf.raw".source ];
-
-      environment.LDAPTLS_CACERT = config.security.pki.caBundle;
-
-      serviceConfig = {
-        Type = "forking";
-        ExecStartPre = "+" + preStart + "/bin/sogo-prestart";
-        ExecStart = "${pkgs.sogo}/bin/sogod -WOLogFile - -WOPidFile /run/sogo/sogo.pid";
-
-        ProtectSystem = "strict";
-        ProtectHome = true;
-        PrivateTmp = true;
-        PrivateDevices = true;
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
-        ProtectControlGroups = true;
-        RuntimeDirectory = "sogo";
-        StateDirectory = "sogo/spool";
-
-        User = "sogo";
-        Group = "sogo";
-
-        CapabilityBoundingSet = "";
-        NoNewPrivileges = true;
-
-        LockPersonality = true;
-        RestrictRealtime = true;
-        PrivateMounts = true;
-        PrivateUsers = true;
-        MemoryDenyWriteExecute = true;
-        SystemCallFilter = "@basic-io @file-system @network-io @system-service @timer";
-        SystemCallArchitectures = "native";
-        RestrictAddressFamilies = "AF_UNIX AF_INET AF_INET6";
-      };
-    };
-
-    systemd.services.sogo-tmpwatch = {
-      description = "SOGo tmpwatch";
-
-      startAt = [ "hourly" ];
-      script = ''
-        SOGOSPOOL=/var/lib/sogo/spool
-
-        find "$SOGOSPOOL" -type f -user sogo -atime +23 -delete > /dev/null
-        find "$SOGOSPOOL" -mindepth 1 -type d -user sogo -empty -delete > /dev/null
-      '';
-
-      serviceConfig = {
-        Type = "oneshot";
-
-        ProtectSystem = "strict";
-        ProtectHome = true;
-        PrivateTmp = true;
-        PrivateDevices = true;
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
-        ProtectControlGroups = true;
-        StateDirectory = "sogo/spool";
-
-        User = "sogo";
-        Group = "sogo";
-
-        CapabilityBoundingSet = "";
-        NoNewPrivileges = true;
-
-        LockPersonality = true;
-        RestrictRealtime = true;
-        PrivateMounts = true;
-        PrivateUsers = true;
-        PrivateNetwork = true;
-        SystemCallFilter = "@basic-io @file-system @system-service";
-        SystemCallArchitectures = "native";
-        RestrictAddressFamilies = "";
-      };
-    };
-
-    systemd.services.sogo-ealarms = {
-      description = "SOGo email alarms";
-
-      after = [
-        "postgresql.target"
-        "mysqld.service"
-        "memcached.service"
-        "openldap.service"
-        "dovecot2.service"
-        "sogo.service"
-      ];
-      restartTriggers = [ config.environment.etc."sogo/sogo.conf.raw".source ];
-
-      startAt = [ "minutely" ];
-
-      serviceConfig = {
-        Type = "oneshot";
-        ExecStart = "${pkgs.sogo}/bin/sogo-ealarms-notify${
-          optionalString (cfg.ealarmsCredFile != null) " -p ${cfg.ealarmsCredFile}"
-        }";
-
-        ProtectSystem = "strict";
-        ProtectHome = true;
-        PrivateTmp = true;
-        PrivateDevices = true;
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
-        ProtectControlGroups = true;
-        StateDirectory = "sogo/spool";
-
-        User = "sogo";
-        Group = "sogo";
-
-        CapabilityBoundingSet = "";
-        NoNewPrivileges = true;
-
-        LockPersonality = true;
-        RestrictRealtime = true;
-        PrivateMounts = true;
-        PrivateUsers = true;
-        MemoryDenyWriteExecute = true;
-        SystemCallFilter = "@basic-io @file-system @network-io @system-service";
-        SystemCallArchitectures = "native";
-        RestrictAddressFamilies = "AF_UNIX AF_INET AF_INET6";
-      };
-    };
+    environment.systemPackages = [ pkgs.sogo ];
 
     # nginx vhost
     services.nginx.virtualHosts."${cfg.vhostName}" = {
       locations."/".extraConfig = ''
         rewrite ^ https://$server_name/SOGo;
+        allow all;
+      '';
+
+      locations."/SOGo.woa/WebServerResources/".extraConfig = ''
+        alias ${pkgs.sogo}/lib/GNUstep/SOGo/WebServerResources/;
+        allow all;
+      '';
+
+      locations."/SOGo/WebServerResources/".extraConfig = ''
+        alias ${pkgs.sogo}/lib/GNUstep/SOGo/WebServerResources/;
         allow all;
       '';
 
@@ -271,16 +151,6 @@ in
         break;
       '';
 
-      locations."/SOGo.woa/WebServerResources/".extraConfig = ''
-        alias ${pkgs.sogo}/lib/GNUstep/SOGo/WebServerResources/;
-        allow all;
-      '';
-
-      locations."/SOGo/WebServerResources/".extraConfig = ''
-        alias ${pkgs.sogo}/lib/GNUstep/SOGo/WebServerResources/;
-        allow all;
-      '';
-
       locations."~ ^/SOGo/so/ControlPanel/Products/([^/]*)/Resources/(.*)$".extraConfig = ''
         alias ${pkgs.sogo}/lib/GNUstep/SOGo/$1.SOGo/Resources/$2;
       '';
@@ -291,12 +161,138 @@ in
         '';
     };
 
+    systemd.services.sogo = {
+      after = [
+        "postgresql.target"
+        "mysql.service"
+        "memcached.service"
+        "openldap.service"
+        "dovecot2.service"
+      ];
+
+      description = "SOGo groupware";
+      environment.LDAPTLS_CACERT = config.security.pki.caBundle;
+      restartTriggers = [ config.environment.etc."sogo/sogo.conf.raw".source ];
+
+      serviceConfig = {
+        CapabilityBoundingSet = "";
+        ExecStart = "${pkgs.sogo}/bin/sogod -WOLogFile - -WOPidFile /run/sogo/sogo.pid";
+        ExecStartPre = "+" + preStart + "/bin/sogo-prestart";
+        Group = "sogo";
+        LockPersonality = true;
+        MemoryDenyWriteExecute = true;
+        NoNewPrivileges = true;
+        PrivateDevices = true;
+        PrivateMounts = true;
+        PrivateTmp = true;
+        PrivateUsers = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectSystem = "strict";
+        RestrictAddressFamilies = "AF_UNIX AF_INET AF_INET6";
+        RestrictRealtime = true;
+        RuntimeDirectory = "sogo";
+        StateDirectory = "sogo/spool";
+        SystemCallArchitectures = "native";
+        SystemCallFilter = "@basic-io @file-system @network-io @system-service @timer";
+        Type = "forking";
+        User = "sogo";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    systemd.services.sogo-ealarms = {
+      after = [
+        "postgresql.target"
+        "mysqld.service"
+        "memcached.service"
+        "openldap.service"
+        "dovecot2.service"
+        "sogo.service"
+      ];
+
+      description = "SOGo email alarms";
+      restartTriggers = [ config.environment.etc."sogo/sogo.conf.raw".source ];
+
+      serviceConfig = {
+        CapabilityBoundingSet = "";
+
+        ExecStart = "${pkgs.sogo}/bin/sogo-ealarms-notify${
+          optionalString (cfg.ealarmsCredFile != null) " -p ${cfg.ealarmsCredFile}"
+        }";
+
+        Group = "sogo";
+        LockPersonality = true;
+        MemoryDenyWriteExecute = true;
+        NoNewPrivileges = true;
+        PrivateDevices = true;
+        PrivateMounts = true;
+        PrivateTmp = true;
+        PrivateUsers = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectSystem = "strict";
+        RestrictAddressFamilies = "AF_UNIX AF_INET AF_INET6";
+        RestrictRealtime = true;
+        StateDirectory = "sogo/spool";
+        SystemCallArchitectures = "native";
+        SystemCallFilter = "@basic-io @file-system @network-io @system-service";
+        Type = "oneshot";
+        User = "sogo";
+      };
+
+      startAt = [ "minutely" ];
+    };
+
+    systemd.services.sogo-tmpwatch = {
+      description = "SOGo tmpwatch";
+
+      script = ''
+        SOGOSPOOL=/var/lib/sogo/spool
+
+        find "$SOGOSPOOL" -type f -user sogo -atime +23 -delete > /dev/null
+        find "$SOGOSPOOL" -mindepth 1 -type d -user sogo -empty -delete > /dev/null
+      '';
+
+      serviceConfig = {
+        CapabilityBoundingSet = "";
+        Group = "sogo";
+        LockPersonality = true;
+        NoNewPrivileges = true;
+        PrivateDevices = true;
+        PrivateMounts = true;
+        PrivateNetwork = true;
+        PrivateTmp = true;
+        PrivateUsers = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectSystem = "strict";
+        RestrictAddressFamilies = "";
+        RestrictRealtime = true;
+        StateDirectory = "sogo/spool";
+        SystemCallArchitectures = "native";
+        SystemCallFilter = "@basic-io @file-system @system-service";
+        Type = "oneshot";
+        User = "sogo";
+      };
+
+      startAt = [ "hourly" ];
+    };
+
     # User and group
     users.groups.sogo = { };
+
     users.users.sogo = {
+      description = "SOGo service user";
       group = "sogo";
       isSystemUser = true;
-      description = "SOGo service user";
     };
   };
 }

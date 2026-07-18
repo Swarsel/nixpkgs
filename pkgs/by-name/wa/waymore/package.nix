@@ -2,14 +2,13 @@
   lib,
   fetchFromGitHub,
   python3Packages,
-  waymore,
   testers,
+  waymore,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "waymore";
   version = "8.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xnl-h4ck3r";
@@ -26,11 +25,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     setuptools
   ];
 
-  pythonRemoveDeps = [
-    # python already provides urllib.parse
-    "urlparse3"
-  ];
-
   dependencies = with python3Packages; [
     requests
     termcolor
@@ -40,12 +34,18 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tldextract
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "waymore.waymore" ];
 
+  pythonRemoveDeps = [
+    # python already provides urllib.parse
+    "urlparse3"
+  ];
+
   passthru.tests.version = testers.testVersion {
-    package = waymore;
-    command = "waymore --version";
     version = "Waymore - v${finalAttrs.version}";
+    command = "waymore --version";
+    package = waymore;
   };
 
   meta = {

@@ -1,15 +1,17 @@
 {
-  writeShellApplication,
+  gnumake,
   klipper,
   python3,
-  gnumake,
+  writeShellApplication,
 }:
 writeShellApplication {
   name = "klipper-genconf";
+
   runtimeInputs = [
     python3
     gnumake
   ];
+
   text = ''
     CURRENT_DIR=$(pwd)
     TMP=$(mktemp -d)

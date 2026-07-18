@@ -2,11 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  ocamlPackages,
-  makeBinaryWrapper,
   graphviz,
   m4,
-
+  makeBinaryWrapper,
+  ocamlPackages,
   enable_interact ? false,
 }:
 
@@ -32,7 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = lib.optionals enable_interact [
     ocamlPackages.lablgtk
   ];
-  nativeCheckInputs = [ m4 ];
 
   buildPhase = ''
     runHook preBuild
@@ -41,6 +39,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doCheck = true;
+  nativeCheckInputs = [ m4 ];
+
   checkPhase = ''
     runHook preCheck
     ./test
@@ -66,10 +66,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Cryptographic protocol verifier in the formal model";
     homepage = "https://bblanche.gitlabpages.inria.fr/proverif/";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
       vbgl
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

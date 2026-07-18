@@ -1,10 +1,10 @@
 {
+  lib,
   stdenv,
   coreutils,
+  fetchFromGitea,
   findutils,
   gnused,
-  lib,
-  fetchFromGitea,
   makeWrapper,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -12,15 +12,15 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "edname";
   version = "1.0.2";
 
-  nativeBuildInputs = [ makeWrapper ];
-
   src = fetchFromGitea {
-    domain = "git.tudbut.de";
     owner = "TudbuT";
     repo = "edname";
     rev = "v${finalAttrs.version}";
     hash = "sha256-8aT/xwdx/ORyCFfOu4LZuxUiErZ9ZiCdhJ/WKAiQwe0=";
+    domain = "git.tudbut.de";
   };
+
+  nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
     mkdir -p $out/bin
@@ -37,9 +37,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Mass renamer using $EDITOR";
+    homepage = "https://git.tudbut.de/TudbuT/edname";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.tudbut ];
-    homepage = "https://git.tudbut.de/TudbuT/edname";
     mainProgram = "edname";
   };
 })

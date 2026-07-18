@@ -2,18 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  automake,
   autoconf,
+  automake,
+  check,
   libtool,
   pkg-config,
-  check,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libdnet";
   version = "1.18.2";
-
-  enableParallelBuilding = true;
 
   src = fetchFromGitHub {
     owner = "ofalk";
@@ -27,6 +25,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoconf
     pkg-config
   ];
+
   buildInputs = [
     check
     libtool
@@ -38,6 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
       ln -s $i $i.so
     done
   '';
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "Provides a simplified, portable interface to several low-level networking routines";

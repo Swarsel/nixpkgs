@@ -1,13 +1,13 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
   colorlog,
   cryptography,
-  fetchFromGitHub,
   go,
-  pykerberos,
   hatchling,
+  pykerberos,
   skein,
   sqlalchemy,
   traitlets,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "dask-gateway-server";
   version = "2025.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dask";
@@ -25,10 +24,14 @@ buildPythonPackage rec {
     hash = "sha256-Ezt5QkA21SDfuCMm+XY8d+xso8SDb4lmK/yd89Guu0Y=";
   };
 
-  sourceRoot = "${src.name}/${pname}";
-
   nativeBuildInputs = [ go ];
 
+  preBuild = ''
+    export HOME=$(mktemp -d)
+  '';
+
+  # Tests requires cluster for testing
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -39,23 +42,19 @@ buildPythonPackage rec {
   ];
 
   optional-dependencies = {
-    kerberos = [ pykerberos ];
     jobqueue = [ sqlalchemy ];
+    kerberos = [ pykerberos ];
     local = [ sqlalchemy ];
+
     yarn = [
       skein
       sqlalchemy
     ];
   };
 
-  preBuild = ''
-    export HOME=$(mktemp -d)
-  '';
-
-  # Tests requires cluster for testing
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "dask_gateway_server" ];
+  sourceRoot = "${src.name}/${pname}";
 
   meta = {
     description = "Multi-tenant server for securely deploying and managing multiple Dask clusters";

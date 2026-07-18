@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -18,10 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-K9GKMijLU1ii5O8P4fT5Vl3S3HoVmvcUyCiIC69dTdU=";
   };
 
-  cargoHash = "sha256-HYdTODIHA1TGhu6BKrKFkvBlGtqVt89wYX9Ehn0EOC0=";
-
-  env.OPENSSL_NO_VENDOR = true;
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -30,9 +26,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-HYdTODIHA1TGhu6BKrKFkvBlGtqVt89wYX9Ehn0EOC0=";
+  env.OPENSSL_NO_VENDOR = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
   versionCheckProgramArg = "--version";
 
   meta = {

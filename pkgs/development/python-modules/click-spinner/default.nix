@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "click-spinner";
   version = "0.1.10";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -23,17 +22,18 @@ buildPythonPackage rec {
     rm versioneer.py
   '';
 
-  build-system = [
-    setuptools
-    versioneer
-  ];
-
   nativeCheckInputs = [
     click
     pytestCheckHook
     six
   ];
 
+  build-system = [
+    setuptools
+    versioneer
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "click_spinner" ];
 
   meta = {

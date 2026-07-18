@@ -3,16 +3,17 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  gitUpdater,
   glib,
   kwindowsystem,
-  libxscrnsaver,
-  libxcursor,
-  libxdmcp,
   libkscreen,
   liblxqt,
   libpthread-stubs,
   libqtxdg,
   libxcb,
+  libxcursor,
+  libxdmcp,
+  libxscrnsaver,
   lxqt-build-tools,
   lxqt-menu-data,
   pkg-config,
@@ -23,7 +24,6 @@
   wrapQtAppsHook,
   xf86-input-libinput,
   xkeyboard_config,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,6 +36,16 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-BG3+/QZkqCZp7kdaHgiruOMq506l8+9KKNq+IUgoTPw=";
   };
+
+  postPatch = ''
+    substituteInPlace lxqt-config-appearance/configothertoolkits.cpp \
+      --replace-fail 'QStringLiteral("gsettings' \
+                'QStringLiteral("${glib.bin}/bin/gsettings'
+
+    substituteInPlace lxqt-config-input/keyboardlayoutconfig.h \
+      --replace-fail '/usr/share/X11/xkb/rules/base.lst' \
+                '${xkeyboard_config}/share/X11/xkb/rules/base.lst'
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -65,22 +75,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   cmakeFlags = [ "-DCMAKE_CXX_STANDARD=20" ];
-
-  postPatch = ''
-    substituteInPlace lxqt-config-appearance/configothertoolkits.cpp \
-      --replace-fail 'QStringLiteral("gsettings' \
-                'QStringLiteral("${glib.bin}/bin/gsettings'
-
-    substituteInPlace lxqt-config-input/keyboardlayoutconfig.h \
-      --replace-fail '/usr/share/X11/xkb/rules/base.lst' \
-                '${xkeyboard_config}/share/X11/xkb/rules/base.lst'
-  '';
-
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://github.com/lxqt/lxqt-config";
     description = "Tools to configure LXQt and the underlying operating system";
+    homepage = "https://github.com/lxqt/lxqt-config";
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.lxqt ];

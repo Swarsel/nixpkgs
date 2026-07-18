@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   nix-update-script,
-  setuptools,
   paup-cli,
+  pytestCheckHook,
+  setuptools,
   paupIntegration ? false,
 }:
 
@@ -16,9 +16,6 @@ in
 buildPythonPackage rec {
   pname = "dendropy";
   version = "5.0.8";
-
-  pyproject = true;
-  build-system = [ setuptools ];
 
   src = fetchFromGitHub {
     owner = "jeetsukumaran";
@@ -36,15 +33,16 @@ buildPythonPackage rec {
   '';
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "dendropy" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Python library for phylogenetic computing";
     homepage = "https://jeetsukumaran.github.io/DendroPy/";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       unode
       pandapip1

@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  tinycc,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
+  tinycc,
 }:
 
 buildPythonPackage {
   pname = "tccbox";
   version = "0-unstable-2025-08-26";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "metab0t";
@@ -25,13 +24,13 @@ buildPythonPackage {
     sed -i '/^[[:space:]]*build_tinycc()[[:space:]]*$/d' setup.py
   '';
 
-  build-system = [ setuptools ];
-
   postCheck = ''
     tinycc/tcc_dist/bin/tcc test/fib.c -o test/fib
     test/fib
   '';
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "tccbox" ];
 
   meta = {

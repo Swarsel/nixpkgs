@@ -1,22 +1,19 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  evdev,
   gitUpdater,
-
+  pyobjc-framework-ApplicationServices,
+  pyobjc-framework-Quartz,
+  # dependencies
+  python-xlib,
   # build-system
   setuptools,
   setuptools-lint,
-  sphinx,
-
-  # dependencies
-  python-xlib,
-  evdev,
   six,
-  pyobjc-framework-ApplicationServices,
-  pyobjc-framework-Quartz,
-
+  sphinx,
   # tests
   unittestCheckHook,
 }:
@@ -24,16 +21,12 @@
 buildPythonPackage rec {
   pname = "pynput";
   version = "1.8.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "moses-palmer";
     repo = "pynput";
     tag = "v${version}";
     hash = "sha256-LoolcMYzurJrR7HR1qDO+dvLwP1l9P3+QOzI7uwLdso=";
-  };
-  passthru.updateScript = gitUpdater {
-    rev-prefix = "v";
   };
 
   postPatch = ''
@@ -62,8 +55,12 @@ buildPythonPackage rec {
   ];
 
   doCheck = false; # requires running X server
-
   nativeCheckInputs = [ unittestCheckHook ];
+  pyproject = true;
+
+  passthru.updateScript = gitUpdater {
+    rev-prefix = "v";
+  };
 
   meta = {
     description = "Library to control and monitor input devices";

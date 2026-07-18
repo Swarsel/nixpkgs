@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitLab,
   hicolor-icon-theme,
   kdePackages,
   papirus-icon-theme,
+  stdenvNoCC,
   unstableGitUpdater,
   colorVariants ? [ ], # default: install all icons
 }:
@@ -37,9 +37,6 @@ lib.checkListOfEnum "${pname}: colorVariants" colorVariantList colorVariants
       papirus-icon-theme
     ];
 
-    dontDropIconThemeCache = true;
-    dontWrapQtApps = true;
-
     installPhase = ''
       runHook preInstall
       mkdir -p $out/share/icons
@@ -49,7 +46,9 @@ lib.checkListOfEnum "${pname}: colorVariants" colorVariantList colorVariants
       runHook postInstall
     '';
 
+    dontDropIconThemeCache = true;
     dontFixup = true;
+    dontWrapQtApps = true;
 
     passthru.updateScript = unstableGitUpdater {
       hardcodeZeroVersion = true;
@@ -58,8 +57,8 @@ lib.checkListOfEnum "${pname}: colorVariants" colorVariantList colorVariants
     meta = {
       description = "FairyWren Icon Set";
       homepage = "https://gitlab.com/FreshDoctor/FairyWren-Icons";
+      license = lib.licenses.gpl3Plus;
       maintainers = with lib.maintainers; [ iamanaws ];
       platforms = lib.platforms.all;
-      license = lib.licenses.gpl3Plus;
     };
   }

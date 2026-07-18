@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  boost,
   cmake,
   pkg-config,
-  ragel,
-  util-linux,
   python3,
-  boost,
+  ragel,
   sqlite,
+  util-linux,
   enableShared ? !stdenv.hostPlatform.isStatic,
 }:
 
@@ -91,6 +91,7 @@ stdenv.mkDerivation (finalAttrs: {
   );
 
   doCheck = true;
+
   checkPhase = ''
     runHook preCheck
 
@@ -101,6 +102,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Portable fork of the high-performance regular expression matching library";
+
     longDescription = ''
       A fork of Intel's Hyperscan, modified to run on more platforms. Currently
       ARM NEON/ASIMD is 100% functional, and Power VSX are in development.
@@ -113,9 +115,10 @@ stdenv.mkDerivation (finalAttrs: {
       gradually simplified and made more uniform and all architecture specific
       code will be abstracted away.
     '';
+
     homepage = "https://www.vectorcamp.gr/vectorscan/";
     changelog = "https://github.com/VectorCamp/vectorscan/blob/${finalAttrs.src.rev}/CHANGELOG-vectorscan.md";
-    platforms = lib.platforms.unix;
+
     license =
       with lib.licenses;
       AND [
@@ -123,9 +126,12 @@ stdenv.mkDerivation (finalAttrs: {
         bsd2
         lib.licenses.boost
       ];
+
     maintainers = with lib.maintainers; [
       tnias
       vlaci
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

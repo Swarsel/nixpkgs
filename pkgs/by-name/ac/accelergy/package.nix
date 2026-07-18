@@ -8,7 +8,6 @@
 python3Packages.buildPythonApplication {
   pname = "accelergy";
   version = "0.1-unstable-2025-05-26";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Accelergy-Project";
@@ -30,15 +29,17 @@ python3Packages.buildPythonApplication {
     jinja2
   ];
 
+  pyproject = true;
+
   passthru.updateScript = unstableGitUpdater {
-    tagPrefix = "v";
     tagFormat = "v*";
+    tagPrefix = "v";
   };
 
   meta = {
     description = "Architecture-level energy/area estimator for accelerator designs";
-    license = lib.licenses.mit;
     homepage = "https://accelergy.mit.edu/";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ gdinh ];
   };
 }

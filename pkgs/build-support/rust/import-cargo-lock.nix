@@ -1,24 +1,17 @@
 {
-  fetchgit,
-  fetchurl,
   lib,
-  writers,
+  fetchurl,
+  cargo,
+  fetchgit,
+  jq,
   python3Packages,
   runCommand,
-  cargo,
-  jq,
+  writers,
 }:
 
 {
-  # Cargo lock file
-  lockFile ? null,
-
-  # Cargo lock file contents as string
-  lockFileContents ? null,
-
   # Allow `fetchGit` to be used to not require hashes for git dependencies
   allowBuiltinFetchGit ? false,
-
   # Additional registries to pull sources from
   #   { "https://<registry index URL>" = "https://<registry download URL>"; }
   #   or if the registry is using the new sparse protocol
@@ -29,7 +22,10 @@
   # - "download URL" is the "dl" value of its associated index configuration
   #   https://doc.rust-lang.org/cargo/reference/registry-index.html#index-configuration
   extraRegistries ? { },
-
+  # Cargo lock file
+  lockFile ? null,
+  # Cargo lock file contents as string
+  lockFileContents ? null,
   # Hashes for git dependencies.
   outputHashes ? { },
 }@args:
@@ -49,8 +45,8 @@ let
       null
     else
       {
-        url = builtins.elemAt parts 0;
         sha = builtins.elemAt parts 4;
+        url = builtins.elemAt parts 0;
       }
       // lib.optionalAttrs (type != null) { inherit type value; };
 
@@ -127,8 +123,8 @@ let
       '';
     fetchurl {
       name = "crate-${pkg.name}-${pkg.version}.tar.gz";
-      url = "${downloadUrl}/${pkg.name}/${pkg.version}/download";
       sha256 = checksum;
+      url = "${downloadUrl}/${pkg.name}/${pkg.version}/download";
     };
 
   registries = {
@@ -141,13 +137,14 @@ let
 
   # Replaces values inherited by workspace members.
   replaceWorkspaceValues = writers.writePython3 "replace-workspace-values" {
-    libraries = with python3Packages; [
-      tomli
-      tomli-w
-    ];
     flakeIgnore = [
       "E501"
       "W503"
+    ];
+
+    libraries = with python3Packages; [
+      tomli
+      tomli-w
     ];
   } (builtins.readFile ./replace-workspace-values.py);
 
@@ -195,8 +192,8 @@ let
           else if allowBuiltinFetchGit then
             fetchGit {
               inherit (gitParts) url;
-              rev = gitParts.sha;
               allRefs = true;
+              rev = gitParts.sha;
               submodules = true;
             }
           else

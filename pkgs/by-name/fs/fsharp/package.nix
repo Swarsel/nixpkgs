@@ -4,11 +4,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  mono,
-  pkg-config,
-  dotnetbuildhelpers,
   autoconf,
   automake,
+  dotnetbuildhelpers,
+  mono,
+  pkg-config,
   which,
 }:
 
@@ -28,17 +28,12 @@ stdenv.mkDerivation (finalAttrs: {
     autoconf
     automake
   ];
+
   buildInputs = [
     mono
     dotnetbuildhelpers
     which
   ];
-
-  configurePhase = ''
-    sed -i '988d' src/FSharpSource.targets
-    substituteInPlace ./autogen.sh --replace "/usr/bin/env sh" "${stdenv.shell}"
-    ./autogen.sh --prefix $out
-  '';
 
   # Make sure the executables use the right mono binary,
   # and set up some symlinks for backwards compatibility.
@@ -54,6 +49,12 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  configurePhase = ''
+    sed -i '988d' src/FSharpSource.targets
+    substituteInPlace ./autogen.sh --replace "/usr/bin/env sh" "${stdenv.shell}"
+    ./autogen.sh --prefix $out
+  '';
+
   # To fix this error when running:
   # The file "/nix/store/path/whatever.exe" is an not a valid CIL image
   dontStrip = true;
@@ -62,10 +63,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Functional CLI language";
     homepage = "https://fsharp.org/";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
       raskin
     ];
+
     platforms = with lib.platforms; unix;
   };
 })

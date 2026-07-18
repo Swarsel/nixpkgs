@@ -1,22 +1,22 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  stripJavaArchivesHook,
-  meson,
-  ninja,
-  pkg-config,
-  gradle_8,
-  curl,
   cryptopp,
+  curl,
   fontconfig,
+  ghostscript,
+  gradle_8,
   jre,
   libxml2,
+  makeWrapper,
+  meson,
+  ninja,
   openssl,
   pcsclite,
+  pkg-config,
   podofo0,
-  ghostscript,
+  stripJavaArchivesHook,
 }:
 
 let
@@ -40,7 +40,11 @@ in
 stdenv.mkDerivation {
   inherit pname src version;
 
-  hardeningDisable = [ "format" ];
+  postPatch = ''
+    # substitute the cieid command with this $out/bin/cieid
+    substituteInPlace libs/pkcs11/src/CSP/AbilitaCIE.cpp \
+      --replace 'file = "cieid"' 'file = "'$out'/bin/cieid"'
+  '';
 
   nativeBuildInputs = [
     makeWrapper
@@ -61,28 +65,9 @@ stdenv.mkDerivation {
     libxml2
   ];
 
-  postPatch = ''
-    # substitute the cieid command with this $out/bin/cieid
-    substituteInPlace libs/pkcs11/src/CSP/AbilitaCIE.cpp \
-      --replace 'file = "cieid"' 'file = "'$out'/bin/cieid"'
-  '';
-
   # Note: we use pushd/popd to juggle between the
   # libraries and the Java application builds.
   preConfigure = "pushd libs";
-
-  mitmCache = gradle.fetchDeps {
-    inherit pname;
-    data = ./deps.json;
-  };
-
-  gradleFlags = [
-    "-Dorg.gradle.java.home=${jre}"
-    "--build-file"
-    "cie-java/build.gradle"
-  ];
-
-  gradleBuildTask = "standalone";
 
   buildPhase = ''
     runHook preBuild
@@ -130,11 +115,26 @@ stdenv.mkDerivation {
     install -Dm644 LICENSE "$out/share/licenses/cieid/LICENSE"
   '';
 
+  gradleBuildTask = "standalone";
+
+  gradleFlags = [
+    "-Dorg.gradle.java.home=${jre}"
+    "--build-file"
+    "cie-java/build.gradle"
+  ];
+
+  hardeningDisable = [ "format" ];
+
+  mitmCache = gradle.fetchDeps {
+    inherit pname;
+    data = ./deps.json;
+  };
+
   preGradleUpdate = "cd ../..";
 
   meta = {
-    homepage = "https://github.com/M0Rf30/cie-middleware-linux";
     description = "Middleware for the Italian Electronic Identity Card (CIE)";
+
     longDescription = ''
       Software for the usage of the Italian Electronic Identity Card (CIE).
       Access to PA services, signing and verification of documents
@@ -143,8 +143,10 @@ stdenv.mkDerivation {
       distributed by the Italian government, is essentially lacking a build
       system and is in violation of the license of the PoDoFo library.
     '';
+
+    homepage = "https://github.com/M0Rf30/cie-middleware-linux";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ rnhmjoj ];
+    platforms = lib.platforms.unix;
   };
 }

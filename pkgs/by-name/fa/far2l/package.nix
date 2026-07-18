@@ -1,45 +1,44 @@
 {
   lib,
   stdenv,
-  fetchpatch,
   fetchFromGitHub,
-  makeWrapper,
-  cmake,
-  ninja,
-  pkg-config,
-  m4,
-  perl,
   bash,
-  xdg-utils,
-  zip,
-  unzip,
-  gzip,
   bzip2,
+  cmake,
+  fetchpatch,
   gnutar,
-  p7zip,
-  xz,
-  withTTYX ? true,
-  libx11,
-  withGUI ? true,
-  wxwidgets_3_2,
-  withUCD ? true,
+  gzip,
+  libarchive,
+  libnfs,
+  libssh,
   libuchardet,
-
+  libx11,
+  libxml2,
+  m4,
+  makeWrapper,
+  neon,
+  ninja,
+  openssl,
+  p7zip,
+  pcre,
+  perl,
+  pkg-config,
+  python3Packages,
+  samba,
+  spdlog,
+  unzip,
+  wxwidgets_3_2,
+  xdg-utils,
+  xz,
+  zip,
   # Plugins
   withColorer ? true,
-  spdlog,
-  libxml2,
+  withGUI ? true,
   withMultiArc ? true,
-  libarchive,
-  pcre,
   withNetRocks ? true,
-  openssl,
-  libssh,
-  samba,
-  libnfs,
-  neon,
   withPython ? false,
-  python3Packages,
+  withTTYX ? true,
+  withUCD ? true,
 }:
 
 stdenv.mkDerivation rec {
@@ -52,6 +51,11 @@ stdenv.mkDerivation rec {
     tag = "v_${version}";
     hash = "sha256-LP+agJrYxjH6vLAg6cJTU4/9jYGF9iaZzxA7hozDKNY=";
   };
+
+  postPatch = ''
+    patchShebangs python/src/prebuild.sh
+    patchShebangs far2l/bootstrap/view.sh
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -91,11 +95,6 @@ stdenv.mkDerivation rec {
       ]
     );
 
-  postPatch = ''
-    patchShebangs python/src/prebuild.sh
-    patchShebangs far2l/bootstrap/view.sh
-  '';
-
   cmakeFlags = [
     (lib.cmakeBool "TTYX" withTTYX)
     (lib.cmakeBool "USEWX" withGUI)
@@ -110,6 +109,12 @@ stdenv.mkDerivation rec {
     (lib.cmakeFeature "VIRTUAL_PYTHON_VERSION" "python")
   ];
 
+  postInstall = ''
+    wrapProgram $out/bin/far2l \
+      --prefix PATH : ${lib.makeBinPath runtimeDeps} \
+      --suffix PATH : ${lib.makeBinPath [ xdg-utils ]}
+  '';
+
   runtimeDeps = [
     unzip
     zip
@@ -119,12 +124,6 @@ stdenv.mkDerivation rec {
     bzip2
     gnutar
   ];
-
-  postInstall = ''
-    wrapProgram $out/bin/far2l \
-      --prefix PATH : ${lib.makeBinPath runtimeDeps} \
-      --suffix PATH : ${lib.makeBinPath [ xdg-utils ]}
-  '';
 
   meta = {
     description = "Linux port of FAR Manager v2, a program for managing files and archives in Windows operating systems";

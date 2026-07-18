@@ -29,31 +29,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-gzkh+JYwuYvdNljB6agEVd7WxqJ5lI3sseY3BlkLmXs=";
   };
 
-  cargoHash = "sha256-FjRlKlOX78QClzhhFhkZuaOLA6XpFziSghJltlRPt20=";
-
   nativeBuildInputs = [
     makeWrapper
     pkg-config
   ];
+
   buildInputs = [
     openssl
     pcsclite
     xz
     zstd
   ];
-  postInstall = ''
-    wrapProgram $out/bin/sh4d0wup \
-      --prefix XDG_DATA_DIRS : "${shared-mime-info}/share"
-  '';
 
-  checkInputs = [ sequoia-sq ];
-  preCheck = ''
-    export XDG_DATA_DIRS=$XDG_DATA_DIRS:${shared-mime-info}/share
-  '';
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  passthru.updateScript = nix-update-script { };
+  cargoHash = "sha256-FjRlKlOX78QClzhhFhkZuaOLA6XpFziSghJltlRPt20=";
 
   env = {
     OPENSSL_NO_VENDOR = 1;
@@ -64,13 +52,28 @@ rustPlatform.buildRustPackage (finalAttrs: {
     SH4D0WUP_SQ_BINARY = lib.getExe sequoia-sq;
   };
 
+  checkInputs = [ sequoia-sq ];
+
+  preCheck = ''
+    export XDG_DATA_DIRS=$XDG_DATA_DIRS:${shared-mime-info}/share
+  '';
+
+  postInstall = ''
+    wrapProgram $out/bin/sh4d0wup \
+      --prefix XDG_DATA_DIRS : "${shared-mime-info}/share"
+  '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  passthru.updateScript = nix-update-script { };
+
   meta = {
     description = "Signing-key abuse and update exploitation framework";
     homepage = "https://github.com/kpcyrd/sh4d0wup";
     changelog = "https://github.com/kpcyrd/sh4d0wup/releases/tag/v${finalAttrs.version}";
-    mainProgram = "sh4d0wup";
     license = with lib.licenses; [ gpl3Plus ];
     maintainers = with lib.maintainers; [ kpcyrd ];
     platforms = lib.platforms.all;
+    mainProgram = "sh4d0wup";
   };
 })

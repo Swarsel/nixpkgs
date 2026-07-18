@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -19,11 +19,6 @@ buildNpmPackage (finalAttrs: {
 
   npmDepsHash = "sha256-CU8AVRuMFOGI0/LbN0LGysBk+qc2XQYxQGfrrH72stc=";
 
-  # Skip rebuilding native modules since they're not needed for the web app
-  npmRebuildFlags = [
-    "--ignore-scripts"
-  ];
-
   installPhase = ''
     runHook preInstall
 
@@ -32,15 +27,22 @@ buildNpmPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  # Skip rebuilding native modules since they're not needed for the web app
+  npmRebuildFlags = [
+    "--ignore-scripts"
+  ];
+
   meta = {
     description = "Yet another Matrix client for the web";
     homepage = "https://cinny.in/";
+    license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       abbe
       rebmit
       ryand56
     ];
-    license = lib.licenses.agpl3Only;
+
     platforms = lib.platforms.all;
   };
 })

@@ -1,10 +1,10 @@
 {
   lib,
-  nodejs,
-  buildNpmPackage,
   fetchFromGitHub,
-  unzip,
+  buildNpmPackage,
   gauge-unwrapped,
+  nodejs,
+  unzip,
 }:
 buildNpmPackage rec {
   pname = "gauge-plugin-js";
@@ -18,26 +18,26 @@ buildNpmPackage rec {
     fetchSubmodules = true;
   };
 
-  npmDepsHash = "sha256-2kZDpRUegHqZOEc49h3+RRAbKroW7v63bXjzDAu/bCc=";
-  npmBuildScript = "package";
-
-  buildInputs = [ nodejs ];
-  nativeBuildInputs = [ unzip ];
-
   postPatch = ''
     patchShebangs index.js
   '';
+
+  nativeBuildInputs = [ unzip ];
+  buildInputs = [ nodejs ];
+  npmDepsHash = "sha256-2kZDpRUegHqZOEc49h3+RRAbKroW7v63bXjzDAu/bCc=";
 
   installPhase = ''
     mkdir -p $out/share/gauge-plugins/js/${version}
     unzip deploy/gauge-js-${version}.zip -d $out/share/gauge-plugins/js/${version}
   '';
 
+  npmBuildScript = "package";
+
   meta = {
+    inherit (gauge-unwrapped.meta) platforms;
     description = "Gauge plugin that lets you write tests in JavaScript";
     homepage = "https://github.com/getgauge/gauge-js/";
     license = lib.licenses.mit;
     maintainers = [ ];
-    inherit (gauge-unwrapped.meta) platforms;
   };
 }

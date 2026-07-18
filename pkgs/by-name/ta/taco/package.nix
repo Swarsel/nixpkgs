@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  python3,
   llvmPackages,
+  python3,
   enablePython ? false,
 }:
 
@@ -26,11 +26,12 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "tensor-compiler";
     repo = "taco";
     rev = "0e79acb56cb5f3d1785179536256e206790b2a9e";
-    fetchSubmodules = true;
     hash = "sha256-mdT6ZLxtJ7fqyjRqdWf6+RltvMy7YDr9AEnJtnaDmTw=";
+    fetchSubmodules = true;
   };
 
-  src-new-pybind11 = python3.pkgs.pybind11.src;
+  # Remove test cases from cmake build as they violate modern C++ expectations
+  patches = [ ./taco.patch ];
 
   postPatch = ''
     rm -rf python_bindings/pybind11/*
@@ -51,13 +52,8 @@ stdenv.mkDerivation (finalAttrs: {
       'm.def("get_parallel_schedule", []() -> py::tuple {'
   '';
 
-  # Remove test cases from cmake build as they violate modern C++ expectations
-  patches = [ ./taco.patch ];
-
   nativeBuildInputs = [ cmake ];
-
   buildInputs = lib.optional stdenv.hostPlatform.isDarwin llvmPackages.openmp;
-
   propagatedBuildInputs = lib.optional enablePython pyEnv;
 
   cmakeFlags = [
@@ -65,23 +61,24 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional enablePython "-DPYTHON=ON";
 
+  # The standard CMake test suite fails a single test of the CLI interface.
+  doCheck = false;
+
   postInstall = lib.strings.optionalString enablePython ''
     mkdir -p $out/${python3.sitePackages}
     cp -r lib/pytaco $out/${python3.sitePackages}/.
   '';
 
-  # The standard CMake test suite fails a single test of the CLI interface.
-  doCheck = false;
-
   # Cython somehow gets built with references to /build/.
   # However, the python module works flawlessly.
   dontFixup = enablePython;
+  src-new-pybind11 = python3.pkgs.pybind11.src;
 
   meta = {
     description = "Computes sparse tensor expressions on CPUs and GPUs";
-    mainProgram = "taco";
-    license = lib.licenses.mit;
     homepage = "https://github.com/tensor-compiler/taco";
+    license = lib.licenses.mit;
     maintainers = [ lib.maintainers.sheepforce ];
+    mainProgram = "taco";
   };
 })

@@ -35,9 +35,9 @@ appimageTools.wrapType2 {
   meta = {
     description = "Native web3 interface that lets you sign data, securely manage accounts and transparently interact with dapps via web3 protocols like Ethereum and IPFS";
     homepage = "https://frame.sh/";
-    downloadPage = "https://github.com/floating/frame/releases";
     license = lib.licenses.gpl3Only;
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ nook ];
+    platforms = [ "x86_64-linux" ];
+    downloadPage = "https://github.com/floating/frame/releases";
   };
 }

@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -15,8 +15,9 @@ in
       without host system rebuilds
     '';
   };
+
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ pkgs.extra-container ];
     boot.extraSystemdUnitPaths = [ "/etc/systemd-mutable/system" ];
+    environment.systemPackages = [ pkgs.extra-container ];
   };
 }

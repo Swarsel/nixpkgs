@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   anyio,
   buildPythonPackage,
-  fetchFromGitHub,
   hatch-fancy-pypi-readme,
   hatchling,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "anysqlite";
   version = "0.0.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "karpetrosyan";
@@ -33,6 +32,7 @@ buildPythonPackage rec {
     trio
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "anysqlite" ];
 
   meta = {

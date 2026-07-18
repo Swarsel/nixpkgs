@@ -1,12 +1,12 @@
 {
   lib,
-  bash,
   fetchFromGitHub,
-  installShellFiles,
+  bash,
   coreutils,
   gawk,
   gnugrep,
   gnused,
+  installShellFiles,
   openssh,
   resholve,
   rsync,
@@ -25,8 +25,6 @@ resholve.mkDerivation (finalAttrs: {
     hash = "sha256-11SQJcD3GqPYBIgaycyKkc62/diVKPuuj2Or97j+NZY=";
   };
 
-  nativeBuildInputs = [ installShellFiles ];
-
   # these may point to paths on remote systems, calculated at runtime, thus we cannot fix them
   # we can only set their initial values, and let them remain dynamic
   postPatch = ''
@@ -34,6 +32,8 @@ resholve.mkDerivation (finalAttrs: {
       --replace 'LCAT=""'                'LCAT=${coreutils}/bin/cat' \
       --replace 'LZFS=$( which zfs )'    'LZFS=${zfs}/bin/zfs'
   '';
+
+  nativeBuildInputs = [ installShellFiles ];
 
   installPhase = ''
     runHook preInstall
@@ -45,8 +45,19 @@ resholve.mkDerivation (finalAttrs: {
   '';
 
   solutions.default = {
-    scripts = [ "bin/zxfer" ];
-    interpreter = "${bash}/bin/sh";
+    execer = [ "cannot:${rsync}/bin/rsync" ];
+
+    fake.external = [
+      "kldload" # bsd builtin
+      "kldstat" # bsd builtin
+      "svcadm" # solaris builtin
+    ];
+
+    fix = {
+      "$AWK" = [ "awk" ];
+      "$RSYNC" = [ "rsync" ];
+    };
+
     inputs = [
       coreutils
       gawk
@@ -56,11 +67,9 @@ resholve.mkDerivation (finalAttrs: {
       rsync
       which
     ];
-    fake.external = [
-      "kldload" # bsd builtin
-      "kldstat" # bsd builtin
-      "svcadm" # solaris builtin
-    ];
+
+    interpreter = "${bash}/bin/sh";
+
     keep = {
       "$LCAT" = true;
       "$LZFS" = true;
@@ -70,11 +79,8 @@ resholve.mkDerivation (finalAttrs: {
       "$option_O" = true;
       "$option_T" = true;
     };
-    fix = {
-      "$AWK" = [ "awk" ];
-      "$RSYNC" = [ "rsync" ];
-    };
-    execer = [ "cannot:${rsync}/bin/rsync" ];
+
+    scripts = [ "bin/zxfer" ];
   };
 
   meta = {

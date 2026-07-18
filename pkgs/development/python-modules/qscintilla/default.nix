@@ -24,26 +24,6 @@ pythonPackages.buildPythonPackage {
   pname = "qscintilla-qt${qtVersion}";
   version = qscintilla.version;
   src = qscintilla.src;
-  pyproject = true;
-
-  disabled = !isPy3k;
-
-  nativeBuildInputs = [
-    sip
-    qmake
-    pyqt-builder
-    qscintilla
-    pythonPackages.setuptools
-  ];
-
-  buildInputs = [ qtbase ];
-
-  propagatedBuildInputs = [
-    pyQtPackage
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [ qtmacextras ];
-
-  dontWrapQtApps = true;
 
   postPatch = ''
     cd Python
@@ -65,26 +45,44 @@ pythonPackages.buildPythonPackage {
                 if self.qsci_features_dir is not None:"
   '';
 
-  dontConfigure = true;
+  nativeBuildInputs = [
+    sip
+    qmake
+    pyqt-builder
+    qscintilla
+    pythonPackages.setuptools
+  ];
+
+  buildInputs = [ qtbase ];
+
+  propagatedBuildInputs = [
+    pyQtPackage
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [ qtmacextras ];
+
+  # Checked using pythonImportsCheck
+  doCheck = false;
+
+  postInstall = ''
+    # Needed by pythonImportsCheck to find the module
+    export PYTHONPATH="$out/${python.sitePackages}:$PYTHONPATH"
+  '';
 
   build = ''
     sip-install --qsci-features-dir ${qscintilla}/mkspecs/features \
     --qsci-include-dir ${qscintilla}/include \
     --qsci-library-dir ${qscintilla}/lib --api-dir ${qscintilla}/share";
   '';
-  postInstall = ''
-    # Needed by pythonImportsCheck to find the module
-    export PYTHONPATH="$out/${python.sitePackages}:$PYTHONPATH"
-  '';
 
-  # Checked using pythonImportsCheck
-  doCheck = false;
-
+  disabled = !isPy3k;
+  dontConfigure = true;
+  dontWrapQtApps = true;
+  pyproject = true;
   pythonImportsCheck = [ "PyQt${qtVersion}.Qsci" ];
 
   meta = {
     description = "Python binding to QScintilla, Qt based text editing control";
-    license = lib.licenses.lgpl21Plus;
     homepage = "https://www.riverbankcomputing.com/software/qscintilla/";
+    license = lib.licenses.lgpl21Plus;
   };
 }

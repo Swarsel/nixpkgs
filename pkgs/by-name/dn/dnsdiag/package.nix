@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "dnsdiag";
   version = "2.9.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "farrokhi";
@@ -16,8 +15,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-CMWjPgdYRL730AkC+PZaDAeefq9jCbO4o3RcdlIqsmU=";
   };
 
-  pythonRelaxDeps = [ "cryptography" ];
-
+  # Project has no tests
+  doCheck = false;
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -29,8 +28,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     httpx
   ];
 
-  # Project has no tests
-  doCheck = false;
+  pyproject = true;
+  pythonRelaxDeps = [ "cryptography" ];
 
   meta = {
     description = "DNS Measurement, Troubleshooting and Security Auditing Toolset";

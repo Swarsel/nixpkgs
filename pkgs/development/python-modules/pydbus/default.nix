@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pygobject3,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pydbus";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "LEW21";
@@ -24,19 +23,18 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ pygobject3 ];
+  doCheck = false; # requires a working dbus setup
+  pyproject = true;
 
   pythonImportsCheck = [
     "pydbus"
     "pydbus.generic"
   ];
 
-  doCheck = false; # requires a working dbus setup
-
   meta = {
-    homepage = "https://github.com/LEW21/pydbus";
     description = "Pythonic DBus library";
+    homepage = "https://github.com/LEW21/pydbus";
     license = lib.licenses.lgpl2Plus;
     maintainers = [ ];
   };

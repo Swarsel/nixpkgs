@@ -1,11 +1,11 @@
 {
   lib,
-  perlPackages,
   fetchFromGitHub,
-  wrapGAppsHook3,
+  clamav,
   gobject-introspection,
   perl,
-  clamav,
+  perlPackages,
+  wrapGAppsHook3,
 }:
 
 perlPackages.buildPerlPackage rec {
@@ -19,27 +19,6 @@ perlPackages.buildPerlPackage rec {
     hash = "sha256-ClBsBXbGj67zgrkA9EjgK7s3OmXOJA+xV5xLGOcMsbI=";
   };
 
-  nativeBuildInputs = [
-    wrapGAppsHook3
-    gobject-introspection
-  ];
-  buildInputs = [
-    perl
-    clamav
-  ];
-  propagatedBuildInputs = with perlPackages; [
-    Glib
-    LWP
-    LWPProtocolHttps
-    TextCSV
-    JSON
-    LocaleGettext
-    Gtk3
-  ];
-
-  preConfigure = "touch Makefile.PL";
-  # no tests implemented
-  doCheck = false;
   outputs = [
     "out"
     "man"
@@ -60,6 +39,30 @@ perlPackages.buildPerlPackage rec {
       --replace "( -e '/usr/bin/crontab' )" "(1)" \
       --replace /usr/bin/crontab crontab
   '';
+
+  nativeBuildInputs = [
+    wrapGAppsHook3
+    gobject-introspection
+  ];
+
+  buildInputs = [
+    perl
+    clamav
+  ];
+
+  propagatedBuildInputs = with perlPackages; [
+    Glib
+    LWP
+    LWPProtocolHttps
+    TextCSV
+    JSON
+    LocaleGettext
+    Gtk3
+  ];
+
+  preConfigure = "touch Makefile.PL";
+  # no tests implemented
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -85,13 +88,16 @@ perlPackages.buildPerlPackage rec {
     description = ''
       Easy to use, lightweight front-end for ClamAV (Clam Antivirus).
     '';
-    mainProgram = "clamtk";
-    license = lib.licenses.gpl1Plus;
+
     homepage = "https://github.com/dave-theunsub/clamtk";
-    platforms = lib.platforms.linux;
+    license = lib.licenses.gpl1Plus;
+
     maintainers = with lib.maintainers; [
       ShamrockLee
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "clamtk";
   };
 
 }

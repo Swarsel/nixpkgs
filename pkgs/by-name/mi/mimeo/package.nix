@@ -10,18 +10,13 @@ let
   version = "2023";
 in
 python3Packages.buildPythonApplication {
-  pname = "mimeo";
   inherit version;
-  pyproject = true;
+  pname = "mimeo";
 
   src = fetchurl {
     url = "https://xyne.dev/projects/mimeo/src/mimeo-${version}.tar.xz";
     hash = "sha256-CahvSypwR1aHVDHTdtty1ZfaKBWPolxc73uZ5OyeqZA=";
   };
-
-  build-system = [ python3Packages.setuptools ];
-
-  dependencies = [ python3Packages.pyxdg ];
 
   postPatch = ''
     substituteInPlace Mimeo.py \
@@ -32,9 +27,14 @@ python3Packages.buildPythonApplication {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     $out/bin/mimeo --help > /dev/null
   '';
+
+  build-system = [ python3Packages.setuptools ];
+  dependencies = [ python3Packages.pyxdg ];
+  pyproject = true;
 
   meta = {
     description = "Open files by MIME-type or file name using regular expressions";

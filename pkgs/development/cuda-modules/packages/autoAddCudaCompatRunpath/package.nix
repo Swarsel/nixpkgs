@@ -4,9 +4,9 @@
 # it doesn't have any effect) and thus appear first. Meaning this hook must be
 # executed last.
 {
+  lib,
   autoFixElfFiles,
   cuda_compat,
-  lib,
   makeSetupHook,
 }:
 let
@@ -16,8 +16,8 @@ let
   enableHook = cuda_compat.meta.available or false;
 in
 makeSetupHook {
-  name = "auto-add-cuda-compat-runpath-hook";
   propagatedBuildInputs = lib.optionals enableHook [ autoFixElfFiles ];
+  name = "auto-add-cuda-compat-runpath-hook";
 
   substitutions = {
     libcudaPath = lib.optionalString enableHook "${cuda_compat}/compat";

@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchurl,
-  flex,
-  bison,
-  libmhash,
-  zlib,
   acl,
   attr,
+  bison,
+  flex,
+  libgcrypt,
+  libmhash,
   libselinux,
   pcre2,
   pkg-config,
-  libgcrypt,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -46,12 +46,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
+    description = "File and directory integrity checker";
     homepage = "https://aide.github.io/";
     changelog = "https://github.com/aide/aide/blob/v${finalAttrs.version}/ChangeLog";
-    description = "File and directory integrity checker";
-    mainProgram = "aide";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ happysalada ];
     platforms = lib.platforms.linux;
+    mainProgram = "aide";
   };
 })

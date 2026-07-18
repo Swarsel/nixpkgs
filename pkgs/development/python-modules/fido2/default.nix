@@ -11,21 +11,10 @@
 buildPythonPackage (finalAttrs: {
   pname = "fido2";
   version = "2.2.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-hXh0KKlMP46vcvD/MK+6mDtVmhsbeVyTMYyBtK1AYsQ=";
-  };
-
-  build-system = [ poetry-core ];
-
-  pythonRelaxDeps = [ "cryptography" ];
-
-  dependencies = [ cryptography ];
-
-  optional-dependencies = {
-    pcsc = [ pyscard ];
   };
 
   nativeCheckInputs = [
@@ -33,12 +22,22 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
+  build-system = [ poetry-core ];
+  dependencies = [ cryptography ];
+
+  optional-dependencies = {
+    pcsc = [ pyscard ];
+  };
+
+  pyproject = true;
+
   pytestFlags = [
     "-v"
     "--no-device"
   ];
 
   pythonImportsCheck = [ "fido2" ];
+  pythonRelaxDeps = [ "cryptography" ];
 
   meta = {
     description = "Provides library functionality for FIDO 2.0, including communication with a device over USB";

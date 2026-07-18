@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "hatsu";
@@ -17,10 +17,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-NXauXnCpk8YjiX4bqZMbEy/QPb7MiJYzY64YKDV6qq0=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -28,8 +26,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/importantimport/hatsu";
     changelog = "https://github.com/importantimport/hatsu/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
-    mainProgram = "hatsu";
     maintainers = with lib.maintainers; [ kwaa ];
     platforms = lib.platforms.linux;
+    mainProgram = "hatsu";
   };
 })

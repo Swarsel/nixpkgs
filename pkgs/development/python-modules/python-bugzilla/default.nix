@@ -2,27 +2,22 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
+  glibcLocalesUtf8,
+  pytestCheckHook,
   requests,
   responses,
-  pytestCheckHook,
-  glibcLocalesUtf8,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "python-bugzilla";
   version = "3.3.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "python_bugzilla";
     inherit version;
     hash = "sha256-4YIgFx4DPrO6YAxNE5NZ0BqhrOwdrrxDCJEORQdj3kc=";
+    pname = "python_bugzilla";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -35,12 +30,16 @@ buildPythonPackage rec {
     export HOME=$(pwd)/check-phase
   '';
 
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/python-bugzilla/python-bugzilla";
     description = "Bugzilla XMLRPC access module";
-    mainProgram = "bugzilla";
+    homepage = "https://github.com/python-bugzilla/python-bugzilla";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ pierron ];
+    platforms = lib.platforms.all;
+    mainProgram = "bugzilla";
   };
 }

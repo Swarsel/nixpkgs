@@ -7,20 +7,15 @@
 godot3-mono.overrideAttrs (
   self: base: {
     pname = "godot3-mono-make-deps";
+    outputs = [ "out" ];
 
     nativeBuildInputs = base.nativeBuildInputs ++ [
       nuget-to-json
     ];
 
-    nugetDeps = null;
-    nugetSource = null;
-    nugetConfig = null;
-
-    keepNugetConfig = true;
-
-    outputs = [ "out" ];
     buildPhase = " ";
     installPhase = ''echo "No output intended. Run make-deps.sh instead." > $out'';
+    keepNugetConfig = true;
 
     # This script is used to update the accompanying deps.json file, a JSON file listing the
     # nuget packages that the godot-mono code depends on, along with their sha256 hashes. This
@@ -59,6 +54,10 @@ godot3-mono.overrideAttrs (
         nuget-to-json nugetPackages > "$outdir"/deps.json
       popd > /dev/null
     '';
+
+    nugetConfig = null;
+    nugetDeps = null;
+    nugetSource = null;
 
     meta = base.meta // {
       description = "Derivation with no output that exists to provide an environment for make-deps.sh";

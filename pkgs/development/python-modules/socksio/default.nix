@@ -1,8 +1,8 @@
 {
   lib,
   buildPythonPackage,
-  fetchpatch,
   fetchPypi,
+  fetchpatch,
   flit-core,
   pytestCheckHook,
 }:
@@ -13,7 +13,6 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -23,20 +22,21 @@ buildPythonPackage {
   patches = [
     # https://github.com/sethmlarson/socksio/pull/61
     (fetchpatch {
+      hash = "sha256-VVUzFvF2KCXXkCfCU5xu9acT6OLr+PlQQPeVGONtU4A=";
       name = "unpin-flit-core.patch";
       url = "https://github.com/sethmlarson/socksio/commit/5c50fd76e7459bb822ff8f712172a78e21b8dd04.patch";
-      hash = "sha256-VVUzFvF2KCXXkCfCU5xu9acT6OLr+PlQQPeVGONtU4A=";
     })
   ];
 
   nativeBuildInputs = [ flit-core ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
   # remove coverage configuration
   preCheck = ''
     rm pytest.ini
   '';
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   meta = {
     description = "Sans-I/O implementation of SOCKS4, SOCKS4A, and SOCKS5";

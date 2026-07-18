@@ -1,21 +1,21 @@
 {
   lib,
   stdenv,
-  src,
-  version,
   autoPatchelfHook,
   fontconfig,
-  libxrandr,
-  libxfixes,
-  libxcursor,
-  libx11,
-  libsm,
   libice,
+  libsm,
+  libx11,
+  libxcursor,
+  libxfixes,
+  libxrandr,
+  src,
+  version,
 }:
 
 stdenv.mkDerivation {
-  pname = "segger-jlink-qt4";
   inherit src version;
+  pname = "segger-jlink-qt4";
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -32,9 +32,6 @@ stdenv.mkDerivation {
     libx11
   ];
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -45,11 +42,15 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "Bundled QT4 libraries for the J-Link Software and Documentation pack";
     homepage = "https://www.segger.com/downloads/jlink/#J-LinkSoftwareAndDocumentationPack";
     license = lib.licenses.lgpl21;
     maintainers = with lib.maintainers; [ stargate01 ];
+
     knownVulnerabilities = [
       "This bundled version of Qt 4 has reached its end of life after 2015. See https://github.com/NixOS/nixpkgs/pull/174634"
       "CVE-2023-43114"

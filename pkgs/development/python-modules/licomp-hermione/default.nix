@@ -1,18 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
+  jsonschema,
   licomp,
   pytestCheckHook,
-  jsonschema,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "licomp-hermione";
   version = "0.5.2";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "hesa";
@@ -20,6 +18,13 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-TIfi7E+BBChOz/EXRJxjFRYavVRPfnSkBHTaiY87k/Y=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    jsonschema
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -29,10 +34,7 @@ buildPythonPackage (finalAttrs: {
     licomp
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    jsonschema
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "licomp_hermione"
@@ -42,11 +44,13 @@ buildPythonPackage (finalAttrs: {
     description = "Implementation of Licomp using the Hermine license resource";
     homepage = "https://github.com/hesa/licomp-hermione";
     changelog = "https://github.com/hesa/licomp-hermione/releases/tag/${finalAttrs.src.tag}";
+
     license = with lib.licenses; [
       bsd0
       gpl3Plus
       odbl
     ];
+
     maintainers = with lib.maintainers; [ eljamm ];
     teams = with lib.teams; [ ngi ];
   };

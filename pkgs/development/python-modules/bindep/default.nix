@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "bindep";
   version = "2.14.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -23,17 +22,6 @@ buildPythonPackage rec {
   };
 
   env.PBR_VERSION = version;
-
-  build-system = [
-    pbr
-  ];
-
-  dependencies = [
-    parsley
-    pbr
-    packaging
-    distro
-  ];
 
   nativeCheckInputs = [
     fixtures
@@ -49,8 +37,19 @@ buildPythonPackage rec {
     export PATH=$PATH:$out/bin
   '';
 
-  pytestFlags = [ "-s" ];
+  build-system = [
+    pbr
+  ];
 
+  dependencies = [
+    parsley
+    pbr
+    packaging
+    distro
+  ];
+
+  pyproject = true;
+  pytestFlags = [ "-s" ];
   pythonImportsCheck = [ "bindep" ];
 
   meta = {

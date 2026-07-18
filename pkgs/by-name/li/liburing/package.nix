@@ -15,28 +15,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-bSq4M28JRND4bdaIv/KXcCDB35cYM7gra1GVO3poWfc=";
   };
 
-  separateDebugInfo = true;
-  enableParallelBuilding = true;
-  # Upstream's configure script is not autoconf generated, but a hand written one.
-  setOutputFlags = false;
-  dontDisableStatic = true;
-  dontAddStaticConfigureFlags = true;
-  configureFlags = [
-    "--includedir=${placeholder "dev"}/include"
-    "--mandir=${placeholder "man"}/share/man"
-  ];
-
-  # mysterious link failure
-  hardeningDisable = [ "trivialautovarinit" ];
-
-  # Doesn't recognize platform flags
-  configurePlatforms = [ ];
-
   outputs = [
     "out"
     "bin"
     "dev"
     "man"
+  ];
+
+  configureFlags = [
+    "--includedir=${placeholder "dev"}/include"
+    "--mandir=${placeholder "man"}/share/man"
   ];
 
   postInstall = ''
@@ -51,14 +39,27 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  # Doesn't recognize platform flags
+  configurePlatforms = [ ];
+  dontAddStaticConfigureFlags = true;
+  dontDisableStatic = true;
+  enableParallelBuilding = true;
+  # mysterious link failure
+  hardeningDisable = [ "trivialautovarinit" ];
+  separateDebugInfo = true;
+  # Upstream's configure script is not autoconf generated, but a hand written one.
+  setOutputFlags = false;
+
   meta = {
     description = "Userspace library for the Linux io_uring API";
     homepage = "https://github.com/axboe/liburing";
     license = lib.licenses.lgpl21;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
       nickcao
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  click,
   hatchling,
   rapidfuzz,
-  click,
 }:
 
 buildPythonPackage rec {
   pname = "jiwer";
   version = "4.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jitsi";
@@ -28,16 +27,16 @@ buildPythonPackage rec {
     click
   ];
 
-  pythonRelaxDeps = [ "rapidfuzz" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "jiwer" ];
+  pythonRelaxDeps = [ "rapidfuzz" ];
 
   meta = {
     description = "Simple and fast python package to evaluate an automatic speech recognition system";
-    mainProgram = "jiwer";
     homepage = "https://github.com/jitsi/jiwer";
     changelog = "https://github.com/jitsi/jiwer/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ GaetanLepage ];
+    mainProgram = "jiwer";
   };
 }

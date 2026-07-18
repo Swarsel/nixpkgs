@@ -3,11 +3,11 @@
   stdenv,
   autoPatchelfHook,
   graalvm-ce,
-  makeWrapper,
-  zlib,
   libxcrypt-legacy,
+  makeWrapper,
   # extra params
   product,
+  zlib,
   extraBuildInputs ? [ ],
   extraNativeBuildInputs ? [ ],
   ...
@@ -46,6 +46,8 @@ stdenv.mkDerivation (
     ]
     ++ extraBuildInputs;
 
+    dontStrip = true;
+
     unpackPhase = ''
       runHook preUnpack
 
@@ -65,8 +67,6 @@ stdenv.mkDerivation (
       runHook postUnpack
     '';
 
-    dontStrip = true;
-
     passthru = {
       updateScript = [
         ./update.sh
@@ -84,6 +84,7 @@ stdenv.mkDerivation (
           teams
           platforms
           ;
+
         description = "High-Performance Polyglot VM (Product: ${product})";
         mainProgram = "js";
       }

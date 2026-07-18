@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -24,7 +24,7 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Navigation and insight in Go";
-    mainProgram = "motion";
+
     longDescription = ''
       Motion is a tool that was designed to work with editors. It is providing
       contextual information for a given offset(option) from a file or
@@ -34,9 +34,11 @@ buildGoModule (finalAttrs: {
       It's optimized and created to work with vim-go, but it's designed to work
       with any editor. It's currently work in progress and open to change.
     '';
+
     homepage = "https://github.com/fatih/motion";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ kalbasit ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "motion";
   };
 })

@@ -1,41 +1,42 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
-  llvmPackages,
-  cmake,
-  pkg-config,
-  gfortran,
+  fetchFromGitHub,
   blas,
+  cmake,
+  gfortran,
   lapack,
+  llvmPackages,
+  metis,
   mpi,
   mpiCheckPhaseHook,
-  metis,
-  parmetis,
-  # Todo: ask for permission of unfree parmetis
-  withParmetis ? false,
-  isILP64 ? false,
-
   # passthru.tests
   mpich,
+  parmetis,
+  pkg-config,
   superlu_dist,
+  isILP64 ? false,
+  # Todo: ask for permission of unfree parmetis
+  withParmetis ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "superlu_dist";
   version = "9.2.0";
 
-  __structuredAttrs = true;
-
   src = fetchFromGitHub {
     owner = "xiaoyeli";
     repo = "superlu_dist";
     tag = "v${finalAttrs.version}";
+    hash = "sha256-i/Gg+9oMNNRlviwXUSRkWNaLRZLPWZRtA1fGYqh2X0k=";
     # Remove non‐free files.
     postFetch = "rm $out/SRC/prec-independent/mc64ad_dist.c";
-    hash = "sha256-i/Gg+9oMNNRlviwXUSRkWNaLRZLPWZRtA1fGYqh2X0k=";
   };
+
+  patches = [
+    ./mc64ad_dist-stub.patch
+  ];
 
   # --oversubscribe unrecognized by mpich
   # see https://github.com/xiaoyeli/superlu_dist/issues/208
@@ -43,10 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace TEST/CMakeLists.txt \
       --replace-fail "-oversubscribe" ""
   '';
-
-  patches = [
-    ./mc64ad_dist-stub.patch
-  ];
 
   nativeBuildInputs = [
     cmake
@@ -88,13 +85,13 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
-
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [ mpiCheckPhaseHook ];
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
 
   passthru = {
     inherit isILP64;
+
     tests = {
       ilp64 = superlu_dist.override { isILP64 = true; };
     }
@@ -106,7 +103,9 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "Library for the solution of large, sparse, nonsymmetric systems of linear equations";
     homepage = "https://portal.nersc.gov/project/sparse/superlu/";
+
     license = with lib.licenses; [
       # Files: *
       # Lawrence Berkeley National Labs BSD variant license
@@ -124,8 +123,8 @@ stdenv.mkDerivation (finalAttrs: {
       # Microsoft code; Obtained from https://github.com/iotivity/iotivity/tree/master/resource/c_common/windows.
       asl20
     ];
-    description = "Library for the solution of large, sparse, nonsymmetric systems of linear equations";
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [ qbisi ];
+    platforms = lib.platforms.unix;
   };
 })

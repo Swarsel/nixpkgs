@@ -5,21 +5,29 @@
   httplib2,
   lazr-restfulclient,
   lazr-uri,
+  pytestCheckHook,
   setuptools_80,
   six,
   testresources,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "launchpadlib";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-tMJYkLt1BQ1UwIEj0nMxVreKWaJVX1Rh9psORM2RJC8=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    testresources
+  ];
+
+  preCheck = ''
+    export HOME=$TMPDIR
+  '';
 
   build-system = [ setuptools_80 ];
 
@@ -30,14 +38,7 @@ buildPythonPackage rec {
     six
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    testresources
-  ];
-
-  preCheck = ''
-    export HOME=$TMPDIR
-  '';
+  pyproject = true;
 
   pythonImportsCheck = [
     "launchpadlib"

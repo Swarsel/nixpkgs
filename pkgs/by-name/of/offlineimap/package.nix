@@ -1,21 +1,20 @@
 {
   lib,
   fetchFromGitHub,
-  python3,
   asciidoc,
   cacert,
   docbook_xsl,
   installShellFiles,
   libxml2,
   libxslt,
-  testers,
   offlineimap,
+  python3,
+  testers,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "offlineimap";
   version = "8.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "OfflineIMAP";
@@ -32,8 +31,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     sed -i offlineimap/utils/distro_utils.py -e '/def get_os_sslcertfile():/a\ \ \ \ return "${cacert}/etc/ssl/certs/ca-bundle.crt"'
   '';
 
-  build-system = [ python3.pkgs.setuptools ];
-
   nativeBuildInputs = [
     asciidoc
     docbook_xsl
@@ -41,6 +38,19 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     libxml2
     libxslt
   ];
+
+  # Test requires credentials
+  doCheck = false;
+
+  postInstall = ''
+    make -C docs man
+    installManPage docs/offlineimap.1
+    installManPage docs/offlineimapui.7
+    install -Dm644 offlineimap.conf -T $out/share/offlineimap/offlineimap.conf
+    install -Dm644 offlineimap.conf.minimal -T $out/share/offlineimap/offlineimap.conf.minimal
+  '';
+
+  build-system = [ python3.pkgs.setuptools ];
 
   dependencies = with python3.pkgs; [
     certifi
@@ -54,16 +64,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     urllib3
   ];
 
-  postInstall = ''
-    make -C docs man
-    installManPage docs/offlineimap.1
-    installManPage docs/offlineimapui.7
-    install -Dm644 offlineimap.conf -T $out/share/offlineimap/offlineimap.conf
-    install -Dm644 offlineimap.conf.minimal -T $out/share/offlineimap/offlineimap.conf.minimal
-  '';
-
-  # Test requires credentials
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "offlineimap"

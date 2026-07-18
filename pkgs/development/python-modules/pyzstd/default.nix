@@ -1,10 +1,10 @@
 {
+  lib,
+  fetchFromGitHub,
   backports-zstd,
   buildPythonPackage,
-  fetchFromGitHub,
-  lib,
-  hatchling,
   hatch-vcs,
+  hatchling,
   pytestCheckHook,
   pythonOlder,
   typing-extensions,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "pyzstd";
   version = "0.19.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Rogdham";
@@ -28,6 +27,14 @@ buildPythonPackage rec {
     ln -s ${zstd-c.src}/LICENSE zstd
   '';
 
+  buildInputs = [
+    zstd-c
+  ];
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     hatchling
     hatch-vcs
@@ -40,24 +47,18 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  pythonRelaxDeps = [
-    "typing-extensions"
-  ];
-
-  buildInputs = [
-    zstd-c
-  ];
-
   pypaBuildFlags = [
     "--config-setting=--global-option=--dynamic-link-zstd"
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "pyzstd"
+  ];
+
+  pythonRelaxDeps = [
+    "typing-extensions"
   ];
 
   meta = {
@@ -65,6 +66,7 @@ buildPythonPackage rec {
     homepage = "https://pyzstd.readthedocs.io";
     changelog = "https://github.com/Rogdham/pyzstd/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       MattSturgeon
       pitkling

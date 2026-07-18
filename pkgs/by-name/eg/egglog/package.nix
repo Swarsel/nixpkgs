@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,16 +16,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-gWccsWZCOucNP6M6cJqCMF8emwzqLXkaRm/huK4ARTs=";
-
   useNextest = true;
 
   meta = {
     description = "Fixpoint reasoning system that unifies Datalog and equality saturation";
-    mainProgram = "egglog";
     homepage = "https://github.com/egraphs-good/egglog";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       XBagon
     ];
+
+    mainProgram = "egglog";
   };
 })

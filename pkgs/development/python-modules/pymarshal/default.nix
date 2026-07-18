@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   bson,
-  pytestCheckHook,
+  buildPythonPackage,
   pytest-cov-stub,
+  pytestCheckHook,
   pyyaml,
   setuptools,
 }:
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "pymarshal";
   version = "2.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "stargateaudio";
@@ -26,10 +25,6 @@ buildPythonPackage rec {
       --replace-fail "'pytest-runner'" ""
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ bson ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
@@ -37,12 +32,15 @@ buildPythonPackage rec {
     pyyaml
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ bson ];
   enabledTestPaths = [ "test" ];
+  pyproject = true;
 
   meta = {
     description = "Python data serialization library";
     homepage = "https://github.com/stargateaudio/pymarshal";
-    maintainers = [ ];
     license = lib.licenses.bsd2;
+    maintainers = [ ];
   };
 }

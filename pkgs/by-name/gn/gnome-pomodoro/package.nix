@@ -2,25 +2,25 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  replaceVars,
+  desktop-file-utils,
+  gettext,
+  glib,
+  gobject-introspection,
+  gom,
+  gsettings-desktop-schemas,
+  gst_all_1,
+  gtk3,
+  json-glib,
+  libcanberra,
+  libpeas,
+  libxml2,
   meson,
   ninja,
   pkg-config,
-  wrapGAppsHook3,
-  desktop-file-utils,
-  libcanberra,
-  gst_all_1,
-  vala,
-  gtk3,
-  gom,
+  replaceVars,
   sqlite,
-  libxml2,
-  glib,
-  gobject-introspection,
-  json-glib,
-  libpeas,
-  gsettings-desktop-schemas,
-  gettext,
+  vala,
+  wrapGAppsHook3,
 }:
 stdenv.mkDerivation rec {
   pname = "gnome-pomodoro";
@@ -40,13 +40,6 @@ stdenv.mkDerivation rec {
       inherit pname version;
     })
   ];
-
-  # Manually compile schemas for package since meson option
-  # gnome.post_install(glib_compile_schemas) used by package tries to compile in
-  # the wrong dir.
-  preFixup = ''
-    glib-compile-schemas ${glib.makeSchemaPath "$out" "${pname}-${version}"}
-  '';
 
   nativeBuildInputs = [
     meson
@@ -74,19 +67,30 @@ stdenv.mkDerivation rec {
     sqlite
   ];
 
+  # Manually compile schemas for package since meson option
+  # gnome.post_install(glib_compile_schemas) used by package tries to compile in
+  # the wrong dir.
+  preFixup = ''
+    glib-compile-schemas ${glib.makeSchemaPath "$out" "${pname}-${version}"}
+  '';
+
   meta = {
-    homepage = "https://gnomepomodoro.org/";
     description = "Time management utility for GNOME based on the pomodoro technique";
-    mainProgram = "gnome-pomodoro";
+
     longDescription = ''
       This GNOME utility helps to manage time according to Pomodoro Technique.
       It intends to improve productivity and focus by taking short breaks.
     '';
+
+    homepage = "https://gnomepomodoro.org/";
+    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       aleksana
       herschenglime
     ];
-    license = lib.licenses.gpl3Plus;
+
     platforms = lib.platforms.linux;
+    mainProgram = "gnome-pomodoro";
   };
 }

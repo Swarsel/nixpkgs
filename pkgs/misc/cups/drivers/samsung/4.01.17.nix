@@ -14,9 +14,9 @@
 {
   lib,
   stdenv,
+  fetchurl,
   cups,
   libusb-compat-0_1,
-  fetchurl,
   patchPpdFilesHook,
 }:
 
@@ -42,9 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ patchPpdFilesHook ];
-
-  dontPatchELF = true;
-  dontStrip = true;
 
   installPhase = ''
     runHook preInstall
@@ -85,6 +82,9 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontPatchELF = true;
+  dontStrip = true;
+
   ppdFileCommands = [
     "pstosecps"
     "pstospl"
@@ -95,9 +95,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Samsung's Linux printing drivers; includes binaries without source code";
     homepage = "http://www.samsung.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
-    platforms = lib.platforms.linux;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ joko ];
+    platforms = lib.platforms.linux;
   };
 })

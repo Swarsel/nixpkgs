@@ -1,14 +1,12 @@
 {
-  build-idris-package,
-  fetchFromGitHub,
-  effects,
   lib,
+  fetchFromGitHub,
+  build-idris-package,
+  effects,
 }:
 build-idris-package {
   pname = "test";
   version = "2017-03-30";
-
-  idrisDeps = [ effects ];
 
   src = fetchFromGitHub {
     owner = "jfdm";
@@ -18,6 +16,7 @@ build-idris-package {
   };
 
   doCheck = false;
+  idrisDeps = [ effects ];
 
   meta = {
     description = "Testing Utilities for Idris programs";

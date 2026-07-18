@@ -3,14 +3,6 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  nasm,
-  openjdk,
-  enableJava ? false, # whether to build the java wrapper
-  enableJpeg7 ? false, # whether to build libjpeg with v7 compatibility
-  enableJpeg8 ? false, # whether to build libjpeg with v8 compatibility
-  enableStatic ? stdenv.hostPlatform.isStatic,
-  enableShared ? !stdenv.hostPlatform.isStatic,
-
   # for passthru.tests
   dvgrab,
   epeg,
@@ -21,11 +13,18 @@
   jhead,
   libjxl,
   mjpegtools,
-  opencv,
-  python3,
-  vips,
-  testers,
+  nasm,
   nix-update-script,
+  opencv,
+  openjdk,
+  python3,
+  testers,
+  vips,
+  enableJava ? false, # whether to build the java wrapper
+  enableJpeg7 ? false, # whether to build libjpeg with v7 compatibility
+  enableJpeg8 ? false, # whether to build libjpeg with v8 compatibility
+  enableShared ? !stdenv.hostPlatform.isStatic,
+  enableStatic ? stdenv.hostPlatform.isStatic,
 }:
 
 assert !(enableJpeg7 && enableJpeg8); # pick only one or none, not both
@@ -41,12 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-jBajigX4/j4jG11prTPeGkTVRrRzheFL/LxgnPufzb4=";
   };
 
-  patches =
-    [ ]
-    ++ lib.optionals stdenv.hostPlatform.isMinGW [
-      ./mingw-boolean.patch
-    ];
-
   outputs = [
     "bin"
     "dev"
@@ -54,6 +47,12 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
     "doc"
   ];
+
+  patches =
+    [ ]
+    ++ lib.optionals stdenv.hostPlatform.isMinGW [
+      ./mingw-boolean.patch
+    ];
 
   nativeBuildInputs = [
     cmake
@@ -86,8 +85,8 @@ stdenv.mkDerivation (finalAttrs: {
   installCheckTarget = "test";
 
   passthru = {
-    updateScript = nix-update-script { };
     dev_private = throw "not supported anymore";
+
     tests = {
       inherit
         dvgrab
@@ -102,24 +101,30 @@ stdenv.mkDerivation (finalAttrs: {
         opencv
         vips
         ;
+
       inherit (python3.pkgs) pillow imread pyturbojpeg;
       pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://libjpeg-turbo.org/";
     description = "Faster (using SIMD) libjpeg implementation";
-    license = lib.licenses.ijg; # and some parts under other BSD-style licenses
+    homepage = "https://libjpeg-turbo.org/";
     changelog = "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/tag/${finalAttrs.version}";
-    pkgConfigModules = [
-      "libjpeg"
-      "libturbojpeg"
-    ];
+    license = lib.licenses.ijg; # and some parts under other BSD-style licenses
+
     maintainers = with lib.maintainers; [
       vcunat
       kamadorueda
     ];
+
     platforms = lib.platforms.all;
+
+    pkgConfigModules = [
+      "libjpeg"
+      "libturbojpeg"
+    ];
   };
 })

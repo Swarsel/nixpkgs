@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
-  yarnInstallHook,
-  nodejs,
   nix-update-script,
+  nodejs,
+  stdenvNoCC,
+  yarnBuildHook,
+  yarnConfigHook,
+  yarnInstallHook,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "coc-vimlsp";
@@ -20,11 +20,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-U5nJRn0UZsGfyDR4gZN2E+TSWk0A7RXJqMRQMK3QV00=";
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    inherit (finalAttrs) src;
-    hash = "sha256-K5hC3YrzSxULt0SiX7r+b8uNWdnvqGe+/GBvZiFzW0c=";
-  };
-
   nativeBuildInputs = [
     yarnConfigHook
     yarnBuildHook
@@ -33,6 +28,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   ];
 
   env.NODE_OPTIONS = "--openssl-legacy-provider";
+
+  yarnOfflineCache = fetchYarnDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-K5hC3YrzSxULt0SiX7r+b8uNWdnvqGe+/GBvZiFzW0c=";
+  };
 
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 

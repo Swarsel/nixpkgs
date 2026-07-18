@@ -1,16 +1,16 @@
 {
-  pkgs,
   lib,
   stdenv,
   fetchurl,
-  dpkg,
-  makeWrapper,
   coreutils,
+  dpkg,
   ghostscript,
   gnugrep,
   gnused,
-  which,
+  makeWrapper,
   perl,
+  pkgs,
+  which,
 }:
 
 stdenv.mkDerivation rec {
@@ -26,8 +26,6 @@ stdenv.mkDerivation rec {
     dpkg
     makeWrapper
   ];
-
-  dontUnpack = true;
 
   installPhase = ''
     dpkg-deb -x $src $out
@@ -57,15 +55,18 @@ stdenv.mkDerivation rec {
     patchelf --set-interpreter "$interpreter" $dir/lpd/rawtobr3
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Brother MFC-L2720DW lpr driver";
     homepage = "http://www.brother.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = [ lib.maintainers.xeji ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
-    maintainers = [ lib.maintainers.xeji ];
   };
 }

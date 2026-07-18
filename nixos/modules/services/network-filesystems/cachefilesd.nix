@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -20,22 +20,22 @@ in
     services.cachefilesd = {
 
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
         description = "Whether to enable cachefilesd network filesystems caching daemon.";
+        type = lib.types.bool;
       };
 
       cacheDir = lib.mkOption {
-        type = lib.types.str;
         default = "/var/cache/fscache";
         description = "Directory to contain filesystem cache.";
+        type = lib.types.str;
       };
 
       extraConfig = lib.mkOption {
-        type = lib.types.lines;
         default = "";
-        example = "brun 10%";
         description = "Additional configuration file entries. See {manpage}`cachefilesd.conf(5)` for more information.";
+        example = "brun 10%";
+        type = lib.types.lines;
       };
 
     };
@@ -49,19 +49,21 @@ in
 
     systemd.services.cachefilesd = {
       description = "Local network file caching management daemon";
-      wantedBy = [ "multi-user.target" ];
+
       serviceConfig = {
-        Type = "exec";
         ExecStart = "${pkgs.cachefilesd}/bin/cachefilesd -n -f ${cfgFile}";
-        Restart = "on-failure";
         PrivateTmp = true;
+        Restart = "on-failure";
+        Type = "exec";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.tmpfiles.settings."10-cachefilesd".${cfg.cacheDir}.d = {
-      user = "root";
       group = "root";
       mode = "0700";
+      user = "root";
     };
   };
 }

@@ -1,12 +1,13 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "firezone-headless-client";
   version = "1.5.6";
+
   src = fetchFromGitHub {
     owner = "firezone";
     repo = "firezone";
@@ -14,20 +15,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-yEceZJBqSF35herNjbqFHKaIoFJwbkDN28wlxFa1UbU=";
   };
 
-  cargoHash = "sha256-3V2eMxUtNcnWsh7cYA5Wf979sKmFl7bjwwrqwcfW4tI=";
-  sourceRoot = "${finalAttrs.src.name}/rust";
-  buildAndTestSubdir = "headless-client";
-  env.RUSTFLAGS = "--cfg system_certs";
-
   # Required to remove profiling arguments which conflict with this builder
   postPatch = ''
     rm .cargo/config.toml
   '';
 
+  cargoHash = "sha256-3V2eMxUtNcnWsh7cYA5Wf979sKmFl7bjwwrqwcfW4tI=";
+  env.RUSTFLAGS = "--cfg system_certs";
+
   # Required to run tests
   preCheck = ''
     export XDG_RUNTIME_DIR=$(mktemp -d)
   '';
+
+  buildAndTestSubdir = "headless-client";
+  sourceRoot = "${finalAttrs.src.name}/rust";
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -40,11 +42,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "CLI client for the Firezone zero-trust access platform";
     homepage = "https://github.com/firezone/firezone";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       oddlama
       patrickdag
     ];
-    mainProgram = "firezone-headless-client";
+
     platforms = lib.platforms.linux;
+    mainProgram = "firezone-headless-client";
   };
 })

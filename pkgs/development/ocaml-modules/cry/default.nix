@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -22,8 +22,8 @@ buildDunePackage (finalAttrs: {
   minimalOCamlVersion = "4.12";
 
   meta = {
-    homepage = "https://github.com/savonet/ocaml-cry";
     description = "OCaml client for the various icecast & shoutcast source protocols";
+    homepage = "https://github.com/savonet/ocaml-cry";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ dandellion ];
   };

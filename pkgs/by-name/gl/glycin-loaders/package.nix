@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   cairo,
   cargo,
   gettext,
   glib,
   gtk4,
-  libglycin,
   lcms2,
+  libglycin,
   libheif,
   libjxl,
   librsvg,
@@ -17,10 +17,9 @@
   ninja,
   pkg-config,
   python3,
-  shared-mime-info,
-  rustc,
   rustPlatform,
-
+  rustc,
+  shared-mime-info,
   # List of loaders to build.
   # https://gitlab.gnome.org/GNOME/glycin/-/blob/2.1.1/meson_options.txt?ref_type=tags#L26-43
   enabledLoaders ? [
@@ -35,9 +34,21 @@
 assert enabledLoaders != [ ];
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit (libglycin) version src cargoDeps;
   pname = "glycin-loaders";
 
-  inherit (libglycin) version src cargoDeps;
+  postPatch = ''
+    substituteInPlace glycin-loaders/meson.build \
+      --replace-fail "cargo_target_dir / rust_target / loader," "cargo_target_dir / '${stdenv.hostPlatform.rust.cargoShortTarget}' / rust_target / loader,"
+  ''
+  + lib.optionalString finalAttrs.finalPackage.doCheck ''
+    chmod +x build-aux/setup-integration-test.py
+
+    patchShebangs \
+      build-aux/setup-integration-test.py
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cargo
@@ -63,13 +74,6 @@ stdenv.mkDerivation (finalAttrs: {
     libjxl
   ];
 
-  # Tests in passthru.tests to avoid dependency cycles.
-  checkInputs = [
-    glib
-    gtk4
-    lcms2
-  ];
-
   mesonFlags = [
     (lib.mesonBool "glycin-loaders" true)
     (lib.mesonBool "glycin-thumbnailer" false)
@@ -82,18 +86,14 @@ stdenv.mkDerivation (finalAttrs: {
     ))
   ];
 
-  strictDeps = true;
+  env.CARGO_BUILD_TARGET = stdenv.hostPlatform.rust.rustcTargetSpec;
 
-  postPatch = ''
-    substituteInPlace glycin-loaders/meson.build \
-      --replace-fail "cargo_target_dir / rust_target / loader," "cargo_target_dir / '${stdenv.hostPlatform.rust.cargoShortTarget}' / rust_target / loader,"
-  ''
-  + lib.optionalString finalAttrs.finalPackage.doCheck ''
-    chmod +x build-aux/setup-integration-test.py
-
-    patchShebangs \
-      build-aux/setup-integration-test.py
-  '';
+  # Tests in passthru.tests to avoid dependency cycles.
+  checkInputs = [
+    glib
+    gtk4
+    lcms2
+  ];
 
   preCheck = lib.optionalString finalAttrs.finalPackage.doCheck ''
     # Fix test files being considered application/octet-stream
@@ -108,8 +108,6 @@ stdenv.mkDerivation (finalAttrs: {
     rm -r $out/share/thumbnailers
   '';
 
-  env.CARGO_BUILD_TARGET = stdenv.hostPlatform.rust.rustcTargetSpec;
-
   passthru = {
     inherit enabledLoaders;
 
@@ -123,13 +121,15 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Glycin loaders for several formats";
     homepage = "https://gitlab.gnome.org/GNOME/glycin";
-    teams = [ lib.teams.gnome ];
+
     license =
       with lib.licenses;
       OR [
         mpl20
         lgpl21Plus
       ];
+
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.gnome ];
   };
 })

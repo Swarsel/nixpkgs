@@ -1,8 +1,8 @@
 {
-  buildPythonPackage,
   lib,
   fetchFromGitHub,
   absl-py,
+  buildPythonPackage,
   future,
   mock,
   mpyq,
@@ -11,15 +11,14 @@
   protobuf,
   pygame,
   s2clientprotocol,
+  sc2-headless,
   six,
   websocket-client,
-  sc2-headless,
 }:
 
 buildPythonPackage rec {
   pname = "pysc2";
   version = "4.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "deepmind";
@@ -53,12 +52,14 @@ buildPythonPackage rec {
     sc2-headless
   ];
 
+  format = "setuptools";
+
   meta = {
-    changelog = "https://github.com/google-deepmind/pysc2/releases/tag/${src.tag}";
     description = "Starcraft II environment and library for training agents";
     homepage = "https://github.com/deepmind/pysc2";
+    changelog = "https://github.com/google-deepmind/pysc2/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 }

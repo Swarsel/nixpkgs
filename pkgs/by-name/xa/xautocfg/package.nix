@@ -28,11 +28,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/SFTtech/xautocfg";
     description = "Automatic keyboard repeat rate configuration for new keyboards";
+    homepage = "https://github.com/SFTtech/xautocfg";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ jceb ];
-    mainProgram = "xautocfg";
     platforms = lib.platforms.linux;
+    mainProgram = "xautocfg";
   };
 })

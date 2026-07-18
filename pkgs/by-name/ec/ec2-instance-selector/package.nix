@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,6 +19,14 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-qrxYLnj8DEGNtIq6sC7xvNBLgguG/lj9YLqgLFumQtE=";
 
+  postInstall = ''
+    rm $out/bin/readme-test
+    mv $out/bin/cmd $out/bin/ec2-instance-selector
+  '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
   ldflags = [
     "-s"
     "-w"
@@ -26,15 +34,7 @@ buildGoModule (finalAttrs: {
     "-X=github.com/aws/amazon-ec2-instance-selector/v3/pkg/selector.versionID=${finalAttrs.version}"
   ];
 
-  postInstall = ''
-    rm $out/bin/readme-test
-    mv $out/bin/cmd $out/bin/ec2-instance-selector
-  '';
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckKeepEnvironment = [ "HOME" ];
-  doInstallCheck = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

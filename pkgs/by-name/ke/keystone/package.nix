@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   cmake,
-  python3,
   fixDarwinDylibNames,
+  pkg-config,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,11 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     ./cmake-3.10.patch
   ];
 
-  cmakeFlags = [
-    "-DBUILD_SHARED_LIBS=ON"
-    "-DCMAKE_INSTALL_LIBDIR=lib"
-  ];
-
   nativeBuildInputs = [
     pkg-config
     cmake
@@ -40,12 +35,17 @@ stdenv.mkDerivation (finalAttrs: {
     fixDarwinDylibNames
   ];
 
+  cmakeFlags = [
+    "-DBUILD_SHARED_LIBS=ON"
+    "-DCMAKE_INSTALL_LIBDIR=lib"
+  ];
+
   meta = {
     description = "Lightweight multi-platform, multi-architecture assembler framework";
     homepage = "https://www.keystone-engine.org";
     license = lib.licenses.gpl2Only;
     maintainers = [ ];
-    mainProgram = "kstool";
     platforms = lib.platforms.unix;
+    mainProgram = "kstool";
   };
 })

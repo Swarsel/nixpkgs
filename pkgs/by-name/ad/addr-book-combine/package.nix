@@ -24,9 +24,9 @@ buildGoModule {
   meta = {
     description = "Combine multiple aerc-style address books into a single address book";
     homepage = "https://jasoncarloscox.com/creations/addr-book-combine/";
-    downloadPage = "https://git.sr.ht/~jcc/addr-book-combine";
     license = lib.licenses.gpl3Only;
-    mainProgram = "addr-book-combine";
     maintainers = with lib.maintainers; [ antonmosich ];
+    mainProgram = "addr-book-combine";
+    downloadPage = "https://git.sr.ht/~jcc/addr-book-combine";
   };
 }

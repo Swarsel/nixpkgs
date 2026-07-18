@@ -6,8 +6,8 @@
   jdk,
   jre,
   makeWrapper,
-  testers,
   runCommand,
+  testers,
   writeText,
 }:
 
@@ -28,23 +28,7 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
   ];
 
-  # Required on Darwin to avoid SocketException during Gradle operations
-  __darwinAllowLocalNetworking = true;
-
-  mitmCache = gradle.fetchDeps {
-    inherit (finalAttrs) pname;
-    data = ./deps.json;
-  };
-
-  # Only build the shadowJar for smithy-cli, skip native image tasks that
-  # would try to download Amazon Corretto
-  gradleBuildTask = ":smithy-cli:shadowJar";
-
-  # Fetch both compile and test dependencies during update
-  gradleUpdateTask = ":smithy-cli:shadowJar :smithy-cli:test";
-
   doCheck = true;
-  gradleCheckTask = ":smithy-cli:test";
 
   installPhase = ''
     runHook preInstall
@@ -70,10 +54,25 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  # Required on Darwin to avoid SocketException during Gradle operations
+  __darwinAllowLocalNetworking = true;
+  # Only build the shadowJar for smithy-cli, skip native image tasks that
+  # would try to download Amazon Corretto
+  gradleBuildTask = ":smithy-cli:shadowJar";
+  gradleCheckTask = ":smithy-cli:test";
+  # Fetch both compile and test dependencies during update
+  gradleUpdateTask = ":smithy-cli:shadowJar :smithy-cli:test";
+
+  mitmCache = gradle.fetchDeps {
+    inherit (finalAttrs) pname;
+    data = ./deps.json;
+  };
+
   passthru.tests = {
     version = testers.testVersion {
       package = finalAttrs.finalPackage;
     };
+
     validate = runCommand "smithy-cli-validate-test" { } ''
       ${lib.getExe finalAttrs.finalPackage} validate ${writeText "example.smithy" ''
         $version: "2.0"
@@ -103,13 +102,15 @@ stdenv.mkDerivation (finalAttrs: {
     description = "CLI for the Smithy interface definition language (IDL)";
     homepage = "https://smithy.io/";
     changelog = "https://github.com/smithy-lang/smithy/releases/tag/${finalAttrs.version}";
+    license = lib.licenses.asl20;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # deps
     ];
-    license = lib.licenses.asl20;
-    mainProgram = "smithy";
+
     maintainers = [ lib.maintainers.joshgodsiff ];
     platforms = lib.platforms.unix;
+    mainProgram = "smithy";
   };
 })

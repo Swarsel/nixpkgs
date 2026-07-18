@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   bundlerEnv,
   bundlerUpdateScript,
   makeWrapper,
@@ -9,17 +9,14 @@
 let
   rubyEnv = bundlerEnv {
     inherit ruby;
-    name = "terraspace";
     gemdir = ./.;
+    name = "terraspace";
   };
 in
 stdenv.mkDerivation {
   pname = "terraspace";
   version = (import ./gemset.nix).terraspace.version;
-
   nativeBuildInputs = [ makeWrapper ];
-
-  dontUnpack = true;
 
   installPhase = ''
     mkdir -p $out/bin
@@ -28,14 +25,15 @@ stdenv.mkDerivation {
       --prefix PATH : ${lib.makeBinPath [ rubyEnv.ruby ]}
   '';
 
+  dontUnpack = true;
   passthru.updateScript = bundlerUpdateScript "terraspace";
 
   meta = {
     description = "Terraform framework that provides an organized structure, and keeps your code DRY";
-    mainProgram = "terraspace";
     homepage = "https://github.com/boltops-tools/terraspace";
     license = lib.licenses.asl20;
-    platforms = ruby.meta.platforms;
     maintainers = with lib.maintainers; [ mislavzanic ];
+    platforms = ruby.meta.platforms;
+    mainProgram = "terraspace";
   };
 }

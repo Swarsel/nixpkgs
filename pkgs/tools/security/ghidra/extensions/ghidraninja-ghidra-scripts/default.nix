@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  buildGhidraScripts,
   binwalk,
+  buildGhidraScripts,
   swift,
   yara,
   useSwift ? false,
@@ -39,6 +39,7 @@ buildGhidraScripts {
   meta = {
     description = "Scripts for the Ghidra software reverse engineering suite";
     homepage = "https://github.com/ghidraninja/ghidra_scripts";
+
     license = with lib.licenses; [
       gpl3Only
       gpl2Only

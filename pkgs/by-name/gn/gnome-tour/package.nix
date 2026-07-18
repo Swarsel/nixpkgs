@@ -1,23 +1,23 @@
 {
   lib,
   stdenv,
-  rustPlatform,
-  gettext,
-  meson,
-  ninja,
   fetchurl,
-  pkg-config,
-  gtk4,
-  glib,
-  desktop-file-utils,
   appstream-glib,
-  wrapGAppsHook4,
-  python3,
+  cargo,
+  desktop-file-utils,
+  gettext,
+  glib,
   gnome,
+  gtk4,
   libadwaita,
   librsvg,
+  meson,
+  ninja,
+  pkg-config,
+  python3,
+  rustPlatform,
   rustc,
-  cargo,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,12 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://gnome/sources/gnome-tour/${lib.versions.major finalAttrs.version}/gnome-tour-${finalAttrs.version}.tar.xz";
     hash = "sha256-bOEYcDGjZb8iagzRRvF7R3Pn7UUIg/fNUC9ez0MrUyU=";
   };
-
-  cargoVendorDir = "vendor";
-
-  depsBuildBuild = [
-    pkg-config
-  ];
 
   nativeBuildInputs = [
     appstream-glib
@@ -57,6 +51,12 @@ stdenv.mkDerivation (finalAttrs: {
     librsvg
   ];
 
+  cargoVendorDir = "vendor";
+
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   passthru = {
     updateScript = gnome.updateScript {
       packageName = "gnome-tour";
@@ -64,12 +64,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "GNOME Greeter & Tour";
     homepage = "https://gitlab.gnome.org/GNOME/gnome-tour";
     changelog = "https://gitlab.gnome.org/GNOME/gnome-tour/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
-    description = "GNOME Greeter & Tour";
-    mainProgram = "gnome-tour";
-    teams = [ lib.teams.gnome ];
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "gnome-tour";
+    teams = [ lib.teams.gnome ];
   };
 })

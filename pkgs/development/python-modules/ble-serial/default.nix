@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
   bleak,
-  coloredlogs,
-  pyserial,
   bless,
+  buildPythonPackage,
+  coloredlogs,
+  hatchling,
+  pyserial,
 }:
 
 buildPythonPackage rec {
   pname = "ble-serial";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Jakeler";
@@ -21,6 +20,10 @@ buildPythonPackage rec {
     hash = "sha256-lbqu6VeE8XEIUvUILqKsTA+0/lxTr8GTbUBkSae/ruE=";
     fetchSubmodules = true;
   };
+
+  # Requires real hardware to test
+  # https://github.com/Jakeler/ble-serial/blob/3f1a619208a0eb372a0993aadc086c4842946f21/tests/test.py
+  doCheck = false;
 
   build-system = [
     hatchling
@@ -38,9 +41,7 @@ buildPythonPackage rec {
     ];
   };
 
-  # Requires real hardware to test
-  # https://github.com/Jakeler/ble-serial/blob/3f1a619208a0eb372a0993aadc086c4842946f21/tests/test.py
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "ble_serial.bluetooth.ble_client"

@@ -1,18 +1,18 @@
 {
   lib,
-  runCommand,
   awscli2,
+  runCommand,
 }:
 lib.fetchers.withNormalizedHash { } (
   {
-    s3url,
-    name ? baseNameOf s3url,
     outputHash,
     outputHashAlgo,
-    region ? "us-east-1",
+    s3url,
     credentials ? null, # Default to looking at local EC2 metadata service
-    recursiveHash ? false,
+    name ? baseNameOf s3url,
     postFetch ? null,
+    recursiveHash ? false,
+    region ? "us-east-1",
   }:
 
   let
@@ -33,14 +33,11 @@ lib.fetchers.withNormalizedHash { } (
   runCommand name
     (
       {
-        nativeBuildInputs = [ awscli2 ];
-
         inherit outputHash outputHashAlgo;
-        outputHashMode = if recursiveHash then "recursive" else "flat";
-
-        preferLocalBuild = true;
-
+        nativeBuildInputs = [ awscli2 ];
         AWS_DEFAULT_REGION = region;
+        outputHashMode = if recursiveHash then "recursive" else "flat";
+        preferLocalBuild = true;
       }
       // credentialAttrs
     )

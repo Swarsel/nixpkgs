@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   docopt-subcommands,
   future,
-  pytestCheckHook,
   hypothesis,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage {
   pname = "eseries";
   version = "1.2.1-unstable-2023-12-17";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rob-smallshire";
@@ -21,6 +20,11 @@ buildPythonPackage {
     hash = "sha256-iQBh4L+t24pOBh86wEqu5e6/RUmTQdCX+rOV/H2ywaY=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    hypothesis
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,12 +32,8 @@ buildPythonPackage {
     future
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "eseries" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    hypothesis
-  ];
 
   meta = {
     description = "Find value in the E-series used for electronic components values";

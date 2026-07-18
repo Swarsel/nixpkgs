@@ -1,26 +1,26 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  atk,
+  curlMinimal,
+  dbus,
   dpkg,
+  glib,
+  gtk3,
+  libsecret,
+  libsoup_3,
   libuuid,
   libx11,
-  curlMinimal,
-  openssl_3,
-  libsecret,
-  webkitgtk_4_1,
-  libsoup_3,
-  gtk3,
-  atk,
-  pango,
-  glib,
-  sqlite,
-  zlib,
-  systemd,
-  pam,
-  p11-kit,
-  dbus,
   nixosTests,
+  openssl_3,
+  p11-kit,
+  pam,
+  pango,
+  sqlite,
+  systemd,
+  webkitgtk_4_1,
+  zlib,
 }:
 let
   curlMinimal_openssl_3 = curlMinimal.override {
@@ -60,6 +60,7 @@ stdenv.mkDerivation rec {
           systemd
           dbus
         ];
+
         pam = lib.makeLibraryPath [ pam ];
       };
     in
@@ -105,16 +106,16 @@ stdenv.mkDerivation rec {
   dontPatchELF = true;
 
   passthru = {
-    updateScript = ./update.sh;
     tests = { inherit (nixosTests) intune; };
+    updateScript = ./update.sh;
   };
 
   meta = {
     description = "Microsoft Intune Portal allows you to securely access corporate apps, data, and resources";
     homepage = "https://www.microsoft.com/";
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
-    maintainers = with lib.maintainers; [ rhysmdnz ];
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    maintainers = with lib.maintainers; [ rhysmdnz ];
+    platforms = [ "x86_64-linux" ];
   };
 }

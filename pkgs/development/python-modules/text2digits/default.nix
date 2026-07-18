@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "text2digits";
   version = "0.1.0";
-  pyproject = false;
 
   src = fetchPypi {
     inherit pname version;
@@ -21,6 +20,7 @@ buildPythonPackage rec {
     setuptoolsBuildHook
   ];
 
+  pyproject = false;
   pythonImportsCheck = [ "text2digits" ];
 
   meta = {

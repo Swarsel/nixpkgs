@@ -2,26 +2,23 @@
 
 {
   lib,
+  excludeDrvArgNames,
   stdenvNoCC,
   undmg,
-
-  excludeDrvArgNames,
   ...
 }:
 
 lib.extendMkDerivation {
   inherit excludeDrvArgNames;
-
   constructDrv = stdenvNoCC.mkDerivation;
 
   extendDrvArgs =
     finalAttrs:
     {
       product,
-      productShort ? product,
-
-      nativeBuildInputs ? [ ],
       meta ? { },
+      nativeBuildInputs ? [ ],
+      productShort ? product,
       ...
     }:
 
@@ -29,9 +26,7 @@ lib.extendMkDerivation {
       loname = lib.toLower productShort;
     in
     {
-      desktopName = product;
-
-      dontFixup = true;
+      nativeBuildInputs = nativeBuildInputs ++ [ undmg ];
 
       installPhase = ''
         runHook preInstall
@@ -47,8 +42,8 @@ lib.extendMkDerivation {
         runHook postInstall
       '';
 
-      nativeBuildInputs = nativeBuildInputs ++ [ undmg ];
-
+      desktopName = product;
+      dontFixup = true;
       sourceRoot = ".";
 
       meta = meta // {

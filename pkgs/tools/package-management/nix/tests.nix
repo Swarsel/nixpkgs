@@ -1,17 +1,25 @@
 {
-  runCommand,
-  version,
-  src,
-  nix,
   lib,
   stdenv,
-  pkgs,
-  pkgsi686Linux,
-  pkgsStatic,
+  nix,
   nixosTests,
+  pkgs,
+  pkgsStatic,
+  pkgsi686Linux,
+  runCommand,
   self_attribute_name,
+  src,
+  version,
 }:
 {
+  /**
+    Intended to test `lib`, but also a good smoke test for Nix
+  */
+  nixpkgs-lib = import ../../../../lib/tests/test-with-nix.nix {
+    inherit lib pkgs;
+    inherit nix;
+  };
+
   srcVersion =
     runCommand "nix-src-version"
       {
@@ -49,24 +57,15 @@
         }
         touch $out
       '';
-
-  /**
-    Intended to test `lib`, but also a good smoke test for Nix
-  */
-  nixpkgs-lib = import ../../../../lib/tests/test-with-nix.nix {
-    inherit lib pkgs;
-    inherit nix;
-  };
 }
 // lib.optionalAttrs stdenv.hostPlatform.isLinux {
   # unfortunally nixpkgs pkgsStatic is too often broken including the dependency closure of nix
   # nixStatic = pkgsStatic.nixVersions.${self_attribute_name};
-
   # Basic smoke tests that needs to pass when upgrading nix.
   # Note that this test does only test the nixVersions.stable attribute.
   misc = nixosTests.nix-misc.default;
-  upgrade = nixosTests.nix-upgrade;
   simpleUefiSystemdBoot = nixosTests.installer.simpleUefiSystemdBoot;
+  upgrade = nixosTests.nix-upgrade;
 }
 // lib.optionalAttrs (stdenv.hostPlatform.system == "x86_64-linux") {
   nixi686 = pkgsi686Linux.nixVersions.${self_attribute_name};

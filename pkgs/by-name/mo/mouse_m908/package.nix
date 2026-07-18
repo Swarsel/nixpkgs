@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
-  libusb1,
-  installShellFiles,
+  stdenv,
   fetchFromGitHub,
+  installShellFiles,
+  libusb1,
   pkg-config,
 }:
 
@@ -25,8 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [ libusb1 ];
 
-  doInstallCheck = true;
-
   # Uses proper nix directories rather than the ones specified in the makefile
   installPhase = ''
     runHook preInstall
@@ -46,12 +44,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   meta = {
-    homepage = "https://github.com/dokutan/mouse_m908";
     description = "Control various Redragon gaming mice from Linux, BSD and Haiku";
-    mainProgram = "mouse_m908";
+    homepage = "https://github.com/dokutan/mouse_m908";
     license = lib.licenses.gpl3Plus;
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ kylelovestoad ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "mouse_m908";
   };
 })

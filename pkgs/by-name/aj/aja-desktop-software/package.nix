@@ -1,12 +1,12 @@
 {
-  stdenvNoCC,
   lib,
-  fetchzip,
-  dpkg,
-  patchelf,
   buildFHSEnv,
-  writeShellScript,
+  dpkg,
+  fetchzip,
   makeBinaryWrapper,
+  patchelf,
+  stdenvNoCC,
+  writeShellScript,
 }:
 
 let
@@ -16,24 +16,25 @@ let
     description = "Graphical utilities for interacting with AJA desktop video cards";
     homepage = "https://www.aja.com/products/aja-control-room";
     license = lib.licenses.unfree; # https://www.aja.com/software-license-agreement
-    maintainers = [ lib.maintainers.lukegb ];
-    platforms = [ "x86_64-linux" ];
+
     sourceProvenance = [
       lib.sourceTypes.binaryNativeCode
       lib.sourceTypes.binaryFirmware
     ];
+
+    maintainers = [ lib.maintainers.lukegb ];
+    platforms = [ "x86_64-linux" ];
   };
 
   unwrapped = stdenvNoCC.mkDerivation {
-    pname = "${pname}-unwrapped";
     inherit version;
+    inherit meta;
+    pname = "${pname}-unwrapped";
 
     src = fetchzip {
       url = "https://www.aja.com/assets/support/files/9895/en/AJA-Desktop-Software-Installer_Linux-Ubuntu_v${version}_Release.zip";
       hash = "sha256-TxDcYIhEcpPnpoqpey5vSvUltLT/3xwBfOhAP81Q9+E=";
     };
-
-    unpackCmd = "dpkg -x $curSrc/ajaretail_*.deb source";
 
     nativeBuildInputs = [
       dpkg
@@ -60,12 +61,32 @@ let
     '';
 
     dontPatchELF = true;
-
-    inherit meta;
+    unpackCmd = "dpkg -x $curSrc/ajaretail_*.deb source";
   };
 in
 buildFHSEnv {
   inherit pname version;
+
+  nativeBuildInputs = [
+    makeBinaryWrapper
+  ];
+
+  extraInstallCommands = ''
+    mkdir -p $out/libexec/aja-desktop
+    mv $out/bin/${pname} $out/libexec/aja-desktop/${pname}
+
+    for binary in controlpanel controlroom ajanmos systemtest; do
+      makeWrapper "$out/libexec/aja-desktop/${pname}" "$out/bin/aja-$binary" \
+        --add-flags "$binary"
+    done
+  '';
+
+  runScript = writeShellScript "aja" ''
+    exec_binary="$1"
+    shift
+    export QT_PLUGIN_PATH="${unwrapped}/opt/aja/plugins"
+    exec "${unwrapped}/opt/aja/bin/$exec_binary" "$@"
+  '';
 
   targetPkgs =
     pkgs:
@@ -92,29 +113,8 @@ buildFHSEnv {
       avahi
     ]);
 
-  nativeBuildInputs = [
-    makeBinaryWrapper
-  ];
-
   unshareIpc = false;
   unsharePid = false;
-
-  runScript = writeShellScript "aja" ''
-    exec_binary="$1"
-    shift
-    export QT_PLUGIN_PATH="${unwrapped}/opt/aja/plugins"
-    exec "${unwrapped}/opt/aja/bin/$exec_binary" "$@"
-  '';
-
-  extraInstallCommands = ''
-    mkdir -p $out/libexec/aja-desktop
-    mv $out/bin/${pname} $out/libexec/aja-desktop/${pname}
-
-    for binary in controlpanel controlroom ajanmos systemtest; do
-      makeWrapper "$out/libexec/aja-desktop/${pname}" "$out/bin/aja-$binary" \
-        --add-flags "$binary"
-    done
-  '';
 
   passthru = {
     inherit unwrapped;

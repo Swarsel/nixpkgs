@@ -1,19 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytest-cov-stub,
   pytestCheckHook,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "brottsplatskartan";
   version = "1.0.5";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "chrillux";
@@ -22,15 +19,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Sc8g8Pqc1ddDlkuAhSpfP4rByGPM+SGkKYHfDZmtPB4=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   nativeCheckInputs = [
     pytest-cov-stub
     pytestCheckHook
   ];
 
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "brottsplatskartan" ];
 
   meta = {

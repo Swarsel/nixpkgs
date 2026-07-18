@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitLab,
+  buildPythonPackage,
   pyserial,
   pytestCheckHook,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aurorapy";
   version = "0.3";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "energievalsabbia";
@@ -24,18 +23,16 @@ buildPythonPackage (finalAttrs: {
     sed -i "/from past.builtins import map/d" aurorapy/client.py
   '';
 
-  build-system = [ setuptools ];
-
-  pythonRemoveDeps = [ "future" ];
-
-  dependencies = [ pyserial ];
-
   nativeCheckInputs = [
     pytestCheckHook
     six
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ pyserial ];
+  pyproject = true;
   pythonImportsCheck = [ "aurorapy" ];
+  pythonRemoveDeps = [ "future" ];
 
   meta = {
     description = "Implementation of the communication protocol for Power-One Aurora inverters";

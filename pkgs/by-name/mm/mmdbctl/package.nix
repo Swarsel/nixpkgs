@@ -1,12 +1,12 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   stdenv,
-  runCommand,
-  mmdbctl,
+  fetchFromGitHub,
+  buildGoModule,
   dbip-country-lite,
+  installShellFiles,
+  mmdbctl,
+  runCommand,
 }:
 
 buildGoModule rec {
@@ -20,14 +20,8 @@ buildGoModule rec {
     hash = "sha256-s1HKPZmuEENBf5a40i0oTtzvPV3UjMhS/1ijc9WtzXo=";
   };
 
-  vendorHash = "sha256-f/FEMTOipss17uVhdvV3QKAmlHsmxnGWrz9csIs7ySk=";
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-f/FEMTOipss17uVhdvV3QKAmlHsmxnGWrz9csIs7ySk=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd mmdbctl \
@@ -35,6 +29,11 @@ buildGoModule rec {
       --fish <($out/bin/mmdbctl completion fish) \
       --zsh <($out/bin/mmdbctl completion zsh)
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
 
   passthru.tests = {
     simple = runCommand "${pname}-test" { } ''

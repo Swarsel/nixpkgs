@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  rustPlatform,
-  cmake,
-  pkg-config,
   alsa-lib,
+  cmake,
+  fetchpatch,
   nix-update-script,
-  writableTmpDirAsHomeHook,
+  pkg-config,
+  rustPlatform,
   versionCheckHook,
+  writableTmpDirAsHomeHook,
   withRadio ? false,
 }:
 
@@ -24,8 +24,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-bLyAki9XJuQRwKhO8jiR1wcssfvXTXGftOS4WRyvVe0=";
   };
 
-  cargoHash = "sha256-PUo9avg1wWgS7D6u3zIBbgv1/eM6N9PbA+EwzdNHC0w=";
-
   patches = lib.optionals (!withRadio) [
     ./disable-radio.patch
   ];
@@ -37,24 +35,28 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     rustPlatform.bindgenHook
   ];
+
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ alsa-lib ];
+  cargoHash = "sha256-PUo9avg1wWgS7D6u3zIBbgv1/eM6N9PbA+EwzdNHC0w=";
 
   nativeCheckInputs = [
     # Save system tests write to home dir
     writableTmpDirAsHomeHook
   ];
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  versionCheckProgram = "${placeholder "out"}/bin/rebels";
   # Darwin: "Error: Operation not permitted (os error 1)"
   doInstallCheck = !stdenv.hostPlatform.isDarwin;
 
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
+  versionCheckProgram = "${placeholder "out"}/bin/rebels";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "P2P terminal game about spacepirates playing basketball across the galaxy";
+
     longDescription = ''
       It's the year 2101. Corporations have taken over the world. The only way to be free is
       to join a pirate crew and start plundering the galaxy. The only means of survival is
@@ -63,8 +65,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
       Now it's your turn to go out there and make a name for yourself. Create your crew and
       start wandering the galaxy in search of worthy basketball opponents.
     '';
+
     homepage = "https://frittura.org/";
     changelog = "https://github.com/ricott1/rebels-in-the-sky/releases/tag/v${finalAttrs.version}";
+
     license =
       with lib.licenses;
       [ gpl3Only ]
@@ -72,6 +76,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
       # I couldn't find licensing information regarding other radio stations, so I'm
       # assuming they're nonfree.
       ++ lib.optionals withRadio [ unfree ];
+
     maintainers = with lib.maintainers; [ marcin-serwin ];
     mainProgram = "rebels";
   };

@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   cmake,
   eigen,
-  fetchFromGitHub,
   libcifpp,
   libmcfp,
   zlib,
@@ -31,11 +31,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Calculate the most likely secondary structure assignment given the 3D structure of a protein";
-    mainProgram = "mkdssp";
     homepage = "https://github.com/PDB-REDO/dssp";
     changelog = "https://github.com/PDB-REDO/dssp/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ natsukium ];
     platforms = lib.platforms.unix;
+    mainProgram = "mkdssp";
   };
 })

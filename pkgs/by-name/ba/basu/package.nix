@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  fetchFromSourcehut,
   audit,
-  pkg-config,
-  libcap,
+  fetchFromSourcehut,
+  getent,
   gperf,
+  libcap,
   meson,
   ninja,
+  pkg-config,
   python3,
-  getent,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,11 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     "lib"
   ];
 
-  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
-    audit
-    libcap
-  ];
-
   nativeBuildInputs = [
     pkg-config
     meson
@@ -41,6 +36,11 @@ stdenv.mkDerivation (finalAttrs: {
     python3
     getent
     gperf
+  ];
+
+  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
+    audit
+    libcap
   ];
 
   mesonFlags = lib.optionals (!stdenv.hostPlatform.isLinux) [
@@ -60,11 +60,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://sr.ht/~emersion/basu";
     description = "Sd-bus library, extracted from systemd";
-    mainProgram = "basuctl";
+    homepage = "https://sr.ht/~emersion/basu";
     license = lib.licenses.lgpl21Only;
     maintainers = [ ];
     platforms = lib.platforms.linux ++ lib.platforms.freebsd;
+    mainProgram = "basuctl";
   };
 })

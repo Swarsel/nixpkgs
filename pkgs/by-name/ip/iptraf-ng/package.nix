@@ -6,8 +6,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.2.2";
   pname = "iptraf-ng";
+  version = "1.2.2";
 
   src = fetchFromGitHub {
     owner = "iptraf-ng";
@@ -28,6 +28,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Console-based network monitoring utility (fork of iptraf)";
+
     longDescription = ''
       IPTraf-ng is a console-based network monitoring utility. IPTraf-ng
       gathers data like TCP connection packet and byte counts, interface
@@ -46,10 +47,11 @@ stdenv.mkDerivation (finalAttrs: {
       of the Linux kernel, so it can be used on a wide variety of supported
       network cards.
     '';
+
     homepage = "https://github.com/iptraf-ng/iptraf-ng";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ devhell ];
+    platforms = lib.platforms.linux;
     mainProgram = "iptraf-ng";
   };
 })

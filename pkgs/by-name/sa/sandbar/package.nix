@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pixman,
   fcft,
+  pixman,
   pkg-config,
+  wayland,
   wayland-protocols,
   wayland-scanner,
-  wayland,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,7 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -36,8 +35,8 @@ stdenv.mkDerivation (finalAttrs: {
   makeFlags = [ "PREFIX=$(out)" ];
 
   meta = {
-    homepage = "https://github.com/kolunmi/sandbar";
     description = "DWM-like bar for the river wayland compositor";
+    homepage = "https://github.com/kolunmi/sandbar";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ fccapria ];
     platforms = lib.platforms.all;

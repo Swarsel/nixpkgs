@@ -1,27 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  scikit-build-core,
-  nanobind,
-  cmake,
-  ninja,
-  pkg-config,
   blas,
-  lapack,
-  numpy,
-  sympy,
-  scipy,
-  matplotlib,
+  buildPythonPackage,
+  cmake,
   fenics-ufl,
+  lapack,
+  matplotlib,
+  nanobind,
+  ninja,
+  numpy,
+  pkg-config,
   pytest-xdist,
   pytestCheckHook,
+  scikit-build-core,
+  scipy,
+  sympy,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "fenics-basix";
   version = "0.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fenics";
@@ -30,21 +29,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-MBrK7O3iQ0XFONebbAFXBom9i985EyTAXrOlSMiIpk8=";
   };
 
-  dontUseCmakeConfigure = true;
-
-  build-system = [
-    scikit-build-core
-    nanobind
-  ];
-
   nativeBuildInputs = [
     cmake
     ninja
     pkg-config
-  ];
-
-  dependencies = [
-    numpy
   ];
 
   buildInputs = [
@@ -59,10 +47,6 @@ buildPythonPackage (finalAttrs: {
     (lib.cmakeBool "BLA_PREFER_PKGCONFIG" true)
   ];
 
-  pythonImportsCheck = [
-    "basix"
-  ];
-
   nativeCheckInputs = [
     sympy
     scipy
@@ -72,12 +56,28 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  build-system = [
+    scikit-build-core
+    nanobind
+  ];
+
+  dependencies = [
+    numpy
+  ];
+
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "basix"
+  ];
+
   meta = {
-    homepage = "https://fenicsproject.org";
-    downloadPage = "https://github.com/fenics/basix";
     description = "Finite element definition and tabulation runtime library";
+    homepage = "https://fenicsproject.org";
     changelog = "https://github.com/fenics/basix/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ qbisi ];
+    downloadPage = "https://github.com/fenics/basix";
   };
 })

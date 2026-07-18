@@ -1,39 +1,34 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   absl-py,
+  # tests
+  apache-beam,
+  buildPythonPackage,
   etils,
+  gitpython,
   jsonpath-rw,
+  librosa,
   networkx,
   pandas,
   pandas-stubs,
+  pillow,
+  pytestCheckHook,
   python-dateutil,
+  pyyaml,
   rdflib,
   requests,
   scipy,
+  # build-system
+  setuptools,
   tqdm,
-
-  # tests
-  apache-beam,
-  gitpython,
-  librosa,
-  pillow,
-  pytestCheckHook,
-  pyyaml,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mlcroissant";
   version = "1.1.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "mlcommons";
@@ -42,7 +37,17 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-IaRlmNQjOSIT3/b6AM68eRmweZEI5yjo6I9ievQIIsE=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/python/mlcroissant";
+  nativeCheckInputs = [
+    apache-beam
+    gitpython
+    librosa
+    pillow
+    pytestCheckHook
+    pyyaml
+    writableTmpDirAsHomeHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -63,18 +68,6 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ etils.optional-dependencies.epath;
 
-  pythonImportsCheck = [ "mlcroissant" ];
-
-  nativeCheckInputs = [
-    apache-beam
-    gitpython
-    librosa
-    pillow
-    pytestCheckHook
-    pyyaml
-    writableTmpDirAsHomeHook
-  ];
-
   disabledTests = [
     # Requires internet access
     "test_hermetic_loading_1_1"
@@ -88,6 +81,10 @@ buildPythonPackage (finalAttrs: {
     # AttributeError: 'MaybeReshuffle' object has no attribute 'side_inputs'
     "test_beam_hermetic_loading"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "mlcroissant" ];
+  sourceRoot = "${finalAttrs.src.name}/python/mlcroissant";
 
   meta = {
     description = "High-level format for machine learning datasets that brings together four rich layers";

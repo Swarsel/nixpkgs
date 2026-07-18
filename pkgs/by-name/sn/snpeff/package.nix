@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   jre,
-  unzip,
   makeWrapper,
+  unzip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,6 +15,7 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/project/snpeff/snpEff_v${
       builtins.replaceStrings [ "." ] [ "_" ] finalAttrs.version
     }_core.zip";
+
     sha256 = "0i12mv93bfv8xjwc3rs2x73d6hkvi7kgbbbx3ry984l3ly4p6nnm";
   };
 
@@ -22,9 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
     unzip
   ];
-  buildInputs = [ jre ];
 
-  sourceRoot = "snpEff";
+  buildInputs = [ jre ];
 
   installPhase = ''
     mkdir -p $out/libexec/snpeff
@@ -38,10 +38,12 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/bin/snpsift $out/bin/snpSift
   '';
 
+  sourceRoot = "snpEff";
+
   meta = {
     description = "Genetic variant annotation and effect prediction toolbox";
-    license = lib.licenses.lgpl3;
     homepage = "https://snpeff.sourceforge.net/";
+    license = lib.licenses.lgpl3;
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ jbedo ];
     platforms = lib.platforms.all;

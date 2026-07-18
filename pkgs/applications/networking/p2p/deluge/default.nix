@@ -1,16 +1,16 @@
 {
   lib,
   fetchurl,
-  intltool,
-  libtorrent-rasterbar,
-  python3Packages,
-  gtk3,
-  libappindicator-gtk3,
   glib,
   gobject-introspection,
+  gtk3,
+  intltool,
+  libappindicator-gtk3,
   librsvg,
-  wrapGAppsHook3,
+  libtorrent-rasterbar,
   nixosTests,
+  python3Packages,
+  wrapGAppsHook3,
 }:
 
 let
@@ -23,12 +23,20 @@ let
     pypkgs.buildPythonPackage rec {
       inherit pname;
       version = "2.2.0";
-      format = "setuptools";
 
       src = fetchurl {
         url = "http://download.deluge-torrent.org/source/${lib.versions.majorMinor version}/deluge-${version}.tar.xz";
         hash = "sha256-ubonK1ukKq8caU5sKWKKuBbMGnAKN7rAiqy1JXFgas0=";
       };
+
+      nativeBuildInputs = [
+        intltool
+        glib
+      ]
+      ++ optionals withGUI [
+        gobject-introspection
+        wrapGAppsHook3
+      ];
 
       propagatedBuildInputs =
         with pypkgs;
@@ -58,14 +66,7 @@ let
           libappindicator-gtk3
         ];
 
-      nativeBuildInputs = [
-        intltool
-        glib
-      ]
-      ++ optionals withGUI [
-        gobject-introspection
-        wrapGAppsHook3
-      ];
+      doCheck = false; # tests are not working at all
 
       nativeCheckInputs = with pypkgs; [
         pytestCheckHook
@@ -75,8 +76,6 @@ let
         mccabe
         pylint
       ];
-
-      doCheck = false; # tests are not working at all
 
       postInstall = ''
         install -Dm444 -t $out/lib/systemd/system packaging/systemd/*.service
@@ -102,6 +101,7 @@ let
         done
       '';
 
+      format = "setuptools";
       passthru.tests = { inherit (nixosTests) deluge; };
 
       meta = {
@@ -115,13 +115,15 @@ let
 
 in
 rec {
+  deluge = deluge-gtk;
+
   deluge-gtk = generic {
     pname = "deluge-gtk";
     withGUI = true;
   };
+
   deluged = generic {
     pname = "deluged";
     withGUI = false;
   };
-  deluge = deluge-gtk;
 }

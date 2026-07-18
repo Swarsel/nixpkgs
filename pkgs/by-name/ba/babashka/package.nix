@@ -1,18 +1,15 @@
 {
-  stdenvNoCC,
   babashka-unwrapped,
   callPackage,
-  makeWrapper,
   installShellFiles,
+  makeWrapper,
+  stdenvNoCC,
   clojureToolsBabashka ? callPackage ./clojure-tools.nix { },
   jdkBabashka ? clojureToolsBabashka.jdk,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
-  pname = "babashka";
   inherit (babashka-unwrapped) version meta doInstallCheck;
-
-  dontUnpack = true;
-  dontBuild = true;
+  pname = "babashka";
 
   nativeBuildInputs = [
     makeWrapper
@@ -41,6 +38,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     $out/bin/bb clojure --version | grep -wF '${clojureToolsBabashka.version}'
   '';
 
-  passthru.unwrapped = babashka-unwrapped;
+  dontBuild = true;
+  dontUnpack = true;
   passthru.clojure-tools = clojureToolsBabashka;
+  passthru.unwrapped = babashka-unwrapped;
 })

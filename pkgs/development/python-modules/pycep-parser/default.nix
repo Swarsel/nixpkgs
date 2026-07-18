@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   assertpy,
   buildPythonPackage,
-  fetchFromGitHub,
   lark,
   pytestCheckHook,
   regex,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pycep-parser";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gruebel";
@@ -22,15 +21,18 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-pEFgpLfGcJhUWfs/nG1r7GfIS045cfNh7MVQokluXmM=";
   };
 
-  build-system = [ uv-build ];
-
   # We can't use pythonRelaxDeps to relax the build-system
   postPatch = ''
     substituteInPlace pyproject.toml \
       --replace-fail "uv_build~=0.9.0" "uv_build"
   '';
 
-  pythonRelaxDeps = [ "regex" ];
+  nativeCheckInputs = [
+    assertpy
+    pytestCheckHook
+  ];
+
+  build-system = [ uv-build ];
 
   dependencies = [
     lark
@@ -38,12 +40,9 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    assertpy
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pycep" ];
+  pythonRelaxDeps = [ "regex" ];
 
   meta = {
     description = "Python based Bicep parser";

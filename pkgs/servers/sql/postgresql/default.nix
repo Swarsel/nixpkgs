@@ -33,9 +33,8 @@ let
 
 in
 {
+  inherit libpq;
+  postgresqlJitVersions = mkAttributes true;
   # variations without and with JIT
   postgresqlVersions = mkAttributes false;
-  postgresqlJitVersions = mkAttributes true;
-
-  inherit libpq;
 }

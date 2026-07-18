@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
+  cmake,
 }:
 
 stdenv.mkDerivation {
@@ -30,7 +30,7 @@ stdenv.mkDerivation {
     description = "ELF object file access library (vendored by avrdudes)";
     homepage = "https://github.com/avrdudes/libelf";
     license = lib.licenses.lgpl2Plus;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.all;
   };
 }

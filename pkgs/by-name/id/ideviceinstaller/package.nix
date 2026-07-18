@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   gitUpdater,
-  usbmuxd,
   libimobiledevice,
   libzip,
+  pkg-config,
+  usbmuxd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -44,16 +44,18 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://github.com/libimobiledevice/ideviceinstaller";
     description = "List/modify installed apps of iOS devices";
+
     longDescription = ''
       ideviceinstaller is a tool to interact with the installation_proxy
       of an iOS device allowing to install, upgrade, uninstall, archive, restore
       and enumerate installed or archived apps.
     '';
+
+    homepage = "https://github.com/libimobiledevice/ideviceinstaller";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
     mainProgram = "ideviceinstaller";
   };
 })

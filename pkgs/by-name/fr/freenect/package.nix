@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  libusb1,
-  pkg-config,
-  libglut,
-  libGLU,
   libGL,
+  libGLU,
+  libglut,
+  libusb1,
   libxi,
   libxmu,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,11 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-PpJGFWrlQ5sK7TJxQNoPujw1MxWRjphvblwOqnF+mSg=";
   };
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
+
   buildInputs = [
     libusb1
     libglut
@@ -30,11 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
     libGL
     libxi
     libxmu
-  ];
-
-  nativeBuildInputs = [
-    cmake
-    pkg-config
   ];
 
   # see https://aur.archlinux.org/cgit/aur.git/commit/PKGBUILD?h=libfreenect&id=0d17db49ba64bcb9e3a4eed61cf55c9a5ceb97f1
@@ -51,10 +51,12 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Drivers and libraries for the Xbox Kinect device on Windows, Linux, and macOS";
     homepage = "http://openkinect.org";
+
     license = with lib.licenses; [
       gpl2
       asl20
     ];
+
     maintainers = with lib.maintainers; [ bennofs ];
     platforms = with lib.platforms; linux ++ darwin;
   };

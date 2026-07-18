@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchgit,
-  python3,
-  jdk17_headless,
   gradle_8,
+  jdk17_headless,
   makeWrapper,
   postgresql,
   postgresqlTestHook,
+  python3,
 }:
 let
   customPython = python3.withPackages (p: [ p.setuptools ]);
@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-bt1NBoiN52CX2Itg8lQ/b0V/MZulBTaD8luNlH4Mwss=";
     fetchSubmodules = true;
     leaveDotGit = true; # required for correct submodule fetching
+
     # Save the HEAD short commit hash in a file so it can be retrieved later for versioning.
     # Delete .git folder for reproducibility (otherwise, the hash changes unexpectedly after fetching submodules)
     postFetch = ''
@@ -32,6 +33,71 @@ stdenv.mkDerivation (finalAttrs: {
       rm -rf .git
       popd
     '';
+  };
+
+  nativeBuildInputs = [
+    customPython
+    jdk17_headless
+    gradle
+    makeWrapper
+  ];
+
+  env = {
+    PGDATABASE = "libeufincheck";
+    PGUSER = "nixbld";
+    postgresqlTestUserOptions = "LOGIN SUPERUSER";
+  };
+
+  preConfigure = ''
+    cp build-system/taler-build-scripts/configure ./configure
+  '';
+
+  # TODO: tests are currently failing
+  doCheck = false;
+
+  # Tests need a database to run
+  nativeCheckInputs = [
+    postgresql
+    postgresqlTestHook
+  ];
+
+  installPhase = ''
+    runHook preInstall
+
+    make install
+
+    for exe in libeufin-bank libeufin-nexus libeufin-ebisync ; do
+      wrapProgram $out/bin/$exe \
+        --set JAVA_HOME ${jdk17_headless.home} \
+        --prefix PATH : $out/bin \
+        --prefix PATH : ${lib.makeBinPath [ jdk17_headless ]} \
+
+    done
+
+    runHook postInstall
+  '';
+
+  # this is required for using mitm-cache on Darwin
+  __darwinAllowLocalNetworking = true;
+
+  gradleBuildTask = [
+    "libeufin-bank:installShadowDist"
+    "libeufin-nexus:installShadowDist"
+    "libeufin-ebisync:installShadowDist"
+  ];
+
+  gradleCheckTask = [
+    "common:test"
+    "bank:test"
+    "nexus:test"
+    "testbench:test"
+  ];
+
+  gradleFlags = [ "-Dorg.gradle.java.home=${jdk17_headless}" ];
+
+  mitmCache = gradle.fetchDeps {
+    inherit (finalAttrs) pname;
+    data = ./deps.json;
   };
 
   patchPhase = ''
@@ -51,80 +117,18 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postPatch
   '';
 
-  preConfigure = ''
-    cp build-system/taler-build-scripts/configure ./configure
-  '';
-
-  mitmCache = gradle.fetchDeps {
-    inherit (finalAttrs) pname;
-    data = ./deps.json;
-  };
-
-  # this is required for using mitm-cache on Darwin
-  __darwinAllowLocalNetworking = true;
-
-  gradleFlags = [ "-Dorg.gradle.java.home=${jdk17_headless}" ];
-  gradleBuildTask = [
-    "libeufin-bank:installShadowDist"
-    "libeufin-nexus:installShadowDist"
-    "libeufin-ebisync:installShadowDist"
-  ];
-
-  nativeBuildInputs = [
-    customPython
-    jdk17_headless
-    gradle
-    makeWrapper
-  ];
-
-  installPhase = ''
-    runHook preInstall
-
-    make install
-
-    for exe in libeufin-bank libeufin-nexus libeufin-ebisync ; do
-      wrapProgram $out/bin/$exe \
-        --set JAVA_HOME ${jdk17_headless.home} \
-        --prefix PATH : $out/bin \
-        --prefix PATH : ${lib.makeBinPath [ jdk17_headless ]} \
-
-    done
-
-    runHook postInstall
-  '';
-
-  # Tests need a database to run
-  nativeCheckInputs = [
-    postgresql
-    postgresqlTestHook
-  ];
-
-  env = {
-    PGUSER = "nixbld";
-    PGDATABASE = "libeufincheck";
-    postgresqlTestUserOptions = "LOGIN SUPERUSER";
-  };
-
-  gradleCheckTask = [
-    "common:test"
-    "bank:test"
-    "nexus:test"
-    "testbench:test"
-  ];
-
-  # TODO: tests are currently failing
-  doCheck = false;
-
   meta = {
-    homepage = "https://git-www.taler.net/libeufin.git";
     description = "Integration and sandbox testing for FinTech APIs and data formats";
+    homepage = "https://git-www.taler.net/libeufin.git";
     license = lib.licenses.agpl3Plus;
-    maintainers = with lib.maintainers; [ atemu ];
-    teams = with lib.teams; [ ngi ];
-    mainProgram = "libeufin-bank";
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # mitm cache
     ];
+
+    maintainers = with lib.maintainers; [ atemu ];
+    mainProgram = "libeufin-bank";
+    teams = with lib.teams; [ ngi ];
   };
 })

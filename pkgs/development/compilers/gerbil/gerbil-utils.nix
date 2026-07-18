@@ -3,10 +3,8 @@
 {
   pname = "gerbil-utils";
   version = "unstable-2023-12-06";
-  git-version = "0.4-13-g9398865";
-  softwareName = "Gerbil-utils";
   gerbil-package = "clan";
-  version-path = "version";
+  git-version = "0.4-13-g9398865";
 
   pre-src = {
     fun = fetchFromGitHub;
@@ -16,11 +14,14 @@
     sha256 = "0dga03qq7iy12bnpxr6d40qhvihsvn3y87psf2w2clnpypjb3blx";
   };
 
+  softwareName = "Gerbil-utils";
+  version-path = "version";
+
   meta = {
     description = "Gerbil Clan: Community curated Collection of Common Utilities";
     homepage = "https://github.com/fare/gerbil-utils";
     license = lib.licenses.lgpl21;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ fare ];
+    platforms = lib.platforms.unix;
   };
 }

@@ -1,40 +1,37 @@
 {
   lib,
+  boto3,
   buildPythonPackage,
   fetchPypi,
-  boto3,
-  pytestCheckHook,
-
   # use for testing promoted localstack
   pkgs,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "localstack-client";
   version = "2.11";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "localstack_client";
     inherit version;
     hash = "sha256-HL178fA7m1U//n6hD+E39E6NaQo3r5xlFeumGiN5/EY=";
+    pname = "localstack_client";
   };
 
   propagatedBuildInputs = [ boto3 ];
-
-  pythonImportsCheck = [ "localstack_client" ];
-
   # All commands test `localstack` which is a downstream dependency
   doCheck = false;
   nativeCheckInputs = [ pytestCheckHook ];
+  # For tests
+  __darwinAllowLocalNetworking = true;
 
   disabledTests = [
     # Has trouble creating a socket
     "test_session"
   ];
 
-  # For tests
-  __darwinAllowLocalNetworking = true;
+  format = "setuptools";
+  pythonImportsCheck = [ "localstack_client" ];
 
   passthru.tests = {
     inherit (pkgs) localstack;

@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   pkg-config,
   protobuf,
+  rustPlatform,
   sqlite,
 }:
 
@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage {
     hash = "sha256-yZwbFjs+mnTbU+75dwRhVjvXXoHQuzgE9GlliUQZV1s=";
   };
 
-  cargoHash = "sha256-/fsK8zgoq819vdHTK9GwzzgyP1ZNhQ78yKai5783XS8=";
-
   nativeBuildInputs = [
     pkg-config
     protobuf
@@ -28,6 +26,8 @@ rustPlatform.buildRustPackage {
   buildInputs = [
     sqlite
   ];
+
+  cargoHash = "sha256-/fsK8zgoq819vdHTK9GwzzgyP1ZNhQ78yKai5783XS8=";
 
   postInstall = ''
     mv $out/bin/downloader $out/bin/hamtransfer-downloader
@@ -38,6 +38,7 @@ rustPlatform.buildRustPackage {
     description = "Tool for transferring files over amateur radio using modern techniques";
     homepage = "https://github.com/ThomasHabets/hamtransfer";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       matthewcroughan
       sarcasticadmin

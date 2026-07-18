@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   go,
   installShellFiles,
   makeWrapper,
@@ -19,16 +19,14 @@ buildGoModule (finalAttrs: {
     hash = "sha256-byKuUf8XMyXjAHZUANaBVAc6c2Jz9mEEdRxAy69P2QM=";
   };
 
-  vendorHash = "sha256-AYbx/DmYnbjJ2iqx34t/dUsthTjJ+YDvfxxCl/cJenI=";
-
   nativeBuildInputs = [
     installShellFiles
     makeWrapper
   ];
 
-  subPackages = [ "." ];
-
-  allowGoReference = true;
+  vendorHash = "sha256-AYbx/DmYnbjJ2iqx34t/dUsthTjJ+YDvfxxCl/cJenI=";
+  # Tests require internet connection
+  doCheck = false;
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd go-licenses \
@@ -42,15 +40,15 @@ buildGoModule (finalAttrs: {
       --set GOROOT '${go}/share/go'
   '';
 
-  # Tests require internet connection
-  doCheck = false;
+  allowGoReference = true;
+  subPackages = [ "." ];
 
   meta = {
-    changelog = "https://github.com/google/go-licenses/releases/tag/v${finalAttrs.version}";
     description = "Reports on the licenses used by a Go package and its dependencies";
-    mainProgram = "go-licenses";
     homepage = "https://github.com/google/go-licenses";
+    changelog = "https://github.com/google/go-licenses/releases/tag/v${finalAttrs.version}";
     license = with lib.licenses; [ asl20 ];
     maintainers = with lib.maintainers; [ Luflosi ];
+    mainProgram = "go-licenses";
   };
 })

@@ -1,9 +1,9 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
-  testers,
+  fetchFromGitHub,
+  buildGoModule,
   cf-vault,
+  testers,
 }:
 buildGoModule (finalAttrs: {
   pname = "cf-vault";
@@ -16,17 +16,17 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-vp9ufjNZabY/ck2lIT+QpD6IgaVj1BkBRTjPxkb6IjQ=";
   };
 
+  vendorHash = "sha256-7qFB1Y1AnqMgdu186tAXCdoYOhCMz8pIh6sY02LbIgs=";
+
   ldflags = [
     "-s"
     "-w"
     "-X github.com/jacobbednarz/cf-vault/cmd.Rev=${finalAttrs.version}"
   ];
 
-  vendorHash = "sha256-7qFB1Y1AnqMgdu186tAXCdoYOhCMz8pIh6sY02LbIgs=";
-
   passthru.tests.version = testers.testVersion {
-    package = cf-vault;
     command = "cf-vault version";
+    package = cf-vault;
   };
 
   meta = {

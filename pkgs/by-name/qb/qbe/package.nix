@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchzip,
   callPackage,
+  fetchzip,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "qbe";
@@ -13,30 +13,29 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-UgtJnZF/YtD54OBy9HzGRAEHx5tC9Wo2YcUidGwrv+s=";
   };
 
-  makeFlags = [
-    "PREFIX=$(out)"
-    "CC=${stdenv.cc.targetPrefix}cc"
-  ];
-
-  doCheck = true;
-
-  enableParallelBuilding = true;
-
   patches = [
     # Use "${TMPDIR:-/tmp}" instead of the latter directly
     # see <https://lists.sr.ht/~mpu/qbe/patches/49613>
     ./001-dont-hardcode-tmp.patch
   ];
 
+  makeFlags = [
+    "PREFIX=$(out)"
+    "CC=${stdenv.cc.targetPrefix}cc"
+  ];
+
+  doCheck = true;
+  enableParallelBuilding = true;
+
   passthru = {
     tests.can-run-hello-world = callPackage ./test-can-run-hello-world.nix { };
   };
 
   meta = {
-    homepage = "https://c9x.me/compile/";
     description = "Small compiler backend written in C";
-    maintainers = with lib.maintainers; [ fgaz ];
+    homepage = "https://c9x.me/compile/";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.all;
     mainProgram = "qbe";
   };

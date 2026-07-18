@@ -1,14 +1,14 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   copyDesktopItems,
-  makeWrapper,
-  python3,
-  zip,
   electron,
   makeDesktopItem,
+  makeWrapper,
   nix-update-script,
+  python3,
+  zip,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -27,8 +27,6 @@ buildNpmPackage (finalAttrs: {
     ./bump-yauzl.patch
   ];
 
-  npmDepsHash = "sha256-p26yEuIiK7baeAxf06E+cmuzl45NS2WOmWNeFfTplQA=";
-
   nativeBuildInputs = [
     copyDesktopItems
     makeWrapper
@@ -36,15 +34,15 @@ buildNpmPackage (finalAttrs: {
     zip
   ];
 
+  npmDepsHash = "sha256-p26yEuIiK7baeAxf06E+cmuzl45NS2WOmWNeFfTplQA=";
+
   env = {
-    ONNXRUNTIME_NODE_INSTALL = "skip";
-    ONNXRUNTIME_NODE_INSTALL_CUDA = "skip";
-    ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
     # electron-forge's console output is squeezed into one narrow column if unset
     CI = "1";
+    ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
+    ONNXRUNTIME_NODE_INSTALL = "skip";
+    ONNXRUNTIME_NODE_INSTALL_CUDA = "skip";
   };
-
-  makeCacheWritable = true;
 
   preBuild = ''
     cp --recursive --no-preserve=mode ${electron.dist} electron-dist
@@ -64,22 +62,6 @@ buildNpmPackage (finalAttrs: {
     runHook postBuild
   '';
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "cheating-daddy";
-      desktopName = "Cheating Daddy";
-      genericName = "AI Assistant";
-      comment = "AI assistant for interviews and learning";
-      exec = "cheating-daddy";
-      terminal = false;
-      icon = "cheating-daddy";
-      categories = [
-        "Development"
-        "Education"
-      ];
-    })
-  ];
-
   installPhase = ''
     runHook preInstall
 
@@ -94,15 +76,33 @@ buildNpmPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Development"
+        "Education"
+      ];
+
+      comment = "AI assistant for interviews and learning";
+      desktopName = "Cheating Daddy";
+      exec = "cheating-daddy";
+      genericName = "AI Assistant";
+      icon = "cheating-daddy";
+      name = "cheating-daddy";
+      terminal = false;
+    })
+  ];
+
+  makeCacheWritable = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/sohzm/cheating-daddy/releases/tag/${finalAttrs.src.tag}";
     description = "Real-time AI assistant that provides contextual help during video calls, interviews, presentations, and meetings using screen capture and audio analysis";
     homepage = "https://github.com/sohzm/cheating-daddy";
+    changelog = "https://github.com/sohzm/cheating-daddy/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "cheating-daddy";
     maintainers = with lib.maintainers; [ kyehn ];
     platforms = lib.platforms.linux;
+    mainProgram = "cheating-daddy";
   };
 })

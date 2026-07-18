@@ -49,10 +49,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Linux utility for Ryzen processors and motherboards";
-    mainProgram = "zenstates";
     homepage = "https://github.com/r4m0n/ZenStates-Linux";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "zenstates";
   };
 }

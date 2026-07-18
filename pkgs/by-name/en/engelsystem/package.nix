@@ -2,14 +2,15 @@
   lib,
   fetchFromGitHub,
   fetchYarnDeps,
+  nixosTests,
   nodejs,
+  php,
   yarn,
   yarnConfigHook,
-  nixosTests,
-  php,
 }:
 
 php.buildComposerProject2 (finalAttrs: {
+  inherit php;
   pname = "engelsystem";
   version = "3.7.0";
 
@@ -20,18 +21,6 @@ php.buildComposerProject2 (finalAttrs: {
     hash = "sha256-hnTkeSqxkvO2Prop0VaBAV/4opr46wjEaJ5ptd5zQ34=";
   };
 
-  inherit php;
-
-  composerNoDev = true;
-  composerStrictValidation = false;
-  vendorHash = "sha256-oGpgtkX0UVSdVceQ8pD3PuGBITifQzaMIb4QRdc7WeY=";
-
-  yarnOfflineCache = fetchYarnDeps {
-    pname = "${finalAttrs.pname}-yarn-deps";
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-IMg1AoqCiQEvMHeqXgonIY2J0nmBHLW2Drz/Vb0rD48=";
-  };
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -39,6 +28,8 @@ php.buildComposerProject2 (finalAttrs: {
     yarn
     yarnConfigHook
   ];
+
+  vendorHash = "sha256-oGpgtkX0UVSdVceQ8pD3PuGBITifQzaMIb4QRdc7WeY=";
 
   preBuild = ''
     yarn build
@@ -58,15 +49,24 @@ php.buildComposerProject2 (finalAttrs: {
     ln -s $out/share/php/engelsystem/bin/migrate $out/bin/migrate
   '';
 
+  composerNoDev = true;
+  composerStrictValidation = false;
+
+  yarnOfflineCache = fetchYarnDeps {
+    pname = "${finalAttrs.pname}-yarn-deps";
+    hash = "sha256-IMg1AoqCiQEvMHeqXgonIY2J0nmBHLW2Drz/Vb0rD48=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
+
   passthru.tests = nixosTests.engelsystem;
 
   meta = {
-    changelog = "https://github.com/engelsystem/engelsystem/releases/tag/v${finalAttrs.version}";
     description = "Coordinate your volunteers in teams, assign them to work shifts or let them decide for themselves when and where they want to help with what";
     homepage = "https://engelsystem.de";
+    changelog = "https://github.com/engelsystem/engelsystem/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl2Only;
-    mainProgram = "migrate";
     maintainers = with lib.maintainers; [ tmarkus ];
     platforms = lib.platforms.all;
+    mainProgram = "migrate";
   };
 })

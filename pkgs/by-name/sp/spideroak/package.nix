@@ -2,8 +2,6 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
-  patchelf,
   fontconfig,
   freetype,
   glib,
@@ -12,6 +10,8 @@
   libx11,
   libxext,
   libxrender,
+  makeWrapper,
+  patchelf,
   zlib,
 }:
 
@@ -34,18 +34,19 @@ let
 
 in
 stdenv.mkDerivation {
-  pname = "spideroak";
   inherit version;
+  pname = "spideroak";
 
   src = fetchurl {
-    name = "SpiderOakONE-${version}-x86_64-1.tgz";
-    url = "https://spideroak-releases.s3.us-east-2.amazonaws.com/SpiderOakONE-${version}-x86_64-1.tgz";
     inherit hash;
+    url = "https://spideroak-releases.s3.us-east-2.amazonaws.com/SpiderOakONE-${version}-x86_64-1.tgz";
+    name = "SpiderOakONE-${version}-x86_64-1.tgz";
   };
 
-  sourceRoot = ".";
-
-  unpackCmd = "tar -xzf $curSrc";
+  nativeBuildInputs = [
+    patchelf
+    makeWrapper
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -72,18 +73,16 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
-  nativeBuildInputs = [
-    patchelf
-    makeWrapper
-  ];
+  sourceRoot = ".";
+  unpackCmd = "tar -xzf $curSrc";
 
   meta = {
-    homepage = "https://spideroak.com";
     description = "Secure online backup and sychronization";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    homepage = "https://spideroak.com";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = [ ];
     platforms = lib.platforms.linux;
     mainProgram = "spideroak";
-    maintainers = [ ];
   };
 }

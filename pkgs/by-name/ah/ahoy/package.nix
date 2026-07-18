@@ -2,8 +2,8 @@
   lib,
   fetchFromGitHub,
   buildGoModule,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,17 +17,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-HBR35sr5WY8bnGmFm5V4ut7AJJj+nSRiJUri4XxycCI=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/v2";
-
   # vendor folder exists
   vendorHash = null;
-
-  ldflags = [ "-X main.version=${finalAttrs.version}" ];
-
   doInstallCheck = true;
-
   nativeInstallCheckInputs = [ versionCheckHook ];
-
+  ldflags = [ "-X main.version=${finalAttrs.version}" ];
+  sourceRoot = "${finalAttrs.src.name}/v2";
   passthru.updateScript = nix-update-script { };
 
   meta = {

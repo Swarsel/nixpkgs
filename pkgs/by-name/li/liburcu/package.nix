@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  perl,
   gitUpdater,
+  perl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.15.6";
   pname = "liburcu";
+  version = "0.15.6";
 
   src = fetchurl {
     url = "https://lttng.org/files/urcu/userspace-rcu-${finalAttrs.version}.tar.bz2";
@@ -21,16 +21,14 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
   ];
 
+  doCheck = true;
   nativeCheckInputs = [ perl ];
-
+  preCheck = "patchShebangs tests/unit";
   enableParallelBuilding = true;
 
-  preCheck = "patchShebangs tests/unit";
-  doCheck = true;
-
   passthru.updateScript = gitUpdater {
-    url = "https://git.lttng.org/userspace-rcu.git";
     rev-prefix = "v";
+    url = "https://git.lttng.org/userspace-rcu.git";
   };
 
   meta = {
@@ -38,6 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://lttng.org/urcu";
     changelog = "https://github.com/urcu/userspace-rcu/raw/v${finalAttrs.version}/ChangeLog";
     license = lib.licenses.lgpl21Plus;
+    maintainers = [ lib.maintainers.bjornfor ];
+
     # https://git.liburcu.org/?p=userspace-rcu.git;a=blob;f=include/urcu/arch.h
     platforms = lib.intersectLists lib.platforms.unix (
       lib.platforms.x86
@@ -50,7 +50,6 @@ stdenv.mkDerivation (finalAttrs: {
       ++ lib.platforms.riscv
       ++ lib.platforms.loongarch64
     );
-    maintainers = [ lib.maintainers.bjornfor ];
   };
 
 })

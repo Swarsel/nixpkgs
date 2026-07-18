@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gettext,
   bzip2,
+  gettext,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,7 +17,20 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-A0ja5/AtRNaXRXCXG2sJsvWrHPePgIIy/+rF+F7RvqI=";
   };
 
+  outputs = [
+    "out"
+    "man"
+    "doc"
+  ];
+
+  patches = [ ./install.patch ];
   buildInputs = [ gettext ];
+
+  makeFlags = [
+    "SYSCONFIG_DIR=$(out)/etc"
+    "IGNORE_FILE_ATTRIBUTES=y"
+    "CHOWN=true"
+  ];
 
   preConfigure = ''
     export PATH_CP=$(type -tp cp)
@@ -27,31 +40,18 @@ stdenv.mkDerivation (finalAttrs: {
     export COMPRESS_MANPG=n
   '';
 
-  makeFlags = [
-    "SYSCONFIG_DIR=$(out)/etc"
-    "IGNORE_FILE_ATTRIBUTES=y"
-    "CHOWN=true"
-  ];
   installTargets = [
     "install_base"
     "install_nls"
     "install_man"
   ];
 
-  outputs = [
-    "out"
-    "man"
-    "doc"
-  ];
-
-  patches = [ ./install.patch ];
-
   meta = {
-    mainProgram = "iostat";
-    homepage = "https://sysstat.github.io/";
     description = "Collection of performance monitoring tools for Linux (such as sar, iostat and pidstat)";
+    homepage = "https://sysstat.github.io/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.hensoko ];
+    platforms = lib.platforms.linux;
+    mainProgram = "iostat";
   };
 })

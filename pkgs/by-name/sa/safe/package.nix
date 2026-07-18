@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,17 +17,17 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-w8gHCqOfmZg4JZgg1nZBtTJ553Rbp0a0JsoQVDFjehM=";
 
-  subPackages = [ "." ];
-
   ldflags = [
     "-X main.Version=${finalAttrs.version}"
   ];
 
+  subPackages = [ "." ];
+
   meta = {
     description = "Vault CLI";
-    mainProgram = "safe";
     homepage = "https://github.com/starkandwayne/safe";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ eonpatapon ];
+    mainProgram = "safe";
   };
 })

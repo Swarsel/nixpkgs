@@ -1,8 +1,8 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
   fetchPypi,
+  python3,
 }:
 
 let
@@ -11,10 +11,11 @@ let
       packageOverrides = self: super: {
         iso8601 = super.iso8601.overridePythonAttrs (old: rec {
           version = "1.1.0";
+
           src = fetchPypi {
-            pname = "iso8601";
             inherit version;
             hash = "sha256-MoEee4He7iBj6m0ulPiBmobR84EeSdI2I6QfqDK+8D8=";
+            pname = "iso8601";
           };
         });
       };
@@ -39,8 +40,6 @@ python.pkgs.buildPythonApplication rec {
   # tests require a network connection
   doCheck = false;
 
-  pyproject = true;
-
   build-system = with python.pkgs; [
     poetry-core
   ];
@@ -56,14 +55,16 @@ python.pkgs.buildPythonApplication rec {
     chardet
   ];
 
+  pyproject = true;
+
   pythonRelaxDeps = [
     "tabulate"
     "urllib3"
   ];
 
   meta = {
-    homepage = "https://github.com/RicterZ/nhentai";
     description = "CLI tool for downloading doujinshi from adult site(s)";
+    homepage = "https://github.com/RicterZ/nhentai";
     license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "nhentai";

@@ -1,14 +1,14 @@
 {
   lib,
-  libgbm,
-  libjxl,
-  libGL,
   stdenv,
   fetchFromGitHub,
+  installShellFiles,
+  libGL,
+  libgbm,
+  libjxl,
   nix-update-script,
   pango,
   pkg-config,
-  installShellFiles,
   rustPlatform,
   wayland,
 }:
@@ -22,10 +22,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-sbY3h3FoWxDmxSng9YvYpt3kyasVJGsykYC/7tblFn8=";
   };
+
   nativeBuildInputs = [
     pkg-config
     installShellFiles
   ];
+
   buildInputs = [
     pango
     libgbm
@@ -33,6 +35,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libGL
     wayland
   ];
+
   cargoHash = "sha256-J7ZKWx258bBCNBd061aCeKgTdcWMUF4yzAiIa9l8ZRA=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
@@ -48,10 +51,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Native, blazing-fast screenshot tool for wlroots based compositors such as sway and river";
     homepage = "https://github.com/waycrate/wayshot";
     license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       id3v1669
       Subserial
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "wayshot";
   };

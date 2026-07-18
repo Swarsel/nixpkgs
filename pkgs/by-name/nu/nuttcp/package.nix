@@ -31,6 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Network performance measurement tool";
+
     longDescription = ''
       nuttcp is a network performance measurement tool intended for use by
       network and system managers. Its most basic usage is to determine the raw
@@ -43,8 +44,9 @@ stdenv.mkDerivation (finalAttrs: {
       system, and wall-clock time, transmitter and receiver CPU utilization,
       and loss percentage (for UDP transfers).
     '';
-    license = lib.licenses.gpl2Only;
+
     homepage = "http://nuttcp.net/";
+    license = lib.licenses.gpl2Only;
     maintainers = [ ];
     platforms = lib.platforms.unix;
     mainProgram = "nuttcp";

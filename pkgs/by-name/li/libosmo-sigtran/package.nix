@@ -3,10 +3,10 @@
   stdenv,
   autoreconfHook,
   fetchgit,
+  libosmo-netif,
+  libosmocore,
   lksctp-tools,
   pkg-config,
-  libosmocore,
-  libosmo-netif,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,8 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-EBBSoSX5tImTLRP7Klhjj/YM8+4RyyJClymIXQK8DgE=";
   };
-
-  configureFlags = [ "--with-systemdsystemunitdir=$out" ];
 
   postPatch = ''
     echo "${finalAttrs.version}" > .tarball-version
@@ -37,16 +35,19 @@ stdenv.mkDerivation (finalAttrs: {
     libosmo-netif
   ];
 
+  configureFlags = [ "--with-systemdsystemunitdir=$out" ];
   enableParallelBuilding = true;
 
   meta = {
     description = "SCCP + SIGTRAN (SUA/M3UA) libraries as well as OsmoSTP";
-    mainProgram = "osmo-stp";
     homepage = "https://osmocom.org/projects/libosmo-sccp";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       markuskowa
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "osmo-stp";
   };
 })

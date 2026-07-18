@@ -1,25 +1,16 @@
 {
   lib,
   buildPythonPackage,
-  openvino-genai-native,
   numpy,
+  openvino-genai-native,
   openvino-tokenizers,
   python,
 }:
 
 buildPythonPackage {
-  pname = "openvino-genai";
   inherit (openvino-genai-native) version;
-  pyproject = false;
-
+  pname = "openvino-genai";
   src = openvino-genai-native.python;
-
-  dependencies = [
-    numpy
-    # openvino-genai loads tokenizers via py::module_::import("openvino_tokenizers")
-    # at runtime, so the Python wrapper must be available on the import path.
-    openvino-tokenizers
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -30,6 +21,14 @@ buildPythonPackage {
     runHook postInstall
   '';
 
+  dependencies = [
+    numpy
+    # openvino-genai loads tokenizers via py::module_::import("openvino_tokenizers")
+    # at runtime, so the Python wrapper must be available on the import path.
+    openvino-tokenizers
+  ];
+
+  pyproject = false;
   pythonImportsCheck = [ "openvino_genai" ];
 
   meta = {

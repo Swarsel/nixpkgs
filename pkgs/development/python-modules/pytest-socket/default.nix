@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytest,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pytest-socket";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "miketheman";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ poetry-core ];
-
   buildInputs = [ pytest ];
-
   # pytest-socket require network for majority of tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pytest_socket" ];
 
   meta = {

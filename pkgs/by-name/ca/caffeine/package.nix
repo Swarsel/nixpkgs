@@ -4,8 +4,8 @@
   fetchFromGitHub,
   apple-sdk,
   darwin,
-  xcbuildHook,
   llvmPackages,
+  xcbuildHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,11 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
     apple-sdk
   ];
 
-  xcbuildFlags = [
-    "-target Caffeine"
-    "-configuration Release"
-  ];
-
   # TODO: Remove once #536365 reaches this branch
   env.NIX_CFLAGS_LINK = "-fuse-ld=lld";
 
@@ -57,11 +52,17 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  xcbuildFlags = [
+    "-target Caffeine"
+    "-configuration Release"
+  ];
+
   meta = {
     description = "Don't let your Mac fall asleep";
     homepage = "https://intelliscapesolutions.com/apps/caffeine";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ emilytrau ];
+
     platforms = [
       "aarch64-darwin"
     ];

@@ -1,16 +1,15 @@
 {
   lib,
   stdenv,
-  makeBinaryWrapper,
-  zulu,
   ant,
   darwin,
-
-  pname,
-  version,
-  src,
+  makeBinaryWrapper,
   meta,
   patches,
+  pname,
+  src,
+  version,
+  zulu,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     makeBinaryWrapper
     ant
   ];
+
   buildInputs = [
     zulu
   ];

@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  fetchpatch,
-  cowsay,
   coreutils,
+  cowsay,
+  fetchpatch,
   findutils,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -21,10 +21,10 @@ stdenvNoCC.mkDerivation rec {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-aqUJkyJDWArLjChxLZ4BbC6XAB53LAqARzTvEAxrFCI=";
       # https://github.com/HRKings/pokemonsay-newgenerations/pull/5
       name = "word-wrap-fix.patch";
       url = "https://github.com/pbsds/pokemonsay-newgenerations/commit/7056d7ba689479a8e6c14ec000be1dfcd83afeb0.patch";
-      hash = "sha256-aqUJkyJDWArLjChxLZ4BbC6XAB53LAqARzTvEAxrFCI=";
     })
   ];
 
@@ -63,6 +63,7 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     (set -x
       test "$($out/bin/pokemonsay --list | wc -l)" -ge 891
@@ -73,7 +74,7 @@ stdenvNoCC.mkDerivation rec {
     description = "Print pokemon in the CLI! An adaptation of the classic cowsay";
     homepage = "https://github.com/HRKings/pokemonsay-newgenerations";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ pbsds ];
+    platforms = lib.platforms.all;
   };
 }

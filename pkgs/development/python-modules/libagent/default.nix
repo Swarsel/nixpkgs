@@ -4,22 +4,22 @@
   backports-shutil-which,
   bech32,
   buildPythonPackage,
-  setuptools,
+  configargparse,
   cryptography,
   docutils,
   ecdsa,
   gnupg,
-  pinentry-curses,
-  semver,
   mnemonic,
-  unidecode,
   mock,
-  pytestCheckHook,
-  configargparse,
-  python-daemon,
+  nix-update-script,
+  pinentry-curses,
   pymsgbox,
   pynacl,
-  nix-update-script,
+  pytestCheckHook,
+  python-daemon,
+  semver,
+  setuptools,
+  unidecode,
 }:
 
 # When changing this package, please test packages {onlykey,trezor}-agent
@@ -27,7 +27,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "libagent";
   version = "0.16.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "romanz";
@@ -44,10 +43,12 @@ buildPythonPackage (finalAttrs: {
       --replace "get_gnupg_components(sp=sp)['pinentry']" "'${(lib.getExe pinentry-curses)}'"
   '';
 
-  build-system = [ setuptools ];
+  nativeCheckInputs = [
+    mock
+    pytestCheckHook
+  ];
 
-  # https://github.com/romanz/trezor-agent/pull/481
-  pythonRemoveDeps = [ "backports.shutil-which" ];
+  build-system = [ setuptools ];
 
   dependencies = [
     backports-shutil-which
@@ -64,17 +65,15 @@ buildPythonPackage (finalAttrs: {
     cryptography
   ];
 
-  pythonImportsCheck = [ "libagent" ];
-
-  nativeCheckInputs = [
-    mock
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # test fails in sandbox
     "test_get_agent_sock_path"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "libagent" ];
+  # https://github.com/romanz/trezor-agent/pull/481
+  pythonRemoveDeps = [ "backports.shutil-which" ];
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version-regex=libagent/(.*)" ];

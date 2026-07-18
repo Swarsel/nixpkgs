@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "git-privacy";
   version = "2.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "EMPRI-DEVOPS";
@@ -16,6 +15,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-b2RkRL8/mZwqc3xCs+oltzualhQtp/7F9POlLlT3UUU=";
   };
+
+  nativeCheckInputs = with python3.pkgs; [
+    git
+    pytestCheckHook
+  ];
 
   build-system = with python3.pkgs; [
     setuptools
@@ -29,15 +33,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     setuptools
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    git
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # Tests want to interact with a git repo
     "TestGitPrivacy"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "gitprivacy"

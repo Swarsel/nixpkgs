@@ -27,16 +27,11 @@ stdenv.mkDerivation rec {
   version = "3.0.1";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "World";
     repo = "Fragments";
     rev = version;
     hash = "sha256-lTOO6ZQWImaFqYZ3qerYYHWj/eOLYU/2k2Wh/ju9Njw=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-i77LHbaAURxWrEpuR40jRkUGPk8wZR+q3DB+rzH3sEc=";
+    domain = "gitlab.gnome.org";
   };
 
   nativeBuildInputs = [
@@ -67,19 +62,26 @@ stdenv.mkDerivation rec {
     )
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-i77LHbaAURxWrEpuR40jRkUGPk8wZR+q3DB+rzH3sEc=";
+  };
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/World/Fragments";
     description = "Easy to use BitTorrent client for the GNOME desktop environment";
+    homepage = "https://gitlab.gnome.org/World/Fragments";
+    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       emilytrau
     ];
-    teams = [ lib.teams.gnome-circle ];
-    license = lib.licenses.gpl3Plus;
+
     platforms = lib.platforms.linux;
     mainProgram = "fragments";
+    teams = [ lib.teams.gnome-circle ];
   };
 }

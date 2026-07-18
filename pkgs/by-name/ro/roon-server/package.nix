@@ -1,35 +1,37 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   alsa-lib,
   alsa-utils,
   autoPatchelfHook,
   cifs-utils,
-  fetchurl,
   ffmpeg,
   freetype,
   icu66,
   krb5,
-  lib,
   libtasn1,
   lttng-ust_2_12,
   makeWrapper,
   openssl,
-  stdenv,
 }:
 let
   version = "2.67.1661";
   urlVersion = builtins.replaceStrings [ "." ] [ "0" ] version;
 in
 stdenv.mkDerivation {
-  pname = "roon-server";
   inherit version;
+  pname = "roon-server";
 
   src = fetchurl {
     url = "https://download.roonlabs.com/updates/production/RoonServer_linuxx64_${urlVersion}.tar.bz2";
     hash = "sha256-5IvAJCTcWaIHTkWZYT7zPTPSjvLuQigF4BHH4l0wTR0=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
+  nativeBuildInputs = [
+    autoPatchelfHook
+    makeWrapper
+  ];
 
   buildInputs = [
     alsa-lib
@@ -38,11 +40,6 @@ stdenv.mkDerivation {
     libtasn1
     lttng-ust_2_12
     (lib.getLib stdenv.cc.cc)
-  ];
-
-  nativeBuildInputs = [
-    autoPatchelfHook
-    makeWrapper
   ];
 
   installPhase =
@@ -104,18 +101,23 @@ stdenv.mkDerivation {
       runHook postInstall
     '';
 
+  dontBuild = true;
+  dontConfigure = true;
   passthru.updateScript = ./update.py;
+
   meta = {
     description = "Music player for music lovers";
-    changelog = "https://community.roonlabs.com/c/roon/software-release-notes/18";
     homepage = "https://roonlabs.com";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    changelog = "https://community.roonlabs.com/c/roon/software-release-notes/18";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       lovesegfault
       steell
       ramblurr
     ];
+
     platforms = [ "x86_64-linux" ];
     mainProgram = "RoonServer";
   };

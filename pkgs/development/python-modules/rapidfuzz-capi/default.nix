@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage rec {
   pname = "rapidfuzz-capi";
   version = "1.0.5";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "maxbachmann";
@@ -18,7 +17,7 @@ buildPythonPackage rec {
 
   # upstream has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "rapidfuzz_capi" ];
 
   meta = {

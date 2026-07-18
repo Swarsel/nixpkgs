@@ -1,25 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  pytestCheckHook,
-
-  setuptools,
-  wheel,
-  setuptools-scm,
-
   # for tests
   base58,
-
+  buildPythonPackage,
+  pytestCheckHook,
+  setuptools,
+  setuptools-scm,
   typing-extensions,
   typing-validation,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "bases";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hashberg-io";
@@ -27,6 +22,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-CRXVxT9uYud1CKRcdRAD0OX5sTAttrUO9E4BaavTe6A=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    base58
+  ];
 
   build-system = [
     setuptools
@@ -39,10 +39,7 @@ buildPythonPackage rec {
     typing-validation
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    base58
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "bases"

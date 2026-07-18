@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,10 +20,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Implements an HTTP server mapping URLs to zenoh paths";
     homepage = "https://github.com/eclipse-zenoh/zenoh-plugin-webserver";
+
     license = with lib.licenses; [
       epl20
       asl20
     ];
+
     maintainers = with lib.maintainers; [ markuskowa ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };

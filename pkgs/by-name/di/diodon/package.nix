@@ -6,15 +6,15 @@
   glib,
   gobject-introspection,
   gtk3,
+  libayatana-appindicator,
+  libpeas,
+  libxtst,
   meson,
   ninja,
   pkg-config,
   vala,
   wrapGAppsHook3,
   xvfb-run,
-  libayatana-appindicator,
-  libpeas,
-  libxtst,
   zeitgeist,
 }:
 
@@ -57,9 +57,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Aiming to be the best integrated clipboard manager for the Unity desktop";
     homepage = "https://launchpad.net/diodon";
-    mainProgram = "diodon";
     license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.sfrijters ];
     platforms = lib.platforms.unix;
+    mainProgram = "diodon";
   };
 })

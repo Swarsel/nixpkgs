@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -28,7 +28,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/ck-zhang/reddix";
     changelog = "https://github.com/ck-zhang/reddix/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "reddix";
     maintainers = with lib.maintainers; [ aleksana ];
+    mainProgram = "reddix";
   };
 })

@@ -16,13 +16,13 @@ stdenv.mkDerivation rec {
     hash = "sha256-AZJn5kHK/al94ONfIHcG+W0jyMfgdJkIngN+PVj+I44=";
   };
 
-  nativeBuildInputs = [ xcbuildHook ];
-
   patches = [
     # Patch to fix running on earlier version of macOS
     # https://github.com/deweller/switchaudio-osx/pull/65
     ./001-macos-legacy-support.patch
   ];
+
+  nativeBuildInputs = [ xcbuildHook ];
 
   installPhase = ''
     runHook preInstall
@@ -36,9 +36,9 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Command-line utility to manage audio input/output devices on macOS";
     homepage = "https://github.com/deweller/switchaudio-osx";
-    mainProgram = "SwitchAudioSource";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ taranarmo ];
     platforms = lib.platforms.darwin;
+    mainProgram = "SwitchAudioSource";
   };
 }

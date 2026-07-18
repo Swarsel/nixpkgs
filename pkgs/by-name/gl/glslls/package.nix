@@ -15,8 +15,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "svenstaro";
     repo = "glsl-language-server";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-wi1QiqaWRh1DmIhwmu94lL/4uuMv6DnB+whM61Jg1Zs=";
+    fetchSubmodules = true;
   };
 
   # Fix build with GCC 15
@@ -38,10 +38,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Language server implementation for GLSL";
-    mainProgram = "glslls";
     homepage = "https://github.com/svenstaro/glsl-language-server";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ declan ];
     platforms = lib.platforms.linux;
+    mainProgram = "glslls";
   };
 })

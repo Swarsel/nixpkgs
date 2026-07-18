@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
-  requests,
   pytestCheckHook,
+  requests,
 }:
 
 buildPythonPackage rec {
   pname = "google-i18n-address";
   version = "3.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mirumee";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
     hash = "sha256-7RqS/+6zInlhWydJwp4xf2uGpfmSdiSwvJugpL8Mlpk=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ requests ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ hatchling ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "i18naddress" ];
 
   meta = {

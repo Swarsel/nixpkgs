@@ -1,27 +1,26 @@
 {
   lib,
-  buildPythonPackage,
-  fetchFromGitLab,
   fetchFromGitHub,
-  setuptools,
+  fetchFromGitLab,
+  buildPythonPackage,
   dataclasses-json,
   deprecated,
   pytestCheckHook,
+  setuptools,
 }:
 
 let
   gltf-sample-models = fetchFromGitHub {
+    hash = "sha256-TxSg1O6eIiaKagcZUoWZ5Iw/tBKvQIoepRFp3MdVlyI=";
     owner = "KhronosGroup";
     repo = "glTF-Sample-Models";
     rev = "d7a3cc8e51d7c573771ae77a57f16b0662a905c6";
-    hash = "sha256-TxSg1O6eIiaKagcZUoWZ5Iw/tBKvQIoepRFp3MdVlyI=";
   };
 in
 
 buildPythonPackage rec {
   pname = "pygltflib";
   version = "1.16.5";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "dodgyville";
@@ -38,10 +37,12 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
+
   preCheck = ''
     ln -s ${gltf-sample-models} glTF-Sample-Models
   '';
 
+  pyproject = true;
   pythonImportsCheck = [ "pygltflib" ];
 
   meta = {

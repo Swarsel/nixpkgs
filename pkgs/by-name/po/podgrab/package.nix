@@ -28,9 +28,9 @@ buildGoModule {
 
   meta = {
     description = "Self-hosted podcast manager to download episodes as soon as they become live";
-    mainProgram = "podgrab";
     homepage = "https://github.com/akhilrex/podgrab";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ ambroisie ];
+    mainProgram = "podgrab";
   };
 }

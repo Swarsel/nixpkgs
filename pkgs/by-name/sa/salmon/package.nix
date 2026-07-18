@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   boost,
   bzip2,
   catch2_3,
   cereal,
   cmake,
   curl,
-  fetchFromGitHub,
   htslib,
   icu,
   jemalloc,
@@ -28,23 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "salmon";
   version = "1.12.1";
 
-  # SALMON_PUFFERFISH_GIT_TAG defined in cmake/SalmonDependencies.cmake
-  pufferFishSrc = fetchFromGitHub {
-    owner = "COMBINE-lab";
-    repo = "pufferfish";
-    fetchSubmodules = true;
-    rev = "1c788594cef77f0558b183281f32152e0ed22ba9";
-    hash = "sha256-N9KYmFsl90eY8R1wH1Jbi3nnNld6YVGeQjqoxYxPqtE=";
-  };
-
-  # SALMON_FQFEEDER_GIT_TAG defined in cmake/SalmonDependencies.cmake
-  FQFeederSrc = fetchFromGitHub {
-    owner = "rob-p";
-    repo = "FQFeeder";
-    rev = "f5b08d1002351c192b69048ac9f6cf4c7c116265";
-    hash = "sha256-csRKUdNlEKKHNIvKRRTt79+27LBmnsJpswzBnWtA/XU=";
-  };
-
   src = fetchFromGitHub {
     owner = "COMBINE-lab";
     repo = "salmon";
@@ -59,6 +42,14 @@ stdenv.mkDerivation (finalAttrs: {
 
     substituteInPlace CMakeLists.txt --replace-fail "CMP0167 OLD" "CMP0167 NEW"
   '';
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    python3
+  ];
 
   buildInputs = [
     (boost.override {
@@ -83,12 +74,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    python3
-  ];
-
   cmakeFlags = [
     "-DSALMON_PUFFERFISH_SOURCE_DIR=${finalAttrs.pufferFishSrc}"
     "-DSALMON_FQFEEDER_SOURCE_DIR=${finalAttrs.FQFeederSrc}"
@@ -101,11 +86,26 @@ stdenv.mkDerivation (finalAttrs: {
     "-ldeflate"
   ];
 
-  strictDeps = true;
+  # SALMON_FQFEEDER_GIT_TAG defined in cmake/SalmonDependencies.cmake
+  FQFeederSrc = fetchFromGitHub {
+    hash = "sha256-csRKUdNlEKKHNIvKRRTt79+27LBmnsJpswzBnWtA/XU=";
+    owner = "rob-p";
+    repo = "FQFeeder";
+    rev = "f5b08d1002351c192b69048ac9f6cf4c7c116265";
+  };
+
+  # SALMON_PUFFERFISH_GIT_TAG defined in cmake/SalmonDependencies.cmake
+  pufferFishSrc = fetchFromGitHub {
+    fetchSubmodules = true;
+    hash = "sha256-N9KYmFsl90eY8R1wH1Jbi3nnNld6YVGeQjqoxYxPqtE=";
+    owner = "COMBINE-lab";
+    repo = "pufferfish";
+    rev = "1c788594cef77f0558b183281f32152e0ed22ba9";
+  };
 
   meta = {
     description = "Tool for quantifying the expression of transcripts using RNA-seq data";
-    mainProgram = "salmon";
+
     longDescription = ''
       Salmon is a tool for quantifying the expression of transcripts
       using RNA-seq data. Salmon uses new algorithms (specifically,
@@ -116,11 +116,13 @@ stdenv.mkDerivation (finalAttrs: {
       account experimental attributes and biases commonly observed in
       real RNA-seq data.
     '';
+
     homepage = "https://combine-lab.github.io/salmon";
-    downloadPage = "https://github.com/COMBINE-lab/salmon/releases";
     changelog = "https://github.com/COMBINE-lab/salmon/releases/tag/" + "v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
+    mainProgram = "salmon";
+    downloadPage = "https://github.com/COMBINE-lab/salmon/releases";
   };
 })

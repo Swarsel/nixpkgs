@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "justbackoff";
   version = "0.6.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "alexferl";
@@ -17,13 +16,13 @@ buildPythonPackage rec {
     sha256 = "097j6jxgl4b3z46x9y9z10643vnr9v831vhagrxzrq6nviil2z6l";
   };
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   postPatch = ''
     substituteInPlace setup.py \
       --replace "pytest-runner>=5.2" ""
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
   pythonImportsCheck = [ "justbackoff" ];
 
   meta = {

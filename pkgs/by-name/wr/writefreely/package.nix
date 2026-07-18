@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -24,9 +24,8 @@ buildGoModule (finalAttrs: {
     "-X github.com/writefreely/writefreely.softwareVer=${finalAttrs.version}"
   ];
 
-  tags = [ "sqlite" ];
-
   subPackages = [ "cmd/writefreely" ];
+  tags = [ "sqlite" ];
 
   passthru.tests = {
     inherit (nixosTests) writefreely;

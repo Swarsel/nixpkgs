@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   matplotlib,
   numpy,
   pytestCheckHook,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "simpful";
   version = "2.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aresio";
@@ -32,6 +31,11 @@ buildPythonPackage rec {
     requests
   ];
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
+
   optional-dependencies = {
     plotting = [
       matplotlib
@@ -39,11 +43,7 @@ buildPythonPackage rec {
     ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "simpful" ];
 
   meta = {

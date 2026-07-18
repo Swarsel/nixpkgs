@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
+  einops,
   llm,
   llm-sentence-transformers,
-  einops,
-  sentence-transformers,
   pytestCheckHook,
+  sentence-transformers,
+  setuptools,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "llm-sentence-transformers";
   version = "0.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -22,6 +21,11 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-FDDMItKFEYEptiL3EHKgKVxClqRU9RaM3uD3xP0F4OM=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -31,19 +35,14 @@ buildPythonPackage (finalAttrs: {
     sentence-transformers
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
   # Disabled because they access the network
   disabledTests = [
     "test_run_embedding"
     "test_embed_multi_with_generator"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "llm_sentence_transformers" ];
-
   passthru.tests = llm.mkPluginTest llm-sentence-transformers;
 
   meta = {

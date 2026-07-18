@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,6 +15,8 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-jl98LuEsGN40L9IfybJhLnbzoYP/XpwFVQnjrlmDL9A=";
   };
 
+  vendorHash = null;
+
   ldflags = [
     "-s"
     "-w"
@@ -23,13 +25,11 @@ buildGoModule (finalAttrs: {
     "-X main.date=19700101T000000"
   ];
 
-  vendorHash = null;
-
   meta = {
-    description = "CLI to render Go template text files";
-    mainProgram = "renderizer";
     inherit (finalAttrs.src.meta) homepage;
+    description = "CLI to render Go template text files";
     license = lib.licenses.gpl3;
     maintainers = [ ];
+    mainProgram = "renderizer";
   };
 })

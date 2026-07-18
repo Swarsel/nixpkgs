@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
   boto3,
+  buildPythonPackage,
   cryptography,
   eventlet,
+  fetchPypi,
   greenlet,
   iana-etc,
   installShellFiles,
@@ -25,7 +25,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "swift";
   version = "2.37.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -33,6 +32,29 @@ buildPythonPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ installShellFiles ];
+  # a lot of tests currently fail while establishing a connection
+  doCheck = false;
+
+  nativeCheckInputs = [
+    boto3
+    libredirect.hook
+    mock
+    stestr
+    swiftclient
+  ];
+
+  checkPhase = ''
+    echo "nameserver 127.0.0.1" > resolv.conf
+    export NIX_REDIRECTS=/etc/protocols=${iana-etc}/etc/protocols:/etc/resolv.conf=$(realpath resolv.conf)
+
+    export SWIFT_TEST_CONFIG_FILE=test/sample.conf
+
+    stestr run
+  '';
+
+  postInstall = ''
+    installManPage doc/manpages/*
+  '';
 
   build-system = [
     pbr
@@ -51,30 +73,7 @@ buildPythonPackage (finalAttrs: {
     xattr
   ];
 
-  nativeCheckInputs = [
-    boto3
-    libredirect.hook
-    mock
-    stestr
-    swiftclient
-  ];
-
-  postInstall = ''
-    installManPage doc/manpages/*
-  '';
-
-  # a lot of tests currently fail while establishing a connection
-  doCheck = false;
-
-  checkPhase = ''
-    echo "nameserver 127.0.0.1" > resolv.conf
-    export NIX_REDIRECTS=/etc/protocols=${iana-etc}/etc/protocols:/etc/resolv.conf=$(realpath resolv.conf)
-
-    export SWIFT_TEST_CONFIG_FILE=test/sample.conf
-
-    stestr run
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "swift" ];
 
   meta = {

@@ -2,24 +2,25 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  hatchling,
   llama-index-core,
   llama-index-embeddings-openai,
   llama-index-readers-file,
-  hatchling,
   s3fs,
 }:
 
 buildPythonPackage rec {
   pname = "llama-index-readers-s3";
   version = "0.6.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "llama_index_readers_s3";
     inherit version;
     hash = "sha256-cK5XmH4F0TZt6IMJvAnmEs7UWkekrrbEAIvd/CE33xw=";
+    pname = "llama_index_readers_s3";
   };
 
+  # Tests are only available in the mono repo
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -29,9 +30,7 @@ buildPythonPackage rec {
     s3fs
   ];
 
-  # Tests are only available in the mono repo
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "llama_index.readers.s3" ];
 
   meta = {

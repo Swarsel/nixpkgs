@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  versionCheckHook,
-  nix-update-script,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,11 +21,9 @@ buildGoModule (finalAttrs: {
   vendorHash = "sha256-Gs+8J+yEVynsBte3Hnx7jnYRPa/61CIISDbMyDKhPRE=";
   # checks fail on aarch64-darwin but binary still builds successfully
   doCheck = !stdenv.hostPlatform.isDarwin;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "version";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -33,10 +31,12 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/yassinebenaid/bunster";
     changelog = "https://github.com/yassinebenaid/bunster/releases/tag/v{finalAttrs.version}";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       yunz
     ];
-    mainProgram = "bunster";
+
     platforms = lib.platforms.unix;
+    mainProgram = "bunster";
   };
 })

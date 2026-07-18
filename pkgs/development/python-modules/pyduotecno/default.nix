@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyduotecno";
   version = "2024.10.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Cereal2nd";
@@ -17,11 +16,10 @@ buildPythonPackage rec {
     hash = "sha256-I/ZA2ooa6nunUr/4K+FWAGMOdcJDfGzE99jJ8zTe2Po=";
   };
 
-  build-system = [ setuptools ];
-
   # Module has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "duotecno" ];
 
   meta = {

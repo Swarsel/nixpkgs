@@ -1,17 +1,16 @@
 {
-  stdenvNoCC,
   lib,
-  fetchItchIo,
   asar,
   copyDesktopItems,
   electron,
+  fetchItchIo,
   makeDesktopItem,
   makeWrapper,
+  stdenvNoCC,
   unzip,
-
   campaigns ? [ ],
-  cubes ? [ ],
   constructed ? [ ],
+  cubes ? [ ],
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -19,9 +18,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   version = "4.1.0";
 
   src = fetchItchIo {
-    name = "DungeonDuelMonsters-linux-x64.zip";
     hash = "sha256-gq2nGwpaStqaVI1pL63xygxOI/z53o+zLwiKizG98Ks=";
     gameUrl = "https://mikaygo.itch.io/ddm";
+    name = "DungeonDuelMonsters-linux-x64.zip";
     upload = "13371354";
   };
 
@@ -33,9 +32,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     makeWrapper
     unzip
   ];
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -71,22 +67,25 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "ddm";
-      desktopName = "Dungeon Duel Monsters";
       comment = "A Tabletop Yugioh Experience";
+      desktopName = "Dungeon Duel Monsters";
       exec = "ddm";
-      terminal = false;
       icon = "ddm";
+      name = "ddm";
+      terminal = false;
     })
   ];
+
+  dontBuild = true;
+  dontConfigure = true;
 
   meta = {
     description = "Tabletop Yugioh Experience";
     homepage = "https://dungeonduelmonsters.com";
     changelog = "https://mikaygo.itch.io/ddm/devlog";
     license = lib.licenses.unfree;
-    mainProgram = "ddm";
     maintainers = with lib.maintainers; [ OPNA2608 ];
     platforms = lib.platforms.linux;
+    mainProgram = "ddm";
   };
 })

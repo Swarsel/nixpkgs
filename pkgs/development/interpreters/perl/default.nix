@@ -11,9 +11,9 @@ let
       perlOnBuildForTarget,
       perlOnHostForHost,
       perlOnTargetForTarget,
+      self, # is perlOnHostForTarget
       perlAttr ? null,
       tests ? { },
-      self, # is perlOnHostForTarget
     }:
     let
       perlPackages =
@@ -24,10 +24,10 @@ let
           (
             {
               stdenv,
-              pkgs,
-              perl,
               callPackage,
               makeScopeWithSplicing',
+              perl,
+              pkgs,
             }:
             let
               perlPackagesFun = callPackage ../../../top-level/perl-packages.nix {
@@ -53,28 +53,31 @@ let
           };
     in
     rec {
+      inherit tests;
+
       buildEnv = callPackage ./wrapper.nix {
-        perl = self;
         inherit (pkgs) requiredPerlModules;
+        perl = self;
       };
-      withPackages = f: buildEnv.override { extraLibs = f pkgs; };
-      pkgs = perlPackages // (overrides pkgs);
+
       interpreter = "${self}/bin/perl";
       libPrefix = "lib/perl5/site_perl";
+
       perlOnBuild = perlOnBuildForHost.override {
         inherit overrides;
         self = perlOnBuild;
       };
 
-      inherit tests;
+      pkgs = perlPackages // (overrides pkgs);
+      withPackages = f: buildEnv.override { extraLibs = f pkgs; };
     };
 
 in
 rec {
   perl5 = callPackage ./interpreter.nix {
-    self = perl5;
-    version = "5.42.0";
-    sha256 = "sha256-4JPvGE1/mhuXl+JGUpb1VRCtttq4hCsMPtUzKWYwltw=";
     inherit passthruFun;
+    version = "5.42.0";
+    self = perl5;
+    sha256 = "sha256-4JPvGE1/mhuXl+JGUpb1VRCtttq4hCsMPtUzKWYwltw=";
   };
 }

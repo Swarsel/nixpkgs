@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchurl,
-  p7zip,
-  nss,
-  nspr,
-  libusb1,
-  cups,
+  alsa-lib,
   autoPatchelfHook,
-  libgpg-error,
-  e2fsprogs,
-  makeDesktopItem,
   copyDesktopItems,
+  cups,
+  e2fsprogs,
+  fontconfig,
+  freetype,
+  libGL,
+  libgpg-error,
+  libusb1,
   libx11,
   libxcb,
-  libGL,
-  alsa-lib,
-  freetype,
-  fontconfig,
+  makeDesktopItem,
   makeWrapper,
+  nspr,
+  nss,
+  p7zip,
 }:
 
 stdenv.mkDerivation rec {
@@ -52,20 +52,6 @@ stdenv.mkDerivation rec {
     fontconfig
   ];
 
-  unpackPhase = ''
-    7z x $src
-  '';
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "lightburn";
-      exec = "lightburn";
-      icon = "lightburn";
-      genericName = "LightBurn";
-      desktopName = "LightBurn";
-    })
-  ];
-
   installPhase = ''
     runHook preInstall
 
@@ -83,11 +69,25 @@ stdenv.mkDerivation rec {
       --unset QML2_IMPORT_PATH
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      desktopName = "LightBurn";
+      exec = "lightburn";
+      genericName = "LightBurn";
+      icon = "lightburn";
+      name = "lightburn";
+    })
+  ];
+
+  unpackPhase = ''
+    7z x $src
+  '';
+
   meta = {
     description = "Layout, editing, and control software for your laser cutter";
     homepage = "https://lightburnsoftware.com";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ q3k ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "lightburn";

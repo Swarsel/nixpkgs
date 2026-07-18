@@ -1,13 +1,13 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
-  makeWrapper,
   less,
-  xdg-utils,
-  testers,
+  makeWrapper,
   stackit-cli,
+  testers,
+  xdg-utils,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,22 +21,14 @@ buildGoModule (finalAttrs: {
     hash = "sha256-xGjp+3yqQS4n4I8xgDZb0WzS4mDQwa9tvOADxy1aRPE=";
   };
 
-  vendorHash = "sha256-ALBq9urUqonQqkLevsHNghIbnBz7LNb+7987Gg+eRVE=";
-
-  subPackages = [ "." ];
-
-  env.CGO_ENABLED = 0;
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [
     installShellFiles
     makeWrapper
   ];
+
+  vendorHash = "sha256-ALBq9urUqonQqkLevsHNghIbnBz7LNb+7987Gg+eRVE=";
+  env.CGO_ENABLED = 0;
+  nativeCheckInputs = [ less ];
 
   postInstall = ''
     mv $out/bin/{stackit-cli,stackit} # rename the binary
@@ -59,12 +51,18 @@ buildGoModule (finalAttrs: {
       }
   '';
 
-  nativeCheckInputs = [ less ];
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version}"
+  ];
+
+  subPackages = [ "." ];
 
   passthru.tests = {
     version = testers.testVersion {
-      package = stackit-cli;
       command = "stackit --version";
+      package = stackit-cli;
     };
   };
 

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   strenum,
   token-bucket,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "limiter";
   version = "0.3.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "alexdelorenzo";
@@ -25,7 +24,7 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "limiter" ];
 
   meta = {

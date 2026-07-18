@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   requests,
   responses,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "python-twitch-client";
   version = "0.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tsifrer";
@@ -21,7 +20,6 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ requests ];
 
   nativeCheckInputs = [
@@ -29,13 +27,14 @@ buildPythonPackage rec {
     responses
   ];
 
-  pythonImportsCheck = [ "twitch" ];
-
   disabledTests = [
     # Tests require network access
     "test_delete_from_community"
     "test_update"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "twitch" ];
 
   meta = {
     description = "Python wrapper for the Twitch API";

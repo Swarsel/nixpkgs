@@ -17,13 +17,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Instrument patches, for MIDI synthesizers";
+
     longDescription = ''
       Freepats is a project to create a free and open set of instrument
       patches, in any format, that can be used with softsynths.
     '';
+
     homepage = "https://freepats.zenvoid.org/";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.all;
   };
 })

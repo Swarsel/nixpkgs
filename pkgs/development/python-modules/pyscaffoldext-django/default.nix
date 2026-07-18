@@ -1,26 +1,25 @@
 {
   lib,
   buildPythonPackage,
+  # dependencies
+  django,
   fetchPypi,
-
+  pyscaffold,
   # build-system
   setuptools,
   setuptools-scm,
-
-  # dependencies
-  django,
-  pyscaffold,
 }:
 
 buildPythonPackage rec {
   pname = "pyscaffoldext-django";
   version = "0.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-5yzF3VK/9VlCSrRsRJWX4arr9n34G2R6O5A51jTpLhg=";
   };
+
+  doCheck = false; # tests require git checkout
 
   build-system = [
     setuptools
@@ -32,11 +31,9 @@ buildPythonPackage rec {
     pyscaffold
   ];
 
-  pythonRelaxDeps = [ "django" ];
-
-  doCheck = false; # tests require git checkout
-
+  pyproject = true;
   pythonImportsCheck = [ "pyscaffoldext.django" ];
+  pythonRelaxDeps = [ "django" ];
 
   meta = {
     description = "Integration of django builtin scaffold cli (django-admin) into PyScaffold";

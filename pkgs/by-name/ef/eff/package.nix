@@ -21,24 +21,23 @@ buildDunePackage rec {
 
   # Compatibility with menhir ≥ 20260203
   patches = [ ./menhir.patch ];
-
   nativeBuildInputs = [ menhir ];
-
   buildInputs = [ js_of_ocaml ];
-
   doCheck = true;
 
   meta = {
-    homepage = "https://www.eff-lang.org";
     description = "Functional programming language based on algebraic effects and their handlers";
-    mainProgram = "eff";
+
     longDescription = ''
       Eff is a functional language with handlers of not only exceptions,
       but also of other computational effects such as state or I/O. With
       handlers, you can simply implement transactions, redirections,
       backtracking, multi-threading, and much more...
     '';
+
+    homepage = "https://www.eff-lang.org";
     license = lib.licenses.bsd2;
     maintainers = [ lib.maintainers.jirkamarsik ];
+    mainProgram = "eff";
   };
 }

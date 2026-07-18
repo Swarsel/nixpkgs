@@ -13,8 +13,8 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1hsvi8wjh615fnjf75h7b5afp04chqcgvini30vfcn3m9a5icbgy";
   };
 
-  dontConfigure = true;
   buildPhase = ":";
+
   installPhase = ''
     mkdir -p $out/bin $out/share/java
     cp *.jar $out/share/java
@@ -30,12 +30,14 @@ stdenv.mkDerivation (finalAttrs: {
     mv jHiccup jHiccupLogProcessor $out/bin/
   '';
 
+  dontConfigure = true;
+
   meta = {
     description = "Measure JVM application stalls and GC pauses";
     homepage = "https://www.azul.com/jhiccup/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.cc0;
-    platforms = lib.platforms.linux;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ thoughtpolice ];
+    platforms = lib.platforms.linux;
   };
 })

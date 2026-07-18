@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   cosmic-wallpapers,
-  libcosmicAppHook,
   just,
+  libcosmicAppHook,
   nasm,
   nix-update-script,
   nixosTests,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -29,17 +29,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
       "${cosmic-wallpapers}/share/backgrounds/cosmic/orion_nebula_nasa_heic0601a.jpg"
   '';
 
-  cargoHash = "sha256-jU6KesqaHnfVZfCtDKrG/pVaJzh3Q5Q6UDMlOoFiLeY=";
-
-  separateDebugInfo = true;
-  __structuredAttrs = true;
-
   nativeBuildInputs = [
     just
     libcosmicAppHook
     nasm
   ];
 
+  cargoHash = "sha256-jU6KesqaHnfVZfCtDKrG/pVaJzh3Q5Q6UDMlOoFiLeY=";
+  __structuredAttrs = true;
   dontUseJustBuild = true;
   dontUseJustCheck = true;
 
@@ -51,6 +48,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "cargo-target-dir"
     "target/${stdenv.hostPlatform.rust.cargoShortTarget}"
   ];
+
+  separateDebugInfo = true;
 
   passthru = {
     tests = {
@@ -71,11 +70,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/pop-os/cosmic-bg";
     description = "Applies Background for the COSMIC Desktop Environment";
+    homepage = "https://github.com/pop-os/cosmic-bg";
     license = lib.licenses.mpl20;
-    teams = [ lib.teams.cosmic ];
     platforms = lib.platforms.linux;
     mainProgram = "cosmic-bg";
+    teams = [ lib.teams.cosmic ];
   };
 })

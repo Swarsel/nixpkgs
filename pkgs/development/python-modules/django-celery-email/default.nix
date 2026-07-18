@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  celery,
   django,
   django-appconf,
-  celery,
   pytest-django,
   pytestCheckHook,
   python,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "django-celery-email";
   version = "3.0.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "pmclanahan";
@@ -39,11 +38,12 @@ buildPythonPackage rec {
     ${python.executable} runtests.py
   '';
 
+  format = "setuptools";
   pythonImportsCheck = [ "djcelery_email" ];
 
   meta = {
-    homepage = "https://github.com/pmclanahan/django-celery-email";
     description = "Django email backend that uses a celery task for sending the email";
+    homepage = "https://github.com/pmclanahan/django-celery-email";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ onny ];
   };

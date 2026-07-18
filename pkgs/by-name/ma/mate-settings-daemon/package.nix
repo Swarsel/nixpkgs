@@ -2,38 +2,39 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  dconf,
   gettext,
+  gitUpdater,
   glib,
-  libxklavier,
+  gtk3,
   libcanberra-gtk3,
-  libnotify,
   libmatekbd,
   libmatemixer,
-  nss,
-  polkit,
-  dconf,
-  gtk3,
-  mate-desktop,
-  pulseaudioSupport ? stdenv.config.pulseaudio or true,
+  libnotify,
   libpulseaudio,
-  wrapGAppsHook3,
-  gitUpdater,
+  libxklavier,
+  mate-desktop,
+  nss,
+  pkg-config,
+  polkit,
   udevCheckHook,
+  wrapGAppsHook3,
+  pulseaudioSupport ? stdenv.config.pulseaudio or true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "mate-settings-daemon";
   version = "1.28.0";
-  outputs = [
-    "out"
-    "man"
-  ];
 
   src = fetchurl {
     url = "https://pub.mate-desktop.org/releases/${lib.versions.majorMinor finalAttrs.version}/mate-settings-daemon-${finalAttrs.version}.tar.xz";
     sha256 = "TtfNraqkyZ7//AKCuEEXA7t24HLEHEtXmJ+MW0BhGjo=";
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
 
   nativeBuildInputs = [
     gettext
@@ -57,28 +58,27 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional pulseaudioSupport libpulseaudio;
 
   configureFlags = lib.optional pulseaudioSupport "--enable-pulse";
-
   env.NIX_CFLAGS_COMPILE = "-I${glib.dev}/include/gio-unix-2.0";
-
+  doInstallCheck = true;
   enableParallelBuilding = true;
 
-  doInstallCheck = true;
-
   passthru.updateScript = gitUpdater {
-    url = "https://git.mate-desktop.org/mate-settings-daemon";
     odd-unstable = true;
     rev-prefix = "v";
+    url = "https://git.mate-desktop.org/mate-settings-daemon";
   };
 
   meta = {
     description = "MATE settings daemon";
     homepage = "https://github.com/mate-desktop/mate-settings-daemon";
+
     license = with lib.licenses; [
       gpl2Plus
       gpl3Plus
       lgpl2Plus
       mit
     ];
+
     platforms = lib.platforms.unix;
     teams = [ lib.teams.mate ];
   };

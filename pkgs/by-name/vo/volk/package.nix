@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   python3,
@@ -20,14 +20,15 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  cmakeFlags = [ (lib.cmakeBool "ENABLE_MODTOOL" enableModTool) ];
-
   nativeBuildInputs = [
     cmake
     python3
     python3.pkgs.mako
     removeReferencesTo
   ];
+
+  cmakeFlags = [ (lib.cmakeBool "ENABLE_MODTOOL" enableModTool) ];
+  doCheck = true;
 
   # Don't embed the path to stdenv.cc in the output, see:
   #
@@ -37,11 +38,9 @@ stdenv.mkDerivation (finalAttrs: {
     remove-references-to -t ${stdenv.cc} $(readlink -f "''${!outputLib}"/lib/libvolk${stdenv.hostPlatform.extensions.sharedLibrary})
   '';
 
-  doCheck = true;
-
   meta = {
-    homepage = "http://libvolk.org/";
     description = "Vector Optimized Library of Kernels";
+    homepage = "http://libvolk.org/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ doronbehar ];
     platforms = lib.platforms.all;

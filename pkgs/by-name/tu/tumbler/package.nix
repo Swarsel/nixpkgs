@@ -1,26 +1,26 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gettext,
-  pkg-config,
-  xfce4-dev-tools,
-  wrapGAppsNoGuiHook,
   ffmpegthumbnailer,
-  gdk-pixbuf,
-  glib,
   freetype,
+  gdk-pixbuf,
+  gettext,
+  gitUpdater,
+  glib,
+  gst_all_1,
   libgepub,
   libgsf,
   libheif,
   libjxl,
   libopenraw,
   librsvg,
-  poppler,
-  gst_all_1,
-  webp-pixbuf-loader,
   libxfce4util,
-  gitUpdater,
+  pkg-config,
+  poppler,
+  webp-pixbuf-loader,
+  wrapGAppsNoGuiHook,
+  xfce4-dev-tools,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,11 +28,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "4.20.1";
 
   src = fetchFromGitLab {
-    domain = "gitlab.xfce.org";
     owner = "xfce";
     repo = "tumbler";
     tag = "tumbler-${finalAttrs.version}";
     hash = "sha256-p4lAFNvCakqrsDa2FP0xbc/khx6eYqAlHwWkk8yEB7Y=";
+    domain = "gitlab.xfce.org";
   };
 
   nativeBuildInputs = [
@@ -55,6 +55,8 @@ stdenv.mkDerivation (finalAttrs: {
     poppler # technically the glib binding
   ];
 
+  configureFlags = [ "--enable-maintainer-mode" ];
+
   preFixup = ''
     gappsWrapperArgs+=(
       # Thumbnailers
@@ -76,12 +78,11 @@ stdenv.mkDerivation (finalAttrs: {
     wrapGApp $out/lib/tumbler-1/tumblerd
   '';
 
-  configureFlags = [ "--enable-maintainer-mode" ];
   enableParallelBuilding = true;
 
   passthru.updateScript = gitUpdater {
-    rev-prefix = "tumbler-";
     odd-unstable = true;
+    rev-prefix = "tumbler-";
   };
 
   meta = {

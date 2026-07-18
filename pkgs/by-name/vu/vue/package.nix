@@ -9,12 +9,11 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "vue";
   version = "3.3.0";
+
   src = fetchurl {
     url = "http://releases.atech.tufts.edu/jenkins/job/VUE/116/deployedArtifacts/download/artifact.1";
     sha256 = "0yfzr80pw632lkayg4qfmwzrqk02y30yz8br7isyhmgkswyp5rnx";
   };
-
-  dontUnpack = true;
 
   installPhase = ''
     mkdir -p "$out"/{share/vue,bin}
@@ -24,12 +23,14 @@ stdenv.mkDerivation (finalAttrs: {
     chmod a+x "$out/bin/vue"
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Visual Understanding Environment - mind mapping software";
+    license = lib.licenses.ecl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ raskin ];
     platforms = with lib.platforms; linux;
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
-    license = lib.licenses.ecl20;
     mainProgram = "vue";
   };
 })

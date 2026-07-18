@@ -24,12 +24,12 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    changelog = "https://github.com/PowerShellMafia/PowerSploit/releases/";
     description = "PowerShell Post-Exploitation Framework";
     homepage = "https://github.com/PowerShellMafia/PowerSploit";
+    changelog = "https://github.com/PowerShellMafia/PowerSploit/releases/";
     license = with lib.licenses; [ bsd3 ];
+    sourceProvenance = with lib.sourceTypes; [ fromSource ];
     maintainers = with lib.maintainers; [ shard7 ];
     platforms = lib.platforms.all;
-    sourceProvenance = with lib.sourceTypes; [ fromSource ];
   };
 }

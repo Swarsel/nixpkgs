@@ -1,19 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   pydantic,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "onepassword-sdk";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "1Password";
@@ -21,6 +18,9 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-mMmHC5zBY1w+Y+NAZJkP7m1CqErwCv2bMNAo1TTNm6E=";
   };
+
+  # Tests require a live 1Password service account token.
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -30,9 +30,7 @@ buildPythonPackage (finalAttrs: {
     pydantic
   ];
 
-  # Tests require a live 1Password service account token.
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "onepassword" ];
 
   meta = {

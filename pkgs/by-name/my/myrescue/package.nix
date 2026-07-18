@@ -14,13 +14,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-tO9gkDpEtmySatzV2Ktw3eq5SybCUGAUmKXiSxnkwdc=";
   };
 
-  nativeBuildInputs = [ installShellFiles ];
-
-  sourceRoot = "./src";
-
   patches = [
     ./0001-darwin-build-fixes.patch
   ];
+
+  nativeBuildInputs = [ installShellFiles ];
 
   installPhase = ''
     runHook preInstall
@@ -29,12 +27,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = "./src";
+
   meta = {
     description = "Hard disk recovery tool that reads undamaged regions first";
-    mainProgram = "myrescue";
     homepage = "https://myrescue.sourceforge.net";
+    license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.gpl2Plus;
+    mainProgram = "myrescue";
   };
 })

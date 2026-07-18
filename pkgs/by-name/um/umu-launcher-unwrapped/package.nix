@@ -1,16 +1,16 @@
 {
+  lib,
+  fetchFromGitHub,
   bash,
   cargo,
-  fetchFromGitHub,
-  lib,
+  nix-update-script,
   python3Packages,
   rustPlatform,
   scdoc,
-  writableTmpDirAsHomeHook,
-  withTruststore ? true,
-  withDeltaUpdates ? true,
   versionCheckHook,
-  nix-update-script,
+  writableTmpDirAsHomeHook,
+  withDeltaUpdates ? true,
+  withTruststore ? true,
 }:
 python3Packages.buildPythonPackage rec {
   pname = "umu-launcher-unwrapped";
@@ -23,16 +23,6 @@ python3Packages.buildPythonPackage rec {
     hash = "sha256-ZpYxoXux80QbmJUWyK5P9Om0iKNTWLrWH0RWDFXx5zE=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit src;
-    hash = "sha256-f9Me1dCS5GxXN4mADS6Z20M7YnX5ck3JXOXUFhM+h5o=";
-  };
-
-  nativeCheckInputs = [
-    writableTmpDirAsHomeHook
-    python3Packages.pytestCheckHook
-  ];
-
   nativeBuildInputs = [
     cargo
     rustPlatform.cargoSetupHook
@@ -44,6 +34,47 @@ python3Packages.buildPythonPackage rec {
     hatch-vcs
     installer
   ]);
+
+  configureFlags = [
+    "--use-system-pyzstd"
+    "--use-system-urllib"
+  ];
+
+  makeFlags = [
+    "PYTHONDIR=$(PREFIX)/${python3Packages.python.sitePackages}"
+    "PYTHON_INTERPRETER=${lib.getExe python3Packages.python}"
+    # Override RELEASEDIR to avoid running `git describe`
+    "RELEASEDIR=${pname}-${version}"
+    "SHELL_INTERPRETER=${lib.getExe bash}"
+  ];
+
+  nativeCheckInputs = [
+    writableTmpDirAsHomeHook
+    python3Packages.pytestCheckHook
+  ];
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit src;
+    hash = "sha256-f9Me1dCS5GxXN4mADS6Z20M7YnX5ck3JXOXUFhM+h5o=";
+  };
+
+  configureScript = "./configure.sh";
+
+  disabledTests = [
+    # Broken? Asserts that $STEAM_RUNTIME_LIBRARY_PATH is non-empty
+    # Fails with AssertionError: '' is not true : Expected two elements in STEAM_RUNTIME_LIBRARY_PATHS
+    "test_game_drive_empty"
+    "test_game_drive_libpath_empty"
+
+    # Broken? Tests parse_args with no options (./umu_run.py)
+    # Fails with AssertionError: SystemExit not raised
+    "test_parse_args_noopts"
+  ];
+
+  pyproject = false;
 
   pythonPath =
     with python3Packages;
@@ -60,48 +91,20 @@ python3Packages.buildPythonPackage rec {
       xxhash
     ];
 
-  pyproject = false;
-  configureScript = "./configure.sh";
-
-  configureFlags = [
-    "--use-system-pyzstd"
-    "--use-system-urllib"
-  ];
-
-  makeFlags = [
-    "PYTHONDIR=$(PREFIX)/${python3Packages.python.sitePackages}"
-    "PYTHON_INTERPRETER=${lib.getExe python3Packages.python}"
-    # Override RELEASEDIR to avoid running `git describe`
-    "RELEASEDIR=${pname}-${version}"
-    "SHELL_INTERPRETER=${lib.getExe bash}"
-  ];
-
-  disabledTests = [
-    # Broken? Asserts that $STEAM_RUNTIME_LIBRARY_PATH is non-empty
-    # Fails with AssertionError: '' is not true : Expected two elements in STEAM_RUNTIME_LIBRARY_PATHS
-    "test_game_drive_empty"
-    "test_game_drive_libpath_empty"
-
-    # Broken? Tests parse_args with no options (./umu_run.py)
-    # Fails with AssertionError: SystemExit not raised
-    "test_parse_args_noopts"
-  ];
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Unified launcher for Windows games on Linux using the Steam Linux Runtime and Tools";
-    changelog = "https://github.com/Open-Wine-Components/umu-launcher/releases/tag/${version}";
     homepage = "https://github.com/Open-Wine-Components/umu-launcher";
+    changelog = "https://github.com/Open-Wine-Components/umu-launcher/releases/tag/${version}";
     license = lib.licenses.gpl3;
-    mainProgram = "umu-run";
+
     maintainers = with lib.maintainers; [
       MattSturgeon
       fuzen
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "umu-run";
   };
 }

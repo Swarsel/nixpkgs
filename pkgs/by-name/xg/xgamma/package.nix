@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  xorgproto,
   libx11,
   libxxf86vm,
+  pkg-config,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xgamma";
@@ -18,7 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -41,12 +40,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Utility to query and alter the gamma correction of a X monitor";
     homepage = "https://gitlab.freedesktop.org/xorg/app/xgamma";
+
     license = with lib.licenses; [
       x11
       hpndSellVariant
     ];
-    mainProgram = "xgamma";
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xgamma";
   };
 })

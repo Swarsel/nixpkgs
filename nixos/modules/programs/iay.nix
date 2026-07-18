@@ -22,9 +22,9 @@ in
     package = mkPackageOption pkgs "iay" { };
 
     minimalPrompt = mkOption {
-      type = types.bool;
       default = false;
       description = "Use minimal one-liner prompt.";
+      type = types.bool;
     };
   };
 

@@ -1,13 +1,13 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   gettext,
   installShellFiles,
-  pkg-config,
   libarchive,
   openssl,
   pacman,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,8 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-TJbhxVnP5UhlCmwxKjXq/XaqPGtzHoN5S+lizm3Bmvs=";
   };
 
-  cargoHash = "sha256-Shp/2jQtO3pulT2gmsAcsEVPpv76nbEiGol+kYD7kr8=";
-
   nativeBuildInputs = [
     gettext
     installShellFiles
@@ -35,6 +33,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
     pacman
   ];
+
+  cargoHash = "sha256-Shp/2jQtO3pulT2gmsAcsEVPpv76nbEiGol+kYD7kr8=";
 
   postBuild = ''
     sh ./scripts/mkmo locale/
@@ -54,7 +54,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     changelog = "https://github.com/Morganamilo/paru/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ wegank ];
-    mainProgram = "paru";
     platforms = lib.platforms.linux;
+    mainProgram = "paru";
   };
 })

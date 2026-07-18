@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,14 +16,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-EoLv7HpdAyEM83m/DTgu9jMh0Nn+v8b2buIavQFJbnY=";
+  __darwinAllowLocalNetworking = true;
 
   ldflags = [
     "-s"
     "-w"
     "-X main.version=${finalAttrs.version}"
   ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Buttplug.io Model Context Protocol (MCP) Server";

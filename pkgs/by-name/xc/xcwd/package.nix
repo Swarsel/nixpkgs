@@ -17,7 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ libx11 ];
-
   makeFlags = [ "prefix=$(out)" ];
 
   preInstall = ''
@@ -28,10 +27,11 @@ stdenv.mkDerivation (finalAttrs: {
     description = ''
       A simple tool which prints the current working directory of the currently focused window
     '';
+
     homepage = "https://github.com/schischi/xcwd";
     license = lib.licenses.bsd3;
-    mainProgram = "xcwd";
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "xcwd";
   };
 })

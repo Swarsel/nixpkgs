@@ -1,7 +1,5 @@
 {
-  stdenvNoCC,
   lib,
-  soapysdr,
   limesuite,
   soapyairspy,
   soapyaudio,
@@ -10,12 +8,16 @@
   soapyplutosdr,
   soapyremote,
   soapyrtlsdr,
+  soapysdr,
   soapyuhd,
+  stdenvNoCC,
   python ? null,
   usePython ? false,
 }:
 
 soapysdr.override {
+  inherit python usePython;
+
   extraPackages = [
     limesuite
     soapyairspy
@@ -29,6 +31,4 @@ soapysdr.override {
   ++ (lib.optionals stdenvNoCC.hostPlatform.isLinux [
     soapyuhd
   ]);
-
-  inherit python usePython;
 }

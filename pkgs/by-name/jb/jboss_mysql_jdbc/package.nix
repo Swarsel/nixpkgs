@@ -5,10 +5,8 @@
 }:
 
 stdenv.mkDerivation {
-  pname = "jboss-mysql-jdbc";
   inherit (mysql_jdbc) version;
-
-  dontUnpack = true;
+  pname = "jboss-mysql-jdbc";
 
   installPhase = ''
     runHook preInstall
@@ -19,6 +17,8 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
     inherit (mysql_jdbc.meta)
       description
@@ -26,6 +26,7 @@ stdenv.mkDerivation {
       platforms
       homepage
       ;
+
     maintainers = [ ];
   };
 }

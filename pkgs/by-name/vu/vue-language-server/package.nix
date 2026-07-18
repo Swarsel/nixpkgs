@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   fetchPnpmDeps,
+  makeBinaryWrapper,
+  nix-update-script,
+  nodejs,
   pnpmConfigHook,
   pnpm_11,
-  nodejs,
-  nix-update-script,
-  makeBinaryWrapper,
 }:
 let
   pnpm = pnpm_11;
@@ -24,21 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   patches = [ ./add-pkg-pr-new-integrities.patch ];
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      patches
-      pname
-      src
-      version
-      ;
-    inherit pnpm;
-    fetcherVersion = 4;
-    prePnpmInstall = ''
-      pnpm config set --location project --json trustPolicyExclude '["volar-service-pug@0.0.71"]'
-    '';
-    hash = "sha256-6xu+z7rrI+YfmpcL5ycwjjeSAfDkkhSgeKBZO34p9Dw=";
-  };
 
   nativeBuildInputs = [
     nodejs
@@ -81,6 +66,23 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      patches
+      pname
+      src
+      version
+      ;
+
+    inherit pnpm;
+    fetcherVersion = 4;
+    hash = "sha256-6xu+z7rrI+YfmpcL5ycwjjeSAfDkkhSgeKBZO34p9Dw=";
+
+    prePnpmInstall = ''
+      pnpm config set --location project --json trustPolicyExclude '["volar-service-pug@0.0.71"]'
+    '';
+  };
 
   passthru.updateScript = nix-update-script { };
 

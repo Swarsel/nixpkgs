@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "nameparser";
   version = "1.1.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ unittestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "nameparser" ];
 
   meta = {

@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  lv2,
-  fftw,
   cmake,
-  libxpm,
-  libxft,
+  fftw,
   libjack2,
   libsamplerate,
   libsndfile,
+  libxft,
+  libxpm,
+  lv2,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

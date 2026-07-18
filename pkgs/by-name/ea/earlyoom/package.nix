@@ -1,9 +1,9 @@
 {
   lib,
-  fetchFromGitHub,
-  pandoc,
   stdenv,
+  fetchFromGitHub,
   nixosTests,
+  pandoc,
   # The man page requires pandoc to build and resides in a separate "man"
   # output which is pulled in on-demand. There is no need to disabled it unless
   # pandoc is hard to build on your platform.
@@ -22,9 +22,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   outputs = [ "out" ] ++ lib.optionals withManpage [ "man" ];
-
   patches = [ ./0000-fix-dbus-path.patch ];
-
   nativeBuildInputs = lib.optionals withManpage [ pandoc ];
 
   makeFlags = [
@@ -40,8 +38,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/rfjakob/earlyoom";
     description = "Early OOM Daemon for Linux";
+
     longDescription = ''
       earlyoom checks the amount of available memory and free swap up to 10
       times a second (less often if there is a lot of free memory). By default
@@ -49,11 +47,15 @@ stdenv.mkDerivation (finalAttrs: {
       oom_score). The percentage value is configurable via command line
       arguments.
     '';
+
+    homepage = "https://github.com/rfjakob/earlyoom";
     license = lib.licenses.mit;
-    mainProgram = "earlyoom";
+
     maintainers = with lib.maintainers; [
       oxalica
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "earlyoom";
   };
 })

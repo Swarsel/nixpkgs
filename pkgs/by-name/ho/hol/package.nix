@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  pkgs,
   fetchurl,
-  graphviz,
   fontconfig,
+  graphviz,
   liberation_ttf,
+  pkgs,
   experimentalKernel ? true,
 }:
 
@@ -78,6 +78,7 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Interactive theorem prover based on Higher-Order Logic";
+
     longDescription = ''
       HOL4 is the latest version of the HOL interactive proof
       assistant for higher order logic: a programming environment in
@@ -90,9 +91,10 @@ stdenv.mkDerivation {
       implementing combinations of deduction, execution and property
       checking.
     '';
+
     homepage = "http://hol.sourceforge.net/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ mudri ];
+    platforms = lib.platforms.unix;
   };
 }

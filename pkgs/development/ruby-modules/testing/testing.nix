@@ -25,13 +25,13 @@ let
   */
 
   passed = desc: {
-    result = "pass";
     description = desc;
+    result = "pass";
   };
 
   failed = desc: {
-    result = "failed";
     description = desc;
+    result = "failed";
   };
 
   prefixName = name: res: {

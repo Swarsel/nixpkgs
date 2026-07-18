@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,16 +16,10 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-GVToa/RfXZaKIPWRkCu6rLN8qU3sI6zmgn4kjeNW6iI=";
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   # There's a mixture of tests that use networking and several that fail on aarch64
   doCheck = false;
-
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
     $out/bin/terraform-ls --help
@@ -33,15 +27,22 @@ buildGoModule (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   meta = {
     description = "Terraform Language Server (official)";
-    mainProgram = "terraform-ls";
     homepage = "https://github.com/hashicorp/terraform-ls";
     changelog = "https://github.com/hashicorp/terraform-ls/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       mbaillie
       jk
     ];
+
+    mainProgram = "terraform-ls";
   };
 })

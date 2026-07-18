@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch2,
   apricot-select,
+  buildPythonPackage,
+  fetchpatch2,
   numba,
   numpy,
   pytestCheckHook,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "apricot-select";
   version = "0.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jmschrei";
@@ -29,11 +28,14 @@ buildPythonPackage rec {
   patches = [
     # migrate to pytest, https://github.com/jmschrei/apricot/pull/43
     (fetchpatch2 {
-      url = "https://github.com/jmschrei/apricot/commit/ffa5cce97292775c0d6890671a19cacd2294383f.patch?full_index=1";
       hash = "sha256-9A49m4587kAPK/kzZBqMRPwuA40S3HinLXaslYUcWdM=";
+      url = "https://github.com/jmschrei/apricot/commit/ffa5cce97292775c0d6890671a19cacd2294383f.patch?full_index=1";
     })
   ];
 
+  # NOTE: Tests are disabled by default because they can run for hours and timeout on Hydra.
+  doCheck = false;
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -44,10 +46,6 @@ buildPythonPackage rec {
     torchvision
     tqdm
   ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "apricot" ];
 
   disabledTestPaths = [
     # Tests require nose
@@ -65,9 +63,8 @@ buildPythonPackage rec {
     "test_digits_sqrt_modular_sparse"
   ];
 
-  # NOTE: Tests are disabled by default because they can run for hours and timeout on Hydra.
-  doCheck = false;
-
+  pyproject = true;
+  pythonImportsCheck = [ "apricot" ];
   passthru.tests.check = apricot-select.overridePythonAttrs { doCheck = true; };
 
   meta = {

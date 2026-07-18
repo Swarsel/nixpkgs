@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   kernel,
   kernelModuleMakeFlags,
@@ -17,15 +17,7 @@ stdenv.mkDerivation rec {
     hash = "sha256-XYRxrVixvImxr2j3qxBcv1df1LvPRKqKKgegW3HqUcQ=";
   };
 
-  hardeningDisable = [
-    "pic"
-    "format"
-  ];
   nativeBuildInputs = kernel.moduleBuildDependencies;
-
-  extraConfig = ''
-    CONFIG_RTC_HCTOSYS yes
-  '';
 
   makeFlags = kernelModuleMakeFlags ++ [
     "DEPMOD=echo"
@@ -34,16 +26,26 @@ stdenv.mkDerivation rec {
     "KERNELDIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
   ];
 
+  enableParallelBuilding = true;
+
+  extraConfig = ''
+    CONFIG_RTC_HCTOSYS yes
+  '';
+
+  hardeningDisable = [
+    "pic"
+    "format"
+  ];
+
   meta = {
     description = "Experimental implementation of a kvmclock-derived clocksource for Linux guests under OpenBSD's hypervisor";
     homepage = "https://github.com/voutilad/vmm_clock";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ qbit ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ];
   };
-
-  enableParallelBuilding = true;
 }

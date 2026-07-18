@@ -1,22 +1,22 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   bzip2,
+  coreutils,
+  dosfstools,
   libarchive,
   libconfuse,
   libsodium,
-  xz,
-  zlib,
-  coreutils,
-  dosfstools,
   mtools,
+  pkg-config,
   unzip,
-  zip,
   which,
   xdelta,
+  xz,
+  zip,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -54,17 +54,17 @@ stdenv.mkDerivation (finalAttrs: {
     dosfstools
   ];
 
+  doCheck = !stdenv.hostPlatform.isDarwin;
+
   nativeCheckInputs = [
     which
     xdelta
   ];
 
-  doCheck = !stdenv.hostPlatform.isDarwin;
-
   meta = {
-    changelog = "https://github.com/fwup-home/fwup/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "Configurable embedded Linux firmware update creator and runner";
     homepage = "https://github.com/fwup-home/fwup";
+    changelog = "https://github.com/fwup-home/fwup/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.georgewhewell ];
     platforms = lib.platforms.all;

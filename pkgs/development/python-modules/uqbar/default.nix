@@ -1,11 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-  pytest-asyncio,
-  pythonAtLeast,
+  buildPythonPackage,
   defusedxml,
+  pytest-asyncio,
+  pytestCheckHook,
+  pythonAtLeast,
   setuptools,
   sphinx,
   typing-extensions,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "uqbar";
   version = "0.9.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "supriya-project";
@@ -77,6 +76,7 @@ buildPythonPackage (finalAttrs: {
     "SummarizingClassDocumenter"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "uqbar" ];
 
   meta = {

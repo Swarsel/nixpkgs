@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   nix-update-script,
   openssl,
   pkg-config,
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Cppc+y5AzESlnNNx4TD72/odRUU3VuiKgbND29Lb9cQ=";
   };
 
-  cargoHash = "sha256-wJbMG9Jv6bB+N7Zh610v9Ty48XchWL8EZ9Ta13tvvlg=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -29,9 +27,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-wJbMG9Jv6bB+N7Zh610v9Ty48XchWL8EZ9Ta13tvvlg=";
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -40,7 +38,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     changelog = "https://github.com/Virviil/oci2git/releases/tag/v${finalAttrs.version}";
     license = [ lib.licenses.mit ];
     maintainers = [ lib.maintainers.kpbaks ];
-    mainProgram = "oci2git";
     platforms = lib.platforms.all;
+    mainProgram = "oci2git";
   };
 })

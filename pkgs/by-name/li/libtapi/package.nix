@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
   cmake,
+  fetchpatch2,
   ninja,
   python3,
   zlib,
@@ -19,8 +19,8 @@ let
   # Note: Can’t use a sparse checkout because the Darwin stdenv bootstrap can’t depend on fetchgit.
   appleLlvm = {
     version = "16.0.0"; # As reported by upstream’s `tapi --version`.
-    rev = "3602748d4ec9947f0d1493511a8c34410909506e"; # Per the TAPI repo.
     hash = "sha256-7o/JY/tcu4AeXCa7xhfjbuuV3/Cbf89AdoZOKrciJk0=";
+    rev = "3602748d4ec9947f0d1493511a8c34410909506e"; # Per the TAPI repo.
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -33,24 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
-  srcs = [
-    (fetchFromGitHub {
-      name = "tapi-src";
-      owner = "apple-oss-distributions";
-      repo = "tapi";
-      tag = "tapi-${finalAttrs.version}";
-      hash = "sha256-87AQZrCmZHv3lbfUnw0j17H4cP+GN5g0D6zhdT4P56Y=";
-    })
-    # libtapi can’t avoid pulling the whole repo even though it needs only a couple of folders because
-    # `fetchgit` can’t be used in the Darwin bootstrap.
-    (fetchFromGitHub {
-      name = "apple-llvm-src";
-      owner = "apple";
-      repo = "llvm-project";
-      inherit (appleLlvm) rev hash;
-    })
-  ];
-
   patches = [
     # Older versions of ld64 may not support `-no_exported_symbols`, so use it only
     # when the linker supports it.
@@ -60,8 +42,8 @@ stdenv.mkDerivation (finalAttrs: {
     ./0003-Match-designator-order-with-declaration-order.patch
     # Add missing <cstdint> include for gcc 15.
     (fetchpatch2 {
-      url = "https://github.com/llvm/llvm-project/commit/e2f25af711425fb238317582441f4bda56131891.patch?full_index=1";
       hash = "sha256-zJwl4aeX71UR7a8XHpKl4atbw+hEGCHOQmiFLIJirTY=";
+      url = "https://github.com/llvm/llvm-project/commit/e2f25af711425fb238317582441f4bda56131891.patch?full_index=1";
     })
   ];
 
@@ -96,21 +78,7 @@ stdenv.mkDerivation (finalAttrs: {
         --replace-fail '-current_version ''${DYLIB_VERSION} -compatibility_version 1' ""
   '';
 
-  preUnpack = ''
-    mkdir source
-  '';
-
-  sourceRoot = "source";
-
-  postUnpack = ''
-    chmod -R u+w apple-llvm-src tapi-src
-    mv apple-llvm-src/{clang,cmake,llvm,utils} source
-    mv tapi-src source/tapi
-  '';
-
   strictDeps = true;
-
-  buildInputs = [ zlib ]; # Upstream links against zlib in their distribution.
 
   nativeBuildInputs = [
     cmake
@@ -118,7 +86,7 @@ stdenv.mkDerivation (finalAttrs: {
     python3
   ];
 
-  cmakeDir = "../llvm";
+  buildInputs = [ zlib ]; # Upstream links against zlib in their distribution.
 
   cmakeFlags = [
     (lib.cmakeFeature "LLVM_ENABLE_PROJECTS" "clang;tapi")
@@ -144,11 +112,12 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "TAPI_INCLUDE_TESTS" false)
   ];
 
-  ninjaFlags = [
-    "libtapi"
-    "tapi-sdkdb"
-    "tapi"
-  ];
+  postInstall = ''
+    # The man page is installed for these, but they’re not included in the source release.
+    rm $bin/share/man/man1/tapi-analyze.1 $bin/share/man/man1/tapi-api-verify.1
+  '';
+
+  cmakeDir = "../llvm";
 
   installTargets = [
     "install-libtapi"
@@ -158,19 +127,52 @@ stdenv.mkDerivation (finalAttrs: {
     "install-tapi"
   ];
 
-  postInstall = ''
-    # The man page is installed for these, but they’re not included in the source release.
-    rm $bin/share/man/man1/tapi-analyze.1 $bin/share/man/man1/tapi-api-verify.1
+  ninjaFlags = [
+    "libtapi"
+    "tapi-sdkdb"
+    "tapi"
+  ];
+
+  postUnpack = ''
+    chmod -R u+w apple-llvm-src tapi-src
+    mv apple-llvm-src/{clang,cmake,llvm,utils} source
+    mv tapi-src source/tapi
   '';
+
+  preUnpack = ''
+    mkdir source
+  '';
+
+  sourceRoot = "source";
+
+  srcs = [
+    (fetchFromGitHub {
+      hash = "sha256-87AQZrCmZHv3lbfUnw0j17H4cP+GN5g0D6zhdT4P56Y=";
+      name = "tapi-src";
+      owner = "apple-oss-distributions";
+      repo = "tapi";
+      tag = "tapi-${finalAttrs.version}";
+    })
+    # libtapi can’t avoid pulling the whole repo even though it needs only a couple of folders because
+    # `fetchgit` can’t be used in the Darwin bootstrap.
+    (fetchFromGitHub {
+      inherit (appleLlvm) rev hash;
+      name = "apple-llvm-src";
+      owner = "apple";
+      repo = "llvm-project";
+    })
+  ];
 
   meta = {
     description = "Replaces the Mach-O Dynamic Library Stub files in Apple's SDKs to reduce the size";
     homepage = "https://github.com/apple-oss-distributions/tapi/";
     license = lib.licenses.ncsa;
-    mainProgram = "tapi";
+
     maintainers = with lib.maintainers; [
       reckenrode
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "tapi";
   };
 })

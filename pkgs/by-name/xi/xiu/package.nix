@@ -1,12 +1,12 @@
 {
   lib,
-  cmake,
+  stdenv,
   fetchFromGitHub,
+  cmake,
   libopus,
   openssl,
   pkg-config,
   rustPlatform,
-  stdenv,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-EjyvCwqcPkOe69YnDiAExtBNPhsqqGa95ao+bn6wcyA=";
   };
 
-  cargoHash = "sha256-IEIZM27zQZrq63ZsCVAeOl2exuFR5tUG3Gwipjg4+oo=";
-
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -34,6 +32,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-IEIZM27zQZrq63ZsCVAeOl2exuFR5tUG3Gwipjg4+oo=";
   env.OPENSSL_NO_VENDOR = 1;
 
   meta = {

@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
   aioresponses,
-  pytestCheckHook,
+  buildPythonPackage,
   pytest-asyncio,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "lojack-api";
   version = "0.7.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "devinslick";
@@ -21,16 +20,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-QVXiIN+gb/jm5H49ByT8+jVgl3RVKPSgpwca04C6Keo=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
   nativeCheckInputs = [
     aioresponses
     pytestCheckHook
     pytest-asyncio
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "lojack_api" ];
 
   meta = {

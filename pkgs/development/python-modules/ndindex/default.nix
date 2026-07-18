@@ -1,27 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  python,
-
+  buildPythonPackage,
   # build-system
   cython,
-  setuptools,
-
-  # optional
-  numpy,
-
   # tests
   hypothesis,
+  # optional
+  numpy,
   pytest-cov-stub,
   pytestCheckHook,
+  python,
+  setuptools,
   sympy,
 }:
 
 buildPythonPackage rec {
   pname = "ndindex";
   version = "1.10.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Quansight-Labs";
@@ -30,19 +26,18 @@ buildPythonPackage rec {
     hash = "sha256-rjhCysdhLCAofob7yUL7s65hMju13uotrzJ+aY0stzI=";
   };
 
-  build-system = [
-    cython
-    setuptools
-  ];
-
   postPatch = ''
     substituteInPlace pytest.ini \
       --replace-fail "--flakes" ""
   '';
 
-  optional-dependencies.arrays = [ numpy ];
-
-  pythonImportsCheck = [ "ndindex" ];
+  nativeCheckInputs = [
+    hypothesis
+    pytest-cov-stub
+    pytestCheckHook
+    sympy
+  ]
+  ++ optional-dependencies.arrays;
 
   # fix Hypothesis timeouts
   preCheck = ''
@@ -61,17 +56,19 @@ buildPythonPackage rec {
     EOF
   '';
 
-  nativeCheckInputs = [
-    hypothesis
-    pytest-cov-stub
-    pytestCheckHook
-    sympy
-  ]
-  ++ optional-dependencies.arrays;
+  build-system = [
+    cython
+    setuptools
+  ];
+
+  optional-dependencies.arrays = [ numpy ];
+  pyproject = true;
 
   pytestFlags = [
     "--hypothesis-profile=ci"
   ];
+
+  pythonImportsCheck = [ "ndindex" ];
 
   meta = {
     description = "Python library for manipulating indices of ndarrays";

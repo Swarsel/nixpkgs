@@ -13,7 +13,6 @@ in
 pypkgs.buildPythonApplication (finalAttrs: {
   pname = "rubber";
   version = "1.6.6";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "latex-rubber";
@@ -44,8 +43,11 @@ pypkgs.buildPythonApplication (finalAttrs: {
     runHook postCheck
   '';
 
+  pyproject = true;
+
   meta = {
     description = "Wrapper for LaTeX and friends";
+
     longDescription = ''
       Rubber is a program whose purpose is to handle all tasks related
       to the compilation of LaTeX documents.  This includes compiling
@@ -55,11 +57,14 @@ pypkgs.buildPythonApplication (finalAttrs: {
       produce PostScript documents is also included, as well as usage
       of pdfLaTeX to produce PDF documents.
     '';
-    license = lib.licenses.gpl2Plus;
+
     homepage = "https://gitlab.com/latex-rubber/rubber";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       peterhoeg
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "rubber";
   };

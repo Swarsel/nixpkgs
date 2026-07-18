@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
-  temurin-jre-bin-17,
   bash,
-  suitesparse,
+  makeWrapper,
   nixosTests,
+  suitesparse,
+  temurin-jre-bin-17,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,18 +15,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   src =
     {
-      "x86_64-linux" = fetchurl {
-        url = "https://github.com/PhotonVision/photonvision/releases/download/v${finalAttrs.version}/photonvision-v${finalAttrs.version}-linuxx64.jar";
-        hash = "sha256-yEb6GCt29DjZNDsIqDvF/AiCw3QVMxUFKQM22OlMl7Q=";
-      };
       "aarch64-linux" = fetchurl {
-        url = "https://github.com/PhotonVision/photonvision/releases/download/v${finalAttrs.version}/photonvision-v${finalAttrs.version}-linuxarm64.jar";
         hash = "sha256-YG9wyh+MCsv/RBdiFvgrF6Fw/6AnN7OEi4ofkMptfT0=";
+        url = "https://github.com/PhotonVision/photonvision/releases/download/v${finalAttrs.version}/photonvision-v${finalAttrs.version}-linuxarm64.jar";
+      };
+
+      "x86_64-linux" = fetchurl {
+        hash = "sha256-yEb6GCt29DjZNDsIqDvF/AiCw3QVMxUFKQM22OlMl7Q=";
+        url = "https://github.com/PhotonVision/photonvision/releases/download/v${finalAttrs.version}/photonvision-v${finalAttrs.version}-linuxx64.jar";
       };
     }
     .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
-
-  dontUnpack = true;
 
   nativeBuildInputs = [ makeWrapper ];
 
@@ -53,6 +52,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   passthru.tests = {
     starts-web-server = nixosTests.photonvision;
   };
@@ -62,10 +63,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://photonvision.org/";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ max-niederman ];
-    mainProgram = "photonvision";
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
+    mainProgram = "photonvision";
   };
 })

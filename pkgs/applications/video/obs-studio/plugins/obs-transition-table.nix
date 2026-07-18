@@ -19,22 +19,23 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     obs-studio
     qtbase
   ];
 
-  dontWrapQtApps = true;
-
   postInstall = ''
     rm -rf $out/obs-plugins $out/data
   '';
 
+  dontWrapQtApps = true;
+
   meta = {
+    inherit (obs-studio.meta) platforms;
     description = "Plugin for OBS Studio to add a Transition Table to the tools menu";
     homepage = "https://github.com/exeldro/obs-transition-table";
-    maintainers = with lib.maintainers; [ flexiondotorg ];
     license = lib.licenses.gpl2Plus;
-    inherit (obs-studio.meta) platforms;
+    maintainers = with lib.maintainers; [ flexiondotorg ];
   };
 }

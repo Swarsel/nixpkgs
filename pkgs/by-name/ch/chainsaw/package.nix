@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,17 +17,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-bbgRqp3bNw2U69aVqwvJNWOKgW0YhR8SlqzH9jdrHZU=";
 
-  ldflags = [
-    "-w"
-    "-s"
-  ];
-
   checkFlags = [
     # failed
     "--skip=analyse_srum_database_json"
     "--skip=search_jq_simple_string"
     "--skip=search_q_jsonl_simple_string"
     "--skip=search_q_simple_string"
+  ];
+
+  ldflags = [
+    "-w"
+    "-s"
   ];
 
   meta = {

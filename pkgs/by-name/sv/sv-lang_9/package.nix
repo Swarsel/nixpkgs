@@ -5,9 +5,9 @@
   boost,
   catch2_3,
   cmake,
-  ninja,
   fmt,
   mimalloc,
+  ninja,
   python3,
 }:
 
@@ -28,23 +28,13 @@ stdenv.mkDerivation (finalAttrs: {
       'set(mimalloc_min_version "${lib.versions.majorMinor mimalloc.version}")'
   '';
 
-  cmakeFlags = [
-    # fix for https://github.com/NixOS/nixpkgs/issues/144170
-    "-DCMAKE_INSTALL_INCLUDEDIR=include"
-    "-DCMAKE_INSTALL_LIBDIR=lib"
-
-    "-DSLANG_INCLUDE_TESTS=${if finalAttrs.finalPackage.doCheck then "ON" else "OFF"}"
-  ];
-
-  __structuredAttrs = true;
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
     python3
     ninja
   ];
-
-  strictDeps = true;
 
   buildInputs = [
     boost
@@ -54,17 +44,26 @@ stdenv.mkDerivation (finalAttrs: {
     catch2_3
   ];
 
+  cmakeFlags = [
+    # fix for https://github.com/NixOS/nixpkgs/issues/144170
+    "-DCMAKE_INSTALL_INCLUDEDIR=include"
+    "-DCMAKE_INSTALL_LIBDIR=lib"
+
+    "-DSLANG_INCLUDE_TESTS=${if finalAttrs.finalPackage.doCheck then "ON" else "OFF"}"
+  ];
+
   # TODO: a mysterious linker error occurs when building the unittests on darwin.
   # The error occurs when using catch2_3 in nixpkgs, not when fetching catch2_3 using CMake
   doCheck = !stdenv.hostPlatform.isDarwin;
+  __structuredAttrs = true;
 
   meta = {
     description = "SystemVerilog compiler and language services";
     homepage = "https://github.com/MikePopoloski/slang";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ sharzy ];
-    mainProgram = "slang";
     platforms = lib.platforms.all;
+    mainProgram = "slang";
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

@@ -1,16 +1,16 @@
 {
   lib,
-  stdenvNoCC,
-  buildPackages,
   fetchFromGitHub,
+  buildPackages,
   fetchPnpmDeps,
+  installShellFiles,
+  makeWrapper,
+  nodejs-slim_22,
   pnpmConfigHook,
   pnpm_11,
-  nodejs-slim_22,
-  makeWrapper,
-  versionCheckHook,
   rolldown,
-  installShellFiles,
+  stdenvNoCC,
+  versionCheckHook,
   version ? "2026.6.11",
 }:
 let
@@ -27,17 +27,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-Ryj+aJ4Daql/ILs3Z/Gi+ltBGQfOdtXKJoOqr3YNoQ0=";
   };
 
-  pnpmDepsHash = "sha256-WvMphvtdimFXIx6kTQ5DMW9dcXS1tcFu2v3W1aiiW+4=";
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    fetcherVersion = 4;
-    hash = finalAttrs.pnpmDepsHash;
-  };
-
-  buildInputs = [ rolldown ];
-
   nativeBuildInputs = [
     pnpmConfigHook
     pnpm
@@ -45,6 +34,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     makeWrapper
     installShellFiles
   ];
+
+  buildInputs = [ rolldown ];
 
   buildPhase = ''
     runHook preBuild
@@ -109,13 +100,22 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     ''
   );
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 4;
+    hash = finalAttrs.pnpmDepsHash;
+  };
+
+  pnpmDepsHash = "sha256-WvMphvtdimFXIx6kTQ5DMW9dcXS1tcFu2v3W1aiiW+4=";
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Self-hosted, open-source AI assistant/agent";
+
     longDescription = ''
       Self-hosted AI assistant/agent connected to all your apps on your Linux
       or macOS machine and controlled via your choice of chat app.
@@ -127,16 +127,20 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
       (Originally known as Moltbot and ClawdBot)
     '';
+
     homepage = "https://openclaw.ai";
     changelog = "https://github.com/openclaw/openclaw/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
-    mainProgram = "openclaw";
+
     maintainers = with lib.maintainers; [
       chrisportela
       mkg20001
       nikhilmaddirala
     ];
+
     platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "openclaw";
+
     knownVulnerabilities = [
       "Project uses LLMs to parse untrusted content, making it vulnerable to prompt injection, while having full access to system by default."
     ];

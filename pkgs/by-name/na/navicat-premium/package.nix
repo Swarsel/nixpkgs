@@ -4,7 +4,6 @@
   fetchurl,
   appimageTools,
   autoPatchelfHook,
-  qt6,
   cjson,
   curl,
   e2fsprogs,
@@ -15,15 +14,16 @@
   glibc,
   harfbuzz,
   libGL,
-  libx11,
   libgpg-error,
   libselinux,
+  libx11,
   libxcb,
   libxcrypt,
   libxcrypt-legacy,
   libxkbcommon,
   p11-kit,
   pango,
+  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,15 +32,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = appimageTools.extractType2 {
     inherit (finalAttrs) pname version;
+
     src =
       {
-        x86_64-linux = fetchurl {
-          url = "https://web.archive.org/web/20260203040321/https://dn.navicat.com/download/navicat17-premium-en-x86_64.AppImage";
-          hash = "sha256-bIIqDwhajE7+S/Mx7lUn3FC1ZvRbk5mwxYwsmELBlRc=";
-        };
         aarch64-linux = fetchurl {
-          url = "https://web.archive.org/web/20260203040711/https://dn.navicat.com/download/navicat17-premium-en-aarch64.AppImage";
           hash = "sha256-2WOSwezm/utHaKUktrsWAfoXzCVMz+lfa1wyx0NtXMs=";
+          url = "https://web.archive.org/web/20260203040711/https://dn.navicat.com/download/navicat17-premium-en-aarch64.AppImage";
+        };
+
+        x86_64-linux = fetchurl {
+          hash = "sha256-bIIqDwhajE7+S/Mx7lUn3FC1ZvRbk5mwxYwsmELBlRc=";
+          url = "https://web.archive.org/web/20260203040321/https://dn.navicat.com/download/navicat17-premium-en-x86_64.AppImage";
         };
       }
       .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
@@ -85,13 +87,6 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  autoPatchelfIgnoreMissingDeps = lib.optionals stdenv.hostPlatform.isAarch64 [
-    "libgs_ktool.so"
-    "libkmc.so"
-  ];
-
-  dontWrapQtApps = true;
-
   preFixup = ''
     rm $out/lib/libselinux.so.1
     ln -s ${libselinux.out}/lib/libselinux.so.1 $out/lib/libselinux.so.1
@@ -129,17 +124,26 @@ stdenv.mkDerivation (finalAttrs: {
       --chdir $out
   '';
 
+  autoPatchelfIgnoreMissingDeps = lib.optionals stdenv.hostPlatform.isAarch64 [
+    "libgs_ktool.so"
+    "libkmc.so"
+  ];
+
+  dontWrapQtApps = true;
+
   meta = {
+    description = "Database development tool that allows you to simultaneously connect to many databases";
     homepage = "https://www.navicat.com/products/navicat-premium";
     changelog = "https://www.navicat.com/products/navicat-premium-release-note";
-    description = "Database development tool that allows you to simultaneously connect to many databases";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
     mainProgram = "navicat-premium";
   };
 })

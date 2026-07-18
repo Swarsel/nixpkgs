@@ -2,8 +2,8 @@
 # See https://github.com/borkdude/deps.clj#deps_clj_tools_version for background.
 # The `updateScript` provided in babashka-unwrapped takes care of keeping it in sync, as well.
 {
-  clojure,
   fetchurl,
+  clojure,
 }:
 clojure.overrideAttrs (previousAttrs: {
   pname = "babashka-clojure-tools";

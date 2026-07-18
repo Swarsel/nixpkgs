@@ -17,9 +17,6 @@ stdenv.mkDerivation rec {
     sha256 = "1jyg8r0s1v83sgg6y0jbsj2v37mglh8rvd8vi27fxnjq9xmg8kpc";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
     share_dir="$prefix/share"
@@ -29,17 +26,20 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   passthru = {
-    extensionUuid = "pidgin@muffinmad";
     extensionPortalSlug = "pidgin-im-integration";
+    extensionUuid = "pidgin@muffinmad";
   };
 
   meta = {
-    homepage = "https://github.com/muffinmad/pidgin-im-gnome-shell-extension";
     description = "Make Pidgin IM conversations appear in the Gnome Shell message tray";
+    homepage = "https://github.com/muffinmad/pidgin-im-gnome-shell-extension";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     broken = lib.versionAtLeast gnome-shell.version "3.32"; # Doesn't support 3.34
   };
 }

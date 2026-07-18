@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  wheel,
+  buildPythonPackage,
   legacy-cgi,
   numpy,
   openmm,
   pytestCheckHook,
+  setuptools,
+  wheel,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pdbfixer";
   version = "1.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openmm";
@@ -21,6 +20,12 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-X2P5cWmdvAjY9dMFB+R21advkdYizR8PmevMPR0RR0o=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  preCheck = ''
+    export PATH=$out/bin:$PATH
+  '';
 
   build-system = [
     setuptools
@@ -31,12 +36,6 @@ buildPythonPackage (finalAttrs: {
     numpy
     openmm
   ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  preCheck = ''
-    export PATH=$out/bin:$PATH
-  '';
 
   disabledTests = [
     # require network access
@@ -55,6 +54,7 @@ buildPythonPackage (finalAttrs: {
     "test_leaving_atoms"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pdbfixer" ];
 
   meta = {

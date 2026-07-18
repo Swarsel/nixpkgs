@@ -1,10 +1,10 @@
 {
-  config,
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  config,
   gtk2,
+  pkg-config,
   useGTK ? config.libiodbc.gtk or false,
 }:
 
@@ -17,12 +17,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-OJizLQeWE2D28s822zYDa3GaIw5HZGklioDzIkPoRfo=";
   };
 
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = lib.optionals useGTK [ gtk2 ];
+
   configureFlags = [
     "--disable-libodbc"
   ];
-
-  nativeBuildInputs = [ pkg-config ];
-  buildInputs = lib.optionals useGTK [ gtk2 ];
 
   # temporary workaround for compile error with GCC 15
   # https://github.com/openlink/iODBC/issues/113
@@ -35,7 +35,7 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "iODBC driver manager";
     homepage = "https://www.iodbc.org";
-    platforms = lib.platforms.unix;
     license = lib.licenses.bsd3;
+    platforms = lib.platforms.unix;
   };
 })

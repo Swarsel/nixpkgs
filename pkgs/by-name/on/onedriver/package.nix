@@ -1,14 +1,14 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
+  fuse3,
+  glib,
+  glib-networking,
+  installShellFiles,
   pkg-config,
   webkitgtk_4_1,
-  glib,
-  fuse3,
-  installShellFiles,
   wrapGAppsHook3,
-  glib-networking,
   wrapperDir ? "/run/wrappers/bin",
 }:
 let
@@ -24,13 +24,13 @@ let
 in
 buildGoModule {
   inherit pname version src;
-  vendorHash = "sha256-Ifcmf9AtZnrjgTPQnof/ap0TY19zHVftm5N4JgvbAgs=";
 
   nativeBuildInputs = [
     pkg-config
     installShellFiles
     wrapGAppsHook3
   ];
+
   buildInputs = [
     webkitgtk_4_1
     glib
@@ -38,12 +38,7 @@ buildGoModule {
     glib-networking
   ];
 
-  ldflags = [ "-X github.com/jstaf/onedriver/cmd/common.commit=v${version}" ];
-
-  subPackages = [
-    "cmd/onedriver"
-    "cmd/onedriver-launcher"
-  ];
+  vendorHash = "sha256-Ifcmf9AtZnrjgTPQnof/ap0TY19zHVftm5N4JgvbAgs=";
 
   postInstall = ''
     echo "Running postInstall"
@@ -66,20 +61,31 @@ buildGoModule {
       --replace-fail "/usr/bin/fusermount3" "${wrapperDir}/fusermount3"
   '';
 
+  ldflags = [ "-X github.com/jstaf/onedriver/cmd/common.commit=v${version}" ];
+
+  subPackages = [
+    "cmd/onedriver"
+    "cmd/onedriver-launcher"
+  ];
+
   meta = {
+    inherit (src.meta) homepage;
     description = "Network filesystem for Linux";
+
     longDescription = ''
       onedriver is a network filesystem that gives your computer direct access to your files on Microsoft OneDrive.
       This is not a sync client. Instead of syncing files, onedriver performs an on-demand download of files when
       your computer attempts to use them. onedriver allows you to use files on OneDrive as if they were files on
       your local computer.
     '';
-    inherit (src.meta) homepage;
+
     license = lib.licenses.gpl3Plus;
+
     maintainers = [
       lib.maintainers.massimogengarelli
       lib.maintainers.lnk3
     ];
+
     platforms = lib.platforms.linux;
   };
 }

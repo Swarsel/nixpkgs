@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  glib,
   gtk2,
   intltool,
   libart_lgpl,
   libglade,
-  glib,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -26,12 +26,14 @@ stdenv.mkDerivation rec {
 
   strictDeps = true;
 
-  buildInputs = [ libglade ];
   nativeBuildInputs = [
     pkg-config
     intltool
     glib
   ];
+
+  buildInputs = [ libglade ];
+
   propagatedBuildInputs = [
     libart_lgpl
     gtk2

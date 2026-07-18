@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  scons,
   boost,
   ladspa-header,
+  scons,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

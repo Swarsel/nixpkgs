@@ -1,12 +1,11 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "qlever-control";
   version = "0.5.48";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "qlever-dev";
@@ -14,6 +13,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-mjWMRXRo2iU8C8fArXTcuVmts67MuCq8nR9dD87nR1g=";
   };
+
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = with python3Packages; [
     setuptools
@@ -30,22 +35,18 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tqdm
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "qlever"
   ];
 
-  __structuredAttrs = true;
-
   meta = {
     description = "Command-line tool for controlling the QLever graph database";
     homepage = "https://github.com/qlever-dev/qlever-control";
-    mainProgram = "qlever";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ eljamm ];
+    mainProgram = "qlever";
     teams = with lib.teams; [ ngi ];
   };
 })

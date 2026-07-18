@@ -1,15 +1,15 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   cacert,
   cmake,
-  fetchFromGitHub,
   git,
-  lib,
   lld,
   ninja,
   nix-update-script,
   perl,
   python3,
-  stdenv,
 }:
 
 let
@@ -55,8 +55,6 @@ let
   };
 
   codon-deps = stdenv.mkDerivation {
-    name = "codon-deps-${version}.tar.gz";
-
     inherit src;
 
     nativeBuildInputs = [
@@ -66,8 +64,6 @@ let
       perl
       python3
     ];
-
-    dontBuild = true;
 
     cmakeFlags = [
       "-DCPM_DOWNLOAD_ALL=ON"
@@ -87,6 +83,9 @@ let
             _deps/googletest-subbuild/googletest-populate-prefix/src/*.zip
     '';
 
+    dontBuild = true;
+    name = "codon-deps-${version}.tar.gz";
+
     outputHash =
       if stdenv.hostPlatform.isDarwin then
         "sha256-KfemYV42xBAhsPbwTkzdc3GxCVHiWRbyUZORPWxx4vg="
@@ -97,9 +96,8 @@ let
   };
 in
 stdenv.mkDerivation {
-  pname = "codon";
-
   inherit src version;
+  pname = "codon";
 
   patches = [
     # Without the hash, CMake will try to replace the `.zip` file
@@ -115,11 +113,6 @@ stdenv.mkDerivation {
     python3
   ];
 
-  postUnpack = ''
-    mkdir -p $sourceRoot/build
-    tar -xf ${codon-deps} -C $sourceRoot/build
-  '';
-
   cmakeFlags = [
     "-DCPM_SOURCE_CACHE=${depsDir}"
     "-DLLVM_DIR=${codon-llvm}/lib/cmake/llvm"
@@ -130,13 +123,18 @@ stdenv.mkDerivation {
     ln -s $out/lib/codon/*.dylib $out/lib/
   '';
 
+  postUnpack = ''
+    mkdir -p $sourceRoot/build
+    tar -xf ${codon-deps} -C $sourceRoot/build
+  '';
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "High-performance, zero-overhead, extensible Python compiler using LLVM";
     homepage = "https://docs.exaloop.io/codon";
-    maintainers = [ ];
     license = lib.licenses.bsl11;
+    maintainers = [ ];
     platforms = lib.platforms.all;
     broken = true; # `codon-llvm` build fails on darwin and linux
   };

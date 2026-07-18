@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   loguru,
   numpy,
   setuptools,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "pyosoenergyapi";
   version = "1.2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "osohotwateriot";
@@ -22,6 +21,9 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-hpbmiSOLawKVSh7BGV70bRi45HCDKmdxEEhCOdJuIww=";
   };
+
+  # Module has no tests
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -36,9 +38,7 @@ buildPythonPackage rec {
     urllib3
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyosoenergyapi" ];
 
   meta = {

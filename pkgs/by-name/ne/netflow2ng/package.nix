@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   pkg-config,
   versionCheckHook,
@@ -12,8 +12,6 @@ buildGoModule (finalAttrs: {
   pname = "netflow2ng";
   version = "0.2.2";
 
-  __structuredAttrs = true;
-
   src = fetchFromGitHub {
     owner = "synfinatic";
     repo = "netflow2ng";
@@ -21,13 +19,17 @@ buildGoModule (finalAttrs: {
     hash = "sha256-cBAgZhHYA9YpQ9NoiW6WNQvPi5nnZ0V3R/bbL8mNXuo=";
   };
 
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ zeromq ];
   vendorHash = "sha256-2hGY58ofzY7BTIrecdSDoo6JuQwJe4AyNPGiBpGY9lA=";
 
-  nativeBuildInputs = [ pkg-config ];
+  postInstall = ''
+    mv $out/bin/cmd $out/bin/${finalAttrs.pname}
+  '';
 
-  buildInputs = [ zeromq ];
-
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   ldflags = [
     "-s"
@@ -36,12 +38,6 @@ buildGoModule (finalAttrs: {
     "-X=main.Tag=${finalAttrs.src.tag}"
     "-X=main.CommitID=${finalAttrs.src.rev}"
   ];
-
-  doInstallCheck = true;
-
-  postInstall = ''
-    mv $out/bin/cmd $out/bin/${finalAttrs.pname}
-  '';
 
   passthru.updateScript = nix-update-script { };
 

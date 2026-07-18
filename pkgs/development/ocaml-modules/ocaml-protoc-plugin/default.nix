@@ -2,14 +2,14 @@
   lib,
   fetchFromGitHub,
   buildDunePackage,
+  dune-site,
   pkg-config,
-  protobuf,
-  zarith,
   ppx_deriving,
   ppx_deriving_yojson,
-  re,
-  dune-site,
   ppx_expect,
+  protobuf,
+  re,
+  zarith,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -27,6 +27,7 @@ buildDunePackage (finalAttrs: {
     pkg-config
     protobuf
   ];
+
   buildInputs = [
     zarith
     ppx_deriving
@@ -36,19 +37,22 @@ buildDunePackage (finalAttrs: {
     ppx_expect
     protobuf
   ];
+
   doCheck = true;
   nativeCheckInputs = [ protobuf ];
 
   meta = {
     description = "Maps google protobuf compiler to Ocaml types";
-    homepage = "https://github.com/issuu/ocaml-protoc-plugin";
-    license = lib.licenses.asl20;
+
     longDescription = ''
       The goal of Ocaml protoc plugin is to create an
       up to date plugin for the google protobuf compiler
       (protoc) to generate Ocaml types and serialization
       and de-serialization function from a .proto file.
     '';
+
+    homepage = "https://github.com/issuu/ocaml-protoc-plugin";
+    license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.GirardR1006 ];
   };
 })

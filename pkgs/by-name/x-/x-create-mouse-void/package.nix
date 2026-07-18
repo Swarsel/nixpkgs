@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  libx11,
+  stdenv,
   fetchFromGitHub,
+  libx11,
 }:
 
 stdenv.mkDerivation rec {
@@ -26,11 +26,11 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://github.com/cas--/XCreateMouseVoid";
     description = "Creates an undecorated black window and prevents the mouse from entering that window";
-    platforms = lib.platforms.unix;
+    homepage = "https://github.com/cas--/XCreateMouseVoid";
     license = lib.licenses.unfreeRedistributable;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
     mainProgram = "x-create-mouse-void";
   };
 }

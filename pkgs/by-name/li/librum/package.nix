@@ -1,12 +1,12 @@
 {
   lib,
-  mupdf,
   stdenv,
   fetchFromGitHub,
-  replaceVars,
   cmake,
-  qt6,
   desktopToDarwinBundle,
+  mupdf,
+  qt6,
+  replaceVars,
 }:
 
 let
@@ -20,14 +20,14 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "Librum-Reader";
     repo = "Librum";
     tag = "v.${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-Iwcbcz8LrznFP8rfW6mg9p7klAtTx4daFxylTeFKrH0=";
+    fetchSubmodules = true;
   };
 
   patches = [
     (replaceVars ./use_mupdf_in_nixpkgs.patch {
-      nixMupdfLibPath = "${mupdf-cxx.out}/lib";
       nixMupdfIncludePath = "${mupdf-cxx.dev}/include";
+      nixMupdfLibPath = "${mupdf-cxx.out}/lib";
     })
   ];
 
@@ -50,6 +50,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Application designed to make reading enjoyable and straightforward";
+
     longDescription = ''
       Librum is an application designed to make reading enjoyable
       and straightforward for everyone. It's not just an e-book
@@ -61,14 +62,17 @@ stdenv.mkDerivation (finalAttrs: {
       and personal reading statistics while being free and
       completely open source.
     '';
+
     homepage = "https://librumreader.com";
     changelog = "https://github.com/Librum-Reader/Librum/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "librum";
+
     maintainers = with lib.maintainers; [
       aleksana
       oluceps
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "librum";
   };
 })

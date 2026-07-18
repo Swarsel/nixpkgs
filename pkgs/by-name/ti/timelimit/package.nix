@@ -16,22 +16,21 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-5IEAF8zCKaCVH6BAxjoa/2rrue9pRGBBkFzN57d+g+g=";
   };
 
-  nativeCheckInputs = [ perl ];
-  doCheck = true;
-
-  installFlags = [ "PREFIX=$(out)" ];
-
   env = {
-    INSTALL_PROGRAM = "install -m755";
     INSTALL_DATA = "install -m644";
+    INSTALL_PROGRAM = "install -m755";
   };
+
+  doCheck = true;
+  nativeCheckInputs = [ perl ];
+  installFlags = [ "PREFIX=$(out)" ];
 
   meta = {
     description = "Execute a command and terminates the spawned process after a given time with a given signal";
     homepage = "https://devel.ringlet.net/sysutils/timelimit/";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
     mainProgram = "timelimit";
   };
 })

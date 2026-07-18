@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   gitlike-commands,
   paho-mqtt,
   poetry-core,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "ha-mqtt-discoverable";
   version = "0.24.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "unixorn";
@@ -21,12 +20,8 @@ buildPythonPackage rec {
     hash = "sha256-8UgYtWB6CsTF9yCpwwjeYIyjfFH8IM3M0sZpvrSqb3M=";
   };
 
-  pythonRelaxDeps = [
-    "paho-mqtt"
-    "pyaml"
-    "pydantic"
-  ];
-
+  # Test require a running Mosquitto instance
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -36,10 +31,14 @@ buildPythonPackage rec {
     pydantic
   ];
 
-  # Test require a running Mosquitto instance
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "ha_mqtt_discoverable" ];
+
+  pythonRelaxDeps = [
+    "paho-mqtt"
+    "pyaml"
+    "pydantic"
+  ];
 
   meta = {
     description = "Python module to create MQTT entities that are automatically discovered by Home Assistant";

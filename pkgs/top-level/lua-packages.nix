@@ -8,10 +8,10 @@
 */
 
 {
-  pkgs,
-  stdenv,
   lib,
+  stdenv,
   lua,
+  pkgs,
 }:
 
 self:
@@ -36,14 +36,8 @@ let
 in
 rec {
 
-  # Dont take luaPackages from "global" pkgs scope to avoid mixing lua versions
-  luaPackages = self;
-
   # helper functions for dealing with LUA_PATH and LUA_CPATH
   inherit luaLib;
-
-  getLuaPath = drv: getPath drv luaLib.luaPathList;
-  getLuaCPath = drv: getPath drv luaLib.luaCPathList;
 
   inherit (callPackage ../development/interpreters/lua-5/hooks { })
     luarocksMoveDataFolder
@@ -53,6 +47,7 @@ rec {
 
   inherit lua;
   inherit buildLuaPackage buildLuarocksPackage buildLuaApplication;
+
   inherit (luaLib)
     luaOlder
     luaAtLeast
@@ -65,20 +60,12 @@ rec {
     hasLuaModule
     ;
 
-  # wraps programs in $out/bin with valid LUA_PATH/LUA_CPATH
-  wrapLua = callPackage ../development/interpreters/lua-5/wrap-lua.nix { };
-
-  luarocks_bootstrap = toLuaModule (callPackage ../development/tools/misc/luarocks/default.nix { });
-
-  # a fork of luarocks used to generate nix lua derivations from rockspecs
-  luarocks-nix = toLuaModule (callPackage ../development/tools/misc/luarocks/luarocks-nix.nix { });
-
   awesome-wm-widgets = callPackage (
     {
+      lib,
       stdenv,
       fetchFromGitHub,
       lua,
-      lib,
     }:
 
     stdenv.mkDerivation {
@@ -111,8 +98,10 @@ rec {
     }
   ) { };
 
+  getLuaCPath = drv: getPath drv luaLib.luaCPathList;
+  getLuaPath = drv: getPath drv luaLib.luaPathList;
   image-nvim = callPackage ../development/lua-modules/image-nvim { };
-
+  libluv = callPackage ../development/lua-modules/luv/lib.nix { };
   lua-https = callPackage ../development/lua-modules/lua-https { };
 
   lua-pam = callPackage (
@@ -133,12 +122,12 @@ rec {
         fetchSubmodules = true;
       };
 
-      # The makefile tries to link to `-llua<luaversion>`
-      env.LUA_LIBS = "-llua";
-
       buildInputs =
         lib.optionals stdenv.hostPlatform.isLinux [ linux-pam ]
         ++ lib.optionals stdenv.hostPlatform.isDarwin [ openpam ];
+
+      # The makefile tries to link to `-llua<luaversion>`
+      env.LUA_LIBS = "-llua";
 
       installPhase = ''
         runHook preInstall
@@ -149,12 +138,12 @@ rec {
       '';
 
       meta = {
-        # The package does not build with lua 5.4 or luaJIT
-        broken = luaAtLeast "5.4" || isLuaJIT;
         description = "Lua module for PAM authentication";
         homepage = "https://github.com/devurandom/lua-pam";
         license = lib.licenses.mit;
         maintainers = with lib.maintainers; [ traxys ];
+        # The package does not build with lua 5.4 or luaJIT
+        broken = luaAtLeast "5.4" || isLuaJIT;
       };
     }
   ) { };
@@ -205,14 +194,18 @@ rec {
     }
   ) { };
 
+  # Dont take luaPackages from "global" pkgs scope to avoid mixing lua versions
+  luaPackages = self;
+  # a fork of luarocks used to generate nix lua derivations from rockspecs
+  luarocks-nix = toLuaModule (callPackage ../development/tools/misc/luarocks/luarocks-nix.nix { });
+  luarocks_bootstrap = toLuaModule (callPackage ../development/tools/misc/luarocks/default.nix { });
   luv = callPackage ../development/lua-modules/luv { };
-  libluv = callPackage ../development/lua-modules/luv/lib.nix { };
 
   luxio = callPackage (
     {
       fetchurl,
-      which,
       pkg-config,
+      which,
     }:
     buildLuaPackage rec {
       pname = "luxio";
@@ -223,14 +216,14 @@ rec {
         sha256 = "1hvwslc25q7k82rxk461zr1a2041nxg7sn3sw3w0y5jxf0giz2pz";
       };
 
+      postPatch = ''
+        patchShebangs const-proc.lua
+      '';
+
       nativeBuildInputs = [
         which
         pkg-config
       ];
-
-      postPatch = ''
-        patchShebangs const-proc.lua
-      '';
 
       preBuild = ''
         makeFlagsArray=(
@@ -242,12 +235,12 @@ rec {
       '';
 
       meta = {
-        broken = stdenv.hostPlatform.isDarwin;
         description = "Lightweight UNIX I/O and POSIX binding for Lua";
         homepage = "https://www.gitano.org.uk/luxio/";
         license = lib.licenses.mit;
         maintainers = with lib.maintainers; [ richardipsum ];
         platforms = lib.platforms.unix;
+        broken = stdenv.hostPlatform.isDarwin;
       };
     }
   ) { };
@@ -257,4 +250,6 @@ rec {
   };
 
   readline = callPackage ../development/lua-modules/readline { inherit (pkgs) readline; };
+  # wraps programs in $out/bin with valid LUA_PATH/LUA_CPATH
+  wrapLua = callPackage ../development/interpreters/lua-5/wrap-lua.nix { };
 }

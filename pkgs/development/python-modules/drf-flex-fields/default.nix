@@ -1,12 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   appdirs,
   asgiref,
   attrs,
   black,
+  buildPythonPackage,
   click,
   django,
   djangorestframework,
@@ -17,20 +16,19 @@
   mypy-extensions,
   pycodestyle,
   pyflakes,
+  pytest-django,
+  # tests
+  pytestCheckHook,
   pytz,
+  setuptools,
   sqlparse,
   toml,
   typing-extensions,
-
-  # tests
-  pytestCheckHook,
-  pytest-django,
 }:
 
 buildPythonPackage rec {
   pname = "drf-flex-fields";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rsinger86";
@@ -44,8 +42,6 @@ buildPythonPackage rec {
     ./drf-3.17-compat.patch
   ];
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     django
     djangorestframework
@@ -57,10 +53,13 @@ buildPythonPackage rec {
     export DJANGO_SETTINGS_MODULE=tests.settings
   '';
 
+  build-system = [ setuptools ];
+  pyproject = true;
+
   meta = {
-    changelog = "https://github.com/rsinger86/drf-flex-fields/releases/tag/${src.tag}";
     description = "Dynamically set fields and expand nested resources in Django REST Framework serializers";
     homepage = "https://github.com/rsinger86/drf-flex-fields";
+    changelog = "https://github.com/rsinger86/drf-flex-fields/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hexa ];
   };

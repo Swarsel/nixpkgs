@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  autoreconfHook,
   curl,
   libnxml,
-  autoreconfHook,
   pkg-config,
 }:
 
@@ -34,10 +34,10 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/bakulf/libmrss";
     description = "C library for parsing, writing and creating RSS/ATOM files or streams";
+    homepage = "https://github.com/bakulf/libmrss";
     license = lib.licenses.lgpl2;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ sigmanificient ];
+    platforms = lib.platforms.all;
   };
 })

@@ -1,29 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  # passthru
+  gitUpdater,
   # build-system
   hatchling,
-
   # dependencies
   langchain-core,
   langchain-openai,
-
   # testing
   langchain-tests,
-  pytestCheckHook,
   pytest-asyncio,
+  pytestCheckHook,
   syrupy,
-
-  # passthru
-  gitUpdater,
 }:
 
 buildPythonPackage rec {
   pname = "langchain-deepseek";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "langchain-ai";
@@ -32,23 +27,6 @@ buildPythonPackage rec {
     hash = "sha256-IHWTArtJB/CLIk0tKirRxUPcdJiqf1NDXn5Y+HBYv/g=";
   };
 
-  sourceRoot = "${src.name}/libs/partners/deepseek";
-
-  build-system = [
-    hatchling
-  ];
-
-  pythonRelaxDeps = [
-    # Each component release requests the exact latest core.
-    # That prevents us from updating individual components.
-    "langchain-core"
-  ];
-
-  dependencies = [
-    langchain-core
-    langchain-openai
-  ];
-
   nativeCheckInputs = [
     langchain-tests
     pytestCheckHook
@@ -56,23 +34,41 @@ buildPythonPackage rec {
     syrupy
   ];
 
-  enabledTestPaths = [ "tests/unit_tests" ];
+  build-system = [
+    hatchling
+  ];
 
+  dependencies = [
+    langchain-core
+    langchain-openai
+  ];
+
+  enabledTestPaths = [ "tests/unit_tests" ];
+  pyproject = true;
   pythonImportsCheck = [ "langchain_deepseek" ];
+
+  pythonRelaxDeps = [
+    # Each component release requests the exact latest core.
+    # That prevents us from updating individual components.
+    "langchain-core"
+  ];
+
+  sourceRoot = "${src.name}/libs/partners/deepseek";
 
   passthru = {
     # python updater script sets the wrong tag
     skipBulkUpdate = true;
+
     updateScript = gitUpdater {
-      rev-prefix = "langchain-deepseek==";
       ignoredVersions = "a|b|dev|rc";
+      rev-prefix = "langchain-deepseek==";
     };
   };
 
   meta = {
-    changelog = "https://github.com/langchain-ai/langchain/releases/tag/${src.tag}";
     description = "Integration package connecting DeepSeek and LangChain";
     homepage = "https://github.com/langchain-ai/langchain/tree/master/libs/partners/deepseek";
+    changelog = "https://github.com/langchain-ai/langchain/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ sarahec ];
   };

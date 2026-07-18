@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchzip,
   fetchFromGitHub,
+  fetchzip,
 }:
 let
   pname = "nitrokey-storage-firmware";
@@ -50,8 +50,6 @@ in
 stdenv.mkDerivation {
   inherit pname version src;
 
-  sourceRoot = "${src.name}/src";
-
   postPatch = ''
     substituteInPlace Makefile \
       --replace-fail '$(shell git describe)' "V${version}"
@@ -62,23 +60,26 @@ stdenv.mkDerivation {
     "nitrokey-storage-V${version}-reproducible.hex"
   ];
 
-  enableParallelBuilding = true;
-
   installPhase = ''
     runHook preInstall
     install -D nitrokey-storage-V${version}-reproducible.hex $out/nitrokey-storage-V${version}-reproducible.hex
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+  sourceRoot = "${src.name}/src";
+
   meta = {
     description = "Firmware for the Nitrokey Storage device";
     homepage = "https://github.com/Nitrokey/nitrokey-storage-firmware";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       imadnyc
       kiike
       amerino
     ];
+
     platforms = [ "x86_64-linux" ];
   };
 }

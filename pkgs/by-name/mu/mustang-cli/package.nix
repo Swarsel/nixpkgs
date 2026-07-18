@@ -1,26 +1,27 @@
 {
   lib,
   fetchFromGitHub,
-  maven,
-  jre_minimal,
   jdk_headless,
+  jre_minimal,
   makeWrapper,
-  stripJavaArchivesHook,
+  maven,
   nix-update-script,
+  stripJavaArchivesHook,
 }:
 let
   jre = jre_minimal.override {
+    jdk = jdk_headless;
+
     modules = [
       "java.base"
       "java.desktop"
       "java.logging"
     ];
-    jdk = jdk_headless;
   };
 in
 maven.buildMavenPackage (finalAttrs: {
-  version = "2.24.0";
   pname = "mustang-cli";
+  version = "2.24.0";
 
   src = fetchFromGitHub {
     owner = "ZUGFeRD";
@@ -30,9 +31,6 @@ maven.buildMavenPackage (finalAttrs: {
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
-
-  mvnHash = "sha256-JjhKHcnLO6OZ6VAI7fFpvS90TK6yOVhX0wk4vrnbFFo=";
 
   nativeBuildInputs = [
     makeWrapper
@@ -50,6 +48,9 @@ maven.buildMavenPackage (finalAttrs: {
       --add-flags "-jar $out/share/Mustang-CLI/Mustang-CLI.jar"
   '';
 
+  __structuredAttrs = true;
+  mvnHash = "sha256-JjhKHcnLO6OZ6VAI7fFpvS90TK6yOVhX0wk4vrnbFFo=";
+
   passthru.updateScript = nix-update-script {
     extraArgs = [
       "--version-regex=core-(.*)"
@@ -57,11 +58,11 @@ maven.buildMavenPackage (finalAttrs: {
   };
 
   meta = {
-    mainProgram = "mustang-cli";
     description = "Open Source Java e-Invoicing library, validator and tool (Factur-X/ZUGFeRD, UNCEFACT/CII XRechnung)";
     homepage = "https://www.mustangproject.org";
     changelog = "https://github.com/ZUGFeRD/mustangproject/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ angelodlfrtr ];
+    mainProgram = "mustang-cli";
   };
 })

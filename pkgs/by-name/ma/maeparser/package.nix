@@ -1,10 +1,10 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
   boost,
-  zlib,
   cmake,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,16 +19,17 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     boost
     zlib
   ];
 
   meta = {
-    homepage = "https://github.com/schrodinger/maeparser";
     description = "Maestro file parser";
-    maintainers = [ lib.maintainers.rmcgibbo ];
+    homepage = "https://github.com/schrodinger/maeparser";
     license = lib.licenses.mit;
+    maintainers = [ lib.maintainers.rmcgibbo ];
     platforms = lib.platforms.unix;
   };
 })

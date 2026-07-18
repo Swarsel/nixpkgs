@@ -1,10 +1,10 @@
 {
-  cmake,
-  mbedtls,
   lib,
   stdenv,
   fetchFromGitHub,
+  cmake,
   gitUpdater,
+  mbedtls,
   withTls ? !stdenv.hostPlatform.isDarwin,
 }:
 
@@ -19,7 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-9UPXuZkAxr3SSjPN3VZRr6Hsz0GyDVJLUZEM+zZruik=";
   };
 
-  separateDebugInfo = true;
+  nativeBuildInputs = [ cmake ];
+  buildInputs = lib.optionals withTls [ mbedtls ];
 
   cmakeFlags = lib.optionals withTls [
     "-DCONFIG_USE_EXTERNAL_MBEDTLS_DYNLIB=ON"
@@ -27,19 +28,19 @@ stdenv.mkDerivation (finalAttrs: {
     "-DCONFIG_EXTERNAL_MBEDTLS_INCLUDE_PATH=${mbedtls}/include"
   ];
 
-  nativeBuildInputs = [ cmake ];
-  buildInputs = lib.optionals withTls [ mbedtls ];
-
+  separateDebugInfo = true;
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
     description = "Open-source library for the IEC 61850 protocols";
     homepage = "https://libiec61850.com/";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       stv0g
       pjungkamp
     ];
+
     platforms = lib.platforms.unix;
   };
 })

@@ -1,18 +1,17 @@
 {
   lib,
   fetchFromGitHub,
-  flutter341,
-  callPackage,
-  makeDesktopItem,
-  copyDesktopItems,
-
   # Needed for update script.
   _experimental-update-script-combinators,
+  callPackage,
+  copyDesktopItems,
+  dart,
+  flutter341,
   gitUpdater,
+  makeDesktopItem,
   runCommand,
   sideswap,
   yq-go,
-  dart,
 }:
 
 let
@@ -31,17 +30,9 @@ flutter341.buildFlutterApplication (finalAttrs: {
     hash = "sha256-E+njx//oCr85nwF8rvuOjDTNvs5177+lh9uy5LEvTVE=";
   };
 
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
-  gitHashes = lib.importJSON ./git-hashes.json;
-
-  # Provide OpenGL and libsideswap_client.so for the Flutter application.
-  extraWrapProgramArgs = ''
-    --prefix LD_LIBRARY_PATH : ${
-      lib.makeLibraryPath [
-        libsideswap-client
-      ]
-    }
-  '';
+  nativeBuildInputs = [
+    copyDesktopItems
+  ];
 
   # Install icons.
   postInstall = ''
@@ -52,24 +43,34 @@ flutter341.buildFlutterApplication (finalAttrs: {
   # Install .desktop file.
   desktopItems = [
     (makeDesktopItem {
-      name = "sideswap";
-      exec = finalAttrs.meta.mainProgram;
-      desktopName = "SideSwap";
-      genericName = "L-USDT Wallet";
-      icon = "sideswap";
-      comment = finalAttrs.meta.description;
       categories = [
         "Finance"
         "Network"
       ];
+
+      comment = finalAttrs.meta.description;
+      desktopName = "SideSwap";
+      exec = finalAttrs.meta.mainProgram;
+      genericName = "L-USDT Wallet";
+      icon = "sideswap";
+      name = "sideswap";
       startupNotify = true;
       startupWMClass = "Sideswap";
       terminal = false;
     })
   ];
-  nativeBuildInputs = [
-    copyDesktopItems
-  ];
+
+  # Provide OpenGL and libsideswap_client.so for the Flutter application.
+  extraWrapProgramArgs = ''
+    --prefix LD_LIBRARY_PATH : ${
+      lib.makeLibraryPath [
+        libsideswap-client
+      ]
+    }
+  '';
+
+  gitHashes = lib.importJSON ./git-hashes.json;
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
 
   passthru = {
     # Expose lib to access it via sideswap.lib from the update script.
@@ -110,6 +111,7 @@ flutter341.buildFlutterApplication (finalAttrs: {
           "--output"
           ./git-hashes.json
         ];
+
         supportedFeatures = [ ];
       }
 
@@ -125,8 +127,8 @@ flutter341.buildFlutterApplication (finalAttrs: {
     description = "Cross‑platform, non‑custodial wallet and atomic swap marketplace for the Liquid Network";
     homepage = "https://sideswap.io/";
     license = lib.licenses.gpl3Only;
-    mainProgram = "sideswap";
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ starius ];
+    platforms = lib.platforms.linux;
+    mainProgram = "sideswap";
   };
 })

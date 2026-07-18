@@ -23,8 +23,6 @@ stdenv.mkDerivation {
     sha256 = "1p65yxr00k35g4bnagszp8i03pmhnrcmipgrdsawps2ba8faqp6r";
   };
 
-  nativeBuildInputs = [ shellcheck ];
-
   postPatch = ''
     substituteInPlace checkup.bash \
       --replace curl ${curl}/bin/curl \
@@ -32,6 +30,8 @@ stdenv.mkDerivation {
       --replace grep ${gnugrep}/bin/grep \
       --replace sed ${gnused}/bin/sed
   '';
+
+  nativeBuildInputs = [ shellcheck ];
 
   installPhase = ''
     runHook preInstall

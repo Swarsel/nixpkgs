@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  vulkan-headers,
-  vulkan-loader,
   glslang,
   opencv,
   protobuf,
+  vulkan-headers,
+  vulkan-loader,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,6 +22,15 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   patches = [ ./cmakelists.patch ];
+  nativeBuildInputs = [ cmake ];
+
+  buildInputs = [
+    vulkan-headers
+    vulkan-loader
+    glslang
+    opencv
+    protobuf
+  ];
 
   cmakeFlags = [
     "-DNCNN_CMAKE_VERBOSE=1" # Only for debugging the build
@@ -35,16 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   # Requires setting `Vulkan_LIBRARY` on Darwin. Otherwise the build fails due to missing symbols.
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ "-DVulkan_LIBRARY=-lvulkan" ];
-
-  nativeBuildInputs = [ cmake ];
-
-  buildInputs = [
-    vulkan-headers
-    vulkan-loader
-    glslang
-    opencv
-    protobuf
-  ];
 
   meta = {
     description = "Neural network inference framework";

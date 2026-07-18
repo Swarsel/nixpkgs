@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pymupdf,
+  buildPythonPackage,
   llm,
   llm-pdf-to-images,
-  pytestCheckHook,
+  pymupdf,
   pytest-asyncio,
+  pytestCheckHook,
+  setuptools,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "llm-pdf-to-images";
   version = "0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -23,6 +22,11 @@ buildPythonPackage rec {
     hash = "sha256-UWtCPdKrGE93NNjCroct5fPhq1pWIkngXXtRb+BHm8k=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,13 +34,8 @@ buildPythonPackage rec {
     pymupdf
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "llm_pdf_to_images" ];
-
   passthru.tests = llm.mkPluginTest llm-pdf-to-images;
 
   meta = {

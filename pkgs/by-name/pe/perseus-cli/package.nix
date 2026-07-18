@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
   makeWrapper,
+  rustPlatform,
   wasm-pack,
 }:
 
@@ -15,9 +15,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-IYjLx9/4oWSXa4jhOtGw1GOHmrR7LQ6bWyN5zbOuEFs=";
   };
 
-  cargoHash = "sha256-9McjhdS6KrFgtWIaP0qKsUYpPxGQjNX7SM9gJ/aJGwc=";
-
   nativeBuildInputs = [ makeWrapper ];
+  cargoHash = "sha256-9McjhdS6KrFgtWIaP0qKsUYpPxGQjNX7SM9gJ/aJGwc=";
 
   postInstall = ''
     wrapProgram $out/bin/perseus \
@@ -25,10 +24,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://framesurge.sh/perseus/en-US";
     description = "High-level web development framework for Rust with full support for server-side rendering and static generation";
-    maintainers = with lib.maintainers; [ max-niederman ];
+    homepage = "https://framesurge.sh/perseus/en-US";
     license = with lib.licenses; [ mit ];
+    maintainers = with lib.maintainers; [ max-niederman ];
     mainProgram = "perseus";
   };
 })

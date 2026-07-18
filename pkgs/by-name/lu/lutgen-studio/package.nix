@@ -1,20 +1,18 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  makeWrapper,
-
   fontconfig,
   libGL,
-  libxkbcommon,
-  openssl,
-  wayland,
-  libxrandr,
-  libxi,
-  libxcursor,
   libx11,
-
+  libxcursor,
+  libxi,
+  libxkbcommon,
+  libxrandr,
+  makeWrapper,
   nix-update-script,
+  openssl,
+  rustPlatform,
+  wayland,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -28,18 +26,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-8sayt1gLJPdhesUvSoykUYjIiGLRJH5avsRSrWLfIVE=";
   };
 
-  cargoHash = "sha256-CJXobmGOFEOiycrtgKjupVwTCYLMQcEI7RdLGpwmSyg=";
-
-  cargoBuildFlags = [
-    "--bin"
-    "lutgen-studio"
-  ];
-  cargoTestFlags = [
-    "-p"
-    "lutgen-studio"
-  ];
-
   nativeBuildInputs = [ makeWrapper ];
+  cargoHash = "sha256-CJXobmGOFEOiycrtgKjupVwTCYLMQcEI7RdLGpwmSyg=";
 
   postInstall =
     let
@@ -61,6 +49,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
         --set LD_LIBRARY_PATH "${LD_LIBRARY_PATH}"
     '';
 
+  cargoBuildFlags = [
+    "--bin"
+    "lutgen-studio"
+  ];
+
+  cargoTestFlags = [
+    "-p"
+    "lutgen-studio"
+  ];
+
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version-regex=^lutgen-studio-v([0-9.]+)$" ];
   };
@@ -68,8 +66,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Official GUI for Lutgen, the best way to apply popular colorschemes to any image or wallpaper";
     homepage = "https://github.com/ozwaldorf/lutgen-rs";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ozwaldorf ];
     mainProgram = "lutgen-studio";
-    license = lib.licenses.mit;
   };
 })

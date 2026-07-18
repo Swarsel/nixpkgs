@@ -2,17 +2,16 @@
   lib,
   buildPythonPackage,
   fetchFromCodeberg,
-  setuptools,
   lark,
   numpy,
-  sympy,
   pytestCheckHook,
+  setuptools,
+  sympy,
 }:
 
 buildPythonPackage rec {
   pname = "liberty-parser";
   version = "0.0.29";
-  pyproject = true;
 
   src = fetchFromCodeberg {
     owner = "tok";
@@ -27,6 +26,10 @@ buildPythonPackage rec {
       --replace-fail "/tmp" "$TMPDIR"
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
   ];
@@ -37,13 +40,11 @@ buildPythonPackage rec {
     sympy
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
   enabledTestPaths = [
     "src/liberty/*.py"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "liberty.parser"
@@ -52,12 +53,14 @@ buildPythonPackage rec {
   meta = {
     description = "Liberty parser for Python";
     homepage = "https://codeberg.org/tok/liberty-parser";
+
     license = with lib.licenses; [
       asl20
       cc-by-sa-40
       cc0
       gpl3Plus
     ];
+
     maintainers = with lib.maintainers; [ eljamm ];
     teams = with lib.teams; [ ngi ];
   };

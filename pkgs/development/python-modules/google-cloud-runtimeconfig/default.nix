@@ -12,13 +12,22 @@
 buildPythonPackage rec {
   pname = "google-cloud-runtimeconfig";
   version = "0.36.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_runtimeconfig";
     inherit version;
     hash = "sha256-+pDFyELolBTJfz/RIoNbGNHC30tyKhZ7D6XiQTKO2t0=";
+    pname = "google_cloud_runtimeconfig";
   };
+
+  nativeCheckInputs = [
+    mock
+    pytestCheckHook
+  ];
+
+  # prevent google directory from shadowing google imports
+  preCheck = ''
+    rm -r google
+  '';
 
   build-system = [ setuptools ];
 
@@ -27,19 +36,9 @@ buildPythonPackage rec {
     google-cloud-core
   ];
 
-  nativeCheckInputs = [
-    mock
-    pytestCheckHook
-  ];
-
   # Client tests require credentials
   disabledTests = [ "client_options" ];
-
-  # prevent google directory from shadowing google imports
-  preCheck = ''
-    rm -r google
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "google.cloud.runtimeconfig" ];
 
   meta = {

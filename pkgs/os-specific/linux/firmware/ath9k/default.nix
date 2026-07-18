@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   fetchFromGitHub,
-  m4,
   cmake,
+  m4,
   perl,
   writeScript,
   enableUnstable ? false,
@@ -57,9 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
     # FIXME remove when the normal version has moved on
     + lib.optionalString (!enableUnstable) " -fpermissive";
 
-  dontUseCmakeConfigure = true;
-  enableParallelBuilding = true;
-
   # The firmware repository builds its own toolchain, with patches
   # applied to the xtensa support in both gcc and binutils.
   preBuild =
@@ -80,9 +77,9 @@ stdenv.mkDerivation (finalAttrs: {
             (map (
               vname:
               fetchurl rec {
-                url = urls-and-hashes."${(toUpper vname) + "_URL"}";
-                sha256 = urls-and-hashes."${(toUpper vname) + "_SUM"}" or "";
                 name = last (splitString "/" url);
+                sha256 = urls-and-hashes."${(toUpper vname) + "_SUM"}" or "";
+                url = urls-and-hashes."${(toUpper vname) + "_URL"}";
               }
             ))
             (map (v: "ln -sT ${v} toolchain/dl/${v.name}"))
@@ -94,11 +91,6 @@ stdenv.mkDerivation (finalAttrs: {
       ${make-links}
     '';
 
-  makeTargets = [
-    "toolchain"
-    "firmware"
-  ];
-
   installPhase = ''
     runHook preInstall
     install -Dt "$out/lib/firmware/ath9k_htc/" target_firmware/*.fw
@@ -108,14 +100,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontUseCmakeConfigure = true;
+  enableParallelBuilding = true;
+
+  makeTargets = [
+    "toolchain"
+    "firmware"
+  ];
+
   passthru = {
     inherit (finalAttrs) src;
-    updateScript = writeScript "${finalAttrs.pname}-${finalAttrs.version}-updateScript" ''
-      nix-shell '<nixpkgs>' -A ${finalAttrs.pname}${lib.optionalString enableUnstable "-unstable"}.passthru.update \
-      > pkgs/os-specific/linux/firmware/ath9k/urls-and-hashes-${finalAttrs.version}.nix
-    '';
+
     update = stdenv.mkDerivation {
       name = "${finalAttrs.pname}-${finalAttrs.version}-update";
+
       shellHook = ''
         echo 'rec {'
         echo '  BASEDIR="$NIX_BUILD_TOP";'
@@ -143,10 +141,16 @@ stdenv.mkDerivation (finalAttrs: {
         exit
       '';
     };
+
+    updateScript = writeScript "${finalAttrs.pname}-${finalAttrs.version}-updateScript" ''
+      nix-shell '<nixpkgs>' -A ${finalAttrs.pname}${lib.optionalString enableUnstable "-unstable"}.passthru.update \
+      > pkgs/os-specific/linux/firmware/ath9k/urls-and-hashes-${finalAttrs.version}.nix
+    '';
   };
 
   meta = {
     description = "Blobless, open source wifi firmware for ath9k_htc.ko";
+
     longDescription = ''
       Firmware for Qualcomm Atheros cards which use the ath9k_htc.ko
       Linux driver, supporting 802.11 abgn on both 2.4ghz and 5ghz
@@ -164,6 +168,10 @@ stdenv.mkDerivation (finalAttrs: {
       dedicated general-purpose CPUs.  This source code allows you
       to see what those CPUs are doing and modify their behavior.
     '';
+
+    homepage = "http://lists.infradead.org/mailman/listinfo/ath9k_htc_fw";
+    changelog = "https://github.com/qca/open-ath9k-htc-firmware/tags";
+
     license = with lib.licenses; [
       # see NOTICE.txt for details
       bsd3 # almost everything; "the ClearBSD licence"
@@ -184,12 +192,9 @@ stdenv.mkDerivation (finalAttrs: {
           isPower64
         ];
     */
-
     sourceProvenance = [ lib.sourceTypes.fromSource ];
-    homepage = "http://lists.infradead.org/mailman/listinfo/ath9k_htc_fw";
-    downloadPage = "https://github.com/qca/open-ath9k-htc-firmware";
-    changelog = "https://github.com/qca/open-ath9k-htc-firmware/tags";
     # The last successful Darwin Hydra build was in 2024
     broken = stdenv.hostPlatform.isDarwin;
+    downloadPage = "https://github.com/qca/open-ath9k-htc-firmware";
   };
 })

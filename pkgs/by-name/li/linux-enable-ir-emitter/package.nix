@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  makeWrapper,
   fetchFromGitHub,
+  argparse,
+  gtk3,
+  makeWrapper,
   meson,
   ninja,
   pkg-config,
-  argparse,
-  gtk3,
   python3,
   spdlog,
   usbutils,
@@ -56,7 +56,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/EmixamPP/linux-enable-ir-emitter";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fufexan ];
-    mainProgram = "linux-enable-ir-emitter";
     platforms = lib.platforms.linux;
+    mainProgram = "linux-enable-ir-emitter";
   };
 })

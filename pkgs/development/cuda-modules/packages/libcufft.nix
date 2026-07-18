@@ -1,6 +1,5 @@
 { buildRedist }:
 buildRedist {
-  redistName = "cuda";
   pname = "libcufft";
 
   outputs = [
@@ -11,6 +10,8 @@ buildRedist {
     "static"
     "stubs"
   ];
+
+  redistName = "cuda";
 
   meta = {
     description = "High-performance FFT product CUDA library";

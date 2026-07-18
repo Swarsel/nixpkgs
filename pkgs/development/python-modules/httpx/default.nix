@@ -1,6 +1,7 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   anyio,
   brotli,
   brotlicffi,
@@ -8,7 +9,6 @@
   certifi,
   chardet,
   click,
-  fetchFromGitHub,
   h2,
   hatch-fancy-pypi-readme,
   hatchling,
@@ -17,12 +17,12 @@
   isPyPy,
   multipart,
   pygments,
+  pytest-asyncio,
+  pytest-trio,
+  pytestCheckHook,
   python,
   rich,
   socksio,
-  pytestCheckHook,
-  pytest-asyncio,
-  pytest-trio,
   trustme,
   uvicorn,
   zstandard,
@@ -31,37 +31,12 @@
 buildPythonPackage rec {
   pname = "httpx";
   version = "0.28.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "encode";
     repo = "httpx";
     tag = version;
     hash = "sha256-tB8uZm0kPRnmeOvsDdrkrHcMVIYfGanB4l/xHsTKpgE=";
-  };
-
-  build-system = [
-    hatch-fancy-pypi-readme
-    hatchling
-  ];
-
-  dependencies = [
-    anyio
-    certifi
-    httpcore
-    idna
-  ];
-
-  optional-dependencies = {
-    brotli = if isPyPy then [ brotlicffi ] else [ brotli ];
-    cli = [
-      click
-      rich
-      pygments
-    ];
-    http2 = [ h2 ];
-    socks = [ socksio ];
-    zstd = [ zstandard ];
   };
 
   # trustme uses pyopenssl
@@ -83,10 +58,21 @@ buildPythonPackage rec {
     export PYTHONPATH=$out/${python.sitePackages}:$PYTHONPATH
   '';
 
-  pytestFlags = [
-    "-Wignore::DeprecationWarning"
-    "-Wignore::trio.TrioDeprecationWarning"
+  __darwinAllowLocalNetworking = true;
+
+  build-system = [
+    hatch-fancy-pypi-readme
+    hatchling
   ];
+
+  dependencies = [
+    anyio
+    certifi
+    httpcore
+    idna
+  ];
+
+  disabledTestPaths = [ "tests/test_main.py" ];
 
   disabledTests = [
     # httpcore.ConnectError: [Errno 101] Network is unreachable
@@ -102,22 +88,38 @@ buildPythonPackage rec {
     "test_response_decode_text_using_autodetect"
   ];
 
-  disabledTestPaths = [ "tests/test_main.py" ];
+  optional-dependencies = {
+    brotli = if isPyPy then [ brotlicffi ] else [ brotli ];
+
+    cli = [
+      click
+      rich
+      pygments
+    ];
+
+    http2 = [ h2 ];
+    socks = [ socksio ];
+    zstd = [ zstandard ];
+  };
+
+  pyproject = true;
+
+  pytestFlags = [
+    "-Wignore::DeprecationWarning"
+    "-Wignore::trio.TrioDeprecationWarning"
+  ];
 
   pythonImportsCheck = [ "httpx" ];
-
-  __darwinAllowLocalNetworking = true;
-
   # stdenv's fake SSL_CERT_FILE breaks default http transport constructor with:
   # FileNotFoundError: [Errno 2] No such file or directory
   setupHook = ./setup-hook.sh;
 
   meta = {
-    changelog = "https://github.com/encode/httpx/blob/${src.rev}/CHANGELOG.md";
     description = "Next generation HTTP client";
-    mainProgram = "httpx";
     homepage = "https://github.com/encode/httpx";
+    changelog = "https://github.com/encode/httpx/blob/${src.rev}/CHANGELOG.md";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "httpx";
   };
 }

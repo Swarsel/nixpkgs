@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  gitUpdater,
-  nixosTests,
   bash,
   boost,
   cmake,
+  gitUpdater,
   inotify-tools,
-  pkg-config,
-  mir,
   libxkbcommon,
+  mir,
+  nixosTests,
+  pkg-config,
   swaybg,
   wayland,
 }:
@@ -55,15 +55,18 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru = {
-    updateScript = gitUpdater { rev-prefix = "v"; };
     providedSessions = [ "miriway" ];
+
     tests = {
       inherit (nixosTests) miriway;
     };
+
+    updateScript = gitUpdater { rev-prefix = "v"; };
   };
 
   meta = {
     description = "Mir based Wayland compositor";
+
     longDescription = ''
       Miriway is a starting point for creating a Wayland based desktop environment using Mir.
 
@@ -85,10 +88,11 @@ stdenv.mkDerivation (finalAttrs: {
       Miriway has been tested with shell components from several desktop environments and there are notes on
       enabling these in miriway-shell.config.
     '';
+
     homepage = "https://github.com/Miriway/Miriway";
     license = lib.licenses.gpl3Only;
+    maintainers = with lib.maintainers; [ OPNA2608 ];
     platforms = lib.platforms.linux;
     mainProgram = "miriway";
-    maintainers = with lib.maintainers; [ OPNA2608 ];
   };
 })

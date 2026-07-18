@@ -235,60 +235,83 @@ in
   options.services.kismet = {
     enable = mkEnableOption "kismet";
     package = mkPackageOption pkgs "kismet" { };
-    user = mkOption {
-      description = "The user to run Kismet as.";
-      type = types.str;
-      default = "kismet";
-    };
-    group = mkOption {
-      description = "The group to run Kismet as.";
-      type = types.str;
-      default = "kismet";
-    };
-    serverName = mkOption {
-      description = "The name of the server.";
-      type = types.str;
-      default = "Kismet";
-    };
-    serverDescription = mkOption {
-      description = "The description of the server.";
-      type = types.str;
-      default = "NixOS Kismet server";
-    };
-    logTypes = mkOption {
-      description = "The log types.";
-      type = with types; listOf str;
-      default = [ "kismet" ];
-    };
+
     dataDir = mkOption {
+      default = "/var/lib/kismet";
       description = "The Kismet data directory.";
       type = types.path;
-      default = "/var/lib/kismet";
     };
+
+    extraConfig = mkOption {
+      default = "";
+
+      description = ''
+        Literal Kismet config lines appended to the site config.
+        Note that `services.kismet.settings` allows you to define
+        all options here using Nix attribute sets.
+      '';
+
+      example = ''
+        # Looks like the following in `services.kismet.settings`:
+        # wepkey = [ "00:DE:AD:C0:DE:00" "FEEDFACE42" ];
+        wepkey=00:DE:AD:C0:DE:00,FEEDFACE42
+      '';
+
+      type = types.str;
+    };
+
+    group = mkOption {
+      default = "kismet";
+      description = "The group to run Kismet as.";
+      type = types.str;
+    };
+
     httpd = {
       enable = mkOption {
+        default = false;
         description = "True to enable the HTTP server.";
         type = types.bool;
-        default = false;
       };
+
       address = mkOption {
+        default = "127.0.0.1";
         description = "The address to listen on. Note that this cannot be a hostname or Kismet will not start.";
         type = types.str;
-        default = "127.0.0.1";
       };
+
       port = mkOption {
+        default = 2501;
         description = "The port to listen on.";
         type = types.port;
-        default = 2501;
       };
     };
+
+    logTypes = mkOption {
+      default = [ "kismet" ];
+      description = "The log types.";
+      type = with types; listOf str;
+    };
+
+    serverDescription = mkOption {
+      default = "NixOS Kismet server";
+      description = "The description of the server.";
+      type = types.str;
+    };
+
+    serverName = mkOption {
+      default = "Kismet";
+      description = "The name of the server.";
+      type = types.str;
+    };
+
     settings = mkOption {
+      default = { };
+
       description = ''
         Options for Kismet. See:
         https://www.kismetwireless.net/docs/readme/configuring/configfiles/
       '';
-      default = { };
-      type = topLevel;
+
       example = literalExpression ''
         {
           /* Examples for atoms */
@@ -343,20 +366,14 @@ in
           ];
         }
       '';
+
+      type = topLevel;
     };
-    extraConfig = mkOption {
-      description = ''
-        Literal Kismet config lines appended to the site config.
-        Note that `services.kismet.settings` allows you to define
-        all options here using Nix attribute sets.
-      '';
-      default = "";
+
+    user = mkOption {
+      default = "kismet";
+      description = "The user to run Kismet as.";
       type = types.str;
-      example = ''
-        # Looks like the following in `services.kismet.settings`:
-        # wepkey = [ "00:DE:AD:C0:DE:00" "FEEDFACE42" ];
-        wepkey=00:DE:AD:C0:DE:00,FEEDFACE42
-      '';
     };
   };
 
@@ -366,35 +383,19 @@ in
       settings =
         cfg.settings
         // {
-          server_name = cfg.serverName;
-          server_description = cfg.serverDescription;
-          logging_enabled = cfg.logTypes != [ ];
           log_types = cfg.logTypes;
+          logging_enabled = cfg.logTypes != [ ];
+          server_description = cfg.serverDescription;
+          server_name = cfg.serverName;
         }
         // optionalAttrs cfg.httpd.enable {
-          httpd_bind_address = cfg.httpd.address;
-          httpd_port = cfg.httpd.port;
           httpd_auth_file = "${configDir}/kismet_httpd.conf";
+          httpd_bind_address = cfg.httpd.address;
           httpd_home = "${cfg.package}/share/kismet/httpd";
+          httpd_port = cfg.httpd.port;
         };
     in
     mkIf cfg.enable {
-      systemd.tmpfiles.settings = {
-        "10-kismet" = {
-          ${cfg.dataDir} = {
-            d = {
-              inherit (cfg) user group;
-              mode = "0750";
-            };
-          };
-          ${configDir} = {
-            d = {
-              inherit (cfg) user group;
-              mode = "0750";
-            };
-          };
-        };
-      };
       systemd.services.kismet =
         let
           kismetConf = pkgs.writeText "kismet.conf" ''
@@ -403,13 +404,13 @@ in
           '';
         in
         {
-          description = "Kismet monitoring service";
-          wants = [ "basic.target" ];
           after = [
             "basic.target"
             "network.target"
           ];
-          wantedBy = [ "multi-user.target" ];
+
+          description = "Kismet monitoring service";
+
           serviceConfig =
             let
               capabilities = [
@@ -451,7 +452,9 @@ in
               '';
             in
             {
-              Type = "simple";
+              AmbientCapabilities = capabilities;
+              CapabilityBoundingSet = capabilities;
+
               ExecStart = escapeShellArgs [
                 "${cfg.package}/bin/kismet"
                 "--homedir"
@@ -464,12 +467,10 @@ in
                 "-f"
                 "${configDir}/kismet.conf"
               ];
-              WorkingDirectory = cfg.dataDir;
+
               ExecStartPre = "+${kismetPreStart}";
-              Restart = "always";
+              Group = cfg.group;
               KillMode = "control-group";
-              CapabilityBoundingSet = capabilities;
-              AmbientCapabilities = capabilities;
               LockPersonality = true;
               NoNewPrivileges = true;
               PrivateDevices = false;
@@ -484,23 +485,47 @@ in
               ProtectKernelTunables = true;
               ProtectProc = "invisible";
               ProtectSystem = "full";
+              Restart = "always";
               RestrictNamespaces = true;
               RestrictSUIDSGID = true;
-              User = cfg.user;
-              Group = cfg.group;
-              UMask = "0007";
               TimeoutStopSec = 30;
+              Type = "simple";
+              UMask = "0007";
+              User = cfg.user;
+              WorkingDirectory = cfg.dataDir;
             };
 
           # Allow it to restart if the wifi interface is not up
           unitConfig.StartLimitIntervalSec = 5;
+          wantedBy = [ "multi-user.target" ];
+          wants = [ "basic.target" ];
         };
+
+      systemd.tmpfiles.settings = {
+        "10-kismet" = {
+          ${cfg.dataDir} = {
+            d = {
+              inherit (cfg) user group;
+              mode = "0750";
+            };
+          };
+
+          ${configDir} = {
+            d = {
+              inherit (cfg) user group;
+              mode = "0750";
+            };
+          };
+        };
+      };
+
       users.groups.${cfg.group} = { };
+
       users.users.${cfg.user} = {
         inherit (cfg) group;
         description = "User for running Kismet";
-        isSystemUser = true;
         home = cfg.dataDir;
+        isSystemUser = true;
       };
     };
 

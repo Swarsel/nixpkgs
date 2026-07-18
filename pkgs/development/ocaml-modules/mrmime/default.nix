@@ -1,4 +1,6 @@
 {
+  lib,
+  fetchurl,
   afl-persistent,
   alcotest,
   angstrom,
@@ -8,13 +10,11 @@
   buildDunePackage,
   cmdliner,
   emile,
-  fetchurl,
   fpath,
   hxd,
   ipaddr,
   jsonm,
   ke,
-  lib,
   mirage-crypto-rng,
   pecu,
   prettym,
@@ -49,6 +49,9 @@ buildDunePackage (finalAttrs: {
     bigstringaf
   ];
 
+  # Checks are not compatible with mirage-crypto-rng ≥ 1.0
+  doCheck = false;
+
   checkInputs = [
     afl-persistent
     alcotest
@@ -58,8 +61,6 @@ buildDunePackage (finalAttrs: {
     jsonm
     mirage-crypto-rng
   ];
-  # Checks are not compatible with mirage-crypto-rng ≥ 1.0
-  doCheck = false;
 
   meta = {
     description = "Parser and generator of mail in OCaml";

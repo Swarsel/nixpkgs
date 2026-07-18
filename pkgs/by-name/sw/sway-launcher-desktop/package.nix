@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchFromGitHub,
   fzf,
   gawk,
-  fetchFromGitHub,
   makeWrapper,
   nix-update-script,
 }:
@@ -23,11 +23,12 @@ stdenv.mkDerivation rec {
     patchShebangs ${pname}.sh
   '';
 
+  nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     fzf
     gawk
   ];
-  nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
     install -d $out/bin
@@ -45,16 +46,18 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "TUI Application launcher with Desktop Entry support";
-    mainProgram = "sway-launcher-desktop";
+
     longDescription = ''
       This is a TUI-based launcher menu made with bash and the amazing fzf.
       Despite its name, it does not (read: no longer) depend on the Sway window manager
       in any way and can be used with just about any WM.
     '';
+
     homepage = "https://github.com/Biont/sway-launcher-desktop";
     changelog = "https://github.com/Biont/sway-launcher-desktop/releases/tag/v${version}";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "sway-launcher-desktop";
   };
 }

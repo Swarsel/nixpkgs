@@ -20,6 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Aw2yg5KH618/lG+BQU8JZhQ/8qr6L3vWiEgUNu7aGYY=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   nativeBuildInputs = [
     meson
     ninja
@@ -32,11 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   dontWrapQtApps = true;
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   meta = {
     description = "Implementation of systemd/elogind for DFL";

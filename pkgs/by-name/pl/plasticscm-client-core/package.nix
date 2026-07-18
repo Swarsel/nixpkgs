@@ -1,23 +1,18 @@
 {
   buildFHSEnv,
-  extraLibs ? _: [ ],
-  extraPkgs ? _: [ ],
   libgcc,
   libz,
   plasticscm-client-core-unwrapped,
+  extraLibs ? _: [ ],
+  extraPkgs ? _: [ ],
 }:
 buildFHSEnv {
-  pname = "plasticscm-client-core";
   inherit (plasticscm-client-core-unwrapped) version meta;
+  pname = "plasticscm-client-core";
 
-  runScript = "/usr/bin/cm";
-
-  targetPkgs =
-    pkgs:
-    [
-      plasticscm-client-core-unwrapped
-    ]
-    ++ extraPkgs pkgs;
+  extraInstallCommands = ''
+    mv $out/bin/plasticscm-client-core $out/bin/cm
+  '';
 
   multiPkgs =
     pkgs:
@@ -41,7 +36,12 @@ buildFHSEnv {
     ]
     ++ extraLibs pkgs;
 
-  extraInstallCommands = ''
-    mv $out/bin/plasticscm-client-core $out/bin/cm
-  '';
+  runScript = "/usr/bin/cm";
+
+  targetPkgs =
+    pkgs:
+    [
+      plasticscm-client-core-unwrapped
+    ]
+    ++ extraPkgs pkgs;
 }

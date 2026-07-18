@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
   pytestCheckHook,
   ruamel-yaml,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "cwlformat";
   version = "2022.02.18";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rabix";
@@ -23,24 +22,23 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/rabix/cwl-format/pull/21
     (fetchpatch {
+      hash = "sha256-TZGK7T2gzxMvreCLtl3nkuPrqL2KzgrO3yCNmd5lY3g=";
       name = "fix-for-ruamel-yaml-0.17.23.patch";
       url = "https://github.com/rabix/cwl-format/commit/9d54330c73c454d2ccacd55e2d51a4145f282041.patch";
-      hash = "sha256-TZGK7T2gzxMvreCLtl3nkuPrqL2KzgrO3yCNmd5lY3g=";
     })
   ];
 
-  build-system = [ setuptools ];
-
-  dependencies = [ ruamel-yaml ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "cwlformat" ];
+  build-system = [ setuptools ];
+  dependencies = [ ruamel-yaml ];
 
   disabledTests = [
     # Test compares output
     "test_formatting_battery"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "cwlformat" ];
 
   meta = {
     description = "Code formatter for CWL";

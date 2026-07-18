@@ -1,31 +1,28 @@
 {
-  buildDunePackage,
+  alcotest,
   astring,
+  bheap,
+  buildDunePackage,
   digestif,
   fmt,
+  hex,
   jsonm,
   logs,
-  ocamlgraph,
-  uri,
-  repr,
-  ppx_irmin,
-  bheap,
-  uutf,
-  mtime,
   lwt,
+  mtime,
+  ocamlgraph,
   optint,
-  vector,
-  hex,
-  alcotest,
+  ppx_irmin,
   qcheck-alcotest,
+  repr,
+  uri,
+  uutf,
+  vector,
 }:
 
 buildDunePackage {
-  pname = "irmin";
-
   inherit (ppx_irmin) src version;
-
-  minimalOCamlVersion = "4.10";
+  pname = "irmin";
 
   propagatedBuildInputs = [
     astring
@@ -44,6 +41,8 @@ buildDunePackage {
     uutf
   ];
 
+  doCheck = true;
+
   checkInputs = [
     vector
     hex
@@ -51,7 +50,7 @@ buildDunePackage {
     qcheck-alcotest
   ];
 
-  doCheck = true;
+  minimalOCamlVersion = "4.10";
 
   meta = ppx_irmin.meta // {
     description = "Distributed database built on the same principles as Git";

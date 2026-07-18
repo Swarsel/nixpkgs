@@ -1,24 +1,23 @@
 {
   lib,
+  bip32,
   buildPythonPackage,
+  coincurve,
   fetchPypi,
-  setuptools,
   ledgercomm,
   packaging,
-  bip32,
-  coincurve,
+  setuptools,
   typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "ledger-bitcoin";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) version;
-    pname = "ledger_bitcoin";
     hash = "sha256-PLQpftflV++YNJzcvWZ+9zaMBH1oGMfNy8p6+YuABrY=";
+    pname = "ledger_bitcoin";
   };
 
   nativeBuildInputs = [ setuptools ];
@@ -31,6 +30,7 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "ledger_bitcoin" ];
 
   meta = {

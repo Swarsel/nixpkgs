@@ -7,12 +7,13 @@
 buildPythonPackage rec {
   pname = "inifile";
   version = "0.4.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     sha256 = "d9e5eb4708ebf13353c4cfce798ad47890a8bcc5fbae04630223d15d79f55e96";
   };
+
+  format = "setuptools";
 
   meta = {
     description = "Small INI library for Python";

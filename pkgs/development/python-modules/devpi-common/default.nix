@@ -1,25 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   lazy,
-  requests,
-  tomli,
-
   # tests
   packaging-legacy,
   pytestCheckHook,
+  requests,
+  # build-system
+  setuptools,
+  tomli,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "devpi-common";
   version = "4.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "devpi";
@@ -33,7 +29,10 @@ buildPythonPackage (finalAttrs: {
       --replace-fail '"setuptools_changelog_shortener",' ""
   '';
 
-  sourceRoot = "${finalAttrs.src.name}/common";
+  nativeCheckInputs = [
+    pytestCheckHook
+    packaging-legacy
+  ];
 
   build-system = [
     setuptools
@@ -45,18 +44,16 @@ buildPythonPackage (finalAttrs: {
     tomli
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    packaging-legacy
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "devpi_common" ];
+  sourceRoot = "${finalAttrs.src.name}/common";
 
   meta = {
-    homepage = "https://github.com/devpi/devpi";
     description = "Utilities jointly used by devpi-server and devpi-client";
+    homepage = "https://github.com/devpi/devpi";
     changelog = "https://github.com/devpi/devpi/blob/common-${finalAttrs.version}/common/CHANGELOG";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       confus
       lewo

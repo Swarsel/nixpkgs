@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  c-stdaux,
   fetchpatch,
   meson,
-  pkg-config,
   ninja,
-  c-stdaux,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -27,18 +27,19 @@ stdenv.mkDerivation rec {
   ];
 
   propagatedBuildInputs = [ c-stdaux ];
-
   doCheck = true;
 
   meta = {
-    homepage = "https://github.com/c-util/c-siphash";
     description = "Streaming-capable SipHash Implementation";
+    homepage = "https://github.com/c-util/c-siphash";
     changelog = "https://github.com/c-util/c-siphash/releases/tag/${src.tag}";
+
     license = with lib.licenses; [
       asl20
       lgpl2Plus
     ];
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [ qbisi ];
+    platforms = lib.platforms.unix;
   };
 }

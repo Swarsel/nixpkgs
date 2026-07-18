@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   asyncssh,
   bcrypt,
   buildPythonPackage,
-  fetchFromGitHub,
   fsspec,
   importlib-metadata,
   mock-ssh-server,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "sshfs";
   version = "2025.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fsspec";
@@ -25,6 +24,15 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-TrFrjORH6VebTBq+OHJUEr55DtjL58/b+qQLpbSU7MU=";
   };
+
+  nativeCheckInputs = [
+    importlib-metadata
+    mock-ssh-server
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     setuptools
@@ -36,24 +44,6 @@ buildPythonPackage rec {
     fsspec
   ];
 
-  optional-dependencies = {
-    bcrypt = [ asyncssh ] ++ asyncssh.optional-dependencies.bcrypt;
-    fido2 = [ asyncssh ] ++ asyncssh.optional-dependencies.fido2;
-    gssapi = [ asyncssh ] ++ asyncssh.optional-dependencies.gssapi;
-    libnacl = [ asyncssh ] ++ asyncssh.optional-dependencies.libnacl;
-    pkcs11 = [ asyncssh ] ++ asyncssh.optional-dependencies.pkcs11;
-    pyopenssl = [ asyncssh ] ++ asyncssh.optional-dependencies.pyOpenSSL;
-  };
-
-  __darwinAllowLocalNetworking = true;
-
-  nativeCheckInputs = [
-    importlib-metadata
-    mock-ssh-server
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # Test requires network access
     "test_config_expansions"
@@ -63,6 +53,16 @@ buildPythonPackage rec {
     "test_checksum"
   ];
 
+  optional-dependencies = {
+    bcrypt = [ asyncssh ] ++ asyncssh.optional-dependencies.bcrypt;
+    fido2 = [ asyncssh ] ++ asyncssh.optional-dependencies.fido2;
+    gssapi = [ asyncssh ] ++ asyncssh.optional-dependencies.gssapi;
+    libnacl = [ asyncssh ] ++ asyncssh.optional-dependencies.libnacl;
+    pkcs11 = [ asyncssh ] ++ asyncssh.optional-dependencies.pkcs11;
+    pyopenssl = [ asyncssh ] ++ asyncssh.optional-dependencies.pyOpenSSL;
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "sshfs" ];
 
   meta = {

@@ -1,9 +1,9 @@
 {
   lib,
-  SDL2,
-  fetchFromGitHub,
-  pkg-config,
   stdenv,
+  fetchFromGitHub,
+  SDL2,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,6 +17,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-vCScQmkODKZKbvrauuR9WNTjjKEvlomfzB0QifHxSVs=";
   };
 
+  outputs = [
+    "out"
+    "doc"
+  ];
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     SDL2
     pkg-config
@@ -28,13 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   makeFlags = [ "CC=${stdenv.cc.targetPrefix}c++" ];
 
-  outputs = [
-    "out"
-    "doc"
-  ];
-
-  strictDeps = true;
-
   installPhase = ''
     runHook preInstall
     install -Dm755 yapesdl -t ''${!outputBin}/bin/
@@ -43,13 +43,13 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://yape.plus4.net/";
     description = "Multiplatform Commodore 64 and 264 family emulator";
+    homepage = "http://yape.plus4.net/";
     changelog = "https://github.com/calmopyrin/yapesdl/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "yapesdl";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "yapesdl";
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

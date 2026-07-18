@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   mashumaro,
   orjson,
   poetry-core,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aiostreammagic";
   version = "2.13.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "noahhusby";
@@ -21,6 +20,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-9HDQdzPq2YyVZ0GHmtJcK5ppk3OPNevYtlPK26hJ0TI=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -30,9 +31,7 @@ buildPythonPackage (finalAttrs: {
     yarl
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "aiostreammagic" ];
 
   meta = {

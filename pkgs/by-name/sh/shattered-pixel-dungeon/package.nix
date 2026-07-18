@@ -1,6 +1,6 @@
 {
-  callPackage,
   fetchFromGitHub,
+  callPackage,
   nixosTests,
 }:
 
@@ -16,18 +16,16 @@ callPackage ./generic.nix rec {
   };
 
   patches = [ ];
-
   depsPath = ./deps.json;
+  desktopName = "Shattered Pixel Dungeon";
 
   passthru.tests = {
     shattered-pixel-dungeon-starts = nixosTests.shattered-pixel-dungeon;
   };
 
-  desktopName = "Shattered Pixel Dungeon";
-
   meta = {
+    description = "Traditional roguelike game with pixel-art graphics and simple interface";
     homepage = "https://shatteredpixel.com/";
     downloadPage = "https://github.com/00-Evan/shattered-pixel-dungeon/releases";
-    description = "Traditional roguelike game with pixel-art graphics and simple interface";
   };
 }

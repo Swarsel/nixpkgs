@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aenum,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   lark,
   poetry-core,
   poetry-dynamic-versioning,
@@ -16,8 +16,6 @@
 buildPythonPackage rec {
   pname = "python-ndn";
   version = "0.5.0";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "named-data";
@@ -41,10 +39,9 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonRelaxDeps = [ "lark" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "ndn" ];
+  pythonRelaxDeps = [ "lark" ];
 
   meta = {
     description = "NDN client library with AsyncIO support";

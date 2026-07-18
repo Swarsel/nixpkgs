@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
+  fftwFloat,
   obs-studio,
   pkg-config,
-  fftwFloat,
 }:
 
 stdenv.mkDerivation rec {
@@ -13,11 +13,11 @@ stdenv.mkDerivation rec {
   version = "1.8.1";
 
   src = fetchFromGitHub {
-    fetchSubmodules = true;
     owner = "phandasm";
     repo = "waveform";
     rev = "v${version}";
     hash = "sha256-Bg1n1yV4JzNFEXFNayNa1exsSZhmRJ0RLHDjLWmqGZE=";
+    fetchSubmodules = true;
   };
 
   postPatch = ''
@@ -32,6 +32,11 @@ stdenv.mkDerivation rec {
     pkg-config
   ];
 
+  buildInputs = [
+    obs-studio
+    fftwFloat
+  ];
+
   postFixup = ''
     mkdir -p $out/lib $out/share/obs/obs-plugins
     mv $out/${pname}/bin/64bit $out/lib/obs-plugins
@@ -39,16 +44,11 @@ stdenv.mkDerivation rec {
     rm -rf $out/${pname}
   '';
 
-  buildInputs = [
-    obs-studio
-    fftwFloat
-  ];
-
   meta = {
     description = "Audio spectral analysis plugin for OBS";
     homepage = "https://github.com/phandasm/waveform";
-    maintainers = with lib.maintainers; [ matthewcroughan ];
     license = lib.licenses.gpl3;
+    maintainers = with lib.maintainers; [ matthewcroughan ];
     # Hard coded x86_64 support
     platforms = [ "x86_64-linux" ];
   };

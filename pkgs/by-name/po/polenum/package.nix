@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "polenum";
   version = "1.7";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "Wh1t3Fox";
@@ -27,6 +26,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
     runHook postInstall
   '';
+
+  pyproject = false;
 
   meta = {
     description = "Tool to get the password policy from a windows machine";

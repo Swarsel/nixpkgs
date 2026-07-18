@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -17,8 +17,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-0ERiUx114EyoooPIVMCjiDkPb4/D0ZC/YuG14+30NPw=";
+  doInstallCheck = true;
 
-  subPackages = [ "." ];
+  installCheckPhase = ''
+    $out/bin/mc --version | grep ${finalAttrs.version} > /dev/null
+  '';
 
   patchPhase = ''
     sed -i "s/Version.*/Version = \"${finalAttrs.version}\"/g" cmd/build-constants.go
@@ -26,21 +29,19 @@ buildGoModule (finalAttrs: {
     sed -i "s/CommitID.*/CommitID = \"${finalAttrs.src.rev}\"/g" cmd/build-constants.go
   '';
 
-  doInstallCheck = true;
-  installCheckPhase = ''
-    $out/bin/mc --version | grep ${finalAttrs.version} > /dev/null
-  '';
-
+  subPackages = [ "." ];
   passthru.tests.minio = nixosTests.minio;
 
   meta = {
-    homepage = "https://github.com/minio/mc";
     description = "Replacement for ls, cp, mkdir, diff and rsync commands for filesystems and object storage";
+    homepage = "https://github.com/minio/mc";
+    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       bachp
       ryan4yin
     ];
+
     mainProgram = "mc";
-    license = lib.licenses.asl20;
   };
 })

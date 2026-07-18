@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  blas,
   cmake,
+  ctestCheckHook,
+  gfortran,
   lapack,
   which,
-  gfortran,
-  blas,
-  ctestCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,21 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-dHxLPrN00wwozagY2JyfZkD3sKUD2+BcnbjNgZepzFg=";
   };
+
+  postPatch = ''
+    sed '/^cmake_minimum_required/Is/VERSION [0-9]\.[0-9]/VERSION 3.5/' -i ./CMakeLists.txt
+  '';
+
+  nativeBuildInputs = [
+    cmake
+    which
+    gfortran
+  ];
+
+  buildInputs = [
+    blas
+    lapack
+  ];
 
   cmakeFlags =
     assert (blas.isILP64 == lapack.isILP64);
@@ -43,22 +58,7 @@ stdenv.mkDerivation (finalAttrs: {
       "-DBLA_VENDOR=Generic"
     ];
 
-  postPatch = ''
-    sed '/^cmake_minimum_required/Is/VERSION [0-9]\.[0-9]/VERSION 3.5/' -i ./CMakeLists.txt
-  '';
-
   doCheck = true;
-
-  nativeBuildInputs = [
-    cmake
-    which
-    gfortran
-  ];
-
-  buildInputs = [
-    blas
-    lapack
-  ];
 
   nativeCheckInputs = [
     ctestCheckHook

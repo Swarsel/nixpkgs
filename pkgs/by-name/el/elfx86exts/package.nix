@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,14 +19,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Decode x86 binaries and print out which instruction set extensions they use";
+
     longDescription = ''
       Disassemble a binary containing x86 instructions and print out which extensions it uses.
       Despite the utterly misleading name, this tool supports ELF and MachO binaries, and
       perhaps PE-format ones as well. (It used to be more limited.)
     '';
+
     homepage = "https://github.com/pkgw/elfx86exts";
-    maintainers = with lib.maintainers; [ rmcgibbo ];
     license = with lib.licenses; [ mit ];
+    maintainers = with lib.maintainers; [ rmcgibbo ];
     mainProgram = "elfx86exts";
   };
 })

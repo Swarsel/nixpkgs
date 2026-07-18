@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchsvn,
-  libx11,
-  imake,
   gccmakedep,
+  imake,
+  libx11,
 }:
 
 stdenv.mkDerivation {
@@ -21,17 +21,19 @@ stdenv.mkDerivation {
     imake
     gccmakedep
   ];
+
   buildInputs = [ libx11 ];
 
-  hardeningDisable = [ "format" ];
   installPhase = ''
     install -Dm755 xlife -t $out/bin
     install -Dm755 lifeconv -t $out/bin
   '';
 
+  hardeningDisable = [ "format" ];
+
   meta = {
-    homepage = "http://litwr2.atspace.eu/xlife.php";
     description = "Conway's Game of Life and other cellular automata, for X";
+    homepage = "http://litwr2.atspace.eu/xlife.php";
     license = lib.licenses.hpndSellVariant;
     maintainers = with lib.maintainers; [ djanatyn ];
     broken = stdenv.hostPlatform.isDarwin;

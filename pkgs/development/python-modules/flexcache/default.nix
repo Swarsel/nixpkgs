@@ -1,24 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  # checks
+  pytestCheckHook,
   # build-system
   setuptools,
   setuptools-scm,
-  wheel,
-
   # dependencies
   typing-extensions,
-
-  # checks
-  pytestCheckHook,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "flexcache";
   version = "0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hgrecco";
@@ -27,6 +23,10 @@ buildPythonPackage rec {
     hash = "sha256-MAbTe7NxzfRPzo/Wnb5SnPJvJWf6zVeYsaw/g9OJYSE=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
     setuptools-scm
@@ -34,11 +34,7 @@ buildPythonPackage rec {
   ];
 
   dependencies = [ typing-extensions ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "flexcache" ];
 
   meta = {

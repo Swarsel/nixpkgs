@@ -1,28 +1,27 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   installFonts,
   nix-update-script,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "paper-mono";
   version = "0.300";
-  __structuredAttrs = true;
-
-  outputs = [
-    "out"
-    "webfont"
-  ];
 
   src = fetchzip {
     url = "https://github.com/paper-design/paper-mono/releases/download/v${finalAttrs.version}/paper-mono-v${finalAttrs.version}.zip";
     hash = "sha256-coWJoVnVrzap8iG5UV84UVQOSDQzgF+a9G5/pn8nD6A=";
   };
 
+  outputs = [
+    "out"
+    "webfont"
+  ];
+
   strictDeps = true;
   nativeBuildInputs = [ installFonts ];
-
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

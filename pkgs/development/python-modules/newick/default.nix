@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools-scm,
-  pytestCheckHook,
+  buildPythonPackage,
   pytest-cov-stub,
+  pytestCheckHook,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "newick";
   version = "1.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dlce-eva";
@@ -26,6 +25,7 @@ buildPythonPackage rec {
     pytest-cov-stub
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "newick" ];
 
   meta = {

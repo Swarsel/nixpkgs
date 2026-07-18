@@ -1,17 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-
-  # build-system
-  poetry-core,
-
+  buildPythonPackage,
   # dependencies
   django,
   django-debug-toolbar,
+  fetchpatch,
   graphene-django,
-
+  # build-system
+  poetry-core,
   # tests
   pytest-django,
   pytestCheckHook,
@@ -20,7 +17,6 @@
 buildPythonPackage rec {
   pname = "django-graphiql-debug-toolbar";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "flavors";
@@ -33,20 +29,12 @@ buildPythonPackage rec {
     # Add compatibility for py-django-debug-toolbar >= 4.4.6
     # https://github.com/flavors/django-graphiql-debug-toolbar/pull/27
     (fetchpatch {
-      url = "https://github.com/flavors/django-graphiql-debug-toolbar/commit/2b42fdb1bc40109d9bb0ae1fb4d2163d13904724.patch";
       hash = "sha256-ywTLqXlAxA2DCacrJOqmB7jSzfpeuGTX2ETu0fKmhq4=";
+      url = "https://github.com/flavors/django-graphiql-debug-toolbar/commit/2b42fdb1bc40109d9bb0ae1fb4d2163d13904724.patch";
     })
   ];
 
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    django
-    django-debug-toolbar
-    graphene-django
-  ];
-
-  pythonImportsCheck = [ "graphiql_debug_toolbar" ];
+  doCheck = false; # tests broke with django-debug-toolbar 6.0
 
   nativeCheckInputs = [
     pytest-django
@@ -59,12 +47,21 @@ buildPythonPackage rec {
     export DJANGO_SETTINGS_MODULE=tests.settings
   '';
 
-  doCheck = false; # tests broke with django-debug-toolbar 6.0
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    django
+    django-debug-toolbar
+    graphene-django
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "graphiql_debug_toolbar" ];
 
   meta = {
-    changelog = "https://github.com/flavors/django-graphiql-debug-toolbar/releases/tag/${src.rev}";
     description = "Django Debug Toolbar for GraphiQL IDE";
     homepage = "https://github.com/flavors/django-graphiql-debug-toolbar";
+    changelog = "https://github.com/flavors/django-graphiql-debug-toolbar/releases/tag/${src.rev}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hexa ];
   };

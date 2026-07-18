@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   imagemagick,
+  makeWrapper,
   xwd,
 }:
 
@@ -18,12 +18,13 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-GsMeVR2wNivQguZ6B/0v39Td9VGHg+m3RtAG9DYkNmU=";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
+
   makeFlags = [
     "CC:=$(CC)"
     "PREFIX=${placeholder "out"}"
   ];
 
-  nativeBuildInputs = [ makeWrapper ];
   postInstall = ''
     wrapProgram $out/bin/ttygif \
       --prefix PATH : ${
@@ -35,11 +36,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/icholy/ttygif";
     description = "Convert terminal recordings to animated gifs";
-    platforms = lib.platforms.unix;
+    homepage = "https://github.com/icholy/ttygif";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ moaxcp ];
+    platforms = lib.platforms.unix;
     mainProgram = "ttygif";
   };
 })

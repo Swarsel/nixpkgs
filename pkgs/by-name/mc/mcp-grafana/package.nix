@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,16 +17,16 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-SovR9UxTqN397oczKgJqlJ9iOFnCrZGqPWhhfcjSNPg=";
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   postInstall = ''
     rm $out/bin/jsonschema
   '';
 
   __darwinAllowLocalNetworking = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
 
   meta = {
     description = "MCP server for Grafana";

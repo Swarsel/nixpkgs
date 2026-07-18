@@ -10,9 +10,9 @@ stdenv.mkDerivation {
   version = "0.5";
 
   src = fetchFromGitHub {
-    rev = "d5e653f0ab31d8d3fff79b2986f6ef9624d80fba";
     owner = "urbanadventurer";
     repo = "username-anarchy";
+    rev = "d5e653f0ab31d8d3fff79b2986f6ef9624d80fba";
     hash = "sha256-1he1FzNc6y7jm/UwedG81z5QGehh2qsd1QkAsIXwrag=";
   };
 
@@ -25,8 +25,8 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/urbanadventurer/username-anarchy/";
     description = "Username generator tool for penetration testing";
+    homepage = "https://github.com/urbanadventurer/username-anarchy/";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.akechishiro ];
     platforms = lib.platforms.unix;

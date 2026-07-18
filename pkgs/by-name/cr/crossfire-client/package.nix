@@ -1,28 +1,28 @@
 {
-  stdenv,
   lib,
-  fetchgit,
-  cmake,
-  pkg-config,
-  perl,
-  vala,
-  gtk2,
-  pcre,
-  zlib,
-  libGL,
-  libGLU,
-  libpng,
-  fribidi,
-  harfbuzzFull,
-  libxdmcp,
-  libpthread-stubs,
-  util-linux,
-  curl,
+  stdenv,
   SDL2,
   SDL2_image,
   SDL2_mixer,
+  cmake,
+  curl,
+  fetchgit,
+  fribidi,
+  gtk2,
+  harfbuzzFull,
+  libGL,
+  libGLU,
+  libpng,
+  libpthread-stubs,
   libselinux,
   libsepol,
+  libxdmcp,
+  pcre,
+  perl,
+  pkg-config,
+  util-linux,
+  vala,
+  zlib,
 }:
 
 stdenv.mkDerivation {
@@ -31,8 +31,8 @@ stdenv.mkDerivation {
 
   src = fetchgit {
     url = "https://git.code.sf.net/p/crossfire/crossfire-client";
-    hash = "sha256-iFm9yVEIBwngr8/0f9TRS4Uw0hnjrW6ngMRfsWY6TX0=";
     rev = "c69f578add358c1db567f6b46f532dd038d2ade0";
+    hash = "sha256-iFm9yVEIBwngr8/0f9TRS4Uw0hnjrW6ngMRfsWY6TX0=";
   };
 
   nativeBuildInputs = [
@@ -41,6 +41,7 @@ stdenv.mkDerivation {
     perl
     vala
   ];
+
   buildInputs = [
     gtk2
     pcre
@@ -60,14 +61,15 @@ stdenv.mkDerivation {
     libselinux
     libsepol
   ];
+
   hardeningDisable = [ "format" ];
 
   meta = {
     description = "GTKv2 client for the Crossfire free MMORPG";
-    mainProgram = "crossfire-client-gtk2";
     homepage = "http://crossfire.real-time.com/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "crossfire-client-gtk2";
   };
 }

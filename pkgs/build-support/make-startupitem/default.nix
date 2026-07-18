@@ -1,16 +1,16 @@
 # given a package with a $name.desktop file, makes a copy
 # as autostart item.
 
-{ stdenv, lib }:
+{ lib, stdenv }:
 {
   name, # name of the desktop file (without .desktop)
   package, # package where the desktop file resides in
-  srcPrefix ? "", # additional prefix that the desktop file may have in the 'package'
   after ? null,
+  appendExtraArgs ? [ ],
   condition ? null,
   phase ? "2",
   prependExtraArgs ? [ ],
-  appendExtraArgs ? [ ],
+  srcPrefix ? "", # additional prefix that the desktop file may have in the 'package'
 }:
 
 # the builder requires that
@@ -18,8 +18,9 @@
 # exists as file.
 
 stdenv.mkDerivation {
-  name = "autostart-${name}";
-  priority = 5;
+  # this will automatically put 'package' in the environment when you
+  # put its startup item in there.
+  propagatedBuildInputs = [ package ];
 
   buildCommand =
     let
@@ -41,7 +42,6 @@ stdenv.mkDerivation {
       cp $target $out/etc/xdg/autostart
     '';
 
-  # this will automatically put 'package' in the environment when you
-  # put its startup item in there.
-  propagatedBuildInputs = [ package ];
+  name = "autostart-${name}";
+  priority = 5;
 }

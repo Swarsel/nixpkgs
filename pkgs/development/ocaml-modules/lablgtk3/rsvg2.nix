@@ -7,12 +7,11 @@
 }:
 
 buildDunePackage {
-  pname = "lablgtk3-rsvg2";
-
   inherit (lablgtk3) version src;
-
+  pname = "lablgtk3-rsvg2";
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ dune-configurator ];
+
   propagatedBuildInputs = [
     lablgtk3
     librsvg

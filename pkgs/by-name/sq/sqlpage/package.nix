@@ -1,42 +1,42 @@
 {
   lib,
-  rustPlatform,
+  fetchurl,
   fetchFromGitHub,
   pkg-config,
+  rustPlatform,
   sqlite,
   unixodbc,
   zstd,
-  fetchurl,
 }:
 
 let
   apexcharts = {
-    url = "https://cdn.jsdelivr.net/npm/apexcharts@5.13.0/dist/apexcharts.min.js";
     hash = "sha256-DgRUn+X1cxT0z5O+QcrX48NuVrY1KhoCmHPvVZAvS8k=";
+    url = "https://cdn.jsdelivr.net/npm/apexcharts@5.13.0/dist/apexcharts.min.js";
   };
   tablerCss = {
-    url = "https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/css/tabler.min.css";
     hash = "sha256-fvdQvRBUamldCxJ2etgEi9jz7F3n2u+xBn+dDao9HJo=";
+    url = "https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/css/tabler.min.css";
   };
   tomSelectCss = {
-    url = "https://cdn.jsdelivr.net/npm/tom-select@2.6.1/dist/css/tom-select.bootstrap5.css";
     hash = "sha256-vW5UjM/Ka9/jIY8I5s5KcudaTRWh/cCGE1ZUsrJvlI0=";
+    url = "https://cdn.jsdelivr.net/npm/tom-select@2.6.1/dist/css/tom-select.bootstrap5.css";
   };
   tablerVendorsCss = {
-    url = "https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/css/tabler-vendors.min.css";
     hash = "sha256-/VPz9GtiH1Es1KGLY706UIayEEgG93B6aIBa3WzwKYc=";
+    url = "https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/css/tabler-vendors.min.css";
   };
   tablerJs = {
-    url = "https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/js/tabler.min.js";
     hash = "sha256-tgx2Fg6XYkV027jPEKvmrummSTtgCW/fwV3R3SvZnrk=";
+    url = "https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/js/tabler.min.js";
   };
   tablerIcons = {
-    url = "https://cdn.jsdelivr.net/npm/@tabler/icons-sprite@3.44.0/dist/tabler-sprite.svg";
     hash = "sha256-aHeH8IGC75mepyW2gj/aYrW7LCEtjobwxvGnVp5j3Uc=";
+    url = "https://cdn.jsdelivr.net/npm/@tabler/icons-sprite@3.44.0/dist/tabler-sprite.svg";
   };
   tomselect = {
-    url = "https://cdn.jsdelivr.net/npm/tom-select@2.6.1/dist/js/tom-select.popular.min.js";
     hash = "sha256-KmjMBvL4Ni3AYc9OCi9xSEuamESyLEBL4B2gzFrWPGE=";
+    url = "https://cdn.jsdelivr.net/npm/tom-select@2.6.1/dist/js/tom-select.popular.min.js";
   };
 in
 
@@ -76,8 +76,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --replace-fail "copy_url_to_opened_file(&client, sprite_url, &mut sprite_content).await;" "sprite_content = std::fs::read(sprite_url).unwrap();"
   '';
 
-  cargoHash = "sha256-w4GfkC+sAJRQgo9GEYm4buv+Q8id84wgRSV1WczZUBI=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -86,8 +84,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zstd
   ];
 
+  cargoHash = "sha256-w4GfkC+sAJRQgo9GEYm4buv+Q8id84wgRSV1WczZUBI=";
   env.ZSTD_SYS_USE_PKG_CONFIG = true;
-
   __darwinAllowLocalNetworking = true;
 
   meta = {

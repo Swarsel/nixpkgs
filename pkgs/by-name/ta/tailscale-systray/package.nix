@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  pkg-config,
+  buildGoModule,
   gtk3,
   libayatana-appindicator,
+  pkg-config,
 }:
 buildGoModule {
   pname = "tailscale-systray";
@@ -17,14 +17,14 @@ buildGoModule {
     sha256 = "sha256-3kozp6jq0xGllxoK2lGCNUahy/FvXyq11vNSxfDehKE=";
   };
 
-  vendorHash = "sha256-YJ74SeZAMS+dXyoPhPTJ3L+5uL5bF8gumhMOqfvmlms=";
-
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     gtk3
     libayatana-appindicator
   ];
 
+  vendorHash = "sha256-YJ74SeZAMS+dXyoPhPTJ3L+5uL5bF8gumhMOqfvmlms=";
   proxyVendor = true;
 
   meta = {

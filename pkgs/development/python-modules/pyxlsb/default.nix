@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "pyxlsb";
   version = "1.0.10";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
 
   # package has no tests
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "pyxlsb" ];
 
   meta = {

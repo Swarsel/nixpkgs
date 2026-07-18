@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  desktopToDarwinBundle,
+  SDL2,
   cmake,
-  ninja,
-  libogg,
+  desktopToDarwinBundle,
+  imagemagick,
+  libicns,
   libjpeg,
+  libmpg123,
+  libogg,
   libopenmpt,
   libpng,
   libvorbis,
-  libmpg123,
-  SDL2,
-  python3,
-  imagemagick,
-  libicns,
+  ninja,
   nix-update-script,
-  pvzDebug ? false, # cheat keys and other debug features
-  limboPage ? true, # access to limbo page with hidden minigame levels
+  python3,
   doFixBugs ? false, # fix bugs (which are usually considered features)
+  limboPage ? true, # access to limbo page with hidden minigame levels
+  pvzDebug ? false, # cheat keys and other debug features
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -84,13 +84,15 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Cross-platform community-driven reimplementation of Plants vs. Zombies GOTY";
     homepage = "https://github.com/wszqkzqk/PvZ-Portable";
     changelog = "https://github.com/wszqkzqk/PvZ-Portable/releases";
-    downloadPage = "https://github.com/wszqkzqk/PvZ-Portable/releases/tag/${finalAttrs.src.tag}";
+
     license = with lib.licenses; [
       lgpl3Plus
       free # PopCap Games Framework License: redistribution with or without modifications allowed
     ];
+
     maintainers = with lib.maintainers; [ ulysseszhan ];
     platforms = lib.platforms.all;
     mainProgram = "pvz-portable";
+    downloadPage = "https://github.com/wszqkzqk/PvZ-Portable/releases/tag/${finalAttrs.src.tag}";
   };
 })

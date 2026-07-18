@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cachecontrol,
-  fetchFromGitHub,
   legacy-cgi,
   lxml-html-clean,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pywebcopy";
   version = "7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rajatomar788";
@@ -23,6 +22,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-ee8uGg4PU1uch8cyiU7QfvdYFUVDz7obq9oC8fKkf1s=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,14 +33,13 @@ buildPythonPackage (finalAttrs: {
     six
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "pywebcopy" ];
-
   disabledTestPaths = [
     # Segfault
     "pywebcopy/tests/test_iterparser.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pywebcopy" ];
 
   meta = {
     description = "Python package for cloning complete webpages and websites to local storage";

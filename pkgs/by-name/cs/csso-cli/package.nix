@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 buildNpmPackage (finalAttrs: {
   pname = "csso-cli";
@@ -15,7 +15,6 @@ buildNpmPackage (finalAttrs: {
   };
 
   npmDepsHash = "sha256-IKy4o/tcNo0Hy49aTKAoHhfsR3xUNFYeBuvSoZXh0UI=";
-
   dontNpmBuild = true;
 
   meta = {
@@ -23,7 +22,7 @@ buildNpmPackage (finalAttrs: {
     homepage = "https://github.com/css/csso-cli";
     changelog = "https://github.com/css/csso-cli/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "csso";
     maintainers = with lib.maintainers; [ ners ];
+    mainProgram = "csso";
   };
 })

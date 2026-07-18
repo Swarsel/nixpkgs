@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "wifitui";
@@ -22,16 +22,18 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Fast featureful friendly wifi terminal UI";
-    mainProgram = "wifitui";
     homepage = "https://github.com/shazow/wifitui";
     changelog = "https://github.com/shazow/wifitui/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       shazow
     ];
+
     # wifitui has partial/experimental darwin support but mainly linux focused;
     # if someone needs this then would appreciate a darwin co-maintainer,
     # see: https://github.com/shazow/wifitui/issues/49
     platforms = lib.platforms.linux;
+    mainProgram = "wifitui";
   };
 })

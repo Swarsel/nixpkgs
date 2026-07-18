@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools-scm,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "bytecode";
   version = "0.18.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "MatthieuDartiailh";
@@ -19,14 +18,13 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools-scm ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "bytecode" ];
 
   meta = {
-    homepage = "https://github.com/vstinner/bytecode";
     description = "Python module to generate and modify bytecode";
+    homepage = "https://github.com/vstinner/bytecode";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ raboof ];
   };

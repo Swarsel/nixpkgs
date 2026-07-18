@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  rpmextract,
+  fetchurl,
   ncurses5,
   patchelf,
-  fetchurl,
+  rpmextract,
   unzip,
 }:
 
@@ -16,17 +16,14 @@ stdenv.mkDerivation rec {
     url = "https://docs.broadcom.com/docs-and-downloads/raid-controllers/raid-controllers-common-files/${
       builtins.replaceStrings [ "." ] [ "-" ] version
     }_MegaCLI.zip";
+
     sha256 = "1sdn58fbmd3fj4nzbajq3gcyw71ilgdh45r5p4sa6xmb7np55cfr";
   };
 
   nativeBuildInputs = [ unzip ];
+
   buildInputs = [
     rpmextract
-    ncurses5
-  ];
-  libPath = lib.makeLibraryPath [
-    stdenv.cc.cc
-    stdenv.cc.libc
     ncurses5
   ];
 
@@ -47,10 +44,16 @@ stdenv.mkDerivation rec {
     eval fixupPhase
   '';
 
+  libPath = lib.makeLibraryPath [
+    stdenv.cc.cc
+    stdenv.cc.libc
+    ncurses5
+  ];
+
   meta = {
     description = "CLI program for LSI MegaRAID cards, which also works with some Dell PERC RAID cards";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "MegaCli64";
   };

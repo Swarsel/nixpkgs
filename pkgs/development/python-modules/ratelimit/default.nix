@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   pytest-cov-stub,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "ratelimit";
   version = "2.2.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "tomasbasham";
@@ -24,7 +23,7 @@ buildPythonPackage rec {
   ];
 
   enabledTestPaths = [ "tests" ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "ratelimit" ];
 
   meta = {

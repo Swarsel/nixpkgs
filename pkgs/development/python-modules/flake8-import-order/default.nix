@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flake8,
   pycodestyle,
   pylama,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "flake8-import-order";
   version = "0.19.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "PyCQA";
@@ -21,10 +20,6 @@ buildPythonPackage rec {
     hash = "sha256-mXw3+pQMr2Ut1prj9sCZc4jyErDOyWJgq6OBPU1nZxs=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pycodestyle ];
-
   nativeCheckInputs = [
     flake8
     pycodestyle
@@ -32,6 +27,9 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ pycodestyle ];
+  pyproject = true;
   pythonImportsCheck = [ "flake8_import_order" ];
 
   meta = {

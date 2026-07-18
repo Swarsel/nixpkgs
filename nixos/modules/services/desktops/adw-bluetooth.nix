@@ -9,8 +9,6 @@ let
   cfg = config.services.adw-bluetooth;
 in
 {
-  meta.maintainers = with lib.maintainers; [ ezratweaver ];
-
   options.services.adw-bluetooth = {
     enable = lib.mkEnableOption "Adwaita Bluetooth daemon";
     package = lib.mkPackageOption pkgs "adw-bluetooth" { };
@@ -21,14 +19,18 @@ in
     services.dbus.packages = [ cfg.package ];
 
     systemd.user.services.adw-bluetooth-daemon = {
-      description = "AdwBluetooth Daemon";
-      wantedBy = [ "default.target" ];
       after = [ "bluetooth.target" ];
+      description = "AdwBluetooth Daemon";
+
       serviceConfig = {
-        Type = "dbus";
         BusName = "com.ezratweaver.AdwBluetoothDaemon";
         ExecStart = "${cfg.package}/libexec/adw-bluetooth-daemon";
+        Type = "dbus";
       };
+
+      wantedBy = [ "default.target" ];
     };
   };
+
+  meta.maintainers = with lib.maintainers; [ ezratweaver ];
 }

@@ -1,12 +1,12 @@
 {
-  buildOctavePackage,
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
   autoconf,
   automake,
+  buildOctavePackage,
   ffmpeg_7,
+  pkg-config,
 }:
 
 buildOctavePackage rec {
@@ -20,16 +20,6 @@ buildOctavePackage rec {
     hash = "sha256-fn9LNfuS9dSStBfzBjRRkvP50JJ5K+Em02J9+cHqt6w=";
   };
 
-  preBuild = ''
-    pushd src
-    patchShebangs bootstrap configure
-    ./bootstrap
-    ./configure
-    popd
-
-    tar --transform 's,^,video-${version}/,' -cz * -f video-${version}.tar.gz
-  '';
-
   nativeBuildInputs = [
     pkg-config
     autoconf
@@ -40,13 +30,25 @@ buildOctavePackage rec {
     ffmpeg_7
   ];
 
+  preBuild = ''
+    pushd src
+    patchShebangs bootstrap configure
+    ./bootstrap
+    ./configure
+    popd
+
+    tar --transform 's,^,video-${version}/,' -cz * -f video-${version}.tar.gz
+  '';
+
   meta = {
+    description = "Wrapper for OpenCV's CvCapture_FFMPEG and CvVideoWriter_FFMPEG";
     homepage = "https://gnu-octave.github.io/packages/video/";
+
     license = with lib.licenses; [
       gpl3Plus
       bsd3
     ];
+
     maintainers = with lib.maintainers; [ ravenjoad ];
-    description = "Wrapper for OpenCV's CvCapture_FFMPEG and CvVideoWriter_FFMPEG";
   };
 }

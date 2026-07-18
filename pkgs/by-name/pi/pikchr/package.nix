@@ -24,12 +24,10 @@ stdenv.mkDerivation {
   '';
 
   nativeBuildInputs = lib.optional enableTcl tcl.tclPackageHook;
-
   buildInputs = lib.optional enableTcl tcl;
-
   makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
-
   buildFlags = [ "pikchr" ] ++ lib.optional enableTcl "piktcl";
+  doCheck = true;
 
   installPhase = ''
     runHook preInstall
@@ -45,9 +43,6 @@ stdenv.mkDerivation {
   '';
 
   dontWrapTclBinaries = true;
-
-  doCheck = true;
-
   passthru.updateScript = ./update.sh;
 
   meta = {

@@ -1,26 +1,24 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   django,
+  fetchPypi,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "django-cleanup";
   version = "9.0.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "django_cleanup";
     inherit version;
     hash = "sha256-u5+1YKr2KVnIHjH6QIhcNrvVhU1aohuQ3yx+S6YzUx4=";
+    pname = "django_cleanup";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ django ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "django_cleanup" ];
 
   meta = {

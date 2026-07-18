@@ -1,16 +1,14 @@
 {
   lib,
   fetchurl,
-  buildDunePackage,
   backoff,
+  buildDunePackage,
   multicore-magic,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "saturn_lockfree";
   version = "0.5.0";
-
-  minimalOCamlVersion = "4.13";
 
   src = fetchurl {
     url = "https://github.com/ocaml-multicore/saturn/releases/download/${finalAttrs.version}/saturn-${finalAttrs.version}.tbz";
@@ -21,6 +19,8 @@ buildDunePackage (finalAttrs: {
     backoff
     multicore-magic
   ];
+
+  minimalOCamlVersion = "4.13";
 
   meta = {
     description = "Lock-free data structures for multicore OCaml";

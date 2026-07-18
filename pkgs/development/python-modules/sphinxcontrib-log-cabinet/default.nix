@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   sphinx,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "sphinxcontrib-log-cabinet";
   version = "1.0.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "davidism";
@@ -18,16 +17,14 @@ buildPythonPackage (finalAttrs: {
   };
 
   propagatedBuildInputs = [ sphinx ];
-
-  pythonImportsCheck = [ "sphinxcontrib.log_cabinet" ];
-
   doCheck = false; # no tests
-
+  format = "setuptools";
+  pythonImportsCheck = [ "sphinxcontrib.log_cabinet" ];
   pythonNamespaces = [ "sphinxcontrib" ];
 
   meta = {
-    homepage = "https://github.com/davidism/sphinxcontrib-log-cabinet";
     description = "Sphinx extension to organize changelogs";
+    homepage = "https://github.com/davidism/sphinxcontrib-log-cabinet";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kaction ];
   };

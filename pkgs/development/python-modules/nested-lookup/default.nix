@@ -1,7 +1,7 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
-  lib,
   pytestCheckHook,
   six,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "nested-lookup";
   version = "0.2.25";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -17,9 +16,8 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ six ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "nested_lookup" ];
 
   meta = {

@@ -1,14 +1,14 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 let
   version = "0.6.2";
 in
 buildGoModule {
-  pname = "ardugotools";
   inherit version;
+  pname = "ardugotools";
 
   src = fetchFromGitHub {
     owner = "randomouscrap98";
@@ -32,8 +32,8 @@ buildGoModule {
 
   meta = {
     description = "CLI toolset for Arduboy";
-    changelog = "https://github.com/randomouscrap98/ardugotools/releases/tag/v${version}";
     homepage = "https://github.com/randomouscrap98/ardugotools";
+    changelog = "https://github.com/randomouscrap98/ardugotools/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ luftmensch-luftmensch ];
     mainProgram = "ardugotools";

@@ -2,48 +2,48 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  autoPatchelfHook,
-  cmake,
-  file,
-  pkg-config,
-  python3,
   SDL2,
   SDL2_mixer,
+  autoPatchelfHook,
   cef-binary,
+  cmake,
   egl-wayland,
   ffmpeg,
   fftw,
+  file,
   freetype,
   glew,
   glfw,
   glm,
   gmp,
   kissfftFloat,
-  libxau,
-  libxdmcp,
-  libxpm,
-  libxrandr,
-  libxxf86vm,
   libdecor,
   libffi,
   libglut,
   libpng,
   libpulseaudio,
+  libxau,
+  libxdmcp,
+  libxpm,
+  libxrandr,
+  libxxf86vm,
   lz4,
   mpv,
+  nix-update-script,
+  pkg-config,
   pulseaudio,
+  python3,
   wayland,
   wayland-protocols,
   wayland-scanner,
   zlib,
-  nix-update-script,
 }:
 
 let
   cef = cef-binary.override {
     version = "135.0.17"; # follow upstream. https://github.com/Almamu/linux-wallpaperengine/blob/a8ce9b6aa14cc10f0396bbb74a16ca12ed3990dc/CMakeLists.txt#L47
-    gitRevision = "cbc1c5b";
     chromiumVersion = "135.0.7049.52";
+    gitRevision = "cbc1c5b";
 
     srcHashes = {
       aarch64-linux = "sha256-LK5JvtcmuwCavK7LnWmMF2UDpM5iIZOmsuZS/t9koDs=";
@@ -59,8 +59,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "Almamu";
     repo = "linux-wallpaperengine";
     rev = "a8ce9b6aa14cc10f0396bbb74a16ca12ed3990dc";
-    fetchSubmodules = true;
     hash = "sha256-S9tPlHugYdg5dbOW4OyDPPfVhxBg6purYhc+Bgt3ovM=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -126,12 +126,14 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Wallpaper Engine backgrounds for Linux";
     homepage = "https://github.com/Almamu/linux-wallpaperengine";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "linux-wallpaperengine";
     maintainers = [ ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
+    mainProgram = "linux-wallpaperengine";
     hydraPlatforms = [ "x86_64-linux" ]; # Hydra "aarch64-linux" fails with "Output limit exceeded"
   };
 })

@@ -1,13 +1,13 @@
 {
   lib,
-  linkFarm,
+  stdenv,
   clr,
+  emptyDirectory,
+  linkFarm,
+  magma-hip,
   ollama,
   python3Packages,
   rocmPackages,
-  magma-hip,
-  emptyDirectory,
-  stdenv,
 }:
 # This package exists purely to have a bunch of passthru.tests attrs
 let
@@ -27,30 +27,37 @@ let
   ];
 in
 stdenv.mkDerivation {
-  name = "rocm-tests";
+  src = emptyDirectory;
+
   nativeBuildInputs = [
     clr
   ];
-  src = emptyDirectory;
+
   postInstall = "mkdir -p $out";
+  name = "rocm-tests";
+
   passthru.tests = {
     ollama = ollama.override {
       inherit rocmPackages;
       acceleration = "rocm";
     };
+
     rocmPackagesDerivations = linkFarm "rocmPackagesDerivations" (
       map (x: {
         name = x.name;
         path = x.value;
       }) availableRocmDrvs
     );
+
     torch = python3Packages.torch.override {
       inherit rocmPackages;
-      rocmSupport = true;
       cudaSupport = false;
+
       magma-hip = magma-hip.override {
         inherit rocmPackages;
       };
+
+      rocmSupport = true;
     };
   };
 }

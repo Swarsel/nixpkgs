@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
-  tuya-device-sharing-sdk,
   pytestCheckHook,
   syrupy,
+  tuya-device-sharing-sdk,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "tuya-device-handlers";
   version = "0.0.25";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "home-assistant-libs";
@@ -20,20 +19,20 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-nJX7N3PCqMmlE2KipeCKTFLn91sJmzmPTizY9cxjnb0=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ tuya-device-sharing-sdk ];
-
   nativeCheckInputs = [
     pytestCheckHook
     syrupy
   ];
+
+  build-system = [ poetry-core ];
+  dependencies = [ tuya-device-sharing-sdk ];
 
   disabledTests = [
     # pathlib.Path(path).relative_to(_PROJECT_ROOT) evaluates to a path that is not below the build dir
     "test_customer_device_with_quirk_as_dict"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "tuya_device_handlers" ];
 
   meta = {

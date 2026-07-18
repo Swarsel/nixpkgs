@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  fetchpatch,
+  buildGoModule,
   containerd,
+  fetchpatch,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,12 +20,12 @@ buildGoModule (finalAttrs: {
   # bump deps to fix CVE that isn't in a tagged release yet
   patches = [
     (fetchpatch {
-      url = "https://github.com/Roblox/nomad-driver-containerd/commit/80b9be1353f701b9d47d874923a9e8ffed4dbd98.patch";
       hash = "sha256-d4C/YwemmZQAt0fTAnQkJVKn8cK4kmxB+wQEHycdn9U=";
+      url = "https://github.com/Roblox/nomad-driver-containerd/commit/80b9be1353f701b9d47d874923a9e8ffed4dbd98.patch";
     })
     (fetchpatch {
-      url = "https://github.com/Roblox/nomad-driver-containerd/commit/cc0da224669a8f85a8b695288fe5ea748fb270c2.patch";
       hash = "sha256-W8ZOKMkv1814cPNyqTaXUGhh44WfMizZNL4cNX+FOqg=";
+      url = "https://github.com/Roblox/nomad-driver-containerd/commit/cc0da224669a8f85a8b695288fe5ea748fb270c2.patch";
     })
   ];
 
@@ -34,24 +34,23 @@ buildGoModule (finalAttrs: {
     substituteInPlace containerd/driver.go --replace-warn 'PluginVersion = "v0.9.3"' 'PluginVersion = "v${finalAttrs.version}"'
   '';
 
-  env.CGO_ENABLED = "1";
-
-  vendorHash = "sha256-OO+a5AqhB0tf6lyodhYl9HUSaWvtXWwevRHYy1Q6VoU=";
-  subPackages = [ "." ];
-
   buildInputs = [ containerd ];
+  vendorHash = "sha256-OO+a5AqhB0tf6lyodhYl9HUSaWvtXWwevRHYy1Q6VoU=";
+  env.CGO_ENABLED = "1";
 
   ldflags = [
     "-s"
     "-w"
   ];
 
+  subPackages = [ "." ];
+
   meta = {
-    homepage = "https://www.github.com/Roblox/nomad-driver-containerd";
     description = "Containerd task driver for Nomad";
-    mainProgram = "nomad-driver-containerd";
-    platforms = lib.platforms.linux;
+    homepage = "https://www.github.com/Roblox/nomad-driver-containerd";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ techknowlogick ];
+    platforms = lib.platforms.linux;
+    mainProgram = "nomad-driver-containerd";
   };
 })

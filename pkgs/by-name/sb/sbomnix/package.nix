@@ -11,7 +11,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "sbomnix";
   version = "1.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tiiuae";
@@ -26,19 +25,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     '';
   };
 
-  makeWrapperArgs = [
-    "--prefix PATH : ${
-      lib.makeBinPath [
-        git
-        nix
-        python3.pkgs.graphviz
-        nix-visualize
-        vulnix
-        grype
-      ]
-    }"
-  ];
-
+  # Tests require network access
+  doCheck = false;
   build-system = [ python3.pkgs.setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -59,23 +47,37 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tabulate
   ];
 
-  pythonImportsCheck = [ "sbomnix" ];
+  makeWrapperArgs = [
+    "--prefix PATH : ${
+      lib.makeBinPath [
+        git
+        nix
+        python3.pkgs.graphviz
+        nix-visualize
+        vulnix
+        grype
+      ]
+    }"
+  ];
 
-  # Tests require network access
-  doCheck = false;
+  pyproject = true;
+  pythonImportsCheck = [ "sbomnix" ];
 
   meta = {
     description = "Utilities to help with software supply chain challenges on nix targets";
     homepage = "https://github.com/tiiuae/sbomnix";
+
     license = with lib.licenses; [
       asl20
       bsd3
       cc-by-30
     ];
+
     maintainers = with lib.maintainers; [
       henrirosten
       jk
     ];
+
     mainProgram = "sbomnix";
   };
 })

@@ -1,8 +1,8 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  flit-core,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
+  flit-core,
   pytest,
   pytestCheckHook,
   pythonAtLeast,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "virtual-glob";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "chrisjsewell";
@@ -20,8 +19,14 @@ buildPythonPackage rec {
     hash = "sha256-ocCa8m7mPPvzOZHPrraSEdSJZwRJoYO/Q7nyDbhIFu8=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     flit-core
+  ];
+
+  disabledTests = lib.optionals (pythonAtLeast "3.13") [
+    "test_baseline_pathlib"
   ];
 
   optional-dependencies = {
@@ -30,20 +35,16 @@ buildPythonPackage rec {
     ];
   };
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "virtual_glob"
   ];
 
-  disabledTests = lib.optionals (pythonAtLeast "3.13") [
-    "test_baseline_pathlib"
-  ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   meta = {
     description = "Globbing of virtual file systems";
     homepage = "https://pypi.org/project/virtual_glob/";
-    maintainers = with lib.maintainers; [ PopeRigby ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ PopeRigby ];
   };
 }

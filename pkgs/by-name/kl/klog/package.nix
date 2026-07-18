@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   hamlib,
-  pkg-config,
   libsForQt5,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,6 +22,7 @@ stdenv.mkDerivation (finalAttrs: {
     libsForQt5.qmake
     libsForQt5.qttools
   ];
+
   buildInputs = [
     hamlib
     libsForQt5.qtbase
@@ -33,14 +34,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Multiplatform free hamradio logger";
-    mainProgram = "klog";
+
     longDescription = ''
       KLog provides QSO management, useful QSL management DX-Cluster client, DXCC management,
       ClubLog integration, WSJT-X, DX-Marathon support and much more.
     '';
+
     homepage = "https://www.klog.xyz/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ pulsation ];
+    platforms = lib.platforms.linux;
+    mainProgram = "klog";
   };
 })

@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   carapace,
   nix-update-script,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,7 +20,9 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-s6Wq7+2S7hxAhU2OJ8TCkSG5H9dJjwlDy5G02Uqnzm4=";
 
-  proxyVendor = true;
+  preBuild = ''
+    GOOS= GOARCH= go generate ./...
+  '';
 
   ldflags = [
     "-s"
@@ -28,22 +30,17 @@ buildGoModule (finalAttrs: {
     "-X main.version=${finalAttrs.version}"
   ];
 
+  proxyVendor = true;
   subPackages = [ "./cmd/carapace" ];
-
   tags = [ "release" ];
-
-  preBuild = ''
-    GOOS= GOARCH= go generate ./...
-  '';
-
-  passthru.updateScript = nix-update-script { };
   passthru.tests.version = testers.testVersion { package = carapace; };
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Multi-shell multi-command argument completer";
     homepage = "https://carapace.sh/";
-    maintainers = with lib.maintainers; [ mimame ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ mimame ];
     mainProgram = "carapace";
   };
 })

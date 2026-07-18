@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   autoconf,
   automake,
+  cmake,
   libtool,
   nix-update-script,
 }:
@@ -38,8 +38,8 @@ stdenv.mkDerivation {
     description = "ReplayGain for AAC files";
     homepage = "https://github.com/dgilman/aacgain";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ robbinch ];
+    platforms = lib.platforms.unix;
     mainProgram = "aacgain";
   };
 }

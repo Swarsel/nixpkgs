@@ -17,14 +17,15 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libosip
     openssl
   ];
 
   meta = {
-    license = lib.licenses.gpl2Plus;
     description = "Library that hides the complexity of using the SIP protocol";
+    license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
   };
 })

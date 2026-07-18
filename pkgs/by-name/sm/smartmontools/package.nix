@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  enableMail ? false,
   gnused,
   hostname,
   mailutils,
+  nix-update,
   systemdLibs,
   writeShellScript,
-  nix-update,
+  enableMail ? false,
 }:
 
 let
@@ -33,16 +33,23 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-/2J73F97yiPlUnGkzewWzU+sARaeqgVc/3ScjVlHhQE=";
   };
 
-  prePatch = ''
-    cd smartmontools
-  '';
+  outputs = [
+    "out"
+    "man"
+    "doc"
+  ];
+
   patches = [
     # fixes darwin build
     ./smartmontools.patch
   ];
+
   postPatch = ''
     ln -sf "$drivedb" drivedb.h
   '';
+
+  nativeBuildInputs = [ autoreconfHook ];
+  buildInputs = lib.optionals (lib.meta.availableOn stdenv.hostPlatform systemdLibs) [ systemdLibs ];
 
   configureFlags = [
     "--with-scriptpath=${scriptPath}"
@@ -50,33 +57,32 @@ stdenv.mkDerivation (finalAttrs: {
     "--without-update-smart-drivedb"
   ];
 
-  outputs = [
-    "out"
-    "man"
-    "doc"
-  ];
-
-  nativeBuildInputs = [ autoreconfHook ];
-  buildInputs = lib.optionals (lib.meta.availableOn stdenv.hostPlatform systemdLibs) [ systemdLibs ];
-  enableParallelBuilding = true;
-
   drivedb = fetchFromGitHub {
-    owner = "smartmontools";
-    repo = "smartmontools";
-    rev = "794fa5069ee298c82f93ff0a7f7ef6a5fdd10e5e";
     hash = "sha256-WBed5elI+WsIiIJ1YVkdVGJ4XMrGRFIFWqk6ffVl0bU=";
+    owner = "smartmontools";
+
     postFetch = ''
       mv "$out/smartmontools/drivedb.h" "$TMPDIR/drivedb.h"
       rm -rf "$out"
       mv "$TMPDIR/drivedb.h" "$out"
     '';
+
+    repo = "smartmontools";
+    rev = "794fa5069ee298c82f93ff0a7f7ef6a5fdd10e5e";
+
     passthru = {
-      # Necessary so that nix-update can update the drivedb
-      src = finalAttrs.drivedb;
       pname = "smartmontools-drivedb";
       version = "${finalAttrs.version}-drivedb-unstable";
+      # Necessary so that nix-update can update the drivedb
+      src = finalAttrs.drivedb;
     };
   };
+
+  enableParallelBuilding = true;
+
+  prePatch = ''
+    cd smartmontools
+  '';
 
   passthru.updateScript = writeShellScript "update-smartmontools" ''
     # Set a default attribute path
@@ -96,10 +102,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Tools for monitoring the health of hard drives";
     homepage = "https://www.smartmontools.org/";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       Frostman
       samasaur
     ];
+
     platforms = with lib.platforms; linux ++ darwin;
     mainProgram = "smartctl";
   };

@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,11 +18,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   cargoHash = "sha256-eh0beK1UYf/Xe30wGxli6dfPKh875yTnOn7CCN2XTtI=";
 
   meta = {
-    changelog = "https://github.com/pls-rs/pls/releases/tag/${finalAttrs.src.tag}";
     description = "Prettier and powerful ls";
     homepage = "http://pls.cli.rs";
+    changelog = "https://github.com/pls-rs/pls/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "pls";
     maintainers = with lib.maintainers; [ tomasajt ];
+    mainProgram = "pls";
   };
 })

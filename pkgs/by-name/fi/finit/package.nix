@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   libcap,
   libite,
   libuev,
+  pkg-config,
+  plymouth,
   shadow,
   sysctl,
-  plymouth,
   plymouthSupport ? false,
 }:
 
@@ -23,6 +23,12 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-sH4xZNMEuIS+r6rVQAKnsHtSyTe2B6gdYcmH9J8eSZ0=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+    "doc"
+  ];
 
   postPatch = ''
     substituteInPlace plugins/modprobe.c --replace-fail \
@@ -40,12 +46,6 @@ stdenv.mkDerivation (finalAttrs: {
     libcap
     libite
     libuev
-  ];
-
-  outputs = [
-    "out"
-    "dev"
-    "doc"
   ];
 
   configureFlags = [
@@ -79,10 +79,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Fast init for Linux";
-    mainProgram = "initctl";
     homepage = "https://troglobit.com/projects/finit/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ aanderse ];
     platforms = lib.platforms.unix;
+    mainProgram = "initctl";
   };
 })

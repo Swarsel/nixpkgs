@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   paramiko,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "mock-ssh-server";
   version = "0.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "carletes";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-yJd+WDidW5ouofytAKTlSiZhIQg2cLs8BvEp15qwtjo=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ paramiko ];
-
   # Tests are running into a timeout on Hydra, they work locally
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ paramiko ];
+  pyproject = true;
   pythonImportsCheck = [ "mockssh" ];
 
   meta = {

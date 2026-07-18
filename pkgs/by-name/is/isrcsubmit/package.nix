@@ -1,15 +1,14 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
   nix-update-script,
+  python3Packages,
   withKeyring ? true,
 }:
 
 python3Packages.buildPythonApplication {
   pname = "isrcsubmit";
   version = "2.1.0-unstable-2023-08-10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "JonnyJD";
@@ -37,6 +36,7 @@ python3Packages.buildPythonApplication {
     ]
     ++ lib.optional withKeyring keyring;
 
+  pyproject = true;
   pythonImportsCheck = [ "isrcsubmit" ];
 
   passthru.updateScript = nix-update-script {
@@ -45,8 +45,8 @@ python3Packages.buildPythonApplication {
 
   meta = {
     description = "Script to submit ISRCs from disc to MusicBrainz";
-    license = lib.licenses.gpl3Plus;
     homepage = "http://jonnyjd.github.io/musicbrainz-isrcsubmit/";
+    license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     mainProgram = "isrcsubmit";
   };

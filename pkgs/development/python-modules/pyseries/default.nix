@@ -1,13 +1,9 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-
-  # build-system
-  setuptools,
-
   # dependencies
   deepdish,
+  fetchPypi,
   matplotlib,
   numpy,
   obspy,
@@ -16,25 +12,23 @@
   scikit-learn,
   scipy,
   seaborn,
+  # build-system
+  setuptools,
   tabulate,
 }:
 
 buildPythonPackage rec {
   pname = "pyseries";
   version = "1.0.26";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-Cq+DXt0/6Ncae8OO+kaPuTCxouh0cFPHP+T8tGVXxXo=";
   };
 
+  # no tests in the pypi archive
+  doCheck = false;
   build-system = [ setuptools ];
-
-  pythonRemoveDeps = [
-    # sklearn is the old name of the scikit-learn package
-    "sklearn"
-  ];
 
   dependencies = [
     deepdish
@@ -49,10 +43,13 @@ buildPythonPackage rec {
     tabulate
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyseries" ];
 
-  # no tests in the pypi archive
-  doCheck = false;
+  pythonRemoveDeps = [
+    # sklearn is the old name of the scikit-learn package
+    "sklearn"
+  ];
 
   meta = {
     description = "Package for statistical analysis of time-series data";

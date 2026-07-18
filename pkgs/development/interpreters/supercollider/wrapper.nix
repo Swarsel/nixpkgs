@@ -1,14 +1,12 @@
 {
-  symlinkJoin,
   makeWrapper,
-  supercollider,
   plugins,
+  supercollider,
+  symlinkJoin,
 }:
 
 symlinkJoin {
-  name = "supercollider-with-plugins-${supercollider.version}";
-  paths = [ supercollider ] ++ plugins;
-
+  inherit (supercollider) pname version meta;
   nativeBuildInputs = [ makeWrapper ];
 
   postBuild = ''
@@ -19,5 +17,6 @@ symlinkJoin {
     done
   '';
 
-  inherit (supercollider) pname version meta;
+  name = "supercollider-with-plugins-${supercollider.version}";
+  paths = [ supercollider ] ++ plugins;
 }

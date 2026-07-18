@@ -1,9 +1,10 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   SDL2,
   SDL2_net,
   alsa-lib,
-  fetchFromGitHub,
   fluidsynth,
   gitUpdater,
   glib,
@@ -24,7 +25,6 @@
   opusfile,
   pkg-config,
   speexdsp,
-  stdenv,
   testers,
   zlib-ng,
 }:
@@ -32,7 +32,6 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "dosbox-staging";
   version = "0.82.2";
-  shortRev = "f8c24f8";
 
   src = fetchFromGitHub {
     owner = "dosbox-staging";
@@ -40,6 +39,21 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-u9W6TfHF+BNeoExcx98kCVJu1BNwWnvjBEg84evMnBw=";
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
+
+  # replace instances of the get-version.sh script that uses git in meson.build with manual values
+  postPatch = ''
+    substituteInPlace meson.build \
+      --replace-fail "meson.project_source_root() + '/scripts/get-version.sh'," "'printf'," \
+      --replace-fail "'version', check: true," "'${finalAttrs.version}', check: true," \
+      --replace-fail "'./scripts/get-version.sh', 'hash'," "'printf', '${
+        builtins.substring 0 5 finalAttrs.shortRev
+      }',"
+  '';
 
   nativeBuildInputs = [
     gtest
@@ -70,21 +84,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ alsa-lib ];
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
-  # replace instances of the get-version.sh script that uses git in meson.build with manual values
-  postPatch = ''
-    substituteInPlace meson.build \
-      --replace-fail "meson.project_source_root() + '/scripts/get-version.sh'," "'printf'," \
-      --replace-fail "'version', check: true," "'${finalAttrs.version}', check: true," \
-      --replace-fail "'./scripts/get-version.sh', 'hash'," "'printf', '${
-        builtins.substring 0 5 finalAttrs.shortRev
-      }',"
-  '';
-
   postInstall = ''
     install -Dm644 $src/contrib/linux/org.dosbox-staging.dosbox-staging.desktop $out/share/applications/
   '';
@@ -102,31 +101,38 @@ stdenv.mkDerivation (finalAttrs: {
     popd
   '';
 
+  shortRev = "f8c24f8";
+
   passthru = {
     tests = {
       version = testers.testVersion {
-        package = finalAttrs.finalPackage;
         command = "dosbox --version";
+        package = finalAttrs.finalPackage;
       };
     };
+
     updateScript = gitUpdater {
       rev-prefix = "v";
     };
   };
 
   meta = {
-    homepage = "https://dosbox-staging.github.io/";
     description = "Modernized DOS emulator; DOSBox fork";
+
     longDescription = ''
       DOSBox Staging is an attempt to revitalize DOSBox's development
       process. It's not a rewrite, but a continuation and improvement on the
       existing DOSBox codebase while leveraging modern development tools and
       practices.
     '';
+
+    homepage = "https://dosbox-staging.github.io/";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       Zaechus
     ];
+
     platforms = lib.platforms.unix;
     priority = 101;
   };

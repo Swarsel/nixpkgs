@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  protobuf,
-  protobufc,
   libsodium,
   openssl,
+  protobuf,
+  protobufc,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,15 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-W1WxaQ33K+N3AHCK3sQWTQo4sN57qW2ZuAGrj6JpgCU=";
   };
 
-  nativeBuildInputs = [ cmake ];
-  buildInputs = [
-    libsodium
-    openssl
-    protobuf
-    protobufc
-  ];
-
-  separateDebugInfo = true;
   outputs = [
     "out"
     "dev"
@@ -40,16 +31,27 @@ stdenv.mkDerivation (finalAttrs: {
       --replace '$'{prefix}/@CMAKE_INSTALL_LIBDIR@ @CMAKE_INSTALL_FULL_LIBDIR@
   '';
 
+  nativeBuildInputs = [ cmake ];
+
+  buildInputs = [
+    libsodium
+    openssl
+    protobuf
+    protobufc
+  ];
+
   postFixup = ''
     substituteInPlace $dev/lib/cmake/cnats/cnats-config.cmake \
       --replace-fail "_IMPORT_PREFIX \"$out\"" "_IMPORT_PREFIX \"$dev\""
   '';
 
+  separateDebugInfo = true;
+
   meta = {
     description = "C API for the NATS messaging system";
     homepage = "https://github.com/nats-io/nats.c";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ thoughtpolice ];
+    platforms = lib.platforms.unix;
   };
 })

@@ -1,16 +1,15 @@
 {
+  lib,
+  fetchFromGitHub,
   aiofiles,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
-  lib,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "compit-inext-api";
   version = "0.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Przemko92";
@@ -19,6 +18,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Me3bVTz9kZcuPgFM3/SZlcvw8LgqxQnXuLfY5lLhUeU=";
   };
 
+  # upstream has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,10 +27,8 @@ buildPythonPackage (finalAttrs: {
     aiohttp
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "compit_inext_api" ];
-
-  # upstream has no tests
-  doCheck = false;
 
   meta = {
     description = "Python client for the Compit iNext API";

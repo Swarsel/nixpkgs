@@ -1,40 +1,17 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
-
   # dependencies
   botan3,
-
+  buildPythonPackage,
   # build dependencies
   setuptools,
   setuptools-scm,
 }:
 
 buildPythonPackage rec {
-  pname = "botan3";
-
   inherit (botan3) src version;
-
-  pyproject = true;
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  # not necessary for build, but makes it easier to discover for
-  # SBOM tooling
-  buildInputs = [ botan3 ];
-
-  # not necessary for build, but makes it easier to discover for
-  # SBOM tooling
-  nativeBuildInputs = [
-    setuptools
-    setuptools-scm
-  ];
-
-  sourceRoot = "source/src/python";
+  pname = "botan3";
 
   postPatch = ''
     # remove again, when https://github.com/randombit/botan/pull/5040 got
@@ -60,7 +37,25 @@ buildPythonPackage rec {
       ''
   );
 
+  # not necessary for build, but makes it easier to discover for
+  # SBOM tooling
+  nativeBuildInputs = [
+    setuptools
+    setuptools-scm
+  ];
+
+  # not necessary for build, but makes it easier to discover for
+  # SBOM tooling
+  buildInputs = [ botan3 ];
+
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "botan3" ];
+  sourceRoot = "source/src/python";
 
   meta = {
     description = "Python Bindings for botan3 cryptography library";

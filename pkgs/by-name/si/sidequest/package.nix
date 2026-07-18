@@ -2,40 +2,40 @@
   lib,
   stdenv,
   fetchurl,
-  buildFHSEnv,
-  copyDesktopItems,
-  makeDesktopItem,
-  makeWrapper,
   alsa-lib,
   at-spi2-atk,
+  bintools,
+  buildFHSEnv,
   cairo,
+  copyDesktopItems,
   cups,
   dbus,
   expat,
   gdk-pixbuf,
   glib,
   gtk3,
-  libgbm,
+  icu,
   libGL,
-  nss,
-  nspr,
   libdrm,
-  libxrandr,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcomposite,
+  libgbm,
   libx11,
-  libxkbfile,
   libxcb,
+  libxcomposite,
+  libxdamage,
+  libxext,
+  libxfixes,
   libxkbcommon,
+  libxkbfile,
+  libxrandr,
   libxshmfence,
+  makeDesktopItem,
+  makeWrapper,
+  nspr,
+  nss,
+  openssl,
   pango,
   systemd,
-  icu,
-  openssl,
   zlib,
-  bintools,
 }:
 let
   pname = "sidequest";
@@ -52,20 +52,6 @@ let
     nativeBuildInputs = [
       copyDesktopItems
       makeWrapper
-    ];
-
-    desktopItems = [
-      (makeDesktopItem {
-        name = "sidequest";
-        exec = "sidequest";
-        icon = "sidequest";
-        desktopName = "SideQuest";
-        genericName = "VR App Store";
-        categories = [
-          "Settings"
-          "PackageManager"
-        ];
-      })
     ];
 
     installPhase = ''
@@ -118,10 +104,31 @@ let
         --add-needed libGL.so.1 \
         "$out/libexec/sidequest/sidequest"
     '';
+
+    desktopItems = [
+      (makeDesktopItem {
+        categories = [
+          "Settings"
+          "PackageManager"
+        ];
+
+        desktopName = "SideQuest";
+        exec = "sidequest";
+        genericName = "VR App Store";
+        icon = "sidequest";
+        name = "sidequest";
+      })
+    ];
   };
 in
 buildFHSEnv {
   inherit pname version;
+
+  extraInstallCommands = ''
+    ln -s ${sidequest}/share "$out/share"
+  '';
+
+  runScript = "sidequest";
 
   targetPkgs = pkgs: [
     sidequest
@@ -133,23 +140,19 @@ buildFHSEnv {
     libxshmfence
   ];
 
-  extraInstallCommands = ''
-    ln -s ${sidequest}/share "$out/share"
-  '';
-
-  runScript = "sidequest";
-
   meta = {
     description = "Open app store and side-loading tool for Android-based VR devices such as the Oculus Go, Oculus Quest or Moverio BT 300";
     homepage = "https://github.com/SideQuestVR/SideQuest";
-    downloadPage = "https://github.com/SideQuestVR/SideQuest/releases";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       joepie91
       rvolosatovs
     ];
+
     platforms = [ "x86_64-linux" ];
     mainProgram = "SideQuest";
+    downloadPage = "https://github.com/SideQuestVR/SideQuest/releases";
   };
 }

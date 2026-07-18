@@ -2,42 +2,39 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  runCommand,
-
   # build-time
   autoconf,
   automake,
   bison,
-  cmake,
-  flex,
-  gettext,
-  hostname,
-  libtool,
-  perl,
-  pkg-config,
-  python3,
-  util-linux,
-  which,
-  whoami,
-
   # run-time
   boost,
   bzip2,
   cairo,
+  cmake,
   curl,
   expat,
+  flex,
+  gettext,
+  # test
+  graphviz,
+  hostname,
   jansson,
+  libtool,
   libxdmcp,
   ncurses,
+  nix-update-script,
   openssl,
+  perl,
+  pkg-config,
   protobuf,
+  python3,
+  runCommand,
+  util-linux,
+  which,
+  whoami,
   xz,
   zlib,
   zstd,
-
-  # test
-  graphviz,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -78,11 +75,6 @@ stdenv.mkDerivation (finalAttrs: {
     popd
   '';
 
-  dontUseCmake = true; # cmake needed for deps, but not main package
-  dontConfigure = true;
-  enableParallelBuilding = true;
-
-  __structuredAttrs = true;
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -122,27 +114,22 @@ stdenv.mkDerivation (finalAttrs: {
     libxdmcp
   ];
 
-  passthru.customPython = python3.withPackages (
-    ps: with ps; [
-      pybind11
-    ]
-  );
-
-  env = {
-    # needed, else build fails
-    VG_GIT_VERSION = finalAttrs.src.tag;
-    # deps/elfutils
-    NIX_CFLAGS_COMPILE = toString [
-      "-Wno-error=stringop-overflow"
-      "-Wno-error=unterminated-string-initialization"
-    ];
-  };
-
   makeFlags = [
     # don't build statically
     "START_STATIC="
     "END_STATIC="
   ];
+
+  env = {
+    # deps/elfutils
+    NIX_CFLAGS_COMPILE = toString [
+      "-Wno-error=stringop-overflow"
+      "-Wno-error=unterminated-string-initialization"
+    ];
+
+    # needed, else build fails
+    VG_GIT_VERSION = finalAttrs.src.tag;
+  };
 
   preBuild = ''
     # Install directories may not exist when parallel builds complete their
@@ -162,6 +149,11 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  dontConfigure = true;
+  dontUseCmake = true; # cmake needed for deps, but not main package
+  enableParallelBuilding = true;
+
   fixupPhase = ''
     runHook preFixup
 
@@ -177,7 +169,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru = {
-    updateScript = nix-update-script { };
     tests = runCommand "test-vg-basic" { } ''
       HOME=$(mktemp -d) # fontconfig cache
 
@@ -193,17 +184,25 @@ stdenv.mkDerivation (finalAttrs: {
       ${finalAttrs.finalPackage}/bin/vg view -d x.vg >x.dot
       ${graphviz}/bin/dot -Tpng x.dot -o $out
     '';
+
+    updateScript = nix-update-script { };
   };
+
+  passthru.customPython = python3.withPackages (
+    ps: with ps; [
+      pybind11
+    ]
+  );
 
   meta = {
     description = "Tools for working with genome variation graphs";
     homepage = "https://github.com/vgteam/vg";
     changelog = "https://github.com/vgteam/vg/releases/tag/${finalAttrs.src.tag}";
-    mainProgram = "vg";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ eljamm ];
     # TODO: build on darwin
     platforms = lib.platforms.linux;
-    maintainers = with lib.maintainers; [ eljamm ];
+    mainProgram = "vg";
     teams = with lib.teams; [ ngi ];
   };
 })

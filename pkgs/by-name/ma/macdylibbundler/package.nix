@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  makeWrapper,
   fetchFromGitHub,
   cctools,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation rec {
@@ -18,7 +18,6 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
   makeFlags = [ "PREFIX=$(out)" ];
 
   postInstall = ''
@@ -28,6 +27,7 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Utility to ease bundling libraries into executables for OSX";
+
     longDescription = ''
       dylibbundler is a small command-line programs that aims to make bundling
       .dylibs as easy as possible. It automatically determines which dylibs are
@@ -36,10 +36,11 @@ stdenv.mkDerivation rec {
       this with a single command on the teminal! It will also work if your
       program uses plug-ins that have dependencies too.
     '';
+
     homepage = "https://github.com/auriamg/macdylibbundler";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.nomeata ];
+    platforms = lib.platforms.all;
 
   };
 }

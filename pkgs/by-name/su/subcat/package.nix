@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication {
   pname = "subcat";
   version = "1.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "duty1g";
@@ -17,6 +16,8 @@ python3.pkgs.buildPythonApplication {
     hash = "sha256-E6gK5CHuFyu3GPyofHErlu92RAgl6jBPfWbTTX3aNtA=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -29,10 +30,8 @@ python3.pkgs.buildPythonApplication {
     urllib3
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "subcat" ];
-
-  # Project has no tests
-  doCheck = false;
 
   meta = {
     description = "Subdomain discovery tool";

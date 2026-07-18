@@ -25,17 +25,18 @@ stdenv.mkDerivation (finalAttrs: {
     FALLBACKVER = finalAttrs.version;
   };
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   meta = {
     description = "Static website generator which aims at being simplistic";
     homepage = "https://strahinja.srht.site/slweb/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ GaetanLepage ];
+    platforms = lib.platforms.linux;
     mainProgram = "slweb";
   };
 })

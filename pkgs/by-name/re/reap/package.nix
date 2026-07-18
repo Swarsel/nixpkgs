@@ -22,11 +22,11 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/leahneukirchen/reap";
     description = "Run process until all its spawned processes are dead";
-    mainProgram = "reap";
+    homepage = "https://github.com/leahneukirchen/reap";
     license = with lib.licenses; [ publicDomain ];
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.leahneukirchen ];
+    platforms = lib.platforms.linux;
+    mainProgram = "reap";
   };
 }

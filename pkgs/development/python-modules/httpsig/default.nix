@@ -2,23 +2,24 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  pycryptodome,
+  pytestCheckHook,
+  requests,
   setuptools,
   setuptools-scm,
-  pycryptodome,
-  requests,
   six,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "httpsig";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-cdbVAkYSnE98/sIPXlfjUdK4SS1jHMKqlnkUrPkfbOY=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -32,14 +33,13 @@ buildPythonPackage rec {
     setuptools
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "httpsig" ];
 
   meta = {
     description = "Sign HTTP requests with secure signatures";
+    homepage = "https://github.com/ahknight/httpsig";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ srhb ];
-    homepage = "https://github.com/ahknight/httpsig";
   };
 }

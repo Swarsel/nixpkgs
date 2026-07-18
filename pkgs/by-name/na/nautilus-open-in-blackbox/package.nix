@@ -1,9 +1,9 @@
 {
-  python3,
+  lib,
+  stdenv,
   fetchFromGitHub,
   nautilus-python,
-  stdenv,
-  lib,
+  python3,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "nautilus-open-in-blackbox";
@@ -33,9 +33,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Extension for nautilus, which adds an context-entry for opening in blackbox";
+    homepage = "https://github.com/ppvan/nautilus-open-in-blackbox";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ blankparticle ];
-    homepage = "https://github.com/ppvan/nautilus-open-in-blackbox";
     platforms = lib.platforms.linux;
   };
 })

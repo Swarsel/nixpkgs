@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "insegel";
   version = "1.3.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,15 +15,14 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ pygments ];
-
   # No tests included
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "insegel" ];
 
   meta = {
-    homepage = "https://github.com/autophagy/insegel";
     description = "Monochrome 2 column Sphinx theme";
+    homepage = "https://github.com/autophagy/insegel";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ autophagy ];
   };

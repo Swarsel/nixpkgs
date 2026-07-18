@@ -1,33 +1,32 @@
 {
   lib,
-  mkCoqDerivation,
   coq,
-  serapi,
   makeWrapper,
+  mkCoqDerivation,
+  serapi,
   version ? null,
 }:
 
 (mkCoqDerivation rec {
-  pname = "coq-lsp";
-  owner = "ejgallego";
-  namePrefix = [ ];
-
-  useDune = true;
-
-  release."0.1.8+8.16".hash = "sha256-dEEAK5IXGjHB8D/fYJRQG/oCotoXJuWLxXB0GQlY2eo=";
-  release."0.2.3+8.17".hash = "sha256-s7GXRYxuCMXm0XpKAyEwYqolsVFcKHhM71uabqqK5BY=";
-  release."0.2.3+8.18".hash = "sha256-0cEuMWuNJwfiPdc0aHKk3EQbkVRIbVukS586EWSHCgo=";
-  release."0.2.3+8.19".hash = "sha256-0eQQheY2yjS7shifhUlVPLXvTmyvgNpx7deLWXBRTfA=";
-  release."0.2.3+8.20".hash = "sha256-TUVS8jkgf1MMOOx5y70OaeZkdIgdgmyGQ2/zKxeplEk=";
-  release."0.2.3+9.0".hash = "sha256-eZMM4gYRXQroEIKz6XlffyHNYryEF5dIeIoVbEulh6M=";
-  release."0.2.4+8.20".hash = "sha256-mQxh2/Cb5hZ99TtqWYLpZ/BRPrm5GRDYPDfKlCTK9N4=";
-  release."0.2.4+9.0".hash = "sha256-ICPdNxJODNqmUErdTkNk7s52MRuINWLbAPm0rmXFW18=";
-  release."0.2.4+9.1".hash = "sha256-HNHA2vbX70oZkd4QtbP28UbTRXatqxJdxw1OWDVDE8U=";
-  release."0.2.5+8.20".hash = "sha256-OduwwJESXVEkeX+w8nLEhLUtPo4YGDPj21yWyc1uv3U=";
-  release."0.2.5+9.0".hash = "sha256-nbMf7xziBYoBH0F8YBUEybCHSdsaOxlqXnyngeQNg3c=";
-  release."0.2.5+9.1".hash = "sha256-PzIgo15zI3JjibT8GzyHdTwofd3IF6eRmUc47NveH70=";
-
   inherit version;
+  pname = "coq-lsp";
+  nativeBuildInputs = [ makeWrapper ];
+
+  propagatedBuildInputs = with coq.ocamlPackages; [
+    dune-build-info
+    menhir
+    result
+    uri
+    yojson
+  ];
+
+  installPhase = ''
+    runHook preInstall
+    dune install -p ${pname} --prefix=$out --libdir $OCAMLFIND_DESTDIR
+    wrapProgram $out/bin/coq-lsp --prefix OCAMLPATH : $OCAMLFIND_DESTDIR --prefix OCAMLPATH : $OCAMLPATH
+    runHook postInstall
+  '';
+
   defaultVersion =
     with lib.versions;
     lib.switch coq.coq-version [
@@ -61,33 +60,34 @@
       }
     ] null;
 
-  nativeBuildInputs = [ makeWrapper ];
-
-  installPhase = ''
-    runHook preInstall
-    dune install -p ${pname} --prefix=$out --libdir $OCAMLFIND_DESTDIR
-    wrapProgram $out/bin/coq-lsp --prefix OCAMLPATH : $OCAMLFIND_DESTDIR --prefix OCAMLPATH : $OCAMLPATH
-    runHook postInstall
-  '';
-
-  propagatedBuildInputs = with coq.ocamlPackages; [
-    dune-build-info
-    menhir
-    result
-    uri
-    yojson
-  ];
+  namePrefix = [ ];
+  owner = "ejgallego";
+  release."0.1.8+8.16".hash = "sha256-dEEAK5IXGjHB8D/fYJRQG/oCotoXJuWLxXB0GQlY2eo=";
+  release."0.2.3+8.17".hash = "sha256-s7GXRYxuCMXm0XpKAyEwYqolsVFcKHhM71uabqqK5BY=";
+  release."0.2.3+8.18".hash = "sha256-0cEuMWuNJwfiPdc0aHKk3EQbkVRIbVukS586EWSHCgo=";
+  release."0.2.3+8.19".hash = "sha256-0eQQheY2yjS7shifhUlVPLXvTmyvgNpx7deLWXBRTfA=";
+  release."0.2.3+8.20".hash = "sha256-TUVS8jkgf1MMOOx5y70OaeZkdIgdgmyGQ2/zKxeplEk=";
+  release."0.2.3+9.0".hash = "sha256-eZMM4gYRXQroEIKz6XlffyHNYryEF5dIeIoVbEulh6M=";
+  release."0.2.4+8.20".hash = "sha256-mQxh2/Cb5hZ99TtqWYLpZ/BRPrm5GRDYPDfKlCTK9N4=";
+  release."0.2.4+9.0".hash = "sha256-ICPdNxJODNqmUErdTkNk7s52MRuINWLbAPm0rmXFW18=";
+  release."0.2.4+9.1".hash = "sha256-HNHA2vbX70oZkd4QtbP28UbTRXatqxJdxw1OWDVDE8U=";
+  release."0.2.5+8.20".hash = "sha256-OduwwJESXVEkeX+w8nLEhLUtPo4YGDPj21yWyc1uv3U=";
+  release."0.2.5+9.0".hash = "sha256-nbMf7xziBYoBH0F8YBUEybCHSdsaOxlqXnyngeQNg3c=";
+  release."0.2.5+9.1".hash = "sha256-PzIgo15zI3JjibT8GzyHdTwofd3IF6eRmUc47NveH70=";
+  useDune = true;
 
   meta = {
     description = "Language Server Protocol and VS Code Extension for Coq";
     homepage = "https://github.com/ejgallego/coq-lsp";
     changelog = "https://github.com/ejgallego/coq-lsp/blob/${defaultVersion}/CHANGES.md";
-    maintainers = with lib.maintainers; [ alizter ];
     license = lib.licenses.lgpl21Only;
+    maintainers = with lib.maintainers; [ alizter ];
   };
 }).overrideAttrs
   (
     o: with coq.ocamlPackages; {
+      patches = lib.optional (lib.versions.isEq "0.1.8" o.version) ./coq-loader.patch;
+
       propagatedBuildInputs =
         o.propagatedBuildInputs
         ++ (
@@ -118,7 +118,5 @@
               tyxml
             ]
         );
-
-      patches = lib.optional (lib.versions.isEq "0.1.8" o.version) ./coq-loader.patch;
     }
   )

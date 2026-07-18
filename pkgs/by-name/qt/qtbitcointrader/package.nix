@@ -24,8 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     libsForQt5.qtscript
   ];
 
-  sourceRoot = "${finalAttrs.src.name}/src";
-
   configurePhase = ''
     runHook preConfigure
 
@@ -38,11 +36,13 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postConfigure
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/src";
+
   meta = {
     description = "Bitcoin trading client";
-    mainProgram = "QtBitcoinTrader";
     homepage = "https://centrabit.com/";
     license = lib.licenses.gpl3;
     platforms = libsForQt5.qtbase.meta.platforms;
+    mainProgram = "QtBitcoinTrader";
   };
 })

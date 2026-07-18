@@ -1,18 +1,18 @@
 {
   lib,
   stdenv,
-  octave,
   buildEnv,
-  makeWrapper,
-  locale,
-  texinfo,
-  glibcLocalesUtf8,
-  wrapOctave,
   computeRequiredOctavePackages,
+  glibcLocalesUtf8,
+  locale,
+  makeWrapper,
+  octave,
+  texinfo,
+  wrapOctave,
   extraLibs ? [ ],
   extraOutputsToInstall ? [ ],
-  postBuild ? "",
   ignoreCollisions ? false,
+  postBuild ? "",
 }:
 
 # Create an octave executable that knows about additional packages
@@ -26,13 +26,10 @@ let
 
 in
 buildEnv {
-  name = "${octave.name}-env";
-  paths = extraLibs ++ [ octave ];
-
   inherit ignoreCollisions;
-  extraOutputsToInstall = [ "out" ] ++ extraOutputsToInstall;
-
+  inherit (octave) meta version;
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     locale
     texinfo
@@ -96,20 +93,24 @@ buildEnv {
   ''
   + postBuild;
 
-  inherit (octave) meta version;
+  extraOutputsToInstall = [ "out" ] ++ extraOutputsToInstall;
+  name = "${octave.name}-env";
+  paths = extraLibs ++ [ octave ];
 
   passthru = (removeAttrs octave.passthru [ "tests" ]) // {
-    interpreter = "$out/bin/octave";
     inherit octave;
-    env = stdenv.mkDerivation {
-      name = "interactive-${octave.name}-environment";
 
+    env = stdenv.mkDerivation {
       buildCommand = ''
         echo >&2 ""
         echo >&2 "*** octave 'env' attributes are intended for interactive nix-shell sessions, not for building! ***"
         echo >&2 ""
         exit 1
       '';
+
+      name = "interactive-${octave.name}-environment";
     };
+
+    interpreter = "$out/bin/octave";
   };
 }

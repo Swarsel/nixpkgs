@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   libxcb,
-  libxrandr,
-  libxcb-util,
   libxcb-keysyms,
+  libxcb-util,
   libxcb-wm,
+  libxrandr,
   xcbproto,
 }:
 
@@ -35,8 +35,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Stacking window manager that cooks windows with orders from the Waitron";
     homepage = "https://github.com/tudurom/windowchef";
-    maintainers = with lib.maintainers; [ bhougland ];
     license = lib.licenses.isc;
+    maintainers = with lib.maintainers; [ bhougland ];
     platforms = lib.platforms.linux;
   };
 })

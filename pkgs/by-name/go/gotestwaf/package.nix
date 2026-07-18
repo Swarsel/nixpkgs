@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -17,7 +17,9 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-5rLYepwuy0B92tshVInYPfKyie9n+Xjh4x8XALcRHm4=";
-
+  # Tests require network access
+  doCheck = false;
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
@@ -25,11 +27,6 @@ buildGoModule (finalAttrs: {
     "-s"
     "-X=github.com/wallarm/gotestwaf/internal/version.Version=v${finalAttrs.version}"
   ];
-
-  # Tests require network access
-  doCheck = false;
-
-  doInstallCheck = true;
 
   meta = {
     description = "Tool for API and OWASP attack simulation";

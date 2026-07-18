@@ -1,22 +1,22 @@
 {
   lib,
   stdenv,
-  callPackage,
   fetchFromGitHub,
+  abc-verifier,
+  callPackage,
   fetchpatch,
-  runCommandLocal,
+  glucose,
+  hostname,
   makeWrapper,
+  minisat,
+  openssl,
+  perl,
+  python3,
   replaceVars,
+  runCommandLocal,
   sbcl,
   which,
-  perl,
-  hostname,
-  openssl,
-  glucose,
-  minisat,
-  abc-verifier,
   z3,
-  python3,
   certifyBooks ? true,
 }@args:
 
@@ -43,24 +43,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-fF9bbEacwCHP1m/eVgFrTD4Ne7L2mzq0K9vJ1tiy9go=";
   };
 
-  # You can swap this out with any other IPASIR implementation at
-  # build time by using overrideAttrs (make sure the derivation you
-  # use has a "libname" attribute so we can plug it into the patch
-  # below).  Or, you can override it at runtime by setting the
-  # $IPASIR_SHARED_LIBRARY environment variable.
-  libipasir = callPackage ./libipasirglucose4 { };
-
   patches = [
     # The upstream fix for the input-files macro regression
     (fetchpatch {
-      url = "https://github.com/acl2/acl2/commit/be39e7835f1c68008c17188d2f65eeaef61632fa.patch";
       hash = "sha256-pZ/r0vlyJz7ymYfrVtHDxsLdw0M/MJStBH42ZLO7Fs4=";
+      url = "https://github.com/acl2/acl2/commit/be39e7835f1c68008c17188d2f65eeaef61632fa.patch";
     })
 
     (replaceVars ./0001-path-changes-for-nix.patch {
+      libcrypto = "${lib.getLib openssl}/lib/libcrypto${stdenv.hostPlatform.extensions.sharedLibrary}";
       libipasir = "${finalAttrs.libipasir}/lib/${finalAttrs.libipasir.libname}";
       libssl = "${lib.getLib openssl}/lib/libssl${stdenv.hostPlatform.extensions.sharedLibrary}";
-      libcrypto = "${lib.getLib openssl}/lib/libcrypto${stdenv.hostPlatform.extensions.sharedLibrary}";
     })
   ]
   ++ lib.optionals (stdenv.hostPlatform.system == "aarch64-linux") [
@@ -97,10 +90,10 @@ stdenv.mkDerivation (finalAttrs: {
     (python3.withPackages (ps: [ ps.z3-solver ]))
   ];
 
-  # NOTE: Parallel building can be memory-intensive depending on the number of
-  # concurrent jobs.  For example, this build has been seen to use >120GB of
-  # RAM on an 85 core machine.
-  enableParallelBuilding = true;
+  makeFlags = [
+    "LISP=${sbcl}/bin/sbcl"
+    "ACL2_MAKE_LOG=NONE"
+  ];
 
   preConfigure = ''
     # When certifying books, ACL2 doesn't like $HOME not existing.
@@ -122,13 +115,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   preBuild = "mkdir -p $HOME";
-  makeFlags = [
-    "LISP=${sbcl}/bin/sbcl"
-    "ACL2_MAKE_LOG=NONE"
-  ];
-
   doCheck = true;
-  checkTarget = "mini-proveall";
 
   installPhase = ''
     mkdir -p $out/bin
@@ -138,8 +125,6 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/share/acl2/books/build/cert.pl  $out/bin/acl2-cert
     ln -s $out/share/acl2/books/build/clean.pl $out/bin/acl2-clean
   '';
-
-  preDistPhases = [ (if certifyBooks then "certifyBooksPhase" else "removeBooksPhase") ];
 
   certifyBooksPhase = ''
     # Certify the community books
@@ -155,6 +140,19 @@ stdenv.mkDerivation (finalAttrs: {
     popd
   '';
 
+  checkTarget = "mini-proveall";
+  # NOTE: Parallel building can be memory-intensive depending on the number of
+  # concurrent jobs.  For example, this build has been seen to use >120GB of
+  # RAM on an 85 core machine.
+  enableParallelBuilding = true;
+  # You can swap this out with any other IPASIR implementation at
+  # build time by using overrideAttrs (make sure the derivation you
+  # use has a "libname" attribute so we can plug it into the patch
+  # below).  Or, you can override it at runtime by setting the
+  # $IPASIR_SHARED_LIBRARY environment variable.
+  libipasir = callPackage ./libipasirglucose4 { };
+  preDistPhases = [ (if certifyBooks then "certifyBooksPhase" else "removeBooksPhase") ];
+
   removeBooksPhase = ''
     # Delete the community books
     rm -rf $out/share/acl2/books
@@ -162,7 +160,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Interpreter and prover for a Lisp dialect";
-    mainProgram = "acl2";
+
     longDescription = ''
       ACL2 is a logic and programming language in which you can model computer
       systems, together with a tool to help you prove properties of those
@@ -188,8 +186,9 @@ stdenv.mkDerivation (finalAttrs: {
           The community books are not included in this package.
         ''
     );
+
     homepage = "https://www.cs.utexas.edu/users/moore/acl2/";
-    downloadPage = "https://github.com/acl2-devel/acl2-devel/releases";
+
     license =
       with lib.licenses;
       [
@@ -206,10 +205,14 @@ stdenv.mkDerivation (finalAttrs: {
         publicDomain
         unfreeRedistributable
       ];
+
     maintainers = with lib.maintainers; [
       kini
       raskin
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "acl2";
+    downloadPage = "https://github.com/acl2-devel/acl2-devel/releases";
   };
 })

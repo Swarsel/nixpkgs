@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   gevent,
   pika,
   prometheus-client,
   pylibmc,
-  pytestCheckHook,
   pytest-benchmark,
   pytest-cov-stub,
+  pytestCheckHook,
   redis,
   setuptools_80,
   watchdog,
@@ -19,36 +19,12 @@
 buildPythonPackage rec {
   pname = "dramatiq";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Bogdanp";
     repo = "dramatiq";
     tag = "v${version}";
     hash = "sha256-wUE3R/lFafP7P9tjKjFC+jwCc3jkvGeXunC8AhkBLbM=";
-  };
-
-  build-system = [ setuptools_80 ];
-
-  dependencies = [ prometheus-client ];
-
-  optional-dependencies = {
-    all = [
-      gevent
-      pika
-      pylibmc
-      redis
-      watchdog
-      watchdog-gevent
-    ];
-    gevent = [ gevent ];
-    memcached = [ pylibmc ];
-    rabbitmq = [ pika ];
-    redis = [ redis ];
-    watch = [
-      watchdog
-      watchdog-gevent
-    ];
   };
 
   nativeCheckInputs = [
@@ -60,7 +36,8 @@ buildPythonPackage rec {
     pylibmc
   ];
 
-  pytestFlags = [ "--benchmark-disable" ];
+  build-system = [ setuptools_80 ];
+  dependencies = [ prometheus-client ];
 
   disabledTests = [
     # Requires a running redis
@@ -95,6 +72,29 @@ buildPythonPackage rec {
     "test_retry_exceptions_can_specify_a_delay"
   ];
 
+  optional-dependencies = {
+    all = [
+      gevent
+      pika
+      pylibmc
+      redis
+      watchdog
+      watchdog-gevent
+    ];
+
+    gevent = [ gevent ];
+    memcached = [ pylibmc ];
+    rabbitmq = [ pika ];
+    redis = [ redis ];
+
+    watch = [
+      watchdog
+      watchdog-gevent
+    ];
+  };
+
+  pyproject = true;
+  pytestFlags = [ "--benchmark-disable" ];
   pythonImportsCheck = [ "dramatiq" ];
 
   meta = {

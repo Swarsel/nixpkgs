@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
+  autoreconfHook,
+  binutils-unwrapped_2_38,
+  bison,
   fetchpatch,
   gnu-config,
-  autoreconfHook,
-  bison,
-  binutils-unwrapped_2_38,
   libiberty,
   libintl,
   zlib,
 }:
 
 stdenv.mkDerivation {
-  pname = "libbfd";
   inherit (binutils-unwrapped_2_38) version src;
+  pname = "libbfd";
 
   outputs = [
     "out"
@@ -23,8 +23,8 @@ stdenv.mkDerivation {
   patches = binutils-unwrapped_2_38.patches ++ [
     ./build-components-separately.patch
     (fetchpatch {
-      url = "https://raw.githubusercontent.com/mxe/mxe/e1d4c144ee1994f70f86cf7fd8168fe69bd629c6/src/bfd-1-disable-subdir-doc.patch";
       sha256 = "0pzb3i74d1r7lhjan376h59a7kirw15j7swwm8pz3zy9lkdqkj6q";
+      url = "https://raw.githubusercontent.com/mxe/mxe/e1d4c144ee1994f70f86cf7fd8168fe69bd629c6/src/bfd-1-disable-subdir-doc.patch";
     })
   ];
 
@@ -33,29 +33,19 @@ stdenv.mkDerivation {
     cd bfd
   '';
 
-  postAutoreconf = ''
-    echo "Updating config.guess and config.sub from ${gnu-config}"
-    cp -f ${gnu-config}/config.{guess,sub} ../
-  '';
-
-  # We update these ourselves
-  dontUpdateAutotoolsGnuConfigScripts = true;
-
   strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     bison
   ];
+
   buildInputs = [
     libiberty
     zlib
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ libintl ];
 
-  configurePlatforms = [
-    "build"
-    "host"
-  ];
   configureFlags = [
     "--enable-targets=all"
     "--enable-64-bit-bfd"
@@ -64,16 +54,30 @@ stdenv.mkDerivation {
   ]
   ++ lib.optional (!stdenv.hostPlatform.isStatic) "--enable-shared";
 
+  configurePlatforms = [
+    "build"
+    "host"
+  ];
+
+  # We update these ourselves
+  dontUpdateAutotoolsGnuConfigScripts = true;
   enableParallelBuilding = true;
+
+  postAutoreconf = ''
+    echo "Updating config.guess and config.sub from ${gnu-config}"
+    cp -f ${gnu-config}/config.{guess,sub} ../
+  '';
 
   meta = {
     description = "Library for manipulating containers of machine code";
+
     longDescription = ''
       BFD is a library which provides a single interface to read and write
       object files, executables, archive files, and core files in any format.
       It is associated with GNU Binutils, and elsewhere often distributed with
       it.
     '';
+
     homepage = "https://www.gnu.org/software/binutils/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ ericson2314 ];

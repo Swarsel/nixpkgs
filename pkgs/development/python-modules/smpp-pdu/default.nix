@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   nix-update-script,
   pytestCheckHook,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage {
   pname = "smpp-pdu";
   version = "0.3-unstable-2022-09-01";
-  pyproject = true;
 
   # Upstream was once mozes/smpp.pdu, but it's dead and Python 2 only.
   src = fetchFromGitHub {
@@ -21,9 +20,8 @@ buildPythonPackage {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "smpp.pdu" ];
 
   passthru.updateScript = nix-update-script {

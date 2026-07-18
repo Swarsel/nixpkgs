@@ -5,14 +5,14 @@
   autoconf,
   bison,
   flex,
+  installShellFiles,
+  libnl,
   libtool,
   pkg-config,
-  which,
-  libnl,
   protobuf,
   protobufc,
   shadow,
-  installShellFiles,
+  which,
 }:
 
 stdenv.mkDerivation rec {
@@ -23,8 +23,8 @@ stdenv.mkDerivation rec {
     owner = "google";
     repo = "nsjail";
     rev = version;
-    fetchSubmodules = true;
     hash = "sha256-4fFXPwfPErve5CkVBtjPd1In8eEDby/RhuyW952YW7Y=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -36,12 +36,12 @@ stdenv.mkDerivation rec {
     pkg-config
     which
   ];
+
   buildInputs = [
     libnl
     protobuf
     protobufc
   ];
-  enableParallelBuilding = true;
 
   env.NIX_CFLAGS_COMPILE = toString [ "-Wno-error" ];
 
@@ -56,15 +56,19 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Light-weight process isolation tool, making use of Linux namespaces and seccomp-bpf syscall filters";
     homepage = "https://nsjail.dev/";
     changelog = "https://github.com/google/nsjail/releases/tag/${version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       arturcygan
       bosu
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "nsjail";
   };

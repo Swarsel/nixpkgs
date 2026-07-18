@@ -18,10 +18,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    downloadPage = "https://sourceforge.net/projects/mingw/files/Other/UserContributed/regex/";
     description = "Regex functionality from glibc extracted into a separate library for win32";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.windows;
+    downloadPage = "https://sourceforge.net/projects/mingw/files/Other/UserContributed/regex/";
     teams = [ lib.teams.windows ];
   };
 })

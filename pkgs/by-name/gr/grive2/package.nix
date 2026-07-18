@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  pkg-config,
-  yajl,
+  boost,
   cmake,
-  libgcrypt,
   curl,
   expat,
-  boost,
+  fetchpatch,
+  libgcrypt,
   libiberty,
+  pkg-config,
+  yajl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.5.3";
   pname = "grive2";
+  version = "0.5.3";
 
   src = fetchFromGitHub {
     owner = "vitalif";
@@ -28,9 +28,9 @@ stdenv.mkDerivation (finalAttrs: {
     # Backport gcc-12 support:
     #   https://github.com/vitalif/grive2/pull/363
     (fetchpatch {
+      hash = "sha256-v2Pb6Qvgml/fYzh/VCjOvEVnFYMkOHqROvLLe61DmKA=";
       name = "gcc-12.patch";
       url = "https://github.com/vitalif/grive2/commit/3cf1c058a3e61deb370dde36024a106a213ab2c6.patch";
-      hash = "sha256-v2Pb6Qvgml/fYzh/VCjOvEVnFYMkOHqROvLLe61DmKA=";
     })
   ];
 

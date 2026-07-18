@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   astroid,
   buildPythonPackage,
   deal-solver,
   docstring-parser,
-  fetchFromGitHub,
   flit-core,
   hypothesis,
   marshmallow,
@@ -21,7 +21,6 @@
 buildPythonPackage rec {
   pname = "deal";
   version = "4.24.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "life4";
@@ -29,15 +28,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-nLZ06Xfa9Q+Saf8qPXG1Xo6y6oO6kifhfK/gryZ6q90=";
   };
-
-  build-system = [ flit-core ];
-
-  dependencies = [
-    astroid
-    deal-solver
-    pygments
-    typeguard
-  ];
 
   nativeCheckInputs = [
     docstring-parser
@@ -48,6 +38,23 @@ buildPythonPackage rec {
     sphinx
     urllib3
     vaa
+  ];
+
+  build-system = [ flit-core ];
+
+  dependencies = [
+    astroid
+    deal-solver
+    pygments
+    typeguard
+  ];
+
+  disabledTestPaths = [
+    # Test needs internet access
+    "tests/test_runtime/test_offline.py"
+    # depends on typeguard <4.0.0 for tests, but >=4.0.0 seems fine for runtime
+    # https://github.com/life4/deal/blob/9be70fa1c5a0635880619b2cea83a9f6631eb236/pyproject.toml#L40
+    "tests/test_testing.py"
   ];
 
   disabledTests = [
@@ -78,23 +85,18 @@ buildPythonPackage rec {
     "test_infer"
   ];
 
-  disabledTestPaths = [
-    # Test needs internet access
-    "tests/test_runtime/test_offline.py"
-    # depends on typeguard <4.0.0 for tests, but >=4.0.0 seems fine for runtime
-    # https://github.com/life4/deal/blob/9be70fa1c5a0635880619b2cea83a9f6631eb236/pyproject.toml#L40
-    "tests/test_testing.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "deal" ];
 
   meta = {
     description = "Library for design by contract (DbC) and checking values, exceptions, and side-effects";
+
     longDescription = ''
       In a nutshell, deal empowers you to write bug-free code.
       By adding a few decorators to your code, you get for free tests, static analysis, formal verification,
       and much more.
     '';
+
     homepage = "https://github.com/life4/deal";
     changelog = "https://github.com/life4/deal/releases/tag/${version}";
     license = lib.licenses.mit;

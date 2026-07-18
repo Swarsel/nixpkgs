@@ -1,11 +1,11 @@
 {
+  stdenv,
   buildPythonPackage,
   cmake,
-  numpy,
-  scipy,
   hatchling,
+  numpy,
   python,
-  stdenv,
+  scipy,
   xgboost,
 }:
 
@@ -15,36 +15,24 @@ let
   libPath = "${xgboost}/lib/${libName}";
 in
 buildPythonPackage {
-  pname = "xgboost";
-  pyproject = true;
   inherit (xgboost) version src meta;
+  pname = "xgboost";
+
+  postPatch = ''
+    cd python-package
+  '';
 
   nativeBuildInputs = [
     cmake
     hatchling
   ];
+
   buildInputs = [ xgboost ];
+
   propagatedBuildInputs = [
     numpy
     scipy
   ];
-
-  pythonRemoveDeps = [
-    "nvidia-nccl-cu12"
-  ];
-
-  # Place libxgboost.so where the build will look for it
-  # to avoid triggering the compilation of the library
-  prePatch = ''
-    mkdir -p lib
-    ln -s ${libPath} lib/
-  '';
-
-  dontUseCmakeConfigure = true;
-
-  postPatch = ''
-    cd python-package
-  '';
 
   # test setup tries to download test data with no option to disable
   # (removing sklearn from nativeCheckInputs causes all previously enabled tests to be skipped)
@@ -62,7 +50,20 @@ buildPythonPackage {
       ln -s "${libPath}" "${libOutPath}"
     '';
 
+  __darwinAllowLocalNetworking = true;
+  dontUseCmakeConfigure = true;
+
+  # Place libxgboost.so where the build will look for it
+  # to avoid triggering the compilation of the library
+  prePatch = ''
+    mkdir -p lib
+    ln -s ${libPath} lib/
+  '';
+
+  pyproject = true;
   pythonImportsCheck = [ "xgboost" ];
 
-  __darwinAllowLocalNetworking = true;
+  pythonRemoveDeps = [
+    "nvidia-nccl-cu12"
+  ];
 }

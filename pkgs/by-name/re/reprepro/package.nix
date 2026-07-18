@@ -3,15 +3,15 @@
   stdenv,
   fetchFromGitLab,
   autoreconfHook,
-  versionCheckHook,
-  nix-update-script,
   bzip2,
   db,
+  gcc14Stdenv,
   gpgme,
   libarchive,
+  nix-update-script,
+  versionCheckHook,
   xz,
   zlib,
-  gcc14Stdenv,
 }:
 
 let
@@ -22,12 +22,17 @@ theStdenv.mkDerivation (finalAttrs: {
   version = "5.4.8";
 
   src = fetchFromGitLab {
-    domain = "salsa.debian.org";
     owner = "debian";
     repo = "reprepro";
     tag = "reprepro-${finalAttrs.version}";
     hash = "sha256-qHqRLWRbSwmpKkUQ8JenUo+CY91EY/h4yHHmq4TacMg=";
+    domain = "salsa.debian.org";
   };
+
+  nativeBuildInputs = [
+    autoreconfHook
+    versionCheckHook
+  ];
 
   buildInputs = [
     bzip2
@@ -38,17 +43,12 @@ theStdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  nativeBuildInputs = [
-    autoreconfHook
-    versionCheckHook
-  ];
-
   doInstallCheck = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://salsa.debian.org/debian/reprepro/";
     description = "Debian package repository producer";
+    homepage = "https://salsa.debian.org/debian/reprepro/";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ baloo ];
     platforms = lib.platforms.all;

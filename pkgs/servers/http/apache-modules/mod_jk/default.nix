@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   apacheHttpd,
   autoreconfHook,
-  fetchFromGitHub,
   jdk,
 }:
 
@@ -17,8 +17,6 @@ stdenv.mkDerivation rec {
     tag = "JK_${lib.replaceStrings [ "." ] [ "_" ] version}";
     hash = "sha256-hlwlx7Sb4oeZIzHQYOC3e9xEZK9u6ZG8Q2U/XdKMe3U=";
   };
-
-  sourceRoot = "${src.name}/native";
 
   nativeBuildInputs = [ autoreconfHook ];
 
@@ -40,6 +38,8 @@ stdenv.mkDerivation rec {
 
     runHook postInstall
   '';
+
+  sourceRoot = "${src.name}/native";
 
   meta = {
     description = "Provides web server plugins to connect web servers with Tomcat";

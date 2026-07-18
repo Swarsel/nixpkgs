@@ -1,30 +1,27 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitLab,
-  setuptools,
-  requests,
+  buildPythonPackage,
   pytestCheckHook,
+  requests,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyhibp";
   version = "4.2.0";
-  pyproject = true;
 
   src = fetchFromGitLab {
-    group = "kitsunix";
     owner = "pyHIBP";
     repo = "pyHIBP";
     tag = "v${finalAttrs.version}";
     hash = "sha256-2LJA989hpG5X6o+zCTSU0RRd0Z4zd29RAtp/jBW8Clo=";
+    group = "kitsunix";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
 
   disabledTests = [
     # All require internet access
@@ -35,6 +32,7 @@ buildPythonPackage (finalAttrs: {
     "TestGetDataClasses"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyhibp" ];
 
   meta = {

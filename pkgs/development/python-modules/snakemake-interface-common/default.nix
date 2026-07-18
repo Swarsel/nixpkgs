@@ -1,20 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-
-  # build-system
-  setuptools,
-
   # dependencies
   argparse-dataclass,
+  buildPythonPackage,
   configargparse,
-
+  fetchpatch,
   # tests
   pytestCheckHook,
+  # build-system
+  setuptools,
   snakemake,
-
   # passthru
   snakemake-interface-common,
 }:
@@ -22,8 +18,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "snakemake-interface-common";
   version = "1.23.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "snakemake";
@@ -35,11 +29,21 @@ buildPythonPackage (finalAttrs: {
   patches = [
     # Upstream PR: https://github.com/snakemake/snakemake-interface-common/pull/89
     (fetchpatch {
+      hash = "sha256-mZ03mx7W5XpdNzr1aNVyQm7/hPdD7yuYqk7DCR9y7Fw=";
       name = "relax-packaging-dependency.patch";
       url = "https://github.com/snakemake/snakemake-interface-common/commit/d585b5c0c7c0ec0df60a1a26d5d413f3ee88e63f.patch";
-      hash = "sha256-mZ03mx7W5XpdNzr1aNVyQm7/hPdD7yuYqk7DCR9y7Fw=";
     })
   ];
+
+  # Circular dependency with snakemake
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    snakemake
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -50,17 +54,10 @@ buildPythonPackage (finalAttrs: {
     configargparse
   ];
 
+  enabledTestPaths = [ "tests/tests.py" ];
+  pyproject = true;
   pythonImportsCheck = [ "snakemake_interface_common" ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    snakemake
-  ];
-
-  enabledTestPaths = [ "tests/tests.py" ];
-
-  # Circular dependency with snakemake
-  doCheck = false;
   passthru.tests.pytest = snakemake-interface-common.overridePythonAttrs {
     doCheck = true;
   };

@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "django-logentry-admin";
   version = "1.1.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "yprez";
@@ -19,16 +18,19 @@ buildPythonPackage rec {
     sha256 = "1bndxgvisw8kk52zfdifvly6dl4833wqilxf77pg473172yaf5gq";
   };
 
+  propagatedBuildInputs = [ django ];
+
   nativeCheckInputs = [
     pytest
     pytest-django
   ];
+
   checkPhase = ''
     rm -r logentry_admin __init__.py
     pytest
   '';
 
-  propagatedBuildInputs = [ django ];
+  format = "setuptools";
 
   meta = {
     description = "Show all LogEntry objects in the Django admin site";

@@ -1,30 +1,31 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
-  runtimeShell,
   installShellFiles,
-  testers,
   pdm,
+  python3,
+  runtimeShell,
+  testers,
 }:
 
 let
   python = python3.override {
-    self = python;
     packageOverrides = _: super: {
       # pdm requires ...... -> ghostscript-with-X which is AGPL only
       matplotlib = super.matplotlib.override { enableTk = false; };
+
       # pdm requires ...... -> jbig2dec which is AGPL only
       moto = super.moto.overridePythonAttrs (old: {
         doCheck = false;
       });
     };
+
+    self = python;
   };
 in
 python.pkgs.buildPythonApplication rec {
   pname = "pdm";
   version = "2.27.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pdm-project";
@@ -33,9 +34,38 @@ python.pkgs.buildPythonApplication rec {
     hash = "sha256-Ju1UoyThWoPnU9HJzdgA9ry+G1pXOhXmPIoydTg7VXo=";
   };
 
-  pythonRelaxDeps = [ "hishel" ];
-
   nativeBuildInputs = [ installShellFiles ];
+
+  nativeCheckInputs = with python.pkgs; [
+    first
+    pytestCheckHook
+    pytest-mock
+    pytest-xdist
+    pytest-httpserver
+  ];
+
+  preCheck = ''
+    export HOME=$TMPDIR
+    substituteInPlace tests/cli/test_run.py \
+      --replace-fail "/bin/bash" "${runtimeShell}"
+  '';
+
+  # Silence network warning during pypaInstallPhase
+  # by disabling latest version check
+  preInstall = ''
+    export PDM_CHECK_UPDATE=0
+  '';
+
+  postInstall = ''
+    export PDM_LOG_DIR=/tmp/pdm/log
+    $out/bin/pdm completion bash >pdm.bash
+    $out/bin/pdm completion fish >pdm.fish
+    $out/bin/pdm completion zsh >pdm.zsh
+    installShellCompletion pdm.{bash,fish,zsh}
+    unset PDM_LOG_DIR
+  '';
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = with python.pkgs; [
     pdm-backend
@@ -69,38 +99,7 @@ python.pkgs.buildPythonApplication rec {
     ]
     ++ httpx.optional-dependencies.socks;
 
-  makeWrapperArgs = [ "--set PDM_CHECK_UPDATE 0" ];
-
-  # Silence network warning during pypaInstallPhase
-  # by disabling latest version check
-  preInstall = ''
-    export PDM_CHECK_UPDATE=0
-  '';
-
-  postInstall = ''
-    export PDM_LOG_DIR=/tmp/pdm/log
-    $out/bin/pdm completion bash >pdm.bash
-    $out/bin/pdm completion fish >pdm.fish
-    $out/bin/pdm completion zsh >pdm.zsh
-    installShellCompletion pdm.{bash,fish,zsh}
-    unset PDM_LOG_DIR
-  '';
-
-  nativeCheckInputs = with python.pkgs; [
-    first
-    pytestCheckHook
-    pytest-mock
-    pytest-xdist
-    pytest-httpserver
-  ];
-
   disabledTestMarks = [ "network" ];
-
-  preCheck = ''
-    export HOME=$TMPDIR
-    substituteInPlace tests/cli/test_run.py \
-      --replace-fail "/bin/bash" "${runtimeShell}"
-  '';
 
   disabledTests = [
     # fails to locate setuptools (maybe upstream bug)
@@ -124,20 +123,23 @@ python.pkgs.buildPythonApplication rec {
     "test_install_from_lock_with_higher_version"
   ];
 
-  __darwinAllowLocalNetworking = true;
-
+  makeWrapperArgs = [ "--set PDM_CHECK_UPDATE 0" ];
+  pyproject = true;
+  pythonRelaxDeps = [ "hishel" ];
   passthru.tests.version = testers.testVersion { package = pdm; };
 
   meta = {
+    description = "Modern Python package and dependency manager supporting the latest PEP standards";
     homepage = "https://pdm-project.org";
     changelog = "https://github.com/pdm-project/pdm/releases/tag/${version}";
-    description = "Modern Python package and dependency manager supporting the latest PEP standards";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       cpcloud
       natsukium
       misilelab
     ];
+
     mainProgram = "pdm";
   };
 }

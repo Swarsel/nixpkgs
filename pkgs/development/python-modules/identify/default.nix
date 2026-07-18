@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   cffi,
+  pytestCheckHook,
   setuptools,
   ukkonen,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "identify";
   version = "2.6.19";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pre-commit";
@@ -28,6 +27,7 @@ buildPythonPackage (finalAttrs: {
     ukkonen
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "identify" ];
 
   meta = {

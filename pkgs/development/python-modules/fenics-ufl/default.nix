@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   numpy,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "fenics-ufl";
   version = "2026.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fenics";
@@ -19,6 +18,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-FwU9QmkyYuUfxt4v8sHFv+YNHldx1g0e/TDezijTUb4=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
   ];
@@ -26,6 +27,8 @@ buildPythonPackage (finalAttrs: {
   dependencies = [
     numpy
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "ufl"
@@ -36,14 +39,12 @@ buildPythonPackage (finalAttrs: {
     "ufl.utils"
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   meta = {
-    homepage = "https://fenicsproject.org";
-    downloadPage = "https://github.com/fenics/ufl";
     description = "Unified Form Language";
+    homepage = "https://fenicsproject.org";
     changelog = "https://github.com/fenics/ufl/releases/tag/${finalAttrs.version}";
     license = lib.licenses.lgpl3Plus;
     maintainers = with lib.maintainers; [ qbisi ];
+    downloadPage = "https://github.com/fenics/ufl";
   };
 })

@@ -3,10 +3,10 @@
   stdenv,
   fetchurl,
   cmake,
+  libgig,
+  liblscp,
   pkg-config,
   qt6,
-  liblscp,
-  libgig,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,11 +33,11 @@ stdenv.mkDerivation (finalAttrs: {
   qtWrapperArgs = [ "--prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [ libgig ]}" ];
 
   meta = {
-    homepage = "https://qsampler.sourceforge.io";
     description = "LinuxSampler GUI front-end application";
-    mainProgram = "qsampler";
+    homepage = "https://qsampler.sourceforge.io";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "qsampler";
   };
 })

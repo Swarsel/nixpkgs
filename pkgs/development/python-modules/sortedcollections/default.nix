@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest-cov-stub,
   pytestCheckHook,
   sortedcontainers,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "sortedcollections";
   version = "2.1.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "grantjenks";
@@ -26,6 +25,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "sortedcollections" ];
 
   meta = {

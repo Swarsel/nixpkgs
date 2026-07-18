@@ -1,13 +1,13 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   autoreconfHook,
   expat,
   fetchpatch,
-  fetchurl,
   glib,
   gtk3-x11,
-  lib,
   pkg-config,
-  stdenv,
   zlib,
 }:
 
@@ -22,24 +22,24 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://salsa.debian.org/pkg-security-team/rfdump/-/raw/debian/master/debian/patches/01_fix_desktop_file.patch";
       hash = "sha256-r6BR+eAg963GjcFvV6/1heW7uKi8tmi7j8LyxtpcgYk=";
+      url = "https://salsa.debian.org/pkg-security-team/rfdump/-/raw/debian/master/debian/patches/01_fix_desktop_file.patch";
     })
     (fetchpatch {
-      url = "https://salsa.debian.org/pkg-security-team/rfdump/-/raw/debian/master/debian/patches/03_fix-format-security-errors.patch";
       hash = "sha256-rQKvFeSQ09P46lhvlov51Oej0HurlR++5Yv4kCLn9J8=";
+      url = "https://salsa.debian.org/pkg-security-team/rfdump/-/raw/debian/master/debian/patches/03_fix-format-security-errors.patch";
     })
     (fetchpatch {
-      url = "https://salsa.debian.org/pkg-security-team/rfdump/-/raw/debian/master/debian/patches/02_configure.in-preserve-CFLAGS.patch";
       hash = "sha256-4+Yj5I019ZkHbtE3s67miAlMeuV8aZdc9RzJrySLmgM=";
+      url = "https://salsa.debian.org/pkg-security-team/rfdump/-/raw/debian/master/debian/patches/02_configure.in-preserve-CFLAGS.patch";
     })
     (fetchpatch {
-      url = "https://salsa.debian.org/pkg-security-team/rfdump/-/raw/debian/master/debian/patches/04_gcc10.patch";
       hash = "sha256-LTsBkdwvmZ11+gwfe/XaapxzLaEVu7CdtCw8mqJcXr4=";
+      url = "https://salsa.debian.org/pkg-security-team/rfdump/-/raw/debian/master/debian/patches/04_gcc10.patch";
     })
     (fetchpatch {
-      url = "https://salsa.debian.org/pkg-security-team/rfdump/-/raw/debian/master/debian/patches/05_gtk3.patch";
       hash = "sha256-1y/JFePfnQMMVwqLYgUQyP/SNZRMHgV+cHjbHP6szQs=";
+      url = "https://salsa.debian.org/pkg-security-team/rfdump/-/raw/debian/master/debian/patches/05_gtk3.patch";
     })
   ];
 
@@ -48,8 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace src/Makefile.am --replace-fail "/usr/share/pixmaps" "$out/share/pixmaps"
     substituteInPlace src/tagtypes.c --replace-fail "/usr/share/rfdump/rfd_types.xml" "$out/share/rfdump/rfd_types.xml"
   '';
-
-  configureFlags = [ "PREFIX=$out" ];
 
   nativeBuildInputs = [
     autoreconfHook
@@ -63,6 +61,7 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
+  configureFlags = [ "PREFIX=$out" ];
   makeFlags = [ "LIBS=-lexpat" ];
 
   postInstall = ''
@@ -76,7 +75,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://salsa.debian.org/pkg-security-team/rfdump/-/blob/debian/master/ChangeLog";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ tochiaha ];
-    mainProgram = "rfdump";
     platforms = lib.platforms.all;
+    mainProgram = "rfdump";
   };
 })

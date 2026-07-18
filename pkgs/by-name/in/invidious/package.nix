@@ -1,16 +1,15 @@
 {
   lib,
+  fetchFromGitHub,
   callPackage,
   crystal,
-  fetchFromGitHub,
   librsvg,
-  pkg-config,
   libxml2,
+  nixosTests,
   openssl,
+  pkg-config,
   shards,
   sqlite,
-  nixosTests,
-
   # All versions, revisions, and checksums are stored in ./versions.json.
   # The update process is the following:
   #   * pick the latest tag
@@ -29,16 +28,15 @@ let
   videojs = callPackage ./videojs.nix { inherit versions; };
 in
 crystal.buildCrystalPackage rec {
-  pname = "invidious";
   inherit (versions.invidious) version;
-  __structuredAttrs = true;
+  pname = "invidious";
 
   src = fetchFromGitHub {
+    inherit (versions.invidious) hash;
     owner = "iv-org";
     repo = "invidious";
-    fetchSubmodules = true;
     rev = versions.invidious.rev or "refs/tags/v${version}";
-    inherit (versions.invidious) hash;
+    fetchSubmodules = true;
   };
 
   postPatch =
@@ -85,24 +83,12 @@ crystal.buildCrystalPackage rec {
     pkg-config
     shards
   ];
+
   buildInputs = [
     libxml2
     openssl
     sqlite
   ];
-
-  format = "crystal";
-  shardsFile = ./shards.nix;
-  crystalBinaries.invidious = {
-    src = "src/invidious.cr";
-    options = [
-      "--release"
-      "--progress"
-      "--verbose"
-      "--no-debug"
-      "-Dskip_videojs_download"
-    ];
-  };
 
   postInstall = ''
     mkdir -p $out/share/invidious/config
@@ -126,21 +112,41 @@ crystal.buildCrystalPackage rec {
     $out/bin/invidious --version
   '';
 
+  __structuredAttrs = true;
+
+  crystalBinaries.invidious = {
+    src = "src/invidious.cr";
+
+    options = [
+      "--release"
+      "--progress"
+      "--verbose"
+      "--no-debug"
+      "-Dskip_videojs_download"
+    ];
+  };
+
+  format = "crystal";
+  shardsFile = ./shards.nix;
+
   passthru = {
     tests = {
       inherit (nixosTests) invidious;
     };
+
     updateScript = ./update.sh;
   };
 
   meta = {
     description = "Open source alternative front-end to YouTube";
-    mainProgram = "invidious";
     homepage = "https://invidious.io/";
     license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       _999eagle
       GaetanLepage
     ];
+
+    mainProgram = "invidious";
   };
 }

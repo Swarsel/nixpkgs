@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchFromGitHub,
   buildGoModule,
   docker-credential-gcr,
-  fetchFromGitHub,
-  lib,
   nix-update-script,
   testers,
 }:
@@ -23,8 +23,8 @@ buildGoModule (finalAttrs: {
   '';
 
   vendorHash = "sha256-P8Mhk6jj7TlbP+rcqpYsWy8CIGJMetYAuKylXRBNKIc=";
-
   env.CGO_ENABLED = 0;
+  __darwinAllowLocalNetworking = true;
 
   ldflags = [
     "-s"
@@ -34,28 +34,31 @@ buildGoModule (finalAttrs: {
 
   passthru = {
     tests.version = testers.testVersion {
-      package = docker-credential-gcr;
       command = "docker-credential-gcr version";
+      package = docker-credential-gcr;
     };
+
     updateScript = nix-update-script { };
   };
 
-  __darwinAllowLocalNetworking = true;
-
   meta = {
     description = "Docker credential helper for GCR (https://gcr.io) users";
+
     longDescription = ''
       docker-credential-gcr is Google Container Registry's Docker credential
       helper. It allows for Docker clients v1.11+ to easily make
       authenticated requests to GCR's repositories (gcr.io, eu.gcr.io, etc.).
     '';
+
     homepage = "https://github.com/GoogleCloudPlatform/docker-credential-gcr";
     changelog = "https://github.com/GoogleCloudPlatform/docker-credential-gcr/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       suvash
       anthonyroussel
     ];
+
     mainProgram = "docker-credential-gcr";
   };
 })

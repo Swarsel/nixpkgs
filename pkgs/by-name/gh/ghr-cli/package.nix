@@ -1,17 +1,15 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  nix-update-script,
   gitMinimal,
+  nix-update-script,
+  rustPlatform,
   versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "ghr-cli";
   version = "0.8.2";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "chenyukang";
@@ -22,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-siMxS08K+7L8f9A32gEWwQF9PAQh5UPMA+xTkTlz13o=";
 
-  passthru.updateScript = nix-update-script { };
-
   nativeCheckInputs = [
     gitMinimal
   ];
@@ -33,6 +29,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
+  __structuredAttrs = true;
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Fast terminal workspace for staying on top of GitHub";

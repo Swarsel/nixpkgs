@@ -30,9 +30,9 @@ buildGoModule (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "High performance DNS over HTTPS client & server";
     homepage = "https://github.com/m13253/dns-over-https";
     changelog = "https://github.com/m13253/dns-over-https/releases/tag/v${finalAttrs.version}";
-    description = "High performance DNS over HTTPS client & server";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.all;

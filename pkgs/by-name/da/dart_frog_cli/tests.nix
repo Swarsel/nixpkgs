@@ -1,37 +1,21 @@
 {
-  testers,
-  dart_frog_cli,
   dart,
+  dart_frog_cli,
+  testers,
 }:
 
 let
   testPkgName = "my_frog_project";
 in
 {
-  # Simple help check (Sanity test)
-  usage = testers.runCommand {
-    name = "dart-frog-usage-test";
-    buildInputs = [ dart_frog_cli ];
-    script = ''
-      export HOME=$TMPDIR
-      dart_frog --help > output.txt
-      if grep -q "Usage: dart_frog" output.txt; then
-        echo "Usage check passed ✅"
-        touch $out
-      else
-        echo "Usage check failed ❌"
-        exit 1
-      fi
-    '';
-  };
-
   # Project creation test (Behavioral test)
   create-project = testers.runCommand {
-    name = "dart-frog-create-test";
     buildInputs = [
       dart_frog_cli
       dart
     ];
+
+    name = "dart-frog-create-test";
 
     script = ''
       export HOME=$TMPDIR
@@ -54,6 +38,24 @@ in
         touch $out
       else
         echo "Project generation failed! ❌"
+        exit 1
+      fi
+    '';
+  };
+
+  # Simple help check (Sanity test)
+  usage = testers.runCommand {
+    buildInputs = [ dart_frog_cli ];
+    name = "dart-frog-usage-test";
+
+    script = ''
+      export HOME=$TMPDIR
+      dart_frog --help > output.txt
+      if grep -q "Usage: dart_frog" output.txt; then
+        echo "Usage check passed ✅"
+        touch $out
+      else
+        echo "Usage check failed ❌"
         exit 1
       fi
     '';

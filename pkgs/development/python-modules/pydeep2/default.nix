@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   nix-update-script,
   setuptools,
   ssdeep,
@@ -10,9 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pydeep2";
   version = "0.5.1";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "JakubOnderka";
@@ -21,18 +18,17 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-qeE+ckYIDOeXaDC3Rxh4LmS0oN+Tqvjwe2tGDDt7YgA=";
   };
 
-  build-system = [ setuptools ];
-
-  buildInputs = [ ssdeep ];
-
   postPatch = ''
     substituteInPlace setup.py \
       --replace-fail '"/usr/local/include/"' '"${ssdeep}/include"' \
       --replace-fail '"/usr/local/lib/"' '"${ssdeep}/lib"'
   '';
 
+  buildInputs = [ ssdeep ];
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "pydeep" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

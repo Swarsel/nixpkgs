@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   testers,
   waf-tester,
 }:
@@ -26,17 +26,17 @@ buildGoModule (finalAttrs: {
   ];
 
   passthru.tests.version = testers.testVersion {
-    package = waf-tester;
-    command = "waf-tester -version";
     version = "waf-tester ${finalAttrs.version}, commit none, built at unknown by unknown";
+    command = "waf-tester -version";
+    package = waf-tester;
   };
 
   meta = {
     description = "Tool to test Web Application Firewalls (WAFs)";
-    mainProgram = "waf-tester";
     homepage = "https://github.com/jreisinger/waf-tester";
     changelog = "https://github.com/jreisinger/waf-tester/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "waf-tester";
   };
 })

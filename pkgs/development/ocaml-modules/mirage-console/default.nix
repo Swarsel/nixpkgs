@@ -10,9 +10,6 @@ buildDunePackage (finalAttrs: {
   pname = "mirage-console";
   version = "5.1.0";
 
-  minimalOCamlVersion = "4.08";
-  duneVersion = "3";
-
   src = fetchurl {
     url = "https://github.com/mirage/mirage-console/releases/download/v${finalAttrs.version}/mirage-console-${finalAttrs.version}.tbz";
     hash = "sha256-mjYRisbNOJbYoSuWaGoPueXakmqAwmWh0ATvLLsvpNM=";
@@ -22,6 +19,9 @@ buildDunePackage (finalAttrs: {
     lwt
     mirage-flow
   ];
+
+  duneVersion = "3";
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "Implementations of Mirage console devices";

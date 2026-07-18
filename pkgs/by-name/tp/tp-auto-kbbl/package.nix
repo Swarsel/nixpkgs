@@ -1,11 +1,11 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   dbus,
-  pkg-config,
-  openssl,
   libevdev,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,14 +19,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-fhBCsOjaQH2tRsBjMGiDmZSIkAgEVxxywVp8/0uAaTU=";
   };
 
-  cargoHash = "sha256-Ptc4m+99YknHY28DR5WHt/JG9tgUOcbz/TezUkezmS8=";
-
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     dbus
     libevdev
     openssl
   ];
+
+  cargoHash = "sha256-Ptc4m+99YknHY28DR5WHt/JG9tgUOcbz/TezUkezmS8=";
 
   meta = {
     description = "Auto toggle keyboard back-lighting on Thinkpads (and maybe other laptops) for Linux";

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   google-ai-generativelanguage,
   google-api-core,
   google-api-python-client,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "google-generativeai";
   version = "0.8.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "google";
@@ -25,8 +24,8 @@ buildPythonPackage rec {
     hash = "sha256-zUNgQqpGgMyCBhW+Z9EiSJIyuIQh2XhwlCdgrTymCVk=";
   };
 
-  pythonRelaxDeps = [ "google-ai-generativelanguage" ];
-
+  # Issue with the google.ai module. Check with the next release
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -40,10 +39,9 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  # Issue with the google.ai module. Check with the next release
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "google.generativeai" ];
+  pythonRelaxDeps = [ "google-ai-generativelanguage" ];
 
   meta = {
     description = "Python client library for Google's large language model PaLM API";

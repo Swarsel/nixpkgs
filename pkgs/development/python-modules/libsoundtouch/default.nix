@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  pytestCheckHook,
   requests,
+  setuptools,
   websocket-client,
   zeroconf,
-  pytestCheckHook,
-  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "libsoundtouch";
   version = "0.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "CharlesBlonde";
@@ -26,6 +25,7 @@ buildPythonPackage rec {
       --replace-fail "'enum-compat>=0.0.2'," ""
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,14 +34,13 @@ buildPythonPackage rec {
     zeroconf
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTests = [
     # mock data order mismatch
     "test_select_content_item"
     "test_snapshot_restore"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "libsoundtouch" ];
 
   meta = {

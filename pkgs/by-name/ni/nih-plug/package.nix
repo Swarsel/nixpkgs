@@ -1,17 +1,17 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   alsa-lib,
-  libjack2,
   libGL,
-  libxkbcommon,
+  libjack2,
   libx11,
-  libxcursor,
   libxcb,
   libxcb-wm,
+  libxcursor,
+  libxkbcommon,
+  pkg-config,
   python3,
+  rustPlatform,
 }:
 
 # NIH-plug is split into two things:
@@ -33,7 +33,6 @@ rustPlatform.buildRustPackage rec {
   # Upstream does not tag releases. Use the `0-unstable-<date>` convention so
   # the version compares lower than any future tagged release.
   version = "0-unstable-2026-05-10";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "robbert-vdh";
@@ -41,14 +40,6 @@ rustPlatform.buildRustPackage rec {
     rev = "f36931f7af4646065488a9845d8f8c2f95252c23";
     hash = "sha256-Jvd1RHs2VXzHN8Koj+JS1bcbGMSA30g2e3i8lhGjGlc=";
   };
-
-  # `cargoLock.outputHashes` would have to be used here because the lockfile
-  # pins several crates by git rev. However, the lockfile contains four
-  # different revs of `baseview` all at version 0.1.0, and `importCargoLock`
-  # keys hashes by `<name>-<version>` — so it cannot represent more than one
-  # rev per name. The `fetchCargoVendor` path (default since 25.05) does not
-  # have this limitation: it produces one combined vendor directory hash.
-  cargoHash = "sha256-d89GZf9cwSlqdC/q3xMHh8ehDiOhuiZAI0/ygKQHuqc=";
 
   nativeBuildInputs = [
     pkg-config
@@ -67,18 +58,13 @@ rustPlatform.buildRustPackage rec {
     libxcb-wm
   ];
 
-  # Only the production plugins are listed in upstream's `bundler.toml`. The
-  # `plugins/examples/*` crates exist for documentation and are deliberately
-  # excluded. Keep this list in sync with `bundler.toml`.
-  bundlePackages = [
-    "buffr_glitch"
-    "crisp"
-    "loudness_war_winner"
-    "puberty_simulator"
-    "safety_limiter"
-    "soft_vacuum"
-    "spectral_compressor"
-  ];
+  # `cargoLock.outputHashes` would have to be used here because the lockfile
+  # pins several crates by git rev. However, the lockfile contains four
+  # different revs of `baseview` all at version 0.1.0, and `importCargoLock`
+  # keys hashes by `<name>-<version>` — so it cannot represent more than one
+  # rev per name. The `fetchCargoVendor` path (default since 25.05) does not
+  # have this limitation: it produces one combined vendor directory hash.
+  cargoHash = "sha256-d89GZf9cwSlqdC/q3xMHh8ehDiOhuiZAI0/ygKQHuqc=";
 
   # `cargo xtask bundle` is a workspace alias for running the in-tree `xtask`
   # binary, which itself invokes `cargo build --release -p <package>` for each
@@ -130,8 +116,24 @@ rustPlatform.buildRustPackage rec {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
+  # Only the production plugins are listed in upstream's `bundler.toml`. The
+  # `plugins/examples/*` crates exist for documentation and are deliberately
+  # excluded. Keep this list in sync with `bundler.toml`.
+  bundlePackages = [
+    "buffr_glitch"
+    "crisp"
+    "loudness_war_winner"
+    "puberty_simulator"
+    "safety_limiter"
+    "soft_vacuum"
+    "spectral_compressor"
+  ];
+
   meta = {
     description = "Collection of CLAP and VST3 audio plugins built with the NIH-plug framework";
+
     longDescription = ''
       Builds the upstream NIH-plug plugin collection: Buffr Glitch (a MIDI-
       triggered buffer-repeat effect), Crisp (high-frequency excitement
@@ -154,6 +156,7 @@ rustPlatform.buildRustPackage rec {
       Crossover and Diopser are part of the upstream repository but
       unconditionally require nightly Rust (std::simd) and are not built here.
     '';
+
     homepage = "https://github.com/robbert-vdh/nih-plug";
     changelog = "https://github.com/robbert-vdh/nih-plug/blob/${src.rev}/CHANGELOG.md";
     # The framework crates are ISC. Every plugin in `plugins/` declares

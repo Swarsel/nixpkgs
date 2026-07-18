@@ -17,8 +17,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Command-line program which performs basic numeric,textual and statistical operations on input textual data files";
     homepage = "https://www.gnu.org/software/datamash/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ pSub ];
+    platforms = lib.platforms.all;
   };
 
 })

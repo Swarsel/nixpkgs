@@ -14,6 +14,7 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/project/smc/smc/${
       lib.replaceStrings [ "." ] [ "_" ] finalAttrs.version
     }/smc_${lib.replaceStrings [ "." ] [ "_" ] finalAttrs.version}.tgz";
+
     sha256 = "1gv0hrgdl4wp562virpf9sib6pdhapwv4zvwbl0d5f5xyx04il11";
   };
 
@@ -39,6 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Generate state machine code from text input (state diagram)";
+
     longDescription = ''
       SMC (State Machine Compiler) takes a text input file describing states,
       events and actions of a state machine and generates source code that
@@ -50,11 +52,12 @@ stdenv.mkDerivation (finalAttrs: {
 
       SMC can also generate GraphViz state diagrams from the input file.
     '';
+
     homepage = "https://smc.sourceforge.net/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.mpl11;
-    platforms = lib.platforms.linux;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.linux;
     mainProgram = "smc";
   };
 })

@@ -2,27 +2,26 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  libsForQt5,
-
   apple-sdk_15,
   asciidoctor,
   botan3,
+  cmake,
   curl,
   darwinMinVersionHook,
+  libargon2,
+  libsForQt5,
+  libusb1,
   libxi,
   libxtst,
-  libargon2,
-  libusb1,
   minizip,
   nix-update-script,
+  nixosTests,
   pcsclite,
   pkg-config,
   qrencode,
   readline,
   wrapGAppsHook3,
   zlib,
-
   withKeePassBrowser ? true,
   withKeePassBrowserPasskeys ? true,
   withKeePassFDOSecrets ? stdenv.hostPlatform.isLinux,
@@ -31,8 +30,6 @@
   withKeePassSSHAgent ? true,
   withKeePassX11 ? true,
   withKeePassYubiKey ? true,
-
-  nixosTests,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -45,6 +42,68 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-eg8jRaSJdRBpEOHQ8E3jXcdwRzsnyq6r4RLyltdpIB8=";
   };
+
+  patches = [ ./darwin-remove-macdeployqt.patch ];
+
+  # Upstream develops against a build of PCSC from Xcode.
+  # The types are incompatible with nixpkgs pcsclite.
+  # https://github.com/NixOS/nixpkgs/issues/520227
+  postPatch = ''
+    substituteInPlace src/keys/drivers/YubiKeyInterfacePCSC.cpp \
+      --replace-fail "typedef uint32_t RETVAL;" "typedef int32_t RETVAL;"
+  '';
+
+  nativeBuildInputs = [
+    asciidoctor
+    cmake
+    libsForQt5.wrapQtAppsHook
+    libsForQt5.qttools
+    pkg-config
+  ]
+  ++ lib.optional (!stdenv.hostPlatform.isDarwin) wrapGAppsHook3;
+
+  buildInputs = [
+    botan3
+    curl
+    libxi
+    libxtst
+    libargon2
+    libsForQt5.qtbase
+    libsForQt5.qtsvg
+    minizip
+    pcsclite
+    qrencode
+    readline
+    zlib
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    libsForQt5.qtmacextras
+
+    apple-sdk_15
+    # ScreenCaptureKit, required by livekit, is only available on 12.3 and up:
+    # https://developer.apple.com/documentation/screencapturekit
+    (darwinMinVersionHook "12.3")
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    libusb1
+  ]
+  ++ lib.optionals withKeePassX11 [
+    libsForQt5.qtx11extras
+  ];
+
+  cmakeFlags = [
+    (lib.cmakeFeature "KEEPASSXC_BUILD_TYPE" "Release")
+    (lib.cmakeBool "WITH_GUI_TESTS" true)
+    (lib.cmakeBool "WITH_XC_UPDATECHECK" false)
+    (lib.cmakeBool "WITH_XC_X11" withKeePassX11)
+    (lib.cmakeBool "WITH_XC_BROWSER" withKeePassBrowser)
+    (lib.cmakeBool "WITH_XC_BROWSER_PASSKEYS" withKeePassBrowserPasskeys)
+    (lib.cmakeBool "WITH_XC_KEESHARE" withKeePassKeeShare)
+    (lib.cmakeBool "WITH_XC_NETWORKING" withKeePassNetworking)
+    (lib.cmakeBool "WITH_XC_SSHAGENT" withKeePassSSHAgent)
+    (lib.cmakeBool "WITH_XC_FDOSECRETS" withKeePassFDOSecrets)
+    (lib.cmakeBool "WITH_XC_YUBIKEY" withKeePassYubiKey)
+  ];
 
   env =
     lib.optionalAttrs stdenv.cc.isClang {
@@ -61,31 +120,8 @@ stdenv.mkDerivation (finalAttrs: {
       ];
     };
 
-  patches = [ ./darwin-remove-macdeployqt.patch ];
-
-  # Upstream develops against a build of PCSC from Xcode.
-  # The types are incompatible with nixpkgs pcsclite.
-  # https://github.com/NixOS/nixpkgs/issues/520227
-  postPatch = ''
-    substituteInPlace src/keys/drivers/YubiKeyInterfacePCSC.cpp \
-      --replace-fail "typedef uint32_t RETVAL;" "typedef int32_t RETVAL;"
-  '';
-
-  cmakeFlags = [
-    (lib.cmakeFeature "KEEPASSXC_BUILD_TYPE" "Release")
-    (lib.cmakeBool "WITH_GUI_TESTS" true)
-    (lib.cmakeBool "WITH_XC_UPDATECHECK" false)
-    (lib.cmakeBool "WITH_XC_X11" withKeePassX11)
-    (lib.cmakeBool "WITH_XC_BROWSER" withKeePassBrowser)
-    (lib.cmakeBool "WITH_XC_BROWSER_PASSKEYS" withKeePassBrowserPasskeys)
-    (lib.cmakeBool "WITH_XC_KEESHARE" withKeePassKeeShare)
-    (lib.cmakeBool "WITH_XC_NETWORKING" withKeePassNetworking)
-    (lib.cmakeBool "WITH_XC_SSHAGENT" withKeePassSSHAgent)
-    (lib.cmakeBool "WITH_XC_FDOSECRETS" withKeePassFDOSecrets)
-    (lib.cmakeBool "WITH_XC_YUBIKEY" withKeePassYubiKey)
-  ];
-
   doCheck = true;
+
   checkPhase =
     let
       disabledTests = lib.concatStringsSep "|" (
@@ -118,23 +154,6 @@ stdenv.mkDerivation (finalAttrs: {
       runHook postCheck
     '';
 
-  nativeBuildInputs = [
-    asciidoctor
-    cmake
-    libsForQt5.wrapQtAppsHook
-    libsForQt5.qttools
-    pkg-config
-  ]
-  ++ lib.optional (!stdenv.hostPlatform.isDarwin) wrapGAppsHook3;
-
-  dontWrapGApps = true;
-  preFixup = ''
-    qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  ''
-  + lib.optionalString stdenv.hostPlatform.isDarwin ''
-    wrapQtApp "$out/Applications/KeePassXC.app/Contents/MacOS/KeePassXC"
-  '';
-
   postInstall = lib.concatLines [
     (lib.optionalString stdenv.hostPlatform.isDarwin ''
       mkdir -p "$out/bin"
@@ -150,44 +169,26 @@ stdenv.mkDerivation (finalAttrs: {
     '')
   ];
 
-  buildInputs = [
-    botan3
-    curl
-    libxi
-    libxtst
-    libargon2
-    libsForQt5.qtbase
-    libsForQt5.qtsvg
-    minizip
-    pcsclite
-    qrencode
-    readline
-    zlib
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    libsForQt5.qtmacextras
+  preFixup = ''
+    qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  ''
+  + lib.optionalString stdenv.hostPlatform.isDarwin ''
+    wrapQtApp "$out/Applications/KeePassXC.app/Contents/MacOS/KeePassXC"
+  '';
 
-    apple-sdk_15
-    # ScreenCaptureKit, required by livekit, is only available on 12.3 and up:
-    # https://developer.apple.com/documentation/screencapturekit
-    (darwinMinVersionHook "12.3")
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    libusb1
-  ]
-  ++ lib.optionals withKeePassX11 [
-    libsForQt5.qtx11extras
-  ];
+  dontWrapGApps = true;
 
   passthru = {
     tests = {
       inherit (nixosTests) keepassxc;
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Offline password manager with many features";
+
     longDescription = ''
       A community fork of KeePassX, which is itself a port of KeePass Password Safe.
       The goal is to extend and improve KeePassX with new features and bugfixes,
@@ -195,15 +196,18 @@ stdenv.mkDerivation (finalAttrs: {
       Accessible via native cross-platform GUI, CLI, has browser integration
       using the KeePassXC Browser Extension (https://github.com/keepassxreboot/keepassxc-browser)
     '';
+
     homepage = "https://keepassxc.org/";
-    donationPage = "https://keepassxc.org/donate/";
     changelog = "https://github.com/keepassxreboot/keepassxc/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "keepassxc";
+
     maintainers = with lib.maintainers; [
       sigmasquadron
       ryand56
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "keepassxc";
+    donationPage = "https://keepassxc.org/donate/";
   };
 })

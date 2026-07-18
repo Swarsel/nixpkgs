@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  catdoc,
   makeWrapper,
   unzip,
-  catdoc,
 }:
 
 stdenv.mkDerivation {
@@ -35,10 +35,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Extracts plain text from docx files";
-    mainProgram = "catdocx";
     homepage = "https://github.com/jncraton/catdocx";
     license = with lib.licenses; [ bsd3 ];
     maintainers = [ lib.maintainers.michalrus ];
     platforms = lib.platforms.all;
+    mainProgram = "catdocx";
   };
 }

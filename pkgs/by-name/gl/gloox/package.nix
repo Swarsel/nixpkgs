@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  zlibSupport ? true,
-  zlib,
-  sslSupport ? true,
-  openssl,
-  idnSupport ? true,
   libidn,
+  openssl,
+  zlib,
+  idnSupport ? true,
+  sslSupport ? true,
+  zlibSupport ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,11 +34,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Portable high-level Jabber/XMPP library for C++";
-    mainProgram = "gloox-config";
     homepage = "http://camaya.net/gloox";
     license = lib.licenses.gpl3;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "gloox-config";
     # The last successful Darwin Hydra build was in 2023
     broken = stdenv.hostPlatform.isDarwin;
   };

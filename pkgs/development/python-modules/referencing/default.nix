@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   attrs,
   buildPythonPackage,
-  fetchFromGitHub,
   hatch-vcs,
   hatchling,
   jsonschema,
@@ -15,15 +15,22 @@ let
   self = buildPythonPackage rec {
     pname = "referencing";
     version = "0.37.0";
-    pyproject = true;
 
     src = fetchFromGitHub {
       owner = "python-jsonschema";
       repo = "referencing";
       tag = "v${version}";
-      fetchSubmodules = true;
       hash = "sha256-4e06rzvIOyWAgkpzAisc4uUK8pWshDZiQ6qpvJCq3GY=";
+      fetchSubmodules = true;
     };
+
+    # Avoid infinite recursion with jsonschema
+    doCheck = false;
+
+    nativeCheckInputs = [
+      jsonschema
+      pytestCheckHook
+    ];
 
     build-system = [
       hatch-vcs
@@ -36,17 +43,9 @@ let
       typing-extensions
     ];
 
-    nativeCheckInputs = [
-      jsonschema
-      pytestCheckHook
-    ];
-
-    # Avoid infinite recursion with jsonschema
-    doCheck = false;
-
-    passthru.tests.referencing = self.overridePythonAttrs { doCheck = true; };
-
+    pyproject = true;
     pythonImportsCheck = [ "referencing" ];
+    passthru.tests.referencing = self.overridePythonAttrs { doCheck = true; };
 
     meta = {
       description = "Cross-specification JSON referencing";

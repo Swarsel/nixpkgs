@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  qt6,
-  glm,
   eigen,
+  glm,
+  qt6,
   stellarium,
 }:
 
@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     qt6.wrapQtAppsHook
   ];
+
   buildInputs = [
     glm
     eigen
@@ -31,7 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   cmakeFlags = [ "-DQT_VERSION=6" ];
-
   doCheck = true;
 
   passthru.tests = {

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitLab,
   buildPythonPackage,
   et-xmlfile,
-  fetchFromGitLab,
   lxml,
   pandas,
   pillow,
@@ -13,19 +13,14 @@
 buildPythonPackage rec {
   pname = "openpyxl";
   version = "3.1.5";
-  pyproject = true;
 
   src = fetchFromGitLab {
-    domain = "foss.heptapod.net";
     owner = "openpyxl";
     repo = "openpyxl";
     tag = version;
     hash = "sha256-vp+TIWcHCAWlDaBcmC7w/kV7DZTZpa6463NusaJmqKo=";
+    domain = "foss.heptapod.net";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ et-xmlfile ];
 
   nativeCheckInputs = [
     lxml
@@ -34,13 +29,18 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  pytestFlags = [
-    "-Wignore::DeprecationWarning"
-  ];
+  build-system = [ setuptools ];
+  dependencies = [ et-xmlfile ];
 
   disabledTests = [
     # lxml 6.0
     "test_iterparse"
+  ];
+
+  pyproject = true;
+
+  pytestFlags = [
+    "-Wignore::DeprecationWarning"
   ];
 
   pythonImportsCheck = [ "openpyxl" ];

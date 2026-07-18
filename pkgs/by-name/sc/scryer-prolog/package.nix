@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,22 +17,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-RCz4zLbmWgSRR6Y5YbhidIZ1+LNR6FHyk/G0ifSDOx4=";
   };
 
-  cargoHash = "sha256-8uFxCLKa8hnGPpilxtV5SxHUG4Nf704A0qG2zpoIK4s=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ openssl ];
-
+  cargoHash = "sha256-8uFxCLKa8hnGPpilxtV5SxHUG4Nf704A0qG2zpoIK4s=";
   env.CARGO_FEATURE_USE_SYSTEM_LIBS = true;
 
   meta = {
     description = "Modern Prolog implementation written mostly in Rust";
-    mainProgram = "scryer-prolog";
     homepage = "https://github.com/mthom/scryer-prolog";
     license = with lib.licenses; [ bsd3 ];
+
     maintainers = with lib.maintainers; [
       malbarbo
       wkral
     ];
+
+    mainProgram = "scryer-prolog";
   };
 })

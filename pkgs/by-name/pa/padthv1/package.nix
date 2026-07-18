@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  cmake,
-  pkg-config,
-  libjack2,
   alsa-lib,
-  libsndfile,
-  liblo,
-  lv2,
-  qt5,
+  cmake,
   fftwFloat,
+  libjack2,
+  liblo,
+  libsndfile,
+  lv2,
+  pkg-config,
+  qt5,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -41,10 +41,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Polyphonic additive synthesizer";
-    mainProgram = "padthv1_jack";
     homepage = "http://padthv1.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.magnetophon ];
+    platforms = lib.platforms.linux;
+    mainProgram = "padthv1_jack";
   };
 })

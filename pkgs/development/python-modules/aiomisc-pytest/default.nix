@@ -10,26 +10,21 @@
 buildPythonPackage rec {
   pname = "aiomisc-pytest";
   version = "1.3.4";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "aiomisc_pytest";
     inherit version;
     hash = "sha256-9Of1pSUcMiIhkz7OW5erF4oDlf/ABkaamDBPg7+WbBE=";
+    pname = "aiomisc_pytest";
   };
 
-  build-system = [ poetry-core ];
-
-  pythonRelaxDeps = [ "pytest" ];
-
   buildInputs = [ pytest ];
-
-  dependencies = [ aiomisc ];
-
-  pythonImportsCheck = [ "aiomisc_pytest" ];
-
   # Module has no tests
   doCheck = false;
+  build-system = [ poetry-core ];
+  dependencies = [ aiomisc ];
+  pyproject = true;
+  pythonImportsCheck = [ "aiomisc_pytest" ];
+  pythonRelaxDeps = [ "pytest" ];
 
   meta = {
     description = "Pytest integration for aiomisc";

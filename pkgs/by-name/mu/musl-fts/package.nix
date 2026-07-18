@@ -25,10 +25,10 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://github.com/void-linux/musl-fts";
     description = "Implementation of fts(3) for musl-libc";
-    platforms = lib.platforms.linux;
+    homepage = "https://github.com/void-linux/musl-fts";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.pjjw ];
+    platforms = lib.platforms.linux;
   };
 })

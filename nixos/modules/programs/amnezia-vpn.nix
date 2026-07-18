@@ -20,13 +20,15 @@ in
 
     systemd = {
       packages = [ cfg.package ];
+
       services."AmneziaVPN" = {
-        wantedBy = [ "multi-user.target" ];
         path = with pkgs; [
           procps
           iproute2
           sudo
         ];
+
+        wantedBy = [ "multi-user.target" ];
       };
     };
   };

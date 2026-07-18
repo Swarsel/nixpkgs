@@ -1,29 +1,27 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
   angstrom-unix,
   binning,
-  ocaml-crunch,
+  buildDunePackage,
   camlzip,
   core_kernel,
-  core_unix ? null,
-  csvfields ? null,
   fmt,
   gsl,
-  ppx_csv_conv ? null,
+  ocaml-crunch,
   ppx_deriving,
   rresult,
   tyxml,
   uri,
   vg,
+  core_unix ? null,
+  csvfields ? null,
+  ppx_csv_conv ? null,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "biotk";
   version = "0.3";
-
-  minimalOCamlVersion = "4.13";
 
   src = fetchurl {
     url = "https://github.com/pveber/biotk/releases/download/v${finalAttrs.version}/biotk-${finalAttrs.version}.tbz";
@@ -31,7 +29,6 @@ buildDunePackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ ocaml-crunch ];
-
   buildInputs = [ ppx_csv_conv ];
 
   propagatedBuildInputs = [
@@ -49,6 +46,8 @@ buildDunePackage (finalAttrs: {
     uri
     vg
   ];
+
+  minimalOCamlVersion = "4.13";
 
   meta = {
     description = "Toolkit for bioinformatics in OCaml";

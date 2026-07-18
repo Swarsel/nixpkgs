@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   flake8,
   python,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pep8-naming";
   version = "0.15.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "PyCQA";
@@ -19,16 +18,15 @@ buildPythonPackage rec {
     hash = "sha256-swSaMOrgd6R4i92LodJVsquls9wp5ZFyzK0LNqwODoc=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ flake8 ];
-
   checkPhase = ''
     runHook preCheck
     ${python.interpreter} run_tests.py
     runHook postCheck
   '';
 
+  build-system = [ setuptools ];
+  dependencies = [ flake8 ];
+  pyproject = true;
   pythonImportsCheck = [ "pep8ext_naming" ];
 
   meta = {

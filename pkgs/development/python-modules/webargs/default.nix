@@ -1,35 +1,30 @@
 {
-  buildPythonPackage,
-  fetchPypi,
   lib,
+  aiohttp,
+  bottle,
+  buildPythonPackage,
+  django,
+  falcon,
+  fetchPypi,
+  flask,
   flit-core,
   marshmallow,
-  pytestCheckHook,
+  pyramid,
   pytest-aiohttp,
+  pytestCheckHook,
+  tornado,
   webtest,
   webtest-aiohttp,
-  flask,
-  django,
-  bottle,
-  tornado,
-  pyramid,
-  falcon,
-  aiohttp,
 }:
 
 buildPythonPackage rec {
   pname = "webargs";
   version = "8.7.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-eZv5A5x2wj/Y3BlREHp1qeVhIDwV1q6PicHkbiNGNsE=";
   };
-
-  build-system = [ flit-core ];
-
-  dependencies = [ marshmallow ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -45,6 +40,9 @@ buildPythonPackage rec {
     aiohttp
   ];
 
+  build-system = [ flit-core ];
+  dependencies = [ marshmallow ];
+  pyproject = true;
   pythonImportsCheck = [ "webargs" ];
 
   meta = {

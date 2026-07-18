@@ -26,7 +26,6 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/dennishafemann/tmux-cssh";
     description = "SSH to multiple hosts at the same time using tmux";
 
     longDescription = ''
@@ -39,10 +38,10 @@ stdenv.mkDerivation {
       like most server do.
     '';
 
+    homepage = "https://github.com/dennishafemann/tmux-cssh";
     license = lib.licenses.asl20;
-
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ zimbatm ];
+    platforms = lib.platforms.unix;
     mainProgram = "tmux-cssh";
   };
 }

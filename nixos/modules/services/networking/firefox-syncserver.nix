@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   options,
   ...
 }:
@@ -18,18 +18,20 @@ let
   format = pkgs.formats.toml { };
   settings = {
     human_logs = true;
+
     syncstorage = {
       database_url = dbURL;
     };
+
     tokenserver = {
-      node_type = "mysql";
-      database_url = dbURL;
-      fxa_email_domain = "api.accounts.firefox.com";
-      fxa_oauth_server_url = "https://oauth.accounts.firefox.com/v1";
-      run_migrations = true;
       # if JWK caching is not enabled the token server must verify tokens
       # using the fxa api, on a thread pool with a static size.
       additional_blocking_threads_for_fxa_requests = 10;
+      database_url = dbURL;
+      fxa_email_domain = "api.accounts.firefox.com";
+      fxa_oauth_server_url = "https://oauth.accounts.firefox.com/v1";
+      node_type = "mysql";
+      run_migrations = true;
     }
     // lib.optionalAttrs cfg.singleNode.enable {
       # Single-node mode is likely to be used on small instances with little
@@ -103,123 +105,77 @@ in
 
       package = lib.mkPackageOption pkgs "syncstorage-rs" { };
 
-      database.name = lib.mkOption {
-        # the mysql module does not allow `-quoting without resorting to shell
-        # escaping, so we restrict db names for forward compaitiblity should this
-        # behavior ever change.
-        type = lib.types.strMatching "[a-z_][a-z0-9_]*";
-        default = defaultDatabase;
-        description = ''
-          Database to use for storage. Will be created automatically if it does not exist
-          and `config.${opt.database.createLocally}` is set.
-        '';
-      };
-
-      database.user = lib.mkOption {
-        type = lib.types.str;
-        default = defaultUser;
-        description = ''
-          Username for database connections.
-        '';
-      };
-
-      database.host = lib.mkOption {
-        type = lib.types.str;
-        default = "localhost";
-        description = ''
-          Database host name. `localhost` is treated specially and inserts
-          systemd dependencies, other hostnames or IP addresses of the local machine do not.
-        '';
-      };
-
       database.createLocally = lib.mkOption {
-        type = lib.types.bool;
         default = true;
+
         description = ''
           Whether to create database and user on the local machine if they do not exist.
           This includes enabling unix domain socket authentication for the configured user.
         '';
+
+        type = lib.types.bool;
+      };
+
+      database.host = lib.mkOption {
+        default = "localhost";
+
+        description = ''
+          Database host name. `localhost` is treated specially and inserts
+          systemd dependencies, other hostnames or IP addresses of the local machine do not.
+        '';
+
+        type = lib.types.str;
+      };
+
+      database.name = lib.mkOption {
+        default = defaultDatabase;
+
+        description = ''
+          Database to use for storage. Will be created automatically if it does not exist
+          and `config.${opt.database.createLocally}` is set.
+        '';
+
+        # the mysql module does not allow `-quoting without resorting to shell
+        # escaping, so we restrict db names for forward compaitiblity should this
+        # behavior ever change.
+        type = lib.types.strMatching "[a-z_][a-z0-9_]*";
+      };
+
+      database.user = lib.mkOption {
+        default = defaultUser;
+
+        description = ''
+          Username for database connections.
+        '';
+
+        type = lib.types.str;
       };
 
       logLevel = lib.mkOption {
-        type = lib.types.str;
         default = "error";
+
         description = ''
           Log level to run with. This can be a simple log level like `error`
           or `trace`, or a more complicated logging expression.
         '';
+
+        type = lib.types.str;
       };
 
       secrets = lib.mkOption {
-        type = lib.types.path;
         description = ''
           A file containing the various secrets. Should be in the format expected by systemd's
           `EnvironmentFile` directory. Two secrets are currently available:
           `SYNC_MASTER_SECRET` and
           `SYNC_TOKENSERVER__FXA_METRICS_HASH_SECRET`.
         '';
-      };
 
-      singleNode = {
-        enable = lib.mkEnableOption "auto-configuration for a simple single-node setup";
-
-        enableTLS = lib.mkEnableOption "automatic TLS setup";
-
-        enableNginx = lib.mkEnableOption "nginx virtualhost definitions";
-
-        hostname = lib.mkOption {
-          type = lib.types.str;
-          description = ''
-            Host name to use for this service.
-          '';
-        };
-
-        capacity = lib.mkOption {
-          type = lib.types.ints.unsigned;
-          default = 10;
-          description = ''
-            How many sync accounts are allowed on this server. Setting this value
-            equal to or less than the number of currently active accounts will
-            effectively deny service to accounts not yet registered here.
-          '';
-        };
-
-        url = lib.mkOption {
-          type = lib.types.str;
-          default = "${if cfg.singleNode.enableTLS then "https" else "http"}://${cfg.singleNode.hostname}";
-          defaultText = lib.literalExpression ''
-            ''${if cfg.singleNode.enableTLS then "https" else "http"}://''${config.${opt.singleNode.hostname}}
-          '';
-          description = ''
-            URL of the host. If you are not using the automatic webserver proxy setup you will have
-            to change this setting or your sync server may not be functional.
-          '';
-        };
+        type = lib.types.path;
       };
 
       settings = lib.mkOption {
-        type = lib.types.submodule {
-          freeformType = format.type;
-
-          options = {
-            port = lib.mkOption {
-              type = lib.types.port;
-              default = 5000;
-              description = ''
-                Port to bind to.
-              '';
-            };
-
-            tokenserver.enabled = lib.mkOption {
-              type = lib.types.bool;
-              default = true;
-              description = ''
-                Whether to enable the token service as well.
-              '';
-            };
-          };
-        };
         default = { };
+
         description = ''
           Settings for the sync server. These take priority over values computed
           from NixOS options.
@@ -232,6 +188,74 @@ in
           <https://github.com/mozilla-services/syncstorage-rs/blob/master/tokenserver-settings/src/lib.rs>
           for available options.
         '';
+
+        type = lib.types.submodule {
+          options = {
+            port = lib.mkOption {
+              default = 5000;
+
+              description = ''
+                Port to bind to.
+              '';
+
+              type = lib.types.port;
+            };
+
+            tokenserver.enabled = lib.mkOption {
+              default = true;
+
+              description = ''
+                Whether to enable the token service as well.
+              '';
+
+              type = lib.types.bool;
+            };
+          };
+
+          freeformType = format.type;
+        };
+      };
+
+      singleNode = {
+        enable = lib.mkEnableOption "auto-configuration for a simple single-node setup";
+
+        capacity = lib.mkOption {
+          default = 10;
+
+          description = ''
+            How many sync accounts are allowed on this server. Setting this value
+            equal to or less than the number of currently active accounts will
+            effectively deny service to accounts not yet registered here.
+          '';
+
+          type = lib.types.ints.unsigned;
+        };
+
+        enableNginx = lib.mkEnableOption "nginx virtualhost definitions";
+        enableTLS = lib.mkEnableOption "automatic TLS setup";
+
+        hostname = lib.mkOption {
+          description = ''
+            Host name to use for this service.
+          '';
+
+          type = lib.types.str;
+        };
+
+        url = lib.mkOption {
+          default = "${if cfg.singleNode.enableTLS then "https" else "http"}://${cfg.singleNode.hostname}";
+
+          defaultText = lib.literalExpression ''
+            ''${if cfg.singleNode.enableTLS then "https" else "http"}://''${config.${opt.singleNode.hostname}}
+          '';
+
+          description = ''
+            URL of the host. If you are not using the automatic webserver proxy setup you will have
+            to change this setting or your sync server may not be functional.
+          '';
+
+          type = lib.types.str;
+        };
       };
     };
   };
@@ -240,79 +264,23 @@ in
     services.mysql = lib.mkIf cfg.database.createLocally {
       enable = true;
       ensureDatabases = [ cfg.database.name ];
+
       ensureUsers = [
         {
-          name = cfg.database.user;
           ensurePermissions = {
             "${cfg.database.name}.*" = "all privileges";
           };
+
+          name = cfg.database.user;
         }
       ];
-    };
-
-    systemd.services.firefox-syncserver = {
-      wantedBy = [ "multi-user.target" ];
-      requires = lib.mkIf dbIsLocal [ "mysql.service" ];
-      after = lib.mkIf dbIsLocal [ "mysql.service" ];
-      restartTriggers = lib.optional cfg.singleNode.enable setupScript;
-      environment.RUST_LOG = cfg.logLevel;
-      serviceConfig = {
-        User = defaultUser;
-        Group = defaultUser;
-        ExecStart = "${cfg.package}/bin/syncserver --config ${configFile}";
-        EnvironmentFile = lib.mkIf (cfg.secrets != null) "${cfg.secrets}";
-
-        # hardening
-        RemoveIPC = true;
-        CapabilityBoundingSet = [ "" ];
-        DynamicUser = true;
-        NoNewPrivileges = true;
-        PrivateDevices = true;
-        ProtectClock = true;
-        ProtectKernelLogs = true;
-        ProtectControlGroups = true;
-        ProtectKernelModules = true;
-        SystemCallArchitectures = "native";
-        # syncstorage-rs uses python-cffi internally, and python-cffi does not
-        # work with MemoryDenyWriteExecute=true
-        MemoryDenyWriteExecute = false;
-        RestrictNamespaces = true;
-        RestrictSUIDSGID = true;
-        ProtectHostname = true;
-        LockPersonality = true;
-        ProtectKernelTunables = true;
-        RestrictAddressFamilies = [
-          "AF_INET"
-          "AF_INET6"
-          "AF_UNIX"
-        ];
-        RestrictRealtime = true;
-        ProtectSystem = "strict";
-        ProtectProc = "invisible";
-        ProcSubset = "pid";
-        ProtectHome = true;
-        PrivateUsers = true;
-        PrivateTmp = true;
-        SystemCallFilter = [
-          "@system-service"
-          "~ @privileged @resources"
-        ];
-        UMask = "0077";
-      };
-    };
-
-    systemd.services.firefox-syncserver-setup = lib.mkIf cfg.singleNode.enable {
-      wantedBy = [ "firefox-syncserver.service" ];
-      requires = [ "firefox-syncserver.service" ] ++ lib.optional dbIsLocal "mysql.service";
-      after = [ "firefox-syncserver.service" ] ++ lib.optional dbIsLocal "mysql.service";
-      path = [ config.services.mysql.package ];
-      serviceConfig.ExecStart = [ "${setupScript}" ];
     };
 
     services.nginx.virtualHosts = lib.mkIf cfg.singleNode.enableNginx {
       ${cfg.singleNode.hostname} = {
         enableACME = cfg.singleNode.enableTLS;
         forceSSL = cfg.singleNode.enableTLS;
+
         locations."/" = {
           proxyPass = "http://127.0.0.1:${toString cfg.settings.port}";
           # We need to pass the Host header that matches the original Host header. Otherwise,
@@ -322,10 +290,74 @@ in
         };
       };
     };
+
+    systemd.services.firefox-syncserver = {
+      after = lib.mkIf dbIsLocal [ "mysql.service" ];
+      environment.RUST_LOG = cfg.logLevel;
+      requires = lib.mkIf dbIsLocal [ "mysql.service" ];
+      restartTriggers = lib.optional cfg.singleNode.enable setupScript;
+
+      serviceConfig = {
+        CapabilityBoundingSet = [ "" ];
+        DynamicUser = true;
+        EnvironmentFile = lib.mkIf (cfg.secrets != null) "${cfg.secrets}";
+        ExecStart = "${cfg.package}/bin/syncserver --config ${configFile}";
+        Group = defaultUser;
+        LockPersonality = true;
+        # syncstorage-rs uses python-cffi internally, and python-cffi does not
+        # work with MemoryDenyWriteExecute=true
+        MemoryDenyWriteExecute = false;
+        NoNewPrivileges = true;
+        PrivateDevices = true;
+        PrivateTmp = true;
+        PrivateUsers = true;
+        ProcSubset = "pid";
+        ProtectClock = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectHostname = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectProc = "invisible";
+        ProtectSystem = "strict";
+        # hardening
+        RemoveIPC = true;
+
+        RestrictAddressFamilies = [
+          "AF_INET"
+          "AF_INET6"
+          "AF_UNIX"
+        ];
+
+        RestrictNamespaces = true;
+        RestrictRealtime = true;
+        RestrictSUIDSGID = true;
+        SystemCallArchitectures = "native";
+
+        SystemCallFilter = [
+          "@system-service"
+          "~ @privileged @resources"
+        ];
+
+        UMask = "0077";
+        User = defaultUser;
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    systemd.services.firefox-syncserver-setup = lib.mkIf cfg.singleNode.enable {
+      after = [ "firefox-syncserver.service" ] ++ lib.optional dbIsLocal "mysql.service";
+      path = [ config.services.mysql.package ];
+      requires = [ "firefox-syncserver.service" ] ++ lib.optional dbIsLocal "mysql.service";
+      serviceConfig.ExecStart = [ "${setupScript}" ];
+      wantedBy = [ "firefox-syncserver.service" ];
+    };
   };
 
   meta = {
-    maintainers = [ ];
     doc = ./firefox-syncserver.md;
+    maintainers = [ ];
   };
 }

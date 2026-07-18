@@ -22,10 +22,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-sCajxTV26jjlmgmbV4GG6hg9NkLGS773ZbFyKucvuBE=";
 
-  subPackages = [ "." ];
-
-  ldflags = [ "-s" ];
-
   # No tests besides the formatting one are in root.
   # We can't override subPackages per-phase (and we don't
   # want to needlessly build packages that have build
@@ -38,25 +34,28 @@ buildGoModule (finalAttrs: {
     runHook postCheck
   '';
 
-  # Tests require networking.
-  __darwinAllowLocalNetworking = finalAttrs.doCheck;
-
   postInstall = ''
     mv $out/bin/wireguard $out/bin/wireguard-go
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  # Tests require networking.
+  __darwinAllowLocalNetworking = finalAttrs.doCheck;
+  ldflags = [ "-s" ];
+  subPackages = [ "." ];
 
   meta = {
     description = "Userspace Go implementation of WireGuard";
     homepage = "https://git.zx2c4.com/wireguard-go/about/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       kirelagin
       winter
       zx2c4
     ];
+
     mainProgram = "wireguard-go";
   };
 })

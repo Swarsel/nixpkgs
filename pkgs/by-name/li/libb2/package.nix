@@ -26,22 +26,21 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   configureFlags = lib.optional stdenv.hostPlatform.isx86 "--enable-fat=yes";
-
-  enableParallelBuilding = true;
-
   doCheck = true;
-
+  enableParallelBuilding = true;
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {
     description = "BLAKE2 family of cryptographic hash functions";
     homepage = "https://blake2.net/";
-    pkgConfigModules = [ "libb2" ];
-    platforms = lib.platforms.all;
+    license = lib.licenses.cc0;
+
     maintainers = with lib.maintainers; [
       dfoxfranke
       dotlambda
     ];
-    license = lib.licenses.cc0;
+
+    platforms = lib.platforms.all;
+    pkgConfigModules = [ "libb2" ];
   };
 })

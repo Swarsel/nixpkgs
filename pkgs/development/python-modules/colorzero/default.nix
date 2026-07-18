@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pkginfo,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "colorzero";
   version = "2.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "waveform80";
@@ -21,12 +20,13 @@ buildPythonPackage rec {
 
   nativeBuildInputs = [ pkginfo ];
 
-  pythonImportsCheck = [ "colorzero" ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
   ];
+
+  format = "setuptools";
+  pythonImportsCheck = [ "colorzero" ];
 
   meta = {
     description = "Yet another Python color library";

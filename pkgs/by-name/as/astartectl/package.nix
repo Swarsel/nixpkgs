@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 buildGoModule (finalAttrs: {
@@ -16,9 +16,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-mRPy5nnj/1T3tnii+Z9QmL6kZba2Wom/jGncp+ZynFg=";
   };
 
-  vendorHash = "sha256-Yz6Ph6TqyWlEXnkW/g1DDqxaqTM9DJrnO+QJgzqjVhw=";
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-Yz6Ph6TqyWlEXnkW/g1DDqxaqTM9DJrnO+QJgzqjVhw=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd astartectl \
@@ -28,10 +27,10 @@ buildGoModule (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/astarte-platform/astartectl";
     description = "Astarte command line client utility";
+    homepage = "https://github.com/astarte-platform/astartectl";
     license = lib.licenses.asl20;
-    mainProgram = "astartectl";
     maintainers = with lib.maintainers; [ noaccos ];
+    mainProgram = "astartectl";
   };
 })

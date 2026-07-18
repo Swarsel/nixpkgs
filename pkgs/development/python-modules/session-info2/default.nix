@@ -1,16 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  coverage,
   hatch-docstring-description,
   hatch-vcs,
   hatchling,
-  coverage,
   ipykernel,
   jupyter-client,
-  pytestCheckHook,
   pytest-asyncio,
   pytest-subprocess,
+  pytestCheckHook,
   testing-common-database,
   writableTmpDirAsHomeHook,
 }:
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "session-info2";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scverse";
@@ -26,12 +25,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-n568j109rnWxCWLsdu0RS7huVfUebzFshAd84i6ALM4=";
   };
-
-  build-system = [
-    hatch-docstring-description
-    hatch-vcs
-    hatchling
-  ];
 
   nativeCheckInputs = [
     coverage
@@ -43,6 +36,14 @@ buildPythonPackage rec {
     testing-common-database
     writableTmpDirAsHomeHook
   ];
+
+  build-system = [
+    hatch-docstring-description
+    hatch-vcs
+    hatchling
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "session_info2"

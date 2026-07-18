@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  coreutils,
   fetchFromGitHub,
+  coreutils,
 }:
 
 stdenv.mkDerivation {
@@ -40,11 +40,13 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Pokémon colorscripts for the terminal, compatible for mac";
+
     longDescription = ''
       Show colored sprites of pokémons in your terminal.
       Contains almost 900 pokemon from gen 1 to gen 8.
       Inspired by DT's colorscripts.
     '';
+
     homepage = "https://github.com/nuke-dash/pokemon-colorscripts-mac";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.wesleyjrz ];

@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   gnome,
-  libxslt,
   libxml2,
+  libxslt,
   meson,
   ninja,
 }:

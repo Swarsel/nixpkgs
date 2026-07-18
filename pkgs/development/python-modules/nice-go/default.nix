@@ -1,9 +1,9 @@
 {
-  buildPythonPackage,
+  lib,
   fetchFromGitHub,
   aiobotocore,
   aiohttp,
-  lib,
+  buildPythonPackage,
   poetry-core,
   pycognito,
   pytest-aiohttp,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "nice-go";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "IceBotYT";
@@ -26,23 +25,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-09Tc2fFXUevQNgJmXyeXy1sBg9Cr9OV/15Feh9tlRug=";
   };
-
-  build-system = [ poetry-core ];
-
-  pythonRelaxDeps = [
-    "aiobotocore"
-    "tenacity"
-  ];
-
-  dependencies = [
-    aiobotocore
-    aiohttp
-    pycognito
-    tenacity
-    yarl
-  ];
-
-  pythonImportsCheck = [ "nice_go" ];
 
   nativeCheckInputs = [
     pytest-aiohttp
@@ -52,10 +34,28 @@ buildPythonPackage rec {
     syrupy
   ];
 
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    aiobotocore
+    aiohttp
+    pycognito
+    tenacity
+    yarl
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "nice_go" ];
+
+  pythonRelaxDeps = [
+    "aiobotocore"
+    "tenacity"
+  ];
+
   meta = {
-    changelog = "https://github.com/IceBotYT/nice-go/blob/${src.tag}/CHANGELOG.md";
     description = "Control various Nice access control products";
     homepage = "https://github.com/IceBotYT/nice-go";
+    changelog = "https://github.com/IceBotYT/nice-go/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

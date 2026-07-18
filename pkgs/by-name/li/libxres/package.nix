@@ -2,29 +2,29 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  xorgproto,
   libx11,
   libxext,
-  writeScript,
+  pkg-config,
   testers,
+  writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libxres";
   version = "1.2.3";
-  outputs = [
-    "out"
-    "dev"
-    "devdoc"
-  ];
 
   src = fetchurl {
     url = "mirror://xorg/individual/lib/libXres-${finalAttrs.version}.tar.xz";
     hash = "sha256-0t6PVAHWyGqJknkWVFR+uN71hd/cDAjMFuJO9q7radw=";
   };
 
-  strictDeps = true;
+  outputs = [
+    "out"
+    "dev"
+    "devdoc"
+  ];
 
+  strictDeps = true;
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -40,6 +40,8 @@ stdenv.mkDerivation (finalAttrs: {
   ) "--enable-malloc0returnsnull";
 
   passthru = {
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = writeScript "update-${finalAttrs.pname}" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p common-updater-scripts
@@ -48,7 +50,6 @@ stdenv.mkDerivation (finalAttrs: {
         | sort -V | tail -n1)"
       update-source-version ${finalAttrs.pname} "$version"
     '';
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
@@ -56,7 +57,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.freedesktop.org/xorg/lib/libxres";
     license = lib.licenses.x11;
     maintainers = [ ];
-    pkgConfigModules = [ "xres" ];
     platforms = lib.platforms.unix;
+    pkgConfigModules = [ "xres" ];
   };
 })

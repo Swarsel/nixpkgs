@@ -1,19 +1,19 @@
 {
-  fetchFromGitHub,
-  fetchurl,
   lib,
+  fetchurl,
+  fetchFromGitHub,
   python3Packages,
-  coreVersion ? "1.13.3", # the version of the binary espurna image to flash
-  coreSize ? "1MB", # size of the binary image to flash
   coreSha256 ? "0pkb2nmml0blrfiqpc46xpjc2dw927i89k1lfyqx827wanhc704x",
+  coreSize ? "1MB", # size of the binary image to flash
+  coreVersion ? "1.13.3", # the version of the binary espurna image to flash
 }:
 
 with python3Packages;
 
 let
   core = fetchurl {
-    url = "https://github.com/xoseperez/espurna/releases/download/${coreVersion}/espurna-${coreVersion}-espurna-core-${coreSize}.bin";
     sha256 = coreSha256;
+    url = "https://github.com/xoseperez/espurna/releases/download/${coreVersion}/espurna-${coreVersion}-espurna-core-${coreSize}.bin";
   };
 
 in
@@ -36,8 +36,6 @@ buildPythonApplication (finalAttrs: {
     substituteInPlace sonota.py --subst-var out
   '';
 
-  pyproject = false;
-
   propagatedBuildInputs = [
     httplib2
     netifaces
@@ -54,6 +52,8 @@ buildPythonApplication (finalAttrs: {
 
     runHook postInstall
   '';
+
+  pyproject = false;
 
   meta = {
     description = "Flash Itead Sonoff devices with custom firmware via original OTA mechanism";

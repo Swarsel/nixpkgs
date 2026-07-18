@@ -2,34 +2,28 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gobject-introspection,
-  pkg-config,
-  ninja,
+  cmake,
   desktop-file-utils,
-  shared-mime-info,
-  meson,
-  gtk4,
+  glib-networking,
+  gobject-introspection,
+  graphviz,
   gst_all_1,
+  gtk4,
   libGL,
   libadwaita,
-  libsoup_3,
-  vala,
-  cmake,
   libmicrodns,
-  glib-networking,
   libpeas2,
-  graphviz,
+  libsoup_3,
+  meson,
+  ninja,
+  pkg-config,
+  shared-mime-info,
+  vala,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "clapper-unwrapped";
   version = "0.10.0";
-
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "Rafostar";
@@ -37,6 +31,16 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-WU004/ea3H0eBYd6XPDsEQaoAuShvZzOu3QOweFvdIo=";
   };
+
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+  ];
+
+  postPatch = ''
+    patchShebangs --build build-aux/meson/postinstall.py
+  '';
 
   nativeBuildInputs = [
     gobject-introspection
@@ -66,10 +70,6 @@ stdenv.mkDerivation (finalAttrs: {
     graphviz # for feature "pipeline-preview"
   ];
 
-  postPatch = ''
-    patchShebangs --build build-aux/meson/postinstall.py
-  '';
-
   preFixup = ''
     mkdir -p $out/share/gsettings-schemas
     # alias clapper-unwrapped schemas to also provide clapper schemas.
@@ -80,10 +80,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "GNOME media player built using GTK4 toolkit and powered by GStreamer with OpenGL rendering";
+
     longDescription = ''
       Clapper is a GNOME media player built using the GTK4 toolkit.
       The media player is using GStreamer as a media backend.
     '';
+
     homepage = "https://github.com/Rafostar/clapper";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ aleksana ];

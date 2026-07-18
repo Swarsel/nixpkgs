@@ -9,9 +9,6 @@ buildDunePackage (finalAttrs: {
   pname = "bwd";
   version = "2.3.0";
 
-  minimalOCamlVersion = "4.12";
-  duneVersion = "3";
-
   src = fetchFromGitHub {
     owner = "RedPRL";
     repo = "ocaml-bwd";
@@ -21,6 +18,8 @@ buildDunePackage (finalAttrs: {
 
   doCheck = true;
   checkInputs = [ qcheck-core ];
+  duneVersion = "3";
+  minimalOCamlVersion = "4.12";
 
   meta = {
     description = "Backward Lists";

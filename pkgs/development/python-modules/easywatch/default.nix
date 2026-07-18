@@ -1,7 +1,7 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
   setuptools,
   watchdog,
 }:
@@ -9,21 +9,18 @@
 buildPythonPackage (finalAttrs: {
   pname = "easywatch";
   version = "0.0.5";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     sha256 = "1b40cjigv7s9qj8hxxy6yhwv0320z7qywrigwgkasgh80q0xgphc";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ watchdog ];
-
   # There are no tests
   doCheck = false;
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  dependencies = [ watchdog ];
+  pyproject = true;
   pythonImportsCheck = [ "easywatch" ];
 
   meta = {

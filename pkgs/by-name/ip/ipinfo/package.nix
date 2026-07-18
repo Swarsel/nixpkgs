@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule rec {
@@ -16,7 +16,6 @@ buildGoModule rec {
   };
 
   vendorHash = null;
-
   # Tests require network access
   doCheck = false;
 

@@ -2,29 +2,30 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   jdk11_headless,
+  makeWrapper,
   nixosTests,
 }:
 
 let
   common =
     {
-      version,
       hash,
-      jdk ? jdk11_headless,
       tests,
+      version,
+      jdk ? jdk11_headless,
     }:
     stdenv.mkDerivation rec {
-      pname = "hbase";
       inherit version;
+      pname = "hbase";
 
       src = fetchurl {
-        url = "mirror://apache/hbase/${version}/hbase-${version}-bin.tar.gz";
         inherit hash;
+        url = "mirror://apache/hbase/${version}/hbase-${version}-bin.tar.gz";
       };
 
       nativeBuildInputs = [ makeWrapper ];
+
       installPhase = ''
         mkdir -p $out
         cp -R * $out
@@ -50,16 +51,19 @@ in
     hash = "sha256-zYrHAxzlPRrRchHGVp3fhQT0BD0+wavZ4cAWncrv+MQ=";
     tests.standalone = nixosTests.hbase_2_4;
   };
+
   hbase_2_5 = common {
     version = "2.5.11";
     hash = "sha256-W3o8J+aY2bQoiu1Lr1n5EQWDVoS1OwWTNIUAU03a5Es=";
     tests.standalone = nixosTests.hbase_2_5;
   };
+
   hbase_2_6 = common {
     version = "2.6.2";
     hash = "sha256-X/mjmTAx9anh2U/Xlfuf+O4AO5BXDkdsY69tPddEpYM=";
     tests.standalone = nixosTests.hbase2;
   };
+
   hbase_3_0 = common {
     version = "3.0.0-beta-1";
     hash = "sha256-lmeaH2gDP6sBwZpzROKhR2Je7dcrwnq7qlMUh0B5fZs=";

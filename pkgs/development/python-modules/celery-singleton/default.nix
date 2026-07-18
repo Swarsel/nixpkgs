@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
-  fetchpatch,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   celery,
-  redis,
-  pytestCheckHook,
+  fetchpatch,
+  poetry-core,
   pytest-celery,
   pytest-cov-stub,
+  pytestCheckHook,
+  redis,
 }:
 
 buildPythonPackage rec {
   pname = "celery-singleton";
   version = "0.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "steinitzu";
@@ -27,17 +26,10 @@ buildPythonPackage rec {
     # chore(poetry): use poetry-core
     # https://github.com/steinitzu/celery-singleton/pull/54
     (fetchpatch {
+      hash = "sha256-lXN4khwyL96pWyBS+iuSkGEkegv4HxYtym+6JUcPa94=";
       name = "use-poetry-core.patch";
       url = "https://github.com/steinitzu/celery-singleton/pull/54/commits/634a001c92a1dff1fae513fc95d733ea9b87e4cf.patch";
-      hash = "sha256-lXN4khwyL96pWyBS+iuSkGEkegv4HxYtym+6JUcPa94=";
     })
-  ];
-
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    celery
-    redis
   ];
 
   checkInputs = [
@@ -46,7 +38,12 @@ buildPythonPackage rec {
     pytest-cov-stub
   ];
 
-  enabledTestPaths = [ "tests" ];
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    celery
+    redis
+  ];
 
   # Tests require a running Redis backend
   disabledTests = [
@@ -58,6 +55,8 @@ buildPythonPackage rec {
     "TestUniqueOn"
   ];
 
+  enabledTestPaths = [ "tests" ];
+  pyproject = true;
   pythonImportsCheck = [ "celery_singleton" ];
 
   meta = {

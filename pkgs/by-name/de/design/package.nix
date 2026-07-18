@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  wrapGAppsHook4,
   appstream-glib,
   blueprint-compiler,
   desktop-file-utils,
+  gjs,
+  glib,
+  libadwaita,
   meson,
   ninja,
   pkg-config,
-  glib,
-  gjs,
-  libadwaita,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,8 +22,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "dubstar-04";
     repo = "Design";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-xLARmvqJUxVjHHeak/BrpfIe18KCy9++8HRjOFjwE7I=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -49,10 +49,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/dubstar-04/Design";
     description = "2D CAD For GNOME";
-    maintainers = with lib.maintainers; [ linsui ];
+    homepage = "https://github.com/dubstar-04/Design";
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ linsui ];
     platforms = lib.platforms.linux;
     mainProgram = "io.github.dubstar_04.design";
   };

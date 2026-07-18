@@ -1,9 +1,9 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  nodejs,
+  buildNpmPackage,
   nix-update-script,
+  nodejs,
   versionCheckHook,
 }:
 buildNpmPackage (finalAttrs: {
@@ -19,13 +19,9 @@ buildNpmPackage (finalAttrs: {
 
   npmDepsHash = "sha256-6dPIZtbTmLVrJgaSAZE7pT1+xbKVkBS+UF8xfy/micc=";
 
-  dontNpmBuild = true;
-
-  npmFlags = [ "--ignore-scripts" ];
-
-  makeWrapperArgs = [ "--prefix PATH : ${lib.makeBinPath [ nodejs ]}" ];
-
-  passthru.updateScript = nix-update-script { };
+  env = {
+    PUPPETEER_SKIP_DOWNLOAD = 1;
+  };
 
   postInstall = ''
     mkdir -p $out/lib/node_modules/task-master-ai/apps
@@ -33,21 +29,21 @@ buildNpmPackage (finalAttrs: {
     cp -r apps/docs $out/lib/node_modules/task-master-ai/apps/docs
   '';
 
-  env = {
-    PUPPETEER_SKIP_DOWNLOAD = 1;
-  };
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  dontNpmBuild = true;
+  makeWrapperArgs = [ "--prefix PATH : ${lib.makeBinPath [ nodejs ]}" ];
+  npmFlags = [ "--ignore-scripts" ];
   versionCheckProgram = "${placeholder "out"}/bin/task-master";
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Node.js agentic AI workflow orchestrator";
     homepage = "https://task-master.dev";
     changelog = "https://github.com/eyaltoledano/claude-task-master/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "task-master-ai";
     maintainers = [ lib.maintainers.repparw ];
     platforms = lib.platforms.all;
+    mainProgram = "task-master-ai";
   };
 })

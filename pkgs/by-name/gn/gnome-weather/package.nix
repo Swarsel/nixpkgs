@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchurl,
-  desktop-file-utils,
-  pkg-config,
-  gnome,
   adwaita-icon-theme,
+  desktop-file-utils,
+  geoclue2,
+  gjs,
+  gnome,
+  gobject-introspection,
+  gsettings-desktop-schemas,
   gtk4,
   libadwaita,
-  wrapGAppsHook4,
-  gjs,
-  gobject-introspection,
   libgweather,
   meson,
   ninja,
-  geoclue2,
+  pkg-config,
   python3,
-  gsettings-desktop-schemas,
   typescript,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,6 +28,18 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://gnome/sources/gnome-weather/${lib.versions.major finalAttrs.version}/gnome-weather-${finalAttrs.version}.tar.xz";
     hash = "sha256-V951eGBfkfmrQAVRznc423UFvIj0KjPHDOenAWf9tRM=";
   };
+
+  postPatch = ''
+    # The .service file is not wrapped with the correct environment
+    # so misses GIR files when started. By re-pointing from the gjs
+    # entry point to the wrapped binary we get back to a wrapped
+    # binary.
+    substituteInPlace "data/org.gnome.Weather.service.in" \
+        --replace-fail "Exec=@DATA_DIR@/@APP_ID@" "Exec=$out/bin/gnome-weather"
+
+    chmod +x meson_post_install.py
+    patchShebangs meson_post_install.py
+  '';
 
   nativeBuildInputs = [
     desktop-file-utils
@@ -51,18 +63,6 @@ stdenv.mkDerivation (finalAttrs: {
     gsettings-desktop-schemas
   ];
 
-  postPatch = ''
-    # The .service file is not wrapped with the correct environment
-    # so misses GIR files when started. By re-pointing from the gjs
-    # entry point to the wrapped binary we get back to a wrapped
-    # binary.
-    substituteInPlace "data/org.gnome.Weather.service.in" \
-        --replace-fail "Exec=@DATA_DIR@/@APP_ID@" "Exec=$out/bin/gnome-weather"
-
-    chmod +x meson_post_install.py
-    patchShebangs meson_post_install.py
-  '';
-
   passthru = {
     updateScript = gnome.updateScript {
       packageName = "gnome-weather";
@@ -70,11 +70,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://apps.gnome.org/Weather/";
     description = "Access current weather conditions and forecasts";
-    mainProgram = "gnome-weather";
-    teams = [ lib.teams.gnome ];
+    homepage = "https://apps.gnome.org/Weather/";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
+    mainProgram = "gnome-weather";
+    teams = [ lib.teams.gnome ];
   };
 })

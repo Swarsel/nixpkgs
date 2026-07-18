@@ -1,13 +1,13 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   autoPatchelfHook,
-  openssl,
   dbus,
-  pkg-config,
   libgcc,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "fum";
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-qZGbJGotxJCxlMIRPS/hw/cfz/k8PFdVKoJtqWKXD6s=";
   };
 
-  cargoHash = "sha256-g6Nn3teRHMdlKReX3j0jkhfJEHOigDF4ghSfSYU33o8=";
-
   nativeBuildInputs = [
     autoPatchelfHook
     pkg-config
@@ -33,8 +31,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libgcc
   ];
 
+  cargoHash = "sha256-g6Nn3teRHMdlKReX3j0jkhfJEHOigDF4ghSfSYU33o8=";
   doCheck = false;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

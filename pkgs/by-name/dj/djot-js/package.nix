@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   installShellFiles,
 }:
 
@@ -16,12 +16,11 @@ buildNpmPackage rec {
     hash = "sha256-SkE7ssWC62sYZNshB8ncfMVI4NEyEbzO5IVIDsKtynU=";
   };
 
-  npmDepsHash = "sha256-FjrjwhVv2WRjbEga9w37lwz7KYgTTHGsoqt496Uq/0c=";
-
   nativeBuildInputs = [
     installShellFiles
   ];
 
+  npmDepsHash = "sha256-FjrjwhVv2WRjbEga9w37lwz7KYgTTHGsoqt496Uq/0c=";
   doCheck = true;
 
   checkPhase = ''

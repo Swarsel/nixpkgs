@@ -1,8 +1,8 @@
 {
   config,
   lib,
-  options,
   pkgs,
+  options,
   ...
 }:
 let
@@ -66,31 +66,47 @@ in
     in
     {
 
+      enable = lib.mkEnableOption "Kubernetes apiserver";
+
       advertiseAddress = lib.mkOption {
+        default = null;
+
         description = ''
           Kubernetes apiserver IP address on which to advertise the apiserver
           to members of the cluster. This address must be reachable by the rest
           of the cluster.
         '';
-        default = null;
+
         type = nullOr str;
       };
 
       allowPrivileged = lib.mkOption {
-        description = "Whether to allow privileged containers on Kubernetes.";
         default = false;
+        description = "Whether to allow privileged containers on Kubernetes.";
         type = bool;
       };
 
-      authorizationMode = lib.mkOption {
+      apiAudiences = lib.mkOption {
+        default = "api,https://kubernetes.default.svc";
+
         description = ''
-          Kubernetes apiserver authorization mode (AlwaysAllow/AlwaysDeny/ABAC/Webhook/RBAC/Node). See
-          <https://kubernetes.io/docs/reference/access-authn-authz/authorization/>
+          Kubernetes apiserver ServiceAccount issuer.
         '';
+
+        type = str;
+      };
+
+      authorizationMode = lib.mkOption {
         default = [
           "RBAC"
           "Node"
         ]; # Enabling RBAC by default, although kubernetes default is AllowAllow
+
+        description = ''
+          Kubernetes apiserver authorization mode (AlwaysAllow/AlwaysDeny/ABAC/Webhook/RBAC/Node). See
+          <https://kubernetes.io/docs/reference/access-authn-authz/authorization/>
+        '';
+
         type = listOf (enum [
           "AlwaysAllow"
           "AlwaysDeny"
@@ -102,56 +118,58 @@ in
       };
 
       authorizationPolicy = lib.mkOption {
+        default = [ ];
+
         description = ''
           Kubernetes apiserver authorization policy file. See
           <https://kubernetes.io/docs/reference/access-authn-authz/authorization/>
         '';
-        default = [ ];
+
         type = listOf attrs;
       };
 
       basicAuthFile = lib.mkOption {
+        default = null;
+
         description = ''
           Kubernetes apiserver basic authentication file. See
           <https://kubernetes.io/docs/reference/access-authn-authz/authentication>
         '';
-        default = null;
+
         type = nullOr path;
       };
 
       bindAddress = lib.mkOption {
+        default = "0.0.0.0";
+
         description = ''
           The IP address on which to listen for the --secure-port port.
           The associated interface(s) must be reachable by the rest
           of the cluster, and by CLI/web clients.
         '';
-        default = "0.0.0.0";
+
         type = str;
       };
 
       clientCaFile = lib.mkOption {
-        description = "Kubernetes apiserver CA file for client auth.";
         default = top.caFile;
         defaultText = lib.literalExpression "config.${otop.caFile}";
+        description = "Kubernetes apiserver CA file for client auth.";
         type = nullOr path;
       };
 
       disableAdmissionPlugins = lib.mkOption {
+        default = [ ];
+
         description = ''
           Kubernetes admission control plugins to disable. See
           <https://kubernetes.io/docs/admin/admission-controllers/>
         '';
-        default = [ ];
+
         type = listOf str;
       };
 
-      enable = lib.mkEnableOption "Kubernetes apiserver";
-
       enableAdmissionPlugins = lib.mkOption {
-        description = ''
-          Kubernetes admission control plugins to enable. See
-          <https://kubernetes.io/docs/admin/admission-controllers/>
-        '';
         default = [
           "NamespaceLifecycle"
           "LimitRanger"
@@ -161,6 +179,12 @@ in
           "DefaultTolerationSeconds"
           "NodeRestriction"
         ];
+
+        description = ''
+          Kubernetes admission control plugins to enable. See
+          <https://kubernetes.io/docs/admin/admission-controllers/>
+        '';
+
         example = [
           "NamespaceLifecycle"
           "NamespaceExists"
@@ -172,142 +196,119 @@ in
           "NodeRestriction"
           "DefaultStorageClass"
         ];
+
         type = listOf str;
       };
 
       etcd = {
-        servers = lib.mkOption {
-          description = "List of etcd servers.";
-          default = [ "http://127.0.0.1:2379" ];
-          type = listOf str;
-        };
-
-        keyFile = lib.mkOption {
-          description = "Etcd key file.";
-          default = null;
+        caFile = lib.mkOption {
+          default = top.caFile;
+          defaultText = lib.literalExpression "config.${otop.caFile}";
+          description = "Etcd ca file.";
           type = nullOr path;
         };
 
         certFile = lib.mkOption {
-          description = "Etcd cert file.";
           default = null;
+          description = "Etcd cert file.";
           type = nullOr path;
         };
 
-        caFile = lib.mkOption {
-          description = "Etcd ca file.";
-          default = top.caFile;
-          defaultText = lib.literalExpression "config.${otop.caFile}";
+        keyFile = lib.mkOption {
+          default = null;
+          description = "Etcd key file.";
           type = nullOr path;
+        };
+
+        servers = lib.mkOption {
+          default = [ "http://127.0.0.1:2379" ];
+          description = "List of etcd servers.";
+          type = listOf str;
         };
       };
 
       extraOpts = lib.mkOption {
-        description = "Kubernetes apiserver extra command line options.";
         default = "";
+        description = "Kubernetes apiserver extra command line options.";
         type = separatedString " ";
       };
 
       extraSANs = lib.mkOption {
-        description = "Extra x509 Subject Alternative Names to be added to the kubernetes apiserver tls cert.";
         default = [ ];
+        description = "Extra x509 Subject Alternative Names to be added to the kubernetes apiserver tls cert.";
         type = listOf str;
       };
 
       featureGates = lib.mkOption {
-        description = "Attribute set of feature gates.";
         default = top.featureGates;
         defaultText = lib.literalExpression "config.${otop.featureGates}";
+        description = "Attribute set of feature gates.";
         type = attrsOf bool;
       };
 
       kubeletClientCaFile = lib.mkOption {
-        description = "Path to a cert file for connecting to kubelet.";
         default = top.caFile;
         defaultText = lib.literalExpression "config.${otop.caFile}";
+        description = "Path to a cert file for connecting to kubelet.";
         type = nullOr path;
       };
 
       kubeletClientCertFile = lib.mkOption {
-        description = "Client certificate to use for connections to kubelet.";
         default = null;
+        description = "Client certificate to use for connections to kubelet.";
         type = nullOr path;
       };
 
       kubeletClientKeyFile = lib.mkOption {
-        description = "Key to use for connections to kubelet.";
         default = null;
+        description = "Key to use for connections to kubelet.";
         type = nullOr path;
       };
 
       preferredAddressTypes = lib.mkOption {
+        default = null;
         description = "List of the preferred NodeAddressTypes to use for kubelet connections.";
         type = nullOr str;
-        default = null;
       };
 
       proxyClientCertFile = lib.mkOption {
-        description = "Client certificate to use for connections to proxy.";
         default = null;
+        description = "Client certificate to use for connections to proxy.";
         type = nullOr path;
       };
 
       proxyClientKeyFile = lib.mkOption {
-        description = "Key to use for connections to proxy.";
         default = null;
+        description = "Key to use for connections to proxy.";
         type = nullOr path;
       };
 
       runtimeConfig = lib.mkOption {
+        default = "authentication.k8s.io/v1beta1=true";
+
         description = ''
           Api runtime configuration. See
           <https://kubernetes.io/docs/tasks/administer-cluster/cluster-management/>
         '';
-        default = "authentication.k8s.io/v1beta1=true";
+
         example = "api/all=false,api/v1=true";
         type = str;
       };
 
-      storageBackend = lib.mkOption {
-        description = ''
-          Kubernetes apiserver storage backend.
-        '';
-        default = "etcd3";
-        type = enum [
-          "etcd2"
-          "etcd3"
-        ];
-      };
-
       securePort = lib.mkOption {
-        description = "Kubernetes apiserver secure port.";
         default = 6443;
+        description = "Kubernetes apiserver secure port.";
         type = int;
       };
 
-      apiAudiences = lib.mkOption {
-        description = ''
-          Kubernetes apiserver ServiceAccount issuer.
-        '';
-        default = "api,https://kubernetes.default.svc";
-        type = str;
-      };
-
       serviceAccountIssuer = lib.mkOption {
+        default = "https://kubernetes.default.svc";
+
         description = ''
           Kubernetes apiserver ServiceAccount issuer.
         '';
-        default = "https://kubernetes.default.svc";
-        type = str;
-      };
 
-      serviceAccountSigningKeyFile = lib.mkOption {
-        description = ''
-          Path to the file that contains the current private key of the service
-          account token issuer. The issuer will sign issued ID tokens with this
-          private key.
-        '';
-        type = path;
+        type = str;
       };
 
       serviceAccountKeyFile = lib.mkOption {
@@ -318,54 +319,86 @@ in
           different files. If unspecified, --tls-private-key-file is used.
           Must be specified when --service-account-signing-key is provided
         '';
+
+        type = path;
+      };
+
+      serviceAccountSigningKeyFile = lib.mkOption {
+        description = ''
+          Path to the file that contains the current private key of the service
+          account token issuer. The issuer will sign issued ID tokens with this
+          private key.
+        '';
+
         type = path;
       };
 
       serviceClusterIpRange = lib.mkOption {
+        default = "10.0.0.0/24";
+
         description = ''
           A CIDR notation IP range from which to assign service cluster IPs.
           This must not overlap with any IP ranges assigned to nodes for pods.
         '';
-        default = "10.0.0.0/24";
+
         type = str;
       };
 
+      storageBackend = lib.mkOption {
+        default = "etcd3";
+
+        description = ''
+          Kubernetes apiserver storage backend.
+        '';
+
+        type = enum [
+          "etcd2"
+          "etcd3"
+        ];
+      };
+
       tlsCertFile = lib.mkOption {
-        description = "Kubernetes apiserver certificate file.";
         default = null;
+        description = "Kubernetes apiserver certificate file.";
         type = nullOr path;
       };
 
       tlsKeyFile = lib.mkOption {
-        description = "Kubernetes apiserver private key file.";
         default = null;
+        description = "Kubernetes apiserver private key file.";
         type = nullOr path;
       };
 
       tokenAuthFile = lib.mkOption {
+        default = null;
+
         description = ''
           Kubernetes apiserver token authentication file. See
           <https://kubernetes.io/docs/reference/access-authn-authz/authentication>
         '';
-        default = null;
+
         type = nullOr path;
       };
 
       verbosity = lib.mkOption {
+        default = null;
+
         description = ''
           Optional glog verbosity level for logging statements. See
           <https://github.com/kubernetes/community/blob/master/contributors/devel/logging.md>
         '';
-        default = null;
+
         type = nullOr int;
       };
 
       webhookConfig = lib.mkOption {
+        default = null;
+
         description = ''
           Kubernetes apiserver Webhook config file. It uses the kubeconfig file format.
           See <https://kubernetes.io/docs/reference/access-authn-authz/webhook/>
         '';
-        default = null;
+
         type = nullOr path;
       };
 
@@ -375,12 +408,113 @@ in
   config = lib.mkMerge [
 
     (lib.mkIf cfg.enable {
+      services.etcd = {
+        advertiseClientUrls = lib.mkDefault [ "https://${top.masterAddress}:2379" ];
+        clientCertAuth = lib.mkDefault true;
+        initialAdvertisePeerUrls = lib.mkDefault [ "https://${top.masterAddress}:2380" ];
+        initialCluster = lib.mkDefault [ "${top.masterAddress}=https://${top.masterAddress}:2380" ];
+        listenClientUrls = lib.mkDefault [ "https://0.0.0.0:2379" ];
+        listenPeerUrls = lib.mkDefault [ "https://0.0.0.0:2380" ];
+        name = lib.mkDefault top.masterAddress;
+        peerClientCertAuth = lib.mkDefault true;
+      };
+
+      services.kubernetes.addonManager.bootstrapAddons = lib.mkIf isRBACEnabled {
+
+        apiserver-kubelet-api-admin-crb = {
+          apiVersion = "rbac.authorization.k8s.io/v1";
+          kind = "ClusterRoleBinding";
+
+          metadata = {
+            name = "system:kube-apiserver:kubelet-api-admin";
+          };
+
+          roleRef = {
+            apiGroup = "rbac.authorization.k8s.io";
+            kind = "ClusterRole";
+            name = "system:kubelet-api-admin";
+          };
+
+          subjects = [
+            {
+              kind = "User";
+              name = "system:kube-apiserver";
+            }
+          ];
+        };
+
+      };
+
+      services.kubernetes.pki.certs = with top.lib; {
+        apiServer = mkCert {
+          CN = "kubernetes";
+          action = "systemctl restart kube-apiserver.service";
+
+          hosts = [
+            "kubernetes.default.svc"
+            "kubernetes.default.svc.${top.addons.dns.clusterDomain}"
+            cfg.advertiseAddress
+            top.masterAddress
+            apiserverServiceIP
+            "127.0.0.1"
+          ]
+          ++ cfg.extraSANs;
+
+          name = "kube-apiserver";
+        };
+
+        apiserverEtcdClient = mkCert {
+          CN = "etcd-client";
+          action = "systemctl restart kube-apiserver.service";
+          name = "kube-apiserver-etcd-client";
+        };
+
+        apiserverKubeletClient = mkCert {
+          CN = "system:kube-apiserver";
+          action = "systemctl restart kube-apiserver.service";
+          name = "kube-apiserver-kubelet-client";
+        };
+
+        apiserverProxyClient = mkCert {
+          CN = "front-proxy-client";
+          action = "systemctl restart kube-apiserver.service";
+          name = "kube-apiserver-proxy-client";
+        };
+
+        clusterAdmin = mkCert {
+          CN = "cluster-admin";
+
+          fields = {
+            O = "system:masters";
+          };
+
+          name = "cluster-admin";
+          privateKeyOwner = "root";
+        };
+
+        etcd = mkCert {
+          CN = top.masterAddress;
+          action = "systemctl restart etcd.service";
+
+          hosts = [
+            "etcd.local"
+            "etcd.${top.addons.dns.clusterDomain}"
+            top.masterAddress
+            cfg.advertiseAddress
+          ];
+
+          name = "etcd";
+          privateKeyOwner = "etcd";
+        };
+      };
+
       systemd.services.kube-apiserver = {
-        description = "Kubernetes APIServer Service";
-        wantedBy = [ "kubernetes.target" ];
         after = [ "network.target" ];
+        description = "Kubernetes APIServer Service";
+
         serviceConfig = {
-          Slice = "kubernetes.slice";
+          AmbientCapabilities = "cap_net_bind_service";
+
           ExecStart = ''
             ${top.package}/bin/kube-apiserver \
             --allow-privileged=${lib.boolToString cfg.allowPrivileged} \
@@ -449,103 +583,20 @@ in
             ${lib.optionalString (cfg.verbosity != null) "--v=${toString cfg.verbosity}"} \
             ${cfg.extraOpts}
           '';
-          WorkingDirectory = top.dataDir;
-          User = "kubernetes";
+
           Group = "kubernetes";
-          AmbientCapabilities = "cap_net_bind_service";
           Restart = "on-failure";
           RestartSec = 5;
+          Slice = "kubernetes.slice";
+          User = "kubernetes";
+          WorkingDirectory = top.dataDir;
         };
 
         unitConfig = {
           StartLimitIntervalSec = 0;
         };
-      };
 
-      services.etcd = {
-        clientCertAuth = lib.mkDefault true;
-        peerClientCertAuth = lib.mkDefault true;
-        listenClientUrls = lib.mkDefault [ "https://0.0.0.0:2379" ];
-        listenPeerUrls = lib.mkDefault [ "https://0.0.0.0:2380" ];
-        advertiseClientUrls = lib.mkDefault [ "https://${top.masterAddress}:2379" ];
-        initialCluster = lib.mkDefault [ "${top.masterAddress}=https://${top.masterAddress}:2380" ];
-        name = lib.mkDefault top.masterAddress;
-        initialAdvertisePeerUrls = lib.mkDefault [ "https://${top.masterAddress}:2380" ];
-      };
-
-      services.kubernetes.addonManager.bootstrapAddons = lib.mkIf isRBACEnabled {
-
-        apiserver-kubelet-api-admin-crb = {
-          apiVersion = "rbac.authorization.k8s.io/v1";
-          kind = "ClusterRoleBinding";
-          metadata = {
-            name = "system:kube-apiserver:kubelet-api-admin";
-          };
-          roleRef = {
-            apiGroup = "rbac.authorization.k8s.io";
-            kind = "ClusterRole";
-            name = "system:kubelet-api-admin";
-          };
-          subjects = [
-            {
-              kind = "User";
-              name = "system:kube-apiserver";
-            }
-          ];
-        };
-
-      };
-
-      services.kubernetes.pki.certs = with top.lib; {
-        apiServer = mkCert {
-          name = "kube-apiserver";
-          CN = "kubernetes";
-          hosts = [
-            "kubernetes.default.svc"
-            "kubernetes.default.svc.${top.addons.dns.clusterDomain}"
-            cfg.advertiseAddress
-            top.masterAddress
-            apiserverServiceIP
-            "127.0.0.1"
-          ]
-          ++ cfg.extraSANs;
-          action = "systemctl restart kube-apiserver.service";
-        };
-        apiserverProxyClient = mkCert {
-          name = "kube-apiserver-proxy-client";
-          CN = "front-proxy-client";
-          action = "systemctl restart kube-apiserver.service";
-        };
-        apiserverKubeletClient = mkCert {
-          name = "kube-apiserver-kubelet-client";
-          CN = "system:kube-apiserver";
-          action = "systemctl restart kube-apiserver.service";
-        };
-        apiserverEtcdClient = mkCert {
-          name = "kube-apiserver-etcd-client";
-          CN = "etcd-client";
-          action = "systemctl restart kube-apiserver.service";
-        };
-        clusterAdmin = mkCert {
-          name = "cluster-admin";
-          CN = "cluster-admin";
-          fields = {
-            O = "system:masters";
-          };
-          privateKeyOwner = "root";
-        };
-        etcd = mkCert {
-          name = "etcd";
-          CN = top.masterAddress;
-          hosts = [
-            "etcd.local"
-            "etcd.${top.addons.dns.clusterDomain}"
-            top.masterAddress
-            cfg.advertiseAddress
-          ];
-          privateKeyOwner = "etcd";
-          action = "systemctl restart etcd.service";
-        };
+        wantedBy = [ "kubernetes.target" ];
       };
 
     })

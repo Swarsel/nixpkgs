@@ -1,12 +1,12 @@
 {
   lib,
-  gccMultiStdenv,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   bash,
   capnproto,
   cmake,
+  fetchpatch,
+  gccMultiStdenv,
   gdb,
   libpfm,
   makeWrapper,
@@ -22,8 +22,8 @@ let
   stdenv' = if stdenv.hostPlatform.isx86_64 then gccMultiStdenv else stdenv;
 in
 stdenv'.mkDerivation (finalAttrs: {
-  version = "5.9.0";
   pname = "rr";
+  version = "5.9.0";
 
   src = fetchFromGitHub {
     owner = "rr-debugger";
@@ -35,26 +35,14 @@ stdenv'.mkDerivation (finalAttrs: {
   patches = [
     # fix build w/ glibc-2.42
     (fetchpatch {
-      url = "https://github.com/rr-debugger/rr/commit/6251648873b9e1ed23536beebbaa5d6fead3d5be.patch";
       hash = "sha256-k+jeGUJyybYq3GF2zIhpDF8NT66Buq6nztUbh28qVD8=";
+      url = "https://github.com/rr-debugger/rr/commit/6251648873b9e1ed23536beebbaa5d6fead3d5be.patch";
     })
   ];
 
   postPatch = ''
     substituteInPlace src/Command.cc --replace '_BSD_SOURCE' '_DEFAULT_SOURCE'
     patchShebangs src
-  '';
-
-  # With LTO enabled, linking fails with the following message:
-  #
-  # src/AddressSpace.cc:1666: undefined reference to `rr_syscall_addr'
-  # ld.bfd: bin/rr: hidden symbol `rr_syscall_addr' isn't defined
-  # ld.bfd: final link failed: bad value
-  # collect2: error: ld returned 1 exit status
-  #
-  # See also https://github.com/NixOS/nixpkgs/pull/110846
-  preConfigure = ''
-    substituteInPlace CMakeLists.txt --replace "-flto" ""
   '';
 
   strictDeps = true;
@@ -87,11 +75,20 @@ stdenv'.mkDerivation (finalAttrs: {
   # we turn on additional warnings due to hardening
   env.NIX_CFLAGS_COMPILE = "-Wno-error";
 
-  hardeningDisable = [ "fortify" ];
+  # With LTO enabled, linking fails with the following message:
+  #
+  # src/AddressSpace.cc:1666: undefined reference to `rr_syscall_addr'
+  # ld.bfd: bin/rr: hidden symbol `rr_syscall_addr' isn't defined
+  # ld.bfd: final link failed: bad value
+  # collect2: error: ld returned 1 exit status
+  #
+  # See also https://github.com/NixOS/nixpkgs/pull/110846
+  preConfigure = ''
+    substituteInPlace CMakeLists.txt --replace "-flto" ""
+  '';
 
   # FIXME
   doCheck = false;
-
   preCheck = "export HOME=$TMPDIR";
 
   # needs GDB to replay programs at runtime
@@ -100,11 +97,12 @@ stdenv'.mkDerivation (finalAttrs: {
       --prefix PATH ":" "${lib.makeBinPath [ gdb ]}";
   '';
 
+  hardeningDisable = [ "fortify" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://rr-project.org/";
     description = "Records nondeterministic executions and debugs them deterministically";
+
     longDescription = ''
       rr aspires to be your primary debugging tool, replacing -- well,
       enhancing -- gdb. You record a failure once, then debug the
@@ -112,15 +110,19 @@ stdenv'.mkDerivation (finalAttrs: {
       time the same execution is replayed.
     '';
 
+    homepage = "https://rr-project.org/";
+
     license = with lib.licenses; [
       mit
       bsd2
     ];
+
     maintainers = with lib.maintainers; [
       pierron
       thoughtpolice
       lf-
     ];
+
     platforms = [
       "aarch64-linux"
       "i686-linux"

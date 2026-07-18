@@ -1,21 +1,20 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
-  lib,
 }:
 buildPythonPackage rec {
   pname = "pymeta3";
   version = "0.5.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit version;
-    pname = "PyMeta3";
     hash = "sha256-GL2jJtmpu/WHv8DuC8loZJZNeLBnKIvPVdTZhoHQW8s=";
+    pname = "PyMeta3";
   };
 
   doCheck = false; # Tests do not support Python3
-
+  format = "setuptools";
   pythonImportsCheck = [ "pymeta" ];
 
   meta = {
@@ -23,6 +22,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/wbond/pymeta3";
     changelog = "https://github.com/wbond/pymeta3/releases/tag/${version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       jfly
       matusf

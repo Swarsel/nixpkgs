@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   ihm,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "modelcif";
   version = "1.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ihmwg";
@@ -19,13 +18,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-4iAFXL+3/HOP2wmO0SoXAGPRrkoaITStDQKvhKAOjTA=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
   ];
 
   dependencies = [ ihm ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   disabledTests = [
     # require network access
@@ -34,6 +33,7 @@ buildPythonPackage (finalAttrs: {
     "test_validate_modbase_example"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "modelcif" ];
 
   meta = {

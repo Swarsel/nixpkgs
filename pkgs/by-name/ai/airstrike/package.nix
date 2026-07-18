@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   SDL,
   SDL_image,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,6 +17,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     SDL
     SDL_image
@@ -37,10 +38,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "2d dogfighting game";
-    mainProgram = "airstrike";
     homepage = "https://icculus.org/airstrike/";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ pSub ];
     platforms = lib.platforms.linux;
+    mainProgram = "airstrike";
   };
 })

@@ -1,10 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  withOpencv ? false,
-  withPyqt6 ? builtins.elem "git-protonmail" scripts,
-  withQrcode ? true,
+  python3Packages,
+  description ? "Git credential helpers for Microsoft Outlook, Gmail, Yahoo, AOL and Proton Mail accounts",
+  license ? with lib.licenses; [
+    asl20
+    gpl3Only
+  ],
   pname ? "git-credential-email",
   scripts ? [
     "git-credential-aol"
@@ -14,11 +16,9 @@
     "git-msgraph"
     "git-protonmail"
   ],
-  description ? "Git credential helpers for Microsoft Outlook, Gmail, Yahoo, AOL and Proton Mail accounts",
-  license ? with lib.licenses; [
-    asl20
-    gpl3Only
-  ],
+  withOpencv ? false,
+  withPyqt6 ? builtins.elem "git-protonmail" scripts,
+  withQrcode ? true,
 }:
 
 let
@@ -34,6 +34,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-pW13tOPOyS5EorR1C/WEpJpu2ilCA4s8N7GkXoyPv7U=";
   };
+
+  installPhase = ''
+    install -D -t $out/bin ${lib.concatStringsSep " " scripts}
+  '';
 
   dependencies =
     with python3Packages;
@@ -53,10 +57,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ++ lib.optionals (withProtonmail && withOpencv) [ opencv4 ];
 
   pyproject = false;
-
-  installPhase = ''
-    install -D -t $out/bin ${lib.concatStringsSep " " scripts}
-  '';
 
   meta = {
     inherit description license;

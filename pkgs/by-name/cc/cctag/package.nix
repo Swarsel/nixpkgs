@@ -1,14 +1,12 @@
 {
   lib,
-  clangStdenv,
   fetchFromGitHub,
-
-  cmake,
   boost186,
+  clangStdenv,
+  cmake,
   eigen,
-  opencv,
   onetbb,
-
+  opencv,
   avx2Support ? clangStdenv.hostPlatform.avx2Support,
 }:
 let
@@ -18,11 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "cctag";
   version = "1.0.4";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchFromGitHub {
     owner = "alicevision";
     repo = "CCTag";
@@ -30,14 +23,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-M35KGTTmwGwXefsFWB2UKAKveUQyZBW7V8ejgOAJpXk=";
   };
 
-  cmakeFlags = [
-    # Feel free to create a PR to add CUDA support
-    (lib.cmakeBool "CCTAG_WITH_CUDA" false)
-
-    (lib.cmakeBool "CCTAG_ENABLE_SIMD_AVX2" avx2Support)
-
-    (lib.cmakeBool "CCTAG_BUILD_TESTS" finalAttrs.finalPackage.doCheck)
-    (lib.cmakeBool "CCTAG_BUILD_APPS" false)
+  outputs = [
+    "out"
+    "dev"
   ];
 
   patches = [
@@ -55,14 +43,24 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
   ];
 
-  propagatedBuildInputs = [
-    onetbb
-  ];
-
   buildInputs = [
     boost186
     eigen
     opencv.cxxdev
+  ];
+
+  propagatedBuildInputs = [
+    onetbb
+  ];
+
+  cmakeFlags = [
+    # Feel free to create a PR to add CUDA support
+    (lib.cmakeBool "CCTAG_WITH_CUDA" false)
+
+    (lib.cmakeBool "CCTAG_ENABLE_SIMD_AVX2" avx2Support)
+
+    (lib.cmakeBool "CCTAG_BUILD_TESTS" finalAttrs.finalPackage.doCheck)
+    (lib.cmakeBool "CCTAG_BUILD_APPS" false)
   ];
 
   doCheck = true;
@@ -70,9 +68,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Detection of CCTag markers made up of concentric circles";
     homepage = "https://cctag.readthedocs.io";
-    downloadPage = "https://github.com/alicevision/CCTag";
     license = lib.licenses.mpl20;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ tmarkus ];
+    platforms = lib.platforms.all;
+    downloadPage = "https://github.com/alicevision/CCTag";
   };
 })

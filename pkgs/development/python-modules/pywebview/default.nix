@@ -1,26 +1,25 @@
 {
   lib,
-  buildPythonPackage,
-  fetchFromGitHub,
-  setuptools-scm,
-  bottle,
-  proxy-tools,
-  pyside6,
-  qtpy,
-  six,
-  typing-extensions,
   stdenv,
+  fetchFromGitHub,
+  bottle,
+  buildPythonPackage,
+  proxy-tools,
   pyobjc-core,
   pyobjc-framework-Cocoa,
   pyobjc-framework-Quartz,
   pyobjc-framework-Security,
   pyobjc-framework-WebKit,
+  pyside6,
+  qtpy,
+  setuptools-scm,
+  six,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "pywebview";
   version = "6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "r0x0r";
@@ -47,17 +46,20 @@ buildPythonPackage rec {
     pyobjc-framework-WebKit
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "webview" ];
 
   meta = {
     description = "Lightweight cross-platform wrapper around a webview";
     homepage = "https://github.com/r0x0r/pywebview";
     license = lib.licenses.bsd3;
-    maintainers = with lib.maintainers; [ jojosch ];
+
     # contains committed jar and dll files
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
       binaryNativeCode
     ];
+
+    maintainers = with lib.maintainers; [ jojosch ];
   };
 }

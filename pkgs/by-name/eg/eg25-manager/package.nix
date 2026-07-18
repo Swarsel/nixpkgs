@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  gnugrep,
-  meson,
-  ninja,
-  pkg-config,
-  scdoc,
   curl,
   glib,
+  gnugrep,
   libgpiod,
   libgudev,
   libusb1,
+  meson,
   modemmanager,
+  ninja,
+  pkg-config,
+  scdoc,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,7 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail '/bin/grep' '${lib.getExe gnugrep}'
   '';
 
-  depsBuildBuild = [ pkg-config ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     glib # Contains gdbus-codegen program
@@ -50,16 +50,16 @@ stdenv.mkDerivation (finalAttrs: {
     modemmanager
   ];
 
-  strictDeps = true;
   doInstallCheck = true;
+  depsBuildBuild = [ pkg-config ];
 
   meta = {
     description = "Manager daemon for the Quectel EG25 mobile broadband modem found on the Pine64 PinePhone and PinePhone Pro";
     homepage = "https://gitlab.com/mobian1/eg25-manager";
     changelog = "https://gitlab.com/mobian1/eg25-manager/-/tags/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "eg25-manager";
     maintainers = with lib.maintainers; [ Luflosi ];
     platforms = lib.platforms.linux;
+    mainProgram = "eg25-manager";
   };
 })

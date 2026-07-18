@@ -11,9 +11,8 @@
 }:
 
 buildDunePackage {
-  pname = "dolmen_lsp";
   inherit (dolmen) src version;
-
+  pname = "dolmen_lsp";
   patches = [ ./linol-common-migration.patch ];
 
   buildInputs = [
@@ -28,7 +27,7 @@ buildDunePackage {
 
   meta = dolmen.meta // {
     description = "LSP server for automated deduction languages";
-    mainProgram = "dolmenls";
     maintainers = [ lib.maintainers.stepbrobd ];
+    mainProgram = "dolmenls";
   };
 }

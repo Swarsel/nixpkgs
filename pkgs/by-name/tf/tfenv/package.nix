@@ -1,15 +1,15 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  makeWrapper,
-  nix-update-script,
   coreutils,
   curl,
   findutils,
   gawk,
   gnugrep,
   gnused,
+  makeWrapper,
+  nix-update-script,
+  stdenvNoCC,
   testers,
   unzip,
 }:
@@ -26,8 +26,6 @@ let
   ];
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
-  __structuredAttrs = true;
-
   pname = "tfenv";
   version = "3.2.2";
 
@@ -39,9 +37,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -70,11 +65,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     ln -s $out/share/tfenv/bin/terraform $out/bin/terraform
   '';
 
+  __structuredAttrs = true;
+  dontBuild = true;
+  dontConfigure = true;
+
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
       package = finalAttrs.finalPackage;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -83,7 +83,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     changelog = "https://github.com/tfutils/tfenv/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kaynetik ];
-    mainProgram = "tfenv";
     platforms = lib.platforms.unix;
+    mainProgram = "tfenv";
   };
 })

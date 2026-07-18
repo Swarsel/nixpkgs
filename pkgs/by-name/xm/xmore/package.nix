@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  wrapWithXFileSearchPathHook,
-  xorgproto,
   libxaw,
   libxt,
+  pkg-config,
+  wrapWithXFileSearchPathHook,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xmore";
@@ -47,12 +47,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Plain text display program for the X Window System";
     homepage = "https://gitlab.freedesktop.org/xorg/app/xmore";
+
     license = with lib.licenses; [
       hpndSellVariant
       mitOpenGroup
     ];
-    mainProgram = "xmore";
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xmore";
   };
 })

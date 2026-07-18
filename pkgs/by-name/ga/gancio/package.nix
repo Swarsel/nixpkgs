@@ -3,19 +3,16 @@
   stdenv,
   fetchFromGitLab,
   fetchYarnDeps,
-
-  yarn,
-  yarnConfigHook,
-  yarnBuildHook,
-  yarnInstallHook,
+  nix-update-script,
+  nixosTests,
   nodejs-slim_22,
   pkg-config,
-
-  vips,
   sqlite,
-
-  nixosTests,
-  nix-update-script,
+  vips,
+  yarn,
+  yarnBuildHook,
+  yarnConfigHook,
+  yarnInstallHook,
 }:
 
 let
@@ -32,16 +29,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.28.2";
 
   src = fetchFromGitLab {
-    domain = "framagit.org";
     owner = "les";
     repo = "gancio";
     rev = "v${finalAttrs.version}";
     hash = "sha256-2WXibjUHKK1jM5FEwgY9QpgIINQ6bG6KC3FV2Q9JlwQ=";
-  };
-
-  offlineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/yarn.lock";
-    hash = "sha256-N53GctXhKH04rO+N8Tshln6bU+QuOyZPEuJf8hC0wHk=";
+    domain = "framagit.org";
   };
 
   nativeBuildInputs = [
@@ -76,11 +68,18 @@ stdenv.mkDerivation (finalAttrs: {
     install -Dm755 node_sqlite3.node -t $out/lib/node_modules/gancio/node_modules/sqlite3/build/Release
   '';
 
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-N53GctXhKH04rO+N8Tshln6bU+QuOyZPEuJf8hC0wHk=";
+    yarnLock = finalAttrs.src + "/yarn.lock";
+  };
+
   passthru = {
     inherit nodejs;
+
     tests = {
       inherit (nixosTests) gancio;
     };
+
     updateScript = nix-update-script { };
   };
 
@@ -89,8 +88,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gancio.org/";
     changelog = "https://framagit.org/les/gancio/-/raw/master/CHANGELOG.md";
     license = lib.licenses.agpl3Plus;
+    maintainers = with lib.maintainers; [ jbgi ];
     platforms = lib.platforms.linux;
     mainProgram = "gancio";
-    maintainers = with lib.maintainers; [ jbgi ];
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatch-vcs,
   hatchling,
   paramiko,
@@ -15,22 +15,12 @@
 buildPythonPackage rec {
   pname = "plumbum";
   version = "1.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tomerfiliba";
     repo = "plumbum";
     tag = "v${version}";
     hash = "sha256-ca9avbBJnMecuKljIrx3mYIGA50QXmhC/LP3hM9Uvcs=";
-  };
-
-  build-system = [
-    hatchling
-    hatch-vcs
-  ];
-
-  optional-dependencies = {
-    ssh = [ paramiko ];
   };
 
   nativeCheckInputs = [
@@ -46,6 +36,17 @@ buildPythonPackage rec {
     export HOME=$TMP
   '';
 
+  build-system = [
+    hatchling
+    hatch-vcs
+  ];
+
+  disabledTestPaths = [
+    # incompatible with pytest7
+    # https://github.com/tomerfiliba/plumbum/issues/594
+    "tests/test_remote.py"
+  ];
+
   disabledTests = [
     # broken in nix env
     "test_change_env"
@@ -55,16 +56,16 @@ buildPythonPackage rec {
     "test_incorrect_login"
   ];
 
-  disabledTestPaths = [
-    # incompatible with pytest7
-    # https://github.com/tomerfiliba/plumbum/issues/594
-    "tests/test_remote.py"
-  ];
+  optional-dependencies = {
+    ssh = [ paramiko ];
+  };
+
+  pyproject = true;
 
   meta = {
     description = "Module Shell Combinators";
-    changelog = "https://github.com/tomerfiliba/plumbum/releases/tag/v${version}";
     homepage = "https://github.com/tomerfiliba/plumbum";
+    changelog = "https://github.com/tomerfiliba/plumbum/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

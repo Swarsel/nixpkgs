@@ -1,21 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build
   hatchling,
-  pytest,
-
-  # runtime
-  jupyter-core,
-
+  ipykernel,
   # optionals
   jupyter-client,
-  ipykernel,
+  # runtime
+  jupyter-core,
   jupyter-server,
   nbformat,
-
+  pytest,
   # tests
   pytest-timeout,
   pytestCheckHook,
@@ -25,7 +21,6 @@ let
   self = buildPythonPackage rec {
     pname = "pytest-jupyter";
     version = "0.11.0";
-    pyproject = true;
 
     src = fetchFromGitHub {
       owner = "jupyter-server";
@@ -35,25 +30,8 @@ let
     };
 
     nativeBuildInputs = [ hatchling ];
-
     buildInputs = [ pytest ];
-
     propagatedBuildInputs = [ jupyter-core ];
-
-    optional-dependencies = {
-      client = [
-        jupyter-client
-        nbformat
-        ipykernel
-      ];
-      server = [
-        jupyter-server
-        jupyter-client
-        nbformat
-        ipykernel
-      ];
-    };
-
     doCheck = false; # infinite recursion with jupyter-server
 
     nativeCheckInputs = [
@@ -62,6 +40,23 @@ let
     ]
     ++ lib.concatAttrValues optional-dependencies;
 
+    optional-dependencies = {
+      client = [
+        jupyter-client
+        nbformat
+        ipykernel
+      ];
+
+      server = [
+        jupyter-server
+        jupyter-client
+        nbformat
+        ipykernel
+      ];
+    };
+
+    pyproject = true;
+
     passthru.tests = {
       check = self.overridePythonAttrs (_: {
         doCheck = false;
@@ -69,9 +64,9 @@ let
     };
 
     meta = {
-      changelog = "https://github.com/jupyter-server/pytest-jupyter/releases/tag/${src.tag}";
       description = "Pytest plugin for testing Jupyter core libraries and extensions";
       homepage = "https://github.com/jupyter-server/pytest-jupyter";
+      changelog = "https://github.com/jupyter-server/pytest-jupyter/releases/tag/${src.tag}";
       license = lib.licenses.bsd3;
       maintainers = [ ];
     };

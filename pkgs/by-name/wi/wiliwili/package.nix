@@ -3,21 +3,21 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  wayland-scanner,
-  mpv-unwrapped,
-  openssl,
   curl,
-  libxkbcommon,
   dbus,
-  libffi,
-  wayland,
   egl-wayland,
-  libxrandr,
+  libffi,
+  libx11,
+  libxcursor,
   libxi,
   libxinerama,
-  libxcursor,
-  libx11,
+  libxkbcommon,
+  libxrandr,
+  mpv-unwrapped,
+  openssl,
+  pkg-config,
+  wayland,
+  wayland-scanner,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,8 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "xfangfang";
     repo = "wiliwili";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-NPJ1PLO6eqm4rBn4t965S0lqzT+npfYLWN6FKYCpnlQ=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -72,11 +72,11 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://xfangfang.github.io/wiliwili";
     # https://github.com/xfangfang/wiliwili/discussions/355
     license = lib.licenses.gpl3Only;
-    mainProgram = "wiliwili";
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = with lib.platforms; unix ++ windows;
     # Testing on darwin was blocked due to broken swift
     # buildInputs should still need some tweaking, but can't be sure
     badPlatforms = lib.platforms.darwin;
+    mainProgram = "wiliwili";
   };
 })

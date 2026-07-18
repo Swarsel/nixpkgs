@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "gdlv";
@@ -19,9 +19,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "GUI frontend for Delve";
-    mainProgram = "gdlv";
     homepage = "https://github.com/aarzilli/gdlv";
-    maintainers = with lib.maintainers; [ mmlb ];
     license = lib.licenses.gpl3;
+    maintainers = with lib.maintainers; [ mmlb ];
+    mainProgram = "gdlv";
   };
 })

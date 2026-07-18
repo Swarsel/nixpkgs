@@ -1,49 +1,44 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  # test
+  anndata,
+  buildPythonPackage,
+  # test-min
+  coverage,
+  # dask
+  dask,
+  # doc
+  furo,
+  # full
+  h5py,
   # build-system
   hatch-docstring-description,
   hatch-fancy-pypi-readme,
   hatch-vcs,
   hatchling,
-
-  # dependencies
-  numpy,
-
   # optional-dependencies
   # accel
   numba,
-  # dask
-  dask,
-  # doc
-  furo,
+  # dependencies
+  numpy,
+  # testing
+  packaging,
   pytest,
-  sphinx,
-  # full
-  h5py,
-  zarr,
-  # test
-  anndata,
-  scikit-learn,
-  # test-min
-  coverage,
   pytest-codspeed,
   pytest-doctestplus,
   pytest-xdist,
-  # testing
-  packaging,
-
   # tests
   pytestCheckHook,
+  scikit-learn,
   scipy,
+  sphinx,
+  zarr,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "fast-array-utils";
   version = "1.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scverse";
@@ -54,6 +49,15 @@ buildPythonPackage (finalAttrs: {
 
   # hatch-min-requirements tries to talk to PyPI by default. See https://github.com/tlambert03/hatch-min-requirements?tab=readme-ov-file#environment-variables.
   env.MIN_REQS_OFFLINE = "1";
+
+  nativeCheckInputs = [
+    dask
+    numba
+    pytest-codspeed
+    pytest-doctestplus
+    pytestCheckHook
+    scipy
+  ];
 
   build-system = [
     hatch-docstring-description
@@ -70,15 +74,18 @@ buildPythonPackage (finalAttrs: {
     accel = [
       numba
     ];
+
     dask = [
       dask
     ];
+
     doc = [
       furo
       pytest
       sphinx
       # sphinx-autofixture
     ];
+
     full = [
       h5py
       zarr
@@ -86,15 +93,18 @@ buildPythonPackage (finalAttrs: {
     ++ self.accel
     ++ self.dask
     ++ self.sparse;
+
     sparse = [
       scipy
     ];
+
     test = [
       anndata
       scikit-learn
       zarr
     ]
     ++ self.accel;
+
     test-min = [
       coverage
       pytest
@@ -104,19 +114,13 @@ buildPythonPackage (finalAttrs: {
     ]
     ++ self.sparse
     ++ self.testing;
+
     testing = [
       packaging
     ];
   });
 
-  nativeCheckInputs = [
-    dask
-    numba
-    pytest-codspeed
-    pytest-doctestplus
-    pytestCheckHook
-    scipy
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "fast_array_utils.conv"
@@ -130,6 +134,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://icb-fast-array-utils.readthedocs-hosted.com";
     changelog = "https://github.com/scverse/fast-array-utils/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       samuela
     ];

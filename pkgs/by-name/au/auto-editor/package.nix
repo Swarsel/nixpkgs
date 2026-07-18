@@ -1,20 +1,18 @@
 {
   lib,
   stdenv,
-  config,
-  buildNimPackage,
   fetchFromGitHub,
-
+  buildNimPackage,
+  config,
+  dav1d,
   ffmpeg-full,
-  yt-dlp,
   lame,
   libopus,
   libvpx,
-  x264,
-  dav1d,
-
   python3,
   python3Packages,
+  x264,
+  yt-dlp,
 }:
 
 buildNimPackage rec {
@@ -28,7 +26,16 @@ buildNimPackage rec {
     hash = "sha256-AzUTDOWzyhZLrwqO9HfZ/Ke72LElJAMzVoDydBfYKwg=";
   };
 
-  lockFile = ./lock.json;
+  postPatch = ''
+    substituteInPlace src/log.nim \
+      --replace-fail '"yt-dlp"' '"${lib.getExe yt-dlp}"'
+
+    # buildNimPackage hack
+    substituteInPlace ae.nimble \
+      --replace-fail '"main=auto-editor"' '"main"'
+
+    mv tests/unit.nim tests/tunit.nim # buildNimPackage expects tests to start with t
+  '';
 
   buildInputs = [
     ffmpeg-full
@@ -41,22 +48,11 @@ buildNimPackage rec {
   env = {
     # Nothing should be dynamically linked, as ffmpeg should already link it.
     DISABLE_HEVC = "1";
-    DISABLE_WHISPER = "1";
-    DISABLE_VPX = "1";
     DISABLE_SVTAV1 = "1";
     DISABLE_VPL = "1";
+    DISABLE_VPX = "1";
+    DISABLE_WHISPER = "1";
   };
-
-  postPatch = ''
-    substituteInPlace src/log.nim \
-      --replace-fail '"yt-dlp"' '"${lib.getExe yt-dlp}"'
-
-    # buildNimPackage hack
-    substituteInPlace ae.nimble \
-      --replace-fail '"main=auto-editor"' '"main"'
-
-    mv tests/unit.nim tests/tunit.nim # buildNimPackage expects tests to start with t
-  '';
 
   nativeCheckInputs = [
     python3
@@ -80,16 +76,20 @@ buildNimPackage rec {
     mv $out/bin/main $out/bin/auto-editor
   '';
 
+  lockFile = ./lock.json;
+
   meta = {
-    changelog = "https://github.com/WyattBlue/auto-editor/releases/tag/${src.tag}";
     description = "Command line application for automatically editing video and audio by analyzing a variety of methods, most notably audio loudness";
     homepage = "https://auto-editor.com/";
+    changelog = "https://github.com/WyattBlue/auto-editor/releases/tag/${src.tag}";
     license = lib.licenses.unlicense;
-    mainProgram = "auto-editor";
+
     maintainers = with lib.maintainers; [
       tomasajt
       utopiatopia
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "auto-editor";
   };
 }

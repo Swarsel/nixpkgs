@@ -1,12 +1,12 @@
 {
-  buildOctavePackage,
   lib,
   fetchFromGitHub,
-  gdcm,
   autoreconfHook,
-  pkg-config,
+  buildOctavePackage,
   cmake,
+  gdcm,
   nix-update-script,
+  pkg-config,
 }:
 
 buildOctavePackage rec {
@@ -32,21 +32,22 @@ buildOctavePackage rec {
 
   dontUseCmakeConfigure = true;
 
+  postAutoreconf = ''
+    popd
+  '';
+
   preAutoreconf = ''
     pushd src
     # Removed these so autoreconf actually fires for our environment.
     rm config.*
   '';
-  postAutoreconf = ''
-    popd
-  '';
 
   passthru.updateScript = nix-update-script { extraArgs = [ "--version-regex=release-(.*)" ]; };
 
   meta = {
+    description = "Digital communications in medicine (DICOM) file io";
     homepage = "https://gnu-octave.github.io/packages/dicom/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ ravenjoad ];
-    description = "Digital communications in medicine (DICOM) file io";
   };
 }

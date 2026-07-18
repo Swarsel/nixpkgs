@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
   cmake,
-  ninja,
-  pkg-config,
   gtk2,
   gtk3,
   gtk4,
+  meson,
+  ninja,
+  pkg-config,
 }:
 
 let
   distorm-src = fetchFromGitHub {
+    hash = "sha256-2ftEV3TMS3HT7f96k+Pwt3Mm31fVEXcHpcbbz05jycU=";
     owner = "gdabah";
     repo = "distorm";
     rev = "3.5.2b";
-    hash = "sha256-2ftEV3TMS3HT7f96k+Pwt3Mm31fVEXcHpcbbz05jycU=";
   };
   pname = "gtkclipblock";
   version = "0.2.2";
@@ -32,6 +32,11 @@ in
 stdenv.mkDerivation {
   inherit pname version src;
 
+  postPatch = ''
+    substituteInPlace subprojects/funchook-helper/subprojects/funchook/CMakeLists.txt \
+      --replace "GIT_REPOSITORY https://github.com/gdabah/distorm.git" "SOURCE_DIR ${distorm-src}"
+  '';
+
   nativeBuildInputs = [
     meson
     cmake
@@ -44,11 +49,6 @@ stdenv.mkDerivation {
     gtk3
     gtk4
   ];
-
-  postPatch = ''
-    substituteInPlace subprojects/funchook-helper/subprojects/funchook/CMakeLists.txt \
-      --replace "GIT_REPOSITORY https://github.com/gdabah/distorm.git" "SOURCE_DIR ${distorm-src}"
-  '';
 
   dontUseCmakeConfigure = true;
 

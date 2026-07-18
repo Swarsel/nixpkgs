@@ -14,8 +14,6 @@ stdenv.mkDerivation {
     hash = "sha256-wyvtWAcADAtxYcJ25Q2coK8MskjfLBr/svb8AkcbUdA=";
   };
 
-  hardeningDisable = [ "format" ];
-
   postPatch = ''
     RM=$(type -tp rm)
     MV=$(type -tp mv)
@@ -28,11 +26,10 @@ stdenv.mkDerivation {
   '';
 
   buildFlags = [ "all" ];
-
   # Fails the build on clang-16 and gcc-14.
   env.NIX_CFLAGS_COMPILE = "-Wno-error=implicit-int";
-
   doCheck = true;
+
   checkPhase = ''
     runHook preCheck
 
@@ -53,22 +50,27 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  hardeningDisable = [ "format" ];
 
   meta = {
-    homepage = "https://www.cs.unm.edu/~mccune/mace4/";
-    license = lib.licenses.gpl2Only;
     description = "Automated theorem prover for first-order and equational logic";
+
     longDescription = ''
       Prover9 is a resolution/paramodulation automated theorem prover
       for first-order and equational logic. Prover9 is a successor of
       the Otter Prover. This is the LADR command-line version.
     '';
-    mainProgram = "prover9";
-    platforms = lib.platforms.linux;
+
+    homepage = "https://www.cs.unm.edu/~mccune/mace4/";
+    license = lib.licenses.gpl2Only;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "prover9";
   };
 }

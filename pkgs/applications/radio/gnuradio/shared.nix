@@ -1,18 +1,18 @@
 {
   lib,
   stdenv,
-  python,
-  qt,
-  gtk,
-  removeReferencesTo,
-  featuresInfo,
+  fetchFromGitHub,
   features,
-  version,
-  sourceSha256,
+  featuresInfo,
+  gtk,
   # If overridden. No need to set default values, as they are given defaults in
   # the main expressions
   overrideSrc,
-  fetchFromGitHub,
+  python,
+  qt,
+  removeReferencesTo,
+  sourceSha256,
+  version,
 }:
 
 let
@@ -27,22 +27,24 @@ let
   cross = stdenv.hostPlatform != stdenv.buildPlatform;
 in
 {
+  src =
+    if overrideSrc != { } then
+      overrideSrc
+    else
+      fetchFromGitHub {
+        owner = "gnuradio";
+        repo = "gnuradio";
+        rev = "v${version}";
+        sha256 = sourceSha256;
+      };
+
   outputs = [
     "out"
   ]
   ++ lib.optionals (hasFeature "man-pages") [
     "man"
   ];
-  src =
-    if overrideSrc != { } then
-      overrideSrc
-    else
-      fetchFromGitHub {
-        repo = "gnuradio";
-        owner = "gnuradio";
-        rev = "v${version}";
-        sha256 = sourceSha256;
-      };
+
   nativeBuildInputs = [
     removeReferencesTo
   ]
@@ -55,6 +57,7 @@ in
       ))
     ) featuresInfo
   );
+
   buildInputs = lib.flatten (
     lib.mapAttrsToList (
       feat: info:
@@ -66,6 +69,7 @@ in
       ))
     ) featuresInfo
   );
+
   cmakeFlags = [
     # https://pybind11.readthedocs.io/en/stable/changelog.html#version-2-13-0-june-25-2024
     (lib.cmakeBool "CMAKE_CROSSCOMPILING" cross)
@@ -83,20 +87,19 @@ in
         (lib.cmakeBool "ENABLE_${info.cmakeEnableFlag}" (hasFeature feat))
     )
   ) featuresInfo;
-  disallowedReferences = [
-    stdenv.cc
-    stdenv.cc.cc
-  ]
-  # If python-support is disabled, we probably don't want it referenced
-  ++ lib.optionals (!hasFeature "python-support") [ python ];
-  # Gcc references from examples
-  stripDebugList = [
-    "lib"
-    "bin"
-  ]
-  ++ lib.optionals (hasFeature "gr-audio") [ "share/gnuradio/examples/audio" ]
-  ++ lib.optionals (hasFeature "gr-uhd") [ "share/gnuradio/examples/uhd" ]
-  ++ lib.optionals (hasFeature "gr-qtgui") [ "share/gnuradio/examples/qt-gui" ];
+
+  # On darwin, it requires playing with DYLD_FALLBACK_LIBRARY_PATH to make if
+  # find libgnuradio-runtim.3.*.dylib .
+  doCheck = !stdenv.hostPlatform.isDarwin;
+
+  preCheck = ''
+    export HOME=$(mktemp -d)
+    export QT_QPA_PLATFORM=offscreen
+  ''
+  + lib.optionalString (hasFeature "gr-qtgui") ''
+    export QT_PLUGIN_PATH="${qt.qtbase.bin}/${qt.qtbase.qtPluginPrefix}"
+  '';
+
   postInstall =
     ""
     # Gcc references
@@ -107,6 +110,27 @@ in
     + lib.optionalString (hasFeature "gnuradio-runtime" && stdenv.hostPlatform.isDarwin) ''
       remove-references-to -t ${stdenv.cc.cc} $(readlink -f $out/lib/libgnuradio-runtime${stdenv.hostPlatform.extensions.sharedLibrary})
     '';
+
+  disallowedReferences = [
+    stdenv.cc
+    stdenv.cc.cc
+  ]
+  # If python-support is disabled, we probably don't want it referenced
+  ++ lib.optionals (!hasFeature "python-support") [ python ];
+
+  # Wrapping is done with an external wrapper
+  dontWrapPythonPrograms = true;
+  dontWrapQtApps = true;
+
+  # Gcc references from examples
+  stripDebugList = [
+    "lib"
+    "bin"
+  ]
+  ++ lib.optionals (hasFeature "gr-audio") [ "share/gnuradio/examples/audio" ]
+  ++ lib.optionals (hasFeature "gr-uhd") [ "share/gnuradio/examples/uhd" ]
+  ++ lib.optionals (hasFeature "gr-qtgui") [ "share/gnuradio/examples/qt-gui" ];
+
   # NOTE: Outputs are disabled due to upstream not using GNU InstallDIrs cmake
   # module. It's not that bad since it's a development package for most
   # purposes. If closure size needs to be reduced, features should be disabled
@@ -119,8 +143,9 @@ in
       featuresInfo
       python
       ;
-    gnuradioOlder = lib.versionOlder versionAttr.major;
+
     gnuradioAtLeast = lib.versionAtLeast versionAttr.major;
+    gnuradioOlder = lib.versionOlder versionAttr.major;
   }
   // lib.optionalAttrs (hasFeature "gr-qtgui") {
     inherit qt;
@@ -128,23 +153,10 @@ in
   // lib.optionalAttrs (hasFeature "gnuradio-companion") {
     inherit gtk;
   };
-  # Wrapping is done with an external wrapper
-  dontWrapPythonPrograms = true;
-  dontWrapQtApps = true;
-  # On darwin, it requires playing with DYLD_FALLBACK_LIBRARY_PATH to make if
-  # find libgnuradio-runtim.3.*.dylib .
-  doCheck = !stdenv.hostPlatform.isDarwin;
-  preCheck = ''
-    export HOME=$(mktemp -d)
-    export QT_QPA_PLATFORM=offscreen
-  ''
-  + lib.optionalString (hasFeature "gr-qtgui") ''
-    export QT_PLUGIN_PATH="${qt.qtbase.bin}/${qt.qtbase.qtPluginPrefix}"
-  '';
 
   meta = {
     description = "Software Defined Radio (SDR) software";
-    mainProgram = "gnuradio-config-info";
+
     longDescription = ''
       GNU Radio is a free & open-source software development toolkit that
       provides signal processing blocks to implement software radios. It can be
@@ -154,14 +166,18 @@ in
       environments to support both wireless communications research and
       real-world radio systems.
     '';
+
     homepage = "https://www.gnuradio.org";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       doronbehar
       bjornfor
       fpletz
       jiegec
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "gnuradio-config-info";
   };
 }

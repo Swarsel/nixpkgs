@@ -1,26 +1,22 @@
 {
   stdenv,
-  buildPythonPackage,
   a2wsgi,
-  uvicorn,
+  buildPythonPackage,
   httpx,
-  pytestCheckHook,
   pytest-mock,
+  pytestCheckHook,
   trustme,
   typing-extensions,
+  uvicorn,
   watchgod,
   wsproto,
 }:
 
 buildPythonPackage {
-  pname = "uvicorn-tests";
   inherit (uvicorn) version;
-  pyproject = false;
-
+  pname = "uvicorn-tests";
   src = uvicorn.testsout;
-
-  dontBuild = true;
-  dontInstall = true;
+  doCheck = !stdenv.hostPlatform.isDarwin;
 
   nativeCheckInputs = [
     uvicorn
@@ -37,8 +33,6 @@ buildPythonPackage {
   ]
   ++ uvicorn.optional-dependencies.standard;
 
-  doCheck = !stdenv.hostPlatform.isDarwin;
-
   __darwinAllowLocalNetworking = true;
 
   disabledTests = [
@@ -47,4 +41,8 @@ buildPythonPackage {
     "test_no_server_headers"
     "test_multiple_server_header"
   ];
+
+  dontBuild = true;
+  dontInstall = true;
+  pyproject = false;
 }

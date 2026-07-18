@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  autoreconfHook,
-  gobject-introspection,
-  gtk-doc,
-  pkg-config,
   atk,
+  autoreconfHook,
   cairo,
   glade,
+  gobject-introspection,
+  gtk-doc,
   gtk3,
   pango,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

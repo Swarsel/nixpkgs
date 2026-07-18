@@ -1,10 +1,10 @@
 {
-  stdenv,
-  libsForQt5,
-  fetchFromGitLab,
-  makeDesktopItem,
   lib,
+  stdenv,
+  fetchFromGitLab,
   copyDesktopItems,
+  libsForQt5,
+  makeDesktopItem,
 }:
 
 let
@@ -12,8 +12,8 @@ let
 in
 
 stdenv.mkDerivation {
-  pname = "cutentr";
   inherit version;
+  pname = "cutentr";
 
   src = fetchFromGitLab {
     owner = "BoltsJ";
@@ -21,14 +21,6 @@ stdenv.mkDerivation {
     tag = version;
     hash = "sha256-KfnC9R38qSMhQDeaMBWm1HoO3Wzs5kyfPFwdMZCWw4E=";
   };
-
-  desktopItems = lib.singleton (makeDesktopItem {
-    name = "cuteNTR";
-    desktopName = "cuteNTR";
-    icon = "cutentr";
-    exec = "cutentr";
-    categories = [ "Game" ];
-  });
 
   nativeBuildInputs = [
     libsForQt5.wrapQtAppsHook
@@ -55,12 +47,20 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  desktopItems = lib.singleton (makeDesktopItem {
+    categories = [ "Game" ];
+    desktopName = "cuteNTR";
+    exec = "cutentr";
+    icon = "cutentr";
+    name = "cuteNTR";
+  });
+
   meta = {
     description = "3DS streaming client for Linux";
     homepage = "https://gitlab.com/BoltsJ/cuteNTR";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "cutentr";
-    platforms = [ "x86_64-linux" ];
     maintainers = [ lib.maintainers.EarthGman ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "cutentr";
   };
 }

@@ -1,20 +1,20 @@
 {
   lib,
+  buildPlatform,
+  cacert,
   callPackage,
   curlMinimal,
-  pkg-config,
+  flutterVersion,
   gitMinimal,
+  hashes,
+  hostPlatform,
+  pkg-config,
   python312,
   runCommand,
-  writeText,
-  cacert,
-  flutterVersion,
-  version,
-  hashes,
-  url,
-  hostPlatform,
   targetPlatform,
-  buildPlatform,
+  url,
+  version,
+  writeText,
   ...
 }@pkgs:
 let
@@ -54,8 +54,8 @@ let
 in
 runCommand "flutter-engine-source-${version}-${buildPlatform.system}-${targetPlatform.system}"
   {
-    pname = "flutter-engine-source";
     inherit version;
+    pname = "flutter-engine-source";
 
     nativeBuildInputs = [
       curlMinimal
@@ -71,19 +71,20 @@ runCommand "flutter-engine-source-${version}-${buildPlatform.system}-${targetPla
     ];
 
     env = {
-      NIX_SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
-      GIT_SSL_CAINFO = "${cacert}/etc/ssl/certs/ca-bundle.crt";
-      SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
-      DEPOT_TOOLS_UPDATE = "0";
       DEPOT_TOOLS_COLLECT_METRICS = "0";
+      DEPOT_TOOLS_UPDATE = "0";
+      GIT_SSL_CAINFO = "${cacert}/etc/ssl/certs/ca-bundle.crt";
+      NIX_SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
       PYTHONDONTWRITEBYTECODE = "1";
+      SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
     };
 
-    outputHashAlgo = "sha256";
-    outputHashMode = "recursive";
     outputHash =
       (hashes."${buildPlatform.system}" or { })."${targetPlatform.system}"
         or (throw "Hash not set for ${targetPlatform.system} on ${buildPlatform.system}");
+
+    outputHashAlgo = "sha256";
+    outputHashMode = "recursive";
   }
   ''
     source ${../../../../build-support/fetchgit/deterministic-git}

@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  stdenvNoCC,
-  python3,
-  uglify-js,
   gitUpdater,
+  python3,
+  stdenvNoCC,
+  uglify-js,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "xpra-html5";
@@ -31,12 +31,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
-    homepage = "https://xpra.org/";
-    downloadPage = "https://xpra.org/src/";
     description = "HTML5 client for Xpra";
+    homepage = "https://xpra.org/";
     changelog = "https://github.com/Xpra-org/xpra-html5/releases/tag/v${finalAttrs.version}";
-    platforms = lib.platforms.linux;
     license = lib.licenses.mpl20;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    downloadPage = "https://xpra.org/src/";
   };
 })

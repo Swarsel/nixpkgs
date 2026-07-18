@@ -2,34 +2,34 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
-  ensureNewerSourcesForZipFilesHook,
-  cmake,
-  pkg-config,
   alsa-lib,
-  libx11,
-  libxcursor,
-  libxext,
-  libxinerama,
-  libxrender,
-  libxrandr,
-  libxdmcp,
-  libxtst,
-  xvfb,
-  freetype,
-  fontconfig,
-  zenity,
+  cmake,
   curl,
-  python3,
-  libxkbcommon,
+  ensureNewerSourcesForZipFilesHook,
+  expat,
+  fetchpatch2,
+  fontconfig,
+  freetype,
   libGL,
   libGLU,
   libjack2,
-  expat,
-  webkitgtk_4_1,
+  libx11,
+  libxcursor,
+  libxdmcp,
+  libxext,
+  libxinerama,
+  libxkbcommon,
+  libxrandr,
+  libxrender,
+  libxtst,
   makeWrapper,
-  writableTmpDirAsHomeHook,
   nix-update-script,
+  pkg-config,
+  python3,
+  webkitgtk_4_1,
+  writableTmpDirAsHomeHook,
+  xvfb,
+  zenity,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "plugdata";
@@ -42,6 +42,24 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-V08xlc14JZZgmXb4Dernnt9vxWDd5l/GHMzolnmCK8Y=";
     fetchSubmodules = true;
   };
+
+  patches = [
+    # fiddle~.c prevents building with gcc15. Upstream puredata has fixed this issue,
+    # but downstream vendored Plugdata has not implemented the patch yet.
+    # This backports the patch.
+    (fetchpatch2 {
+      extraPrefix = "Libraries/pure-data/";
+      hash = "sha256-siwtizmlAS6fTOE1t+VvDKm1F14YquVlt2QAOKOGX2c=";
+      stripLen = 1;
+      url = "https://github.com/pure-data/pure-data/commit/95e4105bc1044cbbcbbbcc369480a77c298d7475.patch";
+    })
+  ];
+
+  postPatch = ''
+    # Plugdata vendors its own version of Ffmpeg, and this script is used to unpack + build
+    # However, its shebang is broken on nix, so we fix it here.
+    patchShebangs Libraries/pd-else/Source/Shared/ffmpeg/build_ffmpeg.sh
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -85,24 +103,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-lXdmcp"
   ];
 
-  patches = [
-    # fiddle~.c prevents building with gcc15. Upstream puredata has fixed this issue,
-    # but downstream vendored Plugdata has not implemented the patch yet.
-    # This backports the patch.
-    (fetchpatch2 {
-      url = "https://github.com/pure-data/pure-data/commit/95e4105bc1044cbbcbbbcc369480a77c298d7475.patch";
-      hash = "sha256-siwtizmlAS6fTOE1t+VvDKm1F14YquVlt2QAOKOGX2c=";
-      stripLen = 1;
-      extraPrefix = "Libraries/pure-data/";
-    })
-  ];
-
-  postPatch = ''
-    # Plugdata vendors its own version of Ffmpeg, and this script is used to unpack + build
-    # However, its shebang is broken on nix, so we fix it here.
-    patchShebangs Libraries/pd-else/Source/Shared/ffmpeg/build_ffmpeg.sh
-  '';
-
   installPhase = ''
     runHook preInstall
 
@@ -133,13 +133,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Plugin wrapper around Pure Data to allow patching in a wide selection of DAWs";
-    mainProgram = "plugdata";
     homepage = "https://plugdata.org/";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       PowerUser64
       l1npengtul
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "plugdata";
   };
 })

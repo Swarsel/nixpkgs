@@ -2,15 +2,15 @@
   lib,
   fetchurl,
   buildDunePackage,
-  testo,
-  testo-diff,
   fpath,
   re,
+  testo,
+  testo-diff,
 }:
 
 buildDunePackage {
-  pname = "testo-util";
   inherit (testo) version src;
+  pname = "testo-util";
 
   propagatedBuildInputs = [
     fpath

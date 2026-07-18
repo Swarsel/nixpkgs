@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   gnat,
   gnatcoll-core,
-  gprbuild,
-  python3,
-  ocamlPackages,
-  makeWrapper,
   gpr2,
+  gprbuild,
+  makeWrapper,
+  ocamlPackages,
+  python3,
 }:
 let
   gnat_version = lib.versions.major gnat.version;
@@ -21,6 +21,7 @@ let
     }).overrideAttrs
       (old: rec {
         version = "24.2.0-next";
+
         src = fetchFromGitHub {
           owner = "AdaCore";
           repo = "gpr";
@@ -34,12 +35,12 @@ let
   # The relevant tags on why3 may get changed without the submodule pointer being updated.
 
   fetchSpark2014 =
-    { rev, hash }:
+    { hash, rev }:
     fetchFromGitHub {
+      inherit rev hash;
+      fetchSubmodules = true;
       owner = "AdaCore";
       repo = "spark2014";
-      fetchSubmodules = true;
-      inherit rev hash;
     };
 
   spark2014 = {
@@ -48,24 +49,30 @@ let
         rev = "ab34e07080a769b63beacc141707b5885c49d375"; # branch fsf-12
         hash = "sha256-7pe3eWitpxmqzjW6qEIEuN0qr2IR+kJ7Ssc9pTBcCD8=";
       };
+
       commit_date = "2022-05-25";
     };
+
     "13" = {
       src = fetchSpark2014 {
         rev = "12db22e854defa9d1c993ef904af1e72330a68ca"; # branch fsf-13
         hash = "sha256-mZWP9yF1O4knCiXx8CqolnS+93bM+hTQy40cd0HZmwI=";
       };
-      commit_date = "2023-01-05";
+
       patches = [
         # Changes to the GNAT frontend: https://github.com/AdaCore/spark2014/issues/58
         ./0003-Adjust-after-category-change-for-N_Formal_Package_De.patch
       ];
+
+      commit_date = "2023-01-05";
     };
+
     "14" = {
       src = fetchSpark2014 {
         rev = "ce5fad038790d5dc18f9b5345dc604f1ccf45b06"; # branch fsf-14
         hash = "sha256-WprJJIe/GpcdabzR2xC2dAV7kIYdNTaTpNYoR3UYTVo=";
       };
+
       patches = [
         # Disable Coq related targets which are missing in the fsf-14 branch
         ./0001-fix-install-fsf-14.patch
@@ -76,13 +83,16 @@ let
         # Changes to the GNAT frontend: https://github.com/AdaCore/spark2014/issues/58
         ./0003-Adjust-after-category-change-for-N_Formal_Package_De.patch
       ];
+
       commit_date = "2024-01-11";
     };
+
     "15" = {
       src = fetchSpark2014 {
         rev = "22bf1510e0829ba74f9d8d686badb65c7365ee91";
         hash = "sha256-KjAWMgMT3Tp/s/DQ20ZZajty9Zrv8aPFocwgv5LkjSw=";
       };
+
       patches = [
         # Disable Coq related targets which are missing in the fsf-15 branch
         ./0001-fix-install-fsf-15.patch
@@ -90,6 +100,7 @@ let
         # Suppress warnings on aarch64: https://github.com/AdaCore/spark2014/issues/54
         ./0002-mute-aarch64-warnings.patch
       ];
+
       commit_date = "2025-06-10";
     };
   };
@@ -102,10 +113,14 @@ in
 stdenv.mkDerivation {
   pname = "gnatprove";
   version = "fsf-${gnat_version}_${thisSpark.commit_date}";
-
   src = thisSpark.src;
-
   patches = thisSpark.patches or [ ];
+
+  postPatch = ''
+    # gnat2why/gnat_src points to the GNAT sources
+    tar xf ${gnat.cc.src} --wildcards 'gcc-*/gcc/ada'
+    mv gcc-*/gcc/ada gnat2why/gnat_src
+  '';
 
   nativeBuildInputs = [
     gnat
@@ -145,18 +160,6 @@ stdenv.mkDerivation {
     gprbuild
   ];
 
-  postPatch = ''
-    # gnat2why/gnat_src points to the GNAT sources
-    tar xf ${gnat.cc.src} --wildcards 'gcc-*/gcc/ada'
-    mv gcc-*/gcc/ada gnat2why/gnat_src
-  '';
-
-  configurePhase = ''
-    runHook preConfigure
-    make setup
-    runHook postConfigure
-  '';
-
   installPhase = ''
     runHook preInstall
     make install-all
@@ -166,11 +169,17 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+    make setup
+    runHook postConfigure
+  '';
+
   meta = {
     description = "Software development technology specifically designed for engineering high-reliability applications";
     homepage = "https://github.com/AdaCore/spark2014";
-    maintainers = [ lib.maintainers.jiegec ];
     license = lib.licenses.gpl3;
+    maintainers = [ lib.maintainers.jiegec ];
     platforms = lib.platforms.all;
   };
 }

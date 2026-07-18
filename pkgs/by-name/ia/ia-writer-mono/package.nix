@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -28,7 +28,7 @@ stdenvNoCC.mkDerivation {
     description = "iA Writer Mono Typeface";
     homepage = "https://ia.net/topics/in-search-of-the-perfect-writing-font";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.richardjacton ];
+    platforms = lib.platforms.all;
   };
 }

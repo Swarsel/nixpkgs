@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools-scm,
-  pytest,
+  buildPythonPackage,
   pluggy,
-  typing-extensions,
   pyqt5,
+  pytest,
+  setuptools-scm,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-qt";
   version = "4.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pytest-dev";
@@ -21,21 +20,19 @@ buildPythonPackage rec {
     hash = "sha256-ZCWWhd1/7qdSgGLNbsjPlxg24IFdqbNtLRktgMFVCJY=";
   };
 
-  build-system = [ setuptools-scm ];
-
   buildInputs = [ pytest ];
+  # Tests require X server
+  doCheck = false;
+  nativeCheckInputs = [ pyqt5 ];
+  build-system = [ setuptools-scm ];
 
   dependencies = [
     pluggy
     typing-extensions
   ];
 
-  nativeCheckInputs = [ pyqt5 ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pytestqt" ];
-
-  # Tests require X server
-  doCheck = false;
 
   meta = {
     description = "Pytest support for PyQt and PySide applications";

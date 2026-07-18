@@ -15,10 +15,8 @@ stdenv.mkDerivation {
     sha256 = "1m83ip40ln61qrvb1fbgaqbld2xip9n3k817lwkk1936pml9zcrq";
   };
 
-  enableParallelBuilding = true;
-  makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
-
   patches = [ ./bcc-warning-fix.patch ];
+  makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
 
   installPhase = ''
     mkdir -p $out/{bin,lib,share/doc}
@@ -27,10 +25,12 @@ stdenv.mkDerivation {
     cp -av lib $out/lib/bcc
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Compiler for Doom/Hexen scripts (ACS, BCS)";
-    mainProgram = "bcc";
     homepage = "https://github.com/positively-charged/bcc";
     license = lib.licenses.mit;
+    mainProgram = "bcc";
   };
 }

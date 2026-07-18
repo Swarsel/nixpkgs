@@ -1,28 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # nativeBuildInputs
-  rustPlatform,
-
   # dependencies
   anyio,
-
+  buildPythonPackage,
+  nix-update-script,
   # tests
   objsize,
   pydantic,
   pytestCheckHook,
+  # nativeBuildInputs
+  rustPlatform,
   trio,
-
-  nix-update-script,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pycrdt";
   version = "0.14.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "y-crdt";
@@ -35,16 +29,10 @@ buildPythonPackage (finalAttrs: {
     cp ${./Cargo.lock} Cargo.lock
   '';
 
-  cargoDeps = rustPlatform.importCargoLock { lockFile = ./Cargo.lock; };
-
   nativeBuildInputs = [
     rustPlatform.cargoSetupHook
     rustPlatform.maturinBuildHook
   ];
-
-  dependencies = [ anyio ];
-
-  pythonImportsCheck = [ "pycrdt" ];
 
   nativeCheckInputs = [
     anyio
@@ -54,10 +42,16 @@ buildPythonPackage (finalAttrs: {
     trio
   ];
 
+  __structuredAttrs = true;
+  cargoDeps = rustPlatform.importCargoLock { lockFile = ./Cargo.lock; };
+  dependencies = [ anyio ];
+  pyproject = true;
+
   pytestFlags = [
     "-Wignore::pytest.PytestUnknownMarkWarning" # requires unpackaged pytest-mypy-testing
   ];
 
+  pythonImportsCheck = [ "pycrdt" ];
   passthru.updateScript = nix-update-script { extraArgs = [ "--generate-lockfile" ]; };
 
   meta = {

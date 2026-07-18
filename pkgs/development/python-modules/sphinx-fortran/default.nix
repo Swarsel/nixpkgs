@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   future,
   numpy,
-  sphinx,
+  pytestCheckHook,
   six,
+  sphinx,
 }:
 
 buildPythonPackage {
   pname = "sphinx-fortran";
   version = "unstable-2022-03-02";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "VACUMM";
@@ -28,12 +27,11 @@ buildPythonPackage {
     six
   ];
 
-  pythonImportsCheck = [ "sphinxfortran" ];
-
   # Tests are failing because reference files are not updated
   doCheck = false;
-
   nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
+  pythonImportsCheck = [ "sphinxfortran" ];
 
   meta = {
     description = "Fortran domain and autodoc extensions to Sphinx";

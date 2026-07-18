@@ -3,9 +3,9 @@
   stdenv,
   fetchurl,
   fetchpatch,
-  pkg-config,
-  json_c,
   hidapi,
+  json_c,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,12 +21,13 @@ stdenv.mkDerivation (finalAttrs: {
     # remove after updating to next release
     (fetchpatch {
       name = "json-c-0.14-support.patch";
-      url = "https://github.com/Yubico/libu2f-host/commit/840f01135d2892f45e71b9e90405de587991bd03.patch";
       sha256 = "0xplx394ppsbsb4h4l8b9m4dv9shbl0zyck3y26vbm9i1g981ki7";
+      url = "https://github.com/Yubico/libu2f-host/commit/840f01135d2892f45e71b9e90405de587991bd03.patch";
     })
   ];
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     json_c
     hidapi
@@ -37,11 +38,13 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "C library and command-line tool that implements the host-side of the U2F protocol";
     homepage = "https://developers.yubico.com/libu2f-host";
+
     license = with lib.licenses; [
       gpl3Plus
       lgpl21Plus
     ];
-    mainProgram = "u2f-host";
+
     platforms = lib.platforms.unix;
+    mainProgram = "u2f-host";
   };
 })

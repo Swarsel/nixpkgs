@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   folium,
   gdal,
   geopandas,
@@ -21,7 +21,6 @@
 buildPythonPackage rec {
   pname = "osmnx";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gboeing";
@@ -30,6 +29,8 @@ buildPythonPackage rec {
     hash = "sha256-3uLgc6zptmXlPg93qtsWbqNxXiBD/SEnXBL/IM/1m2c=";
   };
 
+  # Tests require network
+  doCheck = false;
   build-system = [ uv-build ];
 
   dependencies = [
@@ -48,9 +49,7 @@ buildPythonPackage rec {
     rasterio
   ];
 
-  # Tests require network
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "osmnx" ];
 
   meta = {

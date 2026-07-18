@@ -41,14 +41,10 @@ let
 
 in
 {
-  meta.maintainers = with lib.maintainers; [ peterhoeg ];
-
   options.hardware.sata.timeout = {
     enable = mkEnableOption "SATA drive timeouts";
 
     deciSeconds = mkOption {
-      example = 70;
-      type = types.int;
       description = ''
         Set SCT Error Recovery Control timeout in deciseconds for use in RAID configurations.
 
@@ -58,25 +54,30 @@ in
 
         Maximum is disk dependant but probably 60 seconds.
       '';
+
+      example = 70;
+      type = types.int;
     };
 
     drives = mkOption {
       description = "List of drives for which to configure the timeout.";
+
       type = types.listOf (
         types.submodule {
           options = {
-            name = mkOption {
-              description = "Drive name without the full path.";
-              type = types.str;
-            };
-
             idBy = mkOption {
+              default = "path";
               description = "The method to identify the drive.";
+
               type = types.enum [
                 "path"
                 "wwn"
               ];
-              default = "path";
+            };
+
+            name = mkOption {
+              description = "Drive name without the full path.";
+              type = types.str;
             };
           };
         }
@@ -92,15 +93,17 @@ in
         e:
         lib.nameValuePair (unitName e) {
           description = "SATA timeout for ${e.name}";
-          wantedBy = [ "sata-timeout.target" ];
+
           serviceConfig = {
-            Type = "oneshot";
             ExecStart = "${startScript} '${devicePath e}'";
-            PrivateTmp = true;
             PrivateNetwork = true;
+            PrivateTmp = true;
             ProtectHome = "tmpfs";
             ProtectSystem = "strict";
+            Type = "oneshot";
           };
+
+          wantedBy = [ "sata-timeout.target" ];
         }
       ) cfg.drives
     );
@@ -110,4 +113,6 @@ in
       wantedBy = [ "multi-user.target" ];
     };
   };
+
+  meta.maintainers = with lib.maintainers; [ peterhoeg ];
 }

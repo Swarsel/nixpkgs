@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  pkg-config,
-  gnutls,
-  p11-kit,
-  openssl,
-  useOpenSSL ? false,
+  autoreconfHook,
   gmp,
+  gnutls,
   libxml2,
-  stoken,
-  zlib,
+  openssl,
+  p11-kit,
   pcsclite,
+  pkg-config,
+  stoken,
   vpnc-scripts,
+  xdg-utils,
+  zlib,
   useDefaultExternalBrowser ?
     stdenv.hostPlatform.isLinux && stdenv.buildPlatform == stdenv.hostPlatform, # xdg-utils doesn't cross-compile
-  xdg-utils,
-  autoreconfHook,
+  useOpenSSL ? false,
 }:
 
 stdenv.mkDerivation {
@@ -35,16 +35,10 @@ stdenv.mkDerivation {
     "dev"
   ];
 
-  configureFlags = [
-    "--with-vpnc-script=${vpnc-scripts}/bin/vpnc-script"
-    "--disable-nls"
-    "--without-openssl-version-check"
+  nativeBuildInputs = [
+    pkg-config
+    autoreconfHook
   ];
-
-  # Not finding iconv on Darwin
-  env = {
-    am_cv_func_iconv_works = "yes";
-  };
 
   buildInputs = [
     gmp
@@ -58,19 +52,28 @@ stdenv.mkDerivation {
     pcsclite
   ]
   ++ lib.optional useDefaultExternalBrowser xdg-utils;
-  nativeBuildInputs = [
-    pkg-config
-    autoreconfHook
+
+  configureFlags = [
+    "--with-vpnc-script=${vpnc-scripts}/bin/vpnc-script"
+    "--disable-nls"
+    "--without-openssl-version-check"
   ];
+
+  # Not finding iconv on Darwin
+  env = {
+    am_cv_func_iconv_works = "yes";
+  };
 
   meta = {
     description = "VPN Client for Cisco's AnyConnect SSL VPN";
     homepage = "https://www.infradead.org/openconnect/";
     license = lib.licenses.lgpl21Only;
+
     maintainers = with lib.maintainers; [
       tricktron
       pentane
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "openconnect";
   };

@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  cargo,
   fetchYarnDeps,
   makeWrapper,
   matrix-sdk-crypto-nodejs,
-  yarnConfigHook,
-  cargo,
-  rustPlatform,
-  rustc,
   napi-rs-cli,
-  pkg-config,
+  nix-update-script,
   nodejs,
   openssl,
-  nix-update-script,
+  pkg-config,
+  rustPlatform,
+  rustc,
+  yarnConfigHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,18 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-SVQsXzQU3TTiKjd1manEsqL/Ui6s/sFoZPBf9mWp31k=";
   };
 
-  offlineCache = fetchYarnDeps {
-    inherit (finalAttrs) src;
-    hash = "sha256-1J2a0ZRARYOEQE70WnKZlgwjIwafPfmgBtUVXX106lg=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-EMwrIo17d5+LTczv4/+4m6XALfH0dCHnWtBU17h+mxI=";
-  };
-
-  buildInputs = [ openssl ];
-
   nativeBuildInputs = [
     rustPlatform.cargoSetupHook
     yarnConfigHook
@@ -49,6 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
     nodejs
   ];
+
+  buildInputs = [ openssl ];
 
   preBuild = ''
     # We want nixpkgs' version of this instead
@@ -96,15 +86,25 @@ stdenv.mkDerivation (finalAttrs: {
       --add-flags "$out/lib/node_modules/matrix-hookshot/App/BridgeApp.js"
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-EMwrIo17d5+LTczv4/+4m6XALfH0dCHnWtBU17h+mxI=";
+  };
+
+  offlineCache = fetchYarnDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-1J2a0ZRARYOEQE70WnKZlgwjIwafPfmgBtUVXX106lg=";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/matrix-org/matrix-hookshot/blob/${finalAttrs.version}/CHANGELOG.md";
     description = "Bridge between Matrix and multiple project management services, such as GitHub, GitLab and JIRA";
     homepage = "https://matrix-org.github.io/matrix-hookshot/";
-    mainProgram = "matrix-hookshot";
-    maintainers = with lib.maintainers; [ chvp ];
+    changelog = "https://github.com/matrix-org/matrix-hookshot/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ chvp ];
     platforms = lib.platforms.linux;
+    mainProgram = "matrix-hookshot";
   };
 })

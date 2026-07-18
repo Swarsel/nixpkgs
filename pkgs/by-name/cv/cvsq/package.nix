@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
-  cvs,
-  perl,
-  net-tools,
-  findutils,
-  rsync,
   coreutils,
+  cvs,
   diffutils,
+  findutils,
+  makeWrapper,
+  net-tools,
+  perl,
+  rsync,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,6 +22,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     cvs
     perl
@@ -91,6 +92,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Collection of tools to work locally with CVS";
+
     longDescription = ''
       cvsq is a collection of tools to work locally with CVS.
 
@@ -108,6 +110,7 @@ stdenv.mkDerivation (finalAttrs: {
       repository. This is useful for commands like log, diff, etc; however it cannot
       be used for commits (that's what cvsq is for).
     '';
+
     homepage = "https://www.linta.de/~aehlig/cvsq/";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ clkamp ];

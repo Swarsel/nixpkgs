@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
-  yarnInstallHook,
-  nodejs,
   nix-update-script,
+  nodejs,
+  stdenvNoCC,
+  yarnBuildHook,
+  yarnConfigHook,
+  yarnInstallHook,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "coc-spell-checker";
@@ -21,11 +21,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-WimL7rE+hYW8JoWDnsL3r1zAoEDZBDy6NY2i6Wblm8c=";
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-nMDcc8dP0L7vpIj6Q1HOJyFCkDZ+19/IdbONxBj1jq8=";
-  };
-
   nativeBuildInputs = [
     yarnConfigHook
     yarnBuildHook
@@ -34,6 +29,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   ];
 
   env.NODE_OPTIONS = "--openssl-legacy-provider";
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-nMDcc8dP0L7vpIj6Q1HOJyFCkDZ+19/IdbONxBj1jq8=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
 
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 

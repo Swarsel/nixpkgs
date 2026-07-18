@@ -8,10 +8,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "openttd-nml";
   version = "0.9.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "OpenTTD";
@@ -19,10 +15,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-FVGjXh04uHZM9vZNzjdYEk4ClMR9t0kl44JePrUGx84=";
   };
-
-  build-system = [
-    python3Packages.setuptools
-  ];
 
   postPatch = ''
     echo 'version = "${finalAttrs.version}"' > nml/__version__.py
@@ -32,10 +24,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --replace-fail '"setuptools", "ply"' '"setuptools"'
   '';
 
-  dependencies = [
-    python3Packages.pillow
-  ];
-
+  strictDeps = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
   installCheckPhase = ''
@@ -49,12 +38,24 @@ python3Packages.buildPythonApplication (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  __structuredAttrs = true;
+
+  build-system = [
+    python3Packages.setuptools
+  ];
+
+  dependencies = [
+    python3Packages.pillow
+  ];
+
+  pyproject = true;
+
   meta = {
-    changelog = "https://github.com/OpenTTD/nml/releases/tag/${finalAttrs.version}";
-    homepage = "https://github.com/OpenTTD/nml";
     description = "Compiler for OpenTTD NML files";
-    mainProgram = "nmlc";
+    homepage = "https://github.com/OpenTTD/nml";
+    changelog = "https://github.com/OpenTTD/nml/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.magicquark ];
+    mainProgram = "nmlc";
   };
 })

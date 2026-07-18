@@ -1,42 +1,33 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  replaceVars,
-  isPyPy,
-  pythonOlder,
-
-  # build-system
-  cython,
-  pkgconfig,
-  setuptools,
-
-  # native dependencies
-  llhttp,
-
+  # optional dependencies
+  aiodns,
   # dependencies
   aiohappyeyeballs,
   aiosignal,
   async-timeout,
   attrs,
   backports-zstd,
-  frozenlist,
-  multidict,
-  propcache,
-  yarl,
-
-  # optional dependencies
-  aiodns,
-  brotli,
-  brotlicffi,
-
   # tests
   blockbuster,
+  brotli,
+  brotlicffi,
+  buildPythonPackage,
+  # build-system
+  cython,
   freezegun,
+  frozenlist,
   gunicorn,
+  isPyPy,
   isa-l,
   isal,
+  # native dependencies
+  llhttp,
+  multidict,
+  pkgconfig,
+  propcache,
   proxy-py,
   pytest-codspeed,
   pytest-cov-stub,
@@ -44,15 +35,18 @@
   pytest-timeout,
   pytest-xdist,
   pytestCheckHook,
+  pythonOlder,
   re-assert,
+  replaceVars,
+  setuptools,
   trustme,
+  yarl,
   zlib-ng,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "aiohttp";
   version = "3.14.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aio-libs";
@@ -75,40 +69,15 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "ignore:Couldn't import C tracer:coverage.exceptions.CoverageWarning" ""
   '';
 
-  build-system = [
-    cython
-    pkgconfig
-    setuptools
-  ];
-
-  preBuild = ''
-    make cythonize
-  '';
-
   buildInputs = [
     llhttp
   ];
 
   env.AIOHTTP_USE_SYSTEM_DEPS = true;
 
-  dependencies = [
-    aiohappyeyeballs
-    aiosignal
-    attrs
-    frozenlist
-    multidict
-    propcache
-    yarl
-  ]
-  ++ finalAttrs.passthru.optional-dependencies.speedups;
-
-  optional-dependencies.speedups = [
-    aiodns
-    (if isPyPy then brotlicffi else brotli)
-  ]
-  ++ lib.optionals (pythonOlder "3.14") [
-    backports-zstd
-  ];
+  preBuild = ''
+    make cythonize
+  '';
 
   nativeCheckInputs = [
     blockbuster
@@ -127,6 +96,37 @@ buildPythonPackage (finalAttrs: {
     trustme
     zlib-ng
   ];
+
+  preCheck = ''
+    # aiohttp in current folder shadows installed version
+    rm -r aiohttp
+    touch tests/data.unknown_mime_type # has to be modified after 1 Jan 1990
+
+    export HOME=$(mktemp -d)
+  ''
+  + lib.optionalString stdenv.hostPlatform.isDarwin ''
+    # Work around "OSError: AF_UNIX path too long"
+    export TMPDIR="/tmp"
+  '';
+
+  __darwinAllowLocalNetworking = true;
+
+  build-system = [
+    cython
+    pkgconfig
+    setuptools
+  ];
+
+  dependencies = [
+    aiohappyeyeballs
+    aiosignal
+    attrs
+    frozenlist
+    multidict
+    propcache
+    yarl
+  ]
+  ++ finalAttrs.passthru.optional-dependencies.speedups;
 
   disabledTests = [
     # Disable tests that require network access
@@ -154,25 +154,21 @@ buildPythonPackage (finalAttrs: {
     "test_close"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  optional-dependencies.speedups = [
+    aiodns
+    (if isPyPy then brotlicffi else brotli)
+  ]
+  ++ lib.optionals (pythonOlder "3.14") [
+    backports-zstd
+  ];
 
-  preCheck = ''
-    # aiohttp in current folder shadows installed version
-    rm -r aiohttp
-    touch tests/data.unknown_mime_type # has to be modified after 1 Jan 1990
-
-    export HOME=$(mktemp -d)
-  ''
-  + lib.optionalString stdenv.hostPlatform.isDarwin ''
-    # Work around "OSError: AF_UNIX path too long"
-    export TMPDIR="/tmp"
-  '';
+  pyproject = true;
 
   meta = {
-    changelog = "https://docs.aiohttp.org/en/${finalAttrs.src.tag}/changes.html";
     description = "Asynchronous HTTP Client/Server for Python and asyncio";
-    license = lib.licenses.asl20;
     homepage = "https://github.com/aio-libs/aiohttp";
+    changelog = "https://docs.aiohttp.org/en/${finalAttrs.src.tag}/changes.html";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dotlambda ];
   };
 })

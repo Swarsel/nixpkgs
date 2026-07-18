@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
-  cups,
-  perl,
-  coreutils,
-  gnused,
-  gnugrep,
   brgenml1lpr,
+  coreutils,
+  cups,
+  gnugrep,
+  gnused,
+  makeWrapper,
+  perl,
   debugLvl ? "0",
 }:
 
@@ -71,12 +71,8 @@ stdenv.mkDerivation rec {
     sha256 = "0kd2a2waqr10kfv1s8is3nd5dlphw4d1343srdsbrlbbndja3s6r";
   };
 
-  unpackPhase = ''
-    ar x $src
-    tar xfvz data.tar.gz
-  '';
-
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     cups
     perl
@@ -85,28 +81,6 @@ stdenv.mkDerivation rec {
     gnugrep
     brgenml1lpr
   ];
-
-  dontBuild = true;
-
-  patchPhase = ''
-    WRAPPER=opt/brother/Printers/BrGenML1/cupswrapper/brother_lpdwrapper_BrGenML1
-    PAPER_CFG=opt/brother/Printers/BrGenML1/cupswrapper/paperconfigml1
-
-    substituteInPlace $WRAPPER \
-      --replace "basedir =~" "basedir = \"${brgenml1lpr}/opt/brother/Printers/BrGenML1\"; #" \
-      --replace "PRINTER =~" "PRINTER = \"BrGenML1\"; #" \
-      --replace "\$DEBUG=0;" "\$DEBUG=${debugLvl};"
-
-    # Fixing issue #1 and #2.
-    substituteInPlace $WRAPPER \
-      --replace "\`cp " "\`cp -p " \
-      --replace "\$TEMPRC\`" "\$TEMPRC; chmod a+rw \$TEMPRC\`" \
-      --replace "\`mv " "\`cp -p "
-
-    # This config script make this assumption that the *.ppd are found in a global location `/etc/cups/ppd`.
-    substituteInPlace $PAPER_CFG \
-      --replace "/etc/cups/ppd" "$out/share/cups/model"
-  '';
 
   installPhase = ''
     CUPSFILTER_DIR=$out/lib/cups/filter
@@ -129,14 +103,40 @@ stdenv.mkDerivation rec {
     ln -s $out/$CUPSWRAPPER_DIR/brother-BrGenML1-cups-en.ppd $CUPSPPD_DIR
   '';
 
+  dontBuild = true;
   dontPatchELF = true;
   dontStrip = true;
+
+  patchPhase = ''
+    WRAPPER=opt/brother/Printers/BrGenML1/cupswrapper/brother_lpdwrapper_BrGenML1
+    PAPER_CFG=opt/brother/Printers/BrGenML1/cupswrapper/paperconfigml1
+
+    substituteInPlace $WRAPPER \
+      --replace "basedir =~" "basedir = \"${brgenml1lpr}/opt/brother/Printers/BrGenML1\"; #" \
+      --replace "PRINTER =~" "PRINTER = \"BrGenML1\"; #" \
+      --replace "\$DEBUG=0;" "\$DEBUG=${debugLvl};"
+
+    # Fixing issue #1 and #2.
+    substituteInPlace $WRAPPER \
+      --replace "\`cp " "\`cp -p " \
+      --replace "\$TEMPRC\`" "\$TEMPRC; chmod a+rw \$TEMPRC\`" \
+      --replace "\`mv " "\`cp -p "
+
+    # This config script make this assumption that the *.ppd are found in a global location `/etc/cups/ppd`.
+    substituteInPlace $PAPER_CFG \
+      --replace "/etc/cups/ppd" "$out/share/cups/model"
+  '';
+
+  unpackPhase = ''
+    ar x $src
+    tar xfvz data.tar.gz
+  '';
 
   meta = {
     description = "Brother BrGenML1 CUPS wrapper driver";
     homepage = "http://www.brother.com";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ jraygauthier ];
+    platforms = lib.platforms.linux;
   };
 }

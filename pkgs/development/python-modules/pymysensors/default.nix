@@ -1,15 +1,15 @@
 {
   lib,
+  fetchFromGitHub,
   awesomeversion,
   buildPythonPackage,
   click,
   crcmod,
-  fetchFromGitHub,
   getmac,
   intelhex,
   paho-mqtt,
-  pyserial-asyncio-fast,
   pyserial,
+  pyserial-asyncio-fast,
   pytest-sugar,
   pytest-timeout,
   pytestCheckHook,
@@ -20,7 +20,6 @@
 buildPythonPackage rec {
   pname = "pymysensors";
   version = "0.26.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "theolind";
@@ -28,6 +27,12 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-iND3MEKEruqCdsqJJExm+SA4Z2e87I45fsI4wbnIPRc=";
   };
+
+  nativeCheckInputs = [
+    pytest-sugar
+    pytest-timeout
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -46,12 +51,7 @@ buildPythonPackage rec {
     mqtt-client = [ paho-mqtt ];
   };
 
-  nativeCheckInputs = [
-    pytest-sugar
-    pytest-timeout
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mysensors" ];
 
   meta = {

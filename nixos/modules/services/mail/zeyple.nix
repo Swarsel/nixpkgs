@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -22,23 +22,9 @@ in
   options.services.zeyple = {
     enable = lib.mkEnableOption "Zeyple, an utility program to automatically encrypt outgoing emails with GPG";
 
-    user = lib.mkOption {
-      type = lib.types.str;
-      default = "zeyple";
-      description = ''
-        User to run Zeyple as.
-
-        ::: {.note}
-        If left as the default value this user will automatically be created
-        on system activation, otherwise the sysadmin is responsible for
-        ensuring the user exists.
-        :::
-      '';
-    };
-
     group = lib.mkOption {
-      type = lib.types.str;
       default = "zeyple";
+
       description = ''
         Group to use to run Zeyple.
 
@@ -48,68 +34,62 @@ in
         ensuring the user exists.
         :::
       '';
+
+      type = lib.types.str;
+    };
+
+    keys = lib.mkOption {
+      description = "List of public key files that will be imported by gpg.";
+      type = with lib.types; listOf path;
+    };
+
+    rotateLogs = lib.mkOption {
+      default = true;
+      description = "Whether to enable rotation of log files.";
+      type = lib.types.bool;
     };
 
     settings = lib.mkOption {
-      type = ini.type;
       default = { };
+
       description = ''
         Zeyple configuration. refer to
         <https://github.com/infertux/zeyple/blob/master/zeyple/zeyple.conf.example>
         for details on supported values.
       '';
+
+      type = ini.type;
     };
 
-    keys = lib.mkOption {
-      type = with lib.types; listOf path;
-      description = "List of public key files that will be imported by gpg.";
-    };
+    user = lib.mkOption {
+      default = "zeyple";
 
-    rotateLogs = lib.mkOption {
-      type = lib.types.bool;
-      default = true;
-      description = "Whether to enable rotation of log files.";
+      description = ''
+        User to run Zeyple as.
+
+        ::: {.note}
+        If left as the default value this user will automatically be created
+        on system activation, otherwise the sysadmin is responsible for
+        ensuring the user exists.
+        :::
+      '';
+
+      type = lib.types.str;
     };
   };
 
   config = lib.mkIf cfg.enable {
-    users.groups = lib.optionalAttrs (cfg.group == "zeyple") { "${cfg.group}" = { }; };
-    users.users = lib.optionalAttrs (cfg.user == "zeyple") {
-      "${cfg.user}" = {
-        isSystemUser = true;
-        group = cfg.group;
-      };
-    };
-
-    services.zeyple.settings = {
-      zeyple = lib.mapAttrs (name: lib.mkDefault) {
-        log_file = "/var/log/zeyple/zeyple.log";
-        force_encrypt = true;
-      };
-
-      gpg = lib.mapAttrs (name: lib.mkDefault) { home = "${gpgHome}"; };
-
-      relay = lib.mapAttrs (name: lib.mkDefault) {
-        host = "localhost";
-        port = 10026;
-      };
-    };
-
     environment.etc."zeyple.conf".source = ini.generate "zeyple.conf" cfg.settings;
-
-    systemd.tmpfiles.settings."10-zeyple".${cfg.settings.zeyple.log_file}.f = {
-      inherit (cfg) user group;
-      mode = "0600";
-    };
 
     services.logrotate = lib.mkIf cfg.rotateLogs {
       enable = true;
+
       settings.zeyple = {
+        compress = true;
+        copytruncate = true;
         files = cfg.settings.zeyple.log_file;
         frequency = "weekly";
         rotate = 5;
-        compress = true;
-        copytruncate = true;
       };
     };
 
@@ -129,5 +109,33 @@ in
     '';
 
     services.postfix.settings.main.content_filter = "zeyple";
+
+    services.zeyple.settings = {
+      gpg = lib.mapAttrs (name: lib.mkDefault) { home = "${gpgHome}"; };
+
+      relay = lib.mapAttrs (name: lib.mkDefault) {
+        host = "localhost";
+        port = 10026;
+      };
+
+      zeyple = lib.mapAttrs (name: lib.mkDefault) {
+        force_encrypt = true;
+        log_file = "/var/log/zeyple/zeyple.log";
+      };
+    };
+
+    systemd.tmpfiles.settings."10-zeyple".${cfg.settings.zeyple.log_file}.f = {
+      inherit (cfg) user group;
+      mode = "0600";
+    };
+
+    users.groups = lib.optionalAttrs (cfg.group == "zeyple") { "${cfg.group}" = { }; };
+
+    users.users = lib.optionalAttrs (cfg.user == "zeyple") {
+      "${cfg.user}" = {
+        group = cfg.group;
+        isSystemUser = true;
+      };
+    };
   };
 }

@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   backoff,
   buildPythonPackage,
   certifi,
-  fetchFromGitHub,
   poetry-core,
   pytest-aiohttp,
   pytest-asyncio,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "pyopenuv";
   version = "2023.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bachya";
@@ -32,8 +31,6 @@ buildPythonPackage rec {
     certifi
   ];
 
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [
     aresponses
     pytest-asyncio
@@ -41,11 +38,14 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  __darwinAllowLocalNetworking = true;
+
   disabledTestPaths = [
     # Ignore the examples as they are prefixed with test_
     "examples/"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyopenuv" ];
 
   meta = {

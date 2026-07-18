@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -32,10 +32,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Language server implementation for the WGSL shading language";
     homepage = "https://github.com/wgsl-analyzer/wgsl-analyzer";
     changelog = "https://github.com/wgsl-analyzer/wgsl-analyzer/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ genga898 ];
     mainProgram = "wgsl-analyzer";
   };

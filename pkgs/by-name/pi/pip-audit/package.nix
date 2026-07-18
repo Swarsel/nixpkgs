@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "pip-audit";
   version = "2.10.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "trailofbits";
@@ -17,7 +16,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-+R8X7KIQz6Gm88IigZmMagz5l1eJ2bO8zAUNZqunotI=";
   };
 
-  pythonRelaxDeps = [ "cyclonedx-python-lib" ];
+  nativeCheckInputs = with python3.pkgs; [
+    pretend
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = with python3.pkgs; [ flit-core ];
 
@@ -37,14 +40,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ]
     ++ cachecontrol.optional-dependencies.filecache;
 
-  nativeCheckInputs = with python3.pkgs; [
-    pretend
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
-  pythonImportsCheck = [ "pip_audit" ];
-
   disabledTestPaths = [
     # Tests require network access
     "test/dependency_source/test_requirement.py"
@@ -60,6 +55,10 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "test_pyproject_source"
     "test_virtual_env"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pip_audit" ];
+  pythonRelaxDeps = [ "cyclonedx-python-lib" ];
 
   meta = {
     description = "Tool for scanning Python environments for known vulnerabilities";

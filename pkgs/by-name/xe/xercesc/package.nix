@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   curl,
   icu,
@@ -30,8 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://xerces.apache.org/xerces-c/";
     description = "Validating XML parser written in a portable subset of C++";
+    homepage = "https://xerces.apache.org/xerces-c/";
     license = lib.licenses.asl20;
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };

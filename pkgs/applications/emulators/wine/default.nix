@@ -11,7 +11,37 @@ args@{
   stdenv,
   callPackage,
   darwin,
-  wineRelease ? "stable",
+  moltenvk, # Allow users to override MoltenVK easily
+  alsaSupport ? false,
+  cairoSupport ? false,
+  cupsSupport ? false,
+  cursesSupport ? false,
+  dbusSupport ? false,
+  embedInstallers ? false, # The Mono and Gecko MSI installers
+  ffmpegSupport ? false,
+  fontconfigSupport ? false,
+  gettextSupport ? false,
+  gphoto2Support ? false,
+  gstreamerSupport ? false,
+  gtkSupport ? false,
+  krb5Support ? false,
+  mingwSupport ? stdenv.hostPlatform.isDarwin || stdenv.hostPlatform.isAarch64,
+  netapiSupport ? false,
+  odbcSupport ? false,
+  openclSupport ? false,
+  openglSupport ? false,
+  pcapSupport ? false,
+  pulseaudioSupport ? false,
+  saneSupport ? false,
+  sdlSupport ? false,
+  smartcardSupport ? false,
+  tlsSupport ? false,
+  udevSupport ? false,
+  usbSupport ? false,
+  v4lSupport ? false,
+  vaSupport ? false,
+  vulkanSupport ? false,
+  waylandSupport ? false,
   wineBuild ?
     if stdenv.hostPlatform.system == "x86_64-linux" then
       "wineWow"
@@ -19,39 +49,9 @@ args@{
       "wine64"
     else
       "wine32",
-  gettextSupport ? false,
-  fontconfigSupport ? false,
-  alsaSupport ? false,
-  gtkSupport ? false,
-  openglSupport ? false,
-  tlsSupport ? false,
-  gstreamerSupport ? false,
-  cupsSupport ? false,
-  dbusSupport ? false,
-  openclSupport ? false,
-  cairoSupport ? false,
-  odbcSupport ? false,
-  netapiSupport ? false,
-  cursesSupport ? false,
-  vaSupport ? false,
-  pcapSupport ? false,
-  v4lSupport ? false,
-  saneSupport ? false,
-  gphoto2Support ? false,
-  krb5Support ? false,
-  pulseaudioSupport ? false,
-  udevSupport ? false,
-  xineramaSupport ? false,
-  vulkanSupport ? false,
-  sdlSupport ? false,
-  usbSupport ? false,
-  mingwSupport ? stdenv.hostPlatform.isDarwin || stdenv.hostPlatform.isAarch64,
-  waylandSupport ? false,
+  wineRelease ? "stable",
   x11Support ? false,
-  ffmpegSupport ? false,
-  embedInstallers ? false, # The Mono and Gecko MSI installers
-  moltenvk, # Allow users to override MoltenVK easily
-  smartcardSupport ? false,
+  xineramaSupport ? false,
 }:
 
 let
@@ -75,10 +75,7 @@ let
       src = sources.stable;
       useStaging = false;
     };
-    unstable = {
-      src = sources.unstable;
-      useStaging = false;
-    };
+
     # Many versions have a "staging" variant, but when we say "staging",
     # the version we want to use is "unstable".
     staging = {
@@ -86,6 +83,12 @@ let
       pnameSuffix = "-staging";
       useStaging = true;
     };
+
+    unstable = {
+      src = sources.unstable;
+      useStaging = false;
+    };
+
     # "yabridge" enables staging too --- we are not interested in
     # yabridge without the staging patches applied.
     yabridge = {

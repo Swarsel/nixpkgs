@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  libhighscore,
   meson,
   ninja,
   pkg-config,
   rgbds,
-  libhighscore,
   unstableGitUpdater,
 }:
 
@@ -20,8 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "10703e58fde906df5cd80b81a104b959880bed42";
     hash = "sha256-jpMY40f3xUMl2ZJPH815F0hRqnYiEtm17KYHHLVk4jk=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/highscore";
 
   postPatch = ''
     substituteInPlace meson.build \
@@ -40,14 +38,16 @@ stdenv.mkDerivation (finalAttrs: {
     libhighscore
   ];
 
+  sourceRoot = "${finalAttrs.src.name}/highscore";
+
   passthru.updateScript = unstableGitUpdater {
     hardcodeZeroVersion = true;
   };
 
   meta = {
+    inherit (libhighscore.meta) maintainers platforms;
     description = "Port of SameBoy to Highscore";
     homepage = "https://github.com/highscore-emu/SameBoy";
     license = lib.licenses.mit;
-    inherit (libhighscore.meta) maintainers platforms;
   };
 })

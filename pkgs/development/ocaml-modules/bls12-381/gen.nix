@@ -17,20 +17,18 @@ buildDunePackage (finalAttrs: {
     sha256 = "qocIfQdv9rniOUykRulu2zWsqkzT0OrsGczgVKALRuk=";
   };
 
-  duneVersion = "3";
-
-  minimalOCamlVersion = "4.08";
-
   propagatedBuildInputs = [
     ff-sig
     zarith
   ];
 
   doCheck = true;
+  duneVersion = "3";
+  minimalOCamlVersion = "4.08";
 
   meta = {
-    homepage = "https://gitlab.com/dannywillems/ocaml-bls12-381";
     description = "Functors to generate BLS12-381 primitives based on stubs";
+    homepage = "https://gitlab.com/dannywillems/ocaml-bls12-381";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.ulrikstrid ];
   };

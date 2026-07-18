@@ -3,11 +3,11 @@
   fetchFromGitHub,
   cmake,
   ctestCheckHook,
-  ninja,
-  llvmPackages,
   gtest,
-  versionCheckHook,
+  llvmPackages,
+  ninja,
   nix-update-script,
+  versionCheckHook,
 }:
 
 # redumper is using C++ modules, this requires latest C++20 compiler and build tools
@@ -26,8 +26,6 @@ llvmPackages.libcxxStdenv.mkDerivation (finalAttrs: {
     ./remove-static-linking.patch
   ];
 
-  __structuredAttrs = true;
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -44,10 +42,9 @@ llvmPackages.libcxxStdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
-
   doInstallCheck = true;
-
   nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -57,8 +54,8 @@ llvmPackages.libcxxStdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/superg/redumper";
     description = "Low level CD dumper utility";
+    homepage = "https://github.com/superg/redumper";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ hughobrien ];
     platforms = lib.platforms.unix;

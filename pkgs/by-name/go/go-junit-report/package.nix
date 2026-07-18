@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -24,9 +24,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Convert go test output to junit xml";
-    mainProgram = "go-junit-report";
     homepage = "https://github.com/jstemmer/go-junit-report";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ cryptix ];
+    mainProgram = "go-junit-report";
   };
 })

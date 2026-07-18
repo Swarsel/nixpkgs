@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  cmake,
   fetchpatch,
   gitUpdater,
-  cmake,
   static ? stdenv.hostPlatform.isStatic,
 }:
 
@@ -21,16 +21,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-1kXRa+xrAbLEhcJxNV1oGHPmayj1RNIe6dDWXZA3mUA=";
       name = "yaml-cpp-fix-cmake-4.patch";
       url = "https://github.com/jbeder/yaml-cpp/commit/c2680200486572baf8221ba052ef50b58ecd816e.patch";
-      hash = "sha256-1kXRa+xrAbLEhcJxNV1oGHPmayj1RNIe6dDWXZA3mUA=";
     })
     # Fix build with gcc15
     # https://github.com/jbeder/yaml-cpp/pull/1310
     (fetchpatch {
+      hash = "sha256-4Mua6cYD8UR+fJfFeu0fdYVFprsiuF89HvbaTByz9nI=";
       name = "yaml-cpp-add-include-cstdint-gcc15.patch";
       url = "https://github.com/jbeder/yaml-cpp/commit/7b469b4220f96fb3d036cf68cd7bd30bd39e61d2.patch";
-      hash = "sha256-4Mua6cYD8UR+fJfFeu0fdYVFprsiuF89HvbaTByz9nI=";
     })
   ];
 
@@ -47,14 +47,13 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
   passthru.updateScript = gitUpdater { };
 
   meta = {
     description = "YAML parser and emitter for C++";
     homepage = "https://github.com/jbeder/yaml-cpp";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ OPNA2608 ];
+    platforms = lib.platforms.all;
   };
 })

@@ -1,8 +1,10 @@
 {
   lib,
   stdenv,
-  buildDunePackage,
   fetchurl,
+  alcotest,
+  bos,
+  buildDunePackage,
   cstruct,
   duration,
   ethernet,
@@ -12,8 +14,6 @@
   lwt,
   macaddr,
   mirage-sleep,
-  alcotest,
-  bos,
   mirage-vnetif,
 }:
 
@@ -40,6 +40,7 @@ buildDunePackage (finalAttrs: {
 
   ## NOTE: As of 18 april 2023 and ARP version 3.0.0, tests fail on Darwin.
   doCheck = !stdenv.hostPlatform.isDarwin;
+
   checkInputs = [
     alcotest
     bos

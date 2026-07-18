@@ -8,28 +8,28 @@
   lib,
   stdenv,
   fetchurl,
+  alsa-lib,
+  autoPatchelfHook,
   config,
-  wrapGAppsHook3,
-  curl,
-  gtk3,
-  writeScript,
-  xidel,
   coreutils,
-  gnused,
+  curl,
+  generated,
   gnugrep,
   gnupg,
-  runtimeShell,
-  systemLocale ? config.i18n.defaultLocale or "en_US",
-  generated,
-  versionSuffix ? "",
-  applicationName ? "Thunderbird",
-  # linux dependencies
-  writeText,
-  autoPatchelfHook,
+  gnused,
+  gtk3,
   patchelfUnstable,
-  alsa-lib,
+  runtimeShell,
   # darwin dependencies
   undmg,
+  wrapGAppsHook3,
+  writeScript,
+  # linux dependencies
+  writeText,
+  xidel,
+  applicationName ? "Thunderbird",
+  systemLocale ? config.i18n.defaultLocale or "en_US",
+  versionSuffix ? "",
 }:
 
 let
@@ -38,9 +38,9 @@ let
   pname = "thunderbird-bin";
 
   mozillaPlatforms = {
-    x86_64-linux = "linux-x86_64";
     # bundles are universal and can be re-used for both darwin architectures
     aarch64-darwin = "mac";
+    x86_64-linux = "linux-x86_64";
   };
 
   throwSystem = throw "Unsupported system: ${stdenv.hostPlatform.system}";
@@ -66,15 +66,15 @@ let
   };
 
   meta = {
-    changelog = "https://www.thunderbird.net/en-US/thunderbird/${version}/releasenotes/";
     description = "Mozilla Thunderbird, a full-featured email client (binary package)";
     homepage = "https://www.thunderbird.net/";
-    donationPage = "https://www.thunderbird.net/donate/";
-    mainProgram = "thunderbird";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    changelog = "https://www.thunderbird.net/en-US/thunderbird/${version}/releasenotes/";
     license = lib.licenses.mpl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ lovesegfault ];
     platforms = builtins.attrNames mozillaPlatforms;
+    mainProgram = "thunderbird";
+    donationPage = "https://www.thunderbird.net/donate/";
     hydraPlatforms = [ ];
   };
 
@@ -91,6 +91,7 @@ let
       runtimeShell
       versionSuffix
       ;
+
     baseName = "thunderbird";
     basePath = "pkgs/applications/networking/mailreaders/thunderbird-bin";
     baseUrl = "https://archive.mozilla.org/pub/thunderbird/releases/";
@@ -106,6 +107,7 @@ let
       updateScript
       gtk3
       ;
+
     binaryName = "thunderbird";
     gssSupport = true;
   };

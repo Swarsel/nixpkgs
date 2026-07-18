@@ -36,10 +36,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Fast light-weight MQTT broker/server";
-    mainProgram = "flashmq";
     homepage = "https://www.flashmq.org/";
     license = lib.licenses.osl3;
     maintainers = with lib.maintainers; [ sikmir ];
     platforms = lib.platforms.linux;
+    mainProgram = "flashmq";
   };
 })

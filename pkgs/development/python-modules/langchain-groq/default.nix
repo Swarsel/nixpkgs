@@ -1,28 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  # passthru
+  gitUpdater,
+  groq,
   # build-system
   hatchling,
-
   # dependencies
   langchain-core,
-  groq,
-
   # tests
   langchain-tests,
   pytestCheckHook,
-
-  # passthru
-  gitUpdater,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "langchain-groq";
   version = "1.1.3";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "langchain-ai";
@@ -31,9 +25,28 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-RwwlEL3P/6+Yf1bM5ALGxhUXG0C1XPlf0OQMcft4o4U=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/libs/partners/groq";
+  nativeCheckInputs = [
+    langchain-tests
+    pytestCheckHook
+  ];
 
+  __structuredAttrs = true;
   build-system = [ hatchling ];
+
+  dependencies = [
+    langchain-core
+    groq
+  ];
+
+  disabledTests = [
+    # These tests fail when langchain-core gets ahead of the package
+    "test_groq_serialization"
+    "test_serdes"
+  ];
+
+  enabledTestPaths = [ "tests/unit_tests" ];
+  pyproject = true;
+  pythonImportsCheck = [ "langchain_groq" ];
 
   pythonRelaxDeps = [
     # Each component release requests the exact latest core.
@@ -43,40 +56,24 @@ buildPythonPackage (finalAttrs: {
     "groq"
   ];
 
-  dependencies = [
-    langchain-core
-    groq
-  ];
-
-  nativeCheckInputs = [
-    langchain-tests
-    pytestCheckHook
-  ];
-
-  enabledTestPaths = [ "tests/unit_tests" ];
-
-  disabledTests = [
-    # These tests fail when langchain-core gets ahead of the package
-    "test_groq_serialization"
-    "test_serdes"
-  ];
-
-  pythonImportsCheck = [ "langchain_groq" ];
+  sourceRoot = "${finalAttrs.src.name}/libs/partners/groq";
 
   passthru = {
     # python updater script sets the wrong tag
     skipBulkUpdate = true;
+
     updateScript = gitUpdater {
-      rev-prefix = "langchain-groq==";
       ignoredVersions = "a|b|dev|rc";
+      rev-prefix = "langchain-groq==";
     };
   };
 
   meta = {
-    changelog = "https://github.com/langchain-ai/langchain/releases/tag/${finalAttrs.src.tag}";
     description = "Integration package connecting Groq and LangChain";
     homepage = "https://github.com/langchain-ai/langchain/tree/master/libs/partners/groq";
+    changelog = "https://github.com/langchain-ai/langchain/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       sarahec
     ];

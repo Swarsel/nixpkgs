@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  fetchpatch,
   fetchurl,
-  unzip,
-  ldc,
-  libGL,
-  libGLU,
   SDL,
   SDL_mixer,
   bulletml,
+  fetchpatch,
+  ldc,
+  libGL,
+  libGLU,
+  unzip,
 }:
 
 let
@@ -17,8 +17,8 @@ let
     patchname: hash:
     fetchpatch {
       name = "${patchname}.patch";
-      url = "https://sources.debian.org/data/main/t/torus-trooper/0.22.dfsg1-14/debian/patches/${patchname}.patch";
       sha256 = hash;
+      url = "https://sources.debian.org/data/main/t/torus-trooper/0.22.dfsg1-14/debian/patches/${patchname}.patch";
     };
 
 in
@@ -30,6 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://abagames.sakura.ne.jp/windows/tt${
       lib.replaceStrings [ "." ] [ "_" ] finalAttrs.version
     }.zip";
+
     sha256 = "1yhki1fdp3fi4y2iq12vca69f6k38dqjaw9z4lwcxky5kbgb7jvg";
   };
 
@@ -85,11 +86,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://www.asahi-net.or.jp/~cs8k-cyu/windows/tt_e.html";
     description = "Fast-paced abstract scrolling shooter game";
-    mainProgram = "torus-trooper";
+    homepage = "http://www.asahi-net.or.jp/~cs8k-cyu/windows/tt_e.html";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.all;
+    mainProgram = "torus-trooper";
   };
 })

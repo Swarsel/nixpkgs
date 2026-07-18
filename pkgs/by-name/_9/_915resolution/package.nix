@@ -13,17 +13,19 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0hmmy4kkz3x6yigz6hk99416ybznd67dpjaxap50nhay9f1snk5n";
   };
 
-  patchPhase = "rm *.o";
   installPhase = "mkdir -p $out/sbin; cp 915resolution $out/sbin/";
+  patchPhase = "rm *.o";
 
   meta = {
-    homepage = "http://915resolution.mango-lang.org/";
     description = "Tool to modify Intel 800/900 video BIOS";
-    mainProgram = "915resolution";
+    homepage = "http://915resolution.mango-lang.org/";
+    license = lib.licenses.publicDomain;
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ];
-    license = lib.licenses.publicDomain;
+
+    mainProgram = "915resolution";
   };
 })

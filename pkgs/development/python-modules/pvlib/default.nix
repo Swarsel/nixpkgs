@@ -5,11 +5,11 @@
   h5py,
   numpy,
   pandas,
-  pytestCheckHook,
   pytest-mock,
   pytest-remotedata,
   pytest-rerunfailures,
   pytest-timeout,
+  pytestCheckHook,
   pytz,
   requests,
   requests-mock,
@@ -21,12 +21,20 @@
 buildPythonPackage (finalAttrs: {
   pname = "pvlib";
   version = "0.14.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-nmpmhlJAzk4xy+nTYKKNbreVO6u2KsQDry+QrtFqRQk=";
   };
+
+  nativeCheckInputs = [
+    pytest-mock
+    pytest-remotedata
+    pytest-rerunfailures
+    pytest-timeout
+    pytestCheckHook
+    requests-mock
+  ];
 
   build-system = [
     setuptools
@@ -42,15 +50,7 @@ buildPythonPackage (finalAttrs: {
     scipy
   ];
 
-  nativeCheckInputs = [
-    pytest-mock
-    pytest-remotedata
-    pytest-rerunfailures
-    pytest-timeout
-    pytestCheckHook
-    requests-mock
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pvlib" ];
 
   meta = {

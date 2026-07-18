@@ -1,20 +1,18 @@
 {
   lib,
-  rustPlatform,
-  nodejs,
-  npmHooks,
   fetchFromGitHub,
+  copyDesktopItems,
   fetchNpmDeps,
   makeDesktopItem,
-  copyDesktopItems,
+  nodejs,
+  npmHooks,
+  rustPlatform,
   controlPort ? 30912,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "framework-control";
   version = "0.5.2";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "ozturkkl";
@@ -23,41 +21,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-2+4RxEDtLf7pnAI35Dykx38JDhZykjNZ+mihBhX0yyI=";
   };
 
-  cargoHash = "sha256-fAx3scGTWIkkqqTmzpxp4Z4LxKxVjED5x9qikJpCGf4=";
-
-  cargoRoot = "service";
-  buildAndTestSubdir = "service";
-
-  npmRoot = "web";
-
-  npmDeps = fetchNpmDeps {
-    name = "framework-control-npm-deps";
-    src = "${finalAttrs.src}/web";
-    hash = "sha256-ZTvYT5x+7X3+PfBxaR6YzRlTKH1DBvwlxC281Srq2Og=";
-  };
-
   nativeBuildInputs = [
     nodejs
     npmHooks.npmConfigHook
     copyDesktopItems
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "framework-control";
-      desktopName = "Framework Control";
-      comment = "Lightweight control surface for Framework laptops";
-      exec = "xdg-open http://127.0.0.1:${toString controlPort}";
-      icon = "framework-control";
-      terminal = false;
-      categories = [
-        "Utility"
-        "System"
-      ];
-      startupNotify = true;
-    })
-  ];
-
+  cargoHash = "sha256-fAx3scGTWIkkqqTmzpxp4Z4LxKxVjED5x9qikJpCGf4=";
   env.FRAMEWORK_CONTROL_PORT = controlPort;
 
   preBuild = ''
@@ -66,14 +36,42 @@ rustPlatform.buildRustPackage (finalAttrs: {
     popd
   '';
 
-  buildFeatures = [ "embed-ui" ];
-
   postInstall = ''
     mv $out/bin/framework-control-service $out/bin/framework-control
 
     install -Dm644 web/public/assets/logo.png \
       $out/share/icons/hicolor/256x256/apps/framework-control.png
   '';
+
+  __structuredAttrs = true;
+  buildAndTestSubdir = "service";
+  buildFeatures = [ "embed-ui" ];
+  cargoRoot = "service";
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Utility"
+        "System"
+      ];
+
+      comment = "Lightweight control surface for Framework laptops";
+      desktopName = "Framework Control";
+      exec = "xdg-open http://127.0.0.1:${toString controlPort}";
+      icon = "framework-control";
+      name = "framework-control";
+      startupNotify = true;
+      terminal = false;
+    })
+  ];
+
+  npmDeps = fetchNpmDeps {
+    src = "${finalAttrs.src}/web";
+    hash = "sha256-ZTvYT5x+7X3+PfBxaR6YzRlTKH1DBvwlxC281Srq2Og=";
+    name = "framework-control-npm-deps";
+  };
+
+  npmRoot = "web";
 
   meta = {
     description = "Lightweight control surface for Framework laptops";

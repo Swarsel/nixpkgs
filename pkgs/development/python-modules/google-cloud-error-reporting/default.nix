@@ -1,28 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   google-api-core,
   google-cloud-logging,
-  proto-plus,
-  protobuf,
-
   # testing
   google-cloud-testutils,
   mock,
+  proto-plus,
+  protobuf,
   pytest-asyncio,
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "google-cloud-error-reporting";
   version = "1.14.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googleapis";
@@ -31,9 +27,19 @@ buildPythonPackage rec {
     hash = "sha256-do/pxm+Bo2c57ehg1cRlpax+UggSUMv8WSK30sXhHpo=";
   };
 
-  build-system = [ setuptools ];
+  nativeCheckInputs = [
+    google-cloud-testutils
+    mock
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
-  pythonRelaxDeps = [ "protobuf" ];
+  preCheck = ''
+    # prevent google directory from shadowing google imports
+    rm -r google
+  '';
+
+  build-system = [ setuptools ];
 
   dependencies = [
     google-api-core
@@ -43,13 +49,6 @@ buildPythonPackage rec {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  nativeCheckInputs = [
-    google-cloud-testutils
-    mock
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # Tests require credentials
     "test_report_error_event"
@@ -58,15 +57,14 @@ buildPythonPackage rec {
     "test_namespace_package_compat"
   ];
 
-  preCheck = ''
-    # prevent google directory from shadowing google imports
-    rm -r google
-  '';
+  pyproject = true;
 
   pythonImportsCheck = [
     "google.cloud.error_reporting"
     "google.cloud.errorreporting_v1beta1"
   ];
+
+  pythonRelaxDeps = [ "protobuf" ];
 
   meta = {
     description = "Stackdriver Error Reporting API client library";

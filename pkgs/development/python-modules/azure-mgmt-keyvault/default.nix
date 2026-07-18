@@ -4,21 +4,22 @@
   azure-mgmt-core,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   isodate,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "azure-mgmt-keyvault";
   version = "14.0.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_keyvault";
     inherit version;
     hash = "sha256-0UGoCErkx8W9HK/spJqPP768WNxbxSkPMi6nPYswfvc=";
+    pname = "azure_mgmt_keyvault";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,12 +28,9 @@ buildPythonPackage rec {
     isodate
   ];
 
-  pythonNamespaces = [ "azure.mgmt" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.mgmt.keyvault" ];
-
-  # Module has no tests
-  doCheck = false;
+  pythonNamespaces = [ "azure.mgmt" ];
 
   meta = {
     description = "This is the Microsoft Azure Key Vault Management Client Library";

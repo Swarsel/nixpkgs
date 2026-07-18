@@ -1,7 +1,7 @@
 {
   config,
-  extendModules,
   lib,
+  extendModules,
   ...
 }:
 let
@@ -21,6 +21,7 @@ let
         {
           _file = "nixos/default.nix##vmWithBootLoader";
           virtualisation.useBootLoader = true;
+
           virtualisation.useEFIBoot =
             config.boot.loader.systemd-boot.enable || config.boot.loader.efi.canTouchEfiVariables;
         }
@@ -32,20 +33,24 @@ in
   options = {
 
     virtualisation.vmVariant = mkOption {
+      inherit (vmVariant) type;
+      default = { };
+
       description = ''
         Machine configuration to be added for the vm script produced by `nixos-rebuild build-vm`.
       '';
-      inherit (vmVariant) type;
-      default = { };
+
       visible = "shallow";
     };
 
     virtualisation.vmVariantWithBootLoader = mkOption {
+      inherit (vmVariantWithBootLoader) type;
+      default = { };
+
       description = ''
         Machine configuration to be added for the vm script produced by `nixos-rebuild build-vm-with-bootloader`.
       '';
-      inherit (vmVariantWithBootLoader) type;
-      default = { };
+
       visible = "shallow";
     };
 
@@ -63,6 +68,7 @@ in
         virtualisation.vmVariant = lib.mkOption {
           apply = _: throw "virtualisation.vmVariant*.virtualisation.vmVariant is not supported";
         };
+
         virtualisation.vmVariantWithBootLoader = lib.mkOption {
           apply =
             _: throw "virtualisation.vmVariant*.virtualisation.vmVariantWithBootloader is not supported";

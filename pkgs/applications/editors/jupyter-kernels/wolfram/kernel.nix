@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
 }:
 
@@ -15,7 +15,8 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "19d9dvr0bv7iy0x8mk4f576ha7z7h7id39nyrggwf9cp7gymxf47";
   };
 
-  dontConfigure = true;
+  # no tests
+  doCheck = false;
 
   installPhase = ''
     patchShebangs ./configure-jupyter.wls
@@ -23,8 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r {WolframLanguageForJupyter,images,extras,LICENSE} $out/share/Wolfram
   '';
 
-  # no tests
-  doCheck = false;
+  dontConfigure = true;
 
   meta = {
     description = "Jupyter kernel for Wolfram Language";

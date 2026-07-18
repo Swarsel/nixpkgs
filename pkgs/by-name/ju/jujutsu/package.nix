@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  installShellFiles,
+  buildPackages,
   gitMinimal,
   gnupg,
-  openssh,
-  buildPackages,
+  installShellFiles,
   nix-update-script,
+  openssh,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -23,40 +23,24 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-XgBq2ZN34iWlwKVgW7Syr46KUdt7pJuSDd/J6QWJwwQ=";
   };
 
-  cargoHash = "sha256-bEvpTd+FAHrD+CZN7+AuCuThyJ5LtufQR7OrGpjrWK0=";
-
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  cargoHash = "sha256-bEvpTd+FAHrD+CZN7+AuCuThyJ5LtufQR7OrGpjrWK0=";
+
+  env = {
+    LIBGIT2_NO_VENDOR = "1";
+    LIBSSH2_SYS_USE_PKG_CONFIG = "1";
+    # Disable vendored libraries.
+    ZSTD_SYS_USE_PKG_CONFIG = "1";
+  };
 
   nativeCheckInputs = [
     gitMinimal
     gnupg
     openssh
   ];
-
-  cargoBuildFlags = [
-    # Don’t install the `gen-protos` build tool.
-    "--bin"
-    "jj"
-  ];
-
-  useNextest = true;
-
-  cargoTestFlags = [
-    # Don’t build the `gen-protos` build tool when running tests.
-    "-p"
-    "jj-lib"
-    "-p"
-    "jj-cli"
-  ];
-
-  env = {
-    # Disable vendored libraries.
-    ZSTD_SYS_USE_PKG_CONFIG = "1";
-    LIBGIT2_NO_VENDOR = "1";
-    LIBSSH2_SYS_USE_PKG_CONFIG = "1";
-  };
 
   postInstall =
     let
@@ -74,6 +58,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+
+  cargoBuildFlags = [
+    # Don’t install the `gen-protos` build tool.
+    "--bin"
+    "jj"
+  ];
+
+  cargoTestFlags = [
+    # Don’t build the `gen-protos` build tool when running tests.
+    "-p"
+    "jj-lib"
+    "-p"
+    "jj-cli"
+  ];
+
+  useNextest = true;
   versionCheckProgram = "${placeholder "out"}/bin/jj";
 
   passthru = {
@@ -85,12 +85,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://jj-vcs.dev/";
     changelog = "https://github.com/jj-vcs/jj/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       _0x4A6F
       thoughtpolice
       emily
       bbigras
     ];
+
     mainProgram = "jj";
   };
 })

@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
   nix-update-script,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,14 +19,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-MB78QsJA90Au0bCUXfkcjnvfPagTPZwFhFVqxix+Clw=";
   };
 
-  cargoHash = "sha256-PFpc9z45k0nlWEyjDDKG/U8V7EwR5b8rHPV4CmkRers=";
-
   nativeBuildInputs = [ pkg-config ];
-
+  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ openssl ];
+  cargoHash = "sha256-PFpc9z45k0nlWEyjDDKG/U8V7EwR5b8rHPV4CmkRers=";
   # 0.5.6 release has failing tests
   doCheck = false;
-
-  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ openssl ];
 
   passthru = {
     updateScript = nix-update-script { };
@@ -34,10 +31,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Git prepare-commit-msg hook for authoring commit messages with GPT-3";
-    mainProgram = "gptcommit";
     homepage = "https://github.com/zurawiki/gptcommit";
     license = with lib.licenses; [ asl20 ];
     maintainers = with lib.maintainers; [ happysalada ];
     platforms = with lib.platforms; all;
+    mainProgram = "gptcommit";
   };
 })

@@ -1,5 +1,5 @@
 { mkPrelude, prelude }:
 mkPrelude {
-  name = "base";
   dependencies = [ prelude ];
+  name = "base";
 }

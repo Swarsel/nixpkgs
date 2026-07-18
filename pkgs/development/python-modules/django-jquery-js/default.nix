@@ -1,14 +1,13 @@
 {
   lib,
   buildPythonPackage,
-  fetchFromBitbucket,
   django,
+  fetchFromBitbucket,
 }:
 
 buildPythonPackage rec {
   pname = "django-jquery-js";
   version = "3.1.1";
-  format = "setuptools";
 
   src = fetchFromBitbucket {
     owner = "tim_heap";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
   };
 
   buildInputs = [ django ];
-
-  pythonImportsCheck = [ "jquery" ];
-
   doCheck = false; # no tests
+  format = "setuptools";
+  pythonImportsCheck = [ "jquery" ];
 
   meta = {
     description = "jQuery, bundled up so apps can depend upon it";

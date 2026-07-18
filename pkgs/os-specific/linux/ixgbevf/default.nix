@@ -7,7 +7,6 @@
 }:
 
 stdenv.mkDerivation rec {
-  name = "${pname}-${version}-${kernel.version}";
   pname = "ixgbevf";
   version = "4.6.1";
 
@@ -18,8 +17,6 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = kernel.moduleBuildDependencies;
 
-  hardeningDisable = [ "pic" ];
-
   configurePhase = ''
     cd src
     makeFlagsArray+=(KSRC=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build INSTALL_MOD_PATH=$out MANDIR=/share/man)
@@ -29,13 +26,15 @@ stdenv.mkDerivation rec {
   '';
 
   enableParallelBuilding = true;
+  hardeningDisable = [ "pic" ];
+  name = "${pname}-${version}-${kernel.version}";
 
   meta = {
     description = "Intel 82599 Virtual Function Driver";
     homepage = "https://sourceforge.net/projects/e1000/files/ixgbevf%20stable/";
     license = lib.licenses.gpl2Only;
-    priority = 20;
     # kernels ship ixgbevf driver for a long time already, maybe switch to a newest kernel?
     broken = lib.versionAtLeast kernel.version "5.2";
+    priority = 20;
   };
 }

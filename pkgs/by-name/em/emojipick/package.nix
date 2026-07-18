@@ -1,18 +1,18 @@
 {
-  stdenvNoCC,
-  fetchFromGitHub,
   lib,
-  python3,
-  xclip,
-  libnotify,
+  fetchFromGitHub,
   dmenu,
+  libnotify,
+  python3,
   rofi,
-  emojipick-use-rofi ? false,
+  stdenvNoCC,
+  xclip,
   emojipick-copy-to-clipboard ? true,
-  emojipick-show-notifications ? true,
-  emojipick-print-emoji ? true,
   emojipick-font-family ? "Noto Color Emoji",
   emojipick-font-size ? "18",
+  emojipick-print-emoji ? true,
+  emojipick-show-notifications ? true,
+  emojipick-use-rofi ? false,
 }:
 
 let
@@ -28,9 +28,6 @@ stdenvNoCC.mkDerivation {
     tag = "20210127";
     sha256 = "1kib3cyx6z9v9qw6yrfx5sklanpk5jbxjc317wi7i7ljrg0vdazp";
   };
-
-  dontConfigure = true;
-  dontBuild = true;
 
   # Patch configuration
   # notify-send has to be patched in a bash file
@@ -62,6 +59,9 @@ stdenvNoCC.mkDerivation {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
+  dontConfigure = true;
 
   meta = {
     description = "Get a selection of emojis with dmenu or rofi";

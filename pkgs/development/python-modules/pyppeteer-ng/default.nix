@@ -1,14 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   aenum,
   aiohttp,
   appdirs,
   buildPythonPackage,
-  gitUpdater,
   certifi,
   diff-match-patch,
-  fetchFromGitHub,
   flake8,
+  gitUpdater,
   importlib-metadata,
   livereload,
   mypy,
@@ -41,7 +41,6 @@
 buildPythonPackage rec {
   pname = "pyppeteer-ng";
   version = "2.0.0rc13";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dgtlmoon";
@@ -145,16 +144,16 @@ buildPythonPackage rec {
     "tests/test_misc.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyppeteer" ];
-
   passthru.updateScript = gitUpdater { };
 
   meta = {
     description = "Headless chrome/chromium automation library (unofficial port of puppeteer)";
-    mainProgram = "pyppeteer-install";
     homepage = "https://github.com/dgtlmoon/pyppeteer-ng";
     changelog = "https://github.com/dgtlmoon/pyppeteer-ng/blob/${version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ thanegill ];
+    mainProgram = "pyppeteer-install";
   };
 }

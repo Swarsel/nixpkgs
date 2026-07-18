@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  overrideCC,
+  fetchFromGitHub,
   buildPackages,
+  cmake,
+  overrideCC,
+  unstableGitUpdater,
   stdenv' ?
     if stdenv.hostPlatform.useLLVM or false then
       overrideCC stdenv buildPackages.llvmPackages.tools.clangNoLibcxx
     else
       stdenv,
-  fetchFromGitHub,
-  cmake,
-  unstableGitUpdater,
 }:
 
 stdenv'.mkDerivation {
@@ -24,17 +24,17 @@ stdenv'.mkDerivation {
     sha256 = "+oTjU/DgOEIwJebSVkSEt22mJSdeONozB8FfzEiESHU=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   postPatch = ''
     substituteInPlace CMakeLists.txt \
       --replace-fail "cmake_minimum_required(VERSION 3.0)" "cmake_minimum_required(VERSION 3.10)"
   '';
 
   nativeBuildInputs = [ cmake ];
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   installPhase = ''
     mkdir -p $dev/include $out/lib
@@ -48,10 +48,10 @@ stdenv'.mkDerivation {
   };
 
   meta = {
-    homepage = "https://github.com/libcxxrt/libcxxrt";
     description = "Implementation of the Code Sourcery C++ ABI";
+    homepage = "https://github.com/libcxxrt/libcxxrt";
+    license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ qyliss ];
     platforms = lib.platforms.all;
-    license = lib.licenses.bsd2;
   };
 }

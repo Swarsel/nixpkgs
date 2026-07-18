@@ -1,8 +1,8 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   aiohttp,
+  buildPythonPackage,
   osrparse,
   requests,
   requests-oauthlib,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "ossapi";
   version = "5.3.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Liam-DeVoe";
@@ -22,9 +21,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-gkees4d12vCfx5KGNKm9NjW5XmRw+xJy2RISMOKzG+s=";
   };
 
+  # Tests require Internet access and an osu! API key
+  doCheck = false;
   build-system = [ setuptools ];
-
-  pythonRelaxDeps = [ "osrparse" ];
 
   dependencies = [
     osrparse
@@ -37,10 +36,9 @@ buildPythonPackage (finalAttrs: {
     async = [ aiohttp ];
   };
 
-  # Tests require Internet access and an osu! API key
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "ossapi" ];
+  pythonRelaxDeps = [ "osrparse" ];
 
   meta = {
     description = "Python wrapper for the osu! API";

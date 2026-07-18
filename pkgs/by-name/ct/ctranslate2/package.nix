@@ -1,26 +1,25 @@
 {
   lib,
   stdenv,
-  config,
   fetchFromGitHub,
   cmake,
+  config,
+  cudaPackages,
+  # passthru tests
+  libretranslate,
   llvmPackages, # openmp
-  withMkl ? false,
   mkl,
+  onednn,
+  openblas,
+  wyoming-faster-whisper,
   withCUDA ? config.cudaSupport,
   withCuDNN ? withCUDA && (cudaPackages ? cudnn),
-  cudaPackages,
+  withMkl ? false,
   # Enabling both withOneDNN and withOpenblas is broken
   # https://github.com/OpenNMT/CTranslate2/issues/1294
   withOneDNN ? false,
-  onednn,
   withOpenblas ? true,
-  openblas,
   withRuy ? true,
-
-  # passthru tests
-  libretranslate,
-  wyoming-faster-whisper,
 }:
 
 let
@@ -30,15 +29,12 @@ stdenv'.mkDerivation (finalAttrs: {
   pname = "ctranslate2";
   version = "4.8.1";
 
-  __strutcturedAttrs = true;
-  strictDeps = true;
-
   src = fetchFromGitHub {
     owner = "OpenNMT";
     repo = "CTranslate2";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-cchwv+esysn/0v6RqD5zp306HfzOjjlCxH5usLETXs0=";
+    fetchSubmodules = true;
   };
 
   # Fix CMake 4 compatibility
@@ -56,30 +52,13 @@ stdenv'.mkDerivation (finalAttrs: {
     sed -e '1i #include <cstdint>' -i third_party/cxxopts/include/cxxopts.hpp
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
   ]
   ++ lib.optionals withCUDA [
     cudaPackages.cuda_nvcc
-  ];
-
-  cmakeFlags = [
-    # https://opennmt.net/CTranslate2/installation.html#build-options
-    # https://github.com/OpenNMT/CTranslate2/blob/54810350e662ebdb01ecbf8e4a746f02aeff1dd7/python/tools/prepare_build_environment_linux.sh#L53
-    # https://github.com/OpenNMT/CTranslate2/blob/59d223abcc7e636c1c2956e62482bc3299cc7766/python/tools/prepare_build_environment_macos.sh#L12
-    (lib.cmakeFeature "OPENMP_RUNTIME" "COMP")
-    (lib.cmakeBool "WITH_CUDA" withCUDA)
-    (lib.cmakeBool "WITH_CUDNN" withCuDNN)
-    (lib.cmakeBool "WITH_DNNL" withOneDNN)
-    (lib.cmakeBool "WITH_OPENBLAS" withOpenblas)
-    (lib.cmakeBool "WITH_RUY" withRuy)
-    (lib.cmakeBool "WITH_MKL" withMkl)
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    (lib.cmakeBool "WITH_ACCELERATE" true)
-  ]
-  ++ lib.optionals (stdenv.hostPlatform.gcc.arch or null != null) [
-    (lib.cmakeBool "ENABLE_CPU_DISPATCH" false)
   ];
 
   buildInputs =
@@ -105,6 +84,27 @@ stdenv'.mkDerivation (finalAttrs: {
       llvmPackages.openmp
     ];
 
+  cmakeFlags = [
+    # https://opennmt.net/CTranslate2/installation.html#build-options
+    # https://github.com/OpenNMT/CTranslate2/blob/54810350e662ebdb01ecbf8e4a746f02aeff1dd7/python/tools/prepare_build_environment_linux.sh#L53
+    # https://github.com/OpenNMT/CTranslate2/blob/59d223abcc7e636c1c2956e62482bc3299cc7766/python/tools/prepare_build_environment_macos.sh#L12
+    (lib.cmakeFeature "OPENMP_RUNTIME" "COMP")
+    (lib.cmakeBool "WITH_CUDA" withCUDA)
+    (lib.cmakeBool "WITH_CUDNN" withCuDNN)
+    (lib.cmakeBool "WITH_DNNL" withOneDNN)
+    (lib.cmakeBool "WITH_OPENBLAS" withOpenblas)
+    (lib.cmakeBool "WITH_RUY" withRuy)
+    (lib.cmakeBool "WITH_MKL" withMkl)
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    (lib.cmakeBool "WITH_ACCELERATE" true)
+  ]
+  ++ lib.optionals (stdenv.hostPlatform.gcc.arch or null != null) [
+    (lib.cmakeBool "ENABLE_CPU_DISPATCH" false)
+  ];
+
+  __strutcturedAttrs = true;
+
   passthru.tests = {
     inherit
       libretranslate
@@ -114,14 +114,16 @@ stdenv'.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Fast inference engine for Transformer models";
-    mainProgram = "ct2-translator";
     homepage = "https://github.com/OpenNMT/CTranslate2";
     changelog = "https://github.com/OpenNMT/CTranslate2/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       hexa
       misuzu
     ];
+
+    mainProgram = "ct2-translator";
     broken = !(withCuDNN -> withCUDA);
   };
 })

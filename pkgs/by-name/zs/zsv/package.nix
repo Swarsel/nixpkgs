@@ -27,11 +27,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "World's fastest (simd) CSV parser, with an extensible CLI";
-    mainProgram = "zsv";
     homepage = "https://github.com/liquidaty/zsv";
     changelog = "https://github.com/liquidaty/zsv/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ chillcicada ];
     platforms = lib.platforms.all;
+    mainProgram = "zsv";
   };
 })

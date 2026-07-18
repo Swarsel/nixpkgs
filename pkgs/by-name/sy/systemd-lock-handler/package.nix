@@ -1,7 +1,7 @@
 {
   lib,
-  fetchFromSourcehut,
   buildGoModule,
+  fetchFromSourcehut,
   nix-update-script,
   nixosTests,
 }:
@@ -18,11 +18,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-dWzojV3tDA5lLdpAQNC9NaADGyvV7dNOS3x8mfgNNtA=";
-
-  passthru = {
-    updateScript = nix-update-script { };
-    tests = nixosTests.systemd-lock-handler;
-  };
 
   # The Makefile expects to find the binary in the source root. Make
   # the one built by `buildGoModule` available so that `make install`
@@ -42,9 +37,14 @@ buildGoModule (finalAttrs: {
     runHook postInstall
   '';
 
+  passthru = {
+    tests = nixosTests.systemd-lock-handler;
+    updateScript = nix-update-script { };
+  };
+
   meta = {
-    homepage = "https://git.sr.ht/~whynothugo/systemd-lock-handler";
     description = "Translates systemd-system lock/sleep signals into systemd-user target activations";
+    homepage = "https://git.sr.ht/~whynothugo/systemd-lock-handler";
     license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ liff ];
     platforms = lib.platforms.linux;

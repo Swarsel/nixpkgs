@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  autoreconfHook,
   gettext,
-  pkg-config,
-  wrapGAppsHook3,
-  ibus,
   glib,
   gobject-introspection,
   gtk3,
-  python3,
-  autoreconfHook,
+  ibus,
   intltool,
+  pkg-config,
+  python3,
+  wrapGAppsHook3,
 }:
 
 let
@@ -38,14 +38,6 @@ stdenv.mkDerivation {
     sha256 = "sha256-msVqWougc40bVXIonJA6K/VgurnDeR2TdtGKfd9rzwM=";
   };
 
-  buildInputs = [
-    glib
-    gtk3
-    ibus
-    python3
-  ]
-  ++ pythonModules;
-
   nativeBuildInputs = [
     autoreconfHook
     intltool
@@ -54,6 +46,14 @@ stdenv.mkDerivation {
     pkg-config
     wrapGAppsHook3
   ];
+
+  buildInputs = [
+    glib
+    gtk3
+    ibus
+    python3
+  ]
+  ++ pythonModules;
 
   # Upstream builds Python packages as a part of a non-python
   # autotools build, making it awkward to rely on Nixpkgs Python builders.
@@ -66,12 +66,12 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    isIbusEngine = true;
     description = "IBus engine for users of the Cangjie and Quick input methods";
-    mainProgram = "ibus-setup-cangjie";
     homepage = "https://github.com/Cangjians/ibus-cangjie";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "ibus-setup-cangjie";
+    isIbusEngine = true;
   };
 }

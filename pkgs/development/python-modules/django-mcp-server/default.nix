@@ -6,14 +6,13 @@
   djangorestframework,
   inflection,
   mcp,
-  uritemplate,
   poetry-core,
+  uritemplate,
 }:
 
 buildPythonPackage rec {
   pname = "django-mcp-server";
   version = "0.5.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "omarbenhamid";
@@ -21,6 +20,13 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-HR4AzeDT/oWJe/exsV5AqwSebJPGT/vlzuk3qTgVb/M=";
   };
+
+  doCheck = false; # Needs to run both test server and client simultaneously
+
+  postFixup = ''
+    export PYTHONPATH="$PWD/examples:$PYTHONPATH"
+    export DJANGO_SETTINGS_MODULE=mcpexample.mcpexample.settings
+  '';
 
   build-system = [ poetry-core ];
 
@@ -32,14 +38,8 @@ buildPythonPackage rec {
     uritemplate
   ];
 
-  postFixup = ''
-    export PYTHONPATH="$PWD/examples:$PYTHONPATH"
-    export DJANGO_SETTINGS_MODULE=mcpexample.mcpexample.settings
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "mcp_server" ];
-
-  doCheck = false; # Needs to run both test server and client simultaneously
 
   meta = {
     description = "Django MCP Server implementation";

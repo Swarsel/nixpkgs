@@ -1,33 +1,30 @@
 {
   lib,
-  buildDubPackage,
   fetchFromGitHub,
-  writeShellScriptBin,
-
+  SDL2,
+  buildDubPackage,
+  builderArgs,
   cmake,
-  gettext,
   copyDesktopItems,
-  makeDesktopItem,
-  makeWrapper,
-
   dbus,
   freetype,
-  SDL2,
-  zenity,
-  luajit_2_1,
+  gettext,
   libGL,
   libx11,
-
-  builderArgs,
+  luajit_2_1,
+  makeDesktopItem,
+  makeWrapper,
+  writeShellScriptBin,
+  zenity,
 }:
 
 let
   cimgui-src = fetchFromGitHub {
+    fetchSubmodules = true;
+    hash = "sha256-XcnZbIjwq7vmYBnMAs+cEpJL8HB8wrL098FXGxC+diA=";
     owner = "Inochi2D";
     repo = "cimgui";
     rev = "49bb5ce65f7d5eeab7861d8ffd5aa2a58ca8f08c";
-    hash = "sha256-XcnZbIjwq7vmYBnMAs+cEpJL8HB8wrL098FXGxC+diA=";
-    fetchSubmodules = true;
   };
 
   inherit (builderArgs)
@@ -61,23 +58,6 @@ buildDubPackage (
       libx11
     ];
 
-    dontUseCmakeConfigure = true;
-
-    # these deps are not listed inside `dub.sdl`, so they didn't get auto-generated
-    # these are used for generating version info when building
-    dubLock = lib.recursiveUpdate (lib.importJSON dubLock) {
-      dependencies = {
-        gitver = {
-          version = "1.6.1";
-          sha256 = "sha256-NCyFik4FbD7yMLd5zwf/w4cHwhzLhIRSVw1bWo/CZB4=";
-        };
-        semver = {
-          version = "0.3.2";
-          sha256 = "sha256-l6c9hniUd5xNsJepq8x30e0JTjmXs4pYUmv4ws+Nrn4=";
-        };
-      };
-    };
-
     postConfigure = ''
       cimgui_dir=("$DUB_HOME"/packages/i2d-imgui/*/i2d-imgui)
 
@@ -110,9 +90,6 @@ buildDubPackage (
       dub build --skip-registry=all --compiler=ldc2 --build=release --config=update-version
     '';
 
-    # Use the "barebones" configuration so that we don't include the mascot and icon files in out build
-    dubFlags = [ "--config=barebones" ];
-
     installPhase = ''
       runHook preInstall
 
@@ -121,16 +98,6 @@ buildDubPackage (
 
       runHook postInstall
     '';
-
-    desktopItems = [
-      (makeDesktopItem {
-        name = pname;
-        desktopName = appname;
-        exec = pname;
-        comment = meta.description;
-        categories = [ "Utility" ];
-      })
-    ];
 
     postFixup = ''
       # Add support for `open file` dialog
@@ -146,11 +113,41 @@ buildDubPackage (
         }
     '';
 
+    desktopItems = [
+      (makeDesktopItem {
+        categories = [ "Utility" ];
+        comment = meta.description;
+        desktopName = appname;
+        exec = pname;
+        name = pname;
+      })
+    ];
+
+    dontUseCmakeConfigure = true;
+    # Use the "barebones" configuration so that we don't include the mascot and icon files in out build
+    dubFlags = [ "--config=barebones" ];
+
+    # these deps are not listed inside `dub.sdl`, so they didn't get auto-generated
+    # these are used for generating version info when building
+    dubLock = lib.recursiveUpdate (lib.importJSON dubLock) {
+      dependencies = {
+        gitver = {
+          version = "1.6.1";
+          sha256 = "sha256-NCyFik4FbD7yMLd5zwf/w4cHwhzLhIRSVw1bWo/CZB4=";
+        };
+
+        semver = {
+          version = "0.3.2";
+          sha256 = "sha256-l6c9hniUd5xNsJepq8x30e0JTjmXs4pYUmv4ws+Nrn4=";
+        };
+      };
+    };
+
     meta = {
       homepage = "https://inochi2d.com/";
       license = lib.licenses.bsd2;
-      mainProgram = pname;
       maintainers = with lib.maintainers; [ tomasajt ];
+      mainProgram = pname;
     }
     // meta;
   }

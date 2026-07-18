@@ -1,14 +1,14 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   apacheHttpd,
   apr,
   aprutil,
   directoryListingUpdater,
-  fetchurl,
-  lib,
   openldap,
   openssl,
   pkg-config,
-  stdenv,
 }:
 
 stdenv.mkDerivation rec {
@@ -49,7 +49,7 @@ stdenv.mkDerivation rec {
     homepage = "https://redwax.eu";
     changelog = "https://source.redwax.eu/projects/RS/repos/mod_ca/browse/ChangeLog";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ dirkx ];
+    platforms = lib.platforms.unix;
   };
 }

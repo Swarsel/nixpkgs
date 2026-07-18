@@ -2,32 +2,32 @@
   lib,
   stdenv,
   fetchurl,
-  xorgproto,
-  libx11,
-  libxrender,
-  gmp,
-  libjpeg,
-  libpng,
-  expat,
-  gettext,
-  perl,
-  guile_2_0,
   SDL,
   SDL_image,
   SDL_mixer,
   SDL_ttf,
-  curl,
-  sqlite,
-  libtool,
-  readline,
-  libogg,
-  libvorbis,
-  libcaca,
   csound,
   cunit,
-  pkg-config,
+  curl,
+  expat,
+  gettext,
+  gmp,
+  guile_2_0,
   libGL,
   libGLU,
+  libcaca,
+  libjpeg,
+  libogg,
+  libpng,
+  libtool,
+  libvorbis,
+  libx11,
+  libxrender,
+  perl,
+  pkg-config,
+  readline,
+  sqlite,
+  xorgproto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,6 +38,8 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://gnu/liquidwar6/liquidwar6-${finalAttrs.version}.tar.gz";
     sha256 = "1976nnl83d8wspjhb5d5ivdvdxgb8lp34wp54jal60z4zad581fn";
   };
+
+  nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
     xorgproto
@@ -67,9 +69,8 @@ stdenv.mkDerivation (finalAttrs: {
     libGLU
   ];
 
-  nativeBuildInputs = [ pkg-config ];
-
-  hardeningDisable = [ "format" ];
+  # To avoid problems finding SDL_types.h.
+  configureFlags = [ "CFLAGS=-I${lib.getDev SDL}/include/SDL" ];
 
   env.NIX_CFLAGS_COMPILE = toString (
     lib.optionals (stdenv.cc.isGNU && lib.versionAtLeast stdenv.cc.version "12") [
@@ -85,14 +86,13 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
-  # To avoid problems finding SDL_types.h.
-  configureFlags = [ "CFLAGS=-I${lib.getDev SDL}/include/SDL" ];
+  hardeningDisable = [ "format" ];
 
   meta = {
     description = "Quick tactics game";
     homepage = "https://www.gnu.org/software/liquidwar6/";
-    maintainers = [ lib.maintainers.raskin ];
     license = lib.licenses.gpl3Plus;
+    maintainers = [ lib.maintainers.raskin ];
     platforms = lib.platforms.linux;
   };
 })

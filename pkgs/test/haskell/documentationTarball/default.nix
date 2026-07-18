@@ -1,4 +1,4 @@
-{ pkgs, haskellPackages }:
+{ haskellPackages, pkgs }:
 
 let
   drv = haskellPackages.random;

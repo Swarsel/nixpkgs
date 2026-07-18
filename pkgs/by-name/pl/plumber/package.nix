@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -22,19 +22,19 @@ buildGoModule (finalAttrs: {
     export HOME="$(mktemp -d)"
   '';
 
-  subPackages = [ "." ];
-
   ldflags = [
     "-s"
     "-w"
     "-X github.com/streamdal/plumber/options.VERSION=${finalAttrs.version}"
   ];
 
+  subPackages = [ "." ];
+
   meta = {
     description = "CLI devtool for interacting with data in message systems like Kafka, RabbitMQ, GCP PubSub and more";
-    mainProgram = "plumber";
     homepage = "https://github.com/streamdal/plumber";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ svrana ];
+    mainProgram = "plumber";
   };
 })

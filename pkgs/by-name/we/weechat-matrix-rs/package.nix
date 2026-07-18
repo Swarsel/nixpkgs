@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  weechat,
   openssl,
-  sqlite,
+  pkg-config,
   runCommand,
+  rustPlatform,
+  sqlite,
+  weechat,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -23,8 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   patches = [ ./increase-recursion-limit.patch ];
 
-  cargoHash = "sha256-jAlBCmLJfWWAUHd3ySB930iqAVXMh6ueba7xS///Rt0=";
-
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
@@ -35,6 +33,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
     sqlite
   ];
+
+  cargoHash = "sha256-jAlBCmLJfWWAUHd3ySB930iqAVXMh6ueba7xS///Rt0=";
 
   postInstall = ''
     mkdir -p $out/lib/weechat/plugins

@@ -1,13 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  testers,
   cmake,
   dbus,
   dbus-test-runner,
   dconf,
+  gitUpdater,
   gnome-keyring,
   libphonenumber,
   libqtdbustest,
@@ -19,6 +18,7 @@
   sqlite,
   telepathy,
   telepathy-mission-control,
+  testers,
   validatePkgConfig,
   wrapQtAppsHook,
   xvfb-run,
@@ -106,15 +106,6 @@ stdenv.mkDerivation (finalAttrs: {
     telepathy
   ];
 
-  nativeCheckInputs = [
-    dbus
-    dbus-test-runner
-    dconf
-    gnome-keyring
-    telepathy-mission-control
-    xvfb-run
-  ];
-
   cmakeFlags = [
     # Many deprecation warnings with Qt 5.15
     (lib.cmakeBool "ENABLE_WERROR" false)
@@ -136,13 +127,22 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
-  # Starts & talks to D-Bus services, breaks with parallelism
-  enableParallelChecking = false;
+  nativeCheckInputs = [
+    dbus
+    dbus-test-runner
+    dconf
+    gnome-keyring
+    telepathy-mission-control
+    xvfb-run
+  ];
 
   preCheck = ''
     export QT_PLUGIN_PATH=${lib.getBin qtpim}/${qtbase.qtPluginPrefix}:$QT_PLUGIN_PATH
     export HOME=$PWD
   '';
+
+  # Starts & talks to D-Bus services, breaks with parallelism
+  enableParallelChecking = false;
 
   passthru = {
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
@@ -151,6 +151,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Service that provides call log and conversation history";
+
     longDescription = ''
       History service provides the database and an API to store/retrieve the call log (used by dialer-app) and the sms/mms history (used by messaging-app).
 
@@ -158,11 +159,12 @@ stdenv.mkDerivation (finalAttrs: {
 
       Database location: ~/.local/share/history-service/history.sqlite
     '';
+
     homepage = "https://gitlab.com/ubports/development/core/lomiri-history-service";
     changelog = "https://gitlab.com/ubports/development/core/lomiri-history-service/-/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.gpl3Only;
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.linux;
     pkgConfigModules = [ "lomiri-history-service" ];
+    teams = [ lib.teams.lomiri ];
   };
 })

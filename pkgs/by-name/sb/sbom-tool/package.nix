@@ -1,10 +1,10 @@
 {
   lib,
-  buildDotnetModule,
   fetchFromGitHub,
+  buildDotnetModule,
   dotnetCorePackages,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildDotnetModule rec {
@@ -18,11 +18,10 @@ buildDotnetModule rec {
     hash = "sha256-1bjlw7sJB/1LdMD0R3h/8l1UK3cGMEz5WqVD0CMnTYY=";
   };
 
-  projectFile = "src/Microsoft.Sbom.Tool/Microsoft.Sbom.Tool.csproj";
-  nugetDeps = ./deps.json;
-
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
   dotnet-runtime = dotnetCorePackages.runtime_8_0;
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
 
   dotnetBuildFlags = [
     "-p:MinVerVersionOverride=${version}"
@@ -36,9 +35,8 @@ buildDotnetModule rec {
   ];
 
   executables = [ "Microsoft.Sbom.Tool" ];
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  nugetDeps = ./deps.json;
+  projectFile = "src/Microsoft.Sbom.Tool/Microsoft.Sbom.Tool.csproj";
 
   passthru = {
     updateScript = nix-update-script { };

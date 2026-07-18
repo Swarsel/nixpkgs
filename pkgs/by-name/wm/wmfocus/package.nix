@@ -1,13 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  libxcb-keysyms,
-  python3,
-  pkg-config,
   cairo,
   expat,
+  libxcb-keysyms,
   libxkbcommon,
+  pkg-config,
+  python3,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,12 +21,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-94MgE2j8HaS8IyzHEDtoqTls2A8xD96v2iAFx9XfMcw=";
   };
 
-  cargoHash = "sha256-tYzJS/ApjGuvNnGuBEVr54AGcEmDhG9HtirZvtmNslY=";
-
   nativeBuildInputs = [
     python3
     pkg-config
   ];
+
   buildInputs = [
     cairo
     expat
@@ -34,6 +33,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libxcb-keysyms
   ];
 
+  cargoHash = "sha256-tYzJS/ApjGuvNnGuBEVr54AGcEmDhG9HtirZvtmNslY=";
   # For now, this is the only available featureset. This is also why the file is
   # in the i3 folder, even though it might be useful for more than just i3
   # users.
@@ -41,10 +41,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Visually focus windows by label";
-    mainProgram = "wmfocus";
     homepage = "https://github.com/svenstaro/wmfocus";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "wmfocus";
   };
 })

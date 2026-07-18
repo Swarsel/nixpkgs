@@ -1,15 +1,14 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   docopt,
+  fetchPypi,
   netifaces,
 }:
 
 buildPythonPackage rec {
   pname = "onkyo-eiscp";
   version = "1.2.7";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -21,11 +20,13 @@ buildPythonPackage rec {
     netifaces
   ];
 
+  format = "setuptools";
+
   meta = {
     description = "Control Onkyo receivers over ethernet";
-    mainProgram = "onkyo";
     homepage = "https://github.com/miracle2k/onkyo-eiscp";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ peterhoeg ];
+    mainProgram = "onkyo";
   };
 }

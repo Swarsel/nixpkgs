@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchurl,
-  libxt,
-  libxft,
-  libxext,
-  libxaw,
-  libx11,
-  libsm,
-  libice,
-  xorgproto,
-  luit,
-  ncurses,
-  freetype,
   fontconfig,
-  pkg-config,
-  makeWrapper,
-  nixosTests,
-  pkgsCross,
+  freetype,
   gitUpdater,
+  libice,
+  libsm,
+  libx11,
+  libxaw,
+  libxext,
+  libxft,
+  libxt,
+  luit,
+  makeWrapper,
+  ncurses,
+  nixosTests,
+  pkg-config,
+  pkgsCross,
+  xorgproto,
   enableDecLocator ? true,
 }:
 
@@ -27,15 +27,15 @@ stdenv.mkDerivation (finalAttrs: {
   version = "410";
 
   src = fetchurl {
+    hash = "sha256-e6n7swPdPZXQbKJDYNAZBI2E5YItxv5yLNdzab2/Ix8=";
+
     urls = [
       "https://invisible-island.net/archives/xterm/xterm-${finalAttrs.version}.tgz"
       "https://invisible-mirror.net/archives/xterm/xterm-${finalAttrs.version}.tgz"
     ];
-    hash = "sha256-e6n7swPdPZXQbKJDYNAZBI2E5YItxv5yLNdzab2/Ix8=";
   };
 
   patches = [ ./sixel-256.support.patch ];
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -91,8 +91,6 @@ stdenv.mkDerivation (finalAttrs: {
     echo '#define USE_UTMP_SETGID 1'
   '';
 
-  enableParallelBuilding = true;
-
   postInstall = ''
     for bin in $out/bin/*; do
       wrapProgram $bin --set XAPPLRESDIR $out/lib/X11/app-defaults/
@@ -102,24 +100,27 @@ stdenv.mkDerivation (finalAttrs: {
     install -D -t $out/share/icons/hicolor/48x48/apps icons/xterm-color_48x48.xpm
   '';
 
+  enableParallelBuilding = true;
+
   passthru = {
     tests = {
       customTest = nixosTests.xterm;
-      standardTest = nixosTests.terminal-emulators.xterm;
       musl = pkgsCross.musl64.xterm;
+      standardTest = nixosTests.terminal-emulators.xterm;
     };
 
     updateScript = gitUpdater {
-      # No nicer place to find latest release.
-      url = "https://github.com/ThomasDickey/xterm-snapshots.git";
-      rev-prefix = "xterm-";
       # Tags that end in letters are unstable
       ignoredVersions = "[a-z]$";
+      rev-prefix = "xterm-";
+      # No nicer place to find latest release.
+      url = "https://github.com/ThomasDickey/xterm-snapshots.git";
     };
   };
 
   meta = {
     description = "Terminal emulator for the X Window System";
+
     longDescription = ''
       The xterm program is a terminal emulator for the X Window System. It
       provides DEC VT102/VT220 and selected features from higher-level
@@ -130,10 +131,11 @@ stdenv.mkDerivation (finalAttrs: {
       4.3bsd), xterm will use the facilities to notify programs running in the
       window whenever it is resized.
     '';
+
     homepage = "https://invisible-island.net/xterm";
+    changelog = "https://invisible-island.net/xterm/xterm.log.html#xterm_${finalAttrs.version}";
     license = with lib.licenses; [ mit ];
     platforms = with lib.platforms; linux ++ darwin;
-    changelog = "https://invisible-island.net/xterm/xterm.log.html#xterm_${finalAttrs.version}";
     mainProgram = "xterm";
   };
 })

@@ -2,27 +2,34 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
-  cmake,
-  rocm-cmake,
-  rocblas,
-  rocsparse,
-  rocprim,
-  rocrand,
   clr,
-  pkg-config,
+  cmake,
+  gtest,
   openmp,
   openmpi,
-  gtest,
-  buildTests ? false,
+  pkg-config,
+  rocblas,
+  rocm-cmake,
+  rocmUpdateScript,
+  rocprim,
+  rocrand,
+  rocsparse,
   buildBenchmarks ? false,
   buildSamples ? false,
+  buildTests ? false,
   gpuTargets ? clr.localGpuTargets or [ ], # gpuTargets = [ "gfx803" "gfx900:xnack-" "gfx906:xnack-" ... ]
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "rocalution";
   version = "7.2.3";
+
+  src = fetchFromGitHub {
+    owner = "ROCm";
+    repo = "rocALUTION";
+    rev = "rocm-${finalAttrs.version}";
+    hash = "sha256-yPM26e8tGNpPScIriAPRb+6OZfdpX4PgE0E9bmc3FkU=";
+  };
 
   outputs = [
     "out"
@@ -36,13 +43,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals buildSamples [
     "sample"
   ];
-
-  src = fetchFromGitHub {
-    owner = "ROCm";
-    repo = "rocALUTION";
-    rev = "rocm-${finalAttrs.version}";
-    hash = "sha256-yPM26e8tGNpPScIriAPRb+6OZfdpX4PgE0E9bmc3FkU=";
-  };
 
   nativeBuildInputs = [
     cmake
@@ -116,7 +116,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Iterative sparse solvers for ROCm";
     homepage = "https://github.com/ROCm/rocALUTION";
     license = with lib.licenses; [ mit ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

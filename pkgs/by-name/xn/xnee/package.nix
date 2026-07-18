@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  fetchDebianPatch,
   autoreconfHook,
-  pkg-config,
+  fetchDebianPatch,
+  fetchpatch,
   gtk2,
   libx11,
   libxext,
   libxi,
   libxtst,
+  pkg-config,
   texinfo,
   xorgproto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "3.19";
   pname = "xnee";
+  version = "3.19";
 
   src = fetchurl {
     url = "mirror://gnu/xnee/xnee-${finalAttrs.version}.tar.gz";
@@ -28,15 +28,15 @@ stdenv.mkDerivation (finalAttrs: {
     # Pull fix pending upstream inclusion for -fno-common
     # toolchain support: https://savannah.gnu.org/bugs/?58810
     (fetchpatch {
+      hash = "sha256-Ar5SyVIEp8/knDHm+4f0KWAH+A5gGhXGezEqL7xkQhI=";
       name = "fno-common.patch";
       url = "https://savannah.gnu.org/bugs/download.php?file_id=49534";
-      hash = "sha256-Ar5SyVIEp8/knDHm+4f0KWAH+A5gGhXGezEqL7xkQhI=";
     })
     (fetchDebianPatch {
       inherit (finalAttrs) pname version;
       debianRevision = "9.2";
-      patch = "fix-implicit-declarations.patch";
       hash = "sha256-ct/ATuiC6b7rw9n2wsRNKvfj02i7V20bMOzL7pKDd0A=";
+      patch = "fix-implicit-declarations.patch";
     })
   ];
 
@@ -93,6 +93,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "X11 event recording and replay tool";
+
     longDescription = ''
       Xnee is a suite of programs that can record, replay and distribute
       user actions under the X11 environment.  Think of it as a robot that
@@ -100,6 +101,7 @@ stdenv.mkDerivation (finalAttrs: {
       tests, demonstrate programs, distribute actions, record & replay
       "macros", retype a file.
     '';
+
     homepage = "https://www.gnu.org/software/xnee/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ wegank ];

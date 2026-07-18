@@ -2,19 +2,20 @@
   lib,
   stdenv,
   fetchurl,
-  writeText,
-  pkg-config,
   libx11,
   libxft,
   libxi,
   libxinerama,
   libxtst,
-  layout ? "mobile-intl",
+  pkg-config,
+  writeText,
   conf ? null,
+  layout ? "mobile-intl",
   patches ? [ ],
 }:
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit patches;
   pname = "svkbd";
   version = "0.4.2";
 
@@ -22,8 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://dl.suckless.org/tools/svkbd-${finalAttrs.version}.tar.gz";
     hash = "sha256-bZQyGeMzMUdYY0ZmdKB2CFhZygDc6UDlTU4kdx+UZoA=";
   };
-
-  inherit patches;
 
   postPatch =
     let
@@ -55,8 +54,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Simple virtual keyboard";
     homepage = "https://tools.suckless.org/x/svkbd/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ dotlambda ];
+    platforms = lib.platforms.linux;
     mainProgram = "svkbd-${layout}";
   };
 })

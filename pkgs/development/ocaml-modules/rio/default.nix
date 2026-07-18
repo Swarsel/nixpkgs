@@ -1,15 +1,13 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
   cstruct,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "rio";
   version = "0.0.8";
-
-  minimalOCamlVersion = "5.1";
 
   src = fetchurl {
     url = "https://github.com/leostera/riot/releases/download/${finalAttrs.version}/riot-${finalAttrs.version}.tbz";
@@ -19,6 +17,8 @@ buildDunePackage (finalAttrs: {
   propagatedBuildInputs = [
     cstruct
   ];
+
+  minimalOCamlVersion = "5.1";
 
   meta = {
     description = "Ergonomic, composable, efficient read/write streams";

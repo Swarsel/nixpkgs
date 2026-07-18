@@ -1,15 +1,14 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
-  testers,
   arcanechat-tui,
+  python3,
+  testers,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "arcanechat-tui";
   version = "0.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ArcaneChat";
@@ -18,12 +17,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-seoXvlDG2xxdM9mAKe4Yo4juDslgrniv1LOTdXbplp0=";
   };
 
+  doCheck = false; # no tests implemented
+
   build-system = with python3.pythonOnBuildForHost.pkgs; [
     setuptools
     setuptools-scm
   ];
-
-  pythonRelaxDeps = true;
 
   dependencies = with python3.pkgs; [
     appdirs
@@ -32,14 +31,16 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     urwid-readline
   ];
 
-  doCheck = false; # no tests implemented
+  pyproject = true;
+  pythonRelaxDeps = true;
 
   passthru.tests = {
     version = testers.testVersion rec {
-      package = arcanechat-tui;
       command = ''
         HOME="$TEMP" ${lib.getExe package} --version
       '';
+
+      package = arcanechat-tui;
     };
   };
 
@@ -47,7 +48,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     description = "Lightweight Delta Chat client";
     homepage = "https://github.com/ArcaneChat/arcanechat-tui";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "arcanechat-tui";
     maintainers = with lib.maintainers; [ dotlambda ];
+    mainProgram = "arcanechat-tui";
   };
 })

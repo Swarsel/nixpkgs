@@ -6,8 +6,8 @@
 kuma.override (
   {
     pname = "kumactl";
-    isFull = false;
     components = [ "kumactl" ];
+    isFull = false;
   }
   // removeAttrs args [ "kuma" ]
 )

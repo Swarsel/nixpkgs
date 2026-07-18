@@ -8,8 +8,6 @@ stdenv.mkDerivation {
   pname = "example-unfree-package";
   version = "1.0";
 
-  dontUnpack = true;
-
   installPhase = ''
     mkdir -p $out/bin
     cat > $out/bin/hello-unfree << EOF
@@ -18,6 +16,8 @@ stdenv.mkDerivation {
     EOF
     chmod +x $out/bin/hello-unfree
   '';
+
+  dontUnpack = true;
 
   meta = {
     description = "Example package with unfree license (for testing)";

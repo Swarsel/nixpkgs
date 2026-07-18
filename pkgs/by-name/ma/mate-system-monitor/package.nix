@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   gettext,
-  itstool,
+  gitUpdater,
   gtkmm3,
-  libxml2,
+  itstool,
   libgtop,
   librsvg,
+  libxml2,
+  mate-desktop,
+  pkg-config,
   polkit,
   systemd,
   wrapGAppsHook3,
-  mate-desktop,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,6 +24,12 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://pub.mate-desktop.org/releases/${lib.versions.majorMinor finalAttrs.version}/mate-system-monitor-${finalAttrs.version}.tar.xz";
     sha256 = "QtZj1rkPtTYevBP2VHmD1vHirHXcKuTxysbqYymWWiU=";
   };
+
+  postPatch = ''
+    # This package does not provide mate-version.xml.
+    substituteInPlace src/sysinfo.cpp \
+      --replace-fail 'DATADIR "/mate-about/mate-version.xml"' '"${mate-desktop}/share/mate-about/mate-version.xml"'
+  '';
 
   strictDeps = true;
 
@@ -44,26 +50,20 @@ stdenv.mkDerivation (finalAttrs: {
     systemd
   ];
 
-  postPatch = ''
-    # This package does not provide mate-version.xml.
-    substituteInPlace src/sysinfo.cpp \
-      --replace-fail 'DATADIR "/mate-about/mate-version.xml"' '"${mate-desktop}/share/mate-about/mate-version.xml"'
-  '';
-
   enableParallelBuilding = true;
 
   passthru.updateScript = gitUpdater {
-    url = "https://git.mate-desktop.org/mate-system-monitor";
     odd-unstable = true;
     rev-prefix = "v";
+    url = "https://git.mate-desktop.org/mate-system-monitor";
   };
 
   meta = {
     description = "System monitor for the MATE desktop";
-    mainProgram = "mate-system-monitor";
     homepage = "https://mate-desktop.org";
     license = [ lib.licenses.gpl2Plus ];
     platforms = lib.platforms.unix;
+    mainProgram = "mate-system-monitor";
     teams = [ lib.teams.mate ];
   };
 })

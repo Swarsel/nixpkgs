@@ -4,44 +4,44 @@
   lib,
   stdenv,
   fetchurl,
-  meson,
-  ninja,
-  pkg-config,
-  xorg-server,
   dri-pkgconfig-stub,
-  libdrm,
+  font-util,
   libGL,
+  libdrm,
   libx11,
   libxau,
   libxcb,
+  libxcb-image,
+  libxcb-keysyms,
+  libxcb-render-util,
+  libxcb-util,
+  libxcb-wm,
   libxcvt,
   libxdmcp,
   libxfixes,
   libxfont_2,
   libxkbfile,
   libxshmfence,
-  mesa-gl-headers,
   mesa,
+  mesa-gl-headers,
+  meson,
+  ninja,
   openssl,
   pixman,
-  libxcb-util,
-  libxcb-image,
-  libxcb-keysyms,
-  libxcb-render-util,
-  libxcb-wm,
+  pkg-config,
   xkbcomp,
   xkeyboard-config,
+  xorg-server,
   xorgproto,
   xtrans,
-  font-util,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xvfb";
-
   # TODO: commented out for rebuild avoidance after xorg-server update. revert
   # on staging.
   # inherit (xorg-server) src version;
   version = "21.1.23";
+
   src = fetchurl {
     url = "mirror://xorg/individual/xserver/xorg-server-${finalAttrs.version}.tar.xz";
     hash = "sha256-45gy5WF9ra8HL9+fDhnl0uHCoTYHrCgLrBq6n4/hRjQ=";
@@ -111,7 +111,14 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
+    inherit (xorg-server.meta)
+      homepage
+      license
+      mainProgram
+      ;
+
     description = "X virtual framebuffer";
+
     longDescription = ''
       Xvfb or X virtual framebuffer is a display server implementing the X11 display server
       protocol. In contrast to other display servers, Xvfb performs all graphical operations in
@@ -121,11 +128,7 @@ stdenv.mkDerivation (finalAttrs: {
       computer it is running on to have any kind of graphics adapter, a screen or any input device.
       Is is primarily used for testing.
     '';
-    inherit (xorg-server.meta)
-      homepage
-      license
-      mainProgram
-      ;
+
     platforms = lib.platforms.unix;
   };
 })

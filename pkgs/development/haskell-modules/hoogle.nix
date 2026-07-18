@@ -7,9 +7,9 @@
   stdenv,
   buildPackages,
   haskellPackages,
-  writeText,
-  runCommand,
   nixosTests,
+  runCommand,
+  writeText,
 }:
 
 # This argument is a function which selects a list of Haskell packages from any
@@ -38,23 +38,16 @@ let
 
 in
 buildPackages.stdenv.mkDerivation (finalAttrs: {
-  name = "hoogle-with-packages";
   buildInputs = [
     ghc
     hoogle
   ];
-
-  # compiling databases takes less time than copying the results
-  # between machines.
-  preferLocalBuild = true;
 
   # we still allow substitutes because a database is relatively small and if it
   # is already built downloading is probably faster.  The substitution will only
   # trigger for users who have already cached the database on a substituter and
   # thus probably intend to substitute it.
   allowSubstitutes = true;
-
-  passAsFile = [ "buildCommand" ];
 
   buildCommand = ''
     ${
@@ -123,13 +116,17 @@ buildPackages.stdenv.mkDerivation (finalAttrs: {
     chmod +x $out/bin/hoogle
   '';
 
+  name = "hoogle-with-packages";
+  passAsFile = [ "buildCommand" ];
+  # compiling databases takes less time than copying the results
+  # between machines.
+  preferLocalBuild = true;
+
   passthru = {
-    isHaskellLibrary = false; # for the filter in ./with-packages-wrapper.nix
-
     inherit docPackages;
-
     # The path to the Hoogle database.
     database = "${finalAttrs.finalPackage}/${databasePath}";
+    isHaskellLibrary = false; # for the filter in ./with-packages-wrapper.nix
 
     tests.can-search-database = runCommand "can-search-database" { } ''
       # This succeeds even if no results are found, but `Prelude.map` should
@@ -142,8 +139,8 @@ buildPackages.stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Local Hoogle database";
+    maintainers = [ ];
     platforms = ghc.meta.platforms;
     hydraPlatforms = with lib.platforms; none;
-    maintainers = [ ];
   };
 })

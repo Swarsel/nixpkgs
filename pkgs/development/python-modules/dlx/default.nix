@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   python,
 }:
 
 buildPythonPackage {
   pname = "dlx";
   version = "1.0.4";
-  format = "setuptools";
 
   # untagged releases
   src = fetchFromGitHub {
@@ -18,13 +17,15 @@ buildPythonPackage {
     sha256 = "0c6dblbypwmx6yrk9qxp157m3cd7lq3j411ifr3shscv1igxv5hk";
   };
 
-  # No test suite, so just run an example
-  pythonImportsCheck = [ "dlx" ];
   # ./examples/design.py requires pyncomb, not in tree
   checkPhase = ''
     # example sudoku board from ./examples/sudoku.py
     ${python.interpreter} ./examples/sudoku.py 3 "070285010008903500000000000500010008010000090900040003000000000002408600090632080"
   '';
+
+  format = "setuptools";
+  # No test suite, so just run an example
+  pythonImportsCheck = [ "dlx" ];
 
   meta = {
     description = "Implementation of Donald Knuth's Dancing Links algorithm";

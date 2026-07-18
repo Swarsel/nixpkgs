@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pnpm_10,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  nodejs,
-  electron_41,
-  rustPlatform,
   cargo,
-  rustc,
-  python3,
-  pkg-config,
-  openssl,
-  makeWrapper,
   copyDesktopItems,
+  electron_41,
+  fetchPnpmDeps,
   makeDesktopItem,
+  makeWrapper,
   nix-update-script,
+  nodejs,
+  openssl,
+  pkg-config,
+  pnpmConfigHook,
+  pnpm_10,
+  python3,
   removeReferencesTo,
+  rustPlatform,
+  rustc,
 }:
 let
   electron = electron_41;
@@ -31,33 +31,20 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "SPlayer-Dev";
     repo = "SPlayer";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = false;
     hash = "sha256-7oLFJqZ1Apq2GK5G3r10I+c3liSweDD2ZPhjpq0f+bM=";
-  };
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      patches
-      ;
-    inherit pnpm;
-    fetcherVersion = 3;
-    hash = "sha256-HCSuCtJXaRMLCCZIKQ4ElDkrlYXFUIsHfK1H3pUSQX4=";
+    fetchSubmodules = false;
   };
 
   # When pnpm >= 10.29.3 and electron-builder < 26.8.2, it causes the package to fail at runtime; this patch will be removed once the upstream releases a version that includes the new version of electron-builder.
   patches = [ ./electron-builder-26.8.2.patch ];
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      ;
-    hash = "sha256-dv8WqT6ei0dMwXcTQmUVHO9u1nGZ8iGhP2S8DpL+Hxk=";
-  };
+  postPatch = ''
+    # Workaround for https://github.com/electron/electron/issues/31121
+    substituteInPlace electron/main/utils/native-loader.ts \
+      --replace-fail 'process.resourcesPath' "'$out/share/splayer/resources'"
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     pnpmConfigHook
@@ -76,19 +63,10 @@ stdenv.mkDerivation (finalAttrs: {
     openssl
   ];
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
   env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
   postConfigure = ''
     cp .env.example .env
-  '';
-
-  postPatch = ''
-    # Workaround for https://github.com/electron/electron/issues/31121
-    substituteInPlace electron/main/utils/native-loader.ts \
-      --replace-fail 'process.resourcesPath' "'$out/share/splayer/resources'"
   '';
 
   buildPhase = ''
@@ -140,25 +118,51 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      ;
+
+    hash = "sha256-dv8WqT6ei0dMwXcTQmUVHO9u1nGZ8iGhP2S8DpL+Hxk=";
+  };
+
   desktopItems = [
     (makeDesktopItem {
-      name = "splayer";
-      desktopName = "SPlayer";
-      exec = "splayer %U";
-      terminal = false;
-      type = "Application";
-      icon = "splayer";
-      startupWMClass = "SPlayer";
-      comment = "A minimalist music player";
       categories = [
         "AudioVideo"
         "Audio"
         "Music"
       ];
-      mimeTypes = [ "x-scheme-handler/orpheus" ];
+
+      comment = "A minimalist music player";
+      desktopName = "SPlayer";
+      exec = "splayer %U";
       extraConfig.X-KDE-Protocols = "orpheus";
+      icon = "splayer";
+      mimeTypes = [ "x-scheme-handler/orpheus" ];
+      name = "splayer";
+      startupWMClass = "SPlayer";
+      terminal = false;
+      type = "Application";
     })
   ];
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      patches
+      ;
+
+    inherit pnpm;
+    fetcherVersion = 3;
+    hash = "sha256-HCSuCtJXaRMLCCZIKQ4ElDkrlYXFUIsHfK1H3pUSQX4=";
+  };
 
   passthru.updateScript = nix-update-script { extraArgs = [ "--use-github-releases" ]; };
 
@@ -167,9 +171,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/SPlayer-Dev/SPlayer";
     changelog = "https://github.com/SPlayer-Dev/SPlayer/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
-    maintainers = with lib.maintainers; [ ccicnce113424 ];
-    mainProgram = "splayer";
-    platforms = lib.platforms.linux;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       # public/wasm/ffmpeg.wasm
@@ -178,5 +180,9 @@ stdenv.mkDerivation (finalAttrs: {
       # source: native/ferrous-opencc-wasm
       binaryBytecode
     ];
+
+    maintainers = with lib.maintainers; [ ccicnce113424 ];
+    platforms = lib.platforms.linux;
+    mainProgram = "splayer";
   };
 })

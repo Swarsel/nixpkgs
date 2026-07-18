@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -26,13 +26,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Cargo plugin to manage dependency features";
-    mainProgram = "cargo-feature";
     homepage = "https://github.com/Riey/cargo-feature";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       riey
       matthiasbeyer
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "cargo-feature";
   };
 })

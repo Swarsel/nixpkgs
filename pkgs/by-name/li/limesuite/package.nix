@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
+  fltk,
+  gnuplot,
+  libusb1,
+  libx11,
+  mesa_glu,
+  soapysdr,
   sqlite,
   wxwidgets_3_2,
-  libusb1,
-  soapysdr,
-  mesa_glu,
-  libx11,
-  gnuplot,
-  fltk,
   withGui ? false,
 }:
 
@@ -29,22 +29,17 @@ stdenv.mkDerivation rec {
   patches = [
     # CMake < 3.5 fix. Remove upon next version bump
     (fetchpatch {
-      url = "https://github.com/myriadrf/LimeSuite/commit/4e5ad459d50c922267a008e5cecb3efdbff31f09.patch";
       hash = "sha256-OASki3bISJvV7wjMz0pBT3kO5RvJ5BnymiF6ruHkCJ8=";
+      url = "https://github.com/myriadrf/LimeSuite/commit/4e5ad459d50c922267a008e5cecb3efdbff31f09.patch";
     })
     # Fixes for C23 (GCC 15). Remove upon next version bump
     (fetchpatch {
-      url = "https://github.com/myriadrf/LimeSuite/commit/524cd2e548b11084e6f739b2dfe0f958c2e30354.patch";
       hash = "sha256-wxwhFjXcIgBMTJoJ6efdtyttxMFZviCTXtEb2qFX9yU=";
+      url = "https://github.com/myriadrf/LimeSuite/commit/524cd2e548b11084e6f739b2dfe0f958c2e30354.patch";
     })
   ];
 
   nativeBuildInputs = [ cmake ];
-
-  cmakeFlags = [
-    "-DOpenGL_GL_PREFERENCE=GLVND"
-  ]
-  ++ lib.optional (!withGui) "-DENABLE_GUI=OFF";
 
   buildInputs = [
     libusb1
@@ -60,12 +55,17 @@ stdenv.mkDerivation rec {
     wxwidgets_3_2
   ];
 
-  doInstallCheck = true;
+  cmakeFlags = [
+    "-DOpenGL_GL_PREFERENCE=GLVND"
+  ]
+  ++ lib.optional (!withGui) "-DENABLE_GUI=OFF";
 
   postInstall = ''
     install -Dm444 -t $out/lib/udev/rules.d ../udev-rules/64-limesuite.rules
     install -Dm444 -t $out/share/limesuite bin/Release/lms7suite_mcu/*
   '';
+
+  doInstallCheck = true;
 
   meta = {
     description = "Driver and GUI for LMS7002M-based SDR platforms";

@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   libx11,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-aXTQeUKhwa2uVipKIs8n0XBiWa5o7U6UMlAUlnzXyzE=";
   };
 
-  cargoHash = "sha256-SOmq1txYMJGUVkkrE3kWmioaJzBX9raZ+ExFlPYGDM8=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -28,11 +26,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libx11
   ];
 
+  cargoHash = "sha256-SOmq1txYMJGUVkkrE3kWmioaJzBX9raZ+ExFlPYGDM8=";
+
   meta = {
     description = "Livesplit-inspired speedrunning split timer for Linux/macOS terminal";
+    homepage = "https://github.com/alexozer/flitter";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fgaz ];
-    homepage = "https://github.com/alexozer/flitter";
     platforms = lib.platforms.unix;
     mainProgram = "flitter";
     broken = stdenv.hostPlatform.isDarwin;

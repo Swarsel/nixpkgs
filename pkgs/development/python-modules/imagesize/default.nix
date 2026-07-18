@@ -7,12 +7,13 @@
 buildPythonPackage rec {
   pname = "imagesize";
   version = "1.4.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-aRUERK/7nLDVzFqSs2dvCy+3zZrjnpR6XhGja0SXzUo=";
   };
+
+  format = "setuptools";
 
   meta = {
     description = "Getting image size from png/jpeg/jpeg2000/gif file";

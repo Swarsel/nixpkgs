@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  buildPackages,
   boost,
+  buildPackages,
+  cctools,
+  curl,
   gperftools,
-  snappy,
-  zlib,
-  yaml-cpp,
-  sasl,
+  libpcap,
   net-snmp,
   openldap,
   openssl,
-  libpcap,
-  curl,
-  cctools,
-  xz,
+  sasl,
+  snappy,
   versionCheckHook,
+  xz,
+  yaml-cpp,
+  zlib,
 }:
 
 # Note:
@@ -24,12 +24,12 @@
 #   see pkgs.mongodb-tools and pkgs.mongosh.
 
 {
-  version,
   hash,
-  patches ? [ ],
-  license ? lib.licenses.sspl,
+  version,
   avxSupport ? stdenv.hostPlatform.avxSupport,
+  license ? lib.licenses.sspl,
   passthru ? { },
+  patches ? [ ],
 }:
 
 let
@@ -63,14 +63,36 @@ let
 in
 stdenv.mkDerivation (finalAttrs: {
   inherit version passthru;
+  # MongoDB keeps track of its build parameters, which tricks nix into
+  # keeping dependencies to build inputs in the final output.
+  # We remove the build flags from buildInfo data.
+  inherit patches;
   pname = "mongodb";
 
   src = fetchFromGitHub {
+    inherit hash;
     owner = "mongodb";
     repo = "mongo";
     tag = "r${finalAttrs.version}";
-    inherit hash;
   };
+
+  postPatch = ''
+    # fix environment variable reading
+    substituteInPlace SConstruct \
+        --replace-fail "env = Environment(" "env = Environment(ENV = os.environ,"
+  ''
+  + ''
+    # Fix debug gcc 11 and clang 12 builds on Fedora
+    # https://github.com/mongodb/mongo/commit/e78b2bf6eaa0c43bd76dbb841add167b443d2bb0.patch
+    substituteInPlace src/mongo/db/query/plan_summary_stats.h --replace-fail '#include <string>' '#include <optional>
+    #include <string>'
+    substituteInPlace src/mongo/db/exec/plan_stats.h --replace-fail '#include <string>' '#include <optional>
+    #include <string>'
+  ''
+  + lib.optionalString (!avxSupport) ''
+    substituteInPlace SConstruct \
+      --replace-fail "default=['+sandybridge']," 'default=[],'
+  '';
 
   nativeBuildInputs = [
     scons
@@ -96,47 +118,7 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional stdenv.hostPlatform.isLinux net-snmp;
 
-  # MongoDB keeps track of its build parameters, which tricks nix into
-  # keeping dependencies to build inputs in the final output.
-  # We remove the build flags from buildInfo data.
-  inherit patches;
-
-  postPatch = ''
-    # fix environment variable reading
-    substituteInPlace SConstruct \
-        --replace-fail "env = Environment(" "env = Environment(ENV = os.environ,"
-  ''
-  + ''
-    # Fix debug gcc 11 and clang 12 builds on Fedora
-    # https://github.com/mongodb/mongo/commit/e78b2bf6eaa0c43bd76dbb841add167b443d2bb0.patch
-    substituteInPlace src/mongo/db/query/plan_summary_stats.h --replace-fail '#include <string>' '#include <optional>
-    #include <string>'
-    substituteInPlace src/mongo/db/exec/plan_stats.h --replace-fail '#include <string>' '#include <optional>
-    #include <string>'
-  ''
-  + lib.optionalString (!avxSupport) ''
-    substituteInPlace SConstruct \
-      --replace-fail "default=['+sandybridge']," 'default=[],'
-  '';
-
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-unused-command-line-argument";
-
-  sconsFlags = [
-    "--release"
-    "--ssl"
-    #"--rocksdb" # Don't have this packaged yet
-    "--wiredtiger=on"
-    "--js-engine=mozjs"
-    "--use-sasl-client"
-    "--disable-warnings-as-errors"
-    "VARIANT_DIR=nixos" # Needed so we don't produce argument lists that are too long for gcc / ld
-    "--link-model=static"
-    "MONGO_VERSION=${finalAttrs.version}"
-  ]
-  ++ map (lib: "--use-system-${lib}") system-libraries;
-
-  # This seems to fix mongodb not able to find OpenSSL's crypto.h during build
-  hardeningDisable = [ "fortify3" ];
 
   preBuild = ''
     appendToVar sconsFlags "CC=$CC"
@@ -159,20 +141,33 @@ stdenv.mkDerivation (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  enableParallelBuilding = true;
+  # This seems to fix mongodb not able to find OpenSSL's crypto.h during build
+  hardeningDisable = [ "fortify3" ];
+  installTargets = "install-devcore";
+  prefixKey = "DESTDIR=";
+
+  sconsFlags = [
+    "--release"
+    "--ssl"
+    #"--rocksdb" # Don't have this packaged yet
+    "--wiredtiger=on"
+    "--js-engine=mozjs"
+    "--use-sasl-client"
+    "--disable-warnings-as-errors"
+    "VARIANT_DIR=nixos" # Needed so we don't produce argument lists that are too long for gcc / ld
+    "--link-model=static"
+    "MONGO_VERSION=${finalAttrs.version}"
+  ]
+  ++ map (lib: "--use-system-${lib}") system-libraries;
+
   versionCheckProgram = "${placeholder "out"}/bin/mongo";
   versionCheckProgramArg = "--version";
 
-  installTargets = "install-devcore";
-
-  prefixKey = "DESTDIR=";
-
-  enableParallelBuilding = true;
-
   meta = {
+    inherit license;
     description = "Scalable, high-performance, open source NoSQL database";
     homepage = "http://www.mongodb.org";
-    inherit license;
-
     maintainers = [ ];
     platforms = subtractLists systems.doubles.i686 systems.doubles.unix;
   };

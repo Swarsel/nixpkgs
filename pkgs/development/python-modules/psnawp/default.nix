@@ -1,7 +1,7 @@
 {
+  lib,
   buildPythonPackage,
   fetchFromCodeberg,
-  lib,
   poetry-core,
   pycountry,
   pyrate-limiter,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "psnawp";
   version = "3.0.3";
-  pyproject = true;
 
   src = fetchFromCodeberg {
     owner = "YoshikageKira";
@@ -21,11 +20,9 @@ buildPythonPackage rec {
     hash = "sha256-vAz1HDvPRWgrWMKwWNMA2nhA2wLCN92lDb06ZQiZnO0=";
   };
 
+  # tests access the actual PlayStation Network API
+  doCheck = false;
   build-system = [ poetry-core ];
-
-  pythonRelaxDeps = [
-    "pycountry"
-  ];
 
   dependencies = [
     pycountry
@@ -34,15 +31,17 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "psnawp_api" ];
 
-  # tests access the actual PlayStation Network API
-  doCheck = false;
+  pythonRelaxDeps = [
+    "pycountry"
+  ];
 
   meta = {
-    changelog = "https://codeberg.org/YoshikageKira/psnawp/releases/tag/${src.tag}";
     description = "Python API Wrapper for PlayStation Network API";
     homepage = "https://codeberg.org/YoshikageKira/psnawp";
+    changelog = "https://codeberg.org/YoshikageKira/psnawp/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

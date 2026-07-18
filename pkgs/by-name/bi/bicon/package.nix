@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  perl,
   fribidi,
   kbd,
+  perl,
+  pkg-config,
   xkbutils,
 }:
 
@@ -21,15 +21,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-4pvI4T+fdgCirHDc0h3vP5AZyqfnBKv5R3fJICnpmF4=";
   };
 
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
+  ];
+
   buildInputs = [
     fribidi
     kbd
     xkbutils
     perl
-  ];
-  nativeBuildInputs = [
-    autoreconfHook
-    pkg-config
   ];
 
   preConfigure = ''
@@ -39,11 +40,13 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Bidirectional console";
     homepage = "https://github.com/behdad/bicon";
+
     license = with lib.licenses; [
       lgpl21
       psfl
       bsd0
     ];
+
     maintainers = [ ];
     platforms = lib.platforms.linux;
   };

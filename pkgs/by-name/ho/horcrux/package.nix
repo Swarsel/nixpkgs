@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -21,7 +21,7 @@ buildGoModule {
     description = "Split your file into encrypted fragments so that you don't need to remember a passcode";
     homepage = "https://github.com/jesseduffield/horcrux";
     license = lib.licenses.mit;
-    mainProgram = "horcrux";
     maintainers = with lib.maintainers; [ mh ];
+    mainProgram = "horcrux";
   };
 }

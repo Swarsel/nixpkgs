@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hcloud,
   octodns,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "octodns-hetzner";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "octodns";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-aWWT/LShHxWOfNhBr7vCeG9bA6yXEutO2NJic18szL8=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    requests-mock
+  ];
 
   build-system = [
     setuptools
@@ -32,12 +36,8 @@ buildPythonPackage rec {
     hcloud
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "octodns_hetzner" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    requests-mock
-  ];
 
   meta = {
     description = "Hetzner DNS provider for octoDNS";

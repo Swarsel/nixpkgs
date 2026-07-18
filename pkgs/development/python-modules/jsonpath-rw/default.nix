@@ -1,18 +1,16 @@
 {
   lib,
   buildPythonPackage,
+  decorator,
   fetchPypi,
   isPyPy,
   ply,
   six,
-  decorator,
 }:
 
 buildPythonPackage rec {
   pname = "jsonpath-rw";
   version = "1.4.0";
-  format = "setuptools";
-  disabled = isPyPy;
 
   src = fetchPypi {
     inherit pname version;
@@ -27,11 +25,13 @@ buildPythonPackage rec {
 
   # ImportError: No module named tests
   doCheck = false;
+  disabled = isPyPy;
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/kennknowles/python-jsonpath-rw";
     description = "Robust and significantly extended implementation of JSONPath for Python, with a clear AST for metaprogramming";
-    mainProgram = "jsonpath.py";
+    homepage = "https://github.com/kennknowles/python-jsonpath-rw";
     license = lib.licenses.asl20;
+    mainProgram = "jsonpath.py";
   };
 }

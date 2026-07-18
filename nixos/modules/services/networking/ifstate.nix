@@ -1,6 +1,6 @@
 {
-  lib,
   config,
+  lib,
   pkgs,
   ...
 }:
@@ -9,6 +9,8 @@ let
   cfg = config.networking.ifstate;
   initrdCfg = config.boot.initrd.network.ifstate;
   settingsFormat = {
+    inherit (pkgs.formats.yaml { }) type;
+
     # override generator in order to:
     # - use yq and not remarshal because it matches yaml datatype handling with IfState
     # - validate json schema
@@ -20,49 +22,48 @@ let
             yq
             check-jsonschema
           ];
-          value = builtins.toJSON value;
+
           passAsFile = [ "value" ];
+          value = builtins.toJSON value;
         }
         ''
           yq --yaml-output . $valuePath > $out
           check-jsonschema --schemafile "${cfg.package.passthru.jsonschema}" "$out"
           sed -i $'s|\'!include |!include \'|' $out
         '';
-
-    inherit (pkgs.formats.yaml { }) type;
   };
   initrdInterfaceTypes = map (interface: interface.link.kind) (
     builtins.attrValues initrdCfg.settings.interfaces
   );
   # IfState interface kind to kernel modules mapping
   interfaceKernelModules = {
-    "ifb" = [ "ifb" ];
-    "ip6tnl" = [ "ip6tnl" ];
-    "ipoib" = [ "ib_ipoib" ];
-    "ipvlan" = [ "ipvlan" ];
-    "macvlan" = [ "macvlan" ];
-    "macvtap" = [ "macvtap" ];
-    "team" = [ "team" ];
-    "tun" = [ "tun" ];
-    "vrf" = [ "vrf" ];
-    "vti" = [ "ip_vti" ];
-    "vti6" = [ "ip6_vti" ];
     "bond" = [ "bonding" ];
     "bridge" = [ "bridge" ];
     # "physical" = ...;
     "dsa" = [ "dsa_core" ];
     "dummy" = [ "dummy" ];
-    "veth" = [ "veth" ];
-    "vxcan" = [ "vxcan" ];
-    "vlan" = [ "8021q" ];
-    "vxlan" = [ "vxlan" ];
-    "ipip" = [ "ipip" ];
-    "sit" = [ "sit" ];
+    "geneve" = [ "geneve" ];
     "gre" = [ "ip_gre" ];
     "gretap" = [ "ip_gre" ];
+    "ifb" = [ "ifb" ];
     "ip6gre" = [ "ip6_gre" ];
     "ip6gretap" = [ "ip6_gre" ];
-    "geneve" = [ "geneve" ];
+    "ip6tnl" = [ "ip6tnl" ];
+    "ipip" = [ "ipip" ];
+    "ipoib" = [ "ib_ipoib" ];
+    "ipvlan" = [ "ipvlan" ];
+    "macvlan" = [ "macvlan" ];
+    "macvtap" = [ "macvtap" ];
+    "sit" = [ "sit" ];
+    "team" = [ "team" ];
+    "tun" = [ "tun" ];
+    "veth" = [ "veth" ];
+    "vlan" = [ "8021q" ];
+    "vrf" = [ "vrf" ];
+    "vti" = [ "ip_vti" ];
+    "vti6" = [ "ip6_vti" ];
+    "vxcan" = [ "vxcan" ];
+    "vxlan" = [ "vxlan" ];
     "wireguard" = [ "wireguard" ];
     "xfrm" = [ "xfrm_interface" ];
   };
@@ -73,18 +74,17 @@ let
       "systemd-sysusers.service"
       "systemd-sysctl.service"
     ];
+
     before = [
       "network.target"
       "multi-user.target"
       "shutdown.target"
       "initrd-switch-root.target"
     ];
+
     conflicts = [
       "shutdown.target"
       "initrd-switch-root.target"
-    ];
-    wants = [
-      "network.target"
     ];
 
     # We wait for the udev events queue to empty in the *hope* that the
@@ -97,46 +97,31 @@ let
       # Avoid default dependencies like "basic.target", which prevents ifstate from starting before luks is unlocked.
       DefaultDependencies = "no";
     };
+
+    wants = [
+      "network.target"
+    ];
   };
 in
 {
-  meta.maintainers = with lib.maintainers; [ marcel ];
-
   options = {
-    networking.ifstate = {
-      enable = lib.mkEnableOption "networking using IfState";
-
-      package = lib.mkPackageOption pkgs "ifstate" { };
-
-      settings = lib.mkOption {
-        inherit (settingsFormat) type;
-        default = { };
-        description = "Content of IfState's configuration file. See <https://ifstate.net/2.2/schema/> for details.";
-      };
-    };
-
     boot.initrd.network.ifstate = {
       enable = lib.mkEnableOption "initrd networking using IfState";
 
-      allowIfstateToDrasticlyIncreaseInitrdSize = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "IfState in initrd drastically increases the size of initrd, your boot partition may be too small and/or you may have significantly fewer generations. By setting this option, you acknowledge this fact and keep it in mind when reporting issues.";
-      };
-
       package = lib.mkOption {
-        type = lib.types.package;
         default = cfg.package.override {
           withConfigValidation = false;
         };
+
         defaultText = lib.literalExpression "pkgs.ifstate.override { withConfigValidation = false; }";
         description = "The initrd IfState package to use.";
+        type = lib.types.package;
       };
 
-      settings = lib.mkOption {
-        inherit (settingsFormat) type;
-        default = { };
-        description = "Content of IfState's initrd configuration file. See <https://ifstate.net/2.2/schema/> for details.";
+      allowIfstateToDrasticlyIncreaseInitrdSize = lib.mkOption {
+        default = false;
+        description = "IfState in initrd drastically increases the size of initrd, your boot partition may be too small and/or you may have significantly fewer generations. By setting this option, you acknowledge this fact and keep it in mind when reporting issues.";
+        type = lib.types.bool;
       };
 
       cleanupSettings = lib.mkOption {
@@ -144,6 +129,23 @@ in
         # required by json schema
         default.interfaces = { };
         description = "Content of IfState's initrd cleanup configuration file. See <https://ifstate.net/2.0/schema/> for details. This configuration gets applied before systemd switches to stage two. The goal is to deconfigurate the whole network in order to prevent access to services, before the firewall is configured. The stage two IfState configuration will start after the firewall is configured.";
+      };
+
+      settings = lib.mkOption {
+        inherit (settingsFormat) type;
+        default = { };
+        description = "Content of IfState's initrd configuration file. See <https://ifstate.net/2.2/schema/> for details.";
+      };
+    };
+
+    networking.ifstate = {
+      enable = lib.mkEnableOption "networking using IfState";
+      package = lib.mkPackageOption pkgs "ifstate" { };
+
+      settings = lib.mkOption {
+        inherit (settingsFormat) type;
+        default = { };
+        description = "Content of IfState's configuration file. See <https://ifstate.net/2.2/schema/> for details.";
       };
     };
   };
@@ -169,33 +171,33 @@ in
         }
       ];
 
-      networking.useDHCP = lib.mkDefault false;
-
       environment = {
-        # ifstatecli command should be available to use user, there are other useful subcommands like check or show
-        systemPackages = [ cfg.package ];
         # match the default value of the --config flag of IfState
         etc."ifstate/ifstate.yaml".source = settingsFormat.generate "ifstate.yaml" cfg.settings cfg.package;
+        # ifstatecli command should be available to use user, there are other useful subcommands like check or show
+        systemPackages = [ cfg.package ];
       };
+
+      networking.useDHCP = lib.mkDefault false;
 
       systemd.services.ifstate = lib.recursiveUpdate commonServiceConfig {
         description = "IfState";
-
-        wantedBy = [
-          "multi-user.target"
-        ];
-
         # mount is always available on nixos, avoid adding additional store paths to the closure
         path = [ "/run/wrappers" ];
 
         serviceConfig = {
-          Type = "oneshot";
           ExecStart = "${lib.getExe cfg.package} --config ${
             config.environment.etc."ifstate/ifstate.yaml".source
           } apply";
+
           # because oneshot services do not have a timeout by default
           TimeoutStartSec = "2min";
+          Type = "oneshot";
         };
+
+        wantedBy = [
+          "multi-user.target"
+        ];
       };
     })
     (lib.mkIf initrdCfg.enable {
@@ -214,18 +216,7 @@ in
         }
       ];
 
-      environment.etc = {
-        "ifstate/ifstate.initrd.yaml".source =
-          settingsFormat.generate "ifstate.initrd.yaml" initrdCfg.settings
-            initrdCfg.package;
-        "ifstate/ifstate.initrd-cleanup.yaml".source =
-          settingsFormat.generate "ifstate.initrd-cleanup.yaml" initrdCfg.cleanupSettings
-            initrdCfg.package;
-      };
-
       boot.initrd = {
-        network.udhcpc.enable = lib.mkDefault false;
-
         # automatic configuration of kernel modules of virtual interface types
         availableKernelModules =
           let
@@ -235,7 +226,51 @@ in
           in
           lib.flatten (map enableModule initrdInterfaceTypes);
 
+        network.udhcpc.enable = lib.mkDefault false;
+
         systemd = {
+          # https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/system/boot/networkd.nix#L3444
+          additionalUpstreamUnits = [
+            "network-online.target"
+            "network-pre.target"
+            "network.target"
+            "nss-lookup.target"
+            "nss-user-lookup.target"
+            "remote-fs-pre.target"
+            "remote-fs.target"
+          ];
+
+          services.ifstate-initrd = lib.recursiveUpdate commonServiceConfig {
+            description = "IfState initrd";
+
+            # mount is always available on nixos, avoid adding additional store paths to the closure
+            # https://github.com/NixOS/nixpkgs/blob/2b8e2457ebe576ebf41ddfa8452b5b07a8d493ad/nixos/modules/system/boot/systemd/initrd.nix#L550-L551
+            path = [
+              config.boot.initrd.systemd.package.util-linux
+            ];
+
+            serviceConfig = {
+              ExecStart = "${lib.getExe initrdCfg.package} --config ${
+                config.environment.etc."ifstate/ifstate.initrd.yaml".source
+              } apply";
+
+              ExecStop = "${lib.getExe initrdCfg.package} --config ${
+                config.environment.etc."ifstate/ifstate.initrd-cleanup.yaml".source
+              } apply";
+
+              # Otherwise systemd starts ifstate again, after the encryption password was entered by the user
+              # and we are able to implement the cleanup using ExecStop rather than a separate unit.
+              RemainAfterExit = true;
+              # because oneshot services do not have a timeout by default
+              TimeoutStartSec = "2min";
+              Type = "oneshot";
+            };
+
+            wantedBy = [
+              "initrd.target"
+            ];
+          };
+
           storePaths = [
             (pkgs.runCommand "ifstate-closure"
               {
@@ -256,48 +291,20 @@ in
               ''
             )
           ];
-
-          # https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/system/boot/networkd.nix#L3444
-          additionalUpstreamUnits = [
-            "network-online.target"
-            "network-pre.target"
-            "network.target"
-            "nss-lookup.target"
-            "nss-user-lookup.target"
-            "remote-fs-pre.target"
-            "remote-fs.target"
-          ];
-
-          services.ifstate-initrd = lib.recursiveUpdate commonServiceConfig {
-            description = "IfState initrd";
-
-            wantedBy = [
-              "initrd.target"
-            ];
-
-            # mount is always available on nixos, avoid adding additional store paths to the closure
-            # https://github.com/NixOS/nixpkgs/blob/2b8e2457ebe576ebf41ddfa8452b5b07a8d493ad/nixos/modules/system/boot/systemd/initrd.nix#L550-L551
-            path = [
-              config.boot.initrd.systemd.package.util-linux
-            ];
-
-            serviceConfig = {
-              Type = "oneshot";
-              # Otherwise systemd starts ifstate again, after the encryption password was entered by the user
-              # and we are able to implement the cleanup using ExecStop rather than a separate unit.
-              RemainAfterExit = true;
-              ExecStart = "${lib.getExe initrdCfg.package} --config ${
-                config.environment.etc."ifstate/ifstate.initrd.yaml".source
-              } apply";
-              ExecStop = "${lib.getExe initrdCfg.package} --config ${
-                config.environment.etc."ifstate/ifstate.initrd-cleanup.yaml".source
-              } apply";
-              # because oneshot services do not have a timeout by default
-              TimeoutStartSec = "2min";
-            };
-          };
         };
+      };
+
+      environment.etc = {
+        "ifstate/ifstate.initrd-cleanup.yaml".source =
+          settingsFormat.generate "ifstate.initrd-cleanup.yaml" initrdCfg.cleanupSettings
+            initrdCfg.package;
+
+        "ifstate/ifstate.initrd.yaml".source =
+          settingsFormat.generate "ifstate.initrd.yaml" initrdCfg.settings
+            initrdCfg.package;
       };
     })
   ];
+
+  meta.maintainers = with lib.maintainers; [ marcel ];
 }

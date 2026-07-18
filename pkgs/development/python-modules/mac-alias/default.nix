@@ -8,12 +8,11 @@
 buildPythonPackage rec {
   pname = "mac-alias";
   version = "2.2.3";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "mac_alias";
     inherit version;
     hash = "sha256-HH+jZ2h9ZpefLOTRqLJxbPHJ+4EXQcqzzzyjVlVcK+s=";
+    pname = "mac_alias";
   };
 
   postPatch = ''
@@ -21,16 +20,15 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ setuptools ];
-
   # pypi package does not include tests;
   # tests anyway require admin privileges to succeed
   doCheck = false;
+  pyproject = true;
   pythonImportsCheck = [ "mac_alias" ];
 
   meta = {
-    homepage = "https://github.com/al45tair/mac_alias";
     description = "Generate or read binary Alias and Bookmark records from Python code";
-    mainProgram = "mac_alias";
+
     longDescription = ''
       mac_alias lets you generate or read binary Alias and Bookmark records from Python code.
 
@@ -38,7 +36,10 @@ buildPythonPackage rec {
       to generate a proper Alias or Bookmark record for a given file,
       so this module currently is not portable to other platforms.
     '';
+
+    homepage = "https://github.com/al45tair/mac_alias";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ siriobalmelli ];
+    mainProgram = "mac_alias";
   };
 }

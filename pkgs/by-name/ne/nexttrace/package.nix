@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   libpcap,
 }:
 
@@ -15,21 +15,20 @@ buildGoModule (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-yjG/nXnZs5ks80Q5Qq9TsN57nuSrPvp/jlYV3FXJqMk=";
   };
-  vendorHash = "sha256-u5UTl3zNlnv0qk/Z60h1csp44ypn1V6i/aAThtTn3eg=";
 
   buildInputs = [ libpcap ];
-
+  vendorHash = "sha256-u5UTl3zNlnv0qk/Z60h1csp44ypn1V6i/aAThtTn3eg=";
   doCheck = false; # Tests require a network connection.
+
+  postInstall = ''
+    mv $out/bin/NTrace-core $out/bin/nexttrace
+  '';
 
   ldflags = [
     "-s"
     "-w"
     "-X github.com/nxtrace/NTrace-core/config.Version=v${finalAttrs.version}"
   ];
-
-  postInstall = ''
-    mv $out/bin/NTrace-core $out/bin/nexttrace
-  '';
 
   meta = {
     description = "Open source visual route tracking CLI tool";

@@ -1,28 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  cython,
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   catalogue,
-
+  # build-system
+  cython,
   # tests
   mock,
   numpy,
   psutil,
   pytest,
   ruamel-yaml,
+  setuptools,
   tornado,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "srsly";
   version = "2.5.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "explosion";
@@ -30,13 +26,6 @@ buildPythonPackage (finalAttrs: {
     tag = "release-v${finalAttrs.version}";
     hash = "sha256-dZuw0+tNIMseznGBQwIS6uICZEozkBWzF7FMQIo0Tbo=";
   };
-
-  build-system = [
-    cython
-    setuptools
-  ];
-
-  dependencies = [ catalogue ];
 
   nativeCheckInputs = [
     mock
@@ -47,6 +36,13 @@ buildPythonPackage (finalAttrs: {
     tornado
   ];
 
+  build-system = [
+    cython
+    setuptools
+  ];
+
+  dependencies = [ catalogue ];
+  pyproject = true;
   pythonImportsCheck = [ "srsly" ];
 
   meta = {

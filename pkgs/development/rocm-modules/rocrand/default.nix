@@ -2,20 +2,32 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
-  cmake,
-  rocm-cmake,
   clr,
-  gtest,
+  cmake,
   gbenchmark,
-  buildTests ? false,
+  gtest,
+  rocm-cmake,
+  rocmUpdateScript,
   buildBenchmarks ? false,
+  buildTests ? false,
   gpuTargets ? clr.localGpuTargets or [ ],
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "rocrand${clr.gpuArchSuffix}";
   version = "7.2.3";
+
+  src = fetchFromGitHub {
+    owner = "ROCm";
+    repo = "rocm-libraries";
+    rev = "rocm-${finalAttrs.version}";
+    hash = "sha256-tl++h7LSEXf0jWe007+RIRwYHdB6TKPDpzipj1Emew8=";
+
+    sparseCheckout = [
+      "projects/rocrand"
+      "shared"
+    ];
+  };
 
   outputs = [
     "out"
@@ -26,18 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals buildBenchmarks [
     "benchmark"
   ];
-
-  src = fetchFromGitHub {
-    owner = "ROCm";
-    repo = "rocm-libraries";
-    rev = "rocm-${finalAttrs.version}";
-    sparseCheckout = [
-      "projects/rocrand"
-      "shared"
-    ];
-    hash = "sha256-tl++h7LSEXf0jWe007+RIRwYHdB6TKPDpzipj1Emew8=";
-  };
-  sourceRoot = "${finalAttrs.src.name}/projects/rocrand";
 
   nativeBuildInputs = [
     cmake
@@ -86,13 +86,14 @@ stdenv.mkDerivation (finalAttrs: {
       rmdir $out/bin
     '';
 
+  sourceRoot = "${finalAttrs.src.name}/projects/rocrand";
   passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
 
   meta = {
     description = "Generate pseudo-random and quasi-random numbers";
     homepage = "https://github.com/ROCm/rocm-libraries/tree/develop/projects/rocrand";
     license = with lib.licenses; [ mit ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
-  cloud-utils,
   fetchFromGitHub,
+  cloud-utils,
   pkg-config,
+  rustPlatform,
   util-linux,
   zfs,
 }:
@@ -18,15 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-N1znZbJULEeNR4ABSrUtHHkmz08N+CZqX6Ni7jFzc4c=";
   };
 
-  cargoHash = "sha256-xxTnNwqDlym4Bviek38PRUwmPKUSTnI9GOEYYyBxW+s=";
-
-  preBuild = ''
-    substituteInPlace src/grow.rs \
-      --replace '"growpart"' '"${cloud-utils}/bin/growpart"'
-    substituteInPlace src/lsblk.rs \
-      --replace '"lsblk"' '"${util-linux}/bin/lsblk"'
-  '';
-
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
@@ -36,6 +27,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     util-linux
     zfs
   ];
+
+  cargoHash = "sha256-xxTnNwqDlym4Bviek38PRUwmPKUSTnI9GOEYYyBxW+s=";
+
+  preBuild = ''
+    substituteInPlace src/grow.rs \
+      --replace '"growpart"' '"${cloud-utils}/bin/growpart"'
+    substituteInPlace src/lsblk.rs \
+      --replace '"lsblk"' '"${util-linux}/bin/lsblk"'
+  '';
 
   meta = {
     description = "Tool that aims to expand all partitions in a specified zpool to fill the available space";

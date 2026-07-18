@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyatag";
   version = "0.3.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "MatsNl";
@@ -19,11 +18,10 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ aiohttp ];
-
   # no tests implemented
   doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "pyatag"

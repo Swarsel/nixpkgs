@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,9 +19,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Expressive, simple, dynamic programming language";
-    mainProgram = "oak";
     homepage = "https://oaklang.org/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ tejasag ];
+    mainProgram = "oak";
   };
 })

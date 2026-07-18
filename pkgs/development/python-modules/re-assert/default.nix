@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  regex,
+  buildPythonPackage,
   pytestCheckHook,
+  regex,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "re-assert";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "asottile";
@@ -19,17 +18,15 @@ buildPythonPackage rec {
     hash = "sha256-UTXFTD3QOKIzjq05J9Ontv5h9aClOwlPYKFXfDnBWuc=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ regex ];
-
-  pythonImportsCheck = [ "re_assert" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  dependencies = [ regex ];
+  pyproject = true;
+  pythonImportsCheck = [ "re_assert" ];
 
   meta = {
     description = "Show where your regex match assertion failed";
-    license = lib.licenses.mit;
     homepage = "https://github.com/asottile/re-assert";
+    license = lib.licenses.mit;
   };
 }

@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -39,57 +39,71 @@ in
 
     services.syslog-ng = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to enable the syslog-ng daemon.
         '';
+
+        type = lib.types.bool;
       };
+
       package = lib.mkPackageOption pkgs "syslogng" { };
+
+      configHeader = lib.mkOption {
+        default = ''
+          @version: 4.4
+          @include "scl.conf"
+        '';
+
+        description = ''
+          The very first lines of the configuration file. Should usually contain
+          the syslog-ng version header.
+        '';
+
+        type = lib.types.lines;
+      };
+
+      extraConfig = lib.mkOption {
+        default = "";
+
+        description = ''
+          Configuration added to the end of `syslog-ng.conf`.
+        '';
+
+        type = lib.types.lines;
+      };
+
       extraModulePaths = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
         default = [ ];
+
         description = ''
           A list of paths that should be included in syslog-ng's
           `--module-path` option. They should usually
           end in `/lib/syslog-ng`
         '';
-      };
-      extraConfig = lib.mkOption {
-        type = lib.types.lines;
-        default = "";
-        description = ''
-          Configuration added to the end of `syslog-ng.conf`.
-        '';
-      };
-      configHeader = lib.mkOption {
-        type = lib.types.lines;
-        default = ''
-          @version: 4.4
-          @include "scl.conf"
-        '';
-        description = ''
-          The very first lines of the configuration file. Should usually contain
-          the syslog-ng version header.
-        '';
+
+        type = lib.types.listOf lib.types.str;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.syslog-ng = {
-      description = "syslog-ng daemon";
-      wantedBy = [ "multi-user.target" ];
       after = [ "multi-user.target" ]; # makes sure hostname etc is set
+      description = "syslog-ng daemon";
+
       serviceConfig = {
-        Type = "notify";
-        PIDFile = pidFile;
-        StandardOutput = "null";
-        Restart = "on-failure";
-        ExecStartPre = "${lib.getExe' pkgs.coreutils "mkdir"} -p /var/syslog-ng /run/syslog-ng";
-        ExecStart = "${cfg.package}/sbin/syslog-ng ${lib.concatStringsSep " " syslogngOptions}";
         ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+        ExecStart = "${cfg.package}/sbin/syslog-ng ${lib.concatStringsSep " " syslogngOptions}";
+        ExecStartPre = "${lib.getExe' pkgs.coreutils "mkdir"} -p /var/syslog-ng /run/syslog-ng";
+        PIDFile = pidFile;
+        Restart = "on-failure";
+        StandardOutput = "null";
+        Type = "notify";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

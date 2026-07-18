@@ -1,20 +1,20 @@
 {
-  runCommand,
   fetchurl,
   appimage-run,
-  glibcLocales,
   file,
+  glibcLocales,
+  runCommand,
   xdg-utils,
 }:
 let
   # any AppImage usable on cli, really
   sample-appImage = fetchurl {
-    url = "https://github.com/AppImage/AppImageKit/releases/download/12/appimagetool-x86_64.AppImage";
     sha256 = "04ws94q71bwskmhizhwmaf41ma4wabvfgjgkagr8wf3vakgv866r";
+    url = "https://github.com/AppImage/AppImageKit/releases/download/12/appimagetool-x86_64.AppImage";
   };
   owdtest = fetchurl {
-    url = "https://github.com/NixOS/nixpkgs/files/10099048/owdtest.AppImage.gz";
     sha256 = "sha256-EEp9dxz/+l5XkNaVBFgv5v64sizQILnljRAzwXv/yV8=";
+    url = "https://github.com/NixOS/nixpkgs/files/10099048/owdtest.AppImage.gz";
   };
 in
 runCommand "appimage-run-tests"
@@ -25,6 +25,7 @@ runCommand "appimage-run-tests"
       file
       xdg-utils
     ];
+
     meta.platforms = [ "x86_64-linux" ];
   }
   ''

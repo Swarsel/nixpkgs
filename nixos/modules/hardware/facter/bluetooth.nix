@@ -1,4 +1,4 @@
-{ lib, config, ... }:
+{ config, lib, ... }:
 {
   options.hardware.facter.detected.bluetooth.enable =
     lib.mkEnableOption "Enable the Facter bluetooth module"

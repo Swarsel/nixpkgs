@@ -28,8 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/dsifford/yarn-completion/";
     description = "Bash completion for Yarn";
+    homepage = "https://github.com/dsifford/yarn-completion/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ DamienCassou ];
   };

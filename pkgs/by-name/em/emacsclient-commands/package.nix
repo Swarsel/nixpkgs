@@ -16,9 +16,8 @@ buildGoModule {
     hash = "sha256-OlcB5VqWYdl0wz1y8nmG6Xgdf5IPOUQ31UG1TDxQAis=";
   };
 
-  vendorHash = "sha256-8oREed2Igz5UvUTDdOFwW5wQQy3H8Xj8epxo6gqnZFA=";
-
   buildInputs = [ gnumake ];
+  vendorHash = "sha256-8oREed2Igz5UvUTDdOFwW5wQQy3H8Xj8epxo6gqnZFA=";
 
   buildPhase = ''
     runHook preBuild

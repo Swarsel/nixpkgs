@@ -1,10 +1,10 @@
 {
-  boring,
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   lib,
   stdenv,
+  fetchFromGitHub,
+  boring,
+  buildGoModule,
+  installShellFiles,
   nix-update-script,
   testers,
 }:
@@ -24,9 +24,14 @@ buildGoModule (finalAttrs: {
     installShellFiles
   ];
 
-  subPackages = [ "cmd/boring" ];
-
   vendorHash = "sha256-yjqJ7G9n3c1ABLWynswzLP7B6bSwH1dIYKfVZqJX30g=";
+
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    installShellCompletion --cmd boring      \
+      --bash <($out/bin/boring --shell bash) \
+      --fish <($out/bin/boring --shell fish) \
+      --zsh  <($out/bin/boring --shell zsh)
+  '';
 
   ldflags = [
     "-s"
@@ -37,18 +42,13 @@ buildGoModule (finalAttrs: {
     }"
   ];
 
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    installShellCompletion --cmd boring      \
-      --bash <($out/bin/boring --shell bash) \
-      --fish <($out/bin/boring --shell fish) \
-      --zsh  <($out/bin/boring --shell zsh)
-  '';
+  subPackages = [ "cmd/boring" ];
 
   passthru = {
     tests.version = testers.testVersion {
-      package = boring;
-      command = "boring version";
       version = "boring ${finalAttrs.version}";
+      command = "boring version";
+      package = boring;
     };
 
     updateScript = nix-update-script { };
@@ -58,9 +58,11 @@ buildGoModule (finalAttrs: {
     description = "SSH tunnel manager";
     homepage = "https://github.com/alebeck/boring";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       jacobkoziej
     ];
+
     mainProgram = "boring";
   };
 })

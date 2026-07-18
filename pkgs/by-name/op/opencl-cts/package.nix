@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
+  ocl-icd,
   opencl-headers,
+  pkg-config,
+  python3,
   spirv-headers,
   spirv-tools,
-  ocl-icd,
-  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,10 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
     ocl-icd
   ];
 
-  # Build errors when format hardening is enabled:
-  #   cc1: error: '-Wformat-security' ignored without '-Wformat' [-Werror=format-security]
-  hardeningDisable = [ "format" ];
-
   cmakeFlags = [
     (lib.cmakeFeature "CL_INCLUDE_DIR" "${lib.getInclude opencl-headers}/include")
     # Intentionally no suffix, CMakeLists adds for SPIRV and not for CL ¯\_(ツ)_/¯
@@ -52,6 +48,10 @@ stdenv.mkDerivation (finalAttrs: {
   postInstall = ''
     mv "$out/bin/''${cmakeBuildType:-Release}"/* "$out"/bin/
   '';
+
+  # Build errors when format hardening is enabled:
+  #   cc1: error: '-Wformat-security' ignored without '-Wformat' [-Werror=format-security]
+  hardeningDisable = [ "format" ];
 
   meta = {
     description = "OpenCL Conformance Test Suite";

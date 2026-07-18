@@ -1,8 +1,8 @@
 {
-  fetchCrate,
   lib,
-  rustPlatform,
+  fetchCrate,
   protobuf,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -11,10 +11,11 @@ rustPlatform.buildRustPackage rec {
 
   src = fetchCrate {
     inherit version;
-    pname = "protobuf-codegen";
     hash = "sha256-yGZ4auZHGtcsN6n4/FEzabsSXproyhNTJHIwujt7ijg=";
+    pname = "protobuf-codegen";
   };
 
+  nativeBuildInputs = [ protobuf ];
   cargoHash = "sha256-cj+/X3soc//lMOmBjfjQT+QhY/EWP92gChiDQ7b2fsM=";
 
   cargoBuildFlags = [
@@ -22,13 +23,11 @@ rustPlatform.buildRustPackage rec {
     pname
   ];
 
-  nativeBuildInputs = [ protobuf ];
-
   meta = {
     description = "Protobuf plugin for generating Rust code";
-    mainProgram = "protoc-gen-rust";
     homepage = "https://github.com/stepancheg/rust-protobuf";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ lucperkins ];
+    mainProgram = "protoc-gen-rust";
   };
 }

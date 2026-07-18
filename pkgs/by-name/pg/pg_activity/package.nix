@@ -1,13 +1,12 @@
 {
-  python3Packages,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "pg_activity";
   version = "3.6.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dalibo";
@@ -26,13 +25,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     psycopg2
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pgactivity" ];
 
   meta = {
     description = "Top like application for PostgreSQL server activity monitoring";
-    mainProgram = "pg_activity";
     homepage = "https://github.com/dalibo/pg_activity";
     license = lib.licenses.postgresql;
     maintainers = with lib.maintainers; [ mausch ];
+    mainProgram = "pg_activity";
   };
 })

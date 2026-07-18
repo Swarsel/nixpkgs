@@ -1,11 +1,11 @@
 {
+  lib,
+  fetchFromGitHub,
   coreutils,
   curl,
-  fetchFromGitHub,
   gawk,
   hyprland,
   jq,
-  lib,
   libnotify,
   makeWrapper,
   scdoc,
@@ -54,8 +54,8 @@ stdenvNoCC.mkDerivation rec {
     homepage = "https://github.com/Schweber/hdrop";
     changelog = "https://github.com/Schweber/hdrop/releases/tag/v${version}";
     license = lib.licenses.agpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ Schweber ];
+    platforms = lib.platforms.linux;
     mainProgram = "hdrop";
   };
 }

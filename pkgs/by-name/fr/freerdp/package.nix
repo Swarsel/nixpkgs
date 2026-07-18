@@ -1,24 +1,31 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  writableTmpDirAsHomeHook,
-  docbook-xsl-nons,
-  libxslt,
-  pkg-config,
+  SDL2,
+  SDL2_image,
+  SDL2_ttf,
   alsa-lib,
+  cairo,
+  cjson,
+  cmake,
+  cups,
+  docbook-xsl-nons,
   faac,
   faad2,
   ffmpeg,
   fuse3,
   glib,
-  openh264,
-  openssl,
-  pcre2,
-  pkcs11helper,
-  uriparser,
-  zlib,
+  gnome-remote-desktop,
+  icu,
+  libcbor,
+  libfido2,
+  libjpeg_turbo,
+  libkrb5,
+  libopus,
+  libpulseaudio,
+  libunwind,
+  libusb1,
   libx11,
   libxcursor,
   libxdamage,
@@ -26,48 +33,39 @@
   libxext,
   libxi,
   libxinerama,
-  libxrandr,
-  libxrender,
-  libxtst,
-  libxv,
   libxkbcommon,
   libxkbfile,
+  libxrandr,
+  libxrender,
+  libxslt,
+  libxtst,
+  libxv,
+  makeWrapper,
+  nix-update-script,
+  openh264,
+  openssl,
+  orc,
+  pcre2,
+  pcsclite,
+  pkcs11helper,
+  pkg-config,
+  remmina,
+  sdl3,
+  sdl3-image,
+  sdl3-ttf,
+  systemd,
+  uriparser,
   wayland,
   wayland-scanner,
-  icu,
-  libunwind,
-  orc,
-  cairo,
-  cjson,
-  libcbor,
-  libfido2,
-  libusb1,
-  libpulseaudio,
-  cups,
-  pcsclite,
-  SDL2,
-  SDL2_ttf,
-  SDL2_image,
-  sdl3,
-  sdl3-ttf,
-  sdl3-image,
-  systemd,
-  libjpeg_turbo,
-  libkrb5,
-  libopus,
+  writableTmpDirAsHomeHook,
+  zlib,
   buildServer ? true,
   nocaps ? false,
-  withUnfree ? false,
-  withWaylandSupport ? false,
-  withSDL2 ? false,
-  makeWrapper,
-
   # tries to compile and run generate_argument_docbook.c
   withManPages ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
-
-  gnome-remote-desktop,
-  remmina,
-  nix-update-script,
+  withSDL2 ? false,
+  withUnfree ? false,
+  withWaylandSupport ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -186,20 +184,20 @@ stdenv.mkDerivation (finalAttrs: {
       WITH_FUSE = stdenv.hostPlatform.isLinux && fuse3 != null;
       WITH_JPEG = libjpeg_turbo != null;
       WITH_KRB5 = libkrb5 != null;
+      WITH_MANPAGES = withManPages;
       WITH_OPENH264 = openh264 != null;
       WITH_OPUS = libopus != null;
       WITH_OSS = false;
-      WITH_MANPAGES = withManPages;
       WITH_PCSC = pcsclite != null;
       WITH_PULSE = libpulseaudio != null;
       WITH_SERVER = buildServer;
-      WITH_WEBVIEW = false; # avoid introducing webkit2gtk-4.0
       WITH_VAAPI = false; # false is recommended by upstream
+      WITH_WEBVIEW = false; # avoid introducing webkit2gtk-4.0
     }
     // lib.filterAttrs (name: value: value) {
+      WITH_WAYLAND = withWaylandSupport;
       # Only select one
       WITH_X11 = !withWaylandSupport;
-      WITH_WAYLAND = withWaylandSupport;
     }
   )
   ++ lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
@@ -224,22 +222,27 @@ stdenv.mkDerivation (finalAttrs: {
     tests = {
       inherit gnome-remote-desktop remmina;
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Remote Desktop Protocol Client";
+
     longDescription = ''
       FreeRDP is a client-side implementation of the Remote Desktop Protocol (RDP)
       following the Microsoft Open Specifications.
     '';
-    changelog = "https://github.com/FreeRDP/FreeRDP/releases/tag/${finalAttrs.src.tag}";
+
     homepage = "https://www.freerdp.com/";
+    changelog = "https://github.com/FreeRDP/FreeRDP/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       cizra
       deimelias
     ];
+
     platforms = lib.platforms.unix;
   };
 })

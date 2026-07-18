@@ -1,23 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   mouseinfo,
   pygetwindow,
   pymsgbox,
   pyperclip,
   pyscreeze,
-  pytweening,
-  tkinter,
   python-xlib,
-  xvfb-run,
+  pytweening,
   scrot,
+  setuptools,
+  tkinter,
+  xvfb-run,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "pyautogui";
   version = "0.9.53";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "asweigart";
@@ -30,6 +29,17 @@ buildPythonPackage (finalAttrs: {
     # https://github.com/asweigart/pyautogui/issues/598
     ./fix-locateOnWindow-and-xlib.patch
   ];
+
+  nativeCheckInputs = [
+    xvfb-run
+    scrot
+  ];
+
+  checkPhase = ''
+    xvfb-run python -c 'import pyautogui'
+    # The tests depend on some specific things that xvfb cant provide, like keyboard and mouse
+    # xvfb-run python -m unittest tests.test_pyautogui
+  '';
 
   build-system = [
     setuptools
@@ -46,16 +56,7 @@ buildPythonPackage (finalAttrs: {
     pytweening
   ];
 
-  nativeCheckInputs = [
-    xvfb-run
-    scrot
-  ];
-
-  checkPhase = ''
-    xvfb-run python -c 'import pyautogui'
-    # The tests depend on some specific things that xvfb cant provide, like keyboard and mouse
-    # xvfb-run python -m unittest tests.test_pyautogui
-  '';
+  pyproject = true;
 
   meta = {
     description = "PyAutoGUI lets Python control the mouse and keyboard, and other GUI automation tasks";

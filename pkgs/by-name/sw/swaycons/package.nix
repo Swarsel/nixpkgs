@@ -19,10 +19,10 @@ rustPlatform.buildRustPackage {
 
   meta = {
     description = "Window Icons in Sway with Nerd Fonts";
-    mainProgram = "swaycons";
     homepage = "https://github.com/allie-wake-up/swaycons";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ aacebedo ];
+    platforms = lib.platforms.linux;
+    mainProgram = "swaycons";
   };
 }

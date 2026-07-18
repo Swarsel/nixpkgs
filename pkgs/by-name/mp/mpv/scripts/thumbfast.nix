@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  unstableGitUpdater,
   buildLua,
   mpv-unwrapped,
+  unstableGitUpdater,
 }:
 
 buildLua {
@@ -16,7 +16,6 @@ buildLua {
     rev = "0f711de3138c9bd6718209d819ac54022c23ded2";
     hash = "sha256-LVeEtzOMVSgBqN9z6VQLZnxXfrOUoQPOWazVXmj3ZFY=";
   };
-  passthru.updateScript = unstableGitUpdater { };
 
   passthru.extraWrapperArgs = [
     "--prefix"
@@ -24,6 +23,8 @@ buildLua {
     ":"
     (lib.makeBinPath [ mpv-unwrapped ])
   ];
+
+  passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "High-performance on-the-fly thumbnailer for mpv";

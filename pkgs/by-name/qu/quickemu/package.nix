@@ -1,17 +1,20 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
-  makeWrapper,
-  gitUpdater,
+  fetchFromGitHub,
+  OVMF,
+  OVMFFull,
   cdrtools,
   coreutils,
   curl,
   gawk,
-  mesa-demos,
+  gitUpdater,
   gnugrep,
   gnused,
+  installShellFiles,
   jq,
+  makeWrapper,
+  mesa-demos,
   pciutils,
   procps,
   python3,
@@ -19,16 +22,13 @@
   socat,
   spice-gtk,
   swtpm,
+  testers,
+  unzip,
   usbutils,
   util-linux,
-  unzip,
   xdg-user-dirs,
   xrandr,
   zsync,
-  OVMF,
-  OVMFFull,
-  testers,
-  installShellFiles,
 }:
 let
   runtimePaths = [
@@ -109,11 +109,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Quickly create and run optimised Windows, macOS and Linux virtual machines";
     homepage = "https://github.com/quickemu-project/quickemu";
     changelog = "https://github.com/quickemu-project/quickemu/releases/tag/${finalAttrs.version}";
-    mainProgram = "quickemu";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       fedx-sudo
       flexiondotorg
     ];
+
+    mainProgram = "quickemu";
   };
 })

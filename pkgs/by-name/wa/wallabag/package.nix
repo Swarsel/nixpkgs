@@ -28,8 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
     ./wallabag-data.patch # exposes $WALLABAG_DATA
   ];
 
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -39,16 +37,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Self-hostable application for saving web pages";
+
     longDescription = ''
       wallabag is a self-hostable PHP application allowing you to not
       miss any content anymore. Click, save and read it when you can.
       It extracts content so that you can read it when you have time.
     '';
-    license = lib.licenses.mit;
+
     homepage = "https://wallabag.org";
     changelog = "https://github.com/wallabag/wallabag/releases/tag/${finalAttrs.version}";
+    license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.all;
   };

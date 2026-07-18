@@ -18,15 +18,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-kjIjJVenemlUGptEFQhm3wxhbjlYdqKGDWhGdTtGUI4=";
   };
 
-  configureFlags = [
-    "--without-test" # See mmitch/gbsplay#62
-    "--without-contrib"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+
   buildInputs = [
     libpulseaudio
     nas
+  ];
+
+  configureFlags = [
+    "--without-test" # See mmitch/gbsplay#62
+    "--without-contrib"
   ];
 
   postInstall = ''
@@ -37,8 +38,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Gameboy sound player";
     homepage = "https://github.com/mmitch/gbsplay";
     license = lib.licenses.gpl1Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ sigmanificient ];
+    platforms = lib.platforms.linux;
     mainProgram = "gbsplay";
   };
 })

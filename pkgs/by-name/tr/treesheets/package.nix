@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  ninja,
-  wrapGAppsHook3,
   makeWrapper,
-  wxwidgets_3_2,
+  ninja,
   unstableGitUpdater,
+  wrapGAppsHook3,
+  wxwidgets_3_2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -50,7 +50,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Free Form Data Organizer";
-    mainProgram = "TreeSheets";
 
     longDescription = ''
       The ultimate replacement for spreadsheets, mind mappers, outliners,
@@ -62,8 +61,9 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
     homepage = "https://strlen.com/treesheets/";
+    license = lib.licenses.zlib;
     maintainers = with lib.maintainers; [ obadz ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.zlib;
+    mainProgram = "TreeSheets";
   };
 })

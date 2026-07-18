@@ -1,16 +1,16 @@
 {
   lib,
   fetchFromGitHub,
-  stdenvNoCC,
-  makeBinaryWrapper,
-  gh,
-  fzf,
-  coreutils,
-  gawk,
-  gnused,
-  withBat ? false,
   bat,
+  coreutils,
+  fzf,
+  gawk,
+  gh,
+  gnused,
+  makeBinaryWrapper,
   nix-update-script,
+  stdenvNoCC,
+  withBat ? false,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -26,15 +26,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ makeBinaryWrapper ];
 
-  propagatedUserEnvPkgs = [
-    gh
-    fzf
-    coreutils
-    gawk
-    gnused
-  ]
-  ++ lib.optional withBat bat;
-
   installPhase = ''
     runHook preInstall
 
@@ -48,17 +39,28 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --suffix PATH : ${lib.makeBinPath finalAttrs.propagatedUserEnvPkgs}
   '';
 
+  propagatedUserEnvPkgs = [
+    gh
+    fzf
+    coreutils
+    gawk
+    gnused
+  ]
+  ++ lib.optional withBat bat;
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/gennaro-tedesco/gh-f";
     description = "GitHub CLI ultimate FZF extension";
+    homepage = "https://github.com/gennaro-tedesco/gh-f";
     license = lib.licenses.unlicense;
-    mainProgram = "gh-f";
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       loicreynier
       yiyu
     ];
+
+    platforms = lib.platforms.all;
+    mainProgram = "gh-f";
   };
 })

@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  versionCheckHook,
-  nix-update-script,
   bash,
+  nix-update-script,
+  versionCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,10 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-1b8SO70mp0ACL3hw/iwKpPUpI5G7hF7l84hlSDHB2oA=";
   };
-
-  strictDeps = true;
-  nativeBuildInputs = [ autoreconfHook ];
-  nativeInstallCheckInputs = [ versionCheckHook ];
 
   patches = [
     # Eliminate unsafe strcpy() calls,
@@ -38,17 +34,19 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail '"/bin/bash"' '"${lib.getExe bash}"'
   '';
 
+  strictDeps = true;
+  nativeBuildInputs = [ autoreconfHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Tool to query and modify process behaviour";
     homepage = "https://tracker.debian.org/pkg/prctl";
     changelog = "https://github.com/hikerockies/prctl/blob/v${finalAttrs.version}/ChangeLog";
-    mainProgram = "prctl";
-    maintainers = with lib.maintainers; [ mvs ];
     license = lib.licenses.gpl2Only;
+    maintainers = with lib.maintainers; [ mvs ];
     platforms = lib.platforms.linux;
+    mainProgram = "prctl";
   };
 })

@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pyserial,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "ppk2-api";
   version = "0.9.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "IRNAS";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-fubDFtOXiv2YFYUCOUbuyXs1sHgs0/6ZVK9sAwxQ+Pk=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pyserial ];
-
   # Module has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ pyserial ];
+  pyproject = true;
   pythonImportsCheck = [ "ppk2_api" ];
 
   meta = {

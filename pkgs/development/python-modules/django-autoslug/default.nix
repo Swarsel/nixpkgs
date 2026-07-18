@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   django,
   django-modeltranslation,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "django-autoslug";
   version = "1.9.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "justinmayer";
@@ -26,12 +25,6 @@ buildPythonPackage rec {
       --replace-fail "assert b.slug == 'hello_world-2'" "assert b.slug == 'hello_world_2'"
   '';
 
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [ django ];
-
   nativeCheckInputs = [ django-modeltranslation ];
 
   checkPhase = ''
@@ -41,6 +34,13 @@ buildPythonPackage rec {
 
     runHook postCheck
   '';
+
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [ django ];
+  pyproject = true;
 
   meta = {
     description = "AutoSlugField for Django";

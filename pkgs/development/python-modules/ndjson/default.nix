@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "ndjson";
   version = "0.3.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -28,6 +27,7 @@ buildPythonPackage rec {
     watchdog
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "ndjson" ];
 
   meta = {

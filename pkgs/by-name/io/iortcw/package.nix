@@ -13,14 +13,6 @@ in
 buildEnv {
   inherit (sp) version;
   pname = "iortcw";
-
-  paths = [
-    sp
-    mp
-  ];
-
-  pathsToLink = [ "/opt" ];
-
   nativeBuildInputs = [ makeWrapper ];
 
   # so we can launch sp from mp game and vice versa
@@ -29,6 +21,13 @@ buildEnv {
       makeWrapper $i $out/bin/`basename $i` --chdir "$out/opt/iortcw"
     done
   '';
+
+  paths = [
+    sp
+    mp
+  ];
+
+  pathsToLink = [ "/opt" ];
 
   meta = sp.meta // {
     description = "Game engine for Return to Castle Wolfenstein";

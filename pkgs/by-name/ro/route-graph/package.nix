@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "route-graph";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "audius";
@@ -16,13 +15,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-aLTzej4YtKkQE5q8LKxIBe+aqrjwrG+2pbonzlWhLvU=";
   };
-
-  pythonRelaxDeps = [
-    "typer"
-    "typing-extensions"
-  ];
-
-  build-system = with python3.pkgs; [ poetry-core ];
 
   propagatedBuildInputs = [
     graphviz
@@ -38,7 +30,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pytestCheckHook
   ];
 
+  build-system = with python3.pkgs; [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "route_graph" ];
+
+  pythonRelaxDeps = [
+    "typer"
+    "typing-extensions"
+  ];
 
   meta = {
     description = "CLI tool for creating graphs of routes";

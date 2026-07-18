@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   flit-core,
   httpx,
   pyopenssl,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "truststore";
   version = "0.10.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sethmlarson";
@@ -22,6 +21,8 @@ buildPythonPackage rec {
     hash = "sha256-EbwD2YyVA9W9cWEjYvypBJxs6Hbkb/tF2qU/sUNCt5g=";
   };
 
+  # Tests requires networking
+  doCheck = false;
   build-system = [ flit-core ];
 
   dependencies = [
@@ -32,9 +33,7 @@ buildPythonPackage rec {
     trustme
   ];
 
-  # Tests requires networking
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "truststore" ];
 
   meta = {

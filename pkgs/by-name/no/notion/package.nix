@@ -31,13 +31,20 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-L7WL8zn1Qkf5sqrhqZJqFe4B1l9ULXI3pt3Jpc87huk=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   patches = [
     # GCC 15 fix
     (fetchpatch2 {
-      url = "https://github.com/raboof/notion/commit/89c92f49abfeae1168ad343d4f529a52d0edd78c.patch?full_index=1";
       hash = "sha256-+4GGeY2j7B54Ffw5gFNpG4704Egc7rA6w5z0sZG8210=";
+      url = "https://github.com/raboof/notion/commit/89c92f49abfeae1168ad343d4f529a52d0edd78c.patch?full_index=1";
     })
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     gettext
@@ -60,21 +67,14 @@ stdenv.mkDerivation (finalAttrs: {
     readline
   ];
 
-  outputs = [
-    "out"
-    "man"
+  makeFlags = [
+    "NOTION_RELEASE=${finalAttrs.version}"
+    "PREFIX=${placeholder "out"}"
   ];
-
-  strictDeps = true;
 
   buildFlags = [
     "LUA_DIR=${lua}"
     "X11_PREFIX=/no-such-path"
-  ];
-
-  makeFlags = [
-    "NOTION_RELEASE=${finalAttrs.version}"
-    "PREFIX=${placeholder "out"}"
   ];
 
   postInstall = ''
@@ -91,11 +91,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Tiling tabbed window manager";
     homepage = "https://notionwm.net";
     license = lib.licenses.lgpl21;
-    mainProgram = "notion";
+
     maintainers = with lib.maintainers; [
       raboof
       NotAShelf
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "notion";
   };
 })

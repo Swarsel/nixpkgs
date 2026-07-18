@@ -6,22 +6,21 @@
   dvc-objects,
   fetchPypi,
   knack,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "dvc-azure";
   version = "3.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-UsvHDVQUtQIZs9sKFvaK0l2rp24/Igrr5OSbPGSYriA=";
   };
 
-  # Prevent circular dependency
-  pythonRemoveDeps = [ "dvc" ];
+  # Network access is needed for tests
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -35,14 +34,14 @@ buildPythonPackage (finalAttrs: {
     knack
   ];
 
-  # Network access is needed for tests
-  doCheck = false;
+  pyproject = true;
+  # Prevent circular dependency
+  pythonRemoveDeps = [ "dvc" ];
 
   # Circular dependency
   # pythonImportsCheck = [
   #   "dvc_azure"
   # ];
-
   meta = {
     description = "Azure plugin for dvc";
     homepage = "https://pypi.org/project/dvc-azure/";

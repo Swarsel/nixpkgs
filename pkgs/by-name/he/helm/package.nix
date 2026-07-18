@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  libxrender,
-  libxrandr,
-  libxinerama,
-  libxext,
-  libxcursor,
-  libxcomposite,
-  libx11,
-  freetype,
   alsa-lib,
   curl,
+  fetchpatch,
+  freetype,
+  libGL,
+  libGLU,
   libjack2,
+  libx11,
+  libxcomposite,
+  libxcursor,
+  libxext,
+  libxinerama,
+  libxrandr,
+  libxrender,
   lv2,
   pkg-config,
-  libGLU,
-  libGL,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,6 +30,27 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-pI1umrJGMRBB3ifiWrInG7/Rwn+8j9f8iKkzC/cW2p8=";
   };
+
+  patches = [
+    # gcc9 compatibility https://github.com/mtytel/helm/pull/233
+    (fetchpatch {
+      hash = "sha256-s0eiE5RziZGdInSUOYWR7duvQnFmqf8HO+E7lnVCQsQ=";
+      url = "https://github.com/mtytel/helm/commit/cb611a80bd5a36d31bfc31212ebbf79aa86c6f08.patch";
+    })
+  ];
+
+  postPatch = ''
+    substituteInPlace Makefile \
+      --replace-fail "usr/" ""
+
+    substituteInPlace src/common/load_save.cpp \
+      --replace-fail "/usr/share/" "$out/share/"
+
+    substituteInPlace JUCE/modules/juce_audio_formats/codecs/flac/libFLAC/cpu.c \
+      --replace-fail "__sigemptyset(&sigill_sse.sa_mask);" "sigemptyset(&sigill_sse.sa_mask);"
+  '';
+
+  nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
     libx11
@@ -47,37 +68,19 @@ stdenv.mkDerivation (finalAttrs: {
     libGL
     lv2
   ];
-  nativeBuildInputs = [ pkg-config ];
+
+  makeFlags = [ "DESTDIR=${placeholder "out"}" ];
 
   env.CXXFLAGS = toString [
     "-DHAVE_LROUND"
     "-fpermissive"
   ];
+
   enableParallelBuilding = true;
-  makeFlags = [ "DESTDIR=${placeholder "out"}" ];
-
-  patches = [
-    # gcc9 compatibility https://github.com/mtytel/helm/pull/233
-    (fetchpatch {
-      url = "https://github.com/mtytel/helm/commit/cb611a80bd5a36d31bfc31212ebbf79aa86c6f08.patch";
-      hash = "sha256-s0eiE5RziZGdInSUOYWR7duvQnFmqf8HO+E7lnVCQsQ=";
-    })
-  ];
-
-  postPatch = ''
-    substituteInPlace Makefile \
-      --replace-fail "usr/" ""
-
-    substituteInPlace src/common/load_save.cpp \
-      --replace-fail "/usr/share/" "$out/share/"
-
-    substituteInPlace JUCE/modules/juce_audio_formats/codecs/flac/libFLAC/cpu.c \
-      --replace-fail "__sigemptyset(&sigill_sse.sa_mask);" "sigemptyset(&sigill_sse.sa_mask);"
-  '';
 
   meta = {
-    homepage = "https://tytel.org/helm";
     description = "Free, cross-platform, polyphonic synthesizer";
+
     longDescription = ''
       A free, cross-platform, polyphonic synthesizer.
       Features:
@@ -95,11 +98,15 @@ stdenv.mkDerivation (finalAttrs: {
         Simple arpeggiator
         Effects: Formant filter, stutter, delay
     '';
+
+    homepage = "https://tytel.org/helm";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       magnetophon
       bot-wxt1221
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "helm";
   };

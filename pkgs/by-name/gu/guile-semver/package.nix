@@ -3,9 +3,9 @@
   stdenv,
   fetchurl,
   autoreconfHook,
+  guile,
   pkg-config,
   texinfo,
-  guile,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,14 +18,15 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     guile
     pkg-config
     texinfo
   ];
-  buildInputs = [ guile ];
 
+  buildInputs = [ guile ];
   doCheck = true;
 
   meta = {

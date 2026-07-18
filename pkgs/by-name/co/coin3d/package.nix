@@ -30,11 +30,11 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional stdenv.hostPlatform.isLinux libx11;
 
   meta = {
-    homepage = "https://github.com/coin3d/coin";
     description = "High-level, retained-mode toolkit for effective 3D graphics development";
-    mainProgram = "coin-config";
+    homepage = "https://github.com/coin3d/coin";
     license = lib.licenses.bsd3;
     maintainers = [ ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "coin-config";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   coreutils,
   versionCheckHook,
   writableTmpDirAsHomeHook,
@@ -26,16 +26,18 @@ buildGoModule (finalAttrs: {
     hash = gitHash;
   };
 
-  vendorHash = null;
-
   postPatch = ''
     substituteInPlace pkg/crc/oc/oc_linux_test.go \
       --replace-fail "/bin/echo" "${coreutils}/bin/echo"
   '';
 
-  subPackages = [ "cmd/crc" ];
+  vendorHash = null;
+  doInstallCheck = true;
 
-  tags = [ "containers_image_openpgp" ];
+  nativeInstallCheckInputs = [
+    versionCheckHook
+    writableTmpDirAsHomeHook
+  ];
 
   ldflags = [
     "-X github.com/crc-org/crc/v2/pkg/crc/version.crcVersion=${finalAttrs.version}"
@@ -46,14 +48,10 @@ buildGoModule (finalAttrs: {
     "-X github.com/crc-org/crc/v2/pkg/crc/segment.WriteKey=${writeKey}"
   ];
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [
-    versionCheckHook
-    writableTmpDirAsHomeHook
-  ];
-  versionCheckProgramArg = "version";
+  subPackages = [ "cmd/crc" ];
+  tags = [ "containers_image_openpgp" ];
   versionCheckKeepEnvironment = [ "HOME" ];
-
+  versionCheckProgramArg = "version";
   passthru.updateScript = ./update.sh;
 
   meta = {
@@ -61,11 +59,13 @@ buildGoModule (finalAttrs: {
     homepage = "https://crc.dev/crc/getting_started/getting_started/introducing/";
     changelog = "https://github.com/crc-org/crc/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    mainProgram = "crc";
+
     maintainers = with lib.maintainers; [
       matthewpi
       shikanime
       tricktron
     ];
+
+    mainProgram = "crc";
   };
 })

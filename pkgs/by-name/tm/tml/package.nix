@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -24,10 +24,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Tiny markup language for terminal output";
-    mainProgram = "tml";
     homepage = "https://github.com/liamg/tml";
     changelog = "https://github.com/liamg/tml/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.unlicense;
     maintainers = [ ];
+    mainProgram = "tml";
   };
 })

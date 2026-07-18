@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   typing-extensions,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "http-sf";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mnot";
@@ -18,13 +17,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-sqLYD/JIRvKl6ciVDfSWNAUhhSHhdw7UFnDyHiV5sZg=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ typing-extensions ];
-
   # Tests require external data (https://github.com/httpwg/structured-field-tests)
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ typing-extensions ];
+  pyproject = true;
   pythonImportsCheck = [ "http_sf" ];
 
   meta = {

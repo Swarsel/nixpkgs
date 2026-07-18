@@ -7,13 +7,14 @@
 }:
 
 buildHomeAssistantComponent {
-  domain = "ha_mcp_tools";
   inherit (ha-mcp) version src;
   inherit (ha-mcp.src) owner;
 
   dependencies = [
     ruamel-yaml
   ];
+
+  domain = "ha_mcp_tools";
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -29,6 +30,7 @@ buildHomeAssistantComponent {
       license
       maintainers
       ;
+
     description = "Home Assistant custom component for the MCP (Model Context Protocol) server";
   };
 }

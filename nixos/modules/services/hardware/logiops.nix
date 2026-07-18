@@ -12,13 +12,13 @@ in
 {
   options = {
     services.logiops = {
-      enable = lib.mkEnableOption "LogiOps, a unofficial userspace driver for HID++ Logitech devices";
-
-      package = lib.mkPackageOption pkgs "logiops" { };
-
       config = lib.mkOption {
-        type = configFormat.type;
         default = { };
+
+        description = ''
+          The standard libconfig-style config for LogiOps.
+        '';
+
         example = lib.literalExpression ''
           devices = [
           {
@@ -33,26 +33,29 @@ in
           }
           ];
         '';
-        description = ''
-          The standard libconfig-style config for LogiOps.
-        '';
+
+        type = configFormat.type;
       };
+
+      enable = lib.mkEnableOption "LogiOps, a unofficial userspace driver for HID++ Logitech devices";
+      package = lib.mkPackageOption pkgs "logiops" { };
     };
   };
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [ cfg.package ];
-
     services.dbus.packages = [ cfg.package ];
 
     systemd = {
       packages = [ cfg.package ];
+
       services.logid = {
-        wantedBy = [ "graphical.target" ];
         serviceConfig.ExecStart = [
           ""
           "${lib.getExe cfg.package} -c ${configFile}"
         ];
+
+        wantedBy = [ "graphical.target" ];
       };
     };
   };

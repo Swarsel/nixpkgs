@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
-  dbusSupport ? stdenv.hostPlatform.isLinux,
   dbus,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  dbusSupport ? stdenv.hostPlatform.isLinux,
+  notificationSupport ? stdenv.hostPlatform.isLinux,
   # rustls will be used for TLS if useOpenSSL=false
   useOpenSSL ? stdenv.hostPlatform.isLinux,
-  openssl,
-  notificationSupport ? stdenv.hostPlatform.isLinux,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -23,11 +23,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-phjEae2SS3zkSpuhhE4iscUM8ij8DT47YLIMATMG/+Q=";
   };
 
-  cargoHash = "sha256-lyjTl0kbtfQdqSqxti1181+oDVYP4U++v2JEOYvI7aM=";
-
   nativeBuildInputs = lib.optional stdenv.hostPlatform.isLinux pkg-config;
   buildInputs = lib.optionals dbusSupport [ dbus ] ++ lib.optionals useOpenSSL [ openssl ];
-
+  cargoHash = "sha256-lyjTl0kbtfQdqSqxti1181+oDVYP4U++v2JEOYvI7aM=";
   buildFeatures = lib.optional notificationSupport "desktop-notifications";
 
   meta = {

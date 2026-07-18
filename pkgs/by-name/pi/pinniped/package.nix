@@ -17,16 +17,8 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-C7N6iPD4caTUXR6gB+9sdfBlWyT1tfE8KwE5WaiUdQM=";
   };
 
-  subPackages = "cmd/pinniped";
-
-  vendorHash = "sha256-B94/SR2OVsxDs9+MaivxPBMQsNWFwAEwuDT7xvWN8vg=";
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-B94/SR2OVsxDs9+MaivxPBMQsNWFwAEwuDT7xvWN8vg=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd pinniped \
@@ -35,11 +27,18 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/pinniped completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
+  subPackages = "cmd/pinniped";
+
   meta = {
     description = "Tool to securely log in to your Kubernetes clusters";
-    mainProgram = "pinniped";
     homepage = "https://pinniped.dev/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ bpaulin ];
+    mainProgram = "pinniped";
   };
 })

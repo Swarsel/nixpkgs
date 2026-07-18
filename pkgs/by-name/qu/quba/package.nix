@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
-  appimageTools,
   fetchurl,
   _7zz,
-  writeShellScript,
-  nix-update,
+  appimageTools,
   common-updater-scripts,
+  nix-update,
+  stdenvNoCC,
+  writeShellScript,
 }:
 
 let
@@ -22,11 +22,11 @@ let
   meta = {
     description = "Viewer for electronic invoices";
     homepage = "https://github.com/ZUGFeRD/quba-viewer";
-    downloadPage = "https://github.com/ZUGFeRD/quba-viewer/releases";
     license = lib.licenses.asl20;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ onny ];
     platforms = [ "x86_64-linux" ] ++ lib.platforms.darwin;
+    downloadPage = "https://github.com/ZUGFeRD/quba-viewer/releases";
   };
 
   src = fetchurl {
@@ -66,8 +66,6 @@ let
       hash = "sha256-niuU1zkxNRmCYxzto3g6i6Z3k5KCAgVIVQMgOLZJnSE=";
     };
 
-    unpackCmd = "7zz x -bd -osource -xr'!*/Applications' -xr'!*com.apple.provenance' $curSrc";
-
     nativeBuildInputs = [ _7zz ];
 
     installPhase = ''
@@ -78,6 +76,8 @@ let
 
       runHook postInstall
     '';
+
+    unpackCmd = "7zz x -bd -osource -xr'!*/Applications' -xr'!*com.apple.provenance' $curSrc";
   };
 in
 if stdenvNoCC.hostPlatform.isLinux then linux else darwin

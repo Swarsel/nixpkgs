@@ -4,9 +4,9 @@
   fetchFromSourcehut,
   gobject-introspection,
   gst_all_1,
+  lndir,
   poppler-utils,
   python3,
-  lndir,
 }:
 
 let
@@ -17,28 +17,26 @@ let
     owner = "~mediagoblin";
     repo = "mediagoblin";
     rev = "v${version}";
-    fetchSubmodules = true;
     hash = "sha256-9zfSRFyf9Sw+r7ATlZVl2dymWjOO2JQZGsBLQPYT0rs=";
+    fetchSubmodules = true;
   };
 
   extlib = buildNpmPackage {
-    name = "mediagoblin-extlib";
     inherit src;
-
     npmDepsHash = "sha256-wtk5MgsWEpuz3V/EcozEAMOa8UeCgdjhR5wxaiaMugY=";
-
-    dontNpmBuild = true;
 
     installPhase = ''
       mkdir -p $out/node_modules/
       cp -r node_modules/{jquery,video.js,videojs-resolution-switcher,leaflet} $out/node_modules/
     '';
+
+    dontNpmBuild = true;
+    name = "mediagoblin-extlib";
   };
 in
 python.pkgs.buildPythonApplication rec {
-  format = "setuptools";
-  pname = "mediagoblin";
   inherit version src;
+  pname = "mediagoblin";
 
   postPatch = ''
     # https://git.sr.ht/~mediagoblin/mediagoblin/tree/bf61d38df21748aadb480c53fdd928647285e35f/item/.guix/modules/mediagoblin-package.scm#L60-62
@@ -56,6 +54,31 @@ python.pkgs.buildPythonApplication rec {
     python3.pkgs.babel
     lndir
   ];
+
+  postBuild = ''
+    ./devtools/compile_translations.sh
+  '';
+
+  nativeCheckInputs =
+    with python.pkgs;
+    [
+      pytest-forked
+      pytest-xdist
+      pytestCheckHook
+      webtest
+
+      poppler-utils
+    ]
+    ++ lib.concatAttrValues optional-dependencies;
+
+  postInstall = ''
+    lndir -silent ${extlib}/node_modules $out/${python.sitePackages}/mediagoblin/static/extlib/
+
+    ln -rs $out/${python.sitePackages}/mediagoblin/static/extlib/jquery/dist/jquery.js $out/${python.sitePackages}/mediagoblin/static/js/extlib/jquery.js
+    ln -rs $out/${python.sitePackages}/mediagoblin/static/extlib/leaflet/dist/leaflet.css $out/${python.sitePackages}/mediagoblin/static/extlib/leaflet/leaflet.css
+    ln -rs $out/${python.sitePackages}/mediagoblin/static/extlib/leaflet/dist/leaflet.js $out/${python.sitePackages}/mediagoblin/static/extlib/leaflet/leaflet.js
+    ln -rs $out/${python.sitePackages}/mediagoblin/static/extlib/leaflet/dist/images/ $out/${python.sitePackages}/mediagoblin/static/extlib/leaflet/
+  '';
 
   build-system = with python.pkgs; [
     setuptools
@@ -95,6 +118,8 @@ python.pkgs.buildPythonApplication rec {
     pygobject3
   ];
 
+  format = "setuptools";
+
   optional-dependencies =
     with python.pkgs;
     let
@@ -118,31 +143,6 @@ python.pkgs.buildPythonApplication rec {
       video = [ pygobject3 ] ++ gst;
     };
 
-  postBuild = ''
-    ./devtools/compile_translations.sh
-  '';
-
-  postInstall = ''
-    lndir -silent ${extlib}/node_modules $out/${python.sitePackages}/mediagoblin/static/extlib/
-
-    ln -rs $out/${python.sitePackages}/mediagoblin/static/extlib/jquery/dist/jquery.js $out/${python.sitePackages}/mediagoblin/static/js/extlib/jquery.js
-    ln -rs $out/${python.sitePackages}/mediagoblin/static/extlib/leaflet/dist/leaflet.css $out/${python.sitePackages}/mediagoblin/static/extlib/leaflet/leaflet.css
-    ln -rs $out/${python.sitePackages}/mediagoblin/static/extlib/leaflet/dist/leaflet.js $out/${python.sitePackages}/mediagoblin/static/extlib/leaflet/leaflet.js
-    ln -rs $out/${python.sitePackages}/mediagoblin/static/extlib/leaflet/dist/images/ $out/${python.sitePackages}/mediagoblin/static/extlib/leaflet/
-  '';
-
-  nativeCheckInputs =
-    with python.pkgs;
-    [
-      pytest-forked
-      pytest-xdist
-      pytestCheckHook
-      webtest
-
-      poppler-utils
-    ]
-    ++ lib.concatAttrValues optional-dependencies;
-
   pythonImportsCheck = [ "mediagoblin" ];
 
   passthru = {
@@ -153,6 +153,7 @@ python.pkgs.buildPythonApplication rec {
     description = "Free software media publishing platform that anyone can run";
     homepage = "https://mediagoblin.org/";
     license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       # for the C3D2
       SuperSandro2000

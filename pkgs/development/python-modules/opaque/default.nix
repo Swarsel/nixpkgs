@@ -3,21 +3,18 @@
   stdenv,
   buildPythonPackage,
   libopaque,
-  setuptools,
   pysodium,
   python,
+  setuptools,
 }:
 
 buildPythonPackage rec {
-  pname = "opaque";
-  pyproject = true;
-
   inherit (libopaque)
     version
     src
     ;
 
-  sourceRoot = "${src.name}/python";
+  pname = "opaque";
 
   postPatch =
     let
@@ -28,12 +25,6 @@ buildPythonPackage rec {
         "ctypes.util.find_library('opaque') or ctypes.util.find_library('libopaque')" "'${lib.getLib libopaque}/lib/libopaque${soext}'"
     '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pysodium ];
-
-  pythonImportsCheck = [ "opaque" ];
-
   checkPhase = ''
     runHook preCheck
 
@@ -41,6 +32,12 @@ buildPythonPackage rec {
 
     runHook postCheck
   '';
+
+  build-system = [ setuptools ];
+  dependencies = [ pysodium ];
+  pyproject = true;
+  pythonImportsCheck = [ "opaque" ];
+  sourceRoot = "${src.name}/python";
 
   meta = {
     inherit (libopaque.meta)

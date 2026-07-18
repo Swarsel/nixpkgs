@@ -1,15 +1,14 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   nixosTests,
+  python3Packages,
 }:
 
 with python3Packages;
 buildPythonApplication (finalAttrs: {
   pname = "pinnwand";
   version = "1.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "supakeen";
@@ -18,6 +17,18 @@ buildPythonApplication (finalAttrs: {
     hash = "sha256-Abj68lJn2qjL1jb+cVzkoc/RYKA6d5tYOPlEwqST0tY=";
   };
 
+  nativeCheckInputs = [
+    gitpython
+    pytest-asyncio
+    pytest-cov-stub
+    pytest-html
+    pytest-playwright
+    pytestCheckHook
+    tomli-w
+    urllib3
+  ];
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ pdm-backend ];
 
   dependencies = [
@@ -33,17 +44,6 @@ buildPythonApplication (finalAttrs: {
     tornado
   ];
 
-  nativeCheckInputs = [
-    gitpython
-    pytest-asyncio
-    pytest-cov-stub
-    pytest-html
-    pytest-playwright
-    pytestCheckHook
-    tomli-w
-    urllib3
-  ];
-
   disabledTestPaths = [
     # out-of-date browser tests
     "test/e2e"
@@ -51,17 +51,16 @@ buildPythonApplication (finalAttrs: {
     "test/integration/test_command.py::test_main"
   ];
 
-  __darwinAllowLocalNetworking = true;
-
+  pyproject = true;
   passthru.tests = nixosTests.pinnwand;
 
   meta = {
-    changelog = "https://github.com/supakeen/pinnwand/releases/tag/v${finalAttrs.version}";
     description = "Python pastebin that tries to keep it simple";
     homepage = "https://github.com/supakeen/pinnwand";
+    changelog = "https://github.com/supakeen/pinnwand/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hexa ];
-    mainProgram = "pinnwand";
     platforms = lib.platforms.linux;
+    mainProgram = "pinnwand";
   };
 })

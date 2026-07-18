@@ -18,28 +18,7 @@ in
 
     enable = mkEnableOption "Molly-Brown Gemini server";
 
-    port = mkOption {
-      default = 1965;
-      type = types.port;
-      description = ''
-        TCP port for molly-brown to bind to.
-      '';
-    };
-
-    hostName = mkOption {
-      type = types.str;
-      default = config.networking.hostName;
-      defaultText = literalExpression "config.networking.hostName";
-      description = ''
-        The hostname to respond to requests for. Requests for URLs with
-        other hosts will result in a status 53 (PROXY REQUEST REFUSED)
-        response.
-      '';
-    };
-
     certPath = mkOption {
-      type = types.path;
-      example = "/var/lib/acme/example.com/cert.pem";
       description = ''
         Path to TLS certificate. An ACME certificate and key may be
         shared with an HTTP server, but only if molly-brown has
@@ -51,23 +30,50 @@ in
           [ config.security.acme.certs."example.com".group ];
         ```
       '';
-    };
 
-    keyPath = mkOption {
+      example = "/var/lib/acme/example.com/cert.pem";
       type = types.path;
-      example = "/var/lib/acme/example.com/key.pem";
-      description = "Path to TLS key. See {option}`CertPath`.";
     };
 
     docBase = mkOption {
-      type = types.path;
-      example = "/var/lib/molly-brown";
       description = "Base directory for Gemini content.";
+      example = "/var/lib/molly-brown";
+      type = types.path;
+    };
+
+    hostName = mkOption {
+      default = config.networking.hostName;
+      defaultText = literalExpression "config.networking.hostName";
+
+      description = ''
+        The hostname to respond to requests for. Requests for URLs with
+        other hosts will result in a status 53 (PROXY REQUEST REFUSED)
+        response.
+      '';
+
+      type = types.str;
+    };
+
+    keyPath = mkOption {
+      description = "Path to TLS key. See {option}`CertPath`.";
+      example = "/var/lib/acme/example.com/key.pem";
+      type = types.path;
+    };
+
+    port = mkOption {
+      default = 1965;
+
+      description = ''
+        TCP port for molly-brown to bind to.
+      '';
+
+      type = types.port;
     };
 
     settings = mkOption {
       inherit (settingsFormat) type;
       default = { };
+
       description = ''
         molly-brown configuration. Refer to
         <https://tildegit.org/solderpunk/molly-brown/src/branch/master/example.conf>
@@ -84,25 +90,27 @@ in
         logDir = "/var/log/molly-brown";
       in
       {
-        Port = cfg.port;
-        Hostname = cfg.hostName;
-        CertPath = cfg.certPath;
-        KeyPath = cfg.keyPath;
-        DocBase = cfg.docBase;
         AccessLog = "${logDir}/access.log";
+        CertPath = cfg.certPath;
+        DocBase = cfg.docBase;
         ErrorLog = "${logDir}/error.log";
+        Hostname = cfg.hostName;
+        KeyPath = cfg.keyPath;
+        Port = cfg.port;
       };
 
     systemd.services.molly-brown = {
-      description = "Molly Brown gemini server";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Molly Brown gemini server";
+
       serviceConfig = {
         DynamicUser = true;
-        LogsDirectory = "molly-brown";
         ExecStart = "${pkgs.molly-brown}/bin/molly-brown -c ${configFile}";
+        LogsDirectory = "molly-brown";
         Restart = "always";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
   };

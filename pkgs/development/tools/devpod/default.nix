@@ -1,28 +1,25 @@
 {
   lib,
   stdenv,
-  buildGoModule,
-  rustPlatform,
   fetchFromGitHub,
-  fetchYarnDeps,
-
+  buildGoModule,
   cargo-tauri,
   desktop-file-utils,
+  fetchYarnDeps,
+  glib-networking,
   installShellFiles,
   jq,
+  libayatana-appindicator,
   makeBinaryWrapper,
   moreutils,
   nodejs,
-  pkg-config,
-  yarnConfigHook,
-  wrapGAppsHook3,
-
-  glib-networking,
-  libayatana-appindicator,
   openssl,
-  webkitgtk_4_1,
-
+  pkg-config,
+  rustPlatform,
   testers,
+  webkitgtk_4_1,
+  wrapGAppsHook3,
+  yarnConfigHook,
 }:
 
 let
@@ -37,27 +34,18 @@ let
 
   meta = {
     description = "Codespaces but open-source, client-only and unopinionated: Works with any IDE and lets you use any cloud, kubernetes or just localhost docker";
-    mainProgram = "devpod";
     homepage = "https://devpod.sh";
     license = lib.licenses.mpl20;
     maintainers = [ lib.maintainers.tomasajt ];
+    mainProgram = "devpod";
   };
 
   devpod = buildGoModule (finalAttrs: {
-    pname = "devpod";
     inherit version src meta;
-
-    vendorHash = null;
-
-    env.CGO_ENABLED = 0;
-
-    ldflags = [
-      "-X github.com/loft-sh/devpod/pkg/version.version=v${version}"
-    ];
-
-    excludedPackages = [ "./e2e" ];
-
+    pname = "devpod";
     nativeBuildInputs = [ installShellFiles ];
+    vendorHash = null;
+    env.CGO_ENABLED = 0;
 
     postInstall = ''
       $out/bin/devpod completion bash >devpod.bash
@@ -66,30 +54,22 @@ let
       installShellCompletion devpod.{bash,fish,zsh}
     '';
 
+    excludedPackages = [ "./e2e" ];
+
+    ldflags = [
+      "-X github.com/loft-sh/devpod/pkg/version.version=v${version}"
+    ];
+
     passthru.tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
-      command = "devpod version";
       version = "v${version}";
+      command = "devpod version";
+      package = finalAttrs.finalPackage;
     };
   });
 
   devpod-desktop = rustPlatform.buildRustPackage {
-    pname = "devpod-desktop";
     inherit version src;
-
-    sourceRoot = "${src.name}/desktop";
-
-    offlineCache = fetchYarnDeps {
-      yarnLock = "${src}/desktop/yarn.lock";
-      hash = "sha256-0Ov+Ik+th2IiuuqJyiO9t8vTyMqxDa9juEwbwHFaoi4=";
-    };
-
-    cargoRoot = "src-tauri";
-    buildAndTestSubdir = "src-tauri";
-
-    cargoHash = "sha256-PSgBwa8sZ85W2kBrXkFVvnoYn5l1r3Jvn/LG8tITjbU=";
-
-    cargoPatches = [ ./cargo-lock.patch ];
+    pname = "devpod-desktop";
 
     patches = [
       # don't create a .desktop file automatically registered to open the devpod:// URI scheme
@@ -141,6 +121,8 @@ let
       webkitgtk_4_1
     ];
 
+    cargoHash = "sha256-PSgBwa8sZ85W2kBrXkFVvnoYn5l1r3Jvn/LG8tITjbU=";
+
     postInstall =
       lib.optionalString stdenv.hostPlatform.isDarwin ''
         # replace sidecar binary with symlink
@@ -170,16 +152,26 @@ let
         ln -s ${lib.getExe devpod} "$out/bin/devpod"
       '';
 
-    # we only want to wrap the main binary
-    dontWrapGApps = true;
-
     postFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
       wrapGApp "$out/bin/DevPod Desktop"
     '';
 
+    buildAndTestSubdir = "src-tauri";
+    cargoPatches = [ ./cargo-lock.patch ];
+    cargoRoot = "src-tauri";
+    # we only want to wrap the main binary
+    dontWrapGApps = true;
+
+    offlineCache = fetchYarnDeps {
+      hash = "sha256-0Ov+Ik+th2IiuuqJyiO9t8vTyMqxDa9juEwbwHFaoi4=";
+      yarnLock = "${src}/desktop/yarn.lock";
+    };
+
+    sourceRoot = "${src.name}/desktop";
+
     meta = meta // {
-      mainProgram = "DevPod Desktop";
       platforms = lib.platforms.linux ++ lib.platforms.darwin;
+      mainProgram = "DevPod Desktop";
     };
   };
 in

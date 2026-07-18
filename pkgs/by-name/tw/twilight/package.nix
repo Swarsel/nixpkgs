@@ -34,8 +34,8 @@ stdenv.mkDerivation rec {
     description = "Redo of IRIX twilight backdrop in old school OpenGL";
     homepage = src.meta.homepage;
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "twilight";
   };
 }

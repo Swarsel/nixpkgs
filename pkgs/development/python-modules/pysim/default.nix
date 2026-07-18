@@ -1,29 +1,28 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
-  colorlog,
-  smpp-pdu,
-  pyscard,
-  packaging,
-  gsm0338,
   bidict,
-  jsonpath-ng,
-  termcolor,
-  pyyaml,
-  pycryptodomex,
-  construct,
-  pyserial,
-  pytlv,
+  buildPythonPackage,
   cmd2,
+  colorlog,
+  construct,
+  gsm0338,
+  jsonpath-ng,
+  packaging,
+  pycryptodomex,
+  pyscard,
+  pyserial,
+  pytestCheckHook,
+  pytlv,
+  pyyaml,
+  setuptools,
+  smpp-pdu,
+  termcolor,
 }:
 
 buildPythonPackage {
   pname = "pysim";
   version = "unstable-2023-08-13";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "osmocom";
@@ -56,7 +55,7 @@ buildPythonPackage {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pySim" ];
 
   meta = {

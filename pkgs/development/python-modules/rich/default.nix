@@ -1,34 +1,28 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
-  # dependencies
-  markdown-it-py,
-  pygments,
-
-  # optional-dependencies
-  ipywidgets,
-
   # tests
   attrs,
-  pytestCheckHook,
-  which,
-
+  buildPythonPackage,
   # for passthru.tests
   enrich,
   httpie,
+  # optional-dependencies
+  ipywidgets,
+  # dependencies
+  markdown-it-py,
+  # build-system
+  poetry-core,
+  pygments,
+  pytestCheckHook,
   rich-rst,
   textual,
+  which,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "rich";
   version = "15.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Textualize";
@@ -36,6 +30,12 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Uk3r6aYhrjYJ8GrMKfdlv3/muK/uUynd4pd1yWCwSOM=";
   };
+
+  nativeCheckInputs = [
+    attrs
+    pytestCheckHook
+    which
+  ];
 
   build-system = [ poetry-core ];
 
@@ -48,12 +48,7 @@ buildPythonPackage (finalAttrs: {
     jupyter = [ ipywidgets ];
   };
 
-  nativeCheckInputs = [
-    attrs
-    pytestCheckHook
-    which
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "rich" ];
 
   passthru.tests = {

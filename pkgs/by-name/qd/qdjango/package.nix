@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  testers,
   doxygen,
   libsForQt5,
+  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,22 +36,10 @@ stdenv.mkDerivation (finalAttrs: {
       --replace 'auth' ""
   '';
 
-  qmakeFlags = [
-    # Uses Qt testing infrastructure via QMake CONFIG testcase,
-    # defaults to installing all testcase targets under Qt prefix
-    # https://github.com/qt/qtbase/blob/29400a683f96867133b28299c0d0bd6bcf40df35/mkspecs/features/testcase.prf#L110-L120
-    "CONFIG+=no_testcase_installs"
-
-    # Qmake-generated pkg-config files default to Qt prefix
-    "QMAKE_PKGCONFIG_PREFIX=${placeholder "out"}"
-  ];
-
   nativeBuildInputs = [
     doxygen
     libsForQt5.qmake
   ];
-
-  dontWrapQtApps = true;
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
@@ -66,6 +54,18 @@ stdenv.mkDerivation (finalAttrs: {
       --replace 'DYLD_LIBRARY_PATH=' "DYLD_LIBRARY_PATH=$PWD/src/db:$PWD/src/http:"
   '';
 
+  dontWrapQtApps = true;
+
+  qmakeFlags = [
+    # Uses Qt testing infrastructure via QMake CONFIG testcase,
+    # defaults to installing all testcase targets under Qt prefix
+    # https://github.com/qt/qtbase/blob/29400a683f96867133b28299c0d0bd6bcf40df35/mkspecs/features/testcase.prf#L110-L120
+    "CONFIG+=no_testcase_installs"
+
+    # Qmake-generated pkg-config files default to Qt prefix
+    "QMAKE_PKGCONFIG_PREFIX=${placeholder "out"}"
+  ];
+
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {
@@ -74,6 +74,7 @@ stdenv.mkDerivation (finalAttrs: {
     license = lib.licenses.lgpl21Plus;
     maintainers = with lib.maintainers; [ OPNA2608 ];
     platforms = lib.platforms.all;
+
     pkgConfigModules = [
       "qdjango-db"
       "qdjango-http"

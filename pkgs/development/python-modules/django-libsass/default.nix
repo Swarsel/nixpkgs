@@ -1,21 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  # tests
+  django,
   # dependencies
   django-compressor,
   libsass,
-
-  # tests
-  django,
   python,
 }:
 
 buildPythonPackage rec {
   pname = "django-libsass";
   version = "0.9";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "torchbox";
@@ -36,6 +33,8 @@ buildPythonPackage rec {
     ${python.interpreter} ./runtests.py
     runHook postCheck
   '';
+
+  format = "setuptools";
 
   meta = {
     description = "Django-compressor filter to compile SASS files using libsass";

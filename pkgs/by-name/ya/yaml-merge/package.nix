@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3Packages,
   pkgsHostTarget,
+  python3Packages,
 }:
 
 stdenv.mkDerivation {
@@ -17,7 +17,6 @@ stdenv.mkDerivation {
     sha256 = "sha256-S2eZw+FOZvOn0XupZDRNcolUPd4PhvU1ziu+kx2AwnY=";
   };
 
-  pythonPath = with python3Packages; [ pyyaml ];
   nativeBuildInputs = [
     # Not `python3Packages.wrapPython` to workaround `python3Packages.wrapPython.__spliced.buildHost` having the wrong `pythonHost`
     # See https://github.com/NixOS/nixpkgs/issues/434307
@@ -29,12 +28,14 @@ stdenv.mkDerivation {
     wrapPythonPrograms
   '';
 
+  pythonPath = with python3Packages; [ pyyaml ];
+
   meta = {
     description = "Merge YAML data files";
-    mainProgram = "yaml-merge";
     homepage = "https://github.com/abbradar/yaml-merge";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "yaml-merge";
   };
 }

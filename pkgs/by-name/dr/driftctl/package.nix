@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,17 +17,8 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-IDKfW0NCEsgKXpHA7SwkHjMeoGAIYITlDVR/vI/b9hk=";
   };
 
-  vendorHash = "sha256-JFvC9PReziktHSXbltGkGHjVR8hTM1hPJ0OqrZQXRQM=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/snyk/driftctl/pkg/version.version=v${finalAttrs.version}"
-    "-X github.com/snyk/driftctl/build.env=release"
-    "-X github.com/snyk/driftctl/build.enableUsageReporting=false"
-  ];
+  vendorHash = "sha256-JFvC9PReziktHSXbltGkGHjVR8hTM1hPJ0OqrZQXRQM=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd driftctl \
@@ -37,6 +28,7 @@ buildGoModule (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -48,20 +40,32 @@ buildGoModule (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/snyk/driftctl/pkg/version.version=v${finalAttrs.version}"
+    "-X github.com/snyk/driftctl/build.env=release"
+    "-X github.com/snyk/driftctl/build.enableUsageReporting=false"
+  ];
+
   meta = {
-    homepage = "https://driftctl.com/";
-    changelog = "https://github.com/snyk/driftctl/releases/tag/v${finalAttrs.version}";
     description = "Detect, track and alert on infrastructure drift";
-    mainProgram = "driftctl";
+
     longDescription = ''
       driftctl is a free and open-source CLI that warns of infrastructure drift
       and fills in the missing piece in your DevSecOps toolbox.
     '';
+
+    homepage = "https://driftctl.com/";
+    changelog = "https://github.com/snyk/driftctl/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       kaction
       jk
       qjoly
     ];
+
+    mainProgram = "driftctl";
   };
 })

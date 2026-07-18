@@ -52,44 +52,53 @@ let
   mkOpt =
     type: description:
     mkOption {
-      type = types.nullOr type;
       default = null;
       description = description;
+      type = types.nullOr type;
     };
   accountOptions.options = {
     mailaddress = mkOpt types.str "Your email address (at the moment used as login name)";
-    username = mkOpt types.str "If empty string mailaddress value is used";
     password = mkOpt types.str "";
     serveraddress = mkOpt types.str "mailserver name or address";
     serverport = mkOpt types.int "imap port number (at the moment only tls connection is supported)";
     starttls = mkOpt types.bool "set to true for using STARTTLS to start a TLS connection";
+    username = mkOpt types.str "If empty string mailaddress value is used";
   };
 in
 {
-  port = 8081;
   extraOpts = {
-    oldestUnseenDate = mkOption {
-      type = types.bool;
-      default = false;
-      description = ''
-        Enable metric with timestamp of oldest unseen mail
-      '';
-    };
     accounts = mkOption {
-      type = types.attrsOf (types.submodule accountOptions);
       default = { };
+
       description = ''
         Accounts to monitor
       '';
+
+      type = types.attrsOf (types.submodule accountOptions);
     };
+
     configurationFile = mkOption {
-      type = types.path;
-      example = "/path/to/config-file";
       description = ''
         File containing the configuration
       '';
+
+      example = "/path/to/config-file";
+      type = types.path;
+    };
+
+    oldestUnseenDate = mkOption {
+      default = false;
+
+      description = ''
+        Enable metric with timestamp of oldest unseen mail
+      '';
+
+      type = types.bool;
     };
   };
+
+  port = 8081;
+
   serviceOpts = {
     serviceConfig = {
       ExecStart = ''

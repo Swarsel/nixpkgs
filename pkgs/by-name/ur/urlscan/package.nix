@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "urlscan";
   version = "1.0.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "firecat53";
@@ -16,16 +15,16 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-WWnWQRDo2Q023qLvR5gExE0uptYRGErnFmd7dZNJQ+k=";
   };
 
+  # No tests available
+  doCheck = false;
+
   build-system = with python3.pkgs; [
     hatchling
     hatch-vcs
   ];
 
   dependencies = with python3.pkgs; [ urwid ];
-
-  # No tests available
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "urlscan" ];
 
   meta = {

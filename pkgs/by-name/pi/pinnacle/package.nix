@@ -1,40 +1,40 @@
 {
-  rustPlatform,
   lib,
-  pkg-config,
-  wayland,
-  lua54Packages,
-  lua5_4,
-  extraLuaPackages ? (ps: [ ]),
-  protobuf,
-  seatd,
-  systemdLibs,
-  libxkbcommon,
-  mesa,
-  xwayland,
-  libinput,
-  libdisplay-info,
-  git,
-  libgbm,
-  rustc,
-  cargo,
-  makeWrapper,
-  callPackage,
-  libglvnd,
+  fetchFromGitHub,
   autoPatchelfHook,
+  callPackage,
+  cargo,
+  git,
+  libdisplay-info,
+  libgbm,
+  libglvnd,
+  libinput,
+  libx11,
   libxcursor,
   libxi,
+  libxkbcommon,
   libxrandr,
-  libx11,
-  fetchFromGitHub,
+  lua54Packages,
+  lua5_4,
+  makeWrapper,
+  mesa,
+  pkg-config,
+  protobuf,
+  rustPlatform,
+  rustc,
+  seatd,
+  systemdLibs,
+  wayland,
+  xwayland,
+  extraLuaPackages ? (ps: [ ]),
 }:
 let
   version = "0.2.4";
   pinnacle-src = fetchFromGitHub {
     owner = "pinnacle-comp";
     repo = "pinnacle";
-    tag = "v${version}";
     sha256 = "sha256-T8wZjgOTzYKfYUV1ShLBIi2xoCdVn9I7sux/pDH+8ic=";
+    tag = "v${version}";
   };
   buildRustConfig = callPackage ./pinnacle-config.nix { inherit pinnacle-src; };
 
@@ -42,22 +42,15 @@ let
     description = "A WIP Smithay-based Wayland compositor, inspired by AwesomeWM and configured in Lua or Rust";
     homepage = "https://pinnacle-comp.github.io/pinnacle/";
     license = lib.licenses.gpl3;
-    mainProgram = "pinnacle";
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ cassandracomar ];
+    platforms = lib.platforms.linux;
+    mainProgram = "pinnacle";
   };
 
   lua-client-api = lua54Packages.buildLuarocksPackage rec {
     inherit meta version;
     pname = "pinnacle-client-api";
     src = pinnacle-src;
-    sourceRoot = "${src.name}/api/lua";
-    knownRockspec = "${pinnacle-src}/api/lua/rockspecs/pinnacle-api-0.2.4-1.rockspec";
-
-    postConfigure = ''
-      substituteInPlace "$rockspecFilename" \
-        --replace-fail '"compat53 ~> 0.14"' '"compat53 >= 0.14"'
-    '';
 
     propagatedBuildInputs = with lua54Packages; [
       cqueues
@@ -66,6 +59,11 @@ let
       compat53
       luaposix
     ];
+
+    postConfigure = ''
+      substituteInPlace "$rockspecFilename" \
+        --replace-fail '"compat53 ~> 0.14"' '"compat53 >= 0.14"'
+    '';
 
     postInstall = ''
       mkdir -p $out/share/pinnacle/protobuf/pinnacle
@@ -77,14 +75,27 @@ let
       mkdir -p $out/share/pinnacle/snowcap/protobuf/google
       cp -rL --no-preserve ownership,mode ../../snowcap/api/protobuf/google $out/share/pinnacle/snowcap/protobuf
     '';
+
+    knownRockspec = "${pinnacle-src}/api/lua/rockspecs/pinnacle-api-0.2.4-1.rockspec";
+    sourceRoot = "${src.name}/api/lua";
   };
 in
 rustPlatform.buildRustPackage (finalAttrs: {
   inherit meta version;
-
   pname = "pinnacle-server";
   src = pinnacle-src;
-  cargoHash = "sha256-hM19RB2+ejC+OFU4keH+PKWYf5NRUXJ1W33eSUhKR/g=";
+
+  nativeBuildInputs = [
+    pkg-config
+    protobuf
+    lua54Packages.luarocks
+    lua5_4
+    lua-client-api
+    git
+    wayland
+    makeWrapper
+    autoPatchelfHook
+  ];
 
   buildInputs = [
     wayland
@@ -107,28 +118,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libx11
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-    protobuf
-    lua54Packages.luarocks
-    lua5_4
-    lua-client-api
-    git
-    wayland
-    makeWrapper
-    autoPatchelfHook
-  ];
-
-  checkFeatures = [ "testing" ];
-  checkNoDefaultFeatures = true;
-  cargoTestFlags = [
-    "--exclude"
-    "wlcs_pinnacle"
-    "--all"
-    "--"
-    "--skip"
-    "process_spawn"
-  ];
+  cargoHash = "sha256-hM19RB2+ejC+OFU4keH+PKWYf5NRUXJ1W33eSUhKR/g=";
 
   preCheck = ''
     export LD_LIBRARY_PATH="${lib.makeLibraryPath [ wayland ]}";
@@ -153,6 +143,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     install -m644 ./resources/pinnacle-portals.conf $out/share/xdg-desktop-portal/pinnacle-uwsm-portals.conf
   '';
 
+  __structuredAttrs = true;
+
+  cargoTestFlags = [
+    "--exclude"
+    "wlcs_pinnacle"
+    "--all"
+    "--"
+    "--skip"
+    "process_spawn"
+  ];
+
+  checkFeatures = [ "testing" ];
+  checkNoDefaultFeatures = true;
+
   runtimeDependencies = [
     wayland
     mesa
@@ -160,6 +164,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   passthru = {
+    inherit buildRustConfig;
+    lua-client-api = lua-client-api;
+
     luaEnv = lua5_4.withPackages (
       ps:
       [
@@ -168,9 +175,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
       ]
       ++ (extraLuaPackages ps)
     );
-    inherit buildRustConfig;
+
     providedSessions = [ "pinnacle" ];
-    lua-client-api = lua-client-api;
   };
-  __structuredAttrs = true;
 })

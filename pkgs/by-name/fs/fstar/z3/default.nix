@@ -1,7 +1,7 @@
 {
+  lib,
   fetchFromGitHub,
   fetchpatch,
-  lib,
   replaceVars,
   stdenvNoCC,
   z3,
@@ -20,6 +20,7 @@ let
     else
       z3'.overrideAttrs (final: rec {
         version = fstarNewZ3Version;
+
         src = fetchFromGitHub {
           owner = "Z3Prover";
           repo = "z3";
@@ -35,22 +36,24 @@ let
     else
       z3'.overrideAttrs (prev: rec {
         version = fstarOldZ3Version;
+
         src = fetchFromGitHub {
           owner = "Z3Prover";
           repo = "z3";
           rev = "Z3-${version}"; # caps matter
           hash = "sha256-ytG5O9HczbIVJAiIGZfUXC/MuYH7d7yLApaeTRlKXoc=";
         };
+
         patches =
           let
             static-matrix-patch = fetchpatch {
-              # clang / gcc fixes. fixes typos in some member names
-              name = "gcc-15-fixes.patch";
-              url = "https://github.com/Z3Prover/z3/commit/2ce89e5f491fa817d02d8fdce8c62798beab258b.patch";
-              includes = [ "src/@dir@/lp/static_matrix.h" ];
-              stripLen = 3;
               extraPrefix = "src/@dir@/";
               hash = "sha256-+H1/VJPyI0yq4M/61ay8SRCa6OaoJ/5i+I3zVTAPUVo=";
+              includes = [ "src/@dir@/lp/static_matrix.h" ];
+              # clang / gcc fixes. fixes typos in some member names
+              name = "gcc-15-fixes.patch";
+              stripLen = 3;
+              url = "https://github.com/Z3Prover/z3/commit/2ce89e5f491fa817d02d8fdce8c62798beab258b.patch";
             };
 
             # replace @dir@ in the path of the given list of patches
@@ -89,18 +92,17 @@ let
       });
 in
 stdenvNoCC.mkDerivation {
-  name = "fstar-z3";
-  dontUnpack = true;
-
   installPhase = ''
     mkdir -p $out/bin
     ln -s ${lib.getExe fstarNewZ3} $out/bin/z3-${lib.escapeShellArg fstarNewZ3.version}
     ln -s ${lib.getExe fstarOldZ3} $out/bin/z3-${lib.escapeShellArg fstarOldZ3.version}
   '';
 
+  dontUnpack = true;
+  name = "fstar-z3";
+
   passthru = {
     "z3_${lib.replaceStrings [ "." ] [ "_" ] fstarNewZ3.version}" = fstarNewZ3;
-
     "z3_${lib.replaceStrings [ "." ] [ "_" ] fstarOldZ3.version}" = fstarOldZ3;
   };
 }

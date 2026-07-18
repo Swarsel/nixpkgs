@@ -5,8 +5,8 @@
   SDL2,
   SDL2_ttf,
   libpcap,
-  vde2,
   pcre2,
+  vde2,
 }:
 
 stdenv.mkDerivation rec {
@@ -28,18 +28,16 @@ stdenv.mkDerivation rec {
     pcre2
   ];
 
-  dontConfigure = true;
-
-  # Workaround to build against upstream gcc-10 and clang-11.
-  # Can be removed when next release contains
-  #    https://github.com/simh/simh/issues/794
-  env.NIX_CFLAGS_COMPILE = toString [ "-fcommon" ];
-
   makeFlags = [
     "GCC=${stdenv.cc.targetPrefix}cc"
     "CC_STD=-std=c99"
     "LDFLAGS=-lm"
   ];
+
+  # Workaround to build against upstream gcc-10 and clang-11.
+  # Can be removed when next release contains
+  #    https://github.com/simh/simh/issues/794
+  env.NIX_CFLAGS_COMPILE = toString [ "-fcommon" ];
 
   preInstall = ''
     install -d ${placeholder "out"}/bin
@@ -61,9 +59,11 @@ stdenv.mkDerivation rec {
     (cd $out/bin; for i in *; do ln -s $i simh-$i; done)
   '';
 
+  dontConfigure = true;
+
   meta = {
-    homepage = "http://simh.trailing-edge.com/";
     description = "Collection of simulators of historic hardware";
+
     longDescription = ''
       SimH (History Simulator) is a collection of simulators for historically
       significant or just plain interesting computer hardware and software from
@@ -71,6 +71,8 @@ stdenv.mkDerivation rec {
       simulators and to publish them as freeware on the Internet, with freely
       available copies of significant or representative software.
     '';
+
+    homepage = "http://simh.trailing-edge.com/";
     license = with lib.licenses; mit;
     maintainers = [ ];
     platforms = with lib.platforms; unix;

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,6 +15,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-AKVwwvt77FZlm7089EeayYVRYLo7c3v6LFVpsQN68Zk=";
     fetchSubmodules = true;
   };
+
+  vendorHash = "sha256-pcIydpKWZt3vwShwzGlPKGq+disdxYFOB8gxHou3mVU=";
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
 
   subPackages = [
     "cmd/abidump"
@@ -31,19 +38,12 @@ buildGoModule (finalAttrs: {
     "cmd/utils"
   ];
 
-  vendorHash = "sha256-pcIydpKWZt3vwShwzGlPKGq+disdxYFOB8gxHou3mVU=";
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   meta = {
-    # Marked broken 2025-11-28 because it has failed on Hydra for at least one year.
-    broken = true;
     description = "";
     homepage = "https://github.com/ethereum-optimism/op-geth";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ happysalada ];
+    # Marked broken 2025-11-28 because it has failed on Hydra for at least one year.
+    broken = true;
   };
 })

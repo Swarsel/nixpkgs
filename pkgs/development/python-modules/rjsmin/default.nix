@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "rjsmin";
   version = "1.2.5";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -17,7 +16,7 @@ buildPythonPackage rec {
   # The package does not ship tests, and the setup machinery confuses
   # tests auto-discovery
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "rjsmin" ];
 
   meta = {

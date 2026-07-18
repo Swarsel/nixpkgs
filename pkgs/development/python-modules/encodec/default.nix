@@ -1,8 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # dependencies
   einops,
   numpy,
@@ -13,7 +12,6 @@
 buildPythonPackage rec {
   pname = "encodec";
   version = "0.1.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "facebookresearch";
@@ -29,10 +27,10 @@ buildPythonPackage rec {
     torchaudio
   ];
 
-  pythonImportsCheck = [ "encodec" ];
-
   # requires model data from the internet
   doCheck = false;
+  format = "setuptools";
+  pythonImportsCheck = [ "encodec" ];
 
   meta = {
     description = "State-of-the-art deep learning based audio codec supporting both mono 24 kHz audio and stereo 48 kHz audio";

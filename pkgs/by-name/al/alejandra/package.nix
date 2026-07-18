@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  testers,
   alejandra,
+  rustPlatform,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -28,11 +28,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/kamadorueda/alejandra";
     changelog = "https://github.com/kamadorueda/alejandra/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.unlicense;
+
     maintainers = with lib.maintainers; [
       _0x4A6F
       kamadorueda
       sciencentistguy
     ];
+
     mainProgram = "alejandra";
   };
 })

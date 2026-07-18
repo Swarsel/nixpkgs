@@ -1,14 +1,12 @@
 {
   lib,
-  buildGo125Module,
   fetchFromGitHub,
+  buildGo125Module,
 }:
 
 buildGo125Module (finalAttrs: {
   pname = "ipfs-cluster";
   version = "1.1.5";
-
-  vendorHash = "sha256-ARzpn/LzFIA+3ghW+xdQvFFiFwxT79dk4vpgEKoEBzk=";
 
   src = fetchFromGitHub {
     owner = "ipfs-cluster";
@@ -16,6 +14,8 @@ buildGo125Module (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-TOUntNZtTj6cS+6+MwIwKdUZ/gB5D63osn4+fpGGkDY=";
   };
+
+  vendorHash = "sha256-ARzpn/LzFIA+3ghW+xdQvFFiFwxT79dk4vpgEKoEBzk=";
 
   checkFlags =
     let
@@ -35,6 +35,7 @@ buildGo125Module (finalAttrs: {
     description = "Allocate, replicate, and track Pins across a cluster of IPFS daemons";
     homepage = "https://ipfscluster.io";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       Luflosi
       jglukasik

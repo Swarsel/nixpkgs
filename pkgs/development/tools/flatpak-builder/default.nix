@@ -2,30 +2,21 @@
   lib,
   stdenv,
   fetchurl,
-  replaceVars,
-  nixosTests,
-
-  docbook_xml_dtd_45,
-  docbook_xsl,
-  gettext,
-  libxml2,
-  libxslt,
-  pkg-config,
-  xmlto,
-  meson,
-  ninja,
-
   acl,
   appstream,
-  breezy,
+  attr,
   binutils,
+  breezy,
   bzip2,
   coreutils,
   cpio,
   curl,
   debugedit,
+  docbook_xml_dtd_45,
+  docbook_xsl,
   elfutils,
   flatpak,
+  gettext,
   gitMinimal,
   glib,
   glibcLocales,
@@ -34,17 +25,30 @@
   gnutar,
   json-glib,
   libcap,
+  libxml2,
+  libxslt,
   libyaml,
+  meson,
+  ninja,
+  nixosTests,
   ostree,
   patch,
+  pkg-config,
+  replaceVars,
   rpm,
   unzip,
-  attr,
+  xmlto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "flatpak-builder";
   version = "1.4.4";
+
+  # fetchFromGitHub fetches an archive which does not contain the full source (https://github.com/flatpak/flatpak-builder/issues/558)
+  src = fetchurl {
+    url = "https://github.com/flatpak/flatpak-builder/releases/download/${finalAttrs.version}/flatpak-builder-${finalAttrs.version}.tar.xz";
+    hash = "sha256-3CcVk5S6qiy1I/Uvh0Ry/1DRYZgyMyZMoqIuhQdB7Ho=";
+  };
 
   outputs = [
     "out"
@@ -52,12 +56,6 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
     "installedTests"
   ];
-
-  # fetchFromGitHub fetches an archive which does not contain the full source (https://github.com/flatpak/flatpak-builder/issues/558)
-  src = fetchurl {
-    url = "https://github.com/flatpak/flatpak-builder/releases/download/${finalAttrs.version}/flatpak-builder-${finalAttrs.version}.tar.xz";
-    hash = "sha256-3CcVk5S6qiy1I/Uvh0Ry/1DRYZgyMyZMoqIuhQdB7Ho=";
-  };
 
   patches = [
     # patch taken from gtk_doc
@@ -67,16 +65,16 @@ stdenv.mkDerivation (finalAttrs: {
     (replaceVars ./fix-paths.patch {
       brz = "${breezy}/bin/brz";
       cp = "${coreutils}/bin/cp";
+      cpio = "${cpio}/bin/cpio";
+      euelfcompress = "${elfutils}/bin/eu-elfcompress";
+      eustrip = "${elfutils}/bin/eu-strip";
+      git = "${gitMinimal}/bin/git";
       patch = "${patch}/bin/patch";
+      rofilesfuse = "${ostree}/bin/rofiles-fuse";
+      rpm2cpio = "${rpm}/bin/rpm2cpio";
+      strip = "${binutils}/bin/strip";
       tar = "${gnutar}/bin/tar";
       unzip = "${unzip}/bin/unzip";
-      rpm2cpio = "${rpm}/bin/rpm2cpio";
-      cpio = "${cpio}/bin/cpio";
-      git = "${gitMinimal}/bin/git";
-      rofilesfuse = "${ostree}/bin/rofiles-fuse";
-      strip = "${binutils}/bin/strip";
-      eustrip = "${elfutils}/bin/eu-strip";
-      euelfcompress = "${elfutils}/bin/eu-elfcompress";
     })
 
     (replaceVars ./fix-test-paths.patch {
@@ -118,11 +116,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dinstalled_test_prefix=${placeholder "installedTests"}"
   ];
 
-  # Some scripts used by tests  need to use shebangs that are available in Flatpak runtimes.
-  dontPatchShebangs = true;
-
-  enableParallelBuilding = true;
-
   # Installed tests
   postFixup =
     let
@@ -133,6 +126,10 @@ stdenv.mkDerivation (finalAttrs: {
         patchShebangs $file
       done
     '';
+
+  # Some scripts used by tests  need to use shebangs that are available in Flatpak runtimes.
+  dontPatchShebangs = true;
+  enableParallelBuilding = true;
 
   passthru = {
     installedTestsDependencies = [
@@ -151,10 +148,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Tool to build flatpaks from source";
-    mainProgram = "flatpak-builder";
     homepage = "https://github.com/flatpak/flatpak-builder";
     license = lib.licenses.lgpl21Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "flatpak-builder";
   };
 })

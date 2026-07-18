@@ -3,23 +3,23 @@
   stdenv,
   fetchurl,
   cmake,
-  openssl,
-  pkg-config,
-  withPerl ? false,
-  perl,
-  withPython ? false,
-  python3,
-  withTcl ? false,
-  tcl,
-  withCyrus ? true,
   cyrus_sasl,
-  withUnicode ? true,
   icu,
-  withZlib ? true,
-  zlib,
-  withIPv6 ? true,
-  withDebug ? false,
+  openssl,
+  perl,
+  pkg-config,
+  python3,
+  tcl,
   testers,
+  zlib,
+  withCyrus ? true,
+  withDebug ? false,
+  withIPv6 ? true,
+  withPerl ? false,
+  withPython ? false,
+  withTcl ? false,
+  withUnicode ? true,
+  withZlib ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -74,9 +74,11 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Advanced IRC bouncer";
     homepage = "https://wiki.znc.in/ZNC";
+    license = lib.licenses.asl20;
+
     maintainers = [
     ];
-    license = lib.licenses.asl20;
+
     platforms = lib.platforms.unix;
     pkgConfigModules = [ "znc" ];
   };

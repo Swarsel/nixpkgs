@@ -15,11 +15,9 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   patches = [ ./gcc-O3.patch ];
-
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-error=c++11-narrowing";
 
   meta = {
-    homepage = "http://www.phontron.com/kytea/";
     description = "General toolkit developed for analyzing text";
 
     longDescription = ''
@@ -27,8 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
       Chinese and other languages requiring word or morpheme segmentation.
     '';
 
+    homepage = "http://www.phontron.com/kytea/";
     license = lib.licenses.asl20;
-
     maintainers = [ ];
     platforms = lib.platforms.unix;
   };

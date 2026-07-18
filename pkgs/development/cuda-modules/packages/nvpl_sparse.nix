@@ -1,6 +1,5 @@
 { buildRedist }:
 buildRedist {
-  redistName = "nvpl";
   pname = "nvpl_sparse";
 
   outputs = [
@@ -9,6 +8,8 @@ buildRedist {
     "include"
     "lib"
   ];
+
+  redistName = "nvpl";
 
   meta = {
     description = "Provides a set of CPU-accelerated basic linear algebra subroutines used for handling sparse matrices";

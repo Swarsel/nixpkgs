@@ -1,11 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  setuptools-scm,
+  buildPythonPackage,
   numpy,
   pytestCheckHook,
+  setuptools,
+  setuptools-scm,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "trsfile";
@@ -18,7 +18,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-c56DvBezOPOTBoNnnP0NnpeKv5Gmf6usGrLwI4Qm3As=";
   };
 
-  pyproject = true;
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -29,9 +31,7 @@ buildPythonPackage (finalAttrs: {
     numpy
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "trsfile"

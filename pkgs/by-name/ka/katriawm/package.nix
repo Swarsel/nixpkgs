@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchzip,
+  gitUpdater,
   libx11,
   libxft,
   libxrandr,
   pkg-config,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,6 +18,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-vnnc5SkNzCLZTBxKcaHDo9F5f++7dtESD5hOB0zrxjo=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
+  postPatch = ''
+    substituteInPlace src/config.mk \
+      --replace pkg-config "$PKG_CONFIG"
+  '';
+
+  strictDeps = true;
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -26,13 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxrandr
   ];
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
-  strictDeps = true;
-
   makeFlags = [
     "-C"
     "src"
@@ -40,22 +44,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   installFlags = [ "prefix=$(out)" ];
 
-  postPatch = ''
-    substituteInPlace src/config.mk \
-      --replace pkg-config "$PKG_CONFIG"
-  '';
-
   passthru.updateScript = gitUpdater {
-    url = "https://www.uninformativ.de/git/katriawm.git/";
     rev-prefix = "v";
+    url = "https://www.uninformativ.de/git/katriawm.git/";
   };
 
   meta = {
-    homepage = "https://www.uninformativ.de/git/katriawm/file/README.html";
-    description = "Non-reparenting, dynamic window manager with decorations";
-    license = lib.licenses.mit;
-    mainProgram = "katriawm";
-    maintainers = [ ];
     inherit (libx11.meta) platforms;
+    description = "Non-reparenting, dynamic window manager with decorations";
+    homepage = "https://www.uninformativ.de/git/katriawm/file/README.html";
+    license = lib.licenses.mit;
+    maintainers = [ ];
+    mainProgram = "katriawm";
   };
 })

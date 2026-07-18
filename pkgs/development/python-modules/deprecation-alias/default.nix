@@ -1,20 +1,19 @@
 {
-  buildPythonPackage,
-  fetchPypi,
   lib,
-  hatch-requirements-txt,
+  buildPythonPackage,
   deprecation,
+  fetchPypi,
+  hatch-requirements-txt,
   packaging,
 }:
 buildPythonPackage rec {
   pname = "deprecation-alias";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "deprecation_alias";
     inherit version;
     hash = "sha256-pY0udEkceDTp0xh4jaYCcvovga64FLQFWkupCgpBdA8=";
+    pname = "deprecation_alias";
   };
 
   build-system = [ hatch-requirements-txt ];
@@ -23,6 +22,8 @@ buildPythonPackage rec {
     deprecation
     packaging
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Wrapper around ‘deprecation’ providing support for deprecated aliases";

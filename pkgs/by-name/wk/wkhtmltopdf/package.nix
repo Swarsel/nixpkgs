@@ -1,25 +1,26 @@
 {
   lib,
+  stdenv,
+  fetchurl,
   autoPatchelfHook,
   cpio,
-  freetype,
-  zlib,
-  openssl,
-  fetchurl,
   dpkg,
+  fontconfig,
+  freetype,
   gcc-unwrapped,
   libjpeg,
   libpng,
-  fontconfig,
-  stdenv,
-  xar,
-  libxrender,
   libxext,
+  libxrender,
+  openssl,
+  xar,
+  zlib,
 }:
 
 let
   darwinAttrs = rec {
     version = "0.12.6-2";
+
     src = fetchurl {
       url = "https://github.com/wkhtmltopdf/packaging/releases/download/${version}/wkhtmltox-${version}.macos-cocoa.pkg";
       sha256 = "sha256-gaZrd7UI/t6NvKpnEnIDdIN2Vos2c6F/ZhG21R6YlPg=";
@@ -30,17 +31,17 @@ let
       cpio
     ];
 
-    unpackPhase = ''
-      xar -xf $src
-      zcat Payload | cpio -i
-      tar -xf usr/local/share/wkhtmltox-installer/wkhtmltox.tar.gz
-    '';
-
     installPhase = ''
       runHook preInstall
       mkdir -p $out
       cp -r bin include lib share $out/
       runHook postInstall
+    '';
+
+    unpackPhase = ''
+      xar -xf $src
+      zcat Payload | cpio -i
+      tar -xf usr/local/share/wkhtmltox-installer/wkhtmltox.tar.gz
     '';
   };
 
@@ -75,6 +76,7 @@ let
 
   linuxAttrs.aarch64-linux = rec {
     version = "0.12.6.1-3";
+
     src = fetchurl {
       url = "https://github.com/wkhtmltopdf/packaging/releases/download/${version}/wkhtmltox_${version}.bookworm_arm64.deb";
       hash = "sha256-tmBhV7J8E+BE0Ku+ZwMB+I3k4Xgq/KT5wGpYF/PgOpw=";
@@ -84,6 +86,7 @@ let
 
   linuxAttrs.x86_64-linux = rec {
     version = "0.12.6.1-3";
+
     src = fetchurl {
       url = "https://github.com/wkhtmltopdf/packaging/releases/download/${version}/wkhtmltox_${version}.bookworm_amd64.deb";
       hash = "sha256-mLoNFXtQ028jvQ3t9MCqKMewxQ/NzcVKpba7uoGjlB0=";
@@ -96,18 +99,17 @@ stdenv.mkDerivation (
     pname = "wkhtmltopdf";
     # required to fix eval when it's not overridden by platform below
     version = "none";
-
-    dontStrip = true;
-
     doInstallCheck = true;
 
     installCheckPhase = ''
       $out/bin/wkhtmltopdf --version
     '';
 
+    dontStrip = true;
+
     meta = {
-      homepage = "https://wkhtmltopdf.org/";
       description = "Tools for rendering web pages to PDF or images (binary package)";
+
       longDescription = ''
         wkhtmltopdf and wkhtmltoimage are open source (LGPL) command line tools
         to render HTML into PDF and various image formats using the QT Webkit
@@ -116,11 +118,15 @@ stdenv.mkDerivation (
 
         There is also a C library, if you're into that kind of thing.
       '';
+
+      homepage = "https://wkhtmltopdf.org/";
       license = lib.licenses.gpl3Plus;
+
       maintainers = with lib.maintainers; [
         nbr
         kalbasit
       ];
+
       platforms = [
         "x86_64-linux"
         "aarch64-linux"

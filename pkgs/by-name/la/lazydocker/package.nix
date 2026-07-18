@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   lazydocker,
   testers,
 }:
@@ -17,11 +17,11 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-MHSZ0O8LPx1SOhrUK0sh73jDvDvu31Qsw+yjsTMQN/Y=";
   };
 
-  vendorHash = null;
-
   postPatch = ''
     rm -f pkg/config/app_config_test.go
   '';
+
+  vendorHash = null;
 
   excludedPackages = [
     "scripts"
@@ -42,10 +42,12 @@ buildGoModule (finalAttrs: {
     description = "Simple terminal UI for both docker and docker-compose";
     homepage = "https://github.com/jesseduffield/lazydocker";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       das-g
       yvnth
     ];
+
     mainProgram = "lazydocker";
   };
 })

@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,7 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-JxYafSralKqd/AB6fhTuQvt0q+/Zeu7dmZwVAAkolxY=";
-
   subPackages = [ "cmd/grr" ];
 
   meta = {

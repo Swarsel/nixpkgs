@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -21,6 +21,45 @@ in
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [ pkgs.torque ];
+
+    systemd.services.torque-scheduler = {
+      after = [ "torque-server-init.service" ];
+      documentation = [ "man:pbs_sched(8)" ];
+      path = [ torque ];
+      requires = [ "torque-server-init.service" ];
+
+      serviceConfig = {
+        ExecStart = "${torque}/bin/pbs_sched";
+        PIDFile = "/var/spool/torque/sched_priv/sched.lock";
+        Type = "forking";
+      };
+    };
+
+    systemd.services.torque-server = {
+      after = [
+        "torque-server-init.service"
+        "network.target"
+      ];
+
+      before = [ "trqauthd.service" ];
+      documentation = [ "man:pbs_server(8)" ];
+      path = [ torque ];
+      requires = [ "torque-server-init.service" ];
+
+      serviceConfig = {
+        ExecStart = "${torque}/bin/pbs_server";
+        ExecStop = "${torque}/bin/qterm";
+        PIDFile = "/var/spool/torque/server_priv/server.lock";
+        Type = "forking";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+
+      wants = [
+        "torque-scheduler.service"
+        "trqauthd.service"
+      ];
+    };
 
     systemd.services.torque-server-init = {
       path = with pkgs; [
@@ -48,8 +87,8 @@ in
       '';
 
       serviceConfig = {
-        Type = "oneshot";
         RemainAfterExit = true;
+        Type = "oneshot";
       };
 
       unitConfig = {
@@ -58,52 +97,13 @@ in
     };
 
     systemd.services.trqauthd = {
-      path = [ torque ];
-
-      requires = [ "torque-server-init.service" ];
       after = [ "torque-server-init.service" ];
+      path = [ torque ];
+      requires = [ "torque-server-init.service" ];
 
       serviceConfig = {
-        Type = "forking";
         ExecStart = "${torque}/bin/trqauthd";
-      };
-    };
-
-    systemd.services.torque-server = {
-      documentation = [ "man:pbs_server(8)" ];
-      path = [ torque ];
-
-      wantedBy = [ "multi-user.target" ];
-      wants = [
-        "torque-scheduler.service"
-        "trqauthd.service"
-      ];
-      before = [ "trqauthd.service" ];
-      requires = [ "torque-server-init.service" ];
-      after = [
-        "torque-server-init.service"
-        "network.target"
-      ];
-
-      serviceConfig = {
         Type = "forking";
-        ExecStart = "${torque}/bin/pbs_server";
-        ExecStop = "${torque}/bin/qterm";
-        PIDFile = "/var/spool/torque/server_priv/server.lock";
-      };
-    };
-
-    systemd.services.torque-scheduler = {
-      documentation = [ "man:pbs_sched(8)" ];
-      path = [ torque ];
-
-      requires = [ "torque-server-init.service" ];
-      after = [ "torque-server-init.service" ];
-
-      serviceConfig = {
-        Type = "forking";
-        ExecStart = "${torque}/bin/pbs_sched";
-        PIDFile = "/var/spool/torque/sched_priv/sched.lock";
       };
     };
 

@@ -19,10 +19,13 @@ in
   imports = [
     (mkRenamedOptionModule [ "controlSocketPaths" ] [ "targets" ])
   ];
-  port = 9547;
+
   extraOpts = {
     targets = mkOption {
-      type = types.listOf types.str;
+      description = ''
+        Paths or URLs to the Kea control socket.
+      '';
+
       example = literalExpression ''
         [
           "/run/kea/kea-dhcp4.socket"
@@ -30,19 +33,22 @@ in
           "http://127.0.0.1:8547"
         ]
       '';
-      description = ''
-        Paths or URLs to the Kea control socket.
-      '';
+
+      type = types.listOf types.str;
     };
   };
+
+  port = 9547;
+
   serviceOpts = {
     after = [
       "kea-dhcp4-server.service"
       "kea-dhcp6-server.service"
     ];
+
     serviceConfig = {
-      User = "kea";
       DynamicUser = true;
+
       ExecStart = utils.escapeSystemdExecArgs (
         [
           (lib.getExe pkgs.prometheus-kea-exporter)
@@ -54,12 +60,15 @@ in
         ++ cfg.extraFlags
         ++ cfg.targets
       );
-      RuntimeDirectory = "kea";
-      RuntimeDirectoryPreserve = true;
+
       RestrictAddressFamilies = [
         # Need AF_UNIX to collect data
         "AF_UNIX"
       ];
+
+      RuntimeDirectory = "kea";
+      RuntimeDirectoryPreserve = true;
+      User = "kea";
     };
   };
 }

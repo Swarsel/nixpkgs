@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "yocto-cooker";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cpb-";
@@ -15,6 +14,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-h4fmpYzErOiu5M7XHuqlRUvDpXUoOC0c/HGs9a5PZNg=";
   };
+
+  strictDeps = true;
+  __structuredAttrs = true;
 
   build-system = with python3Packages; [
     setuptools
@@ -26,8 +28,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pyjson5
   ];
 
-  __structuredAttrs = true;
-  strictDeps = true;
+  pyproject = true;
 
   meta = {
     description = "Meta buildtool for Yocto Project based Linux embedded systems";

@@ -1,31 +1,27 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   botocore,
+  buildPythonPackage,
   click,
+  # tests
+  hypothesis,
   inquirer,
   jmespath,
   pip,
-  pyyaml,
-  six,
-
-  # tests
-  hypothesis,
   pytestCheckHook,
+  pyyaml,
   requests,
+  # build-system
+  setuptools,
+  six,
   websocket-client,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "chalice";
   version = "1.33.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aws";
@@ -33,6 +29,13 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-c5xzgrxRFRlvgMnf/L8rhG7rYJLtuMvDZHYsPaHkdRs=";
   };
+
+  nativeCheckInputs = [
+    hypothesis
+    pytestCheckHook
+    requests
+    websocket-client
+  ];
 
   build-system = [ setuptools ];
 
@@ -45,15 +48,6 @@ buildPythonPackage (finalAttrs: {
     pyyaml
     # setuptools
     six
-  ];
-
-  pythonRelaxDeps = [ "pip" ];
-
-  nativeCheckInputs = [
-    hypothesis
-    pytestCheckHook
-    requests
-    websocket-client
   ];
 
   disabledTestPaths = [
@@ -84,14 +78,16 @@ buildPythonPackage (finalAttrs: {
     "test_no_error_message_printed_on_empty_reqs_file"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "chalice" ];
+  pythonRelaxDeps = [ "pip" ];
 
   meta = {
     description = "Python Serverless Microframework for AWS";
-    mainProgram = "chalice";
     homepage = "https://github.com/aws/chalice";
     changelog = "https://github.com/aws/chalice/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "chalice";
   };
 })

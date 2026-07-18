@@ -1,7 +1,7 @@
 {
+  lib,
   buildPythonPackage,
   fetchFromBitbucket,
-  lib,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "zcc-helper";
   version = "3.8";
-  pyproject = true;
 
   src = fetchFromBitbucket {
     owner = "mark_hannon";
@@ -18,18 +17,18 @@ buildPythonPackage rec {
     hash = "sha256-8jbDhlYIgmC0U6w9UY6PGvCnSDFiC/uBib08fikeabk=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "zcc" ];
-
   nativeCheckInputs = [
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "zcc" ];
+
   meta = {
-    changelog = "https://bitbucket.org/mark_hannon/zcc/src/${src.rev}/CHANGELOG.md";
     description = "ZIMI ZCC helper module";
     homepage = "https://bitbucket.org/mark_hannon/zcc";
+    changelog = "https://bitbucket.org/mark_hannon/zcc/src/${src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

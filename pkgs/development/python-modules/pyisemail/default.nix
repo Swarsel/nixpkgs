@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dnspython,
-  fetchFromGitHub,
   hatchling,
   pytestCheckHook,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pyisemail";
   version = "2.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "michaelherold";
@@ -20,11 +19,9 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ hatchling ];
-
   propagatedBuildInputs = [ dnspython ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyisemail" ];
 
   meta = {

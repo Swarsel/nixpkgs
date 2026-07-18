@@ -2,20 +2,28 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  docbook-xsl-nons,
+  docbook_xml_dtd_43,
+  glib,
+  gobject-introspection,
+  gtk-doc,
   meson,
   mesonEmulatorHook,
   ninja,
   pkg-config,
-  gobject-introspection,
-  gtk-doc,
-  docbook-xsl-nons,
-  docbook_xml_dtd_43,
-  glib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libqrtr-glib";
   version = "1.2.2";
+
+  src = fetchFromGitLab {
+    owner = "mobile-broadband";
+    repo = "libqrtr-glib";
+    rev = finalAttrs.version;
+    sha256 = "kHLrOXN6wgBrHqipo2KfAM5YejS0/bp7ziBSpt0s1i0=";
+    domain = "gitlab.freedesktop.org";
+  };
 
   outputs = [
     "out"
@@ -23,19 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
     "devdoc"
   ];
 
-  src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
-    owner = "mobile-broadband";
-    repo = "libqrtr-glib";
-    rev = finalAttrs.version;
-    sha256 = "kHLrOXN6wgBrHqipo2KfAM5YejS0/bp7ziBSpt0s1i0=";
-  };
-
   strictDeps = true;
-
-  depsBuildBuild = [
-    pkg-config
-  ];
 
   nativeBuildInputs = [
     meson
@@ -54,11 +50,15 @@ stdenv.mkDerivation (finalAttrs: {
     glib
   ];
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   meta = {
-    homepage = "https://gitlab.freedesktop.org/mobile-broadband/libqrtr-glib";
     description = "Qualcomm IPC Router protocol helper library";
-    teams = [ lib.teams.freedesktop ];
-    platforms = lib.platforms.linux;
+    homepage = "https://gitlab.freedesktop.org/mobile-broadband/libqrtr-glib";
     license = lib.licenses.lgpl2Plus;
+    platforms = lib.platforms.linux;
+    teams = [ lib.teams.freedesktop ];
   };
 })

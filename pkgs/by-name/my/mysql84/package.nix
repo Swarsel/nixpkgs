@@ -3,27 +3,27 @@
   stdenv,
   fetchurl,
   bison,
+  cctools,
   cmake,
-  pkg-config,
+  curl,
+  darwin,
   icu,
   libedit,
   libevent,
+  libfido2,
+  libtirpc,
   lz4,
   ncurses,
+  nixosTests,
+  numactl,
   openssl,
+  pkg-config,
   protobuf_21,
   re2,
   readline,
+  rpcsvc-proto,
   zlib,
   zstd,
-  libfido2,
-  cctools,
-  darwin,
-  numactl,
-  libtirpc,
-  rpcsvc-proto,
-  curl,
-  nixosTests,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,12 +35,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-1XpnMLrvFK4Rj39KbgKEW1tQkzdY32H7BuEE8nzMj5Y=";
   };
 
-  nativeBuildInputs = [
-    bison
-    cmake
-    pkg-config
-  ]
-  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [ rpcsvc-proto ];
+  outputs = [
+    "out"
+    "static"
+  ];
 
   patches = [
     ./no-force-outline-atomics.patch # Do not force compilers to turn on -moutline-atomics switch
@@ -51,6 +49,13 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace cmake/libutils.cmake --replace /usr/bin/libtool libtool
     substituteInPlace cmake/os/Darwin.cmake --replace /usr/bin/libtool libtool
   '';
+
+  nativeBuildInputs = [
+    bison
+    cmake
+    pkg-config
+  ]
+  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [ rpcsvc-proto ];
 
   buildInputs = [
     (curl.override { inherit openssl; })
@@ -75,11 +80,6 @@ stdenv.mkDerivation (finalAttrs: {
     cctools
     darwin.developer_cmds
     darwin.DarwinTools
-  ];
-
-  outputs = [
-    "out"
-    "static"
   ];
 
   cmakeFlags = [
@@ -110,24 +110,29 @@ stdenv.mkDerivation (finalAttrs: {
   passthru = {
     client = finalAttrs.finalPackage;
     connector-c = finalAttrs.finalPackage;
-    server = finalAttrs.finalPackage;
     mysqlVersion = lib.versions.majorMinor finalAttrs.version;
+    server = finalAttrs.finalPackage;
+
     tests = {
       mysql =
         nixosTests.mysql."mysql${lib.versions.major finalAttrs.version}${lib.versions.minor finalAttrs.version}";
-      mysql-secure-root-by-default =
-        nixosTests.mysql-secure-root.secure-by-default."mysql${lib.versions.major finalAttrs.version}${lib.versions.minor finalAttrs.version}";
+
       mysql-root-can-be-kept-insecure =
         nixosTests.mysql-secure-root.can-be-insecure."mysql${lib.versions.major finalAttrs.version}${lib.versions.minor finalAttrs.version}";
+
+      mysql-secure-root-by-default =
+        nixosTests.mysql-secure-root.secure-by-default."mysql${lib.versions.major finalAttrs.version}${lib.versions.minor finalAttrs.version}";
     };
   };
 
   meta = {
-    homepage = "https://www.mysql.com/";
     description = "World's most popular open source database";
+    homepage = "https://www.mysql.com/";
     license = lib.licenses.gpl2;
+
     maintainers = [
     ];
+
     platforms = lib.platforms.unix;
   };
 })

@@ -1,18 +1,18 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   autoPatchelfHook,
   buildPythonPackage,
   colorama,
   distro,
-  fetchFromGitHub,
   packaging,
   psutil,
   python-dateutil,
   pyyaml,
+  requests,
   requests-cache,
   requests-toolbelt,
-  requests,
   resolvelib,
   setuptools,
   stevedore,
@@ -22,7 +22,6 @@
 buildPythonPackage rec {
   pname = "e3-core";
   version = "22.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "AdaCore";
@@ -31,9 +30,10 @@ buildPythonPackage rec {
     hash = "sha256-LHWtgIvbS1PaF85aOpdhR0rWQGRUtbY0Qg1SZxQOsSc=";
   };
 
-  build-system = [ setuptools ];
-
   nativeBuildInputs = [ autoPatchelfHook ];
+  # e3-core is tested with tox; it's hard to test without internet.
+  doCheck = false;
+  build-system = [ setuptools ];
 
   dependencies = [
     colorama
@@ -54,20 +54,18 @@ buildPythonPackage rec {
     distro
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "e3" ];
 
-  # e3-core is tested with tox; it's hard to test without internet.
-  doCheck = false;
-
   meta = {
-    changelog = "https://github.com/AdaCore/e3-core/releases/tag/${src.tag}";
-    homepage = "https://github.com/AdaCore/e3-core/";
     description = "Core framework for developing portable automated build systems";
+    homepage = "https://github.com/AdaCore/e3-core/";
+    changelog = "https://github.com/AdaCore/e3-core/releases/tag/${src.tag}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ atalii ];
-    mainProgram = "e3";
     # See the comment regarding distro and psutil. Other platforms are supported
     # upstream, but not by this package.
     platforms = lib.platforms.linux;
+    mainProgram = "e3";
   };
 }

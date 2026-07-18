@@ -1,24 +1,29 @@
 {
   lib,
-  jdk8,
   buildPythonPackage,
   fetchPypi,
+  jdk8,
+  py4j,
   setuptools,
   six,
-  py4j,
 }:
 
 buildPythonPackage rec {
   pname = "databricks-connect";
   version = "11.3.40";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-rSuW/6fSro1pAxDj2tZ+EYvO0zf0yCWXNaS9Ls7xJfw=";
   };
 
-  sourceRoot = ".";
+  # requires network access
+  doCheck = false;
+
+  preFixup = ''
+    substituteInPlace "$out/bin/find-spark-home" \
+      --replace-fail find_spark_home.py .find_spark_home.py-wrapped
+  '';
 
   build-system = [ setuptools ];
 
@@ -28,15 +33,7 @@ buildPythonPackage rec {
     jdk8
   ];
 
-  # requires network access
-  doCheck = false;
-
-  pythonRelaxDeps = [ "py4j" ];
-
-  preFixup = ''
-    substituteInPlace "$out/bin/find-spark-home" \
-      --replace-fail find_spark_home.py .find_spark_home.py-wrapped
-  '';
+  pyproject = true;
 
   pythonImportsCheck = [
     "pyspark"
@@ -44,11 +41,14 @@ buildPythonPackage rec {
     "py4j"
   ];
 
+  pythonRelaxDeps = [ "py4j" ];
+  sourceRoot = ".";
+
   meta = {
     description = "Client for connecting to remote Databricks clusters";
     homepage = "https://pypi.org/project/databricks-connect";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.databricks;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ kfollesdal ];
   };
 }

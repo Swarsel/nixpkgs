@@ -1,12 +1,12 @@
 {
-  pkgsBuildBuild,
-  qtModule,
-  stdenv,
   lib,
-  qtbase,
-  qtdeclarative,
+  stdenv,
   cups,
   llvmPackages,
+  pkgsBuildBuild,
+  qtModule,
+  qtbase,
+  qtdeclarative,
   # clang-based c++ parser for qdoc and lupdate
   withClang ? false,
 }:
@@ -21,10 +21,6 @@ qtModule {
       src/qdoc/catch_conversions/CMakeLists.txt \
       --replace ''\'''${CMAKE_INSTALL_INCLUDEDIR}' "$out/include"
   '';
-
-  env.NIX_CFLAGS_COMPILE = toString [
-    "-DNIX_OUTPUT_OUT=\"${placeholder "out"}\""
-  ];
 
   buildInputs = lib.optionals withClang [
     llvmPackages.libclang
@@ -45,6 +41,10 @@ qtModule {
     ++ lib.optionals withClang [
       "-DFEATURE_clang=ON"
     ];
+
+  env.NIX_CFLAGS_COMPILE = toString [
+    "-DNIX_OUTPUT_OUT=\"${placeholder "out"}\""
+  ];
 
   postInstall = ''
     mkdir -p "$dev"

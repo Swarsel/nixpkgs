@@ -1,27 +1,26 @@
 {
   lib,
-  buildPythonPackage,
-  build,
-  blessed,
   fetchFromGitHub,
+  blessed,
+  build,
+  buildPythonPackage,
+  icecream,
   invoke,
+  pip,
+  pytest-mock,
+  pytest-relaxed,
+  pytestCheckHook,
   releases,
   semantic-version,
+  setuptools,
   tabulate,
   tqdm,
   twine,
-  pytestCheckHook,
-  pytest-relaxed,
-  pytest-mock,
-  icecream,
-  setuptools,
-  pip,
 }:
 
 buildPythonPackage rec {
   pname = "invocations";
   version = "4.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyinvoke";
@@ -37,6 +36,14 @@ buildPythonPackage rec {
       --replace-fail "semantic_version>=2.4,<2.7" "semantic_version"
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-relaxed
+    pytest-mock
+    icecream
+    pip
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -50,16 +57,6 @@ buildPythonPackage rec {
     twine
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-relaxed
-    pytest-mock
-    icecream
-    pip
-  ];
-
-  pythonImportsCheck = [ "invocations" ];
-
   disabledTests = [
     # invoke.exceptions.UnexpectedExit
     "autodoc_"
@@ -70,6 +67,9 @@ buildPythonPackage rec {
     "prepare_"
     "status_"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "invocations" ];
 
   meta = {
     description = "Common/best-practice Invoke tasks and collections";

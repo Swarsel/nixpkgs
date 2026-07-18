@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "explex";
@@ -22,12 +22,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
   meta = {
     description = "Composite font of 0xProto and IBM Plex Sans JP";
     homepage = "https://github.com/yuru7/Explex";
     changelog = "https://github.com/yuru7/Explex/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.r-aizawa ];
+    platforms = lib.platforms.all;
   };
 })

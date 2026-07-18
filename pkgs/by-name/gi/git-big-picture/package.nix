@@ -1,15 +1,14 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   git,
   graphviz,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "git-big-picture";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "git-big-picture";
@@ -17,8 +16,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-aBwSw7smeRkkXSPY02Cs+jFI1wvgj1JisUny+R8G59E=";
   };
-
-  build-system = with python3Packages; [ setuptools ];
 
   postFixup = ''
     wrapProgram $out/bin/git-big-picture \
@@ -29,6 +26,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
         ]
       }
   '';
+
+  build-system = with python3Packages; [ setuptools ];
+  pyproject = true;
 
   meta = {
     description = "Tool for visualization of Git repositories";

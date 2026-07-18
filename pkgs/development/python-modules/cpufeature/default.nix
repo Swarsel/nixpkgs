@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  unittestCheckHook,
+  buildPythonPackage,
   setuptools,
+  unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "cpufeature";
   version = "0.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "robbmcleod";
@@ -19,23 +18,23 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ setuptools ];
-
   nativeCheckInputs = [ unittestCheckHook ];
-
-  pythonImportsCheck = [ "cpufeature" ];
 
   preCheck = ''
     # Change into the test directory due to a relative resource path
     cd cpufeature
   '';
 
+  pyproject = true;
+  pythonImportsCheck = [ "cpufeature" ];
+
   meta = {
     description = "Python module for detection of CPU features";
     homepage = "https://github.com/robbmcleod/cpufeature";
     license = lib.licenses.cc0;
     maintainers = with lib.maintainers; [ fab ];
+
     platforms = [
       "x86_64-linux"
       "x86_64-windows"

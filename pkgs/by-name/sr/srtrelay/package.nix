@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  srt,
+  buildGoModule,
   ffmpeg,
+  srt,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,9 +17,8 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-idWAJD6dvvM5OHox5+MI8q3knyl2ANqBiXfQ0VlF67Q=";
   };
 
-  vendorHash = "sha256-a4Efva0nWeyHjftuky76znbHOrZYXaIVENKbHK9xnb8=";
-
   buildInputs = [ srt ];
+  vendorHash = "sha256-a4Efva0nWeyHjftuky76znbHOrZYXaIVENKbHK9xnb8=";
   nativeCheckInputs = [ ffmpeg ];
 
   meta = {

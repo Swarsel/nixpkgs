@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   appimageTools,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -13,17 +13,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     url = "https://github.com/pavlobu/deskreen/releases/download/v${finalAttrs.version}/Deskreen-${finalAttrs.version}.AppImage";
     hash = "sha256-0jI/mbXaXanY6ay2zn+dPWGvsqWRcF8aYHRvfGVsObE=";
   };
-  deskreenUnwrapped = appimageTools.wrapType2 {
-    inherit (finalAttrs) pname version;
-    src = finalAttrs.src;
-  };
 
   buildInputs = [
     finalAttrs.deskreenUnwrapped
   ];
-
-  dontUnpack = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -34,14 +27,24 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  deskreenUnwrapped = appimageTools.wrapType2 {
+    inherit (finalAttrs) pname version;
+    src = finalAttrs.src;
+  };
+
+  dontBuild = true;
+  dontUnpack = true;
+
   meta = {
     description = "Turn any device into a secondary screen for your computer";
     homepage = "https://deskreen.com";
     license = lib.licenses.agpl3Only;
-    mainProgram = "deskreen";
+
     maintainers = with lib.maintainers; [
       leo248
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "deskreen";
   };
 })

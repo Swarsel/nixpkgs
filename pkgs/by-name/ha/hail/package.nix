@@ -1,16 +1,16 @@
 {
   lib,
-  rustPlatform,
+  SDL2,
+  SDL2_gfx,
+  SDL2_image,
   fetchFromCodeberg,
-  pkg-config,
   fontconfig,
   freetype,
   libxkbcommon,
-  wayland,
-  SDL2,
-  SDL2_image,
-  SDL2_gfx,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  wayland,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -24,8 +24,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-pPhbeZKNH5iKv4y34zKRmDIwLhmogaHIJJ00sZvHzHs=";
   };
 
-  cargoHash = "sha256-TlxNHIpweWqRtoCblwUBS3RJM7vItORV8uYr4T3U37k=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -38,6 +36,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     SDL2_gfx
   ];
 
+  cargoHash = "sha256-TlxNHIpweWqRtoCblwUBS3RJM7vItORV8uYr4T3U37k=";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -46,7 +45,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     changelog = "https://codeberg.org/periwinkle/hail/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [ yiyu ];
-    mainProgram = "hail";
     platforms = lib.platforms.linux;
+    mainProgram = "hail";
   };
 })

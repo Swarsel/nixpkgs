@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   coreutils,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ makeWrapper ];
 
+  postInstall = ''
+    wrapProgram "$out/sbin/resolvconf" --set PATH "${coreutils}/bin"
+  '';
+
   configurePhase = ''
     cat > config.mk <<EOF
     PREFIX=$out
@@ -33,18 +37,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   installFlags = [ "SYSCONFDIR=$(out)/etc" ];
 
-  postInstall = ''
-    wrapProgram "$out/sbin/resolvconf" --set PATH "${coreutils}/bin"
-  '';
-
   meta = {
     description = "Program to manage /etc/resolv.conf";
-    mainProgram = "resolvconf";
     homepage = "https://roy.marples.name/projects/openresolv";
     license = lib.licenses.bsd2;
     maintainers = [ ];
-    teams = [ lib.teams.security-review ];
     platforms = lib.platforms.unix;
+    mainProgram = "resolvconf";
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "openresolv_project" finalAttrs.version;
+    teams = [ lib.teams.security-review ];
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,14 +17,14 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-SkBHFvQn3Q6fl/d1npEspTYhq1YrnusXNWr/Ky4bv64=";
 
+  postInstall = ''
+    mv $out/bin/cmd $out/bin/pingtunnel
+  '';
+
   ldflags = [
     "-s"
     "-w"
   ];
-
-  postInstall = ''
-    mv $out/bin/cmd $out/bin/pingtunnel
-  '';
 
   meta = {
     description = "Tool that send TCP/UDP traffic over ICMP";

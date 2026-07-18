@@ -1,7 +1,7 @@
 {
-  buildPecl,
   lib,
   fetchFromGitHub,
+  buildPecl,
 }:
 
 let
@@ -19,10 +19,10 @@ buildPecl {
   };
 
   meta = {
-    changelog = "https://pecl.php.net/package-changelog.php?package=excimer&release=${version}";
     description = "PHP extension that provides an interrupting timer and a low-overhead sampling profiler";
-    license = lib.licenses.asl20;
     homepage = "https://mediawiki.org/wiki/Excimer";
+    changelog = "https://pecl.php.net/package-changelog.php?package=excimer&release=${version}";
+    license = lib.licenses.asl20;
     teams = [ lib.teams.php ];
   };
 }

@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   asciidoctor,
   desktop-file-utils,
   dmidecode,
   ethtool,
-  fetchFromGitHub,
   gawk,
   gobject-introspection,
   hdparm,
@@ -28,18 +28,18 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "tuned";
   version = "2.27.0";
 
-  outputs = [
-    "out"
-    "doc"
-    "man"
-  ];
-
   src = fetchFromGitHub {
     owner = "redhat-performance";
     repo = "tuned";
     tag = "v${finalAttrs.version}";
     hash = "sha256-PlF2T+EpveFkKPMU/6ZMXDO0q8Efzol4HJ4CX0wsBoY=";
   };
+
+  outputs = [
+    "out"
+    "doc"
+    "man"
+  ];
 
   patches = [
     # Some tests require a TTY to run
@@ -96,12 +96,31 @@ stdenv.mkDerivation (finalAttrs: {
     "UNITDIR=/lib/systemd/system"
   ];
 
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  postInstall = ''
+    rm -rf $out/{run,var}
+  '';
+
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    python3Packages.pythonImportsCheckHook
+    versionCheckHook
+  ];
+
+  postFixup = ''
+    wrapPythonPrograms
+  '';
+
+  checkTarget = "test";
+  dontWrapGApps = true;
+
   installTargets = [
     "install"
     "install-ppd"
   ];
 
-  dontWrapGApps = true;
   makeWrapperArgs = [
     "\${gappsWrapperArgs[@]}"
     "--prefix"
@@ -120,29 +139,13 @@ stdenv.mkDerivation (finalAttrs: {
     ])
   ];
 
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-  checkTarget = "test";
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [
-    python3Packages.pythonImportsCheckHook
-    versionCheckHook
-  ];
-
   pythonImportsCheck = [ "tuned" ];
-
-  postInstall = ''
-    rm -rf $out/{run,var}
-  '';
-
-  postFixup = ''
-    wrapPythonPrograms
-  '';
 
   passthru = {
     tests = lib.optionalAttrs stdenv.hostPlatform.isLinux {
       nixos = nixosTests.tuned;
     };
+
     updateScript = nix-update-script { };
   };
 
@@ -152,7 +155,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/redhat-performance/tuned/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ getchoo ];
-    mainProgram = "tuned";
     platforms = lib.platforms.linux;
+    mainProgram = "tuned";
   };
 })

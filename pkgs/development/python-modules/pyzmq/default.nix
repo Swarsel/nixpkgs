@@ -1,35 +1,50 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  isPyPy,
-
   # build-system
   cffi,
-  cython,
   cmake,
+  cython,
+  fetchPypi,
+  isPyPy,
+  libsodium,
   ninja,
   packaging,
   pathspec,
-  scikit-build-core,
-
+  pytest-asyncio,
   # checks
   pytestCheckHook,
+  scikit-build-core,
   tornado,
-  libsodium,
   zeromq,
-  pytest-asyncio,
 }:
 
 buildPythonPackage rec {
   pname = "pyzmq";
   version = "27.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-rAdl49REVa223b9EF9zORg/ECgWXjAjv3ylIBy9ttUA=";
   };
+
+  buildInputs = [
+    libsodium
+    zeromq
+  ];
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    tornado
+    pytest-asyncio
+  ];
+
+  preCheck = ''
+    rm -r zmq
+  '';
+
+  # Some of the tests use localhost networking.
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     cmake
@@ -40,26 +55,7 @@ buildPythonPackage rec {
   ]
   ++ (if isPyPy then [ cffi ] else [ cython ]);
 
-  dontUseCmakeConfigure = true;
-
-  buildInputs = [
-    libsodium
-    zeromq
-  ];
-
   dependencies = lib.optionals isPyPy [ cffi ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    tornado
-    pytest-asyncio
-  ];
-
-  pythonImportsCheck = [ "zmq" ];
-
-  preCheck = ''
-    rm -r zmq
-  '';
 
   disabledTestMarks = [
     "flaky"
@@ -79,16 +75,19 @@ buildPythonPackage rec {
     "TestPubLog"
   ];
 
-  # Some of the tests use localhost networking.
-  __darwinAllowLocalNetworking = true;
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+  pythonImportsCheck = [ "zmq" ];
 
   meta = {
     description = "Python bindings for ØMQ";
     homepage = "https://pyzmq.readthedocs.io/";
+
     license = with lib.licenses; [
       bsd3 # or
       lgpl3Only
     ];
+
     maintainers = [ ];
   };
 }

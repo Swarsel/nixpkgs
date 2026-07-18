@@ -1,15 +1,14 @@
 {
   lib,
   fetchPypi,
-  rustPlatform,
   python3Packages,
+  rustPlatform,
   versionCheckHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "zensical";
   version = "0.0.50";
-  pyproject = true;
 
   # We fetch from PyPi, because GitHub repo does not contain all sources.
   # The publish process also copies in assets from zensical/ui.
@@ -19,15 +18,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-cEDlLr5eaideTt6zUb8rwxTQB/P7V1DxeKONhAcj5pw=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-4f2nd+amOD6A8XX1470Z7PFXXpd+xFQdx7iepCKzTq0=";
-  };
-
   nativeBuildInputs = with rustPlatform; [
     maturinBuildHook
     cargoSetupHook
   ];
+
+  nativeCheckInputs = [ versionCheckHook ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-4f2nd+amOD6A8XX1470Z7PFXXpd+xFQdx7iepCKzTq0=";
+  };
 
   dependencies = with python3Packages; [
     click
@@ -40,11 +41,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tomli
   ];
 
-  nativeCheckInputs = [ versionCheckHook ];
+  pyproject = true;
   versionCheckProgramArg = "--version";
 
   meta = {
     description = "Static site generator for documentation";
+
     longDescription = ''
       Zensical is a modern static site generator designed to simplify
       building and maintaining project documentation.  It's built by
@@ -52,6 +54,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
       design principles and philosophy – batteries included, easy to
       use, with powerful customization options.
     '';
+
     homepage = "https://zensical.org";
     changelog = "https://github.com/zensical/zensical/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;

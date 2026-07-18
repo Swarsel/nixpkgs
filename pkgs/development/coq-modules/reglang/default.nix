@@ -1,32 +1,30 @@
 {
   lib,
-  mkCoqDerivation,
   coq,
   mathcomp,
+  mkCoqDerivation,
   stdlib,
   version ? null,
 }:
 
 mkCoqDerivation {
+  inherit version;
   pname = "reglang";
 
-  releaseRev = v: "v${v}";
+  propagatedBuildInputs = [
+    mathcomp.ssreflect
+    stdlib
+  ];
 
-  release."1.2.2".hash = "sha256-js1JaLSpYbxfiAfh8XvGsnJpx5DV13heouUm3oeBfNg=";
-  release."1.2.1".hash = "sha256-giCRK8wzpVVzXAkFAieQDWqSsP7upSJSUUHkwG4QqO4=";
-  release."1.2.0".hash = "sha256-gSqQ7D2HLwM4oYopTWkMFYfYXxsH/7VxI3AyrLwNf3o=";
-  release."1.1.3".hash = "sha256-kaselYm8K0JBsTlcI6K24m8qpv8CZ9+VNDJrOtFaExg=";
-  release."1.1.2".hash = "sha256-SEnMilLNxh6a3oiDNGLaBr8quQ/nO2T9Fwdf/1il2Yk=";
-
-  inherit version;
   defaultVersion =
     let
       case = coq: mc: out: {
+        inherit out;
+
         cases = [
           coq
           mc
         ];
-        inherit out;
       };
     in
     with lib.versions;
@@ -40,15 +38,17 @@ mkCoqDerivation {
       ]
       null;
 
-  propagatedBuildInputs = [
-    mathcomp.ssreflect
-    stdlib
-  ];
+  release."1.1.2".hash = "sha256-SEnMilLNxh6a3oiDNGLaBr8quQ/nO2T9Fwdf/1il2Yk=";
+  release."1.1.3".hash = "sha256-kaselYm8K0JBsTlcI6K24m8qpv8CZ9+VNDJrOtFaExg=";
+  release."1.2.0".hash = "sha256-gSqQ7D2HLwM4oYopTWkMFYfYXxsH/7VxI3AyrLwNf3o=";
+  release."1.2.1".hash = "sha256-giCRK8wzpVVzXAkFAieQDWqSsP7upSJSUUHkwG4QqO4=";
+  release."1.2.2".hash = "sha256-js1JaLSpYbxfiAfh8XvGsnJpx5DV13heouUm3oeBfNg=";
+  releaseRev = v: "v${v}";
 
   meta = {
     description = "Regular Language Representations in Coq";
-    maintainers = with lib.maintainers; [ siraben ];
     license = lib.licenses.cecill-b;
+    maintainers = with lib.maintainers; [ siraben ];
     platforms = lib.platforms.unix;
   };
 }

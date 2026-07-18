@@ -3,17 +3,16 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  libjpeg,
-  perl,
-  zlib,
   ctestCheckHook,
-
   # for passthru.tests
   cups-filters,
+  libjpeg,
   pdfmixtool,
+  perl,
   python3,
   testers,
   versionCheckHook,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -45,11 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
     libjpeg
   ];
 
-  nativeCheckInputs = [ ctestCheckHook ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-
   cmakeFlags = [
     (lib.cmakeBool "SHOW_FAILED_TEST_OUTPUT" true)
   ];
@@ -62,6 +56,9 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doCheck = true;
+  nativeCheckInputs = [ ctestCheckHook ];
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   # Cursed system‐dependent(?!) failure with libc++ because another
   # test in the same process sets the global locale; skip for now.
@@ -74,22 +71,24 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru.tests = {
-    pkg-config = testers.hasPkgConfigModules { package = finalAttrs.finalPackage; };
     inherit (python3.pkgs) pikepdf;
+
     inherit
       cups-filters
       pdfmixtool
       ;
+
+    pkg-config = testers.hasPkgConfigModules { package = finalAttrs.finalPackage; };
   };
 
   meta = {
-    homepage = "https://qpdf.sourceforge.io/";
     description = "C++ library and set of programs that inspect and manipulate the structure of PDF files";
+    homepage = "https://qpdf.sourceforge.io/";
+    changelog = "https://qpdf.readthedocs.io/en/${lib.versions.majorMinor finalAttrs.version}/release-notes.html";
     license = lib.licenses.asl20; # as of 7.0.0, people may stay at artistic2
     maintainers = [ lib.maintainers.dotlambda ];
-    mainProgram = "qpdf";
     platforms = lib.platforms.all;
-    changelog = "https://qpdf.readthedocs.io/en/${lib.versions.majorMinor finalAttrs.version}/release-notes.html";
+    mainProgram = "qpdf";
     pkgConfigModules = [ "libqpdf" ];
   };
 })

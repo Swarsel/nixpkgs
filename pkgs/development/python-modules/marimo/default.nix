@@ -1,14 +1,10 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-
-  # build-system
-  uv-build,
-
   # dependencies
   click,
   docutils,
+  fetchPypi,
   itsdangerous,
   jedi,
   loro,
@@ -24,16 +20,16 @@
   pyzmq,
   starlette,
   tomlkit,
+  # build-system
+  uv-build,
   uvicorn,
-  websockets,
-
   # tests
   versionCheckHook,
+  websockets,
 }:
 buildPythonPackage rec {
   pname = "marimo";
   version = "0.23.11";
-  pyproject = true;
 
   # The github archive does not include the static assets
   src = fetchPypi {
@@ -41,9 +37,12 @@ buildPythonPackage rec {
     hash = "sha256-8y/DCVqh5G07nPn2dymz4SHrkb//+3XzgOFEnYMoiHg=";
   };
 
-  build-system = [ uv-build ];
+  # The pypi archive does not contain tests so we do not use `pytestCheckHook`
+  nativeCheckInputs = [
+    versionCheckHook
+  ];
 
-  pythonRelaxDeps = [ "jedi" ];
+  build-system = [ uv-build ];
 
   dependencies = [
     click
@@ -67,22 +66,21 @@ buildPythonPackage rec {
     websockets
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "marimo" ];
-
-  # The pypi archive does not contain tests so we do not use `pytestCheckHook`
-  nativeCheckInputs = [
-    versionCheckHook
-  ];
+  pythonRelaxDeps = [ "jedi" ];
 
   meta = {
     description = "Reactive Python notebook that's reproducible, git-friendly, and deployable as scripts or apps";
     homepage = "https://github.com/marimo-team/marimo";
     changelog = "https://github.com/marimo-team/marimo/releases/tag/${version}";
     license = lib.licenses.asl20;
-    mainProgram = "marimo";
+
     maintainers = with lib.maintainers; [
       akshayka
       dmadisetti
     ];
+
+    mainProgram = "marimo";
   };
 }

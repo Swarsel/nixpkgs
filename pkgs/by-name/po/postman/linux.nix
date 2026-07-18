@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  copyDesktopItems,
-  makeWrapper,
   alsa-lib,
   at-spi2-atk,
   at-spi2-core,
   atk,
+  bintools,
   cairo,
+  copyDesktopItems,
   cups,
   curlWithGnuTls,
   dbus,
@@ -17,41 +17,41 @@
   gdk-pixbuf,
   glib,
   gtk3,
+  libGL,
+  libdrm,
+  libgbm,
+  libsecret,
+  libuuid,
   libx11,
+  libxcb,
   libxcomposite,
   libxcursor,
   libxdamage,
   libxext,
   libxfixes,
   libxi,
+  libxkbcommon,
   libxrandr,
   libxrender,
   libxscrnsaver,
+  libxshmfence,
   libxtst,
-  libdrm,
-  libgbm,
-  libGL,
-  libsecret,
-  libuuid,
-  libxkbcommon,
+  makeDesktopItem,
+  makeWrapper,
+  meta,
   nspr,
   nss,
-  pango,
-  udev,
-  libxshmfence,
-  libxcb,
-  bintools,
-  makeDesktopItem,
   # It's unknown which version of openssl that postman expects but it seems that
   # OpenSSL 3+ seems to work fine (cf.
   # https://github.com/NixOS/nixpkgs/issues/254325). If postman breaks apparently
   # around OpenSSL stuff then try changing this dependency version.
   openssl,
-  pname,
-  version,
-  src,
+  pango,
   passthru,
-  meta,
+  pname,
+  src,
+  udev,
+  version,
 }:
 
 stdenv.mkDerivation {
@@ -66,21 +66,6 @@ stdenv.mkDerivation {
   nativeBuildInputs = [
     copyDesktopItems
     makeWrapper
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "postman";
-      exec = "postman %U";
-      icon = "postman";
-      comment = "API Development Environment";
-      desktopName = "Postman";
-      genericName = "Postman";
-      categories = [ "Development" ];
-      mimeTypes = [ "x-scheme-handler/postman" ];
-      startupNotify = true;
-      startupWMClass = "postman";
-    })
   ];
 
   installPhase = ''
@@ -147,4 +132,19 @@ stdenv.mkDerivation {
       }" $file
     done
   '';
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Development" ];
+      comment = "API Development Environment";
+      desktopName = "Postman";
+      exec = "postman %U";
+      genericName = "Postman";
+      icon = "postman";
+      mimeTypes = [ "x-scheme-handler/postman" ];
+      name = "postman";
+      startupNotify = true;
+      startupWMClass = "postman";
+    })
+  ];
 }

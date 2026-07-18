@@ -25,8 +25,8 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Minimal status bar for macOS";
     homepage = "https://github.com/cmacrae/spacebar";
-    platforms = lib.platforms.darwin;
-    maintainers = [ lib.maintainers.cmacrae ];
     license = lib.licenses.mit;
+    maintainers = [ lib.maintainers.cmacrae ];
+    platforms = lib.platforms.darwin;
   };
 }

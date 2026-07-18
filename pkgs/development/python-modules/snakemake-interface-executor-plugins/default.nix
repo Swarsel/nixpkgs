@@ -1,29 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
   # dependencies
   argparse-dataclass,
-  snakemake-interface-common,
-  throttler,
-
+  buildPythonPackage,
+  # build-system
+  poetry-core,
   # tests
   pytestCheckHook,
   snakemake-executor-plugin-cluster-generic,
-
+  snakemake-interface-common,
   # passthru
   snakemake-interface-executor-plugins,
+  throttler,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "snakemake-interface-executor-plugins";
   version = "9.4.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "snakemake";
@@ -31,6 +25,16 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-ePbdHMYB2LfCOglz87ZnsUkJH7B97hhSmNBGzwtl5OM=";
   };
+
+  # Circular dependency with snakemake
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    snakemake-executor-plugin-cluster-generic
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     poetry-core
@@ -42,17 +46,10 @@ buildPythonPackage (finalAttrs: {
     throttler
   ];
 
+  enabledTestPaths = [ "tests/tests.py" ];
+  pyproject = true;
   pythonImportsCheck = [ "snakemake_interface_executor_plugins" ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    snakemake-executor-plugin-cluster-generic
-  ];
-
-  enabledTestPaths = [ "tests/tests.py" ];
-
-  # Circular dependency with snakemake
-  doCheck = false;
   passthru.tests.pytest = snakemake-interface-executor-plugins.overridePythonAttrs {
     doCheck = true;
   };

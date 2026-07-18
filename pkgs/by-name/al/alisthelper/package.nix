@@ -1,14 +1,14 @@
 {
   lib,
-  flutter341,
   fetchFromGitHub,
+  _experimental-update-script-combinators,
   copyDesktopItems,
+  flutter341,
   libayatana-appindicator,
   makeDesktopItem,
+  nix-update-script,
   runCommand,
   yq-go,
-  _experimental-update-script-combinators,
-  nix-update-script,
 }:
 
 flutter341.buildFlutterApplication (finalAttrs: {
@@ -22,8 +22,6 @@ flutter341.buildFlutterApplication (finalAttrs: {
     hash = "sha256-EIE90R4lCnCLAi6D0YFdntB/tIhqKnoVhbqzk/4bj/k=";
   };
 
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
-
   nativeBuildInputs = [
     copyDesktopItems
   ];
@@ -35,18 +33,20 @@ flutter341.buildFlutterApplication (finalAttrs: {
     packageRun build_runner build --delete-conflicting-outputs
   '';
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "alisthelper";
-      exec = "alisthelper";
-      icon = "alisthelper";
-      desktopName = "Alist Helper";
-    })
-  ];
-
   postInstall = ''
     install -D assets/alisthelper.png $out/share/icons/alisthelper.png
   '';
+
+  desktopItems = [
+    (makeDesktopItem {
+      desktopName = "Alist Helper";
+      exec = "alisthelper";
+      icon = "alisthelper";
+      name = "alisthelper";
+    })
+  ];
+
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
 
   passthru = {
     pubspecSource =
@@ -58,6 +58,7 @@ flutter341.buildFlutterApplication (finalAttrs: {
         ''
           yq eval --output-format=json --prettyPrint $src/pubspec.lock > "$out"
         '';
+
     updateScript = _experimental-update-script-combinators.sequence [
       (nix-update-script { extraArgs = [ "--version=branch" ]; })
       (
@@ -72,9 +73,9 @@ flutter341.buildFlutterApplication (finalAttrs: {
   meta = {
     description = "Designed to simplify the use of the desktop version of alist/openlist";
     homepage = "https://github.com/Xmarmalade/alisthelper";
-    mainProgram = "alisthelper";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "alisthelper";
   };
 })

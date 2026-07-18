@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   anyio,
   buildPythonPackage,
-  fetchFromGitHub,
   flit-core,
   pytestCheckHook,
   trio,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "asyncclick";
   version = "8.3.0.5+async";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-trio";
@@ -20,24 +19,25 @@ buildPythonPackage rec {
     hash = "sha256-gKtxwI/vDB2pDrhiA+e1TClwW5nXvBRCMF3oCNoLaDo=";
   };
 
-  build-system = [ flit-core ];
-
-  dependencies = [ anyio ];
-
   nativeCheckInputs = [
     pytestCheckHook
     trio
   ];
 
-  pytestFlags = [
-    "-Wignore::trio.TrioDeprecationWarning"
-  ];
+  build-system = [ flit-core ];
+  dependencies = [ anyio ];
 
   disabledTests = [
     # AttributeError: 'Context' object has no attribute '_ctx_mgr'
     "test_context_pushing"
     # https://github.com/python-trio/asyncclick/issues/47
     "test_echo_via_pager"
+  ];
+
+  pyproject = true;
+
+  pytestFlags = [
+    "-Wignore::trio.TrioDeprecationWarning"
   ];
 
   pythonImportsCheck = [ "asyncclick" ];

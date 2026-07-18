@@ -1,105 +1,48 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  pdm-backend,
-
+  a2wsgi,
   # dependencies
   annotated-doc,
-  starlette,
-  pydantic,
-  typing-extensions,
-  typing-inspection,
-
   # tests
   anyio,
-  a2wsgi,
+  buildPythonPackage,
   dirty-equals,
-  flask,
-  inline-snapshot,
-  pwdlib,
-  pyjwt,
-  pytest-xdist,
-  pytest-timeout,
-  pytestCheckHook,
-
+  email-validator,
   # optional-dependencies
   fastapi-cli,
+  flask,
   httpx,
-  jinja2,
+  inline-snapshot,
   itsdangerous,
+  jinja2,
+  # build-system
+  pdm-backend,
+  pwdlib,
+  pydantic,
+  pydantic-extra-types,
+  pydantic-settings,
+  pyjwt,
+  pytest-timeout,
+  pytest-xdist,
+  pytestCheckHook,
   python-multipart,
   pyyaml,
-  email-validator,
+  starlette,
+  typing-extensions,
+  typing-inspection,
   uvicorn,
-  pydantic-settings,
-  pydantic-extra-types,
 }:
 
 buildPythonPackage rec {
   pname = "fastapi";
   version = "0.136.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tiangolo";
     repo = "fastapi";
     tag = version;
     hash = "sha256-lfmk8ZveKPukEEfwWq2mKtWmOHAtVzGuE5BsOskDzh0=";
-  };
-
-  build-system = [ pdm-backend ];
-
-  dependencies = [
-    annotated-doc
-    starlette
-    pydantic
-    typing-extensions
-    typing-inspection
-  ];
-
-  optional-dependencies = {
-    all = [
-      fastapi-cli
-      httpx
-      jinja2
-      python-multipart
-      itsdangerous
-      pyyaml
-      email-validator
-      uvicorn
-      pydantic-settings
-      pydantic-extra-types
-    ]
-    ++ fastapi-cli.optional-dependencies.standard
-    ++ uvicorn.optional-dependencies.standard;
-    standard = [
-      fastapi-cli
-      # FIXME package fastar
-      httpx
-      jinja2
-      python-multipart
-      email-validator
-      uvicorn
-      pydantic-settings
-      pydantic-extra-types
-    ]
-    ++ fastapi-cli.optional-dependencies.standard
-    ++ uvicorn.optional-dependencies.standard;
-    standard-no-fastapi-cloud-cli = [
-      fastapi-cli
-      httpx
-      jinja2
-      python-multipart
-      email-validator
-      uvicorn
-      pydantic-settings
-      pydantic-extra-types
-    ]
-    ++ fastapi-cli.optional-dependencies.standard-no-fastapi-cloud-cli
-    ++ uvicorn.optional-dependencies.standard;
   };
 
   nativeCheckInputs = [
@@ -118,9 +61,14 @@ buildPythonPackage rec {
   ++ anyio.optional-dependencies.trio
   ++ optional-dependencies.all;
 
-  disabledTests = [
-    # Coverage test
-    "test_fastapi_cli"
+  build-system = [ pdm-backend ];
+
+  dependencies = [
+    annotated-doc
+    starlette
+    pydantic
+    typing-extensions
+    typing-inspection
   ];
 
   disabledTestPaths = [
@@ -131,12 +79,62 @@ buildPythonPackage rec {
     "tests/test_tutorial/test_graphql/test_tutorial001.py"
   ];
 
+  disabledTests = [
+    # Coverage test
+    "test_fastapi_cli"
+  ];
+
+  optional-dependencies = {
+    all = [
+      fastapi-cli
+      httpx
+      jinja2
+      python-multipart
+      itsdangerous
+      pyyaml
+      email-validator
+      uvicorn
+      pydantic-settings
+      pydantic-extra-types
+    ]
+    ++ fastapi-cli.optional-dependencies.standard
+    ++ uvicorn.optional-dependencies.standard;
+
+    standard = [
+      fastapi-cli
+      # FIXME package fastar
+      httpx
+      jinja2
+      python-multipart
+      email-validator
+      uvicorn
+      pydantic-settings
+      pydantic-extra-types
+    ]
+    ++ fastapi-cli.optional-dependencies.standard
+    ++ uvicorn.optional-dependencies.standard;
+
+    standard-no-fastapi-cloud-cli = [
+      fastapi-cli
+      httpx
+      jinja2
+      python-multipart
+      email-validator
+      uvicorn
+      pydantic-settings
+      pydantic-extra-types
+    ]
+    ++ fastapi-cli.optional-dependencies.standard-no-fastapi-cloud-cli
+    ++ uvicorn.optional-dependencies.standard;
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "fastapi" ];
 
   meta = {
-    changelog = "https://github.com/fastapi/fastapi/releases/tag/${src.tag}";
     description = "Web framework for building APIs";
     homepage = "https://github.com/fastapi/fastapi";
+    changelog = "https://github.com/fastapi/fastapi/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ wd15 ];
   };

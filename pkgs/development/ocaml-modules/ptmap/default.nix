@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
   seq,
   stdlib-shims,
 }:
@@ -17,12 +17,11 @@ buildDunePackage (finalAttrs: {
 
   buildInputs = [ stdlib-shims ];
   propagatedBuildInputs = [ seq ];
-
   doCheck = true;
 
   meta = {
-    homepage = "https://www.lri.fr/~filliatr/software.en.html";
     description = "Maps over integers implemented as Patricia trees";
+    homepage = "https://www.lri.fr/~filliatr/software.en.html";
     license = lib.licenses.lgpl21;
     maintainers = [ ];
   };

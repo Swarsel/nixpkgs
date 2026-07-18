@@ -1,13 +1,11 @@
 {
-  build-idris-package,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  build-idris-package,
 }:
 build-idris-package {
   pname = "refined";
   version = "2017-12-28";
-
-  ipkgName = "idris-refined";
 
   src = fetchFromGitHub {
     owner = "janschultecom";
@@ -15,6 +13,8 @@ build-idris-package {
     rev = "e21cdef16106a77b42d193806c1749ba6448a128";
     sha256 = "1am7kfc51p2zlml954v8cl9xvx0g0f1caq7ni3z36xvsd7fh47yh";
   };
+
+  ipkgName = "idris-refined";
 
   meta = {
     description = "Port of Scala/Haskell Refined library to Idris";

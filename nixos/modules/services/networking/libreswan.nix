@@ -68,22 +68,26 @@ in
       enable = lib.mkEnableOption "Libreswan IPsec service";
 
       configSetup = lib.mkOption {
-        type = lib.types.lines;
         default = ''
           protostack=netkey
           virtual_private=%v4:10.0.0.0/8,%v4:192.168.0.0/16,%v4:172.16.0.0/12,%v4:25.0.0.0/8,%v4:100.64.0.0/10,%v6:fd00::/8,%v6:fe80::/10
         '';
+
+        description = "Options to go in the 'config setup' section of the Libreswan IPsec configuration";
+
         example = ''
           secretsfile=/root/ipsec.secrets
           protostack=netkey
           virtual_private=%v4:10.0.0.0/8,%v4:192.168.0.0/16,%v4:172.16.0.0/12,%v4:25.0.0.0/8,%v4:100.64.0.0/10,%v6:fd00::/8,%v6:fe80::/10
         '';
-        description = "Options to go in the 'config setup' section of the Libreswan IPsec configuration";
+
+        type = lib.types.lines;
       };
 
       connections = lib.mkOption {
-        type = lib.types.attrsOf lib.types.lines;
         default = { };
+        description = "A set of connections to define for the Libreswan IPsec service";
+
         example = lib.literalExpression ''
           { myconnection = '''
               auto=add
@@ -97,12 +101,33 @@ in
             ''';
           }
         '';
-        description = "A set of connections to define for the Libreswan IPsec service";
+
+        type = lib.types.attrsOf lib.types.lines;
+      };
+
+      disableRedirects = lib.mkOption {
+        default = true;
+
+        description = ''
+          Whether to disable send and accept redirects for all network interfaces.
+          See the Libreswan [
+          FAQ](https://libreswan.org/wiki/FAQ#Why_is_it_recommended_to_disable_send_redirects_in_.2Fproc.2Fsys.2Fnet_.3F) page for why this is recommended.
+        '';
+
+        type = lib.types.bool;
       };
 
       policies = lib.mkOption {
-        type = lib.types.attrsOf lib.types.lines;
         default = { };
+
+        description = ''
+          A set of policies to apply to the IPsec connections.
+
+          ::: {.note}
+          The policy name must match the one of connection it needs to apply to.
+          :::
+        '';
+
         example = lib.literalExpression ''
           { private-or-clear = '''
               # Attempt opportunistic IPsec for the entire Internet
@@ -111,23 +136,8 @@ in
             ''';
           }
         '';
-        description = ''
-          A set of policies to apply to the IPsec connections.
 
-          ::: {.note}
-          The policy name must match the one of connection it needs to apply to.
-          :::
-        '';
-      };
-
-      disableRedirects = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = ''
-          Whether to disable send and accept redirects for all network interfaces.
-          See the Libreswan [
-          FAQ](https://libreswan.org/wiki/FAQ#Why_is_it_recommended_to_disable_send_redirects_in_.2Fproc.2Fsys.2Fnet_.3F) page for why this is recommended.
-        '';
+        type = lib.types.attrsOf lib.types.lines;
       };
 
     };
@@ -138,28 +148,28 @@ in
 
   config = lib.mkIf cfg.enable {
 
+    # Install configuration files
+    environment.etc = {
+      "ipsec.conf".source = "${pkgs.libreswan}/etc/ipsec.conf";
+      "ipsec.d/01-nixos.conf".source = configFile;
+
+      "ipsec.secrets".text = ''
+        include ${pkgs.libreswan}/etc/ipsec.secrets
+      '';
+    }
+    // policyFiles;
+
     # Install package, systemd units, etc.
     environment.systemPackages = [
       pkgs.libreswan
       pkgs.iproute2
     ];
-    systemd.packages = [ pkgs.libreswan ];
-    systemd.tmpfiles.packages = [ pkgs.libreswan ];
 
-    # Install configuration files
-    environment.etc = {
-      "ipsec.secrets".text = ''
-        include ${pkgs.libreswan}/etc/ipsec.secrets
-      '';
-      "ipsec.conf".source = "${pkgs.libreswan}/etc/ipsec.conf";
-      "ipsec.d/01-nixos.conf".source = configFile;
-    }
-    // policyFiles;
+    systemd.packages = [ pkgs.libreswan ];
 
     systemd.services.ipsec = {
       description = "Internet Key Exchange (IKE) Protocol Daemon for IPsec";
-      wantedBy = [ "multi-user.target" ];
-      restartTriggers = [ configFile ] ++ lib.mapAttrsToList (n: v: v.source) policyFiles;
+
       path = with pkgs; [
         libreswan
         iproute2
@@ -168,16 +178,24 @@ in
         iptables
         net-tools
       ];
+
       preStart = lib.optionalString cfg.disableRedirects ''
         # Disable send/receive redirects
         echo 0 | tee /proc/sys/net/ipv4/conf/*/send_redirects
         echo 0 | tee /proc/sys/net/ipv{4,6}/conf/*/accept_redirects
       '';
+
+      restartTriggers = [ configFile ] ++ lib.mapAttrsToList (n: v: v.source) policyFiles;
+
       serviceConfig = {
         StateDirectory = "ipsec/nss";
         StateDirectoryMode = 700;
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
+
+    systemd.tmpfiles.packages = [ pkgs.libreswan ];
 
   };
 

@@ -1,12 +1,12 @@
 {
+  lib,
   stdenv,
-  makeWrapper,
-  writeText,
-  python3,
   fetchzip,
   inkscape,
-  lib,
+  makeWrapper,
+  python3,
   udevCheckHook,
+  writeText,
   udevGroup ? "k40",
 }:
 
@@ -32,8 +32,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = fetchzip {
     url = "https://www.scorchworks.com/K40whisperer/K40_Whisperer-${finalAttrs.version}_src.zip";
-    stripRoot = true;
     sha256 = "sha256-Pc6iqBQUoI0dsrf+2dA1ZbxX+4Eks/lVgMGC4SR+oFI=";
+    stripRoot = true;
   };
 
   nativeBuildInputs = [
@@ -41,14 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
     udevCheckHook
   ];
 
-  patchPhase = ''
-    substituteInPlace svg_reader.py \
-      --replace '"/usr/bin/inkscape"' '"${inkscape}/bin/inkscape"'
-  '';
-
   buildPhase = "";
-
-  doInstallCheck = true;
 
   installPhase = ''
     mkdir -p $out
@@ -64,20 +57,29 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix PYTHONPATH : $out
   '';
 
+  doInstallCheck = true;
+
+  patchPhase = ''
+    substituteInPlace svg_reader.py \
+      --replace '"/usr/bin/inkscape"' '"${inkscape}/bin/inkscape"'
+  '';
+
   meta = {
     description = ''
       Control software for the stock K40 Laser controller
     '';
-    mainProgram = "k40-whisperer";
+
     longDescription = ''
       K40 Whisperer is an alternative to the the Laser Draw (LaserDRW) program that comes with the cheap Chinese laser cutters available on E-Bay and Amazon.
       K40 Whisperer reads SVG and DXF files, interprets the data and sends commands to the K40 controller to move the laser head and control the laser accordingly.
       K40 Whisperer does not require a USB key (dongle) to function.
     '';
+
     homepage = "https://www.scorchworks.com/K40whisperer/k40whisperer.html";
-    downloadPage = "https://www.scorchworks.com/K40whisperer/k40whisperer.html#download";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ fooker ];
     platforms = lib.platforms.all;
+    mainProgram = "k40-whisperer";
+    downloadPage = "https://www.scorchworks.com/K40whisperer/k40whisperer.html#download";
   };
 })

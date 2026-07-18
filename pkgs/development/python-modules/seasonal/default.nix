@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  numpy,
-  scipy,
-  pandas,
+  buildPythonPackage,
   matplotlib,
+  numpy,
+  pandas,
   pytestCheckHook,
+  scipy,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "seasonal";
   version = "0.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "welch";
@@ -36,20 +35,23 @@ buildPythonPackage rec {
     scipy
   ];
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
+
   optional-dependencies = {
     csv = [ pandas ];
     plot = [ matplotlib ];
   };
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "seasonal"
     "seasonal.trend"
     "seasonal.periodogram"
   ];
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
 
   meta = {
     description = "Robustly estimate trend and periodicity in a timeseries";

@@ -4,17 +4,15 @@
   fetchFromGitHub,
   gradle,
   jre,
-  makeWrapper,
+  libGL,
   libx11,
   libxext,
-  libGL,
+  makeWrapper,
 }:
 let
   self = stdenv.mkDerivation (finalAttrs: {
     pname = "ramus";
     version = "2.0.2";
-    strictDeps = true;
-    __structuredAttrs = true;
 
     src = fetchFromGitHub {
       owner = "Vitaliy-Yakovchuk";
@@ -23,17 +21,6 @@ let
       hash = "sha256-2rbcUqM0YgwPLo8lNFCRJQDlHZQEivB3GRG/iIlwXiQ=";
     };
 
-    nativeBuildInputs = [
-      gradle
-      makeWrapper
-    ];
-
-    mitmCache = gradle.fetchDeps {
-      pkg = finalAttrs;
-      data = ./deps.json;
-    };
-
-    doCheck = false;
     postPatch = ''
       sed -i "/plugins {/,/^}/d" build.gradle
       sed -i "/^dependencies {/,/^}/d" build.gradle
@@ -45,7 +32,15 @@ let
       sed -i "s/targetCompatibility = 1\.6/targetCompatibility = 8/" build.gradle
     '';
 
-    gradleBuildTask = "copyFiles";
+    strictDeps = true;
+
+    nativeBuildInputs = [
+      gradle
+      makeWrapper
+    ];
+
+    doCheck = false;
+
     installPhase = ''
       runHook preInstall
 
@@ -66,18 +61,28 @@ let
       runHook postInstall
     '';
 
+    __structuredAttrs = true;
+    gradleBuildTask = "copyFiles";
+
+    mitmCache = gradle.fetchDeps {
+      data = ./deps.json;
+      pkg = finalAttrs;
+    };
+
     meta = {
       description = "Java-based IDEF0 and DFD modelling tool";
+
       longDescription = ''
         Ramus is a desktop application for creating IDEF0 functional decomposition
         diagrams and Data Flow Diagrams (DFD). It is written in Java/Swing and
         supports saving/loading projects in its own XML-based format.
       '';
+
       homepage = "https://github.com/Vitaliy-Yakovchuk/ramus";
       license = lib.licenses.gpl3Only;
       maintainers = with lib.maintainers; [ mootfrost ];
-      mainProgram = "ramus";
       platforms = lib.platforms.linux;
+      mainProgram = "ramus";
     };
   });
 in

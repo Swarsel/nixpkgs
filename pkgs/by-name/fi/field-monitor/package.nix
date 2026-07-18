@@ -1,42 +1,40 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cargo,
-  meson,
-  ninja,
-  rustPlatform,
-  rustc,
-  pkg-config,
-  glib,
-  gsettings-desktop-schemas,
-  gtk4,
-  libadwaita,
-  libvirt,
-  gst_all_1,
-  desktop-file-utils,
   appstream,
   appstream-glib,
+  blueprint-compiler,
+  cargo,
+  desktop-file-utils,
+  gcr_4,
+  glib,
+  gsettings-desktop-schemas,
+  gst_all_1,
+  gtk-vnc,
+  gtk4,
+  libGL,
+  libadwaita,
+  libepoxy,
+  libvirt,
+  libxml2,
+  meson,
+  ninja,
+  nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  rustc,
+  spice-gtk,
+  spice-protocol,
+  usbredir,
+  vte-gtk4,
   wrapGAppsHook4,
   xdg-desktop-portal,
-  blueprint-compiler,
-  libxml2,
-  nix-update-script,
-  spice-protocol,
-  spice-gtk,
-  vte-gtk4,
-  gcr_4,
-  gtk-vnc,
-  usbredir,
-  libepoxy,
-  libGL,
-  openssl,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "field-monitor";
   version = "50.1";
-
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "theCapypara";
@@ -45,12 +43,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-waMa70oLKvIoljvE+MjWWKVL1Cd0xnasVeB17tfMQW8=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src;
-    hash = "sha256-fsrczFhoIilxgZRH2PVXC67YdkMsIjA6zTfix57TTzo=";
-  };
-
-  mesonBuildType = "release";
+  strictDeps = true;
 
   nativeBuildInputs = [
     appstream
@@ -90,11 +83,17 @@ stdenv.mkDerivation (finalAttrs: {
     gst-plugins-good
   ]);
 
-  passthru.updateScript = nix-update-script { };
-
   postInstall = ''
     wrapProgram $out/bin/de.capypara.FieldMonitor --prefix PATH ':' "$out/libexec"
   '';
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src;
+    hash = "sha256-fsrczFhoIilxgZRH2PVXC67YdkMsIjA6zTfix57TTzo=";
+  };
+
+  mesonBuildType = "release";
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Viewer for virtual machines and other external screens";

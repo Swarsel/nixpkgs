@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   buildLinux,
   rpiVersion,
@@ -16,16 +16,16 @@ lib.overrideDerivation
   (buildLinux (
     args
     // {
-      version = "${modDirVersion}-1+rpt1";
       inherit modDirVersion;
       pname = "linux-rpi";
+      version = "${modDirVersion}-1+rpt1";
 
       src = fetchFromGitHub {
+        inherit hash;
         owner = "raspberrypi";
         repo = "linux";
         # https://github.com/RPi-Distro/linux-packaging/raw/refs/tags/pios/1%256.12.75-1+rpt1/debian/changelog
         rev = "89050b1059997d38d55462b323b099a6436dc10d";
-        inherit hash;
       };
 
       defconfig =
@@ -37,25 +37,25 @@ lib.overrideDerivation
         }
         .${toString rpiVersion};
 
+      extraMeta =
+        if (rpiVersion < 3) then
+          {
+            hydraPlatforms = [ ];
+            platforms = with lib.platforms; lib.intersectLists arm linux;
+          }
+        else
+          {
+            hydraPlatforms = [ "aarch64-linux" ];
+            platforms = with lib.platforms; lib.intersectLists (arm ++ aarch64) linux;
+          };
+
       features = {
         efiBootStub = false;
       }
       // (args.features or { });
 
-      isLTS = true;
-
-      extraMeta =
-        if (rpiVersion < 3) then
-          {
-            platforms = with lib.platforms; lib.intersectLists arm linux;
-            hydraPlatforms = [ ];
-          }
-        else
-          {
-            platforms = with lib.platforms; lib.intersectLists (arm ++ aarch64) linux;
-            hydraPlatforms = [ "aarch64-linux" ];
-          };
       ignoreConfigErrors = true;
+      isLTS = true;
     }
     // (args.argsOverride or { })
   ))

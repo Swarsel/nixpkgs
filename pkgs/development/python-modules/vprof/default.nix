@@ -2,15 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  psutil,
   setuptools,
   wheel,
-  psutil,
 }:
 
 buildPythonPackage rec {
   pname = "vprof";
   version = "0.38";
-  pyproject = true;
 
   # We use the Pypi source rather than the GitHub ones because the former include the javascript
   # dependency for the UI.
@@ -25,11 +24,10 @@ buildPythonPackage rec {
   ];
 
   propagatedBuildInputs = [ psutil ];
-
-  pythonImportsCheck = [ "vprof" ];
-
   # The tests are not included in the Pypi sources
   doCheck = false;
+  pyproject = true;
+  pythonImportsCheck = [ "vprof" ];
 
   meta = {
     description = "Visual profiler for Python";

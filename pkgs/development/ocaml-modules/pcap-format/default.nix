@@ -1,18 +1,15 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
-  ppx_cstruct,
+  buildDunePackage,
   cstruct,
   ounit,
+  ppx_cstruct,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "pcap-format";
   version = "0.6.0";
-
-  minimalOCamlVersion = "4.08";
-  duneVersion = "3";
 
   src = fetchurl {
     url = "https://github.com/mirage/ocaml-pcap/releases/download/v${finalAttrs.version}/pcap-format-${finalAttrs.version}.tbz";
@@ -28,9 +25,13 @@ buildDunePackage (finalAttrs: {
   ];
 
   doCheck = true;
+
   checkInputs = [
     ounit
   ];
+
+  duneVersion = "3";
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "Decode and encode PCAP (packet capture) files";

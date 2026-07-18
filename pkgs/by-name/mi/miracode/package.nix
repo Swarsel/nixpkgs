@@ -1,24 +1,20 @@
 {
-  stdenvNoCC,
   lib,
   fetchurl,
+  stdenvNoCC,
 }:
 
 let
   version = "1.0";
 in
 stdenvNoCC.mkDerivation {
-  pname = "miracode";
   inherit version;
+  pname = "miracode";
 
   src = fetchurl {
     url = "https://github.com/IdreesInc/Miracode/releases/download/v${version}/Miracode.ttf";
     hash = "sha256-Q+/D/TPlqOt779qYS/dF7ahEd3Mm4a4G+wdHB+Gutmo=";
   };
-
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -26,11 +22,15 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
+
   meta = {
     description = "Sharp, readable, vector-y version of Monocraft";
     homepage = "https://github.com/IdreesInc/Miracode";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ coca ];
+    platforms = lib.platforms.all;
   };
 }

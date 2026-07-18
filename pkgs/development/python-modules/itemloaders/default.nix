@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  itemadapter,
+  jmespath,
+  parsel,
+  pytestCheckHook,
   setuptools,
   w3lib,
-  parsel,
-  jmespath,
-  itemadapter,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "itemloaders";
   version = "1.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scrapy";
@@ -32,7 +31,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "itemloaders" ];
 
   meta = {

@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "sphinxcontrib-httpdomain";
   version = "1.8.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,11 +15,10 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ sphinx ];
-
   # Check is disabled due to this issue:
   # https://bitbucket.org/pypa/setuptools/issue/137/typeerror-unorderable-types-str-nonetype
   doCheck = false;
-
+  format = "setuptools";
   pythonNamespaces = [ "sphinxcontrib" ];
 
   meta = {

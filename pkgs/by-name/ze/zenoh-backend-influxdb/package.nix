@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,10 +20,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Backend and Storages for zenoh using InfluxDB";
     homepage = "https://github.com/eclipse-zenoh/zenoh-backend-influxdb";
+
     license = with lib.licenses; [
       epl20
       asl20
     ];
+
     maintainers = with lib.maintainers; [ markuskowa ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };

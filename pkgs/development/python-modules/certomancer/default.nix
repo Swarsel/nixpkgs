@@ -1,39 +1,34 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
   # dependencies
   asn1crypto,
+  buildPythonPackage,
   click,
   cryptography,
-  python-dateutil,
-  pyyaml,
-  tzlocal,
-
-  # optional-dependencies
-  requests-mock,
-  jinja2,
-  werkzeug,
-  python-pkcs11,
-
   # nativeCheckInputs
   freezegun,
+  jinja2,
   pyhanko-certvalidator,
   pytest-aiohttp,
   pytestCheckHook,
+  python-dateutil,
+  python-pkcs11,
   pytz,
+  pyyaml,
   requests,
+  # optional-dependencies
+  requests-mock,
+  # build-system
+  setuptools,
+  setuptools-scm,
+  tzlocal,
+  werkzeug,
 }:
 
 buildPythonPackage rec {
   pname = "certomancer";
   version = "0.14.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "MatthiasValvekens";
@@ -41,6 +36,16 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-rsugn1g8iYESrC+IUSbxCAbwnKXWG+ubbUj9QdZB+Ow=";
   };
+
+  nativeCheckInputs = [
+    freezegun
+    pyhanko-certvalidator
+    pytest-aiohttp
+    pytestCheckHook
+    pytz
+    requests
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [
     setuptools
@@ -57,31 +62,23 @@ buildPythonPackage rec {
   ];
 
   optional-dependencies = {
+    pkcs11 = [ python-pkcs11 ];
     requests-mocker = [ requests-mock ];
+
     web-api = [
       jinja2
       werkzeug
     ];
-    pkcs11 = [ python-pkcs11 ];
   };
 
-  nativeCheckInputs = [
-    freezegun
-    pyhanko-certvalidator
-    pytest-aiohttp
-    pytestCheckHook
-    pytz
-    requests
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "certomancer" ];
 
   meta = {
     description = "Quickly construct, mock & deploy PKI test configurations using simple declarative configuration";
-    mainProgram = "certomancer";
     homepage = "https://github.com/MatthiasValvekens/certomancer";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "certomancer";
   };
 }

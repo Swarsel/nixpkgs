@@ -1,13 +1,13 @@
 {
+  lib,
+  fetchFromGitHub,
   bash,
   coreutils,
-  fetchFromGitHub,
   ghostscript,
-  locale,
-  zenity,
   gnused,
-  lib,
+  locale,
   resholve,
+  zenity,
 }:
 
 resholve.mkDerivation {
@@ -21,17 +21,22 @@ resholve.mkDerivation {
     hash = "sha256-TOISD/2g7MwnLrtpMnfr2Ln0IiwlJVNavWl4eh/uwN0=";
   };
 
-  dontBuild = true;
-
   installPhase = ''
     install -Dm 0755 pdfmm $out/bin/pdfmm
   '';
 
+  dontBuild = true;
+
   solutions.default = {
-    scripts = [
-      "bin/pdfmm"
+    execer = [
+      "cannot:${zenity}/bin/zenity"
     ];
-    interpreter = "${bash}/bin/bash";
+
+    fake = {
+      # only need xmessage if zenity is unavailable
+      external = [ "xmessage" ];
+    };
+
     inputs = [
       coreutils
       ghostscript
@@ -39,14 +44,13 @@ resholve.mkDerivation {
       zenity
       gnused
     ];
-    fake = {
-      # only need xmessage if zenity is unavailable
-      external = [ "xmessage" ];
-    };
-    execer = [
-      "cannot:${zenity}/bin/zenity"
-    ];
+
+    interpreter = "${bash}/bin/bash";
     keep."$toutLu" = true;
+
+    scripts = [
+      "bin/pdfmm"
+    ];
   };
 
   meta = {
@@ -54,7 +58,7 @@ resholve.mkDerivation {
     homepage = "https://github.com/jpfleury/pdfmm";
     license = lib.licenses.gpl3Only;
     maintainers = [ ];
-    mainProgram = "pdfmm";
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "pdfmm";
   };
 }

@@ -2,15 +2,14 @@
   lib,
   fetchFromGitLab,
   buildDunePackage,
-  zarith,
   ff-sig,
+  zarith,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "polynomial";
   version = "0.4.0";
-  duneVersion = "3";
-  minimalOCamlVersion = "4.08";
+
   src = fetchFromGitLab {
     owner = "nomadic-labs";
     repo = "cryptography/ocaml-polynomial";
@@ -24,11 +23,13 @@ buildDunePackage (finalAttrs: {
   ];
 
   doCheck = false; # circular dependencies
+  duneVersion = "3";
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "Polynomials over finite field";
-    license = lib.licenses.mit;
     homepage = "https://gitlab.com/nomadic-labs/ocaml-polynomial";
+    license = lib.licenses.mit;
     maintainers = [ lib.maintainers.ulrikstrid ];
   };
 })

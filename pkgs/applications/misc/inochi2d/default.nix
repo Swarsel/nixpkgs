@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  replaceVars,
   callPackage,
+  replaceVars,
 }:
 
 # Note for maintainers:
@@ -21,7 +21,6 @@ in
 {
   inochi-creator = mkGeneric rec {
     pname = "inochi-creator";
-    appname = "Inochi Creator";
     version = "0.8.6";
 
     src = fetchFromGitHub {
@@ -30,8 +29,6 @@ in
       rev = "v${version}";
       hash = "sha256-9d3j5ZL6rGOjN1GUpCIfbjby0mNMvOK7BJbHYgwLY2k=";
     };
-
-    dubLock = ./creator-dub-lock.json;
 
     patches = [
       # Upstream asks that we change the bug tracker URL to not point to the upstream bug tracker
@@ -42,17 +39,19 @@ in
       ./translations.patch
     ];
 
+    appname = "Inochi Creator";
+    dubLock = ./creator-dub-lock.json;
+
     meta = {
+      description = "Open source editor for the Inochi2D puppet format";
+      changelog = "https://github.com/Inochi2D/inochi-creator/releases/tag/${src.rev}";
       # darwin has slightly different build steps
       broken = stdenv.hostPlatform.isDarwin;
-      changelog = "https://github.com/Inochi2D/inochi-creator/releases/tag/${src.rev}";
-      description = "Open source editor for the Inochi2D puppet format";
     };
   };
 
   inochi-session = mkGeneric rec {
     pname = "inochi-session";
-    appname = "Inochi Session";
     version = "0.8.7";
 
     src = fetchFromGitHub {
@@ -68,19 +67,19 @@ in
       ./session-dynamic-lua.patch
     ];
 
-    dubLock = ./session-dub-lock.json;
-
     preFixup = ''
       patchelf $out/share/inochi-session/inochi-session --add-needed cimgui.so
     '';
 
+    appname = "Inochi Session";
     dontStrip = true; # symbol lookup error: undefined symbol: , version
+    dubLock = ./session-dub-lock.json;
 
     meta = {
+      description = "Application that allows streaming with Inochi2D puppets";
+      changelog = "https://github.com/Inochi2D/inochi-session/releases/tag/${src.rev}";
       # darwin has slightly different build steps
       broken = stdenv.hostPlatform.isDarwin;
-      changelog = "https://github.com/Inochi2D/inochi-session/releases/tag/${src.rev}";
-      description = "Application that allows streaming with Inochi2D puppets";
     };
   };
 }

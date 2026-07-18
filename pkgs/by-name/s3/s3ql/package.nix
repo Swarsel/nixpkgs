@@ -1,11 +1,11 @@
 {
   lib,
   fetchFromGitHub,
+  nix-update-script,
   python3,
   replaceVars,
   sqlite,
   which,
-  nix-update-script,
   writableTmpDirAsHomeHook,
 }:
 
@@ -31,7 +31,6 @@ in
 buildPythonApplication (finalAttrs: {
   pname = "s3ql";
   version = "5.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "s3ql";
@@ -44,12 +43,22 @@ buildPythonApplication (finalAttrs: {
     (replaceVars ./0001-setup.py-remove-self-reference.patch { inherit (finalAttrs) version; })
   ];
 
-  build-system = [ setuptools ];
-
   nativeBuildInputs = [
     which
     cython
   ];
+
+  preBuild = ''
+    ${python.pythonOnBuildForHost.interpreter} ./setup.py build_cython build_ext --inplace
+  '';
+
+  nativeCheckInputs = [
+    pytest-trio
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     apsw
@@ -63,22 +72,11 @@ buildPythonApplication (finalAttrs: {
     trio
   ];
 
-  nativeCheckInputs = [
-    pytest-trio
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
-  preBuild = ''
-    ${python.pythonOnBuildForHost.interpreter} ./setup.py build_cython build_ext --inplace
-  '';
-
-  pythonImportsCheck = [ "s3ql" ];
-
-  enabledTestPaths = [ "tests/" ];
-
   # SSL EOF error doesn't match connection reset error. Seems fine.
   disabledTests = [ "test_aborted_write2" ];
+  enabledTestPaths = [ "tests/" ];
+  pyproject = true;
+  pythonImportsCheck = [ "s3ql" ];
 
   passthru.updateScript = nix-update-script {
     extraArgs = [

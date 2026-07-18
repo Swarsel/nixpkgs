@@ -1,18 +1,18 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  glibc,
   SDL2,
-  libjpeg_turbo,
   alsa-lib,
-  libspnav,
-  desktop-file-utils,
-  gobject-introspection,
-  wrapGAppsHook3,
-  wrapGAppsHook4,
   cameractrls-gtk3,
   cameractrls-gtk4,
+  desktop-file-utils,
+  glibc,
+  gobject-introspection,
+  libjpeg_turbo,
+  libspnav,
+  python3Packages,
+  wrapGAppsHook3,
+  wrapGAppsHook4,
   withGtk ? null,
 }:
 
@@ -41,7 +41,6 @@ in
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "cameractrls";
   version = "0.6.10";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "soyersoyer";
@@ -71,9 +70,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ++ lib.optionals (withGtk == 3) [ wrapGAppsHook3 ]
     ++ lib.optionals (withGtk == 4) [ wrapGAppsHook4 ];
 
-  # Only used when withGtk != null
-  dependencies = with python3Packages; [ pygobject3 ];
-
   installPhase = ''
     runHook preInstall
 
@@ -97,14 +93,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
     runHook postInstall
   '';
 
-  dontWrapGApps = true;
-  dontWrapPythonPrograms = true;
-
   postFixup = lib.optionalString (withGtk != null) ''
     wrapPythonPrograms
     patchPythonScript ${modulePath}/${mainExecutable}.py
     wrapProgram $out/bin/${mainExecutable} ''${makeWrapperArgs[@]} ''${gappsWrapperArgs[@]}
   '';
+
+  # Only used when withGtk != null
+  dependencies = with python3Packages; [ pygobject3 ];
+  dontWrapGApps = true;
+  dontWrapPythonPrograms = true;
+  pyproject = false;
 
   passthru.tests = {
     # Also build these packages in ofBorg (defined in top-level/all-packages.nix)
@@ -113,6 +112,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   meta = {
     description = "Camera controls for Linux";
+
     longDescription = ''
       It's a standalone Python CLI and GUI (GTK3, GTK4) and
       camera Viewer (SDL) to set the camera controls in Linux.
@@ -124,10 +124,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
       restore controls), Control Restore Daemon (to restore
       presets at device connection).
     '';
+
     homepage = "https://github.com/soyersoyer/cameractrls";
     license = lib.licenses.lgpl3Plus;
-    mainProgram = mainExecutable;
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.linux;
+    mainProgram = mainExecutable;
   };
 })

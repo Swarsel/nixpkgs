@@ -1,23 +1,22 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   azure-core,
   buildPythonPackage,
-  fetchFromGitHub,
   flit-core,
+  gitUpdater,
   microsoft-kiota-abstractions,
   opentelemetry-api,
   opentelemetry-sdk,
   pytest-asyncio,
   pytest-mock,
   pytestCheckHook,
-  gitUpdater,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "microsoft-kiota-authentication-azure";
   version = "1.11.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "microsoft";
@@ -26,7 +25,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Fd9XSO3H1Au8y+Acft5to7hi7QNwWcmP0/NeWZlufjg=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/packages/authentication/azure/";
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-mock
+    pytestCheckHook
+  ];
 
   build-system = [ flit-core ];
 
@@ -38,13 +41,9 @@ buildPythonPackage (finalAttrs: {
     opentelemetry-sdk
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-mock
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "kiota_authentication_azure" ];
+  sourceRoot = "${finalAttrs.src.name}/packages/authentication/azure/";
 
   passthru.updateScript = gitUpdater {
     rev-prefix = "microsoft-kiota-authentication-azure-v";

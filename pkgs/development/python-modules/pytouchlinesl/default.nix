@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
-  lib,
   pydantic,
   pytest-asyncio,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "pytouchlinesl";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jnsgruk";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     hash = "sha256-o9/K+0ADbU9qTtjLCGM2+aBQsQDP22qdwsgimo9oKns=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,11 +32,7 @@ buildPythonPackage rec {
     pydantic
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pytouchlinesl" ];
 
   meta = {

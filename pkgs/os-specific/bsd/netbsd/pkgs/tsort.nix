@@ -1,15 +1,14 @@
 {
-  mkDerivation,
   bsdSetupHook,
-  netbsdSetupHook,
-  makeMinimal,
-  install,
-  mandoc,
   groff,
+  install,
+  makeMinimal,
+  mandoc,
+  mkDerivation,
+  netbsdSetupHook,
 }:
 
 mkDerivation {
-  path = "usr.bin/tsort";
   nativeBuildInputs = [
     bsdSetupHook
     netbsdSetupHook
@@ -18,4 +17,6 @@ mkDerivation {
     mandoc
     groff
   ];
+
+  path = "usr.bin/tsort";
 }

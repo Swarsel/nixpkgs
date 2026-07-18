@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  buildDotnetModule,
-  dotnetCorePackages,
   fetchFromGitHub,
-  nix-update-script,
   autoPatchelfHook,
+  buildDotnetModule,
   clang,
+  dotnetCorePackages,
+  nix-update-script,
   patchelf,
   systemd,
   zlib,
@@ -23,16 +23,6 @@ buildDotnetModule rec {
     hash = "sha256-lMXp7ItwpZ14ATRKuR7Q8/FhfMNQ+YCgHL13oj6iBNs=";
   };
 
-  projectFile = "src/CrossMacro.Daemon/CrossMacro.Daemon.csproj";
-  nugetDeps = ./deps.json;
-
-  dotnet-sdk = dotnetCorePackages.sdk_10_0;
-  dotnet-runtime = null;
-
-  selfContainedBuild = true;
-  executables = [ "CrossMacro.Daemon" ];
-  buildType = "Release";
-
   nativeBuildInputs = [
     autoPatchelfHook
     clang
@@ -43,8 +33,6 @@ buildDotnetModule rec {
     systemd
     zlib
   ];
-
-  dotnetFlags = [ "-p:Version=${version}" ];
 
   postInstall = ''
     install -Dm644 scripts/assets/io.github.alper_han.crossmacro.policy \
@@ -57,6 +45,14 @@ buildDotnetModule rec {
     patchelf --add-needed libsystemd.so.0 $out/lib/crossmacro-daemon/CrossMacro.Daemon
   '';
 
+  buildType = "Release";
+  dotnet-runtime = null;
+  dotnet-sdk = dotnetCorePackages.sdk_10_0;
+  dotnetFlags = [ "-p:Version=${version}" ];
+  executables = [ "CrossMacro.Daemon" ];
+  nugetDeps = ./deps.json;
+  projectFile = "src/CrossMacro.Daemon/CrossMacro.Daemon.csproj";
+  selfContainedBuild = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -64,8 +60,8 @@ buildDotnetModule rec {
     homepage = "https://github.com/alper-han/CrossMacro";
     changelog = "https://github.com/alper-han/CrossMacro/releases/tag/v${version}";
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ alper-han ];
     platforms = lib.platforms.linux;
     mainProgram = "CrossMacro.Daemon";
-    maintainers = with lib.maintainers; [ alper-han ];
   };
 }

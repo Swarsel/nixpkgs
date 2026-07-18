@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,9 +19,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "SystemVerilog language server";
-    mainProgram = "svls";
     homepage = "https://github.com/dalance/svls";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "svls";
   };
 })

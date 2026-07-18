@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   coreutils,
   testers,
 }:
@@ -18,28 +18,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
-
   env.CGO_ENABLED = 0;
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.commit=${finalAttrs.src.rev}"
-    "-X main.date=1970-01-01T00:00:00Z"
-  ];
-
-  preCheck = ''
-    # Fix tests expecting /usr/bin/printf and /bin/echo
-    substituteInPlace skeema_cmd_test.go \
-      --replace-fail /usr/bin/printf "${coreutils}/bin/printf"
-
-    substituteInPlace internal/fs/dir_test.go \
-      --replace-fail /bin/echo "${coreutils}/bin/echo" \
-      --replace-fail /usr/bin/printf "${coreutils}/bin/printf"
-
-    substituteInPlace internal/applier/ddlstatement_test.go \
-      --replace-fail /bin/echo "${coreutils}/bin/echo"
-  '';
 
   checkFlags =
     let
@@ -57,6 +36,26 @@ buildGoModule (finalAttrs: {
       ];
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
+
+  preCheck = ''
+    # Fix tests expecting /usr/bin/printf and /bin/echo
+    substituteInPlace skeema_cmd_test.go \
+      --replace-fail /usr/bin/printf "${coreutils}/bin/printf"
+
+    substituteInPlace internal/fs/dir_test.go \
+      --replace-fail /bin/echo "${coreutils}/bin/echo" \
+      --replace-fail /usr/bin/printf "${coreutils}/bin/printf"
+
+    substituteInPlace internal/applier/ddlstatement_test.go \
+      --replace-fail /bin/echo "${coreutils}/bin/echo"
+  '';
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.commit=${finalAttrs.src.rev}"
+    "-X main.date=1970-01-01T00:00:00Z"
+  ];
 
   passthru.tests.version = testers.testVersion {
     package = finalAttrs.finalPackage;

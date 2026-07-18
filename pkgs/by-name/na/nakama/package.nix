@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,15 +15,14 @@ buildGoModule (finalAttrs: {
     hash = "sha256-+yHQ2KxH/Kzv8s3hPsOh3IQZvSPeAwWHYHHHh3NR8VA=";
   };
 
-  vendorHash = null;
-
-  subPackages = [ "." ];
-
   postPatch = ''
     substituteInPlace main.go \
       --replace-fail  'os.Getenv("NAKAMA_TELEMETRY") != "0"' \
                       'os.Getenv("NAKAMA_TELEMETRY") == "1"'
   '';
+
+  vendorHash = null;
+  doCheck = false;
 
   ldflags = [
     "-s"
@@ -31,15 +30,15 @@ buildGoModule (finalAttrs: {
     "-X main.version=${finalAttrs.version}"
   ];
 
-  doCheck = false;
+  subPackages = [ "." ];
 
   meta = {
     description = "Distributed server for social and realtime games and apps";
     homepage = "https://heroiclabs.com/nakama/";
     changelog = "https://github.com/heroiclabs/nakama/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.qxrein ];
+    platforms = lib.platforms.linux;
     mainProgram = "nakama";
   };
 })

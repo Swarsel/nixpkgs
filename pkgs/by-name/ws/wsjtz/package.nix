@@ -25,10 +25,12 @@ wsjtx.overrideAttrs (
       description = "WSJT-X fork, primarily focused on automation and enhanced functionality";
       homepage = "https://github.com/sq9fve/wsjt-z";
       license = lib.licenses.gpl3Only;
-      platforms = lib.platforms.linux;
+
       maintainers = with lib.maintainers; [
         scd31
       ];
+
+      platforms = lib.platforms.linux;
       mainProgram = "wsjtz";
     };
   }

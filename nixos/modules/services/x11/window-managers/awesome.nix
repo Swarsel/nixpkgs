@@ -26,20 +26,19 @@ in
     services.xserver.windowManager.awesome = {
 
       enable = mkEnableOption "Awesome window manager";
+      package = mkPackageOption pkgs "awesome" { };
 
       luaModules = mkOption {
         default = [ ];
-        type = types.listOf types.package;
         description = "List of lua packages available for being used in the Awesome configuration.";
         example = literalExpression "[ pkgs.luaPackages.vicious ]";
+        type = types.listOf types.package;
       };
-
-      package = mkPackageOption pkgs "awesome" { };
 
       noArgb = mkOption {
         default = false;
-        type = types.bool;
         description = "Disable client transparency support, which can be greatly detrimental to performance in some setups";
+        type = types.bool;
       };
     };
 
@@ -49,15 +48,16 @@ in
 
   config = mkIf cfg.enable {
 
+    environment.systemPackages = [ awesome ];
+
     services.xserver.windowManager.session = singleton {
       name = "awesome";
+
       start = ''
         ${awesome}/bin/awesome ${lib.optionalString cfg.noArgb "--no-argb"} ${makeSearchPath cfg.luaModules} &
         waitPID=$!
       '';
     };
-
-    environment.systemPackages = [ awesome ];
 
   };
 }

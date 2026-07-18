@@ -8,8 +8,8 @@ let
   cfg = config.services.webdav-server-rs;
   format = pkgs.formats.toml { };
   settings = lib.recursiveUpdate {
-    server.uid = config.users.users."${cfg.user}".uid;
     server.gid = config.users.groups."${cfg.group}".gid;
+    server.uid = config.users.users."${cfg.user}".uid;
   } cfg.settings;
 in
 {
@@ -17,32 +17,40 @@ in
     services.webdav-server-rs = {
       enable = lib.mkEnableOption "WebDAV server";
 
-      user = lib.mkOption {
-        type = lib.types.str;
-        default = "webdav";
-        description = "User to run under when setuid is not enabled.";
-      };
+      configFile = lib.mkOption {
+        default = format.generate "webdav-server.toml" settings;
+        defaultText = "Config file generated from services.webdav-server-rs.settings";
 
-      group = lib.mkOption {
-        type = lib.types.str;
-        default = "webdav";
-        description = "Group to run under when setuid is not enabled.";
+        description = ''
+          Path to config file. If this option is set, it will override any
+          configuration done in services.webdav-server-rs.settings.
+        '';
+
+        example = "/etc/webdav-server.toml";
+        type = lib.types.path;
       };
 
       debug = lib.mkOption {
-        type = lib.types.bool;
         default = false;
         description = "Enable debug mode.";
+        type = lib.types.bool;
+      };
+
+      group = lib.mkOption {
+        default = "webdav";
+        description = "Group to run under when setuid is not enabled.";
+        type = lib.types.str;
       };
 
       settings = lib.mkOption {
-        type = format.type;
         default = { };
+
         description = ''
           Attrset that is converted and passed as config file. Available
           options can be found at
           [here](https://github.com/miquels/webdav-server-rs/blob/master/webdav-server.toml).
         '';
+
         example = lib.literalExpression ''
           {
             server.listen = [ "0.0.0.0:4918" "[::]:4918" ];
@@ -74,17 +82,14 @@ in
             ];
           }
         '';
+
+        type = format.type;
       };
 
-      configFile = lib.mkOption {
-        type = lib.types.path;
-        default = format.generate "webdav-server.toml" settings;
-        defaultText = "Config file generated from services.webdav-server-rs.settings";
-        description = ''
-          Path to config file. If this option is set, it will override any
-          configuration done in services.webdav-server-rs.settings.
-        '';
-        example = "/etc/webdav-server.toml";
+      user = lib.mkOption {
+        default = "webdav";
+        description = "User to run under when setuid is not enabled.";
+        type = lib.types.str;
       };
     };
   };
@@ -98,43 +103,29 @@ in
       {
         assertion =
           lib.hasAttr cfg.group config.users.groups && config.users.groups."${cfg.group}".gid != null;
+
         message = "users.groups.${cfg.group} and users.groups.${cfg.group}.gid must be defined.";
       }
     ];
 
-    users.users = lib.optionalAttrs (cfg.user == "webdav") {
-      webdav = {
-        description = "WebDAV user";
-        group = cfg.group;
-        uid = config.ids.uids.webdav;
-      };
-    };
-
-    users.groups = lib.optionalAttrs (cfg.group == "webdav") {
-      webdav.gid = config.ids.gids.webdav;
-    };
-
     systemd.services.webdav-server-rs = {
-      description = "WebDAV server";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        ExecStart = "${pkgs.webdav-server-rs}/bin/webdav-server ${lib.optionalString cfg.debug "--debug"} -c ${cfg.configFile}";
+      description = "WebDAV server";
 
+      serviceConfig = {
         CapabilityBoundingSet = [
           "CAP_SETUID"
           "CAP_SETGID"
         ];
 
-        NoExecPaths = [ "/" ];
         ExecPaths = [ "/nix/store" ];
-
+        ExecStart = "${pkgs.webdav-server-rs}/bin/webdav-server ${lib.optionalString cfg.debug "--debug"} -c ${cfg.configFile}";
+        NoExecPaths = [ "/" ];
         # This program actively detects if it is running in root user account
         # when it starts and uses root privilege to switch process uid to
         # respective unix user when a user logs in.  Maybe we can enable
         # DynamicUser in the future when it's able to detect CAP_SETUID and
         # CAP_SETGID capabilities.
-
         NoNewPrivileges = true;
         PrivateDevices = true;
         PrivateTmp = true;
@@ -144,6 +135,20 @@ in
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
         ProtectSystem = true;
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups = lib.optionalAttrs (cfg.group == "webdav") {
+      webdav.gid = config.ids.gids.webdav;
+    };
+
+    users.users = lib.optionalAttrs (cfg.user == "webdav") {
+      webdav = {
+        description = "WebDAV user";
+        group = cfg.group;
+        uid = config.ids.uids.webdav;
       };
     };
   };

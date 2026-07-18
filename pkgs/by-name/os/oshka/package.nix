@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,6 +16,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-ZBI3WDXfJKBEF2rmUN3LvOOPT1185dHmj88qJKsdUiE=";
+  # Tests requires a running Docker instance
+  doCheck = false;
 
   ldflags = [
     "-w"
@@ -23,14 +25,11 @@ buildGoModule (finalAttrs: {
     "-X github.com/k1LoW/oshka/version.Version=${finalAttrs.version}"
   ];
 
-  # Tests requires a running Docker instance
-  doCheck = false;
-
   meta = {
     description = "Tool for extracting nested CI/CD supply chains and executing commands";
-    mainProgram = "oshka";
     homepage = "https://github.com/k1LoW/oshka";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "oshka";
   };
 })

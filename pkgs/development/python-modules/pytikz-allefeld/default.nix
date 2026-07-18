@@ -2,17 +2,16 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
-  pymupdf,
-  numpy,
   ipython,
+  numpy,
+  pymupdf,
+  setuptools,
   texliveSmall,
 }:
 
 buildPythonPackage {
   pname = "pytikz-allefeld"; # "pytikz" on pypi is a different module
   version = "unstable-2022-11-01";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "allefeld";
@@ -22,16 +21,8 @@ buildPythonPackage {
   };
 
   nativeBuildInputs = [ setuptools ];
-
-  dependencies = [
-    pymupdf
-    numpy
-    ipython
-  ];
-
-  pythonImportsCheck = [ "tikz" ];
-
   nativeCheckInputs = [ texliveSmall ];
+
   checkPhase = ''
     runHook preCheck
     python -c 'if 1:
@@ -45,9 +36,18 @@ buildPythonPackage {
     runHook postCheck
   '';
 
+  dependencies = [
+    pymupdf
+    numpy
+    ipython
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "tikz" ];
+
   meta = {
-    homepage = "https://github.com/allefeld/pytikz";
     description = "Python interface to TikZ";
+    homepage = "https://github.com/allefeld/pytikz";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ pbsds ];
   };

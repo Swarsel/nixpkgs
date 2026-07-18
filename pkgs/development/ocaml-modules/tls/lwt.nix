@@ -1,22 +1,20 @@
 {
   buildDunePackage,
-  tls,
   lwt,
   mirage-crypto-rng,
+  tls,
 }:
 
 buildDunePackage {
-  pname = "tls-lwt";
-
   inherit (tls) src meta version;
-
-  minimalOCamlVersion = "4.11";
-
-  doCheck = true;
+  pname = "tls-lwt";
 
   propagatedBuildInputs = [
     lwt
     mirage-crypto-rng
     tls
   ];
+
+  doCheck = true;
+  minimalOCamlVersion = "4.11";
 }

@@ -16,9 +16,8 @@ stdenv.mkDerivation {
     hash = "sha256-os1yQ6o4m7yBiEZQIPP64diRleIr7FtuQucUbWs4A6k=";
   };
 
-  makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
-
   buildInputs = [ ncurses ];
+  makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
 
   # Silence warnings related to use of implicitly declared library functions and implicit ints.
   # TODO: Remove and/or fix with patches the next time this package is updated.
@@ -59,10 +58,10 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://web.archive.org/web/20211113222004/http://www.clifford.at/stfl/";
     description = "Library which implements a curses-based widget set for text terminals";
-    maintainers = [ ];
+    homepage = "https://web.archive.org/web/20211113222004/http://www.clifford.at/stfl/";
     license = lib.licenses.lgpl3;
+    maintainers = [ ];
     platforms = lib.platforms.unix;
   };
 }

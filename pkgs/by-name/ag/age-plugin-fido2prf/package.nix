@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   libfido2,
 }:
 buildGoModule (finalAttrs: {
@@ -16,16 +16,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-JGEn1xIzfLyoCWd/aRRG08Z/OoviEyZF+tGEfcj9DXw=";
   };
 
-  srcRoot = "${finalAttrs.src}/fido2prf/cmd/age-plugin-fido2prf";
-  vendorHash = "sha256-XrgZBvNyVUhKJ87vfd9aZh6aW+JifJWUu/ggNQZKwo0=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=v${finalAttrs.version}"
-  ];
-
   buildInputs = [ libfido2 ];
+  vendorHash = "sha256-XrgZBvNyVUhKJ87vfd9aZh6aW+JifJWUu/ggNQZKwo0=";
 
   postConfigure = lib.optionalString stdenv.hostPlatform.isDarwin ''
     chmod -R +w vendor/github.com/keys-pub/go-libfido2
@@ -45,6 +37,16 @@ buildGoModule (finalAttrs: {
         '-I${libfido2.dev}/include'
   '';
 
+  __structuredAttrs = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=v${finalAttrs.version}"
+  ];
+
+  srcRoot = "${finalAttrs.src}/fido2prf/cmd/age-plugin-fido2prf";
+
   meta = {
     description = "Age plugin to encrypt files with FIDO2 tokens in a way compatible to typage";
     homepage = "https://github.com/FiloSottile/typage/";
@@ -52,5 +54,4 @@ buildGoModule (finalAttrs: {
     maintainers = with lib.maintainers; [ claraphyll ];
     mainProgram = "age-plugin-fido2prf";
   };
-  __structuredAttrs = true;
 })

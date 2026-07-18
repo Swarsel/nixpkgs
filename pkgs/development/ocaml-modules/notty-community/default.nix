@@ -3,8 +3,8 @@
   fetchurl,
   buildDunePackage,
   cppo,
-  uutf,
   lwt,
+  uutf,
 }:
 
 buildDunePackage (finalAttrs: {

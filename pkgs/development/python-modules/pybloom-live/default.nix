@@ -12,12 +12,11 @@
 buildPythonPackage rec {
   pname = "pybloom-live";
   version = "4.0.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "pybloom_live";
     inherit version;
     hash = "sha256-mVRcXTsFvTiLVJHja4I7cGgwpoa6GLTBkGPQjeUyERA=";
+    pname = "pybloom_live";
   };
 
   nativeBuildInputs = [
@@ -31,7 +30,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pybloom_live" ];
 
   meta = {

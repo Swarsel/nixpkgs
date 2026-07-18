@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pymodbus,
   pytest-asyncio,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "python-qube-heatpump";
   version = "1.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "MattieGit";
@@ -21,16 +20,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-49zRXAWHo5+Ooo/D+Cb3ydIKD3vMIslSql5lmAHtaeA=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ pymodbus ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-mock
     pytestCheckHook
   ];
 
+  build-system = [ hatchling ];
+  dependencies = [ pymodbus ];
+  pyproject = true;
   pythonImportsCheck = [ "python_qube_heatpump" ];
 
   meta = {

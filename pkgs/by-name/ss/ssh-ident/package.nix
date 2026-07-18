@@ -1,14 +1,15 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
-  python3,
   openssh,
+  python3,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
   pname = "ssh-ident";
   version = "2016-04-21";
+
   src = fetchFromGitHub {
     owner = "ccontavalli";
     repo = "ssh-ident";
@@ -20,6 +21,7 @@ stdenvNoCC.mkDerivation {
     substituteInPlace ssh-ident \
       --replace 'ssh-agent >' '${openssh}/bin/ssh-agent >'
   '';
+
   buildInputs = [ python3 ];
 
   installPhase = ''
@@ -28,8 +30,8 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/ccontavalli/ssh-ident";
     description = "Start and use ssh-agent and load identities as necessary";
+    homepage = "https://github.com/ccontavalli/ssh-ident";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ telotortium ];
     platforms = with lib.platforms; unix;

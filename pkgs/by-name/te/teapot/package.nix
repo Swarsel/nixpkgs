@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchzip,
   cmake,
+  fetchzip,
   libtirpc,
   ncurses,
 }:
@@ -23,6 +23,11 @@ stdenv.mkDerivation (finalAttrs: {
     ./002-remove-help.patch
   ];
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 2.6)" "cmake_minimum_required(VERSION 3.10)"
+  '';
+
   nativeBuildInputs = [
     cmake
   ];
@@ -38,13 +43,9 @@ stdenv.mkDerivation (finalAttrs: {
     NIX_LDFLAGS = "-ltirpc";
   };
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 2.6)" "cmake_minimum_required(VERSION 3.10)"
-  '';
-
   meta = {
     description = "Table Editor And Planner, Or: Teapot";
+
     longDescription = ''
       Teapot is a compact spreadsheet software originally written by Michael
       Haardt. It features a (n)curses-based text terminal interface, and
@@ -66,12 +67,13 @@ stdenv.mkDerivation (finalAttrs: {
       spreadsheets still inherit from the days of VisiCalc on ancient CP/M
       systems.
     '';
+
+    homepage = "https://www.syntax-k.de/projekte/teapot/";
+    changelog = "https://www.syntax-k.de/projekte/teapot/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
     mainProgram = "teapot";
-    homepage = "https://www.syntax-k.de/projekte/teapot/";
-    changelog = "https://www.syntax-k.de/projekte/teapot/";
   };
 })
 # TODO: patch/fix FLTK building

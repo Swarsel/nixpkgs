@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  makeWrapper,
   mpi,
   mpich,
-  tmux,
   reptyr,
-  makeWrapper,
+  tmux,
 }:
 
 stdenv.mkDerivation {
@@ -20,14 +20,14 @@ stdenv.mkDerivation {
     hash = "sha256-BaOaMpsF8ho8EIVuHfu4+CiVV3yLoC3tDkLq4R8BYBA=";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
+
   propagatedBuildInputs = [
     mpi
     mpich
     reptyr
     tmux
   ];
-
-  nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
     runHook preInstall
@@ -51,10 +51,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Run a parallel command inside a split tmux window";
-    mainProgram = "tmpi";
     homepage = "https://github.com/Azrael3000/tmpi";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ vasissualiyp ];
     platforms = reptyr.meta.platforms;
+    mainProgram = "tmpi";
   };
 }

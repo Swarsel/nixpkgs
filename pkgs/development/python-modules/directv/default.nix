@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-  setuptools,
   aiohttp,
-  yarl,
   aresponses,
+  buildPythonPackage,
+  fetchpatch,
   pytest-asyncio,
   pytestCheckHook,
+  setuptools,
+  yarl,
 }:
 
 buildPythonPackage rec {
   pname = "directv";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ctalkington";
@@ -26,17 +25,10 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/ctalkington/python-directv/pull/365
     (fetchpatch {
+      hash = "sha256-jI+ALoQ0EDUQCSQp90SE+e3sGMWLwojNtLevAbgoScc=";
       name = "replace-async-timeout-with-asyncio.timeout.patch";
       url = "https://github.com/ctalkington/python-directv/commit/a161454b09e144de15883d25378fbb13069e241b.patch";
-      hash = "sha256-jI+ALoQ0EDUQCSQp90SE+e3sGMWLwojNtLevAbgoScc=";
     })
-  ];
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    aiohttp
-    yarl
   ];
 
   nativeCheckInputs = [
@@ -46,18 +38,25 @@ buildPythonPackage rec {
   ];
 
   __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    aiohttp
+    yarl
+  ];
 
   disabledTests = [
     #  ValueError: Host '#' cannot contain '#' (at position 0)
     "test_client_error"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "directv" ];
 
   meta = {
-    changelog = "https://github.com/ctalkington/python-directv/releases/tag/${src.tag}";
     description = "Asynchronous Python client for DirecTV (SHEF)";
     homepage = "https://github.com/ctalkington/python-directv";
+    changelog = "https://github.com/ctalkington/python-directv/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

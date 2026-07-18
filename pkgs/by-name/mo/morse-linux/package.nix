@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitLab,
   alsa-lib,
-  pulseaudio,
-  pkg-config,
-  xmlto,
   docbook_xsl,
+  pkg-config,
+  pulseaudio,
+  xmlto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,10 +20,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-KIFvOPPIpjRsXQDgaQuAFmYDcCwp9rOm9yxTFPOtf3E=";
   };
 
-  buildInputs = [
-    alsa-lib
-    pulseaudio
-  ];
+  postPatch = ''
+    substituteInPlace Makefile --replace-fail "xmlto" "xmlto --skip-validation"
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -31,9 +30,10 @@ stdenv.mkDerivation (finalAttrs: {
     docbook_xsl
   ];
 
-  postPatch = ''
-    substituteInPlace Makefile --replace-fail "xmlto" "xmlto --skip-validation"
-  '';
+  buildInputs = [
+    alsa-lib
+    pulseaudio
+  ];
 
   env.NIX_CFLAGS_COMPILE = "-std=gnu99";
 
@@ -50,10 +50,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Training program about morse-code for aspiring radio hams";
     homepage = "https://gitlab.com/esr/morse-classic";
     license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       matthewcroughan
       sarcasticadmin
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "morse";
   };

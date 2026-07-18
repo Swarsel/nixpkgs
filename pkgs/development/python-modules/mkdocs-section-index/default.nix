@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
-  mkdocs,
-  pytestCheckHook,
   mechanicalsoup,
-  testfixtures,
-  pytest-golden,
+  mkdocs,
   mkdocs-material,
+  pytest-golden,
+  pytestCheckHook,
+  testfixtures,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mkdocs-section-index";
   version = "0.3.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "oprypin";
@@ -22,6 +21,14 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-cw/a17xliK68vStC20f+IHI3nQl1/s/lIIj1tyQJti0=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    mechanicalsoup
+    testfixtures
+    pytest-golden
+    mkdocs-material
+  ];
 
   build-system = [
     hatchling
@@ -31,16 +38,10 @@ buildPythonPackage (finalAttrs: {
     mkdocs
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "mkdocs_section_index"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    mechanicalsoup
-    testfixtures
-    pytest-golden
-    mkdocs-material
   ];
 
   meta = {

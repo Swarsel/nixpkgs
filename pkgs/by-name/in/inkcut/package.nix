@@ -1,15 +1,14 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
   cups,
+  python3,
   qt6,
 }:
 
 python3.pkgs.buildPythonApplication rec {
   pname = "inkcut";
   version = "2.1.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "inkcut";
@@ -24,8 +23,18 @@ python3.pkgs.buildPythonApplication rec {
   '';
 
   nativeBuildInputs = [ qt6.wrapQtAppsHook ];
-
   buildInputs = [ qt6.qtbase ];
+  # QtApplication.instance() does not work during tests?
+  doCheck = false;
+
+  postInstall = ''
+    mkdir -p $out/share/inkscape/extensions
+
+    cp plugins/inkscape/* $out/share/inkscape/extensions
+
+    sed -i "s|cmd = \['inkcut'\]|cmd = \['$out/bin/inkcut'\]|" $out/share/inkscape/extensions/inkcut_cut.py
+    sed -i "s|cmd = \['inkcut'\]|cmd = \['$out/bin/inkcut'\]|" $out/share/inkscape/extensions/inkcut_open.py
+  '';
 
   build-system = with python3.pkgs; [ setuptools ];
 
@@ -41,8 +50,15 @@ python3.pkgs.buildPythonApplication rec {
     pyqt6
   ];
 
-  # QtApplication.instance() does not work during tests?
-  doCheck = false;
+  dontWrapQtApps = true;
+
+  makeWrapperArgs = [
+    "--unset"
+    "PYTHONPATH"
+    "\${qtWrapperArgs[@]}"
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "inkcut"
@@ -56,27 +72,11 @@ python3.pkgs.buildPythonApplication rec {
     "inkcut.preview"
   ];
 
-  dontWrapQtApps = true;
-  makeWrapperArgs = [
-    "--unset"
-    "PYTHONPATH"
-    "\${qtWrapperArgs[@]}"
-  ];
-
-  postInstall = ''
-    mkdir -p $out/share/inkscape/extensions
-
-    cp plugins/inkscape/* $out/share/inkscape/extensions
-
-    sed -i "s|cmd = \['inkcut'\]|cmd = \['$out/bin/inkcut'\]|" $out/share/inkscape/extensions/inkcut_cut.py
-    sed -i "s|cmd = \['inkcut'\]|cmd = \['$out/bin/inkcut'\]|" $out/share/inkscape/extensions/inkcut_open.py
-  '';
-
   meta = {
-    homepage = "https://www.codelv.com/projects/inkcut/";
     description = "Control 2D plotters, cutters, engravers, and CNC machines";
-    mainProgram = "inkcut";
+    homepage = "https://www.codelv.com/projects/inkcut/";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ raboof ];
+    mainProgram = "inkcut";
   };
 }

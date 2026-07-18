@@ -1,10 +1,10 @@
 { lib, callPackage }:
 
 {
-  project-references = callPackage ./project-references { };
-  use-dotnet-from-env = lib.recurseIntoAttrs (callPackage ./use-dotnet-from-env { });
-  structured-attrs = lib.recurseIntoAttrs (callPackage ./structured-attrs { });
+  cross-target = callPackage ./cross-target { };
   final-attrs = lib.recurseIntoAttrs (callPackage ./final-attrs { });
   nuget-deps = lib.recurseIntoAttrs (callPackage ./nuget-deps { });
-  cross-target = callPackage ./cross-target { };
+  project-references = callPackage ./project-references { };
+  structured-attrs = lib.recurseIntoAttrs (callPackage ./structured-attrs { });
+  use-dotnet-from-env = lib.recurseIntoAttrs (callPackage ./use-dotnet-from-env { });
 }

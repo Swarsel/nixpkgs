@@ -17,15 +17,14 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
-
   doCheck = true;
 
   meta = {
+    description = "Easy to use and fast C++ CRC library";
     homepage = "https://github.com/d-bahr/CRCpp";
     changelog = "https://github.com/d-bahr/CRCpp/releases/tag/release-${finalAttrs.version}";
-    description = "Easy to use and fast C++ CRC library";
-    platforms = lib.platforms.all;
-    maintainers = [ ];
     license = lib.licenses.bsd3;
+    maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 })

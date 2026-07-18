@@ -1,44 +1,44 @@
 {
-  stdenv,
-  makeWrapper,
   lib,
-  libpng,
-  libjpeg,
-  libwebp,
-  openssl,
-  expat,
-  libyaml,
-  bash,
-  gnused,
-  gnugrep,
-  coreutils,
-  util-linux,
-  procps,
-  gd,
-  autoreconfHook,
-  gawk,
+  stdenv,
   fetchFromGitHub,
-  fetchgit,
-  fetchNpmDeps,
+  autoreconfHook,
+  bash,
   beamPackages,
-  nixosTests,
-  withMysql ? false,
-  withPgsql ? false,
-  withSqlite ? false,
-  sqlite,
-  withPam ? false,
-  pam,
-  withZlib ? true,
-  zlib,
-  withSip ? false,
-  withLua ? false,
-  withTools ? false,
-  withRedis ? false,
-  withImagemagick ? false,
+  coreutils,
+  expat,
+  fetchNpmDeps,
+  fetchgit,
+  gawk,
+  gd,
+  gnugrep,
+  gnused,
   imagemagick,
-  withBootstrap ? true, # used for the built-in mod_invites page
+  libjpeg,
+  libpng,
+  libwebp,
+  libyaml,
+  makeWrapper,
+  nixosTests,
   nodejs,
   npmHooks,
+  openssl,
+  pam,
+  procps,
+  sqlite,
+  util-linux,
+  zlib,
+  withBootstrap ? true, # used for the built-in mod_invites page
+  withImagemagick ? false,
+  withLua ? false,
+  withMysql ? false,
+  withPam ? false,
+  withPgsql ? false,
+  withRedis ? false,
+  withSip ? false,
+  withSqlite ? false,
+  withTools ? false,
+  withZlib ? true,
 }:
 
 let
@@ -55,24 +55,28 @@ let
   ];
 
   provider_asn1 = buildRebar3 {
-    name = "provider_asn1";
     version = "0.4.1";
+
     src = fetchHex {
+      sha256 = "sha256-HqR6IyJyJinvbPJJlhJE14yEiBbNmTGOmR0hqonrOR0=";
       pkg = "provider_asn1";
       version = "0.4.1";
-      sha256 = "sha256-HqR6IyJyJinvbPJJlhJE14yEiBbNmTGOmR0hqonrOR0=";
     };
+
     beamDeps = [ ];
+    name = "provider_asn1";
   };
   rebar3_hex = buildRebar3 {
-    name = "rebar3_hex";
     version = "7.0.8";
+
     src = fetchHex {
+      sha256 = "sha256-aEY0EEZwRHp6AAuE1pSfm5RjBjU+PaaJuKp7fvXRiBc=";
       pkg = "rebar3_hex";
       version = "7.0.8";
-      sha256 = "sha256-aEY0EEZwRHp6AAuE1pSfm5RjBjU+PaaJuKp7fvXRiBc=";
     };
+
     beamDeps = [ ];
+    name = "rebar3_hex";
   };
 
   allBeamDeps = import ./rebar-deps.nix {
@@ -81,9 +85,7 @@ let
 
     overrides = final: prev: {
       cache_tab = prev.cache_tab.override { buildPlugins = [ beamPackages.pc ]; };
-      mqtree = prev.mqtree.override { buildPlugins = [ beamPackages.pc ]; };
-      stringprep = prev.stringprep.override { buildPlugins = [ beamPackages.pc ]; };
-      p1_acme = prev.p1_acme.override { buildPlugins = [ beamPackages.pc ]; };
+
       eimp = prev.eimp.override {
         buildInputs = [
           gd
@@ -91,40 +93,54 @@ let
           libpng
           libjpeg
         ];
+
         buildPlugins = [ beamPackages.pc ];
       };
+
+      epam = prev.epam.override {
+        buildInputs = [ pam ];
+        buildPlugins = [ beamPackages.pc ];
+      };
+
+      esip = prev.esip.override { buildPlugins = [ beamPackages.pc ]; };
+
+      ezlib = prev.ezlib.override {
+        buildInputs = [ zlib ];
+        buildPlugins = [ beamPackages.pc ];
+      };
+
       fast_tls = prev.fast_tls.override {
         buildInputs = [ openssl ];
         buildPlugins = [ beamPackages.pc ];
       };
+
       fast_xml = prev.fast_xml.override {
         buildInputs = [ expat ];
         buildPlugins = [ beamPackages.pc ];
       };
+
       fast_yaml = prev.fast_yaml.override {
         buildInputs = [ libyaml ];
         buildPlugins = [ beamPackages.pc ];
       };
-      xmpp = prev.xmpp.override {
-        buildPlugins = [
-          beamPackages.pc
-          provider_asn1
-        ];
-      };
+
+      mqtree = prev.mqtree.override { buildPlugins = [ beamPackages.pc ]; };
+      p1_acme = prev.p1_acme.override { buildPlugins = [ beamPackages.pc ]; };
+      p1_mysql = prev.p1_mysql.override { buildPlugins = [ beamPackages.pc ]; };
+
       # Optional deps
       sqlite3 = prev.sqlite3.override {
         buildInputs = [ sqlite ];
         buildPlugins = [ beamPackages.pc ];
       };
-      p1_mysql = prev.p1_mysql.override { buildPlugins = [ beamPackages.pc ]; };
-      epam = prev.epam.override {
-        buildInputs = [ pam ];
-        buildPlugins = [ beamPackages.pc ];
-      };
-      esip = prev.esip.override { buildPlugins = [ beamPackages.pc ]; };
-      ezlib = prev.ezlib.override {
-        buildInputs = [ zlib ];
-        buildPlugins = [ beamPackages.pc ];
+
+      stringprep = prev.stringprep.override { buildPlugins = [ beamPackages.pc ]; };
+
+      xmpp = prev.xmpp.override {
+        buildPlugins = [
+          beamPackages.pc
+          provider_asn1
+        ];
       };
     };
   };
@@ -145,6 +161,20 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "ejabberd";
   version = "26.04";
+
+  src = fetchFromGitHub {
+    owner = "processone";
+    repo = "ejabberd";
+    tag = finalAttrs.version;
+    hash = "sha256-PF65TgHvKeSEudEqqJVEotu2zgiWgGtRuNvbiyE0nwc=";
+  };
+
+  postPatch = ''
+    patchShebangs .
+    mkdir -p _build/default/lib
+    touch _build/default/lib/.got
+    touch _build/default/lib/.built
+  '';
 
   nativeBuildInputs = [
     makeWrapper
@@ -174,23 +204,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional withLua allBeamDeps.luerl
   ++ lib.optional withRedis allBeamDeps.eredis;
 
-  npmDeps = lib.optionalDrvAttr npmToolingUsed (fetchNpmDeps {
-    name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
-    src = finalAttrs.src;
-    hash = "sha256-MTyoc8ozrCi3W0CXmxyLpyU8v+vlUjcbLnv/1ev/Qqo=";
-  });
-
-  src = fetchFromGitHub {
-    owner = "processone";
-    repo = "ejabberd";
-    tag = finalAttrs.version;
-    hash = "sha256-PF65TgHvKeSEudEqqJVEotu2zgiWgGtRuNvbiyE0nwc=";
-  };
-
-  passthru.tests = {
-    inherit (nixosTests) ejabberd;
-  };
-
   configureFlags = [
     (lib.enableFeature withMysql "mysql")
     (lib.enableFeature withPgsql "pgsql")
@@ -205,20 +218,11 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional withSqlite "--with-sqlite3=${sqlite.dev}";
 
-  enableParallelBuilding = true;
-
-  postPatch = ''
-    patchShebangs .
-    mkdir -p _build/default/lib
-    touch _build/default/lib/.got
-    touch _build/default/lib/.built
-  '';
+  env.REBAR_IGNORE_DEPS = 1;
 
   preBuild = lib.optionalString npmToolingUsed /* sh */ ''
     npm run postinstall
   '';
-
-  env.REBAR_IGNORE_DEPS = 1;
 
   postInstall = ''
     sed -i \
@@ -230,18 +234,32 @@ stdenv.mkDerivation (finalAttrs: {
     }"''}
   '';
 
+  enableParallelBuilding = true;
+
+  npmDeps = lib.optionalDrvAttr npmToolingUsed (fetchNpmDeps {
+    src = finalAttrs.src;
+    hash = "sha256-MTyoc8ozrCi3W0CXmxyLpyU8v+vlUjcbLnv/1ev/Qqo=";
+    name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
+  });
+
+  passthru.tests = {
+    inherit (nixosTests) ejabberd;
+  };
+
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Open-source XMPP application server written in Erlang";
-    mainProgram = "ejabberdctl";
+    homepage = "https://www.ejabberd.im";
     changelog = "https://github.com/processone/ejabberd/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl2Plus;
-    homepage = "https://www.ejabberd.im";
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       chuangzhu
       toastal
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "ejabberdctl";
   };
 })

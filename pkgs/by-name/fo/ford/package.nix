@@ -1,8 +1,8 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   gfortran,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
@@ -16,15 +16,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-+pz4YvMmr7QIqrORJg0F2W7m20FTrItHCC+AmcDp284=";
   };
 
-  pyproject = true;
-
   nativeBuildInputs = [ python3Packages.pythonRelaxDepsHook ];
 
-  pythonRelaxDeps = [
-    "markdown"
-    "markdown-include"
-    "toposort"
-    "graphviz"
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+    tomli-w
+    pcpp
+    gfortran
   ];
 
   build-system = with python3Packages; [
@@ -47,18 +45,20 @@ python3Packages.buildPythonApplication (finalAttrs: {
     python-markdown-math
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-    tomli-w
-    pcpp
-    gfortran
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "markdown"
+    "markdown-include"
+    "toposort"
+    "graphviz"
   ];
 
   meta = {
     description = "Fortran documentation system";
-    mainProgram = "ford";
     homepage = "https://github.com/Fortran-FOSS-Programmers/ford";
     license = [ lib.licenses.gpl3Only ];
     maintainers = [ lib.maintainers.sheepforce ];
+    mainProgram = "ford";
   };
 })

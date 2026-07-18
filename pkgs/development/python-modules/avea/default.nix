@@ -1,16 +1,15 @@
 {
   lib,
-  bleak-retry-connector,
-  bleak,
-  buildPythonPackage,
   fetchFromGitHub,
+  bleak,
+  bleak-retry-connector,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "avea";
   version = "1.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "k0rventen";
@@ -19,6 +18,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-8jDKsEqYDUuB9L2M3da+6xvp6pP7TRHcZwy8w/fOesk=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage (finalAttrs: {
     bleak-retry-connector
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "avea" ];
 
   meta = {

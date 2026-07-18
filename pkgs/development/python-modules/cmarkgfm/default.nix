@@ -9,19 +9,16 @@
 buildPythonPackage rec {
   pname = "cmarkgfm";
   version = "2025.10.22";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-W+xhAHtluRlIhELIOMWKbIv0dB9RA8WTsu8YDTmBjto=";
   };
 
-  propagatedNativeBuildInputs = [ cffi ];
-
   propagatedBuildInputs = [ cffi ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
+  propagatedNativeBuildInputs = [ cffi ];
   pythonImportsCheck = [ "cmarkgfm" ];
 
   meta = {

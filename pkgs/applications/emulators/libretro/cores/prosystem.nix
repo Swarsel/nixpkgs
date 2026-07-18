@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "prosystem";
   version = "0-unstable-2026-06-04";
 
   src = fetchFromGitHub {
@@ -14,6 +13,7 @@ mkLibretroCore {
     hash = "sha256-5KNxBCZq4BfBo5pF4tBzJNNyatrVQH4kmXmcyQcIPSY=";
   };
 
+  core = "prosystem";
   makefile = "Makefile";
 
   meta = {

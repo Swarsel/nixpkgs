@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  gtk3,
   gnome-icon-theme,
-  papirus-icon-theme,
+  gtk3,
   hicolor-icon-theme,
   kdePackages,
+  papirus-icon-theme,
 }:
 
 stdenv.mkDerivation {
@@ -21,6 +21,10 @@ stdenv.mkDerivation {
     sha256 = "0d6lvdg5nw5wfaq8lxszcws174vg12ywkrqzn6czimhmhp48jf5p";
   };
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt --replace /usr "$out"
+  '';
+
   nativeBuildInputs = [
     cmake
     gtk3
@@ -33,25 +37,20 @@ stdenv.mkDerivation {
     hicolor-icon-theme
   ];
 
-  dontDropIconThemeCache = true;
-
-  dontWrapQtApps = true;
-
-  postPatch = ''
-    substituteInPlace CMakeLists.txt --replace /usr "$out"
-  '';
-
   postInstall = ''
     for theme in $out/share/icons/*; do
       gtk-update-icon-cache $theme
     done
   '';
 
+  dontDropIconThemeCache = true;
+  dontWrapQtApps = true;
+
   meta = {
     description = "Manjaro variation of Papirus icon theme";
     homepage = "https://github.com/Ste74/papirus-maia-icon-theme";
     license = lib.licenses.lgpl3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ romildo ];
+    platforms = lib.platforms.linux;
   };
 }

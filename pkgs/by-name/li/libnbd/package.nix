@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchurl,
+  autoreconfHook,
   bash-completion,
-  pkg-config,
-  perl,
-  buildPythonBindings ? false,
-  buildOcamlBindings ? false,
-  ocamlPackages,
-  python3,
-  libxml2,
   fuse,
   fuse3,
   gnutls,
-  autoreconfHook,
+  libxml2,
+  ocamlPackages,
+  perl,
+  pkg-config,
+  python3,
+  buildOcamlBindings ? false,
+  buildPythonBindings ? false,
 }:
 
 stdenv.mkDerivation rec {
@@ -24,6 +24,11 @@ stdenv.mkDerivation rec {
     url = "https://download.libguestfs.org/libnbd/${lib.versions.majorMinor version}-stable/libnbd-${version}.tar.gz";
     hash = "sha256-y/Ria/R8jC+Zu5bHnlqM7JozNzyt6i/Bu/4E5uFbbjw=";
   };
+
+  postPatch = lib.optionalString buildOcamlBindings ''
+    substituteInPlace ocaml/Makefile.am \
+        --replace-fail '$(DESTDIR)$(OCAMLLIB)' '$(out)/lib/ocaml/${ocamlPackages.ocaml.version}/site-lib'
+  '';
 
   nativeBuildInputs = [
     bash-completion
@@ -47,16 +52,9 @@ stdenv.mkDerivation rec {
     libxml2
   ];
 
-  postPatch = lib.optionalString buildOcamlBindings ''
-    substituteInPlace ocaml/Makefile.am \
-        --replace-fail '$(DESTDIR)$(OCAMLLIB)' '$(out)/lib/ocaml/${ocamlPackages.ocaml.version}/site-lib'
-  '';
-
   configureFlags = lib.optionals buildPythonBindings [
     "--with-python-installdir=${placeholder "out"}/${python3.sitePackages}"
   ];
-
-  installFlags = [ "bashcompdir=$(out)/share/bash-completion/completions" ];
 
   postInstall = lib.optionalString buildPythonBindings ''
     LIBNBD_PYTHON_METADATA='${placeholder "out"}/${python3.sitePackages}/nbd-${version}.dist-info/METADATA'
@@ -64,9 +62,11 @@ stdenv.mkDerivation rec {
     substituteAllInPlace $LIBNBD_PYTHON_METADATA
   '';
 
+  installFlags = [ "bashcompdir=$(out)/share/bash-completion/completions" ];
+
   meta = {
-    homepage = "https://gitlab.com/nbdkit/libnbd";
     description = "Network Block Device client library in userspace";
+
     longDescription = ''
       NBD — Network Block Device — is a protocol for accessing Block Devices
       (hard disks and disk-like things) over a Network.  This is the NBD client
@@ -82,10 +82,14 @@ stdenv.mkDerivation rec {
       - Bindings in several programming languages.
       - Shell (nbdsh) for command line and scripting.
     '';
+
+    homepage = "https://gitlab.com/nbdkit/libnbd";
     license = with lib.licenses; lgpl21Plus;
+
     maintainers = with lib.maintainers; [
       humancalico
     ];
+
     platforms = with lib.platforms; linux;
     broken = buildOcamlBindings && !lib.versionAtLeast ocamlPackages.ocaml.version "4.05";
   };

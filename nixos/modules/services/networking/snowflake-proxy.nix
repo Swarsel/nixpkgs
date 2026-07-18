@@ -16,42 +16,48 @@ in
       enable = mkEnableOption "snowflake-proxy, a system to defeat internet censorship";
 
       broker = mkOption {
+        default = null;
         description = "Broker URL (default \"https://snowflake-broker.torproject.net/\")";
         type = with types; nullOr str;
-        default = null;
       };
 
       capacity = mkOption {
+        default = null;
         description = "Limits the amount of maximum concurrent clients allowed.";
         type = with types; nullOr int;
-        default = null;
-      };
-
-      relay = mkOption {
-        description = "websocket relay URL (default \"wss://snowflake.bamsoftware.com/\")";
-        type = with types; nullOr str;
-        default = null;
-      };
-
-      stun = mkOption {
-        description = "STUN broker URL (default \"stun:stun.stunprotocol.org:3478\")";
-        type = with types; nullOr str;
-        default = null;
       };
 
       extraFlags = mkOption {
-        description = "Extra flags to pass to snowflake-proxy";
-        type = with types; listOf str;
         default = [ ];
+        description = "Extra flags to pass to snowflake-proxy";
         example = [ "-metrics" ];
+        type = with types; listOf str;
+      };
+
+      relay = mkOption {
+        default = null;
+        description = "websocket relay URL (default \"wss://snowflake.bamsoftware.com/\")";
+        type = with types; nullOr str;
+      };
+
+      stun = mkOption {
+        default = null;
+        description = "STUN broker URL (default \"stun:stun.stunprotocol.org:3478\")";
+        type = with types; nullOr str;
       };
     };
   };
 
   config = mkIf cfg.enable {
     systemd.services.snowflake-proxy = {
-      wantedBy = [ "network-online.target" ];
       serviceConfig = {
+        # Security Hardening
+        # Refer to systemd.exec(5) for option descriptions.
+        CapabilityBoundingSet = "";
+        # implies RemoveIPC=, PrivateTmp=, NoNewPrivileges=, RestrictSUIDSGID=,
+        # ProtectSystem=strict, ProtectHome=read-only
+        DynamicUser = true;
+
         ExecStart =
           "${pkgs.snowflake}/bin/proxy "
           + concatStringsSep " " (
@@ -62,13 +68,6 @@ in
             ++ cfg.extraFlags
           );
 
-        # Security Hardening
-        # Refer to systemd.exec(5) for option descriptions.
-        CapabilityBoundingSet = "";
-
-        # implies RemoveIPC=, PrivateTmp=, NoNewPrivileges=, RestrictSUIDSGID=,
-        # ProtectSystem=strict, ProtectHome=read-only
-        DynamicUser = true;
         LockPersonality = true;
         PrivateDevices = true;
         PrivateUsers = true;
@@ -78,23 +77,29 @@ in
         ProtectHome = true;
         ProtectHostname = true;
         ProtectKernelLogs = true;
-        ProtectProc = "invisible";
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
+        ProtectProc = "invisible";
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
           "AF_UNIX"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
         ];
+
         UMask = "0077";
       };
+
+      wantedBy = [ "network-online.target" ];
     };
   };
 

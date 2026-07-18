@@ -1,10 +1,10 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
-  cmake,
-  buildPackages,
+  fetchFromGitHub,
   asciidoc,
+  buildPackages,
+  cmake,
   libxslt,
 }:
 
@@ -23,20 +23,21 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-JGQE+orVDKKJsTt8sIjPX+3yhpZkujISroQ6g19+MzU=";
   };
 
-  cmakeFlags = [ "-DSCAS_LIBRARY=1" ];
   postPatch = ''
     substituteInPlace CMakeLists.txt \
       --replace-fail "TARGETS scas scdump scwrap" "TARGETS scas scdump scwrap generate_tables" \
       --replace-fail "cmake_minimum_required(VERSION 2.8.5)" "cmake_minimum_required(VERSION 3.10)"
   '';
+
   strictDeps = true;
 
-  depsBuildBuild = lib.optionals isCrossCompiling [ buildPackages.knightos-scas ];
   nativeBuildInputs = [
     asciidoc
     libxslt.bin
     cmake
   ];
+
+  cmakeFlags = [ "-DSCAS_LIBRARY=1" ];
 
   env.NIX_CFLAGS_COMPILE = toString (
     lib.optionals stdenv.cc.isClang [
@@ -49,9 +50,11 @@ stdenv.mkDerivation (finalAttrs: {
     make DESTDIR=$out install_man
   '';
 
+  depsBuildBuild = lib.optionals isCrossCompiling [ buildPackages.knightos-scas ];
+
   meta = {
-    homepage = "https://knightos.org/";
     description = "Assembler and linker for the Z80";
+    homepage = "https://knightos.org/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ siraben ];
     platforms = lib.platforms.all;

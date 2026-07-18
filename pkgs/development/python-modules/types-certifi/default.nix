@@ -8,7 +8,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "types-certifi";
   version = "2021.10.8.3";
-  pyproject = true;
 
   # Building typeshed subpackages from the GitHub repository requires packaging
   # https://github.com/typeshed-internal/stub_uploader
@@ -19,10 +18,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-cs93mNFlvAt24cEN0eowl8cGPELCHWZFI7ko6ItVSk8=";
   };
 
-  build-system = [ setuptools ];
-
   # No tests
   doCheck = false;
+  build-system = [ setuptools ];
+  pyproject = true;
 
   meta = {
     description = "Typing stubs for certifi";

@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
+  buildPackages,
   pkg-config,
   protobuf_33,
   zlib,
-  buildPackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,10 +39,10 @@ stdenv.mkDerivation (finalAttrs: {
   env.PROTOC = lib.getExe buildPackages.protobuf_33;
 
   meta = {
-    homepage = "https://github.com/protobuf-c/protobuf-c/";
     description = "C bindings for Google's Protocol Buffers";
+    homepage = "https://github.com/protobuf-c/protobuf-c/";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ nickcao ];
+    platforms = lib.platforms.all;
   };
 })

@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  replaceVars,
+  buildPythonPackage,
   nmap,
   python,
+  replaceVars,
 }:
 
 buildPythonPackage rec {
   pname = "netmap";
   version = "0.7.0.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "home-assistant-libs";
@@ -33,6 +32,7 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  format = "setuptools";
   pythonImportsCheck = [ "nmap" ];
 
   meta = {

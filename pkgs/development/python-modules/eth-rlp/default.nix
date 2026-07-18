@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   eth-hash,
   eth-utils,
   hexbytes,
+  pydantic,
   pytestCheckHook,
   rlp,
-  pydantic,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "eth-rlp";
   version = "2.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ethereum";
@@ -22,8 +21,6 @@ buildPythonPackage rec {
     rev = "v${version}";
     hash = "sha256-e8nPfxk3OnFEcPnfTy1IEUCHVId6E/ssNOUeAe331+U=";
   };
-
-  build-system = [ setuptools ];
 
   propagatedBuildInputs = [
     hexbytes
@@ -37,11 +34,14 @@ buildPythonPackage rec {
   ]
   ++ eth-hash.optional-dependencies.pycryptodome;
 
-  pythonImportsCheck = [ "eth_rlp" ];
+  build-system = [ setuptools ];
 
   disabledTests = [
     "test_install_local_wheel"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "eth_rlp" ];
 
   meta = {
     description = "RLP definitions for common Ethereum objects";

@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gfortran,
   blas,
-  lapack,
-  metis,
-  fixDarwinDylibNames,
-  gmp,
-  mpfr,
   config,
-  enableCuda ? config.cudaSupport,
   cudaPackages,
+  fixDarwinDylibNames,
+  gfortran,
+  gmp,
+  lapack,
   llvmPackages,
+  metis,
+  mpfr,
+  enableCuda ? config.cudaSupport,
 }@inputs:
 
 let
@@ -23,18 +23,18 @@ effectiveStdenv.mkDerivation rec {
   pname = "suitesparse";
   version = "5.13.0";
 
-  outputs = [
-    "out"
-    "dev"
-    "doc"
-  ];
-
   src = fetchFromGitHub {
     owner = "DrTimothyAldenDavis";
     repo = "SuiteSparse";
     rev = "v${version}";
     sha256 = "sha256-Anen1YtXsSPhk8DpA4JtADIz9m8oXFl9umlkb4iImf8=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+    "doc"
+  ];
 
   nativeBuildInputs =
     lib.optionals effectiveStdenv.hostPlatform.isDarwin [
@@ -64,11 +64,6 @@ effectiveStdenv.mkDerivation rec {
       cudaPackages.libcublas
     ];
 
-  preConfigure = ''
-    # Mongoose and GraphBLAS are packaged separately
-    sed -i "Makefile" -e '/GraphBLAS\|Mongoose/d'
-  '';
-
   makeFlags = [
     "INSTALL=${placeholder "out"}"
     "INSTALL_INCLUDE=${placeholder "dev"}/include"
@@ -90,6 +85,11 @@ effectiveStdenv.mkDerivation rec {
     "LAPACK=-llapack"
   ];
 
+  buildFlags = [
+    # Build individual shared libraries, not demos
+    "library"
+  ];
+
   env = {
     # in GCC14 these two warnings were promoted to error
     # let's make them warnings again to fix the build failure
@@ -101,19 +101,21 @@ effectiveStdenv.mkDerivation rec {
     NIX_LDFLAGS = "-headerpad_max_install_names";
   };
 
-  buildFlags = [
-    # Build individual shared libraries, not demos
-    "library"
-  ];
+  preConfigure = ''
+    # Mongoose and GraphBLAS are packaged separately
+    sed -i "Makefile" -e '/GraphBLAS\|Mongoose/d'
+  '';
 
   meta = {
-    homepage = "http://faculty.cse.tamu.edu/davis/suitesparse.html";
     description = "Suite of sparse matrix algorithms";
+    homepage = "http://faculty.cse.tamu.edu/davis/suitesparse.html";
+
     license = with lib.licenses; [
       bsd2
       gpl2Plus
       lgpl21Plus
     ];
+
     maintainers = [ ];
     platforms = with lib.platforms; unix;
   };

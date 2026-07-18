@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
-  gmp,
   coreutils,
+  fetchpatch,
+  gmp,
 }:
 
 stdenv.mkDerivation rec {
@@ -26,24 +26,26 @@ stdenv.mkDerivation rec {
   patches = [
     # Fix gcc-13 build failure
     (fetchpatch {
+      hash = "sha256-hBm2QNFS1jdoR6LUQHLReKxMKv7kbkrkrTGJ43YnvfA=";
       name = "gcc-13.patch";
       url = "https://github.com/leanprover-community/lean/commit/21d264a66d53b0a910178ae7d9529cb5886a39b6.patch";
-      hash = "sha256-hBm2QNFS1jdoR6LUQHLReKxMKv7kbkrkrTGJ43YnvfA=";
     })
   ];
 
+  postPatch = ''
+    patchShebangs .
+
+    sed -e '1i #include <cstdint>' -i src/util/hash.{cpp,h}
+  '';
+
   nativeBuildInputs = [ cmake ];
   buildInputs = [ gmp ];
-
-  cmakeDir = "../src";
 
   cmakeFlags = [
     (lib.cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "3.10")
   ];
 
-  # Running the tests is required to build the *.olean files for the core
-  # library.
-  doCheck = true;
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=template-body";
 
   preConfigure =
     assert builtins.stringLength src.rev == 40;
@@ -54,27 +56,27 @@ stdenv.mkDerivation rec {
         --subst-var-by GIT_SHA1 "${src.rev}"
     '';
 
-  postPatch = ''
-    patchShebangs .
-
-    sed -e '1i #include <cstdint>' -i src/util/hash.{cpp,h}
-  '';
-
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=template-body";
+  # Running the tests is required to build the *.olean files for the core
+  # library.
+  doCheck = true;
 
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     substituteInPlace $out/bin/leanpkg \
       --replace "greadlink" "${coreutils}/bin/readlink"
   '';
 
+  cmakeDir = "../src";
+
   meta = {
     description = "Automatic and interactive theorem prover";
     homepage = "https://leanprover.github.io/";
     changelog = "https://github.com/leanprover-community/lean/blob/v${version}/doc/changes.md";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
     ];
+
+    platforms = lib.platforms.unix;
   };
 }

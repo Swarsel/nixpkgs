@@ -1,17 +1,16 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   libsodium,
+  poetry-core,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "libnacl";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "saltstack";
@@ -19,10 +18,6 @@ buildPythonPackage rec {
     rev = "v${version}";
     hash = "sha256-phECLGDcBfDi/r2y0eGtqgIX/hvirtBqO8UUvEJ66zo=";
   };
-
-  nativeBuildInputs = [ poetry-core ];
-
-  buildInputs = [ libsodium ];
 
   postPatch =
     let
@@ -38,15 +33,17 @@ buildPythonPackage rec {
           "ctypes.cdll.LoadLibrary('${libsodium}/lib/libsodium${soext}')"
     '';
 
+  nativeBuildInputs = [ poetry-core ];
+  buildInputs = [ libsodium ];
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "libnacl" ];
 
   meta = {
     description = "Python bindings for libsodium based on ctypes";
     homepage = "https://libnacl.readthedocs.io/";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ xvapx ];
+    platforms = lib.platforms.unix;
   };
 }

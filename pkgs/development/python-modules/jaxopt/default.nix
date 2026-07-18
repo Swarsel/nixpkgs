@@ -1,30 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   absl-py,
+  buildPythonPackage,
+  # tests
+  cvxpy,
   jax,
   matplotlib,
   numpy,
-  scipy,
-
-  # tests
-  cvxpy,
   optax,
   pytest-xdist,
   pytestCheckHook,
   scikit-learn,
+  scipy,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "jaxopt";
   version = "0.8.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "google";
@@ -50,16 +46,6 @@ buildPythonPackage (finalAttrs: {
           "jax.enable_x64(True)"
     '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    absl-py
-    jax
-    matplotlib
-    numpy
-    scipy
-  ];
-
   nativeCheckInputs = [
     cvxpy
     optax
@@ -68,12 +54,14 @@ buildPythonPackage (finalAttrs: {
     scikit-learn
   ];
 
-  pythonImportsCheck = [
-    "jaxopt"
-    "jaxopt.implicit_diff"
-    "jaxopt.linear_solve"
-    "jaxopt.loss"
-    "jaxopt.tree_util"
+  build-system = [ setuptools ];
+
+  dependencies = [
+    absl-py
+    jax
+    matplotlib
+    numpy
+    scipy
   ];
 
   disabledTests = [
@@ -98,9 +86,19 @@ buildPythonPackage (finalAttrs: {
     "test_wrapper_grad"
   ];
 
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "jaxopt"
+    "jaxopt.implicit_diff"
+    "jaxopt.linear_solve"
+    "jaxopt.loss"
+    "jaxopt.tree_util"
+  ];
+
   meta = {
-    homepage = "https://jaxopt.github.io";
     description = "Hardware accelerated, batchable and differentiable optimizers in JAX";
+    homepage = "https://jaxopt.github.io";
     changelog = "https://github.com/google/jaxopt/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ bcdarwin ];

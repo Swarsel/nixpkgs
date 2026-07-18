@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  httpx,
+  buildPythonPackage,
   hatchling,
+  httpx,
   pytest-asyncio,
   pytestCheckHook,
   starlette,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "starlette-context";
   version = "0.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tomwojcik";
@@ -21,16 +20,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-cxhTrLLIjlqaR07VVgHmvYctk7+7fDjbGb39PbJbGgk=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ starlette ];
-
   nativeCheckInputs = [
     httpx
     pytest-asyncio
     pytestCheckHook
   ];
 
+  build-system = [ hatchling ];
+  dependencies = [ starlette ];
+  pyproject = true;
   pythonImportsCheck = [ "starlette_context" ];
 
   meta = {

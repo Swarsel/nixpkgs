@@ -1,19 +1,17 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  setuptools,
   cmake,
+  fetchPypi,
   nix-update-script,
-
   numpy,
   pillow,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "fast-colorthief";
   version = "0.0.5";
-  pyproject = true;
 
   # No tags on github
   src = fetchPypi {
@@ -30,6 +28,9 @@ buildPythonPackage rec {
       "cmake_minimum_required(VERSION 3.10)"
   '';
 
+  # return to project root to locate pyproject.toml for build
+  preBuild = "cd ..";
+
   build-system = [
     setuptools
     cmake
@@ -40,11 +41,8 @@ buildPythonPackage rec {
     numpy
   ];
 
-  # return to project root to locate pyproject.toml for build
-  preBuild = "cd ..";
-
+  pyproject = true;
   pythonImportsCheck = [ "fast_colorthief" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

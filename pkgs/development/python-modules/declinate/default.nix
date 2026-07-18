@@ -1,23 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitLab,
-
+  buildPythonPackage,
+  # nativeCheckInputs
+  pytestCheckHook,
   # build-system
   setuptools,
   setuptools-scm,
-
   # dependencies
   typing-extensions,
-
-  # nativeCheckInputs
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "declinate";
   version = "0.0.6";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "ternaris";
@@ -25,6 +21,10 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-JEO/GtbG/yQuj8vJJaWex9mGy6qpWOPHGlKrdG9vt28=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -35,9 +35,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "declinate"

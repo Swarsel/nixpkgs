@@ -1,9 +1,9 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   makeWrapper,
   socat,
-  stdenv,
   testers,
 }:
 
@@ -18,20 +18,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-/M3xOb0trUaxJGXmV2+sOCbrHGyP4jpyo+S/oBoDkO0=";
   };
 
-  nativeBuildInputs = [ makeWrapper ];
-
-  buildInputs = [ socat ];
-
   outputs = [
     "out"
     "doc"
   ];
 
-  makeFlags = [ "PREFIX=$(out)" ];
-
-  installFlags = [ "PREFIX=$(out)" ];
-
   strictDeps = true;
+  nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ socat ];
+  makeFlags = [ "PREFIX=$(out)" ];
 
   postInstall = ''
     wrapProgram $out/bin/mpvc --prefix PATH : "${lib.getBin socat}/"
@@ -43,12 +38,14 @@ stdenv.mkDerivation (finalAttrs: {
     rmdir $out/share || true
   '';
 
+  installFlags = [ "PREFIX=$(out)" ];
+
   meta = {
-    homepage = "https://github.com/gmt4/mpvc";
     description = "Mpc-like control interface for mpv";
+    homepage = "https://github.com/gmt4/mpvc";
     license = lib.licenses.mit;
-    mainProgram = "mpvc";
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "mpvc";
   };
 })

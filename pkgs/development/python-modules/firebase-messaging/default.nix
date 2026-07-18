@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   async-timeout,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   hatchling,
   http-ece,
   myst-parser,
@@ -24,7 +24,6 @@
 buildPythonPackage rec {
   pname = "firebase-messaging";
   version = "0.4.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sdb9696";
@@ -38,18 +37,23 @@ buildPythonPackage rec {
     "doc"
   ];
 
-  build-system = [
-    hatchling
-  ];
-
   nativeBuildInputs = [
     sphinxHook
   ]
   ++ optional-dependencies.docs;
 
-  pythonRelaxDeps = [
-    "http-ece"
-    "protobuf"
+  nativeCheckInputs = [
+    aioresponses
+    async-timeout
+    requests-mock
+    pytest-asyncio
+    pytest-mock
+    pytest-socket
+    pytestCheckHook
+  ];
+
+  build-system = [
+    hatchling
   ];
 
   dependencies = [
@@ -68,16 +72,12 @@ buildPythonPackage rec {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "firebase_messaging" ];
 
-  nativeCheckInputs = [
-    aioresponses
-    async-timeout
-    requests-mock
-    pytest-asyncio
-    pytest-mock
-    pytest-socket
-    pytestCheckHook
+  pythonRelaxDeps = [
+    "http-ece"
+    "protobuf"
   ];
 
   meta = {

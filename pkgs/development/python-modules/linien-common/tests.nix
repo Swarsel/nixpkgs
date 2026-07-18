@@ -11,12 +11,8 @@
 }:
 
 buildPythonPackage {
-  pname = "linien-tests";
   inherit (linien-common) version src;
-  pyproject = false;
-
-  dontBuild = true;
-  dontInstall = true;
+  pname = "linien-tests";
 
   nativeCheckInputs = [
     cma
@@ -42,4 +38,8 @@ buildPythonPackage {
     "tests/test_robust_autolock.py"
     "tests/test_simple_autolock_cpu.py"
   ];
+
+  dontBuild = true;
+  dontInstall = true;
+  pyproject = false;
 }

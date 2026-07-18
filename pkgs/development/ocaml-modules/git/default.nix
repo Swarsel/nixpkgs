@@ -1,47 +1,45 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  buildDunePackage,
   alcotest,
-  mirage-crypto-rng,
-  git-binary,
+  alcotest-lwt,
   angstrom,
   astring,
+  base64,
+  bigstringaf,
+  buildDunePackage,
+  carton,
+  carton-git,
+  carton-lwt,
+  checkseum,
+  cmdliner,
+  crowbar,
   decompress,
   digestif,
+  domain-name,
+  emile,
   encore,
   fmt,
-  checkseum,
+  git-binary,
+  hxd,
+  ipaddr,
   ke,
   logs,
   lwt,
-  ocamlgraph,
-  uri,
-  rresult,
-  base64,
-  hxd,
-  bigstringaf,
-  optint,
-  mirage-flow,
-  domain-name,
-  emile,
   mimic,
-  carton,
-  carton-lwt,
-  carton-git,
-  ipaddr,
+  mirage-crypto-rng,
+  mirage-flow,
+  ocamlgraph,
+  optint,
   psq,
-  crowbar,
-  alcotest-lwt,
-  cmdliner,
+  rresult,
+  uri,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "git";
   version = "3.18.0";
-
-  minimalOCamlVersion = "4.08";
 
   src = fetchurl {
     url = "https://github.com/mirage/ocaml-git/releases/download/${finalAttrs.version}/git-${finalAttrs.version}.tbz";
@@ -51,6 +49,7 @@ buildDunePackage (finalAttrs: {
   buildInputs = [
     base64
   ];
+
   propagatedBuildInputs = [
     angstrom
     astring
@@ -78,9 +77,13 @@ buildDunePackage (finalAttrs: {
     psq
     hxd
   ];
+
+  doCheck = !stdenv.hostPlatform.isAarch64;
+
   nativeCheckInputs = [
     git-binary
   ];
+
   checkInputs = [
     alcotest
     alcotest-lwt
@@ -88,15 +91,17 @@ buildDunePackage (finalAttrs: {
     crowbar
     cmdliner
   ];
-  doCheck = !stdenv.hostPlatform.isAarch64;
+
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "Git format and protocol in pure OCaml";
+    homepage = "https://github.com/mirage/ocaml-git";
     license = lib.licenses.isc;
+
     maintainers = with lib.maintainers; [
       sternenseemann
       vbgl
     ];
-    homepage = "https://github.com/mirage/ocaml-git";
   };
 })

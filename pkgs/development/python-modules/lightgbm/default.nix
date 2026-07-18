@@ -1,42 +1,36 @@
 {
   lib,
-  config,
   stdenv,
-  pkgs,
-  buildPythonPackage,
-  fetchPypi,
-
-  # build-system
-  scikit-build-core,
-
-  # nativeBuildInputs
-  cmake,
-  ninja,
-  pathspec,
-  pyproject-metadata,
-  writableTmpDirAsHomeHook,
-
-  # buildInputs
-  llvmPackages,
   boost187,
-  ocl-icd,
-  opencl-headers,
-
-  # dependencies
-  numpy,
-  scipy,
-
+  buildPythonPackage,
   # optional-dependencies
   cffi,
+  # nativeBuildInputs
+  cmake,
+  config,
+  cudaPackages,
   dask,
+  fetchPypi,
+  # buildInputs
+  llvmPackages,
+  ninja,
+  # dependencies
+  numpy,
+  ocl-icd,
+  opencl-headers,
   pandas,
+  pathspec,
+  pkgs,
   pyarrow,
+  pyproject-metadata,
+  # build-system
+  scikit-build-core,
   scikit-learn,
-
+  scipy,
+  writableTmpDirAsHomeHook,
+  cudaSupport ? config.cudaSupport,
   # optionals: gpu
   gpuSupport ? stdenv.hostPlatform.isLinux && !cudaSupport,
-  cudaSupport ? config.cudaSupport,
-  cudaPackages,
 }:
 
 assert gpuSupport -> !cudaSupport;
@@ -51,16 +45,11 @@ buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
     version
     patches
     ;
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-yxxZcg61aTicC6dNFPUjUbVzr0ifIwAyocnzFPi6t/4=";
   };
-
-  build-system = [
-    scikit-build-core
-  ];
 
   nativeBuildInputs = [
     cmake
@@ -70,8 +59,6 @@ buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
     writableTmpDirAsHomeHook
   ]
   ++ lib.optionals cudaSupport [ cudaPackages.cuda_nvcc ];
-
-  dontUseCmakeConfigure = true;
 
   buildInputs =
     (lib.optionals stdenv.cc.isClang [ llvmPackages.openmp ])
@@ -85,11 +72,6 @@ buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
       cudaPackages.cuda_cudart
     ];
 
-  dependencies = [
-    numpy
-    scipy
-  ];
-
   cmakeFlags = [
     (lib.cmakeBool "USE_GPU" gpuSupport)
     (lib.cmakeBool "USE_CUDA" cudaSupport)
@@ -102,11 +84,26 @@ buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
     (lib.cmakeFeature "CMAKE_CUDA_STANDARD" "14")
   ];
 
+  # No python tests
+  doCheck = false;
+
+  build-system = [
+    scikit-build-core
+  ];
+
+  dependencies = [
+    numpy
+    scipy
+  ];
+
+  dontUseCmakeConfigure = true;
+
   optional-dependencies = {
     arrow = [
       cffi
       pyarrow
     ];
+
     dask = [
       dask
       pandas
@@ -114,13 +111,12 @@ buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
     ++ dask.optional-dependencies.array
     ++ dask.optional-dependencies.dataframe
     ++ dask.optional-dependencies.distributed;
+
     pandas = [ pandas ];
     scikit-learn = [ scikit-learn ];
   };
 
-  # No python tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "lightgbm" ];
 
   meta = {
@@ -128,6 +124,7 @@ buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
     homepage = "https://github.com/lightgbm-org/LightGBM";
     changelog = "https://github.com/lightgbm-org/LightGBM/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       flokli
       teh

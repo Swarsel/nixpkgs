@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   requests,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "python-fsutil";
   version = "0.17.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fabiocaccamo";
@@ -19,11 +18,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-HQdQwPfMXTXSP9v/VF5fy3DicWm562V/KxxaO85nQ0c=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
 
   disabledTests = [
     # Tests require network access
@@ -31,6 +28,7 @@ buildPythonPackage (finalAttrs: {
     "test_read_file_from_url"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "fsutil" ];
 
   meta = {

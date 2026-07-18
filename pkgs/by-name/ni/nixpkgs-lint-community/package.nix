@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,12 +19,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Fast semantic linter for Nix using tree-sitter";
-    mainProgram = "nixpkgs-lint";
     homepage = "https://github.com/nix-community/nixpkgs-lint";
     changelog = "https://github.com/nix-community/nixpkgs-lint/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       artturin
     ];
+
+    mainProgram = "nixpkgs-lint";
   };
 })

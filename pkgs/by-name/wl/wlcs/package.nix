@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
-  gitUpdater,
+  stdenv,
   fetchFromGitHub,
-  testers,
-  cmake,
-  pkg-config,
   boost,
+  cmake,
+  gitUpdater,
   gtest,
+  pkg-config,
+  testers,
   wayland,
   wayland-scanner,
 }:
@@ -43,6 +43,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = gitUpdater {
       rev-prefix = "v";
     };
@@ -50,6 +51,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Wayland Conformance Test Suite";
+
     longDescription = ''
       wlcs aspires to be a protocol-conformance-verifying test suite usable by Wayland
       compositor implementors.
@@ -65,11 +67,13 @@ stdenv.mkDerivation (finalAttrs: {
       standard debugging tools can follow control flow from the test client to the
       compositor and back again.
     '';
+
     homepage = "https://github.com/MirServer/wlcs";
     changelog = "https://github.com/MirServer/wlcs/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ OPNA2608 ];
     platforms = lib.platforms.linux;
+
     pkgConfigModules = [
       "wlcs"
     ];

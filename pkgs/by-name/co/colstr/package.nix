@@ -10,11 +10,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.0.0";
 
   src = fetchFromGitea {
-    domain = "git.sleeping.town";
     owner = "wonder";
     repo = "colstr";
     rev = finalAttrs.version;
     hash = "sha256-0V2S/yYu5L7qxkT4Zf18x9+cHoPMztFmgSywpxF8QqA=";
+    domain = "git.sleeping.town";
   };
 
   buildPhase = ''
@@ -40,7 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://git.sleeping.town/wonder/colstr";
     license = with lib.licenses; [ cc0 ];
     maintainers = with lib.maintainers; [ annaaurora ];
-    mainProgram = "colstr";
     platforms = lib.platforms.all;
+    mainProgram = "colstr";
   };
 })

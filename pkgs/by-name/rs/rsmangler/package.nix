@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  testers,
   ruby,
+  stdenvNoCC,
+  testers,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -17,30 +17,30 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-DN20XzrlkunLyk4nkgytUJEtCOlFjWUUUAQ416l3Aug=";
   };
 
-  buildInputs = [ ruby ];
-
   postPatch = ''
     substituteInPlace rsmangler.rb \
       --replace-quiet ./rsmangler.rb rsmangler \
       --replace-quiet rsmangler.rb rsmangler
   '';
 
+  buildInputs = [ ruby ];
+
   postInstall = ''
     install -Dm555 rsmangler.rb $out/bin/rsmangler
   '';
 
   passthru.tests.version = testers.testVersion {
-    package = finalAttrs.finalPackage;
-    command = "rsmangler --help";
     version = "rsmangler v ${lib.versions.majorMinor finalAttrs.version}";
+    command = "rsmangler --help";
+    package = finalAttrs.finalPackage;
   };
 
   meta = {
     description = "Perform various manipulations on the wordlists";
     homepage = "https://github.com/digininja/RSMangler";
     license = lib.licenses.cc-by-sa-20;
-    mainProgram = "rsmangler";
     maintainers = [ ];
     platforms = ruby.meta.platforms;
+    mainProgram = "rsmangler";
   };
 })

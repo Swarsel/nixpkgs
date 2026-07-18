@@ -67,28 +67,24 @@ in
       enable = mkEnableOption "AutoMySQLBackup";
 
       calendar = mkOption {
-        type = types.str;
         default = "01:15:00";
+
         description = ''
           Configured when to run the backup service systemd unit (DayOfWeek Year-Month-Day Hour:Minute:Second).
         '';
+
+        type = types.str;
       };
 
       settings = mkOption {
-        type =
-          with types;
-          attrsOf (oneOf [
-            str
-            int
-            bool
-            (listOf str)
-          ]);
         default = { };
+
         description = ''
           automysqlbackup configuration. Refer to
           {file}`''${pkgs.automysqlbackup}/etc/automysqlbackup.conf`
           for details on supported values.
         '';
+
         example = literalExpression ''
           {
             db_names = [ "nextcloud" "matomo" ];
@@ -97,6 +93,15 @@ in
             mail_address = "admin@example.org";
           }
         '';
+
+        type =
+          with types;
+          attrsOf (oneOf [
+            str
+            int
+            bool
+            (listOf str)
+          ]);
       };
 
     };
@@ -112,57 +117,64 @@ in
       }
     ];
 
+    environment.systemPackages = [ pkg ];
+
     services.automysqlbackup.config = mapAttrs (name: mkDefault) {
-      mysql_dump_username = user;
-      mysql_dump_host = "localhost";
-      mysql_dump_socket = "/run/mysqld/mysqld.sock";
       backup_dir = "/var/backup/mysql";
+
       db_exclude = [
         "information_schema"
         "performance_schema"
       ];
+
       mailcontent = "stdout";
+      mysql_dump_host = "localhost";
       mysql_dump_single_transaction = true;
+      mysql_dump_socket = "/run/mysqld/mysqld.sock";
+      mysql_dump_username = user;
+    };
+
+    services.mysql.ensureUsers =
+      optional (config.services.mysql.enable && cfg.config.mysql_dump_host == "localhost")
+        {
+          ensurePermissions = {
+            "*.*" = "SELECT, SHOW VIEW, TRIGGER, LOCK TABLES, EVENT";
+          };
+
+          name = user;
+        };
+
+    systemd.services.automysqlbackup = {
+      description = "automysqlbackup service";
+
+      serviceConfig = {
+        ExecStart = "${pkg}/bin/automysqlbackup ${configFile}";
+        Group = group;
+        User = user;
+      };
     };
 
     systemd.timers.automysqlbackup = {
       description = "automysqlbackup timer";
-      wantedBy = [ "timers.target" ];
+
       timerConfig = {
-        OnCalendar = cfg.calendar;
         AccuracySec = "5m";
+        OnCalendar = cfg.calendar;
       };
-    };
 
-    systemd.services.automysqlbackup = {
-      description = "automysqlbackup service";
-      serviceConfig = {
-        User = user;
-        Group = group;
-        ExecStart = "${pkg}/bin/automysqlbackup ${configFile}";
-      };
+      wantedBy = [ "timers.target" ];
     };
-
-    environment.systemPackages = [ pkg ];
-
-    users.users.${user} = {
-      group = group;
-      isSystemUser = true;
-    };
-    users.groups.${group} = { };
 
     systemd.tmpfiles.rules = [
       "d '${cfg.config.backup_dir}' 0750 ${user} ${group} - -"
     ];
 
-    services.mysql.ensureUsers =
-      optional (config.services.mysql.enable && cfg.config.mysql_dump_host == "localhost")
-        {
-          name = user;
-          ensurePermissions = {
-            "*.*" = "SELECT, SHOW VIEW, TRIGGER, LOCK TABLES, EVENT";
-          };
-        };
+    users.groups.${group} = { };
+
+    users.users.${user} = {
+      group = group;
+      isSystemUser = true;
+    };
 
   };
 }

@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,9 +16,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-7CWOoirQ/8zKCO7lBA9snyShlwsKYONiYkl39lQrpTY=";
   };
 
-  env.STARDUST_RES_PREFIXES = "${finalAttrs.src}/res";
-
   cargoHash = "sha256-H65uAHMAIkJ9D5q/5HxMEbvcfoRhYdFgTQejp6bvu5w=";
+  env.STARDUST_RES_PREFIXES = "${finalAttrs.src}/res";
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];
@@ -28,11 +27,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Handheld panel shell for Stardust XR";
     homepage = "https://stardustxr.org";
     license = lib.licenses.mit;
-    mainProgram = "phobetor";
+
     maintainers = with lib.maintainers; [
       pandapip1
       technobaboo
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "phobetor";
   };
 })

@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitLab,
   fetchYarnDeps,
+  nix-update-script,
+  nodejs_22,
   yarn,
   yarnConfigHook,
   yarnInstallHook,
-  nodejs_22,
-  nix-update-script,
 }:
 
 let
@@ -24,22 +24,17 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.0.6";
 
   src = fetchFromGitLab {
-    domain = "framagit.org";
     owner = "bcn.convocala";
     repo = "gancio-plugin-telegram-bridge";
     rev = "v${finalAttrs.version}";
     hash = "sha256-J7FIfJjounrq/hPQk58mYXigjD7BZQWoE4aGi0eJ4sY=";
+    domain = "framagit.org";
   };
 
   # upstream doesn't provide a yarn.lock file
   postPatch = ''
     cp --no-preserve=all ${./yarn.lock} ./yarn.lock
   '';
-
-  offlineCache = fetchYarnDeps {
-    yarnLock = ./yarn.lock;
-    hash = "sha256-3842mgKcsa0FIAFdClVorYFKWODiQJm7ytw2bkJ1WG4=";
-  };
 
   nativeBuildInputs = [
     yarnConfigHook'
@@ -52,6 +47,11 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s "$out/lib/node_modules/gancio-plugin-telegram/node_modules" "$out/node_modules"
   '';
 
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-3842mgKcsa0FIAFdClVorYFKWODiQJm7ytw2bkJ1WG4=";
+    yarnLock = ./yarn.lock;
+  };
+
   passthru = {
     inherit nodejs;
     updateScript = nix-update-script { };
@@ -61,7 +61,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Telegram bridge for Gancio, republishes content to Telegram channels or groups";
     homepage = "https://framagit.org/bcn.convocala/gancio-plugin-telegram-bridge";
     license = lib.licenses.agpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ jbgi ];
+    platforms = lib.platforms.linux;
   };
 })

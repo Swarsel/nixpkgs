@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pytest-cov-stub,
   pytestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "wheel-filename";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jwodder";
@@ -19,13 +18,13 @@ buildPythonPackage rec {
     hash = "sha256-YlJ3mQoaNY7wiLzADLZuTET5i37e/zn2S7n9dOdcE0E=";
   };
 
-  build-system = [ hatchling ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
   ];
 
+  build-system = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "wheel_filename" ];
 
   meta = {

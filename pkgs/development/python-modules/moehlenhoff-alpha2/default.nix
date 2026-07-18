@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
-  xmltodict,
-  pytestCheckHook,
+  buildPythonPackage,
   pytest-asyncio,
+  pytestCheckHook,
+  setuptools,
+  xmltodict,
 }:
 
 buildPythonPackage rec {
   pname = "moehlenhoff-alpha2";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "j-a-n";
@@ -20,6 +19,11 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-bvT7kWFPIEQUgUxLGydd2e7SBA7vPV+YAzDqYLE7X+o=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+  ];
 
   build-system = [
     setuptools
@@ -30,10 +34,7 @@ buildPythonPackage rec {
     xmltodict
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "moehlenhoff_alpha2"

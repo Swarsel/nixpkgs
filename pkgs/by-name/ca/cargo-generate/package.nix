@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  libgit2,
-  openssl,
   coreutils,
   gitMinimal,
+  libgit2,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,8 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-myakseKwLEjQa9GgcxdWZJWdjMFXh7Wi64CwrN2ZwSU=";
   };
 
-  cargoHash = "sha256-IAUgpk3HD9znLORCQKNw+AO6NG9GEVWMU/cez3B+CKc=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -30,16 +28,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-IAUgpk3HD9znLORCQKNw+AO6NG9GEVWMU/cez3B+CKc=";
+
+  env = {
+    LIBGIT2_NO_VENDOR = 1;
+  };
+
   nativeCheckInputs = [ gitMinimal ];
-
-  # disable vendored libgit2 and openssl
-  buildNoDefaultFeatures = true;
-
-  preCheck = ''
-    export HOME=$(mktemp -d) USER=nixbld
-    git config --global user.name Nixbld
-    git config --global user.email nixbld@localhost.localnet
-  '';
 
   # Exclude some tests that don't work in sandbox:
   # - favorites_default_to_git_if_not_defined: requires network access to github.com
@@ -59,22 +54,30 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=git::utils::should_canonicalize"
   ];
 
-  env = {
-    LIBGIT2_NO_VENDOR = 1;
-  };
+  preCheck = ''
+    export HOME=$(mktemp -d) USER=nixbld
+    git config --global user.name Nixbld
+    git config --global user.email nixbld@localhost.localnet
+  '';
+
+  # disable vendored libgit2 and openssl
+  buildNoDefaultFeatures = true;
 
   meta = {
     description = "Tool to generate a new Rust project by leveraging a pre-existing git repository as a template";
-    mainProgram = "cargo-generate";
     homepage = "https://github.com/cargo-generate/cargo-generate";
     changelog = "https://github.com/cargo-generate/cargo-generate/blob/v${finalAttrs.version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
+
     maintainers = with lib.maintainers; [
       turbomack
       matthiasbeyer
     ];
+
+    mainProgram = "cargo-generate";
   };
 })

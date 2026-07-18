@@ -1,8 +1,8 @@
 {
   lib,
+  babel,
   buildPythonPackage,
   fetchPypi,
-  babel,
   ipykernel,
   ipython-genutils,
   jupyter-packaging,
@@ -17,12 +17,19 @@
 buildPythonPackage rec {
   pname = "nbclassic";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-c27FBIOlRIWXHbITvpIH405R/BRMeDQ2JbaZF0I2RLo=";
   };
+
+  nativeCheckInputs = [
+    pytest-jupyter
+    pytest-tornasync
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     babel
@@ -37,15 +44,8 @@ buildPythonPackage rec {
     notebook-shim
   ];
 
-  nativeCheckInputs = [
-    pytest-jupyter
-    pytest-tornasync
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "nbclassic" ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Jupyter lab environment notebook server extension";

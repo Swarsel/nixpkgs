@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  libpq,
   autoPatchelfHook,
+  libpq,
   writeScript,
 }:
 
@@ -16,6 +16,7 @@ stdenv.mkDerivation rec {
 
   src = fetchurl {
     url = "https://files.teamspeak-services.com/releases/server/${version}/teamspeak3-server_linux_${arch}-${version}.tar.bz2";
+
     sha256 =
       if stdenv.hostPlatform.is64bit then
         "sha256-d1pXMamAmAHkyPkGbNm8ViobNoVTE5wSSfKgdA1QBB4="
@@ -23,12 +24,12 @@ stdenv.mkDerivation rec {
         "sha256-aMEDOnvBeKfzG8lDFhU8I5DYgG53IsCDBMV2MUyJi2g=";
   };
 
+  nativeBuildInputs = [ autoPatchelfHook ];
+
   buildInputs = [
     stdenv.cc.cc
     libpq
   ];
-
-  nativeBuildInputs = [ autoPatchelfHook ];
 
   installPhase = ''
     runHook preInstall
@@ -71,12 +72,14 @@ stdenv.mkDerivation rec {
   meta = {
     description = "TeamSpeak voice communication server";
     homepage = "https://teamspeak.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.teamspeak;
-    platforms = [ "x86_64-linux" ];
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       arobyn
       gerschtli
     ];
+
+    platforms = [ "x86_64-linux" ];
   };
 }

@@ -46,71 +46,14 @@ in
     services.gnunet = {
 
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to run the GNUnet daemon.  GNUnet is GNU's anonymous
           peer-to-peer communication and file sharing framework.
         '';
-      };
 
-      fileSharing = {
-        quota = lib.mkOption {
-          type = lib.types.int;
-          default = 1024;
-          description = ''
-            Maximum file system usage (in MiB) for file sharing.
-          '';
-        };
-      };
-
-      udp = {
-        port = lib.mkOption {
-          type = lib.types.port;
-          default = 2086; # assigned by IANA
-          description = ''
-            The UDP port for use by GNUnet.
-          '';
-        };
-      };
-
-      tcp = {
-        port = lib.mkOption {
-          type = lib.types.port;
-          default = 2086; # assigned by IANA
-          description = ''
-            The TCP port for use by GNUnet.
-          '';
-        };
-      };
-
-      load = {
-        maxNetDownBandwidth = lib.mkOption {
-          type = lib.types.int;
-          default = 50000;
-          description = ''
-            Maximum bandwidth usage (in bits per second) for GNUnet
-            when downloading data.
-          '';
-        };
-
-        maxNetUpBandwidth = lib.mkOption {
-          type = lib.types.int;
-          default = 50000;
-          description = ''
-            Maximum bandwidth usage (in bits per second) for GNUnet
-            when downloading data.
-          '';
-        };
-
-        hardNetUpBandwidth = lib.mkOption {
-          type = lib.types.int;
-          default = 0;
-          description = ''
-            Hard bandwidth limit (in bits per second) when uploading
-            data.
-          '';
-        };
+        type = lib.types.bool;
       };
 
       package = lib.mkPackageOption pkgs "gnunet" {
@@ -118,12 +61,85 @@ in
       };
 
       extraOptions = lib.mkOption {
-        type = lib.types.lines;
         default = "";
+
         description = ''
           Additional options that will be copied verbatim in {file}`gnunet.conf`.
           See {manpage}`gnunet.conf(5)` for details.
         '';
+
+        type = lib.types.lines;
+      };
+
+      fileSharing = {
+        quota = lib.mkOption {
+          default = 1024;
+
+          description = ''
+            Maximum file system usage (in MiB) for file sharing.
+          '';
+
+          type = lib.types.int;
+        };
+      };
+
+      load = {
+        hardNetUpBandwidth = lib.mkOption {
+          default = 0;
+
+          description = ''
+            Hard bandwidth limit (in bits per second) when uploading
+            data.
+          '';
+
+          type = lib.types.int;
+        };
+
+        maxNetDownBandwidth = lib.mkOption {
+          default = 50000;
+
+          description = ''
+            Maximum bandwidth usage (in bits per second) for GNUnet
+            when downloading data.
+          '';
+
+          type = lib.types.int;
+        };
+
+        maxNetUpBandwidth = lib.mkOption {
+          default = 50000;
+
+          description = ''
+            Maximum bandwidth usage (in bits per second) for GNUnet
+            when downloading data.
+          '';
+
+          type = lib.types.int;
+        };
+      };
+
+      tcp = {
+        port = lib.mkOption {
+          default = 2086; # assigned by IANA
+
+          description = ''
+            The TCP port for use by GNUnet.
+          '';
+
+          type = lib.types.port;
+        };
+      };
+
+      udp = {
+        port = lib.mkOption {
+          default = 2086; # assigned by IANA
+
+          description = ''
+            The UDP port for use by GNUnet.
+          '';
+
+          type = lib.types.port;
+        };
       };
     };
 
@@ -133,36 +149,37 @@ in
 
   config = lib.mkIf config.services.gnunet.enable {
 
-    users.users.gnunet = {
-      group = "gnunet";
-      description = "GNUnet User";
-      uid = config.ids.uids.gnunet;
-    };
-
-    users.groups.gnunet.gid = config.ids.gids.gnunet;
-
+    environment.etc."gnunet.conf".text = configFile;
     # The user tools that talk to `gnunetd' should come from the same source,
     # so install them globally.
     environment.systemPackages = [ cfg.package ];
 
-    environment.etc."gnunet.conf".text = configFile;
-
     systemd.services.gnunet = {
+      after = [ "network.target" ];
       description = "GNUnet";
       documentation = [ "info:gnunet" ];
-      after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
-      restartTriggers = [ config.environment.etc."gnunet.conf".source ];
+
       path = [
         cfg.package
         pkgs.miniupnpc
       ];
+
+      restartTriggers = [ config.environment.etc."gnunet.conf".source ];
       serviceConfig.ExecStart = "${cfg.package}/lib/gnunet/libexec/gnunet-service-arm -c /etc/gnunet.conf";
-      serviceConfig.User = "gnunet";
-      serviceConfig.UMask = "0007";
-      serviceConfig.WorkingDirectory = stateDir;
       serviceConfig.RuntimeDirectory = "gnunet";
       serviceConfig.StateDirectory = "gnunet";
+      serviceConfig.UMask = "0007";
+      serviceConfig.User = "gnunet";
+      serviceConfig.WorkingDirectory = stateDir;
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups.gnunet.gid = config.ids.gids.gnunet;
+
+    users.users.gnunet = {
+      description = "GNUnet User";
+      group = "gnunet";
+      uid = config.ids.uids.gnunet;
     };
 
   };

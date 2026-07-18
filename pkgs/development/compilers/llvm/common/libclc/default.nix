@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  version,
-  runCommand,
-  monorepoSrc,
-  llvm,
-  buildPackages,
   buildLlvmPackages,
-  ninja,
+  buildPackages,
   cmake,
+  getVersionFile,
+  llvm,
+  monorepoSrc,
+  ninja,
   python3,
   release_version,
-  getVersionFile,
+  runCommand,
+  version,
 }:
 let
   spirv-llvm-translator = buildPackages.spirv-llvm-translator.override {
@@ -27,16 +27,14 @@ let
   '';
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "libclc";
   inherit version;
+  pname = "libclc";
 
   src = runCommand "libclc-src-${version}" { inherit (monorepoSrc) passthru; } ''
     mkdir -p "$out"
     cp -r ${monorepoSrc}/cmake "$out"
     cp -r ${monorepoSrc}/libclc "$out"
   '';
-
-  sourceRoot = "${finalAttrs.src.name}/libclc";
 
   outputs = [
     "out"
@@ -84,6 +82,8 @@ stdenv.mkDerivation (finalAttrs: {
         ''
     );
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     ninja
@@ -94,18 +94,20 @@ stdenv.mkDerivation (finalAttrs: {
     llvm
     spirv-llvm-translator
   ];
+
   buildInputs = [ llvm ];
-  strictDeps = true;
 
   postInstall = lib.optionalString (lib.versionOlder finalAttrs.version "22.1") ''
     install -Dt $dev/bin prepare_builtins
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/libclc";
+
   meta = {
-    homepage = "http://libclc.llvm.org/";
     description = "Implementation of the library requirements of the OpenCL C programming language";
-    mainProgram = "prepare_builtins";
+    homepage = "http://libclc.llvm.org/";
     license = lib.licenses.mit;
     platforms = lib.platforms.all;
+    mainProgram = "prepare_builtins";
   };
 })

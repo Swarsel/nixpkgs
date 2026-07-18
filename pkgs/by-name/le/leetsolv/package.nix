@@ -1,17 +1,15 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  nix-update-script,
   versionCheckHook,
   writableTmpDirAsHomeHook,
-  nix-update-script,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "leetsolv";
   version = "1.2.0";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "eannchen";
@@ -21,6 +19,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
+  # needed for unit tests, also for version test
+  nativeCheckInputs = [ writableTmpDirAsHomeHook ];
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   ldflags = [
     "-s"
@@ -29,14 +32,8 @@ buildGoModule (finalAttrs: {
     "-X main.GitCommit=${finalAttrs.src.rev}"
   ];
 
-  # needed for unit tests, also for version test
-  nativeCheckInputs = [ writableTmpDirAsHomeHook ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckKeepEnvironment = [ "HOME" ];
   versionCheckProgramArg = "version";
-  doInstallCheck = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

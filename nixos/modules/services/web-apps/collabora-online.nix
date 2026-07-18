@@ -41,8 +41,9 @@ let
           pkgs.jq
           pkgs.yq-go
         ];
-        userConfig = builtins.toJSON { config = cfg.settings; };
+
         passAsFile = [ "userConfig" ];
+        userConfig = builtins.toJSON { config = cfg.settings; };
       }
       # Merge the cfg.settings into the default coolwsd.xml.
       # See https://github.com/CollaboraOnline/online/issues/10049.
@@ -68,104 +69,83 @@ in
 {
   options.services.collabora-online = {
     enable = lib.mkEnableOption "collabora-online";
-
     package = lib.mkPackageOption pkgs "Collabora Online" { default = "collabora-online"; };
 
+    aliasGroups = lib.mkOption {
+      default = [ ];
+      description = "Alias groups to use.";
+
+      type = lib.types.listOf (
+        lib.types.submodule {
+          options = {
+            aliases = lib.mkOption {
+              default = [ ];
+              description = "A list of regex pattern of aliasname.";
+
+              example = [
+                "scheme://aliasname1:port"
+                "scheme://aliasname2:port"
+              ];
+
+              type = lib.types.listOf lib.types.str;
+            };
+
+            host = lib.mkOption {
+              description = "Hostname to allow or deny.";
+              example = "scheme://hostname:port";
+              type = lib.types.str;
+            };
+          };
+        }
+      );
+    };
+
+    extraArgs = lib.mkOption {
+      default = [ ];
+      description = "Extra arguments to pass to the service.";
+      type = lib.types.listOf lib.types.str;
+    };
+
     port = lib.mkOption {
-      type = lib.types.port;
       default = 9980;
       description = "Listening port";
+      type = lib.types.port;
     };
 
     settings = lib.mkOption {
-      type = freeformType;
       default = { };
+
       description = ''
         Configuration for Collabora Online WebSocket Daemon, see
         <https://sdk.collaboraonline.com/docs/installation/Configuration.html>, or
         <https://github.com/CollaboraOnline/online/blob/master/coolwsd.xml.in> for the default
         configuration.
       '';
-    };
 
-    aliasGroups = lib.mkOption {
-      type = lib.types.listOf (
-        lib.types.submodule {
-          options = {
-            host = lib.mkOption {
-              type = lib.types.str;
-              example = "scheme://hostname:port";
-              description = "Hostname to allow or deny.";
-            };
-
-            aliases = lib.mkOption {
-              type = lib.types.listOf lib.types.str;
-              default = [ ];
-              example = [
-                "scheme://aliasname1:port"
-                "scheme://aliasname2:port"
-              ];
-              description = "A list of regex pattern of aliasname.";
-            };
-          };
-        }
-      );
-      default = [ ];
-      description = "Alias groups to use.";
-    };
-
-    extraArgs = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-      description = "Extra arguments to pass to the service.";
+      type = freeformType;
     };
   };
 
   config = lib.mkIf cfg.enable {
     services.collabora-online.settings = {
       child_root_path = lib.mkDefault "/var/lib/cool/child-roots";
-      sys_template_path = lib.mkDefault "/var/lib/cool/systemplate";
-
       file_server_root_path = lib.mkDefault "${config.services.collabora-online.package}/share/coolwsd";
-
       # Use mount namespaces instead of setcap'd coolmount/coolforkit.
       mount_namespaces = lib.mkDefault true;
-
       # By default, use dummy self-signed certificates provided for testing.
       ssl.ca_file_path = lib.mkDefault "${config.services.collabora-online.package}/etc/coolwsd/ca-chain.cert.pem";
       ssl.cert_file_path = lib.mkDefault "${config.services.collabora-online.package}/etc/coolwsd/cert.pem";
       ssl.key_file_path = lib.mkDefault "${config.services.collabora-online.package}/etc/coolwsd/key.pem";
-    };
-
-    users.users.cool = {
-      isSystemUser = true;
-      group = "cool";
-    };
-    users.groups.cool = { };
-
-    systemd.services.coolwsd-systemplate-setup = {
-      description = "Collabora Online WebSocket Daemon Setup";
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        ExecStart = utils.escapeSystemdExecArgs [
-          "${cfg.package}/bin/coolwsd-systemplate-setup"
-          "/var/lib/cool/systemplate"
-          "${cfg.package.libreoffice}/lib/collaboraoffice"
-        ];
-        RemainAfterExit = true;
-        StateDirectory = "cool";
-        Type = "oneshot";
-        User = "cool";
-      };
+      sys_template_path = lib.mkDefault "/var/lib/cool/systemplate";
     };
 
     systemd.services.coolwsd = {
-      description = "Collabora Online WebSocket Daemon";
-      wantedBy = [ "multi-user.target" ];
       after = [
         "network.target"
         "coolwsd-systemplate-setup.service"
       ];
+
+      description = "Collabora Online WebSocket Daemon";
 
       environment = builtins.listToAttrs (
         lib.imap1 (n: ag: {
@@ -185,6 +165,7 @@ in
           ]
           ++ cfg.extraArgs
         );
+
         KillMode = "mixed";
         KillSignal = "SIGINT";
         LimitNOFILE = "infinity:infinity";
@@ -193,6 +174,34 @@ in
         TimeoutStopSec = 120;
         User = "cool";
       };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    systemd.services.coolwsd-systemplate-setup = {
+      description = "Collabora Online WebSocket Daemon Setup";
+
+      serviceConfig = {
+        ExecStart = utils.escapeSystemdExecArgs [
+          "${cfg.package}/bin/coolwsd-systemplate-setup"
+          "/var/lib/cool/systemplate"
+          "${cfg.package.libreoffice}/lib/collaboraoffice"
+        ];
+
+        RemainAfterExit = true;
+        StateDirectory = "cool";
+        Type = "oneshot";
+        User = "cool";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups.cool = { };
+
+    users.users.cool = {
+      group = "cool";
+      isSystemUser = true;
     };
   };
 

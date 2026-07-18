@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  libbsd,
   libevent,
   libressl,
+  pkg-config,
   readline,
-  libbsd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,14 +29,14 @@ stdenv.mkDerivation (finalAttrs: {
     libbsd
   ];
 
+  makeFlags = [ "AR:=$(AR)" ];
+
   env.NIX_CFLAGS_COMPILE = toString [
     # client.c:381:13: error: implicit declaration of function 'setgroups'; did you mean 'getgroups'?
     "-Wno-error=implicit-function-declaration"
     # ftp.c:1585:22: error: passing argument 1 of 'log_procinit' makes pointer from integer without a cast
     "-Wno-error=int-conversion"
   ];
-
-  makeFlags = [ "AR:=$(AR)" ];
 
   meta = {
     description = "FREE, easy-to-use and portable implementation of a 9p file server daemon for UNIX-like systems";

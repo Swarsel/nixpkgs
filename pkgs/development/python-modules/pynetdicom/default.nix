@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   pydicom,
   pyfakefs,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "pynetdicom";
   version = "3.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pydicom";
@@ -21,14 +20,18 @@ buildPythonPackage rec {
     hash = "sha256-4LISckHH+fVBmPcBr8rM62E6r3IkKAgdUneVHyc5Vm8=";
   };
 
-  build-system = [ flit-core ];
-
-  dependencies = [ pydicom ];
-
   nativeCheckInputs = [
     pyfakefs
     pytestCheckHook
     sqlalchemy
+  ];
+
+  build-system = [ flit-core ];
+  dependencies = [ pydicom ];
+
+  disabledTestPaths = [
+    # Ignore apps tests
+    "pynetdicom/apps/tests/"
   ];
 
   disabledTests = [
@@ -58,11 +61,7 @@ buildPythonPackage rec {
     "TestStoreSCUCLI"
   ];
 
-  disabledTestPaths = [
-    # Ignore apps tests
-    "pynetdicom/apps/tests/"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pynetdicom" ];
 
   meta = {

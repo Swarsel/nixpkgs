@@ -1,28 +1,28 @@
 {
+  lib,
+  fetchFromGitHub,
   clangStdenv,
   cmake,
   cmark,
   curl,
-  fetchFromGitHub,
   fmt,
   fontconfig,
   freetype,
   giflib,
   glib,
   harfbuzzFull,
-  libicns,
-  lib,
   libGL,
+  libicns,
   libjpeg,
   libpng,
   libwebp,
   libx11,
+  libxcb,
   libxcursor,
   libxext,
   libxi,
-  libxxf86vm,
-  libxcb,
   libxrandr,
+  libxxf86vm,
   ninja,
   pcre2,
   pixman,
@@ -34,10 +34,10 @@
 
 let
   asepriteStrings = fetchFromGitHub {
+    hash = "sha256-S3YkWA5ECvyyqGvojDhIZci04CTjbJzTQiJ5FZsB4lU=";
     owner = "aseprite";
     repo = "strings";
     rev = "0f49265d7e7aea4b862b7d1e670ed969e8a469b8";
-    hash = "sha256-S3YkWA5ECvyyqGvojDhIZci04CTjbJzTQiJ5FZsB4lU=";
   };
 in
 clangStdenv.mkDerivation (finalAttrs: {
@@ -48,13 +48,25 @@ clangStdenv.mkDerivation (finalAttrs: {
     owner = "aseprite";
     repo = "aseprite";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-+rLrk/c3WLqNhXQ7J0eeqZ3h4PsbZad61Cxw0RubWgk=";
+    fetchSubmodules = true;
   };
 
-  # Translation files are copied without overwriting existing ones to preserve the potentially more up-to-date English file from the main source.
-  postUnpack = ''
-    cp --no-clobber ${asepriteStrings}/* "$sourceRoot/data/strings"
+  patches = [
+    ./shared-fmt.patch
+    ./shared-libwebp.patch
+    ./shared-skia-deps.patch
+    ./shared-libjpeg-turbo.patch
+  ];
+
+  postPatch = ''
+    substituteInPlace src/ver/CMakeLists.txt \
+      --replace-fail '"1.x-dev"' '"${finalAttrs.version}"'
+
+    # Fix build on Darwin with `-Werror=format-security`
+    # (NSLog requires a string-literal format)
+    substituteInPlace laf/os/osx/logger.mm \
+      --replace-fail 'NSLog([NSString stringWithUTF8String:error]);' 'NSLog(@"%@", [NSString stringWithUTF8String:error]);'
   '';
 
   nativeBuildInputs = [
@@ -92,23 +104,6 @@ clangStdenv.mkDerivation (finalAttrs: {
     tinyxml-2
     zlib
   ];
-
-  patches = [
-    ./shared-fmt.patch
-    ./shared-libwebp.patch
-    ./shared-skia-deps.patch
-    ./shared-libjpeg-turbo.patch
-  ];
-
-  postPatch = ''
-    substituteInPlace src/ver/CMakeLists.txt \
-      --replace-fail '"1.x-dev"' '"${finalAttrs.version}"'
-
-    # Fix build on Darwin with `-Werror=format-security`
-    # (NSLog requires a string-literal format)
-    substituteInPlace laf/os/osx/logger.mm \
-      --replace-fail 'NSLog([NSString stringWithUTF8String:error]);' 'NSLog(@"%@", [NSString stringWithUTF8String:error]);'
-  '';
 
   cmakeFlags = [
     "-DENABLE_DESKTOP_INTEGRATION=ON"
@@ -175,10 +170,14 @@ clangStdenv.mkDerivation (finalAttrs: {
     rmdir "$out/bin" 2>/dev/null || true
   '';
 
+  # Translation files are copied without overwriting existing ones to preserve the potentially more up-to-date English file from the main source.
+  postUnpack = ''
+    cp --no-clobber ${asepriteStrings}/* "$sourceRoot/data/strings"
+  '';
+
   meta = {
-    homepage = "https://www.aseprite.org/";
     description = "Animated sprite editor & pixel art tool";
-    license = lib.licenses.unfree;
+
     longDescription = ''
       Aseprite is a program to create animated sprites. Its main features are:
         - Sprites are composed by layers & frames (as separated concepts).
@@ -192,6 +191,9 @@ clangStdenv.mkDerivation (finalAttrs: {
         - Pixel-art specific tools like filled Contour, Polygon, Shading mode, etc.
         - Onion skinning.
     '';
+
+    homepage = "https://www.aseprite.org/";
+    license = lib.licenses.unfree;
     maintainers = [ lib.maintainers.iamanaws ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "aseprite";

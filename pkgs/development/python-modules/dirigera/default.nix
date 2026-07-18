@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pydantic,
   pytestCheckHook,
   requests,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "dirigera";
   version = "1.2.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Leggin";
@@ -21,6 +20,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-R8K32jTYIh6GW3WyGRUJWxwi7Elw0D0iX8flr422L5M=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,8 +29,7 @@ buildPythonPackage (finalAttrs: {
     websocket-client
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "dirigera" ];
 
   meta = {

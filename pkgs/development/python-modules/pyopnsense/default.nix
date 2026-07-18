@@ -13,18 +13,11 @@
 buildPythonPackage rec {
   pname = "pyopnsense";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-3DKlVrOtMa55gTu557pgojRpdgrO5pEZ3L+9gKoW9yg=";
   };
-
-  build-system = [ pbr ];
-
-  dependencies = [
-    requests
-  ];
 
   nativeCheckInputs = [
     fixtures
@@ -33,6 +26,13 @@ buildPythonPackage rec {
     testtools
   ];
 
+  build-system = [ pbr ];
+
+  dependencies = [
+    requests
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "pyopnsense" ];
 
   meta = {

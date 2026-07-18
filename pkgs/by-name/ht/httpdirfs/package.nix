@@ -1,17 +1,17 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   curl,
   expat,
-  fetchFromGitHub,
   fuse3,
   gumbo,
   help2man,
-  lib,
   libuuid,
   meson,
   ninja,
   nix-update-script,
   pkg-config,
-  stdenv,
   testers,
 }:
 
@@ -51,19 +51,22 @@ stdenv.mkDerivation (finalAttrs: {
       command = "${lib.getExe finalAttrs.finalPackage} --version";
       package = finalAttrs.finalPackage;
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://github.com/fangfufu/httpdirfs/releases/tag/${finalAttrs.version}";
     description = "FUSE filesystem for HTTP directory listings";
     homepage = "https://github.com/fangfufu/httpdirfs";
+    changelog = "https://github.com/fangfufu/httpdirfs/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "httpdirfs";
+
     maintainers = with lib.maintainers; [
       schnusch
       anthonyroussel
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "httpdirfs";
   };
 })

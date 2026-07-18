@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gitUpdater,
-  pkg-config,
   dbus,
+  gitUpdater,
   mpv-unwrapped,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,7 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-LSGg5gAQE2JpepBqhz6D6d3NlqYaU4bjvYf1F+oLphQ=";
   };
-  passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   nativeBuildInputs = [ pkg-config ];
 
@@ -27,17 +26,18 @@ stdenv.mkDerivation (finalAttrs: {
     mpv-unwrapped
   ];
 
-  passthru.scriptName = "mpv_inhibit_gnome.so";
-
   installPhase = ''
     install -D ./lib/mpv_inhibit_gnome.so $out/share/mpv/scripts/mpv_inhibit_gnome.so
   '';
+
+  passthru.scriptName = "mpv_inhibit_gnome.so";
+  passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
     description = "This mpv plugin prevents screen blanking in GNOME";
     homepage = "https://github.com/Guldoman/mpv_inhibit_gnome";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ myaats ];
+    platforms = lib.platforms.linux;
   };
 })

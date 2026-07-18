@@ -1,22 +1,20 @@
 {
   lib,
-  buildPythonPackage,
-  setuptools,
+  stdenv,
   fetchFromGitHub,
+  buildPythonPackage,
+  deprecation,
+  pbr,
+  pillow,
   pytestCheckHook,
   requests,
-  deprecation,
   retry2,
-  pillow,
-  pbr,
-  stdenv,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "adbutils";
   version = "2.12.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "openatx";
@@ -25,16 +23,17 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-zJz4fBekKOUeqBBfBPgGnHXVEKddelqReAQ2CEblObs=";
   };
 
-  build-system = [
-    setuptools
-  ];
-
   env = {
     PBR_VERSION = finalAttrs.version;
   };
 
-  nativeCheckInputs = [ pytestCheckHook ];
   doCheck = !stdenv.hostPlatform.isDarwin;
+  nativeCheckInputs = [ pytestCheckHook ];
+  __structuredAttrs = true;
+
+  build-system = [
+    setuptools
+  ];
 
   dependencies = [
     pbr
@@ -44,6 +43,7 @@ buildPythonPackage (finalAttrs: {
     retry2
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "adbutils" ];
 
   meta = {

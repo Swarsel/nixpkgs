@@ -4,8 +4,8 @@
   fetchFromGitHub,
   autoreconfHook,
   doxygen,
-  enableTool ? false,
   enableTest ? false,
+  enableTool ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,12 +33,12 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = true;
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Network Benchmarking Utility";
     homepage = "https://github.com/Mellanox/sockperf";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ emilytrau ];
     platforms = lib.platforms.all;
     mainProgram = "sockperf";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

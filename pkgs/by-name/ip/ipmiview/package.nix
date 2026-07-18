@@ -2,26 +2,25 @@
   lib,
   stdenv,
   fetchurl,
-  makeDesktopItem,
-  makeWrapper,
-  patchelf,
   fontconfig,
   freetype,
   gcc,
   gcc-unwrapped,
   iputils,
-  psmisc,
-  libxtst,
-  libxrender,
-  libxi,
-  libxext,
   libx11,
+  libxext,
+  libxi,
+  libxrender,
+  libxtst,
+  makeDesktopItem,
+  makeWrapper,
+  patchelf,
+  psmisc,
 }:
 
 stdenv.mkDerivation rec {
   pname = "IPMIView";
   version = "2.21.0";
-  buildVersion = "221118";
 
   src = fetchurl {
     url = "https://www.supermicro.com/wftp/utility/IPMIView/Linux/IPMIView_${version}_build.${buildVersion}_bundleJRE_Linux_x64.tar.gz";
@@ -32,6 +31,7 @@ stdenv.mkDerivation rec {
     patchelf
     makeWrapper
   ];
+
   buildPhase =
     let
       stunnelBinary =
@@ -60,14 +60,6 @@ stdenv.mkDerivation rec {
 
       runHook postBuild
     '';
-
-  desktopItem = makeDesktopItem rec {
-    name = "IPMIView";
-    exec = "IPMIView";
-    desktopName = name;
-    genericName = "Supermicro BMC manager";
-    categories = [ "Network" ];
-  };
 
   installPhase = ''
     runHook preInstall
@@ -98,17 +90,31 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  buildVersion = "221118";
+
+  desktopItem = makeDesktopItem rec {
+    categories = [ "Network" ];
+    desktopName = name;
+    exec = "IPMIView";
+    genericName = "Supermicro BMC manager";
+    name = "IPMIView";
+  };
+
   meta = {
+    license = lib.licenses.unfree;
+
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
       binaryNativeCode
     ];
-    license = lib.licenses.unfree;
+
     maintainers = with lib.maintainers; [ vlaci ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
+
     mainProgram = "IPMIView";
   };
 }

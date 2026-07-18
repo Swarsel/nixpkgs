@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   cmake,
-  librsvg,
-  kdePackages,
   hunspell,
+  kdePackages,
+  librsvg,
   nix-update-script,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

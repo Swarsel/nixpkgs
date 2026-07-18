@@ -1,26 +1,26 @@
 {
-  stdenv,
   lib,
-  copyDesktopItems,
-  fetchFromGitHub,
-  fetchpatch,
+  stdenv,
   fetchurl,
+  fetchFromGitHub,
   bzip2,
-  gobject-introspection,
-  imagemagick,
-  meson,
-  ninja,
-  pkg-config,
-  wrapGAppsHook3,
-  makeDesktopItem,
-  makeWrapper,
+  copyDesktopItems,
+  fetchpatch,
   fmt,
   gettext,
+  gobject-introspection,
   gtk3,
+  imagemagick,
   inih,
   libevdev,
+  makeDesktopItem,
+  makeWrapper,
+  meson,
+  ninja,
   pam,
+  pkg-config,
   python3,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -43,28 +43,16 @@ stdenv.mkDerivation (finalAttrs: {
     # module creates `/etc/howdy` and the config file of course.
     # PR sent upstream https://github.com/boltgolt/howdy/pull/1050
     (fetchpatch {
-      url = "https://github.com/boltgolt/howdy/commit/1f3b83e2db5a8dfd9c7c88706ecce033e154060a.patch";
       hash = "sha256-OIN8A4q0zjtMOMzZgBqrKy2qOD8BDPB+euG6zerFbCE=";
+      url = "https://github.com/boltgolt/howdy/commit/1f3b83e2db5a8dfd9c7c88706ecce033e154060a.patch";
     })
 
     # Fix python path for howdy-gtk. Uses python from meson option instead of
     # the system installation (which is not defined in this package).
     # PR sent upstream https://github.com/boltgolt/howdy/pull/1049
     (fetchpatch {
-      url = "https://github.com/boltgolt/howdy/commit/b056724f84361dc6150554e7a806152af032c54b.patch";
       hash = "sha256-ZOb+QmWagKWtyXI0Xg00tnw8UP8uDWw7wb4Fwjy3VeE=";
-    })
-  ];
-
-  mesonFlags = lib.concatLists [
-    (lib.mapAttrsToList lib.mesonOption {
-      config_dir = "/etc/howdy";
-      python_path = "${finalAttrs.finalPackage.pythonEnv}/bin/python";
-      user_models_dir = "/var/lib/howdy/models";
-    })
-    (lib.mapAttrsToList lib.mesonBool {
-      install_config = false;
-      with_polkit = true;
+      url = "https://github.com/boltgolt/howdy/commit/b056724f84361dc6150554e7a806152af032c54b.patch";
     })
   ];
 
@@ -89,18 +77,15 @@ stdenv.mkDerivation (finalAttrs: {
     pam
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "howdy";
-      exec = "howdy-gtk";
-      icon = "howdy";
-      comment = "Howdy facial authentication";
-      desktopName = "Howdy";
-      genericName = "Facial authentication";
-      categories = [
-        "System"
-        "Security"
-      ];
+  mesonFlags = lib.concatLists [
+    (lib.mapAttrsToList lib.mesonOption {
+      config_dir = "/etc/howdy";
+      python_path = "${finalAttrs.finalPackage.pythonEnv}/bin/python";
+      user_models_dir = "/var/lib/howdy/models";
+    })
+    (lib.mapAttrsToList lib.mesonBool {
+      install_config = false;
+      with_polkit = true;
     })
   ];
 
@@ -121,8 +106,25 @@ stdenv.mkDerivation (finalAttrs: {
     chmod +x $out/lib/howdy-gtk/init.py
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "System"
+        "Security"
+      ];
+
+      comment = "Howdy facial authentication";
+      desktopName = "Howdy";
+      exec = "howdy-gtk";
+      genericName = "Facial authentication";
+      icon = "howdy";
+      name = "howdy";
+    })
+  ];
+
   pythonEnv = python3.buildEnv.override {
     extraLibs = lib.attrVals finalAttrs.finalPackage.passthru.pythonDeps python3.pkgs;
+
     makeWrapperArgs = [
       "--set"
       "OMP_NUM_THREADS"
@@ -131,6 +133,21 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   passthru = {
+    dlibModels = lib.mapAttrs (
+      name: hash:
+      fetchurl {
+        inherit hash;
+        name = "howdy-${name}.dat";
+        url = "https://github.com/davisking/dlib-models/raw/daf943f7819a3dda8aec4276754ef918dc26491f/${name}.dat.bz2";
+      }
+    ) finalAttrs.finalPackage.passthru.dlibModelsHashes;
+
+    dlibModelsHashes = {
+      dlib_face_recognition_resnet_model_v1 = "sha256-q7H2EEHkNEZYVc6Bwr1UboMNKLy+2NJ/++W7QIsRVTo=";
+      mmod_human_face_detector = "sha256-256eQPCSwRjV6z5kOTWyFoOBcHk1WVFVQcVqK1DZ/IQ=";
+      shape_predictor_5_face_landmarks = "sha256-bnh7vr9cnv23k/bNHwIyMMRBMwZgXyTymfEoaflapHI=";
+    };
+
     pythonDeps = [
       "dlib"
       "elevate"
@@ -140,27 +157,14 @@ stdenv.mkDerivation (finalAttrs: {
       "pycairo"
       "pygobject3"
     ];
-    dlibModels = lib.mapAttrs (
-      name: hash:
-      fetchurl {
-        name = "howdy-${name}.dat";
-        url = "https://github.com/davisking/dlib-models/raw/daf943f7819a3dda8aec4276754ef918dc26491f/${name}.dat.bz2";
-        inherit hash;
-      }
-    ) finalAttrs.finalPackage.passthru.dlibModelsHashes;
-    dlibModelsHashes = {
-      dlib_face_recognition_resnet_model_v1 = "sha256-q7H2EEHkNEZYVc6Bwr1UboMNKLy+2NJ/++W7QIsRVTo=";
-      mmod_human_face_detector = "sha256-256eQPCSwRjV6z5kOTWyFoOBcHk1WVFVQcVqK1DZ/IQ=";
-      shape_predictor_5_face_landmarks = "sha256-bnh7vr9cnv23k/bNHwIyMMRBMwZgXyTymfEoaflapHI=";
-    };
   };
 
   meta = {
     description = "Windows Hello™ style facial authentication for Linux";
     homepage = "https://github.com/boltgolt/howdy";
     license = lib.licenses.mit;
-    mainProgram = "howdy";
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ fufexan ];
+    platforms = lib.platforms.linux;
+    mainProgram = "howdy";
   };
 })

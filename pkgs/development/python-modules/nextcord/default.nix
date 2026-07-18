@@ -1,30 +1,27 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
-  pythonAtLeast,
-  pythonOlder,
   fetchFromGitHub,
-  replaceVars,
-  ffmpeg,
-  libopus,
-  aiohttp,
   aiodns,
+  aiohttp,
   audioop-lts,
   brotli,
+  buildPythonPackage,
+  ffmpeg,
+  libopus,
   orjson,
   poetry-core,
   poetry-dynamic-versioning,
   pynacl,
+  pythonAtLeast,
+  pythonOlder,
+  replaceVars,
   typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "nextcord";
   version = "3.2.0";
-  pyproject = true;
-
-  disabled = pythonOlder "3.12";
 
   src = fetchFromGitHub {
     owner = "nextcord";
@@ -47,6 +44,9 @@ buildPythonPackage rec {
       --replace-fail 'enable = true' 'enable = false'
   '';
 
+  # upstream has no tests
+  doCheck = false;
+
   build-system = [
     poetry-core
     poetry-dynamic-versioning
@@ -64,8 +64,8 @@ buildPythonPackage rec {
     audioop-lts
   ];
 
-  # upstream has no tests
-  doCheck = false;
+  disabled = pythonOlder "3.12";
+  pyproject = true;
 
   pythonImportsCheck = [
     "nextcord"
@@ -74,9 +74,9 @@ buildPythonPackage rec {
   ];
 
   meta = {
-    changelog = "https://github.com/nextcord/nextcord/blob/${src.tag}/docs/whats_new.rst";
     description = "Python wrapper for the Discord API forked from discord.py";
     homepage = "https://github.com/nextcord/nextcord";
+    changelog = "https://github.com/nextcord/nextcord/blob/${src.tag}/docs/whats_new.rst";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

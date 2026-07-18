@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pscript,
   pytestCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "vbuild";
   version = "0.8.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "manatlan";
@@ -32,15 +31,16 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "pkgutil.find_loader" "importlib.util.find_spec"
   '';
 
-  pythonRelaxDeps = [ "pscript" ];
-
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ poetry-core ];
-
   dependencies = [ pscript ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "vbuild" ];
+  disabledTestPaths = lib.optionals (pythonAtLeast "3.13") [
+    # https://github.com/manatlan/vbuild/issues/13
+    "tests/test_py2js.py"
+    "tests/test_PyStdLibIncludeOrNot.py"
+    "test_py_comp.py"
+  ];
 
   disabledTests = [
     # Tests require network access
@@ -51,12 +51,9 @@ buildPythonPackage (finalAttrs: {
     "test_ok"
   ];
 
-  disabledTestPaths = lib.optionals (pythonAtLeast "3.13") [
-    # https://github.com/manatlan/vbuild/issues/13
-    "tests/test_py2js.py"
-    "tests/test_PyStdLibIncludeOrNot.py"
-    "test_py_comp.py"
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "vbuild" ];
+  pythonRelaxDeps = [ "pscript" ];
 
   meta = {
     description = "Module to compile your VueJS components to standalone HTML/JS/CSS";

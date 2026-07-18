@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   pkg-config,
+  rustPlatform,
   udev,
 }:
 
@@ -17,10 +17,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-/+m6nWvZg5q3rPAu80xXImISmLzTpXiugu1m3M8QupQ=";
   };
 
-  cargoHash = "sha256-vq680vbpvJRUV3waSMgiWm8oiu9m1JGTXzBco6lEvKc=";
-
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ udev ];
+  cargoHash = "sha256-vq680vbpvJRUV3waSMgiWm8oiu9m1JGTXzBco6lEvKc=";
 
   meta = {
     description = "Linux daemon to remap and create macros for keyboards, mice and controllers";

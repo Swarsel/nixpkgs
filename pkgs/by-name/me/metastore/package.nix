@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  libbsd,
   fetchFromGitHub,
+  libbsd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.1.2";
   pname = "metastore";
+  version = "1.1.2";
 
   src = fetchFromGitHub {
     owner = "przemoc";
@@ -21,10 +21,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Store and restore metadata from a filesystem";
-    mainProgram = "metastore";
     homepage = "https://software.przemoc.net/#metastore";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ sstef ];
     platforms = lib.platforms.linux;
+    mainProgram = "metastore";
   };
 })

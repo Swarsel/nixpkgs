@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   buildGoModule,
   docker,
   gotestsum,
-  versionCheckHook,
   installShellFiles,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,11 +20,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-OSAySCTK2temrVxmkRnrl5YWVbmkp8DRlXFVxTzEW3Q=";
   };
 
-  vendorHash = "sha256-ztA+/4l180UKTKrsqTyysDcD4oQSDgnBYUaiKDF6LvI=";
-
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  vendorHash = "sha256-ztA+/4l180UKTKrsqTyysDcD4oQSDgnBYUaiKDF6LvI=";
 
   nativeCheckInputs = [
     docker
@@ -49,16 +49,6 @@ buildGoModule (finalAttrs: {
     runHook postCheck
   '';
 
-  ldflags = [
-    "-s"
-    "-X 'github.com/docker/docker-language-server/internal/pkg/cli/metadata.Version=${finalAttrs.version}'"
-  ];
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
-
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd '${finalAttrs.meta.mainProgram}' \
       --bash <("$out/bin/${finalAttrs.meta.mainProgram}" completion bash) \
@@ -66,12 +56,23 @@ buildGoModule (finalAttrs: {
       --fish <("$out/bin/${finalAttrs.meta.mainProgram}" completion fish)
   '';
 
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
+  ldflags = [
+    "-s"
+    "-X 'github.com/docker/docker-language-server/internal/pkg/cli/metadata.Version=${finalAttrs.version}'"
+  ];
+
   meta = {
     description = "Language server for providing language features for file types in the Docker ecosystem (Dockerfiles, Compose files, and Bake files)";
     homepage = "https://github.com/docker/docker-language-server";
     changelog = "https://github.com/docker/docker-language-server/blob/${finalAttrs.src.tag}/CHANGELOG.md";
-    mainProgram = "docker-language-server";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ baongoc124 ];
+    mainProgram = "docker-language-server";
   };
 })

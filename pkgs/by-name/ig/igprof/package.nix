@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libunwind,
   cmake,
-  pcre,
   gdb,
+  libunwind,
+  pcre,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "5.9.18";
   pname = "igprof";
+  version = "5.9.18";
 
   src = fetchFromGitHub {
     owner = "igprof";
@@ -26,12 +26,13 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "CMAKE_MINIMUM_REQUIRED(VERSION 2.6)" "CMAKE_MINIMUM_REQUIRED(VERSION 3.10)"
   '';
 
+  nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     libunwind
     gdb
     pcre
   ];
-  nativeBuildInputs = [ cmake ];
 
   env.CXXFLAGS = toString [
     "-fPIC"
@@ -41,7 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
     description = "Ignominous Profiler";
 
     longDescription = ''
@@ -56,10 +56,10 @@ stdenv.mkDerivation (finalAttrs: {
       details and see the big picture from combined workloads.
     '';
 
-    license = lib.licenses.gpl2;
-
     homepage = "https://igprof.org/";
-    platforms = lib.platforms.linux;
+    license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ ktf ];
+    platforms = lib.platforms.linux;
+    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
   };
 })

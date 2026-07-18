@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,9 +19,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Lightweight utility to install HashiCorp Consul, Nomad, or Vault on any remote Linux host";
-    mainProgram = "hashi-up";
     homepage = "https://github.com/jsiebens/hashi-up";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ lucperkins ];
+    mainProgram = "hashi-up";
   };
 })

@@ -8,9 +8,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "prowler";
   version = "5.33.1";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "prowler-cloud";
@@ -19,10 +16,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-uecwowuP/h+o739EV7REIGLoiejJ9Jcu6bk08DMWno0=";
   };
 
-  pythonRelaxDeps = true;
+  postFixup = ''
+    wrapProgram $out/bin/prowler --prefix PATH : "${lib.makeBinPath [ kingfisher ]}"
+  '';
 
-  pythonRemoveDeps = [ "kingfisher-bin" ];
-
+  __structuredAttrs = true;
   build-system = with python3Packages; [ hatchling ];
 
   dependencies = with python3Packages; [
@@ -110,11 +108,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     uuid6
   ];
 
-  postFixup = ''
-    wrapProgram $out/bin/prowler --prefix PATH : "${lib.makeBinPath [ kingfisher ]}"
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "prowler" ];
+  pythonRelaxDeps = true;
+  pythonRemoveDeps = [ "kingfisher-bin" ];
 
   meta = {
     description = "Security tool to perform Cloud Security best practices assessments";

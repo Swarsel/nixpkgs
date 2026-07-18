@@ -4,8 +4,8 @@
   fetchurl,
   bison,
   flex,
-  pkg-config,
   netsurf-buildsystem,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,9 +31,9 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://www.netsurf-browser.org/";
-    description = "NetSurf Parametric Logging Library";
-    license = lib.licenses.isc;
     inherit (netsurf-buildsystem.meta) maintainers platforms;
+    description = "NetSurf Parametric Logging Library";
+    homepage = "https://www.netsurf-browser.org/";
+    license = lib.licenses.isc;
   };
 })

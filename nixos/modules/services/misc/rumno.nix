@@ -9,40 +9,45 @@ let
   cfg = config.services.rumno;
 in
 {
-  meta.maintainers = with lib.maintainers; [ imalison ];
-
   options.services.rumno = {
     enable = lib.mkEnableOption "rumno visual pop-up notification manager";
-
     package = lib.mkPackageOption pkgs "rumno" { };
 
     extraArgs = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
       default = [ ];
+
+      description = ''
+        Extra command-line arguments to pass to the rumno daemon.
+      '';
+
       example = [
         "--verbose"
         "--config"
         "/etc/rumno/config.toml"
       ];
-      description = ''
-        Extra command-line arguments to pass to the rumno daemon.
-      '';
+
+      type = lib.types.listOf lib.types.str;
     };
   };
 
   config = lib.mkIf cfg.enable {
+    # Ensure dbus service file is installed
+    environment.systemPackages = [ cfg.package ];
+
     systemd.user.services.rumno = {
-      description = "Rumno visual pop-up notification manager";
-      wantedBy = [ "graphical-session.target" ];
-      partOf = [ "graphical-session.target" ];
       after = [ "graphical-session-pre.target" ];
+      description = "Rumno visual pop-up notification manager";
+
+      environment = {
+        # Set GTK theme environment variables if needed
+        GTK_THEME = lib.mkDefault "";
+      };
+
+      partOf = [ "graphical-session.target" ];
 
       serviceConfig = {
-        Type = "dbus";
         BusName = "de.rumno.v1";
         ExecStart = "${cfg.package}/bin/rumno daemon --foreground ${lib.escapeShellArgs cfg.extraArgs}";
-        Restart = "on-failure";
-        RestartSec = 1;
 
         # Environment for GTK/GUI applications
         PassEnvironment = [
@@ -50,15 +55,15 @@ in
           "WAYLAND_DISPLAY"
           "XDG_RUNTIME_DIR"
         ];
+
+        Restart = "on-failure";
+        RestartSec = 1;
+        Type = "dbus";
       };
 
-      environment = {
-        # Set GTK theme environment variables if needed
-        GTK_THEME = lib.mkDefault "";
-      };
+      wantedBy = [ "graphical-session.target" ];
     };
-
-    # Ensure dbus service file is installed
-    environment.systemPackages = [ cfg.package ];
   };
+
+  meta.maintainers = with lib.maintainers; [ imalison ];
 }

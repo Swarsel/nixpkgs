@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "pefile";
   version = "2024.8.26";
-  pyproject = true;
 
   # DON'T fetch from github, the repo is >60 MB due to test artifacts, which we cannot use
   src = fetchPypi {
@@ -16,11 +15,10 @@ buildPythonPackage rec {
     hash = "sha256-P/bF2LQ+jDe7bm3VCFZY1linoL3NILagex/PwcTp1jI=";
   };
 
-  build-system = [ setuptools ];
-
   # Test data contains proprietary executables and malware, and is therefore encrypted
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "pefile" ];
 
   meta = {

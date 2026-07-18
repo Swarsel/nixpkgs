@@ -1,6 +1,6 @@
 {
-  buildPythonPackage,
   acme,
+  buildPythonPackage,
   certbot,
   google-api-python-client,
   google-auth,
@@ -9,12 +9,9 @@
 }:
 
 buildPythonPackage rec {
-  pname = "certbot-dns-google";
   inherit (certbot) src version;
-  pyproject = true;
-
-  sourceRoot = "${src.name}/certbot-dns-google";
-
+  pname = "certbot-dns-google";
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -24,11 +21,13 @@ buildPythonPackage rec {
     google-auth
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   pytestFlags = [
     "-pno:cacheprovider"
   ];
+
+  sourceRoot = "${src.name}/certbot-dns-google";
 
   meta = certbot.meta // {
     description = "Google Cloud DNS Authenticator plugin for Certbot";

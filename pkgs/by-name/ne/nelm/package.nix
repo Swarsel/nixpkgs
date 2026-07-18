@@ -1,10 +1,10 @@
 {
-  buildGoModule,
-  buildPackages,
-  fetchFromGitHub,
-  installShellFiles,
   lib,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  buildPackages,
+  installShellFiles,
   versionCheckHook,
 }:
 buildGoModule (finalAttrs: {
@@ -18,21 +18,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-2YIxnuHbY9zCVZer+b7JD0fbmUC/ZYyaWmHts7s5ldw=";
   };
 
-  vendorHash = "sha256-rIiphGjE/a5IwF6Fkk3Ffq36AfEkfAZb12ZljlYP6X4=";
-
-  subPackages = [ "cmd/nelm" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/werf/nelm/pkg/common.Version=${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
-
+  vendorHash = "sha256-rIiphGjE/a5IwF6Fkk3Ffq36AfEkfAZb12ZljlYP6X4=";
   # Tests are currently broken upstream because they were neglected after some
   # sort of a refactor. This is not a packaging problem.
   doCheck = false;
+
   preCheck = ''
     # Test all packages.
     unset subPackages
@@ -51,16 +42,26 @@ buildGoModule (finalAttrs: {
     ''
   );
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/werf/nelm/pkg/common.Version=${finalAttrs.version}"
+  ];
+
+  subPackages = [ "cmd/nelm" ];
   versionCheckProgramArg = "version";
 
   meta = {
     description = "Kubernetes deployment tool, alternative to Helm 3";
+
     longDescription = ''
       Nelm is a Helm 3 alternative. It is a Kubernetes deployment tool that
       manages Helm Charts and deploys them to Kubernetes.
     '';
+
     homepage = "https://github.com/werf/nelm";
     changelog = "https://github.com/werf/nelm/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;

@@ -20,11 +20,24 @@ in
 
     programs.xonsh = {
 
+      config = lib.mkOption {
+        default = "";
+
+        description = ''
+          Extra text added to the end of `/etc/xonsh/xonshrc`,
+          the system-wide control file for xonsh.
+        '';
+
+        type = lib.types.lines;
+      };
+
       enable = lib.mkOption {
         default = false;
+
         description = ''
           Whether to configure xonsh as an interactive shell.
         '';
+
         type = lib.types.bool;
       };
 
@@ -35,34 +48,29 @@ in
         '';
       };
 
-      config = lib.mkOption {
-        default = "";
-        description = ''
-          Extra text added to the end of `/etc/xonsh/xonshrc`,
-          the system-wide control file for xonsh.
-        '';
-        type = lib.types.lines;
+      bashCompletion = {
+        enable = lib.mkEnableOption "bash completions for xonsh" // {
+          default = true;
+        };
+
+        package = lib.mkPackageOption pkgs "bash-completion" { };
       };
 
       extraPackages = lib.mkOption {
         default = (ps: [ ]);
         defaultText = lib.literalExpression "ps: [ ]";
-        example = lib.literalExpression ''
-          ps: with ps; [ numpy xonsh.xontribs.xontrib-vox ]
-        '';
-        type =
-          with lib.types;
-          coercedTo (listOf lib.types.package) (v: (_: v)) (functionTo (listOf lib.types.package));
+
         description = ''
           Xontribs and extra Python packages to be available in xonsh.
         '';
-      };
 
-      bashCompletion = {
-        enable = lib.mkEnableOption "bash completions for xonsh" // {
-          default = true;
-        };
-        package = lib.mkPackageOption pkgs "bash-completion" { };
+        example = lib.literalExpression ''
+          ps: with ps; [ numpy xonsh.xontribs.xontrib-vox ]
+        '';
+
+        type =
+          with lib.types;
+          coercedTo (listOf lib.types.package) (v: (_: v)) (functionTo (listOf lib.types.package));
       };
     };
 
@@ -98,11 +106,11 @@ in
       ${cfg.config}
     '';
 
-    environment.systemPackages = [ package ];
-
     environment.shells = [
       "/run/current-system/sw/bin/xonsh"
       "${lib.getExe package}"
     ];
+
+    environment.systemPackages = [ package ];
   };
 }

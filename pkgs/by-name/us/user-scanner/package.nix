@@ -9,9 +9,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "user-scanner";
   version = "1.4.1";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "kaifcodec";
@@ -20,6 +17,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-SDi13KGqWXgNXdgF5KOpqEcjwbuNv4PU5ahB5UdsbWQ=";
   };
 
+  nativeCheckInputs = with python3Packages; [ pytestCheckHook ];
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
   build-system = with python3Packages; [ flit-core ];
 
   dependencies = with python3Packages; [
@@ -28,14 +29,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     socksio
   ];
 
-  nativeCheckInputs = with python3Packages; [ pytestCheckHook ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  doInstallCheck = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "user_scanner" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

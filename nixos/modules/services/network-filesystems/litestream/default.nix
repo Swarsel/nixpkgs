@@ -11,32 +11,11 @@ in
 {
   options.services.litestream = {
     enable = lib.mkEnableOption "litestream";
-
     package = lib.mkPackageOption pkgs "litestream" { };
 
-    settings = lib.mkOption {
-      description = ''
-        See the [documentation](https://litestream.io/reference/config/).
-      '';
-      type = settingsFormat.type;
-      example = {
-        dbs = [
-          {
-            path = "/var/lib/db1";
-            replicas = [
-              {
-                url = "s3://mybkt.litestream.io/db1";
-              }
-            ];
-          }
-        ];
-      };
-    };
-
     environmentFile = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
       default = null;
-      example = "/run/secrets/litestream";
+
       description = ''
         Environment file as defined in {manpage}`systemd.exec(5)`.
 
@@ -60,36 +39,65 @@ in
         Note that this file needs to be available on the host on which
         this exporter is running.
       '';
+
+      example = "/run/secrets/litestream";
+      type = lib.types.nullOr lib.types.path;
+    };
+
+    settings = lib.mkOption {
+      description = ''
+        See the [documentation](https://litestream.io/reference/config/).
+      '';
+
+      example = {
+        dbs = [
+          {
+            path = "/var/lib/db1";
+
+            replicas = [
+              {
+                url = "s3://mybkt.litestream.io/db1";
+              }
+            ];
+          }
+        ];
+      };
+
+      type = settingsFormat.type;
     };
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ cfg.package ];
     environment.etc = {
       "litestream.yml" = {
         source = settingsFormat.generate "litestream-config.yaml" cfg.settings;
       };
     };
 
+    environment.systemPackages = [ cfg.package ];
+
     systemd.services.litestream = {
-      description = "Litestream";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "Litestream";
+
       serviceConfig = {
         EnvironmentFile = lib.mkIf (cfg.environmentFile != null) cfg.environmentFile;
         ExecStart = "${cfg.package}/bin/litestream replicate";
+        Group = "litestream";
         Restart = "always";
         User = "litestream";
-        Group = "litestream";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
+
+    users.groups.litestream = { };
 
     users.users.litestream = {
       description = "Litestream user";
       group = "litestream";
       isSystemUser = true;
     };
-    users.groups.litestream = { };
   };
 
   meta.doc = ./default.md;

@@ -2,32 +2,32 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
+  avahi-compat,
   buildGoModule,
-  nix-update-script,
-  copyDesktopItems,
-  makeDesktopItem,
   cargo,
   cmake,
+  copyDesktopItems,
   corrosion,
-  pkg-config,
-  avahi-compat,
+  fetchpatch,
   ffmpeg,
+  go,
   libheif,
   libimobiledevice,
   libimobiledevice-glue,
   libplist,
-  go,
-  qrencode,
   libssh,
   libtatsu,
-  libusbmuxd,
   libusb1,
+  libusbmuxd,
   libzip,
-  openssl,
-  pugixml,
-  qt6,
   lxqt,
+  makeDesktopItem,
+  nix-update-script,
+  openssl,
+  pkg-config,
+  pugixml,
+  qrencode,
+  qt6,
   rustPlatform,
   rustc,
 }:
@@ -45,28 +45,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/iDescriptor/iDescriptor/commit/fc73e3146dc4884cf9bc1f7879574ac832cc21e6.patch";
       hash = "sha256-WqEpSY/fhbsMv0bgU2Ak5japUdohaN7zsNG1BbxJnKs=";
+      url = "https://github.com/iDescriptor/iDescriptor/commit/fc73e3146dc4884cf9bc1f7879574ac832cc21e6.patch";
     })
   ];
-
-  cargoRoot = "src/rust";
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src cargoRoot;
-    hash = "sha256-PJhMb+lMiu8ubOYVX8YVkQzeQMbBO+i6NQhvuyrCujk=";
-  };
-
-  ipatool-go-modules =
-    (buildGoModule {
-      pname = "ipatool-go";
-      inherit (finalAttrs) version src;
-      modRoot = "lib/ipatool-go";
-      vendorHash = "sha256-SGdyyZU8Ze/1lJS4tKbHyfCv2yYleGcqoyA9Uzb8r/k=";
-      proxyVendor = true;
-      doCheck = false;
-      env.GOWORK = "off";
-    }).goModules;
 
   nativeBuildInputs = [
     cargo
@@ -106,13 +88,6 @@ stdenv.mkDerivation (finalAttrs: {
     lxqt.qtermwidget
   ];
 
-  cxx-qt-cmake = fetchFromGitHub {
-    owner = "kdab";
-    repo = "cxx-qt-cmake";
-    tag = "0.8.1";
-    hash = "sha256-kXSIU71iHn+SSGikGoNeMbBpSrDJ6hwhnHslmskm8nY=";
-  };
-
   cmakeFlags = [
     "-DPACKAGE_MANAGER_MANAGED=ON"
     "-DPACKAGE_MANAGER_HINT=nixpkgs"
@@ -133,33 +108,58 @@ stdenv.mkDerivation (finalAttrs: {
       $out/share/icons/hicolor/256x256/apps/idescriptor.png
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src cargoRoot;
+    hash = "sha256-PJhMb+lMiu8ubOYVX8YVkQzeQMbBO+i6NQhvuyrCujk=";
+  };
+
+  cargoRoot = "src/rust";
+
+  cxx-qt-cmake = fetchFromGitHub {
+    hash = "sha256-kXSIU71iHn+SSGikGoNeMbBpSrDJ6hwhnHslmskm8nY=";
+    owner = "kdab";
+    repo = "cxx-qt-cmake";
+    tag = "0.8.1";
+  };
+
   desktopItems = [
     (makeDesktopItem {
-      name = "iDescriptor";
-      exec = "iDescriptor";
-      icon = "idescriptor";
-      desktopName = "iDescriptor";
-      comment = "Cross-platform iDevice management tool";
       categories = [
         "System"
         "Utility"
       ];
+
+      comment = "Cross-platform iDevice management tool";
+      desktopName = "iDescriptor";
+      exec = "iDescriptor";
+      icon = "idescriptor";
+      name = "iDescriptor";
     })
   ];
 
-  passthru = {
-    updateScript = nix-update-script { };
+  ipatool-go-modules =
+    (buildGoModule {
+      inherit (finalAttrs) version src;
+      pname = "ipatool-go";
+      vendorHash = "sha256-SGdyyZU8Ze/1lJS4tKbHyfCv2yYleGcqoyA9Uzb8r/k=";
+      env.GOWORK = "off";
+      doCheck = false;
+      modRoot = "lib/ipatool-go";
+      proxyVendor = true;
+    }).goModules;
 
+  passthru = {
     goModules = finalAttrs.ipatool-go-modules;
+    updateScript = nix-update-script { };
   };
 
   meta = {
+    description = "A cross-platform iDevice management tool";
     homepage = "https://github.com/iDescriptor/iDescriptor";
     changelog = "https://github.com/iDescriptor/iDescriptor/releases/tag/v${finalAttrs.version}";
-    description = "A cross-platform iDevice management tool";
     license = lib.licenses.agpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ amadejkastelic ];
+    platforms = lib.platforms.linux;
     mainProgram = "iDescriptor";
   };
 })

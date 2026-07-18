@@ -12,43 +12,50 @@ in
   options = {
     services.chisel-server = {
       enable = lib.mkEnableOption "Chisel Tunnel Server";
-      host = lib.mkOption {
-        description = "Address to listen on, falls back to 0.0.0.0";
-        type = with lib.types; nullOr str;
-        default = null;
-        example = "[::1]";
-      };
-      port = lib.mkOption {
-        description = "Port to listen on, falls back to 8080";
-        type = with lib.types; nullOr port;
-        default = null;
-      };
+
       authfile = lib.mkOption {
+        default = null;
         description = "Path to auth.json file";
         type = with lib.types; nullOr path;
-        default = null;
       };
-      keepalive = lib.mkOption {
-        description = "Keepalive interval, falls back to 25s";
-        type = with lib.types; nullOr str;
-        default = null;
-        example = "5s";
-      };
+
       backend = lib.mkOption {
-        description = "HTTP server to proxy normal requests to";
-        type = with lib.types; nullOr str;
         default = null;
+        description = "HTTP server to proxy normal requests to";
         example = "http://127.0.0.1:8888";
+        type = with lib.types; nullOr str;
       };
-      socks5 = lib.mkOption {
-        description = "Allow clients access to internal SOCKS5 proxy";
-        type = lib.types.bool;
-        default = false;
+
+      host = lib.mkOption {
+        default = null;
+        description = "Address to listen on, falls back to 0.0.0.0";
+        example = "[::1]";
+        type = with lib.types; nullOr str;
       };
+
+      keepalive = lib.mkOption {
+        default = null;
+        description = "Keepalive interval, falls back to 25s";
+        example = "5s";
+        type = with lib.types; nullOr str;
+      };
+
+      port = lib.mkOption {
+        default = null;
+        description = "Port to listen on, falls back to 8080";
+        type = with lib.types; nullOr port;
+      };
+
       reverse = lib.mkOption {
+        default = false;
         description = "Allow clients reverse port forwarding";
         type = lib.types.bool;
+      };
+
+      socks5 = lib.mkOption {
         default = false;
+        description = "Allow clients access to internal SOCKS5 proxy";
+        type = lib.types.bool;
       };
     };
   };
@@ -56,9 +63,15 @@ in
   config = lib.mkIf cfg.enable {
     systemd.services.chisel-server = {
       description = "Chisel Tunnel Server";
-      wantedBy = [ "network-online.target" ];
 
       serviceConfig = {
+        # Security Hardening
+        # Refer to systemd.exec(5) for option descriptions.
+        CapabilityBoundingSet = "";
+        # implies RemoveIPC=, PrivateTmp=, NoNewPrivileges=, RestrictSUIDSGID=,
+        # ProtectSystem=strict, ProtectHome=read-only
+        DynamicUser = true;
+
         ExecStart =
           "${pkgs.chisel}/bin/chisel server "
           + lib.concatStringsSep " " (
@@ -71,13 +84,6 @@ in
             ++ lib.optional cfg.reverse "--reverse"
           );
 
-        # Security Hardening
-        # Refer to systemd.exec(5) for option descriptions.
-        CapabilityBoundingSet = "";
-
-        # implies RemoveIPC=, PrivateTmp=, NoNewPrivileges=, RestrictSUIDSGID=,
-        # ProtectSystem=strict, ProtectHome=read-only
-        DynamicUser = true;
         LockPersonality = true;
         PrivateDevices = true;
         PrivateUsers = true;
@@ -87,20 +93,24 @@ in
         ProtectHome = true;
         ProtectHostname = true;
         ProtectKernelLogs = true;
-        ProtectProc = "invisible";
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
+        ProtectProc = "invisible";
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
           "AF_UNIX"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         SystemCallArchitectures = "native";
         SystemCallFilter = "~@clock @cpu-emulation @debug @mount @obsolete @reboot @swap @privileged @resources";
         UMask = "0077";
       };
+
+      wantedBy = [ "network-online.target" ];
     };
   };
 

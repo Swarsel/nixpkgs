@@ -1,26 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  uv-build,
-
   # dependencies
   beartype,
-  typing-extensions,
-
-  # tests
-  pytestCheckHook,
-  pytest-xdist,
+  buildPythonPackage,
   inline-snapshot,
   py-key-value-shared-test,
+  pytest-xdist,
+  # tests
+  pytestCheckHook,
+  typing-extensions,
+  # build-system
+  uv-build,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "py-key-value-shared";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "strawgate";
@@ -29,14 +25,19 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-4ji+GzJTv1QnC5n/OaL9vR65j8BQmJsVGGnjjuulDiU=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/key-value/key-value-shared";
-
   postPatch = ''
     substituteInPlace pyproject.toml \
       --replace-fail \
         "uv_build>=0.8.2,<0.9.0" \
         "uv_build"
   '';
+
+  nativeCheckInputs = [
+    inline-snapshot
+    py-key-value-shared-test
+    pytest-xdist
+    pytestCheckHook
+  ];
 
   build-system = [
     uv-build
@@ -47,14 +48,9 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "key_value.shared" ];
-
-  nativeCheckInputs = [
-    inline-snapshot
-    py-key-value-shared-test
-    pytest-xdist
-    pytestCheckHook
-  ];
+  sourceRoot = "${finalAttrs.src.name}/key-value/key-value-shared";
 
   meta = {
     description = "Shared code between key-value-aio and key-value-sync";

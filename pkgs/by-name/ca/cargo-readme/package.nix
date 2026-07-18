@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -25,15 +25,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Generate README.md from docstrings";
-    mainProgram = "cargo-readme";
     homepage = "https://github.com/livioribeiro/cargo-readme";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = with lib.maintainers; [
       baloo
       matthiasbeyer
     ];
+
+    mainProgram = "cargo-readme";
   };
 })

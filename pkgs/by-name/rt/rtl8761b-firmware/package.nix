@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -29,8 +29,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Firmware for Realtek RTL8761b";
     homepage = "https://github.com/Realtek-OpenSource/android_hardware_realtek";
     license = lib.licenses.unfreeRedistributableFirmware;
+    sourceProvenance = with lib.sourceTypes; [ binaryFirmware ];
     maintainers = with lib.maintainers; [ milibopp ];
     platforms = lib.platforms.linux;
-    sourceProvenance = with lib.sourceTypes; [ binaryFirmware ];
   };
 })

@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   click,
+  poetry-core,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "click-didyoumean";
   version = "0.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "click-contrib";
@@ -19,11 +18,10 @@ buildPythonPackage rec {
     hash = "sha256-C8OrJUfBFiDM/Jnf1iJo8pGEd0tUhar1vu4fVIfGzq8=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ click ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ poetry-core ];
+  dependencies = [ click ];
+  pyproject = true;
 
   meta = {
     description = "Enable git-like did-you-mean feature in click";

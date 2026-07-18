@@ -18,6 +18,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Cute cat(1) for the terminal";
+
     longDescription = ''
       see is a powerful file visualization tool for the terminal, offering
       advanced code viewing capabilities, Markdown rendering, and
@@ -25,9 +26,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
       rendering capabilities, offering a visually appealing way to view
       various file types directly in your console.
     '';
+
     homepage = "https://github.com/guilhermeprokisch/see";
     license = lib.licenses.mit;
-    mainProgram = "see";
     maintainers = with lib.maintainers; [ louis-thevenet ];
+    mainProgram = "see";
   };
 })

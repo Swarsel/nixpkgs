@@ -1,16 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
   installShellFiles,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
-  version = "1.4";
   pname = "wikicurses";
-  pyproject = true;
-
-  build-system = with python3Packages; [ setuptools ];
+  version = "1.4";
 
   src = fetchFromGitHub {
     owner = "ids1024";
@@ -28,25 +25,29 @@ python3Packages.buildPythonApplication (finalAttrs: {
     installShellFiles
   ];
 
+  doCheck = false;
+
+  postInstall = ''
+    installManPage wikicurses.1 wikicurses.conf.5
+  '';
+
+  build-system = with python3Packages; [ setuptools ];
+
   dependencies = with python3Packages; [
     urwid
     beautifulsoup4
     lxml
   ];
 
-  postInstall = ''
-    installManPage wikicurses.1 wikicurses.conf.5
-  '';
-
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "Simple curses interface for MediaWiki sites such as Wikipedia";
-    mainProgram = "wikicurses";
     homepage = "https://github.com/ids1024/wikicurses/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ pSub ];
+    platforms = lib.platforms.unix;
+    mainProgram = "wikicurses";
   };
 
 })

@@ -27,22 +27,21 @@ let
   '';
 in
 bundlerApp {
-  pname = "jekyll";
-  exes = [ "jekyll" ];
-
   inherit ruby;
-  gemdir = if withOptionalDependencies then ./full else ./basic;
-
+  pname = "jekyll";
   nativeBuildInputs = [ makeWrapper ];
 
   postBuild = ''
     wrapProgram $out/bin/jekyll --prefix PATH : ${rubyWrapper}/bin
   '';
 
+  exes = [ "jekyll" ];
+  gemdir = if withOptionalDependencies then ./full else ./basic;
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Blog-aware, static site generator, written in Ruby";
+
     longDescription = ''
       Jekyll is a simple, blog-aware, static site generator, written in Ruby.
       Think of it like a file-based CMS, without all the complexity. Jekyll
@@ -51,6 +50,7 @@ bundlerApp {
       web server. Jekyll is the engine behind GitHub Pages, which you can use to
       host sites right from your GitHub repositories.
     '';
+
     homepage = "https://jekyllrb.com/";
     changelog = "https://jekyllrb.com/news/releases/";
     license = lib.licenses.mit;

@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   keyring,
-  pytestCheckHook,
   playwright,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
 }:
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "pycookiecheat";
   version = "0.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "n8henrie";
@@ -23,10 +22,14 @@ buildPythonPackage rec {
     hash = "sha256-jOyTfh2ZhKW/pMU7T5tfxaM0l/g59N+mirnbc0FLPbQ=";
   };
 
-  pythonRelaxDeps = [
-    "cryptography"
-    "keyring"
+  nativeCheckInputs = [
+    playwright
+    pytestCheckHook
   ];
+
+  preCheck = ''
+    export HOME=$(mktemp -d)
+  '';
 
   build-system = [
     setuptools
@@ -37,17 +40,6 @@ buildPythonPackage rec {
     cryptography
     keyring
   ];
-
-  nativeCheckInputs = [
-    playwright
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "pycookiecheat" ];
-
-  preCheck = ''
-    export HOME=$(mktemp -d)
-  '';
 
   disabledTests = [
     # Tests want to use playwright executable
@@ -61,11 +53,20 @@ buildPythonPackage rec {
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ "test_slack_config" ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "pycookiecheat" ];
+
+  pythonRelaxDeps = [
+    "cryptography"
+    "keyring"
+  ];
+
   meta = {
     description = "Borrow cookies from your browser's authenticated session for use in Python scripts";
     homepage = "https://github.com/n8henrie/pycookiecheat";
     changelog = "https://github.com/n8henrie/pycookiecheat/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       fab
       n8henrie

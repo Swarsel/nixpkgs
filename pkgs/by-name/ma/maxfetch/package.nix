@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  makeBinaryWrapper,
   gnused,
+  makeBinaryWrapper,
   ncurses,
   procps,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -39,8 +39,8 @@ stdenvNoCC.mkDerivation {
     description = "Nice fetching program written in sh";
     homepage = "https://github.com/natewhar/maxfetch";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "maxfetch";
     maintainers = with lib.maintainers; [ jtbx ];
     platforms = lib.platforms.unix;
+    mainProgram = "maxfetch";
   };
 }

@@ -4,9 +4,9 @@
   fetchFromGitHub,
   cmake,
   kdePackages,
-  uthash,
-  libxcb-util,
   libxcb-keysyms,
+  libxcb-util,
+  uthash,
   xorgproto,
 }:
 

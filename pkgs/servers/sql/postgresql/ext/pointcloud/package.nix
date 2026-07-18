@@ -1,11 +1,12 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   autoconf,
   automake,
   cunit,
-  fetchFromGitHub,
   fetchpatch,
   installShellFiles,
-  lib,
   libtool,
   libxml2,
   perl,
@@ -14,7 +15,6 @@
   postgresqlTestExtension,
   postgresqlTestHook,
   sphinx,
-  stdenv,
   which,
   zlib,
 }:
@@ -22,17 +22,17 @@ postgresqlBuildExtension (finalAttrs: {
   pname = "pointcloud";
   version = "1.2.5";
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
   src = fetchFromGitHub {
     owner = "pgpointcloud";
     repo = "pointcloud";
     tag = "v${finalAttrs.version}";
     hash = "sha256-uFbScxq21kt0jOjjyfMeO3i+bG2/kWS/Rrt3ZpOqEns=";
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
 
   nativeBuildInputs = [
     autoconf
@@ -50,24 +50,24 @@ postgresqlBuildExtension (finalAttrs: {
     zlib
   ];
 
-  doCheck = lib.meta.availableOn stdenv.buildPlatform postgresqlTestHook;
-
-  checkInputs = [
-    cunit
-  ];
-
-  nativeCheckInputs = [
-    postgresql
-    postgresqlTestHook
+  configureFlags = [
+    (lib.withFeatureAs true "xml2config" (lib.getExe' (lib.getDev libxml2) "xml2-config"))
+    "CFLAGS=-std=gnu17"
   ];
 
   preConfigure = ''
     ./autogen.sh
   '';
 
-  configureFlags = [
-    (lib.withFeatureAs true "xml2config" (lib.getExe' (lib.getDev libxml2) "xml2-config"))
-    "CFLAGS=-std=gnu17"
+  doCheck = lib.meta.availableOn stdenv.buildPlatform postgresqlTestHook;
+
+  nativeCheckInputs = [
+    postgresql
+    postgresqlTestHook
+  ];
+
+  checkInputs = [
+    cunit
   ];
 
   postInstall = ''
@@ -79,37 +79,41 @@ postgresqlBuildExtension (finalAttrs: {
   passthru.tests = {
     extension = postgresqlTestExtension {
       inherit (finalAttrs) finalPackage;
-      # see https://pgpointcloud.github.io/pointcloud/concepts/schemas.html
-      withPackages = [ "postgis" ];
-      sql = builtins.readFile ./tests.sql;
+
       asserts = [
         {
-          query = "pc_version()";
-          expected = "'${lib.versions.major finalAttrs.version}.${lib.versions.minor finalAttrs.version}.${lib.versions.patch finalAttrs.version}'";
           description = "pc_version() returns correct values.";
+          expected = "'${lib.versions.major finalAttrs.version}.${lib.versions.minor finalAttrs.version}.${lib.versions.patch finalAttrs.version}'";
+          query = "pc_version()";
         }
         {
-          query = "pc_postgis_version()";
-          expected = "'${lib.versions.major finalAttrs.version}.${lib.versions.minor finalAttrs.version}.${lib.versions.patch finalAttrs.version}'";
           description = "pc_postgis_version() returns correct values.";
+          expected = "'${lib.versions.major finalAttrs.version}.${lib.versions.minor finalAttrs.version}.${lib.versions.patch finalAttrs.version}'";
+          query = "pc_postgis_version()";
         }
         # these tests are taken from the documentation of respective methods
         {
-          query = "SELECT PC_AsText('010100000064CEFFFF94110000703000000400'::pcpoint)";
-          expected = "'{\"pcid\":1,\"pt\":[-127,45,124,4]}'";
           description = "Creating a point and displaying as text returns correct string";
+          expected = "'{\"pcid\":1,\"pt\":[-127,45,124,4]}'";
+          query = "SELECT PC_AsText('010100000064CEFFFF94110000703000000400'::pcpoint)";
         }
         {
-          query = "SELECT ST_AsText(PC_MakePoint(1, ARRAY[-127, 45, 124.0, 4.0])::geometry)";
-          expected = "'POINT Z (-127 45 124)'";
           description = "Casting a pcpoint to a postgis geometry works";
+          expected = "'POINT Z (-127 45 124)'";
+          query = "SELECT ST_AsText(PC_MakePoint(1, ARRAY[-127, 45, 124.0, 4.0])::geometry)";
         }
       ];
+
+      sql = builtins.readFile ./tests.sql;
+      # see https://pgpointcloud.github.io/pointcloud/concepts/schemas.html
+      withPackages = [ "postgis" ];
     };
   };
 
   meta = {
+    inherit (postgresql.meta) platforms;
     description = "PostgreSQL extension for storing point cloud (LIDAR) data";
+
     longDescription = ''
       # pgPointcloud - A PostgreSQL extension for storing point cloud (LIDAR) data.
 
@@ -117,10 +121,10 @@ postgresqlBuildExtension (finalAttrs: {
 
       By storing LIDAR points in a PostgreSQL database, pgPointcloud eases many problems and allows a good integration with other geo-spatial data (vector, raster) into one common framework : PostGIS.
     '';
+
     homepage = "https://pgpointcloud.github.io/pointcloud/";
     changelog = "https://github.com/pgpointcloud/pointcloud/blob/v${finalAttrs.version}/NEWS";
     license = lib.licenses.bsd3;
     teams = [ lib.teams.geospatial ];
-    inherit (postgresql.meta) platforms;
   };
 })

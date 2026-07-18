@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   ant,
-  jdk8,
-  xmlstarlet,
   axis2,
   dbus_java,
+  fetchpatch,
+  jdk8,
+  xmlstarlet,
 }:
 let
   jdk = jdk8;
@@ -27,8 +27,8 @@ stdenv.mkDerivation (finalAttrs: {
     # Correct the DisnixWebService build for compatibility with Axis2 1.8.1
     # See https://github.com/svanderburg/DisnixWebService/pull/2
     (fetchpatch {
-      url = "https://github.com/svanderburg/DisnixWebService/commit/cee99c6af744b5dda16728a70ebd2800f61871a0.patch";
       hash = "sha256-4rSEN8AwivUXUCIUYFBRIoE19jVDv+Vpgakmy8fR06A=";
+      url = "https://github.com/svanderburg/DisnixWebService/commit/cee99c6af744b5dda16728a70ebd2800f61871a0.patch";
     })
   ];
 
@@ -39,20 +39,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env = {
-    PREFIX = placeholder "out";
     AXIS2_LIB = "${axis2}/lib";
     AXIS2_WEBAPP = "${axis2}/webapps/axis2";
     DBUS_JAVA_LIB = "${dbus_java}/share/java";
+    PREFIX = placeholder "out";
   };
-
-  prePatch = ''
-    # add modificationtime="0" to the <jar> and <war> tasks to achieve reproducibility
-    xmlstarlet ed -L -a "//jar|//war" -t attr -n "modificationtime" -v "0" build.xml
-
-    substituteInPlace scripts/disnix-soap-client \
-      --replace-fail "#JAVA_HOME=" ${lib.escapeShellArg "JAVA_HOME=${jdk}"} \
-      --replace-fail "#AXIS2_LIB=" "AXIS2_LIB=$AXIS2_LIB"
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -66,12 +57,21 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  prePatch = ''
+    # add modificationtime="0" to the <jar> and <war> tasks to achieve reproducibility
+    xmlstarlet ed -L -a "//jar|//war" -t attr -n "modificationtime" -v "0" build.xml
+
+    substituteInPlace scripts/disnix-soap-client \
+      --replace-fail "#JAVA_HOME=" ${lib.escapeShellArg "JAVA_HOME=${jdk}"} \
+      --replace-fail "#AXIS2_LIB=" "AXIS2_LIB=$AXIS2_LIB"
+  '';
+
   meta = {
     description = "SOAP interface and client for Disnix";
-    mainProgram = "disnix-soap-client";
     homepage = "https://github.com/svanderburg/DisnixWebService";
     changelog = "https://github.com/svanderburg/DisnixWebService/blob/${finalAttrs.src.rev}/NEWS.txt";
     license = lib.licenses.mit;
     platforms = lib.platforms.linux;
+    mainProgram = "disnix-soap-client";
   };
 })

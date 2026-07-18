@@ -1,12 +1,12 @@
 {
-  autoreconfHook,
-  fetchFromGitHub,
-  fftwMpi,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  autoreconfHook,
+  fftwMpi,
   llvmPackages,
   mpi,
   precision ? "double",
-  stdenv,
 }:
 
 assert lib.elem precision [
@@ -35,22 +35,21 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   nativeBuildInputs = [ autoreconfHook ];
-
-  preConfigure = ''
-    export FCFLAGS="-I${lib.getDev fftw'}/include"
-  '';
-
-  configureFlags = [
-    "--enable-portable-binary"
-  ]
-  ++ lib.optional (precision != "double") "--enable-${precision}";
-
   buildInputs = lib.optional stdenv.cc.isClang llvmPackages.openmp;
 
   propagatedBuildInputs = [
     fftw'
     mpi
   ];
+
+  configureFlags = [
+    "--enable-portable-binary"
+  ]
+  ++ lib.optional (precision != "double") "--enable-${precision}";
+
+  preConfigure = ''
+    export FCFLAGS="-I${lib.getDev fftw'}/include"
+  '';
 
   doCheck = true;
 

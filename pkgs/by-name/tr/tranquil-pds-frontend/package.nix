@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
+  fetchPnpmDeps,
   fetchgit,
   nodejs,
   pnpm,
   pnpmConfigHook,
-  fetchPnpmDeps,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -17,22 +17,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-kBy982B9ZY5W02hmdKqlR86ynJAUD98b4UgaYIPaFzM=";
   };
-  sourceRoot = "${finalAttrs.src.name}/frontend";
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      sourceRoot
-      ;
-    inherit pnpm;
-    fetcherVersion = 4;
-    hash = "sha256-+P4UUkZKQJVfGbDFKR0gRMU+wYK9K7NBYo1s/ebRK9I=";
-  };
 
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     pnpm
@@ -51,6 +37,23 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     cp -r ./dist $out
     runHook postInstall
   '';
+
+  __structuredAttrs = true;
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      sourceRoot
+      ;
+
+    inherit pnpm;
+    fetcherVersion = 4;
+    hash = "sha256-+P4UUkZKQJVfGbDFKR0gRMU+wYK9K7NBYo1s/ebRK9I=";
+  };
+
+  sourceRoot = "${finalAttrs.src.name}/frontend";
 
   meta = {
     description = "First party frontend for the Tranquil PDS implementation";

@@ -25,15 +25,15 @@ in
   options.services.autotierfs = {
     enable = lib.mkEnableOption "the autotier passthrough tiering filesystem";
     package = lib.mkPackageOption pkgs "autotier" { };
+
     settings = lib.mkOption {
-      type = lib.types.submodule {
-        freeformType = format;
-      };
       default = { };
+
       description = ''
         The contents of the configuration file for autotier.
         See the [autotier repo](https://github.com/45Drives/autotier#configuration) for supported values.
       '';
+
       example = lib.literalExpression ''
         {
           "/mnt/autotier" = {
@@ -53,6 +53,10 @@ in
           };
         }
       '';
+
+      type = lib.types.submodule {
+        freeformType = format;
+      };
     };
   };
 
@@ -64,32 +68,34 @@ in
       }
     ];
 
-    system.fsPackages = [ cfg.package ];
-
     # Not necessary for module to work but makes it easier to pass config into cli
     environment.etc = lib.attrsets.mapAttrs' (
       name: value:
       lib.attrsets.nameValuePair "autotier/${(generateConfigName name)}.conf" { source = value; }
     ) configFiles;
 
-    systemd.tmpfiles.rules = (map (path: "d ${path} 0770 - autotier - -") mountPaths) ++ [
-      "d ${stateDir} 0774 - autotier - -"
-    ];
-
-    users.groups.autotier = { };
+    system.fsPackages = [ cfg.package ];
 
     systemd.services = lib.attrsets.mapAttrs' (
       path: values:
       lib.attrsets.nameValuePair (generateConfigName path) {
         description = "Mount autotierfs virtual path ${path}";
-        unitConfig.RequiresMountsFor = getMountDeps values;
-        wantedBy = [ "local-fs.target" ];
+
         serviceConfig = {
-          Type = "forking";
           ExecStart = "${lib.getExe' cfg.package "autotierfs"} -c /etc/autotier/${generateConfigName path}.conf ${path} -o allow_other,default_permissions";
           ExecStop = "umount ${path}";
+          Type = "forking";
         };
+
+        unitConfig.RequiresMountsFor = getMountDeps values;
+        wantedBy = [ "local-fs.target" ];
       }
     ) cfg.settings;
+
+    systemd.tmpfiles.rules = (map (path: "d ${path} 0770 - autotier - -") mountPaths) ++ [
+      "d ${stateDir} 0774 - autotier - -"
+    ];
+
+    users.groups.autotier = { };
   };
 }

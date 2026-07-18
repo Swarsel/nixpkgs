@@ -3,12 +3,12 @@
   stdenv,
   fetchurl,
   libdbi,
-  withMysql ? true,
   libmysqlclient,
-  withSqlite ? true,
+  libpq,
   sqlite,
   withLibpg ? true,
-  libpq,
+  withMysql ? true,
+  withSqlite ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,12 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/libdbi-drivers/libdbi-drivers-${finalAttrs.version}.tar.gz";
     hash = "sha256-Q9LqzVc6T6/ylvqSXdl/vyrtvxrjXGJjR4IQxhAEyFQ=";
   };
-
-  buildInputs = [
-    libdbi
-    sqlite
-  ]
-  ++ lib.optional withMysql libmysqlclient;
 
   patches = [
     # https://sourceforge.net/p/libdbi-drivers/libdbi-drivers/ci/24f48b86c8988ee3aaebc5f303d71e9d789f77b6
@@ -40,6 +34,12 @@ stdenv.mkDerivation (finalAttrs: {
   postPatch = ''
     sed -i '/SQLITE3_LIBS/ s/-lsqlite/-lsqlite3/' configure;
   '';
+
+  buildInputs = [
+    libdbi
+    sqlite
+  ]
+  ++ lib.optional withMysql libmysqlclient;
 
   configureFlags = [
     "--sysconfdir=/etc"
@@ -72,8 +72,6 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
-  installFlags = [ "DESTDIR=\${out}" ];
-
   postInstall = ''
     mv $out/$out/* $out
     DIR=$out/$out
@@ -85,11 +83,13 @@ stdenv.mkDerivation (finalAttrs: {
     rm -rf $out/var
   '';
 
+  installFlags = [ "DESTDIR=\${out}" ];
+
   meta = {
-    homepage = "https://libdbi-drivers.sourceforge.net/";
     description = "Database drivers for libdbi";
-    platforms = lib.platforms.all;
+    homepage = "https://libdbi-drivers.sourceforge.net/";
     license = lib.licenses.lgpl21;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 })

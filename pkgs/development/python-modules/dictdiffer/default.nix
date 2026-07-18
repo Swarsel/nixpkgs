@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools-scm,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "dictdiffer";
   version = "0.9.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "inveniosoftware";
@@ -18,10 +17,6 @@ buildPythonPackage rec {
     hash = "sha256-lQyPs3lQWtsvNPuvvwJUTDzrFaOX5uwGuRHe3yWUheU=";
   };
 
-  nativeBuildInputs = [ setuptools-scm ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   postPatch = ''
     substituteInPlace setup.py \
       --replace "'pytest-runner>=2.7'," ""
@@ -29,6 +24,9 @@ buildPythonPackage rec {
       --replace ' --isort --pydocstyle --pycodestyle --doctest-glob="*.rst" --doctest-modules --cov=dictdiffer --cov-report=term-missing' ""
   '';
 
+  nativeBuildInputs = [ setuptools-scm ];
+  nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
   pythonImportsCheck = [ "dictdiffer" ];
 
   meta = {

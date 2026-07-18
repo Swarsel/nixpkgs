@@ -1,9 +1,9 @@
 {
   lib,
+  aiohttp,
   buildPythonPackage,
   fetchFromCodeberg,
   hatchling,
-  aiohttp,
   pytest-asyncio,
   pytestCheckHook,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "data-grand-lyon-ha";
   version = "0.9.0";
-  pyproject = true;
 
   src = fetchFromCodeberg {
     owner = "Crocmagnon";
@@ -20,15 +19,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-cxyfvHeX59cHuxpQEy2kUhaObm7n0EF0MZTrGw17uik=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ aiohttp ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytestCheckHook
   ];
 
+  build-system = [ hatchling ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "data_grand_lyon_ha" ];
 
   meta = {

@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
-  unicodecsv,
   setuptools,
   six,
+  unicodecsv,
 }:
 
 buildPythonPackage rec {
   pname = "python-registry";
   version = "1.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "williballenthin";
@@ -20,20 +19,17 @@ buildPythonPackage rec {
     hash = "sha256-OgRPcyx+NJnbtETMakUT0p8Pb0Qfzgj+qvWtmJksnT8=";
   };
 
-  pythonRemoveDeps = [ "enum-compat" ];
-
-  build-system = [ setuptools ];
-
-  dependencies = [ unicodecsv ];
-
   nativeCheckInputs = [
     pytestCheckHook
     six
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ unicodecsv ];
   disabledTestPaths = [ "samples" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "Registry" ];
+  pythonRemoveDeps = [ "enum-compat" ];
 
   meta = {
     description = "Module to parse the Windows Registry hives";

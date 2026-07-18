@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   coreutils,
   gawk,
-  fetchFromGitHub,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,6 +16,16 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "0is4jgil3wdqbvx9h66xcyzbqy84ndyydnnay2g9k81a4mcz4dns";
   };
+
+  doInstallCheck = true;
+
+  installCheckPhase = ''
+    cd $TMP
+    echo hello > input
+    $out/bin/freeze.sh input > packed
+    $out/bin/melt.sh packed > output
+    diff -u input output
+  '';
 
   postFixup = ''
     cd $out/bin
@@ -37,15 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     # Remove unneded binary
     rm poorZFS.py
-  '';
-
-  doInstallCheck = true;
-  installCheckPhase = ''
-    cd $TMP
-    echo hello > input
-    $out/bin/freeze.sh input > packed
-    $out/bin/melt.sh packed > output
-    diff -u input output
   '';
 
   meta = {

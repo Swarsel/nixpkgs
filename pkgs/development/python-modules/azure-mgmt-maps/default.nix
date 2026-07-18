@@ -12,15 +12,15 @@
 buildPythonPackage (finalAttrs: {
   pname = "azure-mgmt-maps";
   version = "2.1.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-XVaml4UuVBanYYHxjB1YT/PvExzgAPbD4gI3Hbc0dI0=";
   };
 
+  # Module has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,12 +30,9 @@ buildPythonPackage (finalAttrs: {
     msrest
   ];
 
-  pythonNamespaces = [ "azure.mgmt" ];
-
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.mgmt.maps" ];
+  pythonNamespaces = [ "azure.mgmt" ];
 
   meta = {
     description = "This is the Microsoft Azure Maps Client Library";

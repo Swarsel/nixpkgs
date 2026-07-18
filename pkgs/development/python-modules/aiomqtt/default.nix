@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   anyio,
   buildPythonPackage,
-  fetchFromGitHub,
   hatchling,
   paho-mqtt,
   pytestCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "aiomqtt";
   version = "2.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sbtinstruments";
@@ -20,20 +19,20 @@ buildPythonPackage rec {
     hash = "sha256-f9m+mdlSADOixsKymxsKiVxgWF7JBc3kjVU+rOkC+yM=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ paho-mqtt ];
-
   nativeCheckInputs = [
     anyio
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "aiomqtt" ];
+  build-system = [ hatchling ];
+  dependencies = [ paho-mqtt ];
 
   disabledTestMarks = [
     "network"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "aiomqtt" ];
 
   meta = {
     description = "Idiomatic asyncio MQTT client, wrapped around paho-mqtt";

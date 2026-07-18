@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   nix-update-script,
   numpy,
   ply,
@@ -12,9 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pycifrw";
   version = "5.0.1";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "jamesrhester";
@@ -27,6 +24,9 @@ buildPythonPackage (finalAttrs: {
     make -C src Parsers
   '';
 
+  # Requires external dictionaries (dics/DDLm/cif_mag.dic) which are not available
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -35,11 +35,8 @@ buildPythonPackage (finalAttrs: {
     ply
   ];
 
-  # Requires external dictionaries (dics/DDLm/cif_mag.dic) which are not available
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "CifFile" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

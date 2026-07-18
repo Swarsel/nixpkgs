@@ -1,21 +1,20 @@
 {
   lib,
   buildPythonPackage,
+  cmake,
+  highs,
+  ninja,
+  numpy,
+  pathspec,
+  pybind11,
   pytestCheckHook,
   scikit-build-core,
-  pybind11,
-  numpy,
-  cmake,
-  ninja,
-  pathspec,
-  highs,
 }:
 buildPythonPackage {
+  inherit (highs) src;
   pname = "highspy";
   version = highs.version;
-  pyproject = true;
-
-  inherit (highs) src;
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     cmake
@@ -25,13 +24,10 @@ buildPythonPackage {
     pybind11
   ];
 
-  dontUseCmakeConfigure = true;
-
   dependencies = [ numpy ];
-
+  dontUseCmakeConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "highspy" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   meta = {
     description = "Linear optimization software";

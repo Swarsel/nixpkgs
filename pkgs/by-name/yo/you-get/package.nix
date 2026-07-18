@@ -1,20 +1,15 @@
 {
   lib,
-  python3,
   fetchPypi,
-  replaceVars,
   ffmpeg,
   installShellFiles,
+  python3,
+  replaceVars,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "you-get";
   version = "0.4.1700";
-  pyproject = true;
-
-  # Tests aren't packaged, but they all hit the real network so
-  # probably aren't suitable for a build environment anyway.
-  doCheck = false;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -23,15 +18,16 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   patches = [
     (replaceVars ./ffmpeg-path.patch {
+      version = lib.getVersion ffmpeg;
       ffmpeg = "${lib.getBin ffmpeg}/bin/ffmpeg";
       ffprobe = "${lib.getBin ffmpeg}/bin/ffmpeg";
-      version = lib.getVersion ffmpeg;
     })
   ];
 
   nativeBuildInputs = [ installShellFiles ];
-
-  build-system = with python3.pkgs; [ setuptools ];
+  # Tests aren't packaged, but they all hit the real network so
+  # probably aren't suitable for a build environment anyway.
+  doCheck = false;
 
   postInstall = ''
     installShellCompletion --cmd you-get \
@@ -39,6 +35,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       --fish contrib/completion/you-get.fish \
       --bash contrib/completion/you-get-completion.bash
   '';
+
+  build-system = with python3.pkgs; [ setuptools ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "you_get"

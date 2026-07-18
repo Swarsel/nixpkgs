@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
+  appimageupdate-qt,
+  argagg,
   cmake,
+  fetchpatch,
+  gpgme,
+  libappimage,
+  libcpr,
+  libgcrypt,
+  nlohmann_json,
   pkg-config,
   qt5,
   zsync2,
-  libcpr,
-  libgcrypt,
-  libappimage,
-  argagg,
-  nlohmann_json,
-  gpgme,
-  appimageupdate-qt,
   withQtUI ? false,
 }:
 
@@ -62,11 +62,11 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "BUILD_QT_UI" withQtUI)
   ];
 
-  dontWrapQtApps = true;
-
   preFixup = lib.optionalString withQtUI ''
     wrapQtApp "$out/bin/AppImageUpdate"
   '';
+
+  dontWrapQtApps = true;
 
   passthru.tests = {
     inherit appimageupdate-qt;
@@ -76,8 +76,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Update AppImages using information embedded in the AppImage itself";
     homepage = "https://github.com/AppImageCommunity/AppImageUpdate";
     license = lib.licenses.mit;
-    mainProgram = if withQtUI then "AppImageUpdate" else "appimageupdatetool";
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.linux;
+    mainProgram = if withQtUI then "AppImageUpdate" else "appimageupdatetool";
   };
 })

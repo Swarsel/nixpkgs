@@ -1,21 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   mypy,
   pytestCheckHook,
   python-lsp-server,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pylsp-mypy";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-lsp";
@@ -24,6 +21,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-rS0toZaAygNJ3oe3vfP9rKJ1A0avIdp5yjNx7oGOB4o=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,14 +29,13 @@ buildPythonPackage (finalAttrs: {
     python-lsp-server
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "pylsp_mypy" ];
-
   disabledTests = [
     # Tests wants to call dmypy
     "test_option_overrides_dmypy"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pylsp_mypy" ];
 
   meta = {
     description = "Mypy plugin for the Python LSP Server";

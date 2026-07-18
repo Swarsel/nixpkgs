@@ -1,32 +1,32 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  avahi,
+  desktop-file-utils,
   fetchpatch,
-  vala,
-  meson,
-  ninja,
-  libpwquality,
-  pkg-config,
-  gtk3,
+  gcr,
   glib,
   glib-networking,
-  wrapGAppsHook3,
-  itstool,
-  gnupg,
-  desktop-file-utils,
-  libsoup_3,
   gnome,
+  gnupg,
   gpgme,
-  python3,
-  openldap,
-  gcr,
-  libsecret,
-  avahi,
-  p11-kit,
-  openssh,
   gsettings-desktop-schemas,
+  gtk3,
+  itstool,
   libhandy,
+  libpwquality,
+  libsecret,
+  libsoup_3,
+  meson,
+  ninja,
+  openldap,
+  openssh,
+  p11-kit,
+  pkg-config,
+  python3,
+  vala,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -42,11 +42,15 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix build with gpgme 2.0+
     # https://gitlab.gnome.org/GNOME/seahorse/-/merge_requests/248
     (fetchpatch {
+      hash = "sha256-xd5K8xUGuMk+41JROsq7QpZ5gD2jPAbv1kQdLI3z9lc=";
       name = "seahorse-allow-build-with-gpgme-2_0.patch";
       url = "https://gitlab.gnome.org/GNOME/seahorse/-/commit/aa68522cc696fa491ccfdff735b77bcf113168d0.patch";
-      hash = "sha256-xd5K8xUGuMk+41JROsq7QpZ5gD2jPAbv1kQdLI3z9lc=";
     })
   ];
+
+  postPatch = ''
+    patchShebangs build-aux/gpg_check_version.py
+  '';
 
   nativeBuildInputs = [
     meson
@@ -78,12 +82,6 @@ stdenv.mkDerivation (finalAttrs: {
     libhandy
   ];
 
-  doCheck = true;
-
-  postPatch = ''
-    patchShebangs build-aux/gpg_check_version.py
-  '';
-
   env =
     lib.optionalAttrs (stdenv.cc.isGNU && (lib.versionAtLeast (lib.getVersion stdenv.cc.cc) "14"))
       {
@@ -93,6 +91,8 @@ stdenv.mkDerivation (finalAttrs: {
           "-Wno-error=return-mismatch"
         ];
       };
+
+  doCheck = true;
 
   preCheck = ''
     # Add “org.gnome.crypto.pgp” GSettings schema to path
@@ -117,11 +117,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/seahorse";
     description = "Application for managing encryption keys and passwords in the GnomeKeyring";
-    mainProgram = "seahorse";
-    teams = [ lib.teams.gnome ];
+    homepage = "https://gitlab.gnome.org/GNOME/seahorse";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "seahorse";
+    teams = [ lib.teams.gnome ];
   };
 })

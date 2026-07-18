@@ -1,19 +1,18 @@
 {
+  lib,
+  fetchFromGitHub,
+  bleach,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
-  lib,
+  markdown,
   pytest-django,
   pytestCheckHook,
   setuptools,
-  markdown,
-  bleach,
   tinycss2,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "django-markdownify";
   version = "0.9.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "erwinmatijsen";
@@ -21,6 +20,16 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-Zl6t/ja/VAYrVOM6xkjcayn+vCss6JLQr+vBGsGGp+k=";
   };
+
+  nativeCheckInputs = [
+    tinycss2
+    pytest-django
+    pytestCheckHook
+  ];
+
+  preCheck = ''
+    export DJANGO_SETTINGS_MODULE=markdownify.checks
+  '';
 
   build-system = [ setuptools ];
 
@@ -31,22 +40,13 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ bleach.optional-dependencies.css;
 
-  preCheck = ''
-    export DJANGO_SETTINGS_MODULE=markdownify.checks
-  '';
-
-  nativeCheckInputs = [
-    tinycss2
-    pytest-django
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "markdownify" ];
-
   disabledTests = [
     # Test settings didn't setup DjangoTemplates
     "test_markdownify_nodelist"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "markdownify" ];
 
   meta = {
     description = "Markdown template filter for Django";

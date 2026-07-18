@@ -42,25 +42,31 @@ in
     services.cron = {
 
       enable = mkOption {
-        type = types.bool;
         default = false;
         description = "Whether to enable the Vixie cron daemon.";
+        type = types.bool;
+      };
+
+      cronFiles = mkOption {
+        default = [ ];
+
+        description = ''
+          A list of extra crontab files that will be read and appended to the main
+          crontab file when the cron service starts.
+        '';
+
+        type = types.listOf types.path;
       };
 
       mailto = mkOption {
-        type = types.nullOr types.str;
         default = null;
         description = "Email address to which job output will be mailed.";
+        type = types.nullOr types.str;
       };
 
       systemCronJobs = mkOption {
-        type = types.listOf types.str;
         default = [ ];
-        example = literalExpression ''
-          [ "* * * * *  test   ls -l / > /tmp/cronout 2>&1"
-            "* * * * *  eelco  echo Hello World > /home/eelco/cronout"
-          ]
-        '';
+
         description = ''
           A list of Cron jobs to be appended to the system-wide
           crontab.  See the manual page for crontab for the expected
@@ -75,15 +81,14 @@ in
           and enable another cron daemon, you may want it to get its system crontab
           based on systemCronJobs.
         '';
-      };
 
-      cronFiles = mkOption {
-        type = types.listOf types.path;
-        default = [ ];
-        description = ''
-          A list of extra crontab files that will be read and appended to the main
-          crontab file when the cron service starts.
+        example = literalExpression ''
+          [ "* * * * *  test   ls -l / > /tmp/cronout 2>&1"
+            "* * * * *  eelco  echo Hello World > /home/eelco/cronout"
+          ]
         '';
+
+        type = types.listOf types.str;
       };
 
     };
@@ -96,14 +101,9 @@ in
 
     { services.cron.enable = mkDefault (allFiles != [ ]); }
     (mkIf (config.services.cron.enable) {
-      security.wrappers.crontab = {
-        setuid = true;
-        owner = "root";
-        group = "root";
-        source = "${cronNixosPkg}/bin/crontab";
-      };
-      environment.systemPackages = [ cronNixosPkg ];
       environment.etc.crontab = {
+        mode = "0600"; # Cron requires this.
+
         source =
           pkgs.runCommand "crontabs"
             {
@@ -116,13 +116,19 @@ in
                 cat "$i" >> $out
               done
             '';
-        mode = "0600"; # Cron requires this.
+      };
+
+      environment.systemPackages = [ cronNixosPkg ];
+
+      security.wrappers.crontab = {
+        group = "root";
+        owner = "root";
+        setuid = true;
+        source = "${cronNixosPkg}/bin/crontab";
       };
 
       systemd.services.cron = {
         description = "Cron Daemon";
-
-        wantedBy = [ "multi-user.target" ];
 
         preStart = ''
           (umask 022 && mkdir -p /var)
@@ -137,6 +143,7 @@ in
 
         restartTriggers = [ config.time.timeZone ];
         serviceConfig.ExecStart = "${cronNixosPkg}/bin/cron -n";
+        wantedBy = [ "multi-user.target" ];
       };
 
     })

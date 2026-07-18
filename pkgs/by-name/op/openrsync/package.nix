@@ -17,11 +17,10 @@ stdenv.mkDerivation {
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
-  enableParallelBuilding = true;
-
   # Uses oconfigure
   env.prefixKey = "PREFIX=";
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -31,13 +30,13 @@ stdenv.mkDerivation {
   };
 
   meta = {
-    homepage = "https://www.openrsync.org/";
     description = "BSD-licensed implementation of rsync";
-    mainProgram = "openrsync";
+    homepage = "https://www.openrsync.org/";
     license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ fgaz ];
     # https://github.com/kristapsdz/openrsync#portability
     # https://github.com/kristapsdz/oconfigure#readme
     platforms = lib.platforms.unix;
+    mainProgram = "openrsync";
   };
 }

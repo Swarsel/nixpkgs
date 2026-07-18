@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  zlib,
   nix-update-script,
   testers,
   validatePkgConfig,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,21 +20,21 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-9Xp+gPqJpB7xZr5dzyc9Via9gxG9q/EriCx3cm++0kU=";
   };
 
-  buildInputs = [ zlib ];
   nativeBuildInputs = [
     cmake
     validatePkgConfig
   ];
 
+  buildInputs = [ zlib ];
   doCheck = true;
 
   passthru = {
-    updateScript = nix-update-script { };
-
     tests.pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
       versionCheck = true;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {

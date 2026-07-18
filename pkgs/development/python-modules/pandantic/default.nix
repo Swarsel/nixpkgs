@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   multiprocess,
-  pandas-stubs,
   pandas,
+  pandas-stubs,
   poetry-core,
   pydantic,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "pandantic";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wesselhuising";
@@ -22,6 +21,7 @@ buildPythonPackage rec {
     hash = "sha256-lqd4aQiBMbATFMdftKQeTlqQ3MGrxm2shb7qil+84iA=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -31,8 +31,7 @@ buildPythonPackage rec {
     pydantic
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pandantic" ];
 
   meta = {

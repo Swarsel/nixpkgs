@@ -1,9 +1,9 @@
 {
+  lib,
+  fetchFromGitLab,
   bzip2,
   dtc,
-  fetchFromGitLab,
   gzip,
-  lib,
   lz4,
   lzop,
   makeWrapper,
@@ -17,15 +17,17 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "depthcharge-tools";
   version = "0.6.4";
+
   src = fetchFromGitLab {
-    domain = "gitlab.postmarketos.org";
     owner = "postmarketOS";
     repo = "depthcharge-tools";
     tag = "v${finalAttrs.version}";
     hash = "sha256-McnBtc0UpatKO4XBnMOHf2L8xxcrsRM/5DCbmAmfA1o=";
+    domain = "gitlab.postmarketos.org";
   };
 
-  pyproject = true;
+  __structuredAttrs = true;
+
   build-system = with python3Packages; [
     setuptools
   ];
@@ -53,16 +55,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ]}"
   ];
 
+  pyproject = true;
   passthru.updateScript = nix-update-script { };
-
-  __structuredAttrs = true;
 
   meta = {
     description = "Tools to manage the Chrome OS bootloader";
     homepage = "https://gitlab.postmarketos.org/postmarketOS/depthcharge-tools";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.ninelore ];
+    platforms = lib.platforms.linux;
     mainProgram = "depthchargectl";
   };
 })

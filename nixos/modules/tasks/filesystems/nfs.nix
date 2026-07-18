@@ -69,14 +69,25 @@ in
 
   options = {
     services.nfs = {
+      extraConfig = lib.mkOption {
+        default = "";
+
+        description = ''
+          Extra nfs-utils configuration.
+        '';
+
+        type = lib.types.lines;
+      };
+
       idmapd.settings = lib.mkOption {
-        type = format.type;
         default = { };
+
         description = ''
           libnfsidmap configuration. Refer to
           <https://linux.die.net/man/5/idmapd.conf>
           for details.
         '';
+
         example = lib.literalExpression ''
           {
             Translation = {
@@ -87,26 +98,25 @@ in
             };
           }
         '';
-      };
-      settings = lib.mkOption {
+
         type = format.type;
+      };
+
+      settings = lib.mkOption {
         default = { };
+
         description = ''
           General configuration for NFS daemons and tools.
           See {manpage}`nfs.conf(5)` and related man pages for details.
         '';
+
         example = lib.literalExpression ''
           {
             mountd.manage-gids = true;
           }
         '';
-      };
-      extraConfig = lib.mkOption {
-        type = lib.types.lines;
-        default = "";
-        description = ''
-          Extra nfs-utils configuration.
-        '';
+
+        type = format.type;
       };
     };
   };
@@ -117,13 +127,6 @@ in
     lib.mkIf (config.boot.supportedFilesystems.nfs or config.boot.supportedFilesystems.nfs4 or false)
       {
 
-        warnings =
-          (lib.optional (cfg.extraConfig != "") ''
-            `services.nfs.extraConfig` is deprecated. Use `services.nfs.settings` instead.
-          '')
-          ++ (lib.optional (cfg.server.extraNfsdConfig != "") ''
-            `services.nfs.server.extraNfsdConfig` is deprecated. Use `services.nfs.settings` instead.
-          '');
         assertions = [
           {
             assertion = cfg.settings != { } -> cfg.extraConfig == "" && cfg.server.extraNfsdConfig == "";
@@ -131,40 +134,79 @@ in
           }
         ];
 
-        services.rpcbind.enable = true;
-
-        services.nfs.idmapd.settings = {
-          General = lib.mkMerge [
-            { Pipefs-Directory = rpcMountpoint; }
-            (lib.mkIf (config.networking.domain != null) { Domain = config.networking.domain; })
-          ];
-          Mapping = {
-            Nobody-User = "nobody";
-            Nobody-Group = "nogroup";
-          };
-          Translation = {
-            Method = "nsswitch";
-          };
-        };
-
-        system.fsPackages = [ pkgs.nfs-utils ];
-
         boot.initrd.kernelModules = lib.mkIf inInitrd [ "nfs" ];
-
-        systemd.packages = [ pkgs.nfs-utils ];
-
-        environment.systemPackages = [ pkgs.keyutils ];
 
         environment.etc = {
           "idmapd.conf".source = idmapdConfFile;
           "nfs.conf".source = nfsConfFile;
+
           "request-key.conf".text = ''
             create id_resolver * * ${pkgs.nfs-utils}/bin/nfsidmap -t 600 %k %d
             create dns_resolver * * ${pkgs.keyutils}/bin/key.dns_resolver %k
           '';
         };
 
+        environment.systemPackages = [ pkgs.keyutils ];
+
+        services.nfs.idmapd.settings = {
+          General = lib.mkMerge [
+            { Pipefs-Directory = rpcMountpoint; }
+            (lib.mkIf (config.networking.domain != null) { Domain = config.networking.domain; })
+          ];
+
+          Mapping = {
+            Nobody-Group = "nogroup";
+            Nobody-User = "nobody";
+          };
+
+          Translation = {
+            Method = "nsswitch";
+          };
+        };
+
+        services.rpcbind.enable = true;
+        system.fsPackages = [ pkgs.nfs-utils ];
+        systemd.packages = [ pkgs.nfs-utils ];
+
+        systemd.services.auth-rpcgss-module = {
+          unitConfig.ConditionPathExists = [
+            ""
+            "/etc/krb5.keytab"
+          ];
+        };
+
         systemd.services.nfs-blkmap = {
+          restartTriggers = [ nfsConfFile ];
+        };
+
+        systemd.services.nfs-idmapd = {
+          restartTriggers = [ idmapdConfFile ];
+        };
+
+        systemd.services.nfs-mountd = {
+          enable = lib.mkDefault false;
+          restartTriggers = [ nfsConfFile ];
+        };
+
+        systemd.services.nfs-server = {
+          enable = lib.mkDefault false;
+          restartTriggers = [ nfsConfFile ];
+        };
+
+        systemd.services.rpc-gssd = {
+          restartTriggers = [ nfsConfFile ];
+
+          unitConfig.ConditionPathExists = [
+            ""
+            "/etc/krb5.keytab"
+          ];
+        };
+
+        systemd.services.rpc-statd = {
+          preStart = ''
+            mkdir -p /var/lib/nfs/{sm,sm.bak}
+          '';
+
           restartTriggers = [ nfsConfFile ];
         };
 
@@ -175,42 +217,13 @@ in
           ];
         };
 
-        systemd.services.nfs-idmapd = {
-          restartTriggers = [ idmapdConfFile ];
-        };
-
-        systemd.services.nfs-mountd = {
-          restartTriggers = [ nfsConfFile ];
-          enable = lib.mkDefault false;
-        };
-
-        systemd.services.nfs-server = {
-          restartTriggers = [ nfsConfFile ];
-          enable = lib.mkDefault false;
-        };
-
-        systemd.services.auth-rpcgss-module = {
-          unitConfig.ConditionPathExists = [
-            ""
-            "/etc/krb5.keytab"
-          ];
-        };
-
-        systemd.services.rpc-gssd = {
-          restartTriggers = [ nfsConfFile ];
-          unitConfig.ConditionPathExists = [
-            ""
-            "/etc/krb5.keytab"
-          ];
-        };
-
-        systemd.services.rpc-statd = {
-          restartTriggers = [ nfsConfFile ];
-
-          preStart = ''
-            mkdir -p /var/lib/nfs/{sm,sm.bak}
-          '';
-        };
+        warnings =
+          (lib.optional (cfg.extraConfig != "") ''
+            `services.nfs.extraConfig` is deprecated. Use `services.nfs.settings` instead.
+          '')
+          ++ (lib.optional (cfg.server.extraNfsdConfig != "") ''
+            `services.nfs.server.extraNfsdConfig` is deprecated. Use `services.nfs.settings` instead.
+          '');
 
       };
 }

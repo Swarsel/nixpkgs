@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -23,14 +23,16 @@ stdenvNoCC.mkDerivation rec {
 
   meta = {
     description = "Weather Icons";
+
     longDescription = ''
       Weather Icons is the only icon font and CSS with 222 weather themed icons,
       ready to be dropped right into Bootstrap, or any project that needs high
       quality weather, maritime, and meteorological based icons!
     '';
+
     homepage = "https://erikflowers.github.io/weather-icons/";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ pnelson ];
+    platforms = lib.platforms.all;
   };
 }

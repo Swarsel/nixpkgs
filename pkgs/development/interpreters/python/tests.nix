@@ -6,12 +6,12 @@
 # $ nix-build -A python3.tests
 #
 {
-  stdenv,
-  python,
-  runCommand,
   lib,
+  stdenv,
   callPackage,
   pkgs,
+  python,
+  runCommand,
 }:
 
 let
@@ -38,8 +38,8 @@ let
           plain = rec {
             environment = python;
             interpreter = environment.interpreter;
-            is_venv = "False";
             is_nixenv = "False";
+            is_venv = "False";
             is_virtualenv = "False";
           };
         }
@@ -52,9 +52,10 @@ let
               ${pythonVirtualEnv.interpreter} -m virtualenv venv
               mv venv $out
             '';
+
             interpreter = "${environment}/bin/${python.executable}";
-            is_venv = "False";
             is_nixenv = "True";
+            is_venv = "False";
             is_virtualenv = "True";
           };
         }
@@ -63,8 +64,8 @@ let
           nixenv = rec {
             environment = pythonEnv;
             interpreter = environment.interpreter;
-            is_venv = "False";
             is_nixenv = "True";
+            is_venv = "False";
             is_virtualenv = "False";
           };
         }
@@ -76,9 +77,10 @@ let
             environment = runCommand "${python.name}-venv" { } ''
               ${python.interpreter} -m venv $out
             '';
+
             interpreter = "${environment}/bin/${python.executable}";
-            is_venv = "True";
             is_nixenv = "False";
+            is_venv = "True";
             is_virtualenv = "False";
           };
 
@@ -91,9 +93,10 @@ let
             environment = runCommand "${python.name}-venv" { } ''
               ${pythonEnv.interpreter} -m venv $out
             '';
+
             interpreter = "${environment}/bin/${pythonEnv.executable}";
-            is_venv = "True";
             is_nixenv = "True";
+            is_venv = "True";
             is_virtualenv = "False";
           };
         };
@@ -149,19 +152,21 @@ let
   editableTests =
     let
       testPython = python.override {
-        self = testPython;
         packageOverrides = pyfinal: pyprev: {
           # An editable package with a script that loads our mutable location
           my-editable = pyfinal.mkPythonEditablePackage {
             pname = "my-editable";
             version = "0.1.0";
             root = "$NIX_BUILD_TOP/src"; # Use environment variable expansion at runtime
+
             # Inject a script
             scripts = {
               my-script = "my_editable.main:main";
             };
           };
         };
+
+        self = testPython;
       };
 
     in
@@ -203,8 +208,8 @@ let
             myPython =
               let
                 self = python.override {
-                  packageOverrides = extension;
                   inherit self;
+                  packageOverrides = extension;
                 };
               in
               self;
@@ -242,18 +247,19 @@ let
     let
       requests = callPackage (
         {
-          autoPatchelfHook,
           fetchurl,
+          autoPatchelfHook,
           pythonCondaPackages,
         }:
         python.pkgs.buildPythonPackage {
           pname = "requests";
           version = "2.24.0";
-          pyproject = false;
+
           src = fetchurl {
             url = "https://repo.anaconda.com/pkgs/main/noarch/requests-2.24.0-py_0.tar.bz2";
             sha256 = "02qzaf6gwsqbcs69pix1fnjxzgnngwzvrsy65h1d521g750mjvvp";
           };
+
           nativeBuildInputs = [
             autoPatchelfHook
           ]
@@ -261,13 +267,17 @@ let
             condaUnpackHook
             condaInstallHook
           ]);
+
           buildInputs = pythonCondaPackages.condaPatchelfLibs;
+
           propagatedBuildInputs = with python.pkgs; [
             chardet
             idna
             urllib3
             certifi
           ];
+
+          pyproject = false;
         }
       ) { };
       pythonWithRequests = requests.pythonModule.withPackages (ps: [ requests ]);

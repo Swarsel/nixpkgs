@@ -1,15 +1,14 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   gettext,
   gitMinimal,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "pykickstart";
   version = "3.75";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pykickstart";
@@ -17,14 +16,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "r${finalAttrs.version}";
     hash = "sha256-3tQ5tXUx2L3I0SyxVKgNRFv0AwYeG88vZOdSZDxj1Ks=";
   };
-
-  build-system = with python3Packages; [
-    setuptools
-  ];
-
-  dependencies = with python3Packages; [
-    requests
-  ];
 
   nativeBuildInputs = [
     gettext
@@ -35,6 +26,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
   # Can't package it and not really necessary so disable them.
   doCheck = false;
 
+  build-system = with python3Packages; [
+    setuptools
+  ];
+
+  dependencies = with python3Packages; [
+    requests
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "pykickstart" ];
 
   meta = {
@@ -42,6 +42,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     homepage = "https://github.com/pykickstart/pykickstart";
     changelog = "https://github.com/pykickstart/pykickstart/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       thefossguy
     ];

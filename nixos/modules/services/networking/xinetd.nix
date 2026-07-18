@@ -51,14 +51,17 @@ in
 
     services.xinetd.extraDefaults = mkOption {
       default = "";
-      type = types.lines;
+
       description = ''
         Additional configuration lines added to the default section of xinetd's configuration.
       '';
+
+      type = types.lines;
     };
 
     services.xinetd.services = mkOption {
       default = [ ];
+
       description = ''
         A list of services provided by xinetd.
       '';
@@ -69,63 +72,65 @@ in
 
           options = {
 
-            name = mkOption {
-              type = types.str;
-              example = "login";
-              description = "Name of the service.";
-            };
-
-            protocol = mkOption {
-              type = types.str;
-              default = "tcp";
-              description = "Protocol of the service.  Usually `tcp` or `udp`.";
-            };
-
-            port = mkOption {
-              type = types.port;
-              default = 0;
-              example = 123;
-              description = "Port number of the service.";
-            };
-
-            user = mkOption {
-              type = types.str;
-              default = "nobody";
-              description = "User account for the service";
-            };
-
-            server = mkOption {
-              type = types.str;
-              example = "/foo/bin/ftpd";
-              description = "Path of the program that implements the service.";
-            };
-
-            serverArgs = mkOption {
-              type = types.separatedString " ";
+            extraConfig = mkOption {
               default = "";
-              description = "Command-line arguments for the server program.";
+              description = "Extra configuration-lines added to the section of the service.";
+              type = types.lines;
             };
 
             flags = mkOption {
-              type = types.str;
               default = "";
               description = "";
+              type = types.str;
+            };
+
+            name = mkOption {
+              description = "Name of the service.";
+              example = "login";
+              type = types.str;
+            };
+
+            port = mkOption {
+              default = 0;
+              description = "Port number of the service.";
+              example = 123;
+              type = types.port;
+            };
+
+            protocol = mkOption {
+              default = "tcp";
+              description = "Protocol of the service.  Usually `tcp` or `udp`.";
+              type = types.str;
+            };
+
+            server = mkOption {
+              description = "Path of the program that implements the service.";
+              example = "/foo/bin/ftpd";
+              type = types.str;
+            };
+
+            serverArgs = mkOption {
+              default = "";
+              description = "Command-line arguments for the server program.";
+              type = types.separatedString " ";
             };
 
             unlisted = mkOption {
-              type = types.bool;
               default = false;
+
               description = ''
                 Whether this server is listed in
                 {file}`/etc/services`.  If so, the port
                 number can be omitted.
               '';
+
+              type = types.bool;
             };
 
-            extraConfig = mkOption {
-              type = types.lines;
-              default = "";
-              description = "Extra configuration-lines added to the section of the service.";
+            user = mkOption {
+              default = "nobody";
+              description = "User account for the service";
+              type = types.str;
             };
 
           };
@@ -140,11 +145,11 @@ in
 
   config = mkIf cfg.enable {
     systemd.services.xinetd = {
-      description = "xinetd server";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "xinetd server";
       path = [ pkgs.xinetd ];
       script = "exec xinetd -syslog daemon -dontfork -stayalive -f ${configFile}";
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

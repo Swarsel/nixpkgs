@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  guile,
   autoreconfHook,
+  guile,
   guile-gcrypt,
   guile-lzma,
   guile-quickcheck,
@@ -58,8 +58,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Disassemble software into data and metadata";
     homepage = "https://ngyro.com/software/disarchive.html";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "disarchive";
     maintainers = [ ];
     platforms = guile.meta.platforms;
+    mainProgram = "disarchive";
   };
 })

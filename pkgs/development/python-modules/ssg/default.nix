@@ -1,22 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
-
-  python,
-  unittestCheckHook,
-  setuptools,
-
   fire,
+  python,
   python-crfsuite,
+  setuptools,
   tqdm,
+  unittestCheckHook,
 }:
 
 buildPythonPackage {
   pname = "ssg";
   version = "0.0.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ponrawee";
@@ -27,12 +24,14 @@ buildPythonPackage {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-4O1fpI0FBUG/3RN+PAi7I8vpgYmPPL5ZMXhoZUFsQy8=";
       name = "fix-deprecation-warnings-and-bump-version";
       url = "https://patch-diff.githubusercontent.com/raw/ponrawee/ssg/pull/10.patch";
-      hash = "sha256-4O1fpI0FBUG/3RN+PAi7I8vpgYmPPL5ZMXhoZUFsQy8=";
     })
   ];
 
+  nativeCheckInputs = [ unittestCheckHook ];
+  postInstall = "rm -rf $out/${python.sitePackages}/scripts";
   build-system = [ setuptools ];
 
   dependencies = [
@@ -41,11 +40,8 @@ buildPythonPackage {
     tqdm
   ];
 
-  nativeCheckInputs = [ unittestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "ssg" ];
-
-  postInstall = "rm -rf $out/${python.sitePackages}/scripts";
 
   meta = {
     description = "TCRF syllable segmenter for Thai";

@@ -22,31 +22,28 @@ buildDotnetModule (finalAttrs: {
     hash = "sha256-xebt55WKHOKwA6QIkW5mnvqUGHeGRzINCWfViA4cfJ0=";
   };
 
-  projectFile = "Marksman/Marksman.fsproj";
-  dotnetBuildFlags = [ "-p:VersionString=${finalAttrs.version}" ];
-
-  __darwinAllowLocalNetworking = true;
-
   doCheck = true;
-  testProjectFile = "Tests/Tests.fsproj";
-
-  nugetDeps = ./deps.json;
-
-  dotnet-runtime = dotnetCorePackages.runtime_9_0;
 
   postInstall = ''
     install -m 644 -D -t "$out/share/doc/${pname}" LICENSE
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __darwinAllowLocalNetworking = true;
+  dotnet-runtime = dotnetCorePackages.runtime_9_0;
+  dotnetBuildFlags = [ "-p:VersionString=${finalAttrs.version}" ];
+  nugetDeps = ./deps.json;
+  projectFile = "Marksman/Marksman.fsproj";
+  testProjectFile = "Tests/Tests.fsproj";
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-
   meta = {
     description = "Language Server for Markdown";
+
     longDescription = ''
       Marksman is a program that integrates with your editor
       to assist you in writing and maintaining your Markdown documents.
@@ -55,12 +52,15 @@ buildDotnetModule (finalAttrs: {
       In addition to regular Markdown, it also supports wiki-link-style
       references that enable Zettelkasten-like note taking.
     '';
+
     homepage = "https://github.com/artempyanykh/marksman";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       stasjok
       plusgut
     ];
+
     platforms = dotnet-sdk.meta.platforms;
     mainProgram = "marksman";
   };

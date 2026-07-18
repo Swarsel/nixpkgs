@@ -1,11 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  buildPythonPackage,
-  poetry-core,
-
   anthropic,
   astor,
+  buildPythonPackage,
   fastapi,
   google-generativeai,
   html2image,
@@ -15,7 +13,9 @@
   jupyter-client,
   litellm,
   matplotlib,
+  nltk,
   platformdirs,
+  poetry-core,
   psutil,
   pyautogui,
   pydantic,
@@ -36,14 +36,11 @@
   webdriver-manager,
   wget,
   yaspin,
-
-  nltk,
 }:
 
 buildPythonPackage rec {
   pname = "open-interpreter";
   version = "0.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "KillianLucas";
@@ -52,20 +49,8 @@ buildPythonPackage rec {
     hash = "sha256-fogCcWAhcrCrrcV0q4oKttkf/GeJaJSZnbgiFxvySs8=";
   };
 
-  pythonRemoveDeps = [ "git-python" ];
-
-  pythonRelaxDeps = [
-    "anthropic"
-    "google-generativeai"
-    "html2text"
-    "psutil"
-    "rich"
-    "starlette"
-    "tiktoken"
-    "typer"
-    "yaspin"
-  ];
-
+  # Most tests required network access
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -106,18 +91,30 @@ buildPythonPackage rec {
     nltk
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "interpreter" ];
 
-  # Most tests required network access
-  doCheck = false;
+  pythonRelaxDeps = [
+    "anthropic"
+    "google-generativeai"
+    "html2text"
+    "psutil"
+    "rich"
+    "starlette"
+    "tiktoken"
+    "typer"
+    "yaspin"
+  ];
+
+  pythonRemoveDeps = [ "git-python" ];
 
   meta = {
-    broken = true;
     description = "OpenAI's Code Interpreter in your terminal, running locally";
     homepage = "https://github.com/KillianLucas/open-interpreter";
-    license = lib.licenses.mit;
     changelog = "https://github.com/KillianLucas/open-interpreter/releases/tag/v${version}";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ happysalada ];
     mainProgram = "interpreter";
+    broken = true;
   };
 }

@@ -1,12 +1,12 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
+  dbus,
   git,
   nix-update-script,
-  pkg-config,
   openssl,
-  dbus,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,22 +20,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-o895VPlUGmLUsIeOnShjCetKoS/4x0nbEKxipEbuBu4=";
   };
 
-  cargoHash = "sha256-hHbMMi4nuTORUPEKEo3OiQg7y12+cXHzUAkh3ApYx5s=";
   nativeBuildInputs = [
     git
     pkg-config
   ];
+
   buildInputs = [
     openssl
     dbus
   ];
 
-  passthru.updateScript = nix-update-script { };
-
+  cargoHash = "sha256-hHbMMi4nuTORUPEKEo3OiQg7y12+cXHzUAkh3ApYx5s=";
   # too many tests fail for now
   doCheck = false;
-
   cargoBuildFlags = [ "-p ockam" ];
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Orchestrate end-to-end encryption, cryptographic identities, mutual authentication, and authorization policies between distributed applications – at massive scale";

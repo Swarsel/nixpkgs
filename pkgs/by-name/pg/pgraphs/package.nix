@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -20,10 +20,10 @@ buildNpmPackage rec {
 
   meta = {
     description = "Property Graph Exchange Format (PG) converter";
-    changelog = "https://github.com/pg-format/pgraphs/blob/v${version}/CHANGELOG.md";
     homepage = "https://github.com/pg-format/pgraphs";
+    changelog = "https://github.com/pg-format/pgraphs/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "pgraphs";
     maintainers = with lib.maintainers; [ luftmensch-luftmensch ];
+    mainProgram = "pgraphs";
   };
 }

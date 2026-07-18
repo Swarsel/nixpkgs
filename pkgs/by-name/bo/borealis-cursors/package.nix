@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -15,8 +15,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-1qgyU0Npbx/AgqGbmF/BWtlVC0KsKtgC48SL/HtkDrk=";
   };
 
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/share/icons
@@ -24,11 +22,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Cursor theme using a custom color palette inspired by boreal colors";
     homepage = "https://www.gnome-look.org/s/Gnome/p/1717914";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ argrat ];
+    platforms = lib.platforms.linux;
   };
 })

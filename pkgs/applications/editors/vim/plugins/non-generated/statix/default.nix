@@ -1,6 +1,6 @@
 {
-  vimUtils,
   statix,
+  vimUtils,
 }:
 vimUtils.buildVimPlugin {
   inherit (statix)

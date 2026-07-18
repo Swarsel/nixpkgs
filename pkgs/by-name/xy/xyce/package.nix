@@ -1,32 +1,32 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  fetchgit,
-  fetchpatch,
   applyPatches,
-  lib,
+  # for tests
+  bash,
+  bc,
   bison,
   blas,
   cmake,
-  flex,
+  fetchgit,
+  fetchpatch,
   fftw,
+  flex,
   gfortran,
   lapack,
   libtool_2,
   mpi,
-  suitesparse,
-  trilinos,
-  withMPI ? false,
-  # for doc
-  texliveMedium,
-  enableDocs ? true,
-  # for tests
-  bash,
-  bc,
   openssh, # required by MPI
   perl,
   python3,
+  suitesparse,
+  # for doc
+  texliveMedium,
+  trilinos,
+  enableDocs ? true,
   enableTests ? true,
+  withMPI ? false,
 }:
 
 assert withMPI -> trilinos.withMPI;
@@ -37,47 +37,54 @@ let
   # using fetchurl or fetchFromGitHub doesn't include the manuals
   # due to .gitattributes files
   xyce_src = fetchgit {
-    name = "Xyce";
-    url = "https://github.com/Xyce/Xyce.git";
-    rev = "Release-${version}";
     hash = "sha256-8cvglBCykZVQk3BD7VE3riXfJ0PAEBwsoloqUsrMlBc=";
+    name = "Xyce";
+    rev = "Release-${version}";
+    url = "https://github.com/Xyce/Xyce.git";
   };
 
   regression_src = applyPatches {
     src = fetchFromGitHub {
-      name = "Xyce_Regression";
       owner = "Xyce";
       repo = "Xyce_Regression";
       rev = "Release-${version}";
       hash = "sha256-aA/4UpzSb+EeJ1RVkVwSKiNh7BDcLHxNDnKXZmnCBmI=";
+      name = "Xyce_Regression";
     };
+
     patches = [
       # remove after next release
       (fetchpatch {
-        url = "https://github.com/Xyce/Xyce_Regression/commit/a77e39e409d3ab2ae05d6dcbf08d9e42e3fd0f15.patch";
         hash = "sha256-BJJO2qSwQf+u2HUWhdyBUwP3j4HbMPfXrAhgdzeTZgc=";
+        url = "https://github.com/Xyce/Xyce_Regression/commit/a77e39e409d3ab2ae05d6dcbf08d9e42e3fd0f15.patch";
       })
     ];
   };
 in
 
 stdenv.mkDerivation rec {
-  pname = "xyce";
   inherit version;
+  pname = "xyce";
 
-  srcs = [
-    xyce_src
-    regression_src
+  outputs = [
+    "out"
+    "doc"
   ];
 
-  sourceRoot = xyce_src.name;
-
-  cmakeFlags = lib.optionals withMPI [
-    "-DCMAKE_C_COMPILER=mpicc"
-    "-DCMAKE_CXX_COMPILER=mpicxx"
-  ];
-
-  enableParallelBuilding = true;
+  postPatch = ''
+    pushd ../${regression_src.name}
+    find Netlists -type f -regex ".*\.sh\|.*\.pl" -exec chmod ugo+x {} \;
+    # some tests generate new files, some overwrite netlists
+    find . -type d -exec chmod u+w {} \;
+    find . -type f -name "*.cir" -exec chmod u+w {} \;
+    patchShebangs Netlists/ TestScripts/
+    # patch script generating functions
+    sed -i -E 's|/usr/bin/env perl|${lib.escapeRegex perl.outPath}/bin/perl|'  \
+      TestScripts/XyceRegression/Testing/Netlists/RunOptions/runOptions.cir.sh
+    sed -i -E 's|/bin/sh|${lib.escapeRegex bash.outPath}/bin/sh|' \
+      TestScripts/XyceRegression/Testing/Netlists/RunOptions/runOptions.cir.sh
+    popd
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -109,22 +116,12 @@ stdenv.mkDerivation rec {
   ]
   ++ lib.optionals withMPI [ mpi ];
 
-  doCheck = enableTests;
+  cmakeFlags = lib.optionals withMPI [
+    "-DCMAKE_C_COMPILER=mpicc"
+    "-DCMAKE_CXX_COMPILER=mpicxx"
+  ];
 
-  postPatch = ''
-    pushd ../${regression_src.name}
-    find Netlists -type f -regex ".*\.sh\|.*\.pl" -exec chmod ugo+x {} \;
-    # some tests generate new files, some overwrite netlists
-    find . -type d -exec chmod u+w {} \;
-    find . -type f -name "*.cir" -exec chmod u+w {} \;
-    patchShebangs Netlists/ TestScripts/
-    # patch script generating functions
-    sed -i -E 's|/usr/bin/env perl|${lib.escapeRegex perl.outPath}/bin/perl|'  \
-      TestScripts/XyceRegression/Testing/Netlists/RunOptions/runOptions.cir.sh
-    sed -i -E 's|/bin/sh|${lib.escapeRegex bash.outPath}/bin/sh|' \
-      TestScripts/XyceRegression/Testing/Netlists/RunOptions/runOptions.cir.sh
-    popd
-  '';
+  doCheck = enableTests;
 
   nativeCheckInputs = [
     bc
@@ -164,11 +161,6 @@ stdenv.mkDerivation rec {
       "''${EXECSTRING}"
   '';
 
-  outputs = [
-    "out"
-    "doc"
-  ];
-
   postInstall = lib.optionalString enableDocs ''
     pushd ../../${xyce_src.name}
     local docFiles=("doc/Users_Guide/Xyce_UG"
@@ -198,18 +190,29 @@ stdenv.mkDerivation rec {
     popd
   '';
 
+  enableParallelBuilding = true;
+  sourceRoot = xyce_src.name;
+
+  srcs = [
+    xyce_src
+    regression_src
+  ];
+
   meta = {
-    broken =
-      (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64) || stdenv.hostPlatform.isDarwin;
     description = "High-performance analog circuit simulator";
+
     longDescription = ''
       Xyce is a SPICE-compatible, high-performance analog circuit simulator,
       capable of solving extremely large circuit problems by supporting
       large-scale parallel computing platforms.
     '';
+
     homepage = "https://xyce.sandia.gov";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ fbeffa ];
     platforms = [ "x86_64-linux" ];
+
+    broken =
+      (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64) || stdenv.hostPlatform.isDarwin;
   };
 }

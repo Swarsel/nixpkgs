@@ -1,17 +1,16 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "ghqr";
   version = "0.5.0";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "microsoft";
@@ -20,17 +19,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-MpCOeKMqLyZd2N1XL7bUHuCM7AjLgsHzQ1plUKMWn50=";
   };
 
-  vendorHash = "sha256-8lyQ1LDT1GAs+UDOpLxI/6BneU6Hqyt+PWsZIkq2rHY=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/microsoft/ghqr/cmd/ghqr/commands.version=${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  vendorHash = "sha256-8lyQ1LDT1GAs+UDOpLxI/6BneU6Hqyt+PWsZIkq2rHY=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd 'ghqr' \
@@ -41,6 +34,13 @@ buildGoModule (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/microsoft/ghqr/cmd/ghqr/commands.version=${finalAttrs.version}"
+  ];
 
   passthru.updateScript = nix-update-script { };
 

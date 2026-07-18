@@ -1,36 +1,37 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   autoconf,
   automake,
-  fetchFromGitHub,
   fetchpatch,
+  font-util,
+  gccmakedep,
+  imake,
   libjpeg_turbo,
   libpng,
+  libtirpc,
   libtool,
+  libxcomposite,
+  libxdamage,
+  libxdmcp,
+  libxext,
+  libxfont_2,
+  libxinerama,
   libxml2,
+  libxpm,
+  libxrandr,
+  libxtst,
+  pixman,
   pkg-config,
   which,
-  xkeyboard-config,
-  libxtst,
-  libxrandr,
-  libxpm,
-  libxinerama,
-  libxfont_2,
-  libxext,
-  libxdmcp,
-  libxdamage,
-  libxcomposite,
-  font-util,
   xkbcomp,
-  pixman,
-  imake,
-  gccmakedep,
-  libtirpc,
+  xkeyboard-config,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "nx-libs";
   version = "3.5.99.26";
+
   src = fetchFromGitHub {
     owner = "ArcticaProject";
     repo = "nx-libs";
@@ -41,10 +42,16 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     (fetchpatch {
       name = "binutils-2.36.patch";
-      url = "https://github.com/ArcticaProject/nx-libs/commit/605a266911b50ababbb3f8a8b224efb42743379c.patch";
       sha256 = "sha256-kk5ms3i0PrHL74I4OlsqDrdDcCJ0us03cQcBy4zjAoQ=";
+      url = "https://github.com/ArcticaProject/nx-libs/commit/605a266911b50ababbb3f8a8b224efb42743379c.patch";
     })
   ];
+
+  postPatch = ''
+    patchShebangs .
+    find . -type f -name Makefile -exec sed -i 's|^\(SHELL:=\)/bin/bash$|\1${stdenv.shell}|g' {} \;
+    ln -s libNX_X11.so.6.3.0
+  '';
 
   nativeBuildInputs = [
     autoconf
@@ -55,6 +62,7 @@ stdenv.mkDerivation (finalAttrs: {
     gccmakedep
     imake
   ];
+
   buildInputs = [
     libjpeg_turbo
     libpng
@@ -80,11 +88,7 @@ stdenv.mkDerivation (finalAttrs: {
     NIX_LDFLAGS = toString [ "-ltirpc" ];
   };
 
-  postPatch = ''
-    patchShebangs .
-    find . -type f -name Makefile -exec sed -i 's|^\(SHELL:=\)/bin/bash$|\1${stdenv.shell}|g' {} \;
-    ln -s libNX_X11.so.6.3.0
-  '';
+  env.PREFIX = ""; # Don't install to $out/usr/local
 
   preConfigure = ''
     # binutils 2.37 fix
@@ -92,7 +96,6 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace nx-X11/config/cf/Imake.tmpl --replace "clq" "cq"
   '';
 
-  env.PREFIX = ""; # Don't install to $out/usr/local
   installPhase = ''
     make DESTDIR="$out" install
     # See:

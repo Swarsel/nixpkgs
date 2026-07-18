@@ -5,11 +5,11 @@
   SDL2,
   aalib,
   alsa-lib,
-  libxext,
-  libxxf86vm,
   libcaca,
   libpulseaudio,
   libsndfile,
+  libxext,
+  libxxf86vm,
   ncurses,
   openssl,
   which,
@@ -25,6 +25,12 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "ZEsarUX-${finalAttrs.version}";
     hash = "sha256-clwYn43Xswdo11T+aX78K1Qat5BoGwH3ByCT4qaMl8A=";
   };
+
+  postPatch = ''
+    patchShebangs *.sh
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     which
@@ -42,14 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
     ncurses
     openssl
   ];
-
-  strictDeps = true;
-
-  sourceRoot = "${finalAttrs.src.name}/src";
-
-  postPatch = ''
-    patchShebangs *.sh
-  '';
 
   configureFlags = [
     "--prefix=${placeholder "out"}"
@@ -72,12 +70,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/src";
+
   meta = {
-    homepage = "https://github.com/chernandezba/zesarux";
     description = "ZX Second-Emulator And Released for UniX";
-    mainProgram = "zesarux";
+    homepage = "https://github.com/chernandezba/zesarux";
     license = with lib.licenses; [ gpl3Plus ];
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "zesarux";
   };
 })

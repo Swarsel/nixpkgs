@@ -2,16 +2,15 @@
   lib,
   stdenv,
   fetchurl,
+  bluez,
   makeWrapper,
   perl,
   perlPackages,
-  bluez,
 }:
 
 stdenv.mkDerivation rec {
   pname = "bt-fw-converter";
   version = "2017-02-19";
-  rev = "2d8b34402df01c6f7f4b8622de9e8b82fadf4153";
 
   src = fetchurl {
     url = "https://raw.githubusercontent.com/winterheart/broadcom-bt-firmware/${rev}/tools/bt-fw-converter.pl";
@@ -26,23 +25,25 @@ stdenv.mkDerivation rec {
     bluez
   ];
 
-  unpackCmd = ''
-    mkdir -p ${pname}-${version}
-    cp $src ${pname}-${version}/bt-fw-converter.pl
-  '';
-
   installPhase = ''
     install -D -m755 bt-fw-converter.pl $out/bin/bt-fw-converter
     substituteInPlace $out/bin/bt-fw-converter --replace /usr/bin/hex2hcd ${bluez}/bin/hex2hcd
     wrapProgram $out/bin/bt-fw-converter --set PERL5LIB $PERL5LIB
   '';
 
+  rev = "2d8b34402df01c6f7f4b8622de9e8b82fadf4153";
+
+  unpackCmd = ''
+    mkdir -p ${pname}-${version}
+    cp $src ${pname}-${version}/bt-fw-converter.pl
+  '';
+
   meta = {
-    homepage = "https://github.com/winterheart/broadcom-bt-firmware/";
     description = "Tool that converts hex to hcd based on inf file";
-    mainProgram = "bt-fw-converter";
+    homepage = "https://github.com/winterheart/broadcom-bt-firmware/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ zraexy ];
+    platforms = lib.platforms.linux;
+    mainProgram = "bt-fw-converter";
   };
 }

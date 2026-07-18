@@ -8,15 +8,12 @@
 buildPythonPackage rec {
   pname = "types-docutils";
   version = "0.22.3.20260518";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "types_docutils";
     inherit version;
     hash = "sha256-LEW6Y6msZCRjNTWbaP6cJ2ApJkmcm2fK7DeAdF9qre4=";
+    pname = "types_docutils";
   };
-
-  build-system = [ setuptools ];
 
   postPatch = ''
     substituteInPlace pyproject.toml \
@@ -26,7 +23,8 @@ buildPythonPackage rec {
 
   # Module doesn't have tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "docutils-stubs" ];
 
   meta = {

@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
-  pytestCheckHook,
   inform,
   parametrize-from-file,
-  setuptools,
-  voluptuous,
+  pytestCheckHook,
   quantiphy-eval,
   rkm-codes,
+  setuptools,
+  voluptuous,
 }:
 
 buildPythonPackage rec {
   pname = "quantiphy";
   version = "2.22";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "KenKundert";
@@ -39,6 +38,7 @@ buildPythonPackage rec {
     voluptuous
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "quantiphy" ];
 
   meta = {

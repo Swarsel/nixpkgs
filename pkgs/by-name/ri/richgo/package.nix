@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,9 +19,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Enrich `go test` outputs with text decorations";
-    mainProgram = "richgo";
     homepage = "https://github.com/kyoh86/richgo";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ rvolosatovs ];
+    mainProgram = "richgo";
   };
 })

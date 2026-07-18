@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   boost,
-  onetbb,
+  cmake,
   makeWrapper,
+  onetbb,
 }:
 
 stdenv.mkDerivation {
@@ -19,18 +19,6 @@ stdenv.mkDerivation {
     sha256 = "sha256-QYNY+/v6mBEJFiv3i2QS+zqkgWJqeqXSqNoh+ChAiQA=";
   };
 
-  buildInputs = [
-    boost
-    onetbb
-  ];
-
-  nativeBuildInputs = [
-    makeWrapper
-    cmake
-  ];
-
-  cmakeFlags = [ (lib.strings.cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "3.5") ];
-
   postPatch = ''
     runHook prePatch
 
@@ -41,6 +29,18 @@ stdenv.mkDerivation {
     substituteInPlace Converter/src/main.cpp --replace \
       'fs::copy(templateDir, pagedir, fs::copy_options::overwrite_existing | fs::copy_options::recursive)' 'string cmd = "cp --no-preserve=mode -r " + templateDir + " " + pagedir; system(cmd.c_str());'
   '';
+
+  nativeBuildInputs = [
+    makeWrapper
+    cmake
+  ];
+
+  buildInputs = [
+    boost
+    onetbb
+  ];
+
+  cmakeFlags = [ (lib.strings.cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "3.5") ];
 
   # The upstream build system does not provide an install target.
   installPhase = ''

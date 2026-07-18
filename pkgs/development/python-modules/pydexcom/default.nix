@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatch-vcs,
   hatchling,
   requests,
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pydexcom";
   version = "0.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gagebenne";
@@ -19,16 +18,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-u94OI45PmofPLpuJUpjbvGLla+mJEHy1t6/4fiI6+zc=";
   };
 
+  # Tests are interacting with the Dexcom API
+  doCheck = false;
+
   build-system = [
     hatchling
     hatch-vcs
   ];
 
   dependencies = [ requests ];
-
-  # Tests are interacting with the Dexcom API
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pydexcom" ];
 
   meta = {

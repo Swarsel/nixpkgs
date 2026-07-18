@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   chmlib,
-  libzip,
-  qt6,
   cmake,
+  libzip,
   nix-update-script,
+  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -45,12 +45,12 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/eBookProjects/uChmViewer/releases/tag/v${finalAttrs.version}";
     description = "CHM (Winhelp) files viewer (fork of KchmViewer)";
     homepage = "https://github.com/eBookProjects/uChmViewer";
+    changelog = "https://github.com/eBookProjects/uChmViewer/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "uchmviewer";
     maintainers = with lib.maintainers; [ azuwis ];
     platforms = lib.platforms.unix;
+    mainProgram = "uchmviewer";
   };
 })

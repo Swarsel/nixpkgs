@@ -20,13 +20,21 @@
 buildPythonPackage rec {
   pname = "diff-cover";
   version = "10.2.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "diff_cover";
     inherit version;
     hash = "sha256-Yb+DAl8QUQx272pYIGgM9hubl06Pgd5wxXrJJvpjhyo=";
+    pname = "diff_cover";
   };
+
+  nativeCheckInputs = [
+    pycodestyle
+    pyflakes
+    pylint
+    pytest-datadir
+    pytest-mock
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -39,15 +47,6 @@ buildPythonPackage rec {
     tomli
   ];
 
-  nativeCheckInputs = [
-    pycodestyle
-    pyflakes
-    pylint
-    pytest-datadir
-    pytest-mock
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # Tests check for flake8
     "file_does_not_exist"
@@ -58,6 +57,7 @@ buildPythonPackage rec {
     "test_style_defs"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "diff_cover" ];
 
   meta = {

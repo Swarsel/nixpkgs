@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
+  unittestCheckHook,
   zodbpickle,
   zope-interface,
   zope-location,
   zope-schema,
-  unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "zope-copy";
   version = "6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zopefoundation";
@@ -27,6 +26,12 @@ buildPythonPackage rec {
       --replace-fail "setuptools ==" "setuptools >="
   '';
 
+  nativeCheckInputs = [
+    unittestCheckHook
+    zope-location
+    zope-schema
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,20 +39,14 @@ buildPythonPackage rec {
     zope-interface
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "zope.copy" ];
-
-  nativeCheckInputs = [
-    unittestCheckHook
-    zope-location
-    zope-schema
-  ];
+  pythonNamespaces = [ "zope" ];
 
   unittestFlagsArray = [
     "-s"
     "src/zope/copy"
   ];
-
-  pythonNamespaces = [ "zope" ];
 
   meta = {
     description = "Pluggable object copying mechanism";

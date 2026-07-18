@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "catalogue";
   version = "2.0.10";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -17,9 +16,8 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "catalogue" ];
 
   meta = {

@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "epc";
   version = "0.0.5";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -17,6 +16,7 @@ buildPythonPackage rec {
 
   propagatedBuildInputs = [ sexpdata ];
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "EPC (RPC stack for Emacs Lisp) implementation in Python";

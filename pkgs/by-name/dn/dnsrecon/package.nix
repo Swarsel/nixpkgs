@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "dnsrecon";
   version = "1.6.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "darkoperator";
@@ -21,8 +20,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       --replace-fail "setuptools>=82.0.1" "setuptools"
   '';
 
-  pythonRelaxDeps = true;
-
+  # Tests require access to /etc/resolv.conf
+  doCheck = false;
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -40,10 +39,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     setuptools
   ];
 
-  # Tests require access to /etc/resolv.conf
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "dnsrecon" ];
+  pythonRelaxDeps = true;
 
   meta = {
     description = "DNS Enumeration script";

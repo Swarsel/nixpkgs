@@ -5,15 +5,14 @@
 }:
 
 stdenv.mkDerivation {
-  pname = "wasmcert-interpreter-test";
   inherit (wasmcert) src version;
+  pname = "wasmcert-interpreter-test";
+  doCheck = true;
+
   nativeCheckInputs = [
     wasmcert
     coq
   ];
-  dontConfigure = true;
-  dontBuild = true;
-  doCheck = true;
 
   checkPhase = ''
     coqc .ci/import_test.v
@@ -27,4 +26,6 @@ stdenv.mkDerivation {
   '';
 
   installPhase = "touch $out";
+  dontBuild = true;
+  dontConfigure = true;
 }

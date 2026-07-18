@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
+  blobfile,
   buildPythonPackage,
-  fetchPypi,
-  rustPlatform,
   cargo,
+  fetchPypi,
+  libiconv,
+  regex,
+  requests,
+  rustPlatform,
   rustc,
   setuptools,
   setuptools-rust,
-  libiconv,
-  requests,
-  regex,
-  blobfile,
 }:
 let
   pname = "tiktoken";
@@ -31,7 +31,17 @@ buildPythonPackage {
     src
     postPatch
     ;
-  pyproject = true;
+
+  nativeBuildInputs = [
+    rustPlatform.cargoSetupHook
+    setuptools-rust
+    cargo
+    rustc
+  ];
+
+  buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
+  # almost all tests require network access
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -45,17 +55,9 @@ buildPythonPackage {
       src
       postPatch
       ;
+
     hash = "sha256-daIKasW/lwYwIqMs3KvCDJWAoMn1CkPRpNqhl1jKpYY=";
   };
-
-  nativeBuildInputs = [
-    rustPlatform.cargoSetupHook
-    setuptools-rust
-    cargo
-    rustc
-  ];
-
-  buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
 
   dependencies = [
     requests
@@ -63,9 +65,7 @@ buildPythonPackage {
     blobfile
   ];
 
-  # almost all tests require network access
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "tiktoken" ];
 
   meta = {

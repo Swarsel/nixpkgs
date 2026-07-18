@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   appstream,
   blueprint-compiler,
   desktop-file-utils,
-  fetchFromGitHub,
   gjs,
   glib,
   gtk4,
@@ -80,8 +80,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Git commit message editor";
     homepage = "https://github.com/sonnyp/Commit";
     license = lib.licenses.gpl3Only;
-    teams = [ lib.teams.gnome-circle ];
-    mainProgram = "re.sonny.Commit";
     platforms = lib.platforms.linux;
+    mainProgram = "re.sonny.Commit";
+    teams = [ lib.teams.gnome-circle ];
   };
 })

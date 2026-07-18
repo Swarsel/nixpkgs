@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "route-detect";
   version = "0.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mschwager";
@@ -17,12 +16,10 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-4WkYjAQyteHJTJvSZoSfVUnBvsDQ3TWb5Ttp3uCgvdU=";
   };
 
-  build-system = with python3.pkgs; [ poetry-core ];
-
-  dependencies = [ semgrep ];
-
   nativeCheckInputs = with python3.pkgs; [ pytestCheckHook ];
-
+  build-system = with python3.pkgs; [ poetry-core ];
+  dependencies = [ semgrep ];
+  pyproject = true;
   pythonImportsCheck = [ "routes" ];
 
   meta = {

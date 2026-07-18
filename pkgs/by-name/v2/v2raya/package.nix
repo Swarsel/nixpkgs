@@ -1,20 +1,18 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   fetchYarnDeps,
-  symlinkJoin,
-
-  yarnConfigHook,
-  yarnBuildHook,
-  nodejs,
-
   makeWrapper,
-  v2ray,
-  v2ray-geoip,
-  v2ray-domain-list-community,
   nix-update-script,
+  nodejs,
+  symlinkJoin,
+  v2ray,
+  v2ray-domain-list-community,
+  v2ray-geoip,
+  yarnBuildHook,
+  yarnConfigHook,
 }:
 let
   pname = "v2raya";
@@ -31,24 +29,25 @@ let
   web = stdenv.mkDerivation {
     inherit pname version src;
 
-    sourceRoot = "${src.name}/gui";
-
-    offlineCache = fetchYarnDeps {
-      yarnLock = "${src}/gui/yarn.lock";
-      hash = "sha256-g+hI9n+nfXAcuEpjvDDaHg/DfjtNusOaw3S6kC1QDn4=";
-    };
-
-    env.OUTPUT_DIR = placeholder "out";
-
     nativeBuildInputs = [
       yarnConfigHook
       yarnBuildHook
       nodejs
     ];
+
+    env.OUTPUT_DIR = placeholder "out";
+
+    offlineCache = fetchYarnDeps {
+      hash = "sha256-g+hI9n+nfXAcuEpjvDDaHg/DfjtNusOaw3S6kC1QDn4=";
+      yarnLock = "${src}/gui/yarn.lock";
+    };
+
+    sourceRoot = "${src.name}/gui";
   };
 
   assetsDir = symlinkJoin {
     name = "assets";
+
     paths = [
       v2ray-geoip
       v2ray-domain-list-community
@@ -58,20 +57,8 @@ let
 in
 buildGoModule {
   inherit pname version src;
-
-  sourceRoot = "${src.name}/service";
-
-  vendorHash = "sha256-uiURsB1V4IB77YKLu5gdaqw9Fuja6fC5adWYDE3OE+Q=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/v2rayA/v2rayA/conf.Version=${version}"
-  ];
-
-  subPackages = [ "." ];
-
   nativeBuildInputs = [ makeWrapper ];
+  vendorHash = "sha256-uiURsB1V4IB77YKLu5gdaqw9Fuja6fC5adWYDE3OE+Q=";
 
   preBuild = ''
     cp -a ${web} server/router/web
@@ -88,8 +75,18 @@ buildGoModule {
       --prefix XDG_DATA_DIRS ":" ${assetsDir}/share
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/v2rayA/v2rayA/conf.Version=${version}"
+  ];
+
+  sourceRoot = "${src.name}/service";
+  subPackages = [ "." ];
+
   passthru = {
     inherit web;
+
     updateScript = nix-update-script {
       extraArgs = [
         "--subpackage"
@@ -101,9 +98,9 @@ buildGoModule {
   meta = {
     description = "Linux web GUI client of Project V which supports V2Ray, Xray, SS, SSR, Trojan and Pingtunnel";
     homepage = "https://github.com/v2rayA/v2rayA";
-    mainProgram = "v2rayA";
     license = lib.licenses.agpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ ChaosAttractor ];
+    platforms = lib.platforms.linux;
+    mainProgram = "v2rayA";
   };
 }

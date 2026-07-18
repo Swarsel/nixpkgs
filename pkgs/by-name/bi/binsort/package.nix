@@ -28,10 +28,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Sort files by binary similarity";
-    mainProgram = "binsort";
     homepage = "http://neoscientists.org/~tmueller/binsort/";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ numinit ];
     platforms = lib.platforms.unix;
+    mainProgram = "binsort";
   };
 })

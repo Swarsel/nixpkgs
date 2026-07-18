@@ -2,8 +2,8 @@
   lib,
   fetchFromGitHub,
   installShellFiles,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,16 +17,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-tmspfsIIxYa9fTPhHJrVRUcpC8gZ0R4prTLTDstuwbg=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   cargoHash = "sha256-IcQtG29qTQl4U0HwG+kvPT07RhSgUADtejV7ObWyjG0=";
-
   # Upstream tests require network access, which is unavailable in the sandbox.
   doCheck = false;
-
-  passthru = {
-    updateScript = nix-update-script { };
-  };
-
-  nativeBuildInputs = [ installShellFiles ];
 
   postInstall = ''
     installManPage assets/manpages/*.1
@@ -35,6 +29,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     installShellCompletion assets/completions/_hanko
     installShellCompletion assets/completions/hanko.fish
   '';
+
+  passthru = {
+    updateScript = nix-update-script { };
+  };
 
   meta = {
     description = "Keeps your Git allowed signers file up to date";

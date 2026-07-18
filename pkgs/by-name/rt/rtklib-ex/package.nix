@@ -1,11 +1,11 @@
 {
-  stdenv,
-  cmake,
-  nix-update-script,
-  blas,
-  lapack,
   lib,
+  stdenv,
   fetchFromGitHub,
+  blas,
+  cmake,
+  lapack,
+  nix-update-script,
   qt6,
 }:
 
@@ -33,11 +33,11 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.qtserialport
   ];
 
-  doCheck = true;
-
   cmakeFlags = [
     (lib.cmakeFeature "CMAKE_INSTALL_DATAROOTDIR" "${placeholder "out"}/share")
   ];
+
+  doCheck = true;
 
   passthru = {
     updateScript = nix-update-script { };

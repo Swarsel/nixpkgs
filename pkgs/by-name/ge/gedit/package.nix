@@ -1,49 +1,49 @@
 {
-  stdenv,
   lib,
-  meson,
-  mesonEmulatorHook,
+  stdenv,
   fetchFromGitLab,
-  pkg-config,
-  gtk3,
-  gtk-mac-integration,
+  desktop-file-utils,
+  docbook-xsl-nons,
+  gitUpdater,
   glib,
+  gobject-introspection,
+  gsettings-desktop-schemas,
+  gspell,
+  gtk-doc,
+  gtk-mac-integration,
+  gtk3,
+  itstool,
   libgedit-amtk,
   libgedit-gtksourceview,
   libgedit-tepl,
   libpeas,
   libxml2,
-  gsettings-desktop-schemas,
-  wrapGAppsHook3,
-  gtk-doc,
-  gobject-introspection,
-  docbook-xsl-nons,
+  meson,
+  mesonEmulatorHook,
   ninja,
-  gitUpdater,
-  gspell,
-  itstool,
-  desktop-file-utils,
+  pkg-config,
   vala,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "gedit";
   version = "50.0";
 
+  src = fetchFromGitLab {
+    owner = "gedit";
+    repo = "gedit";
+    tag = finalAttrs.version;
+    hash = "sha256-UkKd1H7twf9r9Jf5Cx6br/8lVT2F2O9U5jR2Ihom0ZA=";
+    fetchSubmodules = true;
+    domain = "gitlab.gnome.org";
+    group = "World";
+  };
+
   outputs = [
     "out"
     "devdoc"
   ];
-
-  src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
-    group = "World";
-    owner = "gedit";
-    repo = "gedit";
-    tag = finalAttrs.version;
-    fetchSubmodules = true;
-    hash = "sha256-UkKd1H7twf9r9Jf5Cx6br/8lVT2F2O9U5jR2Ihom0ZA=";
-  };
 
   patches = [
     # We patch gobject-introspection and meson to store absolute paths to libraries in typelibs
@@ -84,14 +84,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   # Reliably fails to generate gedit-file-browser-enum-types.h in time
   enableParallelBuilding = false;
-
   passthru.updateScript = gitUpdater { ignoredVersions = "(alpha|beta|rc).*"; };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/World/gedit/gedit";
     description = "Former GNOME text editor";
-    maintainers = with lib.maintainers; [ bobby285271 ];
+    homepage = "https://gitlab.gnome.org/World/gedit/gedit";
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ bobby285271 ];
     platforms = lib.platforms.unix;
     mainProgram = "gedit";
   };

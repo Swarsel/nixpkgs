@@ -1,9 +1,9 @@
 {
   lib,
-  runCommand,
-  zig,
   stdenv,
   makeWrapper,
+  runCommand,
+  zig,
 }:
 let
   targetPrefix = lib.optionalString (
@@ -12,17 +12,15 @@ let
 in
 runCommand "zig-cc-${zig.version}"
   {
-    pname = "zig-cc";
     inherit (zig) version;
-
+    inherit zig;
+    pname = "zig-cc";
     nativeBuildInputs = [ makeWrapper ];
 
     passthru = {
-      isZig = true;
       inherit targetPrefix;
+      isZig = true;
     };
-
-    inherit zig;
 
     meta = zig.meta // {
       mainProgram = "${targetPrefix}clang";

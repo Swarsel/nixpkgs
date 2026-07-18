@@ -1,21 +1,21 @@
 {
   lib,
   fetchFromGitHub,
-  pkg-config,
-  protobuf,
+  cairo,
+  gdk-pixbuf,
   glib,
   gobject-introspection,
+  graphene,
   gst_all_1,
   gtk4,
   gtk4-layer-shell,
-  gdk-pixbuf,
-  graphene,
-  cairo,
-  pango,
-  wrapGAppsHook4,
-  poppler,
   nix-update-script,
+  pango,
+  pkg-config,
+  poppler,
+  protobuf,
   rustPlatform,
+  wrapGAppsHook4,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -28,8 +28,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-fX3ErzTmHRO9z1SzHC2VZUgKOgRfO13X/joC5a3QN7Q=";
   };
-
-  cargoHash = "sha256-gm7xQ7qHui8F+uJBWKh7Fen0Zfi/YqpbdgNSoqar0wA=";
 
   nativeBuildInputs = [
     gobject-introspection
@@ -55,6 +53,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     gst-libav
   ]);
 
+  cargoHash = "sha256-gm7xQ7qHui8F+uJBWKh7Fen0Zfi/YqpbdgNSoqar0wA=";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -62,12 +61,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/abenz1267/walker";
     changelog = "https://github.com/abenz1267/walker/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       adamcstephens
       donovanglover
       saadndm
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "walker";
   };
 })

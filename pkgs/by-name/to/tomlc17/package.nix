@@ -27,9 +27,9 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "TOML parser in C17";
     homepage = "https://github.com/cktan/tomlc17";
     changelog = "https://github.com/cktan/tomlc17/releases/tag/R${finalAttrs.version}";
-    description = "TOML parser in C17";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ marcin-serwin ];
     platforms = with lib.platforms; unix;

@@ -1,18 +1,18 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
   gettext,
   gobject-introspection,
+  grim,
   gtk3,
-  wrapGAppsHook3,
-  xdg-utils,
+  python3Packages,
   scrot,
   slop,
-  xclip,
-  grim,
   slurp,
   wl-clipboard,
+  wrapGAppsHook3,
+  xclip,
+  xdg-utils,
   waylandSupport ? true,
   x11Support ? true,
 }:
@@ -20,9 +20,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "gscreenshot";
   version = "3.11.1";
-  pyproject = true;
-
-  build-system = with python3Packages; [ setuptools ];
 
   src = fetchFromGitHub {
     owner = "thenaterhood";
@@ -31,10 +28,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-24eo4ihWM/sJXj7Dp3hSp0FEP1uYzvCON2emuMiONSc=";
   };
 
+  patches = [ ./0001-Changing-paths-to-be-nix-compatible.patch ];
   # needed for wrapGAppsHook3 to function
   strictDeps = false;
-
   nativeBuildInputs = [ wrapGAppsHook3 ];
+  build-system = with python3Packages; [ setuptools ];
+
   dependencies = [
     gettext
     gobject-introspection
@@ -59,7 +58,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pygobject3
   ]);
 
-  patches = [ ./0001-Changing-paths-to-be-nix-compatible.patch ];
+  pyproject = true;
 
   meta = {
     description = "Screenshot frontend (CLI and GUI) for a variety of screenshot backends";
@@ -88,8 +87,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
     homepage = "https://github.com/thenaterhood/gscreenshot";
     license = lib.licenses.gpl2Only;
+    maintainers = [ ];
     platforms = lib.platforms.linux;
     mainProgram = "gscreenshot";
-    maintainers = [ ];
   };
 })

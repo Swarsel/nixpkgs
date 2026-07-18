@@ -1,10 +1,10 @@
 {
-  config,
-  callPackage,
   lib,
-  channel,
-  dir ? ./. + ("/" + channel),
   buildDotnetSdk,
+  callPackage,
+  channel,
+  config,
+  dir ? ./. + ("/" + channel),
   ...
 }@attrs:
 

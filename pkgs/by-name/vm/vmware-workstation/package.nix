@@ -1,77 +1,59 @@
 {
-  stdenv,
-  buildFHSEnv,
-  fetchurl,
   lib,
-  zlib,
-  gdbm,
-  libxslt,
-  libxml2,
-  libuuid,
-  readline,
-  readline70,
-  xz,
-  cups,
-  libaio,
-  vulkan-loader,
+  stdenv,
+  fetchurl,
+  fetchFromGitHub,
   alsa-lib,
-  libpulseaudio,
-  libxcrypt-legacy,
+  autoPatchelfHook,
+  buildFHSEnv,
+  bzip2,
+  cups,
+  gdbm,
+  kmod,
   libGL,
-  numactl,
-  libxtst,
-  libxscrnsaver,
-  libxrender,
-  libxrandr,
+  libaio,
+  libpulseaudio,
+  libuuid,
+  libx11,
+  libxau,
+  libxcomposite,
+  libxcrypt-legacy,
+  libxcursor,
+  libxdamage,
+  libxdmcp,
+  libxext,
+  libxfixes,
+  libxft,
   libxi,
   libxinerama,
-  libxft,
-  libxfixes,
-  libxext,
-  libxdmcp,
-  libxdamage,
-  libxcursor,
-  libxcomposite,
-  libxau,
-  libx11,
-  kmod,
-  python3,
-  autoPatchelfHook,
+  libxml2,
+  libxrandr,
+  libxrender,
+  libxscrnsaver,
+  libxslt,
+  libxtst,
   makeWrapper,
-  symlinkJoin,
-  enableInstaller ? false,
-  bzip2,
+  numactl,
+  python3,
+  readline,
+  readline70,
   sqlite,
-  enableMacOSGuests ? false,
-  fetchFromGitHub,
+  symlinkJoin,
   unzip,
+  vulkan-loader,
+  xz,
+  zlib,
+  enableInstaller ? false,
+  enableMacOSGuests ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "vmware-workstation";
   version = "25H2u1";
-  build = "25219725";
 
   src = fetchurl {
     url = "https://archive.org/download/VMware-Workstation-Full-${finalAttrs.version}-${finalAttrs.build}.x86_64/VMware-Workstation-Full-${finalAttrs.version}-${finalAttrs.build}.x86_64.bundle";
     hash = "sha256-chqpPE68qlGsbbde2Xx6TbEKqIEQRGiQ2x5Av6/HVmo=";
-  };
-
-  vmware-unpack-env = buildFHSEnv {
-    pname = "vmware-unpack-env";
-    inherit (finalAttrs) version;
-    targetPkgs = pkgs: [ zlib ];
-  };
-
-  unpackPhase = ''
-    ${finalAttrs.vmware-unpack-env}/bin/vmware-unpack-env -c "sh ${finalAttrs.src} --extract unpacked"
-  '';
-
-  macOSUnlockerSrc = fetchFromGitHub {
-    owner = "paolo-projects";
-    repo = "unlocker";
-    tag = "3.0.5";
-    hash = "sha256-JSEW1gqQuLGRkathlwZU/TnG6dL/xWKW4//SfE+kO0A=";
   };
 
   postPatch = lib.optionalString enableMacOSGuests ''
@@ -83,14 +65,6 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace unlocker/unlocker.py --replace \
       "/usr/lib/vmware/lib/libvmwarebase.so/libvmwarebase.so" "$out/lib/vmware/lib/libvmwarebase.so/libvmwarebase.so"
   '';
-
-  readline70_compat63 = symlinkJoin {
-    name = "readline70_compat63";
-    paths = [ readline70 ];
-    postBuild = ''
-      ln -s $out/lib/libreadline.so $out/lib/libreadline.so.6
-    '';
-  };
 
   nativeBuildInputs = [
     python3
@@ -386,17 +360,47 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  build = "25219725";
+
+  macOSUnlockerSrc = fetchFromGitHub {
+    hash = "sha256-JSEW1gqQuLGRkathlwZU/TnG6dL/xWKW4//SfE+kO0A=";
+    owner = "paolo-projects";
+    repo = "unlocker";
+    tag = "3.0.5";
+  };
+
+  readline70_compat63 = symlinkJoin {
+    postBuild = ''
+      ln -s $out/lib/libreadline.so $out/lib/libreadline.so.6
+    '';
+
+    name = "readline70_compat63";
+    paths = [ readline70 ];
+  };
+
+  unpackPhase = ''
+    ${finalAttrs.vmware-unpack-env}/bin/vmware-unpack-env -c "sh ${finalAttrs.src} --extract unpacked"
+  '';
+
+  vmware-unpack-env = buildFHSEnv {
+    inherit (finalAttrs) version;
+    pname = "vmware-unpack-env";
+    targetPkgs = pkgs: [ zlib ];
+  };
+
   meta = {
     description = "Industry standard desktop hypervisor for x86-64 architecture";
     homepage = "https://www.vmware.com/products/desktop-hypervisor/workstation-and-fusion";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
-    mainProgram = "vmware";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       cawilliamson
       deinferno
       vifino
     ];
+
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "vmware";
   };
 })

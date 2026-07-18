@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   aiofiles,
   aiohttp,
+  buildPythonPackage,
   pytest-asyncio,
   pytestCheckHook,
   python-dateutil,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "blinkpy";
   version = "0.25.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fronzbot";
@@ -31,12 +30,12 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "setuptools>=68,<83" setuptools
   '';
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "aiohttp"
-    "requests"
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     aiofiles
@@ -47,10 +46,7 @@ buildPythonPackage (finalAttrs: {
     sortedcontainers
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "blinkpy"
@@ -60,6 +56,11 @@ buildPythonPackage (finalAttrs: {
     "blinkpy.camera"
     "blinkpy.helpers.util"
     "blinkpy.sync_module"
+  ];
+
+  pythonRelaxDeps = [
+    "aiohttp"
+    "requests"
   ];
 
   meta = {

@@ -7,13 +7,14 @@
 buildPythonPackage rec {
   pname = "unix-ar";
   version = "0.2.1";
-  format = "wheel";
 
   src = fetchPypi {
     inherit format version;
-    pname = "unix_ar";
     hash = "sha256-Kstxi8Ewi/gOW52iYU2CQswv475M2LL9Rxm84Ymq/PE=";
+    pname = "unix_ar";
   };
+
+  format = "wheel";
 
   meta = {
     description = "AR file handling for Python (including .deb files)";

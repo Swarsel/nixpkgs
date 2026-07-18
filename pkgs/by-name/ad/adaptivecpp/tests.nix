@@ -2,31 +2,31 @@
   lib,
   stdenv,
   adaptivecpp,
+  boost,
+  cmake,
+  onetbb,
+  enablePstlTests ? false,
   # Within the nix sandbox, and on the CI especially, the tests will likely be unable to access a gpu.
   # While the CI won't be able to test on a GPU, we can do a sanity check with OMP atleast
   #
   # The bulk of work in acpp focuses on the generic target, so we want to test that first and foremost.
   # Not setting an explicit target makes it default to the generic target.
   targets ? null,
-  enablePstlTests ? false,
-  onetbb,
-  cmake,
-  boost,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  pname = "${adaptivecpp.pname}-tests";
   inherit (adaptivecpp)
     version
     src
     ;
 
+  pname = "${adaptivecpp.pname}-tests";
+
   nativeBuildInputs = [
     cmake
     onetbb
   ];
-  buildInputs = [ boost ];
 
-  sourceRoot = "${adaptivecpp.src.name}/tests";
+  buildInputs = [ boost ];
 
   cmakeFlags = [
     (lib.cmakeFeature "AdaptiveCpp_DIR" "${adaptivecpp}/lib/cmake/AdaptiveCpp")
@@ -47,4 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
   + lib.optionalString enablePstlTests ''
     install -Dm755 pstl_tests -t $out/bin/
   '';
+
+  sourceRoot = "${adaptivecpp.src.name}/tests";
 })

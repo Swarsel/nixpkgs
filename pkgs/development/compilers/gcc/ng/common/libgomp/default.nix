@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  gcc_meta,
-  release_version,
-  version,
-  getVersionFile,
-  monorepoSrc ? null,
   autoreconfHook269,
+  gcc_meta,
+  getVersionFile,
+  release_version,
   runCommand,
+  version,
+  monorepoSrc ? null,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  pname = "libgomp";
   inherit version;
+  pname = "libgomp";
 
   src = runCommand "libgomp-src-${version}" { src = monorepoSrc; } ''
     runPhase unpackPhase
@@ -43,25 +43,8 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
-  postUnpack = ''
-    mkdir -p ./build
-    buildRoot=$(readlink -e "./build")
-  '';
-
-  preAutoreconf = ''
-    sourceRoot=$(readlink -e "./libgomp")
-    cd $sourceRoot
-  '';
-
-  enableParallelBuilding = true;
-
   nativeBuildInputs = [
     autoreconfHook269
-  ];
-
-  configurePlatforms = [
-    "build"
-    "host"
   ];
 
   configureFlags = [
@@ -76,6 +59,23 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doCheck = true;
+
+  configurePlatforms = [
+    "build"
+    "host"
+  ];
+
+  enableParallelBuilding = true;
+
+  postUnpack = ''
+    mkdir -p ./build
+    buildRoot=$(readlink -e "./build")
+  '';
+
+  preAutoreconf = ''
+    sourceRoot=$(readlink -e "./libgomp")
+    cd $sourceRoot
+  '';
 
   passthru = {
     isGNU = true;

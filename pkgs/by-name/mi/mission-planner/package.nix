@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchurl,
+  gitUpdater,
   makeDesktopItem,
   makeWrapper,
-  unzip,
   mono,
-  gitUpdater,
+  unzip,
 }:
 
 let
   pname = "mission-planner";
   desktopItem = makeDesktopItem {
-    name = pname;
-    exec = pname;
-    icon = pname;
     comment = "MissionPlanner GCS & Ardupilot configuration tool";
     desktopName = "MissionPlanner";
+    exec = pname;
     genericName = "Ground Control Station";
+    icon = pname;
+    name = pname;
   };
 in
 stdenv.mkDerivation rec {
@@ -34,17 +34,6 @@ stdenv.mkDerivation rec {
     mono
     unzip
   ];
-
-  # zip has no outer directory, so make one and unpack there
-  unpackPhase = ''
-    runHook preUnpack
-
-    mkdir -p source
-    cd source
-    unzip -q $src
-
-    runHook postUnpack
-  '';
 
   env.AOT_FILES = toString [
     "MissionPlanner.exe"
@@ -71,18 +60,31 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  # zip has no outer directory, so make one and unpack there
+  unpackPhase = ''
+    runHook preUnpack
+
+    mkdir -p source
+    cd source
+    unzip -q $src
+
+    runHook postUnpack
+  '';
+
   meta = {
     description = "ArduPilot ground station";
-    mainProgram = "mission-planner";
+
     longDescription = ''
       Full-featured ground station application for the ArduPilot open source
       autopilot project.  Lets you both flash, configure and control ArduPilot
       Plane, Copter and Rover targets.
     '';
+
     homepage = "https://ardupilot.org/planner/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.gpl3Plus;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ wucke13 ];
     platforms = lib.platforms.all;
+    mainProgram = "mission-planner";
   };
 }

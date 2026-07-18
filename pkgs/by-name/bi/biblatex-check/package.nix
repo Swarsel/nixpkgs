@@ -16,9 +16,8 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-8oHX56+kRWWl8t22DqLAFinjPngRMo3vXxXuVXBwutM=";
   };
 
-  buildInputs = [ python3 ];
-
   strictDeps = true;
+  buildInputs = [ python3 ];
 
   installPhase = ''
     install -Dm755 biblatex_check.py $out/bin/biblatex-check

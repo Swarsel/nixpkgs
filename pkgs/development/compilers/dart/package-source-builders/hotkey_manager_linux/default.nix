@@ -2,12 +2,12 @@
   stdenv,
 }:
 
-{ version, src, ... }:
+{ src, version, ... }:
 
 stdenv.mkDerivation {
-  pname = "hotkey_manager_linux";
   inherit version src;
   inherit (src) passthru;
+  pname = "hotkey_manager_linux";
 
   postPatch = ''
     pushd ${src.passthru.packageRoot}

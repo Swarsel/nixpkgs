@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
   six,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "paste";
   version = "3.10.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pasteorg";
@@ -23,13 +22,6 @@ buildPythonPackage rec {
     patchShebangs tests/cgiapp_data/
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    setuptools
-    six
-  ];
-
   nativeCheckInputs = [ pytestCheckHook ];
 
   preCheck = ''
@@ -37,11 +29,19 @@ buildPythonPackage rec {
     touch tests/urlparser_data/secured.txt
   '';
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    setuptools
+    six
+  ];
+
   disabledTests = [
     # pkg_resources deprecation warning
     "test_form"
   ];
 
+  pyproject = true;
   pythonNamespaces = [ "paste" ];
 
   meta = {

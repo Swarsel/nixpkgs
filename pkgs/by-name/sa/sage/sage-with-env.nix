@@ -1,23 +1,23 @@
 {
-  stdenv,
   lib,
-  sage-env,
+  stdenv,
   blas,
-  lapack,
-  pkg-config,
-  three,
-  singular,
-  gap,
-  giac,
-  maxima,
-  pari,
-  gmp,
-  gfan,
-  python3,
   eclib,
-  ntl,
   ecm,
+  gap,
+  gfan,
+  giac,
+  gmp,
+  lapack,
+  maxima,
+  ntl,
+  pari,
+  pkg-config,
+  python3,
   pythonEnv,
+  sage-env,
+  singular,
+  three,
 }:
 
 # lots of segfaults with (64 bit) blas
@@ -93,13 +93,10 @@ let
   input_names = map (dep: pkg_to_spkg_name dep patch_names) transitiveDeps;
 in
 stdenv.mkDerivation rec {
-  version = src.version;
-  pname = "sage-with-env";
-  src = sage-env.lib.src;
-
   inherit nativeBuildInputs buildInputs;
-
-  configurePhase = "#do nothing";
+  pname = "sage-with-env";
+  version = src.version;
+  src = sage-env.lib.src;
 
   buildPhase = ''
     mkdir installed
@@ -137,6 +134,8 @@ stdenv.mkDerivation rec {
     substituteInPlace "$out/bin/sage-env" \
       --subst-var-by sage-local "$out"
   '';
+
+  configurePhase = "#do nothing";
 
   passthru = {
     env = sage-env;

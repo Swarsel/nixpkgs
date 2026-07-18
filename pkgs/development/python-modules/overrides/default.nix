@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "overrides";
   version = "7.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mkorpela";
@@ -20,11 +19,9 @@ buildPythonPackage rec {
 
   # https://github.com/mkorpela/overrides/pull/136
   patches = [ ./pytest9-compat.patch ];
-
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "overrides" ];
 
   meta = {

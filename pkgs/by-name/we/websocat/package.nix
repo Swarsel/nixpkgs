@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  bash,
   fetchFromGitHub,
+  bash,
   fetchpatch,
   libiconv,
   makeWrapper,
@@ -23,17 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-v5+9cbKe3c12/SrW7mgN6tvQIiAuweqvMIl46Ce9f2A=";
   };
 
-  # Fix build with Rust 1.87
-  # FIXME: remove in next update
-  cargoPatches = [
-    (fetchpatch {
-      url = "https://github.com/vi/websocat/commit/d4455623e777231d69b029d69d7a17c0de2bafe7.diff";
-      hash = "sha256-OUQQ+3eESE3XcGgToErqvF8ItpT8YCMAZhbvRzkFKpc=";
-    })
-  ];
-
-  cargoHash = "sha256-3m7Gg//vjNjYlesEjKsdqjU48dAtgSeugxingr8OJyY=";
-
   nativeBuildInputs = [
     pkg-config
     makeWrapper
@@ -46,10 +35,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libiconv
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  buildFeatures = [ "ssl" ];
-
+  cargoHash = "sha256-3m7Gg//vjNjYlesEjKsdqjU48dAtgSeugxingr8OJyY=";
   # Needed to get openssl-sys to use pkg-config.
   env.OPENSSL_NO_VENDOR = 1;
 
@@ -62,15 +48,28 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  buildFeatures = [ "ssl" ];
+
+  # Fix build with Rust 1.87
+  # FIXME: remove in next update
+  cargoPatches = [
+    (fetchpatch {
+      hash = "sha256-OUQQ+3eESE3XcGgToErqvF8ItpT8YCMAZhbvRzkFKpc=";
+      url = "https://github.com/vi/websocat/commit/d4455623e777231d69b029d69d7a17c0de2bafe7.diff";
+    })
+  ];
 
   meta = {
     description = "Command-line client for WebSockets (like netcat/socat)";
     homepage = "https://github.com/vi/websocat";
     changelog = "https://github.com/vi/websocat/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
     ];
+
     mainProgram = "websocat";
   };
 })

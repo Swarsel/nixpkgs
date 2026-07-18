@@ -2,19 +2,15 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  ninja,
   core,
   core-amqp,
-  nix-update-script,
   meta,
+  ninja,
+  nix-update-script,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "azure-sdk-for-cpp-messaging-eventhubs";
   version = "1.0.0-beta.10";
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "Azure";
@@ -22,7 +18,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "azure-messaging-eventhubs_1.0.0-beta.10";
     hash = "sha256-qGYfvRFnesI+oIp3jCRo53v66aR2qrcummSNpc5sCOw=";
   };
-  sourceRoot = "${finalAttrs.src.name}/sdk/eventhubs/azure-messaging-eventhubs";
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   postPatch = ''
     sed -i '/CMAKE_CXX_STANDARD/d' CMakeLists.txt
@@ -40,23 +40,25 @@ stdenv.mkDerivation (finalAttrs: {
     core-amqp
   ];
 
+  cmakeFlags = [
+    "-DBUILD_SHARED_LIBS=ON"
+    "-DWARNINGS_AS_ERRORS=OFF"
+  ];
+
   env = {
     AZURE_SDK_DISABLE_AUTO_VCPKG = 1;
     NIX_CFLAGS_COMPILE = "-Wno-error";
   };
 
-  cmakeFlags = [
-    "-DBUILD_SHARED_LIBS=ON"
-    "-DWARNINGS_AS_ERRORS=OFF"
-  ];
+  # See note in ./core.nix.
+  doCheck = false;
 
   postInstall = ''
     moveToOutput "share" "$dev"
     moveToOutput "share/$(basename "$sourceRoot")-cpp/copyright" "$out"
   '';
 
-  # See note in ./core.nix.
-  doCheck = false;
+  sourceRoot = "${finalAttrs.src.name}/sdk/eventhubs/azure-messaging-eventhubs";
 
   passthru.updateScript = nix-update-script {
     extraArgs = [

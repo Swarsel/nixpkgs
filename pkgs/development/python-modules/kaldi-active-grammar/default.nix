@@ -1,17 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  scikit-build,
-  cmake,
-  ush,
-  requests,
-  six,
-  numpy,
+  buildPythonPackage,
+  callPackage,
   cffi,
+  cmake,
+  numpy,
   openfst,
   replaceVars,
-  callPackage,
+  requests,
+  scikit-build,
+  six,
+  ush,
 }:
 
 #
@@ -25,18 +25,12 @@ in
 buildPythonPackage rec {
   pname = "kaldi-active-grammar";
   version = "3.2.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "daanzu";
     repo = "kaldi-active-grammar";
     tag = "v${version}";
     sha256 = "sha256-VyVshIEVp/ep4Ih7Kj66GF02JEZ4nwgJOtgR2DarzdY=";
-  };
-
-  env = {
-    KALDI_BRANCH = "foo";
-    KALDIAG_SETUP_RAW = "1";
   };
 
   patches = [
@@ -50,19 +44,16 @@ buildPythonPackage rec {
     })
   ];
 
-  # scikit-build puts us in the wrong folder. That is bad.
-  preBuild = ''
-    cd ..
-  '';
+  nativeBuildInputs = [
+    scikit-build
+    cmake
+  ];
 
   buildInputs = [
     openfst
     kaldi
   ];
-  nativeBuildInputs = [
-    scikit-build
-    cmake
-  ];
+
   propagatedBuildInputs = [
     ush
     requests
@@ -71,7 +62,18 @@ buildPythonPackage rec {
     six
   ];
 
+  env = {
+    KALDIAG_SETUP_RAW = "1";
+    KALDI_BRANCH = "foo";
+  };
+
+  # scikit-build puts us in the wrong folder. That is bad.
+  preBuild = ''
+    cd ..
+  '';
+
   doCheck = false; # no tests exist
+  format = "setuptools";
 
   meta = {
     description = "Python Kaldi speech recognition";

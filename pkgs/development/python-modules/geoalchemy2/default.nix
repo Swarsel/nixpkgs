@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  alembic,
+  buildPythonPackage,
   packaging,
+  pytest-benchmark,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
   shapely,
   sqlalchemy,
-  alembic,
-  pytest-benchmark,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "geoalchemy2";
   version = "0.18.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "geoalchemy";
@@ -23,6 +22,13 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-kSsKud4/uL5ycPiuS+JPXJ6XH9ZgQ+kHOTC5RtG9C0I=";
   };
+
+  nativeCheckInputs = [
+    alembic
+    pytest-benchmark
+    pytestCheckHook
+  ]
+  ++ optional-dependencies.shapely;
 
   build-system = [
     setuptools
@@ -33,15 +39,6 @@ buildPythonPackage rec {
     sqlalchemy
     packaging
   ];
-
-  nativeCheckInputs = [
-    alembic
-    pytest-benchmark
-    pytestCheckHook
-  ]
-  ++ optional-dependencies.shapely;
-
-  pytestFlags = [ "--benchmark-disable" ];
 
   disabledTestPaths = [
     # tests require live databases
@@ -59,11 +56,13 @@ buildPythonPackage rec {
     "tests/test_pickle.py"
   ];
 
-  pythonImportsCheck = [ "geoalchemy2" ];
-
   optional-dependencies = {
     shapely = [ shapely ];
   };
+
+  pyproject = true;
+  pytestFlags = [ "--benchmark-disable" ];
+  pythonImportsCheck = [ "geoalchemy2" ];
 
   meta = {
     description = "Toolkit for working with spatial databases";

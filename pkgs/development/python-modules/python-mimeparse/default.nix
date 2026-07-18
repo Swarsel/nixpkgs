@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "python-mimeparse";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "falconry";
@@ -18,9 +17,9 @@ buildPythonPackage rec {
     hash = "sha256-4LdfxVOioiyjeZjxCrvOELG+mJ4YOX4CUn+CXYWCtOo=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  pyproject = true;
 
   meta = {
     description = "Module provides basic functions for parsing mime-type names and matching them against a list of media-ranges";

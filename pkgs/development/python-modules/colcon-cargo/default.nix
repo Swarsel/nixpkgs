@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
-  colcon,
-  cargo,
   fetchFromGitHub,
-  scspell,
-  setuptools,
+  buildPythonPackage,
+  cargo,
+  colcon,
   pytestCheckHook,
   rustfmt,
+  scspell,
+  setuptools,
   toml,
   writableTmpDirAsHomeHook,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "colcon-cargo";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "colcon";
@@ -22,13 +21,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-jhc5mN4jnLk2zLj01sBm63acrku/FIexnIWCQ6GKDKA=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    colcon
-    toml
-  ];
 
   nativeCheckInputs = [
     cargo
@@ -38,16 +30,25 @@ buildPythonPackage (finalAttrs: {
     writableTmpDirAsHomeHook
   ];
 
-  disabledTests = [
-    # Attempts to download https://index.crates.io/config.json at test time
-    "test_build_and_test_package"
-    "test_skip_pure_library_package"
+  build-system = [ setuptools ];
+
+  dependencies = [
+    colcon
+    toml
   ];
 
   disabledTestPaths = [
     # Skip the linter tests
     "test/test_flake8.py"
   ];
+
+  disabledTests = [
+    # Attempts to download https://index.crates.io/config.json at test time
+    "test_build_and_test_package"
+    "test_skip_pure_library_package"
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "colcon_cargo"

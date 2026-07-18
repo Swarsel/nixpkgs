@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "verlib2";
   version = "26.2";
-  pyproject = true;
 
   # This tarball doesn't include tests unfortunately, and the GitHub tarball
   # could have been an alternative, but versioningit fails to detect the
@@ -27,6 +26,7 @@ buildPythonPackage rec {
     versioningit
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "verlib2" ];
 
   meta = {

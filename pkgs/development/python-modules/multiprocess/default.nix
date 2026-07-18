@@ -1,14 +1,13 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dill,
-  fetchFromGitHub,
 }:
 
 buildPythonPackage rec {
   pname = "multiprocess";
   version = "0.70.19";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "uqfoundation";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ dill ];
-
   # Python-version dependent tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "multiprocess" ];
 
   meta = {

@@ -2,14 +2,13 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  pbr,
   linecache2,
+  pbr,
 }:
 
 buildPythonPackage rec {
-  version = "1.4.0";
-  format = "setuptools";
   pname = "traceback2";
+  version = "1.4.0";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,6 +22,7 @@ buildPythonPackage rec {
 
   # circular dependencies for tests
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Backport of traceback to older supported Pythons";

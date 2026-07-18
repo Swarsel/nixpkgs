@@ -2,28 +2,28 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
+  boost,
   boxed-cpp,
   cairo,
-  freetype,
+  catch2_3,
+  cmake,
+  darwin,
+  file,
+  fmt,
   fontconfig,
+  freetype,
+  installShellFiles,
   libunicode,
   libutempter,
-  termbench-pro,
-  qt6,
-  boost,
-  catch2_3,
-  fmt,
   microsoft-gsl,
-  range-v3,
-  yaml-cpp,
   ncurses,
-  file,
-  darwin,
   nixosTests,
-  installShellFiles,
+  pkg-config,
+  qt6,
+  range-v3,
   reflection-cpp,
+  termbench-pro,
+  yaml-cpp,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,17 +37,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-+rr1bn4O5v9rXyoIx+ejL+qe5Kf2bFpgWA3DkWRcDYk=";
   };
 
-  patches = lib.optionals stdenv.hostPlatform.isDarwin [
-    ./dont-fix-app-bundle.diff
-    ./remove-deep-flag-from-codesign.diff
-  ];
-
-  # Dependencies are already managed by nix
-  cmakeFlags = [ "-DCONTOUR_USE_CPM=OFF" ];
-
   outputs = [
     "out"
     "terminfo"
+  ];
+
+  patches = lib.optionals stdenv.hostPlatform.isDarwin [
+    ./dont-fix-app-bundle.diff
+    ./remove-deep-flag-from-codesign.diff
   ];
 
   nativeBuildInputs = [
@@ -81,6 +78,9 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     darwin.libutil
   ];
+
+  # Dependencies are already managed by nix
+  cmakeFlags = [ "-DCONTOUR_USE_CPM=OFF" ];
 
   postInstall = ''
     mkdir -p $out/nix-support $terminfo/share

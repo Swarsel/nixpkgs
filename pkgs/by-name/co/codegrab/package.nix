@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -14,6 +14,7 @@ buildGoModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Krcjb8HEzaxHhJ+6blP1tuAvAHPKnHSNRrbJ8CHNPG4=";
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       git rev-parse --short HEAD > $out/COMMIT
@@ -22,6 +23,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-/M51gagiJTLSUdUM+Rn96az2iDVj6nsevKcrq2sPzJA=";
+
+  # ldflags based on metadata from git and source
+  preBuild = ''
+    ldflags+=" -X=github.com/epilande/codegrab/internal/utils.CommitSHA=$(cat COMMIT)"
+  '';
 
   checkFlags = [
     "-skip=TestParseSizeString"
@@ -32,11 +38,6 @@ buildGoModule (finalAttrs: {
     "-w"
     "-X=github.com/epilande/codegrab/internal/utils.Version=${finalAttrs.version}"
   ];
-
-  # ldflags based on metadata from git and source
-  preBuild = ''
-    ldflags+=" -X=github.com/epilande/codegrab/internal/utils.CommitSHA=$(cat COMMIT)"
-  '';
 
   meta = {
     description = "Interactive CLI tool for selecting and bundling code into a single, LLM-ready output file";

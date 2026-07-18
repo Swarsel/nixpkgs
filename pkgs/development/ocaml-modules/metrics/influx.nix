@@ -1,16 +1,14 @@
 {
   buildDunePackage,
-  metrics,
   duration,
   fmt,
   lwt,
+  metrics,
 }:
 
 buildDunePackage {
-  pname = "metrics-influx";
   inherit (metrics) version src;
-
-  duneVersion = "3";
+  pname = "metrics-influx";
 
   propagatedBuildInputs = [
     duration
@@ -18,6 +16,8 @@ buildDunePackage {
     lwt
     metrics
   ];
+
+  duneVersion = "3";
 
   meta = metrics.meta // {
     description = "Influx reporter for the Metrics library";

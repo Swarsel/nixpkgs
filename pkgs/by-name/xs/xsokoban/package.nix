@@ -3,9 +3,9 @@
   stdenv,
   fetchurl,
   libx11,
-  xorgproto,
   libxpm,
   libxt,
+  xorgproto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,13 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.NIX_CFLAGS_COMPILE = "-I${libxpm.dev}/include/X11 -Wno-error=implicit-int -Wno-error=implicit-function-declaration";
-
-  hardeningDisable = [ "format" ];
-
-  prePatch = ''
-    substituteInPlace Makefile.in --replace 4755 0755
-    substituteInPlace externs.h --replace 'malloc.h' 'stdlib.h'
-  '';
 
   preConfigure = ''
     sed -e 's/getline/my_getline/' -i score.c
@@ -62,12 +55,19 @@ stdenv.mkDerivation (finalAttrs: {
     mkdir -p $out/bin $out/share $out/man/man1 $out/lib
   '';
 
+  hardeningDisable = [ "format" ];
+
+  prePatch = ''
+    substituteInPlace Makefile.in --replace 4755 0755
+    substituteInPlace externs.h --replace 'malloc.h' 'stdlib.h'
+  '';
+
   meta = {
     description = "X sokoban";
     homepage = "https://www.cs.cornell.edu/andru/xsokoban.html";
-    mainProgram = "xsokoban";
     license = lib.licenses.publicDomain;
     maintainers = [ lib.maintainers.raskin ];
     platforms = lib.platforms.unix;
+    mainProgram = "xsokoban";
   };
 })

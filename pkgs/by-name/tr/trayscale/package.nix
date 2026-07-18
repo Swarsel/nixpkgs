@@ -1,13 +1,13 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  pkg-config,
-  wrapGAppsHook4,
-  tailscale,
-  gtk4,
+  buildGoModule,
   gobject-introspection,
+  gtk4,
   libadwaita,
+  pkg-config,
+  tailscale,
+  wrapGAppsHook4,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,26 +21,18 @@ buildGoModule (finalAttrs: {
     hash = "sha256-MPKOxU3b+i85Y5xaCYWzy7fLWi3K9rN7yPtaUv7fsEU=";
   };
 
-  vendorHash = "sha256-G53kmNrTXhHCT5Axb/h9Mkbz/S2mScxnYjn07fBT2Lc=";
-
-  subPackages = [ "cmd/trayscale" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=deedles.dev/trayscale/internal/metadata.version=${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [
     pkg-config
     gobject-introspection
     wrapGAppsHook4
   ];
+
   buildInputs = [
     gtk4
     libadwaita
   ];
 
+  vendorHash = "sha256-G53kmNrTXhHCT5Axb/h9Mkbz/S2mScxnYjn07fBT2Lc=";
   # there are no actual tests, and it takes 20 minutes to rebuild
   doCheck = false;
 
@@ -53,13 +45,21 @@ buildGoModule (finalAttrs: {
     gappsWrapperArgs+=(--prefix PATH : "${tailscale}/bin")
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=deedles.dev/trayscale/internal/metadata.version=${finalAttrs.version}"
+  ];
+
+  subPackages = [ "cmd/trayscale" ];
+
   meta = {
-    changelog = "https://github.com/DeedleFake/trayscale/releases/tag/${finalAttrs.src.rev}";
     description = "Unofficial GUI wrapper around the Tailscale CLI client";
     homepage = "https://github.com/DeedleFake/trayscale";
+    changelog = "https://github.com/DeedleFake/trayscale/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ sikmir ];
-    mainProgram = "trayscale";
     platforms = lib.platforms.unix;
+    mainProgram = "trayscale";
   };
 })

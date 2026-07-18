@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
-  testers,
   kubeshark,
   nix-update-script,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,7 +20,23 @@ buildGoModule (finalAttrs: {
     hash = "sha256-YKR0P/4X134NTPuXeh1Ha781wav7daAxp+xJWCmgkIw=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-4s1gxJo2w5BibZ9CJP7Jl9Z8Zzo8WpBokBnRN+zp8b4=";
+  doCheck = true;
+
+  checkPhase = ''
+    go test ./...
+  '';
+
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    installShellCompletion --cmd kubeshark \
+      --bash <($out/bin/kubeshark completion bash) \
+      --fish <($out/bin/kubeshark completion fish) \
+      --zsh <($out/bin/kubeshark completion zsh)
+  '';
+
+  # Tests bind loopback sockets via httptest.
+  __darwinAllowLocalNetworking = true;
 
   ldflags =
     let
@@ -36,46 +52,34 @@ buildGoModule (finalAttrs: {
       "-X ${t}/misc.Ver=${finalAttrs.version}"
     ];
 
-  nativeBuildInputs = [ installShellFiles ];
-
-  checkPhase = ''
-    go test ./...
-  '';
-  doCheck = true;
-
-  # Tests bind loopback sockets via httptest.
-  __darwinAllowLocalNetworking = true;
-
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    installShellCompletion --cmd kubeshark \
-      --bash <($out/bin/kubeshark completion bash) \
-      --fish <($out/bin/kubeshark completion fish) \
-      --zsh <($out/bin/kubeshark completion zsh)
-  '';
-
   passthru = {
     tests.version = testers.testVersion {
-      package = kubeshark;
-      command = "kubeshark version";
       inherit (finalAttrs) version;
+      command = "kubeshark version";
+      package = kubeshark;
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://github.com/kubeshark/kubeshark/releases/tag/v${finalAttrs.version}";
     description = "API Traffic Viewer for Kubernetes";
-    mainProgram = "kubeshark";
-    homepage = "https://kubeshark.com/";
-    license = lib.licenses.asl20;
+
     longDescription = ''
       The API traffic viewer for Kubernetes providing real-time, protocol-aware visibility into Kubernetes’ internal network,
       Think TCPDump and Wireshark re-invented for Kubernetes
       capturing, dissecting and monitoring all traffic and payloads going in, out and across containers, pods, nodes and clusters.
     '';
+
+    homepage = "https://kubeshark.com/";
+    changelog = "https://github.com/kubeshark/kubeshark/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       qjoly
       miniharinn
     ];
+
+    mainProgram = "kubeshark";
   };
 })

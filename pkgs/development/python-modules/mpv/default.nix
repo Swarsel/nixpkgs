@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   mpv,
-  setuptools,
   pytestCheckHook,
   pyvirtualdisplay,
+  setuptools,
   writableTmpDirAsHomeHook,
   xvfb,
 }:
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "mpv";
   version = "1.0.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jaseg";
@@ -29,8 +28,6 @@ buildPythonPackage rec {
                      'sofile = "${mpv}/lib/libmpv${stdenv.hostPlatform.extensions.sharedLibrary}"'
   '';
 
-  build-system = [ setuptools ];
-
   buildInputs = [ mpv ];
 
   nativeCheckInputs = [
@@ -42,6 +39,8 @@ buildPythonPackage rec {
     xvfb
   ];
 
+  build-system = [ setuptools ];
+
   disabledTestPaths = [
     # timing sensitive
     "tests/test_mpv.py::CommandTests::test_sub_add"
@@ -51,6 +50,7 @@ buildPythonPackage rec {
     "tests/test_mpv.py::RegressionTests::test_wait_for_property_concurrency"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "mpv" ];
 
   meta = {

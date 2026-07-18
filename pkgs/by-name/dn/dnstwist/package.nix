@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "dnstwist";
   version = "20250130";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "elceef";
@@ -15,6 +14,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-cgSQ6KDCvTYX0vp0jqNzKHzo84IXrztoYqoTJNF+FiI=";
   };
+
+  # Project has no tests
+  doCheck = false;
 
   build-system = with python3.pkgs; [
     setuptools
@@ -29,8 +31,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     whois
   ];
 
-  # Project has no tests
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "dnstwist"

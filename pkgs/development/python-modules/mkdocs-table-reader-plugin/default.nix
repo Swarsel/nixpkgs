@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   mkdocs,
-  pandas,
-  tabulate,
-  pyyaml,
-  pytestCheckHook,
-  openpyxl,
   mkdocs-macros-plugin,
+  openpyxl,
+  pandas,
+  pytestCheckHook,
+  pyyaml,
+  setuptools,
+  tabulate,
 }:
 
 buildPythonPackage rec {
   pname = "mkdocs-table-reader-plugin";
   version = "3.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "timvink";
@@ -23,6 +22,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-XyMz0CeLQderzzz/Z3H6rja619wPzx42X3jz30wt6a8=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    openpyxl
+    mkdocs-macros-plugin
+  ];
 
   build-system = [
     setuptools
@@ -35,20 +40,16 @@ buildPythonPackage rec {
     pyyaml
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    openpyxl
-    mkdocs-macros-plugin
-  ];
-
-  pythonImportsCheck = [
-    "mkdocs_table_reader_plugin"
-  ];
-
   disabledTests = [
     # fails with non zero exit code without printing stdout/stderr of `mkdocs build` -> cause unknown
     "test_compatibility_markdownextradata"
     "test_macros_jinja2_syntax"
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "mkdocs_table_reader_plugin"
   ];
 
   meta = {

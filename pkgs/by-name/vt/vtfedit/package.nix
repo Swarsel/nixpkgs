@@ -1,11 +1,10 @@
 {
   lib,
   stdenv,
-  fetchzip,
   fetchurl,
-  makeDesktopItem,
-
   copyDesktopItems,
+  fetchzip,
+  makeDesktopItem,
   makeWrapper,
   wineWow64Packages,
   winetricks,
@@ -23,19 +22,9 @@ stdenv.mkDerivation rec {
     stripRoot = false;
   };
 
-  icon = fetchurl {
-    url = "https://web.archive.org/web/20230906220249im_/https://valvedev.info/tools/vtfedit/thumb.png";
-    hash = "sha256-Jpqo/s1wO2U5Z1DSZvADTfdH+8ycr0KF6otQbAE+jts=";
-  };
-
   nativeBuildInputs = [
     copyDesktopItems
     makeWrapper
-  ];
-
-  nativeRuntimeInputs = lib.makeBinPath [
-    wine
-    winetricks
   ];
 
   installPhase = ''
@@ -60,23 +49,33 @@ stdenv.mkDerivation rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = pname;
+      categories = [ "Graphics" ];
+      comment = meta.description;
       desktopName = "VTFEdit";
       exec = "vtfedit %f";
       icon = "vtfedit";
-      terminal = false;
-      categories = [ "Graphics" ];
-      comment = meta.description;
       mimeTypes = [ "application/x-vtfedit" ];
+      name = pname;
+      terminal = false;
     })
   ];
 
+  icon = fetchurl {
+    hash = "sha256-Jpqo/s1wO2U5Z1DSZvADTfdH+8ycr0KF6otQbAE+jts=";
+    url = "https://web.archive.org/web/20230906220249im_/https://valvedev.info/tools/vtfedit/thumb.png";
+  };
+
+  nativeRuntimeInputs = lib.makeBinPath [
+    wine
+    winetricks
+  ];
+
   meta = {
+    inherit (wine.meta) platforms;
     description = "VTF file viewer/editor";
     homepage = "https://nemstools.github.io/pages/VTFLib.html";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.lgpl21Plus;
-    inherit (wine.meta) platforms;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
   };
 }

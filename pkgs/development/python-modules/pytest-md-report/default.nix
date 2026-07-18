@@ -2,30 +2,26 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
-  setuptools-scm,
   pytablewriter,
   pytest,
+  pytestCheckHook,
+  setuptools,
+  setuptools-scm,
   tcolorpy,
   typepy,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-md-report";
   version = "0.8.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "pytest_md_report";
     inherit version;
     hash = "sha256-yOO38fkaDo59G5RuGyJPTzkYfaDfL4EnMTYaQ2oX9HI=";
+    pname = "pytest_md_report";
   };
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
+  buildInputs = [ pytest ];
 
   propagatedBuildInputs = [
     pytablewriter
@@ -33,10 +29,14 @@ buildPythonPackage rec {
     typepy
   ];
 
-  buildInputs = [ pytest ];
-
   nativeCheckInputs = [ pytestCheckHook ];
 
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "pytest_md_report" ];
 
   meta = {

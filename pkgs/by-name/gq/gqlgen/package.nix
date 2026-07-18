@@ -9,8 +9,8 @@ let
   version = "0.17.94";
 in
 buildGoModule {
-  pname = "gqlgen";
   inherit version;
+  pname = "gqlgen";
 
   src = fetchFromGitHub {
     owner = "99designs";
@@ -20,28 +20,27 @@ buildGoModule {
   };
 
   vendorHash = "sha256-n49MlAs6gWMxy6u/cH2UR3xd0iwttT3bTcOu2M0UFhc=";
-
-  subPackages = [ "." ];
-
   env.CGO_ENABLED = 0;
 
   checkFlags = [
     "-skip=^TestGenerate$" # skip tests that want to run `go mod tidy`
   ];
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
+  subPackages = [ "." ];
   versionCheckProgramArg = "version";
 
   meta = {
+    description = "Go generate based GraphQL server library";
     homepage = "https://github.com/99designs/gqlgen";
     changelog = "https://github.com/99designs/gqlgen/releases/tag/v${version}";
-    description = "Go generate based GraphQL server library";
     license = lib.licenses.mit;
-    mainProgram = "gqlgen";
     maintainers = with lib.maintainers; [ skowalak ];
+    mainProgram = "gqlgen";
   };
 }

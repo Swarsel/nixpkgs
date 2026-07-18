@@ -10,13 +10,14 @@
 buildPythonPackage rec {
   pname = "alibabacloud-tea";
   version = "0.4.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-7IBT0KqNQ+vh3rYy1cVAQzmznsmhigcH1Xdlg4QYUEo=";
   };
 
+  # Module has only tests in the untagged upstream repo
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -24,10 +25,8 @@ buildPythonPackage rec {
     requests
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "Tea" ];
-
-  # Module has only tests in the untagged upstream repo
-  doCheck = false;
 
   meta = {
     description = "Aliyun Tea Library for Python";

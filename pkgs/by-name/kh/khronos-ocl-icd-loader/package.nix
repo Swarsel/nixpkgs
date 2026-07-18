@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  opencl-headers,
   cmake,
+  opencl-headers,
   withTracing ? false,
 }:
 
@@ -27,10 +27,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Official Khronos OpenCL ICD Loader";
-    mainProgram = "cllayerinfo";
     homepage = "https://github.com/KhronosGroup/OpenCL-ICD-Loader";
     license = lib.licenses.asl20;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "cllayerinfo";
   };
 })

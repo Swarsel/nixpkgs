@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pandoc,
   pandocfilters,
   poetry-core,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "pypandoc";
   version = "1.16.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "JessicaTegner";
@@ -36,12 +35,14 @@ buildPythonPackage rec {
     pandocfilters
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pypandoc" ];
 
   meta = {
     description = "Thin wrapper for pandoc";
     homepage = "https://github.com/JessicaTegner/pypandoc";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       sternenseemann
       bennofs

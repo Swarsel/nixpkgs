@@ -1,61 +1,56 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  huggingface-hub,
-  jinja2,
-  pillow,
-  python-dotenv,
-  requests,
-  rich,
-
-  # optional-dependencies
-  # audio
-  soundfile,
+  # transformers
+  accelerate,
   # bedrock
   boto3,
+  buildPythonPackage,
+  # toolkit
+  ddgs,
   # docker
   docker,
-  websocket-client,
   # gradio
   gradio,
+  # dependencies
+  huggingface-hub,
+  # tests
+  ipython,
+  jinja2,
   # litellm
   litellm,
+  markdownify,
   # mcp
   mcp,
   mcpadapt,
-  # openai
-  openai,
-  # toolkit
-  ddgs,
-  markdownify,
   # torch
   numpy,
-  torch,
-  torchvision,
-  # transformers
-  accelerate,
-  transformers,
-
-  # tests
-  ipython,
+  # openai
+  openai,
+  pillow,
   pytest-datadir,
   pytest-timeout,
   pytestCheckHook,
+  python-dotenv,
+  pythonAtLeast,
+  requests,
+  rich,
+  # build-system
+  setuptools,
+  # optional-dependencies
+  # audio
+  soundfile,
+  torch,
+  torchvision,
+  transformers,
+  websocket-client,
   wikipedia-api,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "smolagents";
   version = "1.26.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "huggingface";
@@ -63,77 +58,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-FYxPz5vmISSgWDVBaRmnEygP60IkUHUtojMSXluEiJg=";
   };
-
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "huggingface-hub"
-  ];
-  dependencies = [
-    huggingface-hub
-    jinja2
-    pillow
-    python-dotenv
-    requests
-    rich
-  ];
-
-  optional-dependencies = lib.fix (self: {
-    audio = [ soundfile ] ++ self.torch;
-    bedrock = [ boto3 ];
-    # blaxel = [
-    #   blaxel
-    #   websocket-client
-    # ];
-    docker = [
-      docker
-      websocket-client
-    ];
-    # e2b = [
-    #   e2b-code-interpreter
-    #   python-dotenv
-    # ];
-    gradio = [ gradio ];
-    litellm = [ litellm ];
-    mcp = [
-      mcp
-      mcpadapt
-    ];
-    # modal = [
-    #   modal
-    #   websocket-client
-    # ];
-    # mlx-lm = [ mlx-lm ];
-    openai = [ openai ];
-    # telemetry = [
-    #   arize-phoenix
-    #   openinference-instrumentation-smolagents
-    #   opentelemetry-exporter-otlp
-    #   opentelemetry-sdk
-    # ];
-    toolkit = [
-      ddgs
-      markdownify
-    ];
-    torch = [
-      numpy
-      torch
-      torchvision
-    ];
-    transformers = [
-      accelerate
-      transformers
-    ]
-    ++ self.torch;
-    # vision = [
-    #   helium
-    #   selenium
-    # ];
-    # vllm = [
-    #   torch
-    #   vllm
-    # ];
-  });
 
   nativeCheckInputs = [
     ipython
@@ -144,7 +68,17 @@ buildPythonPackage (finalAttrs: {
   ++ lib.optionals (stdenv.hostPlatform.isDarwin) [ pytest-timeout ]
   ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
-  pythonImportsCheck = [ "smolagents" ];
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    huggingface-hub
+    jinja2
+    pillow
+    python-dotenv
+    requests
+    rich
+  ];
 
   disabledTestPaths = [
     # ImportError: cannot import name 'require_soundfile' from 'transformers.testing_utils'
@@ -205,7 +139,76 @@ buildPythonPackage (finalAttrs: {
     "test_stream_to_gradio_memory_step"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  optional-dependencies = lib.fix (self: {
+    audio = [ soundfile ] ++ self.torch;
+    bedrock = [ boto3 ];
+
+    # blaxel = [
+    #   blaxel
+    #   websocket-client
+    # ];
+    docker = [
+      docker
+      websocket-client
+    ];
+
+    # e2b = [
+    #   e2b-code-interpreter
+    #   python-dotenv
+    # ];
+    gradio = [ gradio ];
+    litellm = [ litellm ];
+
+    mcp = [
+      mcp
+      mcpadapt
+    ];
+
+    # modal = [
+    #   modal
+    #   websocket-client
+    # ];
+    # mlx-lm = [ mlx-lm ];
+    openai = [ openai ];
+
+    # telemetry = [
+    #   arize-phoenix
+    #   openinference-instrumentation-smolagents
+    #   opentelemetry-exporter-otlp
+    #   opentelemetry-sdk
+    # ];
+    toolkit = [
+      ddgs
+      markdownify
+    ];
+
+    torch = [
+      numpy
+      torch
+      torchvision
+    ];
+
+    transformers = [
+      accelerate
+      transformers
+    ]
+    ++ self.torch;
+    # vision = [
+    #   helium
+    #   selenium
+    # ];
+    # vllm = [
+    #   torch
+    #   vllm
+    # ];
+  });
+
+  pyproject = true;
+  pythonImportsCheck = [ "smolagents" ];
+
+  pythonRelaxDeps = [
+    "huggingface-hub"
+  ];
 
   meta = {
     description = "Barebones library for agents";

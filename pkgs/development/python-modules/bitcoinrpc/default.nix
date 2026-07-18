@@ -2,18 +2,17 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  orjson,
   httpx,
+  orjson,
+  pytest-asyncio,
+  pytestCheckHook,
   setuptools,
   typing-extensions,
-  pytestCheckHook,
-  pytest-asyncio,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "bitcoinrpc";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bibajz";
@@ -21,6 +20,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-QrLAhX2OZNP6k6TZ7OkD9phQidsExbep8MxWxQpqAU8=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+  ];
 
   build-system = [ setuptools ];
 
@@ -30,13 +34,8 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-  ];
-
   disabledTestPaths = [ "tests/test_connection.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "bitcoinrpc" ];
 
   meta = {

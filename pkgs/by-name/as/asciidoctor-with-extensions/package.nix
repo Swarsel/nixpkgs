@@ -2,9 +2,9 @@
   lib,
   bundlerApp,
   bundlerUpdateScript,
+  jre, # Used by asciidoctor-diagram for ditaa and PlantUML
   makeWrapper,
   withJava ? true,
-  jre, # Used by asciidoctor-diagram for ditaa and PlantUML
 }:
 
 let
@@ -12,7 +12,14 @@ let
 in
 bundlerApp rec {
   pname = "asciidoctor";
-  gemdir = ./.;
+  nativeBuildInputs = [ makeWrapper ];
+
+  postBuild = lib.optionalString (path != "") (
+    lib.concatMapStrings (exe: ''
+      wrapProgram $out/bin/${exe} \
+        --prefix PATH : ${path}
+    '') exes
+  );
 
   exes = [
     "asciidoctor"
@@ -23,14 +30,7 @@ bundlerApp rec {
     "asciidoctor-revealjs"
   ];
 
-  nativeBuildInputs = [ makeWrapper ];
-
-  postBuild = lib.optionalString (path != "") (
-    lib.concatMapStrings (exe: ''
-      wrapProgram $out/bin/${exe} \
-        --prefix PATH : ${path}
-    '') exes
-  );
+  gemdir = ./.;
 
   passthru = {
     updateScript = bundlerUpdateScript "asciidoctor-with-extensions";

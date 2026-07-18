@@ -21,8 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     faust2lv2
   ];
 
-  dontWrapQtApps = true;
-
   buildPhase = ''
     for f in *.dsp;
     do
@@ -43,6 +41,8 @@ stdenv.mkDerivation (finalAttrs: {
       cp $f $out/bin/
     done
   '';
+
+  dontWrapQtApps = true;
 
   meta = {
     description = "Group of compressors mixed into a bus, sidechained from that mix bus. For jack and lv2";

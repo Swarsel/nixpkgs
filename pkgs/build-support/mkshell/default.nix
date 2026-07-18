@@ -15,11 +15,11 @@ lib.extendMkDerivation {
   extendDrvArgs =
     _finalAttrs:
     {
+      # propagate all the inputs from the given derivations
+      inputsFrom ? [ ],
       name ? "nix-shell",
       # a list of packages to add to the shell environment
       packages ? [ ],
-      # propagate all the inputs from the given derivations
-      inputsFrom ? [ ],
       ...
     }@attrs:
     let
@@ -35,17 +35,9 @@ lib.extendMkDerivation {
     in
     {
       inherit name;
-
-      buildInputs = mergeInputs "buildInputs";
       nativeBuildInputs = packages ++ (mergeInputs "nativeBuildInputs");
+      buildInputs = mergeInputs "buildInputs";
       propagatedBuildInputs = mergeInputs "propagatedBuildInputs";
-      propagatedNativeBuildInputs = mergeInputs "propagatedNativeBuildInputs";
-
-      shellHook = lib.concatStringsSep "\n" (
-        lib.catAttrs "shellHook" (lib.reverseList inputsFrom ++ [ attrs ])
-      );
-
-      phases = attrs.phases or [ "buildPhase" ];
 
       buildPhase =
         attrs.buildPhase or ''
@@ -59,6 +51,12 @@ lib.extendMkDerivation {
           } >> "$out"
         '';
 
+      phases = attrs.phases or [ "buildPhase" ];
       preferLocalBuild = attrs.preferLocalBuild or true;
+      propagatedNativeBuildInputs = mergeInputs "propagatedNativeBuildInputs";
+
+      shellHook = lib.concatStringsSep "\n" (
+        lib.catAttrs "shellHook" (lib.reverseList inputsFrom ++ [ attrs ])
+      );
     };
 }

@@ -18,18 +18,20 @@ in
     environment.systemPackages = [ cfg.package ];
 
     systemd.services.powerstation = {
-      description = "PowerStation Service";
-      wantedBy = [ "multi-user.target" ];
       after = [ "graphical-session.target" ];
+      description = "PowerStation Service";
+
       environment = {
         XDG_DATA_DIRS = "/run/current-system/sw/share";
       };
 
       serviceConfig = {
-        User = "root";
-        Group = "root";
         ExecStart = lib.getExe cfg.package;
+        Group = "root";
+        User = "root";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

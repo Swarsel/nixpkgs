@@ -1,6 +1,6 @@
 {
-  runCommand,
   breseq,
+  runCommand,
 }:
 
 let

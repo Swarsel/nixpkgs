@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  copyDesktopItems,
   jdk11,
   makeDesktopItem,
   makeWrapper,
-  wrapGAppsHook3,
-  copyDesktopItems,
   nix-update-script,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation rec {
@@ -26,16 +26,6 @@ stdenv.mkDerivation rec {
     ./makeBigJar.patch
   ];
 
-  strictDeps = true;
-
-  nativeBuildInputs = [
-    jdk11
-    makeWrapper
-    wrapGAppsHook3
-  ];
-
-  buildInputs = [ jdk11 ];
-
   postPatch = ''
     substituteInPlace structorizer.sh --replace "\$DIR/Structorizer.app/Contents/Java/Structorizer.jar" "$out/share/java/structorizer.jar"
 
@@ -45,6 +35,16 @@ stdenv.mkDerivation rec {
     patchShebangs --build makeStructorizer
     patchShebangs --build makeBigJar
   '';
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    jdk11
+    makeWrapper
+    wrapGAppsHook3
+  ];
+
+  buildInputs = [ jdk11 ];
 
   buildPhase = ''
     runHook preBuild
@@ -80,15 +80,14 @@ stdenv.mkDerivation rec {
   '';
 
   dontWrapGApps = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Create Nassi-Shneiderman diagrams (NSD)";
     homepage = "https://structorizer.fisch.lu";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ annaaurora ];
+    platforms = lib.platforms.all;
     mainProgram = "structorizer";
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -24,10 +24,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Enumeration tool for publicly exposed Azure Storage blobs";
-    mainProgram = "goblob";
     homepage = "https://github.com/Macmod/goblob";
     changelog = "https://github.com/Macmod/goblob/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "goblob";
   };
 })

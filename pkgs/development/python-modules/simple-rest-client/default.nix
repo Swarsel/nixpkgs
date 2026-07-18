@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   httpx,
   pytest-asyncio,
   pytest-cov-stub,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "simple-rest-client";
   version = "1.2.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "allisson";
@@ -22,6 +21,13 @@ buildPythonPackage rec {
     rev = version;
     hash = "sha256-IaLo7nBMIabi4ZjZ4ZLJliCL/dzidaCBCmn0cq7Fzdw=";
   };
+
+  postPatch = ''
+    substituteInPlace setup.py \
+      --replace "pytest-runner" ""
+    substituteInPlace requirements-dev.txt \
+      --replace "asyncmock" ""
+  '';
 
   propagatedBuildInputs = [
     httpx
@@ -36,15 +42,8 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  postPatch = ''
-    substituteInPlace setup.py \
-      --replace "pytest-runner" ""
-    substituteInPlace requirements-dev.txt \
-      --replace "asyncmock" ""
-  '';
-
   disabledTestPaths = [ "tests/test_decorators.py" ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "simple_rest_client" ];
 
   meta = {

@@ -1,10 +1,10 @@
 {
+  lib,
   stdenv,
   acl,
   attr,
   autoconf,
   automake,
-  pkg-config,
   bash,
   bc,
   coreutils,
@@ -12,28 +12,28 @@
   fetchzip,
   fio,
   gawk,
+  gitMinimal,
   keyutils,
   killall,
-  lib,
   libaio,
   libcap,
   libtool,
   libuuid,
   libxfs,
   lvm2,
+  nix-update,
   openssl,
   perl,
+  pkg-config,
   procps,
   quota,
+  runtimeShell,
   time,
   util-linux,
   which,
   writeScript,
   writeShellScript,
   xfsprogs,
-  gitMinimal,
-  nix-update,
-  runtimeShell,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -51,6 +51,7 @@ stdenv.mkDerivation (finalAttrs: {
     libtool
     pkg-config
   ];
+
   buildInputs = [
     acl
     attr
@@ -62,8 +63,28 @@ stdenv.mkDerivation (finalAttrs: {
     perl
   ];
 
-  hardeningDisable = [ "format" ];
+  preConfigure = ''
+    # The configure scripts really don't like looking in PATH at all...
+    export AWK=$(type -P awk)
+    export ECHO=$(type -P echo)
+    export LIBTOOL=$(type -P libtool)
+    export MAKE=$(type -P make)
+    export SED=$(type -P sed)
+    export SORT=$(type -P sort)
+
+    make configure
+  '';
+
+  postInstall = ''
+    patchShebangs $out/lib/xfstests
+
+    mkdir -p $out/bin
+    substitute $wrapperScript $out/bin/xfstests-check --subst-var out
+    chmod a+x $out/bin/xfstests-check
+  '';
+
   enableParallelBuilding = true;
+  hardeningDisable = [ "format" ];
 
   patchPhase = ''
     substituteInPlace Makefile \
@@ -97,26 +118,6 @@ stdenv.mkDerivation (finalAttrs: {
     done
 
     patchShebangs .
-  '';
-
-  preConfigure = ''
-    # The configure scripts really don't like looking in PATH at all...
-    export AWK=$(type -P awk)
-    export ECHO=$(type -P echo)
-    export LIBTOOL=$(type -P libtool)
-    export MAKE=$(type -P make)
-    export SED=$(type -P sed)
-    export SORT=$(type -P sort)
-
-    make configure
-  '';
-
-  postInstall = ''
-    patchShebangs $out/lib/xfstests
-
-    mkdir -p $out/bin
-    substitute $wrapperScript $out/bin/xfstests-check --subst-var out
-    chmod a+x $out/bin/xfstests-check
   '';
 
   # The upstream package is pretty hostile to packaging; it looks up
@@ -159,6 +160,7 @@ stdenv.mkDerivation (finalAttrs: {
     }:$PATH
     exec ./check "$@"
   '';
+
   passthru.updateScript = writeShellScript "update-xfstests" ''
     set -euo pipefail
     export PATH=${

@@ -2,44 +2,45 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   boost,
-  pkg-config,
+  cmake,
   doxygen,
-  qtbase,
-  libharu,
-  pango,
   fcgi,
   firebird,
-  libmysqlclient,
-  libpq,
-  graphicsmagick,
   glew,
-  openssl,
+  graphicsmagick,
   harfbuzz,
   icu,
+  libharu,
   libice,
+  libmysqlclient,
+  libpq,
   libsm,
+  openssl,
+  pango,
+  pkg-config,
+  qtbase,
 }:
 
 let
   generic =
-    { version, sha256 }:
+    { sha256, version }:
     stdenv.mkDerivation {
-      pname = "wt";
       inherit version;
+      pname = "wt";
 
       src = fetchFromGitHub {
+        inherit sha256;
         owner = "emweb";
         repo = "wt";
         rev = version;
-        inherit sha256;
       };
 
       nativeBuildInputs = [
         cmake
         pkg-config
       ];
+
       buildInputs = [
         boost
         doxygen
@@ -59,7 +60,6 @@ let
         libsm
       ];
 
-      dontWrapQtApps = true;
       cmakeFlags = [
         "-DCMAKE_INSTALL_RPATH=${
           lib.makeLibraryPath [
@@ -76,12 +76,14 @@ let
       ]
       ++ lib.optional (libmysqlclient != null) "-DMYSQL_PREFIX=${libmysqlclient}";
 
+      dontWrapQtApps = true;
+
       meta = {
-        homepage = "https://www.webtoolkit.eu/wt";
         description = "C++ library for developing web applications";
-        platforms = lib.platforms.linux;
+        homepage = "https://www.webtoolkit.eu/wt";
         license = lib.licenses.gpl2;
         maintainers = with lib.maintainers; [ juliendehos ];
+        platforms = lib.platforms.linux;
       };
     };
 in

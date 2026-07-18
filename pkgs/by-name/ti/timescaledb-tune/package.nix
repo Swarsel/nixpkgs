@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -24,9 +24,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Tool for tuning your TimescaleDB for better performance";
-    mainProgram = "timescaledb-tune";
     homepage = "https://github.com/timescale/timescaledb-tune";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "timescaledb-tune";
   };
 })

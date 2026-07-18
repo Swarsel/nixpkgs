@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
   nix-update-script,
 }:
 
@@ -27,11 +27,11 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/rofl0r/microsocks/releases/tag/v${finalAttrs.version}";
     description = "Tiny, portable SOCKS5 server with very moderate resource usage";
     homepage = "https://github.com/rofl0r/microsocks";
+    changelog = "https://github.com/rofl0r/microsocks/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "microsocks";
     maintainers = with lib.maintainers; [ ramblurr ];
+    mainProgram = "microsocks";
   };
 })

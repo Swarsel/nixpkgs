@@ -1,22 +1,23 @@
 {
   lib,
   fetchurl,
-  stdenvNoCC,
-  installShellFiles,
   autoPatchelfHook,
-  makeWrapper,
-  gccForLibs,
   e2fsprogs,
+  gccForLibs,
+  installShellFiles,
   lz4,
+  makeWrapper,
+  nix-update-script,
+  stdenvNoCC,
+  versionCheckHook,
   xxhash,
   zlib,
   zstd,
-  versionCheckHook,
-  nix-update-script,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "docker-sbx";
   version = "0.34.0";
+
   src =
     if stdenvNoCC.hostPlatform.system == "x86_64-linux" then
       fetchurl {
@@ -37,9 +38,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       throw "Unsupported host platform ${stdenvNoCC.hostPlatform.system}";
 
   strictDeps = true;
-  __structuredAttrs = true;
-
-  sourceRoot = if stdenvNoCC.hostPlatform.isDarwin then "." else null;
 
   nativeBuildInputs = [
     installShellFiles
@@ -58,14 +56,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     xxhash
     gccForLibs
   ];
-
-  dontBuild = true;
-  doInstallCheck = true;
-  versionCheckProgramArg = "version";
-  versionCheckKeepEnvironment = [ "HOME" ];
-  preVersionCheck = ''
-    export HOME=$TMPDIR
-  '';
 
   installPhase =
     if stdenvNoCC.hostPlatform.isLinux then
@@ -102,27 +92,43 @@ stdenvNoCC.mkDerivation (finalAttrs: {
         runHook postInstall
       '';
 
+  doInstallCheck = true;
+  __structuredAttrs = true;
+  dontBuild = true;
+
+  preVersionCheck = ''
+    export HOME=$TMPDIR
+  '';
+
+  sourceRoot = if stdenvNoCC.hostPlatform.isDarwin then "." else null;
+  versionCheckKeepEnvironment = [ "HOME" ];
+  versionCheckProgramArg = "version";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Safe environments for agents";
+
     longDescription = ''
       Docker Sandboxes provides sandboxes with controlled access to your
       filesystem, network, and tools. This means your agents can work
       autonomously without putting your machine or data at risk.
     '';
+
     homepage = "https://docs.docker.com/reference/cli/sbx/";
     changelog = "https://github.com/docker/sbx-releases/releases/tag/v${finalAttrs.version}";
-    mainProgram = "sbx";
+    license = lib.licenses.unfree;
+
+    maintainers = [
+      lib.maintainers.skyesoss
+      lib.maintainers.erics118
+    ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
-    license = lib.licenses.unfree;
-    maintainers = [
-      lib.maintainers.skyesoss
-      lib.maintainers.erics118
-    ];
+
+    mainProgram = "sbx";
   };
 })

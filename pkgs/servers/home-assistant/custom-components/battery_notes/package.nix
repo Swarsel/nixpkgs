@@ -1,12 +1,10 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
+  buildHomeAssistantComponent,
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "andrew-codechimp";
-  domain = "battery_notes";
   version = "3.4.8";
 
   src = fetchFromGitHub {
@@ -18,12 +16,14 @@ buildHomeAssistantComponent rec {
 
   # has no tests
   doCheck = false;
+  domain = "battery_notes";
+  owner = "andrew-codechimp";
 
   meta = {
     description = "Home Assistant integration to provide battery details of devices";
     homepage = "https://github.com/andrew-codechimp/HA-Battery-Notes";
     changelog = "https://github.com/andrew-codechimp/HA-Battery-Notes/releases/tag/${src.tag}";
-    maintainers = with lib.maintainers; [ SuperSandro2000 ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ SuperSandro2000 ];
   };
 }

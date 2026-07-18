@@ -16,13 +16,15 @@ stdenv.mkDerivation rec {
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     ocaml
     perl
   ];
-  setSourceRoot = "export sourceRoot=$(echo */ekrh/src)";
+
   preInstall = "export INSTALLDIR=$out";
   postInstall = ''for i in "$out/casc"/*; do ln -s "$i" "$out/bin/ekrh-casc-$(basename $i)"; done '';
+  setSourceRoot = "export sourceRoot=$(echo */ekrh/src)";
 
   meta = {
     description = "Automated first-order theorem prover";

@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pulseaudio,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pasimple";
   version = "0.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "henrikschnor";
@@ -25,14 +24,14 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ setuptools ];
+  # no tests
+  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "pasimple"
     "pasimple.pa_simple"
   ];
-
-  # no tests
-  doCheck = false;
 
   meta = {
     description = "Python wrapper for the \"PulseAudio simple API\". Supports playing and recording audio via PulseAudio and PipeWire";

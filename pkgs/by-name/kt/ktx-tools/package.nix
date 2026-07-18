@@ -1,12 +1,12 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   cmake,
   doxygen,
-  fetchFromGitHub,
   getopt,
   ninja,
-  lib,
   pkg-config,
-  stdenv,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "ktx-tools";
@@ -19,6 +19,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-yBRLKa0h64vDBvaessh2FwP16d8+jvW6udbyZvOMzTQ=";
   };
 
+  postPatch = ''
+    patchShebangs .
+  '';
+
   nativeBuildInputs = [
     cmake
     doxygen
@@ -27,16 +31,12 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
   ];
 
-  cmakeBuildType = "RelWithDebInfo";
-
   cmakeFlags = [ "-DKTX_FEATURE_DOC=ON" ];
-
-  postPatch = ''
-    patchShebangs .
-  '';
+  cmakeBuildType = "RelWithDebInfo";
 
   meta = {
     description = "KTX (Khronos Texture) Library and Tools";
+
     longDescription = ''
       KTX (Khronos Texture) is a lightweight container for textures for OpenGL®,
       Vulkan® and other GPU APIs. KTX files contain all the parameters needed
@@ -58,6 +58,7 @@ stdenv.mkDerivation (finalAttrs: {
           images. It supports mipmap generation, encoding to Basis Universal
           formats and Zstd supercompression.
     '';
+
     homepage = "https://github.com/KhronosGroup/KTX-Software";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ bonsairobo ];

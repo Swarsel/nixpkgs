@@ -34,8 +34,8 @@ let
   computeHash =
     fod:
     runCommand "${fod.pname}-${fod.tlType}-fixed-hash" {
-      buildInputs = [ nix ];
       inherit fod;
+      buildInputs = [ nix ];
     } ''echo -n "$(nix-hash --base32 --type sha256 "$fod")" >"$out"'';
 
   hash = fod: fod.outputHash or (builtins.readFile (computeHash fod));
@@ -59,17 +59,17 @@ let
     '';
 in
 {
-  # fixedHashesNix uses 'import from derivation' which does not parallelize well
-  # you should build newHashes first, before evaluating (and building) fixedHashesNix
-  newHashes = map computeHash (filter (fod: !fod ? outputHash) fods);
-
   fixedHashesNix =
     runCommand "fixed-hashes.nix"
       {
-        unformatted = writeText "fixed-hashes.nix" "{${concatMapStrings hashLine sorted}}";
         nativeBuildInputs = [ pkgs.nixfmt ];
+        unformatted = writeText "fixed-hashes.nix" "{${concatMapStrings hashLine sorted}}";
       }
       ''
         cat "$unformatted" | nixfmt > "$out"
       '';
+
+  # fixedHashesNix uses 'import from derivation' which does not parallelize well
+  # you should build newHashes first, before evaluating (and building) fixedHashesNix
+  newHashes = map computeHash (filter (fod: !fod ? outputHash) fods);
 }

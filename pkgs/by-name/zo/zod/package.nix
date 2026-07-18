@@ -1,20 +1,20 @@
 {
   lib,
-  config,
-  fetchzip,
   stdenv,
   SDL,
   SDL_image,
-  SDL_ttf,
   SDL_mixer,
-  libmysqlclient,
-  wxwidgets_3_2,
-  symlinkJoin,
-  runCommandLocal,
-  makeWrapper,
+  SDL_ttf,
+  config,
   coreutils,
-  scalingFactor ? 2, # this is to resize the fixed-size zod_launcher window
+  fetchzip,
+  libmysqlclient,
+  makeWrapper,
   replaceVars,
+  runCommandLocal,
+  symlinkJoin,
+  wxwidgets_3_2,
+  scalingFactor ? 2, # this is to resize the fixed-size zod_launcher window
 }:
 let
   pname = "zod-engine";
@@ -52,14 +52,17 @@ let
       hardeningDisable
       env
       ;
+
     pname = "zod-engine-engine";
-    enableParallelBuilding = true;
     preBuild = "cd zod_src";
+
     installPhase = ''
       mkdir -p $out/bin
       install -m755 zod $out/bin/
       wrapProgram $out/bin/zod --chdir "${zod_assets}/usr/lib/commander-zod"
     '';
+
+    enableParallelBuilding = true;
   };
   zod_map_editor = stdenv.mkDerivation {
     inherit
@@ -71,15 +74,18 @@ let
       hardeningDisable
       env
       ;
+
     pname = "zod-engine-map_editor";
-    enableParallelBuilding = true;
-    preBuild = "cd zod_src";
     makeFlags = [ "map_editor" ];
+    preBuild = "cd zod_src";
+
     installPhase = ''
       mkdir -p $out/bin
       install -m755 zod_map_editor $out/bin
       wrapProgram $out/bin/zod_map_editor --chdir "${zod_assets}/usr/lib/commander-zod"
     '';
+
+    enableParallelBuilding = true;
   };
   zod_launcher = stdenv.mkDerivation {
     inherit
@@ -90,7 +96,9 @@ let
       zod_engine
       zod_map_editor
       ;
+
     pname = "zod-engine-launcher";
+
     # This is necessary because the zod_launcher has terrible fixed-width window
     # the Idea is to apply the scalingFactor to all positions and sizes and I tested 1,2,3 and 4
     # 2,3,4 look acceptable on my 4k monitor and 1 is unreadable.
@@ -100,12 +108,15 @@ let
         inherit scalingFactor;
       })
     ];
+
     postPatch = ''
       substituteInPlace zod_launcher_src/zod_launcherFrm.cpp \
         --replace 'message = wxT("./zod");' 'message = wxT("zod");' \
         --replace "check.replace(i,1,1,'_');" "check.replace(i,1,1,(wxUniChar)'_');"
     '';
+
     preBuild = "cd zod_launcher_src";
+
     installPhase = ''
       mkdir -p $out/bin
       install -m755 zod_launcher $out/bin
@@ -124,17 +135,19 @@ let
 in
 symlinkJoin {
   inherit pname version;
+
   paths = [
     zod_engine
     zod_launcher
     zod_map_editor
     zod_assets
   ];
+
   meta = {
     description = "Multiplayer remake of ZED";
     homepage = "https://zod.sourceforge.net/";
-    maintainers = with lib.maintainers; [ zeri ];
     license = lib.licenses.gpl3Plus; # Says the website
+    maintainers = with lib.maintainers; [ zeri ];
     platforms = lib.platforms.linux;
   };
 }

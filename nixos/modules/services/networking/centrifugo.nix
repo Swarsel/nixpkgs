@@ -14,35 +14,26 @@ in
 {
   options.services.centrifugo = {
     enable = lib.mkEnableOption "Centrifugo messaging server";
-
     package = lib.mkPackageOption pkgs "centrifugo" { };
 
-    settings = lib.mkOption {
-      type = settingsFormat.type;
-      default = { };
-      description = ''
-        Declarative Centrifugo configuration. See the [Centrifugo
-        documentation] for a list of options.
-
-        [Centrifugo documentation]: https://centrifugal.dev/docs/server/configuration
-      '';
-    };
-
     credentials = lib.mkOption {
-      type = lib.types.attrsOf lib.types.path;
       default = { };
-      example = {
-        CENTRIFUGO_UNI_GRPC_TLS_KEY = "/run/keys/centrifugo-uni-grpc-tls.key";
-      };
+
       description = ''
         Environment variables with absolute paths to credentials files to load
         on service startup.
       '';
+
+      example = {
+        CENTRIFUGO_UNI_GRPC_TLS_KEY = "/run/keys/centrifugo-uni-grpc-tls.key";
+      };
+
+      type = lib.types.attrsOf lib.types.path;
     };
 
     environmentFiles = lib.mkOption {
-      type = lib.types.listOf lib.types.path;
       default = [ ];
+
       description = ''
         Files to load environment variables from. Options set via environment
         variables take precedence over {option}`settings`.
@@ -52,15 +43,32 @@ in
 
         [Centrifugo documentation]: https://centrifugal.dev/docs/server/configuration#os-environment-variables
       '';
+
+      type = lib.types.listOf lib.types.path;
     };
 
     extraGroups = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
       default = [ ];
-      example = [ "redis-centrifugo" ];
+
       description = ''
         Additional groups for the systemd service.
       '';
+
+      example = [ "redis-centrifugo" ];
+      type = lib.types.listOf lib.types.str;
+    };
+
+    settings = lib.mkOption {
+      default = { };
+
+      description = ''
+        Declarative Centrifugo configuration. See the [Centrifugo
+        documentation] for a list of options.
+
+        [Centrifugo documentation]: https://centrifugal.dev/docs/server/configuration
+      '';
+
+      type = settingsFormat.type;
     };
   };
 
@@ -69,68 +77,67 @@ in
       {
         assertion =
           (lib.versionAtLeast cfg.package.version "6") -> (!(cfg.settings ? name) && !(cfg.settings ? port));
+
         message = "`services.centrifugo.settings` is v5 config, must be compatible with centrifugo v6 config format";
       }
     ];
 
     systemd.services.centrifugo = {
-      description = "Centrifugo messaging server";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "Centrifugo messaging server";
 
       serviceConfig = {
-        Type = "exec";
-
-        ExecStartPre = "${lib.getExe cfg.package} checkconfig --config ${configFile}";
-        ExecStart = "${lib.getExe cfg.package} --config ${configFile}";
+        CapabilityBoundingSet = [ "" ];
+        DeviceAllow = [ "" ];
+        DevicePolicy = "closed";
+        DynamicUser = true;
+        Environment = lib.mapAttrsToList (name: _: "${name}=%d/${name}") cfg.credentials;
+        EnvironmentFile = cfg.environmentFiles;
         ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
-
-        Restart = "always";
-        RestartSec = "1s";
-
+        ExecStart = "${lib.getExe cfg.package} --config ${configFile}";
+        ExecStartPre = "${lib.getExe cfg.package} checkconfig --config ${configFile}";
         # Copy files to the credentials directory with file name being the
         # environment variable name. Note that "%d" specifier expands to the
         # path of the credentials directory.
         LoadCredential = lib.mapAttrsToList (name: value: "${name}:${value}") cfg.credentials;
-        Environment = lib.mapAttrsToList (name: _: "${name}=%d/${name}") cfg.credentials;
-
-        EnvironmentFile = cfg.environmentFiles;
-
-        SupplementaryGroups = cfg.extraGroups;
-
-        DynamicUser = true;
-        UMask = "0077";
-
-        ProtectHome = true;
-        ProtectProc = "invisible";
+        LockPersonality = true;
+        MemoryDenyWriteExecute = true;
+        PrivateDevices = true;
+        PrivateUsers = true;
         ProcSubset = "pid";
         ProtectClock = true;
-        ProtectHostname = true;
         ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectHostname = true;
         ProtectKernelLogs = true;
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
-        PrivateUsers = true;
-        PrivateDevices = true;
-        RestrictRealtime = true;
-        RestrictNamespaces = true;
+        ProtectProc = "invisible";
+        Restart = "always";
+        RestartSec = "1s";
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
           "AF_UNIX"
         ];
-        DeviceAllow = [ "" ];
-        DevicePolicy = "closed";
-        CapabilityBoundingSet = [ "" ];
-        MemoryDenyWriteExecute = true;
-        LockPersonality = true;
+
+        RestrictNamespaces = true;
+        RestrictRealtime = true;
+        SupplementaryGroups = cfg.extraGroups;
         SystemCallArchitectures = "native";
         SystemCallErrorNumber = "EPERM";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
         ];
+
+        Type = "exec";
+        UMask = "0077";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

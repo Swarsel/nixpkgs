@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   p7zip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -14,8 +14,6 @@ stdenvNoCC.mkDerivation rec {
     hash = "sha256-7OpnZJc9k5NiOPHAbtJGMQvsMg9j81DCvbfo0f7uJcw=";
   };
 
-  sourceRoot = ".";
-
   nativeBuildInputs = [ p7zip ];
 
   installPhase = ''
@@ -26,11 +24,13 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
+
   meta = {
     description = "Japanese font based on Rounded M+ and Noto Sans Japanese";
     homepage = "http://jikasei.me/font/rounded-mgenplus/";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ mnacamura ];
+    platforms = lib.platforms.all;
   };
 }

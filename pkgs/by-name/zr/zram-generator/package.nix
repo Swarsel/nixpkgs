@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
   bash,
-  ronn,
-  systemd,
   kmod,
   nixosTests,
+  pkg-config,
+  ronn,
+  rustPlatform,
+  systemd,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,10 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-aGBvvjGKZ5biruwmJ0ITakqPhTWs9hspRIE9QirqstA=";
   };
-
-  # RFE: Include Cargo.lock in sources
-  # https://github.com/systemd/zram-generator/issues/65
-  cargoLock.lockFile = ./Cargo.lock;
 
   postPatch = ''
     cp ${./Cargo.lock} Cargo.lock
@@ -46,6 +42,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     systemd
   ];
 
+  # RFE: Include Cargo.lock in sources
+  # https://github.com/systemd/zram-generator/issues/65
+  cargoLock.lockFile = ./Cargo.lock;
+
   preBuild = ''
     # embedded into the binary at build time
     # https://github.com/systemd/zram-generator/blob/v1.2.0/Makefile#LL11-L11C56
@@ -54,7 +54,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   # error[E0432]: unresolved import `self::consts`
   doCheck = !stdenv.hostPlatform.isLoongArch64;
-
   dontCargoInstall = true;
 
   installFlags = [
@@ -68,13 +67,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tests = {
       inherit (nixosTests) zram-generator;
     };
+
     updateScript = ./update.sh;
   };
 
   meta = {
+    description = "Systemd unit generator for zram devices";
     homepage = "https://github.com/systemd/zram-generator";
     license = lib.licenses.mit;
-    description = "Systemd unit generator for zram devices";
     maintainers = with lib.maintainers; [ nickcao ];
   };
 })

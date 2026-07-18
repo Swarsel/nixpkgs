@@ -1,18 +1,18 @@
 {
-  stdenv,
-  cargo,
-  rustc,
-  fetchFromGitHub,
-  libadwaita,
-  rustPlatform,
-  pkg-config,
   lib,
-  wrapGAppsHook4,
+  stdenv,
+  fetchFromGitHub,
+  blueprint-compiler,
+  cargo,
+  desktop-file-utils,
+  glib-networking,
+  libadwaita,
   meson,
   ninja,
-  desktop-file-utils,
-  blueprint-compiler,
-  glib-networking,
+  pkg-config,
+  rustPlatform,
+  rustc,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,11 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "geopard";
     rev = "v${finalAttrs.version}";
     hash = "sha256-wOkzylRfFJsdu9KC4TvF/qYkGf8OZVd1tRre5TbNOX4=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src;
-    hash = "sha256-g7pHEBrR/tdKP+kuYJ44Py7kaAx0tXcMkC4UdsfSfDQ=";
   };
 
   nativeBuildInputs = [
@@ -48,14 +43,21 @@ stdenv.mkDerivation (finalAttrs: {
     glib-networking
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src;
+    hash = "sha256-g7pHEBrR/tdKP+kuYJ44Py7kaAx0tXcMkC4UdsfSfDQ=";
+  };
+
   meta = {
-    homepage = "https://github.com/ranfdev/Geopard";
     description = "Colorful, adaptive gemini browser";
+    homepage = "https://github.com/ranfdev/Geopard";
+    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       jfvillablanca
       aleksana
     ];
-    license = lib.licenses.gpl3Plus;
+
     platforms = lib.platforms.linux;
     mainProgram = "geopard";
   };

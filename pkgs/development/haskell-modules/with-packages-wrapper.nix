@@ -2,17 +2,17 @@
   lib,
   stdenv,
   haskellPackages,
-  symlinkJoin,
+  hoogleWithPackages,
   makeWrapper,
+  symlinkJoin,
+  # Whether to install `doc` outputs for GHC and all included libraries.
+  installDocumentation ? true,
+  postBuild ? "",
   # GHC will have LLVM available if necessary for the respective target,
   # so useLLVM only needs to be changed if -fllvm is to be used for a
   # platform that has NCG support
   useLLVM ? false,
   withHoogle ? false,
-  # Whether to install `doc` outputs for GHC and all included libraries.
-  installDocumentation ? true,
-  hoogleWithPackages,
-  postBuild ? "",
 }:
 
 # This argument is a function which selects a list of Haskell packages from any
@@ -100,12 +100,8 @@ if paths == [ ] && !useLLVM then
   ghc
 else
   symlinkJoin {
-    # this makes computing paths from the name attribute impossible;
-    # if such a feature is needed, the real compiler name should be saved
-    # as a dedicated drv attribute, like `compiler-name`
-    name = ghc.name + "-with-packages";
-    paths = paths ++ [ ghc ] ++ lib.optionals installDocumentation [ (lib.getOutput "doc" ghc) ];
     nativeBuildInputs = [ makeWrapper ];
+
     postBuild = ''
       # wrap compiler executables with correct env variables
 
@@ -198,10 +194,16 @@ else
       $out/bin/${ghcCommand}-pkg check
     ''
     + postBuild;
+
+    # this makes computing paths from the name attribute impossible;
+    # if such a feature is needed, the real compiler name should be saved
+    # as a dedicated drv attribute, like `compiler-name`
+    name = ghc.name + "-with-packages";
+    paths = paths ++ [ ghc ] ++ lib.optionals installDocumentation [ (lib.getOutput "doc" ghc) ];
     preferLocalBuild = true;
+
     passthru = {
       inherit (ghc) version meta targetPrefix;
-
       hoogle = hoogleWithPackages';
 
       # Inform users about backwards incompatibilities with <= 21.05

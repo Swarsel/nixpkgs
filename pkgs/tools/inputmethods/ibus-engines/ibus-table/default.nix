@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  docbook2x,
-  pkg-config,
-  gtk3,
   dconf,
+  docbook2x,
   gobject-introspection,
+  gtk3,
   ibus,
+  pkg-config,
   python3,
   wrapGAppsHook3,
 }:
@@ -42,6 +42,14 @@ stdenv.mkDerivation rec {
       --replace '/usr/share/ibus-table/' $out/share/ibus-table/
   '';
 
+  nativeBuildInputs = [
+    autoreconfHook
+    docbook2x
+    pkg-config
+    gobject-introspection
+    wrapGAppsHook3
+  ];
+
   buildInputs = [
     dconf
     gtk3
@@ -55,26 +63,18 @@ stdenv.mkDerivation rec {
     ))
   ];
 
-  nativeBuildInputs = [
-    autoreconfHook
-    docbook2x
-    pkg-config
-    gobject-introspection
-    wrapGAppsHook3
-  ];
-
   postUnpack = ''
     substituteInPlace $sourceRoot/engine/Makefile.am \
       --replace "docbook2man" "docbook2man --sgml"
   '';
 
   meta = {
-    isIbusEngine = true;
     description = "IBus framework for table-based input methods";
-    mainProgram = "ibus-table-createdb";
     homepage = "https://github.com/kaio/ibus-table/wiki";
     license = lib.licenses.lgpl21;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ mudri ];
+    platforms = lib.platforms.linux;
+    mainProgram = "ibus-table-createdb";
+    isIbusEngine = true;
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,6 +16,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-+FY6KGX606CfTVKM1HeHxCm9PkaqfnT5XeOEXUX3Q5I=";
+  doCheck = false;
 
   ldflags =
     let
@@ -31,13 +32,11 @@ buildGoModule (finalAttrs: {
       "-X ${package_url}.gitTreeState=clean"
     ];
 
-  doCheck = false;
-
   meta = {
     description = "Kubestack framework CLI";
-    mainProgram = "kbst";
     homepage = "https://www.kubestack.com/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ mtrsk ];
+    mainProgram = "kbst";
   };
 })

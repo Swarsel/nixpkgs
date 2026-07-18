@@ -1,25 +1,25 @@
 {
-  erlang,
+  lib,
+  stdenv,
   beamCopySourceHook,
   beamModuleInstallHook,
+  erlang,
+  libyaml,
+  openssl,
   rebar3CompileHook,
   rebar3WithPlugins,
   rebarDevendorPatchHook,
-
-  libyaml,
-  openssl,
-
-  lib,
-  stdenv,
   writeText,
 }:
 
 lib.extendMkDerivation {
   constructDrv = stdenv.mkDerivation;
+
   excludeDrvArgNames = [
     "beamDeps"
     "buildPlugins"
   ];
+
   extendDrvArgs =
     finalAttrs:
     {
@@ -41,7 +41,6 @@ lib.extendMkDerivation {
     in
     {
       pname = args.name;
-      name = "erlang${erlang.version}-${args.name}-${finalAttrs.version}";
 
       nativeBuildInputs = (args.nativeBuildInputs or [ ]) ++ [
         rebarDevendorPatchHook
@@ -70,17 +69,19 @@ lib.extendMkDerivation {
       }
       // (args.env or { });
 
+      name = "erlang${erlang.version}-${args.name}-${finalAttrs.version}";
+
       setupHook = writeText "setupHook.sh" ''
         addToSearchPath ERL_LIBS "$1/lib/erlang/lib/"
       '';
+
+      passthru = {
+        inherit beamDeps;
+      };
 
       meta = {
         inherit (erlang.meta) platforms;
       }
       // (args.meta or { });
-
-      passthru = {
-        inherit beamDeps;
-      };
     };
 }

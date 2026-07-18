@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   fetchpatch,
+  python3Packages,
   versionCheckHook,
 }:
 python3Packages.buildPythonApplication rec {
   pname = "tt-topology";
   version = "1.2.19";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tenstorrent";
@@ -16,6 +15,10 @@ python3Packages.buildPythonApplication rec {
     tag = "v${version}";
     hash = "sha256-M12MdXyEwyvXscp7roE19mWZ4+/miTAyzUH3SUtOohE=";
   };
+
+  nativeCheckInputs = [
+    versionCheckHook
+  ];
 
   build-system = with python3Packages; [
     setuptools
@@ -34,14 +37,9 @@ python3Packages.buildPythonApplication rec {
     setuptools
   ];
 
-  nativeCheckInputs = [
-    versionCheckHook
-  ];
-
-  pythonRemoveDeps = [
-    "black"
-    "pre-commit"
-  ];
+  # Tests are broken
+  dontUsePytestCheck = true;
+  pyproject = true;
 
   # Remove when https://github.com/tenstorrent/tt-topology/pull/51 is merged
   pythonRelaxDeps = [
@@ -51,15 +49,17 @@ python3Packages.buildPythonApplication rec {
     "setuptools"
   ];
 
-  # Tests are broken
-  dontUsePytestCheck = true;
+  pythonRemoveDeps = [
+    "black"
+    "pre-commit"
+  ];
 
   meta = {
-    mainProgram = "tt-topology";
     description = "Command line utility used to flash multiple NB cards on a system to use specific eth routing configurations";
     homepage = "https://github.com/tenstorrent/tt-topology";
     changelog = "https://github.com/tenstorrent/tt-topology/blob/${src.tag}/CHANGELOG.md";
-    maintainers = with lib.maintainers; [ RossComputerGuy ];
     license = with lib.licenses; [ asl20 ];
+    maintainers = with lib.maintainers; [ RossComputerGuy ];
+    mainProgram = "tt-topology";
   };
 }

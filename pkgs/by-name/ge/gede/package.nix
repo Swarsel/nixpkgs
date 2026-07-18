@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  python3,
-  libsForQt5,
   ctags,
   gdb,
+  libsForQt5,
+  makeWrapper,
+  python3,
 }:
 
 stdenv.mkDerivation rec {
@@ -20,6 +20,8 @@ stdenv.mkDerivation rec {
     hash = "sha256-6YSrqLDuV4G/uvtYy4vzbwqrMFftMvZdp3kr3R436rs=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     ctags
     makeWrapper
@@ -28,12 +30,6 @@ stdenv.mkDerivation rec {
     libsForQt5.qtserialport
     libsForQt5.wrapQtAppsHook
   ];
-
-  strictDeps = true;
-
-  dontUseQmakeConfigure = true;
-
-  dontBuild = true;
 
   installPhase = ''
     python build.py install --verbose --prefix="$out"
@@ -47,12 +43,15 @@ stdenv.mkDerivation rec {
       }
   '';
 
+  dontBuild = true;
+  dontUseQmakeConfigure = true;
+
   meta = {
     description = "Graphical frontend (GUI) to GDB";
-    mainProgram = "gede";
     homepage = "http://gede.dexar.se";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ juliendehos ];
+    platforms = lib.platforms.linux;
+    mainProgram = "gede";
   };
 }

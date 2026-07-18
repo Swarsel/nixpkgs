@@ -1,13 +1,12 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "lfk";
   version = "0.14.19";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "janosmiko";
@@ -17,7 +16,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-WYx/eMArAsiyfEvrBZmTfK2ABxX2X1VQEtDCxC+UyP8=";
-
+  __structuredAttrs = true;
   ldflags = [ "-s" ];
 
   meta = {

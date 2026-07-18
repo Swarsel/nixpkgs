@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
+  gitMinimal,
   nix-update-script,
   python3,
-  gitMinimal,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -23,6 +23,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     python3
   ];
 
+  cargoHash = "sha256-P2YH3mf1Olrjzwl6ldwzO0xMC0yccqA7T2mrWZ5qSKM=";
+
   nativeCheckInputs = [
     gitMinimal
   ];
@@ -33,11 +35,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     git config --global user.email "nobody@example.com"
   '';
 
-  cargoHash = "sha256-P2YH3mf1Olrjzwl6ldwzO0xMC0yccqA7T2mrWZ5qSKM=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

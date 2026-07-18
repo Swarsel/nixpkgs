@@ -1,25 +1,23 @@
 {
   lib,
-  buildPythonPackage,
-  pythonAtLeast,
-  isPyPy,
   fetchFromGitHub,
-
-  # build
-  cython,
-  setuptools,
-
   # tests
   aiofiles,
+  buildPythonPackage,
   cbor2,
+  # build
+  cython,
   httpx,
+  isPyPy,
   msgpack,
   mujson,
   orjson,
   pytest7CheckHook,
+  pythonAtLeast,
   pyyaml,
   rapidjson,
   requests,
+  setuptools,
   ujson,
   uvicorn,
   websockets,
@@ -28,7 +26,6 @@
 buildPythonPackage rec {
   pname = "falcon";
   version = "4.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "falconry";
@@ -36,20 +33,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-Vi7J607PsjwxAKYNCiVGxSRYIbKHgrGvRX9Ent3+LQo=";
   };
-
-  build-system = [ setuptools ] ++ lib.optionals (!isPyPy) [ cython ];
-
-  __darwinAllowLocalNetworking = true;
-
-  preCheck = ''
-    export HOME=$TMPDIR
-    cp -R tests examples $TMPDIR
-    pushd $TMPDIR
-  '';
-
-  postCheck = ''
-    popd
-  '';
 
   nativeCheckInputs = [
     # https://github.com/falconry/falcon/blob/master/requirements/tests
@@ -72,7 +55,18 @@ buildPythonPackage rec {
     ujson
   ];
 
-  enabledTestPaths = [ "tests" ];
+  preCheck = ''
+    export HOME=$TMPDIR
+    cp -R tests examples $TMPDIR
+    pushd $TMPDIR
+  '';
+
+  postCheck = ''
+    popd
+  '';
+
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ] ++ lib.optionals (!isPyPy) [ cython ];
 
   disabledTestPaths = [
     # needs a running server
@@ -83,10 +77,13 @@ buildPythonPackage rec {
     "tests/asgi/test_cythonized_asgi.py"
   ];
 
+  enabledTestPaths = [ "tests" ];
+  pyproject = true;
+
   meta = {
-    changelog = "https://falcon.readthedocs.io/en/stable/changes/${src.tag}.html";
     description = "Ultra-reliable, fast ASGI+WSGI framework for building data plane APIs at scale";
     homepage = "https://falconframework.org/";
+    changelog = "https://falcon.readthedocs.io/en/stable/changes/${src.tag}.html";
     license = lib.licenses.asl20;
   };
 }

@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "datadiff";
   version = "2.2.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
 
   # Tests are not part of the PyPI releases
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "datadiff" ];
 
   meta = {

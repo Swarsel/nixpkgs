@@ -5,9 +5,6 @@
 }:
 
 clangStdenv.mkDerivation {
-  name = "ObjFW test";
-  buildInputs = [ objfw ];
-
   src = writeTextDir "helloworld.m" ''
     #import <ObjFW/ObjFW.h>
     int main() {
@@ -15,6 +12,8 @@ clangStdenv.mkDerivation {
         return 0;
     }
   '';
+
+  buildInputs = [ objfw ];
 
   buildPhase = ''
     runHook preBuild
@@ -29,16 +28,19 @@ clangStdenv.mkDerivation {
     runHook postBuild
   '';
 
+  doCheck = true;
+
   checkPhase = ''
     runHook preCheck
     ./testbinary
     runHook postCheck
   '';
-  doCheck = true;
 
   installPhase = ''
     runHook preInstall
     touch $out
     runHook postInstall
   '';
+
+  name = "ObjFW test";
 }

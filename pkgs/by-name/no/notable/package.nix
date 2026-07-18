@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchurl,
   appimageTools,
   makeWrapper,
-  fetchurl,
-  lib,
 }:
 
 let
@@ -11,8 +11,8 @@ let
   sha256 = "0rvz8zwsi62kiq89pv8n2wh9h5yb030kvdr1vf65xwqkhqcrzrby";
 
   src = fetchurl {
-    url = "https://github.com/notable/notable/releases/download/v${version}/Notable-${version}.AppImage";
     inherit sha256;
+    url = "https://github.com/notable/notable/releases/download/v${version}/Notable-${version}.AppImage";
   };
 
   appimageContents = appimageTools.extract {
@@ -22,17 +22,7 @@ in
 appimageTools.wrapType2 {
 
   inherit pname version src;
-
-  profile = ''
-    export LC_ALL=C.UTF-8
-  '';
-
   nativeBuildInputs = [ makeWrapper ];
-
-  extraPkgs = pkgs: [
-    pkgs.at-spi2-atk
-    pkgs.at-spi2-core
-  ];
 
   extraInstallCommands = ''
     install -m 444 -D ${appimageContents}/notable.desktop $out/share/applications/notable.desktop
@@ -48,11 +38,20 @@ appimageTools.wrapType2 {
       --add-flags "--disable-seccomp-filter-sandbox"
   '';
 
+  extraPkgs = pkgs: [
+    pkgs.at-spi2-atk
+    pkgs.at-spi2-core
+  ];
+
+  profile = ''
+    export LC_ALL=C.UTF-8
+  '';
+
   meta = {
     description = "Markdown-based note-taking app that doesn't suck";
     homepage = "https://github.com/notable/notable";
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
     maintainers = [ ];
+    platforms = [ "x86_64-linux" ];
   };
 }

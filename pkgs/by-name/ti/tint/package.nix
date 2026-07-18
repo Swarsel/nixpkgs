@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,6 +18,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
 
   ldflags = [
     "-s"
@@ -25,20 +30,15 @@ buildGoModule (finalAttrs: {
     "-X main.version=${finalAttrs.version}"
   ];
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/ashish0kumar/tint/releases/tag/v${finalAttrs.version}";
     description = "Command-line tool to recolor images using theme palettes";
     homepage = "https://github.com/ashish0kumar/tint";
+    changelog = "https://github.com/ashish0kumar/tint/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ashish0kumar ];
-    mainProgram = "tint";
     platforms = lib.platforms.unix;
+    mainProgram = "tint";
   };
 })

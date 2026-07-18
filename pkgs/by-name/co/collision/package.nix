@@ -1,21 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  crystal,
-  wrapGAppsHook4,
-  desktopToDarwinBundle,
-  gobject-introspection,
-  nautilus-python,
-  python3,
-  libadwaita,
-  openssl,
-  libxml2,
-  pkg-config,
-  gitUpdater,
   _experimental-update-script-combinators,
-  runCommand,
+  crystal,
   crystal2nix,
+  desktopToDarwinBundle,
+  gitUpdater,
+  gobject-introspection,
+  libadwaita,
+  libxml2,
+  nautilus-python,
+  openssl,
+  pkg-config,
+  python3,
+  runCommand,
+  wrapGAppsHook4,
   writeShellScript,
 }:
 
@@ -33,14 +33,6 @@ crystal.buildCrystalPackage rec {
   postPatch = ''
     substituteInPlace Makefile \
       --replace-fail 'gtk-update-icon-cache $(PREFIX)/share/icons/hicolor' 'true'
-  '';
-
-  shardsFile = ./shards.nix;
-  copyShardDeps = true;
-
-  preBuild = ''
-    cd lib/gi-crystal && shards build -Dpreview_mt --release --no-debug && \
-    install -Dm755 bin/gi-crystal ../../bin/gi-crystal && cd ../..
   '';
 
   # Crystal compiler has a strange issue with OpenSSL. The project will not compile due to
@@ -64,22 +56,32 @@ crystal.buildCrystalPackage rec {
     python3.pkgs.pygobject3
   ];
 
+  preBuild = ''
+    cd lib/gi-crystal && shards build -Dpreview_mt --release --no-debug && \
+    install -Dm755 bin/gi-crystal ../../bin/gi-crystal && cd ../..
+  '';
+
+  doCheck = false;
+
+  postInstall = ''
+    install -Dm555 ./nautilus-extension/collision-extension.py -t $out/share/nautilus-python/extensions
+  '';
+
+  doInstallCheck = false;
+
   buildTargets = [
     "bindings"
     "build"
   ];
 
-  doCheck = false;
-  doInstallCheck = false;
+  copyShardDeps = true;
 
   installTargets = [
     "desktop"
     "install"
   ];
 
-  postInstall = ''
-    install -Dm555 ./nautilus-extension/collision-extension.py -t $out/share/nautilus-python/extensions
-  '';
+  shardsFile = ./shards.nix;
 
   passthru = {
     updateScript = _experimental-update-script-combinators.sequence [
@@ -90,6 +92,7 @@ crystal.buildCrystalPackage rec {
           (writeShellScript "update-lock" "cd $1; ${lib.getExe crystal2nix}")
           ./.
         ];
+
         supportedFeatures = [ "silent" ];
       }
       {
@@ -97,6 +100,7 @@ crystal.buildCrystalPackage rec {
           "rm"
           "./shard.lock"
         ];
+
         supportedFeatures = [ "silent" ];
       }
     ];
@@ -106,8 +110,8 @@ crystal.buildCrystalPackage rec {
     description = "Check hashes for your files";
     homepage = "https://github.com/GeopJr/Collision";
     license = lib.licenses.bsd2;
-    mainProgram = "collision";
     maintainers = with lib.maintainers; [ sund3RRR ];
+    mainProgram = "collision";
     teams = [ lib.teams.gnome-circle ];
   };
 }

@@ -1,8 +1,8 @@
 {
   lib,
-  SDL,
-  fetchurl,
   stdenv,
+  fetchurl,
+  SDL,
   # Boolean flags
   enableSdltest ? (!stdenv.hostPlatform.isDarwin),
 }:
@@ -16,23 +16,22 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-37FaxfjOeklS3BLSrtl0dRjF5rM1wOMWNtI/k8Yw9Bk=";
   };
 
+  strictDeps = true;
   buildInputs = [ SDL ];
-
   # SDL_gfx.pc refers to sdl.pc and some SDL_gfx headers import SDL.h
   propagatedBuildInputs = [ SDL ];
-
-  env.SDL_CONFIG = lib.getExe' (lib.getDev SDL) "sdl-config";
 
   configureFlags = [
     (lib.enableFeature false "mmx")
     (lib.enableFeature enableSdltest "sdltest")
   ];
 
-  strictDeps = true;
+  env.SDL_CONFIG = lib.getExe' (lib.getDev SDL) "sdl-config";
 
   meta = {
-    homepage = "https://sourceforge.net/projects/sdlgfx/";
+    inherit (SDL.meta) platforms;
     description = "SDL graphics drawing primitives and support functions";
+
     longDescription = ''
       The SDL_gfx library evolved out of the SDL_gfxPrimitives code which
       provided basic drawing routines such as lines, circles or polygons and
@@ -50,8 +49,9 @@ stdenv.mkDerivation (finalAttrs: {
       The library is backwards compatible to the above mentioned code. Its is
       written in plain C and can be used in C++ code.
     '';
+
+    homepage = "https://sourceforge.net/projects/sdlgfx/";
     license = lib.licenses.zlib;
     teams = [ lib.teams.sdl ];
-    inherit (SDL.meta) platforms;
   };
 })

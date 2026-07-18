@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
   simpleeval,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pycasbin";
   version = "2.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "casbin";
@@ -20,6 +19,7 @@ buildPythonPackage rec {
     hash = "sha256-jK6zmT5trj6qBcS6edXPmK8eHfqw58seraswEQQzhZ0=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,8 +27,7 @@ buildPythonPackage rec {
     wcmatch
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "casbin" ];
 
   meta = {

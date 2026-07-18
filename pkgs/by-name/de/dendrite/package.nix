@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   nixosTests,
   postgresql,
@@ -21,6 +21,22 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-QUztOoOesECAhwh4whzvrc43rJxjtPaEICUHno2DId0=";
+  # PostgreSQL's request for a shared memory segment exceeded your kernel's SHMALL parameter
+  doCheck = !stdenv.hostPlatform.isDarwin;
+
+  nativeCheckInputs = [
+    postgresqlTestHook
+    postgresql
+  ];
+
+  preCheck = ''
+    export PGUSER=$(whoami)
+    # temporarily disable this failing test
+    # it passes in upstream CI and requires further investigation
+    rm roomserver/internal/input/input_test.go
+  '';
+
+  postgresqlTestUserOptions = "LOGIN SUPERUSER";
 
   subPackages = [
     # The server
@@ -39,25 +55,10 @@ buildGoModule (finalAttrs: {
     # "cmd/dendrite-demo-yggdrasil"
   ];
 
-  nativeCheckInputs = [
-    postgresqlTestHook
-    postgresql
-  ];
-
-  postgresqlTestUserOptions = "LOGIN SUPERUSER";
-  preCheck = ''
-    export PGUSER=$(whoami)
-    # temporarily disable this failing test
-    # it passes in upstream CI and requires further investigation
-    rm roomserver/internal/input/input_test.go
-  '';
-
-  # PostgreSQL's request for a shared memory segment exceeded your kernel's SHMALL parameter
-  doCheck = !stdenv.hostPlatform.isDarwin;
-
   passthru.tests = {
     inherit (nixosTests) dendrite;
   };
+
   passthru.updateScript = nix-update-script {
     extraArgs = [
       "--version-regex"
@@ -66,11 +67,11 @@ buildGoModule (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://element-hq.github.io/dendrite";
-    mainProgram = "dendrite";
     description = "Second-generation Matrix homeserver written in Go";
+    homepage = "https://element-hq.github.io/dendrite";
     changelog = "https://github.com/element-hq/dendrite/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.agpl3Plus;
     platforms = lib.platforms.unix;
+    mainProgram = "dendrite";
   };
 })

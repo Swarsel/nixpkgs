@@ -1,11 +1,11 @@
 {
-  stdenvNoCC,
   lib,
   fetchurl,
-  electron,
-  makeWrapper,
-  makeDesktopItem,
   copyDesktopItems,
+  electron,
+  makeDesktopItem,
+  makeWrapper,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -16,10 +16,6 @@ stdenvNoCC.mkDerivation rec {
     url = "https://github.com/camunda/camunda-modeler/releases/download/v${version}/camunda-modeler-${version}-linux-x64.tar.gz";
     hash = "sha256-92KWs2mLcKMhM/v3GRkX5CFcRrtPA1viczZVFkAdVLQ=";
   };
-  sourceRoot = "camunda-modeler-${version}-linux-x64";
-
-  dontConfigure = true;
-  dontBuild = true;
 
   nativeBuildInputs = [
     makeWrapper
@@ -47,10 +43,17 @@ stdenvNoCC.mkDerivation rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = pname;
-      exec = pname;
+      comment = meta.description;
       desktopName = "Camunda Modeler";
+      exec = pname;
+
+      extraConfig = {
+        X-Ayatana-Desktop-Shortcuts = "NewWindow;RepositoryBrowser";
+      };
+
+      genericName = "Process Modeling Tool";
       icon = pname;
+
       keywords = [
         "bpmn"
         "cmmn"
@@ -59,29 +62,33 @@ stdenvNoCC.mkDerivation rec {
         "modeler"
         "camunda"
       ];
-      genericName = "Process Modeling Tool";
-      comment = meta.description;
+
       mimeTypes = [
         "application/bpmn"
         "application/cmmn"
         "application/dmn"
         "application/camunda-form"
       ];
-      extraConfig = {
-        X-Ayatana-Desktop-Shortcuts = "NewWindow;RepositoryBrowser";
-      };
+
+      name = pname;
     })
   ];
 
+  dontBuild = true;
+  dontConfigure = true;
+  sourceRoot = "camunda-modeler-${version}-linux-x64";
+
   meta = {
-    homepage = "https://github.com/camunda/camunda-modeler";
+    inherit (electron.meta) platforms;
     description = "Integrated modeling solution for BPMN, DMN and Forms based on bpmn.io";
+    homepage = "https://github.com/camunda/camunda-modeler";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       vringar
       johannwagner
     ];
-    license = lib.licenses.mit;
-    inherit (electron.meta) platforms;
+
     mainProgram = "camunda-modeler";
   };
 }

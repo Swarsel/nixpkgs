@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "mednafen-vb";
   version = "0-unstable-2026-06-14";
 
   src = fetchFromGitHub {
@@ -14,6 +13,7 @@ mkLibretroCore {
     hash = "sha256-+57qsfH2wygKdD66yauzKD9XDf01q4LeiWdIeYbVUmc=";
   };
 
+  core = "mednafen-vb";
   makefile = "Makefile";
 
   meta = {

@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   async-timeout,
   buildPythonPackage,
-  fetchFromGitHub,
   jsonrpc-base,
   pytest-asyncio_0,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "jsonrpc-websocket";
   version = "3.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "emlove";
@@ -21,6 +20,11 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-vhE5jee3ryrKFm9s8SFklBIk+pV8FkUERwWQ75u/PIw=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio_0
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -30,17 +34,14 @@ buildPythonPackage (finalAttrs: {
     jsonrpc-base
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio_0
-    pytestCheckHook
+  enabledTestPaths = [
+    "tests.py"
   ];
+
+  pyproject = true;
 
   pytestFlags = [
     "--asyncio-mode=auto"
-  ];
-
-  enabledTestPaths = [
-    "tests.py"
   ];
 
   pythonImportsCheck = [ "jsonrpc_websocket" ];

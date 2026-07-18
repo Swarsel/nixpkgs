@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "wyoming-faster-whisper";
   version = "3.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rhasspy";
@@ -16,13 +15,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-+RmP552zsvWbxIpfhmKNdU4EZSeEImUdaF827g6Tuco=";
   };
 
+  # tests require models from huggingface
+  doCheck = false;
+
   build-system = with python3Packages; [
     setuptools
-  ];
-
-  pythonRelaxDeps = [
-    "faster-whisper"
-    "wyoming"
   ];
 
   dependencies = with python3Packages; [
@@ -32,35 +29,42 @@ python3Packages.buildPythonApplication (finalAttrs: {
   ];
 
   optional-dependencies = with python3Packages; {
-    transformers = [
-      transformers
-    ]
-    ++ transformers.optional-dependencies.torch;
-    sherpa = [
-      sherpa-onnx
-    ];
     onnx_asr = [
       onnx-asr
     ]
     ++ onnx-asr.optional-dependencies.cpu
     ++ onnx-asr.optional-dependencies.hub;
+
+    sherpa = [
+      sherpa-onnx
+    ];
+
+    transformers = [
+      transformers
+    ]
+    ++ transformers.optional-dependencies.torch;
+
     zeroconf = [
       wyoming
     ]
     ++ wyoming.optional-dependencies.zeroconf;
   };
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "wyoming_faster_whisper"
   ];
 
-  # tests require models from huggingface
-  doCheck = false;
+  pythonRelaxDeps = [
+    "faster-whisper"
+    "wyoming"
+  ];
 
   meta = {
-    changelog = "https://github.com/rhasspy/wyoming-faster-whisper/releases/tag/v${finalAttrs.version}";
     description = "Wyoming Server for Faster Whisper";
     homepage = "https://github.com/rhasspy/wyoming-faster-whisper";
+    changelog = "https://github.com/rhasspy/wyoming-faster-whisper/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hexa ];
     mainProgram = "wyoming-faster-whisper";

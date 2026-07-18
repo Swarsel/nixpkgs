@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   net-snmp,
   nixosTests,
 }:
@@ -17,18 +17,16 @@ buildGoModule rec {
     sha256 = "sha256-vLgqcqjnUvXYlxVyybDvra9YY5Im17L4I3LLf77tR8M=";
   };
 
-  vendorHash = "sha256-3Rjt91Xb0Y5OCkwGQVQLZ6zK0+xVk8XNrGfax6zZJ7o=";
-
   buildInputs = [ net-snmp ];
-
+  vendorHash = "sha256-3Rjt91Xb0Y5OCkwGQVQLZ6zK0+xVk8XNrGfax6zZJ7o=";
   doCheck = true;
-
   passthru.tests = { inherit (nixosTests.prometheus-exporters) snmp; };
 
   meta = {
     description = "SNMP Exporter for Prometheus";
     homepage = "https://github.com/prometheus/snmp_exporter";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       Frostman
     ];

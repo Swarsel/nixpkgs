@@ -1,12 +1,12 @@
 {
   lib,
   fetchFromGitHub,
-  stdenvNoCC,
-  w3m,
   curl,
+  installShellFiles,
   jq,
   makeWrapper,
-  installShellFiles,
+  stdenvNoCC,
+  w3m,
   xclip,
 }:
 
@@ -20,10 +20,6 @@ stdenvNoCC.mkDerivation rec {
     rev = "v${version}";
     sha256 = "sha256-s4c1M4YHK/CNpH7nPt7rRqlkLUZrpBXvAVS/qxCai9c=";
   };
-
-  dontConfigure = true;
-
-  dontBuild = true;
 
   nativeBuildInputs = [
     makeWrapper
@@ -44,9 +40,12 @@ stdenvNoCC.mkDerivation rec {
     }
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://github.com/sdushantha/tmpmail";
     description = "Temporary email right from your terminal written in POSIX sh";
+    homepage = "https://github.com/sdushantha/tmpmail";
     license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "tmpmail";

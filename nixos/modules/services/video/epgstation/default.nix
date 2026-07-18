@@ -1,8 +1,8 @@
 {
   config,
   lib,
-  options,
   pkgs,
+  options,
   ...
 }:
 
@@ -15,8 +15,8 @@ let
   username = config.users.users.epgstation.name;
   groupname = config.users.users.epgstation.group;
   mirakurun = {
-    sock = config.services.mirakurun.unixSocket;
     option = options.services.mirakurun.unixSocket;
+    sock = config.services.mirakurun.unixSocket;
   };
 
   yaml = pkgs.formats.yaml { };
@@ -53,20 +53,24 @@ let
   streamingConfig = lib.importJSON ./streaming.json;
   logConfig = yaml.generate "logConfig.yml" {
     appenders.stdout.type = "stdout";
+
     categories = {
-      default = {
-        appenders = [ "stdout" ];
-        level = "info";
-      };
-      system = {
-        appenders = [ "stdout" ];
-        level = "info";
-      };
       access = {
         appenders = [ "stdout" ];
         level = "info";
       };
+
+      default = {
+        appenders = [ "stdout" ];
+        level = "info";
+      };
+
       stream = {
+        appenders = [ "stdout" ];
+        level = "info";
+      };
+
+      system = {
         appenders = [ "stdout" ];
         level = "info";
       };
@@ -104,8 +108,6 @@ let
     ) instruction;
 in
 {
-  meta.maintainers = with lib.maintainers; [ midchildan ];
-
   imports = [
     (deprecateTopLevelOption [ "port" ])
     (deprecateTopLevelOption [ "socketioPort" ])
@@ -115,28 +117,38 @@ in
 
   options.services.epgstation = {
     enable = lib.mkEnableOption description;
-
     package = lib.mkPackageOption pkgs "epgstation" { };
+
+    database = {
+      name = lib.mkOption {
+        default = "epgstation";
+
+        description = ''
+          Name of the MySQL database that holds EPGStation's data.
+        '';
+
+        type = lib.types.str;
+      };
+
+      passwordFile = lib.mkOption {
+        description = ''
+          A file containing the password for the database named
+          {option}`database.name`.
+        '';
+
+        example = "/run/keys/epgstation-db-password";
+        type = lib.types.path;
+      };
+    };
 
     ffmpeg = lib.mkPackageOption pkgs "ffmpeg" {
       default = "ffmpeg-headless";
       example = "ffmpeg-full";
     };
 
-    usePreconfiguredStreaming = lib.mkOption {
-      type = lib.types.bool;
-      default = true;
-      description = ''
-        Use preconfigured default streaming options.
-
-        Upstream defaults:
-        <https://github.com/l3tnun/EPGStation/blob/master/config/config.yml.template>
-      '';
-    };
-
     openFirewall = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         Open ports in the firewall for the EPGStation web interface.
 
@@ -146,25 +158,8 @@ in
         putting it behind a VPN if you want remote access.
         :::
       '';
-    };
 
-    database = {
-      name = lib.mkOption {
-        type = lib.types.str;
-        default = "epgstation";
-        description = ''
-          Name of the MySQL database that holds EPGStation's data.
-        '';
-      };
-
-      passwordFile = lib.mkOption {
-        type = lib.types.path;
-        example = "/run/keys/epgstation-db-password";
-        description = ''
-          A file containing the password for the database named
-          {option}`database.name`.
-        '';
-      };
+      type = lib.types.bool;
     };
 
     # The defaults for some options come from the upstream template
@@ -178,6 +173,8 @@ in
     # configure them according to their needs. In these cases, the value in the
     # upstream template configuration should serve as a "good enough" default.
     settings = lib.mkOption {
+      default = { };
+
       description = ''
         Options to add to config.yml.
 
@@ -185,84 +182,45 @@ in
         <https://github.com/l3tnun/EPGStation/blob/master/doc/conf-manual.md>
       '';
 
-      default = { };
       example = {
-        recPriority = 20;
         conflictPriority = 10;
+        recPriority = 20;
       };
 
       type = lib.types.submodule {
-        freeformType = yaml.type;
-
-        options.port = lib.mkOption {
-          type = lib.types.port;
-          default = 20772;
-          description = ''
-            HTTP port for EPGStation to listen on.
-          '';
-        };
-
-        options.socketioPort = lib.mkOption {
-          type = lib.types.port;
-          default = cfg.settings.port + 1;
-          defaultText = lib.literalExpression "config.${opt.settings}.port + 1";
-          description = ''
-            Socket.io port for EPGStation to listen on. It is valid to share
-            ports with {option}`${opt.settings}.port`.
-          '';
-        };
-
         options.clientSocketioPort = lib.mkOption {
-          type = lib.types.port;
           default = cfg.settings.socketioPort;
           defaultText = lib.literalExpression "config.${opt.settings}.socketioPort";
+
           description = ''
             Socket.io port that the web client is going to connect to. This may
             be different from {option}`${opt.settings}.socketioPort` if
             EPGStation is hidden behind a reverse proxy.
           '';
-        };
 
-        options.mirakurunPath =
-          with mirakurun;
-          lib.mkOption {
-            type = lib.types.str;
-            default = "http+unix://${lib.replaceStrings [ "/" ] [ "%2F" ] sock}";
-            defaultText = lib.literalExpression ''
-              "http+unix://''${lib.replaceStrings ["/"] ["%2F"] config.${option}}"
-            '';
-            example = "http://localhost:40772";
-            description = "URL to connect to Mirakurun.";
-          };
-
-        options.encodeProcessNum = lib.mkOption {
-          type = lib.types.ints.positive;
-          default = 4;
-          description = ''
-            The maximum number of processes that EPGStation would allow to run
-            at the same time for encoding or streaming videos.
-          '';
+          type = lib.types.port;
         };
 
         options.concurrentEncodeNum = lib.mkOption {
-          type = lib.types.ints.positive;
           default = 1;
+
           description = ''
             The maximum number of encoding jobs that EPGStation would run at the
             same time.
           '';
+
+          type = lib.types.ints.positive;
         };
 
         options.encode = lib.mkOption {
-          type = with lib.types; listOf attrs;
-          description = "Encoding presets for recorded videos.";
           default = [
             {
-              name = "H.264";
               cmd = "%NODE% ${cfg.package}/libexec/enc.js";
+              name = "H.264";
               suffix = ".mp4";
             }
           ];
+
           defaultText = lib.literalExpression ''
             [
               {
@@ -272,8 +230,73 @@ in
               }
             ]
           '';
+
+          description = "Encoding presets for recorded videos.";
+          type = with lib.types; listOf attrs;
         };
+
+        options.encodeProcessNum = lib.mkOption {
+          default = 4;
+
+          description = ''
+            The maximum number of processes that EPGStation would allow to run
+            at the same time for encoding or streaming videos.
+          '';
+
+          type = lib.types.ints.positive;
+        };
+
+        options.mirakurunPath =
+          with mirakurun;
+          lib.mkOption {
+            default = "http+unix://${lib.replaceStrings [ "/" ] [ "%2F" ] sock}";
+
+            defaultText = lib.literalExpression ''
+              "http+unix://''${lib.replaceStrings ["/"] ["%2F"] config.${option}}"
+            '';
+
+            description = "URL to connect to Mirakurun.";
+            example = "http://localhost:40772";
+            type = lib.types.str;
+          };
+
+        options.port = lib.mkOption {
+          default = 20772;
+
+          description = ''
+            HTTP port for EPGStation to listen on.
+          '';
+
+          type = lib.types.port;
+        };
+
+        options.socketioPort = lib.mkOption {
+          default = cfg.settings.port + 1;
+          defaultText = lib.literalExpression "config.${opt.settings}.port + 1";
+
+          description = ''
+            Socket.io port for EPGStation to listen on. It is valid to share
+            ports with {option}`${opt.settings}.port`.
+          '';
+
+          type = lib.types.port;
+        };
+
+        freeformType = yaml.type;
       };
+    };
+
+    usePreconfiguredStreaming = lib.mkOption {
+      default = true;
+
+      description = ''
+        Use preconfigured default streaming options.
+
+        Upstream defaults:
+        <https://github.com/l3tnun/EPGStation/blob/master/config/config.yml.template>
+      '';
+
+      type = lib.types.bool;
     };
   };
 
@@ -281,6 +304,7 @@ in
     assertions = [
       {
         assertion = !(lib.hasAttr "readOnlyOnce" cfg.settings);
+
         message = ''
           The option config.${opt.settings}.readOnlyOnce can no longer be used
           since it's been removed. No replacements are available.
@@ -301,16 +325,28 @@ in
       ];
     };
 
-    users.users.epgstation = {
-      description = "EPGStation user";
-      group = config.users.groups.epgstation.name;
-      isSystemUser = true;
+    services.epgstation.settings =
+      let
+        defaultSettings = {
+          dbtype = lib.mkDefault "mysql";
+          ffmpeg = lib.mkDefault "${cfg.ffmpeg}/bin/ffmpeg";
+          ffprobe = lib.mkDefault "${cfg.ffmpeg}/bin/ffprobe";
 
-      # npm insists on creating ~/.npm
-      home = "/var/cache/epgstation";
-    };
+          mysql = {
+            database = cfg.database.name;
+            password = lib.mkDefault "@dbPassword@";
+            socketPath = lib.mkDefault "/run/mysqld/mysqld.sock";
+            user = username;
+          };
 
-    users.groups.epgstation = { };
+          # for disambiguation with TypeScript files
+          recordedFileExtension = lib.mkDefault ".m2ts";
+        };
+      in
+      lib.mkMerge [
+        defaultSettings
+        (lib.mkIf cfg.usePreconfiguredStreaming streamingConfig)
+      ];
 
     services.mirakurun.enable = lib.mkDefault true;
 
@@ -327,28 +363,30 @@ in
       # } ];
     };
 
-    services.epgstation.settings =
-      let
-        defaultSettings = {
-          dbtype = lib.mkDefault "mysql";
-          mysql = {
-            socketPath = lib.mkDefault "/run/mysqld/mysqld.sock";
-            user = username;
-            password = lib.mkDefault "@dbPassword@";
-            database = cfg.database.name;
-          };
+    systemd.services.epgstation = {
+      inherit description;
 
-          ffmpeg = lib.mkDefault "${cfg.ffmpeg}/bin/ffmpeg";
-          ffprobe = lib.mkDefault "${cfg.ffmpeg}/bin/ffprobe";
+      after = [
+        "network.target"
+      ]
+      ++ lib.optional config.services.mirakurun.enable "mirakurun.service"
+      ++ lib.optional config.services.mysql.enable "mysql.service";
 
-          # for disambiguation with TypeScript files
-          recordedFileExtension = lib.mkDefault ".m2ts";
-        };
-      in
-      lib.mkMerge [
-        defaultSettings
-        (lib.mkIf cfg.usePreconfiguredStreaming streamingConfig)
-      ];
+      environment.NODE_ENV = "production";
+
+      serviceConfig = {
+        CacheDirectory = "epgstation";
+        ConfigurationDirectory = "epgstation";
+        ExecStart = "${cfg.package}/bin/epgstation start";
+        ExecStartPre = "+${preStartScript}";
+        Group = groupname;
+        LogsDirectory = "epgstation";
+        StateDirectory = "epgstation";
+        User = username;
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
 
     systemd.tmpfiles.settings."10-epgstation" = lib.listToAttrs (
       map
@@ -356,8 +394,8 @@ in
           dir:
           lib.nameValuePair dir {
             d = {
-              user = username;
               group = groupname;
+              user = username;
             };
           }
         )
@@ -374,28 +412,16 @@ in
         ]
     );
 
-    systemd.services.epgstation = {
-      inherit description;
+    users.groups.epgstation = { };
 
-      wantedBy = [ "multi-user.target" ];
-      after = [
-        "network.target"
-      ]
-      ++ lib.optional config.services.mirakurun.enable "mirakurun.service"
-      ++ lib.optional config.services.mysql.enable "mysql.service";
-
-      environment.NODE_ENV = "production";
-
-      serviceConfig = {
-        ExecStart = "${cfg.package}/bin/epgstation start";
-        ExecStartPre = "+${preStartScript}";
-        User = username;
-        Group = groupname;
-        CacheDirectory = "epgstation";
-        StateDirectory = "epgstation";
-        LogsDirectory = "epgstation";
-        ConfigurationDirectory = "epgstation";
-      };
+    users.users.epgstation = {
+      description = "EPGStation user";
+      group = config.users.groups.epgstation.name;
+      # npm insists on creating ~/.npm
+      home = "/var/cache/epgstation";
+      isSystemUser = true;
     };
   };
+
+  meta.maintainers = with lib.maintainers; [ midchildan ];
 }

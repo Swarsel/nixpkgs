@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "izrss";
@@ -14,23 +14,25 @@ buildGoModule (finalAttrs: {
     hash = "sha256-8eHUskfsdymVTYt5V/f75vKsvmuZz/CNGqbthSQrHow=";
   };
 
+  vendorHash = "sha256-NP363PtrTcI1EubIBJEoMCTkHCGsNRM8fY2fgwSlz5s=";
+
   ldflags = [
     "-s"
     "-w"
     "-X main.Version=${finalAttrs.version}"
   ];
 
-  vendorHash = "sha256-NP363PtrTcI1EubIBJEoMCTkHCGsNRM8fY2fgwSlz5s=";
-
   meta = {
     description = "RSS feed reader for the terminal written in Go";
-    changelog = "https://github.com/isabelroses/izrss/releases/v${finalAttrs.version}";
     homepage = "https://github.com/isabelroses/izrss";
+    changelog = "https://github.com/isabelroses/izrss/releases/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       isabelroses
       luftmensch-luftmensch
     ];
+
     mainProgram = "izrss";
   };
 })

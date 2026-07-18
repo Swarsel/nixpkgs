@@ -1,23 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  # dependencies
+  matplotlib,
+  # tests
+  pytestCheckHook,
   # build-system
   setuptools,
   setuptools-scm,
-
-  # dependencies
-  matplotlib,
-
-  # tests
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "mplcursors";
   version = "0.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "anntzer";
@@ -25,6 +21,10 @@ buildPythonPackage rec {
     rev = "v${version}";
     hash = "sha256-ZHX//AUVSF91cHxyiL4klglJ2Ef3iSE6oOancL+gQbA=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -35,9 +35,7 @@ buildPythonPackage rec {
     matplotlib
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "mplcursors"

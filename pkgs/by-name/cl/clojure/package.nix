@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  bashNonInteractive,
   fetchurl,
+  bashNonInteractive,
   installShellFiles,
   # Be careful if you remove this, out-of-tree consumers expect to
   # be able to override `jdk`.
   jdk,
-  rlwrap,
   makeWrapper,
-  writeScript,
+  rlwrap,
   versionCheckHook,
+  writeScript,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-3IbMVrw3L87we9h/RGk+60thz19ENHiDh4Nk0Dtfs0I=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     installShellFiles
     makeWrapper
@@ -31,9 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [
     bashNonInteractive
   ];
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   # See https://github.com/clojure/brew-install/blob/1.10.3/src/main/resources/clojure/install/linux-install.sh
   installPhase =
@@ -71,7 +70,6 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
   doInstallCheck = true;
-
   nativeInstallCheckInputs = [ versionCheckHook ];
 
   installCheckPhase = ''
@@ -84,6 +82,9 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstallCheck
   '';
+
+  __structuredAttrs = true;
+  passthru.jdk = jdk;
 
   passthru.updateScript = writeScript "update-clojure" ''
     #!/usr/bin/env nix-shell
@@ -101,14 +102,9 @@ stdenv.mkDerivation (finalAttrs: {
     update-source-version clojure "$latest_version"
   '';
 
-  passthru.jdk = jdk;
-
   meta = {
     description = "Lisp dialect for the JVM";
-    homepage = "https://clojure.org/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
-    license = lib.licenses.epl10;
-    mainProgram = "clojure";
+
     longDescription = ''
       Clojure is a dynamic programming language that targets the Java
       Virtual Machine. It is designed to be a general-purpose language,
@@ -128,7 +124,12 @@ stdenv.mkDerivation (finalAttrs: {
       offers a software transactional memory system and reactive Agent
       system that ensure clean, correct, multithreaded designs.
     '';
+
+    homepage = "https://clojure.org/";
+    license = lib.licenses.epl10;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ jlesquembre ];
     platforms = lib.platforms.unix;
+    mainProgram = "clojure";
   };
 })

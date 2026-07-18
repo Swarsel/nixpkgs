@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  libGLU,
   fetchurl,
-  dpkg,
   autoPatchelfHook,
+  dpkg,
+  libGLU,
   libsForQt5,
 }:
 
@@ -28,8 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
     libGLU
   ];
 
-  qtWrapperArgs = [ "--prefix QT_QPA_PLATFORM : xcb" ];
-
   installPhase = ''
     runHook preInstall
 
@@ -41,13 +39,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  qtWrapperArgs = [ "--prefix QT_QPA_PLATFORM : xcb" ];
+
   meta = {
     description = "Slicer for the FlashForge 3D printers";
     homepage = "https://www.flashforge.com/";
     license = lib.licenses.unfree;
-    mainProgram = "flashprint";
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = [ lib.maintainers.ianliu ];
     platforms = [ "x86_64-linux" ];
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    mainProgram = "flashprint";
   };
 })

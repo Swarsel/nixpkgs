@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  gnutls,
   cunit,
-  ncurses,
-  knot-dns,
   curlWithGnuTls,
+  gnutls,
+  knot-dns,
+  ncurses,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -31,26 +31,27 @@ stdenv.mkDerivation rec {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [ gnutls ];
-
   configureFlags = [ "--with-gnutls=yes" ];
-  enableParallelBuilding = true;
-
   doCheck = true;
   nativeCheckInputs = [ cunit ] ++ lib.optional stdenv.hostPlatform.isDarwin ncurses;
+  enableParallelBuilding = true;
 
   passthru.tests = knot-dns.passthru.tests // {
     inherit curlWithGnuTls;
   };
 
   meta = {
-    homepage = "https://github.com/ngtcp2/ngtcp2";
     description = "Effort to implement RFC9000 QUIC protocol";
+    homepage = "https://github.com/ngtcp2/ngtcp2";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       vcunat # for knot-dns
     ];
+
+    platforms = lib.platforms.unix;
   };
 }
 

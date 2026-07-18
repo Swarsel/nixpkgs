@@ -1,35 +1,35 @@
 {
   lib,
   stdenv,
-  buildPackages,
   fetchFromGitHub,
-  fetchpatch,
-  flex,
-  db4,
-  gettext,
-  ninja,
   audit,
-  linuxHeaders,
-  libxcrypt,
   bash,
   bashNonInteractive,
-  nixosTests,
+  buildPackages,
+  db4,
+  docbook5,
+  docbook_xsl_ns,
+  fetchpatch,
+  findXMLCatalogs,
+  flex,
+  gettext,
+  libxcrypt,
+  libxml2,
+  libxslt,
+  linuxHeaders,
   meson,
+  ninja,
+  nix-update-script,
+  nixosTests,
   pkg-config,
   systemdLibs,
-  docbook5,
-  libxslt,
-  libxml2,
   w3m-batch,
-  findXMLCatalogs,
-  docbook_xsl_ns,
-  nix-update-script,
-  withLogind ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
+  debugMode ? false, # warning: slower execution due to debug makes VM tests fail!
   withAudit ?
     lib.meta.availableOn stdenv.hostPlatform audit
     # cross-compilation only works from platforms with linux headers
     && lib.meta.availableOn stdenv.buildPlatform linuxHeaders,
-  debugMode ? false, # warning: slower execution due to debug makes VM tests fail!
+  withLogind ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -43,13 +43,19 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-V3XQqolinh+MqUefMDYJF9zP4fBJTHc7YKN+NEGjx1g=";
   };
 
-  __structuredAttrs = true;
+  outputs = [
+    "out"
+    "doc"
+    "man"
+    "scripts"
+    # "modules"
+  ];
 
   patches = [
     (fetchpatch {
+      hash = "sha256-ddgDYdVfdXfTaMFV1hO3RJX9w1NHmE7yi3PxsHOdpvY=";
       name = "secure-opendir-fix-error-handling.patch";
       url = "https://github.com/linux-pam/linux-pam/commit/dd62bac17221911106de165607c6925ea54b18d1.patch?full_index=1";
-      hash = "sha256-ddgDYdVfdXfTaMFV1hO3RJX9w1NHmE7yi3PxsHOdpvY=";
     })
   ];
 
@@ -59,17 +65,8 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "sbindir / 'unix_chkpwd'" "'/run/wrappers/bin/unix_chkpwd'"
   '';
 
-  outputs = [
-    "out"
-    "doc"
-    "man"
-    "scripts"
-    # "modules"
-  ];
-
   strictDeps = true;
 
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
   nativeBuildInputs = [
     flex
     meson
@@ -97,9 +94,6 @@ stdenv.mkDerivation (finalAttrs: {
     systemdLibs
   ];
 
-  enableParallelBuilding = true;
-
-  mesonAutoFeatures = "auto";
   mesonFlags = [
     (lib.mesonEnable "logind" withLogind)
     (lib.mesonEnable "audit" withAudit)
@@ -117,12 +111,17 @@ stdenv.mkDerivation (finalAttrs: {
   # warning: slower execution due to debug makes VM tests fail!
   ++ lib.optional debugMode (lib.mesonBool "pam-debug" true);
 
+  doCheck = false; # fails
+
   postInstall = ''
     moveToOutput sbin/pam_namespace_helper $scripts
     moveToOutput etc/security/namespace.init $scripts
   '';
 
-  doCheck = false; # fails
+  __structuredAttrs = true;
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  enableParallelBuilding = true;
+  mesonAutoFeatures = "auto";
 
   outputChecks.out.disallowedRequisites = [
     bash
@@ -139,15 +138,16 @@ stdenv.mkDerivation (finalAttrs: {
         sssd-ldap
         ;
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://github.com/linux-pam/linux-pam/releases/tag/${finalAttrs.src.tag}";
-    homepage = "https://github.com/linux-pam/linux-pam";
     description = "Pluggable Authentication Modules, a flexible mechanism for authenticating user";
-    platforms = lib.platforms.linux;
+    homepage = "https://github.com/linux-pam/linux-pam";
+    changelog = "https://github.com/linux-pam/linux-pam/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd3;
+    platforms = lib.platforms.linux;
     badPlatforms = [ lib.systems.inspect.platformPatterns.isStatic ];
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "linux-pam" finalAttrs.version;
   };

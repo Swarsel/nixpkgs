@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -14,16 +14,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-QjkUiPwjG25NsvAXM3jqQVtJzYiXhzVqFaDN1b7DXDE=";
-
   # some examples fail to compile
   cargoTestFlags = [ "--tests" ];
 
   meta = {
     description = "Access the rust playground right in terminal";
-    mainProgram = "rustycli";
     homepage = "https://github.com/pwnwriter/rustycli";
     changelog = "https://github.com/pwnwriter/rustycli/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.matthiasbeyer ];
+    mainProgram = "rustycli";
   };
 })

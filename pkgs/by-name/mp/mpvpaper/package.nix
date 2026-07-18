@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  egl-wayland,
+  glew,
+  installShellFiles,
+  makeWrapper,
   meson,
+  mpv,
   ninja,
+  pkg-config,
   wayland,
   wayland-protocols,
   wayland-scanner,
-  egl-wayland,
-  glew,
-  mpv,
-  pkg-config,
-  fetchFromGitHub,
-  makeWrapper,
-  installShellFiles,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,6 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     meson
     ninja
@@ -59,8 +60,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Video wallpaper program for wlroots based wayland compositors";
     homepage = "https://github.com/GhostNaN/mpvpaper";
     license = lib.licenses.gpl3Only;
+    maintainers = [ ];
     platforms = lib.platforms.linux;
     mainProgram = "mpvpaper";
-    maintainers = [ ];
   };
 })

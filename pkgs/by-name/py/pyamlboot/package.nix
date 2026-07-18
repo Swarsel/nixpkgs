@@ -1,15 +1,14 @@
 {
   lib,
   fetchFromGitHub,
+  pyamlboot,
   python3Packages,
   testers,
-  pyamlboot,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "pyamlboot";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "superna9999";
@@ -27,22 +26,25 @@ python3Packages.buildPythonApplication (finalAttrs: {
     setuptools # pkg_resources is imported during runtime
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyamlboot" ];
 
   passthru.tests.version = testers.testVersion {
-    package = pyamlboot;
-    command = "boot.py -v";
     version = "boot.py ${lib.versions.majorMinor finalAttrs.version}";
+    command = "boot.py -v";
+    package = pyamlboot;
   };
 
   meta = {
     description = "Amlogic USB Boot Protocol Library";
     homepage = "https://github.com/superna9999/pyamlboot";
+
     license = with lib.licenses; [
       asl20
       gpl2Only
       mit
     ];
+
     maintainers = with lib.maintainers; [ genga898 ];
     mainProgram = "boot.py";
   };

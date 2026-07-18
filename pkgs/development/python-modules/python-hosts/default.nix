@@ -10,21 +10,18 @@
 buildPythonPackage rec {
   pname = "python-hosts";
   version = "1.1.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-XiU6aO6EhFVgj1g7TYMdbgg7IvjkU2DFoiwYikrB13A=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     pyyaml
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "python_hosts" ];
+  build-system = [ setuptools ];
 
   disabledTests = [
     # Tests require network access
@@ -34,12 +31,17 @@ buildPythonPackage rec {
     "test_import_from_url"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "python_hosts" ];
+
   meta = {
     description = "Library for managing a hosts file";
+
     longDescription = ''
       python-hosts is a Python library for managing a hosts file. It enables you to add
       and remove entries, or import them from a file or URL.
     '';
+
     homepage = "https://github.com/jonhadfield/python-hosts";
     changelog = "https://github.com/jonhadfield/python-hosts/blob/${version}/CHANGELOG.md";
     license = lib.licenses.mit;

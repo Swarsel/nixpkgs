@@ -162,153 +162,65 @@ let
 
 in
 {
-  meta.maintainers = [ lib.maintainers.raitobezarius ];
-
   options = {
     services.keepalived = {
 
       enable = mkOption {
-        type = types.bool;
         default = false;
+
         description = ''
           Whether to enable Keepalived.
         '';
+
+        type = types.bool;
       };
 
       package = lib.mkPackageOption pkgs "keepalived" { };
 
-      openFirewall = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Whether to automatically allow VRRP and AH packets in the firewall.
-        '';
-      };
-
       enableScriptSecurity = mkOption {
-        type = types.bool;
         default = false;
+
         description = ''
           Don't run scripts configured to be run as root if any part of the path is writable by a non-root user.
         '';
+
+        type = types.bool;
       };
 
-      snmp = {
+      extraConfig = mkOption {
+        default = "";
 
-        enable = mkOption {
-          type = types.bool;
-          default = false;
-          description = ''
-            Whether to enable the builtin AgentX subagent.
-          '';
-        };
+        description = ''
+          Extra lines to be added verbatim to the configuration file.
+        '';
 
-        socket = mkOption {
-          type = types.nullOr types.str;
-          default = null;
-          description = ''
-            Socket to use for connecting to SNMP master agent. If this value is
-            set to null, keepalived's default will be used, which is
-            unix:/var/agentx/master, unless using a network namespace, when the
-            default is udp:localhost:705.
-          '';
-        };
-
-        enableKeepalived = mkOption {
-          type = types.bool;
-          default = false;
-          description = ''
-            Enable SNMP handling of vrrp element of KEEPALIVED MIB.
-          '';
-        };
-
-        enableChecker = mkOption {
-          type = types.bool;
-          default = false;
-          description = ''
-            Enable SNMP handling of checker element of KEEPALIVED MIB.
-          '';
-        };
-
-        enableRfc = mkOption {
-          type = types.bool;
-          default = false;
-          description = ''
-            Enable SNMP handling of RFC2787 and RFC6527 VRRP MIBs.
-          '';
-        };
-
-        enableRfcV2 = mkOption {
-          type = types.bool;
-          default = false;
-          description = ''
-            Enable SNMP handling of RFC2787 VRRP MIB.
-          '';
-        };
-
-        enableRfcV3 = mkOption {
-          type = types.bool;
-          default = false;
-          description = ''
-            Enable SNMP handling of RFC6527 VRRP MIB.
-          '';
-        };
-
-        enableTraps = mkOption {
-          type = types.bool;
-          default = false;
-          description = ''
-            Enable SNMP traps.
-          '';
-        };
-
-      };
-
-      vrrpScripts = mkOption {
-        type = types.attrsOf (
-          types.submodule (
-            import ./vrrp-script-options.nix {
-              inherit lib;
-            }
-          )
-        );
-        default = { };
-        description = "Declarative vrrp script config";
-      };
-
-      vrrpInstances = mkOption {
-        type = types.attrsOf (
-          types.submodule (
-            import ./vrrp-instance-options.nix {
-              inherit lib;
-            }
-          )
-        );
-        default = { };
-        description = "Declarative vhost config";
+        type = types.lines;
       };
 
       extraGlobalDefs = mkOption {
-        type = types.lines;
         default = "";
+
         description = ''
           Extra lines to be added verbatim to the 'global_defs' block of the
           configuration file
         '';
+
+        type = types.lines;
       };
 
-      extraConfig = mkOption {
-        type = types.lines;
-        default = "";
+      openFirewall = mkOption {
+        default = false;
+
         description = ''
-          Extra lines to be added verbatim to the configuration file.
+          Whether to automatically allow VRRP and AH packets in the firewall.
         '';
+
+        type = types.bool;
       };
 
       secretFile = mkOption {
-        type = types.nullOr types.path;
         default = null;
-        example = "/run/keys/keepalived.env";
+
         description = ''
           Environment variables from this file will be interpolated into the
           final config file using envsubst with this syntax: `$ENVIRONMENT`
@@ -316,6 +228,122 @@ in
           The file should contain lines formatted as `SECRET_VAR=SECRET_VALUE`.
           This is useful to avoid putting secrets into the nix store.
         '';
+
+        example = "/run/keys/keepalived.env";
+        type = types.nullOr types.path;
+      };
+
+      snmp = {
+
+        enable = mkOption {
+          default = false;
+
+          description = ''
+            Whether to enable the builtin AgentX subagent.
+          '';
+
+          type = types.bool;
+        };
+
+        enableChecker = mkOption {
+          default = false;
+
+          description = ''
+            Enable SNMP handling of checker element of KEEPALIVED MIB.
+          '';
+
+          type = types.bool;
+        };
+
+        enableKeepalived = mkOption {
+          default = false;
+
+          description = ''
+            Enable SNMP handling of vrrp element of KEEPALIVED MIB.
+          '';
+
+          type = types.bool;
+        };
+
+        enableRfc = mkOption {
+          default = false;
+
+          description = ''
+            Enable SNMP handling of RFC2787 and RFC6527 VRRP MIBs.
+          '';
+
+          type = types.bool;
+        };
+
+        enableRfcV2 = mkOption {
+          default = false;
+
+          description = ''
+            Enable SNMP handling of RFC2787 VRRP MIB.
+          '';
+
+          type = types.bool;
+        };
+
+        enableRfcV3 = mkOption {
+          default = false;
+
+          description = ''
+            Enable SNMP handling of RFC6527 VRRP MIB.
+          '';
+
+          type = types.bool;
+        };
+
+        enableTraps = mkOption {
+          default = false;
+
+          description = ''
+            Enable SNMP traps.
+          '';
+
+          type = types.bool;
+        };
+
+        socket = mkOption {
+          default = null;
+
+          description = ''
+            Socket to use for connecting to SNMP master agent. If this value is
+            set to null, keepalived's default will be used, which is
+            unix:/var/agentx/master, unless using a network namespace, when the
+            default is udp:localhost:705.
+          '';
+
+          type = types.nullOr types.str;
+        };
+
+      };
+
+      vrrpInstances = mkOption {
+        default = { };
+        description = "Declarative vhost config";
+
+        type = types.attrsOf (
+          types.submodule (
+            import ./vrrp-instance-options.nix {
+              inherit lib;
+            }
+          )
+        );
+      };
+
+      vrrpScripts = mkOption {
+        default = { };
+        description = "Declarative vrrp script config";
+
+        type = types.attrsOf (
+          types.submodule (
+            import ./vrrp-script-options.nix {
+              inherit lib;
+            }
+          )
+        );
       };
 
     };
@@ -348,53 +376,64 @@ in
         }
     );
 
-    systemd.timers.keepalived-boot-delay = {
-      description = "Keepalive Daemon delay to avoid instant transition to MASTER state";
-      after = [
-        "network.target"
-        "network-online.target"
-      ];
-      requires = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
-      timerConfig = {
-        OnActiveSec = "5s";
-        Unit = "keepalived.service";
-      };
-    };
-
     systemd.services.keepalived =
       let
         finalConfigFile =
           if cfg.secretFile == null then keepalivedConf else "/run/keepalived/keepalived.conf";
       in
       {
-        description = "Keepalive Daemon (LVS and VRRP)";
         after = [
           "network.target"
           "network-online.target"
         ];
-        wants = [ "network-online.target" ];
+
+        description = "Keepalive Daemon (LVS and VRRP)";
+
         serviceConfig = {
-          Type = "forking";
-          PIDFile = pidFile;
-          KillMode = "process";
-          RuntimeDirectory = "keepalived";
           EnvironmentFile = lib.optional (cfg.secretFile != null) cfg.secretFile;
+          ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+
+          ExecStart =
+            "${lib.getExe cfg.package}"
+            + " -f ${finalConfigFile}"
+            + " -p ${pidFile}"
+            + optionalString cfg.snmp.enable " --snmp";
+
           ExecStartPre = lib.optional (cfg.secretFile != null) (
             pkgs.writeShellScript "keepalived-pre-start" ''
               umask 077
               ${pkgs.envsubst}/bin/envsubst -i "${keepalivedConf}" > ${finalConfigFile}
             ''
           );
-          ExecStart =
-            "${lib.getExe cfg.package}"
-            + " -f ${finalConfigFile}"
-            + " -p ${pidFile}"
-            + optionalString cfg.snmp.enable " --snmp";
-          ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+
+          KillMode = "process";
+          PIDFile = pidFile;
           Restart = "always";
           RestartSec = "1s";
+          RuntimeDirectory = "keepalived";
+          Type = "forking";
         };
+
+        wants = [ "network-online.target" ];
       };
+
+    systemd.timers.keepalived-boot-delay = {
+      after = [
+        "network.target"
+        "network-online.target"
+      ];
+
+      description = "Keepalive Daemon delay to avoid instant transition to MASTER state";
+      requires = [ "network-online.target" ];
+
+      timerConfig = {
+        OnActiveSec = "5s";
+        Unit = "keepalived.service";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
   };
+
+  meta.maintainers = [ lib.maintainers.raitobezarius ];
 }

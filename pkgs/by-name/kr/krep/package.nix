@@ -23,22 +23,24 @@ stdenv.mkDerivation (finalAttrs: {
     "HAS_AVX2=0"
   ];
 
-  installFlags = [
-    "PREFIX=${placeholder "out"}"
-  ];
-
   doCheck = true;
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+
+  installFlags = [
+    "PREFIX=${placeholder "out"}"
+  ];
 
   meta = {
     description = "Blazingly fast string search utility designed for performance-critical applications";
     homepage = "https://github.com/davidesantangelo/krep";
     changelog = "https://github.com/davidesantangelo/krep/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       codebam
     ];
+
     platforms = lib.platforms.unix;
   };
 })

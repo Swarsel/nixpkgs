@@ -1,30 +1,28 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   _7zz,
   curl,
-  fetchurl,
   git,
-  lib,
+  installShellFiles,
   makeBinaryWrapper,
+  pharHash,
   php,
   stdenvNoCC,
   unzip,
-  xz,
   version,
-  pharHash,
-  installShellFiles,
-  stdenv,
+  xz,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
-  pname = "composer-phar";
   inherit version;
+  pname = "composer-phar";
 
   src = fetchurl {
     url = "https://github.com/composer/composer/releases/download/${finalAttrs.version}/composer.phar";
     hash = pharHash;
   };
-
-  dontUnpack = true;
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -56,14 +54,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --bash <($out/bin/composer completion bash)
   '';
 
+  dontUnpack = true;
+
   meta = {
-    changelog = "https://github.com/composer/composer/releases/tag/${finalAttrs.version}";
     description = "Dependency Manager for PHP, shipped from the PHAR file";
     homepage = "https://getcomposer.org/";
+    changelog = "https://github.com/composer/composer/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "composer";
     maintainers = [ lib.maintainers.patka ];
-    teams = [ lib.teams.php ];
     platforms = lib.platforms.all;
+    mainProgram = "composer";
+    teams = [ lib.teams.php ];
   };
 })

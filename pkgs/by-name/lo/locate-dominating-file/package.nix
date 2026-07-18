@@ -1,18 +1,19 @@
 {
-  bats,
-  bash,
-  fetchFromGitHub,
   lib,
-  resholve,
+  fetchFromGitHub,
+  bash,
+  bats,
   coreutils,
   getopt,
+  resholve,
 }:
 let
   version = "0.0.1";
 in
 resholve.mkDerivation {
-  pname = "locate-dominating-file";
   inherit version;
+  pname = "locate-dominating-file";
+
   src = fetchFromGitHub {
     owner = "roman";
     repo = "locate-dominating-file";
@@ -31,14 +32,14 @@ resholve.mkDerivation {
     coreutils
   ];
 
+  doCheck = true;
+
   checkInputs = [
     (bats.withLibraries (p: [
       p.bats-support
       p.bats-assert
     ]))
   ];
-
-  doCheck = true;
 
   checkPhase = ''
     runHook preCheck
@@ -58,17 +59,18 @@ resholve.mkDerivation {
   '';
 
   solutions.default = {
-    scripts = [ "bin/locate-dominating-file" ];
-    interpreter = "${bash}/bin/bash";
     inputs = [
       coreutils
       getopt
     ];
+
+    interpreter = "${bash}/bin/bash";
+    scripts = [ "bin/locate-dominating-file" ];
   };
 
   meta = {
-    homepage = "https://github.com/roman/locate-dominating-file";
     description = "Program that looks up in a directory hierarchy for a given filename";
+    homepage = "https://github.com/roman/locate-dominating-file";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.roman ];
     platforms = lib.platforms.all;

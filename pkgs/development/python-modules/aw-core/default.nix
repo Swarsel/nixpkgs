@@ -1,26 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
+  deprecation,
+  gitUpdater,
+  iso8601,
   jsonschema,
   peewee,
   platformdirs,
-  iso8601,
+  poetry-core,
+  pytestCheckHook,
   rfc3339-validator,
   strict-rfc3339,
-  tomlkit,
-  deprecation,
   timeslot,
-  pytestCheckHook,
-  gitUpdater,
+  tomlkit,
 }:
 
 buildPythonPackage rec {
   pname = "aw-core";
   version = "0.5.17";
-
-  pyproject = true;
 
   # pypi distribution doesn't include tests, so build from source instead
   src = fetchFromGitHub {
@@ -46,10 +44,6 @@ buildPythonPackage rec {
     timeslot
   ];
 
-  pythonRelaxDeps = [
-    "platformdirs"
-  ];
-
   nativeCheckInputs = [ pytestCheckHook ];
 
   preCheck = ''
@@ -57,15 +51,20 @@ buildPythonPackage rec {
     export HOME="$TMPDIR"
   '';
 
+  pyproject = true;
   pythonImportsCheck = [ "aw_core" ];
+
+  pythonRelaxDeps = [
+    "platformdirs"
+  ];
 
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
     description = "Core library for ActivityWatch";
-    mainProgram = "aw-cli";
     homepage = "https://github.com/ActivityWatch/aw-core";
-    maintainers = with lib.maintainers; [ huantian ];
     license = lib.licenses.mpl20;
+    maintainers = with lib.maintainers; [ huantian ];
+    mainProgram = "aw-cli";
   };
 }

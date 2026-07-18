@@ -23,14 +23,13 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   nativeBuildInputs = [ autoreconfHook ];
-
   enableParallelBuilding = true;
 
   meta = {
     description = "Scaling, colorspace conversion and dithering library";
     homepage = "https://github.com/sekrit-twc/zimg";
     license = lib.licenses.wtfpl;
-    platforms = with lib.platforms; unix ++ windows;
     maintainers = with lib.maintainers; [ rnhmjoj ];
+    platforms = with lib.platforms; unix ++ windows;
   };
 })

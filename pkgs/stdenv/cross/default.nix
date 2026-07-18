@@ -1,22 +1,20 @@
 {
   lib,
-  localSystem,
-  crossSystem,
   config,
-  overlays,
   crossOverlays,
+  crossSystem,
+  localSystem,
+  overlays,
 }:
 
 let
   bootStages = import ../. {
     inherit lib localSystem overlays;
-
-    crossSystem = localSystem;
-    crossOverlays = [ ];
-
     # Ignore custom stdenvs when cross compiling for compatibility
     # Use replaceCrossStdenv instead.
     config = removeAttrs config [ "replaceStdenv" ];
+    crossOverlays = [ ];
+    crossSystem = localSystem;
   };
 
 in
@@ -36,14 +34,15 @@ lib.init bootStages
   # Build tool Packages
   (vanillaPackages: {
     inherit config overlays;
+    # It's OK to change the built-time dependencies
+    allowCustomOverrides = true;
     selfBuild = false;
+
     stdenv =
       assert vanillaPackages.stdenv.buildPlatform == localSystem;
       assert vanillaPackages.stdenv.hostPlatform == localSystem;
       assert vanillaPackages.stdenv.targetPlatform == localSystem;
       vanillaPackages.stdenv.override { targetPlatform = crossSystem; };
-    # It's OK to change the built-time dependencies
-    allowCustomOverrides = true;
   })
 
   # Run Packages
@@ -53,18 +52,10 @@ lib.init bootStages
       adaptStdenv = if crossSystem.isStatic then buildPackages.stdenvAdapters.makeStatic else lib.id;
       stdenvNoCC = adaptStdenv (
         buildPackages.stdenv.override (old: rec {
-          buildPlatform = localSystem;
-          hostPlatform = crossSystem;
-          targetPlatform = crossSystem;
-
-          # Prior overrides are surely not valid as packages built with this run on
-          # a different platform, and so are disabled.
-          overrides = _: _: { };
-          extraBuildInputs = [ ]; # Old ones run on wrong platform
           allowedRequisites = null;
-
+          buildPlatform = localSystem;
           cc = null;
-          hasCC = false;
+          extraBuildInputs = [ ]; # Old ones run on wrong platform
 
           extraNativeBuildInputs =
             old.extraNativeBuildInputs
@@ -87,25 +78,26 @@ lib.init bootStages
             ++ lib.optional (
               hostPlatform.isCygwin && !buildPlatform.isCygwin
             ) buildPackages.cygwin.cygwinDllLinkHook;
+
+          hasCC = false;
+          hostPlatform = crossSystem;
+          # Prior overrides are surely not valid as packages built with this run on
+          # a different platform, and so are disabled.
+          overrides = _: _: { };
+          targetPlatform = crossSystem;
         })
       );
     in
     {
       inherit config;
+      inherit stdenvNoCC;
       overlays = overlays ++ crossOverlays;
       selfBuild = false;
-      inherit stdenvNoCC;
+
       stdenv =
         let
           inherit (stdenvNoCC) hostPlatform targetPlatform;
           baseStdenv = stdenvNoCC.override {
-            # Old ones run on wrong platform
-            extraBuildInputs = lib.optionals hostPlatform.isDarwin [
-              buildPackages.targetPackages.apple-sdk
-            ];
-
-            hasCC = !stdenvNoCC.targetPlatform.isGhcjs;
-
             cc =
               if crossSystem.useiOSPrebuilt or false then
                 buildPackages.darwin.iosSdkPkgs.clang
@@ -129,6 +121,13 @@ lib.init bootStages
                 buildPackages.arocc
               else
                 buildPackages.gcc;
+
+            # Old ones run on wrong platform
+            extraBuildInputs = lib.optionals hostPlatform.isDarwin [
+              buildPackages.targetPackages.apple-sdk
+            ];
+
+            hasCC = !stdenvNoCC.targetPlatform.isGhcjs;
 
           };
         in

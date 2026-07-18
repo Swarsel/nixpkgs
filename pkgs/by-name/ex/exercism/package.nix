@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildGoModule,
   installShellFiles,
-  fetchFromGitHub,
   nix-update-script,
 }:
 
@@ -17,15 +17,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-vYbOagP3RwqD2+x0Mvve66Xm88jeRVzHU7nsN432j6k=";
   };
 
-  vendorHash = "sha256-xY3C3emqtPIKyxIN9aEkrLXhTxWNmo0EJXNZVtbtIvs=";
-
-  doCheck = false;
-
-  subPackages = [ "./exercism" ];
-
   nativeBuildInputs = [ installShellFiles ];
-
-  passthru.updateScript = nix-update-script { };
+  vendorHash = "sha256-xY3C3emqtPIKyxIN9aEkrLXhTxWNmo0EJXNZVtbtIvs=";
+  doCheck = false;
 
   postInstall = ''
     installShellCompletion --cmd exercism \
@@ -34,14 +28,19 @@ buildGoModule (finalAttrs: {
       --zsh shell/exercism_completion.zsh
   '';
 
+  subPackages = [ "./exercism" ];
+  passthru.updateScript = nix-update-script { };
+
   meta = {
     inherit (finalAttrs.src.meta) homepage;
     description = "Go based command line tool for exercism.io";
     license = lib.licenses.mit;
+
     maintainers = [
       lib.maintainers.rbasso
       lib.maintainers.nobbz
     ];
+
     mainProgram = "exercism";
   };
 })

@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  libdmtx,
   imagemagick,
+  libdmtx,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

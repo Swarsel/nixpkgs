@@ -1,30 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  replaceVars,
-  cpu_features,
-
+  buildPythonPackage,
   # build-system
   cmake,
-  ninja,
-  pybind11,
-  scikit-build-core,
-
+  cpu_features,
   # buildInputs
   eigen,
   gtest,
   matio,
-
+  ninja,
   # tests
   numpy,
-  scipy,
+  pybind11,
   pytestCheckHook,
+  replaceVars,
+  scikit-build-core,
+  scipy,
 }:
 buildPythonPackage rec {
   pname = "piqp";
   version = "0.6.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "PREDICT-EPFL";
@@ -39,27 +35,28 @@ buildPythonPackage rec {
     })
   ];
 
-  build-system = [
-    cmake
-    ninja
-    pybind11
-    scikit-build-core
-  ];
-  dontUseCmakeConfigure = true;
-
   buildInputs = [
     eigen
     gtest
     matio
   ];
 
-  pythonImportsCheck = [ "piqp" ];
-
   nativeCheckInputs = [
     numpy
     pytestCheckHook
     scipy
   ];
+
+  build-system = [
+    cmake
+    ninja
+    pybind11
+    scikit-build-core
+  ];
+
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+  pythonImportsCheck = [ "piqp" ];
 
   meta = {
     description = "Proximal Interior Point Quadratic Programming solver";

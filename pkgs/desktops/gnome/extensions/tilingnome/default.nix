@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   glib,
   gnome-shell,
@@ -33,15 +33,15 @@ stdenv.mkDerivation {
   '';
 
   passthru = {
-    extensionUuid = "tilingnome@rliang.github.com";
     extensionPortalSlug = "tilingnome";
+    extensionUuid = "tilingnome@rliang.github.com";
   };
 
   meta = {
     description = "Tiling window management for GNOME Shell";
+    homepage = "https://github.com/rliang/gnome-shell-extension-tilingnome";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ benley ];
-    homepage = "https://github.com/rliang/gnome-shell-extension-tilingnome";
     platforms = gnome-shell.meta.platforms;
   };
 }

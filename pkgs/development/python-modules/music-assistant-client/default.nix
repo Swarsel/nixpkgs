@@ -1,22 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   aiohttp,
+  buildPythonPackage,
   music-assistant-models,
   orjson,
-
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "music-assistant-client";
   version = "1.3.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "music-assistant";
@@ -30,6 +26,7 @@ buildPythonPackage rec {
       --replace-fail "0.0.0" "${version}"
   '';
 
+  doCheck = false; # no tests
   build-system = [ setuptools ];
 
   dependencies = [
@@ -38,7 +35,7 @@ buildPythonPackage rec {
     orjson
   ];
 
-  doCheck = false; # no tests
+  pyproject = true;
 
   pythonImportsCheck = [
     "music_assistant_client"

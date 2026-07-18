@@ -1,9 +1,8 @@
 { buildDunePackage, dune }:
 
 buildDunePackage {
-  pname = "fs-io";
   inherit (dune) version src;
-
+  pname = "fs-io";
   dontAddPrefix = true;
 
   meta = dune.meta // {

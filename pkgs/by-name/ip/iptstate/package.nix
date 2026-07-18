@@ -20,17 +20,17 @@ stdenv.mkDerivation (finalAttrs: {
     ncurses
   ];
 
-  meta = {
-    description = "Conntrack top like tool";
-    mainProgram = "iptstate";
-    homepage = "https://github.com/jaymzh/iptstate";
-    platforms = lib.platforms.linux;
-    maintainers = with lib.maintainers; [ trevorj ];
-    downloadPage = "https://github.com/jaymzh/iptstate/releases";
-    license = lib.licenses.zlib;
-  };
-
   installPhase = ''
     install -m755 -D iptstate $out/bin/iptstate
   '';
+
+  meta = {
+    description = "Conntrack top like tool";
+    homepage = "https://github.com/jaymzh/iptstate";
+    license = lib.licenses.zlib;
+    maintainers = with lib.maintainers; [ trevorj ];
+    platforms = lib.platforms.linux;
+    mainProgram = "iptstate";
+    downloadPage = "https://github.com/jaymzh/iptstate/releases";
+  };
 })

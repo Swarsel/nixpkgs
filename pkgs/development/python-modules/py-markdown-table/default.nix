@@ -1,15 +1,13 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
 }:
 
 buildPythonPackage rec {
   pname = "py-markdown-table";
   version = "1.3.0";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hvalev";
@@ -19,6 +17,7 @@ buildPythonPackage rec {
   };
 
   build-system = [ poetry-core ];
+  pyproject = true;
 
   meta = {
     description = "Tiny python library with zero dependencies which generates formatted multiline tables in markdown";

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,28 +15,29 @@ buildGoModule (finalAttrs: {
     hash = "sha256-JfNn/e+cSq1pkeXs7A2dMsyhwOnh7x2bwm6dv6NOjLU=";
   };
 
-  vendorHash = "sha256-dEmI+COrWhXdqtTkLIjyiUapHtjezCEuY9jLDqxkBBg=";
-
-  deleteVendor = true;
-
   patches = [
     ./0001-Add-go.mod-go.sum.patch # Add go.mod, go.sum, remove vendor
   ];
+
+  vendorHash = "sha256-dEmI+COrWhXdqtTkLIjyiUapHtjezCEuY9jLDqxkBBg=";
 
   postInstall = ''
     mv $out/bin/{cli,allmark}
   '';
 
   __darwinAllowLocalNetworking = true;
+  deleteVendor = true;
 
   meta = {
     description = "Cross-platform markdown web server";
     homepage = "https://github.com/andreaskoch/allmark";
     changelog = "https://github.com/andreaskoch/allmark/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       luftmensch-luftmensch
     ];
+
     mainProgram = "allmark";
   };
 })

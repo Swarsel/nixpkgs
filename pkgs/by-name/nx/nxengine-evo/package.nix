@@ -1,17 +1,17 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   SDL2,
-  SDL2_mixer,
   SDL2_image,
+  SDL2_mixer,
   callPackage,
   cmake,
-  pkg-config,
-  ninja,
-  fetchFromGitHub,
   fetchpatch,
-  libpng,
   libjpeg,
-  stdenv,
+  libpng,
+  ninja,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,15 +28,22 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Add missing include
     (fetchpatch {
-      url = "https://github.com/nxengine/nxengine-evo/commit/0076ebb11bcfec5dc5e2e923a50425f1a33a4133.patch";
       hash = "sha256-8j3fFFw8DMljV7aAFXE+eA+vkbz1HdFTMAJmk3BRU04=";
+      url = "https://github.com/nxengine/nxengine-evo/commit/0076ebb11bcfec5dc5e2e923a50425f1a33a4133.patch";
     })
     # Update minimum CMake version to 3.10
     (fetchpatch {
-      url = "https://github.com/nxengine/nxengine-evo/commit/7e228063441da50f65a78bf2213e85b7fceffae9.patch";
       hash = "sha256-Vi8nE7IdvQbMDrXycw9hLsuHQwbpu1eiUTLSaIcRoUQ=";
+      url = "https://github.com/nxengine/nxengine-evo/commit/7e228063441da50f65a78bf2213e85b7fceffae9.patch";
     })
   ];
+
+  # Allow finding game assets.
+  postPatch = ''
+    sed -i -e "s,/usr/share/,$out/share/," src/ResourceManager.cpp
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -51,13 +58,6 @@ stdenv.mkDerivation (finalAttrs: {
     libpng
     libjpeg
   ];
-
-  strictDeps = true;
-
-  # Allow finding game assets.
-  postPatch = ''
-    sed -i -e "s,/usr/share/,$out/share/," src/ResourceManager.cpp
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -78,14 +78,16 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "Complete open-source clone/rewrite of the masterpiece jump-and-run platformer Doukutsu Monogatari (also known as Cave Story)";
     homepage = "https://github.com/nxengine/nxengine-evo";
     changelog = "https://github.com/nxengine/nxengine-evo/releases/tag/${finalAttrs.src.rev}";
-    description = "Complete open-source clone/rewrite of the masterpiece jump-and-run platformer Doukutsu Monogatari (also known as Cave Story)";
+
     license = with lib.licenses; [
       gpl3Plus
     ];
-    mainProgram = "nxengine-evo";
+
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "nxengine-evo";
   };
 })

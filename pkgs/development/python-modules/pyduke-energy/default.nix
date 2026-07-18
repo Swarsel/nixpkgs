@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   jsonpickle,
   paho-mqtt,
   pytest-asyncio,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "pyduke-energy";
   version = "1.0.6";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "mjmeli";
@@ -36,6 +35,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "pyduke_energy" ];
 
   meta = {

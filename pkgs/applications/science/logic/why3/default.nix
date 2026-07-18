@@ -1,32 +1,38 @@
 {
-  callPackage,
-  fetchurl,
   lib,
   stdenv,
-  ocamlPackages,
+  fetchurl,
+  callPackage,
   coqPackages,
-  rubber,
-  hevea,
   emacs,
-  version ? "1.8.2",
-  ideSupport ? true,
+  hevea,
+  ocamlPackages,
+  rubber,
   wrapGAppsHook3,
+  ideSupport ? true,
+  version ? "1.8.2",
 }:
 
 stdenv.mkDerivation rec {
-  pname = "why3";
   inherit version;
+  pname = "why3";
 
   src = fetchurl {
     url = "https://why3.gitlabpages.inria.fr/releases/${pname}-${version}.tar.gz";
+
     hash =
       {
-        "1.8.2" = "sha256-t9ES7dW8zmvM4AI9K8g06yrhocQteupE/6Ek1km1C+o=";
-        "1.7.2" = "sha256-VaSG/FiO2MDdSSFXGJJrIylQx0LPwtT8AF7TpPVZhCQ=";
         "1.6.0" = "sha256-hFvM6kHScaCtcHCc6Vezl9CR7BFbiKPoTEh7kj0ZJxw=";
+        "1.7.2" = "sha256-VaSG/FiO2MDdSSFXGJJrIylQx0LPwtT8AF7TpPVZhCQ=";
+        "1.8.2" = "sha256-t9ES7dW8zmvM4AI9K8g06yrhocQteupE/6Ek1km1C+o=";
       }
       ."${version}";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   strictDeps = true;
 
@@ -80,21 +86,9 @@ stdenv.mkDerivation rec {
     sexplib
   ];
 
-  enableParallelBuilding = true;
-
   configureFlags = [
     "--enable-verbose-make"
     (lib.enableFeature ideSupport "ide")
-  ];
-
-  outputs = [
-    "out"
-    "dev"
-  ];
-
-  installTargets = [
-    "install"
-    "install-lib"
   ];
 
   postInstall = ''
@@ -102,16 +96,25 @@ stdenv.mkDerivation rec {
     mv $out/lib/ocaml $dev/lib/
   '';
 
+  enableParallelBuilding = true;
+
+  installTargets = [
+    "install"
+    "install-lib"
+  ];
+
   passthru.withProvers = callPackage ./with-provers.nix { };
 
   meta = {
     description = "Platform for deductive program verification";
     homepage = "https://why3.lri.fr/";
     license = lib.licenses.lgpl21;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
       vbgl
     ];
+
+    platforms = lib.platforms.unix;
   };
 }

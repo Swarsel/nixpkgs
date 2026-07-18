@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nixosTests,
-  makeWrapper,
-  zfs,
-  perlPackages,
-  procps,
-  which,
-  openssh,
-  mbuffer,
-  pv,
-  lzop,
   gzip,
+  lzop,
+  makeWrapper,
+  mbuffer,
+  nixosTests,
+  openssh,
+  perlPackages,
   pigz,
+  procps,
+  pv,
+  which,
+  zfs,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,13 +28,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = with perlPackages; [
     perl
     ConfigIniFiles
     CaptureTiny
   ];
-
-  passthru.tests = nixosTests.sanoid;
 
   installPhase = ''
     runHook preInstall
@@ -91,14 +90,18 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  passthru.tests = nixosTests.sanoid;
+
   meta = {
     description = "Policy-driven snapshot management tool for ZFS filesystems";
     homepage = "https://github.com/jimsalterjrs/sanoid";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       lopsided98
       Frostman
     ];
+
     platforms = lib.platforms.all;
   };
 })

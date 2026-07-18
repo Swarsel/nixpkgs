@@ -1,25 +1,25 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   dune-configurator,
-  ogg,
   libvorbis,
+  ogg,
 }:
 
 buildDunePackage {
-  pname = "vorbis";
   inherit (ogg) version src;
-
+  pname = "vorbis";
   buildInputs = [ dune-configurator ];
+
   propagatedBuildInputs = [
     ogg
     libvorbis
   ];
 
   meta = {
-    homepage = "https://github.com/savonet/ocaml-vorbis";
     description = "Bindings to libvorbis";
+    homepage = "https://github.com/savonet/ocaml-vorbis";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ dandellion ];
   };

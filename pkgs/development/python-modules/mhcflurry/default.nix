@@ -1,29 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   appdirs,
+  buildPythonPackage,
   mhcgnomes,
   numpy,
   pandas,
-  pyyaml,
-  scikit-learn,
-  torch,
-  tqdm,
-
   # tests
   pytestCheckHook,
+  pyyaml,
+  scikit-learn,
+  # build-system
+  setuptools,
+  torch,
+  tqdm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mhcflurry";
   version = "2.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openvax";
@@ -31,6 +27,10 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Vtlj6aK4o7rjhWeTaso/RBZWZFdoZy54AlTrYWUoGfE=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -48,8 +48,11 @@ buildPythonPackage (finalAttrs: {
     tqdm
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
+  disabledTestPaths = [
+    # RuntimeError: Missing MHCflurry downloadable file: /homeless-shelter/.local...
+    "test/test_changing_allele_representations.py"
+    "test/test_class1_affinity_predictor.py"
+    "test/test_class1_pan.py"
   ];
 
   disabledTests = [
@@ -87,13 +90,7 @@ buildPythonPackage (finalAttrs: {
     "test_speed_pan_allele"
   ];
 
-  disabledTestPaths = [
-    # RuntimeError: Missing MHCflurry downloadable file: /homeless-shelter/.local...
-    "test/test_changing_allele_representations.py"
-    "test/test_class1_affinity_predictor.py"
-    "test/test_class1_pan.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mhcflurry" ];
 
   meta = {

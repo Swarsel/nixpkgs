@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   bison,
   cmake,
-  flex,
-  cyrus_sasl,
-  libevent,
   ctestCheckHook,
+  cyrus_sasl,
+  fetchpatch,
+  flex,
+  libevent,
   memcached,
 }:
 
@@ -25,10 +25,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = lib.optionals stdenv.hostPlatform.isDarwin [
     (fetchpatch {
+      hash = "sha256-aH51O4UM3M4yzTtC8bTy+6NKrtPfgqysrvspMZ/gWDc=";
+      includes = [ "test/lib/random.cpp" ];
       name = "libcxx-compat.patch";
       url = "https://github.com/awesomized/libmemcached/commit/547460c12287a34a5993045157a0e13e14203f92.patch";
-      includes = [ "test/lib/random.cpp" ];
-      hash = "sha256-aH51O4UM3M4yzTtC8bTy+6NKrtPfgqysrvspMZ/gWDc=";
     })
   ];
 
@@ -38,13 +38,13 @@ stdenv.mkDerivation (finalAttrs: {
     flex
   ];
 
+  buildInputs = [ libevent ];
+  propagatedBuildInputs = [ cyrus_sasl ];
+
   cmakeFlags = [
     (lib.cmakeBool "BUILD_TESTING" finalAttrs.doCheck)
     "-DENABLE_SASL=ON"
   ];
-
-  buildInputs = [ libevent ];
-  propagatedBuildInputs = [ cyrus_sasl ];
 
   doCheck = true;
 
@@ -59,9 +59,9 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
+    description = "Open source C/C++ client library and tools for the memcached server";
     homepage = "https://github.com/awesomized/libmemcached";
     changelog = "https://github.com/awesomized/libmemcached/blob/${finalAttrs.src.tag}/ChangeLog-${lib.versions.majorMinor finalAttrs.version}.md";
-    description = "Open source C/C++ client library and tools for the memcached server";
     license = lib.licenses.bsd3;
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };

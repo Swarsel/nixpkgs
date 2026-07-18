@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   classify-imports,
-  fetchFromGitHub,
   pytestCheckHook,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "reorder-python-imports";
   version = "3.16.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "asottile";
@@ -19,17 +18,14 @@ buildPythonPackage rec {
     hash = "sha256-fncrrmksYS+8pz9qVucf4ktxxVvnrKEzIeM5kPrh0PQ=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ classify-imports ];
-
-  pythonImportsCheck = [ "reorder_python_imports" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ classify-imports ];
   # prints an explanation about PYTHONPATH first
   # and therefore fails the assertion
   disabledTests = [ "test_success_messages_are_printed_on_stderr" ];
+  pyproject = true;
+  pythonImportsCheck = [ "reorder_python_imports" ];
 
   meta = {
     description = "Tool for automatically reordering python imports";

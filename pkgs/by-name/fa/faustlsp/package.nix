@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,17 +16,15 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-9qARh53TboBuTYp6kGxR53yjDkix0CKIt1VPYBmg0dY=";
-
-  proxyVendor = true;
-
   doCheck = false;
+  proxyVendor = true;
 
   meta = {
     description = "Language Server Protocol (LSP) implementation for the Faust programming language";
     homepage = "https://github.com/grame-cncm/faustlsp";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ magnetophon ];
-    mainProgram = "faustlsp";
     platforms = lib.platforms.all;
+    mainProgram = "faustlsp";
   };
 })

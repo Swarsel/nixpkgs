@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication {
   pname = "pywhisker";
   version = "0.1.0-unstable-2025-09-16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ShutdownRepo";
@@ -16,6 +15,8 @@ python3.pkgs.buildPythonApplication {
     hash = "sha256-dXr/Vb7h+ZiO5VeOEx3tfXUq8sldrRofK5ENJDZcAb0=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -29,10 +30,8 @@ python3.pkgs.buildPythonApplication {
     six
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pywhisker" ];
-
-  # Project has no tests
-  doCheck = false;
 
   meta = {
     description = "Tool for Shadow Credentials attacks";

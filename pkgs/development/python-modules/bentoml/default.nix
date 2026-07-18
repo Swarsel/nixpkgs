@@ -1,6 +1,7 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   a2wsgi,
   aiohttp,
   aiohttp-asgi-connector,
@@ -9,38 +10,41 @@
   buildPythonPackage,
   cattrs,
   circus,
-  click-option-group,
   click,
+  click-option-group,
   cloudpickle,
   deepmerge,
-  fetchFromGitHub,
-  fs-s3fs,
+  fastapi,
   fs,
+  fs-s3fs,
   fsspec,
+  google-api-python-client,
+  grpcio,
   grpcio-channelz,
   grpcio-health-checking,
   grpcio-reflection,
-  grpcio,
   hatch-vcs,
   hatchling,
-  httpx-ws,
   httpx,
+  httpx-ws,
   inflection,
   inquirerpy,
   jinja2,
   kantoku,
+  lxml,
   numpy,
   nvidia-ml-py,
   opentelemetry-api,
-  opentelemetry-exporter-otlp-proto-http,
   opentelemetry-exporter-otlp,
+  opentelemetry-exporter-otlp-proto-http,
+  opentelemetry-instrumentation,
   opentelemetry-instrumentation-aiohttp-client,
   opentelemetry-instrumentation-asgi,
   opentelemetry-instrumentation-grpc,
-  opentelemetry-instrumentation,
   opentelemetry-sdk,
   opentelemetry-semantic-conventions,
   opentelemetry-util-http,
+  orjson,
   packaging,
   pandas,
   pathspec,
@@ -51,6 +55,10 @@
   psutil,
   pyarrow,
   pydantic,
+  pytest-asyncio,
+  pytest-xdist,
+  # native check inputs
+  pytestCheckHook,
   python-dateutil,
   python-json-logger,
   python-multipart,
@@ -59,21 +67,13 @@
   rich,
   rich-toolkit,
   schema,
+  scikit-learn,
   simple-di,
   starlette,
   tomli-w,
   tritonclient,
   uvicorn,
   watchfiles,
-  # native check inputs
-  pytestCheckHook,
-  pytest-xdist,
-  google-api-python-client,
-  scikit-learn,
-  lxml,
-  orjson,
-  pytest-asyncio,
-  fastapi,
   writableTmpDirAsHomeHook,
 }:
 
@@ -103,7 +103,6 @@ let
   io = io-image ++ io-pandas;
   tracing = tracing-otlp; # ++ tracing-zipkin ++ tracing-jaeger
   optional-dependencies = {
-    all = aws ++ io ++ grpc ++ grpc-reflection ++ grpc-channelz ++ tracing ++ monitor-otlp;
     inherit
       aws
       grpc
@@ -116,6 +115,9 @@ let
       tracing-otlp
       tracing
       ;
+
+    all = aws ++ io ++ grpc ++ grpc-reflection ++ grpc-channelz ++ tracing ++ monitor-otlp;
+
     triton = [
       tritonclient
     ]
@@ -132,23 +134,30 @@ let
   };
 in
 buildPythonPackage {
-  pname = "bentoml";
   inherit version src;
-  pyproject = true;
+  inherit optional-dependencies;
+  pname = "bentoml";
 
-  pythonRelaxDeps = [
-    "cattrs"
-    "fsspec"
-    "nvidia-ml-py"
-    "opentelemetry-api"
-    "opentelemetry-instrumentation-aiohttp-client"
-    "opentelemetry-instrumentation-asgi"
-    "opentelemetry-instrumentation"
-    "opentelemetry-sdk"
-    "opentelemetry-semantic-conventions"
-    "opentelemetry-util-http"
-    "rich-toolkit"
-  ];
+  nativeCheckInputs = [
+    fastapi
+    google-api-python-client
+    lxml
+    orjson
+    pandas
+    pillow
+    pytest-asyncio
+    pytest-xdist
+    pytestCheckHook
+    scikit-learn
+    writableTmpDirAsHomeHook
+  ]
+  ++ optional-dependencies.grpc;
+
+  preCheck = ''
+    # required for CI testing
+    # https://github.com/bentoml/BentoML/pull/4056/commits/66302b502a3f4df4e8e6643d2afefefca974073e
+    export GITHUB_ACTIONS=1
+  '';
 
   build-system = [
     hatchling
@@ -205,16 +214,6 @@ buildPythonPackage {
     watchfiles
   ];
 
-  inherit optional-dependencies;
-
-  pythonImportsCheck = [ "bentoml" ];
-
-  preCheck = ''
-    # required for CI testing
-    # https://github.com/bentoml/BentoML/pull/4056/commits/66302b502a3f4df4e8e6643d2afefefca974073e
-    export GITHUB_ACTIONS=1
-  '';
-
   disabledTestPaths = [
     "tests/e2e"
     "tests/integration"
@@ -229,25 +228,34 @@ buildPythonPackage {
     "test_log_collection"
   ];
 
-  nativeCheckInputs = [
-    fastapi
-    google-api-python-client
-    lxml
-    orjson
-    pandas
-    pillow
-    pytest-asyncio
-    pytest-xdist
-    pytestCheckHook
-    scikit-learn
-    writableTmpDirAsHomeHook
-  ]
-  ++ optional-dependencies.grpc;
+  pyproject = true;
+  pythonImportsCheck = [ "bentoml" ];
+
+  pythonRelaxDeps = [
+    "cattrs"
+    "fsspec"
+    "nvidia-ml-py"
+    "opentelemetry-api"
+    "opentelemetry-instrumentation-aiohttp-client"
+    "opentelemetry-instrumentation-asgi"
+    "opentelemetry-instrumentation"
+    "opentelemetry-sdk"
+    "opentelemetry-semantic-conventions"
+    "opentelemetry-util-http"
+    "rich-toolkit"
+  ];
 
   meta = {
     description = "Build Production-Grade AI Applications";
     homepage = "https://github.com/bentoml/BentoML";
     changelog = "https://github.com/bentoml/BentoML/releases/tag/${src.tag}";
+    license = lib.licenses.asl20;
+
+    maintainers = with lib.maintainers; [
+      happysalada
+      natsukium
+    ];
+
     knownVulnerabilities = [
       "CVE-2026-27905"
       "CVE-2026-33744"
@@ -255,11 +263,6 @@ buildPythonPackage {
       "CVE-2026-35044"
       "CVE-2026-44345"
       "CVE-2026-44346"
-    ];
-    license = lib.licenses.asl20;
-    maintainers = with lib.maintainers; [
-      happysalada
-      natsukium
     ];
   };
 }

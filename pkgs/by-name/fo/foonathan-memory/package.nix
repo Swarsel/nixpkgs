@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch2,
   cmake,
   doctest,
+  fetchpatch2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,34 +18,33 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-qGbI7SL6lDbJzn2hkqaYw35QAyvSPxcZTb0ltDkPUSo=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     # do not download doctest, use the system doctest instead
     # originally from: https://sources.debian.org/data/main/f/foonathan-memory/0.7.3-2/debian/patches/0001-Use-system-doctest.patch
     ./0001-Use-system-doctest.patch.patch
 
     (fetchpatch2 {
+      hash = "sha256-RtLGDe6ZQ4CQD25pjS20+SZLhxGSrm/A7cO6VUgPbfo=";
       # Fix build under clang on Darwin
       # https://github.com/foonathan/memory/pull/192
       name = "size-suffixes-cannot-have-a-space.patch";
       url = "https://github.com/foonathan/memory/commit/0f5ebe9f4ac2d2ad106d596c993d13e107b27820.patch?full_index=1";
-      hash = "sha256-RtLGDe6ZQ4CQD25pjS20+SZLhxGSrm/A7cO6VUgPbfo=";
     })
   ];
 
-  outputs = [
-    "out"
-    "dev"
-  ];
+  nativeBuildInputs = [ cmake ];
 
   cmakeFlags = [
     (lib.cmakeBool "FOONATHAN_MEMORY_BUILD_TESTS" finalAttrs.finalPackage.doCheck)
     (lib.cmakeBool "BUILD_SHARED_LIBS" (!stdenv.hostPlatform.isStatic))
   ];
 
-  nativeBuildInputs = [ cmake ];
-
   doCheck = true;
-
   checkInputs = [ doctest ];
 
   # fix a circular dependency between "out" and "dev" outputs
@@ -56,10 +55,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://memory.foonathan.net/";
-    changelog = "https://github.com/foonathan/memory/releases/tag/${finalAttrs.src.rev}";
     description = "STL compatible C++ memory allocator library";
-    mainProgram = "nodesize_dbg";
 
     longDescription = ''
       The C++ STL allocator model has various flaws. For example, they are
@@ -73,8 +69,11 @@ stdenv.mkDerivation (finalAttrs: {
       trying to change the STL, it works with the current implementation.
     '';
 
+    homepage = "https://memory.foonathan.net/";
+    changelog = "https://github.com/foonathan/memory/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.zlib;
     maintainers = with lib.maintainers; [ panicgh ];
     platforms = with lib.platforms; unix ++ windows;
+    mainProgram = "nodesize_dbg";
   };
 })

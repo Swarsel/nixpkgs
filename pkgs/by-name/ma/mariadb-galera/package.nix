@@ -5,9 +5,9 @@
   asio_1_32_0,
   boost,
   check,
-  openssl,
   cmake,
   nixosTests,
+  openssl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -49,16 +49,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Galera 3 wsrep provider library";
-    mainProgram = "garbd";
     homepage = "https://galeracluster.com/";
     license = lib.licenses.lgpl2Only;
+
     maintainers = with lib.maintainers; [
       conni2461
       das_j
       helsinki-Jo
       izorkin
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "garbd";
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

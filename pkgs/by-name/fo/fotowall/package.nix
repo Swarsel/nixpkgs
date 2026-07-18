@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   qt6,
@@ -9,8 +9,6 @@
 stdenv.mkDerivation rec {
   pname = "fotowall";
   version = "1.1.2";
-  strictDeps = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "fotowall";
@@ -18,6 +16,8 @@ stdenv.mkDerivation rec {
     rev = "v${version}";
     hash = "sha256-icZUT17vgpI65Vyx7/TuTP4ISDkb7mrXwuyVzDHcoNE=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -28,6 +28,8 @@ stdenv.mkDerivation rec {
     qt6.qtbase
     qt6.qtsvg
   ];
+
+  __structuredAttrs = true;
 
   meta = {
     description = "Pictures collage & creativity tool";

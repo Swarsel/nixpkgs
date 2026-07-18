@@ -1,28 +1,25 @@
 {
   lib,
-  buildPythonPackage,
-  pythonOlder,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
   bcrypt,
+  buildPythonPackage,
   freezegun,
   homeassistant,
   paho-mqtt,
   pytest-asyncio,
   pytest-socket,
+  pytestCheckHook,
+  pythonOlder,
   requests-mock,
   respx,
+  setuptools,
   syrupy,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-homeassistant-custom-component";
   version = "0.13.346";
-  pyproject = true;
-
-  disabled = pythonOlder "3.13";
 
   src = fetchFromGitHub {
     owner = "MatthewFlamm";
@@ -31,9 +28,8 @@ buildPythonPackage rec {
     hash = "sha256-GUUz6gbhmIgZCH9y3oEmf1Y+Gp2yUf8zvxM//uGvsNw=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
-
-  pythonRemoveDeps = true;
 
   dependencies = [
     aiohttp
@@ -48,14 +44,15 @@ buildPythonPackage rec {
     syrupy
   ];
 
+  disabled = pythonOlder "3.13";
+  pyproject = true;
   pythonImportsCheck = [ "pytest_homeassistant_custom_component.plugins" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
+  pythonRemoveDeps = true;
 
   meta = {
-    changelog = "https://github.com/MatthewFlamm/pytest-homeassistant-custom-component/blob/${src.tag}/CHANGELOG.md";
     description = "Package to automatically extract testing plugins from Home Assistant for custom component testing";
     homepage = "https://github.com/MatthewFlamm/pytest-homeassistant-custom-component";
+    changelog = "https://github.com/MatthewFlamm/pytest-homeassistant-custom-component/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

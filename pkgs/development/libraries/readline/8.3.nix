@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  fetchpatch,
   fetchurl,
-  updateAutotoolsGnuConfigScriptsHook,
+  fetchpatch,
   ncurses,
   termcap,
+  updateAutotoolsGnuConfigScriptsHook,
   curses-library ? if stdenv.hostPlatform.isWindows then termcap else ncurses,
 }:
 
@@ -26,24 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     "info"
   ];
 
-  strictDeps = true;
-  propagatedBuildInputs = [ curses-library ];
-  nativeBuildInputs = [ updateAutotoolsGnuConfigScriptsHook ];
-
-  patchFlags = [ "-p0" ];
-
-  upstreamPatches = (
-    let
-      patch =
-        nr: sha256:
-        fetchurl {
-          url = "mirror://gnu/readline/readline-${finalAttrs.meta.branch}-patches/readline83-${nr}";
-          inherit sha256;
-        };
-    in
-    import ./readline-8.3-patches.nix patch
-  );
-
   patches =
     lib.optionals (curses-library.pname == "ncurses") [
       ./link-against-ncurses.patch
@@ -54,30 +36,34 @@ stdenv.mkDerivation (finalAttrs: {
     ++ finalAttrs.upstreamPatches
     ++ lib.optionals stdenv.hostPlatform.isWindows [
       (fetchpatch {
-        name = "0001-sigwinch.patch";
-        url = "https://github.com/msys2/MINGW-packages/raw/90e7536e3b9c3af55c336d929cfcc32468b2f135/mingw-w64-readline/0001-sigwinch.patch";
-        stripLen = 1;
         hash = "sha256-sFK6EJrSNl0KLWqFv5zBXaQRuiQoYIZVoZfa8BZqfKA=";
+        name = "0001-sigwinch.patch";
+        stripLen = 1;
+        url = "https://github.com/msys2/MINGW-packages/raw/90e7536e3b9c3af55c336d929cfcc32468b2f135/mingw-w64-readline/0001-sigwinch.patch";
       })
       (fetchpatch {
-        name = "0002-event-hook.patch";
-        url = "https://github.com/msys2/MINGW-packages/raw/13d7fe6618496d509bce96e1852e943096cba6fb/mingw-w64-readline/0002-event-hook.patch";
-        stripLen = 1;
         hash = "sha256-KXI85yKedS/eQ3W0a9rhG9zzN/IQT58qhPdWC2kU0Kw=";
+        name = "0002-event-hook.patch";
+        stripLen = 1;
+        url = "https://github.com/msys2/MINGW-packages/raw/13d7fe6618496d509bce96e1852e943096cba6fb/mingw-w64-readline/0002-event-hook.patch";
       })
       (fetchpatch {
-        name = "0003-no-winsize.patch";
-        url = "https://github.com/msys2/MINGW-packages/raw/13d7fe6618496d509bce96e1852e943096cba6fb/mingw-w64-readline/0003-no-winsize.patch";
-        stripLen = 1;
         hash = "sha256-+z2ak32RnDIlGbz1RwQAf4r9Scn/C3lNyEpFB5rQ5s8=";
+        name = "0003-no-winsize.patch";
+        stripLen = 1;
+        url = "https://github.com/msys2/MINGW-packages/raw/13d7fe6618496d509bce96e1852e943096cba6fb/mingw-w64-readline/0003-no-winsize.patch";
       })
       (fetchpatch {
-        name = "0004-locale.patch";
-        url = "https://github.com/msys2/MINGW-packages/raw/f768c4b74708bb397a77e3374cc1e9e6ef647f20/mingw-w64-readline/0004-locale.patch";
-        stripLen = 1;
         hash = "sha256-dk4343KP4EWXdRRCs8GRQlBgJFgu1rd79RfjwFD/nJc=";
+        name = "0004-locale.patch";
+        stripLen = 1;
+        url = "https://github.com/msys2/MINGW-packages/raw/f768c4b74708bb397a77e3374cc1e9e6ef647f20/mingw-w64-readline/0004-locale.patch";
       })
     ];
+
+  strictDeps = true;
+  nativeBuildInputs = [ updateAutotoolsGnuConfigScriptsHook ];
+  propagatedBuildInputs = [ curses-library ];
 
   # Make mingw-w64 provide a dummy alarm() function
   #
@@ -96,6 +82,20 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/lib/libhistory.so* $out/lib/libhistory.so
     ln -s $out/lib/libreadline.so* $out/lib/libreadline.so
   '';
+
+  patchFlags = [ "-p0" ];
+
+  upstreamPatches = (
+    let
+      patch =
+        nr: sha256:
+        fetchurl {
+          inherit sha256;
+          url = "mirror://gnu/readline/readline-${finalAttrs.meta.branch}-patches/readline83-${nr}";
+        };
+    in
+    import ./readline-8.3-patches.nix patch
+  );
 
   meta = {
     description = "Library for interactive line editing";
@@ -116,11 +116,8 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
     homepage = "https://savannah.gnu.org/projects/readline/";
-
     license = lib.licenses.gpl3Plus;
-
     maintainers = [ ];
-
     platforms = lib.platforms.unix ++ lib.platforms.windows;
     branch = "8.3";
   };

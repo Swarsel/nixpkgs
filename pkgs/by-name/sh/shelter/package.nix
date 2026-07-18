@@ -1,5 +1,4 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
   fetchPnpmDeps,
@@ -7,10 +6,12 @@
   nodejs,
   pnpmConfigHook,
   pnpm_10,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "shelter";
   version = "0-unstable-2026-06-10";
+
   src = fetchFromGitHub {
     owner = "uwu";
     repo = "shelter";
@@ -18,21 +19,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-aF13I8zLF1mluhnE8OJSwnatCcqujP1UuQDlbXEUhPM=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     nodejs
     pnpmConfigHook
     pnpm_10
   ];
-
-  __structuredAttrs = true;
-  strictDeps = true;
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-d8GGz/2aCv2YV6CIxs1vkUfjYrhzsc8LyJX2sXgelig=";
-    pnpm = pnpm_10;
-    fetcherVersion = 4;
-  };
 
   buildPhase = ''
     runHook preBuild
@@ -50,6 +43,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  __structuredAttrs = true;
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 4;
+    hash = "sha256-d8GGz/2aCv2YV6CIxs1vkUfjYrhzsc8LyJX2sXgelig=";
+    pnpm = pnpm_10;
+  };
 
   passthru.updateScript = nix-update-script {
     extraArgs = [

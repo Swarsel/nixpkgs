@@ -2,27 +2,24 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pylint,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "setuptools-lint";
   version = "0.6.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "setuptools-lint";
     inherit (finalAttrs) version;
     hash = "sha256-55ThXHyN3pcLYY2cetRYiurqBn8DTMtK6PrMYwtTQZk=";
+    pname = "setuptools-lint";
   };
 
+  __structuredAttrs = true;
   build-system = [ setuptools ];
-
   dependencies = [ pylint ];
-
+  pyproject = true;
   pythonImportsCheck = [ "setuptools_lint" ];
 
   meta = {

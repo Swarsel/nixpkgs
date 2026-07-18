@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
   cmake,
+  nix-update-script,
   obs-studio,
 }:
 
@@ -30,8 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Plugin for OBS Studio to show a browser source during scene transition";
     homepage = "https://github.com/exeldro/obs-browser-transition";
-    maintainers = with lib.maintainers; [ flexiondotorg ];
     license = lib.licenses.gpl2Only;
+    maintainers = with lib.maintainers; [ flexiondotorg ];
     platforms = lib.platforms.linux;
   };
 })

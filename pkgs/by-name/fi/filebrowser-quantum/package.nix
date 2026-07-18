@@ -16,10 +16,8 @@ let
   };
 
   frontend = buildNpmPackage {
-    pname = "filebrowser-quantum-frontend";
     inherit version src;
-
-    sourceRoot = "${src.name}/frontend";
+    pname = "filebrowser-quantum-frontend";
     npmDepsHash = "sha256-tisZA7v0WsynNxgbww48eERz9+om4w8MW4IMzQIyh+Y=";
 
     buildPhase = ''
@@ -38,15 +36,14 @@ let
 
       runHook postInstall
     '';
+
+    sourceRoot = "${src.name}/frontend";
   };
 
 in
 buildGoModule {
-  pname = "filebrowser-quantum";
   inherit version src;
-
-  sourceRoot = "${src.name}/backend";
-
+  pname = "filebrowser-quantum";
   vendorHash = "sha256-WvilFCwTGXecsD/afUpLL6TrGzr/cgkQeltCKKDc4AI=";
 
   preBuild = ''
@@ -65,15 +62,19 @@ buildGoModule {
     "-X github.com/gtsteffaniak/filebrowser/backend/version.Version=testing"
   ];
 
+  sourceRoot = "${src.name}/backend";
+
   meta = {
     description = "Access and manage your files from the web";
     homepage = "https://github.com/gtsteffaniak/filebrowser";
     changelog = "https://github.com/gtsteffaniak/filebrowser/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       jocimsus
       denperidge
     ];
+
     mainProgram = "filebrowser-quantum";
   };
 }

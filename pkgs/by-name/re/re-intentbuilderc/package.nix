@@ -6,7 +6,6 @@
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "re-intentbuilderc";
   version = "1.0.2";
-  __structuredAttrs = true;
 
   src = fetchFromCodeberg {
     owner = "viraptor";
@@ -16,13 +15,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-9PmIoXngNuWUXYa1f4CS5JS1yh+/9E8GBfjndIFEqTk=";
+  __structuredAttrs = true;
 
   meta = {
-    mainProgram = "intentbuilderc";
     description = "Open reimplementation of Apple's intentbuilderc";
     homepage = "https://codeberg.com/viraptor/re-intentbuilderc";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ viraptor ];
     platforms = lib.platforms.unix;
+    mainProgram = "intentbuilderc";
   };
 })

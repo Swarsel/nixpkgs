@@ -1,49 +1,41 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchurl,
+  buildPythonPackage,
+  directoryListingUpdater,
   fetchpatch,
-  meson,
-  ninja,
+  gobject-introspection,
   # TODO: We can get rid of this once `buildPythonPackage` accepts `finalAttrs`.
   # See: https://github.com/NixOS/nixpkgs/pull/271387
   gst-python,
-
-  pkg-config,
-  python,
-  pygobject3,
-  gobject-introspection,
   gst_all_1,
   isPy3k,
-  directoryListingUpdater,
+  meson,
+  ninja,
+  pkg-config,
+  pygobject3,
+  python,
 }:
 
 buildPythonPackage rec {
   pname = "gst-python";
   version = "1.28.4";
 
-  pyproject = false;
+  src = fetchurl {
+    url = "https://gstreamer.freedesktop.org/src/gst-python/gst-python-${version}.tar.xz";
+    hash = "sha256-xOs4JyC0RD+4AaU0GN/wvUzXR4cW1c7Uk1BKZ1tNCf0=";
+  };
 
   outputs = [
     "out"
     "dev"
   ];
 
-  src = fetchurl {
-    url = "https://gstreamer.freedesktop.org/src/gst-python/gst-python-${version}.tar.xz";
-    hash = "sha256-xOs4JyC0RD+4AaU0GN/wvUzXR4cW1c7Uk1BKZ1tNCf0=";
-  };
-
   patches = [
     # https://gitlab.freedesktop.org/gstreamer/gstreamer/-/merge_requests/9918#note_3530752
     ./fix-test-plugin-imports.patch
   ];
-
-  # Python 2.x is not supported.
-  disabled = !isPy3k;
-
-  depsBuildBuild = [ pkg-config ];
 
   nativeBuildInputs = [
     meson
@@ -63,10 +55,6 @@ buildPythonPackage rec {
     pygobject3
   ];
 
-  checkInputs = [
-    gst_all_1.gst-rtsp-server
-  ];
-
   mesonFlags = [
     "-Dpygi-overrides-dir=${placeholder "out"}/${python.sitePackages}/gi/overrides"
     # Exec format error during configure
@@ -81,6 +69,14 @@ buildPythonPackage rec {
     (lib.mesonEnable "tests" gst-python.doInstallCheck)
   ];
 
+  checkInputs = [
+    gst_all_1.gst-rtsp-server
+  ];
+
+  preCheck = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    export DYLD_LIBRARY_PATH="${gst_all_1.gst-plugins-base}/lib"
+  '';
+
   # `buildPythonPackage` uses `installCheckPhase` and leaves `checkPhase`
   # empty. It renames `doCheck` from its arguments, but not `checkPhase`.
   # See: https://github.com/NixOS/nixpkgs/issues/47390
@@ -90,17 +86,18 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
-  preCheck = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    export DYLD_LIBRARY_PATH="${gst_all_1.gst-plugins-base}/lib"
-  '';
+  depsBuildBuild = [ pkg-config ];
+  # Python 2.x is not supported.
+  disabled = !isPy3k;
+  pyproject = false;
 
   passthru = {
     updateScript = directoryListingUpdater { odd-unstable = true; };
   };
 
   meta = {
-    homepage = "https://gstreamer.freedesktop.org";
     description = "Python bindings for GStreamer";
+    homepage = "https://gstreamer.freedesktop.org";
     license = lib.licenses.lgpl2Plus;
     maintainers = with lib.maintainers; [ tmarkus ];
   };

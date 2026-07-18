@@ -1,7 +1,7 @@
 {
   lib,
-  gccStdenv,
   fetchurl,
+  gccStdenv,
 }:
 
 gccStdenv.mkDerivation (finalAttrs: {
@@ -13,6 +13,13 @@ gccStdenv.mkDerivation (finalAttrs: {
     hash = "sha256-R17ScQWH0k8R0A2vpcP234rHnhO4xdVNLqNVdrV5/Zc=";
   };
 
+  postPatch = ''
+    mkdir -p $out/bin
+    substituteInPlace Makefile \
+      --replace-fail "/usr/local" "$out" \
+      --replace-fail "strip " "${gccStdenv.cc.targetPrefix}strip "
+  '';
+
   env.NIX_CFLAGS_COMPILE = toString [
     "-Wno-error=format"
     "-Wno-error=format-truncation"
@@ -21,19 +28,12 @@ gccStdenv.mkDerivation (finalAttrs: {
     "-Wno-error=restrict"
   ];
 
-  postPatch = ''
-    mkdir -p $out/bin
-    substituteInPlace Makefile \
-      --replace-fail "/usr/local" "$out" \
-      --replace-fail "strip " "${gccStdenv.cc.targetPrefix}strip "
-  '';
-
   meta = {
     description = "MIME alteration tool";
+    license = lib.licenses.sendmail;
     maintainers = [ lib.maintainers.raskin ];
     platforms = lib.platforms.all;
-    license = lib.licenses.sendmail;
-    downloadPage = "https://pldaniels.com/altermime/";
     mainProgram = "altermime";
+    downloadPage = "https://pldaniels.com/altermime/";
   };
 })

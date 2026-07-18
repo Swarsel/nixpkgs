@@ -2,18 +2,14 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  ninja,
-  storage-common,
-  nix-update-script,
   meta,
+  ninja,
+  nix-update-script,
+  storage-common,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "azure-sdk-for-cpp-storage-files-shares";
   version = "12.16.0";
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "Azure";
@@ -21,7 +17,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "azure-storage-files-shares_${finalAttrs.version}";
     hash = "sha256-cycBXSvc3G8TdLnI4Ht1lBd9ndPOjxWFQA54a24iUsY=";
   };
-  sourceRoot = "${finalAttrs.src.name}/sdk/storage/azure-storage-files-shares";
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   postPatch = ''
     sed -i '/CMAKE_CXX_STANDARD/d' CMakeLists.txt
@@ -36,22 +36,24 @@ stdenv.mkDerivation (finalAttrs: {
 
   propagatedBuildInputs = [ storage-common ];
 
-  env = {
-    AZURE_SDK_DISABLE_AUTO_VCPKG = 1;
-  };
-
   cmakeFlags = [
     "-DBUILD_SHARED_LIBS=ON"
     "-DWARNINGS_AS_ERRORS=OFF"
   ];
+
+  env = {
+    AZURE_SDK_DISABLE_AUTO_VCPKG = 1;
+  };
+
+  # See note in ./core.nix.
+  doCheck = false;
 
   postInstall = ''
     moveToOutput "share" "$dev"
     moveToOutput "share/$(basename "$sourceRoot")-cpp/copyright" "$out"
   '';
 
-  # See note in ./core.nix.
-  doCheck = false;
+  sourceRoot = "${finalAttrs.src.name}/sdk/storage/azure-storage-files-shares";
 
   passthru.updateScript = nix-update-script {
     extraArgs = [

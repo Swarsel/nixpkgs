@@ -1,16 +1,16 @@
 {
   lib,
-  stdenvNoCC,
+  fetchFromGitHub,
   bash,
   copyDesktopItems,
   coreutils,
-  fetchFromGitHub,
   jq,
   makeDesktopItem,
   makeWrapper,
   nix-update-script,
   scdoc,
   slurp,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "hyprprop";
@@ -23,7 +23,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-aH8h5ZOiyEGtHmEyuE/eFxx8TN7a+NGDnl4V+dbzJ6E=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/hyprprop";
+  nativeBuildInputs = [
+    makeWrapper
+    copyDesktopItems
+  ];
 
   buildInputs = [
     bash
@@ -31,11 +34,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   ];
 
   makeFlags = [ "PREFIX=$(out)" ];
-
-  nativeBuildInputs = [
-    makeWrapper
-    copyDesktopItems
-  ];
 
   postInstall = ''
     wrapProgram $out/bin/hyprprop --prefix PATH ':' \
@@ -51,22 +49,24 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   desktopItems =
     let
       desktopItem = makeDesktopItem {
-        name = "hyprprop";
-        exec = "hyprprop";
         desktopName = "Hyprprop";
-        terminal = true;
+        exec = "hyprprop";
+        name = "hyprprop";
         startupNotify = false;
+        terminal = true;
       };
     in
     [ desktopItem ];
 
+  sourceRoot = "${finalAttrs.src.name}/hyprprop";
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
+
   meta = {
     description = "Xprop replacement for Hyprland";
     homepage = "https://github.com/hyprwm/contrib";
     license = lib.licenses.mit;
     platforms = lib.platforms.unix;
-    teams = [ lib.teams.hyprland ];
     mainProgram = "hyprprop";
+    teams = [ lib.teams.hyprland ];
   };
 })

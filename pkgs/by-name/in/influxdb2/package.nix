@@ -4,11 +4,12 @@
 # - David Anderson 2021-12-16 in 84bc3a02807fd
 {
   buildEnv,
-  influxdb2-server,
   influxdb2-cli,
+  influxdb2-server,
 }:
 buildEnv {
   name = "influxdb2";
+
   paths = [
     influxdb2-server
     influxdb2-cli

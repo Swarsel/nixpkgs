@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "riprova";
   version = "0.3.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,15 +15,14 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ six ];
-
   # PyPI archive doesn't have tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "riprova" ];
 
   meta = {
-    homepage = "https://github.com/h2non/riprova";
     description = "Small and versatile library to retry failed operations using different backoff strategies";
+    homepage = "https://github.com/h2non/riprova";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ mmilata ];
   };

@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 # Source Sans Pro got renamed to Source Sans 3 (see
@@ -29,10 +29,10 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://adobe-fonts.github.io/source-sans/";
     description = "Sans serif font family for user interface environments (version of Source Sans before being renamed)";
+    homepage = "https://adobe-fonts.github.io/source-sans/";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 }

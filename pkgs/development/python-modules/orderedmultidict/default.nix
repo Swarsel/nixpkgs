@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
   six,
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "orderedmultidict";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gruns";
@@ -20,13 +19,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-XJKmchG3BmPKrw20BEMLe2V6XlN9tXcgkf5G+P97uAQ=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ six ];
-
-  pythonImportsCheck = [ "orderedmultidict" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  dependencies = [ six ];
+  pyproject = true;
+  pythonImportsCheck = [ "orderedmultidict" ];
 
   meta = {
     description = "Ordered Multivalue Dictionary";

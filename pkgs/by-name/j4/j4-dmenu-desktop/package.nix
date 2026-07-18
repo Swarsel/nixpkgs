@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  dmenu,
+  fmt,
   meson,
   ninja,
   pkg-config,
-  dmenu,
-  fmt,
   spdlog,
 }:
 
@@ -45,12 +45,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    changelog = "https://github.com/enkore/j4-dmenu-desktop/blob/${finalAttrs.src.rev}/CHANGELOG";
     description = "Wrapper for dmenu that recognizes .desktop files";
     homepage = "https://github.com/enkore/j4-dmenu-desktop";
+    changelog = "https://github.com/enkore/j4-dmenu-desktop/blob/${finalAttrs.src.rev}/CHANGELOG";
     license = lib.licenses.gpl3Only;
-    mainProgram = "j4-dmenu-desktop";
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "j4-dmenu-desktop";
   };
 })

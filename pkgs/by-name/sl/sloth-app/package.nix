@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
   makeBinaryWrapper,
+  unzip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -14,8 +14,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://github.com/sveinbjornt/Sloth/releases/download/${finalAttrs.version}/sloth-${finalAttrs.version}.zip";
     hash = "sha256-K8DweBFAILEQyqri6NO+p5qRam+BHjIk1tl43gcseNs=";
   };
-
-  dontUnpack = true;
 
   nativeBuildInputs = [
     unzip
@@ -32,13 +30,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Mac app that shows all open files, directories, sockets, pipes and devices";
     homepage = "https://sveinbjorn.org/sloth";
     license = lib.licenses.bsd3;
-    mainProgram = "Sloth";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ emilytrau ];
     platforms = lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    mainProgram = "Sloth";
   };
 })

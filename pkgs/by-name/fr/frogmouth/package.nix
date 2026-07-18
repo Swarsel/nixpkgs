@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "frogmouth";
   version = "0.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Textualize";
@@ -27,19 +26,20 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     xdg
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "frogmouth" ];
+
   pythonRelaxDeps = [
     "httpx"
     "textual"
   ];
 
-  pythonImportsCheck = [ "frogmouth" ];
-
   meta = {
     description = "Markdown browser for your terminal";
-    mainProgram = "frogmouth";
     homepage = "https://github.com/Textualize/frogmouth";
     changelog = "https://github.com/Textualize/frogmouth/blob/${finalAttrs.src.rev}/ChangeLog.md";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "frogmouth";
   };
 })

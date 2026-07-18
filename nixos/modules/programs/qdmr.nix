@@ -9,8 +9,6 @@ let
   cfg = config.programs.qdmr;
 in
 {
-  meta.maintainers = [ ];
-
   options = {
     programs.qdmr = {
       enable = lib.mkEnableOption "QDMR - a GUI application and command line tool for programming DMR radios";
@@ -23,4 +21,6 @@ in
     services.udev.packages = [ cfg.package ];
     users.groups.dialout = { };
   };
+
+  meta.maintainers = [ ];
 }

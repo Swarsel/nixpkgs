@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   aio-geojson-client,
   aiohttp,
   aiointercept,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-asyncio,
   pytestCheckHook,
   pytz,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aio-geojson-geonetnz-quakes";
   version = "2026.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "exxamalte";
@@ -24,6 +23,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-JzhKlQR7tNRCtiEVSQGWFIDxUl6o+jhR3kKYjRCMTAU=";
   };
 
+  nativeCheckInputs = [
+    aiointercept
+    aioresponses
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -32,16 +39,8 @@ buildPythonPackage (finalAttrs: {
     pytz
   ];
 
-  nativeCheckInputs = [
-    aiointercept
-    aioresponses
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "aio_geojson_geonetnz_quakes" ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Python module for accessing the GeoNet NZ Quakes GeoJSON feeds";

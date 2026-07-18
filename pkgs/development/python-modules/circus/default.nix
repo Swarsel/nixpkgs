@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   psutil,
   pytestCheckHook,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "circus";
   version = "0.19.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "circus-tent";
@@ -23,14 +22,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-MiZXiGb6F8LAJLAdmEDBO8Y5cJxHJy7jMFi50Ac3Bsc=";
   };
-
-  build-system = [ flit-core ];
-
-  dependencies = [
-    psutil
-    pyzmq
-    tornado
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -41,6 +32,15 @@ buildPythonPackage rec {
   preCheck = lib.optionalString stdenv.hostPlatform.isDarwin ''
     ulimit -n 1024
   '';
+
+  __darwinAllowLocalNetworking = true;
+  build-system = [ flit-core ];
+
+  dependencies = [
+    psutil
+    pyzmq
+    tornado
+  ];
 
   disabledTests = [
     # Depends on the build machine configuration
@@ -59,9 +59,8 @@ buildPythonPackage rec {
     "test_venv_site_packages"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "circus" ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Process and socket manager";

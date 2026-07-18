@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  gettext,
   caja,
+  gettext,
+  gitUpdater,
   glib,
   gst_all_1,
   gtk3,
   gupnp_1_6,
   imagemagick,
   mate-desktop,
+  pkg-config,
   wrapGAppsHook3,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,12 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://pub.mate-desktop.org/releases/${lib.versions.majorMinor finalAttrs.version}/caja-extensions-${finalAttrs.version}.tar.xz";
     sha256 = "0phsXgdAg1/icc+9WCPu6vAyka8XYyA/RwCruBCeMXU=";
   };
+
+  postPatch = ''
+    for f in image-converter/caja-image-{resizer,rotator}.c; do
+      substituteInPlace $f --replace-fail 'argv[0] = "convert"' 'argv[0] = "${imagemagick}/bin/convert"'
+    done
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -42,28 +48,21 @@ stdenv.mkDerivation (finalAttrs: {
     mate-desktop
   ];
 
-  postPatch = ''
-    for f in image-converter/caja-image-{resizer,rotator}.c; do
-      substituteInPlace $f --replace-fail 'argv[0] = "convert"' 'argv[0] = "${imagemagick}/bin/convert"'
-    done
-  '';
-
   configureFlags = [ "--with-cajadir=$$out/lib/caja/extensions-2.0" ];
-
   enableParallelBuilding = true;
 
   passthru.updateScript = gitUpdater {
-    url = "https://git.mate-desktop.org/caja-extensions";
     odd-unstable = true;
     rev-prefix = "v";
+    url = "https://git.mate-desktop.org/caja-extensions";
   };
 
   meta = {
     description = "Set of extensions for Caja file manager";
-    mainProgram = "caja-sendto";
     homepage = "https://mate-desktop.org";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
+    mainProgram = "caja-sendto";
     teams = [ lib.teams.mate ];
   };
 })

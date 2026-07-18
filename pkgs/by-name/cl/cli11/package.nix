@@ -19,22 +19,21 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-TcOmx/qUK/w3mO0bDHX+TRxxMwJpaDFQBcpkQj3hz8A=";
   };
 
-  buildInputs = [ catch2 ];
+  strictDeps = true;
   nativeBuildInputs = [ cmake ];
+  buildInputs = [ catch2 ];
+  doCheck = true;
 
   nativeCheckInputs = [
     boost
     python3
   ];
 
-  doCheck = true;
-  strictDeps = true;
-
   meta = {
     description = "Command line parser for C++11";
     homepage = "https://github.com/CLIUtils/CLI11";
-    platforms = lib.platforms.unix;
-    maintainers = [ ];
     license = lib.licenses.bsd3;
+    maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

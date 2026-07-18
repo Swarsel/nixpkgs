@@ -1,24 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  beautifulsoup4,
+  buildPythonPackage,
   nix-update-script,
-
   # setuptools
   setuptools,
   setuptools-scm,
-
   # dependencies
   stravalib,
-  beautifulsoup4,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "stravaweblib";
   version = "0.0.10";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "pR0Ps";
@@ -26,6 +21,8 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-hsXrU7Rad3LzF58GwlgET98911XjTKztFFNqiUSw278=";
   };
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -37,11 +34,12 @@ buildPythonPackage (finalAttrs: {
     beautifulsoup4
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "stravaweblib" ];
+
   pythonRelaxDeps = [
     "stravalib"
   ];
-
-  pythonImportsCheck = [ "stravaweblib" ];
 
   passthru.updateScript = nix-update-script { };
 

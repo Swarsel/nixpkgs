@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -16,15 +16,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-VyUJ7qiaodLTdfGyh3/tLGfNVZCAxImxOuz4ztaaqtg=";
   };
 
-  vendorHash = "sha256-4YL0N8wA8igveYfeL4uZDY5YD1InW0iD3WWq1E/vIJs=";
-
   nativeBuildInputs = [
     installShellFiles
   ];
 
-  excludedPackages = [
-    "gen-completions"
-  ];
+  vendorHash = "sha256-4YL0N8wA8igveYfeL4uZDY5YD1InW0iD3WWq1E/vIJs=";
 
   postInstall = ''
     installManPage share/man/clx.1
@@ -33,6 +29,10 @@ buildGoModule (finalAttrs: {
     installShellCompletion --fish share/completions/clx.fish
     installShellCompletion --zsh share/completions/_clx
   '';
+
+  excludedPackages = [
+    "gen-completions"
+  ];
 
   meta = {
     description = "Command line tool for browsing Hacker News in your terminal";

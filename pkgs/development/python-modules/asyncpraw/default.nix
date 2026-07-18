@@ -1,16 +1,16 @@
 {
   lib,
+  fetchFromGitHub,
   aiofiles,
   aiohttp,
   asyncprawcore,
   buildPythonPackage,
   coverage,
   defusedxml,
-  fetchFromGitHub,
   hatchling,
-  pytestCheckHook,
   pytest-asyncio,
   pytest-vcr,
+  pytestCheckHook,
   update-checker,
   vcrpy,
 }:
@@ -18,7 +18,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "asyncpraw";
   version = "8.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "praw-dev";
@@ -27,9 +26,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-lVRIZP9XsUEM1Czl4YC10EdSC8RmO5ugPgo3THyqi9A=";
   };
 
-  pythonRelaxDeps = [
-    "defusedxml"
-    "update-checker"
+  nativeCheckInputs = [
+    coverage
+    pytestCheckHook
+    pytest-asyncio
+    pytest-vcr
+    vcrpy
   ];
 
   build-system = [ hatchling ];
@@ -42,14 +44,6 @@ buildPythonPackage (finalAttrs: {
     update-checker
   ];
 
-  nativeCheckInputs = [
-    coverage
-    pytestCheckHook
-    pytest-asyncio
-    pytest-vcr
-    vcrpy
-  ];
-
   disabledTestPaths = [
     # Ignored due to error with request cannot pickle 'BufferedReader' instances
     # Upstream issue: https://github.com/kevin1024/vcrpy/issues/737
@@ -60,7 +54,13 @@ buildPythonPackage (finalAttrs: {
     "tests/integration/models/reddit/test_wikipage.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "asyncpraw" ];
+
+  pythonRelaxDeps = [
+    "defusedxml"
+    "update-checker"
+  ];
 
   meta = {
     description = "Asynchronous Python Reddit API Wrapper";

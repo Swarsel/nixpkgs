@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 buildGoModule (finalAttrs: {
@@ -17,7 +17,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-MxIofF5Jj+w7gxsO+F48ymtgB3bgSutmC5Jh3GcKCnA=";
   subPackages = [ "." ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -25,9 +24,11 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/itzg/rcon-cli";
     changelog = "https://github.com/itzg/rcon-cli/releases/tag/${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       link00000000
     ];
+
     mainProgram = "rcon-cli";
   };
 })

@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   buildNpmPackage,
   buildPythonPackage,
-  fetchFromGitHub,
-  setuptools,
   django,
+  setuptools,
 }:
 let
   pname = "django-admin-sortable2";
@@ -18,8 +18,8 @@ let
   };
 
   assets = buildNpmPackage {
-    pname = "${pname}-assets";
     inherit version src;
+    pname = "${pname}-assets";
     npmDepsHash = "sha256-zM2iSCrGX5sS7Ysmmo8nR+/V9pMOatN6DX/G+hGdFEU=";
 
     installPhase = ''
@@ -34,20 +34,17 @@ in
 
 buildPythonPackage rec {
   inherit pname version src;
-  pyproject = true;
-
-  build-system = [ setuptools ];
-
-  dependencies = [ django ];
 
   preBuild = ''
     install -Dm644 ${assets}/*.js -t adminsortable2/static/adminsortable2/js
   '';
 
-  pythonImportsCheck = [ "adminsortable2" ];
-
   # Tests are very slow (end-to-end with playwright)
   doCheck = false;
+  build-system = [ setuptools ];
+  dependencies = [ django ];
+  pyproject = true;
+  pythonImportsCheck = [ "adminsortable2" ];
 
   meta = {
     description = "Generic drag-and-drop ordering for objects in the Django admin interface";

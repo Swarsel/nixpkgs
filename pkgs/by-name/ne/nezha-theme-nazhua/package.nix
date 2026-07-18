@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
 }:
 
@@ -20,13 +20,12 @@ buildNpmPackage (finalAttrs: {
 
   # Copied from .github/workflows/release.yml
   env = {
+    VITE_CDN_LIB_TYPE = "jsdelivr";
     VITE_NEZHA_VERSION = "v1";
     VITE_SARASA_TERM_SC_USE_CDN = "1";
     VITE_USE_CDN = "1";
-    VITE_CDN_LIB_TYPE = "jsdelivr";
   };
 
-  dontNpmInstall = true;
   installPhase = ''
     runHook preInstall
 
@@ -35,12 +34,13 @@ buildNpmPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  dontNpmInstall = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Nezha monitoring theme called Nazhua";
-    changelog = "https://github.com/hi2shark/nazhua/releases/tag/v${finalAttrs.version}";
     homepage = "https://github.com/hi2shark/nazhua";
+    changelog = "https://github.com/hi2shark/nazhua/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ moraxyc ];
   };

@@ -1,21 +1,19 @@
 {
   lib,
   buildDunePackage,
-  dune,
   csexp,
-  stdune,
+  dune,
+  dyn,
   ocamlc-loc,
   ordering,
   pp,
+  stdune,
   xdg,
-  dyn,
 }:
 
 buildDunePackage {
-  pname = "dune-rpc";
   inherit (dune) src version;
-
-  dontAddPrefix = true;
+  pname = "dune-rpc";
 
   propagatedBuildInputs = [
     csexp
@@ -27,10 +25,12 @@ buildDunePackage {
     dyn
   ];
 
+  dontAddPrefix = true;
+
   meta = {
-    description = "Library to connect and control a running dune instance";
     inherit (dune.meta) homepage;
-    maintainers = [ ];
+    description = "Library to connect and control a running dune instance";
     license = lib.licenses.mit;
+    maintainers = [ ];
   };
 }

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   pyspnego,
   pytestCheckHook,
   requests,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "requests-credssp";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jborean93";
@@ -21,6 +20,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-HHLEmQ+mNjMjpR6J+emrKFM+2PiYq32o7Gnoo0gUrNA=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,12 +29,11 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   optional-dependencies = {
     kerberos = pyspnego.optional-dependencies.kerberos;
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "requests_credssp" ];
 
   meta = {

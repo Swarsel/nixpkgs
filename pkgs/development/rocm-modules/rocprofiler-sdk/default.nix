@@ -2,39 +2,39 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  ninja,
-  pkg-config,
-  clr,
-  rocm-cmake,
-  rocm-runtime,
-  rocprofiler-register,
-  rocprof-trace-decoder,
   aqlprofile,
-  rocm-comgr,
-  rocmUpdateScript,
-  rccl,
-  python3,
-  python3Packages,
-  libdrm,
+  clr,
+  cmake,
+  elfio,
   elfutils,
-  sqlite,
-  otf2,
-  zlib,
-  zstd,
-  xz,
-  numactl,
+  fetchpatch,
   fmt,
   glog,
   gtest,
-  fetchpatch,
-  yaml-cpp,
-  elfio,
-  nlohmann_json,
+  libdrm,
   makeWrapper,
-  gpuTargets ? (clr.localGpuTargets or clr.gpuTargets),
-  buildTests ? false,
+  ninja,
+  nlohmann_json,
+  numactl,
+  otf2,
+  pkg-config,
+  python3,
+  python3Packages,
+  rccl,
+  rocm-cmake,
+  rocm-comgr,
+  rocm-runtime,
+  rocmUpdateScript,
+  rocprof-trace-decoder,
+  rocprofiler-register,
+  sqlite,
+  xz,
+  yaml-cpp,
+  zlib,
+  zstd,
   buildSamples ? false,
+  buildTests ? false,
+  gpuTargets ? (clr.localGpuTargets or clr.gpuTargets),
 }:
 
 # FIXME: devendor remaining git submodules:
@@ -48,80 +48,44 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "rocprofiler-sdk";
   version = "7.2.3";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchFromGitHub {
     owner = "ROCm";
     repo = "rocm-systems";
     rev = "rocm-${finalAttrs.version}";
     hash = "sha256-SQjV1FnAgnK1LS5SiApgfvDSjB3AKpucja+PBZSmLvQ=";
     fetchSubmodules = true;
+
     sparseCheckout = [
       "projects/rocprofiler-sdk"
     ];
   };
-  sourceRoot = "${finalAttrs.src.name}/projects/rocprofiler-sdk";
 
-  strictDeps = true;
-
-  nativeBuildInputs = [
-    cmake
-    ninja
-    pkg-config
-    clr
-    python3
-    makeWrapper
-  ];
-
-  buildInputs = [
-    clr
-    rocm-cmake
-    rocm-runtime
-    rocprofiler-register
-    aqlprofile
-    rocm-comgr
-    libdrm
-    elfutils
-    sqlite
-    otf2
-    zlib
-    zstd
-    xz
-    numactl
-    fmt
-    glog
-    gtest
-    yaml-cpp
-    elfio
-    nlohmann_json
-    rccl
-    python3Packages.pybind11
+  outputs = [
+    "out"
+    "dev"
   ];
 
   patches = [
     (fetchpatch {
+      excludes = [ "external/fmt" ];
+      hash = "sha256-PRmv8SI90jmO6MgJmk1DWf/WVmFy18nUTZClfOvI6a8=";
+      relative = "projects/rocprofiler-sdk";
       # [rocprofiler-sdk] Improve build with system libraries.
       # https://github.com/ROCm/rocm-systems/pull/2319
       # Merged in develop branch, but not yet in ROCm 7.2.1.
       url = "https://github.com/ROCm/rocm-systems/commit/86ee7b2eb2273adaf1181ef9a6b2091465c6f0c7.patch";
-      hash = "sha256-PRmv8SI90jmO6MgJmk1DWf/WVmFy18nUTZClfOvI6a8=";
-      excludes = [ "external/fmt" ];
-      relative = "projects/rocprofiler-sdk";
     })
     (fetchpatch {
-      # Users/mkuriche/rocprofiler sdk fmt build fix memory header
-      url = "https://github.com/ROCm/rocm-systems/commit/36d9d33d90879bfbd406498011070ebd929a56b1.patch";
       hash = "sha256-yRy5pmCX9hd4eeZIz/g3B5VFCL9idkEaGK+S5+2sOsk=";
       relative = "projects/rocprofiler-sdk";
+      # Users/mkuriche/rocprofiler sdk fmt build fix memory header
+      url = "https://github.com/ROCm/rocm-systems/commit/36d9d33d90879bfbd406498011070ebd929a56b1.patch";
     })
     (fetchpatch {
-      # Fix missing amd_comgr linkage in pc-sampling integration test
-      url = "https://github.com/ROCm/rocm-systems/commit/94a4595a5d02bc066f7a32e1b2134a99a5231213.patch";
       hash = "sha256-86Fx0bKL0pvXTwVN8QJL+yzCbMYkmMaKzcU4PYcW6ig=";
       relative = "projects/rocprofiler-sdk";
+      # Fix missing amd_comgr linkage in pc-sampling integration test
+      url = "https://github.com/ROCm/rocm-systems/commit/94a4595a5d02bc066f7a32e1b2134a99a5231213.patch";
     })
     # See https://github.com/ROCm/rocm-systems/pull/4721
     # First change is separate and required to make the patches from that pull request
@@ -160,6 +124,42 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs source/libexec/rocprofiler-sdk/rocprofiler-sdk-launch-compiler/rocprofiler-sdk-launch-compiler.sh
   '';
 
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    cmake
+    ninja
+    pkg-config
+    clr
+    python3
+    makeWrapper
+  ];
+
+  buildInputs = [
+    clr
+    rocm-cmake
+    rocm-runtime
+    rocprofiler-register
+    aqlprofile
+    rocm-comgr
+    libdrm
+    elfutils
+    sqlite
+    otf2
+    zlib
+    zstd
+    xz
+    numactl
+    fmt
+    glog
+    gtest
+    yaml-cpp
+    elfio
+    nlohmann_json
+    rccl
+    python3Packages.pybind11
+  ];
+
   cmakeFlags = [
     (lib.cmakeBool "ROCPROFILER_BUILD_GHC_FS" false)
     (lib.cmakeBool "ROCPROFILER_BUILD_FMT" false)
@@ -193,6 +193,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = false; # Requires GPU
 
+  postInstall = ''
+    mkdir -p $dev/lib $dev/share/rocprofiler-sdk
+    mv $out/lib/cmake $dev/lib/
+    mv $out/share/rocprofiler-sdk/{samples,tests} $dev/share/rocprofiler-sdk/
+  '';
+
   postFixup = ''
     patchelf $out/lib/*.so \
       --add-rpath ${aqlprofile}/lib \
@@ -203,12 +209,7 @@ stdenv.mkDerivation (finalAttrs: {
     }"
   '';
 
-  postInstall = ''
-    mkdir -p $dev/lib $dev/share/rocprofiler-sdk
-    mv $out/lib/cmake $dev/lib/
-    mv $out/share/rocprofiler-sdk/{samples,tests} $dev/share/rocprofiler-sdk/
-  '';
-
+  sourceRoot = "${finalAttrs.src.name}/projects/rocprofiler-sdk";
   passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 let
@@ -15,8 +15,8 @@ stdenvNoCC.mkDerivation {
   src = fetchzip {
     url = "https://note.com/api/v2/attachments/download/d83b2c4ec63d7826acaa76725d261ff4";
     hash = "sha256-pe1G8WeFAo+KYjjsNwn0JmtXFn9QugE1SeGwaqnl1F0=";
-    stripRoot = false;
     extension = "zip";
+    stripRoot = false;
   };
 
   installPhase = ''
@@ -28,10 +28,10 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://dotcolon.net/font/f1_8/";
     description = "Weighted decorative font";
-    platforms = lib.platforms.all;
-    maintainers = with lib.maintainers; [ minijackson ];
+    homepage = "https://dotcolon.net/font/f1_8/";
     license = lib.licenses.ofl;
+    maintainers = with lib.maintainers; [ minijackson ];
+    platforms = lib.platforms.all;
   };
 }

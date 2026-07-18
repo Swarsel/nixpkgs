@@ -3,14 +3,14 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  hunspell,
+  lua,
   pkg-config,
+  python3,
   qt6,
   qt6Packages,
-  hunspell,
   withLua ? true,
-  lua,
   withPython ? true,
-  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -47,9 +47,9 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional withPython "-DWITH_PYTHON=ON";
 
   meta = {
-    changelog = "https://github.com/TeXworks/texworks/blob/${finalAttrs.src.rev}/NEWS";
     description = "Simple TeX front-end program inspired by TeXShop";
     homepage = "http://www.tug.org/texworks/";
+    changelog = "https://github.com/TeXworks/texworks/blob/${finalAttrs.src.rev}/NEWS";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ dotlambda ];
     platforms = lib.platforms.linux;

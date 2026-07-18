@@ -2,25 +2,24 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
+  matplotlib,
   numpy,
   scipy,
-  matplotlib,
+  setuptools,
   unittestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "baycomp";
   version = "1.0.3";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-MrJa17FtWyUd259hEKMtezlTuYcJbaHSXvJ3k10l2uw=";
   };
 
+  nativeCheckInputs = [ unittestCheckHook ];
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,7 +28,7 @@ buildPythonPackage (finalAttrs: {
     matplotlib
   ];
 
-  nativeCheckInputs = [ unittestCheckHook ];
+  pyproject = true;
   pythonImportsCheck = [ "baycomp" ];
 
   meta = {

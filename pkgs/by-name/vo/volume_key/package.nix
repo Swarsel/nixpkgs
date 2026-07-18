@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  fetchgit,
   autoreconfHook,
-  pkg-config,
-  gettext,
-  python3,
-  ncurses,
-  swig,
-  glib,
-  util-linux,
-  cryptsetup,
-  nss,
-  gpgme,
   buildPackages,
+  cryptsetup,
+  fetchgit,
+  gettext,
+  glib,
+  gpgme,
+  ncurses,
+  nss,
+  pkg-config,
+  python3,
+  swig,
+  util-linux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -55,11 +55,6 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-gpgme-prefix=${gpgme.dev}"
   ];
 
-  preConfigure = ''
-    export PYTHON="${buildPackages.python3}/bin/python"
-    export PYTHON3_CONFIG="${python3}/bin/python3-config"
-  '';
-
   makeFlags = [
     "pyexecdir=$(py)/${python3.sitePackages}"
     "pythondir=$(py)/${python3.sitePackages}"
@@ -72,14 +67,19 @@ stdenv.mkDerivation (finalAttrs: {
     ];
   };
 
+  preConfigure = ''
+    export PYTHON="${buildPackages.python3}/bin/python"
+    export PYTHON3_CONFIG="${python3}/bin/python3-config"
+  '';
+
   doCheck = false; # fails 1 out of 1 tests, needs `certutil`
 
   meta = {
     description = "Library for manipulating storage volume encryption keys and storing them separately from volumes to handle forgotten passphrases, and the associated command-line tool";
-    mainProgram = "volume_key";
     homepage = "https://pagure.io/volume_key/";
     license = lib.licenses.gpl2;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "volume_key";
   };
 })

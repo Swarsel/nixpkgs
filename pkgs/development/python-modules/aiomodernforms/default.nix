@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-  setuptools,
   aiohttp,
-  backoff,
-  yarl,
   aresponses,
+  backoff,
+  buildPythonPackage,
+  fetchpatch,
   pytest-asyncio,
   pytestCheckHook,
+  setuptools,
+  yarl,
 }:
 
 buildPythonPackage rec {
   pname = "aiomodernforms";
   version = "0.1.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wonderslug";
@@ -27,18 +26,10 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/wonderslug/aiomodernforms/pull/274
     (fetchpatch {
+      hash = "sha256-7sy5/HgPYgVpULgeEu3tFBa2iXIskAqcarf0RndxTpE=";
       name = "replace-async-timeout-with-asyncio.timeout.patch";
       url = "https://github.com/wonderslug/aiomodernforms/commit/61f1330b2fc244565fd97ae392b9778faa1bab09.patch";
-      hash = "sha256-7sy5/HgPYgVpULgeEu3tFBa2iXIskAqcarf0RndxTpE=";
     })
-  ];
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    aiohttp
-    backoff
-    yarl
   ];
 
   nativeCheckInputs = [
@@ -47,14 +38,22 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    aiohttp
+    backoff
+    yarl
+  ];
+
   disabledTests = [
     # https://github.com/wonderslug/aiomodernforms/issues/273
     "test_connection_error"
     "test_empty_response"
   ];
 
-  __darwinAllowLocalNetworking = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "aiomodernforms" ];
 
   meta = {

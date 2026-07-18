@@ -1,21 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  dpkg,
   autoPatchelfHook,
-  zlib,
-  libgcc,
+  dpkg,
   fontconfig,
-  libx11,
-  lttng-ust,
   icu,
+  imagemagick,
+  libgcc,
   libice,
   libsm,
+  libx11,
   libxcursor,
-  openssl,
-  imagemagick,
+  lttng-ust,
   makeWrapper,
+  openssl,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,12 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://lcdn.icons8.com/setup/Lunacy_${finalAttrs.version}.deb";
     hash = "sha256-Sa6LnB+YGkHpNpETjGHYUChCFu6Ginz+VQO8dPKVRBE=";
   };
+
+  nativeBuildInputs = [
+    dpkg
+    autoPatchelfHook
+    makeWrapper
+  ];
 
   buildInputs = [
     zlib
@@ -40,37 +46,6 @@ stdenv.mkDerivation (finalAttrs: {
     libx11
     libxcursor
   ];
-
-  nativeBuildInputs = [
-    dpkg
-    autoPatchelfHook
-    makeWrapper
-  ];
-
-  # adds to the RPATHS of all shared objects (exe and libs)
-  appendRunpaths =
-    map (pkg: (lib.getLib pkg) + "/lib") [
-      icu
-      openssl
-      stdenv.cc.libc
-      stdenv.cc.cc
-    ]
-    ++ [
-      # technically, this should be in runtimeDependencies but will not work as
-      # "lib" is appended to all elements in the array
-      "${placeholder "out"}/lib/lunacy"
-    ];
-
-  # will add to the RPATH of executable only
-  runtimeDependencies = [
-    libice
-    libsm
-    libx11
-    libxcursor
-  ];
-
-  dontBuild = true;
-  dontStrip = true;
 
   installPhase = ''
     runHook preInstall
@@ -100,17 +75,44 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper "$out/lib/lunacy/Lunacy" "$out/bin/lunacy"
   '';
 
+  # adds to the RPATHS of all shared objects (exe and libs)
+  appendRunpaths =
+    map (pkg: (lib.getLib pkg) + "/lib") [
+      icu
+      openssl
+      stdenv.cc.libc
+      stdenv.cc.cc
+    ]
+    ++ [
+      # technically, this should be in runtimeDependencies but will not work as
+      # "lib" is appended to all elements in the array
+      "${placeholder "out"}/lib/lunacy"
+    ];
+
+  dontBuild = true;
+  dontStrip = true;
+
+  # will add to the RPATH of executable only
+  runtimeDependencies = [
+    libice
+    libsm
+    libx11
+    libxcursor
+  ];
+
   meta = {
     description = "Free design software that keeps your flow with AI tools and built-in graphics";
     homepage = "https://icons8.com/lunacy";
     changelog = "https://lunacy.docs.icons8.com/release-notes/";
     license = lib.licenses.unfree;
+    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       eliandoran
       luftmensch-luftmensch
     ];
+
     platforms = lib.platforms.linux;
-    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
     mainProgram = "lunacy";
   };
 })

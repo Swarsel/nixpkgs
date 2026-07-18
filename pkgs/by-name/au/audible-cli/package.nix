@@ -1,16 +1,15 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   addBinToPathHook,
   installShellFiles,
   nix-update-script,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "audible-cli";
   version = "0.3.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mkb79";
@@ -42,9 +41,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tqdm
   ];
 
-  pythonRelaxDeps = [
-    "httpx"
-  ];
+  # upstream has no tests
+  doCheck = false;
 
   postInstall = ''
     installShellCompletion --cmd audible \
@@ -52,11 +50,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --zsh <(source utils/code_completion/audible-complete-zsh-fish.sh)
   '';
 
-  # upstream has no tests
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "audible_cli"
+  ];
+
+  pythonRelaxDeps = [
+    "httpx"
   ];
 
   passthru.updateScript = nix-update-script {
@@ -68,9 +69,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   meta = {
     description = "Command line interface for audible package. With the cli you can download your Audible books, cover, chapter files";
-    license = lib.licenses.agpl3Only;
     homepage = "https://github.com/mkb79/audible-cli";
     changelog = "https://github.com/mkb79/audible-cli/blob/${finalAttrs.src.rev}/CHANGELOG.md";
+    license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ jvanbruegge ];
     mainProgram = "audible";
   };

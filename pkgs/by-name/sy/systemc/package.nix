@@ -30,7 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Language for System-level design, modeling and verification";
     homepage = "https://systemc.org/";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ atalii ];
+    platforms = lib.platforms.unix;
   };
 })

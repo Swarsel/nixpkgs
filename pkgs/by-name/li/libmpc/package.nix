@@ -22,18 +22,19 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  enableParallelBuilding = true;
 
-  buildInputs = [
-    gmp
-    mpfr
-  ];
   nativeBuildInputs = [
     # needed until config scripts are updated to not use /usr/bin/uname on FreeBSD native
     updateAutotoolsGnuConfigScriptsHook
   ];
 
+  buildInputs = [
+    gmp
+    mpfr
+  ];
+
   doCheck = true; # not cross;
+  enableParallelBuilding = true;
 
   meta = {
     description = "Library for multiprecision complex arithmetic with exact rounding";
@@ -46,8 +47,7 @@ stdenv.mkDerivation (finalAttrs: {
 
     homepage = "https://www.multiprecision.org/mpc/";
     license = lib.licenses.lgpl2Plus;
-
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 })

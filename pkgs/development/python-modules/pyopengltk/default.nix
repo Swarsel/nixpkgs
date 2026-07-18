@@ -1,18 +1,17 @@
 {
-  stdenv,
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pyopengl,
-  writers,
+  setuptools,
   tkinter,
+  writers,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyopengltk";
   version = "0.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jonwright";
@@ -21,6 +20,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-hQoTj8h/L5VZgmq7qgRImLBKZMecrilyir5Ar6ne4S0=";
   };
 
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,22 +28,21 @@ buildPythonPackage (finalAttrs: {
     tkinter
   ];
 
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyopengltk" ];
 
   passthru.tests = {
     cube = writers.writePython3 "cube" {
-      libraries = [ finalAttrs.finalPackage ];
       doCheck = false;
+      libraries = [ finalAttrs.finalPackage ];
     } (builtins.readFile "${finalAttrs.src}/examples/cube.py");
   };
 
   meta = {
     description = "OpenGL frame for Python/Tkinter via ctypes and pyopengl";
     homepage = "https://github.com/jonwright/pyopengltk";
-    maintainers = with lib.maintainers; [ sigmanificient ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ sigmanificient ];
     # not supported yet, see: https://github.com/jonwright/pyopengltk/issues/12
     broken = stdenv.hostPlatform.isDarwin;
   };

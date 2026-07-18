@@ -7,7 +7,6 @@
 python312Packages.buildPythonApplication (finalAttrs: {
   pname = "brutalmaze";
   version = "1.1.1";
-  pyproject = true;
 
   src = fetchFromSourcehut {
     owner = "~cnx";
@@ -32,12 +31,13 @@ python312Packages.buildPythonApplication (finalAttrs: {
   ];
 
   doCheck = false; # there's no test
+  pyproject = true;
 
   meta = {
     description = "Minimalist thrilling shoot 'em up game";
-    mainProgram = "brutalmaze";
     homepage = "https://brutalmaze.rtfd.io";
     license = lib.licenses.agpl3Plus;
     maintainers = [ lib.maintainers.McSinyx ];
+    mainProgram = "brutalmaze";
   };
 })

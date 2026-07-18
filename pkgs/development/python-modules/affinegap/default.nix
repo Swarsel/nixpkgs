@@ -1,20 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   cython,
-  setuptools,
-
   # tests
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "affinegap";
   version = "1.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dedupeio";
@@ -22,11 +19,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-9eX41eoME5Vdtq+c04eQbMYnViy6QKOhKkafrkeMylI=";
   };
-
-  build-system = [
-    cython
-    setuptools
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -36,6 +28,13 @@ buildPythonPackage rec {
   preCheck = ''
     rm -rf affinegap
   '';
+
+  build-system = [
+    cython
+    setuptools
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "affinegap"

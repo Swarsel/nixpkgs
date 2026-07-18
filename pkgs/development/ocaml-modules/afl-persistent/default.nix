@@ -2,15 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  ocaml,
   findlib,
+  ocaml,
   opaline,
 }:
 
 stdenv.mkDerivation rec {
   pname = "afl-persistent";
   version = "1.3";
-  name = "ocaml${ocaml.version}-${pname}-${version}";
 
   src = fetchFromGitHub {
     owner = "stedolan";
@@ -18,13 +17,6 @@ stdenv.mkDerivation rec {
     rev = "v${version}";
     sha256 = "06yyds2vcwlfr2nd3gvyrazlijjcrd1abnvkfpkaadgwdw3qam1i";
   };
-
-  strictDeps = true;
-
-  nativeBuildInputs = [
-    ocaml
-    findlib
-  ];
 
   # don't run tests in buildPhase
   # don't overwrite test binary
@@ -34,17 +26,26 @@ stdenv.mkDerivation rec {
     patchShebangs build.sh
   '';
 
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    ocaml
+    findlib
+  ];
+
   buildPhase = "./build.sh";
+  doCheck = true;
+  checkPhase = "./_build/test && ./_build/test2";
+
   installPhase = ''
     ${opaline}/bin/opaline -prefix $out -libdir $out/lib/ocaml/${ocaml.version}/site-lib/ ${pname}.install
   '';
 
-  doCheck = true;
-  checkPhase = "./_build/test && ./_build/test2";
+  name = "ocaml${ocaml.version}-${pname}-${version}";
 
   meta = {
-    homepage = "https://github.com/stedolan/ocaml-afl-persistent";
     description = "Persistent-mode afl-fuzz for ocaml";
+    homepage = "https://github.com/stedolan/ocaml-afl-persistent";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.sternenseemann ];
   };

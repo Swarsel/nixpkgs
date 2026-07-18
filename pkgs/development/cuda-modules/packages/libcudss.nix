@@ -1,12 +1,11 @@
 {
-  buildRedist,
   lib,
+  buildRedist,
   libcublas,
   mpi,
   nccl,
 }:
 buildRedist {
-  redistName = "cudss";
   pname = "libcudss";
 
   outputs = [
@@ -57,11 +56,15 @@ buildRedist {
     popd >/dev/null
   '';
 
+  redistName = "cudss";
+
   meta = {
     description = "Library of GPU-accelerated linear solvers with sparse matrices";
+
     longDescription = ''
       NVIDIA cuDSS (Preview) is a library of GPU-accelerated linear solvers with sparse matrices.
     '';
+
     homepage = "https://developer.nvidia.com/cudss";
     changelog = "https://docs.nvidia.com/cuda/cudss/release_notes.html";
   };

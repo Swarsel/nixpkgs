@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchFromGitLab,
   antora,
   buildNpmPackage,
-  fetchFromGitLab,
-  lib,
   nix-update-script,
 }:
 buildNpmPackage rec {
@@ -16,12 +16,12 @@ buildNpmPackage rec {
     hash = "sha256-GplCwhUl8jurD4FfO6/T3Vo1WFjg+rtAjWeIh35unk4=";
   };
 
-  npmDepsHash = "sha256-EtjZL6U/uSGSYSqtuatCkdWP0NHxRuht13D9OaM4x00=";
-
   # Prevent tests from failing because they are fetching data at runtime.
   postPatch = ''
     substituteInPlace package.json --replace '"_mocha"' '""'
   '';
+
+  npmDepsHash = "sha256-EtjZL6U/uSGSYSqtuatCkdWP0NHxRuht13D9OaM4x00=";
 
   # Pointing $out to $out/lib/node_modules/@antora/lunr-extension simplifies
   # Antora's extension option usage from
@@ -48,8 +48,6 @@ buildNpmPackage rec {
 
   meta = {
     description = "Antora extension adding offline, full-text search powered by Lunr";
-    homepage = "https://gitlab.com/antora/antora-lunr-extension";
-    license = lib.licenses.mpl20;
 
     longDescription = ''
       This Antora extension is intended to be passed to `antora`'s `--extension`
@@ -57,6 +55,8 @@ buildNpmPackage rec {
       key](https://docs.antora.org/antora/3.1/extend/enable-extension).
     '';
 
+    homepage = "https://gitlab.com/antora/antora-lunr-extension";
+    license = lib.licenses.mpl20;
     maintainers = [ lib.maintainers.noahbiewesch ];
     platforms = lib.platforms.all;
   };

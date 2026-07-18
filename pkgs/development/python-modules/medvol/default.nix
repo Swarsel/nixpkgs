@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   numpy,
+  setuptools,
   simpleitk,
 }:
 
 buildPythonPackage rec {
   pname = "medvol";
   version = "0.0.20";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "MIC-DKFZ";
@@ -19,6 +18,7 @@ buildPythonPackage rec {
     hash = "sha256-U73Whle2/4QwlU9MyRclB5o+pHWdpbCCiYJIdMsMoMg=";
   };
 
+  doCheck = false; # no tests
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,8 +26,7 @@ buildPythonPackage rec {
     simpleitk
   ];
 
-  doCheck = false; # no tests
-
+  pyproject = true;
   pythonImportsCheck = [ "medvol" ];
 
   meta = {

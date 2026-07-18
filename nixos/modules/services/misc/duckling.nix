@@ -13,30 +13,33 @@ in
       enable = lib.mkEnableOption "duckling";
 
       port = lib.mkOption {
-        type = lib.types.port;
         default = 8080;
+
         description = ''
           Port on which duckling will run.
         '';
+
+        type = lib.types.port;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.duckling = {
-      description = "Duckling server service";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "Duckling server service";
 
       environment = {
         PORT = toString cfg.port;
       };
 
       serviceConfig = {
+        DynamicUser = true;
         ExecStart = "${pkgs.haskellPackages.duckling}/bin/duckling-example-exe --no-access-log --no-error-log";
         Restart = "always";
-        DynamicUser = true;
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

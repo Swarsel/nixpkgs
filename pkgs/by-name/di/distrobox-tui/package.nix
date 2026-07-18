@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,17 +16,16 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-y64KqlJsZ8aVK7oBcduEC8VvbutoRC15LMUeZdokPfY=";
-
   ldflags = [ "-s" ];
 
   meta = {
-    changelog = "https://github.com/phanirithvij/distrobox-tui/releases/tag/v${finalAttrs.version}";
     description = "TUI for DistroBox";
     homepage = "https://github.com/phanirithvij/distrobox-tui";
+    changelog = "https://github.com/phanirithvij/distrobox-tui/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "distrobox-tui";
+    sourceProvenance = [ lib.sourceTypes.fromSource ];
     maintainers = with lib.maintainers; [ phanirithvij ];
     platforms = lib.platforms.linux;
-    sourceProvenance = [ lib.sourceTypes.fromSource ];
+    mainProgram = "distrobox-tui";
   };
 })

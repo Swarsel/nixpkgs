@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -16,12 +16,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-XJmStg3SoT+vYVz7twCPjVLr0ayvF08h4WJfwY1qsYk=";
   };
+
   cargoHash = "sha256-4Uzar6NHC4RwnHvn9c/u+uU45EzXFvMBwjP60JOwcog=";
-
-  passthru.updateScript = nix-update-script { };
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Aegis compatible OTP generator for the CLI";

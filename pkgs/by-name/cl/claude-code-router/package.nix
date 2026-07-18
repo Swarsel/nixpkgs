@@ -1,12 +1,12 @@
 {
-  buildNpmPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildNpmPackage,
+  fetchPnpmDeps,
   makeBinaryWrapper,
   nodejs,
-  pnpm_10,
-  fetchPnpmDeps,
   pnpmConfigHook,
+  pnpm_10,
   versionCheckHook,
 }:
 let
@@ -28,20 +28,10 @@ buildNpmPackage (finalAttrs: {
       --replace-fail '"node"' '"${lib.getExe nodejs}"'
   '';
 
-  npmDeps = null;
-  pnpmDeps = fetchPnpmDeps {
-    inherit pnpm;
-    inherit (finalAttrs) pname src;
-    fetcherVersion = 3;
-    hash = "sha256-8184F3ShoC6j7nov35CSZWz2dzPFQC7Bty1iTNs1qzc=";
-  };
-
   nativeBuildInputs = [
     makeBinaryWrapper
     pnpm
   ];
-
-  npmConfigHook = pnpmConfigHook;
 
   installPhase = ''
     runHook preInstall
@@ -58,15 +48,27 @@ buildNpmPackage (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  npmConfigHook = pnpmConfigHook;
+  npmDeps = null;
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit pnpm;
+    inherit (finalAttrs) pname src;
+    fetcherVersion = 3;
+    hash = "sha256-8184F3ShoC6j7nov35CSZWz2dzPFQC7Bty1iTNs1qzc=";
+  };
+
   versionCheckProgramArg = "-v";
 
   meta = {
     description = "Tool to route Claude Code requests to different models and customize any request";
     homepage = "https://github.com/musistudio/claude-code-router";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       prince213
     ];
+
     mainProgram = "ccr";
   };
 })

@@ -1,7 +1,7 @@
 {
-  pkgs,
   config,
   lib,
+  pkgs,
   ...
 }:
 
@@ -50,40 +50,42 @@ let
     '';
 
   commonServiceConfig = {
-    Type = "oneshot";
-    User = user;
-    Group = group;
-    StateDirectory = "speedtest-tracker";
-    ReadWritePaths = [ cfg.dataDir ];
-    WorkingDirectory = cfg.package;
-    PrivateTmp = true;
-    PrivateDevices = true;
-    CapabilityBoundingSet = "";
     AmbientCapabilities = "";
-    ProtectSystem = "strict";
-    ProtectKernelTunables = true;
-    ProtectKernelModules = true;
-    ProtectControlGroups = true;
-    ProtectClock = true;
-    ProtectHostname = true;
-    ProtectHome = "tmpfs";
-    ProtectKernelLogs = true;
-    ProtectProc = "invisible";
-    ProcSubset = "pid";
+    CapabilityBoundingSet = "";
+    Group = group;
+    LockPersonality = true;
+    NoNewPrivileges = true;
+    PrivateDevices = true;
     PrivateNetwork = false;
+    PrivateTmp = true;
+    PrivateUsers = true;
+    ProcSubset = "pid";
+    ProtectClock = true;
+    ProtectControlGroups = true;
+    ProtectHome = "tmpfs";
+    ProtectHostname = true;
+    ProtectKernelLogs = true;
+    ProtectKernelModules = true;
+    ProtectKernelTunables = true;
+    ProtectProc = "invisible";
+    ProtectSystem = "strict";
+    ReadWritePaths = [ cfg.dataDir ];
+    RemoveIPC = true;
     RestrictAddressFamilies = "AF_INET AF_INET6 AF_UNIX";
+    RestrictNamespaces = true;
+    RestrictRealtime = true;
+    RestrictSUIDSGID = true;
+    StateDirectory = "speedtest-tracker";
     SystemCallArchitectures = "native";
+
     SystemCallFilter = [
       "@system-service @resources"
       "~@obsolete @privileged"
     ];
-    RestrictSUIDSGID = true;
-    RemoveIPC = true;
-    NoNewPrivileges = true;
-    RestrictRealtime = true;
-    RestrictNamespaces = true;
-    LockPersonality = true;
-    PrivateUsers = true;
+
+    Type = "oneshot";
+    User = user;
+    WorkingDirectory = cfg.package;
   };
 
 in
@@ -102,60 +104,44 @@ in
           });
       };
 
-    user = lib.mkOption {
-      type = lib.types.str;
-      default = defaultUser;
-      description = "User account under which Speedtest Tracker runs.";
-    };
-
-    group = lib.mkOption {
-      type = lib.types.str;
-      default = if cfg.enableNginx then "nginx" else defaultGroup;
-      defaultText = "If `services.speedtest-tracker.enableNginx` is true then `nginx` else ${defaultGroup}";
-      description = ''
-        Group under which Speedtest Tracker runs. It is best to set this to the group
-        of whatever webserver is being used as the frontend.
-      '';
-    };
-
     dataDir = lib.mkOption {
-      type = lib.types.path;
       default = "/var/lib/speedtest-tracker";
+
       description = ''
         The place where Speedtest Tracker stores its state.
       '';
+
+      type = lib.types.path;
     };
 
     enableNginx = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         Whether to enable nginx or not. If enabled, an nginx virtual host will
         be created for access to Speedtest Tracker. If not enabled, then you may use
         `''${config.services.speedtest-tracker.package}` as your document root in
         whichever webserver you wish to setup.
       '';
+
+      type = lib.types.bool;
     };
 
-    virtualHost = lib.mkOption {
-      type = lib.types.str;
-      default = "localhost";
+    group = lib.mkOption {
+      default = if cfg.enableNginx then "nginx" else defaultGroup;
+      defaultText = "If `services.speedtest-tracker.enableNginx` is true then `nginx` else ${defaultGroup}";
+
       description = ''
-        The hostname at which you wish Speedtest Tracker to be served. If you have
-        enabled nginx using `services.speedtest-tracker.enableNginx` then this will
-        be used.
+        Group under which Speedtest Tracker runs. It is best to set this to the group
+        of whatever webserver is being used as the frontend.
       '';
+
+      type = lib.types.str;
     };
 
     poolConfig = lib.mkOption {
-      type = lib.types.attrsOf (
-        lib.types.oneOf [
-          lib.types.str
-          lib.types.int
-          lib.types.bool
-        ]
-      );
       default = { };
+
       defaultText = ''
         {
           "pm" = "dynamic";
@@ -166,14 +152,24 @@ in
           "pm.max_requests" = 500;
         }
       '';
+
       description = ''
         Options for the Speedtest Tracker PHP pool. See the documentation on `php-fpm.conf`
         for details on configuration directives.
       '';
+
+      type = lib.types.attrsOf (
+        lib.types.oneOf [
+          lib.types.str
+          lib.types.int
+          lib.types.bool
+        ]
+      );
     };
 
     settings = lib.mkOption {
       default = { };
+
       description = ''
         Options for Speedtest Tracker configuration. Refer to
         <https://github.com/alexjustesen/speedtest-tracker> for
@@ -181,6 +177,7 @@ in
         append `_FILE` to the setting name to provide a path to a file
         containing the secret value.
       '';
+
       example = lib.literalExpression ''
         {
           APP_KEY_FILE = "/var/secrets/speedtest-tracker-app-key.txt";
@@ -192,62 +189,86 @@ in
           DB_PASSWORD_FILE = "/var/secrets/speedtest-tracker-mysql-password.txt";
         }
       '';
+
       type = lib.types.submodule {
-        freeformType = lib.types.attrsOf (
-          lib.types.oneOf [
-            lib.types.str
-            lib.types.int
-            lib.types.bool
-          ]
-        );
         options = {
           APP_KEY_FILE = lib.mkOption {
-            type = lib.types.path;
             description = ''
               The path to your appkey. The file should contain a 32 character
               random app key. This may be set using `echo "base64:$(head -c 32
               /dev/urandom | base64)" > /path/to/key-file`.
             '';
+
+            type = lib.types.path;
           };
+
           APP_URL = lib.mkOption {
-            type = lib.types.str;
             default =
               if cfg.virtualHost == "localhost" then
                 "http://${cfg.virtualHost}"
               else
                 "https://${cfg.virtualHost}";
+
             defaultText = ''
               http(s)://''${config.services.speedtest-tracker.virtualHost}
             '';
+
             description = ''
               The APP_URL used by Speedtest Tracker internally. Please make sure this
               URL matches the external URL of your installation. It is used to
               validate specific requests and to generate URLs in notifications.
             '';
+
+            type = lib.types.str;
           };
+
           DB_CONNECTION = lib.mkOption {
+            default = "sqlite";
+
+            description = ''
+              The type of database you wish to use. Can be one of "sqlite",
+              "mysql", "mariadb" or "pgsql".
+            '';
+
+            example = "pgsql";
+
             type = lib.types.enum [
               "sqlite"
               "mysql"
               "mariadb"
               "pgsql"
             ];
-            default = "sqlite";
-            example = "pgsql";
-            description = ''
-              The type of database you wish to use. Can be one of "sqlite",
-              "mysql", "mariadb" or "pgsql".
-            '';
           };
-          DB_HOST = lib.mkOption {
+
+          DB_DATABASE = lib.mkOption {
+            default =
+              if cfg.settings.DB_CONNECTION == "sqlite" then
+                "${cfg.dataDir}/storage/database/database.sqlite"
+              else
+                "speedtest-tracker";
+
+            defaultText = ''
+              "''${config.services.speedtest-tracker.dataDir}/storage/database/database.sqlite" if DB_CONNECTION is "sqlite", "speedtest-tracker" otherwise
+            '';
+
+            description = ''
+              The name of the database, or path to the sqlite file.
+            '';
+
             type = lib.types.str;
+          };
+
+          DB_HOST = lib.mkOption {
             default = "localhost";
+
             description = ''
               The IP or hostname which hosts your database.
             '';
+
+            type = lib.types.str;
           };
+
           DB_PORT = lib.mkOption {
-            type = lib.types.nullOr lib.types.int;
             default =
               if cfg.settings.DB_CONNECTION == "pgsql" then
                 5432
@@ -255,121 +276,72 @@ in
                 3306
               else
                 null;
+
             defaultText = ''
               `null` if DB_CONNECTION is "sqlite", `3306` if "mysql" or "mariadb", `5432` if "pgsql"
             '';
+
             description = ''
               The port your database is listening at. sqlite does not require
               this value to be filled.
             '';
-          };
-          DB_DATABASE = lib.mkOption {
-            type = lib.types.str;
-            default =
-              if cfg.settings.DB_CONNECTION == "sqlite" then
-                "${cfg.dataDir}/storage/database/database.sqlite"
-              else
-                "speedtest-tracker";
-            defaultText = ''
-              "''${config.services.speedtest-tracker.dataDir}/storage/database/database.sqlite" if DB_CONNECTION is "sqlite", "speedtest-tracker" otherwise
-            '';
-            description = ''
-              The name of the database, or path to the sqlite file.
-            '';
+
+            type = lib.types.nullOr lib.types.int;
           };
         };
+
+        freeformType = lib.types.attrsOf (
+          lib.types.oneOf [
+            lib.types.str
+            lib.types.int
+            lib.types.bool
+          ]
+        );
       };
+    };
+
+    user = lib.mkOption {
+      default = defaultUser;
+      description = "User account under which Speedtest Tracker runs.";
+      type = lib.types.str;
+    };
+
+    virtualHost = lib.mkOption {
+      default = "localhost";
+
+      description = ''
+        The hostname at which you wish Speedtest Tracker to be served. If you have
+        enabled nginx using `services.speedtest-tracker.enableNginx` then this will
+        be used.
+      '';
+
+      type = lib.types.str;
     };
   };
 
   config = lib.mkIf cfg.enable {
 
-    services.phpfpm.pools.speedtest-tracker = {
-      inherit user group;
-      phpPackage = cfg.package.phpPackage;
-      phpOptions = ''
-        log_errors = on
-      '';
-      settings = {
-        "listen.mode" = lib.mkDefault "0660";
-        "listen.owner" = lib.mkDefault user;
-        "listen.group" = lib.mkDefault group;
-        "pm" = lib.mkDefault "dynamic";
-        "pm.max_children" = lib.mkDefault 32;
-        "pm.start_servers" = lib.mkDefault 2;
-        "pm.min_spare_servers" = lib.mkDefault 2;
-        "pm.max_spare_servers" = lib.mkDefault 4;
-        "pm.max_requests" = lib.mkDefault 500;
-      }
-      // cfg.poolConfig;
-    };
-
-    systemd.services.speedtest-tracker-setup = {
-      after = [
-        "postgresql.target"
-        "mysql.service"
-      ];
-      requiredBy = [ "phpfpm-speedtest-tracker.service" ];
-      before = [ "phpfpm-speedtest-tracker.service" ];
-      serviceConfig = {
-        ExecStart = speedtest-tracker-maintenance;
-        RemainAfterExit = true;
-      }
-      // commonServiceConfig;
-      unitConfig.JoinsNamespaceOf = "phpfpm-speedtest-tracker.service";
-      restartTriggers = [ cfg.package ];
-      partOf = [ "phpfpm-speedtest-tracker.service" ];
-    };
-
-    systemd.services.speedtest-tracker-scheduler = {
-      after = [ "speedtest-tracker-setup.service" ];
-      wants = [ "speedtest-tracker-setup.service" ];
-      description = "Speedtest Tracker scheduler";
-      path = [ pkgs.ookla-speedtest ];
-      serviceConfig = {
-        ExecStart = speedtest-tracker-env-script "schedule:run";
-      }
-      // commonServiceConfig;
-    };
-
-    systemd.timers.speedtest-tracker-scheduler = {
-      description = "Speedtest Tracker scheduler timer";
-      timerConfig = {
-        OnCalendar = "minutely";
-        Persistent = true;
-      };
-      wantedBy = [ "timers.target" ];
-      restartTriggers = [ cfg.package ];
-    };
-
-    systemd.services.speedtest-tracker-queue-worker = {
-      after = [ "speedtest-tracker-setup.service" ];
-      wants = [ "speedtest-tracker-setup.service" ];
-      wantedBy = [ "multi-user.target" ];
-      description = "Speedtest Tracker queue worker";
-      path = [ pkgs.ookla-speedtest ];
-      serviceConfig = commonServiceConfig // {
-        Type = "simple";
-        Restart = "always";
-        ExecStart = speedtest-tracker-env-script "queue:work --sleep=3 --tries=3";
-      };
-    };
-
     services.nginx = lib.mkIf cfg.enableNginx {
       enable = true;
-      recommendedTlsSettings = lib.mkDefault true;
-      recommendedOptimisation = lib.mkDefault true;
       recommendedGzipSettings = lib.mkDefault true;
+      recommendedOptimisation = lib.mkDefault true;
+      recommendedTlsSettings = lib.mkDefault true;
+
       virtualHosts.${cfg.virtualHost} = {
-        root = "${cfg.package}/public";
         locations = {
           "/" = {
-            tryFiles = "$uri $uri/ /index.php?$query_string";
-            index = "index.php";
             extraConfig = ''
               sendfile off;
             '';
+
+            index = "index.php";
+            tryFiles = "$uri $uri/ /index.php?$query_string";
           };
+
+          "~ \\.(js|css|gif|png|ico|jpg|jpeg)$" = {
+            extraConfig = "expires 365d;";
+          };
+
           "~ \\.php$" = {
             extraConfig = ''
               include ${config.services.nginx.package}/conf/fastcgi_params;
@@ -378,11 +350,93 @@ in
               fastcgi_pass unix:${config.services.phpfpm.pools.speedtest-tracker.socket};
             '';
           };
-          "~ \\.(js|css|gif|png|ico|jpg|jpeg)$" = {
-            extraConfig = "expires 365d;";
-          };
         };
+
+        root = "${cfg.package}/public";
       };
+    };
+
+    services.phpfpm.pools.speedtest-tracker = {
+      inherit user group;
+
+      phpOptions = ''
+        log_errors = on
+      '';
+
+      phpPackage = cfg.package.phpPackage;
+
+      settings = {
+        "listen.group" = lib.mkDefault group;
+        "listen.mode" = lib.mkDefault "0660";
+        "listen.owner" = lib.mkDefault user;
+        "pm" = lib.mkDefault "dynamic";
+        "pm.max_children" = lib.mkDefault 32;
+        "pm.max_requests" = lib.mkDefault 500;
+        "pm.max_spare_servers" = lib.mkDefault 4;
+        "pm.min_spare_servers" = lib.mkDefault 2;
+        "pm.start_servers" = lib.mkDefault 2;
+      }
+      // cfg.poolConfig;
+    };
+
+    systemd.services.speedtest-tracker-queue-worker = {
+      after = [ "speedtest-tracker-setup.service" ];
+      description = "Speedtest Tracker queue worker";
+      path = [ pkgs.ookla-speedtest ];
+
+      serviceConfig = commonServiceConfig // {
+        ExecStart = speedtest-tracker-env-script "queue:work --sleep=3 --tries=3";
+        Restart = "always";
+        Type = "simple";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "speedtest-tracker-setup.service" ];
+    };
+
+    systemd.services.speedtest-tracker-scheduler = {
+      after = [ "speedtest-tracker-setup.service" ];
+      description = "Speedtest Tracker scheduler";
+      path = [ pkgs.ookla-speedtest ];
+
+      serviceConfig = {
+        ExecStart = speedtest-tracker-env-script "schedule:run";
+      }
+      // commonServiceConfig;
+
+      wants = [ "speedtest-tracker-setup.service" ];
+    };
+
+    systemd.services.speedtest-tracker-setup = {
+      after = [
+        "postgresql.target"
+        "mysql.service"
+      ];
+
+      before = [ "phpfpm-speedtest-tracker.service" ];
+      partOf = [ "phpfpm-speedtest-tracker.service" ];
+      requiredBy = [ "phpfpm-speedtest-tracker.service" ];
+      restartTriggers = [ cfg.package ];
+
+      serviceConfig = {
+        ExecStart = speedtest-tracker-maintenance;
+        RemainAfterExit = true;
+      }
+      // commonServiceConfig;
+
+      unitConfig.JoinsNamespaceOf = "phpfpm-speedtest-tracker.service";
+    };
+
+    systemd.timers.speedtest-tracker-scheduler = {
+      description = "Speedtest Tracker scheduler timer";
+      restartTriggers = [ cfg.package ];
+
+      timerConfig = {
+        OnCalendar = "minutely";
+        Persistent = true;
+      };
+
+      wantedBy = [ "timers.target" ];
     };
 
     systemd.tmpfiles.settings."10-speedtest-tracker" =
@@ -401,27 +455,28 @@ in
         (n: {
           d = {
             inherit group;
-            mode = "0700";
             inherit user;
+            mode = "0700";
           };
         })
       // {
         "${cfg.dataDir}".d = {
           inherit group;
-          mode = "0710";
           inherit user;
+          mode = "0710";
         };
       };
 
     users = {
+      groups = lib.mkIf (group == defaultGroup) { ${defaultGroup} = { }; };
+
       users = lib.mkIf (user == defaultUser) {
         ${defaultUser} = {
           inherit group;
-          isSystemUser = true;
           home = cfg.dataDir;
+          isSystemUser = true;
         };
       };
-      groups = lib.mkIf (group == defaultGroup) { ${defaultGroup} = { }; };
     };
   };
 

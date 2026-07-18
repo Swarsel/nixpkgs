@@ -5,10 +5,8 @@
 }:
 
 buildDunePackage {
-  pname = "js_of_ocaml-ppx";
-
   inherit (js_of_ocaml) version src meta;
-
+  pname = "js_of_ocaml-ppx";
   buildInputs = [ js_of_ocaml ];
   propagatedBuildInputs = [ ppxlib ];
 }

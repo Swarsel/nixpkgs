@@ -1,19 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  django-polymorphic,
   hatchling,
   netbox,
   pytestCheckHook,
   python,
-  django-polymorphic,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "netbox-lists";
   version = "4.0.4";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "devon-mar";
@@ -22,16 +20,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-RRUuvoeB3xfqlZr1v1zpRdmVZK9av52ZsADOh9s4toQ=";
   };
 
-  build-system = [ hatchling ];
-
   nativeCheckInputs = [ netbox ];
 
   preFixup = ''
     export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
   '';
 
+  __structuredAttrs = true;
+  build-system = [ hatchling ];
   dontUsePythonImportsCheck = python.pythonVersion != netbox.python.pythonVersion;
-
+  pyproject = true;
   pythonImportsCheck = [ "netbox_lists" ];
 
   meta = {

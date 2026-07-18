@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
-  wayland,
-  makeWrapper,
+  stdenv,
   bundlerEnv,
-  wl-clipboard,
-  ruby,
-  nodejs,
-  writeText,
-  neovim-node-client,
-  python3,
   callPackage,
-  neovimUtils,
-  perl,
   lndir,
+  makeWrapper,
+  neovim-node-client,
+  neovimUtils,
+  nodejs,
+  perl,
+  python3,
+  ruby,
   runCommand,
+  wayland,
+  wl-clipboard,
+  writeText,
 }:
 
 neovim-unwrapped:
@@ -25,50 +25,44 @@ let
 
   wrapper =
     {
-      extraName ? "",
       # certain plugins need a custom configuration (available in passthru.initLua)
       # to work with nix.
       # if true, the wrapper automatically appends those snippets when necessary
       autoconfigure ? true,
-
       # append to PATH runtime deps of plugins
       autowrapRuntimeDeps ? true,
-
-      # should contain all args but the binary. Can be either a string or list
-      wrapperArgs ? [ ],
-      withPython2 ? false,
-      withPython3 ? false,
+      # the function you would have passed to lua.withPackages
+      extraLuaPackages ? (_: [ ]),
+      extraName ? "",
       # the function you would have passed to python3.withPackages
       extraPython3Packages ? (_: [ ]),
-
-      waylandSupport ? lib.meta.availableOn stdenv.hostPlatform wayland,
-      withNodeJs ? false,
-      withPerl ? false,
-      withRuby ? false,
-
-      # wether to create symlinks in $out/bin/vi(m) -> $out/bin/nvim
-      vimAlias ? false,
-      viAlias ? false,
-
-      # it sets the VIMINIT environment variable to "lua dofile('${customRc}')"
-      # set to false if you want to control where to save the generated config
-      # (e.g., in ~/.config/init.vim or project/.nvimrc)
-      wrapRc ? true,
-      # vimL code that should be sourced as part of the generated init.lua file
-      neovimRcContent ? null,
       # lua code to put into the generated init.lua file
       luaRcContent ? "",
+      # vimL code that should be sourced as part of the generated init.lua file
+      neovimRcContent ? null,
       # DEPRECATED: entry to load in packpath
       # use 'plugins' instead
       packpathDirs ? null, # not used anymore
-
       # a list of neovim plugin derivations, for instance
       #  plugins = [
       # { plugin=far-vim; config = "let g:far#source='rg'"; optional = false; }
       # ]
       plugins ? [ ],
-      # the function you would have passed to lua.withPackages
-      extraLuaPackages ? (_: [ ]),
+      viAlias ? false,
+      # wether to create symlinks in $out/bin/vi(m) -> $out/bin/nvim
+      vimAlias ? false,
+      waylandSupport ? lib.meta.availableOn stdenv.hostPlatform wayland,
+      withNodeJs ? false,
+      withPerl ? false,
+      withPython2 ? false,
+      withPython3 ? false,
+      withRuby ? false,
+      # it sets the VIMINIT environment variable to "lua dofile('${customRc}')"
+      # set to false if you want to control where to save the generated config
+      # (e.g., in ~/.config/init.vim or project/.nvimrc)
+      wrapRc ? true,
+      # should contain all args but the binary. Can be either a string or list
+      wrapperArgs ? [ ],
       ...
     }@attrs:
     assert
@@ -84,11 +78,12 @@ let
       let
 
         rubyEnv = bundlerEnv {
-          name = "neovim-ruby-env";
-          gemdir = ./ruby_provider;
           postBuild = ''
             ln -sf ${ruby}/bin/* $out/bin
           '';
+
+          gemdir = ./ruby_provider;
+          name = "neovim-ruby-env";
         };
 
         # a limited RC script used only to generate the manifest for remote plugins
@@ -241,14 +236,9 @@ let
         version = lib.getVersion neovim-unwrapped;
       in
       {
-        name = "${pname}-${version}${extraName}";
         inherit pname version;
         inherit plugins;
 
-        strictDeps = true;
-
-        __structuredAttrs = true;
-        dontUnpack = true;
         inherit
           viAlias
           vimAlias
@@ -258,6 +248,7 @@ let
           withPerl
           withRuby
           ;
+
         inherit
           autoconfigure
           autowrapRuntimeDeps
@@ -265,16 +256,25 @@ let
           providerLuaRc
           packpathDirs
           ;
+
         inherit python3Env rubyEnv;
         inherit wrapperArgs generatedWrapperArgs;
+        strictDeps = true;
 
-        runtimeDeps =
-          lib.optionals finalAttrs.waylandSupport [ wl-clipboard ]
-          ++ lib.optional finalAttrs.withRuby rubyEnv
-          ++ lib.optional finalAttrs.withNodeJs nodejs
-          ++ lib.optionals finalAttrs.autowrapRuntimeDeps vimPackageInfo.runtimeDeps;
+        nativeBuildInputs = [
+          makeWrapper
+          lndir
+        ];
 
-        luaRcContent = rcContent;
+        buildPhase = ''
+          runHook preBuild
+          mkdir -p $out
+          for i in ${neovim-unwrapped}; do
+            lndir -silent $i $out
+          done
+          runHook postBuild
+        '';
+
         # Remove the symlinks created by symlinkJoin which we need to perform
         # extra actions upon
         postBuild =
@@ -336,24 +336,6 @@ let
             makeWrapper ${lib.escapeShellArgs finalMakeWrapperArgs} ${wrapperArgsStr}
           '';
 
-        buildPhase = ''
-          runHook preBuild
-          mkdir -p $out
-          for i in ${neovim-unwrapped}; do
-            lndir -silent $i $out
-          done
-          runHook postBuild
-        '';
-
-        preferLocalBuild = true;
-
-        nativeBuildInputs = [
-          makeWrapper
-          lndir
-        ];
-
-        vimPackage = vimPackageInfo.vimPackage;
-
         checkPhase = ''
           runHook preCheck
 
@@ -361,12 +343,25 @@ let
           runHook postCheck
         '';
 
+        __structuredAttrs = true;
+        dontUnpack = true;
+        luaRcContent = rcContent;
+        name = "${pname}-${version}${extraName}";
+        preferLocalBuild = true;
+
+        runtimeDeps =
+          lib.optionals finalAttrs.waylandSupport [ wl-clipboard ]
+          ++ lib.optional finalAttrs.withRuby rubyEnv
+          ++ lib.optional finalAttrs.withNodeJs nodejs
+          ++ lib.optionals finalAttrs.autowrapRuntimeDeps vimPackageInfo.runtimeDeps;
+
+        vimPackage = vimPackageInfo.vimPackage;
+
         passthru = {
           inherit providerLuaRc packpathDirs;
-          unwrapped = neovim-unwrapped;
           initRc = neovimRcContent';
-
           tests = callPackage ./tests { };
+          unwrapped = neovim-unwrapped;
         };
 
         meta = {

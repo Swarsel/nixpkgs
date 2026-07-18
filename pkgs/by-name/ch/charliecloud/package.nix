@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3,
-  docker,
   autoreconfHook,
   coreutils,
-  makeWrapper,
+  docker,
+  findutils,
+  fuse3,
   gnused,
   gnutar,
   gzip,
-  findutils,
-  sudo,
+  makeWrapper,
   nixosTests,
   pkg-config,
-  fuse3,
+  python3,
+  sudo,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -55,15 +55,15 @@ stdenv.mkDerivation (finalAttrs: {
       "-disable-bundled-lark"
     ];
 
-  preConfigure = ''
-    patchShebangs test/
-    substituteInPlace configure.ac --replace-fail "/usr/bin/env" "${coreutils}/bin/env"
-  '';
-
   makeFlags = [
     "PREFIX=$(out)"
     "LIBEXEC_DIR=lib/charliecloud"
   ];
+
+  preConfigure = ''
+    patchShebangs test/
+    substituteInPlace configure.ac --replace-fail "/usr/bin/env" "${coreutils}/bin/env"
+  '';
 
   # Charliecloud calls some external system tools.
   # Here we wrap those deps so they are resolved inside nixpkgs.
@@ -87,6 +87,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "User-defined software stacks (UDSS) for high-performance computing (HPC) centers";
+
     longDescription = ''
       Charliecloud uses Linux user namespaces to run containers with no
       privileged operations or daemons and minimal configuration changes on
@@ -94,6 +95,7 @@ stdenv.mkDerivation (finalAttrs: {
       while maintaining access to the performance and functionality already
       on offer.
     '';
+
     homepage = "https://hpc.github.io/charliecloud";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.bzizou ];

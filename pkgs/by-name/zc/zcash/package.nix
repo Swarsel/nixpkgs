@@ -1,4 +1,6 @@
 {
+  lib,
+  fetchFromGitHub,
   autoreconfHook,
   boost,
   cargo,
@@ -6,17 +8,15 @@
   curl,
   cxx-rs,
   db62,
-  fetchFromGitHub,
   gitMinimal,
   hexdump,
-  lib,
   libevent,
   libsodium,
-  makeWrapper,
-  rustc,
-  rustPlatform,
-  pkg-config,
   llvmPackages,
+  makeWrapper,
+  pkg-config,
+  rustPlatform,
+  rustc,
   testers,
   tl-expected,
   utf8cpp,
@@ -44,11 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
     ./dont-use-custom-vendoring-logic.patch
   ];
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-VBqasLpxqI4kr73Mr7OVuwb2OIhUwnY9CTyZZOyEElU=";
-  };
-
   nativeBuildInputs = [
     autoreconfHook
     cargo
@@ -71,27 +66,19 @@ stdenv.mkDerivation (finalAttrs: {
     zeromq
   ];
 
-  env.CXXFLAGS = toString [
-    "-I${lib.getDev utf8cpp}/include/utf8cpp"
-    "-I${lib.getDev cxx-rs}/include"
-  ];
-
   configureFlags = [
     "--disable-tests"
     "--with-boost-libdir=${lib.getLib boost}/lib"
     "RUST_TARGET=${stdenv.hostPlatform.rust.rustcTargetSpec}"
   ];
 
-  enableParallelBuilding = true;
+  env.CXXFLAGS = toString [
+    "-I${lib.getDev utf8cpp}/include/utf8cpp"
+    "-I${lib.getDev cxx-rs}/include"
+  ];
 
   # Requires hundreds of megabytes of zkSNARK parameters.
   doCheck = false;
-
-  passthru.tests.version = testers.testVersion {
-    package = zcash;
-    command = "zcashd --version";
-    version = "v${zcash.version}";
-  };
 
   postInstall = ''
     wrapProgram $out/bin/zcash-fetch-params \
@@ -104,14 +91,28 @@ stdenv.mkDerivation (finalAttrs: {
         }
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-VBqasLpxqI4kr73Mr7OVuwb2OIhUwnY9CTyZZOyEElU=";
+  };
+
+  enableParallelBuilding = true;
+
+  passthru.tests.version = testers.testVersion {
+    version = "v${zcash.version}";
+    command = "zcashd --version";
+    package = zcash;
+  };
+
   meta = {
     description = "Peer-to-peer, anonymous electronic cash system";
     homepage = "https://z.cash/";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       tkerber
       centromere
     ];
-    license = lib.licenses.mit;
 
     # https://github.com/zcash/zcash/issues/4405
     broken = stdenv.hostPlatform.isAarch64 && stdenv.hostPlatform.isDarwin;

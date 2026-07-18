@@ -2,30 +2,30 @@
   lib,
   stdenv,
   fetchurl,
-  # native
-  meson,
-  ninja,
-  pkg-config,
-  gettext,
-  desktop-file-utils,
   appstream-glib,
-  wrapGAppsHook4,
-  python3,
+  avahi,
+  desktop-file-utils,
+  gettext,
+  glib,
+  glib-networking,
+  gsettings-desktop-schemas,
   # Not native
   gst_all_1,
-  gsettings-desktop-schemas,
   gtk4,
-  avahi,
-  glib,
-  networkmanager,
   json-glib,
-  glib-networking,
   libadwaita,
   libportal-gtk4,
   libpulseaudio,
   libsoup_3,
+  # native
+  meson,
+  networkmanager,
+  ninja,
   pipewire,
+  pkg-config,
   protobufc,
+  python3,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -89,10 +89,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/gnome-network-displays";
     description = "Miracast implementation for GNOME";
-    maintainers = with lib.maintainers; [ doronbehar ];
+    homepage = "https://gitlab.gnome.org/GNOME/gnome-network-displays";
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ doronbehar ];
     platforms = lib.platforms.linux;
     mainProgram = "gnome-network-displays";
   };

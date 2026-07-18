@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   bzip2,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,19 +17,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-ddWClkeGabvqteVUtuwy4pWZGnarrKrIbuPEe62m6es=";
   };
 
-  cargoHash = "sha256-3R81PJCOFc22QDHH2BqGB9jjvEcMc1axoySSJLJD3wI=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ bzip2 ];
+  cargoHash = "sha256-3R81PJCOFc22QDHH2BqGB9jjvEcMc1axoySSJLJD3wI=";
 
   meta = {
     description = "mdbook backend for generating an e-book in the EPUB format";
-    mainProgram = "mdbook-epub";
     homepage = "https://michael-f-bryan.github.io/mdbook-epub";
     license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
     ];
+
+    mainProgram = "mdbook-epub";
   };
 })

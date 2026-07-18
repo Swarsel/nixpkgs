@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pygobject3,
+  buildPythonPackage,
   dbus,
   hatchling,
+  pygobject3,
   pytestCheckHook,
 }:
 
 buildPythonPackage {
   pname = "dasbus";
   version = "unstable-11-10-2022";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rhinstaller";
@@ -20,14 +19,13 @@ buildPythonPackage {
     hash = "sha256-TmhhDrfpP+nUErAd7dUb+RtGBRtWwn3bYOoIqa0VRoc=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ pygobject3 ];
-
   nativeCheckInputs = [
     dbus
     pytestCheckHook
   ];
+
+  build-system = [ hatchling ];
+  dependencies = [ pygobject3 ];
 
   disabledTestPaths = [
     # https://github.com/dasbus-project/dasbus/issues/128
@@ -36,9 +34,11 @@ buildPythonPackage {
     "tests/test_unix.py"
   ];
 
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/rhinstaller/dasbus";
     description = "DBus library in Python3";
+    homepage = "https://github.com/rhinstaller/dasbus";
     license = lib.licenses.lgpl21Only;
     maintainers = with lib.maintainers; [ moni ];
   };

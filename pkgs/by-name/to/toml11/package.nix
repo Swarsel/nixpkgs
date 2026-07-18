@@ -21,9 +21,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-LZPr/cY6BZXC6/rBIAMCcqEdnhJs1AvbrPjpHF76uKg=";
       name = "literal-operator-whitespace.patch";
       url = "https://patch-diff.githubusercontent.com/raw/ToruNiina/toml11/pull/285.patch";
-      hash = "sha256-LZPr/cY6BZXC6/rBIAMCcqEdnhJs1AvbrPjpHF76uKg=";
     })
   ];
 
@@ -36,19 +36,21 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [
     cmake
   ];
+
   cmakeFlags = [
     (lib.cmakeBool "TOML11_BUILD_TOML_TESTS" finalAttrs.finalPackage.doCheck)
   ];
+
+  doCheck = true;
+
   checkInputs = [
     doctest
     nlohmann_json
   ];
-  doCheck = true;
 
   meta = {
-    changelog = "https://github.com/ToruNiina/toml11/blob/${finalAttrs.src.tag}/docs/content.en/docs/changelog/_index.md";
-    homepage = "https://github.com/ToruNiina/toml11";
     description = "TOML for Modern C++";
+
     longDescription = ''
       toml11 is a C++11 (or later) header-only toml parser/encoder depending
       only on C++ standard library.
@@ -64,6 +66,9 @@ stdenv.mkDerivation (finalAttrs: {
       - It allows customization of the types stored in toml::value.
       - It provides some extensions not present in the TOML language standard.
     '';
+
+    homepage = "https://github.com/ToruNiina/toml11";
+    changelog = "https://github.com/ToruNiina/toml11/blob/${finalAttrs.src.tag}/docs/content.en/docs/changelog/_index.md";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.cobalt ];
     platforms = lib.platforms.unix ++ lib.platforms.windows;

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pdm-backend,
   pkgs,
   pytest,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pytest-gitconfig";
   version = "0.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "noirbizarre";
@@ -20,15 +19,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-z3W9AL74i47k/eYCbFMn3foVaD2h7lFrGzyOnbDwkyc=";
   };
 
-  build-system = [ pdm-backend ];
-
-  buildInput = [ pytest ];
-
   nativeCheckInputs = [
     pkgs.gitMinimal
     pytestCheckHook
   ];
 
+  build-system = [ pdm-backend ];
+  buildInput = [ pytest ];
+  pyproject = true;
   pythonImportsCheck = [ "pytest_gitconfig" ];
 
   meta = {

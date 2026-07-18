@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   fetchpatch,
-  pkg-config,
-  wget,
-  unzip,
-  mawk,
-  sqlite,
-  which,
-  lua5_3,
   installShellFiles,
+  lua5_3,
   makeWrapper,
+  mawk,
+  pkg-config,
+  sqlite,
+  unzip,
+  wget,
+  which,
 }:
 let
   luaEnv = lua5_3.withPackages (
@@ -34,8 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/rhaberkorn/openrussian-cli/commit/984e555acbadbd1aed7df17ab53e2c586a2f8f68.patch";
       hash = "sha256-/z4YrEeuejtCtwiFXksFREwgQoWvtI0Kl9w75KDQfF8=";
+      url = "https://github.com/rhaberkorn/openrussian-cli/commit/984e555acbadbd1aed7df17ab53e2c586a2f8f68.patch";
     })
     # Work around https://github.com/dumblob/mysql2sqlite/issues/75
     ./use-mawk.patch
@@ -59,8 +59,6 @@ stdenv.mkDerivation (finalAttrs: {
     "LUAC=${luaEnv}/bin/luac"
   ];
 
-  dontConfigure = true;
-
   # Can't use "make install" here
   installPhase = ''
     runHook preInstall
@@ -81,16 +79,20 @@ stdenv.mkDerivation (finalAttrs: {
     installManPage ./openrussian.1
   '';
 
+  dontConfigure = true;
+
   meta = {
     description = "Offline Console Russian Dictionary (based on openrussian.org)";
     homepage = "https://github.com/rhaberkorn/openrussian-cli";
+
     license = with lib.licenses; [
       gpl3Only
       mit
       cc-by-sa-40
     ];
+
     maintainers = with lib.maintainers; [ zane ];
-    mainProgram = "openrussian";
     platforms = lib.platforms.unix;
+    mainProgram = "openrussian";
   };
 })

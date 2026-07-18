@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  elfutils,
-  zlib,
-  libbpf,
   clangStdenv,
+  elfutils,
+  libbpf,
+  pkg-config,
+  rustPlatform,
+  zlib,
 }:
 rustPlatform.buildRustPackage.override { stdenv = clangStdenv; } (finalAttrs: {
   pname = "bpftop";
@@ -19,7 +19,7 @@ rustPlatform.buildRustPackage.override { stdenv = clangStdenv; } (finalAttrs: {
     hash = "sha256-QukcBq80tASPSHRg1yRouYiZqvca+ipp6RGzXqP2CwA=";
   };
 
-  cargoHash = "sha256-33VamoVq8O4cgdweWRaDqo5ey2lbLAHoPQVPgmyQwh0=";
+  nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
     elfutils
@@ -27,7 +27,7 @@ rustPlatform.buildRustPackage.override { stdenv = clangStdenv; } (finalAttrs: {
     zlib
   ];
 
-  nativeBuildInputs = [ pkg-config ];
+  cargoHash = "sha256-33VamoVq8O4cgdweWRaDqo5ey2lbLAHoPQVPgmyQwh0=";
 
   hardeningDisable = [
     "zerocallusedregs"
@@ -37,11 +37,13 @@ rustPlatform.buildRustPackage.override { stdenv = clangStdenv; } (finalAttrs: {
     description = "Dynamic real-time view of running eBPF programs";
     homepage = "https://github.com/jfernandez/bpftop";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       _0x4A6F
       luftmensch-luftmensch
       mfrw
     ];
+
     mainProgram = "bpftop";
   };
 })

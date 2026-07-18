@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   inkscape,
+  stdenvNoCC,
   xcursorgen,
 }:
 
@@ -37,7 +37,7 @@ stdenvNoCC.mkDerivation {
     description = "Material cursors for Linux";
     homepage = "https://github.com/varlesh/material-cursors";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 }

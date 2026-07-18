@@ -1,13 +1,13 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
+  elm2nix,
   elmPackages,
+  nix-update,
+  nixfmt,
   versionCheckHook,
   writeShellScript,
-  nix-update,
-  elm2nix,
-  nixfmt,
 }:
 
 buildNpmPackage rec {
@@ -21,11 +21,7 @@ buildNpmPackage rec {
     hash = "sha256-PFyiVTH2Cek377YZwaCmvDToQCaxWQvJrQkRhyNI2Wg=";
   };
 
-  sourceRoot = "${src.name}/projects/cli";
-
   npmDepsHash = "sha256-Bg16s0tqEaUT+BbFMKuEtx32rmbZLIILp8Ra/dQGmUg=";
-
-  npmRebuildFlags = [ "--ignore-scripts" ];
 
   postConfigure =
     (elmPackages.fetchElmDeps {
@@ -37,10 +33,14 @@ buildNpmPackage rec {
       ln -sf ${lib.getExe elmPackages.elm} node_modules/.bin/elm
     '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  npmRebuildFlags = [ "--ignore-scripts" ];
+  sourceRoot = "${src.name}/projects/cli";
 
   passthru.updateScript = writeShellScript "update-elm-land" ''
     set -eu -o pipefail
@@ -61,9 +61,11 @@ buildNpmPackage rec {
     description = "Production-ready framework for building Elm applications";
     homepage = "https://github.com/elm-land/elm-land";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       zupo
     ];
+
     mainProgram = "elm-land";
   };
 }

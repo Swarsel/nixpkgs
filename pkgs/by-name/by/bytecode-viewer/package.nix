@@ -1,12 +1,12 @@
 {
   lib,
   fetchFromGitHub,
+  copyDesktopItems,
+  icoutils,
   jre,
+  makeDesktopItem,
   makeWrapper,
   maven,
-  icoutils,
-  copyDesktopItems,
-  makeDesktopItem,
 }:
 
 maven.buildMavenPackage rec {
@@ -20,26 +20,10 @@ maven.buildMavenPackage rec {
     hash = "sha256-opAUmkEcWPOrcxAL+I1rBQXwHmvzbu0+InTnsg9r+z8=";
   };
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "bytecode-viewer";
-      desktopName = "Bytecode-Viewer";
-      exec = meta.mainProgram;
-      icon = "bytecode-viewer";
-      comment = "A lightweight user-friendly Java/Android Bytecode Viewer, Decompiler & More.";
-      categories = [ "Security" ];
-      startupNotify = false;
-    })
-  ];
-
   patches = [
     # Make vendoring deterministic by pinning Maven plugin dependencies
     ./make-deterministic.patch
   ];
-
-  mvnHash = "sha256-iAxzFq8nR9UiH8y3ZWmGuChZEMwQBAkN8wD+t9q/RWY=";
-
-  mvnParameters = "-Dproject.build.outputTimestamp=1980-01-01T00:00:02Z";
 
   nativeBuildInputs = [
     icoutils
@@ -67,18 +51,36 @@ maven.buildMavenPackage rec {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Security" ];
+      comment = "A lightweight user-friendly Java/Android Bytecode Viewer, Decompiler & More.";
+      desktopName = "Bytecode-Viewer";
+      exec = meta.mainProgram;
+      icon = "bytecode-viewer";
+      name = "bytecode-viewer";
+      startupNotify = false;
+    })
+  ];
+
+  mvnHash = "sha256-iAxzFq8nR9UiH8y3ZWmGuChZEMwQBAkN8wD+t9q/RWY=";
+  mvnParameters = "-Dproject.build.outputTimestamp=1980-01-01T00:00:02Z";
+
   meta = {
-    homepage = "https://bytecodeviewer.com";
     description = "Lightweight user-friendly Java/Android Bytecode Viewer, Decompiler & More";
-    mainProgram = "bytecode-viewer";
-    maintainers = with lib.maintainers; [
-      shard7
-    ];
-    platforms = lib.platforms.unix;
+    homepage = "https://bytecodeviewer.com";
+    license = with lib.licenses; [ gpl3Only ];
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # deps
     ];
-    license = with lib.licenses; [ gpl3Only ];
+
+    maintainers = with lib.maintainers; [
+      shard7
+    ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "bytecode-viewer";
   };
 }

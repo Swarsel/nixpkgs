@@ -1,8 +1,8 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
   jsonschema,
-  lib,
   pytestCheckHook,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "genson";
   version = "1.3.0";
-  pyproject = true;
 
   # Using Python repository source due to missing genson.schema in setup tools.
   src = fetchPypi {
@@ -18,17 +17,18 @@ buildPythonPackage rec {
     hash = "sha256-4C25rC4/0p5ltShvcTV2LizYqYZTfAdbBvxfFRcwjjc=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     jsonschema
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+
   disabledTests = [
     "test_no_input"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "genson" ];
 
   meta = {

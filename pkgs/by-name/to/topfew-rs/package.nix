@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,8 +20,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Rust implementation of Tim Bray's topfew tool";
     homepage = "https://github.com/djc/topfew-rs";
-    maintainers = with lib.maintainers; [ liberodark ];
     license = lib.licenses.gpl3Only;
+    maintainers = with lib.maintainers; [ liberodark ];
     mainProgram = "tf";
   };
 })

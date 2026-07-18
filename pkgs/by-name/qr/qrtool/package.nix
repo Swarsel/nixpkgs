@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   asciidoctor,
   installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,12 +18,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-N/kxis/nLwl+cfmlIC0TzZe0nApp160VXWoWeDtOctU=";
   };
 
-  cargoHash = "sha256-PgtVl55gpVsDg3VMuqtQaR7hD2ebL5+ffLNdpHggxfg=";
-
   nativeBuildInputs = [
     asciidoctor
     installShellFiles
   ];
+
+  cargoHash = "sha256-PgtVl55gpVsDg3VMuqtQaR7hD2ebL5+ffLNdpHggxfg=";
 
   postInstall = ''
     asciidoctor -b manpage docs/man/man1/*.1.adoc
@@ -38,10 +38,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Utility for encoding and decoding QR code images";
-    license = lib.licenses.asl20;
     homepage = "https://sorairolake.github.io/qrtool/book/index.html";
     changelog = "https://sorairolake.github.io/qrtool/book/changelog.html";
-    mainProgram = "qrtool";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ philiptaron ];
+    mainProgram = "qrtool";
   };
 })

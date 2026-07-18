@@ -1,7 +1,7 @@
 {
-  appimageTools,
   lib,
   fetchurl,
+  appimageTools,
   makeWrapper,
 }:
 let
@@ -17,7 +17,6 @@ let
 in
 appimageTools.wrapType2 {
   inherit pname version src;
-
   nativeBuildInputs = [ makeWrapper ];
 
   extraInstallCommands = ''
@@ -32,10 +31,12 @@ appimageTools.wrapType2 {
     description = "OCR tool to convert pictures to LaTeX";
     homepage = "https://mathpix.com/";
     license = lib.licenses.unfree;
+
     maintainers = [
       lib.maintainers.hiro98
       lib.maintainers.axodentally
     ];
+
     platforms = [ "x86_64-linux" ];
     mainProgram = "mathpix-snipping-tool";
   };

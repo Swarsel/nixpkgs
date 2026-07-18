@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchurl,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "spf-engine";
   version = "3.1.0";
-  pyproject = true;
 
   src = fetchurl {
     url = "https://launchpad.net/spf-engine/${lib.versions.majorMinor finalAttrs.version}/${finalAttrs.version}/+download/spf-engine-${finalAttrs.version}.tar.gz";
@@ -25,6 +24,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pymilter
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "spf_engine"
     "spf_engine.milter_spf"
@@ -32,9 +33,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://launchpad.net/spf-engine/";
     description = "Postfix policy engine for Sender Policy Framework (SPF) checking";
-    maintainers = [ ];
+    homepage = "https://launchpad.net/spf-engine/";
     license = lib.licenses.asl20;
+    maintainers = [ ];
   };
 })

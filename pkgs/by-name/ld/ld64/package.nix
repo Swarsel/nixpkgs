@@ -1,17 +1,17 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   cctools,
   cmake,
   darwin,
-  fetchFromGitHub,
   libtapi,
-  llvm,
   libxml2,
+  llvm,
   meson,
   ninja,
   openssl,
   pkg-config,
-  stdenv,
   xar,
 }:
 
@@ -20,22 +20,22 @@ let
   otherSrcs = {
     # The last version of ld64 to have dyldinfo
     dyldinfo = fetchFromGitHub {
+      hash = "sha256-UIq/fwO40vk8yvoTfx+UlLhnuzkI0Ih+Ym6W/BwnP0s=";
       owner = "apple-oss-distributions";
       repo = "ld64";
       tag = "ld64-762";
-      hash = "sha256-UIq/fwO40vk8yvoTfx+UlLhnuzkI0Ih+Ym6W/BwnP0s=";
-    };
-
-    # The last version of ld64 to have machochecker and libpruntrie
-    machochecker = fetchFromGitHub {
-      owner = "apple-oss-distributions";
-      repo = "ld64";
-      tag = "ld64-954.16";
-      hash = "sha256-CVIyL2J9ISZnI4+r+wp4QtOb3+3Tmz2z2Z7/qeRqHS0=";
     };
 
     # Provides the source files used in the vendored libtapi. The libtapi derivation puts `tapi-src` first.
     libtapi = lib.head libtapi.srcs;
+
+    # The last version of ld64 to have machochecker and libpruntrie
+    machochecker = fetchFromGitHub {
+      hash = "sha256-CVIyL2J9ISZnI4+r+wp4QtOb3+3Tmz2z2Z7/qeRqHS0=";
+      owner = "apple-oss-distributions";
+      repo = "ld64";
+      tag = "ld64-954.16";
+    };
   };
 
   dyldinfoSrc = lib.escapeShellArg "${otherSrcs.dyldinfo}";
@@ -49,18 +49,18 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "ld64";
   version = "957.1";
 
-  outputs = [
-    "out"
-    "dev"
-    "lib"
-  ];
-
   src = fetchFromGitHub {
     owner = "apple-oss-distributions";
     repo = "ld64";
     tag = "ld64-${finalAttrs.version}";
     hash = "sha256-KUkEKz2jQq815ls25u0JMYmad4cN9PS/nC3E5eV19co=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+    "lib"
+  ];
 
   patches = [
     # These patches are vendored from https://github.com/reckenrode/ld64/tree/ld64-956.6-nixpkgs.
@@ -86,6 +86,72 @@ stdenv.mkDerivation (finalAttrs: {
     ./patches/0020-Remove-private-analytics-APIs.patch
     ./patches/0021-Support-text-based-stubs-with-compatible-architectur.patch
   ];
+
+  nativeBuildInputs = [
+    cmake
+    darwin.xcodeProjectCheckHook
+    meson
+    ninja
+    openssl
+    pkg-config
+  ];
+
+  buildInputs = [
+    llvm
+    libxml2
+    openssl
+    xar
+  ];
+
+  mesonFlags = [
+    (lib.mesonOption "b_ndebug" "if-release")
+    (lib.mesonOption "default_library" (if stdenv.hostPlatform.isStatic then "static" else "shared"))
+    (lib.mesonOption "libllvm_path" llvmPath)
+  ];
+
+  postInstall = ''
+    ln -s ld-classic.1 "$out/share/man/man1/ld.1"
+    ln -s ld.1 "$out/share/man/man1/ld64.1"
+    moveToOutput lib/libprunetrie.a "$dev"
+  '';
+
+  doInstallCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  # ld64 has a test suite, but many of the tests fail (even with ld from Xcode). Instead
+  # of running the test suite, rebuild ld64 using itself to link itself as a check.
+  # LTO is enabled only to confirm that it is set up and working properly in nixpkgs.
+  installCheckPhase = ''
+    runHook preInstallCheck
+
+    cd "$NIX_BUILD_TOP/$sourceRoot"
+
+    export NIX_CFLAGS_COMPILE+=" --ld-path=$out/bin/ld"
+    export NIX_CFLAGS_LINK+=" -L$SDKROOT/usr/lib"
+    meson setup build-install-check --buildtype=$mesonBuildType ${
+      lib.escapeShellArgs [
+        (lib.mesonBool "b_lto" true)
+        (lib.mesonOption "libllvm_path" llvmPath)
+      ]
+    }
+
+    cd build-install-check
+    ninja src/ld/ld "-j$NIX_BUILD_CORES"
+
+    # Confirm that ld found the LTO library and reports it.
+    if ./src/ld/ld -v 2>&1 | grep -q 'LTO support'; then
+        echo "LTO: supported"
+    else
+        echo "LTO: not supported" && exit 1
+    fi
+
+    runHook postInstallCheck
+  '';
+
+  __structuredAttrs = true;
+  dontUseCmakeConfigure = true; # CMake is only needed because it’s used by Meson to find LLVM.
+  # Note for overrides: ld64 cannot be built as a debug build because of UB in its iteration implementations,
+  # which trigger libc++ debug assertions due to trying to take the address of the first element of an empty vector.
+  mesonBuildType = "release";
 
   prePatch = ''
     # Copy dyldinfo source files
@@ -122,80 +188,12 @@ stdenv.mkDerivation (finalAttrs: {
   xcodeHash = "sha256-b0KCdHkMWsdOb68LB8B2rbZPAQma8AOnGUGQNvHOnV0=";
   xcodeProject = "ld64.xcodeproj";
 
-  nativeBuildInputs = [
-    cmake
-    darwin.xcodeProjectCheckHook
-    meson
-    ninja
-    openssl
-    pkg-config
-  ];
-
-  buildInputs = [
-    llvm
-    libxml2
-    openssl
-    xar
-  ];
-
-  dontUseCmakeConfigure = true; # CMake is only needed because it’s used by Meson to find LLVM.
-
-  # Note for overrides: ld64 cannot be built as a debug build because of UB in its iteration implementations,
-  # which trigger libc++ debug assertions due to trying to take the address of the first element of an empty vector.
-  mesonBuildType = "release";
-
-  mesonFlags = [
-    (lib.mesonOption "b_ndebug" "if-release")
-    (lib.mesonOption "default_library" (if stdenv.hostPlatform.isStatic then "static" else "shared"))
-    (lib.mesonOption "libllvm_path" llvmPath)
-  ];
-
-  doInstallCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
-  # ld64 has a test suite, but many of the tests fail (even with ld from Xcode). Instead
-  # of running the test suite, rebuild ld64 using itself to link itself as a check.
-  # LTO is enabled only to confirm that it is set up and working properly in nixpkgs.
-  installCheckPhase = ''
-    runHook preInstallCheck
-
-    cd "$NIX_BUILD_TOP/$sourceRoot"
-
-    export NIX_CFLAGS_COMPILE+=" --ld-path=$out/bin/ld"
-    export NIX_CFLAGS_LINK+=" -L$SDKROOT/usr/lib"
-    meson setup build-install-check --buildtype=$mesonBuildType ${
-      lib.escapeShellArgs [
-        (lib.mesonBool "b_lto" true)
-        (lib.mesonOption "libllvm_path" llvmPath)
-      ]
-    }
-
-    cd build-install-check
-    ninja src/ld/ld "-j$NIX_BUILD_CORES"
-
-    # Confirm that ld found the LTO library and reports it.
-    if ./src/ld/ld -v 2>&1 | grep -q 'LTO support'; then
-        echo "LTO: supported"
-    else
-        echo "LTO: not supported" && exit 1
-    fi
-
-    runHook postInstallCheck
-  '';
-
-  postInstall = ''
-    ln -s ld-classic.1 "$out/share/man/man1/ld.1"
-    ln -s ld.1 "$out/share/man/man1/ld64.1"
-    moveToOutput lib/libprunetrie.a "$dev"
-  '';
-
-  __structuredAttrs = true;
-
   meta = {
     description = "Classic linker for Darwin";
     homepage = "https://opensource.apple.com/releases/";
     license = lib.licenses.apple-psl20;
+    platforms = lib.platforms.darwin; # Porting to other platforms is incomplete. Support only Darwin for now.
     mainProgram = "ld";
     teams = [ lib.teams.darwin ];
-    platforms = lib.platforms.darwin; # Porting to other platforms is incomplete. Support only Darwin for now.
   };
 })

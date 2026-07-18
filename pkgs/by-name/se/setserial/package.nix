@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  groff,
   autoreconfHook,
+  groff,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,9 +35,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Serial port configuration utility";
     homepage = "https://setserial.sourceforge.net";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl2Only;
-    mainProgram = "setserial";
     maintainers = [ lib.maintainers.mmlb ];
+    platforms = lib.platforms.linux;
+    mainProgram = "setserial";
   };
 })

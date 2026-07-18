@@ -1,13 +1,13 @@
 {
   lib,
+  fetchFromGitHub,
   annexremote,
   buildPythonPackage,
   datalad,
   datasalad,
   distutils,
-  fetchFromGitHub,
-  git-annex,
   git,
+  git-annex,
   hatch-vcs,
   hatchling,
   humanize,
@@ -16,8 +16,8 @@
   psutil,
   pytestCheckHook,
   pythonAtLeast,
-  requests-toolbelt,
   requests,
+  requests-toolbelt,
   unzip,
   webdavclient3,
   writableTmpDirAsHomeHook,
@@ -26,7 +26,6 @@
 buildPythonPackage {
   pname = "datalad-next";
   version = "1.6.0-unstable-2025-07-04";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "datalad";
@@ -35,9 +34,19 @@ buildPythonPackage {
     hash = "sha256-47cRxaxOGzR6hDfiW2hS3MNHp2aP9rxtWNxV+33PPfs=";
   };
 
+  nativeBuildInputs = [ git ];
   env.SETUPTOOLS_SCM_PRETEND_VERSION = "1.6.0";
 
-  nativeBuildInputs = [ git ];
+  nativeCheckInputs = [
+    datalad
+    git-annex
+    openssh
+    psutil
+    pytestCheckHook
+    unzip
+    webdavclient3
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [
     hatchling
@@ -52,22 +61,10 @@ buildPythonPackage {
     more-itertools
   ];
 
-  optional-dependencies = {
-    httpsupport = [
-      requests
-      requests-toolbelt
-    ];
-  };
-
-  nativeCheckInputs = [
-    datalad
-    git-annex
-    openssh
-    psutil
-    pytestCheckHook
-    unzip
-    webdavclient3
-    writableTmpDirAsHomeHook
+  disabledTestPaths = [
+    # Tests require internet access
+    "datalad_next/commands/tests/test_download.py"
+    "datalad_next/archive_operations/tests/test_tarfile.py"
   ];
 
   disabledTests = [
@@ -110,18 +107,20 @@ buildPythonPackage {
     "test_tree_with_broken_symlinks"
   ];
 
-  disabledTestPaths = [
-    # Tests require internet access
-    "datalad_next/commands/tests/test_download.py"
-    "datalad_next/archive_operations/tests/test_tarfile.py"
-  ];
+  optional-dependencies = {
+    httpsupport = [
+      requests
+      requests-toolbelt
+    ];
+  };
 
+  pyproject = true;
   pythonImportsCheck = [ "datalad_next" ];
 
   meta = {
     description = "DataLad extension with a staging area for additional functionality, or for improved performance and user experience";
-    changelog = "https://github.com/datalad/datalad-next/blob/main/CHANGELOG.md";
     homepage = "https://github.com/datalad/datalad-next";
+    changelog = "https://github.com/datalad/datalad-next/blob/main/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ gador ];
   };

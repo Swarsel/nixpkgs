@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pydantic,
+  buildPythonPackage,
   interegular,
-  pyyaml,
   poetry-core,
+  pydantic,
+  pyyaml,
 }:
 
 buildPythonPackage rec {
   pname = "lm-format-enforcer";
   version = "0.11.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "noamgat";
@@ -20,6 +19,7 @@ buildPythonPackage rec {
     hash = "sha256-aUZo7Nlk5A9SRyQFFGhy3LAJO29ygRFwNC4WbRuXvYE=";
   };
 
+  doCheck = false; # most tests require internet access
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -28,14 +28,13 @@ buildPythonPackage rec {
     pyyaml
   ];
 
-  doCheck = false; # most tests require internet access
-
+  pyproject = true;
   pythonImportsCheck = [ "lmformatenforcer" ];
 
   meta = {
     description = "Enforce the output format (JSON Schema, Regex etc) of a language model";
-    changelog = "https://github.com/noamgat/lm-format-enforcer/releases/tag/${src.tag}";
     homepage = "https://github.com/noamgat/lm-format-enforcer";
+    changelog = "https://github.com/noamgat/lm-format-enforcer/releases/tag/${src.tag}";
     license = lib.licenses.mit;
   };
 }

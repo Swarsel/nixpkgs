@@ -1,11 +1,11 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   cmake,
   doxygen,
-  fetchFromGitHub,
-  lib,
   jrl-cmakemodules,
   pkg-config,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,17 +37,18 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   cmakeFlags = [ (lib.cmakeBool "BUILD_PYTHON_INTERFACE" false) ];
-
   doCheck = true;
 
   meta = {
     description = "Set of robot URDFs for benchmarking and developed examples";
     homepage = "https://github.com/Gepetto/example-robot-data";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       nim65s
       wegank
     ];
+
     platforms = lib.platforms.unix;
   };
 })

@@ -1,32 +1,31 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-  pkg-config,
+  SDL2,
+  SDL2_image,
+  SDL2_mixer,
+  SDL2_ttf,
+  buildPythonPackage,
   cython,
   docutils,
-  setuptools,
+  fetchpatch,
+  filetype,
+  gst_all_1,
   kivy-garden,
   libGL,
   libx11,
   mtdev,
-  SDL2,
-  SDL2_image,
-  SDL2_ttf,
-  SDL2_mixer,
-  withGstreamer ? true,
-  gst_all_1,
+  pkg-config,
   pygments,
   requests,
-  filetype,
+  setuptools,
+  withGstreamer ? true,
 }:
 
 buildPythonPackage rec {
   pname = "kivy";
   version = "2.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kivy";
@@ -38,9 +37,9 @@ buildPythonPackage rec {
   patches = [
     # Fix compat with newer Cython
     (fetchpatch {
+      hash = "sha256-GDNYL8dC1Rh4KJ8oPiIjegOJGzRQ1CsgWQeAvx9+Rc8=";
       name = "0001-kivy-Remove-old-Python-2-long.patch";
       url = "https://github.com/kivy/kivy/commit/5a1b27d7d3bdee6cedb55440bfae9c4e66fb3c68.patch";
-      hash = "sha256-GDNYL8dC1Rh4KJ8oPiIjegOJGzRQ1CsgWQeAvx9+Rc8=";
     })
   ];
 
@@ -55,11 +54,6 @@ buildPythonPackage rec {
     substituteInPlace kivy/lib/mtdev.py \
       --replace-fail "LoadLibrary('libmtdev.so.1')" "LoadLibrary('${lib.getLib mtdev}/lib/libmtdev.so.1')"
   '';
-
-  build-system = [
-    setuptools
-    cython
-  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -87,21 +81,10 @@ buildPythonPackage rec {
     ]
   );
 
-  dependencies = [
-    kivy-garden
-    docutils
-    pygments
-    requests
-    filetype
-  ];
-
   env = {
-    KIVY_NO_CONFIG = 1;
     KIVY_NO_ARGS = 1;
+    KIVY_NO_CONFIG = 1;
     KIVY_NO_FILELOG = 1;
-
-    # prefer pkg-config over hardcoded framework paths
-    USE_OSX_FRAMEWORKS = 0;
 
     # work around python distutils compiling C++ with $CC (see issue #26709)
     NIX_CFLAGS_COMPILE = toString (
@@ -112,6 +95,9 @@ buildPythonPackage rec {
         "-I${lib.getInclude stdenv.cc.libcxx}/include/c++/v1"
       ]
     );
+
+    # prefer pkg-config over hardcoded framework paths
+    USE_OSX_FRAMEWORKS = 0;
   };
 
   /*
@@ -119,12 +105,27 @@ buildPythonPackage rec {
     installed.
   */
   doCheck = false;
+
+  build-system = [
+    setuptools
+    cython
+  ];
+
+  dependencies = [
+    kivy-garden
+    docutils
+    pygments
+    requests
+    filetype
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "kivy" ];
 
   meta = {
-    changelog = "https://github.com/kivy/kivy/releases/tag/${src.tag}";
     description = "Library for rapid development of hardware-accelerated multitouch applications";
     homepage = "https://github.com/kivy/kivy";
+    changelog = "https://github.com/kivy/kivy/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ risson ];
   };

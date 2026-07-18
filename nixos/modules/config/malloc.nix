@@ -10,17 +10,17 @@ let
   # The set of alternative malloc(3) providers.
   providers = {
     graphene-hardened = {
-      libPath = "${pkgs.graphene-hardened-malloc}/lib/libhardened_malloc.so";
       description = ''
         Hardened memory allocator coming from GrapheneOS project.
         The default configuration template has all normal optional security
         features enabled and is quite aggressive in terms of sacrificing
         performance and memory usage for security.
       '';
+
+      libPath = "${pkgs.graphene-hardened-malloc}/lib/libhardened_malloc.so";
     };
 
     graphene-hardened-light = {
-      libPath = "${pkgs.graphene-hardened-malloc}/lib/libhardened_malloc-light.so";
       description = ''
         Hardened memory allocator coming from GrapheneOS project.
         The light configuration template disables the slab quarantines,
@@ -30,14 +30,27 @@ let
         being far more secure than mainstream allocators with much better security
         properties.
       '';
+
+      libPath = "${pkgs.graphene-hardened-malloc}/lib/libhardened_malloc-light.so";
     };
 
     jemalloc = {
-      libPath = "${pkgs.jemalloc}/lib/libjemalloc.so";
       description = ''
         A general purpose allocator that emphasizes fragmentation avoidance
         and scalable concurrency support.
       '';
+
+      libPath = "${pkgs.jemalloc}/lib/libjemalloc.so";
+    };
+
+    mimalloc = {
+      description = ''
+        A compact and fast general purpose allocator, which may
+        optionally be built with mitigations against various heap
+        vulnerabilities.
+      '';
+
+      libPath = "${pkgs.mimalloc}/lib/libmimalloc.so";
     };
 
     scudo =
@@ -52,22 +65,14 @@ let
             or (throw "scudo not supported on ${pkgs.stdenv.hostPlatform.system}");
       in
       {
-        libPath = "${pkgs.llvmPackages.compiler-rt}/lib/linux/libclang_rt.scudo_standalone-${systemPlatform}.so";
         description = ''
           A user-mode allocator based on LLVM Sanitizer’s CombinedAllocator,
           which aims at providing additional mitigations against heap based
           vulnerabilities, while maintaining good performance.
         '';
-      };
 
-    mimalloc = {
-      libPath = "${pkgs.mimalloc}/lib/libmimalloc.so";
-      description = ''
-        A compact and fast general purpose allocator, which may
-        optionally be built with mitigations against various heap
-        vulnerabilities.
-      '';
-    };
+        libPath = "${pkgs.llvmPackages.compiler-rt}/lib/linux/libclang_rt.scudo_standalone-${systemPlatform}.so";
+      };
   };
 
   providerConf = providers.${cfg.provider};
@@ -77,10 +82,10 @@ let
   mallocLib =
     pkgs.runCommand "malloc-provider-${cfg.provider}"
       rec {
-        preferLocalBuild = true;
         allowSubstitutes = false;
-        origLibPath = providerConf.libPath;
         libName = baseNameOf origLibPath;
+        origLibPath = providerConf.libPath;
+        preferLocalBuild = true;
       }
       ''
         mkdir -p $out/lib
@@ -92,14 +97,10 @@ let
 in
 
 {
-  meta = {
-    maintainers = [ ];
-  };
-
   options = {
     environment.memoryAllocator.provider = lib.mkOption {
-      type = lib.types.enum ([ "libc" ] ++ lib.attrNames providers);
       default = "libc";
+
       description = ''
         The system-wide memory allocator.
 
@@ -118,10 +119,29 @@ in
         and/or service failure.
         :::
       '';
+
+      type = lib.types.enum ([ "libc" ] ++ lib.attrNames providers);
     };
   };
 
   config = lib.mkIf (cfg.provider != "libc") {
+    environment.etc."ld-nix.so.preload".text = ''
+      ${providerLibPath}
+    '';
+
+    security.apparmor.includes = {
+      "abstractions/base" = ''
+        r /etc/ld-nix.so.preload,
+        r ${config.environment.etc."ld-nix.so.preload".source},
+        include "${
+          pkgs.apparmorRulesFromClosure {
+            baseRules = [ "mr $path/lib/**.so*" ];
+            name = "mallocLib";
+          } [ mallocLib ]
+        }"
+      '';
+    };
+
     # Legacy (LLVM < 13) Scudo uses CamelCase options.
     # Standalone (LLVM >= 13) Scudo uses snake_case options.
     # NixOS switched in 25.11: https://github.com/NixOS/nixpkgs/pull/444605
@@ -150,21 +170,9 @@ in
           environment.variables.SCUDO_OPTIONS: ${lib.concatStringsSep ", " legacyOptionsUsed} is/are no longer valid Scudo options.
           Use snake_case instead of CamelCase: https://llvm.org/docs/ScudoHardenedAllocator.html#options
         '';
+  };
 
-    environment.etc."ld-nix.so.preload".text = ''
-      ${providerLibPath}
-    '';
-    security.apparmor.includes = {
-      "abstractions/base" = ''
-        r /etc/ld-nix.so.preload,
-        r ${config.environment.etc."ld-nix.so.preload".source},
-        include "${
-          pkgs.apparmorRulesFromClosure {
-            name = "mallocLib";
-            baseRules = [ "mr $path/lib/**.so*" ];
-          } [ mallocLib ]
-        }"
-      '';
-    };
+  meta = {
+    maintainers = [ ];
   };
 }

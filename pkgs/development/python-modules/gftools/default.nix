@@ -1,16 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  buildPythonPackage,
-  pytestCheckHook,
-  setuptools,
-  setuptools-scm,
   absl-py,
   afdko,
   axisregistry,
   beautifulsoup4,
   black,
   brotli,
+  buildPythonPackage,
   coreutils,
   diffenator2,
   ffmpeg-python,
@@ -37,10 +34,14 @@
   pygit2,
   pygithub,
   pytest,
+  pytestCheckHook,
+  python,
   pyyaml,
   requests,
   rich,
   ruamel-yaml,
+  setuptools,
+  setuptools-scm,
   strictyaml,
   tabulate,
   ttfautohint-py,
@@ -48,7 +49,6 @@
   unidecode,
   vharfbuzz,
   vttlib,
-  python,
 }:
 
 let
@@ -58,7 +58,6 @@ in
 buildPythonPackage rec {
   pname = "gftools";
   version = "0.9.996";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googlefonts";
@@ -111,11 +110,7 @@ buildPythonPackage rec {
   '';
 
   env.PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION = "python";
-
-  pythonRelaxDeps = [
-    "protobuf"
-    "pygit2"
-  ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -161,20 +156,6 @@ buildPythonPackage rec {
   ++ fonttools.optional-dependencies.ufo
   ++ fontmake.optional-dependencies.json;
 
-  optional-dependencies = {
-    qa = [
-      diffenator2
-      fontbakery
-      pycairo
-    ];
-    test = [
-      black
-      pytest
-    ];
-  };
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTestPaths = [
     # Wants none existing module
     "bin/test_args.py"
@@ -189,14 +170,33 @@ buildPythonPackage rec {
     "tests/test_fix.py"
   ];
 
+  optional-dependencies = {
+    qa = [
+      diffenator2
+      fontbakery
+      pycairo
+    ];
+
+    test = [
+      black
+      pytest
+    ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "gftools" ];
+
+  pythonRelaxDeps = [
+    "protobuf"
+    "pygit2"
+  ];
 
   meta = {
     description = "Misc tools for working with the Google Fonts library";
     homepage = "https://github.com/googlefonts/gftools";
     changelog = "https://github.com/googlefonts/gftools/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
-    mainProgram = "gftools";
     maintainers = with lib.maintainers; [ jopejoe1 ];
+    mainProgram = "gftools";
   };
 }

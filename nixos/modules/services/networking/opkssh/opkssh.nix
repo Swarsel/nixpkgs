@@ -25,94 +25,12 @@ in
 {
   options.services.opkssh = {
     enable = lib.mkEnableOption "OpenID Connect SSH authentication";
-
     package = lib.mkPackageOption pkgs "opkssh" { };
 
-    user = lib.mkOption {
-      type = lib.types.str;
-      default = "opksshuser";
-      description = "System user for running opkssh";
-    };
-
-    group = lib.mkOption {
-      type = lib.types.str;
-      default = "opksshuser";
-      description = "System group for opkssh";
-    };
-
-    providers = lib.mkOption {
-      type = lib.types.attrsOf (
-        lib.types.submodule {
-          options = {
-            issuer = lib.mkOption {
-              type = lib.types.str;
-              description = "Issuer URI";
-              example = "https://accounts.google.com";
-            };
-
-            clientId = lib.mkOption {
-              type = lib.types.str;
-              description = "OAuth client ID";
-            };
-
-            lifetime = lib.mkOption {
-              type = lib.types.enum [
-                "12h"
-                "24h"
-                "48h"
-                "1week"
-                "oidc"
-                "oidc-refreshed"
-              ];
-              default = "24h";
-              description = "Token lifetime";
-            };
-          };
-        }
-      );
-      default = {
-        google = {
-          issuer = "https://accounts.google.com";
-          clientId = "206584157355-7cbe4s640tvm7naoludob4ut1emii7sf.apps.googleusercontent.com";
-          lifetime = "24h";
-        };
-        microsoft = {
-          issuer = "https://login.microsoftonline.com/9188040d-6c67-4c5b-b112-36a304b66dad/v2.0";
-          clientId = "096ce0a3-5e72-4da8-9c86-12924b294a01";
-          lifetime = "24h";
-        };
-        github = {
-          issuer = "https://token.actions.githubusercontent.com";
-          clientId = "github";
-          lifetime = "oidc";
-        };
-      };
-      description = "OpenID Connect providers configuration";
-    };
-
     authorizations = lib.mkOption {
-      type = lib.types.listOf (
-        lib.types.submodule {
-          options = {
-            user = lib.mkOption {
-              type = lib.types.str;
-              description = "Linux user to authorize";
-            };
-
-            principal = lib.mkOption {
-              type = lib.types.str;
-              description = "Principal identifier (email, repo, etc.)";
-            };
-
-            issuer = lib.mkOption {
-              type = lib.types.str;
-              description = "Issuer URI";
-            };
-          };
-        }
-      );
       default = [ ];
       description = "User authorization mappings";
+
       example = lib.literalExpression ''
         # This example refers to values in the providers example
         # adjust your expressions as necessary
@@ -129,15 +47,116 @@ in
           }
         ];
       '';
+
+      type = lib.types.listOf (
+        lib.types.submodule {
+          options = {
+            issuer = lib.mkOption {
+              description = "Issuer URI";
+              type = lib.types.str;
+            };
+
+            principal = lib.mkOption {
+              description = "Principal identifier (email, repo, etc.)";
+              type = lib.types.str;
+            };
+
+            user = lib.mkOption {
+              description = "Linux user to authorize";
+              type = lib.types.str;
+            };
+          };
+        }
+      );
+    };
+
+    group = lib.mkOption {
+      default = "opksshuser";
+      description = "System group for opkssh";
+      type = lib.types.str;
+    };
+
+    providers = lib.mkOption {
+      default = {
+        github = {
+          clientId = "github";
+          issuer = "https://token.actions.githubusercontent.com";
+          lifetime = "oidc";
+        };
+
+        google = {
+          clientId = "206584157355-7cbe4s640tvm7naoludob4ut1emii7sf.apps.googleusercontent.com";
+          issuer = "https://accounts.google.com";
+          lifetime = "24h";
+        };
+
+        microsoft = {
+          clientId = "096ce0a3-5e72-4da8-9c86-12924b294a01";
+          issuer = "https://login.microsoftonline.com/9188040d-6c67-4c5b-b112-36a304b66dad/v2.0";
+          lifetime = "24h";
+        };
+      };
+
+      description = "OpenID Connect providers configuration";
+
+      type = lib.types.attrsOf (
+        lib.types.submodule {
+          options = {
+            clientId = lib.mkOption {
+              description = "OAuth client ID";
+              type = lib.types.str;
+            };
+
+            issuer = lib.mkOption {
+              description = "Issuer URI";
+              example = "https://accounts.google.com";
+              type = lib.types.str;
+            };
+
+            lifetime = lib.mkOption {
+              default = "24h";
+              description = "Token lifetime";
+
+              type = lib.types.enum [
+                "12h"
+                "24h"
+                "48h"
+                "1week"
+                "oidc"
+                "oidc-refreshed"
+              ];
+            };
+          };
+        }
+      );
+    };
+
+    user = lib.mkOption {
+      default = "opksshuser";
+      description = "System user for running opkssh";
+      type = lib.types.str;
     };
   };
 
   config = lib.mkIf cfg.enable {
-    users.groups.${cfg.group} = { };
-    users.users.${cfg.user} = {
-      isSystemUser = true;
-      description = "OpenPubkey OpenID Connect SSH User";
+    environment.etc."opk/auth_id" = {
       group = cfg.group;
+      mode = "0640";
+      source = authIdFile;
+      user = cfg.user;
+    };
+
+    environment.etc."opk/providers" = {
+      group = cfg.group;
+      mode = "0640";
+      source = providerFile;
+      user = cfg.user;
+    };
+
+    security.wrappers."opkssh" = {
+      group = "root";
+      owner = "root";
+      source = "${cfg.package}/bin/opkssh";
     };
 
     services.openssh = {
@@ -145,24 +164,12 @@ in
       authorizedKeysCommandUser = cfg.user;
     };
 
-    security.wrappers."opkssh" = {
-      source = "${cfg.package}/bin/opkssh";
-      owner = "root";
-      group = "root";
-    };
+    users.groups.${cfg.group} = { };
 
-    environment.etc."opk/providers" = {
-      mode = "0640";
-      user = cfg.user;
+    users.users.${cfg.user} = {
+      description = "OpenPubkey OpenID Connect SSH User";
       group = cfg.group;
-      source = providerFile;
-    };
-
-    environment.etc."opk/auth_id" = {
-      mode = "0640";
-      user = cfg.user;
-      group = cfg.group;
-      source = authIdFile;
+      isSystemUser = true;
     };
   };
 

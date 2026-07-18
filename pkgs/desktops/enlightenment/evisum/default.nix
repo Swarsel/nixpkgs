@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
+  directoryListingUpdater,
+  efl,
   meson,
   ninja,
   pkg-config,
-  efl,
-  directoryListingUpdater,
 }:
 
 stdenv.mkDerivation rec {
@@ -32,10 +32,10 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "System and process monitor written with EFL";
-    mainProgram = "evisum";
     homepage = "https://git.enlightenment.org/enlightenment/evisum";
     license = with lib.licenses; [ isc ];
     platforms = lib.platforms.linux;
+    mainProgram = "evisum";
     teams = [ lib.teams.enlightenment ];
   };
 }

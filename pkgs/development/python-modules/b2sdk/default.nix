@@ -1,11 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  logfury,
   annotated-types,
-  hatchling,
+  buildPythonPackage,
   hatch-vcs,
+  hatchling,
+  logfury,
   pytest-lazy-fixtures,
   pytest-mock,
   pytest-timeout,
@@ -22,7 +22,6 @@
 buildPythonPackage rec {
   pname = "b2sdk";
   version = "2.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Backblaze";
@@ -30,6 +29,16 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-JzJ83+W9k5ys8dj0Q3X4MY+GH4m8/crvKmeQKOttspM=";
   };
+
+  nativeCheckInputs = [
+    pytest-lazy-fixtures
+    pytest-mock
+    pytest-timeout
+    pytestCheckHook
+    responses
+    tenacity
+    tqdm
+  ];
 
   build-system = [
     hatchling
@@ -43,26 +52,17 @@ buildPythonPackage rec {
   ]
   ++ lib.optionals (pythonOlder "3.12") [ typing-extensions ];
 
-  nativeCheckInputs = [
-    pytest-lazy-fixtures
-    pytest-mock
-    pytest-timeout
-    pytestCheckHook
-    responses
-    tenacity
-    tqdm
-  ];
-
-  enabledTestPaths = [
-    "test/unit"
-  ];
-
   disabledTests = lib.optionals (pythonAtLeast "3.14") [
     # -     'could not be accessed (no permissions to read?)',
     # +     'could not be accessed (broken symlink?)',
     "test_dir_without_exec_permission"
   ];
 
+  enabledTestPaths = [
+    "test/unit"
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "b2sdk" ];
 
   meta = {

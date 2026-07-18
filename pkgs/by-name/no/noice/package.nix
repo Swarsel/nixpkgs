@@ -22,12 +22,10 @@ stdenv.mkDerivation rec {
     substituteInPlace noice.c --replace 'printw(str);' 'printw("%s", str);'
   '';
 
-  configFile = lib.optionalString (conf != null) (builtins.toFile "config.def.h" conf);
-  preBuild = lib.optionalString (conf != null) "cp ${configFile} config.def.h";
-
   buildInputs = [ ncurses ];
-
   buildFlags = [ "LDLIBS=-lncurses" ];
+  preBuild = lib.optionalString (conf != null) "cp ${configFile} config.def.h";
+  configFile = lib.optionalString (conf != null) (builtins.toFile "config.def.h" conf);
 
   installFlags = [
     "DESTDIR=$(out)"
@@ -38,8 +36,8 @@ stdenv.mkDerivation rec {
     description = "Small ncurses-based file browser";
     homepage = "https://git.2f30.org/noice/";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
     mainProgram = "noice";
   };
 }

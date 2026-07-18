@@ -1,17 +1,15 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   cmake,
   ninja,
-  setuptools,
-  torch,
-
   # tests
   pytestCheckHook,
+  setuptools,
+  torch,
 }:
 let
   inherit (torch) cudaPackages cudaSupport cudaCapabilities;
@@ -19,39 +17,27 @@ in
 buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
   pname = "pyg-lib";
   version = "0.7.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "pyg-team";
     repo = "pyg-lib";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-czHSOIocmoup502kLS8v+aeu6fVPPhqFh3hbGcFvNEQ=";
+    fetchSubmodules = true;
   };
-
-  build-system = [
-    cmake
-    ninja
-    setuptools
-    torch
-  ];
-  dontUseCmakeConfigure = true;
 
   nativeBuildInputs = lib.optionals cudaSupport [
     cudaPackages.cuda_nvcc
   ];
-
-  env = lib.optionalAttrs cudaSupport {
-    TORCH_CUDA_ARCH_LIST = "${lib.concatStringsSep ";" cudaCapabilities}";
-  };
 
   buildInputs = [
     torch.cxxdev
     torch
   ];
 
-  pythonImportsCheck = [ "pyg_lib" ];
+  env = lib.optionalAttrs cudaSupport {
+    TORCH_CUDA_ARCH_LIST = "${lib.concatStringsSep ";" cudaCapabilities}";
+  };
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -60,6 +46,15 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
   preCheck = ''
     rm -rf pyg_lib
   '';
+
+  __structuredAttrs = true;
+
+  build-system = [
+    cmake
+    ninja
+    setuptools
+    torch
+  ];
 
   disabledTests =
     lib.optionals (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64) [
@@ -73,14 +68,20 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
       "test_hetero_neighbor_sampler_temporal_sample"
     ];
 
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+  pythonImportsCheck = [ "pyg_lib" ];
+
   meta = {
     description = "Low-Level Graph Neural Network Operators for PyG";
     homepage = "https://github.com/pyg-team/pyg-lib";
     changelog = "https://github.com/pyg-team/pyg-lib/blob/${finalAttrs.src.tag}/CHANGELOG.md";
+
     license = with lib.licenses; [
       mit
       bsd3
     ];
+
     maintainers = with lib.maintainers; [ GaetanLepage ];
   };
 })

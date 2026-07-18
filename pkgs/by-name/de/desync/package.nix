@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,12 +17,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-rdwUoTwN/fG4fsOY4mCcg0bzWMErFaxBe72RtmHohdA=";
   };
 
-  vendorHash = "sha256-unwaA+WNyaJbNrOFvjXeMI2YbNTpGBrjwBGXhvOfj0M=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  # required for TestHTTPHandlerReadWrite and other tests
-  __darwinAllowLocalNetworking = true;
+  vendorHash = "sha256-unwaA+WNyaJbNrOFvjXeMI2YbNTpGBrjwBGXhvOfj0M=";
 
   checkFlags =
     let
@@ -55,13 +51,16 @@ buildGoModule (finalAttrs: {
     $out/bin/desync manpage --section 1 $out/share/man/man1
   '';
 
+  # required for TestHTTPHandlerReadWrite and other tests
+  __darwinAllowLocalNetworking = true;
+
   meta = {
     description = "Content-addressed binary distribution system";
-    mainProgram = "desync";
     longDescription = "An alternate implementation of the casync protocol and storage mechanism with a focus on production-readiness";
     homepage = "https://github.com/folbricht/desync";
     changelog = "https://github.com/folbricht/desync/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ matshch ];
+    mainProgram = "desync";
   };
 })

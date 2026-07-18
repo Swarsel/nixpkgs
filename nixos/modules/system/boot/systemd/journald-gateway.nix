@@ -34,41 +34,12 @@ in
     (lib.mkRemovedOptionModule [ "services" "journald" "gateway" "trust" ] tlsOptionRemovedMessage)
   ];
 
-  meta.maintainers = [ ];
   options.services.journald.gateway = {
     enable = lib.mkEnableOption "the HTTP gateway to the journal";
 
-    port = lib.mkOption {
-      default = 19531;
-      type = lib.types.port;
-      description = ''
-        The port to listen to.
-      '';
-    };
-
-    system = lib.mkOption {
-      default = false;
-      type = lib.types.bool;
-      description = ''
-        Serve entries from system services and the kernel.
-
-        This has the same meaning as `--system` for {manpage}`journalctl(1)`.
-      '';
-    };
-
-    user = lib.mkOption {
-      default = false;
-      type = lib.types.bool;
-      description = ''
-        Serve entries from services for the current user.
-
-        This has the same meaning as `--user` for {manpage}`journalctl(1)`.
-      '';
-    };
-
     merge = lib.mkOption {
       default = false;
-      type = lib.types.bool;
+
       description = ''
         Serve entries interleaved from all available journals, including other
         machines.
@@ -76,6 +47,42 @@ in
         This has the same meaning as `--merge` option for
         {manpage}`journalctl(1)`.
       '';
+
+      type = lib.types.bool;
+    };
+
+    port = lib.mkOption {
+      default = 19531;
+
+      description = ''
+        The port to listen to.
+      '';
+
+      type = lib.types.port;
+    };
+
+    system = lib.mkOption {
+      default = false;
+
+      description = ''
+        Serve entries from system services and the kernel.
+
+        This has the same meaning as `--system` for {manpage}`journalctl(1)`.
+      '';
+
+      type = lib.types.bool;
+    };
+
+    user = lib.mkOption {
+      default = false;
+
+      description = ''
+        Serve entries from services for the current user.
+
+        This has the same meaning as `--user` for {manpage}`journalctl(1)`.
+      '';
+
+      type = lib.types.bool;
     };
   };
 
@@ -85,10 +92,6 @@ in
       "systemd-journal-gatewayd.service"
     ];
 
-    users.users.systemd-journal-gateway.uid = config.ids.uids.systemd-journal-gateway;
-    users.users.systemd-journal-gateway.group = "systemd-journal-gateway";
-    users.groups.systemd-journal-gateway.gid = config.ids.gids.systemd-journal-gateway;
-
     systemd.services.systemd-journal-gatewayd.serviceConfig.ExecStart = [
       # Clear the default command line
       ""
@@ -96,12 +99,19 @@ in
     ];
 
     systemd.sockets.systemd-journal-gatewayd = {
-      wantedBy = [ "sockets.target" ];
       listenStreams = [
         # Clear the default port
         ""
         (toString cfg.port)
       ];
+
+      wantedBy = [ "sockets.target" ];
     };
+
+    users.groups.systemd-journal-gateway.gid = config.ids.gids.systemd-journal-gateway;
+    users.users.systemd-journal-gateway.group = "systemd-journal-gateway";
+    users.users.systemd-journal-gateway.uid = config.ids.uids.systemd-journal-gateway;
   };
+
+  meta.maintainers = [ ];
 }

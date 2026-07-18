@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   lzo,
   pytestCheckHook,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "python-lzo";
   version = "1.16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jd-boyd";
@@ -26,9 +25,8 @@ buildPythonPackage rec {
   ];
 
   buildInputs = [ lzo ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "lzo" ];
 
   meta = {

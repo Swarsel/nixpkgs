@@ -27,8 +27,8 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/cs50/libcs50";
     description = "CS50 Library for C";
+    homepage = "https://github.com/cs50/libcs50";
     license = lib.licenses.gpl3Only;
     maintainers = [ lib.maintainers.ethancedwards8 ];
   };

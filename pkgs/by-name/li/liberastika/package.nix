@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -10,8 +10,8 @@ stdenvNoCC.mkDerivation rec {
 
   src = fetchzip {
     url = "mirror://sourceforge/project/lib-ka/liberastika-ttf-${version}.zip";
-    stripRoot = false;
     hash = "sha256-woUpOmxhj6eEw7PKJ8EyRcs3ORj0gCZhxHP5a5dy5z0=";
+    stripRoot = false;
   };
 
   installPhase = ''
@@ -25,9 +25,8 @@ stdenvNoCC.mkDerivation rec {
   meta = {
     description = "Liberation Sans fork with improved cyrillic support";
     homepage = "https://sourceforge.net/projects/lib-ka/";
-
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 }

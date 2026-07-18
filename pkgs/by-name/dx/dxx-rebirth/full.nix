@@ -1,19 +1,18 @@
 {
   lib,
   stdenv,
-  makeWrapper,
-  dxx-rebirth,
   descent1-assets,
   descent2-assets,
+  dxx-rebirth,
+  makeWrapper,
 }:
 
 let
   generic =
     ver: assets:
     stdenv.mkDerivation {
-      pname = "d${toString ver}x-rebirth-full";
       inherit (assets) version;
-
+      pname = "d${toString ver}x-rebirth-full";
       nativeBuildInputs = [ makeWrapper ];
 
       buildCommand = ''
@@ -26,10 +25,12 @@ let
       meta = {
         description = "Descent ${toString ver} using the DXX-Rebirth project engine and game assets from GOG";
         homepage = "https://www.dxx-rebirth.com/";
+
         license = with lib.licenses; [
           free
           unfree
         ];
+
         maintainers = with lib.maintainers; [ peterhoeg ];
         platforms = with lib.platforms; linux;
         hydraPlatforms = [ ];

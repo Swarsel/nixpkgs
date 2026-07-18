@@ -1,79 +1,75 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  cython_3_1,
-  meson-python,
-  meson,
-  pkg-config,
-  versioneer,
-  wheel,
-
-  # propagates
-  numpy,
-  python-dateutil,
-  pytz,
-  tzdata,
-
+  # tests
+  adv_cmds,
   # optionals
   beautifulsoup4,
-  bottleneck,
   blosc2,
+  bottleneck,
+  buildPythonPackage,
+  # build-system
+  cython_3_1,
   fsspec,
   gcsfs,
+  glibc,
   html5lib,
+  hypothesis,
   jinja2,
   lxml,
   matplotlib,
+  meson,
+  meson-python,
   numba,
   numexpr,
+  # propagates
+  numpy,
   odfpy,
   openpyxl,
+  pkg-config,
   psycopg2,
   pyarrow,
   pymysql,
   pyqt5,
   pyreadstat,
+  pytest-asyncio,
+  pytest-xdist,
+  pytestCheckHook,
+  python,
+  python-dateutil,
+  pytz,
   pyxlsb,
   qtpy,
+  runtimeShell,
   s3fs,
   scipy,
   sqlalchemy,
   tables,
   tabulate,
+  tzdata,
+  versioneer,
+  wheel,
   xarray,
   xlrd,
   xlsxwriter,
   zstandard,
-
-  # tests
-  adv_cmds,
-  glibc,
-  hypothesis,
-  pytestCheckHook,
-  pytest-xdist,
-  pytest-asyncio,
-  python,
-  runtimeShell,
 }:
 
 let
   pandas = buildPythonPackage rec {
     pname = "pandas";
     version = "3.0.4";
-    pyproject = true;
 
     src = fetchFromGitHub {
       owner = "pandas-dev";
       repo = "pandas";
       tag = "v${version}";
+      hash = "sha256-cPnvBVs5xXjbRoj6KU/KeNn+To9oue7H0OBaJ2JdJG4=";
+
       postFetch = ''
         sed -i 's/git_refnames = "[^"]*"/git_refnames = " (tag: ${src.tag})"/' $out/pandas/_version.py
       '';
-      hash = "sha256-cPnvBVs5xXjbRoj6KU/KeNn+To9oue7H0OBaJ2JdJG4=";
     };
 
     # A NOTE regarding the Numpy version relaxing: Both Numpy versions 1.x &
@@ -92,91 +88,7 @@ let
         --replace-fail "numpy>=2.0.0" numpy
     '';
 
-    build-system = [
-      cython_3_1
-      meson-python
-      meson
-      numpy
-      pkg-config
-      versioneer
-      wheel
-    ];
-
-    enableParallelBuilding = true;
-
-    dependencies = [
-      numpy
-      python-dateutil
-      pytz
-      tzdata
-    ];
-
-    optional-dependencies =
-      let
-        extras = {
-          aws = [ s3fs ];
-          clipboard = [
-            pyqt5
-            qtpy
-          ];
-          compression = [ zstandard ];
-          computation = [
-            scipy
-            xarray
-          ];
-          excel = [
-            odfpy
-            openpyxl
-            pyxlsb
-            xlrd
-            xlsxwriter
-          ];
-          feather = [ pyarrow ];
-          fss = [ fsspec ];
-          gcp = [
-            gcsfs
-            # TODO: pandas-gqb
-          ];
-          hdf5 = [
-            blosc2
-            tables
-          ];
-          html = [
-            beautifulsoup4
-            html5lib
-            lxml
-          ];
-          mysql = [
-            sqlalchemy
-            pymysql
-          ];
-          output_formatting = [
-            jinja2
-            tabulate
-          ];
-          parquet = [ pyarrow ];
-          performance = [
-            bottleneck
-            numba
-            numexpr
-          ];
-          plot = [ matplotlib ];
-          postgresql = [
-            sqlalchemy
-            psycopg2
-          ];
-          spss = [ pyreadstat ];
-          sql-other = [ sqlalchemy ];
-          xml = [ lxml ];
-        };
-      in
-      extras // { all = lib.concatLists (lib.attrValues extras); };
-
     doCheck = false; # various infinite recursions
-
-    passthru.tests.pytest = pandas.overridePythonAttrs (_: {
-      doCheck = true;
-    });
 
     nativeCheckInputs = [
       hypothesis
@@ -194,15 +106,39 @@ let
       adv_cmds
     ];
 
-    # don't max out build cores, it breaks tests
-    dontUsePytestXdist = true;
+    # Tests have relative paths, and need to reference compiled C extensions
+    # so change directory where `import .test` is able to be resolved
+    preCheck = ''
+      export HOME=$TMPDIR
+      cd $out/${python.sitePackages}/pandas
+    ''
+    # TODO: Get locale and clipboard support working on darwin.
+    #       Until then we disable the tests.
+    + lib.optionalString stdenv.hostPlatform.isDarwin ''
+      # Fake the impure dependencies pbpaste and pbcopy
+      echo "#!${runtimeShell}" > pbcopy
+      echo "#!${runtimeShell}" > pbpaste
+      chmod a+x pbcopy pbpaste
+      export PATH=$(pwd):$PATH
+    '';
 
     __darwinAllowLocalNetworking = true;
 
-    pytestFlags = [
-      # https://github.com/pandas-dev/pandas/issues/54907
-      "--no-strict-data-files"
-      "--numprocesses=4"
+    build-system = [
+      cython_3_1
+      meson-python
+      meson
+      numpy
+      pkg-config
+      versioneer
+      wheel
+    ];
+
+    dependencies = [
+      numpy
+      python-dateutil
+      pytz
+      tzdata
     ];
 
     disabledTestMarks = [
@@ -229,40 +165,120 @@ let
       "test_rolling_var_numerical_issues"
     ];
 
-    # Tests have relative paths, and need to reference compiled C extensions
-    # so change directory where `import .test` is able to be resolved
-    preCheck = ''
-      export HOME=$TMPDIR
-      cd $out/${python.sitePackages}/pandas
-    ''
-    # TODO: Get locale and clipboard support working on darwin.
-    #       Until then we disable the tests.
-    + lib.optionalString stdenv.hostPlatform.isDarwin ''
-      # Fake the impure dependencies pbpaste and pbcopy
-      echo "#!${runtimeShell}" > pbcopy
-      echo "#!${runtimeShell}" > pbpaste
-      chmod a+x pbcopy pbpaste
-      export PATH=$(pwd):$PATH
-    '';
+    # don't max out build cores, it breaks tests
+    dontUsePytestXdist = true;
+    enableParallelBuilding = true;
+
+    optional-dependencies =
+      let
+        extras = {
+          aws = [ s3fs ];
+
+          clipboard = [
+            pyqt5
+            qtpy
+          ];
+
+          compression = [ zstandard ];
+
+          computation = [
+            scipy
+            xarray
+          ];
+
+          excel = [
+            odfpy
+            openpyxl
+            pyxlsb
+            xlrd
+            xlsxwriter
+          ];
+
+          feather = [ pyarrow ];
+          fss = [ fsspec ];
+
+          gcp = [
+            gcsfs
+            # TODO: pandas-gqb
+          ];
+
+          hdf5 = [
+            blosc2
+            tables
+          ];
+
+          html = [
+            beautifulsoup4
+            html5lib
+            lxml
+          ];
+
+          mysql = [
+            sqlalchemy
+            pymysql
+          ];
+
+          output_formatting = [
+            jinja2
+            tabulate
+          ];
+
+          parquet = [ pyarrow ];
+
+          performance = [
+            bottleneck
+            numba
+            numexpr
+          ];
+
+          plot = [ matplotlib ];
+
+          postgresql = [
+            sqlalchemy
+            psycopg2
+          ];
+
+          spss = [ pyreadstat ];
+          sql-other = [ sqlalchemy ];
+          xml = [ lxml ];
+        };
+      in
+      extras // { all = lib.concatLists (lib.attrValues extras); };
+
+    pyproject = true;
+
+    pytestFlags = [
+      # https://github.com/pandas-dev/pandas/issues/54907
+      "--no-strict-data-files"
+      "--numprocesses=4"
+    ];
 
     pythonImportsCheck = [ "pandas" ];
 
+    passthru.tests.pytest = pandas.overridePythonAttrs (_: {
+      doCheck = true;
+    });
+
     meta = {
-      # pandas devs no longer test i686, it's commonly broken
-      # broken = stdenv.hostPlatform.isi686;
-      changelog = "https://pandas.pydata.org/docs/whatsnew/index.html";
       description = "Powerful data structures for data analysis, time series, and statistics";
-      downloadPage = "https://github.com/pandas-dev/pandas";
-      homepage = "https://pandas.pydata.org";
-      license = lib.licenses.bsd3;
+
       longDescription = ''
         Flexible and powerful data analysis / manipulation library for
         Python, providing labeled data structures similar to R data.frame
         objects, statistical functions, and much more.
       '';
+
+      homepage = "https://pandas.pydata.org";
+      # pandas devs no longer test i686, it's commonly broken
+      # broken = stdenv.hostPlatform.isi686;
+      changelog = "https://pandas.pydata.org/docs/whatsnew/index.html";
+      license = lib.licenses.bsd3;
+
       maintainers = with lib.maintainers; [
         raskin
       ];
+
+      downloadPage = "https://github.com/pandas-dev/pandas";
     };
   };
 in

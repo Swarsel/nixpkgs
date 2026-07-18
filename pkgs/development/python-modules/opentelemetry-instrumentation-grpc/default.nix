@@ -2,23 +2,35 @@
   lib,
   stdenv,
   buildPythonPackage,
+  grpcio,
   hatchling,
   opentelemetry-api,
   opentelemetry-instrumentation,
   opentelemetry-semantic-conventions,
   opentelemetry-test-utils,
-  wrapt,
   pytestCheckHook,
-  grpcio,
+  wrapt,
 }:
 
 buildPythonPackage {
   inherit (opentelemetry-instrumentation) version src;
   pname = "opentelemetry-instrumentation-grpc";
-  pyproject = true;
 
-  sourceRoot = "${opentelemetry-instrumentation.src.name}/instrumentation/opentelemetry-instrumentation-grpc";
+  env = {
+    PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION = "python";
+  };
 
+  preBuild = ''
+    export TMPDIR=$(mktemp -d)
+  '';
+
+  nativeCheckInputs = [
+    opentelemetry-test-utils
+    grpcio
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -28,35 +40,21 @@ buildPythonPackage {
     wrapt
   ];
 
-  optional-dependencies = {
-    instruments = [ grpcio ];
-  };
-
-  env = {
-    PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION = "python";
-  };
-
-  nativeCheckInputs = [
-    opentelemetry-test-utils
-    grpcio
-    pytestCheckHook
-  ];
-
-  preBuild = ''
-    export TMPDIR=$(mktemp -d)
-  '';
-
   disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
     # RuntimeError: Failed to bind to address
     "TestOpenTelemetryServerInterceptorUnix"
   ];
 
-  pythonImportsCheck = [ "opentelemetry.instrumentation.grpc" ];
+  optional-dependencies = {
+    instruments = [ grpcio ];
+  };
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+  pythonImportsCheck = [ "opentelemetry.instrumentation.grpc" ];
+  sourceRoot = "${opentelemetry-instrumentation.src.name}/instrumentation/opentelemetry-instrumentation-grpc";
 
   meta = opentelemetry-instrumentation.meta // {
-    homepage = "https://github.com/open-telemetry/opentelemetry-python-contrib/tree/main/instrumentation/opentelemetry-instrumentation-grpc";
     description = "OpenTelemetry Instrumentation for grpc";
+    homepage = "https://github.com/open-telemetry/opentelemetry-python-contrib/tree/main/instrumentation/opentelemetry-instrumentation-grpc";
   };
 }

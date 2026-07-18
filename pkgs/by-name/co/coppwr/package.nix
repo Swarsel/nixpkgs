@@ -1,16 +1,16 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
+  libGL,
+  libx11,
+  libxcursor,
+  libxi,
   libxkbcommon,
   pipewire,
+  pkg-config,
+  rustPlatform,
   vulkan-loader,
   wayland,
-  libGL,
-  libxi,
-  libxcursor,
-  libx11,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -23,8 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-L0MpMh3HuWX0zxG50OGZDa+wX5E55/dU6jt6Iei99Ho=";
   };
-
-  cargoHash = "sha256-tcGyoPVoJFhbXZFe23d00Z7FUwIo5J02EfPTBzCGE64=";
 
   nativeBuildInputs = [
     pkg-config
@@ -41,6 +39,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libxi
     libx11
   ];
+
+  cargoHash = "sha256-tcGyoPVoJFhbXZFe23d00Z7FUwIo5J02EfPTBzCGE64=";
 
   preBuild = ''
     install -m 444 \
@@ -76,7 +76,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/dimtpap/coppwr";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ ravenz46 ];
-    mainProgram = "coppwr";
     platforms = lib.platforms.linux;
+    mainProgram = "coppwr";
   };
 })

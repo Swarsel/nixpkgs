@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,15 +16,14 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
-
   # check requires opening webpage
   doCheck = false;
 
   meta = {
     description = "Tool build chart by go mod graph output with zero dependencies";
     homepage = "https://github.com/PaulXu-cn/go-mod-graph-chart";
-    mainProgram = "gmchart";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ aleksana ];
+    mainProgram = "gmchart";
   };
 })

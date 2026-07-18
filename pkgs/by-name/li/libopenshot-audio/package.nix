@@ -26,6 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-NfwjyX+9OiS4NoB4ubscNF52kF4i3GAVjb4Z/RwkaCI=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     doxygen
@@ -52,22 +54,22 @@ stdenv.mkDerivation (finalAttrs: {
         ]
     );
 
-  strictDeps = true;
+  doCheck = true;
   __structuredAttrs = true;
 
-  doCheck = true;
-
   meta = {
-    homepage = "http://openshot.org/";
     description = "High-quality sound editing library";
-    mainProgram = "openshot-audio-demo";
+
     longDescription = ''
       OpenShot Audio Library (libopenshot-audio) is a program that allows the
       high-quality editing and playback of audio, and is based on the amazing
       JUCE library.
     '';
+
+    homepage = "http://openshot.org/";
     license = with lib.licenses; [ gpl3Plus ];
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "openshot-audio-demo";
   };
 })

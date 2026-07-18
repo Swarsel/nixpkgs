@@ -1,10 +1,10 @@
 {
   lib,
-  fetchFromGitHub,
-  buildDunePackage,
   stdenv,
-  flex,
+  fetchFromGitHub,
   bison,
+  buildDunePackage,
+  flex,
 }:
 
 (buildDunePackage.override { inherit stdenv; }) (finalAttrs: {
@@ -25,9 +25,8 @@
     bison
   ];
 
-  hardeningDisable = [ "format" ];
-
   doCheck = true;
+  hardeningDisable = [ "format" ];
 
   meta = {
     description = "Efficient implementation of the Lambda Prolog language";

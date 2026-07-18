@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchurl,
+  alsa-lib,
+  jack,
+  libpulseaudio,
   makeWrapper,
+  perl,
   pkg-config,
+  writeScript,
   libOnly ? false, # whether to build only the library
   withAlsa ? stdenv.hostPlatform.isLinux,
-  alsa-lib,
-  withPulse ? stdenv.hostPlatform.isLinux,
-  libpulseaudio,
+  withConplay ? !stdenv.hostPlatform.isWindows,
   withCoreAudio ? stdenv.hostPlatform.isDarwin,
   withJack ? stdenv.hostPlatform.isUnix,
-  jack,
-  withConplay ? !stdenv.hostPlatform.isWindows,
-  perl,
-  writeScript,
+  withPulse ? stdenv.hostPlatform.isLinux,
 }:
 
 assert withConplay -> !libOnly;
@@ -62,8 +62,6 @@ stdenv.mkDerivation (finalAttrs: {
     ]
     ++ lib.optional (stdenv.hostPlatform ? mpg123) "--with-cpu=${stdenv.hostPlatform.mpg123.cpu}";
 
-  enableParallelBuilding = true;
-
   postInstall = lib.optionalString withConplay ''
     mkdir -p $conplay/bin
     mv scripts/conplay $conplay/bin/
@@ -77,6 +75,8 @@ stdenv.mkDerivation (finalAttrs: {
     wrapProgram $conplay/bin/conplay \
       --prefix PATH : $out/bin
   '';
+
+  enableParallelBuilding = true;
 
   passthru = {
     updateScript = writeScript "update-mpg123" ''

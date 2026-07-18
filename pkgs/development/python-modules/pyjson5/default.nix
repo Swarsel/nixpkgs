@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cython,
-  fetchFromGitHub,
   setuptools,
   wheel,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pyjson5";
   version = "2.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Kijewski";
@@ -20,15 +19,16 @@ buildPythonPackage rec {
     fetchSubmodules = true;
   };
 
+  # Module has no tests
+  doCheck = false;
+
   build-system = [
     cython
     setuptools
     wheel
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyjson5" ];
 
   meta = {

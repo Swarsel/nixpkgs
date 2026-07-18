@@ -1,13 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   aiounittest,
   buildPythonPackage,
-  fetchFromGitHub,
   freezegun,
   google-api-core,
   google-cloud-core,
   google-cloud-testutils,
   mock,
+  nix-update-script,
   proto-plus,
   protobuf,
   pytest-asyncio,
@@ -16,13 +17,11 @@
   pythonOlder,
   pyyaml,
   setuptools,
-  nix-update-script,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "google-cloud-firestore";
   version = "2.28.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googleapis";
@@ -30,20 +29,6 @@ buildPythonPackage (finalAttrs: {
     tag = "google-cloud-firestore-v${finalAttrs.version}";
     hash = "sha256-dct5yBerIMNQgVIvOWdO9yTxSrH1JDUen6I7CYHftC0=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/packages/google-cloud-firestore";
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    google-api-core
-    google-cloud-core
-    proto-plus
-    protobuf
-  ]
-  ++ google-api-core.optional-dependencies.grpc;
-
-  pythonRelaxDeps = [ "protobuf" ];
 
   nativeCheckInputs = [
     freezegun
@@ -64,6 +49,16 @@ buildPythonPackage (finalAttrs: {
     rm -r tests/unit/v1/test_bulk_writer.py
   '';
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    google-api-core
+    google-cloud-core
+    proto-plus
+    protobuf
+  ]
+  ++ google-api-core.optional-dependencies.grpc;
+
   disabledTestPaths = [
     # Tests are broken
     "tests/system/test_system.py"
@@ -82,10 +77,15 @@ buildPythonPackage (finalAttrs: {
     "tests/unit/v1/test_bundle.py::TestAsyncBundle::test_async_query"
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "google.cloud.firestore_v1"
     "google.cloud.firestore_admin_v1"
   ];
+
+  pythonRelaxDeps = [ "protobuf" ];
+  sourceRoot = "${finalAttrs.src.name}/packages/google-cloud-firestore";
 
   passthru.updateScript = nix-update-script {
     extraArgs = [

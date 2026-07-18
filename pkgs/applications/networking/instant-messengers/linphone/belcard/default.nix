@@ -1,9 +1,8 @@
 {
+  lib,
   bctoolbox,
   belr,
-  lib,
   mkLinphoneDerivation,
-
   # tests
   testers,
 }:
@@ -21,10 +20,11 @@ mkLinphoneDerivation (finalAttrs: {
 
   passthru.tests = {
     cmake-config = testers.hasCmakeConfigModules {
-      package = finalAttrs.finalPackage;
       moduleNames = [
         "BelCard"
       ];
+
+      package = finalAttrs.finalPackage;
     };
   };
 

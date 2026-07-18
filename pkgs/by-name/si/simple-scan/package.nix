@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchurl,
-  meson,
-  ninja,
-  pkg-config,
-  gettext,
-  itstool,
-  wrapGAppsHook4,
   cairo,
-  gdk-pixbuf,
   colord,
+  gdk-pixbuf,
+  gettext,
   glib,
-  libadwaita,
-  gtk4,
-  gusb,
-  packagekit,
-  libwebp,
-  libxml2,
-  sane-backends,
-  vala,
   gnome,
   gobject-introspection,
+  gtk4,
+  gusb,
+  itstool,
+  libadwaita,
+  libwebp,
+  libxml2,
+  meson,
+  ninja,
+  packagekit,
+  pkg-config,
+  sane-backends,
+  vala,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -68,7 +68,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Simple scanning utility";
-    mainProgram = "simple-scan";
+
     longDescription = ''
       A really easy way to scan both documents and photos. You can crop out the
       bad parts of a photo and rotate it if it is the wrong way round. You can
@@ -77,10 +77,12 @@ stdenv.mkDerivation (finalAttrs: {
       XSANE uses. This means that all existing scanners will work and the
       interface is well tested.
     '';
+
     homepage = "https://gitlab.gnome.org/GNOME/simple-scan";
     changelog = "https://gitlab.gnome.org/GNOME/simple-scan/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
     license = lib.licenses.gpl3Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+    mainProgram = "simple-scan";
+    teams = [ lib.teams.gnome ];
   };
 })

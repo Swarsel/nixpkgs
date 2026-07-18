@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  hatchling,
   lxml,
   lxml-html-clean,
   pytestCheckHook,
-  hatchling,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "html-text";
   version = "0.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zytedata";
@@ -20,6 +19,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-KLWgdVHGYRiQ61hMNx+Kcx9mE7d/TsBe110TfCe+ejU=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ hatchling ];
 
   dependencies = [
@@ -27,8 +27,7 @@ buildPythonPackage (finalAttrs: {
     lxml-html-clean
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "html_text" ];
 
   meta = {

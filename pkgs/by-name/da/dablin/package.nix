@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  mpg123,
   SDL2,
-  gtkmm3,
+  cmake,
   faad2,
+  gtkmm3,
+  mpg123,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,11 +36,13 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Play DAB/DAB+ from ETI-NI aligned stream";
     homepage = "https://github.com/Opendigitalradio/dablin";
+
     license = with lib.licenses; [
       gpl3Plus
       lgpl21Only
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = [ lib.maintainers.markuskowa ];
+    platforms = lib.platforms.linux;
   };
 })

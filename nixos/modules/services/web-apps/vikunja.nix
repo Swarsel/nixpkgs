@@ -1,7 +1,7 @@
 {
-  pkgs,
-  lib,
   config,
+  lib,
+  pkgs,
   ...
 }:
 
@@ -24,81 +24,104 @@ in
   options.services.vikunja = with lib; {
     enable = mkEnableOption "vikunja service";
     package = mkPackageOption pkgs "vikunja" { };
-    environmentFiles = mkOption {
-      type = types.listOf types.path;
-      default = [ ];
-      description = ''
-        List of environment files set in the vikunja systemd service.
-        For example passwords should be set in one of these files.
-      '';
-    };
-    frontendScheme = mkOption {
-      type = types.enum [
-        "http"
-        "https"
-      ];
-      description = ''
-        Whether the site is available via http or https.
-      '';
-    };
-    frontendHostname = mkOption {
-      type = types.str;
-      description = "The Hostname under which the frontend is running.";
-    };
+
     address = mkOption {
-      type = types.str;
       default = "";
       description = "The IP address to bind to.";
-    };
-    port = mkOption {
-      type = types.port;
-      default = 3456;
-      description = "The TCP port exposed by the API.";
+      type = types.str;
     };
 
-    settings = mkOption {
-      type = format.type;
-      default = { };
-      description = ''
-        Vikunja configuration. Refer to
-        <https://vikunja.io/docs/config-options/>
-        for details on supported values.
-      '';
-    };
     database = {
+      database = mkOption {
+        default = "vikunja";
+        description = "Database name.";
+        type = types.str;
+      };
+
+      host = mkOption {
+        default = "localhost";
+        description = "Database host address. Can also be a socket.";
+        type = types.str;
+      };
+
+      path = mkOption {
+        default = "/var/lib/vikunja/vikunja.db";
+        description = "Path to the sqlite3 database file.";
+        type = types.str;
+      };
+
       type = mkOption {
+        default = "sqlite";
+        description = "Database engine to use.";
+        example = "postgres";
+
         type = types.enum [
           "sqlite"
           "mysql"
           "postgres"
         ];
-        example = "postgres";
-        default = "sqlite";
-        description = "Database engine to use.";
       };
-      host = mkOption {
-        type = types.str;
-        default = "localhost";
-        description = "Database host address. Can also be a socket.";
-      };
+
       user = mkOption {
-        type = types.str;
         default = "vikunja";
         description = "Database user.";
-      };
-      database = mkOption {
         type = types.str;
-        default = "vikunja";
-        description = "Database name.";
-      };
-      path = mkOption {
-        type = types.str;
-        default = "/var/lib/vikunja/vikunja.db";
-        description = "Path to the sqlite3 database file.";
       };
     };
+
+    environmentFiles = mkOption {
+      default = [ ];
+
+      description = ''
+        List of environment files set in the vikunja systemd service.
+        For example passwords should be set in one of these files.
+      '';
+
+      type = types.listOf types.path;
+    };
+
+    frontendHostname = mkOption {
+      description = "The Hostname under which the frontend is running.";
+      type = types.str;
+    };
+
+    frontendScheme = mkOption {
+      description = ''
+        Whether the site is available via http or https.
+      '';
+
+      type = types.enum [
+        "http"
+        "https"
+      ];
+    };
+
+    port = mkOption {
+      default = 3456;
+      description = "The TCP port exposed by the API.";
+      type = types.port;
+    };
+
+    settings = mkOption {
+      default = { };
+
+      description = ''
+        Vikunja configuration. Refer to
+        <https://vikunja.io/docs/config-options/>
+        for details on supported values.
+      '';
+
+      type = format.type;
+    };
   };
+
   config = lib.mkIf cfg.enable {
+    environment.etc."vikunja/config.yaml".source = configFile;
+
+    environment.systemPackages = [
+      cfg.package # for admin `vikunja` CLI
+    ];
+
     services.vikunja.settings = {
       database = {
         inherit (cfg.database)
@@ -109,40 +132,38 @@ in
           path
           ;
       };
+
+      files = {
+        basepath = "/var/lib/vikunja/files";
+      };
+
       service = {
         interface = "${cfg.address}:${toString cfg.port}";
         publicurl = "${cfg.frontendScheme}://${cfg.frontendHostname}/";
       };
-      files = {
-        basepath = "/var/lib/vikunja/files";
-      };
     };
 
     systemd.services.vikunja = {
-      description = "vikunja";
       after = [
         "network.target"
       ]
       ++ lib.optional usePostgresql "postgresql.target"
       ++ lib.optional useMysql "mysql.service";
-      wantedBy = [ "multi-user.target" ];
+
+      description = "vikunja";
       path = [ cfg.package ];
       restartTriggers = [ configFile ];
 
       serviceConfig = {
-        Type = "simple";
         DynamicUser = true;
-        StateDirectory = "vikunja";
+        EnvironmentFile = cfg.environmentFiles;
         ExecStart = "${cfg.package}/bin/vikunja";
         Restart = "always";
-        EnvironmentFile = cfg.environmentFiles;
+        StateDirectory = "vikunja";
+        Type = "simple";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
-
-    environment.etc."vikunja/config.yaml".source = configFile;
-
-    environment.systemPackages = [
-      cfg.package # for admin `vikunja` CLI
-    ];
   };
 }

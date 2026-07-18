@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
+  gitUpdater,
+  glib,
+  gtk3,
   meson,
   ninja,
   pkg-config,
   wrapGAppsHook3,
-  gtk3,
-  glib,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,11 +16,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.6.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.xfce.org";
     owner = "apps";
     repo = "gigolo";
     tag = "gigolo-${finalAttrs.version}";
     hash = "sha256-tyFjVvtDE25y6rnmlESdl8s/GdyHGqbn2Dn/ymIIgWs=";
+    domain = "gitlab.xfce.org";
   };
 
   strictDeps = true;
@@ -44,8 +44,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Frontend to easily manage connections to remote filesystems";
     homepage = "https://gitlab.xfce.org/apps/gigolo";
     license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.linux;
     mainProgram = "gigolo";
     teams = [ lib.teams.xfce ];
-    platforms = lib.platforms.linux;
   };
 })

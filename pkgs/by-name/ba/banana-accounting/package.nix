@@ -3,26 +3,19 @@
   stdenv,
   fetchurl,
   autoPatchelfHook,
-  wrapGAppsHook3,
   cairo,
   e2fsprogs,
   gmp,
   gtk3,
   libGL,
-  libx11,
   libgcrypt,
+  libx11,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "banana-accounting";
   version = "10.1.24";
-
-  srcs = fetchurl {
-    url = "https://web.archive.org/web/20250416013207/https://www.banana.ch/accounting/files/bananaplus/exe/bananaplus.tgz";
-    hash = "sha256-5GewPGOCyeS6faL8aMUZ/JDUUn2PGuur0ws/7nlNX6M=";
-  };
-
-  sourceRoot = ".";
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -40,10 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
     libgcrypt
   ];
 
-  dontConfigure = true;
-
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -56,12 +45,21 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  sourceRoot = ".";
+
+  srcs = fetchurl {
+    hash = "sha256-5GewPGOCyeS6faL8aMUZ/JDUUn2PGuur0ws/7nlNX6M=";
+    url = "https://web.archive.org/web/20250416013207/https://www.banana.ch/accounting/files/bananaplus/exe/bananaplus.tgz";
+  };
+
   meta = {
     description = "Accounting Software for small companies, associations and individuals";
     homepage = "https://www.banana.ch";
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
-    maintainers = with lib.maintainers; [ jacg ];
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    maintainers = with lib.maintainers; [ jacg ];
+    platforms = [ "x86_64-linux" ];
   };
 })

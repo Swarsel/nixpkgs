@@ -1,45 +1,39 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  cython,
-  numpy,
-  setuptools,
-
-  # non-Python dependencies
-  gdal-cpp,
-
   # dependencies
   affine,
   attrs,
+  boto3,
+  buildPythonPackage,
   certifi,
   click,
   click-plugins,
   cligj,
-  snuggs,
-
+  # build-system
+  cython,
+  # tests
+  fsspec,
+  # non-Python dependencies
+  gdal-cpp,
+  hypothesis,
   # optional-dependencies
   ipython,
   matplotlib,
-  boto3,
-
-  # tests
-  fsspec,
-  hypothesis,
+  numpy,
   packaging,
-  pytestCheckHook,
   pytest-randomly,
+  pytestCheckHook,
+  setuptools,
   shapely,
+  snuggs,
   versionCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "rasterio";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rasterio";
@@ -53,12 +47,6 @@ buildPythonPackage rec {
       --replace-fail "cython>=3.1,<=3.2" cython
   '';
 
-  build-system = [
-    cython
-    numpy
-    setuptools
-  ];
-
   nativeBuildInputs = [
     gdal-cpp # for gdal-config
   ];
@@ -66,27 +54,6 @@ buildPythonPackage rec {
   buildInputs = [
     gdal-cpp
   ];
-
-  pythonRelaxDeps = [
-    "click"
-  ];
-
-  dependencies = [
-    affine
-    attrs
-    certifi
-    click
-    click-plugins
-    cligj
-    numpy
-    snuggs
-  ];
-
-  optional-dependencies = {
-    ipython = [ ipython ];
-    plot = [ matplotlib ];
-    s3 = [ boto3 ];
-  };
 
   nativeCheckInputs = [
     boto3
@@ -102,6 +69,23 @@ buildPythonPackage rec {
   preCheck = ''
     rm -r rasterio # prevent importing local rasterio
   '';
+
+  build-system = [
+    cython
+    numpy
+    setuptools
+  ];
+
+  dependencies = [
+    affine
+    attrs
+    certifi
+    click
+    click-plugins
+    cligj
+    numpy
+    snuggs
+  ];
 
   disabledTestMarks = [ "network" ];
 
@@ -128,14 +112,25 @@ buildPythonPackage rec {
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ "test_reproject_error_propagation" ];
 
+  optional-dependencies = {
+    ipython = [ ipython ];
+    plot = [ matplotlib ];
+    s3 = [ boto3 ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "rasterio" ];
+
+  pythonRelaxDeps = [
+    "click"
+  ];
 
   meta = {
     description = "Python package to read and write geospatial raster data";
-    mainProgram = "rio";
     homepage = "https://rasterio.readthedocs.io/";
     changelog = "https://github.com/rasterio/rasterio/blob/${src.tag}/CHANGES.txt";
     license = lib.licenses.bsd3;
+    mainProgram = "rio";
     teams = [ lib.teams.geospatial ];
   };
 }

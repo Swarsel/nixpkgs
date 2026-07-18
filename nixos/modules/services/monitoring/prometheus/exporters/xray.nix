@@ -16,57 +16,69 @@ let
     ;
 in
 {
-  port = 9550;
-
   extraOpts = {
-    xrayEndpoint = mkOption {
-      type = types.str;
-      default = "127.0.0.1:8080";
-      description = ''
-        Xray gRPC API endpoint.
-      '';
-    };
-
-    metricsPath = mkOption {
-      type = types.str;
-      default = "/scrape";
-      description = ''
-        Path under which to expose metrics.
-      '';
-    };
-
-    scrapeTimeout = mkOption {
-      type = types.int;
-      default = 5;
-      description = ''
-        Timeout in seconds for every individual scrape.
-      '';
-    };
-
     logPath = mkOption {
-      type = types.str;
       default = "/var/log/xray/access.log";
+
       description = ''
         Path to Xray access log file. Set to empty string to disable user metrics.
       '';
+
+      type = types.str;
     };
 
     logTimeWindow = mkOption {
-      type = types.int;
       default = 5;
+
       description = ''
         Time window in minutes for user metrics.
       '';
+
+      type = types.int;
+    };
+
+    metricsPath = mkOption {
+      default = "/scrape";
+
+      description = ''
+        Path under which to expose metrics.
+      '';
+
+      type = types.str;
+    };
+
+    scrapeTimeout = mkOption {
+      default = 5;
+
+      description = ''
+        Timeout in seconds for every individual scrape.
+      '';
+
+      type = types.int;
     };
 
     withUserMetrics = mkOption {
-      type = types.bool;
       default = false;
+
       description = ''
         Collect user metrics from the Xray access log.
       '';
+
+      type = types.bool;
+    };
+
+    xrayEndpoint = mkOption {
+      default = "127.0.0.1:8080";
+
+      description = ''
+        Xray gRPC API endpoint.
+      '';
+
+      type = types.str;
     };
   };
+
+  port = 9550;
 
   serviceOpts = {
     serviceConfig = {

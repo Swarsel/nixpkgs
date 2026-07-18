@@ -1,17 +1,17 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   acpica-tools,
   bc,
   coreutils,
-  fetchFromGitHub,
   gawk,
   gnugrep,
   gnused,
   linuxPackages,
-  lib,
+  makeWrapper,
   pciutils,
   powertop,
-  makeWrapper,
-  stdenv,
   unstableGitUpdater,
   util-linux,
   xset,
@@ -51,8 +51,6 @@ stdenv.mkDerivation {
   '';
 
   nativeBuildInputs = [ makeWrapper ];
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -61,14 +59,16 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    homepage = "https://github.com/intel/S0ixSelftestTool";
     description = "Tool for testing the S2idle path CPU Package C-state and S0ix failures";
+    homepage = "https://github.com/intel/S0ixSelftestTool";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ adamcstephens ];
+    platforms = lib.platforms.linux;
     mainProgram = "s0ix-selftest-tool";
   };
 }

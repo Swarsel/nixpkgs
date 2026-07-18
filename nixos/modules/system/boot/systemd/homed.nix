@@ -23,17 +23,20 @@ in
 
     settings.Home = lib.mkOption {
       default = { };
-      type = lib.types.submodule {
-        freeformType = lib.types.attrsOf utils.systemdUtils.unitOptions.unitOption;
-      };
-      example = {
-        DefaultStorage = "luks";
-        DefaultFileSystemType = "btrfs";
-      };
+
       description = ''
         Options for systemd-homed. See {manpage}`homed.conf(5)` man page for
         available options.
       '';
+
+      example = {
+        DefaultFileSystemType = "btrfs";
+        DefaultStorage = "luks";
+      };
+
+      type = lib.types.submodule {
+        freeformType = lib.types.attrsOf utils.systemdUtils.unitOptions.unitOption;
+      };
     };
   };
 
@@ -41,24 +44,13 @@ in
     assertions = [
       {
         assertion = config.services.nscd.enable;
+
         message = ''
           systemd-homed requires the use of the systemd nss module.
           services.nscd.enable must be set to true.
         '';
       }
     ];
-
-    systemd.additionalUpstreamSystemUnits = [
-      "systemd-homed.service"
-      "systemd-homed-activate.service"
-      "systemd-homed-firstboot.service"
-    ];
-
-    # homed exposes SSH public keys and other user metadata using userdb
-    services.userdbd = {
-      enable = true;
-      enableSSHSupport = lib.mkDefault config.services.openssh.enable;
-    };
 
     # Enable creation and mounting of LUKS home areas with all filesystems
     # supported by systemd-homed.
@@ -73,11 +65,23 @@ in
       ${utils.systemdUtils.lib.attrsToSection cfg.settings.Home}
     '';
 
+    # homed exposes SSH public keys and other user metadata using userdb
+    services.userdbd = {
+      enable = true;
+      enableSSHSupport = lib.mkDefault config.services.openssh.enable;
+    };
+
+    systemd.additionalUpstreamSystemUnits = [
+      "systemd-homed.service"
+      "systemd-homed-activate.service"
+      "systemd-homed-firstboot.service"
+    ];
+
     systemd.services = {
       systemd-homed = {
+        aliases = [ "dbus-org.freedesktop.home1.service" ];
         # These packages are required to manage home areas with LUKS storage
         path = config.system.fsPackages;
-        aliases = [ "dbus-org.freedesktop.home1.service" ];
         wantedBy = [ "multi-user.target" ];
       };
 

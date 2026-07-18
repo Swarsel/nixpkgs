@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -23,9 +23,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Tools for user enumeration and password bruteforce";
-    mainProgram = "gomapenum";
     homepage = "https://github.com/nodauf/GoMapEnum";
     license = with lib.licenses; [ gpl3Only ];
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "gomapenum";
   };
 })

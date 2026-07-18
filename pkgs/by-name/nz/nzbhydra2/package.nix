@@ -1,12 +1,12 @@
 {
   lib,
-  makeWrapper,
-  python3,
-  nixosTests,
-  maven,
   fetchFromGitHub,
   jdk,
+  makeWrapper,
+  maven,
   nix-update-script,
+  nixosTests,
+  python3,
   xmlstarlet,
 }:
 
@@ -44,26 +44,11 @@ maven.buildMavenPackage rec {
     hash = "sha256-TKqqKFcmxGQ/u5XpRQbEQRdnVlILS8WDdVMXNsAz/yQ=";
   };
 
-  mvnHash = "sha256-mPNyJ4zijwQg8l0G+2cJPkwAVRFVbpCRfyFkA5ONBIE=";
-
-  mvnFetchExtraArgs.preBuild = ''
-    mvn -nsu "${timestampParameter}" --projects org.nzbhydra:github-release-plugin "-Dmaven.repo.local=$out/.m2" clean install
-  '';
-
-  mvnFetchExtraArgs.postInstall = ''
-    ${lib.getExe xmlstarlet} ed -L -u "/metadata/versioning/lastUpdated" -v "0" $out/.m2/org/nzbhydra/github-release-plugin/maven-metadata-local.xml
-  '';
-
-  mvnJdk = jdk;
-
-  doCheck = true;
-
-  mvnDepsParameters = parameters;
-  mvnParameters = parameters;
-
   nativeBuildInputs = [
     makeWrapper
   ];
+
+  doCheck = true;
 
   installPhase = ''
     runHook preInstall
@@ -80,10 +65,25 @@ maven.buildMavenPackage rec {
     runHook postInstall
   '';
 
+  mvnDepsParameters = parameters;
+
+  mvnFetchExtraArgs.postInstall = ''
+    ${lib.getExe xmlstarlet} ed -L -u "/metadata/versioning/lastUpdated" -v "0" $out/.m2/org/nzbhydra/github-release-plugin/maven-metadata-local.xml
+  '';
+
+  mvnFetchExtraArgs.preBuild = ''
+    mvn -nsu "${timestampParameter}" --projects org.nzbhydra:github-release-plugin "-Dmaven.repo.local=$out/.m2" clean install
+  '';
+
+  mvnHash = "sha256-mPNyJ4zijwQg8l0G+2cJPkwAVRFVbpCRfyFkA5ONBIE=";
+  mvnJdk = jdk;
+  mvnParameters = parameters;
+
   passthru = {
     tests = {
       inherit (nixosTests) nzbhydra2;
     };
+
     updateScript = nix-update-script { };
   };
 
@@ -92,10 +92,12 @@ maven.buildMavenPackage rec {
     homepage = "https://github.com/theotherp/nzbhydra2";
     changelog = "https://github.com/theotherp/nzbhydra2/releases/tag/v${version}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       matteopacini
       tmarkus
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "nzbhydra2";
   };

@@ -10,11 +10,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "roboto-mono";
   version = "3.001";
 
-  outputs = [
-    "out"
-    "webfont"
-  ];
-
   src = fetchFromGitHub {
     owner = "googlefonts";
     repo = "robotomono";
@@ -22,13 +17,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-i0r8x4VgaOYW/pYXK+AXw7jMwhA8Hs9VQ1lq5f/xTe0=";
   };
 
-  nativeBuildInputs = [ installFonts ];
+  outputs = [
+    "out"
+    "webfont"
+  ];
 
+  nativeBuildInputs = [ installFonts ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://fonts.google.com/specimen/Roboto+Mono";
     description = "Google Roboto Mono fonts";
+
     longDescription = ''
       Roboto Mono is a monospaced addition to the Roboto type family. Like
       the other members of the Roboto family, the fonts are optimized for
@@ -40,8 +39,10 @@ stdenv.mkDerivation (finalAttrs: {
       wider glyphs are adjusted for weight. Curved caps like 'C' and 'O'
       take on the straighter sides from Roboto Condensed.
     '';
+
+    homepage = "https://fonts.google.com/specimen/Roboto+Mono";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.all;
   };
 })

@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
-  wayland-scanner,
-  scdoc,
-  makeWrapper,
-  wlroots_0_20,
-  wayland,
-  wayland-protocols,
-  pixman,
-  libxkbcommon,
-  libxcb-wm,
   libGL,
   libx11,
-  xwayland ? null,
+  libxcb-wm,
+  libxkbcommon,
+  makeWrapper,
+  meson,
+  ninja,
   nixosTests,
+  pixman,
+  pkg-config,
+  scdoc,
+  wayland,
+  wayland-protocols,
+  wayland-scanner,
+  wlroots_0_20,
+  xwayland ? null,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,10 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-FHIOicRBL881Kvvui4HTKy0g7K9HcQ0ineLECh6MqFI=";
   };
-
-  depsBuildBuild = [
-    pkg-config
-  ];
 
   nativeBuildInputs = [
     meson
@@ -59,6 +55,10 @@ stdenv.mkDerivation (finalAttrs: {
     wrapProgram $out/bin/cage --prefix PATH : "${xwayland}/bin"
   '';
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   # Tests Cage using the NixOS module by launching xterm:
   passthru.tests.basic-nixos-module-functionality = nixosTests.cage;
 
@@ -66,8 +66,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Wayland kiosk that runs a single, maximized application";
     homepage = "https://www.hjdskes.nl/projects/cage/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "cage";
   };
 })

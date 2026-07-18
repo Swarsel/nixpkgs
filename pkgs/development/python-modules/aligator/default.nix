@@ -1,29 +1,20 @@
 {
   lib,
-
-  toPythonModule,
-  pythonImportsCheckHook,
   stdenv,
-
   aligator,
-
-  ctestCheckHook,
   crocoddyl,
-  pinocchio,
-  python,
+  ctestCheckHook,
   matplotlib,
+  pinocchio,
   pytest,
-
+  python,
+  pythonImportsCheckHook,
+  toPythonModule,
   buildStandalone ? true,
 }:
 toPythonModule (
   aligator.overrideAttrs (super: {
     pname = "py-${super.pname}";
-
-    cmakeFlags = super.cmakeFlags ++ [
-      (lib.cmakeBool "BUILD_PYTHON_INTERFACE" true)
-      (lib.cmakeBool "BUILD_STANDALONE_PYTHON_INTERFACE" buildStandalone)
-    ];
 
     # this is used by CMake at configure/build time
     nativeBuildInputs = super.nativeBuildInputs ++ [
@@ -37,6 +28,11 @@ toPythonModule (
     ++ super.propagatedBuildInputs
     ++ lib.optional buildStandalone aligator;
 
+    cmakeFlags = super.cmakeFlags ++ [
+      (lib.cmakeBool "BUILD_PYTHON_INTERFACE" true)
+      (lib.cmakeBool "BUILD_STANDALONE_PYTHON_INTERFACE" buildStandalone)
+    ];
+
     nativeCheckInputs = [
       ctestCheckHook
       pythonImportsCheckHook
@@ -46,6 +42,8 @@ toPythonModule (
       matplotlib
       pytest
     ];
+
+    __darwinAllowLocalNetworking = true;
 
     disabledTests = [
       # known to work in pinocchio 3, but not 4.
@@ -60,7 +58,5 @@ toPythonModule (
     pythonImportsCheck = [
       "aligator"
     ];
-
-    __darwinAllowLocalNetworking = true;
   })
 )

@@ -1,30 +1,26 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
-  setuptools-scm,
-  pyyaml,
+  fetchPypi,
   pytestCheckHook,
+  pyyaml,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "saneyaml";
   version = "0.6.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-Gc+9i/lNcwmYFix5D+XOyau1MAzFiQ/jfcbbyqj7Frs=";
   };
 
-  dontConfigure = true;
-
-  build-system = [ setuptools-scm ];
-
-  dependencies = [ pyyaml ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools-scm ];
+  dependencies = [ pyyaml ];
+  dontConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "saneyaml" ];
 
   meta = {

@@ -1,16 +1,14 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   pkg-config,
+  rustPlatform,
   versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "corn-cli";
   version = "0.10.1";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "corn-config";
@@ -19,27 +17,28 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-TPGLF72fp1aX19kQgI/bYdzTIsP0M7gn1ZSUny10kMs=";
   };
 
-  cargoHash = "sha256-4WDL1A29vQ9NrDbfA0nBZ7PcBz2zTmlOaxI6V4u4x5o=";
-
-  cargoBuildFlags = [
-    "--package"
-    "corn-cli"
-  ];
-
   nativeBuildInputs = [
     pkg-config
   ];
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  cargoHash = "sha256-4WDL1A29vQ9NrDbfA0nBZ7PcBz2zTmlOaxI6V4u4x5o=";
+
+  # Single failing test
+  checkFlags = [
+    "--skip=toml_complex"
+  ];
 
   preCheck = ''
     export CORN_TEST=bar
   '';
 
-  # Single failing test
-  checkFlags = [
-    "--skip=toml_complex"
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+
+  cargoBuildFlags = [
+    "--package"
+    "corn-cli"
   ];
 
   meta = {

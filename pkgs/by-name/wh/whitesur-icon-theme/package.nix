@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   gtk3,
   hicolor-icon-theme,
   jdupes,
-  boldPanelIcons ? false,
+  stdenvNoCC,
   alternativeIcons ? false,
+  boldPanelIcons ? false,
   themeVariants ? [ ],
 }:
 
@@ -40,21 +40,16 @@ lib.checkListOfEnum "${pname}: theme variants"
       hash = "sha256-5AWyuqREKpgBCXPplpkdrcInDTZfjVIm/JtTleOmaNY=";
     };
 
+    postPatch = ''
+      patchShebangs install.sh
+    '';
+
     nativeBuildInputs = [
       gtk3
       jdupes
     ];
 
     buildInputs = [ hicolor-icon-theme ];
-
-    # These fixup steps are slow and unnecessary
-    dontPatchELF = true;
-    dontRewriteSymlinks = true;
-    dontDropIconThemeCache = true;
-
-    postPatch = ''
-      patchShebangs install.sh
-    '';
 
     installPhase = ''
       runHook preInstall
@@ -75,12 +70,17 @@ lib.checkListOfEnum "${pname}: theme variants"
       find $out/share/icons -xtype l -delete
     '';
 
+    dontDropIconThemeCache = true;
+    # These fixup steps are slow and unnecessary
+    dontPatchELF = true;
+    dontRewriteSymlinks = true;
+
     meta = {
       description = "MacOS Big Sur style icon theme for Linux desktops";
       homepage = "https://github.com/vinceliuice/WhiteSur-icon-theme";
       license = lib.licenses.gpl3Plus;
-      platforms = lib.platforms.linux;
       maintainers = with lib.maintainers; [ icy-thought ];
+      platforms = lib.platforms.linux;
     };
 
   }

@@ -17,8 +17,8 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.00.37";
 
   src = fetchurl {
-    sha256 = "0r66l9zp0p1qgakh4j08hynwsr4lsgq5yrpxyr0x4ldvl0z2b1bb";
     url = "https://www.bchemnet.com/suldr/driver/UnifiedLinuxDriver-${finalAttrs.version}.tar.gz";
+    sha256 = "0r66l9zp0p1qgakh4j08hynwsr4lsgq5yrpxyr0x4ldvl0z2b1bb";
   };
 
   buildInputs = [
@@ -88,21 +88,19 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s ${lib.getLib stdenv.cc.cc}/lib/libstdc++.so.6 $out/lib/
   '';
 
-  # all binaries are already stripped
-  dontStrip = true;
-
   # we did this in prefixup already
   dontPatchELF = true;
+  # all binaries are already stripped
+  dontStrip = true;
 
   meta = {
     description = "Unified Linux Driver for Samsung printers and scanners";
     homepage = "http://www.bchemnet.com/suldr";
-    downloadPage = "http://www.bchemnet.com/suldr/driver/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
-
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     # Tested on linux-x86_64. Might work on linux-i386.
     # Probably won't work on anything else.
     platforms = lib.platforms.linux;
+    downloadPage = "http://www.bchemnet.com/suldr/driver/";
   };
 })

@@ -8,12 +8,8 @@
 }:
 
 symlinkJoin {
-  name = "czkawka-wrapped-${czkawka.version}";
   inherit (czkawka) pname version outputs;
-
   nativeBuildInputs = [ makeWrapper ];
-
-  paths = [ czkawka ];
 
   postBuild = ''
     ${lib.concatMapStringsSep "\n" (
@@ -29,5 +25,7 @@ symlinkJoin {
     popd
   '';
 
+  name = "czkawka-wrapped-${czkawka.version}";
+  paths = [ czkawka ];
   meta = czkawka.meta;
 }

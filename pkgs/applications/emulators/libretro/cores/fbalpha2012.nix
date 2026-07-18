@@ -6,7 +6,6 @@
   zlib,
 }:
 mkLibretroCore rec {
-  core = "fbalpha2012";
   version = "0-unstable-2026-04-20";
 
   src = fetchFromGitHub {
@@ -15,8 +14,6 @@ mkLibretroCore rec {
     rev = "95fa35582b1ca7ce68de3313615794c8c9d8d7c0";
     hash = "sha256-9F970HETDJsttoQOlqg2dFMzff/drR7G8MxXaSlWTHI=";
   };
-
-  sourceRoot = "${src.name}/svn-current/trunk";
 
   # unvendor zlib and broken minizip code
   postPatch =
@@ -35,10 +32,10 @@ mkLibretroCore rec {
     '';
 
   buildInputs = [ zlib ];
-
   makeFlags = [ "EXTERNAL_ZLIB=1" ];
-
+  core = "fbalpha2012";
   makefile = "makefile.libretro";
+  sourceRoot = "${src.name}/svn-current/trunk";
 
   meta = {
     description = "Port of Final Burn Alpha ~2012 to libretro";

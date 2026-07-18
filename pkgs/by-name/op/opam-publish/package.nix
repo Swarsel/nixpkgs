@@ -39,13 +39,15 @@ buildDunePackage (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/ocaml-opam/opam-publish";
     description = "Tool to ease contributions to opam repositories";
-    mainProgram = "opam-publish";
+    homepage = "https://github.com/ocaml-opam/opam-publish";
+
     license = with lib.licenses; [
       lgpl21Only
       ocamlLgplLinkingException
     ];
+
     maintainers = with lib.maintainers; [ niols ];
+    mainProgram = "opam-publish";
   };
 })

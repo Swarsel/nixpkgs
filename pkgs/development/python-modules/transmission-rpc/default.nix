@@ -1,12 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
   python-dotenv,
   pytz,
   requests,
+  setuptools,
   typing-extensions,
   yarl,
 }:
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "transmission-rpc";
   version = "7.0.11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Trim21";
@@ -23,13 +22,6 @@ buildPythonPackage rec {
     hash = "sha256-t07TuLLHfbxvWh+7854OMigfGC8jHzvpd4QO3v0M15I=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    requests
-    typing-extensions
-  ];
-
   nativeCheckInputs = [
     python-dotenv
     pytz
@@ -37,13 +29,21 @@ buildPythonPackage rec {
     yarl
   ];
 
-  pythonImportsCheck = [ "transmission_rpc" ];
+  build-system = [ setuptools ];
+
+  dependencies = [
+    requests
+    typing-extensions
+  ];
 
   disabledTests = [
     # Tests require a running Transmission instance
     "test_groups"
     "test_real"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "transmission_rpc" ];
 
   meta = {
     description = "Python module that implements the Transmission bittorent client RPC protocol";

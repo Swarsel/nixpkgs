@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  meson,
-  pkg-config,
-  ninja,
+  cinnamon-translations,
+  file-roller,
   glib,
   gtk3,
+  meson,
   nemo,
-  file-roller,
-  cinnamon-translations,
+  ninja,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,7 +23,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-tXeMkaCYnWzg+6ng8Tyg4Ms1aUeE3xiEkQ3tKEX6Vv8=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/nemo-fileroller";
+  postPatch = ''
+    substituteInPlace src/nemo-fileroller.c \
+      --replace "file-roller" "${lib.getExe file-roller}" \
+      --replace "GNOMELOCALEDIR" "${cinnamon-translations}/share/locale"
+  '';
 
   nativeBuildInputs = [
     meson
@@ -37,17 +41,12 @@ stdenv.mkDerivation (finalAttrs: {
     nemo
   ];
 
-  postPatch = ''
-    substituteInPlace src/nemo-fileroller.c \
-      --replace "file-roller" "${lib.getExe file-roller}" \
-      --replace "GNOMELOCALEDIR" "${cinnamon-translations}/share/locale"
-  '';
-
   env.PKG_CONFIG_LIBNEMO_EXTENSION_EXTENSIONDIR = "${placeholder "out"}/${nemo.extensiondir}";
+  sourceRoot = "${finalAttrs.src.name}/nemo-fileroller";
 
   meta = {
-    homepage = "https://github.com/linuxmint/nemo-extensions/tree/master/nemo-fileroller";
     description = "Nemo file roller extension";
+    homepage = "https://github.com/linuxmint/nemo-extensions/tree/master/nemo-fileroller";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.cinnamon ];

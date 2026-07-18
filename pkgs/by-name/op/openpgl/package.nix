@@ -1,9 +1,9 @@
 {
   lib,
-  cmake,
-  fetchFromGitHub,
-  ninja,
   stdenv,
+  fetchFromGitHub,
+  cmake,
+  ninja,
   onetbb,
 }:
 
@@ -39,8 +39,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Intel Open Path Guiding Library";
     homepage = "https://github.com/OpenPathGuidingLibrary/openpgl";
-    platforms = lib.platforms.unix;
-    maintainers = [ lib.maintainers.amarshall ];
     license = lib.licenses.asl20;
+    maintainers = [ lib.maintainers.amarshall ];
+    platforms = lib.platforms.unix;
   };
 })

@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  perl,
-  libunwind,
   buildPackages,
-  gitUpdater,
   elfutils,
+  gitUpdater,
+  libunwind,
+  perl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,17 +18,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-gXQ+zypbRBhrL1A4r9yL7aflxwrtFbT7+8xuns4kSQ8=";
   };
 
-  separateDebugInfo = true;
-
   outputs = [
     "out"
     "man"
   ];
 
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
   nativeBuildInputs = [ perl ];
-
-  enableParallelBuilding = true;
 
   # libunwind for -k.
   # On RISC-V platforms, LLVM's libunwind implementation is unsupported by strace.
@@ -44,25 +39,32 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional stdenv.cc.isClang "CFLAGS=-Wno-unused-function";
 
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  enableParallelBuilding = true;
+  separateDebugInfo = true;
+
   passthru.updateScript = gitUpdater {
+    rev-prefix = "v";
     # No nicer place to find latest release.
     url = "https://github.com/strace/strace.git";
-    rev-prefix = "v";
   };
 
   meta = {
-    homepage = "https://strace.io/";
     description = "System call tracer for Linux";
+    homepage = "https://strace.io/";
+
     license = with lib.licenses; [
       lgpl21Plus
       gpl2Plus
     ]; # gpl2Plus is for the test suite
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       globin
       ma27
       qyliss
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "strace";
   };
 })

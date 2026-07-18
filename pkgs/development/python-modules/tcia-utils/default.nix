@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   beautifulsoup4,
+  buildPythonPackage,
+  hatchling,
   ipython,
   pandas,
   plotly,
   requests,
   tqdm,
   unidecode,
-  hatchling,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "tcia-utils";
   version = "3.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kirbyju";
@@ -23,6 +22,9 @@ buildPythonPackage (finalAttrs: {
     rev = "9ff8a409df9daaa3f9bc28f0a951d7f6fcb90160"; # Corresponds to v3.2.1
     hash = "sha256-IW6rxlmRj7RW3hM7aZR+BuqboDzp+2R2ObGwAhOxMPM=";
   };
+
+  # Tests require network access to TCIA API and specific credentials
+  doCheck = false;
 
   build-system = [
     hatchling
@@ -38,12 +40,9 @@ buildPythonPackage (finalAttrs: {
     unidecode
   ];
 
-  pythonRemoveDeps = [ "bs4" ];
-
-  # Tests require network access to TCIA API and specific credentials
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "tcia_utils" ];
+  pythonRemoveDeps = [ "bs4" ];
 
   meta = {
     description = "Python utilities for interacting with The Cancer Imaging Archive (TCIA)";

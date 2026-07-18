@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "pysvg-py3";
   version = "0.2.2-post3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "alorence";
@@ -24,11 +23,12 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  format = "setuptools";
   pythonImportsCheck = [ "pysvg" ];
 
   meta = {
-    homepage = "https://github.com/alorence/pysvg-py3";
     description = "Creating SVG with Python";
+    homepage = "https://github.com/alorence/pysvg-py3";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ davidak ];
   };

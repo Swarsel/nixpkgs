@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication {
   pname = "certmitm";
   version = "0-unstable-2025-05-14";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "aapooksman";
@@ -16,10 +15,8 @@ python3.pkgs.buildPythonApplication {
     hash = "sha256-i4DnOyn56lA63hI40uxtXX8dzMa29BPQQHWKFdVjVlM=";
   };
 
-  dependencies = with python3.pkgs; [
-    dpkt
-    pyopenssl
-  ];
+  # Project has not tests
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -31,15 +28,19 @@ python3.pkgs.buildPythonApplication {
     runHook postInstall
   '';
 
-  # Project has not tests
-  doCheck = false;
+  dependencies = with python3.pkgs; [
+    dpkt
+    pyopenssl
+  ];
+
+  pyproject = false;
 
   meta = {
     description = "Tool for testing for certificate validation vulnerabilities of TLS connections";
     homepage = "https://github.com/aapooksman/certmitm";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
-    mainProgram = "certmitm";
     platforms = lib.platforms.all;
+    mainProgram = "certmitm";
   };
 }

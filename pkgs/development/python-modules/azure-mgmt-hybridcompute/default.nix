@@ -12,15 +12,14 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-hybridcompute";
   version = "9.1.0b2";
-  format = "wheel";
 
   src = fetchPypi {
-    pname = "azure_mgmt_hybridcompute";
     inherit version;
-    format = "wheel";
-    python = "py3";
-    dist = "py3";
     hash = "sha256-bKv4A6PjN6fMpyso0JqewADcKGOK1wXlULtkZpzrilY=";
+    dist = "py3";
+    format = "wheel";
+    pname = "azure_mgmt_hybridcompute";
+    python = "py3";
   };
 
   propagatedBuildInputs = [
@@ -32,7 +31,7 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  format = "wheel";
   pythonImportsCheck = [ "azure.mgmt.hybridcompute" ];
 
   meta = {

@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   bluetooth-adapters,
   btsocket,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   pyric,
   pytest-asyncio,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "bluetooth-auto-recovery";
   version = "1.6.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Bluetooth-Devices";
@@ -23,6 +22,12 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-fb83M2V4q4ncmIIMM6BhNDBg8DSjBmYNE+4Qj22wTEE=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -33,12 +38,7 @@ buildPythonPackage (finalAttrs: {
     usb-devices
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "bluetooth_auto_recovery" ];
 
   meta = {

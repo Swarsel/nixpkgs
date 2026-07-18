@@ -6,11 +6,12 @@
 {
   options = {
     passthru = lib.mkOption {
-      visible = false;
       description = ''
         This attribute set will be exported as a system attribute.
         You can put whatever you want here.
       '';
+
+      visible = false;
     };
   };
 }

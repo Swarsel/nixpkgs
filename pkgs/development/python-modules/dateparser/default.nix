@@ -1,57 +1,34 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
+  convertdate,
+  fasttext,
+  gitpython,
+  hijridate,
+  langdetect,
+  numpy,
+  parameterized,
+  parsel,
+  pytestCheckHook,
   python-dateutil,
   pytz,
   regex,
-  tzlocal,
-  hijridate,
-  convertdate,
-  fasttext,
-  numpy,
-  langdetect,
-  parameterized,
-  pytestCheckHook,
-  gitpython,
-  parsel,
   requests,
   ruamel-yaml,
+  setuptools,
+  tzlocal,
 }:
 
 buildPythonPackage rec {
   pname = "dateparser";
   version = "1.4.1";
 
-  pyproject = true;
-
   src = fetchFromGitHub {
     owner = "scrapinghub";
     repo = "dateparser";
     tag = "v${version}";
     hash = "sha256-TA4GZb24++RF1sw4tECJF5UzouRCwwhPiim5z5/hMzU=";
-  };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    python-dateutil
-    pytz
-    regex
-    tzlocal
-  ];
-
-  optional-dependencies = {
-    calendars = [
-      hijridate
-      convertdate
-    ];
-    fasttext = [
-      fasttext
-      numpy
-    ];
-    langdetect = [ langdetect ];
   };
 
   nativeCheckInputs = [
@@ -68,8 +45,14 @@ buildPythonPackage rec {
     export HOME="$TEMPDIR"
   '';
 
-  # Upstream only runs the tests in tests/ in CI, others use git clone
-  enabledTestPaths = [ "tests" ];
+  build-system = [ setuptools ];
+
+  dependencies = [
+    python-dateutil
+    pytz
+    regex
+    tzlocal
+  ];
 
   disabledTests = [
     # access network
@@ -77,14 +60,32 @@ buildPythonPackage rec {
     "test_custom_language_detect_fast_text_1"
   ];
 
+  # Upstream only runs the tests in tests/ in CI, others use git clone
+  enabledTestPaths = [ "tests" ];
+
+  optional-dependencies = {
+    calendars = [
+      hijridate
+      convertdate
+    ];
+
+    fasttext = [
+      fasttext
+      numpy
+    ];
+
+    langdetect = [ langdetect ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "dateparser" ];
 
   meta = {
-    changelog = "https://github.com/scrapinghub/dateparser/blob/${src.tag}/HISTORY.rst";
     description = "Date parsing library designed to parse dates from HTML pages";
     homepage = "https://github.com/scrapinghub/dateparser";
+    changelog = "https://github.com/scrapinghub/dateparser/blob/${src.tag}/HISTORY.rst";
     license = lib.licenses.bsd3;
-    mainProgram = "dateparser-download";
     maintainers = with lib.maintainers; [ dotlambda ];
+    mainProgram = "dateparser-download";
   };
 }

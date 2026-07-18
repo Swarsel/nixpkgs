@@ -1,17 +1,17 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   libGL,
-  nssmdns,
-  pkg-config,
-  libxxf86vm,
-  libxrandr,
+  libx11,
+  libxcursor,
+  libxext,
   libxi,
   libxinerama,
-  libxext,
-  libxcursor,
-  libx11,
+  libxrandr,
+  libxxf86vm,
+  nssmdns,
+  pkg-config,
   xinput,
 }:
 
@@ -25,8 +25,6 @@ buildGoModule rec {
     rev = "v${version}";
     hash = "sha256-xC/JRM8vyqAsxPpf37P3pZv6i73s+CLQt6Sh4nMxwzM=";
   };
-
-  vendorHash = "sha256-nFttVJbEAAGsrAglMphuw0wJ2Kf8sWB4HrpVqfHO76o=";
 
   nativeBuildInputs = [
     pkg-config
@@ -46,15 +44,19 @@ buildGoModule rec {
     xinput
   ];
 
+  vendorHash = "sha256-nFttVJbEAAGsrAglMphuw0wJ2Kf8sWB4HrpVqfHO76o=";
+
   meta = {
     description = "Desktop application to control Elgato Keylights";
+
     longDescription = ''
       Requires having:
       * Elgato's Keylight paired to local wifi network.
       * Service avahi with nssmdns4 enabled.
     '';
-    license = lib.licenses.mit;
+
     homepage = "https://github.com/mschneider82/keylight-control";
+    license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "keylight-control";
   };

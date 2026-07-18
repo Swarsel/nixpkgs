@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "lndmanage";
   version = "0.16.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bitromortac";
@@ -15,6 +14,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-VUeGnk/DtNAyEYFESV6kXIRbKqUv4IcMnU3fo0NB4uQ=";
   };
+
+  preBuild = ''
+    substituteInPlace setup.py --replace-fail '==' '>='
+  '';
+
+  # requires lnregtest
+  doCheck = false;
 
   build-system = with python3Packages; [
     setuptools
@@ -36,13 +42,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pygments
   ];
 
-  preBuild = ''
-    substituteInPlace setup.py --replace-fail '==' '>='
-  '';
-
-  # requires lnregtest
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "lndmanage" ];
 
   meta = {

@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchzip,
   cmake,
+  fetchzip,
   zlib,
 }:
 
@@ -34,14 +34,16 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://zdoom.org/wiki/ZDBSP";
     description = "ZDoom's internal node builder for DOOM maps";
-    mainProgram = "zdbsp";
+    homepage = "https://zdoom.org/wiki/ZDBSP";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       lassulus
       siraben
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "zdbsp";
   };
 })

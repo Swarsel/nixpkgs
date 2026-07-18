@@ -1,8 +1,8 @@
 {
+  stdenv,
   args,
   hugs,
   microhs,
-  stdenv,
 }:
 
 stdenv.mkDerivation (
@@ -13,10 +13,9 @@ stdenv.mkDerivation (
   args'
   // {
     pname = "microhs-cpphs";
-
     nativeBuildInputs = [ hugs ];
-
     makeFlags = [ "USECPPHS=$(TMP)/cpphs-boot" ];
+
     buildFlags = [
       "bootstrapcpphs"
       "bin/cpphs"

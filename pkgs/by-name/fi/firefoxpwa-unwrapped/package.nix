@@ -1,17 +1,15 @@
 {
-  firefoxRuntime ? firefox-unwrapped,
-
   lib,
+  stdenv,
   fetchFromGitHub,
+  firefox-unwrapped,
   installShellFiles,
   makeWrapper,
-  rustPlatform,
-
-  firefox-unwrapped,
   nixosTests,
   openssl,
   pkg-config,
-  stdenv,
+  rustPlatform,
+  firefoxRuntime ? firefox-unwrapped,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -25,29 +23,25 @@ rustPlatform.buildRustPackage rec {
     hash = "sha256-Rz0H6dpeTnKHRnmBUZicjgzRSrcpamuGDJRw/lqD/7k=";
   };
 
-  sourceRoot = "${src.name}/native";
-  buildFeatures = [ "immutable-runtime" ];
+  nativeBuildInputs = [
+    installShellFiles
+    makeWrapper
+    pkg-config
+  ];
 
+  buildInputs = [ openssl ];
   cargoHash = "sha256-w3poeQsJf6s8uqqZtigJNHqnO0fpD7T4zyY3WzdE6Bo=";
+
+  env = {
+    FFPWA_EXECUTABLES = ""; # .desktop entries generated without any store path references
+    FFPWA_SYSDATA = "${placeholder "out"}/share/firefoxpwa";
+  };
 
   preConfigure = ''
     sed -i 's;version = "0.0.0";version = "${version}";' Cargo.toml
     sed -zi 's;name = "firefoxpwa"\nversion = "0.0.0";name = "firefoxpwa"\nversion = "${version}";' Cargo.lock
     sed -i $'s;DISTRIBUTION_VERSION = \'0.0.0\';DISTRIBUTION_VERSION = \'${version}\';' userchrome/profile/chrome/pwa/chrome.sys.mjs
   '';
-
-  nativeBuildInputs = [
-    installShellFiles
-    makeWrapper
-    pkg-config
-  ];
-  buildInputs = [ openssl ];
-
-  env = {
-    FFPWA_EXECUTABLES = ""; # .desktop entries generated without any store path references
-    FFPWA_SYSDATA = "${placeholder "out"}/share/firefoxpwa";
-  };
-  completions = "target/${stdenv.targetPlatform.config}/release/completions";
 
   postInstall = ''
     # Runtime
@@ -90,15 +84,20 @@ rustPlatform.buildRustPackage rec {
     mkdir $out/lib/firefoxpwa
   '';
 
+  buildFeatures = [ "immutable-runtime" ];
+  completions = "target/${stdenv.targetPlatform.config}/release/completions";
+  sourceRoot = "${src.name}/native";
+
   passthru = {
-    tests.firefoxpwa = nixosTests.firefoxpwa;
-    binaryName = "firefoxpwa";
-    applicationName = "firefoxpwa";
     inherit (firefoxRuntime) gtk3;
+    applicationName = "firefoxpwa";
+    binaryName = "firefoxpwa";
+    tests.firefoxpwa = nixosTests.firefoxpwa;
   };
 
   meta = {
     description = "Tool to install, manage and use Progressive Web Apps (PWAs) in Mozilla Firefox (native component)";
+
     longDescription = ''
       Progressive Web Apps (PWAs) are web apps that use web APIs and features along
       with progressive enhancement strategy to bring a native app-like user experience
@@ -125,14 +124,17 @@ rustPlatform.buildRustPackage rec {
       As it needs to be both in the `PATH` and in the `nativeMessagingHosts` to make it
       possible for the extension to detect and use it.
     '';
+
     homepage = "https://pwasforfirefox.filips.si/";
     changelog = "https://github.com/filips123/PWAsForFirefox/releases/tag/v${version}";
     license = lib.licenses.mpl20;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       camillemndn
       pasqui23
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "firefoxpwa";
   };
 }

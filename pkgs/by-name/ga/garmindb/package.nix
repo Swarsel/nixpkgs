@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
   writableTmpDirAsHomeHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "garmindb";
   version = "3.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tcgoetz";
@@ -17,14 +16,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-iqZHm4C3MB4Qfkg8fBHu+fvt0tQ+2AyBziwrC5ZkcyU=";
   };
 
-  pythonRelaxDeps = [
-    "sqlalchemy"
-    "cached-property"
-    "garminconnect"
-    "tqdm"
-    "fitfile"
-    "tcxfile"
-    "idbutils"
+  nativeCheckInputs = [
+    python3Packages.pytestCheckHook
+    writableTmpDirAsHomeHook
   ];
 
   build-system = with python3Packages; [ setuptools ];
@@ -58,23 +52,31 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "test/test_tcx_file.py"
   ];
 
-  nativeCheckInputs = [
-    python3Packages.pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "garmindb" ];
+
+  pythonRelaxDeps = [
+    "sqlalchemy"
+    "cached-property"
+    "garminconnect"
+    "tqdm"
+    "fitfile"
+    "tcxfile"
+    "idbutils"
+  ];
 
   meta = {
     description = "Download and parse data from Garmin Connect or a Garmin watch";
     homepage = "https://github.com/tcgoetz/GarminDB";
     changelog = "https://github.com/tcgoetz/GarminDB/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       ethancedwards8
       matthiasbeyer
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "garmindb";
   };
 })

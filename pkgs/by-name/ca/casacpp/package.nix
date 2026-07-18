@@ -1,44 +1,46 @@
 {
   lib,
   stdenv,
-  fetchgit,
+  bison,
+  blas,
+  casacore,
   cmake,
   common-updater-scripts,
   curl,
-  gnugrep,
-  writeShellScript,
-  pkg-config,
-  flex,
-  bison,
-  gfortran,
-  casacore,
-  libsakura,
-  grpc,
-  protobuf,
-  gsl,
-  libxml2,
+  fetchgit,
   fftw,
   fftwFloat,
-  blas,
+  flex,
+  gfortran,
+  gnugrep,
+  grpc,
+  gsl,
   lapack,
+  libsakura,
+  libxml2,
   libxslt,
-  openssl,
-  sqlite,
   mpi,
+  openssl,
+  pkg-config,
+  protobuf,
+  sqlite,
+  writeShellScript,
   mpiSupport ? false,
 }:
 let
   casacppPackages = {
+    casacore = casacore.override {
+      inherit mpi mpiSupport;
+    };
+
     fftw = fftw.override {
       inherit mpi;
       enableMpi = mpiSupport;
     };
+
     fftwFloat = fftwFloat.override {
       inherit mpi;
       enableMpi = mpiSupport;
-    };
-    casacore = casacore.override {
-      inherit mpi mpiSupport;
     };
   };
 in
@@ -52,8 +54,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-75oIlaNAyu70KWSjz38LoYAvV7RJgzH/X9uBnGpriF4=";
     fetchSubmodules = false;
   };
-
-  sourceRoot = "${finalAttrs.src.name}/casatools/src/code";
 
   patches = [
     # Fix the generated .pc file: set Requires from a variable instead of
@@ -81,7 +81,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     cmake
@@ -116,7 +115,9 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "CMAKE_CXX_FLAGS" "-ffp-contract=off")
   ];
 
+  __structuredAttrs = true;
   enableParallelBuilding = true;
+  sourceRoot = "${finalAttrs.src.name}/casatools/src/code";
 
   passthru.updateScript = writeShellScript "update-casacpp" ''
     version=$(${lib.getExe curl} -s https://pypi.org/pypi/casatasks/json | ${lib.getExe gnugrep} -oP '"version"\s*:\s*"\K[^"]+' | head -1)
@@ -127,7 +128,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "C++ core libraries for radio interferometry data reduction";
     homepage = "https://casa.nrao.edu/";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ kiranshila ];
+    platforms = lib.platforms.unix;
   };
 })

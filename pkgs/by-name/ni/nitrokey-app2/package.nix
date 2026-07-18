@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
   qt6,
 }:
 
@@ -18,7 +18,6 @@ in
 python3Packages.buildPythonApplication rec {
   pname = "nitrokey-app2";
   version = "2.5.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Nitrokey";
@@ -39,23 +38,6 @@ python3Packages.buildPythonApplication rec {
     qtsvg
   ];
 
-  build-system = with python3Packages; [
-    poetry-core
-  ];
-
-  dependencies = with python3Packages; [
-    fido2
-    nitrokey
-    pyside6
-    usb-monitor
-  ];
-
-  pythonRelaxDeps = [ "nitrokey" ];
-
-  pythonImportsCheck = [
-    "nitrokeyapp"
-  ];
-
   postInstall = ''
     install -Dm755 meta/com.nitrokey.nitrokey-app2.desktop $out/share/applications/com.nitrokey.nitrokey-app2.desktop
     install -Dm755 meta/nk-app2.png $out/share/icons/hicolor/128x128/apps/com.nitrokey.nitrokey-app2.png
@@ -67,15 +49,36 @@ python3Packages.buildPythonApplication rec {
     makeWrapperArgs+=("''${qtWrapperArgs[@]}")
   '';
 
+  build-system = with python3Packages; [
+    poetry-core
+  ];
+
+  dependencies = with python3Packages; [
+    fido2
+    nitrokey
+    pyside6
+    usb-monitor
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "nitrokeyapp"
+  ];
+
+  pythonRelaxDeps = [ "nitrokey" ];
+
   meta = {
     description = "This application allows to manage Nitrokey 3 devices";
     homepage = "https://github.com/Nitrokey/nitrokey-app2";
     changelog = "https://github.com/Nitrokey/nitrokey-app2/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       _999eagle
       panicgh
     ];
+
     mainProgram = "nitrokeyapp";
   };
 }

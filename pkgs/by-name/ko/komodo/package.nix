@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  openssl,
   nix-update-script,
   nixosTests,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,12 +19,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Hw0JD4e/ODK19M/bZtX9foCu5c79XA8Jgv2fleltdLs=";
   };
 
-  cargoHash = "sha256-b/AgQBmS1QfP+BOCT4xL8majVKobig5M2YJhGuXMToc=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ openssl ];
-
+  cargoHash = "sha256-b/AgQBmS1QfP+BOCT4xL8majVKobig5M2YJhGuXMToc=";
   # disable for check. document generation is fail
   # > error: doctest failed, to rerun pass `-p komodo_client --doc`
   doCheck = false;
@@ -35,14 +32,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       inherit (nixosTests) komodo-periphery;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Tool to build and deploy software on many servers";
+
     longDescription = ''
       Komodo is a web app to provide structure for managing your servers, builds, deployments, and automated procedures.
 
@@ -57,13 +56,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
       Komodo is composed of a single core and any amount of connected servers running the periphery application.
     '';
+
     homepage = "https://komo.do";
     changelog = "https://github.com/moghtech/komodo/releases/tag/v${finalAttrs.version}";
-    mainProgram = "km";
+    license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       r17x
       channinghe
     ];
-    license = lib.licenses.gpl3;
+
+    mainProgram = "km";
   };
 })

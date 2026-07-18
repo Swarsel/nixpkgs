@@ -1,7 +1,7 @@
 {
-  buildOctavePackage,
   lib,
   fetchurl,
+  buildOctavePackage,
 }:
 
 buildOctavePackage rec {
@@ -14,10 +14,8 @@ buildOctavePackage rec {
   };
 
   meta = {
-    homepage = "https://gnu-octave.github.io/packages/doctest/";
-    license = lib.licenses.bsd3;
-    maintainers = with lib.maintainers; [ ravenjoad ];
     description = "Find and run example code within documentation";
+
     longDescription = ''
       Find and run example code within documentation. Formatted blocks
       of example code are extracted from documentation files and executed
@@ -25,5 +23,9 @@ buildOctavePackage rec {
       framework or simply to ensure that documentation stays up-to-date
       during software development.
     '';
+
+    homepage = "https://gnu-octave.github.io/packages/doctest/";
+    license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ ravenjoad ];
   };
 }

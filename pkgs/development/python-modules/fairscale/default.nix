@@ -1,18 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  # build inputs
-  torch,
-  numpy,
+  buildPythonPackage,
   ninja,
-  # check inputs
-  pytestCheckHook,
+  numpy,
   parameterized,
   pytest-cov-stub,
   pytest-timeout,
+  # check inputs
+  pytestCheckHook,
   remote-pdb,
+  setuptools,
+  # build inputs
+  torch,
 }:
 let
   pname = "fairscale";
@@ -20,7 +20,6 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "facebookresearch";
@@ -45,6 +44,9 @@ buildPythonPackage {
     numpy
   ];
 
+  # Some tests try to build distributed models, which doesn't work in the sandbox.
+  doCheck = false;
+
   nativeCheckInputs = [
     pytestCheckHook
     parameterized
@@ -53,21 +55,21 @@ buildPythonPackage {
     remote-pdb
   ];
 
-  # Some tests try to build distributed models, which doesn't work in the sandbox.
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "fairscale" ];
 
   meta = {
     description = "PyTorch extensions for high performance and large scale training";
-    mainProgram = "wgit";
     homepage = "https://github.com/facebookresearch/fairscale";
     changelog = "https://github.com/facebookresearch/fairscale/releases/tag/v${version}";
+
     license = with lib.licenses; [
       mit
       asl20
       bsd3
     ];
+
     maintainers = with lib.maintainers; [ happysalada ];
+    mainProgram = "wgit";
   };
 }

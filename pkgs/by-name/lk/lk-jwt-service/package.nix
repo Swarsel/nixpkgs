@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -17,13 +17,12 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-1D04GhXhGrOcRn8G+xY+3XEdgUBSWHis4DiKQ4gGNDw=";
-
   passthru.tests = nixosTests.lk-jwt-service;
 
   meta = {
-    changelog = "https://github.com/element-hq/lk-jwt-service/releases/tag/${finalAttrs.src.tag}";
     description = "Minimal service to issue LiveKit JWTs for MatrixRTC";
     homepage = "https://github.com/element-hq/lk-jwt-service";
+    changelog = "https://github.com/element-hq/lk-jwt-service/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ kilimnik ];
     mainProgram = "lk-jwt-service";

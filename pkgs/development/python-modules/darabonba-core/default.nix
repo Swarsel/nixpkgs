@@ -11,16 +11,16 @@
 buildPythonPackage (finalAttrs: {
   pname = "darabonba-core";
   version = "1.0.7";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "darabonba_core";
     inherit (finalAttrs) version;
     hash = "sha256-wt4u4mBoK0wIyexneT3maivfMWNjuRZfFSuayqFrTcM=";
+    pname = "darabonba_core";
   };
 
+  # Module has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,10 +29,8 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "Tea" ];
-
-  # Module has no tests
-  doCheck = false;
 
   meta = {
     description = "The darabonba module of alibabaCloud Python SDK";

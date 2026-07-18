@@ -1,15 +1,15 @@
 {
   lib,
   fetchFromGitHub,
-  fetchpatch,
-  rustPlatform,
-  pkg-config,
   dbus,
+  fetchpatch,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
-  version = "0.2.3";
   pname = "kdotool";
+  version = "0.2.3";
 
   src = fetchFromGitHub {
     owner = "jinliu";
@@ -18,10 +18,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-8lN85DPw3FUPS1k0Ktcp8Xf1DAdj6Hd6PqlKmhFCP+o=";
   };
 
-  cargoHash = "sha256-8WkLgTg+ndMtAh0W0efvRCDEgvhmKBcN0e0Jxn4hgH8=";
-
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ dbus ];
+  cargoHash = "sha256-8WkLgTg+ndMtAh0W0efvRCDEgvhmKBcN0e0Jxn4hgH8=";
 
   meta = {
     description = "xdotool clone for KDE Wayland";

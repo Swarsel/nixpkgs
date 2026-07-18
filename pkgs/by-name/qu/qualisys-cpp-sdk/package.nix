@@ -1,9 +1,9 @@
 {
-  cmake,
-  fetchFromGitHub,
-  fetchpatch,
   lib,
   stdenv,
+  fetchFromGitHub,
+  cmake,
+  fetchpatch,
 }:
 
 stdenv.mkDerivation {
@@ -20,13 +20,13 @@ stdenv.mkDerivation {
   patches = [
     # Fix include dir in CMake export
     (fetchpatch {
-      url = "https://github.com/qualisys/qualisys_cpp_sdk/pull/32/commits/db5e22662b7f417b317571a7488b6dcbb82b7538.patch";
       hash = "sha256-q7sNT/kQ9xlRPYKfmhiKg+UaYUsZJ4J2xMyQQNSTgxQ=";
+      url = "https://github.com/qualisys/qualisys_cpp_sdk/pull/32/commits/db5e22662b7f417b317571a7488b6dcbb82b7538.patch";
     })
     # don't concatenate CMAKE_INSTALL_PREFIX and absolute CMAKE_INSTALL_INCLUDEDIR
     (fetchpatch {
-      url = "https://github.com/nim65s/qualisys_cpp_sdk/commit/1ba8cdb9a8e3583b68d93a553a6f59ea7ee24876.patch";
       hash = "sha256-5CWBvvnlXlh3UkU3S+LVG2rWC8VZ7+EVo+YFKHk6KuY=";
+      url = "https://github.com/nim65s/qualisys_cpp_sdk/commit/1ba8cdb9a8e3583b68d93a553a6f59ea7ee24876.patch";
     })
   ];
 

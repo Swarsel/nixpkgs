@@ -1,25 +1,25 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  jsoncpp,
-  libossp_uuid,
-  zlib,
-  lib,
-  # optional but of negligible size
-  openssl,
   brotli,
   c-ares,
+  cmake,
+  hiredis,
+  jsoncpp,
+  libmysqlclient,
+  libossp_uuid,
+  libpq,
+  mariadb,
+  # optional but of negligible size
+  openssl,
+  sqlite,
+  zlib,
+  mysqlSupport ? false,
+  postgresSupport ? false,
+  redisSupport ? false,
   # optional databases
   sqliteSupport ? true,
-  sqlite,
-  postgresSupport ? false,
-  libpq,
-  redisSupport ? false,
-  hiredis,
-  mysqlSupport ? false,
-  libmysqlclient,
-  mariadb,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,12 +34,13 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  nativeBuildInputs = [ cmake ];
-
-  cmakeFlags = [
-    (lib.cmakeBool "BUILD_TESTING" finalAttrs.finalPackage.doInstallCheck)
-    (lib.cmakeBool "BUILD_EXAMPLES" false)
+  patches = [
+    # this part of the test would normally fail because it attempts to configure a CMake project that uses find_package on itself
+    # this patch makes drogon and trantor visible to the test
+    ./fix_find_package.patch
   ];
+
+  nativeBuildInputs = [ cmake ];
 
   propagatedBuildInputs = [
     jsoncpp
@@ -58,11 +59,14 @@ stdenv.mkDerivation (finalAttrs: {
     mariadb
   ];
 
-  patches = [
-    # this part of the test would normally fail because it attempts to configure a CMake project that uses find_package on itself
-    # this patch makes drogon and trantor visible to the test
-    ./fix_find_package.patch
+  cmakeFlags = [
+    (lib.cmakeBool "BUILD_TESTING" finalAttrs.finalPackage.doInstallCheck)
+    (lib.cmakeBool "BUILD_EXAMPLES" false)
   ];
+
+  # this excludes you, pkgsStatic (cmake wants to run built binaries
+  # in the buildPhase)
+  doInstallCheck = stdenv.buildPlatform == stdenv.hostPlatform;
 
   # modifying PATH here makes drogon_ctl visible to the test
   installCheckPhase = ''
@@ -72,13 +76,9 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
-  # this excludes you, pkgsStatic (cmake wants to run built binaries
-  # in the buildPhase)
-  doInstallCheck = stdenv.buildPlatform == stdenv.hostPlatform;
-
   meta = {
-    homepage = "https://github.com/drogonframework/drogon";
     description = "C++14/17 based HTTP web application framework";
+    homepage = "https://github.com/drogonframework/drogon";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.all;

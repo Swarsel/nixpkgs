@@ -1,21 +1,20 @@
 {
-  mkKdeDerivation,
-  qtmultimedia,
-  qtsvg,
-  qtwayland,
-  qtimageformats,
-  pkg-config,
+  baloo,
   cfitsio,
   exiv2,
-  baloo,
   kimageannotator,
   lcms2,
   libtiff,
+  mkKdeDerivation,
+  pkg-config,
+  qtimageformats,
+  qtmultimedia,
+  qtsvg,
+  qtwayland,
 }:
 mkKdeDerivation {
   pname = "gwenview";
 
-  extraNativeBuildInputs = [ pkg-config ];
   extraBuildInputs = [
     qtmultimedia
     qtsvg
@@ -31,4 +30,6 @@ mkKdeDerivation {
     lcms2
     libtiff
   ];
+
+  extraNativeBuildInputs = [ pkg-config ];
 }

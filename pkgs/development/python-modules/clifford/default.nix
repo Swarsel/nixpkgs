@@ -7,30 +7,19 @@
   numba,
   numpy,
   pytestCheckHook,
-  setuptools,
   scipy,
+  setuptools,
   sparse,
 }:
 
 buildPythonPackage rec {
   pname = "clifford";
   version = "1.5.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-NISzEs/w4tXhT7mUCbgkIZPDWN+qave8bqIwxGBuZvM=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    h5py
-    numba
-    numpy
-    scipy
-    sparse
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -42,6 +31,22 @@ buildPythonPackage rec {
     cd clifford/test
   '';
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    h5py
+    numba
+    numpy
+    scipy
+    sparse
+  ];
+
+  disabledTestPaths = [
+    # Disable failing tests
+    "test_g3c_tools.py"
+    "test_multivector_inverse.py"
+  ];
+
   disabledTests = [
     "veryslow"
     "test_algebra_initialisation"
@@ -52,12 +57,7 @@ buildPythonPackage rec {
     "test_inv_g4"
   ];
 
-  disabledTestPaths = [
-    # Disable failing tests
-    "test_g3c_tools.py"
-    "test_multivector_inverse.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "clifford" ];
 
   meta = {

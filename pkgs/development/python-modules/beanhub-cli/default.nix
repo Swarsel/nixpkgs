@@ -1,46 +1,42 @@
 {
   lib,
   fetchFromGitHub,
-  buildPythonPackage,
-  hatchling,
-
+  # optional-dependencies
+  attrs,
   # dependencies
   beancount-black,
   beancount-parser,
   beanhub-forms,
   beanhub-import,
   beanhub-inbox,
+  buildPythonPackage,
   click,
-  fastapi,
-  jinja2,
-  pydantic-settings,
-  pydantic,
-  pyyaml,
-  rich,
-  starlette-wtf,
-  uvicorn,
-
-  # optional-dependencies
-  attrs,
   cryptography,
+  fastapi,
+  hatchling,
   httpx,
+  jinja2,
+  pydantic,
+  pydantic-settings,
   pynacl,
-  python-dateutil,
-  tomli-w,
-  tomli,
-
   # tests
   pytest-asyncio,
   pytest-factoryboy,
   pytest-httpx,
   pytest-mock,
   pytestCheckHook,
+  python-dateutil,
+  pyyaml,
+  rich,
+  starlette-wtf,
+  tomli,
+  tomli-w,
+  uvicorn,
 }:
 
 buildPythonPackage rec {
   pname = "beanhub-cli";
   version = "3.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "LaunchPlatform";
@@ -49,7 +45,14 @@ buildPythonPackage rec {
     hash = "sha256-hreVGsptCGW6L3rj6Ec8+lefZWpQ4tZtUEJI+NxTO7w=";
   };
 
-  pythonRelaxDeps = [ "rich" ];
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-factoryboy
+    pytest-httpx
+    pytest-mock
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [ hatchling ];
 
@@ -72,13 +75,6 @@ buildPythonPackage rec {
   ++ lib.concatAttrValues optional-dependencies;
 
   optional-dependencies = {
-    login = [
-      attrs
-      httpx
-      python-dateutil
-      tomli
-      tomli-w
-    ];
     connect = [
       attrs
       cryptography
@@ -88,18 +84,19 @@ buildPythonPackage rec {
       tomli
       tomli-w
     ];
+
+    login = [
+      attrs
+      httpx
+      python-dateutil
+      tomli
+      tomli-w
+    ];
   };
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-factoryboy
-    pytest-httpx
-    pytest-mock
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "beanhub_cli" ];
+  pythonRelaxDeps = [ "rich" ];
 
   meta = {
     description = "Command line tools for BeanHub or Beancount users";

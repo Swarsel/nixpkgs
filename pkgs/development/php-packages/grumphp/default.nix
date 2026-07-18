@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   php,
   versionCheckHook,
 }:
@@ -17,14 +17,13 @@ php.buildComposerProject2 (finalAttrs: {
   };
 
   vendorHash = "sha256-g6iKl+o0kzvjuxE4lJP783ey+pNH2CZCKBLAKPxjb+Y=";
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
-    changelog = "https://github.com/phpro/grumphp/releases/tag/v${finalAttrs.version}";
     description = "PHP code-quality tool";
     homepage = "https://github.com/phpro/grumphp";
+    changelog = "https://github.com/phpro/grumphp/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     mainProgram = "grumphp";
     teams = [ lib.teams.php ];

@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication {
   pname = "cambrinary";
   version = "unstable-2023-07-16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xueyuanl";
@@ -25,14 +24,15 @@ python3Packages.buildPythonApplication {
     beautifulsoup4
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "cambrinary" ];
 
   meta = {
     description = "Cambridge dictionary in a terminal";
-    mainProgram = "cambrinary";
     homepage = "https://github.com/xueyuanl/cambrinary";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "cambrinary";
   };
 }

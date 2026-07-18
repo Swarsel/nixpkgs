@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "rexi";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "royreznik";
@@ -24,6 +23,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --replace-fail ".renderable" ".content"
   '';
 
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+    pytest-asyncio
+    pytest-cov-stub
+  ];
+
   build-system = with python3Packages; [
     poetry-core
   ];
@@ -34,11 +39,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     textual
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-    pytest-asyncio
-    pytest-cov-stub
-  ];
+  pyproject = true;
 
   pythonRelaxDeps = [
     "textual"

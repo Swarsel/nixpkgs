@@ -1,10 +1,10 @@
 {
   cacert,
+  llm,
+  plugin,
   runCommand,
   writableTmpDirAsHomeHook,
   yq,
-  llm,
-  plugin,
 }:
 let
   venv = llm.pythonModule.withPackages (_: [
@@ -19,6 +19,7 @@ runCommand "${plugin.pname}-test"
       writableTmpDirAsHomeHook
       yq
     ];
+
     env.SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
   }
   ''

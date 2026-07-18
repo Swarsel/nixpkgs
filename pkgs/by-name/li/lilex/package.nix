@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   installFonts,
+  stdenvNoCC,
   unzip,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -14,8 +14,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-NDEO20unSfdy1CuI4+7EpjGFJ+dc7qqWz8VW7jU2b7w=";
   };
 
-  sourceRoot = ".";
-
   outputs = [
     "out"
     "webfont"
@@ -25,6 +23,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     installFonts
     unzip
   ];
+
+  sourceRoot = ".";
 
   meta = {
     description = "Open source programming font";

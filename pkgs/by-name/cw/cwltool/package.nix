@@ -8,7 +8,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "cwltool";
   version = "3.1.20260315121657";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "common-workflow-language";
@@ -24,9 +23,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --replace-fail "mypy==1.19.1" "mypy"
   '';
 
-  pythonRelaxDeps = [
-    "prov"
-    "rdflib"
+  nativeCheckInputs = with python3Packages; [
+    mock
+    nodejs
+    pytest-mock
+    pytest-httpserver
+    pytest-xdist
+    pytestCheckHook
   ];
 
   build-system = with python3Packages; [
@@ -56,13 +59,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     typing-extensions
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    mock
-    nodejs
-    pytest-mock
-    pytest-httpserver
-    pytest-xdist
-    pytestCheckHook
+  disabledTestPaths = [
+    "tests/test_udocker.py"
+    "tests/test_provenance.py"
+    "tests/test_examples.py"
   ];
 
   disabledTests = [
@@ -72,14 +72,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "test_modification_date"
   ];
 
-  disabledTestPaths = [
-    "tests/test_udocker.py"
-    "tests/test_provenance.py"
-    "tests/test_examples.py"
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "cwltool"
+  ];
+
+  pythonRelaxDeps = [
+    "prov"
+    "rdflib"
   ];
 
   meta = {

@@ -1,51 +1,30 @@
 {
   buildNpmPackage,
-  headlamp-server,
-  headlamp-frontend,
-  electron,
-  makeWrapper,
-  makeDesktopItem,
   copyDesktopItems,
+  electron,
+  headlamp-frontend,
+  headlamp-server,
+  makeDesktopItem,
+  makeWrapper,
 }:
 
 buildNpmPackage {
-  pname = "headlamp";
   inherit (headlamp-server) version src;
-
-  strictDeps = true;
-  __structuredAttrs = true;
-
-  sourceRoot = "${headlamp-server.src.name}/app";
-
-  npmDepsHash = "sha256-k7rABbEmYY24k/obKm1GZUnM0Udjtyv2bhrVEvc0ebc=";
-
-  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
+  pname = "headlamp";
 
   postPatch = ''
     chmod u+w ..
   '';
 
-  npmBuildScript = "compile-electron";
+  strictDeps = true;
 
   nativeBuildInputs = [
     makeWrapper
     copyDesktopItems
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "headlamp";
-      desktopName = "Headlamp";
-      comment = "An easy-to-use and extensible Kubernetes web UI";
-      exec = "headlamp";
-      icon = "headlamp";
-      categories = [
-        "Network"
-        "System"
-      ];
-      startupWMClass = "Headlamp";
-    })
-  ];
+  npmDepsHash = "sha256-k7rABbEmYY24k/obKm1GZUnM0Udjtyv2bhrVEvc0ebc=";
+  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
   installPhase = ''
     runHook preInstall
@@ -107,6 +86,27 @@ buildNpmPackage {
 
     runHook postInstall
   '';
+
+  __structuredAttrs = true;
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Network"
+        "System"
+      ];
+
+      comment = "An easy-to-use and extensible Kubernetes web UI";
+      desktopName = "Headlamp";
+      exec = "headlamp";
+      icon = "headlamp";
+      name = "headlamp";
+      startupWMClass = "Headlamp";
+    })
+  ];
+
+  npmBuildScript = "compile-electron";
+  sourceRoot = "${headlamp-server.src.name}/app";
 
   passthru = {
     frontend = headlamp-frontend;

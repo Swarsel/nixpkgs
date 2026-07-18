@@ -1,8 +1,8 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,7 +17,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-iZhICV5FpkJyHl42gP0rPrxobHKFId54sVVES7JZR9E=";
-
   env.CGO_ENABLED = "1";
 
   buildPhase = ''

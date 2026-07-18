@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "tcxreader";
   version = "0.4.11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "alenrajsp";
@@ -19,9 +18,8 @@ buildPythonPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ poetry-core ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "tcxreader" ];
 
   meta = {

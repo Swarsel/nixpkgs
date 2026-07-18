@@ -1,23 +1,22 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
+  libmysqlclient,
+  mariadb,
+  mbedtls,
+  nix-update-script,
   openssl,
   perl,
-  libmysqlclient,
-  sqlite,
-  mariadb,
+  pkg-config,
   postgresql,
-  mbedtls,
+  rustPlatform,
+  sqlite,
   versionCheckHook,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "ocsp-server";
   version = "0.7.0";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "DorianCoding";
@@ -25,13 +24,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Ut8z1mlPCJQjxw9hesle30OH/LDhGtZgmCyqTJ8ZzIo=";
   };
-
-  cargoHash = "sha256-cWmabU49p8Fl5xwZ8FQvlg9rySriYav5Zo/bwIdGgX4=";
-
-  checkFlags = [
-    # Requires database access
-    "--skip=test::checkconfig"
-  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -48,10 +40,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     mbedtls
   ];
 
+  cargoHash = "sha256-cWmabU49p8Fl5xwZ8FQvlg9rySriYav5Zo/bwIdGgX4=";
+
+  checkFlags = [
+    # Requires database access
+    "--skip=test::checkconfig"
+  ];
+
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  __structuredAttrs = true;
 
   passthru = {
     updateScript = nix-update-script { };

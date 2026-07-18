@@ -18,6 +18,25 @@ in
       '';
     };
 
+    caddy = {
+      enable = lib.mkEnableOption "a virtualhost to serve bentopdf through caddy";
+
+      virtualHost = lib.mkOption {
+        default = { };
+        description = "Extra configuration for the caddy virtual host of bentopdf.";
+
+        example = lib.literalExpression ''
+          {
+            serverAliases = [ "bentopdf.''${config.networking.domain}" ];
+          }
+        '';
+
+        type = lib.types.submodule (
+          import ../web-servers/caddy/vhost-options.nix { cfg = config.services.caddy; }
+        );
+      };
+    };
+
     domain = lib.mkOption {
       description = "Domain to use for the virtual host.";
       type = lib.types.str;
@@ -27,64 +46,27 @@ in
       enable = lib.mkEnableOption "a virtualhost to serve bentopdf through nginx";
 
       virtualHost = lib.mkOption {
-        type = lib.types.submodule (import ../web-servers/nginx/vhost-options.nix { inherit config lib; });
         default = { };
-        example = lib.literalExpression ''
-          {
-            serverAliases = [ "bentopdf.''${config.networking.domain}" ];
-          }
-        '';
         description = "Extra configuration for the nginx virtual host of bentopdf.";
-      };
-    };
 
-    caddy = {
-      enable = lib.mkEnableOption "a virtualhost to serve bentopdf through caddy";
-
-      virtualHost = lib.mkOption {
-        type = lib.types.submodule (
-          import ../web-servers/caddy/vhost-options.nix { cfg = config.services.caddy; }
-        );
-        default = { };
         example = lib.literalExpression ''
           {
             serverAliases = [ "bentopdf.''${config.networking.domain}" ];
           }
         '';
-        description = "Extra configuration for the caddy virtual host of bentopdf.";
+
+        type = lib.types.submodule (import ../web-servers/nginx/vhost-options.nix { inherit config lib; });
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    services.nginx = lib.mkIf cfg.nginx.enable {
-      enable = lib.mkDefault true;
-      virtualHosts."${cfg.domain}" = lib.mkMerge [
-        cfg.nginx.virtualHost
-        {
-          root = lib.mkForce "${cfg.package}";
-
-          locations."/" = {
-            index = "index.html";
-            extraConfig = ''
-              try_files $uri $uri/ /index.html;
-            '';
-          };
-
-          locations."~* \\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$".extraConfig = ''
-            expires 1y;
-            add_header Cache-Control "public, immutable";
-          '';
-        }
-      ];
-    };
-
     services.caddy = lib.mkIf cfg.caddy.enable {
       enable = lib.mkDefault true;
+
       virtualHosts."${cfg.domain}" = lib.mkMerge [
         cfg.caddy.virtualHost
         {
-          hostName = lib.mkForce cfg.domain;
           extraConfig = ''
             root * ${cfg.package}
             try_files {path} /index.html
@@ -100,6 +82,32 @@ in
               header Cache-Control max-age=31536000
             }
           '';
+
+          hostName = lib.mkForce cfg.domain;
+        }
+      ];
+    };
+
+    services.nginx = lib.mkIf cfg.nginx.enable {
+      enable = lib.mkDefault true;
+
+      virtualHosts."${cfg.domain}" = lib.mkMerge [
+        cfg.nginx.virtualHost
+        {
+          locations."/" = {
+            extraConfig = ''
+              try_files $uri $uri/ /index.html;
+            '';
+
+            index = "index.html";
+          };
+
+          locations."~* \\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$".extraConfig = ''
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+          '';
+
+          root = lib.mkForce "${cfg.package}";
         }
       ];
     };

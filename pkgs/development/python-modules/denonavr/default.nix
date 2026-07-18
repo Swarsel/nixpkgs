@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   asyncstdlib,
   attrs,
   buildPythonPackage,
   defusedxml,
-  fetchFromGitHub,
   ftfy,
   httpx,
   netifaces,
@@ -18,7 +18,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "denonavr";
   version = "1.3.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ol-iver";
@@ -26,6 +25,13 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-5yjrBG7Vufi+O4mHV1yGvunUJY38eWc5ZIoeoZyG5ak=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+    pytest-httpx
+    pytest-timeout
+  ];
 
   build-system = [ setuptools ];
 
@@ -38,13 +44,7 @@ buildPythonPackage (finalAttrs: {
     netifaces
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-    pytest-httpx
-    pytest-timeout
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "denonavr" ];
 
   meta = {

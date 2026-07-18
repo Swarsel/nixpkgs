@@ -2,43 +2,43 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  autoreconfHook,
-  makeWrapper,
-  removeReferencesTo,
-  libxcrypt,
-  ncurses,
-  cpio,
-  gperf,
-  cdrkit,
-  qemu,
-  pcre2,
-  augeas,
-  libxml2,
   acl,
+  augeas,
+  autoreconfHook,
+  cdrkit,
+  cpio,
+  db,
+  fuse,
+  getopt,
+  gmp,
+  gperf,
+  hivex,
+  jdk,
+  json_c,
+  libapparmor,
   libcap,
   libcap_ng,
   libconfig,
-  systemdLibs,
-  fuse,
-  yajl,
-  libvirt,
-  hivex,
-  db,
-  gmp,
-  readline,
-  numactl,
-  libapparmor,
-  json_c,
-  getopt,
-  perlPackages,
-  python3,
-  ocamlPackages,
   libtirpc,
+  libvirt,
+  libxcrypt,
+  libxml2,
+  makeWrapper,
+  ncurses,
+  numactl,
+  ocamlPackages,
+  pcre2,
+  perlPackages,
+  pkg-config,
+  python3,
+  qemu,
+  readline,
+  removeReferencesTo,
+  systemdLibs,
+  yajl,
+  zstd,
   appliance ? null,
   javaSupport ? false,
-  jdk,
-  zstd,
 }:
 
 assert appliance == null || lib.isDerivation appliance;
@@ -52,7 +52,19 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-u0SJGnleC3khPO4sSRSVpt1ksh9ydEVZFzDX94kBaJo=";
   };
 
+  outputs = [
+    "out"
+    "guestfsd"
+  ];
+
+  patches = [
+    ./libguestfs-syms.patch
+    # Fixes PERL Sys-Guestfs build failure
+    ./Revert-perl-Pass-CFLAGS-through-extra_linker_flags.patch
+  ];
+
   strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     removeReferencesTo
@@ -77,6 +89,7 @@ stdenv.mkDerivation (finalAttrs: {
     ocaml
     findlib
   ]);
+
   buildInputs = [
     libxcrypt
     ncurses
@@ -109,9 +122,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional javaSupport jdk;
 
-  prePatch = ''
-    patchShebangs .
-  '';
   configureFlags = [
     "--enable-daemon"
     "--enable-install-daemon"
@@ -124,22 +134,6 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-guestfs-path=${placeholder "out"}/lib/guestfs"
   ]
   ++ lib.optionals (!javaSupport) [ "--without-java" ];
-
-  patches = [
-    ./libguestfs-syms.patch
-    # Fixes PERL Sys-Guestfs build failure
-    ./Revert-perl-Pass-CFLAGS-through-extra_linker_flags.patch
-  ];
-
-  createFindlibDestdir = true;
-
-  installFlags = [ "REALLY_INSTALL=yes" ];
-  enableParallelBuilding = true;
-
-  outputs = [
-    "out"
-    "guestfsd"
-  ];
 
   postInstall = ''
     # move guestfsd (the component running in the appliance) to a separate output
@@ -155,13 +149,8 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  postFixup = lib.optionalString (appliance != null) ''
-    mkdir -p $out/{lib,lib64}
-    ln -s ${appliance} $out/lib64/guestfs
-    ln -s ${appliance} $out/lib/guestfs
-  '';
-
   doInstallCheck = appliance != null;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -181,17 +170,34 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  postFixup = lib.optionalString (appliance != null) ''
+    mkdir -p $out/{lib,lib64}
+    ln -s ${appliance} $out/lib64/guestfs
+    ln -s ${appliance} $out/lib/guestfs
+  '';
+
+  createFindlibDestdir = true;
+  enableParallelBuilding = true;
+  installFlags = [ "REALLY_INSTALL=yes" ];
+
+  prePatch = ''
+    patchShebangs .
+  '';
+
   meta = {
     description = "Tools for accessing and modifying virtual machine disk images";
+    homepage = "https://libguestfs.org/";
+    changelog = "https://libguestfs.org/guestfs-release-notes-${lib.versions.majorMinor finalAttrs.version}.1.html";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl21Plus
     ];
-    homepage = "https://libguestfs.org/";
-    changelog = "https://libguestfs.org/guestfs-release-notes-${lib.versions.majorMinor finalAttrs.version}.1.html";
+
     maintainers = with lib.maintainers; [
       lukts30
     ];
+
     platforms = lib.platforms.linux;
     # this is to avoid "output size exceeded"
     hydraPlatforms = if appliance != null then appliance.meta.hydraPlatforms else lib.platforms.linux;

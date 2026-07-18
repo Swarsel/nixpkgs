@@ -3,14 +3,13 @@
   buildPythonPackage,
   fetchPypi,
   jinja2,
-  setuptools,
   rope,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "nixpkgs-pytools";
   version = "1.3.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -25,6 +24,7 @@ buildPythonPackage rec {
 
   # tests require network ..
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Tools for removing the tedious nature of creating nixpkgs derivations";

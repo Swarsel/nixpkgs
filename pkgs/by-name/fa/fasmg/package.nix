@@ -1,15 +1,14 @@
 {
   lib,
   stdenv,
-  fetchzip,
-
-  # update script
-  writeScript,
   coreutils,
   curl,
+  fetchzip,
   gnugrep,
   htmlq,
   nix-update,
+  # update script
+  writeScript,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,23 +21,30 @@ stdenv.mkDerivation (finalAttrs: {
     stripRoot = false;
   };
 
+  outputs = [
+    "out"
+    "doc"
+  ];
+
   buildPhase =
     let
       inherit (stdenv.hostPlatform) system;
 
       path =
         {
-          x86_64-linux = {
-            bin = "fasmg.x64";
-            asm = "source/linux/x64/fasmg.asm";
-          };
-          x86-linux = {
-            bin = "fasmg";
-            asm = "source/linux/fasmg.asm";
-          };
           x86-darwin = {
-            bin = "source/macos/fasmg";
             asm = "source/macos/fasmg.asm";
+            bin = "source/macos/fasmg";
+          };
+
+          x86-linux = {
+            asm = "source/linux/fasmg.asm";
+            bin = "fasmg";
+          };
+
+          x86_64-linux = {
+            asm = "source/linux/x64/fasmg.asm";
+            bin = "fasmg.x64";
           };
         }
         .${system} or (throw "Unsupported system: ${system}");
@@ -48,11 +54,6 @@ stdenv.mkDerivation (finalAttrs: {
       chmod +x ${path.bin}
       ./${path.bin} ${path.asm} fasmg
     '';
-
-  outputs = [
-    "out"
-    "doc"
-  ];
 
   installPhase = ''
     install -Dm755 fasmg $out/bin/fasmg
@@ -83,10 +84,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "x86(-64) macro assembler to binary, MZ, PE, COFF, and ELF";
-    mainProgram = "fasmg";
     homepage = "https://flatassembler.net";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.iamanaws ];
     platforms = with lib.platforms; lib.intersectLists (linux ++ darwin) x86;
+    mainProgram = "fasmg";
   };
 })

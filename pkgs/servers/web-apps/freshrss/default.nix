@@ -1,9 +1,9 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
   nixosTests,
   php,
+  stdenvNoCC,
   writeText,
 }:
 
@@ -22,19 +22,7 @@ stdenvNoCC.mkDerivation rec {
     patchShebangs cli/*.php app/actualize_script.php
   '';
 
-  # THIRDPARTY_EXTENSIONS_PATH can only be set by config, but should be read from an env-var.
-  overrideConfig = writeText "constants.local.php" ''
-    <?php
-      $thirdpartyExtensionsPath = getenv('THIRDPARTY_EXTENSIONS_PATH');
-      if (is_string($thirdpartyExtensionsPath) && $thirdpartyExtensionsPath !== "") {
-        define('THIRDPARTY_EXTENSIONS_PATH', $thirdpartyExtensionsPath . '/extensions');
-      }
-  '';
-
   buildInputs = [ php ];
-
-  # There's nothing to build.
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -42,6 +30,18 @@ stdenvNoCC.mkDerivation rec {
     cp -vr * $out/
     cp $overrideConfig $out/constants.local.php
     runHook postInstall
+  '';
+
+  # There's nothing to build.
+  dontBuild = true;
+
+  # THIRDPARTY_EXTENSIONS_PATH can only be set by config, but should be read from an env-var.
+  overrideConfig = writeText "constants.local.php" ''
+    <?php
+      $thirdpartyExtensionsPath = getenv('THIRDPARTY_EXTENSIONS_PATH');
+      if (is_string($thirdpartyExtensionsPath) && $thirdpartyExtensionsPath !== "") {
+        define('THIRDPARTY_EXTENSIONS_PATH', $thirdpartyExtensionsPath . '/extensions');
+      }
   '';
 
   passthru.tests = {
@@ -52,6 +52,7 @@ stdenvNoCC.mkDerivation rec {
     description = "FreshRSS is a free, self-hostable RSS aggregator";
     homepage = "https://www.freshrss.org/";
     license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       stunkymonkey
     ];

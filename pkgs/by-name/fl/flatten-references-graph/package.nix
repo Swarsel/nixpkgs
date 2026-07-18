@@ -9,12 +9,15 @@ let
 
 in
 pythonPackages.buildPythonApplication {
-  version = "0.1.0";
-  pyproject = true;
   pname = "flatten-references-graph";
-
+  version = "0.1.0";
   # Note: this uses only ./src/.gitignore
   src = nix-gitignore.gitignoreSource [ ] ./src;
+  doCheck = true;
+
+  checkPhase = ''
+    ${helpers.unittest}/bin/unittest
+  '';
 
   build-system = with pythonPackages; [
     setuptools
@@ -25,11 +28,7 @@ pythonPackages.buildPythonApplication {
     toolz
   ];
 
-  doCheck = true;
-
-  checkPhase = ''
-    ${helpers.unittest}/bin/unittest
-  '';
+  pyproject = true;
 
   passthru = {
     dev-shell = callPackage ./dev-shell.nix { };

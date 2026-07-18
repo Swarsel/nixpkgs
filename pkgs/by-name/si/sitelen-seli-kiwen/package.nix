@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -11,8 +11,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   src = fetchzip {
     url = "https://github.com/kreativekorp/sitelen-seli-kiwen/releases/download/${finalAttrs.version}/sitelenselikiwen.zip";
-    stripRoot = false;
     hash = "sha256-2qxnHjUcfdJG6o/JI4YJP6YVr4/if/0AkMTvco4HWPc=";
+    stripRoot = false;
   };
 
   installPhase = ''
@@ -31,7 +31,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Handwritten sitelen pona font supporting UCSUR";
     homepage = "https://www.kreativekorp.com/software/fonts/sitelenselikiwen/";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ somasis ];
+    platforms = lib.platforms.all;
   };
 })

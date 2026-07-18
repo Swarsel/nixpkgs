@@ -1,12 +1,11 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "fahrplan";
   version = "1.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dbrgn";
@@ -24,6 +23,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     requests
     texttable
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Command line access to the SBB/CFF/FFS timetable with human readable argument parsing";

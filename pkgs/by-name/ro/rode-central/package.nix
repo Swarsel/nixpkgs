@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchzip,
   cpio,
+  fetchzip,
   gzip,
   xar,
 }:
@@ -25,15 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     xar
   ];
 
-  unpackPhase = ''
-    runHook preUnpack
-
-    xar -xf $src/RØDE\ Central\ \(${finalAttrs.version}\).pkg
-    zcat RodeCentral.pkg/Payload | cpio -i
-
-    runHook postUnpack
-  '';
-
   installPhase = ''
     runHook preInstall
 
@@ -41,6 +32,15 @@ stdenv.mkDerivation (finalAttrs: {
     mv Applications/RODE\ Central.app $out/Applications
 
     runHook postInstall
+  '';
+
+  unpackPhase = ''
+    runHook preUnpack
+
+    xar -xf $src/RØDE\ Central\ \(${finalAttrs.version}\).pkg
+    zcat RodeCentral.pkg/Payload | cpio -i
+
+    runHook postUnpack
   '';
 
   meta = {

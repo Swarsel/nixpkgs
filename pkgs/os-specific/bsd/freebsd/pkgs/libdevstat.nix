@@ -1,32 +1,21 @@
 {
-  mkDerivation,
+  csu,
   include,
   libcMinimal,
+  libelf,
   libgcc,
   libkvm,
   libprocstat,
   libutil,
-  libelf,
-  csu,
+  mkDerivation,
 }:
 
 mkDerivation {
-  path = "lib/libdevstat";
-  extraPaths = [
-    "lib/libc/Versions.def"
-    "sys/contrib/openzfs"
-    "sys/contrib/pcg-c"
-    "sys/opencrypto"
-    "sys/crypto"
-  ];
-
   outputs = [
     "out"
     "man"
     "debug"
   ];
-
-  noLibc = true;
 
   buildInputs = [
     include
@@ -41,4 +30,15 @@ mkDerivation {
   preBuild = ''
     export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE -B${csu}/lib"
   '';
+
+  extraPaths = [
+    "lib/libc/Versions.def"
+    "sys/contrib/openzfs"
+    "sys/contrib/pcg-c"
+    "sys/opencrypto"
+    "sys/crypto"
+  ];
+
+  noLibc = true;
+  path = "lib/libdevstat";
 }

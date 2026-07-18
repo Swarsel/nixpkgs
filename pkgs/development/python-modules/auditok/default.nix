@@ -1,7 +1,7 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
-  lib,
   matplotlib,
   numpy,
   pyaudio,
@@ -12,12 +12,11 @@
 buildPythonPackage rec {
   pname = "auditok";
   version = "0.1.5";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit version;
-    pname = "auditok";
     hash = "sha256-HNsw9VLP7XEgs8E2X6p7ygDM47AwWxMYjptipknFig4=";
+    pname = "auditok";
   };
 
   propagatedBuildInputs = [
@@ -28,13 +27,13 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ unittestCheckHook ];
+  format = "setuptools";
+  pythonImportsCheck = [ "auditok" ];
 
   unittestFlagsArray = [
     "-s"
     "tests"
   ];
-
-  pythonImportsCheck = [ "auditok" ];
 
   # The most recent version is 0.2.0, but the only dependent package is
   # ffsubsync, which is pinned at 0.1.5.
@@ -42,10 +41,10 @@ buildPythonPackage rec {
 
   meta = {
     description = "Audio Activity Detection tool that can process online data as well as audio files";
-    mainProgram = "auditok";
     homepage = "https://github.com/amsehili/auditok/";
     changelog = "https://github.com/amsehili/auditok/blob/v${version}/CHANGELOG";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "auditok";
   };
 }

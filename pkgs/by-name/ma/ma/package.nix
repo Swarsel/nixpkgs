@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  tclPackages,
   fetchurl,
+  tclPackages,
 }:
 
 stdenv.mkDerivation {
@@ -40,13 +40,13 @@ stdenv.mkDerivation {
   '';
 
   meta = {
+    inherit (tclPackages.tk.meta) platforms;
     description = "Minimalistic variant of the Acme editor";
     homepage = "http://call-with-current-continuation.org/ma/ma.html";
-    mainProgram = "ma";
-    maintainers = [ lib.maintainers.sternenseemann ];
     # Per the README:
     # > All of MA's source code is hereby placed in the public domain
     license = lib.licenses.publicDomain;
-    inherit (tclPackages.tk.meta) platforms;
+    maintainers = [ lib.maintainers.sternenseemann ];
+    mainProgram = "ma";
   };
 }

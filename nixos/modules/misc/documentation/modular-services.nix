@@ -11,18 +11,21 @@ let
   fakeSubmodule =
     module:
     lib.mkOption {
+      description = "This is a [modular service](https://nixos.org/manual/nixos/unstable/#modular-services), which can be imported into a NixOS configuration using the [`system.services`](https://search.nixos.org/options?channel=unstable&show=system.services&query=modular+service) option.";
+
       type = lib.types.submoduleWith {
         modules = [ module ];
       };
-      description = "This is a [modular service](https://nixos.org/manual/nixos/unstable/#modular-services), which can be imported into a NixOS configuration using the [`system.services`](https://search.nixos.org/options?channel=unstable&show=system.services&query=modular+service) option.";
     };
 
   modularServicesModule = {
     options = {
       "<imports = [ pkgs.autopush-rs.services.autoconnect ]>" =
         fakeSubmodule pkgs.autopush-rs.services.autoconnect;
+
       "<imports = [ pkgs.autopush-rs.services.autoendpoint ]>" =
         fakeSubmodule pkgs.autopush-rs.services.autoendpoint;
+
       "<imports = [ pkgs.ghostunnel.services.default ]>" = fakeSubmodule pkgs.ghostunnel.services.default;
       "<imports = [ pkgs.ktls-utils.services.default ]>" = fakeSubmodule pkgs.ktls-utils.services.default;
       "<imports = [ pkgs.php.services.default ]>" = fakeSubmodule pkgs.php.services.default;

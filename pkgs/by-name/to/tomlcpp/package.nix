@@ -18,10 +18,10 @@ stdenv.mkDerivation {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-SurUKdAZNWqBC7ss5nv5mDnJyC3DqxG/Q/FweTrkLnk=";
       # Use implicit $AR variable in Makefile
       # https://github.com/cktan/tomlcpp/pull/6
       url = "https://github.com/cktan/tomlcpp/commit/abdb4e0db8b27f719434f5a0d6ec0b1a6b086ded.patch";
-      hash = "sha256-SurUKdAZNWqBC7ss5nv5mDnJyC3DqxG/Q/FweTrkLnk=";
     })
   ];
 
@@ -32,8 +32,8 @@ stdenv.mkDerivation {
   ];
 
   meta = {
-    homepage = "https://github.com/cktan/tomlcpp";
     description = "No fanfare TOML C++ Library";
+    homepage = "https://github.com/cktan/tomlcpp";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = with lib.platforms; unix;

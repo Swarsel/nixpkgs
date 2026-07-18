@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -28,7 +28,7 @@ buildGoModule (finalAttrs: {
     changelog = "https://github.com/jfjallid/go-secdump/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
-    mainProgram = "go-secdump";
     platforms = lib.platforms.linux;
+    mainProgram = "go-secdump";
   };
 })

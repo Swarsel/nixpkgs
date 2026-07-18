@@ -1,8 +1,8 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
   cmake,
-  lib,
   nix-update-script,
 }:
 
@@ -18,19 +18,17 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
-
   # Vendored mimalloc-2.0.9 uses ATOMIC_VAR_INIT, removed in C23.
   env.NIX_CFLAGS_COMPILE = "-std=gnu17";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "Fast, powerful, and feature-rich Lua formatting and checking tool";
     homepage = "https://github.com/CppCXY/EmmyLuaCodeStyle";
     changelog = "https://github.com/CppCXY/EmmyLuaCodeStyle/releases/tag/${finalAttrs.version}";
-    description = "Fast, powerful, and feature-rich Lua formatting and checking tool";
-    mainProgram = "CodeFormat";
-    platforms = lib.platforms.unix;
     license = [ lib.licenses.mit ];
     maintainers = [ lib.maintainers.nobbz ];
+    platforms = lib.platforms.unix;
+    mainProgram = "CodeFormat";
   };
 })

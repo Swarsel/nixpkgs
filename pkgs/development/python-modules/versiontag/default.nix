@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   git,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "versiontag";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "thelabnyc";
@@ -23,10 +22,9 @@ buildPythonPackage rec {
       --replace-fail "get_version(pypi=True)" '"${version}"'
   '';
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ git ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "versiontag" ];
 
   meta = {

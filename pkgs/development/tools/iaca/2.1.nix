@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  gcc,
   makeWrapper,
   requireFile,
-  gcc,
   unzip,
 }:
 
@@ -11,18 +11,21 @@
 stdenv.mkDerivation rec {
   pname = "iaca";
   version = "2.1";
+
   src = requireFile {
-    name = "iaca-version-${version}-lin64.zip";
-    sha256 = "11s1134ijf66wrc77ksky9mnb0lq6ml6fzmr86a6p6r5xclzay2m";
     url = "https://software.intel.com/en-us/articles/intel-architecture-code-analyzer-download";
+    sha256 = "11s1134ijf66wrc77ksky9mnb0lq6ml6fzmr86a6p6r5xclzay2m";
+    name = "iaca-version-${version}-lin64.zip";
   };
-  unpackCmd = ''${unzip}/bin/unzip "$src" -x __MACOSX/ __MACOSX/iaca-lin64/ __MACOSX/iaca-lin64/._.DS_Store'';
+
   nativeBuildInputs = [ makeWrapper ];
+
   installPhase = ''
     mkdir -p $out/bin $out/lib
     cp bin/iaca $out/bin/
     cp lib/* $out/lib
   '';
+
   preFixup =
     let
       libPath = lib.makeLibraryPath [
@@ -36,13 +39,16 @@ stdenv.mkDerivation rec {
           --set-rpath $out/lib:"${libPath}" \
           $out/bin/iaca
     '';
+
   postFixup = "wrapProgram $out/bin/iaca --set LD_LIBRARY_PATH $out/lib";
+  unpackCmd = ''${unzip}/bin/unzip "$src" -x __MACOSX/ __MACOSX/iaca-lin64/ __MACOSX/iaca-lin64/._.DS_Store'';
+
   meta = {
     description = "Intel Architecture Code Analyzer";
     homepage = "https://software.intel.com/en-us/articles/intel-architecture-code-analyzer/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ kazcw ];
+    platforms = [ "x86_64-linux" ];
   };
 }

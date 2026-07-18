@@ -7,8 +7,8 @@
   libxext,
   libxft,
   ncurses,
-  pkg-config,
   nix-update-script,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,6 +25,7 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [
     pkg-config
   ];
+
   buildInputs = [
     fontconfig
     libx11
@@ -41,11 +42,11 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/gnotclub/xst";
     description = "Simple terminal fork that can load config from Xresources";
-    mainProgram = "xst";
+    homepage = "https://github.com/gnotclub/xst";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "xst";
   };
 })

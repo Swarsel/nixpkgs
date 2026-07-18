@@ -1,12 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
-  __structuredAttrs = true;
   pname = "modctl";
   version = "0.2.2";
 
@@ -18,15 +17,14 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-S1ygAZO3bTFi/3pwmNYE7P/Vqg7AVHpH5YRJ3yzzvyo=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   ldflags = [
     "-s"
     "-X github.com/modelpack/modctl/pkg/version.GitVersion=v${finalAttrs.version}"
   ];
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "version";
 
   # modctl's cobra commands invoke config.NewRoot(), which uses
   # os/user.Current() to find the home directory. On darwin os/user
@@ -44,6 +42,8 @@ buildGoModule (finalAttrs: {
     chmod +x "$wrapper"
     versionCheckProgram="$wrapper"
   '';
+
+  versionCheckProgramArg = "version";
 
   meta = {
     description = "CLI tool for managing OCI model artifacts based on Model Spec";

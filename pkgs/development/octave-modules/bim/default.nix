@@ -1,7 +1,7 @@
 {
-  buildOctavePackage,
   lib,
   fetchFromGitHub,
+  buildOctavePackage,
   fpl,
   msh,
 }:
@@ -23,9 +23,9 @@ buildOctavePackage rec {
   ];
 
   meta = {
+    description = "Package for solving Diffusion Advection Reaction (DAR) Partial Differential Equations";
     homepage = "https://gnu-octave.github.io/packages/bim/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ ravenjoad ];
-    description = "Package for solving Diffusion Advection Reaction (DAR) Partial Differential Equations";
   };
 }

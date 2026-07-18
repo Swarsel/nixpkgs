@@ -1,12 +1,13 @@
 {
   lib,
-  anki-utils,
   fetchFromGitHub,
+  anki-utils,
 }:
 
 anki-utils.buildAnkiAddon (finalAttrs: {
   pname = "ajt-card-management";
   version = "25.10.14.0";
+
   src =
     (fetchFromGitHub {
       owner = "Ajatt-Tools";
@@ -24,9 +25,12 @@ anki-utils.buildAnkiAddon (finalAttrs: {
           GIT_CONFIG_VALUE_0 = "git@github.com:";
         };
       });
+
   sourceRoot = "${finalAttrs.src.name}/card_management";
+
   meta = {
     description = "Reset, Learn, and Grade cards from the card browser";
+
     longDescription = ''
       Reset, Learn, and Grade cards from the card browser
 
@@ -35,9 +39,10 @@ anki-utils.buildAnkiAddon (finalAttrs: {
       - The Grade now button lets you grade selected cards without opening Reviewer.
       - The Reset selected cards button lets you delete scheduling and learning information from selected cards.
     '';
+
     homepage = "https://github.com/Ajatt-Tools/learn-now-button";
-    downloadPage = "https://ankiweb.net/shared/info/1021636467";
     license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ hey2022 ];
+    downloadPage = "https://ankiweb.net/shared/info/1021636467";
   };
 })

@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  fetchzip,
   autoconf-archive,
   autoreconfHook,
-  pkg-config,
   curlWithGnuTls,
+  fetchzip,
   libev,
   libunwind,
+  pkg-config,
   sqlite,
 }:
 

@@ -1,29 +1,29 @@
 {
-  config,
   lib,
   stdenv,
-  buildPythonPackage,
   fetchurl,
-  python,
-  pythonOlder,
-  pythonAtLeast,
+  addDriverRunpath,
   autoPatchelfHook,
   bash,
-  zlib,
-  setuptools,
-  cudaSupport ? config.cudaSupport or false,
+  buildPythonPackage,
+  config,
   cudaPackages,
-  addDriverRunpath,
   # runtime dependencies
   httpx,
-  numpy,
-  protobuf,
-  pillow,
   networkx,
+  numpy,
   opt-einsum,
+  pillow,
+  protobuf,
+  python,
+  pythonAtLeast,
+  pythonOlder,
   rdma-core,
   safetensors,
+  setuptools,
   typing-extensions,
+  zlib,
+  cudaSupport ? config.cudaSupport or false,
 }:
 
 let
@@ -48,12 +48,13 @@ let
   platform = sources.${stdenv.hostPlatform.system}.platform;
 
   src = fetchurl {
+    inherit hash;
+
     url = "https://paddle-whl.bj.bcebos.com/stable/${
       if cudaSupport then cudaVersion else "cpu"
     }/${pname}/${
       lib.replaceStrings [ "-" ] [ "_" ] pname
     }-${version}-${pyShortVersion}-${pyShortVersion}-${platform}.whl";
-    inherit hash;
   };
 in
 buildPythonPackage {
@@ -64,34 +65,12 @@ buildPythonPackage {
     src
     ;
 
-  disabled = pythonOlder "3.12" || pythonAtLeast "3.14";
-
   nativeBuildInputs = [
     addDriverRunpath
   ]
   ++ lib.optionals cudaSupport [ autoPatchelfHook ];
 
   buildInputs = lib.optionals cudaSupport [ rdma-core ];
-
-  pythonRelaxDeps = [
-    "opt_einsum"
-  ];
-
-  dependencies = [
-    setuptools
-    httpx
-    numpy
-    protobuf
-    pillow
-    opt-einsum
-    networkx
-    safetensors
-    typing-extensions
-  ];
-
-  # Segmentation fault in darwin sandbox
-  pythonImportsCheck = lib.optionals stdenv.hostPlatform.isLinux [ "paddle" ];
-
   # no tests
   doCheck = false;
 
@@ -132,13 +111,35 @@ buildPythonPackage {
       sed -i 's/^INSTALLED_VERSION=.*/INSTALLED_VERSION="${version}"/' $out/bin/paddle
     '';
 
+  dependencies = [
+    setuptools
+    httpx
+    numpy
+    protobuf
+    pillow
+    opt-einsum
+    networkx
+    safetensors
+    typing-extensions
+  ];
+
+  disabled = pythonOlder "3.12" || pythonAtLeast "3.14";
+  # Segmentation fault in darwin sandbox
+  pythonImportsCheck = lib.optionals stdenv.hostPlatform.isLinux [ "paddle" ];
+
+  pythonRelaxDeps = [
+    "opt_einsum"
+  ];
+
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Machine Learning Framework from Industrial Practice";
     homepage = "https://github.com/PaddlePaddle/Paddle";
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ happysalada ];
+
     platforms = [
       "x86_64-linux"
     ]
@@ -146,6 +147,5 @@ buildPythonPackage {
       "aarch64-linux"
       "aarch64-darwin"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 }

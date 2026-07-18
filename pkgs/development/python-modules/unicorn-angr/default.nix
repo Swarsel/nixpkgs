@@ -10,15 +10,29 @@
 buildPythonPackage rec {
   pname = "unicorn-angr";
   version = lib.getVersion unicorn-angr;
-  pyproject = true;
-
   src = unicorn-angr.src;
 
-  sourceRoot = "${src.name}/bindings/python";
+  checkPhase = ''
+    runHook preCheck
+
+    mv unicorn unicorn.hidden
+    patchShebangs sample_*.py shellcode.py
+    sh -e sample_all.sh
+
+    runHook postCheck
+  '';
+
+  build-system = [
+    distutils
+    setuptools
+  ];
 
   prePatch = ''
     ln -s ${unicorn-angr}/lib/libunicorn.* prebuilt/
   '';
+
+  pyproject = true;
+  pythonImportsCheck = [ "unicorn" ];
 
   # Needed on non-x86 linux
   setupPyBuildFlags =
@@ -33,22 +47,7 @@ buildPythonPackage rec {
       "macosx_11_0"
     ];
 
-  build-system = [
-    distutils
-    setuptools
-  ];
-
-  checkPhase = ''
-    runHook preCheck
-
-    mv unicorn unicorn.hidden
-    patchShebangs sample_*.py shellcode.py
-    sh -e sample_all.sh
-
-    runHook postCheck
-  '';
-
-  pythonImportsCheck = [ "unicorn" ];
+  sourceRoot = "${src.name}/bindings/python";
 
   meta = {
     description = "Python bindings for Unicorn CPU emulator engine";

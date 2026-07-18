@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   flit-core,
   pytest-aiohttp,
   pytest-cov-stub,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "aiohttp-remotes";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aio-libs";
@@ -21,6 +20,14 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-/bcYrpZfO/sXc0Tcpr67GBqCu4ZSAVmUj9kzupIHHnM=";
   };
+
+  nativeCheckInputs = [
+    pytest-aiohttp
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     flit-core
@@ -31,15 +38,8 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    pytest-aiohttp
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "aiohttp_remotes" ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Set of useful tools for aiohttp.web server";

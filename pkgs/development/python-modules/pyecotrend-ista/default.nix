@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  dataclasses-json,
+  pytest-xdist,
+  pytestCheckHook,
+  requests,
+  requests-mock,
   setuptools,
   setuptools-scm,
-  dataclasses-json,
-  requests,
-  pytestCheckHook,
-  pytest-xdist,
-  requests-mock,
   syrupy,
 }:
 
 buildPythonPackage rec {
   pname = "pyecotrend-ista";
   version = "3.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Ludy87";
@@ -28,6 +27,13 @@ buildPythonPackage rec {
     sed -i "/addopts =/d" pyproject.toml
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-xdist
+    requests-mock
+    syrupy
+  ];
+
   build-system = [
     setuptools
     setuptools-scm
@@ -38,19 +44,13 @@ buildPythonPackage rec {
     requests
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-xdist
-    requests-mock
-    syrupy
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyecotrend_ista" ];
 
   meta = {
-    changelog = "https://github.com/Ludy87/pyecotrend-ista/releases/tag/${version}";
     description = "Unofficial python library for the pyecotrend-ista API";
     homepage = "https://github.com/Ludy87/pyecotrend-ista";
+    changelog = "https://github.com/Ludy87/pyecotrend-ista/releases/tag/${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ oynqr ];
   };

@@ -9,20 +9,17 @@
 buildPythonPackage rec {
   pname = "pynanoleaf";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-MqCDdZxPmeAZ4AE2cEh4Qfjt+AfHoHdCqXH6GHBwcqc=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   # pynanoleaf does not contain tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "pynanoleaf" ];
 
   meta = {

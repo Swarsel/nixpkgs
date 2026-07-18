@@ -1,22 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-  hatch-vcs,
-
+  buildPythonPackage,
   # dependencies
   flexcache,
   flexparser,
+  hatch-vcs,
+  # build-system
+  hatchling,
+  matplotlib,
+  numpy,
   platformdirs,
-  typing-extensions,
-
   # tests
   pytestCheckHook,
-  numpy,
-  matplotlib,
+  typing-extensions,
   uncertainties,
   writableTmpDirAsHomeHook,
 }:
@@ -24,7 +21,6 @@
 buildPythonPackage rec {
   pname = "pint";
   version = "0.25.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hgrecco";
@@ -32,6 +28,12 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-Ushg7e920TTW7AYXg5C076Bl/yWPLO+H8I3Ytlc7OKc=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    matplotlib
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [
     hatchling
@@ -51,22 +53,18 @@ buildPythonPackage rec {
     numpy
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    matplotlib
-    writableTmpDirAsHomeHook
-  ];
-
   disabledTestPaths = [
     "pint/testsuite/benchmarks"
   ];
 
+  pyproject = true;
+
   meta = {
-    changelog = "https://github.com/hgrecco/pint/blob/${version}/CHANGES";
     description = "Physical quantities module";
-    mainProgram = "pint-convert";
-    license = lib.licenses.bsd3;
     homepage = "https://github.com/hgrecco/pint/";
+    changelog = "https://github.com/hgrecco/pint/blob/${version}/CHANGES";
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ doronbehar ];
+    mainProgram = "pint-convert";
   };
 }

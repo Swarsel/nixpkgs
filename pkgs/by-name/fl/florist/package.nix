@@ -1,9 +1,9 @@
 {
+  lib,
   stdenv,
+  fetchFromGitHub,
   gnat13,
   gnat13Packages,
-  fetchFromGitHub,
-  lib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,12 +17,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-83bfO7RTVs3b7nEzjxnr2eRXggoMjTLIa9agwYKgP9g=";
   };
 
-  configureFlags = [ "--enable-shared" ];
-
   nativeBuildInputs = [
     gnat13
     gnat13Packages.gprbuild
   ];
+
+  configureFlags = [ "--enable-shared" ];
 
   meta = {
     description = "Posix Ada Bindings";

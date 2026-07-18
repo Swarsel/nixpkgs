@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  fetchDebianPatch,
-  testers,
   autoreconfHook,
   bashNonInteractive,
+  fetchDebianPatch,
   tcl,
+  testers,
   tk,
   writableTmpDirAsHomeHook,
 }:
@@ -16,12 +16,13 @@ stdenv.mkDerivation (finalAttrs: {
   version = "3.2.6";
 
   src = fetchurl {
+    hash = "sha256-vJ0i1tJSuSDsnN8Y4At2VaYYmz809C5Y1bsVKVcomEA=";
+
     urls = [
       "https://fossies.org/linux/misc/old/hfsutils-${finalAttrs.version}.tar.gz"
       "https://ftp2.osuosl.org/pub/clfs/conglomeration/hfsutils/hfsutils-${finalAttrs.version}.tar.gz"
       "ftp://ftp.mars.org/hfs/hfsutils-${finalAttrs.version}.tar.gz"
     ];
-    hash = "sha256-vJ0i1tJSuSDsnN8Y4At2VaYYmz809C5Y1bsVKVcomEA=";
   };
 
   patches = [
@@ -29,32 +30,32 @@ stdenv.mkDerivation (finalAttrs: {
     (fetchDebianPatch {
       inherit (finalAttrs) pname version;
       debianRevision = "15";
-      patch = "0002-Fix-FTBFS-with-gcc-3.4.patch";
       hash = "sha256-3xOuEFHJeuVBmdqT/fec1jOxdBiXoUFG7ixGztJlxic=";
+      patch = "0002-Fix-FTBFS-with-gcc-3.4.patch";
     })
 
     # Support files > 2GB
     (fetchDebianPatch {
       inherit (finalAttrs) pname version;
       debianRevision = "15";
-      patch = "0003-Add-support-for-files-larger-than-2GB.patch";
       hash = "sha256-vXRjfJE3mJZyt739Ji5PnMnb94X50QhF0gpwCxRYqc4=";
+      patch = "0003-Add-support-for-files-larger-than-2GB.patch";
     })
 
     # Tcl-interfacing code is old, needs deprecated interp->result
     (fetchDebianPatch {
       inherit (finalAttrs) pname version;
       debianRevision = "15";
-      patch = "0004-Add-DUSE_INTERP_RESULT-to-DEFINES-in-Makefile.in.patch";
       hash = "sha256-m0zDWZsMXcytaOyHUqo8Dbb5A9G2DyjX8TCGXvXVpmc=";
+      patch = "0004-Add-DUSE_INTERP_RESULT-to-DEFINES-in-Makefile.in.patch";
     })
 
     # Fix missing string.h include for strcmp
     (fetchDebianPatch {
       inherit (finalAttrs) pname version;
       debianRevision = "16";
-      patch = "0005-Fix-missing-inclusion-of-string.h-in-hpwd.c.patch";
       hash = "sha256-PIksZZle+FCiexvecy4IOayNZD/X+Qa8DdE8Ej/p79U=";
+      patch = "0005-Fix-missing-inclusion-of-string.h-in-hpwd.c.patch";
     })
   ];
 
@@ -89,8 +90,6 @@ stdenv.mkDerivation (finalAttrs: {
   # Tcl code doesn't pass const strings to API
   env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
 
-  enableParallelBuilding = true;
-
   # Makefile.in expects already-existing target dirs
   preInstall = ''
     mkdir -p $out/{bin,share/man/man1}
@@ -124,22 +123,26 @@ stdenv.mkDerivation (finalAttrs: {
       runHook postInstallCheck
     '';
 
+  enableParallelBuilding = true;
+
   passthru.tests.version = testers.testVersion {
-    package = finalAttrs.finalPackage;
     command = "hvol --version";
+    package = finalAttrs.finalPackage;
   };
 
   meta = {
     description = "Tools for reading and writing Macintosh volumes";
+
     longDescription = ''
       HFS is the “Hierarchical File System”, the native volume format used on modern Macintosh computers.
       hfsutils is the name of a comprehensive software package being developed to permit manipulation of
       HFS volumes from UNIX and other systems.
     '';
+
     homepage = "https://www.mars.org/home/rob/proj/hfs/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.OPNA2608 ];
-    mainProgram = "hfs";
     platforms = lib.platforms.unix;
+    mainProgram = "hfs";
   };
 })

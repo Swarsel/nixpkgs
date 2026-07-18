@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   curl,
   jq,
+  makeWrapper,
   mpv,
 }:
 
@@ -36,8 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Listen to SomaFM in your terminal via pure bash";
     homepage = "https://github.com/rockymadden/somafm-cli";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ SuperSandro2000 ];
+    platforms = lib.platforms.all;
     mainProgram = "somafm";
   };
 })

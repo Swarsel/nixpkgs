@@ -1,23 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  django,
-  pytestCheckHook,
-  setuptools,
-  django-parler,
-  django-cms,
-  distutils,
-  pytest-django,
   beautifulsoup4,
-  python,
+  buildPythonPackage,
+  distutils,
+  django,
   django-app-helper,
+  django-cms,
+  django-parler,
+  pytest-django,
+  pytestCheckHook,
+  python,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "djangocms-alias";
   version = "3.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "django-cms";
@@ -26,13 +25,8 @@ buildPythonPackage rec {
     hash = "sha256-mZvOM27wmcHdem3GfnBZpzx+1hwrX3IeEr8K8M5LrrU=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    django
-    django-cms
-    django-parler
-  ];
+  # Disable tests because dependency djangocms-versioning isn't packaged yet.
+  doCheck = false;
 
   checkInputs = [
     beautifulsoup4
@@ -48,9 +42,15 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
-  # Disable tests because dependency djangocms-versioning isn't packaged yet.
-  doCheck = false;
+  build-system = [ setuptools ];
 
+  dependencies = [
+    django
+    django-cms
+    django-parler
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "djangocms_alias" ];
 
   meta = {

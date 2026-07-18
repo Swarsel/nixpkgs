@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  desktop-file-utils,
+  gettext,
   gnome,
   gsound,
   gtk4,
-  wrapGAppsHook4,
-  librsvg,
-  gettext,
   itstool,
-  vala,
-  libxml2,
   libadwaita,
   libgee,
+  librsvg,
+  libxml2,
   meson,
   ninja,
-  desktop-file-utils,
+  pkg-config,
+  vala,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -54,11 +54,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Guide a worm around a maze";
-    mainProgram = "gnome-nibbles";
     homepage = "https://gitlab.gnome.org/GNOME/gnome-nibbles";
     changelog = "https://gitlab.gnome.org/GNOME/gnome-nibbles/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+    mainProgram = "gnome-nibbles";
+    teams = [ lib.teams.gnome ];
   };
 })

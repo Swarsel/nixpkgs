@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,10 +19,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "CLI utility to format json files";
-    mainProgram = "jfmt";
     homepage = "https://github.com/skilly-lily/jfmt.rs";
     changelog = "https://github.com/skilly-lily/jfmt.rs/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.psibi ];
+    mainProgram = "jfmt";
   };
 })

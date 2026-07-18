@@ -1,28 +1,25 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
   dpdk,
+  gtk2,
   libbsd,
   libpcap,
   lua5_3,
+  meson,
+  ninja,
+  nix-update-script,
   numactl,
+  pkg-config,
   util-linux,
-  gtk2,
   which,
   withGtk ? false,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "pktgen";
   version = "26.03.0";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "pktgen";
@@ -30,6 +27,12 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "pktgen-${finalAttrs.version}";
     hash = "sha256-GNBo0WsHevoge97gUgDdNygCHSA5fQ/73ibsTvDvVYI=";
   };
+
+  postPatch = ''
+    substituteInPlace lib/common/lscpu.h --replace /usr/bin/lscpu ${lib.getExe' util-linux "lscpu"}
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -50,19 +53,16 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env = {
-    RTE_SDK = dpdk;
     GUI = lib.optionalString withGtk "true";
 
     NIX_CFLAGS_COMPILE = toString [
       "-Wno-error=sign-compare"
     ];
+
     # requires symbols from this file
     NIX_LDFLAGS = "-lrte_net_bond";
+    RTE_SDK = dpdk;
   };
-
-  postPatch = ''
-    substituteInPlace lib/common/lscpu.h --replace /usr/bin/lscpu ${lib.getExe' util-linux "lscpu"}
-  '';
 
   postInstall = ''
     # meson installs unneeded files with conflicting generic names, such as
@@ -70,16 +70,19 @@ stdenv.mkDerivation (finalAttrs: {
     rm -rf $out/include $out/lib
   '';
 
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Traffic generator powered by DPDK";
     homepage = "http://dpdk.org/";
     license = lib.licenses.bsdOriginal;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       abuibrahim
       stepbrobd
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,11 +20,11 @@ buildGoModule (finalAttrs: {
   meta = {
     description = "Simple battery level monitor for Linux written in Go";
     homepage = "https://github.com/ulinja/gobatmon";
+    changelog = "https://github.com/ulinja/gobatmon/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.wtfpl;
     maintainers = with lib.maintainers; [ ulinja ];
+    platforms = lib.platforms.linux;
     mainProgram = "gobatmon";
     downloadPage = "https://github.com/ulinja/gobatmon/releases/latest";
-    changelog = "https://github.com/ulinja/gobatmon/blob/v${finalAttrs.version}/CHANGELOG.md";
-    platforms = lib.platforms.linux;
   };
 })

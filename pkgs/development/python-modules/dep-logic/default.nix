@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pdm-backend,
+  buildPythonPackage,
   packaging,
+  pdm-backend,
   pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "dep-logic";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pdm-project";
@@ -20,18 +19,17 @@ buildPythonPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ pdm-backend ];
-
   propagatedBuildInputs = [ packaging ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "dep_logic" ];
 
   meta = {
-    changelog = "https://github.com/pdm-project/dep-logic/releases/tag/${finalAttrs.src.tag}";
     description = "Python dependency specifications supporting logical operations";
     homepage = "https://github.com/pdm-project/dep-logic";
+    changelog = "https://github.com/pdm-project/dep-logic/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       tomasajt
       misilelab

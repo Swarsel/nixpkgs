@@ -1,32 +1,32 @@
 {
-  stdenv,
   lib,
-  intltool,
+  stdenv,
   fetchFromGitLab,
+  desktop-file-utils,
+  docbook_xml_dtd_45,
+  docbook_xsl,
+  gitUpdater,
+  glib,
+  gobject-introspection,
+  gsettings-desktop-schemas,
+  gtk-doc,
+  gtk3,
+  intltool,
+  itstool,
+  libxml2,
   meson,
   mesonEmulatorHook,
   ninja,
+  pcre2,
   pkg-config,
   python3,
-  gtk3,
-  pcre2,
-  glib,
-  desktop-file-utils,
-  gtk-doc,
-  wrapGAppsHook3,
-  itstool,
-  libxml2,
-  yelp-tools,
-  docbook_xsl,
-  docbook_xml_dtd_45,
-  gsettings-desktop-schemas,
-  unzip,
-  unicode-character-database,
-  unihan-database,
   runCommand,
   symlinkJoin,
-  gobject-introspection,
-  gitUpdater,
+  unicode-character-database,
+  unihan-database,
+  unzip,
+  wrapGAppsHook3,
+  yelp-tools,
 }:
 
 let
@@ -39,6 +39,7 @@ let
   '';
   ucd = symlinkJoin {
     name = "ucd+unihan";
+
     paths = [
       unihanZip
       unicode-character-database
@@ -49,6 +50,14 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "gucharmap";
   version = "17.0.2";
 
+  src = fetchFromGitLab {
+    owner = "GNOME";
+    repo = "gucharmap";
+    rev = finalAttrs.version;
+    hash = "sha256-LjXn8cFLqVZmLub0FRscyjg93u6g1EXsv3w0L4iiyqE=";
+    domain = "gitlab.gnome.org";
+  };
+
   outputs = [
     "out"
     "lib"
@@ -56,15 +65,14 @@ stdenv.mkDerivation (finalAttrs: {
     "devdoc"
   ];
 
-  src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
-    owner = "GNOME";
-    repo = "gucharmap";
-    rev = finalAttrs.version;
-    hash = "sha256-LjXn8cFLqVZmLub0FRscyjg93u6g1EXsv3w0L4iiyqE=";
-  };
+  postPatch = ''
+    patchShebangs \
+      data/meson_desktopfile.py \
+      gucharmap/gen-guch-unicode-tables.pl
+  '';
 
   strictDeps = true;
+
   nativeBuildInputs = [
     meson
     ninja
@@ -100,12 +108,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
 
-  postPatch = ''
-    patchShebangs \
-      data/meson_desktopfile.py \
-      gucharmap/gen-guch-unicode-tables.pl
-  '';
-
   passthru = {
     updateScript = gitUpdater {
     };
@@ -113,10 +115,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "GNOME Character Map, based on the Unicode Character Database";
-    mainProgram = "gucharmap";
     homepage = "https://gitlab.gnome.org/GNOME/gucharmap";
     license = lib.licenses.gpl3Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+    mainProgram = "gucharmap";
+    teams = [ lib.teams.gnome ];
   };
 })

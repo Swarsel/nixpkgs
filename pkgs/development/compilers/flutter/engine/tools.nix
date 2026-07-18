@@ -1,16 +1,14 @@
 {
   stdenv,
-  buildPlatform,
-  hostPlatform,
-  callPackage,
-  fetchgit,
   fetchurl,
-  writeText,
-  runCommand,
+  buildPlatform,
+  callPackage,
   darwin,
+  fetchgit,
+  hostPlatform,
+  runCommand,
   writeShellScriptBin,
-  depot_toolsCommit ? "580b4ff3f5cd0dcaa2eacda28cefe0f45320e8f7",
-  depot_toolsHash ? "sha256-k+XQSYJQYc9vAUjwrRxaAlX/sK74W45m5byS31hSpwc=",
+  writeText,
   cipdCommit ? "7120a6a515089a3ff5d1f61ff4ee17750dc038af",
   cipdHashes ? {
     "linux-386" = "sha256-CshLfw49uglvWNwWE4K7ucBUF+IZlXDaIQsTXtFEJ8U=";
@@ -32,6 +30,8 @@
     "windows-amd64" = "sha256-puAQhiPGuwzkElWiBdTRGWOaUR2AIP7Qv9S3pwEY74E=";
     "windows-arm64" = "sha256-4wxOMG+zvkM7gjhAiQvvNqNS0AamKKJdaBM/+rRxgXk=";
   },
+  depot_toolsCommit ? "580b4ff3f5cd0dcaa2eacda28cefe0f45320e8f7",
+  depot_toolsHash ? "sha256-k+XQSYJQYc9vAUjwrRxaAlX/sK74W45m5byS31hSpwc=",
 }:
 let
   constants = callPackage ./constants.nix { platform = buildPlatform; };
@@ -39,21 +39,15 @@ let
   stdenv-constants = callPackage ./constants.nix { platform = stdenv.hostPlatform; };
 in
 {
-  depot_tools = fetchgit {
-    url = "https://chromium.googlesource.com/chromium/tools/depot_tools.git";
-    rev = depot_toolsCommit;
-    hash = depot_toolsHash;
-  };
-
   cipd =
     let
       unwrapped =
         runCommand "cipd-${cipdCommit}"
           {
             src = fetchurl {
-              name = "cipd-${cipdCommit}-unwrapped";
               url = "https://chrome-infra-packages.appspot.com/client?platform=${stdenv-constants.platform}&version=git_revision:${cipdCommit}";
               hash = cipdHashes.${stdenv-constants.platform};
+              name = "cipd-${cipdCommit}-unwrapped";
             };
           }
           ''
@@ -89,6 +83,12 @@ in
 
       exec ${unwrapped}/bin/cipd $params
     '';
+
+  depot_tools = fetchgit {
+    hash = depot_toolsHash;
+    rev = depot_toolsCommit;
+    url = "https://chromium.googlesource.com/chromium/tools/depot_tools.git";
+  };
 
   vpython =
     pythonPkg:

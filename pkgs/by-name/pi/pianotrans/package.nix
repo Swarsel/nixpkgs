@@ -1,14 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  python3,
   ffmpeg,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "pianotrans";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "azuwis";
@@ -17,6 +16,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-gRbyUQmPtGvx5QKAyrmeJl0stp7hwLBWwjSbJajihdE=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -26,18 +27,17 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     torch
   ];
 
-  # Project has no tests
-  doCheck = false;
-
   makeWrapperArgs = [
     ''--prefix PATH : "${lib.makeBinPath [ ffmpeg ]}"''
   ];
 
+  pyproject = true;
+
   meta = {
     description = "Simple GUI for ByteDance's Piano Transcription with Pedals";
-    mainProgram = "pianotrans";
     homepage = "https://github.com/azuwis/pianotrans";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ azuwis ];
+    mainProgram = "pianotrans";
   };
 })

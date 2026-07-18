@@ -1,5 +1,6 @@
 {
   lib,
+  fetchFromGitHub,
   aiofiles,
   aiohttp,
   aiolimiter,
@@ -7,7 +8,6 @@
   bleak-retry-connector,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   protobuf,
   setuptools,
   typing-extensions,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "tesla-fleet-api";
   version = "1.6.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Teslemetry";
@@ -25,6 +24,8 @@ buildPythonPackage rec {
     hash = "sha256-Z27HPmlat0GfVmTeRYmqp9HlUsuZ+5A9FStqGGFMfiw=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -38,9 +39,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "tesla_fleet_api" ];
 
   meta = {

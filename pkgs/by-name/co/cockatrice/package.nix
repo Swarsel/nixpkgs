@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  qt5,
   fetchFromGitHub,
   cmake,
   protobuf_21,
+  qt5,
 }:
 let
   protobuf = protobuf_21;
@@ -34,8 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/Cockatrice/Cockatrice";
     description = "Cross-platform virtual tabletop for multiplayer card games";
+    homepage = "https://github.com/Cockatrice/Cockatrice";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ evanjs ];
     platforms = with lib.platforms; linux;

@@ -1,48 +1,52 @@
 {
   lib,
   stdenv,
-  vscode-utils,
   autoPatchelfHook,
-  icu,
-  openssl,
-  libz,
   glibc,
-  libxml2,
+  icu,
   libkrb5,
+  libxml2,
+  libz,
+  openssl,
   patchelf,
+  vscode-utils,
 }:
 let
   extInfo = (
     {
-      x86_64-linux = {
-        arch = "linux-x64";
-        hash = "sha256-N3W/cvqAzf7Z9jMjiHN9zWrHXZjIqD1RnuZbZ/yQx8g=";
+      aarch64-darwin = {
+        arch = "darwin-arm64";
+        hash = "sha256-F4CsyiX46SpjilJNV+qYps1JAw09pVruLmW+muN9/B4=";
       };
+
       aarch64-linux = {
         arch = "linux-arm64";
         hash = "sha256-1zz9xrMALIOXzMpArWSwO12WmRE+0ldbIwUFH1G2GQI=";
       };
-      aarch64-darwin = {
-        arch = "darwin-arm64";
-        hash = "sha256-F4CsyiX46SpjilJNV+qYps1JAw09pVruLmW+muN9/B4=";
+
+      x86_64-linux = {
+        arch = "linux-x64";
+        hash = "sha256-N3W/cvqAzf7Z9jMjiHN9zWrHXZjIqD1RnuZbZ/yQx8g=";
       };
     }
     .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}")
   );
 in
 vscode-utils.buildVscodeMarketplaceExtension {
-  mktplcRef = {
-    name = "csdevkit";
-    publisher = "ms-dotnettools";
-    version = "3.10.14";
-    inherit (extInfo) hash arch;
-  };
-  sourceRoot = "extension"; # This has more than one folder.
+  postPatch = ''
+    declare ext_unique_id
+    ext_unique_id="$(basename "$out" | head -c 32)"
+
+    substituteInPlace dist/extension.js \
+      --replace-fail 'e.extensionPath,"cache"' 'require("os").tmpdir(),"'"$ext_unique_id"'"' \
+      --replace-fail 't.setExecuteBit=async function(e){if("win32"!==process.platform){const t=o.join(e[a.SERVICEHUB_CONTROLLER_COMPONENT_NAME],"Microsoft.VisualStudio.Code.ServiceController"),r=o.join(e[a.SERVICEHUB_HOST_COMPONENT_NAME],(0,a.getServiceHubHostEntrypointName)()),n=[(0,a.getServerPath)(e),t,r,(0,c.getReliabilityMonitorPath)(e)];await Promise.all(n.map((e=>(0,i.chmod)(e,"0755"))))}}' 't.setExecuteBit=async function(e){}'
+  '';
 
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     autoPatchelfHook
     patchelf
   ];
+
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     (lib.getLib glibc) # libgcc_s.so.1
     (lib.getLib icu) # libicui18n.so libicuuc.so
@@ -52,15 +56,6 @@ vscode-utils.buildVscodeMarketplaceExtension {
     (lib.getLib openssl) # libopenssl.so.3
     (lib.getLib stdenv.cc.cc) # libstdc++.so.6
   ];
-
-  postPatch = ''
-    declare ext_unique_id
-    ext_unique_id="$(basename "$out" | head -c 32)"
-
-    substituteInPlace dist/extension.js \
-      --replace-fail 'e.extensionPath,"cache"' 'require("os").tmpdir(),"'"$ext_unique_id"'"' \
-      --replace-fail 't.setExecuteBit=async function(e){if("win32"!==process.platform){const t=o.join(e[a.SERVICEHUB_CONTROLLER_COMPONENT_NAME],"Microsoft.VisualStudio.Code.ServiceController"),r=o.join(e[a.SERVICEHUB_HOST_COMPONENT_NAME],(0,a.getServiceHubHostEntrypointName)()),n=[(0,a.getServerPath)(e),t,r,(0,c.getReliabilityMonitorPath)(e)];await Promise.all(n.map((e=>(0,i.chmod)(e,"0755"))))}}' 't.setExecuteBit=async function(e){}'
-  '';
 
   preFixup = ''
     (
@@ -125,16 +120,27 @@ vscode-utils.buildVscodeMarketplaceExtension {
     )
   '';
 
+  mktplcRef = {
+    inherit (extInfo) hash arch;
+    version = "3.10.14";
+    name = "csdevkit";
+    publisher = "ms-dotnettools";
+  };
+
+  sourceRoot = "extension"; # This has more than one folder.
+
   meta = {
-    changelog = "https://marketplace.visualstudio.com/items/ms-dotnettools.csdevkit/changelog";
     description = "Official Visual Studio Code extension for C# from Microsoft";
-    downloadPage = "https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit";
+    changelog = "https://marketplace.visualstudio.com/items/ms-dotnettools.csdevkit/changelog";
     license = lib.licenses.unfree;
     maintainers = [ ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
+    downloadPage = "https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit";
   };
 }

@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "autotools-language-server";
   version = "0.0.23";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Freed-Wu";
@@ -15,6 +14,10 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-cehiqxst3iGpR2UnkpN7wVAxd924n0ZNek3aiwEW+ZA=";
   };
+
+  nativeCheckInputs = [
+    python3.pkgs.pytestCheckHook
+  ];
 
   build-system = [
     python3.pkgs.setuptools-generate
@@ -25,9 +28,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tree-sitter-make
     lsp-tree-sitter
   ];
-  nativeCheckInputs = [
-    python3.pkgs.pytestCheckHook
-  ];
+
+  pyproject = true;
 
   meta = {
     description = "Autotools language server, support configure.ac, Makefile.am, Makefile";

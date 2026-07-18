@@ -2,14 +2,26 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch2,
   fetchFromGitHub,
-  python,
   ada,
+  bash,
   brotli,
+  buildPackages,
   c-ares,
+  # for `.pkgs` attribute
+  callPackage,
+  common-updater-scripts,
+  coreutils,
+  curl,
+  darwin,
+  fetchpatch2,
+  gnugrep,
+  gnupg,
   gtest,
   hdrhistogram_c,
+  icu,
+  installShellFiles,
+  jq,
   libffiReal,
   libuv,
   lief,
@@ -19,9 +31,23 @@
   nghttp2,
   nghttp3,
   ngtcp2,
+  ninja,
   openssl,
+  pkgconf,
+  python,
+  runCommand,
+  runtimeShell,
   simdjson,
   simdutf,
+  sqlite,
+  temporal_capi,
+  testers,
+  unixtools,
+  uvwasi,
+  # Updater dependencies
+  writeScript,
+  zlib,
+  zstd,
   simdutf_6 ? (
     simdutf.overrideAttrs (
       {
@@ -42,37 +68,11 @@
       })
     )
   ),
-  sqlite,
-  temporal_capi,
-  uvwasi,
-  zlib,
-  zstd,
-  icu,
-  bash,
-  ninja,
-  pkgconf,
-  unixtools,
-  runCommand,
-  buildPackages,
-  testers,
-  # for `.pkgs` attribute
-  callPackage,
-  # Updater dependencies
-  writeScript,
-  coreutils,
-  gnugrep,
-  jq,
-  curl,
-  common-updater-scripts,
-  runtimeShell,
-  gnupg,
-  installShellFiles,
-  darwin,
 }:
 
 {
-  version,
   sha256,
+  version,
   patches ? [ ],
 }@args:
 
@@ -160,6 +160,7 @@ let
       uvwasi
       zlib
       ;
+
     cares = c-ares;
     http-parser = llhttp;
   }
@@ -168,6 +169,7 @@ let
       ada
       simdjson
       ;
+
     simdutf = if lib.versionAtLeast version "25" then simdutf else simdutf_6;
   })
   // (lib.optionalAttrs useSharedSQLite {
@@ -246,37 +248,32 @@ let
     in
     {
       inherit pname version;
+      inherit patches;
 
       src = fetchurl {
-        url = "https://nodejs.org/${downloadDir}/v${version}/node-v${version}.tar.xz";
         inherit sha256;
+        url = "https://nodejs.org/${downloadDir}/v${version}/node-v${version}.tar.xz";
       };
+
+      outputs = [
+        "out"
+        "libv8"
+        "npm"
+      ]
+      ++ lib.optional bundlesCorepack "corepack"
+      ++ lib.optionals (stdenv.hostPlatform == stdenv.buildPlatform) [ "dev" ];
+
+      postPatch = ''
+        substituteInPlace tools/install.py \
+          --replace-fail '  corepack_files(options, action)' "  oip=options.install_path;options.install_path='$corepack';corepack_files(options, action);options.install_path=oip" \
+          --replace-fail '  npm_files(options, action)' "  oip=options.install_path;options.install_path='$npm';npm_files(options, action);options.install_path=oip"
+      ''
+      + lib.optionalString stdenv.hostPlatform.isDarwin ''
+        substituteInPlace test/parallel/test-macos-app-sandbox.js \
+          --subst-var-by codesign '${darwin.sigtool}/bin/codesign'
+      '';
 
       strictDeps = true;
-
-      env = {
-        # Tell ninja to avoid ANSI sequences, otherwise we don’t see build
-        # progress in Nix logs.
-        #
-        # Note: do not set TERM=dumb environment variable globally, it is used in
-        # test-ci-js test suite to skip tests that otherwise run fine.
-        NINJA = "TERM=dumb ninja";
-      }
-      // lib.optionalAttrs (!canExecute && !canEmulate) {
-        # these are used in the --cross-compiling case. see comment at postConfigure.
-        CC_host = touchScript "${buildPackages.stdenv.cc}/bin/cc";
-        CXX_host = touchScript "${buildPackages.stdenv.cc}/bin/c++";
-        AR_host = touchScript "${buildPackages.stdenv.cc}/bin/ar";
-      };
-
-      # NB: technically, we do not need bash in build inputs since all scripts are
-      # wrappers over the corresponding JS scripts. There are some packages though
-      # that use bash wrappers, e.g. polaris-web.
-      buildInputs = [
-        bash
-        icu
-      ]
-      ++ builtins.attrValues sharedLibDeps;
 
       nativeBuildInputs = [
         installShellFiles
@@ -293,21 +290,14 @@ let
         darwin-cctools-only-libtool
       ];
 
-      # We currently rely on Makefile and stdenv for build phases, so do not let
-      # ninja’s setup hook to override default stdenv phases.
-      dontUseNinjaBuild = true;
-      dontUseNinjaCheck = true;
-      dontUseNinjaInstall = true;
-
-      outputs = [
-        "out"
-        "libv8"
-        "npm"
+      # NB: technically, we do not need bash in build inputs since all scripts are
+      # wrappers over the corresponding JS scripts. There are some packages though
+      # that use bash wrappers, e.g. polaris-web.
+      buildInputs = [
+        bash
+        icu
       ]
-      ++ lib.optional bundlesCorepack "corepack"
-      ++ lib.optionals (stdenv.hostPlatform == stdenv.buildPlatform) [ "dev" ];
-      setOutputFlags = false;
-      moveToDev = false;
+      ++ builtins.attrValues sharedLibDeps;
 
       configureFlags = [
         "--ninja"
@@ -343,13 +333,20 @@ let
         */
       ]) (builtins.attrNames sharedLibDeps);
 
-      configurePlatforms = [ ];
-
-      dontDisableStatic = true;
-
-      configureScript = writeScript "nodejs-configure" ''
-        exec ${python.executable} configure.py "$@"
-      '';
+      env = {
+        # Tell ninja to avoid ANSI sequences, otherwise we don’t see build
+        # progress in Nix logs.
+        #
+        # Note: do not set TERM=dumb environment variable globally, it is used in
+        # test-ci-js test suite to skip tests that otherwise run fine.
+        NINJA = "TERM=dumb ninja";
+      }
+      // lib.optionalAttrs (!canExecute && !canEmulate) {
+        AR_host = touchScript "${buildPackages.stdenv.cc}/bin/ar";
+        # these are used in the --cross-compiling case. see comment at postConfigure.
+        CC_host = touchScript "${buildPackages.stdenv.cc}/bin/cc";
+        CXX_host = touchScript "${buildPackages.stdenv.cc}/bin/c++";
+      };
 
       # In order to support unsupported cross configurations, we copy some intermediate executables
       # from a native build and replace all the build-system tools with a script which simply touches
@@ -360,62 +357,7 @@ let
         export FAKE_TOUCH=1
       '';
 
-      enableParallelBuilding = true;
-
-      # Don't allow enabling content addressed conversion as `nodejs`
-      # checksums it's image before conversion happens and image loading
-      # breaks:
-      #   $ nix build -f. nodejs --arg config '{ contentAddressedByDefault = true; }'
-      #   $ ./result/bin/node
-      #   Check failed: VerifyChecksum(blob).
-      __contentAddressed = false;
-
-      passthru.interpreterName = "nodejs";
-
-      setupHook = ./setup-hook.sh;
-
-      pos = builtins.unsafeGetAttrPos "version" args;
-
-      inherit patches;
-
-      postPatch = ''
-        substituteInPlace tools/install.py \
-          --replace-fail '  corepack_files(options, action)' "  oip=options.install_path;options.install_path='$corepack';corepack_files(options, action);options.install_path=oip" \
-          --replace-fail '  npm_files(options, action)' "  oip=options.install_path;options.install_path='$npm';npm_files(options, action);options.install_path=oip"
-      ''
-      + lib.optionalString stdenv.hostPlatform.isDarwin ''
-        substituteInPlace test/parallel/test-macos-app-sandbox.js \
-          --subst-var-by codesign '${darwin.sigtool}/bin/codesign'
-      '';
-
-      __darwinAllowLocalNetworking = true; # for tests
-      __structuredAttrs = true; # for outputChecks
-
       doCheck = canExecute;
-
-      # See https://github.com/nodejs/node/issues/22006
-      enableParallelChecking = false;
-
-      # Some dependencies required for tools/doc/node_modules (and therefore
-      # test-addons, jstest and others) target are not included in the tarball.
-      # Run test targets that do not require network access.
-      checkTarget = lib.concatStringsSep " " (
-        [
-          "build-js-native-api-tests"
-          "build-node-api-tests"
-          "tooltest"
-          "cctest"
-        ]
-        ++ lib.optional useSharedFFI "build-ffi-tests"
-        ++ lib.optionals (!stdenv.buildPlatform.isDarwin || lib.versionAtLeast version "20") [
-          # There are some test failures on macOS before v20 that are not worth the
-          # time to debug for a version that would be eventually removed in less
-          # than a year (Node.js 18 will be EOL at 2025-04-30). Note that these
-          # failures are specific to Nix sandbox on macOS and should not affect
-          # actual functionality.
-          "test-ci-js"
-        ]
-      );
 
       checkFlags = [
         # Do not create __pycache__ when running tests.
@@ -561,56 +503,6 @@ let
         }"
       ];
 
-      outputChecks = {
-        out = {
-          disallowedReferences = [
-            "libv8"
-            "npm"
-          ]
-          ++ lib.optional bundlesCorepack "corepack";
-        };
-        corepack = {
-          disallowedReferences = [
-            "libv8"
-            "npm"
-          ];
-        };
-        libv8 = {
-          disallowedReferences = [
-            "out"
-            "npm"
-          ]
-          ++ lib.optional bundlesCorepack "corepack";
-        };
-        npm = {
-          disallowedReferences = [
-            "libv8"
-          ]
-          ++ lib.optional bundlesCorepack "corepack";
-        };
-      };
-
-      sandboxProfile = ''
-        (allow file-read*
-          (literal "/Library/Keychains/System.keychain")
-          (literal "/private/var/db/mds/system/mdsDirectory.db")
-          (literal "/private/var/db/mds/system/mdsObject.db"))
-
-        ; Allow files written by Module Directory Services (MDS), which is used
-        ; by Security.framework: https://apple.stackexchange.com/a/411476
-        ; These rules are based on the system sandbox profiles found in
-        ; /System/Library/Sandbox/Profiles.
-        (allow file-write*
-          (regex #"^/private/var/folders/[^/]+/[^/]+/C/mds/mdsDirectory\.db$")
-          (regex #"^/private/var/folders/[^/]+/[^/]+/C/mds/mdsObject\.db_?$")
-          (regex #"^/private/var/folders/[^/]+/[^/]+/C/mds/mds\.lock$"))
-
-        (allow mach-lookup
-          (global-name "com.apple.FSEvents")
-          (global-name "com.apple.SecurityServer")
-          (global-name "com.apple.system.opendirectoryd.membership"))
-      '';
-
       postInstall =
         let
           # nodejs_18 does not have node_js2c, and we don't want to rebuild the other ones
@@ -684,10 +576,118 @@ let
         done
       '';
 
+      # Don't allow enabling content addressed conversion as `nodejs`
+      # checksums it's image before conversion happens and image loading
+      # breaks:
+      #   $ nix build -f. nodejs --arg config '{ contentAddressedByDefault = true; }'
+      #   $ ./result/bin/node
+      #   Check failed: VerifyChecksum(blob).
+      __contentAddressed = false;
+      __darwinAllowLocalNetworking = true; # for tests
+      __structuredAttrs = true; # for outputChecks
+
+      # Some dependencies required for tools/doc/node_modules (and therefore
+      # test-addons, jstest and others) target are not included in the tarball.
+      # Run test targets that do not require network access.
+      checkTarget = lib.concatStringsSep " " (
+        [
+          "build-js-native-api-tests"
+          "build-node-api-tests"
+          "tooltest"
+          "cctest"
+        ]
+        ++ lib.optional useSharedFFI "build-ffi-tests"
+        ++ lib.optionals (!stdenv.buildPlatform.isDarwin || lib.versionAtLeast version "20") [
+          # There are some test failures on macOS before v20 that are not worth the
+          # time to debug for a version that would be eventually removed in less
+          # than a year (Node.js 18 will be EOL at 2025-04-30). Note that these
+          # failures are specific to Nix sandbox on macOS and should not affect
+          # actual functionality.
+          "test-ci-js"
+        ]
+      );
+
+      configurePlatforms = [ ];
+
+      configureScript = writeScript "nodejs-configure" ''
+        exec ${python.executable} configure.py "$@"
+      '';
+
+      dontDisableStatic = true;
+      # We currently rely on Makefile and stdenv for build phases, so do not let
+      # ninja’s setup hook to override default stdenv phases.
+      dontUseNinjaBuild = true;
+      dontUseNinjaCheck = true;
+      dontUseNinjaInstall = true;
+      enableParallelBuilding = true;
+      # See https://github.com/nodejs/node/issues/22006
+      enableParallelChecking = false;
+      moveToDev = false;
+
+      outputChecks = {
+        corepack = {
+          disallowedReferences = [
+            "libv8"
+            "npm"
+          ];
+        };
+
+        libv8 = {
+          disallowedReferences = [
+            "out"
+            "npm"
+          ]
+          ++ lib.optional bundlesCorepack "corepack";
+        };
+
+        npm = {
+          disallowedReferences = [
+            "libv8"
+          ]
+          ++ lib.optional bundlesCorepack "corepack";
+        };
+
+        out = {
+          disallowedReferences = [
+            "libv8"
+            "npm"
+          ]
+          ++ lib.optional bundlesCorepack "corepack";
+        };
+      };
+
+      pos = builtins.unsafeGetAttrPos "version" args;
+
+      sandboxProfile = ''
+        (allow file-read*
+          (literal "/Library/Keychains/System.keychain")
+          (literal "/private/var/db/mds/system/mdsDirectory.db")
+          (literal "/private/var/db/mds/system/mdsObject.db"))
+
+        ; Allow files written by Module Directory Services (MDS), which is used
+        ; by Security.framework: https://apple.stackexchange.com/a/411476
+        ; These rules are based on the system sandbox profiles found in
+        ; /System/Library/Sandbox/Profiles.
+        (allow file-write*
+          (regex #"^/private/var/folders/[^/]+/[^/]+/C/mds/mdsDirectory\.db$")
+          (regex #"^/private/var/folders/[^/]+/[^/]+/C/mds/mdsObject\.db_?$")
+          (regex #"^/private/var/folders/[^/]+/[^/]+/C/mds/mds\.lock$"))
+
+        (allow mach-lookup
+          (global-name "com.apple.FSEvents")
+          (global-name "com.apple.SecurityServer")
+          (global-name "com.apple.system.opendirectoryd.membership"))
+      '';
+
+      setOutputFlags = false;
+      setupHook = ./setup-hook.sh;
+      passthru.interpreterName = "nodejs";
+      passthru.python = python; # to ensure nodeEnv uses the same version
+
       passthru.tests = {
         version = testers.testVersion {
-          package = self;
           version = "v${lib.head (lib.strings.splitString "-rc." version)}";
+          package = self;
         };
       };
 
@@ -703,6 +703,7 @@ let
           jq
           runtimeShell
           ;
+
         inherit lib;
         inherit majorVersion;
       };
@@ -713,20 +714,22 @@ let
         changelog = "https://github.com/nodejs/node/releases/tag/v${version}";
         license = lib.licenses.mit;
         maintainers = with lib.maintainers; [ aduh95 ];
+
         # https://github.com/nodejs/node/blob/732ab9d658e057af5191d4ecd156d38487509462/BUILDING.md#platform-list
         platforms =
           (lib.lists.intersectLists (
             lib.platforms.linux ++ lib.platforms.darwin ++ lib.platforms.freebsd
           ) lib.platforms.littleEndian)
           ++ [ "s390x-linux" ];
+
+        mainProgram = "node";
+
         # This broken condition is likely too conservative. Feel free to loosen it if it works.
         broken =
           !canExecute && !canEmulate && (stdenv.buildPlatform.parsed.cpu != stdenv.hostPlatform.parsed.cpu);
-        mainProgram = "node";
+
         knownVulnerabilities = lib.optional (lib.versionOlder version "22") "This NodeJS release has reached its end of life. See https://nodejs.org/en/about/releases/.";
       };
-
-      passthru.python = python; # to ensure nodeEnv uses the same version
     }
   );
 in

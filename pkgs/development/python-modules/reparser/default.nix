@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage rec {
   pname = "reparser";
   version = "1.4.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "xmikos";
@@ -18,7 +17,7 @@ buildPythonPackage rec {
 
   # no tests implemented
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "reparser" ];
 
   meta = {

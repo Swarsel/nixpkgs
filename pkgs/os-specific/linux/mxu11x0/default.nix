@@ -10,13 +10,8 @@ let
 in
 stdenv.mkDerivation rec {
   pname = "mxu11x0";
-
-  src = if lib.versionAtLeast kernel.version "5.0" then srcs.mxu11x0_5.src else srcs.mxu11x0_4.src;
-  mxu_version =
-    if lib.versionAtLeast kernel.version "5.0" then srcs.mxu11x0_5.version else srcs.mxu11x0_4.version;
-
   version = mxu_version + "-${kernel.version}";
-
+  src = if lib.versionAtLeast kernel.version "5.0" then srcs.mxu11x0_5.src else srcs.mxu11x0_4.src;
   nativeBuildInputs = kernel.moduleBuildDependencies;
 
   preBuild = ''
@@ -30,10 +25,11 @@ stdenv.mkDerivation rec {
   '';
 
   dontStrip = true;
-
   enableParallelBuilding = true;
-
   hardeningDisable = [ "pic" ];
+
+  mxu_version =
+    if lib.versionAtLeast kernel.version "5.0" then srcs.mxu11x0_5.version else srcs.mxu11x0_4.version;
 
   meta = {
     description = "MOXA UPort 11x0 USB to Serial Hub driver";

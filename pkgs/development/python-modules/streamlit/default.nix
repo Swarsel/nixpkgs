@@ -35,19 +35,15 @@
 buildPythonPackage (finalAttrs: {
   pname = "streamlit";
   version = "1.58.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-eKIucIWwU6985UREK/S2cHceaMUJuhvaoFa6Bwj0nD0=";
   };
 
+  # pypi package does not include the tests, but cannot be built with fetchFromGitHub
+  doCheck = false;
   build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "packaging"
-    "protobuf"
-  ];
 
   dependencies = [
     altair
@@ -78,20 +74,25 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [ watchdog ];
 
-  # pypi package does not include the tests, but cannot be built with fetchFromGitHub
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "streamlit" ];
 
+  pythonRelaxDeps = [
+    "packaging"
+    "protobuf"
+  ];
+
   meta = {
+    description = "Fastest way to build custom ML tools";
     homepage = "https://streamlit.io/";
     changelog = "https://github.com/streamlit/streamlit/releases/tag/${finalAttrs.version}";
-    description = "Fastest way to build custom ML tools";
-    mainProgram = "streamlit";
+    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       natsukium
       yrashk
     ];
-    license = lib.licenses.asl20;
+
+    mainProgram = "streamlit";
   };
 })

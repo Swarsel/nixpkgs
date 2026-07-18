@@ -24,7 +24,6 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://github.com/FastCGI-Archives/mod_fastcgi";
     description = "Provide support for the FastCGI protocol";
 
     longDescription = ''
@@ -38,6 +37,7 @@ stdenv.mkDerivation rec {
       more scalable.
     '';
 
+    homepage = "https://github.com/FastCGI-Archives/mod_fastcgi";
     platforms = lib.platforms.linux;
   };
 }

@@ -1,6 +1,6 @@
 {
-  buildPythonPackage,
   acme,
+  buildPythonPackage,
   certbot,
   cloudflare,
   pytestCheckHook,
@@ -8,13 +8,9 @@
 }:
 
 buildPythonPackage rec {
-  pname = "certbot-dns-cloudflare";
-  pyproject = true;
-
   inherit (certbot) src version;
-
-  sourceRoot = "${src.name}/certbot-dns-cloudflare";
-
+  pname = "certbot-dns-cloudflare";
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -23,7 +19,7 @@ buildPythonPackage rec {
     cloudflare
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   pytestFlags = [
     "-pno:cacheprovider"
@@ -31,6 +27,8 @@ buildPythonPackage rec {
     # Monitor https://github.com/certbot/certbot/issues/9606 for a solution
     "-Wignore::DeprecationWarning"
   ];
+
+  sourceRoot = "${src.name}/certbot-dns-cloudflare";
 
   meta = certbot.meta // {
     description = "Cloudflare DNS Authenticator plugin for Certbot";

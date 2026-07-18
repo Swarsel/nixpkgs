@@ -1,37 +1,47 @@
 {
   lib,
   fetchFromGitHub,
-  fetchpatch,
-  rocmUpdateScript,
   buildPythonPackage,
-  pytestCheckHook,
-  setuptools,
+  clr,
   distro,
-  pyyaml,
+  fetchpatch,
+  filelock,
+  joblib,
   msgpack,
   pandas,
-  joblib,
-  filelock,
-  clr,
+  pytestCheckHook,
+  pyyaml,
   rich,
+  rocmUpdateScript,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "tensile";
   version = "7.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ROCm";
     repo = "rocm-libraries";
     rev = "rocm-${finalAttrs.version}";
+    hash = "sha256-sYudPiEPGeZLmf6+3XfQDZqRXiKgRsGPucApzYwlGV8=";
+
     sparseCheckout = [
       "shared/tensile"
       "shared"
     ];
-    hash = "sha256-sYudPiEPGeZLmf6+3XfQDZqRXiKgRsGPucApzYwlGV8=";
   };
-  sourceRoot = "${finalAttrs.src.name}/shared/tensile";
+
+  patches = [
+    ./tensile-solutionstructs-perf-fix.diff
+    ./tensile-create-library-dont-copy-twice.diff
+    (fetchpatch {
+      # [PATCH] Extend Tensile HIP ISA compatibility
+      hash = "sha256-ZHXNYSeLkhhNDaIfdqQm68Pxmh1shUL7mAVmh8/I6Xk=";
+      relative = "shared/tensile";
+      url = "https://github.com/GZGavinZhao/rocm-libraries/commit/1f7135dfc0cdb175c8f0e5eb71b2d24699942873.patch";
+    })
+  ];
 
   # TODO: It should be possible to run asm caps test ONCE for all supported arches
   # We currently disable the test because it's slow and runs each time tensile launches
@@ -58,17 +68,7 @@ buildPythonPackage (finalAttrs: {
     rich
   ];
 
-  patches = [
-    ./tensile-solutionstructs-perf-fix.diff
-    ./tensile-create-library-dont-copy-twice.diff
-    (fetchpatch {
-      # [PATCH] Extend Tensile HIP ISA compatibility
-      hash = "sha256-ZHXNYSeLkhhNDaIfdqQm68Pxmh1shUL7mAVmh8/I6Xk=";
-      url = "https://github.com/GZGavinZhao/rocm-libraries/commit/1f7135dfc0cdb175c8f0e5eb71b2d24699942873.patch";
-      relative = "shared/tensile";
-    })
-  ];
-
+  env.ROCM_PATH = "${clr}";
   doCheck = false; # Too many errors, not sure how to set this up properly
 
   nativeCheckInputs = [
@@ -77,17 +77,16 @@ buildPythonPackage (finalAttrs: {
     clr
   ];
 
-  env.ROCM_PATH = "${clr}";
-
+  pyproject = true;
   pythonImportsCheck = [ "Tensile" ];
-
+  sourceRoot = "${finalAttrs.src.name}/shared/tensile";
   passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
 
   meta = {
     description = "GEMMs and tensor contractions";
     homepage = "https://github.com/ROCm/rocm-libraries/tree/develop/shared/tensile";
     license = with lib.licenses; [ mit ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

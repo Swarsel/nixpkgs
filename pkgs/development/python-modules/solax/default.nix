@@ -14,12 +14,17 @@
 buildPythonPackage rec {
   pname = "solax";
   version = "3.2.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-60FIDhd60zaWcwPnq7P7WxuXQc1MivWNTctj3TuZF3k=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-httpserver
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools-scm ];
 
@@ -29,19 +34,14 @@ buildPythonPackage rec {
     voluptuous
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-httpserver
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "solax" ];
-
   disabledTests = [
     # Tests require network access
     "test_discovery"
     "test_smoke"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "solax" ];
 
   meta = {
     description = "Python wrapper for the Solax Inverter API";

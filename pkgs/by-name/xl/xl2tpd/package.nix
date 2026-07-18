@@ -17,21 +17,19 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-T4oEMMLb/SPkXfJ55fxBx9ii98qZVZRxPoU/eXlKb4U=";
   };
 
-  buildInputs = [ libpcap ];
-
   postPatch = ''
     substituteInPlace l2tp.h --replace /usr/sbin/pppd ${ppp}/sbin/pppd
   '';
 
+  buildInputs = [ libpcap ];
   makeFlags = [ "PREFIX=$(out)" ];
-
   env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types -std=gnu17";
 
   meta = {
-    homepage = finalAttrs.src.meta.homepage;
     description = "Layer 2 Tunnelling Protocol Daemon (RFC 2661)";
-    platforms = lib.platforms.linux;
+    homepage = finalAttrs.src.meta.homepage;
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

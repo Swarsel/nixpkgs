@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   kernel,
   kernelModuleMakeFlags,
@@ -16,10 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ENk/SOUzXbzXYhwN3AdbO2u/tWjf/Mn+V22A2ce21XU=";
   };
 
-  setSourceRoot = ''
-    export sourceRoot=$(pwd)/${finalAttrs.src.name}
-  '';
-
   nativeBuildInputs = kernel.moduleBuildDependencies;
 
   makeFlags = kernelModuleMakeFlags ++ [
@@ -29,19 +25,25 @@ stdenv.mkDerivation (finalAttrs: {
     "VERSION=${finalAttrs.version}"
   ];
 
-  enableParallelBuilding = true;
   buildFlags = [ "modules" ];
+  enableParallelBuilding = true;
   installFlags = [ "INSTALL_MOD_PATH=${placeholder "out"}" ];
   installTargets = [ "modules_install" ];
+
+  setSourceRoot = ''
+    export sourceRoot=$(pwd)/${finalAttrs.src.name}
+  '';
 
   meta = {
     description = "Linux kernel driver for Xbox One and Xbox Series X|S accessories";
     homepage = "https://github.com/dlundqvist/xone";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       rhysmdnz
       fazzi
     ];
+
     platforms = lib.platforms.linux;
     broken = kernel.kernelOlder "6.5";
   };

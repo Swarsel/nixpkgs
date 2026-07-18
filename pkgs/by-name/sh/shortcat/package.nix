@@ -13,8 +13,6 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-jmp9mBMYID0Zcu/o6ICYPS8QGHhSwcLz072jG3zR2mM=";
   };
 
-  sourceRoot = "Shortcat.app";
-
   nativeBuildInputs = [ unzip ];
 
   installPhase = ''
@@ -22,12 +20,14 @@ stdenv.mkDerivation rec {
     cp -R . $out/Applications/Shortcat.app
   '';
 
+  sourceRoot = "Shortcat.app";
+
   meta = {
     description = "Manipulate macOS masterfully, minus the mouse";
     homepage = "https://shortcat.app/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    platforms = lib.platforms.darwin;
-    maintainers = with lib.maintainers; [ t-monaghan ];
     license = lib.licenses.unfreeRedistributable;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ t-monaghan ];
+    platforms = lib.platforms.darwin;
   };
 }

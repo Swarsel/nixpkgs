@@ -1,14 +1,12 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  writableTmpDirAsHomeHook,
+  buildGoModule,
   versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 
 buildGoModule (finalAttrs: {
-  __structuredAttrs = true;
-
   pname = "squix";
   version = "0.5.0-beta";
 
@@ -20,6 +18,14 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-kSv3VAQi+qdT29gZAjLmHauItaMFd9NG7bdRtQE1MZo=";
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    writableTmpDirAsHomeHook
+    versionCheckHook
+  ];
+
+  __structuredAttrs = true;
 
   ldflags = [
     "-s"
@@ -27,18 +33,13 @@ buildGoModule (finalAttrs: {
     "-X main.Version=${finalAttrs.version}"
   ];
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [
-    writableTmpDirAsHomeHook
-    versionCheckHook
-  ];
   versionCheckKeepEnvironment = [ "HOME" ];
 
   meta = {
     description = "SQL command-line client with query management and interactive results";
     homepage = "https://github.com/eduardofuncao/squix";
     license = lib.licenses.mit;
-    mainProgram = "squix";
     maintainers = with lib.maintainers; [ eduardofuncao ];
+    mainProgram = "squix";
   };
 })

@@ -1,26 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  # tests
+  exdown,
   # dependencies
   h5py,
   netcdf4,
   numpy,
-  rich,
-
-  # tests
-  exdown,
   pytestCheckHook,
+  rich,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "meshio";
   version = "5.3.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nschloe";
@@ -29,6 +25,11 @@ buildPythonPackage rec {
     hash = "sha256-2j+5BYftCiy+g33UbsgCMWBRggGBJBx5VoEdSqQ/mV0=";
   };
 
+  nativeCheckInputs = [
+    exdown
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -36,13 +37,6 @@ buildPythonPackage rec {
     netcdf4
     numpy
     rich
-  ];
-
-  pythonImportsCheck = [ "meshio" ];
-
-  nativeCheckInputs = [
-    exdown
-    pytestCheckHook
   ];
 
   disabledTests = [
@@ -102,12 +96,15 @@ buildPythonPackage rec {
     "test_write_str"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "meshio" ];
+
   meta = {
     description = "I/O for mesh files";
     homepage = "https://github.com/nschloe/meshio";
     changelog = "https://github.com/nschloe/meshio/blob/v${version}/CHANGELOG.md";
-    mainProgram = "meshio";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ wd15 ];
+    mainProgram = "meshio";
   };
 }

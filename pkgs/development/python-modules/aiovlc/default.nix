@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest-asyncio,
   pytest-cov-stub,
   pytest-timeout,
@@ -13,19 +13,12 @@
 buildPythonPackage (finalAttrs: {
   pname = "aiovlc";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "MartinHjelmare";
     repo = "aiovlc";
     tag = "v${finalAttrs.version}";
     hash = "sha256-PA8meWB0LOZX503+GVep03GiUh65MsLI+C6Fe9Iz6nc=";
-  };
-
-  build-system = [ setuptools ];
-
-  optional-dependencies = {
-    cli = [ typer ];
   };
 
   nativeCheckInputs = [
@@ -36,6 +29,13 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
+  build-system = [ setuptools ];
+
+  optional-dependencies = {
+    cli = [ typer ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "aiovlc" ];
 
   meta = {

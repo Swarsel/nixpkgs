@@ -8,19 +8,17 @@
 buildPythonPackage rec {
   pname = "nanotime";
   version = "0.5.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-x8wjH8X220AbRI16tRyW0KRzP0tp+r5Wmldvif/flms=";
   };
 
-  build-system = [ setuptools ];
-
   # Tests currently failing
   # https://github.com/jbenet/nanotime/issues/2
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "nanotime" ];
 
   meta = {

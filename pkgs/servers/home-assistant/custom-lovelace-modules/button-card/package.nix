@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  fetchYarnDeps,
   fetchFromGitHub,
+  fetchYarnDeps,
+  nodejs,
   yarnBuildHook,
   yarnConfigHook,
-  nodejs,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,11 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "button-card";
     tag = "v${finalAttrs.version}";
     hash = "sha256-UJ9DzoT0XAWTxUXtnfOrpd0MQihBw9LY7QI0TXEbUNk=";
-  };
-
-  offlineCache = fetchYarnDeps {
-    inherit (finalAttrs) src;
-    hash = "sha256-zbuurXlIz13zCAMKOl+/VvsVHrDscNkweZG1eiqrnUM=";
   };
 
   nativeBuildInputs = [
@@ -38,6 +33,11 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  offlineCache = fetchYarnDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-zbuurXlIz13zCAMKOl+/VvsVHrDscNkweZG1eiqrnUM=";
+  };
 
   meta = {
     description = "Lovelace button-card for home assistant";

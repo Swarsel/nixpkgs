@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   boost,
-  pkg-config,
   cppunit,
+  pkg-config,
   zlib,
 }:
 
@@ -17,7 +17,14 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-GerPXOVdf+apkKRRQlic332gx7aHAXl/EzSCy0Txifo=";
   };
 
+  # Fix an issue with boost 1.59
+  # This is fixed upstream so please remove this when updating
+  postPatch = ''
+    sed -i 's,-DLIBREVENGE_BUILD,\0 -DBOOST_ERROR_CODE_HEADER_ONLY,g' src/lib/Makefile.in
+  '';
+
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     boost
     cppunit
@@ -28,12 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
   # -Werror causes these warnings to be interpreted as errors
   # Simplest solution: disable -Werror
   configureFlags = [ "--disable-werror" ];
-
-  # Fix an issue with boost 1.59
-  # This is fixed upstream so please remove this when updating
-  postPatch = ''
-    sed -i 's,-DLIBREVENGE_BUILD,\0 -DBOOST_ERROR_CODE_HEADER_ONLY,g' src/lib/Makefile.in
-  '';
 
   meta = {
     description = "Base library for writing document import filters";

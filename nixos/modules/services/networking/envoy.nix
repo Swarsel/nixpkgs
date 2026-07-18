@@ -21,22 +21,27 @@ in
 {
   options.services.envoy = {
     enable = lib.mkEnableOption "Envoy reverse proxy";
-
     package = lib.mkPackageOption pkgs "envoy" { };
 
     requireValidConfig = lib.mkOption {
-      type = lib.types.bool;
       default = true;
+
       description = ''
         Whether a failure during config validation at build time is fatal.
         When the config can't be checked during build time, for example when it includes
         other files, disable this option.
       '';
+
+      type = lib.types.bool;
     };
 
     settings = lib.mkOption {
-      type = format.type;
       default = { };
+
+      description = ''
+        Specify the configuration for Envoy in Nix.
+      '';
+
       example = lib.literalExpression ''
         {
           admin = {
@@ -55,31 +60,30 @@ in
           };
         }
       '';
-      description = ''
-        Specify the configuration for Envoy in Nix.
-      '';
+
+      type = format.type;
     };
   };
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [ cfg.package ];
+
     systemd.services.envoy = {
-      description = "Envoy reverse proxy";
       after = [ "network-online.target" ];
+      description = "Envoy reverse proxy";
       requires = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
+
       serviceConfig = {
-        ExecStart = "${cfg.package}/bin/envoy -c ${validateConfig cfg.requireValidConfig conf}";
-        CacheDirectory = [ "envoy" ];
-        LogsDirectory = [ "envoy" ];
-        Restart = "no";
         # Hardening
         AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
+        CacheDirectory = [ "envoy" ];
         CapabilityBoundingSet = [ "CAP_NET_BIND_SERVICE" ];
         DeviceAllow = [ "" ];
         DevicePolicy = "closed";
         DynamicUser = true;
+        ExecStart = "${cfg.package}/bin/envoy -c ${validateConfig cfg.requireValidConfig conf}";
         LockPersonality = true;
+        LogsDirectory = [ "envoy" ];
         MemoryDenyWriteExecute = false; # at least wasmr needs WX permission
         PrivateDevices = true;
         PrivateUsers = false; # breaks CAP_NET_BIND_SERVICE
@@ -93,6 +97,8 @@ in
         ProtectKernelTunables = true;
         ProtectProc = "ptraceable";
         ProtectSystem = "strict";
+        Restart = "no";
+
         RestrictAddressFamilies = [
           "AF_UNIX"
           "AF_INET"
@@ -100,17 +106,22 @@ in
           "AF_NETLINK"
           "AF_XDP"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         SystemCallArchitectures = "native";
         SystemCallErrorNumber = "EPERM";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
           "~@resources"
         ];
+
         UMask = "0066";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

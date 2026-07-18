@@ -1,18 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   netbox,
   pytestCheckHook,
   python,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "netbox-bgp";
   version = "0.19.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "netbox-community";
@@ -21,16 +19,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-6LZLsUPC9L9L19KeXJilJvmZYcl6YwqysGO8nFAUmcI=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ netbox ];
 
   preFixup = ''
     export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
   '';
 
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
   dontUsePythonImportsCheck = python.pythonVersion != netbox.python.pythonVersion;
-
+  pyproject = true;
   pythonImportsCheck = [ "netbox_bgp" ];
 
   meta = {

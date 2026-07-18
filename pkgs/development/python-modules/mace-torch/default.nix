@@ -1,14 +1,10 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   ase,
+  buildPythonPackage,
   configargparse,
   e3nn,
   gitpython,
@@ -21,23 +17,22 @@
   orjson,
   pandas,
   prettytable,
+  # tests
+  pytestCheckHook,
   python-hostlist,
   pyyaml,
+  # build-system
+  setuptools,
   torch,
   torch-ema,
   torchmetrics,
   tqdm,
-
-  # tests
-  pytestCheckHook,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mace-torch";
   version = "0.3.16";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "acesuit";
@@ -46,18 +41,22 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-sJ/3c7kPe99vkliixUMqqQi2OiL3CCUdlcgpDZ/PUHA=";
   };
 
-  build-system = [
-    setuptools
-  ];
-
   env = {
     # Skip the most intensive tests
     CI = true;
   };
 
-  pythonRelaxDeps = [
-    "e3nn"
+  nativeCheckInputs = [
+    pytestCheckHook
+    writableTmpDirAsHomeHook
   ];
+
+  __structuredAttrs = true;
+
+  build-system = [
+    setuptools
+  ];
+
   dependencies = [
     ase
     configargparse
@@ -78,13 +77,6 @@ buildPythonPackage (finalAttrs: {
     torch-ema
     torchmetrics
     tqdm
-  ];
-
-  pythonImportsCheck = [ "mace" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    writableTmpDirAsHomeHook
   ];
 
   disabledTests = [
@@ -131,6 +123,13 @@ buildPythonPackage (finalAttrs: {
     # symbol not found in flat namespace '___kmpc_barrier'
     "test_mace"
     "test_mace_compile_stress"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "mace" ];
+
+  pythonRelaxDeps = [
+    "e3nn"
   ];
 
   meta = {

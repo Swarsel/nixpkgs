@@ -8,6 +8,7 @@
 buildGoModule (finalAttrs: {
   pname = "skrive";
   version = "0.10.0";
+
   src = fetchFromGitHub {
     owner = "VanuPhantom";
     repo = "skrive";
@@ -15,9 +16,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-thEq9mMQl9BNlc5PKbEjOoSsVO0ENSpDy0nQ7uplPus=";
   };
 
-  vendorHash = "sha256-NLkrUaEpwvQhMcNcUbBiaPQKRocLT1RSwAIcMOrRdmg=";
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-NLkrUaEpwvQhMcNcUbBiaPQKRocLT1RSwAIcMOrRdmg=";
 
   postInstall = ''
     mv skrive.1.man skrive.1
@@ -30,7 +30,7 @@ buildGoModule (finalAttrs: {
     changelog = "https://github.com/VanuPhantom/skrive/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ freyacodes ];
-    mainProgram = "skrive";
     platforms = lib.platforms.all;
+    mainProgram = "skrive";
   };
 })

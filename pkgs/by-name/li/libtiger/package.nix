@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   autoreconfHook,
-  pkg-config,
+  cairo,
   libkate,
   pango,
-  cairo,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,6 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     libkate
     pango
@@ -37,10 +38,10 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://code.google.com/archive/p/libtiger/";
     description = "Rendering library for Kate streams using Pango and Cairo";
-    platforms = lib.platforms.unix;
+    homepage = "https://code.google.com/archive/p/libtiger/";
     license = lib.licenses.lgpl21Plus;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

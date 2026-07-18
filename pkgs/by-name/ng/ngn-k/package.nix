@@ -16,6 +16,12 @@ stdenv.mkDerivation {
     hash = "sha256-rUMi+VetQc139PjbFJXlSkmYEuK5wtM6LpQ/f1tcB1s=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+    "lib"
+  ];
+
   patches = [
     ./repl-license-path.patch
     ./repl-argv-1.patch
@@ -29,18 +35,13 @@ stdenv.mkDerivation {
   '';
 
   makeFlags = [ "-e" ];
+
   buildFlags = [
     "k"
     "libk.so"
   ];
-  checkTarget = "t";
-  doCheck = true;
 
-  outputs = [
-    "out"
-    "dev"
-    "lib"
-  ];
+  doCheck = true;
 
   # TODO(@sternenseemann): package bulgarian translation
   installPhase = ''
@@ -53,6 +54,8 @@ stdenv.mkDerivation {
     substituteInPlace "$out/bin/k-repl" --replace-fail "#!k" "#!$out/bin/k"
     runHook postInstall
   '';
+
+  checkTarget = "t";
 
   meta = {
     description = "Simple fast vector programming language";

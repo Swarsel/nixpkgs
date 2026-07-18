@@ -1,19 +1,16 @@
 {
-  valkey,
-  redisTestHook,
   stdenv,
+  redisTestHook,
+  valkey,
 }:
 
 stdenv.mkDerivation {
-  name = "redis-test-hook-test";
+  doCheck = true;
 
   nativeCheckInputs = [
     valkey
     redisTestHook
   ];
-
-  dontUnpack = true;
-  doCheck = true;
 
   preCheck = ''
     redisTestPort=6380
@@ -44,4 +41,6 @@ stdenv.mkDerivation {
   '';
 
   __darwinAllowLocalNetworking = true;
+  dontUnpack = true;
+  name = "redis-test-hook-test";
 }

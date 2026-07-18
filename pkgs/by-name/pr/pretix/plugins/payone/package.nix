@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pretix-plugin-build,
-  setuptools,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pretix-payone";
   version = "1.4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pretix";
@@ -19,14 +18,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-ru944WkeNBYq5XkIMoAFLgGcU2gGxClEYVhCwuZGioI=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     pretix-plugin-build
     setuptools
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "pretix_payone"

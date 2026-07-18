@@ -7,17 +7,16 @@
 }:
 
 buildDunePackage {
-  pname = "ppx_lun";
   inherit (lun) version src;
+  pname = "ppx_lun";
 
   propagatedBuildInputs = [
     lun
     ppxlib
   ];
 
-  checkInputs = [ fmt ];
-
   doCheck = true;
+  checkInputs = [ fmt ];
 
   meta = lun.meta // {
     description = "Optics with lun package and PPX";

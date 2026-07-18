@@ -18,6 +18,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-hOkLlmtF9dKqXZTjAeBntkkg5WsmsZN6DKhyakoIF1k=";
   };
 
+  patches = [
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isMinGW [
+    ./no-msvc-compat-headers.patch
+  ];
+
   nativeBuildInputs = [ cmake ];
 
   buildInputs = [
@@ -25,12 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals stdenv.hostPlatform.isMinGW [
     windows.pthreads
-  ];
-
-  patches = [
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isMinGW [
-    ./no-msvc-compat-headers.patch
   ];
 
   cmakeFlags = [

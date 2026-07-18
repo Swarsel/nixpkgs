@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "entrypoints";
   version = "0.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -17,8 +16,8 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ flit-core ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   meta = {
     description = "Discover and load entry points from installed packages";

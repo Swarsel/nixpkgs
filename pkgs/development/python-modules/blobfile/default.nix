@@ -1,20 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   filelock,
   lxml,
   pycryptodomex,
+  setuptools,
   urllib3,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "blobfile";
   version = "3.1.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "christopher-hesse";
@@ -23,6 +20,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-aTHEJ1P+v9IWXPg9LN+KG1TlEVJh0qTl8J41iWpoPWk=";
   };
 
+  # Tests require a running Docker instance
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -32,9 +32,7 @@ buildPythonPackage (finalAttrs: {
     lxml
   ];
 
-  # Tests require a running Docker instance
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "blobfile" ];
 
   meta = {

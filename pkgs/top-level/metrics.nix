@@ -6,10 +6,6 @@ let
 in
 
 stdenvNoCC.mkDerivation {
-  name = "nixpkgs-metrics";
-
-  # Use structured attrs to pass in relevant information.
-  __structuredAttrs = true;
   inherit evalSystem nixpkgs;
 
   outputs = [
@@ -23,22 +19,37 @@ stdenvNoCC.mkDerivation {
     pkgs.jq
   ];
 
-  # see https://github.com/NixOS/nixpkgs/issues/52436
-  #requiredSystemFeatures = [ "benchmark" ]; # dedicated `t2a` machine, by @vcunat
-
-  # Required because this derivation doesn't have a `src`.
-  dontUnpack = true;
-
-  configurePhase = ''
-    runHook preConfigure
-
-    export NIX_STORE_DIR=$TMPDIR/store
-    export NIX_STATE_DIR=$TMPDIR/state
-    export NIX_PAGER=
-    nix-store --init
-
-    runHook postConfigure
+  # Don't allow aliases anywhere in Nixpkgs for the metrics.
+  env.NIXPKGS_CONFIG = builtins.toFile "nixpkgs-config.nix" ''
+    {
+      allowAliases = false;
+    }
   '';
+
+  # Convince `time` to output in JSON
+  env.TIME = builtins.toJSON {
+    avg_data_kb = "%D";
+    avg_resident_set_kb = "%t";
+    avg_shared_text_kb = "%Z";
+    avg_stack_kb = "%p";
+    avg_total_mem_kb = "%K";
+    avg_unshared_data_kb = "%X";
+    command = "%C";
+    context_switches_involuntary = "%w";
+    context_switches_voluntary = "%c";
+    cpu_percent = "%P";
+    exit_status = "%x";
+    io_reads = "%I";
+    io_writes = "%O";
+    max_resident_set_kb = "%M";
+    page_faults_major = "%F";
+    page_faults_minor = "%R";
+    real_time = "%e";
+    signals_received = "%k";
+    swaps = "%W";
+    sys_time = "%S";
+    user_time = "%U";
+  };
 
   buildPhase = ''
     runHook preBuild
@@ -117,9 +128,29 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  # Use structured attrs to pass in relevant information.
+  __structuredAttrs = true;
+
+  configurePhase = ''
+    runHook preConfigure
+
+    export NIX_STORE_DIR=$TMPDIR/store
+    export NIX_STATE_DIR=$TMPDIR/state
+    export NIX_PAGER=
+    nix-store --init
+
+    runHook postConfigure
+  '';
+
+  # see https://github.com/NixOS/nixpkgs/issues/52436
+  #requiredSystemFeatures = [ "benchmark" ]; # dedicated `t2a` machine, by @vcunat
+  # Required because this derivation doesn't have a `src`.
+  dontUnpack = true;
+  name = "nixpkgs-metrics";
+
   meta = {
     description = "Metrics tracked by Hydra about Nixpkgs";
-    homepage = "https://hydra.nixos.org/job/nixpkgs/trunk/metrics";
+
     longDescription = ''
       View the metrics for Nixpkgs evaluation over time at these URLs.
 
@@ -186,37 +217,7 @@ stdenvNoCC.mkDerivation {
       - [nixos.lapp.values](https://hydra.nixos.org/job/nixpkgs/trunk/metrics/metric/nixos.lapp.values)
       - [nixos.smallContainer.values](https://hydra.nixos.org/job/nixpkgs/trunk/metrics/metric/nixos.smallContainer.values)
     '';
-  };
 
-  # Convince `time` to output in JSON
-  env.TIME = builtins.toJSON {
-    real_time = "%e";
-    user_time = "%U";
-    sys_time = "%S";
-    cpu_percent = "%P";
-    max_resident_set_kb = "%M";
-    avg_resident_set_kb = "%t";
-    avg_total_mem_kb = "%K";
-    avg_data_kb = "%D";
-    avg_stack_kb = "%p";
-    avg_unshared_data_kb = "%X";
-    avg_shared_text_kb = "%Z";
-    page_faults_major = "%F";
-    page_faults_minor = "%R";
-    swaps = "%W";
-    context_switches_voluntary = "%c";
-    context_switches_involuntary = "%w";
-    io_reads = "%I";
-    io_writes = "%O";
-    signals_received = "%k";
-    exit_status = "%x";
-    command = "%C";
+    homepage = "https://hydra.nixos.org/job/nixpkgs/trunk/metrics";
   };
-
-  # Don't allow aliases anywhere in Nixpkgs for the metrics.
-  env.NIXPKGS_CONFIG = builtins.toFile "nixpkgs-config.nix" ''
-    {
-      allowAliases = false;
-    }
-  '';
 }

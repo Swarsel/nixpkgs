@@ -6,12 +6,11 @@
 
 {
   planmaker = makeDesktopItem {
-    name = "${pname}-planmaker";
-    desktopName = "${suiteName} PlanMaker";
-    icon = "${pname}-pml";
     categories = [ "Office" ];
+    desktopName = "${suiteName} PlanMaker";
     exec = "${pname}-planmaker %F";
-    tryExec = "${pname}-planmaker";
+    icon = "${pname}-pml";
+
     mimeTypes = [
       "application/x-pmd"
       "application/x-pmdx"
@@ -35,16 +34,18 @@
       "application/x-prn"
       "application/vnd.ms-excel.sheet.binary.macroenabled.12"
     ];
+
+    name = "${pname}-planmaker";
     startupWMClass = "pm";
+    tryExec = "${pname}-planmaker";
   };
 
   presentations = makeDesktopItem {
-    name = "${pname}-presentations";
-    desktopName = "${suiteName} Presentations";
-    icon = "${pname}-prl";
     categories = [ "Office" ];
+    desktopName = "${suiteName} Presentations";
     exec = "${pname}-presentations %F";
-    tryExec = "${pname}-presentations";
+    icon = "${pname}-prl";
+
     mimeTypes = [
       "application/x-prdx"
       "application/x-prvx"
@@ -62,16 +63,18 @@
       "application/vnd.ms-powerpoint.slideshow.macroenabled.12"
       "application/vnd.openxmlformats-officedocument.presentationml.slideshow"
     ];
+
+    name = "${pname}-presentations";
     startupWMClass = "pr";
+    tryExec = "${pname}-presentations";
   };
 
   textmaker = makeDesktopItem {
-    name = "${pname}-textmaker";
-    desktopName = "${suiteName} TextMaker";
-    icon = "${pname}-tml";
     categories = [ "Office" ];
+    desktopName = "${suiteName} TextMaker";
     exec = "${pname}-textmaker %F";
-    tryExec = "${pname}-textmaker";
+    icon = "${pname}-tml";
+
     mimeTypes = [
       "application/x-tmdx"
       "application/x-tmvx"
@@ -95,6 +98,9 @@
       "application/x-dbf"
       "application/msword-template"
     ];
+
+    name = "${pname}-textmaker";
     startupWMClass = "tm";
+    tryExec = "${pname}-textmaker";
   };
 }

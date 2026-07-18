@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   lvm2,
   pkg-config,
@@ -19,15 +19,22 @@ buildGoModule (finalAttrs: {
     hash = "sha256-hxS/+/fbYOpMJ5VfvvG5l7wWKBUUR22rYn9X79DzUUk=";
   };
 
-  vendorHash = "sha256-SyPd8P9s8R2YbGEPqFeztF98W1QyGSBumtirSdpm8VI=";
-
-  subPackages = [ "cmd/fetchit" ];
-
   nativeBuildInputs = [
     pkg-config
     installShellFiles
   ];
+
   buildInputs = [ lvm2 ];
+  vendorHash = "sha256-SyPd8P9s8R2YbGEPqFeztF98W1QyGSBumtirSdpm8VI=";
+  # There are no tests for cmd/fetchit.
+  doCheck = false;
+
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    for i in bash fish zsh; do
+      installShellCompletion --cmd fetchit \
+        --$i <($out/bin/fetchit completion $i)
+    done
+  '';
 
   # Flags are derived from
   # https://github.com/containers/fetchit/blob/v0.0.1/Makefile#L20-L29
@@ -45,6 +52,8 @@ buildGoModule (finalAttrs: {
     "-w"
   ];
 
+  subPackages = [ "cmd/fetchit" ];
+
   tags = [
     "containers_image_openpgp"
     "exclude_graphdriver_btrfs"
@@ -56,19 +65,9 @@ buildGoModule (finalAttrs: {
     "providerless"
   ];
 
-  # There are no tests for cmd/fetchit.
-  doCheck = false;
-
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    for i in bash fish zsh; do
-      installShellCompletion --cmd fetchit \
-        --$i <($out/bin/fetchit completion $i)
-    done
-  '';
-
   meta = {
     description = "Tool to manage the life cycle and configuration of Podman containers";
-    mainProgram = "fetchit";
+
     longDescription = ''
       FetchIt allows for a GitOps based approach to manage containers running on
       a single host or multiple hosts based on a git repository. This allows for
@@ -78,10 +77,12 @@ buildGoModule (finalAttrs: {
       environments that do not require the complexity of Kubernetes to manage
       the containers running on the host.
     '';
+
     homepage = "https://fetchit.readthedocs.io";
     changelog = "https://github.com/containers/fetchit/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ guylamar2006 ];
     platforms = lib.platforms.linux;
+    mainProgram = "fetchit";
   };
 })

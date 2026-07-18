@@ -1,8 +1,8 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
   gtk3,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -20,9 +20,6 @@ stdenvNoCC.mkDerivation {
     gtk3
   ];
 
-  # avoid the makefile which is only for the theme maintainers
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -38,14 +35,19 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  # avoid the makefile which is only for the theme maintainers
+  dontBuild = true;
+
   meta = {
     description = "Rosé Pine icon theme for GTK";
     homepage = "https://github.com/rose-pine/gtk";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       romildo
       the-argus
     ];
+
+    platforms = lib.platforms.linux;
   };
 }

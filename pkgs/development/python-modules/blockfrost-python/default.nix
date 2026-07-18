@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch2,
   # Python deps
   requests,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "blockfrost-python";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "blockfrost";
@@ -22,9 +21,9 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch2 {
+      hash = "sha256-070tnWxOnVNsCYXmBFo39JUgQDqphdpqx3A9OIuC94U=";
       name = "blockfrost-python-fix-version";
       url = "https://github.com/blockfrost/blockfrost-python/commit/02fdc67ff6d1333c0855e740114585852bbfa0bc.patch?full_index=1";
-      hash = "sha256-070tnWxOnVNsCYXmBFo39JUgQDqphdpqx3A9OIuC94U=";
     })
   ];
 
@@ -36,6 +35,7 @@ buildPythonPackage rec {
     requests
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "blockfrost" ];
 
   meta = {

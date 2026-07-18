@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
   boost183,
+  cmake,
+  fetchpatch,
   libsForQt5,
 }:
 
@@ -26,17 +26,17 @@ stdenv.mkDerivation rec {
   patches = [
     # bump bundled catch2 to avoid incompatibility with modern glibc
     (fetchpatch {
+      hash = "sha256-SbSA813QI8RRVy1lvAOGMGAC2KUQKjwYR2imqX40pvU=";
+      includes = [ "tests/catch2/catch.hpp" ];
       name = "catch2-2.13.9.patch";
       url = "https://github.com/DegateCommunity/Degate/commit/06346dde4312cbb867854899eacf58679d6ac7e2.patch";
-      includes = [ "tests/catch2/catch.hpp" ];
-      hash = "sha256-SbSA813QI8RRVy1lvAOGMGAC2KUQKjwYR2imqX40pvU=";
     })
 
     (fetchpatch {
+      hash = "sha256-5UfVLc4OoMBaDa0qwOCRpd+dOtdDh4kxHNVfTA50lPg=";
+      includes = [ "src/Core/Utils/MemoryMap.h" ];
       name = "memorymap-macos.patch";
       url = "https://github.com/DegateCommunity/Degate/commit/04685b088f485b3b73c55b7bfb989d2f0c88e4ca.patch";
-      includes = [ "src/Core/Utils/MemoryMap.h" ];
-      hash = "sha256-5UfVLc4OoMBaDa0qwOCRpd+dOtdDh4kxHNVfTA50lPg=";
     })
   ];
 
@@ -56,6 +56,7 @@ stdenv.mkDerivation rec {
   ];
 
   doCheck = true;
+
   checkPhase = ''
     runHook preCheck
 
@@ -73,10 +74,10 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Modern and open-source cross-platform software for chips reverse engineering";
-    mainProgram = "Degate";
     homepage = "https://degate.readthedocs.io/";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ ris ];
+    platforms = lib.platforms.unix;
+    mainProgram = "Degate";
   };
 }

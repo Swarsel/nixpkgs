@@ -1,21 +1,17 @@
 {
   lib,
-  mkDerivation,
   bsdSetupHook,
-  openbsdSetupHook,
-  makeMinimal,
   install,
-  tsort,
   lorder,
+  makeMinimal,
+  mkDerivation,
+  openbsdSetupHook,
   rpcgen,
   statHook,
+  tsort,
 }:
 
 mkDerivation {
-  path = "lib/librpcsvc";
-
-  libcMinimal = true;
-
   outputs = [
     "out"
     "dev"
@@ -33,6 +29,7 @@ mkDerivation {
   ];
 
   makeFlags = [ "INCSDIR=$(dev)/include/rpcsvc" ];
-
+  libcMinimal = true;
+  path = "lib/librpcsvc";
   meta.platforms = lib.platforms.openbsd;
 }

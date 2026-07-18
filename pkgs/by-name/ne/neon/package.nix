@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
+  bash,
   libxml2,
   pkg-config,
   compressionSupport ? true,
-  zlib ? null,
-  sslSupport ? true,
   openssl ? null,
-  static ? stdenv.hostPlatform.isStatic,
   shared ? !stdenv.hostPlatform.isStatic,
-  bash,
+  sslSupport ? true,
+  static ? stdenv.hostPlatform.isStatic,
+  zlib ? null,
 }:
 
 assert compressionSupport -> zlib != null;
@@ -22,8 +22,8 @@ let
 in
 
 stdenv.mkDerivation rec {
-  version = "0.37.1";
   pname = "neon";
+  version = "0.37.1";
 
   src = fetchurl {
     url = "https://notroj.github.io/${pname}/${pname}-${version}.tar.gz";
@@ -31,16 +31,15 @@ stdenv.mkDerivation rec {
   };
 
   patches = optionals stdenv.hostPlatform.isDarwin [ ./darwin-fix-configure.patch ];
-
+  strictDeps = true;
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libxml2
     openssl
     bash
   ]
   ++ lib.optional compressionSupport zlib;
-
-  strictDeps = true;
 
   configureFlags = [
     (lib.enableFeature shared "shared")
@@ -57,10 +56,10 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "HTTP and WebDAV client library";
-    mainProgram = "neon-config";
     homepage = "https://notroj.github.io/neon/";
     changelog = "https://github.com/notroj/${pname}/blob/${version}/NEWS";
-    platforms = lib.platforms.unix;
     license = lib.licenses.lgpl2;
+    platforms = lib.platforms.unix;
+    mainProgram = "neon-config";
   };
 }

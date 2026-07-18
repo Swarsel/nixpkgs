@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   gst_all_1,
-  pkg-config,
   meson,
   ninja,
   obs-studio,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -30,11 +30,18 @@ stdenv.mkDerivation rec {
     meson
     ninja
   ];
+
   buildInputs = with gst_all_1; [
     gstreamer
     gst-plugins-base
     obs-studio
   ];
+
+  # Fix output directory
+  postInstall = ''
+    mkdir $out/lib/obs-plugins
+    mv $out/lib/obs-gstreamer.so $out/lib/obs-plugins/
+  '';
 
   # - We need "getLib" instead of default derivation, otherwise it brings gstreamer-bin;
   # - without gst-plugins-base it won't even show proper errors in logs;
@@ -54,20 +61,16 @@ stdenv.mkDerivation rec {
       gst-plugins-ugly
     ];
 
-  # Fix output directory
-  postInstall = ''
-    mkdir $out/lib/obs-plugins
-    mv $out/lib/obs-gstreamer.so $out/lib/obs-plugins/
-  '';
-
   meta = {
     description = "OBS Studio source, encoder and video filter plugin to use GStreamer elements/pipelines in OBS Studio";
     homepage = "https://github.com/fzwoch/obs-gstreamer";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       ahuzik
       pedrohlc
     ];
-    license = lib.licenses.gpl2Plus;
+
     platforms = lib.platforms.linux;
   };
 }

@@ -4,9 +4,9 @@
   fetchFromGitHub,
   cmake,
   ninja,
+  nix-update-script,
   sdl3,
   testers,
-  nix-update-script,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "sdl3-net";
@@ -26,7 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     cmake
@@ -43,6 +42,8 @@ stdenv.mkDerivation (finalAttrs: {
   postInstall = ''
     moveToOutput "libexec/installed-tests" "$out"
   '';
+
+  __structuredAttrs = true;
 
   passthru = {
     tests.pkg-config = testers.hasPkgConfigModules {
@@ -63,8 +64,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/libsdl-org/SDL_net";
     changelog = "https://github.com/libsdl-org/SDL_net/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.zlib;
-    teams = [ lib.teams.sdl ];
     platforms = lib.platforms.unix;
     pkgConfigModules = [ "sdl3-net" ];
+    teams = [ lib.teams.sdl ];
   };
 })

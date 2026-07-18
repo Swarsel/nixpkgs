@@ -1,38 +1,33 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  # build-system
-  poetry-core,
-
-  # dependencies
-  grpclib,
-  python-dateutil,
-  typing-extensions,
-
-  # optional-dependencies
-  black,
-  jinja2,
-  isort,
-
   # tests
   addBinToPathHook,
+  # optional-dependencies
+  black,
+  buildPythonPackage,
   cachelib,
   grpcio-tools,
+  # dependencies
+  grpclib,
+  isort,
+  jinja2,
+  # build-system
+  poetry-core,
   pydantic,
   pytest-asyncio,
   pytest-mock,
   pytestCheckHook,
-  tomlkit,
   python,
+  python-dateutil,
+  pythonAtLeast,
+  tomlkit,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "betterproto";
   version = "2.0.0b7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "danielgtaylor";
@@ -46,20 +41,6 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "poetry-core>=1.0.0,<2" "poetry-core"
   '';
 
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    grpclib
-    python-dateutil
-    typing-extensions
-  ];
-
-  optional-dependencies.compiler = [
-    black
-    jinja2
-    isort
-  ];
-
   nativeCheckInputs = [
     addBinToPathHook
     cachelib
@@ -72,8 +53,6 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
-  pythonImportsCheck = [ "betterproto" ];
-
   # The tests require the generation of code before execution. This requires
   # the protoc-gen-python_betterproto script from the package to be on PATH.
   preCheck = ''
@@ -81,6 +60,21 @@ buildPythonPackage (finalAttrs: {
     patchShebangs src/betterproto/plugin/main.py
     ${python.interpreter} -m tests.generate
   '';
+
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    grpclib
+    python-dateutil
+    typing-extensions
+  ];
+
+  disabledTestPaths = lib.optionals (pythonAtLeast "3.14") [
+    # TypeError: issubclass() arg 1 must be a class
+    "tests/test_inputs.py::test_message_can_instantiated[namespace_builtin_types]"
+    "tests/test_inputs.py::test_message_equality[namespace_builtin_types]"
+    "tests/test_inputs.py::test_message_json[namespace_builtin_types]"
+  ];
 
   disabledTests = [
     # incompatible with pytest 8:
@@ -91,23 +85,27 @@ buildPythonPackage (finalAttrs: {
     "test_binary_compatibility"
   ];
 
-  disabledTestPaths = lib.optionals (pythonAtLeast "3.14") [
-    # TypeError: issubclass() arg 1 must be a class
-    "tests/test_inputs.py::test_message_can_instantiated[namespace_builtin_types]"
-    "tests/test_inputs.py::test_message_equality[namespace_builtin_types]"
-    "tests/test_inputs.py::test_message_json[namespace_builtin_types]"
+  optional-dependencies.compiler = [
+    black
+    jinja2
+    isort
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "betterproto" ];
 
   meta = {
     description = "Code generator & library for Protobuf 3 and async gRPC";
-    mainProgram = "protoc-gen-python_betterproto";
+
     longDescription = ''
       This project aims to provide an improved experience when using Protobuf /
       gRPC in a modern Python environment by making use of modern language
       features and generating readable, understandable, idiomatic Python code.
     '';
+
     homepage = "https://github.com/danielgtaylor/python-betterproto";
     changelog = "https://github.com/danielgtaylor/python-betterproto/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
+    mainProgram = "protoc-gen-python_betterproto";
   };
 })

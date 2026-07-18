@@ -15,19 +15,20 @@
 buildPythonPackage (finalAttrs: {
   pname = "google-cloud-shell";
   version = "1.16.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_shell";
     inherit (finalAttrs) version;
     hash = "sha256-e0RMNqR4jxA+hwlNM2Lyspsh9WKfQRWndZ1oZJMRZoI=";
+    pname = "google_cloud_shell";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
+  nativeCheckInputs = [
+    mock
+    pytest-asyncio
+    pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     google-api-core
@@ -37,15 +38,15 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  nativeCheckInputs = [
-    mock
-    pytest-asyncio
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "google.cloud.shell"
     "google.cloud.shell_v1"
+  ];
+
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

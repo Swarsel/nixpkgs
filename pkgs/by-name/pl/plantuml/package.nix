@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  graphviz,
   gitUpdater,
+  graphviz,
   jre,
   makeBinaryWrapper,
+  stdenvNoCC,
   testers,
 }:
 
@@ -22,6 +22,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     makeBinaryWrapper
   ];
 
+  doInstallCheck = true;
+
   buildCommand = ''
     install -Dm644 $src $out/lib/plantuml.jar
 
@@ -32,8 +34,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --add-flags "-jar $out/lib/plantuml.jar"
   '';
 
-  doInstallCheck = true;
-
   postCheckInstall = ''
     $out/bin/plantuml -help
     $out/bin/plantuml -testdot
@@ -41,13 +41,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   passthru = {
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       command = "plantuml --version";
+      package = finalAttrs.finalPackage;
     };
+
     updateScript = gitUpdater {
-      url = "https://github.com/plantuml/plantuml.git";
       allowedVersions = "^1\\.[0-9\\.]+$";
       rev-prefix = "v";
+      url = "https://github.com/plantuml/plantuml.git";
     };
   };
 
@@ -56,12 +57,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://plantuml.com/";
     # "plantuml -license" says GPLv3 or later
     license = lib.licenses.gpl3Plus;
-    mainProgram = "plantuml";
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       bjornfor
       anthonyroussel
     ];
+
     platforms = lib.platforms.unix;
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    mainProgram = "plantuml";
   };
 })

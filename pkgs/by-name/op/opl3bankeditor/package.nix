@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  unstableGitUpdater,
   cmake,
   pkg-config,
   qt6Packages,
   rtaudio,
   rtmidi,
+  unstableGitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,8 +18,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "Wohlstand";
     repo = "opl3bankeditor";
     rev = "992008e2edbaabcd8809df6be6bc91925597f1a9";
-    fetchSubmodules = true;
     hash = "sha256-D/WlF4Em5hXavXm85Zx2q9EmG6o61wzzmI0Umf5JqGA=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -59,11 +59,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    mainProgram = "opl3_bank_editor";
     description = "Small cross-platform editor of the OPL3 FM banks of different formats";
     homepage = "https://github.com/Wohlstand/opl3bankeditor";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ OPNA2608 ];
+    platforms = lib.platforms.all;
+    mainProgram = "opl3_bank_editor";
   };
 })

@@ -1,8 +1,8 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
   nixosTests,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -27,10 +27,12 @@ stdenvNoCC.mkDerivation rec {
     description = "Third party dependencies for Icingaweb 2";
     homepage = "https://github.com/Icinga/icinga-php-thirdparty";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       das_j
       helsinki-Jo
     ];
+
+    platforms = lib.platforms.all;
   };
 }

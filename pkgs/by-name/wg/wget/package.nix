@@ -3,25 +3,22 @@
   stdenv,
   fetchurl,
   fetchpatch,
-
   gettext,
-  pkg-config,
-  perlPackages,
-  libidn2,
-  zlib,
-  pcre2,
-  libuuid,
   libiconv,
+  libidn2,
   libintl,
-  nukeReferences,
-  python3,
-  lzip,
-
-  withLibpsl ? false,
   libpsl,
-
-  withOpenssl ? true,
+  libuuid,
+  lzip,
+  nukeReferences,
   openssl,
+  pcre2,
+  perlPackages,
+  pkg-config,
+  python3,
+  zlib,
+  withLibpsl ? false,
+  withOpenssl ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,32 +30,36 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-GSJcx1awoIj8gRSNxqQKDI8ymvf9hIPxx7L+UPTgih8=";
   };
 
+  outputs = [
+    "out"
+    "man"
+    "info"
+  ];
+
   patches = [
     (fetchpatch {
+      hash = "sha256-ZnCLK9ILpHMqpmI39sBl3Q3NRNc/H8jukvBrECqJ6OI=";
       name = "fix-cve-2026-58471";
       url = "https://gitlab.com/gnuwget/wget/-/commit/c2640fe5171c59f87c58dc9fcb195b2d18b010ee.patch";
-      hash = "sha256-ZnCLK9ILpHMqpmI39sBl3Q3NRNc/H8jukvBrECqJ6OI=";
     })
     (fetchpatch {
+      hash = "sha256-aR5lW8t6ME2Os/NPXjFaUbNr3QuiUSQKsa2Zk292mrk=";
       name = "fix-cve-2026-58470";
       url = "https://gitlab.com/gnuwget/wget/-/commit/43d3ba9336bc94937e6fae2365c6ffd30c34ffcf.patch";
-      hash = "sha256-aR5lW8t6ME2Os/NPXjFaUbNr3QuiUSQKsa2Zk292mrk=";
     })
     (fetchpatch {
+      hash = "sha256-lkHQufl8XFZ1Ig8EoRUw3JuCgDPQod9PKAIsTBWzvm4=";
       name = "fix-cve-2026-58469";
       url = "https://gitlab.com/gnuwget/wget/-/commit/37a40fcb450153f69537c7cbc2a7a4fb0b6f7826.patch";
-      hash = "sha256-lkHQufl8XFZ1Ig8EoRUw3JuCgDPQod9PKAIsTBWzvm4=";
     })
     (fetchpatch {
+      hash = "sha256-FAlglKTZili9Y4ivSRLOEaOgektFmq4u6yyH+8WzQao=";
       name = "fix-cve-2026-58472";
       url = "https://gitlab.com/gnuwget/wget/-/commit/dd692d9cea5335b181d877ae917fe6e75587a812.patch";
-      hash = "sha256-FAlglKTZili9Y4ivSRLOEaOgektFmq4u6yyH+8WzQao=";
     })
   ];
 
-  preConfigure = ''
-    patchShebangs doc
-  '';
+  strictDeps = true;
 
   nativeBuildInputs = [
     gettext
@@ -67,6 +68,7 @@ stdenv.mkDerivation (finalAttrs: {
     lzip
     nukeReferences
   ];
+
   buildInputs = [
     libidn2
     zlib
@@ -81,8 +83,6 @@ stdenv.mkDerivation (finalAttrs: {
     perlPackages.perl
   ];
 
-  strictDeps = true;
-
   configureFlags = [
     (lib.withFeatureAs withOpenssl "ssl" "openssl")
   ]
@@ -91,11 +91,9 @@ stdenv.mkDerivation (finalAttrs: {
     "--without-included-regex"
   ];
 
-  outputs = [
-    "out"
-    "man"
-    "info"
-  ];
+  preConfigure = ''
+    patchShebangs doc
+  '';
 
   preBuild = ''
     # avoid runtime references to build-only depends
@@ -103,10 +101,16 @@ stdenv.mkDerivation (finalAttrs: {
     nuke-refs src/version.c
   '';
 
-  enableParallelBuilding = true;
-
-  __darwinAllowLocalNetworking = true;
   doCheck = true;
+
+  nativeCheckInputs = [
+    perlPackages.HTTPDaemon
+    python3
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    perlPackages.IOSocketSSL
+  ];
+
   preCheck = ''
     patchShebangs tests fuzz
 
@@ -131,26 +135,23 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  nativeCheckInputs = [
-    perlPackages.HTTPDaemon
-    python3
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    perlPackages.IOSocketSSL
-  ];
+  __darwinAllowLocalNetworking = true;
+  enableParallelBuilding = true;
 
   meta = {
     description = "Tool for retrieving files using HTTP, HTTPS, and FTP";
-    homepage = "https://www.gnu.org/software/wget/";
-    license = lib.licenses.gpl3Plus;
+
     longDescription = ''
       GNU Wget is a free software package for retrieving files using HTTP,
       HTTPS and FTP, the most widely-used Internet protocols.  It is a
       non-interactive commandline tool, so it may easily be called from
       scripts, cron jobs, terminals without X-Windows support, etc.
     '';
-    mainProgram = "wget";
+
+    homepage = "https://www.gnu.org/software/wget/";
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ fpletz ];
     platforms = lib.platforms.all;
+    mainProgram = "wget";
   };
 })

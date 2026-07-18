@@ -1,8 +1,8 @@
 {
-  fetchFromGitHub,
   lib,
-  libgit2,
   stdenv,
+  fetchFromGitHub,
+  libgit2,
 }:
 
 stdenv.mkDerivation rec {
@@ -17,6 +17,36 @@ stdenv.mkDerivation rec {
     hash = "sha256-IOh5TlFHFhIaP5bpQHYzY4wwmQUdwKePmSzEM2qx8oE=";
     fetchSubmodules = true;
   };
+
+  patches = [
+    # Ignore debase's vendored copy of libgit2 in favor of the nixpkgs version.
+    ./ignore-vendored-libgit2.patch
+  ];
+
+  buildInputs = [
+    libgit2
+  ];
+
+  makeFlags = [
+    "ARCHS=${
+      if stdenv.hostPlatform.isx86_64 then
+        "x86_64"
+      else if stdenv.hostPlatform.isAarch64 then
+        "arm64"
+      else
+        throw "unsupported system: ${stdenv.system}"
+    }"
+  ];
+
+  installPhase = ''
+    runHook preInstall
+    install -Dm755 build-${
+      if stdenv.hostPlatform.isDarwin then "mac" else "linux"
+    }/release/debase $out/bin/debase
+    runHook postInstall
+  '';
+
+  enableParallelBuilding = true;
 
   prePatch = ''
     # xcrun is not available in the Darwin stdenv, but we don't need it anyway.
@@ -35,50 +65,23 @@ stdenv.mkDerivation rec {
     sed -i '1s/^/#include <stdbool.h>/' ./lib/ncurses/include/curses.h.in
   '';
 
-  patches = [
-    # Ignore debase's vendored copy of libgit2 in favor of the nixpkgs version.
-    ./ignore-vendored-libgit2.patch
-  ];
-
-  buildInputs = [
-    libgit2
-  ];
-
-  installPhase = ''
-    runHook preInstall
-    install -Dm755 build-${
-      if stdenv.hostPlatform.isDarwin then "mac" else "linux"
-    }/release/debase $out/bin/debase
-    runHook postInstall
-  '';
-
-  enableParallelBuilding = true;
-
-  makeFlags = [
-    "ARCHS=${
-      if stdenv.hostPlatform.isx86_64 then
-        "x86_64"
-      else if stdenv.hostPlatform.isAarch64 then
-        "arm64"
-      else
-        throw "unsupported system: ${stdenv.system}"
-    }"
-  ];
-
   meta = {
     description = "TUI for drag-and-drop manipulation of git commits";
     homepage = "https://toaster.llc/debase";
     license = lib.licenses.publicDomain;
-    mainProgram = "debase";
+
     maintainers = with lib.maintainers; [
       jeremyschlatter
       aleksana
     ];
+
     platforms = [
       # Only these systems are supported by Makefile
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
+    mainProgram = "debase";
   };
 }

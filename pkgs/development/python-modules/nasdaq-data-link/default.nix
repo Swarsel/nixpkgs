@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   factory-boy,
-  fetchFromGitHub,
   httpretty,
   inflection,
   jsondate,
@@ -20,7 +20,6 @@
 buildPythonPackage rec {
   pname = "nasdaq-data-link";
   version = "1.0.4";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "Nasdaq";
@@ -48,6 +47,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "nasdaqdatalink" ];
 
   meta = {

@@ -1,19 +1,19 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   apple-sdk,
-  buildFeatures ? [ ],
-  buildNoDefaultFeatures ? false,
   buildPackages,
   dbus,
-  fetchFromGitHub,
   gpgme,
-  installManPages ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
-  installShellCompletions ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
   installShellFiles,
-  lib,
   notmuch,
   pkg-config,
   rustPlatform,
-  stdenv,
+  buildFeatures ? [ ],
+  buildNoDefaultFeatures ? false,
+  installManPages ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
+  installShellCompletions ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
 }:
 
 let
@@ -60,11 +60,6 @@ rustPlatform.buildRustPackage {
     rev = "v${version}";
   };
 
-  env = {
-    # OpenSSL should not be provided by vendors, not even on Windows
-    OPENSSL_NO_VENDOR = "1";
-  };
-
   nativeBuildInputs =
     [ ]
     ++ lib.optional (hasPgpGpgFeature || hasKeyringFeature || hasNotmuchFeature) pkg-config
@@ -76,10 +71,10 @@ rustPlatform.buildRustPackage {
     ++ lib.optional (hasKeyringFeature && !isWindows) dbus'
     ++ lib.optional hasNotmuchFeature notmuch;
 
-  buildFeatures =
-    buildFeatures
-    # D-Bus is provided by vendors on Windows
-    ++ lib.optional (hasKeyringFeature && isWindows) "vendored";
+  env = {
+    # OpenSSL should not be provided by vendors, not even on Windows
+    OPENSSL_NO_VENDOR = "1";
+  };
 
   # most of the tests are lib side
   doCheck = false;
@@ -106,15 +101,22 @@ rustPlatform.buildRustPackage {
       installShellCompletion "$out"/share/completions/himalaya.{bash,fish,zsh}
     '';
 
+  buildFeatures =
+    buildFeatures
+    # D-Bus is provided by vendors on Windows
+    ++ lib.optional (hasKeyringFeature && isWindows) "vendored";
+
   meta = {
     description = "CLI to manage emails";
-    mainProgram = "himalaya";
     homepage = "https://github.com/pimalaya/himalaya";
     changelog = "https://github.com/pimalaya/himalaya/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       soywod
       yanganto
     ];
+
+    mainProgram = "himalaya";
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
   unzip,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -12,7 +12,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     url = "https://dist.mountainduck.io/Mountain%20Duck-${finalAttrs.version}.zip";
     sha256 = "sha256-f69DBNj15dxkNxmFtoxA3d/bSpagpOX7l84fE4a/VWw=";
   };
-  dontUnpack = true;
 
   nativeBuildInputs = [ unzip ];
 
@@ -24,6 +23,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  dontUnpack = true;
 
   meta = {
     description = "Mount server and cloud storage as a disk on macOS and Windows";

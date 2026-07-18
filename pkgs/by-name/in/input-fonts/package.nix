@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  python3,
   config,
-  acceptLicense ? config.input-fonts.acceptLicense or false,
+  fetchzip,
   parallel,
+  python3,
   writeShellApplication,
+  acceptLicense ? config.input-fonts.acceptLicense or false,
 }:
 
 let
@@ -41,11 +41,10 @@ stdenv.mkDerivation rec {
   src =
     assert !acceptLicense -> throwLicense;
     fetchzip {
-      name = "input-fonts-${version}";
       # Add .zip parameter so that zip unpackCmd can match it.
       url = "https://input.djr.com/build/?fontSelection=whole&a=0&g=0&i=0&l=0&zero=0&asterisk=0&braces=0&preset=default&line-height=1.2&accept=I+do&email=&.zip";
       sha256 = "BESZ4Bjgm2hvQ7oPpMvYSlE8EqvQjqHZtXWIovqyIzA=";
-      stripRoot = false;
+      name = "input-fonts-${version}";
 
       # Reset the timestamp to release date for determinism.
       postFetch =
@@ -53,6 +52,7 @@ stdenv.mkDerivation rec {
           ttf-fixup = writeShellApplication {
             name = "ttf-fixup";
             runtimeInputs = [ python3.pkgs.fonttools ];
+
             text = ''
               if [ $# != 1 ]; then
                 echo "Usage: $0 <file.ttf>: Resets timestamp on <file.ttf> for determinism" >&2
@@ -72,10 +72,9 @@ stdenv.mkDerivation rec {
         ''
           find $out/Input_Fonts -type f -name '*.ttf' -print0 | ${lib.getExe parallel} -0 -j $NIX_BUILD_CORES ${lib.getExe ttf-fixup} {}
         '';
-    };
 
-  dontConfigure = true;
-  dontBuild = true;
+      stripRoot = false;
+    };
 
   installPhase = ''
     runHook preInstall
@@ -88,8 +87,12 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "Fonts for Code, from Font Bureau";
+
     longDescription = ''
       Input is a font family designed for computer programming, data,
       and text composition. It was designed by David Jonathan Ross
@@ -103,12 +106,15 @@ stdenv.mkDerivation rec {
       generous spacing, large punctuation, and easily distinguishable
       characters — but without the limitations of a fixed width.
     '';
+
     homepage = "https://input.djr.com/";
     license = lib.licenses.unfree;
+
     maintainers = with lib.maintainers; [
       jtojnar
       romildo
     ];
+
     platforms = lib.platforms.all;
   };
 }

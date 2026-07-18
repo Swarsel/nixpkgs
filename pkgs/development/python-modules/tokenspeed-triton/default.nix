@@ -1,28 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
+  buildPythonPackage,
   # build-system
   cmake,
   nanobind,
   ninja,
+  nlohmann_json,
+  pythonAtLeast,
   setuptools,
-
-  # nativeBuildInputs
-  writableTmpDirAsHomeHook,
-
   # buildInputs
   tokenspeed-triton-llvm,
-  nlohmann_json,
+  # nativeBuildInputs
+  writableTmpDirAsHomeHook,
   zlib,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "tokenspeed-triton";
   version = "3.7.10.post20260531";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "lightseekorg";
@@ -42,6 +37,29 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "nanobind==2.10.2" "nanobind>=2.10.2"
   '';
 
+  nativeBuildInputs = [
+    writableTmpDirAsHomeHook
+  ];
+
+  buildInputs = [
+    zlib
+  ];
+
+  # https://github.com/lightseekorg/triton/blob/v3.7.10.post20260531/.github/workflows/wheels.yml#L109-L117
+  env = {
+    JSON_SYSPATH = nlohmann_json;
+    LLVM_SYSPATH = tokenspeed-triton-llvm;
+    NIX_CFLAGS_COMPILE = "-Wno-stringop-overflow";
+    TRITON_BUILD_PROTON = false;
+    TRITON_BUILD_RELEASE = true;
+    TRITON_OFFLINE_BUILD = true;
+    TRITON_STABLE_ABI = pythonAtLeast "3.12";
+  };
+
+  # tests import triton instead of tokenspeed_triton
+  doCheck = false;
+  __structuredAttrs = true;
+
   build-system = [
     cmake
     nanobind
@@ -50,43 +68,24 @@ buildPythonPackage (finalAttrs: {
   ];
 
   dontUseCmakeConfigure = true;
-
-  nativeBuildInputs = [
-    writableTmpDirAsHomeHook
-  ];
-
-  # https://github.com/lightseekorg/triton/blob/v3.7.10.post20260531/.github/workflows/wheels.yml#L109-L117
-  env = {
-    TRITON_OFFLINE_BUILD = true;
-    TRITON_BUILD_RELEASE = true;
-    TRITON_BUILD_PROTON = false;
-    TRITON_STABLE_ABI = pythonAtLeast "3.12";
-    LLVM_SYSPATH = tokenspeed-triton-llvm;
-    JSON_SYSPATH = nlohmann_json;
-    NIX_CFLAGS_COMPILE = "-Wno-stringop-overflow";
-  };
-
-  buildInputs = [
-    zlib
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "tokenspeed_triton"
   ];
 
-  # tests import triton instead of tokenspeed_triton
-  doCheck = false;
-
   meta = {
     description = "Language and compiler for custom Deep Learning operations";
     homepage = "https://github.com/lightseekorg/triton";
-    downloadPage = "https://pypi.org/project/tokenspeed-triton/#files";
     changelog = "https://github.com/lightseekorg/triton/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ prince213 ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ];
+
+    downloadPage = "https://pypi.org/project/tokenspeed-triton/#files";
   };
 })

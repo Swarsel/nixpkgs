@@ -17,8 +17,8 @@ in
     services.physlock = {
 
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to enable the {command}`physlock` screen locking mechanism.
 
@@ -30,65 +30,48 @@ in
           {option}`services.physlock.disableSysRq` is set)
           until the root or user password is given.
         '';
+
+        type = lib.types.bool;
       };
 
       allowAnyUser = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to allow any user to lock the screen. This will install a
           setuid wrapper to allow any user to start physlock as root, which
           is a minor security risk. Call the physlock binary to use this instead
           of using the systemd service.
         '';
+
+        type = lib.types.bool;
       };
 
       disableSysRq = lib.mkOption {
-        type = lib.types.bool;
         default = true;
+
         description = ''
           Whether to disable SysRq when locked with physlock.
         '';
+
+        type = lib.types.bool;
       };
 
       lockMessage = lib.mkOption {
-        type = lib.types.str;
         default = "";
+
         description = ''
           Message to show on physlock login terminal.
         '';
-      };
 
-      muteKernelMessages = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Disable kernel messages on console while physlock is running.
-        '';
+        type = lib.types.str;
       };
 
       lockOn = {
 
-        suspend = lib.mkOption {
-          type = lib.types.bool;
-          default = true;
-          description = ''
-            Whether to lock screen with physlock just before suspend.
-          '';
-        };
-
-        hibernate = lib.mkOption {
-          type = lib.types.bool;
-          default = true;
-          description = ''
-            Whether to lock screen with physlock just before hibernate.
-          '';
-        };
-
         extraTargets = lib.mkOption {
-          type = lib.types.listOf lib.types.str;
           default = [ ];
-          example = [ "display-manager.service" ];
+
           description = ''
             Other targets to lock the screen just before.
 
@@ -97,8 +80,41 @@ in
             still to have the screen locked so that the system can be
             booted relatively unattended.
           '';
+
+          example = [ "display-manager.service" ];
+          type = lib.types.listOf lib.types.str;
         };
 
+        hibernate = lib.mkOption {
+          default = true;
+
+          description = ''
+            Whether to lock screen with physlock just before hibernate.
+          '';
+
+          type = lib.types.bool;
+        };
+
+        suspend = lib.mkOption {
+          default = true;
+
+          description = ''
+            Whether to lock screen with physlock just before suspend.
+          '';
+
+          type = lib.types.bool;
+        };
+
+      };
+
+      muteKernelMessages = lib.mkOption {
+        default = false;
+
+        description = ''
+          Disable kernel messages on console while physlock is running.
+        '';
+
+        type = lib.types.bool;
       };
 
     };
@@ -113,16 +129,11 @@ in
 
         # for physlock -l and physlock -L
         environment.systemPackages = [ pkgs.physlock ];
+        security.pam.services.physlock = { };
 
         systemd.services.physlock = {
           enable = true;
-          documentation = [ "man:physlock(1)" ];
-          description = "Physlock";
-          wantedBy =
-            lib.optional cfg.lockOn.suspend "suspend.target"
-            ++ lib.optional cfg.lockOn.hibernate "hibernate.target"
-            ++ lib.optional (cfg.lockOn.hibernate || cfg.lockOn.suspend) "suspend-then-hibernate.target"
-            ++ cfg.lockOn.extraTargets;
+
           before =
             lib.optional cfg.lockOn.suspend "systemd-suspend.service"
             ++ lib.optional cfg.lockOn.hibernate "systemd-hibernate.service"
@@ -130,24 +141,33 @@ in
               cfg.lockOn.hibernate || cfg.lockOn.suspend
             ) "systemd-suspend-then-hibernate.service"
             ++ cfg.lockOn.extraTargets;
+
+          description = "Physlock";
+          documentation = [ "man:physlock(1)" ];
+
           serviceConfig = {
-            Type = "forking";
             ExecStart = "${pkgs.physlock}/bin/physlock -d${lib.optionalString cfg.muteKernelMessages "m"}${lib.optionalString cfg.disableSysRq "s"}${
               lib.optionalString (cfg.lockMessage != "") " -p \"${cfg.lockMessage}\""
             }";
-          };
-        };
 
-        security.pam.services.physlock = { };
+            Type = "forking";
+          };
+
+          wantedBy =
+            lib.optional cfg.lockOn.suspend "suspend.target"
+            ++ lib.optional cfg.lockOn.hibernate "hibernate.target"
+            ++ lib.optional (cfg.lockOn.hibernate || cfg.lockOn.suspend) "suspend-then-hibernate.target"
+            ++ cfg.lockOn.extraTargets;
+        };
 
       }
 
       (lib.mkIf cfg.allowAnyUser {
 
         security.wrappers.physlock = {
-          setuid = true;
-          owner = "root";
           group = "root";
+          owner = "root";
+          setuid = true;
           source = "${pkgs.physlock}/bin/physlock";
         };
 

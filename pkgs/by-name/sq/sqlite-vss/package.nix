@@ -1,13 +1,13 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   cmake,
   faiss,
-  fetchFromGitHub,
   gomp,
   llvmPackages,
   nlohmann_json,
   sqlite,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,7 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   patches = [ ./use-nixpkgs-libs.patch ];
-
   nativeBuildInputs = [ cmake ];
 
   buildInputs = [
@@ -48,13 +47,13 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    # Low maintenance mode, doesn't support up-to-date faiss
-    # https://github.com/NixOS/nixpkgs/pull/330191#issuecomment-2252965866
-    broken = lib.versionAtLeast faiss.version "1.8.0";
     description = "SQLite extension for efficient vector search based on Faiss";
     homepage = "https://github.com/asg017/sqlite-vss";
     changelog = "https://github.com/asg017/sqlite-vss/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     platforms = lib.platforms.unix;
+    # Low maintenance mode, doesn't support up-to-date faiss
+    # https://github.com/NixOS/nixpkgs/pull/330191#issuecomment-2252965866
+    broken = lib.versionAtLeast faiss.version "1.8.0";
   };
 })

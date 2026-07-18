@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "netapp-lib";
   version = "2021.6.25";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -25,7 +24,7 @@ buildPythonPackage rec {
 
   # no tests in sdist and no other download available
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "netapp_lib" ];
 
   meta = {

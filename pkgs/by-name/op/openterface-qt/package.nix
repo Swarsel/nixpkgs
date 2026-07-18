@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  makeDesktopItem,
-  copyDesktopItems,
   fetchFromGitHub,
-  writeText,
-  qt6,
+  copyDesktopItems,
   libusb1,
+  makeDesktopItem,
+  qt6,
+  writeText,
 }:
 let
   # Based on upstream instructions: https://github.com/TechxArtisanStudio/Openterface_QT#for-linux-users
@@ -23,18 +23,21 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "openterface-qt";
   version = "0.3.18";
+
   src = fetchFromGitHub {
     owner = "TechxArtisanStudio";
     repo = "Openterface_QT";
     rev = "${finalAttrs.version}";
     hash = "sha256-yD71UOi6iRd9N3NeASUzqoeHMcTYIqkysAfxRm7GkOA=";
   };
+
   nativeBuildInputs = [
     copyDesktopItems
     qt6.wrapQtAppsHook
     qt6.qmake
     qt6.qttools
   ];
+
   buildInputs = [
     libusb1
     qt6.qtbase
@@ -42,9 +45,11 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.qtserialport
     qt6.qtsvg
   ];
+
   preBuild = ''
     lrelease openterfaceQT.pro
   '';
+
   installPhase = ''
     runHook preInstall
     mkdir -p $out/bin
@@ -60,12 +65,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "openterfaceQT";
-      exec = "openterfaceQT";
-      icon = finalAttrs.pname;
+      categories = [ "Utility" ];
       comment = finalAttrs.meta.description;
       desktopName = "Openterface QT";
-      categories = [ "Utility" ];
+      exec = "openterfaceQT";
+      icon = finalAttrs.pname;
+      name = "openterfaceQT";
     })
   ];
 
@@ -73,8 +78,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Openterface mini-KVM host application for linux";
     homepage = "https://github.com/TechxArtisanStudio/Openterface_QT";
     license = lib.licenses.agpl3Only;
-    mainProgram = "openterfaceQT";
     maintainers = with lib.maintainers; [ samw ];
     platforms = lib.platforms.linux;
+    mainProgram = "openterfaceQT";
   };
 })

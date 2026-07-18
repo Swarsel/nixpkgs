@@ -1,22 +1,22 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  ninja,
-  obs-studio,
-  qtbase,
-  libxt,
-  libxtst,
+  libx11,
+  libxau,
+  libxdmcp,
+  libxext,
   libxi,
   libxinerama,
-  libxext,
-  libxdmcp,
-  libxau,
-  libx11,
   libxkbcommon,
   libxkbfile,
+  libxt,
+  libxtst,
+  ninja,
+  obs-studio,
+  pkg-config,
+  qtbase,
   sdl3,
 }:
 
@@ -58,10 +58,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-DCMAKE_CXX_FLAGS=-msse4.1"
   ];
 
-  postUnpack = ''
-    sed -i '/set(CMAKE_CXX_FLAGS "-march=native")/d' 'source/CMakeLists.txt'
-  '';
-
   preFixup = ''
     # Remove broken uiohook development files
     rm -r $out/lib/cmake $out/lib/pkgconfig
@@ -69,11 +65,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   dontWrapQtApps = true;
 
+  postUnpack = ''
+    sed -i '/set(CMAKE_CXX_FLAGS "-march=native")/d' 'source/CMakeLists.txt'
+  '';
+
   meta = {
+    inherit (obs-studio.meta) platforms;
     description = "Show keyboard, gamepad and mouse input on stream";
     homepage = "https://github.com/univrsal/input-overlay";
-    maintainers = with lib.maintainers; [ glittershark ];
     license = lib.licenses.gpl2;
-    inherit (obs-studio.meta) platforms;
+    maintainers = with lib.maintainers; [ glittershark ];
   };
 })

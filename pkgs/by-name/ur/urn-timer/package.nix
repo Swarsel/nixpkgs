@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  unstableGitUpdater,
-  xxd,
-  pkg-config,
-  imagemagick,
-  wrapGAppsHook3,
   gtk3,
+  imagemagick,
   jansson,
   nixosTests,
+  pkg-config,
+  unstableGitUpdater,
+  wrapGAppsHook3,
+  xxd,
 }:
 
 stdenv.mkDerivation {
@@ -36,16 +36,15 @@ stdenv.mkDerivation {
   ];
 
   makeFlags = [ "PREFIX=$(out)" ];
+  passthru.tests.nixosTest = nixosTests.urn-timer;
 
   passthru.updateScript = unstableGitUpdater {
     url = "https://github.com/paoloose/urn.git";
   };
 
-  passthru.tests.nixosTest = nixosTests.urn-timer;
-
   meta = {
-    homepage = "https://github.com/paoloose/urn";
     description = "Split tracker / timer for speedrunning with GTK+ frontend";
+    homepage = "https://github.com/paoloose/urn";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ fgaz ];
     mainProgram = "urn-gtk";

@@ -6,9 +6,7 @@
   glibc,
 }:
 buildRedist {
-  redistName = "cuda";
   pname = "cuda_crt";
-
   outputs = [ "out" ];
 
   # Fix compatibility with glibc 2.42:
@@ -36,6 +34,9 @@ buildRedist {
         "__func__(float rsqrtf(const float a) throw())"
   '';
 
+  # There's a comment with a reference to /usr
+  allowFHSReferences = true;
+
   brokenAssertions = [
     # TODO(@connorbaker): Build fails on x86 when using pkgsLLVM.
     #  .../include/crt/host_defines.h:67:2:
@@ -48,11 +49,10 @@ buildRedist {
     #
     #  # --error 0x1 --
     {
-      message = "cannot use libc++ on x86_64-linux";
       assertion = backendStdenv.hostNixSystem == "x86_64-linux" -> backendStdenv.cc.libcxx == null;
+      message = "cannot use libc++ on x86_64-linux";
     }
   ];
 
-  # There's a comment with a reference to /usr
-  allowFHSReferences = true;
+  redistName = "cuda";
 }

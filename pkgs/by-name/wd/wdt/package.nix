@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
+  double-conversion,
   folly,
   gflags,
   glog,
   openssl,
-  double-conversion,
   unstableGitUpdater,
 }:
 
@@ -22,7 +22,19 @@ stdenv.mkDerivation {
     hash = "sha256-YReA7lBSeWRZHpF4E7yY6HuabRUOT6Aipk9dgjlTuik=";
   };
 
+  patches = [
+    ./fix-glog-include.patch
+  ];
+
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 3.2)" "cmake_minimum_required(VERSION 3.10)" \
+      --replace-fail "find_package(Boost COMPONENTS system filesystem REQUIRED)" \
+        "find_package(Boost COMPONENTS filesystem REQUIRED)"
+  '';
+
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     folly
     gflags
@@ -31,32 +43,21 @@ stdenv.mkDerivation {
     double-conversion
   ];
 
+  cmakeFlags = [
+    "-DWDT_USE_SYSTEM_FOLLY=ON"
+  ];
+
   # source is expected to be named wdt
   # https://github.com/facebook/wdt/blob/43319e59d0c77092468367cdadab37d12d7a2383/CMakeLists.txt#L238
   postUnpack = ''
     ln -s $sourceRoot wdt
   '';
 
-  patches = [
-    ./fix-glog-include.patch
-  ];
-
-  cmakeFlags = [
-    "-DWDT_USE_SYSTEM_FOLLY=ON"
-  ];
-
   passthru = {
     updateScript = unstableGitUpdater {
       tagPrefix = "v";
     };
   };
-
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 3.2)" "cmake_minimum_required(VERSION 3.10)" \
-      --replace-fail "find_package(Boost COMPONENTS system filesystem REQUIRED)" \
-        "find_package(Boost COMPONENTS filesystem REQUIRED)"
-  '';
 
   meta = {
     description = "Warp speed Data Transfer";

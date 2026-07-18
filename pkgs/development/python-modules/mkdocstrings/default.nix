@@ -1,7 +1,8 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  dirty-equals,
   jinja2,
   markdown,
   markupsafe,
@@ -10,13 +11,11 @@
   pdm-backend,
   pymdown-extensions,
   pytestCheckHook,
-  dirty-equals,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mkdocstrings";
   version = "1.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mkdocstrings";
@@ -30,6 +29,11 @@ buildPythonPackage (finalAttrs: {
       --replace-fail 'dynamic = ["version"]' 'version = "${finalAttrs.version}"'
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    dirty-equals
+  ];
+
   build-system = [ pdm-backend ];
 
   dependencies = [
@@ -40,13 +44,6 @@ buildPythonPackage (finalAttrs: {
     mkdocs-autorefs
     pymdown-extensions
   ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    dirty-equals
-  ];
-
-  pythonImportsCheck = [ "mkdocstrings" ];
 
   disabledTestPaths = [
     # Circular dependencies
@@ -61,6 +58,9 @@ buildPythonPackage (finalAttrs: {
     "test_extended_templates"
     "test_nested_autodoc[ext_markdown0]"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "mkdocstrings" ];
 
   meta = {
     description = "Automatic documentation from sources for MkDocs";

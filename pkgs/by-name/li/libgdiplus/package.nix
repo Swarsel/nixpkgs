@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  pkg-config,
-  glib,
+  autoreconfHook,
   cairo,
   fontconfig,
-  libtiff,
   giflib,
+  glib,
+  libexif,
   libjpeg,
   libpng,
+  libtiff,
   libxrender,
-  libexif,
-  autoreconfHook,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,12 +20,17 @@ stdenv.mkDerivation (finalAttrs: {
   version = "6.2";
 
   src = fetchFromGitLab {
-    domain = "gitlab.winehq.org";
     owner = "mono";
     repo = "libgdiplus";
     tag = finalAttrs.version;
     hash = "sha256-otWdHiS/Ws+2tq5wQlcSfBUOc8Mfhpz5PLmMDgtld1Q=";
+    domain = "gitlab.winehq.org";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     # Fix pkg-config lookup when cross-compiling.
@@ -37,23 +42,10 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "all: update_submodules" "all:"
   '';
 
-  env.NIX_LDFLAGS = "-lgif";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
-
-  hardeningDisable = [ "format" ];
-
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
   ];
-
-  configureFlags = lib.optional stdenv.cc.isClang "--host=${stdenv.hostPlatform.system}";
-
-  enableParallelBuilding = true;
 
   buildInputs = [
     glib
@@ -67,19 +59,25 @@ stdenv.mkDerivation (finalAttrs: {
     libexif
   ];
 
-  postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    ln -s $out/lib/libgdiplus.0.dylib $out/lib/libgdiplus.so
-  '';
+  configureFlags = lib.optional stdenv.cc.isClang "--host=${stdenv.hostPlatform.system}";
+  env.NIX_LDFLAGS = "-lgif";
 
   checkPhase = ''
     make check -w
   '';
 
+  postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    ln -s $out/lib/libgdiplus.0.dylib $out/lib/libgdiplus.so
+  '';
+
+  enableParallelBuilding = true;
+  hardeningDisable = [ "format" ];
+
   meta = {
-    changelog = "https://gitlab.winehq.org/mono/libgdiplus/-/releases/${finalAttrs.src.tag}";
     description = "Mono library that provides a GDI+-compatible API on non-Windows operating systems";
     homepage = "https://www.mono-project.com/docs/gui/libgdiplus/";
-    platforms = lib.platforms.unix;
+    changelog = "https://gitlab.winehq.org/mono/libgdiplus/-/releases/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+    platforms = lib.platforms.unix;
   };
 })

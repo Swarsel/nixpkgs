@@ -3,17 +3,17 @@
   fetchFromGitHub,
   clangStdenv,
   cmake,
-  pkg-config,
+  elfutils,
   installShellFiles,
   libclang,
-  llvmPackages,
   libllvm,
-  yaml-cpp,
-  elfutils,
   libunwind,
+  llvmPackages,
+  pkg-config,
   versionCheckHook,
-  enableLibcxx ? false,
+  yaml-cpp,
   debug ? false,
+  enableLibcxx ? false,
 }:
 clangStdenv.mkDerivation (finalAttrs: {
   pname = "clang-uml";
@@ -45,20 +45,16 @@ clangStdenv.mkDerivation (finalAttrs: {
       [ ]
   );
 
-  cmakeFlags = [
-    "-DCUSTOM_COMPILE_OPTIONS=-Wno-error=sign-compare"
-    "-DGIT_VERSION=${finalAttrs.version}"
-  ];
-
   buildInputs = [
     libclang
     libllvm
     yaml-cpp
   ];
 
-  cmakeBuildType = if debug then "Debug" else "Release";
-
-  clang = if enableLibcxx then llvmPackages.libcxxClang else llvmPackages.clang;
+  cmakeFlags = [
+    "-DCUSTOM_COMPILE_OPTIONS=-Wno-error=sign-compare"
+    "-DGIT_VERSION=${finalAttrs.version}"
+  ];
 
   postInstall = ''
     cp $out/bin/clang-uml $out/bin/clang-uml-unwrapped
@@ -74,23 +70,26 @@ clangStdenv.mkDerivation (finalAttrs: {
       --zsh $src/packaging/autocomplete/_clang-uml
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  clang = if enableLibcxx then llvmPackages.libcxxClang else llvmPackages.clang;
+  cmakeBuildType = if debug then "Debug" else "Release";
   dontFixup = debug;
   dontStrip = debug;
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-
   meta = {
     description = "Customizable automatic UML diagram generator for C++ based on Clang";
+
     longDescription = ''
       clang-uml is an automatic C++ to UML class, sequence, package and include diagram generator, driven by YAML configuration files.
       The main idea behind the project is to easily maintain up-to-date diagrams within a code-base or document legacy code.
       The configuration file or files for clang-uml define the types and contents of each generated diagram.
       The diagrams can be generated in PlantUML, MermaidJS and JSON formats.
     '';
-    maintainers = with lib.maintainers; [ eymeric ];
+
     homepage = "https://clang-uml.github.io/";
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ eymeric ];
     platforms = lib.platforms.all;
     mainProgram = "clang-uml";
   };

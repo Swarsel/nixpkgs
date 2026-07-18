@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   alsa-lib,
+  cmake,
   fftwSinglePrec,
   libjack2,
   libpulseaudio,
   libvorbis,
-  soundtouch,
-  qt5,
   nix-update-script,
+  qt5,
+  soundtouch,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,10 +25,16 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-lRgFCPeIBefwsHMsE8eHLxT9GQUT0iUCyIrJz+mltp0=";
   };
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 3.1.0)" "cmake_minimum_required(VERSION 3.10)"
+  '';
+
   nativeBuildInputs = [
     cmake
     qt5.wrapQtAppsHook
   ];
+
   buildInputs = [
     alsa-lib
     fftwSinglePrec
@@ -49,21 +55,18 @@ stdenv.mkDerivation (finalAttrs: {
     "-DENABLE_PULSEAUDIO=ON"
   ];
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 3.1.0)" "cmake_minimum_required(VERSION 3.10)"
-  '';
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Application for practicing playing musical scores and ear training";
-    mainProgram = "nootka";
     homepage = "https://nootka.sourceforge.io/";
     license = lib.licenses.gpl3Plus;
+
     maintainers = [
       lib.maintainers.mmlb
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "nootka";
   };
 })

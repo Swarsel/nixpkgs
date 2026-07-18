@@ -1,22 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  matplotlib,
   # depedencies
   numpy,
-  scipy,
   pyqt5,
-  matplotlib,
+  scipy,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage {
   pname = "curvefitgui";
   version = "0-unstable-2021-08-25";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "moosepy";
@@ -36,6 +33,7 @@ buildPythonPackage {
     matplotlib
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "curvefitgui" ];
 
   meta = {

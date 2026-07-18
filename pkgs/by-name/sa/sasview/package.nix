@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  python3,
   fetchFromGitHub,
-  writeShellScriptBin,
+  ausaxs,
+  python3,
   qt6,
   writableTmpDirAsHomeHook,
-  ausaxs,
+  writeShellScriptBin,
 }:
 
 let
@@ -21,9 +21,8 @@ let
   '';
 in
 python3.pkgs.buildPythonApplication {
-  pname = "sasview";
   inherit version;
-  pyproject = true;
+  pname = "sasview";
 
   src = fetchFromGitHub {
     owner = "SasView";
@@ -31,14 +30,6 @@ python3.pkgs.buildPythonApplication {
     tag = "v${version}";
     hash = "sha256-dc1vr+YFHItCI4NnSa+yF948/t7B6utoSp2ps/J40ys=";
   };
-
-  build-system = with python3.pkgs; [
-    hatchling
-    hatch-build-scripts
-    hatch-requirements-txt
-    hatch-sphinx
-    hatch-vcs
-  ];
 
   nativeBuildInputs = [
     qt6.wrapQtAppsHook
@@ -50,6 +41,37 @@ python3.pkgs.buildPythonApplication {
   ];
 
   buildInputs = [ qt6.qtbase ];
+
+  postBuild = ''
+    ${python3.interpreter} src/sas/qtgui/convertUI.py
+  '';
+
+  nativeCheckInputs =
+    with python3.pkgs;
+    [
+      pytestCheckHook
+      unittest-xml-reporting
+    ]
+    ++ [
+      writableTmpDirAsHomeHook
+      ausaxs
+    ];
+
+  preCheck =
+    let
+      ext = stdenv.hostPlatform.extensions.sharedLibrary;
+    in
+    ''
+      ln -s ${ausaxs}/lib/libausaxs.${ext} src/sas/sascalc/calculator/ausaxs/lib/libausaxs.${ext}
+    '';
+
+  build-system = with python3.pkgs; [
+    hatchling
+    hatch-build-scripts
+    hatch-requirements-txt
+    hatch-sphinx
+    hatch-vcs
+  ];
 
   dependencies = with python3.pkgs; [
     sasmodels
@@ -84,42 +106,19 @@ python3.pkgs.buildPythonApplication {
     zope-interface
   ];
 
-  pythonRemoveDeps = [ "zope" ];
-
-  postBuild = ''
-    ${python3.interpreter} src/sas/qtgui/convertUI.py
-  '';
-
+  disabledTestPaths = [ "test/sascalculator/utest_sas_gen.py::sas_gen_test::test_debye_impl" ];
   dontWrapQtApps = true;
-
-  makeWrapperArgs = [
-    "\${qtWrapperArgs[@]}"
-  ];
-
-  nativeCheckInputs =
-    with python3.pkgs;
-    [
-      pytestCheckHook
-      unittest-xml-reporting
-    ]
-    ++ [
-      writableTmpDirAsHomeHook
-      ausaxs
-    ];
 
   enabledTestPaths = [
     "test"
   ];
 
-  disabledTestPaths = [ "test/sascalculator/utest_sas_gen.py::sas_gen_test::test_debye_impl" ];
+  makeWrapperArgs = [
+    "\${qtWrapperArgs[@]}"
+  ];
 
-  preCheck =
-    let
-      ext = stdenv.hostPlatform.extensions.sharedLibrary;
-    in
-    ''
-      ln -s ${ausaxs}/lib/libausaxs.${ext} src/sas/sascalc/calculator/ausaxs/lib/libausaxs.${ext}
-    '';
+  pyproject = true;
+  pythonRemoveDeps = [ "zope" ];
 
   meta = {
     description = "Fitting and data analysis for small angle scattering data";

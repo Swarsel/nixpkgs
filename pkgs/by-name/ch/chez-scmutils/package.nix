@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   chez,
-  chez-srfi,
   chez-mit,
+  chez-srfi,
 }:
 
 stdenv.mkDerivation rec {
@@ -24,8 +24,6 @@ stdenv.mkDerivation rec {
     chez-mit
   ];
 
-  lib-path = "lib/csv${lib.versions.majorMinor chez.version}-site";
-
   makeFlags = [
     "CHEZ=${lib.getExe chez}"
     "PREFIX=$(out)"
@@ -33,12 +31,13 @@ stdenv.mkDerivation rec {
   ];
 
   doCheck = false;
+  lib-path = "lib/csv${lib.versions.majorMinor chez.version}-site";
 
   meta = {
     description = "Port of the 'MIT Scmutils' library to Chez Scheme";
     homepage = "https://github.com/fedeinthemix/chez-scmutils/";
-    maintainers = [ lib.maintainers.jitwit ];
     license = lib.licenses.gpl3;
+    maintainers = [ lib.maintainers.jitwit ];
   };
 
 }

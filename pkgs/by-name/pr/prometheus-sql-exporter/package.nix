@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   go,
   prometheus-sql-exporter,
   testers,
@@ -34,15 +34,15 @@ buildGoModule rec {
     ];
 
   passthru.tests.version = testers.testVersion {
-    package = prometheus-sql-exporter;
     command = "sql_exporter -version";
+    package = prometheus-sql-exporter;
   };
 
   meta = {
     description = "Flexible SQL exporter for Prometheus";
-    mainProgram = "sql_exporter";
     homepage = "https://github.com/justwatchcom/sql_exporter";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ justinas ];
+    mainProgram = "sql_exporter";
   };
 }

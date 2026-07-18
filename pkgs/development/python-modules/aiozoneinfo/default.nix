@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytest-asyncio,
   pytest-cov-stub,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "aiozoneinfo";
   version = "0.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bluetooth-devices";
@@ -21,16 +20,15 @@ buildPythonPackage rec {
     hash = "sha256-7qd6Yk/K4BLocu8eQK0hLaw2r1jhWIHBr9W4KsAvmx8=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ tzdata ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-cov-stub
     pytestCheckHook
   ];
 
+  build-system = [ poetry-core ];
+  dependencies = [ tzdata ];
+  pyproject = true;
   pythonImportsCheck = [ "aiozoneinfo" ];
 
   meta = {

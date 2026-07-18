@@ -1,7 +1,7 @@
 {
   lib,
-  blockdiag,
   fetchFromGitHub,
+  blockdiag,
   buildPythonPackage,
   pytestCheckHook,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "nwdiag";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "blockdiag";
@@ -20,14 +19,9 @@ buildPythonPackage rec {
   };
 
   patches = [ ./fix_test_generate.patch ];
-
-  build-system = [ setuptools ];
-
-  dependencies = [ blockdiag ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  enabledTestPaths = [ "src/nwdiag/tests/" ];
+  build-system = [ setuptools ];
+  dependencies = [ blockdiag ];
 
   disabledTests = [
     # AttributeError: 'TestRstDirectives' object has no attribute 'assertRegexpMatches'
@@ -35,6 +29,8 @@ buildPythonPackage rec {
     "noviewbox"
   ];
 
+  enabledTestPaths = [ "src/nwdiag/tests/" ];
+  pyproject = true;
   pythonImportsCheck = [ "nwdiag" ];
 
   meta = {
@@ -43,7 +39,7 @@ buildPythonPackage rec {
     changelog = "https://github.com/blockdiag/nwdiag/blob/${version}/CHANGES.rst";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ bjornfor ];
-    mainProgram = "rackdiag";
     platforms = lib.platforms.unix;
+    mainProgram = "rackdiag";
   };
 }

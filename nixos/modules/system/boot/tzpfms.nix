@@ -80,21 +80,23 @@ let
 
   mkTzpfmsService =
     {
-      pool,
       mountUnits,
+      pool,
       script,
     }:
     {
-      description = "Load TPM keys for ZFS pool “${pool}”";
+      inherit script;
       after = [ "zfs-import-${pool}.service" ];
       before = mountUnits ++ [ "zfs-import.target" ];
+      description = "Load TPM keys for ZFS pool “${pool}”";
       requiredBy = mountUnits ++ [ "zfs-import.target" ];
-      unitConfig.DefaultDependencies = "no";
+
       serviceConfig = {
-        Type = "oneshot";
         RemainAfterExit = true;
+        Type = "oneshot";
       };
-      inherit script;
+
+      unitConfig.DefaultDependencies = "no";
     };
 
   backendArgs = lib.escapeShellArgs (
@@ -105,8 +107,6 @@ let
   );
 in
 {
-  meta.maintainers = with lib.maintainers; [ toastal ];
-
   options = {
     boot.zfs.tzpfms = {
       enable = lib.mkEnableOption ''
@@ -117,30 +117,34 @@ in
       package = lib.mkPackageOption pkgs "tzpfms" { };
 
       backends = lib.mkOption {
+        default = [
+          "TPM2"
+        ];
+
+        description = ''
+          TPM backends to include in for tzpfms.
+        '';
+
         type =
           with lib.types;
           nonEmptyListOf (enum [
             "TPM2"
             "TPM1.X"
           ]);
-        default = [
-          "TPM2"
-        ];
-        description = ''
-          TPM backends to include in for tzpfms.
-        '';
       };
 
       datasets = lib.mkOption {
-        # Needs to be explicit so we can build thy systemd services
-        type = with lib.types; nonEmptyListOf str;
+        description = ''
+          Explicit list of ZFS datasets to unlock with TPM at boot.
+        '';
+
         example = [
           "tank/root"
           "tank/var"
         ];
-        description = ''
-          Explicit list of ZFS datasets to unlock with TPM at boot.
-        '';
+
+        # Needs to be explicit so we can build thy systemd services
+        type = with lib.types; nonEmptyListOf str;
       };
     };
   };
@@ -150,6 +154,7 @@ in
       {
         assertion =
           config.boot.supportedFilesystems.zfs or config.boot.initrd.supportedFilesystems.zfs or false;
+
         message = "ZFS filesystem support needs to be enabled for boot.tzpfms to work";
       }
       {
@@ -159,6 +164,7 @@ in
       {
         assertion =
           !(cfgZFS.requestEncryptionCredentials == true) || cfgZFS.requestEncryptionCredentials == [ ];
+
         message = ''
           boot.zfs.requestEncryptionCredentials = true would prompt for all
           encrypted dataset passphrases at boot, which conflicts with automatic
@@ -174,6 +180,7 @@ in
         in
         {
           assertion = builtins.length intersected == 0;
+
           message = ''
             The following datasets are listed in both boot.zfs.tzpfms.datasets
             & boot.zfs.requestEncryptionCredentials, which would cause a
@@ -188,11 +195,6 @@ in
         }
       )
     ];
-
-    environment.systemPackages = [ cfg.package ];
-
-    # Automatically register pools from tzpfms datasets as extraPools
-    boot.zfs.extraPools = pools;
 
     boot.initrd = lib.mkMerge [
       (lib.mkIf cfg.enable {
@@ -213,21 +215,28 @@ in
             // lib.optionalAttrs (lib.elem "TPM1.X" cfg.backends) {
               zfs-tpm1x-load-key = "${lib.getBin cfg.package}/bin/zfs-tpm1x-load-key";
             };
-            systemd.storePaths =
-              lib.optional (lib.elem "TPM2" cfg.backends) pkgs.tpm2-tss
-              ++ lib.optional (lib.elem "TPM1.X" cfg.backends) pkgs.trousers;
+
             systemd.services = lib.genAttrs' initrdPools (pool: {
               name = "tzpfms-load-${pool}";
+
               value = mkTzpfmsService {
                 inherit pool;
                 mountUnits = initrdMountsByPool.${pool} or [ ];
                 script = mkTzpfmsScript (datasetsByPool.${pool} or [ ]);
               };
             });
+
+            systemd.storePaths =
+              lib.optional (lib.elem "TPM2" cfg.backends) pkgs.tpm2-tss
+              ++ lib.optional (lib.elem "TPM1.X" cfg.backends) pkgs.trousers;
           })
         ]
       ))
     ];
+
+    # Automatically register pools from tzpfms datasets as extraPools
+    boot.zfs.extraPools = pools;
+    environment.systemPackages = [ cfg.package ];
 
     systemd.services = lib.genAttrs' systemPools (
       pool:
@@ -236,6 +245,7 @@ in
       in
       {
         name = "tzpfms-load-${pool}";
+
         value = mkTzpfmsService {
           inherit pool;
           mountUnits = mnts;
@@ -244,4 +254,6 @@ in
       }
     );
   };
+
+  meta.maintainers = with lib.maintainers; [ toastal ];
 }

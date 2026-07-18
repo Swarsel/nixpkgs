@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  makeBinaryWrapper,
   jre_headless,
+  makeBinaryWrapper,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -15,8 +15,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     sha256 = "sha256-oJnPoVQ/VVk7wu0Wpwp8Z/5UsXR7tzAfN/39bZECjik=";
   };
 
-  dontUnpack = true;
-
   nativeBuildInputs = [ makeBinaryWrapper ];
 
   installPhase = ''
@@ -25,14 +23,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Command-line tool to manipulate Android App Bundles";
-    mainProgram = "bundletool";
     homepage = "https://developer.android.com/studio/command-line/bundletool";
     changelog = "https://github.com/google/bundletool/releases/tag/${finalAttrs.version}";
+    license = lib.licenses.asl20;
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ ];
     platforms = jre_headless.meta.platforms;
-    license = lib.licenses.asl20;
+    mainProgram = "bundletool";
   };
 })

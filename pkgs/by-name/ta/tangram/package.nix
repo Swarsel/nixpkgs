@@ -1,8 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   appstream-glib,
+  blueprint-compiler,
   desktop-file-utils,
   gdk-pixbuf,
   gettext,
@@ -11,17 +12,16 @@
   glib-networking,
   gobject-introspection,
   gsettings-desktop-schemas,
-  gtk4,
-  libadwaita,
   gst_all_1,
+  gtk4,
   hicolor-icon-theme,
+  libadwaita,
   meson,
   ninja,
   nix-update-script,
   pkg-config,
   python3,
   webkitgtk_6_0,
-  blueprint-compiler,
   wrapGAppsHook4,
 }:
 
@@ -36,6 +36,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-aK/oavYQJJYQaQ+PjxSDjSSvEaYz3G8aGXLdumOEXgk=";
     fetchSubmodules = true;
   };
+
+  postPatch = ''
+    substituteInPlace src/meson.build --replace "/app/bin/blueprint-compiler" "blueprint-compiler"
+    substituteInPlace src/bin.js troll/gjspack/bin/gjspack \
+      --replace "#!/usr/bin/env -S gjs -m" "#!${gjs}/bin/gjs -m"
+  '';
 
   nativeBuildInputs = [
     appstream-glib
@@ -69,19 +75,13 @@ stdenv.mkDerivation (finalAttrs: {
     gst-plugins-bad
   ]);
 
-  dontPatchShebangs = true;
-
-  postPatch = ''
-    substituteInPlace src/meson.build --replace "/app/bin/blueprint-compiler" "blueprint-compiler"
-    substituteInPlace src/bin.js troll/gjspack/bin/gjspack \
-      --replace "#!/usr/bin/env -S gjs -m" "#!${gjs}/bin/gjs -m"
-  '';
-
   # https://github.com/NixOS/nixpkgs/issues/31168#issuecomment-341793501
   preFixup = ''
     sed -e '2iimports.package._findEffectiveEntryPointName = () => "re.sonny.Tangram"' \
       -i $out/bin/re.sonny.Tangram
   '';
+
+  dontPatchShebangs = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -89,14 +89,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Run web apps on your desktop";
-    mainProgram = "re.sonny.Tangram";
     homepage = "https://github.com/sonnyp/Tangram";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       austinbutler
       chuangzhu
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "re.sonny.Tangram";
     teams = [ lib.teams.gnome-circle ];
   };
 })

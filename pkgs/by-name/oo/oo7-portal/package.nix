@@ -1,4 +1,5 @@
 {
+  stdenv,
   cargo,
   meson,
   ninja,
@@ -6,15 +7,11 @@
   pkg-config,
   rustPlatform,
   rustc,
-  stdenv,
   systemdLibs,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  pname = "oo7-portal";
   inherit (oo7) version src cargoDeps;
-
-  sourceRoot = "${finalAttrs.src.name}/portal";
-  cargoRoot = "../";
+  pname = "oo7-portal";
 
   nativeBuildInputs = [
     pkg-config
@@ -29,6 +26,9 @@ stdenv.mkDerivation (finalAttrs: {
     systemdLibs
   ];
 
+  cargoRoot = "../";
+  sourceRoot = "${finalAttrs.src.name}/portal";
+
   meta = {
     inherit (oo7.meta)
       homepage
@@ -37,6 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
       maintainers
       platforms
       ;
+
     description = "${oo7.meta.description} (XDG Desktop Portal)";
   };
 })

@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "savepagenow";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pastpages";
@@ -16,6 +15,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     sha256 = "sha256-ztM1g71g8SN1LTyFF7sxaLhC3+nVsC9fJwfYPjkUsdE=";
   };
 
+  # requires network access
+  doCheck = false;
   build-system = with python3Packages; [ setuptools-scm ];
 
   dependencies = with python3Packages; [
@@ -23,9 +24,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     requests
   ];
 
-  # requires network access
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "savepagenow" ];
 
   meta = {

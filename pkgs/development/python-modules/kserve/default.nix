@@ -1,22 +1,27 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   aiohttp,
+  # logging
+  asgi-logger,
+  # tests
+  avro,
+  buildPythonPackage,
   cloudevents,
   cryptography,
   fastapi,
   grpc-interceptor,
   grpcio,
+  grpcio-testing,
   grpcio-tools,
   h11,
   httpx,
+  jinja2,
+  # optional-dependencies
+  # storage
+  kserve-storage,
   kubernetes,
   numpy,
   orjson,
@@ -26,43 +31,32 @@
   psutil,
   pyasn1,
   pydantic,
-  python-dateutil,
-  python-multipart,
-  pyyaml,
-  six,
-  starlette,
-  tabulate,
-  timing-asgi,
-  urllib3,
-  uvicorn,
-
-  # optional-dependencies
-  # storage
-  kserve-storage,
-  # logging
-  asgi-logger,
-  # ray
-  ray,
-  # llm
-  vllm,
-
-  # tests
-  avro,
-  grpcio-testing,
-  jinja2,
   pytest-asyncio,
   pytest-cov-stub,
   pytest-httpx,
   pytest-xdist,
   pytestCheckHook,
+  python-dateutil,
+  python-multipart,
+  pyyaml,
+  # ray
+  ray,
+  # build-system
+  setuptools,
+  six,
+  starlette,
+  tabulate,
+  timing-asgi,
   tomlkit,
+  urllib3,
+  uvicorn,
+  # llm
+  vllm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "kserve";
   version = "0.19.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "kserve";
@@ -71,20 +65,21 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-i8eFdXwNLPTdEj2MnNAMbefxQGkMLHNwZXxg8+zv6v0=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/python/kserve";
+  nativeCheckInputs = [
+    avro
+    grpcio-testing
+    jinja2
+    pytest-asyncio
+    pytest-cov-stub
+    pytest-httpx
+    pytest-xdist
+    pytestCheckHook
+    tomlkit
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
-  pythonRelaxDeps = [
-    "cryptography"
-    "fastapi"
-    "httpx"
-    "numpy"
-    "prometheus-client"
-    "protobuf"
-    "psutil"
-    "python-multipart"
-    "starlette"
-    "uvicorn"
-  ];
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -120,37 +115,6 @@ buildPythonPackage (finalAttrs: {
     uvicorn
   ]
   ++ uvicorn.optional-dependencies.standard;
-
-  optional-dependencies = {
-    storage = [
-      kserve-storage
-    ];
-    logging = [
-      asgi-logger
-    ];
-    ray = [
-      ray
-    ]
-    ++ ray.optional-dependencies.serve;
-    llm = [
-      vllm
-    ];
-  };
-
-  nativeCheckInputs = [
-    avro
-    grpcio-testing
-    jinja2
-    pytest-asyncio
-    pytest-cov-stub
-    pytest-httpx
-    pytest-xdist
-    pytestCheckHook
-    tomlkit
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
-
-  pythonImportsCheck = [ "kserve" ];
 
   disabledTestPaths = [
     # Looks for a config file at the root of the repository
@@ -212,7 +176,42 @@ buildPythonPackage (finalAttrs: {
     "test_local_path_with_out_dir_not_exist"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  optional-dependencies = {
+    llm = [
+      vllm
+    ];
+
+    logging = [
+      asgi-logger
+    ];
+
+    ray = [
+      ray
+    ]
+    ++ ray.optional-dependencies.serve;
+
+    storage = [
+      kserve-storage
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "kserve" ];
+
+  pythonRelaxDeps = [
+    "cryptography"
+    "fastapi"
+    "httpx"
+    "numpy"
+    "prometheus-client"
+    "protobuf"
+    "psutil"
+    "python-multipart"
+    "starlette"
+    "uvicorn"
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/python/kserve";
 
   meta = {
     description = "Standardized Serverless ML Inference Platform on Kubernetes";

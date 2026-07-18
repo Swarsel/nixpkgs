@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cryptography,
 }:
 
 buildPythonPackage rec {
   pname = "pyxiaomigateway";
   version = "0.14.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "Danielhiversen";
@@ -18,9 +17,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ cryptography ];
-
   # Tests are not mocking the gateway completely
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "xiaomi_gateway" ];
 
   meta = {

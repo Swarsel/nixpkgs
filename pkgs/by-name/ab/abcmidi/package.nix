@@ -1,7 +1,7 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,11 +19,11 @@ stdenv.mkDerivation (finalAttrs: {
   env.NIX_CFLAGS_COMPILE = "-std=gnu17";
 
   meta = {
-    homepage = "https://abc.sourceforge.net/abcMIDI/";
-    downloadPage = "https://ifdo.ca/~seymour/runabc/top.html";
-    license = lib.licenses.gpl2Plus;
     description = "Utilities for converting between abc and MIDI";
-    platforms = lib.platforms.unix;
+    homepage = "https://abc.sourceforge.net/abcMIDI/";
+    license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.dotlambda ];
+    platforms = lib.platforms.unix;
+    downloadPage = "https://ifdo.ca/~seymour/runabc/top.html";
   };
 })

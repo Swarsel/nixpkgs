@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   openssl,
   pytestCheckHook,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "scrypt";
   version = "0.9.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "holgern";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
     hash = "sha256-4jVXaPD57RMe4ef1PVgZwPGAhEHL3RGlu2DSC6lGuR4=";
   };
 
-  build-system = [ setuptools ];
-
   buildInputs = [ openssl ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "scrypt" ];
 
   meta = {

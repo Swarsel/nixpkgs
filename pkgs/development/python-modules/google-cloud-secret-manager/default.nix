@@ -14,19 +14,19 @@
 buildPythonPackage rec {
   pname = "google-cloud-secret-manager";
   version = "2.29.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_secret_manager";
     inherit version;
     hash = "sha256-7mQTOvj9s3gK/7ZexszxCrFaARPY7eujiGZfS+h84b4=";
+    pname = "google_cloud_secret_manager";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     google-api-core
@@ -36,15 +36,16 @@ buildPythonPackage rec {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "google.cloud.secretmanager"
     "google.cloud.secretmanager_v1"
     "google.cloud.secretmanager_v1beta1"
+  ];
+
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

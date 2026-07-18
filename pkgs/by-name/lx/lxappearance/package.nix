@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  intltool,
-  pkg-config,
-  libx11,
+  docbook_xsl,
   gtk2,
   gtk3,
+  intltool,
+  libx11,
   libxslt,
-  docbook_xsl,
+  pkg-config,
   wrapGAppsHook3,
   withGtk3 ? true,
 }:
@@ -25,7 +25,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-t5P3JYGZzhTaJ3s23r6yrAQoFcCV5uteHh67sWY1KrI=";
   };
 
-  enableParallelBuilding = true;
+  patches = [
+    ./lxappearance-0.6.3-xdg.system.data.dirs.patch
+  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -41,20 +43,16 @@ stdenv.mkDerivation (finalAttrs: {
     (if withGtk3 then gtk3 else gtk2)
   ];
 
-  patches = [
-    ./lxappearance-0.6.3-xdg.system.data.dirs.patch
-  ];
-
-  env.XSLTPROC = lib.getExe' libxslt "xsltproc";
-
   configureFlags = lib.optional withGtk3 "--enable-gtk3";
+  env.XSLTPROC = lib.getExe' libxslt "xsltproc";
+  enableParallelBuilding = true;
 
   meta = {
     description = "Lightweight program for configuring the theme and fonts of gtk applications";
-    mainProgram = "lxappearance";
     homepage = "https://lxde.org/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ romildo ];
+    platforms = lib.platforms.linux;
+    mainProgram = "lxappearance";
   };
 })

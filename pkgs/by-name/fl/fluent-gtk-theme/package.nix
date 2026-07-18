@@ -1,14 +1,14 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   gitUpdater,
   gtk-engine-murrine,
   jdupes,
   sassc,
-  themeVariants ? [ ], # default: blue
+  stdenvNoCC,
   colorVariants ? [ ], # default: all
   sizeVariants ? [ ], # default: standard
+  themeVariants ? [ ], # default: blue
   tweaks ? [ ],
 }:
 
@@ -68,16 +68,14 @@ lib.checkListOfEnum "${pname}: theme variants"
       hash = "sha256-AaFj9lG9lWg0a0ksJ0ufoUpsunR3uDhcdb7oSrvAmPI=";
     };
 
+    postPatch = ''
+      patchShebangs install.sh
+    '';
+
     nativeBuildInputs = [
       jdupes
       sassc
     ];
-
-    propagatedUserEnvPkgs = [ gtk-engine-murrine ];
-
-    postPatch = ''
-      patchShebangs install.sh
-    '';
 
     installPhase = ''
       runHook preInstall
@@ -95,17 +93,20 @@ lib.checkListOfEnum "${pname}: theme variants"
       runHook postInstall
     '';
 
+    propagatedUserEnvPkgs = [ gtk-engine-murrine ];
     passthru.updateScript = gitUpdater { };
 
     meta = {
       description = "Fluent design gtk theme";
-      changelog = "https://github.com/vinceliuice/Fluent-gtk-theme/releases/tag/${finalAttrs.version}";
       homepage = "https://github.com/vinceliuice/Fluent-gtk-theme";
+      changelog = "https://github.com/vinceliuice/Fluent-gtk-theme/releases/tag/${finalAttrs.version}";
       license = lib.licenses.gpl3Only;
-      platforms = lib.platforms.unix;
+
       maintainers = with lib.maintainers; [
         luftmensch-luftmensch
         romildo
       ];
+
+      platforms = lib.platforms.unix;
     };
   })

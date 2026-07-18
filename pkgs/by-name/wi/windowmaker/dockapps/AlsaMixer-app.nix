@@ -10,11 +10,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "AlsaMixer.app";
-
   inherit (dockapps-sources) version src;
-
-  sourceRoot = "${finalAttrs.src.name}/AlsaMixer.app";
+  pname = "AlsaMixer.app";
 
   nativeBuildInputs = [
     pkg-config
@@ -27,10 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxext
   ];
 
-  hardeningDisable = [ "fortify" ];
-
-  dontConfigure = true;
-
   installPhase = ''
     runHook preInstall
     install -D -t ${placeholder "out"}/bin/ AlsaMixer.app
@@ -38,6 +31,10 @@ stdenv.mkDerivation (finalAttrs: {
     ln -vs AlsaMixer.app AlsaMixer
     runHook postInstall
   '';
+
+  dontConfigure = true;
+  hardeningDisable = [ "fortify" ];
+  sourceRoot = "${finalAttrs.src.name}/AlsaMixer.app";
 
   meta = {
     description = "Alsa mixer application for Windowmaker";

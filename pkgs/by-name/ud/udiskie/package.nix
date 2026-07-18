@@ -1,7 +1,7 @@
 {
   lib,
-  asciidoc,
   fetchFromGitHub,
+  asciidoc,
   gobject-introspection,
   gtk3,
   installShellFiles,
@@ -9,17 +9,15 @@
   libnotify,
   librsvg,
   python3Packages,
-  udisks,
-  wrapGAppsHook3,
   testers,
   udiskie,
+  udisks,
+  wrapGAppsHook3,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "udiskie";
   version = "2.6.2";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "coldfix";
@@ -43,12 +41,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     wrapGAppsHook3
   ];
 
-  build-system = with python3Packages; [
-    setuptools
-  ];
-
-  dontWrapGApps = true;
-
   buildInputs = [
     gtk3
     libappindicator-gtk3
@@ -57,16 +49,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     udisks
   ];
 
-  dependencies = with python3Packages; [
-    docopt
-    keyutils
-    pygobject3
-    pyyaml
-  ];
-
   postBuild = ''
     make -C doc
   '';
+
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+  ];
 
   postInstall = ''
     installManPage doc/udiskie.8
@@ -80,18 +69,27 @@ python3Packages.buildPythonApplication (finalAttrs: {
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
+  build-system = with python3Packages; [
+    setuptools
   ];
+
+  dependencies = with python3Packages; [
+    docopt
+    keyutils
+    pygobject3
+    pyyaml
+  ];
+
+  dontWrapGApps = true;
+  pyproject = true;
 
   passthru.tests.version = testers.testVersion {
     package = udiskie;
   };
 
   meta = {
-    homepage = "https://github.com/coldfix/udiskie";
-    changelog = "https://github.com/coldfix/udiskie/blob/${finalAttrs.src.tag}/CHANGES.rst";
     description = "Removable disk automounter for udisks";
+
     longDescription = ''
       udiskie is a udisks2 front-end that allows to manage removeable media such
       as CDs or flash drives from userspace.
@@ -106,6 +104,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
       - loop devices (mounting iso archives)
       - password caching (requires python keyutils 0.3)
     '';
+
+    homepage = "https://github.com/coldfix/udiskie";
+    changelog = "https://github.com/coldfix/udiskie/blob/${finalAttrs.src.tag}/CHANGES.rst";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
     mainProgram = "udiskie";

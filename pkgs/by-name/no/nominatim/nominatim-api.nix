@@ -1,10 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  hatchling,
   async-timeout,
+  buildPythonPackage,
+  hatchling,
   psycopg,
   pyicu,
   python-dotenv,
@@ -15,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "nominatim";
   version = "5.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "osm-search";
@@ -45,15 +43,17 @@ buildPythonPackage (finalAttrs: {
     sqlalchemy
   ];
 
+  pyproject = true;
+
   # Fails on: ModuleNotFoundError: No module named 'nominatim_db'
   # pythonImportsCheck = [ "nominatim_api" ];
-
   meta = {
     description = "Search engine for OpenStreetMap data (API module)";
     homepage = "https://nominatim.org/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ mausch ];
+    platforms = lib.platforms.unix;
+
     teams = with lib.teams; [
       geospatial
       ngi

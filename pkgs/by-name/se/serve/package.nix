@@ -1,10 +1,10 @@
 {
-  buildNpmPackage,
-  fetchFromGitHub,
   lib,
-  pnpm_10,
+  fetchFromGitHub,
+  buildNpmPackage,
   fetchPnpmDeps,
   pnpmConfigHook,
+  pnpm_10,
 }:
 buildNpmPackage (finalAttrs: {
   pname = "serve";
@@ -17,29 +17,27 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-lM04fuzgcLHz8/Jf4wJVYXveFcO6sFyJ9PQAcpweyjk=";
   };
 
-  npmDeps = null;
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm_10;
-    fetcherVersion = 4;
-    hash = "sha256-9gejKf+GqB8BPAQtQSuZsTb6jFro3X1aL1noVfyKTPg=";
-  };
-
   nativeBuildInputs = [ pnpm_10 ];
-  npmConfigHook = pnpmConfigHook;
-
   dontNpmBuild = true;
-
   # takes too long to finish
   dontNpmPrune = true;
+  npmConfigHook = pnpmConfigHook;
+  npmDeps = null;
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 4;
+    hash = "sha256-9gejKf+GqB8BPAQtQSuZsTb6jFro3X1aL1noVfyKTPg=";
+    pnpm = pnpm_10;
+  };
 
   meta = {
     description = "Static file serving and directory listing";
     homepage = "https://github.com/vercel/serve";
-    downloadPage = "https://github.com/vercel/serve/releases";
     changelog = "https://github.com/vercel/serve/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ prince213 ];
     mainProgram = "serve";
+    downloadPage = "https://github.com/vercel/serve/releases";
   };
 })

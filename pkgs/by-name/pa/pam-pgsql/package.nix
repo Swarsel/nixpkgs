@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  libpq,
   libgcrypt,
-  pam,
+  libpq,
   libxcrypt,
-  unstableGitUpdater,
   nixosTests,
+  pam,
+  pkg-config,
+  unstableGitUpdater,
 }:
 
 stdenv.mkDerivation {
@@ -37,15 +37,15 @@ stdenv.mkDerivation {
   ];
 
   passthru = {
-    updateScript = unstableGitUpdater { hardcodeZeroVersion = true; };
     tests = { inherit (nixosTests) pam-pgsql; };
+    updateScript = unstableGitUpdater { hardcodeZeroVersion = true; };
   };
 
   meta = {
     description = "Support to authenticate against PostgreSQL for PAM-enabled applications";
     homepage = "https://github.com/pam-pgsql/pam-pgsql";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ moraxyc ];
+    platforms = lib.platforms.linux;
   };
 }

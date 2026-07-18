@@ -3,11 +3,11 @@
   stdenv,
   fetchurl,
   fetchpatch,
-  pkg-config,
   libx11,
-  libxtst,
-  xorgproto,
   libxi,
+  libxtst,
+  pkg-config,
+  xorgproto,
 }:
 
 stdenv.mkDerivation {
@@ -21,8 +21,8 @@ stdenv.mkDerivation {
 
   patches = [
     (fetchpatch {
-      url = "https://sources.debian.org/data/main/x/xcape/1.2-3/debian/patches/0001-Fix-cross-building-by-removing-hard-coded-pkg-config.patch";
       hash = "sha256-uQNy7EIQdAO5iHYNA2pBoDltNrn1xrfAAjN/ZdGGa4s=";
+      url = "https://sources.debian.org/data/main/x/xcape/1.2-3/debian/patches/0001-Fix-cross-building-by-removing-hard-coded-pkg-config.patch";
     })
   ];
 
@@ -44,6 +44,7 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Utility to configure modifier keys to act as other keys";
+
     longDescription = ''
       xcape allows you to use a modifier key as another key when
       pressed and released on its own.  Note that it is slightly
@@ -52,6 +53,7 @@ stdenv.mkDerivation {
       is to generate the Escape key when Left Control is pressed and
       released on its own.
     '';
+
     homepage = "https://github.com/alols/xcape";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ raskin ];

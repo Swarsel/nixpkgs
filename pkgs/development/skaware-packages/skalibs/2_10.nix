@@ -3,9 +3,6 @@
 skawarePackages.buildPackage {
   pname = "skalibs";
   version = "2.10.0.3";
-  sha256 = "0ka6n5rnxd5sn5lycarf596d5wlak5s535zqqlz0rnhdcnpb105p";
-
-  description = "Set of general-purpose C programming libraries";
 
   outputs = [
     "lib"
@@ -32,5 +29,8 @@ skawarePackages.buildPackage {
 
     mv doc $doc/share/doc/skalibs/html
   '';
+
+  description = "Set of general-purpose C programming libraries";
+  sha256 = "0ka6n5rnxd5sn5lycarf596d5wlak5s535zqqlz0rnhdcnpb105p";
 
 }

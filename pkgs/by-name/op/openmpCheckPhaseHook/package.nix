@@ -4,9 +4,7 @@
 }:
 
 makeSetupHook {
-  name = "omp-checkPhase-hook";
-
   __structuredAttrs = true;
-
+  name = "omp-checkPhase-hook";
   meta.license = lib.licenses.mit;
 } ./omp-check-hook.sh

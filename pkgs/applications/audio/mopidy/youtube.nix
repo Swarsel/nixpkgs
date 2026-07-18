@@ -1,16 +1,15 @@
 {
   lib,
   fetchFromGitHub,
-  pythonPackages,
   mopidy,
   pkgs,
+  pythonPackages,
   extraPkgs ? pkgs: [ ],
 }:
 
 pythonPackages.buildPythonApplication (finalAttrs: {
   pname = "mopidy-youtube";
   version = "3.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "natumbri";
@@ -29,6 +28,11 @@ pythonPackages.buildPythonApplication (finalAttrs: {
       --replace-fail '"youtube_dl_package": "youtube_dl",' '"youtube_dl_package": "yt_dlp",'
   '';
 
+  nativeCheckInputs = with pythonPackages; [
+    vcrpy
+    pytestCheckHook
+  ];
+
   build-system = [
     pythonPackages.setuptools
   ];
@@ -44,16 +48,6 @@ pythonPackages.buildPythonApplication (finalAttrs: {
   ]
   ++ extraPkgs pkgs; # should we remove this? If we do, don't forget to also change the docs!
 
-  nativeCheckInputs = with pythonPackages; [
-    vcrpy
-    pytestCheckHook
-  ];
-
-  disabledTests = [
-    # Test requires a YouTube API key
-    "test_get_default_config"
-  ];
-
   disabledTestPaths = [
     # Disable tests which interact with Youtube
     "tests/test_api.py"
@@ -61,6 +55,12 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     "tests/test_youtube.py"
   ];
 
+  disabledTests = [
+    # Test requires a YouTube API key
+    "test_get_default_config"
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "mopidy_youtube" ];
 
   meta = {

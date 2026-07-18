@@ -1,20 +1,15 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   aflplusplus,
   python3,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
-  version = builtins.readFile (aflplusplus.src + "/nyx_mode/LIBNYX_VERSION");
   pname = "libnyx";
-
+  version = builtins.readFile (aflplusplus.src + "/nyx_mode/LIBNYX_VERSION");
   src = aflplusplus.src;
-  postUnpack = ''
-    sourceRoot="$sourceRoot/nyx_mode/libnyx/libnyx"
-    cp ${./Cargo.lock} "$sourceRoot/Cargo.lock"
-  '';
 
   cargoLock = {
     lockFile = ./Cargo.lock;
@@ -29,11 +24,16 @@ rustPlatform.buildRustPackage {
     runHook postInstall
   '';
 
+  postUnpack = ''
+    sourceRoot="$sourceRoot/nyx_mode/libnyx/libnyx"
+    cp ${./Cargo.lock} "$sourceRoot/Cargo.lock"
+  '';
+
   meta = {
-    homepage = "https://github.com/nyx-fuzz/libnyx";
     description = "Rust library to build hypervisor-based snapshot fuzzers";
+    homepage = "https://github.com/nyx-fuzz/libnyx";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ ekzyis ];
+    platforms = lib.platforms.linux;
   };
 }

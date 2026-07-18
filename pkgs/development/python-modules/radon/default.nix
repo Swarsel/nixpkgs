@@ -1,22 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
+  colorama,
   fetchpatch,
   # Python deps
   mando,
-  colorama,
-  pytest-mock,
-  tomli,
   poetry-core,
+  pytest-mock,
+  pytestCheckHook,
+  tomli,
 }:
 
 buildPythonPackage rec {
   pname = "radon";
   version = "6.0.1";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rubik";
@@ -28,32 +26,33 @@ buildPythonPackage rec {
   patches = [
     # NOTE: Remove after next release
     (fetchpatch {
-      url = "https://github.com/rubik/radon/commit/ce5d2daa0a9e0e843059d6f57a8124c64a87a6dc.patch";
       hash = "sha256-WwcfR2ZEWeRiMKdMZAwtZRBcWOqoqpaVTmVo0k+Tn74=";
+      url = "https://github.com/rubik/radon/commit/ce5d2daa0a9e0e843059d6f57a8124c64a87a6dc.patch";
     })
   ];
 
   nativeBuildInputs = [ poetry-core ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-mock
-  ];
 
   propagatedBuildInputs = [
     mando
     colorama
   ];
 
-  pythonRelaxDeps = [
-    "mando"
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-mock
   ];
 
   optional-dependencies = {
     toml = [ tomli ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "radon" ];
+
+  pythonRelaxDeps = [
+    "mando"
+  ];
 
   meta = {
     description = "Various code metrics for Python code";

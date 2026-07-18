@@ -1,12 +1,12 @@
 {
   lib,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
   buildDunePackage,
   gen,
+  ppx_expect,
   ppxlib,
   uchar,
-  ppx_expect,
 }:
 
 let
@@ -28,30 +28,28 @@ let
   baseUrl = "https://www.unicode.org/Public/${unicodeVersion}";
 
   DerivedCoreProperties = fetchurl {
-    url = "${baseUrl}/ucd/DerivedCoreProperties.txt";
     hash = "sha256-JMf+0RlcSC+q79XB5+uCHF7h+23gfs26pktWqZ2iLAg=";
+    url = "${baseUrl}/ucd/DerivedCoreProperties.txt";
   };
   DerivedGeneralCategory = fetchurl {
-    url = "${baseUrl}/ucd/extracted/DerivedGeneralCategory.txt";
     hash = "sha256-1i5bq3DKdPCZND9xIk+gUcsf3WGhq0XASIxEz8C2EC4=";
+    url = "${baseUrl}/ucd/extracted/DerivedGeneralCategory.txt";
   };
   PropList = fetchurl {
-    url = "${baseUrl}/ucd/PropList.txt";
     hash = "sha256-Ew3N3Kra8HEAi9/OHndD4E/fvJEIhvAX2fmskx2MZN0=";
+    url = "${baseUrl}/ucd/PropList.txt";
   };
   atLeast31 = lib.versionAtLeast param.version "3.1";
 in
 buildDunePackage (finalAttrs: {
-  pname = "sedlex";
   inherit (param) version;
-
-  minimalOCamlVersion = "4.08";
+  pname = "sedlex";
 
   src = fetchFromGitHub {
+    inherit (param) sha256;
     owner = "ocaml-community";
     repo = "sedlex";
     rev = "v${finalAttrs.version}";
-    inherit (param) sha256;
   };
 
   propagatedBuildInputs = [
@@ -69,18 +67,19 @@ buildDunePackage (finalAttrs: {
     ln -s ${PropList} src/generator/data/PropList.txt
   '';
 
+  doCheck = true;
+
   checkInputs = lib.optionals atLeast31 [
     ppx_expect
   ];
 
-  doCheck = true;
-
   dontStrip = true;
+  minimalOCamlVersion = "4.08";
 
   meta = {
+    description = "OCaml lexer generator for Unicode";
     homepage = "https://github.com/ocaml-community/sedlex";
     changelog = "https://github.com/ocaml-community/sedlex/raw/v${finalAttrs.version}/CHANGES";
-    description = "OCaml lexer generator for Unicode";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

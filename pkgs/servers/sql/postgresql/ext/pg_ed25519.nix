@@ -1,6 +1,6 @@
 {
-  fetchFromGitLab,
   lib,
+  fetchFromGitLab,
   postgresql,
   postgresqlBuildExtension,
 }:
@@ -19,9 +19,9 @@ postgresqlBuildExtension (finalAttrs: {
   meta = {
     description = "PostgreSQL extension for signing and verifying ed25519 signatures";
     homepage = "https://gitlab.com/dwagin/pg_ed25519";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ renzo ];
     platforms = postgresql.meta.platforms;
-    license = lib.licenses.mit;
     # Broken with no upstream fix available.
     broken = lib.versionAtLeast postgresql.version "16";
   };

@@ -1,7 +1,7 @@
 {
-  pkgs,
-  lib,
   config,
+  lib,
+  pkgs,
   ...
 }:
 let
@@ -63,53 +63,146 @@ in
 
       enable = lib.mkEnableOption "gammu-smsd daemon";
 
-      user = lib.mkOption {
-        type = lib.types.str;
-        default = "smsd";
-        description = "User that has access to the device";
+      backend = {
+        files = {
+          errorSMSPath = lib.mkOption {
+            default = "/var/spool/sms/error/";
+            description = "Where SMSes with error in transmission is placed";
+            type = lib.types.path;
+          };
+
+          inboxPath = lib.mkOption {
+            default = "/var/spool/sms/inbox/";
+            description = "Where the received SMSes are stored";
+            type = lib.types.path;
+          };
+
+          outboxPath = lib.mkOption {
+            default = "/var/spool/sms/outbox/";
+            description = "Where SMSes to be sent should be placed";
+            type = lib.types.path;
+          };
+
+          sentSMSPath = lib.mkOption {
+            default = "/var/spool/sms/sent/";
+            description = "Where the transmitted SMSes are placed";
+            type = lib.types.path;
+          };
+        };
+
+        service = lib.mkOption {
+          default = "null";
+          description = "Service to use to store sms data.";
+
+          type = lib.types.enum [
+            "null"
+            "files"
+            "sql"
+          ];
+        };
+
+        sql = {
+          database = lib.mkOption {
+            default = null;
+            description = "Database name to store sms data";
+            type = lib.types.nullOr lib.types.str;
+          };
+
+          driver = lib.mkOption {
+            description = "DB driver to use";
+
+            type = lib.types.enum [
+              "native_mysql"
+              "native_pgsql"
+              "odbc"
+              "dbi"
+            ];
+          };
+
+          host = lib.mkOption {
+            default = "localhost";
+            description = "Database server address";
+            type = lib.types.str;
+          };
+
+          password = lib.mkOption {
+            default = null;
+            description = "User password used for connection to the database";
+            type = lib.types.nullOr lib.types.str;
+          };
+
+          sqlDialect = lib.mkOption {
+            default = null;
+            description = "SQL dialect to use (odbc driver only)";
+            type = lib.types.nullOr lib.types.str;
+          };
+
+          user = lib.mkOption {
+            default = null;
+            description = "User name used for connection to the database";
+            type = lib.types.nullOr lib.types.str;
+          };
+        };
       };
 
       device = {
-        path = lib.mkOption {
-          type = lib.types.path;
-          description = "Device node or address of the phone";
-          example = "/dev/ttyUSB2";
+        connection = lib.mkOption {
+          default = "at";
+          description = "Protocol which will be used to talk to the phone";
+          type = lib.types.str;
         };
 
         group = lib.mkOption {
-          type = lib.types.str;
           default = "root";
           description = "Owner group of the device";
           example = "dialout";
-        };
-
-        connection = lib.mkOption {
           type = lib.types.str;
-          default = "at";
-          description = "Protocol which will be used to talk to the phone";
         };
 
-        synchronizeTime = lib.mkOption {
-          type = lib.types.bool;
-          default = true;
-          description = "Whether to set time from computer to the phone during starting connection";
+        path = lib.mkOption {
+          description = "Device node or address of the phone";
+          example = "/dev/ttyUSB2";
+          type = lib.types.path;
         };
 
         pin = lib.mkOption {
-          type = lib.types.nullOr lib.types.str;
           default = null;
           description = "PIN code for the simcard";
+          type = lib.types.nullOr lib.types.str;
+        };
+
+        synchronizeTime = lib.mkOption {
+          default = true;
+          description = "Whether to set time from computer to the phone during starting connection";
+          type = lib.types.bool;
+        };
+      };
+
+      extraConfig = {
+        gammu = lib.mkOption {
+          default = "";
+          description = "Extra config lines to be added into [gammu] section";
+          type = lib.types.lines;
+        };
+
+        smsd = lib.mkOption {
+          default = "";
+          description = "Extra config lines to be added into [smsd] section";
+          type = lib.types.lines;
         };
       };
 
       log = {
         file = lib.mkOption {
-          type = lib.types.str;
           default = "syslog";
           description = "Path to file where information about communication will be stored";
+          type = lib.types.str;
         };
 
         format = lib.mkOption {
+          default = "errors";
+          description = "Determines what will be logged to the LogFile";
+
           type = lib.types.enum [
             "nothing"
             "text"
@@ -119,126 +212,24 @@ in
             "errorsdate"
             "binary"
           ];
-          default = "errors";
-          description = "Determines what will be logged to the LogFile";
         };
       };
 
-      extraConfig = {
-        gammu = lib.mkOption {
-          type = lib.types.lines;
-          default = "";
-          description = "Extra config lines to be added into [gammu] section";
-        };
-
-        smsd = lib.mkOption {
-          type = lib.types.lines;
-          default = "";
-          description = "Extra config lines to be added into [smsd] section";
-        };
-      };
-
-      backend = {
-        service = lib.mkOption {
-          type = lib.types.enum [
-            "null"
-            "files"
-            "sql"
-          ];
-          default = "null";
-          description = "Service to use to store sms data.";
-        };
-
-        files = {
-          inboxPath = lib.mkOption {
-            type = lib.types.path;
-            default = "/var/spool/sms/inbox/";
-            description = "Where the received SMSes are stored";
-          };
-
-          outboxPath = lib.mkOption {
-            type = lib.types.path;
-            default = "/var/spool/sms/outbox/";
-            description = "Where SMSes to be sent should be placed";
-          };
-
-          sentSMSPath = lib.mkOption {
-            type = lib.types.path;
-            default = "/var/spool/sms/sent/";
-            description = "Where the transmitted SMSes are placed";
-          };
-
-          errorSMSPath = lib.mkOption {
-            type = lib.types.path;
-            default = "/var/spool/sms/error/";
-            description = "Where SMSes with error in transmission is placed";
-          };
-        };
-
-        sql = {
-          driver = lib.mkOption {
-            type = lib.types.enum [
-              "native_mysql"
-              "native_pgsql"
-              "odbc"
-              "dbi"
-            ];
-            description = "DB driver to use";
-          };
-
-          sqlDialect = lib.mkOption {
-            type = lib.types.nullOr lib.types.str;
-            default = null;
-            description = "SQL dialect to use (odbc driver only)";
-          };
-
-          database = lib.mkOption {
-            type = lib.types.nullOr lib.types.str;
-            default = null;
-            description = "Database name to store sms data";
-          };
-
-          host = lib.mkOption {
-            type = lib.types.str;
-            default = "localhost";
-            description = "Database server address";
-          };
-
-          user = lib.mkOption {
-            type = lib.types.nullOr lib.types.str;
-            default = null;
-            description = "User name used for connection to the database";
-          };
-
-          password = lib.mkOption {
-            type = lib.types.nullOr lib.types.str;
-            default = null;
-            description = "User password used for connection to the database";
-          };
-        };
+      user = lib.mkOption {
+        default = "smsd";
+        description = "User that has access to the device";
+        type = lib.types.str;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    users.users.${cfg.user} = {
-      description = "gammu-smsd user";
-      isSystemUser = true;
-      group = cfg.device.group;
-    };
-
     environment.systemPackages =
       with cfg.backend;
       [ gammuPackage ] ++ lib.optionals (service == "sql" && sql.driver == "sqlite") [ pkgs.sqlite ];
 
     systemd.services.gammu-smsd = {
       description = "gammu-smsd daemon";
-
-      wantedBy = [ "multi-user.target" ];
-
-      wants =
-        with cfg.backend;
-        [ ] ++ lib.optionals (service == "sql" && sql.driver == "native_pgsql") [ "postgresql.target" ];
 
       preStart =
         with cfg.backend;
@@ -276,12 +267,24 @@ in
         );
 
       serviceConfig = {
-        User = "${cfg.user}";
+        ExecStart = "${gammuPackage}/bin/gammu-smsd -c ${configFile}";
         Group = "${cfg.device.group}";
         PermissionsStartOnly = true;
-        ExecStart = "${gammuPackage}/bin/gammu-smsd -c ${configFile}";
+        User = "${cfg.user}";
       };
 
+      wantedBy = [ "multi-user.target" ];
+
+      wants =
+        with cfg.backend;
+        [ ] ++ lib.optionals (service == "sql" && sql.driver == "native_pgsql") [ "postgresql.target" ];
+
+    };
+
+    users.users.${cfg.user} = {
+      description = "gammu-smsd user";
+      group = cfg.device.group;
+      isSystemUser = true;
     };
   };
 }

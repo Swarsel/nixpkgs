@@ -2,23 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  bison,
   cmake,
-  ninja,
-  pkg-config,
   cyclonedds,
+  flex,
   libmysqlclient,
   mariadb,
   mbedtls,
-  sqlite,
-  zeromq,
-  flex,
-  bison,
-  nix-update-script,
-
-  # for tests
-  python3,
   mosquitto,
   netcat-gnu,
+  ninja,
+  nix-update-script,
+  pkg-config,
+  # for tests
+  python3,
+  sqlite,
+  zeromq,
 }:
 
 let
@@ -89,6 +88,7 @@ stdenv.mkDerivation (finalAttrs: {
   # disabled by default - not 100% reliable and making nanomq depend on
   # mosquitto would annoy people
   doInstallCheck = false;
+
   nativeInstallCheckInputs = [
     mosquitto
     netcat-gnu
@@ -100,6 +100,7 @@ stdenv.mkDerivation (finalAttrs: {
       ]
     ))
   ];
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -121,13 +122,13 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
-  passthru.updateScript = nix-update-script { };
-
   passthru.tests = {
     withInstallChecks = finalAttrs.finalPackage.overrideAttrs (_: {
       doInstallCheck = true;
     });
   };
+
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Ultra-lightweight and blazing-fast MQTT broker for IoT edge";
@@ -135,6 +136,7 @@ stdenv.mkDerivation (finalAttrs: {
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ sikmir ];
     platforms = lib.platforms.unix;
+
     knownVulnerabilities = [
       "CVE-2026-22040"
       "CVE-2025-68699"

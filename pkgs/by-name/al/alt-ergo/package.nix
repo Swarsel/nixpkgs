@@ -1,9 +1,9 @@
 {
-  darwin,
-  fetchurl,
   lib,
-  ocamlPackages,
   stdenv,
+  fetchurl,
+  darwin,
+  ocamlPackages,
 }:
 
 let
@@ -18,9 +18,10 @@ in
 
 let
   alt-ergo-lib = ocamlPackages.buildDunePackage {
-    pname = "alt-ergo-lib";
     inherit version src;
+    pname = "alt-ergo-lib";
     buildInputs = with ocamlPackages; [ ppx_blob ];
+
     propagatedBuildInputs = with ocamlPackages; [
       camlzip
       dolmen_loop
@@ -37,8 +38,8 @@ in
 
 let
   alt-ergo-parsers = ocamlPackages.buildDunePackage {
-    pname = "alt-ergo-parsers";
     inherit version src;
+    pname = "alt-ergo-parsers";
     nativeBuildInputs = [ ocamlPackages.menhir ];
     propagatedBuildInputs = [ alt-ergo-lib ] ++ (with ocamlPackages; [ psmt2-frontend ]);
   };
@@ -48,10 +49,16 @@ ocamlPackages.buildDunePackage {
 
   inherit pname version src;
 
+  outputs = [
+    "bin"
+    "out"
+  ];
+
   nativeBuildInputs = [
     ocamlPackages.menhir
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ darwin.sigtool ];
+
   propagatedBuildInputs = [
     alt-ergo-parsers
   ]
@@ -60,11 +67,6 @@ ocamlPackages.buildDunePackage {
     dune-site
     ppxlib
   ]);
-
-  outputs = [
-    "bin"
-    "out"
-  ];
 
   installPhase = ''
     runHook preInstall

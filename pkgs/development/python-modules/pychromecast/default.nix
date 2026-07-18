@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   casttube,
-  fetchFromGitHub,
   protobuf,
   setuptools,
   zeroconf,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pychromecast";
   version = "14.0.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "home-assistant-libs";
@@ -26,6 +25,8 @@ buildPythonPackage rec {
        --replace-fail "wheel>=0.37.1,<0.47.0" wheel
   '';
 
+  # no tests available
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,9 +35,7 @@ buildPythonPackage rec {
     zeroconf
   ];
 
-  # no tests available
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pychromecast" ];
 
   meta = {

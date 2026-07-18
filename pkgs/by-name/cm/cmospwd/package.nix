@@ -1,7 +1,7 @@
 {
   lib,
-  fetchurl,
   stdenv,
+  fetchurl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,10 +32,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Decrypt password stored in cmos used to access BIOS SETUP";
-    mainProgram = "cmospwd";
     homepage = "https://www.cgsecurity.org/wiki/CmosPwd";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ t4ccer ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "cmospwd";
   };
 })

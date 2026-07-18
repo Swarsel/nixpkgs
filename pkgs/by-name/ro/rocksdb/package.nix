@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  ninja,
   bzip2,
+  cmake,
+  jemalloc,
+  liburing,
   lz4,
+  ninja,
   snappy,
+  windows,
   zlib,
   zstd,
-  windows,
   enableJemalloc ? false,
-  jemalloc,
   enableLiburing ? stdenv.hostPlatform.isLinux,
-  liburing,
   enableShared ? !stdenv.hostPlatform.isStatic,
   sse42Support ? stdenv.hostPlatform.sse4_2Support,
 }:
@@ -29,57 +29,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-gszW+YY8ZZ7cRVCIXuahGopqqswNRnagZLUYYmRxzGY=";
   };
 
-  patches = lib.optional (
-    lib.versionAtLeast finalAttrs.version "6.29.3" && enableLiburing
-  ) ./fix-findliburing.patch;
-
-  nativeBuildInputs = [
-    cmake
-    ninja
-  ];
-
-  propagatedBuildInputs = [
-    bzip2
-    lz4
-    snappy
-    zlib
-    zstd
-  ];
-
-  buildInputs =
-    lib.optional enableJemalloc jemalloc
-    ++ lib.optional enableLiburing liburing
-    ++ lib.optional stdenv.hostPlatform.isMinGW windows.pthreads;
-
   outputs = [
     "out"
     "tools"
   ];
 
-  cmakeFlags = [
-    "-DPORTABLE=1"
-    "-DWITH_JEMALLOC=${if enableJemalloc then "1" else "0"}"
-    "-DWITH_LIBURING=${if enableLiburing then "1" else "0"}"
-    "-DWITH_JNI=0"
-    "-DWITH_BENCHMARK_TOOLS=0"
-    "-DWITH_TESTS=1"
-    "-DWITH_TOOLS=0"
-    "-DWITH_CORE_TOOLS=1"
-    "-DWITH_BZ2=1"
-    "-DWITH_LZ4=1"
-    "-DWITH_SNAPPY=1"
-    "-DWITH_ZLIB=1"
-    "-DWITH_ZSTD=1"
-    "-DWITH_GFLAGS=0"
-    "-DUSE_RTTI=1"
-    "-DROCKSDB_INSTALL_ON_WINDOWS=YES" # harmless elsewhere
-    (lib.optional sse42Support "-DFORCE_SSE42=1")
-    "-DFAIL_ON_WARNINGS=NO"
-  ]
-  ++ lib.optional (!enableShared) "-DROCKSDB_BUILD_SHARED=0";
-
-  # otherwise "cc1: error: -Wformat-security ignored without -Wformat [-Werror=format-security]"
-  hardeningDisable = lib.optional stdenv.hostPlatform.isWindows "format";
+  patches = lib.optional (
+    lib.versionAtLeast finalAttrs.version "6.29.3" && enableLiburing
+  ) ./fix-findliburing.patch;
 
   postPatch =
     lib.optionalString (lib.versionOlder finalAttrs.version "8") ''
@@ -104,6 +61,46 @@ stdenv.mkDerivation (finalAttrs: {
       sed -e '1i #include <system_error>' -i third-party/folly/folly/synchronization/detail/ProxyLockable-inl.h
     '';
 
+  nativeBuildInputs = [
+    cmake
+    ninja
+  ];
+
+  buildInputs =
+    lib.optional enableJemalloc jemalloc
+    ++ lib.optional enableLiburing liburing
+    ++ lib.optional stdenv.hostPlatform.isMinGW windows.pthreads;
+
+  propagatedBuildInputs = [
+    bzip2
+    lz4
+    snappy
+    zlib
+    zstd
+  ];
+
+  cmakeFlags = [
+    "-DPORTABLE=1"
+    "-DWITH_JEMALLOC=${if enableJemalloc then "1" else "0"}"
+    "-DWITH_LIBURING=${if enableLiburing then "1" else "0"}"
+    "-DWITH_JNI=0"
+    "-DWITH_BENCHMARK_TOOLS=0"
+    "-DWITH_TESTS=1"
+    "-DWITH_TOOLS=0"
+    "-DWITH_CORE_TOOLS=1"
+    "-DWITH_BZ2=1"
+    "-DWITH_LZ4=1"
+    "-DWITH_SNAPPY=1"
+    "-DWITH_ZLIB=1"
+    "-DWITH_ZSTD=1"
+    "-DWITH_GFLAGS=0"
+    "-DUSE_RTTI=1"
+    "-DROCKSDB_INSTALL_ON_WINDOWS=YES" # harmless elsewhere
+    (lib.optional sse42Support "-DFORCE_SSE42=1")
+    "-DFAIL_ON_WARNINGS=NO"
+  ]
+  ++ lib.optional (!enableShared) "-DROCKSDB_BUILD_SHARED=0";
+
   preInstall = ''
     mkdir -p $tools/bin
     cp tools/{ldb,sst_dump}${stdenv.hostPlatform.extensions.executable} $tools/bin/
@@ -123,14 +120,19 @@ stdenv.mkDerivation (finalAttrs: {
     fi
   '';
 
+  # otherwise "cc1: error: -Wformat-security ignored without -Wformat [-Werror=format-security]"
+  hardeningDisable = lib.optional stdenv.hostPlatform.isWindows "format";
+
   meta = {
-    homepage = "https://rocksdb.org";
     description = "Library that provides an embeddable, persistent key-value store for fast storage";
+    homepage = "https://rocksdb.org";
     changelog = "https://github.com/facebook/rocksdb/raw/v${finalAttrs.version}/HISTORY.md";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       adev
     ];
+
+    platforms = lib.platforms.all;
   };
 })

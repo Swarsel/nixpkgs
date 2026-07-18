@@ -1,45 +1,45 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  makeWrapper,
   autoreconfHook,
   bash,
+  dbus,
   fuse3,
-  libmspack,
-  openssl,
-  pam,
-  xercesc,
-  icu,
-  libdnet,
-  pciutils,
-  procps,
-  libtirpc,
-  libtool,
-  rpcsvc-proto,
-  libx11,
-  libxext,
-  libxinerama,
-  libxi,
-  libxrender,
-  libxrandr,
-  libxtst,
-  libxcrypt,
-  libxml2,
-  pkg-config,
-  glib,
   gdk-pixbuf-xlib,
+  glib,
   gtk3,
   gtkmm3,
+  icu,
   iproute2,
-  dbus,
-  systemd,
-  which,
+  libdnet,
   libdrm,
+  libmspack,
+  libtirpc,
+  libtool,
+  libx11,
+  libxcrypt,
+  libxext,
+  libxi,
+  libxinerama,
+  libxml2,
+  libxrandr,
+  libxrender,
+  libxtst,
+  makeWrapper,
+  openssl,
+  pam,
+  pciutils,
+  pkg-config,
+  procps,
+  rpcsvc-proto,
+  systemd,
   udev,
-  util-linux,
-  xmlsec,
   udevCheckHook,
+  util-linux,
+  which,
+  xercesc,
+  xmlsec,
   withX ? true,
 }:
 let
@@ -63,51 +63,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-N0z7OpJP8ubYOeb0KHEQkITlWkKP04rpm79VXRnCe0I=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/open-vm-tools";
-
   outputs = [
     "out"
     "dev"
-  ];
-
-  nativeBuildInputs = [
-    autoreconfHook
-    glib # provides glib-genmarshal at build time
-    makeWrapper
-    pkg-config
-    rpcsvc-proto # provides rpcgen at build time
-    udevCheckHook
-  ];
-
-  buildInputs = [
-    fuse3
-    glib
-    icu
-    libdnet
-    libdrm
-    libmspack
-    libtirpc
-    libtool # provides libltdl (libxmlsec dynamic loading)
-    libxcrypt
-    libxml2
-    openssl
-    pam
-    procps
-    udev
-    xercesc
-    xmlsec
-  ]
-  ++ optionals withX [
-    gdk-pixbuf-xlib
-    gtk3
-    gtkmm3
-    libx11
-    libxext
-    libxinerama
-    libxi
-    libxrender
-    libxrandr
-    libxtst
   ];
 
   postPatch = ''
@@ -152,16 +110,54 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "/bin/sh" "${bash}/bin/sh"
   '';
 
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    autoreconfHook
+    glib # provides glib-genmarshal at build time
+    makeWrapper
+    pkg-config
+    rpcsvc-proto # provides rpcgen at build time
+    udevCheckHook
+  ];
+
+  buildInputs = [
+    fuse3
+    glib
+    icu
+    libdnet
+    libdrm
+    libmspack
+    libtirpc
+    libtool # provides libltdl (libxmlsec dynamic loading)
+    libxcrypt
+    libxml2
+    openssl
+    pam
+    procps
+    udev
+    xercesc
+    xmlsec
+  ]
+  ++ optionals withX [
+    gdk-pixbuf-xlib
+    gtk3
+    gtkmm3
+    libx11
+    libxext
+    libxinerama
+    libxi
+    libxrender
+    libxrandr
+    libxtst
+  ];
+
   configureFlags = [
     "--without-kernel-modules"
     "--with-udev-rules-dir=${placeholder "out"}/lib/udev/rules.d"
     "--with-fuse=fuse3"
   ]
   ++ optional (!withX) "--without-x";
-
-  enableParallelBuilding = true;
-
-  doInstallCheck = true;
 
   preConfigure = ''
     mkdir -p ${placeholder "out"}/lib/udev/rules.d
@@ -189,28 +185,35 @@ stdenv.mkDerivation (finalAttrs: {
       }"
   '';
 
-  strictDeps = true;
+  doInstallCheck = true;
+  enableParallelBuilding = true;
+  sourceRoot = "${finalAttrs.src.name}/open-vm-tools";
 
   meta = {
-    homepage = "https://github.com/vmware/open-vm-tools";
-    changelog = "https://github.com/vmware/open-vm-tools/releases/tag/stable-${finalAttrs.version}";
     description = "Set of tools for VMWare guests to improve host-guest interaction";
+
     longDescription = ''
       A set of services and modules that enable several features in VMware products for
       better management of, and seamless user interactions with, guests.
     '';
+
+    homepage = "https://github.com/vmware/open-vm-tools";
+    changelog = "https://github.com/vmware/open-vm-tools/releases/tag/stable-${finalAttrs.version}";
+
     license = with licenses; [
       gpl2
       lgpl21Only
     ];
+
+    maintainers = with maintainers; [
+      joamaki
+      kjeremy
+    ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
       "aarch64-linux"
-    ];
-    maintainers = with maintainers; [
-      joamaki
-      kjeremy
     ];
   };
 })

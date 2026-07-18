@@ -1,6 +1,6 @@
 {
-  lib,
   config,
+  lib,
   options,
   ...
 }:
@@ -42,42 +42,49 @@ in
     with lib.types;
     {
       enable = mkEnableOption "the `msr` (Model-Specific Registers) kernel module and configure `udev` rules for its devices (usually `/dev/cpu/*/msr`)";
-      owner = mkOption {
-        type = str;
-        default = "root";
-        example = "alice";
-        description = "Owner ${set}";
-      };
+
       group = mkOption {
-        type = str;
         default = defaultGroup;
-        example = "users";
         description = "Group ${set}";
-      };
-      mode = mkOption {
+        example = "users";
         type = str;
-        default = "0640";
-        example = "0660";
-        description = "Mode ${set}";
       };
+
+      mode = mkOption {
+        default = "0640";
+        description = "Mode ${set}";
+        example = "0660";
+        type = str;
+      };
+
+      owner = mkOption {
+        default = "root";
+        description = "Owner ${set}";
+        example = "alice";
+        type = str;
+      };
+
       settings = mkOption {
+        default = { };
+        description = "Parameters for the `msr` kernel module.";
+
         type = submodule {
+          options.allow-writes = mkOption {
+            default = null;
+            description = "Whether to allow writes to MSRs (`\"on\"`) or not (`\"off\"`).";
+
+            type = nullOr (enum [
+              "on"
+              "off"
+            ]);
+          };
+
           freeformType = attrsOf (oneOf [
             bool
             int
             str
           ]);
-          options.allow-writes = mkOption {
-            type = nullOr (enum [
-              "on"
-              "off"
-            ]);
-            default = null;
-            description = "Whether to allow writes to MSRs (`\"on\"`) or not (`\"off\"`).";
-          };
         };
-        default = { };
-        description = "Parameters for the `msr` kernel module.";
       };
     };
 
@@ -95,16 +102,17 @@ in
 
     boot = {
       kernelModules = [ "msr" ];
+
       kernelParams = lib.attrsets.mapAttrsToList msrKernelParam (
         lib.attrsets.filterAttrs (_: value: value != null) cfg.settings
       );
     };
 
-    users.groups.${cfg.group} = mkIf isDefaultGroup { };
-
     services.udev.extraRules = ''
       SUBSYSTEM=="msr", OWNER="${cfg.owner}", GROUP="${cfg.group}", MODE="${cfg.mode}"
     '';
+
+    users.groups.${cfg.group} = mkIf isDefaultGroup { };
   };
 
   meta = {

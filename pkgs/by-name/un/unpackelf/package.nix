@@ -25,13 +25,13 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/osm0sis/unpackelf";
     description = "Tool to unpack Sony ELF kernel format image variants";
+    homepage = "https://github.com/osm0sis/unpackelf";
     # No license specified in the repository
     license = lib.licenses.free;
     sourceProvenance = with lib.sourceTypes; [ fromSource ];
     maintainers = with lib.maintainers; [ ungeskriptet ];
-    teams = [ lib.teams.android ];
     mainProgram = "unpackelf";
+    teams = [ lib.teams.android ];
   };
 })

@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  flask,
-  visitor,
+  buildPythonPackage,
   dominate,
+  flask,
   pytestCheckHook,
   requests,
+  setuptools,
+  visitor,
 }:
 
 buildPythonPackage rec {
   pname = "flask-bootstrap";
   version = "3.3.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mbr";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-TsRSNhrI1jZU/beX3G7LM64IrFagD6AYiluoGzy12jE=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    requests
+  ];
 
   build-system = [ setuptools ];
 
@@ -30,13 +34,6 @@ buildPythonPackage rec {
     dominate
   ];
 
-  pythonImportsCheck = [ "flask_bootstrap" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    requests
-  ];
-
   disabledTests = [
     # requires network access
     "test_bootstrap_version_matches"
@@ -44,9 +41,12 @@ buildPythonPackage rec {
     "test_index"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "flask_bootstrap" ];
+
   meta = {
-    homepage = "https://github.com/mbr/flask-bootstrap";
     description = "Ready-to-use Twitter-bootstrap for use in Flask";
+    homepage = "https://github.com/mbr/flask-bootstrap";
     license = lib.licenses.asl20;
     maintainers = [ ];
   };

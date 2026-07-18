@@ -1,11 +1,11 @@
 {
-  stdenv,
-  buildPecl,
   lib,
-  libiconv,
-  php,
+  stdenv,
   fetchFromGitHub,
+  buildPecl,
+  libiconv,
   pcre2,
+  php,
 }:
 
 buildPecl rec {
@@ -26,15 +26,14 @@ buildPecl rec {
     libiconv
   ];
 
-  internalDeps = with php.extensions; [ session ];
-
-  sourceRoot = "${src.name}/src";
-
   configureFlags = [ "--enable-snuffleupagus" ];
+  internalDeps = with php.extensions; [ session ];
 
   postPhpize = ''
     ./configure --enable-snuffleupagus
   '';
+
+  sourceRoot = "${src.name}/src";
 
   meta = {
     description = "Security module for php7 and php8 - Killing bugclasses and virtual-patching the rest";

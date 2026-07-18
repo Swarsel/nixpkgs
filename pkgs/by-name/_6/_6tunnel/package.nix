@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   autoreconfHook,
 }:
@@ -20,10 +20,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Tunnelling for application that don't speak IPv6";
-    mainProgram = "6tunnel";
     homepage = "https://github.com/wojtekka/6tunnel";
     changelog = "https://github.com/wojtekka/6tunnel/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.gpl2Only;
     platforms = lib.platforms.unix;
+    mainProgram = "6tunnel";
   };
 })

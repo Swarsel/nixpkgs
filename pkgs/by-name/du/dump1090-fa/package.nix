@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   fetchpatch2,
-  pkg-config,
   hackrf,
   libbladeRF,
   libusb1,
   limesuite,
   ncurses,
+  pkg-config,
   rtl-sdr,
   soapysdr-with-plugins,
 }:
@@ -27,8 +27,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fix compilation with GCC 15: https://github.com/flightaware/dump1090/pull/261
     (fetchpatch2 {
-      url = "https://github.com/flightaware/dump1090/commit/93be1da123215e8ac15a0deaffedd480e8899f77.patch?full_index=1";
       hash = "sha256-x+U86b1j+mSpqfG4oFnHEz3cd7/O57ezPUf8yBrLzbc=";
+      url = "https://github.com/flightaware/dump1090/commit/93be1da123215e8ac15a0deaffedd480e8899f77.patch?full_index=1";
     })
   ];
 
@@ -44,8 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional stdenv.hostPlatform.isLinux limesuite;
 
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-implicit-function-declaration -Wno-int-conversion -Wno-unknown-warning-option";
-
   buildFlags = [
     "DUMP1090_VERSION=${finalAttrs.version}"
     "showconfig"
@@ -54,6 +52,7 @@ stdenv.mkDerivation (finalAttrs: {
     "faup1090"
   ];
 
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-implicit-function-declaration -Wno-int-conversion -Wno-unknown-warning-option";
   doCheck = true;
 
   installPhase = ''
@@ -70,11 +69,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Simple Mode S decoder for RTLSDR devices";
     homepage = "https://github.com/flightaware/dump1090";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       earldouglas
       aciceri
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "dump1090";
   };
 })

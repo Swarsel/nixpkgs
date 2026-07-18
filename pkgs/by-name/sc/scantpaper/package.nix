@@ -1,24 +1,22 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
-  wrapGAppsHook3,
-
+  djvulibre,
+  ghostscript,
   # libs
   gobject-introspection,
   goocanvas_2,
-  unpaper,
-  djvulibre,
+  imagemagickBig,
   libtiff,
+  poppler-utils,
+  python3,
   qpdf,
-
+  tesseract,
+  unpaper,
+  wrapGAppsHook3,
   # tests
   writableTmpDirAsHomeHook,
   xvfb,
-  imagemagickBig,
-  poppler-utils,
-  ghostscript,
-  tesseract,
 }:
 
 let
@@ -42,38 +40,13 @@ python3.pkgs.buildPythonApplication rec {
     hash = "sha256-6zjIEwDHdOIAIucV4T/zY10F80nQNOgnRkA+i2n7Sng=";
   };
 
-  pyproject = true;
-  strictDeps = true;
-  __structuredAttrs = true;
-
-  dontWrapGApps = true;
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
-
   postPatch = ''
     # disable formatting check, which breaks on Black version change
     substituteInPlace pyproject.toml \
       --replace "--black" ""
   '';
 
-  build-system = with python3.pkgs; [
-    setuptools
-  ];
-
-  dependencies =
-    (with python3.pkgs; [
-      img2pdf
-      ocrmypdf
-      pycairo
-      pygobject3
-      sane
-      tesserocr
-      python-iso639
-    ])
-    ++ [
-      goocanvas_2
-    ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     wrapGAppsHook3
@@ -97,13 +70,6 @@ python3.pkgs.buildPythonApplication rec {
     ]
     ++ runtimeExecDeps;
 
-  makeWrapperArgs = [
-    "--prefix"
-    "PATH"
-    ":"
-    (lib.makeBinPath runtimeExecDeps)
-  ];
-
   postInstall = ''
     install -Dm644 \
       icons/hicolor/scalable/apps/scantpaper.svg \
@@ -114,10 +80,45 @@ python3.pkgs.buildPythonApplication rec {
       $out/share/applications/org.scantpaper.desktop
   '';
 
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
+  __structuredAttrs = true;
+
+  build-system = with python3.pkgs; [
+    setuptools
+  ];
+
+  dependencies =
+    (with python3.pkgs; [
+      img2pdf
+      ocrmypdf
+      pycairo
+      pygobject3
+      sane
+      tesserocr
+      python-iso639
+    ])
+    ++ [
+      goocanvas_2
+    ];
+
+  dontWrapGApps = true;
+
+  makeWrapperArgs = [
+    "--prefix"
+    "PATH"
+    ":"
+    (lib.makeBinPath runtimeExecDeps)
+  ];
+
+  pyproject = true;
+
   meta = with lib; {
-    changelog = "https://github.com/carygravel/scantpaper/blob/${src.tag}/changelog.md";
     description = "GUI to produce PDFs or DjVus from scanned documents";
     homepage = "https://github.com/carygravel/scantpaper";
+    changelog = "https://github.com/carygravel/scantpaper/blob/${src.tag}/changelog.md";
     license = licenses.gpl3Only;
     maintainers = with maintainers; [ euxane ];
     platforms = platforms.linux;

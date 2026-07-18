@@ -1,15 +1,14 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   docopt,
+  fetchPypi,
   requests,
 }:
 
 buildPythonPackage rec {
-  version = "2.0.10";
-  format = "setuptools";
   pname = "mailchimp";
+  version = "2.0.10";
 
   src = fetchPypi {
     inherit pname version;
@@ -18,6 +17,8 @@ buildPythonPackage rec {
 
   buildInputs = [ docopt ];
   propagatedBuildInputs = [ requests ];
+  format = "setuptools";
+
   patchPhase = ''
     sed -i 's/==/>=/' setup.py
   '';

@@ -18,8 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  enableParallelBuilding = true;
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
   nativeBuildInputs = [ autoreconfHook ];
 
   configureFlags = [
@@ -27,14 +25,16 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  enableParallelBuilding = true;
   enableParallelChecking = true;
 
   meta = {
     description = "Tiny Racket for Scripting";
-    mainProgram = "zuo";
     homepage = "https://github.com/racket/zuo";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.RossSmyth ];
+    platforms = lib.platforms.all;
+    mainProgram = "zuo";
   };
 })

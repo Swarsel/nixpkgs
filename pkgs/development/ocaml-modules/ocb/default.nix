@@ -16,8 +16,8 @@ buildDunePackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/ocamlpro/ocb";
     description = "OCaml library for SVG badge generation";
+    homepage = "https://github.com/ocamlpro/ocb";
     changelog = "https://raw.githubusercontent.com/ocamlpro/ocb/${finalAttrs.version}/CHANGES.md";
     license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ redianthus ];

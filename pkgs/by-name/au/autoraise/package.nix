@@ -3,10 +3,9 @@
   stdenv,
   fetchFromGitHub,
   apple-sdk,
-
+  enableAlternativeTaskSwitcher ? false,
   enableExperimentalFocusFirst ? false,
   enableOldActivationMethod ? false,
-  enableAlternativeTaskSwitcher ? false,
 }:
 stdenv.mkDerivation rec {
   pname = "autoraise";
@@ -47,7 +46,7 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/sbmpost/AutoRaise";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ nickhu ];
-    mainProgram = "autoraise";
     platforms = lib.platforms.darwin;
+    mainProgram = "autoraise";
   };
 }

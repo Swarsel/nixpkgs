@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  libgcrypt,
-  zlib,
   bzip2,
+  libgcrypt,
   nixosTests,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     libgcrypt # provides libgcrypt.m4
@@ -36,8 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
     bzip2
   ];
-
-  strictDeps = true;
 
   configureFlags = [
     # Load data from proper global paths
@@ -57,6 +57,11 @@ stdenv.mkDerivation (finalAttrs: {
     "x_ac_cv_check_fifo_recvfd=no"
   ];
 
+  postInstall = ''
+    # rmdir will notify us if anything new is installed to the directories.
+    rmdir "$out"/{var{/{lib,log}{/munge,},},etc/munge}
+  '';
+
   installFlags = [
     "localstatedir=${placeholder "out"}/var"
     "runstatedir=${placeholder "out"}/run"
@@ -64,25 +69,23 @@ stdenv.mkDerivation (finalAttrs: {
     "sysconfigdir=${placeholder "out"}/etc/default"
   ];
 
-  postInstall = ''
-    # rmdir will notify us if anything new is installed to the directories.
-    rmdir "$out"/{var{/{lib,log}{/munge,},},etc/munge}
-  '';
-
   passthru.tests.nixos = nixosTests.munge;
 
   meta = {
     description = ''
       An authentication service for creating and validating credentials
     '';
+
     homepage = "https://github.com/dun/munge";
+
     license = [
       # MUNGE
       lib.licenses.gpl3Plus
       # libmunge
       lib.licenses.lgpl3Plus
     ];
-    platforms = lib.platforms.unix;
+
     maintainers = [ lib.maintainers.rickynils ];
+    platforms = lib.platforms.unix;
   };
 })

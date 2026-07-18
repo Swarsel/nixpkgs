@@ -13,19 +13,12 @@
 buildPythonPackage rec {
   pname = "pyro4";
   version = "4.82";
-  format = "setuptools";
-
-  # No support Python >= 3.11
-  # https://github.com/irmen/Pyro4/issues/246
-  disabled = pythonAtLeast "3.11";
 
   src = fetchPypi {
-    pname = "Pyro4";
     inherit version;
     hash = "sha256-UR9bCATpLdd9wzrfnJR3h+P56cWpaxIWLwVXp8TOIfs=";
+    pname = "Pyro4";
   };
-
-  propagatedBuildInputs = [ serpent ];
 
   buildInputs = [
     dill
@@ -33,12 +26,19 @@ buildPythonPackage rec {
     msgpack
   ];
 
+  propagatedBuildInputs = [ serpent ];
   nativeCheckInputs = [ pytestCheckHook ];
 
   # add testsupport.py to PATH
   preCheck = ''
     PYTHONPATH=tests/PyroTests:$PYTHONPATH
   '';
+
+  # otherwise the tests hang the build
+  __darwinAllowLocalNetworking = true;
+  # No support Python >= 3.11
+  # https://github.com/irmen/Pyro4/issues/246
+  disabled = pythonAtLeast "3.11";
 
   disabledTestPaths = [
     # ignore network related tests, which fail in sandbox
@@ -51,9 +51,7 @@ buildPythonPackage rec {
     "GetIP"
   ];
 
-  # otherwise the tests hang the build
-  __darwinAllowLocalNetworking = true;
-
+  format = "setuptools";
   pythonImportsCheck = [ "Pyro4" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,11 +16,9 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
-
-  subPackages = [ "cmd/imgpkg" ];
-
   env.CGO_ENABLED = "0";
   ldflags = [ "-X=carvel.dev/imgpkg/pkg/imgpkg/cmd.Version=${finalAttrs.version}" ];
+  subPackages = [ "cmd/imgpkg" ];
 
   meta = {
     description = "Store application configuration files in Docker/OCI registries";

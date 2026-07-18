@@ -1,30 +1,17 @@
 {
   lib,
-  python3,
   fetchPypi,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "distgen";
   version = "2.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-EDRCGf4laHZs//E3w5FxlkuTfbVLxnaGmQF/xjwaKDQ=";
   };
-
-  build-system = with python3.pkgs; [
-    setuptools
-    argparse-manpage
-  ];
-
-  dependencies = with python3.pkgs; [
-    distro
-    jinja2
-    six
-    pyyaml
-  ];
 
   nativeCheckInputs = with python3.pkgs; [
     pytest
@@ -39,11 +26,25 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     runHook postCheck
   '';
 
+  build-system = with python3.pkgs; [
+    setuptools
+    argparse-manpage
+  ];
+
+  dependencies = with python3.pkgs; [
+    distro
+    jinja2
+    six
+    pyyaml
+  ];
+
+  pyproject = true;
+
   meta = {
     description = "Templating system/generator for distributions";
-    mainProgram = "dg";
-    license = lib.licenses.gpl2Plus;
     homepage = "https://distgen.readthedocs.io";
+    license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ bachp ];
+    mainProgram = "dg";
   };
 })

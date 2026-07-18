@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -16,9 +16,8 @@ buildGoModule {
     hash = "sha256-5Rmelgiqs7YkdDBZNXZW4sBf0l/bwiq0xxB2tWpm1s8=";
   };
 
-  vendorHash = "sha256-r2wzVkPTsxWdVPFLO84tJgl3VJonoU7kNKLOBgHHdF8=";
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-r2wzVkPTsxWdVPFLO84tJgl3VJonoU7kNKLOBgHHdF8=";
 
   postInstall = ''
     # can't do "mv TMSU tmsu" on case-insensitive filesystems
@@ -31,14 +30,16 @@ buildGoModule {
   '';
 
   meta = {
-    homepage = "https://www.tmsu.org";
     description = "Tool for tagging your files using a virtual filesystem";
+    homepage = "https://www.tmsu.org";
+    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       luftmensch-luftmensch
       pSub
     ];
-    mainProgram = "tmsu";
-    license = lib.licenses.gpl3Plus;
+
     platforms = lib.platforms.unix;
+    mainProgram = "tmsu";
   };
 }

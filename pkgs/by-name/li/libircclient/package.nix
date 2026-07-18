@@ -5,8 +5,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.10";
   pname = "libircclient";
+  version = "1.10";
 
   src = fetchurl {
     url = "mirror://sourceforge/libircclient/libircclient/${finalAttrs.version}/libircclient-${finalAttrs.version}.tar.gz";
@@ -18,14 +18,14 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
-  configureFlags = [ "--enable-shared" ];
-
   postPatch = ''
     substituteInPlace src/Makefile.in \
       --replace "@prefix@/include" "@prefix@/include/libircclient" \
       --replace "@libdir@"         "@prefix@/lib" \
       --replace "cp "              "install "
   '';
+
+  configureFlags = [ "--enable-shared" ];
 
   meta = {
     description = "Small but extremely powerful library which implements the client IRC protocol";

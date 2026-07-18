@@ -1,10 +1,9 @@
 {
   lib,
   stdenv,
-  core,
-
   bash,
   bat,
+  core,
   fish,
   getconf,
   makeWrapper,
@@ -20,8 +19,8 @@ let
   ];
 in
 {
-  name,
   dependencies,
+  name,
   meta ? { },
   # Config for the `shellInit` passthru (a `shell -> string`
   # function returning the shell-specific init snippet for the bat-extras
@@ -34,24 +33,20 @@ stdenv.mkDerivation (
   finalAttrs:
   cleanArgs args
   // {
-    pname = name;
     inherit (core) version;
-
+    pname = name;
     src = core;
-
-    nativeBuildInputs = [ makeWrapper ];
-    # Make the dependencies available to the tests.
-    buildInputs = dependencies;
 
     # Patch shebangs now because our tests rely on them
     postPatch = (args.postPatch or "") + ''
       patchShebangs --host bin/${name}
     '';
 
-    dontConfigure = true;
-    dontBuild = true; # we've already built it
-
+    nativeBuildInputs = [ makeWrapper ];
+    # Make the dependencies available to the tests.
+    buildInputs = dependencies;
     doCheck = args.doCheck or true;
+
     nativeCheckInputs = [
       bat
       bash
@@ -60,6 +55,7 @@ stdenv.mkDerivation (
       zsh
     ]
     ++ (lib.optionals stdenv.hostPlatform.isDarwin [ getconf ]);
+
     checkPhase = ''
       runHook preCheck
       bash ./test.sh --compiled --suite ${name} --verbose --snapshot:show
@@ -79,6 +75,8 @@ stdenv.mkDerivation (
       runHook postInstall
     '';
 
+    dontBuild = true; # we've already built it
+    dontConfigure = true;
     # We have already patched
     dontPatchShebangs = true;
 
@@ -106,9 +104,9 @@ stdenv.mkDerivation (
             ""
           else
             initScript {
-              program = finalAttrs.finalPackage;
               inherit shell;
               flags = shellInit.flags or [ ];
+              program = finalAttrs.finalPackage;
             };
       };
 

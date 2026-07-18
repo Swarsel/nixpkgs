@@ -1,23 +1,23 @@
 {
-  fetchFromGitLab,
   lib,
+  fetchFromGitLab,
+  cage,
+  dbus, # Since 0.0.3, mutter compositors run with their own DBUS sessions
+  kdePackages,
   meson,
+  mutter,
   ninja,
+  phoc,
   python3,
   weston,
   xauth,
   xwayland,
-  withCage ? false,
-  cage,
-  withKwin ? false,
-  kdePackages,
-  withMutter ? false,
-  mutter,
-  withDbus ? withMutter,
-  phoc,
-  withPhoc ? false,
-  dbus, # Since 0.0.3, mutter compositors run with their own DBUS sessions
   xwayland-run,
+  withCage ? false,
+  withDbus ? withMutter,
+  withKwin ? false,
+  withMutter ? false,
+  withPhoc ? false,
 }:
 let
   compositors = [
@@ -34,14 +34,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   version = "0.0.6";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "ofourdan";
     repo = "xwayland-run";
     rev = finalAttrs.version;
     hash = "sha256-zrm8uEy7DduOYPrpHrynZgYwEkZr3pbDsJHdWKOUzY0=";
+    domain = "gitlab.freedesktop.org";
   };
-
-  pyproject = false;
 
   outputs = [
     "out"
@@ -75,6 +73,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       }
   '';
 
+  pyproject = false;
+
   passthru.tests = {
     build = xwayland-run.override {
       withCage = true;
@@ -85,9 +85,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://gitlab.freedesktop.org/ofourdan/xwayland-run/-/releases/${finalAttrs.src.rev}";
     description = "Set of small utilities revolving around running Xwayland and various Wayland compositor headless";
     homepage = "https://gitlab.freedesktop.org/ofourdan/xwayland-run";
+    changelog = "https://gitlab.freedesktop.org/ofourdan/xwayland-run/-/releases/${finalAttrs.src.rev}";
     license = lib.licenses.gpl2Only;
     maintainers = [ ];
     platforms = lib.platforms.linux;

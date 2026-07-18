@@ -1,24 +1,20 @@
 {
   lib,
   fetchFromGitHub,
-  buildHomeAssistantComponent,
-
+  aiohttp,
   # dependencies
   aiomqtt,
+  buildHomeAssistantComponent,
   colorlog,
+  home-assistant,
   loguru,
-  websocket-client,
-  websockets,
-
   # tests
   pytestCheckHook,
-  aiohttp,
-  home-assistant,
+  websocket-client,
+  websockets,
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "danielcherubini";
-  domain = "elegoo_printer";
   version = "2.10.2";
 
   src = fetchFromGitHub {
@@ -28,6 +24,12 @@ buildHomeAssistantComponent rec {
     hash = "sha256-+bL43ACj/8dI7dNVNQ+3n2WvDaYhuh3tiwX98yXmTm4=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    aiohttp
+    home-assistant
+  ];
+
   dependencies = [
     aiomqtt
     colorlog
@@ -36,17 +38,15 @@ buildHomeAssistantComponent rec {
     websockets
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    aiohttp
-    home-assistant
-  ];
+  domain = "elegoo_printer";
+  owner = "danielcherubini";
 
   meta = {
-    changelog = "https://github.com/danielcherubini/elegoo-homeassistant/releases/tag/v${version}";
     description = "Home Assistant integration for Elegoo 3D printers using the SDCP protocol";
     homepage = "https://github.com/danielcherubini/elegoo-homeassistant";
+    changelog = "https://github.com/danielcherubini/elegoo-homeassistant/releases/tag/v${version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       typedrat
     ];

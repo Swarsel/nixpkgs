@@ -21,7 +21,6 @@
 buildPythonPackage rec {
   pname = "cheroot";
   version = "11.1.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -31,12 +30,6 @@ buildPythonPackage rec {
   nativeBuildInputs = [
     setuptools
     setuptools-scm
-  ];
-
-  dependencies = [
-    jaraco-functools
-    more-itertools
-    six
   ];
 
   nativeCheckInputs = [
@@ -61,14 +54,13 @@ buildPythonPackage rec {
     rm pytest.ini
   '';
 
-  disabledTests = [
-    "tls" # touches network
-    "peercreds_unix_sock" # test urls no longer allowed
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    "http_over_https_error"
-    "bind_addr_unix"
-    "test_ssl_env"
+  # Some of the tests use localhost networking.
+  __darwinAllowLocalNetworking = true;
+
+  dependencies = [
+    jaraco-functools
+    more-itertools
+    six
   ];
 
   disabledTestPaths = [
@@ -79,16 +71,24 @@ buildPythonPackage rec {
     "cheroot/test/test_ssl.py"
   ];
 
-  pythonImportsCheck = [ "cheroot" ];
+  disabledTests = [
+    "tls" # touches network
+    "peercreds_unix_sock" # test urls no longer allowed
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    "http_over_https_error"
+    "bind_addr_unix"
+    "test_ssl_env"
+  ];
 
-  # Some of the tests use localhost networking.
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+  pythonImportsCheck = [ "cheroot" ];
 
   meta = {
     description = "High-performance, pure-Python HTTP";
-    mainProgram = "cheroot";
     homepage = "https://github.com/cherrypy/cheroot";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "cheroot";
   };
 }

@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  numactl,
-  ncurses,
   check,
+  ncurses,
   nix-update-script,
+  numactl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,23 +31,23 @@ stdenv.mkDerivation (finalAttrs: {
     ncurses
   ];
 
-  nativeCheckInputs = [ check ];
-
   doCheck = true;
-
+  nativeCheckInputs = [ check ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Tool for runtime memory locality characterization and analysis of processes and threads on a NUMA system";
-    mainProgram = "numatop";
     homepage = "https://www.intel.com/content/www/us/en/developer/topic-technology/open/numatop/overview.html";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ VZstless ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
       "powerpc64-linux"
       "powerpc64le-linux"
     ];
+
+    mainProgram = "numatop";
   };
 })

@@ -1,19 +1,18 @@
 {
   lib,
   stdenv,
-  wlroots,
-  pkg-config,
-  wayland-scanner,
   libxkbcommon,
+  nixosTests,
   pixman,
+  pkg-config,
   udev,
   wayland,
   wayland-protocols,
-  nixosTests,
+  wayland-scanner,
+  wlroots,
 }:
 
 stdenv.mkDerivation {
-  pname = "tinywl";
   inherit (wlroots)
     version
     src
@@ -21,10 +20,13 @@ stdenv.mkDerivation {
     postPatch
     ;
 
+  pname = "tinywl";
+
   nativeBuildInputs = [
     pkg-config
     wayland-scanner
   ];
+
   buildInputs = [
     libxkbcommon
     pixman
@@ -49,11 +51,11 @@ stdenv.mkDerivation {
   passthru.tests = { inherit (nixosTests) tinywl; };
 
   meta = {
-    homepage = "https://gitlab.freedesktop.org/wlroots/wlroots/tree/master/tinywl";
-    description = ''A "minimum viable product" Wayland compositor based on wlroots'';
-    maintainers = with lib.maintainers; [ qyliss ] ++ wlroots.meta.maintainers;
-    license = lib.licenses.cc0;
     inherit (wlroots.meta) platforms;
+    description = ''A "minimum viable product" Wayland compositor based on wlroots'';
+    homepage = "https://gitlab.freedesktop.org/wlroots/wlroots/tree/master/tinywl";
+    license = lib.licenses.cc0;
+    maintainers = with lib.maintainers; [ qyliss ] ++ wlroots.meta.maintainers;
     mainProgram = "tinywl";
   };
 }

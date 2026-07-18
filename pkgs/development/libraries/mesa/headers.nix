@@ -13,20 +13,18 @@ let
   ];
 in
 stdenv.mkDerivation rec {
+  inherit (common) meta;
   pname = "mesa-gl-headers";
-
   # These are a bigger rebuild and don't change often, so keep them separate.
   version = "25.1.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "mesa";
     repo = "mesa";
     rev = "mesa-${version}";
     hash = "sha256-UlI+6OMUj5F6uVAw+Mg2wOZrjfdRq73d1qufaXVI/go";
+    domain = "gitlab.freedesktop.org";
   };
-
-  dontBuild = true;
 
   installPhase = ''
     for header in ${toString headers}; do
@@ -34,7 +32,6 @@ stdenv.mkDerivation rec {
     done
   '';
 
+  dontBuild = true;
   passthru = { inherit headers; };
-
-  inherit (common) meta;
 }

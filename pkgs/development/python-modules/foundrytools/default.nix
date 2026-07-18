@@ -1,26 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   afdko,
+  buildPythonPackage,
   cffsubr,
   defcon,
   dehinter,
   fonttools,
+  # build-system
+  setuptools,
   ttfautohint-py,
+  ufo-extractor,
   ufo2ft,
   ufolib2,
-  ufo-extractor,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "foundrytools";
   version = "0.1.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ftCLI";
@@ -28,6 +25,9 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-E0sJ/shudZTvkB8be5KsPJDmCoytv2notrrNT9nDF0I=";
   };
+
+  # No tests
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -45,14 +45,14 @@ buildPythonPackage (finalAttrs: {
     ufolib2
   ];
 
-  # No tests
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "Library for working with fonts in Python";
     homepage = "https://github.com/ftCLI/FoundryTools";
     changelog = "https://github.com/ftCLI/FoundryTools/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       qb114514
     ];

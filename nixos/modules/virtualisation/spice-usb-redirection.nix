@@ -1,13 +1,13 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 {
   options.virtualisation.spiceUSBRedirection.enable = lib.mkOption {
-    type = lib.types.bool;
     default = false;
+
     description = ''
       Install the SPICE USB redirection helper with setuid
       privileges. This allows unprivileged users to pass USB devices
@@ -15,14 +15,17 @@
       remote. Note that this allows users arbitrary access to USB
       devices.
     '';
+
+    type = lib.types.bool;
   };
 
   config = lib.mkIf config.virtualisation.spiceUSBRedirection.enable {
     environment.systemPackages = [ pkgs.spice-gtk ]; # For polkit actions
+
     security.wrappers.spice-client-glib-usb-acl-helper = {
-      owner = "root";
-      group = "root";
       capabilities = "cap_fowner+ep";
+      group = "root";
+      owner = "root";
       source = "${pkgs.spice-gtk}/bin/spice-client-glib-usb-acl-helper";
     };
   };

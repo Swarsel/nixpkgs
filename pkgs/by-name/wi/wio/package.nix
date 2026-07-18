@@ -5,17 +5,17 @@
   alacritty,
   cage,
   cairo,
+  libgbm,
   libxkbcommon,
   makeWrapper,
-  libgbm,
   meson,
   ninja,
   pkg-config,
-  wayland-scanner,
   udev,
   unstableGitUpdater,
   wayland,
   wayland-protocols,
+  wayland-scanner,
   wlroots_0_19,
   xwayland,
 }:
@@ -30,6 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-Ol9/dMYg1L+3jGFMpKsAPUAA7hkxu/v88JrI3v+ozAM=";
   };
+
+  strictDeps = false; # why is it so hard?
 
   nativeBuildInputs = [
     makeWrapper
@@ -50,8 +52,6 @@ stdenv.mkDerivation (finalAttrs: {
     xwayland
   ];
 
-  strictDeps = false; # why is it so hard?
-
   env.NIX_CFLAGS_COMPILE = "-Wno-error=maybe-uninitialized";
 
   postInstall = ''
@@ -70,15 +70,17 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/Rubo3/wio";
+    inherit (wayland.meta) platforms;
     description = "Wayland compositor similar to Plan 9's rio";
+
     longDescription = ''
       Wio is a Wayland compositor for Linux and FreeBSD which has a similar look
       and feel to plan9's rio.
     '';
+
+    homepage = "https://github.com/Rubo3/wio";
     license = with lib.licenses; [ bsd3 ];
-    mainProgram = "wio";
     maintainers = [ ];
-    inherit (wayland.meta) platforms;
+    mainProgram = "wio";
   };
 })

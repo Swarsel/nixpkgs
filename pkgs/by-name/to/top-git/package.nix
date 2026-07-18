@@ -17,12 +17,12 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-FMrkoJwgBkFvi3tewtqu+b9sRuNPCNCG6BrcnAbx0sk=";
   };
 
-  makeFlags = [ "prefix=${placeholder "out"}" ];
-
   nativeBuildInputs = [
     perl
     git
   ];
+
+  makeFlags = [ "prefix=${placeholder "out"}" ];
 
   postInstall = ''
     install -Dm644 README -t "$out/share/doc/${pname}-${version}/"
@@ -31,10 +31,10 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "TopGit manages large amount of interdependent topic branches";
-    mainProgram = "tg";
     homepage = "https://github.com/mackyle/topgit";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "tg";
   };
 }

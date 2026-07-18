@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  fetchFromBitbucket,
-  cmake,
   blas,
+  cmake,
+  fetchFromBitbucket,
   lapack-reference,
 }:
 

@@ -1,18 +1,17 @@
 {
+  lib,
   _cuda,
   backendStdenv,
   buildRedist,
-  setupCudaHook,
+  cccl,
   cudaAtLeast,
   cudaOlder,
-  cccl,
   glibc,
-  lib,
   libnvvm,
   makeBinaryWrapper,
+  setupCudaHook,
 }:
 buildRedist (finalAttrs: {
-  redistName = "cuda";
   pname = "cuda_nvcc";
 
   # NOTE: We restrict cuda_nvcc to a single output to avoid breaking consumers which expect NVCC to be within a single
@@ -20,9 +19,6 @@ buildRedist (finalAttrs: {
   outputs = [
     "out"
   ];
-
-  # The nvcc and cicc binaries contain hard-coded references to /usr
-  allowFHSReferences = true;
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -37,15 +33,11 @@ buildRedist (finalAttrs: {
   # - `?=` for conditional assignment,
   # - `+=` to "prepend",
   # - `=+` to "append".
-
   # Cf. https://web.archive.org/web/20220912081901/https://developer.download.nvidia.com/compute/DevZone/docs/html/C/doc/nvcc.pdf
-
   # We set all variables with the lowest priority (=+), but we do force
   # nvcc to use the fixed backend toolchain. Cf. comments in
   # backend-stdenv.nix
-
   # As an example, here's the nvcc.profile for CUDA 11.8-12.4 (yes, that is a leading newline):
-
   #
   # TOP              = $(_HERE_)/..
   #
@@ -60,9 +52,7 @@ buildRedist (finalAttrs: {
   #
   # CUDAFE_FLAGS    +=
   # PTXAS_FLAGS     +=
-
   # And here's the nvcc.profile for CUDA 12.5:
-
   #
   # TOP              = $(_HERE_)/..
   #
@@ -79,7 +69,6 @@ buildRedist (finalAttrs: {
   #
   # CUDAFE_FLAGS    +=
   # PTXAS_FLAGS     +=
-
   postInstall =
     let
       # TODO: Should we also patch the LIBRARIES line's use of $(TOP)/$(_TARGET_DIR_)?
@@ -234,6 +223,9 @@ buildRedist (finalAttrs: {
       ''
     );
 
+  # The nvcc and cicc binaries contain hard-coded references to /usr
+  allowFHSReferences = true;
+
   brokenAssertions = [
     # TODO(@connorbaker): Build fails on x86 when using pkgsLLVM.
     #  .../include/crt/host_defines.h:67:2:
@@ -246,10 +238,12 @@ buildRedist (finalAttrs: {
     #
     #  # --error 0x1 --
     {
-      message = "cannot use libc++ on x86_64-linux";
       assertion = backendStdenv.hostNixSystem == "x86_64-linux" -> backendStdenv.cc.libcxx == null;
+      message = "cannot use libc++ on x86_64-linux";
     }
   ];
+
+  redistName = "cuda";
 
   meta = {
     description = "CUDA compiler driver";

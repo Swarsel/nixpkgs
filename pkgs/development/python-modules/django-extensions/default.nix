@@ -1,24 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   aiosmtpd,
+  buildPythonPackage,
   django,
-
   # tests
   factory-boy,
   mock,
   pip,
   postgresql,
   pygments,
-  pytestCheckHook,
   pytest-cov-stub,
   pytest-django,
+  pytestCheckHook,
+  # build-system
+  setuptools,
   shortuuid,
   vobject,
   werkzeug,
@@ -27,7 +24,6 @@
 buildPythonPackage rec {
   pname = "django-extensions";
   version = "4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "django-extensions";
@@ -41,15 +37,6 @@ buildPythonPackage rec {
     # see https://github.com/django-extensions/django-extensions/pull/1979
     ./django_6-compat.diff
   ];
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    aiosmtpd
-    django
-  ];
-
-  __darwinAllowLocalNetworking = true;
 
   nativeCheckInputs = [
     factory-boy
@@ -65,15 +52,25 @@ buildPythonPackage rec {
     werkzeug
   ];
 
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    aiosmtpd
+    django
+  ];
+
   disabledTestPaths = [
     # https://github.com/django-extensions/django-extensions/issues/1871
     "tests/test_dumpscript.py"
   ];
 
+  pyproject = true;
+
   meta = {
-    changelog = "https://github.com/django-extensions/django-extensions/releases/tag/${src.tag}";
     description = "Collection of custom extensions for the Django Framework";
     homepage = "https://github.com/django-extensions/django-extensions";
+    changelog = "https://github.com/django-extensions/django-extensions/releases/tag/${src.tag}";
     license = lib.licenses.mit;
   };
 }

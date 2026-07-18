@@ -1,7 +1,7 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
 }:
 let
   version = "2016-01-26";
@@ -25,14 +25,13 @@ let
       "15y6r5w306pcq4g1rn9f7vf70f3a7qhq237ngaf0wxh2nr0aamxp";
 in
 stdenv.mkDerivation {
+  inherit version;
+  pname = "sundtek";
+
   src = fetchurl {
     url = "http://www.sundtek.de/media/netinst/${platform}/installer.tar.gz";
     sha256 = sha256;
   };
-  pname = "sundtek";
-  inherit version;
-
-  sourceRoot = ".";
 
   installPhase = ''
     cp -r opt $out
@@ -50,13 +49,14 @@ stdenv.mkDerivation {
   '';
 
   preferLocalBuild = true;
+  sourceRoot = ".";
 
   meta = {
     description = "Sundtek MediaTV driver";
-    maintainers = [ lib.maintainers.simonvandel ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    platforms = lib.platforms.unix;
-    license = lib.licenses.unfree;
     homepage = "https://support.sundtek.com/index.php/topic,1573.0.html";
+    license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = [ lib.maintainers.simonvandel ];
+    platforms = lib.platforms.unix;
   };
 }

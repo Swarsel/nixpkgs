@@ -1,19 +1,17 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   installShellFiles,
   jq,
   libarchive,
   p7zip,
+  stdenvNoCC,
   versionCheckHook,
   zsh,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "mas";
   version = "7.0.0";
-
-  __structuredAttrs = true;
 
   src =
     let
@@ -29,28 +27,17 @@ stdenvNoCC.mkDerivation (finalAttrs: {
           or (throw "Unsupported system: ${stdenvNoCC.hostPlatform.system}");
     in
     fetchurl {
-      url = "https://github.com/mas-cli/mas/releases/download/v${finalAttrs.version}/mas-${finalAttrs.version}-${sources.arch}.pkg";
       inherit (sources) hash;
+      url = "https://github.com/mas-cli/mas/releases/download/v${finalAttrs.version}/mas-${finalAttrs.version}-${sources.arch}.pkg";
     };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     installShellFiles
     libarchive
     p7zip
   ];
-
-  unpackPhase = ''
-    runHook preUnpack
-
-    7z x $src
-    bsdtar -xf Payload~
-
-    runHook postUnpack
-  '';
-
-  dontConfigure = true;
-  dontBuild = true;
-  strictDeps = true;
 
   installPhase = ''
     runHook preInstall
@@ -69,19 +56,34 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+  dontBuild = true;
+  dontConfigure = true;
+
+  unpackPhase = ''
+    runHook preUnpack
+
+    7z x $src
+    bsdtar -xf Payload~
+
+    runHook postUnpack
+  '';
 
   meta = {
     description = "Mac App Store command line interface";
     homepage = "https://github.com/mas-cli/mas";
     license = lib.licenses.mit;
-    mainProgram = "mas";
+
     maintainers = with lib.maintainers; [
       zachcoyle
     ];
+
     platforms = [
       "aarch64-darwin"
     ];
+
+    mainProgram = "mas";
   };
 })

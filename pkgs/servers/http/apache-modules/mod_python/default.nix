@@ -1,12 +1,12 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   apacheHttpd,
   ensureNewerSourcesForZipFilesHook,
-  fetchFromGitHub,
-  lib,
   libintl,
   nix-update-script,
   python3,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,11 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   patches = [ ./install.patch ];
-
-  installFlags = [
-    "LIBEXECDIR=$(out)/modules"
-    "BINDIR=$(out)/bin"
-  ];
 
   nativeBuildInputs = [
     ensureNewerSourcesForZipFilesHook
@@ -45,18 +40,23 @@ stdenv.mkDerivation (finalAttrs: {
     libintl
   ];
 
+  installFlags = [
+    "LIBEXECDIR=$(out)/modules"
+    "BINDIR=$(out)/bin"
+  ];
+
   passthru = {
     inherit apacheHttpd;
     updateScript = nix-update-script { };
   };
 
   meta = {
+    description = "Apache module that embeds the Python interpreter within the server";
     homepage = "https://modpython.org/";
     changelog = "https://github.com/grisha/mod_python/blob/master/NEWS";
-    description = "Apache module that embeds the Python interpreter within the server";
-    mainProgram = "mod_python";
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "mod_python";
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

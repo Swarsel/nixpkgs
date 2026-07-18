@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  ninja,
-  gfortran,
   blas,
-  lapack,
+  cmake,
   eigen,
-  useMpi ? false,
+  gfortran,
+  igraph,
+  lapack,
   mpi,
   mpiCheckPhaseHook,
-  igraph,
+  ninja,
   useAccel ? false, # use Accelerate framework on darwin
+  useMpi ? false,
 }:
 
 # MPI version can only be built with LP64 interface.
@@ -36,6 +36,7 @@ stdenv.mkDerivation (finalAttrs: {
     gfortran
     ninja
   ];
+
   buildInputs = [
     eigen
   ]
@@ -47,25 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   )
   ++ lib.optional useMpi mpi;
-
-  nativeCheckInputs = lib.optional useMpi mpiCheckPhaseHook;
-  checkInputs =
-    # work around for `ld: file not found: @rpath/libquadmath.0.dylib`
-    # which occurs due to an mpi test linking with `-flat_namespace`
-    # can remove once `-flat_namespace` is removed or
-    # https://github.com/NixOS/nixpkgs/pull/370526 is merged
-    lib.optional (useMpi && stdenv.hostPlatform.isDarwin) gfortran.cc;
-
-  # a couple tests fail when run in parallel
-  doCheck = true;
-  enableParallelChecking = false;
-
-  env = lib.optionalAttrs useAccel {
-    # Without these flags some tests will fail / segfault when using Accelerate
-    # framework. They were pulled from the CI Workflow
-    # https://github.com/opencollab/arpack-ng/blob/804fa3149a0f773064198a8e883bd021832157ca/.github/workflows/jobs.yml#L184-L192
-    FFLAGS = "-ff2c -fno-second-underscore";
-  };
 
   cmakeFlags = [
     (lib.cmakeBool "BUILD_SHARED_LIBS" stdenv.hostPlatform.hasSharedLibraries)
@@ -80,21 +62,44 @@ stdenv.mkDerivation (finalAttrs: {
     "-DBLA_VENDOR=${if useAccel then "Apple" else "Generic"}"
   ];
 
+  env = lib.optionalAttrs useAccel {
+    # Without these flags some tests will fail / segfault when using Accelerate
+    # framework. They were pulled from the CI Workflow
+    # https://github.com/opencollab/arpack-ng/blob/804fa3149a0f773064198a8e883bd021832157ca/.github/workflows/jobs.yml#L184-L192
+    FFLAGS = "-ff2c -fno-second-underscore";
+  };
+
+  # a couple tests fail when run in parallel
+  doCheck = true;
+  nativeCheckInputs = lib.optional useMpi mpiCheckPhaseHook;
+
+  checkInputs =
+    # work around for `ld: file not found: @rpath/libquadmath.0.dylib`
+    # which occurs due to an mpi test linking with `-flat_namespace`
+    # can remove once `-flat_namespace` is removed or
+    # https://github.com/NixOS/nixpkgs/pull/370526 is merged
+    lib.optional (useMpi && stdenv.hostPlatform.isDarwin) gfortran.cc;
+
+  enableParallelChecking = false;
+
   passthru = {
     isILP64 = !useAccel && blas.isILP64;
+
     tests = {
       inherit igraph;
     };
   };
 
   meta = {
+    description = "Collection of Fortran77 subroutines to solve large scale eigenvalue problems";
     homepage = "https://github.com/opencollab/arpack-ng";
     changelog = "https://github.com/opencollab/arpack-ng/blob/${finalAttrs.version}/CHANGES";
-    description = "Collection of Fortran77 subroutines to solve large scale eigenvalue problems";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       dotlambda
     ];
+
     platforms = lib.platforms.unix;
   };
 })

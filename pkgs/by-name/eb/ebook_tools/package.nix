@@ -3,9 +3,9 @@
   stdenv,
   fetchurl,
   cmake,
-  pkg-config,
   libxml2,
   libzip,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,16 +31,17 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     pkg-config
   ];
+
   buildInputs = [
     libxml2
     libzip
   ];
 
   meta = {
-    homepage = "http://ebook-tools.sourceforge.net";
     description = "Tools and library for dealing with various ebook file formats";
+    homepage = "http://ebook-tools.sourceforge.net";
+    license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.all;
-    license = lib.licenses.mit;
   };
 })

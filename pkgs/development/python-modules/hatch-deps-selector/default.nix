@@ -1,8 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   hatchling,
 }:
@@ -10,7 +9,6 @@
 buildPythonPackage rec {
   pname = "hatch-deps-selector";
   version = "0.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jupyter-book";
@@ -19,14 +17,15 @@ buildPythonPackage rec {
     hash = "sha256-AaHVBUDENF3d+yzDt5mvMnfqO+DSYQafMdHNDyEtz2s=";
   };
 
+  # No tests
+  doCheck = false;
+
   build-system = [
     hatchling
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "hatch_deps_selector" ];
-
-  # No tests
-  doCheck = false;
 
   meta = {
     description = "Select additional dependencies for pyproject.toml from the environment";

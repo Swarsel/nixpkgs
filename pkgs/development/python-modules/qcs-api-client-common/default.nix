@@ -1,24 +1,23 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cargo,
-  fetchFromGitHub,
   grpc-interceptor,
   grpcio,
   httpx,
-  lib,
   pytest-asyncio,
   pytest-mock,
   pytestCheckHook,
   pythonAtLeast,
-  rustc,
   rustPlatform,
+  rustc,
   syrupy,
 }:
 
 buildPythonPackage rec {
   pname = "qcs-api-client-common";
   version = "0.15.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rigetti";
@@ -27,29 +26,12 @@ buildPythonPackage rec {
     hash = "sha256-ksB71Vd9PbKAHll2Y5VrCspsyUyhXwthHl2yVl6MQ7U=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-QvMeCzpHGMVjqYs0i3gpzY6Zk4rGiXyTopzaQMLWBcA=";
-  };
-
-  buildAndTestSubdir = "qcs-api-client-common";
-
   nativeBuildInputs = [
     cargo
     rustPlatform.cargoSetupHook
     rustPlatform.maturinBuildHook
     rustc
   ];
-
-  dependencies = [
-    grpc-interceptor
-    grpcio
-    httpx
-  ];
-
-  preCheck = ''
-    cd ${buildAndTestSubdir}
-  '';
 
   nativeCheckInputs = [
     pytest-asyncio
@@ -58,15 +40,34 @@ buildPythonPackage rec {
     syrupy
   ];
 
+  preCheck = ''
+    cd ${buildAndTestSubdir}
+  '';
+
+  buildAndTestSubdir = "qcs-api-client-common";
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-QvMeCzpHGMVjqYs0i3gpzY6Zk4rGiXyTopzaQMLWBcA=";
+  };
+
+  dependencies = [
+    grpc-interceptor
+    grpcio
+    httpx
+  ];
+
   disabledTests = lib.optionals (pythonAtLeast "3.14") [
     # asyncio.Future() in sync fixture has no implicit event loop on 3.14
     "test_refresh_interceptor"
   ];
 
+  pyproject = true;
+
   meta = {
-    changelog = "https://github.com/rigetti/qcs-api-client-rust/blob/${src.tag}/qcs-api-client-common/CHANGELOG-py.md";
     description = "Contains core QCS client functionality and middleware implementations";
     homepage = "https://github.com/rigetti/qcs-api-client-rust/tree/main/qcs-api-client-common";
+    changelog = "https://github.com/rigetti/qcs-api-client-rust/blob/${src.tag}/qcs-api-client-common/CHANGELOG-py.md";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

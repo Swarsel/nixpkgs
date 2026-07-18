@@ -1,13 +1,13 @@
 {
   lib,
-  cmake,
-  fetchFromGitHub,
-  nix-update-script,
-  vimUtils,
-  vimPlugins,
-  autoPatchelfHook,
   stdenv,
+  fetchFromGitHub,
+  autoPatchelfHook,
+  cmake,
   llvmPackages,
+  nix-update-script,
+  vimPlugins,
+  vimUtils,
 }:
 vimUtils.buildVimPlugin rec {
   pname = "codediff.nvim";
@@ -20,18 +20,16 @@ vimUtils.buildVimPlugin rec {
     hash = "sha256-kT5plTJP4VfN6mFkq6voDTmr9LaZ37W80UU3QUGlKkY=";
   };
 
-  dependencies = [ vimPlugins.nui-nvim ];
-
-  nativeBuildInputs = [ cmake ] ++ lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
-  buildInputs =
-    lib.optionals stdenv.hostPlatform.isLinux [ stdenv.cc.cc.lib ]
-    ++ lib.optionals stdenv.hostPlatform.isDarwin [ llvmPackages.openmp ];
-  dontUseCmakeConfigure = true;
-
   postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
     substituteInPlace libvscode-diff/CMakeLists.txt \
       --replace-fail 'COMMAND brew --prefix libomp' 'COMMAND echo ${llvmPackages.openmp}'
   '';
+
+  nativeBuildInputs = [ cmake ] ++ lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
+
+  buildInputs =
+    lib.optionals stdenv.hostPlatform.isLinux [ stdenv.cc.cc.lib ]
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [ llvmPackages.openmp ];
 
   buildPhase = ''
     runHook preBuild
@@ -50,6 +48,8 @@ vimUtils.buildVimPlugin rec {
     ln -s ${stdenv.cc.cc.lib}/lib/libgomp.so.1 $out/libgomp.so.1
   '';
 
+  dependencies = [ vimPlugins.nui-nvim ];
+  dontUseCmakeConfigure = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

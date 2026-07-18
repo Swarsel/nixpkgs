@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "cmd2-ext-test";
   version = "2.0.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -18,11 +17,9 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools-scm ];
-
   propagatedBuildInputs = [ cmd2 ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "cmd2_ext_test" ];
 
   meta = {

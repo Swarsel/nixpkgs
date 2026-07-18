@@ -1,8 +1,8 @@
 {
-  rustPlatform,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,9 +16,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-lwtRSl0/oqgvFUtCkgExAVTiUt+7PwAD/8ufl+1MIMY=";
   };
 
-  cargoHash = "sha256-/G+wiGlQ1UqH2uWmz55klsu1t6zBrwlv1XH3X+CAPQg=";
-
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-/G+wiGlQ1UqH2uWmz55klsu1t6zBrwlv1XH3X+CAPQg=";
 
   postInstall = ''
     installShellCompletion --cmd pnpm \
@@ -27,8 +26,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/g-plane/pnpm-shell-completion";
     description = "Complete your pnpm command fastly";
+    homepage = "https://github.com/g-plane/pnpm-shell-completion";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ donovanglover ];
     mainProgram = "pnpm-shell-completion";

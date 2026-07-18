@@ -1,9 +1,9 @@
 {
   lib,
+  stdenv,
+  fetchurl,
   SDL,
   SDL_mixer,
-  fetchurl,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,12 +28,12 @@ stdenv.mkDerivation (finalAttrs: {
   hardeningDisable = [ "format" ];
 
   meta = {
-    homepage = "https://lgames.sourceforge.io/Barrage/";
-    description = "Destructive action game";
-    license = with lib.licenses; [ gpl2Plus ];
-    mainProgram = "barrage";
-    maintainers = [ ];
     inherit (SDL.meta) platforms;
+    description = "Destructive action game";
+    homepage = "https://lgames.sourceforge.io/Barrage/";
+    license = with lib.licenses; [ gpl2Plus ];
+    maintainers = [ ];
+    mainProgram = "barrage";
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

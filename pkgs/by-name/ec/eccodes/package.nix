@@ -1,19 +1,19 @@
 {
   lib,
-  gccStdenv,
   fetchurl,
   cmake,
-  netcdf,
-  openjpeg,
+  ctestCheckHook,
+  gccStdenv,
+  gfortran,
   libaec,
   libpng,
-  gfortran,
+  netcdf,
+  openjpeg,
   perl,
-  ctestCheckHook,
+  enableOpenMPThreads ? false,
+  enablePosixThreads ? false,
   enablePython ? false,
   python3Packages ? null,
-  enablePosixThreads ? false,
-  enableOpenMPThreads ? false,
 }:
 gccStdenv.mkDerivation rec {
   pname = "eccodes";
@@ -66,6 +66,7 @@ gccStdenv.mkDerivation rec {
 
   doCheck = true;
   nativeCheckInputs = [ ctestCheckHook ];
+
   checkFlags = [
     "-R"
     # Only do tests that don't require downloading 120MB of testdata
@@ -73,10 +74,10 @@ gccStdenv.mkDerivation rec {
   ];
 
   meta = {
+    description = "ECMWF library for reading and writing GRIB, BUFR and GTS abbreviated header";
     homepage = "https://confluence.ecmwf.int/display/ECC/";
     license = lib.licenses.asl20;
     maintainers = [ ];
     platforms = lib.platforms.unix;
-    description = "ECMWF library for reading and writing GRIB, BUFR and GTS abbreviated header";
   };
 }

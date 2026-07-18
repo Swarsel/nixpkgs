@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   angr,
   buildPythonPackage,
-  fetchFromGitHub,
   setuptools,
   tqdm,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "angrop";
   version = "9.2.12.post3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "angr";
@@ -19,6 +18,9 @@ buildPythonPackage rec {
     hash = "sha256-t4JjI6mWX/Us4dHcVXPAUGms8SEE6MVhteQMPi8p5Zo=";
   };
 
+  # Tests have additional requirements, e.g., angr binaries
+  # cle is executing the tests with the angr binaries already and is a requirement of angr
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,10 +28,7 @@ buildPythonPackage rec {
     tqdm
   ];
 
-  # Tests have additional requirements, e.g., angr binaries
-  # cle is executing the tests with the angr binaries already and is a requirement of angr
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "angrop" ];
 
   meta = {

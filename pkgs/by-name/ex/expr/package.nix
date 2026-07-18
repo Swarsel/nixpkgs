@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,18 +15,18 @@ buildGoModule (finalAttrs: {
     hash = "sha256-MJM7ezZtSdDaUewNGACOKvWc+ZOPVScTuW+d6n1K5jo=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/repl";
-
   vendorHash = "sha256-GH7rn0q/YuGBx0rrfHa2EMCsynQ3Pgtz1yDsD/NIKsU=";
+
+  postInstall = ''
+    mv $out/bin/{repl,expr}
+  '';
 
   ldflags = [
     "-s"
     "-w"
   ];
 
-  postInstall = ''
-    mv $out/bin/{repl,expr}
-  '';
+  sourceRoot = "${finalAttrs.src.name}/repl";
 
   meta = {
     description = "Expression language and expression evaluation for Go";

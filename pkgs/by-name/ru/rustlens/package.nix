@@ -1,15 +1,14 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "rustlens";
   version = "0.2.1";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "yashksaini-coder";
@@ -18,8 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-BYROEUBa9RZXuJbNbKUbWXu9mPYIuAyO6JwPlNmj244=";
   };
 
-  cargoHash = "sha256-WvUu2M2WFLo5Ve+ER7vpl7q/cpPR4g1vY4z9hRl3On0=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -27,6 +24,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = [
     openssl
   ];
+
+  cargoHash = "sha256-WvUu2M2WFLo5Ve+ER7vpl7q/cpPR4g1vY4z9hRl3On0=";
+  __structuredAttrs = true;
 
   meta = {
     description = "Rustlens is a terminal-based application for exploring Rust codebases.";

@@ -4,9 +4,9 @@
   fetchFromGitHub,
   autoconf,
   automake,
-  libtool,
   bison,
   flex,
+  libtool,
   rdma-core,
 }:
 

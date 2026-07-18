@@ -1,20 +1,20 @@
 {
+  lib,
   stdenv,
   akku,
   chez,
-  guile,
   chibi,
+  guile,
   makeWrapper,
-  lib,
   writeShellScriptBin,
 }:
 {
   pname,
-  version,
   src,
+  version,
   buildInputs ? [ ],
-  r7rs ? false,
   nativeBuildInputs ? [ ],
+  r7rs ? false,
   ...
 }@args:
 let
@@ -24,10 +24,8 @@ in
 stdenv.mkDerivation (
   {
     inherit version src;
-
     pname = "akku-${pname}";
-    propagatedBuildInputs = buildInputs;
-    buildInputs = [ ];
+
     nativeBuildInputs = [
       makeWrapper
       akku
@@ -35,6 +33,10 @@ stdenv.mkDerivation (
       chibi
     ]
     ++ nativeBuildInputs;
+
+    buildInputs = [ ];
+    propagatedBuildInputs = buildInputs;
+
     buildPhase = ''
       runHook preBuild
 
@@ -53,6 +55,9 @@ stdenv.mkDerivation (
 
       runHook postBuild
     '';
+
+    doCheck = true;
+
     checkPhase = ''
       IS_R7RS=false
       runHook preCheck
@@ -85,7 +90,7 @@ stdenv.mkDerivation (
       export CHEZSCHEMELIBDIRS=$propagated_chez
       export CHIBI_MODULE_PATH=$propagated_chibi
     '';
-    doCheck = true;
+
     installPhase = ''
       runHook preInstall
 
@@ -113,11 +118,13 @@ stdenv.mkDerivation (
 
       runHook postInstall
     '';
+
+    setupHook = ./setup-hook.sh;
+
     meta = {
       inherit (akku.meta) platforms;
     }
     // args.meta or { };
-    setupHook = ./setup-hook.sh;
   }
   // removeAttrs args [
     "name"

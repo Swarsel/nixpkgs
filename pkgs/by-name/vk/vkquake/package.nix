@@ -1,26 +1,26 @@
 {
-  SDL2,
+  lib,
+  stdenv,
   fetchFromGitHub,
+  SDL2,
+  copyDesktopItems,
   flac,
   glslang,
   gzip,
-  lib,
   libmpg123,
   libopus,
   libvorbis,
   libx11,
+  makeDesktopItem,
   makeWrapper,
   meson,
   moltenvk,
   ninja,
   opusfile,
   pkg-config,
-  stdenv,
+  spirv-tools,
   vulkan-headers,
   vulkan-loader,
-  copyDesktopItems,
-  makeDesktopItem,
-  spirv-tools,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "vkquake";
@@ -79,26 +79,25 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  desktopItems = [
-    (makeDesktopItem {
-      exec = finalAttrs.meta.mainProgram;
-      name = "vkquake";
-      icon = "vkquake";
-      comment = finalAttrs.meta.description;
-      desktopName = "vkQuake";
-      categories = [ "Game" ];
-    })
-  ];
-
   postFixup = lib.optionalString (!stdenv.hostPlatform.isDarwin) ''
     patchelf $out/bin/vkquake \
       --add-rpath ${lib.makeLibraryPath [ vulkan-loader ]}
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "vkQuake";
+      exec = finalAttrs.meta.mainProgram;
+      icon = "vkquake";
+      name = "vkquake";
+    })
+  ];
+
   meta = {
     description = "Vulkan Quake port based on QuakeSpasm";
-    homepage = "https://github.com/Novum/vkQuake";
-    changelog = "https://github.com/Novum/vkQuake/releases";
+
     longDescription = ''
       vkQuake is a Quake 1 port using Vulkan instead of OpenGL for rendering.
       It is based on the popular QuakeSpasm port and runs all mods compatible with it
@@ -108,12 +107,16 @@ stdenv.mkDerivation (finalAttrs: {
       specialization constants, CPU/GPU parallelism and memory pooling.
     '';
 
-    platforms = with lib.platforms; linux ++ darwin;
+    homepage = "https://github.com/Novum/vkQuake";
+    changelog = "https://github.com/Novum/vkQuake/releases";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       PopeRigby
       ylh
     ];
+
+    platforms = with lib.platforms; linux ++ darwin;
     mainProgram = "vkquake";
-    license = lib.licenses.gpl2Plus;
   };
 })

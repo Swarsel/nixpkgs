@@ -1,9 +1,9 @@
 {
-  build-asdf-system,
-  spec,
-  quicklispPackagesFor,
   stdenv,
+  build-asdf-system,
   pkgs,
+  quicklispPackagesFor,
+  spec,
   ...
 }:
 
@@ -45,6 +45,7 @@ let
 
           runHook postBuild
         '';
+
         installPhase = ''
           runHook preInstall
 
@@ -59,10 +60,10 @@ let
     build-asdf-system (
       args'
       // {
+        src = build;
         # Patches are already applied in `build`
         patches = [ ];
         postPatch = "";
-        src = build;
       }
     );
 
@@ -74,157 +75,13 @@ let
     self: super:
     {
 
-      cl-unicode = build-with-compile-into-pwd {
-        inherit (super.cl-unicode)
-          pname
-          version
-          src
-          systems
-          ;
-        lispLibs = super.cl-unicode.lispLibs ++ [ self.flexi-streams ];
-      };
-
-      jzon = super.com_dot_inuoe_dot_jzon;
-
       _40ants-routes = super._40ants-routes.overrideLispAttrs (o: {
         systems = o.systems ++ [ "40ants-routes/handler" ];
-      });
-
-      reblocks-ui2 = super.reblocks-ui2.overrideLispAttrs (o: {
-        systems = o.systems ++ [
-          "reblocks-ui2/themes/color"
-          "reblocks-ui2/themes/tailwind"
-          "reblocks-ui2/utils/padding"
-          "reblocks-ui2/utils/align"
-          "reblocks-ui2/card"
-          "reblocks-ui2/card/view"
-        ];
       });
 
       april = super.april.overrideLispAttrs (o: {
         systems = o.systems ++ [ "cape" ];
       });
-
-      cl-notify = build-asdf-system {
-        pname = "cl-notify";
-        version = "20080904-138ca7038";
-        src = pkgs.fetchzip {
-          url = "https://repo.or.cz/cl-notify.git/snapshot/138ca703861f4a1fbccbed557f92cf4d213668a1.tar.gz";
-          sha256 = "0k6ns6fzvjcbpsqgx85r4g5m25fvrdw9481i9vyabwym9q8bbqwx";
-        };
-        lispLibs = [
-          self.cffi
-        ];
-        nativeLibs = [
-          pkgs.libnotify
-        ];
-      };
-
-      cl-liballegro-nuklear = build-with-compile-into-pwd super.cl-liballegro-nuklear;
-
-      cl-project = super.cl-project.overrideLispAttrs {
-        # install skeleton.asd
-        postInstall = ''
-          cp -v skeleton/skeleton.asd $out/skeleton
-        '';
-      };
-
-      lessp = build-asdf-system {
-        pname = "lessp";
-        version = "0.2-f8a9e4664";
-        src = pkgs.fetchzip {
-          url = "https://github.com/facts-db/cl-lessp/archive/632217602b85b679e8d420654a0aa39e798ca3b5.tar.gz";
-          sha256 = "0i3ia14dzqwjpygd0zn785ff5vqnnmkn75psfpyx0ni3jr71lkq9";
-        };
-      };
-
-      rollback = build-asdf-system {
-        pname = "rollback";
-        version = "0.1-5d3f21fda";
-        src = pkgs.fetchzip {
-          url = "https://github.com/facts-db/cl-rollback/archive/5d3f21fda8f04f35c5e9d20ee3b87db767915d15.tar.gz";
-          sha256 = "12dpxsbm2al633y87i8p784k2dn4bbskz6sl40v9f5ljjmjqjzxf";
-        };
-      };
-
-      facts = build-asdf-system {
-        pname = "facts";
-        version = "0.1-632217602";
-        src = pkgs.fetchzip {
-          url = "https://beta.quicklisp.org/archive/cl-facts/2022-11-06/cl-facts-20221106-git.tgz";
-          sha256 = "sha256-PBpyyJYkq1NjKK9VikSAL4TmrGRwUJlEWRSeKj/f4Sc=";
-        };
-        lispLibs = [
-          self.lessp
-          self.rollback
-          self.local-time
-        ];
-      };
-
-      cl-fuse = build-with-compile-into-pwd {
-        inherit (super.cl-fuse)
-          pname
-          version
-          src
-          lispLibs
-          ;
-        nativeBuildInputs = [ pkgs.fuse ];
-        nativeLibs = [ pkgs.fuse ];
-      };
-
-      cl-containers = build-asdf-system {
-        inherit (super.cl-containers) pname version src;
-        lispLibs = super.cl-containers.lispLibs ++ [ self.moptilities ];
-        systems = [
-          "cl-containers"
-          "cl-containers/with-moptilities"
-        ];
-      };
-
-      swank = build-with-compile-into-pwd rec {
-        inherit (super.swank) pname lispLibs;
-        version = "2.29.1";
-        src = pkgs.fetchFromGitHub {
-          owner = "slime";
-          repo = "slime";
-          rev = "v${version}";
-          hash = "sha256-5hNB5XxbTER4HX3dn4umUGnw6UeiTQkczmggFz4uWoE=";
-        };
-        systems = [
-          "swank"
-          "swank/exts"
-        ];
-        patches = [ ./patches/swank-pure-paths.patch ];
-        postConfigure = ''
-          substituteAllInPlace swank-loader.lisp
-        '';
-      };
-
-      slynk = build-asdf-system {
-        pname = "slynk";
-        version = "trunk";
-        src = pkgs.fetchFromGitHub {
-          owner = "joaotavora";
-          repo = "sly";
-          rev = "ba40c8f054ec3b7040a6c36a1ef3e9596b936421";
-          hash = "sha256-hoaCZtyezuXptDPnAvBTT0SZ14M9Ifrmki3beBOwFmI=";
-        };
-        systems = [
-          "slynk"
-          "slynk/arglists"
-          "slynk/fancy-inspector"
-          "slynk/package-fu"
-          "slynk/mrepl"
-          "slynk/trace-dialog"
-          "slynk/profiler"
-          "slynk/stickers"
-          "slynk/indentation"
-          "slynk/retro"
-        ];
-        meta = {
-          homepage = "https://github.com/joaotavora/sly";
-        };
-      };
 
       cephes = build-with-compile-into-pwd {
         inherit (super.cephes)
@@ -233,197 +90,33 @@ let
           src
           lispLibs
           ;
+
         patches = [ ./patches/cephes-make.patch ];
+
         postPatch = ''
           find \( -name '*.dll' -o -name '*.dylib' -o -name '*.so' \) -delete
         '';
+
         postConfigure = ''
           substituteAllInPlace cephes.asd
         '';
+
         postInstall = ''
           find $out -name '*.o' -delete
         '';
       };
 
-      clx-truetype = build-asdf-system {
-        pname = "clx-truetype";
-        version = "20160825-git";
-        src = pkgs.fetchzip {
-          url = "https://beta.quicklisp.org/archive/clx-truetype/2016-08-25/clx-truetype-20160825-git.tgz";
-          sha256 = "079hyp92cjkdfn6bhkxsrwnibiqbz4y4af6nl31lzw6nm91j5j37";
-        };
-        lispLibs = with self; [
-          alexandria
-          bordeaux-threads
-          cl-aa
-          cl-fad
-          cl-paths
-          cl-paths-ttf
-          cl-store
-          cl-vectors
-          clx
-          trivial-features
-          zpb-ttf
-        ];
-      };
-
-      mathkit = build-asdf-system {
-        inherit (super.mathkit)
-          pname
-          version
-          src
-          asds
-          ;
-        lispLibs = super.mathkit.lispLibs ++ [ super.sb-cga ];
-      };
-
-      stumpwm = super.stumpwm.overrideLispAttrs {
-        inherit (pkgs.stumpwm) src version;
-        meta = {
-          inherit (pkgs.stumpwm.meta) description license homepage;
-        };
-      };
-
-      clfswm = super.clfswm.overrideAttrs (o: {
-        buildScript = pkgs.writeText "build-clfswm.lisp" ''
-          (load "${o.asdfFasl}/asdf.${o.faslExt}")
-          (asdf:load-system 'clfswm)
-          (sb-ext:save-lisp-and-die
-            "clfswm"
-            :executable t
-            #+sb-core-compression :compression
-            #+sb-core-compression t
-            :toplevel #'clfswm:main)
-        '';
-        installPhase = o.installPhase + ''
-          mkdir -p $out/bin
-          mv $out/clfswm $out/bin
-        '';
-      });
-
-      magicl = build-with-compile-into-pwd {
-        inherit (super.magicl)
-          pname
-          version
-          src
-          lispLibs
-          ;
-        nativeBuildInputs = [ pkgs.gfortran ];
-        nativeLibs = [ pkgs.openblas ];
-      };
-
-      cl-gtk4 = build-asdf-system {
-        pname = "cl-gtk4";
-        version = "1.0.0";
-        src = pkgs.fetchFromGitHub {
-          owner = "bohonghuang";
-          repo = "cl-gtk4";
-          rev = "b3e69daf2f96e69881b053046bbe8544a54e087f";
-          hash = "sha256-9bRxxc3LtDR7gE0jorsrguRYaIq2InVOys27W7Im050=";
-        };
-        lispLibs = with self; [
-          cl-gobject-introspection-wrapper
-          cl-glib
-          cl-gio
-          cl-gobject
-        ];
-        nativeBuildInputs = [
-          pkgs.gobject-introspection
-          pkgs.gtk4
-        ];
-        nativeLibs = [
-          pkgs.gtk4
-        ];
-        meta = {
-          homepage = "https://github.com/bohonghuang/cl-gtk4";
-        };
-      };
-
-      cl-gtk4_dot_adw = build-asdf-system {
-        pname = "cl-gtk4.adw";
-        version = self.cl-gtk4.version;
-        src = self.cl-gtk4.src;
-        lispLibs = with self; [
-          cl-gobject-introspection-wrapper
-          cl-gtk4
-        ];
-        nativeBuildInputs = [
-          pkgs.libadwaita
-        ];
-        nativeLibs = [
-          pkgs.libadwaita
-        ];
-        meta = {
-          homepage = "https://github.com/bohonghuang/cl-gtk4";
-        };
-      };
-
-      cl-gtk4_dot_webkit = build-asdf-system {
-        pname = "cl-gtk4.webkit";
-        version = self.cl-gtk4.version;
-        src = self.cl-gtk4.src;
-        lispLibs = with self; [
-          cl-gobject-introspection-wrapper
-          cl-gtk4
-        ];
-        nativeBuildInputs = [
-          pkgs.webkitgtk_6_0
-        ];
-        nativeLibs = [
-          pkgs.webkitgtk_6_0
-        ];
-        meta = {
-          homepage = "https://github.com/bohonghuang/cl-gtk4";
-        };
-      };
-
-      cl-gtk4_dot_sourceview = build-asdf-system {
-        pname = "cl-gtk4.sourceview";
-        version = self.cl-gtk4.version;
-        src = self.cl-gtk4.src;
-        lispLibs = with self; [
-          cl-gobject-introspection-wrapper
-          cl-gtk4
-        ];
-        nativeBuildInputs = [
-          pkgs.gtksourceview5
-        ];
-        nativeLibs = [
-          pkgs.gtksourceview5
-        ];
-        meta = {
-          homepage = "https://github.com/bohonghuang/cl-gtk4";
-        };
-      };
-
-      cl-gdk4 = build-asdf-system {
-        pname = "cl-gdk4";
-        version = self.cl-gtk4.version;
-        src = self.cl-gtk4.src;
-        lispLibs = with self; [
-          cl-gobject-introspection-wrapper
-        ];
-        nativeBuildInputs = [
-          pkgs.gobject-introspection
-          pkgs.gtk4
-        ];
-        nativeLibs = [
-          pkgs.gtk4
-        ];
-        meta = {
-          homepage = "https://github.com/bohonghuang/cl-gtk4";
-        };
-      };
-
       cl-avro = build-asdf-system {
         pname = "cl-avro";
         version = "trunk";
+
         src = pkgs.fetchFromGitHub {
           owner = "SahilKang";
           repo = "cl-avro";
           rev = "b8fa26320fa0ae88390215140d57f9cca937f691";
           hash = "sha256-acXsotvKWuffrLbrG9YJ8yZc5E6WC8N0qCFCAiX6N0Q=";
         };
+
         lispLibs = with self; [
           alexandria
           babel
@@ -439,26 +132,256 @@ let
           time-interval
           trivial-extensible-sequences
         ];
+
         meta = {
           homepage = "https://github.com/SahilKang/cl-avro";
         };
       };
 
-      frugal-uuid = super.frugal-uuid.overrideLispAttrs (o: {
+      cl-containers = build-asdf-system {
+        inherit (super.cl-containers) pname version src;
+        lispLibs = super.cl-containers.lispLibs ++ [ self.moptilities ];
+
         systems = [
-          "frugal-uuid"
-          "frugal-uuid/non-frugal"
-          "frugal-uuid/test"
+          "cl-containers"
+          "cl-containers/with-moptilities"
         ];
-        lispLibs =
-          o.lispLibs
-          ++ (with self; [
-            ironclad
-            babel
-            trivial-clock
-            trivial-benchmark
-            fiveam
-          ]);
+      };
+
+      cl-fuse = build-with-compile-into-pwd {
+        inherit (super.cl-fuse)
+          pname
+          version
+          src
+          lispLibs
+          ;
+
+        nativeBuildInputs = [ pkgs.fuse ];
+        nativeLibs = [ pkgs.fuse ];
+      };
+
+      cl-gdk4 = build-asdf-system {
+        pname = "cl-gdk4";
+        version = self.cl-gtk4.version;
+        src = self.cl-gtk4.src;
+
+        nativeBuildInputs = [
+          pkgs.gobject-introspection
+          pkgs.gtk4
+        ];
+
+        lispLibs = with self; [
+          cl-gobject-introspection-wrapper
+        ];
+
+        nativeLibs = [
+          pkgs.gtk4
+        ];
+
+        meta = {
+          homepage = "https://github.com/bohonghuang/cl-gtk4";
+        };
+      };
+
+      cl-gtk4 = build-asdf-system {
+        pname = "cl-gtk4";
+        version = "1.0.0";
+
+        src = pkgs.fetchFromGitHub {
+          owner = "bohonghuang";
+          repo = "cl-gtk4";
+          rev = "b3e69daf2f96e69881b053046bbe8544a54e087f";
+          hash = "sha256-9bRxxc3LtDR7gE0jorsrguRYaIq2InVOys27W7Im050=";
+        };
+
+        nativeBuildInputs = [
+          pkgs.gobject-introspection
+          pkgs.gtk4
+        ];
+
+        lispLibs = with self; [
+          cl-gobject-introspection-wrapper
+          cl-glib
+          cl-gio
+          cl-gobject
+        ];
+
+        nativeLibs = [
+          pkgs.gtk4
+        ];
+
+        meta = {
+          homepage = "https://github.com/bohonghuang/cl-gtk4";
+        };
+      };
+
+      cl-gtk4_dot_adw = build-asdf-system {
+        pname = "cl-gtk4.adw";
+        version = self.cl-gtk4.version;
+        src = self.cl-gtk4.src;
+
+        nativeBuildInputs = [
+          pkgs.libadwaita
+        ];
+
+        lispLibs = with self; [
+          cl-gobject-introspection-wrapper
+          cl-gtk4
+        ];
+
+        nativeLibs = [
+          pkgs.libadwaita
+        ];
+
+        meta = {
+          homepage = "https://github.com/bohonghuang/cl-gtk4";
+        };
+      };
+
+      cl-gtk4_dot_sourceview = build-asdf-system {
+        pname = "cl-gtk4.sourceview";
+        version = self.cl-gtk4.version;
+        src = self.cl-gtk4.src;
+
+        nativeBuildInputs = [
+          pkgs.gtksourceview5
+        ];
+
+        lispLibs = with self; [
+          cl-gobject-introspection-wrapper
+          cl-gtk4
+        ];
+
+        nativeLibs = [
+          pkgs.gtksourceview5
+        ];
+
+        meta = {
+          homepage = "https://github.com/bohonghuang/cl-gtk4";
+        };
+      };
+
+      cl-gtk4_dot_webkit = build-asdf-system {
+        pname = "cl-gtk4.webkit";
+        version = self.cl-gtk4.version;
+        src = self.cl-gtk4.src;
+
+        nativeBuildInputs = [
+          pkgs.webkitgtk_6_0
+        ];
+
+        lispLibs = with self; [
+          cl-gobject-introspection-wrapper
+          cl-gtk4
+        ];
+
+        nativeLibs = [
+          pkgs.webkitgtk_6_0
+        ];
+
+        meta = {
+          homepage = "https://github.com/bohonghuang/cl-gtk4";
+        };
+      };
+
+      cl-liballegro-nuklear = build-with-compile-into-pwd super.cl-liballegro-nuklear;
+
+      cl-notify = build-asdf-system {
+        pname = "cl-notify";
+        version = "20080904-138ca7038";
+
+        src = pkgs.fetchzip {
+          url = "https://repo.or.cz/cl-notify.git/snapshot/138ca703861f4a1fbccbed557f92cf4d213668a1.tar.gz";
+          sha256 = "0k6ns6fzvjcbpsqgx85r4g5m25fvrdw9481i9vyabwym9q8bbqwx";
+        };
+
+        lispLibs = [
+          self.cffi
+        ];
+
+        nativeLibs = [
+          pkgs.libnotify
+        ];
+      };
+
+      cl-project = super.cl-project.overrideLispAttrs {
+        # install skeleton.asd
+        postInstall = ''
+          cp -v skeleton/skeleton.asd $out/skeleton
+        '';
+      };
+
+      cl-unicode = build-with-compile-into-pwd {
+        inherit (super.cl-unicode)
+          pname
+          version
+          src
+          systems
+          ;
+
+        lispLibs = super.cl-unicode.lispLibs ++ [ self.flexi-streams ];
+      };
+
+      clfswm = super.clfswm.overrideAttrs (o: {
+        installPhase = o.installPhase + ''
+          mkdir -p $out/bin
+          mv $out/clfswm $out/bin
+        '';
+
+        buildScript = pkgs.writeText "build-clfswm.lisp" ''
+          (load "${o.asdfFasl}/asdf.${o.faslExt}")
+          (asdf:load-system 'clfswm)
+          (sb-ext:save-lisp-and-die
+            "clfswm"
+            :executable t
+            #+sb-core-compression :compression
+            #+sb-core-compression t
+            :toplevel #'clfswm:main)
+        '';
+      });
+
+      clx-truetype = build-asdf-system {
+        pname = "clx-truetype";
+        version = "20160825-git";
+
+        src = pkgs.fetchzip {
+          url = "https://beta.quicklisp.org/archive/clx-truetype/2016-08-25/clx-truetype-20160825-git.tgz";
+          sha256 = "079hyp92cjkdfn6bhkxsrwnibiqbz4y4af6nl31lzw6nm91j5j37";
+        };
+
+        lispLibs = with self; [
+          alexandria
+          bordeaux-threads
+          cl-aa
+          cl-fad
+          cl-paths
+          cl-paths-ttf
+          cl-store
+          cl-vectors
+          clx
+          trivial-features
+          zpb-ttf
+        ];
+      };
+
+      coalton = super.coalton.overrideLispAttrs (old: {
+        lispLibs = old.lispLibs ++ [ self.fiasco ];
+        nativeLibs = [ pkgs.mpfr ];
+
+        systems = [
+          "coalton"
+          "thih-coalton"
+          "quil-coalton"
+          "thih-coalton/tests"
+          "quil-coalton/tests"
+          "coalton/tests"
+        ];
+
+        meta = {
+          description = "Statically typed functional programming language that supercharges Common Lisp";
+          homepage = "https://coalton-lang.github.io";
+          license = pkgs.lib.licenses.mit;
+        };
       });
 
       duckdb = super.duckdb.overrideLispAttrs (o: {
@@ -469,42 +392,68 @@ let
         ];
       });
 
-      polyclot = build-asdf-system {
-        pname = "polyclot";
-        version = "trunk";
-        src = pkgs.fetchfossil {
-          url = "https://fossil.turtleware.eu/fossil.turtleware.eu/polyclot";
-          rev = "18500c968b1fc1e2a915b5c70b8cddc4a2b54de51da4eedc5454e42bfea3b479";
-          sha256 = "sha256-KgBL1QQN4iG6d8E9GlKAuxSwkrY6Zy7e1ZzEDGKad+A=";
+      facts = build-asdf-system {
+        pname = "facts";
+        version = "0.1-632217602";
+
+        src = pkgs.fetchzip {
+          url = "https://beta.quicklisp.org/archive/cl-facts/2022-11-06/cl-facts-20221106-git.tgz";
+          sha256 = "sha256-PBpyyJYkq1NjKK9VikSAL4TmrGRwUJlEWRSeKj/f4Sc=";
         };
-        systems = [
-          "eu.turtleware.polyclot"
-          "eu.turtleware.polyclot/demo"
+
+        lispLibs = [
+          self.lessp
+          self.rollback
+          self.local-time
         ];
-        lispLibs = with self; [
-          clim
-          mcclim
-          mcclim-layouts
-        ];
-        meta = {
-          homepage = "https://github.com/kaveh808/kons-9";
-        };
       };
+
+      frugal-uuid = super.frugal-uuid.overrideLispAttrs (o: {
+        lispLibs =
+          o.lispLibs
+          ++ (with self; [
+            ironclad
+            babel
+            trivial-clock
+            trivial-benchmark
+            fiveam
+          ]);
+
+        systems = [
+          "frugal-uuid"
+          "frugal-uuid/non-frugal"
+          "frugal-uuid/test"
+        ];
+      });
+
+      fset = super.fset.overrideLispAttrs (old: {
+        systems = [
+          "fset"
+          "fset/test"
+        ];
+
+        meta = {
+          description = "Functional collections library";
+          homepage = "https://gitlab.common-lisp.net/fset/fset/-/wikis/home";
+          license = pkgs.lib.licenses.llgpl21;
+        };
+      });
+
+      jzon = super.com_dot_inuoe_dot_jzon;
 
       kons-9 = build-asdf-system {
         pname = "kons-9";
         version = "trunk";
+
         src = pkgs.fetchFromGitHub {
           owner = "kaveh808";
           repo = "kons-9";
           rev = "08770e7fbb839b91fd035f1cd4a50ecc81b42d57";
           sha256 = "sha256-Tit/qmOU5+zp43/ecIXGbh4CtgWzltWM7tHdVWkga0k=";
         };
-        systems = [
-          "kons-9"
-          "kons-9/testsuite"
-        ];
+
         patches = [ ./patches/kons-9-fix-testsuite-compilation.patch ];
+
         lispLibs = with self; [
           closer-mop
           trivial-main-thread
@@ -521,14 +470,79 @@ let
           shasht
           org_dot_melusina_dot_confidence
         ];
+
+        systems = [
+          "kons-9"
+          "kons-9/testsuite"
+        ];
+
         meta = {
           homepage = "https://github.com/kaveh808/kons-9";
         };
       };
 
+      lessp = build-asdf-system {
+        pname = "lessp";
+        version = "0.2-f8a9e4664";
+
+        src = pkgs.fetchzip {
+          url = "https://github.com/facts-db/cl-lessp/archive/632217602b85b679e8d420654a0aa39e798ca3b5.tar.gz";
+          sha256 = "0i3ia14dzqwjpygd0zn785ff5vqnnmkn75psfpyx0ni3jr71lkq9";
+        };
+      };
+
+      magicl = build-with-compile-into-pwd {
+        inherit (super.magicl)
+          pname
+          version
+          src
+          lispLibs
+          ;
+
+        nativeBuildInputs = [ pkgs.gfortran ];
+        nativeLibs = [ pkgs.openblas ];
+      };
+
+      mathkit = build-asdf-system {
+        inherit (super.mathkit)
+          pname
+          version
+          src
+          asds
+          ;
+
+        lispLibs = super.mathkit.lispLibs ++ [ super.sb-cga ];
+      };
+
       nsb-cga = super.nsb-cga.overrideLispAttrs (old: {
         lispLibs = old.lispLibs ++ [ self.sb-cga ];
       });
+
+      polyclot = build-asdf-system {
+        pname = "polyclot";
+        version = "trunk";
+
+        src = pkgs.fetchfossil {
+          url = "https://fossil.turtleware.eu/fossil.turtleware.eu/polyclot";
+          rev = "18500c968b1fc1e2a915b5c70b8cddc4a2b54de51da4eedc5454e42bfea3b479";
+          sha256 = "sha256-KgBL1QQN4iG6d8E9GlKAuxSwkrY6Zy7e1ZzEDGKad+A=";
+        };
+
+        lispLibs = with self; [
+          clim
+          mcclim
+          mcclim-layouts
+        ];
+
+        systems = [
+          "eu.turtleware.polyclot"
+          "eu.turtleware.polyclot/demo"
+        ];
+
+        meta = {
+          homepage = "https://github.com/kaveh808/kons-9";
+        };
+      };
 
       qlot-cli = build-asdf-system rec {
         pname = "qlot";
@@ -541,36 +555,9 @@ let
           hash = "sha256-j9iT25Yz9Z6llCKwwiHlVNKLqwuKvY194LrAzXuljsE=";
         };
 
-        lispLibs = with self; [
-          archive
-          deflate
-          dexador
-          fuzzy-match
-          ironclad
-          lparallel
-          yason
-        ];
-
-        nativeLibs = [
-          pkgs.openssl
-        ];
-
         nativeBuildInputs = [
           pkgs.makeWrapper
         ];
-
-        buildScript = pkgs.writeText "build-qlot-cli" ''
-          (load "${self.qlot-cli.asdfFasl}/asdf.${self.qlot-cli.faslExt}")
-          (asdf:load-system :qlot/command)
-          (asdf:load-system :qlot/subcommands)
-
-          ;; Use uiop:dump-image instead of sb-ext:dump-image for the image restore hooks
-          (setf uiop:*image-entry-point* #'qlot/cli:main)
-          (uiop:dump-image "qlot"
-                           :executable t
-                           #+sb-core-compression :compression
-                           #+sb-core-compression t)
-        '';
 
         installPhase = ''
           runHook preInstall
@@ -587,43 +574,123 @@ let
           runHook postInstall
         '';
 
+        buildScript = pkgs.writeText "build-qlot-cli" ''
+          (load "${self.qlot-cli.asdfFasl}/asdf.${self.qlot-cli.faslExt}")
+          (asdf:load-system :qlot/command)
+          (asdf:load-system :qlot/subcommands)
+
+          ;; Use uiop:dump-image instead of sb-ext:dump-image for the image restore hooks
+          (setf uiop:*image-entry-point* #'qlot/cli:main)
+          (uiop:dump-image "qlot"
+                           :executable t
+                           #+sb-core-compression :compression
+                           #+sb-core-compression t)
+        '';
+
+        lispLibs = with self; [
+          archive
+          deflate
+          dexador
+          fuzzy-match
+          ironclad
+          lparallel
+          yason
+        ];
+
+        nativeLibs = [
+          pkgs.openssl
+        ];
+
         meta = {
-          mainProgram = "qlot";
           homepage = "https://github.com/fukamachi/qlot";
+          mainProgram = "qlot";
         };
       };
 
-      fset = super.fset.overrideLispAttrs (old: {
-        systems = [
-          "fset"
-          "fset/test"
+      quil-coalton = self.coalton;
+
+      reblocks-ui2 = super.reblocks-ui2.overrideLispAttrs (o: {
+        systems = o.systems ++ [
+          "reblocks-ui2/themes/color"
+          "reblocks-ui2/themes/tailwind"
+          "reblocks-ui2/utils/padding"
+          "reblocks-ui2/utils/align"
+          "reblocks-ui2/card"
+          "reblocks-ui2/card/view"
         ];
-        meta = {
-          description = "Functional collections library";
-          homepage = "https://gitlab.common-lisp.net/fset/fset/-/wikis/home";
-          license = pkgs.lib.licenses.llgpl21;
-        };
       });
 
-      thih-coalton = self.coalton;
-      quil-coalton = self.coalton;
-      coalton = super.coalton.overrideLispAttrs (old: {
-        systems = [
-          "coalton"
-          "thih-coalton"
-          "quil-coalton"
-          "thih-coalton/tests"
-          "quil-coalton/tests"
-          "coalton/tests"
-        ];
-        lispLibs = old.lispLibs ++ [ self.fiasco ];
-        nativeLibs = [ pkgs.mpfr ];
-        meta = {
-          description = "Statically typed functional programming language that supercharges Common Lisp";
-          homepage = "https://coalton-lang.github.io";
-          license = pkgs.lib.licenses.mit;
+      rollback = build-asdf-system {
+        pname = "rollback";
+        version = "0.1-5d3f21fda";
+
+        src = pkgs.fetchzip {
+          url = "https://github.com/facts-db/cl-rollback/archive/5d3f21fda8f04f35c5e9d20ee3b87db767915d15.tar.gz";
+          sha256 = "12dpxsbm2al633y87i8p784k2dn4bbskz6sl40v9f5ljjmjqjzxf";
         };
-      });
+      };
+
+      slynk = build-asdf-system {
+        pname = "slynk";
+        version = "trunk";
+
+        src = pkgs.fetchFromGitHub {
+          owner = "joaotavora";
+          repo = "sly";
+          rev = "ba40c8f054ec3b7040a6c36a1ef3e9596b936421";
+          hash = "sha256-hoaCZtyezuXptDPnAvBTT0SZ14M9Ifrmki3beBOwFmI=";
+        };
+
+        systems = [
+          "slynk"
+          "slynk/arglists"
+          "slynk/fancy-inspector"
+          "slynk/package-fu"
+          "slynk/mrepl"
+          "slynk/trace-dialog"
+          "slynk/profiler"
+          "slynk/stickers"
+          "slynk/indentation"
+          "slynk/retro"
+        ];
+
+        meta = {
+          homepage = "https://github.com/joaotavora/sly";
+        };
+      };
+
+      stumpwm = super.stumpwm.overrideLispAttrs {
+        inherit (pkgs.stumpwm) src version;
+
+        meta = {
+          inherit (pkgs.stumpwm.meta) description license homepage;
+        };
+      };
+
+      swank = build-with-compile-into-pwd rec {
+        inherit (super.swank) pname lispLibs;
+        version = "2.29.1";
+
+        src = pkgs.fetchFromGitHub {
+          owner = "slime";
+          repo = "slime";
+          rev = "v${version}";
+          hash = "sha256-5hNB5XxbTER4HX3dn4umUGnw6UeiTQkczmggFz4uWoE=";
+        };
+
+        patches = [ ./patches/swank-pure-paths.patch ];
+
+        postConfigure = ''
+          substituteAllInPlace swank-loader.lisp
+        '';
+
+        systems = [
+          "swank"
+          "swank/exts"
+        ];
+      };
+
+      thih-coalton = self.coalton;
 
     }
     // optionalAttrs pkgs.config.allowAliases {

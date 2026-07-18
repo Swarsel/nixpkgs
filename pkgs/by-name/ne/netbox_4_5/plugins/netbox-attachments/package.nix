@@ -1,20 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  python,
-  netbox,
+  buildPythonPackage,
   django,
   netaddr,
+  netbox,
+  python,
+  setuptools,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "netbox-attachments";
   version = "11.2.1";
-  pyproject = true;
-  __structuredAttrs = true;
-
-  disabled = python.pythonVersion != netbox.python.pythonVersion;
 
   src = fetchFromGitHub {
     owner = "Kani999";
@@ -22,8 +18,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-vljF55gYykxHnitYoag9G8PzAxjRe4YpPmu8gGMNMd8=";
   };
-
-  build-system = [ setuptools ];
 
   nativeCheckInputs = [
     netbox
@@ -35,6 +29,10 @@ buildPythonPackage (finalAttrs: {
     export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
   '';
 
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  disabled = python.pythonVersion != netbox.python.pythonVersion;
+  pyproject = true;
   pythonImportsCheck = [ "netbox_attachments" ];
 
   meta = {
@@ -42,7 +40,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/Kani999/netbox-attachments";
     changelog = "https://github.com/Kani999/netbox-attachments/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ felbinger ];
+    platforms = lib.platforms.linux;
   };
 })

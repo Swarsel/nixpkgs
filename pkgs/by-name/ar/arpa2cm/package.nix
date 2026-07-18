@@ -10,9 +10,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "arpa2cm";
   version = "1.0.7";
 
-  __structuredAttrs = true;
-  strictDeps = true;
-
   src = fetchFromGitLab {
     owner = "arpa2";
     repo = "arpa2cm";
@@ -20,12 +17,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-JkMZUXqmrVzURVi8BJRsHprD4Jz6l83qhPxnOfq4KE4=";
   };
 
+  strictDeps = true;
   nativeBuildInputs = [ cmake ];
-
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "CMake Module library for the ARPA2 project";
+
     longDescription = ''
       The CMake module library for the ARPA2 project, including the LillyDAP,
       TLSPool and IdentityHub software stacks. Like the KDE Extra CMake Modules (ECM)
@@ -37,6 +36,7 @@ stdenv.mkDerivation (finalAttrs: {
       also include modules used for product release and deployment of
       the ARPA2 software stack.
     '';
+
     homepage = "https://gitlab.com/arpa2/arpa2cm";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ fufexan ];

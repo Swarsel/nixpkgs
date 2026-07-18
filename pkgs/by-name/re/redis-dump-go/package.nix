@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -17,14 +17,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/yannh/redis-dump-go";
     description = "Dump Redis keys to a file in RESP format using multiple connections";
+    homepage = "https://github.com/yannh/redis-dump-go";
+    changelog = "https://github.com/yannh/redis-dump-go/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.richiejp ];
-    changelog = "https://github.com/yannh/redis-dump-go/releases/tag/v${finalAttrs.version}";
   };
 })

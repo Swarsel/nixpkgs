@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  zlib,
-  kmod,
-  which,
-  hwdata,
-  static ? stdenv.hostPlatform.isStatic,
   gitUpdater,
+  hwdata,
+  kmod,
+  pkg-config,
+  which,
+  zlib,
+  static ? stdenv.hostPlatform.isStatic,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,18 +22,22 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-fPtOhUz8Hlo0ajCZbNOwT4fiuL8HlFQ7NGk+nQpmKZM=";
   };
 
+  # Since this package doesn't use an autotools generated configure script,
+  # splitting the dev or lib outputs produces incorrect files, evident by e.g
+  # pkg-config files which point to wrong paths. manual pages OTH are moved to
+  # the $man outputs naturally by stdenv.
+  outputs = [
+    "out"
+    "man"
+  ];
+
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     which
     zlib
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ kmod ];
-
-  preConfigure = lib.optionalString (!stdenv.cc.isGNU) ''
-    substituteInPlace Makefile --replace 'CC=$(CROSS_COMPILE)gcc' ""
-  '';
-
-  enableParallelBuilding = true;
 
   makeFlags = [
     "SHARED=${lib.boolToYesNo (!static)}"
@@ -44,19 +48,9 @@ stdenv.mkDerivation (finalAttrs: {
     "DNS=yes"
   ];
 
-  installTargets = [
-    "install"
-    "install-lib"
-  ];
-
-  # Since this package doesn't use an autotools generated configure script,
-  # splitting the dev or lib outputs produces incorrect files, evident by e.g
-  # pkg-config files which point to wrong paths. manual pages OTH are moved to
-  # the $man outputs naturally by stdenv.
-  outputs = [
-    "out"
-    "man"
-  ];
+  preConfigure = lib.optionalString (!stdenv.cc.isGNU) ''
+    substituteInPlace Makefile --replace 'CC=$(CROSS_COMPILE)gcc' ""
+  '';
 
   postInstall = ''
     # Remove update-pciids as it won't work on nixos
@@ -68,18 +62,25 @@ stdenv.mkDerivation (finalAttrs: {
     cp --reflink=auto ${hwdata}/share/hwdata/pci.ids $out/share/pci.ids
   '';
 
+  enableParallelBuilding = true;
+
+  installTargets = [
+    "install"
+    "install-lib"
+  ];
+
   passthru.updateScript = gitUpdater {
+    rev-prefix = "v";
     # No nicer place to find latest release.
     url = "https://github.com/pciutils/pciutils.git";
-    rev-prefix = "v";
   };
 
   meta = {
-    homepage = "https://mj.ucw.cz/sw/pciutils/";
     description = "Collection of programs for inspecting and manipulating configuration of PCI devices";
+    homepage = "https://mj.ucw.cz/sw/pciutils/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.vcunat ]; # not really, but someone should watch it
+    platforms = lib.platforms.unix;
     mainProgram = "lspci";
   };
 })

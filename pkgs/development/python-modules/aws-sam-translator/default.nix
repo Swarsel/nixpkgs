@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   boto3,
   buildPythonPackage,
-  fetchFromGitHub,
   jsonschema,
   parameterized,
   pydantic,
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "aws-sam-translator";
   version = "1.110.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aws";
@@ -32,17 +31,6 @@ buildPythonPackage rec {
     # don't try to use --cov or fail on new warnings
     rm pytest.ini
   '';
-
-  pythonRelaxDeps = [ "pydantic" ];
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    boto3
-    jsonschema
-    pydantic
-    typing-extensions
-  ];
 
   nativeCheckInputs = [
     parameterized
@@ -58,17 +46,27 @@ buildPythonPackage rec {
     export AWS_DEFAULT_REGION=us-east-1
   '';
 
-  enabledTestPaths = [
-    "tests"
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    boto3
+    jsonschema
+    pydantic
+    typing-extensions
   ];
 
   disabledTestMarks = [
     "slow"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  enabledTestPaths = [
+    "tests"
+  ];
 
+  pyproject = true;
   pythonImportsCheck = [ "samtranslator" ];
+  pythonRelaxDeps = [ "pydantic" ];
 
   meta = {
     description = "Python library to transform SAM templates into AWS CloudFormation templates";

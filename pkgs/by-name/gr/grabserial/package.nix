@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "grabserial";
   version = "2.1.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tbird20d";
@@ -16,19 +15,18 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-XHI5r4OkJUtMuH83jKvNttEpKpqARjxj9SDLzhSPxSc=";
   };
 
-  build-system = [ python3Packages.setuptools ];
-
-  dependencies = [ python3Packages.pyserial ];
-
   # no usable tests
   doCheck = false;
+  build-system = [ python3Packages.setuptools ];
+  dependencies = [ python3Packages.pyserial ];
+  pyproject = true;
 
   meta = {
     description = "Python based serial dump and timing program";
-    mainProgram = "grabserial";
     homepage = "https://github.com/tbird20d/grabserial";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ vmandela ];
     platforms = lib.platforms.linux;
+    mainProgram = "grabserial";
   };
 })

@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -46,22 +46,27 @@ in
   options = {
     services.nzbget = {
       enable = lib.mkEnableOption "NZBGet, for downloading files from news servers";
-
       package = lib.mkPackageOption pkgs "nzbget" { };
 
-      user = lib.mkOption {
-        type = lib.types.str;
-        default = "nzbget";
-        description = "User account under which NZBGet runs";
-      };
-
       group = lib.mkOption {
-        type = lib.types.str;
         default = "nzbget";
         description = "Group under which NZBGet runs";
+        type = lib.types.str;
       };
 
       settings = lib.mkOption {
+        default = { };
+
+        description = ''
+          NZBGet configuration, passed via command line using switch -o. Refer to
+          <https://github.com/nzbgetcom/nzbget/blob/develop/nzbget.conf>
+          for details on supported values.
+        '';
+
+        example = {
+          MainDir = "/data";
+        };
+
         type =
           with lib.types;
           attrsOf (oneOf [
@@ -69,15 +74,12 @@ in
             int
             str
           ]);
-        default = { };
-        description = ''
-          NZBGet configuration, passed via command line using switch -o. Refer to
-          <https://github.com/nzbgetcom/nzbget/blob/develop/nzbget.conf>
-          for details on supported values.
-        '';
-        example = {
-          MainDir = "/data";
-        };
+      };
+
+      user = lib.mkOption {
+        default = "nzbget";
+        description = "User account under which NZBGet runs";
+        type = lib.types.str;
       };
     };
   };
@@ -86,25 +88,25 @@ in
 
   config = lib.mkIf cfg.enable {
     services.nzbget.settings = {
-      # allows nzbget to run as a "simple" service
-      OutputMode = "loggable";
-      # use journald for logging
-      WriteLog = "none";
-      ErrorTarget = "screen";
-      WarningTarget = "screen";
-      InfoTarget = "screen";
-      DetailTarget = "screen";
       # required paths
       ConfigTemplate = "${cfg.package}/share/nzbget/nzbget.conf";
-      WebDir = "${cfg.package}/share/nzbget/webui";
+      DetailTarget = "screen";
+      ErrorTarget = "screen";
+      InfoTarget = "screen";
+      # allows nzbget to run as a "simple" service
+      OutputMode = "loggable";
       # nixos handles package updates
       UpdateCheck = "none";
+      WarningTarget = "screen";
+      WebDir = "${cfg.package}/share/nzbget/webui";
+      # use journald for logging
+      WriteLog = "none";
     };
 
     systemd.services.nzbget = {
-      description = "NZBGet Daemon";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "NZBGet Daemon";
+
       path = with pkgs; [
         unrar
         p7zip
@@ -117,28 +119,30 @@ in
       '';
 
       serviceConfig = {
-        StateDirectory = "nzbget";
-        StateDirectoryMode = "0750";
-        User = cfg.user;
-        Group = cfg.group;
-        UMask = "0002";
-        Restart = "on-failure";
         ExecStart = "${cfg.package}/bin/nzbget --server --configfile ${stateDir}/nzbget.conf ${configOpts}";
         ExecStop = "${cfg.package}/bin/nzbget --quit";
+        Group = cfg.group;
+        Restart = "on-failure";
+        StateDirectory = "nzbget";
+        StateDirectoryMode = "0750";
+        UMask = "0002";
+        User = cfg.user;
       };
-    };
 
-    users.users = lib.mkIf (cfg.user == "nzbget") {
-      nzbget = {
-        home = stateDir;
-        group = cfg.group;
-        uid = config.ids.uids.nzbget;
-      };
+      wantedBy = [ "multi-user.target" ];
     };
 
     users.groups = lib.mkIf (cfg.group == "nzbget") {
       nzbget = {
         gid = config.ids.gids.nzbget;
+      };
+    };
+
+    users.users = lib.mkIf (cfg.user == "nzbget") {
+      nzbget = {
+        group = cfg.group;
+        home = stateDir;
+        uid = config.ids.uids.nzbget;
       };
     };
   };

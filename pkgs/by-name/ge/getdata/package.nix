@@ -8,6 +8,7 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "getdata";
   version = "0.11.0";
+
   src = fetchFromGitHub {
     owner = "ketiltrout";
     repo = "getdata";
@@ -20,9 +21,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Reference implementation of the Dirfile Standards";
-    license = lib.licenses.lgpl21Plus;
-    platforms = lib.platforms.all;
-    maintainers = [ lib.maintainers.vbgl ];
     homepage = "https://getdata.sourceforge.net/";
+    license = lib.licenses.lgpl21Plus;
+    maintainers = [ lib.maintainers.vbgl ];
+    platforms = lib.platforms.all;
   };
 })

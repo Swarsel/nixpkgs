@@ -1,14 +1,12 @@
 {
-  buildDunePackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildDunePackage,
 }:
 
 buildDunePackage rec {
   pname = "ubase";
   version = "0.20";
-
-  minimalOCamlVersion = "4.14.0";
 
   src = fetchFromGitHub {
     owner = "sanette";
@@ -18,11 +16,12 @@ buildDunePackage rec {
   };
 
   doCheck = true;
+  minimalOCamlVersion = "4.14.0";
 
   meta = {
     description = "Remove accents from utf8 strings";
-    license = lib.licenses.gpl3;
     homepage = "https://github.com/sanette/ubase";
+    license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ mrdev023 ];
   };
 }

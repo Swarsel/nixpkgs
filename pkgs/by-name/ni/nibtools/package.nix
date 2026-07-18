@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  opencbm,
   cc65,
+  opencbm,
 }:
 
 stdenv.mkDerivation {
@@ -17,8 +17,6 @@ stdenv.mkDerivation {
     hash = "sha256-0skAavJe01b+4Z7LEfS2qIhqkwj8XhOwmflhYPEynw4=";
   };
 
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=format-security";
-
   nativeBuildInputs = [
     cc65
   ];
@@ -27,12 +25,14 @@ stdenv.mkDerivation {
     opencbm
   ];
 
-  preBuild = "mkdir build";
   makeFlags = [
     "-f"
     "GNU/Makefile"
     "linux"
   ];
+
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=format-security";
+  preBuild = "mkdir build";
 
   installPhase = ''
     runHook preInstall

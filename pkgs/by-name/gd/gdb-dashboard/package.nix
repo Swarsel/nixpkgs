@@ -19,7 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
   propagatedBuildInputs = [ python3Packages.pygments ];
 
   installPhase = ''
@@ -42,9 +41,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Modular visual interface for GDB in Python";
     homepage = "https://github.com/cyrus-and/gdb-dashboard";
-    downloadPage = "https://github.com/cyrus-and/gdb-dashboard";
     changelog = "https://github.com/cyrus-and/gdb-dashboard/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ethancedwards8 ];
+    downloadPage = "https://github.com/cyrus-and/gdb-dashboard";
   };
 })

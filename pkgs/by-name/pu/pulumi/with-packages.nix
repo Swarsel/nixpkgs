@@ -1,9 +1,9 @@
 {
   lib,
-  runCommand,
+  makeBinaryWrapper,
   pulumi,
   pulumiPackages,
-  makeBinaryWrapper,
+  runCommand,
 }:
 f:
 # Note that Pulumi prints a warning for “ambient” plugins (i.e. from PATH). E.g.
@@ -18,14 +18,16 @@ f:
 runCommand "pulumi-with-packages"
   {
     inherit pulumi;
+    nativeBuildInputs = [ makeBinaryWrapper ];
+    __structuredAttrs = true;
+
     makeWrapperArgs = [
       "--suffix"
       "PATH"
       ":"
       (lib.makeBinPath (f pulumiPackages))
     ];
-    __structuredAttrs = true;
-    nativeBuildInputs = [ makeBinaryWrapper ];
+
     meta.mainProgram = "pulumi";
   }
   ''

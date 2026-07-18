@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "appimage";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ssh-mitm";
@@ -17,11 +16,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-aL0JcA6R2FUMcXykbXaSaUEz1ERs3iKh4c0cbRAClSY=";
   };
 
-  build-system = [ hatchling ];
-
   # Module has no test
   doCheck = false;
-
+  build-system = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "appimage" ];
 
   meta = {

@@ -1,9 +1,9 @@
 {
   lib,
+  alsa-lib,
   buildGoModule,
   fetchzip,
   pkg-config,
-  alsa-lib,
 }:
 buildGoModule {
   pname = "termsonic";
@@ -14,20 +14,17 @@ buildGoModule {
     hash = "sha256-HPI4G+bGHejTwVsb8YIU6b7KnIrkqzDf8zZQAWmcfks=";
   };
 
+  strictDeps = true;
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ alsa-lib ];
   vendorHash = "sha256-+v7i69b4d11IGnraE6ROscFmqCVLHnkyI2pW+NS1v8k=";
 
-  nativeBuildInputs = [ pkg-config ];
-
-  buildInputs = [ alsa-lib ];
-
-  strictDeps = true;
-
   meta = {
-    homepage = "https://git.sixfoisneuf.fr/termsonic";
     description = "Subsonic client running in your terminal";
+    homepage = "https://git.sixfoisneuf.fr/termsonic";
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ mksafavi ];
     platforms = lib.platforms.unix;
     mainProgram = "termsonic";
-    maintainers = with lib.maintainers; [ mksafavi ];
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,6 +16,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-mNY1BmugJ7OauR3nSoiD7EpJ8dlk5PKPL/4urvPtOIY=";
+  __darwinAllowLocalNetworking = true; # for tests
 
   ldflags = [
     "-w"
@@ -23,15 +24,15 @@ buildGoModule (finalAttrs: {
     "-X main.version=v${finalAttrs.version}"
   ];
 
-  __darwinAllowLocalNetworking = true; # for tests
-
   meta = {
-    homepage = "https://github.com/FairwindsOps/pluto";
     description = "Find deprecated Kubernetes apiVersions";
-    mainProgram = "pluto";
+    homepage = "https://github.com/FairwindsOps/pluto";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       kashw2
     ];
+
+    mainProgram = "pluto";
   };
 })

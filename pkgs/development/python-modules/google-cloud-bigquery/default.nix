@@ -1,79 +1,44 @@
 {
   lib,
   buildPythonPackage,
+  db-dtypes,
   fetchPypi,
-
-  # build-system
-  setuptools,
-
+  #  tests
+  freezegun,
   # dependencies
   google-api-core,
   google-cloud-bigquery-storage,
   google-cloud-core,
-  google-resumable-media,
-  grpcio,
-  proto-plus,
-  protobuf,
-  python-dateutil,
-  requests,
-
-  # optional-dependencies
-  pyarrow,
-  db-dtypes,
-  pandas,
-  tqdm,
-  ipython,
-
-  #  tests
-  freezegun,
   google-cloud-datacatalog,
   google-cloud-storage,
   google-cloud-testutils,
+  google-resumable-media,
+  grpcio,
+  ipython,
   mock,
+  pandas,
+  proto-plus,
+  protobuf,
   psutil,
+  # optional-dependencies
+  pyarrow,
   pytest-xdist,
   pytest8_3CheckHook,
+  python-dateutil,
+  requests,
+  # build-system
+  setuptools,
+  tqdm,
 }:
 
 buildPythonPackage rec {
   pname = "google-cloud-bigquery";
   version = "3.41.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_bigquery";
     inherit version;
     hash = "sha256-IhfkiLR+1XY2DJsswH1Z2IOlS4MWfA7zf5FcJrAaBv4=";
-  };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    google-api-core
-    google-cloud-bigquery-storage
-    google-cloud-core
-    google-resumable-media
-    grpcio
-    proto-plus
-    protobuf
-    python-dateutil
-    requests
-  ]
-  ++ google-api-core.optional-dependencies.grpc;
-
-  optional-dependencies = {
-    bqstorage = [
-      google-cloud-bigquery-storage
-      grpcio
-      pyarrow
-    ];
-    pandas = [
-      db-dtypes
-      pandas
-      pyarrow
-    ];
-    tqdm = [ tqdm ];
-    ipython = [ ipython ];
+    pname = "google_cloud_bigquery";
   };
 
   nativeCheckInputs = [
@@ -93,6 +58,31 @@ buildPythonPackage rec {
   preCheck = ''
     rm -r google
   '';
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    google-api-core
+    google-cloud-bigquery-storage
+    google-cloud-core
+    google-resumable-media
+    grpcio
+    proto-plus
+    protobuf
+    python-dateutil
+    requests
+  ]
+  ++ google-api-core.optional-dependencies.grpc;
+
+  disabledTestPaths = [
+    # Tests require credentials
+    "tests/system/test_job_retry.py"
+    "tests/system/test_pandas.py"
+    "tests/system/test_query.py"
+
+    # ModuleNotFoundError: No module named 'google.cloud.resourcemanager_v3'
+    "tests/system/test_client.py"
+  ];
 
   disabledTests = [
     # requires credentials
@@ -129,15 +119,25 @@ buildPythonPackage rec {
     "test_table_snapshots"
   ];
 
-  disabledTestPaths = [
-    # Tests require credentials
-    "tests/system/test_job_retry.py"
-    "tests/system/test_pandas.py"
-    "tests/system/test_query.py"
+  optional-dependencies = {
+    bqstorage = [
+      google-cloud-bigquery-storage
+      grpcio
+      pyarrow
+    ];
 
-    # ModuleNotFoundError: No module named 'google.cloud.resourcemanager_v3'
-    "tests/system/test_client.py"
-  ];
+    ipython = [ ipython ];
+
+    pandas = [
+      db-dtypes
+      pandas
+      pyarrow
+    ];
+
+    tqdm = [ tqdm ];
+  };
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "google.cloud.bigquery"

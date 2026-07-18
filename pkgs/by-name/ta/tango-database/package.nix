@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchFromGitLab,
   cmake,
   cppzmq,
-  fetchFromGitLab,
   libjpeg,
   mariadb,
   mariadb-connector-c,
@@ -23,8 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "tango-controls";
     repo = "TangoDatabase";
     tag = "Database-Release-${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-oKihVbsFXcduCWZo8EU89IWMyMsdJaxVCMXBbGvNT+U=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -62,7 +62,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.com/tango-controls/TangoDatabase";
     changelog = "https://gitlab.com/tango-controls/TangoDatabase/-/blob/Database-Release-${finalAttrs.version}/RELEASE_NOTES.md";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.gilice ];
+    platforms = lib.platforms.linux;
   };
 })

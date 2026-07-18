@@ -19,6 +19,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     imlib2
     libx11
@@ -30,7 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Seven Segment Optical Character Recognition";
     homepage = "https://github.com/auerswal/ssocr";
     license = lib.licenses.gpl3;
-    mainProgram = "ssocr";
     platforms = lib.platforms.unix;
+    mainProgram = "ssocr";
   };
 })

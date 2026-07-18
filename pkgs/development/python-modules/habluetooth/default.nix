@@ -1,14 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   async-interrupt,
-  bleak-retry-connector,
   bleak,
+  bleak-retry-connector,
   bluetooth-adapters,
   bluetooth-auto-recovery,
   bluetooth-data-tools,
   buildPythonPackage,
   cython,
-  fetchFromGitHub,
   freezegun,
   poetry-core,
   pytest-asyncio,
@@ -21,7 +21,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "habluetooth";
   version = "6.26.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Bluetooth-Devices";
@@ -29,6 +28,14 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-IM3M4fWTdD4wT3UsNiLZq7QX3p9pf+lR3x84vuOICMM=";
   };
+
+  nativeCheckInputs = [
+    freezegun
+    pytest-asyncio
+    pytest-codspeed
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [
     cython
@@ -45,14 +52,7 @@ buildPythonPackage (finalAttrs: {
     bluetooth-data-tools
   ];
 
-  nativeCheckInputs = [
-    freezegun
-    pytest-asyncio
-    pytest-codspeed
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "habluetooth" ];
 
   meta = {

@@ -1,18 +1,18 @@
 {
+  lib,
   stdenv,
   fetchgit,
   fontconfig,
-  libjpeg,
-  libcap,
   freetype,
   fribidi,
-  pkg-config,
   gettext,
-  systemd,
+  libcap,
+  libjpeg,
   perl,
-  lib,
-  enableSystemd ? true,
+  pkg-config,
+  systemd,
   enableBidi ? true,
+  enableSystemd ? true,
 }:
 stdenv.mkDerivation rec {
 
@@ -25,9 +25,14 @@ stdenv.mkDerivation rec {
     hash = "sha256-m+aSW4b9GEhJa2Tax5nkm4q5DBZVWwBMa3abRM8vw08=";
   };
 
-  enableParallelBuilding = true;
+  outputs = [
+    "out"
+    "dev"
+    "man"
+  ];
 
   postPatch = "substituteInPlace Makefile --replace libsystemd-daemon libsystemd";
+  nativeBuildInputs = [ perl ];
 
   buildInputs = [
     fontconfig
@@ -46,13 +51,13 @@ stdenv.mkDerivation rec {
   ++ lib.optional enableSystemd "SDNOTIFY=1"
   ++ lib.optional enableBidi "BIDI=1";
 
-  nativeBuildInputs = [ perl ];
+  postInstall = ''
+    mkdir -p $out/lib/vdr # only needed if vdr is started without any plugin
+    mkdir -p $out/share/vdr/conf
+    cp *.conf $out/share/vdr/conf
+  '';
 
-  # plugins uses the same build environment as vdr
-  propagatedNativeBuildInputs = [
-    pkg-config
-    gettext
-  ];
+  enableParallelBuilding = true;
 
   installFlags = [
     "DESTDIR=$(out)"
@@ -67,23 +72,17 @@ stdenv.mkDerivation rec {
     "install-includes"
   ];
 
-  postInstall = ''
-    mkdir -p $out/lib/vdr # only needed if vdr is started without any plugin
-    mkdir -p $out/share/vdr/conf
-    cp *.conf $out/share/vdr/conf
-  '';
-
-  outputs = [
-    "out"
-    "dev"
-    "man"
+  # plugins uses the same build environment as vdr
+  propagatedNativeBuildInputs = [
+    pkg-config
+    gettext
   ];
 
   meta = {
-    homepage = "https://www.tvdr.de/";
     description = "Video Disc Recorder";
+    homepage = "https://www.tvdr.de/";
+    license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.ck3d ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl2Plus;
   };
 }

@@ -1,11 +1,11 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  openssl,
-  tpm2-tss,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  tpm2-tss,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-SL0I1bMh9QmBo4aBv1ZL3M5ZaVeJ0K3kZCMStma6bG0=";
   };
 
-  cargoHash = "sha256-/2Lo5/CCv12PJocUYjZiRD4uBxrcKWA5RelLnU4TpcQ=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -30,21 +28,26 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tpm2-tss
   ];
 
+  cargoHash = "sha256-/2Lo5/CCv12PJocUYjZiRD4uBxrcKWA5RelLnU4TpcQ=";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Collection of utilities for working with NitroTPM attestation";
+
     longDescription = ''
       A collection of utilities for working with NitroTPM attestation on AWS EC2.
       Includes nitro-tpm-attest for requesting attestation documents and
       nitro-tpm-pcr-compute for precomputing PCR values of UKIs (Unified Kernel Images).
     '';
+
     homepage = "https://github.com/aws/NitroTPM-Tools";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       arianvp
       mariusknaust
     ];
+
     platforms = lib.platforms.linux;
   };
 })

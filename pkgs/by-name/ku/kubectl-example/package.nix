@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,10 +19,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "kubectl plugin for retrieving resource example YAMLs";
-    mainProgram = "kubectl-example";
     homepage = "https://github.com/seredot/kubectl-example";
     changelog = "https://github.com/seredot/kubectl-example/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "kubectl-example";
   };
 })

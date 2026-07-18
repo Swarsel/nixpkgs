@@ -1,9 +1,9 @@
 {
-  maven,
-  fetchFromGitHub,
   lib,
-  makeWrapper,
+  fetchFromGitHub,
   jre,
+  makeWrapper,
+  maven,
 }:
 
 maven.buildMavenPackage rec {
@@ -17,10 +17,6 @@ maven.buildMavenPackage rec {
     hash = "sha256-XrlZQf2BamYw8u1S2qQ6jV9mgyCEjBxKqPZCXMJzXmc=";
   };
 
-  mvnHash = "sha256-8q8voXYxOhWcb3U2Nqg/LRhSru94puhymQa7Z9FR0+g=";
-
-  mvnParameters = "package assembly:single -Dmaven.test.skip=true";
-
   nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
@@ -33,6 +29,9 @@ maven.buildMavenPackage rec {
     --add-flags "-classpath $out/share/exificient/exificient-jar-with-dependencies.jar com.siemens.ct.exi.main.cmd.EXIficientCMD"
     runHook postInstall
   '';
+
+  mvnHash = "sha256-8q8voXYxOhWcb3U2Nqg/LRhSru94puhymQa7Z9FR0+g=";
+  mvnParameters = "package assembly:single -Dmaven.test.skip=true";
 
   meta = {
     description = "Java implementation of the W3C Efficient Extensible Interchange (EXI) format specification";

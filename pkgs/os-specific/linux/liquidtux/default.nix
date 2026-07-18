@@ -8,7 +8,6 @@
 }:
 
 stdenv.mkDerivation rec {
-  name = "${pname}-${version}-${kernel.version}";
   pname = "liquidtux";
   version = "0.1.0-unstable-2025-01-16";
 
@@ -18,8 +17,6 @@ stdenv.mkDerivation rec {
     rev = "4613127ac6a7f1f0a98009045ea8c16f6b960533";
     sha256 = "sha256-68W7n3QWoAO07FDW45ualpOo5Cty6vcQt/9cLtlnDX0=";
   };
-
-  hardeningDisable = [ "pic" ];
 
   nativeBuildInputs = kernel.moduleBuildDependencies ++ [
     python3
@@ -36,15 +33,20 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  hardeningDisable = [ "pic" ];
+  name = "${pname}-${version}-${kernel.version}";
+
   meta = {
     description = "Linux kernel hwmon drivers for AIO liquid coolers and other devices";
     homepage = "https://github.com/liquidctl/liquidtux";
     license = lib.licenses.gpl2Only;
+    maintainers = with lib.maintainers; [ nickhu ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
-    maintainers = with lib.maintainers; [ nickhu ];
+
     broken = lib.versionOlder kernel.version "5.10";
   };
 }

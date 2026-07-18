@@ -18,10 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-EmuMF1hvS8wqhimBZ+Nyo+ChPG5FtbbGciquHl54j8k=";
   };
 
-  nativeBuildInputs = [ makeWrapper ];
-
-  buildInputs = [ python3 ];
-
   postPatch = ''
     substituteInPlace src/iproute2mac.py \
       --replace-fail /sbin/ifconfig ${darwin.network_cmds}/bin/ifconfig \
@@ -31,6 +27,9 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail /usr/sbin/arp ${darwin.network_cmds}/bin/arp \
       --replace-fail /usr/sbin/networksetup ${darwin.network_cmds}/bin/networksetup
   '';
+
+  nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ python3 ];
 
   installPhase = ''
     runHook preInstall
@@ -48,8 +47,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/brona/iproute2mac";
     description = "CLI wrapper for basic network utilites on Mac OS X inspired with iproute2 on Linux systems - ip command";
+    homepage = "https://github.com/brona/iproute2mac";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jiegec ];
     platforms = lib.platforms.darwin;

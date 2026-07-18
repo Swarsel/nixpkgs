@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   tags ? [
     # `RELEASE_TAGS` from https://github.com/lightningnetwork/lnd/blob/master/make/release_flags.mk
     "autopilotrpc"
@@ -22,6 +22,7 @@
 }:
 
 buildGoModule (finalAttrs: {
+  inherit tags;
   pname = "lnd";
   version = "0.21.1-beta";
 
@@ -33,20 +34,18 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-7fssqutcagEv6JKxwaAp9g3TtxHnQ34Kyln4DIhxjSQ=";
+  env.CGO_ENABLED = 0;
 
   subPackages = [
     "cmd/lncli"
     "cmd/lnd"
   ];
 
-  env.CGO_ENABLED = 0;
-
-  inherit tags;
-
   meta = {
     description = "Lightning Network Daemon";
     homepage = "https://github.com/lightningnetwork/lnd";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       bleetube
       cypherpunk2140

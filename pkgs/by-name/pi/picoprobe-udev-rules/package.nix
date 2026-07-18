@@ -22,22 +22,21 @@ stdenv.mkDerivation {
     udevCheckHook
   ];
 
-  doInstallCheck = true;
-
-  dontUnpack = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
     install -D $src $out/lib/udev/rules.d/69-probe-rs.rules
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  dontBuild = true;
+  dontUnpack = true;
+
   meta = {
-    homepage = "https://probe.rs/docs/getting-started/probe-setup/#udev-rules";
     description = "Picoprobe udev rules list";
-    platforms = lib.platforms.linux;
+    homepage = "https://probe.rs/docs/getting-started/probe-setup/#udev-rules";
     license = lib.licenses.gpl2Only;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 }

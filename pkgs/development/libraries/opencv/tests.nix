@@ -1,14 +1,14 @@
 {
+  lib,
+  stdenv,
   enableGStreamer,
   enableGtk2,
   enableGtk3,
   gst_all_1,
-  lib,
   opencv4,
   runAccuracyTests,
   runCommand,
   runPerformanceTests,
-  stdenv,
   testDataSrc,
   writableTmpDirAsHomeHook,
   xvfb-run,
@@ -20,7 +20,8 @@ let
 in
 runCommand "opencv4-tests"
   {
-    __structuredAttrs = true;
+    inherit runAccuracyTests;
+    inherit runPerformanceTests;
     strictDeps = true;
 
     nativeBuildInputs = [
@@ -34,6 +35,26 @@ runCommand "opencv4-tests"
         gst-plugins-good
       ]
     );
+
+    __structuredAttrs = true;
+
+    accuracyTestNames = [
+      # "calib3d" # reached a month of CPU time without completing
+      "core"
+      "features2d"
+      "flann"
+      "imgcodecs"
+      "imgproc"
+      "ml"
+      "objdetect"
+      "photo"
+      "stitching"
+      "video"
+      #"videoio" # - a lot of GStreamer warnings and failed tests
+      #"dnn" #- some caffe tests failed, probably because github workflow also downloads additional models
+    ]
+    ++ optionals (!isAarch64 && enableGStreamer) [ "gapi" ]
+    ++ optionals (enableGtk2 || enableGtk3) [ "highgui" ];
 
     ignoredTests = [
       "AsyncAPICancelation/cancel*"
@@ -58,28 +79,6 @@ runCommand "opencv4-tests"
       "CUDA_FastNonLocalMeans.Regression"
     ];
 
-    inherit runAccuracyTests;
-
-    accuracyTestNames = [
-      # "calib3d" # reached a month of CPU time without completing
-      "core"
-      "features2d"
-      "flann"
-      "imgcodecs"
-      "imgproc"
-      "ml"
-      "objdetect"
-      "photo"
-      "stitching"
-      "video"
-      #"videoio" # - a lot of GStreamer warnings and failed tests
-      #"dnn" #- some caffe tests failed, probably because github workflow also downloads additional models
-    ]
-    ++ optionals (!isAarch64 && enableGStreamer) [ "gapi" ]
-    ++ optionals (enableGtk2 || enableGtk3) [ "highgui" ];
-
-    inherit runPerformanceTests;
-
     performanceTestNames = [
       # "calib3d" # reached a month of CPU time without completing
       "core"
@@ -93,9 +92,8 @@ runCommand "opencv4-tests"
     ]
     ++ optionals (!isAarch64 && enableGStreamer) [ "gapi" ];
 
-    testRunner = optionalString (!isDarwin) "${getExe xvfb-run} -a ";
-
     requiredSystemFeatures = [ "big-parallel" ] ++ optionals cudaSupport [ "cuda" ];
+    testRunner = optionalString (!isDarwin) "${getExe xvfb-run} -a ";
   }
   ''
     set -euo pipefail

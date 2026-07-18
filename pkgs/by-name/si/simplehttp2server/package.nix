@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   fetchpatch,
 }:
 
@@ -19,8 +19,8 @@ buildGoModule (finalAttrs: {
   patches = [
     # Migrate to Go modules
     (fetchpatch {
-      url = "https://github.com/GoogleChromeLabs/simplehttp2server/commit/7090b4af33846c48b336335f6a19514b7c1d4392.patch";
       hash = "sha256-xGBPNdAmOAUkr7j2VDfTi3Bm13y/b3nuqDLf1jiGct4=";
+      url = "https://github.com/GoogleChromeLabs/simplehttp2server/commit/7090b4af33846c48b336335f6a19514b7c1d4392.patch";
     })
   ];
 
@@ -28,8 +28,8 @@ buildGoModule (finalAttrs: {
   proxyVendor = true;
 
   meta = {
-    homepage = "https://github.com/GoogleChromeLabs/simplehttp2server";
     description = "HTTP/2 server for development purposes";
+    homepage = "https://github.com/GoogleChromeLabs/simplehttp2server";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ yrashk ];
     mainProgram = "simplehttp2server";

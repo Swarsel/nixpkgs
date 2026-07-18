@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   glib,
-  vala,
-  libcanberra,
-  gobject-introspection,
-  libtool,
   gnome,
+  gobject-introspection,
+  libcanberra,
+  libtool,
   meson,
   ninja,
+  pkg-config,
+  vala,
 }:
 
 stdenv.mkDerivation rec {
@@ -23,7 +23,7 @@ stdenv.mkDerivation rec {
   };
 
   strictDeps = true;
-  depsBuildBuild = [ pkg-config ];
+
   nativeBuildInputs = [
     pkg-config
     meson
@@ -32,10 +32,13 @@ stdenv.mkDerivation rec {
     libtool
     vala
   ];
+
   buildInputs = [
     glib
     libcanberra
   ];
+
+  depsBuildBuild = [ pkg-config ];
 
   passthru = {
     updateScript = gnome.updateScript {
@@ -45,11 +48,11 @@ stdenv.mkDerivation rec {
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/gsound";
     description = "Small library for playing system sounds";
-    mainProgram = "gsound-play";
-    teams = [ lib.teams.gnome ];
+    homepage = "https://gitlab.gnome.org/GNOME/gsound";
     license = lib.licenses.gpl2;
     platforms = lib.platforms.unix;
+    mainProgram = "gsound-play";
+    teams = [ lib.teams.gnome ];
   };
 }

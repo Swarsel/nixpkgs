@@ -17,28 +17,11 @@
 buildPythonPackage (finalAttrs: {
   pname = "google-cloud-datastore";
   version = "2.25.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_datastore";
     inherit (finalAttrs) version;
     hash = "sha256-3WRqPY+ZwnULtfbg8Y7Oe+2V/XbgLayt2/o1orIjKP8=";
-  };
-
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [ "protobuf" ];
-
-  dependencies = [
-    google-api-core
-    google-cloud-core
-    proto-plus
-    protobuf
-  ]
-  ++ google-api-core.optional-dependencies.grpc;
-
-  optional-dependencies = {
-    libcst = [ libcst ];
+    pname = "google_cloud_datastore";
   };
 
   nativeCheckInputs = [
@@ -53,6 +36,16 @@ buildPythonPackage (finalAttrs: {
     rm -r google
   '';
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    google-api-core
+    google-cloud-core
+    proto-plus
+    protobuf
+  ]
+  ++ google-api-core.optional-dependencies.grpc;
+
   disabledTestPaths = [
     # Requires credentials
     "tests/system/test_aggregation_query.py"
@@ -63,11 +56,19 @@ buildPythonPackage (finalAttrs: {
     "tests/system/test_transaction.py"
   ];
 
+  optional-dependencies = {
+    libcst = [ libcst ];
+  };
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "google.cloud.datastore"
     "google.cloud.datastore_admin_v1"
     "google.cloud.datastore_v1"
   ];
+
+  pythonRelaxDeps = [ "protobuf" ];
 
   meta = {
     description = "Google Cloud Datastore API client library";

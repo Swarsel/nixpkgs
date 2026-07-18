@@ -2,10 +2,10 @@
   lib,
   fetchFromGitHub,
   buildDunePackage,
-  ocaml,
   cmdliner,
   dap,
   fmt,
+  gitUpdater,
   iter,
   logs,
   lru,
@@ -13,17 +13,15 @@
   lwt_react,
   menhir,
   menhirLib,
+  ocaml,
   path_glob,
   ppx_deriving_yojson,
   ppx_optcomp,
-  gitUpdater,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "earlybird";
   version = "1.3.6";
-
-  minimalOCamlVersion = "4.12";
 
   src = fetchFromGitHub {
     owner = "hackwaly";
@@ -49,11 +47,12 @@ buildDunePackage (finalAttrs: {
     ppx_optcomp
   ];
 
+  minimalOCamlVersion = "4.12";
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://github.com/hackwaly/ocamlearlybird";
     description = "OCaml debug adapter";
+    homepage = "https://github.com/hackwaly/ocamlearlybird";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.romildo ];
   };

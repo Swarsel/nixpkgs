@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage rec {
   pname = "pcodedmp";
   version = "1.2.6";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "bontchev";
@@ -24,14 +23,14 @@ buildPythonPackage rec {
 
   # Module doesn't have tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pcodedmp" ];
 
   meta = {
     description = "Python VBA p-code disassembler";
-    mainProgram = "pcodedmp";
     homepage = "https://github.com/bontchev/pcodedmp";
     license = with lib.licenses; [ gpl3Only ];
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "pcodedmp";
   };
 }

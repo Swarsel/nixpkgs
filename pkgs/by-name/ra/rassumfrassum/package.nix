@@ -1,8 +1,8 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   basedpyright,
+  python3Packages,
   # codebook,
   ruff,
   ty,
@@ -12,9 +12,8 @@ let
   version = "0.3.4";
 in
 python3Packages.buildPythonApplication {
-  pname = "rassumfrassum";
   inherit version;
-  pyproject = true;
+  pname = "rassumfrassum";
 
   src = fetchFromGitHub {
     owner = "joaotavora";
@@ -26,8 +25,6 @@ python3Packages.buildPythonApplication {
   postPatch = ''
     patchShebangs rass test/
   '';
-
-  build-system = [ python3Packages.setuptools ];
 
   # The test suite is timing-sensitive at present and running it on
   # Hydra does not add much value in any case, given that this package
@@ -47,6 +44,9 @@ python3Packages.buildPythonApplication {
   checkPhase = ''
     test/run-all.sh
   '';
+
+  build-system = [ python3Packages.setuptools ];
+  pyproject = true;
 
   meta = {
     description = "Connect an LSP client to multiple LSP servers";

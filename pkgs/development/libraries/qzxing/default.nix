@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   gitUpdater,
-  testers,
   qmake,
   qtmultimedia,
+  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,11 +38,11 @@ stdenv.mkDerivation (finalAttrs: {
     qtmultimedia
   ];
 
-  dontWrapQtApps = true;
-
   preConfigure = ''
     cd src
   '';
+
+  dontWrapQtApps = true;
 
   qmakeFlags = [
     "CONFIG+=qzxing_qml"
@@ -52,6 +52,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = gitUpdater {
       rev-prefix = "v";
     };
@@ -63,6 +64,7 @@ stdenv.mkDerivation (finalAttrs: {
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ OPNA2608 ];
     platforms = lib.platforms.unix;
+
     pkgConfigModules = [
       "QZXing"
     ];

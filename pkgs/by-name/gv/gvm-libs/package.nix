@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   cjson,
   cmake,
   curl,
   doxygen,
-  fetchFromGitHub,
   glib,
   gnutls,
   gpgme,
@@ -66,7 +66,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   cmakeFlags = [ "-DGVM_RUN_DIR=${placeholder "out"}/run/gvm" ];
-
   # causes redefinition of _FORTIFY_SOURCE
   hardeningDisable = [ "fortify3" ];
 

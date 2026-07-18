@@ -1,24 +1,22 @@
 {
-  buildDunePackage,
-  ocaml,
-  mirage-runtime,
   astring,
   bos,
+  buildDunePackage,
   cmdliner,
   emile,
   fmt,
   fpath,
   ipaddr,
   logs,
+  mirage-runtime,
+  ocaml,
   rresult,
   uri,
 }:
 
 buildDunePackage (finalAttrs: {
-  pname = "mirage";
   inherit (mirage-runtime) version src;
-
-  minimalOCamlVersion = "4.13";
+  pname = "mirage";
 
   outputs = [
     "out"
@@ -46,6 +44,8 @@ buildDunePackage (finalAttrs: {
     dune install --prefix=$out --libdir=$dev/lib/ocaml/${ocaml.version}/site-lib/ mirage
     runHook postInstall
   '';
+
+  minimalOCamlVersion = "4.13";
 
   meta = mirage-runtime.meta // {
     description = "MirageOS library operating system";

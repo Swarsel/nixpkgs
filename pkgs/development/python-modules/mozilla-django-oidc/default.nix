@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  djangorestframework,
+  buildPythonPackage,
+  cryptography,
   django,
+  djangorestframework,
   pyjwt,
   requests,
-  cryptography,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "mozilla-django-oidc";
   version = "5.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mozilla";
@@ -21,17 +20,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-5J2lzGGdjoXzdzfKdmfUaSM7KQ6Hn7KerBtoKzFsZfY=";
   };
-
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    django
-    pyjwt
-    requests
-    cryptography
-  ];
 
   nativeCheckInputs = [
     djangorestframework
@@ -44,6 +32,19 @@ buildPythonPackage rec {
 
     runHook postCheck
   '';
+
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    django
+    pyjwt
+    requests
+    cryptography
+  ];
+
+  pyproject = true;
 
   meta = {
     description = "Django OpenID Connect library";

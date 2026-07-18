@@ -1,30 +1,30 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
   love,
   lua,
-  makeWrapper,
   makeDesktopItem,
+  makeWrapper,
   strip-nondeterminism,
   zip,
 }:
 
 let
   icon = fetchurl {
-    url = "http://tangramgames.dk/img/thumb/mrrescue.png";
     sha256 = "1y5ahf0m01i1ch03axhvp2kqc6lc1yvh59zgvgxw4w7y3jryw20k";
+    url = "http://tangramgames.dk/img/thumb/mrrescue.png";
   };
 
   desktopItem = makeDesktopItem {
-    name = "mrrescue";
-    exec = "mrrescue";
-    icon = icon;
+    categories = [ "Game" ];
     comment = "Arcade-style fire fighting game";
     desktopName = "Mr. Rescue";
+    exec = "mrrescue";
     genericName = "mrrescue";
-    categories = [ "Game" ];
+    icon = icon;
+    name = "mrrescue";
   };
 
 in
@@ -71,10 +71,10 @@ stdenv.mkDerivation {
   meta = {
     description = "Arcade-style fire fighting game";
     homepage = "https://github.com/SimonLarsen/mrrescue";
-    mainProgram = "mrrescue";
+    license = lib.licenses.zlib;
     maintainers = [ ];
     platforms = love.meta.platforms;
-    license = lib.licenses.zlib;
+    mainProgram = "mrrescue";
     downloadPage = "http://tangramgames.dk/games/mrrescue";
   };
 

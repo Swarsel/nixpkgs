@@ -1,31 +1,18 @@
 {
   lib,
-  buildPythonPackage,
-  rustPlatform,
   arwen,
+  buildPythonPackage,
   pytestCheckHook,
+  rustPlatform,
 }:
 
 buildPythonPackage (finalAttrs: {
-  pname = "py-arwen";
-  pyproject = true;
-
   inherit (arwen)
     version
     src
     ;
 
-  sourceRoot = "${finalAttrs.src.name}/py-arwen";
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      sourceRoot
-      ;
-    hash = "sha256-SJ3RZ/kCfMJb26uaJEQzA2NXOCudyqbJpbvC4d/R/T8=";
-  };
+  pname = "py-arwen";
 
   nativeBuildInputs = with rustPlatform; [
     cargoSetupHook
@@ -41,9 +28,24 @@ buildPythonPackage (finalAttrs: {
     rm -r arwen
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      sourceRoot
+      ;
+
+    hash = "sha256-SJ3RZ/kCfMJb26uaJEQzA2NXOCudyqbJpbvC4d/R/T8=";
+  };
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "arwen"
   ];
+
+  sourceRoot = "${finalAttrs.src.name}/py-arwen";
 
   meta = {
     inherit (arwen.meta)

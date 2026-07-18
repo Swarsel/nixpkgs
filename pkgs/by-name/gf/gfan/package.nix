@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  fetchpatch,
   fetchurl,
+  cddlib,
+  fetchpatch,
   gmp,
   mpir,
-  cddlib,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "gfan";
@@ -19,16 +19,16 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     ./gfan-0.6.2-cddlib-prefix.patch
     (fetchpatch {
+      hash = "sha256-ALD8Exe2SW8TZg0hIfhvUuiEbbT3Sk7v+oLnNsYA8hs=";
       name = "cstdint.patch";
       url = "https://salsa.debian.org/math-team/gfan/-/raw/6bb6bc3dd517b3c26fbcb76bfdc47f04d1978007/debian/patches/cstdint.patch";
-      hash = "sha256-ALD8Exe2SW8TZg0hIfhvUuiEbbT3Sk7v+oLnNsYA8hs=";
     })
   ]
   ++ lib.optionals (stdenv.cc.isClang) [
     (fetchpatch {
       name = "clang-fix-miscompilation.patch";
-      url = "https://raw.githubusercontent.com/sagemath/sage/eea1f59394a5066e9acd8ae39a90302820914ee3/build/pkgs/gfan/patches/nodel.patch";
       sha256 = "sha256-RrncSgFyrBIk/Bwe3accxiJ2rpOSJKQ84cV/uBvQsDc=";
+      url = "https://raw.githubusercontent.com/sagemath/sage/eea1f59394a5066e9acd8ae39a90302820914ee3/build/pkgs/gfan/patches/nodel.patch";
     })
   ]
   ++ lib.optionals (stdenv.hostPlatform.isDarwin) [
@@ -47,20 +47,19 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  buildFlags = [
-    "CC=${stdenv.cc.targetPrefix}cc"
-    "CXX=${stdenv.cc.targetPrefix}c++"
-  ];
-  installFlags = [ "PREFIX=$(out)" ];
   buildInputs = [
     gmp
     mpir
     cddlib
   ];
-  enableParallelBuilding = true;
-  hardeningDisable = [ "libcxxhardeningfast" ];
+
+  buildFlags = [
+    "CC=${stdenv.cc.targetPrefix}cc"
+    "CXX=${stdenv.cc.targetPrefix}c++"
+  ];
 
   doCheck = true;
+
   # The test runner still exits successfully when there are failed tests, so check
   # stdout to see if anything failed.
   checkPhase = ''
@@ -68,16 +67,22 @@ stdenv.mkDerivation (finalAttrs: {
     ! grep -q "Failed tests:" "$TMPDIR/test.log"
   '';
 
+  enableParallelBuilding = true;
+  hardeningDisable = [ "libcxxhardeningfast" ];
+  installFlags = [ "PREFIX=$(out)" ];
+
   meta = {
     description = "Software package for computing Gröbner fans and tropical varieties";
+    homepage = "http://home.math.au.dk/jensen/software/gfan/gfan.html";
+
     license =
       with lib.licenses;
       OR [
         gpl2
         gpl3
       ];
+
     maintainers = [ lib.maintainers.raskin ];
     platforms = lib.platforms.unix;
-    homepage = "http://home.math.au.dk/jensen/software/gfan/gfan.html";
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   appdirs,
   buildPythonPackage,
   doit,
-  fetchFromGitHub,
   ftfy,
   mock,
   pytest-order,
@@ -23,7 +23,6 @@
 buildPythonPackage rec {
   pname = "tabcmd";
   version = "2.0.20";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tableau";
@@ -31,42 +30,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-BviaCIav8rz37ac126KS4p54gbxzd6vs1p5kTy42bv4=";
   };
-
-  prePatch = ''
-    # Remove an unneeded dependency that can't be resolved
-    # https://github.com/tableau/tabcmd/pull/282
-    sed -i "/'argparse',/d" pyproject.toml
-    # Uses setuptools-scm instead
-    sed -i "/'pyinstaller_versionfile',/d" pyproject.toml
-  '';
-
-  pythonRelaxDeps = [
-    "tableauserverclient"
-    "urllib3"
-  ];
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  pythonRemoveDeps = [
-    "pyinstaller_versionfile"
-  ];
-
-  dependencies = [
-    appdirs
-    doit
-    ftfy
-    requests
-    setuptools-scm
-    tableauserverclient
-    types-appdirs
-    types-mock
-    types-requests
-    types-setuptools
-    urllib3
-  ];
 
   nativeCheckInputs = [
     mock
@@ -91,7 +54,44 @@ buildPythonPackage rec {
     chmod +x $out/bin/tabcmd
   '';
 
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [
+    appdirs
+    doit
+    ftfy
+    requests
+    setuptools-scm
+    tableauserverclient
+    types-appdirs
+    types-mock
+    types-requests
+    types-setuptools
+    urllib3
+  ];
+
+  prePatch = ''
+    # Remove an unneeded dependency that can't be resolved
+    # https://github.com/tableau/tabcmd/pull/282
+    sed -i "/'argparse',/d" pyproject.toml
+    # Uses setuptools-scm instead
+    sed -i "/'pyinstaller_versionfile',/d" pyproject.toml
+  '';
+
+  pyproject = true;
   pythonImportsCheck = [ "tabcmd" ];
+
+  pythonRelaxDeps = [
+    "tableauserverclient"
+    "urllib3"
+  ];
+
+  pythonRemoveDeps = [
+    "pyinstaller_versionfile"
+  ];
 
   meta = {
     description = "Command line client for working with Tableau Server";

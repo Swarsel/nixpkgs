@@ -1,35 +1,30 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  scons,
-  ragel,
   gengetopt,
-  pkg-config,
-  libuv,
-  openfecSupport ? true,
-  openfec,
-  speexdsp,
-  libunwindSupport ? lib.meta.availableOn stdenv.hostPlatform libunwind,
-  libunwind,
-  pulseaudioSupport ? true,
   libpulseaudio,
-  opensslSupport ? true,
-  openssl,
-  soxSupport ? true,
-  sox,
-  libsndfileSupport ? true,
   libsndfile,
+  libunwind,
+  libuv,
+  openfec,
+  openssl,
+  pkg-config,
+  ragel,
+  scons,
+  sox,
+  speexdsp,
+  libsndfileSupport ? true,
+  libunwindSupport ? lib.meta.availableOn stdenv.hostPlatform libunwind,
+  openfecSupport ? true,
+  opensslSupport ? true,
+  pulseaudioSupport ? true,
+  soxSupport ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "roc-toolkit";
   version = "0.4.0";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "roc-streaming";
@@ -37,6 +32,11 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-53irDq803dTg0YqtC1SOXmYNGypSMAEK+9HJ65pR5PA=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     scons
@@ -55,6 +55,11 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional opensslSupport openssl
   ++ lib.optional soxSupport sox
   ++ lib.optional libsndfileSupport libsndfile;
+
+  env = lib.optionalAttrs stdenv.hostPlatform.isFreeBSD {
+    NIX_CFLAGS_COMPILE = "-D_XOPEN_SOURCE=700 -D__BSD_VISIBLE";
+    NIX_LDFLAGS = "-lpthread";
+  };
 
   sconsFlags =
     lib.optionals (!stdenv.hostPlatform.isDarwin) [
@@ -77,11 +82,6 @@ stdenv.mkDerivation (finalAttrs: {
           "--with-openfec-includes=${openfec.dev}/include"
         ]
     );
-
-  env = lib.optionalAttrs stdenv.hostPlatform.isFreeBSD {
-    NIX_CFLAGS_COMPILE = "-D_XOPEN_SOURCE=700 -D__BSD_VISIBLE";
-    NIX_LDFLAGS = "-lpthread";
-  };
 
   meta = {
     description = "Roc is a toolkit for real-time audio streaming over the network";

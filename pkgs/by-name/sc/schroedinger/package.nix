@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
+  autoreconfHook,
+  fetchpatch,
+  gtk-doc,
   orc,
   pkg-config,
-  fetchpatch,
-  autoreconfHook,
-  gtk-doc,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,32 +24,34 @@ stdenv.mkDerivation (finalAttrs: {
     "devdoc"
   ];
 
+  patches = [
+    (fetchpatch {
+      sha256 = "0cc8ymvgjgwy7ghca2dd8m8pxpinf27s2i8krf2m3fzv2ckq09v3";
+      url = "https://raw.githubusercontent.com/macports/macports-ports/master/multimedia/schroedinger/files/patch-testsuite-Makefile.am.diff";
+    })
+  ];
+
   nativeBuildInputs = [
     pkg-config
     autoreconfHook
     gtk-doc
   ];
+
   buildInputs = [ orc ];
-
   doCheck = (!stdenv.hostPlatform.isDarwin);
-
   patchFlags = [ "-p0" ];
-  patches = [
-    (fetchpatch {
-      url = "https://raw.githubusercontent.com/macports/macports-ports/master/multimedia/schroedinger/files/patch-testsuite-Makefile.am.diff";
-      sha256 = "0cc8ymvgjgwy7ghca2dd8m8pxpinf27s2i8krf2m3fzv2ckq09v3";
-    })
-  ];
 
   meta = {
     description = "Implementation of the Dirac video codec in ANSI C";
     homepage = "https://sourceforge.net/projects/schrodinger/";
-    maintainers = [ ];
+
     license = [
       lib.licenses.mpl11
       lib.licenses.lgpl2
       lib.licenses.mit
     ];
+
+    maintainers = [ ];
     platforms = lib.platforms.unix;
   };
 })

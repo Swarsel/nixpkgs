@@ -1,44 +1,28 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cmake,
-  fetchFromGitHub,
   future,
   numpy,
   pytest-lazy-fixture,
   pytestCheckHook,
+  pythonOlder,
   scikit-build,
   setuptools,
-  pythonOlder,
 }:
 
 buildPythonPackage rec {
   pname = "parselmouth";
   version = "0.4.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "YannickJadoul";
     repo = "Parselmouth";
     tag = "v${version}";
-    fetchSubmodules = true;
     hash = "sha256-gogNiKZVQaAzu/VeP4+bg61GtdptZeNkQatcJ/cjXFI=";
+    fetchSubmodules = true;
   };
-
-  configurePhase = ''
-    # doesn't happen automatically
-    export MAKEFLAGS=-j$NIX_BUILD_CORES
-  '';
-
-  build-system = [
-    cmake
-    scikit-build
-    setuptools
-  ];
-
-  dontUseCmakeConfigure = true;
-
-  dependencies = [ numpy ];
 
   doCheck = pythonOlder "3.13";
 
@@ -47,6 +31,21 @@ buildPythonPackage rec {
     pytest-lazy-fixture
     pytestCheckHook
   ];
+
+  build-system = [
+    cmake
+    scikit-build
+    setuptools
+  ];
+
+  configurePhase = ''
+    # doesn't happen automatically
+    export MAKEFLAGS=-j$NIX_BUILD_CORES
+  '';
+
+  dependencies = [ numpy ];
+  dontUseCmakeConfigure = true;
+  pyproject = true;
 
   pytestFlags = [
     "--run-praat-tests"

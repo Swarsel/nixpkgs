@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
   aw-core,
-  requests,
-  persist-queue,
+  buildPythonPackage,
   click,
+  persist-queue,
+  poetry-core,
+  pytestCheckHook,
+  requests,
   tabulate,
   typing-extensions,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "aw-client";
   version = "0.5.15";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ActivityWatch";
@@ -23,6 +22,13 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-AS29DIfEQ6/vh8idcMMQoGmiRM8MMf3eVQzvNPsXgpA=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  preCheck = ''
+    # Fake home folder for tests that write to $HOME
+    export HOME="$TMPDIR"
+  '';
 
   build-system = [ poetry-core ];
 
@@ -35,17 +41,10 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   # Only run this test, the others are integration tests that require
   # an instance of aw-server running in order to function.
   enabledTestPaths = [ "tests/test_requestqueue.py" ];
-
-  preCheck = ''
-    # Fake home folder for tests that write to $HOME
-    export HOME="$TMPDIR"
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "aw_client" ];
 
   meta = {

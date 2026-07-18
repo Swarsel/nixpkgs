@@ -24,6 +24,7 @@ let
 
 in
 stdenv.mkDerivation (finalAttrs: {
+  inherit blas64;
   pname = "amd-blis";
   version = "5.1";
 
@@ -40,30 +41,25 @@ stdenv.mkDerivation (finalAttrs: {
     # backporting a fix for a GCC15 build error
     # ./frame/include/bli_x86_asm_macros.h:102:21: error: 'asm' operand has impossible constraints or there are not enough registers
     (fetchpatch {
+      hash = "sha256-3vk9NSnhT64J6PUabeP58Gn7p1zheGbPxSRjVEX7WNg=";
       name = "amd-blis-gcc-15-fix-1.patch";
       url = "https://github.com/amd/blis/commit/14e46ad83bac5fd82569a43c7cbd3e791a1eacc8.patch";
-      hash = "sha256-3vk9NSnhT64J6PUabeP58Gn7p1zheGbPxSRjVEX7WNg=";
     })
     (fetchpatch {
+      hash = "sha256-FCMWQzfzQxCQqngULoXfh35BFGaNTu732iu3HctNcFM=";
       name = "amd-blis-gcc-15-fix-2.patch";
       url = "https://github.com/amd/blis/commit/30c42202d78fd5ee5e54d50ad57348e5e541a7d5.patch";
-      hash = "sha256-FCMWQzfzQxCQqngULoXfh35BFGaNTu732iu3HctNcFM=";
     })
   ];
 
-  inherit blas64;
+  postPatch = ''
+    patchShebangs configure build/flatten-headers.py
+  '';
 
   nativeBuildInputs = [
     perl
     python3
   ];
-
-  # Tests currently fail with non-Zen CPUs due to a floating point
-  # exception in one of the generic kernels. Try to re-enable the
-  # next release.
-  doCheck = false;
-
-  enableParallelBuilding = true;
 
   configureFlags = [
     "--enable-cblas"
@@ -72,9 +68,10 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withOpenMP [ "--enable-threading=openmp" ]
   ++ [ withArchitecture ];
 
-  postPatch = ''
-    patchShebangs configure build/flatten-headers.py
-  '';
+  # Tests currently fail with non-Zen CPUs due to a floating point
+  # exception in one of the generic kernels. Try to re-enable the
+  # next release.
+  doCheck = false;
 
   postInstall = ''
     ls $out/lib
@@ -83,6 +80,8 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/lib/libblas.so.3 $out/lib/libblas.so
     ln -s $out/lib/libcblas.so.3 $out/lib/libcblas.so
   '';
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "BLAS-compatible library optimized for AMD CPUs";

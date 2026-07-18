@@ -3,54 +3,54 @@
   stdenv,
   fetchurl,
   fetchFromGitHub,
-  fetchpatch,
-  unzip,
+  asymptote,
+  biber,
+  biber-ms,
+  brotli,
   buildPackages,
-  texlive,
+  cairo,
+  clisp,
+  cmake,
+  fetchpatch,
+  freetype,
+  gd,
+  ghostscript_headless,
+  gmp,
   gnum4,
+  graphite2,
+  harfbuzzFull,
+  icu,
   jdk_headless,
-  zlib,
   libiconv,
+  libpaper,
   libpng,
   libx11,
-  freetype,
-  ttfautohint,
-  gd,
   libxaw,
-  icu,
-  ghostscript_headless,
-  libxpm,
-  libxmu,
   libxext,
-  perl,
-  perlPackages,
-  python3Packages,
-  pkg-config,
-  cmake,
-  ninja,
-  libpaper,
-  graphite2,
-  zziplib,
-  harfbuzzFull,
-  potrace,
-  gmp,
+  libxfixes,
+  libxi,
+  libxmu,
+  libxpm,
+  luajit,
+  makeWrapper,
   mpfr,
   mupdf-headless,
-  brotli,
-  cairo,
+  ninja,
+  perl,
+  perlPackages,
   pixman,
-  libxi,
-  libxfixes,
-  clisp,
-  biber,
+  pkg-config,
+  potrace,
+  python3Packages,
+  texlive,
+  tlpdb,
+  ttfautohint,
+  unzip,
   woff2,
   xxhash,
-  makeWrapper,
+  zlib,
+  zziplib,
   useFixedHashes ? true,
-  asymptote,
-  biber-ms,
-  tlpdb,
-  luajit,
   ...
 }@args:
 
@@ -146,32 +146,11 @@ let
     #   url = "mirror://texhistoric/systems/texlive/${year}/texlive-${year}0308-source.tar.xz";
     #   hash = "sha256-//2xo9FDwXekOYoiKaQNaojxgJjl9tz9V2SMnyQXSQ8=";
     # };
-
     # 2025.2 update
     src = fetchurl {
       url = "https://github.com/TeX-Live/texlive-source/archive/refs/tags/svn74917.tar.gz";
       hash = "sha256-QgUN5LOFeD6Jt0ENF6Uwi516D8PH+TXZ+MCO8bCTHqE=";
     };
-
-    prePatch = ''
-      for i in texk/kpathsea/mktex*; do
-        sed -i '/^mydir=/d' "$i"
-      done
-
-      # ST_NLINK_TRICK causes kpathsea to treat folders with no real subfolders
-      # as leaves, even if they contain symlinks to other folders; must be
-      # disabled to work correctly with the nix store", see section 5.3.6
-      # “Subdirectory expansion” of the kpathsea manual
-      # http://mirrors.ctan.org/systems/doc/kpathsea/kpathsea.pdf for more
-      # details
-      sed -i '/^#define ST_NLINK_TRICK/d' texk/kpathsea/config.h
-    ''
-    +
-      # when cross compiling, we must use himktables from PATH
-      # (i.e. from buildPackages.texlive.bin.core.dev)
-      lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-        sed -i 's|\./himktables|himktables|' texk/web2c/Makefile.in
-      '';
 
     configureFlags = [
       "--with-banner-add=/nixos.org"
@@ -234,23 +213,148 @@ let
         fi
       done
     '';
+
+    prePatch = ''
+      for i in texk/kpathsea/mktex*; do
+        sed -i '/^mydir=/d' "$i"
+      done
+
+      # ST_NLINK_TRICK causes kpathsea to treat folders with no real subfolders
+      # as leaves, even if they contain symlinks to other folders; must be
+      # disabled to work correctly with the nix store", see section 5.3.6
+      # “Subdirectory expansion” of the kpathsea manual
+      # http://mirrors.ctan.org/systems/doc/kpathsea/kpathsea.pdf for more
+      # details
+      sed -i '/^#define ST_NLINK_TRICK/d' texk/kpathsea/config.h
+    ''
+    +
+      # when cross compiling, we must use himktables from PATH
+      # (i.e. from buildPackages.texlive.bin.core.dev)
+      lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+        sed -i 's|\./himktables|himktables|' texk/web2c/Makefile.in
+      '';
   };
 
   # RISC-V: https://github.com/LuaJIT/LuaJIT/issues/628
   withLuaJIT = lib.meta.availableOn stdenv.hostPlatform luajit;
 in
 rec {
-  # un-indented
+  inherit (core-big)
+    metafont
+    mflua
+    metapost
+    luatex
+    luahbtex
+    xetex
+    ;
 
-  texliveYear = year;
+  inherit biber;
+  inherit biber-ms;
+
+  asymptote =
+    let
+      version = "3.09";
+    in
+    args.asymptote.overrideAttrs (
+      finalAttrs: prevAttrs: {
+        version =
+          assert lib.assertMsg (version == texlive.pkgs.asymptote.version)
+            "asymptote: TeX Live version (${texlive.pkgs.asymptote.version}) different from source in bin.nix (${version}), please update it";
+          version;
+
+        # keep local src and patches even if duplicated in the top level asymptote
+        # so that top level updates do not break texlive
+        src = fetchurl {
+          url = "mirror://sourceforge/asymptote/${finalAttrs.version}/asymptote-${finalAttrs.version}.src.tgz";
+          hash = "sha256-unM6mfyq8MCajo8wtG/ksr4E6mQNK/A03gGIa9Fxeuc=";
+        };
+
+        preConfigure = prevAttrs.preConfigure + ''
+          substituteInPlace Makefile.in --replace-fail '/bin/ls' 'ls'
+        '';
+
+        texContainer = texlive.pkgs.asymptote.tex;
+        texdocContainer = texlive.pkgs.asymptote.texdoc;
+      }
+    );
+
+  bibtex8 = stdenv.mkDerivation {
+    inherit (texlive.pkgs.bibtexu) version;
+    inherit (common) src;
+    pname = "bibtex-x";
+    nativeBuildInputs = [ pkg-config ];
+
+    buildInputs = [
+      core # kpathsea
+      icu
+    ];
+
+    configureFlags = common.configureFlags ++ [
+      "--with-system-kpathsea"
+      "--with-system-icu"
+    ];
+
+    preConfigure = "cd texk/bibtex-x";
+    enableParallelBuilding = true;
+  };
+
+  bibtexu = bibtex8;
+
+  chktex = stdenv.mkDerivation {
+    inherit (texlive.pkgs.chktex) version;
+    inherit (common) src;
+    pname = "chktex";
+    nativeBuildInputs = [ pkg-config ];
+
+    # perl used in shebang of script bin/deweb
+    buildInputs = [
+      core # kpathsea
+      perl
+    ];
+
+    configureFlags = common.configureFlags ++ [ "--with-system-kpathsea" ];
+    preConfigure = "cd texk/chktex";
+    enableParallelBuilding = true;
+  };
+
+  # The LuaMetaTeX engine (distributed since TeX Live 2023) must be built separately.
+  # For details on how TeX Live packages ConTeXt, see
+  # https://github.com/gucci-on-fleek/context-packaging
+  context =
+    let
+      version = "2.11.08";
+      level = "20260217";
+    in
+    stdenv.mkDerivation {
+      pname = "luametatex";
+      version = "${version}-${level}";
+      src = texlive.pkgs.context.texsource + "/source/context/base/luametatex-${level}.src.zip";
+
+      nativeBuildInputs = [
+        cmake
+        ninja
+        unzip
+      ];
+
+      enableParallelBuilding = true;
+      sourceRoot = ".";
+
+      meta = {
+        description = "LUAMETATEX engine is a follow up on LUATEX and is again part of CONTEXT development";
+        homepage = "https://www.pragma-ade.nl/luametatex-1.htm";
+        license = lib.licenses.gpl2Plus;
+
+        maintainers = with lib.maintainers; [
+          apfelkuchen6
+          xworld21
+        ];
+      };
+    };
 
   core = stdenv.mkDerivation rec {
-    pname = "texlive-bin";
     inherit version;
-
-    __structuredAttrs = true;
-
     inherit (common) binToOutput src prePatch;
+    pname = "texlive-bin";
 
     outputs = [
       "out"
@@ -290,20 +394,6 @@ rec {
       perl
     ];
 
-    hardeningDisable = [ "format" ];
-
-    preConfigure = ''
-      rm -r libs/{cairo,freetype2,gd,gmp,graphite2,harfbuzz,icu,libpaper,libpng} \
-        libs/{lua53,luajit,mpfr,pixman,pplib,teckit,zlib,zziplib} \
-        texk/{bibtex-x,chktex,dvipng,dvisvgm,upmendex,xdvik} \
-        utils/{asymptote,texdoctk,xindy,xpdfopen}
-      mkdir WorkDir
-      cd WorkDir
-    '';
-    configureScript = "../configure";
-
-    depsBuildBuild = [ buildPackages.stdenv.cc ];
-
     configureFlags =
       common.configureFlags
       ++ [ "--without-x" ] # disable xdvik and xpdfopen
@@ -328,12 +418,17 @@ rec {
         "upmendex" # ICU isn't small
       ];
 
-    enableParallelBuilding = true;
+    preConfigure = ''
+      rm -r libs/{cairo,freetype2,gd,gmp,graphite2,harfbuzz,icu,libpaper,libpng} \
+        libs/{lua53,luajit,mpfr,pixman,pplib,teckit,zlib,zziplib} \
+        texk/{bibtex-x,chktex,dvipng,dvisvgm,upmendex,xdvik} \
+        utils/{asymptote,texdoctk,xindy,xpdfopen}
+      mkdir WorkDir
+      cd WorkDir
+    '';
 
     doCheck = false; # triptest fails, likely due to missing TEXMF tree
     preCheck = "patchShebangs ../texk/web2c";
-
-    installTargets = [ "install" ];
 
     # TODO: perhaps improve texmf.cnf search locations
     postInstall =
@@ -356,46 +451,65 @@ rec {
         rm "${placeholder "ptex"}"/bin/{pbibtex,pdvitype,ppltotf,ptftopl}
       '';
 
+    __structuredAttrs = true;
+    configureScript = "../configure";
+    depsBuildBuild = [ buildPackages.stdenv.cc ];
+    enableParallelBuilding = true;
+    hardeningDisable = [ "format" ];
+    installTargets = [ "install" ];
     passthru = { inherit version buildInputs; };
 
     meta = {
       description = "Basic binaries for TeX Live";
       homepage = "http://www.tug.org/texlive";
       license = lib.licenses.gpl2Plus;
+
       maintainers = with lib.maintainers; [
         veprbl
         raskin
         jwiegley
         xworld21
       ];
+
       platforms = lib.platforms.all;
     };
   };
 
-  inherit (core-big)
-    metafont
-    mflua
-    metapost
-    luatex
-    luahbtex
-    xetex
-    ;
-  luajittex = core.big.luajittex or null;
   core-big = stdenv.mkDerivation {
-    pname = "texlive-bin-big";
     inherit version;
-
-    __structuredAttrs = true;
-
     inherit (common) binToOutput src prePatch;
+    inherit (core) nativeBuildInputs depsBuildBuild;
+    pname = "texlive-bin-big";
+
+    outputs = [
+      "out"
+      "dev"
+      "man"
+      "info"
+    ]
+    ++ (map (builtins.replaceStrings [ "-" ] [ "_" ]) coreBigPackages)
+    # some outputs of metapost, omegaware are for ptex/uptex
+    ++ [
+      "ptex"
+      "uptex"
+    ]
+    # unavoidable duplicates from core
+    ++ [
+      "ctie"
+      "cweb"
+      "omegaware"
+      "texlive_scripts_extra"
+      "tie"
+      "web"
+    ];
 
     patches = [
       # improves reproducibility of fmt files
       # see discussion at https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1009196
       (fetchpatch {
         name = "lua_fixed_hash.patch";
-        url = "https://bugs.debian.org/cgi-bin/bugreport.cgi?att=1;bug=1009196;filename=lua_fixed_hash.patch;msg=45";
         sha256 = "sha256-FTu1eRd3AUU7IRs2/7e7uwHuvZsrzTBPypbcEZkU7y4=";
+        url = "https://bugs.debian.org/cgi-bin/bugreport.cgi?att=1;bug=1009196;filename=lua_fixed_hash.patch;msg=45";
       })
       # The original LuaJIT version number used here is 2.1.1736781742.
       # The patch number in this is the unix epoch timestamp of the commit used.
@@ -413,9 +527,6 @@ rec {
       ./truncate-luajit-version-number.patch
     ];
 
-    hardeningDisable = [ "format" ];
-
-    inherit (core) nativeBuildInputs depsBuildBuild;
     buildInputs = core.buildInputs ++ [
       core
       cairo
@@ -425,28 +536,6 @@ rec {
       libx11
       potrace
     ];
-
-    /*
-      deleting the unused packages speeds up configure by a considerable margin
-      and ensures we do not rebuild existing libraries by mistake
-    */
-    preConfigure = ''
-      rm -r libs/{cairo,freetype2,gd,gmp,graphite2,harfbuzz,icu,libpaper,libpng} \
-        libs/{mpfr,pixman,xpdf,zlib,zziplib} \
-        texk/{afm2pl,bibtex-x,chktex,cjkutils,detex,dtl,dvi2tty,dvidvi,dviljk,dviout-util} \
-        texk/{dvipdfm-x,dvipng,dvipos,dvipsk,dvisvgm,gregorio,gsftopk,kpathsea} \
-        texk/{lcdf-typetools,makeindexk,makejvf,mendexk,musixtnt,ps2pk,psutils,ptexenc} \
-        texk/{seetexk,tex4htk,texlive,ttf2pk2,ttfdump,xdvik} \
-        utils/{asymptote,autosp,axodraw2,devnag,lacheck,m-tx,pmx,ps2eps,t1utils,texdoctk} \
-        utils/{tpic2pdftex,vlna,xindy,xml2pmx,xpdfopen}
-      mkdir WorkDir
-      cd WorkDir
-    ''
-    # force XeTeX to use fontconfig instead of Core Text, so that fonts can be made available via FONTCONFIG_FILE,
-    # by tricking configure into thinking that the relevant test result is already in the config cache
-    + lib.optionalString stdenv.hostPlatform.isDarwin ''
-      export kpse_cv_have_ApplicationServices=no
-    '';
 
     configureFlags =
       common.configureFlags
@@ -489,88 +578,70 @@ rec {
       # kpathsea requires specifying the kpathsea location manually
       ++ [ "--with-kpathsea-includes=${core.dev}/include" ];
 
-    configureScript = "../configure";
-
-    enableParallelBuilding = true;
+    /*
+      deleting the unused packages speeds up configure by a considerable margin
+      and ensures we do not rebuild existing libraries by mistake
+    */
+    preConfigure = ''
+      rm -r libs/{cairo,freetype2,gd,gmp,graphite2,harfbuzz,icu,libpaper,libpng} \
+        libs/{mpfr,pixman,xpdf,zlib,zziplib} \
+        texk/{afm2pl,bibtex-x,chktex,cjkutils,detex,dtl,dvi2tty,dvidvi,dviljk,dviout-util} \
+        texk/{dvipdfm-x,dvipng,dvipos,dvipsk,dvisvgm,gregorio,gsftopk,kpathsea} \
+        texk/{lcdf-typetools,makeindexk,makejvf,mendexk,musixtnt,ps2pk,psutils,ptexenc} \
+        texk/{seetexk,tex4htk,texlive,ttf2pk2,ttfdump,xdvik} \
+        utils/{asymptote,autosp,axodraw2,devnag,lacheck,m-tx,pmx,ps2eps,t1utils,texdoctk} \
+        utils/{tpic2pdftex,vlna,xindy,xml2pmx,xpdfopen}
+      mkdir WorkDir
+      cd WorkDir
+    ''
+    # force XeTeX to use fontconfig instead of Core Text, so that fonts can be made available via FONTCONFIG_FILE,
+    # by tricking configure into thinking that the relevant test result is already in the config cache
+    + lib.optionalString stdenv.hostPlatform.isDarwin ''
+      export kpse_cv_have_ApplicationServices=no
+    '';
 
     doCheck = false; # fails
-
-    outputs = [
-      "out"
-      "dev"
-      "man"
-      "info"
-    ]
-    ++ (map (builtins.replaceStrings [ "-" ] [ "_" ]) coreBigPackages)
-    # some outputs of metapost, omegaware are for ptex/uptex
-    ++ [
-      "ptex"
-      "uptex"
-    ]
-    # unavoidable duplicates from core
-    ++ [
-      "ctie"
-      "cweb"
-      "omegaware"
-      "texlive_scripts_extra"
-      "tie"
-      "web"
-    ];
     postInstall = common.moveBins;
+    __structuredAttrs = true;
+    configureScript = "../configure";
+    enableParallelBuilding = true;
+    hardeningDisable = [ "format" ];
   };
 
-  chktex = stdenv.mkDerivation {
-    pname = "chktex";
-    inherit (texlive.pkgs.chktex) version;
-
+  dvipng = stdenv.mkDerivation {
+    inherit (texlive.pkgs.dvipng) version;
     inherit (common) src;
+    pname = "dvipng";
 
-    nativeBuildInputs = [ pkg-config ];
-    # perl used in shebang of script bin/deweb
+    nativeBuildInputs = [
+      perl
+      pkg-config
+      makeWrapper
+    ];
+
     buildInputs = [
       core # kpathsea
-      perl
+      zlib
+      libpng
+      freetype
+      gd
+      ghostscript_headless
     ];
 
-    preConfigure = "cd texk/chktex";
+    configureFlags = common.configureFlags ++ [
+      "--with-system-kpathsea"
+      "--with-gs=yes"
+      "--disable-debug"
+    ];
 
-    configureFlags = common.configureFlags ++ [ "--with-system-kpathsea" ];
+    preConfigure = ''
+      cd texk/dvipng
+      patchShebangs doc/texi2pod.pl
+    '';
 
+    GS = lib.getExe ghostscript_headless;
     enableParallelBuilding = true;
   };
-
-  # The LuaMetaTeX engine (distributed since TeX Live 2023) must be built separately.
-  # For details on how TeX Live packages ConTeXt, see
-  # https://github.com/gucci-on-fleek/context-packaging
-  context =
-    let
-      version = "2.11.08";
-      level = "20260217";
-    in
-    stdenv.mkDerivation {
-      pname = "luametatex";
-      version = "${version}-${level}";
-
-      src = texlive.pkgs.context.texsource + "/source/context/base/luametatex-${level}.src.zip";
-      sourceRoot = ".";
-
-      enableParallelBuilding = true;
-      nativeBuildInputs = [
-        cmake
-        ninja
-        unzip
-      ];
-
-      meta = {
-        description = "LUAMETATEX engine is a follow up on LUATEX and is again part of CONTEXT development";
-        homepage = "https://www.pragma-ade.nl/luametatex-1.htm";
-        license = lib.licenses.gpl2Plus;
-        maintainers = with lib.maintainers; [
-          apfelkuchen6
-          xworld21
-        ];
-      };
-    };
 
   dvisvgm = stdenv.mkDerivation rec {
     pname = "dvisvgm";
@@ -584,11 +655,6 @@ rec {
         hash = "sha256-JkRrs7EHOf8JJcnkFrdtLSIgdcnV3Pr+biFGCdBy7Ro=";
       };
 
-    configureFlags = [
-      "--disable-manpage" # man pages are provided by the doc container
-      "--with-ttfautohint"
-    ];
-
     # PDF handling requires mutool (from mupdf) since Ghostscript 10.01
     postPatch = ''
       substituteInPlace src/PDFHandler.cpp \
@@ -596,6 +662,7 @@ rec {
     '';
 
     nativeBuildInputs = [ pkg-config ];
+
     buildInputs = [
       core
       brotli
@@ -609,58 +676,25 @@ rec {
       mupdf-headless
     ];
 
+    configureFlags = [
+      "--disable-manpage" # man pages are provided by the doc container
+      "--with-ttfautohint"
+    ];
+
     enableParallelBuilding = true;
   };
 
-  dvipng = stdenv.mkDerivation {
-    pname = "dvipng";
-    inherit (texlive.pkgs.dvipng) version;
-
-    inherit (common) src;
-
-    nativeBuildInputs = [
-      perl
-      pkg-config
-      makeWrapper
-    ];
-    buildInputs = [
-      core # kpathsea
-      zlib
-      libpng
-      freetype
-      gd
-      ghostscript_headless
-    ];
-
-    preConfigure = ''
-      cd texk/dvipng
-      patchShebangs doc/texi2pod.pl
-    '';
-
-    configureFlags = common.configureFlags ++ [
-      "--with-system-kpathsea"
-      "--with-gs=yes"
-      "--disable-debug"
-    ];
-
-    GS = lib.getExe ghostscript_headless;
-
-    enableParallelBuilding = true;
-  };
+  luajittex = core.big.luajittex or null;
 
   pygmentex = python3Packages.buildPythonApplication rec {
-    pname = "pygmentex";
     inherit (src) version;
-    pyproject = false;
-
+    pname = "pygmentex";
     src = assertFixedHash pname texlive.pkgs.pygmentex.tex;
 
     propagatedBuildInputs = with python3Packages; [
       pygments
       chardet
     ];
-
-    dontBuild = true;
 
     doCheck = false;
 
@@ -672,9 +706,12 @@ rec {
       runHook postInstall
     '';
 
+    dontBuild = true;
+    pyproject = false;
+
     meta = {
-      homepage = "https://www.ctan.org/pkg/pygmentex";
       description = "Auxiliary tool for typesetting code listings in LaTeX documents using Pygments";
+
       longDescription = ''
         PygmenTeX is a Python-based LaTeX package that can be used for
         typesetting code listings in a LaTeX document using Pygments.
@@ -683,122 +720,20 @@ rec {
         software such as forum systems, wikis or other applications that need to
         prettify source code.
       '';
+
+      homepage = "https://www.ctan.org/pkg/pygmentex";
       license = lib.licenses.lppl13c;
       maintainers = with lib.maintainers; [ romildo ];
     };
   };
 
-  asymptote =
-    let
-      version = "3.09";
-    in
-    args.asymptote.overrideAttrs (
-      finalAttrs: prevAttrs: {
-        version =
-          assert lib.assertMsg (version == texlive.pkgs.asymptote.version)
-            "asymptote: TeX Live version (${texlive.pkgs.asymptote.version}) different from source in bin.nix (${version}), please update it";
-          version;
-
-        # keep local src and patches even if duplicated in the top level asymptote
-        # so that top level updates do not break texlive
-        src = fetchurl {
-          url = "mirror://sourceforge/asymptote/${finalAttrs.version}/asymptote-${finalAttrs.version}.src.tgz";
-          hash = "sha256-unM6mfyq8MCajo8wtG/ksr4E6mQNK/A03gGIa9Fxeuc=";
-        };
-
-        texContainer = texlive.pkgs.asymptote.tex;
-        texdocContainer = texlive.pkgs.asymptote.texdoc;
-
-        preConfigure = prevAttrs.preConfigure + ''
-          substituteInPlace Makefile.in --replace-fail '/bin/ls' 'ls'
-        '';
-      }
-    );
-
-  inherit biber;
-  inherit biber-ms;
-  bibtexu = bibtex8;
-  bibtex8 = stdenv.mkDerivation {
-    pname = "bibtex-x";
-    inherit (texlive.pkgs.bibtexu) version;
-
-    inherit (common) src;
-
-    nativeBuildInputs = [ pkg-config ];
-    buildInputs = [
-      core # kpathsea
-      icu
-    ];
-
-    preConfigure = "cd texk/bibtex-x";
-
-    configureFlags = common.configureFlags ++ [
-      "--with-system-kpathsea"
-      "--with-system-icu"
-    ];
-
-    enableParallelBuilding = true;
-  };
-
-  xdvi = stdenv.mkDerivation {
-    pname = "xdvi";
-    inherit (texlive.pkgs.xdvi) version;
-
-    inherit (common) src;
-
-    nativeBuildInputs = [ pkg-config ];
-    buildInputs = [
-      core # kpathsea
-      freetype
-      ghostscript_headless
-      libx11
-      libxaw
-      libxi
-      libxpm
-      libxmu
-      libxaw
-      libxext
-      libxfixes
-    ];
-
-    preConfigure = "cd texk/xdvik";
-
-    configureFlags = common.configureFlags ++ [
-      "--with-system-kpathsea"
-      "--with-system-libgs"
-    ];
-
-    enableParallelBuilding = true;
-
-    postInstall = ''
-      substituteInPlace "$out/bin/xdvi" \
-        --replace-fail "exec xdvi-xaw" "exec '$out/bin/xdvi-xaw'"
-    '';
-    # TODO: it's suspicious that mktexpk generates fonts into ~/.texlive2014
-  };
-
-  xpdfopen = stdenv.mkDerivation {
-    pname = "xpdfopen";
-    inherit (texlive.pkgs.xpdfopen) version;
-
-    inherit (common) src;
-
-    buildInputs = [ libx11 ];
-
-    preConfigure = "cd utils/xpdfopen";
-
-    enableParallelBuilding = true;
-  };
-
   # tex4ht.jar
   # we build this as a TeX package, but under texlive.bin to avoid exposing it in texlivePackages
   tex4htJar = stdenv.mkDerivation {
-    pname = "tex4ht-jar";
     inherit (texlive.pkgs.tex4ht) meta version;
-
-    outputs = [ "tex" ];
-
+    pname = "tex4ht-jar";
     src = texlive.pkgs.tex4ht.texsource + "/source/generic/tex4ht";
+    outputs = [ "tex" ];
 
     nativeBuildInputs = [
       gnum4
@@ -810,10 +745,6 @@ rec {
         ps.tex4ht
       ]))
     ];
-
-    preHook = ''
-      export out="$tex"
-    '';
 
     # the current Makefile is broken, so we build the artifact by hand
     # we also use latex instead of htlatex as the latter is orders of magnitude slower
@@ -842,6 +773,58 @@ rec {
     installPhase = ''
       install -D -t "$tex"/tex4ht/bin tex4ht.dir/texmf/tex4ht/bin/tex4ht.jar
     '';
+
+    preHook = ''
+      export out="$tex"
+    '';
+  };
+
+  # un-indented
+  texliveYear = year;
+
+  xdvi = stdenv.mkDerivation {
+    inherit (texlive.pkgs.xdvi) version;
+    inherit (common) src;
+    pname = "xdvi";
+    nativeBuildInputs = [ pkg-config ];
+
+    buildInputs = [
+      core # kpathsea
+      freetype
+      ghostscript_headless
+      libx11
+      libxaw
+      libxi
+      libxpm
+      libxmu
+      libxaw
+      libxext
+      libxfixes
+    ];
+
+    configureFlags = common.configureFlags ++ [
+      "--with-system-kpathsea"
+      "--with-system-libgs"
+    ];
+
+    preConfigure = "cd texk/xdvik";
+
+    postInstall = ''
+      substituteInPlace "$out/bin/xdvi" \
+        --replace-fail "exec xdvi-xaw" "exec '$out/bin/xdvi-xaw'"
+    '';
+
+    enableParallelBuilding = true;
+    # TODO: it's suspicious that mktexpk generates fonts into ~/.texlive2014
+  };
+
+  xpdfopen = stdenv.mkDerivation {
+    inherit (texlive.pkgs.xpdfopen) version;
+    inherit (common) src;
+    pname = "xpdfopen";
+    buildInputs = [ libx11 ];
+    preConfigure = "cd utils/xpdfopen";
+    enableParallelBuilding = true;
   };
 
 } # un-indented
@@ -851,15 +834,10 @@ rec {
     {
 
       xindy = stdenv.mkDerivation {
-        pname = "xindy";
         inherit (texlive.pkgs.xindy) version;
-
         inherit (common) src;
+        pname = "xindy";
 
-        # If unset, xindy will try to mkdir /homeless-shelter
-        HOME = ".";
-
-        prePatch = "cd utils/xindy";
         # hardcode clisp location
         postPatch = ''
           substituteInPlace xindy-*/user-commands/xindy.in \
@@ -873,6 +851,7 @@ rec {
           pkg-config
           perl
         ];
+
         buildInputs = [
           clisp
           libiconv
@@ -886,11 +865,16 @@ rec {
         ];
 
         preInstall = ''mkdir -p "$out/bin" '';
+
         # fixup various file-location errors of: lib/xindy/{xindy.mem,modules/}
         postInstall = ''
           mkdir -p "$out/lib/xindy"
           mv "$out"/{bin/xindy.mem,lib/xindy/}
         '';
+
+        # If unset, xindy will try to mkdir /homeless-shelter
+        HOME = ".";
+        prePatch = "cd utils/xindy";
       };
 
     }

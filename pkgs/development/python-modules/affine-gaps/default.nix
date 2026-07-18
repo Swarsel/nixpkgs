@@ -1,10 +1,10 @@
 {
+  lib,
+  fetchFromGitHub,
   biopython,
   buildPythonPackage,
   colorama,
-  fetchFromGitHub,
   hatchling,
-  lib,
   numpy,
   pytest-repeat,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "affine-gaps";
   version = "0.2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gata-bio";
@@ -22,6 +21,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-WMH2wUqzA196FSe2TpfslQVW0PGwk7lGMRSKyfCG9rg=";
   };
 
+  nativeCheckInputs = [
+    biopython
+    pytest-repeat
+    pytestCheckHook
+  ];
+
   build-system = [ hatchling ];
 
   dependencies = [
@@ -29,21 +34,15 @@ buildPythonPackage (finalAttrs: {
     numpy
   ];
 
+  enabledTestPaths = [ "test.py" ];
+  pyproject = true;
   pythonImportsCheck = [ "affine_gaps" ];
 
-  nativeCheckInputs = [
-    biopython
-    pytest-repeat
-    pytestCheckHook
-  ];
-
-  enabledTestPaths = [ "test.py" ];
-
   meta = {
-    changelog = "https://github.com/gata-bio/affine-gaps/releases/tag/${finalAttrs.src.tag}";
     homepage = "https://github.com/gata-bio/affine-gaps";
+    changelog = "https://github.com/gata-bio/affine-gaps/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
-    mainProgram = "affine-gaps";
     maintainers = [ lib.maintainers.dotlambda ];
+    mainProgram = "affine-gaps";
   };
 })

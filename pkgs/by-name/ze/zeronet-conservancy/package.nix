@@ -1,14 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
   nixosTests,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "zeronet-conservancy";
   version = "0.7.10";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "zeronet-conservancy";
@@ -56,21 +55,25 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --set PATH ${python3Packages.python}/bin
   '';
 
+  pyproject = false;
+
   passthru.tests = {
     nixos-test = nixosTests.zeronet-conservancy;
   };
 
   meta = {
     description = "Fork/continuation of the ZeroNet project";
-    mainProgram = "zeronet";
+
     longDescription = ''
       zeronet-conservancy is a fork/continuation of ZeroNet project (that has
       been abandoned by its creator) that is dedicated to sustaining existing
       p2p network and developing its values of decentralization and freedom,
       while gradually switching to a better designed network.
     '';
+
     homepage = "https://github.com/zeronet-conservancy/zeronet-conservancy";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ fgaz ];
+    mainProgram = "zeronet";
   };
 })

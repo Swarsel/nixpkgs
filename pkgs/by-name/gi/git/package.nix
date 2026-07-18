@@ -1,60 +1,60 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
+  asciidoc,
+  bash,
   buildPackages,
+  cargo,
+  coreutils, # needed at runtime by git-filter-branch etc
   curl,
-  openssl,
-  zlib-ng,
+  deterministic-host-uname, # trick Makefile into targeting the host platform when cross-compiling
+  docbook2x,
+  docbook_xml_dtd_45,
+  docbook_xsl,
   expat,
-  perlPackages,
-  python3,
+  gawk,
   gettext,
+  glib,
   gnugrep,
   gnused,
-  gawk,
-  coreutils, # needed at runtime by git-filter-branch etc
-  openssh,
-  pcre2,
-  bash,
-  asciidoc,
-  texinfo,
-  xmlto,
-  docbook2x,
-  docbook_xsl,
-  docbook_xml_dtd_45,
-  libxslt,
-  tcl,
-  tk,
-  makeWrapper,
+  gzip, # needed at runtime by gitweb.cgi
   libiconv,
   libiconvReal,
-  svnSupport ? false,
+  libsecret,
+  libxslt,
+  makeWrapper,
+  nixosTests,
+  openssh,
+  openssl,
+  pcre2,
+  perlPackages,
+  pkg-config,
+  python3,
+  rustc,
   subversionClient,
-  perlSupport ? stdenv.buildPlatform == stdenv.hostPlatform,
+  sysctl,
+  tcl,
+  testers,
+  tests,
+  texinfo,
+  tk,
+  xmlto,
+  zlib-ng,
+  doInstallCheck ? !stdenv.hostPlatform.isDarwin, # extremely slow on darwin
+  guiSupport ? false,
   nlsSupport ? true,
   osxkeychainSupport ? stdenv.hostPlatform.isDarwin,
-  guiSupport ? false,
+  perlSupport ? stdenv.buildPlatform == stdenv.hostPlatform,
+  pythonSupport ? true,
+  rustSupport ? lib.meta.availableOn stdenv.hostPlatform rustc,
+  sendEmailSupport ? perlSupport,
+  svnSupport ? false,
+  withLibsecret ? false,
   # Disable the manual since libxslt doesn't seem to parse the files correctly.
   withManual ? !stdenv.hostPlatform.useLLVM,
-  pythonSupport ? true,
-  withpcre2 ? true,
-  sendEmailSupport ? perlSupport,
-  nixosTests,
-  withLibsecret ? false,
-  pkg-config,
-  glib,
-  libsecret,
-  gzip, # needed at runtime by gitweb.cgi
   withSsh ? false,
-  sysctl,
-  deterministic-host-uname, # trick Makefile into targeting the host platform when cross-compiling
-  doInstallCheck ? !stdenv.hostPlatform.isDarwin, # extremely slow on darwin
-  tests,
-  testers,
-  rustSupport ? lib.meta.availableOn stdenv.hostPlatform rustc,
-  cargo,
-  rustc,
+  withpcre2 ? true,
 }:
 
 assert osxkeychainSupport -> stdenv.hostPlatform.isDarwin;
@@ -88,13 +88,15 @@ let
 in
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit version;
+  inherit doInstallCheck;
+
   pname =
     "git"
     + lib.optionalString svnSupport "-with-svn"
     + lib.optionalString (
       !svnSupport && !guiSupport && !sendEmailSupport && !withManual && !pythonSupport && !withpcre2
     ) "-minimal";
-  inherit version;
 
   src = fetchurl {
     url =
@@ -104,15 +106,11 @@ stdenv.mkDerivation (finalAttrs: {
         }.tar.xz"
       else
         "https://www.kernel.org/pub/software/scm/git/git-${version}.tar.xz";
+
     hash = "sha256-9okWI2TBDeee+Jqo2/SHMesFfjTtu9IKylEM4BVGgaM=";
   };
 
   outputs = [ "out" ] ++ lib.optional withManual "doc";
-  separateDebugInfo = true;
-  __structuredAttrs = true;
-
-  enableParallelBuilding = true;
-  enableParallelInstalling = true;
 
   patches = [
     # This patch does two things: (1) use the right name for `docbook2texi',
@@ -128,16 +126,16 @@ stdenv.mkDerivation (finalAttrs: {
     # filesystems, causing spurious failures.
     # https://github.com/NixOS/nixpkgs/issues/498789
     (fetchurl {
+      hash = "sha256-44EPfEJ39LjPWjqjFb52EKNaJGzYxZzJaJOis8QnazU=";
       name = "t7703-ignore-ls-total.patch";
       url = "https://lore.kernel.org/git/20260504101429.340123-1-joerg@thalheim.io/raw";
-      hash = "sha256-44EPfEJ39LjPWjqjFb52EKNaJGzYxZzJaJOis8QnazU=";
     })
     # Address test failure (new in 2.52.0) caused by `git-gui--askyesno` being
     # installed by `make install`.
     (fetchurl {
+      hash = "sha256-vvhbvg74OIMzfksHiErSnjOZ+W0M/T9J8GOQ4E4wKbU=";
       name = "expect-gui--askyesno-failure-in-t1517.patch";
       url = "https://lore.kernel.org/git/20251201031040.1120091-1-brianmlyles@gmail.com/raw";
-      hash = "sha256-vvhbvg74OIMzfksHiErSnjOZ+W0M/T9J8GOQ4E4wKbU=";
     })
   ]
   ++ lib.optionals rustSupport [
@@ -193,6 +191,7 @@ stdenv.mkDerivation (finalAttrs: {
     cargo
     rustc
   ];
+
   buildInputs = [
     curl
     openssl
@@ -212,22 +211,6 @@ stdenv.mkDerivation (finalAttrs: {
     libsecret
   ];
 
-  # This is required for building the rust build.rs script when cross compiling
-  depsBuildBuild = lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
-    buildPackages.stdenv.cc
-  ];
-
-  env = {
-    # required to support pthread_cancel()
-    NIX_LDFLAGS =
-      lib.optionalString (stdenv.cc.isGNU && stdenv.hostPlatform.libc == "glibc") "-lgcc_s"
-      + lib.optionalString (stdenv.hostPlatform.isFreeBSD) "-lthr";
-  }
-  // lib.attrsets.optionalAttrs (rustSupport && (stdenv.buildPlatform != stdenv.hostPlatform)) {
-    # Rust cross-compilation
-    CARGO_BUILD_TARGET = stdenv.hostPlatform.rust.rustcTargetSpec;
-  };
-
   configureFlags = [
     "ac_cv_prog_CURL_CONFIG=${lib.getDev curl}/bin/curl-config"
   ]
@@ -236,10 +219,6 @@ stdenv.mkDerivation (finalAttrs: {
     "ac_cv_snprintf_returns_bogus=no"
     "ac_cv_iconv_omits_bom=no"
   ];
-
-  preBuild = ''
-    makeFlagsArray+=( perllibdir=$out/$(perl -MConfig -wle 'print substr $Config{installsitelib}, 1 + length $Config{siteprefixexp}') )
-  '';
 
   makeFlags = [
     "prefix=\${out}"
@@ -273,9 +252,20 @@ stdenv.mkDerivation (finalAttrs: {
   # Starting with future Git version 3.0.0, rust will be mandatory. For now, it's optional.
   ++ lib.optional rustSupport "WITH_RUST=YesPlease";
 
-  disallowedReferences = lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
-    stdenv.shellPackage
-  ];
+  env = {
+    # required to support pthread_cancel()
+    NIX_LDFLAGS =
+      lib.optionalString (stdenv.cc.isGNU && stdenv.hostPlatform.libc == "glibc") "-lgcc_s"
+      + lib.optionalString (stdenv.hostPlatform.isFreeBSD) "-lthr";
+  }
+  // lib.attrsets.optionalAttrs (rustSupport && (stdenv.buildPlatform != stdenv.hostPlatform)) {
+    # Rust cross-compilation
+    CARGO_BUILD_TARGET = stdenv.hostPlatform.rust.rustcTargetSpec;
+  };
+
+  preBuild = ''
+    makeFlagsArray+=( perllibdir=$out/$(perl -MConfig -wle 'print substr $Config{installsitelib}, 1 + length $Config{siteprefixexp}') )
+  '';
 
   postBuild = ''
     # Set up the flags array for make in the same way as for the main build
@@ -309,12 +299,8 @@ stdenv.mkDerivation (finalAttrs: {
     unset flagsArray
   '';
 
-  ## Install
-
-  # WARNING: Do not `rm` or `mv` files from the source tree; use `cp` instead.
-  #          We need many of these files during the installCheckPhase.
-
-  installFlags = [ "NO_INSTALL_HARDLINKS=1" ];
+  ## InstallCheck
+  doCheck = false;
 
   preInstall =
     lib.optionalString osxkeychainSupport ''
@@ -481,12 +467,23 @@ stdenv.mkDerivation (finalAttrs: {
     unset flagsArray
   '';
 
-  ## InstallCheck
+  nativeInstallCheckInputs = lib.optional (
+    stdenv.hostPlatform.isDarwin || stdenv.hostPlatform.isFreeBSD
+  ) sysctl;
 
-  doCheck = false;
-  inherit doInstallCheck;
+  __structuredAttrs = true;
 
-  installCheckTarget = "test";
+  # This is required for building the rust build.rs script when cross compiling
+  depsBuildBuild = lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
+    buildPackages.stdenv.cc
+  ];
+
+  disallowedReferences = lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
+    stdenv.shellPackage
+  ];
+
+  enableParallelBuilding = true;
+  enableParallelInstalling = true;
 
   # see also installCheckFlagsArray
   installCheckFlags = [
@@ -494,9 +491,11 @@ stdenv.mkDerivation (finalAttrs: {
     "PERL_PATH=${buildPackages.perl}/bin/perl"
   ];
 
-  nativeInstallCheckInputs = lib.optional (
-    stdenv.hostPlatform.isDarwin || stdenv.hostPlatform.isFreeBSD
-  ) sysctl;
+  installCheckTarget = "test";
+  ## Install
+  # WARNING: Do not `rm` or `mv` files from the source tree; use `cp` instead.
+  #          We need many of these files during the installCheckPhase.
+  installFlags = [ "NO_INSTALL_HARDLINKS=1" ];
 
   preInstallCheck = ''
     # Some tests break with high concurrency
@@ -593,6 +592,8 @@ stdenv.mkDerivation (finalAttrs: {
     disable_test t7815-grep-binary
   '';
 
+  separateDebugInfo = true;
+
   stripDebugList = [
     "lib"
     "libexec"
@@ -602,35 +603,38 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     shellPath = "/bin/git-shell";
+
     tests = {
+      buildbot-integration = nixosTests.buildbot;
+
       withInstallCheck = finalAttrs.finalPackage.overrideAttrs (_: {
         doInstallCheck = true;
       });
-      buildbot-integration = nixosTests.buildbot;
     }
     // lib.optionalAttrs svnSupport {
       git-svn-version = testers.testVersion {
-        package = finalAttrs.finalPackage;
-        command = "git svn --version";
         version = "git-svn version ${version}";
+        command = "git svn --version";
+        package = finalAttrs.finalPackage;
       };
     }
     // tests.fetchgit;
+
     updateScript = ./update.sh;
   };
 
   meta = {
-    homepage = "https://git-scm.com/";
     description = "Distributed version control system";
-    license = lib.licenses.gpl2;
-    changelog = "https://github.com/git/git/blob/v${version}/Documentation/RelNotes/${version}.adoc";
 
     longDescription = ''
       Git, a popular distributed version control system designed to
       handle very large projects with speed and efficiency.
     '';
 
-    platforms = lib.platforms.all;
+    homepage = "https://git-scm.com/";
+    changelog = "https://github.com/git/git/blob/v${version}/Documentation/RelNotes/${version}.adoc";
+    license = lib.licenses.gpl2;
+
     maintainers = with lib.maintainers; [
       wmertens
       kashw2
@@ -638,8 +642,10 @@ stdenv.mkDerivation (finalAttrs: {
       philiptaron
       zivarah
     ];
-    teams = [ lib.teams.security-review ];
+
+    platforms = lib.platforms.all;
     mainProgram = "git";
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "git-scm" finalAttrs.version;
+    teams = [ lib.teams.security-review ];
   };
 })

@@ -1,11 +1,11 @@
 {
   lib,
+  fetchurl,
   alsa-utils,
   autoconf,
   automake,
   csound,
   docbook-xsl-ns,
-  fetchurl,
   gdk-pixbuf,
   gettext,
   ghostscript,
@@ -29,7 +29,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "solfege";
   version = "3.23.4";
-  pyproject = false;
 
   src = fetchurl {
     url = "https://alpha.gnu.org/gnu/solfege/solfege-${finalAttrs.version}.tar.gz";
@@ -42,11 +41,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ./texinfo.patch
     ./webbrowser.patch
   ];
-
-  preConfigure = ''
-    aclocal
-    autoconf
-  '';
 
   nativeBuildInputs = [
     autoconf
@@ -80,6 +74,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "--enable-docbook-stylesheet=${docbook-xsl-ns}/share/xml/docbook-xsl-ns/html/chunk.xsl"
   ];
 
+  preConfigure = ''
+    aclocal
+    autoconf
+  '';
+
   preBuild = ''
     sed -i -e 's|wav_player=.*|wav_player=${alsa-utils}/bin/aplay|' \
            -e 's|midi_player=.*|midi_player=${timidity}/bin/timidity|' \
@@ -94,23 +93,25 @@ python3Packages.buildPythonApplication (finalAttrs: {
     make help/C/index.html
   '';
 
-  dontWrapGApps = true;
-
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
+  dontWrapGApps = true;
   enableParallelBuilding = true;
+  pyproject = false;
 
   meta = {
     description = "Ear training program";
     homepage = "https://www.gnu.org/software/solfege/";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       bjornfor
       anthonyroussel
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "solfege";
   };
 })

@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   gettext,
-  gobject-introspection,
-  meson,
-  ninja,
-  pkg-config,
-  wrapGAppsHook3,
+  gitUpdater,
   glib,
+  gobject-introspection,
   gtk3,
   libxfce4ui,
   libxfce4util,
+  meson,
+  ninja,
+  pkg-config,
   python3,
-  gitUpdater,
+  wrapGAppsHook3,
 }:
 
 let
@@ -27,11 +27,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.1.1";
 
   src = fetchFromGitLab {
-    domain = "gitlab.xfce.org";
     owner = "apps";
     repo = "xfce4-panel-profiles";
     rev = "xfce4-panel-profiles-${finalAttrs.version}";
     hash = "sha256-4sUNlabWp6WpBlePVFHejq/+TXiJYSQTnZFp5B258Wc=";
+    domain = "gitlab.xfce.org";
   };
 
   nativeBuildInputs = [
@@ -58,11 +58,11 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = gitUpdater { rev-prefix = "xfce4-panel-profiles-"; };
 
   meta = {
-    homepage = "https://docs.xfce.org/apps/xfce4-panel-profiles/start";
     description = "Simple application to manage Xfce panel layouts";
+    homepage = "https://docs.xfce.org/apps/xfce4-panel-profiles/start";
     license = lib.licenses.gpl3Plus;
+    platforms = lib.platforms.linux;
     mainProgram = "xfce4-panel-profiles";
     teams = [ lib.teams.xfce ];
-    platforms = lib.platforms.linux;
   };
 })

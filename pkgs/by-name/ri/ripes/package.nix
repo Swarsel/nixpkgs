@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  qt6,
   cereal,
   cmake,
+  pkg-config,
   python3,
+  qt6,
   unstableGitUpdater,
 }:
 
@@ -19,8 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "mortbopet";
     repo = "Ripes";
     rev = "878087332afa3558dc8ca657f80a16ecdcf82818";
-    fetchSubmodules = true;
     hash = "sha256-aNJTM/s4GNhWVXQxK1R/rIN/NmeKglibQZMh8ENjIzo=";
+    fetchSubmodules = true;
   };
 
   postPatch = ''
@@ -68,8 +68,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Graphical processor simulator and assembly editor for the RISC-V ISA";
     homepage = "https://github.com/mortbopet/Ripes";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ wineee ];
     platforms = lib.platforms.unix;
     mainProgram = "Ripes";
-    maintainers = with lib.maintainers; [ wineee ];
   };
 })

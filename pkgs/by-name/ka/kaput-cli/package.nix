@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  openssl,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,12 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-N+vdK9DpooPEtXVUNZtmbdjVSpN5ddYggb4FsrvyCwU=";
   };
 
-  cargoHash = "sha256-bz7K3eWv9i50k5nXBb9k8IZ+xPIz4PSomp6K2LDSH78=";
-
-  env = {
-    OPENSSL_NO_VENDOR = 1;
-  };
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -32,12 +26,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-bz7K3eWv9i50k5nXBb9k8IZ+xPIz4PSomp6K2LDSH78=";
+
+  env = {
+    OPENSSL_NO_VENDOR = 1;
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/davidchalifoux/kaput-cli/releases/tag/v${finalAttrs.version}";
     description = "Unofficial CLI client for Put.io";
     homepage = "https://kaput.sh/";
+    changelog = "https://github.com/davidchalifoux/kaput-cli/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "kaput";

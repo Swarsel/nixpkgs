@@ -1,23 +1,22 @@
 {
-  buildPythonPackage,
-  pytestCheckHook,
   attrs,
+  buildPythonPackage,
   hypothesis,
+  pytestCheckHook,
 }:
 
 buildPythonPackage {
-  pname = "attrs-tests";
   inherit (attrs) version;
-  pyproject = false;
-
-  srcs = attrs.testout;
-
-  dontBuild = true;
-  dontInstall = true;
+  pname = "attrs-tests";
 
   nativeCheckInputs = [
     attrs
     hypothesis
     pytestCheckHook
   ];
+
+  dontBuild = true;
+  dontInstall = true;
+  pyproject = false;
+  srcs = attrs.testout;
 }

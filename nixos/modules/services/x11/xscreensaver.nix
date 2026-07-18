@@ -11,23 +11,25 @@ in
 {
   options.services.xscreensaver = {
     enable = lib.mkEnableOption "xscreensaver user service";
-
     package = lib.mkPackageOption pkgs "xscreensaver" { };
 
     hooks = lib.mkOption {
-      type = with lib.types; attrsOf lines;
+      default = { };
+      defaultText = lib.literalExpression "{ }";
+
       description = ''
         An attrset of events and commands to run upon each event.
         Refer to <https://www.jwz.org/xscreensaver/man3.html> for supported events.
       '';
-      defaultText = lib.literalExpression "{ }";
-      default = { };
+
       example = lib.literalExpression ''
         # Reconfigure autorandr on screen wake up
         {
           "RUN" = "''${lib.getExe pkgs.autorandr} --change --ignore-lid";
         };
       '';
+
+      type = with lib.types; attrsOf lines;
     };
   };
 
@@ -35,36 +37,35 @@ in
     # Make xscreensaver-auth setuid root so that it can (try to) prevent the OOM
     # killer from unlocking the screen.
     security.wrappers.xscreensaver-auth = {
-      setuid = true;
-      owner = "root";
       group = "root";
+      owner = "root";
+      setuid = true;
       source = "${pkgs.xscreensaver}/libexec/xscreensaver/xscreensaver-auth";
     };
 
     systemd.user.services = {
       xscreensaver = {
         enable = true;
-        description = "XScreenSaver";
         after = [ "graphical-session-pre.target" ];
+        description = "XScreenSaver";
         partOf = [ "graphical-session.target" ];
-        wantedBy = [ "graphical-session.target" ];
         path = [ cfg.package ];
         serviceConfig.ExecStart = "${cfg.package}/bin/xscreensaver -no-splash";
+        wantedBy = [ "graphical-session.target" ];
       };
 
       xscreensaver-hooks = lib.mkIf (cfg.enable && cfg.hooks != { }) {
         enable = true;
-        description = "Run commands on XScreenSaver events";
+
         after = [
           "graphical-session.target"
           "xscreensaver.service"
         ];
+
+        description = "Run commands on XScreenSaver events";
         partOf = [ "graphical-session.target" ];
-        wantedBy = [ "graphical-session.target" ];
         path = [ cfg.package ];
-        serviceConfig = {
-          Restart = "always";
-        };
+
         script =
           let
             handlers = lib.concatMapAttrsStringSep "\n" (event: action: ''
@@ -82,6 +83,12 @@ in
               esac
             done
           '';
+
+        serviceConfig = {
+          Restart = "always";
+        };
+
+        wantedBy = [ "graphical-session.target" ];
       };
     };
   };

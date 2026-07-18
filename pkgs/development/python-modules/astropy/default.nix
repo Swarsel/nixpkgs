@@ -1,61 +1,55 @@
 {
   lib,
-  fetchFromGitHub,
-  buildPythonPackage,
-
   # build time
   stdenv,
-  cython,
-  extension-helpers,
-  setuptools,
-  setuptools-scm,
-
-  # dependencies
-  astropy-iers-data,
-  numpy,
-  packaging,
-  pyerfa,
-  pyyaml,
-
-  # optional-dependencies
-  scipy,
-  matplotlib,
-  ipython,
-  ipywidgets,
-  ipykernel,
-  pandas,
-  certifi,
-  dask,
-  h5py,
-  pyarrow,
-  beautifulsoup4,
-  html5lib,
-  sortedcontainers,
-  pytz,
-  jplephem,
-  mpmath,
+  fetchFromGitHub,
   asdf,
   asdf-astropy,
+  # dependencies
+  astropy-iers-data,
+  beautifulsoup4,
   bottleneck,
+  buildPythonPackage,
+  certifi,
+  cython,
+  dask,
+  extension-helpers,
   fsspec,
-  s3fs,
-  uncompresspy,
-
+  h5py,
+  html5lib,
   # testing
   hypothesis,
-  pytestCheckHook,
-  pytest-xdist,
+  ipykernel,
+  ipython,
+  ipywidgets,
+  jplephem,
+  matplotlib,
+  mpmath,
+  numpy,
+  packaging,
+  pandas,
+  pyarrow,
+  pyerfa,
   pytest-astropy-header,
   pytest-doctestplus,
   pytest-remotedata,
+  pytest-xdist,
+  pytestCheckHook,
+  pytz,
+  pyyaml,
+  s3fs,
+  # optional-dependencies
+  scipy,
+  setuptools,
+  setuptools-scm,
+  sortedcontainers,
   threadpoolctl,
-
+  uncompresspy,
 }:
 
 buildPythonPackage rec {
   pname = "astropy";
   version = "8.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "astropy";
@@ -67,6 +61,36 @@ buildPythonPackage rec {
   env = lib.optionalAttrs stdenv.cc.isClang {
     NIX_CFLAGS_COMPILE = "-Wno-error=unused-command-line-argument";
   };
+
+  nativeCheckInputs = [
+    hypothesis
+    pytestCheckHook
+    pytest-xdist
+    pytest-astropy-header
+    pytest-doctestplus
+    pytest-remotedata
+    threadpoolctl
+    # FIXME remove in 7.2.0
+    # see https://github.com/astropy/astropy/pull/18882
+    uncompresspy
+  ]
+  ++ optional-dependencies.recommended;
+
+  preCheck = ''
+    export HOME="$(mktemp -d)"
+
+    # See https://github.com/astropy/astropy/issues/17649 and see
+    # --hypothesis-profile=ci pytest flag below.
+    cp conftest.py $out/
+    # https://github.com/NixOS/nixpkgs/issues/255262
+    cd "$out"
+  '';
+
+  postCheck = ''
+    rm conftest.py
+  '';
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     cython
@@ -84,20 +108,6 @@ buildPythonPackage rec {
   ];
 
   optional-dependencies = lib.fix (self: {
-    recommended = [
-      scipy
-      matplotlib
-    ];
-    ipython = [
-      ipython
-    ];
-    jupyter = [
-      ipywidgets
-      ipykernel
-      # ipydatagrid
-      pandas
-    ]
-    ++ self.ipython;
     all = [
       certifi
       dask
@@ -121,51 +131,44 @@ buildPythonPackage rec {
     ++ self.jupyter
     ++ dask.optional-dependencies.array
     ++ fsspec.optional-dependencies.http;
+
+    ipython = [
+      ipython
+    ];
+
+    jupyter = [
+      ipywidgets
+      ipykernel
+      # ipydatagrid
+      pandas
+    ]
+    ++ self.ipython;
+
+    recommended = [
+      scipy
+      matplotlib
+    ];
   });
 
-  nativeCheckInputs = [
-    hypothesis
-    pytestCheckHook
-    pytest-xdist
-    pytest-astropy-header
-    pytest-doctestplus
-    pytest-remotedata
-    threadpoolctl
-    # FIXME remove in 7.2.0
-    # see https://github.com/astropy/astropy/pull/18882
-    uncompresspy
-  ]
-  ++ optional-dependencies.recommended;
+  pyproject = true;
 
-  pythonImportsCheck = [ "astropy" ];
-
-  __darwinAllowLocalNetworking = true;
-
-  preCheck = ''
-    export HOME="$(mktemp -d)"
-
-    # See https://github.com/astropy/astropy/issues/17649 and see
-    # --hypothesis-profile=ci pytest flag below.
-    cp conftest.py $out/
-    # https://github.com/NixOS/nixpkgs/issues/255262
-    cd "$out"
-  '';
   pytestFlags = [
     "--hypothesis-profile=ci"
   ];
-  postCheck = ''
-    rm conftest.py
-  '';
+
+  pythonImportsCheck = [ "astropy" ];
 
   meta = {
-    changelog = "https://docs.astropy.org/en/${src.tag}/changelog.html";
     description = "Astronomy/Astrophysics library for Python";
     homepage = "https://www.astropy.org";
+    changelog = "https://docs.astropy.org/en/${src.tag}/changelog.html";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       kentjames
       doronbehar
     ];
+
+    platforms = lib.platforms.all;
   };
 }

@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   libftdi,
   libusb1,
@@ -19,6 +19,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libftdi
     libusb1
@@ -33,10 +34,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Command-line alternative to the FTDI FTProg utility for FTDI's FT-X series";
-    mainProgram = "ftx_prog";
     homepage = "https://github.com/richardeoin/ftx-prog";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = [ lib.maintainers.funkeleinhorn ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "ftx_prog";
   };
 })

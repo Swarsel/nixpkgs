@@ -1,12 +1,12 @@
 {
   lib,
-  python3,
-  buildEnv,
-  runCommandCC,
   stdenv,
-  runCommand,
-  vapoursynth,
+  buildEnv,
   makeWrapper,
+  python3,
+  runCommand,
+  runCommandCC,
+  vapoursynth,
   withPlugins,
 }:
 
@@ -30,20 +30,21 @@ let
 
   pluginsEnv = buildEnv {
     name = "vapoursynth-plugins-env";
-    pathsToLink = [ "/lib/vapoursynth" ];
     paths = deepPlugins;
+    pathsToLink = [ "/lib/vapoursynth" ];
   };
 
   # Override default plugin path through nixPluginDir symbol
   nixPlugins =
     runCommandCC "libvapoursynth-nix-plugins${ext}"
       {
-        executable = true;
-        preferLocalBuild = true;
-        allowSubstitutes = false;
         src = ''
           char const nixPluginDir[] = "${pluginsEnv}/lib/vapoursynth";
         '';
+
+        allowSubstitutes = false;
+        executable = true;
+        preferLocalBuild = true;
       }
       ''
         $CC -x c -shared -fPIC - -o "$out" <<<"$src"
@@ -54,6 +55,7 @@ in
 if stdenv.hostPlatform.isDarwin then
   vapoursynth.overrideAttrs (previousAttrs: {
     pname = "vapoursynth-with-plugins";
+
     configureFlags = (previousAttrs.configureFlags or [ ]) ++ [
       "--with-plugindir=${pluginsEnv}/lib/vapoursynth"
     ];
@@ -62,6 +64,7 @@ else
   runCommand "${vapoursynth.name}-with-plugins"
     {
       nativeBuildInputs = [ makeWrapper ];
+
       passthru = {
         inherit python3;
         inherit (vapoursynth) src version;

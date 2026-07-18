@@ -2,38 +2,38 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  accountsservice,
   autoconf-archive,
   autoreconfHook,
-  pkg-config,
-  gettext,
-  itstool,
-  libxml2,
-  accountsservice,
   caja,
   dbus-glib,
-  libxklavier,
+  dconf,
+  desktop-file-utils,
+  gettext,
+  gitUpdater,
+  glib,
+  gtk3,
+  hicolor-icon-theme,
+  itstool,
+  libayatana-appindicator,
   libcanberra-gtk3,
   libgtop,
   libmatekbd,
   librsvg,
-  libayatana-appindicator,
-  glib,
-  desktop-file-utils,
-  dconf,
-  gtk3,
-  polkit,
+  libxklavier,
+  libxml2,
   marco,
   mate-common,
   mate-desktop,
   mate-menus,
   mate-panel,
   mate-settings-daemon,
-  udisks,
+  pkg-config,
+  polkit,
   systemd,
-  hicolor-icon-theme,
+  udisks,
   wrapGAppsHook3,
   yelp-tools,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -46,6 +46,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-rsEu3Ig6GxqPOvAFOXhkEoXM+etyjWpQWHGOsA+myJs=";
   };
+
+  postPatch = ''
+    substituteInPlace capplets/system-info/mate-system-info.c \
+      --replace-fail "/usr/bin/mate-about" "${mate-desktop}/bin/mate-about"
+  '';
 
   nativeBuildInputs = [
     autoconf-archive
@@ -82,11 +87,6 @@ stdenv.mkDerivation (finalAttrs: {
     systemd
   ];
 
-  postPatch = ''
-    substituteInPlace capplets/system-info/mate-system-info.c \
-      --replace-fail "/usr/bin/mate-about" "${mate-desktop}/bin/mate-about"
-  '';
-
   configureFlags = [ "--disable-update-mimedb" ];
 
   postInstall = ''
@@ -107,9 +107,9 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   passthru.updateScript = gitUpdater {
-    url = "https://git.mate-desktop.org/mate-control-center";
     odd-unstable = true;
     rev-prefix = "v";
+    url = "https://git.mate-desktop.org/mate-control-center";
   };
 
   meta = {

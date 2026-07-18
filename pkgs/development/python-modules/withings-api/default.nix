@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   arrow,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   pydantic,
   pytest-cov-stub,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "withings-api";
   version = "2.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vangorra";
@@ -29,6 +28,12 @@ buildPythonPackage rec {
       --replace-fail 'requests-oauth = ">=0.4.1"' '''
   '';
 
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+    responses
+  ];
+
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -38,12 +43,7 @@ buildPythonPackage rec {
     pydantic
   ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-    responses
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "withings_api" ];
 
   meta = {

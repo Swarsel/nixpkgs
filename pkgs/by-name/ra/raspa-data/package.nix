@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   raspa,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
-  pname = "raspa-data";
   inherit (raspa) version src;
+  pname = "raspa-data";
 
   outputs = [
     "out"
@@ -28,10 +28,11 @@ stdenvNoCC.mkDerivation {
   meta = {
     inherit (raspa.meta) homepage license maintainers;
     description = "Example packs and documentation of RASPA";
+    platforms = lib.platforms.all;
+
     outputsToInstall = [
       "out"
       "doc"
     ];
-    platforms = lib.platforms.all;
   };
 }

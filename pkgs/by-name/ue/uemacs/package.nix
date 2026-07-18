@@ -1,7 +1,7 @@
 {
   lib,
-  gccStdenv,
   fetchgit,
+  gccStdenv,
   ncurses,
 }:
 
@@ -15,8 +15,6 @@ gccStdenv.mkDerivation {
     hash = "sha256-QSouqZiBmKBU6FqRRfWtTGRIl5sqJ8tVPYwdytt/43w=";
   };
 
-  buildInputs = [ ncurses ];
-
   postPatch = ''
     substituteInPlace Makefile --replace "lcurses" "lncurses"
     substituteInPlace Makefile --replace "/usr/bin" "$out/bin"
@@ -25,27 +23,27 @@ gccStdenv.mkDerivation {
     substituteInPlace epath.h --replace "/usr/global/lib/" "$out/share/uemacs/"
   '';
 
-  makeFlags = [ "CC=${gccStdenv.cc.targetPrefix}cc" ];
-
   strictDeps = true;
-
-  enableParallelBuilding = true;
+  buildInputs = [ ncurses ];
+  makeFlags = [ "CC=${gccStdenv.cc.targetPrefix}cc" ];
 
   installPhase = ''
     mkdir -p $out/{bin,share/uemacs}
     make install
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Linus Torvalds's random version of microemacs with his personal modifications";
     homepage = "https://git.kernel.org/pub/scm/editors/uemacs/uemacs.git/about/";
-    platforms = lib.platforms.all;
-    maintainers = with lib.maintainers; [ networkexception ];
-    mainProgram = "em";
     # MicroEMACS 3.9 can be copied and distributed freely for any
     # non-commercial purposes. MicroEMACS 3.9 can only be incorporated
     # into commercial software with the permission of the current author
     # [Daniel M. Lawrence].
     license = lib.licenses.unfree;
+    maintainers = with lib.maintainers; [ networkexception ];
+    platforms = lib.platforms.all;
+    mainProgram = "em";
   };
 }

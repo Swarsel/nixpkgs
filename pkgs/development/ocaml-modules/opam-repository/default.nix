@@ -1,15 +1,14 @@
 {
   lib,
   buildDunePackage,
-  opam-format,
   curl,
+  opam-format,
   patch,
 }:
 
 buildDunePackage {
-  pname = "opam-repository";
-
   inherit (opam-format) src version;
+  pname = "opam-repository";
 
   propagatedBuildInputs = [
     opam-format

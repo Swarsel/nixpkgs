@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   stdenv,
   fetchFromGitHub,
-  writableTmpDirAsHomeHook,
+  buildGoModule,
   installShellFiles,
+  writableTmpDirAsHomeHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -30,6 +30,7 @@ buildGoModule (finalAttrs: {
     # `leaveDotGit = false;` See also:
     # https://github.com/NixOS/nixpkgs/issues/8567
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       git rev-parse HEAD > $out/COMMIT
@@ -38,13 +39,11 @@ buildGoModule (finalAttrs: {
     '';
   };
 
-  vendorHash = "sha256-yieD29GFQQrYVbYNwFHDQX9l0KOKu0usng1OPoaVBZ8=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=v${finalAttrs.version}"
+  nativeBuildInputs = [
+    installShellFiles
   ];
+
+  vendorHash = "sha256-yieD29GFQQrYVbYNwFHDQX9l0KOKu0usng1OPoaVBZ8=";
 
   # ldflags based on metadata from git and source
   preBuild = ''
@@ -54,9 +53,8 @@ buildGoModule (finalAttrs: {
     )
   '';
 
-  nativeBuildInputs = [
-    installShellFiles
-  ];
+  # No tests
+  doCheck = false;
 
   postInstall = ''
     installShellCompletion --cmd pdfcpu \
@@ -65,12 +63,8 @@ buildGoModule (finalAttrs: {
       --bash <($out/bin/pdfcpu completion bash)
   '';
 
-  # No tests
-  doCheck = false;
   doInstallCheck = true;
-  installCheckInputs = [
-    writableTmpDirAsHomeHook
-  ];
+
   # NOTE: Can't use `versionCheckHook` since a writeable $HOME is required and
   # `versionCheckHook` uses --ignore-environment
   installCheckPhase = ''
@@ -88,12 +82,22 @@ buildGoModule (finalAttrs: {
     done
   '';
 
+  installCheckInputs = [
+    writableTmpDirAsHomeHook
+  ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=v${finalAttrs.version}"
+  ];
+
   subPackages = [ "cmd/pdfcpu" ];
 
   meta = {
     description = "PDF processor written in Go";
-    changelog = "https://pdfcpu.io/changelog/";
     homepage = "https://pdfcpu.io";
+    changelog = "https://pdfcpu.io/changelog/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ doronbehar ];
     mainProgram = "pdfcpu";

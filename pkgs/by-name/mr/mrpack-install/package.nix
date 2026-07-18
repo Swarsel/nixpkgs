@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   buildPackages,
   installShellFiles,
   nix-update-script,
@@ -12,8 +12,8 @@ let
   version = "0.16.10";
 in
 buildGoModule {
-  pname = "mrpack-install";
   inherit version;
+  pname = "mrpack-install";
 
   src = fetchFromGitHub {
     owner = "nothub";
@@ -22,14 +22,11 @@ buildGoModule {
     hash = "sha256-mTAXFK97t10imdICpg0UI4YLF744oscJqoOIBG5GEkc=";
   };
 
-  vendorHash = "sha256-az+NpP/hCIq2IfO8Bmn/qG3JVypeDljJ0jWg6yT6hks=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/nothub/mrpack-install/buildinfo.version=${version}"
-    "-X github.com/nothub/mrpack-install/buildinfo.date=1970-01-01T00:00:00Z"
+  nativeBuildInputs = [
+    installShellFiles
   ];
+
+  vendorHash = "sha256-az+NpP/hCIq2IfO8Bmn/qG3JVypeDljJ0jWg6yT6hks=";
 
   checkFlags =
     let
@@ -55,10 +52,6 @@ buildGoModule {
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
-  nativeBuildInputs = [
-    installShellFiles
-  ];
-
   postInstall =
     let
       mrpack-install = "${stdenv.hostPlatform.emulator buildPackages} $out/bin/mrpack-install";
@@ -69,6 +62,13 @@ buildGoModule {
         --fish <(${mrpack-install} completion fish) \
         --zsh <(${mrpack-install} completion zsh)
     '';
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/nothub/mrpack-install/buildinfo.version=${version}"
+    "-X github.com/nothub/mrpack-install/buildinfo.date=1970-01-01T00:00:00Z"
+  ];
 
   passthru.updateScript = nix-update-script { };
 

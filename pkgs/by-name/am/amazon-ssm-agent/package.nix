@@ -1,21 +1,21 @@
 {
   lib,
-  writeShellScriptBin,
-  buildGoModule,
-  makeWrapper,
-  darwin,
-  fetchFromGitHub,
-  substitute,
-  coreutils,
-  unixtools,
-  util-linux,
   stdenv,
-  dmidecode,
+  fetchFromGitHub,
+  amazon-ssm-agent,
   bashInteractive,
+  buildGoModule,
+  coreutils,
+  darwin,
+  dmidecode,
+  makeWrapper,
   nix-update-script,
   nixosTests,
+  substitute,
   testers,
-  amazon-ssm-agent,
+  unixtools,
+  util-linux,
+  writeShellScriptBin,
 }:
 
 let
@@ -33,12 +33,12 @@ let
   '';
 
   binaries = {
-    "core" = "amazon-ssm-agent";
     "agent" = "ssm-agent-worker";
     "cli-main" = "ssm-cli";
-    "worker" = "ssm-document-worker";
+    "core" = "amazon-ssm-agent";
     "logging" = "ssm-session-logger";
     "sessionworker" = "ssm-session-worker";
+    "worker" = "ssm-document-worker";
   };
 in
 buildGoModule (finalAttrs: {
@@ -51,8 +51,6 @@ buildGoModule (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-FEYziTgYIzX8tm/zgVDi2Tvbxn+lBnXAAqqO+LhlQYM=";
   };
-
-  vendorHash = null;
 
   patches = [
     # Some tests use networking, so we skip them.
@@ -67,35 +65,13 @@ buildGoModule (finalAttrs: {
     # the file with a hardcoded value, as we already have it from attrs.
     (substitute {
       src = ./0001-makefile-don-t-use-tool-to-generate-version-file.patch;
+
       substitutions = [
         "--subst-var-by"
         "VERSION"
         finalAttrs.version
       ];
     })
-  ];
-
-  nativeBuildInputs = [
-    makeWrapper
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    darwin.DarwinTools
-  ];
-
-  # See the list https://github.com/aws/amazon-ssm-agent/blob/3.2.2143.0/makefile#L121-L147
-  # The updater is not built because it cannot work on NixOS
-  subPackages = [
-    "core"
-    "agent"
-    "agent/cli-main"
-    "agent/framework/processor/executer/outofproc/sessionworker"
-    "agent/framework/processor/executer/outofproc/worker"
-    "agent/session/logging"
-  ];
-
-  ldflags = [
-    "-s"
-    "-w"
   ];
 
   postPatch = ''
@@ -119,10 +95,21 @@ buildGoModule (finalAttrs: {
       --replace-fail /usr/sbin/dmidecode ${dmidecode}/bin/dmidecode
   '';
 
+  nativeBuildInputs = [
+    makeWrapper
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    darwin.DarwinTools
+  ];
+
+  vendorHash = null;
+
   preBuild = ''
     make pre-release
     make pre-build
   '';
+
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -152,35 +139,53 @@ buildGoModule (finalAttrs: {
     runHook postInstall
   '';
 
-  doCheck = false;
-
   postFixup = ''
     wrapProgram $out/bin/amazon-ssm-agent \
       --prefix PATH : "${lib.makeBinPath [ bashInteractive ]}"
   '';
 
+  __darwinAllowLocalNetworking = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
+  # See the list https://github.com/aws/amazon-ssm-agent/blob/3.2.2143.0/makefile#L121-L147
+  # The updater is not built because it cannot work on NixOS
+  subPackages = [
+    "core"
+    "agent"
+    "agent/cli-main"
+    "agent/framework/processor/executer/outofproc/sessionworker"
+    "agent/framework/processor/executer/outofproc/worker"
+    "agent/session/logging"
+  ];
+
   passthru = {
     tests = {
       inherit (nixosTests) amazon-ssm-agent;
+
       version = testers.testVersion {
-        package = amazon-ssm-agent;
         command = "amazon-ssm-agent --version";
+        package = amazon-ssm-agent;
       };
     };
+
     updateScript = nix-update-script { };
   };
 
-  __darwinAllowLocalNetworking = true;
-
   meta = {
     description = "Agent to enable remote management of your Amazon EC2 instance configuration";
-    changelog = "https://github.com/aws/amazon-ssm-agent/releases/tag/${finalAttrs.version}";
     homepage = "https://github.com/aws/amazon-ssm-agent";
+    changelog = "https://github.com/aws/amazon-ssm-agent/releases/tag/${finalAttrs.version}";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       anthonyroussel
       arianvp
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

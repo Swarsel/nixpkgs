@@ -1,9 +1,9 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  testers,
+  buildNpmPackage,
   elm-review,
+  testers,
 }:
 
 buildNpmPackage rec {
@@ -17,29 +17,30 @@ buildNpmPackage rec {
     hash = "sha256-IjaPJ9ic/5Z8pdtziNwLqzXfnSmgkurjC6afmNIX4LU=";
   };
 
-  npmDepsHash = "sha256-eY9U9mLVL9tizN8touWQfLqFAJJ8pHaSHVD//cvNdhE=";
-
   postPatch = ''
     sed -i "s/elm-tooling install/echo 'skipping elm-tooling install'/g" package.json
   '';
 
+  npmDepsHash = "sha256-eY9U9mLVL9tizN8touWQfLqFAJJ8pHaSHVD//cvNdhE=";
   dontNpmBuild = true;
 
   passthru.tests.version = testers.testVersion {
     version = "${version}";
-    package = elm-review;
     command = "elm-review --version";
+    package = elm-review;
   };
 
   meta = {
-    changelog = "https://github.com/jfmengels/node-elm-review/blob/main/CHANGELOG.md";
     description = "Analyzes Elm projects, to help find mistakes before your users find them";
-    mainProgram = "elm-review";
     homepage = "https://github.com/jfmengels/node-elm-review";
+    changelog = "https://github.com/jfmengels/node-elm-review/blob/main/CHANGELOG.md";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       turbomack
       zupo
     ];
+
+    mainProgram = "elm-review";
   };
 }

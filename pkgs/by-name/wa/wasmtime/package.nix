@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   buildPackages,
   cmake,
   installShellFiles,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
   enableShared ? !stdenv.hostPlatform.isStatic,
   enableStatic ? stdenv.hostPlatform.isStatic,
   variant ? "main",
@@ -16,13 +16,14 @@ let
   sources = {
     lts-36 = {
       version = "36.0.12";
-      hash = "sha256-5hv7Hvw8nYfI/Q2IOMhXl0rYjp9GyUrBg/Y4vrb+r34=";
       cargoHash = "sha256-EhuGBZchVyB9G5eRt/8QKN6grcP5AjFJMyGFdkfvT7g=";
+      hash = "sha256-5hv7Hvw8nYfI/Q2IOMhXl0rYjp9GyUrBg/Y4vrb+r34=";
     };
+
     main = {
       version = "46.0.1";
-      hash = "sha256-rPIO+wQSu5KWT/v3Wbjs29p5Aoqpnpb+TwSTT5CRb6U=";
       cargoHash = "sha256-cJD5iq342giBP+YdTem0/nOsMhI7DKRL4iiai5xayv8=";
+      hash = "sha256-rPIO+wQSu5KWT/v3Wbjs29p5Aoqpnpb+TwSTT5CRb6U=";
     };
   };
   source = sources.${variant};
@@ -39,29 +40,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  # Disable cargo-auditable until https://github.com/rust-secure-code/cargo-auditable/issues/124 is solved.
-  auditable = false;
-
-  cargoHash = source.cargoHash;
-  cargoBuildFlags = [
-    "--package"
-    "wasmtime-cli"
-    "--package"
-    "wasmtime-c-api"
-  ];
-
   outputs = [
     "out"
     "dev"
     "lib"
   ];
 
-  __structuredAttrs = true;
-
   nativeBuildInputs = [
     cmake
     installShellFiles
   ];
+
+  cargoHash = source.cargoHash;
 
   doCheck =
     with stdenv.buildPlatform;
@@ -106,10 +96,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
         --fish "${buildPackages.wasmtime}"/share/fish/*/*
     '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  __structuredAttrs = true;
+  # Disable cargo-auditable until https://github.com/rust-secure-code/cargo-auditable/issues/124 is solved.
+  auditable = false;
+
+  cargoBuildFlags = [
+    "--package"
+    "wasmtime-cli"
+    "--package"
+    "wasmtime-c-api"
+  ];
 
   passthru = {
     updateScript = nix-update-script {
@@ -123,13 +125,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Standalone JIT-style runtime for WebAssembly, using Cranelift";
     homepage = "https://wasmtime.dev/";
+    changelog = "https://github.com/bytecodealliance/wasmtime/blob/v${finalAttrs.version}/RELEASES.md";
     license = lib.licenses.WITH lib.licenses.asl20 lib.licenses.llvm-exception;
-    mainProgram = "wasmtime";
+
     maintainers = with lib.maintainers; [
       ereslibre
       nekowinston
     ];
+
     platforms = lib.platforms.unix;
-    changelog = "https://github.com/bytecodealliance/wasmtime/blob/v${finalAttrs.version}/RELEASES.md";
+    mainProgram = "wasmtime";
   };
 })

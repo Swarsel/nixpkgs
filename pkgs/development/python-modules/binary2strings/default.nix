@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pybind11,
   pytestCheckHook,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "binary2strings";
   version = "0.1.13";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "glmcdona";
@@ -25,10 +24,9 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "binary2strings" ];
-
   enabledTestPaths = [ "tests/test.py" ];
+  pyproject = true;
+  pythonImportsCheck = [ "binary2strings" ];
 
   meta = {
     description = "Module to extract Ascii, Utf8, and Unicode strings from binary data";

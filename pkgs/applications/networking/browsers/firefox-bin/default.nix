@@ -2,31 +2,31 @@
   lib,
   stdenv,
   fetchurl,
-  config,
-  wrapGAppsHook3,
-  autoPatchelfHook,
+  adwaita-icon-theme,
   alsa-lib,
+  autoPatchelfHook,
+  config,
+  coreutils,
   curl,
   dbus-glib,
+  generated,
+  gnugrep,
+  gnupg,
+  gnused,
   gtk3,
-  libxtst,
   libva,
+  libxtst,
+  patchelfUnstable, # have to use patchelfUnstable to support --no-clobber-old-sections
   pciutils,
   pipewire,
-  adwaita-icon-theme,
-  generated,
+  runtimeShell,
+  undmg,
+  wrapGAppsHook3,
   writeScript,
   writeText,
   xidel,
-  coreutils,
-  gnused,
-  gnugrep,
-  gnupg,
-  runtimeShell,
-  systemLocale ? config.i18n.defaultLocale or "en_US",
-  patchelfUnstable, # have to use patchelfUnstable to support --no-clobber-old-sections
   applicationName ? "Firefox",
-  undmg,
+  systemLocale ? config.i18n.defaultLocale or "en_US",
 }:
 
 let
@@ -36,11 +36,11 @@ let
   binaryName = "firefox";
 
   mozillaPlatforms = {
-    i686-linux = "linux-i686";
-    x86_64-linux = "linux-x86_64";
-    aarch64-linux = "linux-aarch64";
     # bundles are universal and can be re-used for both darwin architectures
     aarch64-darwin = "mac";
+    aarch64-linux = "linux-aarch64";
+    i686-linux = "linux-i686";
+    x86_64-linux = "linux-x86_64";
   };
 
   arch = mozillaPlatforms.${stdenv.hostPlatform.system};
@@ -71,10 +71,7 @@ in
 
 stdenv.mkDerivation {
   inherit pname version;
-
   src = fetchurl { inherit (source) url sha256; };
-
-  sourceRoot = lib.optional stdenv.hostPlatform.isDarwin ".";
 
   nativeBuildInputs = [
     wrapGAppsHook3
@@ -86,6 +83,7 @@ stdenv.mkDerivation {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     undmg
   ];
+
   buildInputs = lib.optionals (!stdenv.hostPlatform.isDarwin) [
     gtk3
     adwaita-icon-theme
@@ -93,21 +91,6 @@ stdenv.mkDerivation {
     dbus-glib
     libxtst
   ];
-  runtimeDependencies = [
-    curl
-    pciutils
-  ]
-  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
-    libva.out
-  ];
-  appendRunpaths = lib.optionals (!stdenv.hostPlatform.isDarwin) [
-    "${pipewire}/lib"
-  ];
-  # Firefox uses "relrhack" to manually process relocations from a fixed offset
-  patchelfFlags = [ "--no-clobber-old-sections" ];
-
-  # don't break code signing
-  dontFixup = stdenv.hostPlatform.isDarwin;
 
   installPhase =
     if stdenv.hostPlatform.isDarwin then
@@ -128,12 +111,31 @@ stdenv.mkDerivation {
         ln -s ${policiesJson} "$out/lib/firefox-bin-${version}/distribution/policies.json";
       '';
 
+  appendRunpaths = lib.optionals (!stdenv.hostPlatform.isDarwin) [
+    "${pipewire}/lib"
+  ];
+
+  # don't break code signing
+  dontFixup = stdenv.hostPlatform.isDarwin;
+  # Firefox uses "relrhack" to manually process relocations from a fixed offset
+  patchelfFlags = [ "--no-clobber-old-sections" ];
+
+  runtimeDependencies = [
+    curl
+    pciutils
+  ]
+  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
+    libva.out
+  ];
+
+  sourceRoot = lib.optional stdenv.hostPlatform.isDarwin ".";
+
   passthru = {
     inherit applicationName binaryName;
-    libName = "firefox-bin-${version}";
     ffmpegSupport = true;
     gssSupport = true;
     gtk3 = gtk3;
+    libName = "firefox-bin-${version}";
 
     # update with:
     # $ nix-shell maintainers/scripts/update.nix --argstr package firefox-bin-unwrapped
@@ -149,18 +151,17 @@ stdenv.mkDerivation {
         curl
         runtimeShell
         ;
+
       baseUrl = "https://archive.mozilla.org/pub/firefox/releases/";
     };
   };
 
   meta = {
-    changelog = "https://www.firefox.com/en-US/firefox/${version}/releasenotes/";
     description = "Mozilla Firefox, free web browser (binary package)";
     homepage = "https://www.mozilla.org/firefox/";
+    changelog = "https://www.firefox.com/en-US/firefox/${version}/releasenotes/";
+
     license = {
-      shortName = "firefox";
-      fullName = "Firefox Terms of Use";
-      url = "https://www.mozilla.org/about/legal/terms/firefox/";
       # "You Are Responsible for the Consequences of Your Use of Firefox"
       # (despite the heading, not an indemnity clause) states the following:
       #
@@ -176,15 +177,21 @@ stdenv.mkDerivation {
       # instances where you break your local laws just because you happen to
       # use Firefox whilst doing it?)
       free = false;
+      fullName = "Firefox Terms of Use";
       redistributable = true; # since MPL-2.0 still applies
+      shortName = "firefox";
+      url = "https://www.mozilla.org/about/legal/terms/firefox/";
     };
+
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    platforms = builtins.attrNames mozillaPlatforms;
-    hydraPlatforms = [ ];
+
     maintainers = with lib.maintainers; [
       taku0
       lovesegfault
     ];
+
+    platforms = builtins.attrNames mozillaPlatforms;
     mainProgram = binaryName;
+    hydraPlatforms = [ ];
   };
 }

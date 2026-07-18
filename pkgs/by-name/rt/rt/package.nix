@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   autoreconfHook,
   buildEnv,
-  fetchFromGitHub,
   fetchpatch,
+  gnupg,
+  makeWrapper,
+  openssl,
   perl,
   perlPackages,
-  makeWrapper,
-  gnupg,
-  openssl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,9 +17,9 @@ stdenv.mkDerivation (finalAttrs: {
   version = "5.0.8";
 
   src = fetchFromGitHub {
+    owner = "bestpractical";
     repo = "rt";
     rev = "rt-${finalAttrs.version}";
-    owner = "bestpractical";
     hash = "sha256-4/iC1PjLgLAp7XWTafe8HW3bTkDWWQxtSEIOs8wluzE=";
   };
 
@@ -29,8 +29,8 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix "Wide character in subroutine entry" crash on every request
     # merged upstream
     (fetchpatch {
-      url = "https://github.com/bestpractical/rt/commit/f8f03dd6e69dfbf4eb71e3ded0f793af4721a06d.patch";
       hash = "sha256-Mk8ve8n5tgyyHT7RAt2o+QnUlcYNOu95lNjku6VgXS0=";
+      url = "https://github.com/bestpractical/rt/commit/f8f03dd6e69dfbf4eb71e3ded0f793af4721a06d.patch";
     })
   ];
 
@@ -43,6 +43,7 @@ stdenv.mkDerivation (finalAttrs: {
     perl
     (buildEnv {
       name = "rt-perl-deps";
+
       paths =
         with perlPackages;
         (requiredPerlModules [
@@ -139,9 +140,14 @@ stdenv.mkDerivation (finalAttrs: {
     })
   ];
 
-  preAutoreconf = ''
-    echo rt-${finalAttrs.version} > .tag
-  '';
+  configureFlags = [
+    "--enable-graphviz"
+    "--enable-gd"
+    "--enable-gpg"
+    "--enable-smime"
+    "--with-db-type=Pg"
+  ];
+
   preConfigure = ''
     appendToVar configureFlags "--with-web-user=$UID"
     appendToVar configureFlags "--with-web-group=$(id -g)"
@@ -150,13 +156,6 @@ stdenv.mkDerivation (finalAttrs: {
     appendToVar configureFlags "--with-libs-owner=$UID"
     appendToVar configureFlags "--with-libs-group=$(id -g)"
   '';
-  configureFlags = [
-    "--enable-graphviz"
-    "--enable-gd"
-    "--enable-gpg"
-    "--enable-smime"
-    "--with-db-type=Pg"
-  ];
 
   buildPhase = ''
     make testdeps
@@ -182,9 +181,13 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s /var/lib/rt/gpg $out/var/data/gpg
   '';
 
+  preAutoreconf = ''
+    echo rt-${finalAttrs.version} > .tag
+  '';
+
   meta = {
     homepage = "https://github.com/bestpractical/rt";
-    platforms = lib.platforms.unix;
     license = lib.licenses.gpl2Only;
+    platforms = lib.platforms.unix;
   };
 })

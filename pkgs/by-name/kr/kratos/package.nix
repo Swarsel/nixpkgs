@@ -1,8 +1,8 @@
 {
-  fetchFromGitHub,
-  buildGoModule,
   lib,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -19,20 +19,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-qnG8hdWazKlIFfNPz2z5F7hhgZaTTttUBbg59T+N5OI=";
 
-  subPackages = [ "." ];
-
-  tags = [ "sqlite" ];
-
-  # Pass versioning information via ldflags
-  ldflags = [
-    "-X github.com/ory/kratos/driver/config.Version=v${finalAttrs.version}"
-  ];
-
-  # large portion of tests fail due to:
-  #     provider.go:39: building the Go binary returned error: exit status 1
-  #        cannot find module providing package github.com/ory/x/jsonnetsecure/cmd: import lookup disabled by -mod=vendor
-  doCheck = false;
-
   preBuild = ''
     # Patch shebangs
     files=(
@@ -47,18 +33,32 @@ buildGoModule (finalAttrs: {
     substituteInPlace Makefile --replace-fail '/usr/bin/env bash' '${stdenv.shell}'
   '';
 
+  # large portion of tests fail due to:
+  #     provider.go:39: building the Go binary returned error: exit status 1
+  #        cannot find module providing package github.com/ory/x/jsonnetsecure/cmd: import lookup disabled by -mod=vendor
+  doCheck = false;
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+
+  # Pass versioning information via ldflags
+  ldflags = [
+    "-X github.com/ory/kratos/driver/config.Version=v${finalAttrs.version}"
+  ];
+
+  subPackages = [ "." ];
+  tags = [ "sqlite" ];
   versionCheckProgramArg = [ "version" ];
 
   meta = {
-    mainProgram = "kratos";
     description = "API-first Identity and User Management system that is built according to cloud architecture best practices";
     homepage = "https://www.ory.sh/kratos/";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       mrmebelman
       debtquity
     ];
+
+    mainProgram = "kratos";
   };
 })

@@ -6,18 +6,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  libcosmicAppHook,
-  just,
-  pkg-config,
   alsa-lib,
   ffmpeg,
   glib,
   gst_all_1,
-  libglvnd,
+  just,
+  libcosmicAppHook,
   libgbm,
+  libglvnd,
   nix-update-script,
   nixosTests,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -31,13 +31,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "epoch-${finalAttrs.version}";
     hash = "sha256-4oIfTsEGMVmgS0VWLnQ1xAcPAzBeYaGT8xU3b/ObeO8=";
   };
-
-  cargoHash = "sha256-aY5QYZ1OjiCHgfFysTTU6Wp/1IexAWjuZCkTFuFY1PI=";
-
-  separateDebugInfo = true;
-  __structuredAttrs = true;
-
-  env.VERGEN_GIT_SHA = finalAttrs.src.tag;
 
   nativeBuildInputs = [
     just
@@ -58,6 +51,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libglvnd
   ];
 
+  cargoHash = "sha256-aY5QYZ1OjiCHgfFysTTU6Wp/1IexAWjuZCkTFuFY1PI=";
+  env.VERGEN_GIT_SHA = finalAttrs.src.tag;
+
+  preFixup = ''
+    libcosmicAppWrapperArgs+=(--prefix GST_PLUGIN_SYSTEM_PATH_1_0 : "$GST_PLUGIN_SYSTEM_PATH_1_0")
+
+    substituteInPlace $out/share/thumbnailers/com.system76.CosmicPlayer.thumbnailer \
+      --replace-fail "TryExec=cosmic-player" "TryExec=$out/bin/cosmic-player" \
+      --replace-fail "Exec=cosmic-player" "Exec=$out/bin/cosmic-player"
+  '';
+
+  __structuredAttrs = true;
   dontUseJustBuild = true;
   dontUseJustCheck = true;
 
@@ -70,13 +75,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "target/${stdenv.hostPlatform.rust.cargoShortTarget}"
   ];
 
-  preFixup = ''
-    libcosmicAppWrapperArgs+=(--prefix GST_PLUGIN_SYSTEM_PATH_1_0 : "$GST_PLUGIN_SYSTEM_PATH_1_0")
-
-    substituteInPlace $out/share/thumbnailers/com.system76.CosmicPlayer.thumbnailer \
-      --replace-fail "TryExec=cosmic-player" "TryExec=$out/bin/cosmic-player" \
-      --replace-fail "Exec=cosmic-player" "Exec=$out/bin/cosmic-player"
-  '';
+  separateDebugInfo = true;
 
   passthru = {
     tests = {
@@ -97,11 +96,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/pop-os/cosmic-player";
     description = "Media player for the COSMIC Desktop Environment";
+    homepage = "https://github.com/pop-os/cosmic-player";
     license = lib.licenses.gpl3Only;
-    teams = [ lib.teams.cosmic ];
     platforms = lib.platforms.linux;
     mainProgram = "cosmic-player";
+    teams = [ lib.teams.cosmic ];
   };
 })

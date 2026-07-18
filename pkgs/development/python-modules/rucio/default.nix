@@ -1,18 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  # build-system
-  packaging,
-  setuptools,
-  wheel,
-
   # dependencies
   alembic,
   argcomplete,
   boto3,
+  buildPythonPackage,
   dogpile-cache,
   flask,
   geoip2,
@@ -20,23 +13,27 @@
   google-auth,
   jsonschema,
   oic,
+  # build-system
+  packaging,
   paramiko,
   prometheus-client,
   pymemcache,
+  # tests
+  pytestCheckHook,
   python-dateutil,
   python-magic,
+  pythonAtLeast,
   redis,
   requests,
   rich,
+  setuptools,
   sqlalchemy,
   statsd,
   stomp-py,
   tabulate,
   typing-extensions,
   urllib3,
-
-  # tests
-  pytestCheckHook,
+  wheel,
 }:
 
 let
@@ -50,16 +47,13 @@ let
   };
 in
 buildPythonPackage {
-  pname = "rucio";
   inherit version src;
-  pyproject = true;
+  pname = "rucio";
+  doCheck = false; # needs a rucio.cfg
 
-  # future-1.0.0 not supported for interpreter python3.13
-  disabled = pythonAtLeast "3.13";
-
-  pythonRelaxDeps = true;
-
-  pythonRemoveDeps = [ "boto" ];
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     packaging
@@ -95,13 +89,12 @@ buildPythonPackage {
     urllib3
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
-  doCheck = false; # needs a rucio.cfg
-
+  # future-1.0.0 not supported for interpreter python3.13
+  disabled = pythonAtLeast "3.13";
+  pyproject = true;
   pythonImportsCheck = [ "rucio" ];
+  pythonRelaxDeps = true;
+  pythonRemoveDeps = [ "boto" ];
 
   meta = {
     description = "Tool for Scientific Data Management";

@@ -1,21 +1,16 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
-  paretosecurity,
-  nixosTests,
-  pkg-config,
+  buildGoModule,
   gtk3,
+  nixosTests,
+  paretosecurity,
+  pkg-config,
+  testers,
   webkitgtk_4_1,
 }:
 
 buildGoModule (finalAttrs: {
-  nativeBuildInputs = [ pkg-config ];
-  buildInputs = [
-    gtk3
-    webkitgtk_4_1
-  ];
   pname = "paretosecurity";
   version = "0.3.21";
 
@@ -26,20 +21,19 @@ buildGoModule (finalAttrs: {
     hash = "sha256-pQ5p52Tf8MtCasTC4ZyDN3EaJfncCCADmK03+mdOQ2s=";
   };
 
+  nativeBuildInputs = [ pkg-config ];
+
+  buildInputs = [
+    gtk3
+    webkitgtk_4_1
+  ];
+
   vendorHash = "sha256-tQkiAVrV1Tjv1VlBJWtfP9vBiiK845EBqM7QvJVsVB8=";
-  proxyVendor = true;
 
   # Skip building the Windows installer
   preBuild = ''
     rm -rf cmd/paretosecurity-installer
   '';
-
-  ldflags = [
-    "-s"
-    "-X=github.com/ParetoSecurity/agent/shared.Version=${finalAttrs.version}"
-    "-X=github.com/ParetoSecurity/agent/shared.Commit=${finalAttrs.src.rev}"
-    "-X=github.com/ParetoSecurity/agent/shared.Date=1970-01-01T00:00:00Z"
-  ];
 
   postInstall = ''
     # Install global systemd files
@@ -69,16 +63,27 @@ buildGoModule (finalAttrs: {
     install -Dm444 ${finalAttrs.src}/assets/icon.png $out/share/icons/hicolor/512x512/apps/ParetoSecurity.png
   '';
 
+  ldflags = [
+    "-s"
+    "-X=github.com/ParetoSecurity/agent/shared.Version=${finalAttrs.version}"
+    "-X=github.com/ParetoSecurity/agent/shared.Commit=${finalAttrs.src.rev}"
+    "-X=github.com/ParetoSecurity/agent/shared.Date=1970-01-01T00:00:00Z"
+  ];
+
+  proxyVendor = true;
+
   passthru.tests = {
     version = testers.testVersion {
       inherit (finalAttrs) version;
       package = paretosecurity;
     };
+
     integration_test = nixosTests.paretosecurity;
   };
 
   meta = {
     description = "A simple trayicon app that makes sure your laptop is correctly configured for security";
+
     longDescription = ''
       [Pareto Desktop](https://paretosecurity.com/linux) is a free and open
       source trayicon app to help you configure your laptop for security. It
@@ -104,6 +109,7 @@ buildGoModule (finalAttrs: {
       status of checks to https://cloud.paretosecurity.com which makes
       compliance people happy and your privacy intact.
     '';
+
     homepage = "https://github.com/ParetoSecurity/agent";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ zupo ];

@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   git,
+  installShellFiles,
   makeWrapper,
   which,
-  installShellFiles,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -46,11 +46,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/ingydotnet/git-subrepo";
     description = "Git submodule alternative";
-    mainProgram = "git-subrepo";
+    homepage = "https://github.com/ingydotnet/git-subrepo";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ ryantrinkle ];
+    platforms = lib.platforms.unix;
+    mainProgram = "git-subrepo";
   };
 })

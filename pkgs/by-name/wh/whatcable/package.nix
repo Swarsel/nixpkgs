@@ -1,6 +1,6 @@
 {
-  fetchzip,
   lib,
+  fetchzip,
   nix-update-script,
   re-plistbuddy,
   stdenvNoCC,
@@ -12,18 +12,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "whatcable";
   version = "1.1.9";
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
   src = fetchzip {
     url = "https://github.com/darrylmorley/whatcable/releases/download/v${finalAttrs.version}/WhatCable.zip";
     hash = "sha256-0taHQE4aUJrbRdWXZZyHfJ+2EzpEiXpsj8HWg04lgXg=";
   };
 
-  dontPatch = true;
-  dontConfigure = true;
-  dontBuild = true;
-  dontFixup = true;
+  strictDeps = true;
 
   installPhase = ''
     runHook preInstall
@@ -35,13 +29,19 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+  dontBuild = true;
+  dontConfigure = true;
+  dontFixup = true;
+  dontPatch = true;
+
   versionCheckProgram = writeShellScript "whatcable-version-check" ''
     ${lib.getExe' re-plistbuddy "PlistBuddy"} -c "Print :CFBundleShortVersionString" "$1"
   '';
-  versionCheckProgramArg = [ "${placeholder "out"}/Applications/WhatCable.app/Contents/Info.plist" ];
-  doInstallCheck = true;
 
+  versionCheckProgramArg = [ "${placeholder "out"}/Applications/WhatCable.app/Contents/Info.plist" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -49,9 +49,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://whatcable.uk";
     changelog = "https://github.com/darrylmorley/whatcable/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    maintainers = with lib.maintainers; [ tyceherrman ];
-    mainProgram = "whatcable";
-    platforms = [ "aarch64-darwin" ];
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    maintainers = with lib.maintainers; [ tyceherrman ];
+    platforms = [ "aarch64-darwin" ];
+    mainProgram = "whatcable";
   };
 })

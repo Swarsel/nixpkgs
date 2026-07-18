@@ -1,44 +1,42 @@
 {
-  python3Packages,
   lib,
   fetchFromGitHub,
-
+  appstream-glib,
   # build inputs
   atk,
+  desktop-file-utils,
   file,
-  glib,
+  fluidsynth,
   gdk-pixbuf,
+  gettext,
+  glib,
   glib-networking,
   gnome-desktop,
   gobject-introspection,
   gst_all_1,
   gtk3,
   libnotify,
-  pango,
-  webkitgtk_4_1,
-  wrapGAppsHook3,
+  libstrangle,
+  mesa-demos,
   meson,
   ninja,
-
-  # commands that lutris needs
-  xrandr,
-  pciutils,
-  psmisc,
-  mesa-demos,
-  vulkan-tools,
-  pulseaudio,
   p7zip,
-  xgamma,
-  gettext,
-  libstrangle,
-  fluidsynth,
-  xorg-server,
-  xkbcomp,
+  pango,
+  pciutils,
+  pkg-config,
+  psmisc,
+  pulseaudio,
+  python3Packages,
   setxkbmap,
   util-linux,
-  pkg-config,
-  desktop-file-utils,
-  appstream-glib,
+  vulkan-tools,
+  webkitgtk_4_1,
+  wrapGAppsHook3,
+  xgamma,
+  xkbcomp,
+  xorg-server,
+  # commands that lutris needs
+  xrandr,
 }:
 
 let
@@ -72,7 +70,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-4mNknvfJQJEPZjQoNdKLQcW4CI93D6BUDPj8LtD940A=";
   };
 
-  pyproject = false;
+  postPatch = ''
+    substituteInPlace lutris/util/magic.py \
+      --replace '"libmagic.so.1"' "'${lib.getLib file}/lib/libmagic.so.1'"
+  '';
 
   nativeBuildInputs = [
     appstream-glib
@@ -85,6 +86,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     wrapGAppsHook3
     pkg-config
   ];
+
   buildInputs = [
     atk
     gdk-pixbuf
@@ -120,22 +122,20 @@ python3Packages.buildPythonApplication (finalAttrs: {
     moddb
   ];
 
-  postPatch = ''
-    substituteInPlace lutris/util/magic.py \
-      --replace '"libmagic.so.1"' "'${lib.getLib file}/lib/libmagic.so.1'"
-  '';
-
   # avoid double wrapping
   dontWrapGApps = true;
+
   makeWrapperArgs = [
     "--prefix PATH : ${lib.makeBinPath requiredTools}"
     "--prefix APPIMAGE_EXTRACT_AND_RUN : 1"
     "\${gappsWrapperArgs[@]}"
   ];
 
+  pyproject = false;
+
   meta = {
-    homepage = "https://lutris.net";
     description = "Open Source gaming platform for GNU/Linux";
+    homepage = "https://lutris.net";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ rapiteanu ];
     platforms = lib.platforms.linux;

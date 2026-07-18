@@ -1,11 +1,5 @@
 {
   lib,
-  runtimeShell,
-  srcOnly,
-  stdenvNoCC,
-  writeTextFile,
-  writeShellScript,
-  path,
   bubblewrap,
   coreutils,
   curl,
@@ -13,17 +7,23 @@
   mitm-cache,
   nix,
   openssl,
+  path,
   procps,
   python3,
+  runtimeShell,
+  srcOnly,
+  stdenvNoCC,
+  writeShellScript,
+  writeTextFile,
 }:
 
 lib.makeOverridable (
   {
-    pkg,
-    pname,
     attrPath,
     bwrapFlags,
     data,
+    pkg,
+    pname,
     silent,
     useBwrap,
   }:
@@ -54,9 +54,8 @@ lib.makeOverridable (
     '';
     source = srcOnly (
       pkg.overrideAttrs (old: {
-        mitmCache = "";
         gradleInitScript = ./init-deps.gradle;
-
+        mitmCache = "";
         stdenv = old.stdenv or stdenvNoCC;
       })
     );
@@ -64,13 +63,15 @@ lib.makeOverridable (
     nixShellKeep = lib.concatMapStringsSep " " (x: "--keep ${x}") keep;
   in
   writeTextFile {
-    name = "fetch-deps.sh";
-    executable = true;
     # see pkgs/common-updater/combinators.nix
     derivationArgs.passthru = {
       supportedFeatures = lib.optional silent "silent";
     }
     // lib.optionalAttrs (attrPath != null) { inherit attrPath; };
+
+    executable = true;
+    name = "fetch-deps.sh";
+
     text = ''
       #!${runtimeShell}
       set -eo pipefail

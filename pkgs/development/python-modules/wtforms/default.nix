@@ -1,27 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
   # build-system
   babel,
-  hatchling,
-  setuptools,
-
-  # dependencies
-  markupsafe,
-
+  buildPythonPackage,
   # optional-dependencies
   email-validator,
-
+  hatchling,
+  # dependencies
+  markupsafe,
   # tests
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "wtforms";
   version = "3.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wtforms";
@@ -38,15 +33,16 @@ buildPythonPackage rec {
 
   propagatedBuildInputs = [ markupsafe ];
 
-  optional-dependencies = {
-    email = [ email-validator ];
-  };
-
   nativeCheckInputs = [
     pytestCheckHook
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
+  optional-dependencies = {
+    email = [ email-validator ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "wtforms" ];
 
   meta = {

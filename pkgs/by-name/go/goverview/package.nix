@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,15 +17,14 @@ buildGoModule (finalAttrs: {
     hash = "sha256-IgvpMuDwMK9IdPs1IRbPbpgr7xZuDX3boVT5d7Lb+3w=";
   };
 
-  vendorHash = "sha256-i/m2s9e8PDfGmguNihynVI3Y7nAXC4weoWFXOwUVDSE=";
-
-  ldflags = [
-    "-w"
-    "-s"
-  ];
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  vendorHash = "sha256-i/m2s9e8PDfGmguNihynVI3Y7nAXC4weoWFXOwUVDSE=";
+  # Tests require network access
+  doCheck = false;
+
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd goverview \
       --bash <($out/bin/goverview completion bash) \
@@ -33,15 +32,17 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/goverview completion zsh)
   '';
 
-  # Tests require network access
-  doCheck = false;
+  ldflags = [
+    "-w"
+    "-s"
+  ];
 
   meta = {
     description = "Tool to get an overview of the list of URLs";
-    mainProgram = "goverview";
     homepage = "https://github.com/j3ssie/goverview";
     changelog = "https://github.com/j3ssie/goverview/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "goverview";
   };
 })

@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
-  ninja,
   automaticcomponenttoolkit,
-  pkg-config,
+  cmake,
   fast-float,
-  libzip,
+  fetchpatch,
   gtest,
-  openssl,
   libuuid,
-  zlib,
+  libzip,
+  ninja,
   nix-update-script,
+  openssl,
+  pkg-config,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,34 +27,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-8S892kvea6c9RynfVHo7epBjT9cWCV4VchGZ8G1hvHc=";
   };
 
-  nativeBuildInputs = [
-    cmake
-    ninja
-    pkg-config
-  ];
-
   outputs = [
     "out"
     "dev"
-  ];
-
-  cmakeFlags = [
-    "-DCMAKE_INSTALL_INCLUDEDIR=${placeholder "dev"}/include/lib3mf"
-    "-DUSE_INCLUDED_ZLIB=OFF"
-    "-DUSE_INCLUDED_LIBZIP=OFF"
-    "-DUSE_INCLUDED_GTEST=OFF"
-    "-DUSE_INCLUDED_SSL=OFF"
-  ];
-
-  buildInputs = [
-    gtest
-    openssl
-    zlib
-  ]
-  ++ lib.optional (!stdenv.hostPlatform.isDarwin) libuuid;
-
-  propagatedBuildInputs = [
-    libzip
   ];
 
   postPatch = ''
@@ -93,14 +68,38 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "includedir=$""{prefix}/@CMAKE_INSTALL_INCLUDEDIR@" "includedir=@CMAKE_INSTALL_INCLUDEDIR@"
   '';
 
-  doCheck = true;
+  nativeBuildInputs = [
+    cmake
+    ninja
+    pkg-config
+  ];
 
+  buildInputs = [
+    gtest
+    openssl
+    zlib
+  ]
+  ++ lib.optional (!stdenv.hostPlatform.isDarwin) libuuid;
+
+  propagatedBuildInputs = [
+    libzip
+  ];
+
+  cmakeFlags = [
+    "-DCMAKE_INSTALL_INCLUDEDIR=${placeholder "dev"}/include/lib3mf"
+    "-DUSE_INCLUDED_ZLIB=OFF"
+    "-DUSE_INCLUDED_LIBZIP=OFF"
+    "-DUSE_INCLUDED_GTEST=OFF"
+    "-DUSE_INCLUDED_SSL=OFF"
+  ];
+
+  doCheck = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/3MFConsortium/lib3mf/releases/tag/${finalAttrs.src.tag}";
     description = "Reference implementation of the 3D Manufacturing Format file standard";
     homepage = "https://3mf.io/";
+    changelog = "https://github.com/3MFConsortium/lib3mf/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ nim65s ];
     platforms = lib.platforms.all;

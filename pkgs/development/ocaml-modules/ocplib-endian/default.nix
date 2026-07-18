@@ -1,14 +1,14 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
-  ocaml,
+  buildDunePackage,
   cppo,
+  ocaml,
 }:
 
 buildDunePackage (finalAttrs: {
-  version = "1.2";
   pname = "ocplib-endian";
+  version = "1.2";
 
   src = fetchFromGitHub {
     owner = "OCamlPro";
@@ -23,9 +23,8 @@ buildDunePackage (finalAttrs: {
       --replace "libraries ocplib_endian bigarray bytes" "libraries ocplib_endian"
   '';
 
-  minimalOCamlVersion = "4.03";
-
   nativeBuildInputs = [ cppo ];
+  minimalOCamlVersion = "4.03";
 
   meta = {
     description = "Optimised functions to read and write int16/32/64";

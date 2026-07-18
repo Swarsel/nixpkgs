@@ -9,39 +9,36 @@ let
 
   overlayType = lib.types.submodule {
     options = {
-      name = lib.mkOption {
-        type = lib.types.str;
-        description = ''
-          Name of this overlay
-        '';
-      };
-
-      filter = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
+      dtboFile = lib.mkOption {
         default = null;
-        example = "*rpi*.dtb";
+
         description = ''
-          Only apply to .dtb files matching glob expression.
+          Path to .dtbo compiled overlay file.
         '';
+
+        type = lib.types.nullOr lib.types.path;
       };
 
       dtsFile = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
+        default = null;
+
         description = ''
           Path to .dts overlay file, overlay is applied to
           each .dtb file matching "compatible" of the overlay.
         '';
-        default = null;
+
         example = lib.literalExpression "./dts/overlays.dts";
+        type = lib.types.nullOr lib.types.path;
       };
 
       dtsText = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
         default = null;
+
         description = ''
           Literal DTS contents, overlay is applied to
           each .dtb file matching "compatible" of the overlay.
         '';
+
         example = ''
           /dts-v1/;
           /plugin/;
@@ -55,14 +52,27 @@ let
                   };
           };
         '';
+
+        type = lib.types.nullOr lib.types.str;
       };
 
-      dtboFile = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
+      filter = lib.mkOption {
         default = null;
+
         description = ''
-          Path to .dtbo compiled overlay file.
+          Only apply to .dtb files matching glob expression.
         '';
+
+        example = "*rpi*.dtb";
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      name = lib.mkOption {
+        description = ''
+          Name of this overlay
+        '';
+
+        type = lib.types.str;
       };
     };
   };
@@ -102,8 +112,8 @@ let
               dtsFile = if o.dtsFile == null then (pkgs.writeText "dts" o.dtsText) else o.dtsFile;
             in
             pkgs.deviceTree.compileDTS {
-              name = "${o.name}-dtbo";
               inherit includePaths extraPreprocessorFlags dtsFile;
+              name = "${o.name}-dtbo";
             }
           else
             o.dtboFile;
@@ -125,78 +135,109 @@ in
       enable = lib.mkOption {
         default = config.boot.kernelPackages.kernel.buildDTBs;
         defaultText = lib.literalExpression "config.boot.kernelPackages.kernel.buildDTBs";
-        type = lib.types.bool;
+
         description = ''
           Build device tree files. These are used to describe the
           non-discoverable hardware of a system.
         '';
+
+        type = lib.types.bool;
       };
 
-      kernelPackage = lib.mkOption {
-        default = config.boot.kernelPackages.kernel;
-        defaultText = lib.literalExpression "config.boot.kernelPackages.kernel";
-        example = lib.literalExpression "pkgs.linux_latest";
+      package = lib.mkOption {
+        default = null;
+
+        description = ''
+          A path containing the result of applying `overlays` to `kernelPackage`.
+        '';
+
+        internal = true;
+        type = lib.types.nullOr lib.types.path;
+      };
+
+      dtbSource = lib.mkOption {
+        default = "${cfg.kernelPackage}/dtbs";
+        defaultText = lib.literalExpression "\${cfg.kernelPackage}/dtbs";
+
+        description = ''
+          Path to dtb directory that overlays and other processing will be applied to. Uses
+          device trees bundled with the Linux kernel by default.
+        '';
+
         type = lib.types.path;
-        description = ''
-          Kernel package where device tree include directory is from. Also used as default source of dtb package to apply overlays to
-        '';
-      };
-
-      dtboBuildExtraPreprocessorFlags = lib.mkOption {
-        default = [ ];
-        example = lib.literalExpression "[ \"-DMY_DTB_DEFINE\" ]";
-        type = lib.types.listOf lib.types.str;
-        description = ''
-          Additional flags to pass to the preprocessor during dtbo compilations
-        '';
       };
 
       dtboBuildExtraIncludePaths = lib.mkOption {
         default = [ ];
+
+        description = ''
+          Additional include paths that will be passed to the preprocessor when creating the final .dts to compile into .dtbo
+        '';
+
         example = lib.literalExpression ''
           [
             ./my_custom_include_dir_1
             ./custom_include_dir_2
           ]
         '';
+
         type = lib.types.listOf lib.types.path;
-        description = ''
-          Additional include paths that will be passed to the preprocessor when creating the final .dts to compile into .dtbo
-        '';
       };
 
-      dtbSource = lib.mkOption {
-        default = "${cfg.kernelPackage}/dtbs";
-        defaultText = lib.literalExpression "\${cfg.kernelPackage}/dtbs";
-        type = lib.types.path;
+      dtboBuildExtraPreprocessorFlags = lib.mkOption {
+        default = [ ];
+
         description = ''
-          Path to dtb directory that overlays and other processing will be applied to. Uses
-          device trees bundled with the Linux kernel by default.
+          Additional flags to pass to the preprocessor during dtbo compilations
         '';
+
+        example = lib.literalExpression "[ \"-DMY_DTB_DEFINE\" ]";
+        type = lib.types.listOf lib.types.str;
+      };
+
+      filter = lib.mkOption {
+        default = null;
+
+        description = ''
+          Only include .dtb files matching glob expression.
+        '';
+
+        example = "*rpi*.dtb";
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      kernelPackage = lib.mkOption {
+        default = config.boot.kernelPackages.kernel;
+        defaultText = lib.literalExpression "config.boot.kernelPackages.kernel";
+
+        description = ''
+          Kernel package where device tree include directory is from. Also used as default source of dtb package to apply overlays to
+        '';
+
+        example = lib.literalExpression "pkgs.linux_latest";
+        type = lib.types.path;
       };
 
       name = lib.mkOption {
         default = null;
-        example = "some-dtb.dtb";
-        type = lib.types.nullOr lib.types.str;
+
         description = ''
           The name of an explicit dtb to be loaded, relative to the dtb base.
           Useful in extlinux scenarios if the bootloader doesn't pick the
           right .dtb file from FDTDIR.
         '';
-      };
 
-      filter = lib.mkOption {
+        example = "some-dtb.dtb";
         type = lib.types.nullOr lib.types.str;
-        default = null;
-        example = "*rpi*.dtb";
-        description = ''
-          Only include .dtb files matching glob expression.
-        '';
       };
 
       overlays = lib.mkOption {
         default = [ ];
+
+        description = ''
+          List of overlays to apply to base device-tree (.dtb) files.
+        '';
+
         example = lib.literalExpression ''
           [
             { name = "pps"; dtsFile = ./dts/pps.dts; }
@@ -206,25 +247,14 @@ in
             { name = "precompiled"; dtboFile = ./dtbos/example.dtbo; }
           ]
         '';
+
         type = lib.types.listOf (
           lib.types.coercedTo lib.types.path (path: {
-            name = baseNameOf path;
-            filter = null;
             dtboFile = path;
+            filter = null;
+            name = baseNameOf path;
           }) overlayType
         );
-        description = ''
-          List of overlays to apply to base device-tree (.dtb) files.
-        '';
-      };
-
-      package = lib.mkOption {
-        default = null;
-        type = lib.types.nullOr lib.types.path;
-        internal = true;
-        description = ''
-          A path containing the result of applying `overlays` to `kernelPackage`.
-        '';
       };
     };
   };
@@ -237,6 +267,7 @@ in
       in
       lib.singleton {
         assertion = lib.all (o: !invalidOverlay o) cfg.overlays;
+
         message = ''
           deviceTree overlay needs one of dtsFile, dtsText or dtboFile set.
           Offending overlay(s):

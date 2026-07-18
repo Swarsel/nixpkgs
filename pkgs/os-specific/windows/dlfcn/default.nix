@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   nix-update-script,
@@ -18,14 +18,13 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [ cmake ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/dlfcn-win32/dlfcn-win32";
     description = "Set of functions that allows runtime dynamic library loading";
+    homepage = "https://github.com/dlfcn-win32/dlfcn-win32";
     license = lib.licenses.mit;
-    platforms = lib.platforms.windows;
     maintainers = with lib.maintainers; [ marius851000 ];
+    platforms = lib.platforms.windows;
   };
 }

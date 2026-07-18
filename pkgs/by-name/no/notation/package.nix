@@ -1,12 +1,10 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
-
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
   buildPackages,
-
+  installShellFiles,
   versionCheckHook,
 }:
 
@@ -21,26 +19,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-l9A5AwKJ/atN92Oral6PRH2nCbMJ+/ST9weXYRZXWms=";
   };
 
-  vendorHash = "sha256-WFcy7to3bV3V3bBto5F175PEIxrG9Tj7MuLeBXdSvaM=";
-
   nativeBuildInputs = [
     installShellFiles
   ];
 
-  # This is a Go sub-module and cannot be built directly (e2e tests).
-  excludedPackages = [
-    "./test/e2e"
-  ];
-
-  # tests bind to localhost
-  __darwinAllowLocalNetworking = true;
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/notaryproject/notation/internal/version.Version=${finalAttrs.version}"
-    "-X github.com/notaryproject/notation/internal/version.BuildMetadata="
-  ];
+  vendorHash = "sha256-WFcy7to3bV3V3bBto5F175PEIxrG9Tj7MuLeBXdSvaM=";
 
   postInstall =
     let
@@ -57,20 +40,39 @@ buildGoModule (finalAttrs: {
         --zsh <(${exe} completion zsh)
     '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  # tests bind to localhost
+  __darwinAllowLocalNetworking = true;
+
+  # This is a Go sub-module and cannot be built directly (e2e tests).
+  excludedPackages = [
+    "./test/e2e"
+  ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/notaryproject/notation/internal/version.Version=${finalAttrs.version}"
+    "-X github.com/notaryproject/notation/internal/version.BuildMetadata="
+  ];
+
   versionCheckProgramArg = "version";
 
   meta = {
     description = "CLI tool to sign and verify OCI artifacts and container images";
     homepage = "https://notaryproject.dev/";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       jk
       vdemeester
     ];
+
     mainProgram = "notation";
   };
 })

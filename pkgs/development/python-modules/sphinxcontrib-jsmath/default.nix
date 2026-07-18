@@ -7,7 +7,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "sphinxcontrib-jsmath";
   version = "1.0.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -16,7 +15,7 @@ buildPythonPackage (finalAttrs: {
 
   # Check is disabled due to circular dependency of sphinx
   doCheck = false;
-
+  format = "setuptools";
   pythonNamespaces = [ "sphinxcontrib" ];
 
   meta = {

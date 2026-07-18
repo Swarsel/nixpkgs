@@ -1,7 +1,7 @@
 {
   lib,
-  buildFishPlugin,
   fetchFromGitHub,
+  buildFishPlugin,
   python3,
 }:
 
@@ -16,14 +16,15 @@ buildFishPlugin {
     sha256 = "0mb01y1d0g8ilsr5m8a71j6xmqlyhf8w4xjf00wkk8k41cz3ypky";
   };
 
+  nativeCheckInputs = [ python3 ];
+
+  checkPhase = ''
+    make test
+  '';
+
   #buildFishplugin will only move the .fish files, but bass also relies on python
   postInstall = ''
     cp functions/__bass.py $out/share/fish/vendor_functions.d/
-  '';
-
-  nativeCheckInputs = [ python3 ];
-  checkPhase = ''
-    make test
   '';
 
   meta = {

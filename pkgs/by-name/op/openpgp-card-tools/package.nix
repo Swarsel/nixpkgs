@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  rustPlatform,
+  dbus,
   fetchFromCodeberg,
   installShellFiles,
-  pkg-config,
-  pcsclite,
-  dbus,
-  testers,
   openpgp-card-tools,
+  pcsclite,
+  pkg-config,
+  rustPlatform,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,8 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-vnyDgFs195QMZtcjBu/fOj5YnqpF1jyCS0KzR1k2HWM=";
   };
 
-  cargoHash = "sha256-T0ehazHODSMpQqVx/6rQS+1cWNaYaojLyiHOYwchuwY=";
-
   nativeBuildInputs = [
     installShellFiles
     pkg-config
@@ -35,11 +33,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     dbus
   ];
 
-  passthru = {
-    tests.version = testers.testVersion {
-      package = openpgp-card-tools;
-    };
-  };
+  cargoHash = "sha256-T0ehazHODSMpQqVx/6rQS+1cWNaYaojLyiHOYwchuwY=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     OCT_COMPLETION_OUTPUT_DIR=$PWD/shell $out/bin/oct
@@ -48,13 +42,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
     installManPage ./man/*.1
   '';
 
+  passthru = {
+    tests.version = testers.testVersion {
+      package = openpgp-card-tools;
+    };
+  };
+
   meta = {
     description = "Tool for inspecting and configuring OpenPGP cards";
     homepage = "https://codeberg.org/openpgp-card/openpgp-card-tools";
+
     license = with lib.licenses; [
       asl20 # OR
       mit
     ];
+
     maintainers = with lib.maintainers; [ nickcao ];
     mainProgram = "oct";
   };

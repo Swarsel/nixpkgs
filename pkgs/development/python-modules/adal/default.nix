@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   httpretty,
   pyjwt,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "adal";
   version = "1.2.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "AzureAD";
@@ -26,6 +25,11 @@ buildPythonPackage rec {
     sed -i '/cryptography/d' setup.py
   '';
 
+  nativeCheckInputs = [
+    httpretty
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,16 +38,12 @@ buildPythonPackage rec {
     requests
   ];
 
-  nativeCheckInputs = [
-    httpretty
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # AssertionError: 'Mex [23 chars]tp error:...
     "test_failed_request"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "adal" ];
 
   meta = {

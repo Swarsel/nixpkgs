@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  unzip,
   fetchurl,
+  unzip,
 }:
 
 let
@@ -11,108 +11,114 @@ let
 
   maple-font =
     {
-      pname,
-      hash,
       desc,
+      hash,
+      pname,
     }:
     stdenv.mkDerivation rec {
       inherit pname;
       version = "7.9";
+
       src = fetchurl {
-        url = "https://github.com/subframe7536/Maple-font/releases/download/v${version}/${pname}.zip";
         inherit hash;
+        url = "https://github.com/subframe7536/Maple-font/releases/download/v${version}/${pname}.zip";
       };
 
-      # Work around the "unpacker appears to have produced no directories"
-      # case that happens when the archive doesn't have a subdirectory.
-      sourceRoot = ".";
       nativeBuildInputs = [ unzip ];
+
       installPhase = ''
         find . -name '*.ttf'    -exec install -Dt $out/share/fonts/truetype {} \;
         find . -name '*.otf'    -exec install -Dt $out/share/fonts/opentype {} \;
         find . -name '*.woff2'  -exec install -Dt $out/share/fonts/woff2 {} \;
       '';
 
+      # Work around the "unpacker appears to have produced no directories"
+      # case that happens when the archive doesn't have a subdirectory.
+      sourceRoot = ".";
+
       meta = {
-        homepage = "https://github.com/subframe7536/Maple-font";
         description = ''
           Open source ${desc} font with round corner and ligatures for IDE and command line
         '';
+
+        homepage = "https://github.com/subframe7536/Maple-font";
         license = lib.licenses.ofl;
-        platforms = lib.platforms.all;
         maintainers = with lib.maintainers; [ oluceps ];
+        platforms = lib.platforms.all;
       };
     };
 
   typeVariants = {
-    truetype = {
-      suffix = "TTF";
-      desc = "monospace TrueType";
-    };
-
-    truetype-autohint = {
-      suffix = "TTF-AutoHint";
-      desc = "monospace ttf autohint";
-    };
-
-    variable = {
-      suffix = "Variable";
-      desc = "monospace variable";
-    };
-
-    woff2 = {
-      suffix = "Woff2";
-      desc = "WOFF2.0";
-    };
-
-    opentype = {
-      suffix = "OTF";
-      desc = "OpenType";
-    };
-
-    NF = {
-      suffix = "NF";
-      desc = "Nerd Font";
-    };
-
-    NF-unhinted = {
-      suffix = "NF-unhinted";
-      desc = "Nerd Font unhinted";
-    };
-
     CN = {
-      suffix = "CN";
       desc = "monospace CN";
+      suffix = "CN";
     };
 
     CN-unhinted = {
-      suffix = "CN-unhinted";
       desc = "monospace CN unhinted";
+      suffix = "CN-unhinted";
+    };
+
+    NF = {
+      desc = "Nerd Font";
+      suffix = "NF";
     };
 
     NF-CN = {
-      suffix = "NF-CN";
       desc = "Nerd Font CN";
+      suffix = "NF-CN";
     };
 
     NF-CN-unhinted = {
-      suffix = "NF-CN-unhinted";
       desc = "Nerd Font CN unhinted";
+      suffix = "NF-CN-unhinted";
+    };
+
+    NF-unhinted = {
+      desc = "Nerd Font unhinted";
+      suffix = "NF-unhinted";
+    };
+
+    opentype = {
+      desc = "OpenType";
+      suffix = "OTF";
+    };
+
+    truetype = {
+      desc = "monospace TrueType";
+      suffix = "TTF";
+    };
+
+    truetype-autohint = {
+      desc = "monospace ttf autohint";
+      suffix = "TTF-AutoHint";
+    };
+
+    variable = {
+      desc = "monospace variable";
+      suffix = "Variable";
+    };
+
+    woff2 = {
+      desc = "WOFF2.0";
+      suffix = "Woff2";
     };
   };
 
   ligatureVariants = {
     No-Ligature = {
-      suffix = "NL";
       desc = "No Ligature";
+      suffix = "NL";
     };
+
     Normal-Ligature = {
-      suffix = "Normal";
       desc = "Normal Ligature";
+      suffix = "Normal";
     };
+
     Normal-No-Ligature = {
-      suffix = "NormalNL";
       desc = "Normal No Ligature";
+      suffix = "NormalNL";
     };
   };
 

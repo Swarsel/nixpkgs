@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  alsa-lib,
+  glib,
+  libpulseaudio,
   meson,
   ninja,
   pkg-config,
-  glib,
-  alsa-lib,
-  libpulseaudio,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,6 +22,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     meson
     ninja

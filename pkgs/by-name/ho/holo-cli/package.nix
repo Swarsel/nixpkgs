@@ -1,18 +1,14 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-
   stdenv,
-  replaceVars,
-
+  fetchFromGitHub,
   cmake,
+  nix-update-script,
+  pcre2,
   pkg-config,
   protobuf,
-
-  pcre2,
-
-  nix-update-script,
+  replaceVars,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -26,14 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-5Nvyh9gznMsutu3wHR6gwgKkIm115hbx4R6D/Gm1Rug=";
   };
 
-  cargoPatches = [
-    # cargo lock is outdated
-    # https://github.com/holo-routing/holo-cli/pull/31
-    ./update-cargo-lock.patch
-  ];
-
-  cargoHash = "sha256-77aUfXcnVQLVEKQuUdBZ4k5/3rOoe9PvGC0AlJS0UJc=";
-
   postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
     pushd $cargoDepsCopy/*/libyang4-sys-*
     patch -p1 < ${
@@ -45,9 +33,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     popd
   '';
 
-  # Use rust nightly features
-  env.RUSTC_BOOTSTRAP = 1;
-
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -58,15 +43,25 @@ rustPlatform.buildRustPackage (finalAttrs: {
     pcre2
   ];
 
+  cargoHash = "sha256-77aUfXcnVQLVEKQuUdBZ4k5/3rOoe9PvGC0AlJS0UJc=";
+  # Use rust nightly features
+  env.RUSTC_BOOTSTRAP = 1;
+
+  cargoPatches = [
+    # cargo lock is outdated
+    # https://github.com/holo-routing/holo-cli/pull/31
+    ./update-cargo-lock.patch
+  ];
+
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
   meta = {
     description = "Holo` Command Line Interface";
     homepage = "https://github.com/holo-routing/holo-cli";
     license = lib.licenses.mit;
-    mainProgram = "holo-cli";
     maintainers = with lib.maintainers; [ themadbit ];
     platforms = lib.platforms.all;
+    mainProgram = "holo-cli";
     teams = with lib.teams; [ ngi ];
   };
 })

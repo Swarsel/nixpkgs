@@ -16,17 +16,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-xxFHIJT935NLF9xl9AF1ipiaLhs4WGW1pqtLPDK4Wnk=";
-
   doInstallCheck = true;
+
   postInstallCheck = ''
     $out/bin/beancount-language-server --help > /dev/null
   '';
 
   meta = {
     description = "Language Server Protocol (LSP) for beancount files";
-    mainProgram = "beancount-language-server";
     homepage = "https://github.com/polarmutex/beancount-language-server";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ polarmutex ];
+    mainProgram = "beancount-language-server";
   };
 })

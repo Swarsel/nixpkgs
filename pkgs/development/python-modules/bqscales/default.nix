@@ -1,30 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # frontend
-  nodejs,
-  yarn-berry_3,
-
-  # build-system
-  hatchling,
+  buildPythonPackage,
   hatch-build-scripts,
   hatch-jupyter-builder,
   hatch-nodejs-version,
-  jupyterlab,
-
+  # build-system
+  hatchling,
   # dependencies
   ipywidgets,
+  jupyterlab,
+  # frontend
+  nodejs,
   numpy,
   traitlets,
   traittypes,
+  yarn-berry_3,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "bqscales";
   version = "0.3.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bqplot";
@@ -37,22 +33,20 @@ buildPythonPackage (finalAttrs: {
     sed -i "/\"hatch\"/d" pyproject.toml
   '';
 
-  missingHashes = ./missing-hashes.json;
-
-  yarnOfflineCache = yarn-berry_3.fetchYarnBerryDeps {
-    inherit (finalAttrs) src missingHashes;
-    hash = "sha256-4Y5dRFwOyfHOzrdw2/epK3mN/+xrz+ccG86KP9axxjI=";
-  };
-
   nativeBuildInputs = [
     nodejs
     yarn-berry_3.yarnBerryConfigHook
     yarn-berry_3
   ];
 
+  env.SKIP_JUPYTER_BUILDER = 1;
+
   preBuild = ''
     npm run build
   '';
+
+  # no tests in PyPI dist
+  doCheck = false;
 
   build-system = [
     hatch-build-scripts
@@ -69,12 +63,14 @@ buildPythonPackage (finalAttrs: {
     traittypes
   ];
 
-  env.SKIP_JUPYTER_BUILDER = 1;
-
-  # no tests in PyPI dist
-  doCheck = false;
-
+  missingHashes = ./missing-hashes.json;
+  pyproject = true;
   pythonImportsCheck = [ "bqscales" ];
+
+  yarnOfflineCache = yarn-berry_3.fetchYarnBerryDeps {
+    inherit (finalAttrs) src missingHashes;
+    hash = "sha256-4Y5dRFwOyfHOzrdw2/epK3mN/+xrz+ccG86KP9axxjI=";
+  };
 
   meta = {
     description = "Grammar of Graphics scales for bqplot and other Jupyter widgets libraries";

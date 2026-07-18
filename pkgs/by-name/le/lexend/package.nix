@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -28,10 +28,10 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://www.lexend.com";
     description = "Variable font family designed to aid in reading proficiency";
+    homepage = "https://www.lexend.com";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ fufexan ];
+    platforms = lib.platforms.all;
   };
 }

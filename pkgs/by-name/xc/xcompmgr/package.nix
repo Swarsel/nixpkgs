@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  xorgproto,
   libxcomposite,
   libxdamage,
   libxext,
   libxfixes,
   libxrender,
+  pkg-config,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xcompmgr";
@@ -21,7 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -46,14 +45,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Sample X11 compositing manager";
+
     longDescription = ''
       xcompmgr is a sample compositing manager for X servers supporting the XFIXES, DAMAGE, RENDER
       and COMPOSITE extensions. It enables basic eye-candy effects.
     '';
+
     homepage = "https://gitlab.freedesktop.org/xorg/app/xcompmgr";
     license = lib.licenses.hpndSellVariant;
-    mainProgram = "xcompmgr";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xcompmgr";
   };
 })

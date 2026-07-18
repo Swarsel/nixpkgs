@@ -1,18 +1,17 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   fetchNpmDeps,
+  nix-update-script,
   nodejs,
   npmHooks,
+  stdenvNoCC,
   vsce,
   vscode-utils,
-  nix-update-script,
 }:
 
 let
   vsix = stdenvNoCC.mkDerivation (finalAttrs: {
-    name = "vscode-icons-${finalAttrs.version}.vsix";
     pname = "vscode-icons-vsix";
     version = "12.15.0";
 
@@ -21,12 +20,6 @@ let
       repo = "vscode-icons";
       tag = "v${finalAttrs.version}";
       hash = "sha256-HYMXcmK2cW01PsjwMr+SGq94oFWEXvdny6IFnXMBdKA=";
-    };
-
-    npmDeps = fetchNpmDeps {
-      name = "${finalAttrs.pname}-npm-deps";
-      inherit (finalAttrs) src;
-      hash = "sha256-3Jt9JKbu5QxZynbkgQX/So3PWeJDdxIU5TVM4nfvgcQ=";
     };
 
     nativeBuildInputs = [
@@ -48,34 +41,43 @@ let
       cp ./vscode-icons-$version.vsix $out
       runHook postInstall
     '';
+
+    name = "vscode-icons-${finalAttrs.version}.vsix";
+
+    npmDeps = fetchNpmDeps {
+      inherit (finalAttrs) src;
+      hash = "sha256-3Jt9JKbu5QxZynbkgQX/So3PWeJDdxIU5TVM4nfvgcQ=";
+      name = "${finalAttrs.pname}-npm-deps";
+    };
   });
 in
 vscode-utils.buildVscodeExtension (finalAttrs: {
-  pname = "vscode-icons";
   inherit (finalAttrs.src) version;
-
-  vscodeExtPublisher = "vscode-icons-team";
+  pname = "vscode-icons";
+  src = vsix;
   vscodeExtName = "vscode-icons";
+  vscodeExtPublisher = "vscode-icons-team";
   vscodeExtUniqueId = "${finalAttrs.vscodeExtPublisher}.${finalAttrs.vscodeExtName}";
 
-  src = vsix;
-
   passthru = {
-    vsix = finalAttrs.src;
     updateScript = nix-update-script {
       attrPath = "vscode-extensions.kilocode.kilo-kode.vsix";
     };
+
+    vsix = finalAttrs.src;
   };
 
   meta = {
     description = "Bring real icons to your Visual Studio Code";
-    downloadPage = "https://marketplace.visualstudio.com/items?itemName=vscode-icons-team.vscode-icons";
     homepage = "https://github.com/vscode-icons/vscode-icons";
     license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ fromSource ];
+
     maintainers = with lib.maintainers; [
       bastaynav
       xiaoxiangmoe
     ];
-    sourceProvenance = with lib.sourceTypes; [ fromSource ];
+
+    downloadPage = "https://marketplace.visualstudio.com/items?itemName=vscode-icons-team.vscode-icons";
   };
 })

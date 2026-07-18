@@ -1,11 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   gcc,
   llvm,
   ortools,
+  setuptools,
   sympy,
   unicorn,
 }:
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "slothy";
   version = "0.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "slothy-optimizer";
@@ -21,14 +20,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-pyES6ithBVAFSVdjsM61kp6eeEUxNsLs7jdekpX+YuA=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    ortools
-    sympy
-    unicorn
-  ];
 
   # slothy shells out to `gcc` and the llvm binutils at runtime; extend
   # PATH at import time so the library works in a plain withPackages env.
@@ -45,15 +36,23 @@ buildPythonPackage rec {
     from slothy.core.slothy import Slothy'
   '';
 
-  pythonRelaxDeps = true;
-
-  pythonImportsCheck = [ "slothy" ];
-
   installCheckPhase = ''
     runHook preInstallCheck
     python3 test.py --silent --tests aarch64_simple0_a55
     runHook postInstallCheck
   '';
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    ortools
+    sympy
+    unicorn
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "slothy" ];
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Assembly superoptimization via constraint solving";

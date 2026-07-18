@@ -10,7 +10,6 @@
 python3.pkgs.buildPythonPackage (finalAttrs: {
   pname = "mov-cli";
   version = "4.4.19";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mov-cli";
@@ -41,11 +40,6 @@ python3.pkgs.buildPythonPackage (finalAttrs: {
     (callPackage ./mov-cli-test.nix { })
   ];
 
-  pythonRelaxDeps = [
-    "httpx"
-    "tldextract"
-  ];
-
   makeWrapperArgs =
     let
       binPath = lib.makeBinPath [
@@ -58,11 +52,18 @@ python3.pkgs.buildPythonPackage (finalAttrs: {
       "--prefix PATH : ${binPath}"
     ];
 
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "httpx"
+    "tldextract"
+  ];
+
   meta = {
-    homepage = "https://github.com/mov-cli/mov-cli";
     description = "Cli tool to browse and watch movies";
+    homepage = "https://github.com/mov-cli/mov-cli";
     license = with lib.licenses; [ gpl3Only ];
-    mainProgram = "mov-cli";
     maintainers = with lib.maintainers; [ baitinq ];
+    mainProgram = "mov-cli";
   };
 })

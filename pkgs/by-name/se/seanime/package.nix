@@ -2,11 +2,11 @@
   lib,
   fetchFromGitHub,
   buildGoModule,
+  fetchNpmDeps,
   ffmpeg,
+  nix-update-script,
   nodejs,
   npmHooks,
-  fetchNpmDeps,
-  nix-update-script,
 }:
 buildGoModule (finalAttrs: {
   pname = "seanime";
@@ -19,20 +19,23 @@ buildGoModule (finalAttrs: {
     hash = "sha256-T4TLQ3wMvUFURu5rDfUDWfnhSsmYWq4GGQBZvAd2ivs=";
   };
 
+  patches = [ ./default-disable-update-check.patch ];
+
   nativeBuildInputs = [
     nodejs
     npmHooks.npmConfigHook
   ];
 
+  vendorHash = "sha256-eTKLiwyB3bUIUlwLck8NG6oRdYaJioNs4AiSSPjADyg=";
+
   env = {
-    npmRoot = "seanime-web";
     npmDeps = fetchNpmDeps {
       src = "${finalAttrs.src}/seanime-web";
       hash = "sha256-mODqMuU1AtlNjLr9+OpORyXIyt7yMhIBJZTLDSj4fLQ=";
     };
-  };
 
-  patches = [ ./default-disable-update-check.patch ];
+    npmRoot = "seanime-web";
+  };
 
   preBuild = ''
     npm run build --prefix seanime-web
@@ -41,10 +44,6 @@ buildGoModule (finalAttrs: {
     # .github scripts redeclare main
     rm -rf .github
   '';
-
-  vendorHash = "sha256-eTKLiwyB3bUIUlwLck8NG6oRdYaJioNs4AiSSPjADyg=";
-
-  subPackages = [ "." ];
 
   doCheck = false; # broken in clean environments
 
@@ -62,14 +61,15 @@ buildGoModule (finalAttrs: {
     }"
   ];
 
+  subPackages = [ "." ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Open-source media server for anime and manga";
     homepage = "https://seanime.app";
     changelog = "https://github.com/5rahim/seanime/blob/main/CHANGELOG.md";
-    mainProgram = "seanime";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ thegu5 ];
+    mainProgram = "seanime";
   };
 })

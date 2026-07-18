@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   google-api-core,
   grpc-google-iam-v1,
   libcst,
@@ -17,7 +17,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "google-cloud-datacatalog";
   version = "3.31.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googleapis";
@@ -26,13 +25,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-M/7uDWWz4YCfxa4gyM9BaAo10iyTMvtR2MhNpdFYnis=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/packages/google-cloud-datacatalog";
+  nativeCheckInputs = [
+    mock
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
-  ];
 
   dependencies = [
     google-api-core
@@ -43,17 +42,19 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  nativeCheckInputs = [
-    mock
-    pytest-asyncio
-    pytestCheckHook
+  pyproject = true;
+  pythonImportsCheck = [ "google.cloud.datacatalog" ];
+
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
-  pythonImportsCheck = [ "google.cloud.datacatalog" ];
+  sourceRoot = "${finalAttrs.src.name}/packages/google-cloud-datacatalog";
 
   passthru = {
     # bulk updater selects wrong tag
     skipBulkUpdate = true;
+
     updateScript = nix-update-script {
       extraArgs = [
         "--version-regex"

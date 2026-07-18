@@ -1,16 +1,16 @@
 {
   lib,
-  callPackage,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
+  callPackage,
   cmake,
-  python3,
-  gtest,
-  withAnimation ? true,
-  withTranscoder ? true,
   eigen,
   ghc_filesystem,
+  gtest,
+  nix-update-script,
+  python3,
+  withAnimation ? true,
+  withTranscoder ? true,
 }:
 
 let
@@ -70,9 +70,11 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://google.github.io/draco/";
     changelog = "https://github.com/google/draco/releases/tag/${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       yzx9
     ];
+
     platforms = lib.platforms.all;
   };
 })

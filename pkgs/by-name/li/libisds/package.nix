@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
+  curl,
+  docbook_xsl,
   expat,
   gpgme,
   libgcrypt,
   libxml2,
   libxslt,
-  curl,
-  docbook_xsl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,10 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-YUb4N7J7EaYHHiFI965kUhtNitRTJfmY/ns3MTfkGPs=";
   };
 
-  configureFlags = [
-    "--with-docbook-xsl-stylesheets=${docbook_xsl}/xml/xsl/docbook"
-  ];
-
   buildInputs = [
     expat
     gpgme
@@ -32,6 +28,10 @@ stdenv.mkDerivation (finalAttrs: {
     libxslt
     curl
     docbook_xsl
+  ];
+
+  configureFlags = [
+    "--with-docbook-xsl-stylesheets=${docbook_xsl}/xml/xsl/docbook"
   ];
 
   env.NIX_CFLAGS_COMPILE = toString [ "-Wno-error=deprecated-declarations" ];

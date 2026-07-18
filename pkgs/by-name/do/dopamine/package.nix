@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  applyPatches,
   buildNpmPackage,
   electron,
   python3,
   xcodebuild,
-  applyPatches,
 }:
 buildNpmPackage (finalAttrs: {
   pname = "dopamine";
@@ -14,12 +14,6 @@ buildNpmPackage (finalAttrs: {
 
   # needed to upgrade better-sqlite3 in npmConfigHook
   src = applyPatches {
-    src = fetchFromGitHub {
-      owner = "digimezzo";
-      repo = "dopamine";
-      tag = "v${finalAttrs.version}";
-      hash = "sha256-zYuf5BIQaxTqHBXWX1PLghGR5WmwtnSxTYrNosVFebc=";
-    };
     patches = [
       # register-scheme contains install scripts, but has no lockfile
       ./remove-register-scheme.patch
@@ -30,15 +24,21 @@ buildNpmPackage (finalAttrs: {
       # bump better-sqlite3 to work with electron 41
       ./bump-better-sqlite3.patch
     ];
-  };
 
-  npmDepsHash = "sha256-m5y8TmOUAUf2IE87b73hFe2vj/uRAqFGgfuy3vkUX/s=";
+    src = fetchFromGitHub {
+      owner = "digimezzo";
+      repo = "dopamine";
+      tag = "v${finalAttrs.version}";
+      hash = "sha256-zYuf5BIQaxTqHBXWX1PLghGR5WmwtnSxTYrNosVFebc=";
+    };
+  };
 
   nativeBuildInputs = [
     (python3.withPackages (ps: with ps; [ distutils ]))
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ xcodebuild ];
 
+  npmDepsHash = "sha256-m5y8TmOUAUf2IE87b73hFe2vj/uRAqFGgfuy3vkUX/s=";
   env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
   buildPhase = ''
@@ -121,15 +121,17 @@ buildNpmPackage (finalAttrs: {
   '';
 
   meta = {
-    changelog = "https://github.com/digimezzo/dopamine/blob/v${finalAttrs.version}/CHANGELOG.md";
     description = "Audio player that keeps it simple";
     homepage = "https://github.com/digimezzo/dopamine";
+    changelog = "https://github.com/digimezzo/dopamine/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
-    mainProgram = "dopamine";
+
     maintainers = with lib.maintainers; [
       Guanran928
       ern775
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "dopamine";
   };
 })

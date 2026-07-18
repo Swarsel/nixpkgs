@@ -1,7 +1,7 @@
 {
+  lib,
   fetchFromGitHub,
   buildPerlPackage,
-  lib,
 }:
 
 buildPerlPackage {
@@ -16,16 +16,17 @@ buildPerlPackage {
   };
 
   patches = [ ./no-stdin.patch ];
-
   doCheck = false; # TODO: almost all tests fail ... is this a real problem?
 
   meta = {
     description = "MNI MINC perllib (not used much anymore)";
     homepage = "https://github.com/BIC-MNI/mni-perllib";
+
     license = with lib.licenses; [
       artistic1
       gpl1Plus
     ];
+
     maintainers = with lib.maintainers; [ bcdarwin ];
   };
 }

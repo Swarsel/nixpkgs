@@ -18,14 +18,15 @@ in
 
   ###### implementation
   config = mkIf cfg.enable {
+    environment.systemPackages = [ pkgs.e16 ];
+
     services.xserver.windowManager.session = singleton {
       name = "E16";
+
       start = ''
         ${pkgs.e16}/bin/e16 &
         waitPID=$!
       '';
     };
-
-    environment.systemPackages = [ pkgs.e16 ];
   };
 }

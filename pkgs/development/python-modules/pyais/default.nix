@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   attrs,
   bitarray,
   buildPythonPackage,
-  fetchFromGitHub,
   pytestCheckHook,
   setuptools,
 }:
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyais";
   version = "3.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "M0r13n";
@@ -21,18 +20,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Jc96CjFP/phTnwaP7OWOIxdpYf1iBk4n5mKXdWoMvws=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   __darwinAllowLocalNetworking = true;
-
   build-system = [ setuptools ];
 
   dependencies = [
     attrs
     bitarray
   ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "pyais" ];
 
   disabledTestPaths = [
     # Tests the examples which have additional requirements
@@ -43,6 +38,9 @@ buildPythonPackage (finalAttrs: {
     # OSError: [Errno 48] Address already in use
     "test_full_message_flow"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pyais" ];
 
   meta = {
     description = "Module for decoding and encoding AIS messages (AIVDM/AIVDO)";

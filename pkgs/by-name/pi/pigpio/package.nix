@@ -12,12 +12,6 @@ in
 mkDerivation rec {
   pname = "pigpio";
   version = "79";
-  format = if buildPythonPackage == null then null else "setuptools";
-
-  cmakeFlags = [
-    # https://github.com/NixOS/nixpkgs/issues/445447
-    (lib.cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "3.10")
-  ];
 
   src = fetchFromGitHub {
     owner = "joan2937";
@@ -26,11 +20,17 @@ mkDerivation rec {
     hash = "sha256-Z+SwUlBbtWtnbjTe0IghR3gIKS43ZziN0amYtmXy7HE=";
   };
 
-  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
-
   nativeBuildInputs = [
     cmake
   ];
+
+  cmakeFlags = [
+    # https://github.com/NixOS/nixpkgs/issues/445447
+    (lib.cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "3.10")
+  ];
+
+  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
+  format = if buildPythonPackage == null then null else "setuptools";
 
   meta = {
     description = "C library for the Raspberry which allows control of the General Purpose Input Outputs (GPIO)";

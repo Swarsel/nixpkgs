@@ -36,13 +36,15 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Fuzzy matcher for OS X that uses both std{in,out} and a native GUI";
     homepage = "https://github.com/chipsenkbeil/choose";
-    license = lib.licenses.mit;
-    platforms = lib.platforms.darwin;
     changelog = "https://github.com/chipsenkbeil/choose/blob/${version}/CHANGELOG.md";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       heywoodlh
       semi710
     ];
+
+    platforms = lib.platforms.darwin;
     mainProgram = "choose";
   };
 }

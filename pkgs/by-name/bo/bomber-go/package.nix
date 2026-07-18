@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,13 +17,13 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-jVdrvc48/Vt240EYk5PtZCjNGipX7M1qF8OJdpu/qI4=";
 
+  checkFlags = [
+    "-skip=TestEnrich" # Requires network access
+  ];
+
   ldflags = [
     "-w"
     "-s"
-  ];
-
-  checkFlags = [
-    "-skip=TestEnrich" # Requires network access
   ];
 
   meta = {
@@ -31,7 +31,7 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/devops-kung-fu/bomber";
     changelog = "https://github.com/devops-kung-fu/bomber/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mpl20;
-    mainProgram = "bomber";
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "bomber";
   };
 })

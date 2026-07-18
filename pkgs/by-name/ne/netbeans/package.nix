@@ -2,35 +2,47 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
-  makeDesktopItem,
-  which,
-  unzip,
-  libicns,
   imagemagick,
   jdk21,
+  libicns,
+  makeDesktopItem,
+  makeWrapper,
   perl,
+  unzip,
+  which,
 }:
 
 let
   version = "30";
   desktopItem = makeDesktopItem {
-    name = "netbeans";
-    exec = "netbeans";
+    categories = [ "Development" ];
     comment = "Integrated Development Environment";
     desktopName = "Apache NetBeans IDE";
+    exec = "netbeans";
     genericName = "Integrated Development Environment";
-    categories = [ "Development" ];
     icon = "netbeans";
+    name = "netbeans";
   };
 in
 stdenv.mkDerivation {
-  pname = "netbeans";
   inherit version;
+  pname = "netbeans";
+
   src = fetchurl {
     url = "mirror://apache/netbeans/netbeans/${version}/netbeans-${version}-bin.zip";
     hash = "sha256-q5Ufx1vdLtU75+TkfiKBWu65I7HD5yS/BTbGXM1c1GY=";
   };
+
+  nativeBuildInputs = [
+    makeWrapper
+    unzip
+  ];
+
+  buildInputs = [
+    perl
+    libicns
+    imagemagick
+  ];
 
   buildCommand = ''
     # Unpack and perform some path patching.
@@ -72,28 +84,21 @@ stdenv.mkDerivation {
     ln -s ${desktopItem}/share/applications/* $out/share/applications
   '';
 
-  nativeBuildInputs = [
-    makeWrapper
-    unzip
-  ];
-  buildInputs = [
-    perl
-    libicns
-    imagemagick
-  ];
-
   meta = {
     description = "Integrated development environment for Java, C, C++ and PHP";
     homepage = "https://netbeans.apache.org/";
     license = lib.licenses.asl20;
+
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
       binaryNativeCode
     ];
+
     maintainers = with lib.maintainers; [
       rszibele
       kashw2
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "netbeans";
   };

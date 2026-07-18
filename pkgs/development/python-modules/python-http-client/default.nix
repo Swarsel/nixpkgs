@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   mock,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "python-http-client";
   version = "3.3.7";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "sendgrid";
@@ -28,6 +27,7 @@ buildPythonPackage rec {
     "test_daterange"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "python_http_client" ];
 
   meta = {

@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "commandlines";
   version = "0.4.1";
-  format = "setuptools";
 
   # PyPI source tarballs omit tests, fetch from Github instead
   src = fetchFromGitHub {
@@ -19,6 +18,7 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
 
   meta = {
     description = "Python library for command line argument parsing";

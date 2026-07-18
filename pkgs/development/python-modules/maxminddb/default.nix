@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "maxminddb";
   version = "3.0.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -18,14 +17,12 @@ buildPythonPackage rec {
   };
 
   buildInputs = [ libmaxminddb ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "maxminddb" ];
-
   # The multiprocessing tests fail on Darwin because multiprocessing uses spawn instead of fork,
   # resulting in an exception when it can’t pickle the `lookup` local function.
   disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [ "multiprocessing" ];
+  format = "setuptools";
+  pythonImportsCheck = [ "maxminddb" ];
 
   meta = {
     description = "Reader for the MaxMind DB format";

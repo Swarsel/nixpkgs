@@ -25,6 +25,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ cmake ];
   propagatedBuildInputs = [ zycore ];
+
   cmakeFlags = [
     "-DCMAKE_INSTALL_LIBDIR=lib"
     "-DCMAKE_INSTALL_INCLUDEDIR=include"
@@ -35,14 +36,16 @@ stdenv.mkDerivation (finalAttrs: {
   passthru = { inherit zycore; };
 
   meta = {
+    description = "Fast and lightweight x86/x86-64 disassembler library";
     homepage = "https://zydis.re/";
     changelog = "https://github.com/zyantific/zydis/releases/tag/v${finalAttrs.version}";
-    description = "Fast and lightweight x86/x86-64 disassembler library";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       jbcrail
       athre0z
     ];
+
     platforms = lib.platforms.all;
   };
 })

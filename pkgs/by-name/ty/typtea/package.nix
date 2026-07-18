@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -17,6 +17,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-LWY1Tnh4iyNAV7dNjlKdT9IwPJRN25HkEAGSkQIRe9I=";
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
 
   ldflags = [
     "-s"
@@ -24,18 +29,13 @@ buildGoModule (finalAttrs: {
     "-X github.com/ashish0kumar/typtea/cmd.version=${finalAttrs.version}"
   ];
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-
   meta = {
-    changelog = "https://github.com/ashish0kumar/typtea/releases/tag/v${finalAttrs.version}";
     description = "Terminal-based typing speed test with multi-language support";
     homepage = "https://github.com/ashish0kumar/typtea";
+    changelog = "https://github.com/ashish0kumar/typtea/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ashish0kumar ];
-    mainProgram = "typtea";
     platforms = lib.platforms.unix;
+    mainProgram = "typtea";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   testers,
 }:
 
@@ -22,8 +22,8 @@ buildGoModule (finalAttrs: {
     ./fix-except-type.patch
   ];
 
-  deleteVendor = true;
   vendorHash = "sha256-rYOphvI1ZE8X5UExfgxHnWBn697SDkNnmxeY7ihIZ1s=";
+  deleteVendor = true;
 
   ldflags = [
     "-s"

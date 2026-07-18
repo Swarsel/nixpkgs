@@ -1,44 +1,49 @@
-{ version, hash }:
+{ hash, version }:
 
 {
   lib,
   stdenv,
   fetchFromGitHub,
+  autoreconfHook,
   fetchpatch,
   fusePackages,
-  util-linux,
   gettext,
-  shadow,
   meson,
   ninja,
   pkg-config,
-  autoreconfHook,
   runtimeShell,
+  shadow,
   udevCheckHook,
+  util-linux,
 }:
 
 let
   isFuse3 = lib.hasPrefix "3" version;
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "fuse";
   inherit version;
+  pname = "fuse";
 
   src = fetchFromGitHub {
+    inherit hash;
     owner = "libfuse";
     repo = "libfuse";
     tag = "fuse-${version}";
-    inherit hash;
   };
 
-  strictDeps = true;
-  __structuredAttrs = true;
+  outputs = [
+    "bin"
+    "out"
+    "dev"
+    "man"
+  ]
+  ++ lib.optional isFuse3 "udev";
 
   patches =
     lib.optional (!isFuse3 && (stdenv.hostPlatform.isAarch64 || stdenv.hostPlatform.isLoongArch64))
       (fetchpatch {
-        url = "https://github.com/libfuse/libfuse/commit/914871b20a901e3e1e981c92bc42b1c93b7ab81b.patch";
         hash = "sha256-6hqu5npSUN8I7XLZRiCl+b60Sweb1n2ZZz5LroIzkvA=";
+        url = "https://github.com/libfuse/libfuse/commit/914871b20a901e3e1e981c92bc42b1c93b7ab81b.patch";
       })
     ++ (
       if isFuse3 then
@@ -50,12 +55,14 @@ stdenv.mkDerivation (finalAttrs: {
         [
           ./fuse2-Do-not-set-FUSERMOUNT_DIR.patch
           (fetchpatch {
-            url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/sys-fs/fuse/files/fuse-2.9.9-closefrom-glibc-2-34.patch?id=8a970396fca7aca2d5a761b8e7a8242f1eef14c9";
             hash = "sha256-ELYBW/wxRcSMssv7ejCObrpsJHtOPJcGq33B9yHQII4=";
+            url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/sys-fs/fuse/files/fuse-2.9.9-closefrom-glibc-2-34.patch?id=8a970396fca7aca2d5a761b8e7a8242f1eef14c9";
           })
           ./fuse2-gettext-0.25.patch
         ]
     );
+
+  strictDeps = true;
 
   nativeBuildInputs =
     if isFuse3 then
@@ -70,14 +77,6 @@ stdenv.mkDerivation (finalAttrs: {
         autoreconfHook
         gettext
       ];
-
-  outputs = [
-    "bin"
-    "out"
-    "dev"
-    "man"
-  ]
-  ++ lib.optional isFuse3 "udev";
 
   mesonFlags = lib.optionals isFuse3 [
     "-Dudevrulesdir=/udev/rules.d"
@@ -113,7 +112,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   # v2: no tests, v3: all tests get skipped in a sandbox
   doCheck = false;
-  doInstallCheck = true;
 
   # Drop `/etc/fuse.conf` because it is a no-op config and
   # would conflict with our fuse module.
@@ -123,11 +121,14 @@ stdenv.mkDerivation (finalAttrs: {
     mv $out/etc $udev
   '';
 
+  doInstallCheck = true;
+  __structuredAttrs = true;
   # Don't pull in SUID `fusermount{,3}` binaries into development environment.
   propagatedBuildOutputs = [ "out" ];
 
   meta = {
     description = "Library that allows filesystems to be implemented in user space";
+
     longDescription = ''
       FUSE (Filesystem in Userspace) is an interface for userspace programs to
       export a filesystem to the Linux kernel. The FUSE project consists of two
@@ -136,16 +137,20 @@ stdenv.mkDerivation (finalAttrs: {
       provides the reference implementation for communicating with the FUSE
       kernel module.
     '';
+
     homepage = "https://github.com/libfuse/libfuse";
     changelog = "https://github.com/libfuse/libfuse/releases/tag/fuse-${version}";
-    platforms = lib.platforms.linux;
+
     license = with lib.licenses; [
       gpl2Only
       lgpl21Only
     ];
+
     maintainers = with lib.maintainers; [
       oxalica
     ];
+
+    platforms = lib.platforms.linux;
     outputsToInstall = [ "bin" ];
   };
 })

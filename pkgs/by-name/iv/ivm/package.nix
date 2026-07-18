@@ -1,16 +1,16 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  makeWrapper,
-  cargo,
-  llvm,
   stdenv,
+  fetchFromGitHub,
+  cargo,
   libffi,
-  libz,
   libxml2,
+  libz,
+  llvm,
+  makeWrapper,
   ncurses,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -24,15 +24,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-pqqUvHK6mPrK1Mir2ILANxtih9OrAKDJPE0nRWc5JOY=";
   };
 
-  cargoHash = "sha256-voUucoSLsKn0QhCpr52U8x9K4ykkx7iQ3SsHfjrXu+Q=";
+  nativeBuildInputs = [
+    makeWrapper
+  ];
 
   buildInputs = [
     (lib.getLib stdenv.cc.cc)
   ];
 
-  nativeBuildInputs = [
-    makeWrapper
-  ];
+  cargoHash = "sha256-voUucoSLsKn0QhCpr52U8x9K4ykkx7iQ3SsHfjrXu+Q=";
 
   postFixup = ''
     wrapProgram $out/bin/ivm \
@@ -60,8 +60,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/inko-lang/ivm";
     license = lib.licenses.mpl20;
     maintainers = [ lib.maintainers.feathecutie ];
-    teams = [ lib.teams.ngi ];
     platforms = lib.platforms.unix;
     mainProgram = "ivm";
+    teams = [ lib.teams.ngi ];
   };
 })

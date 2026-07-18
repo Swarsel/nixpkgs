@@ -5,8 +5,8 @@
   fftwSinglePrec,
   lv2,
   pkg-config,
-  wafHook,
   python3,
+  wafHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,14 +23,15 @@ stdenv.mkDerivation (finalAttrs: {
     wafHook
     python3
   ];
+
   buildInputs = [
     fftwSinglePrec
     lv2
   ];
 
   meta = {
-    homepage = "http://drobilla.net/software/mda-lv2.html";
     description = "LV2 port of the MDA plugins by Paul Kellett";
+    homepage = "http://drobilla.net/software/mda-lv2.html";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;

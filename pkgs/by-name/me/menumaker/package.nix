@@ -17,10 +17,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   meta = {
     description = "Heuristics-driven menu generator for several window managers";
-    mainProgram = "mmaker";
     homepage = "https://menumaker.sourceforge.net";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.unix;
+    mainProgram = "mmaker";
   };
 })

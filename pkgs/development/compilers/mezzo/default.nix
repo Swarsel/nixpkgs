@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  ocaml,
-  findlib,
-  ocamlbuild,
   camlp4,
-  menhir,
-  menhirLib,
-  yojson,
-  ulex,
-  pprint,
+  findlib,
   fix,
   functory,
+  menhir,
+  menhirLib,
+  ocaml,
+  ocamlbuild,
+  pprint,
+  ulex,
+  yojson,
 }:
 
 let
@@ -42,6 +42,7 @@ stdenv.mkDerivation {
     camlp4
     menhir
   ];
+
   buildInputs = [
     yojson
     menhirLib
@@ -51,6 +52,13 @@ stdenv.mkDerivation {
     functory
     ocamlbuild
   ];
+
+  postInstall = ''
+    mkdir $out/bin
+    cp mezzo $out/bin/
+  '';
+
+  createFindlibDestdir = true;
 
   # Sets warning 3 as non-fatal
   prePatch =
@@ -63,18 +71,11 @@ stdenv.mkDerivation {
       substituteInPlace typing/Fact.ml --replace PPrintOCaml PPrint.OCaml
     '';
 
-  createFindlibDestdir = true;
-
-  postInstall = ''
-    mkdir $out/bin
-    cp mezzo $out/bin/
-  '';
-
   meta = {
-    homepage = "http://protz.github.io/mezzo/";
     description = "Programming language in the ML tradition, which places strong emphasis on the control of aliasing and access to mutable memory";
+    homepage = "http://protz.github.io/mezzo/";
     license = lib.licenses.gpl2;
-    broken = lib.versionAtLeast ocaml.version "4.06";
     platforms = ocaml.meta.platforms or [ ];
+    broken = lib.versionAtLeast ocaml.version "4.06";
   };
 }

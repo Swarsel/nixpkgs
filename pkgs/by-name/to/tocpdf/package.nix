@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "tocpdf";
   version = "0.3.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kszenes";
@@ -15,6 +14,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-RaNMhEgJ2pSL9BvK1d2Z8AsUPhARaRtEiCnt/2E2uNs=";
   };
+
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+  ];
 
   build-system = with python3Packages; [
     setuptools
@@ -28,15 +31,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tqdm
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # touches network
     "test_read_toc"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "tocPDF" ];
 
   meta = {

@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gitUpdater,
   cmake,
+  curl,
+  gitUpdater,
   gtest,
   nlohmann_json,
-  pdal,
-  curl,
   openssl,
+  pdal,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,16 +22,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-K/mR3Js5F6JeS9xvEOhzX4sXGK/Zo+1mHCXDSaBdV2M=";
   };
 
+  nativeBuildInputs = [
+    cmake
+  ];
+
   buildInputs = [
     gtest
     nlohmann_json
     openssl
     pdal
     curl
-  ];
-
-  nativeBuildInputs = [
-    cmake
   ];
 
   passthru.updateScript = gitUpdater { };
@@ -41,8 +41,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://entwine.io/";
     license = lib.licenses.lgpl2Only;
     maintainers = with lib.maintainers; [ matthewcroughan ];
-    teams = [ lib.teams.geospatial ];
     platforms = lib.platforms.linux;
     mainProgram = "entwine";
+    teams = [ lib.teams.geospatial ];
   };
 })

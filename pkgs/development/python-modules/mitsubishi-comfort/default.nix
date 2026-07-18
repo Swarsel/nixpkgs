@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
   aioresponses,
+  buildPythonPackage,
   pytest-asyncio,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mitsubishi-comfort";
   version = "0.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nikolairahimi";
@@ -21,16 +20,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-fdP2E6ICxuaOUlNJxAa7k0WICWmxKtRFfB2eKRdanG8=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
   nativeCheckInputs = [
     aioresponses
     pytest-asyncio
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "mitsubishi_comfort" ];
 
   meta = {

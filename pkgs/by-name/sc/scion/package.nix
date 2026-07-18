@@ -1,13 +1,12 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   nixosTests,
 }:
 buildGoModule (finalAttrs: {
   pname = "scion";
-
   version = "0.12.0";
 
   src = fetchFromGitHub {
@@ -18,13 +17,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-Ew/hQM8uhaM89sCcPKUBbiGukDq3h5x+KID3w/8BDHg=";
-
-  excludedPackages = [
-    "acceptance"
-    "demo"
-    "tools"
-    "pkg/private/xtest/graphupdater"
-  ];
+  doCheck = true;
 
   postInstall = ''
     set +e
@@ -36,7 +29,12 @@ buildGoModule (finalAttrs: {
     set -e
   '';
 
-  doCheck = true;
+  excludedPackages = [
+    "acceptance"
+    "demo"
+    "tools"
+    "pkg/private/xtest/graphupdater"
+  ];
 
   tags = [ "sqlite_mattn" ];
 
@@ -44,18 +42,21 @@ buildGoModule (finalAttrs: {
     tests = {
       inherit (nixosTests) scion-freestanding-deployment;
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Future Internet architecture utilizing path-aware networking";
     homepage = "https://www.scion.org/";
-    platforms = lib.platforms.unix;
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       sarcasticadmin
       matthewcroughan
     ];
+
+    platforms = lib.platforms.unix;
     teams = with lib.teams; [ ngi ];
   };
 })

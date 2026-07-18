@@ -1,12 +1,13 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nodejs,
   runtimeShell,
 }:
 
 buildNpmPackage rec {
+  inherit nodejs;
   pname = "whitebophir";
   version = "1.19.1";
 
@@ -17,14 +18,7 @@ buildNpmPackage rec {
     hash = "sha256-4T7s9WrpyHVPcw0QY0C0sczDJYKzA4bAAfEv8q2pOy4=";
   };
 
-  inherit nodejs;
-
   npmDepsHash = "sha256-mKDkkX7vWrnfEg1D65bqn/MtyUS0DKjTtkDW6ebso7g=";
-
-  # geckodriver tries to access network
-  npmFlags = [ "--ignore-scripts" ];
-
-  dontNpmBuild = true;
 
   postInstall = ''
     out_whitebophir=$out/lib/node_modules/whitebophir
@@ -37,12 +31,16 @@ buildNpmPackage rec {
     chmod +x $out/bin/whitebophir
   '';
 
+  dontNpmBuild = true;
+  # geckodriver tries to access network
+  npmFlags = [ "--ignore-scripts" ];
+
   meta = {
     description = "Online collaborative whiteboard that is simple, free, easy to use and to deploy";
-    license = lib.licenses.agpl3Plus;
     homepage = "https://github.com/lovasoa/whitebophir";
-    mainProgram = "whitebophir";
+    license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ iblech ];
     platforms = lib.platforms.unix;
+    mainProgram = "whitebophir";
   };
 }

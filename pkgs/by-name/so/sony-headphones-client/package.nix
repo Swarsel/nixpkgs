@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
-  pkg-config,
   bluez,
+  cmake,
+  copyDesktopItems,
   dbus,
+  fetchpatch,
   glew,
   glfw,
   imgui,
   makeDesktopItem,
-  copyDesktopItems,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,30 +28,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      name = "include-cstdint-to-fix-gcc-compiling.patch";
-      url = "https://github.com/Plutoberth/SonyHeadphonesClient/commit/4da8a12b22f8a45e79aa53d4cae88ca99b51d41f.patch";
-      stripLen = 2;
       extraPrefix = "";
       hash = "sha256-IZR/Znj40pUEC9gmNJDMPWuZOM2ueAgykZFn5DVn6es=";
+      name = "include-cstdint-to-fix-gcc-compiling.patch";
+      stripLen = 2;
+      url = "https://github.com/Plutoberth/SonyHeadphonesClient/commit/4da8a12b22f8a45e79aa53d4cae88ca99b51d41f.patch";
     })
   ];
-
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    copyDesktopItems
-  ];
-  buildInputs = [
-    bluez
-    dbus
-    glew
-    glfw
-    imgui
-  ];
-
-  sourceRoot = "${finalAttrs.src.name}/Client";
-
-  cmakeFlags = [ "-Wno-dev" ];
 
   postPatch = ''
     substituteInPlace Constants.h \
@@ -61,6 +44,22 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "cmake_minimum_required(VERSION 3.1 FATAL_ERROR)" "cmake_minimum_required(VERSION 3.10)"
   '';
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    copyDesktopItems
+  ];
+
+  buildInputs = [
+    bluez
+    dbus
+    glew
+    glfw
+    imgui
+  ];
+
+  cmakeFlags = [ "-Wno-dev" ];
+
   installPhase = ''
     runHook preInstall
     install -Dm755 -t $out/bin SonyHeadphonesClient
@@ -69,17 +68,20 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "SonyHeadphonesClient";
-      exec = "SonyHeadphonesClient";
-      icon = "SonyHeadphonesClient";
-      desktopName = "Sony Headphones Client";
-      comment = "A client recreating the functionality of the Sony Headphones app";
       categories = [
         "Audio"
         "Mixer"
       ];
+
+      comment = "A client recreating the functionality of the Sony Headphones app";
+      desktopName = "Sony Headphones Client";
+      exec = "SonyHeadphonesClient";
+      icon = "SonyHeadphonesClient";
+      name = "SonyHeadphonesClient";
     })
   ];
+
+  sourceRoot = "${finalAttrs.src.name}/Client";
 
   meta = {
     description = "Client recreating the functionality of the Sony Headphones app";

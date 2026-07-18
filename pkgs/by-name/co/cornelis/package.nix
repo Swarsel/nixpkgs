@@ -1,10 +1,9 @@
 {
   lib,
-  haskell,
-  haskellPackages,
-
   # Test dependencies
   cornelis,
+  haskell,
+  haskellPackages,
   runCommand,
 }:
 let

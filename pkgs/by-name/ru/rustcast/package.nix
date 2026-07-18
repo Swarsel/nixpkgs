@@ -1,9 +1,9 @@
 {
-  nix-update-script,
-  fetchFromGitHub,
-  rustPlatform,
-  apple-sdk,
   lib,
+  fetchFromGitHub,
+  apple-sdk,
+  nix-update-script,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "rustcast";
@@ -21,15 +21,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   cargoHash = "sha256-IvpvbsnWWI1I/1PmVfP6qXf8DzRknRBJjMixUp01xo8=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/unsecretised/rustcast/releases/tag/v${finalAttrs.version}";
     description = "Modern Spotlight Alternative made opensource";
     homepage = "https://github.com/unsecretised/rustcast";
+    changelog = "https://github.com/unsecretised/rustcast/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.darwin;
     maintainers = with lib.maintainers; [ eveeifyeve ];
+    platforms = lib.platforms.darwin;
   };
 })

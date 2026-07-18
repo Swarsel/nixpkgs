@@ -1,25 +1,25 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   appstream,
-  meson,
-  ninja,
-  pkg-config,
-  gnome,
-  glib,
-  gtk4,
   desktop-file-utils,
-  wrapGAppsHook4,
+  docbook-xsl-nons,
+  docbook_xml_dtd_43,
   gettext,
+  glib,
+  gnome,
+  gsettings-desktop-schemas,
+  gtk4,
   itstool,
   libadwaita,
   libxml2,
   libxslt,
-  docbook-xsl-nons,
-  docbook_xml_dtd_43,
+  meson,
+  ninja,
+  pkg-config,
   systemd,
-  gsettings-desktop-schemas,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -57,7 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   mesonFlags = [ "-Dman=true" ];
-
   doCheck = true;
 
   passthru = {
@@ -65,11 +64,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://apps.gnome.org/Logs/";
     description = "Log viewer for the systemd journal";
-    mainProgram = "gnome-logs";
-    teams = [ lib.teams.gnome ];
+    homepage = "https://apps.gnome.org/Logs/";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "gnome-logs";
+    teams = [ lib.teams.gnome ];
   };
 })

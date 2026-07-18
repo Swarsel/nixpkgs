@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   geojson,
   pysocks,
+  pytestCheckHook,
   requests,
   setuptools,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pyowm";
   version = "3.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "csparpa";
@@ -21,8 +20,7 @@ buildPythonPackage rec {
     hash = "sha256-D1Cl3uWoEIUqA0R+bjRL2YgsVKj5inuBAVLJYluADg0=";
   };
 
-  pythonRelaxDeps = [ "geojson" ];
-
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -32,12 +30,11 @@ buildPythonPackage rec {
     setuptools
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   # Run only tests which don't require network access
   enabledTestPaths = [ "tests/unit" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyowm" ];
+  pythonRelaxDeps = [ "geojson" ];
 
   meta = {
     description = "Python wrapper around the OpenWeatherMap web API";

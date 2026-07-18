@@ -1,21 +1,18 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   hatchling,
-  pytestCheckHook,
   pytest-asyncio,
+  pytestCheckHook,
   pythonOlder,
 }:
 
 buildPythonPackage rec {
   pname = "pyuptimerobot";
   version = "25.0.0";
-  pyproject = true;
-
-  disabled = pythonOlder "3.14";
 
   src = fetchFromGitHub {
     owner = "ludeeus";
@@ -30,16 +27,16 @@ buildPythonPackage rec {
       --replace-fail 'version = "0"' 'version = "${version}"'
   '';
 
-  build-system = [ hatchling ];
-
-  dependencies = [ aiohttp ];
-
   nativeCheckInputs = [
     aresponses
     pytestCheckHook
     pytest-asyncio
   ];
 
+  build-system = [ hatchling ];
+  dependencies = [ aiohttp ];
+  disabled = pythonOlder "3.14";
+  pyproject = true;
   pythonImportsCheck = [ "pyuptimerobot" ];
 
   meta = {

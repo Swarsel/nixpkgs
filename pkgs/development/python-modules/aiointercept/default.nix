@@ -1,10 +1,10 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
   ddt,
-  fetchFromGitHub,
   hatchling,
-  lib,
   multidict,
   pytest-asyncio,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aiointercept";
   version = "0.1.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Polandia94";
@@ -23,23 +22,18 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-ivWdPw7irgrl0mH+mxChRt6ZITey9w/QB9TIxGu5XeU=";
   };
 
+  nativeCheckInputs = [
+    ddt
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
   build-system = [ hatchling ];
 
   dependencies = [
     aiohttp
     multidict
     yarl
-  ];
-
-  pythonImportsCheck = [
-    "aiointercept"
-    "aiointercept.pytest_plugin"
-  ];
-
-  nativeCheckInputs = [
-    ddt
-    pytest-asyncio
-    pytestCheckHook
   ];
 
   disabledTests = [
@@ -63,10 +57,17 @@ buildPythonPackage (finalAttrs: {
     "test_shared_resolve_no_active_instances_uses_real_resolver"
   ];
 
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "aiointercept"
+    "aiointercept.pytest_plugin"
+  ];
+
   meta = {
-    changelog = "https://github.com/Polandia94/aiointercept/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "Aiohttp mock library that routes requests through a real test server";
     homepage = "https://github.com/Polandia94/aiointercept";
+    changelog = "https://github.com/Polandia94/aiointercept/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.dotlambda ];
   };

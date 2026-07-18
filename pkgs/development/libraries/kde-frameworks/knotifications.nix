@@ -1,5 +1,4 @@
 {
-  mkDerivation,
   lib,
   stdenv,
   cmake,
@@ -9,19 +8,22 @@
   kcoreaddons,
   kwindowsystem,
   libcanberra,
+  libdbusmenu-qt5,
+  mkDerivation,
+  qtmacextras,
   qttools,
   qtx11extras,
-  qtmacextras,
-  libdbusmenu-qt5,
 }:
 
 mkDerivation {
   pname = "knotifications";
+
   nativeBuildInputs = [
     cmake
     extra-cmake-modules
     qttools
   ];
+
   buildInputs = [
     kcodecs
     kconfig

@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
-  neon,
+  fetchpatch,
   libdiscid,
   libxml2,
+  neon,
   pkg-config,
 }:
 
@@ -33,14 +33,16 @@ stdenv.mkDerivation {
   ];
 
   meta = {
-    homepage = "http://musicbrainz.org/doc/libmusicbrainz";
     description = "MusicBrainz Client Library";
+
     longDescription = ''
       The libmusicbrainz (also known as mb_client or MusicBrainz Client
       Library) is a development library geared towards developers who wish to
       add MusicBrainz lookup capabilities to their applications.
     '';
-    platforms = lib.platforms.all;
+
+    homepage = "http://musicbrainz.org/doc/libmusicbrainz";
     license = lib.licenses.lgpl21Plus;
+    platforms = lib.platforms.all;
   };
 }

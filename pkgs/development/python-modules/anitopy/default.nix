@@ -1,12 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 buildPythonPackage rec {
   pname = "anitopy";
   version = "2.1.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "igorcmoura";
@@ -15,6 +14,7 @@ buildPythonPackage rec {
     hash = "sha256-xXEf7AJKg7grDmkKfFuC4Fk6QYFJtezClyfA3vq8TfQ=";
   };
 
+  format = "setuptools";
   pythonImportsCheck = [ "anitopy" ];
 
   meta = {

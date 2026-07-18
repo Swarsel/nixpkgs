@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  makeWrapper,
-  jdk21,
-  jdk ? jdk21,
   fetchurl,
+  jdk21,
+  makeWrapper,
   nixosTests,
+  jdk ? jdk21,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,8 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
   ];
 
-  dontUnpack = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -32,21 +30,24 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontUnpack = true;
   passthru.tests = { inherit (nixosTests) lavalink; };
 
   meta = {
+    inherit (jdk.meta) platforms;
     description = "Standalone audio sending node based on Lavaplayer and Koe";
+
     longDescription = ''
       A standalone audio sending node based on Lavaplayer and Koe. Allows for sending audio without it ever reaching any of your shards.
 
       Being used in production by FredBoat, Dyno, LewdBot, and more.
     '';
+
     homepage = "https://lavalink.dev/";
     changelog = "https://github.com/lavalink-devs/Lavalink/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
-    maintainers = with lib.maintainers; [ nanoyaki ];
     sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
+    maintainers = with lib.maintainers; [ nanoyaki ];
     mainProgram = "lavalink";
-    inherit (jdk.meta) platforms;
   };
 })

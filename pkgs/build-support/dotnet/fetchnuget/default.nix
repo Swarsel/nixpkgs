@@ -8,10 +8,10 @@
 attrs@{
   pname,
   version,
-  url ? "https://www.nuget.org/api/v2/package/${pname}/${version}",
-  sha256 ? "",
   hash ? "",
   md5 ? "",
+  sha256 ? "",
+  url ? "https://www.nuget.org/api/v2/package/${pname}/${version}",
   ...
 }:
 if md5 != "" then
@@ -29,11 +29,7 @@ else
         name = "${pname}.${version}.zip";
       };
 
-      sourceRoot = ".";
-
       nativeBuildInputs = [ unzip ];
-
-      dontBuild = true;
 
       preInstall = ''
         function traverseRename () {
@@ -52,6 +48,9 @@ else
 
         traverseRename
       '';
+
+      dontBuild = true;
+      sourceRoot = ".";
     }
     // attrs
   )

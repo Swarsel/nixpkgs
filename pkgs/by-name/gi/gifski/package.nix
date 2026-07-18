@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   ffmpeg_6,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,8 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-8EAC8YH3AIbvYdTL7HtqTL7WqztzCwvDwIVkhiqvtrQ=";
   };
 
-  cargoHash = "sha256-ZppSO3TyZBbNhG+YW71+C9kMu7ok2+kbnnCRbAKsbfs=";
-
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
@@ -28,8 +26,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ffmpeg_6
   ];
 
+  cargoHash = "sha256-ZppSO3TyZBbNhG+YW71+C9kMu7ok2+kbnnCRbAKsbfs=";
   buildFeatures = [ "video" ];
-
   # When the default checkType of release is used, we get the following error:
   #
   #   error: the crate `gifski` is compiled with the panic strategy `abort` which

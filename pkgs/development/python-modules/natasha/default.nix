@@ -2,19 +2,18 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  pymorphy2,
-  razdel,
+  ipymarkup,
   navec,
+  pymorphy2,
+  pytestCheckHook,
+  razdel,
   slovnet,
   yargy,
-  ipymarkup,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "natasha";
   version = "1.6.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -32,6 +31,7 @@ buildPythonPackage rec {
 
   nativeCheckInputs = [ pytestCheckHook ];
   enabledTestPaths = [ "tests/" ];
+  format = "setuptools";
   pythonImportsCheck = [ "natasha" ];
 
   meta = {

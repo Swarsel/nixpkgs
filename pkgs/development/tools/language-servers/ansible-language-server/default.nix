@@ -5,14 +5,13 @@
   fetchPnpmDeps,
   makeWrapper,
   nodejs,
-  pnpm_11,
   pnpmConfigHook,
+  pnpm_11,
   python3,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "ansible-language-server";
   version = finalAttrs.vscodeAnsibleVersion; # Language server version from the repo at packages/ansible-language-server/package.json is stuck at 0.0.0
-  vscodeAnsibleVersion = "26.6.0"; # vscode-ansible version
 
   src = fetchFromGitHub {
     owner = "ansible";
@@ -27,19 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     pnpmConfigHook
     pnpm_11
   ];
-
-  pnpmWorkspaces = [ "@ansible/ansible-language-server" ];
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pnpmWorkspaces
-      pname
-      version
-      src
-      ;
-    pnpm = pnpm_11;
-    fetcherVersion = 4;
-    hash = "sha256-BJkPE4dNDNIUL6+LeFXTTCWNf5njItHuM/rHMkmxLJk=";
-  };
 
   buildPhase = ''
     runHook preBuild
@@ -62,15 +48,33 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pnpmWorkspaces
+      pname
+      version
+      src
+      ;
+
+    fetcherVersion = 4;
+    hash = "sha256-BJkPE4dNDNIUL6+LeFXTTCWNf5njItHuM/rHMkmxLJk=";
+    pnpm = pnpm_11;
+  };
+
+  pnpmWorkspaces = [ "@ansible/ansible-language-server" ];
+  vscodeAnsibleVersion = "26.6.0"; # vscode-ansible version
+
   meta = {
-    changelog = "https://github.com/ansible/vscode-ansible/releases/tag/v${finalAttrs.vscodeAnsibleVersion}";
     description = "Ansible Language Server";
-    mainProgram = "ansible-language-server";
     homepage = "https://github.com/ansible/vscode-ansible";
+    changelog = "https://github.com/ansible/vscode-ansible/releases/tag/v${finalAttrs.vscodeAnsibleVersion}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       dtvillafana
       robsliwi
     ];
+
+    mainProgram = "ansible-language-server";
   };
 })

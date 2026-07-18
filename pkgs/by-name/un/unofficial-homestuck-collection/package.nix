@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  electron,
   fetchFromGitHub,
+  electron,
   fetchYarnDeps,
   fixup-yarn-lock,
-  replaceVars,
-  writableTmpDirAsHomeHook,
+  libglvnd,
   makeWrapper,
   nodejs,
+  replaceVars,
+  writableTmpDirAsHomeHook,
   yarn,
-  libglvnd,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "unofficial-homestuck-collection";
@@ -26,18 +26,13 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     (replaceVars ./0001-disable-git-rev-check.patch {
       git_branch = "'main'";
-      git_revision = "'${finalAttrs.src.rev}'";
       git_remote = "'${finalAttrs.src.url}'";
+      git_revision = "'${finalAttrs.src.rev}'";
     })
     ./0002-disable-update-check.patch
     ./0003-make-compatible-with-native-electron.patch
     ./0004-Upgrade-Electron-14-to-force-removal-of-remote-module.patch
   ];
-
-  offlineCache = fetchYarnDeps {
-    yarnLock = ./yarn.lock;
-    hash = "sha256-CKWFtIZBASGx/1tBR8n7aKPqfj4P9dCAPIzee/DIOP8=";
-  };
 
   nativeBuildInputs = [
     fixup-yarn-lock
@@ -46,26 +41,6 @@ stdenv.mkDerivation (finalAttrs: {
     writableTmpDirAsHomeHook
     yarn
   ];
-
-  configurePhase = ''
-    runHook preConfigure
-
-    # Replace lockfile with our own (sync offline cache)
-    cp -f ${./yarn.lock} yarn.lock
-
-    # setup yarn
-    fixup-yarn-lock yarn.lock
-    yarn config --offline set ignore-engines true
-    yarn config --offline set yarn-offline-mirror $offlineCache
-    yarn install --offline --frozen-lockfile --ignore-scripts --no-progress
-    patchShebangs node_modules
-
-    # fixup node_modules
-    echo > node_modules/phantomjs-prebuilt/install.js
-    echo > node_modules/electron/index.js
-
-    runHook postConfigure
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -106,15 +81,42 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+
+    # Replace lockfile with our own (sync offline cache)
+    cp -f ${./yarn.lock} yarn.lock
+
+    # setup yarn
+    fixup-yarn-lock yarn.lock
+    yarn config --offline set ignore-engines true
+    yarn config --offline set yarn-offline-mirror $offlineCache
+    yarn install --offline --frozen-lockfile --ignore-scripts --no-progress
+    patchShebangs node_modules
+
+    # fixup node_modules
+    echo > node_modules/phantomjs-prebuilt/install.js
+    echo > node_modules/electron/index.js
+
+    runHook postConfigure
+  '';
+
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-CKWFtIZBASGx/1tBR8n7aKPqfj4P9dCAPIzee/DIOP8=";
+    yarnLock = ./yarn.lock;
+  };
+
   meta = {
     description = "Offline collection of Homestuck and its related works (ruffle only)";
     homepage = "https://homestuck.giovanh.com/unofficial-homestuck-collection/";
     changelog = "https://github.com/GiovanH/unofficial-homestuck-collection/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       kenshineto
     ];
-    mainProgram = "unofficial-homestuck-collection";
+
     platforms = lib.platforms.linux;
+    mainProgram = "unofficial-homestuck-collection";
   };
 })

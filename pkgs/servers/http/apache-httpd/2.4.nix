@@ -2,33 +2,33 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch2,
-  perl,
-  zlib,
   apr,
   aprutil,
-  pcre2,
-  libiconv,
-  lynx,
-  which,
-  libxcrypt,
+  brotli,
   buildPackages,
+  fetchpatch2,
+  libiconv,
+  libxcrypt,
+  libxml2,
+  lua5,
+  lynx,
+  nghttp2,
+  nixosTests,
+  openldap,
+  openssl,
+  pcre2,
+  perl,
   pkgsCross,
   runCommand,
-  nixosTests,
+  which,
+  zlib,
+  brotliSupport ? true,
+  http2Support ? true,
+  ldapSupport ? true,
+  libxml2Support ? true,
+  luaSupport ? false,
   proxySupport ? true,
   sslSupport ? true,
-  openssl,
-  http2Support ? true,
-  nghttp2,
-  ldapSupport ? true,
-  openldap,
-  libxml2Support ? true,
-  libxml2,
-  brotliSupport ? true,
-  brotli,
-  luaSupport ? false,
-  lua5,
 }:
 
 stdenv.mkDerivation rec {
@@ -40,16 +40,6 @@ stdenv.mkDerivation rec {
     hash = "sha256-aMdNTfOMJr7U372487rx61MvOHI1e+zBu6XRNva2PAY=";
   };
 
-  patches = [
-    # Fix cross-compilation by using CC_FOR_BUILD for generator program
-    # https://issues.apache.org/bugzilla/show_bug.cgi?id=51257#c6
-    (fetchpatch2 {
-      name = "apache-httpd-cross-compile.patch";
-      url = "https://gitlab.com/buildroot.org/buildroot/-/raw/5dae8cddeecf16c791f3c138542ec51c4e627d75/package/apache/0001-cross-compile.patch";
-      hash = "sha256-KGnAa6euOt6dkZQwURyVITcfqTkDkSR8zpE97DywUUw=";
-    })
-  ];
-
   # FIXME: -dev depends on -doc
   outputs = [
     "out"
@@ -57,9 +47,22 @@ stdenv.mkDerivation rec {
     "man"
     "doc"
   ];
-  setOutputFlags = false; # it would move $out/modules, etc.
 
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  patches = [
+    # Fix cross-compilation by using CC_FOR_BUILD for generator program
+    # https://issues.apache.org/bugzilla/show_bug.cgi?id=51257#c6
+    (fetchpatch2 {
+      hash = "sha256-KGnAa6euOt6dkZQwURyVITcfqTkDkSR8zpE97DywUUw=";
+      name = "apache-httpd-cross-compile.patch";
+      url = "https://gitlab.com/buildroot.org/buildroot/-/raw/5dae8cddeecf16c791f3c138542ec51c4e627d75/package/apache/0001-cross-compile.patch";
+    })
+  ];
+
+  postPatch = ''
+    sed -i config.layout -e "s|installbuilddir:.*|installbuilddir: $dev/share/build|"
+    sed -i configure -e 's|perlbin=.*|perlbin="/usr/bin/env perl"|'
+    sed -i support/apachectl.in -e 's|@LYNX_PATH@|${lynx}/bin/lynx|'
+  '';
 
   nativeBuildInputs = [
     perl
@@ -78,17 +81,6 @@ stdenv.mkDerivation rec {
   ++ lib.optional libxml2Support libxml2
   ++ lib.optional http2Support nghttp2
   ++ lib.optional stdenv.hostPlatform.isDarwin libiconv;
-
-  postPatch = ''
-    sed -i config.layout -e "s|installbuilddir:.*|installbuilddir: $dev/share/build|"
-    sed -i configure -e 's|perlbin=.*|perlbin="/usr/bin/env perl"|'
-    sed -i support/apachectl.in -e 's|@LYNX_PATH@|${lynx}/bin/lynx|'
-  '';
-
-  # Required for ‘pthread_cancel’.
-  env = lib.optionalAttrs (!stdenv.hostPlatform.isDarwin) {
-    NIX_LDFLAGS = "-lgcc_s";
-  };
 
   configureFlags = [
     "--with-apr=${apr.dev}"
@@ -123,13 +115,10 @@ stdenv.mkDerivation rec {
     "ap_cv_void_ptr_lt_long=no"
   ];
 
-  enableParallelBuilding = true;
-
-  stripDebugList = [
-    "lib"
-    "modules"
-    "bin"
-  ];
+  # Required for ‘pthread_cancel’.
+  env = lib.optionalAttrs (!stdenv.hostPlatform.isDarwin) {
+    NIX_LDFLAGS = "-lgcc_s";
+  };
 
   postInstall = ''
     mkdir -p $doc/share/doc/httpd
@@ -137,6 +126,16 @@ stdenv.mkDerivation rec {
     mkdir -p $dev/bin
     mv $out/bin/apxs $dev/bin/apxs
   '';
+
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  enableParallelBuilding = true;
+  setOutputFlags = false; # it would move $out/modules, etc.
+
+  stripDebugList = [
+    "lib"
+    "modules"
+    "bin"
+  ];
 
   passthru = {
     inherit
@@ -148,14 +147,17 @@ stdenv.mkDerivation rec {
       luaSupport
       lua5
       ;
+
     tests = {
       acme-integration = nixosTests.acme.httpd;
-      proxy = nixosTests.proxy;
-      php = nixosTests.php.httpd;
+
       cross = runCommand "apacheHttpd-test-cross" { } ''
         ${pkgsCross.aarch64-multiplatform.apacheHttpd.dev}/bin/apxs -q -n INCLUDE | grep CC=aarch64-unknown-linux-gnu-gcc > $out
         head -n1 ${pkgsCross.aarch64-multiplatform.apacheHttpd}/bin/dbmmanage | grep '^#!${pkgsCross.aarch64-multiplatform.perl}/bin/perl$' >> $out
       '';
+
+      php = nixosTests.php.httpd;
+      proxy = nixosTests.proxy;
     };
   };
 
@@ -163,7 +165,7 @@ stdenv.mkDerivation rec {
     description = "Apache HTTPD, the world's most popular web server";
     homepage = "https://httpd.apache.org/";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ arcayr ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 }

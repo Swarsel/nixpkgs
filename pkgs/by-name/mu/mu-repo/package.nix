@@ -1,16 +1,15 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   git,
-  testers,
   mu-repo,
+  python3Packages,
+  testers,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "mu-repo";
   version = "1.9.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "fabioz";
@@ -19,14 +18,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-aSRf0B/skoZLsn4dykWOFKVNtHYCsD9RtZ1frHDrcJU=";
   };
 
-  dependencies = [ git ];
-
   nativeCheckInputs = [
     python3Packages.pytestCheckHook
     git
   ];
 
+  dependencies = [ git ];
   disabledTests = [ "test_action_diff" ];
+  format = "setuptools";
 
   passthru.tests.version = testers.testVersion {
     package = mu-repo;
@@ -36,8 +35,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     description = "Tool to help in dealing with multiple git repositories";
     homepage = "http://fabioz.github.io/mu-repo/";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ sikmir ];
+    platforms = lib.platforms.unix;
     mainProgram = "mu";
   };
 })

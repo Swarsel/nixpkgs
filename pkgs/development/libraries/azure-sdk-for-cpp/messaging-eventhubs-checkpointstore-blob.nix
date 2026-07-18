@@ -2,20 +2,16 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  ninja,
   core,
   messaging-eventhubs,
-  storage-blobs,
-  nix-update-script,
   meta,
+  ninja,
+  nix-update-script,
+  storage-blobs,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "azure-sdk-for-cpp-messaging-eventhubs-checkpointstore-blob";
   version = "1.0.0-beta.1";
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "Azure";
@@ -23,7 +19,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "azure-messaging-eventhubs-checkpointstore-blob_1.0.0-beta.1";
     hash = "sha256-487IwzlxnKd09ztf9NQESbp/kZzsT18JXKgMwsG5W/Y=";
   };
-  sourceRoot = "${finalAttrs.src.name}/sdk/eventhubs/azure-messaging-eventhubs-checkpointstore-blob";
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   postPatch = ''
     sed -i '/CMAKE_CXX_STANDARD/d' CMakeLists.txt
@@ -42,22 +42,24 @@ stdenv.mkDerivation (finalAttrs: {
     storage-blobs
   ];
 
-  env = {
-    AZURE_SDK_DISABLE_AUTO_VCPKG = 1;
-  };
-
   cmakeFlags = [
     "-DBUILD_SHARED_LIBS=ON"
     "-DWARNINGS_AS_ERRORS=OFF"
   ];
+
+  env = {
+    AZURE_SDK_DISABLE_AUTO_VCPKG = 1;
+  };
+
+  # See note in ./core.nix.
+  doCheck = false;
 
   postInstall = ''
     moveToOutput "share" "$dev"
     moveToOutput "share/$(basename "$sourceRoot")-cpp/copyright" "$out"
   '';
 
-  # See note in ./core.nix.
-  doCheck = false;
+  sourceRoot = "${finalAttrs.src.name}/sdk/eventhubs/azure-messaging-eventhubs-checkpointstore-blob";
 
   passthru.updateScript = nix-update-script {
     extraArgs = [

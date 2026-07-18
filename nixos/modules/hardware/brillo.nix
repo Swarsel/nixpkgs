@@ -18,7 +18,7 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    services.udev.packages = [ pkgs.brillo ];
     environment.systemPackages = [ pkgs.brillo ];
+    services.udev.packages = [ pkgs.brillo ];
   };
 }

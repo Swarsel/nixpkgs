@@ -1,12 +1,12 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   boost,
   cmake,
-  fetchFromGitHub,
   gtest,
   libpcap,
   openssl,
-  lib,
-  stdenv,
 }:
 
 stdenv.mkDerivation rec {
@@ -41,21 +41,22 @@ stdenv.mkDerivation rec {
     cmake
     gtest
   ];
+
   buildInputs = [
     openssl
     libpcap
     boost
   ];
 
+  configureFlags = [
+    "--with-boost-libdir=${boost.out}/lib"
+    "--with-boost=${boost.dev}"
+  ];
+
   cmakeFlags = [
     # CMake 4 dropped support of versions lower than 3.5,
     # versions lower than 3.10 are deprecated.
     (lib.cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "3.10")
-  ];
-
-  configureFlags = [
-    "--with-boost-libdir=${boost.out}/lib"
-    "--with-boost=${boost.dev}"
   ];
 
   doCheck = true;

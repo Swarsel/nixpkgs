@@ -37,12 +37,12 @@
   zlib,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  name = "stdenv-bootstrap-tools";
-
   nativeBuildInputs = [
     dumpnar
     nukeReferences
   ];
+
+  allowedReferences = [ ];
 
   buildCommand =
     let
@@ -273,11 +273,12 @@ stdenv.mkDerivation (finalAttrs: {
       dumpnar $out/unpack | xz -9 -T $NIX_BUILD_CORES > $out/on-server/unpack.nar.xz
     '';
 
-  allowedReferences = [ ];
+  name = "stdenv-bootstrap-tools";
 
   passthru = {
     bootstrapFiles = {
       bootstrapTools = "${finalAttrs.finalPackage}/on-server/bootstrap-tools.tar.xz";
+
       unpack = runCommand "unpack" { allowedReferences = [ ]; } ''
         cp -r ${finalAttrs.finalPackage}/unpack $out
       '';

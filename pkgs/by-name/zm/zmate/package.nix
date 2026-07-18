@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   makeWrapper,
-  zellij,
   nix-update-script,
+  zellij,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,9 +18,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-7RDcRu41zyYIEwQ3wghesTbGAp6sqe44/sFZTzMqpNA=";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
   vendorHash = "sha256-o4RQ2feBP/qt7iv8jUb1zyHJzurjqh+dW3W5qjEuO1o=";
 
-  nativeBuildInputs = [ makeWrapper ];
   postFixup = ''
     wrapProgram $out/bin/zmate \
       --suffix PATH ":" ${
@@ -36,9 +36,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Instant terminal sharing using Zellij";
-    mainProgram = "zmate";
     homepage = "https://github.com/ziinaio/zmate";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ lykos153 ];
+    mainProgram = "zmate";
   };
 })

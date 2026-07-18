@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   flask,
   google-auth,
   httplib2,
   mock,
   pytest-localserver,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "google-auth-httplib2";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googleapis";
@@ -23,6 +22,14 @@ buildPythonPackage rec {
     sha256 = "sha256-NXz2oqbNVGTWOECH+Ly9v/CMxbhygFZhlHRHrnYLhCg=";
   };
 
+  nativeCheckInputs = [
+    flask
+    mock
+    pytestCheckHook
+    pytest-localserver
+  ];
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,14 +37,7 @@ buildPythonPackage rec {
     httplib2
   ];
 
-  __darwinAllowLocalNetworking = true;
-
-  nativeCheckInputs = [
-    flask
-    mock
-    pytestCheckHook
-    pytest-localserver
-  ];
+  pyproject = true;
 
   meta = {
     description = "Google Authentication Library: httplib2 transport";

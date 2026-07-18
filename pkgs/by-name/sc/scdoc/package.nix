@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchFromSourcehut,
   buildPackages,
+  fetchFromSourcehut,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,8 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://git.sr.ht/~sircmpwn/scdoc";
     changelog = "https://git.sr.ht/~sircmpwn/scdoc/refs/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
-    mainProgram = "scdoc";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "scdoc";
   };
 })

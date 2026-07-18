@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "testing.common.database";
   version = "2.0.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -20,10 +19,10 @@ buildPythonPackage rec {
       --replace-fail "collections.Callable" "collections.abc.Callable"
   '';
 
-  build-system = [ setuptools ];
-
   # There are no unit tests
   doCheck = false;
+  build-system = [ setuptools ];
+  pyproject = true;
 
   meta = {
     description = "Utilities for testing.* packages";

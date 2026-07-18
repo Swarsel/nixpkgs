@@ -1,7 +1,7 @@
 {
   lib,
-  dbus,
   fetchFromGitHub,
+  dbus,
   nixosTests,
   python3,
   sphinxHook,
@@ -12,13 +12,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "autosuspend";
   version = "11.3.0";
-  pyproject = true;
-
-  outputs = [
-    "out"
-  ]
-  ++ lib.optionals withDocs [ "doc" ]
-  ++ lib.optionals withMan [ "man" ];
 
   src = fetchFromGitHub {
     owner = "languitar";
@@ -26,6 +19,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-KG1Cv3Fmdf3VDdZR+k0SeA97g6R+oI6+NgtaWHWPVUQ=";
   };
+
+  outputs = [
+    "out"
+  ]
+  ++ lib.optionals withDocs [ "doc" ]
+  ++ lib.optionals withMan [ "man" ];
 
   postPatch = ''
     # This mapping triggers network access on docs generation
@@ -40,7 +39,16 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ++ finalAttrs.passthru.optional-dependencies.docs
   );
 
-  sphinxBuilders = lib.optionals withDocs [ "html" ] ++ lib.optionals withMan [ "man" ];
+  nativeCheckInputs = with python3.pkgs; [
+    dbus
+    freezegun
+    pytest-cov-stub
+    pytest-datadir
+    pytest-httpserver
+    pytest-mock
+    pytestCheckHook
+    python-dbusmock
+  ];
 
   build-system = with python3.pkgs; [
     setuptools
@@ -61,6 +69,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tzlocal
   ];
 
+  # Disable tests that need root
+  disabledTests = [
+    "test_smoke"
+    "test_multiple_sessions"
+  ];
+
   optional-dependencies = {
     docs = with python3.pkgs; [
       furo
@@ -71,22 +85,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = with python3.pkgs; [
-    dbus
-    freezegun
-    pytest-cov-stub
-    pytest-datadir
-    pytest-httpserver
-    pytest-mock
-    pytestCheckHook
-    python-dbusmock
-  ];
-
-  # Disable tests that need root
-  disabledTests = [
-    "test_smoke"
-    "test_multiple_sessions"
-  ];
+  pyproject = true;
+  sphinxBuilders = lib.optionals withDocs [ "html" ] ++ lib.optionals withMan [ "man" ];
 
   passthru.tests = {
     inherit (nixosTests) autosuspend;
@@ -97,12 +97,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     homepage = "https://autosuspend.readthedocs.io";
     changelog = "https://github.com/languitar/autosuspend/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       bzizou
       anthonyroussel
       adamcstephens
     ];
-    mainProgram = "autosuspend";
+
     platforms = lib.platforms.linux;
+    mainProgram = "autosuspend";
   };
 })

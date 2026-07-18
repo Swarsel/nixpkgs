@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -17,35 +17,86 @@ in
   options = {
     services.mautrix-telegram = {
       enable = lib.mkEnableOption "Mautrix-Telegram, a Matrix-Telegram hybrid puppeting/relaybot bridge";
-
       package = lib.mkPackageOption pkgs "mautrix-telegram" { };
 
-      settings = lib.mkOption rec {
-        apply = lib.recursiveUpdate default;
-        inherit (settingsFormat) type;
-        default = {
-          homeserver = {
-            software = "standard";
-          };
+      environmentFile = lib.mkOption {
+        default = null;
 
+        description = ''
+          File containing environment variables to be passed to the mautrix-telegram service,
+          in which secret tokens can be specified securely by defining values for e.g.
+          `MAUTRIX_TELEGRAM_APPSERVICE_AS_TOKEN`,
+          `MAUTRIX_TELEGRAM_APPSERVICE_HS_TOKEN`,
+          `MAUTRIX_TELEGRAM_TELEGRAM_API_ID`,
+          `MAUTRIX_TELEGRAM_TELEGRAM_API_HASH` and optionally
+          `MAUTRIX_TELEGRAM_TELEGRAM_BOT_TOKEN`.
+
+          These environment variables can also be used to set other options by
+          replacing hierarchy levels by `.`, converting the name to uppercase
+          and prepending `MAUTRIX_TELEGRAM_`.
+          For example, the first value above maps to
+          {option}`settings.appservice.as_token`.
+
+          The environment variable values can be prefixed with `json::` to have
+          them be parsed as JSON. For example, `login_shared_secret_map` can be
+          set as follows:
+          `MAUTRIX_TELEGRAM_BRIDGE_LOGIN_SHARED_SECRET_MAP=json::{"example.com":"secret"}`.
+        '';
+
+        type = lib.types.nullOr lib.types.path;
+      };
+
+      registerToSynapse = lib.mkOption {
+        default = config.services.matrix-synapse.enable;
+        defaultText = lib.literalExpression "config.services.matrix-synapse.enable";
+
+        description = ''
+          Whether to add the bridge's app service registration file to
+          `services.matrix-synapse.settings.app_service_config_files`.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      serviceDependencies = lib.mkOption {
+        default = lib.optional config.services.matrix-synapse.enable config.services.matrix-synapse.serviceUnit;
+
+        defaultText = lib.literalExpression ''
+          lib.optional config.services.matrix-synapse.enable config.services.matrix-synapse.serviceUnit
+        '';
+
+        description = ''
+          List of Systemd services to require and wait for when starting the application service.
+        '';
+
+        type = with lib.types; listOf str;
+      };
+
+      settings = lib.mkOption rec {
+        inherit (settingsFormat) type;
+        apply = lib.recursiveUpdate default;
+
+        default = {
           appservice = rec {
+            address = "http://localhost:${toString port}";
             database = "sqlite:///${dataDir}/mautrix-telegram.db";
             database_opts = { };
             hostname = "0.0.0.0";
             port = 8080;
-            address = "http://localhost:${toString port}";
           };
 
           bridge = {
-            permissions."*" = "relaybot";
-            relaybot.whitelist = [ ];
             double_puppet_server_map = { };
             login_shared_secret_map = { };
+            permissions."*" = "relaybot";
+            relaybot.whitelist = [ ];
+          };
+
+          homeserver = {
+            software = "standard";
           };
 
           logging = {
-            version = 1;
-
             formatters.precise.format = "[%(levelname)s@%(name)s] %(message)s";
 
             handlers.console = {
@@ -54,21 +105,32 @@ in
             };
 
             loggers = {
-              mau.level = "INFO";
-              telethon.level = "INFO";
-
               # prevent tokens from leaking in the logs:
               # https://github.com/tulir/mautrix-telegram/issues/351
               aiohttp.level = "WARNING";
+              mau.level = "INFO";
+              telethon.level = "INFO";
             };
 
             # log to console/systemd instead of file
             root = {
-              level = "INFO";
               handlers = [ "console" ];
+              level = "INFO";
             };
+
+            version = 1;
           };
         };
+
+        description = ''
+          {file}`config.yaml` configuration as a Nix attribute set.
+          Configuration options should match those described in
+          [example-config.yaml](https://github.com/mautrix/telegram/blob/master/mautrix_telegram/example-config.yaml).
+
+          Secret tokens should be specified using {option}`environmentFile`
+          instead of this world-readable attribute set.
+        '';
+
         example = lib.literalExpression ''
           {
             homeserver = {
@@ -90,93 +152,23 @@ in
             };
           }
         '';
-        description = ''
-          {file}`config.yaml` configuration as a Nix attribute set.
-          Configuration options should match those described in
-          [example-config.yaml](https://github.com/mautrix/telegram/blob/master/mautrix_telegram/example-config.yaml).
-
-          Secret tokens should be specified using {option}`environmentFile`
-          instead of this world-readable attribute set.
-        '';
-      };
-
-      environmentFile = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
-        default = null;
-        description = ''
-          File containing environment variables to be passed to the mautrix-telegram service,
-          in which secret tokens can be specified securely by defining values for e.g.
-          `MAUTRIX_TELEGRAM_APPSERVICE_AS_TOKEN`,
-          `MAUTRIX_TELEGRAM_APPSERVICE_HS_TOKEN`,
-          `MAUTRIX_TELEGRAM_TELEGRAM_API_ID`,
-          `MAUTRIX_TELEGRAM_TELEGRAM_API_HASH` and optionally
-          `MAUTRIX_TELEGRAM_TELEGRAM_BOT_TOKEN`.
-
-          These environment variables can also be used to set other options by
-          replacing hierarchy levels by `.`, converting the name to uppercase
-          and prepending `MAUTRIX_TELEGRAM_`.
-          For example, the first value above maps to
-          {option}`settings.appservice.as_token`.
-
-          The environment variable values can be prefixed with `json::` to have
-          them be parsed as JSON. For example, `login_shared_secret_map` can be
-          set as follows:
-          `MAUTRIX_TELEGRAM_BRIDGE_LOGIN_SHARED_SECRET_MAP=json::{"example.com":"secret"}`.
-        '';
-      };
-
-      serviceDependencies = lib.mkOption {
-        type = with lib.types; listOf str;
-        default = lib.optional config.services.matrix-synapse.enable config.services.matrix-synapse.serviceUnit;
-        defaultText = lib.literalExpression ''
-          lib.optional config.services.matrix-synapse.enable config.services.matrix-synapse.serviceUnit
-        '';
-        description = ''
-          List of Systemd services to require and wait for when starting the application service.
-        '';
-      };
-
-      registerToSynapse = lib.mkOption {
-        type = lib.types.bool;
-        default = config.services.matrix-synapse.enable;
-        defaultText = lib.literalExpression "config.services.matrix-synapse.enable";
-        description = ''
-          Whether to add the bridge's app service registration file to
-          `services.matrix-synapse.settings.app_service_config_files`.
-        '';
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
 
-    users.users.mautrix-telegram = {
-      isSystemUser = true;
-      group = "mautrix-telegram";
-      home = dataDir;
-      description = "Mautrix-Telegram bridge user";
-    };
-
-    users.groups.mautrix-telegram = { };
-
     services.matrix-synapse = lib.mkIf cfg.registerToSynapse {
       settings.app_service_config_files = [ registrationFile ];
     };
+
     systemd.services.matrix-synapse = lib.mkIf cfg.registerToSynapse {
       serviceConfig.SupplementaryGroups = [ "mautrix-telegram" ];
     };
 
     systemd.services.mautrix-telegram = {
-      description = "Mautrix-Telegram, a Matrix-Telegram hybrid puppeting/relaybot bridge.";
-
-      wantedBy = [ "multi-user.target" ];
-      wants = [ "network-online.target" ] ++ cfg.serviceDependencies;
       after = [ "network-online.target" ] ++ cfg.serviceDependencies;
-      path = [
-        pkgs.lottieconverter
-        pkgs.ffmpeg-headless
-      ];
-
+      description = "Mautrix-Telegram, a Matrix-Telegram hybrid puppeting/relaybot bridge.";
       # mautrix-telegram tries to generate a dotfile in the home directory of
       # the running user if using a postgresql database:
       #
@@ -188,6 +180,11 @@ in
       #    raise RuntimeError("Could not determine home directory.")
       # RuntimeError: Could not determine home directory.
       environment.HOME = dataDir;
+
+      path = [
+        pkgs.lottieconverter
+        pkgs.ffmpeg-headless
+      ];
 
       preStart = ''
         # substitute the settings file by environment variables
@@ -227,28 +224,39 @@ in
       '';
 
       serviceConfig = {
-        User = "mautrix-telegram";
-        Group = "mautrix-telegram";
-        Type = "simple";
-        Restart = "always";
-
-        ProtectSystem = "strict";
-        ProtectHome = true;
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
-        ProtectControlGroups = true;
-
-        PrivateTmp = true;
-        WorkingDirectory = cfg.package; # necessary for the database migration scripts to be found
-        StateDirectory = baseNameOf dataDir;
-        UMask = "0027";
         EnvironmentFile = cfg.environmentFile;
 
         ExecStart = ''
           ${cfg.package}/bin/mautrix-telegram \
             --config='${settingsFile}'
         '';
+
+        Group = "mautrix-telegram";
+        PrivateTmp = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectSystem = "strict";
+        Restart = "always";
+        StateDirectory = baseNameOf dataDir;
+        Type = "simple";
+        UMask = "0027";
+        User = "mautrix-telegram";
+        WorkingDirectory = cfg.package; # necessary for the database migration scripts to be found
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ] ++ cfg.serviceDependencies;
+    };
+
+    users.groups.mautrix-telegram = { };
+
+    users.users.mautrix-telegram = {
+      description = "Mautrix-Telegram bridge user";
+      group = "mautrix-telegram";
+      home = dataDir;
+      isSystemUser = true;
     };
   };
 

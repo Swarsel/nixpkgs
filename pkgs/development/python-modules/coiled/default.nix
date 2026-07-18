@@ -1,23 +1,21 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-
-  # build-system
-  hatchling,
-  hatch-vcs,
-
   # dependencies
   aiohttp,
   backoff,
   bokeh,
   boto3,
+  buildPythonPackage,
   click,
   dask,
   distributed,
   fabric,
+  fetchPypi,
   filelock,
   gilknocker,
+  hatch-vcs,
+  # build-system
+  hatchling,
   httpx,
   importlib-metadata,
   invoke,
@@ -31,22 +29,25 @@
   rich,
   toml,
   typing-extensions,
-  wheel,
-
   # tests
   versionCheckHook,
+  wheel,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "coiled";
   version = "1.135.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-dI3AT4hogMHLAg7jyXuJNPHeJG9U0nEwwN+MQ+UgxTA=";
   };
+
+  nativeCheckInputs = [
+    versionCheckHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     hatchling
@@ -80,11 +81,8 @@ buildPythonPackage (finalAttrs: {
     wheel
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "coiled" ];
-
-  nativeCheckInputs = [
-    versionCheckHook
-  ];
 
   meta = {
     description = "Python client for coiled.io dask clusters";

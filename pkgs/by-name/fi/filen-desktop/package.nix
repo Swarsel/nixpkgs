@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  buildNpmPackage,
   fetchFromGitHub,
-  makeDesktopItem,
-  copyDesktopItems,
-  makeWrapper,
-  electron,
-  pkg-config,
-  pixman,
+  buildNpmPackage,
   cairo,
+  copyDesktopItems,
+  electron,
+  makeDesktopItem,
+  makeWrapper,
   pango,
+  pixman,
+  pkg-config,
 }:
 let
   packageName = "filen-desktop";
@@ -19,55 +19,36 @@ let
   appName = "Filen";
 
   desktopItem = makeDesktopItem {
-    name = packageName;
-    exec = packageName;
-    icon = packageName;
-    startupWMClass = packageName;
-    desktopName = desktopName;
-    comment = "Encrypted Cloud Storage";
     categories = [
       "Network"
       "FileTransfer"
       "Utility"
     ];
+
+    comment = "Encrypted Cloud Storage";
+    desktopName = desktopName;
+    exec = packageName;
+    icon = packageName;
+
     keywords = [
       "cloud"
       "storage"
       "encrypted"
     ];
+
+    name = packageName;
+    startupWMClass = packageName;
   };
 in
 buildNpmPackage {
   pname = packageName;
   version = packageVersion;
-  makeCacheWritable = true;
 
   src = fetchFromGitHub {
     owner = "FilenCloudDienste";
     repo = packageName;
     rev = "v${packageVersion}";
     hash = "sha256-WS9JqErfsRtt6zF+LrKkpiscJ25MRXmRxmIm3GH6xf0=";
-  };
-
-  npmDepsHash = "sha256-+Ul2z6faZvAeCHq35janVTUNoqTQ5JNDeLbCV220nFU=";
-
-  nativeBuildInputs = [
-    pkg-config
-    makeWrapper
-  ]
-  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
-    copyDesktopItems
-  ];
-
-  buildInputs = [
-    pixman
-    cairo
-    pango
-  ];
-
-  env = {
-    ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1";
   };
 
   postPatch = ''
@@ -87,6 +68,27 @@ buildNpmPackage {
       const options = await this.options.get()
     '
   '';
+
+  nativeBuildInputs = [
+    pkg-config
+    makeWrapper
+  ]
+  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
+    copyDesktopItems
+  ];
+
+  buildInputs = [
+    pixman
+    cairo
+    pango
+  ];
+
+  npmDepsHash = "sha256-+Ul2z6faZvAeCHq35janVTUNoqTQ5JNDeLbCV220nFU=";
+
+  env = {
+    ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
+    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1";
+  };
 
   buildPhase = ''
     runHook preBuild
@@ -146,21 +148,26 @@ buildNpmPackage {
   '';
 
   desktopItems = lib.optionals (!stdenv.hostPlatform.isDarwin) [ desktopItem ];
+  makeCacheWritable = true;
 
   meta = {
-    homepage = "https://filen.io/products";
-    downloadPage = "https://filen.io/products/desktop";
     description = "Filen Desktop Client";
+
     longDescription = ''
       Encrypted Cloud Storage built for your Desktop.
       Sync your data, mount network drives, collaborate with others and access files natively powered by robust encryption and seamless integration.
     '';
-    mainProgram = packageName;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
+    homepage = "https://filen.io/products";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       smissingham
       kashw2
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = packageName;
+    downloadPage = "https://filen.io/products/desktop";
   };
 }

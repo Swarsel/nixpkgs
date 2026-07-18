@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "rabbit-ng";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sgl-umons";
@@ -29,6 +28,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     requests
     typer
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "rabbit_ng"

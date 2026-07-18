@@ -1,23 +1,22 @@
 {
   lib,
+  build,
   buildPythonPackage,
   fetchPypi,
-  packaging,
-  pytestCheckHook,
-  build,
+  gitMinimal,
   hatchling,
+  mercurial,
+  packaging,
   pydantic,
   pytest-cov-stub,
   pytest-mock,
+  pytestCheckHook,
   setuptools,
-  gitMinimal,
-  mercurial,
 }:
 
 buildPythonPackage rec {
   pname = "versioningit";
   version = "3.3.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -28,12 +27,6 @@ buildPythonPackage rec {
     substituteInPlace tox.ini \
       --replace-fail "ignore:.*No source for code:coverage.exceptions.CoverageWarning" ""
   '';
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    packaging
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -47,6 +40,12 @@ buildPythonPackage rec {
     mercurial
   ];
 
+  build-system = [ hatchling ];
+
+  dependencies = [
+    packaging
+  ];
+
   disabledTests = [
     # wants to write to the Nix store
     "test_editable_mode"
@@ -55,14 +54,15 @@ buildPythonPackage rec {
     "test_install_from_zip_url"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "versioningit" ];
 
   meta = {
     description = "Setuptools plugin for determining package version from VCS";
-    mainProgram = "versioningit";
     homepage = "https://github.com/jwodder/versioningit";
     changelog = "https://versioningit.readthedocs.io/en/latest/changelog.html";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ DeeUnderscore ];
+    mainProgram = "versioningit";
   };
 }

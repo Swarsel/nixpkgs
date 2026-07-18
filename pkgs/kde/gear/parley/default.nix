@@ -1,7 +1,7 @@
 {
   mkKdeDerivation,
-  qtsvg,
   qtmultimedia,
+  qtsvg,
   qtwebengine,
 }:
 mkKdeDerivation {
@@ -12,5 +12,6 @@ mkKdeDerivation {
     qtmultimedia
     qtwebengine
   ];
+
   meta.mainProgram = "parley";
 }

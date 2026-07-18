@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitLab,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -9,11 +9,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   version = "2.0.1";
 
   src = fetchFromGitLab {
-    domain = "gitlab.fem-net.de";
     owner = "mabl";
     repo = "taschenrechner";
     rev = finalAttrs.version;
     hash = "sha256-lUQmgC3GcLJ2BxE+UOHPBfl8XMclgMrk+rClZI06giE=";
+    domain = "gitlab.fem-net.de";
   };
 
   cargoHash = "sha256-1DNEsVwrGekCuQTgBNAe+j/4JKk0EFgkSklTXAjwFXU=";

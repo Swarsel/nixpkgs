@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "sigma-cli";
   version = "3.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SigmaHQ";
@@ -17,8 +16,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-cr9MFKot/A08q0fg4RnSU1Rl7YAOvfoyIC8Loas/+X8=";
   };
 
-  pythonRelaxDeps = [ "click" ];
-
+  # Starting with 2.0.0 the tests wants to fetch the MITRE data
+  doCheck = false;
   build-system = with python3.pkgs; [ poetry-core ];
 
   dependencies = with python3.pkgs; [
@@ -37,10 +36,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pysigma-pipeline-windows
   ];
 
-  # Starting with 2.0.0 the tests wants to fetch the MITRE data
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "sigma.cli" ];
+  pythonRelaxDeps = [ "click" ];
 
   meta = {
     description = "Sigma command line interface";

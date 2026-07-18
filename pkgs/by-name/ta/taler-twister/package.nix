@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  fetchgit,
   autoreconfHook,
-  pkg-config,
   curl,
+  fetchgit,
   gnunet,
   jansson,
   libgcrypt,
   libmicrohttpd,
   libsodium,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,12 +39,12 @@ stdenv.mkDerivation (finalAttrs: {
   doInstallCheck = true;
 
   meta = {
-    homepage = "https://git-www.taler.net/twister.git";
     description = "Fault injector for HTTP traffic";
-    teams = with lib.teams; [ ngi ];
-    maintainers = [ ];
+    homepage = "https://git-www.taler.net/twister.git";
     license = lib.licenses.agpl3Plus;
-    mainProgram = "twister";
+    maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "twister";
+    teams = with lib.teams; [ ngi ];
   };
 })

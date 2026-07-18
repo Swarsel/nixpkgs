@@ -1,22 +1,19 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  pythonAtLeast,
   decorator,
+  fetchPypi,
   ipython,
   isPyPy,
-  setuptools,
-  pytestCheckHook,
   pytest-timeout,
+  pytestCheckHook,
+  pythonAtLeast,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "ipdb";
   version = "0.13.13";
-  pyproject = true;
-
-  disabled = isPyPy; # setupterm: could not find terminfo database
 
   src = fetchPypi {
     inherit pname version;
@@ -36,6 +33,8 @@ buildPythonPackage rec {
     export HOME=$(mktemp -d)
   '';
 
+  disabled = isPyPy; # setupterm: could not find terminfo database
+
   disabledTestPaths = [
     # OSError: pytest: reading from stdin while output is captured!  Consider using `-s`.
     "manual_test.py"
@@ -45,11 +44,13 @@ buildPythonPackage rec {
     "tests/test_opts.py"
   ];
 
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/gotcha/ipdb";
     description = "IPython-enabled pdb";
-    mainProgram = "ipdb3";
+    homepage = "https://github.com/gotcha/ipdb";
     license = lib.licenses.bsd0;
     maintainers = [ ];
+    mainProgram = "ipdb3";
   };
 }

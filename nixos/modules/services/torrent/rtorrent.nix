@@ -1,8 +1,8 @@
 {
   config,
-  options,
-  pkgs,
   lib,
+  pkgs,
+  options,
   ...
 }:
 
@@ -15,104 +15,105 @@ let
 
 in
 {
-  meta.maintainers = with lib.maintainers; [ thiagokokada ];
-
   options.services.rtorrent = {
     enable = mkEnableOption "rtorrent";
-
-    dataDir = mkOption {
-      type = types.str;
-      default = "/var/lib/rtorrent";
-      description = ''
-        The directory where rtorrent stores its data files.
-      '';
-    };
-
-    dataPermissions = mkOption {
-      type = types.str;
-      default = "0750";
-      example = "0755";
-      description = ''
-        Unix Permissions in octal on the rtorrent directory.
-      '';
-    };
-
-    downloadDir = mkOption {
-      type = types.str;
-      default = "${cfg.dataDir}/download";
-      defaultText = literalExpression ''"''${config.${opt.dataDir}}/download"'';
-      description = ''
-        Where to put downloaded files.
-      '';
-    };
-
-    user = mkOption {
-      type = types.str;
-      default = "rtorrent";
-      description = ''
-        User account under which rtorrent runs.
-      '';
-    };
-
-    group = mkOption {
-      type = types.str;
-      default = "rtorrent";
-      description = ''
-        Group under which rtorrent runs.
-      '';
-    };
-
     package = mkPackageOption pkgs "rtorrent" { };
 
-    port = mkOption {
-      type = types.port;
-      default = 50000;
-      description = ''
-        The rtorrent port.
-      '';
-    };
-
-    openFirewall = mkOption {
-      type = types.bool;
-      default = false;
-      description = ''
-        Whether to open the firewall for the port in {option}`services.rtorrent.port`.
-      '';
-    };
-
-    rpcSocket = mkOption {
-      type = types.str;
-      readOnly = true;
-      default = "/run/rtorrent/rpc.sock";
-      description = ''
-        RPC socket path.
-      '';
-    };
-
     configText = mkOption {
-      type = types.lines;
       default = "";
+
       description = ''
         The content of {file}`rtorrent.rc`. The [modernized configuration template](https://rtorrent-docs.readthedocs.io/en/latest/cookbook.html#modernized-configuration-template) with the values specified in this module will be prepended using mkBefore. You can use mkForce to overwrite the config completely.
       '';
+
+      type = types.lines;
+    };
+
+    dataDir = mkOption {
+      default = "/var/lib/rtorrent";
+
+      description = ''
+        The directory where rtorrent stores its data files.
+      '';
+
+      type = types.str;
+    };
+
+    dataPermissions = mkOption {
+      default = "0750";
+
+      description = ''
+        Unix Permissions in octal on the rtorrent directory.
+      '';
+
+      example = "0755";
+      type = types.str;
+    };
+
+    downloadDir = mkOption {
+      default = "${cfg.dataDir}/download";
+      defaultText = literalExpression ''"''${config.${opt.dataDir}}/download"'';
+
+      description = ''
+        Where to put downloaded files.
+      '';
+
+      type = types.str;
+    };
+
+    group = mkOption {
+      default = "rtorrent";
+
+      description = ''
+        Group under which rtorrent runs.
+      '';
+
+      type = types.str;
+    };
+
+    openFirewall = mkOption {
+      default = false;
+
+      description = ''
+        Whether to open the firewall for the port in {option}`services.rtorrent.port`.
+      '';
+
+      type = types.bool;
+    };
+
+    port = mkOption {
+      default = 50000;
+
+      description = ''
+        The rtorrent port.
+      '';
+
+      type = types.port;
+    };
+
+    rpcSocket = mkOption {
+      default = "/run/rtorrent/rpc.sock";
+
+      description = ''
+        RPC socket path.
+      '';
+
+      readOnly = true;
+      type = types.str;
+    };
+
+    user = mkOption {
+      default = "rtorrent";
+
+      description = ''
+        User account under which rtorrent runs.
+      '';
+
+      type = types.str;
     };
   };
 
   config = mkIf cfg.enable {
-
-    users.groups = mkIf (cfg.group == "rtorrent") {
-      rtorrent = { };
-    };
-
-    users.users = mkIf (cfg.user == "rtorrent") {
-      rtorrent = {
-        group = cfg.group;
-        shell = pkgs.bashInteractive;
-        home = cfg.dataDir;
-        description = "rtorrent Daemon user";
-        isSystemUser = true;
-      };
-    };
 
     networking.firewall.allowedTCPPorts = mkIf (cfg.openFirewall) [ cfg.port ];
 
@@ -200,25 +201,19 @@ in
             rtorrentConfigFile = pkgs.writeText "rtorrent.rc" cfg.configText;
           in
           {
-            description = "rTorrent system service";
             after = [ "network.target" ];
+            description = "rTorrent system service";
+
             path = [
               cfg.package
               pkgs.bash
             ];
-            wantedBy = [ "multi-user.target" ];
-            serviceConfig = {
-              User = cfg.user;
-              Group = cfg.group;
-              Type = "simple";
-              Restart = "on-failure";
-              WorkingDirectory = cfg.dataDir;
-              ExecStartPre = ''${pkgs.bash}/bin/bash -c "if test -e ${cfg.dataDir}/session/rtorrent.lock && test -z $(${pkgs.procps}/bin/pidof rtorrent); then rm -f ${cfg.dataDir}/session/rtorrent.lock; fi"'';
-              ExecStart = "${cfg.package}/bin/rtorrent -n -o system.daemon.set=true -o import=${rtorrentConfigFile}";
-              RuntimeDirectory = "rtorrent";
-              RuntimeDirectoryMode = 750;
 
+            serviceConfig = {
               CapabilityBoundingSet = [ "" ];
+              ExecStart = "${cfg.package}/bin/rtorrent -n -o system.daemon.set=true -o import=${rtorrentConfigFile}";
+              ExecStartPre = ''${pkgs.bash}/bin/bash -c "if test -e ${cfg.dataDir}/session/rtorrent.lock && test -z $(${pkgs.procps}/bin/pidof rtorrent); then rm -f ${cfg.dataDir}/session/rtorrent.lock; fi"'';
+              Group = cfg.group;
               LockPersonality = true;
               NoNewPrivileges = true;
               PrivateDevices = true;
@@ -235,25 +230,53 @@ in
               ProtectKernelTunables = true;
               ProtectProc = "invisible";
               ProtectSystem = "full";
+              Restart = "on-failure";
+
               RestrictAddressFamilies = [
                 "AF_UNIX"
                 "AF_INET"
                 "AF_INET6"
               ];
+
               RestrictNamespaces = true;
               RestrictRealtime = true;
               RestrictSUIDSGID = true;
+              RuntimeDirectory = "rtorrent";
+              RuntimeDirectoryMode = 750;
               SystemCallArchitectures = "native";
+
               SystemCallFilter = [
                 "@system-service"
                 "~@privileged"
                 "@chown"
               ];
+
+              Type = "simple";
+              User = cfg.user;
+              WorkingDirectory = cfg.dataDir;
             };
+
+            wantedBy = [ "multi-user.target" ];
           };
       };
 
       tmpfiles.rules = [ "d '${cfg.dataDir}' ${cfg.dataPermissions} ${cfg.user} ${cfg.group} -" ];
     };
+
+    users.groups = mkIf (cfg.group == "rtorrent") {
+      rtorrent = { };
+    };
+
+    users.users = mkIf (cfg.user == "rtorrent") {
+      rtorrent = {
+        description = "rtorrent Daemon user";
+        group = cfg.group;
+        home = cfg.dataDir;
+        isSystemUser = true;
+        shell = pkgs.bashInteractive;
+      };
+    };
   };
+
+  meta.maintainers = with lib.maintainers; [ thiagokokada ];
 }

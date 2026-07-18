@@ -16,8 +16,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "dimkr";
     repo = "loksh";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-S3oIiCgdh8lYqDuXnLHmdQZxK+OMIPTc9W5ozHrTmls=";
+    fetchSubmodules = true;
   };
 
   outputs = [
@@ -25,6 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
     "man"
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -35,8 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [
     ncurses
   ];
-
-  strictDeps = true;
 
   postInstall = ''
     mv $out/bin/ksh $out/bin/loksh
@@ -51,9 +51,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/dimkr/loksh";
     description = "Linux port of OpenBSD's ksh";
-    mainProgram = "loksh";
+
     longDescription = ''
       loksh is a Linux port of OpenBSD's ksh.
 
@@ -63,8 +62,11 @@ stdenv.mkDerivation (finalAttrs: {
       vulnerabilities and makes loksh a good fit for resource-constrained
       systems.
     '';
+
+    homepage = "https://github.com/dimkr/loksh";
     license = with lib.licenses; [ publicDomain ];
     maintainers = with lib.maintainers; [ cameronnemo ];
     platforms = lib.platforms.linux;
+    mainProgram = "loksh";
   };
 })

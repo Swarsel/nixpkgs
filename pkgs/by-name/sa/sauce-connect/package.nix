@@ -1,49 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  zlib,
-  unzip,
   installShellFiles,
+  unzip,
+  zlib,
 }:
 
 stdenv.mkDerivation rec {
   pname = "sauce-connect";
   version = "5.3.0";
 
-  passthru = {
-    sources = {
-      x86_64-linux = fetchurl {
-        url = "https://saucelabs.com/downloads/sauce-connect/${version}/sauce-connect-${version}_linux.x86_64.tar.gz";
-        hash = "sha256-7DeGVdRtbgwpDpt7txuYLmf7R6KYeneMOGPH0B1PTIQ=";
-      };
-      aarch64-linux = fetchurl {
-        url = "https://saucelabs.com/downloads/sauce-connect/${version}/sauce-connect-${version}_linux.aarch64.tar.gz";
-        hash = "sha256-3fUB0KLFEmSzRlYSZhJ3VP4QJC/S1R2Iyk3+o82sNRg=";
-      };
-      aarch64-darwin = fetchurl {
-        url = "https://saucelabs.com/downloads/sauce-connect/${version}/sauce-connect-${version}_darwin.all.zip";
-        hash = "sha256-nSmDenuel+L4HKhDEHMirGwKj0A7plIXAqf+T7Agc3A=";
-      };
-    };
-    updateScript = ./update.sh;
-  };
-
   src =
     passthru.sources.${stdenv.hostPlatform.system}
       or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
-
-  unpackPhase = ''
-    runHook preUnpack
-
-    mkdir source
-    ${lib.optionalString stdenv.hostPlatform.isLinux "tar -zxvf $src -C source"}
-    ${lib.optionalString stdenv.hostPlatform.isDarwin "unzip $src -d source"}
-
-    runHook postUnpack
-  '';
-
-  sourceRoot = "source";
 
   nativeBuildInputs = [
     unzip
@@ -65,12 +35,44 @@ stdenv.mkDerivation rec {
   '';
 
   dontStrip = true;
+  sourceRoot = "source";
+
+  unpackPhase = ''
+    runHook preUnpack
+
+    mkdir source
+    ${lib.optionalString stdenv.hostPlatform.isLinux "tar -zxvf $src -C source"}
+    ${lib.optionalString stdenv.hostPlatform.isDarwin "unzip $src -d source"}
+
+    runHook postUnpack
+  '';
+
+  passthru = {
+    sources = {
+      aarch64-darwin = fetchurl {
+        hash = "sha256-nSmDenuel+L4HKhDEHMirGwKj0A7plIXAqf+T7Agc3A=";
+        url = "https://saucelabs.com/downloads/sauce-connect/${version}/sauce-connect-${version}_darwin.all.zip";
+      };
+
+      aarch64-linux = fetchurl {
+        hash = "sha256-3fUB0KLFEmSzRlYSZhJ3VP4QJC/S1R2Iyk3+o82sNRg=";
+        url = "https://saucelabs.com/downloads/sauce-connect/${version}/sauce-connect-${version}_linux.aarch64.tar.gz";
+      };
+
+      x86_64-linux = fetchurl {
+        hash = "sha256-7DeGVdRtbgwpDpt7txuYLmf7R6KYeneMOGPH0B1PTIQ=";
+        url = "https://saucelabs.com/downloads/sauce-connect/${version}/sauce-connect-${version}_linux.x86_64.tar.gz";
+      };
+    };
+
+    updateScript = ./update.sh;
+  };
 
   meta = {
     description = "Secure tunneling app for executing tests securely when testing behind firewalls";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    license = lib.licenses.unfree;
     homepage = "https://docs.saucelabs.com/reference/sauce-connect/";
+    license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
     platforms = builtins.attrNames passthru.sources;
   };

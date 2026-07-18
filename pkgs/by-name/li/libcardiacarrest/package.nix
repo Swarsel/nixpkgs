@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   glib,
   libpulseaudio,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -24,9 +24,7 @@ stdenv.mkDerivation rec {
   ];
 
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ glib ];
-
   makeFlags = [ "PREFIX=$(out)" ];
 
   postInstall = ''
@@ -39,6 +37,7 @@ stdenv.mkDerivation rec {
 
     src.meta // {
       description = "Trivial implementation of libpulse PulseAudio library API";
+
       longDescription = ''
         libcardiacarrest is a trivial implementation of libpulse
         PulseAudio library API that unconditionally (but gracefully)
@@ -51,6 +50,7 @@ stdenv.mkDerivation rec {
         hoping the application would try something else (e.g. ALSA or
         JACK).
       '';
+
       license = libpulseaudio.meta.license; # "same as PA headers"
       maintainers = [ lib.maintainers.oxij ]; # also the author
     };

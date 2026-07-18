@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
   bluetooth-data-tools,
   bluetooth-sensor-state-data,
+  buildPythonPackage,
+  hatchling,
   home-assistant-bluetooth,
-  sensor-state-data,
   pytest-cov-stub,
   pytestCheckHook,
+  sensor-state-data,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "chefiq-ble";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Invader444";
@@ -22,6 +21,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-aC0v3KtZEnEz90kJPxx0euUM/h6NzLnvI9WggImYQ5c=";
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -32,11 +36,7 @@ buildPythonPackage (finalAttrs: {
     sensor-state-data
   ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "chefiq_ble" ];
 
   meta = {

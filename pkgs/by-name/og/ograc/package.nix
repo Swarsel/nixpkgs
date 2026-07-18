@@ -1,12 +1,13 @@
 {
-  fetchFromGitLab,
   lib,
+  fetchFromGitLab,
   rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
   pname = "ograc";
   version = "0.1.6";
+
   src = fetchFromGitLab {
     owner = "lirnril";
     repo = "ograc";
@@ -18,9 +19,9 @@ rustPlatform.buildRustPackage {
 
   meta = {
     description = "Like cargo, but backwards";
-    mainProgram = "ograc";
     homepage = "https://crates.io/crates/ograc";
     license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ sciencentistguy ];
+    mainProgram = "ograc";
   };
 }

@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  qt6,
-  nix-update-script,
-  bubblewrap,
   bash,
+  bubblewrap,
+  cmake,
   diffutils,
+  nix-update-script,
+  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,11 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  nativeBuildInputs = [
-    cmake
-    qt6.wrapQtAppsHook
-  ];
-
   patches = [
     ./0001-Bind-Nix-Store.patch
   ];
@@ -40,8 +35,9 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "/usr/bin/diff" "${diffutils}/bin/diff"
   '';
 
-  cmakeFlags = [
-    (lib.cmakeBool "LEMON_QT6" true)
+  nativeBuildInputs = [
+    cmake
+    qt6.wrapQtAppsHook
   ];
 
   buildInputs = [
@@ -50,15 +46,21 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.qtwayland
   ];
 
+  cmakeFlags = [
+    (lib.cmakeBool "LEMON_QT6" true)
+  ];
+
   meta = {
     description = "Lightweight evaluation system based on Lemon + LemonPlus for OI competitions";
     homepage = "https://github.com/Project-LemonLime/Project_LemonLime";
     changelog = "https://github.com/Project-LemonLime/Project_LemonLime/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       sigmanificient
       bot-wxt1221
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "lemon";
   };

@@ -1,23 +1,23 @@
 {
-  config,
-  stdenvNoCC,
-  callPackage,
   lib,
   fetchurl,
-  channel,
-  featureBand ? "1xx",
-  dir ? ../. + ("/" + channel),
-  releaseManifestFile ? dir + "/release.json",
-  releaseInfoFile ? dir + "/release-info.json",
-  bootstrapSdkFile ? dir + "/bootstrap-sdk.nix",
-  bootstrapSdk ? null,
-  depsFile ? dir + "/deps.json",
-  pkgsBuildHost,
-  buildDotnetSdk,
-  withBinary ? true,
-  combinePackages,
-  systemToDotnetRid,
   binary,
+  buildDotnetSdk,
+  callPackage,
+  channel,
+  combinePackages,
+  config,
+  pkgsBuildHost,
+  stdenvNoCC,
+  systemToDotnetRid,
+  bootstrapSdk ? null,
+  bootstrapSdkFile ? dir + "/bootstrap-sdk.nix",
+  depsFile ? dir + "/deps.json",
+  dir ? ../. + ("/" + channel),
+  featureBand ? "1xx",
+  releaseInfoFile ? dir + "/release-info.json",
+  releaseManifestFile ? dir + "/release.json",
+  withBinary ? true,
 }@attrs:
 
 assert bootstrapSdk != null || bootstrapSdkFile != null;
@@ -30,9 +30,9 @@ let
       sdk = lib.concatStringsSep "_" (parts ++ [ featureBand ]);
     in
     {
-      source = if featureBand == "1xx" then major else sdk;
-      channel = lib.concatStringsSep "_" (lib.take 2 parts);
       inherit major sdk;
+      channel = lib.concatStringsSep "_" (lib.take 2 parts);
+      source = if featureBand == "1xx" then major else sdk;
     };
 
   releaseInfo = (lib.importJSON releaseInfoFile);
@@ -43,19 +43,18 @@ let
     ;
 
   artifacts = stdenvNoCC.mkDerivation {
-    name = lib.nameFromURL artifactsUrl ".tar.gz";
-
     src = fetchurl {
       url = artifactsUrl;
       hash = artifactsHash;
     };
 
-    sourceRoot = ".";
-
     installPhase = ''
       mkdir -p $out
       cp -r * $out/
     '';
+
+    name = lib.nameFromURL artifactsUrl ".tar.gz";
+    sourceRoot = ".";
   };
 
   vmr =
@@ -65,6 +64,7 @@ let
           releaseManifestFile
           tarballHash
           ;
+
         inherit bootstrapSdk;
         hasRuntime = false;
       }
@@ -75,6 +75,7 @@ let
           tarballHash
           depsFile
           ;
+
         bootstrapSdk = (buildDotnetSdk bootstrapSdkFile).sdk.overrideAttrs (old: {
           passthru = old.passthru or { } // {
             inherit artifacts;
@@ -96,8 +97,8 @@ let
   source =
     vmrPackages
     // lib.optionalAttrs vmr.meta.broken rec {
-      sdk = fallbackSdk;
       inherit (sdk) runtime aspnetcore;
+      sdk = fallbackSdk;
     };
 
   # combine an SDK with the runtime/packages from a base SDK
@@ -119,7 +120,6 @@ let
               fallback
             ]).unwrapped.overrideAttrs
               (old: {
-                name = fallback.unwrapped.name;
                 # resolve symlinks so DOTNET_ROOT is self-contained
                 postBuild = ''
                   mv "$out"/share/dotnet{,~}
@@ -127,11 +127,15 @@ let
                   rm -r "$out"/share/dotnet~
                 ''
                 + old.postBuild;
+
+                name = fallback.unwrapped.name;
+
                 passthru = old.passthru // {
                   inherit (base)
                     runtime
                     aspnetcore
                     ;
+
                   inherit (fallback.unwrapped)
                     pname
                     version
@@ -188,9 +192,9 @@ in
   in
   combined
   // {
-    "sdk_${suffix.channel}-source" = source.sdk;
-    "runtime_${suffix.channel}" = source.runtime;
     "aspnetcore_${suffix.channel}" = source.aspnetcore;
+    "runtime_${suffix.channel}" = source.runtime;
+    "sdk_${suffix.channel}-source" = source.sdk;
   }
 )
 // lib.optionalAttrs withBinary (
@@ -202,9 +206,9 @@ in
           attrs
           // {
             inherit featureBand;
+            bootstrapSdk = vmrPackages.sdk;
             dir = dir + "/${featureBand}";
             withBinary = false;
-            bootstrapSdk = vmrPackages.sdk;
           }
         )
       )

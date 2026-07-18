@@ -1,21 +1,24 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  makePythonPath,
-  python,
+  buildPythonPackage,
   click,
   dbus-python,
   desktop-notifier,
   dropbox,
   fasteners,
+  gitUpdater,
   importlib-metadata,
   keyring,
   keyrings-alt,
+  makePythonPath,
+  nixosTests,
   packaging,
   pathspec,
   pyro5,
+  pytestCheckHook,
+  python,
   requests,
   rich,
   rubicon-objc,
@@ -24,15 +27,11 @@
   typing-extensions,
   watchdog,
   xattr,
-  pytestCheckHook,
-  gitUpdater,
-  nixosTests,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "maestral";
   version = "1.9.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SamSchott";
@@ -40,6 +39,14 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-mYFiQL4FumJWP2y1u5tIo1CZL027J8/EIYqJQde7G/c=";
   };
+
+  # ModuleNotFoundError: No module named '_watchdog_fsevents'
+  doCheck = !(stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64);
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  preCheck = ''
+    export HOME=$(mktemp -d)
+  '';
 
   build-system = [ setuptools ];
 
@@ -63,27 +70,6 @@ buildPythonPackage (finalAttrs: {
     xattr
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ rubicon-objc ];
-
-  makeWrapperArgs = [
-    # Add the installed directories to the python path so the daemon can find them
-    "--prefix"
-    "PYTHONPATH"
-    ":"
-    (makePythonPath finalAttrs.finalPackage.dependencies)
-    "--prefix"
-    "PYTHONPATH"
-    ":"
-    "$out/${python.sitePackages}"
-  ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  # ModuleNotFoundError: No module named '_watchdog_fsevents'
-  doCheck = !(stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64);
-
-  preCheck = ''
-    export HOME=$(mktemp -d)
-  '';
 
   disabledTests = [
     # We don't want to benchmark
@@ -116,26 +102,42 @@ buildPythonPackage (finalAttrs: {
     "test_stop"
   ];
 
+  makeWrapperArgs = [
+    # Add the installed directories to the python path so the daemon can find them
+    "--prefix"
+    "PYTHONPATH"
+    ":"
+    (makePythonPath finalAttrs.finalPackage.dependencies)
+    "--prefix"
+    "PYTHONPATH"
+    ":"
+    "$out/${python.sitePackages}"
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "maestral" ];
 
   passthru = {
+    tests.maestral = nixosTests.maestral;
+
     updateScript = gitUpdater {
       ignoredVersions = "dev";
       rev-prefix = "v";
     };
-    tests.maestral = nixosTests.maestral;
   };
 
   meta = {
     description = "Open-source Dropbox client for macOS and Linux";
-    mainProgram = "maestral";
     homepage = "https://maestral.app";
     changelog = "https://github.com/samschott/maestral/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       natsukium
       peterhoeg
       sfrijters
     ];
+
+    mainProgram = "maestral";
   };
 })

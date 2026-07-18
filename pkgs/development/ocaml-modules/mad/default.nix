@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   dune-configurator,
   libmad,
 }:
@@ -9,8 +9,6 @@
 buildDunePackage (finalAttrs: {
   pname = "mad";
   version = "0.5.3";
-
-  minimalOCamlVersion = "4.06";
 
   src = fetchFromGitHub {
     owner = "savonet";
@@ -21,10 +19,11 @@ buildDunePackage (finalAttrs: {
 
   buildInputs = [ dune-configurator ];
   propagatedBuildInputs = [ libmad ];
+  minimalOCamlVersion = "4.06";
 
   meta = {
-    homepage = "https://github.com/savonet/ocaml-mad";
     description = "Bindings for the mad library which provides functions for encoding wave audio files into mp3";
+    homepage = "https://github.com/savonet/ocaml-mad";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ dandellion ];
   };

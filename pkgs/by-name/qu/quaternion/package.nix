@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  qt6,
+  kdePackages,
   libsecret,
   olm,
-  kdePackages,
+  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Dn4E3mTqcNK88PNraL+qR1gREob5j7s3Qf8XAaTNSJg=";
   };
 
+  nativeBuildInputs = [
+    cmake
+    qt6.qttools
+    qt6.wrapQtAppsHook
+  ];
+
   buildInputs = [
     kdePackages.libquotient
     libsecret
@@ -27,12 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.qtbase
     kdePackages.qtkeychain
     qt6.qtmultimedia
-  ];
-
-  nativeBuildInputs = [
-    cmake
-    qt6.qttools
-    qt6.wrapQtAppsHook
   ];
 
   env.LANG = "C.UTF-8";
@@ -52,9 +52,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Cross-platform desktop IM client for the Matrix protocol";
-    mainProgram = "quaternion";
     homepage = "https://matrix.org/ecosystem/clients/quaternion/";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ peterhoeg ];
+    mainProgram = "quaternion";
   };
 })

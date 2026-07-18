@@ -21,11 +21,11 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [ zlib ];
 
   meta = {
-    homepage = "https://www.libpng.org/pub/png/apps/pngcheck.html";
     description = "Verifies the integrity of PNG, JNG and MNG files";
+    homepage = "https://www.libpng.org/pub/png/apps/pngcheck.html";
     license = lib.licenses.hpnd;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ starcraft66 ];
+    platforms = lib.platforms.unix;
     mainProgram = "pngcheck";
   };
 })

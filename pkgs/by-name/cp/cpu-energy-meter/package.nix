@@ -22,25 +22,25 @@ stdenv.mkDerivation (finalAttrs: {
       --replace "PREFIX := /usr/local" "PREFIX :="
   '';
 
-  buildInputs = [ libcap ];
   nativeBuildInputs = [
     udevCheckHook
   ];
 
-  doInstallCheck = true;
-
+  buildInputs = [ libcap ];
   env.NIX_CFLAGS_COMPILE = "-fcommon";
 
   postInstall = ''
     install -Dm444 -t $out/etc/udev/rules.d $src/debian/additional_files/59-msr.rules
   '';
 
+  doInstallCheck = true;
+
   meta = {
     description = "Tool for measuring energy consumption of Intel CPUs";
     homepage = "https://github.com/sosy-lab/cpu-energy-meter";
     changelog = "https://github.com/sosy-lab/cpu-energy-meter/blob/main/CHANGELOG.md";
-    maintainers = with lib.maintainers; [ lorenzleutgeb ];
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ lorenzleutgeb ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "cpu-energy-meter";
   };

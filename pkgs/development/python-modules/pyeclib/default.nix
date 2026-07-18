@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   liberasurecode,
   pytestCheckHook,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pyeclib";
   version = "1.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openstack";
@@ -19,14 +18,14 @@ buildPythonPackage rec {
     hash = "sha256-v7pkV5s10AxU+vgp+gcQF8lJmm6yzDwkqunWuT0zU4c=";
   };
 
-  build-system = [
-    setuptools
-  ];
-
   buildInputs = [ liberasurecode ];
 
   nativeCheckInputs = [
     pytestCheckHook
+  ];
+
+  build-system = [
+    setuptools
   ];
 
   disabledTests = [
@@ -34,6 +33,7 @@ buildPythonPackage rec {
     "test_get_metadata_memory_usage"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyeclib" ];
 
   meta = {

@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-  python3,
-  pkg-config,
+  buildPackages,
   cmocka,
-  readline,
-  talloc,
-  libxslt,
   docbook-xsl-nons,
   docbook_xml_dtd_42,
-  which,
-  wafHook,
-  buildPackages,
   libxcrypt,
+  libxslt,
+  pkg-config,
+  python3,
+  readline,
+  talloc,
+  wafHook,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -43,24 +43,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxcrypt
   ];
 
-  # otherwise the configure script fails with
-  # PYTHONHASHSEED=1 missing! Don't use waf directly, use ./configure and make!
-  preConfigure = ''
-    export PKGCONFIG="$PKG_CONFIG"
-    export PYTHONHASHSEED=1
-  '';
-
-  wafPath = "buildtools/bin/waf";
-
-  wafConfigureFlags = [
-    "--bundled-libraries=NONE"
-    "--builtin-libraries=replace"
-  ]
-  ++ lib.optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
-    "--cross-compile"
-    "--cross-execute=${stdenv.hostPlatform.emulator buildPackages}"
-  ];
-
   env = {
     # python-config from build Python gives incorrect values when cross-compiling.
     # If python-config is not found, the build falls back to using the sysconfig
@@ -73,6 +55,24 @@ stdenv.mkDerivation (finalAttrs: {
         # https://reviews.llvm.org/D135402
         NIX_LDFLAGS = "--undefined-version";
       };
+
+  # otherwise the configure script fails with
+  # PYTHONHASHSEED=1 missing! Don't use waf directly, use ./configure and make!
+  preConfigure = ''
+    export PKGCONFIG="$PKG_CONFIG"
+    export PYTHONHASHSEED=1
+  '';
+
+  wafConfigureFlags = [
+    "--bundled-libraries=NONE"
+    "--builtin-libraries=replace"
+  ]
+  ++ lib.optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
+    "--cross-compile"
+    "--cross-execute=${stdenv.hostPlatform.emulator buildPackages}"
+  ];
+
+  wafPath = "buildtools/bin/waf";
 
   meta = {
     description = "Event system based on the talloc memory management library";

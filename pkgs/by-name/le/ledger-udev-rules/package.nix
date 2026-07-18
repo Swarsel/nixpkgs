@@ -20,24 +20,25 @@ stdenv.mkDerivation {
     udevCheckHook
   ];
 
-  doInstallCheck = true;
-
-  dontBuild = true;
-  dontConfigure = true;
-
   installPhase = ''
     mkdir -p $out/lib/udev/rules.d
     cp 20-hw1.rules $out/lib/udev/rules.d/20-ledger.rules
   '';
 
+  doInstallCheck = true;
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "udev rules for Ledger devices";
+    homepage = "https://github.com/LedgerHQ/udev-rules";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       asymmetric
       toasteruwu
     ];
+
     platforms = lib.platforms.linux;
-    homepage = "https://github.com/LedgerHQ/udev-rules";
   };
 }

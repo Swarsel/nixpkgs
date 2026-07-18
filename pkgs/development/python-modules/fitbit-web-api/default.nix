@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
   aiohttp,
   aiohttp-retry,
+  buildPythonPackage,
+  hatchling,
   pydantic,
   pytest-aiohttp,
   pytestCheckHook,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "fitbit-web-api";
   version = "2.15.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "allenporter";
@@ -24,6 +23,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-1XqUhQQRTlEOIbZGzRx9CvJVAE50Enu+4fQXpOgNPdA=";
   };
+
+  nativeCheckInputs = [
+    pytest-aiohttp
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -36,17 +40,13 @@ buildPythonPackage rec {
     urllib3
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "fitbit_web_api" ];
 
-  nativeCheckInputs = [
-    pytest-aiohttp
-    pytestCheckHook
-  ];
-
   meta = {
-    changelog = "https://github.com/allenporter/fitbit-web-api/blob/${src.tag}/CHANGELOG.md";
     description = "Access data from Fitbit activity trackers, Aria scale, and manually entered logs";
     homepage = "https://github.com/allenporter/fitbit-web-api";
+    changelog = "https://github.com/allenporter/fitbit-web-api/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.dotlambda ];
   };

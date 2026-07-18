@@ -1,7 +1,7 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
   autoconf,
   automake,
   libtool,
@@ -19,6 +19,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-0lqU1CAcWXNw9WFa29BXla1mvABlzWV+hcozZyfR0oE=";
   };
 
+  postPatch = ''
+    sed -i \
+      -e 's|#define\s*SCALPEL_DEFAULT_CONFIG_FILE\s.*"scalpel.conf"|#define SCALPEL_DEFAULT_CONFIG_FILE "${placeholder "out"}/share/scalpel/scalpel.conf"|' \
+      src/scalpel.h
+  '';
+
   nativeBuildInputs = [
     autoconf
     automake
@@ -29,11 +35,9 @@ stdenv.mkDerivation (finalAttrs: {
     tre
   ];
 
-  postPatch = ''
-    sed -i \
-      -e 's|#define\s*SCALPEL_DEFAULT_CONFIG_FILE\s.*"scalpel.conf"|#define SCALPEL_DEFAULT_CONFIG_FILE "${placeholder "out"}/share/scalpel/scalpel.conf"|' \
-      src/scalpel.h
-  '';
+  configureFlags = [
+    "--with-pic"
+  ];
 
   env.CXXFLAGS =
     "-std=c++14" + lib.optionalString stdenv.cc.isClang " -Wno-error=reserved-user-defined-literal";
@@ -42,20 +46,16 @@ stdenv.mkDerivation (finalAttrs: {
     ./bootstrap
   '';
 
-  configureFlags = [
-    "--with-pic"
-  ];
-
   postInstall = ''
     install -Dm644 scalpel.conf -t $out/share/scalpel/
   '';
 
   meta = {
-    homepage = "https://github.com/sleuthkit/scalpel";
     description = "Recover files based on their headers, footers and internal data structures, based on Foremost";
-    mainProgram = "scalpel";
+    homepage = "https://github.com/sleuthkit/scalpel";
+    license = with lib.licenses; [ asl20 ];
     maintainers = with lib.maintainers; [ shard7 ];
     platforms = lib.platforms.unix;
-    license = with lib.licenses; [ asl20 ];
+    mainProgram = "scalpel";
   };
 })

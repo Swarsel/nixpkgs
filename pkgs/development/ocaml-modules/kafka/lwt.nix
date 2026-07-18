@@ -1,17 +1,15 @@
 {
-  buildDunePackage,
-  ocaml,
   lib,
+  buildDunePackage,
+  cmdliner,
   kafka,
   lwt,
-  cmdliner,
+  ocaml,
 }:
 
 buildDunePackage {
-  pname = "kafka_lwt";
-
   inherit (kafka) version src;
-
+  pname = "kafka_lwt";
   buildInputs = [ cmdliner ];
 
   propagatedBuildInputs = [

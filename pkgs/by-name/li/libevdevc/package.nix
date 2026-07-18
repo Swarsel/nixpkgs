@@ -8,6 +8,7 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "libevdevc";
   version = "2.0.1";
+
   src = fetchFromGitHub {
     owner = "hugegreenbug";
     repo = "libevdevc";
@@ -32,9 +33,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "ChromiumOS libevdev. Renamed to avoid conflicts with the standard libevdev found in Linux distros";
-    license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux;
     homepage = "https://chromium.googlesource.com/chromiumos/platform/libevdev/";
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ kcalvinalvin ];
+    platforms = lib.platforms.linux;
   };
 })

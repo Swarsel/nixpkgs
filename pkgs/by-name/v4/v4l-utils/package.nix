@@ -1,29 +1,29 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  glibc,
+  alsa-lib,
+  argp-standalone,
+  buildPackages,
   clang,
   doxygen,
-  meson,
-  ninja,
-  pkg-config,
-  perl,
-  argp-standalone,
-  libjpeg,
+  glibc,
   json_c,
+  libGLU,
   libbpf,
   libelf,
+  libjpeg,
+  linuxHeaders,
+  meson,
+  ninja,
+  perl,
+  pkg-config,
+  qt6Packages,
   udev,
   udevCheckHook,
-  withUtils ? true,
-  withGUI ? true,
   withBPF ? true,
-  alsa-lib,
-  libGLU,
-  qt6Packages,
-  linuxHeaders,
-  buildPackages,
+  withGUI ? true,
+  withUtils ? true,
 }:
 
 # See libv4l in all-packages.nix for the libs only (overrides alsa, QT)
@@ -42,13 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-aCiCihd3VSbrk/slipKU0dEHPWM8NE3XHs1Oeh/7ffw=";
   };
 
-  patches = [
-    # Has been submitted upstream, but can't fetchurl/fetchpatch
-    # because patch doesn't know how to decode quoted-printable.
-    # https://lore.kernel.org/all/4dgJekVdP7lLqOQ6JNW05sRHSkRmLLMMQnEn8NGUHPoHDn4SBkaGlHUW89vkJJu3IeFDAh3p6mlplTJJlWJx8V4rr62-hd83quCJ2sIuqoA=@protonmail.com/
-    ./musl.patch
-  ];
-
   outputs = [
     "out"
   ]
@@ -58,21 +51,15 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
-  mesonFlags = [
-    (lib.mesonBool "v4l-utils" withUtils)
-    (lib.mesonEnable "gconv" stdenv.hostPlatform.isGnu)
-    (lib.mesonEnable "qv4l2" withQt)
-    (lib.mesonEnable "qvidcap" withQt)
-    (lib.mesonEnable "bpf" withBPF)
-    (lib.mesonOption "udevdir" "${placeholder "out"}/lib/udev")
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isGnu [
-    (lib.mesonOption "gconvsysdir" "${glibc.out}/lib/gconv")
+  patches = [
+    # Has been submitted upstream, but can't fetchurl/fetchpatch
+    # because patch doesn't know how to decode quoted-printable.
+    # https://lore.kernel.org/all/4dgJekVdP7lLqOQ6JNW05sRHSkRmLLMMQnEn8NGUHPoHDn4SBkaGlHUW89vkJJu3IeFDAh3p6mlplTJJlWJx8V4rr62-hd83quCJ2sIuqoA=@protonmail.com/
+    ./musl.patch
   ];
 
-  postFixup = ''
-    # Create symlink for V4l1 compatibility
-    ln -s "$dev/include/libv4l1-videodev.h" "$dev/include/videodev.h"
+  postPatch = ''
+    patchShebangs utils/
   '';
 
   nativeBuildInputs = [
@@ -102,13 +89,19 @@ stdenv.mkDerivation (finalAttrs: {
     libGLU
   ];
 
-  hardeningDisable = [ "zerocallusedregs" ];
-
   propagatedBuildInputs = [ libjpeg ];
 
-  postPatch = ''
-    patchShebangs utils/
-  '';
+  mesonFlags = [
+    (lib.mesonBool "v4l-utils" withUtils)
+    (lib.mesonEnable "gconv" stdenv.hostPlatform.isGnu)
+    (lib.mesonEnable "qv4l2" withQt)
+    (lib.mesonEnable "qvidcap" withQt)
+    (lib.mesonEnable "bpf" withBPF)
+    (lib.mesonOption "udevdir" "${placeholder "out"}/lib/udev")
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isGnu [
+    (lib.mesonOption "gconvsysdir" "${glibc.out}/lib/gconv")
+  ];
 
   # Meson unable to find moc/uic/rcc in case of cross-compilation
   # https://github.com/mesonbuild/meson/issues/13018
@@ -116,21 +109,30 @@ stdenv.mkDerivation (finalAttrs: {
     export PATH=${buildPackages.qt6Packages.qtbase}/libexec:$PATH
   '';
 
-  enableParallelBuilding = true;
-
   doInstallCheck = true;
+
+  postFixup = ''
+    # Create symlink for V4l1 compatibility
+    ln -s "$dev/include/libv4l1-videodev.h" "$dev/include/videodev.h"
+  '';
+
+  enableParallelBuilding = true;
+  hardeningDisable = [ "zerocallusedregs" ];
 
   meta = {
     description = "V4L utils and libv4l, provide common image formats regardless of the v4l device";
     homepage = "https://linuxtv.org/projects.php";
     changelog = "https://git.linuxtv.org/v4l-utils.git/plain/ChangeLog?h=v4l-utils-${finalAttrs.version}";
+
     license = with lib.licenses; [
       lgpl21Plus
       gpl2Plus
     ];
+
     maintainers = with lib.maintainers; [
       yarny
     ];
+
     platforms = lib.platforms.linux;
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pyjwt,
   pytestCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pyixapi";
   version = "0.2.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "peering-manager";
@@ -20,8 +19,7 @@ buildPythonPackage rec {
     hash = "sha256-pKIm9YCWf5HCwJ76NLm6AmcJWGVErZu9dwl23p8maXs=";
   };
 
-  pythonRelaxDeps = [ "pyjwt" ];
-
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -29,9 +27,9 @@ buildPythonPackage rec {
     pyjwt
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyixapi" ];
+  pythonRelaxDeps = [ "pyjwt" ];
 
   meta = {
     description = "Python API client library for IX-API";

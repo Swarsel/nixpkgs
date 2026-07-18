@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  dpkg,
-  makeWrapper,
   coreutils,
+  dpkg,
   file,
   gawk,
   ghostscript,
   gnused,
+  makeWrapper,
   pkgsi686Linux,
 }:
 
@@ -21,16 +21,10 @@ stdenv.mkDerivation rec {
     sha256 = "1wqx8njrv078fc3vlq90qyrfg3cw9kr9m6f3qvfnkhq1f95fbslh";
   };
 
-  unpackPhase = ''
-    dpkg-deb -x $src $out
-  '';
-
   nativeBuildInputs = [
     dpkg
     makeWrapper
   ];
-
-  dontBuild = true;
 
   installPhase = ''
     dir=$out/opt/brother/Printers/mfc9140cdn
@@ -70,12 +64,19 @@ stdenv.mkDerivation rec {
       }
   '';
 
+  dontBuild = true;
+
+  unpackPhase = ''
+    dpkg-deb -x $src $out
+  '';
+
   meta = {
     description = "Brother MFC-9140CDN LPR printer driver";
     homepage = "http://www.brother.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ hexa ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"

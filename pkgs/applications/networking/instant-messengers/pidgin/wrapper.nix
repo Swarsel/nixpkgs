@@ -1,19 +1,15 @@
 {
   lib,
-  symlinkJoin,
-  pidgin,
   makeWrapper,
+  pidgin,
   plugins,
+  symlinkJoin,
 }:
 
 let
   extraArgs = map (x: x.wrapArgs or "") plugins;
 in
 symlinkJoin {
-  name = "pidgin-with-plugins-${pidgin.version}";
-
-  paths = [ pidgin ] ++ plugins;
-
   nativeBuildInputs = [ makeWrapper ];
 
   postBuild = ''
@@ -24,4 +20,7 @@ symlinkJoin {
       --suffix-each PURPLE_PLUGIN_PATH ':' "$out/lib/purple-${lib.versions.major pidgin.version}" \
       ${toString extraArgs}
   '';
+
+  name = "pidgin-with-plugins-${pidgin.version}";
+  paths = [ pidgin ] ++ plugins;
 }

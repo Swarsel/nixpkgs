@@ -2,20 +2,19 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  nix-update-script,
   poetry-core,
   pydantic,
-  nix-update-script,
 }:
 
 buildPythonPackage rec {
   pname = "pydantic-argparse-extensible";
   version = "1.3.6";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "pydantic_argparse_extensible";
     inherit version;
     hash = "sha256-DLE2eFrofCDcEPrn5g/mZlxNidVXThUumWV+u+yyvOI=";
+    pname = "pydantic_argparse_extensible";
   };
 
   build-system = [
@@ -25,6 +24,8 @@ buildPythonPackage rec {
   dependencies = [
     pydantic
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "pydantic_argparse_extensible"

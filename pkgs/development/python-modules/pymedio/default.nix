@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   cryptography,
   nibabel,
   numpy,
   pydicom,
+  pytestCheckHook,
   simpleitk,
 }:
 
 buildPythonPackage rec {
   pname = "pymedio";
   version = "0.2.14";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "jcreinhold";
@@ -32,6 +31,7 @@ buildPythonPackage rec {
     simpleitk
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "pymedio" ];
 
   meta = {

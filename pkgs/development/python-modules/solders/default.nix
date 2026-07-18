@@ -1,21 +1,20 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cargo,
-  pkgs,
-  fetchFromGitHub,
   jsonalias,
   openssl,
   pkg-config,
-  rustc,
+  pkgs,
   rustPlatform,
+  rustc,
   typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "solders";
   version = "0.27.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kevinheavey";
@@ -24,12 +23,21 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-a3G3mMJvnO24w6WEJnEkYUNinXWHR26KupIlq5eik8A=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-+8iaA1Cs+7qiDfQpwPAWSZ1HuF85WaDZB3MN57QOodI=";
-  };
+  buildInputs = [
+    openssl
+    pkgs.zstd
+  ];
 
-  pythonRelaxDeps = [ "jsonalias" ];
+  env = {
+    OPENSSL_NO_VENDOR = true;
+
+    PKG_CONFIG_PATH = lib.makeSearchPathOutput "dev" "lib/pkgconfig" [
+      openssl
+      pkgs.zstd
+    ];
+
+    ZSTD_SYS_USE_PKG_CONFIG = true;
+  };
 
   build-system = [
     cargo
@@ -39,26 +47,19 @@ buildPythonPackage (finalAttrs: {
     rustc
   ];
 
-  buildInputs = [
-    openssl
-    pkgs.zstd
-  ];
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-+8iaA1Cs+7qiDfQpwPAWSZ1HuF85WaDZB3MN57QOodI=";
+  };
 
   dependencies = [
     jsonalias
     typing-extensions
   ];
 
-  env = {
-    OPENSSL_NO_VENDOR = true;
-    ZSTD_SYS_USE_PKG_CONFIG = true;
-    PKG_CONFIG_PATH = lib.makeSearchPathOutput "dev" "lib/pkgconfig" [
-      openssl
-      pkgs.zstd
-    ];
-  };
-
+  pyproject = true;
   pythonImportsCheck = [ "solders" ];
+  pythonRelaxDeps = [ "jsonalias" ];
 
   meta = {
     description = "Python toolkit for Solana";

@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  replaceVars,
-  glib,
   gettext,
-  xwininfo,
+  glib,
+  replaceVars,
   xprop,
+  xwininfo,
 }:
 
 stdenv.mkDerivation rec {
@@ -20,16 +20,16 @@ stdenv.mkDerivation rec {
     sha256 = "07ddw47binlsbyvgy4xkdjvd40zyp7nwd17r6k7w54d50vmnwhvb";
   };
 
-  nativeBuildInputs = [
-    glib
-    gettext
-  ];
-
   patches = [
     (replaceVars ./fix-paths.patch {
       xprop = "${xprop}/bin/xprop";
       xwininfo = "${xwininfo}/bin/xwininfo";
     })
+  ];
+
+  nativeBuildInputs = [
+    glib
+    gettext
   ];
 
   makeFlags = [ "INSTALLBASE=$(out)/share/gnome-shell/extensions" ];

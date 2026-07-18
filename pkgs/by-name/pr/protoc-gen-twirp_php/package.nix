@@ -17,17 +17,17 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-9ZljfwdeM9Ym068P+cJUGh+XOptBOkEOGYK4VpTjccU=";
 
-  subPackages = [ "protoc-gen-twirp_php" ];
-
   ldflags = [
     "-X main.version=${finalAttrs.version}"
   ];
 
+  subPackages = [ "protoc-gen-twirp_php" ];
+
   meta = {
     description = "PHP port of Twitch's Twirp RPC framework";
-    mainProgram = "protoc-gen-twirp_php";
     homepage = "https://github.com/twirphp/twirp";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jojosch ];
+    mainProgram = "protoc-gen-twirp_php";
   };
 })

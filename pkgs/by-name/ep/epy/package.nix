@@ -1,23 +1,22 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "epy";
   version = "2023.6.11";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) version;
-    pname = "epy_reader";
     hash = "sha256-gel503e8DXjrMJK9lpAZ6GxQsrahKX+SjiyRwKbiJUY=";
+    pname = "epy_reader";
   };
 
-  dependencies = [ python3Packages.standard-imghdr ];
-
   nativeBuildInputs = [ python3Packages.poetry-core ];
+  dependencies = [ python3Packages.standard-imghdr ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "epy_reader.cli"
@@ -27,8 +26,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
   meta = {
     description = "CLI Ebook Reader";
     homepage = "https://github.com/wustho/epy";
-    mainProgram = "epy";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ perstark ];
+    mainProgram = "epy";
   };
 })

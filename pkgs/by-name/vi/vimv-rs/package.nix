@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -10,8 +10,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   src = fetchCrate {
     inherit (finalAttrs) version;
-    crateName = "vimv";
     hash = "sha256-jbRsgEsRYF5hlvo0jEB4jhy5jzCAXNzOsNWWyh4XULQ=";
+    crateName = "vimv";
   };
 
   cargoHash = "sha256-A+Ba3OWQDAramwin1Yc1YDOyabuEEaZGhE1gel2tFoM=";
@@ -20,7 +20,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Command line utility for batch-renaming files";
     homepage = "https://www.dmulholl.com/dev/vimv.html";
     license = lib.licenses.bsd0;
-    mainProgram = "vimv";
     maintainers = with lib.maintainers; [ zowoq ];
+    mainProgram = "vimv";
   };
 })

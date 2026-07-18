@@ -1,36 +1,32 @@
 {
   lib,
-  python,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-  hatch-fancy-pypi-readme,
-
   # dependencies
   annotated-types,
-  pydantic-core,
-  typing-extensions,
-  typing-inspection,
-
+  buildPythonPackage,
   # tests
   cloudpickle,
-  email-validator,
   dirty-equals,
+  email-validator,
+  hatch-fancy-pypi-readme,
+  # build-system
+  hatchling,
   hypothesis,
   inline-snapshot,
   jsonschema,
-  pytestCheckHook,
+  pydantic-core,
   pytest-mock,
   pytest-run-parallel,
   pytest-timeout,
+  pytestCheckHook,
+  python,
+  typing-extensions,
+  typing-inspection,
 }:
 
 buildPythonPackage rec {
   pname = "pydantic";
   version = "2.13.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pydantic";
@@ -42,22 +38,6 @@ buildPythonPackage rec {
   postPatch = ''
     sed -i "/--benchmark/d" pyproject.toml
   '';
-
-  build-system = [
-    hatch-fancy-pypi-readme
-    hatchling
-  ];
-
-  dependencies = [
-    annotated-types
-    pydantic-core
-    typing-extensions
-    typing-inspection
-  ];
-
-  optional-dependencies = {
-    email = [ email-validator ];
-  };
 
   nativeCheckInputs = [
     cloudpickle
@@ -72,6 +52,18 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
+  build-system = [
+    hatch-fancy-pypi-readme
+    hatchling
+  ];
+
+  dependencies = [
+    annotated-types
+    pydantic-core
+    typing-extensions
+    typing-inspection
+  ];
+
   disabledTestPaths = [
     "tests/benchmarks"
     "tests/pydantic_core/benchmarks"
@@ -80,6 +72,11 @@ buildPythonPackage rec {
     "tests/test_docs.py"
   ];
 
+  optional-dependencies = {
+    email = [ email-validator ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "pydantic" ];
 
   meta = {

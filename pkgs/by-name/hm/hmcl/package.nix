@@ -2,20 +2,41 @@
   lib,
   stdenv,
   fetchurl,
-  replaceVars,
-  terracotta,
-  makeDesktopItem,
-  makeWrapper,
-  wrapGAppsHook3,
+  alsa-lib,
+  buildPackages,
+  callPackage,
   copyDesktopItems,
   desktopToDarwinBundle,
+  glfw3,
+  glfw3-minecraft,
+  glib,
+  gobject-introspection,
+  gtk3,
   jdk,
   jdk25,
+  libGL,
+  libglvnd,
+  libpulseaudio,
+  libx11,
+  libxcursor,
+  libxext,
+  libxkbcommon,
+  libxrandr,
+  libxtst,
+  libxxf86vm,
+  makeDesktopItem,
+  makeWrapper,
+  openal,
+  replaceVars,
+  terracotta,
+  vulkan-loader,
+  wayland,
+  wrapGAppsHook3,
+  xrandr,
   hmclJdk ? jdk.override {
     # Required by jar file
     enableJavaFX = true;
   },
-  buildPackages,
   hmclJdkBuild ? buildPackages.jdk.override {
     enableJavaFX = true;
   },
@@ -23,27 +44,6 @@
     hmclJdk
     jdk25
   ],
-  libxxf86vm,
-  libxtst,
-  libxrandr,
-  libxext,
-  libxcursor,
-  libxkbcommon,
-  libx11,
-  xrandr,
-  glib,
-  libGL,
-  glfw3,
-  glfw3-minecraft,
-  openal,
-  libglvnd,
-  alsa-lib,
-  wayland,
-  vulkan-loader,
-  libpulseaudio,
-  gobject-introspection,
-  callPackage,
-  gtk3,
 }:
 let
   glfw3' = if stdenv.hostPlatform.isLinux then glfw3-minecraft else glfw3;
@@ -59,40 +59,22 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-/7RLhSHCnxtKxmusjnrfUEweYXzOoKcQO3G9+loBofk=";
   };
 
-  # - HMCL prompts users to download prebuilt Terracotta binary for
-  #   multi-user functionality, which is messy and doesn’t work on NixOS.
-  # - Building from source isn’t feasible because HMCL’s code relies on
-  #   Microsoft OAuth, CurseForge, and other API keys that upstream doesn’t
-  #   allow in custom builds, causing features to break.
-  # - Our workaround is to compile only the Java files that handle
-  #   Terracotta downloads, package them into a patch jar that overrides
-  #   the original classes, and have it load the original jar. This preserves
-  #   the original jar’s integrity check and avoids modifying the upstream jar.
-  terracottaBundleJava = fetchurl {
-    name = "hmcl-terracotta-bundle-java-${finalAttrs.version}";
-    url = "https://raw.githubusercontent.com/HMCL-dev/HMCL/v${finalAttrs.version}/${finalAttrs.terracottaBundleJavaPath}";
-    hash = "sha256-1o/CUDeywtDlhAxqInk77aUwGCCYeZ84VMIyouN49uU=";
-  };
-  macOSProviderJava = fetchurl {
-    name = "hmcl-macos-provider-java-${finalAttrs.version}";
-    url = "https://raw.githubusercontent.com/HMCL-dev/HMCL/v${finalAttrs.version}/${finalAttrs.macOSProviderJavaPath}";
-    hash = "sha256-+Zji2B8ksT7P+IObyrM9q7vHPJVl5ZtH+v/J8Mfr0Q4=";
-  };
-  terracottaBundleJavaPath = "HMCL/src/main/java/org/jackhuang/hmcl/terracotta/TerracottaBundle.java";
-  macOSProviderJavaPath = "HMCL/src/main/java/org/jackhuang/hmcl/terracotta/provider/MacOSProvider.java";
-
-  dontUnpack = true;
-
-  prePatch = ''
-    install -Dm644 $terracottaBundleJava $terracottaBundleJavaPath
-    install -Dm644 $macOSProviderJava $macOSProviderJavaPath
-  '';
-
   patches = [
     (replaceVars ./0001-nix-use-terracotta-from-nix.patch {
       TERRACOTTA_BIN = lib.getExe terracotta;
     })
     ./0002-nix-skip-terracotta-existence-check-on-darwin.patch
+  ];
+
+  nativeBuildInputs = [
+    gobject-introspection
+    makeWrapper
+    wrapGAppsHook3
+    copyDesktopItems
+    hmclJdkBuild
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    desktopToDarwinBundle
   ];
 
   buildPhase = ''
@@ -115,52 +97,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postBuild
   '';
-
-  dontWrapGApps = true;
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "HMCL";
-      exec = "hmcl";
-      icon = "hmcl";
-      comment = finalAttrs.meta.description;
-      desktopName = "HMCL";
-      categories = [ "Game" ];
-    })
-  ];
-
-  nativeBuildInputs = [
-    gobject-introspection
-    makeWrapper
-    wrapGAppsHook3
-    copyDesktopItems
-    hmclJdkBuild
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    desktopToDarwinBundle
-  ];
-
-  runtimeDeps = [
-    libGL
-    glfw3'
-    glib
-    openal
-    libglvnd
-    vulkan-loader
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    libx11
-    libxxf86vm
-    libxext
-    libxcursor
-    libxkbcommon
-    libxrandr
-    libxtst
-    libpulseaudio
-    wayland
-    alsa-lib
-    gtk3
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -197,18 +133,77 @@ stdenv.mkDerivation (finalAttrs: {
       ''${gappsWrapperArgs[@]}
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "HMCL";
+      exec = "hmcl";
+      icon = "hmcl";
+      name = "HMCL";
+    })
+  ];
+
+  dontUnpack = true;
+  dontWrapGApps = true;
+
+  macOSProviderJava = fetchurl {
+    hash = "sha256-+Zji2B8ksT7P+IObyrM9q7vHPJVl5ZtH+v/J8Mfr0Q4=";
+    name = "hmcl-macos-provider-java-${finalAttrs.version}";
+    url = "https://raw.githubusercontent.com/HMCL-dev/HMCL/v${finalAttrs.version}/${finalAttrs.macOSProviderJavaPath}";
+  };
+
+  macOSProviderJavaPath = "HMCL/src/main/java/org/jackhuang/hmcl/terracotta/provider/MacOSProvider.java";
+
+  prePatch = ''
+    install -Dm644 $terracottaBundleJava $terracottaBundleJavaPath
+    install -Dm644 $macOSProviderJava $macOSProviderJavaPath
+  '';
+
+  runtimeDeps = [
+    libGL
+    glfw3'
+    glib
+    openal
+    libglvnd
+    vulkan-loader
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    libx11
+    libxxf86vm
+    libxext
+    libxcursor
+    libxkbcommon
+    libxrandr
+    libxtst
+    libpulseaudio
+    wayland
+    alsa-lib
+    gtk3
+  ];
+
+  # - HMCL prompts users to download prebuilt Terracotta binary for
+  #   multi-user functionality, which is messy and doesn’t work on NixOS.
+  # - Building from source isn’t feasible because HMCL’s code relies on
+  #   Microsoft OAuth, CurseForge, and other API keys that upstream doesn’t
+  #   allow in custom builds, causing features to break.
+  # - Our workaround is to compile only the Java files that handle
+  #   Terracotta downloads, package them into a patch jar that overrides
+  #   the original classes, and have it load the original jar. This preserves
+  #   the original jar’s integrity check and avoids modifying the upstream jar.
+  terracottaBundleJava = fetchurl {
+    hash = "sha256-1o/CUDeywtDlhAxqInk77aUwGCCYeZ84VMIyouN49uU=";
+    name = "hmcl-terracotta-bundle-java-${finalAttrs.version}";
+    url = "https://raw.githubusercontent.com/HMCL-dev/HMCL/v${finalAttrs.version}/${finalAttrs.terracottaBundleJavaPath}";
+  };
+
+  terracottaBundleJavaPath = "HMCL/src/main/java/org/jackhuang/hmcl/terracotta/TerracottaBundle.java";
   passthru.updateScript = lib.getExe (callPackage ./update.nix { });
 
   meta = {
-    homepage = "https://hmcl.huangyuhui.net";
+    inherit (hmclJdk.meta) platforms;
     description = "Minecraft Launcher which is multi-functional, cross-platform and popular";
-    changelog = "https://docs.hmcl.net/changelog/stable.html";
-    mainProgram = "hmcl";
-    sourceProvenance = with lib.sourceTypes; [
-      fromSource # Our patch jar is built from source
-      binaryBytecode
-    ];
-    license = lib.licenses.gpl3Only;
+
     longDescription = ''
       Hello Minecraft! Launcher (HMCL) is a free, open-source, and cross-platform Minecraft launcher.
       It provides comprehensive support for managing multiple game versions and mod loaders,
@@ -223,11 +218,22 @@ stdenv.mkDerivation (finalAttrs: {
       enable HMCL -> Advanced Settings -> Workaround -> Use System GLFW.
       Otherwise, keep it disabled.
     '';
+
+    homepage = "https://hmcl.huangyuhui.net";
+    changelog = "https://docs.hmcl.net/changelog/stable.html";
+    license = lib.licenses.gpl3Only;
+
+    sourceProvenance = with lib.sourceTypes; [
+      fromSource # Our patch jar is built from source
+      binaryBytecode
+    ];
+
     maintainers = with lib.maintainers; [
       daru-san
       Misaka13514
       moraxyc
     ];
-    inherit (hmclJdk.meta) platforms;
+
+    mainProgram = "hmcl";
   };
 })

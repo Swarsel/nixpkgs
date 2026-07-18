@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "requestsexceptions";
   version = "1.4.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ pbr ];
+  format = "setuptools";
 
   # upstream hacking package is not required for functional testing
   patchPhase = ''

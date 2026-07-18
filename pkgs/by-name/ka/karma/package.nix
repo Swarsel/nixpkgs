@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   fetchNpmDeps,
   nixosTests,
   nodejs,
@@ -19,24 +19,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-/Iv7/CUwY/RlunXOd9H5xu4AzL/iXUEu+extyqinJ7M=";
   };
 
-  vendorHash = "sha256-O+f8drIs+XOvLo8ifB/SHkBBxj0KPg2H1MAcCyJvLe4=";
-
-  npmDeps = fetchNpmDeps {
-    src = "${finalAttrs.src}/ui";
-    hash = "sha256-wcQ6QWoRm+aQRf1L7xkmQIbYnfN+Fr/D0LeRlEK5nbE=";
-  };
-
-  npmRoot = "ui";
-
-  nativeBuildInputs = [
-    nodejs
-    npmHooks.npmConfigHook
-  ];
-
-  overrideModAttrs = oldAttrs: {
-    nativeBuildInputs = lib.filter (drv: drv != npmHooks.npmConfigHook) oldAttrs.nativeBuildInputs;
-  };
-
   postPatch = ''
     # Since we're using node2nix packages, the NODE_INSTALL hook isn't needed in the makefile
     sed -i \
@@ -44,6 +26,13 @@ buildGoModule (finalAttrs: {
       -e 's~NODE_PATH    := $(shell npm bin)~NODE_PATH    := ./node_modules~g' ./ui/Makefile \
       -e 's~NODE_MODULES := $(shell dirname `npm bin`)~NODE_MODULES := ./~g' ./ui/Makefile
   '';
+
+  nativeBuildInputs = [
+    nodejs
+    npmHooks.npmConfigHook
+  ];
+
+  vendorHash = "sha256-O+f8drIs+XOvLo8ifB/SHkBBxj0KPg2H1MAcCyJvLe4=";
 
   buildPhase = ''
     runHook preBuild
@@ -57,17 +46,30 @@ buildGoModule (finalAttrs: {
     install -Dm 755 ./karma $out/bin/karma
   '';
 
+  npmDeps = fetchNpmDeps {
+    src = "${finalAttrs.src}/ui";
+    hash = "sha256-wcQ6QWoRm+aQRf1L7xkmQIbYnfN+Fr/D0LeRlEK5nbE=";
+  };
+
+  npmRoot = "ui";
+
+  overrideModAttrs = oldAttrs: {
+    nativeBuildInputs = lib.filter (drv: drv != npmHooks.npmConfigHook) oldAttrs.nativeBuildInputs;
+  };
+
   passthru.tests.karma = nixosTests.karma;
 
   meta = {
-    changelog = "https://github.com/prymitive/karma/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     description = "Alert dashboard for Prometheus Alertmanager";
-    mainProgram = "karma";
     homepage = "https://karma-dashboard.io/";
+    changelog = "https://github.com/prymitive/karma/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       nukaduka
       kraftnix
     ];
+
+    mainProgram = "karma";
   };
 })

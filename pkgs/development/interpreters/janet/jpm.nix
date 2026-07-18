@@ -34,11 +34,7 @@ stdenv.mkDerivation rec {
       --replace /usr/local $out
   '';
 
-  dontConfigure = true;
-
   buildInputs = [ janet ];
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -61,9 +57,12 @@ stdenv.mkDerivation rec {
     $out/bin/jpm show-paths
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = janet.meta // {
     description = "Janet Project Manager for the Janet programming language";
-    mainProgram = "jpm";
     platforms = lib.attrNames platformFiles;
+    mainProgram = "jpm";
   };
 }

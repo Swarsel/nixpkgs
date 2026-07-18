@@ -1,8 +1,8 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   beautifulsoup4,
+  buildPythonPackage,
   pyrate-limiter,
   requests,
   setuptools_80,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "moddb";
   version = "0.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ClementJ18";
@@ -21,6 +20,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-idBja/W9r8iX69Af+x2TZcLpSLy45fC9pmrMKJZ0RsA=";
   };
 
+  doCheck = false; # Tests try to access the internet.
   build-system = [ setuptools_80 ];
 
   dependencies = [
@@ -30,11 +30,9 @@ buildPythonPackage (finalAttrs: {
     toolz
   ];
 
-  pythonRelaxDeps = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "moddb" ];
-
-  doCheck = false; # Tests try to access the internet.
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Python scrapper to access ModDB mods, games and more as objects";

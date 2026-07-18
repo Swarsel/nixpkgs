@@ -1,12 +1,12 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
-  ounit2,
-  lwt,
+  buildDunePackage,
   cstruct,
   io-page,
+  lwt,
   mirage-flow,
+  ounit2,
   xenstore,
   xenstore_transport,
 }:
@@ -14,8 +14,6 @@
 buildDunePackage rec {
   pname = "vchan";
   version = "6.0.2";
-
-  minimalOCamlVersion = "4.08";
 
   src = fetchurl {
     url = "https://github.com/mirage/ocaml-vchan/releases/download/v${version}/vchan-${version}.tbz";
@@ -32,9 +30,12 @@ buildDunePackage rec {
   ];
 
   doCheck = true;
+
   checkInputs = [
     ounit2
   ];
+
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "Xen Vchan implementation";

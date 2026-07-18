@@ -32,19 +32,20 @@ in
 
     systemd.user.services.safeeyes = {
       description = "Safeeyes";
-
-      wantedBy = [ "graphical-session.target" ];
       partOf = [ "graphical-session.target" ];
 
-      startLimitIntervalSec = 350;
-      startLimitBurst = 10;
       serviceConfig = {
         ExecStart = ''
           ${pkgs.safeeyes}/bin/safeeyes
         '';
+
         Restart = "on-failure";
         RestartSec = 3;
       };
+
+      startLimitBurst = 10;
+      startLimitIntervalSec = 350;
+      wantedBy = [ "graphical-session.target" ];
     };
 
   };

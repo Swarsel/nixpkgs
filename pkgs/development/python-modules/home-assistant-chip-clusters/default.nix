@@ -1,35 +1,34 @@
 {
   lib,
-  buildPythonPackage,
-  home-assistant-chip-wheels,
   aenum,
+  buildPythonPackage,
   dacite,
+  home-assistant-chip-wheels,
 }:
 
 buildPythonPackage rec {
-  pname = "home-assistant-chip-clusters";
   inherit (home-assistant-chip-wheels) version;
-  format = "wheel";
-
+  pname = "home-assistant-chip-clusters";
   src = home-assistant-chip-wheels;
-
-  # format=wheel needs src to be a wheel not a folder of wheels
-  preUnpack = ''
-    src=($src/home_assistant_chip_clusters*.whl)
-  '';
 
   propagatedBuildInputs = [
     aenum
     dacite
   ];
 
+  doCheck = false; # no tests
+  format = "wheel";
+
+  # format=wheel needs src to be a wheel not a folder of wheels
+  preUnpack = ''
+    src=($src/home_assistant_chip_clusters*.whl)
+  '';
+
   pythonImportsCheck = [
     "chip.clusters"
     "chip.clusters.ClusterObjects"
     "chip.tlv"
   ];
-
-  doCheck = false; # no tests
 
   meta = {
     description = "Python-base APIs and tools for CHIP";

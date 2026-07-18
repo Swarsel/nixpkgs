@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -15,17 +15,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-7fPoH6I8Okz8Oby45MIDdKBkbPgUPsaXd6XS3r3cRO8=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Command line tool for debugging, ad hoc benchmarking and generating regular expressions";
-    mainProgram = "regex-cli";
     homepage = "https://github.com/rust-lang/regex/tree/master/regex-cli";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ mdaniels5757 ];
+    mainProgram = "regex-cli";
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
-  wrapFirefox,
-  gpgme,
   gnupg,
+  gpgme,
+  wrapFirefox,
 }:
 
 browser: args:

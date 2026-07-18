@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -26,10 +26,12 @@ buildGoModule (finalAttrs: {
     description = "TUI Cheatsheet for keybindings, hotkeys and more";
     homepage = "https://github.com/Achno/gocheat";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       koi
       sebaguardian
     ];
+
     mainProgram = "gocheat";
   };
 })

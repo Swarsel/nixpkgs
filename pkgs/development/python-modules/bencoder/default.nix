@@ -1,27 +1,24 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
   setuptools,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "bencoder";
   version = "0.2.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-rENvM/3X51stkFdJHSq+77VjHvsTyBNAPbCtsRq1L8I=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "bencoder" ];
-
   # There are no tests.
   doCheck = false;
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "bencoder" ];
 
   meta = {
     description = "Simple bencode decoder/encoder library in pure Python";

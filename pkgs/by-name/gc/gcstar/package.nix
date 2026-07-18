@@ -63,9 +63,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://gitlab.com/Kerenoc/GCstar";
     description = "Manage your collections of movies, games, books, music and more";
-    mainProgram = "gcstar";
+
     longDescription = ''
       GCstar is an application for managing your collections.
       It supports many types of collections, including movies, books, games, comics, stamps, coins, and many more.
@@ -73,8 +72,11 @@ stdenv.mkDerivation (finalAttrs: {
       Detailed information on each item can be automatically retrieved from the internet and you can store additional data, such as the location or who you've lent it to.
       You may also search and filter your collections by many criteria.
     '';
+
+    homepage = "https://gitlab.com/Kerenoc/GCstar";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ dasj19 ];
     platforms = lib.platforms.all;
+    mainProgram = "gcstar";
   };
 })

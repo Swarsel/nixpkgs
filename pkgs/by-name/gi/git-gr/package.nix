@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  buildPackages,
   fetchFromGitHub,
-  rustPlatform,
+  buildPackages,
   installShellFiles,
   libiconv,
   nix-update-script,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 let
   canRunGitGr = stdenv.hostPlatform.emulatorAvailable buildPackages;
@@ -26,12 +26,6 @@ rustPlatform.buildRustPackage {
     hash = "sha256-ihCwrM8Mt3cBxP5HIXYkvVwKt0CYUE8Ph1S62ztl0tE=";
   };
 
-  buildFeatures = [ "clap_mangen" ];
-
-  cargoHash = "sha256-j/qUWGzsODSsn/dbygN2mYHED3wvUDKEGu7nYcTUm90=";
-
-  env.OPENSSL_NO_VENDOR = true;
-
   nativeBuildInputs = [ installShellFiles ] ++ lib.optional stdenv.hostPlatform.isLinux pkg-config;
 
   buildInputs =
@@ -39,6 +33,9 @@ rustPlatform.buildRustPackage {
     ++ lib.optionals stdenv.hostPlatform.isDarwin [
       libiconv
     ];
+
+  cargoHash = "sha256-j/qUWGzsODSsn/dbygN2mYHED3wvUDKEGu7nYcTUm90=";
+  env.OPENSSL_NO_VENDOR = true;
 
   postInstall = lib.optionalString canRunGitGr ''
     manpages=$(mktemp -d)
@@ -53,14 +50,15 @@ rustPlatform.buildRustPackage {
       --zsh <(${gitGr} completions zsh)
   '';
 
+  buildFeatures = [ "clap_mangen" ];
+  passthru.updateScript = nix-update-script { };
+
   meta = {
+    description = "Gerrit CLI client";
     homepage = "https://github.com/9999years/git-gr";
     changelog = "https://github.com/9999years/git-gr/releases/tag/v${version}";
-    description = "Gerrit CLI client";
     license = [ lib.licenses.mit ];
     maintainers = [ lib.maintainers._9999years ];
     mainProgram = "git-gr";
   };
-
-  passthru.updateScript = nix-update-script { };
 }

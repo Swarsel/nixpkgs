@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   bash,
   coreutils,
   curl,
-  fetchFromGitHub,
   gnugrep,
   gnused,
   installShellFiles,
@@ -26,6 +26,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-9dhTQLmWIOm0q51l/BgkxTFcUjub7w9Yk+QdvuZi/3k=";
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
 
   strictDeps = true;
 
@@ -119,11 +124,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   doInstallCheck = true;
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -132,7 +132,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Contains a set of utilities for managing elastic network interfaces on Amazon EC2";
     homepage = "https://github.com/amazonlinux/amazon-ec2-net-utils";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ sielicki ];
+    platforms = lib.platforms.linux;
   };
 })

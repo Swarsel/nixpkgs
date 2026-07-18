@@ -17,15 +17,15 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # define PATH_MAX variable to fix a FTBFS in Hurd.
     (fetchurl {
+      hash = "sha256-wGEzTfT76s5Q7s/5s913c4x9MMn9c0v/4Lhr+QakPQY=";
       name = "fix-FTBFS-Hurd.patch";
       url = "https://salsa.debian.org/pkg-security-team/missidentify/-/raw/14b7169c3157dbad65fc80fdd82ec6634df20ffd/debian/patches/fix-FTBFS-Hurd.patch";
-      hash = "sha256-wGEzTfT76s5Q7s/5s913c4x9MMn9c0v/4Lhr+QakPQY=";
     })
     # fix a hyphen used as minus sign and a typo in manpage.
     (fetchurl {
+      hash = "sha256-7LzQs6ETRSjdnEhlKOVWC3grevwOmGs0h4Z6AYGysD8=";
       name = "fix-manpage.patch";
       url = "https://salsa.debian.org/pkg-security-team/missidentify/-/raw/14b7169c3157dbad65fc80fdd82ec6634df20ffd/debian/patches/fix-manpage.patch";
-      hash = "sha256-7LzQs6ETRSjdnEhlKOVWC3grevwOmGs0h4Z6AYGysD8=";
     })
     # fix darwin build
     ./fix-darwin-build.patch
@@ -39,6 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Find Win32 applications";
+
     longDescription = ''
       Miss Identify is a program to find Win32 applications. In
       its default mode it displays the filename of any executable
@@ -50,10 +51,11 @@ stdenv.mkDerivation (finalAttrs: {
       the user to record the strings found in an executable and
       to work recursively.
     '';
-    mainProgram = "missidentify";
+
     homepage = "https://missidentify.sourceforge.net";
+    license = lib.licenses.gpl2Only;
     maintainers = [ ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.gpl2Only;
+    mainProgram = "missidentify";
   };
 })

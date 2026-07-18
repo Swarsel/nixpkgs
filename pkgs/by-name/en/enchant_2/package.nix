@@ -1,24 +1,22 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   aspell,
-  groff,
-  pkg-config,
   glib,
-  hunspell,
+  groff,
   hspell,
-  nuspell,
+  hunspell,
   libvoikko,
+  nuspell,
+  pkg-config,
   unittest-cpp,
-
-  withHspell ? true,
+  withAppleSpell ? stdenv.hostPlatform.isDarwin,
   withAspell ? true,
+  withHspell ? true,
   withHunspell ? true,
   withNuspell ? true,
   withVoikko ? true,
-  withAppleSpell ? stdenv.hostPlatform.isDarwin,
-
 }:
 
 assert withAppleSpell -> stdenv.hostPlatform.isDarwin;
@@ -27,15 +25,15 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "enchant";
   version = "2.6.9";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchurl {
     url = "https://github.com/rrthomas/enchant/releases/download/v${finalAttrs.version}/enchant-${finalAttrs.version}.tar.gz";
     hash = "sha256-2aWhDcmzikOzoPoix27W67fgnrU1r/YpVK/NvUDv/2s=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   strictDeps = true;
 
@@ -57,10 +55,6 @@ stdenv.mkDerivation (finalAttrs: {
     libvoikko
   ];
 
-  checkInputs = [
-    unittest-cpp
-  ];
-
   # libtool puts these to .la files
   propagatedBuildInputs =
     lib.optionals withHspell [
@@ -69,10 +63,6 @@ stdenv.mkDerivation (finalAttrs: {
     ++ lib.optionals withAspell [
       aspell
     ];
-
-  enableParallelBuilding = true;
-
-  doCheck = true;
 
   configureFlags = [
     "--enable-relocatable" # needed for tests
@@ -83,6 +73,14 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.withFeature withVoikko "voikko")
     (lib.withFeature withAppleSpell "applespell")
   ];
+
+  doCheck = true;
+
+  checkInputs = [
+    unittest-cpp
+  ];
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "Generic spell checking library";

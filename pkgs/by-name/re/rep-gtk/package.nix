@@ -19,6 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-vEhs7QsQUdeEiHZ6AOri6+SLz3Lq/s6j8rALhY0Xqsc=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -30,22 +32,21 @@ stdenv.mkDerivation (finalAttrs: {
     librep
   ];
 
-  strictDeps = true;
-  enableParallelBuilding = true;
-
   env.NIX_CFLAGS_COMPILE = toString [
     "-Wno-error=implicit-function-declaration"
     "-Wno-error=int-conversion"
     "-Wno-error=incompatible-pointer-types"
   ];
 
+  enableParallelBuilding = true;
+
   patchPhase = ''
     sed -e 's|installdir=$(repexecdir)|installdir=$(libdir)/rep|g' -i Makefile.in
   '';
 
   meta = {
-    homepage = "http://sawfish.tuxfamily.org";
     description = "GTK bindings for librep";
+    homepage = "http://sawfish.tuxfamily.org";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;

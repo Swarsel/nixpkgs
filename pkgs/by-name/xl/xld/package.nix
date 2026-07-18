@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  common-updater-scripts,
+  curl,
+  stdenvNoCC,
   undmg,
   writeShellApplication,
-  curl,
   xmlstarlet,
-  common-updater-scripts,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -18,9 +18,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-ADKlRw6k4yoRo1uAd+v0mGECiR+OuCdDCU8sZiGtius=";
   };
 
-  buildInputs = [ undmg ];
+  postPatch = ''
+    substituteInPlace CLI/xld \
+    --replace "/Applications/XLD.app" "$out/Applications/XLD.app"
+  '';
 
-  sourceRoot = ".";
+  buildInputs = [ undmg ];
 
   installPhase = ''
     runHook preInstall
@@ -32,18 +35,17 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  postPatch = ''
-    substituteInPlace CLI/xld \
-    --replace "/Applications/XLD.app" "$out/Applications/XLD.app"
-  '';
+  sourceRoot = ".";
 
   passthru.updateScript = lib.getExe (writeShellApplication {
     name = "xld-update-script";
+
     runtimeInputs = [
       curl
       xmlstarlet
       common-updater-scripts
     ];
+
     text = ''
       url=$(curl --silent "https://svn.code.sf.net/p/xld/code/appcast/xld-appcast_e.xml")
       version=$(echo "$url" | xmlstarlet sel -t -v "//enclosure/@sparkle:shortVersionString")
@@ -55,9 +57,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Lossless audio decoder";
     homepage = "https://tmkk.undo.jp/xld/index_e.html";
     license = lib.licenses.osl3;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ iivusly ];
     platforms = lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     mainProgram = "xld";
   };
 })

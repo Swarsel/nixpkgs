@@ -13,12 +13,17 @@
 buildPythonPackage rec {
   pname = "vertica-python";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-VCB4ri/t7mlK3tsE2Bxu3Cd7h+10QDApQhB9hqC81EU=";
   };
+
+  nativeCheckInputs = [
+    mock
+    parameterized
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -27,17 +32,12 @@ buildPythonPackage rec {
     six
   ];
 
-  nativeCheckInputs = [
-    mock
-    parameterized
-    pytestCheckHook
-  ];
-
   disabledTestPaths = [
     # Integration tests require an accessible Vertica db
     "vertica_python/tests/integration_tests"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "vertica_python" ];
 
   meta = {

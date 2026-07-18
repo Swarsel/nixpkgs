@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
   deepdiff,
-  fetchFromGitHub,
   poetry-core,
   pytest-asyncio,
   pytest-cov-stub,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyomie";
   version = "1.1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "luuuis";
@@ -24,19 +23,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-gsCPqKBzQ0nA47WT30PesGuJ4/jicYsFXl04KQ8H/KQ=";
   };
-
-  build-system = [ poetry-core ];
-
-  pythonRelaxDeps = [
-    "click"
-    "typer"
-  ];
-
-  dependencies = [
-    aiohttp
-    rich
-    typer
-  ];
 
   nativeCheckInputs = [
     aioresponses
@@ -46,7 +32,21 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    aiohttp
+    rich
+    typer
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "pyomie" ];
+
+  pythonRelaxDeps = [
+    "click"
+    "typer"
+  ];
 
   meta = {
     description = "Client for OMIE - Spain and Portugal electricity market data";

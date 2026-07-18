@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pyjwt,
   aiohttp,
-  protobuf,
-  livekit-protocol,
-  pytestCheckHook,
+  buildPythonPackage,
   gitUpdater,
+  livekit-protocol,
+  protobuf,
+  pyjwt,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "livekit-api";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "livekit";
@@ -23,7 +22,9 @@ buildPythonPackage rec {
     hash = "sha256-Z9ZyzESPUR+j9s9LXSTDx3pB+bltbqTeb8WVKaKk80A=";
   };
 
-  pypaBuildFlags = [ "livekit-api" ];
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -34,22 +35,17 @@ buildPythonPackage rec {
     livekit-protocol
   ];
 
-  pythonRemoveDeps = [ "types-protobuf" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
   enabledTestPaths = [ "livekit-api/tests" ];
-
+  pypaBuildFlags = [ "livekit-api" ];
+  pyproject = true;
   pythonImportsCheck = [ "livekit" ];
-
+  pythonRemoveDeps = [ "types-protobuf" ];
   passthru.updateScript = gitUpdater { rev-prefix = "api-v"; };
 
   meta = {
-    changelog = "https://github.com/livekit/python-sdks/releases/tag/${src.tag}";
     description = "LiveKit real-time and server SDKs for Python";
     homepage = "https://github.com/livekit/python-sdks/";
+    changelog = "https://github.com/livekit/python-sdks/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ soyouzpanda ];
     platforms = lib.platforms.all;

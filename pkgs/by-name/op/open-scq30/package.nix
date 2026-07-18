@@ -1,27 +1,27 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  protobuf,
-  wrapGAppsHook4,
+  autoPatchelfHook,
   cairo,
   dbus,
   gdk-pixbuf,
   glib,
   gtk4,
-  libadwaita,
-  pango,
   just,
-  sqlite,
-  wayland,
-  libxkbcommon,
   libGL,
+  libadwaita,
   libx11,
   libxcursor,
   libxi,
-  autoPatchelfHook,
+  libxkbcommon,
   nix-update-script,
+  pango,
+  pkg-config,
+  protobuf,
+  rustPlatform,
+  sqlite,
+  wayland,
+  wrapGAppsHook4,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -34,6 +34,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-4K/3kulUbUa21YbWh1nYXeeHAIVD/FX8VtWArpij0JQ=";
   };
+
+  postPatch = ''
+    patchShebangs ./gui/scripts ./cli/scripts ./scripts
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -55,6 +59,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libxkbcommon
   ];
 
+  cargoHash = "sha256-1Ccbi/21jTyTPt9WqhnwpBFuD0f90PabwyVRwZI1l0k=";
+  env.INSTALL_PREFIX = placeholder "out";
+
+  buildPhase = ''
+    just build-cli
+    just build-gui
+  '';
+
+  # Requires headphones
+  doCheck = false;
+
+  installPhase = ''
+    just install ${placeholder "out"}
+  '';
+
   # Wayland and X11 libs are required at runtime since winit uses dlopen
   runtimeDependencies = [
     wayland
@@ -65,27 +84,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libxi
   ];
 
-  cargoHash = "sha256-1Ccbi/21jTyTPt9WqhnwpBFuD0f90PabwyVRwZI1l0k=";
-
-  env.INSTALL_PREFIX = placeholder "out";
-
-  # Requires headphones
-  doCheck = false;
-
-  postPatch = ''
-    patchShebangs ./gui/scripts ./cli/scripts ./scripts
-  '';
-
-  buildPhase = ''
-    just build-cli
-    just build-gui
-  '';
-
-  installPhase = ''
-    just install ${placeholder "out"}
-  '';
-
   passthru.updateScript = nix-update-script { };
+
   meta = {
     description = "Cross platform application for controlling settings of Soundcore headphones";
     homepage = "https://github.com/Oppzippy/OpenSCQ30";

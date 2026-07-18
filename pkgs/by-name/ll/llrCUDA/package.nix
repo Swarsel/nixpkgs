@@ -1,9 +1,9 @@
 {
-  fetchzip,
   lib,
-  gmp,
-  cudaPackages,
   autoPatchelfHook,
+  cudaPackages,
+  fetchzip,
+  gmp,
 }:
 let
   inherit (cudaPackages) backendStdenv;
@@ -16,10 +16,9 @@ backendStdenv.mkDerivation (finalAttrs: {
     url = "http://jpenne.free.fr/llr4/llrcuda${
       builtins.replaceStrings [ "." ] [ "" ] finalAttrs.version
     }srcgpu12.zip";
+
     hash = "sha256-/v89jsTKCpkmCMKp9nUf7VAnSobE8pDdwLw5n3Hz9dw=";
   };
-
-  enableParallelBuilding = true;
 
   # Disable _chdir in lprime.cu to prevent segmentation fault when fopen returns NULL
   postPatch = ''
@@ -57,8 +56,11 @@ backendStdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "GPU version of the LLR program";
+
     longDescription = ''
       Primality proving program for numbers of the form N = k*b^n +/- 1, (k < b^n),
       or numbers which can be rewritten in this form, like
@@ -66,12 +68,13 @@ backendStdenv.mkDerivation (finalAttrs: {
       The identity Phi(3,-X) = X^2-X+1 is now used with X=b^n to search for
       Generalized Unique Primes.
     '';
+
     homepage = "http://jpenne.free.fr/index2.html";
-    maintainers = with lib.maintainers; [ dstremur ];
     license = lib.licenses.unfree;
     # Restricted by GWNUM terms and CUDA dependencies.
     # Its CUDA code is based on GWNUM.
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    maintainers = with lib.maintainers; [ dstremur ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "llrCUDA";
   };

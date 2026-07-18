@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   boost,
   catch2_3,
+  cmake,
   libcpr,
   trompeloeil,
 }:

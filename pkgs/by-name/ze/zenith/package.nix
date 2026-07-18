@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  nvidiaSupport ? false,
   makeWrapper,
+  rustPlatform,
+  nvidiaSupport ? false,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,25 +22,25 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rm .cargo/config.toml
   '';
 
-  cargoHash = "sha256-OABHxLLysx/atZBWCMJCcypugzs5OFtRp2KW3dkp2DE=";
-
   nativeBuildInputs = [ rustPlatform.bindgenHook ] ++ lib.optional nvidiaSupport makeWrapper;
-
-  buildFeatures = lib.optional nvidiaSupport "nvidia";
+  cargoHash = "sha256-OABHxLLysx/atZBWCMJCcypugzs5OFtRp2KW3dkp2DE=";
 
   postInstall = lib.optionalString nvidiaSupport ''
     wrapProgram $out/bin/zenith \
       --suffix LD_LIBRARY_PATH : "/run/opengl-driver/lib"
   '';
 
+  buildFeatures = lib.optional nvidiaSupport "nvidia";
+
   meta = {
     description =
       "Sort of like top or htop but with zoom-able charts, network, and disk usage"
       + lib.optionalString nvidiaSupport ", and NVIDIA GPU usage";
-    mainProgram = "zenith";
+
     homepage = "https://github.com/bvaisvil/zenith";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ wegank ];
     platforms = if nvidiaSupport then lib.platforms.linux else lib.platforms.unix;
+    mainProgram = "zenith";
   };
 })

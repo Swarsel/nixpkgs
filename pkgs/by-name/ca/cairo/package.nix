@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchurl,
-  lzo,
-  gtk-doc,
-  meson,
-  ninja,
-  pkg-config,
-  python3,
   docbook_xsl,
   fontconfig,
   freetype,
+  glib,
+  gtk-doc,
   libpng,
-  pixman,
-  zlib,
-  x11Support ? !stdenv.hostPlatform.isDarwin || true,
+  libxcb,
   libxext,
   libxrender,
-  gobjectSupport ? true,
-  glib,
-  xcbSupport ? x11Support,
-  libxcb,
+  lzo,
+  meson,
+  ninja,
+  pixman,
+  pkg-config,
+  python3,
   testers,
+  zlib,
+  gobjectSupport ? true,
+  x11Support ? !stdenv.hostPlatform.isDarwin || true,
+  xcbSupport ? x11Support,
 }:
 
 let
@@ -40,6 +40,7 @@ stdenv.mkDerivation (
       url = "https://cairographics.org/${
         if lib.mod (builtins.fromJSON (lib.versions.minor version)) 2 == 0 then "releases" else "snapshots"
       }/${pname}-${version}.tar.xz";
+
       hash = "sha256-RF7YIIpuSCPeEianTKMZ02AOg/Y2n5mxQmUAZZnDLMs=";
     };
 
@@ -48,8 +49,6 @@ stdenv.mkDerivation (
       "dev"
       "devdoc"
     ];
-    outputBin = "dev"; # very small
-    separateDebugInfo = true;
 
     nativeBuildInputs = [
       gtk-doc
@@ -97,8 +96,8 @@ stdenv.mkDerivation (
         [properties]
         ipc_rmid_deferred_release = ${
           {
-            linux = "true";
             freebsd = "true";
+            linux = "true";
             netbsd = "false";
             windows = "false";
           }
@@ -112,8 +111,6 @@ stdenv.mkDerivation (
       patchShebangs version.py
     '';
 
-    enableParallelBuilding = true;
-
     doCheck = false; # fails
 
     postInstall = ''
@@ -123,11 +120,14 @@ stdenv.mkDerivation (
           -es'|^Cflags:\(.*\)$|Cflags: \1 -I${freetype.dev}/include/freetype2 -I${freetype.dev}/include|g'
     '';
 
+    enableParallelBuilding = true;
+    outputBin = "dev"; # very small
+    separateDebugInfo = true;
     passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
     meta = {
       description = "2D graphics library with support for multiple output devices";
-      mainProgram = "cairo-trace";
+
       longDescription = ''
         Cairo is a 2D graphics library with support for multiple output
         devices.  Currently supported output targets include the X
@@ -138,18 +138,23 @@ stdenv.mkDerivation (
         media while taking advantage of display hardware acceleration
         when available (e.g., through the X Render Extension).
       '';
+
       homepage = "http://cairographics.org/";
+
       license = with lib.licenses; [
         lgpl2Plus
         mpl10
       ];
+
+      platforms = lib.platforms.all;
+      mainProgram = "cairo-trace";
+
       pkgConfigModules = [
         "cairo-pdf"
         "cairo-ps"
         "cairo-svg"
       ]
       ++ lib.optional gobjectSupport "cairo-gobject";
-      platforms = lib.platforms.all;
     };
   }
 )

@@ -1,12 +1,12 @@
 {
-  fetchurl,
-  fetchpatch2,
   lib,
   stdenv,
-  libtool,
-  makeWrapper,
+  fetchurl,
   coreutils,
   ctags,
+  fetchpatch2,
+  libtool,
+  makeWrapper,
   ncurses,
   python3Packages,
   sqlite,
@@ -29,8 +29,8 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix for GCC 15 / C23, which interprets empty function parameter lists as
     # having no parameters instead of an unspecified signature.
     (fetchpatch2 {
-      url = "https://src.fedoraproject.org/rpms/global/raw/5a1ababa270e571f3133c03edcdb0e65f95e763f/f/libdb-dbpanic-function-pointers.patch";
       hash = "sha256-o8u90h8ufF0Yr049fR9iMba+xq1tHXeiPdrHFSZMir0=";
+      url = "https://src.fedoraproject.org/rpms/global/raw/5a1ababa270e571f3133c03edcdb0e65f95e763f/f/libdb-dbpanic-function-pointers.patch";
     })
   ];
 
@@ -70,6 +70,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Source code tag system";
+
     longDescription = ''
       GNU GLOBAL is a source code tagging system that works the same way
       across diverse environments (Emacs, vi, less, Bash, web browser, etc).
@@ -80,13 +81,16 @@ stdenv.mkDerivation (finalAttrs: {
       independence of any editor.  It runs on a UNIX (POSIX) compatible
       operating system like GNU and BSD.
     '';
+
     homepage = "https://www.gnu.org/software/global/";
+    changelog = "https://www.gnu.org/software/global/whatsnew.html";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       pSub
       peterhoeg
     ];
+
     platforms = lib.platforms.unix;
-    changelog = "https://www.gnu.org/software/global/whatsnew.html";
   };
 })

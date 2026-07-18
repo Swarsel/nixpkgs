@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   llm,
   llm-video-frames,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "llm-video-frames";
   version = "0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -20,11 +19,9 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
-
   dependencies = [ llm ];
-
+  pyproject = true;
   pythonImportsCheck = [ "llm_video_frames" ];
-
   passthru.tests = llm.mkPluginTest llm-video-frames;
 
   meta = {

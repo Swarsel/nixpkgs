@@ -1,16 +1,16 @@
 {
+  lib,
+  stdenv,
   callPackage,
   dartSdkVersion,
   flutterVersion,
-  swiftshaderHash,
-  swiftshaderRev,
-  version,
   hashes,
-  url,
   patches,
   runtimeModes,
-  lib,
-  stdenv,
+  swiftshaderHash,
+  swiftshaderRev,
+  url,
+  version,
   ...
 }@args:
 let
@@ -31,21 +31,17 @@ let
         patches
         runtimeMode
         ;
+
       isOptimized = args.isOptimized or runtimeMode != "debug";
     }
   );
 in
 stdenv.mkDerivation (
   {
-    pname = "flutter-engine";
     inherit url runtimeModes altRuntimeMode;
     inherit (runtimeModesBuilds.${mainRuntimeMode}) version src meta;
-
+    pname = "flutter-engine";
     strictDeps = true;
-    __structuredAttrs = true;
-
-    dontUnpack = true;
-    dontBuild = true;
 
     installPhase = ''
       runHook preInstall
@@ -65,6 +61,10 @@ stdenv.mkDerivation (
     + ''
       runHook postInstall
     '';
+
+    __structuredAttrs = true;
+    dontBuild = true;
+    dontUnpack = true;
 
     passthru = {
       inherit (runtimeModesBuilds.${mainRuntimeMode})

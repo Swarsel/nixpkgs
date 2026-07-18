@@ -1,45 +1,40 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  replaceVars,
-
+  buildPythonPackage,
   # build-system
   cmake,
   pybind11,
-  setuptools,
-
-  # dependencies
-  sentencepiece,
-  tiktoken,
-  tokenizers,
-
   # tests
   pytestCheckHook,
+  replaceVars,
+  # dependencies
+  sentencepiece,
+  setuptools,
+  tiktoken,
+  tokenizers,
   transformers,
 }:
 
 let
   # https://github.com/meta-pytorch/tokenizers/blob/v<VERSION>/CMakeLists.txt#L174-L175
   pybind11-src = fetchFromGitHub {
+    hash = "sha256-SNLdtrOjaC3lGHN9MAqTf51U9EzNKQLyTMNPe0GcdrU=";
     owner = "pybind";
     repo = "pybind11";
     tag = "v2.13.6";
-    hash = "sha256-SNLdtrOjaC3lGHN9MAqTf51U9EzNKQLyTMNPe0GcdrU=";
   };
 in
 buildPythonPackage (finalAttrs: {
   pname = "pytorch-tokenizers";
   version = "1.3.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "meta-pytorch";
     repo = "tokenizers";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-1G6mDUSwy4KXKgdtEimj9rrQDonGHdo8R8DvPQppvwE=";
+    fetchSubmodules = true;
   };
 
   patches = [
@@ -56,13 +51,6 @@ buildPythonPackage (finalAttrs: {
       --replace-fail '"pytest",' ""
   '';
 
-  build-system = [
-    cmake
-    pybind11
-    setuptools
-  ];
-  dontUseCmakeConfigure = true;
-
   # pkgs/by-name/cm/cmake/setup-hook.sh
   preBuild = ''
     if ! [[ -v enableParallelBuilding ]]; then
@@ -74,29 +62,40 @@ buildPythonPackage (finalAttrs: {
     fi
   '';
 
-  dependencies = [
-    sentencepiece
-    tiktoken
-    tokenizers
-  ];
-
-  pythonImportsCheck = [
-    "pytorch_tokenizers"
-    "pytorch_tokenizers.pytorch_tokenizers_cpp"
+  nativeCheckInputs = [
+    pytestCheckHook
+    transformers
   ];
 
   preCheck = ''
     rm -rf pytorch_tokenizers
   '';
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    transformers
+  __structuredAttrs = true;
+
+  build-system = [
+    cmake
+    pybind11
+    setuptools
+  ];
+
+  dependencies = [
+    sentencepiece
+    tiktoken
+    tokenizers
   ];
 
   disabledTestPaths = [
     # Require downloading models from huggingface
     "test/test_hf_tokenizer.py"
+  ];
+
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "pytorch_tokenizers"
+    "pytorch_tokenizers.pytorch_tokenizers_cpp"
   ];
 
   meta = {

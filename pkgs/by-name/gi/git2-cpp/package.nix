@@ -21,8 +21,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/ken-matsui/git2-cpp";
     description = "libgit2 bindings for C++";
+    homepage = "https://github.com/ken-matsui/git2-cpp";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.unix;

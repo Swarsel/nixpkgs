@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  libclthreads,
-  zita-alsa-pcmi,
+  aeolus-stops,
   alsa-lib,
-  libjack2,
+  libclthreads,
   libclxclient,
+  libjack2,
   libx11,
   libxft,
   readline,
-  aeolus-stops,
+  zita-alsa-pcmi,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,6 +21,11 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://kokkinizita.linuxaudio.org/linuxaudio/downloads/aeolus-${finalAttrs.version}.tar.bz2";
     sha256 = "sha256-J9xrd/N4LrvGgi89Yj4ob4ZPUAEchrXJJQ+YVJ29Qhk=";
   };
+
+  postPatch = ''
+    sed -i source/Makefile -e /ldconfig/d
+    substituteInPlace source/main.cc --replace-fail /etc/ "$out/etc/"
+  '';
 
   buildInputs = [
     libclthreads
@@ -33,17 +38,12 @@ stdenv.mkDerivation (finalAttrs: {
     readline
   ];
 
-  postPatch = ''
-    sed -i source/Makefile -e /ldconfig/d
-    substituteInPlace source/main.cc --replace-fail /etc/ "$out/etc/"
-  '';
-
-  preBuild = "cd source";
-
   makeFlags = [
     "DESTDIR="
     "PREFIX=$(out)"
   ];
+
+  preBuild = "cd source";
 
   postInstall =
     let
@@ -62,10 +62,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Synthetized (not sampled) pipe organ emulator";
     homepage = "http://kokkinizita.linuxaudio.org/linuxaudio/aeolus/index.html";
     license = lib.licenses.lgpl3;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       nico202
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "aeolus";
   };
 })

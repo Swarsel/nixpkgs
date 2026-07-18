@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "anyascii";
   version = "0.3.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,11 +15,12 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
 
   meta = {
-    changelog = "https://github.com/anyascii/anyascii/blob/${version}/CHANGELOG.md";
     description = "Unicode to ASCII transliteration";
     homepage = "https://github.com/anyascii/anyascii";
+    changelog = "https://github.com/anyascii/anyascii/blob/${version}/CHANGELOG.md";
     license = lib.licenses.isc;
     teams = [ lib.teams.tts ];
   };

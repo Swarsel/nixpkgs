@@ -12,14 +12,15 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-eventhub";
   version = "11.2.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_eventhub";
     inherit version;
     hash = "sha256-McR/GPc9LYM0XN5ZCVaOKIWMJUijWxDiMZS0dnqc5+M=";
+    pname = "azure_mgmt_eventhub";
   };
 
+  # has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,8 +30,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  # has no tests
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "This is the Microsoft Azure EventHub Management Client Library";

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pyvex,
   setuptools,
   typing-extensions,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "ailment";
   version = "9.2.158";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "angr";
@@ -19,6 +18,8 @@ buildPythonPackage rec {
     hash = "sha256-WnDtJaEpka6IhYOfOb2DZY0Hd8ghIn8mY5AuF/JktLg=";
   };
 
+  # Tests depend on angr (possibly a circular dependency)
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  # Tests depend on angr (possibly a circular dependency)
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "ailment" ];
 
   meta = {

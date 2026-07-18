@@ -28,10 +28,8 @@ let
   '';
   isolate = pkgs.symlinkJoin {
     name = "isolate-wrapped-${pkgs.isolate.version}";
-
-    paths = [ pkgs.isolate ];
-
     nativeBuildInputs = [ pkgs.makeWrapper ];
+    paths = [ pkgs.isolate ];
 
     postBuild = ''
       wrapProgram $out/bin/isolate \
@@ -51,72 +49,88 @@ in
     package = mkPackageOption pkgs "isolate-unwrapped" { };
 
     boxRoot = mkOption {
-      type = types.path;
       default = "/var/lib/isolate/boxes";
+
       description = ''
         All sandboxes are created under this directory.
         To avoid symlink attacks, this directory and all its ancestors
         must be writeable only by root.
       '';
-    };
 
-    lockRoot = mkOption {
       type = types.path;
-      default = "/run/isolate/locks";
-      description = ''
-        Directory where lock files are created.
-      '';
     };
 
     cgRoot = mkOption {
-      type = types.str;
       default = "auto:/run/isolate/cgroup";
+
       description = ''
         Control group which subgroups are placed under.
         Either an explicit path to a subdirectory in cgroupfs, or "auto:file" to read
         the path from "file", where it is put by `isolate-cg-helper`.
       '';
+
+      type = types.str;
     };
 
-    firstUid = mkOption {
-      type = types.numbers.between 1000 65533;
-      default = 60000;
+    extraConfig = mkOption {
+      default = "";
+
       description = ''
-        Start of block of UIDs reserved for sandboxes.
+        Extra configuration to append to the configuration file.
       '';
+
+      type = types.str;
     };
 
     firstGid = mkOption {
-      type = types.numbers.between 1000 65533;
       default = 60000;
+
       description = ''
         Start of block of GIDs reserved for sandboxes.
       '';
+
+      type = types.numbers.between 1000 65533;
+    };
+
+    firstUid = mkOption {
+      default = 60000;
+
+      description = ''
+        Start of block of UIDs reserved for sandboxes.
+      '';
+
+      type = types.numbers.between 1000 65533;
+    };
+
+    lockRoot = mkOption {
+      default = "/run/isolate/locks";
+
+      description = ''
+        Directory where lock files are created.
+      '';
+
+      type = types.path;
     };
 
     numBoxes = mkOption {
-      type = types.numbers.between 1000 65533;
       default = 1000;
+
       description = ''
         Number of UIDs and GIDs to reserve, starting from
         {option}`firstUid` and {option}`firstGid`.
       '';
+
+      type = types.numbers.between 1000 65533;
     };
 
     restrictedInit = mkOption {
-      type = types.bool;
       default = false;
+
       description = ''
         If true, only root can create sandboxes.
       '';
-    };
 
-    extraConfig = mkOption {
-      type = types.str;
-      default = "";
-      description = ''
-        Extra configuration to append to the configuration file.
-      '';
+      type = types.bool;
     };
   };
 
@@ -127,14 +141,16 @@ in
 
     systemd.services.isolate = {
       description = "Isolate control group hierarchy daemon";
-      wantedBy = [ "multi-user.target" ];
       documentation = [ "man:isolate(1)" ];
+
       serviceConfig = {
-        Type = "notify";
+        Delegate = true;
         ExecStart = "${isolate}/bin/isolate-cg-keeper";
         Slice = "isolate.slice";
-        Delegate = true;
+        Type = "notify";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.slices.isolate = {

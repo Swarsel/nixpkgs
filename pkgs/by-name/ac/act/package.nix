@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  buildGoModule,
-  testers,
-  nix-update-script,
   act,
+  buildGoModule,
+  nix-update-script,
+  testers,
 }:
 buildGoModule (finalAttrs: {
   pname = "act";
@@ -18,7 +18,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-Gp4Bxq0n1gmqHwrggSonMsFbWMVeCIgeVKY1U1Oe6lU=";
-
   doCheck = false;
 
   ldflags = [
@@ -37,13 +36,15 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Run your GitHub Actions locally";
-    mainProgram = "act";
     homepage = "https://github.com/nektos/act";
     changelog = "https://github.com/nektos/act/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       kashw2
       miniharinn
     ];
+
+    mainProgram = "act";
   };
 })

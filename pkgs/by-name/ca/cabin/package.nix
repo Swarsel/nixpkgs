@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -26,6 +26,7 @@ stdenvNoCC.mkDerivation rec {
 
   meta = {
     description = "Humanist sans with 4 weights and true italics";
+
     longDescription = ''
       The Cabin font family is a humanist sans with 4 weights and true italics,
       inspired by Edward Johnston’s and Eric Gill’s typefaces, with a touch of
@@ -38,6 +39,7 @@ stdenvNoCC.mkDerivation rec {
       adjusted. The curved stem endings have a 10 degree angle. E and F have
       shorter center arms. M is splashed.
     '';
+
     homepage = "http://www.impallari.com/cabin";
     license = lib.licenses.ofl;
     maintainers = [ ];

@@ -15,10 +15,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-KSXfa7K8SxnyPmSNCXZs8C+gGYxkLRu0MFbJ3cotSEQ=";
   };
 
-  dontConfigure = true;
-
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -28,9 +24,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://github.com/letoram/cat9";
     description = "User shell for LASH";
+    homepage = "https://github.com/letoram/cat9";
     license = with lib.licenses; [ unlicense ];
     maintainers = [ ];
     platforms = lib.platforms.all;

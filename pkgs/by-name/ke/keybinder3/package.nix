@@ -4,17 +4,17 @@
   fetchFromGitHub,
   autoconf,
   automake,
-  libtool,
-  pkg-config,
   gnome-common,
+  gobject-introspection,
   gtk-doc,
   gtk3,
   gtk3-x11,
-  gtk3' ? (if stdenv.hostPlatform.isDarwin then gtk3-x11 else gtk3),
+  libtool,
   libx11,
   libxext,
   libxrender,
-  gobject-introspection,
+  pkg-config,
+  gtk3' ? (if stdenv.hostPlatform.isDarwin then gtk3-x11 else gtk3),
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,6 +29,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     autoconf
     automake
@@ -38,6 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
     gtk-doc
     gobject-introspection
   ];
+
   buildInputs = [
     gtk3'
     libx11
@@ -56,7 +58,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Library for registering global key bindings";
     homepage = "https://github.com/kupferlauncher/keybinder/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

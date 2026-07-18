@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  nixosTests,
   python3,
   restic,
-  nixosTests,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -44,7 +44,7 @@ stdenvNoCC.mkDerivation rec {
     changelog = "https://github.com/ngosang/restic-exporter/blob/${src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ minersebas ];
-    mainProgram = "restic-exporter.py";
     platforms = lib.platforms.all;
+    mainProgram = "restic-exporter.py";
   };
 }

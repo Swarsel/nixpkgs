@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  nix-update-script,
   rustPlatform,
   versionCheckHook,
-  nix-update-script,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "iwe";
@@ -19,20 +19,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-8l7cTW8riEa1nFjftc5lnEQcY9gz4dYli9FQBZ5SFT8=";
 
-  cargoBuildFlags = [
-    "--package=iwe"
-    "--package=iwec"
-    "--package=iwes"
-  ];
-
   preCheck = ''
     substituteInPlace crates/iwe/tests/common.rs --replace-fail \
       'binary_path.push("target");' \
       'binary_path.push("target/${stdenv.hostPlatform.rust.rustcTarget}");'
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  cargoBuildFlags = [
+    "--package=iwe"
+    "--package=iwec"
+    "--package=iwes"
+  ];
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -45,10 +45,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Personal knowledge management system (editor plugin & command line utility)";
     homepage = "https://iwe.md/";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       phrmendes
       HeitorAugustoLN
     ];
+
     mainProgram = "iwe";
   };
 })

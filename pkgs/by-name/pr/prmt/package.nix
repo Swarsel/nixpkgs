@@ -1,18 +1,17 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "prmt";
   version = "0.7.0";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
-    repo = "prmt";
     owner = "3axap4eHko";
+    repo = "prmt";
     tag = "v${finalAttrs.version}";
     hash = "sha256-5UgHnQl/kfeJm3EHATmcWF4V7C/rhaGnpDa6Ym41Ns4=";
   };
@@ -32,7 +31,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

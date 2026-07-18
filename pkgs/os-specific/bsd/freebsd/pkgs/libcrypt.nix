@@ -1,28 +1,18 @@
 {
-  mkDerivation,
+  csu,
   include,
   libcMinimal,
   libgcc,
   libmd,
-  csu,
+  mkDerivation,
 }:
 
 mkDerivation {
-  path = "lib/libcrypt";
-  extraPaths = [
-    "sys/kern"
-    "sys/crypto"
-    "lib/libmd"
-    "secure/lib/libcrypt"
-  ];
-
   outputs = [
     "out"
     "man"
     "debug"
   ];
-
-  noLibc = true;
 
   buildInputs = [
     include
@@ -31,9 +21,19 @@ mkDerivation {
     libmd
   ];
 
+  env.MK_TESTS = "no";
+
   preBuild = ''
     export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE -B${csu}/lib"
   '';
 
-  env.MK_TESTS = "no";
+  extraPaths = [
+    "sys/kern"
+    "sys/crypto"
+    "lib/libmd"
+    "secure/lib/libcrypt"
+  ];
+
+  noLibc = true;
+  path = "lib/libcrypt";
 }

@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   installShellFiles,
   libiconv,
@@ -8,7 +9,6 @@
   ninja,
   pkg-config,
   python3Packages,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,11 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-oVdnj3nsYvOHcIOgoamLamriuWu9lucWUQtxVmXZabs=";
   };
 
-  buildInputs = [
-    libmpdclient
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
-
   nativeBuildInputs = [
     installShellFiles
     meson
@@ -34,6 +29,11 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     python3Packages.sphinx
   ];
+
+  buildInputs = [
+    libmpdclient
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
 
   env = lib.optionalAttrs stdenv.hostPlatform.isDarwin { NIX_LDFLAGS = "-liconv"; };
 
@@ -46,12 +46,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://www.musicpd.org/clients/mpc/";
     description = "Minimalist command line interface to MPD";
+    homepage = "https://www.musicpd.org/clients/mpc/";
     changelog = "https://raw.githubusercontent.com/MusicPlayerDaemon/mpc/refs/heads/master/NEWS";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "mpc";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "mpc";
   };
 })

@@ -6,8 +6,8 @@
 }:
 
 buildDunePackage (finalAttrs: {
-  pname = "pgx_lwt";
   inherit (pgx) version src;
+  pname = "pgx_lwt";
 
   propagatedBuildInputs = [
     logs

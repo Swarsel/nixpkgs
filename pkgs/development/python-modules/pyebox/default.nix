@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
   async-timeout,
   beautifulsoup4,
+  buildPythonPackage,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyebox";
   version = "1.1.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "titilambert";
@@ -25,6 +24,8 @@ buildPythonPackage rec {
       --replace-fail "bs4" "beautifulsoup4"
   '';
 
+  # Package has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,9 +34,7 @@ buildPythonPackage rec {
     beautifulsoup4
   ];
 
-  # Package has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyebox" ];
 
   meta = {

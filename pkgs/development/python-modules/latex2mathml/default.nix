@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  uv-build,
-  pytestCheckHook,
-  pytest-cov-stub,
+  buildPythonPackage,
   multidict,
+  pytest-cov-stub,
+  pytestCheckHook,
   syrupy,
+  uv-build,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "latex2mathml";
   version = "3.81.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "roniemartinez";
@@ -21,7 +20,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-NY8SVEN9i8OcT8YS8887/TgLuIYAsS26me2BqGW0ubs=";
   };
 
-  build-system = [ uv-build ];
+  # nixpkgs is only at uv_build 0.10.0
+  postPatch = ''
+    substituteInPlace pyproject.toml \
+      --replace-fail 'uv_build>=0.10.11,<0.11.0' 'uv_build'
+  '';
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -30,12 +33,8 @@ buildPythonPackage (finalAttrs: {
     syrupy
   ];
 
-  # nixpkgs is only at uv_build 0.10.0
-  postPatch = ''
-    substituteInPlace pyproject.toml \
-      --replace-fail 'uv_build>=0.10.11,<0.11.0' 'uv_build'
-  '';
-
+  build-system = [ uv-build ];
+  pyproject = true;
   pythonImportsCheck = [ "latex2mathml" ];
 
   meta = {
@@ -43,7 +42,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/roniemartinez/latex2mathml";
     changelog = "https://github.com/roniemartinez/latex2mathml/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
-    mainProgram = "latex2mathml";
     maintainers = with lib.maintainers; [ sfrijters ];
+    mainProgram = "latex2mathml";
   };
 })

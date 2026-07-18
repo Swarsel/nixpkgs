@@ -1,16 +1,14 @@
 {
   buildDunePackage,
-  js_of_ocaml-ppx,
   js_of_ocaml,
+  js_of_ocaml-ppx,
   reactivedata,
   tyxml,
 }:
 
 buildDunePackage {
-  pname = "js_of_ocaml-tyxml";
-
   inherit (js_of_ocaml) version src meta;
-
+  pname = "js_of_ocaml-tyxml";
   buildInputs = [ js_of_ocaml-ppx ];
 
   propagatedBuildInputs = [

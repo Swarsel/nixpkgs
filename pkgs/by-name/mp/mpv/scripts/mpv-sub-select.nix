@@ -1,7 +1,7 @@
 {
   lib,
-  buildLua,
   fetchFromGitHub,
+  buildLua,
   nix-update-script,
 }:
 
@@ -9,7 +9,6 @@ buildLua (finalAttrs: {
   pname = "mpv-sub-select";
   version = "0-unstable-2025-04-04";
 
-  scriptPath = "sub-select.lua";
   src = fetchFromGitHub {
     owner = "CogentRedTester";
     repo = "mpv-sub-select";
@@ -28,6 +27,7 @@ buildLua (finalAttrs: {
     cp sub-select.json '${placeholder "out"}/share/mpv/script-opts'
   '';
 
+  scriptPath = "sub-select.lua";
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   ncurses,
+  pkg-config,
   which,
 }:
 
@@ -22,16 +22,16 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     which
   ];
-  buildInputs = [ ncurses ];
 
+  buildInputs = [ ncurses ];
   makeFlags = [ "PREFIX=$(out)" ];
 
   meta = {
-    homepage = "https://github.com/Xfennec/progress";
     description = "Tool that shows the progress of coreutils programs";
+    homepage = "https://github.com/Xfennec/progress";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ pSub ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "progress";
   };
 })

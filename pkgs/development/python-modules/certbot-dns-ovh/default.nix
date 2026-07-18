@@ -8,13 +8,9 @@
 }:
 
 buildPythonPackage rec {
-  pname = "certbot-dns-ovh";
-  pyproject = true;
-
   inherit (certbot) src version;
-
-  sourceRoot = "${src.name}/certbot-dns-ovh";
-
+  pname = "certbot-dns-ovh";
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -23,7 +19,7 @@ buildPythonPackage rec {
     dns-lexicon
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   pytestFlags = [
     "-pno:cacheprovider"
@@ -31,6 +27,8 @@ buildPythonPackage rec {
     # Monitor https://github.com/certbot/certbot/issues/9606 for a solution
     "-Wignore::DeprecationWarning"
   ];
+
+  sourceRoot = "${src.name}/certbot-dns-ovh";
 
   meta = certbot.meta // {
     description = "OVH DNS Authenticator plugin for Certbot";

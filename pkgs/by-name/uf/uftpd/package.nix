@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   autoreconfHook,
-  libuev,
   libite,
+  libuev,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     autoreconfHook
   ];
+
   buildInputs = [
     libuev
     libite
@@ -32,7 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "FTP/TFTP server for Linux that just works";
     homepage = "https://troglobit.com/projects/uftpd/";
     license = lib.licenses.isc;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ vifino ];
+    platforms = lib.platforms.unix;
   };
 })

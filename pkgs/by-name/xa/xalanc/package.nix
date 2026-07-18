@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  xercesc,
-  getopt,
   cmake,
+  getopt,
+  xercesc,
 }:
 
 stdenv.mkDerivation {
@@ -33,16 +33,17 @@ stdenv.mkDerivation {
   '';
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     xercesc
     getopt
   ];
 
   meta = {
-    homepage = "https://xalan.apache.org/";
     description = "XSLT processor for transforming XML documents";
-    mainProgram = "Xalan";
+    homepage = "https://xalan.apache.org/";
     license = lib.licenses.asl20;
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "Xalan";
   };
 }

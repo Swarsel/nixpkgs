@@ -1,43 +1,36 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  rustPlatform,
-  pythonAtLeast,
-
-  # nativeBuildInputs
-  pkg-config,
-
-  # buildInputs
-  openssl,
-  protobuf,
-
-  # dependencies
-  lance-namespace,
-  numpy,
-  pyarrow,
-
-  # optional-dependencies
-  torch,
-
+  buildPythonPackage,
   # tests
   datafusion,
   duckdb,
+  # dependencies
+  lance-namespace,
   ml-dtypes,
+  numpy,
+  # buildInputs
+  openssl,
   pandas,
   pillow,
+  # nativeBuildInputs
+  pkg-config,
   polars,
+  protobuf,
   psutil,
+  pyarrow,
   pytestCheckHook,
+  pythonAtLeast,
+  rustPlatform,
+  # optional-dependencies
+  torch,
   tqdm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pylance";
   version = "8.0.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "lancedb";
@@ -46,47 +39,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-pxggvF23u3Wfm6YdaHwbDUZDUwtJ4tOaTLViUfGZ0B8=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/python";
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      sourceRoot
-      ;
-    hash = "sha256-VSy1cOshPLAic+1HkTGiavdNRffiEVAlWThNeebJSyg=";
-  };
-
   nativeBuildInputs = [
     pkg-config
     protobuf # for protoc
     rustPlatform.cargoSetupHook
   ];
 
-  build-system = [
-    rustPlatform.cargoSetupHook
-    rustPlatform.maturinBuildHook
-  ];
-
   buildInputs = [
     openssl
     protobuf
   ];
-
-  pythonRelaxDeps = [ "pyarrow" ];
-
-  dependencies = [
-    lance-namespace
-    numpy
-    pyarrow
-  ];
-
-  optional-dependencies = {
-    torch = [ torch ];
-  };
-
-  pythonImportsCheck = [ "lance" ];
 
   nativeCheckInputs = [
     datafusion
@@ -105,9 +67,29 @@ buildPythonPackage (finalAttrs: {
     cd python/tests
   '';
 
-  pytestFlags = lib.optionals (pythonAtLeast "3.14") [
-    # DeprecationWarning: '_UnionGenericAlias' is deprecated and slated for removal in Python 3.17
-    "-Wignore::DeprecationWarning"
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+
+  build-system = [
+    rustPlatform.cargoSetupHook
+    rustPlatform.maturinBuildHook
+  ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      sourceRoot
+      ;
+
+    hash = "sha256-VSy1cOshPLAic+1HkTGiavdNRffiEVAlWThNeebJSyg=";
+  };
+
+  dependencies = [
+    lance-namespace
+    numpy
+    pyarrow
   ];
 
   disabledTestPaths = lib.optionals (pythonAtLeast "3.14") [
@@ -174,7 +156,20 @@ buildPythonPackage (finalAttrs: {
     "test_torch_index_with_nans"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  optional-dependencies = {
+    torch = [ torch ];
+  };
+
+  pyproject = true;
+
+  pytestFlags = lib.optionals (pythonAtLeast "3.14") [
+    # DeprecationWarning: '_UnionGenericAlias' is deprecated and slated for removal in Python 3.17
+    "-Wignore::DeprecationWarning"
+  ];
+
+  pythonImportsCheck = [ "lance" ];
+  pythonRelaxDeps = [ "pyarrow" ];
+  sourceRoot = "${finalAttrs.src.name}/python";
 
   meta = {
     description = "Python wrapper for Lance columnar format";

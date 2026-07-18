@@ -1,9 +1,9 @@
 {
+  lib,
+  stdenv,
   fetchFromGitHub,
   help2man,
-  lib,
   nix-update-script,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,13 +18,14 @@ stdenv.mkDerivation (finalAttrs: {
     postFetch = "rm -f $out/.flox/env/manifest.lock";
   };
 
+  nativeBuildInputs = [ help2man ];
+
   makeFlags = [
     "PREFIX=$(out)"
     "VERSION=${finalAttrs.version}"
   ];
-  nativeBuildInputs = [ help2man ];
-  doCheck = true;
 
+  doCheck = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

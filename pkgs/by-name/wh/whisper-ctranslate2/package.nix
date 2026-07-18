@@ -1,16 +1,15 @@
 {
   lib,
   stdenv,
-  python3,
-  python3Packages,
   fetchFromGitHub,
   nix-update-script,
+  python3,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "whisper-ctranslate2";
   version = "0.5.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Softcatala";
@@ -18,6 +17,21 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-fbdvbmrZWQoqri6iZMDbElXX/sfv6gu0NDjglviLxO4=";
   };
+
+  # Tests fail in build sandbox on aarch64-linux, but the program still works at
+  # runtime. See https://github.com/microsoft/onnxruntime/issues/10038.
+  doCheck = with stdenv.buildPlatform; !(isAarch && isLinux);
+
+  nativeCheckInputs = with python3Packages; [
+    nose2
+  ];
+
+  checkPhase = ''
+    runHook preCheck
+    # Note: we are not running the `e2e-tests` because they require downloading models from the internet.
+    ${python3.interpreter} -m nose2 -s tests
+    runHook postCheck
+  '';
 
   build-system = [ python3Packages.setuptools ];
 
@@ -30,20 +44,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tqdm
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    nose2
-  ];
-
-  checkPhase = ''
-    runHook preCheck
-    # Note: we are not running the `e2e-tests` because they require downloading models from the internet.
-    ${python3.interpreter} -m nose2 -s tests
-    runHook postCheck
-  '';
-  # Tests fail in build sandbox on aarch64-linux, but the program still works at
-  # runtime. See https://github.com/microsoft/onnxruntime/issues/10038.
-  doCheck = with stdenv.buildPlatform; !(isAarch && isLinux);
-
+  pyproject = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

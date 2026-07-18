@@ -1,26 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  makeWrapper,
-
   autoreconfHook,
-  pkg-config,
-
   cairo,
   glib,
   libnotify,
+  makeWrapper,
+  nix-update-script,
+  pkg-config,
   rofi-unwrapped,
-
-  x11Support ? true,
-  xclip,
-  xdotool,
-
-  waylandSupport ? true,
   wl-clipboard,
   wtype,
-
-  nix-update-script,
+  xclip,
+  xdotool,
+  waylandSupport ? true,
+  x11Support ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,6 +32,18 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Look for plugin-related files in $out/lib/rofi
     ./0001-Patch-plugindir-to-output.patch
+  ];
+
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
+    makeWrapper
+  ];
+
+  buildInputs = [
+    cairo
+    glib
+    rofi-unwrapped
   ];
 
   postFixup = ''
@@ -58,28 +65,18 @@ stdenv.mkDerivation (finalAttrs: {
      }
   '';
 
-  nativeBuildInputs = [
-    autoreconfHook
-    pkg-config
-    makeWrapper
-  ];
-
-  buildInputs = [
-    cairo
-    glib
-    rofi-unwrapped
-  ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Emoji selector plugin for Rofi";
     homepage = "https://github.com/Mange/rofi-emoji";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       cole-h
       Mange
     ];
+
     platforms = lib.platforms.linux;
   };
 })

@@ -1,13 +1,13 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
-  pkg-config,
-  libao,
-  json_c,
-  libgcrypt,
-  ffmpeg,
+  fetchFromGitHub,
   curl,
+  ffmpeg,
+  json_c,
+  libao,
+  libgcrypt,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,6 +22,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libao
     json_c
@@ -33,11 +34,11 @@ stdenv.mkDerivation (finalAttrs: {
   makeFlags = [ "PREFIX=$(out)" ];
 
   meta = {
-    changelog = "https://github.com/PromyLOPh/pianobar/raw/${finalAttrs.src.rev}/ChangeLog";
     description = "Console front-end for Pandora.com";
     homepage = "https://6xq.net/pianobar/";
-    platforms = lib.platforms.unix;
+    changelog = "https://github.com/PromyLOPh/pianobar/raw/${finalAttrs.src.rev}/ChangeLog";
     license = lib.licenses.mit; # expat version
+    platforms = lib.platforms.unix;
     mainProgram = "pianobar";
   };
 })

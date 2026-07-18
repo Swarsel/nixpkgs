@@ -1,15 +1,14 @@
 {
   lib,
-  aiohttp,
-  xmltodict,
-  buildPythonPackage,
   fetchFromGitHub,
+  aiohttp,
+  buildPythonPackage,
+  xmltodict,
 }:
 
 buildPythonPackage rec {
   pname = "omnilogic";
   version = "0.5.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "djtimca";
@@ -25,7 +24,7 @@ buildPythonPackage rec {
 
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "omnilogic" ];
 
   meta = {

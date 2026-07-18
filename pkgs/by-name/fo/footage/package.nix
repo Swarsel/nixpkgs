@@ -2,29 +2,29 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  rustPlatform,
-  cargo,
-  rustc,
+  a52dec,
   appstream-glib,
   blueprint-compiler,
+  cargo,
   desktop-file-utils,
+  fdk_aac,
+  ffmpeg,
   gettext,
   glib,
   gst_all_1,
   gtk4,
   libadwaita,
+  libmpeg2,
   meson,
   ninja,
   pkg-config,
+  rustPlatform,
+  rustc,
+  svt-av1,
+  vo-aacenc,
   wrapGAppsHook4,
-  a52dec,
-  fdk_aac,
-  ffmpeg,
   x264,
   x265,
-  vo-aacenc,
-  svt-av1,
-  libmpeg2,
 }:
 
 stdenv.mkDerivation rec {
@@ -36,11 +36,6 @@ stdenv.mkDerivation rec {
     repo = "Footage";
     tag = "v${version}";
     hash = "sha256-VEL96JrJ5eJEoX2miiB4dqGUXizNlYWCUZkkYkh09B8=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-H8sv7faI/qbmcP7ir++/vIpN+cvRQ254rXmAvGyjdsY=";
   };
 
   nativeBuildInputs = [
@@ -88,6 +83,11 @@ stdenv.mkDerivation rec {
       --prefix PATH : "${lib.makeBinPath [ gst_all_1.gstreamer ]}"
     )
   '';
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-H8sv7faI/qbmcP7ir++/vIpN+cvRQ254rXmAvGyjdsY=";
+  };
 
   meta = {
     description = "Video editing tool that allows you to trim, flip, rotate, and crop clips";

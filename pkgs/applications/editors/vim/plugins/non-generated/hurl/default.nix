@@ -1,11 +1,10 @@
 {
-  vimUtils,
   hurl,
+  vimUtils,
 }:
 vimUtils.buildVimPlugin {
-  pname = "hurl";
   inherit (hurl) version;
-
+  pname = "hurl";
   # https://hurl.dev/
   src = "${hurl.src}/contrib/vim";
 }

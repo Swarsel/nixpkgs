@@ -1,80 +1,75 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-  writeScript,
-  writeShellScriptBin,
-  gradio,
-
-  # build-system
-  hatchling,
-  hatch-requirements-txt,
-  hatch-fancy-pypi-readme,
-
-  # web assets
-  zip,
-  nodejs-slim,
-  pnpm_10,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-
+  altair,
   # dependencies
   anyio,
   audioop-lts,
+  # oauth
+  authlib,
+  boto3,
   brotli,
+  build,
+  buildPythonPackage,
+  diffusers,
+  docker,
   fastapi,
+  fetchPnpmDeps,
+  ffmpeg,
+  gradio,
   gradio-client,
+  gradio-pdf,
   groovy,
+  hatch-fancy-pypi-readme,
+  hatch-requirements-txt,
+  # build-system
+  hatchling,
   hf-gradio,
   httpx,
   huggingface-hub,
+  hypothesis,
+  ipython,
+  itsdangerous,
   jinja2,
   markupsafe,
   matplotlib,
+  mcp,
+  nodejs-slim,
   numpy,
   orjson,
   packaging,
   pandas,
   pillow,
+  pnpmConfigHook,
+  pnpm_10,
+  polars,
   pydantic,
-  python-multipart,
   pydub,
+  pytest-asyncio,
+  # tests
+  pytestCheckHook,
+  python-multipart,
+  pythonAtLeast,
   pyyaml,
+  respx,
   safehttpx,
+  scikit-image,
   semantic-version,
   starlette,
   tomlkit,
-  typer,
-  typing-extensions,
-  uvicorn,
-
-  # oauth
-  authlib,
-  itsdangerous,
-
-  # tests
-  pytestCheckHook,
-  build,
-  hypothesis,
-  altair,
-  boto3,
-  diffusers,
-  docker,
-  gradio-pdf,
-  ffmpeg,
-  ipython,
-  mcp,
-  polars,
-  pytest-asyncio,
-  respx,
-  scikit-image,
   torch,
   tqdm,
   transformers,
+  typer,
+  typing-extensions,
+  uvicorn,
   vega-datasets,
   writableTmpDirAsHomeHook,
+  writeScript,
+  writeShellScriptBin,
+  # web assets
+  zip,
 }:
 let
   pnpm = pnpm_10;
@@ -82,8 +77,6 @@ in
 buildPythonPackage (finalAttrs: {
   pname = "gradio";
   version = "6.20.0"; # please always backport gradio changes
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "gradio-app";
@@ -101,20 +94,6 @@ buildPythonPackage (finalAttrs: {
     ./fix-transformers-pipelines-imports.patch
   ];
 
-  pnpmDeps = fetchPnpmDeps {
-    pname = "gradio"; # to avoid a "sans-reverse-dependencies" duplicate
-    inherit (finalAttrs) version src;
-    inherit pnpm;
-    fetcherVersion = 4;
-    hash = "sha256-xCxr/jnp9emeB6THGt4cumvApw6fSZQwG2NGOcvR0yQ=";
-  };
-
-  env = {
-    # test/test_utils.py
-    # @settings(derandomize=os.getenv("CI") is not None)
-    CI = "true";
-  };
-
   nativeBuildInputs = [
     zip
     nodejs-slim
@@ -122,6 +101,64 @@ buildPythonPackage (finalAttrs: {
     pnpmConfigHook
     writableTmpDirAsHomeHook
   ];
+
+  env = {
+    # test/test_utils.py
+    # @settings(derandomize=os.getenv("CI") is not None)
+    CI = "true";
+  };
+
+  preBuild = ''
+    pnpm build
+    pnpm package
+  '';
+
+  nativeCheckInputs = [
+    altair
+    boto3
+    brotli
+    diffusers
+    build
+    docker
+    ffmpeg
+    gradio-pdf
+    hypothesis
+    ipython
+    mcp
+    polars
+    pytest-asyncio
+    pytestCheckHook
+    respx
+    # shap is needed as well, but breaks too often
+    scikit-image
+    torch
+    tqdm
+    transformers
+    vega-datasets
+
+    # mock calls to `shutil.which(...)`
+    (writeShellScriptBin "npm" "false")
+  ]
+  ++ finalAttrs.passthru.optional-dependencies.oauth
+  ++ pydantic.optional-dependencies.email;
+
+  # Add a pytest hook skipping tests that access network, marking them as "Expected fail" (xfail).
+  # We additionally xfail FileNotFoundError, since the gradio devs often fail to upload test assets to pypi.
+  preCheck = ''
+    cat ${./conftest-skip-network-errors.py} >> test/conftest.py
+  ''
+  # OSError: [Errno 24] Too many open files
+  + lib.optionalString stdenv.hostPlatform.isDarwin ''
+    ulimit -n 4096
+  '';
+
+  # check the binary works outside the build env
+  postCheck = ''
+    env --ignore-environment $out/bin/gradio environment >/dev/null
+  '';
+
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
 
   build-system = [
     hatchling
@@ -162,54 +199,26 @@ buildPythonPackage (finalAttrs: {
     audioop-lts
   ];
 
-  optional-dependencies.oauth = [
-    authlib
-    itsdangerous
+  disabledTestMarks = [
+    "flaky"
   ];
 
-  nativeCheckInputs = [
-    altair
-    boto3
-    brotli
-    diffusers
-    build
-    docker
-    ffmpeg
-    gradio-pdf
-    hypothesis
-    ipython
-    mcp
-    polars
-    pytest-asyncio
-    pytestCheckHook
-    respx
-    # shap is needed as well, but breaks too often
-    scikit-image
-    torch
-    tqdm
-    transformers
-    vega-datasets
+  disabledTestPaths = [
+    # 100% touches network
+    "test/test_networking.py"
+    "client/python/test/test_client.py"
 
-    # mock calls to `shutil.which(...)`
-    (writeShellScriptBin "npm" "false")
-  ]
-  ++ finalAttrs.passthru.optional-dependencies.oauth
-  ++ pydantic.optional-dependencies.email;
+    # makes pytest freeze 50% of the time
+    "test/test_interfaces.py"
 
-  preBuild = ''
-    pnpm build
-    pnpm package
-  '';
+    # Local network tests dependant on port availability (port 7860-7959)
+    "test/test_routes.py"
 
-  # Add a pytest hook skipping tests that access network, marking them as "Expected fail" (xfail).
-  # We additionally xfail FileNotFoundError, since the gradio devs often fail to upload test assets to pypi.
-  preCheck = ''
-    cat ${./conftest-skip-network-errors.py} >> test/conftest.py
-  ''
-  # OSError: [Errno 24] Too many open files
-  + lib.optionalString stdenv.hostPlatform.isDarwin ''
-    ulimit -n 4096
-  '';
+    # No module named build.__main__; 'build' is a package and cannot be directly executed
+    "test/test_docker/test_reverse_proxy/test_reverse_proxy.py"
+    "test/test_docker/test_reverse_proxy_fastapi_mount/test_reverse_proxy_fastapi_mount.py"
+    "test/test_docker/test_reverse_proxy_root_path/test_reverse_proxy_root_path.py"
+  ];
 
   disabledTests = [
     # Actually broken
@@ -363,26 +372,20 @@ buildPythonPackage (finalAttrs: {
     "test_varying_output_forms_with_generators"
   ];
 
-  disabledTestPaths = [
-    # 100% touches network
-    "test/test_networking.py"
-    "client/python/test/test_client.py"
-
-    # makes pytest freeze 50% of the time
-    "test/test_interfaces.py"
-
-    # Local network tests dependant on port availability (port 7860-7959)
-    "test/test_routes.py"
-
-    # No module named build.__main__; 'build' is a package and cannot be directly executed
-    "test/test_docker/test_reverse_proxy/test_reverse_proxy.py"
-    "test/test_docker/test_reverse_proxy_fastapi_mount/test_reverse_proxy_fastapi_mount.py"
-    "test/test_docker/test_reverse_proxy_root_path/test_reverse_proxy_root_path.py"
+  optional-dependencies.oauth = [
+    authlib
+    itsdangerous
   ];
 
-  disabledTestMarks = [
-    "flaky"
-  ];
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) version src;
+    inherit pnpm;
+    pname = "gradio"; # to avoid a "sans-reverse-dependencies" duplicate
+    fetcherVersion = 4;
+    hash = "sha256-xCxr/jnp9emeB6THGt4cumvApw6fSZQwG2NGOcvR0yQ=";
+  };
+
+  pyproject = true;
 
   pytestFlags = [
     "-x" # abort on first failure
@@ -392,14 +395,7 @@ buildPythonPackage (finalAttrs: {
     "test/components/test_video.py::TestVideo::test_component_functions"
   ];
 
-  # check the binary works outside the build env
-  postCheck = ''
-    env --ignore-environment $out/bin/gradio environment >/dev/null
-  '';
-
   pythonImportsCheck = [ "gradio" ];
-
-  __darwinAllowLocalNetworking = true;
 
   # Cyclic dependencies are fun!
   # This is gradio without gradio-client and hf-gradio
@@ -408,6 +404,7 @@ buildPythonPackage (finalAttrs: {
       (gradio.override {
         gradio-client = null;
         gradio-pdf = null;
+
         # gradio imports hf_gradio at module load (gradio/routes.py), so we must keep it for the
         # import to succeed.
         # hf-gradio depends on gradio-client, whose test suite pulls in
@@ -419,18 +416,11 @@ buildPythonPackage (finalAttrs: {
       }).overridePythonAttrs
         (old: {
           pname = old.pname + "-sans-reverse-dependencies";
-          pythonRemoveDeps = (old.pythonRemoveDeps or [ ]) ++ [ "gradio-client" ];
-          # we aggressively remove all checkPhase related attrs
-          # to save on rebuilds during bumps
-          doInstallCheck = false;
-          doCheck = false;
           postPatch = "";
-          preCheck = "";
-          disabledTests = [ ];
-          disabledTestPaths = [ ];
-          disabledTestMarks = [ ];
-          pytestFlags = [ ];
           preBuild = ":"; # skip pnpm build, for speed
+          doCheck = false;
+          preCheck = "";
+
           postInstall = ''
             shopt -s globstar
             for f in $out/**/*.py; do
@@ -438,8 +428,17 @@ buildPythonPackage (finalAttrs: {
             done
             shopt -u globstar
           '';
-          pythonImportsCheck = null;
+
+          # we aggressively remove all checkPhase related attrs
+          # to save on rebuilds during bumps
+          doInstallCheck = false;
+          disabledTestMarks = [ ];
+          disabledTestPaths = [ ];
+          disabledTests = [ ];
           dontCheckRuntimeDeps = true;
+          pytestFlags = [ ];
+          pythonImportsCheck = null;
+          pythonRemoveDeps = (old.pythonRemoveDeps or [ ]) ++ [ "gradio-client" ];
         });
 
     # We can't use gitUpdater, because we need to update the pnpm hash.
@@ -467,9 +466,9 @@ buildPythonPackage (finalAttrs: {
   };
 
   meta = {
+    description = "Python library for easily interacting with trained machine learning models";
     homepage = "https://www.gradio.app/";
     changelog = "https://github.com/gradio-app/gradio/releases/tag/${finalAttrs.src.tag}";
-    description = "Python library for easily interacting with trained machine learning models";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ pbsds ];
   };

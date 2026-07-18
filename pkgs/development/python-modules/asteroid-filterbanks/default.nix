@@ -1,27 +1,23 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch2,
-
-  # build-system
-  setuptools,
-
   # dependencies
   numpy,
-  torch,
-  typing-extensions,
-
   # tests
   pytestCheckHook,
   scipy,
+  # build-system
+  setuptools,
+  torch,
+  typing-extensions,
 }:
 
 buildPythonPackage {
   pname = "asteroid-filterbanks";
   version = "0.4.0-unstable-2024-12-02";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "asteroid-team";
@@ -33,10 +29,15 @@ buildPythonPackage {
 
   patches = [
     (fetchpatch2 {
+      hash = "sha256-wBwQJzG/ET+XbV39l3UvctwhR/5TG+WgdxrPa/nyhRU=";
       name = "numpy2-compat.patch";
       url = "https://github.com/asteroid-team/asteroid-filterbanks/commit/2c22e97c782f0e57e49d2beb56054c71ad5ccb08.patch";
-      hash = "sha256-wBwQJzG/ET+XbV39l3UvctwhR/5TG+WgdxrPa/nyhRU=";
     })
+  ];
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    scipy
   ];
 
   build-system = [ setuptools ];
@@ -45,13 +46,6 @@ buildPythonPackage {
     numpy
     torch
     typing-extensions
-  ];
-
-  pythonImportsCheck = [ "asteroid_filterbanks" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    scipy
   ];
 
   disabledTests = [
@@ -75,6 +69,9 @@ buildPythonPackage {
     # Flaky: AssertionError: Tensor-likes are not close!
     "test_fb_def_and_forward_lowdim"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "asteroid_filterbanks" ];
 
   meta = {
     description = "PyTorch-based audio source separation toolkit for researchers";

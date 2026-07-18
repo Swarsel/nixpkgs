@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   autoreconfHook,
   pkg-config,
@@ -24,8 +24,8 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Interface description language used by DirectFB";
-    mainProgram = "fluxcomp";
     homepage = "https://github.com/deniskropp/flux";
     license = lib.licenses.mit;
+    mainProgram = "fluxcomp";
   };
 }

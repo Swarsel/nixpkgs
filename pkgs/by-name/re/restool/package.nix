@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   bash,
   coreutils,
@@ -24,10 +24,17 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-ryTDyqSy39e8Omf7l8lK4mLWr8jccDhMVPldkVGSQVo=";
   };
 
+  postPatch = ''
+    # -Werror makes this derivation fragile on compiler version upgrades, patch
+    # it out.
+    sed -i /-Werror/d Makefile
+  '';
+
   nativeBuildInputs = [
     file
     pandoc
   ];
+
   buildInputs = [
     bash
     coreutils
@@ -38,19 +45,12 @@ stdenv.mkDerivation (finalAttrs: {
     which
   ];
 
-  enableParallelBuilding = true;
   makeFlags = [
     "prefix="
     "bindir_completion=/share/bash-completion/completions"
     "DESTDIR=$(out)"
     "VERSION=${finalAttrs.version}"
   ];
-
-  postPatch = ''
-    # -Werror makes this derivation fragile on compiler version upgrades, patch
-    # it out.
-    sed -i /-Werror/d Makefile
-  '';
 
   preFixup = ''
     # wrapProgram interacts badly with the ls-main tool, which relies on the
@@ -62,15 +62,19 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "DPAA2 Resource Management Tool";
+
     longDescription = ''
       restool is a user space application providing the ability to dynamically
       create and manage DPAA2 containers and objects from Linux.
     '';
+
     homepage = "https://github.com/nxp-qoriq/restool";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

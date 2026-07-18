@@ -1,37 +1,32 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  buildPackages,
   buildPythonPackage,
-  isPyPy,
   fetchPypi,
+  isPyPy,
   libpq,
+  openssl,
   postgresql,
   postgresqlTestHook,
-  openssl,
-  sphinxHook,
-  sphinx-better-theme,
-  buildPackages,
   setuptools,
+  sphinx-better-theme,
+  sphinxHook,
 }:
 
 buildPythonPackage rec {
   pname = "psycopg2";
   version = "2.9.11";
-  pyproject = true;
-
-  # Extension modules don't work well with PyPy. Use psycopg2cffi instead.
-  # c.f. https://github.com/NixOS/nixpkgs/pull/104151#issuecomment-729750892
-  disabled = isPyPy;
-
-  outputs = [
-    "out"
-    "doc"
-  ];
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-lk0xyvco4hfGl/936mnCughl+kHsILsA8Jd+Yv3MUuM=";
   };
+
+  outputs = [
+    "out"
+    "doc"
+  ];
 
   postPatch = ''
     # Preferably upstream would not depend on pg_config because config scripts are incompatible with cross-compilation, however postgresql's pc file is lacking information.
@@ -46,13 +41,11 @@ buildPythonPackage rec {
     sphinx-better-theme
   ];
 
-  build-system = [
-    setuptools
-  ];
-
   buildInputs = [ libpq ] ++ lib.optionals stdenv.hostPlatform.isDarwin [ openssl ];
 
-  sphinxRoot = "doc/src";
+  env = {
+    PGDATABASE = "psycopg2_test";
+  };
 
   # test suite breaks at some point with:
   #   current transaction is aborted, commands ignored until end of transaction block
@@ -63,23 +56,31 @@ buildPythonPackage rec {
     postgresqlTestHook
   ];
 
-  env = {
-    PGDATABASE = "psycopg2_test";
-  };
+  build-system = [
+    setuptools
+  ];
 
-  pythonImportsCheck = [ "psycopg2" ];
+  # Extension modules don't work well with PyPy. Use psycopg2cffi instead.
+  # c.f. https://github.com/NixOS/nixpkgs/pull/104151#issuecomment-729750892
+  disabled = isPyPy;
 
   disallowedReferences = lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
     buildPackages.libpq
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "psycopg2" ];
+  sphinxRoot = "doc/src";
+
   meta = {
     description = "PostgreSQL database adapter for the Python programming language";
     homepage = "https://www.psycopg.org";
+
     license = with lib.licenses; [
       lgpl3Plus
       zpl20
     ];
+
     maintainers = [ ];
   };
 }

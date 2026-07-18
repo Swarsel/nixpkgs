@@ -22,11 +22,6 @@ stdenv.mkDerivation rec {
     hash = "sha256-HnlgBQKT99vVkl6DWqMkN8Vz+QzzZBGj5tqOJ22VkJ8=";
   };
 
-  dontWrapQtApps = true;
-
-  # kdecoration headers include C++20 spaceship operator
-  env.NIX_CFLAGS_COMPILE = "-std=c++20";
-
   nativeBuildInputs = [
     cmake
     extra-cmake-modules
@@ -39,6 +34,10 @@ stdenv.mkDerivation rec {
     kdecoration
     libplasma
   ];
+
+  # kdecoration headers include C++20 spaceship operator
+  env.NIX_CFLAGS_COMPILE = "-std=c++20";
+  dontWrapQtApps = true;
 
   meta = {
     description = "Plasma 6 applet in order to show window buttons in your panels";

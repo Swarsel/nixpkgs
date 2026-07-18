@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  gitUpdater,
-  cmake,
-  pkg-config,
-  ffmpeg,
-  libGLU,
   alsa-lib,
+  cmake,
+  fetchpatch,
+  ffmpeg,
+  gitUpdater,
+  libGLU,
+  libsForQt5,
   libx11,
   libxrandr,
-  sndio,
-  libsForQt5,
+  pkg-config,
   qt6Packages,
+  sndio,
   withQt6 ? false,
 }:
 
@@ -35,25 +35,25 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix FTBFS with Qt 6.7.1
     # Remove when version > 0.111
     (fetchpatch {
+      hash = "sha256-xRalKIOb1qWgqJsFLcm7uUOblEfHDYbkukmcr4/+4Qc=";
       name = "0001-punes-Fix-compatibility-with-Qt-6.7.1.patch";
       url = "https://github.com/punesemu/puNES/commit/6e51b1a6107ad3de97edd40ae4ec2d41b32d804f.patch";
-      hash = "sha256-xRalKIOb1qWgqJsFLcm7uUOblEfHDYbkukmcr4/+4Qc=";
     })
 
     # Fix FTBFS with Qt 6.9
     # Remove when version > 0.111
     (fetchpatch {
+      hash = "sha256-+s7AdaUBgCseQs6Mxat/cDmQ77s6K6J0fUfyihP82jM=";
       name = "0002-punes-Updated-code-for-Qt-6.9.0-compatibility.patch";
       url = "https://github.com/punesemu/puNES/commit/ff906e0a79eeac9a2d16783e0accf65748bb275e.patch";
-      hash = "sha256-+s7AdaUBgCseQs6Mxat/cDmQ77s6K6J0fUfyihP82jM=";
     })
 
     # Fix compat with FFmpeg 8, part 1
     # Remove when version > 0.111
     (fetchpatch {
+      hash = "sha256-l71n+c7W2vJKOJKLgfMfDJtof+UBzcVUgXMTn6ap1XI=";
       name = "0003-punes-Dont-use-deprecated-avcodec_close.patch";
       url = "https://github.com/punesemu/puNES/commit/49f86fcf0fab37d4761b713b0a9e7dc342b8f594.patch";
-      hash = "sha256-l71n+c7W2vJKOJKLgfMfDJtof+UBzcVUgXMTn6ap1XI=";
     })
   ];
 
@@ -104,11 +104,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Qt-based Nintendo Entertainment System emulator and NSF/NSFe Music Player";
-    mainProgram = "punes";
     homepage = "https://github.com/punesemu/puNES";
     changelog = "https://github.com/punesemu/puNES/blob/v${finalAttrs.version}/ChangeLog";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ OPNA2608 ];
     platforms = with lib.platforms; linux ++ freebsd ++ openbsd ++ windows;
+    mainProgram = "punes";
   };
 })

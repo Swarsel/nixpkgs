@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  libzip,
   boost,
-  wt,
-  libconfig,
-  pkg-config,
+  cmake,
   libarchive,
+  libconfig,
+  libzip,
+  pkg-config,
+  wt,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,8 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
       'find_package(Boost REQUIRED COMPONENTS program_options)'
   '';
 
-  enableParallelBuilding = true;
-
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -52,12 +50,14 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s ${wt}/share/Wt/resources $out/share/fileshelter/docroot/resources
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://github.com/epoupon/fileshelter";
     description = "One-click file sharing web application";
-    mainProgram = "fileshelter";
-    maintainers = [ ];
+    homepage = "https://github.com/epoupon/fileshelter";
     license = lib.licenses.gpl3;
+    maintainers = [ ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "fileshelter";
   };
 })

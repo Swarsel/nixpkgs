@@ -1,18 +1,17 @@
 {
   lib,
   stdenv,
-  mkDerivation,
+  boot-install,
   bsdSetupHook,
   freebsdSetupHook,
+  groff,
+  install,
   makeMinimal,
   mandoc,
-  groff,
-  boot-install,
-  install,
+  mkDerivation,
 }:
 
 mkDerivation {
-  path = "lib/libnetbsd";
   nativeBuildInputs = [
     bsdSetupHook
     freebsdSetupHook
@@ -21,6 +20,7 @@ mkDerivation {
     groff
     (if stdenv.hostPlatform == stdenv.buildPlatform then boot-install else install)
   ];
+
   makeFlags = [
     "STRIP=-s" # flag to install, not command
     "MK_WERROR=no"
@@ -28,4 +28,5 @@ mkDerivation {
   ++ lib.optional (stdenv.hostPlatform == stdenv.buildPlatform) "INSTALL=boot-install";
 
   alwaysKeepStatic = true;
+  path = "lib/libnetbsd";
 }

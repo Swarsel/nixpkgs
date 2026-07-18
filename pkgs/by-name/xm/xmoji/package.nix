@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   fontconfig,
   harfbuzz,
   libpng,
+  libxcb-cursor,
+  libxcb-image,
   libxcb-util,
   libxcursor,
-  libxcb-image,
   libxkbcommon,
-  libxcb-cursor,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,8 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'PATH:=''$(POSIXPATH)' "#"
   '';
 
-  enableParallelBuilding = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -46,6 +44,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   makeFlags = [ "prefix=${placeholder "out"}" ];
+  enableParallelBuilding = true;
 
   meta = {
     description = "Plain X11 emoji keyboard";

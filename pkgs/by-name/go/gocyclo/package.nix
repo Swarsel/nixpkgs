@@ -1,7 +1,7 @@
 {
-  buildGoModule,
   lib,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,9 +19,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Calculate cyclomatic complexities of functions in Go source code";
-    mainProgram = "gocyclo";
     homepage = "https://github.com/fzipp/gocyclo";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ kalbasit ];
+    mainProgram = "gocyclo";
   };
 })

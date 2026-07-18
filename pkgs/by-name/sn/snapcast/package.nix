@@ -1,28 +1,28 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
+  aixlog,
   alsa-lib,
   asio,
   avahi,
   boost,
+  cmake,
+  config,
   expat,
   flac,
   libogg,
-  libvorbis,
   libopus,
-  soxr,
-  aixlog,
-  popl,
-  config,
-  pulseaudioSupport ? config.pulseaudio or stdenv.hostPlatform.isLinux,
-  pipewireSupport ? stdenv.hostPlatform.isLinux,
   libpulseaudio,
-  pipewire,
+  libvorbis,
   nixosTests,
   openssl,
+  pipewire,
+  pkg-config,
+  popl,
+  soxr,
+  pipewireSupport ? stdenv.hostPlatform.isLinux,
+  pulseaudioSupport ? config.pulseaudio or stdenv.hostPlatform.isLinux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,6 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     pkg-config
   ];
+
   # snapcast also supports building against tremor but as we have libogg, that's
   # not needed
   buildInputs = [
@@ -60,14 +61,14 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional pipewireSupport pipewire
   ++ lib.optional stdenv.hostPlatform.isLinux alsa-lib;
 
-  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
-    TARGET = "MACOS";
-  };
-
   cmakeFlags = [
     (lib.cmakeBool "BUILD_WITH_PULSE" pulseaudioSupport)
     (lib.cmakeBool "BUILD_WITH_PIPEWIRE" pipewireSupport)
   ];
+
+  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
+    TARGET = "MACOS";
+  };
 
   # Upstream systemd unit files are pretty awful, so we provide our own in a
   # NixOS module. It might make sense to get that upstreamed...
@@ -81,8 +82,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Synchronous multi-room audio player";
     homepage = "https://github.com/badaix/snapcast";
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ fpletz ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
-    license = lib.licenses.gpl3Plus;
   };
 })

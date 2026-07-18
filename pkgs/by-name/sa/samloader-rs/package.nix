@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  perl,
   nix-update-script,
+  perl,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "samloader-rs";
@@ -16,10 +16,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-vUoRO//RSPv0Z69nyeiwtFIN+5lkOjguR96KjsLpc5U=";
   };
 
-  cargoHash = "sha256-rqJ0/h/HDBlXQ7MGQspKXMSUEGaddkxRqdQmwSlfttc=";
-
   nativeBuildInputs = [ perl ];
-
+  cargoHash = "sha256-rqJ0/h/HDBlXQ7MGQspKXMSUEGaddkxRqdQmwSlfttc=";
   passthru.updateScript = nix-update-script { };
 
   meta = {

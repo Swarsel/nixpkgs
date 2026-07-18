@@ -1,8 +1,7 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
-
+  fetchFromGitHub,
   autoreconfHook,
   gtest,
   mathic,
@@ -21,43 +20,44 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-34ASkRPNH6d8TSJmyZmYZVOi1p02nHgMVXXWVJMNZ1c=";
   };
 
-  buildInputs = [
-    mathic
-    memtailor
-    onetbb
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
     pkg-config # clears up bad behavior of autoconf
   ];
 
-  checkInputs = [
-    gtest
+  buildInputs = [
+    mathic
+    memtailor
+    onetbb
   ];
-
-  __structuredAttrs = true;
-
-  strictDeps = true;
 
   configureFlags = [
     (lib.withFeature finalAttrs.doCheck "gtest")
   ];
 
-  enableParallelBuilding = true;
-
   doCheck = true;
 
+  checkInputs = [
+    gtest
+  ];
+
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
+
   meta = {
-    mainProgram = "mgb";
     description = "Program for computing Groebner basis and signature Grobner bases";
+
     longDescription = ''
       Mathicgb is a program for computing Groebner basis and signature Grobner
       bases. Mathicgb is based on the fast data structures from mathic.
     '';
+
     homepage = "https://github.com/Macaulay2/mathicgb";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ coolcuber ];
     platforms = lib.platforms.unix;
+    mainProgram = "mgb";
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,25 +18,23 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-g+yaVIx4jxpAQ/+WrGKxhVeliYx7nLQe/zsGpxV4Fn4=";
-
-  subPackages = [ "." ];
+  nativeCheckInputs = [ versionCheckHook ];
+  doInstallCheck = true;
 
   ldflags = [
     "-s"
     "-w"
   ];
 
-  nativeCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-
+  subPackages = [ "." ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "Convert yaml to json";
     homepage = "https://github.com/bronze1man/yaml2json";
     changelog = "https://github.com/bronze1man/yaml2json/releases/tag/v${finalAttrs.version}";
-    description = "Convert yaml to json";
-    mainProgram = "yaml2json";
     license = with lib.licenses; [ mit ];
     maintainers = [ ];
+    mainProgram = "yaml2json";
   };
 })

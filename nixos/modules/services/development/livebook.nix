@@ -9,25 +9,16 @@ let
 in
 {
   options.services.livebook = {
+    package = lib.mkPackageOption pkgs "livebook" { };
     # Since livebook doesn't have a granular permission system (a user
     # either has access to all the data or none at all), the decision
     # was made to run this as a user service.  If that changes in the
     # future, this can be changed to a system service.
     enableUserService = lib.mkEnableOption "a user service for Livebook";
 
-    package = lib.mkPackageOption pkgs "livebook" { };
-
     environment = lib.mkOption {
-      type =
-        with lib.types;
-        attrsOf (
-          nullOr (oneOf [
-            bool
-            int
-            str
-          ])
-        );
       default = { };
+
       description = ''
         Environment variables to set.
 
@@ -53,11 +44,21 @@ in
           LIVEBOOK_PORT = 8080;
         }
       '';
+
+      type =
+        with lib.types;
+        attrsOf (
+          nullOr (oneOf [
+            bool
+            int
+            str
+          ])
+        );
     };
 
     environmentFile = lib.mkOption {
-      type = with lib.types; nullOr lib.types.path;
       default = null;
+
       description = ''
         Additional environment file as defined in {manpage}`systemd.exec(5)`.
 
@@ -80,44 +81,51 @@ in
         and the [](#opt-services.livebook.environment) configuration parameter
         for further options.
       '';
+
       example = "/var/lib/livebook.env";
+      type = with lib.types; nullOr lib.types.path;
     };
 
     extraPackages = lib.mkOption {
-      type = with lib.types; listOf package;
       default = [ ];
+
       description = ''
         Extra packages to make available to the Livebook service.
       '';
+
       example = lib.literalExpression "with pkgs; [ gcc gnumake ]";
+      type = with lib.types; listOf package;
     };
   };
 
   config = lib.mkIf cfg.enableUserService {
     systemd.user.services.livebook = {
+      environment = lib.mapAttrs (
+        name: value: if lib.isBool value then lib.boolToString value else toString value
+      ) cfg.environment;
+
+      path = [ pkgs.bash ] ++ cfg.extraPackages;
+
       serviceConfig = {
-        Restart = "always";
         EnvironmentFile = cfg.environmentFile;
         ExecStart = "${cfg.package}/bin/livebook start";
-        KillMode = "mixed";
-
         # Fix for the issue described here:
         # https://github.com/livebook-dev/livebook/issues/2691
         #
         # Without this, the livebook service fails to start and gets
         # stuck running a `cat /dev/urandom | tr | fold` pipeline.
         IgnoreSIGPIPE = false;
+        KillMode = "mixed";
+        Restart = "always";
       };
-      environment = lib.mapAttrs (
-        name: value: if lib.isBool value then lib.boolToString value else toString value
-      ) cfg.environment;
-      path = [ pkgs.bash ] ++ cfg.extraPackages;
+
       wantedBy = [ "default.target" ];
     };
   };
 
   meta = {
     doc = ./livebook.md;
+
     maintainers = with lib.maintainers; [
       munksgaard
       scvalex

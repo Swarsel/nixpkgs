@@ -1,9 +1,9 @@
 {
   lib,
-  gettext,
-  fetchFromGitHub,
-  sqlite,
   stdenv,
+  fetchFromGitHub,
+  gettext,
+  sqlite,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,13 +18,13 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ gettext ];
-
   buildInputs = [ sqlite ];
 
   makeFlags = [
     "loadable"
     "static"
   ];
+
   installPhase = ''
     runHook preInstall
 
@@ -40,9 +40,11 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/asg017/sqlite-vec";
     changelog = "https://github.com/asg017/sqlite-vec/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       sarahec
     ];
+
     platforms = lib.platforms.unix;
   };
 })

@@ -4,10 +4,9 @@
   fetchFromGitHub,
   autoreconfHook,
   nix-update-script,
-  ncurses ? null,
-
   # Enable `termcap` (`ncurses`) support.
   enableTermcap ? false,
+  ncurses ? null,
 }:
 
 assert lib.assertMsg (
@@ -17,12 +16,23 @@ assert lib.assertMsg (
 stdenv.mkDerivation (finalAttrs: {
   pname = "editline";
   version = "1.17.1-unstable-2025-05-24";
+
   src = fetchFromGitHub {
     owner = "troglobit";
     repo = "editline";
     rev = "f735e4d1d566cac3caa4a5e248179d07f0babefd";
     sha256 = "sha256-MUXxSmhpQd8CZdGGC6Ln9eci85E+GBhlNk28VHUvjaU=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+    "man"
+    "doc"
+  ];
+
+  nativeBuildInputs = [ autoreconfHook ];
+  propagatedBuildInputs = lib.optional enableTermcap ncurses;
 
   configureFlags = [
     # Enable SIGSTOP (Ctrl-Z) behavior.
@@ -33,26 +43,15 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.enableFeature enableTermcap "termcap")
   ];
 
-  nativeBuildInputs = [ autoreconfHook ];
-
-  propagatedBuildInputs = lib.optional enableTermcap ncurses;
-
   makeFlags = lib.optionals stdenv.hostPlatform.isPE [
     "LDFLAGS=-no-undefined"
-  ];
-
-  outputs = [
-    "out"
-    "dev"
-    "man"
-    "doc"
   ];
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://troglobit.com/projects/editline/";
     description = "Readline() replacement for UNIX without termcap (ncurses)";
+    homepage = "https://troglobit.com/projects/editline/";
     license = lib.licenses.bsdOriginal;
     maintainers = with lib.maintainers; [ oxalica ];
     platforms = lib.platforms.all;

@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   buildPythonPackage,
   llvmPackages,
   ml-dtypes,
@@ -10,20 +11,11 @@
   pytestCheckHook,
   scipy,
   setuptools,
-  stdenv,
 }:
 
 buildPythonPackage {
   inherit (pkgs.numkong) pname version src;
-  pyproject = true;
-
-  build-system = [
-    setuptools
-  ];
-
   buildInputs = lib.optional stdenv.hostPlatform.isDarwin llvmPackages.openmp;
-
-  pythonImportsCheck = [ "numkong" ];
 
   nativeCheckInputs = [
     numpy
@@ -35,11 +27,18 @@ buildPythonPackage {
     # there are more tests for big libraries, but we avoid them to not explode the closure size
   ];
 
+  build-system = [
+    setuptools
+  ];
+
   disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
     # slight floating point error
     "test/test_similarities.py::test_cdist_float_accuracy"
     "test/test_similarities.py::test_cdist_jaccard"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "numkong" ];
 
   meta = {
     inherit (pkgs.numkong.meta)

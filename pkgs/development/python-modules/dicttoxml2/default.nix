@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "dicttoxml2";
   version = "2.1.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "dicttoxml2" ];
 
   meta = {

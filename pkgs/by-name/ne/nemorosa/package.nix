@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "nemorosa";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "KyokoMiki";
@@ -15,9 +14,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-1Heh6iE33IM5SSrXjQMUTOS5xDh+c9nlpzQRNIkUqck=";
   };
-
-  # Upstream uses overly strict, fresh version specifiers
-  pythonRelaxDeps = true;
 
   # `build-system` requirements are seemingly not covered by pythonRelaxDeps
   postPatch = ''
@@ -57,7 +53,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ++ sqlalchemy.optional-dependencies.aiosqlite
     ++ uvicorn.optional-dependencies.standard;
 
+  pyproject = true;
   pythonImportsCheck = [ "nemorosa" ];
+  # Upstream uses overly strict, fresh version specifiers
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Specialized cross-seeding tool designed for music torrents";

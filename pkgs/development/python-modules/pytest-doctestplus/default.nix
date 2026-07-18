@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   gitMinimal,
   numpy,
   packaging,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "pytest-doctestplus";
   version = "1.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scientific-python";
@@ -28,22 +27,20 @@ buildPythonPackage rec {
       --replace-fail '"git"' '"${lib.getExe gitMinimal}"'
   '';
 
+  buildInputs = [ pytest ];
+
+  nativeCheckInputs = [
+    numpy
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
-  buildInputs = [ pytest ];
-
   dependencies = [
     packaging
-  ];
-
-  pythonImportsCheck = [ "pytest_doctestplus" ];
-
-  nativeCheckInputs = [
-    numpy
-    pytestCheckHook
   ];
 
   disabledTests = [
@@ -57,6 +54,9 @@ buildPythonPackage rec {
     "test_remote_data_ignore_warnings"
     "test_remote_data_all"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pytest_doctestplus" ];
 
   meta = {
     description = "Pytest plugin with advanced doctest features";

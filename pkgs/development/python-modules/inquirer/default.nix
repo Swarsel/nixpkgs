@@ -1,26 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # native
-  poetry-core,
-
   # propagated
   blessed,
+  buildPythonPackage,
   editor,
-  readchar,
-
+  pexpect,
+  # native
+  poetry-core,
   # tests
   pytest-mock,
   pytestCheckHook,
-  pexpect,
+  readchar,
 }:
 
 buildPythonPackage rec {
   pname = "inquirer";
   version = "3.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "magmax";
@@ -28,6 +24,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-xVHmdJGN5yOxbEkZIiOLqeUwcfdj+o7jTTWBD75szII=";
   };
+
+  nativeCheckInputs = [
+    pexpect
+    pytest-mock
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -37,12 +39,7 @@ buildPythonPackage rec {
     readchar
   ];
 
-  nativeCheckInputs = [
-    pexpect
-    pytest-mock
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "inquirer" ];
 
   meta = {

@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   fetchpatch,
-  pkg-config,
-  oniguruma,
-  versionCheckHook,
   nix-update-script,
+  oniguruma,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,33 +20,32 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-ICMM2kqrHFlKt2/jmE4gum1Eb32afTJkT3IRoqcjJJ8=";
   };
 
-  cargoPatches = [
-    # https://github.com/huggingface/llm-ls/pull/102
-    ./fix-time-compilation-failure.patch
-
-    (fetchpatch {
-      name = "fix-version.patch";
-      url = "https://github.com/huggingface/llm-ls/commit/479401f3a5173f2917a888c8068f84e29b7dceed.patch?full_index=1";
-      hash = "sha256-4gXasfMqlrrP8II+FiV/qGfO7a9qFkDQMiax7yEua5E=";
-    })
-  ];
-
-  env.RUSTONIG_SYSTEM_LIBONIG = true;
-
-  cargoHash = "sha256-qiYspv2KcvzxVshVpAMlSqFDqbbiutpLyWMz+QSIVmQ=";
-
-  buildAndTestSubdir = "crates/llm-ls";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
     oniguruma
   ];
 
+  cargoHash = "sha256-qiYspv2KcvzxVshVpAMlSqFDqbbiutpLyWMz+QSIVmQ=";
+  env.RUSTONIG_SYSTEM_LIBONIG = true;
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  buildAndTestSubdir = "crates/llm-ls";
+
+  cargoPatches = [
+    # https://github.com/huggingface/llm-ls/pull/102
+    ./fix-time-compilation-failure.patch
+
+    (fetchpatch {
+      hash = "sha256-4gXasfMqlrrP8II+FiV/qGfO7a9qFkDQMiax7yEua5E=";
+      name = "fix-version.patch";
+      url = "https://github.com/huggingface/llm-ls/commit/479401f3a5173f2917a888c8068f84e29b7dceed.patch?full_index=1";
+    })
+  ];
 
   passthru = {
     updateScript = nix-update-script { };

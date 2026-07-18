@@ -9,10 +9,8 @@ if (conf == { }) then
   fediwall-unwrapped
 else
   stdenv.mkDerivation {
-    pname = "fediwall";
     inherit (fediwall-unwrapped) version meta;
-
-    dontUnpack = true;
+    pname = "fediwall";
 
     installPhase = ''
       runHook preInstall
@@ -22,4 +20,6 @@ else
           > "$out/wall-config.json"
       runHook postInstall
     '';
+
+    dontUnpack = true;
   }

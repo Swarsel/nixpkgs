@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  copyDesktopItems,
   jdk8,
-  makeWrapper,
   makeBinaryWrapper,
   makeDesktopItem,
-  copyDesktopItems,
+  makeWrapper,
+  stdenvNoCC,
   unzip,
 }:
 
@@ -30,9 +30,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
         hash = "sha256-MVWvYbI9V9s0CbmM6DXmWZEu0kdn9ZIpNcnJZhkDsjU=";
       };
 
-  sourceRoot = if stdenvNoCC.hostPlatform.isDarwin then "." else "xadrian-${finalAttrs.version}";
-
-  __structuredAttrs = true;
   strictDeps = true;
 
   # Xadrian must run on a Java 8 runtime: it uses javax.xml.bind (JAXB), which
@@ -46,18 +43,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   ++ lib.optionals (!stdenvNoCC.hostPlatform.isDarwin) [
     makeWrapper
     copyDesktopItems
-  ];
-
-  desktopItems = lib.optionals (!stdenvNoCC.hostPlatform.isDarwin) [
-    (makeDesktopItem {
-      name = "xadrian";
-      desktopName = "Xadrian";
-      exec = "xadrian";
-      icon = "xadrian";
-      comment = finalAttrs.meta.description;
-      categories = [ "Game" ];
-      startupWMClass = "Xadrian";
-    })
   ];
 
   installPhase = ''
@@ -99,13 +84,29 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
+  desktopItems = lib.optionals (!stdenvNoCC.hostPlatform.isDarwin) [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "Xadrian";
+      exec = "xadrian";
+      icon = "xadrian";
+      name = "xadrian";
+      startupWMClass = "Xadrian";
+    })
+  ];
+
+  sourceRoot = if stdenvNoCC.hostPlatform.isDarwin then "." else "xadrian-${finalAttrs.version}";
+
   meta = {
     description = "Factory complex calculator for X3: Terran Conflict and X3: Albion Prelude";
     homepage = "https://github.com/kayahr/xadrian";
     license = lib.licenses.mit;
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ FabricSoul ];
-    mainProgram = "xadrian";
     platforms = jdk8.meta.platforms;
+    mainProgram = "xadrian";
   };
 })

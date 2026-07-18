@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   cargo-bundle,
   libicns,
-  resvg,
   nix-update-script,
+  resvg,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -14,17 +14,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   pname = "openlogi";
   version = "0.3.4";
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
   src = fetchFromGitHub {
     owner = "AprilNEA";
     repo = "OpenLogi";
     tag = "v${finalAttrs.version}";
     hash = "sha256-04o/Ry65CdNtycgJfqhXwTD5InUwfkr88xQ+I/5Pe4o=";
   };
-
-  cargoHash = "sha256-nKQRcRsEq5JJpn0DZIssS/wAwVsj4kq9J2WmQXJ3smY=";
 
   postPatch = ''
     # gpui-component generates its IconName enum from a sibling assets directory,
@@ -41,6 +36,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --replace-fail 'runner = "scripts/cargo-run-macos.sh"' ""
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cargo-bundle
     libicns
@@ -48,16 +45,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rustPlatform.bindgenHook
   ];
 
-  cargoBuildFlags = [
-    "--package=openlogi"
-    "--package=openlogi-gui"
-  ];
-
-  cargoTestFlags = [ "--workspace" ];
-
-  buildFeatures = lib.optionals stdenv.hostPlatform.isDarwin [
-    "gpui_platform/runtime_shaders"
-  ];
+  cargoHash = "sha256-nKQRcRsEq5JJpn0DZIssS/wAwVsj4kq9J2WmQXJ3smY=";
 
   # Upstream intentionally fetches optional device images on first launch
   # unless OPENLOGI_BUNDLE_ASSETS is set while bundling.
@@ -98,20 +86,33 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "--version";
+  __structuredAttrs = true;
 
+  buildFeatures = lib.optionals stdenv.hostPlatform.isDarwin [
+    "gpui_platform/runtime_shaders"
+  ];
+
+  cargoBuildFlags = [
+    "--package=openlogi"
+    "--package=openlogi-gui"
+  ];
+
+  cargoTestFlags = [ "--workspace" ];
+  versionCheckProgramArg = "--version";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Local-first companion for Logitech HID++ peripherals";
     homepage = "https://github.com/AprilNEA/OpenLogi";
     changelog = "https://github.com/AprilNEA/OpenLogi/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
-    mainProgram = "openlogi";
+
     maintainers = with lib.maintainers; [ imcvampire ];
     platforms = lib.platforms.darwin;
+    mainProgram = "openlogi";
   };
 })

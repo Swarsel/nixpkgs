@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
-  fetchzip,
+  stdenv,
   autoconf,
   automake,
-  libtool,
   cups,
-  popt,
-  libtiff,
-  libpng,
+  fetchzip,
   ghostscript,
+  libpng,
+  libtiff,
+  libtool,
+  popt,
 }:
 
 /*
@@ -19,7 +19,6 @@
 
 stdenv.mkDerivation {
   pname = "cnijfilter";
-
   /*
     important note about versions: cnijfilter packages seem to use
     versions in a non-standard way.  the version indicates which
@@ -38,21 +37,6 @@ stdenv.mkDerivation {
     sha256 = "06s9nl155yxmx56056y22kz1p5b2sb5fhr3gf4ddlczjkd1xch53";
   };
 
-  nativeBuildInputs = [
-    autoconf
-    automake
-  ];
-  buildInputs = [
-    libtool
-    cups
-    popt
-    libtiff
-    libpng
-    ghostscript
-  ];
-
-  env.NIX_CFLAGS_COMPILE = " -std=gnu90";
-
   patches = [
     ./patches/missing-include.patch
     ./patches/libpng15.patch
@@ -65,20 +49,21 @@ stdenv.mkDerivation {
     sed -i "s|/usr/local|$out|" libs/bjexec/bjexec.c;
   '';
 
-  configurePhase = ''
-    cd libs
-    ./autogen.sh --prefix=$out;
+  nativeBuildInputs = [
+    autoconf
+    automake
+  ];
 
-    cd ../cngpij
-    ./autogen.sh --prefix=$out --enable-progpath=$out/bin;
+  buildInputs = [
+    libtool
+    cups
+    popt
+    libtiff
+    libpng
+    ghostscript
+  ];
 
-    cd ../pstocanonij
-    ./autogen.sh --prefix=$out --enable-progpath=$out/bin;
-
-    cd ../backend
-    ./autogen.sh --prefix=$out;
-    cd ..;
-  '';
+  env.NIX_CFLAGS_COMPILE = " -std=gnu90";
 
   preInstall = ''
     mkdir -p $out/bin $out/lib/cups/filter $out/share/cups/model;
@@ -115,6 +100,21 @@ stdenv.mkDerivation {
     popd;
   '';
 
+  configurePhase = ''
+    cd libs
+    ./autogen.sh --prefix=$out;
+
+    cd ../cngpij
+    ./autogen.sh --prefix=$out --enable-progpath=$out/bin;
+
+    cd ../pstocanonij
+    ./autogen.sh --prefix=$out --enable-progpath=$out/bin;
+
+    cd ../backend
+    ./autogen.sh --prefix=$out;
+    cd ..;
+  '';
+
   /*
     the tarball includes some pre-built shared libraries.  we run
     'patchelf --set-rpath' on them just a few lines above, so that
@@ -126,7 +126,6 @@ stdenv.mkDerivation {
     them, it undoes the --set-rpath.  this prevents that.
   */
   dontPatchELF = true;
-
   # fortify hardening makes the filter crash
   # https://github.com/NixOS/nixpkgs/issues/276125
   hardeningDisable = [ "fortify3" ];
@@ -134,12 +133,14 @@ stdenv.mkDerivation {
   meta = {
     description = "Canon InkJet printer drivers for the iP5400, MP520, MP210, MP140, iP3500, and MP610 series.  (MP520 drivers also work for MX700.)";
     homepage = "http://support-asia.canon-asia.com/content/EN/0100084101.html";
+    license = lib.licenses.unfree;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryNativeCode
     ];
-    license = lib.licenses.unfree;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [ jerith666 ];
+    platforms = lib.platforms.linux;
   };
 }

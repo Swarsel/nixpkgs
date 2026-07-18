@@ -1,28 +1,27 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  # build-system
-  setuptools,
+  buildPythonPackage,
   # dependencies
   distlib,
   empy,
   packaging,
-  python-dateutil,
-  pyyaml,
-  # tests
-  pytestCheckHook,
   pytest-cov-stub,
   pytest-repeat,
   pytest-rerunfailures,
+  # tests
+  pytestCheckHook,
+  python-dateutil,
+  pyyaml,
   scspell,
+  # build-system
+  setuptools,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "colcon-core";
   version = "0.21.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "colcon";
@@ -35,6 +34,15 @@ buildPythonPackage rec {
   # This will break some functionality of building setuptools packages using colcon, other package types should work fine
   patches = [ ./0001-update-setuptools.patch ];
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+    pytest-repeat
+    pytest-rerunfailures
+    scspell
+    writableTmpDirAsHomeHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -45,15 +53,6 @@ buildPythonPackage rec {
     pyyaml
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-    pytest-repeat
-    pytest-rerunfailures
-    scspell
-    writableTmpDirAsHomeHook
-  ];
-
   disabledTestPaths = [
     # Skip the linter tests that require additional dependencies
     "test/test_flake8.py"
@@ -61,6 +60,7 @@ buildPythonPackage rec {
     "test/test_build_python.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "colcon_core" ];
 
   pythonRemoveDeps = [
@@ -74,10 +74,12 @@ buildPythonPackage rec {
     description = "Command line tool to build sets of software packages";
     homepage = "https://github.com/colcon/colcon-core";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       amronos
       guelakais
     ];
+
     mainProgram = "colcon";
   };
 }

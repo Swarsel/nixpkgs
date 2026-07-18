@@ -1,39 +1,35 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  aiohttp,
   # dependencies
   ansicolors,
-  click,
-  entrypoints,
-  nbclient,
-  nbformat,
-  pyyaml,
-  requests,
-  tenacity,
-  tqdm,
-  pythonAtLeast,
-  aiohttp,
-
   # optional-dependencies
   azure-datalake-store,
   azure-identity,
   azure-storage-blob,
-  gcsfs,
-  pygithub,
-  pyarrow,
   boto3,
-
+  buildPythonPackage,
+  click,
+  entrypoints,
+  gcsfs,
   # tests
   ipykernel,
   moto,
+  nbclient,
+  nbformat,
+  pyarrow,
+  pygithub,
   pytest-mock,
   pytestCheckHook,
+  pythonAtLeast,
+  pyyaml,
+  requests,
+  # build-system
+  setuptools,
+  tenacity,
+  tqdm,
   versionCheckHook,
   writableTmpDirAsHomeHook,
 }:
@@ -41,7 +37,6 @@
 buildPythonPackage rec {
   pname = "papermill";
   version = "2.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nteract";
@@ -50,6 +45,19 @@ buildPythonPackage rec {
     hash = "sha256-NxC5+hRDdMCl/7ZIho5ml4hdENrgO+wzi87GRPeMv8Q=";
   };
 
+  nativeCheckInputs = [
+    ipykernel
+    moto
+    pytest-mock
+    pytestCheckHook
+    versionCheckHook
+    writableTmpDirAsHomeHook
+  ]
+  ++ optional-dependencies.azure
+  ++ optional-dependencies.s3
+  ++ optional-dependencies.gcs;
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -65,31 +73,16 @@ buildPythonPackage rec {
   ]
   ++ lib.optionals (pythonAtLeast "3.12") [ aiohttp ];
 
-  optional-dependencies = {
-    azure = [
-      azure-datalake-store
-      azure-identity
-      azure-storage-blob
-    ];
-    gcs = [ gcsfs ];
-    github = [ pygithub ];
-    hdfs = [ pyarrow ];
-    s3 = [ boto3 ];
-  };
+  disabledTestPaths = [
+    # ImportError: cannot import name 'mock_s3' from 'moto'
+    "papermill/tests/test_s3.py"
 
-  nativeCheckInputs = [
-    ipykernel
-    moto
-    pytest-mock
-    pytestCheckHook
-    versionCheckHook
-    writableTmpDirAsHomeHook
-  ]
-  ++ optional-dependencies.azure
-  ++ optional-dependencies.s3
-  ++ optional-dependencies.gcs;
+    # AssertionError: 'error' != 'display_data'
+    "papermill/tests/test_execute.py::TestBrokenNotebook2::test"
 
-  pythonImportsCheck = [ "papermill" ];
+    # AssertionError: '\x1b[31mSystemExit\x1b[39m\x1b[31m:\x1b[39m 1\n' != '\x1b[0;31mSystemExit\x1b[0m\x1b[0;31m:\x1b[0m 1\n'
+    "papermill/tests/test_execute.py::TestOutputFormatting::test_output_formatting"
+  ];
 
   disabledTests = [
     # pytest 8 compat
@@ -103,18 +96,21 @@ buildPythonPackage rec {
     "test_end2end_autosave_slow_notebook"
   ];
 
-  disabledTestPaths = [
-    # ImportError: cannot import name 'mock_s3' from 'moto'
-    "papermill/tests/test_s3.py"
+  optional-dependencies = {
+    azure = [
+      azure-datalake-store
+      azure-identity
+      azure-storage-blob
+    ];
 
-    # AssertionError: 'error' != 'display_data'
-    "papermill/tests/test_execute.py::TestBrokenNotebook2::test"
+    gcs = [ gcsfs ];
+    github = [ pygithub ];
+    hdfs = [ pyarrow ];
+    s3 = [ boto3 ];
+  };
 
-    # AssertionError: '\x1b[31mSystemExit\x1b[39m\x1b[31m:\x1b[39m 1\n' != '\x1b[0;31mSystemExit\x1b[0m\x1b[0;31m:\x1b[0m 1\n'
-    "papermill/tests/test_execute.py::TestOutputFormatting::test_output_formatting"
-  ];
-
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+  pythonImportsCheck = [ "papermill" ];
 
   meta = {
     description = "Parametrize and run Jupyter and interact with notebooks";

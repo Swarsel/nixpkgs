@@ -17,8 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-wbdamPi2XSLWeprrYZtBUDH1A2gdp6/5geFZv+ZqSWk=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/client";
-
   # cmake 4 compatibility
   postPatch = ''
     substituteInPlace CMakeLists.txt \
@@ -28,13 +26,14 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [ cmake ];
   buildInputs = [ qt6.qtbase ];
   dontWrapQtApps = true;
+  sourceRoot = "${finalAttrs.src.name}/client";
 
   meta = {
     description = "C++ Qt API for Libre Graph, a free API for cloud collaboration inspired by the MS Graph API";
     homepage = "https://owncloud.org";
+    changelog = "https://github.com/owncloud/libre-graph-api-cpp-qt-client/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ hellwolf ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.asl20;
-    changelog = "https://github.com/owncloud/libre-graph-api-cpp-qt-client/releases/tag/v${finalAttrs.version}";
   };
 })

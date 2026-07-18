@@ -1,10 +1,10 @@
 {
+  lib,
+  stdenv,
   fetchFromGitHub,
   installShellFiles,
-  lib,
   nix-update-script,
   rustPlatform,
-  stdenv,
   versionCheckHook,
 }:
 
@@ -19,11 +19,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-DEsxdqX9kAK/TqmP8PMOLQE4ij0+8mkoK/QapbXikss=";
   };
 
-  cargoHash = "sha256-OLDMaHwrDO4Q4V0hVIbXmkTiBowpGoZc/xOISwS25Nc=";
-
-  buildFeatures = [ "embed-configs" ];
   nativeBuildInputs = [ installShellFiles ];
-
+  cargoHash = "sha256-OLDMaHwrDO4Q4V0hVIbXmkTiBowpGoZc/xOISwS25Nc=";
   checkFlags = [ "--skip=test_command_exists" ];
 
   postInstall = ''
@@ -37,17 +34,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <($out/bin/rgrc --completions zsh)
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  buildFeatures = [ "embed-configs" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/lazywalker/rgrc/releases/tag/v${finalAttrs.version}";
     description = "Rusty Generic Colouriser - just like grc but fast";
     homepage = "https://lazywalker.github.io/rgrc/";
+    changelog = "https://github.com/lazywalker/rgrc/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "rgrc";
     maintainers = with lib.maintainers; [ sedlund ];
+    mainProgram = "rgrc";
   };
 })

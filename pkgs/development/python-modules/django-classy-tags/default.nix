@@ -1,14 +1,13 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   django,
+  fetchPypi,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "django-classy-tags";
   version = "4.1.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -16,10 +15,9 @@ buildPythonPackage (finalAttrs: {
   };
 
   propagatedBuildInputs = [ django ];
-
   # pypi version doesn't include runtest.py, needed to run tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "classytags" ];
 
   meta = {

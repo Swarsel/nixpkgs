@@ -1,22 +1,27 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  gi-docgen,
+  glib,
+  gnome,
+  gobject-introspection,
+  gtk4,
+  libadwaita,
   meson,
   ninja,
   pkg-config,
-  gobject-introspection,
   vala,
-  gi-docgen,
-  glib,
-  gtk4,
-  libadwaita,
-  gnome,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libpanel";
   version = "1.10.4";
+
+  src = fetchurl {
+    url = "mirror://gnome/sources/libpanel/${lib.versions.majorMinor finalAttrs.version}/libpanel-${finalAttrs.version}.tar.xz";
+    hash = "sha256-WTiIp2kfCviqpuGTyeFK+oaoEMDC8nUVxtgT8Yczsc0=";
+  };
 
   outputs = [
     "out"
@@ -24,16 +29,7 @@ stdenv.mkDerivation (finalAttrs: {
     "devdoc"
   ];
 
-  outputBin = "dev";
-
-  src = fetchurl {
-    url = "mirror://gnome/sources/libpanel/${lib.versions.majorMinor finalAttrs.version}/libpanel-${finalAttrs.version}.tar.xz";
-    hash = "sha256-WTiIp2kfCviqpuGTyeFK+oaoEMDC8nUVxtgT8Yczsc0=";
-  };
-
   strictDeps = true;
-
-  depsBuildBuild = [ pkg-config ];
 
   nativeBuildInputs = [
     meson
@@ -60,6 +56,9 @@ stdenv.mkDerivation (finalAttrs: {
     moveToOutput "share/doc" "$devdoc"
   '';
 
+  depsBuildBuild = [ pkg-config ];
+  outputBin = "dev";
+
   passthru = {
     updateScript = gnome.updateScript {
       packageName = "libpanel";
@@ -69,10 +68,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Dock/panel library for GTK 4";
-    mainProgram = "libpanel-example";
     homepage = "https://gitlab.gnome.org/GNOME/libpanel";
     license = lib.licenses.lgpl3Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.unix;
+    mainProgram = "libpanel-example";
+    teams = [ lib.teams.gnome ];
   };
 })

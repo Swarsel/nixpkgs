@@ -1,14 +1,15 @@
 {
-  writeShellApplication,
-  nix,
-  nix-update,
+  common-updater-scripts,
   curl,
   jq,
-  common-updater-scripts,
+  nix,
+  nix-update,
+  writeShellApplication,
 }:
 
 writeShellApplication {
   name = "update-alist";
+
   runtimeInputs = [
     curl
     jq

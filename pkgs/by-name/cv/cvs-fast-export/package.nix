@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   asciidoc,
-  docbook_xml_dtd_45,
-  docbook_xsl,
   coreutils,
   cvs,
   diffutils,
+  docbook_xml_dtd_45,
+  docbook_xsl,
   findutils,
   git,
+  makeWrapper,
   python3,
   rsync,
 }:
@@ -24,16 +24,22 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-YZF2QebWbvn/N9pLpccudZsFHzocJp/3M0Gx9p7fQ5Y=";
   };
 
+  postPatch = ''
+    patchShebangs .
+  '';
+
   strictDeps = true;
+
   nativeBuildInputs = [
     makeWrapper
     asciidoc
   ];
+
   buildInputs = [ python3 ];
 
-  postPatch = ''
-    patchShebangs .
-  '';
+  env = lib.optionalAttrs stdenv.cc.isClang {
+    NIX_CFLAGS_COMPILE = "-Wno-implicit-function-declaration";
+  };
 
   preBuild = ''
     makeFlagsArray=(
@@ -42,10 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
       prefix="$out"
     )
   '';
-
-  env = lib.optionalAttrs stdenv.cc.isClang {
-    NIX_CFLAGS_COMPILE = "-Wno-implicit-function-declaration";
-  };
 
   postInstall = ''
     wrapProgram $out/bin/cvssync --prefix PATH : ${lib.makeBinPath [ rsync ]}
@@ -62,9 +64,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Export an RCS or CVS history as a fast-import stream";
+    homepage = "http://www.catb.org/esr/cvs-fast-export/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ dfoxfranke ];
-    homepage = "http://www.catb.org/esr/cvs-fast-export/";
     platforms = lib.platforms.unix;
   };
 })

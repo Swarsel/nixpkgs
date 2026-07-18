@@ -6,8 +6,8 @@
 }:
 
 stdenv.mkDerivation {
-  version = "0.2.4";
   pname = "extundelete";
+  version = "0.2.4";
 
   src = fetchurl {
     url = "mirror://sourceforge/extundelete/extundelete-0.2.4.tar.bz2";
@@ -28,8 +28,8 @@ stdenv.mkDerivation {
     description = "Utility that can recover deleted files from an ext3 or ext4 partition";
     homepage = "https://extundelete.sourceforge.net/";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "extundelete";
   };
 }

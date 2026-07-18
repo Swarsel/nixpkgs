@@ -1,9 +1,9 @@
 {
-  buildOctavePackage,
   lib,
   fetchFromGitHub,
-  nix-update-script,
   autoreconfHook,
+  buildOctavePackage,
+  nix-update-script,
 }:
 
 buildOctavePackage rec {
@@ -21,6 +21,10 @@ buildOctavePackage rec {
     autoreconfHook
   ];
 
+  postAutoreconf = ''
+    popd
+  '';
+
   # autoreconfHook provides an autoreconfPhase that is run as a
   # preconfigurePhase, which means it runs AFTER the source is un-tarred, and
   # before buildOctavePackage's buildPhase re-tars it up into a format for later
@@ -32,17 +36,14 @@ buildOctavePackage rec {
     # actually fires for our environment.
     rm config.*
   '';
-  postAutoreconf = ''
-    popd
-  '';
 
   passthru.updateScript = nix-update-script { extraArgs = [ "--version-regex=release-(.*)" ]; };
 
   meta = {
+    description = "Provides COM interface and additional functionality on Windows";
     homepage = "https://gnu-octave.github.io/packages/windows/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ ravenjoad ];
-    description = "Provides COM interface and additional functionality on Windows";
     platforms = lib.platforms.windows;
   };
 }

@@ -43,23 +43,16 @@ in
 
 {
   options.services.davmail = {
-    enable = lib.mkEnableOption "davmail, an MS Exchange gateway";
-
-    url = lib.mkOption {
-      type = lib.types.str;
-      description = "Outlook Web Access URL to access the exchange server, i.e. the base webmail URL.";
-      example = "https://outlook.office365.com/EWS/Exchange.asmx";
-    };
-
     config = lib.mkOption {
-      type = configType;
       default = { };
+
       description = ''
         Davmail configuration. Refer to
         <http://davmail.sourceforge.net/serversetup.html>
         and <http://davmail.sourceforge.net/advanced.html>
         for details on supported values.
       '';
+
       example = lib.literalExpression ''
         {
           davmail.allowRemote = true;
@@ -71,25 +64,38 @@ in
           log4j.logger.rootLogger = "DEBUG";
         }
       '';
+
+      type = configType;
+    };
+
+    enable = lib.mkEnableOption "davmail, an MS Exchange gateway";
+
+    url = lib.mkOption {
+      description = "Outlook Web Access URL to access the exchange server, i.e. the base webmail URL.";
+      example = "https://outlook.office365.com/EWS/Exchange.asmx";
+      type = lib.types.str;
     };
   };
 
   config = lib.mkIf cfg.enable {
 
+    environment.systemPackages = [ pkgs.davmail ];
+
     services.davmail.config = {
       davmail = lib.mapAttrs (name: lib.mkDefault) {
-        server = true;
+        caldavPort = 1080;
         disableUpdateCheck = true;
+        imapPort = 1143;
+        ldapPort = 1389;
         logFilePath = "/var/log/davmail/davmail.log";
         logFileSize = "1MB";
         mode = "auto";
-        url = cfg.url;
-        caldavPort = 1080;
-        imapPort = 1143;
-        ldapPort = 1389;
         popPort = 1110;
+        server = true;
         smtpPort = 1025;
+        url = cfg.url;
       };
+
       log4j = {
         logger.davmail = lib.mkDefault "WARN";
         logger.httpclient.wire = lib.mkDefault "WARN";
@@ -99,20 +105,16 @@ in
     };
 
     systemd.services.davmail = {
-      description = "DavMail POP/IMAP/SMTP Exchange Gateway";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "DavMail POP/IMAP/SMTP Exchange Gateway";
 
       serviceConfig = {
-        Type = "simple";
-        ExecStart = "${pkgs.davmail}/bin/davmail ${configFile}";
-        Restart = "on-failure";
-        DynamicUser = "yes";
-        LogsDirectory = "davmail";
-
         CapabilityBoundingSet = [ "" ];
         DeviceAllow = [ "" ];
+        DynamicUser = "yes";
+        ExecStart = "${pkgs.davmail}/bin/davmail ${configFile}";
         LockPersonality = true;
+        LogsDirectory = "davmail";
         NoNewPrivileges = true;
         PrivateDevices = true;
         PrivateTmp = true;
@@ -120,28 +122,32 @@ in
         ProtectClock = true;
         ProtectControlGroups = true;
         ProtectHome = true;
-        ProtectSystem = "strict";
         ProtectHostname = true;
         ProtectKernelLogs = true;
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
+        ProtectSystem = "strict";
         RemoveIPC = true;
+        Restart = "on-failure";
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
         SystemCallArchitectures = "native";
-        SystemCallFilter = "@system-service";
         SystemCallErrorNumber = "EPERM";
+        SystemCallFilter = "@system-service";
+        Type = "simple";
         UMask = "0077";
 
       };
-    };
 
-    environment.systemPackages = [ pkgs.davmail ];
+      wantedBy = [ "multi-user.target" ];
+    };
   };
 }

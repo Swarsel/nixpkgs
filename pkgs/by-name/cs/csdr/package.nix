@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   fftwFloat,
   libsamplerate,
+  pkg-config,
   versionCheckHook,
 }:
 
@@ -39,7 +39,8 @@ stdenv.mkDerivation (finalAttrs: {
     libsamplerate
   ];
 
-  hardeningDisable = lib.optional stdenv.hostPlatform.isAarch64 "format";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   postFixup = ''
     substituteInPlace "$out"/lib/pkgconfig/csdr.pc \
@@ -47,13 +48,12 @@ stdenv.mkDerivation (finalAttrs: {
       --replace '=''${exec_prefix}//' '=/'
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  hardeningDisable = lib.optional stdenv.hostPlatform.isAarch64 "format";
   versionCheckProgramArg = "version";
-  doInstallCheck = true;
 
   meta = {
-    homepage = "https://github.com/jketterl/csdr";
     description = "Simple DSP library and command-line tool for Software Defined Radio";
+    homepage = "https://github.com/jketterl/csdr";
     license = lib.licenses.gpl3Only;
     platforms = lib.platforms.unix;
     broken = stdenv.hostPlatform.isDarwin;

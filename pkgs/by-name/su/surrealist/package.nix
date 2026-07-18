@@ -1,16 +1,17 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   buildGoModule,
   bun,
   cairo,
-  cargo-tauri,
   cargo,
+  cargo-tauri,
   esbuild,
-  fetchFromGitHub,
   gdk-pixbuf,
   glib-networking,
   gobject-introspection,
   jq,
-  lib,
   libsoup_3,
   makeBinaryWrapper,
   moreutils,
@@ -18,9 +19,8 @@
   openssl,
   pango,
   pkg-config,
-  rustc,
   rustPlatform,
-  stdenv,
+  rustc,
   typescript,
   webkitgtk_4_1,
   writableTmpDirAsHomeHook,
@@ -37,12 +37,14 @@ let
           args
           // {
             inherit version;
+
             src = fetchFromGitHub {
               owner = "evanw";
               repo = "esbuild";
               rev = "v${version}";
               hash = "sha256-FpvXWIlt67G8w3pBKZo/mcp57LunxDmRUaCU/Ne89B8=";
             };
+
             vendorHash = "sha256-+BfxCyg0KkDQpHt/wycy/8CTG6YBA/VJvJFhhzUnSiQ=";
           }
         );
@@ -59,49 +61,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-L2O3iMoNptNgzEy7gXptAaHXhv4J5ED/72GLrH43/kQ=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src cargoRoot;
-    hash = "sha256-NhgSfiBb4FGEnirpDFWI3MIMElen8frKDFKmCBJlSBY=";
-  };
-
-  node_modules = stdenv.mkDerivation {
-    inherit (finalAttrs) src version;
-    pname = "surrealist-node_modules";
-    impureEnvVars = lib.fetchers.proxyImpureEnvVars ++ [
-      "GIT_PROXY_COMMAND"
-      "SOCKS_SERVER"
-    ];
-    nativeBuildInputs = [
-      bun
-      writableTmpDirAsHomeHook
-    ];
-    dontConfigure = true;
-    buildPhase = ''
-      runHook preBuild
-
-      export BUN_INSTALL_CACHE_DIR=$(mktemp -d)
-
-      bun install --no-progress --frozen-lockfile --no-cache
-
-      runHook postBuild
-    '';
-    installPhase = ''
-      runHook preInstall
-
-      mkdir -p $out/node_modules
-      cp -R ./node_modules $out
-
-      runHook postInstall
-    '';
-    outputHash =
-      {
-        x86_64-linux = "sha256-tZYIiWHaeryV/f9AFNknRZp8om0y8QH8RCxoqgmbR5g=";
-        aarch64-linux = "sha256-6nB8wcXIYR1WcYqZrNFl0Jfdz/Z3PttULQHsQcfAsOk=";
-      }
-      .${stdenv.hostPlatform.system}
-        or (throw "${finalAttrs.pname}: Platform ${stdenv.hostPlatform.system} is not packaged yet. Supported platforms: x86_64-linux, aarch64-linux.");
-    outputHashMode = "recursive";
-  };
+  # Deactivate the upstream update mechanism
+  postPatch = ''
+    jq '
+      .bundle.createUpdaterArtifacts = false |
+      .plugins.updater = {"active": false, "pubkey": "", "endpoints": []}
+    ' \
+    src-tauri/tauri.conf.json | sponge src-tauri/tauri.conf.json
+  '';
 
   nativeBuildInputs = [
     bun
@@ -132,23 +99,20 @@ stdenv.mkDerivation (finalAttrs: {
     OPENSSL_NO_VENDOR = 1;
   };
 
-  cargoRoot = "src-tauri";
-  buildAndTestSubdir = finalAttrs.cargoRoot;
-
-  # Deactivate the upstream update mechanism
-  postPatch = ''
-    jq '
-      .bundle.createUpdaterArtifacts = false |
-      .plugins.updater = {"active": false, "pubkey": "", "endpoints": []}
-    ' \
-    src-tauri/tauri.conf.json | sponge src-tauri/tauri.conf.json
-  '';
-
   postFixup = ''
     wrapProgram "$out/bin/surrealist" \
       --set GIO_EXTRA_MODULES ${glib-networking}/lib/gio/modules \
       --set WEBKIT_DISABLE_COMPOSITING_MODE 1
   '';
+
+  buildAndTestSubdir = finalAttrs.cargoRoot;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src cargoRoot;
+    hash = "sha256-NhgSfiBb4FGEnirpDFWI3MIMElen8frKDFKmCBJlSBY=";
+  };
+
+  cargoRoot = "src-tauri";
 
   configurePhase = ''
     runHook preConfigure
@@ -166,15 +130,63 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postConfigure
   '';
 
+  node_modules = stdenv.mkDerivation {
+    inherit (finalAttrs) src version;
+    pname = "surrealist-node_modules";
+
+    nativeBuildInputs = [
+      bun
+      writableTmpDirAsHomeHook
+    ];
+
+    buildPhase = ''
+      runHook preBuild
+
+      export BUN_INSTALL_CACHE_DIR=$(mktemp -d)
+
+      bun install --no-progress --frozen-lockfile --no-cache
+
+      runHook postBuild
+    '';
+
+    installPhase = ''
+      runHook preInstall
+
+      mkdir -p $out/node_modules
+      cp -R ./node_modules $out
+
+      runHook postInstall
+    '';
+
+    dontConfigure = true;
+
+    impureEnvVars = lib.fetchers.proxyImpureEnvVars ++ [
+      "GIT_PROXY_COMMAND"
+      "SOCKS_SERVER"
+    ];
+
+    outputHash =
+      {
+        aarch64-linux = "sha256-6nB8wcXIYR1WcYqZrNFl0Jfdz/Z3PttULQHsQcfAsOk=";
+        x86_64-linux = "sha256-tZYIiWHaeryV/f9AFNknRZp8om0y8QH8RCxoqgmbR5g=";
+      }
+      .${stdenv.hostPlatform.system}
+        or (throw "${finalAttrs.pname}: Platform ${stdenv.hostPlatform.system} is not packaged yet. Supported platforms: x86_64-linux, aarch64-linux.");
+
+    outputHashMode = "recursive";
+  };
+
   meta = {
     description = "Visual management of your SurrealDB database";
     homepage = "https://surrealdb.com/surrealist";
     license = lib.licenses.mit;
-    mainProgram = "surrealist";
+
     maintainers = with lib.maintainers; [
       frankp
       dmitriiStepanidenko
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "surrealist";
   };
 })

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  libv4l,
   gd,
+  libv4l,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,9 +22,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Neat and simple webcam app";
-    mainProgram = "fswebcam";
     homepage = "http://www.sanslogic.co.uk/fswebcam";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl2Only;
+    platforms = lib.platforms.linux;
+    mainProgram = "fswebcam";
   };
 })

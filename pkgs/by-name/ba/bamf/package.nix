@@ -1,30 +1,36 @@
 {
-  stdenv,
   lib,
+  stdenv,
   autoreconfHook,
-  gitUpdater,
-  gnome-common,
-  which,
+  dbus,
+  docbook_xsl,
   fetchgit,
-  libgtop,
-  libwnck,
+  gitUpdater,
   glib,
-  vala,
-  pkg-config,
-  libstartup_notification,
+  gnome-common,
   gobject-introspection,
   gtk-doc,
-  docbook_xsl,
-  xorg-server,
-  dbus,
+  libgtop,
+  libstartup_notification,
+  libwnck,
+  pkg-config,
   python3,
+  vala,
+  which,
   wrapGAppsHook3,
+  xorg-server,
   withDocs ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "bamf";
   version = "0.5.6";
+
+  src = fetchgit {
+    url = "https://git.launchpad.net/~unity-team/bamf";
+    tag = finalAttrs.version;
+    sha256 = "7U+2GcuDjPU8quZjkd8bLADGlG++tl6wSo0mUQkjAXQ=";
+  };
 
   outputs = [
     "out"
@@ -34,15 +40,14 @@ stdenv.mkDerivation (finalAttrs: {
     "devdoc"
   ];
 
-  src = fetchgit {
-    url = "https://git.launchpad.net/~unity-team/bamf";
-    tag = finalAttrs.version;
-    sha256 = "7U+2GcuDjPU8quZjkd8bLADGlG++tl6wSo0mUQkjAXQ=";
-  };
+  # Fix hard-coded path
+  # https://bugs.launchpad.net/bamf/+bug/1780557
+  postPatch = ''
+    substituteInPlace data/Makefile.am \
+      --replace '/usr/lib/systemd/user' '@prefix@/lib/systemd/user'
+  '';
 
-  depsBuildBuild = [
-    pkg-config
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     (python3.pythonOnBuildForHost.withPackages (ps: with ps; [ lxml ])) # Tests
@@ -66,13 +71,6 @@ stdenv.mkDerivation (finalAttrs: {
     libwnck
   ];
 
-  # Fix hard-coded path
-  # https://bugs.launchpad.net/bamf/+bug/1780557
-  postPatch = ''
-    substituteInPlace data/Makefile.am \
-      --replace '/usr/lib/systemd/user' '@prefix@/lib/systemd/user'
-  '';
-
   configureFlags = [
     "--enable-headless-tests"
   ]
@@ -86,12 +84,14 @@ stdenv.mkDerivation (finalAttrs: {
     "INTROSPECTION_TYPELIBDIR=${placeholder "out"}/lib/girepository-1.0"
   ];
 
-  # TODO: Requires /etc/machine-id
-  doCheck = false;
-  strictDeps = true;
-
   # Ignore deprecation errors
   env.NIX_CFLAGS_COMPILE = "-DGLIB_DISABLE_DEPRECATION_WARNINGS";
+  # TODO: Requires /etc/machine-id
+  doCheck = false;
+
+  depsBuildBuild = [
+    pkg-config
+  ];
 
   passthru.updateScript = gitUpdater {
     ignoredVersions = ".ubuntu.*";
@@ -99,14 +99,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Application matching framework";
+
     longDescription = ''
       Removes the headache of applications matching
       into a simple DBus daemon and c wrapper library.
     '';
+
     homepage = "https://launchpad.net/bamf";
     license = lib.licenses.lgpl3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ davidak ];
+    platforms = lib.platforms.linux;
     teams = [ lib.teams.pantheon ];
   };
 })

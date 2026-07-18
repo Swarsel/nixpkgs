@@ -24,8 +24,8 @@ stdenv.mkDerivation rec {
   ];
 
   meta = {
-    homepage = "http://l-smash.github.io/l-smash/";
     description = "MP4 container utilities";
+    homepage = "http://l-smash.github.io/l-smash/";
     license = lib.licenses.isc;
     maintainers = [ ];
     platforms = lib.platforms.all;

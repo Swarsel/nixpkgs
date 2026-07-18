@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,15 +16,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-Ac+iCZ2WoRq7yP9YlT9hp0grsMPny/JdYBrdWiSj/L8=";
+  # Many tests require filesystem writes which fail in Nix sandbox
+  doCheck = false;
 
   # Ensure that only the `scooter` package is built (excluding `xtask`)
   cargoBuildFlags = [
     "--package"
     "scooter"
   ];
-
-  # Many tests require filesystem writes which fail in Nix sandbox
-  doCheck = false;
 
   meta = {
     description = "Interactive find and replace in the terminal";

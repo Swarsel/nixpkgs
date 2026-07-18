@@ -1,14 +1,12 @@
 {
   lib,
-  versionCheckHook,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
+  versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "swaytreesave";
   version = "0.4.2";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "fabienjuif";
@@ -18,16 +16,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-gbcVgdGvKxQioL6aQcMoajsJo2rTPDNqEhsywFPCQ0s=";
+  __structuredAttrs = true;
 
   meta = {
     description = "CLI to save and load your compositors tree/layout";
     homepage = "https://github.com/fabienjuif/swaytreesave";
     changelog = "https://github.com/fabienjuif/swaytreesave/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       uzlkav
     ];
-    mainProgram = "swaytreesave";
+
     platforms = lib.platforms.linux;
+    mainProgram = "swaytreesave";
   };
 })

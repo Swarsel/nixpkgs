@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
+  buildPythonPackage,
   msal,
   portalocker,
-  setuptools,
-  stdenv,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "msal-extensions";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "AzureAD";
@@ -21,16 +20,13 @@ buildPythonPackage rec {
     hash = "sha256-LRopszB8+8N9EajSmZvz0MTomp/qWZ5O3q00AHimZbY=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
-
-  pythonRelaxDeps = [ "portalocker" ];
 
   dependencies = [
     msal
     portalocker
   ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   disabledTests = [
     # `from gi.repository import Secret` fails to find libsecret
@@ -46,7 +42,9 @@ buildPythonPackage rec {
     "test_keychain_persistence"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "msal_extensions" ];
+  pythonRelaxDeps = [ "portalocker" ];
 
   meta = {
     description = "Microsoft Authentication Library Extensions (MSAL-Extensions) for Python";

@@ -10,30 +10,16 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "tzdata";
   version = "2026b";
 
-  srcs = [
-    (fetchurl {
-      url = "https://data.iana.org/time-zones/releases/tzdata${finalAttrs.version}.tar.gz";
-      hash = "sha256-EUVD2fGaa/61vKQ2hq6hc9OHVaPbHy7sESZHrpLG9UQ=";
-    })
-    (fetchurl {
-      url = "https://data.iana.org/time-zones/releases/tzcode${finalAttrs.version}.tar.gz";
-      hash = "sha256-N+nthCf101IcIvxY4pPL+wQ9cO7fEAOHCzPzY/Yco0Q=";
-    })
-  ];
-
-  sourceRoot = ".";
-
-  patches = lib.optionals (stdenv.hostPlatform.isWindows || stdenv.hostPlatform.isCygwin) [
-    ./0001-Add-exe-extension-for-MS-Windows-binaries.patch
-  ];
-
   outputs = [
     "out"
     "bin"
     "man"
     "dev"
   ];
-  propagatedBuildOutputs = [ ];
+
+  patches = lib.optionals (stdenv.hostPlatform.isWindows || stdenv.hostPlatform.isCygwin) [
+    ./0001-Add-exe-extension-for-MS-Windows-binaries.patch
+  ];
 
   makeFlags = [
     "TOPDIR=${placeholder "out"}"
@@ -84,14 +70,7 @@ stdenv.mkDerivation (finalAttrs: {
     "CFLAGS+=-DEXTERN_TIMEOFF=1"
   ];
 
-  enableParallelBuilding = true;
-
   doCheck = true;
-  checkTarget = "check";
-
-  installFlags = lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
-    "zic=${buildPackages.tzdata.bin}/bin/zic"
-  ];
 
   postInstall = ''
     rm $out/share/zoneinfo-posix
@@ -106,7 +85,27 @@ stdenv.mkDerivation (finalAttrs: {
     cp tzfile.h "$dev/include/tzfile.h"
   '';
 
+  checkTarget = "check";
+  enableParallelBuilding = true;
+
+  installFlags = lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
+    "zic=${buildPackages.tzdata.bin}/bin/zic"
+  ];
+
+  propagatedBuildOutputs = [ ];
   setupHook = ./tzdata-setup-hook.sh;
+  sourceRoot = ".";
+
+  srcs = [
+    (fetchurl {
+      hash = "sha256-EUVD2fGaa/61vKQ2hq6hc9OHVaPbHy7sESZHrpLG9UQ=";
+      url = "https://data.iana.org/time-zones/releases/tzdata${finalAttrs.version}.tar.gz";
+    })
+    (fetchurl {
+      hash = "sha256-N+nthCf101IcIvxY4pPL+wQ9cO7fEAOHCzPzY/Yco0Q=";
+      url = "https://data.iana.org/time-zones/releases/tzcode${finalAttrs.version}.tar.gz";
+    })
+  ];
 
   # PostgreSQL is sensitive to tzdata updates, because the test-suite often breaks.
   # Upstream provides patches very quickly, we just need to apply them until the next
@@ -114,17 +113,20 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.tests = postgresql;
 
   meta = {
-    homepage = "http://www.iana.org/time-zones";
     description = "Database of current and historical time zones";
+    homepage = "http://www.iana.org/time-zones";
     changelog = "https://github.com/eggert/tz/blob/${finalAttrs.version}/NEWS";
+
     license = with lib.licenses; [
       bsd3 # tzcode
       publicDomain # tzdata
     ];
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       ajs124
       fpletz
     ];
+
+    platforms = lib.platforms.all;
   };
 })

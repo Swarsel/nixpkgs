@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchgit,
-  makeWrapper,
-  jre,
   gradle,
+  jre,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation {
@@ -47,7 +47,7 @@ stdenv.mkDerivation {
     description = "Map and archetype editor for the Crossfire free MMORPG";
     homepage = "http://crossfire.real-time.com/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 }

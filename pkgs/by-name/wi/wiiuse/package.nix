@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
   bluez,
+  cmake,
+  fetchpatch,
 }:
 stdenv.mkDerivation (finalAttrs: {
 
@@ -29,16 +29,14 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix `.pc` files's double prefixes:
     #   https://github.com/wiiuse/wiiuse/pull/153
     (fetchpatch {
+      hash = "sha256-WEHumCiNzsWfyMl7qu9xrlsNhgNcawdi+EFXf5w8jiE=";
       name = "pc-prefix.patch";
       url = "https://github.com/wiiuse/wiiuse/commit/9c774ec0b71fa5119eabed823c35e4c745f3277c.patch";
-      hash = "sha256-WEHumCiNzsWfyMl7qu9xrlsNhgNcawdi+EFXf5w8jiE=";
     })
   ];
 
   nativeBuildInputs = [ cmake ];
-
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ bluez ];
-
   propagatedBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ bluez ];
 
   cmakeFlags = [
@@ -57,9 +55,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Feature complete cross-platform Wii Remote access library";
-    mainProgram = "wiiuseexample";
-    license = lib.licenses.gpl3Plus;
     homepage = "https://github.com/wiiuse/wiiuse";
+    license = lib.licenses.gpl3Plus;
     platforms = with lib.platforms; unix;
+    mainProgram = "wiiuseexample";
   };
 })

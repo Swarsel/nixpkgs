@@ -30,11 +30,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "SIMD accelerated carryless-multiplication CRC-64/NVME checksum computation (based on Intel's PCLMULQDQ paper)";
     homepage = "https://github.com/awesomized/crc64fast-nvme";
-    mainProgram = "crc_64_nvme_checksum";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ powwu ];
+    mainProgram = "crc_64_nvme_checksum";
   };
 })

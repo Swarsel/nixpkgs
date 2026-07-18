@@ -1,30 +1,38 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  setuptools,
   deprecated,
+  fetchPypi,
   hopcroftkarp,
   joblib,
   matplotlib,
   numpy,
+  pytestCheckHook,
   scikit-learn,
   scipy,
-  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "persim";
   version = "0.3.8";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) version;
-    pname = "persim";
     hash = "sha256-4T0YWEF2uKdk0W1+Vt8I3Mi6ZsazJXoHI0W+O9WbpA0=";
+    pname = "persim";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  preCheck = ''
+    # specifically needed for darwin
+    export HOME=$(mktemp -d)
+    mkdir -p $HOME/.matplotlib
+    echo "backend: ps" > $HOME/.matplotlib/matplotlibrc
+  '';
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -40,15 +48,7 @@ buildPythonPackage (finalAttrs: {
     scipy
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  preCheck = ''
-    # specifically needed for darwin
-    export HOME=$(mktemp -d)
-    mkdir -p $HOME/.matplotlib
-    echo "backend: ps" > $HOME/.matplotlib/matplotlibrc
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "persim" ];
 
   meta = {

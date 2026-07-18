@@ -7,8 +7,9 @@ let
   mkModule =
     n:
     writeTextFile {
-      name = "module-${n}";
       destination = "/Init.py";
+      name = "module-${n}";
+
       text = ''
         import sys
         import os

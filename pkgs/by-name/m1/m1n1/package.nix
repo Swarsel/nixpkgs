@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  buildPackages,
   imagemagick,
-  python3Packages,
   nix-update-script,
   nixos-icons,
-  buildPackages,
+  python3Packages,
   customLogo ? "${nixos-icons}/share/icons/hicolor/256x256/apps/nix-snowflake.png",
 }:
 
 let
   stdenvOpts = {
-    targetPlatform.system = "aarch64-none-elf";
     targetPlatform.rust.rustcTarget = "${stdenv.hostPlatform.parsed.cpu.name}-unknown-none-softfloat";
     targetPlatform.rust.rustcTargetSpec = "${stdenv.hostPlatform.parsed.cpu.name}-unknown-none-softfloat";
+    targetPlatform.system = "aarch64-none-elf";
   };
   rust = buildPackages.rust.override {
     stdenv = lib.recursiveUpdate buildPackages.stdenv stdenvOpts;
@@ -41,14 +41,6 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version;
-    src = "${finalAttrs.src}/rust";
-    sourceRoot = "rust";
-    hash = "sha256-iuiRp2FA5jnb3uh/p1gpc7Sznt1s4/UR91wEtXTf97o=";
-  };
-  cargoRoot = "rust";
-
   postPatch = lib.optionalString (customLogo != null) ''
     magick ${customLogo} -resize 128x128 data/custom_128.png
     magick ${customLogo} -resize 256x256 data/custom_256.png
@@ -67,19 +59,6 @@ stdenv.mkDerivation (finalAttrs: {
     "CHAINLOADING=1"
   ]
   ++ lib.optional (customLogo != null) "LOGO=custom";
-
-  enableParallelBuilding = true;
-
-  installPhase = ''
-    runHook preInstall
-
-    install -Dm644 build/m1n1.bin -t $out/lib/m1n1/
-
-    install -Dm644 3rdparty_licenses/LICENSE.* -t $out/share/doc/m1n1/licenses/
-    install -Dm644 LICENSE -t $out/share/doc/m1n1/licenses/
-
-    runHook postInstall
-  '';
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
@@ -100,13 +79,35 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postCheck
   '';
 
+  installPhase = ''
+    runHook preInstall
+
+    install -Dm644 build/m1n1.bin -t $out/lib/m1n1/
+
+    install -Dm644 3rdparty_licenses/LICENSE.* -t $out/share/doc/m1n1/licenses/
+    install -Dm644 LICENSE -t $out/share/doc/m1n1/licenses/
+
+    runHook postInstall
+  '';
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version;
+    src = "${finalAttrs.src}/rust";
+    hash = "sha256-iuiRp2FA5jnb3uh/p1gpc7Sznt1s4/UR91wEtXTf97o=";
+    sourceRoot = "rust";
+  };
+
+  cargoRoot = "rust";
+  enableParallelBuilding = true;
+
   passthru = {
-    updateScript = nix-update-script { };
     inherit rustPlatform rustPackages;
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Bootloader to bridge the Apple (XNU) boot to Linux boot";
+
     longDescription = ''
       m1n1 is the bootloader developed by the Asahi Linux project to
       bridge the Apple (XNU) boot ecosystem to the Linux boot ecosystem.
@@ -126,8 +127,10 @@ stdenv.mkDerivation (finalAttrs: {
       a path to the desired image file which will be resized by
       ImageMagick to the correct sizes.
     '';
+
     homepage = "https://github.com/AsahiLinux/m1n1";
     changelog = "https://github.com/AsahiLinux/m1n1/releases/tag/${finalAttrs.src.tag}";
+
     license = with lib.licenses; [
       # m1n1 embeds several libraries, all of which cannot be
       # unvendored easily.
@@ -149,6 +152,7 @@ stdenv.mkDerivation (finalAttrs: {
       bsd3
       asl20
     ];
+
     maintainers = with lib.maintainers; [ sempiternal-aurora ];
     platforms = [ "aarch64-linux" ];
   };

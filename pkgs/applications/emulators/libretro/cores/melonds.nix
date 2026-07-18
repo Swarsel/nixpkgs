@@ -1,12 +1,11 @@
 {
   lib,
   fetchFromGitHub,
-  mkLibretroCore,
-  libGLU,
   libGL,
+  libGLU,
+  mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "melonds";
   version = "0-unstable-2026-06-25";
 
   src = fetchFromGitHub {
@@ -16,10 +15,13 @@ mkLibretroCore {
     hash = "sha256-xvBdt/TMxZOrC//DLHRWRMqIibt7dNsfLM/FeMTRA60=";
   };
 
+  core = "melonds";
+
   extraBuildInputs = [
     libGLU
     libGL
   ];
+
   makefile = "Makefile";
 
   meta = {

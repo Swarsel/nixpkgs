@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   jq,
 }:
 
@@ -22,15 +22,14 @@ buildNpmPackage rec {
   '';
 
   npmDepsHash = "sha256-4UYX9ndqecr06/gZeouzrDss6568jBXY1ypcVX7DEVk=";
-
   dontNpmBuild = true;
 
   meta = {
-    changelog = "https://github.com/jaywink/matrix-alertmanager/blob/${src.rev}/CHANGELOG.md";
     description = "Bot to receive Alertmanager webhook events and forward them to chosen rooms";
-    mainProgram = "matrix-alertmanager";
     homepage = "https://github.com/jaywink/matrix-alertmanager";
+    changelog = "https://github.com/jaywink/matrix-alertmanager/blob/${src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ erethon ];
+    mainProgram = "matrix-alertmanager";
   };
 }

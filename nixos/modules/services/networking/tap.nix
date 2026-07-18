@@ -11,20 +11,22 @@ in
 {
   options.services.tap = {
     enable = lib.mkEnableOption "Tap, ATProtocol firehose sync utility";
-
     package = lib.mkPackageOption pkgs "tap" { };
 
     environmentFiles = lib.mkOption {
-      type = lib.types.listOf lib.types.path;
       default = [ ];
+
       description = ''
         Files to load environment variables from. Use for secrets such as
         {env}`TAP_ADMIN_PASSWORD` that should not be readable in the Nix store.
       '';
+
+      type = lib.types.listOf lib.types.path;
     };
 
     settings = lib.mkOption {
       default = { };
+
       description = ''
         Configuration for Tap as environment variables. See the
         [README](https://github.com/bluesky-social/indigo/blob/main/cmd/tap/README.md)
@@ -34,7 +36,27 @@ in
         {option}`environmentFiles` rather than here, as values set here will
         be readable in the Nix store.
       '';
+
       type = lib.types.submodule {
+        options = {
+          TAP_BIND = lib.mkOption {
+            default = "127.0.0.1:2480";
+            description = "Address and port the HTTP server will listen on.";
+            type = lib.types.str;
+          };
+
+          TAP_DATABASE_URL = lib.mkOption {
+            default = "sqlite:///var/lib/tap/tap.db";
+
+            description = ''
+              Database connection string. Accepts SQLite (`sqlite://path`) or
+              PostgreSQL (`postgres://...`) connection strings.
+            '';
+
+            type = lib.types.str;
+          };
+        };
+
         freeformType = lib.types.attrsOf (
           lib.types.nullOr (
             lib.types.oneOf [
@@ -45,49 +67,32 @@ in
             ]
           )
         );
-
-        options = {
-          TAP_BIND = lib.mkOption {
-            type = lib.types.str;
-            default = "127.0.0.1:2480";
-            description = "Address and port the HTTP server will listen on.";
-          };
-
-          TAP_DATABASE_URL = lib.mkOption {
-            type = lib.types.str;
-            default = "sqlite:///var/lib/tap/tap.db";
-            description = ''
-              Database connection string. Accepts SQLite (`sqlite://path`) or
-              PostgreSQL (`postgres://...`) connection strings.
-            '';
-          };
-        };
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.tap = {
-      description = "Tap - ATProtocol firehose sync utility";
       after = [ "network-online.target" ];
-      wants = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Tap - ATProtocol firehose sync utility";
 
       serviceConfig = {
-        User = "tap";
+        AmbientCapabilities = "";
+        CapabilityBoundingSet = "";
         DynamicUser = true;
 
-        ExecStart = "${lib.getExe cfg.package} run";
         Environment = lib.mapAttrsToList (
           k: v: "${k}=${if lib.isBool v then lib.boolToString v else toString v}"
         ) (lib.filterAttrs (_: v: v != null) cfg.settings);
+
         EnvironmentFile = cfg.environmentFiles;
-
-        Restart = "on-failure";
-        RestartSec = 5;
-        StateDirectory = "tap";
-        StateDirectoryMode = "0750";
-
+        ExecStart = "${lib.getExe cfg.package} run";
+        LockPersonality = true;
+        NoNewPrivileges = true;
+        PrivateDevices = true;
+        PrivateTmp = true;
+        PrivateUsers = true;
+        ProcSubset = "pid";
         ProtectClock = true;
         ProtectControlGroups = true;
         ProtectHome = true;
@@ -96,34 +101,35 @@ in
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
-        ProcSubset = "pid";
         ProtectSystem = "strict";
+        RemoveIPC = true;
+        Restart = "on-failure";
+        RestartSec = 5;
 
-        PrivateDevices = true;
-        PrivateTmp = true;
-        PrivateUsers = true;
-
-        RestrictNamespaces = true;
-        RestrictRealtime = true;
-        RestrictSUIDSGID = true;
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
           "AF_UNIX"
         ];
 
-        LockPersonality = true;
-        NoNewPrivileges = true;
-        AmbientCapabilities = "";
-        CapabilityBoundingSet = "";
-        RemoveIPC = true;
+        RestrictNamespaces = true;
+        RestrictRealtime = true;
+        RestrictSUIDSGID = true;
+        StateDirectory = "tap";
+        StateDirectoryMode = "0750";
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
         ];
+
         UMask = "0077";
+        User = "tap";
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
   };
 

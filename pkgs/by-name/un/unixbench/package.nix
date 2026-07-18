@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  coreutils,
+  gawk,
+  gnugrep,
+  installShellFiles,
+  libGLX,
+  libx11,
+  libxext,
   makeWrapper,
   pandoc,
-  installShellFiles,
   perl,
-  libxext,
-  libx11,
-  x11perf,
-  libGLX,
-  coreutils,
-  unixtools,
   runtimeShell,
   targetPackages,
-  gnugrep,
-  gawk,
+  unixtools,
+  x11perf,
   withGL ? true,
   withX11perf ? true,
 }:
@@ -33,10 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     ./common.patch
   ];
-
-  patchFlags = [ "-p2" ];
-
-  sourceRoot = "${finalAttrs.src.name}/UnixBench";
 
   postPatch = ''
     substituteInPlace Makefile \
@@ -59,18 +55,6 @@ stdenv.mkDerivation (finalAttrs: {
     libx11
     libxext
     libGLX
-  ];
-
-  runtimeDependencies = [
-    coreutils
-    unixtools.net-tools
-    unixtools.locale
-    targetPackages.stdenv.cc
-    gnugrep
-    gawk
-  ]
-  ++ lib.optionals withX11perf [
-    x11perf
   ];
 
   makeFlags = [
@@ -111,12 +95,28 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix PATH : ${lib.makeBinPath finalAttrs.runtimeDependencies}
   '';
 
+  patchFlags = [ "-p2" ];
+
+  runtimeDependencies = [
+    coreutils
+    unixtools.net-tools
+    unixtools.locale
+    targetPackages.stdenv.cc
+    gnugrep
+    gawk
+  ]
+  ++ lib.optionals withX11perf [
+    x11perf
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/UnixBench";
+
   meta = {
     description = "Basic indicator of the performance of a Unix-like system";
     homepage = "https://github.com/kdlucas/byte-unixbench";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "ubench";
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.unix;
+    mainProgram = "ubench";
   };
 })

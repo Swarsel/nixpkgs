@@ -7,13 +7,13 @@
 buildPythonPackage rec {
   pname = "speaklater3";
   version = "1.4";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     sha256 = "ySYdS2taMEZyMS0esImb4Cj6yRdgGQqA/szTHTo7UEI=";
   };
 
+  format = "setuptools";
   pythonImportsCheck = [ "speaklater" ];
 
   meta = {

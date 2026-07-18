@@ -3,20 +3,17 @@
   stdenv,
   buildPythonPackage,
   equihash,
-  setuptools,
   python,
+  setuptools,
 }:
 
 buildPythonPackage rec {
-  pname = "pyequihash";
-  pyproject = true;
-
   inherit (equihash)
     version
     src
     ;
 
-  sourceRoot = "${src.name}/python";
+  pname = "pyequihash";
 
   postPatch =
     let
@@ -27,10 +24,6 @@ buildPythonPackage rec {
         "ctypes.util.find_library('equihash') or ctypes.util.find_library('libequihash')" "'${lib.getLib equihash}/lib/libequihash${soext}'"
     '';
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "equihash" ];
-
   checkPhase = ''
     runHook preCheck
 
@@ -38,6 +31,11 @@ buildPythonPackage rec {
 
     runHook postCheck
   '';
+
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "equihash" ];
+  sourceRoot = "${src.name}/python";
 
   meta = {
     inherit (equihash.meta)

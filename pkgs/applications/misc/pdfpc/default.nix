@@ -3,25 +3,25 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  vala,
-  gtk3,
-  libgee,
-  poppler,
-  libpthread-stubs,
-  gstreamer,
+  discount,
+  gobject-introspection,
+  gst-libav,
   gst-plugins-base,
   gst-plugins-good,
-  gst-libav,
-  gobject-introspection,
-  wrapGAppsHook3,
-  qrencode,
-  webkitgtk_4_1,
-  discount,
+  gstreamer,
+  gtk3,
   json-glib,
-  nix-update-script,
-  libsoup_3,
+  libgee,
+  libpthread-stubs,
   librsvg,
+  libsoup_3,
+  nix-update-script,
+  pkg-config,
+  poppler,
+  qrencode,
+  vala,
+  webkitgtk_4_1,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation rec {
@@ -29,8 +29,8 @@ stdenv.mkDerivation rec {
   version = "4.7.0";
 
   src = fetchFromGitHub {
-    repo = "pdfpc";
     owner = "pdfpc";
+    repo = "pdfpc";
     rev = "v${version}";
     hash = "sha256-fPhCrn1ELC03/II+e021BUNJr1OKCBIcFCM7z+2Oo+s=";
   };
@@ -44,7 +44,6 @@ stdenv.mkDerivation rec {
     wrapGAppsHook3
   ];
 
-  cmakeFlags = lib.optional stdenv.hostPlatform.isDarwin (lib.cmakeBool "MDVIEW" false);
   buildInputs =
     let
       platformBuildInputs =
@@ -71,15 +70,16 @@ stdenv.mkDerivation rec {
     ]
     ++ platformBuildInputs;
 
+  cmakeFlags = lib.optional stdenv.hostPlatform.isDarwin (lib.cmakeBool "MDVIEW" false);
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Presenter console with multi-monitor support for PDF files";
-    mainProgram = "pdfpc";
     homepage = "https://pdfpc.github.io/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ pSub ];
     platforms = lib.platforms.unix;
+    mainProgram = "pdfpc";
   };
 
 }

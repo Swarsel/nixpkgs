@@ -3,15 +3,15 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   boost,
-  m4ri,
   gd,
+  m4ri,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.2.15";
   pname = "brial";
+  version = "1.2.15";
 
   src = fetchFromGitHub {
     owner = "BRiAl";
@@ -20,11 +20,9 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-I8p2jdc2/oq9piy1QvNl+N0+MHDE5Xv1kawkRTjrWSU=";
   };
 
-  # FIXME package boost-test and enable checks
-  doCheck = false;
-
-  configureFlags = [
-    "--with-boost-unit-test-framework=no"
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
   ];
 
   buildInputs = [
@@ -33,16 +31,18 @@ stdenv.mkDerivation (finalAttrs: {
     gd
   ];
 
-  nativeBuildInputs = [
-    autoreconfHook
-    pkg-config
+  configureFlags = [
+    "--with-boost-unit-test-framework=no"
   ];
 
+  # FIXME package boost-test and enable checks
+  doCheck = false;
+
   meta = {
-    homepage = "https://github.com/BRiAl/BRiAl";
     description = "Legacy version of PolyBoRi maintained by sagemath developers";
+    homepage = "https://github.com/BRiAl/BRiAl";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.sage ];
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.sage ];
   };
 })

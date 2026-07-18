@@ -1,11 +1,10 @@
 {
   lib,
-  cmake,
   fetchFromGitHub,
+  cmake,
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "swanstation";
   version = "0-unstable-2026-06-25";
 
   src = fetchFromGitHub {
@@ -15,11 +14,13 @@ mkLibretroCore {
     hash = "sha256-l4Vb1kSuoqMJC4gn+S61zuePZaYvJ/nmVyoFOlsCTBM=";
   };
 
-  extraNativeBuildInputs = [ cmake ];
-  makefile = "Makefile";
   cmakeFlags = [
     "-DBUILD_LIBRETRO_CORE=ON"
   ];
+
+  core = "swanstation";
+  extraNativeBuildInputs = [ cmake ];
+  makefile = "Makefile";
 
   meta = {
     description = "Port of SwanStation (a fork of DuckStation) to libretro";

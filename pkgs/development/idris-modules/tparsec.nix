@@ -1,16 +1,12 @@
 {
-  build-idris-package,
-  fetchFromGitHub,
-  contrib,
   lib,
+  fetchFromGitHub,
+  build-idris-package,
+  contrib,
 }:
 build-idris-package {
   pname = "tparsec";
   version = "2020-02-11";
-
-  ipkgName = "TParsec";
-
-  idrisDeps = [ contrib ];
 
   src = fetchFromGitHub {
     owner = "gallais";
@@ -18,6 +14,9 @@ build-idris-package {
     rev = "943c64dfcb4e1582696f68312fad88145dc3a8e4";
     sha256 = "0pyhkafhx2pwim91ada6qrgacvahl9bpv5m486y8fph4qzf4z6mx";
   };
+
+  idrisDeps = [ contrib ];
+  ipkgName = "TParsec";
 
   meta = {
     description = "TParsec - Total Parser Combinators in Idris";

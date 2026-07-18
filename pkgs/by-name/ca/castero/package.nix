@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "castero";
   version = "0.9.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xgi";
@@ -16,10 +15,10 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-6/7oCKBMEcQeJ8PaFP15Xef9sQRYCpigtzINv2M6GUY=";
   };
 
-  build-system = with python3.pkgs; [
-    setuptools
-    wheel
-  ];
+  # Satisfy the python-mpv dependency, which is mpv within NixOS
+  postPatch = ''
+    substituteInPlace setup.py --replace-fail "python-mpv" "mpv"
+  '';
 
   propagatedBuildInputs =
     with python3.pkgs;
@@ -39,8 +38,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pytestCheckHook
   ];
 
-  enabledTestPaths = [
-    "tests"
+  # Resolve configuration tests, which access $HOME
+  preCheck = ''
+    export HOME=$(mktemp -d)
+  '';
+
+  build-system = with python3.pkgs; [
+    setuptools
+    wheel
   ];
 
   # Disable tests that are problematic with pytest
@@ -58,27 +63,23 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "test_perspective_downloaded_draw_metadata"
   ];
 
+  enabledTestPaths = [
+    "tests"
+  ];
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "castero"
   ];
 
-  # Resolve configuration tests, which access $HOME
-  preCheck = ''
-    export HOME=$(mktemp -d)
-  '';
-
-  # Satisfy the python-mpv dependency, which is mpv within NixOS
-  postPatch = ''
-    substituteInPlace setup.py --replace-fail "python-mpv" "mpv"
-  '';
-
   # VLC currently doesn't support Darwin on NixOS
   meta = {
-    mainProgram = "castero";
     description = "TUI podcast client for the terminal";
     homepage = "https://github.com/xgi/castero";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ keto ];
+    platforms = lib.platforms.linux;
+    mainProgram = "castero";
   };
 })

@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   buildNpmPackage,
 }:
 buildNpmPackage (finalAttrs: {
@@ -24,7 +24,7 @@ buildNpmPackage (finalAttrs: {
     description = "Improved navigation between Git branches";
     homepage = "https://github.com/mykolaharmash/git-jump";
     license = lib.licenses.mit;
-    mainProgram = "git-jump";
     maintainers = with lib.maintainers; [ juliusfreudenberger ];
+    mainProgram = "git-jump";
   };
 })

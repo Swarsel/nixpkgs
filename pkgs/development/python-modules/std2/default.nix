@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage {
   pname = "std2";
   version = "0-unstable-2025-02-06";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ms-jpq";
@@ -18,12 +17,12 @@ buildPythonPackage {
   };
 
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "std2" ];
 
   meta = {
-    homepage = "https://github.com/ms-jpq/std2";
     description = "Dependency to chadtree and coq_nvim plugins";
+    homepage = "https://github.com/ms-jpq/std2";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ GaetanLepage ];
   };

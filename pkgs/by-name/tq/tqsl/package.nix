@@ -3,14 +3,14 @@
   stdenv,
   fetchurl,
   cmake,
-  expat,
-  openssl,
-  zlib,
-  lmdb,
   curl,
+  expat,
+  lmdb,
+  openssl,
   sqlite,
-  wxwidgets_3_2,
   wrapGAppsHook3,
+  wxwidgets_3_2,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     wrapGAppsHook3
   ];
+
   buildInputs = [
     expat
     openssl
@@ -38,10 +39,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Software for using the ARRL Logbook of the World";
-    mainProgram = "tqsl";
     homepage = "https://www.arrl.org/tqsl-download";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "tqsl";
   };
 })

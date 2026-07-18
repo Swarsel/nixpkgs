@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  python,
-  setuptools,
+  buildPythonPackage,
   dbus,
   pytest,
   pytest-asyncio,
   pytest-timeout,
+  python,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "dbus-next";
   version = "0.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "altdesktop";
@@ -22,7 +21,8 @@ buildPythonPackage rec {
     hash = "sha256-EKEQZFRUe+E65Z6DNCJFL5uCI5kbXrN7Tzd4O0X5Cqo=";
   };
 
-  build-system = [ setuptools ];
+  # Tests are flaky and upstream is no longer active
+  doCheck = false;
 
   nativeCheckInputs = [
     dbus
@@ -30,9 +30,6 @@ buildPythonPackage rec {
     pytest-asyncio
     pytest-timeout
   ];
-
-  # Tests are flaky and upstream is no longer active
-  doCheck = false;
 
   # test_peer_interface hits a timeout
   # test_tcp_connection_with_forwarding fails due to dbus
@@ -44,6 +41,9 @@ buildPythonPackage rec {
       -k "not test_peer_interface and not test_tcp_connection_with_forwarding"
     runHook postCheck
   '';
+
+  build-system = [ setuptools ];
+  pyproject = true;
 
   meta = {
     description = "Zero-dependency DBus library for Python with asyncio support";

@@ -1,18 +1,18 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
   callPackage,
-  gnat,
-  zlib,
-  llvm,
-  lib,
   gcc13,
-  texinfo,
   gmp,
-  mpfr,
-  libmpc,
+  gnat,
   gnutar,
+  libmpc,
+  llvm,
   makeWrapper,
+  mpfr,
+  texinfo,
+  zlib,
   backend ? if stdenv.hostPlatform.isAarch64 then "llvm-jit" else "mcode",
 }:
 
@@ -40,9 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
-
-  env.LIBRARY_PATH = "${stdenv.cc.libc}/lib";
 
   nativeBuildInputs = [
     gnat
@@ -63,14 +60,6 @@ stdenv.mkDerivation (finalAttrs: {
     libmpc
   ];
 
-  preConfigure = ''
-    # If llvm 7.0 works, 7.x releases should work too.
-    sed -i 's/check_version  7.0/check_version  7/g' configure
-  ''
-  + lib.optionalString backendIsGCC ''
-    ${gnutar}/bin/tar -xf ${gcc13.cc.src}
-  '';
-
   configureFlags = [
     # See https://github.com/ghdl/ghdl/pull/2058
     "--disable-werror"
@@ -85,6 +74,16 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals backendIsGCC [
     "--with-gcc=gcc-${gcc13.cc.version}"
   ];
+
+  env.LIBRARY_PATH = "${stdenv.cc.libc}/lib";
+
+  preConfigure = ''
+    # If llvm 7.0 works, 7.x releases should work too.
+    sed -i 's/check_version  7.0/check_version  7/g' configure
+  ''
+  + lib.optionalString backendIsGCC ''
+    ${gnutar}/bin/tar -xf ${gcc13.cc.src}
+  '';
 
   buildPhase = lib.optionalString backendIsGCC ''
     make copy-sources
@@ -119,14 +118,15 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix PATH : ${lib.makeBinPath [ stdenv.cc ]}
   '';
 
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
+
   hardeningDisable = [
   ]
   ++ lib.optionals backendIsGCC [
     # GCC compilation fails with format errors
     "format"
   ];
-
-  enableParallelBuilding = true;
 
   passthru = {
     # run with:
@@ -139,19 +139,22 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/ghdl/ghdl";
     description = "VHDL 2008/93/87 simulator";
+    homepage = "https://github.com/ghdl/ghdl";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "ghdl";
+
     maintainers = with lib.maintainers; [
       lucus16
       thoughtpolice
       sempiternal-aurora
     ];
+
     platforms = [
       "x86_64-linux"
     ]
     ++ lib.optionals (backendIsLLVM || backendIsLLVMJit || backendIsGCC) [ "aarch64-linux" ]
     ++ lib.optionals (backendIsLLVM || backendIsLLVMJit) [ "aarch64-darwin" ];
+
+    mainProgram = "ghdl";
   };
 })

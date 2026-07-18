@@ -17,13 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "ili2c";
   version = "5.1.1"; # There are newer versions, but they use gradle
 
-  nativeBuildInputs = [
-    ant
-    jdk
-    makeWrapper
-    stripJavaArchivesHook
-  ];
-
   src = fetchFromGitHub {
     owner = "claeis";
     repo = "ili2c";
@@ -34,6 +27,13 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # avoids modifying Version.properties file because that would insert the current timestamp into the file
     ./dont-use-build-timestamp.patch
+  ];
+
+  nativeBuildInputs = [
+    ant
+    jdk
+    makeWrapper
+    stripJavaArchivesHook
   ];
 
   buildPhase = ''
@@ -54,18 +54,22 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "INTERLIS Compiler";
+
     longDescription = ''
       Checks the syntactical correctness of an INTERLIS data model.
     '';
+
     homepage = "https://www.interlis.ch/downloads/ili2c";
+    license = lib.licenses.lgpl21Plus;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # source bundles dependencies as jars
     ];
-    license = lib.licenses.lgpl21Plus;
+
     maintainers = with lib.maintainers; [ das-g ];
-    teams = [ lib.teams.geospatial ];
     platforms = lib.platforms.unix;
     mainProgram = "ili2c";
+    teams = [ lib.teams.geospatial ];
   };
 })

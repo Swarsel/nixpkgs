@@ -1,14 +1,14 @@
 {
-  buildPerlPackage,
-  bzip2,
+  lib,
   fetchFromGitHub,
   JSONXS,
-  lib,
+  PodMarkdown,
+  TextCSV_XS,
+  buildPerlPackage,
+  bzip2,
   nix-update-script,
   pgbadger,
-  PodMarkdown,
   testers,
-  TextCSV_XS,
   which,
 }:
 
@@ -23,19 +23,19 @@ buildPerlPackage rec {
     hash = "sha256-i2EamGk+urwTQNaiphJw0QIjLq/OpRdQzsR6ytaZc7k=";
   };
 
+  outputs = [ "out" ];
+
   postPatch = ''
     patchShebangs ./pgbadger
   '';
-
-  outputs = [ "out" ];
-
-  env.PERL_MM_OPT = "INSTALL_BASE=${placeholder "out"}";
 
   buildInputs = [
     JSONXS
     PodMarkdown
     TextCSV_XS
   ];
+
+  env.PERL_MM_OPT = "INSTALL_BASE=${placeholder "out"}";
 
   nativeCheckInputs = [
     bzip2
@@ -48,12 +48,13 @@ buildPerlPackage rec {
       command = "${lib.getExe pgbadger} --version";
       package = pgbadger;
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://github.com/darold/pgbadger";
     description = "Fast PostgreSQL Log Analyzer";
+    homepage = "https://github.com/darold/pgbadger";
     changelog = "https://github.com/darold/pgbadger/raw/v${version}/ChangeLog";
     license = lib.licenses.postgresql;
     mainProgram = "pgbadger";

@@ -23,7 +23,6 @@ in
 mkDerivation (finalAttrs: {
   pname = "lgpio";
   version = "0.2.2";
-  format = if pyProject == "" then null else "setuptools";
 
   src = fetchFromGitHub {
     owner = "joan2937";
@@ -36,11 +35,21 @@ mkDerivation (finalAttrs: {
     swig
   ];
 
+  buildInputs = [
+    lgpioWithoutPython
+  ];
+
+  makeFlags = [
+    "prefix=$(out)"
+    "CROSS_PREFIX=${stdenv.cc.targetPrefix}"
+  ];
+
   env.NIX_CFLAGS_COMPILE = "-std=gnu17";
 
   preConfigure = lib.optionalString (pyProject != "") ''
     cd ${pyProject}
   '';
+
   # Emulate ldconfig when building the C API
   postConfigure = lib.optionalString (pyProject == "") ''
     substituteInPlace Makefile \
@@ -51,14 +60,7 @@ mkDerivation (finalAttrs: {
     swig -python lgpio.i
   '';
 
-  buildInputs = [
-    lgpioWithoutPython
-  ];
-
-  makeFlags = [
-    "prefix=$(out)"
-    "CROSS_PREFIX=${stdenv.cc.targetPrefix}"
-  ];
+  format = if pyProject == "" then null else "setuptools";
 
   meta = {
     description = "Linux C libraries and Python modules for manipulating GPIO";

@@ -1,9 +1,9 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   godot_4_6,
   makeWrapper,
-  stdenv,
-  lib,
-  fetchFromGitHub,
   nix-update-script,
   enableWayland ? false,
 }:
@@ -11,6 +11,7 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "godsvg";
   version = "1.0-alpha16";
+
   src = fetchFromGitHub {
     owner = "MewPurPur";
     repo = "GodSVG";
@@ -28,8 +29,8 @@ stdenv.mkDerivation (finalAttrs: {
       # https://github.com/MewPurPur/GodSVG/blob/main/export_presets.cfg
       preset =
         {
-          "x86_64-linux" = "Linux";
           "aarch64-darwin" = "macOS";
+          "x86_64-linux" = "Linux";
         }
         .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
     in
@@ -71,18 +72,21 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=unstable" ]; };
 
   meta = {
-    homepage = "https://www.godsvg.com/";
     description = "A vector graphics application for structured SVG editing";
+    homepage = "https://www.godsvg.com/";
     changelog = "https://www.godsvg.com/article/${lib.replaceString "." "-" finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = [
-      "x86_64-linux"
-      "aarch64-darwin"
-    ];
-    mainProgram = "godsvg";
+
     maintainers = with lib.maintainers; [
       mochienya
       CodeF53
     ];
+
+    platforms = [
+      "x86_64-linux"
+      "aarch64-darwin"
+    ];
+
+    mainProgram = "godsvg";
   };
 })

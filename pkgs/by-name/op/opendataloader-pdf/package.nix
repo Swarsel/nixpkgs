@@ -1,17 +1,14 @@
 {
   lib,
-  maven,
   fetchFromGitHub,
-  makeBinaryWrapper,
   jre,
+  makeBinaryWrapper,
+  maven,
 }:
 
 maven.buildMavenPackage (finalAttrs: {
   pname = "opendataloader-pdf";
   version = "2.4.7";
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "opendataloader-project";
@@ -20,10 +17,7 @@ maven.buildMavenPackage (finalAttrs: {
     hash = "sha256-qCU0Yb4N0KtbqVSscGLmv0xps4RwR++WxS/A44WwRlk=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/java";
-
-  mvnHash = "sha256-TWp/vlxqlK+8zqDzQySBKpLRUpLCG7Oa1C/1dIlwmsw=";
-  mvnParameters = "-Dproject.build.outputTimestamp=1980-01-01T00:00:02Z";
+  strictDeps = true;
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -41,13 +35,18 @@ maven.buildMavenPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  mvnHash = "sha256-TWp/vlxqlK+8zqDzQySBKpLRUpLCG7Oa1C/1dIlwmsw=";
+  mvnParameters = "-Dproject.build.outputTimestamp=1980-01-01T00:00:02Z";
+  sourceRoot = "${finalAttrs.src.name}/java";
+
   meta = {
     description = "PDF Parser for AI-ready data";
     homepage = "https://github.com/opendataloader-project/opendataloader-pdf";
     changelog = "https://github.com/opendataloader-project/opendataloader-pdf/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ drupol ];
-    mainProgram = "opendataloader-pdf";
     platforms = lib.platforms.linux;
+    mainProgram = "opendataloader-pdf";
   };
 })

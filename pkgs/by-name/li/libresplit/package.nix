@@ -1,7 +1,7 @@
 {
   lib,
-  gcc15Stdenv,
   fetchFromGitHub,
+  gcc15Stdenv,
   gtk3,
   jansson,
   luajit,
@@ -39,11 +39,11 @@ gcc15Stdenv.mkDerivation {
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    homepage = "https://github.com/LibreSplitDev/LibreSplit";
     description = "Speedrun timer with auto splitting and load removal for Linux";
+    homepage = "https://github.com/LibreSplitDev/LibreSplit";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ fgaz ];
-    mainProgram = "libresplit";
     platforms = lib.platforms.linux;
+    mainProgram = "libresplit";
   };
 }

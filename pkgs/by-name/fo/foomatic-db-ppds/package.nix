@@ -1,16 +1,16 @@
 {
   lib,
-  foomatic-db,
-  foomatic-db-nonfree,
-  buildEnv,
-  foomatic-db-engine,
   stdenv,
+  buildEnv,
   cups-filters,
+  foomatic-db,
+  foomatic-db-engine,
+  foomatic-db-nonfree,
   ghostscript,
   netpbm,
+  patchPpdFilesHook,
   perl,
   psutils,
-  patchPpdFilesHook,
   withNonfreeDb ? false, # include foomatic-db-nonfree ppd files
 }:
 
@@ -18,9 +18,6 @@ let
   foomatic-db-packages = [ foomatic-db ] ++ lib.lists.optional withNonfreeDb foomatic-db-nonfree;
 
   foomatic-db-combined = buildEnv {
-    name = "foomatic-db-combined";
-    paths = foomatic-db-packages;
-    pathsToLink = [ "/share/foomatic" ];
     # `foomatic-db-combined` is a nativeBuildInput of `foomatic-db-ppds`.
     # The setup hook defined here helps scripts in
     # `foomatic-db-engine` to find the database.
@@ -30,6 +27,10 @@ let
       export FOOMATICDB="${placeholder "out"}/share/foomatic"
       eof
     '';
+
+    name = "foomatic-db-combined";
+    paths = foomatic-db-packages;
+    pathsToLink = [ "/share/foomatic" ];
   };
 
   # the effective license is `free` if all database
@@ -42,6 +43,7 @@ in
 
 stdenv.mkDerivation {
   pname = "foomatic-db-ppds";
+
   # the effective version is simply the
   # highest version of all database packages
   version = lib.trivial.pipe foomatic-db-packages [
@@ -49,6 +51,12 @@ stdenv.mkDerivation {
     (lib.lists.sort lib.strings.versionOlder)
     lib.lists.reverseList
     lib.lists.head
+  ];
+
+  nativeBuildInputs = [
+    foomatic-db-combined
+    foomatic-db-engine
+    patchPpdFilesHook
   ];
 
   buildInputs = [
@@ -59,20 +67,21 @@ stdenv.mkDerivation {
     psutils
   ];
 
-  nativeBuildInputs = [
-    foomatic-db-combined
-    foomatic-db-engine
-    patchPpdFilesHook
-  ];
-
-  dontUnpack = true;
-
   installPhase = ''
     runHook preInstall
     mkdir -p "${placeholder "out"}/share/cups/model"
     foomatic-compiledb -j "$NIX_BUILD_CORES" -d "${placeholder "out"}/share/cups/model/foomatic-db-ppds"
     runHook postInstall
   '';
+
+  # compress ppd files
+  postFixup = ''
+    echo 'compressing ppd files'
+    find -H "${placeholder "out"}/share/cups/model/foomatic-db-ppds" -type f -iname '*.ppd' -print0  \
+      | xargs -0r -n 64 -P "$NIX_BUILD_CORES" gzip -9n
+  '';
+
+  dontUnpack = true;
 
   # Comments indicate the respective
   # package the command is contained in.
@@ -92,18 +101,9 @@ stdenv.mkDerivation {
     #"pbm2l2030" "pbm2lwxl" "rastertophaser6100"
   ];
 
-  # compress ppd files
-  postFixup = ''
-    echo 'compressing ppd files'
-    find -H "${placeholder "out"}/share/cups/model/foomatic-db-ppds" -type f -iname '*.ppd' -print0  \
-      | xargs -0r -n 64 -P "$NIX_BUILD_CORES" gzip -9n
-  '';
-
   meta = {
     description = "OpenPrinting ppd files";
-    homepage = "https://openprinting.github.io/projects/02-foomatic/";
-    license = if isFree then lib.licenses.free else lib.licenses.unfree;
-    maintainers = [ lib.maintainers.yarny ];
+
     # list printer manufacturers here so people
     # searching for ppd files can find this package
     longDescription = ''
@@ -121,5 +121,9 @@ stdenv.mkDerivation {
       Samsung, Savin, Seiko, Sharp, SiPix, Sony, Star, Tally,
       Tektronix, TexasInstruments, Toshiba, Xante and Xerox.
     '';
+
+    homepage = "https://openprinting.github.io/projects/02-foomatic/";
+    license = if isFree then lib.licenses.free else lib.licenses.unfree;
+    maintainers = [ lib.maintainers.yarny ];
   };
 }

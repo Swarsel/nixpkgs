@@ -3,22 +3,19 @@
   buildPythonPackage,
   fetchPypi,
   google-generativeai,
-  llama-index-core,
   hatchling,
+  llama-index-core,
 }:
 
 buildPythonPackage rec {
   pname = "llama-index-vector-stores-google";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "llama_index_vector_stores_google";
     inherit version;
     hash = "sha256-lf1Wr8l6azfxrokcGilR+IriU465LmFXDiqfHrCdrO0=";
+    pname = "llama_index_vector_stores_google";
   };
-
-  pythonRelaxDeps = [ "google-generativeai" ];
 
   build-system = [
     hatchling
@@ -29,7 +26,9 @@ buildPythonPackage rec {
     llama-index-core
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "llama_index.vector_stores.google" ];
+  pythonRelaxDeps = [ "google-generativeai" ];
 
   meta = {
     description = "LlamaIndex Vector Store Integration for Google";

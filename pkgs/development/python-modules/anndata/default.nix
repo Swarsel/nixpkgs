@@ -1,4 +1,7 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   anndata,
   array-api-compat,
   awkward,
@@ -6,13 +9,11 @@
   buildPythonPackage,
   dask,
   distributed,
-  fetchFromGitHub,
   filelock,
   h5py,
   hatch-vcs,
   hatchling,
   joblib,
-  lib,
   legacy-api-wrap,
   natsort,
   numba,
@@ -26,14 +27,12 @@
   scanpy,
   scikit-learn,
   scipy,
-  stdenv,
   zarr,
 }:
 
 buildPythonPackage rec {
   pname = "anndata";
   version = "0.12.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scverse";
@@ -42,21 +41,7 @@ buildPythonPackage rec {
     hash = "sha256-LVpkLWlt7GtsHoh5rcHPM0JWlTDQqTl/c/38Mz7oBJA=";
   };
 
-  build-system = [
-    hatch-vcs
-    hatchling
-  ];
-
-  dependencies = [
-    array-api-compat
-    h5py
-    legacy-api-wrap
-    natsort
-    numpy
-    pandas
-    scipy
-    zarr
-  ];
+  doCheck = false; # use passthru.tests instead to prevent circularity with `scanpy`
 
   nativeCheckInputs = [
     awkward
@@ -79,14 +64,25 @@ buildPythonPackage rec {
   # Test suite takes ~5 minutes without pytest-xdist. Note that some tests will
   # fail when running without pytest-xdist ("worker_id not found").
   # pytestFlags = [ "-oaddopts=" ];
-
   preCheck = ''
     export NUMBA_CACHE_DIR=$(mktemp -d);
   '';
 
-  doCheck = false; # use passthru.tests instead to prevent circularity with `scanpy`
+  build-system = [
+    hatch-vcs
+    hatchling
+  ];
 
-  passthru.tests = anndata.overridePythonAttrs { doCheck = true; };
+  dependencies = [
+    array-api-compat
+    h5py
+    legacy-api-wrap
+    natsort
+    numpy
+    pandas
+    scipy
+    zarr
+  ];
 
   disabledTests = [
     # requires data from a previous test execution:
@@ -132,12 +128,14 @@ buildPythonPackage rec {
     "test_read_lazy_h5_cluster"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "anndata" ];
+  passthru.tests = anndata.overridePythonAttrs { doCheck = true; };
 
   meta = {
-    changelog = "https://github.com/scverse/anndata/blob/main/docs/release-notes/${src.tag}.md";
     description = "Python package for handling annotated data matrices in memory and on disk";
     homepage = "https://anndata.readthedocs.io/";
+    changelog = "https://github.com/scverse/anndata/blob/main/docs/release-notes/${src.tag}.md";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ samuela ];
   };

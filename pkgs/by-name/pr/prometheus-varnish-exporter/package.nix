@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   makeWrapper,
-  varnish,
   nixosTests,
+  varnish,
 }:
 
 buildGoModule rec {
@@ -18,9 +18,8 @@ buildGoModule rec {
     hash = "sha256-1sUzKLNkLP/eX0wYSestMAJpjAmX1iimjYoFYb6Mgpc=";
   };
 
-  vendorHash = "sha256-P2fR0U2O0Y4Mci9jkAMb05WR+PrpuQ59vbLMG5b9KQI=";
-
   nativeBuildInputs = [ makeWrapper ];
+  vendorHash = "sha256-P2fR0U2O0Y4Mci9jkAMb05WR+PrpuQ59vbLMG5b9KQI=";
 
   postInstall = ''
     wrapProgram $out/bin/prometheus_varnish_exporter \
@@ -30,10 +29,10 @@ buildGoModule rec {
   passthru.tests = { inherit (nixosTests.prometheus-exporters) varnish; };
 
   meta = {
-    homepage = "https://github.com/jonnenauha/prometheus_varnish_exporter";
     description = "Varnish exporter for Prometheus";
-    mainProgram = "prometheus_varnish_exporter";
+    homepage = "https://github.com/jonnenauha/prometheus_varnish_exporter";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ MostAwesomeDude ];
+    mainProgram = "prometheus_varnish_exporter";
   };
 }

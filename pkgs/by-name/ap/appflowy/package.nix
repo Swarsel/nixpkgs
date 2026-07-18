@@ -1,37 +1,38 @@
 {
-  stdenvNoCC,
   lib,
-  fetchzip,
+  alsa-lib,
   autoPatchelfHook,
-  makeWrapper,
   copyDesktopItems,
-  makeDesktopItem,
-  gtk3,
-  xdg-user-dirs,
-  keybinder3,
-  libnotify,
+  fetchzip,
   gst_all_1,
-  libva,
-  libvdpau,
+  gtk3,
+  keybinder3,
   lcms2,
   libarchive,
-  alsa-lib,
-  libpulseaudio,
   libgbm,
+  libnotify,
+  libpulseaudio,
+  libva,
+  libvdpau,
   libxscrnsaver,
   libxv,
+  makeDesktopItem,
+  makeWrapper,
+  stdenvNoCC,
+  xdg-user-dirs,
 }:
 
 let
   dist =
     {
-      x86_64-linux = {
-        urlSuffix = "linux-x86_64.tar.gz";
-        hash = "sha256-A8JUYzEMQH1sEKYrKZ84QZAgYbz0OvpHa3t9RIUVE9c=";
-      };
       aarch64-darwin = {
-        urlSuffix = "macos-universal.zip";
         hash = "sha256-LSNvFL1ud/FkzNSGk17ZqN2debnqsjlVDHd4NBjTds0=";
+        urlSuffix = "macos-universal.zip";
+      };
+
+      x86_64-linux = {
+        hash = "sha256-A8JUYzEMQH1sEKYrKZ84QZAgYbz0OvpHa3t9RIUVE9c=";
+        urlSuffix = "linux-x86_64.tar.gz";
       };
     }
     ."${stdenvNoCC.hostPlatform.system}"
@@ -42,8 +43,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   version = "0.11.9";
 
   src = fetchzip {
-    url = "https://github.com/AppFlowy-IO/appflowy/releases/download/${finalAttrs.version}/AppFlowy-${finalAttrs.version}-${dist.urlSuffix}";
     inherit (dist) hash;
+    url = "https://github.com/AppFlowy-IO/appflowy/releases/download/${finalAttrs.version}/AppFlowy-${finalAttrs.version}-${dist.urlSuffix}";
     stripRoot = false;
   };
 
@@ -69,9 +70,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     libxscrnsaver
     libxv
   ];
-
-  dontBuild = true;
-  dontConfigure = true;
 
   installPhase =
     lib.optionalString stdenvNoCC.hostPlatform.isLinux ''
@@ -111,20 +109,24 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   desktopItems = lib.optionals stdenvNoCC.hostPlatform.isLinux [
     (makeDesktopItem {
-      name = "appflowy";
-      desktopName = "AppFlowy";
+      categories = [ "Office" ];
       comment = finalAttrs.meta.description;
+      desktopName = "AppFlowy";
       exec = "appflowy %U";
       icon = "appflowy";
-      categories = [ "Office" ];
       mimeTypes = [ "x-scheme-handler/appflowy-flutter" ];
+      name = "appflowy";
     })
   ];
+
+  dontBuild = true;
+  dontConfigure = true;
 
   meta = {
     description = "Open-source alternative to Notion";
     homepage = "https://www.appflowy.io/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    changelog = "https://github.com/AppFlowy-IO/appflowy/releases/tag/${finalAttrs.version}";
+
     license = with lib.licenses; [
       # The LICENSE file clearly claims the project is using AGPL-3.0
       #
@@ -138,7 +140,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       # c.f. https://github.com/AppFlowy-IO/AppFlowy/issues/8479#issuecomment-4053301446
       unfreeRedistributable
     ];
-    changelog = "https://github.com/AppFlowy-IO/appflowy/releases/tag/${finalAttrs.version}";
+
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ darkonion0 ];
     platforms = [ "x86_64-linux" ] ++ lib.platforms.darwin;
     mainProgram = "appflowy";

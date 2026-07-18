@@ -5,8 +5,7 @@
 }:
 mkKdeDerivation {
   pname = "plymouth-kcm";
-
-  extraNativeBuildInputs = [ pkg-config ];
   extraBuildInputs = [ plymouth ];
+  extraNativeBuildInputs = [ pkg-config ];
   meta.mainProgram = "kplymouththemeinstaller";
 }

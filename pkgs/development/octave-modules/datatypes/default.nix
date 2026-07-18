@@ -1,7 +1,7 @@
 {
-  buildOctavePackage,
   lib,
   fetchFromGitHub,
+  buildOctavePackage,
   nix-update-script,
 }:
 
@@ -19,9 +19,9 @@ buildOctavePackage rec {
   passthru.updateScript = nix-update-script { extraArgs = [ "--version-regex=release-(.*)" ]; };
 
   meta = {
+    description = "Extra data types for GNU Octave";
     homepage = "https://gnu-octave.github.io/packages/datatypes/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ ravenjoad ];
-    description = "Extra data types for GNU Octave";
   };
 }

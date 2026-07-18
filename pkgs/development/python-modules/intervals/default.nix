@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   infinity,
   pytestCheckHook,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "intervals";
   version = "0.9.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kvesteri";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
     hash = "sha256-5SwbGF7RU+2wgGnqhhFCdV89tsEIum4w7RwPU7+3MRQ=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ infinity ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ infinity ];
+  pyproject = true;
   pythonImportsCheck = [ "intervals" ];
 
   meta = {

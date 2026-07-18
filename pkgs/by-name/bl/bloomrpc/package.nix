@@ -10,8 +10,8 @@ let
 
   src = fetchurl {
     url = "https://github.com/uw-labs/${pname}/releases/download/${version}/BloomRPC-${version}.AppImage";
-    name = "${pname}-${version}.AppImage";
     hash = "sha512-PebdYDpcplPN5y3mRu1mG6CXenYfYvBXNLgIGEr7ZgKnR5pIaOfJNORSNYSdagdGDb/B1sxuKfX4+4f2cqgb6Q==";
+    name = "${pname}-${version}.AppImage";
   };
 
   appimageContents = appimageTools.extractType2 {
@@ -21,10 +21,6 @@ in
 appimageTools.wrapType2 {
   inherit pname src version;
 
-  profile = ''
-    export LC_ALL=C.UTF-8
-  '';
-
   extraInstallCommands = ''
     install -m 444 -D ${appimageContents}/${pname}.desktop $out/share/applications/${pname}.desktop
     install -m 444 -D ${appimageContents}/${pname}.png \
@@ -33,12 +29,18 @@ appimageTools.wrapType2 {
       --replace 'Exec=AppRun' 'Exec=${pname}'
   '';
 
+  profile = ''
+    export LC_ALL=C.UTF-8
+  '';
+
   meta = {
     description = "GUI Client for GRPC Services";
+
     longDescription = ''
       Inspired by Postman and GraphQL Playground BloomRPC aims to provide the simplest
       and most efficient developer experience for exploring and querying your GRPC services.
     '';
+
     homepage = "https://github.com/uw-labs/bloomrpc";
     license = lib.licenses.lgpl3Plus;
     maintainers = with lib.maintainers; [ zoedsoupe ];

@@ -18,21 +18,33 @@ in
   options = {
 
     boot.uki = {
-      name = lib.mkOption {
-        type = lib.types.str;
-        description = "Name of the UKI";
+      configFile = lib.mkOption {
+        description = ''
+          The configuration file passed to {manpage}`ukify(1)` to create the UKI.
+
+          By default this configuration file is created from {option}`boot.uki.settings`.
+        '';
+
+        type = lib.types.path;
       };
 
-      version = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = config.system.image.version;
-        defaultText = lib.literalExpression "config.system.image.version";
-        description = "Version of the image or generation the UKI belongs to";
+      name = lib.mkOption {
+        description = "Name of the UKI";
+        type = lib.types.str;
+      };
+
+      settings = lib.mkOption {
+        description = ''
+          The configuration settings for ukify. These control what the UKI
+          contains and how it is built.
+        '';
+
+        type = format.type;
       };
 
       tries = lib.mkOption {
-        type = lib.types.nullOr lib.types.ints.unsigned;
         default = null;
+
         description = ''
           Number of boot attempts before this UKI is considered bad.
 
@@ -42,35 +54,29 @@ in
           [boot counting](https://uapi-group.org/specifications/specs/boot_loader_specification/#boot-counting)
           for more information.
         '';
+
+        type = lib.types.nullOr lib.types.ints.unsigned;
       };
 
-      settings = lib.mkOption {
-        type = format.type;
-        description = ''
-          The configuration settings for ukify. These control what the UKI
-          contains and how it is built.
-        '';
-      };
-
-      configFile = lib.mkOption {
-        type = lib.types.path;
-        description = ''
-          The configuration file passed to {manpage}`ukify(1)` to create the UKI.
-
-          By default this configuration file is created from {option}`boot.uki.settings`.
-        '';
+      version = lib.mkOption {
+        default = config.system.image.version;
+        defaultText = lib.literalExpression "config.system.image.version";
+        description = "Version of the image or generation the UKI belongs to";
+        type = lib.types.nullOr lib.types.str;
       };
     };
 
     system.boot.loader.ukiFile = lib.mkOption {
-      type = lib.types.str;
-      internal = true;
       description = "Name of the UKI file";
+      internal = true;
+      type = lib.types.str;
     };
 
   };
 
   config = {
+
+    boot.uki.configFile = lib.mkOptionDefault (format.generate "ukify.conf" cfg.settings);
 
     boot.uki.name = lib.mkOptionDefault (
       if config.system.image.id != null then config.system.image.id else "nixos"
@@ -78,14 +84,14 @@ in
 
     boot.uki.settings = {
       UKI = {
-        Linux = lib.mkOptionDefault "${config.boot.kernelPackages.kernel}/${config.system.boot.loader.kernelFile}";
-        Initrd = lib.mkOptionDefault "${config.system.build.initialRamdisk}/${config.system.boot.loader.initrdFile}";
         Cmdline = lib.mkOptionDefault "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams}";
-        Stub = lib.mkOptionDefault "${config.systemd.package}/lib/systemd/boot/efi/linux${efiArch}.efi.stub";
-        Uname = lib.mkOptionDefault "${config.boot.kernelPackages.kernel.modDirVersion}";
-        OSRelease = lib.mkOptionDefault "@${config.system.build.etc}/etc/os-release";
         # This is needed for cross compiling.
         EFIArch = lib.mkOptionDefault efiArch;
+        Initrd = lib.mkOptionDefault "${config.system.build.initialRamdisk}/${config.system.boot.loader.initrdFile}";
+        Linux = lib.mkOptionDefault "${config.boot.kernelPackages.kernel}/${config.system.boot.loader.kernelFile}";
+        OSRelease = lib.mkOptionDefault "@${config.system.build.etc}/etc/os-release";
+        Stub = lib.mkOptionDefault "${config.systemd.package}/lib/systemd/boot/efi/linux${efiArch}.efi.stub";
+        Uname = lib.mkOptionDefault "${config.boot.kernelPackages.kernel.modDirVersion}";
       }
       //
         lib.optionalAttrs (config.hardware.deviceTree.enable && config.hardware.deviceTree.name != null)
@@ -93,8 +99,6 @@ in
             DeviceTree = lib.mkOptionDefault "${config.hardware.deviceTree.package}/${config.hardware.deviceTree.name}";
           };
     };
-
-    boot.uki.configFile = lib.mkOptionDefault (format.generate "ukify.conf" cfg.settings);
 
     system.boot.loader.ukiFile =
       let

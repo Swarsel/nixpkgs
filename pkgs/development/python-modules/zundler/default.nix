@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatch-vcs,
   hatchling,
   lxml,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "zundler";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "AdrianVollmer";
@@ -25,6 +24,17 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-RUzVeJLRB9y6lS0tCkseoFgND1MXT7s2o7vNuUpdRDE=";
   };
+
+  # Tests are container-based
+  doCheck = false;
+
+  nativeCheckInputs = [
+    nox
+    pytestCheckHook
+    pytest-docker
+    pytest-selenium
+    selenium
+  ];
 
   build-system = [
     hatch-vcs
@@ -37,17 +47,7 @@ buildPythonPackage rec {
     sphinx
   ];
 
-  nativeCheckInputs = [
-    nox
-    pytestCheckHook
-    pytest-docker
-    pytest-selenium
-    selenium
-  ];
-
-  # Tests are container-based
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "zundler" ];
 
   meta = {

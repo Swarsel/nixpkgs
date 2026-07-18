@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   liquid-dsp,
+  pkg-config,
   soapysdr,
 }:
 
@@ -27,16 +27,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Find initial calibration offset for SDR devices";
+
     longDescription = ''
       fm_tune finds the initial offset for calibrating an SDR device. This is
       based a given FM radio station frequency. The offset given by this tool is
       not precise, but can be useful as a starting point for other tools which
       cannot correct for very large errors.
     '';
+
     homepage = "https://github.com/viraptor/fm_tune";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ viraptor ];
+    platforms = lib.platforms.unix;
     mainProgram = "fm_tune";
   };
 })

@@ -8,8 +8,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "5.1";
   pname = "seaview";
+  version = "5.1";
 
   src = fetchurl {
     url = "ftp://pbil.univ-lyon1.fr/pub/mol_phylogeny/seaview/archive/seaview_${finalAttrs.version}.tar.gz";
@@ -21,12 +21,12 @@ stdenv.mkDerivation (finalAttrs: {
     libjpeg
   ];
 
-  patchPhase = "sed -i 's#PATH=/bin:/usr/bin rm#'${coreutils}/bin/rm'#' seaview.cxx";
   installPhase = "mkdir -p $out/bin; cp seaview $out/bin";
+  patchPhase = "sed -i 's#PATH=/bin:/usr/bin rm#'${coreutils}/bin/rm'#' seaview.cxx";
 
   meta = {
     description = "GUI for molecular phylogeny";
-    mainProgram = "seaview";
+
     longDescription = ''
       SeaView is a multiplatform, graphical user interface for multiple sequence alignment and molecular phylogeny.
         - SeaView reads and writes various file formats (NEXUS, MSF, CLUSTAL, FASTA, PHYLIP, MASE, Newick) of DNA and protein sequences and of phylogenetic trees.
@@ -44,9 +44,11 @@ stdenv.mkDerivation (finalAttrs: {
 
           Gouy M., Guindon S. & Gascuel O. (2010) SeaView version 4 : a multiplatform graphical user interface for sequence alignment and phylogenetic tree building. Molecular Biology and Evolution 27(2):221-224.
     '';
+
     homepage = "https://doua.prabi.fr/software/seaview";
     license = lib.licenses.gpl3;
     maintainers = [ lib.maintainers.iimog ];
     platforms = lib.platforms.linux;
+    mainProgram = "seaview";
   };
 })

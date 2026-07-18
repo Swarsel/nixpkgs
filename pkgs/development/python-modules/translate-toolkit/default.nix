@@ -1,41 +1,36 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools-scm,
-
-  # dependencies
-  lxml,
-  unicode-segmentation-rs,
-
+  addBinToPathHook,
+  aeidon,
+  buildPythonPackage,
   # optional-dependencies
   charset-normalizer,
   fluent-syntax,
-  vobject,
+  gettext,
   iniparse,
-  rapidfuzz,
+  # dependencies
+  lxml,
   mistletoe,
   phply,
-  pyparsing,
   pyenchant,
-  aeidon,
-  tomlkit,
-  ruamel-yaml,
-
+  pyparsing,
+  pytest-xdist,
   # tests
   pytestCheckHook,
-  addBinToPathHook,
-  pytest-xdist,
-  gettext,
+  rapidfuzz,
+  ruamel-yaml,
+  # build-system
+  setuptools-scm,
   syrupy,
+  tomlkit,
+  unicode-segmentation-rs,
+  vobject,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "translate-toolkit";
   version = "3.19.11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "translate";
@@ -44,6 +39,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-+94oo6IYnRR4jnR60C3WNjesK6Tk6jND3xsYyx6sw0U=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    addBinToPathHook
+    pytest-xdist
+    syrupy
+    gettext
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools-scm ];
 
   dependencies = [
@@ -51,7 +56,10 @@ buildPythonPackage (finalAttrs: {
     unicode-segmentation-rs
   ];
 
-  pythonRelaxDeps = [ "lxml" ];
+  disabledTests = [
+    # Probably breaks because of nix sandbox
+    "test_timezones"
+  ];
 
   optional-dependencies = {
     chardet = [ charset-normalizer ];
@@ -68,23 +76,9 @@ buildPythonPackage (finalAttrs: {
     yaml = [ ruamel-yaml ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    addBinToPathHook
-    pytest-xdist
-    syrupy
-    gettext
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
-
-  disabledTests = [
-    # Probably breaks because of nix sandbox
-    "test_timezones"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "translate" ];
-
-  __darwinAllowLocalNetworking = true;
+  pythonRelaxDeps = [ "lxml" ];
 
   meta = {
     description = "Useful localization tools for building localization & translation systems";

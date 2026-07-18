@@ -3,9 +3,6 @@
   stdenv,
   fetchurl,
   autoPatchelfHook,
-  replaceVars,
-  wrapGAppsHook4,
-  python3Packages,
   cpio,
   cups,
   cyrus_sasl,
@@ -19,6 +16,9 @@
   lz4,
   pcsclite,
   protobufc,
+  python3Packages,
+  replaceVars,
+  wrapGAppsHook4,
 }:
 let
   pname = "nice-dcv-client";
@@ -37,10 +37,6 @@ stdenv.mkDerivation {
     wrapGAppsHook4
     python3Packages.rpm
   ];
-
-  unpackPhase = ''
-    rpm2cpio $src | ${cpio}/bin/cpio -idm
-  '';
 
   buildInputs = [
     cups
@@ -68,10 +64,10 @@ stdenv.mkDerivation {
       );
       fixPathsPatch = replaceVars ./fix-paths.patch {
         basedir = null;
+        dcv_sasl_plugin_dir = "${cyrus_sasl.out}/lib/sasl2";
         gio_extra_modules = "${glib-networking}/lib/gio/modules";
         gst_plugin_scanner = "${gst_all_1.gstreamer.out}/libexec/gstreamer-1.0/gst-plugin-scanner";
         gst_plugin_system_path = gst_plugin_system_path;
-        dcv_sasl_plugin_dir = "${cyrus_sasl.out}/lib/sasl2";
       };
     in
     ''
@@ -106,15 +102,21 @@ stdenv.mkDerivation {
       ${glib.dev}/bin/glib-compile-schemas $out/share/glib-2.0/schemas
     '';
 
+  unpackPhase = ''
+    rpm2cpio $src | ${cpio}/bin/cpio -idm
+  '';
+
   meta = with lib; {
     description = "High-performance remote display protocol";
     homepage = "https://aws.amazon.com/hpc/dcv/";
-    sourceProvenance = with sourceTypes; [ binaryNativeCode ];
     license = licenses.unfree;
-    platforms = [ "x86_64-linux" ];
+    sourceProvenance = with sourceTypes; [ binaryNativeCode ];
+
     maintainers = with maintainers; [
       rmcgibbo
       jhol
     ];
+
+    platforms = [ "x86_64-linux" ];
   };
 }

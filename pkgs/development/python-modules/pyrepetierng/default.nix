@@ -9,20 +9,17 @@
 buildPythonPackage rec {
   pname = "pyrepetierng";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-0+Qr2yrjk1/K4Yg55d8sdmI6BtBYI76DCQiPlp6dzrc=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   # Package has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "pyrepetierng" ];
 
   meta = {

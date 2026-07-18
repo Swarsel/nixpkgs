@@ -34,9 +34,9 @@ appimageTools.wrapType2 {
     homepage = "https://github.com/hydralauncher/hydra";
     changelog = "https://github.com/hydralauncher/hydra/releases/tag/v${version}";
     license = lib.licenses.mit;
-    maintainers = with lib.maintainers; [ HeitorAugustoLN ];
-    mainProgram = "hydralauncher";
-    platforms = lib.platforms.linux;
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    maintainers = with lib.maintainers; [ HeitorAugustoLN ];
+    platforms = lib.platforms.linux;
+    mainProgram = "hydralauncher";
   };
 }

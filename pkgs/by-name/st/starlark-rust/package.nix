@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -9,9 +9,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   version = "0.14.0";
 
   src = fetchCrate {
-    pname = "starlark_bin";
     inherit (finalAttrs) version;
     hash = "sha256-uNhMtBpfkTQdWNyjklP6NC3aXwXqH23PN4MWOjaR49w=";
+    pname = "starlark_bin";
   };
 
   cargoHash = "sha256-1x0QESkxze/MP7/E0whPwx3zSv+JC2OH7pz5adO1JFk=";

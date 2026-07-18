@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  cairo,
+  glib,
+  gtk3,
+  hicolor-icon-theme,
+  libnotify,
   meson,
   ninja,
-  wayland,
-  cairo,
   pango,
-  gtk3,
   pkg-config,
   scdoc,
-  libnotify,
-  glib,
+  wayland,
   wrapGAppsHook3,
-  hicolor-icon-theme,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-rPe567ajk/umfZ2HHm+pRxpbMOTyUmqd+22kwDSFMTc=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     glib
@@ -46,8 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
     hicolor-icon-theme
   ];
 
-  strictDeps = true;
-
   mesonFlags = [
     # TODO: https://github.com/NixOS/nixpkgs/issues/36468
     "-Dc_args=-I${glib.dev}/include/gio-unix-2.0"
@@ -57,8 +57,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Wayland native snapshot editing tool, inspired by Snappy on macOS";
     homepage = "https://github.com/jtheoof/swappy";
     license = lib.licenses.mit;
-    mainProgram = "swappy";
     maintainers = [ lib.maintainers.matthiasbeyer ];
     platforms = lib.platforms.linux;
+    mainProgram = "swappy";
   };
 })

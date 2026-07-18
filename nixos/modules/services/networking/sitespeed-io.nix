@@ -1,6 +1,6 @@
 {
-  lib,
   config,
+  lib,
   pkgs,
   ...
 }:
@@ -11,71 +11,80 @@ in
 {
   options.services.sitespeed-io = {
     enable = lib.mkEnableOption "Sitespeed.io";
-
-    user = lib.mkOption {
-      type = lib.types.str;
-      default = "sitespeed-io";
-      description = "User account under which sitespeed-io runs.";
-    };
-
     package = lib.mkPackageOption pkgs "sitespeed-io" { };
 
     dataDir = lib.mkOption {
       default = "/var/lib/sitespeed-io";
-      type = lib.types.str;
       description = "The base sitespeed-io data directory.";
+      type = lib.types.str;
     };
 
     period = lib.mkOption {
-      type = lib.types.str;
       default = "hourly";
+
       description = ''
         Systemd calendar expression when to run. See {manpage}`systemd.time(7)`.
       '';
+
+      type = lib.types.str;
     };
 
     runs = lib.mkOption {
       default = [ ];
+
       description = ''
         A list of run configurations. The service will call sitespeed-io once
         for every run listed here. This lets you examine different websites
         with different sitespeed-io settings.
       '';
+
       type = lib.types.listOf (
         lib.types.submodule {
           options = {
-            urls = lib.mkOption {
-              type = with lib.types; listOf str;
+            extraArgs = lib.mkOption {
               default = [ ];
+
               description = ''
-                URLs the service should monitor.
+                Extra command line arguments to pass to the program.
               '';
+
+              type = with lib.types; listOf str;
             };
 
             settings = lib.mkOption {
-              type = lib.types.submodule {
-                freeformType = format.type;
-                options = { };
-              };
               default = { };
+
               description = ''
                 Configuration for sitespeed-io, see
                 <https://www.sitespeed.io/documentation/sitespeed.io/configuration/>
                 for available options. The value here will be directly transformed to
                 JSON and passed as `--config` to the program.
               '';
+
+              type = lib.types.submodule {
+                options = { };
+                freeformType = format.type;
+              };
             };
 
-            extraArgs = lib.mkOption {
-              type = with lib.types; listOf str;
+            urls = lib.mkOption {
               default = [ ];
+
               description = ''
-                Extra command line arguments to pass to the program.
+                URLs the service should monitor.
               '';
+
+              type = with lib.types; listOf str;
             };
           };
         }
       );
+    };
+
+    user = lib.mkOption {
+      default = "sitespeed-io";
+      description = "User account under which sitespeed-io runs.";
+      type = lib.types.str;
     };
   };
 
@@ -93,12 +102,8 @@ in
 
     systemd.services.sitespeed-io = {
       description = "Check website status";
-      startAt = cfg.period;
-      serviceConfig = {
-        WorkingDirectory = cfg.dataDir;
-        User = cfg.user;
-      };
       preStart = "chmod u+w -R ${cfg.dataDir}"; # Make sure things are writable
+
       script =
         (lib.concatMapStrings (run: ''
           ${lib.getExe cfg.package} \
@@ -109,17 +114,25 @@ in
         + ''
           wait
         '';
+
+      serviceConfig = {
+        User = cfg.user;
+        WorkingDirectory = cfg.dataDir;
+      };
+
+      startAt = cfg.period;
     };
 
     users = {
+      extraGroups.${cfg.user} = { };
+
       extraUsers.${cfg.user} = {
-        isSystemUser = true;
+        createHome = true;
         group = cfg.user;
         home = cfg.dataDir;
-        createHome = true;
         homeMode = "755";
+        isSystemUser = true;
       };
-      extraGroups.${cfg.user} = { };
     };
   };
 }

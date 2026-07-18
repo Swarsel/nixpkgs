@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  openssl,
   getconf,
+  openssl,
   util-linux,
 }:
 
@@ -22,11 +22,12 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
-  configureFlags = [ "--enable-libscrypt-kdf" ];
-
-  buildInputs = [ openssl ];
-
   nativeBuildInputs = [ getconf ];
+  buildInputs = [ openssl ];
+  configureFlags = [ "--enable-libscrypt-kdf" ];
+  doCheck = true;
+  nativeCheckInputs = lib.optionals stdenv.hostPlatform.isLinux [ util-linux ];
+  checkTarget = "test";
 
   patchPhase = ''
     for f in Makefile.in autotools/Makefile.am libcperciva/cpusupport/Build/cpusupport.sh configure ; do
@@ -36,16 +37,12 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs tests/test_scrypt.sh
   '';
 
-  doCheck = true;
-  checkTarget = "test";
-  nativeCheckInputs = lib.optionals stdenv.hostPlatform.isLinux [ util-linux ];
-
   meta = {
     description = "Encryption utility";
-    mainProgram = "scrypt";
     homepage = "https://www.tarsnap.com/scrypt.html";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ thoughtpolice ];
+    platforms = lib.platforms.all;
+    mainProgram = "scrypt";
   };
 })

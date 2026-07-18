@@ -1,11 +1,11 @@
 {
   lib,
-  buildDartApplication,
   fetchFromGitHub,
+  buildDartApplication,
   callPackage,
-  makeWrapper,
-  flutter,
   dart,
+  flutter,
+  makeWrapper,
 }:
 buildDartApplication rec {
   pname = "pana";
@@ -17,12 +17,6 @@ buildDartApplication rec {
     tag = version;
     hash = "sha256-yBheou/u8TjL+MDhxd6AhWPJARLEcQF+ojmDqkv8zi4=";
   };
-
-  dartEntryPoints = {
-    "bin/pana" = "bin/pana.dart";
-  };
-
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
 
   nativeBuildInputs = [ makeWrapper ];
 
@@ -47,21 +41,31 @@ buildDartApplication rec {
       --add-flags "--dart-sdk ${dart} --flutter-sdk ${flutter} --license-data $out/share/pana/spdx-licenses"
   '';
 
+  dartEntryPoints = {
+    "bin/pana" = "bin/pana.dart";
+  };
+
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
+
   passthru = {
-    updateScript = lib.getExe (callPackage ./update.nix { });
     tests = callPackage ./tests.nix { };
+    updateScript = lib.getExe (callPackage ./update.nix { });
   };
 
   meta = {
-    mainProgram = "pana";
-    homepage = "https://pub.dev/packages/pana";
     description = "Package ANAlysis for Dart";
+
     longDescription = ''
       Package ANAlyzer - produce a report summarizing the health and quality of a Dart package.
     '';
+
+    homepage = "https://pub.dev/packages/pana";
     changelog = "https://pub.dev/packages/pana/changelog#${lib.replaceStrings [ "." ] [ "" ] version}";
     license = lib.licenses.bsd3;
     sourceProvenance = with lib.sourceTypes; [ fromSource ];
+    maintainers = with lib.maintainers; [ KristijanZic ];
+    mainProgram = "pana";
+
     identifiers.cpeParts =
       let
         versionSplit = lib.split "\\+" version;
@@ -70,11 +74,10 @@ buildDartApplication rec {
           if lib.count (x: lib.isList x) versionSplit > 0 then lib.elemAt versionSplit 2 else "*";
       in
       {
-        vendor = "dart-lang";
-        product = "pana";
         version = versionPart;
+        product = "pana";
         update = updatePart;
+        vendor = "dart-lang";
       };
-    maintainers = with lib.maintainers; [ KristijanZic ];
   };
 }

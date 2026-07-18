@@ -1,26 +1,26 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  gitUpdater,
-  makeBinaryWrapper,
-  pkg-config,
   asciidoctor,
-  libxslt,
-  docbook_xsl,
   bash,
-  kmod,
   binutils,
   bzip2,
   coreutils,
   cpio,
+  docbook_xsl,
   findutils,
+  gitUpdater,
   gnugrep,
   gnused,
   gnutar,
   gzip,
+  kmod,
+  libxslt,
   lz4,
   lzop,
+  makeBinaryWrapper,
+  pkg-config,
   squashfsTools,
   util-linux,
   xz,
@@ -38,22 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-2jdS7/LGuLSBBXv1R/o8yjgwdXl2l2wNbZWxq01wSb0";
   };
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
-  buildInputs = [
-    bash
-    kmod
-  ];
-
-  nativeBuildInputs = [
-    makeBinaryWrapper
-    pkg-config
-    asciidoctor
-    libxslt
-    docbook_xsl
-  ];
-
   postPatch = ''
     substituteInPlace dracut.sh \
       --replace-fail "dracutbasedir=\"$""{dracutsysrootdir-}\"/usr/lib/dracut" \
@@ -63,6 +47,21 @@ stdenv.mkDerivation (finalAttrs: {
 
     echo 'DRACUT_VERSION=${finalAttrs.version}' >dracut-version.sh
   '';
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    makeBinaryWrapper
+    pkg-config
+    asciidoctor
+    libxslt
+    docbook_xsl
+  ];
+
+  buildInputs = [
+    bash
+    kmod
+  ];
 
   postFixup = ''
     wrapProgram $out/bin/dracut --prefix PATH : ${
@@ -109,12 +108,13 @@ stdenv.mkDerivation (finalAttrs: {
     }
   '';
 
+  __structuredAttrs = true;
   passthru.updateScript = gitUpdater { };
 
   meta = {
+    description = "Event driven initramfs infrastructure";
     homepage = "https://dracut-ng.github.io/";
     changelog = "https://github.com/dracut-ng/dracut/blob/${finalAttrs.src.tag}/NEWS.md";
-    description = "Event driven initramfs infrastructure";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ tbutter ];
     platforms = lib.platforms.linux;

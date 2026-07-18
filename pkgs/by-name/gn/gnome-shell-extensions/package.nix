@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  meson,
-  ninja,
   gettext,
-  pkg-config,
-  libgtop,
   glib,
   gnome,
   gnome-menus,
+  libgtop,
+  meson,
+  ninja,
+  pkg-config,
   replaceVars,
 }:
 
@@ -68,11 +68,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "Modify and extend GNOME Shell functionality and behavior";
     homepage = "https://gitlab.gnome.org/GNOME/gnome-shell-extensions";
     changelog = "https://gitlab.gnome.org/GNOME/gnome-shell-extensions/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
-    description = "Modify and extend GNOME Shell functionality and behavior";
-    teams = [ lib.teams.gnome ];
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.gnome ];
   };
 })

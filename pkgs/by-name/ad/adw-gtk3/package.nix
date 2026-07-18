@@ -1,11 +1,11 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
-  nix-update-script,
+  dart-sass,
   meson,
   ninja,
-  dart-sass,
+  nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -31,10 +31,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Unofficial GTK 3 port of libadwaita";
     homepage = "https://github.com/lassekongo83/adw-gtk3";
     license = lib.licenses.lgpl21Only;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       ciferkey
       Gliczy
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

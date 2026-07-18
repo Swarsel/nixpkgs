@@ -2,16 +2,15 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
   pathspec,
   pytestCheckHook,
   pyyaml,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "ssort";
   version = "0.16.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bwhmather";
@@ -19,12 +18,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-QVodBJsYryVue0QXaZbjo1JtwuCBUiuZ+XU+I7jJCq8=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ pathspec ];
-
-  pythonImportsCheck = [ "ssort" ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -34,6 +27,11 @@ buildPythonPackage rec {
   preCheck = ''
     export PATH=$out/bin:$PATH
   '';
+
+  build-system = [ setuptools ];
+  dependencies = [ pathspec ];
+  pyproject = true;
+  pythonImportsCheck = [ "ssort" ];
 
   meta = {
     description = "Automatically sorting python statements within a module";

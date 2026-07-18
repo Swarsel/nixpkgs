@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pytest-grpc";
   version = "0.8.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -17,8 +16,8 @@ buildPythonPackage rec {
   };
 
   buildInputs = [ pytest ];
-
   propagatedBuildInputs = [ grpcio ];
+  format = "setuptools";
 
   meta = {
     description = "Pytest plugin for grpc";

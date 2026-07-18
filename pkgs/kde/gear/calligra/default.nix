@@ -1,9 +1,8 @@
 {
-  mkKdeDerivation,
   lib,
-  fetchpatch,
   boost,
   eigen,
+  fetchpatch,
   gsl,
   imath,
   libetonyek,
@@ -14,6 +13,7 @@
   libwpd,
   libwpg,
   libwps,
+  mkKdeDerivation,
   okular,
   perl,
   pkg-config,
@@ -30,8 +30,8 @@ mkKdeDerivation {
   patches = [
     # Fix build with Poppler 26.04
     (fetchpatch {
-      url = "https://invent.kde.org/office/calligra/-/commit/e9aae90db47ca87d639b8f2b17ec75c1b6093e27.patch";
       hash = "sha256-V21Bw0xV/E4a9v8Yrt0vZ3AU1LJFHul1k92u+nsp85I=";
+      url = "https://invent.kde.org/office/calligra/-/commit/e9aae90db47ca87d639b8f2b17ec75c1b6093e27.patch";
     })
   ];
 
@@ -55,12 +55,6 @@ mkKdeDerivation {
     qtwebengine
   ];
 
-  extraNativeBuildInputs = [
-    perl
-    pkg-config
-    shared-mime-info
-  ];
-
   # Recommended by the upstream packaging instructions. RELEASE_BUILD disables
   # unmaintained components, like Braindump, from being built, and KDE_NO_DEBUG_OUTPUT
   # is supposed to improve performance in the finished package.
@@ -69,11 +63,18 @@ mkKdeDerivation {
     (lib.cmakeFeature "CMAKE_CXX_FLAGS" "-DKDE_NO_DEBUG_OUTPUT")
   ];
 
+  extraNativeBuildInputs = [
+    perl
+    pkg-config
+    shared-mime-info
+  ];
+
   meta = {
     maintainers = with lib.maintainers; [
       zraexy
       sigmasquadron
     ];
+
     mainProgram = "calligralauncher";
   };
 }

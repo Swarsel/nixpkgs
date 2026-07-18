@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -22,13 +22,15 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://undefined-medium.com/";
     description = "Pixel grid-based monospace typeface";
+
     longDescription = ''
       undefined medium is a free and open-source pixel grid-based
       monospace typeface suitable for programming, writing, and
       whatever else you can think of … it’s pretty undefined.
     '';
+
+    homepage = "https://undefined-medium.com/";
     license = lib.licenses.ofl;
     platforms = lib.platforms.all;
   };

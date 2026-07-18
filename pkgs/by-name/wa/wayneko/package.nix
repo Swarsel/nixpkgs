@@ -19,8 +19,6 @@ stdenv.mkDerivation {
     hash = "sha256-2cbEcDK6WZPe4HvY1pxmZVyDAj617VP1l0Gn7uSlNaE=";
   };
 
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
-
   postPatch = ''
     substituteInPlace Makefile \
       --replace-fail -Werror ""
@@ -37,13 +35,14 @@ stdenv.mkDerivation {
   ];
 
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
 
   meta = {
     description = "Neko on Wayland";
     homepage = "https://sr.ht/~leon_plickat/wayneko";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ fgaz ];
-    mainProgram = "wayneko";
     platforms = lib.platforms.linux;
+    mainProgram = "wayneko";
   };
 }

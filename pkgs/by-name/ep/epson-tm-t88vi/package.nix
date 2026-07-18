@@ -1,9 +1,9 @@
 {
-  fetchzip,
   lib,
   stdenv,
   cmake,
   cups,
+  fetchzip,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "epson-tm-t88vi";
@@ -14,23 +14,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-c6VpnNXYebkDkK9kcTZ/ILE8pD/qSWKCHYqkHV+WIkc=";
   };
 
-  buildInputs = [ cups ];
-  nativeBuildInputs = [ cmake ];
-
-  unpackPhase = ''
-    runHook preUnpack
-
-    tar xf $src/tmx-cups-src-ThermalReceipt-${finalAttrs.version}.tar.gz --strip-components=1
-
-    runHook postUnpack
-  '';
-
   postPatch = ''
     substituteInPlace ./ppd/*.ppd --replace-fail "rastertotmtr" "$out/lib/cups/filter/rastertotmtr"
 
     substituteInPlace CMakeLists.txt \
       --replace-fail "cmake_minimum_required(VERSION 2.8)" "cmake_minimum_required(VERSION 3.10)"
   '';
+
+  nativeBuildInputs = [ cmake ];
+  buildInputs = [ cups ];
 
   installPhase = ''
     runHook preInstall
@@ -41,12 +33,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  unpackPhase = ''
+    runHook preUnpack
+
+    tar xf $src/tmx-cups-src-ThermalReceipt-${finalAttrs.version}.tar.gz --strip-components=1
+
+    runHook postUnpack
+  '';
+
   meta = {
     description = "EPSON TM Series T88VI Series Printer Driver for Linux";
-    downloadPage = "https://epson.com/Support/Point-of-Sale/OmniLink-Printers/Epson-TM-T88VI-Series/s/SPT_C31CE94061?review-filter=Linux";
     homepage = "https://www.epson.com/";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ allsimon ];
+    platforms = lib.platforms.linux;
+    downloadPage = "https://epson.com/Support/Point-of-Sale/OmniLink-Printers/Epson-TM-T88VI-Series/s/SPT_C31CE94061?review-filter=Linux";
   };
 })

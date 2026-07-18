@@ -1,26 +1,27 @@
 {
   lib,
+  azure-cli,
+  azure-common,
+  azure-mgmt-core,
   buildPythonPackage,
   fetchPypi,
-  azure-mgmt-core,
-  azure-common,
   isodate,
   setuptools,
   typing-extensions,
-  azure-cli,
 }:
 
 buildPythonPackage rec {
   pname = "azure-mgmt-resource-deploymentstacks";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_resource_deploymentstacks";
     inherit version;
     hash = "sha256-gI3N1xc36cpOfLhLxip079VFe2ptsOVgfNNshv1YLcc=";
+    pname = "azure_mgmt_resource_deploymentstacks";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,16 +31,15 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  # Module has no tests
-  doCheck = false;
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "azure.mgmt.resource.deploymentstacks"
+  ];
 
   pythonNamespaces = [
     "azure.mgmt"
     "azure.mgmt.resource"
-  ];
-
-  pythonImportsCheck = [
-    "azure.mgmt.resource.deploymentstacks"
   ];
 
   meta = {

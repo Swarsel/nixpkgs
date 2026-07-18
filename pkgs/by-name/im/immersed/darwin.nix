@@ -1,10 +1,10 @@
 {
   stdenv,
-  pname,
-  version,
-  src,
   meta,
+  pname,
+  src,
   undmg,
+  version,
 }:
 
 stdenv.mkDerivation {
@@ -17,8 +17,6 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = [ undmg ];
 
-  sourceRoot = ".";
-
   installPhase = ''
     runHook preInstall
 
@@ -30,4 +28,5 @@ stdenv.mkDerivation {
 
   # Immersed is notarized.
   dontFixup = true;
+  sourceRoot = ".";
 }

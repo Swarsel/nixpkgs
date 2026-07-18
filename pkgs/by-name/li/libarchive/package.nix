@@ -5,11 +5,19 @@
   acl,
   attr,
   autoreconfHook,
+  # for passthru.lore
+  binlore,
   bzip2,
+  # for passthru.tests
+  cmake,
   glibcLocalesUtf8,
+  libxml2,
   lzo,
+  nix,
   openssl,
   pkg-config,
+  samba,
+  testers,
   xz,
   zlib,
   zstd,
@@ -17,16 +25,6 @@
   # fine on windows, libarchive has trouble linking windows things it depends on
   # for some reason.
   xarSupport ? stdenv.hostPlatform.isUnix,
-  libxml2,
-
-  # for passthru.tests
-  cmake,
-  nix,
-  samba,
-  testers,
-
-  # for passthru.lore
-  binlore,
 }:
 
 assert xarSupport -> libxml2 != null;
@@ -108,13 +106,6 @@ stdenv.mkDerivation (finalAttrs: {
     acl
   ];
 
-  hardeningDisable = [
-    "strictflexarrays3"
-  ]
-  # some tests won't compile because this makes memcpy a macro:
-  # libarchive/test/test_write_format_mtree_preset_digests.c:2020:29: error: macro "memcpy" passed 66 arguments, but takes just 3
-  ++ lib.optional stdenv.hostPlatform.isCygwin "fortify";
-
   configureFlags = lib.optional (!xarSupport) "--without-xml2";
 
   env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
@@ -140,30 +131,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   enableParallelBuilding = true;
 
-  meta = {
-    homepage = "http://libarchive.org";
-    description = "Multi-format archive and compression library";
-    longDescription = ''
-      The libarchive project develops a portable, efficient C library that can
-      read and write streaming archives in a variety of formats. It also
-      includes implementations of the common tar, cpio, and zcat command-line
-      tools that use the libarchive library.
-    '';
-    changelog = "https://github.com/libarchive/libarchive/releases/tag/v${finalAttrs.version}";
-    license = lib.licenses.bsd3;
-    maintainers = with lib.maintainers; [ jcumming ];
-    platforms = lib.platforms.all;
-    inherit (acl.meta) badPlatforms;
-    pkgConfigModules = [ "libarchive" ];
-    identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "libarchive" finalAttrs.version;
-  };
-
-  passthru.tests = {
-    inherit cmake nix samba;
-    pkg-config = testers.hasPkgConfigModules {
-      package = finalAttrs.finalPackage;
-    };
-  };
+  hardeningDisable = [
+    "strictflexarrays3"
+  ]
+  # some tests won't compile because this makes memcpy a macro:
+  # libarchive/test/test_write_format_mtree_preset_digests.c:2020:29: error: macro "memcpy" passed 66 arguments, but takes just 3
+  ++ lib.optional stdenv.hostPlatform.isCygwin "fortify";
 
   # bsdtar is detected as "cannot" because its exec is internal to
   # calls it makes into libarchive itself. If binlore gains support
@@ -171,4 +144,32 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.binlore.out = binlore.synthesize finalAttrs.finalPackage ''
     execer can bin/bsdtar
   '';
+
+  passthru.tests = {
+    inherit cmake nix samba;
+
+    pkg-config = testers.hasPkgConfigModules {
+      package = finalAttrs.finalPackage;
+    };
+  };
+
+  meta = {
+    inherit (acl.meta) badPlatforms;
+    description = "Multi-format archive and compression library";
+
+    longDescription = ''
+      The libarchive project develops a portable, efficient C library that can
+      read and write streaming archives in a variety of formats. It also
+      includes implementations of the common tar, cpio, and zcat command-line
+      tools that use the libarchive library.
+    '';
+
+    homepage = "http://libarchive.org";
+    changelog = "https://github.com/libarchive/libarchive/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ jcumming ];
+    platforms = lib.platforms.all;
+    identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "libarchive" finalAttrs.version;
+    pkgConfigModules = [ "libarchive" ];
+  };
 })

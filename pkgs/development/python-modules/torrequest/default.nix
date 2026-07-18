@@ -2,15 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  requests,
   pysocks,
+  requests,
   stem,
 }:
 
 buildPythonPackage rec {
   pname = "torrequest";
   version = "0.1.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -25,12 +24,12 @@ buildPythonPackage rec {
 
   # This package does not contain any tests.
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "torrequest" ];
 
   meta = {
-    homepage = "https://github.com/erdiaker/torrequest";
     description = "Simple Python interface for HTTP(s) requests over Tor";
+    homepage = "https://github.com/erdiaker/torrequest";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ applePrincess ];
   };

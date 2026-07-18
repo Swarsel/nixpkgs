@@ -12,17 +12,27 @@ in
 
     nix.gc = {
 
+      options = lib.mkOption {
+        default = "";
+
+        description = ''
+          Options given to [`nix-collect-garbage`](https://nixos.org/manual/nix/stable/command-ref/nix-collect-garbage) when the garbage collector is run automatically.
+        '';
+
+        example = "--max-freed $((64 * 1024**3))";
+        type = lib.types.singleLineStr;
+      };
+
       automatic = lib.mkOption {
         default = false;
-        type = lib.types.bool;
         description = "Automatically run the garbage collector at a specific time.";
+        type = lib.types.bool;
       };
 
       dates = lib.mkOption {
-        type = with lib.types; either singleLineStr (listOf str);
         apply = lib.toList;
         default = [ "03:15" ];
-        example = "weekly";
+
         description = ''
           How often or when garbage collection is performed. For most desktop and server systems
           a sufficient garbage collection is once a week.
@@ -30,24 +40,14 @@ in
           This value must be a calendar event in the format specified by
           {manpage}`systemd.time(7)`.
         '';
-      };
 
-      randomizedDelaySec = lib.mkOption {
-        default = "0";
-        type = lib.types.singleLineStr;
-        example = "45min";
-        description = ''
-          Add a randomized delay before each garbage collection.
-          The delay will be chosen between zero and this value.
-          This value must be a time span in the format specified by
-          {manpage}`systemd.time(7)`
-        '';
+        example = "weekly";
+        type = with lib.types; either singleLineStr (listOf str);
       };
 
       persistent = lib.mkOption {
         default = true;
-        type = lib.types.bool;
-        example = false;
+
         description = ''
           Takes a boolean argument. If true, the time when the service
           unit was last triggered is stored on disk. When the timer is
@@ -58,15 +58,23 @@ in
           useful to catch up on missed runs of the service when the
           system was powered down.
         '';
+
+        example = false;
+        type = lib.types.bool;
       };
 
-      options = lib.mkOption {
-        default = "";
-        example = "--max-freed $((64 * 1024**3))";
-        type = lib.types.singleLineStr;
+      randomizedDelaySec = lib.mkOption {
+        default = "0";
+
         description = ''
-          Options given to [`nix-collect-garbage`](https://nixos.org/manual/nix/stable/command-ref/nix-collect-garbage) when the garbage collector is run automatically.
+          Add a randomized delay before each garbage collection.
+          The delay will be chosen between zero and this value.
+          This value must be a time span in the format specified by
+          {manpage}`systemd.time(7)`
         '';
+
+        example = "45min";
+        type = lib.types.singleLineStr;
       };
 
     };
@@ -85,17 +93,17 @@ in
 
     systemd.services.nix-gc = lib.mkIf config.nix.enable {
       description = "Nix Garbage Collector";
+      # do not start and delay when switching
+      restartIfChanged = false;
       script = "exec ${config.nix.package.out}/bin/nix-collect-garbage ${cfg.options}";
       serviceConfig.Type = "oneshot";
       startAt = lib.optionals cfg.automatic cfg.dates;
-      # do not start and delay when switching
-      restartIfChanged = false;
     };
 
     systemd.timers.nix-gc = lib.mkIf cfg.automatic {
       timerConfig = {
-        RandomizedDelaySec = cfg.randomizedDelaySec;
         Persistent = cfg.persistent;
+        RandomizedDelaySec = cfg.randomizedDelaySec;
       };
     };
 

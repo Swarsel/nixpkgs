@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
 }:
 
 buildPythonPackage {
   pname = "curlify";
   version = "2.2.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "ofw";
@@ -18,6 +17,7 @@ buildPythonPackage {
   };
 
   propagatedBuildInputs = [ requests ];
+  format = "setuptools";
 
   meta = {
     description = "Convert python requests request object to cURL command";

@@ -21,14 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  cmakeFlags = [
-    "-DWITH_PROCPS=Off"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isAarch64 [
-    "-DCURVE=ALT_BN128"
-    "-DUSE_ASM=OFF"
-  ];
-
   postPatch = ''
     substituteInPlace CMakeLists.txt --replace "VERSION 2.8" "VERSION 3.10"
   ''
@@ -40,17 +32,26 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     pkg-config
   ];
+
   buildInputs = [
     gmp
     openssl
   ];
 
+  cmakeFlags = [
+    "-DWITH_PROCPS=Off"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isAarch64 [
+    "-DCURVE=ALT_BN128"
+    "-DUSE_ASM=OFF"
+  ];
+
   meta = {
     description = "C++ library for Finite Fields and Elliptic Curves";
-    changelog = "https://github.com/scipr-lab/libff/blob/develop/CHANGELOG.md";
     homepage = "https://github.com/scipr-lab/libff";
+    changelog = "https://github.com/scipr-lab/libff/blob/develop/CHANGELOG.md";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ arturcygan ];
+    platforms = lib.platforms.unix;
   };
 })

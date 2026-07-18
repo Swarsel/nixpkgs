@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "terraform-iam-policy-validator";
   version = "0.0.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "awslabs";
@@ -16,6 +15,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-RGZqnt2t+aSNGt8Ubi2dzZE04n9Zfkw+T3Zmol/FO+I=";
   };
 
+  nativeCheckInputs = with python3Packages; [ pytestCheckHook ];
+
+  # Tests need to be run relative to a subdir
+  preCheck = ''
+    pushd iam_check
+  '';
+
+  postCheck = ''
+    popd
+  '';
+
   build-system = with python3Packages; [ poetry-core ];
 
   dependencies = with python3Packages; [
@@ -23,19 +33,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pyyaml
   ];
 
-  nativeCheckInputs = with python3Packages; [ pytestCheckHook ];
-
   # Some tests require network
   disabledTestPaths = [ "test/test_accessAnalyzer.py" ];
-
-  # Tests need to be run relative to a subdir
-  preCheck = ''
-    pushd iam_check
-  '';
-  postCheck = ''
-    popd
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "iam_check" ];
 
   meta = {

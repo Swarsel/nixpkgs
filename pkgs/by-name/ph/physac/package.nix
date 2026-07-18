@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -15,7 +15,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-PTlV1tT0axQbmGmJ7JD1n6wmbIxUdu7xho78EO0HNNk=";
   };
 
-  dontBuild = true;
   installPhase = ''
     runHook preInstall
 
@@ -36,6 +35,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
 
   meta = {
     description = "2D physics header-only library for raylib";

@@ -1,17 +1,17 @@
 {
   lib,
-  rustPlatform,
-  llvmPackages,
-  pkg-config,
-  elfutils,
-  zlib,
-  zstd,
   fetchFromGitHub,
-  protobuf,
+  elfutils,
   libseccomp,
+  llvmPackages,
   nix-update-script,
   nixosTests,
   openssl,
+  pkg-config,
+  protobuf,
+  rustPlatform,
+  zlib,
+  zstd,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "scx_rustscheds";
@@ -23,8 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-igrmrfimVOEJnFxMr9ghN6lAHwEBSFLLVrB2MQ72PXI=";
   };
-
-  cargoHash = "sha256-CTEVdvw6aG/fFas2Fk3x9o4Sp2k3lHO/OLwUM8t9UjE=";
 
   nativeBuildInputs = [
     pkg-config
@@ -40,20 +38,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-CTEVdvw6aG/fFas2Fk3x9o4Sp2k3lHO/OLwUM8t9UjE=";
+
   env = {
     BPF_CLANG = lib.getExe llvmPackages.clang;
+    EXPECTED_SCHEDULERS = lib.concatStringsSep " " finalAttrs.passthru.schedulers;
+
     RUSTFLAGS = lib.concatStringsSep " " [
       "-C relocation-model=pic"
       "-C link-args=-lelf"
       "-C link-args=-lz"
       "-C link-args=-lzstd"
     ];
-    EXPECTED_SCHEDULERS = lib.concatStringsSep " " finalAttrs.passthru.schedulers;
   };
-
-  hardeningDisable = [
-    "zerocallusedregs"
-  ];
 
   # most of the tests rely on system CPU topology info,
   # which is not available in the sandbox
@@ -64,9 +61,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rm $out/bin/{scx_arena_selftests,vmlinux_docify,xtask}
   '';
 
-  __structuredAttrs = true;
-
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -80,8 +76,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     runHook postInstallCheck
   '';
 
-  passthru.tests.basic = nixosTests.scx;
-  passthru.updateScript = nix-update-script { };
+  __structuredAttrs = true;
+
+  hardeningDisable = [
+    "zerocallusedregs"
+  ];
+
   passthru.schedulers = [
     "scx_beerland"
     "scx_bpfland"
@@ -103,8 +103,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "scx_tickless"
   ];
 
+  passthru.tests.basic = nixosTests.scx;
+  passthru.updateScript = nix-update-script { };
+
   meta = {
     description = "Sched-ext Rust userspace schedulers";
+
     longDescription = ''
       This includes Rust based schedulers such as
       scx_rustland, scx_bpfland, scx_lavd, scx_layered, scx_rlfifo.
@@ -118,10 +122,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/sched-ext/scx/tree/main/scheds/rust";
     changelog = "https://github.com/sched-ext/scx/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       johnrtitor
       Gliczy
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

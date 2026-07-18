@@ -9,14 +9,13 @@ let
   shell =
     drv:
     stdenv.mkDerivation {
-      name = "interactive-shell-${drv.name}";
       buildInputs = [ drv ];
+      name = "interactive-shell-${drv.name}";
     };
 
   pkg =
     self:
     buildRebar3 {
-      name = "pgsql";
       version = "25+beta.2";
 
       src = fetchFromGitHub {
@@ -27,16 +26,17 @@ let
       };
 
       dontStrip = true;
-
-      meta = {
-        description = "Erlang PostgreSQL Driver";
-        license = lib.licenses.mit;
-        homepage = "https://github.com/semiocast/pgsql";
-        maintainers = with lib.maintainers; [ ericbmerritt ];
-      };
+      name = "pgsql";
 
       passthru = {
         env = shell self;
+      };
+
+      meta = {
+        description = "Erlang PostgreSQL Driver";
+        homepage = "https://github.com/semiocast/pgsql";
+        license = lib.licenses.mit;
+        maintainers = with lib.maintainers; [ ericbmerritt ];
       };
 
     };

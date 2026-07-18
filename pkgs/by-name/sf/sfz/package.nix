@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,17 +16,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-/I0cSnB/HVhJr5qf5dMvawggwM7qHJbnD4InECuKdcA=";
-
   # error: Found argument '--test-threads' which wasn't expected, or isn't valid in this context
   doCheck = false;
 
   meta = {
     description = "Simple static file serving command-line tool written in Rust";
     homepage = "https://github.com/weihanglo/sfz";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
+
     maintainers = [ ];
     mainProgram = "sfz";
   };

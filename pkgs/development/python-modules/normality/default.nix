@@ -1,11 +1,11 @@
 {
   lib,
   fetchFromGitHub,
-  buildPythonPackage,
-  hatchling,
-  charset-normalizer,
-  chardet,
   banal,
+  buildPythonPackage,
+  chardet,
+  charset-normalizer,
+  hatchling,
   pyicu,
   pytestCheckHook,
 }:
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "normality";
   version = "3.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pudo";
@@ -22,6 +21,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-A3uaGAa3SQSNM73h/OlwvMc5FKbZvdsE6S07C/sEbSc=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ hatchling ];
 
   dependencies = [
@@ -31,8 +31,7 @@ buildPythonPackage (finalAttrs: {
     pyicu
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "normality" ];
 
   meta = {

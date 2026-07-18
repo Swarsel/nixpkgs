@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   colorama,
   cryptography,
-  fetchFromGitHub,
   requests,
   setuptools,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "tinytuya";
   version = "1.20.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jasonacox";
@@ -20,6 +19,8 @@ buildPythonPackage rec {
     hash = "sha256-kyLRTfhTB8olZ48rUm+WtnuGZmCojnlUY4CeF+FADWg=";
   };
 
+  # Tests require real network resources
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,9 +29,7 @@ buildPythonPackage rec {
     colorama
   ];
 
-  # Tests require real network resources
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "tinytuya" ];
 
   meta = {

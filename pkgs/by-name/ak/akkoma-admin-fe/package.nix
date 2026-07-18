@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  fetchFromGitea,
   cctools,
-  yarn-berry_3,
-  nodejs,
-  python311,
-  pkg-config,
+  fetchFromGitea,
   libsass,
-  xcbuild,
   nix-update-script,
+  nodejs,
+  pkg-config,
+  python311,
+  xcbuild,
+  yarn-berry_3,
 }:
 
 let
@@ -20,19 +20,13 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.3.0-2-unstable-2025-12-07";
 
   src = fetchFromGitea {
-    domain = "akkoma.dev";
     owner = "AkkomaGang";
     repo = "admin-fe";
     rev = "a0e3b95a75367d1b5e329963a3d54f67cf59dfca";
     hash = "sha256-eEAM1itUvpR57B0BseeeRuV+ZjcYiJvbdln8vleRNcc=";
-
+    domain = "akkoma.dev";
     # upstream repository archive fetching is broken
     forceFetchGit = true;
-  };
-
-  offlineCache = yarn-berry.fetchYarnBerryDeps {
-    yarnLock = finalAttrs.src + "/yarn.lock";
-    hash = "sha256-YZlvIr27bHBgsQcBiayqEX07kjX6iH2Kh5wt+PQFq04=";
   };
 
   nativeBuildInputs = [
@@ -59,6 +53,11 @@ stdenv.mkDerivation (finalAttrs: {
     cp -R -v dist $out
     runHook postInstall
   '';
+
+  offlineCache = yarn-berry.fetchYarnBerryDeps {
+    hash = "sha256-YZlvIr27bHBgsQcBiayqEX07kjX6iH2Kh5wt+PQFq04=";
+    yarnLock = finalAttrs.src + "/yarn.lock";
+  };
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch=stable" ];

@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
+  _experimental-update-script-combinators,
   asmc-linux,
-  useAsmc ? !useUasm && stdenv.hostPlatform.isx86 && stdenv.hostPlatform.isLinux,
+  makeWrapper,
+  nix-update-script,
   uasm,
+  enableUnfree ? false,
+  useAsmc ? !useUasm && stdenv.hostPlatform.isx86 && stdenv.hostPlatform.isLinux,
   useUasm ?
     enableUnfree
     && stdenv.hostPlatform.isx86
     && (stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isWindows),
-  _experimental-update-script-combinators,
-  nix-update-script,
-  enableUnfree ? false,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "7zip-zstd";
@@ -22,11 +22,13 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "mcmilk";
     repo = "7-Zip-zstd";
     tag = "v${finalAttrs.version}";
+
     hash =
       if enableUnfree then
         "sha256-Y1l+PiZyHZX4KnqANogn4iVhhEjsezGckkeXtO0RHDY="
       else
         "sha256-0m4Q4920/tIatY28E5d89hYvp6Z0zE2v55rUSwig1+0=";
+
     # remove the unRAR related code from the src drv
     # > the license requires that you agree to these use restrictions,
     # > or you must remove the software (source and binary) from your hard disks
@@ -36,17 +38,27 @@ stdenv.mkDerivation (finalAttrs: {
     '';
   };
 
+  outputs = [
+    "out"
+    "doc"
+  ];
+
+  postPatch = ''
+    sed -i 's/-Werror//g' CPP/7zip/7zip_gcc.mak
+  ''
+  + lib.optionalString stdenv.hostPlatform.isMinGW ''
+    substituteInPlace CPP/7zip/7zip_gcc.mak C/7zip_gcc_c.mak \
+      --replace-fail windres.exe ${stdenv.cc.targetPrefix}windres
+  '';
+
+  strictDeps = true;
+
   nativeBuildInputs =
     lib.optionals (!stdenv.hostPlatform.isWindows) [
       makeWrapper
     ]
     ++ lib.optionals useAsmc [ asmc-linux ]
     ++ lib.optionals useUasm [ uasm ];
-
-  outputs = [
-    "out"
-    "doc"
-  ];
 
   makeFlags = [
     "CC=${stdenv.cc.targetPrefix}cc"
@@ -68,19 +80,6 @@ stdenv.mkDerivation (finalAttrs: {
     "IS_MINGW=1"
     "MSYSTEM=1"
   ];
-
-  strictDeps = true;
-  __structuredAttrs = true;
-
-  enableParallelBuilding = true;
-
-  postPatch = ''
-    sed -i 's/-Werror//g' CPP/7zip/7zip_gcc.mak
-  ''
-  + lib.optionalString stdenv.hostPlatform.isMinGW ''
-    substituteInPlace CPP/7zip/7zip_gcc.mak C/7zip_gcc_c.mak \
-      --replace-fail windres.exe ${stdenv.cc.targetPrefix}windres
-  '';
 
   buildPhase =
     let
@@ -140,7 +139,10 @@ stdenv.mkDerivation (finalAttrs: {
       runHook postInstall
     '';
 
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
   setupHook = ./setup-hook.sh;
+
   passthru.updateScript = _experimental-update-script-combinators.sequence [
     (nix-update-script {
       attrPath = "_7zip-zstd";
@@ -153,9 +155,10 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/mcmilk/7-Zip-zstd";
     description = "7-Zip with support for Brotli, Fast-LZMA2, Lizard, LZ4, LZ5 and Zstandard";
+    homepage = "https://github.com/mcmilk/7-Zip-zstd";
     changelog = "https://github.com/mcmilk/7-Zip-zstd/releases/tag/v${finalAttrs.version}";
+
     license =
       with lib.licenses;
       # p7zip code is largely lgpl2Plus
@@ -168,11 +171,13 @@ stdenv.mkDerivation (finalAttrs: {
         # and CPP/7zip/Compress/Rar* are unfree with the unRAR license restriction
         # the unRAR compression code is disabled by default
         lib.optionals enableUnfree [ unfreeRedistributable ];
+
     maintainers = with lib.maintainers; [
       ccicnce113424
     ];
+
     platforms = lib.platforms.unix ++ lib.platforms.windows;
-    broken = stdenv.hostPlatform.isWindows; # waiting for fixes in 26.00
     mainProgram = "7z";
+    broken = stdenv.hostPlatform.isWindows; # waiting for fixes in 26.00
   };
 })

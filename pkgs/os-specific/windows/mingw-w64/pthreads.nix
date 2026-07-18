@@ -8,9 +8,8 @@
 }:
 
 stdenv.mkDerivation {
-  pname = "mingw_w64-pthreads";
   inherit (mingw_w64_headers) version src meta;
-
+  pname = "mingw_w64-pthreads";
   configureFlags = [ (lib.enableFeature withStatic "static") ];
 
   preConfigure = ''

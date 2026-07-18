@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   curl,
-  openssl,
-  versionCheckHook,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Dv2HL8dLV8wOZp+Lhy5qgsZO9sZWOVVIhQZe6JE+F40=";
   };
 
-  cargoHash = "sha256-5vyOxKhTbUFi1kUhm3OlhnEXoSYLdRMIWTTPSVXAvsA=";
-
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
@@ -32,16 +30,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-5vyOxKhTbUFi1kUhm3OlhnEXoSYLdRMIWTTPSVXAvsA=";
   env.OPENSSL_NO_VENDOR = true;
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
 
   cargoBuildFlags = [
     "--bin=mdbook-tabs"
     "--bin=mdbook-trunk"
-  ];
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [
-    versionCheckHook
   ];
 
   passthru.updateScript = nix-update-script { };

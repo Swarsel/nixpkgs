@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  file,
   fetchFromGitLab,
-  buildPerlPackage,
-  ArchiveZip,
   ArchiveCpio,
+  ArchiveZip,
   SubOverride,
+  buildPerlPackage,
+  file,
   gitUpdater,
 }:
 
@@ -14,30 +14,31 @@ buildPerlPackage rec {
   pname = "strip-nondeterminism";
   version = "1.14.1";
 
+  src = fetchFromGitLab {
+    owner = "reproducible-builds";
+    repo = "strip-nondeterminism";
+    rev = version;
+    sha256 = "C/812td9BX1YRqFpD9QYgBfzE+biZeAKgxoNcxpb6UU=";
+    domain = "salsa.debian.org";
+  };
+
   outputs = [
     "out"
     "dev"
   ]; # no "devdoc"
 
-  src = fetchFromGitLab {
-    owner = "reproducible-builds";
-    repo = "strip-nondeterminism";
-    domain = "salsa.debian.org";
-    rev = version;
-    sha256 = "C/812td9BX1YRqFpD9QYgBfzE+biZeAKgxoNcxpb6UU=";
-  };
+  postPatch = ''
+    substituteInPlace lib/File/StripNondeterminism.pm \
+      --replace "exec('file'" "exec('${lib.getExe file}'"
+  '';
 
   strictDeps = true;
+
   buildInputs = [
     ArchiveZip
     ArchiveCpio
     SubOverride
   ];
-
-  postPatch = ''
-    substituteInPlace lib/File/StripNondeterminism.pm \
-      --replace "exec('file'" "exec('${lib.getExe file}'"
-  '';
 
   postBuild = ''
     patchShebangs ./bin
@@ -49,13 +50,13 @@ buildPerlPackage rec {
     rm $out/share/man/man1/dh_strip_nondeterminism.1
   '';
 
+  doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
     ($out/bin/strip-nondeterminism --help 2>&1 | grep -q "verbose") || (echo "'$out/bin/strip-nondeterminism --help' failed" && exit 1)
     runHook postInstallCheck
   '';
-
-  doInstallCheck = true;
 
   passthru = {
     updateScript = gitUpdater { };
@@ -63,12 +64,14 @@ buildPerlPackage rec {
 
   meta = {
     description = "Perl module for stripping bits of non-deterministic information";
-    mainProgram = "strip-nondeterminism";
     homepage = "https://reproducible-builds.org/";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       pSub
       artturin
     ];
+
+    mainProgram = "strip-nondeterminism";
   };
 }

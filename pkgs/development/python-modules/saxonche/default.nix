@@ -1,10 +1,10 @@
 {
   lib,
+  stdenv,
   autoPatchelfHook,
   buildPythonPackage,
   fetchPypi,
   python,
-  stdenv,
   zlib,
 }:
 let
@@ -13,22 +13,19 @@ let
   releases = lib.importJSON ./releases.json;
 in
 buildPythonPackage rec {
-  pname = "saxonche";
   inherit (releases) version;
-  format = "wheel";
+  pname = "saxonche";
 
   src = fetchPypi {
-    pname = "saxonche";
     inherit version;
-    format = "wheel";
-    python = "cp${pythonVersionNoDot}";
+    hash = releases."cp${pythonVersionNoDot}-${system}".hash or (throw "unsupported system");
     abi = "cp${pythonVersionNoDot}";
     dist = "cp${pythonVersionNoDot}";
+    format = "wheel";
     platform = releases."cp${pythonVersionNoDot}-${system}".platform or (throw "unsupported system");
-    hash = releases."cp${pythonVersionNoDot}-${system}".hash or (throw "unsupported system");
+    pname = "saxonche";
+    python = "cp${pythonVersionNoDot}";
   };
-
-  dontBuild = true;
 
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
 
@@ -36,15 +33,16 @@ buildPythonPackage rec {
     zlib
   ];
 
+  dontBuild = true;
+  format = "wheel";
   pythonImportsCheck = [ "saxonche" ];
-
   passthru.updateScript = ./update.py;
 
   meta = {
     description = "Official Python package for the SaxonC-HE processor";
     homepage = "https://www.saxonica.com/saxon-c/index.xml";
     license = lib.licenses.unfree;
-    maintainers = with lib.maintainers; [ hhr2020 ];
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ hhr2020 ];
   };
 }

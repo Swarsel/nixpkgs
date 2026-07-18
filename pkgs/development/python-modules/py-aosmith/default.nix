@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
   aiohttp,
+  buildPythonPackage,
+  poetry-core,
   tenacity,
 }:
 
 buildPythonPackage rec {
   pname = "py-aosmith";
   version = "1.0.18";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bdr99";
@@ -19,6 +18,8 @@ buildPythonPackage rec {
     hash = "sha256-sR7yUl97MlxdJHLrA8IjODNk7LJhVxqraaUkPljuMZg=";
   };
 
+  # upstream has no tests
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -26,10 +27,8 @@ buildPythonPackage rec {
     tenacity
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "py_aosmith" ];
-
-  # upstream has no tests
-  doCheck = false;
 
   meta = {
     description = "Python client library for A. O. Smith water heaters";

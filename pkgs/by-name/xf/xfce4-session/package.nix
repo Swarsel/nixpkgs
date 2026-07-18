@@ -1,24 +1,24 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gettext,
-  pkg-config,
-  xfce4-dev-tools,
-  wrapGAppsHook3,
-  polkit,
   bashNonInteractive,
-  xfce4-exo,
-  libxfce4util,
-  libxfce4ui,
-  libxfce4windowing,
-  xfconf,
-  iceauth,
-  gtk3,
-  gtk-layer-shell,
-  glib,
-  libwnck,
+  gettext,
   gitUpdater,
+  glib,
+  gtk-layer-shell,
+  gtk3,
+  iceauth,
+  libwnck,
+  libxfce4ui,
+  libxfce4util,
+  libxfce4windowing,
+  pkg-config,
+  polkit,
+  wrapGAppsHook3,
+  xfce4-dev-tools,
+  xfce4-exo,
+  xfconf,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,12 +26,14 @@ stdenv.mkDerivation (finalAttrs: {
   version = "4.20.4";
 
   src = fetchFromGitLab {
-    domain = "gitlab.xfce.org";
     owner = "xfce";
     repo = "xfce4-session";
     tag = "xfce4-session-${finalAttrs.version}";
     hash = "sha256-mL5fOWJtpkpskBQmyYhcVRzGJlzAHsvtcy4j3DceOBE=";
+    domain = "gitlab.xfce.org";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     gettext
@@ -55,8 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
     polkit
   ];
 
-  strictDeps = true;
-
   configureFlags = [
     "--enable-maintainer-mode"
     "--with-xsession-prefix=${placeholder "out"}"
@@ -66,19 +66,20 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   passthru = {
-    xinitrc = "${finalAttrs.finalPackage}/etc/xdg/xfce4/xinitrc";
     updateScript = gitUpdater {
-      rev-prefix = "xfce4-session-";
       odd-unstable = true;
+      rev-prefix = "xfce4-session-";
     };
+
+    xinitrc = "${finalAttrs.finalPackage}/etc/xdg/xfce4/xinitrc";
   };
 
   meta = {
     description = "Session manager for Xfce";
     homepage = "https://gitlab.xfce.org/xfce/xfce4-session";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "xfce4-session";
     platforms = lib.platforms.linux;
+    mainProgram = "xfce4-session";
     teams = [ lib.teams.xfce ];
   };
 })

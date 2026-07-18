@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  ocaml,
   findlib,
-  topkg,
+  ocaml,
   ocamlbuild,
+  topkg,
 }:
 
 let
@@ -15,8 +15,9 @@ in
 
 stdenv.mkDerivation {
 
-  pname = "ocaml${ocaml.version}-gg";
   inherit version;
+  inherit (topkg) buildPhase installPhase;
+  pname = "ocaml${ocaml.version}-gg";
 
   src = fetchurl {
     url = "${homepage}/releases/gg-${version}.tbz";
@@ -31,20 +32,21 @@ stdenv.mkDerivation {
     ocamlbuild
     topkg
   ];
+
   buildInputs = [ topkg ];
 
-  inherit (topkg) buildPhase installPhase;
-
   meta = {
+    inherit homepage;
+    inherit (ocaml.meta) platforms;
     description = "Basic types for computer graphics in OCaml";
+
     longDescription = ''
       Gg is an OCaml module providing basic types for computer graphics. It
       defines types and functions for floats, vectors, points, sizes,
       matrices, quaternions, axis aligned boxes, colors, color spaces, and
       raster data.
     '';
-    inherit homepage;
-    inherit (ocaml.meta) platforms;
+
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.jirkamarsik ];
     broken = !(lib.versionAtLeast ocaml.version "4.08");

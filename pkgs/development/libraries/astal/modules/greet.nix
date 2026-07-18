@@ -4,10 +4,11 @@
   quarrel,
 }:
 buildAstalModule {
-  name = "greet";
   buildInputs = [
     json-glib
     quarrel
   ];
+
+  name = "greet";
   meta.description = "Astal module for greetd using IPC";
 }

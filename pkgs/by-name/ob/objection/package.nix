@@ -1,17 +1,17 @@
 {
   lib,
-  python3Packages,
-  fetchFromGitHub,
+  stdenv,
   fetchurl,
-  frida-tools,
-  apktool,
+  fetchFromGitHub,
   aapt,
-  apksigner,
   android-tools,
   androidenv,
-  makeWrapper,
+  apksigner,
+  apktool,
   buildNpmPackage,
-  stdenv,
+  frida-tools,
+  makeWrapper,
+  python3Packages,
 }:
 let
   androidComposition = androidenv.composeAndroidPackages { };
@@ -26,29 +26,34 @@ let
   fridaVersion = "17.5.1";
 
   supportedPlatforms = {
-    x86_64-linux = {
-      fridaArch = "linux-x64";
-      fridaHash = "sha256-g7uZs/fUwraIu6SZaU9kGGVuzD/nyqmXHVp0zL3jhdY=";
-    };
-    aarch64-linux = {
-      fridaArch = "linux-arm64";
-      fridaHash = "sha256-BsCgpHS3IFMPciu9hsdu9vWwKu+pon+EtqF10NO1EAc=";
-    };
-    armv7l-linux = {
-      fridaArch = "linux-armv7l";
-      fridaHash = "sha256-mNl+kP+9a4AC2Tf1SM7mYL5b+j4pPz+E9R88JjLgifE=";
-    };
-    i686-linux = {
-      fridaArch = "linux-ia32";
-      fridaHash = "sha256-vLwf+EwWNDLznda8J+xVqp8XmuivdZ0VKgISR9YoQR0=";
-    };
     aarch64-darwin = {
       fridaArch = "darwin-arm64";
       fridaHash = "sha256-mR6HM9rmRmXhWqXA0GC4Xkdj9KVSthhtvMAzijE+j5c=";
     };
+
+    aarch64-linux = {
+      fridaArch = "linux-arm64";
+      fridaHash = "sha256-BsCgpHS3IFMPciu9hsdu9vWwKu+pon+EtqF10NO1EAc=";
+    };
+
+    armv7l-linux = {
+      fridaArch = "linux-armv7l";
+      fridaHash = "sha256-mNl+kP+9a4AC2Tf1SM7mYL5b+j4pPz+E9R88JjLgifE=";
+    };
+
+    i686-linux = {
+      fridaArch = "linux-ia32";
+      fridaHash = "sha256-vLwf+EwWNDLznda8J+xVqp8XmuivdZ0VKgISR9YoQR0=";
+    };
+
     x86_64-freebsd = {
       fridaArch = "freebsd-x64";
       fridaHash = "sha256-ddvUtdZJdVH9O7np04ayB/Nebxq4Raw0eAQJpFAFl6Q=";
+    };
+
+    x86_64-linux = {
+      fridaArch = "linux-x64";
+      fridaHash = "sha256-g7uZs/fUwraIu6SZaU9kGGVuzD/nyqmXHVp0zL3jhdY=";
     };
   };
 
@@ -57,8 +62,8 @@ let
       or (throw "frida Node.js binding: unsupported system ${stdenv.hostPlatform.system}");
 
   fridaNodeBinding = fetchurl {
-    url = "https://github.com/frida/frida/releases/download/${fridaVersion}/frida-v${fridaVersion}-napi-v8-${currentPlatform.fridaArch}.tar.gz";
     hash = currentPlatform.fridaHash;
+    url = "https://github.com/frida/frida/releases/download/${fridaVersion}/frida-v${fridaVersion}-napi-v8-${currentPlatform.fridaArch}.tar.gz";
   };
 
   runtimeTools = [
@@ -69,19 +74,16 @@ let
   ];
 
   agent = buildNpmPackage {
-    pname = "objection-agent";
     inherit version src;
-    sourceRoot = "source/agent";
-
-    npmDepsHash = "sha256-oG0uMhy6Gv2lc1SNJwqnvYRdhhqWwPMY0MCDMt2hPf0=";
-
-    npmRebuildFlags = [ "--ignore-scripts" ];
+    pname = "objection-agent";
 
     postPatch = ''
       substituteInPlace package.json \
         --replace-fail '"frida-compile src/index.ts -o ../objection/agent.js -T none"' \
                        '"frida-compile src/index.ts -o ./agent.js -T none"'
     '';
+
+    npmDepsHash = "sha256-oG0uMhy6Gv2lc1SNJwqnvYRdhhqWwPMY0MCDMt2hPf0=";
 
     preBuild = ''
       mkdir -p node_modules/frida
@@ -93,19 +95,36 @@ let
       install -Dm644 agent.js $out/agent.js
       runHook postInstall
     '';
+
+    npmRebuildFlags = [ "--ignore-scripts" ];
+    sourceRoot = "source/agent";
   };
 in
 python3Packages.buildPythonApplication {
-  pname = "objection";
   inherit version src;
-  pyproject = true;
-
-  build-system = with python3Packages; [
-    setuptools
-  ];
+  pname = "objection";
 
   nativeBuildInputs = [
     makeWrapper
+  ];
+
+  doCheck = true;
+
+  postFixup = ''
+    mkdir -p "$out/bin-wrapped"
+    ln -s "${aapt}/bin/aapt2" "$out/bin-wrapped/aapt"
+    BUILD_TOOLS_PATH="${androidComposition.androidsdk}/libexec/android-sdk/build-tools"
+    if [ -d "$BUILD_TOOLS_PATH" ]; then
+      LATEST_BUILD_TOOLS=$(ls -d "$BUILD_TOOLS_PATH"/* 2>/dev/null | sort -V | tail -1)
+      [ -n "$LATEST_BUILD_TOOLS" ] && ln -s "$LATEST_BUILD_TOOLS/zipalign" "$out/bin-wrapped/zipalign" 2>/dev/null || true
+    fi
+
+    wrapProgram $out/bin/objection \
+      --prefix PATH : "$out/bin-wrapped:${lib.makeBinPath runtimeTools}"
+  '';
+
+  build-system = with python3Packages; [
+    setuptools
   ];
 
   dependencies = with python3Packages; [
@@ -124,43 +143,32 @@ python3Packages.buildPythonApplication {
     litecli
   ];
 
-  pythonImportsCheck = [
-    "objection"
-  ];
-
-  doCheck = true;
-
-  pythonRuntimeDepsCheck = true;
-
   postUnpack = ''
     cp ${agent}/agent.js $sourceRoot/objection/
   '';
 
-  postFixup = ''
-    mkdir -p "$out/bin-wrapped"
-    ln -s "${aapt}/bin/aapt2" "$out/bin-wrapped/aapt"
-    BUILD_TOOLS_PATH="${androidComposition.androidsdk}/libexec/android-sdk/build-tools"
-    if [ -d "$BUILD_TOOLS_PATH" ]; then
-      LATEST_BUILD_TOOLS=$(ls -d "$BUILD_TOOLS_PATH"/* 2>/dev/null | sort -V | tail -1)
-      [ -n "$LATEST_BUILD_TOOLS" ] && ln -s "$LATEST_BUILD_TOOLS/zipalign" "$out/bin-wrapped/zipalign" 2>/dev/null || true
-    fi
+  pyproject = true;
 
-    wrapProgram $out/bin/objection \
-      --prefix PATH : "$out/bin-wrapped:${lib.makeBinPath runtimeTools}"
-  '';
+  pythonImportsCheck = [
+    "objection"
+  ];
+
+  pythonRuntimeDepsCheck = true;
 
   meta = {
     description = "Runtime mobile exploration toolkit, powered by Frida";
+
     longDescription = ''
       objection is a runtime mobile exploration toolkit, powered by Frida,
       built to help you assess the security posture of your mobile applications,
       without needing a jailbreak.
     '';
+
     homepage = "https://github.com/sensepost/objection";
     changelog = "https://github.com/sensepost/objection/releases/tag/${version}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ nullstring1 ];
-    mainProgram = "objection";
     platforms = builtins.attrNames supportedPlatforms;
+    mainProgram = "objection";
   };
 }

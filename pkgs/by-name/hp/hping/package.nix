@@ -4,8 +4,8 @@
   fetchFromGitHub,
   fetchpatch,
   libpcap,
-  withTcl ? true,
   tcl,
+  withTcl ? true,
 }:
 
 stdenv.mkDerivation {
@@ -18,17 +18,16 @@ stdenv.mkDerivation {
     rev = "3547c7691742c6eaa31f8402e0ccbb81387c1b99"; # there are no tags/releases
     sha256 = "0y0n1ybij3yg9lfgzcwfmjz1sjg913zcqrv391xx83dm0j80sdpb";
   };
+
   patches = [
     # Pull patch pending upstream inclusion for -fno-common toolchain
     # support: https://github.com/antirez/hping/pull/64
     (fetchpatch {
       name = "fno-common.patch";
-      url = "https://github.com/antirez/hping/pull/64/commits/d057b9309aec3a5a53aaee1ac3451a8a5b71b4e8.patch";
       sha256 = "0bqr7kdlziijja588ipj8g5hv2109wq01c6x2qadbhjfnsps1b6l";
+      url = "https://github.com/antirez/hping/pull/64/commits/d057b9309aec3a5a53aaee1ac3451a8a5b71b4e8.patch";
     })
   ];
-
-  buildInputs = [ libpcap ] ++ lib.optional withTcl tcl;
 
   postPatch = ''
     substituteInPlace Makefile.in --replace "gcc" "$CC"
@@ -41,14 +40,15 @@ stdenv.mkDerivation {
   + lib.optionalString (stdenv.buildPlatform != stdenv.hostPlatform) ''
     substituteInPlace configure --replace 'BYTEORDER=`./byteorder -m`' BYTEORDER=${
       {
-        littleEndian = "__LITTLE_ENDIAN_BITFIELD";
         bigEndian = "__BIG_ENDIAN_BITFIELD";
+        littleEndian = "__LITTLE_ENDIAN_BITFIELD";
       }
       .${stdenv.hostPlatform.parsed.cpu.significantByte.name}
     }
     substituteInPlace Makefile.in --replace './hping3 -v' ""
   '';
 
+  buildInputs = [ libpcap ] ++ lib.optional withTcl tcl;
   configureFlags = [ (if withTcl then "TCLSH=${tcl}/bin/tclsh" else "--no-tcl") ];
 
   installPhase = ''

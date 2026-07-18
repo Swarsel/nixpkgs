@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   appstream,
   blueprint-compiler,
   desktop-file-utils,
-  fetchFromGitHub,
   gdm,
   glib,
   libadwaita,
@@ -24,7 +24,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "gdm-settings";
   version = "5.0";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "gdm-settings";
@@ -45,24 +44,24 @@ python3Packages.buildPythonApplication (finalAttrs: {
   ];
 
   buildInputs = [ libadwaita ];
-
   dependencies = [ python3Packages.pygobject3 ];
-
   dontWrapGApps = true;
+
   makeWrapperArgs = [
     "\${gappsWrapperArgs[@]}"
     "--set-default HOST_DATA_DIRS ${dataDirs}"
   ];
 
+  pyproject = false;
   pythonImportsCheck = [ "gdms" ];
 
   meta = {
+    inherit (gdm.meta) platforms;
     description = "Settings app for GNOME's Login Manager";
     homepage = "https://gdm-settings.github.io/";
     changelog = "https://github.com/gdm-settings/gdm-settings/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ getchoo ];
     mainProgram = "gdm-settings";
-    inherit (gdm.meta) platforms;
   };
 })

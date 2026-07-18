@@ -22,12 +22,19 @@
 buildPythonPackage rec {
   pname = "oauthenticator";
   version = "17.3.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-5dkMskEf/z3G/MFjNGgjPA4OAjlCLAh8dzTRaFBVuPM=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+    requests-mock
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [ setuptools ];
 
@@ -40,22 +47,6 @@ buildPythonPackage rec {
     tornado
     traitlets
   ];
-
-  optional-dependencies = {
-    googlegroups = [
-      google-api-python-client
-      google-auth-oauthlib
-    ];
-    mediawiki = [ mwoauth ];
-  };
-
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-    requests-mock
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
 
   disabledTests = [
     # Tests are outdated, https://github.com/jupyterhub/oauthenticator/issues/432
@@ -73,6 +64,16 @@ buildPythonPackage rec {
     "test_openshift"
   ];
 
+  optional-dependencies = {
+    googlegroups = [
+      google-api-python-client
+      google-auth-oauthlib
+    ];
+
+    mediawiki = [ mwoauth ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "oauthenticator" ];
 
   meta = {

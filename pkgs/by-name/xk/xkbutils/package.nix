@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  xorgproto,
   libx11,
   libxaw,
   libxt,
+  pkg-config,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xkbutils";
@@ -19,7 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -42,18 +41,22 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Collection of small XKB utilities";
+
     longDescription = ''
       xkbutils is a collection of small utilities using the X Keyboard extenison:
       - xkbbell: generate X Keyboard Extension bell events
       - xkbvleds: display X Keyboard Extension LED state in a window
       - xkbwatch: report state changes using the X Keyboard Extension
     '';
+
     homepage = "https://gitlab.freedesktop.org/xorg/app/xkbutils";
+
     license = with lib.licenses; [
       hpnd
       hpndDec
       mit
     ];
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
   };

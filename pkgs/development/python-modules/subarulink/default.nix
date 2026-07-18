@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
@@ -16,9 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "subarulink";
   version = "0.7.19";
-  pyproject = true;
-
-  disabled = pythonOlder "3.12";
 
   src = fetchFromGitHub {
     owner = "G-Two";
@@ -26,13 +23,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-+huEDrcMjCMUKnzL0wfqnpVjIm8zebV3qAq4OWLZ+GU=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    aiohttp
-    stdiomask
-  ];
 
   nativeCheckInputs = [
     cryptography
@@ -43,7 +33,15 @@ buildPythonPackage (finalAttrs: {
   ];
 
   __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
 
+  dependencies = [
+    aiohttp
+    stdiomask
+  ];
+
+  disabled = pythonOlder "3.12";
+  pyproject = true;
   pythonImportsCheck = [ "subarulink" ];
 
   meta = {

@@ -1,15 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-
   ffmpeg,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "streamrip";
   version = "2.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nathom";
@@ -52,15 +50,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pytestCheckHook
   ];
 
-  pythonRelaxDeps = true;
+  preCheck = ''
+    export HOME=$(mktemp -d)
+  '';
 
   prePatch = ''
     sed -i 's#"ffmpeg"#"${lib.getBin ffmpeg}/bin/ffmpeg"#g' streamrip/client/downloadable.py
   '';
 
-  preCheck = ''
-    export HOME=$(mktemp -d)
-  '';
+  pyproject = true;
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Scriptable music downloader for Qobuz, Tidal, SoundCloud, and Deezer";

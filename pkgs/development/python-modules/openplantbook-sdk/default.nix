@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   json-timeseries,
   numpy,
   pandas,
@@ -15,7 +15,6 @@
 buildPythonPackage {
   pname = "openplantbook-sdk";
   version = "0.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "slaxor505";
@@ -29,6 +28,13 @@ buildPythonPackage {
     ./update-test.patch
   ];
 
+  nativeBuildInputs = [
+    numpy
+    pandas
+    pyyaml
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
     setuptools-scm
@@ -39,21 +45,16 @@ buildPythonPackage {
     json-timeseries
   ];
 
-  nativeBuildInputs = [
-    numpy
-    pandas
-    pyyaml
-    pytestCheckHook
-  ];
-
   enabledTestPaths = [
     "tests/offline"
   ];
 
+  pyproject = true;
+
   meta = {
     description = "SDK to integrate with Open Plantbook API";
     homepage = "https://github.com/slaxor505/openplantbook-sdk-py";
-    maintainers = with lib.maintainers; [ SuperSandro2000 ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ SuperSandro2000 ];
   };
 }

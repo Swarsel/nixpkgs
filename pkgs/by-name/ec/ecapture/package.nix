@@ -1,25 +1,25 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  bpftools,
   lib,
-  nspr,
-  libpcap,
+  fetchFromGitHub,
+  bash,
+  bashInteractive,
+  bpftools,
+  buildGoModule,
   clang,
   fd,
-  go-bindata,
   glibc,
   gnutls,
-  bashInteractive,
-  postgresql,
-  mariadb,
-  openssl,
-  bash,
-  zsh,
-  nix-update-script,
+  go-bindata,
+  libpcap,
   llvmPackages,
-  withNonBTF ? false,
+  mariadb,
+  nix-update-script,
+  nspr,
+  openssl,
+  postgresql,
+  zsh,
   kernel ? null,
+  withNonBTF ? false,
 }:
 
 buildGoModule rec {
@@ -33,39 +33,6 @@ buildGoModule rec {
     hash = "sha256-GWz+zlaP+kNF0G3hZJ2GJXusihGgEpxVdOlgAiHIH4s=";
     fetchSubmodules = true;
   };
-
-  nativeBuildInputs = [
-    llvmPackages.libllvm
-    clang
-    fd
-    bpftools
-    go-bindata
-  ];
-
-  newlibpcap = libpcap.overrideAttrs (previousAttrs: {
-    configureFlags = previousAttrs.configureFlags ++ [ "--without-libnl" ];
-  });
-
-  buildInputs = [
-    newlibpcap
-    glibc.static
-    glibc
-  ];
-
-  env.CGO_LDFLAGS = toString [
-    "-lpcap"
-    "-lpthread"
-    "-static"
-  ];
-
-  ldflags = [
-    "-extldflags '-static'"
-    "-linkmode=external"
-  ];
-
-  hardeningDisable = [
-    "zerocallusedregs"
-  ];
 
   postPatch = ''
     substituteInPlace user/config/config_gnutls_linux.go \
@@ -101,6 +68,28 @@ buildGoModule rec {
       --replace-fail '"errors"' ' '
   '';
 
+  nativeBuildInputs = [
+    llvmPackages.libllvm
+    clang
+    fd
+    bpftools
+    go-bindata
+  ];
+
+  buildInputs = [
+    newlibpcap
+    glibc.static
+    glibc
+  ];
+
+  vendorHash = "sha256-esBALagv8J4UPYAzV2x3joF0MUxco4OHDFlL32yXe6E=";
+
+  env.CGO_LDFLAGS = toString [
+    "-lpcap"
+    "-lpthread"
+    "-static"
+  ];
+
   postConfigure = ''
     sed -i '/git/d' Makefile
     sed -i '/git/d' variables.mk
@@ -126,20 +115,33 @@ buildGoModule rec {
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
-  vendorHash = "sha256-esBALagv8J4UPYAzV2x3joF0MUxco4OHDFlL32yXe6E=";
+  hardeningDisable = [
+    "zerocallusedregs"
+  ];
+
+  ldflags = [
+    "-extldflags '-static'"
+    "-linkmode=external"
+  ];
+
+  newlibpcap = libpcap.overrideAttrs (previousAttrs: {
+    configureFlags = previousAttrs.configureFlags ++ [ "--without-libnl" ];
+  });
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Capture SSL/TLS text content without CA certificate Using eBPF";
-    changelog = "https://github.com/gojue/ecapture/releases/tag/v${version}";
     homepage = "https://ecapture.cc";
+    changelog = "https://github.com/gojue/ecapture/releases/tag/v${version}";
+    license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ bot-wxt1221 ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
-    license = lib.licenses.asl20;
-    maintainers = with lib.maintainers; [ bot-wxt1221 ];
+
     mainProgram = "ecapture";
   };
 }

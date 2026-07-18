@@ -27,13 +27,15 @@ let
   luaDrv = originalLuaDrv.overrideAttrs (old: {
     version = attrs.version or old.version;
     __intentionallyOverridingVersion = true;
-    rockspecVersion = old.rockspecVersion;
+
     luarocksConfig = (old.luarocksConfig or { }) // {
-      # to create a flat hierarchy
-      lua_modules_path = "lua";
       # neovim expects C modules to also be in the lua directory
       lib_modules_path = "lua";
+      # to create a flat hierarchy
+      lua_modules_path = "lua";
     };
+
+    rockspecVersion = old.rockspecVersion;
   });
 
   finalDrv = toVimPlugin (
@@ -41,10 +43,12 @@ let
       old:
       attrs
       // {
+        version = "${originalLuaDrv.version}-unstable-${old.version}";
+
         nativeBuildInputs = old.nativeBuildInputs or [ ] ++ [
           lua.pkgs.luarocksMoveDataFolder
         ];
-        version = "${originalLuaDrv.version}-unstable-${old.version}";
+
         __intentionallyOverridingVersion = true;
       }
     )

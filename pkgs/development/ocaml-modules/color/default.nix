@@ -20,8 +20,8 @@ buildDunePackage (finalAttrs: {
 
   meta = {
     description = "Converts between different color formats";
+    homepage = "https://github.com/anuragsoni/color";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fgaz ];
-    homepage = "https://github.com/anuragsoni/color";
   };
 })

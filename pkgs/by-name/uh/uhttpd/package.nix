@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  fetchgit,
   cmake,
-  pkg-config,
-  lua5_1,
+  fetchgit,
   json_c,
   libubox,
-  ubus,
   libxcrypt,
-  unstableGitUpdater,
+  lua5_1,
   makeWrapper,
+  pkg-config,
+  ubus,
+  unstableGitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -59,8 +59,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Tiny HTTP server from OpenWrt project";
     homepage = "https://openwrt.org/docs/guide-user/services/webserver/uhttpd";
     license = lib.licenses.isc;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.haylin ];
+    platforms = lib.platforms.unix;
     mainProgram = "uhttpd";
   };
 })

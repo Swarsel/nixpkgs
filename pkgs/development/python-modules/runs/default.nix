@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
-  xmod,
   pytestCheckHook,
   tdir,
+  xmod,
 }:
 
 buildPythonPackage rec {
   pname = "runs";
   version = "1.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rec";
@@ -20,20 +19,20 @@ buildPythonPackage rec {
     hash = "sha256-aEamhXr3C+jYDzQGzcmGFyl5oEtovxlNacFM08y0ZEk=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ xmod ];
-
   nativeCheckInputs = [
     pytestCheckHook
     tdir
   ];
+
+  build-system = [ poetry-core ];
+  dependencies = [ xmod ];
 
   disabledTests = [
     # requires .git directory
     "test_many"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "runs" ];
 
   meta = {

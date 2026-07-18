@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   coreutils,
   findutils,
   getopt,
   gnugrep,
   gnused,
+  makeWrapper,
   sops,
 }:
 
@@ -22,19 +22,17 @@ stdenv.mkDerivation rec {
     hash = "sha256-gCsXnZCvQqc5PIQGheOdzZ1YSUNDhbMvJIROMGA65Jg=";
   };
 
-  nativeBuildInputs = [ makeWrapper ];
-  buildInputs = [
-    getopt
-    sops
-  ];
-
-  # NOTE: helm-secrets is comprised of shell scripts.
-  dontBuild = true;
-
   # NOTE: Fix version string
   postPatch = ''
     sed -i 's/^version:.*/version: "${version}"/' plugin.yaml
   '';
+
+  nativeBuildInputs = [ makeWrapper ];
+
+  buildInputs = [
+    getopt
+    sops
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -56,6 +54,9 @@ stdenv.mkDerivation rec {
 
     runHook postInstall
   '';
+
+  # NOTE: helm-secrets is comprised of shell scripts.
+  dontBuild = true;
 
   meta = {
     description = "Helm plugin that helps manage secrets";

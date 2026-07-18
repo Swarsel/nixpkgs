@@ -17,7 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   patches = [ ./pkg-config.patch ];
-
   nativeBuildInputs = [ cmake ];
 
   cmakeFlags = [
@@ -29,7 +28,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Interface to all AMD AOCL libraries to access CPU features";
     homepage = "https://github.com/amd/aocl-utils";
     license = lib.licenses.bsd3;
-    platforms = [ "x86_64-linux" ];
     maintainers = [ lib.maintainers.markuskowa ];
+    platforms = [ "x86_64-linux" ];
   };
 })

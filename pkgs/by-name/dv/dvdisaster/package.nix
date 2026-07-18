@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   gettext,
-  pkg-config,
-  which,
   glib,
   gtk3,
+  pkg-config,
+  which,
   wrapGAppsHook3,
   withGui ? true,
 }:
@@ -23,6 +23,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-yQldvTvmbZgIOLKzdubd1zomSRKvAkTnS6hpEYWPr8A=";
   };
 
+  patches = [
+    ./md5sum.patch
+  ];
+
+  postPatch = ''
+    patchShebangs ./
+    sed -i 's/dvdisaster48.png/dvdisaster/' contrib/dvdisaster.desktop
+  '';
+
   nativeBuildInputs = [
     gettext
     pkg-config
@@ -37,15 +46,6 @@ stdenv.mkDerivation (finalAttrs: {
     gtk3
   ];
 
-  patches = [
-    ./md5sum.patch
-  ];
-
-  postPatch = ''
-    patchShebangs ./
-    sed -i 's/dvdisaster48.png/dvdisaster/' contrib/dvdisaster.desktop
-  '';
-
   configureFlags = [
     # Explicit --docdir= is required for on-line help to work:
     "--docdir=share/doc"
@@ -57,9 +57,8 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional (stdenv.hostPlatform.isx86_64) "--with-sse2=yes";
 
-  enableParallelBuilding = true;
-
   doCheck = true;
+
   checkPhase = ''
     runHook preCheck
     pushd regtest
@@ -87,13 +86,13 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  enableParallelBuilding = true;
   # Tests are heavily CPU-bound
   requiredSystemFeatures = [ "big-parallel" ];
 
   meta = {
-    homepage = "https://github.com/speed47/dvdisaster";
-    changelog = "https://github.com/speed47/dvdisaster/blob/v${finalAttrs.version}/CHANGELOG";
     description = "Data loss/scratch/aging protection for CD/DVD media (unofficial version)";
+
     longDescription = ''
       Dvdisaster provides a margin of safety against data loss on CD and
       DVD media caused by scratches or aging media. It creates error correction
@@ -104,9 +103,12 @@ stdenv.mkDerivation (finalAttrs: {
       it is backwards compatible with it, and adds a list of improvements,
       such as BD-R support, CLI-only mode, and more.
     '';
+
+    homepage = "https://github.com/speed47/dvdisaster";
+    changelog = "https://github.com/speed47/dvdisaster/blob/v${finalAttrs.version}/CHANGELOG";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.matteopacini ];
+    platforms = lib.platforms.linux;
     mainProgram = "dvdisaster";
     # Tests are not parallelized, and take a long time to run (1-3 hours, depending on CPU)
     # Max observed time: ~4 hours on a "big-parallel" builder

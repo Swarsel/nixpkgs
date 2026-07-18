@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  cmake,
-  pkg-config,
-  liblxi,
-  readline,
-  lua,
+  appstream-glib,
   bash-completion,
-  wrapGAppsHook4,
+  cmake,
+  desktop-file-utils,
   glib,
+  gsettings-desktop-schemas,
   gtk4,
   gtksourceview5,
-  libadwaita,
   json-glib,
-  desktop-file-utils,
-  appstream-glib,
-  gsettings-desktop-schemas,
+  libadwaita,
+  liblxi,
+  lua,
+  meson,
+  ninja,
+  pkg-config,
+  readline,
+  wrapGAppsHook4,
   withGui ? false,
 }:
 
@@ -58,24 +58,24 @@ stdenv.mkDerivation rec {
     gsettings-desktop-schemas
   ];
 
-  postUnpack = "sed -i '/meson.add_install.*$/d' source/meson.build";
-
   mesonFlags = lib.optional (!withGui) "-Dgui=false";
-
   postInstall = lib.optionalString withGui "glib-compile-schemas $out/share/glib-2.0/schemas";
+  postUnpack = "sed -i '/meson.add_install.*$/d' source/meson.build";
 
   meta = {
     description = "Tool for communicating with LXI compatible instruments";
+
     longDescription = ''
       lxi-tools is a collection of open source software tools
       that enables control of LXI compatible instruments such
       as modern oscilloscopes, power supplies,
       spectrum analyzers etc.
     '';
+
     homepage = "https://lxi-tools.github.io/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.vq ];
+    platforms = lib.platforms.unix;
     mainProgram = "lxi";
   };
 }

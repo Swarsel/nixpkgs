@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "growattserver";
   version = "2.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "indykoning";
@@ -18,13 +17,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-zVcKuwTxuCCIZzVKgEdjULSyKgKcb/Fb93rk3J8ztCg=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   # Project has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "growattServer" ];
 
   meta = {

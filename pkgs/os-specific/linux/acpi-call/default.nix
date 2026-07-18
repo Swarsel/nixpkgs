@@ -20,8 +20,6 @@ stdenv.mkDerivation {
     sha256 = "1s7h9y3adyfhw7cjldlfmid79lrwz3vqlvziw9nwd6x5qdj4w9vp";
   };
 
-  hardeningDisable = [ "pic" ];
-
   nativeBuildInputs = kernel.moduleBuildDependencies;
 
   makeFlags = kernelModuleMakeFlags ++ [
@@ -33,15 +31,19 @@ stdenv.mkDerivation {
     install -D -m755 examples/turn_off_gpu.sh $out/bin/test_discrete_video_off.sh
   '';
 
+  hardeningDisable = [ "pic" ];
+
   meta = {
+    description = "Module allowing arbitrary ACPI calls; use case: hybrid video";
+    homepage = "https://github.com/nix-community/acpi_call";
+    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       raskin
       mic92
     ];
-    homepage = "https://github.com/nix-community/acpi_call";
+
     platforms = lib.platforms.linux;
-    description = "Module allowing arbitrary ACPI calls; use case: hybrid video";
     mainProgram = "test_discrete_video_off.sh";
-    license = lib.licenses.gpl3Plus;
   };
 }

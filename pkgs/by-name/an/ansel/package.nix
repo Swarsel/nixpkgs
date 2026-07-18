@@ -1,4 +1,7 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   bash,
   cmake,
   colord,
@@ -8,7 +11,6 @@
   desktop-file-utils,
   exiftool,
   exiv2,
-  fetchFromGitHub,
   glib,
   gmic,
   graphicsmagick,
@@ -21,7 +23,6 @@
   lcms,
   lensfun,
   lerc,
-  lib,
   libaom,
   libavif,
   libdatrie,
@@ -57,7 +58,6 @@
   rav1e,
   saxon,
   sqlite,
-  stdenv,
   unstableGitUpdater,
   util-linux,
   wrapGAppsHook3,
@@ -165,14 +165,15 @@ stdenv.mkDerivation {
     x265
   ];
 
+  cmakeFlags = [
+    "-DBINARY_PACKAGE_BUILD=1"
+  ];
+
   preFixup = ''
     gappsWrapperArgs+=(
       --prefix LD_LIBRARY_PATH ":" "$out/lib/ansel"
     )
   '';
-  cmakeFlags = [
-    "-DBINARY_PACKAGE_BUILD=1"
-  ];
 
   passthru.updateScript = unstableGitUpdater {
     # Tags inherited from Darktable, + a "nightly" 0.0.0 tag that new artefacts get attached to
@@ -184,7 +185,7 @@ stdenv.mkDerivation {
     homepage = "https://ansel.photos/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ mBornand ];
-    mainProgram = "ansel";
     platforms = lib.platforms.linux;
+    mainProgram = "ansel";
   };
 }

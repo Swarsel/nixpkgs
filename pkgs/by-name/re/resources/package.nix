@@ -6,19 +6,19 @@
   autoAddDriverRunpath,
   cargo,
   desktop-file-utils,
-  meson,
-  ninja,
-  pkg-config,
-  rustPlatform,
-  rustc,
-  wrapGAppsHook4,
+  dmidecode,
   glib,
   gtk4,
   libadwaita,
-  dmidecode,
-  util-linux,
-  systemd,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  rustc,
+  systemd,
+  util-linux,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,11 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "resources";
     tag = "v${finalAttrs.version}";
     hash = "sha256-BkyWq3Cwt34lNQ/p1iQcfIlkCefE2YeiQMd1T6ODbxw=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-zzSqwc+MoYoieOT0qmgfxKG8/HLGTVsTgcru5wZgn2M=";
   };
 
   nativeBuildInputs = [
@@ -56,13 +51,6 @@ stdenv.mkDerivation (finalAttrs: {
     libadwaita
   ];
 
-  # Check all Command::new
-  runtimeDeps = [
-    dmidecode
-    util-linux # lscpu
-    systemd # udevadm
-  ];
-
   mesonFlags = [
     (lib.mesonOption "profile" "default")
   ];
@@ -71,22 +59,36 @@ stdenv.mkDerivation (finalAttrs: {
     gappsWrapperArgs+=(--prefix PATH : ${lib.makeBinPath finalAttrs.runtimeDeps})
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-zzSqwc+MoYoieOT0qmgfxKG8/HLGTVsTgcru5wZgn2M=";
+  };
+
+  # Check all Command::new
+  runtimeDeps = [
+    dmidecode
+    util-linux # lscpu
+    systemd # udevadm
+  ];
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://github.com/nokyan/resources/releases/tag/v${finalAttrs.version}";
     description = "Monitor your system resources and processes";
     homepage = "https://github.com/nokyan/resources";
+    changelog = "https://github.com/nokyan/resources/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "resources";
+
     maintainers = with lib.maintainers; [
       lukas-heiligenbrunner
       ewuuwe
       graysontinker
     ];
-    teams = [ lib.teams.gnome-circle ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "resources";
+    teams = [ lib.teams.gnome-circle ];
   };
 })

@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "lw12";
   version = "0.9.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jaypikay";
@@ -17,10 +16,10 @@ buildPythonPackage rec {
     hash = "sha256-6zZolUfs1SzCH0DT2YYuP4eXt8Hxv+TYIDgLnR51MAQ=";
   };
 
-  build-system = [ setuptools ];
-
   # Tests require hardware access
   doCheck = false;
+  build-system = [ setuptools ];
+  pyproject = true;
 
   meta = {
     description = "Library to control the Lagute LW-12 WiFi LED controller";

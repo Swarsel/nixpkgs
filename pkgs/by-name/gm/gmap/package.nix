@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  nix-update-script,
   pkg-config,
+  rustPlatform,
   sqlite,
   versionCheckHook,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,19 +19,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-+klVySOgI/M57f98Cx3omkEBx/NcaWD4FuIW6cz1aN8=";
   };
 
-  cargoHash = "sha256-WjYCwGyFjBjITqsMPsD4kkeuSGPXtSKOFKaEfznMryI=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ sqlite ];
-
+  cargoHash = "sha256-WjYCwGyFjBjITqsMPsD4kkeuSGPXtSKOFKaEfznMryI=";
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Command-line tool for visualizing Git activity";
+
     longDescription = ''
       gmap helps you understand your Git repository at a glance — not
       just what changed, but when, how much, and by whom. Visualize
@@ -41,6 +38,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
       Built for developers who live in the CLI and want quick,
       powerful insights.
     '';
+
     homepage = "https://github.com/marawny/gmap";
     changelog = "https://github.com/marawny/gmap/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;

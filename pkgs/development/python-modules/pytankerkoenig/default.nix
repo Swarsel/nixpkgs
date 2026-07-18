@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "pytankerkoenig";
   version = "0.0.7";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
 
   # Tests require an API key and network access
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "pytankerkoenig" ];
 
   meta = {

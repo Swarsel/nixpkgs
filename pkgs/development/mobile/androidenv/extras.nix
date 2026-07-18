@@ -1,18 +1,20 @@
 {
-  deployAndroidPackage,
   lib,
-  package,
-  os,
   arch,
   autoPatchelfHook,
+  deployAndroidPackage,
   makeWrapper,
-  pkgs,
   meta,
+  os,
+  package,
+  pkgs,
 }:
 
 deployAndroidPackage {
   inherit package os arch;
+  inherit meta;
   nativeBuildInputs = [ makeWrapper ] ++ lib.optionals (os == "linux") [ autoPatchelfHook ];
+
   buildInputs = lib.optionals (os == "linux") (
     with pkgs;
     [
@@ -38,6 +40,4 @@ deployAndroidPackage {
         }
     fi
   '';
-
-  inherit meta;
 }

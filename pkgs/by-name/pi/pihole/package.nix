@@ -1,9 +1,6 @@
 {
   lib,
-  nixosTests,
   fetchFromGitHub,
-  makeBinaryWrapper,
-  installShellFiles,
   bash,
   coreutils,
   curl,
@@ -13,14 +10,17 @@
   glibc,
   gnugrep,
   gnused,
+  installShellFiles,
   iproute2,
   jq,
   killall,
   libidn2,
   locale,
+  makeBinaryWrapper,
   ncurses,
-  netcat,
   net-tools,
+  netcat,
+  nixosTests,
   pihole-ftl,
   procps,
   resholve,
@@ -76,27 +76,55 @@
       scriptsDir = "${out}/share/pihole/advanced/Scripts";
     in
     {
-      scripts =
-        let
-          relativeScripts = "share/pihole/advanced/Scripts";
-        in
-        [
-          "bin/pihole"
-          "${relativeScripts}/api.sh"
-          "${relativeScripts}/database_migration/gravity-db.sh"
-          "${relativeScripts}/gravity.sh"
-          "${relativeScripts}/list.sh"
-          "${relativeScripts}/piholeCheckout.sh"
-          "${relativeScripts}/piholeDebug.sh"
-          "${relativeScripts}/piholeLogFlush.sh"
-          "${relativeScripts}/piholeNetworkFlush.sh"
-          "${relativeScripts}/query.sh"
-          "${relativeScripts}/update.sh"
-          "${relativeScripts}/updatecheck.sh"
-          "${relativeScripts}/utils.sh"
-          "${relativeScripts}/version.sh"
+      execer = [
+        "cannot:${pihole-ftl}/bin/pihole-FTL"
+        "cannot:${iproute2}/bin/ip"
+        "cannot:${systemd}/bin/systemctl"
+        "cannot:${glibc.bin}/bin/ldd"
+        "cannot:${out}/bin/pihole"
+      ];
+
+      fake = {
+        external = [
+          # Used by chronometer.sh to get GPU information on Raspberry Pis
+          "sudo"
+          "vcgencmd"
+          # used by the checkout and update scripts, which are patched out
+          "git"
+          "getenforce"
+          "firewall-cmd"
+          # Conditionally used in Docker builds
+          "service"
+          "lighttpd"
+          # Used in piholeLogFlush.sh
+          "/usr/sbin/logrotate"
+          # Used by teleporter in webpage.sh
+          "php"
         ];
-      interpreter = lib.getExe bash;
+
+        source = [
+          "/etc/os-release"
+          "/etc/pihole/versions"
+          "/etc/pihole/setupVars.conf"
+          "/opt/pihole/utils.sh"
+        ];
+      };
+
+      fix = {
+        "$PIHOLE_COLTABLE_FILE" = [ "${scriptsDir}/COL_TABLE" ];
+        "$PIHOLE_COMMAND" = [ "pihole" ];
+        "$PI_HOLE_BIN_DIR" = [ "${out}/bin" ];
+        "$PI_HOLE_FILES_DIR" = [ "${out}/share/pihole" ];
+        "$PI_HOLE_INSTALL_DIR" = [ scriptsDir ];
+        "$PI_HOLE_LOCAL_REPO" = [ "${out}/share/pihole" ];
+        "$PI_HOLE_SCRIPT_DIR" = [ scriptsDir ];
+        "$apifile" = [ "${scriptsDir}/api.sh" ];
+        "$colfile" = [ "${scriptsDir}/COL_TABLE" ];
+        "$coltable" = [ "${scriptsDir}/COL_TABLE" ];
+        "$piholeGitDir" = [ "${out}/share/pihole" ];
+        "$utilsfile" = [ "${scriptsDir}/utils.sh" ];
+      };
+
       inputs = [
         # TODO: see if these inputs can help resholving
         "bin"
@@ -124,45 +152,47 @@
         systemd
         util-linux
       ];
-      fake = {
-        source = [
-          "/etc/os-release"
-          "/etc/pihole/versions"
-          "/etc/pihole/setupVars.conf"
-          "/opt/pihole/utils.sh"
-        ];
-        external = [
-          # Used by chronometer.sh to get GPU information on Raspberry Pis
-          "sudo"
-          "vcgencmd"
-          # used by the checkout and update scripts, which are patched out
-          "git"
-          "getenforce"
-          "firewall-cmd"
-          # Conditionally used in Docker builds
-          "service"
-          "lighttpd"
-          # Used in piholeLogFlush.sh
-          "/usr/sbin/logrotate"
-          # Used by teleporter in webpage.sh
-          "php"
-        ];
-      };
-      fix = {
-        "$PI_HOLE_BIN_DIR" = [ "${out}/bin" ];
-        "$PI_HOLE_FILES_DIR" = [ "${out}/share/pihole" ];
-        "$PI_HOLE_INSTALL_DIR" = [ scriptsDir ];
-        "$PI_HOLE_LOCAL_REPO" = [ "${out}/share/pihole" ];
-        "$PI_HOLE_SCRIPT_DIR" = [ scriptsDir ];
-        "$colfile" = [ "${scriptsDir}/COL_TABLE" ];
-        "$coltable" = [ "${scriptsDir}/COL_TABLE" ];
-        "$PIHOLE_COLTABLE_FILE" = [ "${scriptsDir}/COL_TABLE" ];
-        "$utilsfile" = [ "${scriptsDir}/utils.sh" ];
-        "$apifile" = [ "${scriptsDir}/api.sh" ];
-        "$piholeGitDir" = [ "${out}/share/pihole" ];
-        "$PIHOLE_COMMAND" = [ "pihole" ];
-      };
+
+      interpreter = lib.getExe bash;
+
       keep = {
+        "$PIHOLE_SETUP_VARS_FILE" = true;
+        "$PKG_INSTALL" = true; # System package manager, patched out
+        "$PKG_MANAGER" = true; # System package manager, patched out
+        # boolean variables
+        "$addmode" = true;
+        "$cmd" = true; # ping or ping6
+        "$noReloadRequested" = true;
+        "$oldAvail" = true;
+        "$program_name" = true; # alias for $1
+        "$svc" = true; # dynamic restart command
+        "$verbose" = true;
+        "$web" = true;
+        "$wildcard" = true;
+        "${out}/bin/pihole" = true;
+        "${scriptsDir}/api.sh" = true;
+        "${scriptsDir}/gravity.sh" = true;
+        "${scriptsDir}/list.sh" = true;
+        "${scriptsDir}/piholeDebug.sh" = true;
+        "${scriptsDir}/piholeLogFlush.sh" = true;
+        "${scriptsDir}/piholeNetworkFlush.sh" = true;
+        "${scriptsDir}/query.sh" = true;
+        "${scriptsDir}/uninstall.sh" = true;
+        "${scriptsDir}/update.sh" = true;
+        "${scriptsDir}/updatecheck.sh" = true;
+        "${scriptsDir}/version.sh" = true;
+        "'${out}/share/pihole/automated install/basic-install.sh'" = true;
+        # Note that this path needs to be quoted due to the whitespace.
+        # TODO: raise upstream resholve issue. pihole scripts specify this path
+        # both quoted and escaped. Resholve apparently requires matching the
+        # literal path, so we need to provide a version with and without the
+        # backslash.
+        "'${out}/share/pihole/automated\\ install/basic-install.sh'" = true;
+        "/etc/.pihole" = true; # Patched with an override
+        "/etc/os-release" = true;
+        "/etc/pihole/setupVars.conf" = true;
+        "/etc/pihole/versions" = true;
+
         source = [
           "$pihole_FTL" # Global config file
           "$setupVars" # Global config file
@@ -181,54 +211,28 @@
           "$cachedVersions"
           "/opt/pihole/utils.sh"
         ];
-
-        "$PIHOLE_SETUP_VARS_FILE" = true;
-        "$PKG_INSTALL" = true; # System package manager, patched out
-        "$PKG_MANAGER" = true; # System package manager, patched out
-        "$cmd" = true; # ping or ping6
-        "$program_name" = true; # alias for $1
-        "$svc" = true; # dynamic restart command
-        "${out}/bin/pihole" = true;
-        "${scriptsDir}/api.sh" = true;
-        "${scriptsDir}/gravity.sh" = true;
-        "${scriptsDir}/list.sh" = true;
-        "${scriptsDir}/piholeDebug.sh" = true;
-        "${scriptsDir}/piholeLogFlush.sh" = true;
-        "${scriptsDir}/piholeNetworkFlush.sh" = true;
-        "${scriptsDir}/query.sh" = true;
-        "${scriptsDir}/uninstall.sh" = true;
-        "${scriptsDir}/update.sh" = true;
-        "${scriptsDir}/updatecheck.sh" = true;
-        "${scriptsDir}/version.sh" = true;
-
-        # boolean variables
-        "$addmode" = true;
-        "$noReloadRequested" = true;
-        "$oldAvail" = true;
-        "$verbose" = true;
-        "$web" = true;
-        "$wildcard" = true;
-
-        # Note that this path needs to be quoted due to the whitespace.
-        # TODO: raise upstream resholve issue. pihole scripts specify this path
-        # both quoted and escaped. Resholve apparently requires matching the
-        # literal path, so we need to provide a version with and without the
-        # backslash.
-        "'${out}/share/pihole/automated\\ install/basic-install.sh'" = true;
-        "'${out}/share/pihole/automated install/basic-install.sh'" = true;
-
-        "/etc/.pihole" = true; # Patched with an override
-        "/etc/os-release" = true;
-        "/etc/pihole/versions" = true;
-        "/etc/pihole/setupVars.conf" = true;
       };
-      execer = [
-        "cannot:${pihole-ftl}/bin/pihole-FTL"
-        "cannot:${iproute2}/bin/ip"
-        "cannot:${systemd}/bin/systemctl"
-        "cannot:${glibc.bin}/bin/ldd"
-        "cannot:${out}/bin/pihole"
-      ];
+
+      scripts =
+        let
+          relativeScripts = "share/pihole/advanced/Scripts";
+        in
+        [
+          "bin/pihole"
+          "${relativeScripts}/api.sh"
+          "${relativeScripts}/database_migration/gravity-db.sh"
+          "${relativeScripts}/gravity.sh"
+          "${relativeScripts}/list.sh"
+          "${relativeScripts}/piholeCheckout.sh"
+          "${relativeScripts}/piholeDebug.sh"
+          "${relativeScripts}/piholeLogFlush.sh"
+          "${relativeScripts}/piholeNetworkFlush.sh"
+          "${relativeScripts}/query.sh"
+          "${relativeScripts}/update.sh"
+          "${relativeScripts}/updatecheck.sh"
+          "${relativeScripts}/utils.sh"
+          "${relativeScripts}/version.sh"
+        ];
     };
 
   passthru = {

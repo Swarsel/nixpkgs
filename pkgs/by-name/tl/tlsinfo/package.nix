@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -26,11 +26,11 @@ buildGoModule (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/paepckehh/tlsinfo/releases/tag/v${finalAttrs.version}";
-    homepage = "https://paepcke.de/tlsinfo";
     description = "Tool to analyze and troubleshoot TLS connections";
+    homepage = "https://paepcke.de/tlsinfo";
+    changelog = "https://github.com/paepckehh/tlsinfo/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
-    mainProgram = "tlsinfo";
     maintainers = with lib.maintainers; [ paepcke ];
+    mainProgram = "tlsinfo";
   };
 })

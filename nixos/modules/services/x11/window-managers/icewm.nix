@@ -18,14 +18,15 @@ in
 
   ###### implementation
   config = mkIf cfg.enable {
+    environment.systemPackages = [ pkgs.icewm ];
+
     services.xserver.windowManager.session = singleton {
       name = "icewm";
+
       start = ''
         ${pkgs.icewm}/bin/icewm-session &
         waitPID=$!
       '';
     };
-
-    environment.systemPackages = [ pkgs.icewm ];
   };
 }

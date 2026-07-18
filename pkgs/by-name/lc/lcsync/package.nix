@@ -1,10 +1,10 @@
 {
+  lib,
+  stdenv,
   fetchFromCodeberg,
   lcrq,
-  lib,
   librecast,
   libsodium,
-  stdenv,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "lcsync";
@@ -16,24 +16,27 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-KirMifJ5Mc3WXuIZjFv6ZIzpz/bjGHMU2jnRGGQ2w/I=";
   };
+
   buildInputs = [
     lcrq
     librecast
     libsodium
   ];
+
   configureFlags = [ "SETCAP_PROGRAM=true" ];
-  installFlags = [ "PREFIX=$(out)" ];
   doCheck = true;
+  installFlags = [ "PREFIX=$(out)" ];
 
   meta = {
-    changelog = "https://codeberg.org/librecast/lcsync/src/tag/v${finalAttrs.version}/CHANGELOG.md";
     description = "Librecast File and Syncing Tool";
-    mainProgram = "lcsync";
     homepage = "https://librecast.net/lcsync.html";
+    changelog = "https://codeberg.org/librecast/lcsync/src/tag/v${finalAttrs.version}/CHANGELOG.md";
+
     license = [
       lib.licenses.gpl2
       lib.licenses.gpl3
     ];
+
     maintainers = with lib.maintainers; [
       albertchae
       aynish
@@ -41,6 +44,8 @@ stdenv.mkDerivation (finalAttrs: {
       jasonodoom
       jleightcap
     ];
+
     platforms = lib.platforms.gnu;
+    mainProgram = "lcsync";
   };
 })

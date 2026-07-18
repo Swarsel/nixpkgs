@@ -1,12 +1,12 @@
 {
-  python3Packages,
-  cmake,
-  pkg-config,
-  intltool,
-  wrapGAppsNoGuiHook,
-  gobject-introspection,
-  fetchurl,
   lib,
+  fetchurl,
+  cmake,
+  gobject-introspection,
+  intltool,
+  pkg-config,
+  python3Packages,
+  wrapGAppsNoGuiHook,
   writeScript,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
@@ -31,12 +31,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pygobject3
   ];
 
-  pyproject = false;
-  dontWrapGApps = true;
-
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
+
+  dontWrapGApps = true;
+  pyproject = false;
 
   passthru = {
     updateScript = writeScript "update-cdemu-client" ''
@@ -54,6 +54,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   meta = {
     description = "Suite of tools for emulating optical drives and discs";
+
     longDescription = ''
       CDEmu consists of:
 
@@ -65,9 +66,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
       Optical media emulated by CDemu can be mounted within Linux. Automounting is also allowed.
     '';
+
     homepage = "https://cdemu.sourceforge.io/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ bendlas ];
+    platforms = lib.platforms.linux;
   };
 })

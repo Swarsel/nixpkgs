@@ -14,9 +14,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-c7qxgZYk/QaqocjRXVlgJxUWCgf3T1JBY7v9Fg9YfIU=";
   };
 
-  makeFlags = [ "--directory=src" ];
-
   nativeBuildInputs = [ installShellFiles ];
+  makeFlags = [ "--directory=src" ];
 
   installPhase = ''
     runHook preInstall
@@ -30,8 +29,8 @@ stdenv.mkDerivation (finalAttrs: {
     longDescription = "Reads an input file and copies it to an output file transforming the data as specified by the patterns defined by the user.";
     homepage = "https://gema.sourceforge.net/";
     license = lib.licenses.mit;
-    mainProgram = "gema";
     maintainers = with lib.maintainers; [ quag ];
     platforms = lib.platforms.unix;
+    mainProgram = "gema";
   };
 })

@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   git,
+  linuxkit,
   sigtool,
   testers,
-  linuxkit,
 }:
 
 buildGoModule rec {
@@ -20,10 +20,6 @@ buildGoModule rec {
     sha256 = "sha256-0W3YWj6amNI6jr10FfLAqF1kEUwx4BU5+gjkg4iqX1Q=";
   };
 
-  vendorHash = null;
-
-  modRoot = "./src/cmd/linuxkit";
-
   patches = [
     ./darwin-os-version.patch
     ./support-apple-11-sdk.patch
@@ -34,13 +30,7 @@ buildGoModule rec {
   # - sigtool is allows us to validly sign such executables with a dummy
   #   authority.
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ sigtool ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/linuxkit/linuxkit/src/cmd/linuxkit/version.Version=${version}"
-  ];
-
+  vendorHash = null;
   nativeCheckInputs = [ git ];
 
   # - Because this package definition doesn't build using the source's Makefile,
@@ -54,16 +44,25 @@ buildGoModule rec {
   postFixup = lib.optionalString stdenv.hostPlatform.isDarwin ''
     make sign LOCAL_TARGET=$out/bin/linuxkit
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/linuxkit/linuxkit/src/cmd/linuxkit/version.Version=${version}"
+  ];
+
+  modRoot = "./src/cmd/linuxkit";
+
   passthru.tests.version = testers.testVersion {
-    package = linuxkit;
     command = "linuxkit version";
+    package = linuxkit;
   };
 
   meta = {
     description = "Toolkit for building secure, portable and lean operating systems for containers";
-    mainProgram = "linuxkit";
-    license = lib.licenses.asl20;
     homepage = "https://github.com/linuxkit/linuxkit";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ nicknovitski ];
+    mainProgram = "linuxkit";
   };
 }

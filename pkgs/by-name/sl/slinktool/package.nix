@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,10 +28,9 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  versionCheckProgramArg = "-V";
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  versionCheckProgramArg = "-V";
   passthru.updateScript = nix-update-script { };
 
   meta = {

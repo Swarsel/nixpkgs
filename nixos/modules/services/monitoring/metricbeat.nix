@@ -31,6 +31,8 @@ in
       };
 
       modules = mkOption {
+        default = { };
+
         description = ''
           Metricbeat modules are responsible for reading metrics from the various sources.
 
@@ -43,29 +45,18 @@ in
 
           See <https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-modules.html>.
         '';
-        default = { };
-        type = types.attrsOf (
-          types.submodule (
-            { name, ... }:
-            {
-              freeformType = settingsFormat.type;
-              options = {
-                module = mkOption {
-                  type = types.str;
-                  default = name;
-                  description = ''
-                    The name of the module.
 
-                    Look for the value after `module:` on the individual
-                    module pages linked from <https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-modules.html>.
-                  '';
-                };
-              };
-            }
-          )
-        );
         example = {
           system = {
+            core.metrics = [ "percentages" ];
+
+            cpu.metrics = [
+              "percentages"
+              "normalized_percentages"
+            ];
+
+            enabled = true;
+
             metricsets = [
               "cpu"
               "load"
@@ -76,57 +67,85 @@ in
               "uptime"
               "socket_summary"
             ];
-            enabled = true;
+
             period = "10s";
             processes = [ ".*" ];
-            cpu.metrics = [
-              "percentages"
-              "normalized_percentages"
-            ];
-            core.metrics = [ "percentages" ];
           };
         };
+
+        type = types.attrsOf (
+          types.submodule (
+            { name, ... }:
+            {
+              options = {
+                module = mkOption {
+                  default = name;
+
+                  description = ''
+                    The name of the module.
+
+                    Look for the value after `module:` on the individual
+                    module pages linked from <https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-modules.html>.
+                  '';
+
+                  type = types.str;
+                };
+              };
+
+              freeformType = settingsFormat.type;
+            }
+          )
+        );
       };
 
       settings = mkOption {
+        default = { };
+
+        description = ''
+          Configuration for metricbeat. See <https://www.elastic.co/guide/en/beats/metricbeat/current/configuring-howto-metricbeat.html> for supported values.
+        '';
+
         type = types.submodule {
-          freeformType = settingsFormat.type;
           options = {
 
-            name = mkOption {
-              type = types.str;
-              default = "";
-              description = ''
-                Name of the beat. Defaults to the hostname.
-                See <https://www.elastic.co/guide/en/beats/metricbeat/current/configuration-general-options.html#_name>.
-              '';
-            };
-
-            tags = mkOption {
-              type = types.listOf types.str;
-              default = [ ];
-              description = ''
-                Tags to place on the shipped metrics.
-                See <https://www.elastic.co/guide/en/beats/metricbeat/current/configuration-general-options.html#_tags_2>.
-              '';
-            };
-
             metricbeat.modules = mkOption {
-              type = types.listOf settingsFormat.type;
               default = [ ];
-              internal = true;
+
               description = ''
                 The metric collecting modules. Use [](#opt-services.metricbeat.modules) instead.
 
                 See <https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-modules.html>.
               '';
+
+              internal = true;
+              type = types.listOf settingsFormat.type;
+            };
+
+            name = mkOption {
+              default = "";
+
+              description = ''
+                Name of the beat. Defaults to the hostname.
+                See <https://www.elastic.co/guide/en/beats/metricbeat/current/configuration-general-options.html#_name>.
+              '';
+
+              type = types.str;
+            };
+
+            tags = mkOption {
+              default = [ ];
+
+              description = ''
+                Tags to place on the shipped metrics.
+                See <https://www.elastic.co/guide/en/beats/metricbeat/current/configuration-general-options.html#_tags_2>.
+              '';
+
+              type = types.listOf types.str;
             };
           };
+
+          freeformType = settingsFormat.type;
         };
-        default = { };
-        description = ''
-          Configuration for metricbeat. See <https://www.elastic.co/guide/en/beats/metricbeat/current/configuring-howto-metricbeat.html> for supported values.
-        '';
       };
 
     };
@@ -146,8 +165,10 @@ in
 
     systemd.services.metricbeat = {
       description = "metricbeat metrics shipper";
-      wantedBy = [ "multi-user.target" ];
+
       serviceConfig = {
+        DynamicUser = true;
+
         ExecStart = ''
           ${cfg.package}/bin/metricbeat \
             -c ${settingsFormat.generate "metricbeat.yml" cfg.settings} \
@@ -155,13 +176,15 @@ in
             --path.logs $LOGS_DIRECTORY \
             ;
         '';
-        Restart = "always";
-        DynamicUser = true;
-        ProtectSystem = "strict";
-        ProtectHome = "tmpfs";
-        StateDirectory = "metricbeat";
+
         LogsDirectory = "metricbeat";
+        ProtectHome = "tmpfs";
+        ProtectSystem = "strict";
+        Restart = "always";
+        StateDirectory = "metricbeat";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

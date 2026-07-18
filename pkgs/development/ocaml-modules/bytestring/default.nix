@@ -1,20 +1,18 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
   ppxlib,
+  qcheck,
   rio,
   sedlex,
   spices,
   uutf,
-  qcheck,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "bytestring";
   version = "0.0.8";
-
-  minimalOCamlVersion = "5.1";
 
   src = fetchurl {
     url = "https://github.com/riot-ml/riot/releases/download/${finalAttrs.version}/riot-${finalAttrs.version}.tbz";
@@ -29,12 +27,14 @@ buildDunePackage (finalAttrs: {
     uutf
   ];
 
+  # Checks fail with OCaml 5.2
+  doCheck = false;
+
   checkInputs = [
     qcheck
   ];
 
-  # Checks fail with OCaml 5.2
-  doCheck = false;
+  minimalOCamlVersion = "5.1";
 
   meta = {
     description = "Efficient, immutable, pattern-matchable, UTF friendly byte strings";

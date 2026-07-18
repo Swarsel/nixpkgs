@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest-freezer,
   pytest-mock,
   pytestCheckHook,
@@ -9,8 +9,8 @@
   pythonOlder,
   requests,
   requests-mock,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
   syrupy,
   websocket-client,
   zeroconf,
@@ -19,9 +19,6 @@
 buildPythonPackage rec {
   pname = "devolo-home-control-api";
   version = "0.19.1";
-  pyproject = true;
-
-  disabled = pythonOlder "3.12";
 
   src = fetchFromGitHub {
     owner = "2Fake";
@@ -29,6 +26,14 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-IvS3582CaFf+Nfbj0rHGn6OlQ04o9EBYW+7Umbc6rpg=";
   };
+
+  nativeCheckInputs = [
+    pytest-freezer
+    pytest-mock
+    pytestCheckHook
+    requests-mock
+    syrupy
+  ];
 
   build-system = [
     setuptools
@@ -42,22 +47,18 @@ buildPythonPackage rec {
     websocket-client
   ];
 
-  nativeCheckInputs = [
-    pytest-freezer
-    pytest-mock
-    pytestCheckHook
-    requests-mock
-    syrupy
-  ];
-
-  pytestFlags = [
-    "--snapshot-update"
-  ];
+  disabled = pythonOlder "3.12";
 
   disabledTests = [
     # Disable test that requires network access
     "test__on_pong"
     "TestMprm"
+  ];
+
+  pyproject = true;
+
+  pytestFlags = [
+    "--snapshot-update"
   ];
 
   pythonImportsCheck = [ "devolo_home_control_api" ];

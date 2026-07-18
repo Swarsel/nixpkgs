@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   go-bindata,
   go-bindata-assetfs,
   nixosTests,
@@ -18,33 +18,30 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-Kv4BsFB08rkGRkePFIkjjuhK1TnLPS4m+PUlgKG5cTQ=";
   };
 
-  vendorHash = null;
-
-  doCheck = false;
-
   nativeBuildInputs = [
     go-bindata
     go-bindata-assetfs
   ];
 
+  vendorHash = null;
   # This is really weird, but they've managed to screw up
   # their folder structure enough, you can only build by
   # literally cding into this folder.
   preBuild = "cd edition";
-
-  subPackages = [ "." ];
-
-  passthru.tests = { inherit (nixosTests) documize; };
+  doCheck = false;
 
   postInstall = ''
     mv $out/bin/edition $out/bin/documize
   '';
 
+  subPackages = [ "." ];
+  passthru.tests = { inherit (nixosTests) documize; };
+
   meta = {
     description = "Open source Confluence alternative for internal & external docs built with Golang + EmberJS";
+    homepage = "https://www.documize.com/";
     license = lib.licenses.agpl3Only;
     maintainers = [ ];
     mainProgram = "documize";
-    homepage = "https://www.documize.com/";
   };
 })

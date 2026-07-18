@@ -2,9 +2,9 @@
   lib,
   fetchurl,
   buildDunePackage,
-  ppxlib,
-  ppx_repr,
   logs,
+  ppx_repr,
+  ppxlib,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -16,18 +16,19 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-CZlvvMLEPhF6m9jpAoxjXoHMyyZNXgLUJauLBrus29s=";
   };
 
-  minimalOCamlVersion = "4.10";
-
   propagatedBuildInputs = [
     ppx_repr
     ppxlib
     logs
   ];
 
+  minimalOCamlVersion = "4.10";
+
   meta = {
-    homepage = "https://irmin.org/";
     description = "PPX deriver for Irmin generics";
+    homepage = "https://irmin.org/";
     license = lib.licenses.isc;
+
     maintainers = with lib.maintainers; [
       vbgl
       sternenseemann

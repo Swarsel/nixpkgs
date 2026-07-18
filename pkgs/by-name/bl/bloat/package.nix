@@ -31,14 +31,16 @@ buildGoModule {
 
   meta = {
     description = "Web client for Pleroma and Mastodon";
+
     longDescription = ''
       A lightweight web client for Pleroma and Mastodon.
       Does not require JavaScript to display text, images, audio and videos.
     '';
+
     homepage = "https://bloat.freesoftwareextremist.com";
-    downloadPage = "https://git.freesoftwareextremist.com/bloat/";
     license = lib.licenses.cc0;
     maintainers = with lib.maintainers; [ fgaz ];
     mainProgram = "bloat";
+    downloadPage = "https://git.freesoftwareextremist.com/bloat/";
   };
 }

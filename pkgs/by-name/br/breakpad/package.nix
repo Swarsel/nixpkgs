@@ -6,16 +6,14 @@
 }:
 let
   lss = fetchgit {
-    url = "https://chromium.googlesource.com/linux-syscall-support";
-    rev = "v2022.10.12";
     hash = "sha256-rF10v5oH4u9i9vnmFCVVl2Ew3h+QTiOsW64HeB0nRQU=";
+    rev = "v2022.10.12";
+    url = "https://chromium.googlesource.com/linux-syscall-support";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "breakpad";
   version = "2024.02.16";
-
-  __structuredAttrs = true;
 
   src = fetchgit {
     url = "https://chromium.googlesource.com/breakpad/breakpad";
@@ -24,12 +22,10 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
-  enableParallelBuilding = true;
-
   buildInputs = [ zlib ];
-
   configureFlags = lib.optionals stdenv.hostPlatform.isMusl [ "--disable-tools" ];
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
 
   postUnpack = ''
     ln -s ${lss} $sourceRoot/src/third_party/lss

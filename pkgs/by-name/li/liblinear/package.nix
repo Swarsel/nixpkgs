@@ -18,15 +18,15 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-so7uCc/52NdN0V2Ska8EUdw/wSegaudX5AF+c0xe5jk=";
   };
 
-  makeFlags = [
-    "AR=${stdenv.cc.targetPrefix}ar"
-    "RANLIB=${stdenv.cc.targetPrefix}ranlib"
-  ];
-
   outputs = [
     "bin"
     "dev"
     "out"
+  ];
+
+  makeFlags = [
+    "AR=${stdenv.cc.targetPrefix}ar"
+    "RANLIB=${stdenv.cc.targetPrefix}ranlib"
   ];
 
   buildFlags = [

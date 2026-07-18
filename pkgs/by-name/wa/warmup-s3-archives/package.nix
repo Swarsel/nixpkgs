@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,16 +18,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-31p6IfX5VFSz4tNrjgFigsuTsPA3iO6m3QV6KOb2GKQ=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "A warmup program that facilitates restoring archived objects from Amazon S3 Glacier storage classes";
     homepage = "https://gitlab.com/philipmw/warmup-s3-archives";
     changelog = "https://gitlab.com/philipmw/warmup-s3-archives/-/releases/v${finalAttrs.version}";
-    description = "A warmup program that facilitates restoring archived objects from Amazon S3 Glacier storage classes";
-    mainProgram = "warmup-s3-archives";
-    platforms = lib.platforms.all;
     license = lib.licenses.isc;
     maintainers = [ lib.maintainers.pmw ];
+    platforms = lib.platforms.all;
+    mainProgram = "warmup-s3-archives";
   };
 })

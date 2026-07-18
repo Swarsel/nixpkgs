@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -23,8 +23,8 @@ stdenvNoCC.mkDerivation {
   nativeBuildInputs = [ installFonts ];
 
   meta = {
-    homepage = "https://fonts.google.com/specimen/Roboto+Slab";
     description = "Roboto Slab Typeface by Google";
+
     longDescription = ''
       Roboto has a dual nature. It has a mechanical skeleton and the forms
       are largely geometric. At the same time, the font features friendly
@@ -36,8 +36,10 @@ stdenvNoCC.mkDerivation {
       This is the Roboto Slab family, which can be used alongside the normal
       Roboto family and the Roboto Condensed family.
     '';
+
+    homepage = "https://fonts.google.com/specimen/Roboto+Slab";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.all;
   };
 }

@@ -1,20 +1,20 @@
 {
   lib,
   stdenv,
-  meson,
-  ninja,
   fetchFromGitLab,
-  gperf,
+  asciidoctor,
+  boost,
+  emilua,
+  fmt,
   gawk,
   gitUpdater,
-  pkg-config,
-  boost,
-  luajit_openresty,
-  asciidoctor,
-  emilua,
+  gperf,
   liburing,
+  luajit_openresty,
+  meson,
+  ninja,
   openssl,
-  fmt,
+  pkg-config,
   secp256k1,
 }:
 
@@ -29,6 +29,15 @@ stdenv.mkDerivation rec {
     hash = "sha256-u3o6kE1HykxH2KbrJmNTDz9IbT+e26Vxze5RzvfCfVA=";
   };
 
+  nativeBuildInputs = [
+    gperf
+    gawk
+    pkg-config
+    asciidoctor
+    meson
+    ninja
+  ];
+
   buildInputs = [
     emilua
     liburing
@@ -37,15 +46,6 @@ stdenv.mkDerivation rec {
     luajit_openresty
     openssl
     boost
-  ];
-
-  nativeBuildInputs = [
-    gperf
-    gawk
-    pkg-config
-    asciidoctor
-    meson
-    ninja
   ];
 
   passthru = {

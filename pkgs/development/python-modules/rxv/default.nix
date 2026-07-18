@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   defusedxml,
-  fetchFromGitHub,
   mock,
   pytest-asyncio,
   pytest-timeout,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "rxv";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wuub";
@@ -41,6 +40,7 @@ buildPythonPackage rec {
     requests-mock
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "rxv" ];
 
   meta = {

@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  nixosTests,
-  nix-update-script,
-  protobuf,
-  rust-jemalloc-sys,
-  nodejs,
-  yarn,
   fetchYarnDeps,
   fixup-yarn-lock,
+  nix-update-script,
+  nixosTests,
+  nodejs,
+  protobuf,
+  rust-jemalloc-sys,
+  rustPlatform,
+  yarn,
 }:
 
 let
@@ -18,8 +18,8 @@ let
   version = "0.8.2";
 
   yarnOfflineCache = fetchYarnDeps {
-    yarnLock = "${src}/quickwit/quickwit-ui/yarn.lock";
     hash = "sha256-HppK9ycUxCOIagvzCmE+VfcmfMQfPIC8WeWM6WbA6fQ=";
+    yarnLock = "${src}/quickwit/quickwit-ui/yarn.lock";
   };
 
   src = fetchFromGitHub {
@@ -30,7 +30,6 @@ let
   };
 
   quickwit-ui = stdenv.mkDerivation {
-    name = "quickwit-ui";
     src = "${src}/quickwit/quickwit-ui";
 
     nativeBuildInputs = [
@@ -38,10 +37,6 @@ let
       yarn
       fixup-yarn-lock
     ];
-
-    configurePhase = ''
-      export HOME=$(mktemp -d)
-    '';
 
     buildPhase = ''
       yarn config --offline set yarn-offline-mirror ${yarnOfflineCache}
@@ -59,6 +54,12 @@ let
       mkdir $out
       mv build/* $out
     '';
+
+    configurePhase = ''
+      export HOME=$(mktemp -d)
+    '';
+
+    name = "quickwit-ui";
   };
 in
 rustPlatform.buildRustPackage rec {
@@ -74,19 +75,13 @@ rustPlatform.buildRustPackage rec {
     cp /build/cargo-vendor-dir/Cargo.lock /build/source/quickwit/Cargo.lock
   '';
 
-  sourceRoot = "${src.name}/quickwit";
-
-  preBuild = ''
-    mkdir -p quickwit-ui/build
-    cp -r ${quickwit-ui}/* quickwit-ui/build
-  '';
-
   buildInputs = [
     rust-jemalloc-sys
   ];
 
   cargoLock = {
     lockFile = ./Cargo.lock;
+
     outputHashes = {
       "chitchat-0.8.0" = "sha256-6K2noPoFaDnOxQIEV1WbmVPfRGwlI/WS1OWSBH2qb1Q=";
       "mrecordlog-0.4.0" = "sha256-9LIVs+BqK9FLSfHL3vm9LL+/FXIXJ6v617QLv4luQik=";
@@ -98,20 +93,17 @@ rustPlatform.buildRustPackage rec {
   };
 
   env = {
-    CARGO_PROFILE_RELEASE_LTO = "fat";
     CARGO_PROFILE_RELEASE_CODEGEN_UNITS = "1";
-
+    CARGO_PROFILE_RELEASE_LTO = "fat";
     # needed for internal protobuf c wrapper library
     PROTOC = "${protobuf}/bin/protoc";
     PROTOC_INCLUDE = "${protobuf}/include";
   };
 
-  passthru = {
-    tests = {
-      inherit (nixosTests) quickwit;
-    };
-    updateScript = nix-update-script { };
-  };
+  preBuild = ''
+    mkdir -p quickwit-ui/build
+    cp -r ${quickwit-ui}/* quickwit-ui/build
+  '';
 
   checkFlags = [
     # tries to make a network access
@@ -140,13 +132,23 @@ rustPlatform.buildRustPackage rec {
     "--skip=io::tests::test_controlled_writer_limited_sync"
   ];
 
+  sourceRoot = "${src.name}/quickwit";
+
+  passthru = {
+    tests = {
+      inherit (nixosTests) quickwit;
+    };
+
+    updateScript = nix-update-script { };
+  };
+
   meta = {
-    # Marked broken 2025-11-28 because it has failed on Hydra for at least one year.
-    broken = true;
     description = "Sub-second search & analytics engine on cloud storage";
     homepage = "https://quickwit.io/";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ happysalada ];
     platforms = lib.platforms.all;
+    # Marked broken 2025-11-28 because it has failed on Hydra for at least one year.
+    broken = true;
   };
 }

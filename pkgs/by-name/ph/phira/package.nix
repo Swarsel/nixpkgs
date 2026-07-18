@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  symlinkJoin,
   fetchzip,
-  phira-unwrapped,
-  makeWrapper,
   libGL,
   libx11,
-  libxi,
   libxcursor,
+  libxi,
+  makeWrapper,
+  phira-unwrapped,
+  symlinkJoin,
   # A derivation or a path that contains a dir `assets`.
   overrideAssets ? fetchzip {
-    url = "https://github.com/TeamFlos/phira/releases/download/v${phira-unwrapped.version}/Phira-windows-x86_64-v${phira-unwrapped.version}.zip";
     hash = "sha256-p0+o7q42caHqVWnHtgknYaCIJemG/9fNKF7pqTnRGE4=";
     stripRoot = false;
+    url = "https://github.com/TeamFlos/phira/releases/download/v${phira-unwrapped.version}/Phira-windows-x86_64-v${phira-unwrapped.version}.zip";
     meta.license = lib.licenses.unfree;
   },
 }:
@@ -21,9 +21,6 @@
 symlinkJoin {
   pname = "phira";
   version = phira-unwrapped.version;
-
-  paths = [ phira-unwrapped ];
-
   nativeBuildInputs = [ makeWrapper ];
 
   postBuild = ''
@@ -52,8 +49,8 @@ symlinkJoin {
     wrapProgram $out/bin/phira-monitor "''${wrapper_options[@]}"
   '';
 
+  paths = [ phira-unwrapped ];
   passthru.assets = overrideAssets;
-
   meta = phira-unwrapped.meta;
 
 }

@@ -1,6 +1,6 @@
 {
-  lib,
   config,
+  lib,
   pkgs,
   ...
 }:
@@ -27,27 +27,8 @@ let
   );
 in
 {
-  options.system.preSwitchChecksScript = lib.mkOption {
-    type = lib.types.pathInStore;
-    internal = true;
-    readOnly = true;
-    default = lib.getExe (
-      pkgs.writeShellApplication {
-        name = "pre-switch-checks";
-        text = preSwitchCheckScript;
-      }
-    );
-  };
-
   options.system.preSwitchChecks = lib.mkOption {
     default = { };
-    example = lib.literalExpression ''
-      { failsEveryTime =
-        '''
-          false
-        ''';
-      }
-    '';
 
     description = ''
       A set of shell script fragments that are executed before the switch to a
@@ -58,6 +39,27 @@ in
       (meaning that you can access them using `$1` and `$2`, respectively).
     '';
 
+    example = lib.literalExpression ''
+      { failsEveryTime =
+        '''
+          false
+        ''';
+      }
+    '';
+
     type = lib.types.attrsOf lib.types.str;
+  };
+
+  options.system.preSwitchChecksScript = lib.mkOption {
+    default = lib.getExe (
+      pkgs.writeShellApplication {
+        name = "pre-switch-checks";
+        text = preSwitchCheckScript;
+      }
+    );
+
+    internal = true;
+    readOnly = true;
+    type = lib.types.pathInStore;
   };
 }

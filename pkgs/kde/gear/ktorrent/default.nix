@@ -1,8 +1,8 @@
 {
+  libmaxminddb,
   mkKdeDerivation,
   qtwebengine,
   taglib,
-  libmaxminddb,
 }:
 mkKdeDerivation {
   pname = "ktorrent";

@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "infrastructure-agent";
@@ -16,6 +16,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-+ajMZ+kZ+m1vxyAfM+zvzTfcwkN63agdGoXPTNPC2i0=";
+  env.CGO_ENABLED = if stdenv.hostPlatform.isDarwin then "1" else "0";
 
   ldflags = [
     "-s"
@@ -23,8 +24,6 @@ buildGoModule (finalAttrs: {
     "-X main.buildVersion=${finalAttrs.version}"
     "-X main.gitCommit=${finalAttrs.src.rev}"
   ];
-
-  env.CGO_ENABLED = if stdenv.hostPlatform.isDarwin then "1" else "0";
 
   subPackages = [
     "cmd/newrelic-infra"

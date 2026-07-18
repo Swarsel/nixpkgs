@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildDotnetModule,
   dotnetCorePackages,
-  fetchFromGitHub,
   nix-update-script,
 }:
 
@@ -16,9 +16,6 @@ buildDotnetModule rec {
     tag = "v${version}";
     hash = "sha256-tvfqs9ZSIQySJu7euf56ESzqw7A2973PSMr/rxNHxR8=";
   };
-
-  projectFile = "main/GarnetServer/GarnetServer.csproj";
-  nugetDeps = ./deps.json;
 
   dotnet-sdk =
     with dotnetCorePackages;
@@ -39,7 +36,10 @@ buildDotnetModule rec {
     "-f"
     "net10.0"
   ];
+
   dotnetInstallFlags = dotnetBuildFlags;
+  nugetDeps = ./deps.json;
+  projectFile = "main/GarnetServer/GarnetServer.csproj";
 
   passthru = {
     updateScript = nix-update-script { };
@@ -47,18 +47,22 @@ buildDotnetModule rec {
 
   meta = {
     description = "Remote cache-store from Microsoft Research";
+
     longDescription = ''
       A remote cache-store that offers strong performance, scalability,
       storage, recovery, cluster sharding, key migration, replication features,
       and compatibility with existing Redis clients
     '';
+
     homepage = "https://microsoft.github.io/garnet/";
     changelog = "https://github.com/microsoft/garnet/releases/tag/v${version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       getchoo
       hythera
     ];
+
     mainProgram = "GarnetServer";
   };
 }

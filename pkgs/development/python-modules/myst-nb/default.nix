@@ -4,27 +4,26 @@
   fetchPypi,
   flit-core,
   importlib-metadata,
+  ipykernel,
   ipython,
   jupyter-cache,
-  nbclient,
   myst-parser,
+  nbclient,
   nbformat,
   pyyaml,
   sphinx,
   sphinx-togglebutton,
   typing-extensions,
-  ipykernel,
 }:
 
 buildPythonPackage rec {
   pname = "myst-nb";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "myst_nb";
     hash = "sha256-3zzUaA9Rpa9nP9RrOLVivjVZrvFHXpBu0PLmbkWHzks=";
+    pname = "myst_nb";
   };
 
   nativeBuildInputs = [ flit-core ];
@@ -42,6 +41,8 @@ buildPythonPackage rec {
     typing-extensions
     ipykernel
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "myst_nb"

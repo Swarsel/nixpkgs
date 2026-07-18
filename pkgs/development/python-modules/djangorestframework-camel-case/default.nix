@@ -1,15 +1,14 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   djangorestframework,
+  fetchPypi,
   six,
 }:
 
 buildPythonPackage rec {
   pname = "djangorestframework-camel-case";
   version = "1.4.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -17,13 +16,11 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ djangorestframework ];
-
-  nativeCheckInputs = [ six ];
-
   # tests are only on GitHub but there are no tags
   # https://github.com/vbabiy/djangorestframework-camel-case/issues/116
   doCheck = false;
-
+  nativeCheckInputs = [ six ];
+  format = "setuptools";
   pythonImportsCheck = [ "djangorestframework_camel_case" ];
 
   meta = {

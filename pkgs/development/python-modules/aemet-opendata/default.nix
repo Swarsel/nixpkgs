@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   geopy,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "aemet-opendata";
   version = "0.6.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Noltari";
@@ -19,6 +18,8 @@ buildPythonPackage rec {
     hash = "sha256-xxpB5JFPkTwd7dxba9pXRvcont/i3wXBdJh5NfLnZTM=";
   };
 
+  # no tests implemented
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage rec {
     geopy
   ];
 
-  # no tests implemented
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "aemet_opendata.interface" ];
 
   meta = {

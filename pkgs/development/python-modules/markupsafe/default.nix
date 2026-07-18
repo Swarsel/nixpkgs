@@ -1,25 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # tests
-  pytestCheckHook,
-
+  buildPythonPackage,
   # reverse dependencies
   jinja2,
   mkdocs,
+  # tests
+  pytestCheckHook,
   quart,
+  # build-system
+  setuptools,
   werkzeug,
 }:
 
 buildPythonPackage rec {
   pname = "markupsafe";
   version = "3.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pallets";
@@ -28,10 +24,9 @@ buildPythonPackage rec {
     hash = "sha256-2d64cItemqVM25WJIKrjExKz6v4UW2wVxM6phH1g1sE=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "markupsafe" ];
 
   passthru.tests = {
@@ -44,11 +39,13 @@ buildPythonPackage rec {
   };
 
   meta = {
+    description = "Implements a XML/HTML/XHTML Markup safe string";
+    homepage = "https://palletsprojects.com/p/markupsafe/";
+
     changelog = "https://markupsafe.palletsprojects.com/page/changes/#version-${
       lib.replaceStrings [ "." ] [ "-" ] version
     }";
-    description = "Implements a XML/HTML/XHTML Markup safe string";
-    homepage = "https://palletsprojects.com/p/markupsafe/";
+
     license = lib.licenses.bsd3;
     maintainers = [ ];
   };

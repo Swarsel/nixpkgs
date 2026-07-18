@@ -1,12 +1,12 @@
 {
-  fetchFromCodeberg,
   lib,
   stdenv,
-  flex,
   bison,
+  fetchFromCodeberg,
+  flex,
+  lcrq,
   librecast,
   libsodium,
-  lcrq,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "lcagent";
@@ -29,22 +29,26 @@ stdenv.mkDerivation (finalAttrs: {
     librecast
     libsodium
   ];
-  installFlags = [ "PREFIX=$(out)" ];
+
   doCheck = true;
+  installFlags = [ "PREFIX=$(out)" ];
 
   meta = {
-    changelog = "https://codeberg.org/librecast/lcagent/src/tag/v${finalAttrs.version}/CHANGELOG.md";
     description = "Librecast multicast agent";
     homepage = "https://librecast.net/lcagent.html";
+    changelog = "https://codeberg.org/librecast/lcagent/src/tag/v${finalAttrs.version}/CHANGELOG.md";
+
     license = [
       lib.licenses.gpl2Only
       lib.licenses.gpl3Only
     ];
-    mainProgram = "lcagent";
+
     maintainers = with lib.maintainers; [
       jleightcap
       jasonodoom
     ];
+
     platforms = lib.platforms.gnu;
+    mainProgram = "lcagent";
   };
 })

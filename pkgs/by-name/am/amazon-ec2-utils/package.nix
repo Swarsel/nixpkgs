@@ -1,9 +1,10 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   bash,
   coreutils,
   curl,
-  fetchFromGitHub,
   gawk,
   gnugrep,
   gnused,
@@ -11,7 +12,6 @@
   makeWrapper,
   nix-update-script,
   python3,
-  stdenv,
   udevCheckHook,
   util-linux,
 }:
@@ -26,6 +26,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-plTBh2LAXkYVSxN0IZJQuPr7QxD7+OAqHl/Zl8JPCmg=";
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
 
   strictDeps = true;
 
@@ -85,11 +90,6 @@ stdenv.mkDerivation (finalAttrs: {
     installManPage doc/*.8
   '';
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
   doInstallCheck = true;
 
   # We can't run `ec2-metadata` since it calls IMDS even with `--help`.
@@ -109,6 +109,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Contains a set of utilities and settings for Linux deployments in EC2";
     homepage = "https://github.com/amazonlinux/amazon-ec2-utils";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       anthonyroussel
       arianvp

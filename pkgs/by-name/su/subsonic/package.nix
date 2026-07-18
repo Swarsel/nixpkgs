@@ -6,6 +6,7 @@
 }:
 
 stdenv.mkDerivation rec {
+  inherit jre;
   pname = "subsonic";
   version = "6.1.6";
 
@@ -14,7 +15,12 @@ stdenv.mkDerivation rec {
     sha256 = "180qdk8mnc147az8v9rmc1kgf8b13mmq88l195gjdwiqpflqzdyz";
   };
 
-  inherit jre;
+  installPhase = ''
+    runHook preInstall
+    mkdir $out
+    cp -r ${pname}-${version}/* $out
+    runHook postInstall
+  '';
 
   # Create temporary directory to extract tarball into to satisfy Nix's need
   # for a directory to be created in the unpack phase.
@@ -24,16 +30,10 @@ stdenv.mkDerivation rec {
     tar -C ${pname}-${version} -xzf $src
     runHook postUnpack
   '';
-  installPhase = ''
-    runHook preInstall
-    mkdir $out
-    cp -r ${pname}-${version}/* $out
-    runHook postInstall
-  '';
 
   meta = {
-    homepage = "http://subsonic.org";
     description = "Personal media streamer";
+    homepage = "http://subsonic.org";
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ telotortium ];
     platforms = lib.platforms.unix;

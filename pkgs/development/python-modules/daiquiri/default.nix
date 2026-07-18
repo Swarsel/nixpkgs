@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "daiquiri";
   version = "3.4.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -24,9 +23,8 @@ buildPythonPackage rec {
   ];
 
   propagatedBuildInputs = [ python-json-logger ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "daiquiri" ];
 
   meta = {

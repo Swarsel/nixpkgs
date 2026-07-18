@@ -1,23 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  unstableGitUpdater,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   numpy,
-
   # tests
   pytestCheckHook,
+  # build-system
+  setuptools,
+  unstableGitUpdater,
 }:
 
 buildPythonPackage {
   pname = "categorical-distance";
   version = "1.9-unstable-2020-03-31";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dedupeio";
@@ -25,6 +21,10 @@ buildPythonPackage {
     rev = "07d079fd412ccf06cdb200b3cd2cfa4b67f78722";
     hash = "sha256-zSjSrlFiRus/T2XZdakLQpF1u/LV0VNWwrc8lhss6kU=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -34,9 +34,7 @@ buildPythonPackage {
     numpy
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "categorical"

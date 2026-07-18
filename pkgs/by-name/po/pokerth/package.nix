@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  qt5,
   fetchFromGitHub,
-  fetchpatch,
   SDL,
   SDL_mixer,
   boost181,
   curl,
+  fetchpatch,
   gsasl,
   libgcrypt,
   libircclient,
   protobuf_21,
+  qt5,
   sqlite,
   tinyxml,
   target ? "client",
@@ -35,19 +35,19 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-we2UOCFF5J/Wlji/rJeCHDu/dNsUU+R+bTw83AmvDxs=";
       name = "pokerth-1.1.2.patch";
       url = "https://aur.archlinux.org/cgit/aur.git/plain/pokerth-1.1.2.patch?h=pokerth&id=7734029cf9c6ef58f42ed873e1b9c3c19eb1df3b";
-      hash = "sha256-we2UOCFF5J/Wlji/rJeCHDu/dNsUU+R+bTw83AmvDxs=";
     })
     (fetchpatch {
+      hash = "sha256-m6uFPmPC3T9kV7EI1p33vQSi0d/w+YCH0dKjviAphMY=";
       name = "pokerth-1.1.2.patch.2019";
       url = "https://aur.archlinux.org/cgit/aur.git/plain/pokerth-1.1.2.patch.2019?h=pokerth&id=7734029cf9c6ef58f42ed873e1b9c3c19eb1df3b";
-      hash = "sha256-m6uFPmPC3T9kV7EI1p33vQSi0d/w+YCH0dKjviAphMY=";
     })
     (fetchpatch {
+      hash = "sha256-I2qrgLGSMvFDHyUZFWGPGnuecZ914NBf2uGK02X/wOg=";
       name = "pokerth-1.1.2.patch.2020";
       url = "https://aur.archlinux.org/cgit/aur.git/plain/pokerth-1.1.2.patch.2020?h=pokerth&id=7734029cf9c6ef58f42ed873e1b9c3c19eb1df3b";
-      hash = "sha256-I2qrgLGSMvFDHyUZFWGPGnuecZ914NBf2uGK02X/wOg=";
     })
   ];
 
@@ -79,19 +79,19 @@ stdenv.mkDerivation (finalAttrs: {
     tinyxml
   ];
 
+  env.NIX_CFLAGS_COMPILE = "-I${lib.getDev SDL}/include/SDL";
+
   qmakeFlags = [
     "CONFIG+=${target}"
     "pokerth.pro"
   ];
 
-  env.NIX_CFLAGS_COMPILE = "-I${lib.getDev SDL}/include/SDL";
-
   meta = {
-    homepage = "https://www.pokerth.net";
     description = "Poker game ${target}";
-    mainProgram = "pokerth";
+    homepage = "https://www.pokerth.net";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ obadz ];
     platforms = lib.platforms.all;
+    mainProgram = "pokerth";
   };
 })

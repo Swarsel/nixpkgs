@@ -1,12 +1,12 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  makeWrapper,
+  buildGoModule,
   docker-credential-helpers,
   gitMinimal,
-  versionCheckHook,
+  makeWrapper,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,7 +20,18 @@ buildGoModule (finalAttrs: {
     hash = "sha256-vBBcLQ4ZgiLbUMuDvn8Um24yB9EknuUeU+sxMdg+qoc=";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
   vendorHash = "sha256-CgMFIYoM+nWiZ5NXtTlXHhrjzVYxoVg0YVpQq3LLrjI=";
+  nativeCheckInputs = [ gitMinimal ];
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  postFixup = ''
+    wrapProgram $out/bin/dockerfile-pin \
+      --prefix PATH : ${lib.makeBinPath [ docker-credential-helpers ]}
+  '';
+
+  __structuredAttrs = true;
 
   ldflags = [
     "-s"
@@ -28,22 +39,8 @@ buildGoModule (finalAttrs: {
     "-X=github.com/azu/dockerfile-pin/cmd.version=${finalAttrs.version}"
   ];
 
-  nativeBuildInputs = [ makeWrapper ];
-
-  postFixup = ''
-    wrapProgram $out/bin/dockerfile-pin \
-      --prefix PATH : ${lib.makeBinPath [ docker-credential-helpers ]}
-  '';
-
-  nativeCheckInputs = [ gitMinimal ];
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "version";
-
   passthru.updateScript = nix-update-script { };
-
-  __structuredAttrs = true;
 
   meta = {
     description = "Add sha256 digests to Docker images in Dockerfiles, Compose, and GitHub Actions";

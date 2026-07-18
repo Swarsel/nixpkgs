@@ -1,21 +1,20 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
   cython,
-  pkg-config,
+  fetchPypi,
   lrcalc,
+  pkg-config,
 }:
 
 buildPythonPackage rec {
   pname = "lrcalc-python";
   version = "2.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit version;
-    pname = "lrcalc";
     sha256 = "e3a0509aeda487b412b391a52e817ca36b5c063a8305e09fd54d53259dd6aaa9";
+    pname = "lrcalc";
   };
 
   nativeBuildInputs = [
@@ -24,13 +23,13 @@ buildPythonPackage rec {
   ];
 
   buildInputs = [ lrcalc ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "lrcalc" ];
 
   meta = {
     description = "Littlewood-Richardson Calculator bindings";
     homepage = "https://sites.math.rutgers.edu/~asbuch/lrcalc/";
-    teams = [ lib.teams.sage ];
     license = lib.licenses.gpl3;
+    teams = [ lib.teams.sage ];
   };
 }

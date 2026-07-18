@@ -12,30 +12,87 @@ let
   configFile = yaml.generate "fritz-exporter.yaml" cfg.settings;
 in
 {
-  port = 9787;
-
   extraOpts = {
     settings = mkOption {
       description = "Configuration settings for fritz-exporter.";
-      type = types.submodule {
-        freeformType = yaml.type;
 
+      type = types.submodule {
         options = {
-          # Pull existing port option into config file.
-          port = mkOption {
-            type = types.port;
-            default = cfg.port;
-            internal = true;
-            visible = false;
+          devices = mkOption {
+            default = [ ];
+            description = "Fritz!-devices to monitor using the exporter.";
+
+            type =
+              with types;
+              listOf (submodule {
+                options = {
+                  host_info = mkOption {
+                    default = false;
+
+                    description = ''
+                      Enable extended host info for this device. *Warning*: This will heavily increase scrape time.
+                    '';
+
+                    type = types.bool;
+                  };
+
+                  hostname = mkOption {
+                    default = "fritz.box";
+
+                    description = ''
+                      Hostname under which the target device is reachable.
+                    '';
+
+                    type = types.str;
+                  };
+
+                  name = mkOption {
+                    default = "";
+
+                    description = ''
+                      Name to use for the device.
+                    '';
+
+                    type = types.str;
+                  };
+
+                  password_file = mkOption {
+                    description = ''
+                      Path to a file which contains the password to authenticate with the target device.
+                      Needs to be readable by the user the exporter runs under.
+                    '';
+
+                    type = types.path;
+                  };
+
+                  username = mkOption {
+                    description = ''
+                      Username to authenticate with the target device.
+                    '';
+
+                    type = types.str;
+                  };
+                };
+
+                freeformType = yaml.type;
+              });
           };
+
           # Pull existing listen address option into config file.
           listen_address = mkOption {
-            type = types.str;
             default = cfg.listenAddress;
             internal = true;
+            type = types.str;
             visible = false;
           };
+
           log_level = mkOption {
+            default = "INFO";
+
+            description = ''
+              Log level to use for the exporter.
+            '';
+
             type = types.enum [
               "DEBUG"
               "INFO"
@@ -43,64 +100,28 @@ in
               "ERROR"
               "CRITICAL"
             ];
-            default = "INFO";
-            description = ''
-              Log level to use for the exporter.
-            '';
           };
-          devices = mkOption {
-            default = [ ];
-            description = "Fritz!-devices to monitor using the exporter.";
-            type =
-              with types;
-              listOf (submodule {
-                freeformType = yaml.type;
 
-                options = {
-                  name = mkOption {
-                    type = types.str;
-                    default = "";
-                    description = ''
-                      Name to use for the device.
-                    '';
-                  };
-                  hostname = mkOption {
-                    type = types.str;
-                    default = "fritz.box";
-                    description = ''
-                      Hostname under which the target device is reachable.
-                    '';
-                  };
-                  username = mkOption {
-                    type = types.str;
-                    description = ''
-                      Username to authenticate with the target device.
-                    '';
-                  };
-                  password_file = mkOption {
-                    type = types.path;
-                    description = ''
-                      Path to a file which contains the password to authenticate with the target device.
-                      Needs to be readable by the user the exporter runs under.
-                    '';
-                  };
-                  host_info = mkOption {
-                    type = types.bool;
-                    description = ''
-                      Enable extended host info for this device. *Warning*: This will heavily increase scrape time.
-                    '';
-                    default = false;
-                  };
-                };
-              });
+          # Pull existing port option into config file.
+          port = mkOption {
+            default = cfg.port;
+            internal = true;
+            type = types.port;
+            visible = false;
           };
         };
+
+        freeformType = yaml.type;
       };
     };
   };
 
+  port = 9787;
+
   serviceOpts = {
     serviceConfig = {
+      DynamicUser = false;
+
       ExecStart = utils.escapeSystemdExecArgs (
         [
           (lib.getExe pkgs.fritz-exporter)
@@ -109,7 +130,6 @@ in
         ]
         ++ cfg.extraFlags
       );
-      DynamicUser = false;
     };
   };
 }

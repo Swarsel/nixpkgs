@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cacert,
   deprecated,
   eval-type-backport,
-  fetchFromGitHub,
   filetype,
   griffe,
   hatchling,
@@ -20,7 +20,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "banks";
   version = "2.4.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "masci";
@@ -30,6 +29,12 @@ buildPythonPackage (finalAttrs: {
   };
 
   env.SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ]
+  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
   build-system = [ hatchling ];
 
@@ -50,12 +55,7 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ]
-  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
-
+  pyproject = true;
   pythonImportsCheck = [ "banks" ];
 
   meta = {

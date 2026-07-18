@@ -1,18 +1,16 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
-  bluetooth-sensor-state-data,
-  bleak-retry-connector,
   bleak,
+  bleak-retry-connector,
+  bluetooth-sensor-state-data,
+  buildHomeAssistantComponent,
   nix-update-script,
 }:
 let
   version = "2.0.0";
 in
 buildHomeAssistantComponent {
-  owner = "8none1";
-  domain = "lednetwf_ble";
   inherit version;
 
   src = fetchFromGitHub {
@@ -22,15 +20,17 @@ buildHomeAssistantComponent {
     hash = "sha256-Keb2Eph2DvS0zsg7wa30LrfqkmmccLl9okfdd0OTpqc=";
   };
 
+  # Currently there are no tests run, so we skip
+  doCheck = false;
+
   dependencies = [
     bluetooth-sensor-state-data
     bleak-retry-connector
     bleak
   ];
 
-  # Currently there are no tests run, so we skip
-  doCheck = false;
-
+  domain = "lednetwf_ble";
+  owner = "8none1";
   passthru.updateScript = nix-update-script { };
 
   meta = {

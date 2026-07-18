@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  writeShellApplication,
   cacert,
   curl,
   jq,
   openssl,
+  stdenvNoCC,
   undmg,
+  writeShellApplication,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -17,21 +17,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   src =
     {
       aarch64-darwin = fetchurl {
+        hash = "sha256-muX6PPanjU+ElCQhIfo7Y7cChbTO8Q/gH12ULvBK43s=";
         name = "Raycast.dmg";
         url = "https://releases.raycast.com/releases/${finalAttrs.version}/download?build=arm";
-        hash = "sha256-muX6PPanjU+ElCQhIfo7Y7cChbTO8Q/gH12ULvBK43s=";
       };
     }
     .${stdenvNoCC.system} or (throw "raycast: ${stdenvNoCC.system} is unsupported.");
 
-  dontPatch = true;
-  dontConfigure = true;
-  dontBuild = true;
-  dontFixup = true;
-
   nativeBuildInputs = [ undmg ];
-
-  sourceRoot = "Raycast.app";
 
   installPhase = ''
     runHook preInstall
@@ -42,14 +35,22 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontFixup = true;
+  dontPatch = true;
+  sourceRoot = "Raycast.app";
+
   passthru.updateScript = lib.getExe (writeShellApplication {
     name = "raycast-update-script";
+
     runtimeInputs = [
       cacert
       curl
       jq
       openssl
     ];
+
     text = ''
       url=$(curl --silent "https://releases.raycast.com/releases/latest?build=universal")
       version=$(echo "$url" | jq -r '.version')
@@ -72,15 +73,17 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Control your tools with a few keystrokes";
     homepage = "https://raycast.app/";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       lovesegfault
       stepbrobd
       _4evy
       jakecleary
     ];
+
     platforms = [
       "aarch64-darwin"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

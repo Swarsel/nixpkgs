@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  libestr,
   json_c,
-  pcre2,
+  libestr,
   libfastjson,
+  pcre2,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,15 +38,14 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   configureFlags = [ "--enable-regexp" ];
-
   doCheck = true;
 
   meta = {
-    changelog = "https://github.com/rsyslog/liblognorm/blob/${finalAttrs.src.tag}/ChangeLog";
     description = "Help to make sense out of syslog data, or, actually, any event data that is present in text form";
     homepage = "https://www.liblognorm.com/";
+    changelog = "https://github.com/rsyslog/liblognorm/blob/${finalAttrs.src.tag}/ChangeLog";
     license = lib.licenses.lgpl21;
-    mainProgram = "lognormalizer";
     platforms = lib.platforms.all;
+    mainProgram = "lognormalizer";
   };
 })

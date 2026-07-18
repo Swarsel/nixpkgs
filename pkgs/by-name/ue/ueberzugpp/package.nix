@@ -1,37 +1,37 @@
 {
   lib,
   stdenv,
-  config,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  openssl,
-  zeromq,
-  cppzmq,
-  onetbb,
-  spdlog,
-  libsodium,
-  fmt,
-  vips,
-  nlohmann_json,
-  libsixel,
-  microsoft-gsl,
   chafa,
   cli11,
-  libexif,
-  range-v3,
-  enableOpencv ? stdenv.hostPlatform.isLinux,
-  opencv,
-  enableWayland ? stdenv.hostPlatform.isLinux,
+  cmake,
+  config,
+  cppzmq,
+  cudaPackages,
+  fmt,
   kdePackages,
+  libexif,
+  libsixel,
+  libsodium,
+  libx11,
+  libxcb-image,
+  microsoft-gsl,
+  nlohmann_json,
+  onetbb,
+  opencv,
+  openssl,
+  pkg-config,
+  range-v3,
+  spdlog,
+  vips,
   wayland,
   wayland-protocols,
   wayland-scanner,
-  enableX11 ? stdenv.hostPlatform.isLinux,
-  libxcb-image,
-  libx11,
+  zeromq,
   cudaSupport ? config.cudaSupport,
-  cudaPackages,
+  enableOpencv ? stdenv.hostPlatform.isLinux,
+  enableWayland ? stdenv.hostPlatform.isLinux,
+  enableX11 ? stdenv.hostPlatform.isLinux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -104,10 +104,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/jstkdng/ueberzugpp";
     changelog = "https://github.com/jstkdng/ueberzugpp/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       aleksana
       wegank
     ];
+
     platforms = lib.platforms.unix;
   };
 })

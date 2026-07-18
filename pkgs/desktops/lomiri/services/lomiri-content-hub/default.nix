@@ -1,14 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  nixosTests,
-  testers,
   cmake,
   cmake-extras,
   dbus-test-runner,
   gettext,
+  gitUpdater,
   glib,
   gsettings-qt,
   gtest,
@@ -18,16 +16,18 @@
   lomiri-app-launch,
   lomiri-download-manager,
   lomiri-ui-toolkit,
+  nixosTests,
   pkg-config,
   properties-cpp,
   qtbase,
   qtdeclarative,
-  qtfeedback ? null,
-  qtgraphicaleffects ? null,
   qttools,
+  testers,
   validatePkgConfig,
   wrapGAppsHook3,
   xvfb-run,
+  qtfeedback ? null,
+  qtgraphicaleffects ? null,
   withDocumentation ? true,
 }:
 
@@ -108,15 +108,6 @@ stdenv.mkDerivation (finalAttrs: {
     qtfeedback
   ];
 
-  nativeCheckInputs = [
-    dbus-test-runner
-    xvfb-run
-  ];
-
-  checkInputs = [ gtest ];
-
-  dontWrapQtApps = true;
-
   cmakeFlags = [
     (lib.cmakeBool "GSETTINGS_COMPILE" true)
     (lib.cmakeBool "GSETTINGS_LOCALINSTALL" true)
@@ -156,8 +147,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
-  # Starts & talks to D-Bus services, breaks under parallelism
-  enableParallelChecking = false;
+  nativeCheckInputs = [
+    dbus-test-runner
+    xvfb-run
+  ];
+
+  checkInputs = [ gtest ];
 
   preFixup = ''
     for exampleExe in lomiri-content-hub-test-{importer,exporter,sharer}; do
@@ -174,6 +169,10 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  dontWrapQtApps = true;
+  # Starts & talks to D-Bus services, breaks under parallelism
+  enableParallelChecking = false;
+
   passthru = {
     tests = {
       pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
@@ -183,27 +182,34 @@ stdenv.mkDerivation (finalAttrs: {
       # from another and changes into a mode to pick the content to send
       vm = nixosTests.lomiri.desktop-appinteractions;
     };
+
     updateScript = gitUpdater { };
   };
 
   meta = {
     description = "Content sharing/picking service for the Lomiri desktop";
+
     longDescription = ''
       lomiri-content-hub is a mediation service to let applications share content between them,
       even if they are not running at the same time.
     '';
+
     homepage = "https://gitlab.com/ubports/development/core/lomiri-content-hub";
     changelog = "https://gitlab.com/ubports/development/core/lomiri-content-hub/-/blob/${finalAttrs.version}/ChangeLog";
+
     license = with lib.licenses; [
       gpl3Only
       lgpl3Only
     ];
-    mainProgram = "lomiri-content-hub-service";
-    teams = [ lib.teams.lomiri ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "lomiri-content-hub-service";
+
     pkgConfigModules = [
       "liblomiri-content-hub${lib.optionalString withQt6 "-qt6"}"
       "liblomiri-content-hub-glib"
     ];
+
+    teams = [ lib.teams.lomiri ];
   };
 })

@@ -1,27 +1,30 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  makeWrapper,
   bridge-utils,
-  iproute2,
-  lxc,
-  openvswitch,
-  docker,
   busybox,
   dhcpcd,
+  docker,
+  iproute2,
+  lxc,
+  makeWrapper,
+  openvswitch,
 }:
 
 stdenv.mkDerivation {
   pname = "pipework";
   version = "2017-08-22";
+
   src = fetchFromGitHub {
     owner = "jpetazzo";
     repo = "pipework";
     rev = "ae42f1b5fef82b3bc23fe93c95c345e7af65fef3";
     sha256 = "0c342m0bpq6ranr7dsxk9qi5mg3j5aw9wv85ql8gprdb2pz59qy8";
   };
+
   nativeBuildInputs = [ makeWrapper ];
+
   installPhase = ''
     install -D pipework $out/bin/pipework
     wrapProgram $out/bin/pipework --prefix PATH : \
@@ -37,12 +40,13 @@ stdenv.mkDerivation {
         ]
       };
   '';
+
   meta = {
     description = "Software-Defined Networking tools for LXC";
-    mainProgram = "pipework";
     homepage = "https://github.com/jpetazzo/pipework";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "pipework";
   };
 }

@@ -1,6 +1,5 @@
-{ mkDerivation, libgeom }:
+{ libgeom, mkDerivation }:
 mkDerivation {
-  path = "sbin/fdisk";
-
   buildInputs = [ libgeom ];
+  path = "sbin/fdisk";
 }

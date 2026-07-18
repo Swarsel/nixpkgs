@@ -2,15 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-
   # build
   cmake,
-  pkg-config,
-
   # runtime
   espeak-ng,
+  fetchpatch,
   onnxruntime,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,14 +27,14 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
   ];
 
-  cmakeFlags = [
-    "-DONNXRUNTIME_DIR=${onnxruntime.dev}"
-    "-DESPEAK_NG_DIR=${espeak-ng}"
-  ];
-
   buildInputs = [
     espeak-ng
     onnxruntime
+  ];
+
+  cmakeFlags = [
+    "-DONNXRUNTIME_DIR=${onnxruntime.dev}"
+    "-DESPEAK_NG_DIR=${espeak-ng}"
   ];
 
   meta = {

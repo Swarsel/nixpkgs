@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  dbus-glib,
   glib,
   gtk2,
-  dbus-glib,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -17,14 +17,6 @@ stdenv.mkDerivation rec {
     sha256 = "1fsgvmncd9caw552lyfg8swmsd6bh4ijjsph69bwacwfxwf09j75";
   };
 
-  # Don't make deprecated usages hard errors
-  prePatch = ''
-    substituteInPlace configure --replace "-Werror" "";
-  '';
-
-  # glib-2.62 deprecations
-  env.NIX_CFLAGS_COMPILE = "-DGLIB_DISABLE_DEPRECATION_WARNINGS";
-
   # Patches from Gentoo portage
   patches = [
     ./1.1.6-compiler-warnings.patch
@@ -35,17 +27,25 @@ stdenv.mkDerivation rec {
   ++ [ ./gcc7-bug.patch ];
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     glib
     gtk2
     dbus-glib
   ];
 
+  # glib-2.62 deprecations
+  env.NIX_CFLAGS_COMPILE = "-DGLIB_DISABLE_DEPRECATION_WARNINGS";
   doCheck = true;
 
+  # Don't make deprecated usages hard errors
+  prePatch = ''
+    substituteInPlace configure --replace "-Werror" "";
+  '';
+
   meta = {
-    homepage = "https://gitlab.gnome.org/Archive/unique";
     description = "Library for writing single instance applications";
+    homepage = "https://gitlab.gnome.org/Archive/unique";
     license = lib.licenses.lgpl21;
     platforms = with lib.platforms; linux ++ darwin;
   };

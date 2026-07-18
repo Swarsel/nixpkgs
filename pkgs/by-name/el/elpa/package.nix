@@ -3,24 +3,24 @@
   stdenv,
   fetchurl,
   autoreconfHook,
+  blas,
+  config,
+  cudaPackages,
+  lapack,
+  mpi,
   mpiCheckPhaseHook,
   perl,
-  mpi,
-  blas,
-  lapack,
   scalapack,
-  # CPU optimizations
-  avxSupport ? stdenv.hostPlatform.avxSupport,
   avx2Support ? stdenv.hostPlatform.avx2Support,
   avx512Support ? stdenv.hostPlatform.avx512Support,
-  config,
+  # CPU optimizations
+  avxSupport ? stdenv.hostPlatform.avxSupport,
   # Enable NIVIA GPU support
   # Note, that this needs to be built on a system with a GPU
   # present for the tests to succeed.
   enableCuda ? config.cudaSupport,
   # type of GPU architecture
   nvidiaArch ? "sm_60",
-  cudaPackages,
 }:
 
 assert blas.isILP64 == lapack.isILP64;
@@ -30,12 +30,17 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "elpa";
   version = "2026.02.002";
 
-  passthru = { inherit (blas) isILP64; };
-
   src = fetchurl {
     url = "https://elpa.mpcdf.mpg.de/software/tarball-archive/Releases/${finalAttrs.version}/elpa-${finalAttrs.version}.tar.gz";
     sha256 = "sha256-AuPFn+xTzY62akzBX6T78ZDPllQiciP7itVXE+lCeTI=";
   };
+
+  outputs = [
+    "out"
+    "doc"
+    "man"
+    "dev"
+  ];
 
   patches = [
     # Use a plain name for the pkg-config file
@@ -49,13 +54,6 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix the test script generator
     substituteInPlace Makefile.am --replace '#!/bin/bash' '#!${stdenv.shell}'
   '';
-
-  outputs = [
-    "out"
-    "doc"
-    "man"
-    "dev"
-  ];
 
   nativeBuildInputs = [
     autoreconfHook
@@ -72,6 +70,23 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals enableCuda [
     cudaPackages.cuda_cudart
     cudaPackages.libcublas
+  ];
+
+  configureFlags = [
+    "--with-mpi"
+    "--enable-openmp"
+    "--without-threading-support-check-during-build"
+  ]
+  ++ lib.optional blas.isILP64 "--enable-64bit-integer-math-support"
+  ++ lib.optional (!avxSupport) "--disable-avx"
+  ++ lib.optional (!avx2Support) "--disable-avx2"
+  ++ lib.optional (!avx512Support) "--disable-avx512"
+  ++ lib.optional (!stdenv.hostPlatform.isx86_64) "--disable-sse"
+  ++ lib.optional (!stdenv.hostPlatform.isx86_64) "--disable-sse-assembly"
+  ++ lib.optional stdenv.hostPlatform.isx86_64 "--enable-sse-assembly"
+  ++ lib.optionals enableCuda [
+    "--enable-nvidia-gpu"
+    "--with-NVIDIA-GPU-compute-capability=${nvidiaArch}"
   ];
 
   preConfigure = ''
@@ -91,28 +106,9 @@ stdenv.mkDerivation (finalAttrs: {
     export CFLAGS=$FCFLAGS
   '';
 
-  configureFlags = [
-    "--with-mpi"
-    "--enable-openmp"
-    "--without-threading-support-check-during-build"
-  ]
-  ++ lib.optional blas.isILP64 "--enable-64bit-integer-math-support"
-  ++ lib.optional (!avxSupport) "--disable-avx"
-  ++ lib.optional (!avx2Support) "--disable-avx2"
-  ++ lib.optional (!avx512Support) "--disable-avx512"
-  ++ lib.optional (!stdenv.hostPlatform.isx86_64) "--disable-sse"
-  ++ lib.optional (!stdenv.hostPlatform.isx86_64) "--disable-sse-assembly"
-  ++ lib.optional stdenv.hostPlatform.isx86_64 "--enable-sse-assembly"
-  ++ lib.optionals enableCuda [
-    "--enable-nvidia-gpu"
-    "--with-NVIDIA-GPU-compute-capability=${nvidiaArch}"
-  ];
-
-  enableParallelBuilding = true;
-
   doCheck = !enableCuda;
-
   nativeCheckInputs = [ mpiCheckPhaseHook ];
+
   preCheck = ''
     #patchShebangs ./
 
@@ -120,11 +116,14 @@ stdenv.mkDerivation (finalAttrs: {
     export TEST_FLAGS="1500 50 16"
   '';
 
+  enableParallelBuilding = true;
+  passthru = { inherit (blas) isILP64; };
+
   meta = {
     description = "Eigenvalue Solvers for Petaflop-Applications";
     homepage = "https://elpa.mpcdf.mpg.de/";
     license = lib.licenses.lgpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.markuskowa ];
+    platforms = lib.platforms.linux;
   };
 })

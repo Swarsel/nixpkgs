@@ -1,11 +1,10 @@
 {
   lib,
-  buildKodiAddon,
   fetchFromGitHub,
+  buildKodiAddon,
 }:
 buildKodiAddon rec {
   pname = "osmc-skin";
-  namespace = "skin.osmc";
   version = "21.1.1";
 
   src = fetchFromGitHub {
@@ -15,11 +14,13 @@ buildKodiAddon rec {
     hash = "sha256-3BR6HfKefuyybDv9c/ZkkZMRDyWNZWpftulXyUAD9nY=";
   };
 
+  namespace = "skin.osmc";
+
   meta = {
-    homepage = "https://github.com/osmc/skin.osmc";
     description = "Default skin for OSMC";
-    platforms = lib.platforms.all;
-    maintainers = [ ];
+    homepage = "https://github.com/osmc/skin.osmc";
     license = lib.licenses.cc-by-nc-sa-30;
+    maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 }

@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -15,7 +15,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-1qnChZYsb0e5LnPhvs6a/R5Ammgj2HWFNe9625sBRo8=";
   };
 
-  dontBuild = true;
   installPhase = ''
     runHook preInstall
 
@@ -36,6 +35,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
 
   meta = {
     description = "Simple and easy-to-use immediate-mode gui library";

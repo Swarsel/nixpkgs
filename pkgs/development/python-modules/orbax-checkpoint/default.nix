@@ -1,50 +1,45 @@
 {
   lib,
   stdenv,
-  absl-py,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  flit-core,
-
+  absl-py,
   # dependencies
   aiofiles,
-  etils,
-  humanize,
-  jax,
-  msgpack,
-  numpy,
-  prometheus-client,
-  protobuf,
-  psutil,
-  pyyaml,
-  simplejson,
-  tensorstore,
-  typing-extensions,
-  uvloop,
-
   # tests
   aiosqlite,
+  buildPythonPackage,
   chex,
+  etils,
   fastapi,
+  # build-system
+  flit-core,
   google-cloud-logging,
   greenlet,
   httpx,
+  humanize,
+  jax,
   mock,
+  msgpack,
+  numpy,
   optax,
   portpicker,
+  prometheus-client,
+  protobuf,
+  psutil,
   pytestCheckHook,
+  pyyaml,
   safetensors,
+  simplejson,
   sqlalchemy,
+  tensorstore,
   torch,
+  typing-extensions,
+  uvloop,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "orbax-checkpoint";
   version = "0.12.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "google";
@@ -53,8 +48,23 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-yE8M8f2c+4lTL56LrS57vU/MMM3NgYCZOuHZWbdODh0=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/checkpoint";
+  nativeCheckInputs = [
+    aiosqlite
+    chex
+    fastapi
+    google-cloud-logging
+    greenlet
+    httpx
+    mock
+    optax
+    portpicker
+    pytestCheckHook
+    safetensors
+    sqlalchemy
+    torch
+  ];
 
+  __structuredAttrs = true;
   build-system = [ flit-core ];
 
   dependencies = [
@@ -76,63 +86,6 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ etils.optional-dependencies.epath
   ++ etils.optional-dependencies.epy;
-
-  nativeCheckInputs = [
-    aiosqlite
-    chex
-    fastapi
-    google-cloud-logging
-    greenlet
-    httpx
-    mock
-    optax
-    portpicker
-    pytestCheckHook
-    safetensors
-    sqlalchemy
-    torch
-  ];
-
-  disabledTests = [
-    # ValueError: Distributed system is not available; please initialize it via `jax.distributed.initialize()` at the start of your program.
-    "NumpyHandlerTest"
-    "SerializationTest"
-    "SingleReplicaArrayHandlerTest"
-    "UtilsTest"
-
-    # Flaky
-    # AssertionError: 2 not greater than 2.0046136379241943
-    "test_async_mkdir_parallel"
-    "test_async_mkdir_sequential"
-
-    # AssertionError:
-    # "Handler type string "(?:__main__|orbax.checkpoint._src.handlers.handler_type_registry_test)\.TestHandler" not found in the registry."
-    # does not match
-    # "'Handler type string "handler_type_registry_test.TestHandler" not found in the registry.'"
-    "test_get_handler_type_not_found"
-    "test_no_typestr"
-    "test_register_duplicate_handler_type"
-
-    # AssertionError: False is not true
-    "test_register_and_get"
-    "test_register_different_modules"
-
-    # IndexError: list index out of range
-    "test_named_sharding"
-
-    # ValueError: cannot reshape array of size 1 into shape (0,2)
-    "ArrayHandlerCallbackTest"
-    "test_get_leaf_memory_per_device"
-    "test_memory_size"
-    "test_number_of_broadcasts"
-    "test_tree_memory_per_device"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    # Probably failing because of a filesystem impurity
-    # self.assertFalse(os.path.exists(dst_dir))
-    # AssertionError: True is not false
-    "test_create_snapshot"
-  ];
 
   disabledTestPaths = [
     # import file mismatch:
@@ -209,10 +162,55 @@ buildPythonPackage (finalAttrs: {
     "orbax/checkpoint/transform_utils_test.py"
   ];
 
+  disabledTests = [
+    # ValueError: Distributed system is not available; please initialize it via `jax.distributed.initialize()` at the start of your program.
+    "NumpyHandlerTest"
+    "SerializationTest"
+    "SingleReplicaArrayHandlerTest"
+    "UtilsTest"
+
+    # Flaky
+    # AssertionError: 2 not greater than 2.0046136379241943
+    "test_async_mkdir_parallel"
+    "test_async_mkdir_sequential"
+
+    # AssertionError:
+    # "Handler type string "(?:__main__|orbax.checkpoint._src.handlers.handler_type_registry_test)\.TestHandler" not found in the registry."
+    # does not match
+    # "'Handler type string "handler_type_registry_test.TestHandler" not found in the registry.'"
+    "test_get_handler_type_not_found"
+    "test_no_typestr"
+    "test_register_duplicate_handler_type"
+
+    # AssertionError: False is not true
+    "test_register_and_get"
+    "test_register_different_modules"
+
+    # IndexError: list index out of range
+    "test_named_sharding"
+
+    # ValueError: cannot reshape array of size 1 into shape (0,2)
+    "ArrayHandlerCallbackTest"
+    "test_get_leaf_memory_per_device"
+    "test_memory_size"
+    "test_number_of_broadcasts"
+    "test_tree_memory_per_device"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    # Probably failing because of a filesystem impurity
+    # self.assertFalse(os.path.exists(dst_dir))
+    # AssertionError: True is not false
+    "test_create_snapshot"
+  ];
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "orbax"
     "orbax.checkpoint"
   ];
+
+  sourceRoot = "${finalAttrs.src.name}/checkpoint";
 
   meta = {
     description = "Orbax provides common utility libraries for JAX users";

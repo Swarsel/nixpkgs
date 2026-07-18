@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   pcsclite,
   pkg-config,
 }:
@@ -18,9 +18,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-fFnUWV+q9M0QS84N59DKMVQ+uTG8adZaUi1fPipwF/U=";
   };
 
+  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ pkg-config ];
+  buildInputs = lib.optionals (!stdenv.hostPlatform.isDarwin) [ pcsclite ];
   vendorHash = "sha256-j8Sq8j99APyOmfgpqkaVTgawJ0ahToHQt71TMBoafm0=";
-
-  subPackages = [ "cmd/piv-agent" ];
 
   ldflags = [
     "-s"
@@ -29,9 +29,7 @@ buildGoModule (finalAttrs: {
     "-X main.shortCommit=${finalAttrs.src.rev}"
   ];
 
-  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ pkg-config ];
-
-  buildInputs = lib.optionals (!stdenv.hostPlatform.isDarwin) [ pcsclite ];
+  subPackages = [ "cmd/piv-agent" ];
 
   meta = {
     description = "SSH and GPG agent which you can use with your PIV hardware security device (e.g. a Yubikey)";

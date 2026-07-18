@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   buildDunePackage,
   ocaml,
@@ -16,15 +16,13 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-2PRgjJ6Ssp4l6jHzv1/MqzlomQlJkKLVnRXG6KPJ7j4=";
   };
 
-  checkInputs = [ ounit2 ];
-
   doCheck = lib.versionAtLeast ocaml.version "4.08";
-
+  checkInputs = [ ounit2 ];
   hardeningDisable = lib.optional stdenv.cc.isClang "strictoverflow";
 
   meta = {
-    homepage = "https://github.com/flowtype/ocaml-dtoa";
     description = "Converts OCaml floats into strings (doubles to ascii, \"d to a\"), using the efficient Grisu3 algorithm";
+    homepage = "https://github.com/flowtype/ocaml-dtoa";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.eqyiel ];
   };

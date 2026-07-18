@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
+  callPackage,
+  gcc,
+  gnumake,
+  makeWrapper,
   php,
   which,
-  makeWrapper,
-  gnumake,
-  gcc,
-  callPackage,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,11 +19,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-HyCS1TbAoxk+/FPkpQ887mXA7xp40x5UBPHGY//3t/Q=";
   };
 
-  buildInputs = [ php ];
   nativeBuildInputs = [
     which
     makeWrapper
   ];
+
+  buildInputs = [ php ];
 
   installPhase = ''
     runHook preInstall
@@ -48,8 +49,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Open-Source, Automated Benchmarking";
     homepage = "https://www.phoronix-test-suite.com/";
-    maintainers = with lib.maintainers; [ davidak ];
     license = lib.licenses.gpl3;
+    maintainers = with lib.maintainers; [ davidak ];
     platforms = with lib.platforms; unix;
     mainProgram = "phoronix-test-suite";
   };

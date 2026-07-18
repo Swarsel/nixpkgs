@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cython,
   extension-helpers,
   numpy,
+  pytest-cov-stub,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
-  pytestCheckHook,
-  pytest-cov-stub,
 }:
 
 buildPythonPackage rec {
   pname = "gstools-cython";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "GeoStat-Framework";
@@ -22,6 +21,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-D5oOSOVfmwAOF7MYpMmOMXIS82NJeztRJh4sDXS+Ouc=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+  ];
 
   build-system = [
     cython
@@ -35,10 +39,7 @@ buildPythonPackage rec {
     numpy
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "gstools_cython"

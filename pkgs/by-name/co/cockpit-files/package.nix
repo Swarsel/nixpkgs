@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  cockpit,
-  nodejs,
-  gettext,
-  writeShellScriptBin,
   fetchFromGitHub,
+  cockpit,
+  gettext,
   gitUpdater,
+  nodejs,
+  writeShellScriptBin,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,18 +18,9 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "cockpit-files";
     tag = finalAttrs.version;
     hash = "sha256-NfI6y60O5ctsPbwPcXgkwxpNYuZkF/2YXZOIcRZUc5c=";
-
     fetchSubmodules = true;
     postFetch = "cp $out/node_modules/.package-lock.json $out/package-lock.json";
   };
-
-  buildInputs = [
-    nodejs
-    gettext
-    (writeShellScriptBin "git" "true")
-  ];
-
-  cockpitSrc = cockpit.src;
 
   postPatch = ''
     mkdir -p pkg; cp -r $cockpitSrc/pkg/lib pkg
@@ -43,14 +34,21 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs build.js
   '';
 
+  buildInputs = [
+    nodejs
+    gettext
+    (writeShellScriptBin "git" "true")
+  ];
+
+  cockpitSrc = cockpit.src;
   passthru.updateScript = gitUpdater { };
 
   meta = {
     description = "Featureful file browser for Cockpit";
     homepage = "https://github.com/cockpit-project/cockpit-files";
     changelog = "https://github.com/cockpit-project/cockpit-files/releases/tag/${finalAttrs.version}";
-    platforms = lib.platforms.linux;
     license = [ lib.licenses.lgpl21 ];
+    platforms = lib.platforms.linux;
     teams = [ lib.teams.cockpit ];
   };
 })

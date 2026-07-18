@@ -1,19 +1,18 @@
 {
-  cmake,
   stdenv,
+  cmake,
   qt6,
 }:
 
 {
-  version,
-  src,
   meta,
+  src,
+  version,
 }:
 
 stdenv.mkDerivation {
-  pname = "coolercontrol";
   inherit version src;
-  sourceRoot = "${src.name}/coolercontrol";
+  pname = "coolercontrol";
 
   nativeBuildInputs = [
     cmake
@@ -35,6 +34,8 @@ stdenv.mkDerivation {
     install -Dm644 "${src}/packaging/metadata/org.coolercontrol.CoolerControl-symbolic.svg" -t "$out/share/icons/hicolor/symbolic/apps/"
     install -Dm644 "${src}/packaging/metadata/org.coolercontrol.CoolerControl-symbolic-alert.svg" -t "$out/share/icons/hicolor/symbolic/apps/"
   '';
+
+  sourceRoot = "${src.name}/coolercontrol";
 
   meta = meta // {
     description = "${meta.description} (GUI)";

@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  ninja,
   ctestCheckHook,
+  ninja,
   testers,
 }:
 
@@ -30,8 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
     ctestCheckHook
   ];
 
-  doCheck = true;
-
   cmakeFlags = [
     (lib.cmakeBool "BUILD_TESTING" true)
     (lib.cmakeBool "BUILD_SHARED_LIBS" stdenv.hostPlatform.hasSharedLibraries)
@@ -42,17 +40,19 @@ stdenv.mkDerivation (finalAttrs: {
     rm BUILD
   '';
 
+  doCheck = true;
+
   passthru = {
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
-    pkgConfigModules = [ "double-conversion" ];
-    changelog = "https://github.com/google/double-conversion/blob/${finalAttrs.src.tag}/Changelog";
     description = "Binary-decimal and decimal-binary routines for IEEE doubles";
     homepage = "https://github.com/google/double-conversion";
+    changelog = "https://github.com/google/double-conversion/blob/${finalAttrs.src.tag}/Changelog";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix ++ lib.platforms.windows;
     maintainers = with lib.maintainers; [ fzakaria ];
+    platforms = lib.platforms.unix ++ lib.platforms.windows;
+    pkgConfigModules = [ "double-conversion" ];
   };
 })

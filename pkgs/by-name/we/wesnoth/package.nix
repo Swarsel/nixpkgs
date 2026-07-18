@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   SDL2,
   SDL2_image,
   SDL2_mixer,
   SDL2_net,
-  makeBinaryWrapper,
   SDL2_ttf,
-  pango,
-  gettext,
   boost186,
-  libvorbis,
-  fribidi,
-  dbus,
-  libpng,
-  openssl,
-  icu,
-  lua5_4,
+  cmake,
   curl,
+  dbus,
+  fribidi,
+  gettext,
+  icu,
+  libpng,
+  libvorbis,
+  lua5_4,
+  makeBinaryWrapper,
   nix-update-script,
+  openssl,
+  pango,
+  pkg-config,
   enableDevel ? false,
 }:
 
@@ -44,12 +44,33 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "wesnoth";
     repo = "wesnoth";
     tag = finalAttrs.version;
+
     hash =
       if enableDevel then
         "sha256-q6gdzHDPkG/RqpJxIHqWsxD0n8dzKajDhAT49bjmq78="
       else
         "sha256-fODkyn4tyWL3PUVjXS4d7OW7VnQSL+fPaytvS8iigXg=";
   };
+
+  postPatch = lib.optionalString (suffix != "") ''
+    mv packaging/org.wesnoth.Wesnoth.desktop packaging/org.wesnoth.Wesnoth${suffix}.desktop
+    mv packaging/org.wesnoth.Wesnoth.appdata.xml packaging/org.wesnoth.Wesnoth${suffix}.appdata.xml
+
+    substituteInPlace packaging/org.wesnoth.Wesnoth${suffix}.desktop \
+      --replace-fail "Name=Battle for Wesnoth" "Name=Battle for Wesnoth${suffix}" \
+      --replace-fail "Exec=sh -c \"wesnoth >/dev/null 2>&1\"" "Exec=sh -c \"wesnoth${suffix} >/dev/null 2>&1\"" \
+      --replace-fail "Exec=sh -c \"wesnoth -e  >/dev/null 2>&1\"" "Exec=sh -c \"wesnoth${suffix} -e  >/dev/null 2>&1\""
+
+    substituteInPlace packaging/org.wesnoth.Wesnoth${suffix}.appdata.xml \
+      --replace-fail "<name>Battle for Wesnoth</name>" "<name>Battle for Wesnoth${suffix}</name>" \
+      --replace-fail "org.wesnoth.Wesnoth" "org.wesnoth.Wesnoth${suffix}" \
+      --replace-fail "<binary>wesnoth</binary>" "<binary>wesnoth${suffix}</binary>" \
+      --replace-fail "<binary>wesnothd</binary>" "<binary>wesnothd${suffix}</binary>"
+
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "org.wesnoth.Wesnoth.desktop" "org.wesnoth.Wesnoth${suffix}.desktop" \
+      --replace-fail "org.wesnoth.Wesnoth.appdata.xml" "org.wesnoth.Wesnoth${suffix}.appdata.xml"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -80,26 +101,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "ENABLE_SYSTEM_LUA" true)
     "-DBINARY_SUFFIX=${suffix}"
   ];
-
-  postPatch = lib.optionalString (suffix != "") ''
-    mv packaging/org.wesnoth.Wesnoth.desktop packaging/org.wesnoth.Wesnoth${suffix}.desktop
-    mv packaging/org.wesnoth.Wesnoth.appdata.xml packaging/org.wesnoth.Wesnoth${suffix}.appdata.xml
-
-    substituteInPlace packaging/org.wesnoth.Wesnoth${suffix}.desktop \
-      --replace-fail "Name=Battle for Wesnoth" "Name=Battle for Wesnoth${suffix}" \
-      --replace-fail "Exec=sh -c \"wesnoth >/dev/null 2>&1\"" "Exec=sh -c \"wesnoth${suffix} >/dev/null 2>&1\"" \
-      --replace-fail "Exec=sh -c \"wesnoth -e  >/dev/null 2>&1\"" "Exec=sh -c \"wesnoth${suffix} -e  >/dev/null 2>&1\""
-
-    substituteInPlace packaging/org.wesnoth.Wesnoth${suffix}.appdata.xml \
-      --replace-fail "<name>Battle for Wesnoth</name>" "<name>Battle for Wesnoth${suffix}</name>" \
-      --replace-fail "org.wesnoth.Wesnoth" "org.wesnoth.Wesnoth${suffix}" \
-      --replace-fail "<binary>wesnoth</binary>" "<binary>wesnoth${suffix}</binary>" \
-      --replace-fail "<binary>wesnothd</binary>" "<binary>wesnothd${suffix}</binary>"
-
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "org.wesnoth.Wesnoth.desktop" "org.wesnoth.Wesnoth${suffix}.desktop" \
-      --replace-fail "org.wesnoth.Wesnoth.appdata.xml" "org.wesnoth.Wesnoth${suffix}.appdata.xml"
-  '';
 
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     app_name="The Battle for Wesnoth${suffix}"
@@ -145,6 +146,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Battle for Wesnoth, a free, turn-based strategy game with a fantasy theme";
+
     longDescription = ''
       The Battle for Wesnoth is a Free, turn-based tactical strategy
       game with a high fantasy theme, featuring both single-player, and
@@ -152,6 +154,7 @@ stdenv.mkDerivation (finalAttrs: {
       reclaim the throne of Wesnoth, or take hand in any number of other
       adventures.
     '';
+
     homepage = "https://www.wesnoth.org/";
     changelog = "https://github.com/wesnoth/wesnoth/blob/${finalAttrs.version}/changelog.md";
     license = lib.licenses.gpl2Plus;

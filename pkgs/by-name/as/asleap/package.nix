@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  openssl,
   libpcap,
   libxcrypt,
   nix-update-script,
+  openssl,
 }:
 
 stdenv.mkDerivation {
@@ -39,11 +39,11 @@ stdenv.mkDerivation {
   };
 
   meta = {
-    homepage = "https://github.com/zackw/asleap";
     description = "Recovers weak LEAP and PPTP passwords";
+    homepage = "https://github.com/zackw/asleap";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ pyrox0 ];
-    mainProgram = "asleap";
     platforms = lib.platforms.linux;
+    mainProgram = "asleap";
   };
 }

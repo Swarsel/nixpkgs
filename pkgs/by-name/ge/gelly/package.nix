@@ -1,20 +1,20 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
+  bubblewrap,
   dbus,
   glib,
-  wrapGAppsHook4,
   glib-networking,
+  glycin-loaders,
   gst_all_1,
   gtk4,
   libadwaita,
   libseccomp,
-  openssl,
-  bubblewrap,
-  glycin-loaders,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  wrapGAppsHook4,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -27,8 +27,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-WcnPNsFvQ/CqvAYxWeoAWZiJ62bOgLe8fGNeyh2B+8s=";
   };
-
-  cargoHash = "sha256-0ZKW2xxjTn84mWBrK6zhw/uiOnd5sD+URu2O0a1TZW8=";
 
   nativeBuildInputs = [
     pkg-config
@@ -51,6 +49,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libseccomp
     openssl
   ];
+
+  cargoHash = "sha256-0ZKW2xxjTn84mWBrK6zhw/uiOnd5sD+URu2O0a1TZW8=";
 
   # Adapted from upstream's `justfile`
   postInstall = ''
@@ -77,7 +77,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/Fingel/gelly";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ minijackson ];
-    mainProgram = "gelly";
     platforms = lib.platforms.linux;
+    mainProgram = "gelly";
   };
 })

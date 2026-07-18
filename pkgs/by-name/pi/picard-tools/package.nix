@@ -18,8 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ jre ];
 
-  dontUnpack = true;
-
   installPhase = ''
     mkdir -p $out/libexec/picard
     cp $src $out/libexec/picard/picard.jar
@@ -27,13 +25,15 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper ${jre}/bin/java $out/bin/picard --add-flags "-jar $out/libexec/picard/picard.jar"
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Tools for high-throughput sequencing (HTS) data and formats such as SAM/BAM/CRAM and VCF";
-    license = lib.licenses.mit;
     homepage = "https://broadinstitute.github.io/picard/";
+    license = lib.licenses.mit;
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ jbedo ];
-    mainProgram = "picard";
     platforms = lib.platforms.all;
+    mainProgram = "picard";
   };
 })

@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  fetchpatch,
   alsa-lib,
+  fetchpatch,
 }:
 
 let
 
   fetchDebianPatch =
     {
-      name,
       debname,
+      name,
       sha256,
     }:
     fetchpatch {
@@ -25,10 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "audiofile";
   version = "0.3.6";
 
-  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
-    alsa-lib
-  ];
-
   src = fetchurl {
     url = "https://audiofile.68k.org/audiofile-${finalAttrs.version}.tar.gz";
     sha256 = "0rb927zknk9kmhprd8rdr4azql4gn2dp75a36iazx2xhkbqhvind";
@@ -38,6 +34,76 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
     "dev"
     "man"
+  ];
+
+  patches = [
+    ./gcc-6.patch
+    ./CVE-2015-7747.patch
+
+    (fetchDebianPatch {
+      debname = "04_clamp-index-values-to-fix-index-overflow-in-IMA.cpp.patch";
+      name = "CVE-2017-6829.patch";
+      sha256 = "04qxl51i64c53v69q2kx61qdq474f4vapk8rq97cipj7yrar392m";
+    })
+    (fetchDebianPatch {
+      debname = "05_Always-check-the-number-of-coefficients.patch";
+      name = "CVE-2017-6827+CVE-2017-6828+CVE-2017-6832+CVE-2017-6835+CVE-2017-6837.patch";
+      sha256 = "1ih03kfkabffi6ymp6832q470i28rsds78941vzqlshnqjb2nnxw";
+    })
+    (fetchDebianPatch {
+      debname = "06_Check-for-multiplication-overflow-in-MSADPCM-decodeSam.patch";
+      name = "CVE-2017-6839.patch";
+      sha256 = "0a8s2z8rljlj03p7l1is9s4fml8vyzvyvfrh1m6xj5a8vbi635d0";
+    })
+    (fetchDebianPatch {
+      debname = "07_Check-for-multiplication-overflow-in-sfconvert.patch";
+      name = "CVE-2017-6830+CVE-2017-6834+CVE-2017-6836+CVE-2017-6838.patch";
+      sha256 = "0rfba8rkasl5ycvc0kqlzinkl3rvyrrjvjhpc45h423wmjk2za2l";
+    })
+    (fetchDebianPatch {
+      debname = "08_Fix-signature-of-multiplyCheckOverflow.-It-returns-a-b.patch";
+      name = "audiofile-fix-multiplyCheckOverflow-signature.patch";
+      sha256 = "032p5jqp7q7jgc5axdnazz00zm7hd26z6m5j55ifs0sykr5lwldb";
+    })
+    (fetchDebianPatch {
+      debname = "09_Actually-fail-when-error-occurs-in-parseFormat.patch";
+      name = "CVE-2017-6831.patch";
+      sha256 = "0csikmj8cbiy6cigg0rmh67jrr0sgm56dfrnrxnac3m9635nxlac";
+    })
+    (fetchDebianPatch {
+      debname = "10_Check-for-division-by-zero-in-BlockCodec-runPull.patch";
+      name = "CVE-2017-6833.patch";
+      sha256 = "1rlislkjawq98bbcf1dgl741zd508wwsg85r37ca7pfdf6wgl6z7";
+    })
+    (fetchDebianPatch {
+      debname = "11_CVE-2018-13440.patch";
+      name = "CVE-2018-13440.patch";
+      sha256 = "sha256-qDfjiBJ4QXgn8588Ra1X0ViH0jBjtFS/+2zEGIUIhuo=";
+    })
+    (fetchDebianPatch {
+      debname = "12_CVE-2018-17095.patch";
+      name = "CVE-2018-17095.patch";
+      sha256 = "sha256-FC89EFZuRLcj5x4wZVqUlitEMTRPSZk+qzQpIoVk9xY=";
+    })
+    (fetchDebianPatch {
+      debname = "0013-Fix-CVE-2022-24599.patch";
+      name = "CVE-2022-24599.patch";
+      sha256 = "sha256-DHJQ4B6cvKfSlXy66ZC5RNaCMDaygj8dWLZZhJnhw1E=";
+    })
+    (fetchDebianPatch {
+      debname = "0014-Partial-fix-of-CVE-2019-13147.patch";
+      name = "1_CVE-2019-13147.patch";
+      sha256 = "sha256-clb/XiIZbmttPr2dT9AZsbQ97W6lwifEwMO4l2ZEh0k=";
+    })
+    (fetchDebianPatch {
+      debname = "0015-Partial-fix-of-CVE-2019-13147.patch";
+      name = "2_CVE-2019-13147.patch";
+      sha256 = "sha256-JOZIw962ae7ynnjJXGO29i8tuU5Dhk67DmB0o5/vSf4=";
+    })
+  ];
+
+  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
+    alsa-lib
   ];
 
   # std::unary_function has been removed in c++17
@@ -57,72 +123,6 @@ stdenv.mkDerivation (finalAttrs: {
     make -C libaudiofile $makeFlags
     sed -i "s/dependency_libs=.*/dependency_libs=' -lstdc++'/" libaudiofile/libaudiofile.la
   '';
-
-  patches = [
-    ./gcc-6.patch
-    ./CVE-2015-7747.patch
-
-    (fetchDebianPatch {
-      name = "CVE-2017-6829.patch";
-      debname = "04_clamp-index-values-to-fix-index-overflow-in-IMA.cpp.patch";
-      sha256 = "04qxl51i64c53v69q2kx61qdq474f4vapk8rq97cipj7yrar392m";
-    })
-    (fetchDebianPatch {
-      name = "CVE-2017-6827+CVE-2017-6828+CVE-2017-6832+CVE-2017-6835+CVE-2017-6837.patch";
-      debname = "05_Always-check-the-number-of-coefficients.patch";
-      sha256 = "1ih03kfkabffi6ymp6832q470i28rsds78941vzqlshnqjb2nnxw";
-    })
-    (fetchDebianPatch {
-      name = "CVE-2017-6839.patch";
-      debname = "06_Check-for-multiplication-overflow-in-MSADPCM-decodeSam.patch";
-      sha256 = "0a8s2z8rljlj03p7l1is9s4fml8vyzvyvfrh1m6xj5a8vbi635d0";
-    })
-    (fetchDebianPatch {
-      name = "CVE-2017-6830+CVE-2017-6834+CVE-2017-6836+CVE-2017-6838.patch";
-      debname = "07_Check-for-multiplication-overflow-in-sfconvert.patch";
-      sha256 = "0rfba8rkasl5ycvc0kqlzinkl3rvyrrjvjhpc45h423wmjk2za2l";
-    })
-    (fetchDebianPatch {
-      name = "audiofile-fix-multiplyCheckOverflow-signature.patch";
-      debname = "08_Fix-signature-of-multiplyCheckOverflow.-It-returns-a-b.patch";
-      sha256 = "032p5jqp7q7jgc5axdnazz00zm7hd26z6m5j55ifs0sykr5lwldb";
-    })
-    (fetchDebianPatch {
-      name = "CVE-2017-6831.patch";
-      debname = "09_Actually-fail-when-error-occurs-in-parseFormat.patch";
-      sha256 = "0csikmj8cbiy6cigg0rmh67jrr0sgm56dfrnrxnac3m9635nxlac";
-    })
-    (fetchDebianPatch {
-      name = "CVE-2017-6833.patch";
-      debname = "10_Check-for-division-by-zero-in-BlockCodec-runPull.patch";
-      sha256 = "1rlislkjawq98bbcf1dgl741zd508wwsg85r37ca7pfdf6wgl6z7";
-    })
-    (fetchDebianPatch {
-      name = "CVE-2018-13440.patch";
-      debname = "11_CVE-2018-13440.patch";
-      sha256 = "sha256-qDfjiBJ4QXgn8588Ra1X0ViH0jBjtFS/+2zEGIUIhuo=";
-    })
-    (fetchDebianPatch {
-      name = "CVE-2018-17095.patch";
-      debname = "12_CVE-2018-17095.patch";
-      sha256 = "sha256-FC89EFZuRLcj5x4wZVqUlitEMTRPSZk+qzQpIoVk9xY=";
-    })
-    (fetchDebianPatch {
-      name = "CVE-2022-24599.patch";
-      debname = "0013-Fix-CVE-2022-24599.patch";
-      sha256 = "sha256-DHJQ4B6cvKfSlXy66ZC5RNaCMDaygj8dWLZZhJnhw1E=";
-    })
-    (fetchDebianPatch {
-      name = "1_CVE-2019-13147.patch";
-      debname = "0014-Partial-fix-of-CVE-2019-13147.patch";
-      sha256 = "sha256-clb/XiIZbmttPr2dT9AZsbQ97W6lwifEwMO4l2ZEh0k=";
-    })
-    (fetchDebianPatch {
-      name = "2_CVE-2019-13147.patch";
-      debname = "0015-Partial-fix-of-CVE-2019-13147.patch";
-      sha256 = "sha256-JOZIw962ae7ynnjJXGO29i8tuU5Dhk67DmB0o5/vSf4=";
-    })
-  ];
 
   meta = {
     description = "Library for reading and writing audio files in various formats";

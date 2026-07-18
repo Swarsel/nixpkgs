@@ -1,22 +1,22 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  crystal,
-  wrapGAppsHook4,
-  gobject-introspection,
-  desktopToDarwinBundle,
-  webkitgtk_6_0,
-  sqlite,
-  libadwaita,
-  gtk4,
-  glib,
-  pango,
-  symlinkJoin,
-  gitUpdater,
   _experimental-update-script-combinators,
-  runCommand,
+  crystal,
   crystal2nix,
+  desktopToDarwinBundle,
+  gitUpdater,
+  glib,
+  gobject-introspection,
+  gtk4,
+  libadwaita,
+  pango,
+  runCommand,
+  sqlite,
+  symlinkJoin,
+  webkitgtk_6_0,
+  wrapGAppsHook4,
   writeShellScript,
 }:
 let
@@ -36,6 +36,7 @@ let
     in
     symlinkJoin {
       name = "gtk-doc";
+
       paths = [
         gtk4'.devdoc
         pango'.devdoc
@@ -46,11 +47,8 @@ let
     };
 in
 crystal.buildCrystalPackage {
-  pname = "rtfm";
   inherit version src;
-
-  shardsFile = ./shards.nix;
-  copyShardDeps = true;
+  pname = "rtfm";
 
   postPatch = ''
     substituteInPlace src/doc2dash/create_gtk_docset.cr \
@@ -61,15 +59,6 @@ crystal.buildCrystalPackage {
     substituteInPlace src/doc2dash/docset_builder.cr \
       --replace-fail 'File.copy(original, real_dest)' 'File.copy(original, real_dest); File.chmod(real_dest, 0o600)'
   '';
-
-  preBuild = ''
-    cd lib/gi-crystal
-    shards build -Dpreview_mt --release --no-debug
-    cd ../..
-    install -Dm755 lib/gi-crystal/bin/gi-crystal bin/gi-crystal
-  '';
-
-  buildTargets = [ "all" ];
 
   nativeBuildInputs = [
     wrapGAppsHook4
@@ -85,13 +74,27 @@ crystal.buildCrystalPackage {
     pango
   ];
 
+  preBuild = ''
+    cd lib/gi-crystal
+    shards build -Dpreview_mt --release --no-debug
+    cd ../..
+    install -Dm755 lib/gi-crystal/bin/gi-crystal bin/gi-crystal
+  '';
+
   postInstall = ''
     glib-compile-schemas $out/share/glib-2.0/schemas
   '';
 
   doInstallCheck = false;
+  buildTargets = [ "all" ];
+  copyShardDeps = true;
+  shardsFile = ./shards.nix;
 
   passthru = {
+    shardLock = runCommand "shard.lock" { inherit src; } ''
+      cp $src/shard.lock $out
+    '';
+
     updateScript = _experimental-update-script-combinators.sequence [
       (gitUpdater { rev-prefix = "v"; })
       (_experimental-update-script-combinators.copyAttrOutputToFile "rtfm.shardLock" "./shard.lock")
@@ -100,6 +103,7 @@ crystal.buildCrystalPackage {
           (writeShellScript "update-lock" "cd $1; ${lib.getExe crystal2nix}")
           ./.
         ];
+
         supportedFeatures = [ "silent" ];
       }
       {
@@ -107,20 +111,18 @@ crystal.buildCrystalPackage {
           "rm"
           "./shard.lock"
         ];
+
         supportedFeatures = [ "silent" ];
       }
     ];
-    shardLock = runCommand "shard.lock" { inherit src; } ''
-      cp $src/shard.lock $out
-    '';
   };
 
   meta = {
     description = "Dash/docset reader with built in documentation for Crystal and GTK APIs";
     homepage = "https://github.com/hugopl/rtfm/";
     license = lib.licenses.mit;
-    mainProgram = "rtfm";
     maintainers = with lib.maintainers; [ sund3RRR ];
     platforms = lib.platforms.unix;
+    mainProgram = "rtfm";
   };
 }

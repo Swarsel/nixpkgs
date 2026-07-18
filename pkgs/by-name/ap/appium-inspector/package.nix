@@ -1,16 +1,16 @@
 {
   lib,
+  fetchFromGitHub,
+  _experimental-update-script-combinators,
   buildNpmPackage,
   copyDesktopItems,
   electron_41,
-  fetchFromGitHub,
+  jq,
   makeDesktopItem,
   makeWrapper,
-  nix-update-script,
-  _experimental-update-script-combinators,
-  writeShellApplication,
   nix,
-  jq,
+  nix-update-script,
+  writeShellApplication,
 }:
 
 let
@@ -19,8 +19,8 @@ let
 in
 
 buildNpmPackage (finalAttrs: {
-  pname = "appium-inspector";
   inherit version;
+  pname = "appium-inspector";
 
   src = fetchFromGitHub {
     owner = "appium";
@@ -29,15 +29,12 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-SJlTTVTZ/zGIK7Nf35cZ62tdhevXC95MsbiQJCLiVtk=";
   };
 
-  npmDepsHash = "sha256-2rjgKS1mIrjOg+YXuMaqKyEQt0utLA4DGxOs0oI4BaQ=";
-  npmFlags = [ "--ignore-scripts" ];
-
   nativeBuildInputs = [
     makeWrapper
     copyDesktopItems
   ];
 
-  makeCacheWritable = true;
+  npmDepsHash = "sha256-2rjgKS1mIrjOg+YXuMaqKyEQt0utLA4DGxOs0oI4BaQ=";
 
   buildPhase = ''
     runHook preBuild
@@ -70,27 +67,33 @@ buildNpmPackage (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "appium-inspector";
-      exec = "appium-inspector";
-      desktopName = "Appium Inspector";
-      comment = "A GUI inspector for mobile apps and more, powered by a (separately installed) Appium server";
       categories = [ "Development" ];
+      comment = "A GUI inspector for mobile apps and more, powered by a (separately installed) Appium server";
+      desktopName = "Appium Inspector";
+      exec = "appium-inspector";
       icon = "appium-inspector";
+      name = "appium-inspector";
     })
   ];
+
+  makeCacheWritable = true;
+  npmFlags = [ "--ignore-scripts" ];
 
   passthru.updateScript = _experimental-update-script-combinators.sequence [
     (nix-update-script { })
     (lib.getExe (writeShellApplication {
       name = "${finalAttrs.pname}-electron-updater";
+
+      runtimeEnv = {
+        PKG_FILE = toString ./package.nix;
+        PNAME = finalAttrs.pname;
+      };
+
       runtimeInputs = [
         nix
         jq
       ];
-      runtimeEnv = {
-        PNAME = finalAttrs.pname;
-        PKG_FILE = toString ./package.nix;
-      };
+
       text = ''
         new_src="$(nix-build --attr "pkgs.$PNAME.src" --no-out-link)"
         new_electron_major="$(jq -r '.devDependencies.electron | split(".")[0] | tonumber' "$new_src/package.json")"
@@ -104,8 +107,8 @@ buildNpmPackage (finalAttrs: {
     homepage = "https://appium.github.io/appium-inspector";
     changelog = "https://github.com/appium/appium-inspector/releases/tag/v${version}";
     license = lib.licenses.asl20;
-    mainProgram = "appium-inspector";
     maintainers = with lib.maintainers; [ marie ];
     platforms = lib.platforms.linux;
+    mainProgram = "appium-inspector";
   };
 })

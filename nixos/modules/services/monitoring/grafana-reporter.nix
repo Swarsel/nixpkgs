@@ -12,52 +12,56 @@ in
   options.services.grafana_reporter = {
     enable = lib.mkEnableOption "grafana_reporter";
 
+    addr = lib.mkOption {
+      default = "127.0.0.1";
+      description = "Listening address.";
+      type = lib.types.str;
+    };
+
     grafana = {
+      addr = lib.mkOption {
+        default = "127.0.0.1";
+        description = "Grafana address.";
+        type = lib.types.str;
+      };
+
+      port = lib.mkOption {
+        default = 3000;
+        description = "Grafana port.";
+        type = lib.types.port;
+      };
+
       protocol = lib.mkOption {
-        description = "Grafana protocol.";
         default = "http";
+        description = "Grafana protocol.";
+
         type = lib.types.enum [
           "http"
           "https"
         ];
       };
-      addr = lib.mkOption {
-        description = "Grafana address.";
-        default = "127.0.0.1";
-        type = lib.types.str;
-      };
-      port = lib.mkOption {
-        description = "Grafana port.";
-        default = 3000;
-        type = lib.types.port;
-      };
 
-    };
-    addr = lib.mkOption {
-      description = "Listening address.";
-      default = "127.0.0.1";
-      type = lib.types.str;
     };
 
     port = lib.mkOption {
-      description = "Listening port.";
       default = 8686;
+      description = "Listening port.";
       type = lib.types.port;
     };
 
     templateDir = lib.mkOption {
-      description = "Optional template directory to use custom tex templates";
       default = pkgs.grafana_reporter;
       defaultText = lib.literalExpression "pkgs.grafana_reporter";
+      description = "Optional template directory to use custom tex templates";
       type = lib.types.either lib.types.str lib.types.path;
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.grafana_reporter = {
-      description = "Grafana Reporter Service Daemon";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "Grafana Reporter Service Daemon";
+
       serviceConfig =
         let
           args = lib.concatStringsSep " " [
@@ -70,6 +74,8 @@ in
         {
           ExecStart = "${pkgs.grafana-reporter}/bin/grafana-reporter ${args}";
         };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

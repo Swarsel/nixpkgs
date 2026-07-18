@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -20,7 +20,13 @@ in
 
       settings = lib.mkOption {
         default = { };
-        type = json.type;
+
+        description = ''
+          XMRig configuration. Refer to
+          <https://xmrig.com/docs/miner/config>
+          for details on supported values.
+        '';
+
         example = lib.literalExpression ''
           {
             autosave = true;
@@ -37,11 +43,8 @@ in
             ]
           }
         '';
-        description = ''
-          XMRig configuration. Refer to
-          <https://xmrig.com/docs/miner/config>
-          for details on supported values.
-        '';
+
+        type = json.type;
       };
     };
   };
@@ -50,18 +53,20 @@ in
     hardware.cpu.x86.msr.enable = true;
 
     systemd.services.xmrig = {
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
       description = "XMRig Mining Software Service";
+
       serviceConfig = {
-        ExecStartPre = "${lib.getExe cfg.package} --config=${configFile} --dry-run";
-        ExecStart = "${lib.getExe cfg.package} --config=${configFile}";
         # https://xmrig.com/docs/miner/randomx-optimization-guide/msr
         # If you use recent XMRig with root privileges (Linux) or admin
         # privileges (Windows) the miner configure all MSR registers
         # automatically.
         DynamicUser = lib.mkDefault false;
+        ExecStart = "${lib.getExe cfg.package} --config=${configFile}";
+        ExecStartPre = "${lib.getExe cfg.package} --config=${configFile} --dry-run";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

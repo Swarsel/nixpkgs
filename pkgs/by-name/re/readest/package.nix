@@ -1,25 +1,25 @@
 {
+  lib,
   stdenv,
-  rustPlatform,
-  pnpm_11,
-  fetchPnpmDeps,
-  pnpmConfigHook,
+  fetchFromGitHub,
+  autoPatchelfHook,
   cargo-tauri,
+  fetchPnpmDeps,
+  glib-networking,
+  gst_all_1,
+  gtk3,
+  jq,
+  librsvg,
+  moreutils,
+  nix-update-script,
   nodejs,
+  openssl,
   pkg-config,
+  pnpmConfigHook,
+  pnpm_11,
+  rustPlatform,
   webkitgtk_4_1,
   wrapGAppsHook3,
-  fetchFromGitHub,
-  gtk3,
-  librsvg,
-  openssl,
-  glib-networking,
-  autoPatchelfHook,
-  lib,
-  nix-update-script,
-  moreutils,
-  jq,
-  gst_all_1,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "readest";
@@ -32,36 +32,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-ate2vEYdE121wy3WUautpbIzfejbcaBZr/CnA6rf2Zw=";
     fetchSubmodules = true;
   };
-
-  postUnpack = ''
-    # pnpm.configHook has to write to ../.., as our sourceRoot is set to
-    # apps/readest-app
-    chmod -R +w .
-  '';
-
-  sourceRoot = "${finalAttrs.src.name}/apps/readest-app";
-
-  pnpmRoot = "../..";
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm_11;
-    fetcherVersion = 4;
-    hash = "sha256-wtWYdIfqytwn8PNahbQ/WxJuhhH1lbgNshQy6V0vvcA=";
-    pnpmInstallFlags = [
-      # Increase number of fetch attempts to work around timeout issues on slow
-      # networks: "TimeoutError: The operation was aborted due to timeout".
-      #
-      # If this still happens on your network, consider changing some of the
-      # fetch setting and opening a pull request:
-      # https://pnpm.io/settings#request-settings
-      "--fetch-retries=5"
-    ];
-  };
-
-  cargoRoot = "../..";
-  cargoHash = "sha256-RgqkTttEScAp1R+CWE1ItD5yCDMtJ5tb3fjgkMi3x9E=";
-
-  buildAndTestSubdir = "src-tauri";
 
   postPatch = ''
     substituteInPlace src-tauri/tauri.conf.json \
@@ -106,6 +76,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     gst_all_1.gst-plugins-bad
   ];
 
+  cargoHash = "sha256-RgqkTttEScAp1R+CWE1ItD5yCDMtJ5tb3fjgkMi3x9E=";
+
   preBuild = ''
     # set up pdfjs and simplecc
     pnpm setup-vendors
@@ -120,16 +92,35 @@ rustPlatform.buildRustPackage (finalAttrs: {
     pnpm --filter @readest/readest-app build
   '';
 
-  passthru.updateScript = nix-update-script { };
+  buildAndTestSubdir = "src-tauri";
+  cargoRoot = "../..";
 
-  passthru.tursoPluginDeps = fetchPnpmDeps {
-    pname = "tauri-plugin-turso";
-    version = finalAttrs.version;
-    src = "${finalAttrs.src}/apps/readest-app/src-tauri/plugins/tauri-plugin-turso";
-    pnpm = pnpm_11;
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
     fetcherVersion = 4;
-    hash = "sha256-quVUYsT3u4UBhuJ75QQ4SEuW8MhGQ0vGhtwtUj/eKHs=";
+    hash = "sha256-wtWYdIfqytwn8PNahbQ/WxJuhhH1lbgNshQy6V0vvcA=";
+    pnpm = pnpm_11;
+
+    pnpmInstallFlags = [
+      # Increase number of fetch attempts to work around timeout issues on slow
+      # networks: "TimeoutError: The operation was aborted due to timeout".
+      #
+      # If this still happens on your network, consider changing some of the
+      # fetch setting and opening a pull request:
+      # https://pnpm.io/settings#request-settings
+      "--fetch-retries=5"
+    ];
   };
+
+  pnpmRoot = "../..";
+
+  postUnpack = ''
+    # pnpm.configHook has to write to ../.., as our sourceRoot is set to
+    # apps/readest-app
+    chmod -R +w .
+  '';
+
+  sourceRoot = "${finalAttrs.src.name}/apps/readest-app";
 
   passthru.tursoPlugin = stdenv.mkDerivation {
     pname = "tauri-plugin-turso";
@@ -142,8 +133,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
       nodejs
     ];
 
-    pnpmDeps = finalAttrs.passthru.tursoPluginDeps;
-
     buildPhase = ''
       pnpm build
     '';
@@ -151,18 +140,33 @@ rustPlatform.buildRustPackage (finalAttrs: {
     installPhase = ''
       cp -r dist-js $out
     '';
+
+    pnpmDeps = finalAttrs.passthru.tursoPluginDeps;
   };
+
+  passthru.tursoPluginDeps = fetchPnpmDeps {
+    pname = "tauri-plugin-turso";
+    version = finalAttrs.version;
+    src = "${finalAttrs.src}/apps/readest-app/src-tauri/plugins/tauri-plugin-turso";
+    fetcherVersion = 4;
+    hash = "sha256-quVUYsT3u4UBhuJ75QQ4SEuW8MhGQ0vGhtwtUj/eKHs=";
+    pnpm = pnpm_11;
+  };
+
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Modern, feature-rich ebook reader";
     homepage = "https://github.com/readest/readest";
     changelog = "https://github.com/readest/readest/releases/tag/v${finalAttrs.version}";
-    mainProgram = "readest";
     license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       eljamm
       kasifrasi
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "readest";
   };
 })

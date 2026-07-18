@@ -1,7 +1,7 @@
 {
-  pkgs,
-  lib,
   config,
+  lib,
+  pkgs,
   ...
 }:
 let
@@ -28,11 +28,12 @@ in
 {
   options.networking.getaddrinfo = {
     enable = lib.mkOption {
-      type = lib.types.bool;
       default = pkgs.stdenv.hostPlatform.libc == "glibc";
+
       defaultText = lib.literalExpression ''
         pkgs.stdenv.hostPlatform.libc == "glibc"
       '';
+
       description = ''
         Enables custom address sorting configuration for {manpage}`getaddrinfo(3)` according to RFC 3484.
 
@@ -42,41 +43,35 @@ in
         This setting is only applicable when using the GNU C Library (glibc).
         It has no effect with other libc implementations.
       '';
-    };
 
-    reload = lib.mkOption {
       type = lib.types.bool;
-      default = false;
-      description = ''
-        Determines whether a process should detect changes to the configuration file since it was last read.
-
-        If enabled, the file is re-read automatically. This may cause issues in multithreaded applications
-        and is generally discouraged.
-      '';
     };
 
     label = lib.mkOption {
-      type = lib.types.nullOr (lib.types.attrsOf lib.types.int);
       default = null;
+
       description = ''
         Adds entries to the label table, as described in section 2.1 of RFC 3484.
 
         If any label entries are provided, the glibc’s default label table is ignored.
       '';
+
       example = {
-        "::/0" = 1;
+        "2001:0::/32" = 7;
         "2002::/16" = 2;
+        "::/0" = 1;
         "::/96" = 3;
         "::ffff:0:0/96" = 4;
-        "fec0::/10" = 5;
         "fc00::/7" = 6;
-        "2001:0::/32" = 7;
+        "fec0::/10" = 5;
       };
+
+      type = lib.types.nullOr (lib.types.attrsOf lib.types.int);
     };
 
     precedence = lib.mkOption {
-      type = lib.types.nullOr (lib.types.attrsOf lib.types.int);
       default = null;
+
       description = ''
         Similar to {option}`networking.getaddrinfo.label`, but this option
         defines entries for the precedence table instead.
@@ -85,18 +80,34 @@ in
 
         Providing any value will disable the glibc's default precedence table.
       '';
+
       example = {
-        "::1/128" = 50;
-        "::/0" = 40;
         "2002::/16" = 30;
+        "::/0" = 40;
         "::/96" = 20;
+        "::1/128" = 50;
         "::ffff:0:0/96" = 10;
       };
+
+      type = lib.types.nullOr (lib.types.attrsOf lib.types.int);
+    };
+
+    reload = lib.mkOption {
+      default = false;
+
+      description = ''
+        Determines whether a process should detect changes to the configuration file since it was last read.
+
+        If enabled, the file is re-read automatically. This may cause issues in multithreaded applications
+        and is generally discouraged.
+      '';
+
+      type = lib.types.bool;
     };
 
     scopev4 = lib.mkOption {
-      type = lib.types.nullOr (lib.types.attrsOf lib.types.int);
       default = null;
+
       description = ''
         Adds custom rules to the IPv4 scope table.
 
@@ -104,11 +115,14 @@ in
 
         Modifying these values is rarely necessary.
       '';
+
       example = {
-        "::ffff:169.254.0.0/112" = 2;
-        "::ffff:127.0.0.0/104" = 2;
         "::ffff:0.0.0.0/96" = 14;
+        "::ffff:127.0.0.0/104" = 2;
+        "::ffff:169.254.0.0/112" = 2;
       };
+
+      type = lib.types.nullOr (lib.types.attrsOf lib.types.int);
     };
   };
 

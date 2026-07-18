@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
-  jdk,
   gawk,
+  jdk,
   makeBinaryWrapper,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -16,13 +16,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-jMF1v2WV8ataFkz2VuVXOE6/QV+Kb0KBVRfj8yKdkUQ=";
   };
 
+  nativeBuildInputs = [
+    makeBinaryWrapper
+  ];
+
   buildInputs = [
     gawk
     jdk
-  ];
-
-  nativeBuildInputs = [
-    makeBinaryWrapper
   ];
 
   installPhase = ''

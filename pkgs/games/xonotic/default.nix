@@ -2,37 +2,36 @@
   lib,
   stdenv,
   fetchurl,
-  fetchzip,
-  makeWrapper,
-  runCommand,
-  makeDesktopItem,
-  xonotic-data,
-  copyDesktopItems,
-  # required for both
-  unzip,
-  libjpeg,
-  zlib,
-  libvorbis,
-  curl,
-  freetype,
-  libpng,
-  libtheora,
-  libx11,
-  # glx
-  libGLU,
-  libGL,
-  libxpm,
-  libxext,
-  libxxf86vm,
-  alsa-lib,
   # sdl
   SDL2,
+  alsa-lib,
+  copyDesktopItems,
+  curl,
+  fetchzip,
+  freetype,
   # blind
   gmp,
-
-  withSDL ? true,
-  withGLX ? false,
+  libGL,
+  # glx
+  libGLU,
+  libjpeg,
+  libpng,
+  libtheora,
+  libvorbis,
+  libx11,
+  libxext,
+  libxpm,
+  libxxf86vm,
+  makeDesktopItem,
+  makeWrapper,
+  runCommand,
+  # required for both
+  unzip,
+  xonotic-data,
+  zlib,
   withDedicated ? true,
+  withGLX ? false,
+  withSDL ? true,
 }:
 
 let
@@ -52,6 +51,7 @@ let
 
   meta = {
     description = "Free fast-paced first-person shooter";
+
     longDescription = ''
       Xonotic is a free, fast-paced first-person shooter that works on
       Windows, macOS and Linux. The project is geared towards providing
@@ -60,30 +60,34 @@ let
       Nexuiz project with years of development between them, and it
       aims to become the best possible open-source FPS of its kind.
     '';
+
     homepage = "https://www.xonotic.org/";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       zalakain
     ];
+
     platforms = lib.platforms.linux;
   };
 
   desktopItem = makeDesktopItem {
-    name = "xonotic";
-    exec = "xonotic";
-    comment = meta.description;
-    desktopName = "Xonotic";
     categories = [
       "Game"
       "Shooter"
     ];
+
+    comment = meta.description;
+    desktopName = "Xonotic";
+    exec = "xonotic";
     icon = "xonotic";
+    name = "xonotic";
     startupNotify = false;
   };
 
   xonotic-unwrapped = stdenv.mkDerivation rec {
-    pname = "xonotic${variant}-unwrapped";
     inherit version;
+    pname = "xonotic${variant}-unwrapped";
 
     src = fetchurl {
       url = "https://dl.xonotic.org/xonotic-${version}-source.zip";
@@ -91,8 +95,8 @@ let
     };
 
     patches = [ ./fix-build-with-c23.patch ];
-
     nativeBuildInputs = [ unzip ];
+
     buildInputs = [
       libjpeg
       zlib
@@ -110,13 +114,6 @@ let
       alsa-lib
     ]
     ++ lib.optionals withSDL [ SDL2 ];
-
-    sourceRoot = "Xonotic/source/darkplaces";
-
-    # "debug", "release", "profile"
-    target = "release";
-
-    dontStrip = target != "release";
 
     postConfigure = ''
       pushd ../d0_blind_id
@@ -141,8 +138,6 @@ let
         make -j $NIX_BUILD_CORES
         popd
       '';
-
-    enableParallelBuilding = true;
 
     installPhase =
       (
@@ -175,8 +170,6 @@ let
         popd
       '';
 
-    # Xonotic needs to find libcurl.so at runtime for map downloads
-    dontPatchELF = true;
     postFixup =
       lib.optionalString withDedicated ''
         patchelf --add-needed ${curl.out}/lib/libcurl.so $out/bin/xonotic-dedicated
@@ -204,32 +197,31 @@ let
             --add-needed ${libtheora}/lib/libtheora.so \
             $out/bin/xonotic-sdl
       '';
+
+    # Xonotic needs to find libcurl.so at runtime for map downloads
+    dontPatchELF = true;
+    dontStrip = target != "release";
+    enableParallelBuilding = true;
+    sourceRoot = "Xonotic/source/darkplaces";
+    # "debug", "release", "profile"
+    target = "release";
   };
 
 in
 rec {
-  xonotic-data = fetchzip {
-    name = "xonotic-data";
-    url = "https://dl.xonotic.org/xonotic-${version}.zip";
-    hash = "sha256-Lhjpyk7idmfQAVn4YUb7diGyyKZQBfwNXxk2zMOqiZQ=";
-    postFetch = ''
-      cd $out
-      rm -rf $(ls | grep -v "^data$" | grep -v "^key_0.d0pk$")
-    '';
-    meta.hydraPlatforms = [ ];
-    inherit version pname;
-  };
-
   xonotic =
     runCommand "xonotic${variant}-${version}"
       {
         inherit xonotic-unwrapped version;
         pname = "${pname}${variant}";
+
         nativeBuildInputs = [
           makeWrapper
           copyDesktopItems
         ];
+
         desktopItems = [ desktopItem ];
+
         meta = meta // {
           hydraPlatforms = [ ];
         };
@@ -260,4 +252,18 @@ rec {
           done
         ''
       );
+
+  xonotic-data = fetchzip {
+    inherit version pname;
+    hash = "sha256-Lhjpyk7idmfQAVn4YUb7diGyyKZQBfwNXxk2zMOqiZQ=";
+    name = "xonotic-data";
+
+    postFetch = ''
+      cd $out
+      rm -rf $(ls | grep -v "^data$" | grep -v "^key_0.d0pk$")
+    '';
+
+    url = "https://dl.xonotic.org/xonotic-${version}.zip";
+    meta.hydraPlatforms = [ ];
+  };
 }

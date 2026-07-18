@@ -1,11 +1,11 @@
 {
-  rustPlatform,
   lib,
   fetchFromGitHub,
-  zlib,
   openssl,
   pkg-config,
   protobuf,
+  rustPlatform,
+  zlib,
 }:
 rustPlatform.buildRustPackage rec {
   pname = "nearcore";
@@ -17,34 +17,13 @@ rustPlatform.buildRustPackage rec {
     repo = "nearcore";
     # there is also a branch for this version number, so we need to be explicit
     tag = version;
-
     sha256 = "sha256-VjvHCiWjsx5Y7xxqck/O9gSNrL8mxCTosLwLqC85ywY=";
   };
-
-  cargoHash = "sha256-3MvUn6CJ3skVctTIYhib8G+UVOB/VXokwlTnseGJAGU=";
-  cargoPatches = [ ./0001-make-near-test-contracts-optional.patch ];
 
   postPatch = ''
     substituteInPlace neard/build.rs \
       --replace 'get_git_version()?' '"nix:${version}"'
   '';
-
-  env = {
-    CARGO_PROFILE_RELEASE_CODEGEN_UNITS = "1";
-    CARGO_PROFILE_RELEASE_LTO = "fat";
-    NEAR_RELEASE_BUILD = "release";
-
-    OPENSSL_NO_VENDOR = 1; # we want to link to OpenSSL provided by Nix
-  };
-
-  # don't build SDK samples that require wasm-enabled rust
-  buildAndTestSubdir = "neard";
-  doCheck = false; # needs network
-
-  buildInputs = [
-    zlib
-    openssl
-  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -52,12 +31,28 @@ rustPlatform.buildRustPackage rec {
     rustPlatform.bindgenHook
   ];
 
+  buildInputs = [
+    zlib
+    openssl
+  ];
+
+  cargoHash = "sha256-3MvUn6CJ3skVctTIYhib8G+UVOB/VXokwlTnseGJAGU=";
+
+  env = {
+    CARGO_PROFILE_RELEASE_CODEGEN_UNITS = "1";
+    CARGO_PROFILE_RELEASE_LTO = "fat";
+    NEAR_RELEASE_BUILD = "release";
+    OPENSSL_NO_VENDOR = 1; # we want to link to OpenSSL provided by Nix
+  };
+
+  doCheck = false; # needs network
+  # don't build SDK samples that require wasm-enabled rust
+  buildAndTestSubdir = "neard";
+  cargoPatches = [ ./0001-make-near-test-contracts-optional.patch ];
   # fat LTO requires ~3.4GB RAM
   requiredSystemFeatures = [ "big-parallel" ];
 
   meta = {
-    # Marked broken 2025-11-28 because it has failed on Hydra for at least one year.
-    broken = true;
     description = "Reference client for NEAR Protocol";
     homepage = "https://github.com/near/nearcore";
     license = lib.licenses.gpl3;
@@ -65,5 +60,7 @@ rustPlatform.buildRustPackage rec {
     # only x86_64 is supported in nearcore because of sse4+ support, macOS might
     # be also possible
     platforms = [ "x86_64-linux" ];
+    # Marked broken 2025-11-28 because it has failed on Hydra for at least one year.
+    broken = true;
   };
 }

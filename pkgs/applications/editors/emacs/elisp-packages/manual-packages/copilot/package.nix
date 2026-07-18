@@ -1,14 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
+  copilot-language-server,
   dash,
   editorconfig,
   f,
-  fetchFromGitHub,
   jsonrpc,
+  melpaBuild,
   nodejs,
   s,
-  melpaBuild,
-  copilot-language-server,
 }:
 melpaBuild (finalAttrs: {
   pname = "copilot";
@@ -21,13 +21,13 @@ melpaBuild (finalAttrs: {
     sha256 = "sha256-x2Lzhz8Yi3/EsahkJZ/pJoaJuVb1xIHgNt50qi0ndeo=";
   };
 
-  files = ''(:defaults "dist")'';
-
   postPatch = ''
     substituteInPlace copilot.el \
       --replace-fail "defcustom copilot-server-executable \"copilot-language-server\"" \
                      "defcustom copilot-server-executable \"${lib.getExe copilot-language-server}\""
   '';
+
+  files = ''(:defaults "dist")'';
 
   packageRequires = [
     dash
@@ -44,6 +44,7 @@ melpaBuild (finalAttrs: {
     homepage = "https://github.com/copilot-emacs/copilot.el";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ bbigras ];
+
     platforms = [
       "aarch64-darwin"
       "aarch64-linux"

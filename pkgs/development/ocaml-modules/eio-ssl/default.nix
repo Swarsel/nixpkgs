@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
   eio,
   ssl,
 }:
@@ -21,8 +21,8 @@ buildDunePackage (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/anmonteiro/eio-ssl";
     description = "OpenSSL binding to EIO";
+    homepage = "https://github.com/anmonteiro/eio-ssl";
     license = lib.licenses.lgpl21;
   };
 })

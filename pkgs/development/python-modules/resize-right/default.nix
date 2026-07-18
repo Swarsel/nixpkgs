@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "resize-right";
   version = "0.0.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,10 +22,10 @@ buildPythonPackage rec {
     torch
   ];
 
-  pythonImportsCheck = [ "resize_right" ];
-
   # no tests
   doCheck = false;
+  format = "setuptools";
+  pythonImportsCheck = [ "resize_right" ];
 
   meta = {
     description = "Correct way to resize images or tensors. For Numpy or Pytorch (differentiable";

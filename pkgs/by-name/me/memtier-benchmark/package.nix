@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   libevent,
-  zlib,
   openssl,
+  pkg-config,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,12 +32,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    changelog = "https://github.com/redis/memtier_benchmark/releases/tag/${finalAttrs.version}";
     description = "Redis and Memcached traffic generation and benchmarking tool";
     homepage = "https://github.com/redis/memtier_benchmark";
+    changelog = "https://github.com/redis/memtier_benchmark/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ thoughtpolice ];
+    platforms = lib.platforms.unix;
     mainProgram = "memtier_benchmark";
     teams = [ lib.teams.redis ];
   };

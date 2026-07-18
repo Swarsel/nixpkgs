@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
-  fetchzip,
   callPackage,
+  fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -46,18 +46,18 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   passthru = {
+    tests = callPackage ./tests.nix { };
+
     tlDeps = ps: [
       ps.xkeyval
       ps.fontspec
     ];
-
-    tests = callPackage ./tests.nix { };
   };
 
   meta = {
-    homepage = "https://github.com/psb1558/Junicode-font";
     description = "Unicode font for medievalists";
-    maintainers = with lib.maintainers; [ ivan-timokhin ];
+    homepage = "https://github.com/psb1558/Junicode-font";
     license = lib.licenses.ofl;
+    maintainers = with lib.maintainers; [ ivan-timokhin ];
   };
 }

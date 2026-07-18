@@ -1,15 +1,11 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
 {
-  meta = {
-    teams = [ lib.teams.gnome ];
-  };
-
   imports = [
     (lib.mkRenamedOptionModule
       [
@@ -30,21 +26,25 @@
   options = {
     services.gnome.localsearch = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to enable LocalSearch, indexing services for TinySPARQL
           search engine and metadata storage system.
         '';
+
+        type = lib.types.bool;
       };
     };
   };
 
   config = lib.mkIf config.services.gnome.localsearch.enable {
     environment.systemPackages = [ pkgs.localsearch ];
-
     services.dbus.packages = [ pkgs.localsearch ];
-
     systemd.packages = [ pkgs.localsearch ];
+  };
+
+  meta = {
+    teams = [ lib.teams.gnome ];
   };
 }

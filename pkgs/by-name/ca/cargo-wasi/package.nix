@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
-  fetchCrate,
-  pkg-config,
   stdenv,
+  fetchCrate,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -13,16 +13,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   src = fetchCrate {
     inherit (finalAttrs) version;
-    pname = "cargo-wasi-src";
     hash = "sha256-fmQ23BtcBUPNcgZgvNq85iqdY6WRUhqwAp4aIobqMIw=";
+    pname = "cargo-wasi-src";
   };
 
-  cargoHash = "sha256-GTpFgoKtAH06xBJ5X6w37ApTVjBLX7S4asWOB4/mN4g=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ openssl ];
-
+  cargoHash = "sha256-GTpFgoKtAH06xBJ5X6w37ApTVjBLX7S4asWOB4/mN4g=";
   # Checks need to be disabled here because the current test suite makes assumptions
   # about the surrounding environment that aren't Nix friendly. See these lines for specifics:
   # https://github.com/bytecodealliance/cargo-wasi/blob/0.1.28/tests/tests/support.rs#L13-L18
@@ -30,9 +27,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Lightweight Cargo subcommand to build code for the wasm32-wasi target";
-    mainProgram = "cargo-wasi";
     homepage = "https://bytecodealliance.github.io/cargo-wasi";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ lucperkins ];
+    mainProgram = "cargo-wasi";
   };
 })

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  libGLU,
   libGL,
+  libGLU,
   libx11,
   libxext,
 }:

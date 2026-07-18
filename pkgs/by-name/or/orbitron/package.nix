@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -25,9 +25,8 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://www.theleagueofmoveabletype.com/orbitron";
-    downloadPage = "https://www.theleagueofmoveabletype.com/orbitron/download";
     description = "Geometric sans-serif for display purposes by Matt McInerney";
+
     longDescription = ''
       Orbitron is a geometric sans-serif typeface intended for display
       purposes. It features four weights (light, medium, bold, and
@@ -45,10 +44,15 @@ stdenvNoCC.mkDerivation {
       course Orbitron could also be used on the posters for the movies
       portraying this inevitable future.
     '';
+
+    homepage = "https://www.theleagueofmoveabletype.com/orbitron";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       minijackson
     ];
+
+    platforms = lib.platforms.all;
+    downloadPage = "https://www.theleagueofmoveabletype.com/orbitron/download";
   };
 }

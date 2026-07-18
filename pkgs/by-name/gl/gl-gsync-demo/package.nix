@@ -1,12 +1,12 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  libx11,
-  libglut,
   glew,
+  libglut,
+  libx11,
   libxext,
   linuxPackages,
-  lib,
 }:
 
 let
@@ -41,11 +41,8 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
-    maintainers = with lib.maintainers; [ atemu ];
     description = "Very basic OpenGL demo for testing NVIDIA's G-SYNC technology on Linux";
-    mainProgram = "gl-gsync-demo";
+
     longDescription = ''
       The demo simply draws a vertical bar moving across the screen at constant speed, but deliberately rendered at a variable frame rate.
 
@@ -53,6 +50,11 @@ stdenv.mkDerivation {
 
       The demo also allows to toggle V-Sync on/off.
     '';
+
     homepage = "https://github.com/dahenry/gl-gsync-demo";
+    license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ atemu ];
+    platforms = lib.platforms.linux;
+    mainProgram = "gl-gsync-demo";
   };
 }

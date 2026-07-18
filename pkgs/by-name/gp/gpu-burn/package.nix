@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   autoAddDriverRunpath,
   config,
   cudaPackages,
-  fetchFromGitHub,
   nix-update-script,
 }:
 let
@@ -23,8 +23,6 @@ backendStdenv.mkDerivation {
   pname = "gpu-burn";
   version = "0-unstable-2026-05-27";
 
-  strictDeps = true;
-
   src = fetchFromGitHub {
     owner = "wilicc";
     repo = "gpu-burn";
@@ -42,6 +40,8 @@ backendStdenv.mkDerivation {
         '${"\${CUDAPATH}/bin/nvcc"}' \
         '${lib.getExe cuda_nvcc}'
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoAddDriverRunpath
@@ -82,16 +82,18 @@ backendStdenv.mkDerivation {
   # we only include the platforms where we know the package is available -- thus the conditionals setting the
   # platforms and badPlatforms fields.
   meta = {
-    badPlatforms = optionals (!cudaSupport) lib.platforms.all;
-    broken = !cudaSupport;
     description = "Multi-GPU CUDA stress test";
     homepage = "http://wili.cc/blog/gpu-burn.html";
     license = lib.licenses.bsd2;
-    mainProgram = "gpu_burn";
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       connorbaker
     ];
+
     platforms = optionals cudaSupport lib.platforms.linux;
+    badPlatforms = optionals (!cudaSupport) lib.platforms.all;
+    mainProgram = "gpu_burn";
+    broken = !cudaSupport;
   };
 }

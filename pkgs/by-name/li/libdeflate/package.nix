@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  cmake,
   fixDarwinDylibNames,
   pkgsStatic,
-  cmake,
-  zlib,
   testers,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,32 +20,35 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-2TiV3kmFs9j4aYetoYeWg3+MoZ542/0zaD0hwn9b8ZA=";
   };
 
+  nativeBuildInputs = [ cmake ] ++ lib.optional stdenv.hostPlatform.isDarwin fixDarwinDylibNames;
+  buildInputs = [ zlib ];
+
   cmakeFlags = [
     "-DLIBDEFLATE_BUILD_TESTS=ON"
   ]
   ++ lib.optionals stdenv.hostPlatform.isStatic [ "-DLIBDEFLATE_BUILD_SHARED_LIB=OFF" ];
 
-  nativeBuildInputs = [ cmake ] ++ lib.optional stdenv.hostPlatform.isDarwin fixDarwinDylibNames;
-  buildInputs = [ zlib ];
+  doCheck = true;
 
   passthru.tests = {
-    static = pkgsStatic.libdeflate;
     pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
     };
-  };
 
-  doCheck = true;
+    static = pkgsStatic.libdeflate;
+  };
 
   meta = {
     description = "Fast DEFLATE/zlib/gzip compressor and decompressor";
-    license = lib.licenses.mit;
     homepage = "https://github.com/ebiggers/libdeflate";
     changelog = "https://github.com/ebiggers/libdeflate/blob/v${finalAttrs.version}/NEWS.md";
-    platforms = lib.platforms.unix ++ lib.platforms.windows;
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       kaction
     ];
+
+    platforms = lib.platforms.unix ++ lib.platforms.windows;
     pkgConfigModules = [ "libdeflate" ];
   };
 })

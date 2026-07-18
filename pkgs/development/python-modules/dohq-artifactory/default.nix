@@ -1,15 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-  setuptools,
-  requests,
-  python-dateutil,
+  buildPythonPackage,
+  nix-update-script,
   pyjwt,
   pytestCheckHook,
+  python-dateutil,
+  pythonAtLeast,
+  requests,
   responses,
-  nix-update-script,
+  setuptools,
 }:
 
 buildPythonPackage rec {
@@ -23,10 +23,10 @@ buildPythonPackage rec {
     hash = "sha256-oGv7sZWi/e9WWa5W82pJ6d8S2d2e9gaoGZ3P/97IWoI=";
   };
 
-  # https://github.com/devopshq/artifactory/issues/470
-  disabled = pythonAtLeast "3.13";
-
-  pyproject = true;
+  nativeCheckInputs = [
+    pytestCheckHook
+    responses
+  ];
 
   build-system = [ setuptools ];
 
@@ -36,15 +36,11 @@ buildPythonPackage rec {
     pyjwt
   ];
 
-  pythonImportsCheck = [ "artifactory" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    responses
-  ];
-
+  # https://github.com/devopshq/artifactory/issues/470
+  disabled = pythonAtLeast "3.13";
   enabledTestPaths = [ "tests/unit" ];
-
+  pyproject = true;
+  pythonImportsCheck = [ "artifactory" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

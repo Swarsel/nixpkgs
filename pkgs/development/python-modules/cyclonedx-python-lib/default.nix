@@ -1,19 +1,19 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   ddt,
-  fetchFromGitHub,
   importlib-metadata,
   jsonschema,
   license-expression,
   lxml,
   packageurl-python,
-  py-serializable,
   poetry-core,
+  py-serializable,
   pytestCheckHook,
   requirements-parser,
-  sortedcontainers,
   setuptools,
+  sortedcontainers,
   toml,
   types-setuptools,
   types-toml,
@@ -23,7 +23,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "cyclonedx-python-lib";
   version = "11.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "CycloneDX";
@@ -32,7 +31,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-P6TJHxETBazn+zfrDYUuzCH2DHhYVtn1ceBharxCXRo=";
   };
 
-  pythonRelaxDeps = [ "py-serializable" ];
+  nativeCheckInputs = [
+    ddt
+    pytestCheckHook
+    xmldiff
+  ]
+  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
+
+  preCheck = ''
+    export PYTHONPATH=tests''${PYTHONPATH+:$PYTHONPATH}
+  '';
 
   build-system = [ poetry-core ];
 
@@ -49,29 +57,10 @@ buildPythonPackage (finalAttrs: {
     types-toml
   ];
 
-  optional-dependencies = {
-    validation = [
-      jsonschema
-      lxml
-    ];
-    json-validation = [ jsonschema ];
-    xml-validation = [ lxml ];
-  };
-
-  nativeCheckInputs = [
-    ddt
-    pytestCheckHook
-    xmldiff
-  ]
-  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
-
-  pythonImportsCheck = [ "cyclonedx" ];
-
-  preCheck = ''
-    export PYTHONPATH=tests''${PYTHONPATH+:$PYTHONPATH}
-  '';
-
-  enabledTestPaths = [ "tests/" ];
+  disabledTestPaths = [
+    # Test failures seem py-serializable related
+    "tests/test_output_xml.py"
+  ];
 
   disabledTests = [
     # These tests require network access
@@ -81,10 +70,22 @@ buildPythonPackage (finalAttrs: {
     "TestJson"
   ];
 
-  disabledTestPaths = [
-    # Test failures seem py-serializable related
-    "tests/test_output_xml.py"
-  ];
+  enabledTestPaths = [ "tests/" ];
+
+  optional-dependencies = {
+    json-validation = [ jsonschema ];
+
+    validation = [
+      jsonschema
+      lxml
+    ];
+
+    xml-validation = [ lxml ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "cyclonedx" ];
+  pythonRelaxDeps = [ "py-serializable" ];
 
   meta = {
     description = "Python library for generating CycloneDX SBOMs";

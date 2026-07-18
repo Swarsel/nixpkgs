@@ -5,9 +5,9 @@
 
 amule.override (
   {
-    monolithic = false;
     enableDaemon = true;
     mainProgram = "amuled";
+    monolithic = false;
   }
   // removeAttrs args [ "amule" ]
 )

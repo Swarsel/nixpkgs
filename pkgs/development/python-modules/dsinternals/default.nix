@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pycryptodomex,
   pyopenssl,
   pytestCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "dsinternals";
   version = "1.2.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "p0dalirius";
@@ -20,6 +19,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-ZbYHO7It7R/Zh2dykTa4Ha4m2eyt9zkCzPyc/j79v6A=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,11 +27,9 @@ buildPythonPackage (finalAttrs: {
     pycryptodomex
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "dsinternals" ];
-
   enabledTestPaths = [ "tests/*.py" ];
+  pyproject = true;
+  pythonImportsCheck = [ "dsinternals" ];
 
   meta = {
     description = "Module to interact with Windows Active Directory";

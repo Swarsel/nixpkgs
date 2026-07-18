@@ -15,20 +15,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ libusb-compat-0_1 ];
-
   propagatedBuildInputs = [ libusb-compat-0_1 ];
 
   configureFlags = [
     "ac_cv_prog_HAVELIBUSB=${lib.getExe' (lib.getDev libusb-compat-0_1) "libusb-config"}"
   ]
   ++ lib.optional (!stdenv.hostPlatform.isDarwin) "--with-async-mode";
-
-  # allow async mode. from ubuntu. see:
-  #   https://bazaar.launchpad.net/~ubuntu-branches/ubuntu/trusty/libftdi/trusty/view/head:/debian/patches/04_async_mode.diff
-  patchPhase = ''
-    substituteInPlace ./src/ftdi.c \
-      --replace "ifdef USB_CLASS_PTP" "if 0"
-  '';
 
   # remove forbidden references to $TMPDIR
   preFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
@@ -37,6 +29,13 @@ stdenv.mkDerivation (finalAttrs: {
         patchelf --shrink-rpath --allowed-rpath-prefixes "$NIX_STORE" "$f"
       fi
     done
+  '';
+
+  # allow async mode. from ubuntu. see:
+  #   https://bazaar.launchpad.net/~ubuntu-branches/ubuntu/trusty/libftdi/trusty/view/head:/debian/patches/04_async_mode.diff
+  patchPhase = ''
+    substituteInPlace ./src/ftdi.c \
+      --replace "ifdef USB_CLASS_PTP" "if 0"
   '';
 
   meta = {

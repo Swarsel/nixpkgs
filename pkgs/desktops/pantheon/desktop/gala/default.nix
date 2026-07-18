@@ -1,29 +1,29 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  at-spi2-core,
   desktop-file-utils,
   gettext,
-  libxml2,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
-  wayland-scanner,
-  wrapGAppsHook4,
-  at-spi2-core,
-  gnome-settings-daemon,
   gnome-desktop,
+  gnome-settings-daemon,
   granite,
   granite7,
   gtk3,
   gtk4,
   libgee,
   libhandy,
+  libxml2,
+  meson,
   mutter,
+  ninja,
+  nix-update-script,
+  pkg-config,
   sqlite,
   systemd,
-  nix-update-script,
+  vala,
+  wayland-scanner,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,7 +37,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-f+/RaKG208v84q1V9NkDci0wuGAtXwjVsF7ITDAgHCQ=";
   };
 
-  depsBuildBuild = [ pkg-config ];
+  postPatch = ''
+    substituteInPlace meson.build \
+      --replace-fail "conf.set('PLUGINDIR', plugins_dir)" "conf.set('PLUGINDIR','/run/current-system/sw/lib/gala/plugins')"
+  '';
 
   nativeBuildInputs = [
     desktop-file-utils
@@ -66,10 +69,7 @@ stdenv.mkDerivation (finalAttrs: {
     systemd
   ];
 
-  postPatch = ''
-    substituteInPlace meson.build \
-      --replace-fail "conf.set('PLUGINDIR', plugins_dir)" "conf.set('PLUGINDIR','/run/current-system/sw/lib/gala/plugins')"
-  '';
+  depsBuildBuild = [ pkg-config ];
 
   passthru = {
     updateScript = nix-update-script { };
@@ -80,7 +80,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/elementary/gala";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
-    teams = [ lib.teams.pantheon ];
     mainProgram = "gala";
+    teams = [ lib.teams.pantheon ];
   };
 })

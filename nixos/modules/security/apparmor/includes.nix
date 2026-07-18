@@ -15,8 +15,8 @@ let
     let
       go =
         {
-          path ? null,
           mode ? "r",
+          path ? null,
           trail ? "",
         }:
         lib.optionalString (hasAttr path etc) "${config.environment.etc.${path}.source}${trail} ${mode},";
@@ -31,14 +31,18 @@ in
   # this remains to be determined case by case,
   # some may even be completely useless.
   config.security.apparmor.includes = {
-    # This one is included by <tunables/global>
-    # which is usually included before any profile.
-    "abstractions/tunables/alias" = ''
-      alias /bin -> /run/current-system/sw/bin,
-      alias /lib/modules -> /run/current-system/kernel/lib/modules,
-      alias /sbin -> /run/current-system/sw/sbin,
-      alias /usr -> /run/current-system/sw,
+    "abstractions/X" = ''
+      include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/X"
+      ${etcRule {
+        path = "X11/cursors";
+        trail = "/";
+      }}
+      ${etcRule {
+        path = "X11/cursors";
+        trail = "/**";
+      }}
     '';
+
     "abstractions/audio" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/audio"
     ''
@@ -73,6 +77,7 @@ in
       "openal/alsoft.conf"
       "wildmidi/wildmidi.conf"
     ];
+
     "abstractions/authentication" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/authentication"
       # Defined in security.pam
@@ -91,6 +96,7 @@ in
       "default/passwd"
       "login.defs"
     ];
+
     "abstractions/base" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/base"
       ${pkgs.stdenv.cc.libc}/share/locale/** r,
@@ -102,6 +108,7 @@ in
       ${pkgs.tzdata}/share/zoneinfo/** r,
       ${pkgs.stdenv.cc.libc}/share/i18n/** r,
     '';
+
     "abstractions/bash" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/bash"
 
@@ -133,17 +140,21 @@ in
       # run out of /etc/bash.bashrc
       "DIR_COLORS"
     ];
+
     "abstractions/consoles" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/consoles"
     '';
+
     "abstractions/cups-client" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/cups-client"
       ${etcRule "cups/cups-client.conf"}
     '';
+
     "abstractions/dbus-session-strict" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/dbus-session-strict"
       ${etcRule "machine-id"}
     '';
+
     "abstractions/dconf" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/dconf"
       ${etcRule {
@@ -151,10 +162,12 @@ in
         trail = "/**";
       }}
     '';
+
     "abstractions/dri-common" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/dri-common"
       ${etcRule "drirc"}
     '';
+
     # The config.fonts.fontconfig NixOS module adds many files to /etc/fonts/
     # by symlinking them but without exporting them outside of its NixOS module,
     # those are therefore added there to this "abstractions/fonts".
@@ -165,6 +178,7 @@ in
         trail = "/**";
       }}
     '';
+
     "abstractions/gnome" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/gnome"
       include <abstractions/fonts>
@@ -214,6 +228,15 @@ in
       }
       "xdg/mimeapps.list"
     ];
+
+    "abstractions/golang" = ''
+      # Container-aware GOMAXPROCS
+      owner @{PROC}/@{pid}/mountinfo r,
+      owner @{PROC}/@{pid}/cgroup r,
+      @{sys}/fs/cgroup/**/{cpu.cfs_quota_us,cpu.cfs_period_us} r, # V1
+      @{sys}/fs/cgroup/**/cpu.max r, # V2
+    '';
+
     "abstractions/kde" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/kde"
     ''
@@ -245,13 +268,14 @@ in
         trail = "/Trolltech.conf";
       }
     ];
+
     "abstractions/kerberosclient" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/kerberosclient"
     ''
     + lib.concatMapStringsSep "\n" etcRule [
       {
-        path = "krb5.keytab";
         mode = "rk";
+        path = "krb5.keytab";
       }
       "krb5.conf"
       "krb5.conf.d"
@@ -265,6 +289,7 @@ in
       "krb.realms"
       "srvtab"
     ];
+
     "abstractions/ldapclient" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/ldapclient"
     ''
@@ -284,13 +309,16 @@ in
         trail = "/*";
       }
     ];
+
     "abstractions/likewise" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/likewise"
     '';
+
     "abstractions/mdns" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/mdns"
       ${etcRule "nss_mdns.conf"}
     '';
+
     "abstractions/nameservice" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/nameservice"
 
@@ -333,16 +361,20 @@ in
         trail = "/classid";
       }
     ];
+
     "abstractions/nis" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/nis"
     '';
+
     "abstractions/nss-systemd" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/nss-systemd"
     '';
+
     "abstractions/nvidia" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/nvidia"
       ${etcRule "vdpau_wrapper.cfg"}
     '';
+
     "abstractions/opencl-common" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/opencl-common"
       ${etcRule {
@@ -350,10 +382,12 @@ in
         trail = "/**";
       }}
     '';
+
     "abstractions/opencl-mesa" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/opencl-mesa"
       ${etcRule "default/drirc"}
     '';
+
     "abstractions/openssl" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/openssl"
       ${etcRule {
@@ -361,6 +395,7 @@ in
         trail = "/openssl.cnf";
       }}
     '';
+
     "abstractions/p11-kit" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/p11-kit"
     ''
@@ -382,6 +417,7 @@ in
         trail = "/modules/*";
       }
     ];
+
     "abstractions/perl" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/perl"
       ${etcRule {
@@ -389,6 +425,7 @@ in
         trail = "/**";
       }}
     '';
+
     "abstractions/php" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/php"
     ''
@@ -418,6 +455,7 @@ in
         trail = "/**.ini";
       }
     ];
+
     "abstractions/postfix-common" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/postfix-common"
     ''
@@ -430,16 +468,11 @@ in
       "postfix/main.cf"
       "postfix/master.cf"
     ];
+
     "abstractions/python" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/python"
     '';
-    "abstractions/golang" = ''
-      # Container-aware GOMAXPROCS
-      owner @{PROC}/@{pid}/mountinfo r,
-      owner @{PROC}/@{pid}/cgroup r,
-      @{sys}/fs/cgroup/**/{cpu.cfs_quota_us,cpu.cfs_period_us} r, # V1
-      @{sys}/fs/cgroup/**/cpu.max r, # V2
-    '';
+
     "abstractions/qt5" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/qt5"
     ''
@@ -454,6 +487,7 @@ in
       }
       "xdg/QtProject/qtlogging.ini"
     ];
+
     "abstractions/samba" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/samba"
       ${etcRule {
@@ -461,6 +495,7 @@ in
         trail = "/*";
       }}
     '';
+
     "abstractions/ssl_certs" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/ssl_certs"
 
@@ -510,11 +545,22 @@ in
         trail = "/**";
       }
     ];
+
     "abstractions/ssl_keys" = ''
       # security.acme NixOS module
       /var/lib/acme/*/full.pem r,
       /var/lib/acme/*/key.pem r,
     '';
+
+    # This one is included by <tunables/global>
+    # which is usually included before any profile.
+    "abstractions/tunables/alias" = ''
+      alias /bin -> /run/current-system/sw/bin,
+      alias /lib/modules -> /run/current-system/kernel/lib/modules,
+      alias /sbin -> /run/current-system/sw/sbin,
+      alias /usr -> /run/current-system/sw,
+    '';
+
     "abstractions/vulkan" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/vulkan"
       ${etcRule {
@@ -526,6 +572,7 @@ in
         trail = "/*.json";
       }}
     '';
+
     "abstractions/winbind" = ''
       include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/winbind"
       ${etcRule {
@@ -535,17 +582,6 @@ in
       ${etcRule {
         path = "samba";
         trail = "/dhcp.conf";
-      }}
-    '';
-    "abstractions/X" = ''
-      include "${pkgs.apparmor-profiles}/etc/apparmor.d/abstractions/X"
-      ${etcRule {
-        path = "X11/cursors";
-        trail = "/";
-      }}
-      ${etcRule {
-        path = "X11/cursors";
-        trail = "/**";
       }}
     '';
   };

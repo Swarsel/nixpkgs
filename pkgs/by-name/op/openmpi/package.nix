@@ -2,40 +2,40 @@
   lib,
   stdenv,
   fetchurl,
-  removeReferencesTo,
-  gfortran,
-  perl,
-  libnl,
-  rdma-core,
-  zlib,
-  numactl,
-  libevent,
-  hwloc,
-  targetPackages,
-  libpsm2,
-  libfabric,
-  pmix,
-  ucx,
-  ucc,
-  prrte,
-  makeWrapper,
-  python3,
   config,
-  # Enable CUDA support
-  cudaSupport ? config.cudaSupport,
   cudaPackages,
-  # Enable the Sun Grid Engine bindings
-  enableSGE ? false,
-  # Pass PATH/LD_LIBRARY_PATH to point to current mpirun by default
-  enablePrefix ? false,
-  # Enable libfabric support (necessary for Omnipath networks) on x86_64 linux
-  fabricSupport ? stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isx86_64,
-  # Enable Fortran support
-  fortranSupport ? true,
+  gfortran,
+  hwloc,
+  libevent,
+  libfabric,
+  libnl,
+  libpsm2,
+  makeWrapper,
+  numactl,
+  perl,
+  pmix,
+  prrte,
+  python3,
+  rdma-core,
+  removeReferencesTo,
+  targetPackages,
+  ucc,
+  ucx,
+  zlib,
   # AVX/SSE options. See passthru.defaultAvxOptions for the available options.
   # note that opempi fails to build with AVX disabled, meaning that everything
   # up to AVX is enabled by default.
   avxOptions ? { },
+  # Enable CUDA support
+  cudaSupport ? config.cudaSupport,
+  # Pass PATH/LD_LIBRARY_PATH to point to current mpirun by default
+  enablePrefix ? false,
+  # Enable the Sun Grid Engine bindings
+  enableSGE ? false,
+  # Enable libfabric support (necessary for Omnipath networks) on x86_64 linux
+  fabricSupport ? stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isx86_64,
+  # Enable Fortran support
+  fortranSupport ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -46,6 +46,12 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://www.open-mpi.org/software/ompi/v${lib.versions.majorMinor finalAttrs.version}/downloads/openmpi-${finalAttrs.version}.tar.bz2";
     sha256 = "sha256-Cs7MT8IY5d69vLikHRgsaw8dKTkwFe12OyqR1dc3TMY=";
   };
+
+  outputs = [
+    "out"
+    "man"
+    "dev"
+  ];
 
   postPatch = ''
     patchShebangs ./
@@ -65,18 +71,13 @@ stdenv.mkDerivation (finalAttrs: {
     ]}
   '';
 
-  # Ensure build is reproducible according to manual
-  # https://docs.open-mpi.org/en/v5.0.x/release-notes/general.html#general-notes
-  env = {
-    USER = "nixbld";
-    HOSTNAME = "localhost";
-  };
-
-  outputs = [
-    "out"
-    "man"
-    "dev"
-  ];
+  nativeBuildInputs = [
+    perl
+    removeReferencesTo
+    makeWrapper
+  ]
+  ++ lib.optionals cudaSupport [ cudaPackages.cuda_nvcc ]
+  ++ lib.optionals fortranSupport [ gfortran ];
 
   buildInputs = [
     zlib
@@ -101,14 +102,6 @@ stdenv.mkDerivation (finalAttrs: {
     libpsm2
     libfabric
   ];
-
-  nativeBuildInputs = [
-    perl
-    removeReferencesTo
-    makeWrapper
-  ]
-  ++ lib.optionals cudaSupport [ cudaPackages.cuda_nvcc ]
-  ++ lib.optionals fortranSupport [ gfortran ];
 
   configureFlags = [
     (lib.enableFeature cudaSupport "mca-dso")
@@ -136,7 +129,14 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals fabricSupport [ "--with-ofi-libdir=${lib.getLib libfabric}/lib" ];
 
-  enableParallelBuilding = true;
+  # Ensure build is reproducible according to manual
+  # https://docs.open-mpi.org/en/v5.0.x/release-notes/general.html#general-notes
+  env = {
+    HOSTNAME = "localhost";
+    USER = "nixbld";
+  };
+
+  doCheck = true;
 
   postInstall =
     let
@@ -150,6 +150,7 @@ stdenv.mkDerivation (finalAttrs: {
           "shmem"
           "osh"
         ];
+
         s = [
           "c++"
           "cxx"
@@ -163,6 +164,12 @@ stdenv.mkDerivation (finalAttrs: {
         ++ lib.optionals stdenv.hostPlatform.isLinux [ "CC" ];
       };
       wrapperDataSubstitutions = {
+        "c++" = [
+          # Same as with $CC
+          "$CXX"
+          "${targetPackages.stdenv.cc}/bin/${targetPackages.stdenv.cc.targetPrefix}$CXX"
+        ];
+
         # The attr key is the filename prefix. The list's 1st value is the
         # compiler=_ line that should be replaced by a compiler=#2 string, where
         # #2 is the 2nd value in the list.
@@ -172,11 +179,6 @@ stdenv.mkDerivation (finalAttrs: {
           # "gcc" for Linux)
           "$CC"
           "${targetPackages.stdenv.cc}/bin/${targetPackages.stdenv.cc.targetPrefix}$CC"
-        ];
-        "c++" = [
-          # Same as with $CC
-          "$CXX"
-          "${targetPackages.stdenv.cc}/bin/${targetPackages.stdenv.cc.targetPrefix}$CXX"
         ];
       }
       // lib.optionalAttrs fortranSupport {
@@ -195,6 +197,7 @@ stdenv.mkDerivation (finalAttrs: {
           "mpi"
         ]
         ++ lib.optionals (lib.meta.availableOn stdenv.hostPlatform ucx) [ "shmem" ];
+
         part2 = builtins.attrNames wrapperDataSubstitutions;
       };
     in
@@ -255,29 +258,32 @@ stdenv.mkDerivation (finalAttrs: {
       --set OPAL_PKGDATADIR "''${!outputDev}/share/openmpi"
   '';
 
-  doCheck = true;
+  enableParallelBuilding = true;
 
   passthru = {
+    inherit cudaSupport;
+    cudatoolkit = cudaPackages.cudatoolkit; # For backward compatibility only
+
     defaultAvxOptions = {
-      sse3 = true;
-      sse41 = true;
       avx = true;
       avx2 = stdenv.hostPlatform.avx2Support;
       avx512 = stdenv.hostPlatform.avx512Support;
+      sse3 = true;
+      sse41 = true;
     };
-    inherit cudaSupport;
-    cudatoolkit = cudaPackages.cudatoolkit; # For backward compatibility only
   };
 
   meta = {
-    homepage = "https://www.open-mpi.org/";
     description = "Open source MPI-3 implementation";
     longDescription = "The Open MPI Project is an open source MPI-3 implementation that is developed and maintained by a consortium of academic, research, and industry partners. Open MPI is therefore able to combine the expertise, technologies, and resources from all across the High Performance Computing community in order to build the best MPI library available. Open MPI offers advantages for system and software vendors, application developers and computer science researchers.";
+    homepage = "https://www.open-mpi.org/";
+    license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       markuskowa
       doronbehar
     ];
-    license = lib.licenses.bsd3;
+
     platforms = lib.platforms.unix;
     # checking size of Fortran CHARACTER... configure: error: Can not determine size of CHARACTER when cross-compiling
     broken = !stdenv.buildPlatform.canExecute stdenv.hostPlatform;

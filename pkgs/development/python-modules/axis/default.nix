@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
   faust-cchardet,
-  fetchFromGitHub,
   orjson,
   packaging,
   pythonOlder,
@@ -17,9 +17,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "axis";
   version = "74";
-  pyproject = true;
-
-  disabled = pythonOlder "3.14";
 
   src = fetchFromGitHub {
     owner = "Kane610";
@@ -34,6 +31,8 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "wheel==0.47.0" "wheel"
   '';
 
+  # Tests requires a server on localhost
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -47,9 +46,8 @@ buildPythonPackage (finalAttrs: {
     zeroconf
   ];
 
-  # Tests requires a server on localhost
-  doCheck = false;
-
+  disabled = pythonOlder "3.14";
+  pyproject = true;
   pythonImportsCheck = [ "axis" ];
 
   meta = {

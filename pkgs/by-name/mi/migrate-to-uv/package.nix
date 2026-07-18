@@ -1,18 +1,17 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
   cargo,
+  nix-update-script,
+  python3,
   rustPlatform,
   rustc,
   versionCheckHook,
-  nix-update-script,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "migrate-to-uv";
   version = "0.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "osprey-oss";
@@ -21,10 +20,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-+UXPgFYgTlLmUYpE2aWsO2OdelP9dCZsB3cWjG4negA=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src pname version;
-    hash = "sha256-evsc5uOZnN6+tRXmN1SQD5Iqnm4Y+TjmBzWaGQQj2UQ=";
-  };
+  nativeCheckInputs = [ versionCheckHook ];
 
   build-system = [
     cargo
@@ -33,8 +29,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     rustc
   ];
 
-  nativeCheckInputs = [ versionCheckHook ];
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src pname version;
+    hash = "sha256-evsc5uOZnN6+tRXmN1SQD5Iqnm4Y+TjmBzWaGQQj2UQ=";
+  };
 
+  pyproject = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -18,12 +18,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Preprocessor for mdbook to support the inclusion of automatically numbered footnotes";
-    mainProgram = "mdbook-footnote";
     homepage = "https://github.com/daviddrysdale/mdbook-footnote";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       brianmcgillion
       matthiasbeyer
     ];
+
+    mainProgram = "mdbook-footnote";
   };
 })

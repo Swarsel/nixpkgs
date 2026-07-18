@@ -2,23 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
   # nativeBuildInputs
   cmake,
-  pkg-config,
-
   # buildInputs
   glfw3,
   libGLU,
+  libglut,
   libx11,
   libxcursor,
   libxi,
   libxinerama,
   libxrandr,
-  libglut,
-  xorgproto,
-
   nix-update-script,
+  pkg-config,
+  xorgproto,
 }:
 
 let
@@ -61,8 +58,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "2D physics engine";
     homepage = "https://box2d.org/";
     changelog = "https://github.com/erincatto/box2d/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.zlib;
     maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.zlib;
   };
 })

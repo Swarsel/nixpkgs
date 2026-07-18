@@ -1,17 +1,17 @@
 {
-  buildPackages,
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
   argp-standalone,
+  buildPackages,
   libgcrypt,
-  readline,
   libgpg-error,
+  readline,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.6.18";
   pname = "freeipmi";
+  version = "1.6.18";
 
   src = fetchurl {
     url = "mirror://gnu/freeipmi/freeipmi-${finalAttrs.version}.tar.gz";
@@ -24,8 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
         '$(CPP_FOR_BUILD) -nostdinc -w -C -P -I. -I$(top_srcdir)/man $@.pre $@' \
         '$(CPP_FOR_BUILD) -nostdinc -w -C -P -I. -I$(top_srcdir)/man -o $@ $@.pre'
   '';
-
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
 
   buildInputs = [
     libgcrypt
@@ -48,8 +46,8 @@ stdenv.mkDerivation (finalAttrs: {
   # Fix GCC 14 build.
   # https://savannah.gnu.org/bugs/?65203
   env.NIX_CFLAGS_COMPILE = "-Wno-error=implicit-function-declaration";
-
   doCheck = true;
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
 
   meta = {
     description = "Implementation of the Intelligent Platform Management Interface";
@@ -69,11 +67,9 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
     homepage = "https://www.gnu.org/software/freeipmi/";
-    downloadPage = "https://www.gnu.org/software/freeipmi/download.html";
-
     license = lib.licenses.gpl3Plus;
-
     maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.gnu ++ lib.platforms.unix;
+    downloadPage = "https://www.gnu.org/software/freeipmi/download.html";
   };
 })

@@ -14,19 +14,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-viVbaU21tI4lU+0WoSzRW81aUPzCIkJKjJR/BPEFO2c=";
   };
 
-  __structuredAttrs = true;
-  strictDeps = true;
-
   patches = [ ./format-security.patch ];
-
+  strictDeps = true;
   buildInputs = [ ncurses ];
+  __structuredAttrs = true;
 
   meta = {
     description = "A curses based card games application";
     homepage = "https://sourceforge.net/projects/cpat/";
-    mainProgram = "cpat";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ castorNova2 ];
+    platforms = lib.platforms.unix;
+    mainProgram = "cpat";
   };
 })

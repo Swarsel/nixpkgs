@@ -23,6 +23,7 @@ buildGoModule (finalAttrs: {
     tests = {
       inherit (nixosTests) transfer-sh;
     };
+
     updateScript = nix-update-script { };
   };
 
@@ -30,11 +31,13 @@ buildGoModule (finalAttrs: {
     description = "Easy and fast file sharing and pastebin server with access from the command-line";
     homepage = "https://github.com/dutchcoders/transfer.sh";
     changelog = "https://github.com/dutchcoders/transfer.sh/releases";
-    mainProgram = "transfer.sh";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       ocfox
       pinpox
     ];
+
+    mainProgram = "transfer.sh";
   };
 })

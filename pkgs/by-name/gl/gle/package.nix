@@ -3,19 +3,30 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  libglut,
-  libx11,
-  libxt,
-  libxmu,
-  libxi,
-  libxext,
   libGL,
   libGLU,
+  libglut,
+  libx11,
+  libxext,
+  libxi,
+  libxmu,
+  libxt,
 }:
 
 stdenv.mkDerivation rec {
   pname = "gle";
   version = "3.1.2";
+
+  src = fetchFromGitHub {
+    owner = "linas";
+    repo = "glextrusion";
+    tag = "${pname}-${version}";
+    sha256 = "sha256-yvCu0EOwxOMN6upeHX+C2sIz1YVjjB/320g+Mf24S6g=";
+  };
+
+  nativeBuildInputs = [
+    autoreconfHook
+  ];
 
   buildInputs = [
     libGLU
@@ -27,17 +38,6 @@ stdenv.mkDerivation rec {
     libxi
     libxext
   ];
-
-  nativeBuildInputs = [
-    autoreconfHook
-  ];
-
-  src = fetchFromGitHub {
-    owner = "linas";
-    repo = "glextrusion";
-    tag = "${pname}-${version}";
-    sha256 = "sha256-yvCu0EOwxOMN6upeHX+C2sIz1YVjjB/320g+Mf24S6g=";
-  };
 
   meta = {
     description = "Tubing and extrusion library";

@@ -1,44 +1,45 @@
 {
   lib,
-  libGL,
   stdenv,
   fetchurl,
-  undmg,
-  dpkg,
-  autoPatchelfHook,
-  wrapGAppsHook3,
   alsa-lib,
   at-spi2-atk,
+  autoPatchelfHook,
+  dpkg,
   gdk-pixbuf,
-  nss,
-  udev,
   gnome-keyring,
-  libgbm,
   gtk3,
-  libusb1,
-  libsecret,
+  libGL,
   libappindicator,
-  xdotool,
+  libgbm,
+  libsecret,
+  libusb1,
   libx11,
   libxcomposite,
   libxext,
   libxrandr,
   libxscrnsaver,
-  libxtst,
   libxshmfence,
+  libxtst,
+  nss,
+  udev,
+  undmg,
+  wrapGAppsHook3,
+  xdotool,
 }:
 let
   pname = "keeweb";
   version = "1.18.7";
 
   srcs = {
-    x86_64-linux = fetchurl {
-      url = "https://github.com/keeweb/keeweb/releases/download/v${version}/KeeWeb-${version}.linux.x64.deb";
-      hash = "sha256-/U+vn5TLIU9/J6cRFjuAdyGzlwC04mp4L2X2ETp+ZSE=";
-    };
     aarch64-darwin = fetchurl {
-      url = "https://github.com/keeweb/keeweb/releases/download/v${version}/KeeWeb-${version}.mac.arm64.dmg";
       hash = "sha256-bkhwsWYLkec16vMOfXUce7jfrmI9W2xHiZvU1asebK4=";
+      url = "https://github.com/keeweb/keeweb/releases/download/v${version}/KeeWeb-${version}.mac.arm64.dmg";
+    };
+
+    x86_64-linux = fetchurl {
+      hash = "sha256-/U+vn5TLIU9/J6cRFjuAdyGzlwC04mp4L2X2ETp+ZSE=";
+      url = "https://github.com/keeweb/keeweb/releases/download/v${version}/KeeWeb-${version}.linux.x64.deb";
     };
   };
   src =
@@ -69,13 +70,13 @@ let
 
   meta = {
     description = "Free cross-platform password manager compatible with KeePass";
-    mainProgram = "keeweb";
     homepage = "https://keeweb.info/";
     changelog = "https://github.com/keeweb/keeweb/blob/v${version}/release-notes.md";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ sikmir ];
     platforms = builtins.attrNames srcs;
+    mainProgram = "keeweb";
   };
 in
 if stdenv.hostPlatform.isDarwin then
@@ -89,12 +90,12 @@ if stdenv.hostPlatform.isDarwin then
 
     nativeBuildInputs = [ undmg ];
 
-    sourceRoot = ".";
-
     installPhase = ''
       mkdir -p $out/Applications
       cp -r *.app $out/Applications
     '';
+
+    sourceRoot = ".";
   }
 else
   stdenv.mkDerivation {

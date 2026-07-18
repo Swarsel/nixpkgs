@@ -1,28 +1,28 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  cairo,
+  djvulibre,
   glib,
   gobject-introspection,
-  intltool,
-  shared-mime-info,
   gtk3,
-  wrapGAppsHook3,
+  intltool,
   libarchive,
+  libgxps,
+  libsecret,
+  libspectre,
   libxml2,
+  mathjax,
+  meson,
+  ninja,
+  pkg-config,
+  poppler,
+  shared-mime-info,
+  webkitgtk_4_1,
+  wrapGAppsHook3,
   xapp,
   xapp-symbolic-icons,
-  meson,
-  pkg-config,
-  cairo,
-  libsecret,
-  poppler,
-  libspectre,
-  libgxps,
-  webkitgtk_4_1,
-  mathjax,
-  ninja,
-  djvulibre,
   backends ? [
     "pdf"
     "ps" # "dvi" "t1lib"
@@ -56,13 +56,6 @@ stdenv.mkDerivation (finalAttrs: {
     intltool
   ];
 
-  mesonFlags = [
-    # FIXME: `MathJax.js` is only available in MathJax 2.7.x.
-    "-Dmathjax-directory=${mathjax}"
-    "-Dintrospection=true"
-  ]
-  ++ (map (x: "-D${x}=true") backends);
-
   buildInputs = [
     glib
     gtk3
@@ -79,6 +72,13 @@ stdenv.mkDerivation (finalAttrs: {
     djvulibre
   ];
 
+  mesonFlags = [
+    # FIXME: `MathJax.js` is only available in MathJax 2.7.x.
+    "-Dmathjax-directory=${mathjax}"
+    "-Dintrospection=true"
+  ]
+  ++ (map (x: "-D${x}=true") backends);
+
   postInstall = ''
     substituteInPlace $out/share/thumbnailers/xreader.thumbnailer \
       --replace-fail "TryExec=xreader-thumbnailer" "TryExec=$out/bin/xreader-thumbnailer" \
@@ -94,6 +94,7 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Document viewer capable of displaying multiple and single page
 document formats like PDF and Postscript";
+
     homepage = "https://github.com/linuxmint/xreader";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;

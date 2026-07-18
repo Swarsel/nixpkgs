@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -29,8 +29,8 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://cadsondemak.github.io/sarabun/";
     description = "Slightly-condensed looped Thai and sans serif Latin typeface for communications";
+
     longDescription = ''
       The most popular typeface from the 13 fonts from SIPA Thailand’s National
       fonts project. Sarabun was designed by Suppakit Chalermlarp to be a
@@ -42,8 +42,10 @@ stdenvNoCC.mkDerivation {
       neutral Thai traditional loop design which can easily fit in with any
       occasion. Probably one of the most today’s familiar Thai loop typefaces.
     '';
+
+    homepage = "https://cadsondemak.github.io/sarabun/";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ toastal ];
+    platforms = lib.platforms.all;
   };
 }

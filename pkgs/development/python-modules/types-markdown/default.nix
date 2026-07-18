@@ -8,16 +8,15 @@
 buildPythonPackage (finalAttrs: {
   pname = "types-markdown";
   version = "3.10.2.20260211";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "types_markdown";
     inherit (finalAttrs) version;
     hash = "sha256-ZhZDEPiMEaWMbHBglMb4xTfEGONSXTO3Ynal+9ZrAc4=";
+    pname = "types_markdown";
   };
 
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "markdown-stubs" ];
 
   meta = {

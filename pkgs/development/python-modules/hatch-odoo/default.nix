@@ -1,15 +1,14 @@
 {
-  buildPythonPackage,
+  lib,
   fetchFromGitHub,
+  buildPythonPackage,
   hatch-vcs,
   hatchling,
-  lib,
   manifestoo-core,
 }:
 buildPythonPackage rec {
   pname = "hatch-odoo";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "acsone";
@@ -24,6 +23,8 @@ buildPythonPackage rec {
     hatchling
     manifestoo-core
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Hatch plugin to develop and package Odoo projects";

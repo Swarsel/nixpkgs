@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
-  jdk11,
   atlassian-plugin-sdk,
-  testers,
-  writeShellScript,
   common-updater-scripts,
   curl,
+  jdk11,
   jq,
+  makeWrapper,
+  testers,
+  writeShellScript,
   yq,
 }:
 
@@ -29,8 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ jdk11 ];
 
-  unpackPhase = "tar -xzf $src";
-
   installPhase = ''
     runHook preInstall
 
@@ -45,11 +43,13 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  unpackPhase = "tar -xzf $src";
+
   passthru = {
     tests.version = testers.testVersion {
-      package = atlassian-plugin-sdk;
-      command = "atlas-version";
       version = "atlassian-plugin-sdk-${finalAttrs.version}";
+      command = "atlas-version";
+      package = atlassian-plugin-sdk;
     };
 
     updateScript = writeShellScript "update-atlassian-plugin-sdk" ''

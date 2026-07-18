@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pyasn1,
+  setuptools,
   tqdm,
 }:
 
 buildPythonPackage rec {
   pname = "pysmb";
   version = "1.2.14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "miketeo";
@@ -19,6 +18,9 @@ buildPythonPackage rec {
     hash = "sha256-TwQ9gkhZ9nMyr30qJ9QVX3PPUtSPcxxBzKZr7Z7d9l8=";
   };
 
+  # Tests require Network Connectivity and a server up and running
+  # https://github.com/miketeo/pysmb/blob/master/python3/tests/README_1st.txt
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,9 +28,7 @@ buildPythonPackage rec {
     tqdm
   ];
 
-  # Tests require Network Connectivity and a server up and running
-  # https://github.com/miketeo/pysmb/blob/master/python3/tests/README_1st.txt
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "nmb"

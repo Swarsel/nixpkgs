@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   aliyun-python-sdk-core,
   aliyun-python-sdk-kms,
   aliyun-python-sdk-sts,
   buildPythonPackage,
   crcmod,
-  fetchFromGitHub,
   mock,
   pycryptodome,
   pytestCheckHook,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "oss2";
   version = "2.18.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "aliyun";
@@ -39,10 +38,6 @@ buildPythonPackage rec {
     mock
     pytestCheckHook
   ];
-
-  pythonRelaxDeps = true;
-
-  pythonImportsCheck = [ "oss2" ];
 
   disabledTestPaths = [
     # Tests require network access
@@ -102,6 +97,10 @@ buildPythonPackage rec {
     # Tests require network access
     "test_write_get_object_response"
   ];
+
+  format = "setuptools";
+  pythonImportsCheck = [ "oss2" ];
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Alibaba Cloud OSS SDK for Python";

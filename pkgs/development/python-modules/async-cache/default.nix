@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "async-cache";
   version = "2.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "iamsinghrajat";
@@ -18,11 +17,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-3SPepAlXJxufTgNqwxh/c2jhL/j9/omqOZElHhDiIIw=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "cache" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "cache" ];
 
   meta = {
     description = "Caching solution for asyncio";

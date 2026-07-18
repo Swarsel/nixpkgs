@@ -1,15 +1,14 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   nix,
+  python3Packages,
   ronn,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "vulnix";
   version = "1.12.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nix-community";
@@ -18,24 +17,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-4aaYSOBuZHW/FZ8c+REjwr6X2S4KsP9Czk5jGTQfqDI=";
   };
 
-  __darwinAllowLocalNetworking = true;
-
   outputs = [
     "out"
     "doc"
     "man"
   ];
+
   nativeBuildInputs = [ ronn ];
-
-  nativeCheckInputs = with python3Packages; [
-    freezegun
-    pytestCheckHook
-    pytest-cov-stub
-  ];
-
-  build-system = with python3Packages; [
-    setuptools
-  ];
 
   propagatedBuildInputs = [
     nix
@@ -51,7 +39,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   postBuild = "make -C doc";
 
-  enabledTestPaths = [ "src/vulnix" ];
+  nativeCheckInputs = with python3Packages; [
+    freezegun
+    pytestCheckHook
+    pytest-cov-stub
+  ];
 
   postInstall = ''
     install -D -t $doc/share/doc/vulnix README.rst CHANGES.rst
@@ -60,13 +52,21 @@ python3Packages.buildPythonApplication (finalAttrs: {
     install -D -t $man/share/man/man5 doc/vulnix-whitelist.5
   '';
 
+  __darwinAllowLocalNetworking = true;
+
+  build-system = with python3Packages; [
+    setuptools
+  ];
+
   dontStrip = true;
+  enabledTestPaths = [ "src/vulnix" ];
+  pyproject = true;
 
   meta = {
     description = "NixOS vulnerability scanner";
-    mainProgram = "vulnix";
     homepage = "https://github.com/nix-community/vulnix";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ henrirosten ];
+    mainProgram = "vulnix";
   };
 })

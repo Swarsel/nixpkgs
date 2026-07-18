@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  updateAutotoolsGnuConfigScriptsHook,
   coreutils,
+  updateAutotoolsGnuConfigScriptsHook,
 }:
 
 # Note: this package is used for bootstrapping fetchurl, and thus
@@ -20,9 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-E4fgtn/yR9Kr3pmPkN+/cMFJE5Glnd/suK5ph4nwpPU=";
   };
 
-  postPatch = ''
-    substituteInPlace xargs/xargs.c --replace 'char default_cmd[] = "echo";' 'char default_cmd[] = "${coreutils}/bin/echo";'
-  '';
+  outputs = [
+    "out"
+    "info"
+    "locate"
+  ];
 
   patches = [
     ./no-install-statedir.patch
@@ -33,22 +35,12 @@ stdenv.mkDerivation (finalAttrs: {
     ./gnulib-float-h-tests-port-to-C23-PowerPC-GCC.patch
   ];
 
+  postPatch = ''
+    substituteInPlace xargs/xargs.c --replace 'char default_cmd[] = "echo";' 'char default_cmd[] = "${coreutils}/bin/echo";'
+  '';
+
   nativeBuildInputs = [ updateAutotoolsGnuConfigScriptsHook ];
   buildInputs = [ coreutils ]; # bin/updatedb script needs to call sort
-
-  # Since glibc-2.25 the i686 tests hang reliably right after test-sleep.
-  doCheck =
-    !stdenv.hostPlatform.isDarwin
-    && !stdenv.hostPlatform.isFreeBSD
-    && !(stdenv.hostPlatform.libc == "glibc" && stdenv.hostPlatform.isi686)
-    && (stdenv.hostPlatform.libc != "musl")
-    && stdenv.hostPlatform == stdenv.buildPlatform;
-
-  outputs = [
-    "out"
-    "info"
-    "locate"
-  ];
 
   configureFlags = [
     # "sort" need not be on the PATH as a run-time dep, so we need to tell
@@ -65,6 +57,14 @@ stdenv.mkDerivation (finalAttrs: {
     ];
   };
 
+  # Since glibc-2.25 the i686 tests hang reliably right after test-sleep.
+  doCheck =
+    !stdenv.hostPlatform.isDarwin
+    && !stdenv.hostPlatform.isFreeBSD
+    && !(stdenv.hostPlatform.libc == "glibc" && stdenv.hostPlatform.isi686)
+    && (stdenv.hostPlatform.libc != "musl")
+    && stdenv.hostPlatform == stdenv.buildPlatform;
+
   postInstall = ''
     moveToOutput bin/locate $locate
     moveToOutput bin/updatedb $locate
@@ -78,15 +78,14 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   enableParallelBuilding = true;
-
   # bionic libc is super weird and has issues with fortify outside of its own libc, check this comment:
   # https://github.com/NixOS/nixpkgs/pull/192630#discussion_r978985593
   # or you can check libc/include/sys/cdefs.h in bionic source code
   hardeningDisable = lib.optional (stdenv.hostPlatform.libc == "bionic") "fortify";
 
   meta = {
-    homepage = "https://www.gnu.org/software/findutils/";
     description = "GNU Find Utilities, the basic directory searching utilities of the GNU operating system";
+
     longDescription = ''
       The GNU Find Utilities are the basic directory searching
       utilities of the GNU operating system.  These programs are
@@ -104,11 +103,13 @@ stdenv.mkDerivation (finalAttrs: {
           * locate - list files in databases that match a pattern;
           * updatedb - update a file name database;
     '';
-    platforms = lib.platforms.all;
+
+    homepage = "https://www.gnu.org/software/findutils/";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "find";
     maintainers = [ lib.maintainers.mdaniels5757 ];
-    teams = [ lib.teams.security-review ];
+    platforms = lib.platforms.all;
+    mainProgram = "find";
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "gnu" finalAttrs.version;
+    teams = [ lib.teams.security-review ];
   };
 })

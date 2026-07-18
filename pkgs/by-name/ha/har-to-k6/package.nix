@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
   versionCheckHook,
 }:
@@ -17,13 +17,10 @@ buildNpmPackage rec {
     hash = "sha256-8cMq0fWBRPR9SmPMSgjulA//BN91xZbFVPCYxxULRKQ=";
   };
 
-  dontNpmBuild = true;
-
   npmDepsHash = "sha256-7YPlXrBxO3Zdm+3vkHdcCABV1dUJ6BCPwCZ4IFKZjT4=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  dontNpmBuild = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -32,7 +29,7 @@ buildNpmPackage rec {
     changelog = "https://github.com/grafana/har-to-k6/releases/tag/v${version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ cterence ];
-    mainProgram = "har-to-k6";
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "har-to-k6";
   };
 }

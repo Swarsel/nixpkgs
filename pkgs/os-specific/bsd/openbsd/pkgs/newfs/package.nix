@@ -4,11 +4,12 @@
 }:
 
 mkDerivation {
-  path = "sbin/newfs";
   extraPaths = [
     "sbin/mount"
     "sbin/disklabel"
   ];
+
+  path = "sbin/newfs";
   meta.mainProgram = "newfs";
   meta.platforms = lib.platforms.openbsd;
 }

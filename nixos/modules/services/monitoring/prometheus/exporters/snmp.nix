@@ -33,8 +33,8 @@ let
     file:
     pkgs.runCommand "checked-snmp-exporter-config.yml"
       {
-        preferLocalBuild = true;
         nativeBuildInputs = [ pkgs.buildPackages.prometheus-snmp-exporter ];
+        preferLocalBuild = true;
       }
       ''
         ln -s ${coerceConfigFile file} $out
@@ -42,69 +42,50 @@ let
       '';
 in
 {
-  port = 9116;
   extraOpts = {
-    configurationPath = mkOption {
-      type = types.nullOr types.path;
-      default = null;
-      description = ''
-        Path to a snmp exporter configuration file. Mutually exclusive with 'configuration' option.
-      '';
-      example = literalExpression "./snmp.yml";
-    };
-
     configuration = mkOption {
-      type = types.nullOr types.attrs;
       default = null;
+
       description = ''
         Snmp exporter configuration as nix attribute set. Mutually exclusive with 'configurationPath' option.
       '';
+
       example = {
         auths.public_v2 = {
           community = "public";
           version = 2;
         };
       };
+
+      type = types.nullOr types.attrs;
+    };
+
+    configurationPath = mkOption {
+      default = null;
+
+      description = ''
+        Path to a snmp exporter configuration file. Mutually exclusive with 'configuration' option.
+      '';
+
+      example = literalExpression "./snmp.yml";
+      type = types.nullOr types.path;
     };
 
     enableConfigCheck = mkOption {
-      type = types.bool;
       default = true;
+
       description = ''
         Whether to run a correctness check for the configuration file. This depends
         on the configuration file residing in the nix-store. Paths passed as string will
         be copied to the store.
       '';
-    };
 
-    logFormat = mkOption {
-      type = types.enum [
-        "logfmt"
-        "json"
-      ];
-      default = "logfmt";
-      description = ''
-        Output format of log messages.
-      '';
-    };
-
-    logLevel = mkOption {
-      type = types.enum [
-        "debug"
-        "info"
-        "warn"
-        "error"
-      ];
-      default = "info";
-      description = ''
-        Only log messages with the given severity or above.
-      '';
+      type = types.bool;
     };
 
     environmentFile = mkOption {
-      type = types.nullOr types.path;
       default = null;
-      example = "/root/prometheus-snmp-exporter.env";
+
       description = ''
         EnvironmentFile as defined in {manpage}`systemd.exec(5)`.
 
@@ -126,8 +107,42 @@ in
         Note that this file needs to be available on the host on which
         this exporter is running.
       '';
+
+      example = "/root/prometheus-snmp-exporter.env";
+      type = types.nullOr types.path;
+    };
+
+    logFormat = mkOption {
+      default = "logfmt";
+
+      description = ''
+        Output format of log messages.
+      '';
+
+      type = types.enum [
+        "logfmt"
+        "json"
+      ];
+    };
+
+    logLevel = mkOption {
+      default = "info";
+
+      description = ''
+        Only log messages with the given severity or above.
+      '';
+
+      type = types.enum [
+        "debug"
+        "info"
+        "warn"
+        "error"
+      ];
     };
   };
+
+  port = 9116;
+
   serviceOpts =
     let
       uncheckedConfigFile =
@@ -140,6 +155,7 @@ in
     {
       serviceConfig = {
         EnvironmentFile = lib.mkIf (cfg.environmentFile != null) [ cfg.environmentFile ];
+
         ExecStart = ''
           ${pkgs.prometheus-snmp-exporter}/bin/snmp_exporter \
             --config.file=${escapeShellArg configFile} \

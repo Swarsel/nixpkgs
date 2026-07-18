@@ -1,22 +1,22 @@
 {
   lib,
-  buildPlatform,
-  hostPlatform,
   fetchurl,
   bash,
-  coreutils,
-  gcc,
-  musl,
   binutils,
-  gnumake,
-  gnused,
-  gnugrep,
-  gawk,
+  buildPlatform,
+  bzip2,
+  coreutils,
   diffutils,
   findutils,
+  gawk,
+  gcc,
+  gnugrep,
+  gnumake,
+  gnused,
   gnutar,
   gzip,
-  bzip2,
+  hostPlatform,
+  musl,
   xz,
 }:
 let
@@ -33,20 +33,20 @@ let
   # last version to compile with gcc 4.6
   gmpVersion = "6.2.1";
   gmp = fetchurl {
-    url = "mirror://gnu/gmp/gmp-${gmpVersion}.tar.xz";
     hash = "sha256-/UgpkSzd0S+EGBw0Ucx1K+IkZD6H+sSXtp7d2txJtPI=";
+    url = "mirror://gnu/gmp/gmp-${gmpVersion}.tar.xz";
   };
 
   mpfrVersion = "4.2.2";
   mpfr = fetchurl {
-    url = "mirror://gnu/mpfr/mpfr-${mpfrVersion}.tar.xz";
     hash = "sha256-tnugOD736KhWNzTi6InvXsPDuJigHQD6CmhprYHGzgE=";
+    url = "mirror://gnu/mpfr/mpfr-${mpfrVersion}.tar.xz";
   };
 
   mpcVersion = "1.3.1";
   mpc = fetchurl {
-    url = "mirror://gnu/mpc/mpc-${mpcVersion}.tar.gz";
     hash = "sha256-q2QkkvXPiCt0qgy3MM1BCoHtzb7IlRg86TDnBsHHWbg=";
+    url = "mirror://gnu/mpc/mpc-${mpcVersion}.tar.gz";
   };
 in
 bash.runCommand "${pname}-${version}"
@@ -95,9 +95,9 @@ bash.runCommand "${pname}-${version}"
       description = "GNU Compiler Collection, version ${version}";
       homepage = "https://gcc.gnu.org";
       license = lib.licenses.gpl3Plus;
-      teams = [ lib.teams.minimal-bootstrap ];
       platforms = lib.platforms.unix;
       mainProgram = "gcc";
+      teams = [ lib.teams.minimal-bootstrap ];
     };
   }
   ''

@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  makeWrapper,
-  jre,
-  gnugrep,
-  coreutils,
-  writeScript,
   common-updater-scripts,
+  coreutils,
   git,
+  gnugrep,
   gnused,
-  nix,
+  jre,
   majorVersion,
+  makeWrapper,
+  nix,
+  writeScript,
 }:
 
 let
@@ -19,15 +19,15 @@ let
 
   versionMap = {
     "2.12" = {
+      pname = "scala_2_12";
       version = "2.12.18";
       hash = "sha256-naIJCET+YPrbXln39F9aU3DBdnjcn7PYMmhDxETOA5g=";
-      pname = "scala_2_12";
     };
 
     "2.13" = {
+      pname = "scala_2_13";
       version = "2.13.15";
       hash = "sha256-jXIZ0q2IHIHPdwmp5JU05s4S0Bft4Uc+r9Hpuyh8ObE=";
-      pname = "scala_2_13";
     };
   };
 
@@ -36,7 +36,6 @@ with versionMap.${majorVersion};
 
 stdenv.mkDerivation rec {
   inherit version;
-
   pname = "scala";
 
   src = fetchurl {
@@ -44,9 +43,8 @@ stdenv.mkDerivation rec {
     url = "https://www.scala-lang.org/files/archive/scala-${version}.tgz";
   };
 
-  propagatedBuildInputs = [ jre ];
-
   nativeBuildInputs = [ makeWrapper ];
+  propagatedBuildInputs = [ jre ];
 
   installPhase = ''
     runHook preInstall
@@ -68,6 +66,7 @@ stdenv.mkDerivation rec {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     $out/bin/scalac -version 2>&1 | grep '^Scala compiler version ${version}'
 
@@ -100,6 +99,7 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "General purpose programming language";
+
     longDescription = ''
       Scala is a general purpose programming language designed to express
       common programming patterns in a concise, elegant, and type-safe way.
@@ -108,12 +108,15 @@ stdenv.mkDerivation rec {
       Code sizes are typically reduced by a factor of two to three when
       compared to an equivalent Java application.
     '';
+
     homepage = "https://www.scala-lang.org/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
-    branch = lib.versions.majorMinor version;
+
     maintainers = with lib.maintainers; [
       kashw2
     ];
+
+    platforms = lib.platforms.all;
+    branch = lib.versions.majorMinor version;
   };
 }

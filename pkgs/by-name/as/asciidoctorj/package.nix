@@ -26,16 +26,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Official library for running Asciidoctor on the JVM";
+
     longDescription = ''
       AsciidoctorJ is the official library for running Asciidoctor on the JVM.
       Using AsciidoctorJ, you can convert AsciiDoc content or analyze the
       structure of a parsed AsciiDoc document from Java and other JVM
       languages.
     '';
+
     homepage = "https://asciidoctor.org/docs/asciidoctorj/";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ moaxcp ];
+    platforms = lib.platforms.all;
     mainProgram = "asciidoctorj";
   };
 })

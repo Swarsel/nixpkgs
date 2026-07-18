@@ -5,11 +5,11 @@
   cmake,
   gbenchmark,
   gtest,
+  nix-update-script,
   simdjson,
   simdutf,
   testers,
   validatePkgConfig,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,14 +27,8 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     validatePkgConfig
   ];
-  buildInputs = [ simdutf ];
 
-  doCheck = true;
-  checkInputs = [
-    simdjson
-    gtest
-    gbenchmark
-  ];
+  buildInputs = [ simdutf ];
 
   cmakeFlags = [
     # uses CPM that requires network access
@@ -46,21 +40,31 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "CPM_USE_LOCAL_PACKAGES" true)
   ];
 
-  passthru = {
-    updateScript = nix-update-script { };
+  doCheck = true;
 
+  checkInputs = [
+    simdjson
+    gtest
+    gbenchmark
+  ];
+
+  passthru = {
     tests.pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "WHATWG-compliant and fast URL parser written in modern C";
     homepage = "https://github.com/ada-url/ada";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ nickcao ];
     platforms = lib.platforms.all;
     pkgConfigModules = [ "ada" ];

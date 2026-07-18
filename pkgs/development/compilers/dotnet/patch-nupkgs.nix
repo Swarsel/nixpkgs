@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
-  zlib,
+  stdenv,
   curl,
   icu,
   libunwind,
   libuuid,
-  openssl,
   lttng-ust_2_12,
+  openssl,
   patchelf,
   writeShellScriptBin,
+  zlib,
 }:
 
 let

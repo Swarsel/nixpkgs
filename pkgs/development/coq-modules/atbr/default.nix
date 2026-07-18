@@ -1,14 +1,16 @@
 {
   lib,
-  mkCoqDerivation,
   coq,
+  mkCoqDerivation,
   stdlib,
   version ? null,
 }:
 
 mkCoqDerivation {
-  pname = "atbr";
   inherit version;
+  pname = "atbr";
+  propagatedBuildInputs = [ stdlib ];
+
   defaultVersion =
     let
       inherit (lib.versions) range;
@@ -19,14 +21,14 @@ mkCoqDerivation {
         out = "8.20.0";
       }
     ] null;
+
+  mlPlugin = true;
+
   release = {
     "8.20.0".hash = "sha256-Okhtq6Gnq4HA3tEZJvf8JBnmk3OKdm6hC1qINmoShmo=";
   };
+
   releaseRev = v: "v${v}";
-
-  propagatedBuildInputs = [ stdlib ];
-
-  mlPlugin = true;
 
   meta = {
     description = "Coq library and tactic for deciding Kleene algebras";

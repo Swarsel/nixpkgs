@@ -2,27 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  buildType ? "meson",
-
-  gfortran,
-  pkg-config,
-  python3,
-  meson,
-  ninja,
-  cmake,
-
   # buildInputs
   blas,
+  cmake,
+  gfortran,
   lapack,
-  test-drive,
-
   # propagatedBuildInputs
   mctc-lib,
-  numsa,
-  toml-f,
-
+  meson,
+  ninja,
   nix-update-script,
+  numsa,
+  pkg-config,
+  python3,
+  test-drive,
+  toml-f,
+  buildType ? "meson",
 }:
 
 assert (
@@ -34,8 +29,6 @@ assert (
 stdenv.mkDerivation (finalAttrs: {
   pname = "cpcm-x";
   version = "1.1.0";
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "grimme-lab";
@@ -43,6 +36,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-FyPUECbcqUHoGq1LASvPF4qSUKQ5N/y1itq8e2wGliE=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     # The installed CMake package config links numsa::numsa transitively but
@@ -56,10 +54,7 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "/usr/bin/env python" "${lib.getExe python3}"
   '';
 
-  outputs = [
-    "out"
-    "dev"
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     gfortran
@@ -88,7 +83,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
-
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -97,7 +92,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/grimme-lab/CPCM-X/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.lgpl3;
     maintainers = with lib.maintainers; [ GaetanLepage ];
-    mainProgram = "cpx";
     platforms = lib.platforms.linux;
+    mainProgram = "cpx";
   };
 })

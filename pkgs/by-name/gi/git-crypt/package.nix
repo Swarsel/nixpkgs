@@ -1,13 +1,13 @@
 {
-  fetchFromGitHub,
-  git,
-  gnupg,
-  makeWrapper,
-  openssl,
   lib,
   stdenv,
-  libxslt,
+  fetchFromGitHub,
   docbook_xsl,
+  git,
+  gnupg,
+  libxslt,
+  makeWrapper,
+  openssl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,6 +21,11 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-d5nMDFQkJY+obYkhvr8yT9mjlGEBWFLN5xGizJ9kwHw=";
   };
 
+  postPatch = ''
+    substituteInPlace commands.cpp \
+      --replace '(escape_shell_arg(our_exe_path()))' '= "git-crypt"'
+  '';
+
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -29,11 +34,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ openssl ];
-
-  postPatch = ''
-    substituteInPlace commands.cpp \
-      --replace '(escape_shell_arg(our_exe_path()))' '= "git-crypt"'
-  '';
 
   makeFlags = [
     "PREFIX=${placeholder "out"}"
@@ -57,8 +57,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://www.agwa.name/projects/git-crypt";
     description = "Transparent file encryption in git";
+
     longDescription = ''
       git-crypt enables transparent encryption and decryption of files in a git
       repository. Files which you choose to protect are encrypted when
@@ -70,11 +70,13 @@ stdenv.mkDerivation (finalAttrs: {
       same repository as your code, without requiring you to lock down your
       entire repository.
     '';
-    downloadPage = "https://github.com/AGWA/git-crypt/releases";
+
+    homepage = "https://www.agwa.name/projects/git-crypt";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ dochang ];
     platforms = lib.platforms.unix;
     mainProgram = "git-crypt";
+    downloadPage = "https://github.com/AGWA/git-crypt/releases";
   };
 
 })

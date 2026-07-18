@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   gitUpdater,
-  pytestCheckHook,
-  unittestCheckHook,
-  setuptools,
   pkg-config,
+  pytestCheckHook,
+  setuptools,
+  unittestCheckHook,
   yajl,
 }:
 
 buildPythonPackage rec {
   pname = "jsonslicer";
   version = "0.1.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "AMDmi3";
@@ -22,11 +21,6 @@ buildPythonPackage rec {
     hash = "sha256-nPifyqr+MaFqoCYFbFSSBDjvifpX0CFnHCdMCvhwYTA=";
   };
 
-  build-system = [
-    setuptools
-    pkg-config
-  ];
-
   buildInputs = [ yajl ];
 
   nativeCheckInputs = [
@@ -34,8 +28,13 @@ buildPythonPackage rec {
     unittestCheckHook
   ];
 
-  pythonImportsCheck = [ "jsonslicer" ];
+  build-system = [
+    setuptools
+    pkg-config
+  ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "jsonslicer" ];
   passthru.updateScript = gitUpdater { };
 
   meta = {

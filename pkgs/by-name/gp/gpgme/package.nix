@@ -3,26 +3,31 @@
   stdenv,
   fetchurl,
   autoreconfHook,
-  libgpg-error,
-  gnupg,
-  pkg-config,
-  glib,
-  pth,
-  libassuan,
-  which,
-  texinfo,
   buildPackages,
+  glib,
+  gnupg,
   # only for passthru.tests
   gpa,
+  libassuan,
+  libgpg-error,
   libsForQt5,
-  qt6Packages,
+  pkg-config,
+  pth,
   python3,
+  qt6Packages,
   testers,
+  texinfo,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "gpgme";
   version = "2.1.0";
+
+  src = fetchurl {
+    url = "mirror://gnupg/gpgme/gpgme-${finalAttrs.version}.tar.bz2";
+    hash = "sha256-hBxepT/CYln0+/DovemC3qG4ocoMt35oHIKwUFZr+Ss=";
+  };
 
   outputs = [
     "out"
@@ -30,24 +35,17 @@ stdenv.mkDerivation (finalAttrs: {
     "info"
   ];
 
-  outputBin = "dev"; # gpgme-config; not so sure about gpgme-tool
-
-  src = fetchurl {
-    url = "mirror://gnupg/gpgme/gpgme-${finalAttrs.version}.tar.bz2";
-    hash = "sha256-hBxepT/CYln0+/DovemC3qG4ocoMt35oHIKwUFZr+Ss=";
-  };
+  patches = [
+    # Don't use deprecated LFS64 APIs (removed in musl 1.2.4)
+    # https://dev.gnupg.org/D600
+    ./LFS64.patch
+  ];
 
   postPatch = ''
     # remove -unknown suffix from pkgconfig version
     substituteInPlace autogen.sh \
       --replace-fail 'tmp="-unknown"' 'tmp=""'
   '';
-
-  patches = [
-    # Don't use deprecated LFS64 APIs (removed in musl 1.2.4)
-    # https://dev.gnupg.org/D600
-    ./LFS64.patch
-  ];
 
   nativeBuildInputs = [
     autoreconfHook
@@ -63,12 +61,6 @@ stdenv.mkDerivation (finalAttrs: {
     pth
   ];
 
-  nativeCheckInputs = [ which ];
-
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
-
-  dontWrapQtApps = true;
-
   configureFlags = [
     "--enable-fixed-path=${gnupg}/bin"
     "--with-libgpg-error-prefix=${libgpg-error.dev}"
@@ -80,53 +72,64 @@ stdenv.mkDerivation (finalAttrs: {
   # fit in the limit. https://github.com/NixOS/nix/pull/1085
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ "--disable-gpg-test" ];
 
+  # prevent tests from being run during the buildPhase
+  makeFlags = [ "tests=" ];
+
   env.NIX_CFLAGS_COMPILE = toString (
     # https://www.gnupg.org/documentation/manuals/gpgme/Largefile-Support-_0028LFS_0029.html
     lib.optional stdenv.hostPlatform.is32bit "-D_FILE_OFFSET_BITS=64"
   );
 
-  enableParallelBuilding = true;
-
-  # prevent tests from being run during the buildPhase
-  makeFlags = [ "tests=" ];
-
   doCheck = true;
+  nativeCheckInputs = [ which ];
 
   checkFlags = [
     "-C"
     "tests"
   ];
 
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  dontWrapQtApps = true;
+  enableParallelBuilding = true;
+  outputBin = "dev"; # gpgme-config; not so sure about gpgme-tool
+
   passthru.tests = {
     inherit gpa;
+
     pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
       versionCheck = true;
     };
+
     python = python3.pkgs.gpgme;
     qt5 = libsForQt5.qgpgme;
     qt6 = qt6Packages.qgpgme;
   };
 
   meta = {
-    homepage = "https://gnupg.org/software/gpgme/index.html";
-    changelog = "https://dev.gnupg.org/source/gpgme/browse/master/NEWS;gpgme-${finalAttrs.version}?as=remarkup";
     description = "Library for making GnuPG easier to use";
+
     longDescription = ''
       GnuPG Made Easy (GPGME) is a library designed to make access to GnuPG
       easier for applications. It provides a High-Level Crypto API for
       encryption, decryption, signing, signature verification and key
       management.
     '';
+
+    homepage = "https://gnupg.org/software/gpgme/index.html";
+    changelog = "https://dev.gnupg.org/source/gpgme/browse/master/NEWS;gpgme-${finalAttrs.version}?as=remarkup";
+
     license = with lib.licenses; [
       lgpl21Plus
       gpl3Plus
     ];
+
+    maintainers = with lib.maintainers; [ dotlambda ];
+    platforms = lib.platforms.unix;
+
     pkgConfigModules = [
       "gpgme"
       "gpgme-glib"
     ];
-    platforms = lib.platforms.unix;
-    maintainers = with lib.maintainers; [ dotlambda ];
   };
 })

@@ -1,7 +1,7 @@
 {
+  lib,
   fetchFromGitHub,
   buildNpmPackage,
-  lib,
   chromium,
 }:
 buildNpmPackage rec {
@@ -16,10 +16,6 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-B84p4VBaQMZlhwiwXdF9Ijwpn3MisMlOXWc0E+5R5l8=";
-  npmPackFlags = [ "--ignore-scripts" ];
-
-  dontNpmBuild = true;
-
   env.PUPPETEER_SKIP_DOWNLOAD = 1;
 
   postFixup = ''
@@ -32,12 +28,15 @@ buildNpmPackage rec {
       }
   '';
 
+  dontNpmBuild = true;
+  npmPackFlags = [ "--ignore-scripts" ];
+
   meta = {
     description = "High-quality PDF exporter for HTML presentation frameworks";
-    mainProgram = "decktape";
     homepage = "https://github.com/astefanutti/decktape";
     changelog = "https://github.com/astefanutti/decktape/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fidgetingbits ];
+    mainProgram = "decktape";
   };
 }

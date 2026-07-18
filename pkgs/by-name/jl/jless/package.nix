@@ -1,10 +1,10 @@
 {
   lib,
-  fetchFromGitHub,
-  rustPlatform,
   stdenv,
-  python3,
+  fetchFromGitHub,
   libxcb,
+  python3,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,20 +18,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-76oFPUWROX389U8DeMjle/GkdItu+0eYxZkt1c6l0V4=";
   };
 
-  cargoHash = "sha256-moXZcPGh0+KyyeUMjH7/+hvF86Penk2o2DQWj4BEzt8=";
-
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ python3 ];
-
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ libxcb ];
+  cargoHash = "sha256-moXZcPGh0+KyyeUMjH7/+hvF86Penk2o2DQWj4BEzt8=";
 
   meta = {
     description = "Command-line pager for JSON data";
-    mainProgram = "jless";
     homepage = "https://jless.io";
     changelog = "https://github.com/PaulJuliusMartinez/jless/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       jfchevrette
     ];
+
+    mainProgram = "jless";
   };
 })

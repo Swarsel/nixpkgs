@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -26,11 +26,11 @@ buildGoModule (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/paepckehh/certinfo/releases/tag/v${finalAttrs.version}";
-    homepage = "https://paepcke.de/certinfo";
     description = "Tool to analyze and troubleshoot x.509 & ssh certificates, encoded keys";
+    homepage = "https://paepcke.de/certinfo";
+    changelog = "https://github.com/paepckehh/certinfo/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
-    mainProgram = "certinfo";
     maintainers = with lib.maintainers; [ paepcke ];
+    mainProgram = "certinfo";
   };
 })

@@ -1,30 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonOlder,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  einops,
-  torch,
-  transformers,
-
+  buildPythonPackage,
   # optional-dependencies
   causal-conv1d,
-  matplotlib,
   datasets,
+  # dependencies
+  einops,
+  matplotlib,
   pytest,
+  pythonOlder,
+  # build-system
+  setuptools,
+  torch,
+  transformers,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "flash-linear-attention";
   version = "0.5.1";
-  pyproject = true;
-
-  disabled = pythonOlder "3.10";
 
   src = fetchFromGitHub {
     owner = "fla-org";
@@ -33,6 +27,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-vxNbZ+FkxJh2E0TF09Z7ghkm8eas7Q96heeSXwgV4uU=";
   };
 
+  # Tests require a GPU
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -41,19 +37,20 @@ buildPythonPackage (finalAttrs: {
     transformers
   ];
 
+  disabled = pythonOlder "3.10";
+
   optional-dependencies = {
-    # tilelang = [ tilelang ];
-    conv1d = [ causal-conv1d ];
     benchmark = [
       matplotlib
       datasets
     ];
+
+    # tilelang = [ tilelang ];
+    conv1d = [ causal-conv1d ];
     test = [ pytest ];
   };
 
-  # Tests require a GPU
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "fla" ];
 
   meta = {

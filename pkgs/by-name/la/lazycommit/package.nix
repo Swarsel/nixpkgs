@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  nix-update-script,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  nix-update-script,
   writableTmpDirAsHomeHook,
 }:
 buildGoModule (finalAttrs: {
@@ -18,9 +18,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-4OPCUWXxsAnzxsqZPHhjvhxQQf5Knm7nGqrdjH4I4YY=";
-
   nativeCheckInputs = [ writableTmpDirAsHomeHook ];
-
   # Error reading config file: open /nix/build/nix-53143-2282724270/.home/.config/.lazycommit.yaml: no such file or directory
   checkFlags = lib.optional stdenv.hostPlatform.isDarwin "-skip=^TestSetEndpoint_Validation$";
 
@@ -43,9 +41,11 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/m7medvision/lazycommit";
     changelog = "https://github.com/m7medvision/lazycommit/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       m7medvision
     ];
+
     mainProgram = "lazycommit";
   };
 })

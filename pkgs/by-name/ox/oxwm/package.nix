@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  callPackage,
   fetchFromGitHub,
-  zig_0_16,
-  pkg-config,
+  callPackage,
+  fontconfig,
+  freetype,
   libx11,
   libxft,
   libxinerama,
   lua5_4,
-  freetype,
-  fontconfig,
+  pkg-config,
   writableTmpDirAsHomeHook,
+  zig_0_16,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "oxwm";
@@ -23,13 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-N0uKA51AR0YFUcp6MdIiJS5HtHobSaDdXPRrMEOCSEM=";
   };
-
-  deps = callPackage ./build.zig.zon.nix { };
-
-  zigBuildFlags = [
-    "--system"
-    "${finalAttrs.deps}"
-  ];
 
   nativeBuildInputs = [
     zig_0_16.hook
@@ -48,18 +41,26 @@ stdenv.mkDerivation (finalAttrs: {
   # tests require a running X server
   doCheck = false;
 
-  doInstallCheck = true;
-  versionCheckProgramArg = "--version";
-  versionCheckKeepEnvironment = [ "HOME" ];
-  nativeInstallCheckInputs = [
-    writableTmpDirAsHomeHook
-  ];
-
   postInstall = ''
     install -Dm644 resources/oxwm.desktop -t $out/share/xsessions
     install -Dm644 resources/oxwm.1 -t $out/share/man/man1
     install -Dm644 templates/oxwm.lua -t $out/share/oxwm
   '';
+
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    writableTmpDirAsHomeHook
+  ];
+
+  deps = callPackage ./build.zig.zon.nix { };
+  versionCheckKeepEnvironment = [ "HOME" ];
+  versionCheckProgramArg = "--version";
+
+  zigBuildFlags = [
+    "--system"
+    "${finalAttrs.deps}"
+  ];
 
   passthru.providedSessions = [ "oxwm" ];
 

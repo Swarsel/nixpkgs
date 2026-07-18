@@ -1,10 +1,10 @@
 # hyphen dictionaries
 
 {
-  hyphen,
-  stdenv,
   lib,
+  stdenv,
   fetchgit,
+  hyphen,
   symlinkJoin,
 }:
 
@@ -12,30 +12,24 @@ let
   # this does not assume any structure for dictFilePath and readmeFilePath
   mkDictFromLibreofficeGitCustom =
     {
-      subdir,
-      shortName,
       dictFileName,
-      shortDescription,
       dictFilePath,
+      shortDescription,
+      shortName,
+      subdir,
       filenameAliases ? "",
       readmeFilePath ? "",
     }:
     stdenv.mkDerivation rec {
-      version = "24.8";
       pname = "hyphen-dict-${shortName}-libreoffice";
+      version = "24.8";
+
       src = fetchgit {
         url = "https://anongit.freedesktop.org/git/libreoffice/dictionaries.git";
         rev = "e4ad1862342d7e1365978499ca951ae4788c9dc0";
         hash = "sha256-sv3KnmrewE1dRxeO+TqfOjfHjoJpzJ6p8MdBDiT3Ips=";
       };
-      meta = {
-        description = "Hyphen dictionary for ${shortDescription} from LibreOffice";
-        homepage = "https://wiki.documentfoundation.org/Development/Dictionaries";
-        license = with lib.licenses; [ mpl20 ];
-        maintainers = with lib.maintainers; [ theCapypara ];
-        platforms = lib.platforms.all;
-      };
-      dontBuild = true;
+
       installPhase = ''
         runHook preInstall
         cd $src/${subdir}
@@ -52,15 +46,25 @@ let
         fi
         runHook postInstall
       '';
+
+      dontBuild = true;
+
+      meta = {
+        description = "Hyphen dictionary for ${shortDescription} from LibreOffice";
+        homepage = "https://wiki.documentfoundation.org/Development/Dictionaries";
+        license = with lib.licenses; [ mpl20 ];
+        maintainers = with lib.maintainers; [ theCapypara ];
+        platforms = lib.platforms.all;
+      };
     };
 
   # wrapper for backwards compatibility
   mkDictFromLibreofficeGit =
     {
-      subdir,
-      shortName,
-      shortDescription,
       dictFileName,
+      shortDescription,
+      shortName,
+      subdir,
       filenameAliases ? "",
       readmeFileName ? "",
     }:
@@ -68,178 +72,165 @@ let
       inherit subdir;
       inherit shortName;
       inherit shortDescription;
-      dictFilePath = "hyph_${dictFileName}.dic";
       dictFileName = dictFileName;
+      dictFilePath = "hyph_${dictFileName}.dic";
       filenameAliases = filenameAliases;
       readmeFilePath = if (readmeFileName != "") then "README_${readmeFileName}.txt" else "";
     };
 
   dicts = rec {
 
-    # see https://wiki.documentfoundation.org/Development/Dictionaries
-    # for a list of available hyphenation dictionaries
-
-    # see https://github.com/LibreOffice/dictionaries
-    # for the sources and to find the names of the README files
-
-    # AFRIKAANS
-
-    af_NA = af-za;
-    af_ZA = af-za;
     af-za = mkDictFromLibreofficeGit {
-      subdir = "af_ZA";
-      shortName = "af-za";
-      shortDescription = "Afrikaans";
       dictFileName = "af_ZA";
       filenameAliases = "af_NA";
       readmeFileName = "af_ZA";
+      shortDescription = "Afrikaans";
+      shortName = "af-za";
+      subdir = "af_ZA";
+    };
+
+    # see https://wiki.documentfoundation.org/Development/Dictionaries
+    # for a list of available hyphenation dictionaries
+    # see https://github.com/LibreOffice/dictionaries
+    # for the sources and to find the names of the README files
+    # AFRIKAANS
+    af_NA = af-za;
+    af_ZA = af-za;
+
+    as-in = mkDictFromLibreofficeGit {
+      dictFileName = "as_IN";
+      readmeFileName = "as_IN";
+      shortDescription = "Assamese";
+      shortName = "as-in";
+      subdir = "as_IN";
     };
 
     # ASSAMESE
-
     as_IN = as-in;
-    as-in = mkDictFromLibreofficeGit {
-      subdir = "as_IN";
-      shortName = "as-in";
-      shortDescription = "Assamese";
-      dictFileName = "as_IN";
-      readmeFileName = "as_IN";
+
+    be-by = mkDictFromLibreofficeGit {
+      dictFileName = "be_BY";
+      readmeFileName = "be_BY";
+      shortDescription = "Belarussian";
+      shortName = "be-by";
+      subdir = "be_BY";
     };
 
     # BELARUSSIAN
-
     be_BY = be-by;
-    be-by = mkDictFromLibreofficeGit {
-      subdir = "be_BY";
-      shortName = "be-by";
-      shortDescription = "Belarussian";
-      dictFileName = "be_BY";
-      readmeFileName = "be_BY";
+
+    bg-bg = mkDictFromLibreofficeGit {
+      dictFileName = "bg_BG";
+      readmeFileName = "hyph_bg_BG";
+      shortDescription = "Bulgarian";
+      shortName = "bg-bg";
+      subdir = "bg_BG";
     };
 
     # BULGARIAN
-
     bg_BG = bg-bg;
-    bg-bg = mkDictFromLibreofficeGit {
-      subdir = "bg_BG";
-      shortName = "bg-bg";
-      shortDescription = "Bulgarian";
-      dictFileName = "bg_BG";
-      readmeFileName = "hyph_bg_BG";
+
+    ca-es = mkDictFromLibreofficeGitCustom {
+      dictFileName = "ca";
+      dictFilePath = "dictionaries/hyph_ca.dic";
+      filenameAliases = "ca_ES_valencia ca_AD ca_FR ca_IT";
+      readmeFilePath = "README_hyph_ca.txt";
+      shortDescription = "Catalan";
+      shortName = "ca-es";
+      subdir = "ca";
     };
 
-    # CATALAN
-
-    ca_ES_valencia = ca-es;
     ca_AD = ca-es;
+    ca_ES = ca-es;
+    # CATALAN
+    ca_ES_valencia = ca-es;
     ca_FR = ca-es;
     ca_IT = ca-es;
-    ca_ES = ca-es;
-    ca-es = mkDictFromLibreofficeGitCustom {
-      subdir = "ca";
-      shortName = "ca-es";
-      shortDescription = "Catalan";
-      dictFileName = "ca";
-      filenameAliases = "ca_ES_valencia ca_AD ca_FR ca_IT";
-      dictFilePath = "dictionaries/hyph_ca.dic";
-      readmeFilePath = "README_hyph_ca.txt";
+
+    cs-cz = mkDictFromLibreofficeGit {
+      dictFileName = "cs_CZ";
+      readmeFileName = "cs";
+      shortDescription = "Czech";
+      shortName = "cs-cz";
+      subdir = "cs_CZ";
     };
 
     # CZECH
-
     cs_CZ = cs-cz;
-    cs-cz = mkDictFromLibreofficeGit {
-      subdir = "cs_CZ";
-      shortName = "cs-cz";
-      shortDescription = "Czech";
-      dictFileName = "cs_CZ";
-      readmeFileName = "cs";
-    };
 
-    # DANISH
-
-    da_DK = da-dk;
     da-dk = mkDictFromLibreofficeGitCustom {
-      subdir = "da_DK";
-      shortName = "da-dk";
-      shortDescription = "Danish";
       dictFileName = "da_DK";
       dictFilePath = "hyph_da_DK.dic";
       readmeFilePath = "HYPH_da_DK_README.txt";
+      shortDescription = "Danish";
+      shortName = "da-dk";
+      subdir = "da_DK";
     };
 
-    # GERMAN
+    # DANISH
+    da_DK = da-dk;
 
-    de_DE = de-de;
-    de-de = mkDictFromLibreofficeGit {
+    de-at = mkDictFromLibreofficeGit {
+      dictFileName = "de_AT";
+      readmeFileName = "hyph_de";
+      shortDescription = "German (Austria)";
+      shortName = "de-at";
       subdir = "de";
-      shortName = "de-de";
-      shortDescription = "German (Germany)";
+    };
+
+    de-ch = mkDictFromLibreofficeGit {
+      dictFileName = "de_CH";
+      readmeFileName = "hyph_de";
+      shortDescription = "German (Switzerland)";
+      shortName = "de-ch";
+      subdir = "de";
+    };
+
+    de-de = mkDictFromLibreofficeGit {
       dictFileName = "de_DE";
       readmeFileName = "hyph_de";
+      shortDescription = "German (Germany)";
+      shortName = "de-de";
+      subdir = "de";
     };
 
     de_AT = de-at;
-    de-at = mkDictFromLibreofficeGit {
-      subdir = "de";
-      shortName = "de-at";
-      shortDescription = "German (Austria)";
-      dictFileName = "de_AT";
-      readmeFileName = "hyph_de";
-    };
-
     de_CH = de-ch;
-    de-ch = mkDictFromLibreofficeGit {
-      subdir = "de";
-      shortName = "de-ch";
-      shortDescription = "German (Switzerland)";
-      dictFileName = "de_CH";
-      readmeFileName = "hyph_de";
+    # GERMAN
+    de_DE = de-de;
+
+    el-gr = mkDictFromLibreofficeGit {
+      dictFileName = "el_GR";
+      readmeFileName = "hyph_el_GR";
+      shortDescription = "Greek";
+      shortName = "el-gr";
+      subdir = "el_GR";
     };
 
     # GREEK
-
     el_GR = el-gr;
-    el-gr = mkDictFromLibreofficeGit {
-      subdir = "el_GR";
-      shortName = "el-gr";
-      shortDescription = "Greek";
-      dictFileName = "el_GR";
-      readmeFileName = "hyph_el_GR";
-    };
 
-    # ENGLISH
-
-    en_GB = en-gb;
-    en_ZA = en-gb;
-    en_NA = en-gb;
-    en_ZW = en-gb;
-    en_AU = en-gb;
-    en_CA = en-gb;
-    en_IE = en-gb;
-    en_IN = en-gb;
-    en_BZ = en-gb;
-    en_BS = en-gb;
-    en_GH = en-gb;
-    en_JM = en-gb;
-    en_MW = en-gb;
-    en_NZ = en-gb;
-    en_TT = en-gb;
     en-gb = mkDictFromLibreofficeGit {
-      subdir = "en";
-      shortName = "en-gb";
-      shortDescription = "English (Great Britain)";
       dictFileName = "en_GB";
       filenameAliases = "en_ZA en_NA en_ZW en_AU en_CA en_IE en_IN en_BZ en_BS en_GH en_JM en_MW en_NZ en_TT";
       readmeFileName = "hyph_en_GB";
+      shortDescription = "English (Great Britain)";
+      shortName = "en-gb";
+      subdir = "en";
     };
 
-    en_US = en-us;
     en-us = stdenv.mkDerivation {
-      nativeBuildInputs = hyphen.nativeBuildInputs;
-      version = hyphen.version;
       pname = "hyphen-dict-en-us";
+      version = hyphen.version;
       src = hyphen.src;
+      nativeBuildInputs = hyphen.nativeBuildInputs;
+
+      installPhase = ''
+        runHook preInstall
+        make install-hyphDATA
+        runHook postInstall
+      '';
+
       meta = {
         inherit (hyphen.meta)
           homepage
@@ -247,28 +238,49 @@ let
           license
           maintainers
           ;
+
         description = "Hyphen dictionary for English (United States)";
       };
-      installPhase = ''
-        runHook preInstall
-        make install-hyphDATA
-        runHook postInstall
-      '';
     };
 
-    # ESPERANTO
+    en_AU = en-gb;
+    en_BS = en-gb;
+    en_BZ = en-gb;
+    en_CA = en-gb;
+    # ENGLISH
+    en_GB = en-gb;
+    en_GH = en-gb;
+    en_IE = en-gb;
+    en_IN = en-gb;
+    en_JM = en-gb;
+    en_MW = en-gb;
+    en_NA = en-gb;
+    en_NZ = en-gb;
+    en_TT = en-gb;
+    en_US = en-us;
+    en_ZA = en-gb;
+    en_ZW = en-gb;
 
+    # ESPERANTO
     eo = mkDictFromLibreofficeGitCustom {
-      subdir = "eo";
-      shortName = "eo";
-      shortDescription = "Esperanto";
       dictFileName = "eo";
       dictFilePath = "hyph_eo.dic";
       readmeFilePath = "desc_eo.txt";
+      shortDescription = "Esperanto";
+      shortName = "eo";
+      subdir = "eo";
+    };
+
+    es-es = mkDictFromLibreofficeGit {
+      dictFileName = "es";
+      filenameAliases = "es_AR es_BO es_CL es_CO es_CR es_CU es_DO es_EC es_GQ es_GT es_HN es_MX es_NI es_PA es_PE es_PH es_PR es_PY es_SV es_US es_UY es_VE";
+      readmeFileName = "hyph_es";
+      shortDescription = "Spanish";
+      shortName = "es-es";
+      subdir = "es";
     };
 
     # SPANISH
-
     es_AR = es-es;
     es_BO = es-es;
     es_CL = es-es;
@@ -277,6 +289,7 @@ let
     es_CU = es-es;
     es_DO = es-es;
     es_EC = es-es;
+    es_ES = es-es;
     es_GQ = es-es;
     es_GT = es-es;
     es_HN = es-es;
@@ -291,375 +304,367 @@ let
     es_US = es-es;
     es_UY = es-es;
     es_VE = es-es;
-    es_ES = es-es;
-    es-es = mkDictFromLibreofficeGit {
-      subdir = "es";
-      shortName = "es-es";
-      shortDescription = "Spanish";
-      dictFileName = "es";
-      filenameAliases = "es_AR es_BO es_CL es_CO es_CR es_CU es_DO es_EC es_GQ es_GT es_HN es_MX es_NI es_PA es_PE es_PH es_PR es_PY es_SV es_US es_UY es_VE";
-      readmeFileName = "hyph_es";
+
+    et-ee = mkDictFromLibreofficeGit {
+      dictFileName = "et_EE";
+      readmeFileName = "hyph_et_EE";
+      shortDescription = "Estonian";
+      shortName = "et-ee";
+      subdir = "et_EE";
     };
 
     # ESTONIAN
-
     et_EE = et-ee;
-    et-ee = mkDictFromLibreofficeGit {
-      subdir = "et_EE";
-      shortName = "et-ee";
-      shortDescription = "Estonian";
-      dictFileName = "et_EE";
-      readmeFileName = "hyph_et_EE";
-    };
 
-    # FRENCH
-
-    fr_BE = fr-fr;
-    fr_CA = fr-fr;
-    fr_CH = fr-fr;
-    fr_LU = fr-fr;
-    fr_MC = fr-fr;
-    fr_FR = fr-fr;
     fr-fr = mkDictFromLibreofficeGit {
-      subdir = "fr_FR";
-      shortName = "fr-fr";
-      shortDescription = "French";
       dictFileName = "fr";
       filenameAliases = "fr_BE fr_CA fr_CH fr_LU fr_MC";
       readmeFileName = "hyph_fr";
+      shortDescription = "French";
+      shortName = "fr-fr";
+      subdir = "fr_FR";
+    };
+
+    # FRENCH
+    fr_BE = fr-fr;
+    fr_CA = fr-fr;
+    fr_CH = fr-fr;
+    fr_FR = fr-fr;
+    fr_LU = fr-fr;
+    fr_MC = fr-fr;
+
+    gl-es = mkDictFromLibreofficeGit {
+      dictFileName = "gl";
+      readmeFileName = "hyph-gl";
+      shortDescription = "Galician";
+      shortName = "gl-es";
+      subdir = "gl";
     };
 
     # GALICIAN
-
     gl_ES = gl-es;
-    gl-es = mkDictFromLibreofficeGit {
-      subdir = "gl";
-      shortName = "gl-es";
-      shortDescription = "Galician";
-      dictFileName = "gl";
-      readmeFileName = "hyph-gl";
+
+    hr-hr = mkDictFromLibreofficeGit {
+      dictFileName = "hr_HR";
+      readmeFileName = "hyph_hr_HR";
+      shortDescription = "Croatian";
+      shortName = "hr-hr";
+      subdir = "hr_HR";
     };
 
     # CROATIAN
-
     hr_HR = hr-hr;
-    hr-hr = mkDictFromLibreofficeGit {
-      subdir = "hr_HR";
-      shortName = "hr-hr";
-      shortDescription = "Croatian";
-      dictFileName = "hr_HR";
-      readmeFileName = "hyph_hr_HR";
+
+    hu-hu = mkDictFromLibreofficeGit {
+      dictFileName = "hu_HU";
+      readmeFileName = "hyph_hu_HU";
+      shortDescription = "Hungarian";
+      shortName = "hu-hu";
+      subdir = "hu_HU";
     };
 
     # HUNGARIAN
-
     hu_HU = hu-hu;
-    hu-hu = mkDictFromLibreofficeGit {
-      subdir = "hu_HU";
-      shortName = "hu-hu";
-      shortDescription = "Hungarian";
-      dictFileName = "hu_HU";
-      readmeFileName = "hyph_hu_HU";
-    };
 
-    # INDONESIAN
-
-    id_ID = id-id;
     id-id = mkDictFromLibreofficeGitCustom {
-      subdir = "id";
-      shortName = "id-id";
-      shortDescription = "Indonesian";
       dictFileName = "id_ID";
       dictFilePath = "hyph_id_ID.dic";
       readmeFilePath = "README-dict.adoc";
+      shortDescription = "Indonesian";
+      shortName = "id-id";
+      subdir = "id";
     };
 
+    # INDONESIAN
+    id_ID = id-id;
     # ITALIAN
-
     it-CH = it-it;
-    it_IT = it-it;
+
     it-it = mkDictFromLibreofficeGit {
-      subdir = "it_IT";
-      shortName = "it-it";
-      shortDescription = "Italian";
       dictFileName = "it_IT";
       filenameAliases = "it_CH";
       readmeFileName = "hyph_it_IT";
+      shortDescription = "Italian";
+      shortName = "it-it";
+      subdir = "it_IT";
     };
 
-    # KANNADA
+    it_IT = it-it;
 
-    kn_IN = kn-in;
     kn-in = mkDictFromLibreofficeGitCustom {
-      subdir = "kn_IN";
-      shortName = "kn-in";
-      shortDescription = "Kannada";
       dictFileName = "kn_IN";
       dictFilePath = "hyph_kn_IN.dic";
       readmeFilePath = "README-kn_IN.txt";
+      shortDescription = "Kannada";
+      shortName = "kn-in";
+      subdir = "kn_IN";
     };
 
-    # LITHUANIAN
+    # KANNADA
+    kn_IN = kn-in;
 
-    lt_LT = lt-lt;
     lt-lt = mkDictFromLibreofficeGitCustom {
-      subdir = "lt_LT";
-      shortName = "lt-lt";
-      shortDescription = "Lithuanian";
       dictFileName = "lt";
       dictFilePath = "hyph_lt.dic";
       readmeFilePath = "README_hyph";
+      shortDescription = "Lithuanian";
+      shortName = "lt-lt";
+      subdir = "lt_LT";
+    };
+
+    # LITHUANIAN
+    lt_LT = lt-lt;
+
+    lv-lv = mkDictFromLibreofficeGit {
+      dictFileName = "lv_LV";
+      readmeFileName = "hyph_lv_LV";
+      shortDescription = "Latvian";
+      shortName = "lv-lv";
+      subdir = "lv_LV";
     };
 
     # LATVIAN
-
     lv_LV = lv-lv;
-    lv-lv = mkDictFromLibreofficeGit {
-      subdir = "lv_LV";
-      shortName = "lv-lv";
-      shortDescription = "Latvian";
-      dictFileName = "lv_LV";
-      readmeFileName = "hyph_lv_LV";
+
+    mn-mn = mkDictFromLibreofficeGit {
+      dictFileName = "mn_MN";
+      readmeFileName = "mn_MN";
+      shortDescription = "Mongolian";
+      shortName = "mn-mn";
+      subdir = "mn_MN";
     };
 
     # MONGOLIAN
-
     mn_MN = mn-mn;
-    mn-mn = mkDictFromLibreofficeGit {
-      subdir = "mn_MN";
-      shortName = "mn-mn";
-      shortDescription = "Mongolian";
-      dictFileName = "mn_MN";
-      readmeFileName = "mn_MN";
-    };
 
-    # DUTCH
-
-    nl_BE = nl-nl;
-    nl_NL = nl-nl;
-    nl-nl = mkDictFromLibreofficeGit {
-      subdir = "nl_NL";
-      shortName = "nl-nl";
-      shortDescription = "Dutch";
-      dictFileName = "nl_NL";
-      filenameAliases = "nl_BE";
-      readmeFileName = "NL";
+    nb-no = mkDictFromLibreofficeGit {
+      dictFileName = "nb_NO";
+      readmeFileName = "hyph_NO";
+      shortDescription = "Norwegian (Bokmål)";
+      shortName = "nb-no";
+      subdir = "no";
     };
 
     # NORWEGIAN
-
     nb_NO = nb-no;
-    nb-no = mkDictFromLibreofficeGit {
-      subdir = "no";
-      shortName = "nb-no";
-      shortDescription = "Norwegian (Bokmål)";
-      dictFileName = "nb_NO";
+
+    nl-nl = mkDictFromLibreofficeGit {
+      dictFileName = "nl_NL";
+      filenameAliases = "nl_BE";
+      readmeFileName = "NL";
+      shortDescription = "Dutch";
+      shortName = "nl-nl";
+      subdir = "nl_NL";
+    };
+
+    # DUTCH
+    nl_BE = nl-nl;
+    nl_NL = nl-nl;
+
+    nn-no = mkDictFromLibreofficeGit {
+      dictFileName = "nn_NO";
       readmeFileName = "hyph_NO";
+      shortDescription = "Norwegian (Nynorsk)";
+      shortName = "nn-no";
+      subdir = "no";
     };
 
     nn_NO = nn-no;
-    nn-no = mkDictFromLibreofficeGit {
-      subdir = "no";
-      shortName = "nn-no";
-      shortDescription = "Norwegian (Nynorsk)";
-      dictFileName = "nn_NO";
-      readmeFileName = "hyph_NO";
+
+    or-in = mkDictFromLibreofficeGit {
+      dictFileName = "or_IN";
+      shortDescription = "Oriya";
+      shortName = "or-in";
+      subdir = "or_IN";
     };
 
     # ORIYA
-
     or_IN = or-in;
-    or-in = mkDictFromLibreofficeGit {
-      subdir = "or_IN";
-      shortName = "or-in";
-      shortDescription = "Oriya";
-      dictFileName = "or_IN";
+
+    pa-in = mkDictFromLibreofficeGit {
+      dictFileName = "pa_IN";
+      shortDescription = "Panjabi";
+      shortName = "pa-in";
+      subdir = "pa_IN";
     };
 
     # PANJABI
-
     pa_IN = pa-in;
-    pa-in = mkDictFromLibreofficeGit {
-      subdir = "pa_IN";
-      shortName = "pa-in";
-      shortDescription = "Panjabi";
-      dictFileName = "pa_IN";
+
+    pl-pl = mkDictFromLibreofficeGit {
+      dictFileName = "pl_PL";
+      readmeFileName = "pl";
+      shortDescription = "Polish";
+      shortName = "pl-pl";
+      subdir = "pl_PL";
     };
 
     # POLISH
-
     pl_PL = pl-pl;
-    pl-pl = mkDictFromLibreofficeGit {
-      subdir = "pl_PL";
-      shortName = "pl-pl";
-      shortDescription = "Polish";
-      dictFileName = "pl_PL";
-      readmeFileName = "pl";
+
+    pt-br = mkDictFromLibreofficeGit {
+      dictFileName = "pt_BR";
+      readmeFileName = "hyph_pt_BR";
+      shortDescription = "Portuguese (Brazil)";
+      shortName = "pt-br";
+      subdir = "pt_BR";
+    };
+
+    pt-pt = mkDictFromLibreofficeGit {
+      dictFileName = "pt_PT";
+      readmeFileName = "hyph_pt_PT";
+      shortDescription = "Portuguese (Portugal)";
+      shortName = "pt-pt";
+      subdir = "pt_PT";
     };
 
     # PORTUGUESE
-
     pt_BR = pt-br;
-    pt-br = mkDictFromLibreofficeGit {
-      subdir = "pt_BR";
-      shortName = "pt-br";
-      shortDescription = "Portuguese (Brazil)";
-      dictFileName = "pt_BR";
-      readmeFileName = "hyph_pt_BR";
-    };
-
     pt_PT = pt-pt;
-    pt-pt = mkDictFromLibreofficeGit {
-      subdir = "pt_PT";
-      shortName = "pt-pt";
-      shortDescription = "Portuguese (Portugal)";
-      dictFileName = "pt_PT";
-      readmeFileName = "hyph_pt_PT";
+
+    ro-ro = mkDictFromLibreofficeGit {
+      dictFileName = "ro_RO";
+      readmeFileName = "RO";
+      shortDescription = "Romanian";
+      shortName = "ro-ro";
+      subdir = "ro";
     };
 
     # ROMANIAN
-
     ro_RO = ro-ro;
-    ro-ro = mkDictFromLibreofficeGit {
-      subdir = "ro";
-      shortName = "ro-ro";
-      shortDescription = "Romanian";
-      dictFileName = "ro_RO";
-      readmeFileName = "RO";
+
+    ru-ru = mkDictFromLibreofficeGit {
+      dictFileName = "ru_RU";
+      readmeFileName = "ru_RU";
+      shortDescription = "Russian (Russia)";
+      shortName = "ru-ru";
+      subdir = "ru_RU";
     };
 
     # RUSSIAN
-
     ru_RU = ru-ru;
-    ru-ru = mkDictFromLibreofficeGit {
-      subdir = "ru_RU";
-      shortName = "ru-ru";
-      shortDescription = "Russian (Russia)";
-      dictFileName = "ru_RU";
-      readmeFileName = "ru_RU";
+
+    sa-in = mkDictFromLibreofficeGit {
+      dictFileName = "sa_IN";
+      shortDescription = "Sanskrit (India)";
+      shortName = "sa-in";
+      subdir = "sa_IN";
     };
 
     # SANSKRIT
-
     sa_IN = sa-in;
-    sa-in = mkDictFromLibreofficeGit {
-      subdir = "sa_IN";
-      shortName = "sa-in";
-      shortDescription = "Sanskrit (India)";
-      dictFileName = "sa_IN";
+
+    sk-sk = mkDictFromLibreofficeGit {
+      dictFileName = "sk_SK";
+      readmeFileName = "sk";
+      shortDescription = "Slovak";
+      shortName = "sk-sk";
+      subdir = "sk_SK";
     };
 
     # SLOVAK
-
     sk_SK = sk-sk;
-    sk-sk = mkDictFromLibreofficeGit {
-      subdir = "sk_SK";
-      shortName = "sk-sk";
-      shortDescription = "Slovak";
-      dictFileName = "sk_SK";
-      readmeFileName = "sk";
+
+    sl-si = mkDictFromLibreofficeGit {
+      dictFileName = "sl_SI";
+      readmeFileName = "hyph_sl_SI";
+      shortDescription = "Slovenian";
+      shortName = "sl-si";
+      subdir = "sl_SI";
     };
 
     # SLOVENIAN
-
     sl_SI = sl-si;
-    sl-si = mkDictFromLibreofficeGit {
-      subdir = "sl_SI";
-      shortName = "sl-si";
-      shortDescription = "Slovenian";
-      dictFileName = "sl_SI";
-      readmeFileName = "hyph_sl_SI";
+
+    sq-al = mkDictFromLibreofficeGit {
+      dictFileName = "sq_AL";
+      readmeFileName = "hyph_sq_AL";
+      shortDescription = "Albanian";
+      shortName = "sq-al";
+      subdir = "sq_AL";
     };
 
     # ALBANIAN
-
     sq_AL = sq-al;
-    sq-al = mkDictFromLibreofficeGit {
-      subdir = "sq_AL";
-      shortName = "sq-al";
-      shortDescription = "Albanian";
-      dictFileName = "sq_AL";
-      readmeFileName = "hyph_sq_AL";
-    };
 
-    # SERBIAN
-
-    sr_SR = sr-sr;
     sr-sr = mkDictFromLibreofficeGitCustom {
-      subdir = "sr";
-      shortName = "sr-sr";
-      shortDescription = "Serbian (Cyrillic)";
       dictFileName = "sr";
       dictFilePath = "hyph_sr.dic";
       readmeFilePath = "README.txt";
+      shortDescription = "Serbian (Cyrillic)";
+      shortName = "sr-sr";
+      subdir = "sr";
     };
 
-    sr_SR_LATN = sr-sr-latn;
     sr-sr-latn = mkDictFromLibreofficeGitCustom {
-      subdir = "sr";
-      shortName = "sr-sr-latn";
-      shortDescription = "Serbian (Latin)";
       dictFileName = "sr-Latn";
       dictFilePath = "hyph_sr-Latn.dic";
       readmeFilePath = "README.txt";
+      shortDescription = "Serbian (Latin)";
+      shortName = "sr-sr-latn";
+      subdir = "sr";
+    };
+
+    # SERBIAN
+    sr_SR = sr-sr;
+    sr_SR_LATN = sr-sr-latn;
+
+    sv-se = mkDictFromLibreofficeGit {
+      dictFileName = "sv";
+      readmeFileName = "hyph_sv";
+      shortDescription = "Swedish";
+      shortName = "sv-se";
+      subdir = "sv_SE";
     };
 
     # SWEDISH
-
     sv_FI = sv-se;
     sv_SE = sv-se;
-    sv-se = mkDictFromLibreofficeGit {
-      subdir = "sv_SE";
-      shortName = "sv-se";
-      shortDescription = "Swedish";
-      dictFileName = "sv";
-      readmeFileName = "hyph_sv";
+
+    te-in = mkDictFromLibreofficeGit {
+      dictFileName = "te_IN";
+      readmeFileName = "hyph_te_IN";
+      shortDescription = "Telugu";
+      shortName = "te-in";
+      subdir = "te_IN";
     };
 
     # TELUGU
-
     te_IN = te-in;
-    te-in = mkDictFromLibreofficeGit {
-      subdir = "te_IN";
-      shortName = "te-in";
-      shortDescription = "Telugu";
-      dictFileName = "te_IN";
-      readmeFileName = "hyph_te_IN";
+
+    th-th = mkDictFromLibreofficeGit {
+      dictFileName = "th_TH";
+      readmeFileName = "hyph_th_TH";
+      shortDescription = "Thai";
+      shortName = "th-th";
+      subdir = "th_TH";
     };
 
     # THAI
-
     th_TH = th-th;
-    th-th = mkDictFromLibreofficeGit {
-      subdir = "th_TH";
-      shortName = "th-th";
-      shortDescription = "Thai";
-      dictFileName = "th_TH";
-      readmeFileName = "hyph_th_TH";
+
+    uk-ua = mkDictFromLibreofficeGit {
+      dictFileName = "uk_UA";
+      readmeFileName = "hyph_uk_UA";
+      shortDescription = "Ukrainian";
+      shortName = "uk-ua";
+      subdir = "uk_UA";
     };
 
     # UKRAINIAN
-
     uk_UA = uk-ua;
-    uk-ua = mkDictFromLibreofficeGit {
-      subdir = "uk_UA";
-      shortName = "uk-ua";
-      shortDescription = "Ukrainian";
-      dictFileName = "uk_UA";
-      readmeFileName = "hyph_uk_UA";
+
+    zu-za = mkDictFromLibreofficeGitCustom {
+      dictFileName = "zu_ZA";
+      dictFilePath = "hyph_zu_ZA.dic";
+      shortDescription = "Zulu";
+      shortName = "zu-za";
+      subdir = "zu_ZA";
+      # no readme file provided, leave empty
     };
 
     # ZULU
-
     zu_ZA = zu-za;
-    zu-za = mkDictFromLibreofficeGitCustom {
-      subdir = "zu_ZA";
-      shortName = "zu-za";
-      shortDescription = "Zulu";
-      dictFileName = "zu_ZA";
-      dictFilePath = "hyph_zu_ZA.dic";
-      # no readme file provided, leave empty
-    };
 
   };
 

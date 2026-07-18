@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchPnpmDeps,
-  nodejs,
-  pnpm_11,
-  pnpmConfigHook,
   callPackage,
-  testers,
-  runCommand,
-  writeText,
-  nix-update-script,
+  fetchPnpmDeps,
   lessc,
+  nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_11,
+  runCommand,
+  testers,
+  writeText,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,18 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-D/gPyPoxHeLjF7EU40Jw2Mb4ZRrnaLq8XnL+kL2yhic=";
   };
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      pnpmWorkspaces
-      ;
-    pnpm = pnpm_11;
-    fetcherVersion = 4;
-    hash = "sha256-tlms2b0aodWkI+btdmCnwSDgsURekaBdiI8IZ/iMVnI=";
-  };
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -46,8 +34,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ nodejs ];
-
-  pnpmWorkspaces = [ "less..." ];
 
   buildPhase = ''
     runHook preBuild
@@ -68,25 +54,33 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      pnpmWorkspaces
+      ;
+
+    fetcherVersion = 4;
+    hash = "sha256-tlms2b0aodWkI+btdmCnwSDgsURekaBdiI8IZ/iMVnI=";
+    pnpm = pnpm_11;
+  };
+
+  pnpmWorkspaces = [ "less..." ];
+
   passthru = {
-    updateScript = nix-update-script { };
     plugins = callPackage ./plugins { };
-    wrapper = callPackage ./wrapper { };
-    withPlugins = fn: lessc.wrapper.override { plugins = fn lessc.plugins; };
+
     tests = {
       version = testers.testVersion { package = lessc; };
 
       simple = testers.testEqualContents {
-        assertion = "lessc compiles a basic less file";
-        expected = writeText "expected" ''
-          body h1 {
-            color: red;
-          }
-        '';
         actual =
           runCommand "actual"
             {
               nativeBuildInputs = [ lessc ];
+
               base = writeText "base" ''
                 @color: red;
                 body {
@@ -99,16 +93,28 @@ stdenv.mkDerivation (finalAttrs: {
             ''
               lessc $base > $out
             '';
+
+        assertion = "lessc compiles a basic less file";
+
+        expected = writeText "expected" ''
+          body h1 {
+            color: red;
+          }
+        '';
       };
     };
+
+    updateScript = nix-update-script { };
+    withPlugins = fn: lessc.wrapper.override { plugins = fn lessc.plugins; };
+    wrapper = callPackage ./wrapper { };
   };
 
   meta = {
+    description = "Dynamic stylesheet language";
     homepage = "https://github.com/less/less.js";
     changelog = "https://github.com/less/less.js/blob/${finalAttrs.src.tag}/CHANGELOG.md";
-    description = "Dynamic stylesheet language";
-    mainProgram = "lessc";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ lelgenio ];
+    mainProgram = "lessc";
   };
 })

@@ -14,11 +14,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.88.2";
 
   src = fetchFromGitLab {
-    domain = "salsa.debian.org";
     owner = "debian";
     repo = "debian-goodies";
     tag = "debian/${finalAttrs.version}";
     sha256 = "sha256-KPPRxYmCEYwlUAR29tc8w4rerXpswO/rbpEjXPoDV4Q=";
+    domain = "salsa.debian.org";
   };
 
   postPatch = ''
@@ -65,7 +65,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Small toolbox-style utilities for Debian systems";
     homepage = "https://salsa.debian.org/debian/debian-goodies";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ SuperSandro2000 ];
+    platforms = lib.platforms.unix;
   };
 })

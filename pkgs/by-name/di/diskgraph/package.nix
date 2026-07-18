@@ -23,11 +23,13 @@ stdenv.mkDerivation {
     description = "Terminal-based monitor for disk I/O";
     homepage = "https://github.com/stolk/diskgraph";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       fliegendewurst
       nettika
     ];
-    mainProgram = "diskgraph";
+
     platforms = lib.platforms.linux;
+    mainProgram = "diskgraph";
   };
 }

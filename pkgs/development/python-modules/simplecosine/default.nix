@@ -1,22 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   numpy,
-
   # tests
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "simplecosine";
   version = "1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dedupeio";
@@ -24,6 +20,10 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-TNQnSbCh7o5JsxvfljRGSNwptwpLHmVw9gyk0TELDek=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -33,9 +33,7 @@ buildPythonPackage rec {
     numpy
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "simplecosine"

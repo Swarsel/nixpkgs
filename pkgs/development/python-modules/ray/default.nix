@@ -1,83 +1,77 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
-  pythonAtLeast,
-  python,
-  fetchPypi,
-  autoPatchelfHook,
-
-  # dependencies
-  click,
-  filelock,
-  jsonschema,
-  msgpack,
-  packaging,
-  protobuf,
-  pyyaml,
-  requests,
-
-  # optional-dependencies
-  # cgraph
-  cupy,
-  # client
-  grpcio,
-  # data
-  fsspec,
-  numpy,
-  pandas,
-  pyarrow,
   # default
   aiohttp,
   aiohttp-cors,
+  # llm
+  async-timeout,
+  autoPatchelfHook,
+  buildPythonPackage,
+  # serve-async-inference
+  celery,
+  # dependencies
+  click,
   colorful,
+  # optional-dependencies
+  # cgraph
+  cupy,
+  # rllib
+  dm-tree,
+  # serve
+  fastapi,
+  fetchPypi,
+  filelock,
+  # data
+  fsspec,
+  # client
+  grpcio,
+  gymnasium,
+  hf-transfer,
+  jsonref,
+  jsonschema,
+  lz4,
+  # observability
+  memray,
+  meson,
+  msgpack,
+  ninja,
+  numpy,
   opencensus,
   opentelemetry-exporter-prometheus,
   opentelemetry-proto,
   opentelemetry-sdk,
+  ormsgpack,
+  packaging,
+  pandas,
   prometheus-client,
-  pydantic,
+  protobuf,
   py-spy,
-  smart-open,
-  virtualenv,
-  # llm
-  async-timeout,
-  hf-transfer,
-  jsonref,
-  meson,
-  ninja,
+  pyarrow,
   # nixl,
   pybind11,
-  typer,
-  vllm,
-  # observability
-  memray,
-  # rllib
-  dm-tree,
-  gymnasium,
-  lz4,
-  ormsgpack,
-  scipy,
-  # serve
-  fastapi,
-  starlette,
-  uvicorn,
-  watchfiles,
-  # serve-async-inference
-  celery,
+  pydantic,
   # serve-grpc
   pyopenssl,
+  python,
+  pythonAtLeast,
+  pyyaml,
+  requests,
+  scipy,
+  smart-open,
+  starlette,
   # tune
   tensorboardx,
+  typer,
+  uvicorn,
+  virtualenv,
+  vllm,
+  watchfiles,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "ray";
   version = "2.56.0";
-  format = "wheel";
-  __structuredAttrs = true;
-
-  disabled = pythonAtLeast "3.15";
 
   src =
     let
@@ -90,41 +84,51 @@ buildPythonPackage (finalAttrs: {
       # ./pkgs/development/python-modules/ray/prefetch.sh
       # Results are in ./ray-hashes.nix
       hashes = {
-        x86_64-linux = {
-          cp311 = "sha256-xb8aQ4TA4qpEIMlUdLc00GTKw1Sw8AdgvgLYhq/pbKQ=";
-          cp312 = "sha256-eO80pxODwfzzNeUx4OWQhnhX/OkGnwbtNRvmznpY/FA=";
-          cp313 = "sha256-VNJyX4tl2WFckz/sXsYuVKZ7jy4UKGAm+wFGBiU2cO8=";
-          cp314 = "sha256-c+22+1/QVIGx81isLopMf2oDHYn5uCPSWlh923UpBw8=";
-        };
-        aarch64-linux = {
-          cp311 = "sha256-rqZVgx0lCEyzQwAqjmene2qlUt23dqZUYdSfYohPCWo=";
-          cp312 = "sha256-4f0DxuzF/kwxRmVp5BzgpPryb7kweYydHx6x9AWmh8g=";
-          cp313 = "sha256-oOnP6SyIq3SryiOSPBWlkvSbx2F//dpBkNrKd4WnxPY=";
-          cp314 = "sha256-w6FtQ9dSg6PWT6HZBKOtrz9Sbz9Qj0R1Bbi7jccLrWw=";
-        };
         aarch64-darwin = {
           cp311 = "sha256-qa1OJpQesvjb1JStB/nyInFDFkxhFBMrJrI61PILHG8=";
           cp312 = "sha256-aEpCfFB0WYnpKjMjQ/CBLJO4UG9xx2i5Wx7vwRNJJpk=";
           cp313 = "sha256-mSBH9QRztb/qdMj1KPmZlo4LS8c1ryOtR2oPTgR0Guo=";
           cp314 = "sha256-844Dt3xT49lAka7bhLFO/n7ltYHYW30TklBmvNSMRKI=";
         };
+
+        aarch64-linux = {
+          cp311 = "sha256-rqZVgx0lCEyzQwAqjmene2qlUt23dqZUYdSfYohPCWo=";
+          cp312 = "sha256-4f0DxuzF/kwxRmVp5BzgpPryb7kweYydHx6x9AWmh8g=";
+          cp313 = "sha256-oOnP6SyIq3SryiOSPBWlkvSbx2F//dpBkNrKd4WnxPY=";
+          cp314 = "sha256-w6FtQ9dSg6PWT6HZBKOtrz9Sbz9Qj0R1Bbi7jccLrWw=";
+        };
+
+        x86_64-linux = {
+          cp311 = "sha256-xb8aQ4TA4qpEIMlUdLc00GTKw1Sw8AdgvgLYhq/pbKQ=";
+          cp312 = "sha256-eO80pxODwfzzNeUx4OWQhnhX/OkGnwbtNRvmznpY/FA=";
+          cp313 = "sha256-VNJyX4tl2WFckz/sXsYuVKZ7jy4UKGAm+wFGBiU2cO8=";
+          cp314 = "sha256-c+22+1/QVIGx81isLopMf2oDHYn5uCPSWlh923UpBw8=";
+        };
       };
     in
     fetchPypi {
       inherit (finalAttrs) pname version;
-      format = "wheel";
-      dist = pyShortVersion;
-      python = pyShortVersion;
-      abi = pyShortVersion;
-      platform = platforms.${stdenv.hostPlatform.system} or { };
+
       hash =
         hashes.${stdenv.hostPlatform.system}.${pyShortVersion}
           or (throw "No hash specified for '${stdenv.hostPlatform.system}.${pyShortVersion}'");
+
+      abi = pyShortVersion;
+      dist = pyShortVersion;
+      format = "wheel";
+      platform = platforms.${stdenv.hostPlatform.system} or { };
+      python = pyShortVersion;
     };
 
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     autoPatchelfHook
   ];
+
+  postInstall = ''
+    chmod +x $out/${python.sitePackages}/ray/core/src/ray/{gcs/gcs_server,raylet/raylet}
+  '';
+
+  __structuredAttrs = true;
 
   dependencies = [
     click
@@ -137,9 +141,13 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
+  disabled = pythonAtLeast "3.15";
+  format = "wheel";
+
   optional-dependencies = lib.fix (self: {
     adag = self.cgraph;
     air = lib.unique (self.data ++ self.serve ++ self.tune ++ self.train);
+
     all = lib.unique (
       self.adag
       ++ self.air
@@ -155,16 +163,20 @@ buildPythonPackage (finalAttrs: {
       ++ self.train
       ++ self.tune
     );
+
     cgraph = [
       cupy
     ];
+
     client = [ grpcio ];
+
     data = [
       fsspec
       numpy
       pandas
       pyarrow
     ];
+
     default = [
       aiohttp
       aiohttp-cors
@@ -181,6 +193,7 @@ buildPythonPackage (finalAttrs: {
       smart-open
       virtualenv
     ];
+
     llm = lib.unique (
       [
         async-timeout
@@ -198,9 +211,11 @@ buildPythonPackage (finalAttrs: {
       ++ self.serve
       ++ vllm.optional-dependencies.audio
     );
+
     observability = [
       memray
     ];
+
     rllib = lib.unique (
       [
         dm-tree
@@ -212,6 +227,7 @@ buildPythonPackage (finalAttrs: {
       ]
       ++ self.tune
     );
+
     serve = lib.unique (
       [
         fastapi
@@ -222,12 +238,14 @@ buildPythonPackage (finalAttrs: {
       ]
       ++ self.default
     );
+
     serve-async-inference = lib.unique (
       [
         celery
       ]
       ++ self.serve
     );
+
     serve-grpc = lib.unique (
       [
         grpcio
@@ -235,12 +253,14 @@ buildPythonPackage (finalAttrs: {
       ]
       ++ self.serve
     );
+
     train = lib.unique (
       [
         pydantic
       ]
       ++ self.tune
     );
+
     tune = [
       fsspec
       pandas
@@ -254,10 +274,6 @@ buildPythonPackage (finalAttrs: {
     ];
   });
 
-  postInstall = ''
-    chmod +x $out/${python.sitePackages}/ray/core/src/ray/{gcs/gcs_server,raylet/raylet}
-  '';
-
   pythonImportsCheck = [ "ray" ];
 
   meta = {
@@ -265,8 +281,9 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/ray-project/ray";
     changelog = "https://github.com/ray-project/ray/releases/tag/ray-${finalAttrs.version}";
     license = lib.licenses.asl20;
-    maintainers = with lib.maintainers; [ billhuang ];
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ billhuang ];
+
     platforms = [
       "aarch64-darwin"
       "aarch64-linux"

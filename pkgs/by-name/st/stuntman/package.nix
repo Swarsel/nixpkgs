@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  openssl,
   boost,
+  openssl,
 }:
 
 stdenv.mkDerivation {
@@ -22,6 +22,16 @@ stdenv.mkDerivation {
     openssl
   ];
 
+  doCheck = true;
+
+  checkPhase = ''
+    runHook preCheck
+
+    ./stuntestcode
+
+    runHook postCheck
+  '';
+
   installPhase = ''
     runHook preInstall
 
@@ -30,15 +40,6 @@ stdenv.mkDerivation {
     mv stunclient $out/bin/
 
     runHook postInstall
-  '';
-
-  doCheck = true;
-  checkPhase = ''
-    runHook preCheck
-
-    ./stuntestcode
-
-    runHook postCheck
   '';
 
   meta = {

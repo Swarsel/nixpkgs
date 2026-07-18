@@ -15,9 +15,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Hy+y3BFydwqloJ05c4pE2LdTzF4uJeMGynhoL5/qC08=";
   };
 
-  buildInputs = [ perl ];
-
+  strictDeps = true;
   nativeBuildInputs = [ perl ];
+  buildInputs = [ perl ];
 
   configureFlags = [
     "--sysconfdir=/etc"
@@ -25,22 +25,20 @@ stdenv.mkDerivation (finalAttrs: {
     "--disable-suid-install"
   ];
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+
   installFlags = [
     "sysconfdir=\${out}/etc"
     "localstatedir=$(TMPDIR)"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-
-  __structuredAttrs = true;
-  strictDeps = true;
-
   meta = {
-    homepage = "https://www.remlab.net/ndisc6/";
     description = "Small collection of useful tools for IPv6 networking";
+    homepage = "https://www.remlab.net/ndisc6/";
+    license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ aiyion ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl2Only;
   };
 })

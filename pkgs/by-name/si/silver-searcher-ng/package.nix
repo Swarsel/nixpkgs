@@ -4,11 +4,11 @@
   fetchFromGitHub,
   autoreconfHook,
   git,
-  pkg-config,
   pcre2,
+  pkg-config,
   python3Packages,
-  zlib,
   xz,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,10 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   patches = [ ./bash-completion.patch ];
-
-  env = lib.optionalAttrs stdenv.hostPlatform.isLinux {
-    NIX_LDFLAGS = "-lgcc_s";
-  };
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -39,11 +36,17 @@ stdenv.mkDerivation (finalAttrs: {
     xz
   ];
 
+  env = lib.optionalAttrs stdenv.hostPlatform.isLinux {
+    NIX_LDFLAGS = "-lgcc_s";
+  };
+
   doCheck = true;
+
   nativeCheckInputs = [
     python3Packages.cram
     git
   ];
+
   checkPhase = ''
     runHook preCheck
 
@@ -52,15 +55,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postCheck
   '';
 
-  strictDeps = true;
   __structuredAttrs = true;
 
   meta = {
-    homepage = "https://github.com/silver-searcher/silver-searcher-ng";
     description = "Code-searching tool similar to ack, but faster";
-    maintainers = with lib.maintainers; [ timschumi ];
-    mainProgram = "ag";
-    platforms = lib.platforms.all;
+    homepage = "https://github.com/silver-searcher/silver-searcher-ng";
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ timschumi ];
+    platforms = lib.platforms.all;
+    mainProgram = "ag";
   };
 })

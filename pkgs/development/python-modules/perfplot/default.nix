@@ -1,20 +1,19 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   matplotlib,
   matplotx,
   numpy,
-  rich,
   pytestCheckHook,
+  rich,
 }:
 
 buildPythonPackage rec {
   pname = "perfplot";
   version = "0.10.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nschloe";
@@ -35,9 +34,8 @@ buildPythonPackage rec {
   # This variable is needed to suppress the "Trace/BPT trap: 5" error in Darwin's checkPhase.
   # Not sure of the details, but we can avoid it by changing the matplotlib backend during testing.
   env.MPLBACKEND = lib.optionalString stdenv.hostPlatform.isDarwin "Agg";
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "perfplot" ];
 
   meta = {

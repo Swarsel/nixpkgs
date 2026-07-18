@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
-  cmake,
-  rocm-cmake,
   clr,
-  libxml2,
+  cmake,
   libedit,
+  libxml2,
+  ncurses,
+  python3Packages,
+  rocm-cmake,
   rocm-comgr,
   rocm-device-libs,
   rocm-runtime,
-  zstd,
+  rocmUpdateScript,
   zlib,
-  ncurses,
-  python3Packages,
+  zstd,
   buildRockCompiler ? false,
   buildTests ? false, # `argument of type 'NoneType' is not iterable`
 }:
@@ -44,6 +44,13 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "rocmlir${suffix}";
   version = "7.2.3";
 
+  src = fetchFromGitHub {
+    owner = "ROCm";
+    repo = "rocMLIR";
+    rev = "rocm-${finalAttrs.version}";
+    hash = "sha256-0OvQT8pX6GbEqUwuauKGI66IHw8dsnt5mIijnzYyiRc=";
+  };
+
   outputs = [
     "out"
   ]
@@ -51,12 +58,17 @@ stdenv.mkDerivation (finalAttrs: {
     "external"
   ];
 
-  src = fetchFromGitHub {
-    owner = "ROCm";
-    repo = "rocMLIR";
-    rev = "rocm-${finalAttrs.version}";
-    hash = "sha256-0OvQT8pX6GbEqUwuauKGI66IHw8dsnt5mIijnzYyiRc=";
-  };
+  postPatch = ''
+    patchShebangs mlir
+    patchShebangs external/llvm-project/mlir/lib/Dialect/GPU/AmdDeviceLibsIncGen.py
+
+    # Fixes mlir/lib/Analysis/BufferDependencyAnalysis.cpp:41:19: error: redefinition of 'read'
+    substituteInPlace mlir/lib/Analysis/BufferDependencyAnalysis.cpp \
+      --replace-fail "enum EffectType { read, write, unknown };" "enum class EffectType { read, write, unknown };"
+
+    substituteInPlace mlir/utils/performance/common/CMakeLists.txt \
+      --replace-fail " PATHS /opt/rocm" ""
+  '';
 
   nativeBuildInputs = [
     clr
@@ -105,29 +117,7 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "ROCM_TEST_CHIPSET" "gfx900")
   ];
 
-  postPatch = ''
-    patchShebangs mlir
-    patchShebangs external/llvm-project/mlir/lib/Dialect/GPU/AmdDeviceLibsIncGen.py
-
-    # Fixes mlir/lib/Analysis/BufferDependencyAnalysis.cpp:41:19: error: redefinition of 'read'
-    substituteInPlace mlir/lib/Analysis/BufferDependencyAnalysis.cpp \
-      --replace-fail "enum EffectType { read, write, unknown };" "enum class EffectType { read, write, unknown };"
-
-    substituteInPlace mlir/utils/performance/common/CMakeLists.txt \
-      --replace-fail " PATHS /opt/rocm" ""
-  '';
-
-  dontBuild = true;
   doCheck = true;
-
-  # Certain libs aren't being generated, try enabling tests next update
-  checkTarget =
-    if buildRockCompiler then
-      "librockCompiler"
-    else if buildTests then
-      "check-rocmlir"
-    else
-      "check-rocmlir-build-only";
 
   postInstall =
     let
@@ -146,6 +136,17 @@ stdenv.mkDerivation (finalAttrs: {
       patchelf --set-rpath $out/lib:$external/lib:${libPath} $out/{bin/*,lib/*.so*}
     '';
 
+  # Certain libs aren't being generated, try enabling tests next update
+  checkTarget =
+    if buildRockCompiler then
+      "librockCompiler"
+    else if buildTests then
+      "check-rocmlir"
+    else
+      "check-rocmlir-build-only";
+
+  dontBuild = true;
+
   passthru.updateScript = rocmUpdateScript {
     inherit finalAttrs;
     page = "tags";
@@ -155,7 +156,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "MLIR-based convolution and GEMM kernel generator";
     homepage = "https://github.com/ROCm/rocMLIR";
     license = with lib.licenses; [ asl20 ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

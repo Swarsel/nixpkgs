@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "greaseweazle";
   version = "1.23";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "keirf";
@@ -28,6 +27,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pyserial
     requests
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "greaseweazle"

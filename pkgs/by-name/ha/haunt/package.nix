@@ -1,14 +1,14 @@
 {
+  lib,
+  stdenv,
   autoreconfHook,
   fetchgit,
   gitUpdater,
   guile,
   guile-commonmark,
   guile-reader,
-  lib,
   makeBinaryWrapper,
   pkg-config,
-  stdenv,
   texinfo,
   versionCheckHook,
 }:
@@ -49,13 +49,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
-    homepage = "https://dthompson.us/projects/haunt.html";
+    inherit (guile.meta) platforms;
     description = "Guile-based static site generator";
-    mainProgram = "haunt";
+
     longDescription = ''
       Haunt is a simple, functional, hackable static site generator
       that gives authors the ability to treat websites as Scheme
@@ -74,8 +73,10 @@ stdenv.mkDerivation (finalAttrs: {
       empowered to tweak, replace, or create builders to do things
       that aren't provided out-of-the-box.
     '';
+
+    homepage = "https://dthompson.us/projects/haunt.html";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ yiyu ];
-    inherit (guile.meta) platforms;
+    mainProgram = "haunt";
   };
 })

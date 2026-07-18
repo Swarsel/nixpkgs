@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools-scm,
+  buildPythonPackage,
   inflect,
   more-itertools,
   pytestCheckHook,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "jaraco-itertools";
   version = "6.4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jaraco";
@@ -20,23 +19,22 @@ buildPythonPackage rec {
     hash = "sha256-LjWkyY9I8BBYpFm8TT3kq4vk63pNQrnZ15haJCQ5xlk=";
   };
 
-  pythonNamespaces = [ "jaraco" ];
-
-  build-system = [ setuptools-scm ];
-
   postPatch = ''
     # downloads license texts at build time
     sed -i "/coherent\.licensed/d" pyproject.toml
   '';
+
+  nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools-scm ];
 
   dependencies = [
     inflect
     more-itertools
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "jaraco.itertools" ];
+  pythonNamespaces = [ "jaraco" ];
 
   meta = {
     description = "Tools for working with iterables";

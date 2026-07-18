@@ -1,26 +1,26 @@
 {
-  stdenv,
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitLab,
+  appstream-glib,
   cargo,
-  meson,
-  ninja,
+  dbus,
+  desktop-file-utils,
   gettext,
-  pkg-config,
-  rustc,
   glib,
+  glib-networking,
+  gst_all_1,
   gtk4,
   libadwaita,
-  appstream-glib,
-  desktop-file-utils,
-  dbus,
-  openssl,
-  glib-networking,
-  sqlite,
-  gst_all_1,
-  wrapGAppsHook4,
+  meson,
+  ninja,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  rustc,
+  sqlite,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,16 +28,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "25.3";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "World";
     repo = "podcasts";
     tag = finalAttrs.version;
     hash = "sha256-SblEHmKB/WZwT3T3vnlB4yJjY9JhftDkO21/yY//BRM=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-Ii5M6W5v5t+qppQNZI1ypHGMM5urUMv7e3Fef3FjfAA=";
+    domain = "gitlab.gnome.org";
   };
 
   nativeBuildInputs = [
@@ -70,21 +65,27 @@ stdenv.mkDerivation (finalAttrs: {
   # tests require network
   doCheck = false;
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-Ii5M6W5v5t+qppQNZI1ypHGMM5urUMv7e3Fef3FjfAA=";
+  };
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Listen to your favorite podcasts";
-    mainProgram = "gnome-podcasts";
     homepage = "https://apps.gnome.org/Podcasts/";
     changelog = "https://gitlab.gnome.org/World/podcasts/-/releases/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
+    platforms = lib.platforms.unix;
+    mainProgram = "gnome-podcasts";
+    broken = stdenv.hostPlatform.isDarwin; # never built on Hydra https://hydra.nixos.org/job/nixpkgs/trunk/gnome-podcasts.x86_64-darwin
+
     teams = [
       lib.teams.gnome
       lib.teams.gnome-circle
     ];
-    platforms = lib.platforms.unix;
-    broken = stdenv.hostPlatform.isDarwin; # never built on Hydra https://hydra.nixos.org/job/nixpkgs/trunk/gnome-podcasts.x86_64-darwin
   };
 })

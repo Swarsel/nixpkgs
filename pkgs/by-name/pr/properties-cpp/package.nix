@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  testers,
   cmake,
-  pkg-config,
-  gtest,
   doxygen,
+  gitUpdater,
   graphviz,
+  gtest,
   lomiri,
+  pkg-config,
+  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,11 +36,11 @@ stdenv.mkDerivation (finalAttrs: {
     lomiri.cmake-extras
   ];
 
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   checkInputs = [
     gtest
   ];
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
   passthru = {
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
@@ -48,11 +48,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://gitlab.com/ubports/development/core/lib-cpp/properties-cpp";
     description = "Very simple convenience library for handling properties and signals in C++11";
+    homepage = "https://gitlab.com/ubports/development/core/lib-cpp/properties-cpp";
     license = lib.licenses.lgpl3Only;
     maintainers = with lib.maintainers; [ edwtjo ];
     platforms = lib.platforms.linux;
+
     pkgConfigModules = [
       "properties-cpp"
     ];

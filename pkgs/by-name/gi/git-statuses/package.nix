@@ -1,14 +1,14 @@
 {
   lib,
-  fetchFromGitHub,
-  rustPlatform,
-  installShellFiles,
-  pkg-config,
-  openssl,
-  git,
-  versionCheckHook,
   stdenv,
+  fetchFromGitHub,
+  git,
+  installShellFiles,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,23 +22,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-p200nv8H/tuO48ZBsTQvM0JBGN4Yu58kXLhYl8AJxfc=";
   };
 
-  cargoHash = "sha256-MJekW/AzVe1dCr5La4+FKBeyGFAjN0fCBUiGnMoAtdI=";
-
-  # Needed to get openssl-sys to use pkg-config.
-  env.OPENSSL_NO_VENDOR = 1;
-
   nativeBuildInputs = [
     installShellFiles
     pkg-config
   ];
+
   buildInputs = [
     openssl
   ];
-  nativeInstallCheckInputs = [
-    git
-    versionCheckHook
-  ];
-  doInstallCheck = true;
+
+  cargoHash = "sha256-MJekW/AzVe1dCr5La4+FKBeyGFAjN0fCBUiGnMoAtdI=";
+  # Needed to get openssl-sys to use pkg-config.
+  env.OPENSSL_NO_VENDOR = 1;
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd git-statuses \
@@ -46,6 +41,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --fish <($out/bin/git-statuses --completions fish) \
       --zsh <($out/bin/git-statuses --completions zsh)
   '';
+
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    git
+    versionCheckHook
+  ];
 
   passthru.updateScript = nix-update-script { };
 

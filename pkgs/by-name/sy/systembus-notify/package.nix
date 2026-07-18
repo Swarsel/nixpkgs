@@ -10,20 +10,20 @@ let
   ini = formats.ini { };
 
   unit = ini.generate "systembus-notify.service" {
-    Unit = {
-      Description = "system bus notification daemon";
-    };
-
     Service = {
-      Type = "exec";
       ExecStart = "@out@/bin/systembus-notify";
-      PrivateTmp = true;
       # NB. We cannot `ProtectHome`, or it would block session dbus access.
       InaccessiblePaths = "/home";
-      ReadOnlyPaths = "/run/user";
+      PrivateTmp = true;
       ProtectSystem = "strict";
+      ReadOnlyPaths = "/run/user";
       Restart = "on-failure";
       Slice = "background.slice";
+      Type = "exec";
+    };
+
+    Unit = {
+      Description = "system bus notification daemon";
     };
   };
 
@@ -40,6 +40,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ systemd ];
+  # requires a running dbus instance
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -53,9 +55,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
-
-  # requires a running dbus instance
-  doCheck = false;
 
   meta = {
     description = "System bus notification daemon";

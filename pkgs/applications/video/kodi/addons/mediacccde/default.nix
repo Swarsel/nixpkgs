@@ -1,16 +1,15 @@
 {
   lib,
-  rel,
+  addonUpdateScript,
   buildKodiAddon,
   fetchzip,
-  addonUpdateScript,
+  rel,
   requests,
   routing,
 }:
 
 buildKodiAddon rec {
   pname = "media.ccc.de";
-  namespace = "plugin.video.media-ccc-de";
   version = "0.3.0+matrix.1";
 
   src = fetchzip {
@@ -23,6 +22,8 @@ buildKodiAddon rec {
     routing
   ];
 
+  namespace = "plugin.video.media-ccc-de";
+
   passthru = {
     updateScript = addonUpdateScript {
       attrPath = "kodi.packages.mediacccde";
@@ -30,8 +31,8 @@ buildKodiAddon rec {
   };
 
   meta = {
-    homepage = "https://github.com/voc/plugin.video.media-ccc-de/";
     description = "media.ccc.de for Kodi";
+    homepage = "https://github.com/voc/plugin.video.media-ccc-de/";
     license = lib.licenses.mit;
     teams = [ lib.teams.kodi ];
   };

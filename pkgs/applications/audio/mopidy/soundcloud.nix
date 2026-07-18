@@ -1,14 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  pythonPackages,
   mopidy,
+  pythonPackages,
 }:
 
 pythonPackages.buildPythonApplication (finalAttrs: {
   pname = "mopidy-soundcloud";
   version = "3.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mopidy";
@@ -16,6 +15,8 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     sha256 = "sha256-1Qqbfw6NZ+2K1w+abMBfWo0RAmIRbNyIErEmalmWJ0s=";
   };
+
+  doCheck = false;
 
   build-system = [
     pythonPackages.setuptools
@@ -26,8 +27,7 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     pythonPackages.beautifulsoup4
   ];
 
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "mopidy_soundcloud" ];
 
   meta = {

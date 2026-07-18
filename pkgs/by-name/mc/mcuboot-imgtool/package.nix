@@ -1,22 +1,19 @@
 {
   lib,
   fetchPypi,
-  python3Packages,
   nix-update-script,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "mcuboot-imgtool";
   version = "2.4.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) version;
-    pname = "imgtool";
     hash = "sha256-7y2x2eP2K5vJQlqOhsTqchLBZPChbpI9VSUPDYdDNC4=";
+    pname = "imgtool";
   };
-
-  passthru.updateScript = nix-update-script { };
 
   nativeBuildInputs = with python3Packages; [ setuptools ];
 
@@ -27,6 +24,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     intelhex
     pyyaml
   ];
+
+  pyproject = true;
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "MCUboot's image signing and key management";

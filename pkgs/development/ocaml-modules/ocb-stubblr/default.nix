@@ -1,25 +1,27 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  astring,
   fetchzip,
-  ocaml,
   findlib,
+  ocaml,
   ocamlbuild,
   topkg,
-  astring,
 }:
 
 stdenv.mkDerivation rec {
+  inherit (topkg) buildPhase installPhase;
   pname = "ocaml${ocaml.version}-ocb-stubblr";
   version = "0.1.1";
 
   src = fetchzip {
     url = "https://github.com/pqwy/ocb-stubblr/releases/download/v${version}/ocb-stubblr-${version}.tbz";
-    name = "src.tar.bz";
     hash = "sha256-Zd9a2EFT5j944xCFmWD4Td21VB7uGHZoNE4yvgfI9y0=";
+    name = "src.tar.bz";
   };
 
   patches = [ ./pkg-config.patch ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     ocaml
@@ -27,6 +29,7 @@ stdenv.mkDerivation rec {
     ocamlbuild
     topkg
   ];
+
   buildInputs = [
     topkg
     ocamlbuild
@@ -34,15 +37,11 @@ stdenv.mkDerivation rec {
 
   propagatedBuildInputs = [ astring ];
 
-  strictDeps = true;
-
-  inherit (topkg) buildPhase installPhase;
-
   meta = {
+    inherit (ocaml.meta) platforms;
     description = "OCamlbuild plugin for C stubs";
     homepage = "https://github.com/pqwy/ocb-stubblr";
     license = lib.licenses.isc;
-    inherit (ocaml.meta) platforms;
     maintainers = [ lib.maintainers.vbgl ];
   };
 }

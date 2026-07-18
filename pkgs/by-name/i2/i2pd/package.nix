@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  installShellFiles,
   boost,
-  zlib,
-  openssl,
-  upnpSupport ? true,
+  installShellFiles,
   miniupnpc,
+  openssl,
+  zlib,
+  upnpSupport ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,10 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "-msse" ""
   '';
 
+  nativeBuildInputs = [
+    installShellFiles
+  ];
+
   buildInputs = [
     boost
     zlib
@@ -33,15 +37,9 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional upnpSupport miniupnpc;
 
-  nativeBuildInputs = [
-    installShellFiles
-  ];
-
   makeFlags = [
     "USE_UPNP=${lib.boolToYesNo upnpSupport}"
   ];
-
-  enableParallelBuilding = true;
 
   installPhase = ''
     install -D i2pd $out/bin/i2pd
@@ -49,9 +47,11 @@ stdenv.mkDerivation (finalAttrs: {
     installManPage 'debian/i2pd.1'
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://i2pd.website";
     description = "Minimal I2P router written in C++";
+    homepage = "https://i2pd.website";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ edwtjo ];
     platforms = lib.platforms.unix;

@@ -1,7 +1,7 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "curio-compat";
   version = "1.6.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "klen";
@@ -18,16 +17,16 @@ buildPythonPackage rec {
     hash = "sha256-Crd9r4Icwga85wvtXaePbE56R192o+FXU9Zn+Lc7trI=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "curio" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
 
   disabledTests = [
     # contacts google.com
     "test_ssl_outgoing"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "curio" ];
 
   meta = {
     description = "Coroutine-based library for concurrent systems programming";

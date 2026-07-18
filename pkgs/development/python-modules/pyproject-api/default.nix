@@ -1,29 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  furo,
+  hatch-vcs,
   # build time
   hatchling,
-  hatch-vcs,
-
   # runtime
   packaging,
-
-  # docs
-  sphinxHook,
-  furo,
-  sphinx-autodoc-typehints,
-
   # tests
   pytest-mock,
   pytestCheckHook,
+  sphinx-autodoc-typehints,
+  # docs
+  sphinxHook,
 }:
 
 buildPythonPackage rec {
   pname = "pyproject-api";
   version = "1.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tox-dev";
@@ -37,11 +32,6 @@ buildPythonPackage rec {
     "doc"
   ];
 
-  build-system = [
-    hatchling
-    hatch-vcs
-  ];
-
   nativeBuildInputs = [
     # docs
     sphinxHook
@@ -49,19 +39,24 @@ buildPythonPackage rec {
     sphinx-autodoc-typehints
   ];
 
-  dependencies = [ packaging ];
-
   nativeCheckInputs = [
     pytest-mock
     pytestCheckHook
   ];
 
+  build-system = [
+    hatchling
+    hatch-vcs
+  ];
+
+  dependencies = [ packaging ];
+  pyproject = true;
   pythonImportsCheck = [ "pyproject_api" ];
 
   meta = {
-    changelog = "https://github.com/tox-dev/pyproject-api/releases/tag/${version}";
     description = "API to interact with the python pyproject.toml based projects";
     homepage = "https://github.com/tox-dev/pyproject-api";
+    changelog = "https://github.com/tox-dev/pyproject-api/releases/tag/${version}";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

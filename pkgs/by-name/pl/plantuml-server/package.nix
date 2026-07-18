@@ -14,12 +14,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-1jcX6GMknJK5dGL74DMwYTDZNVkKI07MpL8qbb0WMi4=";
   };
 
-  dontUnpack = true;
-
   postInstall = ''
     mkdir -p "$out/webapps"
     cp "$src" "$out/webapps/plantuml.war"
   '';
+
+  dontUnpack = true;
 
   passthru.tests = {
     inherit (nixosTests) plantuml-server;
@@ -28,12 +28,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Web application to generate UML diagrams on-the-fly";
     homepage = "https://plantuml.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       truh
       anthonyroussel
     ];
+
+    platforms = lib.platforms.all;
   };
 })

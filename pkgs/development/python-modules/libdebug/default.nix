@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cmake,
   elfutils,
-  fetchFromGitHub,
   libdwarf,
   libiberty,
   nanobind,
@@ -28,13 +28,14 @@ buildPythonPackage (finalAttrs: {
     owner = "libdebug";
     repo = "libdebug";
     tag = finalAttrs.version;
-
     hash = "sha256-J0ETzqAGufsZyW+XDhJCKwX1rrmDBwlAicvBb1AAiIQ=";
   };
 
-  dontUseCmakeConfigure = true;
-  pyproject = true;
-  build-system = [ scikit-build-core ];
+  nativeBuildInputs = [
+    pkg-config
+    cmake
+    ninja
+  ];
 
   buildInputs = [
     libdwarf
@@ -43,6 +44,9 @@ buildPythonPackage (finalAttrs: {
     libiberty
     zlib
   ];
+
+  nativeCheckInputs = [ writableTmpDirAsHomeHook ];
+  build-system = [ scikit-build-core ];
 
   dependencies = [
     psutil
@@ -53,19 +57,14 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-    cmake
-    ninja
-  ];
-
-  nativeCheckInputs = [ writableTmpDirAsHomeHook ];
-
+  dontUseCmakeConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "libdebug" ];
+
   meta = {
-    homepage = "https://github.com/libdebug/libdebug";
     description = "Programmatic debugging of userland Linux binaries";
-    maintainers = with lib.maintainers; [ mrsmoer ];
+    homepage = "https://github.com/libdebug/libdebug";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ mrsmoer ];
   };
 })

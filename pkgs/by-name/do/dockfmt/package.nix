@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -26,9 +26,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Dockerfile format";
-    mainProgram = "dockfmt";
     homepage = "https://github.com/jessfraz/dockfmt";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ cpcloud ];
+    mainProgram = "dockfmt";
   };
 })

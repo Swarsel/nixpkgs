@@ -1,19 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  python,
-  setuptools,
-
   # passthru tests
   apache-beam,
+  buildPythonPackage,
   datasets,
+  python,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "dill";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "uqfoundation";
@@ -22,19 +20,19 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Yh9WvescLgV7DmxGBTGKsb29+eRzF9qjZMg0DQQyLyY=";
   };
 
-  build-system = [ setuptools ];
-
   checkPhase = ''
     runHook preCheck
     ${python.interpreter} dill/tests/__main__.py
     runHook postCheck
   '';
 
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "dill" ];
+
   passthru.tests = {
     inherit apache-beam datasets;
   };
-
-  pythonImportsCheck = [ "dill" ];
 
   meta = {
     description = "Serialize all of python (almost)";

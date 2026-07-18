@@ -1,28 +1,22 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
-  rustPlatform,
-  pytestCheckHook,
-  psutil,
   cbor2,
+  fetchPypi,
   hypothesis,
+  psutil,
+  pytestCheckHook,
+  rustPlatform,
 }:
 
 buildPythonPackage rec {
   pname = "pycddl";
   version = "0.6.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-aUa6Q3e1RwvWN0NPqbJtWW3o/yzJxUc0g7gUGKUlOXo=";
   };
-
-  nativeBuildInputs = with rustPlatform; [
-    maturinBuildHook
-    cargoSetupHook
-  ];
 
   postPatch = ''
     # We don't place pytest-benchmark in the closure because we have no
@@ -36,10 +30,10 @@ buildPythonPackage rec {
     rm tests/test_benchmarks.py
   '';
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-cEpvkSqe/wRCxEajmM148jbo6a346x2t81pMRpKEJyE=";
-  };
+  nativeBuildInputs = with rustPlatform; [
+    maturinBuildHook
+    cargoSetupHook
+  ];
 
   env.PYO3_USE_ABI3_FORWARD_COMPATIBILITY = 1;
 
@@ -50,11 +44,17 @@ buildPythonPackage rec {
     cbor2
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-cEpvkSqe/wRCxEajmM148jbo6a346x2t81pMRpKEJyE=";
+  };
+
   disabledTests = [
     # flaky
     "test_memory_usage"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pycddl" ];
 
   meta = {

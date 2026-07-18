@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   colcon,
   pytestCheckHook,
-  setuptools,
   scspell,
+  setuptools,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "colcon-parallel-executor";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "colcon";
@@ -20,11 +19,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-JjpVhBpkVNFOsTnY8vEqIre4Hzwg+eDYwrR2iaIC5TA=";
   };
-  build-system = [ setuptools ];
-
-  dependencies = [
-    colcon
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -32,13 +26,21 @@ buildPythonPackage rec {
     writableTmpDirAsHomeHook
   ];
 
-  pythonImportsCheck = [
-    "colcon_parallel_executor"
+  build-system = [ setuptools ];
+
+  dependencies = [
+    colcon
   ];
 
   disabledTestPaths = [
     # Skip the linter tests
     "test/test_flake8.py"
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "colcon_parallel_executor"
   ];
 
   meta = {

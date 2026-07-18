@@ -13,8 +13,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-5/bYexDb3lHuPZ4VpxruR0Aw9eKytfpk+S8mSGYiYEs=";
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -23,15 +21,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontUnpack = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Fcitx 5 pinyin dictionary from zh.minecraft.wiki";
     homepage = "https://github.com/oldherl/fcitx5-pinyin-minecraft";
+
     license = with lib.licenses; [
       unlicense
       cc-by-nc-sa-30
     ];
+
     maintainers = with lib.maintainers; [ Guanran928 ];
     platforms = lib.platforms.all;
   };

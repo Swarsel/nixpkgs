@@ -3,30 +3,30 @@
   stdenv,
   fetchurl,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  installShellFiles,
-  darwin,
   boost,
+  cmake,
+  darwin,
+  db53,
+  installShellFiles,
   libevent,
+  libsystemtap,
+  pkg-config,
+  python3,
+  qrencode,
+  qt5,
+  sqlite,
+  versionCheckHook,
   zeromq,
   zlib,
-  db53,
-  sqlite,
-  qrencode,
-  libsystemtap,
-  qt5,
-  python3,
-  versionCheckHook,
   withGui ? true,
   withWallet ? true,
 }:
 
 let
   desktop = fetchurl {
+    sha256 = "0mxwq4jvcip44a796iwz7n1ljkhl3a4p47z7qlsxcfxw3zmm0k0k";
     # de45048 is the last commit when the debian/groestlcoin-qt.desktop file was changed
     url = "https://raw.githubusercontent.com/Groestlcoin/packaging/de4504844e47cf2c7604789650a5db4f3f7a48aa/debian/groestlcoin-qt.desktop";
-    sha256 = "0mxwq4jvcip44a796iwz7n1ljkhl3a4p47z7qlsxcfxw3zmm0k0k";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -67,24 +67,6 @@ stdenv.mkDerivation (finalAttrs: {
     qt5.qttools
   ];
 
-  postInstall = ''
-      cd ..
-      installShellCompletion --bash contrib/completions/bash/groestlcoin-cli.bash
-      installShellCompletion --bash contrib/completions/bash/groestlcoind.bash
-      installShellCompletion --bash contrib/completions/bash/groestlcoin-tx.bash
-
-    for file in contrib/completions/fish/groestlcoin-*.fish; do
-      installShellCompletion --fish $file
-    done
-  ''
-  + lib.optionalString withGui ''
-    installShellCompletion --fish contrib/completions/fish/groestlcoin-qt.fish
-
-    install -Dm644 ${desktop} $out/share/applications/groestlcoin-qt.desktop
-    substituteInPlace $out/share/applications/groestlcoin-qt.desktop --replace "Icon=groestlcoin128" "Icon=groestlcoin"
-    install -Dm644 share/pixmaps/groestlcoin256.png $out/share/icons/hicolor/256x256/apps/groestlcoin.png
-  '';
-
   cmakeFlags = [
     (lib.cmakeBool "BUILD_BENCH" false)
     (lib.cmakeBool "WITH_ZMQ" true)
@@ -107,30 +89,50 @@ stdenv.mkDerivation (finalAttrs: {
   # See also https://github.com/NixOS/nixpkgs/issues/24256
   ++ lib.optional withGui "QT_PLUGIN_PATH=${qt5.qtbase}/${qt5.qtbase.qtPluginPrefix}";
 
-  enableParallelBuilding = true;
+  postInstall = ''
+      cd ..
+      installShellCompletion --bash contrib/completions/bash/groestlcoin-cli.bash
+      installShellCompletion --bash contrib/completions/bash/groestlcoind.bash
+      installShellCompletion --bash contrib/completions/bash/groestlcoin-tx.bash
 
-  __darwinAllowLocalNetworking = true;
+    for file in contrib/completions/fish/groestlcoin-*.fish; do
+      installShellCompletion --fish $file
+    done
+  ''
+  + lib.optionalString withGui ''
+    installShellCompletion --fish contrib/completions/fish/groestlcoin-qt.fish
+
+    install -Dm644 ${desktop} $out/share/applications/groestlcoin-qt.desktop
+    substituteInPlace $out/share/applications/groestlcoin-qt.desktop --replace "Icon=groestlcoin128" "Icon=groestlcoin"
+    install -Dm644 share/pixmaps/groestlcoin256.png $out/share/icons/hicolor/256x256/apps/groestlcoin.png
+  '';
+
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
+  __darwinAllowLocalNetworking = true;
+  enableParallelBuilding = true;
   versionCheckProgram = "${placeholder "out"}/bin/groestlcoin-cli";
   versionCheckProgramArg = "--version";
-  doInstallCheck = true;
 
   meta = {
     description = "Peer-to-peer electronic cash system";
+
     longDescription = ''
       Groestlcoin is a free open source peer-to-peer electronic cash system that is
       completely decentralized, without the need for a central server or trusted
       parties. Users hold the crypto keys to their own money and transact directly
       with each other, with the help of a P2P network to check for double-spending.
     '';
+
     homepage = "https://groestlcoin.org/";
-    downloadPage = "https://github.com/Groestlcoin/groestlcoin/releases/tag/v${finalAttrs.version}/";
     changelog = "https://github.com/Groestlcoin/groestlcoin/blob/${finalAttrs.version}.0/doc/release-notes/release-notes-${finalAttrs.version}.0.md";
-    maintainers = with lib.maintainers; [ gruve-p ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ gruve-p ];
     platforms = lib.platforms.unix;
+    downloadPage = "https://github.com/Groestlcoin/groestlcoin/releases/tag/v${finalAttrs.version}/";
   };
 })

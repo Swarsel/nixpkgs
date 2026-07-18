@@ -1,44 +1,29 @@
 {
   lib,
-  buildGoModule,
   fetchurl,
   autoreconfHook,
-  pkg-config,
+  buildGoModule,
   libiconv,
   openssl,
   pcre2,
+  pkg-config,
   zlib,
 }:
 
 import ./versions.nix (
   {
-    version,
     hash,
+    version,
     ...
   }:
   buildGoModule {
-    pname = "zabbix-agent2";
     inherit version;
+    pname = "zabbix-agent2";
 
     src = fetchurl {
-      url = "https://cdn.zabbix.com/zabbix/sources/stable/${lib.versions.majorMinor version}/zabbix-${version}.tar.gz";
       inherit hash;
+      url = "https://cdn.zabbix.com/zabbix/sources/stable/${lib.versions.majorMinor version}/zabbix-${version}.tar.gz";
     };
-
-    modRoot = "src/go";
-
-    vendorHash = null;
-
-    nativeBuildInputs = [
-      autoreconfHook
-      pkg-config
-    ];
-    buildInputs = [
-      libiconv
-      openssl
-      pcre2
-      zlib
-    ];
 
     # need to provide GO* env variables & patch for reproducibility
     postPatch = ''
@@ -48,6 +33,20 @@ import ./versions.nix (
         --replace '`date +%H:%M:%S`' "00:00:00" \
         --replace '`date +"%b %_d %Y"`' "Jan 1 1970"
     '';
+
+    nativeBuildInputs = [
+      autoreconfHook
+      pkg-config
+    ];
+
+    buildInputs = [
+      libiconv
+      openssl
+      pcre2
+      zlib
+    ];
+
+    vendorHash = null;
 
     # manually configure the c dependencies
     preConfigure = ''
@@ -77,15 +76,20 @@ import ./versions.nix (
       ln -s $out/bin/zabbix_agent2 $out/sbin/zabbix_agentd
     '';
 
+    modRoot = "src/go";
+
     meta = {
       description = "Enterprise-class open source distributed monitoring solution (client-side agent)";
       homepage = "https://www.zabbix.com/";
+
       license =
         if (lib.versions.major version >= "7") then lib.licenses.agpl3Only else lib.licenses.gpl2Plus;
+
       maintainers = with lib.maintainers; [
         aanderse
         bstanderline
       ];
+
       platforms = lib.platforms.unix;
     };
   }

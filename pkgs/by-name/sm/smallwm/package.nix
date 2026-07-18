@@ -19,6 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-6FPpw1HE0iV/ayl2NvVUApqUcwBElRLf9o216gPyEDM=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     doxygen
     graphviz
@@ -28,10 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
     libx11
     libxrandr
   ];
-
-  strictDeps = true;
-
-  dontConfigure = true;
 
   makeFlags = [
     "CC=${stdenv.cc.targetPrefix}cc"
@@ -53,12 +51,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+
   meta = {
+    inherit (libx11.meta) platforms;
     description = "Small X window manager, extended from tinywm";
     homepage = "https://github.com/adamnew123456/SmallWM";
     license = lib.licenses.bsd2;
-    mainProgram = "smallwm";
     maintainers = [ ];
-    inherit (libx11.meta) platforms;
+    mainProgram = "smallwm";
   };
 })

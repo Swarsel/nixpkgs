@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  requests,
   amazon-ion,
-  python-dateutil,
-  pytestCheckHook,
+  buildPythonPackage,
   pytest-mock,
+  pytestCheckHook,
+  python-dateutil,
+  requests,
   requests-mock,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "kestra";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kestra-io";
@@ -23,7 +22,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Z03wLcu0tDe0UJgY9bLX+ozACpgGBPg99W67m3MsStc=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/python";
+  nativeCheckInputs = [
+    pytestCheckHook
+    requests-mock
+    pytest-mock
+  ];
 
   build-system = [ setuptools ];
 
@@ -33,13 +36,9 @@ buildPythonPackage (finalAttrs: {
     python-dateutil
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "kestra" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    requests-mock
-    pytest-mock
-  ];
+  sourceRoot = "${finalAttrs.src.name}/python";
 
   meta = {
     description = "Infinitely scalable orchestration and scheduling platform, creating, running, scheduling, and monitoring millions of complex pipelines";

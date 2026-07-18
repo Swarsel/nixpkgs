@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
+  cogapp,
   llm,
   llm-openai-plugin,
   openai,
-  pytestCheckHook,
   pytest-asyncio,
   pytest-recording,
+  pytestCheckHook,
+  setuptools,
   syrupy,
-  cogapp,
   writableTmpDirAsHomeHook,
 }:
 buildPythonPackage rec {
   pname = "llm-openai-plugin";
   version = "0.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -24,13 +23,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-f/0QvMi2ZF14GtyDIOc9TkHLfbSjjNMe+Wy+60jKO7E=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    llm
-    openai
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -41,8 +33,15 @@ buildPythonPackage rec {
     writableTmpDirAsHomeHook
   ];
 
-  pythonImportsCheck = [ "llm_openai" ];
+  build-system = [ setuptools ];
 
+  dependencies = [
+    llm
+    openai
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "llm_openai" ];
   passthru.tests = llm.mkPluginTest llm-openai-plugin;
 
   meta = {
@@ -50,6 +49,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/simonw/llm-openai-plugin";
     changelog = "https://github.com/simonw/llm-openai-plugin/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       josh
       philiptaron

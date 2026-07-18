@@ -9,9 +9,6 @@ buildDunePackage (finalAttrs: {
   pname = "hex";
   version = "1.5.0";
 
-  duneVersion = "3";
-  minimalOCamlVersion = "4.08";
-
   src = fetchurl {
     url = "https://github.com/mirage/ocaml-hex/releases/download/v${finalAttrs.version}/hex-${finalAttrs.version}.tbz";
     hash = "sha256-LmfuyhsDBJMHowgxtc1pS8stPn8qa0+1l/vbZHNRtNw=";
@@ -19,6 +16,8 @@ buildDunePackage (finalAttrs: {
 
   propagatedBuildInputs = [ cstruct ];
   doCheck = true;
+  duneVersion = "3";
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "Mininal OCaml library providing hexadecimal converters";

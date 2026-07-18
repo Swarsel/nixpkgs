@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  ncurses,
   autoreconfHook,
+  ncurses,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -14,11 +14,9 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "majorkingleo";
     repo = "xstow";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-c89+thw5N3Cgl1Ww+W7c3YsyhNJMLlreedvdWJFY3WY=";
+    fetchSubmodules = true;
   };
-
-  nativeBuildInputs = [ autoreconfHook ];
 
   # Upstream seems to try to support building both static and dynamic version
   # of executable on dynamic systems, but fails with link error when attempting
@@ -27,6 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace src/Makefile.am --replace xstow-static ""
     substituteInPlace src/Makefile.am --replace xstow-stow ""
   '';
+
+  nativeBuildInputs = [ autoreconfHook ];
 
   buildInputs = [
     ncurses

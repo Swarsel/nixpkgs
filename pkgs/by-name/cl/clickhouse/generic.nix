@@ -1,52 +1,53 @@
 {
-  lts ? false,
-  version,
-  rev,
   hash,
+  rev,
+  version,
+  lts ? false,
 }:
 
 {
   lib,
   stdenv,
-  llvmPackages_21,
   fetchFromGitHub,
-  fetchpatch,
+  cargo,
   cmake,
-  ninja,
-  python3,
-  perl,
-  nasm,
-  yasm,
-  nixosTests,
   darwin,
+  fetchpatch,
   findutils,
   libiconv,
+  llvmPackages_21,
+  nasm,
+  ninja,
+  nix-update-script,
+  nixosTests,
+  perl,
+  python3,
   removeReferencesTo,
+  rustPlatform,
+  rustc,
+  versionCheckHook,
+  yasm,
   zstd,
   rustSupport ? true,
-  rustc,
-  cargo,
-  rustPlatform,
-  nix-update-script,
-  versionCheckHook,
 }:
 let
   llvmPackages = llvmPackages_21;
   llvmStdenv = llvmPackages.stdenv;
 in
 llvmStdenv.mkDerivation (finalAttrs: {
-  pname = "clickhouse";
   inherit version;
   inherit rev;
+  pname = "clickhouse";
 
   src = fetchFromGitHub rec {
+    inherit hash;
     owner = "ClickHouse";
     repo = "ClickHouse";
     tag = "v${finalAttrs.version}";
     fetchSubmodules = true;
     name = "clickhouse-${tag}.tar.zst";
-    inherit hash;
     nativeBuildInputs = [ zstd ];
+
     postFetch = ''
       # Delete files that make the source too big
       rm -rf $out/contrib/arrow/docs/
@@ -96,7 +97,26 @@ llvmStdenv.mkDerivation (finalAttrs: {
     '';
   };
 
+  postPatch = ''
+    patchShebangs src/ utils/
+  ''
+  + lib.optionalString stdenv.hostPlatform.isDarwin ''
+    substituteInPlace cmake/tools.cmake \
+      --replace-fail 'gfind' 'find' \
+      --replace-fail 'ggrep' 'grep' \
+      --replace-fail '--ld-path=''${LLD_PATH}' '-fuse-ld=lld'
+
+    substituteInPlace utils/list-licenses/list-licenses.sh \
+      --replace-fail 'gfind' 'find' \
+      --replace-fail 'ggrep' 'grep'
+  ''
+  # Rust is handled by cmake
+  + lib.optionalString rustSupport ''
+    cargoSetupPostPatchHook() { true; }
+  '';
+
   strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     ninja
@@ -126,25 +146,29 @@ llvmStdenv.mkDerivation (finalAttrs: {
 
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
 
-  dontCargoSetupPostUnpack = true;
+  cmakeFlags = [
+    "-DENABLE_CHDIG=OFF"
+    "-DENABLE_TESTS=OFF"
+    "-DENABLE_DELTA_KERNEL_RS=0"
+    "-DENABLE_XRAY=OFF"
+    "-DCOMPILER_CACHE=disabled"
+  ]
+  ++ lib.optional (
+    stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64
+  ) "-DNO_ARMV81_OR_HIGHER=1";
 
-  postPatch = ''
-    patchShebangs src/ utils/
-  ''
-  + lib.optionalString stdenv.hostPlatform.isDarwin ''
-    substituteInPlace cmake/tools.cmake \
-      --replace-fail 'gfind' 'find' \
-      --replace-fail 'ggrep' 'grep' \
-      --replace-fail '--ld-path=''${LLD_PATH}' '-fuse-ld=lld'
+  env = {
+    CARGO_HOME = "$PWD/../.cargo/";
 
-    substituteInPlace utils/list-licenses/list-licenses.sh \
-      --replace-fail 'gfind' 'find' \
-      --replace-fail 'ggrep' 'grep'
-  ''
-  # Rust is handled by cmake
-  + lib.optionalString rustSupport ''
-    cargoSetupPostPatchHook() { true; }
-  '';
+    NIX_CFLAGS_COMPILE =
+      # undefined reference to '__sync_val_compare_and_swap_16'
+      lib.optionalString stdenv.hostPlatform.isx86_64 " -mcx16"
+      +
+        # Silence ``-Wimplicit-const-int-float-conversion` error in MemoryTracker.cpp and
+        # ``-Wno-unneeded-internal-declaration` TreeOptimizer.cpp.
+        lib.optionalString stdenv.hostPlatform.isDarwin
+          " -Wno-implicit-const-int-float-conversion -Wno-unneeded-internal-declaration";
+  };
 
   # Set the version the same way as ClickHouse CI does.
   #
@@ -176,39 +200,11 @@ llvmStdenv.mkDerivation (finalAttrs: {
       EOF
     '';
 
-  cmakeFlags = [
-    "-DENABLE_CHDIG=OFF"
-    "-DENABLE_TESTS=OFF"
-    "-DENABLE_DELTA_KERNEL_RS=0"
-    "-DENABLE_XRAY=OFF"
-    "-DCOMPILER_CACHE=disabled"
-  ]
-  ++ lib.optional (
-    stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64
-  ) "-DNO_ARMV81_OR_HIGHER=1";
+  # Basic smoke test
+  doCheck = true;
 
-  env = {
-    CARGO_HOME = "$PWD/../.cargo/";
-    NIX_CFLAGS_COMPILE =
-      # undefined reference to '__sync_val_compare_and_swap_16'
-      lib.optionalString stdenv.hostPlatform.isx86_64 " -mcx16"
-      +
-        # Silence ``-Wimplicit-const-int-float-conversion` error in MemoryTracker.cpp and
-        # ``-Wno-unneeded-internal-declaration` TreeOptimizer.cpp.
-        lib.optionalString stdenv.hostPlatform.isDarwin
-          " -Wno-implicit-const-int-float-conversion -Wno-unneeded-internal-declaration";
-  };
-
-  # https://github.com/ClickHouse/ClickHouse/issues/49988
-  hardeningDisable = [
-    "fortify"
-    "libcxxhardeningfast"
-  ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-  preVersionCheck = ''
-    version=${builtins.head (lib.splitString "-" version)}
+  checkPhase = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    $NIX_BUILD_TOP/$sourceRoot/build/programs/clickhouse local --query 'SELECT 1' | grep 1
   '';
 
   postInstall = ''
@@ -220,13 +216,20 @@ llvmStdenv.mkDerivation (finalAttrs: {
     remove-references-to -t ${llvmStdenv.cc} $out/bin/clickhouse
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
   # canary for the remove-references-to hook failing
   disallowedReferences = [ llvmStdenv.cc ];
+  dontCargoSetupPostUnpack = true;
 
-  # Basic smoke test
-  doCheck = true;
-  checkPhase = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    $NIX_BUILD_TOP/$sourceRoot/build/programs/clickhouse local --query 'SELECT 1' | grep 1
+  # https://github.com/ClickHouse/ClickHouse/issues/49988
+  hardeningDisable = [
+    "fortify"
+    "libcxxhardeningfast"
+  ];
+
+  preVersionCheck = ''
+    version=${builtins.head (lib.splitString "-" version)}
   '';
 
   # Builds in 7+h with 2 cores, and ~20m with a big-parallel builder.
@@ -243,21 +246,21 @@ llvmStdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://clickhouse.com";
     description = "Column-oriented database management system";
-    license = lib.licenses.asl20;
+    homepage = "https://clickhouse.com";
     changelog = "https://github.com/ClickHouse/ClickHouse/blob/v${version}/CHANGELOG.md";
+    license = lib.licenses.asl20;
 
-    mainProgram = "clickhouse";
+    maintainers = with lib.maintainers; [
+      thevar1able
+    ];
 
     # not supposed to work on 32-bit https://github.com/ClickHouse/ClickHouse/pull/23959#issuecomment-835343685
     platforms = lib.filter (x: (lib.systems.elaborate x).is64bit) (
       lib.platforms.linux ++ lib.platforms.darwin
     );
-    broken = stdenv.buildPlatform != stdenv.hostPlatform;
 
-    maintainers = with lib.maintainers; [
-      thevar1able
-    ];
+    mainProgram = "clickhouse";
+    broken = stdenv.buildPlatform != stdenv.hostPlatform;
   };
 })

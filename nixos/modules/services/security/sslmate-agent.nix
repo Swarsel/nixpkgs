@@ -9,8 +9,6 @@ let
 
 in
 {
-  meta.maintainers = [ ];
-
   options = {
     services.sslmate-agent = {
       enable = lib.mkEnableOption "sslmate-agent, a daemon for managing SSL/TLS certificates on a server";
@@ -22,14 +20,18 @@ in
 
     systemd = {
       packages = [ pkgs.sslmate-agent ];
+
       services.sslmate-agent = {
-        wantedBy = [ "multi-user.target" ];
         serviceConfig = {
           ConfigurationDirectory = "sslmate-agent";
           LogsDirectory = "sslmate-agent";
           StateDirectory = "sslmate-agent";
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
     };
   };
+
+  meta.maintainers = [ ];
 }

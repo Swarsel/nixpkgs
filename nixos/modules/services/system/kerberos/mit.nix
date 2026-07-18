@@ -1,7 +1,7 @@
 {
-  pkgs,
   config,
   lib,
+  pkgs,
   utils,
   ...
 }:
@@ -20,13 +20,13 @@ let
 
   aclMap = {
     add = "a";
+    all = "x";
     cpw = "c";
     delete = "d";
-    get-keys = "e";
     get = "i";
+    get-keys = "e";
     list = "l";
     modify = "m";
-    all = "x";
   };
 
   aclConfigs = lib.pipe cfg.settings.realms [
@@ -35,8 +35,8 @@ let
       { acl, ... }:
       lib.concatMapStringsSep "\n" (
         {
-          principal,
           access,
+          principal,
           target,
           ...
         }:
@@ -76,24 +76,26 @@ in
 
     systemd.services.kadmind = {
       description = "Kerberos Administration Daemon";
+      environment = env;
       partOf = [ "kerberos-server.target" ];
-      wantedBy = [ "kerberos-server.target" ];
+      restartTriggers = [ kdcConfFile ];
+
       serviceConfig = {
         ExecStart = "${package}/bin/kadmind -nofork";
         Slice = "system-kerberos-server.slice";
         StateDirectory = "krb5kdc";
       };
-      restartTriggers = [ kdcConfFile ];
-      environment = env;
+
+      wantedBy = [ "kerberos-server.target" ];
     };
 
     systemd.services.kdc = {
       description = "Key Distribution Center daemon";
+      environment = env;
       partOf = [ "kerberos-server.target" ];
-      wantedBy = [ "kerberos-server.target" ];
+      restartTriggers = [ kdcConfFile ];
+
       serviceConfig = {
-        Type = "forking";
-        PIDFile = PIDFile;
         ExecStart = escapeSystemdExecArgs (
           [
             "${package}/bin/krb5kdc"
@@ -102,11 +104,14 @@ in
           ]
           ++ cfg.extraKDCArgs
         );
+
+        PIDFile = PIDFile;
         Slice = "system-kerberos-server.slice";
         StateDirectory = "krb5kdc";
+        Type = "forking";
       };
-      restartTriggers = [ kdcConfFile ];
-      environment = env;
+
+      wantedBy = [ "kerberos-server.target" ];
     };
   };
 }

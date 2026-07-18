@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  imake,
   gccmakedep,
+  imake,
   libx11,
   libxext,
   libxscrnsaver,
-  xorgproto,
   nixosTests,
+  xorgproto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,6 +28,7 @@ stdenv.mkDerivation (finalAttrs: {
     imake
     gccmakedep
   ];
+
   buildInputs = [
     libx11
     libxext
@@ -50,9 +51,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Launch a given program when your X session has been idle for a given time";
     homepage = "http://www.ibiblio.org/pub/linux/X11/screensavers";
+    license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ peti ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl2Only;
     mainProgram = "xautolock";
   };
 })

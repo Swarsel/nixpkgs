@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  xorgproto,
-  wrapWithXFileSearchPathHook,
   libx11,
   libxaw,
   libxt,
+  pkg-config,
+  wrapWithXFileSearchPathHook,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xcalc";
@@ -49,12 +49,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Scientific calculator X11 client that can emulate a TI-30 or an HP-10C";
     homepage = "https://gitlab.freedesktop.org/xorg/app/xcalc";
+
     license = with lib.licenses; [
       x11
       hpndSellVariant
     ];
-    mainProgram = "xcalc";
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xcalc";
   };
 })

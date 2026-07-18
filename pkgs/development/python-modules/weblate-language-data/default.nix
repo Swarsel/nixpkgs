@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   translate-toolkit,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "weblate-language-data";
   version = "2026.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "WeblateOrg";
@@ -18,13 +17,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-7wNm6bu2L1/eF5D49wSYu1qfVC5Fl5MbaSbXO/az4F4=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ translate-toolkit ];
-
   # No tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ translate-toolkit ];
+  pyproject = true;
   pythonImportsCheck = [ "weblate_language_data" ];
 
   meta = {

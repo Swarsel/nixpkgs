@@ -1,18 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   gevent,
-
   pytestCheckHook,
-
   setuptools,
 }:
 buildPythonPackage rec {
   pname = "gevent-eventemitter";
   version = "2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rossengeorgiev";
@@ -21,21 +17,23 @@ buildPythonPackage rec {
     hash = "sha256-aW4OsQi3N5yAMdbTd8rxbb2qYMfFJBR4WQFIXvxpiMw=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
     gevent
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   meta = {
     description = "EventEmitter using gevent";
     homepage = "https://github.com/rossengeorgiev/gevent-eventemitter";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ weirdrock ];
+    platforms = lib.platforms.linux;
   };
 }

@@ -1,14 +1,14 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  cmake,
-  pkg-config,
   stdenv,
-  curl,
-  openssl,
+  fetchFromGitHub,
   buildPackages,
+  cmake,
+  curl,
   installShellFiles,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 let
@@ -27,8 +27,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-UtdXlIvX82UUhc4RWZZTBV5kz4YqfOTd4D/pGhDUfSI=";
   };
 
-  cargoHash = "sha256-Kv0NKA3OdHBn2M8DmcGyjcN2acGJYOdbczOb/nRsvDs=";
-
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -36,6 +34,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   buildInputs = [ curl ] ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [ openssl ];
+  cargoHash = "sha256-Kv0NKA3OdHBn2M8DmcGyjcN2acGJYOdbczOb/nRsvDs=";
+  # Needed to get openssl-sys to use pkg-config.
+  env.OPENSSL_NO_VENDOR = 1;
 
   preFixup = lib.optionalString canRunCmd ''
     installShellCompletion --cmd gix \
@@ -49,17 +50,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <(${ein} completions --shell zsh)
   '';
 
-  # Needed to get openssl-sys to use pkg-config.
-  env.OPENSSL_NO_VENDOR = 1;
-
   meta = {
     description = "Command-line application for interacting with git repositories";
     homepage = "https://github.com/GitoxideLabs/gitoxide";
     changelog = "https://github.com/GitoxideLabs/gitoxide/blob/${finalAttrs.src.tag}/CHANGELOG.md";
+
     license = with lib.licenses; [
       mit # or
       asl20
     ];
+
     maintainers = with lib.maintainers; [ hythera ];
     # NB: `ein` is also provided by this package, but `nix run
     # nixpkgs#gitoxide` doesn't work at all without this set.

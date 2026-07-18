@@ -31,64 +31,63 @@ in
   options = {
     services.plantuml-server = {
       enable = mkEnableOption "PlantUML server";
-
       package = mkPackageOption pkgs "plantuml-server" { };
+      graphvizPackage = mkPackageOption pkgs "graphviz" { };
+
+      group = mkOption {
+        default = "plantuml";
+        description = "Group which runs PlantUML server.";
+        type = types.str;
+      };
+
+      home = mkOption {
+        default = "/var/lib/plantuml";
+        description = "Home directory of the PlantUML server instance.";
+        type = types.path;
+      };
+
+      httpAuthorization = mkOption {
+        default = null;
+        description = "When calling the proxy endpoint, the value of HTTP_AUTHORIZATION will be used to set the HTTP Authorization header.";
+        type = types.nullOr types.str;
+      };
+
+      listenHost = mkOption {
+        default = "127.0.0.1";
+        description = "Host to listen on.";
+        type = types.str;
+      };
+
+      listenPort = mkOption {
+        default = 8080;
+        description = "Port to listen on.";
+        type = types.port;
+      };
 
       packages = {
         jdk = mkPackageOption pkgs "jdk" { };
+
         jetty = mkPackageOption pkgs "jetty" {
           default = [ "jetty_12" ];
         };
       };
 
-      user = mkOption {
-        type = types.str;
-        default = "plantuml";
-        description = "User which runs PlantUML server.";
-      };
-
-      group = mkOption {
-        type = types.str;
-        default = "plantuml";
-        description = "Group which runs PlantUML server.";
-      };
-
-      home = mkOption {
-        type = types.path;
-        default = "/var/lib/plantuml";
-        description = "Home directory of the PlantUML server instance.";
-      };
-
-      listenHost = mkOption {
-        type = types.str;
-        default = "127.0.0.1";
-        description = "Host to listen on.";
-      };
-
-      listenPort = mkOption {
-        type = types.port;
-        default = 8080;
-        description = "Port to listen on.";
-      };
-
       plantumlLimitSize = mkOption {
-        type = types.int;
         default = 4096;
         description = "Limits image width and height.";
+        type = types.int;
       };
-
-      graphvizPackage = mkPackageOption pkgs "graphviz" { };
 
       plantumlStats = mkOption {
-        type = types.bool;
         default = false;
         description = "Set it to on to enable statistics report (https://plantuml.com/statistics-report).";
+        type = types.bool;
       };
 
-      httpAuthorization = mkOption {
-        type = types.nullOr types.str;
-        default = null;
-        description = "When calling the proxy endpoint, the value of HTTP_AUTHORIZATION will be used to set the HTTP Authorization header.";
+      user = mkOption {
+        default = "plantuml";
+        description = "User which runs PlantUML server.";
+        type = types.str;
       };
     };
   };
@@ -96,14 +95,14 @@ in
   config = mkIf cfg.enable {
     systemd.services.plantuml-server = {
       description = "PlantUML server";
-      wantedBy = [ "multi-user.target" ];
 
       environment = {
-        PLANTUML_LIMIT_SIZE = toString cfg.plantumlLimitSize;
         GRAPHVIZ_DOT = "${cfg.graphvizPackage}/bin/dot";
-        PLANTUML_STATS = if cfg.plantumlStats then "on" else "off";
         HTTP_AUTHORIZATION = cfg.httpAuthorization;
+        PLANTUML_LIMIT_SIZE = toString cfg.plantumlLimitSize;
+        PLANTUML_STATS = if cfg.plantumlStats then "on" else "off";
       };
+
       script = ''
         ${cfg.packages.jdk}/bin/java \
           -jar ${cfg.packages.jetty}/start.jar \
@@ -115,15 +114,11 @@ in
       '';
 
       serviceConfig = {
-        User = cfg.user;
-        Group = cfg.group;
-        StateDirectory = mkIf (cfg.home == "/var/lib/plantuml") "plantuml";
-        StateDirectoryMode = mkIf (cfg.home == "/var/lib/plantuml") "0750";
-
         # Hardening
         AmbientCapabilities = [ "" ];
         CapabilityBoundingSet = [ "" ];
         DynamicUser = true;
+        Group = cfg.group;
         LockPersonality = true;
         NoNewPrivileges = true;
         PrivateDevices = true;
@@ -138,17 +133,24 @@ in
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
         ProtectSystem = "strict";
+
         RestrictAddressFamilies = [
           "AF_UNIX"
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
+        StateDirectory = mkIf (cfg.home == "/var/lib/plantuml") "plantuml";
+        StateDirectoryMode = mkIf (cfg.home == "/var/lib/plantuml") "0750";
         SystemCallArchitectures = "native";
         SystemCallFilter = [ "@system-service" ];
+        User = cfg.user;
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

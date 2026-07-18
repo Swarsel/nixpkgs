@@ -1,21 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  docbook_xml_dtd_43,
+  buildPackages,
   docbook-xsl-nons,
+  docbook_xml_dtd_43,
   glib,
   gobject-introspection,
   gtk-doc,
   meson,
   ninja,
+  nixosTests,
   pkg-config,
   python3,
   shared-mime-info,
-  nixosTests,
   xz,
   zstd,
-  buildPackages,
   withIntrospection ?
     lib.meta.availableOn stdenv.hostPlatform gobject-introspection
     && stdenv.hostPlatform.emulatorAvailable buildPackages,
@@ -24,6 +24,13 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "libxmlb";
   version = "0.3.27";
+
+  src = fetchFromGitHub {
+    owner = "hughsie";
+    repo = "libxmlb";
+    rev = finalAttrs.version;
+    hash = "sha256-5RP794gBA67DcrjzqvguDYu/Sf+1X5kfRi9yvLx9b+c=";
+  };
 
   outputs = [
     "out"
@@ -34,13 +41,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withIntrospection [
     "devdoc"
   ];
-
-  src = fetchFromGitHub {
-    owner = "hughsie";
-    repo = "libxmlb";
-    rev = finalAttrs.version;
-    hash = "sha256-5RP794gBA67DcrjzqvguDYu/Sf+1X5kfRi9yvLx9b+c=";
-  };
 
   patches = [
     ./installed-tests-path.patch
@@ -73,11 +73,13 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dinstalled_test_prefix=${placeholder "installedTests"}"
   ];
 
+  doCheck = true;
+
   preCheck = ''
     export XDG_DATA_DIRS=$XDG_DATA_DIRS:${shared-mime-info}/share
   '';
 
-  doCheck = true;
+  __structuredAttrs = true;
 
   passthru = {
     tests = {
@@ -85,14 +87,12 @@ stdenv.mkDerivation (finalAttrs: {
     };
   };
 
-  __structuredAttrs = true;
-
   meta = {
     description = "Library to help create and query binary XML blobs";
-    mainProgram = "xb-tool";
     homepage = "https://github.com/hughsie/libxmlb";
     license = lib.licenses.lgpl21Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xb-tool";
   };
 })

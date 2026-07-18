@@ -1,6 +1,6 @@
 {
-  pkgs,
   pandoc-mustache,
+  pkgs,
   runCommand,
 }:
 let

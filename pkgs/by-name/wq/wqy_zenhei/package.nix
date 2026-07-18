@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -16,12 +16,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ installFonts ];
 
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
     runHook postInstall
   '';
+
+  dontBuild = true;
 
   meta = {
     description = "Chinese Unicode font with full CJK coverage";

@@ -1,7 +1,7 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   numpy,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "mnist";
   version = "0.2.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "datapythonista";
@@ -19,7 +18,6 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ numpy ];
-
   nativeCheckInputs = [ pytestCheckHook ];
 
   # disable tests which fail due to socket related errors
@@ -29,6 +27,8 @@ buildPythonPackage rec {
     "test_train_images_has_right_size"
     "test_train_labels_has_right_size"
   ];
+
+  format = "setuptools";
 
   meta = {
     description = "Python utilities to download and parse the MNIST dataset";

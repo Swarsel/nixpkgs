@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   sonobuoy,
+  testers,
 }:
 
 # SHA of ${finalAttrs.version} for the tool's help output. Unfortunately this is needed in build flags.
@@ -14,6 +14,15 @@ in
 buildGoModule (finalAttrs: {
   pname = "sonobuoy";
   version = "0.57.5"; # Do not forget to update `rev` above
+
+  src = fetchFromGitHub {
+    owner = "vmware-tanzu";
+    repo = "sonobuoy";
+    rev = "v${finalAttrs.version}";
+    hash = "sha256-yd2a4FeWpONn/SQ1UEVN6f1RwgOT4Sbs6rSYDAuTqCU=";
+  };
+
+  vendorHash = "sha256-saReHf6oYu1IydP0qNEuFCtrqHDsHoHlPJpo9kSIEiQ=";
 
   ldflags =
     let
@@ -26,28 +35,21 @@ buildGoModule (finalAttrs: {
       "-X ${t}/pkg/buildDate=unknown"
     ];
 
-  src = fetchFromGitHub {
-    owner = "vmware-tanzu";
-    repo = "sonobuoy";
-    rev = "v${finalAttrs.version}";
-    hash = "sha256-yd2a4FeWpONn/SQ1UEVN6f1RwgOT4Sbs6rSYDAuTqCU=";
-  };
-
-  vendorHash = "sha256-saReHf6oYu1IydP0qNEuFCtrqHDsHoHlPJpo9kSIEiQ=";
-
   subPackages = [ "." ];
 
   passthru = {
-    updateScript = ./update.sh;
     tests.version = testers.testVersion {
-      package = sonobuoy;
-      command = "sonobuoy version";
       version = "v${finalAttrs.version}";
+      command = "sonobuoy version";
+      package = sonobuoy;
     };
+
+    updateScript = ./update.sh;
   };
 
   meta = {
     description = "Diagnostic tool that makes it easier to understand the state of a Kubernetes cluster";
+
     longDescription = ''
       Sonobuoy is a diagnostic tool that makes it easier to understand the state of
       a Kubernetes cluster by running a set of Kubernetes conformance tests in an
@@ -57,11 +59,13 @@ buildGoModule (finalAttrs: {
     homepage = "https://sonobuoy.io";
     changelog = "https://github.com/vmware-tanzu/sonobuoy/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    mainProgram = "sonobuoy";
+
     maintainers = with lib.maintainers; [
       carlosdagos
       saschagrunert
       wilsonehusin
     ];
+
+    mainProgram = "sonobuoy";
   };
 })

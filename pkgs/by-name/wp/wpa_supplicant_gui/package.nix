@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  qt5,
-  inkscape,
   imagemagick,
+  inkscape,
+  qt5,
   wpa_supplicant,
 }:
 
 stdenv.mkDerivation {
-  pname = "wpa_gui";
   inherit (wpa_supplicant) version src patches;
+  pname = "wpa_gui";
 
-  buildInputs = [
-    qt5.qtbase
-  ];
+  postPatch = ''
+    cd wpa_supplicant/wpa_gui-qt4
+  '';
 
   nativeBuildInputs = [
     qt5.qmake
@@ -22,9 +22,9 @@ stdenv.mkDerivation {
     qt5.wrapQtAppsHook
   ];
 
-  postPatch = ''
-    cd wpa_supplicant/wpa_gui-qt4
-  '';
+  buildInputs = [
+    qt5.qtbase
+  ];
 
   postBuild = ''
     make -C icons
@@ -39,9 +39,9 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Qt-based GUI for wpa_supplicant";
-    mainProgram = "wpa_gui";
     homepage = "https://hostap.epitest.fi/wpa_supplicant/";
     license = lib.licenses.bsd3;
     platforms = lib.platforms.linux;
+    mainProgram = "wpa_gui";
   };
 }

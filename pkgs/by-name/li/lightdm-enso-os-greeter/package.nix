@@ -2,27 +2,27 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  linkFarm,
-  lightdm-enso-os-greeter,
-  dbus,
-  pcre,
-  libepoxy,
-  libxdmcp,
-  libx11,
-  libpthread-stubs,
   at-spi2-core,
-  libxklavier,
-  libxkbcommon,
-  gtk3,
-  vala,
-  cmake,
-  libgee,
-  lightdm,
-  gdk-pixbuf,
   clutter-gtk,
-  wrapGAppsHook3,
+  cmake,
+  dbus,
+  gdk-pixbuf,
+  gtk3,
+  libepoxy,
+  libgee,
+  libpthread-stubs,
   librsvg,
+  libx11,
+  libxdmcp,
+  libxkbcommon,
+  libxklavier,
+  lightdm,
+  lightdm-enso-os-greeter,
+  linkFarm,
+  pcre,
+  pkg-config,
+  vala,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation {
@@ -69,29 +69,32 @@ stdenv.mkDerivation {
     cd greeter
   '';
 
-  passthru.xgreeters = linkFarm "enso-os-greeter-xgreeters" [
-    {
-      path = "${lightdm-enso-os-greeter}/share/xgreeters/pantheon-greeter.desktop";
-      name = "pantheon-greeter.desktop";
-    }
-  ];
-
   postFixup = ''
     substituteInPlace $out/share/xgreeters/pantheon-greeter.desktop \
       --replace "pantheon-greeter" "$out/bin/pantheon-greeter"
   '';
+
+  passthru.xgreeters = linkFarm "enso-os-greeter-xgreeters" [
+    {
+      name = "pantheon-greeter.desktop";
+      path = "${lightdm-enso-os-greeter}/share/xgreeters/pantheon-greeter.desktop";
+    }
+  ];
 
   meta = {
     description = ''
       A fork of pantheon greeter that positions elements in a central and
       vertigal manner and adds a blur effect to the background
     '';
-    mainProgram = "pantheon-greeter";
+
     homepage = "https://github.com/nick92/Enso-OS";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       eadwu
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "pantheon-greeter";
   };
 }

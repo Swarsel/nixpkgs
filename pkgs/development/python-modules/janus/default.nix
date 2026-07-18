@@ -2,17 +2,16 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  pytestCheckHook,
   pytest-asyncio,
   pytest-benchmark,
   pytest-cov-stub,
+  pytestCheckHook,
   typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "janus";
   version = "2.0.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -28,6 +27,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  format = "setuptools";
   pytestFlags = [ "--benchmark-disable" ];
 
   meta = {

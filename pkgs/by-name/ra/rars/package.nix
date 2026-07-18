@@ -1,9 +1,9 @@
 {
   lib,
   fetchurl,
-  stdenvNoCC,
-  makeWrapper,
   jre,
+  makeWrapper,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -14,8 +14,6 @@ stdenvNoCC.mkDerivation rec {
     url = "https://github.com/TheThirdOne/rars/releases/download/v${version}/rars1_6.jar";
     hash = "sha256-eA9zDrRXsbpgnpaKzMLIt32PksPZ2/MMx/2zz7FOjCQ=";
   };
-
-  dontUnpack = true;
 
   nativeBuildInputs = [ makeWrapper ];
 
@@ -28,13 +26,15 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "RISC-V Assembler and Runtime Simulator";
-    mainProgram = "rars";
     homepage = "https://github.com/TheThirdOne/rars";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ athas ];
     platforms = lib.platforms.all;
+    mainProgram = "rars";
   };
 }

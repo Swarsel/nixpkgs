@@ -2,19 +2,17 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
   clickclick,
   dnspython,
-  requests,
-  pytestCheckHook,
   isPy3k,
+  pytestCheckHook,
+  requests,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "stups-cli-support";
   version = "1.1.22";
-  pyproject = true;
-  disabled = !isPy3k;
 
   src = fetchFromGitHub {
     owner = "zalando-stups";
@@ -23,6 +21,8 @@ buildPythonPackage rec {
     sha256 = "sha256-/UsQzV1Ljd+K8AIj55UmiVXAshX+rUbYxFeSK7YGgn8=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+  preCheck = "export HOME=$TEMPDIR";
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,9 +31,8 @@ buildPythonPackage rec {
     requests
   ];
 
-  preCheck = "export HOME=$TEMPDIR";
-
-  nativeCheckInputs = [ pytestCheckHook ];
+  disabled = !isPy3k;
+  pyproject = true;
 
   meta = {
     description = "Helper library for all STUPS command line tools";

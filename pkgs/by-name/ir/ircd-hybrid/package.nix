@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   jansson,
+  libxcrypt,
   openssl,
   zlib,
-  libxcrypt,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,8 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "IPv6-capable IRC server";
+    homepage = "https://www.ircd-hybrid.org/";
     maintainers = with lib.maintainers; [ tbutter ];
     platforms = lib.platforms.unix;
-    homepage = "https://www.ircd-hybrid.org/";
   };
 })

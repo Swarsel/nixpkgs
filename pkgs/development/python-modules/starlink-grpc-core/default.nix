@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  setuptools-scm,
+  buildPythonPackage,
   grpcio,
   protobuf,
+  setuptools,
+  setuptools-scm,
   yagrc,
 }:
 
 buildPythonPackage rec {
   pname = "starlink-grpc-core";
   version = "1.2.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sparky8512";
@@ -21,7 +20,8 @@ buildPythonPackage rec {
     hash = "sha256-+KQ0zzgbqnzeQZXBTxnclJQbRioirK8Ym4EjJSQA3ZE=";
   };
 
-  pypaBuildFlags = [ "packaging" ];
+  # no tests
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -34,9 +34,8 @@ buildPythonPackage rec {
     yagrc
   ];
 
-  # no tests
-  doCheck = false;
-
+  pypaBuildFlags = [ "packaging" ];
+  pyproject = true;
   pythonImportsCheck = [ "starlink_grpc" ];
 
   meta = {

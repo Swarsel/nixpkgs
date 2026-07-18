@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   csaf-tool,
   lib4sbom,
   packageurl-python,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "lib4vex";
   version = "0.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "anthonyharrison";
@@ -20,6 +19,8 @@ buildPythonPackage rec {
     hash = "sha256-XH3Y2kbsJFR202F8bmcd3IWpgHS36W+ylDObtBFNFFg=";
   };
 
+  # has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,9 +29,7 @@ buildPythonPackage rec {
     packageurl-python
   ];
 
-  # has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "lib4vex" ];
 
   meta = {

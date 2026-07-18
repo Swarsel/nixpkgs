@@ -13,12 +13,13 @@
 buildPythonPackage rec {
   pname = "mongomock";
   version = "4.3.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-MmZ7eQZvq8EtTxfxao/XNhtfRDUgizujLCJuUiEqjDA=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     hatch-vcs
@@ -31,8 +32,7 @@ buildPythonPackage rec {
     sentinels
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mongomock" ];
 
   meta = {

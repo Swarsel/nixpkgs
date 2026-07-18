@@ -1,10 +1,9 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-
   # propagates
   click,
+  fetchPypi,
   jinja2,
   shellingham,
   six,
@@ -13,7 +12,6 @@
 buildPythonPackage rec {
   pname = "click-completion";
   version = "0.5.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -27,10 +25,10 @@ buildPythonPackage rec {
     six
   ];
 
-  pythonImportsCheck = [ "click_completion" ];
-
   # has no tests
   doCheck = false;
+  format = "setuptools";
+  pythonImportsCheck = [ "click_completion" ];
 
   meta = {
     description = "Add or enhance bash, fish, zsh and powershell completion in Click";

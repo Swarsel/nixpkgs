@@ -2,8 +2,8 @@
   stdenv,
   fetchurl,
   callPackage,
-  version,
   hashes,
+  version,
 }:
 
 let

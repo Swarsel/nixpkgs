@@ -2,9 +2,9 @@
   lib,
   fetchFromGitHub,
   buildGoModule,
-  writableTmpDirAsHomeHook,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,15 +19,14 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-CuFoH6crS6BOsSj2hNGw7loi4RixHbyJGySfxglUUmg=";
+  nativeCheckInputs = [ writableTmpDirAsHomeHook ];
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
     "-X=github.com/kopecmaciej/vi-mongo/internal/build.Version=${finalAttrs.version}"
   ];
-
-  nativeCheckInputs = [ writableTmpDirAsHomeHook ];
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
 
   passthru.updateScript = nix-update-script { };
 

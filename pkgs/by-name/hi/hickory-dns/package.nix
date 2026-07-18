@@ -1,7 +1,7 @@
 {
-  cacert,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  cacert,
   nix-update-script,
   rustPlatform,
   versionCheckHook,
@@ -19,17 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-zszSkclNCLGVchWiNdtNLJeY2j5CmubjMjhwVwsvRP8=";
-
-  buildFeatures = [
-    "blocklist"
-    "dnssec-ring"
-    "h3-ring"
-    "https-ring"
-    "quic-ring"
-    "recursor"
-    "rustls-platform-verifier"
-    "tls-ring"
-  ];
 
   # skip tests that need network or public resolvers
   checkFlags = [
@@ -67,11 +56,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=tests::readme_example"
   ];
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
-
   preCheck = ''
     # integration tests spin up the server which needs a cert bundle
     export SSL_CERT_FILE="${cacert}/etc/ssl/certs/ca-bundle.crt";
@@ -80,22 +64,42 @@ rustPlatform.buildRustPackage (finalAttrs: {
     substituteInPlace crates/resolver/src/lib.rs --replace-fail '//! ```rust' '//! ```rust,no_run'
   '';
 
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
+  buildFeatures = [
+    "blocklist"
+    "dnssec-ring"
+    "h3-ring"
+    "https-ring"
+    "quic-ring"
+    "recursor"
+    "rustls-platform-verifier"
+    "tls-ring"
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Rust based DNS client, server, and resolver";
     homepage = "https://hickory-dns.org/";
     changelog = "https://github.com/hickory-dns/hickory-dns/releases/tag/v${finalAttrs.version}";
+
+    license = with lib.licenses; [
+      asl20
+      mit
+    ];
+
     maintainers = with lib.maintainers; [
       adamcstephens
       colinsane
       cpu
     ];
+
     platforms = lib.platforms.linux;
-    license = with lib.licenses; [
-      asl20
-      mit
-    ];
     mainProgram = "hickory-dns";
   };
 })

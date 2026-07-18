@@ -1,12 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   backoff,
+  buildPythonPackage,
   httpx,
   opentelemetry-api,
-  opentelemetry-sdk,
   opentelemetry-exporter-otlp,
+  opentelemetry-sdk,
   packaging,
   poetry-core,
   pydantic,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "langfuse";
   version = "4.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "langfuse";
@@ -25,6 +24,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-BTwCAyqZMic5sOVAXOhhS6H1SBoEePo1fGOt5vLiLUo=";
   };
 
+  # tests require network access and openai api key
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -38,10 +39,8 @@ buildPythonPackage (finalAttrs: {
     wrapt
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "langfuse" ];
-
-  # tests require network access and openai api key
-  doCheck = false;
 
   meta = {
     description = "Instrument your LLM app with decorators or low-level SDK and get detailed tracing/observability";

@@ -1,10 +1,10 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
   google-api-core,
   google-auth,
   grpc-google-iam-v1,
-  lib,
   proto-plus,
   protobuf,
   pytest-asyncio,
@@ -15,19 +15,19 @@
 buildPythonPackage rec {
   pname = "google-cloud-artifact-registry";
   version = "1.22.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_artifact_registry";
     inherit version;
     hash = "sha256-DoFzqXrmld/PAsgyd6D9V04aOb5AnaY0W5Rb6+V3rZQ=";
+    pname = "google_cloud_artifact_registry";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     google-api-core
@@ -38,15 +38,16 @@ buildPythonPackage rec {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "google.cloud.artifactregistry"
     "google.cloud.artifactregistry_v1"
     "google.cloud.artifactregistry_v1beta2"
+  ];
+
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

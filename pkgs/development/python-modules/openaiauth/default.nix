@@ -9,21 +9,18 @@
 buildPythonPackage rec {
   pname = "openaiauth";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "OpenAIAuth";
     hash = "sha256-9SrptiheiM5s9YI6Ht68ahDGMFADWfBQgAWUBY3EEJ8=";
+    pname = "OpenAIAuth";
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ tls-client ];
-
   # Module has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "OpenAIAuth" ];
 
   meta = {

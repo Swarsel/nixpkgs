@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
-  scdoc,
-  wayland-scanner,
-  wayland,
-  wayland-protocols,
-  libxkbcommon,
   cairo,
   gdk-pixbuf,
-  pam,
-  wrapGAppsNoGuiHook,
   librsvg,
+  libxkbcommon,
+  meson,
+  ninja,
+  pam,
+  pkg-config,
+  scdoc,
+  wayland,
+  wayland-protocols,
+  wayland-scanner,
+  wrapGAppsNoGuiHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,7 +29,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  depsBuildBuild = [ pkg-config ];
+
   nativeBuildInputs = [
     meson
     ninja
@@ -39,6 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
     wrapGAppsNoGuiHook
     gdk-pixbuf
   ];
+
   buildInputs = [
     wayland
     wayland-protocols
@@ -55,17 +56,21 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dman-pages=enabled"
   ];
 
+  depsBuildBuild = [ pkg-config ];
+
   meta = {
+    inherit (finalAttrs.src.meta) homepage;
     description = "Screen locker for Wayland";
+
     longDescription = ''
       swaylock is a screen locking utility for Wayland compositors.
       Important note: If you don't use the Sway module (programs.sway.enable)
       you need to set "security.pam.services.swaylock = {};" manually.
     '';
-    inherit (finalAttrs.src.meta) homepage;
-    mainProgram = "swaylock";
+
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ wineee ];
+    platforms = lib.platforms.linux;
+    mainProgram = "swaylock";
   };
 })

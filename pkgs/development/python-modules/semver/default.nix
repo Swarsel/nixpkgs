@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   pytest-cov-stub,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "semver";
   version = "3.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-semver";
@@ -20,16 +19,17 @@ buildPythonPackage rec {
     hash = "sha256-ry6r2cY/DRTiPxT+ZiumgFbQyHNzL8i1QcQbLWjnDVE=";
   };
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
   ];
 
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "semver" ];
 
   meta = {

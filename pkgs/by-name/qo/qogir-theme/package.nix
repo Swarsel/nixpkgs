@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gitUpdater,
   gdk-pixbuf,
+  gitUpdater,
   gnome-themes-extra,
   gtk-engine-murrine,
   jdupes,
   librsvg,
   sassc,
   which,
-  themeVariants ? [ ], # default: blue
   colorVariants ? [ ], # default: all
+  themeVariants ? [ ], # default: blue
   tweaks ? [ ],
 }:
 
@@ -41,6 +41,10 @@ lib.checkListOfEnum "${pname}: theme variants" [ "default" "manjaro" "ubuntu" "a
       hash = "sha256-LS1BE2jR08/JW2+rixYhTmctAfK2yZVWIE4QnAX9PDQ=";
     };
 
+    postPatch = ''
+      patchShebangs install.sh clean-old-theme.sh
+    '';
+
     nativeBuildInputs = [
       jdupes
       sassc
@@ -52,14 +56,6 @@ lib.checkListOfEnum "${pname}: theme variants" [ "default" "manjaro" "ubuntu" "a
       gnome-themes-extra # adwaita engine for Gtk2
       librsvg # pixbuf loader for svg
     ];
-
-    propagatedUserEnvPkgs = [
-      gtk-engine-murrine # murrine engine for Gtk2
-    ];
-
-    postPatch = ''
-      patchShebangs install.sh clean-old-theme.sh
-    '';
 
     installPhase = ''
       runHook preInstall
@@ -82,13 +78,17 @@ lib.checkListOfEnum "${pname}: theme variants" [ "default" "manjaro" "ubuntu" "a
       runHook postInstall
     '';
 
+    propagatedUserEnvPkgs = [
+      gtk-engine-murrine # murrine engine for Gtk2
+    ];
+
     passthru.updateScript = gitUpdater { };
 
     meta = {
       description = "Flat Design theme for GTK based desktop environments";
       homepage = "https://github.com/vinceliuice/Qogir-theme";
       license = lib.licenses.gpl3Only;
-      platforms = lib.platforms.unix;
       maintainers = [ lib.maintainers.romildo ];
+      platforms = lib.platforms.unix;
     };
   }

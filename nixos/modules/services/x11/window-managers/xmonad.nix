@@ -1,7 +1,7 @@
 {
-  pkgs,
-  lib,
   config,
+  lib,
+  pkgs,
   ...
 }:
 
@@ -34,15 +34,15 @@ let
       xmonadAndPackages = self: [ self.xmonad ] ++ packages self;
       xmonadEnv = ghcWithPackages xmonadAndPackages;
       configured = pkgs.writers.writeHaskellBin "xmonad" {
+        inherit (cfg) ghcArgs;
         ghc = cfg.haskellPackages.ghc;
         libraries = xmonadAndPackages cfg.haskellPackages;
-        inherit (cfg) ghcArgs;
       } cfg.config;
     in
     pkgs.runCommand "xmonad"
       {
-        preferLocalBuild = true;
         nativeBuildInputs = [ pkgs.makeWrapper ];
+        preferLocalBuild = true;
       }
       (
         ''
@@ -60,56 +60,11 @@ let
   xmonad = if (cfg.config != null) then xmonad-config else xmonad-vanilla;
 in
 {
-  meta.maintainers = with maintainers; [
-    lassulus
-    xaverdh
-    ivanbrennan
-    slotThe
-  ];
-
   options = {
     services.xserver.windowManager.xmonad = {
-      enable = mkEnableOption "xmonad";
-
-      haskellPackages = mkOption {
-        default = pkgs.haskellPackages;
-        defaultText = literalExpression "pkgs.haskellPackages";
-        example = literalExpression "pkgs.haskell.packages.ghc910";
-        type = types.attrs;
-        description = ''
-          haskellPackages used to build Xmonad and other packages.
-          This can be used to change the GHC version used to build
-          Xmonad and the packages listed in
-          {var}`extraPackages`.
-        '';
-      };
-
-      extraPackages = mkOption {
-        type = types.functionTo (types.listOf types.package);
-        default = self: [ ];
-        defaultText = literalExpression "self: []";
-        example = literalExpression ''
-          haskellPackages: [
-            haskellPackages.xmonad-contrib
-            haskellPackages.monad-logger
-          ]
-        '';
-        description = ''
-          Extra packages available to ghc when rebuilding Xmonad. The
-          value must be a function which receives the attrset defined
-          in {var}`haskellPackages` as the sole argument.
-        '';
-      };
-
-      enableContribAndExtras = mkOption {
-        default = false;
-        type = lib.types.bool;
-        description = "Enable xmonad-{contrib,extras} in Xmonad.";
-      };
-
       config = mkOption {
         default = null;
-        type = with lib.types; nullOr (either path str);
+
         description = ''
           Configuration from which XMonad gets compiled. If no value is
           specified, a vanilla xmonad binary is put in PATH, which will
@@ -137,6 +92,7 @@ in
           This should allow you to switch at will between the local xmonad and
           the one NixOS puts in your PATH.
         '';
+
         example = ''
           import XMonad
           import XMonad.Util.EZConfig (additionalKeys)
@@ -185,42 +141,97 @@ in
           --------------------------------------------
 
         '';
+
+        type = with lib.types; nullOr (either path str);
       };
+
+      enable = mkEnableOption "xmonad";
 
       enableConfiguredRecompile = mkOption {
         default = false;
-        type = lib.types.bool;
+
         description = ''
           Enable recompilation even if {option}`config` is set to a
           non-null value. This adds the necessary Haskell dependencies (GHC with
           packages) to the xmonad binary's environment.
         '';
+
+        type = lib.types.bool;
       };
 
-      xmonadCliArgs = mkOption {
-        default = [ ];
-        type = with lib.types; listOf str;
+      enableContribAndExtras = mkOption {
+        default = false;
+        description = "Enable xmonad-{contrib,extras} in Xmonad.";
+        type = lib.types.bool;
+      };
+
+      extraPackages = mkOption {
+        default = self: [ ];
+        defaultText = literalExpression "self: []";
+
         description = ''
-          Command line arguments passed to the xmonad binary.
+          Extra packages available to ghc when rebuilding Xmonad. The
+          value must be a function which receives the attrset defined
+          in {var}`haskellPackages` as the sole argument.
         '';
+
+        example = literalExpression ''
+          haskellPackages: [
+            haskellPackages.xmonad-contrib
+            haskellPackages.monad-logger
+          ]
+        '';
+
+        type = types.functionTo (types.listOf types.package);
       };
 
       ghcArgs = mkOption {
         default = [ ];
-        type = with lib.types; listOf str;
+
         description = ''
           Command line arguments passed to the compiler (ghc)
           invocation when xmonad.config is set.
         '';
+
+        type = with lib.types; listOf str;
+      };
+
+      haskellPackages = mkOption {
+        default = pkgs.haskellPackages;
+        defaultText = literalExpression "pkgs.haskellPackages";
+
+        description = ''
+          haskellPackages used to build Xmonad and other packages.
+          This can be used to change the GHC version used to build
+          Xmonad and the packages listed in
+          {var}`extraPackages`.
+        '';
+
+        example = literalExpression "pkgs.haskell.packages.ghc910";
+        type = types.attrs;
+      };
+
+      xmonadCliArgs = mkOption {
+        default = [ ];
+
+        description = ''
+          Command line arguments passed to the xmonad binary.
+        '';
+
+        type = with lib.types; listOf str;
       };
 
     };
   };
+
   config = mkIf cfg.enable {
+    environment.systemPackages = [ xmonad ];
+
     services.xserver.windowManager = {
       session = [
         {
           name = "xmonad";
+
           start = ''
             systemd-cat -t xmonad -- ${xmonad}/bin/xmonad ${lib.escapeShellArgs cfg.xmonadCliArgs} &
             waitPID=$!
@@ -228,7 +239,12 @@ in
         }
       ];
     };
-
-    environment.systemPackages = [ xmonad ];
   };
+
+  meta.maintainers = with maintainers; [
+    lassulus
+    xaverdh
+    ivanbrennan
+    slotThe
+  ];
 }

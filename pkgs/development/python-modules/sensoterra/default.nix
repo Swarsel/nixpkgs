@@ -9,20 +9,17 @@
 buildPythonPackage rec {
   pname = "sensoterra";
   version = "2.0.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-WfjTOns5OPU8+ufDeFdDGjURhBWUFfw/qRSHQazBL04=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   # Test require network access
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "sensoterra" ];
 
   meta = {

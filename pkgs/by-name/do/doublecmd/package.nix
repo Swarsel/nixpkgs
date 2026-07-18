@@ -7,8 +7,8 @@
   getopt,
   glib,
   lazarus,
-  libx11,
   libsForQt5,
+  libx11,
   writableTmpDirAsHomeHook,
 }:
 
@@ -22,6 +22,14 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-VmiL3B4BmbKhk0eWmlKuPuPv6OsUk7DbFNoYGdcpeBM=";
   };
+
+  postPatch = ''
+    patchShebangs build.sh install/linux/install.sh
+    substituteInPlace build.sh \
+      --replace-warn '$(which lazbuild)' '"${lazarus}/bin/lazbuild --lazarusdir=${lazarus}/share/lazarus"'
+    substituteInPlace install/linux/install.sh \
+      --replace-warn '$DC_INSTALL_PREFIX/usr' '$DC_INSTALL_PREFIX'
+  '';
 
   nativeBuildInputs = [
     fpc
@@ -40,14 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   env.NIX_LDFLAGS = "--as-needed -rpath ${lib.makeLibraryPath finalAttrs.buildInputs}";
 
-  postPatch = ''
-    patchShebangs build.sh install/linux/install.sh
-    substituteInPlace build.sh \
-      --replace-warn '$(which lazbuild)' '"${lazarus}/bin/lazbuild --lazarusdir=${lazarus}/share/lazarus"'
-    substituteInPlace install/linux/install.sh \
-      --replace-warn '$DC_INSTALL_PREFIX/usr' '$DC_INSTALL_PREFIX'
-  '';
-
   buildPhase = ''
     runHook preBuild
 
@@ -65,12 +65,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://doublecmd.sourceforge.io/";
     description = "Two-panel graphical file manager written in Pascal";
+    homepage = "https://doublecmd.sourceforge.io/";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "doublecmd";
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "doublecmd";
   };
 })
 # TODO: deal with other platforms too

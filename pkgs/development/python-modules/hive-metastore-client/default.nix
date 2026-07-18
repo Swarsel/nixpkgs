@@ -1,22 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  thrift,
-
+  buildPythonPackage,
   # tests
   pytestCheckHook,
+  # build-system
+  setuptools,
+  # dependencies
+  thrift,
 }:
 
 buildPythonPackage rec {
   pname = "hive-metastore-client";
   version = "1.0.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "quintoandar";
@@ -25,21 +21,23 @@ buildPythonPackage rec {
     hash = "sha256-IejsiC1eDNa6fjpQPhLNkMvZpyr9QsQdGBfhev1jEyg=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
   ];
 
-  pythonRelaxDeps = [
-    "thrift"
-  ];
   dependencies = [
     thrift
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "hive_metastore_client" ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
+  pythonRelaxDeps = [
+    "thrift"
   ];
 
   meta = {

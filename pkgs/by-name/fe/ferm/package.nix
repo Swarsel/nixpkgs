@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
-  perl,
   iptables,
+  makeWrapper,
   nixosTests,
+  perl,
 }:
 
 let
   inherit (lib.versions) majorMinor;
 in
 stdenv.mkDerivation (finalAttrs: {
-  version = "2.7";
   pname = "ferm";
+  version = "2.7";
 
   src = fetchurl {
     url = "http://ferm.foo-projects.org/download/${majorMinor finalAttrs.version}/ferm-${finalAttrs.version}.tar.xz";
@@ -29,6 +29,7 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
     perl
   ];
+
   buildInputs = [ perl ];
 
   makeFlags = [
@@ -46,8 +47,8 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.tests.ferm = nixosTests.ferm;
 
   meta = {
-    homepage = "http://ferm.foo-projects.org/";
     description = "Tool to maintain complex firewalls";
+
     longDescription = ''
       ferm is a tool to maintain complex firewalls, without having the trouble to
       rewrite the complex rules over and over again. ferm allows the entire
@@ -55,6 +56,8 @@ stdenv.mkDerivation (finalAttrs: {
       command. The firewall configuration resembles structured programming-like
       language, which can contain levels and lists.
     '';
+
+    homepage = "http://ferm.foo-projects.org/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ mic92 ];
     platforms = lib.platforms.linux;

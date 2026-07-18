@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  fftwSinglePrec,
-  freetype,
   SDL,
   SDL_ttf,
+  fftwSinglePrec,
+  freetype,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,10 +39,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Quantum mechanics-based minigolf-like game";
-    mainProgram = "quantumminigolf";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.linux;
+    mainProgram = "quantumminigolf";
     # never built on aarch64-linux since first introduction in nixpkgs
     broken = stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64;
   };

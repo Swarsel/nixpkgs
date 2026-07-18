@@ -1,22 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  boost,
+  callPackage,
   cmake,
   coreutils,
-  python3,
-  git,
-  fetchFromGitHub,
-  ninja,
-  lit,
-  z3,
-  sv-lang_10, # update sv-lang version here according to upstream requirements
   fmt,
-  boost,
-  mimalloc,
+  git,
   gitUpdater,
-  callPackage,
+  lit,
+  mimalloc,
+  ninja,
+  python3,
+  sv-lang_10, # update sv-lang version here according to upstream requirements
   versionCheckHook,
-
+  z3,
   # sv-lang (slang) build is broken on darwin
   enableSlangFrontend ? stdenv.hostPlatform.isLinux,
 }:
@@ -28,6 +27,7 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "circt";
   version = "1.147.0";
+
   src = fetchFromGitHub {
     owner = "llvm";
     repo = "circt";
@@ -36,9 +36,35 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  requiredSystemFeatures = [ "big-parallel" ];
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+  ];
 
-  __structuredAttrs = true;
+  postPatch = ''
+    patchShebangs tools/circt-test
+
+    # Replace slang references to match the package in nixpkgs
+    substituteInPlace \
+      lib/Tools/circt-verilog-lsp-server/VerilogServerImpl/CMakeLists.txt \
+      lib/Conversion/ImportVerilog/CMakeLists.txt \
+      unittests/Conversion/ImportVerilog/CMakeLists.txt \
+      --replace-fail "slang_slang" "slang::slang"
+
+    # Patch shebang in test mlir files
+    find ./test -name '*.mlir' -exec sed -i 's|/usr/bin/env|${coreutils}/bin/env|g' {} \;
+
+    # circt uses git to check its version, but when cloned on nix it can't access git.
+    # So this hard codes the version.
+    substituteInPlace cmake/modules/GenVersionFile.cmake \
+      --replace-fail "unknown git version" "${finalAttrs.src.rev}"
+
+    # Increase timeout on tests because some were failing on hydra.
+    # Using `replace-warn` so it doesn't break when upstream changes the timeout.
+    substituteInPlace integration_test/CMakeLists.txt \
+      --replace-warn 'set(CIRCT_INTEGRATION_TIMEOUT 60)' 'set(CIRCT_INTEGRATION_TIMEOUT 300)'
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -48,6 +74,7 @@ stdenv.mkDerivation (finalAttrs: {
     z3
     versionCheckHook
   ];
+
   buildInputs = [
     circt-llvm
   ]
@@ -109,49 +136,7 @@ stdenv.mkDerivation (finalAttrs: {
     in
     if lit-filters != [ ] then lib.strings.concatStringsSep "|" lit-filters else null;
 
-  postPatch = ''
-    patchShebangs tools/circt-test
-
-    # Replace slang references to match the package in nixpkgs
-    substituteInPlace \
-      lib/Tools/circt-verilog-lsp-server/VerilogServerImpl/CMakeLists.txt \
-      lib/Conversion/ImportVerilog/CMakeLists.txt \
-      unittests/Conversion/ImportVerilog/CMakeLists.txt \
-      --replace-fail "slang_slang" "slang::slang"
-
-    # Patch shebang in test mlir files
-    find ./test -name '*.mlir' -exec sed -i 's|/usr/bin/env|${coreutils}/bin/env|g' {} \;
-
-    # circt uses git to check its version, but when cloned on nix it can't access git.
-    # So this hard codes the version.
-    substituteInPlace cmake/modules/GenVersionFile.cmake \
-      --replace-fail "unknown git version" "${finalAttrs.src.rev}"
-
-    # Increase timeout on tests because some were failing on hydra.
-    # Using `replace-warn` so it doesn't break when upstream changes the timeout.
-    substituteInPlace integration_test/CMakeLists.txt \
-      --replace-warn 'set(CIRCT_INTEGRATION_TIMEOUT 60)' 'set(CIRCT_INTEGRATION_TIMEOUT 300)'
-  '';
-
   doCheck = true;
-  checkTarget = "check-circt check-circt-unit";
-
-  doInstallCheck = true;
-  versionCheckProgram = "${placeholder "out"}/bin/firtool";
-  versionCheckProgramArg = "--version";
-
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-  ];
-
-  # Copy circt-llvm's postFixup stage so that it can make all our dylib references
-  # absolute as well.
-  #
-  # We don't need `postPatch` because circt seems to be automatically inheriting
-  # the config somehow, presumably via. `-DMLIR_DIR`.
-  postFixup = circt-llvm.postFixup;
 
   postInstall = ''
     moveToOutput lib "$lib"
@@ -168,22 +153,38 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "\''${_IMPORT_PREFIX}/lib" "$lib/lib"
   '';
 
+  doInstallCheck = true;
+  # Copy circt-llvm's postFixup stage so that it can make all our dylib references
+  # absolute as well.
+  #
+  # We don't need `postPatch` because circt seems to be automatically inheriting
+  # the config somehow, presumably via. `-DMLIR_DIR`.
+  postFixup = circt-llvm.postFixup;
+  __structuredAttrs = true;
+  checkTarget = "check-circt check-circt-unit";
+  requiredSystemFeatures = [ "big-parallel" ];
+  versionCheckProgram = "${placeholder "out"}/bin/firtool";
+  versionCheckProgramArg = "--version";
+
   passthru = {
+    llvm = circt-llvm;
+
     updateScript = gitUpdater {
       rev-prefix = "firtool-";
     };
-    llvm = circt-llvm;
   };
 
   meta = {
     description = "Circuit IR compilers and tools";
     homepage = "https://circt.org/";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       sharzy
       pineapplehunter
       sequencer
     ];
+
     platforms = lib.platforms.all;
   };
 })

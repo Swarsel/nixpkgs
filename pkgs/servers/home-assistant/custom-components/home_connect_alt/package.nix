@@ -6,8 +6,6 @@
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "ekutner";
-  domain = "home_connect_alt";
   version = "1.4.2";
 
   src = fetchFromGitHub {
@@ -18,12 +16,14 @@ buildHomeAssistantComponent rec {
   };
 
   dependencies = [ home-connect-async ];
+  domain = "home_connect_alt";
+  owner = "ekutner";
 
   meta = {
-    changelog = "https://github.com/ekutner/home-connect-hass/releases/tag/${src.tag}";
     description = "Alternative (and improved) Home Connect integration for Home Assistant";
     homepage = "https://github.com/ekutner/home-connect-hass";
-    maintainers = with lib.maintainers; [ kranzes ];
+    changelog = "https://github.com/ekutner/home-connect-hass/releases/tag/${src.tag}";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ kranzes ];
   };
 }

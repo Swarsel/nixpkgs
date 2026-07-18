@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -16,9 +16,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-/5VJ7RMq1kt+z9V+UymJ1SKbaFF+E9eHxYzkS37siG8=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-6bzTLnT69IdLwgbz/zZhjQYm8WpimJlItutW6fvwACs=";
 
-  nativeBuildInputs = [ installShellFiles ];
+  postInstall = ''
+    installShellCompletion completion/*
+  '';
 
   ldflags = [
     "-s"
@@ -26,14 +29,11 @@ buildGoModule (finalAttrs: {
     "-X main.version=${finalAttrs.version}"
   ];
 
-  postInstall = ''
-    installShellCompletion completion/*
-  '';
-
   meta = {
     description = "Fast way to switch between clusters and namespaces in kubectl";
-    license = lib.licenses.asl20;
     homepage = "https://github.com/ahmetb/kubectx";
+    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       jlesquembre
       miniharinn

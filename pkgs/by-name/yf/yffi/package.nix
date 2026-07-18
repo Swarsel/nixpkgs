@@ -1,9 +1,9 @@
 {
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
   rust-cbindgen,
   rustPlatform,
-  stdenv,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,13 +17,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-OYqBxhpNw4LAfCLN/xBxSFuwjUV/PZvbg7Kk4AQpvvs=";
   };
 
-  cargoHash = "sha256-eMGhHDcVeySESsgrP5Pj9BwsAgEe8rZHz+0FeFFp7IY=";
-
-  buildAndTestSubdir = "yffi";
-
   nativeBuildInputs = [
     rust-cbindgen
   ];
+
+  cargoHash = "sha256-eMGhHDcVeySESsgrP5Pj9BwsAgEe8rZHz+0FeFFp7IY=";
 
   postBuild = ''
     cbindgen --config yffi/cbindgen.toml --crate yffi --output libyrs.h --lang C
@@ -38,13 +36,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     install -Dm644 libyrs.h $out/include/libyrs.h
   '';
 
+  buildAndTestSubdir = "yffi";
+
   meta = {
     description = "C foreign function interface for Yrs";
     homepage = "https://github.com/y-crdt/y-crdt/tree/main/yffi";
-    downloadPage = "https://github.com/y-crdt/y-crdt/tags";
     changelog = "https://github.com/y-crdt/y-crdt/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
-    teams = with lib.teams; [ ngi ];
     platforms = with lib.platforms; linux;
+    downloadPage = "https://github.com/y-crdt/y-crdt/tags";
+    teams = with lib.teams; [ ngi ];
   };
 })

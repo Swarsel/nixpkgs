@@ -1,15 +1,15 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
 }:
 
 let
   version = "6.2.4";
 in
 stdenvNoCC.mkDerivation {
-  pname = "activemq";
   inherit version;
+  pname = "activemq";
 
   src = fetchurl {
     url = "mirror://apache/activemq/${version}/apache-activemq-${version}-bin.tar.gz";
@@ -30,12 +30,12 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://activemq.apache.org/";
     description = "Messaging and Integration Patterns server written in Java";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    homepage = "https://activemq.apache.org/";
     license = lib.licenses.asl20;
-    mainProgram = "activemq";
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ lib.maintainers.anthonyroussel ];
     platforms = lib.platforms.unix;
+    mainProgram = "activemq";
   };
 }

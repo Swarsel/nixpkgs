@@ -26,12 +26,12 @@ stdenv.mkDerivation (finalAttrs: {
     "INSTALL_MOD_PATH=$(out)/lib/modules/${kernel.modDirVersion}"
   ];
 
-  doInstallCheck = true;
-
   postInstall = ''
     mkdir -p $out/etc/udev/rules.d
     echo 'SUBSYSTEM=="misc", KERNEL=="pn544", MODE="0666", GROUP="dialout"' > $out/etc/udev/rules.d/99-nxp-pn5xx.rules
   '';
+
+  doInstallCheck = true;
 
   meta = {
     description = "NXP's NFC Open Source Kernel mode driver with ACPI configuration support";

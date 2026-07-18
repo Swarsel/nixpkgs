@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pdm-backend,
   pytestCheckHook,
   typing-extensions,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "annotated-doc";
   version = "0.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fastapi";
@@ -19,14 +18,16 @@ buildPythonPackage rec {
     hash = "sha256-O7kobzzFfHelYsxTflifEcoEWsUmPzlDz3siFTAq0I0=";
   };
 
-  build-system = [
-    pdm-backend
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
     typing-extensions
   ];
+
+  build-system = [
+    pdm-backend
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "annotated_doc"

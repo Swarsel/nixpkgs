@@ -2,18 +2,18 @@
 # that contains a Debian-like (i.e. dpkg-based) OS.
 
 {
-  name ? "debian-build",
-  diskImage,
-  src,
   lib,
   stdenv,
-  vmTools,
   checkinstall,
-  fsTranslation ? false,
+  diskImage,
+  src,
+  vmTools,
   # Features provided by this package.
   debProvides ? [ ],
   # Features required by this package.
   debRequires ? [ ],
+  fsTranslation ? false,
+  name ? "debian-build",
   ...
 }@args:
 
@@ -23,12 +23,12 @@ vmTools.runInLinuxImage (
     {
       doCheck = true;
 
-      prefix = "/usr";
-
       prePhases = [
         "installExtraDebsPhase"
         "sysInfoPhase"
       ];
+
+      prefix = "/usr";
     }
 
     // removeAttrs args [
@@ -38,29 +38,6 @@ vmTools.runInLinuxImage (
     //
 
       {
-        name = name + "-" + diskImage.name + (lib.optionalString (src ? version) "-${src.version}");
-
-        # !!! cut&paste from rpm-build.nix
-        postHook = ''
-          . ${./functions.sh}
-          propagateImageName
-          src=$(findTarball $src)
-        '';
-
-        installExtraDebsPhase = ''
-          for i in $extraDebs; do
-            dpkg --install $(ls $i/debs/*.deb | sort | head -1)
-          done
-        '';
-
-        sysInfoPhase = ''
-          [ ! -f /etc/lsb-release ] || (source /etc/lsb-release; echo "OS release: $DISTRIB_DESCRIPTION")
-          echo "System/kernel: $(uname -a)"
-          if test -e /etc/debian_version; then echo "Debian release: $(cat /etc/debian_version)"; fi
-          echo "installed Debian packages"
-          dpkg-query --list
-        '';
-
         installPhase = ''
           eval "$preInstall"
           export LOGNAME=root
@@ -99,6 +76,29 @@ vmTools.runInLinuxImage (
           done
 
           eval "$postInstall"
+        '';
+
+        installExtraDebsPhase = ''
+          for i in $extraDebs; do
+            dpkg --install $(ls $i/debs/*.deb | sort | head -1)
+          done
+        '';
+
+        name = name + "-" + diskImage.name + (lib.optionalString (src ? version) "-${src.version}");
+
+        # !!! cut&paste from rpm-build.nix
+        postHook = ''
+          . ${./functions.sh}
+          propagateImageName
+          src=$(findTarball $src)
+        '';
+
+        sysInfoPhase = ''
+          [ ! -f /etc/lsb-release ] || (source /etc/lsb-release; echo "OS release: $DISTRIB_DESCRIPTION")
+          echo "System/kernel: $(uname -a)"
+          if test -e /etc/debian_version; then echo "Debian release: $(cat /etc/debian_version)"; fi
+          echo "installed Debian packages"
+          dpkg-query --list
         '';
 
         meta = (lib.optionalAttrs (args ? meta) args.meta) // {

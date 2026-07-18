@@ -19,8 +19,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Command-line JSON processor using nix as query language";
     homepage = "https://github.com/Rucadi/njq";
-    mainProgram = "njq";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ powwu ];
+    mainProgram = "njq";
   };
 })

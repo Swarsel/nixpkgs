@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  python-json-logger,
+  buildPythonPackage,
   jsonschema,
-  ruamel-yaml,
-  traitlets,
   pytestCheckHook,
+  python-json-logger,
+  ruamel-yaml,
+  setuptools,
+  traitlets,
 }:
 
 buildPythonPackage rec {
   pname = "jupyter-telemetry";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jupyter";
@@ -22,6 +21,7 @@ buildPythonPackage rec {
     hash = "sha256-WxTlTs6gE9pa0hbl29Zvwikobz1/2JQ3agYO7WxyZ2E=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,15 +31,14 @@ buildPythonPackage rec {
     traitlets
   ];
 
-  pythonImportsCheck = [ "jupyter_telemetry" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTests = [
     # AssertionError
     "test_record_event"
     "test_unique_logger_instances"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "jupyter_telemetry" ];
 
   meta = {
     description = "Telemetry for Jupyter Applications and extensions";

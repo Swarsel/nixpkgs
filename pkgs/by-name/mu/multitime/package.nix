@@ -37,8 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
       performance.
     '';
 
-    license = lib.licenses.mit;
     homepage = "https://tratt.net/laurie/src/multitime/";
+    license = lib.licenses.mit;
     platforms = lib.platforms.unix;
     mainProgram = "multitime";
   };

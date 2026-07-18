@@ -2,17 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
   anthy,
+  cmake,
   hunspell,
   libchewing,
   libpinyin,
+  libsForQt5,
   maliit-framework,
-
-  cmake,
   pkg-config,
   wrapGAppsHook3,
-  libsForQt5,
 }:
 
 stdenv.mkDerivation {
@@ -31,6 +29,13 @@ stdenv.mkDerivation {
       --replace /usr/share "$out/share"
   '';
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    wrapGAppsHook3
+    libsForQt5.wrapQtAppsHook
+  ];
+
   buildInputs = [
     anthy
     hunspell
@@ -48,26 +53,21 @@ stdenv.mkDerivation {
     "-DCMAKE_INSTALL_LIBDIR=lib"
   ];
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    wrapGAppsHook3
-    libsForQt5.wrapQtAppsHook
-  ];
-
   postInstall = ''
     glib-compile-schemas "$out"/share/glib-2.0/schemas
   '';
 
   meta = {
     description = "Virtual keyboard";
-    mainProgram = "maliit-keyboard";
     homepage = "http://maliit.github.io/";
+
     license = with lib.licenses; [
       lgpl3Only
       bsd3
       cc-by-30
     ];
+
     maintainers = [ ];
+    mainProgram = "maliit-keyboard";
   };
 }

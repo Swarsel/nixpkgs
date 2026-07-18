@@ -1,7 +1,7 @@
 {
-  rustPlatform,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -24,12 +24,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Provides local testing for developers working with Compute@Edge";
-    mainProgram = "viceroy";
     homepage = "https://github.com/fastly/Viceroy";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       ereslibre
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "viceroy";
   };
 })

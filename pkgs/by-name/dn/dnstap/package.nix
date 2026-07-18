@@ -1,9 +1,9 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   lib,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
 }:
 buildGoModule (finalAttrs: {
   pname = "dnstap";
@@ -16,11 +16,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-GmwHJ6AQ4HcPEFNeodKqJe/mYE1Fa95hRiQWoka/nv4=";
   };
 
-  vendorHash = "sha256-xDui88YgLqIETIR34ZdqT6Iz12v+Rdf6BssAIXgaMLU=";
-
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  vendorHash = "sha256-xDui88YgLqIETIR34ZdqT6Iz12v+Rdf6BssAIXgaMLU=";
 
   postInstall = ''
     installManPage dnstap/dnstap.8
@@ -28,6 +28,7 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Structured DNS server events decoding utility";
+
     longDescription = ''
       dnstap implements an encoding format for DNS server events. It uses a
       lightweight framing on top of event payloads encoded using Protocol
@@ -37,11 +38,12 @@ buildGoModule (finalAttrs: {
       to obtain using techniques based on traditional packet capture or
       unstructured textual format logging.
     '';
+
     homepage = "https://dnstap.info";
     changelog = "https://github.com/dnstap/golang-dnstap/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.asl20;
-    broken = stdenv.hostPlatform.isDarwin;
     maintainers = [ lib.maintainers.azahi ];
     mainProgram = "dnstap";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

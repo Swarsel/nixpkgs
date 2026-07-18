@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  m4,
-  pkg-config,
-  tcl,
   bzip2,
   elfutils,
   libarchive,
   libbsd,
-  xz,
+  m4,
   openssl,
+  pkg-config,
+  tcl,
+  xz,
   zlib,
 }:
 
@@ -25,14 +25,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-t1Mvnw6dRbKgUjxSnm4OSbq8HN6e/0q2MqUlgNB+amw=";
   };
 
-  setOutputFlags = false;
-  separateDebugInfo = true;
-
   nativeBuildInputs = [
     m4
     pkg-config
     tcl
   ];
+
   buildInputs = [
     bzip2
     elfutils
@@ -43,18 +41,20 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional stdenv.hostPlatform.isLinux libbsd;
 
-  enableParallelBuilding = true;
-
   preInstall = ''
     mkdir -p $out/etc
   '';
 
+  enableParallelBuilding = true;
+  separateDebugInfo = true;
+  setOutputFlags = false;
+
   meta = {
-    homepage = "https://github.com/freebsd/pkg";
     description = "Package management tool for FreeBSD";
+    homepage = "https://github.com/freebsd/pkg";
+    license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ qyliss ];
     platforms = with lib.platforms; darwin ++ freebsd ++ linux ++ netbsd ++ openbsd;
-    license = lib.licenses.bsd2;
     mainProgram = "pkg";
   };
 })

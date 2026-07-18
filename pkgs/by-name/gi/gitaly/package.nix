@@ -1,8 +1,8 @@
 {
   lib,
-  callPackage,
   fetchFromGitLab,
   buildGoModule,
+  callPackage,
   pkg-config,
 }:
 
@@ -24,7 +24,9 @@ let
       hash = "sha256-fsr8ttV2q2iedTA5yn4iHry92Mgu775K1GW3JBz5N1U=";
     };
 
+    nativeBuildInputs = [ pkg-config ];
     vendorHash = "sha256-/RJnCcmUoqGy08MSGEVM/taV1qZK65kiZw19n6S3ZQ0=";
+    doCheck = false;
 
     ldflags = [
       "-X ${gitaly_package}/internal/version.version=${version}"
@@ -32,10 +34,6 @@ let
     ];
 
     tags = [ "static" ];
-
-    nativeBuildInputs = [ pkg-config ];
-
-    doCheck = false;
   };
 
   auxBins = buildGoModule (
@@ -56,13 +54,7 @@ in
 buildGoModule (
   {
     pname = "gitaly";
-
-    subPackages = [
-      "cmd/gitaly"
-      "cmd/gitaly-backup"
-    ];
-
-    dontStrip = true;
+    outputs = [ "out" ];
 
     preConfigure = ''
       rm -r tools
@@ -83,24 +75,30 @@ buildGoModule (
     '';
 
     doInstallCheck = true;
+
     installCheckPhase = ''
       runHook preInstallCheck
       HOME=/build PAGER=cat ${git}/bin/git config -l
       runHook postInstallCheck
     '';
 
-    outputs = [ "out" ];
+    dontStrip = true;
+
+    subPackages = [
+      "cmd/gitaly"
+      "cmd/gitaly-backup"
+    ];
 
     passthru = {
       inherit git;
     };
 
     meta = {
-      homepage = "https://gitlab.com/gitlab-org/gitaly";
       description = "Git RPC service for handling all the git calls made by GitLab";
+      homepage = "https://gitlab.com/gitlab-org/gitaly";
+      license = lib.licenses.mit;
       platforms = lib.platforms.linux ++ [ ];
       teams = [ lib.teams.gitlab ];
-      license = lib.licenses.mit;
     };
   }
   // commonOpts

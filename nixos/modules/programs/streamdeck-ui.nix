@@ -12,14 +12,14 @@ in
   options.programs.streamdeck-ui = {
     enable = lib.mkEnableOption "streamdeck-ui";
 
-    autoStart = lib.mkOption {
-      default = true;
-      type = lib.types.bool;
-      description = "Whether streamdeck-ui should be started automatically.";
-    };
-
     package = lib.mkPackageOption pkgs "streamdeck-ui" {
       default = [ "streamdeck-ui" ];
+    };
+
+    autoStart = lib.mkOption {
+      default = true;
+      description = "Whether streamdeck-ui should be started automatically.";
+      type = lib.types.bool;
     };
 
   };
@@ -29,8 +29,8 @@ in
       cfg.package
       (lib.mkIf cfg.autoStart (
         pkgs.makeAutostartItem {
-          name = "streamdeck-ui-noui";
           package = cfg.package;
+          name = "streamdeck-ui-noui";
         }
       ))
     ];

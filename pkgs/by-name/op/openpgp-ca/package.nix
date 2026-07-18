@@ -1,13 +1,13 @@
 {
-  fetchFromGitLab,
   lib,
+  fetchFromGitLab,
+  gnupg,
   nettle,
   nix-update-script,
-  rustPlatform,
-  pkg-config,
-  pcsclite,
   openssl,
-  gnupg,
+  pcsclite,
+  pkg-config,
+  rustPlatform,
   sqlite,
 }:
 
@@ -22,15 +22,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-71SApct2yQV3ueWDlZv7ScK1s0nWWS57cPCvoMutlLA=";
   };
 
-  cargoHash = "sha256-uftsBw8ZegnaoFel/wEqCMhVxiGR13jKbKqVSm+23T4=";
-
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
-  ];
-
-  nativeCheckInputs = [
-    gnupg
   ];
 
   buildInputs = [
@@ -40,9 +34,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     nettle
   ];
 
+  cargoHash = "sha256-uftsBw8ZegnaoFel/wEqCMhVxiGR13jKbKqVSm+23T4=";
   # Most tests rely on gnupg being able to write to /run/user
   # gnupg refuses to respect the XDG_RUNTIME_DIR variable, so we skip the tests
   doCheck = false;
+
+  nativeCheckInputs = [
+    gnupg
+  ];
 
   passthru.updateScript = nix-update-script { };
 

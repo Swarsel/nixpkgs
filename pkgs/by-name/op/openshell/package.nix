@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  versionCheckHook,
   cacert,
   gitMinimal,
   pkg-config,
+  rustPlatform,
+  versionCheckHook,
   z3,
 }:
 
@@ -21,20 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-AnZliQrn5kwaVJw1LEorT+VPtIk2NIbVY0QISxfnORs=";
   };
 
-  cargoHash = "sha256-kmmzzph39KaAXkEbjOHMoTRltX2ttqxtHppb6apoSSs=";
-
-  nativeBuildInputs = [
-    pkg-config
-    rustPlatform.bindgenHook
-  ];
-
-  buildInputs = [ z3 ];
-
-  nativeCheckInputs = [
-    cacert
-    gitMinimal
-  ];
-
   postPatch = ''
     # fill in package version to Cargo
     substituteInPlace Cargo.toml \
@@ -44,6 +30,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --replace-fail 'members = ["crates/*"]' 'members = ["crates/openshell-cli"]'
   '';
 
+  nativeBuildInputs = [
+    pkg-config
+    rustPlatform.bindgenHook
+  ];
+
+  buildInputs = [ z3 ];
+  cargoHash = "sha256-kmmzzph39KaAXkEbjOHMoTRltX2ttqxtHppb6apoSSs=";
+
   env = {
     # docker image tag baked in at compile time, must match binary version
     OPENSHELL_IMAGE_TAG = finalAttrs.version;
@@ -51,14 +45,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   doCheck = !stdenv.hostPlatform.isDarwin;
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  nativeCheckInputs = [
+    cacert
+    gitMinimal
+  ];
+
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
-    changelog = "https://github.com/NVIDIA/OpenShell/releases/tag/v${finalAttrs.version}";
     description = "The safe, private runtime for autonomous AI agents.";
-    homepage = "https://docs.nvidia.com/openshell/index.html";
-    license = lib.licenses.asl20;
+
     longDescription = ''
       NVIDIA OpenShell is an open source runtime to build and deploy autonomous,
       self-evolving agents more safely. OpenShell sits between your agent and
@@ -66,8 +63,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
       see and do, and where inference goes. It enables claws to run in isolated
       sandboxes, with fine-grained control over privacy and security.
     '';
+
+    homepage = "https://docs.nvidia.com/openshell/index.html";
+    changelog = "https://github.com/NVIDIA/OpenShell/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ wishstudio ];
-    mainProgram = "openshell";
     platforms = lib.platforms.all;
+    mainProgram = "openshell";
   };
 })

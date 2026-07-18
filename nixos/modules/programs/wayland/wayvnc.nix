@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 
@@ -16,7 +16,6 @@ in
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [ cfg.package ];
-
     # https://github.com/any1/wayvnc/blob/master/src/pam_auth.c
     security.pam.services.wayvnc = { };
   };

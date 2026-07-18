@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  gengetopt,
-  m4,
-  gnupg,
-  git,
-  perl,
   autoconf,
   automake,
+  gengetopt,
+  git,
+  gnupg,
   help2man,
+  m4,
+  perl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,10 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  preConfigure = ''
-    ./bootstrap
-  '';
-
   nativeBuildInputs = [
     gengetopt
     m4
@@ -41,8 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
   ];
 
-  enableParallelBuilding = true;
-
   env = lib.optionalAttrs stdenv.cc.isClang {
     NIX_CFLAGS_COMPILE = toString [
       "-Wno-error=implicit-function-declaration"
@@ -51,11 +45,17 @@ stdenv.mkDerivation (finalAttrs: {
     ];
   };
 
+  preConfigure = ''
+    ./bootstrap
+  '';
+
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://github.com/rrthomas/mmv";
     description = "Utility for wildcard renaming, copying, etc";
+    homepage = "https://github.com/rrthomas/mmv";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ siraben ];
+    platforms = lib.platforms.all;
   };
 })

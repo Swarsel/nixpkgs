@@ -1,17 +1,16 @@
 {
   lib,
+  fetchFromGitHub,
+  build,
   buildPythonPackage,
   callPackage,
-  fetchFromGitHub,
-  pytestCheckHook,
-
-  setuptools,
-  build,
   coloredlogs,
   homf,
   packaging,
   pip,
   pydantic,
+  pytestCheckHook,
+  setuptools,
   urllib3,
   writableTmpDirAsHomeHook,
 }:
@@ -19,7 +18,6 @@
 buildPythonPackage rec {
   pname = "bork";
   version = "11.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "duckinator";
@@ -28,14 +26,12 @@ buildPythonPackage rec {
     hash = "sha256-VashMByAdoRa/uWBGgtsJtd4LcG8hwq/naDXxW+nSg8=";
   };
 
-  build-system = [
-    setuptools
+  nativeCheckInputs = [
+    pytestCheckHook
   ];
 
-  pythonRelaxDeps = [
-    "build"
-    "packaging"
-    "urllib3"
+  build-system = [
+    setuptools
   ];
 
   dependencies = [
@@ -48,16 +44,6 @@ buildPythonPackage rec {
     urllib3
   ];
 
-  pythonImportsCheck = [
-    "bork"
-    "bork.api"
-    "bork.cli"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
   disabledTestMarks = [ "network" ];
 
   disabledTests = [
@@ -68,13 +54,27 @@ buildPythonPackage rec {
     "test_builder_order"
   ];
 
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "bork"
+    "bork.api"
+    "bork.cli"
+  ];
+
+  pythonRelaxDeps = [
+    "build"
+    "packaging"
+    "urllib3"
+  ];
+
   passthru.tests = callPackage ./tests.nix { };
 
   meta = {
     description = "Python build and release management tool";
-    mainProgram = "bork";
     homepage = "https://github.com/duckinator/bork";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ nicoo ];
+    mainProgram = "bork";
   };
 }

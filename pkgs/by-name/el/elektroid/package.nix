@@ -1,17 +1,17 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   alsa-lib,
   autoreconfHook,
-  fetchFromGitHub,
   gtk3,
   json-glib,
-  lib,
   libpulseaudio,
   libsamplerate,
   libsndfile,
   libzip,
   pkg-config,
   rubberband,
-  stdenv,
   zlib,
 }:
 

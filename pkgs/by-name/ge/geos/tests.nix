@@ -1,4 +1,4 @@
-{ runCommand, geos }:
+{ geos, runCommand }:
 
 let
   inherit (geos) pname;

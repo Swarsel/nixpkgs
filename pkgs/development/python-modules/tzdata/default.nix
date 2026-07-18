@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "tzdata";
   version = "2026.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -22,12 +21,13 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "tzdata" ];
 
   meta = {
-    changelog = "https://github.com/python/tzdata/blob/${version}/NEWS.md";
     description = "Provider of IANA time zone data";
     homepage = "https://github.com/python/tzdata";
+    changelog = "https://github.com/python/tzdata/blob/${version}/NEWS.md";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ mdaniels5757 ];
   };

@@ -1,15 +1,15 @@
 {
   lib,
-  clangStdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  libimobiledevice,
-  libusb1,
   avahi,
   clang,
+  clangStdenv,
   git,
   libgeneral,
+  libimobiledevice,
+  libusb1,
+  pkg-config,
 }:
 clangStdenv.mkDerivation {
   pname = "usbmuxd2";
@@ -46,8 +46,6 @@ clangStdenv.mkDerivation {
     libusb1
   ];
 
-  doInstallCheck = true;
-
   configureFlags = [
     "--with-udevrulesdir=${placeholder "out"}/lib/udev/rules.d"
     "--with-systemdsystemunitdir=${placeholder "out"}/lib/systemd/system"
@@ -57,12 +55,14 @@ clangStdenv.mkDerivation {
     "sbindir=${placeholder "out"}/bin"
   ];
 
+  doInstallCheck = true;
+
   meta = {
-    homepage = "https://github.com/tihmstar/usbmuxd2";
     description = "Socket daemon to multiplex connections from and to iOS devices";
+    homepage = "https://github.com/tihmstar/usbmuxd2";
     license = lib.licenses.lgpl3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ onny ];
+    platforms = lib.platforms.linux;
     mainProgram = "usbmuxd";
   };
 }

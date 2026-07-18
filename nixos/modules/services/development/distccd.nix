@@ -11,15 +11,11 @@ in
   options = {
     services.distccd = {
       enable = lib.mkEnableOption "distccd, a distributed C/C++ compiler";
+      package = lib.mkPackageOption pkgs "distcc" { };
 
       allowedClients = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
         default = [ "127.0.0.1" ];
-        example = [
-          "127.0.0.1"
-          "192.168.0.0/24"
-          "10.0.0.0/24"
-        ];
+
         description = ''
           Client IPs which are allowed to connect to distccd in CIDR notation.
 
@@ -27,17 +23,35 @@ in
           commands on that system as the distcc user, therefore you should use
           this judiciously.
         '';
+
+        example = [
+          "127.0.0.1"
+          "192.168.0.0/24"
+          "10.0.0.0/24"
+        ];
+
+        type = lib.types.listOf lib.types.str;
       };
 
       jobTimeout = lib.mkOption {
-        type = lib.types.nullOr lib.types.int;
         default = null;
+
         description = ''
           Maximum duration, in seconds, of a single compilation request.
         '';
+
+        type = lib.types.nullOr lib.types.int;
       };
 
       logLevel = lib.mkOption {
+        default = "warning";
+
+        description = ''
+          Set the minimum severity of error that will be included in the log
+          file. Useful if you only want to see error messages rather than an
+          entry for each connection.
+        '';
+
         type = lib.types.nullOr (
           lib.types.enum [
             "critical"
@@ -48,66 +62,71 @@ in
             "debug"
           ]
         );
-        default = "warning";
-        description = ''
-          Set the minimum severity of error that will be included in the log
-          file. Useful if you only want to see error messages rather than an
-          entry for each connection.
-        '';
       };
 
       maxJobs = lib.mkOption {
-        type = lib.types.nullOr lib.types.int;
         default = null;
+
         description = ''
           Maximum number of tasks distccd should execute at lib.any time.
         '';
+
+        type = lib.types.nullOr lib.types.int;
       };
 
       nice = lib.mkOption {
-        type = lib.types.nullOr (lib.types.ints.between (-20) 19);
         default = null;
+
         description = ''
           Niceness of the compilation tasks.
         '';
+
+        type = lib.types.nullOr (lib.types.ints.between (-20) 19);
       };
 
       openFirewall = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Opens the specified TCP port for distcc.
         '';
+
+        type = lib.types.bool;
       };
 
-      package = lib.mkPackageOption pkgs "distcc" { };
-
       port = lib.mkOption {
-        type = lib.types.port;
         default = 3632;
+
         description = ''
           The TCP port which distccd will listen on.
         '';
+
+        type = lib.types.port;
       };
 
       stats = {
         enable = lib.mkEnableOption "statistics reporting via HTTP server";
+
         port = lib.mkOption {
-          type = lib.types.port;
           default = 3633;
+
           description = ''
             The TCP port which the distccd statistics HTTP server will listen
             on.
           '';
+
+          type = lib.types.port;
         };
       };
 
       zeroconf = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to register via mDNS/DNS-SD
         '';
+
+        type = lib.types.bool;
       };
     };
   };
@@ -119,14 +138,10 @@ in
 
     systemd.services.distccd = {
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
-
       description = "Distributed C, C++ and Objective-C compiler";
       documentation = [ "man:distccd(1)" ];
 
       serviceConfig = {
-        User = "distcc";
-        Group = "distcc";
         # FIXME: I'd love to get rid of `--enable-tcp-insecure` here, but I'm
         # not sure how I'm supposed to get distccd to "accept" running a binary
         # (the compiler) that's outside of /usr/lib.
@@ -146,11 +161,17 @@ in
             ${lib.optionalString cfg.zeroconf "--zeroconf"} \
             ${lib.concatMapStrings (c: "--allow ${c} ") cfg.allowedClients}
         '';
+
+        Group = "distcc";
+        User = "distcc";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     users = {
       groups.distcc.gid = config.ids.gids.distcc;
+
       users.distcc = {
         description = "distccd user";
         group = "distcc";

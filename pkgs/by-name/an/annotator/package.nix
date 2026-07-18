@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  meson,
-  ninja,
-  vala,
-  wrapGAppsHook4,
   desktop-file-utils,
-  shared-mime-info,
   libarchive,
   libgee,
-  pantheon,
-  libxml2,
   libportal-gtk4,
   libwebp,
+  libxml2,
+  meson,
+  ninja,
+  pantheon,
+  pkg-config,
+  shared-mime-info,
+  vala,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -51,8 +51,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Image annotation for Elementary OS";
     homepage = "https://github.com/phase1geo/Annotator";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "com.github.phase1geo.annotator";
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.linux;
+    mainProgram = "com.github.phase1geo.annotator";
   };
 })

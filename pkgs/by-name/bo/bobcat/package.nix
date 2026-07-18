@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitLab,
   icmake,
-  yodl,
   libmilter,
   libx11,
   openssl,
   readline,
   util-linux,
+  yodl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,8 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-JLJKaJmztputIon9JkKzpm3Ch60iwm4Imh9p42crYzA=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/bobcat";
 
   postPatch = ''
     substituteInPlace INSTALL.im \
@@ -62,6 +60,8 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  sourceRoot = "${finalAttrs.src.name}/bobcat";
 
   meta = {
     description = "Brokken's Own Base Classes And Templates";

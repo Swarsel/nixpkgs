@@ -3,16 +3,16 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  libx11,
-  libnotify,
-  glfw,
-  makeWrapper,
-  libxrandr,
-  libxinerama,
-  libxcursor,
-  gtk3,
   ffmpeg-full,
+  glfw,
+  gtk3,
+  libnotify,
+  libx11,
+  libxcursor,
+  libxinerama,
+  libxrandr,
+  makeWrapper,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -63,11 +63,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Small MIDI visualizer tool, using OpenGL";
-    mainProgram = "MIDIVisualizer";
     homepage = "https://github.com/kosua20/MIDIVisualizer";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
-    broken = stdenv.hostPlatform.isDarwin;
     maintainers = [ lib.maintainers.ericdallo ];
+    platforms = lib.platforms.unix;
+    mainProgram = "MIDIVisualizer";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

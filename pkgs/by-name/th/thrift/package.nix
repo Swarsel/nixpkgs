@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  bison,
   boost,
-  zlib,
+  cmake,
+  ctestCheckHook,
+  flex,
   libevent,
   openssl,
-  python3,
-  cmake,
   pkg-config,
-  bison,
-  flex,
-  ctestCheckHook,
+  python3,
+  zlib,
   static ? stdenv.hostPlatform.isStatic,
 }:
 
@@ -26,9 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-gGAO+D0A/hEoHMm6OvRBc1Mks9y52kfd0q/Sg96pdW4=";
   };
 
-  # Workaround to make the Python wrapper not drop this package:
-  # pythonFull.buildEnv.override { extraLibs = [ thrift ]; }
-  pythonPath = [ ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     bison
@@ -52,19 +50,11 @@ stdenv.mkDerivation (finalAttrs: {
     boost
   ];
 
-  strictDeps = true;
-
   propagatedBuildInputs = [
     libevent
     openssl
     zlib
   ];
-
-  nativeCheckInputs = [ ctestCheckHook ];
-
-  preConfigure = ''
-    export PY_PREFIX=$out
-  '';
 
   cmakeFlags = [
     (lib.cmakeBool "BUILD_JAVASCRIPT" false)
@@ -76,6 +66,13 @@ stdenv.mkDerivation (finalAttrs: {
     # `boost::unit_test::unit_test_main(bool (*)(), int, char**)'
     (lib.cmakeBool "BUILD_TESTING" (!static))
   ];
+
+  preConfigure = ''
+    export PY_PREFIX=$out
+  '';
+
+  doCheck = !static;
+  nativeCheckInputs = [ ctestCheckHook ];
 
   disabledTests = [
     "UnitTests" # getaddrinfo() -> -3; Temporary failure in name resolution
@@ -103,16 +100,17 @@ stdenv.mkDerivation (finalAttrs: {
     "StressTestNonBlocking"
   ];
 
-  doCheck = !static;
-
   enableParallelChecking = false;
+  # Workaround to make the Python wrapper not drop this package:
+  # pythonFull.buildEnv.override { extraLibs = [ thrift ]; }
+  pythonPath = [ ];
 
   meta = {
     description = "Library for scalable cross-language services";
-    mainProgram = "thrift";
     homepage = "https://thrift.apache.org/";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ bjornfor ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "thrift";
   };
 })

@@ -9,22 +9,22 @@
 buildPythonPackage rec {
   pname = "wrapcco";
   version = "0.1.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-nts5cujixB+PfAf9Fk7kOXW4BeI/0q5GYTthCI76ZOA=";
   };
 
+  # require non trivial test setup
+  doCheck = false;
   build-system = [ setuptools ];
+
   dependencies = [
     numpy
     setuptools
   ];
 
-  # require non trivial test setup
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "wrapcco" ];
 
   meta = {

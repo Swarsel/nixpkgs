@@ -2,14 +2,13 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  six,
   pynacl,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "pymacaroons";
   version = "0.13.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,6 +22,7 @@ buildPythonPackage rec {
 
   # Tests require an old version of hypothesis
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Macaroon library for Python";

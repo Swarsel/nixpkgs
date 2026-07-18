@@ -2,17 +2,16 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  buildPackages,
   autoreconfHook,
-  pkg-config,
-  util-macros,
+  buildPackages,
   darwin,
   libx11,
-  xorgproto,
+  nix-update-script,
+  pkg-config,
+  util-macros,
   xauth,
   xorg-server,
-  nix-update-script,
-
+  xorgproto,
   # path to the X server binary to use - override for setuid, for example: "/run/wrappers/bin/X"
   xserverPath ? "${xorg-server.out}/bin/X",
 }:
@@ -21,17 +20,15 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.4.4";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
-    group = "xorg";
     owner = "app";
     repo = "xinit";
     tag = "xinit-${finalAttrs.version}";
     hash = "sha256-1GL0xJ/l9BnhoUyD5m1Ch86hjcRdBnys366qM4Lj84U=";
+    domain = "gitlab.freedesktop.org";
+    group = "xorg";
   };
 
   strictDeps = true;
-
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
 
   nativeBuildInputs = [
     autoreconfHook
@@ -71,6 +68,8 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail '"$xinitdir/xserverrc"' '/etc/X11/xinit/xserverrc'
   '';
 
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+
   passthru = {
     updateScript = nix-update-script { extraArgs = [ "--version-regex=xinit-(.*)" ]; };
   };
@@ -78,12 +77,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "X server & client startup utilities (includes startx)";
     homepage = "https://gitlab.freedesktop.org/xorg/app/xinit";
+
     license = with lib.licenses; [
       mitOpenGroup
       x11
     ];
-    mainProgram = "xinit";
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xinit";
   };
 })

@@ -1,18 +1,16 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  lib,
-  nodejs_22,
-  node-pre-gyp,
+  ffmpeg-headless,
+  ncVersion,
   node-gyp,
+  node-pre-gyp,
+  nodejs_22,
   python3,
   util-linux,
-  ffmpeg-headless,
-
   # Current derivation only supports linux-x86_64 (contributions welcome, without libTensorflow builtin webassembly can be used)
   useLibTensorflow ? stdenv.hostPlatform.isx86_64 && stdenv.hostPlatform.isLinux,
-
-  ncVersion,
 }:
 let
   nodejs = nodejs_22;
@@ -22,11 +20,13 @@ let
       appHash = "sha256-quuH9ZNQhvlJ6SsFeboVIrMtF9K6ckpQkXb9OXDvFm8=";
       modelHash = "sha256-Q862f4mNWE6V4ZUpfNFZrs4kwRF/29uETCroyie0+zA=";
     };
+
     "33" = {
       version = "11.0.1";
       appHash = "sha256-x3LXZKDWmzCYLTaNqSvgu4Gvrn6w2c/jifNCx1oaw1U=";
       modelHash = "sha256-Yx/NJwtD4ltETpkzlcadZsFKqEmMneoZaXiHVSB1WoE=";
     };
+
     "34" = {
       version = "12.0.0";
       appHash = "sha256-1TpfDRMmJ7d5MPp0iTr/RpZHAG7LDsXof9u35O3+5Mg=";
@@ -38,37 +38,8 @@ let
       or (throw "recognize currently does not support nextcloud version ${ncVersion}");
 in
 stdenv.mkDerivation rec {
-  pname = "nextcloud-app-recognize";
   inherit (currentVersionInfo) version;
-
-  srcs = [
-    (fetchurl {
-      url = "https://github.com/nextcloud/recognize/releases/download/v${version}/recognize-${version}.tar.gz";
-      hash = currentVersionInfo.appHash;
-    })
-
-    (fetchurl {
-      url = "https://github.com/nextcloud/recognize/archive/refs/tags/v${version}.tar.gz";
-      hash = currentVersionInfo.modelHash;
-    })
-  ]
-  ++ lib.optionals useLibTensorflow [
-    (fetchurl {
-      # For version see LIBTENSORFLOW_VERSION in https://github.com/tensorflow/tfjs/blob/master/tfjs-node/scripts/deps-constants.js
-      url = "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-2.9.1.tar.gz";
-      hash = "sha256-f1ENJUbj214QsdEZRjaJAD1YeEKJKtPJW8pRz4KCAXM=";
-    })
-  ];
-
-  unpackPhase = ''
-    # Merge the app and the models from github
-    tar -xzpf "${builtins.elemAt srcs 0}" recognize
-    tar -xzpf "${builtins.elemAt srcs 1}" -C recognize --strip-components=1 recognize-${version}/models
-  ''
-  + lib.optionalString useLibTensorflow ''
-    # Place the tensorflow lib at the right place for building
-    tar -xzpf "${builtins.elemAt srcs 2}" -C recognize/node_modules/@tensorflow/tfjs-node/deps
-  '';
+  pname = "nextcloud-app-recognize";
 
   postPatch = ''
     # Make it clear we are not reading the node in settings
@@ -134,15 +105,46 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  srcs = [
+    (fetchurl {
+      hash = currentVersionInfo.appHash;
+      url = "https://github.com/nextcloud/recognize/releases/download/v${version}/recognize-${version}.tar.gz";
+    })
+
+    (fetchurl {
+      hash = currentVersionInfo.modelHash;
+      url = "https://github.com/nextcloud/recognize/archive/refs/tags/v${version}.tar.gz";
+    })
+  ]
+  ++ lib.optionals useLibTensorflow [
+    (fetchurl {
+      hash = "sha256-f1ENJUbj214QsdEZRjaJAD1YeEKJKtPJW8pRz4KCAXM=";
+      # For version see LIBTENSORFLOW_VERSION in https://github.com/tensorflow/tfjs/blob/master/tfjs-node/scripts/deps-constants.js
+      url = "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-2.9.1.tar.gz";
+    })
+  ];
+
+  unpackPhase = ''
+    # Merge the app and the models from github
+    tar -xzpf "${builtins.elemAt srcs 0}" recognize
+    tar -xzpf "${builtins.elemAt srcs 1}" -C recognize --strip-components=1 recognize-${version}/models
+  ''
+  + lib.optionalString useLibTensorflow ''
+    # Place the tensorflow lib at the right place for building
+    tar -xzpf "${builtins.elemAt srcs 2}" -C recognize/node_modules/@tensorflow/tfjs-node/deps
+  '';
+
   meta = {
-    license = lib.licenses.agpl3Only;
-    maintainers = with lib.maintainers; [ beardhatcode ];
+    description = "Smart media tagging for Nextcloud: recognizes faces, objects, landscapes, music genres";
+
     longDescription = ''
       Nextcloud app that does Smart media tagging and face recognition with on-premises machine learning models.
       This app goes through your media collection and adds fitting tags, automatically categorizing your photos and music.
     '';
+
     homepage = "https://apps.nextcloud.com/apps/recognize";
-    description = "Smart media tagging for Nextcloud: recognizes faces, objects, landscapes, music genres";
     changelog = "https://github.com/nextcloud/recognize/blob/v${version}/CHANGELOG.md";
+    license = lib.licenses.agpl3Only;
+    maintainers = with lib.maintainers; [ beardhatcode ];
   };
 }

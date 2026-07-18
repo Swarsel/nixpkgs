@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   testers,
 }:
 
@@ -16,20 +16,20 @@ buildGoModule rec {
     hash = "sha256-+KlAJV+CeycQHwxrRI9kMkKlDLs8bS+/QwaYv70LEfU=";
   };
 
-  ldflags = [
-    "-s -w -X main.version=${version}"
-  ];
+  vendorHash = "sha256-FsjCpwvehmRm67Tqwld+0vn4IFO6E46SJnLwRjKVAiw=";
 
   postInstall = ''
     mv $out/bin/cli $out/bin/goodhosts
   '';
 
-  vendorHash = "sha256-FsjCpwvehmRm67Tqwld+0vn4IFO6E46SJnLwRjKVAiw=";
+  ldflags = [
+    "-s -w -X main.version=${version}"
+  ];
 
   meta = {
     description = "CLI tool for managing hostfiles";
-    license = lib.licenses.mit;
     homepage = "https://github.com/goodhosts/cli/tree/main";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ schinmai-akamai ];
     mainProgram = "goodhosts";
   };

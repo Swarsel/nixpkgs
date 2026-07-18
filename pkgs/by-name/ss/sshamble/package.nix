@@ -1,13 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
 buildGoModule (finalAttrs: {
-  __structuredAttrs = true;
-
   pname = "sshamble";
   version = "0.3.9";
 
@@ -20,15 +18,19 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-uVef5OvCYCZvVfWMh0JTYIN5cokqslvQvYoWHHxtd5g=";
 
-  # Disabled because tests rely on network requests
-  disabledTests = [
-    "TestCacheBasics"
-  ];
   checkFlags = [
     "-skip=${lib.concatStringsSep "|" finalAttrs.disabledTests}"
   ];
 
+  __structuredAttrs = true;
+
+  # Disabled because tests rely on network requests
+  disabledTests = [
+    "TestCacheBasics"
+  ];
+
   passthru.updateScript = nix-update-script { };
+
   meta = {
     description = "SSH-protocol pentesting utility";
     homepage = "https://github.com/runZeroInc/sshamble";

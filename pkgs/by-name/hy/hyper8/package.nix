@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromCodeberg,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -15,13 +15,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-pvtQPL/hPgoKDLYWC/IL04db7Q/FUlgiExthu4xBQEw=";
   };
 
+  cargoHash = "sha256-AQAWGmzixDFfL7wqJJXCvNSYojVtYHRP0zqdj0C8JRE=";
   __structuredAttrs = true;
 
-  cargoHash = "sha256-AQAWGmzixDFfL7wqJJXCvNSYojVtYHRP0zqdj0C8JRE=";
-
   meta = {
-    homepage = "https://hyper8.org";
     description = "Static site generator for video publishing.";
+    homepage = "https://hyper8.org";
     license = lib.licenses.gpl3;
     platforms = lib.platforms.all;
     mainProgram = "hyper8";

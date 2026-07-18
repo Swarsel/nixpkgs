@@ -1,12 +1,12 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   holos,
   kubectl,
-  kustomize,
   kubernetes-helm,
+  kustomize,
+  testers,
 }:
 buildGoModule (finalAttrs: {
   pname = "holos";
@@ -21,6 +21,12 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-Ev8DuecVz/FVpOBk53ddF6aCRkLt7i6O4D/UU0iumHs=";
 
+  nativeCheckInputs = [
+    kubernetes-helm
+    kubectl
+    kustomize
+  ];
+
   ldflags = [
     "-w"
     "-X github.com/holos-run/holos/version.GitDescribe=v${finalAttrs.version}"
@@ -32,16 +38,10 @@ buildGoModule (finalAttrs: {
 
   subPackages = [ "cmd/holos" ];
 
-  nativeCheckInputs = [
-    kubernetes-helm
-    kubectl
-    kustomize
-  ];
-
   passthru.tests.version = testers.testVersion {
-    package = holos;
-    command = "holos --version || true";
     version = "${finalAttrs.version}";
+    command = "holos --version || true";
+    package = holos;
   };
 
   meta = {

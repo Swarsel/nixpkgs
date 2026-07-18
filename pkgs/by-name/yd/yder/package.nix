@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  check,
   cmake,
   orcania,
-  systemd,
-  check,
   subunit,
+  systemd,
   withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
 }:
 
@@ -28,13 +28,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   nativeBuildInputs = [ cmake ];
-
   buildInputs = [ orcania ] ++ lib.optional withSystemd systemd;
-
-  nativeCheckInputs = [
-    check
-    subunit
-  ];
 
   cmakeFlags = [
     "-DBUILD_YDER_TESTING=on"
@@ -42,6 +36,11 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional (!withSystemd) "-DWITH_JOURNALD=off";
 
   doCheck = true;
+
+  nativeCheckInputs = [
+    check
+    subunit
+  ];
 
   meta = {
     description = "Logging library for C applications";

@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  xeddsa,
+  buildPythonPackage,
   cryptography,
   pydantic,
-  typing-extensions,
-  pytestCheckHook,
   pytest-asyncio,
   pytest-cov-stub,
+  pytestCheckHook,
+  setuptools,
+  typing-extensions,
+  xeddsa,
 }:
 buildPythonPackage rec {
   pname = "x3dh";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Syndace";
@@ -24,6 +23,12 @@ buildPythonPackage rec {
   };
 
   strictDeps = true;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+    pytest-cov-stub
+  ];
 
   build-system = [
     setuptools
@@ -36,12 +41,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-    pytest-cov-stub
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "x3dh" ];
 
   meta = {
@@ -49,7 +49,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/Syndace/python-x3dh";
     changelog = "https://github.com/Syndace/python-x3dh/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    teams = with lib.teams; [ ngi ];
     maintainers = [ ];
+    teams = with lib.teams; [ ngi ];
   };
 }

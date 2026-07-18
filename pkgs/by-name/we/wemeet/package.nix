@@ -2,52 +2,52 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
+  fetchFromGitHub,
+  alsa-lib,
   autoPatchelfHook,
-  makeWrapper,
-  nss,
-  libxtst,
-  libxrandr,
-  libxext,
-  libxdamage,
-  libx11,
-  libsm,
-  libice,
-  desktop-file-utils,
-  libpulseaudio,
-  libgcrypt,
+  cmake,
+  curl,
   dbus,
-  systemd,
-  udev,
-  libGL,
-  libglvnd,
+  desktop-file-utils,
+  dpkg,
+  fetchgit,
   fontconfig,
   freetype,
-  openssl,
-  wayland,
-  libdrm,
   harfbuzz,
-  openldap,
-  curl,
-  nghttp2,
-  libunwind,
-  alsa-lib,
+  libGL,
+  libdrm,
+  libgcrypt,
+  libglvnd,
+  libice,
   libidn2,
-  rtmpdump,
-  libpsl,
   libkrb5,
-  xkeyboard_config,
-  libsForQt5,
-  pkg-config,
-  fetchFromGitHub,
-  cmake,
-  ninja,
-  wireplumber,
   libportal,
-  xdg-desktop-portal,
+  libpsl,
+  libpulseaudio,
+  libsForQt5,
+  libsm,
+  libunwind,
+  libx11,
+  libxdamage,
+  libxext,
+  libxrandr,
+  libxtst,
+  makeWrapper,
+  nghttp2,
+  ninja,
+  nss,
   opencv4WithoutCuda,
+  openldap,
+  openssl,
   pipewire,
-  fetchgit,
+  pkg-config,
+  rtmpdump,
+  systemd,
+  udev,
+  wayland,
+  wireplumber,
+  xdg-desktop-portal,
+  xkeyboard_config,
 }:
 let
   wemeet-wayland-screenshare = stdenv.mkDerivation {
@@ -100,8 +100,6 @@ let
       hash = "sha256-ExzLCIoLu4KxaoeWNhMXixdlDTIwuPiYZkO+XVK8X10=";
     };
 
-    dontWrapQtApps = true;
-
     nativeBuildInputs = [ pkg-config ];
 
     buildInputs = [
@@ -131,6 +129,7 @@ let
       runHook postInstall
     '';
 
+    dontWrapQtApps = true;
     meta.license = lib.licenses.unfree;
   };
 
@@ -138,12 +137,7 @@ let
   wemeet-x11-fix = stdenv.mkDerivation {
     pname = "wemeet-x11-fix";
     version = "0-unstable-2025-11-07";
-
     src = ./wemeet-x11-fix.c;
-
-    dontUnpack = true;
-    dontWrapQtApps = true;
-
     nativeBuildInputs = [ pkg-config ];
 
     buildInputs = [
@@ -168,6 +162,9 @@ let
       runHook postInstall
     '';
 
+    dontUnpack = true;
+    dontWrapQtApps = true;
+
     meta = {
       description = "Fix for wemeet Wayland XSetInputFocus crash";
       license = lib.licenses.mit;
@@ -177,11 +174,7 @@ let
   wemeet-camera-fix = stdenv.mkDerivation {
     pname = "wemeet-camera-fix";
     version = "0-unstable-2026-05-20";
-
     src = ./wemeet-camera-fix.c;
-
-    dontUnpack = true;
-    dontWrapQtApps = true;
 
     buildInputs = [
       libglvnd
@@ -206,6 +199,9 @@ let
       runHook postInstall
     '';
 
+    dontUnpack = true;
+    dontWrapQtApps = true;
+
     meta = {
       description = "Fix for WeMeet Wayland camera preview rendering";
       license = lib.licenses.mit;
@@ -222,13 +218,14 @@ stdenv.mkDerivation {
   version = "3.26.10.401";
 
   src = selectSystem {
-    x86_64-linux = fetchurl {
-      url = "https://updatecdn.meeting.qq.com/cos/72e0e0023e1d1e6d4123fba28821aea1/TencentMeeting_0300000000_3.26.10.401_x86_64_default.publish.officialwebsite.deb";
-      hash = "sha256-cPN7ApIJwO+RvpgT7r9mUMbLmgD3xxhJAVh3Pi/mrK8=";
-    };
     aarch64-linux = fetchurl {
-      url = "https://updatecdn.meeting.qq.com/cos/c06d6bc4a3370dbfb2f43bbc6ff8969e/TencentMeeting_0300000000_3.26.10.401_arm64_default.publish.officialwebsite.deb";
       hash = "sha256-W50E1bmqJLPDU7FY0qNKPlh1z8A9Ez1Gc+NrHQhBwgI=";
+      url = "https://updatecdn.meeting.qq.com/cos/c06d6bc4a3370dbfb2f43bbc6ff8969e/TencentMeeting_0300000000_3.26.10.401_arm64_default.publish.officialwebsite.deb";
+    };
+
+    x86_64-linux = fetchurl {
+      hash = "sha256-cPN7ApIJwO+RvpgT7r9mUMbLmgD3xxhJAVh3Pi/mrK8=";
+      url = "https://updatecdn.meeting.qq.com/cos/72e0e0023e1d1e6d4123fba28821aea1/TencentMeeting_0300000000_3.26.10.401_x86_64_default.publish.officialwebsite.deb";
     };
   };
 
@@ -293,6 +290,10 @@ stdenv.mkDerivation {
   '';
 
   postInstall = selectSystem {
+    aarch64-linux = ''
+      # I don't know if aarch64-linux version needs similar patch, I don't have aarch64 device.
+    '';
+
     x86_64-linux = ''
       # According to @mnixry:
       #   The thing is, it's a coroutine library that involves a series of low-level operations like stack and register restoration and saving, so there's quite a bit of code that looks like hand-written assembly.
@@ -301,9 +302,6 @@ stdenv.mkDerivation {
 
       # cmp rdi, 0 -> cmp r12, 0, at co_jump_to_link to address coroutine context resume issue
       echo -ne '\x49\x83\xfc\x00' | dd of=$out/app/wemeet/lib/libwemeet_base.so bs=1 seek=$((0x94c833)) conv=notrunc
-    '';
-    aarch64-linux = ''
-      # I don't know if aarch64-linux version needs similar patch, I don't have aarch64 device.
     '';
   };
 
@@ -344,12 +342,14 @@ stdenv.mkDerivation {
     description = "Tencent Video Conferencing";
     homepage = "https://wemeet.qq.com";
     license = lib.licenses.unfree;
-    mainProgram = "wemeet";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ wrvsrx ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    maintainers = with lib.maintainers; [ wrvsrx ];
+
+    mainProgram = "wemeet";
   };
 }

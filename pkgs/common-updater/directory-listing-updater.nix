@@ -1,21 +1,21 @@
 {
   lib,
-  genericUpdater,
   common-updater-scripts,
+  genericUpdater,
 }:
 
 {
-  pname ? null,
-  version ? null,
-  attrPath ? null,
   allowedVersions ? "",
+  attrPath ? null,
+  extraRegex ? null,
   ignoredVersions ? "",
-  rev-prefix ? "",
-  rev-suffix ? "",
   odd-unstable ? false,
   patchlevel-unstable ? false,
+  pname ? null,
+  rev-prefix ? "",
+  rev-suffix ? "",
   url ? null,
-  extraRegex ? null,
+  version ? null,
 }:
 
 genericUpdater {
@@ -30,6 +30,7 @@ genericUpdater {
     odd-unstable
     patchlevel-unstable
     ;
+
   versionLister = "${common-updater-scripts}/bin/list-directory-versions ${
     lib.optionalString (url != null) "--url=${lib.escapeShellArg url}"
   } ${lib.optionalString (extraRegex != null) "--extra-regex=${lib.escapeShellArg extraRegex}"}";

@@ -1,17 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "yaswfp";
   version = "0.9.3-unstable-20210331";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "facundobatista";
@@ -20,10 +17,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-ST4s1OrInVOF3hGwmRXur2PgAuUuGWFtDp55ChP6rbc=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "yaswfp" ];
 
   meta = {

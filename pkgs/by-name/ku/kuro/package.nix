@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
-  nodejs,
-  makeWrapper,
-  makeDesktopItem,
   copyDesktopItems,
   electron,
+  fetchYarnDeps,
   imagemagick,
+  makeDesktopItem,
+  makeWrapper,
+  nodejs,
+  yarnBuildHook,
+  yarnConfigHook,
 }:
 
 stdenv.mkDerivation rec {
@@ -24,13 +24,6 @@ stdenv.mkDerivation rec {
     hash = "sha256-9Z/r5T5ZI5aBghHmwiJcft/x/wTRzDlbIupujN2RFfU=";
   };
 
-  offlineCache = fetchYarnDeps {
-    yarnLock = "${src}/yarn.lock";
-    hash = "sha256-GTiNv7u1QK/wjQgpka7REuoLn2wjZG59kYJQaZZPycI=";
-  };
-
-  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-
   nativeBuildInputs = [
     yarnConfigHook
     yarnBuildHook
@@ -40,12 +33,7 @@ stdenv.mkDerivation rec {
     imagemagick
   ];
 
-  yarnBuildScript = "electron-builder";
-  yarnBuildFlags = [
-    "--dir"
-    "-c.electronDist=${electron.dist}"
-    "-c.electronVersion=${electron.version}"
-  ];
+  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
   installPhase = ''
     runHook preInstall
@@ -69,24 +57,37 @@ stdenv.mkDerivation rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "kuro";
-      exec = "kuro";
-      icon = "kuro";
-      desktopName = "Kuro";
-      genericName = "Microsoft To-Do Client";
-      comment = meta.description;
       categories = [ "Office" ];
+      comment = meta.description;
+      desktopName = "Kuro";
+      exec = "kuro";
+      genericName = "Microsoft To-Do Client";
+      icon = "kuro";
+      name = "kuro";
       startupWMClass = "kuro";
     })
   ];
 
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-GTiNv7u1QK/wjQgpka7REuoLn2wjZG59kYJQaZZPycI=";
+    yarnLock = "${src}/yarn.lock";
+  };
+
+  yarnBuildFlags = [
+    "--dir"
+    "-c.electronDist=${electron.dist}"
+    "-c.electronVersion=${electron.version}"
+  ];
+
+  yarnBuildScript = "electron-builder";
+
   meta = {
-    changelog = "https://github.com/davidsmorais/kuro/releases/tag/${src.rev}";
+    inherit (electron.meta) platforms;
     description = "Unofficial, featureful, open source, community-driven, free Microsoft To-Do app";
     homepage = "https://github.com/davidsmorais/kuro";
+    changelog = "https://github.com/davidsmorais/kuro/releases/tag/${src.rev}";
     license = lib.licenses.mit;
-    mainProgram = "kuro";
     maintainers = with lib.maintainers; [ ChaosAttractor ];
-    inherit (electron.meta) platforms;
+    mainProgram = "kuro";
   };
 }

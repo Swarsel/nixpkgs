@@ -1,28 +1,28 @@
 {
   lib,
-  beam27Packages,
   stdenv,
   fetchurl,
-  python3,
-  libxml2,
-  libxslt,
-  git,
-  xmlto,
+  beam27Packages,
+  coreutils,
   docbook_xml_dtd_45,
   docbook_xsl,
-  zip,
-  unzip,
-  rsync,
   getconf,
-  socat,
-  procps,
-  coreutils,
-  gnused,
-  systemd,
+  git,
   glibcLocales,
+  gnused,
+  libxml2,
+  libxslt,
   nixosTests,
-  which,
   p7zip,
+  procps,
+  python3,
+  rsync,
+  socat,
+  systemd,
+  unzip,
+  which,
+  xmlto,
+  zip,
 }:
 
 let
@@ -53,6 +53,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-cI/imLX4pdZTl1HDKaE2WwOOaWpwC78KyqWHmxsFQj0=";
   };
 
+  outputs = [
+    "out"
+    "man"
+    "doc"
+  ];
+
   nativeBuildInputs = [
     unzip
     xmlto
@@ -71,31 +77,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxml2
     libxslt
     glibcLocales
-  ];
-
-  prePatch = ''
-    # erlang.mk assumes that the elixir lib directory is at the same level as the bin of the elixir binary,
-    # this is not for the Nixpkgs packaging, so patch this
-    substituteInPlace erlang.mk \
-      --replace-fail \
-      "ELIXIR_LIBS ?= $(abspath $(dir $(ELIXIR_BIN))/../lib)" \
-      "ELIXIR_LIBS ?= ${beamPackages.elixir}/lib/elixir/lib"
-  '';
-
-  outputs = [
-    "out"
-    "man"
-    "doc"
-  ];
-
-  installFlags = [
-    "PREFIX=${placeholder "out"}"
-    "RMQ_ERLAPP_DIR=${placeholder "out"}"
-  ];
-
-  installTargets = [
-    "install"
-    "install-man"
   ];
 
   preBuild = ''
@@ -123,6 +104,7 @@ stdenv.mkDerivation (finalAttrs: {
   # Can not use versionCheckHook since that doesn't allow for setting environment variables
   # which is necessary since Erlang needs a $HOME for the Cookie.
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
     out="$(env - LANG=C.utf8 HOME=$TMPDIR ${placeholder "out"}/bin/rabbitmqctl version)"
@@ -136,16 +118,35 @@ stdenv.mkDerivation (finalAttrs: {
   # Needed for the check in installCheckPhase
   __darwinAllowLocalNetworking = true;
 
+  installFlags = [
+    "PREFIX=${placeholder "out"}"
+    "RMQ_ERLAPP_DIR=${placeholder "out"}"
+  ];
+
+  installTargets = [
+    "install"
+    "install-man"
+  ];
+
+  prePatch = ''
+    # erlang.mk assumes that the elixir lib directory is at the same level as the bin of the elixir binary,
+    # this is not for the Nixpkgs packaging, so patch this
+    substituteInPlace erlang.mk \
+      --replace-fail \
+      "ELIXIR_LIBS ?= $(abspath $(dir $(ELIXIR_BIN))/../lib)" \
+      "ELIXIR_LIBS ?= ${beamPackages.elixir}/lib/elixir/lib"
+  '';
+
   passthru.tests = {
     vm-test = nixosTests.rabbitmq;
   };
 
   meta = {
-    homepage = "https://www.rabbitmq.com/";
     description = "Implementation of the AMQP messaging protocol";
+    homepage = "https://www.rabbitmq.com/";
     changelog = "https://github.com/rabbitmq/rabbitmq-server/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mpl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ samueltardieu ];
+    platforms = lib.platforms.unix;
   };
 })

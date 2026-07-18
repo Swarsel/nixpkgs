@@ -18,18 +18,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-eWUUEdin8v8NIDEDJaHzKYaMyHeyp6d0ar23GkWvZLY=";
   };
 
-  __structuredAttrs = true;
-
-  cargoHash = "sha256-4mhVNr62NrCPR5W7Qkfg2LAPInOltyfG/nyITROEKJY=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ sqlite ];
-
+  cargoHash = "sha256-4mhVNr62NrCPR5W7Qkfg2LAPInOltyfG/nyITROEKJY=";
   nativeCheckInputs = [ versionCheckHook ];
-
   doInstallCheck = true;
-
+  __structuredAttrs = true;
   versionCheckProgramArg = [ "-V" ];
 
   meta = {

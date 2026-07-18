@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   apischema,
   buildPythonPackage,
-  fetchFromGitHub,
   gql,
   setuptools,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "aioaseko";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "milanmeu";
@@ -20,6 +19,8 @@ buildPythonPackage rec {
     hash = "sha256-jUvpu/lOFKRUwEuYD1zRp0oODjf4AgH84fnGngtv9jw=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,9 +29,7 @@ buildPythonPackage rec {
     gql
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "aioaseko" ];
 
   meta = {

@@ -1,49 +1,49 @@
 {
   lib,
   stdenv,
-  fetchzip,
   autoreconfHook,
-  makeWrapper,
-  nixosTests,
-  pkg-config,
+  brotli,
+  cjose,
+  curl,
+  fetchzip,
   file,
+  geoip,
+  hiredis,
+  hwloc,
+  imagemagick,
+  jansson,
+  kyotocabinet,
+  libcap,
+  libmaxminddb,
+  libunwind,
   linuxHeaders,
+  luajit,
+  makeWrapper,
+  ncurses,
+  nixosTests,
   openssl,
   pcre,
   perlPackages,
+  pkg-config,
   python3,
-  # recommended dependencies
-  withHwloc ? true,
-  hwloc,
-  withCurl ? true,
-  curl,
-  withCurses ? true,
-  ncurses,
-  withCap ? stdenv.hostPlatform.isLinux,
-  libcap,
-  withUnwind ? stdenv.hostPlatform.isLinux,
-  libunwind,
-  # optional dependencies
-  withBrotli ? false,
-  brotli,
-  withCjose ? false,
-  cjose,
-  withGeoIP ? false,
-  geoip,
-  withHiredis ? false,
-  hiredis,
-  withImageMagick ? false,
-  imagemagick,
-  withJansson ? false,
-  jansson,
-  withKyotoCabinet ? false,
-  kyotocabinet,
-  withLuaJIT ? false,
-  luajit,
-  withMaxmindDB ? false,
-  libmaxminddb,
   # optional features
   enableWCCP ? false,
+  # optional dependencies
+  withBrotli ? false,
+  withCap ? stdenv.hostPlatform.isLinux,
+  withCjose ? false,
+  withCurl ? true,
+  withCurses ? true,
+  withGeoIP ? false,
+  withHiredis ? false,
+  # recommended dependencies
+  withHwloc ? true,
+  withImageMagick ? false,
+  withJansson ? false,
+  withKyotoCabinet ? false,
+  withLuaJIT ? false,
+  withMaxmindDB ? false,
+  withUnwind ? stdenv.hostPlatform.isLinux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -54,6 +54,28 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://apache/trafficserver/trafficserver-${finalAttrs.version}.tar.bz2";
     hash = "sha256-WFABr7+JsUbQagLFK0OXZ20t4QCuYrozeaV4fKO/c2s=";
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
+
+  postPatch = ''
+    patchShebangs \
+      iocore/aio/test_AIO.sample \
+      src/traffic_via/test_traffic_via \
+      src/traffic_logstats/tests \
+      tools/check-unused-dependencies
+  ''
+  + lib.optionalString stdenv.hostPlatform.isLinux ''
+    substituteInPlace configure.ac \
+      --replace-fail '/usr/include/linux' '${linuxHeaders}/include/linux'
+  ''
+  + lib.optionalString stdenv.hostPlatform.isDarwin ''
+    # 'xcrun leaks' probably requires non-free XCode
+    substituteInPlace iocore/net/test_certlookup.cc \
+      --replace-fail 'xcrun leaks' 'true'
+  '';
 
   # NOTE: The upstream README indicates that flex is needed for some features,
   # but it actually seems to be unnecessary as of this commit[1]. The detection
@@ -96,28 +118,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional withUnwind libunwind
   ++ lib.optional withMaxmindDB libmaxminddb;
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
-  postPatch = ''
-    patchShebangs \
-      iocore/aio/test_AIO.sample \
-      src/traffic_via/test_traffic_via \
-      src/traffic_logstats/tests \
-      tools/check-unused-dependencies
-  ''
-  + lib.optionalString stdenv.hostPlatform.isLinux ''
-    substituteInPlace configure.ac \
-      --replace-fail '/usr/include/linux' '${linuxHeaders}/include/linux'
-  ''
-  + lib.optionalString stdenv.hostPlatform.isDarwin ''
-    # 'xcrun leaks' probably requires non-free XCode
-    substituteInPlace iocore/net/test_certlookup.cc \
-      --replace-fail 'xcrun leaks' 'true'
-  '';
-
   configureFlags = [
     "--enable-layout=NixOS"
     "--enable-experimental-plugins"
@@ -126,15 +126,7 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.withFeatureAs withHiredis "hiredis" hiredis)
   ];
 
-  installFlags = [
-    "pkgsysconfdir=${placeholder "out"}/etc/trafficserver"
-
-    # replace runtime directories with an install-time placeholder directory
-    "pkgcachedir=${placeholder "out"}/.install-trafficserver"
-    "pkglocalstatedir=${placeholder "out"}/.install-trafficserver"
-    "pkglogdir=${placeholder "out"}/.install-trafficserver"
-    "pkgruntimedir=${placeholder "out"}/.install-trafficserver"
-  ];
+  doCheck = true;
 
   postInstall = ''
     install -Dm644 rc/trafficserver.service $out/lib/systemd/system/trafficserver.service
@@ -148,6 +140,8 @@ stdenv.mkDerivation (finalAttrs: {
     # ensure no files actually exist in this directory
     rmdir $out/.install-trafficserver
   '';
+
+  doInstallCheck = true;
 
   installCheckPhase =
     let
@@ -175,16 +169,23 @@ stdenv.mkDerivation (finalAttrs: {
       runHook postInstallCheck
     '';
 
-  doCheck = true;
-  doInstallCheck = true;
   enableParallelBuilding = true;
+
+  installFlags = [
+    "pkgsysconfdir=${placeholder "out"}/etc/trafficserver"
+
+    # replace runtime directories with an install-time placeholder directory
+    "pkgcachedir=${placeholder "out"}/.install-trafficserver"
+    "pkglocalstatedir=${placeholder "out"}/.install-trafficserver"
+    "pkglogdir=${placeholder "out"}/.install-trafficserver"
+    "pkgruntimedir=${placeholder "out"}/.install-trafficserver"
+  ];
 
   passthru.tests = { inherit (nixosTests) trafficserver; };
 
   meta = {
-    homepage = "https://trafficserver.apache.org";
-    changelog = "https://raw.githubusercontent.com/apache/trafficserver/${finalAttrs.version}/CHANGELOG-${finalAttrs.version}";
     description = "Fast, scalable, and extensible HTTP caching proxy server";
+
     longDescription = ''
       Apache Traffic Server is a high-performance web proxy cache that improves
       network efficiency and performance by caching frequently-accessed
@@ -194,6 +195,9 @@ stdenv.mkDerivation (finalAttrs: {
       enterprises, Internet service providers (ISPs), backbone providers, and
       large intranets by maximizing existing and available bandwidth.
     '';
+
+    homepage = "https://trafficserver.apache.org";
+    changelog = "https://raw.githubusercontent.com/apache/trafficserver/${finalAttrs.version}/CHANGELOG-${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ midchildan ];
     platforms = lib.platforms.unix;

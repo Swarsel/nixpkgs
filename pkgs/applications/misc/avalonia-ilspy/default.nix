@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  autoSignDarwinBinariesHook,
+  bintools,
   buildDotnetModule,
+  copyDesktopItems,
   dotnetCorePackages,
-  libx11,
-  libice,
-  libsm,
-  libxi,
-  libxcursor,
-  libxext,
-  libxrandr,
+  fixDarwinDylibNames,
   fontconfig,
   glew,
-  makeDesktopItem,
-  copyDesktopItems,
   icoutils,
-  bintools,
-  fixDarwinDylibNames,
-  autoSignDarwinBinariesHook,
+  libice,
+  libsm,
+  libx11,
+  libxcursor,
+  libxext,
+  libxi,
+  libxrandr,
+  makeDesktopItem,
 }:
 
 buildDotnetModule rec {
@@ -57,19 +57,6 @@ buildDotnetModule rec {
     fontconfig
   ];
 
-  runtimeDeps = [
-    # Avalonia UI
-    libx11
-    libice
-    libsm
-    libxi
-    libxcursor
-    libxext
-    libxrandr
-    fontconfig
-    glew
-  ];
-
   postInstall = ''
     icotool --icon -x ILSpy/ILSpy.ico
     for i in 16 32 48 256; do
@@ -84,48 +71,67 @@ buildDotnetModule rec {
     ln -s $out/bin/ILSpy $out/Applications/ILSpy.app/Contents/MacOS/ILSpy
   '';
 
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-
-  projectFile = "ILSpy/ILSpy.csproj";
-  nugetDeps = ./deps.json;
-  executables = [ "ILSpy" ];
-
   desktopItems = [
     (makeDesktopItem {
-      name = "ILSpy";
-      desktopName = "ILSpy";
-      exec = "ILSpy";
-      icon = "ILSpy";
-      comment = ".NET assembly browser and decompiler";
       categories = [
         "Development"
       ];
+
+      comment = ".NET assembly browser and decompiler";
+      desktopName = "ILSpy";
+      exec = "ILSpy";
+      icon = "ILSpy";
+
       keywords = [
         ".net"
         "il"
         "assembly"
       ];
+
+      name = "ILSpy";
     })
+  ];
+
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+  executables = [ "ILSpy" ];
+  nugetDeps = ./deps.json;
+  projectFile = "ILSpy/ILSpy.csproj";
+
+  runtimeDeps = [
+    # Avalonia UI
+    libx11
+    libice
+    libsm
+    libxi
+    libxcursor
+    libxext
+    libxrandr
+    fontconfig
+    glew
   ];
 
   meta = {
     description = ".NET assembly browser and decompiler";
     homepage = "https://github.com/icsharpcode/AvaloniaILSpy";
+
     license = with lib.licenses; [
       mit
       # third party dependencies
       lgpl21Only
       mspl
     ];
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode
       binaryNativeCode
     ];
+
     maintainers = with lib.maintainers; [
       AngryAnt
       emilytrau
     ];
+
     mainProgram = "ILSpy";
   };
 }

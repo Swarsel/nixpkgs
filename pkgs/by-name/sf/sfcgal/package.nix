@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  cmake,
-  cgal,
   boost,
-  mpfr,
+  cgal,
+  cmake,
   gmp,
+  mpfr,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,6 +27,8 @@ stdenv.mkDerivation (finalAttrs: {
       'set( SFCGAL_Boost_COMPONENTS thread serialization )'
   '';
 
+  nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     cgal
     boost
@@ -34,15 +36,13 @@ stdenv.mkDerivation (finalAttrs: {
     gmp
   ];
 
-  nativeBuildInputs = [ cmake ];
-
   meta = {
     description = "C++ wrapper library around CGAL with the aim of supporting ISO 191007:2013 and OGC Simple Features for 3D operations";
     homepage = "https://sfcgal.gitlab.io/SFCGAL/";
     changelog = "https://gitlab.com/sfcgal/SFCGAL/-/releases/v${finalAttrs.version}";
     license = lib.licenses.lgpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ fqidz ];
+    platforms = lib.platforms.unix;
     teams = [ lib.teams.geospatial ];
   };
 })

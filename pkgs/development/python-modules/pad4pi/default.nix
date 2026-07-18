@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "pad4pi";
   version = "1.1.5";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,14 +15,14 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ rpi-gpio ];
-
   # Checks depend on rpi-gpio which requires to be run on a Raspberry Pi,
   # therefore it fails on other systems
   doCheck = false;
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/brettmclean/pad4pi";
     description = "Interrupt-based matrix keypad library for Raspberry Pi";
+    homepage = "https://github.com/brettmclean/pad4pi";
     license = lib.licenses.lgpl3;
     maintainers = with lib.maintainers; [ onny ];
   };

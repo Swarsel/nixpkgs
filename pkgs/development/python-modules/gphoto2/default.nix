@@ -2,8 +2,8 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  pkg-config,
   libgphoto2,
+  pkg-config,
   pytestCheckHook,
   setuptools,
   toml,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "gphoto2";
   version = "2.6.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jim-easterbrook";
@@ -20,11 +19,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-fxrgHFVfTs7PZFHafld5uNmvaqW2uLAs01GatdxtbAU=";
   };
-
-  build-system = [
-    setuptools
-    toml
-  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -36,12 +30,18 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [
+    setuptools
+    toml
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "gphoto2" ];
 
   meta = {
-    changelog = "https://github.com/jim-easterbrook/python-gphoto2/blob/${src.tag}/CHANGELOG.txt";
     description = "Python interface to libgphoto2";
     homepage = "https://github.com/jim-easterbrook/python-gphoto2";
+    changelog = "https://github.com/jim-easterbrook/python-gphoto2/blob/${src.tag}/CHANGELOG.txt";
     license = lib.licenses.lgpl3Plus;
     maintainers = [ ];
   };

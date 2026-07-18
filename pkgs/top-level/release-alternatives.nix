@@ -1,8 +1,8 @@
 {
-  pkgsFun ? import ../..,
   lib ? import ../../lib,
-  supportedSystems ? [ "x86_64-linux" ],
   allowUnfree ? false,
+  pkgsFun ? import ../..,
+  supportedSystems ? [ "x86_64-linux" ],
 }:
 
 let
@@ -159,19 +159,22 @@ in
           isILP64 = builtins.elem provider ([ "mkl64" ] ++ lib.optional system.is64bit "openblas");
           pkgs = pkgsFun {
             config = { inherit allowUnfree; };
-            system = system';
+
             overlays = [
               (self: super: {
-                lapack = super.lapack.override {
-                  lapackProvider = if provider == "mkl64" then super.mkl else builtins.getAttr provider super;
-                  inherit isILP64;
-                };
                 blas = super.blas.override {
-                  blasProvider = if provider == "mkl64" then super.mkl else builtins.getAttr provider super;
                   inherit isILP64;
+                  blasProvider = if provider == "mkl64" then super.mkl else builtins.getAttr provider super;
+                };
+
+                lapack = super.lapack.override {
+                  inherit isILP64;
+                  lapackProvider = if provider == "mkl64" then super.mkl else builtins.getAttr provider super;
                 };
               })
             ];
+
+            system = system';
           };
         in
         mapListToAttrs (if builtins.elem provider blas64Providers then blas64Users else blasUsers) (
@@ -189,5 +192,6 @@ in
     // {
       recurseForDerivations = true;
     };
+
   recurseForDerivations = true;
 }

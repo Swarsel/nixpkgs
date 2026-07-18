@@ -1,16 +1,16 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  pkg-config,
   stdenv,
+  fetchFromGitHub,
   libxkbcommon,
-  wayland,
-  openssl,
-  squashfsTools,
   makeBinaryWrapper,
-  versionCheckHook,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  squashfsTools,
+  versionCheckHook,
+  wayland,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -23,8 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-8Ulah5NtjQh5dIB/nhTrDstnaub4LS9iH33E1iv1JpY=";
   };
-
-  cargoHash = "sha256-qE0ZDq0UJHfsivvI1W44u/pVjKMDGrghSl7sfau/pIY=";
 
   nativeBuildInputs = [
     pkg-config
@@ -39,26 +37,29 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-qE0ZDq0UJHfsivvI1W44u/pVjKMDGrghSl7sfau/pIY=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
   # squashfs tools are needed to build appimages for Linux
   postFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
     wrapProgram $out/bin/cargo-bundle \
       --prefix PATH : ${lib.makeBinPath [ squashfsTools ]}
   '';
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "--version";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Wrap rust executables in OS-specific app bundles";
-    mainProgram = "cargo-bundle";
     homepage = "https://github.com/burtonageo/cargo-bundle";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = [ lib.maintainers.progrm_jarvis ];
+    mainProgram = "cargo-bundle";
   };
 })

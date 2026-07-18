@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "govee-local-api";
   version = "2.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Galorhallen";
@@ -24,10 +23,9 @@ buildPythonPackage rec {
     sed -i '/poetry = "^1.8.5"/d' pyproject.toml
   '';
 
-  build-system = [ poetry-core ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "govee_local_api" ];
 
   meta = {

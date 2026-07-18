@@ -4,26 +4,31 @@
   cmdline,
   importlib-metadata,
   mock,
-  pytestCheckHook,
   pytest,
   pytest-fixture-config,
   pytest-shutil,
+  pytestCheckHook,
   setuptools,
   virtualenv,
 }:
 
 buildPythonPackage {
-  pname = "pytest-virtualenv";
   inherit (pytest-fixture-config) version src patches;
-  pyproject = true;
+  pname = "pytest-virtualenv";
 
   postPatch = ''
     cd pytest-virtualenv
   '';
 
-  build-system = [ setuptools ];
-
   buildInputs = [ pytest ];
+
+  nativeCheckInputs = [
+    cmdline
+    mock
+    pytestCheckHook
+  ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     importlib-metadata
@@ -32,14 +37,9 @@ buildPythonPackage {
     virtualenv
   ];
 
-  nativeCheckInputs = [
-    cmdline
-    mock
-    pytestCheckHook
-  ];
-
   # Don't run integration tests
   disabledTestPaths = [ "tests/integration/*" ];
+  pyproject = true;
 
   meta = {
     description = "Create a Python virtual environment in your test that cleans up on teardown. The fixture has utility methods to install packages and list what’s installed";

@@ -1,21 +1,19 @@
 {
+  lib,
+  fetchFromGitHub,
   absl-py,
   buildPythonPackage,
   contextlib2,
-  fetchFromGitHub,
-  lib,
+  flit-core,
+  pytest-xdist,
+  pytestCheckHook,
   pyyaml,
   six,
-  flit-core,
-  pytestCheckHook,
-  pytest-xdist,
 }:
 
 buildPythonPackage rec {
   pname = "ml-collections";
   version = "1.1.0";
-  pyproject = true;
-  build-system = [ flit-core ];
 
   src = fetchFromGitHub {
     owner = "google";
@@ -24,6 +22,13 @@ buildPythonPackage rec {
     hash = "sha256-G9+UBqHalzI3quR8T5NEgJs+ep60ffFw9vyTTZDeZ9M=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-xdist
+  ];
+
+  build-system = [ flit-core ];
+
   dependencies = [
     six
     absl-py
@@ -31,19 +36,15 @@ buildPythonPackage rec {
     pyyaml
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-xdist
+  disabledTestPaths = [
+    "ml_collections/config_dict/examples/examples_test.py" # From github workflows
   ];
 
   enabledTestPaths = [
     "ml_collections/"
   ];
 
-  disabledTestPaths = [
-    "ml_collections/config_dict/examples/examples_test.py" # From github workflows
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "ml_collections" ];
 
   meta = {

@@ -1,18 +1,17 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
   gettext,
   gobject-introspection,
-  wrapGAppsHook3,
-  pango,
   gtksourceview3,
+  pango,
+  python3,
+  wrapGAppsHook3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "genxword";
   version = "2.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "riverrun";
@@ -32,6 +31,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     gtksourceview3
   ];
 
+  # there are no tests
+  doCheck = false;
+
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
   build-system = with python3.pkgs; [
     setuptools
   ];
@@ -43,18 +49,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   # to prevent double wrapping
   dontWrapGApps = true;
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
-
-  # there are no tests
-  doCheck = false;
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/riverrun/genxword";
     description = "Crossword generator";
+    homepage = "https://github.com/riverrun/genxword";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "genxword";
     maintainers = with lib.maintainers; [ dotlambda ];
+    mainProgram = "genxword";
   };
 })

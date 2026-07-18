@@ -1,11 +1,11 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
   pkg-config,
   readline,
-  xercesc,
   unstableGitUpdater,
+  xercesc,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,28 +19,30 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-yxf9w8USn9SVL4QW6XUWwR1rObvbj6Z69O3he3JiGT4=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     pkg-config
   ];
+
   buildInputs = [
     readline
     xercesc
   ];
 
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
-
   doCheck = true;
-
-  strictDeps = true;
-
   passthru.updateScript = unstableGitUpdater { hardcodeZeroVersion = true; };
+
   meta = {
     description = "Library of C++ classes and utilities for change ringing";
     homepage = "https://ringing-lib.github.io/";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl2Plus
     ];
+
     maintainers = with lib.maintainers; [ jshholland ];
     platforms = lib.platforms.linux;
   };

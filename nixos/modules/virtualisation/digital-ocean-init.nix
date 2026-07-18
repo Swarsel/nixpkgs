@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 with lib;
@@ -17,44 +17,44 @@ let
   '';
 in
 {
-  options.virtualisation.digitalOcean.rebuildFromUserData = mkOption {
-    type = types.bool;
-    default = true;
-    example = true;
-    description = "Whether to reconfigure the system from Digital Ocean user data";
-  };
   options.virtualisation.digitalOcean.defaultConfigFile = mkOption {
-    type = types.path;
     default = defaultConfigFile;
+
     defaultText = literalMD ''
       The default configuration imports user-data if applicable and
       `(modulesPath + "/virtualisation/digital-ocean-config.nix")`.
     '';
+
     description = ''
       A path to a configuration file which will be placed at
       `/etc/nixos/configuration.nix` and be used when switching to
       a new configuration.
     '';
+
+    type = types.path;
+  };
+
+  options.virtualisation.digitalOcean.rebuildFromUserData = mkOption {
+    default = true;
+    description = "Whether to reconfigure the system from Digital Ocean user data";
+    example = true;
+    type = types.bool;
   };
 
   config = {
     systemd.services.digitalocean-init = mkIf cfg.rebuildFromUserData {
       description = "Reconfigure the system from Digital Ocean userdata on startup";
-      wantedBy = [ "network-online.target" ];
-      unitConfig = {
-        ConditionPathExists = "!/etc/nixos/do-userdata.nix";
-        After = [
-          "digitalocean-metadata.service"
-          "network-online.target"
+
+      environment = {
+        HOME = "/root";
+
+        NIX_PATH = concatStringsSep ":" [
+          "/nix/var/nix/profiles/per-user/root/channels/nixos"
+          "nixos-config=/etc/nixos/configuration.nix"
+          "/nix/var/nix/profiles/per-user/root/channels"
         ];
-        Requires = [ "digitalocean-metadata.service" ];
-        X-StopOnRemoval = false;
       };
-      serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-      };
-      restartIfChanged = false;
+
       path = [
         pkgs.jq
         pkgs.gnused
@@ -63,14 +63,9 @@ in
         config.nix.package
         config.system.build.nixos-rebuild
       ];
-      environment = {
-        HOME = "/root";
-        NIX_PATH = concatStringsSep ":" [
-          "/nix/var/nix/profiles/per-user/root/channels/nixos"
-          "nixos-config=/etc/nixos/configuration.nix"
-          "/nix/var/nix/profiles/per-user/root/channels"
-        ];
-      };
+
+      restartIfChanged = false;
+
       script = ''
         set -e
         echo "attempting to fetch configuration from Digital Ocean user data..."
@@ -105,8 +100,27 @@ in
           echo "no user data is available"
         fi
       '';
+
+      serviceConfig = {
+        RemainAfterExit = true;
+        Type = "oneshot";
+      };
+
+      unitConfig = {
+        After = [
+          "digitalocean-metadata.service"
+          "network-online.target"
+        ];
+
+        ConditionPathExists = "!/etc/nixos/do-userdata.nix";
+        Requires = [ "digitalocean-metadata.service" ];
+        X-StopOnRemoval = false;
+      };
+
+      wantedBy = [ "network-online.target" ];
     };
   };
+
   meta.maintainers = with maintainers; [
     arianvp
     eamsden

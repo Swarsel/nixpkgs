@@ -25,14 +25,10 @@ let
   };
 
   ms-tools-lib = buildGoModule {
-    pname = "usbkvm-ms-tools-lib";
     inherit version src;
-
-    sourceRoot = "${src.name}/ms-tools";
-
-    vendorHash = null; # dependencies are vendored in the release tarball
-
+    pname = "usbkvm-ms-tools-lib";
     buildInputs = [ hidapi ];
+    vendorHash = null; # dependencies are vendored in the release tarball
 
     buildPhase = ''
       runHook preBuild
@@ -43,16 +39,18 @@ let
       runHook postBuild
     '';
 
+    sourceRoot = "${src.name}/ms-tools";
+
     meta = {
-      homepage = "https://github.com/carrotIndustries/ms-tools";
       description = "Program, library and reference designs to develop for MacroSilicon MS2106/MS2109/MS2130 chips";
+      homepage = "https://github.com/carrotIndustries/ms-tools";
       license = lib.licenses.mit;
     };
   };
 in
 stdenv.mkDerivation {
-  pname = "usbkvm";
   inherit version src;
+  pname = "usbkvm";
 
   # The package includes instructions to build the "mslib.{a,h}" files using a
   # Go compiler, but that doesn't work in the Nix sandbox. We patch out this
@@ -89,6 +87,8 @@ stdenv.mkDerivation {
     "-Dudevrulesdir=lib/udev/rules.d"
   ];
 
+  doInstallCheck = true;
+
   postFixup =
     let
       GST_PLUGIN_PATH = lib.makeSearchPathOutput "lib" "lib/gstreamer-1.0" [
@@ -101,11 +101,9 @@ stdenv.mkDerivation {
         --prefix GST_PLUGIN_PATH : "${GST_PLUGIN_PATH}"
     '';
 
-  doInstallCheck = true;
-
   meta = {
-    homepage = "https://github.com/carrotIndustries/usbkvm";
     description = "Open-source USB KVM (Keyboard, Video and Mouse) adapter";
+    homepage = "https://github.com/carrotIndustries/usbkvm";
     changelog = "https://github.com/carrotIndustries/usbkvm/releases/tag/v${version}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ lschuermann ];

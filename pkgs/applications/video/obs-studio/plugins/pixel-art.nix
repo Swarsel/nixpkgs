@@ -21,10 +21,10 @@ stdenv.mkDerivation rec {
   buildInputs = [ obs-studio ];
 
   meta = {
+    inherit (obs-studio.meta) platforms;
     description = "OBS Plugin that can be used to create retro-inspired pixel art visuals";
     homepage = "https://github.com/dspstanky/pixel-art";
-    maintainers = with lib.maintainers; [ flexiondotorg ];
     license = lib.licenses.gpl2Only;
-    inherit (obs-studio.meta) platforms;
+    maintainers = with lib.maintainers; [ flexiondotorg ];
   };
 }

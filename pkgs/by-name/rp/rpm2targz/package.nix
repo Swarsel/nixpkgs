@@ -1,12 +1,12 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   bzip2,
   coreutils,
   cpio,
-  fetchurl,
   gnutar,
   gzip,
-  lib,
-  stdenv,
   xz,
   zstd,
 }:

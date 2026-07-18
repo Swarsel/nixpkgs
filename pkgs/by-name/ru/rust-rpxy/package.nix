@@ -21,13 +21,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Http reverse proxy serving multiple domain names and terminating TLS for http/1.1, 2 and 3, written in Rust";
     homepage = "https://github.com/junkurihara/rust-rpxy";
     changelog = "https://github.com/junkurihara/rust-rpxy/releases/tag/${finalAttrs.version}";
+
     license = with lib.licenses; [
       mit
     ];
+
     maintainers = with lib.maintainers; [
       jpteb
     ];
-    mainProgram = "rpxy";
+
     platforms = lib.platforms.all;
+    mainProgram = "rpxy";
   };
 })

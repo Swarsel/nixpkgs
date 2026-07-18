@@ -1,25 +1,21 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  rustPlatform,
-
-  # dependencies
-  python-dateutil,
-  tzdata,
-
+  buildPythonPackage,
   # tests
   pytestCheckHook,
+  # dependencies
+  python-dateutil,
+  # build-system
+  rustPlatform,
   time-machine,
+  tzdata,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pendulum";
   version = "3.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sdispater";
@@ -35,28 +31,27 @@ buildPythonPackage (finalAttrs: {
     ./delete-obsolete-cargo-toml.patch
   ];
 
-  cargoRoot = "rust";
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    sourceRoot = "${finalAttrs.src.name}/rust";
-    hash = "sha256-tC65lxI561ygOhBFujWzGk32XiQH6QB42nqboWSfQrg=";
-  };
-
   nativeBuildInputs = [
     rustPlatform.maturinBuildHook
     rustPlatform.cargoSetupHook
   ];
 
-  dependencies = [
-    python-dateutil
-    tzdata
-  ];
-
-  pythonImportsCheck = [ "pendulum" ];
-
   nativeCheckInputs = [
     pytestCheckHook
     time-machine
+  ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-tC65lxI561ygOhBFujWzGk32XiQH6QB42nqboWSfQrg=";
+    sourceRoot = "${finalAttrs.src.name}/rust";
+  };
+
+  cargoRoot = "rust";
+
+  dependencies = [
+    python-dateutil
+    tzdata
   ];
 
   disabledTestPaths = [
@@ -66,6 +61,9 @@ buildPythonPackage (finalAttrs: {
     # PermissionError: [Errno 1] Operation not permitted: '/etc/localtime'
     "tests/testing/test_time_travel.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pendulum" ];
 
   meta = {
     description = "Python datetimes made easy";

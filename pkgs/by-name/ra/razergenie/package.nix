@@ -1,12 +1,12 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
+  cmake,
   meson,
   ninja,
   pkg-config,
   qt6,
-  cmake,
 }:
 
 let
@@ -35,8 +35,8 @@ let
     dontWrapQtApps = true;
 
     meta = {
-      homepage = "https://github.com/z3ntu/libopenrazer";
       description = "Qt wrapper around the D-Bus API from OpenRazer";
+      homepage = "https://github.com/z3ntu/libopenrazer";
       license = lib.licenses.gpl3Plus;
       platforms = lib.platforms.linux;
     };
@@ -53,8 +53,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-TxW6IUHmEaNdJPeEGwo57a3EGH6MMyitVTmzStVmZjc=";
   };
 
-  postUnpack = "ln -s ${libopenrazer} libopenrazer";
-
   nativeBuildInputs = [
     pkg-config
     meson
@@ -69,12 +67,14 @@ stdenv.mkDerivation (finalAttrs: {
     libopenrazer
   ];
 
+  postUnpack = "ln -s ${libopenrazer} libopenrazer";
+
   meta = {
-    homepage = "https://github.com/z3ntu/RazerGenie";
     description = "Qt application for configuring your Razer devices under GNU/Linux";
-    mainProgram = "razergenie";
+    homepage = "https://github.com/z3ntu/RazerGenie";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "razergenie";
   };
 })

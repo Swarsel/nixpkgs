@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "clairvoyance";
   version = "2.5.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nikitastupin";
@@ -16,7 +15,15 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-anUceLMTeHQ/Z0+MjKL0alDdKaWA5y3HpJC81MBTTq8=";
   };
 
-  pythonRelaxDeps = [ "rich" ];
+  postPatch = ''
+    substituteInPlace pyproject.toml \
+      --replace 'asyncio = "^3.4.3"' ""
+  '';
+
+  nativeCheckInputs = with python3.pkgs; [
+    aiounittest
+    pytestCheckHook
+  ];
 
   build-system = with python3.pkgs; [ poetry-core ];
 
@@ -25,22 +32,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     rich
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    aiounittest
-    pytestCheckHook
-  ];
-
-  postPatch = ''
-    substituteInPlace pyproject.toml \
-      --replace 'asyncio = "^3.4.3"' ""
-  '';
-
-  pythonImportsCheck = [ "clairvoyance" ];
-
   disabledTests = [
     # KeyError
     "test_probe_typename"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "clairvoyance" ];
+  pythonRelaxDeps = [ "rich" ];
 
   meta = {
     description = "Tool to obtain GraphQL API schemas";

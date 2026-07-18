@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  build2,
   fetchurl,
+  build2,
   libbutl,
   enableShared ? !stdenv.hostPlatform.isStatic,
   enableStatic ? !enableShared,
@@ -11,40 +11,44 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "libbpkg";
   version = "0.18.0";
-  outputs = [
-    "out"
-    "dev"
-    "doc"
-  ];
 
   src = fetchurl {
     url = "https://pkg.cppget.org/1/alpha/build2/libbpkg-${finalAttrs.version}.tar.gz";
     hash = "sha256-ROaIgIql1oXOqiwz8giTcz0landh6rITyzX3WxR16L4=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+    "doc"
+  ];
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     build2
   ];
+
   buildInputs = [
     libbutl
   ];
+
+  doCheck = true;
 
   build2ConfigureFlags = [
     "config.bin.lib=${build2.configSharedStatic enableShared enableStatic}"
   ];
 
-  strictDeps = true;
-
-  doCheck = true;
-
   meta = {
     description = "Build2 package dependency manager utility library";
+
     longDescription = ''
       This library defines the types and utilities for working with build2 packages.
       In particular, it provides C++ classes as well as the parser and serializer
       implementations that can be used to read, manipulate, and write package,
       repository and signature manifests.
     '';
+
     homepage = "https://build2.org/";
     changelog = "https://git.build2.org/cgit/libbpkg/log";
     license = lib.licenses.mit;

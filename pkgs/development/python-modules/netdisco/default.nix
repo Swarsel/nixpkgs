@@ -11,13 +11,13 @@
 buildPythonPackage rec {
   pname = "netdisco";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-TbtZBILzd8zEYeAXQnB8y+jx0tGyhXivkdybf+vNy9I=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -25,12 +25,12 @@ buildPythonPackage rec {
     zeroconf
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTestPaths = [
     # Broken due to removed discoverables in https://github.com/home-assistant-libs/netdisco/commit/477db5a1dc93919a6c5bd61b4b1d3c80e75785bd
     "tests/test_xboxone.py"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "netdisco"

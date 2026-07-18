@@ -25,10 +25,16 @@ stdenv.mkDerivation rec {
     hash = "sha256-pgWKHKJGeiMPryoEC3zt6DnzadzoHvS4mVeWkVxiMVQ=";
   };
 
-  pythonPath = [
-    dockbarx
-    python3Packages.pygobject3
-  ];
+  postPatch = ''
+    # We execute the wrapped xfce4-panel-plug directly.
+    # Since argv is used for g_free() we also need to shift the indexes.
+    substituteInPlace src/xfce_panel_plugin.c \
+      --replace '"python3",' "" \
+      --replace "g_free(argv[3]);" "g_free(argv[2]);" \
+      --replace "g_free(argv[5]);" "g_free(argv[4]);"
+
+    patchShebangs src/xfce4-dockbarx-plug.py
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -46,26 +52,20 @@ stdenv.mkDerivation rec {
   ]
   ++ pythonPath;
 
-  postPatch = ''
-    # We execute the wrapped xfce4-panel-plug directly.
-    # Since argv is used for g_free() we also need to shift the indexes.
-    substituteInPlace src/xfce_panel_plugin.c \
-      --replace '"python3",' "" \
-      --replace "g_free(argv[3]);" "g_free(argv[2]);" \
-      --replace "g_free(argv[5]);" "g_free(argv[4]);"
-
-    patchShebangs src/xfce4-dockbarx-plug.py
-  '';
-
   postFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
     chmod +x $out/share/dockbarx/xfce4-panel-plug
     wrapPythonProgramsIn "$out/share/dockbarx" "$out ''${pythonPath[*]}"
   '';
 
+  pythonPath = [
+    dockbarx
+    python3Packages.pygobject3
+  ];
+
   meta = {
-    homepage = "https://github.com/xuzhen/xfce4-dockbarx-plugin";
     description = "Plugins to embed DockbarX into xfce4-panel";
+    homepage = "https://github.com/xuzhen/xfce4-dockbarx-plugin";
     license = lib.licenses.mit;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.xfce ];

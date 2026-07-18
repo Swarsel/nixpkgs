@@ -24,8 +24,8 @@ let
   '';
 
   php = cfg.phpPackage.override {
-    apxs2Support = true;
     apacheHttpd = pkg;
+    apxs2Support = true;
   };
 
   phpModuleName =
@@ -527,39 +527,63 @@ in
     services.httpd = {
 
       enable = mkEnableOption "the Apache HTTP Server";
-
       package = mkPackageOption pkgs "apacheHttpd" { };
 
+      adminAddr = mkOption {
+        default = null;
+        description = "E-mail address of the server administrator.";
+        example = "admin@example.org";
+        type = types.nullOr types.str;
+      };
+
       configFile = mkOption {
-        type = types.path;
         default = confFile;
         defaultText = literalExpression "confFile";
-        example = literalExpression ''pkgs.writeText "httpd.conf" "# my custom config file ..."'';
+
         description = ''
           Override the configuration file used by Apache. By default,
           NixOS generates one automatically.
         '';
+
+        example = literalExpression ''pkgs.writeText "httpd.conf" "# my custom config file ..."'';
+        type = types.path;
       };
 
+      customLogFormat = mkOption {
+        default = null;
+
+        description = ''
+          Defines a custom Apache HTTPD access log format string.
+
+          This option is only consulted when `logFormat` is set to `custom`.
+          The value must be a valid Apache `LogFormat` specification and will be registered under the symbolic name `custom`.
+
+          See <https://httpd.apache.org/docs/2.4/logs.html#formats> for the formal definition of log format directives.
+        '';
+
+        example = ''%{X-Forwarded-For}i %l %u %t \"%r\" %>s %b'';
+        type = types.str;
+      };
+
+      enableMellon = mkEnableOption "the mod_auth_mellon module";
+      enablePHP = mkEnableOption "the PHP module";
+      enablePerl = mkEnableOption "the Perl module (mod_perl)";
+
       extraConfig = mkOption {
-        type = types.lines;
         default = "";
+
         description = ''
           Configuration lines appended to the generated Apache
           configuration file. Note that this mechanism will not work
           when {option}`configFile` is overridden.
         '';
+
+        type = types.lines;
       };
 
       extraModules = mkOption {
-        type = types.listOf types.unspecified;
         default = [ ];
-        example = literalExpression ''
-          [
-            "proxy_connect"
-            { name = "jk"; path = "''${pkgs.apacheHttpdPackages.mod_jk}/modules/mod_jk.so"; }
-          ]
-        '';
+
         description = ''
           Additional Apache modules to be used. These can be
           specified as a string in the case of modules distributed
@@ -567,26 +591,40 @@ in
           {var}`name` and {var}`path` of the
           module.
         '';
+
+        example = literalExpression ''
+          [
+            "proxy_connect"
+            { name = "jk"; path = "''${pkgs.apacheHttpdPackages.mod_jk}/modules/mod_jk.so"; }
+          ]
+        '';
+
+        type = types.listOf types.unspecified;
       };
 
-      adminAddr = mkOption {
-        type = types.nullOr types.str;
-        example = "admin@example.org";
-        default = null;
-        description = "E-mail address of the server administrator.";
+      group = mkOption {
+        default = "wwwrun";
+
+        description = ''
+          Group under which httpd children processes run.
+        '';
+
+        type = types.str;
+      };
+
+      logDir = mkOption {
+        default = "/var/log/httpd";
+
+        description = ''
+          Directory for Apache's log files. It is created automatically.
+        '';
+
+        type = types.path;
       };
 
       logFormat = mkOption {
-        type = types.enum [
-          "combined"
-          "common"
-          "referer"
-          "agent"
-          "custom"
-          "none"
-        ];
         default = "common";
-        example = "custom";
+
         description = ''
           Selects the access log format written to log files.
 
@@ -596,23 +634,29 @@ in
 
           Further details on Apache log formats are available at <https://httpd.apache.org/docs/2.4/logs.html>.
         '';
-      };
 
-      customLogFormat = mkOption {
-        type = types.str;
-        default = null;
-        example = ''%{X-Forwarded-For}i %l %u %t \"%r\" %>s %b'';
-        description = ''
-          Defines a custom Apache HTTPD access log format string.
+        example = "custom";
 
-          This option is only consulted when `logFormat` is set to `custom`.
-          The value must be a valid Apache `LogFormat` specification and will be registered under the symbolic name `custom`.
-
-          See <https://httpd.apache.org/docs/2.4/logs.html#formats> for the formal definition of log format directives.
-        '';
+        type = types.enum [
+          "combined"
+          "common"
+          "referer"
+          "agent"
+          "custom"
+          "none"
+        ];
       };
 
       logLevel = mkOption {
+        default = "notice";
+
+        description = ''
+          Controls the verbosity of the ErrorLog.
+          See <https://httpd.apache.org/docs/2.4/mod/core.html#loglevel> for more details.
+        '';
+
+        example = "crit";
+
         type =
           with types;
           nullOr (enum [
@@ -633,28 +677,93 @@ in
             "trace7"
             "trace8"
           ]);
-        default = "notice";
-        example = "crit";
-        description = ''
-          Controls the verbosity of the ErrorLog.
-          See <https://httpd.apache.org/docs/2.4/mod/core.html#loglevel> for more details.
-        '';
       };
 
       logPerVirtualHost = mkOption {
-        type = types.bool;
         default = true;
+
         description = ''
           If enabled, each virtual host gets its own
           {file}`access.log` and
           {file}`error.log`, namely suffixed by the
           {option}`hostName` of the virtual host.
         '';
+
+        type = types.bool;
+      };
+
+      maxClients = mkOption {
+        default = 150;
+        description = "Maximum number of httpd processes (prefork)";
+        example = 8;
+        type = types.ints.positive;
+      };
+
+      maxRequestsPerChild = mkOption {
+        default = 0;
+
+        description = ''
+          Maximum number of httpd requests answered per httpd child (prefork), 0 means unlimited.
+        '';
+
+        example = 500;
+        type = types.ints.unsigned;
+      };
+
+      mpm = mkOption {
+        default = "event";
+
+        description = ''
+          Multi-processing module to be used by Apache. Available
+          modules are `prefork` (handles each
+          request in a separate child process), `worker`
+          (hybrid approach that starts a number of child processes
+          each running a number of threads) and `event`
+          (the default; a recent variant of `worker`
+          that handles persistent connections more efficiently).
+        '';
+
+        example = "worker";
+
+        type = types.enum [
+          "event"
+          "prefork"
+          "worker"
+        ];
+      };
+
+      phpOptions = mkOption {
+        default = "";
+
+        description = ''
+          Options appended to the PHP configuration file {file}`php.ini`.
+        '';
+
+        example = ''
+          date.timezone = "CET"
+        '';
+
+        type = types.lines;
+      };
+
+      phpPackage = mkPackageOption pkgs "php" { };
+
+      sslCiphers = mkOption {
+        default = "HIGH:!aNULL:!MD5:!EXP";
+        description = "Cipher Suite available for negotiation in SSL proxy handshake.";
+        type = types.str;
+      };
+
+      sslProtocols = mkOption {
+        default = "All -SSLv2 -SSLv3 -TLSv1 -TLSv1.1";
+        description = "Allowed SSL/TLS protocol versions.";
+        example = "All -SSLv2 -SSLv3";
+        type = types.str;
       };
 
       user = mkOption {
-        type = types.str;
         default = "wwwrun";
+
         description = ''
           User account under which httpd children processes run.
 
@@ -664,31 +773,17 @@ in
           systemd.services.httpd.serviceConfig.User = lib.mkForce "root";
           ```
         '';
-      };
 
-      group = mkOption {
         type = types.str;
-        default = "wwwrun";
-        description = ''
-          Group under which httpd children processes run.
-        '';
-      };
-
-      logDir = mkOption {
-        type = types.path;
-        default = "/var/log/httpd";
-        description = ''
-          Directory for Apache's log files. It is created automatically.
-        '';
       };
 
       virtualHosts = mkOption {
-        type = with types; attrsOf (submodule (import ./vhost-options.nix));
         default = {
           localhost = {
             documentRoot = "${pkg}/htdocs";
           };
         };
+
         defaultText = literalExpression ''
           {
             localhost = {
@@ -696,6 +791,13 @@ in
             };
           }
         '';
+
+        description = ''
+          Specification of the virtual hosts served by Apache. Each
+          element should be an attribute set specifying the
+          configuration of the virtual host.
+        '';
+
         example = literalExpression ''
           {
             "foo.example.com" = {
@@ -708,78 +810,8 @@ in
             };
           }
         '';
-        description = ''
-          Specification of the virtual hosts served by Apache. Each
-          element should be an attribute set specifying the
-          configuration of the virtual host.
-        '';
-      };
 
-      enableMellon = mkEnableOption "the mod_auth_mellon module";
-
-      enablePHP = mkEnableOption "the PHP module";
-
-      phpPackage = mkPackageOption pkgs "php" { };
-
-      enablePerl = mkEnableOption "the Perl module (mod_perl)";
-
-      phpOptions = mkOption {
-        type = types.lines;
-        default = "";
-        example = ''
-          date.timezone = "CET"
-        '';
-        description = ''
-          Options appended to the PHP configuration file {file}`php.ini`.
-        '';
-      };
-
-      mpm = mkOption {
-        type = types.enum [
-          "event"
-          "prefork"
-          "worker"
-        ];
-        default = "event";
-        example = "worker";
-        description = ''
-          Multi-processing module to be used by Apache. Available
-          modules are `prefork` (handles each
-          request in a separate child process), `worker`
-          (hybrid approach that starts a number of child processes
-          each running a number of threads) and `event`
-          (the default; a recent variant of `worker`
-          that handles persistent connections more efficiently).
-        '';
-      };
-
-      maxClients = mkOption {
-        type = types.ints.positive;
-        default = 150;
-        example = 8;
-        description = "Maximum number of httpd processes (prefork)";
-      };
-
-      maxRequestsPerChild = mkOption {
-        type = types.ints.unsigned;
-        default = 0;
-        example = 500;
-        description = ''
-          Maximum number of httpd requests answered per httpd child (prefork), 0 means unlimited.
-        '';
-      };
-
-      sslCiphers = mkOption {
-        type = types.str;
-        default = "HIGH:!aNULL:!MD5:!EXP";
-        description = "Cipher Suite available for negotiation in SSL proxy handshake.";
-      };
-
-      sslProtocols = mkOption {
-        type = types.str;
-        default = "All -SSLv2 -SSLv3 -TLSv1 -TLSv1.1";
-        example = "All -SSLv2 -SSLv3";
-        description = "Allowed SSL/TLS protocol versions.";
+        type = with types; attrsOf (submodule (import ./vhost-options.nix));
       };
     };
 
@@ -792,6 +824,7 @@ in
     assertions = [
       {
         assertion = all (hostOpts: !hostOpts.enableSSL) vhosts;
+
         message = ''
           The option `services.httpd.virtualHosts.<name>.enableSSL` no longer has any effect; please remove it.
           Select one of `services.httpd.virtualHosts.<name>.addSSL`, `services.httpd.virtualHosts.<name>.forceSSL`,
@@ -802,6 +835,7 @@ in
         assertion = all (
           hostOpts: with hostOpts; !(addSSL && onlySSL) && !(forceSSL && onlySSL) && !(addSSL && forceSSL)
         ) vhosts;
+
         message = ''
           Options `services.httpd.virtualHosts.<name>.addSSL`,
           `services.httpd.virtualHosts.<name>.onlySSL` and `services.httpd.virtualHosts.<name>.forceSSL`
@@ -810,6 +844,7 @@ in
       }
       {
         assertion = all (hostOpts: !(hostOpts.enableACME && hostOpts.useACMEHost != null)) vhosts;
+
         message = ''
           Options `services.httpd.virtualHosts.<name>.enableACME` and
           `services.httpd.virtualHosts.<name>.useACMEHost` are mutually exclusive.
@@ -817,6 +852,7 @@ in
       }
       {
         assertion = cfg.enablePHP -> php.ztsSupport;
+
         message = ''
           The php package provided by `services.httpd.phpPackage` is not built with zts support. Please
           ensure the php has zts support by settings `services.httpd.phpPackage = php.override { ztsSupport = true; }`
@@ -828,6 +864,7 @@ in
       mkCertOwnershipAssertion {
         cert = config.security.acme.certs.${name};
         groups = config.users.groups;
+
         services = [
           config.systemd.services.httpd
         ]
@@ -835,21 +872,13 @@ in
       }
     ) vhostCertNames;
 
-    warnings = mapAttrsToList (name: hostOpts: ''
-      Using config.services.httpd.virtualHosts."${name}".servedFiles is deprecated and will become unsupported in a future release. Your configuration will continue to work as is but please migrate your configuration to config.services.httpd.virtualHosts."${name}".locations before the 20.09 release of NixOS.
-    '') (filterAttrs (name: hostOpts: hostOpts.servedFiles != [ ]) cfg.virtualHosts);
+    # httpd requires a stable path to the configuration file for reloads
+    environment.etc."httpd/httpd.conf".source = cfg.configFile;
 
-    users.users = optionalAttrs (cfg.user == "wwwrun") {
-      wwwrun = {
-        group = cfg.group;
-        description = "Apache httpd user";
-        uid = config.ids.uids.wwwrun;
-      };
-    };
-
-    users.groups = optionalAttrs (cfg.group == "wwwrun") {
-      wwwrun.gid = config.ids.gids.wwwrun;
-    };
+    environment.systemPackages = [
+      apachectl
+      pkg
+    ];
 
     security.acme.certs =
       let
@@ -859,53 +888,22 @@ in
             hasRoot = hostOpts.acmeRoot != null;
           in
           nameValuePair hostOpts.hostName {
+            # Also nudge dnsProvider to null in case it is inherited
+            dnsProvider = mkOverride (if hasRoot then 1000 else 2000) null;
+            # Use the vhost-specific email address if provided, otherwise let
+            # security.acme.email or security.acme.certs.<cert>.email be used.
+            email = mkOverride 2000 (if hostOpts.adminAddr != null then hostOpts.adminAddr else cfg.adminAddr);
+            extraDomainNames = hostOpts.serverAliases;
             group = mkDefault cfg.group;
             # if acmeRoot is null inherit config.security.acme
             # Since config.security.acme.certs.<cert>.webroot's own default value
             # should take precedence set priority higher than mkOptionDefault
             webroot = mkOverride (if hasRoot then 1000 else 2000) hostOpts.acmeRoot;
-            # Also nudge dnsProvider to null in case it is inherited
-            dnsProvider = mkOverride (if hasRoot then 1000 else 2000) null;
-            extraDomainNames = hostOpts.serverAliases;
-            # Use the vhost-specific email address if provided, otherwise let
-            # security.acme.email or security.acme.certs.<cert>.email be used.
-            email = mkOverride 2000 (if hostOpts.adminAddr != null then hostOpts.adminAddr else cfg.adminAddr);
             # Filter for enableACME-only vhosts. Don't want to create dud certs
           }
         ) (filter (hostOpts: hostOpts.useACMEHost == null) acmeEnabledVhosts);
       in
       listToAttrs acmePairs;
-
-    # httpd requires a stable path to the configuration file for reloads
-    environment.etc."httpd/httpd.conf".source = cfg.configFile;
-    environment.systemPackages = [
-      apachectl
-      pkg
-    ];
-
-    services.logrotate = optionalAttrs (cfg.logFormat != "none") {
-      enable = mkDefault true;
-      settings.httpd = {
-        files = "${cfg.logDir}/*.log";
-        su = "${cfg.user} ${cfg.group}";
-        frequency = "daily";
-        rotate = 28;
-        sharedscripts = true;
-        compress = true;
-        delaycompress = true;
-        postrotate = "systemctl reload httpd.service > /dev/null 2>/dev/null || true";
-      };
-    };
-
-    services.httpd.phpOptions = ''
-      ; Don't advertise PHP
-      expose_php = off
-    ''
-    + optionalString (config.time.timeZone != null) ''
-
-      ; Apparently PHP doesn't use $TZ.
-      date.timezone = "${config.time.timeZone}"
-    '';
 
     services.httpd.extraModules = mkBefore [
       # HTTP authentication mechanisms: basic and digest.
@@ -950,37 +948,51 @@ in
       "access_compat"
     ];
 
-    systemd.tmpfiles.rules =
-      let
-        svc = config.systemd.services.httpd.serviceConfig;
-      in
-      [
-        "d '${cfg.logDir}' 0700 ${svc.User} ${svc.Group}"
-        "Z '${cfg.logDir}' - ${svc.User} ${svc.Group}"
-      ];
+    services.httpd.phpOptions = ''
+      ; Don't advertise PHP
+      expose_php = off
+    ''
+    + optionalString (config.time.timeZone != null) ''
+
+      ; Apparently PHP doesn't use $TZ.
+      date.timezone = "${config.time.timeZone}"
+    '';
+
+    services.logrotate = optionalAttrs (cfg.logFormat != "none") {
+      enable = mkDefault true;
+
+      settings.httpd = {
+        compress = true;
+        delaycompress = true;
+        files = "${cfg.logDir}/*.log";
+        frequency = "daily";
+        postrotate = "systemctl reload httpd.service > /dev/null 2>/dev/null || true";
+        rotate = 28;
+        sharedscripts = true;
+        su = "${cfg.user} ${cfg.group}";
+      };
+    };
 
     systemd.services.httpd = {
-      description = "Apache HTTPD";
-      wantedBy = [ "multi-user.target" ];
-      wants = concatLists (map (certName: [ "acme-${certName}.service" ]) vhostCertNames);
       after = [
         "network.target"
       ]
       # Ensure httpd runs with baseline certificates in place.
       ++ map (certName: "acme-${certName}.service") vhostCertNames;
+
       # Ensure httpd runs (with current config) before the actual ACME jobs run
       before = map (certName: "acme-order-renew-${certName}.service") vhostCertNames;
-      restartTriggers = [ cfg.configFile ];
+      description = "Apache HTTPD";
+
+      environment =
+        optionalAttrs cfg.enablePHP { PHPRC = phpIni; }
+        // optionalAttrs cfg.enableMellon { LD_LIBRARY_PATH = "${pkgs.xmlsec}/lib"; };
 
       path = [
         pkg
         pkgs.coreutils
         pkgs.gnugrep
       ];
-
-      environment =
-        optionalAttrs cfg.enablePHP { PHPRC = phpIni; }
-        // optionalAttrs cfg.enableMellon { LD_LIBRARY_PATH = "${pkgs.xmlsec}/lib"; };
 
       preStart = ''
         # Get rid of old semaphores.  These tend to accumulate across
@@ -991,20 +1003,25 @@ in
         done
       '';
 
+      restartTriggers = [ cfg.configFile ];
+
       serviceConfig = {
+        AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
+        ExecReload = "${pkg}/bin/httpd -f /etc/httpd/httpd.conf -k graceful";
         ExecStart = "@${pkg}/bin/httpd httpd -f /etc/httpd/httpd.conf";
         ExecStop = "${pkg}/bin/httpd -f /etc/httpd/httpd.conf -k graceful-stop";
-        ExecReload = "${pkg}/bin/httpd -f /etc/httpd/httpd.conf -k graceful";
-        User = cfg.user;
         Group = cfg.group;
-        Type = "forking";
         PIDFile = "${runtimeDir}/httpd.pid";
         Restart = "always";
         RestartSec = "5s";
         RuntimeDirectory = "httpd httpd/runtime";
         RuntimeDirectoryMode = "0750";
-        AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
+        Type = "forking";
+        User = cfg.user;
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = concatLists (map (certName: [ "acme-${certName}.service" ]) vhostCertNames);
     };
 
     # postRun hooks on cert renew can't be used to restart Apache since renewal
@@ -1016,25 +1033,53 @@ in
         sslServices = map (certName: "acme-order-renew-${certName}.service") vhostCertNames;
       in
       mkIf (vhostCertNames != [ ]) {
-        wantedBy = sslServices ++ [ "multi-user.target" ];
         # Before the finished targets, after the renew services.
         # This service might be needed for HTTP-01 challenges, but we only want to confirm
         # certs are updated _after_ config has been reloaded.
         after = sslServices;
         restartTriggers = [ cfg.configFile ];
+
+        serviceConfig = {
+          ExecCondition = "/run/current-system/systemd/bin/systemctl -q is-active httpd.service";
+          ExecStart = "/run/current-system/systemd/bin/systemctl reload httpd.service";
+          ExecStartPre = "${pkg}/bin/httpd -f /etc/httpd/httpd.conf -t";
+          TimeoutSec = 60;
+          Type = "oneshot";
+        };
+
         # Block reloading if not all certs exist yet.
         # Happens when config changes add new vhosts/certs.
         unitConfig.ConditionPathExists = map (
           certName: certs.${certName}.directory + "/fullchain.pem"
         ) vhostCertNames;
-        serviceConfig = {
-          Type = "oneshot";
-          TimeoutSec = 60;
-          ExecCondition = "/run/current-system/systemd/bin/systemctl -q is-active httpd.service";
-          ExecStartPre = "${pkg}/bin/httpd -f /etc/httpd/httpd.conf -t";
-          ExecStart = "/run/current-system/systemd/bin/systemctl reload httpd.service";
-        };
+
+        wantedBy = sslServices ++ [ "multi-user.target" ];
       };
+
+    systemd.tmpfiles.rules =
+      let
+        svc = config.systemd.services.httpd.serviceConfig;
+      in
+      [
+        "d '${cfg.logDir}' 0700 ${svc.User} ${svc.Group}"
+        "Z '${cfg.logDir}' - ${svc.User} ${svc.Group}"
+      ];
+
+    users.groups = optionalAttrs (cfg.group == "wwwrun") {
+      wwwrun.gid = config.ids.gids.wwwrun;
+    };
+
+    users.users = optionalAttrs (cfg.user == "wwwrun") {
+      wwwrun = {
+        description = "Apache httpd user";
+        group = cfg.group;
+        uid = config.ids.uids.wwwrun;
+      };
+    };
+
+    warnings = mapAttrsToList (name: hostOpts: ''
+      Using config.services.httpd.virtualHosts."${name}".servedFiles is deprecated and will become unsupported in a future release. Your configuration will continue to work as is but please migrate your configuration to config.services.httpd.virtualHosts."${name}".locations before the 20.09 release of NixOS.
+    '') (filterAttrs (name: hostOpts: hostOpts.servedFiles != [ ]) cfg.virtualHosts);
 
   };
 }

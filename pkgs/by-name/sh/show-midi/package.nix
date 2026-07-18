@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   alsa-lib,
+  copyDesktopItems,
   freetype,
   libx11,
-  libxrandr,
-  libxinerama,
-  libxext,
   libxcursor,
+  libxext,
+  libxinerama,
+  libxrandr,
   makeDesktopItem,
-  copyDesktopItems,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,6 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     copyDesktopItems
   ];
+
   buildInputs = [
     alsa-lib
     freetype
@@ -39,8 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxext
     libxcursor
   ];
-
-  enableParallelBuilding = true;
 
   makeFlags = [
     "-C Builds/LinuxMakefile"
@@ -52,6 +51,16 @@ stdenv.mkDerivation (finalAttrs: {
     "Standalone"
     "VST3"
     "VST3_MANIFEST_HELPER"
+  ];
+
+  # JUCE dlopens these, make sure they are in rpath
+  # Otherwise, segfault will happen
+  env.NIX_LDFLAGS = toString [
+    "-lX11"
+    "-lXext"
+    "-lXcursor"
+    "-lXinerama"
+    "-lXrandr"
   ];
 
   installPhase = ''
@@ -72,32 +81,24 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "ShowMIDI";
-      exec = finalAttrs.meta.mainProgram;
-      comment = finalAttrs.meta.description;
-      type = "Application";
-      icon = "show-midi";
-      desktopName = "ShowMIDI";
       categories = [ "Audio" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "ShowMIDI";
+      exec = finalAttrs.meta.mainProgram;
+      icon = "show-midi";
+      name = "ShowMIDI";
+      type = "Application";
     })
   ];
 
-  # JUCE dlopens these, make sure they are in rpath
-  # Otherwise, segfault will happen
-  env.NIX_LDFLAGS = toString [
-    "-lX11"
-    "-lXext"
-    "-lXcursor"
-    "-lXinerama"
-    "-lXrandr"
-  ];
+  enableParallelBuilding = true;
 
   meta = {
     description = "Multi-platform GUI application to effortlessly visualize MIDI activity";
     homepage = "https://github.com/gbevin/ShowMIDI";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ minijackson ];
-    mainProgram = "ShowMIDI";
     platforms = lib.platforms.linux;
+    mainProgram = "ShowMIDI";
   };
 })

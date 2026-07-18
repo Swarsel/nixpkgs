@@ -1,17 +1,14 @@
 {
   lib,
   fetchFromGitHub,
-  buildDunePackage,
   alcotest,
+  buildDunePackage,
   qcheck,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "dates_calc";
   version = "0.0.6";
-
-  minimalOCamlVersion = "4.11";
-  duneVersion = "3";
 
   src = fetchFromGitHub {
     owner = "catalalang";
@@ -21,15 +18,19 @@ buildDunePackage (finalAttrs: {
   };
 
   doCheck = true;
+
   checkInputs = [
     alcotest
     qcheck
   ];
 
+  duneVersion = "3";
+  minimalOCamlVersion = "4.11";
+
   meta = {
     description = "Date calculation library";
+    homepage = "https://github.com/catalalang/dates-calc";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.niols ];
-    homepage = "https://github.com/catalalang/dates-calc";
   };
 })

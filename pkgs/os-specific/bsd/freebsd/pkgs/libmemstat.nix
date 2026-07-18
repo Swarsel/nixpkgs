@@ -1,22 +1,18 @@
 {
-  mkDerivation,
+  csu,
   include,
   libcMinimal,
   libgcc,
   libkvm,
-  csu,
+  mkDerivation,
 }:
 
 mkDerivation {
-  path = "lib/libmemstat";
-
   outputs = [
     "out"
     "man"
     "debug"
   ];
-
-  noLibc = true;
 
   buildInputs = [
     include
@@ -28,4 +24,7 @@ mkDerivation {
   preBuild = ''
     export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE -B${csu}/lib"
   '';
+
+  noLibc = true;
+  path = "lib/libmemstat";
 }

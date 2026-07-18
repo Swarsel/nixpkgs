@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
   aiohttp,
+  buildPythonPackage,
+  hatchling,
 }:
 
 buildPythonPackage rec {
   pname = "pysuezv2";
   version = "2.0.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jb101010-2";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-nPRHpT5j/AAxhCJen4mFzoyUWi/+0hIWK2dnpfhP/Gk=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ aiohttp ];
-
   # Module has no tests
   doCheck = false;
-
+  build-system = [ hatchling ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "pysuez" ];
 
   meta = {

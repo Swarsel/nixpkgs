@@ -1,41 +1,36 @@
 {
   # eval time deps
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  # buildtime
-  hatchling,
-
+  # optional-dependencies
+  babel,
+  buildPythonPackage,
   # runtime deps
   click,
   ghp-import,
+  # buildtime
+  hatchling,
   jinja2,
   markdown,
   markupsafe,
   mergedeep,
   mkdocs-get-deps,
+  # testing deps
+  mock,
   packaging,
   pathspec,
   platformdirs,
+  pythonAtLeast,
   pyyaml,
   pyyaml-env-tag,
-  watchdog,
-
-  # optional-dependencies
-  babel,
   setuptools,
-
-  # testing deps
-  mock,
   unittestCheckHook,
+  watchdog,
 }:
 
 buildPythonPackage rec {
   pname = "mkdocs";
   version = "1.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mkdocs";
@@ -48,6 +43,12 @@ buildPythonPackage rec {
     # https://github.com/mkdocs/mkdocs/pull/4065
     ./click-8.3.0-compat.patch
   ];
+
+  nativeCheckInputs = [
+    unittestCheckHook
+    mock
+  ]
+  ++ optional-dependencies.i18n;
 
   build-system = [
     hatchling
@@ -76,11 +77,8 @@ buildPythonPackage rec {
     i18n = [ babel ];
   };
 
-  nativeCheckInputs = [
-    unittestCheckHook
-    mock
-  ]
-  ++ optional-dependencies.i18n;
+  pyproject = true;
+  pythonImportsCheck = [ "mkdocs" ];
 
   unittestFlagsArray = [
     "-v"
@@ -89,13 +87,9 @@ buildPythonPackage rec {
     "mkdocs"
   ];
 
-  pythonImportsCheck = [ "mkdocs" ];
-
   meta = {
-    changelog = "https://github.com/mkdocs/mkdocs/releases/tag/${version}";
     description = "Project documentation with Markdown / static website generator";
-    mainProgram = "mkdocs";
-    downloadPage = "https://github.com/mkdocs/mkdocs";
+
     longDescription = ''
       MkDocs is a fast, simple and downright gorgeous static site generator that's
       geared towards building project documentation. Documentation source files
@@ -103,9 +97,13 @@ buildPythonPackage rec {
 
       MkDocs can also be used to generate general-purpose websites.
     '';
+
     homepage = "http://mkdocs.org/";
+    changelog = "https://github.com/mkdocs/mkdocs/releases/tag/${version}";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ rkoe ];
+    platforms = lib.platforms.unix;
+    mainProgram = "mkdocs";
+    downloadPage = "https://github.com/mkdocs/mkdocs";
   };
 }

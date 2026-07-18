@@ -1,23 +1,23 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  openssl,
   fontconfig,
-  nasm,
+  gtk3,
+  libGL,
   libx11,
   libxcursor,
-  libxrandr,
   libxi,
-  libGL,
   libxkbcommon,
-  wayland,
-  stdenv,
-  gtk3,
+  libxrandr,
+  nasm,
+  openssl,
   perl,
+  pkg-config,
+  rustPlatform,
   shaderc,
+  wayland,
   wrapGAppsHook3,
 }:
 
@@ -32,9 +32,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-YTrUucO1Fq2TgnV/HHkx2fcHvBupeoMpiBSwqIvyHaQ=";
   };
 
-  cargoHash = "sha256-Bn2HxmFiqOeb3oUnUL/K0SahcFWRlY9RrbGU4orQz+Y=";
-
-  env.SHADERC_LIB_DIR = "${lib.getLib shaderc}/lib";
+  # The below patch is needed to fix this build, until the upstream dependency (libavif-rs) fixes the problem.
+  # <https://github.com/njaard/libavif-rs/issues/122>
+  postPatch = ''
+    patch -p1 -d "$cargoDepsCopy"/*/libaom-sys-0.17.2+libaom.3.11.0 -i ${./libaom-sys-0.17.2+libaom.3.11.0-cmake-nasm-fix.patch}
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -60,18 +62,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     wayland
   ];
 
+  cargoHash = "sha256-Bn2HxmFiqOeb3oUnUL/K0SahcFWRlY9RrbGU4orQz+Y=";
+  env.SHADERC_LIB_DIR = "${lib.getLib shaderc}/lib";
+
   checkFlags = [
     "--skip=bench"
     "--skip=tests::net" # requires network access
     "--skip=tests::flathub"
     "--skip=thumbnails::test_thumbs" # broken as of v0.9.2
   ];
-
-  # The below patch is needed to fix this build, until the upstream dependency (libavif-rs) fixes the problem.
-  # <https://github.com/njaard/libavif-rs/issues/122>
-  postPatch = ''
-    patch -p1 -d "$cargoDepsCopy"/*/libaom-sys-0.17.2+libaom.3.11.0 -i ${./libaom-sys-0.17.2+libaom.3.11.0-cmake-nasm-fix.patch}
-  '';
 
   postInstall = ''
     install -Dm444 $src/res/icons/icon.png $out/share/icons/hicolor/128x128/apps/oculante.png
@@ -89,13 +88,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Minimalistic crossplatform image viewer written in Rust";
     homepage = "https://github.com/woelper/oculante";
     changelog = "https://github.com/woelper/oculante/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "oculante";
+
     maintainers = [
     ];
+
+    mainProgram = "oculante";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

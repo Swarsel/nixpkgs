@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
-  requests,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
+  requests,
 }:
 
 buildPythonPackage rec {
   pname = "kiss-headers";
   version = "2.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Ousret";
@@ -21,7 +20,6 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ hatchling ];
-
   propagatedBuildInputs = [ requests ];
 
   nativeCheckInputs = [
@@ -39,6 +37,7 @@ buildPythonPackage rec {
     "tests/test_with_http_request.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "kiss_headers" ];
 
   meta = {

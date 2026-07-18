@@ -1,19 +1,17 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  runtimeShell,
-  installShellFiles,
   bc,
+  buildGoModule,
+  installShellFiles,
   ncurses,
+  runtimeShell,
   versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "fzf";
   version = "0.74.0";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "junegunn";
@@ -22,23 +20,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-fsD/usMUfnjxpn5R/Bv4xuP32excEDgtZDEvikjDCY8=";
   };
 
-  vendorHash = "sha256-MLuoKPEAqrpCbUphYOCpHdo8MdW5kvueeDU/3loK33Q=";
-
-  env.CGO_ENABLED = 0;
-
   outputs = [
     "out"
     "man"
-  ];
-
-  nativeBuildInputs = [ installShellFiles ];
-
-  buildInputs = [ ncurses ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version} -X main.revision=${finalAttrs.src.rev}"
   ];
 
   # The vim plugin expects a relative path to the binary; patch it to abspath.
@@ -54,6 +38,11 @@ buildGoModule (finalAttrs: {
     substituteInPlace bin/fzf-tmux \
       --replace-fail "bc" "${lib.getExe bc}"
   '';
+
+  nativeBuildInputs = [ installShellFiles ];
+  buildInputs = [ ncurses ];
+  vendorHash = "sha256-MLuoKPEAqrpCbUphYOCpHdo8MdW5kvueeDU/3loK33Q=";
+  env.CGO_ENABLED = 0;
 
   postInstall = ''
     install bin/fzf-tmux $out/bin
@@ -76,19 +65,28 @@ buildGoModule (finalAttrs: {
     chmod +x $out/bin/fzf-share
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version} -X main.revision=${finalAttrs.src.rev}"
+  ];
 
   meta = {
-    changelog = "https://github.com/junegunn/fzf/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     description = "Command-line fuzzy finder written in Go";
     homepage = "https://github.com/junegunn/fzf";
+    changelog = "https://github.com/junegunn/fzf/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       ma27
       zowoq
     ];
-    mainProgram = "fzf";
+
     platforms = lib.platforms.unix;
+    mainProgram = "fzf";
   };
 })

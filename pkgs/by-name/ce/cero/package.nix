@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,14 +16,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-VwzjkZLKovmPjvEmANMgZTtkwiM+dyjfTqftvK+muPM=";
+  # Tests are comparing output
+  doCheck = false;
 
   ldflags = [
     "-s"
     "-w"
   ];
-
-  # Tests are comparing output
-  doCheck = false;
 
   meta = {
     description = "Scrape domain names from SSL certificates of arbitrary hosts";

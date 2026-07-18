@@ -7,30 +7,29 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  xorgproto,
   libx11,
   libxau,
   libxext,
-  writeScript,
+  pkg-config,
   testers,
+  writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libxp";
   version = "1.0.4";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchurl {
     url = "mirror://xorg/individual/lib/libXp-${finalAttrs.version}.tar.xz";
     hash = "sha256-HxnjuOgqNKj9mImn2a8KvoWIywP7V8N8VpY0zzud8aQ=";
   };
 
-  strictDeps = true;
+  outputs = [
+    "out"
+    "dev"
+  ];
 
+  strictDeps = true;
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -43,6 +42,8 @@ stdenv.mkDerivation (finalAttrs: {
   propagatedBuildInputs = [ xorgproto ];
 
   passthru = {
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = writeScript "update-${finalAttrs.pname}" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p common-updater-scripts
@@ -51,19 +52,20 @@ stdenv.mkDerivation (finalAttrs: {
         | sort -V | tail -n1)"
       update-source-version ${finalAttrs.pname} "$version"
     '';
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
     description = "X Print Client Library";
+
     longDescription = ''
       This library provides support for X11 clients to print via the X Print Extension, as
       previously implemented in the Xprt server.
     '';
+
     homepage = "https://gitlab.freedesktop.org/xorg/lib/libxp";
     license = lib.licenses.x11;
     maintainers = [ ];
-    pkgConfigModules = [ "xp" ];
     platforms = lib.platforms.unix;
+    pkgConfigModules = [ "xp" ];
   };
 })

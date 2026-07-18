@@ -1,21 +1,20 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
+  gobject-introspection,
+  keybinder3,
   meson,
   ninja,
   pkg-config,
-  wrapGAppsHook3,
-  gobject-introspection,
-  keybinder3,
-  xdotool,
+  python3Packages,
   wl-clipboard,
+  wrapGAppsHook3,
+  xdotool,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "emote";
   version = "4.1.0";
-  pyproject = false; # Built with meson
 
   src = fetchFromGitHub {
     owner = "tom-james-watson";
@@ -45,19 +44,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     keybinder3
   ];
 
-  dependencies = with python3Packages; [
-    dbus-python.out # don't propagate dev output
-    manimpango
-    pygobject3.out # don't propagate dev output
-    setproctitle
-  ];
-
   postInstall = ''
     rm $out/share/emote/emote/{emote.in,meson.build}
     rm $out/share/emote/static/{meson.build,com.tomjwatson.Emote.desktop,prepare-launch}
   '';
 
-  dontWrapGApps = true;
   preFixup = ''
     makeWrapperArgs+=(
       "''${gappsWrapperArgs[@]}"
@@ -70,16 +61,28 @@ python3Packages.buildPythonApplication (finalAttrs: {
     )
   '';
 
+  dependencies = with python3Packages; [
+    dbus-python.out # don't propagate dev output
+    manimpango
+    pygobject3.out # don't propagate dev output
+    setproctitle
+  ];
+
+  dontWrapGApps = true;
+  pyproject = false; # Built with meson
+
   meta = {
     description = "Modern emoji picker for Linux";
-    mainProgram = "emote";
     homepage = "https://github.com/tom-james-watson/emote";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       emilytrau
       SuperSandro2000
       aleksana
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "emote";
   };
 })

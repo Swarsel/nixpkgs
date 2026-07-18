@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  unstableGitUpdater,
   alsa-lib,
   cmake,
   libjack2,
   libvgm,
   pkg-config,
+  unstableGitUpdater,
   zlib,
 }:
 
@@ -19,8 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "vampirefrog";
     repo = "fmtoy";
     rev = "6858fc8ad3171df2c9b90cb1e62719af9fc4f7c2";
-    fetchSubmodules = true;
     hash = "sha256-OiPKtFPlTxdMNSTLJXcXZkqjzUiGQKXSF2udHePBpho=";
+    fetchSubmodules = true;
   };
 
   patches = [
@@ -50,9 +50,6 @@ stdenv.mkDerivation (finalAttrs: {
     alsa-lib
     libjack2
     (libvgm.override {
-      # Only enable free cores that we actually use
-      enableEmulation = true;
-      withAllEmulators = false;
       emulators = [
         "YM2151_ALL"
         "YM2203_ALL"
@@ -65,15 +62,14 @@ stdenv.mkDerivation (finalAttrs: {
 
       # Don't need these
       enableAudio = false;
+      # Only enable free cores that we actually use
+      enableEmulation = true;
       enableLibplayer = false;
       enableTools = false;
+      withAllEmulators = false;
     })
     zlib
   ];
-
-  dontUseCmakeConfigure = true;
-
-  enableParallelBuilding = true;
 
   buildFlags = [
     "CC=${stdenv.cc.targetPrefix}cc"
@@ -88,6 +84,9 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontUseCmakeConfigure = true;
+  enableParallelBuilding = true;
+
   passthru = {
     updateScript = unstableGitUpdater { };
   };
@@ -96,8 +95,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "FM synthesiser based on emulated Yamaha YM chips (OPL, OPM and OPN series)";
     homepage = "https://github.com/vampirefrog/fmtoy";
     license = lib.licenses.gpl3Only;
-    mainProgram = "fmtoy_jack";
     maintainers = with lib.maintainers; [ OPNA2608 ];
     platforms = lib.platforms.linux;
+    mainProgram = "fmtoy_jack";
   };
 })

@@ -3,8 +3,8 @@
   azure-core,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   isodate,
+  setuptools,
   typing-extensions,
   yarl,
 }:
@@ -12,14 +12,15 @@
 buildPythonPackage rec {
   pname = "azure-data-tables";
   version = "12.7.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_data_tables";
     inherit version;
     hash = "sha256-sU/JSjIjooNf9WiOF9jhB7J8fNfEEUE48qyBNzcjcF0=";
+    pname = "azure_data_tables";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,9 +30,7 @@ buildPythonPackage rec {
     yarl
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.data.tables" ];
 
   meta = {

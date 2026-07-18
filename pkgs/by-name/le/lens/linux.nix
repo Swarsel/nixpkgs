@@ -1,11 +1,11 @@
 {
-  pname,
-  version,
-  src,
-  meta,
-  updateScript,
   appimageTools,
   makeWrapper,
+  meta,
+  pname,
+  src,
+  updateScript,
+  version,
 }:
 let
   appimageContents = appimageTools.extractType2 {
@@ -22,8 +22,6 @@ appimageTools.wrapType2 {
     meta
     ;
 
-  passthru = { inherit updateScript; };
-
   nativeBuildInputs = [ makeWrapper ];
 
   extraInstallCommands = ''
@@ -37,4 +35,5 @@ appimageTools.wrapType2 {
   '';
 
   extraPkgs = pkgs: [ pkgs.nss_latest ];
+  passthru = { inherit updateScript; };
 }

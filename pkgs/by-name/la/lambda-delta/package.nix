@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  SDL2,
   autoreconfHook,
   pkg-config,
-  SDL2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,12 +24,13 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [ SDL2 ];
+  configureFlags = [ "--without-SDL1" ];
+
   env = lib.optionalAttrs stdenv.cc.isClang {
     NIX_CFLAGS_COMPILE = "-std=c89";
   };
-
-  configureFlags = [ "--without-SDL1" ];
 
   meta = {
     description = "LMI (Lambda Lisp Machine) emulator";

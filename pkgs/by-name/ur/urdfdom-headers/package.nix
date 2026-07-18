@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
   validatePkgConfig,
 }:
 
@@ -21,8 +21,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fix CMake relative install dir assumptions (https://github.com/ros/urdfdom_headers/pull/66)
     (fetchpatch {
-      url = "https://github.com/ros/urdfdom_headers/commit/fa89f2d4744839827f41579004537c966a097681.patch";
       hash = "sha256-w6PPKCpbR4dGsudVEz+SO9ylXVayLPRAl3VvpMt4DHo=";
+      url = "https://github.com/ros/urdfdom_headers/commit/fa89f2d4744839827f41579004537c966a097681.patch";
     })
   ];
 

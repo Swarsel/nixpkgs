@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,7 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-WsV6IGKO3mwAXtqXHu+CP1dQ/tw1jsuZlfSZx4L2WIM=";
-
   # https://github.com/bgreenwell/doxx/issues/65
   checkFlags = [ "--skip=terminal_image::tests::test_renderer_creation" ];
 
@@ -27,11 +26,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Terminal document viewer for .docx files";
+
     longDescription = ''
       `doxx` is a lightning-fast, terminal-native document viewer for
       Microsoft Word files. Built with Rust for performance and
@@ -39,6 +38,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
       beautiful rendering, smart table support, and powerful export
       capabilities.
     '';
+
     homepage = "https://github.com/bgreenwell/doxx";
     changelog = "https://github.com/bgreenwell/doxx/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;

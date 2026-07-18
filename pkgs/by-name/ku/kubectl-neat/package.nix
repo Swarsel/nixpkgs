@@ -1,8 +1,8 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
   bash,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -26,10 +26,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Clean up Kubernetes yaml and json output to make it readable";
-    mainProgram = "kubectl-neat";
     homepage = "https://github.com/itaysk/kubectl-neat";
     changelog = "https://github.com/itaysk/kubectl-neat/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.koralowiec ];
+    mainProgram = "kubectl-neat";
   };
 })

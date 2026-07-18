@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  php,
   nix-update-script,
+  php,
+  stdenvNoCC,
   installPlugins ? true,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -45,13 +45,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   meta = {
     description = "Database management in a single PHP file (fork of Adminer)";
     homepage = "https://www.adminneo.org/";
+
     license = with lib.licenses; [
       asl20
       gpl2Only
     ];
+
     maintainers = with lib.maintainers; [
       Necoro
     ];
+
     platforms = lib.platforms.all;
   };
 })

@@ -1,8 +1,8 @@
 {
-  cmake,
   lib,
   stdenv,
   fetchFromGitHub,
+  cmake,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,9 +20,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Concise Binary Object Representation (CBOR) Library";
-    mainProgram = "cbordump";
     homepage = "https://github.com/intel/tinycbor";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ tbutter ];
+    mainProgram = "cbordump";
   };
 })

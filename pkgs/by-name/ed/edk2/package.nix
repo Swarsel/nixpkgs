@@ -1,11 +1,11 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
   applyPatches,
-  libuuid,
   bc,
-  lib,
   buildPackages,
+  libuuid,
   nixosTests,
   writeScript,
 }:
@@ -39,17 +39,8 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "edk2";
   version = "202605";
 
-  srcWithVendoring = fetchFromGitHub {
-    owner = "tianocore";
-    repo = "edk2";
-    tag = "edk2-stable${finalAttrs.version}";
-    fetchSubmodules = true;
-    hash = "sha256-sUqLocdX7lxN2pEdn84Cjh8pOzYqIeKqO144XhwKA30=";
-  };
-
   src = applyPatches {
     name = "edk2-${finalAttrs.version}-unvendored-src";
-    src = finalAttrs.srcWithVendoring;
 
     patches = [
       ./fix-cross-compilation-antlr-dlg.patch
@@ -86,16 +77,12 @@ stdenv.mkDerivation (finalAttrs: {
         'DEFINE CLANGPDB_WARNING_OVERRIDES    = ' \
         'DEFINE CLANGPDB_WARNING_OVERRIDES    = -Wno-unneeded-internal-declaration '
     '';
+
+    src = finalAttrs.srcWithVendoring;
   };
 
-  nativeBuildInputs = [ pythonEnv ];
-  depsBuildBuild = [
-    buildPackages.stdenv.cc
-    buildPackages.bash
-  ];
-  depsHostHost = [ libuuid ];
   strictDeps = true;
-
+  nativeBuildInputs = [ pythonEnv ];
   makeFlags = [ "--directory=BaseTools" ];
 
   env = {
@@ -103,14 +90,10 @@ stdenv.mkDerivation (finalAttrs: {
       "-Wno-return-type"
       + lib.optionalString (stdenv.cc.isGNU) " -Wno-error=stringop-truncation"
       + lib.optionalString (stdenv.hostPlatform.isDarwin) " -Wno-error=macro-redefined";
+
     PYTHON_COMMAND = lib.getExe pythonEnv;
   }
   // targetPrefixes;
-
-  hardeningDisable = [
-    "format"
-    "fortify"
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -127,18 +110,82 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  depsBuildBuild = [
+    buildPackages.stdenv.cc
+    buildPackages.bash
+  ];
+
+  depsHostHost = [ libuuid ];
   enableParallelBuilding = true;
 
-  meta = {
-    description = "Intel EFI development kit";
-    homepage = "https://github.com/tianocore/tianocore.github.io/wiki/EDK-II/";
-    changelog = "https://github.com/tianocore/edk2/releases/tag/edk2-stable${finalAttrs.version}";
-    license = lib.licenses.bsd2;
-    platforms = with lib.platforms; aarch64 ++ arm ++ i686 ++ x86_64 ++ loongarch64 ++ riscv64;
-    maintainers = [ lib.maintainers.mjoerg ];
+  hardeningDisable = [
+    "format"
+    "fortify"
+  ];
+
+  srcWithVendoring = fetchFromGitHub {
+    fetchSubmodules = true;
+    hash = "sha256-sUqLocdX7lxN2pEdn84Cjh8pOzYqIeKqO144XhwKA30=";
+    owner = "tianocore";
+    repo = "edk2";
+    tag = "edk2-stable${finalAttrs.version}";
   };
 
   passthru = {
+    mkDerivation =
+      projectDscPath: attrsOrFun:
+      stdenv.mkDerivation (
+        finalAttrsInner:
+        let
+          attrs = lib.toFunction attrsOrFun finalAttrsInner;
+          buildType = attrs.buildType or (if stdenv.hostPlatform.isDarwin then "CLANGPDB" else "GCC");
+        in
+        {
+          inherit (finalAttrs) src;
+          strictDeps = true;
+
+          nativeBuildInputs = [
+            bc
+            pythonEnv
+          ]
+          ++ attrs.nativeBuildInputs or [ ];
+
+          buildPhase = ''
+            runHook preBuild
+            build -a ${targetArch} -b ${attrs.buildConfig or "RELEASE"} -t ${buildType} -p ${projectDscPath} -n $NIX_BUILD_CORES $buildFlags
+            runHook postBuild
+          '';
+
+          installPhase = ''
+            runHook preInstall
+            mv -v Build/*/* $out
+            runHook postInstall
+          '';
+
+          configurePhase = ''
+            runHook preConfigure
+            export WORKSPACE="$PWD"
+            . ${buildPackages.edk2}/edksetup.sh BaseTools
+            runHook postConfigure
+          '';
+
+          depsBuildBuild = [ buildPackages.stdenv.cc ] ++ attrs.depsBuildBuild or [ ];
+
+          prePatch = ''
+            rm -rf BaseTools
+            ln -sv ${buildPackages.edk2}/BaseTools BaseTools
+          '';
+        }
+        // removeAttrs attrs [
+          "nativeBuildInputs"
+          "depsBuildBuild"
+          "env"
+        ]
+        // {
+          env = targetPrefixes // (attrs.env or { });
+        }
+      );
+
     # exercise a channel blocker
     tests = {
       systemdBootExtraEntries = nixosTests.systemd-boot.extraEntries;
@@ -158,58 +205,14 @@ stdenv.mkDerivation (finalAttrs: {
               "$UPDATE_NIX_ATTR_PATH" "$version"
       fi
     '';
+  };
 
-    mkDerivation =
-      projectDscPath: attrsOrFun:
-      stdenv.mkDerivation (
-        finalAttrsInner:
-        let
-          attrs = lib.toFunction attrsOrFun finalAttrsInner;
-          buildType = attrs.buildType or (if stdenv.hostPlatform.isDarwin then "CLANGPDB" else "GCC");
-        in
-        {
-          inherit (finalAttrs) src;
-
-          depsBuildBuild = [ buildPackages.stdenv.cc ] ++ attrs.depsBuildBuild or [ ];
-          nativeBuildInputs = [
-            bc
-            pythonEnv
-          ]
-          ++ attrs.nativeBuildInputs or [ ];
-          strictDeps = true;
-
-          prePatch = ''
-            rm -rf BaseTools
-            ln -sv ${buildPackages.edk2}/BaseTools BaseTools
-          '';
-
-          configurePhase = ''
-            runHook preConfigure
-            export WORKSPACE="$PWD"
-            . ${buildPackages.edk2}/edksetup.sh BaseTools
-            runHook postConfigure
-          '';
-
-          buildPhase = ''
-            runHook preBuild
-            build -a ${targetArch} -b ${attrs.buildConfig or "RELEASE"} -t ${buildType} -p ${projectDscPath} -n $NIX_BUILD_CORES $buildFlags
-            runHook postBuild
-          '';
-
-          installPhase = ''
-            runHook preInstall
-            mv -v Build/*/* $out
-            runHook postInstall
-          '';
-        }
-        // removeAttrs attrs [
-          "nativeBuildInputs"
-          "depsBuildBuild"
-          "env"
-        ]
-        // {
-          env = targetPrefixes // (attrs.env or { });
-        }
-      );
+  meta = {
+    description = "Intel EFI development kit";
+    homepage = "https://github.com/tianocore/tianocore.github.io/wiki/EDK-II/";
+    changelog = "https://github.com/tianocore/edk2/releases/tag/edk2-stable${finalAttrs.version}";
+    license = lib.licenses.bsd2;
+    maintainers = [ lib.maintainers.mjoerg ];
+    platforms = with lib.platforms; aarch64 ++ arm ++ i686 ++ x86_64 ++ loongarch64 ++ riscv64;
   };
 })

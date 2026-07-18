@@ -15,7 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ updateAutotoolsGnuConfigScriptsHook ];
 
   preConfigure = ''
@@ -52,8 +51,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Create a shadow directory of symbolic links to another directory tree";
     homepage = "https://gitlab.freedesktop.org/xorg/util/lndir";
     license = lib.licenses.mitOpenGroup;
-    mainProgram = "lndir";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "lndir";
   };
 })

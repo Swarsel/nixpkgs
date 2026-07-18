@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  setuptools-scm,
+  buildPythonPackage,
   numpy,
   scipy,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "truncnorm";
   version = "0.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jluttine";
@@ -19,6 +18,9 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-F+RBXN/pjxmHf26/Vxptz1NbF58eqU018l3zmepSoJk=";
   };
+
+  # No checks
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -30,14 +32,12 @@ buildPythonPackage rec {
     scipy
   ];
 
-  # No checks
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "truncnorm" ];
 
   meta = {
-    homepage = "https://pypi.org/project/truncnorm";
     description = "Moments for doubly truncated multivariate normal distributions";
+    homepage = "https://pypi.org/project/truncnorm";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jluttine ];
   };

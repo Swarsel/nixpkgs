@@ -1,16 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  flit-core,
-
   # dependencies
   arviz-base,
   arviz-plots,
   arviz-stats,
-
+  buildPythonPackage,
+  # build-system
+  flit-core,
   # tests
   pytestCheckHook,
 }:
@@ -18,8 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "arviz";
   version = "1.2.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "arviz-devs";
@@ -27,6 +22,12 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-pbYc9ofBTAZ9e7IqAgHXT0EXhbQzovSdc6X3SysAKhw=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     flit-core
@@ -39,10 +40,7 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ arviz-stats.optional-dependencies.xarray;
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "arviz" ];
 
   meta = {

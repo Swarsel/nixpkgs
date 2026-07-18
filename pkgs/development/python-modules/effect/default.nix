@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "effect";
   version = "1.1.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -29,9 +28,8 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
   checkInputs = [ testtools ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "effect" ];
 
   meta = {

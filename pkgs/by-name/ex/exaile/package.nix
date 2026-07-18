@@ -1,36 +1,36 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  gobject-introspection,
-  makeWrapper,
-  wrapGAppsHook3,
-  gtk3,
-  gst_all_1,
-  python3,
-  gettext,
   adwaita-icon-theme,
+  gettext,
+  gobject-introspection,
+  gst_all_1,
+  gtk3,
   help2man,
   keybinder3,
   libnotify,
   librsvg,
+  makeWrapper,
+  python3,
   streamripper,
   udisks,
   webkitgtk_4_1,
-  iconTheme ? adwaita-icon-theme,
+  wrapGAppsHook3,
+  cdMetadataSupport ? false,
   deviceDetectionSupport ? true,
   documentationSupport ? true,
-  notificationSupport ? true,
-  scalableIconSupport ? true,
-  translationSupport ? true,
+  iconTheme ? adwaita-icon-theme,
   ipythonSupport ? false,
-  cdMetadataSupport ? false,
   lastfmSupport ? false,
   lyricsManiaSupport ? false,
   multimediaKeySupport ? false,
   musicBrainzSupport ? false,
+  notificationSupport ? true,
   podcastSupport ? false,
+  scalableIconSupport ? true,
   streamripperSupport ? false,
+  translationSupport ? true,
   wikipediaSupport ? false,
 }:
 
@@ -89,15 +89,16 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional podcastSupport python3.pkgs.feedparser
   ++ lib.optional wikipediaSupport webkitgtk_4_1;
 
-  nativeCheckInputs = with python3.pkgs; [
-    pytest
-  ];
-
   makeFlags = [
     "PREFIX=${placeholder "out"}"
   ];
 
   doCheck = true;
+
+  nativeCheckInputs = with python3.pkgs; [
+    pytest
+  ];
+
   preCheck = ''
     substituteInPlace Makefile --replace "PYTHONPATH=$(shell pwd)" "PYTHONPATH=$PYTHONPATH:$(shell pwd)"
     export PYTEST="py.test"
@@ -113,11 +114,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://www.exaile.org/";
     description = "Music player with a simple interface and powerful music management capabilities";
-    mainProgram = "exaile";
+    homepage = "https://www.exaile.org/";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ ryneeverett ];
     platforms = lib.platforms.all;
+    mainProgram = "exaile";
   };
 })

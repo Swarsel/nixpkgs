@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -22,11 +22,11 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/thameera/vimv";
     description = "Batch-rename files using Vim";
+    homepage = "https://github.com/thameera/vimv";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ kmein ];
+    platforms = lib.platforms.all;
     mainProgram = "vimv";
   };
 }

@@ -1,17 +1,20 @@
 {
   lib,
+  callPackage,
   makeSetupHook,
   which,
-  callPackage,
 }:
 
 makeSetupHook {
   name = "patch-ppd-files";
+
   substitutions = {
-    which = lib.getBin which;
     awkscript = ./patch-ppd-lines.awk;
+    which = lib.getBin which;
   };
+
   passthru.tests.test = callPackage ./test.nix { };
+
   meta = {
     description = "Setup hook to patch executable paths in ppd files";
     license = lib.licenses.mit;

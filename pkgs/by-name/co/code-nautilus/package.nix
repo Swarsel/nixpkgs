@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   nautilus-python,
   python3,
@@ -31,8 +31,8 @@ stdenv.mkDerivation {
     description = "VSCode extension for Nautilus: 'Open in Code'";
     homepage = "https://github.com/harry-cpp/code-nautilus";
     license = lib.licenses.unlicense;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ berrij ];
+    platforms = lib.platforms.linux;
   };
 
 }

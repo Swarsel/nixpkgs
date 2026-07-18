@@ -1,14 +1,13 @@
 {
   stdenv,
   fetchFromGitHub,
-  cmake,
   bpp-core,
+  cmake,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "bpp-seq";
-
   inherit (bpp-core) version postPatch;
+  pname = "bpp-seq";
 
   src = fetchFromGitHub {
     owner = "BioPP";
@@ -19,16 +18,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ cmake ];
   buildInputs = [ bpp-core ];
+  # prevents cmake from exporting incorrect INTERFACE_INCLUDE_DIRECTORIES
+  # of form /nix/store/.../nix/store/.../include,
+  # probably due to relative vs absolute path issue
+  doCheck = !stdenv.hostPlatform.isDarwin;
 
   postFixup = ''
     substituteInPlace $out/lib/cmake/bpp-seq/bpp-seq-targets.cmake  \
       --replace 'set(_IMPORT_PREFIX' '#set(_IMPORT_PREFIX'
   '';
-  # prevents cmake from exporting incorrect INTERFACE_INCLUDE_DIRECTORIES
-  # of form /nix/store/.../nix/store/.../include,
-  # probably due to relative vs absolute path issue
-
-  doCheck = !stdenv.hostPlatform.isDarwin;
 
   meta = bpp-core.meta // {
     homepage = "https://github.com/BioPP/bpp-seq";

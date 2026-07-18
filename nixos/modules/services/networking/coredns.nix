@@ -10,48 +10,52 @@ let
 in
 {
   options.services.coredns = {
-    enable = lib.mkEnableOption "Coredns dns server";
-
     config = lib.mkOption {
       default = "";
+
+      description = ''
+        Verbatim Corefile to use.
+        See <https://coredns.io/manual/toc/#configuration> for details.
+      '';
+
       example = ''
         . {
           whoami
         }
       '';
+
       type = lib.types.lines;
-      description = ''
-        Verbatim Corefile to use.
-        See <https://coredns.io/manual/toc/#configuration> for details.
-      '';
     };
 
+    enable = lib.mkEnableOption "Coredns dns server";
     package = lib.mkPackageOption pkgs "coredns" { };
 
     extraArgs = lib.mkOption {
       default = [ ];
+      description = "Extra arguments to pass to coredns.";
       example = [ "-dns.port=53" ];
       type = lib.types.listOf lib.types.str;
-      description = "Extra arguments to pass to coredns.";
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.coredns = {
-      description = "Coredns dns server";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Coredns dns server";
+
       serviceConfig = {
-        LimitNPROC = 512;
-        LimitNOFILE = 1048576;
-        CapabilityBoundingSet = "cap_net_bind_service";
         AmbientCapabilities = "cap_net_bind_service";
-        NoNewPrivileges = true;
+        CapabilityBoundingSet = "cap_net_bind_service";
         DynamicUser = true;
-        ExecStart = "${lib.getBin cfg.package}/bin/coredns -conf=${configFile} ${lib.escapeShellArgs cfg.extraArgs}";
         ExecReload = "${pkgs.coreutils}/bin/kill -SIGUSR1 $MAINPID";
+        ExecStart = "${lib.getBin cfg.package}/bin/coredns -conf=${configFile} ${lib.escapeShellArgs cfg.extraArgs}";
+        LimitNOFILE = 1048576;
+        LimitNPROC = 512;
+        NoNewPrivileges = true;
         Restart = "on-failure";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

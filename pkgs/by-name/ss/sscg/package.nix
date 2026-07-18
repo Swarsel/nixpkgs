@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gitUpdater,
-  versionCheckHook,
-  meson,
-  pkg-config,
-  openssl,
   ding-libs,
-  talloc,
-  popt,
+  gitUpdater,
   help2man,
+  meson,
   ninja,
+  openssl,
+  pkg-config,
+  popt,
+  talloc,
+  versionCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,9 +39,8 @@ stdenv.mkDerivation (finalAttrs: {
     help2man
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
   passthru.updateScript = gitUpdater { rev-prefix = "sscg-"; };
 
   meta = {

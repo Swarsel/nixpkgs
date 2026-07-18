@@ -1,20 +1,20 @@
 {
-  stdenv,
-  ghc,
-  pkg-config,
-  glibcLocales,
-  cacert,
-  stack,
-  makeSetupHook,
   lib,
+  stdenv,
+  cacert,
+  ghc,
+  glibcLocales,
+  makeSetupHook,
+  pkg-config,
+  stack,
 }@depArgs:
 
 {
-  buildInputs ? [ ],
-  nativeBuildInputs ? [ ],
-  extraArgs ? [ ],
   LD_LIBRARY_PATH ? [ ],
+  buildInputs ? [ ],
+  extraArgs ? [ ],
   ghc ? depArgs.ghc,
+  nativeBuildInputs ? [ ],
   stack ? depArgs.stack,
   ...
 }@args:
@@ -27,7 +27,6 @@ let
   # STACK_IN_NIX_EXTRA_ARGS.
   stackHook = makeSetupHook {
     name = "stack-hook";
-
     meta.license = lib.licenses.mit;
   } ./stack-hook.sh;
 
@@ -36,12 +35,6 @@ stdenv.mkDerivation (
   args
   // {
 
-    # Doesn't work in the sandbox. Pass `--option sandbox relaxed` or
-    # `--option sandbox false` to be able to build this
-    __noChroot = true;
-
-    buildInputs = buildInputs ++ lib.optional (stdenv.hostPlatform.libc == "glibc") glibcLocales;
-
     nativeBuildInputs = nativeBuildInputs ++ [
       ghc
       pkg-config
@@ -49,23 +42,20 @@ stdenv.mkDerivation (
       stackHook
     ];
 
+    buildInputs = buildInputs ++ lib.optional (stdenv.hostPlatform.libc == "glibc") glibcLocales;
+
     env = {
-      STACK_PLATFORM_VARIANT = "nix";
-      STACK_IN_NIX_SHELL = 1;
-      STACK_IN_NIX_EXTRA_ARGS = extraArgs;
-
-      # XXX: workaround for https://ghc.haskell.org/trac/ghc/ticket/11042.
-      LD_LIBRARY_PATH = lib.makeLibraryPath (LD_LIBRARY_PATH ++ buildInputs);
       # ^^^ Internally uses `getOutput "lib"` (equiv. to getLib)
-
       # Non-NixOS git needs cert
       GIT_SSL_CAINFO = "${cacert}/etc/ssl/certs/ca-bundle.crt";
-
       # Fixes https://github.com/commercialhaskell/stack/issues/2358 krank:ignore-line
       LANG = "en_US.UTF-8";
+      # XXX: workaround for https://ghc.haskell.org/trac/ghc/ticket/11042.
+      LD_LIBRARY_PATH = lib.makeLibraryPath (LD_LIBRARY_PATH ++ buildInputs);
+      STACK_IN_NIX_EXTRA_ARGS = extraArgs;
+      STACK_IN_NIX_SHELL = 1;
+      STACK_PLATFORM_VARIANT = "nix";
     };
-
-    preferLocalBuild = true;
 
     preConfigure = ''
       export STACK_ROOT=$NIX_BUILD_TOP/.stack
@@ -80,6 +70,8 @@ stdenv.mkDerivation (
         runHook postBuild
       '';
 
+    doCheck = args.doCheck or true;
+
     checkPhase =
       args.checkPhase or ''
         runHook preCheck
@@ -89,8 +81,6 @@ stdenv.mkDerivation (
         runHook postCheck
       '';
 
-    doCheck = args.doCheck or true;
-
     installPhase =
       args.installPhase or ''
         runHook preInstall
@@ -99,5 +89,10 @@ stdenv.mkDerivation (
 
         runHook postInstall
       '';
+
+    # Doesn't work in the sandbox. Pass `--option sandbox relaxed` or
+    # `--option sandbox false` to be able to build this
+    __noChroot = true;
+    preferLocalBuild = true;
   }
 )

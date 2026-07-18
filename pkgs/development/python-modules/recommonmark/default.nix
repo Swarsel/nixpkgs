@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   commonmark,
   docutils,
-  sphinx,
   isPy3k,
+  pytestCheckHook,
+  sphinx,
 }:
 
 buildPythonPackage rec {
   pname = "recommonmark";
   version = "0.7.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "rtfd";
@@ -21,12 +20,14 @@ buildPythonPackage rec {
     sha256 = "0kwm4smxbgq0c0ybkxfvlgrfb3gq9amdw94141jyykk9mmz38379";
   };
 
-  nativeCheckInputs = [ pytestCheckHook ];
   propagatedBuildInputs = [
     commonmark
     docutils
     sphinx
   ];
+
+  doCheck = !isPy3k; # Not yet compatible with latest Sphinx.
+  nativeCheckInputs = [ pytestCheckHook ];
 
   disabledTests = [
     # https://github.com/readthedocs/recommonmark/issues/164
@@ -34,7 +35,7 @@ buildPythonPackage rec {
     "test_integration"
   ];
 
-  doCheck = !isPy3k; # Not yet compatible with latest Sphinx.
+  format = "setuptools";
   pythonImportsCheck = [ "recommonmark" ];
 
   meta = {

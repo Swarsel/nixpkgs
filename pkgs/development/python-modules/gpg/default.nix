@@ -1,10 +1,10 @@
 {
+  lib,
+  fetchurl,
   autoreconfHook,
   buildPythonPackage,
-  fetchurl,
   gnupg,
   gpgme,
-  lib,
   libgpg-error,
   setuptools,
   swig,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "gpg";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchurl {
     url = "mirror://gnupg/gpgmepy/gpgmepy-${version}.tar.bz2";
@@ -29,8 +28,6 @@ buildPythonPackage rec {
       --replace-fail 'tmp="-unknown"' 'tmp=""'
   '';
 
-  build-system = [ setuptools ];
-
   nativeBuildInputs = [
     autoreconfHook
     gpgme # for gpgme-config
@@ -38,17 +35,15 @@ buildPythonPackage rec {
     swig
   ];
 
-  preBuild = ''
-    # prevent `error: package directory 'gpg' does not exist`
-    mv src gpg
-  '';
-
   buildInputs = [
     gpgme
     libgpg-error
   ];
 
-  pythonImportsCheck = [ "gpg" ];
+  preBuild = ''
+    # prevent `error: package directory 'gpg' does not exist`
+    mv src gpg
+  '';
 
   nativeCheckInputs = [
     gnupg
@@ -62,10 +57,14 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "gpg" ];
+
   meta = {
-    changelog = "https://dev.gnupg.org/source/gpgmepy/browse/master/NEWS;gpgmepy-${version}?as=remarkup";
     description = "Python bindings to the GPGME API of the GnuPG cryptography library";
     homepage = "https://dev.gnupg.org/source/gpgmepy/";
+    changelog = "https://dev.gnupg.org/source/gpgmepy/browse/master/NEWS;gpgmepy-${version}?as=remarkup";
     license = lib.licenses.lgpl21Plus;
     maintainers = [ lib.maintainers.dotlambda ];
   };

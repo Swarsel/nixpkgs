@@ -79,12 +79,12 @@
         # Supplies default values.
         {
           archName,
-          isJetson ? false,
+          minCudaMajorMinorVersion,
+          dontDefaultAfterCudaMajorMinorVersion ? null,
           isArchitectureSpecific ? (lib.hasSuffix "a" cudaCapability),
           isFamilySpecific ? (lib.hasSuffix "f" cudaCapability),
-          minCudaMajorMinorVersion,
+          isJetson ? false,
           maxCudaMajorMinorVersion ? null,
-          dontDefaultAfterCudaMajorMinorVersion ? null,
         }:
         {
           inherit
@@ -100,134 +100,6 @@
         }
       )
       {
-        # Tesla K40
-        "3.5" = {
-          archName = "Kepler";
-          minCudaMajorMinorVersion = "10.0";
-          dontDefaultAfterCudaMajorMinorVersion = "11.0";
-          maxCudaMajorMinorVersion = "11.8";
-        };
-
-        # Tesla K80
-        "3.7" = {
-          archName = "Kepler";
-          minCudaMajorMinorVersion = "10.0";
-          dontDefaultAfterCudaMajorMinorVersion = "11.0";
-          maxCudaMajorMinorVersion = "11.8";
-        };
-
-        # Tesla/Quadro M series
-        "5.0" = {
-          archName = "Maxwell";
-          minCudaMajorMinorVersion = "10.0";
-          maxCudaMajorMinorVersion = "12.9";
-          dontDefaultAfterCudaMajorMinorVersion = "11.0";
-        };
-
-        # Quadro M6000 , GeForce 900, GTX-970, GTX-980, GTX Titan X
-        "5.2" = {
-          archName = "Maxwell";
-          minCudaMajorMinorVersion = "10.0";
-          maxCudaMajorMinorVersion = "12.9";
-          dontDefaultAfterCudaMajorMinorVersion = "11.0";
-        };
-
-        # Quadro GP100, Tesla P100, DGX-1 (Generic Pascal)
-        "6.0" = {
-          archName = "Pascal";
-          minCudaMajorMinorVersion = "10.0";
-          maxCudaMajorMinorVersion = "12.9";
-          # Removed from TensorRT 10.0, which corresponds to CUDA 12.4 release.
-          # https://docs.nvidia.com/deeplearning/tensorrt/archives/tensorrt-1001/support-matrix/index.html
-          dontDefaultAfterCudaMajorMinorVersion = "12.3";
-        };
-
-        # GTX 1080, GTX 1070, GTX 1060, GTX 1050, GTX 1030 (GP108), GT 1010 (GP108) Titan Xp, Tesla
-        # P40, Tesla P4, Discrete GPU on the NVIDIA Drive PX2
-        "6.1" = {
-          archName = "Pascal";
-          minCudaMajorMinorVersion = "10.0";
-          maxCudaMajorMinorVersion = "12.9";
-          # Removed from TensorRT 10.0, which corresponds to CUDA 12.4 release.
-          # https://docs.nvidia.com/deeplearning/tensorrt/archives/tensorrt-1001/support-matrix/index.html
-          dontDefaultAfterCudaMajorMinorVersion = "12.3";
-        };
-
-        # DGX-1 with Volta, Tesla V100, GTX 1180 (GV104), Titan V, Quadro GV100
-        "7.0" = {
-          archName = "Volta";
-          minCudaMajorMinorVersion = "10.0";
-          maxCudaMajorMinorVersion = "12.9";
-          # Removed from TensorRT 10.5, which corresponds to CUDA 12.6 release.
-          # https://docs.nvidia.com/deeplearning/tensorrt/archives/tensorrt-1050/support-matrix/index.html
-          dontDefaultAfterCudaMajorMinorVersion = "12.5";
-        };
-
-        # Jetson AGX Xavier, Drive AGX Pegasus, Xavier NX
-        "7.2" = {
-          archName = "Volta";
-          minCudaMajorMinorVersion = "10.0";
-          # Note: without `cuda_compat`, maxCudaMajorMinorVersion is 11.8
-          # https://docs.nvidia.com/cuda/cuda-for-tegra-appnote/index.html#deployment-considerations-for-cuda-upgrade-package
-          maxCudaMajorMinorVersion = "12.2";
-          isJetson = true;
-        };
-
-        # GTX/RTX Turing – GTX 1660 Ti, RTX 2060, RTX 2070, RTX 2080, Titan RTX, Quadro RTX 4000,
-        # Quadro RTX 5000, Quadro RTX 6000, Quadro RTX 8000, Quadro T1000/T2000, Tesla T4
-        "7.5" = {
-          archName = "Turing";
-          minCudaMajorMinorVersion = "10.0";
-        };
-
-        # NVIDIA A100 (the name “Tesla” has been dropped – GA100), NVIDIA DGX-A100
-        "8.0" = {
-          archName = "Ampere";
-          minCudaMajorMinorVersion = "11.2";
-        };
-
-        # Tesla GA10x cards, RTX Ampere – RTX 3080, GA102 – RTX 3090, RTX A2000, A3000, RTX A4000,
-        # A5000, A6000, NVIDIA A40, GA106 – RTX 3060, GA104 – RTX 3070, GA107 – RTX 3050, RTX A10, RTX
-        # A16, RTX A40, A2 Tensor Core GPU
-        "8.6" = {
-          archName = "Ampere";
-          minCudaMajorMinorVersion = "11.2";
-        };
-
-        # Tegra T234 (Jetson Orin)
-        "8.7" = {
-          archName = "Ampere";
-          minCudaMajorMinorVersion = "11.4";
-          isJetson = true;
-        };
-
-        # Tegra T239 (Switch 2?)
-        # "8.8" = {
-        #   archName = "Ampere";
-        #   minCudaMajorMinorVersion = "13.0";
-        #   # It's not a Jetson device, but it does use the same architecture.
-        #   isJetson = true;
-        #   # Should never be default.
-        #   dontDefaultAfterCudaMajorMinorVersion = "13.0";
-        # };
-
-        # NVIDIA GeForce RTX 4090, RTX 4080, RTX 6000, Tesla L40
-        "8.9" = {
-          archName = "Ada";
-          minCudaMajorMinorVersion = "11.8";
-        };
-
-        # NVIDIA H100, H200, GH200
-        "9.0" = {
-          archName = "Hopper";
-          minCudaMajorMinorVersion = "11.8";
-        };
-
-        "9.0a" = {
-          archName = "Hopper";
-          minCudaMajorMinorVersion = "12.0";
-        };
-
         # NVIDIA B200, GB200
         "10.0" = {
           archName = "Blackwell";
@@ -251,23 +123,23 @@
         # - From CUDA 13.0 and on, 10.1 is no longer a valid compute capability
         "10.1" = {
           archName = "Blackwell";
-          minCudaMajorMinorVersion = "12.7";
-          maxCudaMajorMinorVersion = "12.9";
           isJetson = true;
+          maxCudaMajorMinorVersion = "12.9";
+          minCudaMajorMinorVersion = "12.7";
         };
 
         "10.1a" = {
           archName = "Blackwell";
-          minCudaMajorMinorVersion = "12.7";
-          maxCudaMajorMinorVersion = "12.9";
           isJetson = true;
+          maxCudaMajorMinorVersion = "12.9";
+          minCudaMajorMinorVersion = "12.7";
         };
 
         "10.1f" = {
           archName = "Blackwell";
-          minCudaMajorMinorVersion = "12.9";
-          maxCudaMajorMinorVersion = "12.9";
           isJetson = true;
+          maxCudaMajorMinorVersion = "12.9";
+          minCudaMajorMinorVersion = "12.9";
         };
 
         # NVIDIA B300
@@ -289,20 +161,20 @@
         # NVIDIA Jetson Thor Blackwell, T4000, T5000 (CUDA 13.0+)
         "11.0" = {
           archName = "Blackwell";
-          minCudaMajorMinorVersion = "13.0";
           isJetson = true;
+          minCudaMajorMinorVersion = "13.0";
         };
 
         "11.0a" = {
           archName = "Blackwell";
-          minCudaMajorMinorVersion = "13.0";
           isJetson = true;
+          minCudaMajorMinorVersion = "13.0";
         };
 
         "11.0f" = {
           archName = "Blackwell";
-          minCudaMajorMinorVersion = "13.0";
           isJetson = true;
+          minCudaMajorMinorVersion = "13.0";
         };
 
         # NVIDIA GeForce RTX 5090 (GB202) etc.
@@ -335,6 +207,133 @@
         "12.1f" = {
           archName = "Blackwell";
           minCudaMajorMinorVersion = "12.9";
+        };
+
+        # Tesla K40
+        "3.5" = {
+          archName = "Kepler";
+          dontDefaultAfterCudaMajorMinorVersion = "11.0";
+          maxCudaMajorMinorVersion = "11.8";
+          minCudaMajorMinorVersion = "10.0";
+        };
+
+        # Tesla K80
+        "3.7" = {
+          archName = "Kepler";
+          dontDefaultAfterCudaMajorMinorVersion = "11.0";
+          maxCudaMajorMinorVersion = "11.8";
+          minCudaMajorMinorVersion = "10.0";
+        };
+
+        # Tesla/Quadro M series
+        "5.0" = {
+          archName = "Maxwell";
+          dontDefaultAfterCudaMajorMinorVersion = "11.0";
+          maxCudaMajorMinorVersion = "12.9";
+          minCudaMajorMinorVersion = "10.0";
+        };
+
+        # Quadro M6000 , GeForce 900, GTX-970, GTX-980, GTX Titan X
+        "5.2" = {
+          archName = "Maxwell";
+          dontDefaultAfterCudaMajorMinorVersion = "11.0";
+          maxCudaMajorMinorVersion = "12.9";
+          minCudaMajorMinorVersion = "10.0";
+        };
+
+        # Quadro GP100, Tesla P100, DGX-1 (Generic Pascal)
+        "6.0" = {
+          archName = "Pascal";
+          # Removed from TensorRT 10.0, which corresponds to CUDA 12.4 release.
+          # https://docs.nvidia.com/deeplearning/tensorrt/archives/tensorrt-1001/support-matrix/index.html
+          dontDefaultAfterCudaMajorMinorVersion = "12.3";
+          maxCudaMajorMinorVersion = "12.9";
+          minCudaMajorMinorVersion = "10.0";
+        };
+
+        # GTX 1080, GTX 1070, GTX 1060, GTX 1050, GTX 1030 (GP108), GT 1010 (GP108) Titan Xp, Tesla
+        # P40, Tesla P4, Discrete GPU on the NVIDIA Drive PX2
+        "6.1" = {
+          archName = "Pascal";
+          # Removed from TensorRT 10.0, which corresponds to CUDA 12.4 release.
+          # https://docs.nvidia.com/deeplearning/tensorrt/archives/tensorrt-1001/support-matrix/index.html
+          dontDefaultAfterCudaMajorMinorVersion = "12.3";
+          maxCudaMajorMinorVersion = "12.9";
+          minCudaMajorMinorVersion = "10.0";
+        };
+
+        # DGX-1 with Volta, Tesla V100, GTX 1180 (GV104), Titan V, Quadro GV100
+        "7.0" = {
+          archName = "Volta";
+          # Removed from TensorRT 10.5, which corresponds to CUDA 12.6 release.
+          # https://docs.nvidia.com/deeplearning/tensorrt/archives/tensorrt-1050/support-matrix/index.html
+          dontDefaultAfterCudaMajorMinorVersion = "12.5";
+          maxCudaMajorMinorVersion = "12.9";
+          minCudaMajorMinorVersion = "10.0";
+        };
+
+        # Jetson AGX Xavier, Drive AGX Pegasus, Xavier NX
+        "7.2" = {
+          archName = "Volta";
+          isJetson = true;
+          # Note: without `cuda_compat`, maxCudaMajorMinorVersion is 11.8
+          # https://docs.nvidia.com/cuda/cuda-for-tegra-appnote/index.html#deployment-considerations-for-cuda-upgrade-package
+          maxCudaMajorMinorVersion = "12.2";
+          minCudaMajorMinorVersion = "10.0";
+        };
+
+        # GTX/RTX Turing – GTX 1660 Ti, RTX 2060, RTX 2070, RTX 2080, Titan RTX, Quadro RTX 4000,
+        # Quadro RTX 5000, Quadro RTX 6000, Quadro RTX 8000, Quadro T1000/T2000, Tesla T4
+        "7.5" = {
+          archName = "Turing";
+          minCudaMajorMinorVersion = "10.0";
+        };
+
+        # NVIDIA A100 (the name “Tesla” has been dropped – GA100), NVIDIA DGX-A100
+        "8.0" = {
+          archName = "Ampere";
+          minCudaMajorMinorVersion = "11.2";
+        };
+
+        # Tesla GA10x cards, RTX Ampere – RTX 3080, GA102 – RTX 3090, RTX A2000, A3000, RTX A4000,
+        # A5000, A6000, NVIDIA A40, GA106 – RTX 3060, GA104 – RTX 3070, GA107 – RTX 3050, RTX A10, RTX
+        # A16, RTX A40, A2 Tensor Core GPU
+        "8.6" = {
+          archName = "Ampere";
+          minCudaMajorMinorVersion = "11.2";
+        };
+
+        # Tegra T234 (Jetson Orin)
+        "8.7" = {
+          archName = "Ampere";
+          isJetson = true;
+          minCudaMajorMinorVersion = "11.4";
+        };
+
+        # Tegra T239 (Switch 2?)
+        # "8.8" = {
+        #   archName = "Ampere";
+        #   minCudaMajorMinorVersion = "13.0";
+        #   # It's not a Jetson device, but it does use the same architecture.
+        #   isJetson = true;
+        #   # Should never be default.
+        #   dontDefaultAfterCudaMajorMinorVersion = "13.0";
+        # };
+        # NVIDIA GeForce RTX 4090, RTX 4080, RTX 6000, Tesla L40
+        "8.9" = {
+          archName = "Ada";
+          minCudaMajorMinorVersion = "11.8";
+        };
+
+        # NVIDIA H100, H200, GH200
+        "9.0" = {
+          archName = "Hopper";
+          minCudaMajorMinorVersion = "11.8";
+        };
+
+        "9.0a" = {
+          archName = "Hopper";
+          minCudaMajorMinorVersion = "12.0";
         };
       };
 }

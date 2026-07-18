@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "hetzner";
   version = "0.8.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aszlig";
@@ -18,12 +17,13 @@ buildPythonPackage (finalAttrs: {
   };
 
   build-system = [ setuptools ];
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/RedMoonStudios/hetzner";
     description = "High-level Python API for accessing the Hetzner robot";
-    mainProgram = "hetznerctl";
+    homepage = "https://github.com/RedMoonStudios/hetzner";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ aszlig ];
+    mainProgram = "hetznerctl";
   };
 })

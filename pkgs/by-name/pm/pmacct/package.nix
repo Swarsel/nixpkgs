@@ -2,35 +2,35 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  pkg-config,
   autoreconfHook,
-  libtool,
-  libpcap,
+  fetchpatch,
+  gnutls,
+  jansson,
   libcdada,
+  libmysqlclient,
+  libnetfilter_log,
+  libpcap,
+  libpq,
+  libtool,
+  numactl,
+  pkg-config,
+  rdkafka,
+  sqlite,
+  testers,
+  zlib,
+  gnutlsSupport ? false,
+  withJansson ? true,
   # Optional Dependencies
   withKafka ? true,
-  rdkafka,
-  withJansson ? true,
-  jansson,
-  withNflog ? true,
-  libnetfilter_log,
-  withSQLite ? true,
-  sqlite,
-  withPgSQL ? true,
-  libpq,
   withMysql ? true,
-  libmysqlclient,
-  zlib,
-  numactl,
-  gnutlsSupport ? false,
-  gnutls,
-  testers,
+  withNflog ? true,
+  withPgSQL ? true,
+  withSQLite ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.7.9";
   pname = "pmacct";
+  version = "1.7.9";
 
   src = fetchFromGitHub {
     owner = "pmacct";
@@ -52,6 +52,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     libtool
   ];
+
   buildInputs = [
     libcdada
     libpcap
@@ -68,8 +69,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional gnutlsSupport gnutls;
 
-  env.MYSQL_CONFIG = lib.optionalString withMysql "${lib.getDev libmysqlclient}/bin/mysql_config";
-
   configureFlags = [
     "--with-pcap-includes=${libpcap}/include"
   ]
@@ -81,19 +80,23 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional withMysql "--enable-mysql"
   ++ lib.optional gnutlsSupport "--enable-gnutls";
 
+  env.MYSQL_CONFIG = lib.optionalString withMysql "${lib.getDev libmysqlclient}/bin/mysql_config";
+
   passthru.tests = {
     version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       command = "pmacct -V";
+      package = finalAttrs.finalPackage;
     };
   };
 
   meta = {
     description = "Small set of multi-purpose passive network monitoring tools";
+
     longDescription = ''
       pmacct is a small set of multi-purpose passive network monitoring tools
       [NetFlow IPFIX sFlow libpcap BGP BMP RPKI IGP Streaming Telemetry]
     '';
+
     homepage = "http://www.pmacct.net/";
     changelog = "https://github.com/pmacct/pmacct/blob/v${finalAttrs.version}/ChangeLog";
     license = lib.licenses.gpl2Plus;

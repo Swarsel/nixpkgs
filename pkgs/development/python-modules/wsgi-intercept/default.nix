@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  six,
+  buildPythonPackage,
   httplib2,
   pytestCheckHook,
   requests,
   setuptools,
+  six,
   urllib3,
 }:
 
 buildPythonPackage rec {
   pname = "wsgi-intercept";
   version = "1.13.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cdent";
@@ -22,16 +21,15 @@ buildPythonPackage rec {
     hash = "sha256-hs5yB0+eDlh/pNPaqYIU9C+RBpyrdPOAscQGIoqzmvU=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ six ];
-
   nativeCheckInputs = [
     pytestCheckHook
     httplib2
     requests
     urllib3
   ];
+
+  build-system = [ setuptools ];
+  dependencies = [ six ];
 
   disabledTests = [
     # Tests require network access
@@ -42,6 +40,7 @@ buildPythonPackage rec {
     "test_https_no_ssl_verification_not_intercepted"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "wsgi_intercept" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pillow,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "python-sixel";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lubosz";
@@ -25,6 +24,8 @@ buildPythonPackage rec {
   dependencies = [
     pillow
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "sixel"

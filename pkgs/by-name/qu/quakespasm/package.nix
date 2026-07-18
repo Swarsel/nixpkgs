@@ -1,21 +1,21 @@
 {
   lib,
   stdenv,
+  fetchurl,
   SDL,
   SDL2,
-  fetchurl,
+  copyDesktopItems,
+  flac,
   gzip,
   libGL,
   libGLU,
-  libvorbis,
   libmad,
-  flac,
-  libopus,
-  opusfile,
   libogg,
+  libopus,
+  libvorbis,
   libxmp,
-  copyDesktopItems,
   makeDesktopItem,
+  opusfile,
   pkg-config,
   useSDL2 ? stdenv.hostPlatform.isDarwin, # TODO: CoreAudio fails to initialize with SDL 1.x for some reason.
 }:
@@ -28,8 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/quakespasm/quakespasm-${finalAttrs.version}.tar.gz";
     hash = "sha256-tXjWzkpPf04mokRY8YxLzI04VK5iUuuZgu6B2V5QGA4=";
   };
-
-  sourceRoot = "quakespasm-${finalAttrs.version}/Quake";
 
   patches = lib.optionals stdenv.hostPlatform.isDarwin [
     # Makes Darwin Makefile use system libraries instead of ones from app bundle
@@ -79,8 +77,6 @@ stdenv.mkDerivation (finalAttrs: {
     "USE_SDL2=1"
   ];
 
-  makefile = if (stdenv.hostPlatform.isDarwin) then "Makefile.darwin" else "Makefile";
-
   preInstall = ''
     mkdir -p "$out/bin"
     substituteInPlace Makefile --replace "/usr/local/games" "$out/bin"
@@ -102,20 +98,22 @@ stdenv.mkDerivation (finalAttrs: {
       --replace '>''${PRODUCT_NAME}' '>QuakeSpasm'
   '';
 
-  enableParallelBuilding = true;
-
   desktopItems = [
     (makeDesktopItem {
-      name = "quakespasm";
-      exec = "quake";
-      desktopName = "Quakespasm";
       categories = [ "Game" ];
+      desktopName = "Quakespasm";
+      exec = "quake";
+      name = "quakespasm";
     })
   ];
 
+  enableParallelBuilding = true;
+  makefile = if (stdenv.hostPlatform.isDarwin) then "Makefile.darwin" else "Makefile";
+  sourceRoot = "quakespasm-${finalAttrs.version}/Quake";
+
   meta = {
     description = "Engine for iD software's Quake";
-    homepage = "https://quakespasm.sourceforge.net/";
+
     longDescription = ''
       QuakeSpasm is a modern, cross-platform Quake 1 engine based on FitzQuake.
       It includes support for 64 bit CPUs and custom music playback, a new sound driver,
@@ -125,12 +123,15 @@ stdenv.mkDerivation (finalAttrs: {
       and smoother mouse input - though no CD support.
     '';
 
-    platforms = lib.platforms.unix;
-    maintainers = with lib.maintainers; [ mikroskeem ];
-    mainProgram = "quake";
+    homepage = "https://quakespasm.sourceforge.net/";
+
     license = lib.licenses.AND [
       lib.licenses.gpl2Only
       lib.licenses.cc-by-30
     ];
+
+    maintainers = with lib.maintainers; [ mikroskeem ];
+    platforms = lib.platforms.unix;
+    mainProgram = "quake";
   };
 })

@@ -6,18 +6,14 @@
 }:
 
 buildPythonPackage {
-  pname = "oslotest-tests";
   inherit (oslotest) version src;
-  pyproject = false;
+  pname = "oslotest-tests";
 
   postPatch = ''
     # only a small portion of the listed packages are actually needed for running the tests
     # so instead of removing them one by one remove everything
     rm test-requirements.txt
   '';
-
-  dontBuild = true;
-  dontInstall = true;
 
   nativeCheckInputs = [
     oslotest
@@ -28,4 +24,8 @@ buildPythonPackage {
   checkPhase = ''
     stestr run
   '';
+
+  dontBuild = true;
+  dontInstall = true;
+  pyproject = false;
 }

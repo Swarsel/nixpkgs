@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  ORBit2,
   dbus-glib,
   glib,
-  ORBit2,
+  intltool,
   libxml2,
+  pkg-config,
   polkit,
   python312,
-  intltool,
 }:
 
 stdenv.mkDerivation rec {
@@ -27,7 +27,18 @@ stdenv.mkDerivation rec {
     "man"
   ];
 
+  postPatch = ''
+    2to3 --write --nobackup gsettings/gsettings-schema-convert
+  '';
+
   strictDeps = true;
+
+  nativeBuildInputs = [
+    pkg-config
+    intltool
+    python312
+    glib
+  ];
 
   buildInputs = [
     ORBit2
@@ -42,24 +53,13 @@ stdenv.mkDerivation rec {
     dbus-glib
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-    intltool
-    python312
-    glib
-  ];
-
   configureFlags =
     # fixes the "libgconfbackend-oldxml.so is not portable" error on darwin
     lib.optionals stdenv.hostPlatform.isDarwin [ "--enable-static" ];
 
-  postPatch = ''
-    2to3 --write --nobackup gsettings/gsettings-schema-convert
-  '';
-
   meta = {
-    homepage = "https://projects.gnome.org/gconf/";
     description = "Deprecated system for storing application preferences";
+    homepage = "https://projects.gnome.org/gconf/";
     platforms = lib.platforms.unix;
   };
 }

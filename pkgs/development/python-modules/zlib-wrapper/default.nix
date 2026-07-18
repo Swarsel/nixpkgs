@@ -8,19 +8,17 @@
 buildPythonPackage rec {
   pname = "zlib-wrapper";
   version = "0.1.3";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "zlib_wrapper";
     inherit version;
     hash = "sha256-Yxqc7fSDdnAPlGLzTbgcEQxiTKJDSJmPgm0eV62JiGQ=";
+    pname = "zlib_wrapper";
   };
-
-  build-system = [ setuptools ];
 
   # Module has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "zlib_wrapper" ];
 
   meta = {

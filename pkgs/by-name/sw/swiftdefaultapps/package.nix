@@ -1,6 +1,6 @@
 {
-  fetchzip,
   lib,
+  fetchzip,
   stdenvNoCC,
 }:
 
@@ -12,8 +12,8 @@ stdenvNoCC.mkDerivation rec {
   # doesn't currently have the ability to build Swift projects.
   src = fetchzip {
     url = "https://github.com/Lord-Kamina/SwiftDefaultApps/releases/download/v${version}/SwiftDefaultApps-v${version}.zip";
-    stripRoot = false;
     sha256 = "sha256-0HsHjZBPUzmdvHy7E9EdZj6zwaXjSX2u5aj8pij0u3E=";
+    stripRoot = false;
   };
 
   installPhase = ''

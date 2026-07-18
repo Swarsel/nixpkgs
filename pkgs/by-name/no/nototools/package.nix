@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   bash,
   python3Packages,
 }:
@@ -8,7 +8,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "nototools";
   version = "0.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googlefonts";
@@ -17,14 +16,26 @@ python3Packages.buildPythonApplication (finalAttrs: {
     sha256 = "sha256-0se0YcnhDwwMbt2C4hep0T/JEidHfFRUnm2Sy7qr2uk=";
   };
 
+  nativeCheckInputs = [
+    python3Packages.pillow
+    python3Packages.six
+    bash
+  ];
+
+  checkPhase = ''
+    patchShebangs tests/
+    cd tests
+    rm gpos_diff_test.py # needs ttxn?
+    ./run_tests
+  '';
+
+  postInstall = ''
+    cp -r third_party $out
+  '';
+
   build-system = with python3Packages; [
     setuptools
     setuptools-scm
-  ];
-
-  pythonRemoveDeps = [
-    # https://github.com/notofonts/nototools/pull/901
-    "typed-ast"
   ];
 
   dependencies = with python3Packages; [
@@ -54,24 +65,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     zopfli
   ];
 
-  nativeCheckInputs = [
-    python3Packages.pillow
-    python3Packages.six
-    bash
-  ];
-
-  checkPhase = ''
-    patchShebangs tests/
-    cd tests
-    rm gpos_diff_test.py # needs ttxn?
-    ./run_tests
-  '';
-
-  postInstall = ''
-    cp -r third_party $out
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "nototools" ];
+
+  pythonRemoveDeps = [
+    # https://github.com/notofonts/nototools/pull/901
+    "typed-ast"
+  ];
 
   meta = {
     description = "Noto fonts support tools and scripts plus web site generation";

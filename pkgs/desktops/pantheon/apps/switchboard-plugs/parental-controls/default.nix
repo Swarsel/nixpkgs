@@ -1,28 +1,28 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  gettext,
-  gtk4,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
-  wrapGAppsHook4,
   accountsservice,
   dbus,
+  fetchpatch,
   flatpak,
+  gettext,
   glib,
   granite7,
+  gtk4,
+  iptables,
   libadwaita,
   libgee,
   malcontent,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
   polkit,
   switchboard,
   systemd,
-  iptables,
-  nix-update-script,
+  vala,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,12 +40,12 @@ stdenv.mkDerivation (finalAttrs: {
     # Change default config file path and separate default and run-time config file
     # https://github.com/elementary/switchboard-plug-parental-controls/pull/206
     (fetchpatch {
-      url = "https://github.com/elementary/switchboard-plug-parental-controls/commit/1e5a08c1c3b0a5503e9d3f6858047d53ed8188f7.patch";
       hash = "sha256-daP/nBmrUw8b3UytIZz3bKdM+lIgAIQ/DJP0h9sdXmc=";
+      url = "https://github.com/elementary/switchboard-plug-parental-controls/commit/1e5a08c1c3b0a5503e9d3f6858047d53ed8188f7.patch";
     })
     (fetchpatch {
-      url = "https://github.com/elementary/switchboard-plug-parental-controls/commit/51f027657616a5d4a6bd24478a5b94fad12edb95.patch";
       hash = "sha256-JOogF1ychF7MAJdrKT4eiUgM8+Y7CN9nxnRNidRoMOk=";
+      url = "https://github.com/elementary/switchboard-plug-parental-controls/commit/51f027657616a5d4a6bd24478a5b94fad12edb95.patch";
     })
 
     # See the nixos/lightdm module for corresponding PAM files.

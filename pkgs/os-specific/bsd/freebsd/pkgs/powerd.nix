@@ -2,10 +2,11 @@
   mkDerivation,
 }:
 mkDerivation {
-  path = "usr.sbin/powerd";
   outputs = [
     "out"
     "debug"
   ];
+
+  path = "usr.sbin/powerd";
   meta.mainProgram = "powerd";
 }

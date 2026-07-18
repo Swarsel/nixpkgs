@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libx11,
   fontconfig,
+  libx11,
   libxft,
   libxrender,
 }:
@@ -37,7 +37,7 @@ stdenv.mkDerivation {
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ somasis ];
     platforms = lib.platforms.unix;
-    broken = stdenv.hostPlatform.isDarwin;
     mainProgram = "stw";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 }

@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  kdePackages,
   fcitx5,
   fcitx5-qt,
   gettext,
+  kdePackages,
+  pkg-config,
   qtbase,
 }:
 

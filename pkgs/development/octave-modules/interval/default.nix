@@ -1,7 +1,7 @@
 {
-  buildOctavePackage,
   lib,
   fetchurl,
+  buildOctavePackage,
   mpfr,
 }:
 
@@ -19,10 +19,8 @@ buildOctavePackage rec {
   ];
 
   meta = {
-    homepage = "https://gnu-octave.github.io/packages/interval/";
-    license = lib.licenses.gpl3Plus;
-    maintainers = with lib.maintainers; [ ravenjoad ];
     description = "Interval arithmetic to evaluate functions over subsets of their domain";
+
     longDescription = ''
       The interval package for real-valued interval arithmetic allows one to
       evaluate functions over subsets of their domain. All results are verified,
@@ -36,5 +34,9 @@ buildOctavePackage rec {
       binary64 numbers and is conforming to IEEE Std 1788-2015, IEEE standard
       for interval arithmetic.
     '';
+
+    homepage = "https://gnu-octave.github.io/packages/interval/";
+    license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ ravenjoad ];
   };
 }

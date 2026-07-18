@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   backoff,
   buildPythonPackage,
-  fetchFromGitHub,
   gitpython,
   pip,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "versionfinder";
   version = "1.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jantman";
@@ -22,17 +21,17 @@ buildPythonPackage rec {
     hash = "sha256-aa2bRGn8Hn7gpEMUM7byh1qZVsqvJeMXomnwCj2Xu5o=";
   };
 
+  nativeCheckInputs = [
+    pip
+    pytestCheckHook
+    requests
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
     gitpython
     backoff
-  ];
-
-  nativeCheckInputs = [
-    pip
-    pytestCheckHook
-    requests
   ];
 
   disabledTestPaths = [
@@ -45,6 +44,7 @@ buildPythonPackage rec {
     "TestFindPipInfo"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "versionfinder" ];
 
   meta = {

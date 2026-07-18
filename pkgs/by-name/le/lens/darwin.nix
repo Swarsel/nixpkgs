@@ -1,11 +1,11 @@
 {
   stdenv,
-  pname,
-  version,
-  src,
   meta,
-  updateScript,
+  pname,
+  src,
   undmg,
+  updateScript,
+  version,
 }:
 
 stdenv.mkDerivation {
@@ -15,8 +15,6 @@ stdenv.mkDerivation {
     src
     meta
     ;
-
-  sourceRoot = ".";
 
   nativeBuildInputs = [ undmg ];
 
@@ -30,6 +28,6 @@ stdenv.mkDerivation {
   '';
 
   dontFixup = true;
-
+  sourceRoot = ".";
   passthru = { inherit updateScript; };
 }

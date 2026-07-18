@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchPypi,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "wireviz";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -25,6 +24,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pillow
     pyyaml
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "wireviz"

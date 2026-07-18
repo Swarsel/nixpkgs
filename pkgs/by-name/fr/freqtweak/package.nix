@@ -4,13 +4,12 @@
   fetchFromGitHub,
   autoconf,
   automake,
-  pkg-config,
   fftwFloat,
   libjack2,
   libsigcxx,
   libxml2,
+  pkg-config,
   wxwidgets_3_2,
-
 }:
 
 stdenv.mkDerivation {
@@ -29,6 +28,7 @@ stdenv.mkDerivation {
     automake
     pkg-config
   ];
+
   buildInputs = [
     fftwFloat
     libjack2
@@ -44,11 +44,11 @@ stdenv.mkDerivation {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "http://essej.net/freqtweak/";
     description = "Realtime audio frequency spectral manipulation";
+    homepage = "http://essej.net/freqtweak/";
+    license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl2Plus;
     mainProgram = "freqtweak";
   };
 }

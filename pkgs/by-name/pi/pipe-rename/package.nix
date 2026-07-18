@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
-  python3,
-  versionCheckHook,
   nix-update-script,
+  python3,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -12,13 +12,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   version = "1.6.7";
 
   src = fetchCrate {
-    pname = "pipe-rename";
     inherit (finalAttrs) version;
     hash = "sha256-9Pub+OCN+PiKHfCxflwkHp6JNSB8AqAtKsNTlAsANbA=";
+    pname = "pipe-rename";
   };
 
   cargoHash = "sha256-oYJNiUIi/uYxzd9DfgBgEaEy3g32r44seI56ur9UMcc=";
-
   nativeCheckInputs = [ python3 ];
 
   checkFlags = [
@@ -33,7 +32,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  ocaml-ng,
-  zlib,
-  which,
+  coq,
   eprover,
   makeWrapper,
-  coq,
+  ocaml-ng,
+  which,
+  zlib,
 }:
 
 let
@@ -16,17 +16,6 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "satallax";
   version = "2.7";
-
-  strictDeps = true;
-
-  nativeBuildInputs = [
-    makeWrapper
-    ocaml
-    which
-    eprover
-    coq
-  ];
-  buildInputs = [ zlib ];
 
   src = fetchurl {
     url = "https://www.ps.uni-saarland.de/~cebrown/satallax/downloads/satallax-${finalAttrs.version}.tar.gz";
@@ -38,9 +27,19 @@ stdenv.mkDerivation (finalAttrs: {
     ./fix-declaration-gcc9.patch
   ];
 
-  prePatch = ''
-    patch -p1 -i ${./minisat-fenv.patch} -d minisat
-  '';
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    makeWrapper
+    ocaml
+    which
+    eprover
+    coq
+  ];
+
+  buildInputs = [ zlib ];
+  # error: invalid suffix on literal; C++11 requires a space between literal and identifier
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-Wno-reserved-user-defined-literal";
 
   preConfigure = ''
     mkdir fake-tools
@@ -68,8 +67,16 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
-  # error: invalid suffix on literal; C++11 requires a space between literal and identifier
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-Wno-reserved-user-defined-literal";
+  doCheck = stdenv.hostPlatform.isLinux;
+
+  checkPhase = ''
+    runHook preCheck
+    if bash ./test | grep ERROR; then
+      echo "Tests failed"
+      exit 1
+    fi
+    runHook postCheck
+  '';
 
   installPhase = ''
     mkdir -p "$out/share/doc/satallax" "$out/bin" "$out/lib" "$out/lib/satallax"
@@ -92,24 +99,17 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r coq* "$out/lib/satallax/"
   '';
 
-  doCheck = stdenv.hostPlatform.isLinux;
-
-  checkPhase = ''
-    runHook preCheck
-    if bash ./test | grep ERROR; then
-      echo "Tests failed"
-      exit 1
-    fi
-    runHook postCheck
+  prePatch = ''
+    patch -p1 -i ${./minisat-fenv.patch} -d minisat
   '';
 
   meta = {
     description = "Automated theorem prover for higher-order logic";
-    mainProgram = "satallax";
+    homepage = "http://www.ps.uni-saarland.de/~cebrown/satallax/index.php";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.raskin ];
     platforms = lib.platforms.unix;
+    mainProgram = "satallax";
     downloadPage = "http://www.ps.uni-saarland.de/~cebrown/satallax/downloads.php";
-    homepage = "http://www.ps.uni-saarland.de/~cebrown/satallax/index.php";
   };
 })

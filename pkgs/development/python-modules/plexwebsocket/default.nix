@@ -1,14 +1,13 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
 }:
 
 buildPythonPackage rec {
   pname = "plexwebsocket";
   version = "0.0.14";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "jjlawren";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ aiohttp ];
-
   # Package does not include tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "plexwebsocket" ];
 
   meta = {

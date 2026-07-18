@@ -1,17 +1,23 @@
 {
   lib,
   fetchFromGitHub,
+  buildAndTestSubdir,
   buildPythonPackage,
-  rustPlatform,
-
   # These are always passed as an override or as a callPackage option.
   nativeBuildInputs,
-  buildAndTestSubdir,
-  pyproject,
   preConfigure,
+  pyproject,
+  rustPlatform,
 }:
 
 buildPythonPackage (finalAttrs: {
+  inherit
+    buildAndTestSubdir
+    pyproject
+    nativeBuildInputs
+    preConfigure
+    ;
+
   pname = "word-count";
   version = "0.28.2";
 
@@ -22,19 +28,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Jg+eni7I0jVUFViWbgj5F094ksvyuvF4mdgGzh0PMaQ=";
   };
 
-  cargoDeps = rustPlatform.importCargoLock { lockFile = ./Cargo.lock; };
-
   postPatch = ''
     ln -s ${./Cargo.lock} Cargo.lock
   '';
 
-  inherit
-    buildAndTestSubdir
-    pyproject
-    nativeBuildInputs
-    preConfigure
-    ;
-
+  cargoDeps = rustPlatform.importCargoLock { lockFile = ./Cargo.lock; };
   pythonImportsCheck = [ "word_count" ];
 
   meta = {

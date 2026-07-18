@@ -26,7 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/lexbor/lexbor/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ miniharinn ];
-    mainProgram = "lexbor";
     platforms = lib.platforms.all;
+    mainProgram = "lexbor";
   };
 })

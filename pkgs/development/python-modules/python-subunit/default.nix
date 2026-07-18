@@ -3,28 +3,27 @@
   # pkgs dependencies
   check,
   cppunit,
-  pkg-config,
-  subunit,
-
   # python dependencies
   fixtures,
   hypothesis,
   iso8601,
+  pkg-config,
   pytestCheckHook,
   pyyaml,
   setuptools,
+  subunit,
   testscenarios,
   testtools,
 }:
 
 buildPythonPackage {
-  pname = "python-subunit";
   inherit (subunit)
     version
     src
     meta
     ;
-  pyproject = true;
+
+  pname = "python-subunit";
 
   postPatch = ''
     substituteInPlace setup.py \
@@ -54,12 +53,13 @@ buildPythonPackage {
     pyyaml
   ];
 
-  enabledTestPaths = [ "python/tests" ];
-
   disabledTestPaths = [
     # these tests require testtools and don't work with pytest
     "python/tests/test_output_filter.py"
     "python/tests/test_test_protocol.py"
     "python/tests/test_test_protocol2.py"
   ];
+
+  enabledTestPaths = [ "python/tests" ];
+  pyproject = true;
 }

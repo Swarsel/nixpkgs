@@ -3,15 +3,14 @@
   buildPythonPackage,
   fetchPypi,
   pytestCheckHook,
-  setuptools,
   requests,
   requests-mock,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "packet-python";
   version = "1.44.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -23,15 +22,14 @@ buildPythonPackage rec {
       --replace-fail "pytest-runner" ""
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   nativeCheckInputs = [
     pytestCheckHook
     requests-mock
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "packet" ];
 
   meta = {

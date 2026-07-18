@@ -1,10 +1,10 @@
 {
-  applyPatches,
   lib,
-  bundlerEnv,
-  fetchFromGitHub,
-  ruby_3_4,
   stdenv,
+  fetchFromGitHub,
+  applyPatches,
+  bundlerEnv,
+  ruby_3_4,
   tailwindcss_4,
 }:
 let
@@ -12,39 +12,34 @@ let
   inherit (sources) version;
 
   src = applyPatches {
+    postPatch = ''
+      cp -f ${./rubyEnv/Gemfile} ./Gemfile
+      cp -f ${./rubyEnv/Gemfile.lock} ./Gemfile.lock
+    '';
+
     src = fetchFromGitHub {
       inherit (sources)
         owner
         repo
         hash
         ;
+
       tag = sources.version;
     };
-    postPatch = ''
-      cp -f ${./rubyEnv/Gemfile} ./Gemfile
-      cp -f ${./rubyEnv/Gemfile.lock} ./Gemfile.lock
-    '';
   };
 
   rubyEnv = bundlerEnv rec {
-    name = "sure-ruby-env-${version}";
-    ruby = ruby_3_4;
     inherit version;
     gemdir = src;
     gemset = ./rubyEnv/gemset.nix;
+    name = "sure-ruby-env-${version}";
+    ruby = ruby_3_4;
   };
 in
 stdenv.mkDerivation rec {
-  pname = "sure";
   inherit src version;
-
+  pname = "sure";
   strictDeps = true;
-  __structuredAttrs = true;
-
-  env = {
-    RAILS_ENV = "production";
-    TAILWINDCSS_INSTALL_DIR = "${tailwindcss_4}/bin";
-  };
 
   nativeBuildInputs = [
     rubyEnv
@@ -54,6 +49,11 @@ stdenv.mkDerivation rec {
   buildInputs = [
     rubyEnv.wrappedRuby
   ];
+
+  env = {
+    RAILS_ENV = "production";
+    TAILWINDCSS_INSTALL_DIR = "${tailwindcss_4}/bin";
+  };
 
   buildPhase = ''
     runHook preBuild
@@ -81,19 +81,23 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
   passthru = {
     updateScript = ./update.sh;
   };
 
   meta = {
-    changelog = "https://github.com/we-promise/sure/releases/tag/v${version}";
     description = "Personal finance app for everyone";
     homepage = "https://sure.am/";
+    changelog = "https://github.com/we-promise/sure/releases/tag/v${version}";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       _74k1
       pjrm
     ];
+
     platforms = lib.platforms.linux;
   };
 }

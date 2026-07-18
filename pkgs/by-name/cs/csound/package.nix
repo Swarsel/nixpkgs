@@ -2,33 +2,31 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
-  libsndfile,
-  libsamplerate,
-  flex,
   bison,
   boost,
+  cmake,
+  fetchpatch,
+  flex,
   gettext,
+  libsamplerate,
+  libsndfile,
   portaudio,
   alsa-lib ? null,
-  libpulseaudio ? null,
-  libjack2 ? null,
-  liblo ? null,
-  ladspa-sdk ? null,
-  fluidsynth ? null,
+  curl ? null,
   # , gmm ? null  # opcodes don't build with gmm 5.1
   eigen ? null,
-  curl ? null,
-  tcltk ? null,
   fltk ? null,
+  fluidsynth ? null,
+  ladspa-sdk ? null,
+  libjack2 ? null,
+  liblo ? null,
+  libpulseaudio ? null,
+  tcltk ? null,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "csound";
   version = "7.0.0-beta.10";
-
-  hardeningDisable = [ "format" ];
 
   src = fetchFromGitHub {
     owner = "csound";
@@ -37,21 +35,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-l3dSVt5rgyj98ZCZltqKAJx/0Afl4R03flLXBcivtwg=";
   };
 
-  cmakeFlags = [
-    "-DBUILD_CSOUND_AC=0"
-  ] # fails to find Score.hpp
-  ++ lib.optional stdenv.hostPlatform.isDarwin "-DCS_FRAMEWORK_DEST=${placeholder "out"}/lib"
-  # Ignore gettext in CMAKE_PREFIX_PATH on cross to prevent find_program picking up the wrong gettext
-  ++ lib.optional (
-    stdenv.hostPlatform != stdenv.buildPlatform
-  ) "-DCMAKE_IGNORE_PATH=${lib.getBin gettext}/bin";
-
   nativeBuildInputs = [
     cmake
     flex
     bison
     gettext
   ];
+
   buildInputs = [
     libsndfile
     libsamplerate
@@ -75,10 +65,21 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
+  cmakeFlags = [
+    "-DBUILD_CSOUND_AC=0"
+  ] # fails to find Score.hpp
+  ++ lib.optional stdenv.hostPlatform.isDarwin "-DCS_FRAMEWORK_DEST=${placeholder "out"}/lib"
+  # Ignore gettext in CMAKE_PREFIX_PATH on cross to prevent find_program picking up the wrong gettext
+  ++ lib.optional (
+    stdenv.hostPlatform != stdenv.buildPlatform
+  ) "-DCMAKE_IGNORE_PATH=${lib.getBin gettext}/bin";
+
   postInstall = lib.optional stdenv.hostPlatform.isDarwin ''
     mkdir -p $out/Library/Frameworks
     ln -s $out/lib/CsoundLib64.framework $out/Library/Frameworks
   '';
+
+  hardeningDisable = [ "format" ];
 
   meta = {
     description = "Sound design, audio synthesis, and signal processing system, providing facilities for music composition and performance on all major operating systems and platforms";

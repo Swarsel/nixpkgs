@@ -1,19 +1,13 @@
 {
   buildPythonPackage,
-
-  # dependencies
-  pytorch-lightning,
-
   # tests
   psutil,
   pytestCheckHook,
+  # dependencies
+  pytorch-lightning,
 }:
 
 buildPythonPackage {
-  pname = "lightning";
-  pyproject = true;
-  __structuredAttrs = true;
-
   inherit (pytorch-lightning)
     version
     src
@@ -21,16 +15,19 @@ buildPythonPackage {
     meta
     ;
 
-  dependencies = pytorch-lightning.dependencies ++ [ pytorch-lightning ];
+  pname = "lightning";
+  # Some packages are not in nixpkgs; other tests try to build distributed
+  # models, which doesn't work in the sandbox.
+  doCheck = false;
 
   nativeCheckInputs = [
     psutil
     pytestCheckHook
   ];
 
-  # Some packages are not in nixpkgs; other tests try to build distributed
-  # models, which doesn't work in the sandbox.
-  doCheck = false;
+  __structuredAttrs = true;
+  dependencies = pytorch-lightning.dependencies ++ [ pytorch-lightning ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "lightning"

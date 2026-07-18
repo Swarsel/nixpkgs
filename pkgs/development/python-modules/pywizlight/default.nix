@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
   pytest-asyncio,
   pytestCheckHook,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pywizlight";
   version = "0.6.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sbidy";
@@ -20,16 +19,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-ki4X+4s+tM3kIyhA2cxPPzG775Qz9jKFS8/ssUqfHas=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ click ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytestCheckHook
   ];
 
-  pytestFlags = [ "--asyncio-mode=auto" ];
+  build-system = [ setuptools ];
+  dependencies = [ click ];
 
   disabledTests = [
     # Tests requires network features (e. g., discovery testing)
@@ -40,6 +36,8 @@ buildPythonPackage (finalAttrs: {
     "test_error_PilotBuilder_cold_white_lower"
   ];
 
+  pyproject = true;
+  pytestFlags = [ "--asyncio-mode=auto" ];
   pythonImportsCheck = [ "pywizlight" ];
 
   meta = {

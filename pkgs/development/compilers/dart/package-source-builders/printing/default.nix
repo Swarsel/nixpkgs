@@ -4,16 +4,12 @@
   replaceVars,
 }:
 
-{ version, src, ... }:
+{ src, version, ... }:
 
 stdenv.mkDerivation rec {
-  pname = "printing";
   inherit version src;
   inherit (src) passthru;
-
-  prePatch = ''
-    if [ -d printing ]; then pushd printing; fi
-  '';
+  pname = "printing";
 
   patches = [
     (replaceVars ./printing.patch {
@@ -25,13 +21,17 @@ stdenv.mkDerivation rec {
     popd || true
   '';
 
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
     cp -r . $out
 
     runHook postInstall
+  '';
+
+  dontBuild = true;
+
+  prePatch = ''
+    if [ -d printing ]; then pushd printing; fi
   '';
 }

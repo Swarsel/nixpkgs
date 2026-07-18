@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "battery-toolkit";
@@ -24,16 +24,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Control the platform power state of your Apple Silicon Mac";
+
     longDescription = ''
       Battery Toolkit allows you to control battery charging behavior on Apple Silicon Macs.
       Features include setting upper and lower charge limits, disabling the power adapter,
       and manual control over charging state.
     '';
+
     homepage = "https://github.com/mhaeuser/Battery-Toolkit";
     changelog = "https://github.com/mhaeuser/Battery-Toolkit/releases/tag/${finalAttrs.version}";
     license = lib.licenses.bsd3;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ shgew ];
     platforms = [ "aarch64-darwin" ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

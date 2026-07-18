@@ -1,7 +1,7 @@
 {
   lib,
-  fetchFromGitLab,
   stdenv,
+  fetchFromGitLab,
   luaPackages,
 }:
 
@@ -15,8 +15,6 @@ stdenv.mkDerivation rec {
     tag = version;
     hash = "sha256-FrFeRbfK4sHd3pjiVDMrE8IpDKptZuwkTLMQ9hppVRY=";
   };
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -32,12 +30,14 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Dependency and PATH manager for Fennel";
     homepage = "https://gitlab.com/andreyorst/deps.fnl";
     license = lib.licenses.mit;
-    mainProgram = "deps";
     maintainers = with lib.maintainers; [ emily-lavender ];
     platforms = lib.platforms.all;
+    mainProgram = "deps";
   };
 }

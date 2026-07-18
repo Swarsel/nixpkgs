@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,19 +17,19 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-iJ1agL7sZ3ZKbW1wMA+qi8FgHdPa6gZLQ5BBPKJTNaQ=";
 
-  subPackages = [ "cmd/cdncheck/" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   preCheck = ''
     # Tests require network access
     substituteInPlace other_test.go \
       --replace-fail "TestCheckDomainWithFallback" "SkipTestCheckDomainWithFallback" \
       --replace-fail "TestCheckDNSResponse" "SkipTestCheckDNSResponse"
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
+  subPackages = [ "cmd/cdncheck/" ];
 
   meta = {
     description = "Tool to detect various technology for a given IP address";

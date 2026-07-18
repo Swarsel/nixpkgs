@@ -11,7 +11,6 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -19,6 +18,7 @@ buildPythonPackage {
   };
 
   nativeBuildInputs = [ setuptools ];
+  pyproject = true;
 
   meta = {
     description = "Collection of library stubs for Python, with static types";

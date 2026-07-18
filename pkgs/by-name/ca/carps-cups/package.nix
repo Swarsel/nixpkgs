@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cups,
 }:
@@ -15,6 +15,8 @@ stdenv.mkDerivation {
     rev = "18d80d1d6f473dd9132e4b6d8b5c592c74982f17";
     sha256 = "0mjj9hs5lqxi0qamgb4sxfz4fvf7ggi66bxd37bkz3fl0g9xff70";
   };
+
+  buildInputs = [ cups ];
 
   preBuild = ''
     export CUPS_DATADIR="${cups}/share/cups"
@@ -31,15 +33,15 @@ stdenv.mkDerivation {
     install -m 644 carps.usb-quirks $CUPSDATADIR/usb/
   '';
 
-  buildInputs = [ cups ];
-
   meta = {
     description = "CUPS Linux drivers for Canon printers";
     homepage = "https://www.canon.com/";
     license = lib.licenses.gpl3Plus;
-    broken = stdenv.hostPlatform.isDarwin;
+
     maintainers = with lib.maintainers; [
       ewok
     ];
+
+    broken = stdenv.hostPlatform.isDarwin;
   };
 }

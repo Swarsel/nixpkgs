@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  gfortran,
   fetchFromGitHub,
   cmake,
+  gfortran,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "dkh";
@@ -34,9 +34,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Arbitrary-order scalar-relativistic Douglas-Kroll-Hess module";
-    license = lib.licenses.lgpl3Only;
     homepage = "https://github.com/psi4/dkh";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.lgpl3Only;
     maintainers = [ lib.maintainers.sheepforce ];
+    platforms = lib.platforms.unix;
   };
 })

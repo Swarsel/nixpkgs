@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,9 +15,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-JUZwBy9aP649HSMLFIB7xrXlqc78JM3B+Ejci1pu+4E=";
   };
 
-  proxyVendor = true;
-
   vendorHash = "sha256-xX4ZrhIdHvNFRTXHkZfEbevauuv4x9IYfDVfq7IFDg8=";
+  # The test requires a running database
+  doCheck = false;
 
   ldflags = [
     "-s"
@@ -25,17 +25,18 @@ buildGoModule (finalAttrs: {
     "-X main.version=${finalAttrs.version}"
   ];
 
-  # The test requires a running database
-  doCheck = false;
+  proxyVendor = true;
 
   meta = {
     description = "Idempotent SQL schema management tool";
+    homepage = "https://github.com/sqldef/sqldef";
+    changelog = "https://github.com/sqldef/sqldef/blob/v${finalAttrs.version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       mit # for everything except parser
       asl20 # for parser
     ];
-    homepage = "https://github.com/sqldef/sqldef";
-    changelog = "https://github.com/sqldef/sqldef/blob/v${finalAttrs.version}/CHANGELOG.md";
+
     maintainers = with lib.maintainers; [ kgtkr ];
   };
 })

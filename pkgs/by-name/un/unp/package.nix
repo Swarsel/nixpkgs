@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
+  file,
+  gzip,
   installShellFiles,
   makeWrapper,
   perl,
   unzip,
-  gzip,
-  file,
   # extractors which are added to unp’s PATH
   extraBackends ? [ ],
 }:
@@ -26,11 +26,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.0";
 
   src = fetchFromGitLab {
-    domain = "salsa.debian.org";
     owner = "blade";
     repo = "unp";
     tag = "debian/${finalAttrs.version}";
     hash = "sha256-6lYyKnNUkz9PKdn++zHe2SMdFsgaajStIdSaenbXIRo=";
+    domain = "salsa.debian.org";
   };
 
   nativeBuildInputs = [
@@ -39,10 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ perl ];
-
-  dontConfigure = true;
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -56,6 +52,9 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
+  dontConfigure = true;
 
   meta = {
     description = "Command line tool for unpacking archives easily";

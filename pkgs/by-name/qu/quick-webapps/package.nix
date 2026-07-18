@@ -1,19 +1,16 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-
   just,
-  pkg-config,
-  makeBinaryWrapper,
   libcosmicAppHook,
-
   libxkbcommon,
-  openssl,
-  wayland,
-
+  makeBinaryWrapper,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  wayland,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "quick-webapps";
@@ -26,8 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-yd4lALm7eG4NxrvaduZC1SZEE83j/nRsG2ufrfUMJJM=";
   };
 
-  cargoHash = "sha256-gg8WCzKbpFT8SRzMxC7ezvv+uN9IpIbGy/yytFC9uaM=";
-
   nativeBuildInputs = [
     just
     pkg-config
@@ -39,8 +34,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-gg8WCzKbpFT8SRzMxC7ezvv+uN9IpIbGy/yytFC9uaM=";
   env.VERGEN_GIT_SHA = finalAttrs.src.tag;
-
   dontUseJustBuild = true;
   dontUseJustCheck = true;
 
@@ -59,8 +54,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Web App Manager for the COSMIC desktop";
     homepage = "https://github.com/cosmic-utils/web-apps";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ pluiedev ];
+    platforms = lib.platforms.linux;
     mainProgram = "quick-webapps";
   };
 })

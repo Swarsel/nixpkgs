@@ -10,18 +10,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-
-  # nativeBuildInputs
-  pkg-config,
-  installShellFiles,
-
   # buildInputs
   fontconfig,
   harfbuzzFull,
-  openssl,
   icu,
-
+  installShellFiles,
+  openssl,
+  # nativeBuildInputs
+  pkg-config,
+  rustPlatform,
   # passthru.tests
   tectonic,
 }:
@@ -37,14 +34,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-5yphhmrrfgFwQ952eWpToyGfIJVJfV6y5w0BgznSOe0=";
   };
 
-  cargoHash = "sha256-22Hy51zCzY2DRytcYHgwkI9+e/g52o1jy4eosvEm3KY=";
+  strictDeps = true;
 
   nativeBuildInputs = [
     pkg-config
     installShellFiles
   ];
-
-  buildFeatures = [ "external-harfbuzz" ];
 
   buildInputs = [
     icu
@@ -53,6 +48,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-22Hy51zCzY2DRytcYHgwkI9+e/g52o1jy4eosvEm3KY=";
   # By default, tectonic looks up the latest bundle by opening this URL:
   #
   #   https://relay.fullyjustified.net/default_bundle_v${FORMAT_VERSION}.tar
@@ -84,6 +80,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
   #   https://github.com/tectonic-typesetting/tectonic/issues/1269
   #
   env.TECTONIC_BUNDLE_LOCKED = "https://data1.fullyjustified.net/tlextras-2022.0r0.tar";
+  doCheck = true;
+
+  checkFlags = [
+    # Test fails due to tectonic bundle missing and can't be downloaded in the
+    # sandbox
+    "--skip=tests::no_segfault_after_failed_compilation"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    # Another sandbox failing test, see:
+    # https://github.com/tectonic-typesetting/tectonic/issues/1352
+    "--skip=v2_watch_succeeds"
+  ];
 
   postInstall = ''
     # Makes it possible to automatically use the V2 CLI API
@@ -102,35 +110,25 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --fish <($out/bin/nextonic show shell-completions fish)
   '';
 
-  checkFlags = [
-    # Test fails due to tectonic bundle missing and can't be downloaded in the
-    # sandbox
-    "--skip=tests::no_segfault_after_failed_compilation"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    # Another sandbox failing test, see:
-    # https://github.com/tectonic-typesetting/tectonic/issues/1352
-    "--skip=v2_watch_succeeds"
-  ];
-  doCheck = true;
+  __structuredAttrs = true;
+  buildFeatures = [ "external-harfbuzz" ];
 
   passthru = {
     inherit (tectonic.passthru) tests;
   };
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   meta = {
     description = "Modernized, complete, self-contained TeX/LaTeX engine, powered by XeTeX and TeXLive";
     homepage = "https://tectonic-typesetting.github.io/";
     changelog = "https://github.com/tectonic-typesetting/tectonic/blob/tectonic@${finalAttrs.version}/CHANGELOG.md";
     license = with lib.licenses; [ mit ];
-    mainProgram = "tectonic";
+
     maintainers = with lib.maintainers; [
       lluchs
       doronbehar
       bryango
     ];
+
+    mainProgram = "tectonic";
   };
 })

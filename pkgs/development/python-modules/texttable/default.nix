@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "texttable";
   version = "1.7.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,9 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "texttable" ];
-
   enabledTestPaths = [ "tests.py" ];
+  format = "setuptools";
+  pythonImportsCheck = [ "texttable" ];
 
   meta = {
     description = "Module to generate a formatted text table, using ASCII characters";

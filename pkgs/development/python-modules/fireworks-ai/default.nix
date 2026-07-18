@@ -1,46 +1,39 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-  hatch-fancy-pypi-readme,
-
-  # dependencies
-  httpx,
-  pydantic,
-  typing-extensions,
-  anyio,
-  distro,
-  sniffio,
   aiohttp,
-  httpx-aiohttp,
-
+  anyio,
+  buildPythonPackage,
   # optional dependencies
   datasets,
+  # tests
+  dirty-equals,
+  distro,
+  hatch-fancy-pypi-readme,
+  # build-system
+  hatchling,
+  # dependencies
+  httpx,
+  httpx-aiohttp,
   numpy,
+  pydantic,
+  pytest-asyncio,
+  pytestCheckHook,
   requests,
+  respx,
+  sniffio,
   tiktoken,
+  time-machine,
   # tinker -- not packaged yet
   torch,
   transformers,
+  typing-extensions,
   wandb,
-
-  # tests
-  dirty-equals,
-  pytest-asyncio,
-  pytestCheckHook,
-  respx,
-  time-machine,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "fireworks-ai";
   version = "1.2.0-alpha.71";
-  pyproject = true;
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "fw-ai-external";
@@ -54,12 +47,23 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "hatchling==1.26.3" "hatchling>=1.26.3"
   '';
 
+  strictDeps = true;
+
+  nativeCheckInputs = [
+    dirty-equals
+    pytest-asyncio
+    pytestCheckHook
+    respx
+    time-machine
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
+
+  __structuredAttrs = true;
+
   build-system = [
     hatchling
     hatch-fancy-pypi-readme
   ];
-
-  pythonRelaxDeps = [ "pydantic" ];
 
   dependencies = [
     aiohttp
@@ -73,10 +77,6 @@ buildPythonPackage (finalAttrs: {
   ];
 
   optional-dependencies = {
-    training-sdk = [
-      # tinker is not available in nixpkgs
-      requests
-    ];
     training = [
       datasets
       numpy
@@ -86,20 +86,20 @@ buildPythonPackage (finalAttrs: {
       wandb
     ]
     ++ finalAttrs.passthru.optional-dependencies.training-sdk;
+
+    training-sdk = [
+      # tinker is not available in nixpkgs
+      requests
+    ];
   };
 
-  nativeCheckInputs = [
-    dirty-equals
-    pytest-asyncio
-    pytestCheckHook
-    respx
-    time-machine
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
+  pyproject = true;
 
   pythonImportsCheck = [
     "fireworks"
   ];
+
+  pythonRelaxDeps = [ "pydantic" ];
 
   meta = {
     description = "Client library for Fireworks.ai";

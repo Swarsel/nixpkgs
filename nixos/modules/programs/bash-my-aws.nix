@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -22,7 +22,6 @@ in
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = with pkgs; [ bash-my-aws ];
-
     programs.bash.interactiveShellInit = initScript;
   };
 }

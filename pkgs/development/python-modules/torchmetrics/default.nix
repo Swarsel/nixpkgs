@@ -1,33 +1,28 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # dependencies
-  numpy,
-  lightning-utilities,
-  packaging,
-
-  # buildInputs
-  torch,
-
+  buildPythonPackage,
   # tests
   ipython,
-  pytestCheckHook,
+  lightning-utilities,
+  # dependencies
+  numpy,
+  packaging,
   pytest-doctestplus,
   pytest-xdist,
+  pytestCheckHook,
   pytorch-lightning,
   scikit-image,
-  transformers,
-
+  # buildInputs
+  torch,
   # passthru
   torchmetrics,
+  transformers,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "torchmetrics";
   version = "1.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Lightning-AI";
@@ -36,14 +31,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-jlIZQWu0lE37Gv0Rzmgm+kG3dEeT1p3pKdXzkUgq3Rw=";
   };
 
-  dependencies = [
-    numpy
-    lightning-utilities
-    packaging
-  ];
-
   # Let the user bring their own instance
   buildInputs = [ torch ];
+  # A cyclic dependency in: integrations/test_lightning.py
+  doCheck = false;
 
   nativeCheckInputs = [
     ipython
@@ -55,20 +46,10 @@ buildPythonPackage (finalAttrs: {
     transformers
   ];
 
-  # A cyclic dependency in: integrations/test_lightning.py
-  doCheck = false;
-  passthru.tests.check = torchmetrics.overridePythonAttrs (_: {
-    pname = "${finalAttrs.pname}-check";
-    doCheck = true;
-    # We don't have to install because the only purpose
-    # of this passthru test is to, well, test.
-    # This fixes having to set `catchConflicts` to false.
-    dontInstall = true;
-  });
-
-  pytestFlags = [
-    # The (path: py.path.local) argument is deprecated, please use (file_path: pathlib.Path)
-    "-Wignore::pytest.PytestRemovedIn9Warning"
+  dependencies = [
+    numpy
+    lightning-utilities
+    packaging
   ];
 
   disabledTestPaths = [
@@ -90,7 +71,23 @@ buildPythonPackage (finalAttrs: {
     "src/torchmetrics"
   ];
 
+  pyproject = true;
+
+  pytestFlags = [
+    # The (path: py.path.local) argument is deprecated, please use (file_path: pathlib.Path)
+    "-Wignore::pytest.PytestRemovedIn9Warning"
+  ];
+
   pythonImportsCheck = [ "torchmetrics" ];
+
+  passthru.tests.check = torchmetrics.overridePythonAttrs (_: {
+    pname = "${finalAttrs.pname}-check";
+    doCheck = true;
+    # We don't have to install because the only purpose
+    # of this passthru test is to, well, test.
+    # This fixes having to set `catchConflicts` to false.
+    dontInstall = true;
+  });
 
   meta = {
     description = "Machine learning metrics for distributed, scalable PyTorch applications (used in pytorch-lightning)";

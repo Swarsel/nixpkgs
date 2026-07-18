@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  texinfo,
-  texLive,
   perl,
+  texLive,
+  texinfo,
 }:
 
 stdenv.mkDerivation rec {
@@ -17,6 +17,7 @@ stdenv.mkDerivation rec {
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     texinfo
     texLive
@@ -27,6 +28,7 @@ stdenv.mkDerivation rec {
     make build/asdf.lisp
     make -C doc asdf.info asdf.html
   '';
+
   installPhase = ''
     mkdir -p "$out"/lib/common-lisp/asdf/
     mkdir -p "$out"/share/doc/asdf/

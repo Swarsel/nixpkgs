@@ -1,14 +1,14 @@
 {
   lib,
-  buildGo126Module,
   fetchFromGitHub,
   _experimental-update-script-combinators,
-  versionCheckHook,
-  nix-update-script,
-  writeShellApplication,
-  nix,
+  buildGo126Module,
   gnugrep,
   gnused,
+  nix,
+  nix-update-script,
+  versionCheckHook,
+  writeShellApplication,
 }:
 
 let
@@ -27,26 +27,26 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-q6dMb2ab4uZ3GTrcA7v2JzfmOM+ZzBcJN6gKOpLfM/k=";
+  env.CGO_ENABLED = 0;
+
+  postInstall = ''
+    ln -s "$out/bin/tsgo" "$out/bin/tsc"
+  '';
+
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
 
   ldflags = [
     "-s"
     "-w"
   ];
 
-  env.CGO_ENABLED = 0;
-
   subPackages = [
     "cmd/tsgo"
   ];
-
-  postInstall = ''
-    ln -s "$out/bin/tsgo" "$out/bin/tsc"
-  '';
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
 
   passthru = {
     updateScript = _experimental-update-script-combinators.sequence [
@@ -60,11 +60,13 @@ buildGoModule (finalAttrs: {
 
       (lib.getExe (writeShellApplication {
         name = "typescript-go-go-version-updater";
+
         runtimeInputs = [
           nix
           gnugrep
           gnused
         ];
+
         text = ''
           new_src="$(nix-build --attr 'pkgs.typescript-go.src' --no-out-link)"
           new_go_major_minor="$(grep --only-matching --perl-regexp '^go \K([0-9]+\.[0-9]+)' "$new_src/go.mod")"
@@ -84,9 +86,11 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/microsoft/typescript-go";
     changelog = "https://github.com/microsoft/typescript-go/releases/tag/typescript/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       kachick
     ];
+
     mainProgram = "tsc";
   };
 })

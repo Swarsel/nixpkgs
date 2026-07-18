@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   adslib,
   buildPythonPackage,
-  fetchFromGitHub,
   nix-update-script,
   pytestCheckHook,
   setuptools,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "pyads";
   version = "3.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "stlehmann";
@@ -20,10 +19,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-v36T8CEEgKvw5XRg0WPTUoGMa9uKDrea/9MJY3+WsP8=";
   };
-
-  build-system = [ setuptools ];
-
-  buildInputs = [ adslib ];
 
   postPatch = ''
     # Skip compilation of bundled adslib - we provide it as a separate nix package
@@ -39,10 +34,11 @@ buildPythonPackage rec {
         'ctypes.CDLL("${lib.getLib adslib}/lib/adslib.so")'
   '';
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  buildInputs = [ adslib ];
   # Test suite has port reuse races and UDP timing issues on darwin
   doCheck = !stdenv.hostPlatform.isDarwin;
+  nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
 
   disabledTests = [
     # Race over UDP 48899 (no SO_REUSEADDR), occasionally segfaulting on shutdown
@@ -50,6 +46,7 @@ buildPythonPackage rec {
     "test_get_ams"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyads" ];
 
   passthru.updateScript = nix-update-script {

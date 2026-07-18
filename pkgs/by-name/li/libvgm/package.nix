@@ -1,37 +1,33 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  unstableGitUpdater,
-  testers,
+  alsa-lib,
   cmake,
+  libao,
   libiconv,
+  libpulseaudio,
+  testers,
+  unstableGitUpdater,
   zlib,
-  enableShared ? (!stdenv.hostPlatform.isStatic),
-
+  emulators ? [ ],
   enableAudio ? true,
+  enableEmulation ? true,
+  enableLibplayer ? true,
+  enableShared ? (!stdenv.hostPlatform.isStatic),
+  enableTools ? false,
+  withALSA ? stdenv.hostPlatform.isLinux,
+  withAllEmulators ? true,
+  withCoreAudio ? stdenv.hostPlatform.isDarwin,
+  withDirectSound ? stdenv.hostPlatform.isWindows,
+  withLibao ? true,
+  withOSS ? stdenv.hostPlatform.isFreeBSD,
+  withPulseAudio ? stdenv.hostPlatform.isLinux,
+  withSADA ? stdenv.hostPlatform.isSunOS,
+  withWASAPI ? stdenv.hostPlatform.isWindows,
   withWaveWrite ? true,
   withWinMM ? stdenv.hostPlatform.isWindows,
-  withDirectSound ? stdenv.hostPlatform.isWindows,
   withXAudio2 ? stdenv.hostPlatform.isWindows,
-  withWASAPI ? stdenv.hostPlatform.isWindows,
-  withOSS ? stdenv.hostPlatform.isFreeBSD,
-  withSADA ? stdenv.hostPlatform.isSunOS,
-  withALSA ? stdenv.hostPlatform.isLinux,
-  alsa-lib,
-  withPulseAudio ? stdenv.hostPlatform.isLinux,
-  libpulseaudio,
-  withCoreAudio ? stdenv.hostPlatform.isDarwin,
-  withLibao ? true,
-  libao,
-
-  enableEmulation ? true,
-  withAllEmulators ? true,
-  emulators ? [ ],
-
-  enableLibplayer ? true,
-
-  enableTools ? false,
 }:
 
 assert enableTools -> enableAudio && enableEmulation && enableLibplayer;
@@ -105,13 +101,16 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "More modular rewrite of most components from VGMPlay";
     homepage = "https://github.com/ValleyBell/libvgm";
+
     license =
       if (enableEmulation && (withAllEmulators || (lib.lists.elem "WSWAN_ALL" emulators))) then
         lib.licenses.unfree # https://github.com/ValleyBell/libvgm/issues/43
       else
         lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [ OPNA2608 ];
     platforms = lib.platforms.all;
+
     pkgConfigModules = [
       "vgm-utils"
     ]

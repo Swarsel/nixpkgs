@@ -1,52 +1,32 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
+  buildPythonPackage,
   # build-system
   cython,
-  setuptools,
-
-  # dependencies
-  typing-extensions,
-
-  # optional-dependencies
-  python-dotenv,
-  email-validator,
-
   # tests
   distutils,
+  email-validator,
   pytest-mock,
   pytest7CheckHook,
+  # optional-dependencies
+  python-dotenv,
+  pythonAtLeast,
+  setuptools,
+  # dependencies
+  typing-extensions,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "pydantic";
   version = "1.10.24";
-  pyproject = true;
-
-  # https://github.com/pydantic/pydantic/pull/12263
-  disabled = pythonAtLeast "3.14";
 
   src = fetchFromGitHub {
     owner = "pydantic";
     repo = "pydantic";
     tag = "v${version}";
     hash = "sha256-eDmVpo6tI6a1lfBOU7Bvq9Wv/+I959c7krYPzZEoQig=";
-  };
-
-  build-system = [
-    cython
-    setuptools
-  ];
-
-  dependencies = [ typing-extensions ];
-
-  optional-dependencies = {
-    dotenv = [ python-dotenv ];
-    email = [ email-validator ];
   };
 
   nativeCheckInputs = [
@@ -57,8 +37,22 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
+  build-system = [
+    cython
+    setuptools
+  ];
+
+  dependencies = [ typing-extensions ];
+  # https://github.com/pydantic/pydantic/pull/12263
+  disabled = pythonAtLeast "3.14";
   enableParallelBuilding = true;
 
+  optional-dependencies = {
+    dotenv = [ python-dotenv ];
+    email = [ email-validator ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "pydantic" ];
 
   meta = {

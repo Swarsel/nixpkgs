@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  tinycmmc,
   libiconv,
+  tinycmmc,
 }:
 
 stdenv.mkDerivation {
@@ -25,8 +25,8 @@ stdenv.mkDerivation {
   meta = {
     description = "A simple gettext replacement that works directly on .po files";
     homepage = "https://github.com/tinygettext/tinygettext";
+    license = lib.licenses.zlib;
     maintainers = [ lib.maintainers.SchweGELBin ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.zlib;
   };
 }

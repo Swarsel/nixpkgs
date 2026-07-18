@@ -1,14 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  django,
+  buildPythonPackage,
   dj-database-url,
+  django,
+  djangorestframework,
   inflection,
   pydantic,
-  pytestCheckHook,
   pytest-django,
-  djangorestframework,
+  pytestCheckHook,
   pyyaml,
   syrupy,
   typing-extensions,
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "django-pydantic-field";
   version = "0.5.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "surenkov";
@@ -32,14 +31,6 @@ buildPythonPackage rec {
     substituteInPlace pyproject.toml \
       --replace-fail "uv_build>=0.9.17,<0.10.0" uv_build
   '';
-
-  build-system = [ uv-build ];
-
-  dependencies = [
-    django
-    pydantic
-    typing-extensions
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -56,11 +47,21 @@ buildPythonPackage rec {
     export DJANGO_SETTINGS_MODULE=tests.settings.django_test_settings
   '';
 
+  build-system = [ uv-build ];
+
+  dependencies = [
+    django
+    pydantic
+    typing-extensions
+  ];
+
+  pyproject = true;
+
   meta = {
-    changelog = "https://github.com/surenkov/django-pydantic-field/releases/tag/${src.tag}";
     description = "Django JSONField with Pydantic models as a Schema";
     homepage = "https://github.com/surenkov/django-pydantic-field";
-    maintainers = with lib.maintainers; [ kiara ];
+    changelog = "https://github.com/surenkov/django-pydantic-field/releases/tag/${src.tag}";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ kiara ];
   };
 }

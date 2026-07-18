@@ -16,6 +16,13 @@ stdenv.mkDerivation rec {
     sha256 = "1l4hpcmgc98kp9g1642sy111ki5qyk3q7j10xzkgmnvz8lqffnxp";
   };
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 2.8.7)" "cmake_minimum_required(VERSION 3.10)"
+    substituteInPlace webOS/webOS.cmake \
+      --replace-fail "cmake_minimum_required(VERSION 2.8.7)" "cmake_minimum_required(VERSION 3.10)"
+  '';
+
   nativeBuildInputs = [ cmake ];
 
   prePatch = ''
@@ -28,13 +35,6 @@ stdenv.mkDerivation rec {
   '';
 
   setupHook = ./cmake-setup-hook.sh;
-
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 2.8.7)" "cmake_minimum_required(VERSION 3.10)"
-    substituteInPlace webOS/webOS.cmake \
-      --replace-fail "cmake_minimum_required(VERSION 2.8.7)" "cmake_minimum_required(VERSION 3.10)"
-  '';
 
   meta = {
     description = "CMake modules needed to build Open WebOS components";

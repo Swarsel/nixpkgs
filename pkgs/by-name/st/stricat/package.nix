@@ -24,8 +24,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Multi-use cryptographic tool based on the STRIBOB algorithm";
     homepage = "https://www.stribob.com/stricat/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.thoughtpolice ];
+    platforms = lib.platforms.unix;
     mainProgram = "stricat";
   };
 })

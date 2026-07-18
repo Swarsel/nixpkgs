@@ -1,37 +1,50 @@
 {
   lib,
-  callPackage,
   stdenv,
-  buildPackages,
   fetchurl,
-  which,
   autoconf,
   automake,
-  flex,
   bison,
-  glibc,
-  perl,
-  libkrb5,
-  libxslt,
-  docbook_xsl,
-  docbook_xml_dtd_43,
-  libtool_2,
-  withDevdoc ? false,
-  doxygen,
+  buildPackages,
+  callPackage,
   dblatex, # Extra developer documentation
-  withNcurses ? false,
+  docbook_xml_dtd_43,
+  docbook_xsl,
+  doxygen,
+  flex,
+  glibc,
+  libkrb5,
+  libtool_2,
+  libxslt,
   ncurses, # Extra ncurses utilities. Needed for debugging and monitoring.
-  withTsm ? false,
+  perl,
   tsm-client, # Tivoli Storage Manager Backup Client from IBM
+  which,
+  withDevdoc ? false,
+  withNcurses ? false,
+  withTsm ? false,
 }:
 
 with (import ./srcs.nix { inherit fetchurl; });
 
 stdenv.mkDerivation {
-  pname = "openafs";
   inherit version srcs;
+  pname = "openafs";
 
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  outputs = [
+    "out"
+    "dev"
+    "man"
+    "doc"
+  ]
+  ++ lib.optional withDevdoc "devdoc";
+
+  patches = [
+    ./bosserver.patch
+    ./cross-build.patch
+  ]
+  ++ lib.optional withTsm ./tsmbac.patch;
+
   nativeBuildInputs = [
     autoconf
     automake
@@ -48,27 +61,7 @@ stdenv.mkDerivation {
   ];
 
   buildInputs = [ libkrb5 ] ++ lib.optional withNcurses ncurses;
-
-  patches = [
-    ./bosserver.patch
-    ./cross-build.patch
-  ]
-  ++ lib.optional withTsm ./tsmbac.patch;
-
-  outputs = [
-    "out"
-    "dev"
-    "man"
-    "doc"
-  ]
-  ++ lib.optional withDevdoc "devdoc";
-
-  enableParallelBuilding = false;
-
-  setOutputFlags = false;
-
-  # Makefiles don't include install targets for all new shared libs, yet.
-  dontDisableStatic = true;
+  buildFlags = [ "all_nolibafs" ];
 
   preConfigure = ''
     patchShebangs .
@@ -102,8 +95,6 @@ stdenv.mkDerivation {
   + lib.optionalString withTsm ''
     export XBSA_CFLAGS="-Dxbsa -DNEW_XBSA -I${tsm-client}/opt/tivoli/tsm/client/api/bin64/sample -DXBSA_TSMLIB=\\\"${tsm-client}/lib64/libApiTSM64.so\\\""
   '';
-
-  buildFlags = [ "all_nolibafs" ];
 
   postBuild = ''
     for d in doc/xml/{AdminGuide,QuickStartUnix,UserGuide}; do
@@ -140,20 +131,28 @@ stdenv.mkDerivation {
     done
   '';
 
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  # Makefiles don't include install targets for all new shared libs, yet.
+  dontDisableStatic = true;
+  enableParallelBuilding = false;
+  setOutputFlags = false;
   passthru.cellservdb = callPackage ./cellservdb.nix { };
 
   meta = {
+    description = "Open AFS client";
+    homepage = "https://www.openafs.org";
+    license = lib.licenses.ipl10;
+
+    maintainers = [
+      lib.maintainers.spacefrogg
+    ];
+
+    platforms = lib.platforms.linux;
+
     outputsToInstall = [
       "out"
       "doc"
       "man"
-    ];
-    description = "Open AFS client";
-    homepage = "https://www.openafs.org";
-    license = lib.licenses.ipl10;
-    platforms = lib.platforms.linux;
-    maintainers = [
-      lib.maintainers.spacefrogg
     ];
   };
 }

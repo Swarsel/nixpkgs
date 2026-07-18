@@ -22,12 +22,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     longDescription = "A simple command line application that integrates with `cron` to execute tasks relative to sunset, sunrise and other such solar events.";
     homepage = "https://github.com/mfreeborn/heliocron";
     changelog = "https://github.com/mfreeborn/heliocron/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = with lib.maintainers; [ TheColorman ];
-    mainProgram = "heliocron";
     platforms = lib.platforms.linux;
+    mainProgram = "heliocron";
   };
 })

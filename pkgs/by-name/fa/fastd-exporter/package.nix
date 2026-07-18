@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -26,10 +26,12 @@ buildGoModule {
     description = "Prometheus exporter for fastd";
     homepage = "https://github.com/freifunk-darmstadt/fastd-exporter";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
-    mainProgram = "fastd-exporter";
+
     maintainers = with lib.maintainers; [
       felixsinger
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "fastd-exporter";
   };
 }

@@ -21,55 +21,12 @@ in
     in
     {
       servers = mkOption {
-        type = types.attrsOf (
-          types.submodule (
-            { ... }:
-            {
-              options = {
-                enable = mkEnableOption "Coqui TTS server";
-
-                port = mkOption {
-                  type = types.port;
-                  example = 5000;
-                  description = ''
-                    Port to bind the TTS server to.
-                  '';
-                };
-
-                model = mkOption {
-                  type = types.nullOr types.str;
-                  default = "tts_models/en/ljspeech/tacotron2-DDC";
-                  example = null;
-                  description = ''
-                    Name of the model to download and use for speech synthesis.
-
-                    Check `tts-server --list_models` for possible values.
-
-                    Set to `null` to use a custom model.
-                  '';
-                };
-
-                useCuda = mkOption {
-                  type = types.bool;
-                  default = false;
-                  example = true;
-                  description = ''
-                    Whether to offload computation onto a CUDA compatible GPU.
-                  '';
-                };
-
-                extraArgs = mkOption {
-                  type = types.listOf types.str;
-                  default = [ ];
-                  description = ''
-                    Extra arguments to pass to the server commandline.
-                  '';
-                };
-              };
-            }
-          )
-        );
         default = { };
+
+        description = ''
+          TTS server instances.
+        '';
+
         example = literalExpression ''
           {
             english = {
@@ -86,9 +43,62 @@ in
             };
           }
         '';
-        description = ''
-          TTS server instances.
-        '';
+
+        type = types.attrsOf (
+          types.submodule (
+            { ... }:
+            {
+              options = {
+                enable = mkEnableOption "Coqui TTS server";
+
+                extraArgs = mkOption {
+                  default = [ ];
+
+                  description = ''
+                    Extra arguments to pass to the server commandline.
+                  '';
+
+                  type = types.listOf types.str;
+                };
+
+                model = mkOption {
+                  default = "tts_models/en/ljspeech/tacotron2-DDC";
+
+                  description = ''
+                    Name of the model to download and use for speech synthesis.
+
+                    Check `tts-server --list_models` for possible values.
+
+                    Set to `null` to use a custom model.
+                  '';
+
+                  example = null;
+                  type = types.nullOr types.str;
+                };
+
+                port = mkOption {
+                  description = ''
+                    Port to bind the TTS server to.
+                  '';
+
+                  example = 5000;
+                  type = types.port;
+                };
+
+                useCuda = mkOption {
+                  default = false;
+
+                  description = ''
+                    Whether to offload computation onto a CUDA compatible GPU.
+                  '';
+
+                  example = true;
+                  type = types.bool;
+                };
+              };
+            }
+          )
+        );
       };
     };
 
@@ -106,27 +116,20 @@ in
       systemd.services = mapAttrs' (
         server: options:
         nameValuePair "tts-${server}" {
-          description = "Coqui TTS server instance ${server}";
           after = [
             "network-online.target"
           ];
-          wantedBy = [
-            "multi-user.target"
-          ];
+
+          description = "Coqui TTS server instance ${server}";
+          environment.HOME = "/var/lib/tts";
+
           path = with pkgs; [
             espeak-ng
           ];
-          environment.HOME = "/var/lib/tts";
+
           serviceConfig = {
-            DynamicUser = true;
-            User = "tts";
-            StateDirectory = "tts";
-            ExecStart =
-              "${pkgs.tts}/bin/tts-server --port ${toString options.port} "
-              + optionalString (options.model != null) "--model_name ${options.model} "
-              + optionalString (options.useCuda) "--use_cuda "
-              + (escapeShellArgs options.extraArgs);
             CapabilityBoundingSet = "";
+
             DeviceAllow =
               if options.useCuda then
                 [
@@ -144,34 +147,53 @@ in
                 ]
               else
                 "";
+
             DevicePolicy = "closed";
+            DynamicUser = true;
+
+            ExecStart =
+              "${pkgs.tts}/bin/tts-server --port ${toString options.port} "
+              + optionalString (options.model != null) "--model_name ${options.model} "
+              + optionalString (options.useCuda) "--use_cuda "
+              + (escapeShellArgs options.extraArgs);
+
             LockPersonality = true;
             # jit via numba->llvmpipe
             MemoryDenyWriteExecute = false;
             PrivateDevices = true;
             PrivateUsers = true;
+            ProcSubset = "pid";
+            ProtectControlGroups = true;
             ProtectHome = true;
             ProtectHostname = true;
             ProtectKernelLogs = true;
             ProtectKernelModules = true;
             ProtectKernelTunables = true;
-            ProtectControlGroups = true;
             ProtectProc = "invisible";
-            ProcSubset = "pid";
+
             RestrictAddressFamilies = [
               "AF_UNIX"
               "AF_INET"
               "AF_INET6"
             ];
+
             RestrictNamespaces = true;
             RestrictRealtime = true;
+            StateDirectory = "tts";
             SystemCallArchitectures = "native";
+
             SystemCallFilter = [
               "@system-service"
               "~@privileged"
             ];
+
             UMask = "0077";
+            User = "tts";
           };
+
+          wantedBy = [
+            "multi-user.target"
+          ];
         }
       ) cfg.servers;
     };

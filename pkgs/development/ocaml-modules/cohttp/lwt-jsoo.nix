@@ -2,18 +2,18 @@
   buildDunePackage,
   cohttp,
   cohttp-lwt,
+  js_of_ocaml,
+  js_of_ocaml-lwt,
+  js_of_ocaml-ppx,
   logs,
   lwt,
-  js_of_ocaml,
-  js_of_ocaml-ppx,
-  js_of_ocaml-lwt,
-  nodejs,
   lwt_ppx,
+  nodejs,
 }:
 
 buildDunePackage {
-  pname = "cohttp-lwt-jsoo";
   inherit (cohttp-lwt) version src;
+  pname = "cohttp-lwt-jsoo";
 
   propagatedBuildInputs = [
     cohttp
@@ -26,6 +26,7 @@ buildDunePackage {
   ];
 
   doCheck = true;
+
   checkInputs = [
     nodejs
     lwt_ppx

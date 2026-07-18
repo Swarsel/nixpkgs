@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pdm-backend,
+  buildPythonPackage,
   importlib-resources,
+  pdm-backend,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "acres";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nipreps";
@@ -18,6 +17,10 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-D2w/xGlt0ApQ1Il9pzHPcL1s3CmCCOdgRpvUw/LI3gA=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     pdm-backend
@@ -27,12 +30,10 @@ buildPythonPackage rec {
     importlib-resources
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "acres"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
   ];
 
   meta = {

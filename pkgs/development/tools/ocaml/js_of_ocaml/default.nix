@@ -5,13 +5,9 @@
 }:
 
 buildDunePackage {
-  pname = "js_of_ocaml";
-
   inherit (js_of_ocaml-compiler) version src;
-
+  pname = "js_of_ocaml";
   buildInputs = [ ppxlib ];
-
   propagatedBuildInputs = [ js_of_ocaml-compiler ];
-
   meta = removeAttrs js_of_ocaml-compiler.meta [ "mainProgram" ];
 }

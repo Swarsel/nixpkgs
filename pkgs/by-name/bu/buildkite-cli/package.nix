@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   gitMinimal,
+  nix-update-script,
   versionCheckHook,
   writableTmpDirAsHomeHook,
-  nix-update-script,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,11 +21,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-GGIjZ3Fc40JN6STP9h+0AER5PcTL4zf/SYa22vqrj6k=";
-
-  ldflags = [
-    "-s"
-    "-X github.com/buildkite/cli/v3/cmd/version.Version=${finalAttrs.version}"
-  ];
 
   nativeCheckInputs = [
     gitMinimal
@@ -53,16 +48,22 @@ buildGoModule (finalAttrs: {
       "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$"
     ];
 
-  __darwinAllowLocalNetworking = true;
-
   postInstall = ''
     mv $out/bin/cli $out/bin/bk
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  __darwinAllowLocalNetworking = true;
+
+  ldflags = [
+    "-s"
+    "-X github.com/buildkite/cli/v3/cmd/version.Version=${finalAttrs.version}"
+  ];
 
   passthru.updateScript = nix-update-script { };
 

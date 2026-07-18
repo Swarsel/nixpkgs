@@ -1,17 +1,17 @@
 {
   lib,
   fetchFromGitHub,
-  pkg-config,
   buildGoModule,
+  fetchpatch,
   libGL,
   libx11,
   libxcb,
   libxcursor,
   libxfixes,
   libxkbcommon,
+  pkg-config,
   vulkan-headers,
   wayland,
-  fetchpatch,
 }:
 
 buildGoModule (finalAttrs: {
@@ -27,14 +27,11 @@ buildGoModule (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-dxsVMjyKkRG4Q6mONlJAohWJ8YTu8KN7ynPVycJhcs8=";
       name = "switch-to-gio-fork.patch";
       url = "https://github.com/dominikh/gotraceui/commit/00289f5f4c1da3e13babd2389e533b069cd18e3c.diff";
-      hash = "sha256-dxsVMjyKkRG4Q6mONlJAohWJ8YTu8KN7ynPVycJhcs8=";
     })
   ];
-
-  vendorHash = "sha256-9rzcSxlOuQC5bt1kZuRX7CTQaDHKrtGRpMNLrOHTjJk=";
-  subPackages = [ "cmd/gotraceui" ];
 
   nativeBuildInputs = [ pkg-config ];
 
@@ -49,18 +46,21 @@ buildGoModule (finalAttrs: {
     libGL
   ];
 
-  ldflags = [ "-X gioui.org/app.ID=co.honnef.Gotraceui" ];
+  vendorHash = "sha256-9rzcSxlOuQC5bt1kZuRX7CTQaDHKrtGRpMNLrOHTjJk=";
 
   postInstall = ''
     cp -r share $out/
   '';
 
+  ldflags = [ "-X gioui.org/app.ID=co.honnef.Gotraceui" ];
+  subPackages = [ "cmd/gotraceui" ];
+
   meta = {
     description = "Efficient frontend for Go execution traces";
-    mainProgram = "gotraceui";
     homepage = "https://github.com/dominikh/gotraceui";
-    platforms = lib.platforms.linux;
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dominikh ];
+    platforms = lib.platforms.linux;
+    mainProgram = "gotraceui";
   };
 })

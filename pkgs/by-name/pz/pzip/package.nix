@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   unzip,
 }:
 
@@ -16,11 +16,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-bb2TSSyA7TwgoV53M/7WkNcTq8F0EjCA7ObHfnGL9l0=";
   };
 
-  vendorHash = "sha256-MRZlv4eN1Qbu+QXr//YexTDYSK4pCXAPO7VvGqZhjho=";
-
   nativeBuildInputs = [
     unzip
   ];
+
+  vendorHash = "sha256-MRZlv4eN1Qbu+QXr//YexTDYSK4pCXAPO7VvGqZhjho=";
 
   ldflags = [
     "-s"

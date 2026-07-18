@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  autoAddDriverRunpath,
   cmake,
   config,
-  enableCuda ? config.cudaSupport,
   cudaPackages,
-  versionCheckHook,
   installShellFiles,
   unstableGitUpdater,
-  autoAddDriverRunpath,
+  versionCheckHook,
+  enableCuda ? config.cudaSupport,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -41,32 +41,32 @@ stdenv.mkDerivation (finalAttrs: {
     installManPage ${finalAttrs.src}/peakperf.1
   '';
 
-  passthru = {
-    updateScript = unstableGitUpdater { };
-  };
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
-  ];
-
-  versionCheckProgramArg = [
-    "-v"
   ];
 
   preVersionCheck = ''
     export version=1.17
   '';
 
-  doInstallCheck = true;
-
   versionCheckProgram = "${placeholder "out"}/bin/peakperf";
 
+  versionCheckProgramArg = [
+    "-v"
+  ];
+
+  passthru = {
+    updateScript = unstableGitUpdater { };
+  };
+
   meta = {
-    homepage = "https://github.com/Dr-Noob/peakperf";
     description = "Achieve peak performance on x86 CPUs and NVIDIA GPUs";
-    mainProgram = "peakperf";
+    homepage = "https://github.com/Dr-Noob/peakperf";
+    license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ bot-wxt1221 ];
     platforms = [ "x86_64-linux" ];
-    license = lib.licenses.gpl2Only;
+    mainProgram = "peakperf";
   };
 })

@@ -1,8 +1,8 @@
 {
-  ffmpeg-headless,
+  lib,
   fetchFromGitHub,
   fetchpatch2,
-  lib,
+  ffmpeg-headless,
 }:
 
 let
@@ -11,23 +11,22 @@ in
 
 (ffmpeg-headless.override {
   inherit version; # Important! This sets the ABI.
+  buildAvdevice = false;
+  buildAvfilter = false;
+  buildFfmpeg = false;
+  buildFfplay = false;
+  buildPostproc = false;
+  buildSwresample = false;
+  buildSwscale = false;
 
   # Fetch commit hash from this repository: https://github.com/Servarr/ffmpeg-build
   # Compare build logs to upstream logs here: https://dev.azure.com/Servarr/Servarr/_build?definitionId=15
   source = fetchFromGitHub {
+    hash = "sha256-8qXQIbBNFRX3HsEHD2m4STHyxALqTSoIkKrVLc6vX/4=";
     owner = "Servarr";
     repo = "FFmpeg";
     rev = "9eecad42d64ab888b9bb366df998b5b7cac0e2bc";
-    hash = "sha256-8qXQIbBNFRX3HsEHD2m4STHyxALqTSoIkKrVLc6vX/4=";
   };
-
-  buildFfmpeg = false;
-  buildFfplay = false;
-  buildAvdevice = false;
-  buildAvfilter = false;
-  buildPostproc = false;
-  buildSwresample = false;
-  buildSwscale = false;
 
   withAlsa = false;
   withAmf = false;
@@ -38,16 +37,16 @@ in
   withCudaLLVM = false;
   withCuvid = false;
   withDrm = false;
-  withGmp = false;
-  withNetwork = false;
-  withNvcodec = false;
   withFontconfig = false;
   withFreetype = false;
   withFribidi = false;
+  withGmp = false;
   withGnutls = false;
   withIconv = false;
   withLzma = false;
   withMp3lame = false;
+  withNetwork = false;
+  withNvcodec = false;
   withOpencl = false;
   withOpenjpeg = false;
   withOpenmpt = false;
@@ -79,9 +78,9 @@ in
 
     patches = old.patches ++ [
       (fetchpatch2 {
+        hash = "sha256-+2kzfPJf5piim+DqEgDuVEEX5HLwRsxq0dWONJ4ACrU=";
         name = "fix_build_failure_due_to_libjxl_version_to_new";
         url = "https://git.ffmpeg.org/gitweb/ffmpeg.git/patch/75b1a555a70c178a9166629e43ec2f6250219eb2";
-        hash = "sha256-+2kzfPJf5piim+DqEgDuVEEX5HLwRsxq0dWONJ4ACrU=";
       })
     ];
 
@@ -107,9 +106,9 @@ in
 
     meta = {
       inherit (old.meta) license pkgConfigModules;
-      mainProgram = "ffprobe";
       description = "${old.meta.description} (Servarr fork)";
       homepage = "https://github.com/Servarr/FFmpeg";
       maintainers = with lib.maintainers; [ nyanloutre ];
+      mainProgram = "ffprobe";
     };
   })

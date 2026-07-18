@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pyyaml,
+  setuptools,
   unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "irctokens";
   version = "2.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jesopo";
@@ -19,19 +18,19 @@ buildPythonPackage rec {
     hash = "sha256-Y9NBqxGUkt48hnXxsmfydHkJmWWb+sRrElV8C7l9bpw=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     pyyaml
     unittestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "irctokens" ];
 
   meta = {
     description = "RFC1459 and IRCv3 protocol tokeniser library for python3";
-    license = lib.licenses.mit;
     homepage = "https://github.com/jesopo/irctokens";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hexa ];
   };
 }

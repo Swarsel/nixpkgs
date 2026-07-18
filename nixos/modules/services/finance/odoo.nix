@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -16,70 +16,79 @@ in
       enable = lib.mkEnableOption "odoo, an open source ERP and CRM system";
 
       package = lib.mkOption {
-        type = lib.types.package;
         description = "Which package to use for the Odoo instance.";
+
         relatedPackages = [
           "odoo17"
           "odoo18"
           "odoo19"
         ];
+
+        type = lib.types.package;
       };
 
       addons = lib.mkOption {
-        type = with lib.types; listOf package;
         default = [ ];
-        example = lib.literalExpression "[ pkgs.odoo_enterprise ]";
         description = "Odoo addons.";
+        example = lib.literalExpression "[ pkgs.odoo_enterprise ]";
+        type = with lib.types; listOf package;
       };
 
       autoInit = lib.mkEnableOption "automatically initialize the DB";
 
       autoInitExtraFlags = lib.mkOption {
-        type = with lib.types; listOf str;
         default = [ ];
+        description = "Extra flags passed to odoo when run for the first time by autoInit";
+
         example =
           lib.literalExpression # nix
             ''
               [ "--without-demo=all" ]
             '';
-        description = "Extra flags passed to odoo when run for the first time by autoInit";
+
+        type = with lib.types; listOf str;
+      };
+
+      domain = lib.mkOption {
+        default = null;
+        description = "Domain to host Odoo with nginx";
+        type = with lib.types; nullOr str;
       };
 
       settings = lib.mkOption {
-        type = lib.types.submodule {
-          options = {
-            options = {
-              workers = lib.mkOption {
-                type = lib.types.ints.unsigned;
-                default = 0;
-                description = "Values above 0 will enable the multi-processing HTTP server, this should be set for production setups. This needs to be set to >0 for real-time connections in the discuss app. For configuration recommendations see <https://www.odoo.com/documentation/19.0/administration/on_premise/deploy.html#builtin-server>";
-              };
-              proxy_mode = lib.mkOption {
-                type = lib.types.bool;
-                default = cfg.domain != null;
-                defaultText = "services.odoo.domain != null";
-                description = "Enables the use of X-Forwarded-* headers through Werkzeug’s proxy support. Must be enabled if reverse proxy is used.";
-              };
-            };
-          };
-          freeformType = format.type;
-        };
         default = { };
+
         description = ''
           Odoo configuration settings. For more details see <https://www.odoo.com/documentation/15.0/administration/install/deploy.html>
         '';
+
         example = lib.literalExpression ''
           options = {
             db_user = "odoo";
             db_password="odoo";
           };
         '';
-      };
 
-      domain = lib.mkOption {
-        type = with lib.types; nullOr str;
-        description = "Domain to host Odoo with nginx";
-        default = null;
+        type = lib.types.submodule {
+          options = {
+            options = {
+              proxy_mode = lib.mkOption {
+                default = cfg.domain != null;
+                defaultText = "services.odoo.domain != null";
+                description = "Enables the use of X-Forwarded-* headers through Werkzeug’s proxy support. Must be enabled if reverse proxy is used.";
+                type = lib.types.bool;
+              };
+
+              workers = lib.mkOption {
+                default = 0;
+                description = "Values above 0 will enable the multi-processing HTTP server, this should be set for production setups. This needs to be set to >0 for real-time connections in the discuss app. For configuration recommendations see <https://www.odoo.com/documentation/19.0/administration/on_premise/deploy.html#builtin-server>";
+                type = lib.types.ints.unsigned;
+              };
+            };
+          };
+
+          freeformType = format.type;
+        };
       };
     };
   };
@@ -113,15 +122,16 @@ in
           '';
 
           locations = {
-            "/websocket" = {
-              proxyPass = "http://odoochat";
-            };
-
             "/" = {
-              proxyPass = "http://odoo";
               extraConfig = ''
                 proxy_redirect off;
               '';
+
+              proxyPass = "http://odoo";
+            };
+
+            "/websocket" = {
+              proxyPass = "http://odoochat";
             };
           };
         };
@@ -142,6 +152,7 @@ in
           else
             pkgs.odoo19
         );
+
         settings.options = {
           data_dir = "/var/lib/private/odoo/data";
           # Disable the database manager by default
@@ -153,14 +164,19 @@ in
         });
       };
 
-      users.users.odoo = {
-        isSystemUser = true;
-        group = "odoo";
+      services.postgresql = {
+        enable = true;
+        ensureDatabases = [ "odoo" ];
+
+        ensureUsers = [
+          {
+            ensureDBOwnership = true;
+            name = "odoo";
+          }
+        ];
       };
-      users.groups.odoo = { };
 
       systemd.services.odoo = {
-        wantedBy = [ "multi-user.target" ];
         after = [
           "network.target"
           "postgresql.target"
@@ -168,11 +184,17 @@ in
 
         # pg_dump
         path = [ config.services.postgresql.package ];
-
         requires = [ "postgresql.target" ];
 
         serviceConfig = {
+          DynamicUser = true;
+
+          Environment = [
+            "ODOO_RC=${cfgFile}"
+          ];
+
           ExecStart = "${cfg.package}/bin/odoo";
+
           ExecStartPre = pkgs.writeShellScript "odoo-start-pre.sh" (
             ''
               set -euo pipefail
@@ -197,25 +219,19 @@ in
             '')
             + "echo pre-start: OK"
           );
-          DynamicUser = true;
-          User = "odoo";
+
           StateDirectory = "odoo";
-          Environment = [
-            "ODOO_RC=${cfgFile}"
-          ];
+          User = "odoo";
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
 
-      services.postgresql = {
-        enable = true;
+      users.groups.odoo = { };
 
-        ensureDatabases = [ "odoo" ];
-        ensureUsers = [
-          {
-            name = "odoo";
-            ensureDBOwnership = true;
-          }
-        ];
+      users.users.odoo = {
+        group = "odoo";
+        isSystemUser = true;
       };
     }
   );

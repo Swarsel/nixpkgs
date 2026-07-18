@@ -8,18 +8,16 @@
 buildPythonPackage rec {
   pname = "pathvalidate";
   version = "3.3.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-sYwHISv+rWJDRbuOHWFBzc8Vo5c2mU6guUA1rSsboXc=";
   };
 
-  build-system = [ setuptools-scm ];
-
   # Requires `pytest-md-report`, causing infinite recursion.
   doCheck = false;
-
+  build-system = [ setuptools-scm ];
+  pyproject = true;
   pythonImportsCheck = [ "pathvalidate" ];
 
   meta = {

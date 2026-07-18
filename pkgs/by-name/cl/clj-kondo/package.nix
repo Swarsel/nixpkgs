@@ -1,7 +1,7 @@
 {
   lib,
-  buildGraalvmNativeImage,
   fetchurl,
+  buildGraalvmNativeImage,
 }:
 
 buildGraalvmNativeImage (finalAttrs: {
@@ -21,13 +21,15 @@ buildGraalvmNativeImage (finalAttrs: {
   meta = {
     description = "Linter for Clojure code that sparks joy";
     homepage = "https://github.com/clj-kondo/clj-kondo";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
-    license = lib.licenses.epl10;
     changelog = "https://github.com/clj-kondo/clj-kondo/blob/v${finalAttrs.version}/CHANGELOG.md";
+    license = lib.licenses.epl10;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       jlesquembre
       bandresen
     ];
+
     mainProgram = "clj-kondo";
   };
 })

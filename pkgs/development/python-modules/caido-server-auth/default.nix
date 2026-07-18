@@ -10,14 +10,11 @@
 buildPythonPackage (finalAttrs: {
   pname = "caido-server-auth";
   version = "0.1.2";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "caido_server_auth";
     inherit (finalAttrs) version;
     hash = "sha256-6ywl6d4VBidgtoES9djprWPusTIlGLkMGgEZppp1JKQ=";
+    pname = "caido_server_auth";
   };
 
   postPatch = ''
@@ -25,6 +22,9 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "uv_build>=0.9.8,<0.10.0" "uv_build"
   '';
 
+  # Module has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ uv-build ];
 
   dependencies = [
@@ -33,11 +33,8 @@ buildPythonPackage (finalAttrs: {
   ++ gql.optional-dependencies.aiohttp
   ++ gql.optional-dependencies.websockets;
 
+  pyproject = true;
   pythonImportsCheck = [ "caido_server_auth" ];
-
-  # Module has no tests
-  doCheck = false;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

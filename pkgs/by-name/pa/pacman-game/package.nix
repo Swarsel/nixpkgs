@@ -1,15 +1,13 @@
 {
-  installShellFiles,
   lib,
   stdenv,
   fetchFromGitHub,
+  installShellFiles,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "pacman-game";
   version = "0-unstable-2017-01-30";
-  strictDeps = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "justinjo";
@@ -24,6 +22,7 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace Makefile --replace-fail "clang++" "c++"
   '';
 
+  strictDeps = true;
   nativeBuildInputs = [ installShellFiles ];
 
   installPhase = ''
@@ -34,12 +33,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
   meta = {
     description = "Command line pacman game";
     homepage = "https://github.com/justinjo/Pacman";
     license = lib.licenses.unlicense;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ ethancedwards8 ];
+    platforms = lib.platforms.unix;
     mainProgram = "pacman";
   };
 })

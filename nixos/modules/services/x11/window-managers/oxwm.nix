@@ -14,11 +14,12 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    services.displayManager.sessionPackages = [ cfg.package ];
-    environment.systemPackages = [ cfg.package ];
     environment.pathsToLink = [
       "/share/oxwm"
       "/share/xsessions"
     ];
+
+    environment.systemPackages = [ cfg.package ];
+    services.displayManager.sessionPackages = [ cfg.package ];
   };
 }

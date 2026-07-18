@@ -1,12 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   kernel,
 }:
 
 stdenv.mkDerivation rec {
-  name = "${pname}-${version}-${kernel.version}";
   pname = "isgx";
   version = "2.14";
 
@@ -16,8 +15,6 @@ stdenv.mkDerivation rec {
     rev = "sgx_diver_${version}"; # Typo is upstream's.
     sha256 = "0kbbf2inaywp44lm8ig26mkb36jq3smsln0yp6kmrirdwc3c53mi";
   };
-
-  hardeningDisable = [ "pic" ];
 
   nativeBuildInputs = kernel.moduleBuildDependencies;
 
@@ -32,9 +29,12 @@ stdenv.mkDerivation rec {
   '';
 
   enableParallelBuilding = true;
+  hardeningDisable = [ "pic" ];
+  name = "${pname}-${version}-${kernel.version}";
 
   meta = {
     description = "Intel SGX Linux Driver";
+
     longDescription = ''
       The linux-sgx-driver project (isgx) hosts an out-of-tree driver
       for the Linux* Intel(R) SGX software stack, which would be used
@@ -43,11 +43,14 @@ stdenv.mkDerivation rec {
       It is used to support Enhanced Privacy Identification (EPID)
       based attestation on the platforms without Flexible Launch Control.
     '';
+
     homepage = "https://github.com/intel/linux-sgx-driver";
+
     license = with lib.licenses; [
       bsd3 # OR
       gpl2Only
     ];
+
     maintainers = [ ];
     platforms = [ "x86_64-linux" ];
     # This kernel module is now in mainline so newer kernels should

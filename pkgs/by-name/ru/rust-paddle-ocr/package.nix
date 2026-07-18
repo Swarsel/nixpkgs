@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   cmake,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,15 +17,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-sDr7oTt9m02u52tuZzuSqKO8s4rIdhMRirzif8Lp2+g=";
   };
 
-  cargoHash = "sha256-fNtKnAPcJrjnbl7wqn+iDmf/HRQzex1oCfY3h11rrSM=";
-
-  buildFeatures = [ "v5" ];
-
   nativeBuildInputs = [
     rustPlatform.bindgenHook
     cmake
   ];
 
+  cargoHash = "sha256-fNtKnAPcJrjnbl7wqn+iDmf/HRQzex1oCfY3h11rrSM=";
+  buildFeatures = [ "v5" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

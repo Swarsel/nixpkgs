@@ -17,8 +17,6 @@ in
 appimageTools.wrapType2 {
   inherit pname version src;
 
-  extraPkgs = pkgs: [ pkgs.libsecret ];
-
   extraInstallCommands = ''
     install -D ${appimageContents}/desktop.desktop $out/share/applications/firefly-desktop.desktop
     substituteInPlace $out/share/applications/firefly-desktop.desktop \
@@ -26,6 +24,8 @@ appimageTools.wrapType2 {
       --replace-fail 'Icon=desktop' 'Icon=firefly-desktop'
     install -D ${appimageContents}/desktop.png $out/share/icons/firefly-desktop.png
   '';
+
+  extraPkgs = pkgs: [ pkgs.libsecret ];
 
   meta = {
     description = "IOTA's New Wallet";

@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  nix-update-script,
-  pkg-config,
-  openssl,
   installShellFiles,
+  nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
   writableTmpDirAsHomeHook,
 }:
 
@@ -20,12 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-XsN4UyIXkd0YVtO/q9EcFP/sBYkH9leISmbJZ93ef6E=";
   };
-
-  cargoHash = "sha256-KFNFioZ/5moC5FNXw+hA+NrPjsqu+3V8A5mtZ4FZUHw=";
-
-  buildNoDefaultFeatures = true;
-  # Would be cleaner with an "--all-features" option
-  buildFeatures = [ "full" ];
 
   nativeBuildInputs = [
     pkg-config
@@ -41,10 +35,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-KFNFioZ/5moC5FNXw+hA+NrPjsqu+3V8A5mtZ4FZUHw=";
   # Wants to create config file where it s not allowed
   doCheck = false;
-
-  passthru.updateScript = nix-update-script { };
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd alistral \
@@ -53,15 +46,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <($out/bin/alistral --generate zsh)
   '';
 
+  # Would be cleaner with an "--all-features" option
+  buildFeatures = [ "full" ];
+  buildNoDefaultFeatures = true;
+  passthru.updateScript = nix-update-script { };
+
   meta = {
+    description = "Power tools for Listenbrainz";
     homepage = "https://rustynova016.github.io/Alistral/";
     changelog = "https://github.com/RustyNova016/Alistral/blob/${finalAttrs.src.tag}/CHANGELOG.md";
-    description = "Power tools for Listenbrainz";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       jopejoe1
       RustyNova
     ];
+
     mainProgram = "alistral";
   };
 })

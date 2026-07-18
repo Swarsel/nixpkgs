@@ -1,21 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  flit-core,
-  unittestCheckHook,
-
+  black,
+  buildPythonPackage,
   # important downstream dependencies
   flit,
-  black,
+  flit-core,
   mypy,
   setuptools-scm,
+  unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "tomli";
   version = "2.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hukkin";
@@ -25,9 +23,8 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ flit-core ];
-
   nativeCheckInputs = [ unittestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "tomli" ];
 
   passthru.tests = {

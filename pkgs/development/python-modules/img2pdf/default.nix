@@ -1,21 +1,21 @@
 {
   lib,
-  pkgs,
-  buildPythonPackage,
-  fetchFromGitHub,
-  replaceVars,
-  colord,
-  flit-core,
-  pikepdf,
-  pillow,
   stdenv,
+  fetchFromGitHub,
+  buildPythonPackage,
+  colord,
   exiftool,
+  flit-core,
   imagemagick,
   mupdf-headless,
   netpbm,
   numpy,
+  pikepdf,
+  pillow,
+  pkgs,
   poppler-utils,
   pytestCheckHook,
+  replaceVars,
   runCommand,
   scipy,
 }:
@@ -23,7 +23,6 @@
 buildPythonPackage rec {
   pname = "img2pdf";
   version = "0.6.3";
-  pyproject = true;
 
   # gitlab.mister-muffin.de produces a 500 error on 0.6.1
   # when upgrading, switch src attribute back to gitlab if fixed.
@@ -47,19 +46,6 @@ buildPythonPackage rec {
     })
   ];
 
-  build-system = [ flit-core ];
-
-  dependencies = [
-    pikepdf
-    pillow
-  ];
-
-  # FIXME: Only add "sRGB Profile.icc" to __impureHostDeps once
-  # https://github.com/NixOS/nix/issues/9301 is fixed.
-  __impureHostDeps = lib.optionals stdenv.hostPlatform.isDarwin [
-    "/System/Library/ColorSync/Profiles"
-  ];
-
   nativeCheckInputs = [
     exiftool
     pkgs.ghostscript
@@ -75,6 +61,19 @@ buildPythonPackage rec {
   preCheck = ''
     export img2pdfprog="$out/bin/img2pdf"
   '';
+
+  # FIXME: Only add "sRGB Profile.icc" to __impureHostDeps once
+  # https://github.com/NixOS/nix/issues/9301 is fixed.
+  __impureHostDeps = lib.optionals stdenv.hostPlatform.isDarwin [
+    "/System/Library/ColorSync/Profiles"
+  ];
+
+  build-system = [ flit-core ];
+
+  dependencies = [
+    pikepdf
+    pillow
+  ];
 
   disabledTests = [
     # https://gitlab.mister-muffin.de/josch/img2pdf/issues/178
@@ -93,17 +92,20 @@ buildPythonPackage rec {
     "test_jpg"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "img2pdf" ];
 
   meta = {
-    changelog = "https://gitlab.mister-muffin.de/josch/img2pdf/src/tag/${src.tag}/CHANGES.rst";
     description = "Convert images to PDF via direct JPEG inclusion";
     homepage = "https://gitlab.mister-muffin.de/josch/img2pdf";
+    changelog = "https://gitlab.mister-muffin.de/josch/img2pdf/src/tag/${src.tag}/CHANGES.rst";
     license = lib.licenses.lgpl3Plus;
-    mainProgram = "img2pdf";
+
     maintainers = with lib.maintainers; [
       veprbl
       dotlambda
     ];
+
+    mainProgram = "img2pdf";
   };
 }

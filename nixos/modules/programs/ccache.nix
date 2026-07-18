@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -12,49 +12,55 @@ in
   options.programs.ccache = {
     # host configuration
     enable = lib.mkEnableOption "CCache, a compiler cache for fast recompilation of C/C++ code";
+
     cacheDir = lib.mkOption {
-      type = lib.types.path;
-      description = "CCache directory";
       default = "/var/cache/ccache";
+      description = "CCache directory";
+      type = lib.types.path;
     };
+
+    group = lib.mkOption {
+      default = "nixbld";
+      description = "Group owner of CCache directory";
+      type = lib.types.str;
+    };
+
+    owner = lib.mkOption {
+      default = "root";
+      description = "Owner of CCache directory";
+      type = lib.types.str;
+    };
+
     # target configuration
     packageNames = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      description = "Nix top-level packages to be compiled using CCache";
       default = [ ];
+      description = "Nix top-level packages to be compiled using CCache";
+
       example = [
         "wxwidgets_3_2"
         "ffmpeg"
         "libav_all"
       ];
+
+      type = lib.types.listOf lib.types.str;
     };
-    owner = lib.mkOption {
-      type = lib.types.str;
-      default = "root";
-      description = "Owner of CCache directory";
-    };
-    group = lib.mkOption {
-      type = lib.types.str;
-      default = "nixbld";
-      description = "Group owner of CCache directory";
-    };
+
     trace = lib.mkOption {
-      type = lib.types.bool;
       default = true;
       description = "Trace ccache usage to see which derivations use ccache";
+      type = lib.types.bool;
     };
   };
 
   config = lib.mkMerge [
     # host configuration
     (lib.mkIf cfg.enable {
-      systemd.tmpfiles.rules = [ "d ${cfg.cacheDir} 0770 ${cfg.owner} ${cfg.group} -" ];
-
       # "nix-ccache --show-stats" and "nix-ccache --clear"
       security.wrappers.nix-ccache = {
         inherit (cfg) owner group;
-        setuid = false;
         setgid = true;
+        setuid = false;
+
         source = pkgs.writeScript "nix-ccache.pl" ''
           #!${pkgs.perl}/bin/perl
 
@@ -70,6 +76,8 @@ in
           exec('${pkgs.ccache}/bin/ccache', map { untaint $_ } @ARGV);
         '';
       };
+
+      systemd.tmpfiles.rules = [ "d ${cfg.cacheDir} 0770 ${cfg.owner} ${cfg.group} -" ];
     })
 
     # target configuration

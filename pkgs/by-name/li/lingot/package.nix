@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  intltool,
-  wrapGAppsHook3,
-  gtk3,
   alsa-lib,
-  libpulseaudio,
   fftw,
   fftwFloat,
+  gtk3,
+  intltool,
   json_c,
   libjack2,
+  libpulseaudio,
+  pkg-config,
+  wrapGAppsHook3,
   jackSupport ? true,
 }:
 
@@ -44,10 +44,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Not a Guitar-Only tuner";
-    mainProgram = "lingot";
     homepage = "https://www.nongnu.org/lingot/";
     license = lib.licenses.gpl2Plus;
-    platforms = with lib.platforms; linux;
     maintainers = [ ];
+    platforms = with lib.platforms; linux;
+    mainProgram = "lingot";
   };
 })

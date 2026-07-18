@@ -1,41 +1,28 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
+  buildPythonPackage,
   django,
-  redis,
-  rq,
+  hatchling,
   prometheus-client,
   pytest-django,
   pytestCheckHook,
   pyyaml,
+  redis,
   redisTestHook,
+  rq,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "django-rq";
   version = "4.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rq";
     repo = "django-rq";
     tag = "v${finalAttrs.version}";
     hash = "sha256-pp8/7pMG4CHEe+jsmZ9euAV8eEMW0Hh4ecTTHnP6DiE=";
-  };
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    django
-    redis
-    rq
-  ];
-
-  optional-dependencies = {
-    prometheus = [ prometheus-client ];
   };
 
   # redis hook does not support darwin
@@ -53,10 +40,24 @@ buildPythonPackage (finalAttrs: {
     export DJANGO_SETTINGS_MODULE=tests.settings
   '';
 
+  build-system = [ hatchling ];
+
+  dependencies = [
+    django
+    redis
+    rq
+  ];
+
   disabledTests = [
     # ValueError: Job ID must only contain letters, numbers, underscores and dashes
     "test_scheduled_jobs"
   ];
+
+  optional-dependencies = {
+    prometheus = [ prometheus-client ];
+  };
+
+  pyproject = true;
 
   meta = {
     description = "Simple app that provides django integration for RQ (Redis Queue)";

@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  fetchsvn,
-  libsForQt5,
   bison,
+  fetchsvn,
   flex,
+  libsForQt5,
 }:
 stdenv.mkDerivation {
   pname = "qtspim";
@@ -35,15 +35,9 @@ stdenv.mkDerivation {
     bison
     flex
   ];
+
   buildInputs = [ libsForQt5.qtbase ];
   env.QT_PLUGIN_PATH = "${libsForQt5.qtbase}/${libsForQt5.qtbase.qtPluginPrefix}";
-
-  qmakeFlags = [
-    "QtSpim.pro"
-    "-spec"
-    "linux-g++"
-    "CONFIG+=release"
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -58,12 +52,19 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  qmakeFlags = [
+    "QtSpim.pro"
+    "-spec"
+    "linux-g++"
+    "CONFIG+=release"
+  ];
+
   meta = {
     description = "New user interface for spim, a MIPS simulator";
-    mainProgram = "qtspim";
     homepage = "https://spimsimulator.sourceforge.net/";
     license = lib.licenses.bsdOriginal;
     maintainers = with lib.maintainers; [ emilytrau ];
     platforms = lib.platforms.linux;
+    mainProgram = "qtspim";
   };
 }

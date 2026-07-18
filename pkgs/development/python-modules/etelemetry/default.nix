@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   ci-info,
   ci-py,
+  pytestCheckHook,
   requests,
   setuptools,
 }:
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "etelemetry";
   version = "0.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sensein";
@@ -25,6 +24,8 @@ buildPythonPackage (finalAttrs: {
     substituteInPlace setup.py --replace-fail "versioneer.get_version()" "'${finalAttrs.version}'"
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
   ];
@@ -35,20 +36,20 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [
-    "etelemetry"
-    "etelemetry.client"
-    "etelemetry.config"
-  ];
-
   disabledTests = [
     # RuntimeError: Connection to server could not be made
     # due to external network access
     "test_etrequest"
     "test_get_project"
     "test_check_available"
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "etelemetry"
+    "etelemetry.client"
+    "etelemetry.config"
   ];
 
   meta = {

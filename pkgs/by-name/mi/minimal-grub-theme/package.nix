@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -16,8 +16,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-otGWChSgoxRKfJZkw9usY1sxAc/RsXmkNVMxbSqtc04=";
   };
 
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -26,6 +24,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

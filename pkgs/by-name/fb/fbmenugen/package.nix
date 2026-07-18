@@ -2,13 +2,13 @@
   lib,
   fetchFromGitHub,
   fluxbox,
+  gitUpdater,
   gnused,
   makeWrapper,
   perlPackages,
   replaceVars,
-  xmessage,
   wrapGAppsHook3,
-  gitUpdater,
+  xmessage,
 }:
 
 perlPackages.buildPerlPackage rec {
@@ -22,16 +22,20 @@ perlPackages.buildPerlPackage rec {
     sha256 = "A0yhoK/cPp3JlNZacgLaDhaU838PpFna7luQKNDvyOg=";
   };
 
+  outputs = [ "out" ];
+
   patches = [
     (replaceVars ./0001-Fix-paths.patch {
-      xmessage = xmessage;
       inherit fluxbox gnused;
       # replaced in postPatch
       fbmenugen = null;
+      xmessage = xmessage;
     })
   ];
 
-  outputs = [ "out" ];
+  postPatch = ''
+    substituteInPlace fbmenugen --subst-var-by fbmenugen $out
+  '';
 
   nativeBuildInputs = [
     makeWrapper
@@ -49,14 +53,6 @@ perlPackages.buildPerlPackage rec {
     xmessage
   ];
 
-  dontConfigure = true;
-
-  dontBuild = true;
-
-  postPatch = ''
-    substituteInPlace fbmenugen --subst-var-by fbmenugen $out
-  '';
-
   installPhase = ''
     runHook preInstall
     install -D -t $out/bin fbmenugen
@@ -68,14 +64,16 @@ perlPackages.buildPerlPackage rec {
     wrapProgram "$out/bin/fbmenugen" --prefix PERL5LIB : "$PERL5LIB"
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://github.com/trizen/fbmenugen";
     description = "Simple menu generator for the Fluxbox Window Manager";
-    mainProgram = "fbmenugen";
+    homepage = "https://github.com/trizen/fbmenugen";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.linux;
+    mainProgram = "fbmenugen";
   };
 }

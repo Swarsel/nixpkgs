@@ -1,25 +1,25 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  _experimental-update-script-combinators,
   cargo,
-  meson,
-  ninja,
-  rustPlatform,
-  rustc,
-  pkg-config,
+  common-updater-scripts,
+  desktop-file-utils,
+  gitUpdater,
   glib,
-  libshumate,
   gst_all_1,
   gtk4,
   libadwaita,
+  libshumate,
+  meson,
+  ninja,
   pipewire,
+  pkg-config,
+  rustPlatform,
+  rustc,
   wayland,
   wrapGAppsHook4,
-  desktop-file-utils,
-  gitUpdater,
-  common-updater-scripts,
-  _experimental-update-script-combinators,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,10 +33,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-0IGqA8PM6I2p4/MrptkdSWIZThMoeaMsdMc6tVTI2MU=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    src = "${finalAttrs.src}/ashpd-demo";
-    hash = "sha256-kUEzVBk8dKXCQdHFJJS633CBG1F57TIxJg1xApMwzbI=";
-  };
+  postPatch = ''
+    cd ashpd-demo
+  '';
 
   nativeBuildInputs = [
     meson
@@ -62,16 +61,17 @@ stdenv.mkDerivation (finalAttrs: {
     libshumate
   ];
 
-  postPatch = ''
-    cd ashpd-demo
-  '';
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    src = "${finalAttrs.src}/ashpd-demo";
+    hash = "sha256-kUEzVBk8dKXCQdHFJJS633CBG1F57TIxJg1xApMwzbI=";
+  };
 
   passthru = {
     updateScript =
       let
         updateSource = gitUpdater {
-          url = finalAttrs.src.gitRepoUrl;
           rev-suffix = "-demo";
+          url = finalAttrs.src.gitRepoUrl;
         };
 
         updateLockfile = {
@@ -87,6 +87,7 @@ stdenv.mkDerivation (finalAttrs: {
               update-source-version ashpd-demo --ignore-same-version --source-key=cargoDeps.vendorStaging > /dev/null
             ''
           ];
+
           # Experimental feature: do not copy!
           supportedFeatures = [ "silent" ];
         };
@@ -99,10 +100,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Tool for playing with XDG desktop portals";
-    mainProgram = "ashpd-demo";
     homepage = "https://github.com/bilelmoussaoui/ashpd/tree/master/ashpd-demo";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jtojnar ];
     platforms = lib.platforms.linux;
+    mainProgram = "ashpd-demo";
   };
 })

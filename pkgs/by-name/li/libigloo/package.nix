@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  rhash,
   icecast,
+  rhash,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,12 +16,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ rhash ];
-
   doCheck = true;
 
   meta = {
+    inherit (icecast.meta) maintainers;
     description = "Generic C framework used and developed by the Icecast project";
     license = lib.licenses.gpl2Only;
-    inherit (icecast.meta) maintainers;
   };
 })

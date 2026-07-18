@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   autoreconfHook,
   libsodium,
   pcre2,
-  regexSupport ? false,
   batchSize ? 2048,
+  regexSupport ? false,
 }:
 
 stdenv.mkDerivation rec {
@@ -26,44 +26,46 @@ stdenv.mkDerivation rec {
       # the fastest depends on a particular cpu
       variants = [
         {
-          suffix = "ref10";
           configureFlags = [ "--enable-ref10" ];
+          suffix = "ref10";
         }
         {
-          suffix = "donna";
           configureFlags = [ "--enable-donna" ];
+          suffix = "donna";
         }
       ]
       ++ lib.optionals stdenv.hostPlatform.isx86 [
         {
-          suffix = "donna-sse2";
           configureFlags = [ "--enable-donna-sse2" ];
+          suffix = "donna-sse2";
         }
       ]
       ++ lib.optionals (!stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64) [
         {
-          suffix = "amd64-51-30k";
           configureFlags = [ "--enable-amd64-51-30k" ];
+          suffix = "amd64-51-30k";
         }
         {
-          suffix = "amd64-64-24k";
           configureFlags = [ "--enable-amd64-64-24k" ];
+          suffix = "amd64-64-24k";
         }
       ];
     in
     lib.concatMapStrings (
-      { suffix, configureFlags }:
+      { configureFlags, suffix }:
       ''
         install -D ${
           stdenv.mkDerivation {
-            pname = "mkp224o-${suffix}";
             inherit version src;
+            pname = "mkp224o-${suffix}";
+            nativeBuildInputs = [ autoreconfHook ];
+            buildInputs = [ libsodium ] ++ lib.optionals regexSupport [ pcre2 ];
+
             configureFlags =
               configureFlags
               ++ [ "--enable-batchnum=${builtins.toString batchSize}" ]
               ++ lib.optionals regexSupport [ "--enable-regex=yes" ];
-            nativeBuildInputs = [ autoreconfHook ];
-            buildInputs = [ libsodium ] ++ lib.optionals regexSupport [ pcre2 ];
+
             installPhase = "install -D mkp224o $out";
           }
         } $out/bin/mkp224o-${suffix}
@@ -74,7 +76,7 @@ stdenv.mkDerivation rec {
     description = "Vanity address generator for tor onion v3 (ed25519) hidden services";
     homepage = "http://cathug2kyi4ilneggumrenayhuhsvrgn6qv2y47bgeet42iivkpynqad.onion/";
     license = lib.licenses.cc0;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 }

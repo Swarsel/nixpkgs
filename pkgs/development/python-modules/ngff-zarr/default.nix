@@ -1,51 +1,45 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
+  buildPythonPackage,
   # dependencies
   dask,
-  importlib-resources,
-  itkwasm,
-  itkwasm-downsample,
-  numpy,
-  platformdirs,
-  psutil,
-  rich,
-  rich-argparse,
-  typing-extensions,
-  zarr,
-
   # optional-dependencies
   # dask-image:
   dask-image,
+  # tests
+  deepdiff,
+  # build-system
+  hatchling,
   # cli:
   imagecodecs,
   imageio,
+  importlib-resources,
   itk,
+  itkwasm,
+  itkwasm-downsample,
   itkwasm-image-io,
-  nibabel,
-  tifffile,
-  # tensorstore:
-  tensorstore,
   # validate:
   jsonschema,
-
-  # tests
-  deepdiff,
+  nibabel,
+  numpy,
+  platformdirs,
   pooch,
+  psutil,
   pytestCheckHook,
+  rich,
+  rich-argparse,
+  # tensorstore:
+  tensorstore,
+  tifffile,
+  typing-extensions,
   writableTmpDirAsHomeHook,
+  zarr,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "ngff-zarr";
   version = "0.37.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "fideus-labs";
@@ -54,8 +48,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-73bduVeH+o7uirhwFcFpU33NUAOZe//GCVYMl6OYgC8=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/py/";
+  nativeCheckInputs = [
+    deepdiff
+    pooch
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
+  __structuredAttrs = true;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -72,37 +73,6 @@ buildPythonPackage (finalAttrs: {
     zarr
   ]
   ++ dask.optional-dependencies.array;
-
-  optional-dependencies = {
-    dask-image = [ dask-image ];
-    # itk = [ itk-filtering ];
-    cli = [
-      # itk-filtering
-      # itk-io
-      # liffile
-      dask
-      dask-image
-      imagecodecs
-      imageio
-      itk
-      itkwasm-image-io
-      nibabel
-      tifffile
-    ]
-    ++ dask.optional-dependencies.distributed;
-    tensorstore = [ tensorstore ];
-    validate = [ jsonschema ];
-  };
-
-  nativeCheckInputs = [
-    deepdiff
-    pooch
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
-
-  pythonImportsCheck = [ "ngff_zarr" ];
 
   disabledTestPaths = [
     # No CLI tests
@@ -180,6 +150,32 @@ buildPythonPackage (finalAttrs: {
     "test_cli_orientation_preset_end_to_end"
     "test_cli_itk_input_writes_orientation_automatically"
   ];
+
+  optional-dependencies = {
+    # itk = [ itk-filtering ];
+    cli = [
+      # itk-filtering
+      # itk-io
+      # liffile
+      dask
+      dask-image
+      imagecodecs
+      imageio
+      itk
+      itkwasm-image-io
+      nibabel
+      tifffile
+    ]
+    ++ dask.optional-dependencies.distributed;
+
+    dask-image = [ dask-image ];
+    tensorstore = [ tensorstore ];
+    validate = [ jsonschema ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "ngff_zarr" ];
+  sourceRoot = "${finalAttrs.src.name}/py/";
 
   meta = {
     description = "Open Microscopy Environment (OME) Next Generation File Format (NGFF) Zarr implementation";

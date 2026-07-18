@@ -1,11 +1,8 @@
 {
   lib,
-
+  fetchFromGitHub,
   buildPythonPackage,
   callPackages,
-  fetchFromGitHub,
-  pythonOlder,
-
   nix-update-script,
   pcpp,
   platformdirs,
@@ -13,16 +10,15 @@
   pydantic,
   pydantic-settings,
   pyparsing,
+  pythonOlder,
   pyyaml,
   tree-sitter,
   tree-sitter-grammars,
   versionCheckHook,
 }:
 buildPythonPackage (finalAttrs: {
-  version = "0.23.0";
   pname = "keymap-drawer";
-  pyproject = true;
-  disabled = pythonOlder "3.12";
+  version = "0.23.0";
 
   src = fetchFromGitHub {
     owner = "caksoylar";
@@ -31,11 +27,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-yrZidTATnOPacAfdk0gFIgH/3MaZqVOjmzkWNnMa01s=";
   };
 
-  build-system = [ poetry-core ];
-
-  pythonRelaxDeps = [
-    "tree-sitter-devicetree"
+  nativeCheckInputs = [
+    versionCheckHook
   ];
+
+  build-system = [ poetry-core ];
 
   dependencies = [
     pcpp
@@ -48,15 +44,18 @@ buildPythonPackage (finalAttrs: {
     tree-sitter-grammars.tree-sitter-devicetree
   ];
 
-  nativeCheckInputs = [
-    versionCheckHook
-  ];
-
+  disabled = pythonOlder "3.12";
+  pyproject = true;
   pythonImportsCheck = [ "keymap_drawer" ];
+
+  pythonRelaxDeps = [
+    "tree-sitter-devicetree"
+  ];
 
   passthru.tests = callPackages ./tests {
     keymap-drawer = finalAttrs.finalPackage;
   };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -64,9 +63,11 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/caksoylar/keymap-drawer";
     changelog = "https://github.com/caksoylar/keymap-drawer/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       MattSturgeon
     ];
+
     mainProgram = "keymap";
   };
 })

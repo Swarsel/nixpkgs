@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  setuptools,
   eventlet,
-  fetchFromGitHub,
   iana-etc,
   libredirect,
   mock,
   pytest-asyncio,
   pytestCheckHook,
   requests,
+  setuptools,
   simple-websocket,
   tornado,
   websocket-client,
@@ -20,25 +20,12 @@
 buildPythonPackage rec {
   pname = "python-engineio";
   version = "4.13.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "miguelgrinberg";
     repo = "python-engineio";
     tag = "v${version}";
     hash = "sha256-3KWhQE4STzwEtFzuhiTQZcc9a3lWoQlW74oHtbR4N6M=";
-  };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ simple-websocket ];
-
-  optional-dependencies = {
-    client = [
-      requests
-      websocket-client
-    ];
-    asyncio_client = [ aiohttp ];
   };
 
   nativeCheckInputs = [
@@ -60,6 +47,9 @@ buildPythonPackage rec {
     unset NIX_REDIRECTS LD_PRELOAD
   '';
 
+  build-system = [ setuptools ];
+  dependencies = [ simple-websocket ];
+
   disabledTests = [
     # Assertion issue
     "test_async_mode_eventlet"
@@ -67,14 +57,26 @@ buildPythonPackage rec {
     "test_logger"
   ];
 
+  optional-dependencies = {
+    asyncio_client = [ aiohttp ];
+
+    client = [
+      requests
+      websocket-client
+    ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "engineio" ];
 
   meta = {
     description = "Python based Engine.IO client and server";
+
     longDescription = ''
       Engine.IO is a lightweight transport protocol that enables real-time
       bidirectional event-based communication between clients and a server.
     '';
+
     homepage = "https://github.com/miguelgrinberg/python-engineio/";
     changelog = "https://github.com/miguelgrinberg/python-engineio/blob/${src.tag}/CHANGES.md";
     license = lib.licenses.mit;

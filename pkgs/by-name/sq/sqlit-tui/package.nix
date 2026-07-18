@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   python3Packages,
   writableTmpDirAsHomeHook,
 }:
@@ -8,7 +8,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "sqlit-tui";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Maxteabag";
@@ -16,6 +15,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-lcZe7EiN/wZllRO7KnXryoeGiUVBhSE4AYaRniZV6Cw=";
   };
+
+  nativeCheckInputs = with python3Packages; [
+    pytest-asyncio
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = with python3Packages; [
     hatch-vcs
@@ -40,22 +45,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
     textual-fastdatatable
   ];
 
-  pythonRelaxDeps = [
-    "paramiko"
-  ];
-
-  nativeCheckInputs = with python3Packages; [
-    pytest-asyncio
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
-  pythonImportsCheck = [ "sqlit" ];
-
   disabledTests = [
     "tests/ui/" # UI tests fail in the sandbox
     "test_installer_cancel_terminates_process" # timeout error
     "test_detect_strategy_pip_user_fallback" # AssertionError: assert 'externally-managed' == 'pip-user'
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "sqlit" ];
+
+  pythonRelaxDeps = [
+    "paramiko"
   ];
 
   meta = {

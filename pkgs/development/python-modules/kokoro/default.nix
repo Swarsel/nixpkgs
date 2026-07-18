@@ -1,10 +1,10 @@
 {
-  buildPythonPackage,
+  lib,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchPypi,
   hatchling,
   huggingface-hub,
-  lib,
   loguru,
   misaki,
   numpy,
@@ -16,7 +16,6 @@
 buildPythonPackage {
   pname = "kokoro";
   version = "0-unstable-2025-06-16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hexgrad";
@@ -24,6 +23,8 @@ buildPythonPackage {
     rev = "2668b2e279d0f94977995230e523b0183763f30e";
     hash = "sha256-slXbn0W1632Hak6Z0ofF0gyavxRLoxS4fyPQLHSapjA=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     hatchling
@@ -39,13 +40,13 @@ buildPythonPackage {
   ]
   ++ misaki.optional-dependencies.en; # kokoro depends on misaki[en]
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTests = [
     # See https://github.com/hexgrad/kokoro/issues/225
     "test_different_window_sizes"
     "test_stft_reconstruction"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "kokoro"

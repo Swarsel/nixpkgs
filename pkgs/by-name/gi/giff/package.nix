@@ -1,14 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
   versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
-  __structuredAttrs = true;
-
   pname = "giff";
   version = "1.2.0";
 
@@ -20,10 +18,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-094QMCEI4ShTqlfYZUxCUUd/Fx9kmATHKuJPKqGxw7s=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -31,10 +28,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/bahdotsh/giff";
     changelog = "https://github.com/bahdotsh/giff/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
       kpbaks
     ];
+
     mainProgram = "giff";
   };
 })

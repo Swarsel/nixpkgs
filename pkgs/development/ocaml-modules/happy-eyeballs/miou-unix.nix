@@ -1,10 +1,10 @@
 {
   buildDunePackage,
-  happy-eyeballs,
   cmdliner,
-  duration,
   domain-name,
+  duration,
   fmt,
+  happy-eyeballs,
   ipaddr,
   logs,
   miou,
@@ -12,8 +12,8 @@
 }:
 
 buildDunePackage {
-  pname = "happy-eyeballs-miou-unix";
   inherit (happy-eyeballs) src version;
+  pname = "happy-eyeballs-miou-unix";
 
   buildInputs = [
     cmdliner

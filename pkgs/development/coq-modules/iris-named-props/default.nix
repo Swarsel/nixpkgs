@@ -1,15 +1,16 @@
 {
   lib,
-  mkCoqDerivation,
   coq,
-  version ? null,
   iris,
+  mkCoqDerivation,
+  version ? null,
 }:
 
 mkCoqDerivation {
-  pname = "iris-named-props";
-  owner = "tchajed";
   inherit version;
+  pname = "iris-named-props";
+  propagatedBuildInputs = [ iris ];
+
   defaultVersion =
     with lib.versions;
     lib.switch coq.version [
@@ -18,9 +19,11 @@ mkCoqDerivation {
         out = "2023-08-14";
       }
     ] null;
+
+  owner = "tchajed";
   release."2023-08-14".hash = "sha256-gu9qOdHO0qJ2B9Y9Vf66q08iNJcfuECJO66fizFB08g=";
   release."2023-08-14".rev = "ca1871dd33649f27257a0fbf94076acc80ecffbc";
-  propagatedBuildInputs = [ iris ];
+
   meta = {
     description = "Named props for Iris";
     maintainers = with lib.maintainers; [ ineol ];

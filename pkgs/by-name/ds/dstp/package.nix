@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,15 +16,14 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-EE3xSRu7zAuQjaXCdTD924K6OamEkdxHYEaM0rW/O+o=";
-
   # Tests require network connection, but is not allowed by nix
   doCheck = false;
 
   meta = {
     description = "Run common networking tests against your site";
-    mainProgram = "dstp";
     homepage = "https://github.com/ycd/dstp";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jlesquembre ];
+    mainProgram = "dstp";
   };
 })

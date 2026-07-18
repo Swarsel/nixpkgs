@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   levenshtein,
   nltk,
   pydantic,
-  wikitextprocessor,
+  setuptools,
   unstableGitUpdater,
+  wikitextprocessor,
 }:
 
 buildPythonPackage {
   pname = "wiktextract";
   version = "1.99.7-unstable-2026-03-26";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tatuylonen";
@@ -22,6 +21,8 @@ buildPythonPackage {
     hash = "sha256-U9Xm3vRAvONN/DwyhEEM54eiBnv7JKAEXPolK9HfJU8=";
   };
 
+  # It requires Internet
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,20 +32,19 @@ buildPythonPackage {
     wikitextprocessor
   ];
 
-  # It requires Internet
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "wiktextract" ];
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "Wiktionary dump file parser and multilingual data extractor";
     homepage = "https://github.com/tatuylonen/wiktextract";
+
     license = with lib.licenses; [
       mit
       cc-by-sa-40 # Needed for certain test files under Wiktionary licence
     ];
+
     maintainers = with lib.maintainers; [ theobori ];
     mainProgram = "wiktwords";
   };

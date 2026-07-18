@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   postgresql_18,
 }:
 
@@ -39,7 +39,9 @@ let
           platforms
           broken
           ;
+
         description = "Cloud-native storage engine for PostgreSQL";
+
         maintainers = [
           lib.maintainers.wolfgangwalther
         ];

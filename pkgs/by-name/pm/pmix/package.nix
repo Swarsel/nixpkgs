@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  perl,
   autoconf,
   automake,
-  removeReferencesTo,
-  libtool,
-  python3,
   flex,
-  libevent,
-  targetPackages,
-  makeWrapper,
-  hwloc,
-  munge,
-  zlib,
   gitMinimal,
+  hwloc,
+  libevent,
+  libtool,
+  makeWrapper,
+  munge,
+  perl,
+  python3,
+  removeReferencesTo,
+  targetPackages,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,8 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
   version = "6.1.0";
 
   src = fetchFromGitHub {
-    repo = "openpmix";
     owner = "openpmix";
+    repo = "openpmix";
     tag = "v${finalAttrs.version}";
     hash = "sha256-wMVppqSXpQeBgkwna+jaU5kY03WHbGwMQQrouCyGROo=";
     fetchSubmodules = true;
@@ -121,6 +121,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Process Management Interface for HPC environments";
     homepage = "https://openpmix.github.io/";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       markuskowa
       doronbehar

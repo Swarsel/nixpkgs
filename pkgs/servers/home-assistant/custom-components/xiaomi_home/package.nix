@@ -1,18 +1,16 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
+  buildHomeAssistantComponent,
   construct,
-  paho-mqtt,
-  numpy,
   cryptography,
-  psutil-home-assistant,
   nix-update-script,
+  numpy,
+  paho-mqtt,
+  psutil-home-assistant,
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "XiaoMi";
-  domain = "xiaomi_home";
   version = "0.4.7";
 
   src = fetchFromGitHub {
@@ -30,11 +28,13 @@ buildHomeAssistantComponent rec {
     psutil-home-assistant
   ];
 
+  domain = "xiaomi_home";
+  owner = "XiaoMi";
   passthru.updateScript = nix-update-script { extraArgs = [ "--version-regex=^v([0-9.]+)$" ]; };
 
   meta = {
-    changelog = "https://github.com/XiaoMi/ha_xiaomi_home/releases/tag/v${version}";
     description = "Xiaomi Home Integration for Home Assistant";
+
     longDescription = ''
       Xiaomi Home Integration for Home Assistant depends on additional components, example how to setup in NixOS `configuration.nix`:
 
@@ -52,8 +52,10 @@ buildHomeAssistantComponent rec {
       }
       ```
     '';
+
     homepage = "https://github.com/XiaoMi/ha_xiaomi_home";
-    maintainers = with lib.maintainers; [ MakiseKurisu ];
+    changelog = "https://github.com/XiaoMi/ha_xiaomi_home/releases/tag/v${version}";
     license = lib.licenses.unfree;
+    maintainers = with lib.maintainers; [ MakiseKurisu ];
   };
 }

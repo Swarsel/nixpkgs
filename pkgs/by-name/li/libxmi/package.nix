@@ -15,7 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   env.CFLAGS = "-std=gnu89";
-
   # For the x86_64 GNU/Linux arch to be recognized by 'configure'
   preConfigure = "cp ${libtool}/share/libtool/build-aux/config.sub .";
 
@@ -23,7 +22,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Library for rasterizing 2-D vector graphics";
     homepage = "https://www.gnu.org/software/libxmi/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

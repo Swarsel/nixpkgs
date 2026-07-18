@@ -34,7 +34,7 @@ stdenv.mkDerivation {
     homepage = "https://github.com/Lallapallooza/c_ascii_render";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ yiyu ];
-    mainProgram = "c-ascii-render";
     platforms = lib.platforms.all;
+    mainProgram = "c-ascii-render";
   };
 }

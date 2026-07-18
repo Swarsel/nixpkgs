@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cffi,
   pillow,
   pytestCheckHook,
@@ -12,8 +12,6 @@
 buildPythonPackage rec {
   pname = "blurhash-python";
   version = "1.2.2";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "woltapp";
@@ -33,9 +31,9 @@ buildPythonPackage rec {
     six
   ];
 
-  pythonImportsCheck = [ "blurhash" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
+  pythonImportsCheck = [ "blurhash" ];
 
   meta = {
     description = "Compact representation of a placeholder for an image";

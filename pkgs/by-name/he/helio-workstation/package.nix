@@ -3,19 +3,19 @@
   stdenv,
   fetchFromGitHub,
   alsa-lib,
-  freetype,
-  libxrandr,
-  libxinerama,
-  libxext,
-  libxcursor,
-  libxcomposite,
-  libx11,
   curl,
+  freetype,
   libGL,
   libjack2,
-  zenity,
-  pkg-config,
+  libx11,
+  libxcomposite,
+  libxcursor,
+  libxext,
+  libxinerama,
+  libxrandr,
   makeWrapper,
+  pkg-config,
+  zenity,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,9 +26,14 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "helio-fm";
     repo = "helio-sequencer";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-uEo4dxwc1HksYGU5ssYp3rLugszSir2kKo4XxgqvSno=";
+    fetchSubmodules = true;
   };
+
+  nativeBuildInputs = [
+    pkg-config
+    makeWrapper
+  ];
 
   buildInputs = [
     alsa-lib
@@ -45,16 +50,12 @@ stdenv.mkDerivation (finalAttrs: {
     zenity
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-    makeWrapper
-  ];
+  buildFlags = [ "CONFIG=Release64" ];
 
   preBuild = ''
     cd Projects/LinuxMakefile
     substituteInPlace Makefile --replace alsa "alsa jack"
   '';
-  buildFlags = [ "CONFIG=Release64" ];
 
   installPhase = ''
     mkdir -p $out/bin
@@ -69,10 +70,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "One music sequencer for all major platforms, both desktop and mobile";
-    mainProgram = "helio";
     homepage = "https://helio.fm/";
     license = lib.licenses.gpl3Only;
     maintainers = [ lib.maintainers.suhr ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "helio";
   };
 })

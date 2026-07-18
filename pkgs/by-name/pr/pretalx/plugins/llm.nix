@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   numpy,
   ollama,
   openai,
   python-redis-lock,
+  setuptools,
   umap-learn,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pretalx-llm";
   version = "0.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "why2025-datenzone";
@@ -21,6 +20,8 @@ buildPythonPackage (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-KnL4X24RESAgO0Oh1k9c+K4zaho6CEFHMQvDeRdLBzs=";
   };
+
+  doCheck = false; # no tests
 
   build-system = [
     setuptools
@@ -34,7 +35,7 @@ buildPythonPackage (finalAttrs: {
     umap-learn
   ];
 
-  doCheck = false; # no tests
+  pyproject = true;
 
   pythonImportsCheck = [
     "pretalx_llm"

@@ -1,26 +1,26 @@
 {
   lib,
-  buildNpmPackage,
-  electron,
   fetchFromGitHub,
+  buildNpmPackage,
   buildPackages,
-  python3,
-  pkg-config,
+  electron,
   libsecret,
   nodejs_22,
+  pkg-config,
+  python3,
 }:
 
 let
   common =
     {
+      installPhase,
       name,
       npmBuildScript,
-      installPhase,
     }:
     buildNpmPackage rec {
+      inherit npmBuildScript installPhase;
       pname = name;
       version = "2026.4.0";
-      nodejs = nodejs_22;
 
       src = fetchFromGitHub {
         owner = "bitwarden";
@@ -38,30 +38,30 @@ let
           --replace-fail "AppImage" "dir"
       '';
 
-      npmDepsHash = "sha256-kFuSCcIWAEJ0KNVqEabjqqSZ8CVBbPyxkAxhrbRBqVc=";
-
-      env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-
-      makeCacheWritable = true;
-      inherit npmBuildScript installPhase;
-
-      buildInputs = [
-        libsecret
-      ];
-
       nativeBuildInputs = [
         (python3.withPackages (ps: with ps; [ setuptools ]))
         pkg-config
       ];
 
+      buildInputs = [
+        libsecret
+      ];
+
+      npmDepsHash = "sha256-kFuSCcIWAEJ0KNVqEabjqqSZ8CVBbPyxkAxhrbRBqVc=";
+      env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
+      makeCacheWritable = true;
+      nodejs = nodejs_22;
+
       meta = {
         description = "LDAP connector for Bitwarden";
         homepage = "https://github.com/bitwarden/directory-connector";
         license = lib.licenses.gpl3Only;
+
         maintainers = with lib.maintainers; [
           Silver-Golden
           SuperSandro2000
         ];
+
         platforms = lib.platforms.linux;
         mainProgram = name;
       };
@@ -69,8 +69,6 @@ let
 in
 {
   bitwarden-directory-connector = common {
-    name = "bitwarden-directory-connector";
-    npmBuildScript = "build:dist";
     installPhase = ''
       runHook preInstall
 
@@ -91,11 +89,12 @@ in
 
       runHook postInstall
     '';
+
+    name = "bitwarden-directory-connector";
+    npmBuildScript = "build:dist";
   };
 
   bitwarden-directory-connector-cli = common {
-    name = "bitwarden-directory-connector-cli";
-    npmBuildScript = "build:cli:prod";
     installPhase = ''
       runHook preInstall
 
@@ -109,5 +108,8 @@ in
 
       runHook postInstall
     '';
+
+    name = "bitwarden-directory-connector-cli";
+    npmBuildScript = "build:cli:prod";
   };
 }

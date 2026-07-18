@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  ncurses,
-  libpcap,
   cmake,
-  openssl,
+  libpcap,
   lksctp-tools,
+  ncurses,
+  openssl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,17 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     echo '#define VERSION "v${finalAttrs.version}"' >> include/version.h
   '';
 
-  cmakeFlags = [
-    "-DUSE_PCAP=1"
-    "-DUSE_SSL=1"
-    "-DUSE_SCTP=${if stdenv.hostPlatform.isLinux then "1" else "0"}"
-
-    # file RPATH_CHANGE could not write new RPATH
-    "-DCMAKE_SKIP_BUILD_RPATH=ON"
-  ];
-
-  enableParallelBuilding = true;
-
   nativeBuildInputs = [
     cmake
   ];
@@ -47,11 +36,22 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional (stdenv.hostPlatform.isLinux) lksctp-tools;
 
+  cmakeFlags = [
+    "-DUSE_PCAP=1"
+    "-DUSE_SSL=1"
+    "-DUSE_SCTP=${if stdenv.hostPlatform.isLinux then "1" else "0"}"
+
+    # file RPATH_CHANGE could not write new RPATH
+    "-DCMAKE_SKIP_BUILD_RPATH=ON"
+  ];
+
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "http://sipp.sf.net";
     description = "SIPp testing tool";
-    mainProgram = "sipp";
+    homepage = "http://sipp.sf.net";
     license = lib.licenses.gpl3;
     platforms = lib.platforms.unix;
+    mainProgram = "sipp";
   };
 })

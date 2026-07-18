@@ -1,8 +1,14 @@
-{ pkgs, libsForQt5 }:
+{ libsForQt5, pkgs }:
 
 let
   packages =
     self: with self; {
+
+      corePackages = [
+        lumina
+        lumina-calculator
+        lumina-pdf
+      ];
 
       lumina = callPackage ./lumina { };
       lumina-calculator = callPackage ./lumina-calculator { };
@@ -14,12 +20,6 @@ let
         pkgs.numlockx
         pkgs.qt5.qtsvg
         pkgs.xscreensaver
-      ];
-
-      corePackages = [
-        lumina
-        lumina-calculator
-        lumina-pdf
       ];
 
     };

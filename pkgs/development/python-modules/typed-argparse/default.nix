@@ -1,18 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  pytest-cov-stub,
+  pytestCheckHook,
   pythonAtLeast,
   setuptools,
   typing-extensions,
-  pytestCheckHook,
-  pytest-cov-stub,
 }:
 buildPythonPackage {
   pname = "typed-argparse";
   version = "0.3.1-unstable-2025-05-09";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "typed-argparse";
@@ -21,14 +19,13 @@ buildPythonPackage {
     hash = "sha256-RgOHIjODBacZdUMCrazZxhQerHtZrNO0BBXPkWPN47o=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ typing-extensions ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
   ];
+
+  build-system = [ setuptools ];
+  dependencies = [ typing-extensions ];
 
   # https://github.com/typed-argparse/typed-argparse/pull/82
   disabledTests = lib.optionals (pythonAtLeast "3.14") [
@@ -38,6 +35,7 @@ buildPythonPackage {
     "test_check_reserved_names"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "typed_argparse" ];
 
   meta = {

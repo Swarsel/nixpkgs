@@ -1,9 +1,9 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   buildDotnetModule,
   dotnetCorePackages,
-  stdenv,
   nix-update-script,
   aot ? dotnetCorePackages.sdk_9_0.hasILCompiler && !stdenv.hostPlatform.isDarwin,
 }:
@@ -21,13 +21,14 @@ buildDotnetModule rec {
 
   nativeBuildInputs = lib.optional aot stdenv.cc;
 
-  projectFile = "src/PatchCil.csproj";
-  nugetDeps = ./deps.json;
+  preFixup = lib.optionalString aot ''
+    # Remove debug symbols as they shouldn't have anything in them.
+    rm $out/lib/patchcil/patchcil.dbg
+  '';
 
-  dotnet-sdk = dotnetCorePackages.sdk_9_0;
   dotnet-runtime = if aot then null else dotnetCorePackages.runtime_9_0;
+  dotnet-sdk = dotnetCorePackages.sdk_9_0;
 
-  selfContainedBuild = aot;
   dotnetFlags = lib.optionals (!aot) [
     # Disable AOT
     "-p:PublishAot=false"
@@ -47,12 +48,10 @@ buildDotnetModule rec {
     "-p:_UseManagedNtlm=true"
   ];
 
-  preFixup = lib.optionalString aot ''
-    # Remove debug symbols as they shouldn't have anything in them.
-    rm $out/lib/patchcil/patchcil.dbg
-  '';
-
   executables = [ "patchcil" ];
+  nugetDeps = ./deps.json;
+  projectFile = "src/PatchCil.csproj";
+  selfContainedBuild = aot;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -63,7 +62,7 @@ buildDotnetModule rec {
     homepage = "https://github.com/GGG-KILLER/patchcil";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ggg ];
-    mainProgram = "patchcil";
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
@@ -71,5 +70,7 @@ buildDotnetModule rec {
       "x86_64-windows"
       "i686-windows"
     ];
+
+    mainProgram = "patchcil";
   };
 }

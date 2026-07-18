@@ -1,12 +1,12 @@
 {
-  stdenv,
-  runCommandLocal,
   lib,
-  htmlq,
-  curl,
+  stdenv,
   cacert,
+  curl,
   gtk3,
+  htmlq,
   pkg-config,
+  runCommandLocal,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,16 +20,16 @@ stdenv.mkDerivation (finalAttrs: {
       {
         BASE = "https://www.rvq.fr/php/ndl.php";
         FNAME = "gaw3-${finalAttrs.version}.tar.gz";
+        SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
 
         nativeBuildInputs = [
           htmlq
           curl
         ];
-        SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
 
-        outputHashMode = "recursive";
-        outputHashAlgo = "sha256";
         outputHash = "sha256-3uO+209+cmu231iabyYmABmgegyxAxswWDWA/v8WSy0=";
+        outputHashAlgo = "sha256";
+        outputHashMode = "recursive";
       }
       ''
         # fetch download page
@@ -75,24 +75,24 @@ stdenv.mkDerivation (finalAttrs: {
       '';
 
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ gtk3 ];
-
   # K&R-style function declarations break under gcc 15's C23 default.
   env.NIX_CFLAGS_COMPILE = "-std=gnu17";
 
   meta = {
     description = "Gtk Analog Wave viewer";
-    mainProgram = "gaw";
+
     longDescription = ''
       Gaw is a software tool for displaying analog waveforms from
       sampled datas, for example from the output of simulators or
       input from sound cards. Data can be imported to gaw using files,
       direct tcp/ip connection or directly from the sound card.
     '';
+
     homepage = "https://www.rvq.fr/linux/gaw.php";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ fbeffa ];
     platforms = lib.platforms.linux;
+    mainProgram = "gaw";
   };
 })

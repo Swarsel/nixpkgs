@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   libgit2,
-  zlib,
+  pkg-config,
+  rustPlatform,
   versionCheckHook,
+  zlib,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-ahjCfSodq4foBV3aBbU0FsSUrEo3wgvFYSBr/OClmpc=";
   };
 
-  cargoHash = "sha256-hbRSQ9iVmp0oKEK53y4IuU34WNgq+pRefNxFbP1DPVQ=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -30,15 +28,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zlib
   ];
 
+  cargoHash = "sha256-hbRSQ9iVmp0oKEK53y4IuU34WNgq+pRefNxFbP1DPVQ=";
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
-    changelog = "https://github.com/AmmarAbouZor/tui-journal/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     description = "Your journal app if you live in a terminal";
     homepage = "https://github.com/AmmarAbouZor/tui-journal";
+    changelog = "https://github.com/AmmarAbouZor/tui-journal/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "tjournal";
     maintainers = with lib.maintainers; [ phanirithvij ];
+    mainProgram = "tjournal";
   };
 })

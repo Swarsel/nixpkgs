@@ -1,43 +1,35 @@
 {
   lib,
-  rustPlatform,
-  fetchFromCodeberg,
+  stdenv,
+  cargo-about,
+  cargo-bundle,
   cmake,
+  envsubst,
+  fetchFromCodeberg,
+  fontconfig,
+  git,
+  libGL,
+  libxcb,
+  libxkbcommon,
+  nix-update-script,
+  openssl,
   pkg-config,
   protobuf,
-  fontconfig,
-  openssl,
+  rustPlatform,
   sqlite,
+  testers,
+  versionCheckHook,
+  vulkan-loader,
+  wayland,
+  writableTmpDirAsHomeHook,
   zlib,
   zstd,
-  libxkbcommon,
-  wayland,
-  libxcb,
-  stdenv,
-  libGL,
-  vulkan-loader,
-  envsubst,
-  nix-update-script,
-  cargo-about,
-  versionCheckHook,
-  cargo-bundle,
-  git,
-  testers,
-  writableTmpDirAsHomeHook,
-
   buildRemoteServer ? true,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "gram";
   version = "3.0.1";
-
-  outputs = [
-    "out"
-  ]
-  ++ lib.optionals buildRemoteServer [
-    "remote_server"
-  ];
 
   src = fetchFromCodeberg {
     owner = "GramEditor";
@@ -46,16 +38,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-B3RmY1h0+D0aawNzevdt9f+gzozckjInhoz+t9taf8o=";
   };
 
+  outputs = [
+    "out"
+  ]
+  ++ lib.optionals buildRemoteServer [
+    "remote_server"
+  ];
+
   postPatch = ''
     # The generate-licenses script wants a specific version of cargo-about eventhough
     # newer versions work just as well.
     substituteInPlace script/generate-licenses \
       --replace-fail '$CARGO_ABOUT_VERSION' '${cargo-about.version}'
   '';
-
-  cargoHash = "sha256-pK0rUuPtWejXitbDQqh9fvdEv3aza0ZEg1XWnCmY4eE=";
-
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     cargo-about
@@ -67,8 +62,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     cargo-bundle
     rustPlatform.bindgenHook
   ];
-
-  dontUseCmakeConfigure = true;
 
   buildInputs = [
     openssl
@@ -82,19 +75,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libxkbcommon
   ];
 
-  cargoBuildFlags = [
-    "--package=gram"
-    "--package=cli"
-  ]
-  ++ lib.optionals buildRemoteServer [ "--package=remote_server" ];
+  cargoHash = "sha256-pK0rUuPtWejXitbDQqh9fvdEv3aza0ZEg1XWnCmY4eE=";
 
   env = {
     ALLOW_MISSING_LICENSES = true;
-    OPENSSL_NO_VENDOR = true;
-    LIBSQLITE3_SYS_USE_PKG_CONFIG = true;
-    ZSTD_SYS_USE_PKG_CONFIG = true;
-    RELEASE_VERSION = finalAttrs.version;
     GRAM_UPDATE_EXPLANATION = "Updates are handled by nixpkgs";
+    LIBSQLITE3_SYS_USE_PKG_CONFIG = true;
+    OPENSSL_NO_VENDOR = true;
+    RELEASE_VERSION = finalAttrs.version;
+    ZSTD_SYS_USE_PKG_CONFIG = true;
   };
 
   preBuild = ''
@@ -105,9 +94,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     writableTmpDirAsHomeHook
   ];
 
-  useNextest = true;
-
-  remoteServerExecutableName = "gram-remote-server-stable-${finalAttrs.version}";
   installPhase = ''
     runHook preInstall
 
@@ -159,6 +145,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
   postFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
     patchelf $out/libexec/gram-editor --add-rpath ${
       lib.makeLibraryPath [
@@ -169,19 +161,27 @@ rustPlatform.buildRustPackage (finalAttrs: {
     }
   '';
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
+  __structuredAttrs = true;
+
+  cargoBuildFlags = [
+    "--package=gram"
+    "--package=cli"
+  ]
+  ++ lib.optionals buildRemoteServer [ "--package=remote_server" ];
+
+  dontUseCmakeConfigure = true;
+  remoteServerExecutableName = "gram-remote-server-stable-${finalAttrs.version}";
+  useNextest = true;
 
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       remoteServerVersion = testers.testVersion {
-        package = finalAttrs.finalPackage.remote_server;
         command = "${finalAttrs.remoteServerExecutableName} version";
+        package = finalAttrs.finalPackage.remote_server;
       };
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -189,10 +189,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://gram-editor.com";
     changelog = "https://codeberg.org/GramEditor/gram/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       niklaskorz
     ];
-    mainProgram = "gram";
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "gram";
   };
 })

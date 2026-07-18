@@ -25,14 +25,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ qtscript ];
-
+  makeFlags = [ "PREFIX=${placeholder "out"}" ];
   dontUseQmakeConfigure = true;
 
-  makeFlags = [ "PREFIX=${placeholder "out"}" ];
-
   meta = {
-    homepage = "https://www.smplayer.info";
     description = "Complete front-end for MPlayer";
+
     longDescription = ''
       SMPlayer is a free media player for Windows and Linux with built-in codecs
       that can play virtually all video and audio formats. It doesn't need any
@@ -51,6 +49,8 @@ stdenv.mkDerivation (finalAttrs: {
       options of MPlayer, SMPlayer adds other interesting features like the
       possibility to play Youtube videos or download subtitles.
     '';
+
+    homepage = "https://www.smplayer.info";
     changelog = "https://github.com/smplayer-dev/smplayer/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];

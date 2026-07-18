@@ -20,12 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ zig ];
-
   passthru.tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
 
   meta = {
-    homepage = "https://github.com/so-dang-cool/findup";
     description = "Search parent directories for sentinel files";
+    homepage = "https://github.com/so-dang-cool/findup";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ booniepepper ];
     mainProgram = "findup";

@@ -5,8 +5,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.4.5";
   pname = "theft";
+  version = "0.4.5";
 
   src = fetchFromGitHub {
     owner = "silentbicycle";
@@ -23,11 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   preConfigure = "patchShebangs ./scripts/mk_bits_lut";
-
   doCheck = true;
-  checkTarget = "test";
-
-  installFlags = [ "PREFIX=$(out)" ];
 
   # fix the libtheft.pc file to use the right installation
   # directory. should be fixed upstream, too
@@ -38,14 +34,19 @@ stdenv.mkDerivation (finalAttrs: {
       --replace "/usr/local" "$out"
   '';
 
+  checkTarget = "test";
+  installFlags = [ "PREFIX=$(out)" ];
+
   meta = {
     description = "C library for property-based testing";
     homepage = "https://github.com/silentbicycle/theft/";
-    platforms = lib.platforms.unix;
     license = lib.licenses.isc;
+
     maintainers = with lib.maintainers; [
       kquick
       thoughtpolice
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

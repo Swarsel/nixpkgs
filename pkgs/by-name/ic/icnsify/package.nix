@@ -1,14 +1,14 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 let
   version = "0.1.1";
 in
 rustPlatform.buildRustPackage {
-  pname = "icnsify";
   inherit version;
+  pname = "icnsify";
 
   src = fetchFromGitHub {
     owner = "uncenter";

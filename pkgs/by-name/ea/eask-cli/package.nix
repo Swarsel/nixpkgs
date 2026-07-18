@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
   versionCheckHook,
 }:
@@ -18,28 +18,29 @@ buildNpmPackage (finalAttrs: {
   };
 
   npmDepsHash = "sha256-Xj68un97I8xtAY3RXEq8PNC8ZOZ+NWg6SblnmKzHGMo=";
-
-  dontBuild = true;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
-  doInstallCheck = true;
+  dontBuild = true;
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--use-github-releases" ];
   };
 
   meta = {
-    changelog = "https://github.com/emacs-eask/cli/blob/${finalAttrs.version}/CHANGELOG.md";
     description = "CLI for building, runing, testing, and managing your Emacs Lisp dependencies";
     homepage = "https://emacs-eask.github.io/";
+    changelog = "https://github.com/emacs-eask/cli/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "eask";
+
     maintainers = with lib.maintainers; [
       jcs090218
       piotrkwiecinski
     ];
+
+    mainProgram = "eask";
   };
 })

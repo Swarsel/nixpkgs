@@ -15,10 +15,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-59RzOEC2bKDJSCvoRxRd1QNVRlHboewlO8ifAiVDqME=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/rust";
+  postPatch = ''
+    ln -s ${./Cargo.lock} Cargo.lock
+    chmod +w ../bindings.h
+  '';
 
   cargoLock = {
     lockFile = ./Cargo.lock;
+
     outputHashes = {
       "rust-stemmers-1.2.0" = "sha256-GJYFQf025U42rJEoI9eIi3xDdK6enptAr3jphuKJdiw=";
       "tantivy-0.23.0" = "sha256-e2ffM2gRC5eww3xv9izLqukGUgduCt2u7jsqTDX5l8k=";
@@ -26,16 +30,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     };
   };
 
-  postPatch = ''
-    ln -s ${./Cargo.lock} Cargo.lock
-    chmod +w ../bindings.h
-  '';
+  sourceRoot = "${finalAttrs.src.name}/rust";
 
   meta = {
     description = "Tantivy go bindings";
     homepage = "https://github.com/anyproto/tantivy-go";
     changelog = "https://github.com/anyproto/tantivy-go/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       autrimpo
       adda

@@ -1,12 +1,12 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   ayatana-ido,
   cmake,
-  fetchFromGitHub,
   glib,
   gtk3,
-  lib,
   pkg-config,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-OsguZ+jl274uPSCTFHq/ZwUE3yHR7MlUPHCpfmn1F7A=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     glib # for glib-mkenums
@@ -27,10 +29,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ gtk3 ];
-
   propagatedBuildInputs = [ ayatana-ido ];
-
-  strictDeps = true;
 
   meta = {
     description = "Ayatana Indicators Shared Library";

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libdvdread,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,14 +17,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ libdvdread ];
+  passthru = { inherit libdvdread; };
 
   meta = {
-    homepage = "http://dvdnav.mplayerhq.hu/";
     description = "Library that implements DVD navigation features such as DVD menus";
+    homepage = "http://dvdnav.mplayerhq.hu/";
     license = lib.licenses.gpl2;
     maintainers = [ lib.maintainers.wmertens ];
     platforms = lib.platforms.unix;
   };
-
-  passthru = { inherit libdvdread; };
 })

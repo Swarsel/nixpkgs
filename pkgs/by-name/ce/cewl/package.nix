@@ -8,8 +8,8 @@
 
 let
   rubyEnv = bundlerEnv {
-    name = "cewl-ruby-env";
     gemdir = ./.;
+    name = "cewl-ruby-env";
   };
 in
 stdenv.mkDerivation (finalAttrs: {

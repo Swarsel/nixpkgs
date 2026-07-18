@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   nix-update-script,
   php,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -28,10 +28,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   meta = {
     description = "Webbased Amateur Radio Logging Software";
     homepage = "https://www.wavelog.org";
-    downloadPage = "https://github.com/wavelog/wavelog";
     changelog = "https://github.com/wavelog/wavelog/releases/tag/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    platforms = php.meta.platforms;
     maintainers = with lib.maintainers; [ ethancedwards8 ];
+    platforms = php.meta.platforms;
+    downloadPage = "https://github.com/wavelog/wavelog";
   };
 })

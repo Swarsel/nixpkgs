@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
   nasm,
   nix-update-script,
   nixos-icons,
   runCommand,
+  rustPlatform,
   testers,
 }:
 
@@ -18,19 +18,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-F2b03x+jklgxa3VcRA3y0wuK7AQ2LJtCEvCa6eFeG3w=";
   };
 
-  cargoHash = "sha256-x/0Kgf8oWjL6m2/8ol32EJpKkWSgBRbdCTay6KYrtzg=";
-
   nativeBuildInputs = [ nasm ];
+  cargoHash = "sha256-x/0Kgf8oWjL6m2/8ol32EJpKkWSgBRbdCTay6KYrtzg=";
 
   passthru = {
     tests = {
       version = testers.testVersion {
         package = finalAttrs.finalPackage;
       };
+
       encode = runCommand "cavif-encode-test" { nativeBuildInputs = [ finalAttrs.finalPackage ]; } ''
         cavif ${nixos-icons}/share/icons/hicolor/512x512/apps/nix-snowflake.png -o $out
       '';
     };
+
     updateScript = nix-update-script { };
   };
 

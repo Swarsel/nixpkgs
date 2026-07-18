@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  intltool,
-  pkg-config,
-  networkmanager,
-  strongswanNM,
   gtk3,
   gtk4,
-  libsecret,
+  intltool,
   libnma,
   libnma-gtk4,
+  libsecret,
+  networkmanager,
+  pkg-config,
+  strongswanNM,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -48,16 +48,17 @@ stdenv.mkDerivation (finalAttrs: {
   env.PKG_CONFIG_LIBNM_VPNSERVICEDIR = "${placeholder "out"}/lib/NetworkManager/VPN";
 
   passthru = {
-    networkManagerPlugin = "VPN/nm-strongswan-service.name";
     networkManagerDbusDeps = [ strongswanNM ];
+    networkManagerPlugin = "VPN/nm-strongswan-service.name";
+
     networkManagerTmpfilesRules = [
       "d /etc/ipsec.d 0700 root root -"
     ];
   };
 
   meta = {
-    description = "NetworkManager's strongswan plugin";
     inherit (networkmanager.meta) platforms;
+    description = "NetworkManager's strongswan plugin";
     license = lib.licenses.gpl2Plus;
   };
 })

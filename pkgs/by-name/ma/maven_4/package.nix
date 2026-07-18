@@ -20,11 +20,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-7OalyZ09BBx25/7RgU656jogoSC8s8I1pz0sTo2xbKE=";
   };
 
-  sourceRoot = ".";
-
   strictDeps = true;
-  __structuredAttrs = true;
-
   nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
@@ -41,42 +37,51 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  sourceRoot = ".";
+
   passthru = {
     # Reuse maven's builder so build-maven-package.nix is not duplicated.
     buildMavenPackage = maven.mkBuildMavenPackage finalAttrs.finalPackage;
 
     tests = {
       version = testers.testVersion {
-        package = finalAttrs.finalPackage;
         command = ''
           env MAVEN_OPTS="-Dmaven.repo.local=$TMPDIR/m2" \
             mvn --version
         '';
+
+        package = finalAttrs.finalPackage;
       };
     };
   };
 
   meta = {
-    homepage = "https://maven.apache.org/";
+    inherit (jdk_headless.meta) platforms;
     description = "Build automation tool (used primarily for Java projects)";
+
     longDescription = ''
       Apache Maven is a software project management and comprehension
       tool. Based on the concept of a project object model (POM), Maven can
       manage a project's build, reporting and documentation from a central piece
       of information.
     '';
+
+    homepage = "https://maven.apache.org/";
     changelog = "https://maven.apache.org/docs/${finalAttrs.version}/release-notes.html";
+    license = lib.licenses.asl20;
+
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
       binaryNativeCode
     ];
-    license = lib.licenses.asl20;
-    mainProgram = "mvn";
+
     maintainers = with lib.maintainers; [
       tricktron
       britter
     ];
+
+    mainProgram = "mvn";
     teams = [ lib.teams.java ];
-    inherit (jdk_headless.meta) platforms;
   };
 })

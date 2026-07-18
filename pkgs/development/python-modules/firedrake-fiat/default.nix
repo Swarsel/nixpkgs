@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  numpy,
-  scipy,
-  sympy,
-  recursivenodes,
-  symengine,
+  buildPythonPackage,
   firedrake-ufl,
-  pytestCheckHook,
   nix-update-script,
+  numpy,
+  pytestCheckHook,
+  recursivenodes,
+  scipy,
+  setuptools,
+  symengine,
+  sympy,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "firedrake-fiat";
   version = "2026.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "firedrakeproject";
@@ -28,16 +27,17 @@ buildPythonPackage (finalAttrs: {
   postPatch =
     let
       fiat-reference-data = fetchFromGitHub {
+        hash = "sha256-Ylq5u3d54SnCiB3nLRkkQu7IkRVuMcUWPgIjn7SIQ0M=";
         owner = "firedrakeproject";
         repo = "fiat-reference-data";
         rev = "508bd755e024010f6fc691a36e51a8f4d7de7efe";
-        hash = "sha256-Ylq5u3d54SnCiB3nLRkkQu7IkRVuMcUWPgIjn7SIQ0M=";
       };
     in
     ''
       ln -s ${fiat-reference-data} test/FIAT/regression/fiat-reference-data
     '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -49,17 +49,17 @@ buildPythonPackage (finalAttrs: {
     symengine
   ];
 
+  pyproject = true;
+
+  pytestFlags = [
+    "--skip-download"
+  ];
+
   pythonImportsCheck = [
     "FIAT"
     "finat"
     "finat.ufl"
     "gem"
-  ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pytestFlags = [
-    "--skip-download"
   ];
 
   passthru = {
@@ -77,8 +77,8 @@ buildPythonPackage (finalAttrs: {
   meta = {
     description = "FInite element Automatic Tabulator";
     homepage = "http://fenics-fiat.readthedocs.org/";
-    downloadPage = "https://github.com/firedrakeproject/fiat";
     license = lib.licenses.lgpl3Plus;
     maintainers = with lib.maintainers; [ qbisi ];
+    downloadPage = "https://github.com/firedrakeproject/fiat";
   };
 })

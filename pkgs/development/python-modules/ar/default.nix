@@ -1,17 +1,16 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
+  buildPythonPackage,
   hatch-vcs,
+  hatchling,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "ar";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vidstige";
@@ -19,6 +18,8 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-uaEkp2uCiRMj8pTBgA6NESJO3Eh5pVc+FfX/enIBcNA=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     hatchling
@@ -28,10 +29,6 @@ buildPythonPackage rec {
     hatch-vcs
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "ar" ];
-
   disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
     "test_list"
     "test_read_content"
@@ -39,6 +36,9 @@ buildPythonPackage rec {
     "test_read_content_ext"
     "test_read_binary_ext"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "ar" ];
 
   meta = {
     description = "Implementation of the ar archive format";

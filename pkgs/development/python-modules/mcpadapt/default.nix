@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   crewai,
-  fetchFromGitHub,
   hatchling,
   jsonref,
   langchain,
@@ -21,7 +21,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "mcpadapt";
   version = "0.1.20";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "grll";
@@ -30,6 +29,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-mUwGKr+QBkqMKhfEEIlF/jZDW7enKYdngNIoxG5hMU4=";
   };
 
+  # Circular dependency smolagents
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -43,20 +44,21 @@ buildPythonPackage (finalAttrs: {
       torchaudio
       soundfile
     ];
+
     crewai = [ crewai ];
+
     langchain = [
       langchain
       langchain-anthropic
       langgraph
     ];
+
     llamaindex = [ llama-index ];
     smolagents = [ smolagents ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "mcpadapt" ];
-
-  # Circular dependency smolagents
-  doCheck = false;
 
   meta = {
     description = "MCP servers tool";

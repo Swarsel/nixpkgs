@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchbzr,
   fetchFromGitHub,
+  fetchbzr,
   libsForQt5,
   versionNum ? "1.1.0",
 }:
@@ -10,43 +10,50 @@
 let
   versionInfo = {
     "0.4.15" = rec {
-      release = "SR10";
-      rev = "291";
       src = fetchbzr {
+        inherit rev;
         # the branch name does not mach the version for some reason
         url = "https://code.launchpad.net/~arcachofo/simulide/simulide_0.4.14";
         sha256 = "sha256-BBoZr/S2pif0Jft5wrem8y00dXl08jq3kFiIUtOr3LM=";
-        inherit rev;
       };
+
+      release = "SR10";
+      rev = "291";
     };
+
     "1.0.0" = rec {
-      release = "SR2";
-      rev = "1449";
       src = fetchbzr {
+        inherit rev;
         url = "https://code.launchpad.net/~arcachofo/simulide/1.0.0";
         sha256 = "sha256-rJWZvnjVzaKXU2ktbde1w8LSNvu0jWkDIk4dq2l7t5g=";
-        inherit rev;
       };
-    };
-    "1.1.0" = rec {
+
       release = "SR2";
-      rev = "28965e3bd6dd118598db1f5639ce1cf2e3c56e36";
+      rev = "1449";
+    };
+
+    "1.1.0" = rec {
       src = fetchFromGitHub {
+        inherit rev;
         owner = "Arcachofo";
         repo = "SimuliDE_110";
-        inherit rev;
         hash = "sha256-Ec72OE4xBlanFFzrrGu0lTY2BEVu7slc1+ZDFr8lUT8=";
       };
+
+      release = "SR2";
+      rev = "28965e3bd6dd118598db1f5639ce1cf2e3c56e36";
     };
+
     "1.2.0" = rec {
-      release = "RC1";
-      rev = "da3a925491fab9fa2a8633d18e45f8e1b576c9d2";
       src = fetchFromGitHub {
+        inherit rev;
         owner = "Arcachofo";
         repo = "SimulIDE-dev";
         hash = "sha256-6Gh0efBizDK1rUNkyU+/ysj7QwkAs3kTA1mQZYFb/pI=";
-        inherit rev;
       };
+
+      release = "RC1";
+      rev = "da3a925491fab9fa2a8633d18e45f8e1b576c9d2";
     };
   };
 in
@@ -64,9 +71,9 @@ let
 in
 
 stdenv.mkDerivation {
+  inherit src;
   pname = "simulide";
   version = "${versionNum}-${release}";
-  inherit src;
 
   patches = lib.optionals (versionNum == "1.0.0") [
     # a static field was declared as protected but was accessed
@@ -99,10 +106,6 @@ stdenv.mkDerivation {
     ''}
   '';
 
-  preConfigure = ''
-    cd build_XX
-  '';
-
   nativeBuildInputs = [
     libsForQt5.qmake
     libsForQt5.wrapQtAppsHook
@@ -116,6 +119,10 @@ stdenv.mkDerivation {
   ++ lib.optionals (lib.versionOlder versionNum "1.1.0") [
     libsForQt5.qtscript
   ];
+
+  preConfigure = ''
+    cd build_XX
+  '';
 
   installPhase = ''
     runHook preInstall
@@ -150,33 +157,39 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
-  # on darwin there are some binaries in the examples directory which
-  # accidentally get wrapped by wrapQtAppsHook so we do the wrapping manually instead
-  dontWrapQtApps = stdenv.hostPlatform.isDarwin;
-
   postFixup = lib.optionalString stdenv.hostPlatform.isDarwin ''
     mkdir -p $out/bin
     wrapQtApp $out/Applications/simulide.app/Contents/MacOs/simulide
     ln -s $out/Applications/simulide.app/Contents/MacOs/simulide $out/bin/simulide
   '';
 
+  # on darwin there are some binaries in the examples directory which
+  # accidentally get wrapped by wrapQtAppsHook so we do the wrapping manually instead
+  dontWrapQtApps = stdenv.hostPlatform.isDarwin;
+
   meta = {
     description = "Simple real time electronic circuit simulator";
+
     longDescription = ''
       SimulIDE is a simple real time electronic circuit simulator, intended for hobbyist or students
       to learn and experiment with analog and digital electronic circuits and microcontrollers.
       It supports PIC, AVR, Arduino and other MCUs and MPUs.
     '';
+
     homepage = "https://simulide.com/";
+
     license =
       if lib.versionAtLeast versionNum "1.1.0" then lib.licenses.agpl3Only else lib.licenses.gpl3Only;
-    mainProgram = "simulide";
+
     maintainers = with lib.maintainers; [
       carloscraveiro
       tomasajt
     ];
+
     platforms = [
       "x86_64-linux"
     ];
+
+    mainProgram = "simulide";
   };
 }

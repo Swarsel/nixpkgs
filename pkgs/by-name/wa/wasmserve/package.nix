@@ -1,7 +1,7 @@
 {
-  buildGoModule,
   lib,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,9 +19,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "HTTP server for testing Wasm";
-    mainProgram = "wasmserve";
     homepage = "https://github.com/hajimehoshi/wasmserve";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ kirillrdy ];
+    mainProgram = "wasmserve";
   };
 })

@@ -26,7 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/e-dant/watcher/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ matthiasbeyer ];
-    mainProgram = "tw";
     platforms = lib.platforms.all;
+    mainProgram = "tw";
   };
 })

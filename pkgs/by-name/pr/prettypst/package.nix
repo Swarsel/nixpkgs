@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,11 +18,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   cargoHash = "sha256-zfx6SDtvn5waKWZB1gVxcvCzP+Rp7+J+txaRHoRfaBM=";
 
   meta = {
-    changelog = "https://github.com/antonWetzel/prettypst/blob/${finalAttrs.src.rev}/changelog.md";
     description = "Formatter for Typst";
     homepage = "https://github.com/antonWetzel/prettypst";
+    changelog = "https://github.com/antonWetzel/prettypst/blob/${finalAttrs.src.rev}/changelog.md";
     license = lib.licenses.mit;
-    mainProgram = "prettypst";
     maintainers = [ ];
+    mainProgram = "prettypst";
   };
 })

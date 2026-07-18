@@ -1,12 +1,12 @@
 {
   lib,
+  stdenv,
   fetchurl,
   libtool,
   openssh,
   pkg-config,
   qt5,
   rsync,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,6 +24,8 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     libtool
     pkg-config
@@ -36,8 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
     openssh
     qt5.qtwayland
   ];
-
-  strictDeps = true;
 
   prePatch = ''
     for File in \
@@ -54,8 +54,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://luckybackup.sourceforge.net/";
     description = "Powerful, fast and reliable backup & sync tool";
+
     longDescription = ''
       luckyBackup is an application for data back-up and synchronization
       powered by the rsync tool.
@@ -65,9 +65,11 @@ stdenv.mkDerivation (finalAttrs: {
       before proceeding in any data manipulation), reliable and fully
       customizable.
     '';
+
+    homepage = "https://luckybackup.sourceforge.net/";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "luckybackup";
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "luckybackup";
   };
 })

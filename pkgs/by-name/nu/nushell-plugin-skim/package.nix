@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
-  rustPlatform,
-  nix-update-script,
+  stdenv,
   fetchFromGitHub,
+  nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,17 +17,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-zypldu525L2JieDYoZN/lYlc3ooupAsrTtheGxmyxew=";
   };
 
-  cargoHash = "sha256-7S4wkRCFEWKbq801boMo6bJ8LFU9gPMUKhFJWhA7AMU=";
-
   nativeBuildInputs = lib.optionals stdenv.cc.isClang [ rustPlatform.bindgenHook ];
-
+  cargoHash = "sha256-7S4wkRCFEWKbq801boMo6bJ8LFU9gPMUKhFJWhA7AMU=";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Nushell plugin that adds integrates the skim fuzzy finder";
-    mainProgram = "nu_plugin_skim";
     homepage = "https://github.com/idanarye/nu_plugin_skim";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ aftix ];
+    mainProgram = "nu_plugin_skim";
   };
 })

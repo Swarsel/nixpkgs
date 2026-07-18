@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   ahocorasick-rs,
   babel,
   banal,
   buildPythonPackage,
-  fetchFromGitHub,
   fingerprints,
   hatchling,
   jellyfish,
@@ -22,7 +22,6 @@
 buildPythonPackage rec {
   pname = "rigour";
   version = "1.8.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "opensanctions";
@@ -30,6 +29,8 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-Rh1JCLj1lSwsSrhXaBlQBdBTnG33LVJd1nAOx4mReyo=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     hatchling
@@ -51,7 +52,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "rigour"

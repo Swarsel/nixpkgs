@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   cython,
   pdm-backend,
+  pytestCheckHook,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "editdistance";
   version = "0.8.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "roy-ht";
@@ -27,7 +26,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "editdistance" ];
 
   meta = {

@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
+  dbus,
   installShellFiles,
   openssl,
-  dbus,
-  stdenv,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-JXjQiPhkkSJh4oWVqTq3lJdVYaknPDCnZ7L+K1vVb/4=";
   };
 
-  cargoHash = "sha256-WtKyq09GRQvPvvw1bfGYCKxQpW6MRR2DOWJ/tC+QJuA=";
-
   nativeBuildInputs = [
     pkg-config
     installShellFiles
@@ -33,6 +31,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isLinux [
     dbus
   ];
+
+  cargoHash = "sha256-WtKyq09GRQvPvvw1bfGYCKxQpW6MRR2DOWJ/tC+QJuA=";
 
   # For keyring support
   env = lib.optionalAttrs stdenv.hostPlatform.isLinux {

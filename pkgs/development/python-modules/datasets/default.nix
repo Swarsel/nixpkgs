@@ -1,10 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   dill,
   filelock,
@@ -17,13 +14,14 @@
   pyarrow,
   pyyaml,
   requests,
+  # build-system
+  setuptools,
   tqdm,
   xxhash,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "datasets";
   version = "4.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "huggingface";
@@ -31,6 +29,11 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-K8JqIbYz3ZfT1t1h5dRGCo9kBQp0E+kElqzaw2InaOI=";
   };
+
+  # Tests require pervasive internet access
+  doCheck = false;
+  # Module import will attempt to create a cache directory
+  postFixup = "export HF_MODULES_CACHE=$TMPDIR";
 
   build-system = [
     setuptools
@@ -53,6 +56,9 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ fsspec.optional-dependencies.http;
 
+  pyproject = true;
+  pythonImportsCheck = [ "datasets" ];
+
   pythonRelaxDeps = [
     # https://github.com/huggingface/datasets/blob/a256b85cbc67aa3f0e75d32d6586afc507cf535b/setup.py#L117
     # "pin until dill has official support for determinism"
@@ -63,20 +69,12 @@ buildPythonPackage (finalAttrs: {
     "fsspec"
   ];
 
-  # Tests require pervasive internet access
-  doCheck = false;
-
-  # Module import will attempt to create a cache directory
-  postFixup = "export HF_MODULES_CACHE=$TMPDIR";
-
-  pythonImportsCheck = [ "datasets" ];
-
   meta = {
     description = "Open-access datasets and evaluation metrics for natural language processing";
-    mainProgram = "datasets-cli";
     homepage = "https://github.com/huggingface/datasets";
     changelog = "https://github.com/huggingface/datasets/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ osbm ];
+    mainProgram = "datasets-cli";
   };
 })

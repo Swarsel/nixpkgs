@@ -1,15 +1,14 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   fetchpatch,
+  python3Packages,
   tarsnap,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "tarsnapper";
   version = "0.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "miracle2k";
@@ -21,13 +20,13 @@ python3Packages.buildPythonApplication rec {
   patches = [
     # Fix failing tests when default_deltas is None
     (fetchpatch {
-      url = "https://github.com/miracle2k/tarsnapper/commit/2ee33ce748b9bb42d559cc2c0104115732cb4150.patch";
       hash = "sha256-fEXGhzlfB+J5lw1pcsC5Ne7I8UMnDzwyyCx/zm15+fU=";
+      url = "https://github.com/miracle2k/tarsnapper/commit/2ee33ce748b9bb42d559cc2c0104115732cb4150.patch";
     })
     # Migrate to pytest, see: https://github.com/miracle2k/tarsnapper/pull/73
     (fetchpatch {
-      url = "https://github.com/miracle2k/tarsnapper/commit/eace01f3085fba8a6421d4f19110b814511e5170.patch?full_index=1";
       hash = "sha256-2YPb7iaAusT1DkISfOWs72jr/GBY/qG5qFyRlnVt0IY=";
+      url = "https://github.com/miracle2k/tarsnapper/commit/eace01f3085fba8a6421d4f19110b814511e5170.patch?full_index=1";
     })
   ];
 
@@ -45,12 +44,11 @@ python3Packages.buildPythonApplication rec {
     pytestCheckHook
   ];
 
+  makeWrapperArgs = [ "--prefix PATH : ${lib.makeBinPath [ tarsnap ]}" ];
+  pyproject = true;
+  pythonImportsCheck = [ "tarsnapper" ];
   # Remove standard module argparse from requirements
   pythonRemoveDeps = [ "argparse" ];
-
-  makeWrapperArgs = [ "--prefix PATH : ${lib.makeBinPath [ tarsnap ]}" ];
-
-  pythonImportsCheck = [ "tarsnapper" ];
 
   meta = {
     description = "Wrapper which expires backups using a gfs-scheme";

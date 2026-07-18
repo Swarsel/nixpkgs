@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  linuxPackages,
   libx11,
   libxext,
+  linuxPackages,
+  rustPlatform,
 }:
 let
   libXNVCtrl = linuxPackages.nvidia_x11.settings.libXNVCtrl;
@@ -20,13 +20,13 @@ rustPlatform.buildRustPackage rec {
     sha256 = "sha256-0WBQSnTYVc3sNmZf/KFzznMg9AVsyaBgdx/IvG1dZAw=";
   };
 
-  cargoHash = "sha256-nJc1G9R0+o22H1KiBtzfdcIIfKrD+Dksl7HsZ2ICD7U=";
-
   nativeBuildInputs = [
     libXNVCtrl
     libx11
     libxext
   ];
+
+  cargoHash = "sha256-nJc1G9R0+o22H1KiBtzfdcIIfKrD+Dksl7HsZ2ICD7U=";
 
   # Needed for static linking
   preConfigure = ''
@@ -38,8 +38,8 @@ rustPlatform.buildRustPackage rec {
     homepage = "https://github.com/foucault/nvfancontrol";
     changelog = "https://github.com/foucault/nvfancontrol/releases/tag/${version}";
     license = with lib.licenses; [ gpl3Only ];
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ devins2518 ];
+    platforms = lib.platforms.linux;
     mainProgram = "nvfancontrol";
   };
 }

@@ -1,14 +1,12 @@
 {
-  build-idris-package,
-  fetchFromGitHub,
-  effects,
   lib,
+  fetchFromGitHub,
+  build-idris-package,
+  effects,
 }:
 build-idris-package {
   pname = "eternal";
   version = "2018-07-02";
-
-  idrisDeps = [ effects ];
 
   src = fetchFromGitHub {
     owner = "Heather";
@@ -16,6 +14,8 @@ build-idris-package {
     rev = "2f84b0dd49a7a29a2f852ba96cabfe8322e0852b";
     sha256 = "1x8cwngiqi05f3wll0niznm47jj2byivx4mh5xf4sb47kciwkxvs";
   };
+
+  idrisDeps = [ effects ];
 
   postUnpack = ''
     printf 'makefile = Makefile\n' >> source/eternal.ipkg

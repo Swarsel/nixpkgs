@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  alsa-lib,
   fetchFromGitHub,
+  alsa-lib,
   libGL,
   libGLU,
   libx11,
@@ -33,18 +33,16 @@ stdenv.mkDerivation (finalAttrs: {
     libxext
   ];
 
-  enableParallelBuilding = true;
+  # TODO: build graphic version for darwin
+  buildFlags = (if stdenv.hostPlatform.isDarwin then [ "nox" ] else [ "all" ]) ++ [
+    "CC=${stdenv.cc.targetPrefix}cc"
+  ];
 
   env.NIX_CFLAGS_COMPILE = "-Wno-unused-result";
 
   preBuild = ''
     pushd ${if stdenv.hostPlatform.isDarwin then "macos/cmdline" else "unix"}
   '';
-
-  # TODO: build graphic version for darwin
-  buildFlags = (if stdenv.hostPlatform.isDarwin then [ "nox" ] else [ "all" ]) ++ [
-    "CC=${stdenv.cc.targetPrefix}cc"
-  ];
 
   postBuild = ''
     popd
@@ -79,15 +77,19 @@ stdenv.mkDerivation (finalAttrs: {
       done
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Open-source minimalist computing technology";
+
     longDescription = ''
       Minimacy is an open-source minimalist computation system based on the principle "Less is more".
       It is designed and programmed by Sylvain Huet.
     '';
-    maintainers = with lib.maintainers; [ jboy ];
+
     homepage = "https://minimacy.net";
     license = lib.licenses.gpl2;
+    maintainers = with lib.maintainers; [ jboy ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

@@ -8,12 +8,11 @@
 buildPythonPackage rec {
   pname = "useful-types";
   version = "0.2.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "useful_types";
     hash = "sha256-hwoLzI/LfQsvFAVUOMHKt+JI/e2UKwlDpNcBnn+72s0=";
+    pname = "useful_types";
   };
 
   build-system = [
@@ -24,6 +23,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "useful_types" ];
 
   meta = {

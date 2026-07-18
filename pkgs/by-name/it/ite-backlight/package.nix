@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
+  boost,
   fetchpatch,
-  ninja,
   libusb1,
   meson,
-  boost,
-  fetchFromGitHub,
-  pkg-config,
   microsoft-gsl,
+  ninja,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,6 +22,14 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1hany4bn93mac9qyz97r1l858d48zdvvmn3mabzr3441ivqr9j0a";
   };
 
+  patches = [
+    (fetchpatch {
+      hash = "sha256-iTRTVy7qB2z1ip135b8k3RufTBzeJaP1wdrRWN9tPsU=";
+      name = "fix-gcc13-build-failure.patch";
+      url = "https://github.com/hexagonal-sun/ite-backlight/commit/dc8c19d4785d80cbe7a82869daee1f723d3f3fb2.patch";
+    })
+  ];
+
   nativeBuildInputs = [
     ninja
     pkg-config
@@ -34,23 +42,17 @@ stdenv.mkDerivation (finalAttrs: {
     libusb1
   ];
 
-  patches = [
-    (fetchpatch {
-      name = "fix-gcc13-build-failure.patch";
-      url = "https://github.com/hexagonal-sun/ite-backlight/commit/dc8c19d4785d80cbe7a82869daee1f723d3f3fb2.patch";
-      hash = "sha256-iTRTVy7qB2z1ip135b8k3RufTBzeJaP1wdrRWN9tPsU=";
-    })
-  ];
-
   meta = {
     description = "Commands to control ite-backlight devices";
+
     longDescription = ''
       This project aims to provide a set of simple utilities for controlling ITE 8291
       keyboard backlight controllers.
     '';
-    license = with lib.licenses; [ mit ];
+
     homepage = "https://github.com/hexagonal-sun/ite-backlight";
-    platforms = lib.platforms.linux;
+    license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ hexagonal-sun ];
+    platforms = lib.platforms.linux;
   };
 })

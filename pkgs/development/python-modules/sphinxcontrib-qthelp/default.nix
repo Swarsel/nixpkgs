@@ -8,20 +8,18 @@
 buildPythonPackage rec {
   pname = "sphinxcontrib-qthelp";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "sphinxcontrib_qthelp";
     inherit version;
     hash = "sha256-T+fQrI/BcQRb5iOro+Ko9hP4aCcx+RU7suQOzha5u6s=";
+    pname = "sphinxcontrib_qthelp";
   };
 
   nativeBuildInputs = [ flit-core ];
-
+  doCheck = false;
   # Check is disabled due to circular dependency of sphinx
   dontCheckRuntimeDeps = true;
-  doCheck = false;
-
+  pyproject = true;
   pythonNamespaces = [ "sphinxcontrib" ];
 
   meta = {

@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   risor,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,12 +17,7 @@ buildGoModule (finalAttrs: {
     hash = "sha256-SXUaSJmtWul4LYRdoxv4lXBB4HHp62xrWbEchI691YY=";
   };
 
-  proxyVendor = true;
   vendorHash = "sha256-WUvCzdDSsCan4K568k53oveYIzFQCxFi2B9gQEaeFEM=";
-
-  subPackages = [
-    "cmd/risor"
-  ];
 
   ldflags = [
     "-s"
@@ -30,19 +25,25 @@ buildGoModule (finalAttrs: {
     "-X=main.version=${finalAttrs.version}"
   ];
 
+  proxyVendor = true;
+
+  subPackages = [
+    "cmd/risor"
+  ];
+
   passthru.tests = {
     version = testers.testVersion {
-      package = risor;
       command = "risor version";
+      package = risor;
     };
   };
 
   meta = {
     description = "Fast and flexible scripting for Go developers and DevOps";
-    mainProgram = "risor";
     homepage = "https://github.com/risor-io/risor";
     changelog = "https://github.com/risor-io/risor/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "risor";
   };
 })

@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  buildPackages,
   fetchpatch,
+  libffi,
   pkg-config,
   python3,
-  libffi,
   readline,
-  buildPackages,
 }:
 
 stdenv.mkDerivation rec {
@@ -39,10 +39,10 @@ stdenv.mkDerivation rec {
     # * <https://github.com/openwrt/openwrt/pull/15479>
     # * <https://github.com/Mbed-TLS/mbedtls/issues/9003>
     (fetchpatch {
-      url = "https://raw.githubusercontent.com/openwrt/openwrt/52b6c9247997e51a97f13bb9e94749bc34e2d52e/package/libs/mbedtls/patches/100-fix-gcc14-build.patch";
-      stripLen = 1;
       extraPrefix = "lib/mbedtls/";
       hash = "sha256-Sllp/iWWEhykMJ3HALw5KzR4ta22120Jcl51JZCkZE0=";
+      stripLen = 1;
+      url = "https://raw.githubusercontent.com/openwrt/openwrt/52b6c9247997e51a97f13bb9e94749bc34e2d52e/package/libs/mbedtls/patches/100-fix-gcc14-build.patch";
     })
     ./fix-cross-compilation.patch
     ./fix-mpy-cross-path.patch
@@ -50,8 +50,8 @@ stdenv.mkDerivation rec {
     # https://github.com/micropython/micropython/issues/18639
     # https://github.com/micropython/micropython/pull/18671
     (fetchpatch {
-      url = "https://github.com/dpgeorge/micropython/commit/570744d06c5ba9dba59b4c3f432ca4f0abd396b6.patch";
       hash = "sha256-j8xr4oqmrsYumJvyA71bx+/dg2HiUxSxdjKUR/2sclI=";
+      url = "https://github.com/dpgeorge/micropython/commit/570744d06c5ba9dba59b4c3f432ca4f0abd396b6.patch";
     })
   ];
 
@@ -60,24 +60,19 @@ stdenv.mkDerivation rec {
     substituteInPlace ports/unix/Makefile \
       --subst-var-by UNAME_S "${
         {
-          "x86_64-linux" = "Linux";
-          "i686-linux" = "Linux";
-          "aarch64-linux" = "Linux";
-          "armv7l-linux" = "Linux";
-          "armv6l-linux" = "Linux";
-          "riscv64-linux" = "Linux";
-          "powerpc64le-linux" = "Linux";
           "aarch64-darwin" = "Darwin";
+          "aarch64-linux" = "Linux";
+          "armv6l-linux" = "Linux";
+          "armv7l-linux" = "Linux";
+          "i686-linux" = "Linux";
+          "powerpc64le-linux" = "Linux";
+          "riscv64-linux" = "Linux";
+          "x86_64-linux" = "Linux";
         }
         .${stdenv.hostPlatform.system} or stdenv.hostPlatform.parsed.kernel.name
       }" \
       --subst-var-by PKG_CONFIG "${stdenv.cc.targetPrefix}pkg-config"
   '';
-
-  depsBuildBuild = [
-    buildPackages.stdenv.cc
-    buildPackages.python3
-  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -111,20 +106,7 @@ stdenv.mkDerivation rec {
     export MPY_CROSS="$PWD/mpy-cross/build/mpy-cross"
   '';
 
-  enableParallelBuilding = true;
-
   doCheck = true;
-
-  __darwinAllowLocalNetworking = true; # needed for select_poll_eintr test
-
-  skippedTests =
-    " -e select_poll_fd"
-    +
-      lib.optionalString (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64)
-        " -e ffi_callback -e float_parse -e float_parse_doubleproc -e 'thread/stress_*' -e select_poll_eintr"
-    + lib.optionalString (
-      stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64
-    ) " -e float_parse";
 
   checkPhase = ''
     runHook preCheck
@@ -141,15 +123,35 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  __darwinAllowLocalNetworking = true; # needed for select_poll_eintr test
+
+  depsBuildBuild = [
+    buildPackages.stdenv.cc
+    buildPackages.python3
+  ];
+
+  enableParallelBuilding = true;
+
+  skippedTests =
+    " -e select_poll_fd"
+    +
+      lib.optionalString (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64)
+        " -e ffi_callback -e float_parse -e float_parse_doubleproc -e 'thread/stress_*' -e select_poll_eintr"
+    + lib.optionalString (
+      stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64
+    ) " -e float_parse";
+
   meta = {
     description = "Lean and efficient Python implementation for microcontrollers and constrained systems";
     homepage = "https://micropython.org";
-    platforms = lib.platforms.unix;
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       prusnak
       sgo
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "micropython";
   };
 }

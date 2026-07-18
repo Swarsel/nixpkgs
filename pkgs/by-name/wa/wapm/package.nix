@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  perl,
   libiconv,
   openssl,
+  perl,
   rustPlatform,
 }:
 
@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-T7YEe8xg5iwI/npisW0m+6FLi+eaAQVgYNe6TvMlhAs=";
   };
 
-  cargoHash = "sha256-GW5/1/RsS5jn6DoR+wGpwNzUW+nN45cxpE85XbnXqso=";
-
   nativeBuildInputs = [ perl ];
 
   buildInputs = [
@@ -27,13 +25,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-GW5/1/RsS5jn6DoR+wGpwNzUW+nN45cxpE85XbnXqso=";
   doCheck = false;
 
   meta = {
     description = "Package manager for WebAssembly modules";
-    mainProgram = "wapm";
     homepage = "https://docs.wasmer.io/ecosystem/wapm";
     license = with lib.licenses; [ mit ];
     maintainers = [ lib.maintainers.lucperkins ];
+    mainProgram = "wapm";
   };
 })

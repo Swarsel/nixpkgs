@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
-  ctags,
+  stdenv,
+  fetchurl,
   cmark,
+  ctags,
+  dbus,
   desktop-file-utils,
   editorconfig-core-c,
-  fetchurl,
   flatpak,
-  gnome,
-  libgit2-glib,
   gi-docgen,
+  gnome,
   gobject-introspection,
   gom,
   gtk4,
@@ -18,6 +18,7 @@
   jsonrpc-glib,
   libadwaita,
   libdex,
+  libgit2-glib,
   libpanel,
   libpeas2,
   libportal-gtk4,
@@ -37,7 +38,6 @@
   vte-gtk4,
   webkitgtk_6_0,
   wrapGAppsHook4,
-  dbus,
   xvfb-run,
 }:
 
@@ -45,15 +45,15 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "gnome-builder";
   version = "50.0";
 
-  outputs = [
-    "out"
-    "devdoc"
-  ];
-
   src = fetchurl {
     url = "mirror://gnome/sources/gnome-builder/${lib.versions.major finalAttrs.version}/gnome-builder-${finalAttrs.version}.tar.xz";
     hash = "sha256-RtVP0T9PS9tu7X0AS0mdC22adqb6/GitFsOJlT/ZL0Y=";
   };
+
+  outputs = [
+    "out"
+    "devdoc"
+  ];
 
   patches = [
     # The test environment hardcodes `GI_TYPELIB_PATH` environment variable to direct dependencies of libide & co.
@@ -68,6 +68,12 @@ stdenv.mkDerivation (finalAttrs: {
     #     Typelib file for namespace 'Pango', version '1.0' not found (g-irepository-error-quark, 0)
     ./fix-finding-test-typelibs.patch
   ];
+
+  postPatch = ''
+    patchShebangs build-aux/meson/post_install.py
+    substituteInPlace build-aux/meson/post_install.py \
+      --replace "gtk-update-icon-cache" "gtk4-update-icon-cache"
+  '';
 
   nativeBuildInputs = [
     desktop-file-utils
@@ -109,11 +115,6 @@ stdenv.mkDerivation (finalAttrs: {
     webkitgtk_6_0
   ];
 
-  nativeCheckInputs = [
-    dbus
-    xvfb-run
-  ];
-
   mesonFlags = [
     "-Ddocs=true"
 
@@ -127,11 +128,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
 
-  postPatch = ''
-    patchShebangs build-aux/meson/post_install.py
-    substituteInPlace build-aux/meson/post_install.py \
-      --replace "gtk-update-icon-cache" "gtk4-update-icon-cache"
-  '';
+  nativeCheckInputs = [
+    dbus
+    xvfb-run
+  ];
 
   checkPhase = ''
     GTK_A11Y=none \
@@ -165,6 +165,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "IDE for writing GNOME-based software";
+
     longDescription = ''
       Global search, auto-completion, source code map, documentation
       reference, and other features expected in an IDE, but with a focus
@@ -175,10 +176,11 @@ stdenv.mkDerivation (finalAttrs: {
       currently recommend running gnome-builder inside a nix-shell with
       appropriate dependencies loaded.
     '';
+
     homepage = "https://apps.gnome.org/Builder/";
     license = lib.licenses.gpl3Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
     mainProgram = "gnome-builder";
+    teams = [ lib.teams.gnome ];
   };
 })

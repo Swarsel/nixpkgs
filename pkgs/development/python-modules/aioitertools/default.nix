@@ -13,17 +13,15 @@
 buildPythonPackage rec {
   pname = "aioitertools";
   version = "0.13.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-YgvSQazAu7nsgZ8ashWGaHG0u9H3ODalX3mSAO6GlQw=";
   };
 
-  build-system = [ flit-core ];
-
   nativeCheckInputs = [ unittestCheckHook ];
-
+  build-system = [ flit-core ];
+  pyproject = true;
   pythonImportsCheck = [ "aioitertools" ];
 
   meta = {

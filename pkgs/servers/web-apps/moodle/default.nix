@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
+  nixosTests,
   writeText,
   plugins ? [ ],
-  nixosTests,
 }:
 
 let
@@ -27,82 +27,76 @@ let
 
   # Reference: https://docs.moodle.org/dev/Plugin_types
   pluginDirs = {
-    mod = "mod";
     antivirus = "lib/antivirus";
-    assignsubmission = "mod/assign/submission";
     assignfeedback = "mod/assign/feedback";
+    assignsubmission = "mod/assign/submission";
+    atto = "lib/editor/atto/plugins";
+    auth = "auth";
+    availability = "availability/condition";
+    block = "blocks";
     booktool = "mod/book/tool";
+    cachelock = "cache/locks";
+    cachestore = "cache/stores";
+    calendartype = "calendar/type";
+    # assignment = "mod/assignment/type"; # Deprecated
+    # report = "admin/report"; # Moved to /report
+    contenttype = "contentbank/contenttype";
     customfield = "customfield/field";
     datafield = "mod/data/field";
-    datapreset = "mod/data/preset";
-    ltisource = "mod/lti/source";
-    fileconverter = "files/converter";
-    ltiservice = "mod/lti/service";
-    mlbackend = "lib/mlbackend";
-    forumreport = "mod/forum/report";
-    quiz = "mod/quiz/report";
-    quizaccess = "mod/quiz/accessrule";
-    scormreport = "mod/scorm/report";
-    workshopform = "mod/workshop/form";
-    workshopallocation = "mod/workshop/allocation";
-    workshopeval = "mod/workshop/eval";
-    block = "blocks";
-    qtype = "question/type";
-    qbehaviour = "question/behaviour";
-    qformat = "question/format";
-    filter = "filter";
-    editor = "lib/editor";
-    atto = "lib/editor/atto/plugins";
-    tinymce = "lib/editor/tinymce/plugins";
-    enrol = "enrol";
-    auth = "auth";
-    tool = "admin/tool";
-    logstore = "admin/tool/log/store";
-    availability = "availability/condition";
-    calendartype = "calendar/type";
-    message = "message/output";
-    format = "course/format";
     dataformat = "dataformat";
-    profilefield = "user/profile/field";
-    report = "report";
+    datapreset = "mod/data/preset";
+    editor = "lib/editor";
+    enrol = "enrol";
+    fileconverter = "files/converter";
+    filter = "filter";
+    format = "course/format";
+    forumreport = "mod/forum/report";
     # coursereport = "course/report"; # Moved to /report
     gradeexport = "grade/export";
     gradeimport = "grade/import";
     gradereport = "grade/report";
     gradingform = "grade/grading/form";
-    mnetservice = "mnet/service";
-    webservice = "webservice";
-    repository = "repository";
-    portfolio = "portfolio";
-    search = "search/engine";
-    media = "media/player";
-    plagiarism = "plagiarism";
-    cachestore = "cache/stores";
-    cachelock = "cache/locks";
-    theme = "theme";
-    local = "local";
-    # assignment = "mod/assignment/type"; # Deprecated
-    # report = "admin/report"; # Moved to /report
-    contenttype = "contentbank/contenttype";
     h5plib = "h5p/h5plib";
+    local = "local";
+    logstore = "admin/tool/log/store";
+    ltiservice = "mod/lti/service";
+    ltisource = "mod/lti/source";
+    media = "media/player";
+    message = "message/output";
+    mlbackend = "lib/mlbackend";
+    mnetservice = "mnet/service";
+    mod = "mod";
+    plagiarism = "plagiarism";
+    portfolio = "portfolio";
+    profilefield = "user/profile/field";
     qbank = "question/bank";
+    qbehaviour = "question/behaviour";
+    qformat = "question/format";
+    qtype = "question/type";
+    quiz = "mod/quiz/report";
+    quizaccess = "mod/quiz/accessrule";
+    report = "report";
+    repository = "repository";
+    scormreport = "mod/scorm/report";
+    search = "search/engine";
+    theme = "theme";
+    tinymce = "lib/editor/tinymce/plugins";
+    tool = "admin/tool";
+    webservice = "webservice";
+    workshopallocation = "mod/workshop/allocation";
+    workshopeval = "mod/workshop/eval";
+    workshopform = "mod/workshop/form";
   };
 
 in
 stdenv.mkDerivation rec {
-  pname = "moodle";
   inherit version;
+  pname = "moodle";
 
   src = fetchurl {
     url = "https://download.moodle.org/download.php/direct/stable${stableVersion}/${pname}-${version}.tgz";
     hash = "sha256-7N2aPfPdZu4WXmZeetup7hL/8XdCcH+5NwTdHxvG0qk=";
   };
-
-  phpConfig = writeText "config.php" ''
-    <?php
-      return require(getenv('MOODLE_CONFIG'));
-    ?>
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -132,14 +126,20 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  phpConfig = writeText "config.php" ''
+    <?php
+      return require(getenv('MOODLE_CONFIG'));
+    ?>
+  '';
+
   passthru.tests = {
     inherit (nixosTests) moodle;
   };
 
   meta = {
     description = "Free and open-source learning management system (LMS) written in PHP";
-    license = lib.licenses.gpl3Plus;
     homepage = "https://moodle.org/";
+    license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.all;
   };

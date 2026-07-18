@@ -2,34 +2,36 @@
   lib,
   stdenv,
   fetchurl,
-  replaceVars,
   fetchFromGitHub,
-  fetchDebianPatch,
   copyDesktopItems,
-  pkg-config,
-  wrapGAppsHook3,
-  unzip,
   curl,
+  fetchDebianPatch,
   glib,
   gtk3,
   libidn2,
   libssh2,
-  openssl,
-  wxwidgets_3_3,
   makeDesktopItem,
+  openssl,
+  pkg-config,
+  replaceVars,
+  unzip,
+  wrapGAppsHook3,
+  wxwidgets_3_3,
 }:
 
 let
   wxwidgets_3_3_1 = wxwidgets_3_3.overrideAttrs (
     finalAttrs: previousAttrs: {
       version = "3.3.2";
+
       src = fetchFromGitHub {
         owner = "wxWidgets";
         repo = "wxWidgets";
         tag = "v${finalAttrs.version}";
-        fetchSubmodules = true;
         hash = "sha256-UL1NuByKFGMQ/dhjuWRdnWTgdy4+1cD9pSls3e1mur8=";
+        fetchSubmodules = true;
       };
+
       patches = [
         ./wxcolorhook.patch
       ];
@@ -42,15 +44,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = fetchurl {
     url = "https://freefilesync.org/download/FreeFileSync_${finalAttrs.version}_Source.zip";
+    hash = "sha256-tjyJ4+sc4nZxP7NQnBlISODsqDHKSKfpw8P8RixZj80=";
+
     # The URL only redirects to the file on the second attempt
     postFetch = ''
       rm -f "$out"
       tryDownload "$url" "$out"
     '';
-    hash = "sha256-tjyJ4+sc4nZxP7NQnBlISODsqDHKSKfpw8P8RixZj80=";
   };
-
-  sourceRoot = ".";
 
   patches = [
     # Disable loading of the missing Animal.dat
@@ -64,8 +65,8 @@ stdenv.mkDerivation (finalAttrs: {
       pname = "freefilesync";
       version = "13.7";
       debianRevision = "1";
-      patch = "Disable_wxWidgets_uncaught_exception_handling.patch";
       hash = "sha256-Fem7eDDKSqPFU/t12Jco8OmYC8FM9JgB4/QVy/ouvbI=";
+      patch = "Disable_wxWidgets_uncaught_exception_handling.patch";
     })
   ];
 
@@ -127,38 +128,44 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem rec {
-      name = "FreeFileSync";
+      categories = [
+        "Utility"
+        "FileTools"
+      ];
+
       desktopName = name;
+      exec = name;
       genericName = "Folder Comparison and Synchronization";
       icon = name;
-      exec = name;
-      categories = [
-        "Utility"
-        "FileTools"
-      ];
+      name = "FreeFileSync";
     })
     (makeDesktopItem rec {
-      name = "RealTimeSync";
-      desktopName = name;
-      genericName = "Automated Synchronization";
-      icon = name;
-      exec = name;
       categories = [
         "Utility"
         "FileTools"
       ];
+
+      desktopName = name;
+      exec = name;
+      genericName = "Automated Synchronization";
+      icon = name;
+      name = "RealTimeSync";
     })
   ];
+
+  sourceRoot = ".";
 
   meta = {
     description = "Open Source File Synchronization & Backup Software";
     homepage = "https://freefilesync.org";
+
     license = [
       lib.licenses.gpl3Only
       lib.licenses.openssl
       lib.licenses.curl
       lib.licenses.bsd3
     ];
+
     maintainers = with lib.maintainers; [ wegank ];
     platforms = lib.platforms.linux;
   };

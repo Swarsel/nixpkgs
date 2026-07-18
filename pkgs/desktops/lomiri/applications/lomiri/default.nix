@@ -1,12 +1,7 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  fetchpatch,
-  gitUpdater,
-  linkFarm,
-  replaceVars,
-  nixosTests,
   bash,
   biometryd,
   boost,
@@ -16,7 +11,9 @@
   dbus,
   dbus-test-runner,
   deviceinfo,
+  fetchpatch,
   geonames,
+  gitUpdater,
   glib,
   glm,
   gnome-desktop,
@@ -24,26 +21,28 @@
   gtk3,
   hfd-service,
   libevdev,
-  libqtdbustest,
   libqtdbusmock,
+  libqtdbustest,
   libusermetrics,
   libuuid,
   lightdm_qt,
+  linkFarm,
   lomiri-api,
   lomiri-app-launch,
   lomiri-download-manager,
   lomiri-indicator-datetime,
   lomiri-indicator-network,
   lomiri-notifications,
+  lomiri-schemas,
   lomiri-settings-components,
   lomiri-system-settings-unwrapped,
-  lomiri-schemas,
   lomiri-telephony-service,
   lomiri-thumbnailer,
   lomiri-ui-toolkit,
   maliit-keyboard,
   mir_2_15,
   nixos-icons,
+  nixosTests,
   pam,
   pkg-config,
   properties-cpp,
@@ -55,6 +54,7 @@
   qtmir,
   qtmultimedia,
   qtsvg,
+  replaceVars,
   wrapGAppsHook3,
   wrapQtAppsHook,
 }:
@@ -73,50 +73,50 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fix broken multimedia suspend due to missing media-hub
     (fetchpatch {
+      hash = "sha256-9mvkILrkig18fAw5KyA2+5vXup6Le7X0blgY0PJ2Trc=";
       name = "2012-lomiri-dont-suspend-apps.patch";
       url = "https://salsa.debian.org/ubports-team/lomiri/-/raw/1d6e83446f69299d1206927c2adbf78470ba27ec/debian/patches/2012_no-app-suspension-on-Debian+Ubuntu-proper.patch";
-      hash = "sha256-9mvkILrkig18fAw5KyA2+5vXup6Le7X0blgY0PJ2Trc=";
     })
 
     # Fix convergence on some tablets
     (fetchpatch {
+      hash = "sha256-pQYIa8U0gEFdwZBuWMp8nL5j2HPSivMrsuKUC9scKg0=";
       name = "1013-lomiri-fix-convergence-on-high-resolution-tablets.patch";
       url = "https://salsa.debian.org/ubports-team/lomiri/-/raw/4d4904b728a3e66706c756f911ddc79b01f863a2/debian/patches/1013_fix-convergence-on-high-resolution-tablets.patch";
-      hash = "sha256-pQYIa8U0gEFdwZBuWMp8nL5j2HPSivMrsuKUC9scKg0=";
     })
 
     # Make greeter behave nicer & more Wayland-native
     (fetchpatch {
+      hash = "sha256-aEId3UDqH1iUi9gV5IpW/5S5rke93UyZVr0jWlNYnOU=";
       name = "2014-lomiri-greeter-wrapper-on-wayland.patch";
       url = "https://salsa.debian.org/ubports-team/lomiri/-/raw/e655e14c7d420021193e37debd3e7da620b45429/debian/patches/2014_lomiri-greeter-wrapper-on-wayland.patch";
-      hash = "sha256-aEId3UDqH1iUi9gV5IpW/5S5rke93UyZVr0jWlNYnOU=";
     })
     (fetchpatch {
+      hash = "sha256-fnTEVQnOBQVd95ucs+iDMcQFOevfQ8dckQg0PrtL/A0=";
       name = "2015-lomiri-greeter-use-wayland.patch";
       url = "https://salsa.debian.org/ubports-team/lomiri/-/raw/2f5acfa085c901359bf6f6cccbce36d7e2981555/debian/patches/2015_lomiri-greeter-use-wayland.patch";
-      hash = "sha256-fnTEVQnOBQVd95ucs+iDMcQFOevfQ8dckQg0PrtL/A0=";
     })
 
     # Reduce desyncing of cursor
     (fetchpatch {
+      hash = "sha256-FYWRHt3//gm3jT9dr35tH4PlZssMMA/zBhjkszgqTYo=";
       name = "1005-lomiri-cursor-always-follow-cursor-position-from-mir.patch";
       url = "https://salsa.debian.org/ubports-team/lomiri/-/raw/f3ba943006f5469a8a7aa24f232d6383afb3bc74/debian/patches/1005_cursor-always-follow-cursor-position-from-mir.patch";
-      hash = "sha256-FYWRHt3//gm3jT9dr35tH4PlZssMMA/zBhjkszgqTYo=";
     })
 
     # Undo start-here integration & uglier colours for launcher
     (fetchpatch {
+      hash = "sha256-9YRWMV+1UT+EQd9Uq1+6enNzz+HDlSt3LTPM1BKJxiE=";
       name = "0001-lomiri-LauncherPanel-Use-Lomiri-upstream-home-logo-and-home-background-color.patch";
       url = "https://gitlab.com/ubports/development/core/lomiri/-/commit/defaabfaf4818ee6b618c97b34acf5e0ed2ebb2e.patch";
-      hash = "sha256-9YRWMV+1UT+EQd9Uq1+6enNzz+HDlSt3LTPM1BKJxiE=";
     })
 
     # Compatibility with newer lomiri-api
     # Remove when version > 0.5.0
     (fetchpatch {
+      hash = "sha256-1mPDtitMpktuvLs3Zn+6pCaMGTwGvIglGBdrm4Y8QwA=";
       name = "0002-lomiri-Adjust-to-newer-lomiri-api.patch";
       url = "https://gitlab.com/ubports/development/core/lomiri/-/commit/26cbfa458766df406ed7d2c351ec84522371b083.patch";
-      hash = "sha256-1mPDtitMpktuvLs3Zn+6pCaMGTwGvIglGBdrm4Y8QwA=";
     })
 
     ./9901-lomiri-Disable-Wizard.patch
@@ -212,6 +212,12 @@ stdenv.mkDerivation (finalAttrs: {
     qtmultimedia
   ];
 
+  cmakeFlags = [
+    (lib.cmakeBool "NO_TESTS" (!finalAttrs.finalPackage.doCheck))
+    (lib.cmakeBool "WITH_MIR2" true)
+  ];
+
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
   nativeCheckInputs = [ (python3.withPackages (ps: with ps; [ python-dbusmock ])) ];
 
   checkInputs = [
@@ -219,26 +225,13 @@ stdenv.mkDerivation (finalAttrs: {
     libqtdbusmock
   ];
 
-  # Need its flags
-  dontWrapGApps = true;
-
-  # Manually calling, to avoid double & unnecessary wrapping
-  dontWrapQtApps = true;
-
-  cmakeFlags = [
-    (lib.cmakeBool "NO_TESTS" (!finalAttrs.finalPackage.doCheck))
-    (lib.cmakeBool "WITH_MIR2" true)
-  ];
-
-  postInstall = ''
-    install -Dm755 ../data/lomiri-greeter-wrapper $out/bin/lomiri-greeter-wrapper
-  '';
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
   preCheck = ''
     export QT_PLUGIN_PATH=${lib.getBin qtbase}/${qtbase.qtPluginPrefix}
     export XDG_DATA_DIRS=${libqtdbusmock}/share
+  '';
+
+  postInstall = ''
+    install -Dm755 ../data/lomiri-greeter-wrapper $out/bin/lomiri-greeter-wrapper
   '';
 
   preFixup = ''
@@ -268,31 +261,40 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix PATH : ${lib.makeBinPath [ dbus ]}
   '';
 
+  # Need its flags
+  dontWrapGApps = true;
+  # Manually calling, to avoid double & unnecessary wrapping
+  dontWrapQtApps = true;
+
   passthru = {
     etcLayoutsFile = "lomiri/keymaps";
-    tests = nixosTests.lomiri;
-    updateScript = gitUpdater { };
+
     greeter = linkFarm "lomiri-greeter" [
       {
-        path = "${finalAttrs.finalPackage}/share/lightdm/greeters/lomiri-greeter.desktop";
         name = "lomiri-greeter.desktop";
+        path = "${finalAttrs.finalPackage}/share/lightdm/greeters/lomiri-greeter.desktop";
       }
     ];
+
+    tests = nixosTests.lomiri;
+    updateScript = gitUpdater { };
   };
 
   meta = {
     description = "Shell of the Lomiri Operating environment";
+
     longDescription = ''
       Shell of the Lomiri Operating environment optimized for touch based human-machine interaction, but also supporting
       convergence (i.e. switching between tablet/phone and desktop mode).
 
       Lomiri is the user shell driving Ubuntu Touch based mobile devices.
     '';
+
     homepage = "https://lomiri.com/";
     changelog = "https://gitlab.com/ubports/development/core/lomiri/-/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.gpl3Only;
+    platforms = lib.platforms.linux;
     mainProgram = "lomiri";
     teams = [ lib.teams.lomiri ];
-    platforms = lib.platforms.linux;
   };
 })

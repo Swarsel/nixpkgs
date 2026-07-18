@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoLibc,
-  makeScopeWithSplicing',
-  generateSplicesForMkScope,
   buildPackages,
+  generateSplicesForMkScope,
+  makeScopeWithSplicing',
+  stdenvNoLibc,
 }:
 
 let
@@ -13,6 +13,7 @@ in
 
 makeScopeWithSplicing' {
   inherit otherSplices;
+
   f = (
     self:
     lib.packagesFromDirectoryRecursive {
@@ -22,37 +23,23 @@ makeScopeWithSplicing' {
     // {
       version = "7.9";
 
-      stdenvLibcMinimal = stdenvNoLibc.override (old: {
-        cc = old.cc.override {
-          libc = self.libcMinimal;
-          noLibc = false;
-          bintools = old.cc.bintools.override {
-            libc = self.libcMinimal;
-            noLibc = false;
-            sharedLibraryLoader = null;
-          };
-        };
-      });
-
-      makeMinimal = buildPackages.netbsd.makeMinimal.override { inherit (self) make-rules; };
-
-      # The manual callPackages below should in principle be unnecessary, but are
-      # necessary. See note in ../netbsd/default.nix
-
-      include = self.callPackage ./pkgs/include/package.nix {
-        inherit (buildOpenbsd) makeMinimal;
-        inherit (buildPackages.netbsd) install rpcgen mtree;
-      };
-
       csu = self.callPackage ./pkgs/csu.nix {
         inherit (self) include;
         inherit (buildOpenbsd) makeMinimal;
         inherit (buildPackages.netbsd) install;
       };
 
+      # The manual callPackages below should in principle be unnecessary, but are
+      # necessary. See note in ../netbsd/default.nix
+      include = self.callPackage ./pkgs/include/package.nix {
+        inherit (buildOpenbsd) makeMinimal;
+        inherit (buildPackages.netbsd) install rpcgen mtree;
+      };
+
       libcMinimal = self.callPackage ./pkgs/libcMinimal/package.nix {
         inherit (self) csu include;
         inherit (buildOpenbsd) makeMinimal;
+
         inherit (buildPackages.netbsd)
           install
           gencat
@@ -63,6 +50,7 @@ makeScopeWithSplicing' {
 
       librpcsvc = self.callPackage ./pkgs/librpcsvc.nix {
         inherit (buildOpenbsd) openbsdSetupHook makeMinimal lorder;
+
         inherit (buildPackages.netbsd)
           install
           tsort
@@ -78,13 +66,26 @@ makeScopeWithSplicing' {
       };
 
       lorder = self.callPackage ./pkgs/lorder.nix { inherit (buildPackages.netbsd) install; };
-
       make-rules = self.callPackage ./pkgs/make-rules/package.nix { };
+      makeMinimal = buildPackages.netbsd.makeMinimal.override { inherit (self) make-rules; };
 
       mkDerivation = self.callPackage ./pkgs/mkDerivation.nix {
         inherit (buildPackages.netbsd) install tsort;
         inherit (buildPackages.buildPackages) rsync;
       };
+
+      stdenvLibcMinimal = stdenvNoLibc.override (old: {
+        cc = old.cc.override {
+          bintools = old.cc.bintools.override {
+            libc = self.libcMinimal;
+            noLibc = false;
+            sharedLibraryLoader = null;
+          };
+
+          libc = self.libcMinimal;
+          noLibc = false;
+        };
+      });
     }
   );
 }

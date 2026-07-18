@@ -1,23 +1,24 @@
 {
   lib,
   buildPythonPackage,
+  ditaa,
   fetchPypi,
   setuptools,
   sphinx,
-  ditaa,
 }:
 
 buildPythonPackage rec {
   pname = "sphinxcontrib-ditaa";
   version = "1.0.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "sphinxcontrib_ditaa";
     hash = "sha256-8O74Gyb4KxER/VlFQWwHKQQjiYNU1ch5n6eLneVHTCg=";
+    pname = "sphinxcontrib_ditaa";
   };
 
+  # no tests provided
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -25,18 +26,15 @@ buildPythonPackage rec {
     ditaa
   ];
 
-  # no tests provided
-  doCheck = false;
-
+  pyproject = true;
   # ? needs docutils exported as runtime dep
   #pythonImportsCheck = [ "sphinxcontrib.ditaa" ];
-
   pythonNamespaces = [ "sphinxcontrib" ];
 
   meta = {
     description = "Sphinx ditaa extension";
     homepage = "https://pypi.org/project/sphinxcontrib-ditaa";
-    maintainers = with lib.maintainers; [ rconybea ];
     license = lib.licenses.bsd2;
+    maintainers = with lib.maintainers; [ rconybea ];
   };
 }

@@ -1,37 +1,37 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
-  pythonAtLeast,
   fetchFromGitHub,
-  replaceVars,
-  gdb,
-  lldb,
-  setuptools,
-  pytestCheckHook,
-  pytest-xdist,
-  pytest-timeout,
-  pytest-retry,
-  importlib-metadata,
-  psutil,
-  untangle,
+  buildPythonPackage,
   django,
   flask,
+  gdb,
   gevent,
+  importlib-metadata,
+  lldb,
   numpy,
+  psutil,
+  pytest-retry,
+  pytest-timeout,
+  pytest-xdist,
+  pytestCheckHook,
+  pythonAtLeast,
+  replaceVars,
   requests,
+  setuptools,
   typing-extensions,
+  untangle,
 }:
 
 buildPythonPackage rec {
   pname = "debugpy";
   version = "1.8.21";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "microsoft";
     repo = "debugpy";
     tag = "v${version}";
+    hash = "sha256-7XM476tfL6QLCHB1kwlbN/dmlgnjuTE+ulQ9yOHfgEE=";
 
     # Upstream uses .gitattributes to inject information about the revision
     # hash and the refname into `src/debugpy/_version.py`, see:
@@ -41,8 +41,6 @@ buildPythonPackage rec {
     postFetch = ''
       sed -i 's/git_refnames = "[^"]*"/git_refnames = " (tag: ${src.tag})"/' "$out/src/debugpy/_version.py"
     '';
-
-    hash = "sha256-7XM476tfL6QLCHB1kwlbN/dmlgnjuTE+ulQ9yOHfgEE=";
   };
 
   patches = [
@@ -83,18 +81,16 @@ buildPythonPackage rec {
       cd src/debugpy/_vendored/pydevd/pydevd_attach_to_process
       $CXX linux_and_mac/attach.cpp -Ilinux_and_mac -std=c++11 -fPIC -nostartfiles ${
         {
-          "x86_64-linux" = "-shared -o attach_linux_amd64.so";
-          "i686-linux" = "-shared -o attach_linux_x86.so";
-          "aarch64-linux" = "-shared -o attach_linux_arm64.so";
-          "riscv64-linux" = "-shared -o attach_linux_riscv64.so";
           "aarch64-darwin" = "-D_REENTRANT -dynamiclib -lc -o attach.dylib";
+          "aarch64-linux" = "-shared -o attach_linux_arm64.so";
+          "i686-linux" = "-shared -o attach_linux_x86.so";
+          "riscv64-linux" = "-shared -o attach_linux_riscv64.so";
+          "x86_64-linux" = "-shared -o attach_linux_amd64.so";
         }
         .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}")
       }
     )
   '';
-
-  build-system = [ setuptools ];
 
   # Disable tests for unmaintained versions of python
   doCheck = pythonAtLeast "3.11";
@@ -129,10 +125,9 @@ buildPythonPackage rec {
     unset no_proxy
   '';
 
-  disabledTests = [
-    # hanging test (flaky)
-    "test_systemexit"
-  ];
+  # Fixes hanging tests on Darwin
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
 
   disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
     # ConnectionResetError: [Errno 54] Connection reset by peer
@@ -140,9 +135,12 @@ buildPythonPackage rec {
     "tests/debugpy/test_breakpoints.py::test_error_in_condition[program-attach_connect(cli)-NameError]"
   ];
 
-  # Fixes hanging tests on Darwin
-  __darwinAllowLocalNetworking = true;
+  disabledTests = [
+    # hanging test (flaky)
+    "test_systemexit"
+  ];
 
+  pyproject = true;
   pythonImportsCheck = [ "debugpy" ];
 
   meta = {
@@ -151,6 +149,7 @@ buildPythonPackage rec {
     changelog = "https://github.com/microsoft/debugpy/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kira-bruneau ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"

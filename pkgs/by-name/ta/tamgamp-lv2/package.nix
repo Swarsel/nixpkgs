@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   lv2,
+  pkg-config,
   zita-resampler,
 }:
 
@@ -26,12 +26,11 @@ stdenv.mkDerivation {
   ];
 
   makeFlags = [ "PREFIX=$(out)" ];
-
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://github.com/sadko4u/tamgamp.lv2";
     description = "Guitar amplifier simulator";
+
     longDescription = ''
       Tamgamp (Pronouncement: "Damage Amp") is an LV2 guitar amp simulator that provides two plugins:
 
@@ -56,8 +55,10 @@ stdenv.mkDerivation {
       - VOX AC-30 Brilliant channel
       - VOX AC-30 normal channel
     '';
+
+    homepage = "https://github.com/sadko4u/tamgamp.lv2";
+    license = lib.licenses.lgpl3Plus;
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.lgpl3Plus;
   };
 }

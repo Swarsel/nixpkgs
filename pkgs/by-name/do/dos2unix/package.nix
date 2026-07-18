@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  perl,
   gettext,
+  perl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,7 @@ stdenv.mkDerivation (finalAttrs: {
     perl
     gettext
   ];
+
   makeFlags = [ "prefix=${placeholder "out"}" ];
 
   meta = {

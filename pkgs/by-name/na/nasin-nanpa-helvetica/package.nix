@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -14,25 +14,26 @@ stdenvNoCC.mkDerivation rec {
     hash = "sha256-isteUDpgdHufXYkcbsC7wbT+e4LzArFe42Tw9wfj04E=";
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     mkdir -p $out/share/fonts/opentype
     cp $src $out/share/fonts/opentype/nasin-nanpa-helvetica.otf
   '';
 
+  dontUnpack = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/ETBCOR/nasin-nanpa";
     description = ''UCSUR OpenType monospaced font for the Toki Pona writing system, Sitelen Pona ("Discord" version; makes UCSUR visible in vanilla Discord)'';
+
     longDescription = ''
       ni li nasin pi sitelen pona.
       sitelen ale pi nasin ni li sama mute weka.
       sitelen pi nasin ni li lon nasin UCSUR kin.
     '';
+
+    homepage = "https://github.com/ETBCOR/nasin-nanpa";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ feathecutie ];
+    platforms = lib.platforms.all;
   };
 }

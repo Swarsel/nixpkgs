@@ -1,9 +1,9 @@
 {
-  i3lock-color,
   lib,
   stdenv,
   fetchFromGitHub,
   fetchpatch,
+  i3lock-color,
   libGL,
 }:
 
@@ -22,9 +22,9 @@ i3lock-color.overrideAttrs (oldAttrs: rec {
     # Pull patch pending upstream inclusion for -fno-common toolchain
     # support: https://github.com/karulont/i3lock-blur/pull/22
     (fetchpatch {
+      hash = "sha256-0hXUr+ZEB1tpI3xw80/hGzKyeGuna4CQmEvK6t0VBqU=";
       name = "fno-common.patch";
       url = "https://github.com/karulont/i3lock-blur/commit/ec8fe0e7f7d78bf445602ed517efd5c324bb32f7.patch";
-      hash = "sha256-0hXUr+ZEB1tpI3xw80/hGzKyeGuna4CQmEvK6t0VBqU=";
     })
   ];
 

@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libx11,
-  libxext,
+  giflib,
   libjpeg,
   libpng,
-  giflib,
+  libx11,
+  libxext,
 }:
 
 stdenv.mkDerivation {
@@ -20,8 +20,6 @@ stdenv.mkDerivation {
     sha256 = "sha256-srSwoaajW4H4+kmE7NQAqVz9d/1q2XQ5ayQaOcGwzI0=";
   };
 
-  installFlags = [ "PREFIX=${placeholder "out"}" ];
-
   outputs = [
     "out"
     "man"
@@ -34,6 +32,8 @@ stdenv.mkDerivation {
     libpng
     giflib
   ];
+
+  installFlags = [ "PREFIX=${placeholder "out"}" ];
 
   meta = {
     description = "Minimal image viewer using raw XLib";

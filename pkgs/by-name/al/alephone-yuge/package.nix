@@ -1,4 +1,4 @@
-{ alephone, fetchurl }:
+{ fetchurl, alephone }:
 
 alephone.makeWrapper {
   pname = "yuge";
@@ -6,8 +6,8 @@ alephone.makeWrapper {
   desktopName = "Marathon-Yuge";
 
   zip = fetchurl {
-    url = "https://lochnits.com/marathon/yuge/files/Mararthon_Yuge.zip";
     hash = "sha256-dZHInYThB/4igpAXbUadXwPvh2Fl3XGZ4ficg7IEnNc=";
+    url = "https://lochnits.com/marathon/yuge/files/Mararthon_Yuge.zip";
   };
 
   meta = {

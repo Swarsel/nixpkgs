@@ -23,11 +23,11 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [ autoreconfHook ];
 
   meta = {
+    description = "Implementation of line breaking and word breaking algorithms as in the Unicode standard";
     homepage = "https://github.com/adah1972/libunibreak";
     changelog = "https://github.com/adah1972/libunibreak/blob/${finalAttrs.src.tag}/NEWS";
-    description = "Implementation of line breaking and word breaking algorithms as in the Unicode standard";
     license = lib.licenses.zlib;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

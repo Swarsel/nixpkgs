@@ -10,37 +10,34 @@ let
 in
 
 {
-  meta.maintainers = with lib.maintainers; [ defelo ];
-
   options.services.whoami = {
     enable = lib.mkEnableOption "whoami";
-
     package = lib.mkPackageOption pkgs "whoami" { };
 
-    port = lib.mkOption {
-      type = lib.types.port;
-      description = "The port whoami should listen on.";
-      default = 8000;
+    extraArgs = lib.mkOption {
+      default = [ ];
+      description = "Extra command line arguments to pass to whoami. See <https://github.com/traefik/whoami#flags> for details.";
+      type = lib.types.listOf lib.types.str;
     };
 
-    extraArgs = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      description = "Extra command line arguments to pass to whoami. See <https://github.com/traefik/whoami#flags> for details.";
-      default = [ ];
+    port = lib.mkOption {
+      default = 8000;
+      description = "The port whoami should listen on.";
+      type = lib.types.port;
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.whoami = {
-      wantedBy = [ "multi-user.target" ];
-
-      wants = [ "network-online.target" ];
       after = [ "network-online.target" ];
 
       serviceConfig = {
-        User = "whoami";
-        Group = "whoami";
+        # Hardening
+        AmbientCapabilities = "";
+        CapabilityBoundingSet = [ "" ];
+        DevicePolicy = "closed";
         DynamicUser = true;
+
         ExecStart = lib.escapeShellArgs (
           [
             (lib.getExe cfg.package)
@@ -50,10 +47,7 @@ in
           ++ cfg.extraArgs
         );
 
-        # Hardening
-        AmbientCapabilities = "";
-        CapabilityBoundingSet = [ "" ];
-        DevicePolicy = "closed";
+        Group = "whoami";
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
         NoNewPrivileges = true;
@@ -78,13 +72,21 @@ in
         SocketBindAllow = "tcp:${toString cfg.port}";
         SocketBindDeny = "any";
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
           "~@resources"
         ];
+
         UMask = "0077";
+        User = "whoami";
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
   };
+
+  meta.maintainers = with lib.maintainers; [ defelo ];
 }

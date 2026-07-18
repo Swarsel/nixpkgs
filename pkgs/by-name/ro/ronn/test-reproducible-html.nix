@@ -1,7 +1,7 @@
 {
-  runCommand,
   diffutils,
   ronn,
+  runCommand,
 }:
 runCommand "ronn-test-reproducible-html" { } ''
   set -euo pipefail

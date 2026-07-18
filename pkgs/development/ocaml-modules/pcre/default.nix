@@ -1,9 +1,9 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
-  pcre,
+  buildDunePackage,
   dune-configurator,
+  pcre,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -16,12 +16,11 @@ buildDunePackage (finalAttrs: {
   };
 
   buildInputs = [ dune-configurator ];
-
   propagatedBuildInputs = [ pcre ];
 
   meta = {
-    homepage = "https://mmottl.github.io/pcre-ocaml";
     description = "Efficient C-library for pattern matching with Perl-style regular expressions in OCaml";
+    homepage = "https://mmottl.github.io/pcre-ocaml";
     license = lib.licenses.lgpl21Plus;
     maintainers = [ ];
   };

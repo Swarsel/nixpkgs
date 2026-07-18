@@ -15,8 +15,6 @@ stdenv.mkDerivation {
     sha256 = "sha256-G6Qi7e4o+0ahcslJ8UfJrdoc8NNkY+nl6kyDlkJCo9I=";
   };
 
-  dontConfigure = true;
-
   buildPhase = ''
     runHook preBuild
 
@@ -33,9 +31,11 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://github.com/ahroach/hexdiff";
     description = "Terminal application for differencing two binary files, with color-coded output";
+    homepage = "https://github.com/ahroach/hexdiff";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ rogarb ];
     platforms = lib.platforms.linux;

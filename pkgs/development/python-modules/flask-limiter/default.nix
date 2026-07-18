@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   asgiref,
   buildPythonPackage,
-  fetchFromGitHub,
   flask,
-  hatchling,
   hatch-vcs,
+  hatchling,
   hiro,
   limits,
   ordered-set,
@@ -22,7 +22,6 @@
 buildPythonPackage rec {
   pname = "flask-limiter";
   version = "4.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "alisaifee";
@@ -37,24 +36,6 @@ buildPythonPackage rec {
       --replace-fail "import flask_restful" ""
   '';
 
-  build-system = [
-    hatchling
-    hatch-vcs
-  ];
-
-  dependencies = [
-    flask
-    limits
-    ordered-set
-  ];
-
-  optional-dependencies = {
-    cli = [ rich ];
-    redis = limits.optional-dependencies.redis;
-    memcached = limits.optional-dependencies.memcached;
-    mongodb = limits.optional-dependencies.mongodb;
-  };
-
   nativeCheckInputs = [
     asgiref
     pytest-check
@@ -67,6 +48,22 @@ buildPythonPackage rec {
     pymongo
   ]
   ++ optional-dependencies.cli;
+
+  build-system = [
+    hatchling
+    hatch-vcs
+  ];
+
+  dependencies = [
+    flask
+    limits
+    ordered-set
+  ];
+
+  disabledTestPaths = [
+    # requires running redis/memcached/mongodb
+    "tests/test_storage.py"
+  ];
 
   disabledTests = [
     # flask-restful is unmaintained and breaks regularly
@@ -88,11 +85,14 @@ buildPythonPackage rec {
     "test_fallback_to_memory"
   ];
 
-  disabledTestPaths = [
-    # requires running redis/memcached/mongodb
-    "tests/test_storage.py"
-  ];
+  optional-dependencies = {
+    cli = [ rich ];
+    memcached = limits.optional-dependencies.memcached;
+    mongodb = limits.optional-dependencies.mongodb;
+    redis = limits.optional-dependencies.redis;
+  };
 
+  pyproject = true;
   pythonImportsCheck = [ "flask_limiter" ];
 
   meta = {

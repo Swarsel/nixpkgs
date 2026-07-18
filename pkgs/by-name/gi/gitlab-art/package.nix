@@ -6,7 +6,6 @@
 python3Packages.buildPythonApplication rec {
   pname = "gitlab-art";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kosma";
@@ -25,6 +24,8 @@ python3Packages.buildPythonApplication rec {
     click
     python-gitlab
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Pull cross-project Gitlab artifact dependencies";

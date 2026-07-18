@@ -14,24 +14,21 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0wm04519pd3g8hqpjqhfr72q8qmbiwqaxcs3cndny9h86aa95y60";
   };
 
-  nativeBuildInputs = [ updateAutotoolsGnuConfigScriptsHook ];
-
-  configureFlags = lib.optional (!stdenv.hostPlatform.isStatic) "--enable-shared";
-
-  enableParallelBuilding = true;
-
-  doCheck = true; # not cross;
-
-  strictDeps = true;
-
   outputs = [
     "out"
     "dev"
     "doc"
   ];
 
+  strictDeps = true;
+  nativeBuildInputs = [ updateAutotoolsGnuConfigScriptsHook ];
+  configureFlags = lib.optional (!stdenv.hostPlatform.isStatic) "--enable-shared";
+  doCheck = true; # not cross;
+  enableParallelBuilding = true;
+
   meta = {
     description = "Real-time data (de)compression library";
+
     longDescription = ''
       LZO is a portable lossless data compression library written in ANSI C.
       Both the source code and the compressed data format are designed to be
@@ -44,7 +41,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     homepage = "http://www.oberhumer.com/opensource/lzo";
     license = lib.licenses.gpl2Plus;
-
     platforms = lib.platforms.all;
   };
 })

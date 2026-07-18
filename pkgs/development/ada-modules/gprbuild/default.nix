@@ -1,15 +1,13 @@
 {
   lib,
   stdenv,
+  gnat,
   gprbuild-boot,
   which,
-  gnat,
   xmlada,
 }:
 
 stdenv.mkDerivation {
-  pname = "gprbuild";
-
   # See ./boot.nix for an explanation of the gprbuild setupHook,
   # our custom knowledge base entry and the situation wrt a
   # (future) gprbuild wrapper.
@@ -19,6 +17,16 @@ stdenv.mkDerivation {
     setupHooks
     meta
     ;
+
+  pname = "gprbuild";
+
+  patches =
+    gprbuild-boot.patches
+    # Fixes gprbuild being linked statically always. Based on the AUR's patch:
+    # https://aur.archlinux.org/cgit/aur.git/plain/0001-Makefile-build-relocatable-instead-of-static-binary.patch?h=gprbuild&id=bac524c76cd59c68fb91ef4dfcbe427357b9f850
+    ++ lib.optionals (!stdenv.hostPlatform.isStatic) [
+      ./gprbuild-relocatable-build.patch
+    ];
 
   nativeBuildInputs = [
     gnat
@@ -41,29 +49,16 @@ stdenv.mkDerivation {
     "LIBRARY_TYPE=relocatable"
   ];
 
-  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
-    # Ensure that there is enough space for the `fixDarwinDylibNames` hook to
-    # update the install names of the output dylibs.
-    NIX_LDFLAGS = "-headerpad_max_install_names";
-  };
-
-  patches =
-    gprbuild-boot.patches
-    # Fixes gprbuild being linked statically always. Based on the AUR's patch:
-    # https://aur.archlinux.org/cgit/aur.git/plain/0001-Makefile-build-relocatable-instead-of-static-binary.patch?h=gprbuild&id=bac524c76cd59c68fb91ef4dfcbe427357b9f850
-    ++ lib.optionals (!stdenv.hostPlatform.isStatic) [
-      ./gprbuild-relocatable-build.patch
-    ];
-
   buildFlags = [
     "all"
     "libgpr.build"
   ];
 
-  installFlags = [
-    "all"
-    "libgpr.install"
-  ];
+  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
+    # Ensure that there is enough space for the `fixDarwinDylibNames` hook to
+    # update the install names of the output dylibs.
+    NIX_LDFLAGS = "-headerpad_max_install_names";
+  };
 
   # link gprconfig_kb db from gprbuild-boot into build dir,
   # the install process copies its contents to $out
@@ -78,4 +73,9 @@ stdenv.mkDerivation {
   postInstall = ''
     rm $out/doinstall
   '';
+
+  installFlags = [
+    "all"
+    "libgpr.install"
+  ];
 }

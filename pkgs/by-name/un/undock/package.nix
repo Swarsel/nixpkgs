@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "undock";
@@ -15,14 +15,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
-
-  tags = [
-    "containers_image_openpgp"
-    "exclude_graphdriver_btrfs"
-    "exclude_graphdriver_devicemapper"
-  ];
-
   env.CGO_ENABLED = 0;
+
+  postInstall = ''
+    mv $out/bin/cmd $out/bin/undock
+  '';
 
   ldflags = [
     "-s"
@@ -30,17 +27,21 @@ buildGoModule (finalAttrs: {
     "-X main.version=${finalAttrs.version}"
   ];
 
-  postInstall = ''
-    mv $out/bin/cmd $out/bin/undock
-  '';
+  tags = [
+    "containers_image_openpgp"
+    "exclude_graphdriver_btrfs"
+    "exclude_graphdriver_devicemapper"
+  ];
 
   meta = {
     description = "Extract contents of a container image in a local folder";
     homepage = "https://crazymax.dev/undock/";
     license = lib.licenses.mit;
-    mainProgram = "undock";
+
     maintainers = with lib.maintainers; [
       nolith
     ];
+
+    mainProgram = "undock";
   };
 })

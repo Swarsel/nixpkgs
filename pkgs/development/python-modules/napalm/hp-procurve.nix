@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   napalm,
   netmiko,
   pip,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "napalm-hp-procurve";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "napalm-automation-community";
@@ -23,28 +22,21 @@ buildPythonPackage rec {
     hash = "sha256-cO4kxI90krj1knzixRKWxa77OAaxjO8dLTy02VpkV9M=";
   };
 
-  patchPhase = ''
-    # Dependency installation in setup.py doesn't work
-    echo -n > requirements.txt
-    substituteInPlace setup.cfg \
-      --replace " --pylama" ""
-  '';
+  buildInputs = [ napalm ];
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
     pip
   ];
 
-  buildInputs = [ napalm ];
-
   dependencies = [
     netmiko
     standard-telnetlib
-  ];
-
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
   ];
 
   disabledTests = [
@@ -57,6 +49,14 @@ buildPythonPackage rec {
     "test_get_facts"
   ];
 
+  patchPhase = ''
+    # Dependency installation in setup.py doesn't work
+    echo -n > requirements.txt
+    substituteInPlace setup.cfg \
+      --replace " --pylama" ""
+  '';
+
+  pyproject = true;
   pythonImportsCheck = [ "napalm_procurve" ];
 
   meta = {

@@ -3,20 +3,20 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  util-linux,
-  hexdump,
-  darwin,
   boost,
+  darwin,
+  db48,
+  hexdump,
   libevent,
   miniupnpc,
-  zeromq,
-  zlib,
-  db48,
-  sqlite,
+  pkg-config,
+  python3,
   qrencode,
   qt5,
-  python3,
+  sqlite,
+  util-linux,
+  zeromq,
+  zlib,
   withGui ? true,
   withWallet ? true,
 }:
@@ -76,16 +76,8 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-qt-bindir=${qt5.qtbase.dev}/bin:${qt5.qttools.dev}/bin"
   ];
 
-  # fix "Killed: 9  test/test_bitcoin"
-  # https://github.com/NixOS/nixpkgs/issues/179474
-  hardeningDisable = lib.optionals (stdenv.hostPlatform.isAarch64 && stdenv.hostPlatform.isDarwin) [
-    "fortify"
-    "stackprotector"
-  ];
-
-  nativeCheckInputs = [ python3 ];
-
   doCheck = true;
+  nativeCheckInputs = [ python3 ];
 
   checkFlags = [
     "LC_ALL=en_US.UTF-8"
@@ -96,17 +88,26 @@ stdenv.mkDerivation (finalAttrs: {
 
   enableParallelBuilding = true;
 
+  # fix "Killed: 9  test/test_bitcoin"
+  # https://github.com/NixOS/nixpkgs/issues/179474
+  hardeningDisable = lib.optionals (stdenv.hostPlatform.isAarch64 && stdenv.hostPlatform.isDarwin) [
+    "fortify"
+    "stackprotector"
+  ];
+
   meta = {
     description = "Open Source implementation of advanced blockchain features extending the Bitcoin protocol";
+
     longDescription = ''
       The Elements blockchain platform is a collection of feature experiments and extensions to the
       Bitcoin protocol. This platform enables anyone to build their own businesses or networks
       pegged to Bitcoin as a sidechain or run as a standalone blockchain with arbitrary asset
       tokens.
     '';
+
     homepage = "https://www.github.com/ElementsProject/elements";
-    maintainers = with lib.maintainers; [ prusnak ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ prusnak ];
     platforms = lib.platforms.unix;
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
+  buildPythonPackage,
   django,
+  hatchling,
   pytest-django,
   pytestCheckHook,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "django-js-asset";
   version = "4.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "matthiask";
@@ -19,12 +18,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-TmoT+WuOw92wWW82CpKLy0Lr+oSKf+c2diG8Gs5rWg4=";
   };
-
-  build-system = [ hatchling ];
-
-  dependencies = [ django ];
-
-  pythonImportsCheck = [ "js_asset" ];
 
   nativeCheckInputs = [
     pytest-django
@@ -35,11 +28,16 @@ buildPythonPackage rec {
     export DJANGO_SETTINGS_MODULE=tests.testapp.settings
   '';
 
+  build-system = [ hatchling ];
+  dependencies = [ django ];
+  pyproject = true;
+  pythonImportsCheck = [ "js_asset" ];
+
   meta = {
-    changelog = "https://github.com/matthiask/django-js-asset/blob/${version}/CHANGELOG.rst";
     description = "Script tag with additional attributes for django.forms.Media";
     homepage = "https://github.com/matthiask/django-js-asset";
-    maintainers = with lib.maintainers; [ hexa ];
+    changelog = "https://github.com/matthiask/django-js-asset/blob/${version}/CHANGELOG.rst";
     license = with lib.licenses; [ bsd3 ];
+    maintainers = with lib.maintainers; [ hexa ];
   };
 }

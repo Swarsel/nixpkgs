@@ -1,21 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  setuptools,
-  pybind11,
-
+  buildPythonPackage,
   pillow,
-
   psutil,
+  pybind11,
   rich,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "materialyoucolor";
   version = "3.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "T-Dynamos";
@@ -23,15 +19,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-CCpYrNp79gdnj5TYcQ7fEiLsFW/kbuZ+3/cHZF4Bv/s=";
   };
-
-  build-system = [
-    setuptools
-    pybind11
-  ];
-
-  dependencies = [
-    pillow
-  ];
 
   nativeCheckInputs = [
     psutil
@@ -48,6 +35,17 @@ buildPythonPackage (finalAttrs: {
 
     runHook postCheck
   '';
+
+  build-system = [
+    setuptools
+    pybind11
+  ];
+
+  dependencies = [
+    pillow
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "materialyoucolor"

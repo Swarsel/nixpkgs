@@ -2,27 +2,25 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
-  testers,
-
-  cmake,
-  ninja,
-  pkg-config,
-
   SDL2,
-  libxt,
-  libxrandr,
-  libxaw,
-  libx11,
-  libxcb,
-  libGL,
-  zlib,
-  freetype,
-  tinyxml,
-  openvr,
-  rapidjson,
-  zziplib,
   apple-sdk_15,
+  cmake,
+  fetchpatch2,
+  freetype,
+  libGL,
+  libx11,
+  libxaw,
+  libxcb,
+  libxrandr,
+  libxt,
+  ninja,
+  openvr,
+  pkg-config,
+  rapidjson,
+  testers,
+  tinyxml,
+  zlib,
+  zziplib,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "ogre-next";
@@ -37,9 +35,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch2 {
+      hash = "sha256-JYsksDxcLrkHqlgdP3KdHlFuvYxNazlchPGoTXE9LYQ=";
       # https://github.com/OGRECave/ogre-next/pull/542
       url = "https://github.com/OGRECave/ogre-next/commit/c1dad50e8510dea9d75d97b0ace33a870993895c.patch?full_index=1";
-      hash = "sha256-JYsksDxcLrkHqlgdP3KdHlFuvYxNazlchPGoTXE9LYQ=";
     })
   ];
 
@@ -130,16 +128,19 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "3D Object-Oriented Graphics Rendering Engine";
     homepage = "https://www.ogre3d.org/";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       marcin-serwin
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
     pkgConfigModules = [
       "OGRE"
       "OGRE-Hlms"
       "OGRE-MeshLodGenerator"
       "OGRE-Overlay"
     ];
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
-    license = lib.licenses.mit;
   };
 })

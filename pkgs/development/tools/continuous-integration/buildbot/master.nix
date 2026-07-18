@@ -1,71 +1,71 @@
 {
   lib,
   stdenv,
-  buildPythonApplication,
   fetchFromGitHub,
-  makeWrapper,
+  alembic,
+  autobahn,
+  boto3,
+  brotli,
+  buildPythonApplication,
   # Tie withPlugins through the fixed point here, so it will receive an
   # overridden version properly
   buildbot,
-  python,
-  twisted,
-  jinja2,
-  msgpack,
-  zope-interface,
-  sqlalchemy,
-  alembic,
-  python-dateutil,
-  txaio,
-  autobahn,
-  pyjwt,
-  pyyaml,
-  treq,
-  txrequests,
-  pypugjs,
-  boto3,
-  moto,
-  markdown,
-  lz4,
-  brotli,
-  zstandard,
-  setuptools-trial,
-  buildbot-worker,
-  buildbot-plugins,
   buildbot-pkg,
-  parameterized,
-  git,
-  openssh,
-  setuptools,
+  buildbot-plugins,
+  buildbot-worker,
   croniter,
+  git,
   importlib-resources,
-  packaging,
-  unidiff,
+  jinja2,
+  lz4,
+  makeWrapper,
+  markdown,
+  moto,
+  msgpack,
   nixosTests,
+  openssh,
+  packaging,
+  parameterized,
+  pyjwt,
+  pypugjs,
+  python,
+  python-dateutil,
+  pyyaml,
+  setuptools,
+  setuptools-trial,
+  sqlalchemy,
+  treq,
+  twisted,
+  txaio,
+  txrequests,
+  unidiff,
+  zope-interface,
+  zstandard,
 }:
 
 let
   withPlugins =
     plugins:
     buildPythonApplication rec {
-      pname = "${buildbot.pname}-with-plugins";
       inherit (buildbot) version;
-      pyproject = false;
-
-      dontUnpack = true;
-      dontBuild = true;
-      doCheck = false;
+      pname = "${buildbot.pname}-with-plugins";
 
       nativeBuildInputs = [
         makeWrapper
       ];
 
       propagatedBuildInputs = plugins ++ buildbot.propagatedBuildInputs;
+      doCheck = false;
 
       installPhase = ''
         makeWrapper ${buildbot}/bin/buildbot $out/bin/buildbot \
           --prefix PYTHONPATH : "${buildbot}/${python.sitePackages}:$PYTHONPATH"
         ln -sfv ${buildbot}/lib $out/lib
       '';
+
+      dontBuild = true;
+      dontUnpack = true;
+      pyproject = false;
 
       passthru = buildbot.passthru // {
         inherit pyproject;
@@ -76,7 +76,6 @@ in
 buildPythonApplication rec {
   pname = "buildbot";
   version = "4.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "buildbot";
@@ -85,11 +84,43 @@ buildPythonApplication rec {
     hash = "sha256-yUtOJRI04/clCMImh5sokpj6MeBIXjEAdf9xnToqJZs=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "twisted"
+  patches = [
+    # This patch disables the test that tries to read /etc/os-release which
+    # is not accessible in sandboxed builds.
+    ./skip_test_linux_distro.patch
   ];
+
+  postPatch = ''
+    cd master
+    touch buildbot/py.typed
+    substituteInPlace buildbot/scripts/logwatcher.py --replace '/usr/bin/tail' "$(type -P tail)"
+  '';
+
+  # TimeoutErrors on slow machines -> aarch64
+  doCheck = !stdenv.hostPlatform.isAarch64;
+
+  nativeCheckInputs = [
+    treq
+    txrequests
+    pypugjs
+    boto3
+    moto
+    markdown
+    lz4
+    setuptools-trial
+    buildbot-worker
+    buildbot-pkg
+    buildbot-plugins.www
+    parameterized
+    git
+    openssh
+  ];
+
+  preCheck = ''
+    export PATH="$out/bin:$PATH"
+  '';
+
+  build-system = [ setuptools ];
 
   dependencies = [
     # core
@@ -115,41 +146,11 @@ buildPythonApplication rec {
   # tls
   ++ twisted.optional-dependencies.tls;
 
-  nativeCheckInputs = [
-    treq
-    txrequests
-    pypugjs
-    boto3
-    moto
-    markdown
-    lz4
-    setuptools-trial
-    buildbot-worker
-    buildbot-pkg
-    buildbot-plugins.www
-    parameterized
-    git
-    openssh
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "twisted"
   ];
-
-  patches = [
-    # This patch disables the test that tries to read /etc/os-release which
-    # is not accessible in sandboxed builds.
-    ./skip_test_linux_distro.patch
-  ];
-
-  postPatch = ''
-    cd master
-    touch buildbot/py.typed
-    substituteInPlace buildbot/scripts/logwatcher.py --replace '/usr/bin/tail' "$(type -P tail)"
-  '';
-
-  # TimeoutErrors on slow machines -> aarch64
-  doCheck = !stdenv.hostPlatform.isAarch64;
-
-  preCheck = ''
-    export PATH="$out/bin:$PATH"
-  '';
 
   passthru = {
     inherit withPlugins python;
@@ -165,7 +166,7 @@ buildPythonApplication rec {
     description = "Open-source continuous integration framework for automating software build, test, and release processes";
     homepage = "https://buildbot.net/";
     changelog = "https://github.com/buildbot/buildbot/releases/tag/v${version}";
-    teams = [ lib.teams.buildbot ];
     license = lib.licenses.gpl2Only;
+    teams = [ lib.teams.buildbot ];
   };
 }

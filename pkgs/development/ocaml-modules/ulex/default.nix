@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  ocaml,
-  findlib,
-  ocamlbuild,
   camlp4,
+  findlib,
+  ocaml,
+  ocamlbuild,
 }:
 
 let
@@ -23,17 +23,17 @@ let
       };
 in
 stdenv.mkDerivation {
-  pname = "ocaml${ocaml.version}-${pname}";
   inherit (param) version;
+  pname = "ocaml${ocaml.version}-${pname}";
 
   src = fetchFromGitHub {
+    inherit (param) sha256;
     owner = "ocaml-community";
     repo = pname;
     rev = "v${param.version}";
-    inherit (param) sha256;
   };
 
-  createFindlibDestdir = true;
+  strictDeps = true;
 
   nativeBuildInputs = [
     ocaml
@@ -41,20 +41,21 @@ stdenv.mkDerivation {
     ocamlbuild
     camlp4
   ];
-  propagatedBuildInputs = [ camlp4 ];
 
-  strictDeps = true;
+  propagatedBuildInputs = [ camlp4 ];
 
   buildFlags = [
     "all"
     "all.opt"
   ];
 
+  createFindlibDestdir = true;
+
   meta = {
-    homepage = "https://opam.ocaml.org/packages/ulex/";
-    description = "Lexer generator for Unicode and OCaml";
-    license = lib.licenses.mit;
     inherit (ocaml.meta) platforms;
+    description = "Lexer generator for Unicode and OCaml";
+    homepage = "https://opam.ocaml.org/packages/ulex/";
+    license = lib.licenses.mit;
     maintainers = [ lib.maintainers.roconnor ];
     broken = lib.versionAtLeast ocaml.version "5.0";
   };

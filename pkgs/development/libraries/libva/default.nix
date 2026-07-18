@@ -1,28 +1,28 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  meson,
-  pkg-config,
-  ninja,
-  wayland-scanner,
+  # for passthru.tests
+  intel-compute-runtime,
+  intel-media-driver,
+  intel-vaapi-driver,
+  libGL,
   libdrm,
-  minimal ? false,
+  libffi,
   libx11,
   libxcb,
   libxext,
   libxfixes,
-  wayland,
-  libffi,
-  libGL,
   mesa,
-  # for passthru.tests
-  intel-compute-runtime,
-  intel-media-driver,
+  meson,
   mpv,
-  intel-vaapi-driver,
-  vlc,
+  ninja,
+  pkg-config,
   testers,
+  vlc,
+  wayland,
+  wayland-scanner,
+  minimal ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,8 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
     "out"
   ];
-
-  depsBuildBuild = [ pkg-config ];
 
   nativeBuildInputs = [
     meson
@@ -77,6 +75,8 @@ stdenv.mkDerivation (finalAttrs: {
       NIX_CFLAGS_COMPILE = "-DHAVE_SECURE_GETENV";
     };
 
+  depsBuildBuild = [ pkg-config ];
+
   passthru.tests = {
     # other drivers depending on libva and selected application users.
     # Please get a confirmation from the maintainer before adding more applications.
@@ -87,21 +87,31 @@ stdenv.mkDerivation (finalAttrs: {
       mpv
       vlc
       ;
+
     pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
     description = "Implementation for VA-API (Video Acceleration API)";
+
     longDescription = ''
       VA-API is an open-source library and API specification, which provides
       access to graphics hardware acceleration capabilities for video
       processing. It consists of a main library (this package) and
       driver-specific acceleration backends for each supported hardware vendor.
     '';
+
     homepage = "https://01.org/linuxmedia/vaapi";
     changelog = "https://raw.githubusercontent.com/intel/libva/${finalAttrs.version}/NEWS";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ SuperSandro2000 ];
+    platforms = lib.platforms.unix;
+
+    badPlatforms = [
+      # Mandatory libva shared library.
+      lib.systems.inspect.platformPatterns.isStatic
+    ];
+
     pkgConfigModules = [
       "libva"
       "libva-drm"
@@ -110,11 +120,6 @@ stdenv.mkDerivation (finalAttrs: {
       "libva-glx"
       "libva-wayland"
       "libva-x11"
-    ];
-    platforms = lib.platforms.unix;
-    badPlatforms = [
-      # Mandatory libva shared library.
-      lib.systems.inspect.platformPatterns.isStatic
     ];
   };
 })

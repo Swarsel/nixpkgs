@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  makeWrapper,
   jre,
+  makeWrapper,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "jive";
@@ -13,8 +13,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://repo.maven.apache.org/maven2/org/tango-controls/Jive/${finalAttrs.version}/Jive-${finalAttrs.version}-jar-with-dependencies.jar";
     hash = "sha256-AbxTRFi5dCsN/HENTI/o3hBQKZM+cFtJxT3A8RKpQM4=";
   };
-
-  dontUnpack = true;
 
   nativeBuildInputs = [ makeWrapper ];
 
@@ -29,12 +27,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Standalone JAVA application designed to browse and edit the static TANGO database";
     homepage = "https://gitlab.com/tango-controls/jive";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.unix;
-    maintainers = [ lib.maintainers.gilice ];
     sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
+    maintainers = [ lib.maintainers.gilice ];
+    platforms = lib.platforms.unix;
   };
 })

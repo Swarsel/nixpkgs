@@ -14,19 +14,19 @@ buildGoModule (finalAttrs: {
     hash = "sha256-T0wuPSShJqVW+CcQHQuZnh3JOwqUxAKv1OCHwZMr7KM=";
   };
 
-  subPackages = [ "." ];
-
-  proxyVendor = true;
-
   vendorHash = "sha256-niDJB3QhZjz9qIGSjUEcghRpEbPUgsSuK52ncZ21DS8=";
+  proxyVendor = true;
+  subPackages = [ "." ];
 
   meta = {
     description = "Model Context Protocol server to interact with language servers";
-    license = lib.licenses.bsd3;
     homepage = "https://github.com/isaacphi/mcp-language-server";
-    mainProgram = "mcp-language-server";
+    license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       fayash
     ];
+
+    mainProgram = "mcp-language-server";
   };
 })

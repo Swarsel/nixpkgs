@@ -4,9 +4,8 @@
 }:
 
 buildDunePackage {
-  pname = "posix-errno";
-
   inherit (posix-base) version src;
+  pname = "posix-errno";
 
   propagatedBuildInputs = [
     posix-base

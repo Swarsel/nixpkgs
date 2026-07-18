@@ -1,24 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   cmake,
-  setuptools,
-  setuptools-scm,
-
-  # native dependencies
-  zlib-ng,
-
   # tests
   pytestCheckHook,
+  setuptools,
+  setuptools-scm,
+  # native dependencies
+  zlib-ng,
 }:
 
 buildPythonPackage rec {
   pname = "zlib-ng";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pycompression";
@@ -27,25 +23,19 @@ buildPythonPackage rec {
     hash = "sha256-t/PSby1LUTyp+7XXKZTWjRrPvAei1ZrGSGU2CIcAQBc=";
   };
 
-  build-system = [
-    cmake
-    setuptools
-    setuptools-scm
-  ];
-
-  dontUseCmakeConfigure = true;
-
-  env.PYTHON_ZLIB_NG_LINK_DYNAMIC = true;
-
   buildInputs = [ zlib-ng ];
-
-  pythonImportsCheck = [ "zlib_ng" ];
-
+  env.PYTHON_ZLIB_NG_LINK_DYNAMIC = true;
   nativeCheckInputs = [ pytestCheckHook ];
 
   preCheck = ''
     rm -rf src
   '';
+
+  build-system = [
+    cmake
+    setuptools
+    setuptools-scm
+  ];
 
   disabledTests = [
     # commandline tests fail to find the built module
@@ -56,6 +46,10 @@ buildPythonPackage rec {
     "test_decompress_infile_outfile"
     "test_decompress_infile_outfile_error"
   ];
+
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+  pythonImportsCheck = [ "zlib_ng" ];
 
   meta = {
     description = "Drop-in replacement for Python's zlib and gzip modules using zlib-ng";

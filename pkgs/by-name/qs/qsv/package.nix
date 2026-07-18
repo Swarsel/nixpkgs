@@ -1,18 +1,15 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
+  cmake,
   file,
-  lib,
   pkg-config,
+  python3,
   rustPlatform,
   sqlite,
-  zstd,
-  cmake,
-  python3,
   wayland,
-  withPolars ? true,
-  withPython ? stdenv.buildPlatform == stdenv.hostPlatform,
-  withUi ? true,
+  zstd,
   buildFeatures ?
     # enable all features except self_update by default
     # https://github.com/dathere/qsv/blob/19.1.0/Cargo.toml#L370
@@ -29,13 +26,15 @@
     ++ lib.optional withPython "python"
     ++ lib.optional withUi "ui",
   mainProgram ? "qsv",
+  withPolars ? true,
+  withPython ? stdenv.buildPlatform == stdenv.hostPlatform,
+  withUi ? true,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
+  inherit buildFeatures;
   pname = "qsv";
   version = "20.1.0";
-
-  inherit buildFeatures;
 
   src = fetchFromGitHub {
     owner = "dathere";
@@ -44,7 +43,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-dYUZ2IwvXTFwpv1cDQjmq+iq2g/vQQovpR0++/ZtSy8=";
   };
 
-  cargoHash = "sha256-7jZR5u32Hy0XQEeX+tWDbpkj7jM804LBUL93wgnA5bM=";
+  nativeBuildInputs = [
+    pkg-config
+    rustPlatform.bindgenHook
+    cmake
+  ]
+  ++ lib.optional (lib.elem "python" buildFeatures) python3;
 
   buildInputs = [
     file
@@ -53,29 +57,26 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ]
   ++ lib.optional (lib.elem "ui" buildFeatures && stdenv.hostPlatform.isLinux) wayland;
 
-  nativeBuildInputs = [
-    pkg-config
-    rustPlatform.bindgenHook
-    cmake
-  ]
-  ++ lib.optional (lib.elem "python" buildFeatures) python3;
-
-  doCheck = false;
+  cargoHash = "sha256-7jZR5u32Hy0XQEeX+tWDbpkj7jM804LBUL93wgnA5bM=";
 
   env = {
     ZSTD_SYS_USE_PKG_CONFIG = true;
   };
 
+  doCheck = false;
+
   meta = {
+    inherit mainProgram;
     description = "CSVs sliced, diced & analyzed";
     homepage = "https://github.com/dathere/qsv";
     changelog = "https://github.com/dathere/qsv/blob/${finalAttrs.version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       mit
       # or
       unlicense
     ];
-    inherit mainProgram;
+
     maintainers = with lib.maintainers; [
       detroyejr
       misuzu

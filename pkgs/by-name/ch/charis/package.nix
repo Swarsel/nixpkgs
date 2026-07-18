@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -24,8 +24,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://software.sil.org/charis";
     description = "Family of highly readable fonts for broad multilingual use";
+
     longDescription = ''
       This Charis font is essentially the same design as the SIL Charis font
       first released by SIL in 1997. Charis is similar to Bitstream Charter,
@@ -44,8 +44,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       such as the need to position arbitrary combinations of base glyphs and
       diacritics optimally.
     '';
+
+    homepage = "https://software.sil.org/charis";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.f--t ];
+    platforms = lib.platforms.all;
   };
 })

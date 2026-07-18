@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   nix-update-script,
   nkf,
   skktools,
+  stdenvNoCC,
   useUtf8 ? false,
 }:
 
@@ -13,13 +13,14 @@ let
 
   mkDictNameValue =
     {
-      name,
       description,
       license, # it's written in the beginning of each file
+      name,
       files ? [ "SKK-JISYO.${name}" ],
     }:
     {
       name = lib.toLower (builtins.replaceStrings [ "." ] [ "_" ] name);
+
       value = stdenvNoCC.mkDerivation {
         pname = "skk-jisyo-" + lib.toLower name;
         version = "0-unstable-2026-04-11";
@@ -31,9 +32,8 @@ let
           sha256 = "sha256-xKMtHB54kVSwwwr+v248ewa7dwuavYVmc6KHrZwSdnM=";
         };
 
-        nativeBuildInputs = lib.optionals useUtf8 [ nkf ];
-
         strictDeps = true;
+        nativeBuildInputs = lib.optionals useUtf8 [ nkf ];
 
         buildPhase = ''
           runHook preBuild
@@ -60,6 +60,7 @@ let
         '';
 
         doInstallCheck = true;
+
         installCheckPhase = ''
           emptydict=': 0 candidates$'
           ${skktools}/bin/skkdic-count /dev/null | grep "$emptydict"
@@ -75,15 +76,19 @@ let
 
         meta = {
           inherit description license;
+
           longDescription = ''
             This package provides a kana-to-kanji conversion dictionary for the
             SKK Japanese input method.
           '';
+
           homepage = "https://github.com/skk-dev/dict";
+
           maintainers = with lib.maintainers; [
             yuriaisaka
             midchildan
           ];
+
           platforms = lib.platforms.all;
         };
       };
@@ -92,125 +97,128 @@ in
 lib.listToAttrs (
   map mkDictNameValue [
     {
-      name = "L";
       description = "Standard SKK dictionary";
       license = lib.licenses.gpl2Plus;
+      name = "L";
     }
     {
-      name = "S";
       description = "Small SKK dictionary";
       license = lib.licenses.gpl2Plus;
+      name = "S";
     }
     {
-      name = "M";
       description = "Medium sized SKK dictionary";
       license = lib.licenses.gpl2Plus;
+      name = "M";
     }
     {
-      name = "ML";
       description = "Medium to large sized SKK dictionary";
       license = lib.licenses.gpl2Plus;
+      name = "ML";
     }
     {
-      name = "jinmei";
       description = "SKK dictionary for names";
       license = lib.licenses.gpl2Plus;
+      name = "jinmei";
     }
     {
-      name = "fullname";
       description = "SKK dictionary for celebrities";
       license = lib.licenses.gpl2Plus;
+      name = "fullname";
     }
     {
-      name = "geo";
       description = "SKK dictionary for locations";
       license = lib.licenses.gpl2Plus;
+      name = "geo";
     }
     {
-      name = "propernoun";
       description = "SKK dictionary for proper nouns";
       license = lib.licenses.gpl2Plus;
+      name = "propernoun";
     }
     {
-      name = "station";
       description = "SKK dictionary for stations";
       license = lib.licenses.gpl2Plus;
+      name = "station";
     }
     {
-      name = "law";
       description = "SKK dictionary for legal terms";
       license = lib.licenses.gpl2Plus;
+      name = "law";
     }
     {
-      name = "okinawa";
       description = "SKK dictionary for the Okinawan language";
       license = lib.licenses.publicDomain;
+      name = "okinawa";
     }
     {
-      name = "china_taiwan";
       description = "SKK dictionary for Chinese & Taiwanese locations";
       license = lib.licenses.gpl2Plus;
+      name = "china_taiwan";
     }
     {
-      name = "assoc";
       description = "SKK dictionary for abbreviated input";
       license = lib.licenses.gpl2Plus;
+      name = "assoc";
     }
     {
-      name = "edict";
       description = "SKK dictionary for English to Japanese translation";
       license = lib.licenses.cc-by-sa-30;
+      name = "edict";
     }
     {
-      name = "zipcode";
       description = "SKK dictionary for Japanese zipcodes";
+
       files = [
         "zipcode/SKK-JISYO.zipcode"
         "zipcode/SKK-JISYO.office.zipcode"
       ];
+
       license = lib.licenses.publicDomain;
+      name = "zipcode";
     }
     {
-      name = "JIS2";
       description = "SKK dictionary for JIS level 2 kanjis";
       license = lib.licenses.gpl2Plus;
+      name = "JIS2";
     }
     {
-      name = "JIS3_4";
       description = "SKK dictionary for JIS level 3 and 4 kanjis";
       license = lib.licenses.gpl2Plus;
+      name = "JIS3_4";
     }
     {
-      name = "JIS2004";
       description = ''
         A complementary SKK dictionary for JIS3_4 with JIS X 0213:2004 additions"
       '';
+
       license = lib.licenses.gpl2Plus;
+      name = "JIS2004";
     }
     {
-      name = "itaiji";
       description = "SKK dictionary for variant kanjis";
       license = lib.licenses.publicDomain;
+      name = "itaiji";
     }
     {
-      name = "itaiji.JIS3_4";
       description = "SKK dictionary for JIS level 3 and 4 variant kanjis";
       license = lib.licenses.gpl2Plus;
+      name = "itaiji.JIS3_4";
     }
     {
-      name = "mazegaki";
       description = "SKK dictionary for mazegaki";
       license = lib.licenses.gpl2Plus;
+      name = "mazegaki";
     }
     {
-      name = "emoji";
       description = "SKK dictionary for emojis";
       license = lib.licenses.unicode-dfs-2016;
+      name = "emoji";
     }
     {
-      name = "pinyin";
       description = "SKK dictionary for pinyin to simplified Chinese input";
       license = lib.licenses.gpl1Plus;
+      name = "pinyin";
     }
   ]
 )

@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,12 +19,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "CLI tool to inspect Parquet files";
-    mainProgram = "pqrs";
     homepage = "https://github.com/manojkarthick/pqrs";
+
     license = with lib.licenses; [
       mit # or
       asl20
     ];
+
     maintainers = [ lib.maintainers.manojkarthick ];
+    mainProgram = "pqrs";
   };
 })

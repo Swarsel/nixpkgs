@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "pykakasi";
   version = "2.3.0";
-  pyproject = true;
 
   src = fetchFromCodeberg {
     owner = "miurahr";
@@ -22,6 +21,12 @@ buildPythonPackage rec {
     hash = "sha256-b2lYYdg1RW1xRD3hym7o1EnxzN/U5txVTWRifwZn3k0=";
   };
 
+  nativeCheckInputs = [
+    py-cpuinfo
+    pytest-benchmark
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools-scm ];
 
   dependencies = [
@@ -29,19 +34,13 @@ buildPythonPackage rec {
     deprecated
   ];
 
-  nativeCheckInputs = [
-    py-cpuinfo
-    pytest-benchmark
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # Assertion error
     "test_aozora"
   ];
 
+  pyproject = true;
   pytestFlags = [ "--benchmark-disable" ];
-
   pythonImportsCheck = [ "pykakasi" ];
 
   meta = {

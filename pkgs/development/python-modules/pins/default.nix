@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   adlfs,
   appdirs,
   buildPythonPackage,
   databackend,
   fastparquet,
-  fetchFromGitHub,
   fsspec,
   gcsfs,
   humanize,
@@ -21,8 +21,8 @@
   pyyaml,
   requests,
   s3fs,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
   typing-extensions,
   xxhash,
 }:
@@ -30,7 +30,6 @@
 buildPythonPackage rec {
   pname = "pins";
   version = "0.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rstudio";
@@ -39,13 +38,18 @@ buildPythonPackage rec {
     hash = "sha256-fDbgas4RG4cJRqrISWmrMUQUycQindlqF9/jA5R1TF8=";
   };
 
+  nativeCheckInputs = [
+    fastparquet
+    pyarrow
+    pytest-cases
+    pytest-parallel
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
+
   build-system = [
     setuptools
     setuptools-scm
-  ];
-
-  pythonRelaxDeps = [
-    "fsspec"
   ];
 
   dependencies = [
@@ -64,31 +68,27 @@ buildPythonPackage rec {
     xxhash
   ];
 
-  optional-dependencies = {
-    aws = [ s3fs ];
-    azure = [ adlfs ];
-    gcs = [ gcsfs ];
-  };
-
-  nativeCheckInputs = [
-    fastparquet
-    pyarrow
-    pytest-cases
-    pytest-parallel
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
-  pythonImportsCheck = [ "pins" ];
-
-  enabledTestPaths = [ "pins/tests/" ];
-
   disabledTestPaths = [
     # Tests require network access
     "pins/tests/test_boards.py"
     "pins/tests/test_compat.py"
     "pins/tests/test_constructors.py"
     "pins/tests/test_rsconnect_api.py"
+  ];
+
+  enabledTestPaths = [ "pins/tests/" ];
+
+  optional-dependencies = {
+    aws = [ s3fs ];
+    azure = [ adlfs ];
+    gcs = [ gcsfs ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "pins" ];
+
+  pythonRelaxDeps = [
+    "fsspec"
   ];
 
   meta = {

@@ -1,12 +1,13 @@
 {
-  mkDerivation,
   libcapsicum,
   libcasper,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "usr.bin/iconv";
   buildInputs = [
     libcapsicum
     libcasper
   ];
+
+  path = "usr.bin/iconv";
 }

@@ -1,13 +1,13 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  lib,
   file,
-  pkg-config,
   glib,
-  gtkVersion ? "3",
   gtk2,
   gtk3,
+  pkg-config,
+  gtkVersion ? "3",
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,15 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "b2d2e44c10313d5c9cd60db455d520f80b36dc39562df079a3f29495e8f9447f";
   };
 
-  strictDeps = true;
-
-  nativeBuildInputs = [
-    pkg-config
-    glib
-  ];
-
-  buildInputs = [ (if gtkVersion == "2" then gtk2 else gtk3) ];
-
   postPatch = ''
     substituteInPlace configure \
       --replace 'LIBINDICATOR_LIBS+="$LIBM"' 'LIBINDICATOR_LIBS+=" $LIBM"'
@@ -37,6 +28,15 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    pkg-config
+    glib
+  ];
+
+  buildInputs = [ (if gtkVersion == "2" then gtk2 else gtk3) ];
+
   configureFlags = [
     "CFLAGS=-Wno-error"
     "--sysconfdir=/etc"
@@ -44,18 +44,18 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-gtk=${gtkVersion}"
   ];
 
+  doCheck = false; # fails 8 out of 8 tests
+
   installFlags = [
     "sysconfdir=\${out}/etc"
     "localstatedir=\${TMPDIR}"
   ];
 
-  doCheck = false; # fails 8 out of 8 tests
-
   meta = {
     description = "Set of symbols and convenience functions for Ayatana indicators";
     homepage = "https://launchpad.net/libindicator";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.msteen ];
+    platforms = lib.platforms.linux;
   };
 })

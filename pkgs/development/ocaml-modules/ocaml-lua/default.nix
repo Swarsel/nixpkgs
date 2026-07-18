@@ -10,8 +10,6 @@ buildDunePackage {
   pname = "ocaml-lua";
   version = "1.8";
 
-  minimalOCamlVersion = "4.08";
-
   src = fetchFromGitHub {
     owner = "pdonadeo";
     repo = "ocaml-lua";
@@ -31,8 +29,8 @@ buildDunePackage {
 
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ lua5_1 ];
-
   doCheck = true;
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "Lua bindings for OCaml";

@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  gitUpdater,
   installShellFiles,
   openssh,
   tmux,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Rh8eyKoUydixj+X7muWleZW9u8djCQAyexIfRWIOr0o=";
   };
 
+  postPatch = ''
+    substituteInPlace hostmux \
+      --replace "SSH_CMD=ssh" "SSH_CMD=${lib.getExe openssh}" \
+      --replace "TMUX_CMD=tmux" "TMUX_CMD=${lib.getExe tmux}"
+  '';
+
   nativeBuildInputs = [
     installShellFiles
   ];
@@ -27,12 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
     openssh
     tmux
   ];
-
-  postPatch = ''
-    substituteInPlace hostmux \
-      --replace "SSH_CMD=ssh" "SSH_CMD=${lib.getExe openssh}" \
-      --replace "TMUX_CMD=tmux" "TMUX_CMD=${lib.getExe tmux}"
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -51,8 +51,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/hukl/hostmux";
     changelog = "https://github.com/hukl/hostmux/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "hostmux";
     maintainers = with lib.maintainers; [ fernsehmuell ];
     platforms = lib.platforms.unix;
+    mainProgram = "hostmux";
   };
 })

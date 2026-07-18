@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cmake,
-  setuptools,
-  pybind11,
   kissfft,
+  pybind11,
+  setuptools,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "kaldi-native-fbank";
   version = "1.22.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "csukuangfj";
@@ -19,14 +18,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Wu4wM52T6NoQ1t5/iAyPtkEGnZki5P0jx0eYMFZMb5o=";
   };
 
-  build-system = [
-    cmake
-    setuptools
-  ];
-
   buildInputs = [ pybind11 ];
-
-  dontUseCmakeConfigure = true;
 
   env.KALDI_NATIVE_FBANK_CMAKE_ARGS = lib.concatStringsSep " " [
     "-DFETCHCONTENT_SOURCE_DIR_KISSFFT=${kissfft.src}"
@@ -35,6 +27,13 @@ buildPythonPackage (finalAttrs: {
     "-DKALDI_NATIVE_FBANK_BUILD_PYTHON=ON"
   ];
 
+  build-system = [
+    cmake
+    setuptools
+  ];
+
+  dontUseCmakeConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "kaldi_native_fbank" ];
 
   meta = {

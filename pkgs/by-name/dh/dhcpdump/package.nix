@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  perl,
   installShellFiles,
   libpcap,
+  perl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -42,9 +42,9 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Tool for visualization of DHCP packets as recorded and output by tcpdump to analyze DHCP server responses";
     homepage = "https://github.com/dhcpdump-org/dhcpdump";
     changelog = "https://github.com/dhcpdump-org/dhcpdump/releases/tag/v${finalAttrs.version}";
-    platforms = lib.platforms.linux;
-    maintainers = with lib.maintainers; [ nickcao ];
     license = lib.licenses.bsd2;
+    maintainers = with lib.maintainers; [ nickcao ];
+    platforms = lib.platforms.linux;
     mainProgram = "dhcpdump";
   };
 })

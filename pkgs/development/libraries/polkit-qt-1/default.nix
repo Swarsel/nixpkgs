@@ -1,11 +1,11 @@
 {
   lib,
-  mkDerivation,
   fetchurl,
   cmake,
+  glib,
+  mkDerivation,
   pkg-config,
   polkit,
-  glib,
 }:
 
 mkDerivation rec {

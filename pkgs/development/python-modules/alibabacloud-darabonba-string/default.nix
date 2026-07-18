@@ -8,21 +8,18 @@
 buildPythonPackage (finalAttrs: {
   pname = "alibabacloud-darabonba-string";
   version = "0.0.4";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) version pname;
     hash = "sha256-7GYUwESNrcvF5GZIWDih+M/dkRE1vqc54gsUURJwxvc=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "alibabacloud_darabonba_string" ];
-
   # Module has no tests
   doCheck = false;
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "alibabacloud_darabonba_string" ];
 
   meta = {
     description = "Alibaba Cloud Darabonba String Library for Python";

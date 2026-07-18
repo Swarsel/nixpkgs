@@ -2,18 +2,19 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  fetchpatch,
-  pkg-config,
-  cmake,
-  yaml-cpp,
-  libevdev,
-  udev,
   boost,
+  cmake,
+  fetchpatch,
+  libevdev,
+  pkg-config,
+  udev,
+  yaml-cpp,
 }:
 
 stdenv.mkDerivation rec {
   pname = "interception-tools";
   version = "0.6.8";
+
   src = fetchFromGitLab {
     owner = "interception/linux";
     repo = "tools";
@@ -26,9 +27,9 @@ stdenv.mkDerivation rec {
     # See #126681 issue for more information
     ./interception-tools-udevmon-path-fix.patch
     (fetchpatch {
+      hash = "sha256-vLm7LvXh/pGA12gUpt9vt2XTWFqkdjQFOyRzaDRghHI=";
       name = "Bump-CMake-minimum-version-to-3.10";
       url = "https://gitlab.com/interception/linux/tools/-/commit/110c9b39b54eae9acd16fa6d64539ce9886b5684.patch";
-      hash = "sha256-vLm7LvXh/pGA12gUpt9vt2XTWFqkdjQFOyRzaDRghHI=";
     })
   ];
 
@@ -36,6 +37,7 @@ stdenv.mkDerivation rec {
     cmake
     pkg-config
   ];
+
   buildInputs = [
     libevdev
     udev

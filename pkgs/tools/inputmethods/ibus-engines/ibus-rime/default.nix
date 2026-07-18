@@ -25,6 +25,11 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-7RyCJpgGMqq5s4ijTDA2aq2CtpnQ1HOwO9aPrizSaSo=";
   };
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
+
   buildInputs = [
     gdk-pixbuf
     glib
@@ -32,34 +37,31 @@ stdenv.mkDerivation rec {
     libnotify
     librime
   ];
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
 
   cmakeFlags = [ "-DRIME_DATA_DIR=${placeholder "out"}/share/rime-data" ];
 
+  postInstall = ''
+    cp -r "${rimeDataDrv}/share/rime-data/." $out/share/rime-data/
+  '';
+
   rimeDataDrv = symlinkJoin {
-    name = "ibus-rime-data";
-    paths = rimeDataPkgs;
     postBuild = ''
       mkdir -p $out/share/rime-data
 
       # Ensure default.yaml exists
       [ -e "$out/share/rime-data/default.yaml" ] || touch "$out/share/rime-data/default.yaml"
     '';
+
+    name = "ibus-rime-data";
+    paths = rimeDataPkgs;
   };
 
-  postInstall = ''
-    cp -r "${rimeDataDrv}/share/rime-data/." $out/share/rime-data/
-  '';
-
   meta = {
-    isIbusEngine = true;
     description = "Rime input method engine for IBus";
     homepage = "https://rime.im/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ pmy ];
+    platforms = lib.platforms.linux;
+    isIbusEngine = true;
   };
 }

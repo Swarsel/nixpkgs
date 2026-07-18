@@ -1,15 +1,14 @@
 {
-  buildPythonPackage,
+  lib,
   fetchFromGitHub,
+  buildPythonPackage,
   hatch-vcs,
   hatchling,
-  lib,
 }:
 
 buildPythonPackage rec {
   pname = "bosch-alarm-mode2";
   version = "0.4.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mag1024";
@@ -18,15 +17,16 @@ buildPythonPackage rec {
     hash = "sha256-XpLMPFi3e6iTtKGfVXN4VbnPyNLVjSFrodyFK+zelF4=";
   };
 
+  # upstream has no tests
+  doCheck = false;
+
   build-system = [
     hatch-vcs
     hatchling
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "bosch_alarm_mode2" ];
-
-  # upstream has no tests
-  doCheck = false;
 
   meta = {
     description = "Async Python library for interacting with Bosch Alarm Panels supporting the 'Mode 2' API";

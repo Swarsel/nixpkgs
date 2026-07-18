@@ -2,37 +2,44 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
-  cmake,
-  pkg-config,
-  libdrm,
-  python,
-  wrapPython,
   autoPatchelfHook,
+  cmake,
+  libdrm,
+  pkg-config,
+  python,
+  rocmUpdateScript,
+  wrapPython,
 }:
 
 let
   esmi_ib_src = fetchFromGitHub {
+    hash = "sha256-czF9ezkAO0PuDkXh8y639AcOZH+KVcWiXPX74H5W/nw=";
     owner = "amd";
     repo = "esmi_ib_library";
     rev = "esmi_pkg_ver-4.2";
-    hash = "sha256-czF9ezkAO0PuDkXh8y639AcOZH+KVcWiXPX74H5W/nw=";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "amdsmi";
   version = "7.2.3";
+
   src = fetchFromGitHub {
     owner = "ROCm";
     repo = "rocm-systems";
     rev = "rocm-${finalAttrs.version}";
+    hash = "sha256-TFi+3txemvV6K827e8S3hZOd9jcj4Qzop6V9CdKrpLg=";
+
     sparseCheckout = [
       "projects/amdsmi"
       "shared"
     ];
-    hash = "sha256-TFi+3txemvV6K827e8S3hZOd9jcj4Qzop6V9CdKrpLg=";
   };
-  sourceRoot = "${finalAttrs.src.name}/projects/amdsmi";
+
+  patches = [
+    # Fix error: redefinition of 'struct drm_color_ctm_3x4'
+    # https://github.com/ROCm/amdsmi/pull/165
+    ./drm-struct-redefinition-fix.patch
+  ];
 
   postPatch = ''
     substituteInPlace goamdsmi_shim/CMakeLists.txt \
@@ -46,12 +53,6 @@ stdenv.mkDerivation (finalAttrs: {
     mkdir -p ./esmi_ib_library/include/asm
     cp ./include/amd_smi/impl/amd_hsmp.h ./esmi_ib_library/include/asm/amd_hsmp.h
   '';
-
-  patches = [
-    # Fix error: redefinition of 'struct drm_color_ctm_3x4'
-    # https://github.com/ROCm/amdsmi/pull/165
-    ./drm-struct-redefinition-fix.patch
-  ];
 
   nativeBuildInputs = [
     cmake
@@ -82,6 +83,7 @@ stdenv.mkDerivation (finalAttrs: {
     ln -sf $out/libexec/amdsmi_cli/amdsmi_cli.py $out/bin/amd-smi
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/projects/amdsmi";
   passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
 
   meta = {
@@ -89,8 +91,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/ROCm/rocm-systems/tree/develop/projects/amdsmi";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ lovesegfault ];
-    teams = [ lib.teams.rocm ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "amd-smi";
+    teams = [ lib.teams.rocm ];
   };
 })

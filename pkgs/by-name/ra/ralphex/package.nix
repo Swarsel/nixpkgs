@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   git,
   installShellFiles,
   writableTmpDirAsHomeHook,
@@ -11,8 +11,6 @@ buildGoModule (finalAttrs: {
   pname = "ralphex";
   version = "1.6.0";
 
-  __structuredAttrs = true;
-
   src = fetchFromGitHub {
     owner = "umputun";
     repo = "ralphex";
@@ -20,7 +18,20 @@ buildGoModule (finalAttrs: {
     hash = "sha256-RUl5BVGc5EjeXZNjfC2WVZrrSXxR1mQyABkIxIT2NyQ=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = null;
+
+  nativeCheckInputs = [
+    git
+    writableTmpDirAsHomeHook
+  ];
+
+  postInstall = ''
+    installShellCompletion completions/*
+  '';
+
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
 
   ldflags = [
     "-s"
@@ -28,24 +39,11 @@ buildGoModule (finalAttrs: {
     "-X main.revision=${finalAttrs.version}"
   ];
 
-  nativeBuildInputs = [ installShellFiles ];
-
-  nativeCheckInputs = [
-    git
-    writableTmpDirAsHomeHook
-  ];
-
-  __darwinAllowLocalNetworking = true;
-
-  postInstall = ''
-    installShellCompletion completions/*
-  '';
-
   meta = {
     description = "Extended Ralph loop for autonomous AI-driven plan execution";
     homepage = "https://ralphex.com/";
     license = lib.licenses.mit;
-    mainProgram = "ralphex";
     maintainers = [ lib.maintainers.sikmir ];
+    mainProgram = "ralphex";
   };
 })

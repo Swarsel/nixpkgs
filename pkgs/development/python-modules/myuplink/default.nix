@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "myuplink";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pajzo";
@@ -24,9 +23,8 @@ buildPythonPackage rec {
   '';
 
   build-system = [ setuptools ];
-
   dependencies = [ aiohttp ];
-
+  pyproject = true;
   pythonImportsCheck = [ "myuplink" ];
 
   meta = {

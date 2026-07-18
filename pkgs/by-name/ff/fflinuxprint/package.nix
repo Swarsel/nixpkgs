@@ -1,10 +1,10 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   autoPatchelfHook,
   cups,
   dpkg,
-  fetchurl,
-  lib,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,9 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     cups
   ];
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -39,12 +36,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "FujiFILM Linux Printer Driver";
     homepage = "https://support-fb.fujifilm.com";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ jaduff ];
     platforms = lib.platforms.linux;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

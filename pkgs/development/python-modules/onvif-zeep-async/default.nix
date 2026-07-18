@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
   ciso8601,
-  fetchFromGitHub,
   setuptools,
   yarl,
   zeep,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "onvif-zeep-async";
   version = "4.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openvideolibs";
@@ -26,6 +25,8 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "setuptools>=82.0.1" setuptools
   '';
 
+  # Tests are not shipped
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -36,10 +37,8 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ zeep.optional-dependencies.async;
 
+  pyproject = true;
   pythonImportsCheck = [ "onvif" ];
-
-  # Tests are not shipped
-  doCheck = false;
 
   meta = {
     description = "ONVIF Client Implementation in Python";

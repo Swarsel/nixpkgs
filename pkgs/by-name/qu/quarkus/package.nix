@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   jdk,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,9 +40,9 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://quarkus.io";
     changelog = "https://github.com/quarkusio/quarkus/releases/tag/${finalAttrs.version}";
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ lib.maintainers.vinetos ];
     platforms = lib.platforms.all;
     mainProgram = "quarkus";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
   };
 })

@@ -1,31 +1,31 @@
 {
-  resholve,
-  stdenv,
-  symlinkJoin,
   lib,
+  stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   bash,
+  binlore,
   coreutils,
+  gitUpdater,
   gnugrep,
   gnused,
   gnutls,
   gsasl,
   libidn2,
+  libnotify,
+  libsecret,
+  msmtp,
   netcat-gnu,
+  pkg-config,
+  resholve,
+  symlinkJoin,
+  systemd,
   texinfo,
   which,
   withKeyring ? true,
-  libsecret,
-  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
-  systemd,
-  withScripts ? true,
   withLibnotify ? true,
-  libnotify,
-  gitUpdater,
-  binlore,
-  msmtp,
+  withScripts ? true,
+  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
 }:
 
 let
@@ -50,14 +50,14 @@ let
   };
 
   binaries = stdenv.mkDerivation {
-    pname = "msmtp-binaries";
     inherit version src meta;
+    pname = "msmtp-binaries";
 
-    configureFlags = [
-      "--sysconfdir=/etc"
-      "--with-libgsasl"
-    ]
-    ++ optionals stdenv.hostPlatform.isDarwin [ "--with-macosx-keyring" ];
+    nativeBuildInputs = [
+      autoreconfHook
+      pkg-config
+      texinfo
+    ];
 
     buildInputs = [
       gnutls
@@ -66,23 +66,23 @@ let
     ]
     ++ optionals withKeyring [ libsecret ];
 
-    nativeBuildInputs = [
-      autoreconfHook
-      pkg-config
-      texinfo
-    ];
-
-    enableParallelBuilding = true;
+    configureFlags = [
+      "--sysconfdir=/etc"
+      "--with-libgsasl"
+    ]
+    ++ optionals stdenv.hostPlatform.isDarwin [ "--with-macosx-keyring" ];
 
     postInstall = ''
       install -Dm444 -t $out/share/doc/msmtp doc/*.example
       ln -s msmtp $out/bin/sendmail
     '';
+
+    enableParallelBuilding = true;
   };
 
   scripts = resholve.mkDerivation {
-    pname = "msmtp-scripts";
     inherit version src meta;
+    pname = "msmtp-scripts";
 
     patches = [
       ./msmtpq-remove-binary-check.patch
@@ -93,9 +93,6 @@ let
       substituteInPlace scripts/msmtpq/msmtpq \
         --replace @journal@ ${if withSystemd then "Y" else "N"}
     '';
-
-    dontConfigure = true;
-    dontBuild = true;
 
     installPhase = ''
       runHook preInstall
@@ -113,20 +110,18 @@ let
       runHook postInstall
     '';
 
+    dontBuild = true;
+    dontConfigure = true;
+
     solutions = {
-      msmtpq = {
-        scripts = [ "bin/msmtpq" ];
+      msmtp-queue = {
+        execer = [ "cannot:${placeholder "out"}/bin/msmtpq" ];
+        inputs = [ "${placeholder "out"}/bin" ];
         interpreter = getExe bash;
-        inputs = [
-          binaries
-          coreutils
-          gnugrep
-          gnused
-          netcat-gnu
-          which
-        ]
-        ++ optionals withSystemd [ systemd ]
-        ++ optionals withLibnotify [ libnotify ];
+        scripts = [ "bin/msmtp-queue" ];
+      };
+
+      msmtpq = {
         execer = [
           "cannot:${getBin binaries}/bin/msmtp"
           "cannot:${getBin netcat-gnu}/bin/nc"
@@ -137,20 +132,29 @@ let
         ++ optionals withLibnotify [
           "cannot:${getBin libnotify}/bin/notify-send"
         ];
-        fix."$MSMTP" = [ "msmtp" ];
+
         fake.external = [
           "ping"
         ]
         ++ optionals (!withSystemd) [ "systemd-cat" ]
         ++ optionals (!withLibnotify) [ "notify-send" ];
-        keep.source = [ "~/.msmtpqrc" ];
-      };
 
-      msmtp-queue = {
-        scripts = [ "bin/msmtp-queue" ];
+        fix."$MSMTP" = [ "msmtp" ];
+
+        inputs = [
+          binaries
+          coreutils
+          gnugrep
+          gnused
+          netcat-gnu
+          which
+        ]
+        ++ optionals withSystemd [ systemd ]
+        ++ optionals withLibnotify [ libnotify ];
+
         interpreter = getExe bash;
-        inputs = [ "${placeholder "out"}/bin" ];
-        execer = [ "cannot:${placeholder "out"}/bin/msmtpq" ];
+        keep.source = [ "~/.msmtpqrc" ];
+        scripts = [ "bin/msmtpq" ];
       };
     };
   };
@@ -158,20 +162,24 @@ let
 in
 if withScripts then
   symlinkJoin {
-    pname = "msmtp";
     inherit version meta;
+    pname = "msmtp";
+
     paths = [
       binaries
       scripts
     ];
+
     passthru = {
       inherit binaries scripts src;
+
       # msmtpq forwards most of its arguments to msmtp [1].
       #
       # [1]: <https://github.com/marlam/msmtp/blob/msmtp-1.8.26/scripts/msmtpq/msmtpq#L301>
       binlore.out = binlore.synthesize msmtp ''
         wrapper bin/msmtpq bin/msmtp
       '';
+
       updateScript = gitUpdater { rev-prefix = "msmtp-"; };
     };
   }

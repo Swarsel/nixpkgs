@@ -4,10 +4,10 @@
   fetchFromGitHub,
   atf,
   autoreconfHook,
+  gitUpdater,
   kyua,
   lua,
   pkg-config,
-  gitUpdater,
 }:
 
 lib.fix (
@@ -38,11 +38,6 @@ lib.fix (
     pname = "lutok";
     version = "0.4";
 
-    outputs = [
-      "out"
-      "dev"
-    ];
-
     src = fetchFromGitHub {
       owner = "freebsd";
       repo = "lutok";
@@ -50,9 +45,12 @@ lib.fix (
       hash = "sha256-awAFxx9q8dZ6JO1/mShjhJnOPTLn1wCT4VrB4rlgWyg=";
     };
 
-    strictDeps = true;
+    outputs = [
+      "out"
+      "dev"
+    ];
 
-    propagatedBuildInputs = [ lua ];
+    strictDeps = true;
 
     nativeBuildInputs = [
       atf'
@@ -60,7 +58,7 @@ lib.fix (
       pkg-config
     ];
 
-    enableParallelBuilding = true;
+    propagatedBuildInputs = [ lua ];
 
     makeFlags = [
       # Lutok isn’t compatible with C++17, which is the default on current clang and GCC.
@@ -68,13 +66,11 @@ lib.fix (
     ];
 
     doCheck = true;
-
-    checkInputs = [ atf' ];
     nativeCheckInputs = [ kyua' ];
-
-    passthru.updateScript = gitUpdater { rev-prefix = "lutok-"; };
-
+    checkInputs = [ atf' ];
     __structuredAttrs = true;
+    enableParallelBuilding = true;
+    passthru.updateScript = gitUpdater { rev-prefix = "lutok-"; };
 
     meta = {
       description = "Lightweight C++ API for Lua";

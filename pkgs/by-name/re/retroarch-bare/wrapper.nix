@@ -3,8 +3,8 @@
   libretro,
   makeBinaryWrapper,
   retroarch-bare,
-  writeText,
   symlinkJoin,
+  writeText,
   cores ? [ ],
   settings ? { },
 }:
@@ -33,16 +33,7 @@ in
 symlinkJoin {
   pname = "retroarch-with-cores";
   version = lib.getVersion retroarch-bare;
-
-  paths = [ retroarch-bare ] ++ cores;
-
   nativeBuildInputs = [ makeBinaryWrapper ];
-
-  passthru = {
-    inherit cores;
-    unwrapped = retroarch-bare;
-    withCores = coreFun: retroarch-bare.wrapper { cores = (coreFun libretro); };
-  };
 
   postBuild = ''
     # remove core specific binaries
@@ -51,6 +42,14 @@ symlinkJoin {
     # wrap binary to load cores from the proper location(s)
     wrapProgram $out/bin/retroarch ${wrapperArgs}
   '';
+
+  paths = [ retroarch-bare ] ++ cores;
+
+  passthru = {
+    inherit cores;
+    unwrapped = retroarch-bare;
+    withCores = coreFun: retroarch-bare.wrapper { cores = (coreFun libretro); };
+  };
 
   meta = {
     inherit (retroarch-bare.meta)

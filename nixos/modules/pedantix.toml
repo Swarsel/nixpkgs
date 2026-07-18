@@ -1,0 +1,13 @@
+# NixOS / home-manager modules: module arguments as
+# { config, lib, pkgs, ... } and bodies as imports / options / config
+# first, meta last. nixfmt handles layout as a separate formatter.
+
+preset = "nixos-module"
+formatter = "off"
+
+# Reordering drops the blank lines between a set's bindings; restore the
+# usual "blank line around multi-line bindings" grouping afterwards.
+# [attrs].blank-lines applies at every nesting level, so it also reaches
+# config sets nested behind mkIf / mkMerge wrappers.
+[attrs]
+blank-lines = 1

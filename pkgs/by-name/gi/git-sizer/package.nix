@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   git-sizer,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,14 +18,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-oRlsD99XiI/0ZWibjyRcycmGab+vMbXrV5hIdIyUDYg=";
+  doCheck = false;
 
   ldflags = [
     "-s"
     "-w"
     "-X main.BuildVersion=${finalAttrs.version}"
   ];
-
-  doCheck = false;
 
   passthru.tests.vesion = testers.testVersion {
     package = git-sizer;

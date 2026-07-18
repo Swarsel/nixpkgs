@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,21 +17,21 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-o928qjp7+/U1W03esYTwVEfQ4A3TmPnmgmh4oWpqJoo=";
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   postInstall = ''
     # Keep `theme` only
     rm -f $out/bin/{cmd,tkrelease}
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   meta = {
     description = "Command line tool for shopify themes";
-    mainProgram = "theme";
     homepage = "https://shopify.github.io/themekit/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ _1000101 ];
+    mainProgram = "theme";
   };
 })

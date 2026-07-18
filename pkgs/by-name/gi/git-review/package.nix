@@ -1,18 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchgit,
   gitUpdater,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "git-review";
   version = "2.5.0";
-  pyproject = true;
-
-  # Manually set version because pbr wants to get it from the git
-  # upstream repository (and we are installing from tarball instead)
-  env.PBR_VERSION = finalAttrs.version;
 
   # fetchFromGitea fails trying to download archive file
   src = fetchgit {
@@ -26,6 +21,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "man"
   ];
 
+  # Manually set version because pbr wants to get it from the git
+  # upstream repository (and we are installing from tarball instead)
+  env.PBR_VERSION = finalAttrs.version;
+  # Don't run tests because they pull in external dependencies
+  # (a specific build of gerrit + maven plugins), and I haven't figured
+  # out how to work around this yet.
+  doCheck = false;
+
   build-system = with python3Packages; [
     setuptools
     pbr
@@ -36,13 +39,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     setuptools # implicit dependency, used to get package version through pkg_resources
   ];
 
-  # Don't run tests because they pull in external dependencies
-  # (a specific build of gerrit + maven plugins), and I haven't figured
-  # out how to work around this yet.
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "git_review" ];
-
   passthru.updateScript = gitUpdater { };
 
   meta = {

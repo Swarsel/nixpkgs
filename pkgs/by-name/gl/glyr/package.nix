@@ -4,15 +4,15 @@
   fetchFromGitHub,
   cmake,
   curl,
-  glib,
-  sqlite,
-  pkg-config,
   fetchpatch,
+  glib,
+  pkg-config,
+  sqlite,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.0.10";
   pname = "glyr";
+  version = "1.0.10";
 
   src = fetchFromGitHub {
     owner = "sahib";
@@ -23,8 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/media-libs/glyr/files/glyr-1.0.10-curl.patch?id=51addb56510c82d88ebac65d9ca4c8ca8e005693";
       hash = "sha256-mRB0R04CWD+DFkjo5wfvFveUb98+gDAgxWTnrV0K1vk=";
+      url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/media-libs/glyr/files/glyr-1.0.10-curl.patch?id=51addb56510c82d88ebac65d9ca4c8ca8e005693";
     })
   ];
 
@@ -39,6 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     pkg-config
   ];
+
   buildInputs = [
     sqlite
     glib
@@ -50,7 +51,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/sahib/glyr";
     license = lib.licenses.lgpl3;
     maintainers = [ lib.maintainers.sternenseemann ];
-    mainProgram = "glyrc";
     platforms = lib.platforms.unix;
+    mainProgram = "glyrc";
   };
 })

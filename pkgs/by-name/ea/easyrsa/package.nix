@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  openssl,
   makeWrapper,
+  openssl,
   runtimeShell,
 }:
 
@@ -19,7 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-  nativeInstallCheckInputs = [ openssl.bin ];
 
   installPhase = ''
     mkdir -p $out/share/easy-rsa
@@ -45,6 +44,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ openssl.bin ];
+
   postInstallCheck = ''
     set -euo pipefail
     export EASYRSA_BATCH=1
@@ -63,9 +64,11 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Simple shell based CA utility";
     homepage = "https://openvpn.net/";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       numinit
     ];
+
     platforms = lib.platforms.unix;
   };
 })

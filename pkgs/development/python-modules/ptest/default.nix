@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   nix-update-script,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "ptest";
   version = "2.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "KarlGong";
@@ -18,12 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-lmiBqFWGfYdsBXCh6dQ9xed+HhpP6PWa9Csr68GtLxs=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "ptest" ];
-
   # I don't know how to run the tests
   doCheck = false;
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "ptest" ];
 
   passthru.updateScript = nix-update-script {
     extraArgs = [

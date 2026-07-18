@@ -1,11 +1,11 @@
 {
   lib,
-  gccStdenv,
   fetchurl,
   autoreconfHook,
-  gmp,
-  flex,
   bison,
+  flex,
+  gccStdenv,
+  gmp,
 }:
 
 gccStdenv.mkDerivation {
@@ -22,22 +22,22 @@ gccStdenv.mkDerivation {
     flex
     bison
   ];
+
   buildInputs = [ gmp ];
-
-  # --disable-static actually enables static linking here...
-  dontDisableStatic = true;
-
   makeFlags = [ "LEX=${flex}/bin/flex" ];
 
   preInstall = ''
     mkdir -p $out/bin
   '';
 
+  # --disable-static actually enables static linking here...
+  dontDisableStatic = true;
+
   meta = {
     description = "Open, trustable and efficient SMT-solver";
     homepage = "https://verit.loria.fr/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 }

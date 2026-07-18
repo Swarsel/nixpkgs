@@ -1,20 +1,18 @@
 {
-  stdenvNoCC,
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
+  nix-update-script,
   openssl,
+  pkg-config,
+  rustPlatform,
+  stdenvNoCC,
   versionCheckHook,
   writableTmpDirAsHomeHook,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "feedr";
   version = "0.8.0";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "bahdotsh";
@@ -23,8 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-x8FypbvuAzARc/Jy9kSfSVSSVUsTTdLJU9ihNWpUbak=";
   };
 
-  cargoHash = "sha256-bUZnaAKlbNCOoMYufBZSHu2QLtxsrur3Cdmpd5y4Sw8=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -32,6 +28,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = [
     openssl
   ];
+
+  cargoHash = "sha256-bUZnaAKlbNCOoMYufBZSHu2QLtxsrur3Cdmpd5y4Sw8=";
 
   checkFlags = [
     # Those tests require network access, which is not available in the sandbox.
@@ -53,18 +51,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
     writableTmpDirAsHomeHook
   ];
 
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/bahdotsh/feedr/releases/tag/${finalAttrs.src.tag}";
     description = "Feature-rich terminal-based RSS/Atom feed reader written in Rust";
     longDescription = "Feedr is a modern terminal-based RSS/Atom feed reader with advanced filtering, categorization, and search capabilities. It supports both RSS and Atom feeds with compression handling and provides an intuitive TUI interface.";
     homepage = "https://github.com/bahdotsh/feedr";
+    changelog = "https://github.com/bahdotsh/feedr/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ drupol ];
     mainProgram = "feedr";

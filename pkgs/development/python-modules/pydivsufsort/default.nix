@@ -1,9 +1,9 @@
 {
+  lib,
   buildPythonPackage,
   cmake,
   cython,
   fetchPypi,
-  lib,
   numpy,
   setuptools,
 }:
@@ -11,8 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pydivsufsort";
   version = "0.0.20";
-
-  pyproject = true;
 
   # The repo hosted on github does not have tags, so we use fetchPypi, though
   # we should replace with fetchFromGitHub when we have
@@ -28,13 +26,15 @@ buildPythonPackage (finalAttrs: {
   '';
 
   nativeBuildInputs = [ cmake ];
-  dontUseCmakeConfigure = true;
-
   build-system = [ setuptools ];
+
   dependencies = [
     cython
     numpy
   ];
+
+  dontUseCmakeConfigure = true;
+  pyproject = true;
 
   meta = {
     description = "Bindings to `libdivsufsort`";

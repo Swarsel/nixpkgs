@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -17,18 +17,18 @@ buildNpmPackage rec {
 
   npmDepsHash = "sha256-0M9RzyeINmUPYcLy654iI+/ehElKrhIAibpiSqlXD2A=";
 
-  dontNpmBuild = true;
-
   postInstall = ''
     # Remove the .bin directory as it contains broken symlinks
     rm -rf $out/lib/node_modules/write-good/node_modules/.bin
   '';
 
+  dontNpmBuild = true;
+
   meta = {
     description = "Naive linter for English prose";
     homepage = "https://github.com/btford/write-good";
     license = lib.licenses.mit;
-    mainProgram = "write-good";
     maintainers = [ ];
+    mainProgram = "write-good";
   };
 }

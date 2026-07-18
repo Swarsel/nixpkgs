@@ -1,7 +1,7 @@
 {
+  runCommand,
   substitute,
   testers,
-  runCommand,
 }:
 let
   # Ofborg doesn't allow any traces on stderr,
@@ -19,83 +19,99 @@ let
 in
 {
 
-  substitutions = testers.testEqualContents {
-    assertion = "substitutions-spaces";
-    actual = substitute {
-      src = builtins.toFile "source" ''
-        Hello world!
-      '';
-      substitutions = [
-        "--replace-fail"
-        "Hello world!"
-        "Yo peter!"
-      ];
-    };
-    expected = builtins.toFile "expected" ''
-      Yo peter!
-    '';
-  };
-
-  legacySingleReplace = testers.testEqualContents {
-    assertion = "substitute-single-replace";
+  legacySingleArg = testers.testEqualContents {
     actual = substituteSilent {
       src = builtins.toFile "source" ''
         Hello world!
       '';
+
+      # Not great that this works at all, but is supported
+      replacements = [
+        "--replace-fail world list"
+      ];
+    };
+
+    assertion = "substitute-single-arg";
+
+    expected = builtins.toFile "expected" ''
+      Hello list!
+    '';
+  };
+
+  legacySingleReplace = testers.testEqualContents {
+    actual = substituteSilent {
+      src = builtins.toFile "source" ''
+        Hello world!
+      '';
+
       replacements = [
         "--replace-fail"
         "world"
         "paul"
       ];
     };
+
+    assertion = "substitute-single-replace";
+
     expected = builtins.toFile "expected" ''
       Hello paul!
     '';
   };
 
   legacyString = testers.testEqualContents {
-    assertion = "substitute-string";
     actual = substituteSilent {
       src = builtins.toFile "source" ''
         Hello world!
       '';
+
       # Not great that this works at all, but is supported
       replacements = "--replace-fail world string";
     };
+
+    assertion = "substitute-string";
+
     expected = builtins.toFile "expected" ''
       Hello string!
     '';
   };
 
-  legacySingleArg = testers.testEqualContents {
-    assertion = "substitute-single-arg";
-    actual = substituteSilent {
-      src = builtins.toFile "source" ''
-        Hello world!
-      '';
-      # Not great that this works at all, but is supported
-      replacements = [
-        "--replace-fail world list"
-      ];
-    };
-    expected = builtins.toFile "expected" ''
-      Hello list!
-    '';
-  };
-
   legacyVar = testers.testEqualContents {
-    assertion = "substitute-var";
     actual = substituteSilent {
       src = builtins.toFile "source" ''
         @greeting@ @name@!
       '';
+
+      name = "peter";
+
       # Not great that this works at all, but is supported
       replacements = [
         "--subst-var name"
         "--subst-var-by greeting Yo"
       ];
-      name = "peter";
     };
+
+    assertion = "substitute-var";
+
+    expected = builtins.toFile "expected" ''
+      Yo peter!
+    '';
+  };
+
+  substitutions = testers.testEqualContents {
+    actual = substitute {
+      src = builtins.toFile "source" ''
+        Hello world!
+      '';
+
+      substitutions = [
+        "--replace-fail"
+        "Hello world!"
+        "Yo peter!"
+      ];
+    };
+
+    assertion = "substitutions-spaces";
+
     expected = builtins.toFile "expected" ''
       Yo peter!
     '';

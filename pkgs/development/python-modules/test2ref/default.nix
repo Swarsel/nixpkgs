@@ -1,14 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  pdm-backend,
-
   # dependencies
   binaryornot,
-
+  buildPythonPackage,
+  # build-system
+  pdm-backend,
   # tests
   pytest-cov-stub,
   pytestCheckHook,
@@ -17,8 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "test2ref";
   version = "1.2.3";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "nbiotcloud";
@@ -26,6 +21,13 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-20vE6o8yKphKxlfGo+lBZ1VlKyCVlNawlMYVcj4JAtY=";
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     pdm-backend
@@ -35,13 +37,6 @@ buildPythonPackage (finalAttrs: {
     binaryornot
   ];
 
-  pythonImportsCheck = [ "test2ref" ];
-
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # AssertionError:
     #   Only in /build/pytest-of-nixbld/pytest-0/test_known0/ref: file0.txt
@@ -49,6 +44,9 @@ buildPythonPackage (finalAttrs: {
     # Reported upstream: https://github.com/nbiotcloud/test2ref/issues/36
     "test_known"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "test2ref" ];
 
   meta = {
     description = "Testing Against Learned Reference Data";

@@ -1,13 +1,12 @@
 {
   lib,
-  buildKodiAddon,
   fetchFromGitHub,
+  buildKodiAddon,
   myconnpy,
 }:
 
 buildKodiAddon rec {
   pname = "mediathekview";
-  namespace = "plugin.video.mediathekview";
   version = "1.0.9";
 
   src = fetchFromGitHub {
@@ -21,9 +20,11 @@ buildKodiAddon rec {
     myconnpy
   ];
 
+  namespace = "plugin.video.mediathekview";
+
   meta = {
-    homepage = "https://github.com/mediathekview/plugin.video.mediathekview";
     description = "Access media libraries of German speaking broadcasting stations";
+    homepage = "https://github.com/mediathekview/plugin.video.mediathekview";
     license = lib.licenses.mit;
     teams = [ lib.teams.kodi ];
   };

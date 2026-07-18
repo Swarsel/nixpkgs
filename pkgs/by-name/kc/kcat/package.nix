@@ -2,18 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  zlib,
-  rdkafka,
-  yajl,
   avro-c,
   libserdes,
+  pkg-config,
+  rdkafka,
   which,
+  yajl,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "kcat";
-
   version = "1.7.1";
 
   src = fetchFromGitHub {
@@ -38,10 +37,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Generic non-JVM producer and consumer for Apache Kafka";
-    mainProgram = "kcat";
     homepage = "https://github.com/edenhill/kcat";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ nyarly ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "kcat";
   };
 })

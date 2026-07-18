@@ -1,35 +1,34 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
+  authlib,
+  buildPythonPackage,
   click,
-  packaging,
   dparse,
-  ruamel-yaml,
+  filelock,
+  git,
+  hatchling,
+  httpx,
   jinja2,
   marshmallow,
   nltk,
-  authlib,
-  typer,
+  packaging,
   pydantic,
+  pytestCheckHook,
+  ruamel-yaml,
   safety-schemas,
-  typing-extensions,
-  filelock,
-  httpx,
   tenacity,
+  tomli,
   tomlkit,
   truststore,
-  git,
-  pytestCheckHook,
-  tomli,
+  typer,
+  typing-extensions,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "safety";
   version = "3.8.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyupio";
@@ -42,11 +41,14 @@ buildPythonPackage (finalAttrs: {
     ./disable-telemetry.patch
   ];
 
-  build-system = [ hatchling ];
-
-  pythonRelaxDeps = [
-    "safety-schemas"
+  nativeCheckInputs = [
+    git
+    pytestCheckHook
+    tomli
+    writableTmpDirAsHomeHook
   ];
+
+  build-system = [ hatchling ];
 
   dependencies = [
     click
@@ -68,28 +70,29 @@ buildPythonPackage (finalAttrs: {
     truststore
   ];
 
-  nativeCheckInputs = [
-    git
-    pytestCheckHook
-    tomli
-    writableTmpDirAsHomeHook
-  ];
-
   disabledTestPaths = [
     # Failed to initialize SafetyPlatformClient: [Errno -3] Temporary failure in name resolution
     "tests/firewall/test_command.py"
     "tests/test_cli.py"
   ];
 
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "safety-schemas"
+  ];
+
   meta = {
     description = "Checks installed dependencies for known vulnerabilities";
-    mainProgram = "safety";
     homepage = "https://github.com/pyupio/safety";
     changelog = "https://github.com/pyupio/safety/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       thomasdesr
       dotlambda
     ];
+
+    mainProgram = "safety";
   };
 })

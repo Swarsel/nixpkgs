@@ -17,13 +17,13 @@ stdenv.mkDerivation {
 
   env.CFLAGS = toString [ "-O2" ];
 
-  installFlags = [ "DESTDIR=$(out)" ];
-
   postInstall = ''
     mv $out/usr/bin $out/bin
     mv $out/usr/share $out/share
     rm -r $out/usr
   '';
+
+  installFlags = [ "DESTDIR=$(out)" ];
 
   meta = {
     description = "Tool for reading EXIF data from image files produced by digital cameras";

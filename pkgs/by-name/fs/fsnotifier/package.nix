@@ -5,8 +5,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "2024.2.0";
   pname = "fsnotifier";
+  version = "2024.2.0";
 
   src = fetchFromGitHub {
     owner = "JetBrains";
@@ -19,8 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
   # fix for hard-links in nix-store, https://github.com/JetBrains/intellij-community/pull/2171
   patches = [ ./fsnotifier.patch ];
 
-  sourceRoot = "${finalAttrs.src.name}/native/fsNotifier/linux";
-
   buildPhase = ''
     mkdir -p $out/bin
 
@@ -29,12 +27,14 @@ stdenv.mkDerivation (finalAttrs: {
     cp fsnotifier $out/bin/fsnotifier
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/native/fsNotifier/linux";
+
   meta = {
-    homepage = "https://github.com/JetBrains/intellij-community/tree/master/native/fsNotifier/linux";
     description = "IntelliJ Platform companion program for watching and reporting file and directory structure modification";
+    homepage = "https://github.com/JetBrains/intellij-community/tree/master/native/fsNotifier/linux";
     license = lib.licenses.asl20;
-    mainProgram = "fsnotifier";
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "fsnotifier";
   };
 })

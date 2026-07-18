@@ -1,10 +1,10 @@
 {
   lib,
-  callPackage,
-  rustPlatform,
   fetchFromGitHub,
-  protobuf,
   buildNpmPackage,
+  callPackage,
+  protobuf,
+  rustPlatform,
 }:
 let
   version = "0.4.1";
@@ -17,7 +17,7 @@ let
   };
 
   mkSshxPackage =
-    { pname, cargoHash, ... }@args:
+    { cargoHash, pname, ... }@args:
     rustPlatform.buildRustPackage (
       rec {
         inherit
@@ -41,9 +41,11 @@ let
           homepage = "https://github.com/ekzhang/sshx";
           changelog = "https://github.com/ekzhang/sshx/releases/tag/v${version}";
           license = lib.licenses.mit;
+
           maintainers = with lib.maintainers; [
             pinpox
           ];
+
           mainProgram = pname;
         };
       }
@@ -58,7 +60,6 @@ in
 
   sshx-server = mkSshxPackage rec {
     pname = "sshx-server";
-    cargoHash = "sha256-QftBUGDQvCSHoOBLnEzNOe1dMTpVTvMDXNp5qZr0C2M=";
 
     postPatch = ''
       substituteInPlace crates/sshx-server/src/web.rs \
@@ -66,13 +67,15 @@ in
         --replace-fail 'ServeFile::new("build/spa.html")' 'ServeFile::new("${passthru.web.outPath}/spa.html")'
     '';
 
-    passthru.web = buildNpmPackage {
-      pname = "sshx-web";
+    cargoHash = "sha256-QftBUGDQvCSHoOBLnEzNOe1dMTpVTvMDXNp5qZr0C2M=";
 
+    passthru.web = buildNpmPackage {
       inherit
         version
         src
         ;
+
+      pname = "sshx-web";
 
       postPatch = ''
         substituteInPlace vite.config.ts \

@@ -1,6 +1,6 @@
 {
-  buildPythonPackage,
   lib,
+  buildPythonPackage,
   cython,
   libseccomp,
 }:
@@ -8,16 +8,7 @@
 buildPythonPackage rec {
   pname = "libseccomp";
   version = libseccomp.version;
-  format = "setuptools";
   src = libseccomp.pythonsrc;
-
-  env.VERSION_RELEASE = version; # used by build system
-
-  nativeBuildInputs = [ cython ];
-  buildInputs = [ libseccomp ];
-
-  unpackCmd = "tar xf $curSrc";
-  doInstallCheck = true;
 
   postPatch = ''
     substituteInPlace ./setup.py \
@@ -25,7 +16,13 @@ buildPythonPackage rec {
                 'libraries=["seccomp"]'
   '';
 
+  nativeBuildInputs = [ cython ];
+  buildInputs = [ libseccomp ];
+  env.VERSION_RELEASE = version; # used by build system
+  doInstallCheck = true;
+  format = "setuptools";
   pythonImportsCheck = [ "seccomp" ];
+  unpackCmd = "tar xf $curSrc";
 
   meta = {
     description = "Python bindings for libseccomp";

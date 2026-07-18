@@ -14,8 +14,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-2+itIZn3LWTdKfYhj29T793I+z5d2cXRDy/R4j1uRPY=";
   };
 
-  buildInputs = [ fastjet ];
-
   postPatch = ''
     for f in Makefile.in */Makefile scripts/internal/Template/Makefile; do
       substituteInPlace "$f" --replace "CXX=g++" ""
@@ -27,26 +25,27 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-warn "-Wl,-soname,fastjetcontribfragile.so.0" "-Wl,-soname,libfastjetcontribfragile.so"
   '';
 
-  # Written in shell manually, does not support autoconf-style
-  # --build=/--host= options:
-  #   Error: --build=x86_64-unknown-linux-gnu: unrecognised argument
-  configurePlatforms = [ ];
+  buildInputs = [ fastjet ];
 
   configureFlags = [
     "--fastjet-config=${lib.getExe' (lib.getDev fastjet) "fastjet-config"}"
   ];
 
-  enableParallelBuilding = true;
-
-  doCheck = true;
-
   postBuild = ''
     make fragile-shared
   '';
 
+  doCheck = true;
+
   postInstall = ''
     make fragile-shared-install
   '';
+
+  # Written in shell manually, does not support autoconf-style
+  # --build=/--host= options:
+  #   Error: --build=x86_64-unknown-linux-gnu: unrecognised argument
+  configurePlatforms = [ ];
+  enableParallelBuilding = true;
 
   meta = {
     description = "Third party extensions for FastJet";

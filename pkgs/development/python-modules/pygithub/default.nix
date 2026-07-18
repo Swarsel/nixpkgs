@@ -1,21 +1,20 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   deprecated,
-  fetchFromGitHub,
-  pynacl,
-  typing-extensions,
   pyjwt,
+  pynacl,
   requests,
   setuptools,
   setuptools-scm,
+  typing-extensions,
   urllib3,
 }:
 
 buildPythonPackage rec {
   pname = "pygithub";
   version = "2.8.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "PyGithub";
@@ -23,6 +22,9 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-36taxa95WrpQw0UUlmnWX4XFslAAuuoousxNh5O5uDA=";
   };
+
+  # Test suite makes REST calls against github.com
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -39,9 +41,7 @@ buildPythonPackage rec {
   ]
   ++ pyjwt.optional-dependencies.crypto;
 
-  # Test suite makes REST calls against github.com
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "github" ];
 
   meta = {

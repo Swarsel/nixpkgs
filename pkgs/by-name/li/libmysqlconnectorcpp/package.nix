@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  cmake,
   boost,
-  openssl,
+  cmake,
   mysql84,
+  openssl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,6 +24,8 @@ stdenv.mkDerivation (finalAttrs: {
       -i ./cdk/extra/zstd/CMakeLists.txt
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     mysql84
@@ -35,8 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
     mysql84
   ];
 
-  strictDeps = true;
-
   cmakeFlags = [
     # libmysqlclient is shared library
     "-DMYSQLCLIENT_STATIC_LINKING=false"
@@ -45,8 +45,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://dev.mysql.com/downloads/connector/cpp/";
     description = "C++ library for connecting to mysql servers";
+    homepage = "https://dev.mysql.com/downloads/connector/cpp/";
     license = lib.licenses.gpl2Only;
     platforms = lib.platforms.unix;
   };

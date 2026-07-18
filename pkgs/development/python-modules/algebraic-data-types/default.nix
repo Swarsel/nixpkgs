@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hypothesis,
   mypy,
   pytestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "algebraic-data-types";
   version = "0.2.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "jspahrsummers";
@@ -30,6 +29,7 @@ buildPythonPackage rec {
     "tests/test_mypy_plugin.py"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "adt" ];
 
   meta = {

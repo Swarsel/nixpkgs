@@ -1,10 +1,10 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
+  protobuf,
   rustPlatform,
   rustfmt,
-  protobuf,
 }:
 let
   src = fetchFromGitHub {
@@ -15,52 +15,48 @@ let
   };
 
   meta = {
-    # Marked broken 2025-11-28 because both indradb-server and indradb-client
-    # have failed on Hydra for nearly a year.
-    broken = true;
     description = "Graph database written in rust";
     homepage = "https://github.com/indradb/indradb";
     license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [ happysalada ];
     platforms = lib.platforms.unix;
+    # Marked broken 2025-11-28 because both indradb-server and indradb-client
+    # have failed on Hydra for nearly a year.
+    broken = true;
   };
 in
 {
-  indradb-server = rustPlatform.buildRustPackage {
-    pname = "indradb-server";
-    version = "unstable-2021-01-05";
+  indradb-client = rustPlatform.buildRustPackage {
     inherit src meta;
-
-    cargoHash = "sha256-wehQU0EOSkxQatoViqBJwgu4LG7NsbKjVZvKE6SoOFs=";
-
-    buildAndTestSubdir = "server";
-
-    env.PROTOC = "${protobuf}/bin/protoc";
+    pname = "indradb-client";
+    version = "unstable-2021-01-05";
 
     nativeBuildInputs = [
       rustfmt
       rustPlatform.bindgenHook
     ];
 
+    cargoHash = "sha256-wehQU0EOSkxQatoViqBJwgu4LG7NsbKjVZvKE6SoOFs=";
+    env.PROTOC = "${protobuf}/bin/protoc";
+    buildAndTestSubdir = "client";
+  };
+
+  indradb-server = rustPlatform.buildRustPackage {
+    inherit src meta;
+    pname = "indradb-server";
+    version = "unstable-2021-01-05";
+
+    nativeBuildInputs = [
+      rustfmt
+      rustPlatform.bindgenHook
+    ];
+
+    cargoHash = "sha256-wehQU0EOSkxQatoViqBJwgu4LG7NsbKjVZvKE6SoOFs=";
+    env.PROTOC = "${protobuf}/bin/protoc";
     # test rely on libindradb and it can't be found
     # failure at https://github.com/indradb/indradb/blob/master/server/tests/plugins.rs#L63
     # `let _server = Server::start(&format!("../target/debug/libindradb_plugin_*.{}", LIBRARY_EXTENSION)).unwrap();`
     doCheck = false;
-  };
-  indradb-client = rustPlatform.buildRustPackage {
-    pname = "indradb-client";
-    version = "unstable-2021-01-05";
-    inherit src meta;
-
-    cargoHash = "sha256-wehQU0EOSkxQatoViqBJwgu4LG7NsbKjVZvKE6SoOFs=";
-
-    env.PROTOC = "${protobuf}/bin/protoc";
-
-    nativeBuildInputs = [
-      rustfmt
-      rustPlatform.bindgenHook
-    ];
-
-    buildAndTestSubdir = "client";
+    buildAndTestSubdir = "server";
   };
 }

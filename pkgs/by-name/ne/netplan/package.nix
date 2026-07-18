@@ -1,15 +1,15 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  glib,
-  pandoc,
-  systemd,
-  libyaml,
-  python3,
-  libuuid,
   bash-completion,
-  lib,
+  glib,
+  libuuid,
+  libyaml,
+  pandoc,
+  pkg-config,
+  python3,
+  systemd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,6 +22,24 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-wQ4gd9+9YU92WGRMjSiF/zLCGxhaSl8s22pH1jr+Mm0=";
   };
+
+  postPatch = ''
+    substituteInPlace netplan/libnetplan.py \
+      --replace "/lib/netplan/generate" "$out/lib/netplan/generate" \
+      --replace "ctypes.util.find_library('netplan')" "\"$out/lib/libnetplan.so\""
+
+    substituteInPlace Makefile \
+      --replace 'SYSTEMD_GENERATOR_DIR=' 'SYSTEMD_GENERATOR_DIR ?= ' \
+      --replace 'SYSTEMD_UNIT_DIR=' 'SYSTEMD_UNIT_DIR ?= ' \
+      --replace 'BASH_COMPLETIONS_DIR=' 'BASH_COMPLETIONS_DIR ?= ' \
+      --replace 'pkg-config' '$(PKG_CONFIG)'
+
+    # from upstream https://github.com/canonical/netplan/blob/ee0d5df7b1dfbc3197865f02c724204b955e0e58/rpm/netplan.spec#L81
+    sed -e "s/-Werror//g" -i Makefile
+
+    substituteInPlace netplan/cli/utils.py \
+      --replace-fail "/usr/libexec/netplan/generate" "${placeholder "out"}/lib/netplan/generate"
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -44,24 +62,6 @@ stdenv.mkDerivation (finalAttrs: {
     libuuid
     bash-completion
   ];
-
-  postPatch = ''
-    substituteInPlace netplan/libnetplan.py \
-      --replace "/lib/netplan/generate" "$out/lib/netplan/generate" \
-      --replace "ctypes.util.find_library('netplan')" "\"$out/lib/libnetplan.so\""
-
-    substituteInPlace Makefile \
-      --replace 'SYSTEMD_GENERATOR_DIR=' 'SYSTEMD_GENERATOR_DIR ?= ' \
-      --replace 'SYSTEMD_UNIT_DIR=' 'SYSTEMD_UNIT_DIR ?= ' \
-      --replace 'BASH_COMPLETIONS_DIR=' 'BASH_COMPLETIONS_DIR ?= ' \
-      --replace 'pkg-config' '$(PKG_CONFIG)'
-
-    # from upstream https://github.com/canonical/netplan/blob/ee0d5df7b1dfbc3197865f02c724204b955e0e58/rpm/netplan.spec#L81
-    sed -e "s/-Werror//g" -i Makefile
-
-    substituteInPlace netplan/cli/utils.py \
-      --replace-fail "/usr/libexec/netplan/generate" "${placeholder "out"}/lib/netplan/generate"
-  '';
 
   makeFlags = [
     "PREFIX="

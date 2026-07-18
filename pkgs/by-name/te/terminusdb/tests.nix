@@ -1,25 +1,15 @@
 {
   lib,
   buildNpmPackage,
-  fetchpatch2,
-  terminusdb,
-  procps,
   curl,
+  fetchpatch2,
+  procps,
+  terminusdb,
 }:
 
 buildNpmPackage {
-  pname = "terminusdb-tests";
   inherit (terminusdb) src version;
-
-  nativeCheckInputs = [
-    terminusdb
-    procps
-    curl
-  ];
-
-  sourceRoot = "${terminusdb.src.name}/tests";
-
-  npmDepsHash = "sha256-AkTKdkKTCWExd3U1fkoXoF9znbIGzVGtQl06wfIVOeM=";
+  pname = "terminusdb-tests";
 
   # Test-only JS adjustments live here so the runtime package stays untouched
   postPatch = ''
@@ -31,8 +21,14 @@ buildNpmPackage {
     patchShebangs terminusdb.sh
   '';
 
-  dontNpmBuild = true;
+  npmDepsHash = "sha256-AkTKdkKTCWExd3U1fkoXoF9znbIGzVGtQl06wfIVOeM=";
   doCheck = true;
+
+  nativeCheckInputs = [
+    terminusdb
+    procps
+    curl
+  ];
 
   # Custom test harness
   preCheck = ''
@@ -109,5 +105,8 @@ buildNpmPackage {
   installPhase = ''
     touch $out
   '';
+
+  dontNpmBuild = true;
+  sourceRoot = "${terminusdb.src.name}/tests";
 
 }

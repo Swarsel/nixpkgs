@@ -1,26 +1,26 @@
 {
   lib,
-  steam-unwrapped,
   buildFHSEnv,
+  steam-unwrapped,
   writeShellScript,
-  extraPkgs ? pkgs: [ ], # extra packages to add to targetPkgs
-  extraLibraries ? pkgs: [ ], # extra packages to add to multiPkgs
-  extraProfile ? "", # string to append to profile
-  extraPreBwrapCmds ? "", # extra commands to run before calling bubblewrap
-  extraBwrapArgs ? [ ], # extra arguments to pass to bubblewrap (real default is at usage site)
   extraArgs ? "", # arguments to always pass to steam
+  extraBwrapArgs ? [ ], # extra arguments to pass to bubblewrap (real default is at usage site)
   extraEnv ? { }, # Environment variables to pass to Steam
+  extraLibraries ? pkgs: [ ], # extra packages to add to multiPkgs
+  extraPkgs ? pkgs: [ ], # extra packages to add to targetPkgs
+  extraPreBwrapCmds ? "", # extra commands to run before calling bubblewrap
+  extraProfile ? "", # string to append to profile
   privateTmp ? true, # if the steam bubblewrap should isolate /tmp
 }:
 let
   buildRuntimeEnv =
     {
-      extraPkgs ? pkgs: [ ],
-      extraLibraries ? pkgs: [ ],
-      extraProfile ? "",
-      extraPreBwrapCmds ? "",
       extraBwrapArgs ? [ ],
       extraEnv ? { },
+      extraLibraries ? pkgs: [ ],
+      extraPkgs ? pkgs: [ ],
+      extraPreBwrapCmds ? "",
+      extraProfile ? "",
       privateTmp ? true,
       ...
     }@args:
@@ -36,33 +36,23 @@ let
       ])
       // {
         inherit privateTmp;
+        inherit extraPreBwrapCmds;
 
-        multiArch = true;
+        # Steam expects /sbin/ldconfig to exist, and since SinceRT3
+        # symlinking it results in a symlink loop in nested containers.
+        # Thus, just copy it.
+        extraBuildCommands = ''
+          cp -f $out/usr/{bin,sbin}/ldconfig
+        '';
+
+        extraBwrapArgs = [
+          # Steam will dump crash reports here, make those more accessible
+          "--bind-try /tmp/dumps /tmp/dumps"
+        ]
+        ++ extraBwrapArgs;
+
         includeClosures = true;
-
-        # https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/docs/distro-assumptions.md#command-line-tools
-        targetPkgs =
-          pkgs:
-          with pkgs;
-          [
-            bash
-            coreutils
-            file
-            lsb-release # not documented, called from Big Picture
-            pciutils # not documented, complains about lspci on startup
-            glibc_multi.bin
-            usbutils # not documented, complains about lsusb on startup (needed for the 'Enter VR Mode' button to appear)
-            xdg-utils # calls xdg-open occasionally
-            xz
-            zenity
-
-            # crashes on startup if it can't find libx11 locale files
-            (pkgs.runCommand "xorg-locale" { } ''
-              mkdir -p $out
-              ln -s ${libx11}/share $out/share
-            '')
-          ]
-          ++ extraPkgs pkgs;
+        multiArch = true;
 
         # https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/docs/distro-assumptions.md#shared-libraries
         multiPkgs =
@@ -125,28 +115,35 @@ let
           ${extraProfile}
         '';
 
-        inherit extraPreBwrapCmds;
+        # https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/docs/distro-assumptions.md#command-line-tools
+        targetPkgs =
+          pkgs:
+          with pkgs;
+          [
+            bash
+            coreutils
+            file
+            lsb-release # not documented, called from Big Picture
+            pciutils # not documented, complains about lspci on startup
+            glibc_multi.bin
+            usbutils # not documented, complains about lsusb on startup (needed for the 'Enter VR Mode' button to appear)
+            xdg-utils # calls xdg-open occasionally
+            xz
+            zenity
 
-        # Steam expects /sbin/ldconfig to exist, and since SinceRT3
-        # symlinking it results in a symlink loop in nested containers.
-        # Thus, just copy it.
-        extraBuildCommands = ''
-          cp -f $out/usr/{bin,sbin}/ldconfig
-        '';
-
-        extraBwrapArgs = [
-          # Steam will dump crash reports here, make those more accessible
-          "--bind-try /tmp/dumps /tmp/dumps"
-        ]
-        ++ extraBwrapArgs;
+            # crashes on startup if it can't find libx11 locale files
+            (pkgs.runCommand "xorg-locale" { } ''
+              mkdir -p $out
+              ln -s ${libx11}/share $out/share
+            '')
+          ]
+          ++ extraPkgs pkgs;
       }
     );
 in
 buildRuntimeEnv {
-  pname = "steam";
   inherit (steam-unwrapped) version meta;
 
-  extraPkgs = pkgs: [ steam-unwrapped ] ++ extraPkgs pkgs;
   inherit
     extraLibraries
     extraProfile
@@ -156,12 +153,16 @@ buildRuntimeEnv {
     privateTmp
     ;
 
-  runScript = writeShellScript "steam-wrapped" ''
-    exec steam ${extraArgs} "$@"
-  '';
+  pname = "steam";
 
   extraInstallCommands = ''
     ln -s ${steam-unwrapped}/share $out/share
+  '';
+
+  extraPkgs = pkgs: [ steam-unwrapped ] ++ extraPkgs pkgs;
+
+  runScript = writeShellScript "steam-wrapped" ''
+    exec steam ${extraArgs} "$@"
   '';
 
   passthru =
@@ -170,9 +171,6 @@ buildRuntimeEnv {
         package:
         buildRuntimeEnv {
           inherit (steam-unwrapped) version;
-          pname = "steam-run";
-
-          extraPkgs = pkgs: package ++ extraPkgs pkgs;
 
           inherit
             extraLibraries
@@ -182,6 +180,9 @@ buildRuntimeEnv {
             extraEnv
             privateTmp
             ;
+
+          pname = "steam-run";
+          extraPkgs = pkgs: package ++ extraPkgs pkgs;
 
           runScript = writeShellScript "steam-run" ''
             if [ $# -eq 0 ]; then
@@ -194,15 +195,14 @@ buildRuntimeEnv {
 
           meta = {
             description = "Run commands in the same FHS environment that is used for Steam";
+            license = lib.licenses.mit;
             mainProgram = "steam-run";
             name = "steam-run";
-            license = lib.licenses.mit;
           };
         };
     in
     {
       inherit buildRuntimeEnv;
-
       run = makeSteamRun [ steam-unwrapped ];
       run-free = makeSteamRun [ ];
     };

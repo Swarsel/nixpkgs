@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  llm,
-  llm-gemini,
+  buildPythonPackage,
   httpx,
   ijson,
-  pytestCheckHook,
-  pytest-recording,
-  pytest-asyncio,
+  llm,
+  llm-gemini,
   nest-asyncio,
+  pytest-asyncio,
+  pytest-recording,
+  pytestCheckHook,
+  setuptools,
   writableTmpDirAsHomeHook,
 }:
 buildPythonPackage rec {
   pname = "llm-gemini";
   version = "0.32";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -24,14 +23,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-h8aZvkZNDj7Vcc1HZ7mHVYk99Upoeazp0ET6yeRiySo=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    httpx
-    ijson
-    llm
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -41,8 +32,16 @@ buildPythonPackage rec {
     writableTmpDirAsHomeHook
   ];
 
-  pythonImportsCheck = [ "llm_gemini" ];
+  build-system = [ setuptools ];
 
+  dependencies = [
+    httpx
+    ijson
+    llm
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "llm_gemini" ];
   passthru.tests = llm.mkPluginTest llm-gemini;
 
   meta = {
@@ -50,6 +49,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/simonw/llm-gemini";
     changelog = "https://github.com/simonw/llm-gemini/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       josh
       philiptaron

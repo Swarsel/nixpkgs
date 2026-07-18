@@ -1,36 +1,36 @@
 {
   lib,
-  gcc14Stdenv, # done for better C++ support in the project
   fetchFromGitHub,
+  alsa-lib,
+  autoPatchelfHook,
   cmake,
+  curl,
+  gcc14Stdenv, # done for better C++ support in the project
+  libGL,
+  libpulseaudio,
+  libx11,
+  libxcb,
+  libxcursor,
+  libxext,
+  libxi,
+  libxinerama,
+  libxkbcommon,
+  libxrandr,
+  makeWrapper,
   pkg-config,
   python3Minimal,
-  makeWrapper,
-  libx11,
-  libxrandr,
-  libxinerama,
-  libxcursor,
-  libxi,
-  libxcb,
-  libxext,
-  libxkbcommon,
   vulkan-headers,
   vulkan-loader,
-  libGL,
-  curl,
-  autoPatchelfHook,
-  alsa-lib,
-  libpulseaudio,
 }:
 
 let
   # JoltPhysics is fetched at build time via FetchContent in deps/joltc/CMakeLists.txt.
   # Pre-fetch it here and pass via FETCHCONTENT_SOURCE_DIR_JOLTPHYSICS to avoid network access.
   joltphysics-src = fetchFromGitHub {
+    hash = "sha256-owI9uM/hjicuUWXYeZOhfYby5ygWm3JOO/qifRGiOdM=";
     owner = "jrouwe";
     repo = "JoltPhysics";
     rev = "c10d9b2a8ee134fb5e72de1a0f26f8c9cc8f6382";
-    hash = "sha256-owI9uM/hjicuUWXYeZOhfYby5ygWm3JOO/qifRGiOdM=";
   };
 
   # Libraries that LOVR loads at runtime via dlopen
@@ -87,17 +87,6 @@ gcc14Stdenv.mkDerivation (finalAttrs: {
     "-DFETCHCONTENT_SOURCE_DIR_JOLTPHYSICS=${joltphysics-src}"
   ];
 
-  installCheckPhase = ''
-    runHook preInstallCheck
-    # LOVR's test/conf.lua disables graphics when CI is set
-    export CI=1
-    export HOME=$TMPDIR
-    $out/bin/lovr $src/test
-    runHook postInstallCheck
-  '';
-
-  doInstallCheck = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -126,6 +115,17 @@ gcc14Stdenv.mkDerivation (finalAttrs: {
       --suffix LD_LIBRARY_PATH : "${lib.makeLibraryPath runtimeLibs}:$out/lib"
 
     runHook postInstall
+  '';
+
+  doInstallCheck = true;
+
+  installCheckPhase = ''
+    runHook preInstallCheck
+    # LOVR's test/conf.lua disables graphics when CI is set
+    export CI=1
+    export HOME=$TMPDIR
+    $out/bin/lovr $src/test
+    runHook postInstallCheck
   '';
 
   dontUseCmakeInstall = true;

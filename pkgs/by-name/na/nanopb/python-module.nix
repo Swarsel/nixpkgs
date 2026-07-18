@@ -1,17 +1,19 @@
 {
+  generator-out,
   python3,
   version,
-  generator-out,
 }:
 python3.pkgs.buildPythonPackage {
-  pname = "nanopb-python-module";
   inherit version;
+  pname = "nanopb-python-module";
   src = generator-out;
-  pyproject = true;
-  pythonImportsCheck = [ "nanopb" ];
+
   propagatedBuildInputs = with python3.pkgs; [
     setuptools
     protobuf
     six
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "nanopb" ];
 }

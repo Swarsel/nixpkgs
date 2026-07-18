@@ -1,8 +1,8 @@
 {
   lib,
   fetchurl,
-  buildGoModule,
   asciidoctor,
+  buildGoModule,
   ruby,
   which,
 }:
@@ -22,15 +22,13 @@ buildGoModule (finalAttrs: {
       --replace-fail "./repotool docgen >toolcommands.inc" 'echo "/* skipped */" >toolcommands.inc'
   '';
 
-  vendorHash = "sha256-4bNhAWkO84imCaBzjBxNCOzG2A/z4lhqvu51wF2GVUo=";
-
-  subPackages = [ "." ];
-
   nativeBuildInputs = [
     asciidoctor
     ruby
     which
   ];
+
+  vendorHash = "sha256-4bNhAWkO84imCaBzjBxNCOzG2A/z4lhqvu51wF2GVUo=";
 
   postBuild = ''
     patchShebangs .
@@ -41,10 +39,12 @@ buildGoModule (finalAttrs: {
     make install prefix=$out HTMLFILES=
   '';
 
+  subPackages = [ "." ];
+
   meta = {
     description = "Tool for editing version-control repository history";
-    license = lib.licenses.bsd3;
     homepage = "http://www.catb.org/esr/reposurgeon/";
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ dfoxfranke ];
     platforms = lib.platforms.all;
   };

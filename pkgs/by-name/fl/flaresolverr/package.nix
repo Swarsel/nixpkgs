@@ -2,15 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  makeWrapper,
-
   chromium,
+  makeWrapper,
+  nixosTests,
   python3,
   undetected-chromedriver,
   xvfb,
-
-  nixosTests,
 }:
 
 let
@@ -40,8 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-gOrfxFGNlxZWScfYEw7zfy7oVWhYEygYgP7mkO4cs/w=";
   };
 
-  nativeBuildInputs = [ makeWrapper ];
-
   postPatch = ''
     substituteInPlace src/utils.py \
       --replace-fail \
@@ -51,6 +46,8 @@ stdenv.mkDerivation (finalAttrs: {
         'PATCHED_DRIVER_PATH = None' \
         'PATCHED_DRIVER_PATH = "${lib.getExe undetected-chromedriver}"'
   '';
+
+  nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
     mkdir -p $out/{bin,share/flaresolverr-${finalAttrs.version}}
@@ -66,12 +63,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    inherit (undetected-chromedriver.meta) platforms;
     description = "Proxy server to bypass Cloudflare protection";
     homepage = "https://github.com/FlareSolverr/FlareSolverr";
     changelog = "https://github.com/FlareSolverr/FlareSolverr/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "flaresolverr";
     maintainers = with lib.maintainers; [ diogotcorreia ];
-    inherit (undetected-chromedriver.meta) platforms;
+    mainProgram = "flaresolverr";
   };
 })

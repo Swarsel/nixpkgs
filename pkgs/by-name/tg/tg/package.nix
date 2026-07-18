@@ -1,15 +1,14 @@
 {
   lib,
-  fetchFromGitHub,
-  python3Packages,
   stdenv,
+  fetchFromGitHub,
   libnotify,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "tg";
   version = "0.22.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "paul-nameless";
@@ -27,6 +26,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     sed -i 's|^NOTIFY_CMD = .*|NOTIFY_CMD = "${libnotify}/bin/notify-send {title} {message} -i {icon_path}"|' tg/config.py
   '';
 
+  doCheck = false; # No tests
   build-system = [ python3Packages.poetry-core ];
 
   dependencies = with python3Packages; [
@@ -34,13 +34,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     python-telegram
   ];
 
-  doCheck = false; # No tests
+  pyproject = true;
 
   meta = {
     description = "Terminal client for telegram";
-    mainProgram = "tg";
     homepage = "https://github.com/paul-nameless/tg";
     license = lib.licenses.unlicense;
     maintainers = with lib.maintainers; [ sikmir ];
+    mainProgram = "tg";
   };
 })

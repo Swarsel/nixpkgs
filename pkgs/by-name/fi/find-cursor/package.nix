@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libx11,
-  libxdamage,
-  libxrender,
-  libxcomposite,
-  libxext,
-  installShellFiles,
   git,
+  installShellFiles,
+  libx11,
+  libxcomposite,
+  libxdamage,
+  libxext,
+  libxrender,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     installShellFiles
     git
   ];
+
   buildInputs = [
     libx11
     libxdamage
@@ -33,6 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
     libxcomposite
     libxext
   ];
+
   preInstall = "mkdir -p $out/share/man/man1";
   installFlags = [ "PREFIX=${placeholder "out"}" ];
 
@@ -40,8 +42,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Simple XLib program to highlight the cursor position";
     homepage = "https://github.com/arp242/find-cursor";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.yanganto ];
+    platforms = lib.platforms.linux;
     mainProgram = "find-cursor";
   };
 })

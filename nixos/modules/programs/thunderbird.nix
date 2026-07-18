@@ -1,7 +1,7 @@
 {
-  pkgs,
   config,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -12,12 +12,11 @@ in
 {
   options.programs.thunderbird = {
     enable = lib.mkEnableOption "Thunderbird mail client";
-
     package = lib.mkPackageOption pkgs "thunderbird" { };
 
     policies = lib.mkOption {
-      type = policyFormat.type;
       default = { };
+
       description = ''
         Group policies to install.
 
@@ -28,9 +27,20 @@ in
         documentation of the `ExtensionSettings` policy for details.
 
       '';
+
+      type = policyFormat.type;
     };
 
     preferences = lib.mkOption {
+      default = { };
+
+      description = ''
+        Preferences to set from `about:config`.
+
+        Some of these might be able to be configured more ergonomically
+        using policies.
+      '';
+
       type =
         with lib.types;
         attrsOf (oneOf [
@@ -38,23 +48,11 @@ in
           int
           str
         ]);
-      default = { };
-      description = ''
-        Preferences to set from `about:config`.
-
-        Some of these might be able to be configured more ergonomically
-        using policies.
-      '';
     };
 
     preferencesStatus = lib.mkOption {
-      type = lib.types.enum [
-        "default"
-        "locked"
-        "user"
-        "clear"
-      ];
       default = "locked";
+
       description = ''
         The status of `thunderbird.preferences`.
 
@@ -64,23 +62,31 @@ in
         - `"user"`: Preferences appear as changed.
         - `"clear"`: Value has no effect. Resets to factory defaults on each startup.
       '';
+
+      type = lib.types.enum [
+        "default"
+        "locked"
+        "user"
+        "clear"
+      ];
     };
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ cfg.package ];
-
     environment.etc =
       let
         policiesJSON = policyFormat.generate "thunderbird-policies.json" { inherit (cfg) policies; };
       in
       lib.mkIf (cfg.policies != { }) { "thunderbird/policies/policies.json".source = policiesJSON; };
 
+    environment.systemPackages = [ cfg.package ];
+
     programs.thunderbird.policies = {
       DisableAppUpdate = true;
+
       Preferences = builtins.mapAttrs (_: value: {
-        Value = value;
         Status = cfg.preferencesStatus;
+        Value = value;
       }) cfg.preferences;
     };
   };

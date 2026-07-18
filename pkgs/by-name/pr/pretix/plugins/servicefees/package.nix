@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   django,
   pretix-plugin-build,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pretix-servicefees";
   version = "1.15.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pretix";
@@ -19,18 +18,19 @@ buildPythonPackage rec {
     hash = "sha256-oxuxlwNYJsuYj5zm2VYRMn8wz3vF92SzGxD8w3N7ZIM=";
   };
 
-  build-system = [
-    django
-    pretix-plugin-build
-    setuptools
-  ];
-
   postBuild = ''
     make
   '';
 
   doCheck = false; # no tests
 
+  build-system = [
+    django
+    pretix-plugin-build
+    setuptools
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "pretix_servicefees" ];
 
   meta = {

@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   rocksdb_9_10,
+  rustPlatform,
 }:
 
 let
@@ -19,11 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-MDdxu+ITEEUs+DXKfRKlwStT94Bv8tYIqh2eQlqPgrQ=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-D8edLG3Zr/Qsk42husi/Nw1wGjvMb71Enl8hbifvLbk=";
-  };
-
   # needed for librocksdb-sys
   nativeBuildInputs = [ rustPlatform.bindgenHook ];
 
@@ -31,6 +26,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     # link rocksdb dynamically
     ROCKSDB_INCLUDE_DIR = "${rocksdb}/include";
     ROCKSDB_LIB_DIR = "${rocksdb}/lib";
+  };
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-D8edLG3Zr/Qsk42husi/Nw1wGjvMb71Enl8hbifvLbk=";
   };
 
   passthru.updateScript = ./update.sh;

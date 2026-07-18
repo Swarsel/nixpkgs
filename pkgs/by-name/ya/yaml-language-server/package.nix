@@ -14,18 +14,19 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-JIThwWGunUn4fHxPx7wBqi/F9aslNhWjcx11TvMyoDQ=";
   };
 
+  strictDeps = true;
   npmDepsHash = "sha256-0jmq/4XpuZLjoRCxpGBZdGgfyvBTBBoT893o2mooCVw=";
 
-  strictDeps = true;
-
   meta = {
-    changelog = "https://github.com/redhat-developer/yaml-language-server/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     description = "Language Server for YAML Files";
     homepage = "https://github.com/redhat-developer/yaml-language-server";
+    changelog = "https://github.com/redhat-developer/yaml-language-server/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "yaml-language-server";
+
     maintainers = with lib.maintainers; [
       nick-linux
     ];
+
+    mainProgram = "yaml-language-server";
   };
 })

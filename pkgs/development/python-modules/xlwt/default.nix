@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
   six,
 }:
 
 buildPythonPackage {
   pname = "xlwt";
   version = "1.3.0-unstable-2018-09-16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-excel";
@@ -20,22 +19,22 @@ buildPythonPackage {
     hash = "sha256-YKbqdimX1q+d7A9BSwuKl3SndQ+0eocz+m6xMAZeMQQ=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ six ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ six ];
+  pyproject = true;
   pythonImportsCheck = [ "xlwt" ];
 
   meta = {
     description = "Library to create spreadsheet files compatible with MS";
     homepage = "https://github.com/python-excel/xlwt";
+
     license = with lib.licenses; [
       bsdOriginal
       bsd3
       lgpl21Plus
     ];
+
     maintainers = [ ];
   };
 }

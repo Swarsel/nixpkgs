@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 let
@@ -12,13 +12,11 @@ in
   options.services.reframe = {
     enable = lib.mkEnableOption "DRM/KMS based remote desktop for Linux that supports Wayland/NVIDIA/headless/login…";
     package = lib.mkPackageOption pkgs "reframe" { };
-    configs = lib.mkOption {
-      type = lib.types.submodule {
-        freeformType = settingsFormat.type;
-      };
-      default = { };
 
+    configs = lib.mkOption {
+      default = { };
       description = "Configurations for ReFrame";
+
       example = ''
         {
           main = {
@@ -47,34 +45,42 @@ in
           };
         }
       '';
+
+      type = lib.types.submodule {
+        freeformType = settingsFormat.type;
+      };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ cfg.package ];
-    systemd.packages = [ cfg.package ];
-    systemd.tmpfiles.packages = [ cfg.package ];
-    users.users.reframe = {
-      isSystemUser = true;
-      group = "reframe";
-      description = "ReFrame Remote Desktop";
-    };
-    users.groups.reframe = { };
     environment.etc = lib.mapAttrs' (
       name: value:
       lib.nameValuePair "reframe/${name}.conf" {
-        mode = "0644";
-        user = "root";
         group = "root";
+        mode = "0644";
         source = settingsFormat.generate "${name}.conf" value;
+        user = "root";
       }
     ) cfg.configs;
+
+    environment.systemPackages = [ cfg.package ];
+    systemd.packages = [ cfg.package ];
+
     systemd.services = lib.mapAttrs' (
       name: _:
       lib.nameValuePair "reframe-server@${name}" {
         wantedBy = [ "multi-user.target" ];
       }
     ) cfg.configs;
+
+    systemd.tmpfiles.packages = [ cfg.package ];
+    users.groups.reframe = { };
+
+    users.users.reframe = {
+      description = "ReFrame Remote Desktop";
+      group = "reframe";
+      isSystemUser = true;
+    };
   };
 
   meta.maintainers = with lib.maintainers; [

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  unstableGitUpdater,
   bash,
+  unstableGitUpdater,
 }:
 
 stdenv.mkDerivation {
@@ -18,13 +18,13 @@ stdenv.mkDerivation {
     fetchSubmodules = true;
   };
 
-  strictDeps = true;
-  buildInputs = [ bash ];
-
   postPatch = ''
     # make zshrc aware of where zsh-prezto is installed
     sed -i -e "s|\''${ZDOTDIR:\-\$HOME}/.zprezto/|$out/share/zsh-prezto/|g" runcoms/zshrc
   '';
+
+  strictDeps = true;
+  buildInputs = [ bash ];
 
   installPhase = ''
     mkdir -p $out/share/zsh-prezto
@@ -35,11 +35,13 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Configuration framework for Zsh";
+
     longDescription = ''
       Prezto is the configuration framework for Zsh; it enriches
       the command line interface environment with sane defaults,
       aliases, functions, auto completion, and prompt themes.
     '';
+
     homepage = "https://github.com/sorin-ionescu/prezto";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ holymonson ];

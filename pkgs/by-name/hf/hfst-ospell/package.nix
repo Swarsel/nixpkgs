@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  autoreconfHook,
   fetchFromGitHub,
+  autoreconfHook,
   icu,
   libarchive,
   pkg-config,
@@ -19,14 +19,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-BmM0acqPL8qPOJ0KEkcI264xj89v+VaItZ0yS8QLF3o=";
   };
 
-  buildInputs = [
-    icu
-    libarchive
-  ];
-
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
+  ];
+
+  buildInputs = [
+    icu
+    libarchive
   ];
 
   # libxmlxx is listed as a dependency but Darwin build fails with it,
@@ -38,8 +38,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/hfst/hfst-ospell/";
     description = "HFST spell checker library and command line tool";
+    homepage = "https://github.com/hfst/hfst-ospell/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ lurkki ];
     platforms = lib.platforms.unix;

@@ -2,22 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   jre_headless,
+  makeWrapper,
   testers,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "detekt";
   version = "1.23.8";
 
-  jarfilename = "detekt-${finalAttrs.version}-executable.jar";
-
   src = fetchurl {
     url = "https://github.com/detekt/detekt/releases/download/v${finalAttrs.version}/detekt-cli-${finalAttrs.version}-all.jar";
     sha256 = "sha256-LOL/lS4VC68oopzacKNjsDQLPoGlX0PlHsXt/8PQZsE=";
   };
-
-  dontUnpack = true;
 
   nativeBuildInputs = [ makeWrapper ];
 
@@ -32,15 +28,17 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+  jarfilename = "detekt-${finalAttrs.version}-executable.jar";
   passthru.tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
 
   meta = {
     description = "Static code analysis for Kotlin";
-    mainProgram = "detekt";
     homepage = "https://detekt.dev/";
     license = lib.licenses.asl20;
-    platforms = jre_headless.meta.platforms;
-    maintainers = with lib.maintainers; [ mdr ];
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    maintainers = with lib.maintainers; [ mdr ];
+    platforms = jre_headless.meta.platforms;
+    mainProgram = "detekt";
   };
 })

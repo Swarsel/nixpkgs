@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,11 +17,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = null;
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   checkFlags =
     let
       skippedTests = [
@@ -32,10 +27,15 @@ buildGoModule (finalAttrs: {
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   meta = {
     description = "Easily rename multiple files using your text editor";
-    license = lib.licenses.mit;
     homepage = "https://github.com/laurent22/massren";
+    license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "massren";
   };

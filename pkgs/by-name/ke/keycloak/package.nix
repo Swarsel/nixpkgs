@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  makeBinaryWrapper,
-  jre_headless,
-  nixosTests,
   callPackage,
+  fetchzip,
+  jre_headless,
+  makeBinaryWrapper,
+  nixosTests,
   confFile ? null,
-  plugins ? [ ],
-  extraFeatures ? [ ],
   disabledFeatures ? [ ],
+  extraFeatures ? [ ],
+  plugins ? [ ],
 }:
 
 let
@@ -31,15 +31,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-QfPCgwUZYwiCWZgL8DVlVAYE3AoZnDHn99j+f/oo0Hs=";
   };
 
-  nativeBuildInputs = [
-    makeBinaryWrapper
-    jre_headless
-  ];
-
   patches = [
     # Make home.dir and config.dir configurable through the
     # KC_HOME_DIR and KC_CONF_DIR environment variables.
     ./config_vars.patch
+  ];
+
+  nativeBuildInputs = [
+    makeBinaryWrapper
+    jre_headless
   ];
 
   buildPhase = ''
@@ -85,17 +85,17 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru = {
-    tests = nixosTests.keycloak;
-    plugins = callPackage ./all-plugins.nix { };
     enabledPlugins = plugins;
+    plugins = callPackage ./all-plugins.nix { };
+    tests = nixosTests.keycloak;
   };
 
   meta = {
-    homepage = "https://www.keycloak.org/";
     description = "Identity and access management for modern applications and services";
-    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
+    homepage = "https://www.keycloak.org/";
     license = lib.licenses.asl20;
-    platforms = jre_headless.meta.platforms;
+    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       ngerstle
       talyz
@@ -105,5 +105,7 @@ stdenv.mkDerivation (finalAttrs: {
       krit
       jefferyoo
     ];
+
+    platforms = jre_headless.meta.platforms;
   };
 })

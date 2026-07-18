@@ -16,16 +16,15 @@ in
     enable = lib.mkEnableOption "Ubertooth software and its udev rules";
 
     group = lib.mkOption {
-      type = lib.types.str;
       default = "ubertooth";
-      example = "wheel";
       description = "Group for Ubertooth's udev rules.";
+      example = "wheel";
+      type = lib.types.str;
     };
   };
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [ ubertoothPkg ];
-
     services.udev.packages = [ ubertoothPkg ];
     users.groups.${cfg.group} = { };
   };

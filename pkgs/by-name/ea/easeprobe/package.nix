@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,9 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-FPApT6snyzYbMn/Am7Zxpwp5w8VZ8F6/YhwCLwDaRAw=";
-
-  subPackages = [ "cmd/easeprobe" ];
-
   env.CGO_ENABLED = 0;
 
   ldflags = [
@@ -28,6 +25,8 @@ buildGoModule (finalAttrs: {
     "-X github.com/megaease/easeprobe/global.Ver=${finalAttrs.version}"
     "-X github.com/megaease/easeprobe/pkg/version.REPO=megaease/easeprobe"
   ];
+
+  subPackages = [ "cmd/easeprobe" ];
 
   meta = {
     description = "Simple, standalone, and lightweight tool that can do health/status checking, written in Go";

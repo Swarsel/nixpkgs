@@ -1,17 +1,15 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   makeWrapper,
-  trivy,
   nix-update-script,
+  trivy,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "lazytrivy";
   version = "1.4.1";
-
-  env.GOEXPERIMENT = "jsonv2";
 
   src = fetchFromGitHub {
     owner = "owenrumney";
@@ -20,14 +18,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-0VWmsZKp0IEQ93AuMoYXN8pF0G3fwaP7Lzh3JsN2CtU=";
   };
 
-  vendorHash = "sha256-HKD7vpQAw3G4uMLUMhbv6tsFCOxfp62Phynun4HkFrg=";
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   nativeBuildInputs = [ makeWrapper ];
+  vendorHash = "sha256-HKD7vpQAw3G4uMLUMhbv6tsFCOxfp62Phynun4HkFrg=";
+  env.GOEXPERIMENT = "jsonv2";
 
   postFixup = ''
     wrapProgram $out/bin/lazytrivy \
@@ -37,6 +30,11 @@ buildGoModule (finalAttrs: {
         ]
       }
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
 
   passthru.updateScript = nix-update-script { };
 

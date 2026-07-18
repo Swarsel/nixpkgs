@@ -1,9 +1,9 @@
 {
-  replaceVars,
-  replaceVarsWith,
+  lib,
   emptyDirectory,
   emptyFile,
-  lib,
+  replaceVars,
+  replaceVarsWith,
   runCommand,
   testers,
   writeText,
@@ -14,33 +14,6 @@ let
   mkTests =
     callReplaceVars: mkExpectation:
     lib.recurseIntoAttrs {
-      succeeds = testEqualContents {
-        assertion = "replaceVars-succeeds";
-        actual = callReplaceVars ./source.txt {
-          free = "free";
-          "equal in" = "are the same in";
-          brotherhood = "shared humanity";
-        };
-
-        expected = mkExpectation (
-          writeText "source.txt" ''
-            All human beings are born free and are the same in dignity and rights.
-            They are endowed with reason and conscience and should act towards
-            one another in a spirit of shared humanity.
-
-              -- eroosevelt@humanrights.un.org
-          ''
-        );
-      };
-
-      # There might eventually be a usecase for this, but it's not supported at the moment.
-      fails-on-directory =
-        runCommand "replaceVars-fails" { failed = testBuildFailure (callReplaceVars emptyDirectory { }); }
-          ''
-            grep -e "ERROR: file.*empty-directory.*does not exist" $failed/testBuildFailure.log
-            touch $out
-          '';
-
       fails-in-build-phase =
         runCommand "replaceVars-fails"
           { failed = testBuildFailure (callReplaceVars emptyFile { not-found = "boo~"; }); }
@@ -78,24 +51,29 @@ let
             touch $out
           '';
 
-      succeeds-with-exemption = testEqualContents {
-        assertion = "replaceVars-succeeds";
-        actual = callReplaceVars ./source.txt {
-          free = "free";
-          "equal in" = "are the same in";
-          brotherhood = null;
-        };
-
-        expected = mkExpectation (
-          writeText "source.txt" ''
-            All human beings are born free and are the same in dignity and rights.
-            They are endowed with reason and conscience and should act towards
-            one another in a spirit of @brotherhood@.
-
-              -- eroosevelt@humanrights.un.org
+      fails-in-check-phase-with-bad-exemption =
+        runCommand "replaceVars-fails"
+          {
+            failed =
+              let
+                src = writeText "source.txt" ''
+                  @a@
+                  @b@
+                '';
+              in
+              testBuildFailure (
+                callReplaceVars src {
+                  a = "a";
+                  b = null;
+                  c = null;
+                }
+              );
+          }
           ''
-        );
-      };
+            grep -e "ERROR: pattern @c@ doesn't match anything in file.*source.txt" $failed/testBuildFailure.log
+
+            touch $out
+          '';
 
       fails-in-check-phase-with-exemption =
         runCommand "replaceVars-fails"
@@ -123,33 +101,58 @@ let
             touch $out
           '';
 
-      fails-in-check-phase-with-bad-exemption =
-        runCommand "replaceVars-fails"
-          {
-            failed =
-              let
-                src = writeText "source.txt" ''
-                  @a@
-                  @b@
-                '';
-              in
-              testBuildFailure (
-                callReplaceVars src {
-                  a = "a";
-                  b = null;
-                  c = null;
-                }
-              );
-          }
+      # There might eventually be a usecase for this, but it's not supported at the moment.
+      fails-on-directory =
+        runCommand "replaceVars-fails" { failed = testBuildFailure (callReplaceVars emptyDirectory { }); }
           ''
-            grep -e "ERROR: pattern @c@ doesn't match anything in file.*source.txt" $failed/testBuildFailure.log
-
+            grep -e "ERROR: file.*empty-directory.*does not exist" $failed/testBuildFailure.log
             touch $out
           '';
+
+      succeeds = testEqualContents {
+        actual = callReplaceVars ./source.txt {
+          brotherhood = "shared humanity";
+          "equal in" = "are the same in";
+          free = "free";
+        };
+
+        assertion = "replaceVars-succeeds";
+
+        expected = mkExpectation (
+          writeText "source.txt" ''
+            All human beings are born free and are the same in dignity and rights.
+            They are endowed with reason and conscience and should act towards
+            one another in a spirit of shared humanity.
+
+              -- eroosevelt@humanrights.un.org
+          ''
+        );
+      };
+
+      succeeds-with-exemption = testEqualContents {
+        actual = callReplaceVars ./source.txt {
+          brotherhood = null;
+          "equal in" = "are the same in";
+          free = "free";
+        };
+
+        assertion = "replaceVars-succeeds";
+
+        expected = mkExpectation (
+          writeText "source.txt" ''
+            All human beings are born free and are the same in dignity and rights.
+            They are endowed with reason and conscience and should act towards
+            one another in a spirit of @brotherhood@.
+
+              -- eroosevelt@humanrights.un.org
+          ''
+        );
+      };
     };
 in
 {
   replaceVars = mkTests replaceVars lib.id;
+
   replaceVarsWith =
     mkTests
       (

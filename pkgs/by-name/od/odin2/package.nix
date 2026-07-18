@@ -1,23 +1,23 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   alsa-lib,
+  cmake,
+  copyDesktopItems,
   freetype,
+  gcc-unwrapped,
+  libGL,
   libjack2,
-  lv2,
   libx11,
   libxcursor,
   libxext,
   libxinerama,
   libxrandr,
-  libGL,
-  gcc-unwrapped,
-  copyDesktopItems,
+  lv2,
   makeDesktopItem,
   nix-update-script,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,8 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "TheWaveWarden";
     repo = "odin2";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-j/rZvBNBTDo2vwESXbGIXR89PHOI1HK8hvzV7y6dJHI=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -51,6 +51,12 @@ stdenv.mkDerivation (finalAttrs: {
     libGL
   ];
 
+  cmakeFlags = [
+    "-DCMAKE_AR=${gcc-unwrapped}/bin/gcc-ar"
+    "-DCMAKE_RANLIB=${gcc-unwrapped}/bin/gcc-ranlib"
+    "-DCMAKE_NM=${gcc-unwrapped}/bin/gcc-nm"
+  ];
+
   # JUCE dlopen's these at runtime, crashes without them
   env.NIX_LDFLAGS = toString [
     "-lX11"
@@ -64,12 +70,6 @@ stdenv.mkDerivation (finalAttrs: {
   preConfigure = ''
     export HOME="$TMPDIR"
   '';
-
-  cmakeFlags = [
-    "-DCMAKE_AR=${gcc-unwrapped}/bin/gcc-ar"
-    "-DCMAKE_RANLIB=${gcc-unwrapped}/bin/gcc-ranlib"
-    "-DCMAKE_NM=${gcc-unwrapped}/bin/gcc-nm"
-  ];
 
   installPhase = ''
     mkdir -p $out/bin $out/lib/vst3 $out/lib/lv2 $out/lib/clap $out/share/icons/hicolor/512x512/apps
@@ -85,19 +85,20 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "Odin2";
-      desktopName = "Odin 2";
-      comment = "Odin 2 Free Synthesizer";
-      icon = "odin2";
-      startupNotify = true;
       categories = [
         "AudioVideo"
         "Audio"
         "Midi"
         "Music"
       ];
+
+      comment = "Odin 2 Free Synthesizer";
       dbusActivatable = false;
+      desktopName = "Odin 2";
       exec = "Odin2";
+      icon = "odin2";
+      name = "Odin2";
+      startupNotify = true;
     })
   ];
 
@@ -107,8 +108,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Odin 2 Synthesizer Plugin";
     homepage = "https://thewavewarden.com/odin2";
     license = lib.licenses.gpl3;
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ magnetophon ];
+    platforms = [ "x86_64-linux" ];
     mainProgram = "Odin2";
   };
 })

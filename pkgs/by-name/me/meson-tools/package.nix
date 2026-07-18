@@ -24,8 +24,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/afaerber/meson-tools";
     description = "Tools for Amlogic Meson ARM platforms";
+    homepage = "https://github.com/afaerber/meson-tools";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ lopsided98 ];
   };

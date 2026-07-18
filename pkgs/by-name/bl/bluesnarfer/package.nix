@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchzip,
   bluez,
+  fetchzip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -11,15 +11,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = fetchzip {
     url = "https://www.alighieri.org/tools/bluesnarfer.tar.gz";
-    stripRoot = false;
     hash = "sha256-HGdrJZohKIsOkLETBdHz80w6vxmG25aMEWXrQlpMgRw=";
+    stripRoot = false;
   };
 
-  sourceRoot = finalAttrs.src.name + "/bluesnarfer";
-
-  buildInputs = [ bluez ];
-
   strictDeps = true;
+  buildInputs = [ bluez ];
 
   env.NIX_CFLAGS_COMPILE = toString [
     "-Wno-incompatible-pointer-types"
@@ -31,6 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
     install -Dm755 bluesnarfer $out/bin/bluesnarfer
     runHook postInstall
   '';
+
+  sourceRoot = finalAttrs.src.name + "/bluesnarfer";
 
   meta = {
     description = "Bluetooth bluesnarfing utility";

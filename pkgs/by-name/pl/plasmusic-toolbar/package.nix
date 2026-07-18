@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   kdePackages,
   nix-update-script,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "plasmusic-toolbar";
@@ -26,11 +26,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    inherit (kdePackages.kwindowsystem.meta) platforms;
     description = "KDE Plasma widget that shows currently playing song information and provide playback controls";
     homepage = "https://github.com/ccatterina/plasmusic-toolbar";
     changelog = "https://github.com/ccatterina/plasmusic-toolbar/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ HeitorAugustoLN ];
-    inherit (kdePackages.kwindowsystem.meta) platforms;
   };
 })

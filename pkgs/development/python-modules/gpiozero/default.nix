@@ -1,27 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  # dependencies
+  colorzero,
+  pytest-cov-stub,
+  # tests
+  pytestCheckHook,
   # build-system
   setuptools,
-
   # docs
   sphinx-rtd-theme,
   sphinxHook,
-
-  # dependencies
-  colorzero,
-
-  # tests
-  pytestCheckHook,
-  pytest-cov-stub,
 }:
 
 buildPythonPackage rec {
   pname = "gpiozero";
   version = "2.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gpiozero";
@@ -48,14 +43,16 @@ buildPythonPackage rec {
     pytest-cov-stub
   ];
 
-  pythonImportsCheck = [
-    "gpiozero"
-    "gpiozero.tools"
-  ];
-
   disabledTests = [
     # https://github.com/gpiozero/gpiozero/issues/1087
     "test_spi_hardware_write"
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "gpiozero"
+    "gpiozero.tools"
   ];
 
   meta = {
@@ -63,7 +60,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/gpiozero/gpiozero";
     changelog = "https://github.com/gpiozero/gpiozero/blob/v${version}/docs/changelog.rst";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ hexa ];
+    platforms = lib.platforms.linux;
   };
 }

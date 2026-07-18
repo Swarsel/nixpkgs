@@ -1,15 +1,15 @@
 {
-  stdenv,
-  php,
   lib,
+  stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
-  nodejs,
-  yarnConfigHook,
-  yarnBuildHook,
   nixosTests,
-  envLocalPath ? "/var/lib/part-db/env.local",
+  nodejs,
+  php,
+  yarnBuildHook,
+  yarnConfigHook,
   cachePath ? "/var/cache/part-db/",
+  envLocalPath ? "/var/lib/part-db/env.local",
   logPath ? "/var/log/part-db/",
   mediaPath ? "/var/lib/part-db/public/media/",
   uploadsPath ? "/var/lib/part-db/uploads/",
@@ -28,21 +28,7 @@ let
       hash = "sha256-j7Kj03RxbrRoHJ4kFeZo1VmeHT3YucY4Zxog93+5Q38=";
     };
 
-    php = php.buildEnv {
-      extensions = (
-        { enabled, all }:
-        enabled
-        ++ (with all; [
-          xsl
-        ])
-      );
-    };
-
     vendorHash = "sha256-ZYo0gNsR9liMWWjHZGGf/XFNZJBnBrVVLf7WVhN/pY4=";
-
-    # Upstream composer.json file is missing the description field
-    composerStrictValidation = false;
-    composerNoPlugins = false;
 
     postInstall = ''
       chmod -R u+w $out/share
@@ -58,17 +44,25 @@ let
       mv "$out"/share/php/part-db/.* $out/
       rm -rf "$out/share"
     '';
+
+    composerNoPlugins = false;
+    # Upstream composer.json file is missing the description field
+    composerStrictValidation = false;
+
+    php = php.buildEnv {
+      extensions = (
+        { all, enabled }:
+        enabled
+        ++ (with all; [
+          xsl
+        ])
+      );
+    };
   };
 in
 stdenv.mkDerivation (finalAttrs: {
   inherit pname version;
-
   src = srcWithVendor;
-
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/yarn.lock";
-    hash = "sha256-xdRMAOmGQFPuej/8A88edH23jL/3K8igx0BB7Z78sjM=";
-  };
 
   nativeBuildInputs = [
     yarnConfigHook
@@ -89,6 +83,11 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s ${uploadsPath} $out/uploads
   '';
 
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-xdRMAOmGQFPuej/8A88edH23jL/3K8igx0BB7Z78sjM=";
+    yarnLock = finalAttrs.src + "/yarn.lock";
+  };
+
   passthru.tests = { inherit (nixosTests) part-db; };
 
   meta = {
@@ -96,10 +95,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://docs.part-db.de/";
     changelog = "https://github.com/Part-DB/Part-DB-server/releases/tag/v${version}";
     license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       felbinger
       oddlama
     ];
+
     platforms = lib.platforms.linux;
   };
 })

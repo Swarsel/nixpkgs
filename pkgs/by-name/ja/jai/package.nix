@@ -1,9 +1,9 @@
 {
-  buildFHSEnv,
   lib,
+  stdenv,
+  buildFHSEnv,
   requireFile,
   runCommand,
-  stdenv,
   unzip,
 }:
 let
@@ -13,34 +13,39 @@ let
   version = "0.${minor}.${patch}";
   zipName = "jai-beta-${minor}-${patch}.zip";
   jai = stdenv.mkDerivation {
-    name = "jai";
     src = requireFile {
+      sha256 = "sha256-LH49sPgtn4TccDQa1080cnCnH/zlyZa1Jc4Y1DScJOc=";
+
       message = ''
         The language is not yet public. If you are in the closed beta, download the zip file and run the following command:
           nix-store --add-fixed sha256 ${zipName}
       '';
+
       name = zipName;
-      sha256 = "sha256-LH49sPgtn4TccDQa1080cnCnH/zlyZa1Jc4Y1DScJOc=";
     };
+
     nativeBuildInputs = [ unzip ];
     buildCommand = "unzip $src -d $out";
+    name = "jai";
   };
   meta = {
     description = "Powerful language to write efficient reliable software in simple ways";
     license = lib.licenses.unfree;
-    mainProgram = "jai";
     maintainers = with lib.maintainers; [ samestep ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-darwin"
     ];
+
+    mainProgram = "jai";
   };
 in
 if stdenv.hostPlatform.isLinux then
   buildFHSEnv {
     inherit meta pname version;
-    targetPkgs = pkgs: [ pkgs.zlib ];
     runScript = "${jai}/jai/bin/jai-linux";
+    targetPkgs = pkgs: [ pkgs.zlib ];
   }
 else
   runCommand "jai" { inherit meta pname version; } ''

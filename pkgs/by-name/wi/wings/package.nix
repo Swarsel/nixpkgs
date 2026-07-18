@@ -4,13 +4,13 @@
   fetchFromGitHub,
   beamPackages,
   cl,
+  eigen,
+  git,
   libGL,
   libGLU,
-  runtimeShell,
-  git,
-  eigen,
   libigl,
   nix-update-script,
+  runtimeShell,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,25 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-3ulWbAOtYujaymN50u7buvnBdtYMEAe8Ji3arvPUH/s=";
   };
 
-  nativeBuildInputs = [ git ];
-  buildInputs = [
-    beamPackages.erlang
-    cl
-    libGL
-    libGLU
-    eigen
-    libigl
-    cl
-  ];
-
-  preBuildPhases = [ "setupDepsPhase" ];
-  setupDepsPhase = ''
-    mkdir -p _deps/eigen _deps/libigl
-    ln -s ${eigen}/include/eigen3/* _deps/eigen/
-    ln -s ${libigl}/include/* _deps/libigl/
-    ln -s ${cl}/lib/erlang/lib/cl* _deps/cl
-  '';
-
   postPatch = ''
     find . -type f -name "Makefile" -exec sed -i 's,-Werror ,,' {} \;
     sed -i 's,../../wings/,../,' icons/Makefile
@@ -54,6 +35,18 @@ stdenv.mkDerivation (finalAttrs: {
     find . -type f -name "*.[eh]rl" -exec sed -i 's,wings/intl_tools/,../intl_tools/,' {} \;
     echo "${finalAttrs.version}" > version
   '';
+
+  nativeBuildInputs = [ git ];
+
+  buildInputs = [
+    beamPackages.erlang
+    cl
+    libGL
+    libGLU
+    eigen
+    libigl
+    cl
+  ];
 
   makeFlags = [
     "TYPE=opt"
@@ -101,13 +94,22 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  preBuildPhases = [ "setupDepsPhase" ];
+
+  setupDepsPhase = ''
+    mkdir -p _deps/eigen _deps/libigl
+    ln -s ${eigen}/include/eigen3/* _deps/eigen/
+    ln -s ${libigl}/include/* _deps/libigl/
+    ln -s ${cl}/lib/erlang/lib/cl* _deps/cl
+  '';
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://www.wings3d.com/";
     description = "Subdivision modeler inspired by Nendo and Mirai from Izware";
+    homepage = "https://www.wings3d.com/";
     license = lib.licenses.tcltk;
     maintainers = [ ];
     platforms = lib.platforms.linux;

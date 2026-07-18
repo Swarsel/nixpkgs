@@ -10,13 +10,15 @@
 buildPythonPackage rec {
   pname = "pysecuritas";
   version = "0.1.6";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-W3DLZCXUH9y5NPipFEu6URmKN+oVXMgeDF1rfKtxRng=";
   };
 
+  # Project doesn't ship tests with PyPI releases
+  # https://github.com/Cebeerre/pysecuritas/issues/13
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -24,10 +26,7 @@ buildPythonPackage rec {
     requests
   ];
 
-  # Project doesn't ship tests with PyPI releases
-  # https://github.com/Cebeerre/pysecuritas/issues/13
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pysecuritas" ];
 
   meta = {

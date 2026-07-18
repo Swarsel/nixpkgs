@@ -1,24 +1,25 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  ocaml,
-  findlib,
   camlp4,
   config-file,
+  findlib,
   lablgtk,
+  ocaml,
   xmlm,
 }:
 
 stdenv.mkDerivation rec {
-  version = "1.6";
   pname = "ocaml${ocaml.version}-lablgtk-extras";
+  version = "1.6";
+
   src = fetchFromGitLab {
-    domain = "framagit.org";
     owner = "zoggy";
     repo = "lablgtk-extras";
     rev = "release-${version}";
     sha256 = "1bbdp5j18s582mmyd7qiaq1p08g2ag4gl7x65pmzahbhg719hjda";
+    domain = "framagit.org";
   };
 
   strictDeps = true;
@@ -28,6 +29,7 @@ stdenv.mkDerivation rec {
     findlib
     camlp4
   ];
+
   propagatedBuildInputs = [
     config-file
     lablgtk
@@ -38,10 +40,10 @@ stdenv.mkDerivation rec {
 
   meta = {
     inherit (ocaml.meta) platforms;
-    maintainers = with lib.maintainers; [ vbgl ];
-    homepage = "https://framagit.org/zoggy/lablgtk-extras/";
     description = "Collection of libraries and modules useful when developing OCaml/LablGtk2 applications";
+    homepage = "https://framagit.org/zoggy/lablgtk-extras/";
     license = lib.licenses.lgpl2Plus;
+    maintainers = with lib.maintainers; [ vbgl ];
     broken = lib.versionOlder ocaml.version "4.02" || lib.versionAtLeast ocaml.version "4.13";
   };
 }

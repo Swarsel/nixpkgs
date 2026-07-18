@@ -8,28 +8,17 @@
 {
   options = {
     services.conman = {
-      enable = lib.mkEnableOption ''
-        Enable the conman Console manager.
-
-        Either `configFile` or `config` must be specified.
-      '';
-      package = lib.mkPackageOption pkgs "conman" { };
-
-      configFile = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
+      config = lib.mkOption {
         default = null;
-        example = "/run/secrets/conman.conf";
+
         description = ''
-          The absolute path to the configuration file.
+          The configuration object.
 
           Either `configFile` or `config` must be specified.
 
           See <https://github.com/dun/conman/wiki/Man-5-conman.conf#files>.
         '';
-      };
-      config = lib.mkOption {
-        type = lib.types.nullOr lib.types.lines;
-        default = null;
+
         example = ''
           server coredump=off
           server keepalive=on
@@ -41,19 +30,34 @@
           global seropts="9600,8n1"
           global ipmiopts="U:<user>,P:<password>"
         '';
+
+        type = lib.types.nullOr lib.types.lines;
+      };
+
+      enable = lib.mkEnableOption ''
+        Enable the conman Console manager.
+
+        Either `configFile` or `config` must be specified.
+      '';
+
+      package = lib.mkPackageOption pkgs "conman" { };
+
+      configFile = lib.mkOption {
+        default = null;
+
         description = ''
-          The configuration object.
+          The absolute path to the configuration file.
 
           Either `configFile` or `config` must be specified.
 
           See <https://github.com/dun/conman/wiki/Man-5-conman.conf#files>.
         '';
+
+        example = "/run/secrets/conman.conf";
+        type = lib.types.nullOr lib.types.path;
       };
     };
   };
-  meta.maintainers = with lib.maintainers; [
-    frantathefranta
-  ];
 
   config =
     let
@@ -72,18 +76,27 @@
         {
           assertion =
             (cfg.configFile != null) && (cfg.config == null) || (cfg.configFile == null && cfg.config != null);
+
           message = "Either but not both `configFile` and `config` must be specified for conman.";
         }
       ];
+
       environment.systemPackages = [ cfg.package ];
+
       systemd.services.conmand = {
         description = "serial console management program";
         documentation = [ "man:conman(8)" ];
-        wantedBy = [ "multi-user.target" ];
+
         serviceConfig = {
           ExecStart = "${cfg.package}/bin/conmand -F -c ${configFile}";
           KillMode = "process";
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
     };
+
+  meta.maintainers = with lib.maintainers; [
+    frantathefranta
+  ];
 }

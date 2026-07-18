@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "infinity";
   version = "1.5";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -20,6 +19,8 @@ buildPythonPackage rec {
     pytestCheckHook
     six
   ];
+
+  format = "setuptools";
 
   meta = {
     description = "All-in-one infinity value for Python. Can be compared to any object";

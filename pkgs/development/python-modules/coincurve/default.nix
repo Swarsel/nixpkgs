@@ -1,30 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-
+  # dependencies
+  asn1crypto,
+  buildPythonPackage,
+  cffi,
   # build-system
   cmake,
+  fetchpatch,
   hatchling,
   ninja,
   pkg-config,
-  setuptools,
-  scikit-build-core,
-
-  # dependencies
-  asn1crypto,
-  cffi,
-  secp256k1,
-
   # checks
   pytestCheckHook,
+  scikit-build-core,
+  secp256k1,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "coincurve";
   version = "21.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ofek";
@@ -36,10 +32,14 @@ buildPythonPackage rec {
   patches = [
     # Build requires cffi LICENSE files
     (fetchpatch {
-      url = "https://github.com/ofek/coincurve/commit/19597b0869803acfc669d916e43c669e9ffcced7.patch";
       hash = "sha256-BkUxXjcwk3btcvSVaVZqVTJ+8E8CYtT5cTXLx9lxJ/g=";
+      url = "https://github.com/ofek/coincurve/commit/19597b0869803acfc669d916e43c669e9ffcced7.patch";
     })
   ];
+
+  buildInputs = [ secp256k1 ];
+  env.COINCURVE_IGNORE_SYSTEM_LIB = "OFF";
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     hatchling
@@ -51,28 +51,24 @@ buildPythonPackage rec {
     scikit-build-core
   ];
 
-  dontUseCmakeConfigure = true;
-
-  env.COINCURVE_IGNORE_SYSTEM_LIB = "OFF";
-
-  buildInputs = [ secp256k1 ];
-
   dependencies = [
     asn1crypto
     cffi
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  dontUseCmakeConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "coincurve" ];
 
   meta = {
     description = "Cross-platform bindings for libsecp256k1";
     homepage = "https://github.com/ofek/coincurve";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ ryand56 ];
   };
 }

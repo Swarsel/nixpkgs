@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "xcat";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "orf";
@@ -16,6 +15,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-GkQwUvHl4pGvZtgq2tqCz6dOj4gMzAtVbhLv9lBKJQc=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = with python3.pkgs; [ poetry-core ];
 
   dependencies = with python3.pkgs; [
@@ -29,19 +30,19 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     xpath-expressions
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "xcat" ];
 
   meta = {
     description = "XPath injection tool";
+
     longDescription = ''
       xcat is an advanced tool for exploiting XPath injection vulnerabilities,
       featuring a comprehensive set of features to read the entire file being
       queried as well as other files on the filesystem, environment variables
       and directories.
     '';
+
     homepage = "https://github.com/orf/xcat";
     changelog = "https://github.com/orf/xcat/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;

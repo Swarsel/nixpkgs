@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  buildBazelPackage,
-  bazel_7,
-  nix-update-script,
   applyPatches,
-  nodejs,
+  bazel_7,
+  buildBazelPackage,
   cctools,
+  nix-update-script,
+  nodejs,
 }:
 let
   cc_tools = [
@@ -26,10 +26,10 @@ let
   ];
 
   registry = fetchFromGitHub {
+    hash = "sha256-OcMLg0KiAQOJZLH8r+QkeQ9bxcEc4L0dCgyUv5PkLQk=";
     owner = "bazelbuild";
     repo = "bazel-central-registry";
     rev = "0f256a72067e42d62bb568cc2619f98deed139e2";
-    hash = "sha256-OcMLg0KiAQOJZLH8r+QkeQ9bxcEc4L0dCgyUv5PkLQk=";
   };
 
   rules_js = applyPatches {
@@ -63,8 +63,8 @@ let
   };
 
   bazelDepsHashByBuildAndHost = {
-    x86_64-linux.x86_64-linux = "sha256-PastkoOioWqlmGFHZiZ2S1ahWZu1UBhqHIfD2M/ff6A=";
     aarch64-linux.aarch64-linux = "sha256-mNWnpmk/dNQYKnP3YbfK5ott0+41I+49aH6RhWEMOGM=";
+    x86_64-linux.x86_64-linux = "sha256-PastkoOioWqlmGFHZiZ2S1ahWZu1UBhqHIfD2M/ff6A=";
   };
   bazelDepsHashByHost = bazelDepsHashByBuildAndHost.${stdenv.buildPlatform.system} or { };
   bazelDepsHash = bazelDepsHashByHost.${stdenv.hostPlatform.system} or "";
@@ -89,32 +89,21 @@ buildBazelPackage {
     substituteInPlace MODULE.bazel --subst-var-by rules_js "${rules_js}"
   '';
 
-  bazelFlags = [
-    "--registry"
-    "file://${registry}"
-  ];
+  strictDeps = true;
 
   env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
     LIBTOOL = "${cctools}/bin/libtool";
   };
 
-  fetchAttrs = {
-    preInstall = ''
-      # Avoid bash and $out store paths leaking into the fixed-output derivation
-      rm $bazelOut/external/aspect_rules_js~~npm~npm/_exists.sh
-      rm -r $bazelOut/external/rules_shell~~sh_configure~local_config_shell
-
-      # Remove some non-reproducible and unused files
-      rm -r $bazelOut/external/gazelle~~non_module_deps~bazel_gazelle_go_repository_cache
-      rm -r $bazelOut/external/gazelle~~non_module_deps~bazel_gazelle_go_repository_tools
-    '';
-
-    hash = bazelDepsHash;
-  };
-
+  __structuredAttrs = true;
   bazel = bazel_7;
-
   bazelBuildFlags = [ "-c opt" ];
+
+  bazelFlags = [
+    "--registry"
+    "file://${registry}"
+  ];
+
   bazelTargets =
     (builtins.map (tool: "//src/tools:${tool}") cc_tools)
     ++ (builtins.map (tool: "//cmd/${tool}") go_tools);
@@ -134,24 +123,37 @@ buildBazelPackage {
     '';
   };
 
+  fetchAttrs = {
+    preInstall = ''
+      # Avoid bash and $out store paths leaking into the fixed-output derivation
+      rm $bazelOut/external/aspect_rules_js~~npm~npm/_exists.sh
+      rm -r $bazelOut/external/rules_shell~~sh_configure~local_config_shell
+
+      # Remove some non-reproducible and unused files
+      rm -r $bazelOut/external/gazelle~~non_module_deps~bazel_gazelle_go_repository_cache
+      rm -r $bazelOut/external/gazelle~~non_module_deps~bazel_gazelle_go_repository_tools
+    '';
+
+    hash = bazelDepsHash;
+  };
+
   passthru = {
     inherit rules_js;
     updateScript = nix-update-script { };
   };
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
   meta = {
     description = "Livegrep is a tool, partially inspired by Google Code Search, for interactive regex search of ~gigabyte-scale source repositories.";
     homepage = "http://livegrep.com/";
-    downloadPage = "https://github.com/livegrep/livegrep";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ nicolas-guichard ];
-    mainProgram = "livegrep";
+
     badPlatforms = [
       # Error in fail: Unable to find a CC toolchain using toolchain resolution
       lib.systems.inspect.patterns.isDarwin
     ];
+
+    mainProgram = "livegrep";
+    downloadPage = "https://github.com/livegrep/livegrep";
   };
 }

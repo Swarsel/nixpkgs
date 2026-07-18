@@ -1,17 +1,16 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
   copyDesktopItems,
-  makeDesktopItem,
-
-  libxxf86vm,
   glfw,
   gtk3,
+  libxxf86vm,
+  llvmPackages,
+  makeDesktopItem,
   pkg-config,
   wrapGAppsHook3,
-  llvmPackages,
 }:
 
 buildGoModule (finalAttrs: {
@@ -25,14 +24,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-B10PP/V8xvYbA6rQHWdav/KtQKecNUmwvj9qMYqml8E=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/src";
-
-  vendorHash = "sha256-0fEy/YuZa7dENfL3y+NN4SLWYwOLmXqHHJEiU37AkX4=";
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
+  nativeBuildInputs = [
+    copyDesktopItems
+    pkg-config
+    wrapGAppsHook3
+  ]
+  # TODO: Remove once #536365 reaches this branch
+  ++ lib.optional stdenv.hostPlatform.isDarwin llvmPackages.lld;
 
   buildInputs =
     # Depends on a vendored, patched GLFW.
@@ -43,13 +41,7 @@ buildGoModule (finalAttrs: {
       libxxf86vm
     ];
 
-  nativeBuildInputs = [
-    copyDesktopItems
-    pkg-config
-    wrapGAppsHook3
-  ]
-  # TODO: Remove once #536365 reaches this branch
-  ++ lib.optional stdenv.hostPlatform.isDarwin llvmPackages.lld;
+  vendorHash = "sha256-0fEy/YuZa7dENfL3y+NN4SLWYwOLmXqHHJEiU37AkX4=";
 
   env = {
     CGO_ENABLED = 1;
@@ -66,14 +58,21 @@ buildGoModule (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "Picocrypt";
-      exec = "picocrypt-gui";
-      icon = "picocrypt";
+      categories = [ "Utility" ];
       comment = finalAttrs.meta.description;
       desktopName = "Picocrypt";
-      categories = [ "Utility" ];
+      exec = "picocrypt-gui";
+      icon = "picocrypt";
+      name = "Picocrypt";
     })
   ];
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/src";
 
   meta = {
     description = "Very small, very simple, yet very secure encryption tool, written in Go";

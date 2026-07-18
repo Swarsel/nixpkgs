@@ -1,21 +1,14 @@
 {
   lib,
-  vscode-utils,
-  vsce,
   gemini-cli,
+  vsce,
+  vscode-utils,
 }:
 vscode-utils.buildVscodeExtension (finalAttrs: {
-  pname = "gemini-cli-vscode-ide-companion";
   inherit (gemini-cli) version;
-
-  vscodeExtPublisher = "Google";
-  vscodeExtName = "gemini-cli-vscode-ide-companion";
-  vscodeExtUniqueId = "${finalAttrs.vscodeExtPublisher}.${finalAttrs.vscodeExtName}";
+  pname = "gemini-cli-vscode-ide-companion";
 
   src = gemini-cli.overrideAttrs (oldAttrs: {
-    pname = "gemini-cli-vscode-ide-companion-vsix";
-    name = "${finalAttrs.pname}-${finalAttrs.version}.vsix";
-
     installPhase = ''
       runHook preInstall
 
@@ -30,14 +23,21 @@ vscode-utils.buildVscodeExtension (finalAttrs: {
 
       runHook postInstall
     '';
+
+    name = "${finalAttrs.pname}-${finalAttrs.version}.vsix";
+    pname = "gemini-cli-vscode-ide-companion-vsix";
   });
+
+  vscodeExtName = "gemini-cli-vscode-ide-companion";
+  vscodeExtPublisher = "Google";
+  vscodeExtUniqueId = "${finalAttrs.vscodeExtPublisher}.${finalAttrs.vscodeExtName}";
 
   meta = {
     description = "Enable Gemini CLI with direct access to your IDE workspace";
     homepage = "https://github.com/google-gemini/gemini-cli";
-    downloadPage = "https://marketplace.visualstudio.com/items?itemName=Google.gemini-cli-vscode-ide-companion";
     license = lib.licenses.asl20;
     sourceProvenance = with lib.sourceTypes; [ fromSource ];
     maintainers = with lib.maintainers; [ xiaoxiangmoe ];
+    downloadPage = "https://marketplace.visualstudio.com/items?itemName=Google.gemini-cli-vscode-ide-companion";
   };
 })

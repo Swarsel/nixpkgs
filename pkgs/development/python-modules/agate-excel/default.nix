@@ -1,19 +1,18 @@
 {
   lib,
   fetchFromGitHub,
-  buildPythonPackage,
-  setuptools,
   agate,
-  openpyxl,
-  xlrd,
+  buildPythonPackage,
   olefile,
+  openpyxl,
   pytestCheckHook,
+  setuptools,
+  xlrd,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "agate-excel";
   version = "0.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wireservice";
@@ -22,6 +21,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-sKy7NaRhJ4KYOOUKuNs0SGutUn8XEmSeQFQ/57gTGCg=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,8 +31,7 @@ buildPythonPackage (finalAttrs: {
     olefile
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "agate" ];
 
   meta = {

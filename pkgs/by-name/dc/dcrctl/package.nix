@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -23,8 +23,8 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://decred.org";
     description = "Secure Decred wallet daemon written in Go (golang)";
+    homepage = "https://decred.org";
     license = with lib.licenses; [ isc ];
     maintainers = [ ];
     mainProgram = "dcrctl";

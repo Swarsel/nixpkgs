@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "aab";
   version = "1.0.0-dev.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "glutanimate";
@@ -22,6 +21,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ./allow-manually-setting-modtime.patch
   ];
 
+  nativeCheckInputs = [
+    python3.pkgs.pytestCheckHook
+    python3.pkgs.pyqt5
+    python3.pkgs.pyqt6
+  ];
+
   build-system = [ python3.pkgs.poetry-core ];
 
   dependencies = with python3.pkgs; [
@@ -31,12 +36,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pyqt6
   ];
 
-  nativeCheckInputs = [
-    python3.pkgs.pytestCheckHook
-    python3.pkgs.pyqt5
-    python3.pkgs.pyqt6
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "aab" ];
 
   meta = {

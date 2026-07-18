@@ -2,36 +2,41 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  buildPackages,
   cairo,
+  docutils,
+  freefont_ttf,
+  fribidi,
+  gi-docgen,
+  glib,
+  gnome,
+  gobject-introspection,
   harfbuzz,
   libintl,
   libthai,
-  fribidi,
-  gnome,
-  gi-docgen,
+  libxft,
+  # TODO: Clean up on `staging`.
+  llvmPackages,
   makeFontsConf,
-  freefont_ttf,
   meson,
   ninja,
-  glib,
+  pkg-config,
   python3,
-  docutils,
-  x11Support ? !stdenv.hostPlatform.isDarwin,
-  libxft,
+  testers,
   withIntrospection ?
     lib.meta.availableOn stdenv.hostPlatform gobject-introspection
     && stdenv.hostPlatform.emulatorAvailable buildPackages,
-  buildPackages,
-  gobject-introspection,
-  testers,
-  # TODO: Clean up on `staging`.
-  llvmPackages,
+  x11Support ? !stdenv.hostPlatform.isDarwin,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "pango";
   version = "1.57.1";
+
+  src = fetchurl {
+    url = "mirror://gnome/sources/pango/${lib.versions.majorMinor finalAttrs.version}/pango-${finalAttrs.version}.tar.xz";
+    hash = "sha256-5l1tEXCA3Drut9i0s7UY9zg6oubPziMRfGI81iR2TC8=";
+  };
 
   outputs = [
     "bin"
@@ -40,14 +45,13 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional withIntrospection "devdoc";
 
-  src = fetchurl {
-    url = "mirror://gnome/sources/pango/${lib.versions.majorMinor finalAttrs.version}/pango-${finalAttrs.version}.tar.xz";
-    hash = "sha256-5l1tEXCA3Drut9i0s7UY9zg6oubPziMRfGI81iR2TC8=";
-  };
-
-  depsBuildBuild = [
-    pkg-config
-  ];
+  # Run-time dependency gi-docgen found: NO (tried pkgconfig and cmake)
+  # it should be a build-time dep for build
+  # TODO: send upstream
+  postPatch = ''
+    substituteInPlace docs/meson.build \
+      --replace "'gi-docgen', req" "'gi-docgen', native:true, req"
+  '';
 
   nativeBuildInputs = [
     meson
@@ -102,14 +106,6 @@ stdenv.mkDerivation (finalAttrs: {
     OBJC_LD = "lld";
   };
 
-  # Run-time dependency gi-docgen found: NO (tried pkgconfig and cmake)
-  # it should be a build-time dep for build
-  # TODO: send upstream
-  postPatch = ''
-    substituteInPlace docs/meson.build \
-      --replace "'gi-docgen', req" "'gi-docgen', native:true, req"
-  '';
-
   doCheck = false; # test-font: FAIL
 
   postFixup = ''
@@ -117,16 +113,21 @@ stdenv.mkDerivation (finalAttrs: {
     moveToOutput "share/doc" "$devdoc"
   '';
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   passthru = {
-    updateScript = gnome.updateScript {
-      packageName = "pango";
-      # 1.90 is alpha for API 2.
-      freeze = "1.90.0";
-    };
     tests = {
       pkg-config = testers.hasPkgConfigModules {
         package = finalAttrs.finalPackage;
       };
+    };
+
+    updateScript = gnome.updateScript {
+      # 1.90 is alpha for API 2.
+      freeze = "1.90.0";
+      packageName = "pango";
     };
   };
 
@@ -143,9 +144,7 @@ stdenv.mkDerivation (finalAttrs: {
 
     homepage = "https://www.pango.org/";
     license = lib.licenses.lgpl2Plus;
-
     maintainers = with lib.maintainers; [ raskin ];
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.unix;
 
     pkgConfigModules = [
@@ -158,5 +157,7 @@ stdenv.mkDerivation (finalAttrs: {
     ++ lib.optionals x11Support [
       "pangoxft"
     ];
+
+    teams = [ lib.teams.gnome ];
   };
 })

@@ -34,15 +34,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Database schema discovery and comprehension tool";
-    mainProgram = "schemacrawler";
     homepage = "https://www.schemacrawler.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     license = with lib.licenses; [
       epl10
       gpl3Only
       lgpl3Only
     ];
-    platforms = lib.platforms.unix;
+
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "schemacrawler";
   };
 })

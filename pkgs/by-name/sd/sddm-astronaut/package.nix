@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  formats,
   installFonts,
   kdePackages,
-  formats,
   nix-update-script,
-  themeConfig ? null,
+  stdenvNoCC,
   embeddedTheme ? "astronaut",
+  themeConfig ? null,
 }:
 let
   configFile = (formats.ini { }).generate "" { General = themeConfig; };
@@ -24,8 +24,6 @@ stdenvNoCC.mkDerivation {
     rev = "292c87b770ff9eab1903dd2c6ddff466faf87fb0";
     hash = "sha256-O/EMJc1j2TRF3W+vuurzA9j5eG1OXSjGFrYxQbp99KU=";
   };
-
-  dontWrapQtApps = true;
 
   nativeBuildInputs = [ installFonts ];
 
@@ -56,17 +54,20 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontWrapQtApps = true;
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
   meta = {
     description = "Modern looking qt6 sddm theme";
     homepage = "https://github.com/Keyitdev/sddm-astronaut-theme";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       danid3v
       uxodb
       qweered
     ];
+
+    platforms = lib.platforms.linux;
   };
 }

@@ -21,10 +21,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Pi-Hole clone written in Rust using Hickory DNS";
     homepage = "https://github.com/LuckyTurtleDev/crab-hole";
     license = lib.licenses.agpl3Plus;
-    mainProgram = "crab-hole";
+
     maintainers = [
       lib.maintainers.NiklasVousten
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "crab-hole";
   };
 })

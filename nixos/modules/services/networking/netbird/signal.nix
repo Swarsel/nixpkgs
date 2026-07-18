@@ -30,45 +30,47 @@ in
 {
   options.services.netbird.server.signal = {
     enable = mkEnableOption "Netbird's Signal Service";
-
     package = mkPackageOption pkgs "netbird-signal" { };
+
+    domain = mkOption {
+      description = "The domain name for the signal service.";
+      type = str;
+    };
 
     enableNginx = mkEnableOption "Nginx reverse-proxy for the netbird signal service";
 
-    domain = mkOption {
-      type = str;
-      description = "The domain name for the signal service.";
-    };
-
-    port = mkOption {
-      type = port;
-      default = 8012;
-      description = "Internal port of the signal server.";
-    };
-
-    metricsPort = mkOption {
-      type = port;
-      default = 9091;
-      description = "Internal port of the metrics server.";
-    };
-
     extraOptions = mkOption {
-      type = listOf str;
       default = [ ];
+
       description = ''
         Additional options given to netbird-signal as commandline arguments.
       '';
+
+      type = listOf str;
     };
 
     logLevel = mkOption {
+      default = "INFO";
+      description = "Log level of the netbird signal service.";
+
       type = enum [
         "ERROR"
         "WARN"
         "INFO"
         "DEBUG"
       ];
-      default = "INFO";
-      description = "Log level of the netbird signal service.";
+    };
+
+    metricsPort = mkOption {
+      default = 9091;
+      description = "Internal port of the metrics server.";
+      type = port;
+    };
+
+    port = mkOption {
+      default = 8012;
+      description = "Internal port of the signal server.";
+      type = port;
     };
   };
 
@@ -81,9 +83,27 @@ in
       }
     ];
 
+    services.nginx = mkIf cfg.enableNginx {
+      enable = true;
+
+      virtualHosts.${cfg.domain} = {
+        locations."/signalexchange.SignalExchange/".extraConfig = ''
+          # This is necessary so that grpc connections do not get closed early
+          # see https://stackoverflow.com/a/67805465
+          client_body_timeout 1d;
+
+          grpc_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+          grpc_pass grpc://localhost:${toString cfg.port};
+          grpc_read_timeout 1d;
+          grpc_send_timeout 1d;
+          grpc_socket_keepalive on;
+        '';
+      };
+    };
+
     systemd.services.netbird-signal = {
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
 
       serviceConfig = {
         ExecStart = escapeSystemdExecArgs (
@@ -106,11 +126,6 @@ in
           ++ cfg.extraOptions
         );
 
-        Restart = "always";
-        RuntimeDirectory = "netbird-mgmt";
-        StateDirectory = "netbird-mgmt";
-        WorkingDirectory = "/var/lib/netbird-mgmt";
-
         # hardening
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
@@ -126,31 +141,17 @@ in
         ProtectKernelTunables = true;
         ProtectSystem = true;
         RemoveIPC = true;
+        Restart = "always";
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
+        RuntimeDirectory = "netbird-mgmt";
+        StateDirectory = "netbird-mgmt";
+        WorkingDirectory = "/var/lib/netbird-mgmt";
       };
 
       stopIfChanged = false;
-    };
-
-    services.nginx = mkIf cfg.enableNginx {
-      enable = true;
-
-      virtualHosts.${cfg.domain} = {
-        locations."/signalexchange.SignalExchange/".extraConfig = ''
-          # This is necessary so that grpc connections do not get closed early
-          # see https://stackoverflow.com/a/67805465
-          client_body_timeout 1d;
-
-          grpc_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
-          grpc_pass grpc://localhost:${toString cfg.port};
-          grpc_read_timeout 1d;
-          grpc_send_timeout 1d;
-          grpc_socket_keepalive on;
-        '';
-      };
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

@@ -1,18 +1,18 @@
 {
   lib,
   stdenv,
-  gccStdenv,
-  autoreconfHook,
-  autoconf-archive,
-  pkg-config,
   fetchurl,
   fetchFromGitHub,
-  openal,
-  enet,
   SDL2,
+  autoconf-archive,
+  autoreconfHook,
   curl,
+  enet,
+  gccStdenv,
   gettext,
   libiconv,
+  openal,
+  pkg-config,
 }:
 
 let
@@ -37,8 +37,8 @@ let
   };
 in
 gccStdenv.mkDerivation (finalAttrs: {
-  pname = "7kaa";
   inherit version;
+  pname = "7kaa";
 
   src = fetchFromGitHub {
     owner = "the3dfxdude";
@@ -62,14 +62,6 @@ gccStdenv.mkDerivation (finalAttrs: {
     libiconv
   ];
 
-  preAutoreconf = ''
-    autoupdate
-  '';
-
-  hardeningDisable = lib.optionals (stdenv.hostPlatform.isAarch64 && stdenv.hostPlatform.isDarwin) [
-    "stackprotector"
-  ];
-
   postInstall = ''
     mkdir $out/share/7kaa/MUSIC
     cp -R ${music}/MUSIC $out/share/7kaa/
@@ -77,13 +69,20 @@ gccStdenv.mkDerivation (finalAttrs: {
     cp ${music}/COPYING-Music.txt $out/share/doc/7kaa
   '';
 
-  # Multiplayer is auto-disabled for non-x86 system
+  hardeningDisable = lib.optionals (stdenv.hostPlatform.isAarch64 && stdenv.hostPlatform.isDarwin) [
+    "stackprotector"
+  ];
 
+  preAutoreconf = ''
+    autoupdate
+  '';
+
+  # Multiplayer is auto-disabled for non-x86 system
   meta = {
-    homepage = "https://www.7kfans.com";
     description = "GPL release of the Seven Kingdoms with multiplayer (available only on x86 platforms)";
+    homepage = "https://www.7kfans.com";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.x86_64 ++ lib.platforms.aarch64;
     maintainers = with lib.maintainers; [ _1000101 ];
+    platforms = lib.platforms.x86_64 ++ lib.platforms.aarch64;
   };
 })

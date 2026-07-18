@@ -15,14 +15,14 @@ stdenv.mkDerivation {
     hash = "sha256-7rgYvqeH8ZDI8Vc5vnjIhe3Ke0TE1q/iFHEqucanhUM=";
   };
 
-  dontConfigure = true;
-
   installPhase = ''
     runHook preInstall
     install --directory --mode=755 $out/bin
     install --mode=755 cue2pops $out/bin
     runHook postInstall
   '';
+
+  dontConfigure = true;
 
   meta = {
     description = "Convert CUE to ISO suitable to POPStarter";

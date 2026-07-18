@@ -1,29 +1,29 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
-  sdl3,
+  fetchFromGitHub,
   cmake,
+  fmt_11,
   libpng,
+  libx11,
   libzip,
   openal,
   pkg-config,
+  sdl3,
   yaml-cpp,
-  fmt_11,
-  libx11,
 }:
 let
   sfl-src = fetchFromGitHub {
+    hash = "sha256-U1InclhSF3pte2AhKUVYBYOXZagksDMkUWgFn5ZB/tk=";
     owner = "slavenf";
     repo = "sfl-library";
     tag = "2.2.0";
-    hash = "sha256-U1InclhSF3pte2AhKUVYBYOXZagksDMkUWgFn5ZB/tk=";
   };
 
   openloco-objects = fetchurl {
-    url = "https://github.com/OpenLoco/OpenGraphics/releases/download/v0.1.8/objects.zip";
     sha256 = "sha256-ZYiR2UpGBAt79x39fwG7wd2mRwcSyz3AdIKTH+tQE8c=";
+    url = "https://github.com/OpenLoco/OpenGraphics/releases/download/v0.1.8/objects.zip";
   };
 
 in
@@ -56,12 +56,6 @@ stdenv.mkDerivation rec {
     sed -i 's#URL \+${openloco-objects.url}#URL ${openloco-objects}#' CMakeLists.txt
   '';
 
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=null-dereference";
-
-  cmakeFlags = [
-    "-DOPENLOCO_BUILD_TESTS=NO"
-  ];
-
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -77,12 +71,18 @@ stdenv.mkDerivation rec {
     libx11
   ];
 
+  cmakeFlags = [
+    "-DOPENLOCO_BUILD_TESTS=NO"
+  ];
+
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=null-dereference";
+
   meta = {
     description = "Open source re-implementation of Chris Sawyer's Locomotion";
     homepage = "https://github.com/OpenLoco/OpenLoco";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ icewind1991 ];
+    platforms = lib.platforms.linux;
     mainProgram = "OpenLoco";
   };
 }

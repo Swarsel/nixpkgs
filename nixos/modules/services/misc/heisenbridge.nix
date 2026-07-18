@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -17,103 +17,108 @@ let
   bridgeConfig = builtins.toFile "heisenbridge-registration.yml" (
     builtins.toJSON {
       id = "heisenbridge";
-      url = cfg.registrationUrl;
+      namespaces = cfg.namespaces;
       # Don't specify as_token and hs_token
       rate_limited = false;
       sender_localpart = "heisenbridge";
-      namespaces = cfg.namespaces;
+      url = cfg.registrationUrl;
     }
   );
 in
 {
   options.services.heisenbridge = {
     enable = lib.mkEnableOption "the Matrix to IRC bridge";
-
     package = lib.mkPackageOption pkgs "heisenbridge" { };
 
-    homeserver = lib.mkOption {
-      type = lib.types.str;
-      description = "The URL to the home server for client-server API calls";
-      example = "http://localhost:8008";
-    };
-
-    registrationUrl = lib.mkOption {
-      type = lib.types.str;
-      description = ''
-        The URL where the application service is listening for HS requests, from the Matrix HS perspective.#
-        The default value assumes the bridge runs on the same host as the home server, in the same network.
-      '';
-      example = "https://matrix.example.org";
-      default = "http://${cfg.address}:${toString cfg.port}";
-      defaultText = "http://$${cfg.address}:$${toString cfg.port}";
-    };
-
     address = lib.mkOption {
-      type = lib.types.str;
-      description = "Address to listen on. IPv6 does not seem to be supported.";
       default = "127.0.0.1";
+      description = "Address to listen on. IPv6 does not seem to be supported.";
       example = "0.0.0.0";
-    };
-
-    port = lib.mkOption {
-      type = lib.types.port;
-      description = "The port to listen on";
-      default = 9898;
+      type = lib.types.str;
     };
 
     debug = lib.mkOption {
-      type = lib.types.bool;
-      description = "More verbose logging. Recommended during initial setup.";
       default = false;
+      description = "More verbose logging. Recommended during initial setup.";
+      type = lib.types.bool;
     };
 
-    owner = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
-      description = ''
-        Set owner MXID otherwise first talking local user will claim the bridge
-      '';
-      default = null;
-      example = "@admin:example.org";
+    extraArgs = lib.mkOption {
+      default = [ ];
+      description = "Heisenbridge is configured over the command line. Append extra arguments here";
+      type = lib.types.listOf lib.types.str;
+    };
+
+    homeserver = lib.mkOption {
+      description = "The URL to the home server for client-server API calls";
+      example = "http://localhost:8008";
+      type = lib.types.str;
+    };
+
+    identd.enable = lib.mkEnableOption "identd service support";
+
+    identd.port = lib.mkOption {
+      default = 113;
+      description = "identd listen port";
+      type = lib.types.port;
     };
 
     namespaces = lib.mkOption {
+      default = {
+        aliases = [ ];
+        rooms = [ ];
+
+        users = [
+          {
+            exclusive = true;
+            regex = "@irc_.*";
+          }
+        ];
+      };
+
       description = "Configure the 'namespaces' section of the registration.yml for the bridge and the server";
+
       # TODO link to Matrix documentation of the format
       type = lib.types.submodule {
         freeformType = jsonType;
       };
-
-      default = {
-        users = [
-          {
-            regex = "@irc_.*";
-            exclusive = true;
-          }
-        ];
-        aliases = [ ];
-        rooms = [ ];
-      };
     };
 
-    identd.enable = lib.mkEnableOption "identd service support";
-    identd.port = lib.mkOption {
+    owner = lib.mkOption {
+      default = null;
+
+      description = ''
+        Set owner MXID otherwise first talking local user will claim the bridge
+      '';
+
+      example = "@admin:example.org";
+      type = lib.types.nullOr lib.types.str;
+    };
+
+    port = lib.mkOption {
+      default = 9898;
+      description = "The port to listen on";
       type = lib.types.port;
-      description = "identd listen port";
-      default = 113;
     };
 
-    extraArgs = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      description = "Heisenbridge is configured over the command line. Append extra arguments here";
-      default = [ ];
+    registrationUrl = lib.mkOption {
+      default = "http://${cfg.address}:${toString cfg.port}";
+      defaultText = "http://$${cfg.address}:$${toString cfg.port}";
+
+      description = ''
+        The URL where the application service is listening for HS requests, from the Matrix HS perspective.#
+        The default value assumes the bridge runs on the same host as the home server, in the same network.
+      '';
+
+      example = "https://matrix.example.org";
+      type = lib.types.str;
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.heisenbridge = {
-      description = "Matrix<->IRC bridge";
       before = [ "matrix-synapse.service" ]; # So the registration file can be used by Synapse
-      wantedBy = [ "multi-user.target" ];
+      description = "Matrix<->IRC bridge";
 
       preStart = ''
         umask 077
@@ -141,7 +146,15 @@ in
       '';
 
       serviceConfig = rec {
-        Type = "simple";
+        AmbientCapabilities = CapabilityBoundingSet;
+
+        CapabilityBoundingSet = [
+          "CAP_CHOWN"
+        ]
+        ++ lib.optional (
+          cfg.port < 1024 || (cfg.identd.enable && cfg.identd.port < 1024)
+        ) "CAP_NET_BIND_SERVICE";
+
         ExecStart = lib.concatStringsSep " " (
           [
             bin
@@ -168,54 +181,50 @@ in
           ++ (map (lib.escapeShellArg) cfg.extraArgs)
         );
 
-        # Hardening options
-
-        User = "heisenbridge";
         Group = "heisenbridge";
+        LockPersonality = true;
+        NoNewPrivileges = true;
+        PrivateDevices = true;
+        PrivateMounts = true;
+        PrivateTmp = true;
+        ProcSubset = "pid";
+        ProtectClock = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectHostname = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectProc = "invisible";
+        ProtectSystem = "strict";
+        RemoveIPC = true;
+        RestrictAddressFamilies = "AF_INET AF_INET6";
+        RestrictNamespaces = true;
+        RestrictRealtime = true;
+        RestrictSUIDSGID = true;
         RuntimeDirectory = "heisenbridge";
         RuntimeDirectoryMode = "0700";
         StateDirectory = "heisenbridge";
         StateDirectoryMode = "0755";
+        SystemCallArchitectures = "native";
 
-        ProtectSystem = "strict";
-        ProtectHome = true;
-        PrivateTmp = true;
-        PrivateDevices = true;
-        ProtectKernelTunables = true;
-        ProtectControlGroups = true;
-        RestrictSUIDSGID = true;
-        PrivateMounts = true;
-        ProtectKernelModules = true;
-        ProtectKernelLogs = true;
-        ProtectHostname = true;
-        ProtectClock = true;
-        ProtectProc = "invisible";
-        ProcSubset = "pid";
-        RestrictNamespaces = true;
-        RemoveIPC = true;
-        UMask = "0077";
-
-        CapabilityBoundingSet = [
-          "CAP_CHOWN"
-        ]
-        ++ lib.optional (
-          cfg.port < 1024 || (cfg.identd.enable && cfg.identd.port < 1024)
-        ) "CAP_NET_BIND_SERVICE";
-        AmbientCapabilities = CapabilityBoundingSet;
-        NoNewPrivileges = true;
-        LockPersonality = true;
-        RestrictRealtime = true;
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
           "@chown"
         ];
-        SystemCallArchitectures = "native";
-        RestrictAddressFamilies = "AF_INET AF_INET6";
+
+        Type = "simple";
+        UMask = "0077";
+        # Hardening options
+        User = "heisenbridge";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     users.groups.heisenbridge = { };
+
     users.users.heisenbridge = {
       description = "Service user for the Heisenbridge";
       group = "heisenbridge";

@@ -13,15 +13,13 @@
 buildPythonPackage rec {
   pname = "restview";
   version = "3.0.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-i011oL7Xa2e0Vu9wEfTrbJilVsn4N2Qt8iAscxL8zBo=";
   };
 
-  pythonRelaxDeps = [ "readme_renderer" ];
-
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,14 +29,14 @@ buildPythonPackage rec {
     pygments
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "restview" ];
-
   disabledTests = [
     # Tests are comparing output
     "rest_to_html"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "restview" ];
+  pythonRelaxDeps = [ "readme_renderer" ];
 
   meta = {
     description = "ReStructuredText viewer";

@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "pipdate";
   version = "0.5.6";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -32,12 +31,13 @@ buildPythonPackage rec {
 
   # Tests require network access and pythonImportsCheck requires configuration file
   doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "Pip update helpers";
-    mainProgram = "pipdate";
     homepage = "https://github.com/nschloe/pipdate";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
+    mainProgram = "pipdate";
   };
 }

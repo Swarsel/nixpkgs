@@ -1,8 +1,8 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -29,7 +29,7 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/davrodpin/mole";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ fab ];
-    broken = stdenv.hostPlatform.isDarwin; # build fails with go > 1.17
     mainProgram = "mole";
+    broken = stdenv.hostPlatform.isDarwin; # build fails with go > 1.17
   };
 })

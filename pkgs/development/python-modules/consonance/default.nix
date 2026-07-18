@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-  setuptools,
+  buildPythonPackage,
   dissononce,
-  python-axolotl-curve25519,
-  transitions,
+  fetchpatch,
   protobuf,
   pytestCheckHook,
+  python-axolotl-curve25519,
+  setuptools,
+  transitions,
 }:
 
 buildPythonPackage rec {
   pname = "consonance";
   version = "0.1.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tgalal";
@@ -26,9 +25,9 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/tgalal/consonance/pull/9
     (fetchpatch {
+      hash = "sha256-wVUGxZ4W2zPyrcQPQTc85LcRUtsLbTBVzS10NEolpQY=";
       name = "fix-type-error.patch";
       url = "https://github.com/tgalal/consonance/pull/9/commits/92fb78af98a18f0533ec8a286136968174fb0baf.patch";
-      hash = "sha256-wVUGxZ4W2zPyrcQPQTc85LcRUtsLbTBVzS10NEolpQY=";
     })
   ];
 
@@ -38,6 +37,7 @@ buildPythonPackage rec {
     PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION = "python";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -47,10 +47,8 @@ buildPythonPackage rec {
     protobuf
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   enabledTestPaths = [ "tests/test_handshakes_offline.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "consonance" ];
 
   meta = {

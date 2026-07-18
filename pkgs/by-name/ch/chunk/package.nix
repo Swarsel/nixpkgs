@@ -1,21 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  stdenvNoCC,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
   pname = "chunk";
   version = "2021-03-03";
-
-  outputs = [
-    "out"
-    "webfont"
-  ];
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "theleagueof";
@@ -24,10 +16,18 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-NMkRvrUgy9yzOT3a1rN6Ch/p8Cr902CwL4G0w7jVm1E=";
   };
 
+  outputs = [
+    "out"
+    "webfont"
+  ];
+
+  strictDeps = true;
   nativeBuildInputs = [ installFonts ];
+  __structuredAttrs = true;
 
   meta = {
     description = "Ultra-bold, ultra-awesome slab serif typeface";
+
     longDescription = ''
       Chunk is an ultra-bold slab serif typeface that is reminiscent of old
       American Western woodcuts, broadsides, and newspaper headlines. Used
@@ -37,6 +37,7 @@ stdenvNoCC.mkDerivation {
       In 2014, a new textured style was created by Tyler Finck called Chunk
       Five Print. It contains the same glyphs as the original.
     '';
+
     homepage = "https://www.theleagueofmoveabletype.com/chunk";
     license = lib.licenses.ofl;
     maintainers = with lib.maintainers; [ minijackson ];

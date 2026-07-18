@@ -1,22 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
+  buildPythonPackage,
   # tests
   pytest-mock,
   pytestCheckHook,
+  # build-system
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "cuda-pathfinder";
   version = "1.5.6";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "NVIDIA";
@@ -25,22 +21,26 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-okhlkeS7vmH5nUFvND6stB5FoyGAsO1VimWRgFxqHKU=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/cuda_pathfinder";
+  nativeCheckInputs = [
+    pytest-mock
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
     setuptools-scm
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "cuda"
     "cuda.pathfinder"
   ];
 
-  nativeCheckInputs = [
-    pytest-mock
-    pytestCheckHook
-  ];
+  sourceRoot = "${finalAttrs.src.name}/cuda_pathfinder";
 
   meta = {
     description = "one-stop solution for locating CUDA components";

@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   apacheHttpd,
   autoconf,
   automake,
   autoreconfHook,
   curl,
-  fetchFromGitHub,
   glib,
   lasso,
   libtool,
@@ -35,6 +35,7 @@ stdenv.mkDerivation rec {
     autoconf
     automake
   ];
+
   buildInputs = [
     apacheHttpd
     curl
@@ -60,12 +61,12 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://github.com/latchset/mod_auth_mellon";
     description = "Apache module with a simple SAML 2.0 service provider";
-    mainProgram = "mellon_create_metadata.sh";
+    homepage = "https://github.com/latchset/mod_auth_mellon";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ womfoo ];
+    platforms = lib.platforms.linux;
+    mainProgram = "mellon_create_metadata.sh";
   };
 
 }

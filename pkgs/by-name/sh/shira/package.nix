@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   ffmpeg,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "shira";
   version = "1.8.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "KraXen72";
@@ -38,6 +37,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
       ]
     }"
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Download music from YouTube, YouTube Music and Soundcloud";

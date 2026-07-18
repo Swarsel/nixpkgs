@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
 }:
 
@@ -37,8 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "CLI star constellations displayer";
     homepage = "https://github.com/Haruno19/starfetch";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ annaaurora ];
+    platforms = lib.platforms.all;
     mainProgram = "starfetch";
   };
 })

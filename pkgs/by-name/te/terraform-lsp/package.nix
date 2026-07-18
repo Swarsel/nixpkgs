@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -26,9 +26,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Language Server Protocol for Terraform";
-    mainProgram = "terraform-lsp";
     homepage = "https://github.com/juliosueiras/terraform-lsp";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "terraform-lsp";
   };
 })

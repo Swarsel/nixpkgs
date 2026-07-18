@@ -4,9 +4,9 @@
   fetchFromGitHub,
   SDL2,
   SDL2_net,
+  desktopToDarwinBundle,
   glew,
   lua5_4,
-  desktopToDarwinBundle,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -47,8 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
-  hardeningDisable = [ "format" ];
-
   installPhase = ''
     runHook preInstall
     install -Dm755 cadzinho -t $out/bin
@@ -56,6 +54,8 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r linux/CadZinho/share/* $out/share
     runHook postInstall
   '';
+
+  hardeningDisable = [ "format" ];
 
   meta = {
     description = "Minimalist computer aided design (CAD) software";

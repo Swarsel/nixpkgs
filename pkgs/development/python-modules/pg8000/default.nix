@@ -2,22 +2,24 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  hatchling,
   passlib,
   python-dateutil,
   scramp,
-  hatchling,
   versioningit,
 }:
 
 buildPythonPackage rec {
   pname = "pg8000";
   version = "1.31.5";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-RuuwO+UrenfAPHJcedosooHW6PWVd8pmsXyQCWGMrng=";
   };
+
+  # Tests require a running PostgreSQL instance
+  doCheck = false;
 
   build-system = [
     hatchling
@@ -30,9 +32,7 @@ buildPythonPackage rec {
     scramp
   ];
 
-  # Tests require a running PostgreSQL instance
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pg8000" ];
 
   meta = {

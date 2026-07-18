@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   jre,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation rec {
@@ -16,7 +16,6 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
   buildInputs = [ jre ];
 
   installPhase = ''
@@ -35,15 +34,17 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Distributed stream processing framework";
-    mainProgram = "flink";
     homepage = "https://flink.apache.org";
-    downloadPage = "https://flink.apache.org/downloads.html";
     license = lib.licenses.asl20;
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       mbode
       autophagy
     ];
+
+    platforms = lib.platforms.all;
+    mainProgram = "flink";
+    downloadPage = "https://flink.apache.org/downloads.html";
   };
 }

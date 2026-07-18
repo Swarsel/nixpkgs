@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "compdb";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Sarcasm";
@@ -20,10 +19,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     setuptools
   ];
 
+  pyproject = true;
+
   meta = {
     description = "Command line tool to manipulate compilation databases";
-    license = lib.licenses.mit;
     homepage = "https://github.com/Sarcasm/compdb";
+    license = lib.licenses.mit;
     maintainers = [ lib.maintainers.detegr ];
     mainProgram = "compdb";
   };

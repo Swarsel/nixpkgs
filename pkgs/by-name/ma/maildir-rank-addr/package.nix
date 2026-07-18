@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 buildGoModule (finalAttrs: {
@@ -16,7 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-Wl7KfvNYtvSUiYS1LpN027SrU+K3Uq0UQHv7slC2Xwc=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -24,7 +23,7 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/ferdinandyb/maildir-rank-addr";
     changelog = "https://github.com/ferdinandyb/maildir-rank-addr/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "maildir-rank-addr";
     maintainers = with lib.maintainers; [ antonmosich ];
+    mainProgram = "maildir-rank-addr";
   };
 })

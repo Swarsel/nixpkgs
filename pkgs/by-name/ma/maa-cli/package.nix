@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  installShellFiles,
-  makeWrapper,
-  pkg-config,
-  openssl,
-  maa-assistant-arknights,
   android-tools,
   git,
+  installShellFiles,
+  maa-assistant-arknights,
+  makeWrapper,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -30,11 +30,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   buildInputs = [ openssl ];
-
-  # https://github.com/MaaAssistantArknights/maa-cli/pull/126
-  buildNoDefaultFeatures = true;
-  buildFeatures = [ "git2" ];
-
   cargoHash = "sha256-pJlTcxF6nzV4HfMTs/gAzSUubDy2UlhzEIVeSWs6uX0=";
 
   # maa-cli would only search libMaaCore.so and resources in itself's path
@@ -65,12 +60,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     installManPage manpage/*
   '';
 
+  buildFeatures = [ "git2" ];
+  # https://github.com/MaaAssistantArknights/maa-cli/pull/126
+  buildNoDefaultFeatures = true;
+
   meta = {
     description = "Simple CLI for MAA by Rust";
     homepage = "https://github.com/MaaAssistantArknights/maa-cli";
     license = lib.licenses.agpl3Only;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ Cryolitia ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "maa";
   };
 })

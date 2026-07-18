@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "python-fedora";
   version = "1.1.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -46,6 +45,7 @@ buildPythonPackage rec {
     "tests/functional/test_openidbaseclient.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "fedora" ];
 
   meta = {

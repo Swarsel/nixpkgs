@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aiomqtt,
   buildPythonPackage,
   cachetools,
   defusedxml,
   docker,
-  fetchFromGitHub,
   orjson,
   pkg-config,
   pycountry,
@@ -23,20 +23,12 @@
 buildPythonPackage (finalAttrs: {
   pname = "deebot-client";
   version = "18.4.0";
-  pyproject = true;
-
-  disabled = pythonOlder "3.14";
 
   src = fetchFromGitHub {
     owner = "DeebotUniverse";
     repo = "client.py";
     tag = finalAttrs.version;
     hash = "sha256-SFOwIK1rjvbLw5W0d6vzXVUDlUOlBYOu/GMvlwwFDs0=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-mvHHwfeP7k8bvOMFcNTn7wZlumMJ8wx7H+p8SNreIuE=";
   };
 
   nativeBuildInputs = [
@@ -46,14 +38,6 @@ buildPythonPackage (finalAttrs: {
   ];
 
   buildInputs = [ xz ];
-
-  dependencies = [
-    aiohttp
-    aiomqtt
-    cachetools
-    defusedxml
-    orjson
-  ];
 
   nativeCheckInputs = [
     docker
@@ -69,7 +53,20 @@ buildPythonPackage (finalAttrs: {
     rm -rf deebot_client
   '';
 
-  pythonImportsCheck = [ "deebot_client" ];
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-mvHHwfeP7k8bvOMFcNTn7wZlumMJ8wx7H+p8SNreIuE=";
+  };
+
+  dependencies = [
+    aiohttp
+    aiomqtt
+    cachetools
+    defusedxml
+    orjson
+  ];
+
+  disabled = pythonOlder "3.14";
 
   disabledTests = [
     # Tests require running container
@@ -85,6 +82,9 @@ buildPythonPackage (finalAttrs: {
     "test_mqtt_task_exceptions"
     "test_client_reconnect_on_broker_error"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "deebot_client" ];
 
   meta = {
     description = "Deebot client library";

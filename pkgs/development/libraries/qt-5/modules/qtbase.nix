@@ -1,81 +1,77 @@
 {
-  stdenv,
   lib,
-  src,
-  patches,
-  version,
-  qtCompatVersion,
-
-  coreutils,
+  stdenv,
+  at-spi2-core,
   bison,
-  flex,
-  gdb,
-  gperf,
-  lndir,
-  perl,
-  pkg-config,
-  python3,
+  buildPackages,
   copyPathToStore,
-  makeSetupHook,
-  which,
-  # darwin support
-  xcbuild,
-  # TODO: Clean up on `staging`
-  llvmPackages,
-
+  coreutils,
   dbus,
+  dconf,
+  flex,
   fontconfig,
   freetype,
+  gdb,
   glib,
+  gperf,
+  gtk3,
   harfbuzz,
   icu,
+  libGL,
   libdrm,
+  libinput,
+  libjpeg,
+  libmysqlclient,
+  libpng,
   libx11,
+  libxcb,
+  libxcb-image,
+  libxcb-keysyms,
+  libxcb-render-util,
+  libxcb-util,
+  libxcb-wm,
   libxcomposite,
   libxcursor,
   libxext,
   libxi,
-  libxrender,
-  libjpeg,
-  libpng,
-  libxcb,
   libxkbcommon,
   libxml2,
+  libxrender,
   libxslt,
+  # TODO: Clean up on `staging`
+  llvmPackages,
+  lndir,
+  makeSetupHook,
   openssl,
+  patches,
   pcre2,
+  perl,
+  pkg-config,
+  python3,
+  qtCompatVersion,
   sqlite,
+  src,
+  testers,
   udev,
-  libxcb-util,
-  libxcb-image,
-  libxcb-keysyms,
-  libxcb-render-util,
-  libxcb-wm,
+  version,
+  which,
+  # darwin support
+  xcbuild,
   zlib,
-  at-spi2-core,
-
-  # optional dependencies
-  cups ? null,
-  libpq ? null,
-  withGtk3 ? false,
-  dconf,
-  gtk3,
-  qttranslations ? null,
-  withLibinput ? false,
-  libinput,
-
-  # options
-  libGLSupported ? !stdenv.hostPlatform.isDarwin,
-  libGL,
-  mysqlSupport ? true,
-  libmysqlclient,
   buildExamples ? false,
   buildTests ? false,
+  # optional dependencies
+  cups ? null,
   debug ? false,
-  developerBuild ? false,
   decryptSslTraffic ? false,
-  testers,
-  buildPackages,
+  developerBuild ? false,
+  # options
+  libGLSupported ? !stdenv.hostPlatform.isDarwin,
+  libpq ? null,
+  mysqlSupport ? true,
+  qttranslations ? null,
+  withGtk3 ? false,
+  withLibinput ? false,
 }:
 
 let
@@ -110,8 +106,46 @@ stdenv.mkDerivation (
   finalAttrs:
   (
     {
-      pname = "qtbase";
       inherit qtCompatVersion src version;
+      pname = "qtbase";
+
+      nativeBuildInputs = [
+        bison
+        flex
+        gperf
+        lndir
+        perl
+        pkg-config
+        which
+      ]
+      ++ lib.optionals mysqlSupport [
+        libmysqlclient
+      ]
+      ++ lib.optionals stdenv.hostPlatform.isDarwin [
+        xcbuild
+        # TODO: Clean up on `staging`
+        llvmPackages.lld
+      ];
+
+      buildInputs = [
+        python3
+        at-spi2-core
+      ]
+      ++ lib.optionals (!stdenv.hostPlatform.isDarwin) (
+        lib.optional withLibinput libinput ++ lib.optional withGtk3 gtk3
+      )
+      ++ lib.optionals developerBuild [
+        gdb
+      ]
+      ++ lib.optionals (cups != null) [
+        cups
+      ]
+      ++ lib.optionals mysqlSupport [
+        libmysqlclient
+      ]
+      ++ lib.optionals (libpq != null) [
+        libpq
+      ];
 
       propagatedBuildInputs = [
         libxml2
@@ -160,44 +194,6 @@ stdenv.mkDerivation (
         ]
       );
 
-      buildInputs = [
-        python3
-        at-spi2-core
-      ]
-      ++ lib.optionals (!stdenv.hostPlatform.isDarwin) (
-        lib.optional withLibinput libinput ++ lib.optional withGtk3 gtk3
-      )
-      ++ lib.optionals developerBuild [
-        gdb
-      ]
-      ++ lib.optionals (cups != null) [
-        cups
-      ]
-      ++ lib.optionals mysqlSupport [
-        libmysqlclient
-      ]
-      ++ lib.optionals (libpq != null) [
-        libpq
-      ];
-
-      nativeBuildInputs = [
-        bison
-        flex
-        gperf
-        lndir
-        perl
-        pkg-config
-        which
-      ]
-      ++ lib.optionals mysqlSupport [
-        libmysqlclient
-      ]
-      ++ lib.optionals stdenv.hostPlatform.isDarwin [
-        xcbuild
-        # TODO: Clean up on `staging`
-        llvmPackages.lld
-      ];
-
     }
     // lib.optionalAttrs (stdenv.buildPlatform != stdenv.hostPlatform) {
       # `qtbase` expects to find `cc` (with no prefix) in the
@@ -207,32 +203,13 @@ stdenv.mkDerivation (
     }
     // {
 
-      propagatedNativeBuildInputs = [ lndir ];
-
-      strictDeps = true;
-
-      # libQt5Core links calls CoreFoundation APIs that call into the system ICU. Binaries linked
-      # against it will crash during build unless they can access `/usr/share/icu/icudtXXl.dat`.
-      propagatedSandboxProfile = lib.optionalString stdenv.hostPlatform.isDarwin ''
-        (allow file-read* (subpath "/usr/share/icu"))
-      '';
-
-      enableParallelBuilding = true;
+      inherit patches;
 
       outputs = [
         "bin"
         "dev"
         "out"
       ];
-
-      inherit patches;
-
-      preHook = ''
-        . ${fix_qt_builtin_paths}
-        . ${fix_qt_module_paths}
-        . ${../hooks/move-qt-dev-tools.sh}
-        . ${../hooks/fix-qmake-libtool.sh}
-      '';
 
       postPatch = ''
         for prf in qml_plugin.prf qt_plugin.prf qt_docs.prf qml_module.prf create_cmake.prf; do
@@ -293,47 +270,7 @@ stdenv.mkDerivation (
           ''
       );
 
-      setOutputFlags = false;
-      preConfigure = ''
-        export LD_LIBRARY_PATH="$PWD/lib:$PWD/plugins/platforms''${LD_LIBRARY_PATH:+:}$LD_LIBRARY_PATH"
-
-        NIX_CFLAGS_COMPILE+=" -DNIXPKGS_QT_PLUGIN_PREFIX=\"${qtPluginPrefix}\""
-
-        # paralellize compilation of qtmake, which happens within ./configure
-        export MAKEFLAGS+=" -j$NIX_BUILD_CORES"
-
-        ./bin/syncqt.pl -version ${version}
-      ''
-      + lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-        # QT's configure script will refuse to use pkg-config unless these two environment variables are set
-        export PKG_CONFIG_SYSROOT_DIR=/
-        export PKG_CONFIG_LIBDIR=${lib.getLib pkg-config}/lib
-        echo "QMAKE_LFLAGS=''${LDFLAGS}" >> mkspecs/devices/${qtPlatformCross stdenv.hostPlatform}/qmake.conf
-        echo "QMAKE_CFLAGS=''${CFLAGS}" >> mkspecs/devices/${qtPlatformCross stdenv.hostPlatform}/qmake.conf
-        echo "QMAKE_CXXFLAGS=''${CXXFLAGS}" >> mkspecs/devices/${qtPlatformCross stdenv.hostPlatform}/qmake.conf
-      '';
-
-      postConfigure = ''
-        qmakeCacheInjectNixOutputs() {
-            local cache="$1/.qmake.stash"
-            echo "qmakeCacheInjectNixOutputs: $cache"
-            if ! [ -f "$cache" ]; then
-                echo >&2 "qmakeCacheInjectNixOutputs: WARNING: $cache does not exist"
-            fi
-            cat >>"$cache" <<EOF
-        NIX_OUTPUT_BIN = $bin
-        NIX_OUTPUT_DEV = $dev
-        NIX_OUTPUT_OUT = $out
-        NIX_OUTPUT_DOC = $dev/${qtDocPrefix}
-        NIX_OUTPUT_QML = $bin/${qtQmlPrefix}
-        NIX_OUTPUT_PLUGIN = $bin/${qtPluginPrefix}
-        EOF
-        }
-
-        find . -name '.qmake.conf' | while read conf; do
-            qmakeCacheInjectNixOutputs "$(dirname $conf)"
-        done
-      '';
+      strictDeps = true;
 
       env = {
         NIX_CFLAGS_COMPILE = toString (
@@ -385,7 +322,66 @@ stdenv.mkDerivation (
         NIX_CFLAGS_LINK = "-fuse-ld=lld";
       };
 
+      preConfigure = ''
+        export LD_LIBRARY_PATH="$PWD/lib:$PWD/plugins/platforms''${LD_LIBRARY_PATH:+:}$LD_LIBRARY_PATH"
+
+        NIX_CFLAGS_COMPILE+=" -DNIXPKGS_QT_PLUGIN_PREFIX=\"${qtPluginPrefix}\""
+
+        # paralellize compilation of qtmake, which happens within ./configure
+        export MAKEFLAGS+=" -j$NIX_BUILD_CORES"
+
+        ./bin/syncqt.pl -version ${version}
+      ''
+      + lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+        # QT's configure script will refuse to use pkg-config unless these two environment variables are set
+        export PKG_CONFIG_SYSROOT_DIR=/
+        export PKG_CONFIG_LIBDIR=${lib.getLib pkg-config}/lib
+        echo "QMAKE_LFLAGS=''${LDFLAGS}" >> mkspecs/devices/${qtPlatformCross stdenv.hostPlatform}/qmake.conf
+        echo "QMAKE_CFLAGS=''${CFLAGS}" >> mkspecs/devices/${qtPlatformCross stdenv.hostPlatform}/qmake.conf
+        echo "QMAKE_CXXFLAGS=''${CXXFLAGS}" >> mkspecs/devices/${qtPlatformCross stdenv.hostPlatform}/qmake.conf
+      '';
+
+      postConfigure = ''
+        qmakeCacheInjectNixOutputs() {
+            local cache="$1/.qmake.stash"
+            echo "qmakeCacheInjectNixOutputs: $cache"
+            if ! [ -f "$cache" ]; then
+                echo >&2 "qmakeCacheInjectNixOutputs: WARNING: $cache does not exist"
+            fi
+            cat >>"$cache" <<EOF
+        NIX_OUTPUT_BIN = $bin
+        NIX_OUTPUT_DEV = $dev
+        NIX_OUTPUT_OUT = $out
+        NIX_OUTPUT_DOC = $dev/${qtDocPrefix}
+        NIX_OUTPUT_QML = $bin/${qtQmlPrefix}
+        NIX_OUTPUT_PLUGIN = $bin/${qtPluginPrefix}
+        EOF
+        }
+
+        find . -name '.qmake.conf' | while read conf; do
+            qmakeCacheInjectNixOutputs "$(dirname $conf)"
+        done
+      '';
+
+      enableParallelBuilding = true;
+
+      preHook = ''
+        . ${fix_qt_builtin_paths}
+        . ${fix_qt_module_paths}
+        . ${../hooks/move-qt-dev-tools.sh}
+        . ${../hooks/fix-qmake-libtool.sh}
+      '';
+
       prefixKey = "-prefix ";
+      propagatedNativeBuildInputs = [ lndir ];
+
+      # libQt5Core links calls CoreFoundation APIs that call into the system ICU. Binaries linked
+      # against it will crash during build unless they can access `/usr/share/icu/icudtXXl.dat`.
+      propagatedSandboxProfile = lib.optionalString stdenv.hostPlatform.isDarwin ''
+        (allow file-read* (subpath "/usr/share/icu"))
+      '';
+
+      setOutputFlags = false;
     }
     // lib.optionalAttrs (stdenv.buildPlatform != stdenv.hostPlatform) {
       configurePlatforms = [ ];
@@ -570,12 +566,14 @@ stdenv.mkDerivation (
           -e "/^host_bins=/ c host_bins=$dev/bin"
       '';
 
+      __structuredAttrs = true;
       dontStrip = debugSymbols;
 
       setupHook =
         let
           hook = makeSetupHook {
             name = "qtbase5-setup-hook";
+
             substitutions = {
               inherit
                 qtPluginPrefix
@@ -584,8 +582,10 @@ stdenv.mkDerivation (
                 fix_qt_builtin_paths
                 fix_qt_module_paths
                 ;
+
               debug = debugSymbols;
             };
+
             meta.license = lib.licenses.mit;
           } ../hooks/qtbase-setup-hook.sh;
         in
@@ -597,24 +597,28 @@ stdenv.mkDerivation (
           qtQmlPrefix
           qtDocPrefix
           ;
+
         tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
       };
 
-      __structuredAttrs = true;
-
       meta = {
-        homepage = "https://www.qt.io/";
         description = "Cross-platform application framework for C++";
+        homepage = "https://www.qt.io/";
+
         license = with lib.licenses; [
           fdl13Plus
           gpl2Plus
           lgpl21Plus
           lgpl3Plus
         ];
+
         maintainers = with lib.maintainers; [
           qknight
           bkchr
         ];
+
+        platforms = lib.platforms.unix;
+
         pkgConfigModules = [
           "Qt5Concurrent"
           "Qt5Core"
@@ -634,7 +638,6 @@ stdenv.mkDerivation (
           "Qt5Widgets"
           "Qt5Xml"
         ];
-        platforms = lib.platforms.unix;
       };
 
     }

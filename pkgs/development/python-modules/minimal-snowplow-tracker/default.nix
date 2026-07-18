@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "minimal-snowplow-tracker";
   version = "0.0.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,13 +22,14 @@ buildPythonPackage rec {
 
   # has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "snowplow_tracker" ];
 
   meta = {
     description = "Minimal snowplow event tracker";
     homepage = "https://github.com/dbt-labs/snowplow-python-tracker";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       mausch
     ];

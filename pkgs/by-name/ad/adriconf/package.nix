@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
+  atkmm,
   cmake,
   gettext,
   glib,
-  pkg-config,
-  libdrm,
-  libGL,
-  atkmm,
   gtkmm4,
-  pugixml,
+  libGL,
+  libdrm,
   libgbm,
   pciutils,
+  pkg-config,
+  pugixml,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,11 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.7.3";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "mesa";
     repo = "adriconf";
     tag = "v${finalAttrs.version}";
     hash = "sha256-MRZYAinBL4fzj/Nhhn22sJgupVMpoeeyOYYWTr+fK+E=";
+    domain = "gitlab.freedesktop.org";
   };
 
   # fix build with c23
@@ -39,6 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
     glib # glib-compile-resources
     pkg-config
   ];
+
   buildInputs = [
     libdrm
     libGL
@@ -62,9 +63,9 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
+    description = "GUI tool used to configure open source graphics drivers";
     homepage = "https://gitlab.freedesktop.org/mesa/adriconf/";
     changelog = "https://gitlab.freedesktop.org/mesa/adriconf/-/releases/v${finalAttrs.version}";
-    description = "GUI tool used to configure open source graphics drivers";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ muscaln ];
     platforms = lib.platforms.linux;

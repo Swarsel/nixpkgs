@@ -8,7 +8,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "venstarcolortouch";
   version = "0.22";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -16,10 +15,9 @@ buildPythonPackage (finalAttrs: {
   };
 
   propagatedBuildInputs = [ requests ];
-
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "venstarcolortouch" ];
 
   meta = {

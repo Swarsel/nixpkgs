@@ -3,12 +3,9 @@
   stdenv,
   makeWrapper,
   nixosTests,
-  symlinkJoin,
-
-  extraPythonPackages ? (ps: [ ]),
-
   qt6Packages,
-
+  symlinkJoin,
+  extraPythonPackages ? (ps: [ ]),
   # unwrapped package parameters
   withGrass ? false,
   withServer ? false,
@@ -24,15 +21,10 @@ symlinkJoin {
   inherit (qgis-unwrapped) version outputs src;
   pname = "qgis";
 
-  paths = [ qgis-unwrapped ];
-
   nativeBuildInputs = [
     makeWrapper
     qgis-unwrapped.py.pkgs.wrapPython
   ];
-
-  # Extend to add to the python environment of QGIS without rebuilding QGIS application.
-  pythonInputs = qgis-unwrapped.pythonBuildInputs ++ (extraPythonPackages qgis-unwrapped.py.pkgs);
 
   postBuild = ''
     buildPythonPath "$pythonInputs"
@@ -60,9 +52,14 @@ symlinkJoin {
     ln -s ${qgis-unwrapped.man} $man
   '';
 
+  paths = [ qgis-unwrapped ];
+  # Extend to add to the python environment of QGIS without rebuilding QGIS application.
+  pythonInputs = qgis-unwrapped.pythonBuildInputs ++ (extraPythonPackages qgis-unwrapped.py.pkgs);
+
   passthru = {
-    unwrapped = qgis-unwrapped;
     tests.qgis = nixosTests.qgis;
+    unwrapped = qgis-unwrapped;
+
     updateScript = [
       ./update.sh
       "qgis"

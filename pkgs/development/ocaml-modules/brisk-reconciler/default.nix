@@ -1,10 +1,10 @@
 {
-  buildDunePackage,
-  fetchFromGitHub,
   lib,
-  reason,
-  ppxlib,
+  fetchFromGitHub,
+  buildDunePackage,
   ocaml,
+  ppxlib,
+  reason,
 }:
 
 let
@@ -12,8 +12,8 @@ let
 in
 
 buildDunePackage {
-  pname = "brisk-reconciler";
   inherit version;
+  pname = "brisk-reconciler";
 
   src = fetchFromGitHub {
     owner = "briskml";
@@ -28,6 +28,7 @@ buildDunePackage {
 
   meta = {
     description = "React.js-like reconciler implemented in OCaml/Reason";
+
     longDescription = ''
       Easily model any `tree-shaped state` with simple `stateful functions`.
 
@@ -35,9 +36,10 @@ buildDunePackage {
       * tree-shaped state: Any tree shaped-state like the DOM tree, app navigation state, or even rich text document!
       * stateful functions: Functions that maintain state over time. Imagine that you can take any variable in your function and manage its value over the function's invocation. Now, imagine that any function invocation really creates its own "instance" of the function which will track this state separately from other invocations of this function.
     '';
+
     homepage = "https://github.com/briskml/brisk-reconciler";
-    maintainers = [ ];
     license = lib.licenses.mit;
+    maintainers = [ ];
     broken = lib.versionAtLeast ocaml.version "5.3";
   };
 }

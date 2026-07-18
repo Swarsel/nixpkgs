@@ -1,46 +1,41 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  pyprojectVersionPatchHook,
-
-  # build-system
-  setuptools,
-
+  aiohttp,
   # dependencies
   asn1crypto,
-  cryptography,
-  lxml,
-  pyhanko-certvalidator,
-  pyyaml,
-  requests,
-  tzlocal,
-
-  # optional-dependencies
-  fonttools,
-  uharfbuzz,
-  pillow,
-  python-barcode,
-  python-pkcs11,
-  aiohttp,
-  xsdata,
-  qrcode,
-
+  buildPythonPackage,
   # tests
   certomancer,
+  cryptography,
+  # optional-dependencies
+  fonttools,
   freezegun,
+  lxml,
+  pillow,
+  pyhanko-certvalidator,
+  pyprojectVersionPatchHook,
   pytest-aiohttp,
   pytestCheckHook,
+  python-barcode,
   python-pae,
+  python-pkcs11,
+  pyyaml,
+  qrcode,
+  requests,
   requests-mock,
+  # build-system
+  setuptools,
   signxml,
+  tzlocal,
+  uharfbuzz,
+  xsdata,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyhanko";
   version = "0.35.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "MatthiasValvekens";
@@ -49,47 +44,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-CY+YgUu8za5c0t2OKStKvCN9X8hVXT2sN42KSDiyMX8=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/pkgs/pyhanko";
-
   postPatch = ''
     substituteInPlace src/pyhanko/version/__init__.py \
       --replace-fail "0.0.0.dev1" "${finalAttrs.version}" \
       --replace-fail "(0, 0, 0, 'dev1')" "tuple(\"${finalAttrs.version}\".split(\".\"))"
   '';
 
-  build-system = [ setuptools ];
-
   nativeBuildInputs = [
     pyprojectVersionPatchHook
   ];
-
-  dependencies = [
-    asn1crypto
-    cryptography
-    lxml
-    pyhanko-certvalidator
-    pyyaml
-    requests
-    tzlocal
-  ];
-
-  optional-dependencies = {
-    opentype = [
-      fonttools
-      uharfbuzz
-    ];
-    image-support = [
-      pillow
-      python-barcode
-    ];
-    pkcs11 = [ python-pkcs11 ];
-    async-http = [ aiohttp ];
-    etsi = [
-      xsdata
-      signxml
-    ];
-    qr = [ qrcode ];
-  };
 
   nativeCheckInputs = [
     aiohttp
@@ -103,6 +66,19 @@ buildPythonPackage (finalAttrs: {
     signxml
   ]
   ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
+
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    asn1crypto
+    cryptography
+    lxml
+    pyhanko-certvalidator
+    pyyaml
+    requests
+    tzlocal
+  ];
 
   disabledTestPaths = [
     # ModuleNotFoundError: No module named 'csc_dummy'
@@ -135,17 +111,37 @@ buildPythonPackage (finalAttrs: {
     "test_ts_fetch_requests"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  optional-dependencies = {
+    async-http = [ aiohttp ];
 
+    etsi = [
+      xsdata
+      signxml
+    ];
+
+    image-support = [
+      pillow
+      python-barcode
+    ];
+
+    opentype = [
+      fonttools
+      uharfbuzz
+    ];
+
+    pkcs11 = [ python-pkcs11 ];
+    qr = [ qrcode ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "pyhanko" ];
+  sourceRoot = "${finalAttrs.src.name}/pkgs/pyhanko";
 
   passthru = {
     testData = buildPythonPackage {
-      pname = "common-test-utils";
       inherit (finalAttrs) version src;
-      pyproject = true;
+      pname = "common-test-utils";
 
-      sourceRoot = "${finalAttrs.src.name}/internal/common-test-utils";
       # Include the test pdf/xml files etc. in the build output
       postPatch = ''
         echo "graft src/pyhanko_testing_commons/test_data" > MANIFEST.in
@@ -158,7 +154,9 @@ buildPythonPackage (finalAttrs: {
         pyhanko-certvalidator
       ];
 
+      pyproject = true;
       pythonRemoveDeps = [ "pyhanko" ];
+      sourceRoot = "${finalAttrs.src.name}/internal/common-test-utils";
     };
   };
 

@@ -1,17 +1,16 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
-  pydal,
+  fetchFromGitHub,
+  buildPythonPackage,
   graphviz,
   pandoc,
   plantuml,
+  pydal,
 }:
 
 buildPythonPackage rec {
   pname = "pytm";
   version = "1.3.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "OWASP";
@@ -27,15 +26,18 @@ buildPythonPackage rec {
     plantuml
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "pytm" ];
 
   meta = {
     description = "Pythonic framework for threat modeling";
     homepage = "https://owasp.org/www-project-pytm/";
+
     license = with lib.licenses; [
       capec
       mit
     ];
+
     maintainers = with lib.maintainers; [ wamserma ];
   };
 }

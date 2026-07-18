@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   babashka,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,20 +19,20 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  dontBuild = true;
-
   installPhase = ''
     install -D neil $out/bin/neil
     wrapProgram $out/bin/neil \
       --prefix PATH : "${lib.makeBinPath [ babashka ]}"
   '';
 
+  dontBuild = true;
+
   meta = {
-    homepage = "https://github.com/babashka/neil";
     description = "CLI to add common aliases and features to deps.edn-based projects";
-    mainProgram = "neil";
+    homepage = "https://github.com/babashka/neil";
     license = lib.licenses.mit;
-    platforms = babashka.meta.platforms;
     maintainers = with lib.maintainers; [ jlesquembre ];
+    platforms = babashka.meta.platforms;
+    mainProgram = "neil";
   };
 })

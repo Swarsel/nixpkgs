@@ -1,15 +1,13 @@
 {
   lib,
   stdenv,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "minisat";
   version = "0.6";
-
-  minimalOCamlVersion = "4.05";
 
   src = fetchFromGitHub {
     owner = "c-cube";
@@ -22,9 +20,11 @@ buildDunePackage (finalAttrs: {
     NIX_CFLAGS_COMPILE = "-I${lib.getInclude stdenv.cc.libcxx}/include/c++/v1";
   };
 
+  minimalOCamlVersion = "4.05";
+
   meta = {
-    homepage = "https://c-cube.github.io/ocaml-minisat/";
     description = "Simple bindings to Minisat-C";
+    homepage = "https://c-cube.github.io/ocaml-minisat/";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ mgttlinger ];
   };

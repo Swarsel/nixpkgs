@@ -11,13 +11,14 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyenvisalink";
   version = "4.10";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-V/Sr49e78CO4tBRKkKMQ1Z8bA6/YeEVHdoPx2KY7+mI=";
   };
 
+  # Tests require an Envisalink device
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage (finalAttrs: {
     pyserial
   ];
 
-  # Tests require an Envisalink device
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyenvisalink" ];
 
   meta = {

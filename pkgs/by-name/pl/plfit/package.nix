@@ -1,12 +1,12 @@
 {
-  cmake,
-  fetchFromGitHub,
   lib,
-  llvmPackages,
-  withPython ? false,
-  python ? null,
   stdenv,
+  fetchFromGitHub,
+  cmake,
+  llvmPackages,
   swig,
+  python ? null,
+  withPython ? false,
 }:
 
 assert withPython -> python != null;
@@ -36,15 +36,15 @@ stdenv.mkDerivation (finalAttrs: {
     swig
   ];
 
+  buildInputs = lib.optionals stdenv.cc.isClang [
+    llvmPackages.openmp
+  ];
+
   cmakeFlags = [
     "-DPLFIT_USE_OPENMP=ON"
   ]
   ++ lib.optionals withPython [
     "-DPLFIT_COMPILE_PYTHON_MODULE=ON"
-  ];
-
-  buildInputs = lib.optionals stdenv.cc.isClang [
-    llvmPackages.openmp
   ];
 
   doCheck = true;

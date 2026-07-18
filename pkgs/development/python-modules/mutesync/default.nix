@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "mutesync";
   version = "0.0.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,7 +22,7 @@ buildPythonPackage rec {
 
   # Project has not published tests yet
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "mutesync" ];
 
   meta = {

@@ -1,26 +1,23 @@
 {
+  lib,
+  fetchFromGitHub,
   # utils
   buildPythonPackage,
-  fetchFromGitHub,
-  lib,
-  rustPlatform,
-
   # build and dependencies
   llvmPackages,
   maturin,
-  obspec,
-
-  # tests dependencies
-  pytestCheckHook,
   numpy,
+  obspec,
   obstore,
   pytest-asyncio,
+  # tests dependencies
+  pytestCheckHook,
   rasterio,
+  rustPlatform,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "async-tiff";
   version = "0.7.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "developmentseed";
@@ -34,33 +31,13 @@ buildPythonPackage (finalAttrs: {
     cd python
   '';
 
-  buildSystem = [ maturin ];
-
-  buildInputs = [ llvmPackages.libclang ];
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    pname = finalAttrs.pname;
-    version = finalAttrs.version;
-    src = finalAttrs.src;
-    hash = "sha256-7iT1ZIdwlztHFEGEseEQEHzY/vqjXX/X6s5Uc3WaKxc=";
-
-    preBuild = ''
-      cd python
-    '';
-  };
-
   nativeBuildInputs = with rustPlatform; [
     cargoSetupHook
     maturinBuildHook
     rustPlatform.bindgenHook
   ];
 
-  dependencies = [
-    obspec
-  ];
-
-  pythonImportsCheck = [ "async_tiff" ];
-
+  buildInputs = [ llvmPackages.libclang ];
   nativeCheckInputs = [ pytestCheckHook ];
 
   checkInputs = [
@@ -70,11 +47,32 @@ buildPythonPackage (finalAttrs: {
     rasterio
   ];
 
+  buildSystem = [ maturin ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    pname = finalAttrs.pname;
+    version = finalAttrs.version;
+    src = finalAttrs.src;
+
+    preBuild = ''
+      cd python
+    '';
+
+    hash = "sha256-7iT1ZIdwlztHFEGEseEQEHzY/vqjXX/X6s5Uc3WaKxc=";
+  };
+
+  dependencies = [
+    obspec
+  ];
+
   disabledTests = [
     # network access
     "test_cog_s3"
     "test_raise_typeerror_fetch_tile_striped_tiff"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "async_tiff" ];
 
   meta = {
     description = "Async TIFF reader for Python";

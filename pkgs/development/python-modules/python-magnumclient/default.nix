@@ -1,13 +1,13 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cryptography,
   decorator,
-  fetchFromGitHub,
   fixtures,
   keystoneauth1,
-  openstacksdk,
   openstackdocstheme,
+  openstacksdk,
   osc-lib,
   oslo-i18n,
   oslo-log,
@@ -18,8 +18,8 @@
   pbr,
   prettytable,
   python-openstackclient,
-  requests-mock,
   requests,
+  requests-mock,
   setuptools,
   sphinxHook,
   stestr,
@@ -30,7 +30,6 @@
 buildPythonPackage rec {
   pname = "python-magnumclient";
   version = "4.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openstack";
@@ -39,14 +38,28 @@ buildPythonPackage rec {
     hash = "sha256-kOnx2Fsx6WK7Z3z7O6so1LOjjyPiEB0jDFzOl7WlMS0=";
   };
 
-  env.PBR_VERSION = version;
-
   nativeBuildInputs = [
     openstackdocstheme
     sphinxHook
   ];
 
-  sphinxBuilders = [ "man" ];
+  env.PBR_VERSION = version;
+
+  nativeCheckInputs = [
+    fixtures
+    python-openstackclient
+    osprofiler
+    oslotest
+    requests-mock
+    stestr
+    testtools
+  ];
+
+  checkPhase = ''
+    runHook preCheck
+    stestr run
+    runHook postCheck
+  '';
 
   build-system = [
     pbr
@@ -68,27 +81,13 @@ buildPythonPackage rec {
     stevedore
   ];
 
-  nativeCheckInputs = [
-    fixtures
-    python-openstackclient
-    osprofiler
-    oslotest
-    requests-mock
-    stestr
-    testtools
-  ];
-
-  checkPhase = ''
-    runHook preCheck
-    stestr run
-    runHook postCheck
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "magnumclient" ];
+  sphinxBuilders = [ "man" ];
 
   meta = {
-    homepage = "https://github.com/openstack/python-magnumclient";
     description = "Client library for OpenStack Magnum API";
+    homepage = "https://github.com/openstack/python-magnumclient";
     license = lib.licenses.asl20;
     mainProgram = "magnum";
     teams = [ lib.teams.openstack ];

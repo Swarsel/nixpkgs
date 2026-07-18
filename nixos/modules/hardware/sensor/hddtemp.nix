@@ -33,18 +33,23 @@ let
 
 in
 {
-  meta.maintainers = with lib.maintainers; [ peterhoeg ];
-
   ###### interface
-
   options = {
     hardware.sensor.hddtemp = {
       enable = mkOption {
+        default = false;
+
         description = ''
           Enable this option to support HDD/SSD temperature sensors.
         '';
+
         type = types.bool;
-        default = false;
+      };
+
+      dbEntries = mkOption {
+        default = [ ];
+        description = "Additional DB entries";
+        type = types.listOf types.str;
       };
 
       drives = mkOption {
@@ -52,44 +57,42 @@ in
         type = types.listOf types.str;
       };
 
+      extraArgs = mkOption {
+        default = [ ];
+        description = "Additional arguments passed to the daemon.";
+        type = types.listOf types.str;
+      };
+
       unit = mkOption {
+        default = "C";
         description = "Celsius or Fahrenheit";
+
         type = types.enum [
           "C"
           "F"
         ];
-        default = "C";
-      };
-
-      dbEntries = mkOption {
-        description = "Additional DB entries";
-        type = types.listOf types.str;
-        default = [ ];
-      };
-
-      extraArgs = mkOption {
-        description = "Additional arguments passed to the daemon.";
-        type = types.listOf types.str;
-        default = [ ];
       };
     };
   };
 
   ###### implementation
-
   config = mkIf cfg.enable {
     systemd.services.hddtemp = {
+      inherit script;
       description = "HDD/SSD temperature";
       documentation = [ "man:hddtemp(8)" ];
-      wantedBy = [ "multi-user.target" ];
-      inherit script;
+
       serviceConfig = {
-        Type = "forking";
-        StateDirectory = "hddtemp";
         PrivateTmp = true;
         ProtectHome = "tmpfs";
         ProtectSystem = "strict";
+        StateDirectory = "hddtemp";
+        Type = "forking";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
+
+  meta.maintainers = with lib.maintainers; [ peterhoeg ];
 }

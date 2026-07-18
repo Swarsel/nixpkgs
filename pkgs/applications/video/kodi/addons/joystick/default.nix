@@ -1,14 +1,13 @@
 {
   lib,
-  rel,
-  buildKodiBinaryAddon,
   fetchFromGitHub,
+  buildKodiBinaryAddon,
+  rel,
   tinyxml,
   udev,
 }:
 buildKodiBinaryAddon rec {
   pname = namespace;
-  namespace = "peripheral.joystick";
   version = "21.1.23";
 
   src = fetchFromGitHub {
@@ -23,11 +22,13 @@ buildKodiBinaryAddon rec {
     udev
   ];
 
+  namespace = "peripheral.joystick";
+
   meta = {
     description = "Binary addon for raw joystick input";
     homepage = "https://github.com/xbmc/peripheral.joystick";
-    platforms = lib.platforms.all;
     license = lib.licenses.gpl2Only;
+    platforms = lib.platforms.all;
     teams = [ lib.teams.kodi ];
   };
 }

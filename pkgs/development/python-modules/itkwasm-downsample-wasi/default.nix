@@ -12,29 +12,28 @@
 buildPythonPackage (finalAttrs: {
   pname = "itkwasm-downsample-wasi";
   version = "1.8.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "itkwasm_downsample_wasi";
     inherit (finalAttrs) version;
     hash = "sha256-OykKkZRlRGDw+SsK69z6dqh6LY7eUlyHGdZwmkKsMKQ=";
+    pname = "itkwasm_downsample_wasi";
   };
+
+  nativeBuildInputs = [ writableTmpDirAsHomeHook ];
+  # No tests available
+  doCheck = false;
 
   build-system = [
     hatch-vcs
     hatchling
   ];
 
-  nativeBuildInputs = [ writableTmpDirAsHomeHook ];
-
   dependencies = [
     importlib-resources
     itkwasm
   ];
 
-  # No tests available
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "itkwasm_downsample_wasi" ];
 
   meta = {

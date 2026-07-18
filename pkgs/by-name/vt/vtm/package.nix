@@ -24,8 +24,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Terminal multiplexer with window manager and session sharing";
     homepage = "https://vtm.netxs.online/";
     license = lib.licenses.mit;
-    mainProgram = "vtm";
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "vtm";
   };
 })

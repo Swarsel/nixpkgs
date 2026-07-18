@@ -1,7 +1,7 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
   expect,
   makeWrapper,
   updateAutotoolsGnuConfigScriptsHook,
@@ -20,6 +20,7 @@ stdenv.mkDerivation (finalAttrs: {
     updateAutotoolsGnuConfigScriptsHook
     makeWrapper
   ];
+
   buildInputs = [ expect ];
 
   # dejagnu-1.6.3 can't successfully run tests in source tree:
@@ -28,7 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     mkdir build
     cd build
   '';
-  configureScript = "../configure";
 
   doCheck = !(with stdenv; isDarwin && isAarch64);
 
@@ -36,7 +36,6 @@ stdenv.mkDerivation (finalAttrs: {
   # the build daemon when building in a chroot.  See
   # <https://www.mail-archive.com/nix-dev@cs.uu.nl/msg01056.html> for
   # details.
-
   # The test-suite needs to have a non-empty stdin:
   #   https://lists.gnu.org/archive/html/bug-dejagnu/2003-06/msg00002.html
   checkPhase = ''
@@ -52,6 +51,8 @@ stdenv.mkDerivation (finalAttrs: {
     #   https://sourceware.org/PR30052#c5
     ln -s ${expect}/bin/expect $out/bin/expect
   '';
+
+  configureScript = "../configure";
 
   meta = {
     description = "Framework for testing other programs";
@@ -69,8 +70,7 @@ stdenv.mkDerivation (finalAttrs: {
 
     homepage = "https://www.gnu.org/software/dejagnu/";
     license = lib.licenses.gpl2Plus;
-
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

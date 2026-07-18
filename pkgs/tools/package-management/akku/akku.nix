@@ -4,11 +4,11 @@
   fetchurl,
   fetchFromGitLab,
   autoreconfHook,
-  pkg-config,
+  curl,
   git,
   guile_3_0,
-  curl,
   nix-update-script,
+  pkg-config,
 }:
 let
   # Akku currently breaks starting with Guile 3.0.11.
@@ -44,27 +44,29 @@ stdenv.mkDerivation rec {
     git
   ];
 
+  makeFlags = [ "GUILE_AUTO_COMPILE=0" ];
+
   # Use a dummy package index to bootstrap Akku
   preBuild = ''
     touch bootstrap.db
   '';
-
-  makeFlags = [ "GUILE_AUTO_COMPILE=0" ];
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];
   };
 
   meta = {
-    homepage = "https://akkuscm.org/";
     description = "Language package manager for Scheme";
+    homepage = "https://akkuscm.org/";
     changelog = "https://gitlab.com/akkuscm/akku/-/raw/v${version}/NEWS.md";
-    platforms = lib.platforms.all;
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       nagy
       konst-aa
     ];
+
+    platforms = lib.platforms.all;
     mainProgram = "akku";
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   perl,
   # Needed if you want to use it for a perl script with dependencies.
   extraPerlPackages ? [ ],
@@ -29,14 +29,15 @@ buildNpmPackage rec {
 
   npmDepsHash = "sha256-iw7+YC4qkrTVEJuZ9lnjNlUopTCp+fMNoIjFLutmrMw=";
 
-  npmBuildScript = "compile";
-
   makeWrapperArgs = [
     "--prefix"
     "PATH"
     ":"
     (lib.makeBinPath [ perlInterpreter ])
   ];
+
+  npmBuildScript = "compile";
+
   passthru = {
     inherit perlInterpreter;
   };

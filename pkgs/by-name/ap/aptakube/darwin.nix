@@ -1,11 +1,10 @@
 {
-  stdenvNoCC,
   fetchurl,
-  undmg,
-
-  pname,
-  version,
   meta,
+  pname,
+  stdenvNoCC,
+  undmg,
+  version,
 }:
 stdenvNoCC.mkDerivation {
   inherit
@@ -21,16 +20,16 @@ stdenvNoCC.mkDerivation {
 
   nativeBuildInputs = [ undmg ];
 
-  unpackPhase = ''
-    runHook preUnpack
-    undmg $src
-    runHook postUnpack
-  '';
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/Applications
     cp -r Aptakube.app $out/Applications/Aptakube.app
     runHook postInstall
+  '';
+
+  unpackPhase = ''
+    runHook preUnpack
+    undmg $src
+    runHook postUnpack
   '';
 }

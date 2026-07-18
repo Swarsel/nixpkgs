@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication {
   pname = "altdns";
   version = "1.0.2-unstable-2021-09-09";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "infosec-au";
@@ -16,7 +15,12 @@ python3Packages.buildPythonApplication {
     hash = "sha256-ElY6AZ7IBnOh7sRWNSQNmq7AYGlnjvYRn8/U+29BwWA=";
   };
 
-  pythonRemoveDeps = [ "argparse" ];
+  # Project has no tests
+  doCheck = false;
+
+  postInstall = ''
+    cp $src/words.txt $out/
+  '';
 
   build-system = with python3Packages; [
     setuptools
@@ -28,16 +32,13 @@ python3Packages.buildPythonApplication {
     tldextract
   ];
 
-  postInstall = ''
-    cp $src/words.txt $out/
-  '';
-
-  # Project has no tests
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "altdns"
   ];
+
+  pythonRemoveDeps = [ "argparse" ];
 
   meta = {
     description = "Generates permutations, alterations and mutations of subdomains and then resolves them";

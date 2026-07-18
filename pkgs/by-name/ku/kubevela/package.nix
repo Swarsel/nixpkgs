@@ -1,13 +1,13 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
-  writableTmpDirAsHomeHook,
   lib,
   stdenv,
-  testers,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
   kubevela,
   nix-update-script,
+  testers,
+  writableTmpDirAsHomeHook,
 }:
 let
   canGenerateShellCompletions = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
@@ -23,7 +23,27 @@ buildGoModule (finalAttrs: {
     hash = "sha256-7rW5hJSci3jQP/0HDjwvrNLY5fKYog+jB/dqBdz+2fw=";
   };
 
+  nativeBuildInputs = [
+    installShellFiles
+  ]
+  ++ lib.optionals canGenerateShellCompletions [
+    writableTmpDirAsHomeHook # Workaround for permission issue in shell completion
+  ];
+
   vendorHash = "sha256-MUfULgycZn8hFfWmtNeoFf21+g3gGpeKoBvL8qB/m80=";
+  env.CGO_ENABLED = 0;
+
+  installPhase = ''
+    runHook preInstall
+    install -Dm755 "$GOPATH/bin/cli" -T $out/bin/vela
+    runHook postInstall
+  '';
+
+  postInstall = lib.optionalString canGenerateShellCompletions ''
+    installShellCompletion --cmd vela \
+      --bash <($out/bin/vela completion bash) \
+      --zsh <($out/bin/vela completion zsh)
+  '';
 
   ldflags = [
     "-s"
@@ -33,40 +53,19 @@ buildGoModule (finalAttrs: {
 
   subPackages = [ "references/cmd/cli" ];
 
-  env.CGO_ENABLED = 0;
-
-  installPhase = ''
-    runHook preInstall
-    install -Dm755 "$GOPATH/bin/cli" -T $out/bin/vela
-    runHook postInstall
-  '';
-
-  nativeBuildInputs = [
-    installShellFiles
-  ]
-  ++ lib.optionals canGenerateShellCompletions [
-    writableTmpDirAsHomeHook # Workaround for permission issue in shell completion
-  ];
-
-  postInstall = lib.optionalString canGenerateShellCompletions ''
-    installShellCompletion --cmd vela \
-      --bash <($out/bin/vela completion bash) \
-      --zsh <($out/bin/vela completion zsh)
-  '';
-
   passthru.tests.version = testers.testVersion {
-    package = kubevela;
     command = "HOME=$TMPDIR vela version";
+    package = kubevela;
   };
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Application delivery platform to deploy and operate applications in hybrid, multi-cloud environments";
-    downloadPage = "https://github.com/kubevela/kubevela";
     homepage = "https://kubevela.io/";
     license = lib.licenses.asl20;
     maintainers = [ ];
     mainProgram = "vela";
+    downloadPage = "https://github.com/kubevela/kubevela";
   };
 })

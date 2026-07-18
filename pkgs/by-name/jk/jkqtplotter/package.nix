@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
   qt6,
 }:
 
@@ -29,8 +29,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Qt plotting framework";
-    maintainers = [ lib.maintainers.sheepforce ];
     homepage = "https://github.com/jkriege2/JKQtPlotter";
     license = lib.licenses.lgpl21Plus;
+    maintainers = [ lib.maintainers.sheepforce ];
   };
 })

@@ -2,25 +2,25 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
+  asciidoc,
   autoconf,
   automake,
-  libtool,
-  gettext,
-  pkg-config,
-  wxwidgets_3_2,
   boost,
-  icu,
-  lucenepp,
-  asciidoc,
-  libxslt,
-  xmlto,
+  gettext,
   gtk3,
   gtkspell3,
-  pugixml,
-  nlohmann_json,
   hicolor-icon-theme,
+  icu,
+  libtool,
+  libxslt,
+  lucenepp,
+  nix-update-script,
+  nlohmann_json,
+  pkg-config,
+  pugixml,
   wrapGAppsHook3,
+  wxwidgets_3_2,
+  xmlto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -59,11 +59,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   propagatedBuildInputs = [ gettext ];
 
-  preConfigure = "
-    patchShebangs bootstrap
-    ./bootstrap
-  ";
-
   configureFlags = [
     "--without-cld2"
     "--without-cpprest"
@@ -71,6 +66,11 @@ stdenv.mkDerivation (finalAttrs: {
     "CPPFLAGS=-I${nlohmann_json}/include/nlohmann/"
     "LDFLAGS=-llucene++"
   ];
+
+  preConfigure = "
+    patchShebangs bootstrap
+    ./bootstrap
+  ";
 
   preFixup = ''
     gappsWrapperArgs+=(--prefix PATH : "${lib.makeBinPath [ gettext ]}")
@@ -87,11 +87,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Cross-platform gettext catalogs (.po files) editor";
-    mainProgram = "poedit";
     homepage = "https://www.poedit.net/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ dasj19 ];
+    platforms = lib.platforms.unix;
+    mainProgram = "poedit";
     # configure: error: GTK+ build of wxWidgets is required
     broken = stdenv.hostPlatform.isDarwin;
   };

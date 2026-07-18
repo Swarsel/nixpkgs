@@ -14,13 +14,12 @@ stdenv.mkDerivation {
     sha256 = "0bnbfpj1qg4yzwbikh1aw5ajc8l44lkb0y0m6mz8grpf5bxk5cwm";
   };
 
-  dontUnpack = true;
-
-  passthru.scripts = [ "go.py" ];
-
   installPhase = ''
     install -D $src $out/share/go.py
   '';
+
+  dontUnpack = true;
+  passthru.scripts = [ "go.py" ];
 
   meta = {
     inherit (weechat.meta) platforms;

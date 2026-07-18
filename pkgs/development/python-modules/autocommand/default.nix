@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "autocommand";
   version = "2.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Lucretiel";
@@ -24,12 +23,10 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ setuptools ];
-
   # fails with: SyntaxError: invalid syntax
   doCheck = false;
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "autocommand" ];
 
   meta = {

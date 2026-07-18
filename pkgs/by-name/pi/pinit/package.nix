@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  blueprint-compiler,
+  libadwaita,
+  libgee,
   meson,
   ninja,
   pkg-config,
   vala,
-  blueprint-compiler,
   wrapGAppsHook4,
-  libadwaita,
-  libgee,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,12 +40,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Pin portable apps to the launcher";
     homepage = "https://github.com/ryonakano/pinit";
+
     license = with lib.licenses; [
       gpl3Plus
       cc0
     ];
-    mainProgram = "com.github.ryonakano.pinit";
+
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.linux;
+    mainProgram = "com.github.ryonakano.pinit";
   };
 })

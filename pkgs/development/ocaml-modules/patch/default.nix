@@ -1,17 +1,15 @@
 {
   lib,
   fetchFromGitHub,
-  buildDunePackage,
-  gitUpdater,
   alcotest,
+  buildDunePackage,
   crowbar,
+  gitUpdater,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "patch";
   version = "3.0.0";
-
-  minimalOCamlVersion = "4.08";
 
   src = fetchFromGitHub {
     owner = "hannesm";
@@ -25,15 +23,18 @@ buildDunePackage (finalAttrs: {
     crowbar
   ];
 
+  minimalOCamlVersion = "4.08";
   passthru.updateScript = gitUpdater { };
 
   meta = {
     description = "Patch library purely in OCaml";
+
     longDescription = ''
       This is a library which parses unified diff and git diff output, and can apply a patch in memory.
     '';
+
     homepage = "https://github.com/hannesm/patch";
-    maintainers = with lib.maintainers; [ r17x ];
     license = lib.licenses.isc;
+    maintainers = with lib.maintainers; [ r17x ];
   };
 })

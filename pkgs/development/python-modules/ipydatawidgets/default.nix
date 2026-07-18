@@ -2,21 +2,18 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  pytestCheckHook,
-  nbval,
-  jupyter-packaging,
   ipywidgets,
+  jupyter-packaging,
+  nbval,
   numpy,
+  pytestCheckHook,
   six,
   traittypes,
 }:
 
 buildPythonPackage rec {
-  __structuredAttrs = true;
-
   pname = "ipydatawidgets";
   version = "4.3.5";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -24,8 +21,6 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ jupyter-packaging ];
-
-  setupPyBuildFlags = [ "--skip-npm" ];
 
   propagatedBuildInputs = [
     ipywidgets
@@ -41,6 +36,7 @@ buildPythonPackage rec {
 
   # Tests bind ports
   __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
 
   disabledTestPaths = [
     # https://github.com/vidartf/ipydatawidgets/issues/62
@@ -49,6 +45,9 @@ buildPythonPackage rec {
     # https://github.com/vidartf/ipydatawidgets/issues/63
     "examples/test.ipynb::Cell 3"
   ];
+
+  format = "setuptools";
+  setupPyBuildFlags = [ "--skip-npm" ];
 
   meta = {
     description = "Widgets to help facilitate reuse of large datasets across different widgets";

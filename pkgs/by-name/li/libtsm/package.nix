@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  check,
   libxkbcommon,
-  pkg-config,
   meson,
   ninja,
-  check,
   nix-update-script,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,12 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
-
-  buildInputs = [
-    libxkbcommon
-    check
-  ];
 
   nativeBuildInputs = [
     meson
@@ -35,6 +29,12 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
   ];
 
+  buildInputs = [
+    libxkbcommon
+    check
+  ];
+
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { extraArgs = [ "--use-github-releases" ]; };
 
   meta = {

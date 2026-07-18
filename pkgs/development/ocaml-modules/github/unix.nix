@@ -1,17 +1,17 @@
 {
   buildDunePackage,
-  fetchpatch,
-  github,
+  cmdliner,
   cohttp,
   cohttp-lwt-unix,
-  stringext,
-  cmdliner,
+  fetchpatch,
+  github,
   lwt,
+  stringext,
 }:
 
 buildDunePackage {
-  pname = "github-unix";
   inherit (github) version src;
+  pname = "github-unix";
 
   postPatch = ''
     substituteInPlace unix/dune --replace-fail 'github bytes' 'github'

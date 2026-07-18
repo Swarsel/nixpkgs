@@ -3,20 +3,20 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  python3,
-  wrapGAppsHook3,
+  curl,
+  fribidi,
+  gspell,
   gtkmm3,
   gtksourceview4,
   gtksourceviewmm,
-  gspell,
-  libxmlxx,
-  sqlite,
-  curl,
   libuchardet,
+  libxmlxx,
+  pkg-config,
+  python3,
   spdlog,
-  fribidi,
+  sqlite,
   vte,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -53,7 +53,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Hierarchical note taking application";
-    mainProgram = "cherrytree";
+
     longDescription = ''
       Cherrytree is an hierarchical note taking application, featuring rich
       text, syntax highlighting and powerful search capabilities. It organizes
@@ -63,10 +63,12 @@ stdenv.mkDerivation (finalAttrs: {
       you have scattered around your hard drive can be conveniently placed into
       a Cherrytree document where you can easily find it.
     '';
+
     homepage = "https://www.giuspen.com/cherrytree";
     changelog = "https://raw.githubusercontent.com/giuspen/cherrytree/v${finalAttrs.version}/changelog.txt";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "cherrytree";
   };
 })

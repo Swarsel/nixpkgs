@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  nixosTests,
   setuptools,
   six,
   twisted,
-  nixosTests,
 }:
 
 buildPythonPackage rec {
   pname = "txredisapi";
   version = "1.4.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "IlyaSkriblovsky";
@@ -28,15 +27,14 @@ buildPythonPackage rec {
   ]
   ++ twisted.optional-dependencies.tls;
 
-  pythonImportsCheck = [ "txredisapi" ];
-
   doCheck = false;
-
+  pyproject = true;
+  pythonImportsCheck = [ "txredisapi" ];
   passthru.tests.unit-tests = nixosTests.txredisapi;
 
   meta = {
-    homepage = "https://github.com/IlyaSkriblovsky/txredisapi";
     description = "Non-blocking redis client for python";
+    homepage = "https://github.com/IlyaSkriblovsky/txredisapi";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dandellion ];
   };

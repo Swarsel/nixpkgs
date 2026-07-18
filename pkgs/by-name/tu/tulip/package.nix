@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchurl,
-  libxml2,
-  freetype,
-  libGLU,
-  libGL,
-  glew,
-  qt5,
   autoPatchelfHook,
-  python312,
   cmake,
+  freetype,
+  glew,
+  libGL,
+  libGLU,
   libjpeg,
+  libxml2,
   llvmPackages,
+  python312,
+  qt5,
 }:
 let
   python3 = python312; # fails to build otherwise
@@ -47,8 +47,6 @@ stdenv.mkDerivation rec {
     libGL
   ];
 
-  qtWrapperArgs = [ "--prefix PATH : ${lib.makeBinPath [ python3 ]}" ];
-
   env.NIX_CFLAGS_COMPILE =
     # error: invalid conversion from 'unsigned char*' to 'char*'
     "-fpermissive "
@@ -61,6 +59,7 @@ stdenv.mkDerivation rec {
 
   # FIXME: "make check" needs Docbook's DTD 4.4, among other things.
   doCheck = false;
+  qtWrapperArgs = [ "--prefix PATH : ${lib.makeBinPath [ python3 ]}" ];
 
   meta = {
     description = "Visualization framework for the analysis and visualization of relational data";
@@ -74,9 +73,7 @@ stdenv.mkDerivation rec {
     '';
 
     homepage = "http://tulip.labri.fr/";
-
     license = lib.licenses.gpl3Plus;
-
     maintainers = [ ];
     platforms = lib.platforms.all;
     # The last successful Darwin Hydra build was in 2024

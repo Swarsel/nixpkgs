@@ -10,14 +10,14 @@
 buildPythonPackage rec {
   pname = "websocket-client";
   version = "1.9.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "websocket_client";
     inherit version;
     hash = "sha256-noE2JLbrYZmZqX3HlYRpIXwxdjErOhakvRvH4IpG7Jg=";
+    pname = "websocket_client";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   optional-dependencies = {
@@ -27,8 +27,7 @@ buildPythonPackage rec {
     ];
   };
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "websocket" ];
 
   meta = {

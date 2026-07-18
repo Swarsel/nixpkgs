@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   celery,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "tenant-schemas-celery";
   version = "4.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "maciej-gol";
@@ -19,9 +18,8 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
-
   dependencies = [ celery ];
-
+  pyproject = true;
   pythonImportsCheck = [ "tenant_schemas_celery" ];
 
   meta = {

@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  maven,
-  swt,
+  alsa-lib,
+  fetchpatch,
+  fluidsynth,
+  jack2,
   jdk,
   jre,
-  makeBinaryWrapper,
-  pkg-config,
-  alsa-lib,
-  jack2,
-  fluidsynth,
   libpulseaudio,
   lilv,
-  suil,
+  makeBinaryWrapper,
+  maven,
+  nixosTests,
+  pkg-config,
   qt5,
+  suil,
+  swt,
   which,
   wrapGAppsHook3,
-  nixosTests,
-  fetchpatch,
 }:
 
 let
@@ -60,9 +60,9 @@ let
   ];
   # FIXME: Makes hash stable across platforms and convert to a single hash.
   mvnHashByPlatform = {
-    "x86_64-linux" = "sha256-KYF7vSMXPgi6xvtgcSIIEOltK5RL4ynGQf1579Is5nM=";
-    "aarch64-linux" = "sha256-KYF7vSMXPgi6xvtgcSIIEOltK5RL4ynGQf1579Is5nM=";
     "aarch64-darwin" = "sha256-uJXOACtuE4fKIb4a6C3Cy+MilI8OOdsuAgtJyklxHdw=";
+    "aarch64-linux" = "sha256-KYF7vSMXPgi6xvtgcSIIEOltK5RL4ynGQf1579Is5nM=";
+    "x86_64-linux" = "sha256-KYF7vSMXPgi6xvtgcSIIEOltK5RL4ynGQf1579Is5nM=";
   };
   wrapperArgs = [
     "\${gappsWrapperArgs[@]}"
@@ -82,8 +82,8 @@ let
   version = "2.0.1";
 in
 maven.buildMavenPackage {
-  pname = "tuxguitar";
   inherit version;
+  pname = "tuxguitar";
 
   src = fetchFromGitHub {
     owner = "helge17";
@@ -96,52 +96,11 @@ maven.buildMavenPackage {
     ./fix-include.patch
     # Helps a little bit with https://github.com/helge17/tuxguitar/issues/961
     (fetchpatch {
+      hash = "sha256-umZlCSCTWqj3tgR+qFcPucEDv5vpaC6zHbDJg/W5KUI=";
       name = "create-new-file";
       url = "https://github.com/helge17/tuxguitar/commit/3dc828a9b92e932952c2b33d8ee41db734f2fcc0.patch";
-      hash = "sha256-umZlCSCTWqj3tgR+qFcPucEDv5vpaC6zHbDJg/W5KUI=";
     })
   ];
-
-  buildOffline = true;
-
-  mvnJdk = jdk;
-
-  mvnHash = (
-    mvnHashByPlatform.${stdenv.system}
-      or (lib.warn "Missing mvnHash for ${stdenv.system}, using lib.fakeHash" lib.fakeHash)
-  );
-
-  mvnParameters = mvnParams;
-  mvnDepsParameters = mvnParams;
-
-  mvnFetchExtraArgs = {
-    dontWrapQtApps = true;
-    dontWrapGApps = true;
-    preBuild = ''
-      mkdir -p $out/.m2
-      mvn install:install-file \
-        -Dfile=${swt}/jars/swt.jar \
-        -DgroupId=org.eclipse.swt \
-        -DartifactId=${swtArtifactId} \
-        -Dpackaging=jar \
-        -Dversion=4.36 \
-        -Dmaven.repo.local=$out/.m2
-    '';
-    postInstall = ''
-      rm -rf $out/.m2/repository/org/eclipse/swt
-      find $out -type f -name "maven-metadata-*.xml" -delete
-    '';
-  };
-
-  afterDepsSetup = ''
-    mvn install:install-file \
-      -Dfile=${swt}/jars/swt.jar \
-      -DgroupId=org.eclipse.swt \
-      -DartifactId=${swtArtifactId} \
-      -Dpackaging=jar \
-      -Dversion=4.36 \
-      -Dmaven.repo.local=$mvnDeps/.m2
-  '';
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -164,10 +123,6 @@ maven.buildMavenPackage {
     suil
     qt5.qtbase
   ];
-
-  dontWrapQtApps = true;
-
-  dontWrapGApps = true;
 
   installPhase = ''
     runHook preInstall
@@ -216,22 +171,70 @@ maven.buildMavenPackage {
     wrapProgram $out/bin/tuxguitar ${lib.concatStringsSep " " wrapperArgs}
   '';
 
+  afterDepsSetup = ''
+    mvn install:install-file \
+      -Dfile=${swt}/jars/swt.jar \
+      -DgroupId=org.eclipse.swt \
+      -DartifactId=${swtArtifactId} \
+      -Dpackaging=jar \
+      -Dversion=4.36 \
+      -Dmaven.repo.local=$mvnDeps/.m2
+  '';
+
+  buildOffline = true;
+  dontWrapGApps = true;
+  dontWrapQtApps = true;
+  mvnDepsParameters = mvnParams;
+
+  mvnFetchExtraArgs = {
+    preBuild = ''
+      mkdir -p $out/.m2
+      mvn install:install-file \
+        -Dfile=${swt}/jars/swt.jar \
+        -DgroupId=org.eclipse.swt \
+        -DartifactId=${swtArtifactId} \
+        -Dpackaging=jar \
+        -Dversion=4.36 \
+        -Dmaven.repo.local=$out/.m2
+    '';
+
+    postInstall = ''
+      rm -rf $out/.m2/repository/org/eclipse/swt
+      find $out -type f -name "maven-metadata-*.xml" -delete
+    '';
+
+    dontWrapGApps = true;
+    dontWrapQtApps = true;
+  };
+
+  mvnHash = (
+    mvnHashByPlatform.${stdenv.system}
+      or (lib.warn "Missing mvnHash for ${stdenv.system}, using lib.fakeHash" lib.fakeHash)
+  );
+
+  mvnJdk = jdk;
+  mvnParameters = mvnParams;
+
   passthru = {
     tests.nixos = nixosTests.tuxguitar;
   };
 
   meta = {
     description = "Multitrack guitar tablature editor";
+
     longDescription = ''
       TuxGuitar is a multitrack guitar tablature editor and player written
       in Java-SWT. It can open GuitarPro, PowerTab and TablEdit files.
     '';
+
     homepage = "https://github.com/helge17/tuxguitar";
     license = lib.licenses.lgpl21Plus;
+
     maintainers = with lib.maintainers; [
       ardumont
       mio
     ];
+
     platforms = builtins.attrNames mvnHashByPlatform;
     mainProgram = "tuxguitar";
   };

@@ -1,13 +1,13 @@
 {
   lib,
-  chromaprint,
   fetchFromGitHub,
+  chromaprint,
   python3Packages,
 }:
 python3Packages.buildPythonPackage rec {
-  version = "0.2.2";
   pname = "audiomatch";
-  pyproject = true;
+  version = "0.2.2";
+
   src = fetchFromGitHub {
     owner = "unmade";
     repo = "audiomatch";
@@ -24,22 +24,24 @@ python3Packages.buildPythonPackage rec {
      --replace-fail 'fpcalc' '${lib.getExe chromaprint}'
   '';
 
+  nativeCheckInputs = [
+    python3Packages.pytestCheckHook
+  ];
+
   build-system = [
     python3Packages.poetry-core
     python3Packages.distutils
   ];
 
-  nativeCheckInputs = [
-    python3Packages.pytestCheckHook
-  ];
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/unmade/audiomatch";
     description = "A small command-line tool to find similar audio files";
+    homepage = "https://github.com/unmade/audiomatch";
     changelog = "https://github.com/unmade/audiomatch/releases/tag/${version}";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ leha44581 ];
     platforms = lib.platforms.all;
     mainProgram = "audiomatch";
-    maintainers = with lib.maintainers; [ leha44581 ];
   };
 }

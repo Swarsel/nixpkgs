@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
-  fetchzip,
-  installFonts,
-  writeShellApplication,
-  curl,
-  gnugrep,
   common-updater-scripts,
+  curl,
+  fetchzip,
+  gnugrep,
+  installFonts,
+  stdenvNoCC,
+  writeShellApplication,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -48,11 +48,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Japanese Mincho font implementing IVS compliant with Hanyo-Denshi collection";
-    downloadPage = "https://forest.watch.impress.co.jp/library/software/ipamjfont/";
     homepage = "https://moji.or.jp/mojikiban/font/";
     license = lib.licenses.ipa;
+
     maintainers = with lib.maintainers; [
       kachick
     ];
+
+    downloadPage = "https://forest.watch.impress.co.jp/library/software/ipamjfont/";
   };
 })

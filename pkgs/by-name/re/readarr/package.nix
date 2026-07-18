@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  libmediainfo,
-  sqlite,
   curl,
-  makeWrapper,
-  icu,
   dotnet-runtime,
-  openssl,
+  icu,
+  libmediainfo,
+  makeWrapper,
   nixosTests,
+  openssl,
+  sqlite,
   zlib,
 }:
 
@@ -17,14 +17,14 @@ let
   os = if stdenv.hostPlatform.isDarwin then "osx" else "linux";
   arch =
     {
-      x86_64-linux = "x64";
       aarch64-linux = "arm64";
+      x86_64-linux = "x64";
     }
     ."${stdenv.hostPlatform.system}" or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
   hash =
     {
-      x64-linux_hash = "sha256-hCqxH6xPLhA+V7reqsHi1EY2sU3HJ6ESMJiiWXrcUUE=";
       arm64-linux_hash = "sha256-7NpH32tkEOYVyfwIBq9LCKAo0IQ1IehYfKi+qiBzf8o=";
+      x64-linux_hash = "sha256-hCqxH6xPLhA+V7reqsHi1EY2sU3HJ6ESMJiiWXrcUUE=";
       x64-osx_hash = "sha256-ypzOWXxtzvOTgTmU7pQ1cS+FcyNCOo5R2Z4l5Mk+4wA=";
     }
     ."${arch}-${os}_hash";
@@ -62,23 +62,26 @@ stdenv.mkDerivation rec {
   '';
 
   passthru = {
-    updateScript = ./update.sh;
     tests.smoke-test = nixosTests.readarr;
+    updateScript = ./update.sh;
   };
 
   meta = {
     description = "Usenet/BitTorrent ebook downloader";
     homepage = "https://readarr.com";
     license = lib.licenses.gpl3;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       jocelynthode
       devusb
     ];
-    mainProgram = "Readarr";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
+    mainProgram = "Readarr";
   };
 }

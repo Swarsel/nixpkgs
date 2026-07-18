@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  zlib,
   bzip2,
   jansson,
   makeWrapper,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,12 +19,15 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-IF2MWGpdnP8PKwLRboe5bxu8N+gV4qZ82BemJE/JCU0=";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     zlib
     bzip2
     jansson
   ];
-  nativeBuildInputs = [ makeWrapper ];
+
+  makeFlags = [ "BINDIR=$(out)/bin" ];
 
   preConfigure = ''
     # We use nixpkgs versions of these libraries
@@ -56,8 +59,6 @@ stdenv.mkDerivation (finalAttrs: {
       substituteInPlace $f --replace '-static' ""
     done
   '';
-
-  makeFlags = [ "BINDIR=$(out)/bin" ];
 
   postFixup = ''
     for f in $out/bin/* ; do

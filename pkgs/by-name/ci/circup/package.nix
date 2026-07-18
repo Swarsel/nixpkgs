@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "circup";
   version = "3.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "adafruit";
@@ -16,8 +15,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-sv+ixo5S9JRuVu8JkKt29Kpn1ioRIwGW4Ss/A77YiFU=";
   };
 
-  pythonRelaxDeps = [ "semver" ];
+  postBuild = ''
+    export HOME=$(mktemp -d);
+  '';
 
+  nativeCheckInputs = with python3.pkgs; [ pytestCheckHook ];
   build-system = with python3.pkgs; [ setuptools-scm ];
 
   dependencies = with python3.pkgs; [
@@ -31,19 +33,15 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     update-checker
   ];
 
-  nativeCheckInputs = with python3.pkgs; [ pytestCheckHook ];
-
-  postBuild = ''
-    export HOME=$(mktemp -d);
-  '';
-
-  pythonImportsCheck = [ "circup" ];
-
   disabledTests = [
     # Test requires network access
     "test_libraries_from_imports_bad"
     "test_install_auto_file_bad"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "circup" ];
+  pythonRelaxDeps = [ "semver" ];
 
   meta = {
     description = "CircuitPython library updater";

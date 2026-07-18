@@ -1,15 +1,14 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 let
   version = "1.2.17";
 in
 python3Packages.buildPythonApplication {
-  pname = "mktxp";
   inherit version;
-  pyproject = false;
+  pname = "mktxp";
 
   src = fetchFromGitHub {
     owner = "akpw";
@@ -35,13 +34,15 @@ python3Packages.buildPythonApplication {
     pyyaml
   ];
 
+  pyproject = false;
+
   meta = {
+    description = "Prometheus Exporter for Mikrotik RouterOS devices";
     homepage = "https://github.com/akpw/mktxp";
     changelog = "https://github.com/akpw/mktxp/releases/tag/v${version}";
-    description = "Prometheus Exporter for Mikrotik RouterOS devices";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.BonusPlay ];
+    platforms = lib.platforms.linux;
     mainProgram = "mktxp";
   };
 }

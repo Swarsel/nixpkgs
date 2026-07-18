@@ -10,16 +10,13 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.4.1";
 
   src = fetchurl {
+    hash = "sha256-Y8EqajKo42TzTwSdiyR39GVgIUGPCLjWtGK+DtO+OsM=";
+
     urls = [
       "https://www.floodgap.com/retrotech/xa/dists/xa-${finalAttrs.version}.tar.gz"
       "https://www.floodgap.com/retrotech/xa/dists/unsupported/xa-${finalAttrs.version}.tar.gz"
     ];
-    hash = "sha256-Y8EqajKo42TzTwSdiyR39GVgIUGPCLjWtGK+DtO+OsM=";
   };
-
-  nativeCheckInputs = [ perl ];
-
-  dontConfigure = true;
 
   postPatch = ''
     substituteInPlace Makefile \
@@ -31,21 +28,21 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   makeFlags = [ "DESTDIR:=${placeholder "out"}" ];
-
-  enableParallelBuilding = true;
-
   doCheck = false; # while opening file: stat: No such file or directory [Makefile:21: test1.o65]
-
-  # Running tests in parallel does not work
-  enableParallelChecking = false;
+  nativeCheckInputs = [ perl ];
 
   preCheck = ''
     patchShebangs tests
   '';
 
+  dontConfigure = true;
+  enableParallelBuilding = true;
+  # Running tests in parallel does not work
+  enableParallelChecking = false;
+
   meta = {
-    homepage = "https://www.floodgap.com/retrotech/xa/";
     description = "Andre Fachat's open-source 6502 cross assembler";
+
     longDescription = ''
       xa is a high-speed, two-pass portable cross-assembler. It understands
       mnemonics and generates code for NMOS 6502s (such as 6502A, 6504, 6507,
@@ -62,9 +59,11 @@ stdenv.mkDerivation (finalAttrs: {
         suite, as well as "bare" plain binary object files
       - block structure for label scoping
     '';
-    mainProgram = "xa";
+
+    homepage = "https://www.floodgap.com/retrotech/xa/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xa";
   };
 })

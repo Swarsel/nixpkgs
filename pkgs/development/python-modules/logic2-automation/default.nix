@@ -1,14 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build
-  hatchling,
-
+  buildPythonPackage,
   # dependencies
   grpcio,
   grpcio-tools,
+  # build
+  hatchling,
   protobuf,
 }:
 
@@ -23,11 +21,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-e0UvRwUs+rKFF3ky8bnHV22ZA9sU+AoghcMui2pIzQ0=";
   };
 
-  sourceRoot = "source/python";
-
   preBuild = "./build.sh";
-
-  pyproject = true;
+  # Tests require the unfree saleae-logic-2 package, plus gRPC server which is not packaged, yet.
+  doCheck = false;
 
   build-system = [
     hatchling
@@ -39,10 +35,9 @@ buildPythonPackage (finalAttrs: {
     protobuf
   ];
 
-  # Tests require the unfree saleae-logic-2 package, plus gRPC server which is not packaged, yet.
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "saleae.automation" ];
+  sourceRoot = "source/python";
 
   meta = {
     description = "Automation interface for Saleae Logic 2 software";

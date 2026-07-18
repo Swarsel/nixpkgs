@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  kdePackages,
   fcitx5,
   gettext,
+  kdePackages,
   qtbase,
   qtwayland,
-  wrapQtAppsHook,
   wayland,
+  wrapQtAppsHook,
 }:
 let
   majorVersion = lib.versions.major qtbase.version;
@@ -30,13 +30,6 @@ stdenv.mkDerivation rec {
       --replace \$"{CMAKE_INSTALL_QT${majorVersion}PLUGINDIR}" $out/${qtbase.qtPluginPrefix}
   '';
 
-  cmakeFlags = [
-    "-DENABLE_QT4=OFF"
-    "-DENABLE_QT5=OFF"
-    "-DENABLE_QT6=OFF"
-    "-DENABLE_QT${majorVersion}=ON"
-  ];
-
   nativeBuildInputs = [
     cmake
     kdePackages.extra-cmake-modules
@@ -51,13 +44,22 @@ stdenv.mkDerivation rec {
     wayland
   ];
 
+  cmakeFlags = [
+    "-DENABLE_QT4=OFF"
+    "-DENABLE_QT5=OFF"
+    "-DENABLE_QT6=OFF"
+    "-DENABLE_QT${majorVersion}=ON"
+  ];
+
   meta = {
     description = "Fcitx5 Qt Library";
     homepage = "https://github.com/fcitx/fcitx5-qt";
+
     license = with lib.licenses; [
       lgpl21Plus
       bsd3
     ];
+
     maintainers = with lib.maintainers; [ poscat ];
     platforms = lib.platforms.linux;
   };

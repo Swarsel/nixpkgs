@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   alsa-lib,
+  cmake,
   python3,
 }:
 
@@ -26,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     python3
   ];
+
   buildInputs = [ alsa-lib ];
   sourceRoot = "${finalAttrs.src.name}/tools";
 
@@ -33,8 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Tools to develop, test and debug SoF (Sund Open Firmware)";
     homepage = "https://thesofproject.github.io";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.johnazoidberg ];
+    platforms = lib.platforms.unix;
     mainProgram = "sof-ctl";
   };
 })

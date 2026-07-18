@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
   pytestCheckHook,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aprslib";
   version = "0.7.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rossengeorgiev";
@@ -21,17 +20,15 @@ buildPythonPackage (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/rossengeorgiev/aprs-python/commit/c2a0f18ce028a4cced582567a73d57f0d03cd00f.patch";
       hash = "sha256-uxiLIagz1PIUUa6/qdBW15yhm/0QXqznVzZnzUVCWuQ=";
+      url = "https://github.com/rossengeorgiev/aprs-python/commit/c2a0f18ce028a4cced582567a73d57f0d03cd00f.patch";
     })
   ];
 
-  build-system = [ setuptools ];
-
   doCheck = false; # mox3 is not packaged
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "aprslib" ];
 
   meta = {

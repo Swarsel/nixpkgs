@@ -19,19 +19,20 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ autoreconfHook ];
   buildInputs = [ zlib ];
-
   # Fix build with gcc15 (-std=gnu23)
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isGNU "-std=gnu17";
 
   meta = {
     description = "Command line tools for transforming Open Street Map files";
+
     homepage = [
       "https://wiki.openstreetmap.org/wiki/osmconvert"
       "https://wiki.openstreetmap.org/wiki/osmfilter"
       "https://wiki.openstreetmap.org/wiki/osmupdate"
     ];
+
+    license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ sikmir ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.agpl3Only;
   };
 })

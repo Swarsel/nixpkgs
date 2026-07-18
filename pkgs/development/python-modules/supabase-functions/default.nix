@@ -1,8 +1,8 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  httpx,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
+  httpx,
   pyjwt,
   pytest-asyncio,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "supabase-functions";
   version = "2.29.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "supabase";
@@ -22,17 +21,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-LaSlAYFvx/HHdfmc9J+KScVQ9JFGS98Yfihzn8F7t3g=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/src/functions";
-
-  build-system = [ uv-build ];
-
-  dependencies = [
-    strenum
-    yarl
-    httpx
-  ]
-  ++ httpx.optional-dependencies.http2;
 
   # Upstream pins `uv_build>=0.8.3,<0.9.0`, but nixpkgs ships `uv-build` 0.9.x.
   # Relax the upper bound to accept the 0.9 series, consistent with uv’s documentation examples:
@@ -48,13 +36,24 @@ buildPythonPackage (finalAttrs: {
     pytest-asyncio
   ];
 
+  build-system = [ uv-build ];
+
+  dependencies = [
+    strenum
+    yarl
+    httpx
+  ]
+  ++ httpx.optional-dependencies.http2;
+
+  pyproject = true;
   pythonImportsCheck = [ "supabase_functions" ];
+  sourceRoot = "${finalAttrs.src.name}/src/functions";
 
   meta = {
     description = "Client library for Supabase Functions";
     homepage = "https://github.com/supabase/supabase-py";
     changelog = "https://github.com/supabase/supabase-py/blob/v${finalAttrs.src.tag}/CHANGELOG.md";
-    maintainers = with lib.maintainers; [ macbucheron ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ macbucheron ];
   };
 })

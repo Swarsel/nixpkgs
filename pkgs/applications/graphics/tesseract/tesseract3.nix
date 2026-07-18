@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
+  icu,
   leptonica,
   libpng,
   libtiff,
-  icu,
-  pango,
   opencl-headers,
+  pango,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,8 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  enableParallelBuilding = true;
-
   nativeBuildInputs = [
     pkg-config
     autoreconfHook
@@ -48,6 +46,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.LIBLEPT_HEADERSDIR = "${leptonica}/include";
+  enableParallelBuilding = true;
 
   meta = {
     description = "OCR engine";

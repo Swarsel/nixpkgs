@@ -6,8 +6,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.12";
   pname = "chibi-scheme";
+  version = "0.12";
 
   src = fetchFromGitHub {
     owner = "ashinn";
@@ -34,13 +34,15 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/ashinn/chibi-scheme";
     description = "Small Footprint Scheme for use as a C Extension Language";
-    platforms = lib.platforms.all;
+    homepage = "https://github.com/ashinn/chibi-scheme";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       applePrincess
       DerGuteMoritz
     ];
+
+    platforms = lib.platforms.all;
   };
 })

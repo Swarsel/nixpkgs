@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  installShellFiles,
+  buildGoModule,
   git,
-  testers,
   git-town,
+  installShellFiles,
   makeWrapper,
+  testers,
   writableTmpDirAsHomeHook,
 }:
 
@@ -22,35 +22,18 @@ buildGoModule (finalAttrs: {
     hash = "sha256-vw8S1Y9yXERL9Ddt70Elz0pZZHAuC+C9231Y8o1mb9k=";
   };
 
-  vendorHash = null;
-
   nativeBuildInputs = [
     installShellFiles
     makeWrapper
   ];
 
   buildInputs = [ git ];
-
-  ldflags =
-    let
-      modulePath = "github.com/git-town/git-town/v${lib.versions.major finalAttrs.version}";
-    in
-    [
-      "-s"
-      "-w"
-      "-X ${modulePath}/src/cmd.version=v${finalAttrs.version}"
-      "-X ${modulePath}/src/cmd.buildDate=nix"
-    ];
+  vendorHash = null;
 
   nativeCheckInputs = [
     git
     writableTmpDirAsHomeHook
   ];
-
-  preCheck = ''
-    # this runs tests requiring local operations
-    rm main_test.go
-  '';
 
   checkFlags =
     let
@@ -68,6 +51,11 @@ buildGoModule (finalAttrs: {
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
+  preCheck = ''
+    # this runs tests requiring local operations
+    rm main_test.go
+  '';
+
   postInstall =
     lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
       installShellCompletion --cmd git-town \
@@ -79,20 +67,33 @@ buildGoModule (finalAttrs: {
       wrapProgram $out/bin/git-town --prefix PATH : ${lib.makeBinPath [ git ]}
     '';
 
+  ldflags =
+    let
+      modulePath = "github.com/git-town/git-town/v${lib.versions.major finalAttrs.version}";
+    in
+    [
+      "-s"
+      "-w"
+      "-X ${modulePath}/src/cmd.version=v${finalAttrs.version}"
+      "-X ${modulePath}/src/cmd.buildDate=nix"
+    ];
+
   passthru.tests.version = testers.testVersion {
-    package = git-town;
-    command = "git-town --version";
     inherit (finalAttrs) version;
+    command = "git-town --version";
+    package = git-town;
   };
 
   meta = {
     description = "Generic, high-level git support for git-flow workflows";
     homepage = "https://www.git-town.com/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       allonsy
       gabyx
     ];
+
     mainProgram = "git-town";
   };
 })

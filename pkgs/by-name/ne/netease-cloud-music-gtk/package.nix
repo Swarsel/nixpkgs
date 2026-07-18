@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   cargo,
-  meson,
-  ninja,
-  pkg-config,
-  desktop-file-utils,
-  rustc,
-  wrapGAppsHook4,
-  openssl,
   dbus,
-  libadwaita,
+  desktop-file-utils,
   glib-networking,
   gst_all_1,
+  libadwaita,
   libxml2,
+  meson,
+  ninja,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  rustc,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,13 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "netease-cloud-music-gtk";
     tag = finalAttrs.version;
     hash = "sha256-yZOCUoAee2XSfO87SzTBjkZ4r2YzVC7mpqYULV5JPRE=";
-  };
-
-  cargoDeps = rustPlatform.importCargoLock {
-    lockFile = ./Cargo.lock;
-    outputHashes = {
-      "netease-cloud-music-api-1.5.2" = "sha256-7j5MLC++MPyuRvJRiUMWPV7OxWM2H+RD/hChuco3UTE=";
-    };
   };
 
   postPatch = ''
@@ -66,15 +59,25 @@ stdenv.mkDerivation (finalAttrs: {
     gst-plugins-ugly
   ]);
 
+  cargoDeps = rustPlatform.importCargoLock {
+    lockFile = ./Cargo.lock;
+
+    outputHashes = {
+      "netease-cloud-music-api-1.5.2" = "sha256-7j5MLC++MPyuRvJRiUMWPV7OxWM2H+RD/hChuco3UTE=";
+    };
+  };
+
   meta = {
     description = "Rust + GTK based netease cloud music player";
     homepage = "https://github.com/gmg137/netease-cloud-music-gtk";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       diffumist
       aleksana
     ];
-    mainProgram = "netease-cloud-music-gtk4";
+
     platforms = lib.platforms.linux;
+    mainProgram = "netease-cloud-music-gtk4";
   };
 })

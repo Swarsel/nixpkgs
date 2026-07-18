@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   boost,
+  cmake,
   eigen,
   gtest,
   help2man,
@@ -64,20 +64,22 @@ stdenv.mkDerivation (finalAttrs: {
     "-DCMAKE_CTEST_ARGUMENTS=-E;SpanningTreeTest"
   ];
 
+  doCheck = true;
+
   checkInputs = [
     gtest
   ];
 
-  doCheck = true;
-
   meta = {
     description = "Machine learning system focused on online reinforcement learning";
-    homepage = "https://github.com/VowpalWabbit/vowpal_wabbit/";
-    license = lib.licenses.bsd3;
+
     longDescription = ''
       Machine learning system which pushes the frontier of machine learning with techniques such as online,
       hashing, allreduce, reductions, learning2search, active, and interactive and reinforcement learning
     '';
+
+    homepage = "https://github.com/VowpalWabbit/vowpal_wabbit/";
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ jackgerrits ];
     platforms = lib.platforms.unix;
   };

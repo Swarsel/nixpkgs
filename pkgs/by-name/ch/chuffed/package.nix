@@ -1,8 +1,8 @@
 {
-  stdenv,
-  cmake,
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  cmake,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "chuffed";
@@ -18,9 +18,9 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [ cmake ];
 
   meta = {
-    homepage = "https://github.com/chuffed/chuffed";
     description = "The Chuffed CP solver";
     longDescription = "Chuffed is a state of the art lazy clause solver designed from the ground up with lazy clause generation in mind.";
+    homepage = "https://github.com/chuffed/chuffed";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jaanonim ];
     platforms = lib.platforms.all;

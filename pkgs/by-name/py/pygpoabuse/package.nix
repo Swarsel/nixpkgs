@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   nix-update-script,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication {
   pname = "pygpoabuse";
   version = "0-unstable-2025-11-09";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Hackndo";
@@ -17,6 +16,10 @@ python3Packages.buildPythonApplication {
     hash = "sha256-DNdKKxE8UACZ5oEZ2iKuNvFrmpz+RCTYI0O5pCa5jIU=";
   };
 
+  postInstall = ''
+    mv $out/bin/pygpoabuse{.py,}
+  '';
+
   build-system = [ python3Packages.setuptools ];
 
   dependencies = with python3Packages; [
@@ -24,10 +27,7 @@ python3Packages.buildPythonApplication {
     msldap
   ];
 
-  postInstall = ''
-    mv $out/bin/pygpoabuse{.py,}
-  '';
-
+  pyproject = true;
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch=master" ]; };
 
   meta = {

@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   coreutils,
-  openssh,
   gnutar,
+  openssh,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -47,11 +47,11 @@ stdenv.mkDerivation (finalAttrs: {
   installFlags = [ "PREFIX=$(out)" ];
 
   meta = {
-    homepage = "https://scriptedconfiguration.org/";
     description = "Configure systems using any scripting language";
+    homepage = "https://scriptedconfiguration.org/";
     changelog = "https://github.com/eradman/rset/raw/${finalAttrs.version}/NEWS";
     license = lib.licenses.isc;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

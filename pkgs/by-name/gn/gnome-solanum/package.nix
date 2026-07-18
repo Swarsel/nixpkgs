@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  rustPlatform,
-  cargo,
-  desktop-file-utils,
   appstream-glib,
   blueprint-compiler,
-  meson,
-  ninja,
-  pkg-config,
-  rustc,
-  wrapGAppsHook4,
-  python3,
+  cargo,
+  desktop-file-utils,
   git,
   glib,
-  gtk4,
   gst_all_1,
+  gtk4,
   libadwaita,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  python3,
+  rustPlatform,
+  rustc,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,16 +26,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "6.0.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "World";
     repo = "Solanum";
     tag = finalAttrs.version;
     hash = "sha256-Wh9/88Vc4mtjL0U1Vrw+GEEBPjEv+5NrWd/Kw1glp+w=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-krjbeutochFk5md+THlYBW4iEwfFDbK89DYHZyd3IKo=";
+    domain = "gitlab.gnome.org";
   };
 
   postPatch = ''
@@ -66,17 +61,22 @@ stdenv.mkDerivation (finalAttrs: {
     gst_all_1.gst-plugins-bad
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-krjbeutochFk5md+THlYBW4iEwfFDbK89DYHZyd3IKo=";
+  };
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/World/Solanum";
     description = "Pomodoro timer for the GNOME desktop";
-    maintainers = with lib.maintainers; [ linsui ];
-    teams = [ lib.teams.gnome-circle ];
+    homepage = "https://gitlab.gnome.org/World/Solanum";
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ linsui ];
     platforms = lib.platforms.linux;
     mainProgram = "solanum";
+    teams = [ lib.teams.gnome-circle ];
   };
 })

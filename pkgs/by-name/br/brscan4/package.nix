@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   callPackage,
-  patchelf,
-  makeWrapper,
   libusb-compat-0_1,
+  makeWrapper,
+  patchelf,
 }:
 let
   myPatchElf = file: ''
@@ -20,31 +20,20 @@ in
 stdenv.mkDerivation rec {
   pname = "brscan4";
   version = "0.4.10-1";
+
   src =
     {
       "i686-linux" = fetchurl {
-        url = "http://download.brother.com/welcome/dlf006646/${pname}-${version}.i386.deb";
         sha256 = "sha256-ymIAg+rfSYP5uzsAM1hUYZacJ0PXmKEoljNtb0pgGMw=";
+        url = "http://download.brother.com/welcome/dlf006646/${pname}-${version}.i386.deb";
       };
+
       "x86_64-linux" = fetchurl {
-        url = "https://download.brother.com/welcome/dlf006645/${pname}-${version}.amd64.deb";
         sha256 = "sha256-Gpr5456MCNpyam3g2qPo7S3aEZFMaUGR8bu7YmRY8xk=";
+        url = "https://download.brother.com/welcome/dlf006645/${pname}-${version}.amd64.deb";
       };
     }
     ."${stdenv.hostPlatform.system}" or (throw "unsupported system ${stdenv.hostPlatform.system}");
-
-  unpackPhase = ''
-    ar x $src
-    tar xfvz data.tar.gz
-  '';
-
-  nativeBuildInputs = [
-    makeWrapper
-    patchelf
-    udevRules
-  ];
-  buildInputs = [ libusb-compat-0_1 ];
-  dontBuild = true;
 
   postPatch = ''
     ${myPatchElf "opt/brother/scanner/brscan4/brsaneconfig4"}
@@ -56,6 +45,14 @@ stdenv.mkDerivation rec {
       fi
     done
   '';
+
+  nativeBuildInputs = [
+    makeWrapper
+    patchelf
+    udevRules
+  ];
+
+  buildInputs = [ libusb-compat-0_1 ];
 
   installPhase = ''
     runHook preInstall
@@ -96,18 +93,25 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
-  dontStrip = true;
+  dontBuild = true;
   dontPatchELF = true;
+  dontStrip = true;
+
+  unpackPhase = ''
+    ar x $src
+    tar xfvz data.tar.gz
+  '';
 
   meta = {
     description = "Brother brscan4 sane backend driver";
     homepage = "http://www.brother.com";
+    license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ jraygauthier ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    license = lib.licenses.unfree;
-    maintainers = with lib.maintainers; [ jraygauthier ];
   };
 }

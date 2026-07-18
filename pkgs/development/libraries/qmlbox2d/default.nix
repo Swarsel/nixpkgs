@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  qtbase,
-  qtdeclarative,
   fetchFromGitHub,
   cmake,
   pkg-config,
+  qtbase,
+  qtdeclarative,
   unstableGitUpdater,
 }:
 
@@ -20,8 +20,6 @@ stdenv.mkDerivation {
     hash = "sha256-kxDSPO2ifffJng9rKgEwdKRoP6alnYWwItbvE1t4Hbo=";
   };
 
-  dontWrapQtApps = true;
-
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -32,6 +30,8 @@ stdenv.mkDerivation {
     qtdeclarative
   ];
 
+  dontWrapQtApps = true;
+
   passthru = {
     updateScript = unstableGitUpdater {
       hardcodeZeroVersion = true;
@@ -41,8 +41,8 @@ stdenv.mkDerivation {
   meta = {
     description = "QML plugin for Box2D engine";
     homepage = "https://github.com/qml-box2d/qml-box2d";
+    license = lib.licenses.zlib;
     maintainers = with lib.maintainers; [ guibou ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.zlib;
   };
 }

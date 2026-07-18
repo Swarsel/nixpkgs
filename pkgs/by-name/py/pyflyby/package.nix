@@ -1,7 +1,7 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 let
   version = "1.9.11";
@@ -9,7 +9,6 @@ in
 python3.pkgs.buildPythonApplication rec {
   inherit version;
   pname = "pyflyby";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "deshaw";
@@ -31,6 +30,7 @@ python3.pkgs.buildPythonApplication rec {
     ipython
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyflyby" ];
 
   meta = {

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   fetchpatch,
-  fetchFromGitHub,
   pytestCheckHook,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pprintpp";
   version = "0.4.0-unstable-2022-05-31";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "joaonc";
@@ -22,17 +21,16 @@ buildPythonPackage rec {
   patches = [
     # Remove "U" move from open(), https://github.com/wolever/pprintpp/pull/31
     (fetchpatch {
+      hash = "sha256-I84pnY/KyCIPPI9q0uvj64t8oPeMkgVTPEBRANkZNa4=";
       name = "remove-u.patch";
       url = "https://github.com/wolever/pprintpp/commit/deec5e5efad562fc2f9084abfe249ed0c7dd65fa.patch";
-      hash = "sha256-I84pnY/KyCIPPI9q0uvj64t8oPeMkgVTPEBRANkZNa4=";
     })
   ];
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "pprintpp" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "pprintpp" ];
 
   meta = {
     description = "Drop-in replacement for pprint that's actually pretty";

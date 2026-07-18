@@ -1,81 +1,81 @@
 {
   lib,
-  clangStdenv,
   fetchurl,
-  perl,
-  python3,
-  ruby,
-  gi-docgen,
-  bison,
-  gperf,
-  cmake,
-  ninja,
-  pkg-config,
-  gettext,
-  gobject-introspection,
-  gnutls,
-  libgcrypt,
-  libgpg-error,
-  gtk4,
-  wayland,
-  wayland-protocols,
-  wayland-scanner,
-  libwebp,
-  enchant,
-  libx11,
-  libxkbcommon,
-  libavif,
-  libepoxy,
-  libjxl,
+  addDriverRunpath,
   at-spi2-core,
+  bison,
+  bubblewrap,
   cairo,
+  clangStdenv,
+  cmake,
+  enchant,
   expat,
-  libxml2,
-  libsoup_3,
-  libsecret,
-  libxslt,
-  harfbuzz,
-  hyphen,
-  icu,
-  libsysprof-capture,
-  libpthread-stubs,
-  nettle,
-  libtasn1,
-  p11-kit,
-  libidn,
-  libedit,
-  readline,
-  libGL,
-  libGLU,
-  libgbm,
-  libintl,
-  lcms2,
-  libmanette,
-  librice,
-  geoclue2,
+  fetchpatch,
   flite,
   fontconfig,
   freetype,
+  geoclue2,
+  gettext,
+  gi-docgen,
+  glib,
+  gnutls,
+  gobject-introspection,
+  gperf,
+  gst-plugins-bad,
+  gst-plugins-base,
+  gtk4,
+  harfbuzz,
+  hyphen,
+  icu,
+  lcms2,
+  libGL,
+  libGLU,
+  libavif,
+  libbacktrace,
+  libedit,
+  libepoxy,
+  libgbm,
+  libgcrypt,
+  libgpg-error,
+  libidn,
+  libintl,
+  libjxl,
+  libmanette,
+  libpthread-stubs,
+  librice,
+  libseccomp,
+  libsecret,
+  libsoup_3,
+  libsysprof-capture,
+  libtasn1,
+  libwebp,
+  libx11,
+  libxkbcommon,
+  libxml2,
+  libxslt,
+  nettle,
+  ninja,
   openssl,
   openxr-loader,
-  sqlite,
-  gst-plugins-base,
-  gst-plugins-bad,
-  bubblewrap,
-  libseccomp,
-  libbacktrace,
-  systemdLibs,
-  xdg-dbus-proxy,
+  p11-kit,
+  perl,
+  pkg-config,
+  python3,
+  readline,
   replaceVars,
-  glib,
-  unifdef,
-  addDriverRunpath,
-  enableGeoLocation ? true,
-  enableExperimental ? false,
-  withLibsecret ? true,
-  systemdSupport ? lib.meta.availableOn clangStdenv.hostPlatform systemdLibs,
+  ruby,
+  sqlite,
+  systemdLibs,
   testers,
-  fetchpatch,
+  unifdef,
+  wayland,
+  wayland-protocols,
+  wayland-scanner,
+  xdg-dbus-proxy,
+  enableExperimental ? false,
+  enableGeoLocation ? true,
+  systemdSupport ? lib.meta.availableOn clangStdenv.hostPlatform systemdLibs,
+  withLibsecret ? true,
 }:
 
 let
@@ -86,22 +86,17 @@ in
 clangStdenv.mkDerivation (finalAttrs: {
   pname = "webkitgtk";
   version = "2.52.5";
-  name = "webkitgtk-${finalAttrs.version}+abi=${abiVersion}";
+
+  src = fetchurl {
+    url = "https://webkitgtk.org/releases/webkitgtk-${finalAttrs.version}.tar.xz";
+    hash = "sha256-ilMamr0iFZNuioqRTAd7WGwCKLMdZS8gUoao7JDzNks=";
+  };
 
   outputs = [
     "out"
     "dev"
     "devdoc"
   ];
-
-  # https://github.com/NixOS/nixpkgs/issues/153528
-  # Can't be linked within a 4GB address space.
-  separateDebugInfo = clangStdenv.hostPlatform.isLinux && !clangStdenv.hostPlatform.is32bit;
-
-  src = fetchurl {
-    url = "https://webkitgtk.org/releases/webkitgtk-${finalAttrs.version}.tar.xz";
-    hash = "sha256-ilMamr0iFZNuioqRTAd7WGwCKLMdZS8gUoao7JDzNks=";
-  };
 
   patches = lib.optionals clangStdenv.hostPlatform.isLinux [
     (replaceVars ./fix-bubblewrap-paths.patch {
@@ -113,11 +108,15 @@ clangStdenv.mkDerivation (finalAttrs: {
     # error: ‘toB3Type’ was not declared in this scope
     # See: https://bugs.webkit.org/show_bug.cgi?id=271371
     (fetchpatch {
-      url = "https://salsa.debian.org/webkit-team/webkit/-/raw/debian/2.44.1-1/debian/patches/fix-ftbfs-riscv64.patch";
       hash = "sha256-MgaSpXq9l6KCLQdQyel6bQFHG53l3GY277WePpYXdjA=";
       name = "fix_ftbfs_riscv64.patch";
+      url = "https://salsa.debian.org/webkit-team/webkit/-/raw/debian/2.44.1-1/debian/patches/fix-ftbfs-riscv64.patch";
     })
   ];
+
+  postPatch = ''
+    patchShebangs .
+  '';
 
   nativeBuildInputs = [
     bison
@@ -246,24 +245,26 @@ clangStdenv.mkDerivation (finalAttrs: {
       "-DENABLE_JOURNALD_LOG=OFF"
     ];
 
-  postPatch = ''
-    patchShebangs .
-  '';
-
   postFixup = ''
     # Cannot be in postInstall, otherwise _multioutDocs hook in preFixup will move right back.
     moveToOutput "share/doc" "$devdoc"
   '';
 
+  name = "webkitgtk-${finalAttrs.version}+abi=${abiVersion}";
   requiredSystemFeatures = [ "big-parallel" ];
-
+  # https://github.com/NixOS/nixpkgs/issues/153528
+  # Can't be linked within a 4GB address space.
+  separateDebugInfo = clangStdenv.hostPlatform.isLinux && !clangStdenv.hostPlatform.is32bit;
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {
     description = "Web content rendering engine, GTK port";
-    mainProgram = "WebKitWebDriver";
     homepage = "https://webkitgtk.org/";
     license = lib.licenses.bsd2;
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "WebKitWebDriver";
+    broken = clangStdenv.hostPlatform.isDarwin;
+
     pkgConfigModules =
       if lib.versionAtLeast abiVersion "6.0" then
         [
@@ -277,8 +278,7 @@ clangStdenv.mkDerivation (finalAttrs: {
           "webkit2gtk-${abiVersion}"
           "webkit2gtk-web-extension-${abiVersion}"
         ];
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
     teams = [ lib.teams.gnome ];
-    broken = clangStdenv.hostPlatform.isDarwin;
   };
 })

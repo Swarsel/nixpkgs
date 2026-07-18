@@ -1,8 +1,8 @@
 {
   lib,
   fetchCrate,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -26,7 +26,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://crates.io/crates/asahi-wifisync";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ lukaslihotzki ];
-    mainProgram = "asahi-wifisync";
     platforms = lib.platforms.linux;
+    mainProgram = "asahi-wifisync";
   };
 })

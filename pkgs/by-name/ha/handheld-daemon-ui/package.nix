@@ -1,7 +1,7 @@
 {
   lib,
-  appimageTools,
   fetchurl,
+  appimageTools,
 }:
 let
   pname = "handheld-daemon-ui";
@@ -34,9 +34,9 @@ appimageTools.wrapType2 {
     description = "UI for the Handheld Daemon";
     homepage = "https://github.com/hhd-dev/hhd-ui";
     license = lib.licenses.gpl3Only;
-    maintainers = with lib.maintainers; [ toast ];
-    mainProgram = "hhd-ui";
-    platforms = [ "x86_64-linux" ];
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ toast ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "hhd-ui";
   };
 }

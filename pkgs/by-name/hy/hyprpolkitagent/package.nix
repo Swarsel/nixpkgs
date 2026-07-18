@@ -1,12 +1,12 @@
 {
   lib,
-  gcc15Stdenv,
-  cmake,
-  pkg-config,
   fetchFromGitHub,
+  cmake,
+  gcc15Stdenv,
   hyprland-qt-support,
   hyprutils,
   kdePackages,
+  pkg-config,
   polkit,
   qt6,
 }:
@@ -42,8 +42,8 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
     description = "Polkit authentication agent written in QT/QML";
     homepage = "https://github.com/hyprwm/hyprpolkitagent";
     license = lib.licenses.bsd3;
-    teams = [ lib.teams.hyprland ];
-    mainProgram = "hyprpolkitagent";
     platforms = lib.platforms.linux;
+    mainProgram = "hyprpolkitagent";
+    teams = [ lib.teams.hyprland ];
   };
 })

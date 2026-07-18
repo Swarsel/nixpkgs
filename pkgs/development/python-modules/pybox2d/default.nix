@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   swig,
 }:
 
 buildPythonPackage rec {
   pname = "pybox2d";
   version = "2.3.10";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "pybox2d";
@@ -26,13 +25,14 @@ buildPythonPackage rec {
     python setup.py build
   '';
 
+  # Tests need to start GUI windows.
+  doCheck = false;
+  format = "setuptools";
+
   pythonImportsCheck = [
     "Box2D"
     "Box2D._Box2D"
   ];
-
-  # Tests need to start GUI windows.
-  doCheck = false;
 
   meta = {
     description = "2D Game Physics for Python";

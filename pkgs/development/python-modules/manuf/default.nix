@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  manuf, # remove when buildPythonPackage supports finalAttrs
+  pytestCheckHook,
   runCommand,
   wireshark-cli,
-  pytestCheckHook,
-  manuf, # remove when buildPythonPackage supports finalAttrs
 }:
 
 buildPythonPackage rec {
   pname = "manuf";
   version = "1.1.5";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "coolbho3k";
@@ -19,8 +18,6 @@ buildPythonPackage rec {
     rev = "${version}";
     hash = "sha256-3CFs3aqwE8rZPwU1QBqAGxNHT5jg7ymG12yBD56gTNI=";
   };
-
-  nativeBuildInputs = [ wireshark-cli ];
 
   patches = [
     # Do update while building package from wireshark-cli
@@ -34,10 +31,10 @@ buildPythonPackage rec {
     cat ${wireshark-cli}/share/wireshark/wka >> manuf/manuf
   '';
 
+  nativeBuildInputs = [ wireshark-cli ];
   nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTests = [ "test_update_update" ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "manuf" ];
 
   passthru.tests = {
@@ -48,14 +45,16 @@ buildPythonPackage rec {
   };
 
   meta = {
-    homepage = "https://github.com/coolbho3k/manuf";
     description = "Parser library for Wireshark's OUI database";
-    mainProgram = "manuf";
-    platforms = lib.platforms.linux;
+    homepage = "https://github.com/coolbho3k/manuf";
+
     license = with lib.licenses; [
       lgpl3Plus
       asl20
     ];
+
     maintainers = with lib.maintainers; [ dsuetin ];
+    platforms = lib.platforms.linux;
+    mainProgram = "manuf";
   };
 }

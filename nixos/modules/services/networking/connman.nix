@@ -16,50 +16,63 @@ let
   enableIwd = cfg.wifi.backend == "iwd";
 in
 {
-  meta.maintainers = [ ];
-
   imports = [
     (lib.mkRenamedOptionModule [ "networking" "connman" ] [ "services" "connman" ])
   ];
 
   ###### interface
-
   options = {
     services.connman = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to use ConnMan for managing your network connections.
         '';
+
+        type = lib.types.bool;
       };
 
       package = lib.mkOption {
-        type = lib.types.package;
-        description = "The connman package / build flavor";
         default = pkgs.connman;
         defaultText = lib.literalExpression "pkgs.connman";
+        description = "The connman package / build flavor";
         example = lib.literalExpression "pkgs.connmanFull";
+        type = lib.types.package;
       };
 
       enableVPN = lib.mkOption {
-        type = lib.types.bool;
         default = true;
+
         description = ''
           Whether to enable ConnMan VPN service.
         '';
+
+        type = lib.types.bool;
       };
 
       extraConfig = lib.mkOption {
-        type = lib.types.lines;
         default = "";
+
         description = ''
           Configuration lines appended to the generated connman configuration file.
         '';
+
+        type = lib.types.lines;
+      };
+
+      extraFlags = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          Extra flags to pass to connmand
+        '';
+
+        example = [ "--nodnsproxy" ];
+        type = lib.types.listOf lib.types.str;
       };
 
       networkInterfaceBlacklist = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
         default = [
           "vmnet"
           "vboxnet"
@@ -67,38 +80,33 @@ in
           "ifb"
           "ve"
         ];
+
         description = ''
           Default blacklisted interfaces, this includes NixOS containers interfaces (ve).
         '';
+
+        type = lib.types.listOf lib.types.str;
       };
 
       wifi = {
         backend = lib.mkOption {
-          type = lib.types.enum [
-            "wpa_supplicant"
-            "iwd"
-          ];
           default = "wpa_supplicant";
+
           description = ''
             Specify the Wi-Fi backend used.
             Currently supported are {option}`wpa_supplicant` or {option}`iwd`.
           '';
-        };
-      };
 
-      extraFlags = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [ ];
-        example = [ "--nodnsproxy" ];
-        description = ''
-          Extra flags to pass to connmand
-        '';
+          type = lib.types.enum [
+            "wpa_supplicant"
+            "iwd"
+          ];
+        };
       };
     };
   };
 
   ###### implementation
-
   config = lib.mkIf cfg.enable {
     assertions = [
       {
@@ -115,15 +123,29 @@ in
 
     environment.systemPackages = [ cfg.package ];
 
+    networking = {
+      networkmanager.enable = false;
+      useDHCP = false;
+
+      wireless = {
+        enable = lib.mkIf (!enableIwd) true;
+        autoDetectInterfaces = false;
+        dbusControlled = true;
+
+        iwd = lib.mkIf enableIwd {
+          enable = true;
+        };
+      };
+    };
+
     systemd.services.connman = {
-      description = "Connection service";
-      wantedBy = [ "multi-user.target" ];
       after = lib.optional enableIwd "iwd.service";
+      description = "Connection service";
       requires = lib.optional enableIwd "iwd.service";
+
       serviceConfig = {
-        Type = "dbus";
         BusName = "net.connman";
-        Restart = "on-failure";
+
         ExecStart = toString (
           [
             "${cfg.package}/sbin/connmand"
@@ -133,44 +155,41 @@ in
           ++ lib.optional enableIwd "--wifi=iwd_agent"
           ++ cfg.extraFlags
         );
+
+        Restart = "on-failure";
         StandardOutput = "null";
+        Type = "dbus";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.services.connman-vpn = lib.mkIf cfg.enableVPN {
-      description = "ConnMan VPN service";
-      wantedBy = [ "multi-user.target" ];
       before = [ "connman.service" ];
+      description = "ConnMan VPN service";
+
       serviceConfig = {
-        Type = "dbus";
         BusName = "net.connman.vpn";
         ExecStart = "${cfg.package}/sbin/connman-vpnd -n";
         StandardOutput = "null";
+        Type = "dbus";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.services.net-connman-vpn = lib.mkIf cfg.enableVPN {
       description = "D-BUS Service";
-      serviceConfig = {
-        Name = "net.connman.vpn";
-        before = [ "connman.service" ];
-        ExecStart = "${cfg.package}/sbin/connman-vpnd -n";
-        User = "root";
-        SystemdService = "connman-vpn.service";
-      };
-    };
 
-    networking = {
-      useDHCP = false;
-      wireless = {
-        enable = lib.mkIf (!enableIwd) true;
-        dbusControlled = true;
-        autoDetectInterfaces = false;
-        iwd = lib.mkIf enableIwd {
-          enable = true;
-        };
+      serviceConfig = {
+        ExecStart = "${cfg.package}/sbin/connman-vpnd -n";
+        Name = "net.connman.vpn";
+        SystemdService = "connman-vpn.service";
+        User = "root";
+        before = [ "connman.service" ];
       };
-      networkmanager.enable = false;
     };
   };
+
+  meta.maintainers = [ ];
 }

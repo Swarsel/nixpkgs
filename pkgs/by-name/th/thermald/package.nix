@@ -1,19 +1,19 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   autoconf,
   autoconf-archive,
   automake,
   dbus,
   dbus-glib,
-  docbook_xml_dtd_412,
   docbook-xsl-nons,
-  fetchFromGitHub,
+  docbook_xml_dtd_412,
   gtk-doc,
   libevdev,
   libtool,
   libxml2,
   pkg-config,
-  lib,
-  stdenv,
   upower,
 }:
 
@@ -21,17 +21,17 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "thermald";
   version = "2.5.11";
 
-  outputs = [
-    "out"
-    "devdoc"
-  ];
-
   src = fetchFromGitHub {
     owner = "intel";
     repo = "thermal_daemon";
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-IHBfNqiMd2q5vj+xpo31LFy19zwv0GkB0GoHq8Ni7aA=";
   };
+
+  outputs = [
+    "out"
+    "devdoc"
+  ];
 
   nativeBuildInputs = [
     autoconf
@@ -71,11 +71,13 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/intel/thermal_daemon";
     changelog = "https://github.com/intel/thermal_daemon/blob/master/README.txt";
     license = lib.licenses.gpl2Plus;
+    maintainers = [ ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
-    maintainers = [ ];
+
     mainProgram = "thermald";
   };
 })

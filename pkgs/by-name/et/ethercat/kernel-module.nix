@@ -2,8 +2,8 @@ ethercat:
 {
   lib,
   stdenv,
-  kernelModuleMakeFlags,
   kernel,
+  kernelModuleMakeFlags,
 }:
 let
   # Aside from a generic drivers there are special drivers for specific NICs
@@ -19,15 +19,9 @@ let
   ];
 in
 stdenv.mkDerivation {
+  inherit (ethercat) src;
   pname = "ethercat";
   version = "${kernel.version}-${ethercat.version}";
-
-  __structuredAttrs = true;
-
-  enableParallelBuilding = true;
-
-  inherit (ethercat) src;
-
   nativeBuildInputs = kernel.moduleBuildDependencies ++ ethercat.nativeBuildInputs;
 
   configureFlags = [
@@ -53,12 +47,11 @@ stdenv.mkDerivation {
   ];
 
   buildFlags = [ "modules" ];
-
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
   installTargets = [ "modules_install" ];
 
   meta = {
-    description = ethercat.meta.description + " - kernel modules";
-
     inherit (ethercat.meta)
       homepage
       changelog
@@ -66,5 +59,7 @@ stdenv.mkDerivation {
       maintainers
       platforms
       ;
+
+    description = ethercat.meta.description + " - kernel modules";
   };
 }

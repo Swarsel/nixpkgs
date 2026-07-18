@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   libxcrypt,
-  nixosTests,
   nix-update-script,
+  nixosTests,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,18 +18,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-mXXakR75Iz6AFf/TYgIHE8SxOri2HyReYUYTT3lCEPA=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/rust/userborn";
-
-  cargoHash = "sha256-uAid5GsM9lasVQAYfeo9jwp4xg1MrXdJqtD0l6ME6OQ=";
-
   nativeBuildInputs = [ rustPlatform.bindgenHook ];
-
   buildInputs = [ libxcrypt ];
-
+  cargoHash = "sha256-uAid5GsM9lasVQAYfeo9jwp4xg1MrXdJqtD0l6ME6OQ=";
+  sourceRoot = "${finalAttrs.src.name}/rust/userborn";
   stripAllList = [ "bin" ];
 
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       inherit (nixosTests)
         userborn
@@ -40,15 +35,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
         userborn-static
         ;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://github.com/nikstur/userborn";
     description = "Declaratively bear (manage) Linux users and groups";
+    homepage = "https://github.com/nikstur/userborn";
     changelog = "https://github.com/nikstur/userborn/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ nikstur ];
+    platforms = lib.platforms.unix;
     mainProgram = "userborn";
   };
 })

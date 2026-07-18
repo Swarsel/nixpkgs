@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -90,159 +90,50 @@ in
 
       enable = lib.mkOption {
         default = false;
-        type = bool;
+
         description = ''
           Whether to synchronise your machine's IP address with a dynamic DNS provider (e.g. dyndns.org).
         '';
+
+        type = bool;
       };
 
       package = lib.mkOption {
-        type = package;
         default = pkgs.ddclient;
         defaultText = lib.literalExpression "pkgs.ddclient";
+
         description = ''
           The ddclient executable package run by the service.
         '';
-      };
 
-      domains = lib.mkOption {
-        default = [ "" ];
-        type = listOf str;
-        description = ''
-          Domain name(s) to synchronize.
-        '';
-      };
-
-      username = lib.mkOption {
-        # For `nsupdate` username contains the path to the nsupdate executable
-        default = lib.optionalString (
-          config.services.ddclient.protocol == "nsupdate"
-        ) "${pkgs.bind.dnsutils}/bin/nsupdate";
-        defaultText = "";
-        type = str;
-        description = ''
-          User name.
-        '';
-      };
-
-      passwordFile = lib.mkOption {
-        default = null;
-        type = nullOr str;
-        description = ''
-          A file containing the password or a TSIG key in named format when using the nsupdate protocol.
-        '';
-      };
-
-      secretsFile = lib.mkOption {
-        default = null;
-        type = nullOr str;
-        description = ''
-          A file containing the secrets for the dynamic DNS provider.
-          This file should contain lines of valid secrets in the format specified by the ddclient documentation.
-          If this option is set, it overrides the `passwordFile` option.
-        '';
-      };
-
-      interval = lib.mkOption {
-        default = "10min";
-        type = str;
-        description = ''
-          The interval at which to run the check and update.
-          See {command}`man 7 systemd.time` for the format.
-        '';
+        type = package;
       };
 
       configFile = lib.mkOption {
         default = null;
-        type = nullOr path;
+
         description = ''
           Path to configuration file.
           When set this overrides the generated configuration from module options.
         '';
+
         example = "/root/nixos/secrets/ddclient.conf";
+        type = nullOr path;
       };
 
-      protocol = lib.mkOption {
-        default = "dyndns2";
-        type = str;
-        description = ''
-          Protocol to use with dynamic DNS provider (see <https://ddclient.net/protocols.html> ).
-        '';
-      };
+      domains = lib.mkOption {
+        default = [ "" ];
 
-      server = lib.mkOption {
-        default = "";
-        type = str;
         description = ''
-          Server address.
+          Domain name(s) to synchronize.
         '';
-      };
 
-      ssl = lib.mkOption {
-        default = true;
-        type = bool;
-        description = ''
-          Whether to use SSL/TLS to connect to dynamic DNS provider.
-        '';
-      };
-
-      quiet = lib.mkOption {
-        default = false;
-        type = bool;
-        description = ''
-          Print no messages for unnecessary updates.
-        '';
-      };
-
-      script = lib.mkOption {
-        default = "";
-        type = str;
-        description = ''
-          script as required by some providers.
-        '';
-      };
-
-      use = lib.mkOption {
-        default = "";
-        type = str;
-        description = ''
-          Method to determine the IP address to send to the dynamic DNS provider.
-        '';
-      };
-      usev4 = lib.mkOption {
-        default = "webv4, webv4=ipify-ipv4";
-        type = str;
-        description = ''
-          Method to determine the IPv4 address to send to the dynamic DNS provider. Only used if `use` is not set.
-        '';
-      };
-      usev6 = lib.mkOption {
-        default = "webv6, webv6=ipify-ipv6";
-        type = str;
-        description = ''
-          Method to determine the IPv6 address to send to the dynamic DNS provider. Only used if `use` is not set.
-        '';
-      };
-
-      verbose = lib.mkOption {
-        default = false;
-        type = bool;
-        description = ''
-          Print verbose information.
-        '';
-      };
-
-      zone = lib.mkOption {
-        default = "";
-        type = str;
-        description = ''
-          zone as required by some providers.
-        '';
+        type = listOf str;
       };
 
       extraConfig = lib.mkOption {
         default = "";
-        type = lines;
+
         description = ''
           Extra configuration. Contents will be added verbatim to the configuration file.
 
@@ -250,6 +141,156 @@ in
           `daemon` should not be added here because it does not work great with the systemd-timer approach the service uses.
           :::
         '';
+
+        type = lines;
+      };
+
+      interval = lib.mkOption {
+        default = "10min";
+
+        description = ''
+          The interval at which to run the check and update.
+          See {command}`man 7 systemd.time` for the format.
+        '';
+
+        type = str;
+      };
+
+      passwordFile = lib.mkOption {
+        default = null;
+
+        description = ''
+          A file containing the password or a TSIG key in named format when using the nsupdate protocol.
+        '';
+
+        type = nullOr str;
+      };
+
+      protocol = lib.mkOption {
+        default = "dyndns2";
+
+        description = ''
+          Protocol to use with dynamic DNS provider (see <https://ddclient.net/protocols.html> ).
+        '';
+
+        type = str;
+      };
+
+      quiet = lib.mkOption {
+        default = false;
+
+        description = ''
+          Print no messages for unnecessary updates.
+        '';
+
+        type = bool;
+      };
+
+      script = lib.mkOption {
+        default = "";
+
+        description = ''
+          script as required by some providers.
+        '';
+
+        type = str;
+      };
+
+      secretsFile = lib.mkOption {
+        default = null;
+
+        description = ''
+          A file containing the secrets for the dynamic DNS provider.
+          This file should contain lines of valid secrets in the format specified by the ddclient documentation.
+          If this option is set, it overrides the `passwordFile` option.
+        '';
+
+        type = nullOr str;
+      };
+
+      server = lib.mkOption {
+        default = "";
+
+        description = ''
+          Server address.
+        '';
+
+        type = str;
+      };
+
+      ssl = lib.mkOption {
+        default = true;
+
+        description = ''
+          Whether to use SSL/TLS to connect to dynamic DNS provider.
+        '';
+
+        type = bool;
+      };
+
+      use = lib.mkOption {
+        default = "";
+
+        description = ''
+          Method to determine the IP address to send to the dynamic DNS provider.
+        '';
+
+        type = str;
+      };
+
+      username = lib.mkOption {
+        # For `nsupdate` username contains the path to the nsupdate executable
+        default = lib.optionalString (
+          config.services.ddclient.protocol == "nsupdate"
+        ) "${pkgs.bind.dnsutils}/bin/nsupdate";
+
+        defaultText = "";
+
+        description = ''
+          User name.
+        '';
+
+        type = str;
+      };
+
+      usev4 = lib.mkOption {
+        default = "webv4, webv4=ipify-ipv4";
+
+        description = ''
+          Method to determine the IPv4 address to send to the dynamic DNS provider. Only used if `use` is not set.
+        '';
+
+        type = str;
+      };
+
+      usev6 = lib.mkOption {
+        default = "webv6, webv6=ipify-ipv6";
+
+        description = ''
+          Method to determine the IPv6 address to send to the dynamic DNS provider. Only used if `use` is not set.
+        '';
+
+        type = str;
+      };
+
+      verbose = lib.mkOption {
+        default = false;
+
+        description = ''
+          Print verbose information.
+        '';
+
+        type = bool;
+      };
+
+      zone = lib.mkOption {
+        default = "";
+
+        description = ''
+          zone as required by some providers.
+        '';
+
+        type = str;
       };
     };
   };
@@ -257,10 +298,6 @@ in
   ###### implementation
 
   config = lib.mkIf config.services.ddclient.enable {
-    warnings =
-      lib.optional (cfg.use != "")
-        "Setting `use` is deprecated, ddclient now supports `usev4` and `usev6` for separate IPv4/IPv6 configuration.";
-
     assertions = [
       {
         assertion = !((cfg.passwordFile != null) && (cfg.secretsFile != null));
@@ -273,32 +310,41 @@ in
     ];
 
     systemd.services.ddclient = {
-      description = "Dynamic DNS Client";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
-      restartTriggers = lib.optional (cfg.configFile != null) cfg.configFile;
+      description = "Dynamic DNS Client";
+
       path = lib.optional (
         lib.hasPrefix "if," cfg.use || lib.hasPrefix "ifv4," cfg.usev4 || lib.hasPrefix "ifv6," cfg.usev6
       ) pkgs.iproute2;
 
+      restartTriggers = lib.optional (cfg.configFile != null) cfg.configFile;
+
       serviceConfig = {
-        DynamicUser = true;
-        RuntimeDirectoryMode = "0700";
         inherit RuntimeDirectory;
         inherit StateDirectory;
-        Type = "oneshot";
-        ExecStartPre = [ "!${pkgs.writeShellScript "ddclient-prestart" preStart}" ];
+        DynamicUser = true;
         ExecStart = "${lib.getExe cfg.package} -file /run/${RuntimeDirectory}/ddclient.conf";
+        ExecStartPre = [ "!${pkgs.writeShellScript "ddclient-prestart" preStart}" ];
+        RuntimeDirectoryMode = "0700";
+        Type = "oneshot";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.timers.ddclient = {
       description = "Run ddclient";
-      wantedBy = [ "timers.target" ];
+
       timerConfig = {
         OnBootSec = cfg.interval;
         OnUnitInactiveSec = cfg.interval;
       };
+
+      wantedBy = [ "timers.target" ];
     };
+
+    warnings =
+      lib.optional (cfg.use != "")
+        "Setting `use` is deprecated, ddclient now supports `usev4` and `usev6` for separate IPv4/IPv6 configuration.";
   };
 }

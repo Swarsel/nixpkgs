@@ -2,22 +2,21 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  pytestCheckHook,
-  writableTmpDirAsHomeHook,
   hatch-jupyter-builder,
   hatchling,
   ipykernel,
   ipywidgets,
   psygnal,
   pydantic,
+  pytestCheckHook,
   typing-extensions,
   watchfiles,
+  writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "anywidget";
   version = "0.9.21";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -32,6 +31,14 @@ buildPythonPackage rec {
       --replace '"jupyterlab==3.*"' ""
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    ipykernel
+    pydantic
+    watchfiles
+    writableTmpDirAsHomeHook
+  ];
+
   build-system = [
     hatch-jupyter-builder
     hatchling
@@ -41,14 +48,6 @@ buildPythonPackage rec {
     ipywidgets
     psygnal
     typing-extensions
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    ipykernel
-    pydantic
-    watchfiles
-    writableTmpDirAsHomeHook
   ];
 
   disabledTests = [
@@ -66,6 +65,7 @@ buildPythonPackage rec {
     "test_descriptor_with_psygnal"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "anywidget" ];
 
   meta = {

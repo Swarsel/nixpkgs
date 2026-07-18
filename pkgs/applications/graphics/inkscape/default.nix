@@ -1,30 +1,31 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchurl,
   boehmgc,
   boost,
   cairo,
   callPackage,
   cmake,
   desktopToDarwinBundle,
-  fetchpatch,
-  fetchurl,
   fd,
+  fetchpatch,
+  gdk-pixbuf,
   gettext,
   ghostscript,
   glib,
   glibmm,
   gobject-introspection,
+  graphicsmagick,
   gsl,
   gspell,
   gtk-mac-integration,
   gtkmm3,
   gtksourceview4,
-  gdk-pixbuf,
-  graphicsmagick,
   lcms,
   lib2geom,
   libcdr,
+  libepoxy,
   libexif,
   libpng,
   librevenge,
@@ -35,7 +36,6 @@
   libxft,
   libxml2,
   libxslt,
-  readline,
   ninja,
   perlPackages,
   pkg-config,
@@ -43,12 +43,12 @@
   popt,
   potrace,
   python3,
-  runCommand,
+  readline,
   replaceVars,
+  runCommand,
   wrapGAppsHook3,
-  libepoxy,
-  zlib,
   yq,
+  zlib,
 }:
 let
   python3Env = python3.withPackages (
@@ -77,21 +77,16 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "inkscape";
   version = "1.4.4";
-  outputs = [
-    "out"
-    "man"
-  ];
 
   src = fetchurl {
     url = "https://inkscape.org/release/inkscape-${finalAttrs.version}/source/archive/xz/dl/inkscape-${finalAttrs.version}.tar.xz";
     sha256 = "sha256-u85XU6Hgi4caXPFsZl6wYHAKqrmmo3ncY/TE2bO4hW4=";
   };
 
-  # Inkscape hits the ARGMAX when linking on macOS. It appears to be
-  # CMake’s ARGMAX check doesn’t offer enough padding for NIX_LDFLAGS.
-  # Setting strictDeps it avoids duplicating some dependencies so it
-  # will leave us under ARGMAX.
-  strictDeps = true;
+  outputs = [
+    "out"
+    "man"
+  ];
 
   patches = [
     (replaceVars ./fix-python-paths.patch {
@@ -105,9 +100,9 @@ stdenv.mkDerivation (finalAttrs: {
     })
     # https://gitlab.com/inkscape/inkscape/-/merge_requests/7919
     (fetchpatch {
+      hash = "sha256-ujUl0SxZyb/TyJRmq1ETNn5W8lDDNn3JqHQQQPU5klA=";
       name = "fix-build-poppler-26.05.0";
       url = "https://gitlab.com/inkscape/inkscape/-/commit/98828255aa0c1212329236b3ff4ac7f41efb4a67.patch";
-      hash = "sha256-ujUl0SxZyb/TyJRmq1ETNn5W8lDDNn3JqHQQQPU5klA=";
     })
     # https://gitlab.com/inkscape/inkscape/-/merge_requests/7968
     ./fix-build-poppler-26.06.0.patch
@@ -129,6 +124,12 @@ stdenv.mkDerivation (finalAttrs: {
     done
     shopt -u globstar
   '';
+
+  # Inkscape hits the ARGMAX when linking on macOS. It appears to be
+  # CMake’s ARGMAX check doesn’t offer enough padding for NIX_LDFLAGS.
+  # Setting strictDeps it avoids duplicating some dependencies so it
+  # will leave us under ARGMAX.
+  strictDeps = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -196,42 +197,47 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru = {
-    tests = {
-      ps2pdf-plugin = callPackage ./test-ps2pdf-plugin.nix { };
-      inherit (python3.pkgs) inkex;
-    };
-
     pythonDependencies =
       runCommand "python-dependency-list"
         {
+          inherit (finalAttrs) src;
+
           nativeBuildInputs = [
             fd
             yq
           ];
-          inherit (finalAttrs) src;
         }
         ''
           unpackPhase
           tomlq --slurp 'map(.tool.poetry.dependencies | to_entries | map(.key)) | flatten | map(ascii_downcase) | unique' $(fd pyproject.toml) > "$out"
         '';
+
+    tests = {
+      inherit (python3.pkgs) inkex;
+      ps2pdf-plugin = callPackage ./test-ps2pdf-plugin.nix { };
+    };
   };
 
   meta = {
     description = "Vector graphics editor";
-    homepage = "https://www.inkscape.org";
-    license = lib.licenses.gpl3Plus;
-    maintainers = with lib.maintainers; [
-      jtojnar
-      x123
-      Luflosi
-    ];
-    platforms = lib.platforms.all;
-    mainProgram = "inkscape";
+
     longDescription = ''
       Inkscape is a feature-rich vector graphics editor that edits
       files in the W3C SVG (Scalable Vector Graphics) file format.
 
       If you want to import .eps files install ps2edit.
     '';
+
+    homepage = "https://www.inkscape.org";
+    license = lib.licenses.gpl3Plus;
+
+    maintainers = with lib.maintainers; [
+      jtojnar
+      x123
+      Luflosi
+    ];
+
+    platforms = lib.platforms.all;
+    mainProgram = "inkscape";
   };
 })

@@ -1,6 +1,5 @@
 {
   buildDunePackage,
-  tls,
   fmt,
   lwt,
   mirage-crypto,
@@ -9,11 +8,12 @@
   mirage-kv,
   mirage-ptime,
   ptime,
+  tls,
 }:
 
 buildDunePackage {
-  pname = "tls-mirage";
   inherit (tls) src version;
+  pname = "tls-mirage";
 
   propagatedBuildInputs = [
     fmt

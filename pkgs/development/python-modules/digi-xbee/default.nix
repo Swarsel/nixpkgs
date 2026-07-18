@@ -1,20 +1,19 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
   pyserial,
   srp,
-  lib,
 }:
 
 buildPythonPackage rec {
   pname = "digi-xbee";
   version = "1.5.0";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "digi_xbee";
     inherit version;
     hash = "sha256-amUrhHIpeRHuShD0cxb2sbbRTpJQZ9/b8otsa1Bo+bI=";
+    pname = "digi_xbee";
   };
 
   propagatedBuildInputs = [
@@ -24,6 +23,7 @@ buildPythonPackage rec {
 
   # Upstream doesn't contain unit tests, only functional tests which require specific hardware
   doCheck = false;
+  format = "setuptools";
 
   pythonImportsCheck = [
     "digi.xbee.models"

@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  lib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,7 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "common-licenses extracted from debian base-files package";
     homepage = "https://tracker.debian.org/pkg/base-files";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.mkg20001 ];
+    platforms = lib.platforms.linux;
   };
 })

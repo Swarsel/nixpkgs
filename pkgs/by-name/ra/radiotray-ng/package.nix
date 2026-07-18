@@ -2,35 +2,35 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  # Transport
-  curl,
   # Libraries
   boost,
-  jsoncpp,
-  libbsd,
+  cmake,
+  # Transport
+  curl,
   # GUI/Desktop
   dbus,
-  glibmm,
-  gsettings-desktop-schemas,
-  hicolor-icon-theme,
-  libappindicator-gtk3,
-  libnotify,
-  libxdg_basedir,
-  wxwidgets_3_2,
   # GStreamer
   glib-networking,
+  glibmm,
+  gsettings-desktop-schemas,
   gst_all_1,
-  # User-agent info
-  lsb-release,
-  # rt2rtng
-  python3,
   # Testing
   gtest,
+  hicolor-icon-theme,
+  jsoncpp,
+  libappindicator-gtk3,
+  libbsd,
+  libnotify,
+  libxdg_basedir,
+  # User-agent info
+  lsb-release,
+  makeWrapper,
+  pkg-config,
+  # rt2rtng
+  python3,
   # Fixup
   wrapGAppsHook3,
-  makeWrapper,
+  wxwidgets_3_2,
 }:
 
 let
@@ -59,6 +59,27 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-GYSacYKS0az5sqPqZhnuTZOT9NSzW+P9o5r5p0RhTtI=";
   };
 
+  patches = [
+    ./no-dl-googletest.patch
+  ];
+
+  postPatch = ''
+    for x in package/CMakeLists.txt include/radiotray-ng/common.hpp data/*.desktop; do
+      substituteInPlace $x --replace /usr $out
+    done
+    substituteInPlace package/CMakeLists.txt --replace /etc/xdg/autostart $out/etc/xdg/autostart
+
+    # jsoncpp 1.9.7 only exports std::string_view overloads under C++17
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "set(CMAKE_CXX_STANDARD 14)" "set(CMAKE_CXX_STANDARD 17)"
+
+    # We don't find the radiotray-ng-notification icon otherwise
+    substituteInPlace data/radiotray-ng.desktop \
+      --replace radiotray-ng-notification radiotray-ng-on
+    substituteInPlace data/rtng-bookmark-editor.desktop \
+      --replace radiotray-ng-notification radiotray-ng-on
+  '';
+
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -85,36 +106,14 @@ stdenv.mkDerivation (finalAttrs: {
   ++ gstInputs
   ++ pythonInputs;
 
-  patches = [
-    ./no-dl-googletest.patch
-  ];
-
-  postPatch = ''
-    for x in package/CMakeLists.txt include/radiotray-ng/common.hpp data/*.desktop; do
-      substituteInPlace $x --replace /usr $out
-    done
-    substituteInPlace package/CMakeLists.txt --replace /etc/xdg/autostart $out/etc/xdg/autostart
-
-    # jsoncpp 1.9.7 only exports std::string_view overloads under C++17
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "set(CMAKE_CXX_STANDARD 14)" "set(CMAKE_CXX_STANDARD 17)"
-
-    # We don't find the radiotray-ng-notification icon otherwise
-    substituteInPlace data/radiotray-ng.desktop \
-      --replace radiotray-ng-notification radiotray-ng-on
-    substituteInPlace data/rtng-bookmark-editor.desktop \
-      --replace radiotray-ng-notification radiotray-ng-on
-  '';
-
   cmakeFlags = [
     (lib.cmakeBool "BUILD_TESTS" finalAttrs.doCheck)
   ];
 
   # 'wxFont::wxFont(int, int, int, int, bool, const wxString&, wxFontEncoding)' is deprecated
   env.NIX_CFLAGS_COMPILE = "-Wno-error=deprecated-declarations";
-
-  nativeCheckInputs = [ gtest ];
   doCheck = !stdenv.hostPlatform.isAarch64; # single failure that I can't explain
+  nativeCheckInputs = [ gtest ];
 
   preFixup = ''
     gappsWrapperArgs+=(--suffix PATH : ${lib.makeBinPath [ dbus ]})

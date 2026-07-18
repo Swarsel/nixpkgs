@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  python3,
+  dieHook,
   flex,
   libedit,
   pcre2,
-  sqlite,
+  pkg-config,
+  python3,
   runCommand,
-  dieHook,
+  sqlite,
 }:
 
 let
@@ -18,17 +18,17 @@ let
     pname = "link-grammar";
     version = "5.13.0";
 
+    src = fetchurl {
+      url = "https://www.gnucash.org/link-grammar/downloads/${finalAttrs.version}/link-grammar-${finalAttrs.version}.tar.gz";
+      hash = "sha256-5qDJBd+xdfNZefA1CgzzxnyzimgZ2fK3PGhN/nKpQd8=";
+    };
+
     outputs = [
       "bin"
       "out"
       "dev"
       "man"
     ];
-
-    src = fetchurl {
-      url = "https://www.gnucash.org/link-grammar/downloads/${finalAttrs.version}/link-grammar-${finalAttrs.version}.tar.gz";
-      hash = "sha256-5qDJBd+xdfNZefA1CgzzxnyzimgZ2fK3PGhN/nKpQd8=";
-    };
 
     nativeBuildInputs = [
       pkg-config
@@ -53,12 +53,12 @@ let
       "--disable-pcre2"
     ];
 
+    # multi-dict test randomly fails on x86_64-darwin
+    doCheck = stdenv.hostPlatform.system != "x86_64-darwin";
+
     preCheck = lib.optionalString stdenv.hostPlatform.isDarwin ''
       export DYLD_LIBRARY_PATH=$(pwd)/link-grammar/.libs
     '';
-
-    # multi-dict test randomly fails on x86_64-darwin
-    doCheck = stdenv.hostPlatform.system != "x86_64-darwin";
 
     passthru.tests = {
       quick =

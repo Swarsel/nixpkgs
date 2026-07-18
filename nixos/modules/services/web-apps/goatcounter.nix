@@ -15,37 +15,40 @@ in
   options = {
     services.goatcounter = {
       enable = lib.mkEnableOption "goatcounter";
-
       package = lib.mkPackageOption pkgs "goatcounter" { };
 
       address = lib.mkOption {
-        type = types.str;
         default = "127.0.0.1";
         description = "Web interface address.";
-      };
-
-      port = lib.mkOption {
-        type = types.port;
-        default = 8081;
-        description = "Web interface port.";
-      };
-
-      proxy = lib.mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Whether Goatcounter service is running behind a reverse proxy. Will listen for HTTPS if `false`.
-          Refer to [documentation](https://github.com/arp242/goatcounter?tab=readme-ov-file#running) for more details.
-        '';
+        type = types.str;
       };
 
       extraArgs = lib.mkOption {
-        type = with types; listOf str;
         default = [ ];
+
         description = ''
           List of extra arguments to be passed to goatcounter cli.
           See {command}`goatcounter help serve` for more information.
         '';
+
+        type = with types; listOf str;
+      };
+
+      port = lib.mkOption {
+        default = 8081;
+        description = "Web interface port.";
+        type = types.port;
+      };
+
+      proxy = lib.mkOption {
+        default = false;
+
+        description = ''
+          Whether Goatcounter service is running behind a reverse proxy. Will listen for HTTPS if `false`.
+          Refer to [documentation](https://github.com/arp242/goatcounter?tab=readme-ov-file#running) for more details.
+        '';
+
+        type = types.bool;
       };
     };
   };
@@ -53,8 +56,10 @@ in
   config = lib.mkIf cfg.enable {
     systemd.services.goatcounter = {
       description = "Easy web analytics. No tracking of personal data.";
-      wantedBy = [ "multi-user.target" ];
+
       serviceConfig = {
+        DynamicUser = true;
+
         ExecStart = lib.escapeShellArgs (
           [
             (lib.getExe cfg.package)
@@ -68,11 +73,13 @@ in
           ]
           ++ cfg.extraArgs
         );
-        DynamicUser = true;
+
+        Restart = "always";
         StateDirectory = stateDir;
         WorkingDirectory = "%S/${stateDir}";
-        Restart = "always";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

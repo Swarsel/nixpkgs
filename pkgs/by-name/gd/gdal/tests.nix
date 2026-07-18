@@ -1,8 +1,8 @@
 {
-  runCommand,
+  lib,
   gdal,
   jdk,
-  lib,
+  runCommand,
   testers,
 }:
 
@@ -11,15 +11,29 @@ let
 
 in
 {
-  ogrinfo-version = testers.testVersion {
-    package = gdal;
-    command = "ogrinfo --version";
-  };
+  gdalinfo-format-geotiff = runCommand "${pname}-gdalinfo-format-geotiff" { } ''
+    ${lib.getExe' gdal "gdalinfo"} --formats \
+      | grep 'GTiff.*GeoTIFF'
+    touch $out
+  '';
 
   gdalinfo-version = testers.testVersion {
-    package = gdal;
     command = "gdalinfo --version";
+    package = gdal;
   };
+
+  java-bindings = runCommand "${pname}-java-bindings" { } ''
+    cat <<EOF > main.java
+    import org.gdal.gdal.gdal;
+    class Main {
+      public static void main(String[] args) {
+      gdal.AllRegister();
+      }
+    }
+    EOF
+    ${lib.getExe jdk} -Djava.library.path=${gdal}/lib/ -cp ${gdal}/share/java/gdal-${version}.jar main.java
+    touch $out
+  '';
 
   ogrinfo-format-geopackage = runCommand "${pname}-ogrinfo-format-geopackage" { } ''
     ${lib.getExe' gdal "ogrinfo"} --formats \
@@ -27,17 +41,10 @@ in
     touch $out
   '';
 
-  gdalinfo-format-geotiff = runCommand "${pname}-gdalinfo-format-geotiff" { } ''
-    ${lib.getExe' gdal "gdalinfo"} --formats \
-      | grep 'GTiff.*GeoTIFF'
-    touch $out
-  '';
-
-  vector-file = runCommand "${pname}-vector-file" { } ''
-    echo -e "Latitude,Longitude,Name\n48.1,0.25,'Test point'" > test.csv
-    ${lib.getExe' gdal "ogrinfo"} ./test.csv
-    touch $out
-  '';
+  ogrinfo-version = testers.testVersion {
+    command = "ogrinfo --version";
+    package = gdal;
+  };
 
   raster-file = runCommand "${pname}-raster-file" { } ''
     ${lib.getExe' gdal "gdal_create"} \
@@ -54,16 +61,9 @@ in
     touch $out
   '';
 
-  java-bindings = runCommand "${pname}-java-bindings" { } ''
-    cat <<EOF > main.java
-    import org.gdal.gdal.gdal;
-    class Main {
-      public static void main(String[] args) {
-      gdal.AllRegister();
-      }
-    }
-    EOF
-    ${lib.getExe jdk} -Djava.library.path=${gdal}/lib/ -cp ${gdal}/share/java/gdal-${version}.jar main.java
+  vector-file = runCommand "${pname}-vector-file" { } ''
+    echo -e "Latitude,Longitude,Name\n48.1,0.25,'Test point'" > test.csv
+    ${lib.getExe' gdal "ogrinfo"} ./test.csv
     touch $out
   '';
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation {
   pname = "rtl8192su-firmware";
@@ -13,8 +13,6 @@ stdenvNoCC.mkDerivation {
     rev = "c00112c9a14133290fe30bd3b44e45196994cb1c";
     hash = "sha256-tCwmshfItJTw49XNdXAyVagu6j2vAtwriwFfpW4ZbEg=";
   };
-
-  dontBuild = true;
 
   installPhase = ''
     for i in rtl8192sfw.bin \
@@ -30,12 +28,14 @@ stdenvNoCC.mkDerivation {
     done
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Firmware for Realtek RTL8188SU/RTL8191SU/RTL8192SU";
     homepage = "https://github.com/chunkeey/rtl8192su";
     license = lib.licenses.unfreeRedistributableFirmware;
+    sourceProvenance = with lib.sourceTypes; [ binaryFirmware ];
     maintainers = with lib.maintainers; [ mic92 ];
     platforms = lib.platforms.linux;
-    sourceProvenance = with lib.sourceTypes; [ binaryFirmware ];
   };
 }

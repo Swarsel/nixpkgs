@@ -1,21 +1,20 @@
 {
   lib,
+  fetchFromGitHub,
   asn1crypto,
   buildPythonPackage,
   dissect-cstruct,
   dissect-fve,
   dissect-util,
-  fetchFromGitHub,
   pycryptodome,
   pytestCheckHook,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "dissect-apfs";
   version = "1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fox-it";
@@ -23,6 +22,8 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-DCLaDXLE3WkWUNOhZpROaTxMrSF+of30G8D2ZXivJEg=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -37,14 +38,13 @@ buildPythonPackage (finalAttrs: {
     pycryptodome
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "dissect.apfs" ];
-
   disabledTestPaths = [
     # Bad file
     "tests/test_apfs.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "dissect.apfs" ];
 
   meta = {
     description = "Dissect module implementing a parser for APFS";

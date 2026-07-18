@@ -1,17 +1,16 @@
 {
   lib,
-  pythonPackages,
   fetchFromGitHub,
   fetchNpmDeps,
   mopidy,
   nodejs,
   npmHooks,
+  pythonPackages,
 }:
 
 pythonPackages.buildPythonApplication (finalAttrs: {
   pname = "mopidy-iris";
   version = "3.70.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jaedb";
@@ -26,11 +25,6 @@ pythonPackages.buildPythonApplication (finalAttrs: {
       --replace-fail 'allow_reporting: true' 'allow_reporting: false'
   '';
 
-  npmDeps = fetchNpmDeps {
-    inherit (finalAttrs) src;
-    hash = "sha256-aQHq80SLaOPOANYV+aDTWC/bxfc1it5iDeRJ8L5iuEU=";
-  };
-
   nativeBuildInputs = [
     nodejs
     npmHooks.npmConfigHook
@@ -39,6 +33,9 @@ pythonPackages.buildPythonApplication (finalAttrs: {
   preBuild = ''
     npm run prod
   '';
+
+  # no tests implemented
+  doCheck = false;
 
   build-system = [
     pythonPackages.setuptools
@@ -51,14 +48,17 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     pythonPackages.tornado
   ];
 
-  # no tests implemented
-  doCheck = false;
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-aQHq80SLaOPOANYV+aDTWC/bxfc1it5iDeRJ8L5iuEU=";
+  };
 
+  pyproject = true;
   pythonImportsCheck = [ "mopidy_iris" ];
 
   meta = {
-    homepage = "https://github.com/jaedb/Iris";
     description = "Fully-functional Mopidy web client encompassing Spotify and many other backends";
+    homepage = "https://github.com/jaedb/Iris";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.rvolosatovs ];
   };

@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  gtkmm3,
   glibmm,
-  gtksourceview3,
   gnome,
+  gtkmm3,
+  gtksourceview3,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,26 +18,27 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1danc9mp5mnb65j01qxkwj92z8jf1gns41wbgp17qh7050f0pc6v";
   };
 
-  passthru = {
-    updateScript = gnome.updateScript {
-      packageName = "gtksourceviewmm";
-      versionPolicy = "none";
-      freeze = true;
-    };
-  };
-
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     glibmm
     gtkmm3
     gtksourceview3
   ];
 
+  passthru = {
+    updateScript = gnome.updateScript {
+      freeze = true;
+      packageName = "gtksourceviewmm";
+      versionPolicy = "none";
+    };
+  };
+
   meta = {
-    platforms = lib.platforms.unix;
-    homepage = "https://gitlab.gnome.org/GNOME/gtksourceviewmm";
     description = "C++ wrapper for gtksourceview";
+    homepage = "https://gitlab.gnome.org/GNOME/gtksourceviewmm";
     license = lib.licenses.lgpl2;
     maintainers = [ lib.maintainers.juliendehos ];
+    platforms = lib.platforms.unix;
   };
 })

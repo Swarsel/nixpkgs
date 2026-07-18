@@ -1,18 +1,16 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   buildPgrxExtension,
   cargo-pgrx_0_17_0,
-  fetchFromGitHub,
-  lib,
   nix-update-script,
   postgresql,
   postgresqlTestExtension,
   rustc,
-  stdenv,
 }:
 buildPgrxExtension (finalAttrs: {
   inherit postgresql;
-  cargo-pgrx = cargo-pgrx_0_17_0;
-
   pname = "vectorchord";
   version = "1.1.1";
 
@@ -22,8 +20,6 @@ buildPgrxExtension (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-QL9XGSQFOcrpww03Y5F0JuDbpo0v8oidUqucLxggkqE=";
   };
-
-  cargoHash = "sha256-IXOCzKJArNOcb/2TcJbLz1XdCquUpyF/cLHYU5vmlko=";
 
   patches = lib.optional (lib.versionOlder rustc.llvm.version "22.0.0" && stdenv.isx86_64) [
     # Due to a bug in LLVM 21, build fails on x86_64 with:
@@ -36,21 +32,45 @@ buildPgrxExtension (finalAttrs: {
     ./0001-disable-avx512vnni.patch
   ];
 
+  cargoHash = "sha256-IXOCzKJArNOcb/2TcJbLz1XdCquUpyF/cLHYU5vmlko=";
+
   # Include upgrade scripts in the final package
   # https://github.com/supervc-stack/VectorChord/blob/0.5.0/crates/make/src/main.rs#L366
   postInstall = ''
     cp sql/upgrade/* $out/share/postgresql/extension/
   '';
 
+  cargo-pgrx = cargo-pgrx_0_17_0;
   # This crate does not have the "pg_test" feature
   usePgTestCheckFeature = false;
 
   passthru = {
-    updateScript = nix-update-script { };
-
     tests.extension = postgresqlTestExtension {
       inherit (finalAttrs) finalPackage;
-      withPackages = [ "pgvector" ]; # vectorchord depends on pgvector at runtime
+
+      asserts = [
+        {
+          description = "Expected installed version to match the derivation's version";
+          expected = "'${finalAttrs.version}'";
+          query = "SELECT extversion FROM pg_extension WHERE extname = 'vchord'";
+        }
+        {
+          description = "Expected vector of row with ID=1 to have an euclidean distance from [1,2,3] of 1.";
+          expected = "1";
+          query = "SELECT id FROM items WHERE embedding <-> '[1,2,3]' = 1";
+        }
+        {
+          description = "Expected vector of row with ID=2 to have an euclidean distance from [1,2,3] of 2.";
+          expected = "2";
+          query = "SELECT id FROM items WHERE embedding <-> '[1,2,3]' = 2";
+        }
+        {
+          description = "Expected vector of row with ID=2 to be the closest to [2,3,7].";
+          expected = "2";
+          query = "SELECT id FROM items ORDER BY embedding <-> '[2,3,7]' LIMIT 1";
+        }
+      ];
+
       postgresqlExtraSettings = ''
         shared_preload_libraries = 'vchord'
       '';
@@ -76,48 +96,33 @@ buildPgrxExtension (finalAttrs: {
         SET vchordrq.probes = 1;
       '';
 
-      asserts = [
-        {
-          query = "SELECT extversion FROM pg_extension WHERE extname = 'vchord'";
-          expected = "'${finalAttrs.version}'";
-          description = "Expected installed version to match the derivation's version";
-        }
-        {
-          query = "SELECT id FROM items WHERE embedding <-> '[1,2,3]' = 1";
-          expected = "1";
-          description = "Expected vector of row with ID=1 to have an euclidean distance from [1,2,3] of 1.";
-        }
-        {
-          query = "SELECT id FROM items WHERE embedding <-> '[1,2,3]' = 2";
-          expected = "2";
-          description = "Expected vector of row with ID=2 to have an euclidean distance from [1,2,3] of 2.";
-        }
-        {
-          query = "SELECT id FROM items ORDER BY embedding <-> '[2,3,7]' LIMIT 1";
-          expected = "2";
-          description = "Expected vector of row with ID=2 to be the closest to [2,3,7].";
-        }
-      ];
+      withPackages = [ "pgvector" ]; # vectorchord depends on pgvector at runtime
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
+    description = "Scalable, fast, and disk-friendly vector search in Postgres, the successor of pgvecto.rs";
+    homepage = "https://github.com/supervc-stack/VectorChord";
+    changelog = "https://github.com/supervc-stack/VectorChord/releases/tag/${finalAttrs.version}";
+
+    license = lib.licenses.OR [
+      lib.licenses.agpl3Only
+      lib.licenses.elastic20
+    ];
+
+    maintainers = with lib.maintainers; [
+      diogotcorreia
+    ];
+
+    platforms = postgresql.meta.platforms;
+
     # PostgreSQL 19 is not yet supported
     # See https://github.com/supervc-stack/VectorChord/issues/464
     # Check after next package update.
     broken = lib.warnIf (
       finalAttrs.version != "1.1.1"
     ) "Is postgresql19Packages.vectorchord still broken?" (lib.versionAtLeast postgresql.version "19");
-    changelog = "https://github.com/supervc-stack/VectorChord/releases/tag/${finalAttrs.version}";
-    description = "Scalable, fast, and disk-friendly vector search in Postgres, the successor of pgvecto.rs";
-    homepage = "https://github.com/supervc-stack/VectorChord";
-    license = lib.licenses.OR [
-      lib.licenses.agpl3Only
-      lib.licenses.elastic20
-    ];
-    maintainers = with lib.maintainers; [
-      diogotcorreia
-    ];
-    platforms = postgresql.meta.platforms;
   };
 })

@@ -20,9 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ autoreconfHook ];
-
-  enableParallelBuilding = true;
-
   doCheck = true;
 
   nativeCheckInputs = [
@@ -35,15 +32,15 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
-
   nativeInstallCheckInputs = [ versionCheckHook ];
+  enableParallelBuilding = true;
 
   meta = {
     description = "Sequence analysis library used by Eddy/Rivas lab code";
     homepage = "https://github.com/EddyRivasLab/easel";
     license = lib.licenses.bsd2;
-    mainProgram = "easel";
     maintainers = with lib.maintainers; [ natsukium ];
     platforms = lib.platforms.unix;
+    mainProgram = "easel";
   };
 })

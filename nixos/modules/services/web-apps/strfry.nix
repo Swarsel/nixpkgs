@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -9,71 +9,74 @@ let
     db = "/var/lib/strfry";
 
     dbParams = {
-      maxreaders = 256;
       mapsize = 10995116277760;
+      maxreaders = 256;
       noReadAhead = false;
     };
 
     events = {
-      maxEventSize = 65536;
-      rejectEventsNewerThanSeconds = 900;
-      rejectEventsOlderThanSeconds = 94608000;
-      rejectEphemeralEventsOlderThanSeconds = 60;
       ephemeralEventsLifetimeSeconds = 300;
+      maxEventSize = 65536;
       maxNumTags = 2000;
       maxTagValSize = 1024;
+      rejectEphemeralEventsOlderThanSeconds = 60;
+      rejectEventsNewerThanSeconds = 900;
+      rejectEventsOlderThanSeconds = 94608000;
     };
 
     relay = {
-      bind = "127.0.0.1";
-      port = 7777;
-      nofiles = 1000000;
-      realIpHeader = "";
-
-      info = {
-        name = "strfry default";
-        description = "This is a strfry instance.";
-        pubkey = "";
-        contact = "";
-        icon = "";
-        nips = "";
-      };
-
-      maxWebsocketPayloadSize = 131072;
-      maxReqFilterSize = 200;
       autoPingSeconds = 55;
-      enableTcpKeepalive = false;
-      queryTimesliceBudgetMicroseconds = 10000;
-      maxFilterLimit = 500;
-      maxSubsPerConnection = 20;
-
-      writePolicy = {
-        plugin = "";
-      };
+      bind = "127.0.0.1";
 
       compression = {
         enabled = true;
         slidingWindow = true;
       };
 
+      enableTcpKeepalive = false;
+
+      info = {
+        contact = "";
+        description = "This is a strfry instance.";
+        icon = "";
+        name = "strfry default";
+        nips = "";
+        pubkey = "";
+      };
+
       logging = {
+        dbScanPerf = false;
         dumpInAll = false;
         dumpInEvents = false;
         dumpInReqs = false;
-        dbScanPerf = false;
         invalidEvents = true;
       };
 
-      numThreads = {
-        ingester = 3;
-        reqWorker = 3;
-        reqMonitor = 3;
-        negentropy = 2;
-      };
+      maxFilterLimit = 500;
+      maxReqFilterSize = 200;
+      maxSubsPerConnection = 20;
+      maxWebsocketPayloadSize = 131072;
 
       negentropy = {
         enabled = true;
         maxSyncEvents = 1000000;
+      };
+
+      nofiles = 1000000;
+
+      numThreads = {
+        ingester = 3;
+        negentropy = 2;
+        reqMonitor = 3;
+        reqWorker = 3;
+      };
+
+      port = 7777;
+      queryTimesliceBudgetMicroseconds = 10000;
+      realIpHeader = "";
+
+      writePolicy = {
+        plugin = "";
       };
     };
   };
@@ -85,14 +88,13 @@ in
 {
   options.services.strfry = {
     enable = lib.mkEnableOption "strfry";
-
     package = lib.mkPackageOption pkgs "strfry" { };
 
     settings = lib.mkOption {
-      type = settingsFormat.type;
-      default = defaultSettings;
       apply = lib.recursiveUpdate defaultSettings;
+      default = defaultSettings;
       description = "Configuration options to set for the Strfry service. See <https://github.com/hoytech/strfry> for documentation.";
+
       example = lib.literalExpression ''
         dbParams = {
           maxreaders = 256;
@@ -100,66 +102,69 @@ in
           noReadAhead = false;
         };
       '';
+
+      type = settingsFormat.type;
     };
 
   };
 
   config = lib.mkIf cfg.enable {
+    systemd.services.strfry = {
+      description = "strfry";
+
+      serviceConfig = {
+        CapabilityBoundingSet = "";
+        ExecStart = "${lib.getExe cfg.package} --config=${configFile} relay";
+        Group = "strfry";
+        LimitNOFILE = cfg.settings.relay.nofiles;
+        LockPersonality = true;
+        MemoryDenyWriteExecute = true;
+        NoNewPrivileges = true;
+        PrivateDevices = true;
+        PrivateTmp = true;
+        PrivateUsers = true;
+        ProcSubset = "pid";
+        ProtectClock = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectHostname = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectProc = "invisible";
+        ProtectSystem = "strict";
+        ReadWritePaths = [ cfg.settings.db ];
+        RemoveIPC = true;
+        Restart = "on-failure";
+        RestrictRealtime = true;
+        RestrictSUIDSGID = true;
+        StateDirectory = "strfry";
+        SystemCallArchitectures = "native";
+
+        SystemCallFilter = [
+          "@system-service"
+        ];
+
+        User = "strfry";
+        WorkingDirectory = cfg.settings.db;
+      };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network.target" ];
+    };
+
+    users.groups.strfry = { };
+
     users.users.strfry = {
       description = "Strfry daemon user";
       group = "strfry";
       isSystemUser = true;
     };
-
-    users.groups.strfry = { };
-
-    systemd.services.strfry = {
-      description = "strfry";
-      wants = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
-
-      serviceConfig = {
-        ExecStart = "${lib.getExe cfg.package} --config=${configFile} relay";
-        User = "strfry";
-        Group = "strfry";
-        Restart = "on-failure";
-
-        StateDirectory = "strfry";
-        WorkingDirectory = cfg.settings.db;
-        ReadWritePaths = [ cfg.settings.db ];
-
-        LimitNOFILE = cfg.settings.relay.nofiles;
-
-        PrivateTmp = true;
-        PrivateUsers = true;
-        PrivateDevices = true;
-        ProtectSystem = "strict";
-        ProtectHome = true;
-        NoNewPrivileges = true;
-        MemoryDenyWriteExecute = true;
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
-        ProtectKernelLogs = true;
-        ProtectClock = true;
-        ProtectProc = "invisible";
-        ProcSubset = "pid";
-        ProtectControlGroups = true;
-        LockPersonality = true;
-        RestrictSUIDSGID = true;
-        RemoveIPC = true;
-        RestrictRealtime = true;
-        ProtectHostname = true;
-        CapabilityBoundingSet = "";
-        SystemCallFilter = [
-          "@system-service"
-        ];
-        SystemCallArchitectures = "native";
-      };
-    };
   };
 
   meta = {
     doc = ./strfry.md;
+
     maintainers = with lib.maintainers; [
       felixzieger
     ];

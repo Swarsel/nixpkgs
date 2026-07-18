@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "python-uinput";
   version = "1.0.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,9 @@ buildPythonPackage rec {
   };
 
   buildInputs = [ udev ];
-
   env.NIX_CFLAGS_LINK = "-ludev";
-
   doCheck = false; # no tests
+  format = "setuptools";
 
   meta = {
     description = "Pythonic API to Linux uinput kernel module";

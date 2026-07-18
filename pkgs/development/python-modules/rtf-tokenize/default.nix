@@ -1,20 +1,17 @@
 {
   lib,
-  python,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  python,
+  setuptools,
   versionCheckHook,
   which,
 }:
 
 buildPythonPackage (finalAttrs: {
-  __structuredAttrs = true;
-
   pname = "rtf-tokenize";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openstenoproject";
@@ -23,10 +20,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-bM/DFl1mpHgeBItdyA5Tt+Eo9u82Gz+6qwft2h0bM94=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
   doInstallCheck = true;
 
   nativeInstallCheckInputs = [
@@ -34,18 +28,22 @@ buildPythonPackage (finalAttrs: {
     which
   ];
 
-  versionCheckProgramArg = "${placeholder "out"}/${python.sitePackages}";
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
 
   preInstallCheck = ''
     versionCheckProgram="$(which ls)"
   '';
 
+  pyproject = true;
   pythonImportsCheck = [ "rtf_tokenize" ];
+  versionCheckProgramArg = "${placeholder "out"}/${python.sitePackages}";
 
   meta = {
     description = "Simple RTF tokenizer package for Python";
     homepage = "https://github.com/openstenoproject/rtf_tokenize";
     license = lib.licenses.gpl2Plus; # https://github.com/openstenoproject/rtf_tokenize/issues/1
+
     maintainers = with lib.maintainers; [
       pandapip1
       ShamrockLee

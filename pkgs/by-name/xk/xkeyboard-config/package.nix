@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  gettext,
+  libxslt,
   meson,
   ninja,
-  python3,
   perl,
-  libxslt,
-  gettext,
+  pkg-config,
+  python3,
   writeScript,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -36,15 +36,15 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonBool "xorg-rules-symlinks" true)
   ];
 
-  prePatch = ''
-    patchShebangs rules/merge.py rules/compat/map-variants.py rules/generate-options-symbols.py rules/xml2lst.pl
-  '';
-
   # 1: compatibility for X11/xkb location
   # 2: I think pkg-config/ is supposed to be in /lib/
   postInstall = ''
     ln -s share "$out/etc"
     mkdir -p "$out/lib" && ln -s ../share/pkgconfig "$out/lib/"
+  '';
+
+  prePatch = ''
+    patchShebangs rules/merge.py rules/compat/map-variants.py rules/generate-options-symbols.py rules/xml2lst.pl
   '';
 
   passthru = {
@@ -63,6 +63,7 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Provides a consistent, well-structured, database of keyboard configuration data";
     homepage = "https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config";
+
     license = with lib.licenses; [
       hpndSellVariant
       x11
@@ -72,6 +73,7 @@ stdenv.mkDerivation (finalAttrs: {
       cronyx
       hyphenBulgarian
     ];
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
   };

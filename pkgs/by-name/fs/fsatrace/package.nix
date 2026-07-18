@@ -15,8 +15,6 @@ stdenv.mkDerivation rec {
     "hash" = "sha256-pn07qlrRaM153znEviziuKWrkX9cLsNFCujovmE4UUA=";
   };
 
-  installDir = "libexec/${pname}-${version}";
-
   makeFlags = [ "INSTALLDIR=$(out)/$(installDir)" ];
 
   preInstall = ''
@@ -28,11 +26,13 @@ stdenv.mkDerivation rec {
     ln -s $out/$installDir/fsatrace $out/bin/fsatrace
   '';
 
+  installDir = "libexec/${pname}-${version}";
+
   meta = {
-    homepage = "https://github.com/jacereda/fsatrace";
     description = "Filesystem access tracer";
-    mainProgram = "fsatrace";
+    homepage = "https://github.com/jacereda/fsatrace";
     license = lib.licenses.isc;
     platforms = lib.platforms.linux;
+    mainProgram = "fsatrace";
   };
 }

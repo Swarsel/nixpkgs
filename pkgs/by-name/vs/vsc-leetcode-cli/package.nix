@@ -1,7 +1,7 @@
 {
-  buildNpmPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage {
@@ -16,10 +16,8 @@ buildNpmPackage {
   };
 
   npmDepsHash = "sha256-t8eEnyAKeDmbmduUXuxo/WbJTced5dLeJTbtjxrrxY8=";
-
-  dontNpmBuild = true;
-
   dontCheckForBrokenSymlinks = true;
+  dontNpmBuild = true;
 
   meta = {
     description = "CLI tool for leetcode.com";

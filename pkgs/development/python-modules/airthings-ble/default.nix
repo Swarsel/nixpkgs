@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   async-interrupt,
   bleak,
   bleak-retry-connector,
   buildPythonPackage,
   cbor2,
-  fetchFromGitHub,
   poetry-core,
   pytest-cov-stub,
   pytestCheckHook,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "airthings-ble";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vincegio";
@@ -23,6 +22,11 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-y6vpkq3u5JKImwxevMupUVVAclUcsyrqxoIOYRK0YGQ=";
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -35,11 +39,7 @@ buildPythonPackage rec {
     bleak
   ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "airthings_ble" ];
 
   meta = {

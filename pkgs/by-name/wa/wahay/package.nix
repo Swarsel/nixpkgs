@@ -1,18 +1,18 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   gnumake,
-  pkg-config,
   gtk3,
+  installShellFiles,
+  mumble,
+  nix-update-script,
+  pkg-config,
   rubyPackages,
   tor,
-  mumble,
-  installShellFiles,
   wrapGAppsHook3,
   writableTmpDirAsHomeHook,
-  nix-update-script,
 }:
 
 buildGoModule (finalAttrs: {
@@ -26,11 +26,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-59gVGDElIs+OQ/ELwOFjz6YqG18iHqoa2yYF2Ddi0/o=";
   };
 
-  vendorHash = "sha256-w8lUnvy5dPMHWbzyyTq9Q/kE/4vSuOHffaY9CeasvQ0=";
-
-  buildInputs = [
-    gtk3
-  ];
+  postPatch = ''
+    # Avoid Git invocation: Remove assignments starting with ‘$(shell git’
+    sed -E -i \
+      -e '/^\w+\s*[+:]?=\s*\$\(shell\s+git\>/d' \
+      Makefile
+  '';
 
   nativeBuildInputs = [
     gnumake
@@ -40,16 +41,11 @@ buildGoModule (finalAttrs: {
     wrapGAppsHook3
   ];
 
-  nativeCheckInputs = [
-    writableTmpDirAsHomeHook
+  buildInputs = [
+    gtk3
   ];
 
-  postPatch = ''
-    # Avoid Git invocation: Remove assignments starting with ‘$(shell git’
-    sed -E -i \
-      -e '/^\w+\s*[+:]?=\s*\$\(shell\s+git\>/d' \
-      Makefile
-  '';
+  vendorHash = "sha256-w8lUnvy5dPMHWbzyyTq9Q/kE/4vSuOHffaY9CeasvQ0=";
 
   buildPhase = ''
     runHook preBuild
@@ -58,6 +54,10 @@ buildGoModule (finalAttrs: {
          build
     runHook postBuild
   '';
+
+  nativeCheckInputs = [
+    writableTmpDirAsHomeHook
+  ];
 
   checkPhase = ''
     runHook preCheck
@@ -88,11 +88,11 @@ buildGoModule (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Decentralized encrypted conference call application";
     homepage = "https://wahay.org/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ dvn0 ];
     mainProgram = "wahay";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

@@ -12,14 +12,15 @@ let
 
   rtorrentPluginDependencies = with pkgs; {
     _task = [ procps ];
+    mediainfo = [ mediainfo ];
+    rss = [ curl ];
+    screenshots = [ ffmpeg ];
+    spectrogram = [ sox ];
+
     unpack = [
       unzip
       unrar
     ];
-    rss = [ curl ];
-    mediainfo = [ mediainfo ];
-    spectrogram = [ sox ];
-    screenshots = [ ffmpeg ];
   };
 
   phpPluginDependencies = with pkgs; {
@@ -34,53 +35,78 @@ in
     services.rutorrent = {
       enable = mkEnableOption "ruTorrent";
 
-      hostName = mkOption {
-        type = types.str;
-        description = "FQDN for the ruTorrent instance.";
-      };
-
       dataDir = mkOption {
-        type = types.str;
         default = "/var/lib/rutorrent";
         description = "Storage path of ruTorrent.";
-      };
-
-      user = mkOption {
         type = types.str;
-        default = "rutorrent";
-        description = ''
-          User which runs the ruTorrent service.
-        '';
       };
 
       group = mkOption {
-        type = types.str;
         default = "rutorrent";
+
         description = ''
           Group which runs the ruTorrent service.
         '';
+
+        type = types.str;
       };
 
-      rpcSocket = mkOption {
+      hostName = mkOption {
+        description = "FQDN for the ruTorrent instance.";
         type = types.str;
-        default = config.services.rtorrent.rpcSocket;
-        defaultText = "config.services.rtorrent.rpcSocket";
-        description = ''
-          Path to rtorrent rpc socket.
-        '';
+      };
+
+      nginx = {
+        enable = mkOption {
+          default = false;
+
+          description = ''
+            Whether to enable nginx virtual host management.
+            Further nginx configuration can be done by adapting `services.nginx.virtualHosts.<name>`.
+            See {option}`services.nginx.virtualHosts` for further information.
+          '';
+
+          type = types.bool;
+        };
+
+        exposeInsecureRPC2mount = mkOption {
+          default = false;
+
+          description = ''
+            If you do not enable one of the `rpc` or `httprpc` plugins you need to expose an RPC mount through scgi using this option.
+            Warning: This allow to run arbitrary commands, as the rtorrent user, so make sure to use authentication. The simplest way would be to use the {option}`services.nginx.virtualHosts.<name>.basicAuth` option.
+          '';
+
+          type = types.bool;
+        };
       };
 
       plugins = mkOption {
-        type = with types; listOf (either str package);
         default = [ "httprpc" ];
-        example = literalExpression ''[ "httprpc" "data" "diskspace" "edit" "erasedata" "theme" "trafic" ]'';
+
         description = ''
           List of plugins to enable. See the list of [available plugins](https://github.com/Novik/ruTorrent/wiki/Plugins#currently-there-are-the-following-plugins). Note: the `unpack` plugin needs the nonfree `unrar` package.
           You need to either enable one of the `rpc` or `httprpc` plugin or enable the {option}`services.rutorrent.nginx.exposeInsecureRPC2mount` option.
         '';
+
+        example = literalExpression ''[ "httprpc" "data" "diskspace" "edit" "erasedata" "theme" "trafic" ]'';
+        type = with types; listOf (either str package);
       };
 
       poolSettings = mkOption {
+        default = {
+          "pm" = "dynamic";
+          "pm.max_children" = 32;
+          "pm.max_requests" = 500;
+          "pm.max_spare_servers" = 4;
+          "pm.min_spare_servers" = 2;
+          "pm.start_servers" = 2;
+        };
+
+        description = ''
+          Options for ruTorrent's PHP pool. See the documentation on `php-fpm.conf` for details on configuration directives.
+        '';
+
         type =
           with types;
           attrsOf (oneOf [
@@ -88,38 +114,27 @@ in
             int
             bool
           ]);
-        default = {
-          "pm" = "dynamic";
-          "pm.max_children" = 32;
-          "pm.start_servers" = 2;
-          "pm.min_spare_servers" = 2;
-          "pm.max_spare_servers" = 4;
-          "pm.max_requests" = 500;
-        };
-        description = ''
-          Options for ruTorrent's PHP pool. See the documentation on `php-fpm.conf` for details on configuration directives.
-        '';
       };
 
-      nginx = {
-        enable = mkOption {
-          type = types.bool;
-          default = false;
-          description = ''
-            Whether to enable nginx virtual host management.
-            Further nginx configuration can be done by adapting `services.nginx.virtualHosts.<name>`.
-            See {option}`services.nginx.virtualHosts` for further information.
-          '';
-        };
+      rpcSocket = mkOption {
+        default = config.services.rtorrent.rpcSocket;
+        defaultText = "config.services.rtorrent.rpcSocket";
 
-        exposeInsecureRPC2mount = mkOption {
-          type = types.bool;
-          default = false;
-          description = ''
-            If you do not enable one of the `rpc` or `httprpc` plugins you need to expose an RPC mount through scgi using this option.
-            Warning: This allow to run arbitrary commands, as the rtorrent user, so make sure to use authentication. The simplest way would be to use the {option}`services.nginx.virtualHosts.<name>.basicAuth` option.
-          '';
-        };
+        description = ''
+          Path to rtorrent rpc socket.
+        '';
+
+        type = types.str;
+      };
+
+      user = mkOption {
+        default = "rutorrent";
+
+        description = ''
+          User which runs the ruTorrent service.
+        '';
+
+        type = types.str;
       };
     };
   };
@@ -144,26 +159,10 @@ in
           }
         ];
 
-      warnings =
-        let
-          nginxVhostCfg = config.services.nginx.virtualHosts."${cfg.hostName}";
-        in
-        [ ]
-        ++ (optional
-          (
-            cfg.nginx.exposeInsecureRPC2mount
-            && (nginxVhostCfg.basicAuth == { } || nginxVhostCfg.basicAuthFile == null)
-          )
-          ''
-            You are using exposeInsecureRPC2mount without using basic auth on the virtual host. The exposed rpc mount allow for remote command execution.
-
-            Please make sure it is not accessible from the outside.
-          ''
-        );
-
       systemd = {
         services = {
           rtorrent.path = getPluginDependencies rtorrentPluginDependencies cfg.plugins;
+
           rutorrent-setup =
             let
               rutorrentConfig = pkgs.writeText "rutorrent-config.php" ''
@@ -237,8 +236,8 @@ in
               '';
             in
             {
-              wantedBy = [ "multi-user.target" ];
               before = [ "phpfpm-rutorrent.service" ];
+
               script = ''
                 ln -sf ${pkgs.rutorrent}/{css,images,js,lang,index.html} ${cfg.dataDir}/
                 mkdir -p ${cfg.dataDir}/{conf,logs,plugins} ${cfg.dataDir}/share/{settings,torrents,users}
@@ -256,7 +255,9 @@ in
                 chown -R ${cfg.user}:${cfg.group} ${cfg.dataDir}/{conf,share,logs,plugins}
                 chmod -R 755 ${cfg.dataDir}/{conf,share,logs,plugins}
               '';
+
               serviceConfig.Type = "oneshot";
+              wantedBy = [ "multi-user.target" ];
             };
         };
 
@@ -267,10 +268,10 @@ in
 
       users.users = {
         "${cfg.user}" = {
-          home = cfg.dataDir;
-          group = cfg.group;
-          extraGroups = [ config.services.rtorrent.group ];
           description = "ruTorrent Daemon user";
+          extraGroups = [ config.services.rtorrent.group ];
+          group = cfg.group;
+          home = cfg.dataDir;
           isSystemUser = true;
         };
 
@@ -278,32 +279,33 @@ in
           extraGroups = [ cfg.group ];
         };
       };
+
+      warnings =
+        let
+          nginxVhostCfg = config.services.nginx.virtualHosts."${cfg.hostName}";
+        in
+        [ ]
+        ++ (optional
+          (
+            cfg.nginx.exposeInsecureRPC2mount
+            && (nginxVhostCfg.basicAuth == { } || nginxVhostCfg.basicAuthFile == null)
+          )
+          ''
+            You are using exposeInsecureRPC2mount without using basic auth on the virtual host. The exposed rpc mount allow for remote command execution.
+
+            Please make sure it is not accessible from the outside.
+          ''
+        );
     }
 
     (mkIf cfg.nginx.enable (mkMerge [
       {
         services = {
-          phpfpm.pools.rutorrent =
-            let
-              envPath = lib.makeBinPath (getPluginDependencies phpPluginDependencies cfg.plugins);
-              pool = {
-                user = cfg.user;
-                group = config.services.rtorrent.group;
-                settings =
-                  mapAttrs (name: mkDefault) {
-                    "listen.owner" = config.services.nginx.user;
-                    "listen.group" = config.services.nginx.group;
-                  }
-                  // cfg.poolSettings;
-              };
-            in
-            if (envPath == "") then pool else pool // { phpEnv.PATH = envPath; };
-
           nginx = {
             enable = true;
+
             virtualHosts = {
               ${cfg.hostName} = {
-                root = cfg.dataDir;
                 locations = {
                   "~ [^/]\\.php(/|$)" = {
                     extraConfig = ''
@@ -322,9 +324,29 @@ in
                     '';
                   };
                 };
+
+                root = cfg.dataDir;
               };
             };
           };
+
+          phpfpm.pools.rutorrent =
+            let
+              envPath = lib.makeBinPath (getPluginDependencies phpPluginDependencies cfg.plugins);
+              pool = {
+                group = config.services.rtorrent.group;
+
+                settings =
+                  mapAttrs (name: mkDefault) {
+                    "listen.group" = config.services.nginx.group;
+                    "listen.owner" = config.services.nginx.user;
+                  }
+                  // cfg.poolSettings;
+
+                user = cfg.user;
+              };
+            in
+            if (envPath == "") then pool else pool // { phpEnv.PATH = envPath; };
         };
       }
 

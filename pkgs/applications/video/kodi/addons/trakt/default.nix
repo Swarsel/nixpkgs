@@ -1,15 +1,14 @@
 {
   lib,
-  rel,
-  buildKodiAddon,
-  fetchzip,
   addonUpdateScript,
-  trakt-module,
+  buildKodiAddon,
   dateutil,
+  fetchzip,
+  rel,
+  trakt-module,
 }:
 buildKodiAddon rec {
   pname = "trakt";
-  namespace = "script.trakt";
   version = "3.8.2";
 
   src = fetchzip {
@@ -22,16 +21,19 @@ buildKodiAddon rec {
     trakt-module
   ];
 
+  namespace = "script.trakt";
+
   passthru = {
     pythonPath = "lib";
+
     updateScript = addonUpdateScript {
       attrPath = "kodi.packages.trakt";
     };
   };
 
   meta = {
-    homepage = "https://kodi.wiki/view/Add-on:Trakt";
     description = "Trakt.tv movie and TV show scrobbler for Kodi";
+    homepage = "https://kodi.wiki/view/Add-on:Trakt";
     license = lib.licenses.gpl2Only;
     teams = [ lib.teams.kodi ];
   };

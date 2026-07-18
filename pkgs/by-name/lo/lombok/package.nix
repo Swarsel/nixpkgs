@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   jdk,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,12 +15,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-NIik6ZlMJllrqs7r7ljK02pQ472uxb5ytYNNPDtWAwY=";
   };
 
-  nativeBuildInputs = [ makeWrapper ];
-
   outputs = [
     "out"
     "bin"
   ];
+
+  nativeBuildInputs = [ makeWrapper ];
 
   buildCommand = ''
     mkdir -p $out/share/java
@@ -33,11 +33,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Library that can write a lot of boilerplate for your Java project";
-    mainProgram = "lombok";
-    platforms = lib.platforms.all;
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
-    license = lib.licenses.mit;
     homepage = "https://projectlombok.org/";
+    license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ lib.maintainers.CrystalGamma ];
+    platforms = lib.platforms.all;
+    mainProgram = "lombok";
   };
 })

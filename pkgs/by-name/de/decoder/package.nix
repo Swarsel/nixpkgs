@@ -22,8 +22,8 @@ stdenv.mkDerivation {
     #   https://github.com/PeterPawn/decoder/pull/29
     (fetchpatch {
       name = "fno-common.patch";
-      url = "https://github.com/PeterPawn/decoder/commit/843ac477c31108023d8008581bf91c5a3acc1859.patch";
       sha256 = "sha256-rRylz8cxgNyPSqL/THdgEBpzcVx1K+xbjUn4PwP9Jn4=";
+      url = "https://github.com/PeterPawn/decoder/commit/843ac477c31108023d8008581bf91c5a3acc1859.patch";
     })
   ];
 
@@ -42,11 +42,11 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/PeterPawn/decoder";
     description = ''"secrets" decoding for FRITZ!OS devices'';
-    mainProgram = "decoder";
+    homepage = "https://github.com/PeterPawn/decoder";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ Luflosi ];
+    platforms = lib.platforms.linux;
+    mainProgram = "decoder";
   };
 }

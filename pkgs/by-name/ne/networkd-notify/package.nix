@@ -10,8 +10,6 @@
 python3Packages.buildPythonApplication {
   pname = "networkd-notify";
   version = "unstable-2022-11-29";
-  # There is no setup.py, just a single Python script.
-  pyproject = false;
 
   src = fetchFromGitLab {
     owner = "wavexx";
@@ -24,10 +22,23 @@ python3Packages.buildPythonApplication {
     wrapGAppsNoGuiHook
   ];
 
+  installPhase = ''
+    install -D networkd-notify -t "$out/bin/"
+    install -D -m0644 networkd-notify.desktop -t "$out/share/applications/"
+  '';
+
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
   dependencies = with python3Packages; [
     dbus-python
     pygobject3
   ];
+
+  dontBuild = true;
+  # Let the Python wrapper add gappsWrapperArgs, to avoid two layers of wrapping.
+  dontWrapGApps = true;
 
   patchPhase = ''
     sed -i \
@@ -36,26 +47,15 @@ python3Packages.buildPythonApplication {
       networkd-notify
   '';
 
-  dontBuild = true;
-
-  installPhase = ''
-    install -D networkd-notify -t "$out/bin/"
-    install -D -m0644 networkd-notify.desktop -t "$out/share/applications/"
-  '';
-
-  # Let the Python wrapper add gappsWrapperArgs, to avoid two layers of wrapping.
-  dontWrapGApps = true;
-
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
+  # There is no setup.py, just a single Python script.
+  pyproject = false;
 
   meta = {
     description = "Desktop notification integration for systemd-networkd";
-    mainProgram = "networkd-notify";
     homepage = "https://gitlab.com/wavexx/networkd-notify";
-    maintainers = with lib.maintainers; [ danc86 ];
     license = lib.licenses.gpl3;
+    maintainers = with lib.maintainers; [ danc86 ];
     platforms = lib.platforms.linux;
+    mainProgram = "networkd-notify";
   };
 }

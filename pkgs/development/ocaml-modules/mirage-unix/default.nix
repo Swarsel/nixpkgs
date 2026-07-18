@@ -1,17 +1,15 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
-  lwt,
+  buildDunePackage,
   duration,
+  lwt,
   mirage-runtime,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "mirage-unix";
   version = "5.0.1";
-
-  duneVersion = "3";
 
   src = fetchurl {
     url = "https://github.com/mirage/mirage-unix/releases/download/v${finalAttrs.version}/mirage-unix-${finalAttrs.version}.tbz";
@@ -23,11 +21,13 @@ buildDunePackage (finalAttrs: {
     duration
     mirage-runtime
   ];
+
   doCheck = true;
+  duneVersion = "3";
 
   meta = {
-    homepage = "https://github.com/mirage/mirage-unix";
     description = "Unix core platform libraries for MirageOS";
+    homepage = "https://github.com/mirage/mirage-unix";
     license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ sternenseemann ];
   };

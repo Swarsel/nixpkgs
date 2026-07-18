@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   gettext,
-  pkg-config,
-  xfce4-dev-tools,
-  wrapGAppsHook3,
+  gitUpdater,
   glib,
   gtk3,
   libical,
   libnotify,
   libxfce4ui,
   libxfce4util,
+  pkg-config,
   tzdata,
-  gitUpdater,
+  wrapGAppsHook3,
+  xfce4-dev-tools,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,12 +21,17 @@ stdenv.mkDerivation (finalAttrs: {
   version = "4.20.3";
 
   src = fetchFromGitLab {
-    domain = "gitlab.xfce.org";
     owner = "apps";
     repo = "orage";
     tag = "orage-${finalAttrs.version}";
     hash = "sha256-0C0vuWvYSBMfyHTQBvfx/Olvg1SjEs9vuT8EOE8Ng70=";
+    domain = "gitlab.xfce.org";
   };
+
+  postPatch = ''
+    substituteInPlace src/parameters.c        --replace-fail "/usr/share/zoneinfo" "${tzdata}/share/zoneinfo"
+    substituteInPlace src/tz_zoneinfo_read.c  --replace-fail "/usr/share/zoneinfo" "${tzdata}/share/zoneinfo"
+  '';
 
   nativeBuildInputs = [
     gettext
@@ -44,25 +49,20 @@ stdenv.mkDerivation (finalAttrs: {
     libxfce4util
   ];
 
-  postPatch = ''
-    substituteInPlace src/parameters.c        --replace-fail "/usr/share/zoneinfo" "${tzdata}/share/zoneinfo"
-    substituteInPlace src/tz_zoneinfo_read.c  --replace-fail "/usr/share/zoneinfo" "${tzdata}/share/zoneinfo"
-  '';
-
   configureFlags = [ "--enable-maintainer-mode" ];
   enableParallelBuilding = true;
 
   passthru.updateScript = gitUpdater {
-    rev-prefix = "orage-";
     odd-unstable = true;
+    rev-prefix = "orage-";
   };
 
   meta = {
     description = "Simple calendar application for Xfce";
     homepage = "https://gitlab.xfce.org/apps/orage";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "orage";
     platforms = lib.platforms.linux;
+    mainProgram = "orage";
     teams = [ lib.teams.xfce ];
   };
 })

@@ -4,23 +4,35 @@
   buildPythonPackage,
   capstone,
   pytestCheckHook,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
   unicorn,
 }:
 
 buildPythonPackage rec {
   pname = "unicorn";
   version = lib.getVersion unicorn;
-  pyproject = true;
-
   src = unicorn.src;
 
-  sourceRoot = "${src.name}/bindings/python";
+  nativeCheckInputs = [
+    capstone
+    pytestCheckHook
+  ];
+
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  # this test does not appear to be intended as a pytest-style test
+  disabledTests = [ "test_i386" ];
 
   prePatch = ''
     ln -s ${unicorn}/lib/libunicorn.* prebuilt/
   '';
+
+  pyproject = true;
+  pythonImportsCheck = [ "unicorn" ];
 
   # Needed on non-x86 linux
   setupPyBuildFlags =
@@ -35,25 +47,13 @@ buildPythonPackage rec {
       "macosx_11_0"
     ];
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  nativeCheckInputs = [
-    capstone
-    pytestCheckHook
-  ];
-
-  # this test does not appear to be intended as a pytest-style test
-  disabledTests = [ "test_i386" ];
-
-  pythonImportsCheck = [ "unicorn" ];
+  sourceRoot = "${src.name}/bindings/python";
 
   meta = {
     description = "Python bindings for Unicorn CPU emulator engine";
     homepage = "https://www.unicorn-engine.org/";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       bennofs
       ris

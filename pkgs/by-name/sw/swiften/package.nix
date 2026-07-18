@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchurl,
+  # pin Boost 1.86 due to use of boost/asio/io_service.hpp
+  boost186,
+  expat,
+  fetchpatch,
   libidn,
   lua,
   miniupnpc,
-  expat,
-  zlib,
-  fetchurl,
-  fetchpatch,
-  python312,
   openssl,
-  # pin Boost 1.86 due to use of boost/asio/io_service.hpp
-  boost186,
+  python312,
   scons,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,12 +32,21 @@ stdenv.mkDerivation (finalAttrs: {
     # https://swift.im/git/swift/commit/Swiften/Base/Platform.h?id=3666cbbe30e4d4e25401a5902ae359bc2c24248b
     (fetchpatch {
       name = "3666cbbe30e4d4e25401a5902ae359bc2c24248b.patch";
-      url = "https://swift.im/git/swift/patch/Swiften/Base/Platform.h?id=3666cbbe30e4d4e25401a5902ae359bc2c24248b";
       sha256 = "Wh8Nnfm0/EppSJ7aH2vTNObHtodE5tM19kV1oDfm70w=";
+      url = "https://swift.im/git/swift/patch/Swiften/Base/Platform.h?id=3666cbbe30e4d4e25401a5902ae359bc2c24248b";
     })
 
     ./gcc14-fix.patch
   ];
+
+  postPatch = ''
+    # Ensure bundled dependencies cannot be used.
+    rm -rf 3rdParty
+
+    find . \( \
+      -name '*.py' -o -name SConscript -o -name SConstruct \
+      \) -exec 2to3 -w {} +
+  '';
 
   nativeBuildInputs = [
     python312 # 2to3
@@ -57,6 +66,14 @@ stdenv.mkDerivation (finalAttrs: {
     boost186
   ];
 
+  enableParallelBuilding = true;
+
+  installFlags = [
+    "SWIFTEN_INSTALLDIR=${placeholder "out"}"
+  ];
+
+  installTargets = "${placeholder "out"}";
+
   sconsFlags = [
     "openssl=${openssl.dev}"
     "boost_includedir=${lib.getDev boost186}/include"
@@ -68,29 +85,12 @@ stdenv.mkDerivation (finalAttrs: {
     "swiften_dll=1"
   ];
 
-  postPatch = ''
-    # Ensure bundled dependencies cannot be used.
-    rm -rf 3rdParty
-
-    find . \( \
-      -name '*.py' -o -name SConscript -o -name SConstruct \
-      \) -exec 2to3 -w {} +
-  '';
-
-  installTargets = "${placeholder "out"}";
-
-  installFlags = [
-    "SWIFTEN_INSTALLDIR=${placeholder "out"}"
-  ];
-
-  enableParallelBuilding = true;
-
   meta = {
     description = "XMPP library for C++, used by the Swift client";
-    mainProgram = "swiften-config";
     homepage = "http://swift.im/swiften.html";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.twey ];
+    platforms = lib.platforms.linux;
+    mainProgram = "swiften-config";
   };
 })

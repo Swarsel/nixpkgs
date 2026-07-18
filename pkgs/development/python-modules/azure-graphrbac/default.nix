@@ -1,24 +1,25 @@
 {
   lib,
+  azure-common,
   buildPythonPackage,
   fetchPypi,
   msrest,
   msrestazure,
-  azure-common,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "azure-graphrbac";
   version = "0.61.2";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_graphrbac";
     inherit version;
     hash = "sha256-+yWwMwfhf3Ocga1r0+m1fFeENoYDHw8hS2UVhEfHc90=";
+    pname = "azure_graphrbac";
   };
 
+  # has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,8 +28,7 @@ buildPythonPackage rec {
     azure-common
   ];
 
-  # has no tests
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "This is the Microsoft Azure Graph RBAC Client Library";

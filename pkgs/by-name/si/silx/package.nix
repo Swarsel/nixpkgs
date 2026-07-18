@@ -1,14 +1,12 @@
 {
-  python3Packages,
-  fetchPypi,
   lib,
+  fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "silx";
   version = "2.2.2";
-
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -30,10 +28,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     fabio
   ];
 
+  pyproject = true;
+
   meta = {
-    changelog = "https://github.com/silx-kit/silx/blob/main/CHANGELOG.rst";
     description = "Software to support data assessment, reduction and analysis at synchrotron radiation facilities";
     homepage = "https://github.com/silx-kit/silx";
+    changelog = "https://github.com/silx-kit/silx/blob/main/CHANGELOG.rst";
     license = [ lib.licenses.mit ];
     maintainers = [ lib.maintainers.pmiddend ];
     mainProgram = "silx";

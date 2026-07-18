@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  unstableGitUpdater,
   lua,
+  stdenvNoCC,
+  unstableGitUpdater,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -35,6 +35,7 @@ stdenvNoCC.mkDerivation {
     description = "Extending RIME with Lua scripts";
     homepage = "https://github.com/hchunhui/librime-lua";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       linj
       xddxdd

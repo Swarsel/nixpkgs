@@ -16,21 +16,20 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = [ autoPatchelfHook ];
 
-  sourceRoot = ".";
-
-  dontBuild = true;
-
   installPhase = ''
     install LAC -D -t $out/bin
   '';
 
+  dontBuild = true;
+  sourceRoot = ".";
+
   meta = {
     description = "Utility to check whether audio is truly lossless or not";
     homepage = "https://losslessaudiochecker.com";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ p-h ];
+    platforms = [ "x86_64-linux" ];
     mainProgram = "LAC";
   };
 }

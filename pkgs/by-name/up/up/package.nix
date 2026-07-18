@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,8 +20,8 @@ buildGoModule (finalAttrs: {
   meta = {
     description = "Ultimate Plumber is a tool for writing Linux pipes with instant live preview";
     homepage = "https://github.com/akavel/up";
-    maintainers = with lib.maintainers; [ ma27 ];
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ ma27 ];
     mainProgram = "up";
   };
 })

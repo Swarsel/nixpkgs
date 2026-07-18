@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -30,7 +30,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/lvillis/tcping-rs";
     changelog = "https://github.com/lvillis/tcping-rs/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
-    mainProgram = "tcping";
     maintainers = with lib.maintainers; [ heitorPB ];
+    mainProgram = "tcping";
   };
 })

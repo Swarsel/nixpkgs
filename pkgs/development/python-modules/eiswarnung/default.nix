@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   pytest-asyncio,
   pytest-cov-stub,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "eiswarnung";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "klaasnicolaas";
@@ -24,22 +23,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-/61qrRfD7/gaEcvFot34HYXOVLWwTDi/fvcgHDTv9u0=";
   };
 
-  __darwinAllowLocalNetworking = true;
-
   postPatch = ''
     substituteInPlace pyproject.toml \
       --replace-fail '"0.0.0"' '"${finalAttrs.version}"'
   '';
-
-  pythonRelaxDeps = [ "pytz" ];
-
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    aiohttp
-    pytz
-    yarl
-  ];
 
   nativeCheckInputs = [
     aresponses
@@ -48,7 +35,18 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  __darwinAllowLocalNetworking = true;
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    aiohttp
+    pytz
+    yarl
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "eiswarnung" ];
+  pythonRelaxDeps = [ "pytz" ];
 
   meta = {
     description = "Module for getting Eiswarning API forecasts";

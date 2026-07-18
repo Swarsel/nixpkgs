@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
+  boost,
+  cppunit,
   gperf,
-  pkg-config,
+  icu,
+  liblangtag,
   librevenge,
   libxml2,
-  boost,
-  icu,
-  cppunit,
+  pkg-config,
   zlib,
-  liblangtag,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,6 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
       "true, true, &status)"
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     pkg-config
     gperf
@@ -44,8 +46,6 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
     liblangtag
   ];
-
-  strictDeps = true;
 
   enableParallelBuilding = true;
 

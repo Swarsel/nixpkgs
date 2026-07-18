@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitLab,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "sr2t";
   version = "0.0.26";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "0bs1d1an";
@@ -16,6 +15,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-BPsYnKBTxt5WUd2+WumMdVi8p6iryOWG2MjI97qbaCw=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = with python3.pkgs; [ hatchling ];
 
   dependencies = with python3.pkgs; [
@@ -25,9 +26,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     xlsxwriter
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "sr2t" ];
 
   meta = {

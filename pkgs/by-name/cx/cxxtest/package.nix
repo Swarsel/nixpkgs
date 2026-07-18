@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "cxxtest";
   version = "4.4";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "CxxTest";
@@ -15,8 +14,6 @@ python3Packages.buildPythonApplication rec {
     rev = version;
     sha256 = "19w92kipfhp5wvs47l0qpibn3x49sbmvkk91yxw6nwk6fafcdl17";
   };
-
-  sourceRoot = "${src.name}/python";
 
   nativeCheckInputs = [ python3Packages.ply ];
 
@@ -40,12 +37,15 @@ python3Packages.buildPythonApplication rec {
     cp -r ../../cxxtest "$out/include"
   '';
 
+  format = "setuptools";
+  sourceRoot = "${src.name}/python";
+
   meta = {
-    homepage = "https://github.com/CxxTest/cxxtest";
     description = "Unit testing framework for C++";
-    mainProgram = "cxxtestgen";
+    homepage = "https://github.com/CxxTest/cxxtest";
     license = lib.licenses.lgpl3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ juliendehos ];
+    platforms = lib.platforms.unix;
+    mainProgram = "cxxtestgen";
   };
 }

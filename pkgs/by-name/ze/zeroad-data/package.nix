@@ -6,8 +6,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "0ad-data";
   inherit (zeroad-unwrapped) version;
+  pname = "0ad-data";
 
   src = fetchurl {
     url = "https://releases.wildfiregames.com/0ad-${finalAttrs.version}-unix-data.tar.xz";

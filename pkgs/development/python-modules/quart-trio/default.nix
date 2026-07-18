@@ -1,28 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonOlder,
-
-  # build-system
-  pdm-backend,
-
+  buildPythonPackage,
   # dependencies
   exceptiongroup,
   hypercorn,
-  quart,
-  trio,
-
+  # build-system
+  pdm-backend,
   # tests
   pytest-cov-stub,
   pytest-trio,
   pytestCheckHook,
+  pythonOlder,
+  quart,
+  trio,
 }:
 
 buildPythonPackage rec {
   pname = "quart-trio";
   version = "0.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pgjones";
@@ -30,6 +26,12 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-n41XATex20iw3ZYxud/5cTdx+F6tTQQJmP91TIw2xJo=";
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytest-trio
+    pytestCheckHook
+  ];
 
   build-system = [
     pdm-backend
@@ -42,14 +44,10 @@ buildPythonPackage rec {
   ]
   ++ hypercorn.optional-dependencies.trio;
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "quart_trio"
-  ];
-
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytest-trio
-    pytestCheckHook
   ];
 
   meta = {

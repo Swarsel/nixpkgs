@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  libjack2,
   alsa-lib,
-  libpulseaudio,
+  autoreconfHook,
   faac,
   lame,
+  libjack2,
   libogg,
   libopus,
-  libvorbis,
+  libpulseaudio,
   libsamplerate,
-  autoreconfHook,
+  libvorbis,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,12 +25,12 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     sha256 = "sha256-THsw7N80hkcKQmU3spUhTEuCHbGw+pkh3MPp5Isnk7c=";
   };
-  sourceRoot = "source/darkice/trunk";
 
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     libopus
     libvorbis
@@ -48,11 +48,13 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   enableParallelBuilding = true;
+  sourceRoot = "source/darkice/trunk";
 
   meta = {
-    homepage = "http://darkice.org/";
     description = "Live audio streamer";
+    homepage = "http://darkice.org/";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       ikervagyok
       l33tname

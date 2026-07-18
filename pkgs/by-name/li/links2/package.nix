@@ -2,35 +2,40 @@
   lib,
   stdenv,
   fetchurl,
+  bzip2,
+  directfb,
   gpm,
+  libavif, # graphic formats
+  libev, # Misc.
+  libjpeg,
+  libpng,
+  librsvg,
+  libtiff,
+  libx11,
+  libxau, # GUI support
+  libxt,
   openssl,
   pkg-config,
-  libev, # Misc.
-  libpng,
-  libjpeg,
-  libtiff,
-  librsvg,
-  libavif, # graphic formats
-  bzip2,
-  zlib,
   xz, # Transfer encodings
-  enableFB ? (!stdenv.hostPlatform.isDarwin),
+  zlib,
   enableDirectFB ? false,
-  directfb,
+  enableFB ? (!stdenv.hostPlatform.isDarwin),
   enableX11 ? (!stdenv.hostPlatform.isDarwin),
-  libx11,
-  libxt,
-  libxau, # GUI support
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "2.30";
   pname = "links2";
+  version = "2.30";
 
   src = fetchurl {
     url = "https://links.twibright.com/download/links-${finalAttrs.version}.tar.bz2";
     hash = "sha256-xGMca1oRUnzcPLeHL8I7fyslwrAh1Za+QQ2ttAMV8WY=";
   };
+
+  nativeBuildInputs = [
+    pkg-config
+    bzip2
+  ];
 
   buildInputs = [
     libev
@@ -52,11 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals enableDirectFB [ directfb ];
 
-  nativeBuildInputs = [
-    pkg-config
-    bzip2
-  ];
-
   configureFlags = [
     "--with-ssl"
   ]
@@ -70,11 +70,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "http://links.twibright.com/";
     description = "Small browser with some graphics support";
-    maintainers = with lib.maintainers; [ raskin ];
-    mainProgram = "links";
+    homepage = "http://links.twibright.com/";
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.unix;
+    mainProgram = "links";
   };
 })

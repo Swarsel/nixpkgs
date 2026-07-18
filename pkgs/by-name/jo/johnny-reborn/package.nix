@@ -1,43 +1,32 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   fetchzip,
   johnny-reborn-engine,
   makeWrapper,
+  stdenvNoCC,
 }:
 
 let
   sounds = fetchFromGitHub {
+    hash = "sha256-rtZVCn4KbEBVwaSQ4HZhMoDEI5Q9IPj9SZywgAx0MPY=";
     owner = "nivs1978";
     repo = "Johnny-Castaway-Open-Source";
     rev = "be6afefd43a3334acc66fc9d777c162c8bfb9558";
-    hash = "sha256-rtZVCn4KbEBVwaSQ4HZhMoDEI5Q9IPj9SZywgAx0MPY=";
   };
 
   resources = fetchzip {
-    name = "scrantic-source";
-    url = "https://archive.org/download/johnny-castaway-screensaver/scrantic-run.zip";
     hash = "sha256-Q9chCYReOQEmkTyIkYo+D+OXYUqxPNOOEEmiFh8yaw4=";
+    name = "scrantic-source";
     stripRoot = false;
+    url = "https://archive.org/download/johnny-castaway-screensaver/scrantic-run.zip";
   };
 in
 
 stdenvNoCC.mkDerivation {
-  pname = "johnny-reborn";
   inherit (johnny-reborn-engine) version;
-
-  srcs = [
-    sounds
-    resources
-  ];
-
+  pname = "johnny-reborn";
   nativeBuildInputs = [ makeWrapper ];
-
-  sourceRoot = sounds.name;
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -55,10 +44,19 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  sourceRoot = sounds.name;
+
+  srcs = [
+    sounds
+    resources
+  ];
+
   meta = {
+    inherit (johnny-reborn-engine.meta) homepage platforms mainProgram;
     description = "Open-source engine for the classic \"Johnny Castaway\" screensaver (ready to use, with resources)";
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ pedrohlc ];
-    inherit (johnny-reborn-engine.meta) homepage platforms mainProgram;
   };
 }

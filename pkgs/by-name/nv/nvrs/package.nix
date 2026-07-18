@@ -1,10 +1,10 @@
 {
   lib,
-  nix-update-script,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
+  nix-update-script,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,12 +18,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-6ATkebFYuOOvhzSO+gClPbtaz9/Zph4m8/cqkufRYFw=";
   };
 
-  cargoHash = "sha256-h3egaj4RQImxIf0MB8ZM9V92Xlml5BK++s7RJQwAk+E=";
-
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ openssl ];
-
+  cargoHash = "sha256-h3egaj4RQImxIf0MB8ZM9V92Xlml5BK++s7RJQwAk+E=";
   buildFeatures = [ "cli" ];
+
   cargoBuildFlags = [
     "--bin"
     "nvrs"
@@ -50,7 +49,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     changelog = "https://github.com/koibtw/nvrs/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ koi ];
-    mainProgram = "nvrs";
     platforms = lib.platforms.linux;
+    mainProgram = "nvrs";
   };
 })

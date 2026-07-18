@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,6 +16,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-x96+l9EBzYplGRFHsfQazSjqZs35bdXQEJv3pBuaJVo=";
+  # integration tests require network access
+  doCheck = false;
 
   ldflags = [
     "-s"
@@ -23,15 +25,12 @@ buildGoModule (finalAttrs: {
     "-X=github.com/netlify/gotrue/cmd.Version=${finalAttrs.version}"
   ];
 
-  # integration tests require network access
-  doCheck = false;
-
   meta = {
-    homepage = "https://github.com/netlify/gotrue";
     description = "SWT based API for managing users and issuing SWT tokens";
-    mainProgram = "gotrue";
+    homepage = "https://github.com/netlify/gotrue";
     changelog = "https://github.com/netlify/gotrue/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "gotrue";
   };
 })

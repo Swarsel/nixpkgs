@@ -1,14 +1,13 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
   writableTmpDirAsHomeHook,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "qbom";
   version = "0.1.0-unstable-2026-01-21";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "csnp";
@@ -16,6 +15,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     rev = "817414c311faac8da99042be82d9449019a8e9f9";
     hash = "sha256-qTcNoQZkcTaHQyZ0Lqbt1XlXsV15+tOcv7f+K7ydqmw=";
   };
+
+  nativeCheckInputs = with python3.pkgs; [
+    pytest-cov-stub
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = with python3.pkgs; [ hatchling ];
 
@@ -32,17 +37,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       pennylane
       qiskit
     ];
+
     cirq = [ cirq ];
     pennylane = [ pennylane ];
     qiskit = [ qiskit ];
   };
 
-  nativeCheckInputs = with python3.pkgs; [
-    pytest-cov-stub
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "qbom" ];
 
   meta = {

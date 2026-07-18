@@ -1,6 +1,6 @@
 {
-  callPackage,
   fetchFromGitHub,
+  callPackage,
 }:
 
 callPackage ../generic.nix rec {
@@ -17,8 +17,8 @@ callPackage ../generic.nix rec {
   desktopName = "Experienced Pixel Dungeon";
 
   meta = {
+    description = "Fork of the Shattered Pixel Dungeon roguelike without limits on experience and items";
     homepage = "https://github.com/TrashboxBobylev/Experienced-Pixel-Dungeon-Redone";
     downloadPage = "https://github.com/TrashboxBobylev/Experienced-Pixel-Dungeon-Redone/releases";
-    description = "Fork of the Shattered Pixel Dungeon roguelike without limits on experience and items";
   };
 }

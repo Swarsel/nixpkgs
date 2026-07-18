@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cyclopts,
-  fetchFromGitHub,
   hatchling,
   httpx,
   mashumaro,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "connect-box3";
   version = "0.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "home-assistant-ecosystem";
@@ -23,6 +22,12 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-eLrCMziV/+maLIded1n0248Xb14uVBps/gzTUz8NMMc=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+    pytest-httpx
+  ];
 
   build-system = [ hatchling ];
 
@@ -33,12 +38,7 @@ buildPythonPackage (finalAttrs: {
     rich
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-    pytest-httpx
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "connect_box3" ];
 
   meta = {

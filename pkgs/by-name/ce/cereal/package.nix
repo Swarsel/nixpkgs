@@ -17,12 +17,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
-
   cmakeFlags = [ "-DJUST_INSTALL_CEREAL=yes" ];
 
   meta = {
-    homepage = "https://uscilab.github.io/cereal/";
     description = "Header-only C++11 serialization library";
+    homepage = "https://uscilab.github.io/cereal/";
     changelog = "https://github.com/USCiLab/cereal/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
     maintainers = [ ];

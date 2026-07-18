@@ -1,19 +1,19 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
+  _experimental-update-script-combinators,
   callPackage,
+  nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  tzdata,
+  versionCheckHook,
   librusty_v8 ? (
     callPackage ./librusty_v8.nix {
       inherit (callPackage ./fetchers.nix { }) fetchLibrustyV8;
     }
   ),
-  openssl,
-  tzdata,
-  versionCheckHook,
-  _experimental-update-script-combinators,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -27,13 +27,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-j0Hi75olubvlHEOzVbW0cMAslZFWCzHiwXaBqmkXzmE=";
   };
 
-  cargoHash = "sha256-3UvggE45Gvus5ghd64ZK+Nh/VB3NJBmZNrbStl/xJu0=";
-
-  env = {
-    OPENSSL_NO_VENDOR = true;
-    RUSTY_V8_ARCHIVE = librusty_v8;
-  };
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -42,14 +35,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-3UvggE45Gvus5ghd64ZK+Nh/VB3NJBmZNrbStl/xJu0=";
+
+  env = {
+    OPENSSL_NO_VENDOR = true;
+    RUSTY_V8_ARCHIVE = librusty_v8;
+  };
+
   # Tests require network access and CA certificates, which are unavailable in the nix sandbox
   doCheck = false;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
   versionCheckProgramArg = "--version";
-  doInstallCheck = true;
 
   passthru.updateScript = _experimental-update-script-combinators.sequence [
     (nix-update-script { })
@@ -59,15 +60,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Package manager for building and running complex software projects";
     homepage = "https://brioche.dev/";
-    downloadPage = "https://github.com/brioche-dev/brioche";
     changelog = "https://github.com/brioche-dev/brioche/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ GaetanLepage ];
-    mainProgram = "brioche";
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
+    mainProgram = "brioche";
+    downloadPage = "https://github.com/brioche-dev/brioche";
   };
 })

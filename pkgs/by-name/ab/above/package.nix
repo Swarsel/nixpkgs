@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "above";
   version = "2.8.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "caster0x00";
@@ -16,6 +15,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-wyXWGfthzJeHZoJe4OKe9k2BIwLae/aOUtiJpT4SfHw=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -23,8 +24,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     scapy
   ];
 
-  # Project has no tests
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "Invisible network protocol sniffer";

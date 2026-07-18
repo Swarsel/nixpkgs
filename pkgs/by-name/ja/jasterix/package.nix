@@ -1,16 +1,16 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   boost,
   catch2_3,
   cmake,
-  fetchFromGitHub,
   fetchpatch,
-  lib,
   libarchive,
   libpcap,
   log4cpp,
   onetbb,
   openssl,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,11 +24,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-df5tByZwtQLdV0UlSo1WkgyoF3hReU/mN74V2WL6zoI=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     (fetchpatch {
+      hash = "sha256-V0/nMJGb8ZB/Z6bKvyZnic57HXAsUAHXgyVq+D4yFDw=";
       name = "jasterix-fix-tests.patch";
       url = "https://github.com/OpenATSGmbH/jASTERIX/commit/b79e59c042ebb7eee31f50a7ed48840bcec50429.patch";
-      hash = "sha256-V0/nMJGb8ZB/Z6bKvyZnic57HXAsUAHXgyVq+D4yFDw=";
     })
   ];
 
@@ -39,18 +44,8 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i 's/BOOST_STACKTRACE_LINK/#BOOST_STACKTRACE_LINK/' CMakeLists.txt
   '';
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
+  strictDeps = true;
   nativeBuildInputs = [ cmake ];
-
-  cmakeFlags = [
-    (lib.cmakeBool "BUILD_SHARED" (!stdenv.hostPlatform.isStatic))
-    (lib.cmakeBool "BUILD_STATIC" stdenv.hostPlatform.isStatic)
-    (lib.cmakeBool "WITH_UNIT_TESTS" finalAttrs.doCheck)
-  ];
 
   buildInputs = [
     boost.dev
@@ -62,17 +57,21 @@ stdenv.mkDerivation (finalAttrs: {
     openssl.dev
   ];
 
-  doCheck = true;
+  cmakeFlags = [
+    (lib.cmakeBool "BUILD_SHARED" (!stdenv.hostPlatform.isStatic))
+    (lib.cmakeBool "BUILD_STATIC" stdenv.hostPlatform.isStatic)
+    (lib.cmakeBool "WITH_UNIT_TESTS" finalAttrs.doCheck)
+  ];
 
-  strictDeps = true;
+  doCheck = true;
   __structuredAttrs = true;
 
   meta = {
     description = "C++ Library for EUROCONTROL's ASTERIX to JSON conversion";
     homepage = "https://github.com/OpenATSGmbH/jASTERIX";
     changelog = "https://github.com/OpenATSGmbH/jASTERIX/releases/tag/v${finalAttrs.src.tag}";
-    maintainers = [ lib.maintainers.vog ];
     license = lib.licenses.gpl3Plus;
+    maintainers = [ lib.maintainers.vog ];
     platforms = lib.platforms.all;
   };
 })

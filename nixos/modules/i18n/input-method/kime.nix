@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   generators,
   ...
 }:
@@ -20,6 +20,21 @@ in
 
   options.i18n.inputMethod.kime = {
     daemonModules = lib.mkOption {
+      default = [
+        "Xim"
+        "Wayland"
+        "Indicator"
+      ];
+
+      description = ''
+        List of enabled daemon modules
+      '';
+
+      example = [
+        "Xim"
+        "Indicator"
+      ];
+
       type = lib.types.listOf (
         lib.types.enum [
           "Xim"
@@ -27,48 +42,35 @@ in
           "Indicator"
         ]
       );
-      default = [
-        "Xim"
-        "Wayland"
-        "Indicator"
-      ];
-      example = [
-        "Xim"
-        "Indicator"
-      ];
-      description = ''
-        List of enabled daemon modules
-      '';
     };
+
+    extraConfig = lib.mkOption {
+      default = "";
+
+      description = ''
+        extra kime configuration. Refer to <https://github.com/Riey/kime/blob/v${pkgs.kime.version}/docs/CONFIGURATION.md> for details on supported values.
+      '';
+
+      type = lib.types.lines;
+    };
+
     iconColor = lib.mkOption {
+      default = "Black";
+
+      description = ''
+        Color of the indicator icon
+      '';
+
+      example = "White";
+
       type = lib.types.enum [
         "Black"
         "White"
       ];
-      default = "Black";
-      example = "White";
-      description = ''
-        Color of the indicator icon
-      '';
-    };
-    extraConfig = lib.mkOption {
-      type = lib.types.lines;
-      default = "";
-      description = ''
-        extra kime configuration. Refer to <https://github.com/Riey/kime/blob/v${pkgs.kime.version}/docs/CONFIGURATION.md> for details on supported values.
-      '';
     };
   };
 
   config = lib.mkIf (imcfg.enable && imcfg.type == "kime") {
-    i18n.inputMethod.package = pkgs.kime;
-
-    environment.variables = {
-      GTK_IM_MODULE = "kime";
-      QT_IM_MODULE = "kime";
-      XMODIFIERS = "@im=kime";
-    };
-
     environment.etc."xdg/kime/config.yaml".text = ''
       daemon:
         modules: [${lib.concatStringsSep "," imcfg.kime.daemonModules}]
@@ -76,6 +78,14 @@ in
         icon_color: ${imcfg.kime.iconColor}
     ''
     + imcfg.kime.extraConfig;
+
+    environment.variables = {
+      GTK_IM_MODULE = "kime";
+      QT_IM_MODULE = "kime";
+      XMODIFIERS = "@im=kime";
+    };
+
+    i18n.inputMethod.package = pkgs.kime;
   };
 
   # uses attributes of the linked package

@@ -1,27 +1,27 @@
 {
+  lib,
   stdenv,
   fetchurl,
   fetchFromGitHub,
   buildPackages,
-  lib,
-  self,
-  version,
-  sha256,
+  config,
+  coreutils,
+  makeWrapper,
+  passthruFun,
   pkgsBuildBuild,
   pkgsBuildHost,
   pkgsBuildTarget,
   pkgsHostHost,
   pkgsTargetTarget,
+  self,
+  sha256,
+  version,
   zlib,
-  config,
-  passthruFun,
-  perlAttr ? "perl${lib.versions.major version}",
-  enableThreading ? true,
-  coreutils,
-  makeWrapper,
   enableCrypt ? true,
+  enableThreading ? true,
   libxcrypt ? null,
   overrides ? config.perlPackageOverrides or (p: { }), # TODO: (self: super: {}) like in python
+  perlAttr ? "perl${lib.versions.major version}",
 }@inputs:
 
 # Note: this package is used for bootstrapping fetchurl, and thus
@@ -85,44 +85,49 @@ let
   # next perl maintenance release includes them.
   vendoredPerlDistributions = [
     {
-      # CVE-2026-7010
-      path = "cpan/HTTP-Tiny";
       src = fetchurl {
         url = "mirror://cpan/authors/id/H/HA/HAARG/HTTP-Tiny-0.094.tar.gz";
         hash = "sha256-poQemfwbVdFd6VlHzL17dnvsxRxxAhl/qPBE333cB0M=";
       };
+
+      # CVE-2026-7010
+      path = "cpan/HTTP-Tiny";
     }
     {
-      # CVE-2026-3381, CVE-2026-4176
-      path = "cpan/Compress-Raw-Zlib";
       src = fetchurl {
         url = "mirror://cpan/authors/id/P/PM/PMQS/Compress-Raw-Zlib-2.222.tar.gz";
         hash = "sha256-Hf19URplVifIGBXTDTurwo+luIRV/wP4sECZ3LUShrg=";
       };
+
+      # CVE-2026-3381, CVE-2026-4176
+      path = "cpan/Compress-Raw-Zlib";
     }
     {
-      # Runtime dependency of IO-Compress 2.220.
-      path = "cpan/Compress-Raw-Bzip2";
       src = fetchurl {
         url = "mirror://cpan/authors/id/P/PM/PMQS/Compress-Raw-Bzip2-2.218.tar.gz";
         hash = "sha256-iRU+ai69pSNJSTsHT6S3VJ/x+QU952E8GKXgXFtBX6g=";
       };
+
+      # Runtime dependency of IO-Compress 2.220.
+      path = "cpan/Compress-Raw-Bzip2";
     }
     {
-      # CVE-2026-48962, CVE-2026-48961, CVE-2026-48959
-      path = "cpan/IO-Compress";
       src = fetchurl {
         url = "mirror://cpan/authors/id/P/PM/PMQS/IO-Compress-2.220.tar.gz";
         hash = "sha256-nZbqKR8sVO82fHOWuFfZO6GsHEsvG84T7Yo+Xz7rtic=";
       };
+
+      # CVE-2026-48962, CVE-2026-48961, CVE-2026-48959
+      path = "cpan/IO-Compress";
     }
     {
-      # CVE-2026-42496, CVE-2026-42497, CVE-2026-9538
-      path = "cpan/Archive-Tar";
       src = fetchurl {
         url = "mirror://cpan/authors/id/B/BI/BINGOS/Archive-Tar-3.12.tar.gz";
         hash = "sha256-ARTvObZfSfiWgoOrR3Gdfoj5jXNg/jZJvjMcf1PVgyw=";
       };
+
+      # CVE-2026-42496, CVE-2026-42497, CVE-2026-9538
+      path = "cpan/Archive-Tar";
     }
   ];
 
@@ -148,11 +153,10 @@ stdenv.mkDerivation (
     pname = "perl";
 
     src = fetchurl {
-      url = "mirror://cpan/src/5.0/perl-${version}.tar.gz";
       inherit sha256;
+      url = "mirror://cpan/src/5.0/perl-${version}.tar.gz";
     };
 
-    strictDeps = true;
     # TODO: Add a "dev" output containing the header files.
     outputs = [
       "out"
@@ -160,20 +164,6 @@ stdenv.mkDerivation (
       "devdoc"
     ]
     ++ lib.optional crossCompiling "mini";
-    setOutputFlags = false;
-
-    # On FreeBSD, if Perl is built with threads support, having
-    # libxcrypt available will result in a build failure, because
-    # perl.h will get conflicting definitions of struct crypt_data
-    # from libc's unistd.h and libxcrypt's crypt.h.
-    #
-    # FreeBSD Ports has the same issue building the perl port if
-    # the libxcrypt port has been installed.
-    #
-    # Without libxcrypt, Perl will still find FreeBSD's crypt functions.
-    propagatedBuildInputs = lib.optional (enableCrypt && !stdenv.hostPlatform.isFreeBSD) libxcrypt;
-
-    disallowedReferences = [ stdenv.cc ];
 
     patches = commonPatches;
 
@@ -199,6 +189,18 @@ stdenv.mkDerivation (
         # the output in some cases (when cross-compiling).
         unset src
       '';
+
+    strictDeps = true;
+    # On FreeBSD, if Perl is built with threads support, having
+    # libxcrypt available will result in a build failure, because
+    # perl.h will get conflicting definitions of struct crypt_data
+    # from libc's unistd.h and libxcrypt's crypt.h.
+    #
+    # FreeBSD Ports has the same issue building the perl port if
+    # the libxcrypt port has been installed.
+    #
+    # Without libxcrypt, Perl will still find FreeBSD's crypt functions.
+    propagatedBuildInputs = lib.optional (enableCrypt && !stdenv.hostPlatform.isFreeBSD) libxcrypt;
 
     # Build a thread-safe Perl with a dynamic libperl.so.  We need the
     # "installstyle" option to ensure that modules are put under
@@ -259,23 +261,12 @@ stdenv.mkDerivation (
         "-Dd_crypt"
       ];
 
-    configureScript = lib.optionalString (!crossCompiling) "${stdenv.shell} ./Configure";
-
-    # !canExecute cross uses miniperl which doesn't have this
-    postConfigure =
-      lib.optionalString (!crossCompiling && stdenv.cc.targetPrefix != "") ''
-        substituteInPlace Makefile \
-          --replace-fail "AR = ar" "AR = ${stdenv.cc.targetPrefix}ar"
-      ''
-      + lib.optionalString crossCompiling ''
-        substituteInPlace miniperl_top --replace-fail '-I$top/lib' '-I$top/cpan/JSON-PP/lib -I$top/cpan/CPAN-Meta-YAML/lib -I$top/lib'
-      '';
-
-    dontAddStaticConfigureFlags = true;
-
-    dontAddPrefix = !crossCompiling;
-
-    enableParallelBuilding = true;
+    env = {
+      # https://github.com/llvm/llvm-project/issues/152241
+      NIX_CFLAGS_COMPILE = lib.optionalString (
+        stdenv.hasCC && stdenv.cc.isClang && lib.versionAtLeast stdenv.cc.version "21"
+      ) "-fno-strict-aliasing";
+    };
 
     # perl includes the build date, the uname of the build system and the
     # username of the build user in some files.
@@ -321,49 +312,15 @@ stdenv.mkDerivation (
       sed -i 's,\(libswanted.*\)pthread,\1,g' Configure
     '';
 
-    # Default perl does not support --host= & co.
-    configurePlatforms = [ ];
-
-    setupHook = ./setup-hook.sh;
-
-    env = {
-      # https://github.com/llvm/llvm-project/issues/152241
-      NIX_CFLAGS_COMPILE = lib.optionalString (
-        stdenv.hasCC && stdenv.cc.isClang && lib.versionAtLeast stdenv.cc.version "21"
-      ) "-fno-strict-aliasing";
-    };
-
-    # copied from python
-    passthru =
-      let
-        # When we override the interpreter we also need to override the spliced versions of the interpreter
-        inputs' = lib.filterAttrs (n: v: !lib.isDerivation v && n != "passthruFun") inputs;
-        override =
-          attr:
-          let
-            perl = attr.override (inputs' // { self = perl; });
-          in
-          perl;
-      in
-      passthruFun rec {
-        inherit self perlAttr;
-        inherit overrides;
-        perlOnBuildForBuild = override pkgsBuildBuild.${perlAttr};
-        perlOnBuildForHost = override pkgsBuildHost.${perlAttr};
-        perlOnBuildForTarget = override pkgsBuildTarget.${perlAttr};
-        perlOnHostForHost = override pkgsHostHost.${perlAttr};
-        perlOnTargetForTarget =
-          if lib.hasAttr perlAttr pkgsTargetTarget then (override pkgsTargetTarget.${perlAttr}) else { };
-
-        tests.withCheck = finalAttrs.finalPackage.overrideAttrs (_: {
-          preCheck = ''
-            # Weird test failure, can't even understand what it's about
-            # Disable the test for now
-            sed -i '/ext\/Pod-Html\/t\/htmldir3.*/d' MANIFEST
-          '';
-          doCheck = true;
-        });
-      };
+    # !canExecute cross uses miniperl which doesn't have this
+    postConfigure =
+      lib.optionalString (!crossCompiling && stdenv.cc.targetPrefix != "") ''
+        substituteInPlace Makefile \
+          --replace-fail "AR = ar" "AR = ${stdenv.cc.targetPrefix}ar"
+      ''
+      + lib.optionalString crossCompiling ''
+        substituteInPlace miniperl_top --replace-fail '-I$top/lib' '-I$top/cpan/JSON-PP/lib -I$top/cpan/CPAN-Meta-YAML/lib -I$top/lib'
+      '';
 
     # TODO: it seems like absolute paths to some coreutils is required.
     postInstall = ''
@@ -411,53 +368,99 @@ stdenv.mkDerivation (
         "$mini/lib/perl5/cross_perl/${version}:$out/lib/perl5/${version}:$out/lib/perl5/${version}/$runtimeArch"
     ''; # */
 
+    # Default perl does not support --host= & co.
+    configurePlatforms = [ ];
+    configureScript = lib.optionalString (!crossCompiling) "${stdenv.shell} ./Configure";
+    disallowedReferences = [ stdenv.cc ];
+    dontAddPrefix = !crossCompiling;
+    dontAddStaticConfigureFlags = true;
+    enableParallelBuilding = true;
+    setOutputFlags = false;
+    setupHook = ./setup-hook.sh;
+
+    # copied from python
+    passthru =
+      let
+        # When we override the interpreter we also need to override the spliced versions of the interpreter
+        inputs' = lib.filterAttrs (n: v: !lib.isDerivation v && n != "passthruFun") inputs;
+        override =
+          attr:
+          let
+            perl = attr.override (inputs' // { self = perl; });
+          in
+          perl;
+      in
+      passthruFun rec {
+        inherit self perlAttr;
+        inherit overrides;
+        perlOnBuildForBuild = override pkgsBuildBuild.${perlAttr};
+        perlOnBuildForHost = override pkgsBuildHost.${perlAttr};
+        perlOnBuildForTarget = override pkgsBuildTarget.${perlAttr};
+        perlOnHostForHost = override pkgsHostHost.${perlAttr};
+
+        perlOnTargetForTarget =
+          if lib.hasAttr perlAttr pkgsTargetTarget then (override pkgsTargetTarget.${perlAttr}) else { };
+
+        tests.withCheck = finalAttrs.finalPackage.overrideAttrs (_: {
+          doCheck = true;
+
+          preCheck = ''
+            # Weird test failure, can't even understand what it's about
+            # Disable the test for now
+            sed -i '/ext\/Pod-Html\/t\/htmldir3.*/d' MANIFEST
+          '';
+        });
+      };
+
     meta = {
-      homepage = "https://www.perl.org/";
       description = "Standard implementation of the Perl 5 programming language";
+      homepage = "https://www.perl.org/";
       license = lib.licenses.artistic1;
       maintainers = [ ];
+      platforms = lib.platforms.all;
+      mainProgram = "perl";
+      identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "perl" finalAttrs.version;
+      priority = 6; # in `buildEnv' (including the one inside `perl.withPackages') the library files will have priority over files in `perl`
+
       teams = [
         lib.teams.perl
         lib.teams.security-review
       ];
-      platforms = lib.platforms.all;
-      priority = 6; # in `buildEnv' (including the one inside `perl.withPackages') the library files will have priority over files in `perl`
-      mainProgram = "perl";
-      identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "perl" finalAttrs.version;
     };
   }
   // lib.optionalAttrs crossCompiling rec {
-    crossVersion = "1.6.4";
-
-    perl-cross-src = fetchFromGitHub {
-      name = "perl-cross-${crossVersion}";
-      owner = "arsv";
-      repo = "perl-cross";
-      rev = crossVersion;
-      hash = "sha256-Qcysy7f887XHlq23iE5U92PhxDhpgaluITZBSdcc9Ck=";
-    };
     patches = commonPatches ++ [
       # fixes build failure due to missing d_fdopendir/HAS_FDOPENDIR configure option
       # https://github.com/arsv/perl-cross/pull/159
       ./cross-fdopendir.patch
     ];
 
+    configurePlatforms = [
+      "build"
+      "host"
+      "target"
+    ];
+
+    crossVersion = "1.6.4";
+
     depsBuildBuild = [
       buildPackages.stdenv.cc
       makeWrapper
     ];
+
+    perl-cross-src = fetchFromGitHub {
+      hash = "sha256-Qcysy7f887XHlq23iE5U92PhxDhpgaluITZBSdcc9Ck=";
+      name = "perl-cross-${crossVersion}";
+      owner = "arsv";
+      repo = "perl-cross";
+      rev = crossVersion;
+    };
 
     postUnpack = ''
       unpackFile ${perl-cross-src}
       chmod -R u+w ${perl-cross-src.name}
       cp -R ${perl-cross-src.name}/* perl-${version}/
     '';
-
-    configurePlatforms = [
-      "build"
-      "host"
-      "target"
-    ];
 
     # TODO merge setup hooks
     setupHook = ./setup-hook-cross.sh;

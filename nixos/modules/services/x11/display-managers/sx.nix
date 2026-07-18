@@ -25,6 +25,8 @@ in
         '';
       };
 
+      package = lib.mkPackageOption pkgs "sx" { };
+
       addAsSession = lib.mkEnableOption "" // {
         description = ''
           Whether to add sx as a display manager session. Keep in mind that sx
@@ -32,8 +34,6 @@ in
           manager.
         '';
       };
-
-      package = lib.mkPackageOption pkgs "sx" { };
     };
   };
 

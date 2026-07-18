@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   orderedmultidict,
   pytestCheckHook,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "furl";
   version = "2.1.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gruns";
@@ -27,15 +26,15 @@ buildPythonPackage rec {
       --replace-fail '[0:0:0:0:0:0:0:1:1:1:1:1:1:1:1:9999999999999]' '[2001:db8::9999]'
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
     orderedmultidict
     six
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
   ];
 
   disabledTests = [
@@ -44,12 +43,13 @@ buildPythonPackage rec {
     "test_odd_urls"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "furl" ];
 
   meta = {
-    changelog = "https://github.com/gruns/furl/releases/tag/${src.tag}";
     description = "Python library that makes parsing and manipulating URLs easy";
     homepage = "https://github.com/gruns/furl";
+    changelog = "https://github.com/gruns/furl/releases/tag/${src.tag}";
     license = lib.licenses.unlicense;
   };
 }

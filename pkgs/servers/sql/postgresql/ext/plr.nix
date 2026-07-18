@@ -1,13 +1,13 @@
 {
-  buildEnv,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  R,
+  buildEnv,
   nix-update-script,
   pkg-config,
   postgresql,
   postgresqlBuildExtension,
   postgresqlTestExtension,
-  R,
   rPackages,
 }:
 
@@ -24,13 +24,25 @@ postgresqlBuildExtension (finalAttrs: {
 
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ R ];
-
   makeFlags = [ "USE_PGXS=1" ];
 
   passthru = {
+    tests.extension = postgresqlTestExtension {
+      finalPackage = finalAttrs.finalPackage.withPackages (ps: [ ps.base64enc ]);
+
+      sql = ''
+        CREATE EXTENSION plr;
+        DO LANGUAGE plr $$
+          require('base64enc')
+          base64encode(1:100)
+        $$;
+      '';
+    };
+
     updateScript = nix-update-script {
       extraArgs = [ "--version-regex=^REL(\\d+)_(\\d+)_(\\d+)$" ];
     };
+
     withPackages =
       f:
       let
@@ -40,28 +52,19 @@ postgresqlBuildExtension (finalAttrs: {
       buildEnv {
         name = "${finalAttrs.pname}-with-packages-${finalAttrs.version}";
         paths = [ finalAttrs.finalPackage ];
+
         passthru.wrapperArgs = [
           ''--set R_LIBS_SITE "${paths}"''
         ];
       };
-    tests.extension = postgresqlTestExtension {
-      finalPackage = finalAttrs.finalPackage.withPackages (ps: [ ps.base64enc ]);
-      sql = ''
-        CREATE EXTENSION plr;
-        DO LANGUAGE plr $$
-          require('base64enc')
-          base64encode(1:100)
-        $$;
-      '';
-    };
   };
 
   meta = {
     description = "PL/R - R Procedural Language for PostgreSQL";
     homepage = "https://github.com/postgres-plr/plr";
     changelog = "https://github.com/postgres-plr/plr/blob/${finalAttrs.src.rev}/changelog.md";
+    license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ qoelet ];
     platforms = postgresql.meta.platforms;
-    license = lib.licenses.gpl2Only;
   };
 })

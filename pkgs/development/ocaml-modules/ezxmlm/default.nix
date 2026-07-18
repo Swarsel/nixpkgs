@@ -18,6 +18,7 @@ buildDunePackage (finalAttrs: {
 
   meta = {
     description = "Combinators to use with xmlm for parsing and selection";
+
     longDescription = ''
       An "easy" interface on top of the xmlm library. This version provides
       more convenient (but far less flexible) input and output functions
@@ -29,8 +30,9 @@ buildDunePackage (finalAttrs: {
       types in this library are more specific than Xmlm, it should interoperate
       just fine with it if you decide to switch over.
     '';
-    maintainers = [ lib.maintainers.carlosdagos ];
+
     homepage = "https://github.com/mirage/ezxmlm/";
     license = lib.licenses.isc;
+    maintainers = [ lib.maintainers.carlosdagos ];
   };
 })

@@ -41,74 +41,91 @@ in
 
   options.services.redshift = {
     enable = mkOption {
-      type = types.bool;
       default = false;
+
       description = ''
         Enable Redshift to change your screen's colour temperature depending on
         the time of day.
       '';
-    };
 
-    temperature = {
-      day = mkOption {
-        type = types.ints.between 1000 25000;
-        default = 5500;
-        description = ''
-          Colour temperature to use during the day, between
-          `1000` and `25000` K.
-        '';
-      };
-      night = mkOption {
-        type = types.ints.between 1000 25000;
-        default = 3700;
-        description = ''
-          Colour temperature to use at night, between
-          `1000` and `25000` K.
-        '';
-      };
-    };
-
-    brightness = {
-      day = mkOption {
-        type = types.str;
-        default = "1";
-        description = ''
-          Screen brightness to apply during the day,
-          between `0.1` and `1.0`.
-        '';
-      };
-      night = mkOption {
-        type = types.str;
-        default = "1";
-        description = ''
-          Screen brightness to apply during the night,
-          between `0.1` and `1.0`.
-        '';
-      };
+      type = types.bool;
     };
 
     package = mkPackageOption pkgs "redshift" { };
 
+    brightness = {
+      day = mkOption {
+        default = "1";
+
+        description = ''
+          Screen brightness to apply during the day,
+          between `0.1` and `1.0`.
+        '';
+
+        type = types.str;
+      };
+
+      night = mkOption {
+        default = "1";
+
+        description = ''
+          Screen brightness to apply during the night,
+          between `0.1` and `1.0`.
+        '';
+
+        type = types.str;
+      };
+    };
+
     executable = mkOption {
-      type = types.str;
       default = "/bin/redshift";
-      example = "/bin/redshift-gtk";
+
       description = ''
         Redshift executable to use within the package.
       '';
+
+      example = "/bin/redshift-gtk";
+      type = types.str;
     };
 
     extraOptions = mkOption {
-      type = types.listOf types.str;
       default = [ ];
-      example = [
-        "-v"
-        "-m randr"
-      ];
+
       description = ''
         Additional command-line arguments to pass to
         {command}`redshift`.
       '';
+
+      example = [
+        "-v"
+        "-m randr"
+      ];
+
+      type = types.listOf types.str;
+    };
+
+    temperature = {
+      day = mkOption {
+        default = 5500;
+
+        description = ''
+          Colour temperature to use during the day, between
+          `1000` and `25000` K.
+        '';
+
+        type = types.ints.between 1000 25000;
+      };
+
+      night = mkOption {
+        default = 3700;
+
+        description = ''
+          Colour temperature to use at night, between
+          `1000` and `25000` K.
+        '';
+
+        type = types.ints.between 1000 25000;
+      };
     };
   };
 
@@ -131,8 +148,8 @@ in
       in
       {
         description = "Redshift colour temperature adjuster";
-        wantedBy = [ "graphical-session.target" ];
         partOf = [ "graphical-session.target" ];
+
         serviceConfig = {
           ExecStart = ''
             ${cfg.package}${cfg.executable} \
@@ -141,9 +158,12 @@ in
               -b ${toString cfg.brightness.day}:${toString cfg.brightness.night} \
               ${lib.strings.concatStringsSep " " cfg.extraOptions}
           '';
-          RestartSec = 3;
+
           Restart = "always";
+          RestartSec = 3;
         };
+
+        wantedBy = [ "graphical-session.target" ];
       };
   };
 

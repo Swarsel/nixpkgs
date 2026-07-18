@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
   openssh,
+  rustPlatform,
   shtk,
 }:
 
@@ -19,13 +19,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-XAIupGVU8D4tmZXZ3/5lKiHbvBlxgNQXL0T9Htp7Zmo=";
   };
 
-  cargoHash = "sha256-dbeUye20E2nQcJPyUCpZT68T95dopgoIlBm8rOoaZ6Y=";
-
   nativeBuildInputs = [
     installShellFiles
     shtk.dev
   ];
 
+  cargoHash = "sha256-dbeUye20E2nQcJPyUCpZT68T95dopgoIlBm8rOoaZ6Y=";
   nativeCheckInputs = [ openssh ];
 
   checkPhase = ''
@@ -49,17 +48,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "SSH agent forwarding and tmux done right";
+
     longDescription = ''
       ssh-agent-switcher is a daemon that proxies SSH agent connections to any
       valid forwarded agent provided by sshd. This allows long-lived processes
       such as terminal multiplexers like tmux or screen to access the
       connection-specific forwarded agents.
     '';
+
     homepage = "https://github.com/jmmv/ssh-agent-switcher";
     changelog = "https://github.com/jmmv/ssh-agent-switcher/blob/ssh-agent-switcher-${finalAttrs.version}/NEWS.md";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.jmmv ];
-    mainProgram = "ssh-agent-switcher";
     platforms = lib.platforms.unix;
+    mainProgram = "ssh-agent-switcher";
   };
 })

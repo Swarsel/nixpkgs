@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   makeWrapper,
-  writeText,
   shellspec,
+  writeText,
   # usage:
   # pkgs.mommy.override {
   #  mommySettings.sweetie = "catgirl";
@@ -33,11 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-  nativeCheckInputs = [ shellspec ];
-  installFlags = [ "prefix=$(out)" ];
-
   doCheck = true;
-  checkTarget = "test/unit";
+  nativeCheckInputs = [ shellspec ];
 
   postInstall = ''
     ${lib.optionalString (mommySettings != null) ''
@@ -46,13 +43,16 @@ stdenv.mkDerivation (finalAttrs: {
     ''}
   '';
 
+  checkTarget = "test/unit";
+  installFlags = [ "prefix=$(out)" ];
+
   meta = {
     description = "mommy's here to support you, in any shell, on any system~ ❤️";
     homepage = "https://github.com/FWDekker/mommy";
     changelog = "https://github.com/FWDekker/mommy/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.unlicense;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
     mainProgram = "mommy";
   };
 })

@@ -1,15 +1,14 @@
 {
+  lib,
+  stdenv,
   buildGoModule,
   callPackage,
   installShellFiles,
-  lib,
-  stdenv,
 }:
 let
   common = callPackage ./common.nix { };
 in
 buildGoModule {
-  pname = "woodpecker-cli";
   inherit (common)
     version
     src
@@ -17,11 +16,10 @@ buildGoModule {
     vendorHash
     ;
 
-  subPackages = "cmd/cli";
-
+  pname = "woodpecker-cli";
   nativeBuildInputs = [ installShellFiles ];
-
   env.CGO_ENABLED = 0;
+
   postInstall = ''
     ${common.postInstall}
   ''
@@ -31,6 +29,8 @@ buildGoModule {
       --fish <($out/bin/woodpecker-cli completion fish ) \
       --zsh <($out/bin/woodpecker-cli completion zsh)
   '';
+
+  subPackages = "cmd/cli";
 
   meta = common.meta // {
     description = "Command line client for the Woodpecker Continuous Integration server";

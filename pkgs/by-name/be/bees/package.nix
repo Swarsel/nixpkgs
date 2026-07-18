@@ -1,17 +1,16 @@
 {
   lib,
-  fetchFromGitHub,
-  makeWrapper,
-  nixosTests,
-
   stdenv,
-  # Build inputs
-  btrfs-progs,
-  util-linux,
-  python3Packages,
+  fetchFromGitHub,
   # bees-service-wrapper
   bash,
+  # Build inputs
+  btrfs-progs,
   coreutils,
+  makeWrapper,
+  nixosTests,
+  python3Packages,
+  util-linux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,14 +24,26 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-qaiRWRd9+ElJ40QGOS3AxT2NvF3phQCyPnVz6RfTt8c=";
   };
 
+  nativeBuildInputs = [
+    makeWrapper
+    python3Packages.markdown # documentation build
+  ];
+
   buildInputs = [
     btrfs-progs # for btrfs/ioctl.h
     util-linux # for uuid.h
   ];
 
-  nativeBuildInputs = [
-    makeWrapper
-    python3Packages.markdown # documentation build
+  makeFlags = [
+    "SHELL=bash"
+    "PREFIX=$(out)"
+    "ETC_PREFIX=$(out)/etc"
+    "BEES_VERSION=${finalAttrs.version}"
+    "SYSTEMD_SYSTEM_UNIT_DIR=$(out)/etc/systemd/system"
+  ];
+
+  buildFlags = [
+    "ETC_PREFIX=/var/run/bees/configs"
   ];
 
   preBuild = ''
@@ -57,28 +68,16 @@ stdenv.mkDerivation (finalAttrs: {
       --set beesd_bin "$out"/lib/bees/bees
   '';
 
-  buildFlags = [
-    "ETC_PREFIX=/var/run/bees/configs"
-  ];
-
-  makeFlags = [
-    "SHELL=bash"
-    "PREFIX=$(out)"
-    "ETC_PREFIX=$(out)/etc"
-    "BEES_VERSION=${finalAttrs.version}"
-    "SYSTEMD_SYSTEM_UNIT_DIR=$(out)/etc/systemd/system"
-  ];
-
   passthru.tests = {
     smoke-test = nixosTests.bees;
   };
 
   meta = {
-    homepage = "https://github.com/Zygo/bees";
     description = "Block-oriented BTRFS deduplication service";
     longDescription = "Best-Effort Extent-Same: bees finds not just identical files, but also identical extents within files that differ";
+    homepage = "https://github.com/Zygo/bees";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -1,27 +1,23 @@
 {
   lib,
   fetchFromGitHub,
-  buildPythonPackage,
-
-  # build-system
-  poetry-core,
-
   # dependencies
   beautifulsoup4,
+  buildPythonPackage,
   httpx,
   pbkdf2,
   pillow,
+  # build-system
+  poetry-core,
   pyaes,
-  rsa,
-
   # test dependencies
   pytestCheckHook,
+  rsa,
 }:
 
 buildPythonPackage rec {
   pname = "audible";
   version = "0.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mkb79";
@@ -42,13 +38,13 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "audible" ];
 
   meta = {
     description = "A(Sync) Interface for internal Audible API written in pure Python";
-    license = lib.licenses.agpl3Only;
     homepage = "https://github.com/mkb79/Audible";
+    license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ jvanbruegge ];
   };
 }

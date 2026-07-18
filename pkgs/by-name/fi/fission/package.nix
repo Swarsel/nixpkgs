@@ -17,6 +17,10 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-y5h1lMq99gWhB9T5e8b2t9USgKc2pv+FMgl9wva8t28=";
 
+  postInstall = ''
+    ln -s $out/bin/fission-cli $out/bin/fission
+  '';
+
   ldflags = [
     "-s"
     "-w"
@@ -24,10 +28,6 @@ buildGoModule (finalAttrs: {
   ];
 
   subPackages = [ "cmd/fission-cli" ];
-
-  postInstall = ''
-    ln -s $out/bin/fission-cli $out/bin/fission
-  '';
 
   meta = {
     description = "Cli used by end user to interact Fission";

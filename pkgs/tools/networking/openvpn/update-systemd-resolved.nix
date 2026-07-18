@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  coreutils,
   iproute2,
   runtimeShell,
   systemd,
-  coreutils,
   util-linux,
 }:
 

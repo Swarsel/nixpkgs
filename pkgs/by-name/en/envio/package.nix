@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  installShellFiles,
-  gpgme,
   dbus,
+  gpgme,
+  installShellFiles,
   libgpg-error,
+  nix-update-script,
   pkg-config,
   rustPlatform,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,8 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-3bcIGQ+4abdG7Xw4Sta+I8a1XllO8h7V09egwuogcxk=";
   };
-
-  cargoHash = "sha256-QwuGpIhPS0p+TsbWdGknXcN655IP/AzE44a6m9HY8K0=";
 
   nativeBuildInputs = [
     pkg-config
@@ -37,6 +35,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     dbus
   ];
 
+  cargoHash = "sha256-QwuGpIhPS0p+TsbWdGknXcN655IP/AzE44a6m9HY8K0=";
+
   postInstall = ''
     installManPage man/*.1
   '';
@@ -44,21 +44,25 @@ rustPlatform.buildRustPackage (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/humblepenguinn/envio";
-    changelog = "https://github.com/humblepenguinn/envio/blob/v${finalAttrs.version}/CHANGELOG.md";
     description = "Modern and secure CLI tool for managing environment variables";
-    mainProgram = "envio";
+
     longDescription = ''
       Envio is a command-line tool that simplifies the management of
       environment variables across multiple profiles. It allows users to easily
       switch between different configurations and apply them to their current
       environment.
     '';
+
+    homepage = "https://github.com/humblepenguinn/envio";
+    changelog = "https://github.com/humblepenguinn/envio/blob/v${finalAttrs.version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [ afh ];
+    platforms = lib.platforms.unix;
+    mainProgram = "envio";
   };
 })

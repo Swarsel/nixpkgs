@@ -19,24 +19,25 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Pull upstream gcc-15 build fix.
     (fetchpatch {
+      hash = "sha256-CR5/Cs82JN63TmMRt398iWlMdt0QaLL7N2bbOiCAz9s=";
       name = "gcc-15.patch";
       url = "https://github.com/dasm-assembler/dasm/commit/ed21db28a0e9693c455d6491cdc120a5936b007a.patch";
-      hash = "sha256-CR5/Cs82JN63TmMRt398iWlMdt0QaLL7N2bbOiCAz9s=";
     })
   ];
 
-  configurePhase = false;
-  installPhase = ''
-    mkdir -p $out/bin
-    install bin/* $out/bin
-  '';
+  doCheck = true;
 
   preCheck = ''
     patchShebangs ./test/
   '';
 
+  installPhase = ''
+    mkdir -p $out/bin
+    install bin/* $out/bin
+  '';
+
   checkTarget = "test";
-  doCheck = true;
+  configurePhase = false;
 
   meta = {
     description = "Assembler for 6502 and other 8-bit microprocessors";

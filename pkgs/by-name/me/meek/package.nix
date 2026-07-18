@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitLab,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -10,30 +10,30 @@ buildGoModule (finalAttrs: {
   version = "0.38.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.torproject.org";
-    group = "tpo";
     owner = "anti-censorship/pluggable-transports";
     repo = "meek";
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-zmIRXrHWrEzR+RcX/gkuqw2oBmyGoXDQ45ZjA4vwGSs=";
+    domain = "gitlab.torproject.org";
+    group = "tpo";
   };
 
-  vendorHash = "sha256-eAO6vEPKqWWZkmJXmOCeTa7TE8opynYvvxzPDSe9p+I=";
-
-  subPackages = [
-    "meek-client"
-    "meek-server"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-eAO6vEPKqWWZkmJXmOCeTa7TE8opynYvvxzPDSe9p+I=";
 
   postInstall = ''
     installManPage doc/meek-client.1
     installManPage doc/meek-server.1
   '';
 
+  subPackages = [
+    "meek-client"
+    "meek-server"
+  ];
+
   meta = {
     description = "Blocking-resistant pluggable transport for Tor";
+
     longDescription = ''
       meek is a blocking-resistant pluggable transport for Tor. It encodes a
       data stream as a sequence of HTTPS requests and responses. Requests are
@@ -41,8 +41,9 @@ buildGoModule (finalAttrs: {
       avoid talking directly to a Tor bridge. HTTPS encryption hides
       fingerprintable byte patterns in Tor traffic.
     '';
+
     homepage = "https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/meek";
-    maintainers = with lib.maintainers; [ doronbehar ];
     license = lib.licenses.cc0;
+    maintainers = with lib.maintainers; [ doronbehar ];
   };
 })

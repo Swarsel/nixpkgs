@@ -2,25 +2,25 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
+  bison,
+  brotli,
   cmake,
+  libcap,
+  liburing,
+  libuv,
   makeBinaryWrapper,
   ninja,
+  nixosTests,
+  openssl,
   perl,
   perlPackages,
-  openssl,
-  libcap,
-  libuv,
+  pkg-config,
+  ruby,
   wslay,
   zlib,
   withBrotli ? true,
-  brotli,
   withMruby ? true,
-  bison,
-  ruby,
   withUring ? stdenv.hostPlatform.isLinux,
-  liburing,
-  nixosTests,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -91,11 +91,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Optimized HTTP/1.x, HTTP/2, HTTP/3 server";
     homepage = "https://h2o.examp1e.net";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       toastal
       thoughtpolice
     ];
-    mainProgram = "h2o";
+
     platforms = lib.platforms.linux;
+    mainProgram = "h2o";
   };
 })

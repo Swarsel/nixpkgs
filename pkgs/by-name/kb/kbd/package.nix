@@ -1,34 +1,32 @@
 {
   lib,
   stdenv,
-  fetchgit,
-  nixosTests,
-  autoreconfHook,
-  pkg-config,
-  flex,
-  perl,
-  bison,
   autoPatchelfHook,
-  check,
-  pam,
+  autoreconfHook,
   bash,
   bashNonInteractive,
-  coreutils,
-  zlib,
+  bison,
   bzip2,
-  xz,
-  zstd,
+  check,
+  coreutils,
+  fetchgit,
+  flex,
   gitUpdater,
-  pkgsCross,
-  withVlock ? false,
   kbdVlock,
+  nixosTests,
+  pam,
+  perl,
+  pkg-config,
+  pkgsCross,
+  xz,
+  zlib,
+  zstd,
+  withVlock ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "kbd" + lib.optionalString withVlock "-vlock";
   version = "2.9.0";
-
-  __structuredAttrs = true;
 
   src = fetchgit {
     url = "https://git.kernel.org/pub/scm/linux/kernel/git/legion/kbd.git";
@@ -61,10 +59,25 @@ stdenv.mkDerivation (finalAttrs: {
     popd
   '';
 
-  preConfigure = ''
-    # Perl and Bash only used during build time
-    patchShebangs --build contrib/
-  '';
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
+    flex
+    perl
+    bison
+    autoPatchelfHook # for patching dlopen()
+  ];
+
+  buildInputs = [
+    zlib
+    bzip2
+    xz
+    zstd
+    bash
+  ]
+  ++ lib.optionals withVlock [ pam ];
 
   configureFlags = [
     "--enable-optional-progs"
@@ -77,30 +90,14 @@ stdenv.mkDerivation (finalAttrs: {
     "ac_cv_func_realloc_0_nonnull=yes"
   ];
 
-  strictDeps = true;
-  enableParallelBuilding = true;
-
-  nativeBuildInputs = [
-    autoreconfHook
-    pkg-config
-    flex
-    perl
-    bison
-    autoPatchelfHook # for patching dlopen()
-  ];
+  preConfigure = ''
+    # Perl and Bash only used during build time
+    patchShebangs --build contrib/
+  '';
 
   nativeCheckInputs = [
     check
   ];
-
-  buildInputs = [
-    zlib
-    bzip2
-    xz
-    zstd
-    bash
-  ]
-  ++ lib.optionals withVlock [ pam ];
 
   postInstall = ''
     substituteInPlace $out/bin/unicode_{start,stop} \
@@ -110,34 +107,40 @@ stdenv.mkDerivation (finalAttrs: {
     moveToOutput bin/unicode_stop $scripts
   '';
 
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
+
   outputChecks.out.disallowedRequisites = [
     bash
     bashNonInteractive
   ];
 
   passthru = {
-    updateScript = gitUpdater {
-      # No nicer place to find latest release.
-      url = "https://github.com/legionus/kbd.git";
-      rev-prefix = "v";
-    };
     tests = {
+      inherit (nixosTests) keymap kbd-setfont-decompress kbd-update-search-paths-patch;
+
       cross =
         let
           systemString = if stdenv.buildPlatform.isAarch64 then "gnu64" else "aarch64-multiplatform";
         in
         pkgsCross.${systemString}.kbd;
-      inherit (nixosTests) keymap kbd-setfont-decompress kbd-update-search-paths-patch;
     };
+
+    updateScript = gitUpdater {
+      rev-prefix = "v";
+      # No nicer place to find latest release.
+      url = "https://github.com/legionus/kbd.git";
+    };
+
     # For backwards compatibility. Remove after 26.05.
     vlock = kbdVlock;
   };
 
   meta = {
-    homepage = "https://kbd-project.org/";
     description = "Linux keyboard tools and keyboard maps";
-    platforms = lib.platforms.linux;
+    homepage = "https://kbd-project.org/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ davidak ];
+    platforms = lib.platforms.linux;
   };
 })

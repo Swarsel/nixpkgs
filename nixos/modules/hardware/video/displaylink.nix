@@ -23,8 +23,6 @@ in
     boot.extraModulePackages = [ evdi ];
     boot.kernelModules = [ "evdi" ];
 
-    services.xserver.externallyConfiguredDrivers = [ "displaylink" ];
-
     environment.etc."X11/xorg.conf.d/40-displaylink.conf".text = ''
       Section "OutputClass"
         Identifier  "DisplayLink"
@@ -34,15 +32,6 @@ in
         Option      "AccelMethod" "none"
       EndSection
     '';
-
-    # make the device available
-    services.xserver.displayManager.sessionCommands = ''
-      ${lib.getBin pkgs.xrandr}/bin/xrandr --setprovideroutputsource 1 0
-    '';
-
-    # Those are taken from displaylink-installer.sh and from Arch Linux AUR package.
-
-    services.udev.packages = [ displaylink ];
 
     powerManagement.powerDownCommands = ''
       #flush any bytes in pipe
@@ -63,16 +52,26 @@ in
       echo "R" > /tmp/PmMessagesPort_in
     '';
 
+    # Those are taken from displaylink-installer.sh and from Arch Linux AUR package.
+    services.udev.packages = [ displaylink ];
+
+    # make the device available
+    services.xserver.displayManager.sessionCommands = ''
+      ${lib.getBin pkgs.xrandr}/bin/xrandr --setprovideroutputsource 1 0
+    '';
+
+    services.xserver.externallyConfiguredDrivers = [ "displaylink" ];
+
     systemd.services.dlm = {
-      description = "DisplayLink Manager Service";
       after = [ "display-manager.service" ];
       conflicts = [ "getty@tty7.service" ];
+      description = "DisplayLink Manager Service";
 
       serviceConfig = {
         ExecStart = "${displaylink}/bin/DisplayLinkManager";
+        LogsDirectory = "displaylink";
         Restart = "always";
         RestartSec = 5;
-        LogsDirectory = "displaylink";
       };
     };
 

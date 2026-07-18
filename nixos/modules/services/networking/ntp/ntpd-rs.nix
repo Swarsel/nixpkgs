@@ -1,6 +1,6 @@
 {
-  lib,
   config,
+  lib,
   pkgs,
   ...
 }:
@@ -24,29 +24,32 @@ in
 {
   options.services.ntpd-rs = {
     enable = lib.mkEnableOption "Network Time Service (ntpd-rs)";
+    package = lib.mkPackageOption pkgs "ntpd-rs" { };
     metrics.enable = lib.mkEnableOption "ntpd-rs Prometheus Metrics Exporter";
 
-    package = lib.mkPackageOption pkgs "ntpd-rs" { };
-
-    useNetworkingTimeServers = lib.mkOption {
-      type = lib.types.bool;
-      default = true;
-      description = ''
-        Use source time servers from {var}`networking.timeServers` in config.
-      '';
-    };
-
     settings = lib.mkOption {
-      type = lib.types.submodule {
-        freeformType = format.type;
-      };
       default = { };
+
       description = ''
         Settings to write to {file}`ntp.toml`
 
         See <https://docs.ntpd-rs.pendulum-project.org/man/ntp.toml.5>
         for more information about available options.
       '';
+
+      type = lib.types.submodule {
+        freeformType = format.type;
+      };
+    };
+
+    useNetworkingTimeServers = lib.mkOption {
+      default = true;
+
+      description = ''
+        Use source time servers from {var}`networking.timeServers` in config.
+      '';
+
+      type = lib.types.bool;
     };
   };
 
@@ -54,6 +57,7 @@ in
     assertions = [
       {
         assertion = !config.services.timesyncd.enable;
+
         message = ''
           `ntpd-rs` is not compatible with `services.timesyncd`. Please disable one of them.
         '';
@@ -61,50 +65,50 @@ in
     ];
 
     environment.systemPackages = [ cfg.package ];
-    systemd.packages = [ cfg.package ];
-
-    services.timesyncd.enable = false;
-    systemd.services.systemd-timedated.environment = {
-      SYSTEMD_TIMEDATED_NTP_SERVICES = "ntpd-rs.service";
-    };
 
     services.ntpd-rs.settings = {
       observability = {
         log-level = lib.mkDefault "warn";
         observation-path = lib.mkDefault "/var/run/ntpd-rs/observe";
       };
+
       source = lib.mkIf cfg.useNetworkingTimeServers (
         map (ts: {
-          mode = if lib.strings.hasInfix "pool" ts then "pool" else "server";
           address = ts;
+          mode = if lib.strings.hasInfix "pool" ts then "pool" else "server";
         }) config.networking.timeServers
       );
     };
 
+    services.timesyncd.enable = false;
+    systemd.packages = [ cfg.package ];
+
     systemd.services.ntpd-rs = {
-      wantedBy = [ "multi-user.target" ];
       serviceConfig = {
-        User = "";
-        Group = "";
-        DynamicUser = true;
-        ExecStart = [
-          ""
-          "${lib.makeBinPath [ cfg.package ]}/ntp-daemon --config=${validateConfig configFile}"
+        AmbientCapabilities = [
+          "CAP_SYS_TIME"
+          "CAP_NET_BIND_SERVICE"
         ];
 
         CapabilityBoundingSet = [
           "CAP_SYS_TIME"
           "CAP_NET_BIND_SERVICE"
         ];
-        AmbientCapabilities = [
-          "CAP_SYS_TIME"
-          "CAP_NET_BIND_SERVICE"
+
+        DynamicUser = true;
+
+        ExecStart = [
+          ""
+          "${lib.makeBinPath [ cfg.package ]}/ntp-daemon --config=${validateConfig configFile}"
         ];
+
+        Group = "";
         LimitCORE = 0;
         LimitNOFILE = 65535;
         LockPersonality = true;
         MemorySwapMax = 0;
         MemoryZSwapMax = 0;
+        NoNewPrivileges = true;
         PrivateTmp = true;
         ProcSubset = "pid";
         ProtectControlGroups = true;
@@ -117,43 +121,50 @@ in
         ProtectSystem = "strict";
         Restart = "on-failure";
         RestartSec = "10s";
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
           "AF_UNIX"
           "AF_NETLINK"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "@resources"
           "@network-io"
           "@clock"
         ];
-        NoNewPrivileges = true;
+
         UMask = "0077";
+        User = "";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.services.ntpd-rs-metrics = lib.mkIf cfg.metrics.enable {
-      wantedBy = [ "multi-user.target" ];
       serviceConfig = {
-        User = "";
-        Group = "";
+        CapabilityBoundingSet = [ ];
         DynamicUser = true;
+
         ExecStart = [
           ""
           "${lib.makeBinPath [ cfg.package ]}/ntp-metrics-exporter --config=${validateConfig configFile}"
         ];
 
-        CapabilityBoundingSet = [ ];
+        Group = "";
         LimitCORE = 0;
         LimitNOFILE = 65535;
         LockPersonality = true;
         MemorySwapMax = 0;
         MemoryZSwapMax = 0;
+        NoNewPrivileges = true;
+        PrivateDevices = true;
         PrivateTmp = true;
         ProcSubset = "pid";
         ProtectClock = true;
@@ -165,17 +176,19 @@ in
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
         ProtectSystem = "strict";
-        PrivateDevices = true;
-        RestrictSUIDSGID = true;
         RemoveIPC = true;
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
           "AF_UNIX"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
+        RestrictSUIDSGID = true;
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "@network-io"
@@ -183,9 +196,16 @@ in
           "~@resources"
           "~@mount"
         ];
-        NoNewPrivileges = true;
+
         UMask = "0077";
+        User = "";
       };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    systemd.services.systemd-timedated.environment = {
+      SYSTEMD_TIMEDATED_NTP_SERVICES = "ntpd-rs.service";
     };
   };
 

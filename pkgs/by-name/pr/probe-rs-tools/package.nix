@@ -1,21 +1,21 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
+  stdenv,
   fetchurl,
+  fetchFromGitHub,
   cmake,
-  pkg-config,
   installShellFiles,
   libusb1,
   openssl,
-  stdenv,
+  pkg-config,
+  rustPlatform,
 }:
 
 let
   # udev rules are in another unversioned repo
   udevRules = fetchurl {
-    url = "https://raw.githubusercontent.com/probe-rs/webpage/054a0b16831593091a8a5624d0e2305573e860ee/public/files/69-probe-rs.rules";
     hash = "sha256-yjxld5ebm2jpfyzkw+vngBfHu5Nfh2ioLUKQQDY4KYo=";
+    url = "https://raw.githubusercontent.com/probe-rs/webpage/054a0b16831593091a8a5624d0e2305573e860ee/public/files/69-probe-rs.rules";
   };
 in
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -28,10 +28,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-ZcH2FBKsbBtTYfRQgPfOOODDpyB7VydcO7F7pq8xzD0=";
   };
-
-  cargoHash = "sha256-fVmwZw34lK6eKkqNT/SW5wzeeyWg6Qp48eso6yibICE=";
-
-  buildAndTestSubdir = finalAttrs.pname;
 
   nativeBuildInputs = [
     # required by libz-sys, no option for dynamic linking
@@ -46,15 +42,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
-  postInstall = ''
-    install -D -m 444 ${udevRules} $out/etc/udev/rules.d/69-probe-rs.rules
-  ''
-  + lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    installShellCompletion --cmd probe-rs \
-      --bash <(SHELL=bash $out/bin/probe-rs complete install -m) \
-      --fish <(SHELL=fish $out/bin/probe-rs complete install -m) \
-      --zsh <(SHELL=zsh $out/bin/probe-rs complete install -m)
-  '';
+  cargoHash = "sha256-fVmwZw34lK6eKkqNT/SW5wzeeyWg6Qp48eso6yibICE=";
 
   checkFlags = [
     # require a physical probe
@@ -82,14 +70,28 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=util::cargo::test::workspace_root"
   ];
 
+  postInstall = ''
+    install -D -m 444 ${udevRules} $out/etc/udev/rules.d/69-probe-rs.rules
+  ''
+  + lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    installShellCompletion --cmd probe-rs \
+      --bash <(SHELL=bash $out/bin/probe-rs complete install -m) \
+      --fish <(SHELL=fish $out/bin/probe-rs complete install -m) \
+      --zsh <(SHELL=zsh $out/bin/probe-rs complete install -m)
+  '';
+
+  buildAndTestSubdir = finalAttrs.pname;
+
   meta = {
     description = "CLI tool for on-chip debugging and flashing of ARM chips";
     homepage = "https://probe.rs/";
     changelog = "https://github.com/probe-rs/probe-rs/blob/v${finalAttrs.version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
+
     maintainers = with lib.maintainers; [
       xgroleau
       newam

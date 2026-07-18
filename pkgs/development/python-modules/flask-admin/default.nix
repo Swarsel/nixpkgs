@@ -1,122 +1,64 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  flit-core,
   lib,
+  fetchFromGitHub,
+  # sqlalchemy-with-utils
+  arrow,
+  # azure-blob-storage
+  azure-storage-blob,
+  # checks
+  beautifulsoup4,
+  # s3
+  boto3,
+  buildPythonPackage,
+  colour,
+  email-validator,
   # dependencies
   flask,
-  jinja2,
-  markupsafe,
-  werkzeug,
-  wtforms,
+  # translation
+  flask-babel,
   # optional dependencies
   # sqlalchemy
   flask-sqlalchemy,
-  sqlalchemy,
   # sqlalchemy-lite
   flask-sqlalchemy-lite,
-  # sqlalchemy-with-utils
-  arrow,
-  colour,
-  email-validator,
-  sqlalchemy-citext,
-  sqlalchemy-utils,
+  flit-core,
   # geoalchemy
   geoalchemy2,
-  shapely,
-  # pymongo
-  pymongo,
+  jinja2,
+  markupsafe,
   # mongoengine
   mongoengine,
+  moto,
   # peewee
   peewee,
-  wtf-peewee,
-  # s3
-  boto3,
-  # azure-blob-storage
-  azure-storage-blob,
   # images
   pillow,
-  # export
-  tablib,
+  psycopg2,
+  # pymongo
+  pymongo,
+  pytestCheckHook,
   # rediscli
   redis,
-  # translation
-  flask-babel,
-  # checks
-  beautifulsoup4,
-  moto,
-  psycopg2,
-  pytestCheckHook,
+  shapely,
+  sqlalchemy,
+  sqlalchemy-citext,
+  sqlalchemy-utils,
+  # export
+  tablib,
+  werkzeug,
+  wtf-peewee,
+  wtforms,
 }:
 
 buildPythonPackage rec {
   pname = "flask-admin";
   version = "2.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "flask-admin";
     repo = "flask-admin";
     tag = "v${version}";
     hash = "sha256-lRLyGvCat6nBixFKkrn4NxeVF52Hl32admAL37mf9wc=";
-  };
-
-  build-system = [ flit-core ];
-
-  dependencies = [
-    flask
-    jinja2
-    markupsafe
-    werkzeug
-    wtforms
-  ];
-
-  optional-dependencies = {
-    sqlalchemy = [
-      flask-sqlalchemy
-      sqlalchemy
-    ];
-    sqlalchemy-lite = [
-      flask-sqlalchemy-lite
-    ];
-    sqlalchemy-with-utils = optional-dependencies.sqlalchemy ++ [
-      arrow
-      colour
-      email-validator
-      sqlalchemy-citext
-      sqlalchemy-utils
-    ];
-    geoalchemy = optional-dependencies.sqlalchemy ++ [
-      geoalchemy2
-      shapely
-    ];
-    pymongo = [ pymongo ];
-    mongoengine = [ mongoengine ];
-    peewee = [
-      peewee
-      wtf-peewee
-    ];
-    s3 = [ boto3 ];
-    azure-blob-storage = [ azure-storage-blob ];
-    images = [ pillow ];
-    export = [ tablib ];
-    rediscli = [ redis ];
-    translation = [ flask-babel ];
-    all = lib.flatten [
-      optional-dependencies.sqlalchemy
-      optional-dependencies.sqlalchemy-with-utils
-      optional-dependencies.geoalchemy
-      optional-dependencies.pymongo
-      optional-dependencies.mongoengine
-      optional-dependencies.peewee
-      optional-dependencies.s3
-      optional-dependencies.azure-blob-storage
-      optional-dependencies.images
-      optional-dependencies.export
-      optional-dependencies.rediscli
-      optional-dependencies.translation
-    ];
   };
 
   nativeCheckInputs = [
@@ -136,6 +78,16 @@ buildPythonPackage rec {
     flask.optional-dependencies.async
   ];
 
+  build-system = [ flit-core ];
+
+  dependencies = [
+    flask
+    jinja2
+    markupsafe
+    werkzeug
+    wtforms
+  ];
+
   disabledTestPaths = [
     # requires database
     "flask_admin/tests/geoa/test_basic.py"
@@ -147,6 +99,63 @@ buildPythonPackage rec {
     "flask_admin/tests/fileadmin/test_fileadmin_azure.py"
   ];
 
+  optional-dependencies = {
+    all = lib.flatten [
+      optional-dependencies.sqlalchemy
+      optional-dependencies.sqlalchemy-with-utils
+      optional-dependencies.geoalchemy
+      optional-dependencies.pymongo
+      optional-dependencies.mongoengine
+      optional-dependencies.peewee
+      optional-dependencies.s3
+      optional-dependencies.azure-blob-storage
+      optional-dependencies.images
+      optional-dependencies.export
+      optional-dependencies.rediscli
+      optional-dependencies.translation
+    ];
+
+    azure-blob-storage = [ azure-storage-blob ];
+    export = [ tablib ];
+
+    geoalchemy = optional-dependencies.sqlalchemy ++ [
+      geoalchemy2
+      shapely
+    ];
+
+    images = [ pillow ];
+    mongoengine = [ mongoengine ];
+
+    peewee = [
+      peewee
+      wtf-peewee
+    ];
+
+    pymongo = [ pymongo ];
+    rediscli = [ redis ];
+    s3 = [ boto3 ];
+
+    sqlalchemy = [
+      flask-sqlalchemy
+      sqlalchemy
+    ];
+
+    sqlalchemy-lite = [
+      flask-sqlalchemy-lite
+    ];
+
+    sqlalchemy-with-utils = optional-dependencies.sqlalchemy ++ [
+      arrow
+      colour
+      email-validator
+      sqlalchemy-citext
+      sqlalchemy-utils
+    ];
+
+    translation = [ flask-babel ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "flask_admin" ];
 
   meta = {

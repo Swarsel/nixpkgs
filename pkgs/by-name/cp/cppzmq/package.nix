@@ -27,12 +27,14 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
+    description = "C++ binding for 0MQ";
     homepage = "https://github.com/zeromq/cppzmq";
     license = lib.licenses.bsd2;
-    description = "C++ binding for 0MQ";
+
     maintainers = with lib.maintainers; [
       panicgh
     ];
+
     platforms = lib.platforms.unix;
   };
 })

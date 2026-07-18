@@ -1,16 +1,16 @@
 {
   lib,
-  git,
   stdenv,
   fetchurl,
+  adwaita-icon-theme,
+  git,
+  glib,
+  gtk3,
+  libxtst,
   makeDesktopItem,
   openjdk21,
-  gtk3,
-  glib,
-  adwaita-icon-theme,
-  wrapGAppsHook3,
-  libxtst,
   which,
+  wrapGAppsHook3,
 }:
 let
   jre = openjdk21;
@@ -23,6 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://download.smartgit.dev/smartgit/smartgit-${
       builtins.replaceStrings [ "." ] [ "_" ] finalAttrs.version
     }-no-git-linux-amd64.tar.gz";
+
     hash = "sha256-eROBWhH/VLGBEakAKukyGSyHJ9tyPXPQaZTb/3UIa6U=";
   };
 
@@ -33,6 +34,28 @@ stdenv.mkDerivation (finalAttrs: {
     adwaita-icon-theme
     gtk3
   ];
+
+  installPhase = ''
+    runHook preInstall
+
+    sed -i '/ --login/d' bin/smartgit.sh
+    mkdir -pv $out/{bin,share/applications,share/icons/hicolor/scalable/apps/}
+    cp -av ./{dictionaries,lib} $out/
+    cp -av bin/smartgit.sh $out/bin/smartgit
+    ln -sfv $out/bin/smartgit $out/bin/smartgithg
+
+    cp -av $desktopItem/share/applications/* $out/share/applications/
+    for icon_size in 32 48 64 128 256; do
+        path=$icon_size'x'$icon_size
+        icon=bin/smartgit-$icon_size.png
+        mkdir -p $out/share/icons/hicolor/$path/apps
+        cp $icon $out/share/icons/hicolor/$path/apps/smartgit.png
+    done
+
+    cp -av bin/smartgit.svg $out/share/icons/hicolor/scalable/apps/
+
+    runHook postInstall
+  '';
 
   preFixup = ''
     gappsWrapperArgs+=( \
@@ -57,62 +80,47 @@ stdenv.mkDerivation (finalAttrs: {
       -e '1i#!/bin/bash'
   '';
 
-  installPhase = ''
-    runHook preInstall
-
-    sed -i '/ --login/d' bin/smartgit.sh
-    mkdir -pv $out/{bin,share/applications,share/icons/hicolor/scalable/apps/}
-    cp -av ./{dictionaries,lib} $out/
-    cp -av bin/smartgit.sh $out/bin/smartgit
-    ln -sfv $out/bin/smartgit $out/bin/smartgithg
-
-    cp -av $desktopItem/share/applications/* $out/share/applications/
-    for icon_size in 32 48 64 128 256; do
-        path=$icon_size'x'$icon_size
-        icon=bin/smartgit-$icon_size.png
-        mkdir -p $out/share/icons/hicolor/$path/apps
-        cp $icon $out/share/icons/hicolor/$path/apps/smartgit.png
-    done
-
-    cp -av bin/smartgit.svg $out/share/icons/hicolor/scalable/apps/
-
-    runHook postInstall
-  '';
-
   desktopItem = makeDesktopItem {
-    name = "smartgit";
-    exec = "smartgit";
-    comment = finalAttrs.meta.description;
-    icon = "smartgit";
-    desktopName = "SmartGit";
     categories = [
       "Development"
       "RevisionControl"
     ];
+
+    comment = finalAttrs.meta.description;
+    desktopName = "SmartGit";
+    exec = "smartgit";
+    icon = "smartgit";
+    keywords = [ "git" ];
+
     mimeTypes = [
       "x-scheme-handler/git"
       "x-scheme-handler/smartgit"
       "x-scheme-handler/sourcetree"
     ];
+
+    name = "smartgit";
     startupNotify = true;
     startupWMClass = "smartgit";
-    keywords = [ "git" ];
   };
 
   meta = {
     description = "Git GUI client";
+
     longDescription = ''
       SmartGit is a multi-platform Git GUI client, free to use for active Open Source developers and users from academic institutions.
       Command line Git is required.
     '';
+
     homepage = "https://www.smartgit.dev/";
     changelog = "https://www.smartgit.dev/changelogs/changelog-${lib.versions.majorMinor finalAttrs.version}.txt";
     license = lib.licenses.unfree;
-    mainProgram = "smartgit";
-    platforms = [ "x86_64-linux" ];
+
     maintainers = with lib.maintainers; [
       jraygauthier
       tmssngr
     ];
+
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "smartgit";
   };
 })

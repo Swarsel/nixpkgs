@@ -4,12 +4,12 @@
   fetchFromGitHub,
   autoconf,
   automake,
-  libtool,
-  pkg-config,
-  libxml2,
   deadbeef,
   glib,
   gtk3,
+  libtool,
+  libxml2,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,6 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     libxml2
   ];
+
   buildInputs = [
     deadbeef
     glib
@@ -39,7 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
   # Choose correct installation path
   # https://github.com/saivert/ddb_misc_headerbar_GTK3/commit/50ff75f76aa9d40761e352311670a894bfcd5cf6#r30319680
   makeFlags = [ "pkglibdir=$(out)/lib/deadbeef" ];
-
   preConfigure = "./autogen.sh";
 
   meta = {

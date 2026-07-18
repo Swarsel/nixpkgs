@@ -1,28 +1,26 @@
 {
   lib,
   fetchFromGitLab,
-  pkg-config,
-  libcangjie,
-  sqlite,
   buildPythonPackage,
+  cmake,
   cython,
+  libcangjie,
   meson,
   ninja,
-  cmake,
+  pkg-config,
+  sqlite,
 }:
 
 buildPythonPackage rec {
   pname = "pycangjie";
   version = "1.5.0";
 
-  pyproject = false;
-
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "cangjie";
     repo = "pycangjie";
     rev = version;
     hash = "sha256-REWX6u3Rc72+e5lIImBwV5uFoBBUTMM5BOfYdKIFL4k=";
+    domain = "gitlab.freedesktop.org";
   };
 
   # `find_installation()` without the `name_or_path` argument uses the
@@ -34,14 +32,6 @@ buildPythonPackage rec {
       --replace-fail \
         "import('python').find_installation()" \
         "import('python').find_installation('python3')"
-  '';
-
-  preConfigure = ''
-    (
-      cd subprojects
-      set -x
-      cp -R --no-preserve=mode,ownership ${libcangjie.src} libcangjie
-    )
   '';
 
   nativeBuildInputs = [
@@ -56,12 +46,21 @@ buildPythonPackage rec {
     sqlite
   ];
 
-  pythonImportsCheck = [ "cangjie" ];
+  preConfigure = ''
+    (
+      cd subprojects
+      set -x
+      cp -R --no-preserve=mode,ownership ${libcangjie.src} libcangjie
+    )
+  '';
 
   # `buildPythonApplication` skips checkPhase
   postInstallCheck = ''
     mesonCheckPhase
   '';
+
+  pyproject = false;
+  pythonImportsCheck = [ "cangjie" ];
 
   meta = {
     description = "Python wrapper to libcangjie";

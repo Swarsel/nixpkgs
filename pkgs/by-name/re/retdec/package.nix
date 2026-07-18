@@ -1,31 +1,31 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  fetchzip,
-  writeText,
-  lib,
-  openssl,
-  cmake,
   autoconf,
   automake,
-  libtool,
-  pkg-config,
   bison,
+  cmake,
+  fetchpatch,
+  fetchzip,
   flex,
   groff,
-  perl,
-  python3,
-  ncurses,
-  time,
-  upx,
   gtest,
   libffi,
+  libtool,
   libxml2,
+  ncurses,
+  openssl,
+  perl,
+  pkg-config,
+  python3,
+  time,
+  upx,
+  writeText,
   zlib,
-  enableTests ? true,
   buildDevTools ? true,
   compileYaraPatterns ? true,
+  enableTests ? true,
 }:
 
 let
@@ -69,9 +69,9 @@ let
   }
   # for checking the version against the expected version
   // fetchzip {
-    url = "https://github.com/avast-tl/retdec-support/releases/download/${retdec-support-version}/retdec-support_${retdec-support-version}.tar.xz";
     hash = "sha256-t1tx4MfLW/lwtbO5JQ1nrFBIOeMclq+0dENuXW+ahIM=";
     stripRoot = false;
+    url = "https://github.com/avast-tl/retdec-support/releases/download/${retdec-support-version}/retdec-support_${retdec-support-version}.tar.xz";
   };
 
   check-dep = name: dep: ''
@@ -89,9 +89,9 @@ let
   deps = {
     CAPSTONE = capstone;
     LLVM = llvm;
+    SUPPORT_PKG = retdec-support;
     YARA = yaracpp;
     YARAMOD = yaramod;
-    SUPPORT_PKG = retdec-support;
   }
   // lib.optionalAttrs enableTests {
     KEYSTONE = keystone;
@@ -117,7 +117,6 @@ let
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "retdec";
-
   # If you update this you will also need to adjust the versions of the updated dependencies.
   # I've notified upstream about this problem here:
   # https://github.com/avast-tl/retdec/issues/412
@@ -136,8 +135,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # gcc 13 compatibility: https://github.com/avast/retdec/pull/1153
     (fetchpatch {
-      url = "https://github.com/avast/retdec/commit/dbaab2c3d17b1eae22c581e8ab6bfefadf4ef6ae.patch";
       hash = "sha256-YqHYPGAGWT4x6C+CpsOSsOIZ+NPM2FBQtGQFs74OUIQ=";
+      url = "https://github.com/avast/retdec/commit/dbaab2c3d17b1eae22c581e8ab6bfefadf4ef6ae.patch";
     })
   ];
 
@@ -219,6 +218,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = enableTests;
+
   installCheckPhase = ''
     ${python3.interpreter} "$out/bin/retdec-tests-runner.py"
 

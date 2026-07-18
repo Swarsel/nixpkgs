@@ -1,11 +1,11 @@
 # Arguments that this derivation gets when it is created with `callPackage`
 {
-  stdenv,
   lib,
-  symlinkJoin,
+  stdenv,
+  file,
   makeWrapper,
   runCommand,
-  file,
+  symlinkJoin,
 }:
 
 open-watcom:
@@ -59,10 +59,8 @@ let
     in
     symlinkJoin {
       inherit (open-watcom) version;
+      inherit (open-watcom) meta;
       pname = open-watcom.passthru.prettyName;
-
-      paths = [ open-watcom ];
-
       nativeBuildInputs = [ makeWrapper ];
 
       postBuild = ''
@@ -84,47 +82,14 @@ let
         done
       '';
 
+      paths = [ open-watcom ];
+
       passthru = {
-        unwrapped = open-watcom;
         tests =
           let
             wrapped = wrapper { };
           in
           {
-            simple = runCommand "${name}-test-simple" { nativeBuildInputs = [ wrapped ]; } ''
-              cat <<EOF >test.c
-              #include <stdio.h>
-              int main() {
-                printf ("Testing OpenWatcom C89 compiler.\n");
-                return 0;
-              }
-              EOF
-              cat test.c
-              wcl386 -fe=test_c test.c
-              # Only test execution if hostPlatform is targetable
-              ${lib.optionalString (!stdenv.hostPlatform.isDarwin && !stdenv.hostPlatform.isAarch) "./test_c"}
-
-              cat <<EOF >test.cpp
-              #include <string>
-              #include <iostream>
-              int main() {
-                std::cout << "Testing OpenWatcom C++ library implementation." << std::endl;
-                watcom::istring HELLO ("HELLO");
-                if (HELLO != "hello") {
-                  return 1;
-                }
-                if (HELLO.find ("ello") != 1) {
-                  return 2;
-                }
-                return 0;
-              }
-              EOF
-              cat test.cpp
-              wcl386 -fe=test_cpp test.cpp
-              # Only test execution if hostPlatform is targetable
-              ${lib.optionalString (!stdenv.hostPlatform.isDarwin && !stdenv.hostPlatform.isAarch) "./test_cpp"}
-              touch $out
-            '';
             cross =
               runCommand "${name}-test-cross"
                 {
@@ -163,10 +128,45 @@ let
                   file ./dos.exe | grep "MS-DOS executable" | grep -q "MZ for MS-DOS"
                   touch $out
                 '';
-          };
-      };
 
-      inherit (open-watcom) meta;
+            simple = runCommand "${name}-test-simple" { nativeBuildInputs = [ wrapped ]; } ''
+              cat <<EOF >test.c
+              #include <stdio.h>
+              int main() {
+                printf ("Testing OpenWatcom C89 compiler.\n");
+                return 0;
+              }
+              EOF
+              cat test.c
+              wcl386 -fe=test_c test.c
+              # Only test execution if hostPlatform is targetable
+              ${lib.optionalString (!stdenv.hostPlatform.isDarwin && !stdenv.hostPlatform.isAarch) "./test_c"}
+
+              cat <<EOF >test.cpp
+              #include <string>
+              #include <iostream>
+              int main() {
+                std::cout << "Testing OpenWatcom C++ library implementation." << std::endl;
+                watcom::istring HELLO ("HELLO");
+                if (HELLO != "hello") {
+                  return 1;
+                }
+                if (HELLO.find ("ello") != 1) {
+                  return 2;
+                }
+                return 0;
+              }
+              EOF
+              cat test.cpp
+              wcl386 -fe=test_cpp test.cpp
+              # Only test execution if hostPlatform is targetable
+              ${lib.optionalString (!stdenv.hostPlatform.isDarwin && !stdenv.hostPlatform.isAarch) "./test_cpp"}
+              touch $out
+            '';
+          };
+
+        unwrapped = open-watcom;
+      };
     };
 in
 lib.makeOverridable wrapper

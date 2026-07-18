@@ -17,14 +17,7 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  enableParallelBuilding = true;
   nativeBuildInputs = [ pkg-config ];
-
-  patchPhase = ''
-    runHook prePatch
-    find . -type f -name "makefile" -exec sed "s/ -static/ -g/g" -i \{\} \;
-    runHook postPatch
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -32,12 +25,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
+  patchPhase = ''
+    runHook prePatch
+    find . -type f -name "makefile" -exec sed "s/ -static/ -g/g" -i \{\} \;
+    runHook postPatch
+  '';
+
   meta = {
-    homepage = "https://github.com/wangyu-/tinyfecVPN";
     description = "VPN Designed for Lossy Links, with Build-in Forward Error Correction(FEC) Support";
+    homepage = "https://github.com/wangyu-/tinyfecVPN";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "tinyvpn";
   };
 })

@@ -13,8 +13,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0gk4x4x04wz7y0kp19p1jjcxhqqk9n29l4dw3wa72y0n09knbwab";
   };
 
-  sourceRoot = "sleepwatcher_${finalAttrs.version}/sources";
-
   buildPhase = ''
     runHook preBuild
 
@@ -38,8 +36,11 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = "sleepwatcher_${finalAttrs.version}/sources";
+
   meta = {
     description = "Monitors sleep, wakeup and idleness of a Mac";
+
     longDescription = ''
       SleepWatcher is a command line tool (daemon) for macOS that monitors
       sleep, wakeup and idleness of a Mac. It can be used to execute a Unix
@@ -49,10 +50,11 @@ stdenv.mkDerivation (finalAttrs: {
       or detached. It also can send the Mac to sleep mode or retrieve the time since
       last user activity.
     '';
+
     homepage = "https://www.bernhard-baehr.de/";
     license = lib.licenses.gpl3Only;
-    mainProgram = "sleepwatcher";
     maintainers = with lib.maintainers; [ virusdave ];
     platforms = lib.platforms.darwin;
+    mainProgram = "sleepwatcher";
   };
 })

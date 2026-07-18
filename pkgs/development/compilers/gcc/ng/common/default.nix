@@ -1,22 +1,22 @@
 {
   lib,
-  newScope,
   stdenv,
-  overrideCC,
-  fetchgit,
   fetchurl,
-  gitRelease ? null,
-  officialRelease ? null,
-  monorepoSrc ? null,
-  version ? null,
-  patchesFn ? lib.id,
-  wrapCCWith,
-  binutilsNoLibc,
   binutils,
+  binutilsNoLibc,
   buildGccPackages,
-  targetGccPackages,
+  fetchgit,
   makeScopeWithSplicing',
+  newScope,
   otherSplices,
+  overrideCC,
+  targetGccPackages,
+  wrapCCWith,
+  gitRelease ? null,
+  monorepoSrc ? null,
+  officialRelease ? null,
+  patchesFn ? lib.id,
+  version ? null,
   ...
 }@args:
 
@@ -40,7 +40,9 @@ let
       })
       releaseInfo
       ;
+
     inherit (releaseInfo) release_version version;
+
     inherit
       (import ./common-let.nix {
         inherit
@@ -57,13 +59,14 @@ let
       gcc_meta
       monorepoSrc
       ;
+
     src = monorepoSrc;
-    versionDir =
-      (toString ../.) + "/${if (gitRelease != null) then "git" else lib.versions.major release_version}";
+
     getVersionFile =
       p:
       builtins.path {
         name = baseNameOf p;
+
         path =
           let
             patches = args.patchesFn (import ./patches.nix);
@@ -71,9 +74,9 @@ let
             constraints = patches."${p}" or null;
             matchConstraint =
               {
-                before ? null,
-                after ? null,
                 path,
+                after ? null,
+                before ? null,
               }:
               let
                 check = fn: value: if value == null then true else fn release_version value;
@@ -93,39 +96,112 @@ let
           in
           "${patchDir}/${p}";
       };
+
+    versionDir =
+      (toString ../.) + "/${if (gitRelease != null) then "git" else lib.versions.major release_version}";
   };
 in
 makeScopeWithSplicing' {
   inherit otherSplices;
+
   f =
     gccPackages:
     let
       callPackage = gccPackages.newScope (args // metadata);
     in
     {
-      stdenv = overrideCC stdenv gccPackages.gcc;
+      gcc = wrapCCWith {
+        bintools = binutils;
+        cc = gccPackages.gcc-unwrapped;
+
+        extraPackages = [
+          targetGccPackages.libgcc
+        ];
+
+        libcxx = targetGccPackages.libstdcxx;
+
+        nixSupport.cc-cflags = [
+          "-B${targetGccPackages.libgcc}/lib"
+          "-B${targetGccPackages.libssp}/lib"
+          "-B${targetGccPackages.libatomic}/lib"
+          "-B${targetGccPackages.libgomp}/lib"
+          "-I${targetGccPackages.libgomp}/lib/gcc/${metadata.release_version}/include"
+        ];
+      };
 
       gcc-unwrapped = callPackage ./gcc {
         bintools = binutils;
       };
 
-      libbacktrace = callPackage ./libbacktrace { };
-      libiberty = callPackage ./libiberty { };
-      libsanitizer = callPackage ./libsanitizer { };
-      libquadmath = callPackage ./libquadmath { };
+      gccNoLibgcc = wrapCCWith {
+        bintools = binutilsNoLibc;
+        cc = gccPackages.gcc-unwrapped;
+        extraPackages = [ ];
+        libcxx = null;
 
-      gfortran-unwrapped = gccPackages.gcc-unwrapped.override {
-        stdenv = overrideCC stdenv buildGccPackages.gcc;
-        langFortran = true;
+        nixSupport.cc-cflags = [
+          "-nostartfiles"
+        ];
       };
 
-      gfortran = wrapCCWith {
-        cc = gccPackages.gfortran-unwrapped;
-        libcxx = targetGccPackages.libstdcxx;
+      gccWithLibatomic = wrapCCWith {
         bintools = binutils;
+        cc = gccPackages.gcc-unwrapped;
+
         extraPackages = [
           targetGccPackages.libgcc
         ];
+
+        libcxx = null;
+
+        nixSupport.cc-cflags = [
+          "-B${targetGccPackages.libgcc}/lib"
+          "-B${targetGccPackages.libssp}/lib"
+          "-B${targetGccPackages.libatomic}/lib"
+        ];
+      };
+
+      gccWithLibc = wrapCCWith {
+        bintools = binutils;
+        cc = gccPackages.gcc-unwrapped;
+
+        extraPackages = [
+          targetGccPackages.libgcc
+        ];
+
+        libcxx = null;
+
+        nixSupport.cc-cflags = [
+          "-B${targetGccPackages.libgcc}/lib"
+        ];
+      };
+
+      gccWithLibssp = wrapCCWith {
+        bintools = binutils;
+        cc = gccPackages.gcc-unwrapped;
+
+        extraPackages = [
+          targetGccPackages.libgcc
+        ];
+
+        libcxx = null;
+
+        nixSupport.cc-cflags = [
+          "-B${targetGccPackages.libgcc}/lib"
+          "-B${targetGccPackages.libssp}/lib"
+        ];
+      };
+
+      gfortran = wrapCCWith {
+        bintools = binutils;
+        cc = gccPackages.gfortran-unwrapped;
+
+        extraPackages = [
+          targetGccPackages.libgcc
+        ];
+
+        libcxx = targetGccPackages.libstdcxx;
+
         nixSupport.cc-cflags = [
           "-B${targetGccPackages.libgcc}/lib"
           "-B${targetGccPackages.libssp}/lib"
@@ -135,78 +211,27 @@ makeScopeWithSplicing' {
         ];
       };
 
+      gfortran-unwrapped = gccPackages.gcc-unwrapped.override {
+        langFortran = true;
+        stdenv = overrideCC stdenv buildGccPackages.gcc;
+      };
+
       gfortranNoLibgfortran = wrapCCWith {
+        bintools = binutils;
         cc = gccPackages.gfortran-unwrapped;
-        libcxx = targetGccPackages.libstdcxx;
-        bintools = binutils;
+
         extraPackages = [
           targetGccPackages.libgcc
         ];
+
+        libcxx = targetGccPackages.libstdcxx;
+
         nixSupport.cc-cflags = [
           "-B${targetGccPackages.libgcc}/lib"
           "-B${targetGccPackages.libssp}/lib"
           "-B${targetGccPackages.libatomic}/lib"
           "-B${targetGccPackages.libgomp}/lib"
           "-I${targetGccPackages.libgomp}/lib/gcc/${metadata.release_version}/include"
-        ];
-      };
-
-      gcc = wrapCCWith {
-        cc = gccPackages.gcc-unwrapped;
-        libcxx = targetGccPackages.libstdcxx;
-        bintools = binutils;
-        extraPackages = [
-          targetGccPackages.libgcc
-        ];
-        nixSupport.cc-cflags = [
-          "-B${targetGccPackages.libgcc}/lib"
-          "-B${targetGccPackages.libssp}/lib"
-          "-B${targetGccPackages.libatomic}/lib"
-          "-B${targetGccPackages.libgomp}/lib"
-          "-I${targetGccPackages.libgomp}/lib/gcc/${metadata.release_version}/include"
-        ];
-      };
-
-      gccNoLibgcc = wrapCCWith {
-        cc = gccPackages.gcc-unwrapped;
-        libcxx = null;
-        bintools = binutilsNoLibc;
-        extraPackages = [ ];
-        nixSupport.cc-cflags = [
-          "-nostartfiles"
-        ];
-      };
-
-      libgcc = callPackage ./libgcc {
-        stdenv = overrideCC stdenv buildGccPackages.gccNoLibgcc;
-      };
-
-      gccWithLibc = wrapCCWith {
-        cc = gccPackages.gcc-unwrapped;
-        libcxx = null;
-        bintools = binutils;
-        extraPackages = [
-          targetGccPackages.libgcc
-        ];
-        nixSupport.cc-cflags = [
-          "-B${targetGccPackages.libgcc}/lib"
-        ];
-      };
-
-      libssp = callPackage ./libssp {
-        stdenv = overrideCC stdenv buildGccPackages.gccWithLibc;
-      };
-
-      gccWithLibssp = wrapCCWith {
-        cc = gccPackages.gcc-unwrapped;
-        libcxx = null;
-        bintools = binutils;
-        extraPackages = [
-          targetGccPackages.libgcc
-        ];
-        nixSupport.cc-cflags = [
-          "-B${targetGccPackages.libgcc}/lib"
-          "-B${targetGccPackages.libssp}/lib"
         ];
       };
 
@@ -214,31 +239,33 @@ makeScopeWithSplicing' {
         stdenv = overrideCC stdenv buildGccPackages.gccWithLibssp;
       };
 
-      gccWithLibatomic = wrapCCWith {
-        cc = gccPackages.gcc-unwrapped;
-        libcxx = null;
-        bintools = binutils;
-        extraPackages = [
-          targetGccPackages.libgcc
-        ];
-        nixSupport.cc-cflags = [
-          "-B${targetGccPackages.libgcc}/lib"
-          "-B${targetGccPackages.libssp}/lib"
-          "-B${targetGccPackages.libatomic}/lib"
-        ];
+      libbacktrace = callPackage ./libbacktrace { };
+
+      libgcc = callPackage ./libgcc {
+        stdenv = overrideCC stdenv buildGccPackages.gccNoLibgcc;
       };
 
       libgfortran = callPackage ./libgfortran {
-        stdenv = overrideCC stdenv buildGccPackages.gcc;
         gfortran = buildGccPackages.gfortranNoLibgfortran;
+        stdenv = overrideCC stdenv buildGccPackages.gcc;
+      };
+
+      libgomp = callPackage ./libgomp {
+        stdenv = overrideCC stdenv buildGccPackages.gccWithLibatomic;
+      };
+
+      libiberty = callPackage ./libiberty { };
+      libquadmath = callPackage ./libquadmath { };
+      libsanitizer = callPackage ./libsanitizer { };
+
+      libssp = callPackage ./libssp {
+        stdenv = overrideCC stdenv buildGccPackages.gccWithLibc;
       };
 
       libstdcxx = callPackage ./libstdcxx {
         stdenv = overrideCC stdenv buildGccPackages.gccWithLibatomic;
       };
 
-      libgomp = callPackage ./libgomp {
-        stdenv = overrideCC stdenv buildGccPackages.gccWithLibatomic;
-      };
+      stdenv = overrideCC stdenv gccPackages.gcc;
     };
 }

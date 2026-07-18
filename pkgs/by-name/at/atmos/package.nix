@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   terraform,
 }:
 
@@ -17,17 +17,9 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-X8R0hRTDKvKmBWgV4ujVQrHIE935wG6sogQAzv2fdTg=";
-
   env.CGO_ENABLED = 0; # Compiles a pure statically linked Go binary.
-
-  subPackages = [ "." ]; # Speeds up the build.
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/cloudposse/atmos/cmd.Version=v${finalAttrs.version}"
-  ];
-
+  # depend on a network connection.
+  doCheck = false;
   nativeCheckInputs = [ terraform ];
 
   preCheck = ''
@@ -37,9 +29,6 @@ buildGoModule (finalAttrs: {
       pkg/atlantis/atlantis_generate_repo_config_test.go \
       pkg/describe/describe_affected_test.go
   '';
-
-  # depend on a network connection.
-  doCheck = false;
 
   # depend on a network connection.
   doInstallCheck = false;
@@ -52,11 +41,19 @@ buildGoModule (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/cloudposse/atmos/cmd.Version=v${finalAttrs.version}"
+  ];
+
+  subPackages = [ "." ]; # Speeds up the build.
+
   meta = {
+    description = "Universal Tool for DevOps and Cloud Automation (works with terraform, helm, helmfile, etc)";
     homepage = "https://atmos.tools";
     changelog = "https://github.com/cloudposse/atmos/releases/tag/v${finalAttrs.version}";
-    description = "Universal Tool for DevOps and Cloud Automation (works with terraform, helm, helmfile, etc)";
-    mainProgram = "atmos";
     license = lib.licenses.asl20;
+    mainProgram = "atmos";
   };
 })

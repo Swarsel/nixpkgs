@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   versionCheckHook,
 }:
@@ -17,7 +17,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-Gm5PXEEgw98NnsfKN8JxhyTqEL9KSA6L2CgRTRJirdY=";
   };
 
-  subPackages = [ "." ];
+  vendorHash = "sha256-pEex5xu3Cf6vqFp7YLwk+Ku+Yc0coOGLXP7/NUtDYbg=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
@@ -28,21 +30,17 @@ buildGoModule (finalAttrs: {
     "-X=github.com/prometheus/common/version.Version=${finalAttrs.version}"
   ];
 
-  vendorHash = "sha256-pEex5xu3Cf6vqFp7YLwk+Ku+Yc0coOGLXP7/NUtDYbg=";
-
-  passthru.updateScript = nix-update-script { };
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
+  subPackages = [ "." ];
   versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
   versionCheckProgramArg = "-version";
+  passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/dmachard/dns-collector/releases/tag/v${finalAttrs.version}";
-    homepage = "https://github.com/dmachard/dns-collector";
     description = "Ingesting, pipelining, and enhancing your DNS logs with usage indicators, security analysis, and additional metadata";
+    homepage = "https://github.com/dmachard/dns-collector";
+    changelog = "https://github.com/dmachard/dns-collector/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "go-dnscollector";
     maintainers = with lib.maintainers; [ paepcke ];
+    mainProgram = "go-dnscollector";
   };
 })

@@ -1,23 +1,22 @@
 {
   lib,
   stdenv,
+  bzip2,
+  curl,
+  libsodium,
   mkMesonDerivation,
-  pkg-config,
+  nix-store,
   perl,
   perlPackages,
-  nix-store,
+  pkg-config,
   version,
-  curl,
-  bzip2,
-  libsodium,
 }:
 
 perl.pkgs.toPerlModule (
   mkMesonDerivation (finalAttrs: {
-    pname = "nix-perl";
     inherit version;
-
-    workDir = ./.;
+    pname = "nix-perl";
+    strictDeps = false;
 
     nativeBuildInputs = [
       pkg-config
@@ -31,11 +30,10 @@ perl.pkgs.toPerlModule (
       libsodium
     ];
 
-    # `perlPackages.Test2Harness` is marked broken for Darwin
-    doCheck = !stdenv.hostPlatform.isDarwin;
-
-    nativeCheckInputs = [
-      perlPackages.Test2Harness
+    mesonFlags = [
+      (lib.mesonOption "dbi_path" "${perlPackages.DBI}/${perl.libPrefix}")
+      (lib.mesonOption "dbd_sqlite_path" "${perlPackages.DBDSQLite}/${perl.libPrefix}")
+      (lib.mesonEnable "tests" finalAttrs.finalPackage.doCheck)
     ];
 
     preConfigure =
@@ -45,16 +43,17 @@ perl.pkgs.toPerlModule (
         echo ${finalAttrs.version} > .version
       '';
 
-    mesonFlags = [
-      (lib.mesonOption "dbi_path" "${perlPackages.DBI}/${perl.libPrefix}")
-      (lib.mesonOption "dbd_sqlite_path" "${perlPackages.DBDSQLite}/${perl.libPrefix}")
-      (lib.mesonEnable "tests" finalAttrs.finalPackage.doCheck)
+    # `perlPackages.Test2Harness` is marked broken for Darwin
+    doCheck = !stdenv.hostPlatform.isDarwin;
+
+    nativeCheckInputs = [
+      perlPackages.Test2Harness
     ];
 
     mesonCheckFlags = [
       "--print-errorlogs"
     ];
 
-    strictDeps = false;
+    workDir = ./.;
   })
 )

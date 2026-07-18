@@ -1,19 +1,17 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   cython,
-  setuptools,
-
   # tests
   numpy,
   psutil,
-  pytestCheckHook,
   pytest-xdist,
+  pytestCheckHook,
   pythonAtLeast,
+  setuptools,
   trio,
   untangle,
 }:
@@ -21,7 +19,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pydevd";
   version = "3.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fabioz";
@@ -29,13 +26,6 @@ buildPythonPackage (finalAttrs: {
     tag = "pydev_debugger_${lib.replaceStrings [ "." ] [ "_" ] finalAttrs.version}";
     hash = "sha256-srcYeN4IsnX/B0AWLynr62UC5o+DcjnUrGjcTpvHTCM=";
   };
-
-  __darwinAllowLocalNetworking = true;
-
-  build-system = [
-    cython
-    setuptools
-  ];
 
   nativeCheckInputs = [
     numpy
@@ -46,8 +36,11 @@ buildPythonPackage (finalAttrs: {
     untangle
   ];
 
-  enabledTestPaths = [
-    "tests/"
+  __darwinAllowLocalNetworking = true;
+
+  build-system = [
+    cython
+    setuptools
   ];
 
   disabledTests = [
@@ -117,6 +110,11 @@ buildPythonPackage (finalAttrs: {
     "test_evaluate_exception_trace"
   ];
 
+  enabledTestPaths = [
+    "tests/"
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "pydevd" ];
 
   meta = {

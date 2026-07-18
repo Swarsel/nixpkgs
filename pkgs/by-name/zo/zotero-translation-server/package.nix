@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nodejs,
 }:
 
@@ -19,10 +19,6 @@ buildNpmPackage {
 
   npmDepsHash = "sha256-JHoBxUybs1GGRxEVG5GgX2mOCplTgR5dcPjnR42SEbY=";
 
-  makeCacheWritable = true;
-
-  dontNpmBuild = true;
-
   postInstall = ''
     mkdir -p $out/bin/ $out/share/zotero-translation-server/
     makeWrapper ${nodejs}/bin/node $out/bin/translation-server \
@@ -30,6 +26,9 @@ buildNpmPackage {
     ln -s $out/lib/node_modules/translation-server/config $out/share/zotero-translation-server/config
     ln -s $out/lib/node_modules/translation-server/modules $out/share/zotero-translation-server/modules
   '';
+
+  dontNpmBuild = true;
+  makeCacheWritable = true;
 
   meta = {
     description = "Node.js-based server to run Zotero translators";

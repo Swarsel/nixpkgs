@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,19 +16,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-cmOMWJOSJxhjXVdwVdDnTORJRSZcQ8kdDUTJaIy8dbk=";
-
   # tests require internet access
   doCheck = false;
 
   meta = {
     description = "Cargo tool that detects unused dependencies in Rust projects";
-    mainProgram = "cargo-machete";
     homepage = "https://github.com/bnjbvr/cargo-machete";
     changelog = "https://github.com/bnjbvr/cargo-machete/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
       chrjabs
     ];
+
+    mainProgram = "cargo-machete";
   };
 })

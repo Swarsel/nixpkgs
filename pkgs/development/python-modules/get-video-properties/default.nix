@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   ffmpeg-headless,
 }:
 
 buildPythonPackage {
   pname = "get-video-properties";
   version = "0.1.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "mvasilkov";
@@ -16,9 +15,6 @@ buildPythonPackage {
     rev = "944c68addbc27e320ebc6313d3f016fb69b5e880";
     sha256 = "18aslx7amaiw31bl9gambmvzry7hp5nqab6kgp8sg3mz9ih4lzal";
   };
-
-  # no tests
-  doCheck = false;
 
   postPatch = ''
     substituteInPlace videoprops/__init__.py \
@@ -28,6 +24,9 @@ buildPythonPackage {
     rm -r videoprops/binary_dependencies
   '';
 
+  # no tests
+  doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "videoprops" ];
 
   meta = {

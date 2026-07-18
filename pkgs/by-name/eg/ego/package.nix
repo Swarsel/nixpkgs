@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  makeBinaryWrapper,
   acl,
   libxcb,
+  makeBinaryWrapper,
+  rustPlatform,
   xhost,
 }:
 
@@ -19,12 +19,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-TO0jyi6XGPfuF7s4vTV8uT43SjCGUx6cVZONyb5e93Q=";
   };
 
+  nativeBuildInputs = [ makeBinaryWrapper ];
+
   buildInputs = [
     acl
     libxcb
   ];
-
-  nativeBuildInputs = [ makeBinaryWrapper ];
 
   cargoHash = "sha256-MmcZrjjNvc3C/RRMCQsuaJT4sf+gTAaxVDtKGHjKqc8=";
 
@@ -47,9 +47,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Run Linux desktop applications under a different local user";
     homepage = "https://github.com/intgr/ego";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       mio
     ];
+
     mainProgram = "ego";
   };
 })

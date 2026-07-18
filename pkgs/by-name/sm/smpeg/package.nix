@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   SDL,
   autoconf,
   automake,
-  libtool,
+  fetchpatch,
   gtk2,
-  m4,
-  pkg-config,
-  libGLU,
   libGL,
+  libGLU,
+  libtool,
+  m4,
   makeWrapper,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,11 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-nq/i7cFGpJXIuTwN/ScLMX7FN8NMdgdsRM9xOD3uycs=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = lib.optionals (!stdenv.hostPlatform.isDarwin) [ ./libx11.patch ] ++ [
     ./format.patch
     ./gcc6.patch
@@ -33,12 +38,12 @@ stdenv.mkDerivation (finalAttrs: {
     # These patches remove use of the `register` storage class specifier,
     # allowing smpeg to build with clang 16, which defaults to C++17.
     (fetchpatch {
-      url = "https://github.com/icculus/smpeg/commit/cc114ba0dd8644c0d6205bbce2384781daeff44b.patch";
       hash = "sha256-GxSD82j05pw0r2SxmPYAe/BXX4iUc+iHWhB9Ap4GzfA=";
+      url = "https://github.com/icculus/smpeg/commit/cc114ba0dd8644c0d6205bbce2384781daeff44b.patch";
     })
     (fetchpatch {
-      url = "https://github.com/icculus/smpeg/commit/b369feca5bf99d6cff50d8eb316395ef48acf24f.patch";
       hash = "sha256-U+a6dbc5cm249KlUcf4vi79yUiT4hgEvMv522K4PqUc=";
+      url = "https://github.com/icculus/smpeg/commit/b369feca5bf99d6cff50d8eb316395ef48acf24f.patch";
     })
   ];
 
@@ -47,8 +52,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace 'register int' 'int' \
       --replace 'register Uint16' 'Uint16'
   '';
-
-  enableParallelBuilding = true;
 
   nativeBuildInputs = [
     autoconf
@@ -68,10 +71,9 @@ stdenv.mkDerivation (finalAttrs: {
     libGL
   ];
 
-  outputs = [
-    "out"
-    "dev"
-  ];
+  env = lib.optionalAttrs (!stdenv.hostPlatform.isDarwin) {
+    NIX_LDFLAGS = "-lX11";
+  };
 
   preConfigure = ''
     touch NEWS AUTHORS ChangeLog
@@ -93,13 +95,11 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix PKG_CONFIG_PATH ":" "${lib.getDev SDL}/lib/pkgconfig"
   '';
 
-  env = lib.optionalAttrs (!stdenv.hostPlatform.isDarwin) {
-    NIX_LDFLAGS = "-lX11";
-  };
+  enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://icculus.org/smpeg/";
     description = "MPEG decoding library";
+    homepage = "https://icculus.org/smpeg/";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
   };

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 buildGoModule (finalAttrs: {
@@ -15,6 +15,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-oAQm2bxcDQfqTdtVtot1Dk2MkFqG5wVxeERie5DRoOQ=";
   };
 
+  vendorHash = null;
+  doInstallCheck = true;
+
   ldflags = [
     "-s"
     "-w"
@@ -24,15 +27,15 @@ buildGoModule (finalAttrs: {
     "-X github.com/prometheus/common/version.Revision=${finalAttrs.src.rev}"
     "-X github.com/prometheus/common/version.Version=${finalAttrs.version}"
   ];
-  vendorHash = null;
+
   passthru.updateScript = nix-update-script { };
-  doInstallCheck = true;
+
   meta = {
-    changelog = "https://github.com/AthennaMind/opnsense-exporter/releases/tag/v${finalAttrs.version}";
-    homepage = "https://github.com/AthennaMind/opnsense-exporter";
     description = "Prometheus exporter for opnsense firewall appliances";
+    homepage = "https://github.com/AthennaMind/opnsense-exporter";
+    changelog = "https://github.com/AthennaMind/opnsense-exporter/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    mainProgram = "opnsense-exporter";
     maintainers = with lib.maintainers; [ paepcke ];
+    mainProgram = "opnsense-exporter";
   };
 })

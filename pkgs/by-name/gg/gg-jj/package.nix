@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  fetchNpmDeps,
   cargo-tauri,
+  fetchNpmDeps,
+  gitMinimal,
+  nix-update-script,
   nodejs,
   npmHooks,
-  pkg-config,
-  wrapGAppsHook3,
   openssl,
-  webkitgtk_4_1,
+  pkg-config,
+  rustPlatform,
   versionCheckHook,
-  nix-update-script,
-  gitMinimal,
+  webkitgtk_4_1,
+  wrapGAppsHook3,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -25,18 +25,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     repo = "gg";
     tag = "v${finalAttrs.version}";
     hash = "sha256-0f1MM9iXjYuj7Anu6TMVtAjo3fg0IeOyrKfpeODrvA8=";
-  };
-
-  cargoHash = "sha256-oDAA4lFfp/zMQ2gm595OgnNyP3tiPSC1M0hiozOH/ss=";
-
-  npmDeps = fetchNpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      patches
-      ;
-    hash = "sha256-aZSBKEVftMfPuIOnwc/ykbjdmb3Np+gJl1Jq9yv4pck=";
   };
 
   nativeBuildInputs = [
@@ -56,16 +44,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     webkitgtk_4_1
   ];
 
+  cargoHash = "sha256-oDAA4lFfp/zMQ2gm595OgnNyP3tiPSC1M0hiozOH/ss=";
+  env.OPENSSL_NO_VENDOR = true;
+
   nativeCheckInputs = [
     # Failing tests: Could not execute the git process, found in the OS path 'git'
     gitMinimal
   ];
+
   checkFlags = lib.optionals stdenv.hostPlatform.isDarwin [
     # Attempted to create a NULL object.
     "--skip=web::tests::integration_test"
   ];
-
-  env.OPENSSL_NO_VENDOR = true;
 
   postInstall = lib.optionals stdenv.hostPlatform.isDarwin ''
     mkdir -p $out/bin
@@ -76,14 +66,25 @@ rustPlatform.buildRustPackage (finalAttrs: {
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      patches
+      ;
+
+    hash = "sha256-aZSBKEVftMfPuIOnwc/ykbjdmb3Np+gJl1Jq9yv4pck=";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    inherit (cargo-tauri.hook.meta) platforms;
     description = "GUI for the version control system Jujutsu";
     homepage = "https://github.com/gulbanana/gg";
     changelog = "https://github.com/gulbanana/gg/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = with lib.licenses; [ asl20 ];
-    inherit (cargo-tauri.hook.meta) platforms;
     maintainers = with lib.maintainers; [ pluiedev ];
     mainProgram = "gg";
   };

@@ -1,50 +1,47 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  lib,
+  alsa-lib,
   cmake,
-  pkg-config,
-  writableTmpDirAsHomeHook,
-  nix-update-script,
+  fetchpatch,
+  fontconfig,
+  freetype,
   juce,
   libx11,
-  libxrandr,
-  libxinerama,
-  libxext,
   libxcursor,
-  freetype,
-  fontconfig,
-  alsa-lib,
-
-  buildVST3 ? true,
-  buildLV2 ? true,
+  libxext,
+  libxinerama,
+  libxrandr,
+  nix-update-script,
+  pkg-config,
+  writableTmpDirAsHomeHook,
   buildCLAP ? true,
+  buildLV2 ? true,
+  buildVST3 ? true,
 }:
 
 let
   juce-clap-extensions = fetchFromGitHub {
+    fetchSubmodules = true;
+    hash = "sha256-cPi+prl+jLq/KvjZ5M2MxxZVLSKCiJB9SQHK8psW2OU=";
     owner = "free-audio";
     repo = "clap-juce-extensions";
     rev = "02f91b7988298f7f1f05c706da16e1d9da852a87";
-    hash = "sha256-cPi+prl+jLq/KvjZ5M2MxxZVLSKCiJB9SQHK8psW2OU=";
-    fetchSubmodules = true;
   };
 
   chowdsp_utils = fetchFromGitHub {
+    hash = "sha256-rKjrhb+w/lW9k3Dg5jWM2eJRa0fPDF8SNVrCTFrRMoM=";
     owner = "Chowdhury-DSP";
     repo = "chowdsp_utils";
     rev = "ffc70ba399f9afaeefb996eb14e55a1d487270b8"; # LIB_CHOWDSP_UTILS_TAG from CMakeLists.txt
-    hash = "sha256-rKjrhb+w/lW9k3Dg5jWM2eJRa0fPDF8SNVrCTFrRMoM=";
   };
 
   # src/dsp/guitarml-byod/CMakeLists.txt
   rtneural = fetchFromGitHub {
-    owner = "jatinchowdhury18";
-    repo = "RTNeural";
-    rev = "04cb333bc4b174760958a77c7ce076eae38fe8e4"; # LIB_RTNEURAL_TAG
-    hash = "sha256-kTHYEpoXPYNKEs7rHeSwBHVQnOQKhKnST+UWa++uCsc=";
     fetchSubmodules = true;
+    hash = "sha256-kTHYEpoXPYNKEs7rHeSwBHVQnOQKhKnST+UWa++uCsc=";
+    owner = "jatinchowdhury18";
 
     postFetch = ''
       # note: if rtneural is updated, this won't be needed anymore
@@ -57,22 +54,25 @@ let
           "cmake_minimum_required(VERSION 3.5)" \
           "cmake_minimum_required(VERSION 4.0)"
     '';
+
+    repo = "RTNeural";
+    rev = "04cb333bc4b174760958a77c7ce076eae38fe8e4"; # LIB_RTNEURAL_TAG
   };
 
   # src/dsp/guitarml-byod/CMakeLists.txt
   math_approx = fetchFromGitHub {
+    hash = "sha256-t6UrsZGRJjJVp+aGkwBa++Skj9xkdQuZKAxRrTkfM0E=";
     owner = "Chowdhury-DSP";
     repo = "math_approx";
     rev = "0c68d4d17242d707ba07fa7f1901692b7ed72d58"; # LIB_CHOWDSP_MATH_APPROX_TAG
-    hash = "sha256-t6UrsZGRJjJVp+aGkwBa++Skj9xkdQuZKAxRrTkfM0E=";
   };
 
   # src/dsp/guitarml-byod/CMakeLists.txt
   ea_variant = fetchFromGitHub {
+    hash = "sha256-2zzam7rKY6zoT2jFqDtr4pwOCAWTu0GTxUqVGxVHbQQ=";
     owner = "eyalamirmusic";
     repo = "Variant";
     rev = "3fce49cfca50ba3b05026d41ffc4911a8e653378"; # LIB_VARIANT_TAG
-    hash = "sha256-2zzam7rKY6zoT2jFqDtr4pwOCAWTu0GTxUqVGxVHbQQ=";
   };
 
   formats = lib.concatStringsSep " " [
@@ -94,8 +94,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # `BUILD_CLAP` cmake flag
     (fetchpatch {
-      url = "https://github.com/midilab/jc303/commit/837d3fc5cf4e993375403a45d7e23df1b4e3cf7f.diff";
       hash = "sha256-WvLIcSHrLiXj1VEV+IxS05YSWEq7oz57qIbNsqRySaY=";
+      url = "https://github.com/midilab/jc303/commit/837d3fc5cf4e993375403a45d7e23df1b4e3cf7f.diff";
     })
   ];
 
@@ -138,8 +138,6 @@ stdenv.mkDerivation (finalAttrs: {
   # Fontconfig error: Cannot load default config file: No such file: (null)
   env.FONTCONFIG_FILE = "${fontconfig.out}/etc/fonts/fonts.conf";
 
-  enableParallelBuilding = true;
-
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isLinux (toString [
     # juce, compiled in this build as part of a Git submodule, uses `-flto` as
     # a Link Time Optimization flag, and instructs the plugin compiled here to
@@ -174,13 +172,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Roland TB-303 clone plugin";
     homepage = "https://github.com/midilab/jc303";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.mrtnvgr ];
+    platforms = lib.platforms.linux;
   };
 })

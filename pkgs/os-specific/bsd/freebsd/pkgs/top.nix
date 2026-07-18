@@ -1,17 +1,18 @@
 {
-  mkDerivation,
   libjail,
   libncurses-tinfo,
-  libutil,
   libsbuf,
+  libutil,
+  mkDerivation,
   ...
 }:
 mkDerivation {
-  path = "usr.bin/top";
   buildInputs = [
     libjail
     libncurses-tinfo
     libutil
     libsbuf
   ];
+
+  path = "usr.bin/top";
 }

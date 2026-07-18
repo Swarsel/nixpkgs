@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  libsForQt5,
-  djvulibre,
-  libspectre,
   cups,
+  djvulibre,
   file,
   ghostscript,
+  libsForQt5,
+  libspectre,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -38,13 +38,18 @@ stdenv.mkDerivation rec {
     ghostscript
   ];
 
-  # needed for qmakeFlags+=( below
-  __structuredAttrs = true;
+  env = {
+    # Fix build due to missing `std::option`.
+    NIX_CFLAGS_COMPILE = "-std=c++17";
+  };
 
   preConfigure = ''
     lrelease qpdfview.pro
     qmakeFlags+=(*.pro)
   '';
+
+  # needed for qmakeFlags+=( below
+  __structuredAttrs = true;
 
   qmakeFlags = [
     "TARGET_INSTALL_PATH=${placeholder "out"}/bin"
@@ -56,17 +61,12 @@ stdenv.mkDerivation rec {
     "APPDATA_INSTALL_PATH=${placeholder "out"}/share/appdata"
   ];
 
-  env = {
-    # Fix build due to missing `std::option`.
-    NIX_CFLAGS_COMPILE = "-std=c++17";
-  };
-
   meta = {
     description = "Tabbed document viewer";
-    mainProgram = "qpdfview";
+    homepage = "https://launchpad.net/qpdfview";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.linux;
-    homepage = "https://launchpad.net/qpdfview";
+    mainProgram = "qpdfview";
   };
 }

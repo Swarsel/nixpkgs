@@ -1,10 +1,9 @@
 {
   lib,
-  formats,
-  stdenvNoCC,
   fetchFromGitHub,
+  formats,
   kdePackages,
-
+  stdenvNoCC,
   # Override themeConfig.General.background for custom backgrounds
   # https://wiki.nixos.org/wiki/SDDM_Themes
   themeConfig ? null,
@@ -25,7 +24,6 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-l4gv1PEVWpLmzNt1c+dHTHtM5WlEsXdDgW3q8U3FMUQ=";
   };
 
-  dontWrapQtApps = true;
   propagatedBuildInputs = [
     # avoid .dev outputs propagation
     kdePackages.qt5compat.out
@@ -44,10 +42,13 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontWrapQtApps = true;
+
   meta = {
     description = "Sleek and stylish SDDM theme crafted in QML for Qt6";
     homepage = "https://github.com/rainD4X/Elegant-sddm-qt6";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       redlonghead

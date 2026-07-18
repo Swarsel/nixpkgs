@@ -1,8 +1,8 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   cmake,
+  fetchPypi,
   setuptools,
   wheel,
 }:
@@ -10,12 +10,11 @@
 buildPythonPackage rec {
   pname = "opencc";
   version = "1.2.0";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "opencc";
     inherit version;
     hash = "sha256-K7kTx+04hGaybTivTIxLtBndtQMjXQcPDuGySZjvi8o=";
+    pname = "opencc";
   };
 
   nativeBuildInputs = [
@@ -25,6 +24,7 @@ buildPythonPackage rec {
   ];
 
   dontUseCmakeConfigure = true;
+  format = "setuptools";
 
   pythonImportsCheck = [
     "opencc"

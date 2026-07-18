@@ -1,12 +1,12 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  openssl,
-  pkg-config,
+  buildGoModule,
+  krb5,
   libpcap,
   nix-update-script,
-  krb5,
+  openssl,
+  pkg-config,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,14 +20,15 @@ buildGoModule (finalAttrs: {
     hash = "sha256-lR0pEZgDoIW9HYfutrPa1fNqLLANcw5oS2jATuPSBLo=";
   };
 
-  vendorHash = null;
-
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     openssl
     libpcap
     krb5
   ];
+
+  vendorHash = null;
 
   # Mongodb incorrectly names all of their binaries main
   # Let's work around this with our own installer
@@ -58,9 +59,10 @@ buildGoModule (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/mongodb/mongo-tools";
     description = "Tools for the MongoDB";
+    homepage = "https://github.com/mongodb/mongo-tools";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       iamanaws
     ];

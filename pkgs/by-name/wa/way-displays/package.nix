@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  wayland-scanner,
-  wayland,
   libinput,
+  pkg-config,
+  wayland,
+  wayland-scanner,
   yaml-cpp,
 }:
 
@@ -21,10 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
-  depsBuildBuild = [
-    pkg-config
-  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -44,9 +40,13 @@ stdenv.mkDerivation (finalAttrs: {
     "CXX:=$(CXX)"
   ];
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   meta = {
-    homepage = "https://github.com/alex-courtis/way-displays";
     description = "Auto Manage Your Wayland Displays";
+    homepage = "https://github.com/alex-courtis/way-displays";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ simoneruffini ];
     platforms = lib.platforms.linux;

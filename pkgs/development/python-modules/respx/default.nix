@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flask,
   httpcore,
   httpx,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "respx";
   version = "0.22.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lundberg";
@@ -24,10 +23,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-T3DLNXJykSF/HXjlmQdJ2CG4d+U1eTa+XWcgtT3dhl4=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ httpx ];
 
   nativeCheckInputs = [
     httpcore
@@ -40,8 +35,10 @@ buildPythonPackage rec {
     trio
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ httpx ];
   disabledTests = [ "test_pass_through" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "respx" ];
 
   meta = {

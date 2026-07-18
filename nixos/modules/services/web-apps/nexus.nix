@@ -16,43 +16,23 @@ in
   options = {
     services.nexus = {
       enable = mkEnableOption "Sonatype Nexus3 OSS service";
-
       package = lib.mkPackageOption pkgs "nexus" { };
 
-      jdkPackage = lib.mkPackageOption pkgs "openjdk8" { };
-
-      user = mkOption {
-        type = types.str;
-        default = "nexus";
-        description = "User which runs Nexus3.";
-      };
-
       group = mkOption {
-        type = types.str;
         default = "nexus";
         description = "Group which runs Nexus3.";
+        type = types.str;
       };
 
       home = mkOption {
-        type = types.str;
         default = "/var/lib/sonatype-work";
         description = "Home directory of the Nexus3 instance.";
-      };
-
-      listenAddress = mkOption {
         type = types.str;
-        default = "127.0.0.1";
-        description = "Address to listen on.";
       };
 
-      listenPort = mkOption {
-        type = types.port;
-        default = 8081;
-        description = "Port to listen on.";
-      };
+      jdkPackage = lib.mkPackageOption pkgs "openjdk8" { };
 
       jvmOpts = mkOption {
-        type = types.lines;
         default = ''
           -Xms1200M
           -Xmx1200M
@@ -72,6 +52,7 @@ in
           -Dkaraf.startLocalConsole=false
           -Djava.endorsed.dirs=${cfg.package}/lib/endorsed
         '';
+
         defaultText = literalExpression ''
           '''
             -Xms1200M
@@ -99,33 +80,42 @@ in
           Please refer to the docs (https://help.sonatype.com/repomanager3/installation/configuring-the-runtime-environment)
           for further information.
         '';
+
+        type = types.lines;
+      };
+
+      listenAddress = mkOption {
+        default = "127.0.0.1";
+        description = "Address to listen on.";
+        type = types.str;
+      };
+
+      listenPort = mkOption {
+        default = 8081;
+        description = "Port to listen on.";
+        type = types.port;
+      };
+
+      user = mkOption {
+        default = "nexus";
+        description = "User which runs Nexus3.";
+        type = types.str;
       };
     };
   };
 
   config = mkIf cfg.enable {
-    users.users.${cfg.user} = {
-      isSystemUser = true;
-      inherit (cfg) group home;
-      createHome = true;
-    };
-
-    users.groups.${cfg.group} = { };
-
     systemd.services.nexus = {
       description = "Sonatype Nexus3";
 
-      wantedBy = [ "multi-user.target" ];
-
-      path = [ cfg.home ];
-
       environment = {
-        NEXUS_USER = cfg.user;
-        NEXUS_HOME = cfg.home;
-
         INSTALL4J_JAVA_HOME = cfg.jdkPackage;
+        NEXUS_HOME = cfg.home;
+        NEXUS_USER = cfg.user;
         VM_OPTS_FILE = pkgs.writeText "nexus.vmoptions" cfg.jvmOpts;
       };
+
+      path = [ cfg.home ];
 
       preStart = ''
         mkdir -p ${cfg.home}/nexus3/etc
@@ -145,11 +135,21 @@ in
       script = "${cfg.package}/bin/nexus run";
 
       serviceConfig = {
-        User = cfg.user;
         Group = cfg.group;
-        PrivateTmp = true;
         LimitNOFILE = 102642;
+        PrivateTmp = true;
+        User = cfg.user;
       };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups.${cfg.group} = { };
+
+    users.users.${cfg.user} = {
+      inherit (cfg) group home;
+      createHome = true;
+      isSystemUser = true;
     };
   };
 

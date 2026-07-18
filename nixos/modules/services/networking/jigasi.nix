@@ -13,78 +13,56 @@ let
 in
 {
   options.services.jigasi = with lib.types; {
+    config = lib.mkOption {
+      default = { };
+
+      description = ''
+        Contents of the <filename>sip-communicator.properties</filename> configuration file for jigasi.
+      '';
+
+      example = lib.literalExpression ''
+        {
+          "org.jitsi.jigasi.auth.URL" = "XMPP:jitsi-meet.example.com";
+        }
+      '';
+
+      type = attrsOf str;
+    };
+
     enable = lib.mkEnableOption "Jitsi Gateway to SIP - component of Jitsi Meet";
 
-    xmppHost = lib.mkOption {
-      type = str;
-      example = "localhost";
-      description = ''
-        Hostname of the XMPP server to connect to.
-      '';
-    };
-
-    xmppDomain = lib.mkOption {
-      type = nullOr str;
-      example = "meet.example.org";
-      description = ''
-        Domain name of the XMMP server to which to connect as a component.
-
-        If null, <option>xmppHost</option> is used.
-      '';
-    };
-
-    componentPasswordFile = lib.mkOption {
-      type = str;
-      example = "/run/keys/jigasi-component";
-      description = ''
-        Path to file containing component secret.
-      '';
-    };
-
-    userName = lib.mkOption {
-      type = str;
-      default = "callcontrol";
-      description = ''
-        User part of the JID for XMPP user connection.
-      '';
-    };
-
-    userDomain = lib.mkOption {
-      type = str;
-      example = "internal.meet.example.org";
-      description = ''
-        Domain part of the JID for XMPP user connection.
-      '';
-    };
-
-    userPasswordFile = lib.mkOption {
-      type = str;
-      example = "/run/keys/jigasi-user";
-      description = ''
-        Path to file containing password for XMPP user connection.
-      '';
-    };
-
     bridgeMuc = lib.mkOption {
-      type = str;
-      example = "jigasibrewery@internal.meet.example.org";
       description = ''
         JID of the internal MUC used to communicate with Videobridges.
       '';
+
+      example = "jigasibrewery@internal.meet.example.org";
+      type = str;
+    };
+
+    componentPasswordFile = lib.mkOption {
+      description = ''
+        Path to file containing component secret.
+      '';
+
+      example = "/run/keys/jigasi-component";
+      type = str;
     };
 
     defaultJvbRoomName = lib.mkOption {
-      type = str;
       default = "";
-      example = "siptest";
+
       description = ''
         Name of the default JVB room that will be joined if no special header is included in SIP invite.
       '';
+
+      example = "siptest";
+      type = str;
     };
 
     environmentFile = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
       default = null;
+
       description = ''
         File containing environment variables to be passed to the jigasi service,
         in which secret tokens can be specified securely by defining values for
@@ -93,23 +71,67 @@ in
         <literal>JIGASI_SIPSERVER</literal> and
         <literal>JIGASI_SIPPORT</literal>.
       '';
+
+      type = lib.types.nullOr lib.types.path;
     };
 
-    config = lib.mkOption {
-      type = attrsOf str;
-      default = { };
-      example = lib.literalExpression ''
-        {
-          "org.jitsi.jigasi.auth.URL" = "XMPP:jitsi-meet.example.com";
-        }
-      '';
+    userDomain = lib.mkOption {
       description = ''
-        Contents of the <filename>sip-communicator.properties</filename> configuration file for jigasi.
+        Domain part of the JID for XMPP user connection.
       '';
+
+      example = "internal.meet.example.org";
+      type = str;
+    };
+
+    userName = lib.mkOption {
+      default = "callcontrol";
+
+      description = ''
+        User part of the JID for XMPP user connection.
+      '';
+
+      type = str;
+    };
+
+    userPasswordFile = lib.mkOption {
+      description = ''
+        Path to file containing password for XMPP user connection.
+      '';
+
+      example = "/run/keys/jigasi-user";
+      type = str;
+    };
+
+    xmppDomain = lib.mkOption {
+      description = ''
+        Domain name of the XMMP server to which to connect as a component.
+
+        If null, <option>xmppHost</option> is used.
+      '';
+
+      example = "meet.example.org";
+      type = nullOr str;
+    };
+
+    xmppHost = lib.mkOption {
+      description = ''
+        Hostname of the XMPP server to connect to.
+      '';
+
+      example = "localhost";
+      type = str;
     };
   };
 
   config = lib.mkIf cfg.enable {
+    environment.etc."jitsi/jigasi/logging.properties".source =
+      lib.mkDefault "${stateDir}/logging.properties-journal";
+
+    environment.etc."jitsi/jigasi/sip-communicator.properties".source = lib.mkDefault "${
+      sipCommunicatorPropertiesFile
+    }";
+
     services.jicofo.config = {
       "org.jitsi.jicofo.jigasi.BREWERY" = "${cfg.bridgeMuc}";
     };
@@ -118,20 +140,21 @@ in
       "org.jitsi.jigasi.BRIDGE_MUC" = cfg.bridgeMuc;
     };
 
-    users.groups.jitsi-meet = { };
-
     systemd.services.jigasi =
       let
         jigasiProps = {
+          "-Djava.util.logging.config.file" = "${pkgs.jigasi}/etc/jitsi/jigasi/logging.properties";
           "-Dnet.java.sip.communicator.SC_HOME_DIR_LOCATION" = "${stateDir}";
           "-Dnet.java.sip.communicator.SC_HOME_DIR_NAME" = "${homeDirName}";
-          "-Djava.util.logging.config.file" = "${pkgs.jigasi}/etc/jitsi/jigasi/logging.properties";
         };
       in
       {
-        description = "Jitsi Gateway to SIP";
-        wantedBy = [ "multi-user.target" ];
         after = [ "network.target" ];
+        description = "Jitsi Gateway to SIP";
+
+        environment.JAVA_SYS_PROPS = lib.concatStringsSep " " (
+          lib.mapAttrsToList (k: v: "${k}=${toString v}") jigasiProps
+        );
 
         preStart = ''
           [ -f "${sipCommunicatorPropertiesFile}" ] && rm -f "${sipCommunicatorPropertiesFile}"
@@ -189,9 +212,6 @@ in
         restartTriggers = [
           config.environment.etc."jitsi/jigasi/sip-communicator.properties".source
         ];
-        environment.JAVA_SYS_PROPS = lib.concatStringsSep " " (
-          lib.mapAttrsToList (k: v: "${k}=${toString v}") jigasiProps
-        );
 
         script = ''
           ${pkgs.jigasi}/bin/jigasi \
@@ -206,41 +226,39 @@ in
         '';
 
         serviceConfig = {
-          Type = "exec";
-
-          DynamicUser = true;
-          User = "jigasi";
-          Group = "jitsi-meet";
-
           CapabilityBoundingSet = "";
+          DynamicUser = true;
+          EnvironmentFile = cfg.environmentFile;
+          Group = "jitsi-meet";
+          LockPersonality = true;
           NoNewPrivileges = true;
-          ProtectSystem = "strict";
-          ProtectHome = true;
-          PrivateTmp = true;
           PrivateDevices = true;
-          ProtectHostname = true;
-          ProtectKernelTunables = true;
-          ProtectKernelModules = true;
+          PrivateTmp = true;
           ProtectControlGroups = true;
+          ProtectHome = true;
+          ProtectHostname = true;
+          ProtectKernelModules = true;
+          ProtectKernelTunables = true;
+          ProtectSystem = "strict";
+
           RestrictAddressFamilies = [
             "AF_INET"
             "AF_INET6"
             "AF_UNIX"
           ];
+
           RestrictNamespaces = true;
-          LockPersonality = true;
           RestrictRealtime = true;
           RestrictSUIDSGID = true;
           StateDirectory = baseNameOf stateDir;
-          EnvironmentFile = cfg.environmentFile;
+          Type = "exec";
+          User = "jigasi";
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
 
-    environment.etc."jitsi/jigasi/sip-communicator.properties".source = lib.mkDefault "${
-      sipCommunicatorPropertiesFile
-    }";
-    environment.etc."jitsi/jigasi/logging.properties".source =
-      lib.mkDefault "${stateDir}/logging.properties-journal";
+    users.groups.jitsi-meet = { };
   };
 
   meta.teams = [ lib.teams.jitsi ];

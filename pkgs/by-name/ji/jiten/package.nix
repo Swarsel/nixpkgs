@@ -1,20 +1,19 @@
 {
   lib,
   fetchFromGitHub,
-  python3,
   bash,
-  makeWrapper,
-  kanjidraw,
   installShellFiles,
-  pcre,
-  sqlite,
+  kanjidraw,
+  makeWrapper,
   nodejs,
+  pcre,
+  python3,
+  sqlite,
 }:
 
 python3.pkgs.buildPythonApplication rec {
   pname = "jiten";
   version = "1.1.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "obfusk";
@@ -23,38 +22,11 @@ python3.pkgs.buildPythonApplication rec {
     sha256 = "13bdx136sirbhxdhvpq5kf0r6q1xvm5zyzp454z51gy0v6rn0qrp";
   };
 
-  nonFreeData = fetchFromGitHub {
-    owner = "obfusk";
-    repo = "jiten-nonfree-data";
-    rev = "v${version}";
-    sha256 = "16sz8i0sw7ggy6kijcx4qyl2zr6xj789x4iav0yyllx12dfgp5b1";
-  };
-
   patches = [
     # Potentially can be dropped after the next release
     # https://github.com/NixOS/nixpkgs/issues/271600
     ./cookie-fix.patch
   ];
-
-  nativeBuildInputs = [
-    makeWrapper
-    installShellFiles
-  ];
-  buildInputs = [
-    pcre
-    sqlite
-  ];
-  propagatedBuildInputs = with python3.pkgs; [
-    click
-    flask
-    kanjidraw
-  ];
-  nativeCheckInputs = [ nodejs ];
-
-  preBuild = ''
-    export JITEN_VERSION=${version}   # override `git describe`
-    export JITEN_FINAL=yes            # build & package *.sqlite3
-  '';
 
   postPatch = ''
     rmdir nonfree-data
@@ -63,6 +35,29 @@ python3.pkgs.buildPythonApplication rec {
     substituteInPlace jiten/res/jmdict/Makefile \
       --replace /bin/bash ${bash}/bin/bash
   '';
+
+  nativeBuildInputs = [
+    makeWrapper
+    installShellFiles
+  ];
+
+  buildInputs = [
+    pcre
+    sqlite
+  ];
+
+  propagatedBuildInputs = with python3.pkgs; [
+    click
+    flask
+    kanjidraw
+  ];
+
+  preBuild = ''
+    export JITEN_VERSION=${version}   # override `git describe`
+    export JITEN_FINAL=yes            # build & package *.sqlite3
+  '';
+
+  nativeCheckInputs = [ nodejs ];
 
   checkPhase = ''
     make test
@@ -78,8 +73,18 @@ python3.pkgs.buildPythonApplication rec {
       --fish <(env _JITEN_COMPLETE=fish_source $out/bin/jiten)
   '';
 
+  format = "setuptools";
+
+  nonFreeData = fetchFromGitHub {
+    owner = "obfusk";
+    repo = "jiten-nonfree-data";
+    rev = "v${version}";
+    sha256 = "16sz8i0sw7ggy6kijcx4qyl2zr6xj789x4iav0yyllx12dfgp5b1";
+  };
+
   meta = {
     description = "Japanese android/cli/web dictionary based on jmdict/kanjidic";
+
     longDescription = ''
       Jiten is a Japanese dictionary based on JMDict/Kanjidic
 
@@ -118,12 +123,15 @@ python3.pkgs.buildPythonApplication rec {
 
       Command-line interface
     '';
+
     homepage = "https://github.com/obfusk/jiten";
+
     license = with lib.licenses; [
       agpl3Plus # code
       cc-by-sa-30 # jmdict/kanjidic
       unfreeRedistributable # pitch data & audio are non-commercial
     ];
+
     maintainers = [ lib.maintainers.obfusk ];
   };
 }

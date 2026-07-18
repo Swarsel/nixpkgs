@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
+  buildPythonPackage,
   fasteners,
+  hatchling,
   libcloud,
   pillow,
   pytestCheckHook,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "sqlalchemy-file";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jowilf";
@@ -23,13 +22,6 @@ buildPythonPackage rec {
     rev = version;
     hash = "sha256-gtW7YA/rQ48tnqPdypMnSqqtwb90nhAkiQNhgEr1M3I=";
   };
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    libcloud
-    sqlalchemy
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -44,6 +36,13 @@ buildPythonPackage rec {
     mkdir .storage
     export LOCAL_PATH="$PWD/.storage"
   '';
+
+  build-system = [ hatchling ];
+
+  dependencies = [
+    libcloud
+    sqlalchemy
+  ];
 
   disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
     # very flaky, sandbox issues?
@@ -60,6 +59,8 @@ buildPythonPackage rec {
     "tests/test_size_validator.py"
     "tests/test_sqlmodel.py"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "sqlalchemy_file"

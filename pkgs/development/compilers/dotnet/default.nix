@@ -7,16 +7,15 @@
 */
 {
   lib,
+  buildPackages,
   config,
   generateSplicesForMkScope,
   makeScopeWithSplicing',
-  writeScriptBin,
-  buildPackages,
   newScope,
+  writeScriptBin,
 }:
 
 makeScopeWithSplicing' {
-  otherSplices = generateSplicesForMkScope "dotnetCorePackages";
   f = (
     self:
     let
@@ -37,11 +36,11 @@ makeScopeWithSplicing' {
         };
 
       runtimeIdentifierMap = {
-        "x86_64-linux" = "linux-x64";
-        "aarch64-linux" = "linux-arm64";
         "aarch64-darwin" = "osx-arm64";
-        "x86_64-windows" = "win-x64";
+        "aarch64-linux" = "linux-arm64";
         "i686-windows" = "win-x86";
+        "x86_64-linux" = "linux-x64";
+        "x86_64-windows" = "win-x64";
       };
 
       # used to break cycle in attribute names
@@ -54,27 +53,25 @@ makeScopeWithSplicing' {
           buildDotnetSdk
           ;
 
+        addNuGetDeps = callPackage ../../../build-support/dotnet/add-nuget-deps { };
+        autoPatchcilHook = callPackage ../../../build-support/dotnet/auto-patchcil-hook { };
+        buildDotnetGlobalTool = callPackage ../../../build-support/dotnet/build-dotnet-global-tool { };
+        buildDotnetModule = callPackage ../../../build-support/dotnet/build-dotnet-module { };
+        combinePackages = attrs: callPackage (import ./combine-packages.nix attrs) { };
+
         generate-dotnet-sdk = writeScriptBin "generate-dotnet-sdk" (
           # Don't include current nixpkgs in the exposed version. We want to make the script runnable without nixpkgs repo.
           builtins.replaceStrings [ " -I nixpkgs=./." ] [ "" ] (builtins.readFile ./binary/update.sh)
         );
 
+        mkNugetDeps = callPackage ../../../build-support/dotnet/make-nuget-deps { };
+        mkNugetSource = callPackage ../../../build-support/dotnet/make-nuget-source { };
+        nugetPackageHook = callPackage ./nuget-package-hook.nix { };
+        patchNupkgs = buildPackages.callPackage ./patch-nupkgs.nix { };
+
         # Convert a "stdenv.hostPlatform.system" to a dotnet RID
         systemToDotnetRid =
           system: runtimeIdentifierMap.${system} or (throw "unsupported platform ${system}");
-
-        combinePackages = attrs: callPackage (import ./combine-packages.nix attrs) { };
-
-        patchNupkgs = buildPackages.callPackage ./patch-nupkgs.nix { };
-        nugetPackageHook = callPackage ./nuget-package-hook.nix { };
-        autoPatchcilHook = callPackage ../../../build-support/dotnet/auto-patchcil-hook { };
-
-        buildDotnetModule = callPackage ../../../build-support/dotnet/build-dotnet-module { };
-        buildDotnetGlobalTool = callPackage ../../../build-support/dotnet/build-dotnet-global-tool { };
-
-        mkNugetSource = callPackage ../../../build-support/dotnet/make-nuget-source { };
-        mkNugetDeps = callPackage ../../../build-support/dotnet/make-nuget-deps { };
-        addNuGetDeps = callPackage ../../../build-support/dotnet/add-nuget-deps { };
       };
 
     in
@@ -123,4 +120,6 @@ makeScopeWithSplicing' {
       ]
     )
   );
+
+  otherSplices = generateSplicesForMkScope "dotnetCorePackages";
 }

@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
-  installShellFiles,
+  buildGoModule,
   buildPackages,
+  installShellFiles,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,15 +18,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-khdD5wrTP7YSqnV5qhyvIIbOtx//eE+wgDu5y7pQ+NY=";
   };
 
-  vendorHash = "sha256-BXbT/WpLsythZc3JsMIjXlB+SbWv0HBS7tPRS1/tk4w=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-BXbT/WpLsythZc3JsMIjXlB+SbWv0HBS7tPRS1/tk4w=";
 
   postInstall =
     let
@@ -41,15 +34,23 @@ buildGoModule (finalAttrs: {
         --zsh  <(${emulator} $out/bin/nfpm completion zsh)
     '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version}"
+  ];
+
   meta = {
     description = "Simple deb and rpm packager written in Go";
     homepage = "https://github.com/goreleaser/nfpm";
     changelog = "https://github.com/goreleaser/nfpm/releases/tag/v${finalAttrs.version}";
+    license = with lib.licenses; [ mit ];
+
     maintainers = with lib.maintainers; [
       techknowlogick
       caarlos0
     ];
-    license = with lib.licenses; [ mit ];
+
     mainProgram = "nfpm";
   };
 })

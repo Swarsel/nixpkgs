@@ -2,27 +2,27 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  fetchpatch,
-  pkg-config,
-  cmake,
-  gettext,
   cairo,
-  pango,
+  cmake,
+  fetchpatch,
+  gettext,
   glib,
-  imlib2,
   gtk3,
-  libxinerama,
-  libxrender,
+  imlib2,
+  libpthread-stubs,
+  librsvg,
+  libstartup_notification,
+  libx11,
   libxcomposite,
   libxdamage,
-  libx11,
-  libxrandr,
-  librsvg,
-  libpthread-stubs,
   libxdmcp,
-  libstartup_notification,
-  wrapGAppsHook3,
+  libxinerama,
+  libxrandr,
+  libxrender,
+  pango,
+  pkg-config,
   versionCheckHook,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation rec {
@@ -41,15 +41,22 @@ stdenv.mkDerivation rec {
     # https://patchespromptly.com/glib2/
     # https://gitlab.com/nick87720z/tint2/-/issues/4
     (fetchpatch {
-      url = "https://gitlab.com/nick87720z/tint2/uploads/7de4501a4fa4fffa5ba8bb0fa3d19f78/glib.patch";
       hash = "sha256-K547KYlRkVl1s2THi3ZCRuM447EFJwTqUEBjKQnV8Sc=";
+      url = "https://gitlab.com/nick87720z/tint2/uploads/7de4501a4fa4fffa5ba8bb0fa3d19f78/glib.patch";
     })
     # https://gitlab.com/nick87720z/tint2/-/merge_requests/4
     ./fix-cmake-version.patch
   ];
 
-  # Fix build with gcc14
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isGNU "-Wno-error=incompatible-pointer-types";
+  postPatch = ''
+    # Add missing dependency on libm
+    # https://gitlab.com/nick87720z/tint2/-/merge_requests/3
+    substituteInPlace src/tint2conf/CMakeLists.txt \
+      --replace-fail "RSVG_LIBRARIES} )" "RSVG_LIBRARIES} m)"
+
+    substituteInPlace src/launcher/apps-common.c src/launcher/icon-theme-common.c \
+      --replace-fail /usr/share/ /run/current-system/sw/share/
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -80,25 +87,17 @@ stdenv.mkDerivation rec {
     "-Ddocdir=share/doc/${pname}"
   ];
 
-  postPatch = ''
-    # Add missing dependency on libm
-    # https://gitlab.com/nick87720z/tint2/-/merge_requests/3
-    substituteInPlace src/tint2conf/CMakeLists.txt \
-      --replace-fail "RSVG_LIBRARIES} )" "RSVG_LIBRARIES} m)"
-
-    substituteInPlace src/launcher/apps-common.c src/launcher/icon-theme-common.c \
-      --replace-fail /usr/share/ /run/current-system/sw/share/
-  '';
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  # Fix build with gcc14
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isGNU "-Wno-error=incompatible-pointer-types";
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
-    mainProgram = "tint2";
-    homepage = "https://gitlab.com/nick87720z/tint2";
     description = "Simple panel/taskbar unintrusive and light (memory, cpu, aestetic)";
+    homepage = "https://gitlab.com/nick87720z/tint2";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.linux;
+    mainProgram = "tint2";
   };
 }

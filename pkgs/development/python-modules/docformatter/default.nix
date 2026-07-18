@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   charset-normalizer,
-  untokenize,
   mock,
+  poetry-core,
   pytestCheckHook,
+  untokenize,
 }:
 
 buildPythonPackage rec {
   pname = "docformatter";
   version = "1.7.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "PyCQA";
@@ -28,16 +27,16 @@ buildPythonPackage rec {
       --subst-var-by docformatter $out/bin/docformatter
   '';
 
+  nativeCheckInputs = [
+    mock
+    pytestCheckHook
+  ];
+
   build-system = [ poetry-core ];
 
   dependencies = [
     charset-normalizer
     untokenize
-  ];
-
-  nativeCheckInputs = [
-    mock
-    pytestCheckHook
   ];
 
   disabledTests = [
@@ -46,14 +45,15 @@ buildPythonPackage rec {
     "test_detect_encoding_with_undetectable_encoding"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "docformatter" ];
 
   meta = {
-    changelog = "https://github.com/PyCQA/docformatter/blob/${src.tag}/CHANGELOG.md";
     description = "Formats docstrings to follow PEP 257";
-    mainProgram = "docformatter";
     homepage = "https://github.com/myint/docformatter";
+    changelog = "https://github.com/PyCQA/docformatter/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
+    mainProgram = "docformatter";
   };
 }

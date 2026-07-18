@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  cairo,
+  jack2,
+  liblo,
+  libsamplerate,
+  libsndfile,
   meson,
   ninja,
-  pkg-config,
-  jack2,
-  cairo,
-  liblo,
-  libsndfile,
-  libsamplerate,
   ntk,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,8 +40,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "http://openavproductions.com/luppp/"; # https does not work
     description = "Music creation tool, intended for live use";
+    homepage = "http://openavproductions.com/luppp/"; # https does not work
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ prusnak ];
     platforms = lib.platforms.linux;

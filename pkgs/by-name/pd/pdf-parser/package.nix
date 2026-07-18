@@ -1,19 +1,19 @@
 {
   lib,
-  python3Packages,
   fetchzip,
+  python3Packages,
   writeScript,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "pdf-parser";
   version = "0.7.14";
-  pyproject = false;
 
   src = fetchzip {
     url = "https://didierstevens.com/files/software/pdf-parser_V${
       lib.replaceStrings [ "." ] [ "_" ] finalAttrs.version
     }.zip";
+
     hash = "sha256-oAmTzkBxwrXXSSimaN1Uo4wP+7ySrmyJNb9jD2uWglA=";
   };
 
@@ -34,6 +34,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --replace-fail '/usr/bin/python' '${python3Packages.python}/bin/python'
   '';
 
+  pyproject = false;
+
   passthru.updateScript = writeScript "update-pdf-parser" ''
     #!/usr/bin/env nix-shell
     #!nix-shell -i bash -p common-updater-scripts curl pcre2
@@ -48,10 +50,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   meta = {
     description = "Parse a PDF document";
+
     longDescription = ''
       This tool will parse a PDF document to identify the fundamental elements used in the analyzed file.
       It will not render a PDF document.
     '';
+
     homepage = "https://blog.didierstevens.com/programs/pdf-tools/";
     license = lib.licenses.publicDomain;
     maintainers = with lib.maintainers; [ cbrxyz ];

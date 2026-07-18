@@ -1,19 +1,18 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  nix-update-script,
   ffmpeg-full,
-  gtk3,
-  pango,
   gobject-introspection,
+  gtk3,
+  nix-update-script,
+  pango,
+  python3Packages,
   wrapGAppsHook3,
 }:
 
 python3Packages.buildPythonApplication {
   pname = "escrotum";
   version = "1.0.1-unstable-2020-12-07";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Roger";
@@ -22,15 +21,28 @@ python3Packages.buildPythonApplication {
     sha256 = "sha256-z0AyTbOEE60j/883X17mxgoaVlryNtn0dfEB0C18G2s=";
   };
 
-  buildInputs = [
-    gtk3
-    pango
+  outputs = [
+    "out"
+    "man"
   ];
+
+  # Cannot find pango without strictDeps = false
+  strictDeps = false;
 
   nativeBuildInputs = [
     gobject-introspection
     wrapGAppsHook3
   ];
+
+  buildInputs = [
+    gtk3
+    pango
+  ];
+
+  postInstall = ''
+    mkdir -p $man/share/man/man1
+    cp man/escrotum.1 $man/share/man/man1/
+  '';
 
   build-system = with python3Packages; [
     setuptools
@@ -43,31 +55,19 @@ python3Packages.buildPythonApplication {
     numpy
   ];
 
-  # Cannot find pango without strictDeps = false
-  strictDeps = false;
-
-  outputs = [
-    "out"
-    "man"
-  ];
-
   makeWrapperArgs = [ "--prefix PATH : ${lib.makeBinPath [ ffmpeg-full ]}" ];
-
-  postInstall = ''
-    mkdir -p $man/share/man/man1
-    cp man/escrotum.1 $man/share/man/man1/
-  '';
+  pyproject = true;
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];
   };
 
   meta = {
-    homepage = "https://github.com/Roger/escrotum";
     description = "Linux screen capture using pygtk, inspired by scrot";
-    platforms = lib.platforms.linux;
-    maintainers = [ ];
+    homepage = "https://github.com/Roger/escrotum";
     license = lib.licenses.gpl3;
+    maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "escrotum";
   };
 }

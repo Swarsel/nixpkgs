@@ -1,13 +1,13 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  libxrender,
-  libxfixes,
-  libxdamage,
-  libxcomposite,
   libx11,
+  libxcomposite,
+  libxdamage,
+  libxfixes,
+  libxrender,
   pkgs,
-  lib,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "fastcompmgr";

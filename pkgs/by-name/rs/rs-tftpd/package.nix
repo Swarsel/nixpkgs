@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,9 +17,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-I49jiMcC9ndk8GuCKJE3+qS7F6V38meUdbtrxKJNhsg=";
-
   buildFeatures = [ "client" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -27,10 +25,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/altugbakan/rs-tftpd";
     changelog = "https://github.com/altugbakan/rs-tftpd/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       adamcstephens
       matthewcroughan
     ];
+
     mainProgram = "tftpd";
   };
 })

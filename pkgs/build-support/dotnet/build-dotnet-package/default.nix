@@ -1,24 +1,24 @@
 {
-  stdenv,
   lib,
-  makeWrapper,
-  pkg-config,
-  mono,
+  stdenv,
   dotnetbuildhelpers,
+  makeWrapper,
+  mono,
+  pkg-config,
 }:
 
 attrsOrig@{
   pname,
   version,
-  nativeBuildInputs ? [ ],
-  xBuildFiles ? [ ],
-  xBuildFlags ? [ "/p:Configuration=Release" ],
-  outputFiles ? [ "bin/Release/*" ],
   dllFiles ? [ "*.dll" ],
   exeFiles ? [ "*.exe" ],
   # Additional arguments to pass to the makeWrapper function, which wraps
   # generated binaries.
   makeWrapperArgs ? [ ],
+  nativeBuildInputs ? [ ],
+  outputFiles ? [ "bin/Release/*" ],
+  xBuildFiles ? [ ],
+  xBuildFlags ? [ "/p:Configuration=Release" ],
   ...
 }:
 let
@@ -34,16 +34,6 @@ let
       mono
     ]
     ++ nativeBuildInputs;
-
-    configurePhase = ''
-      runHook preConfigure
-
-      [ -z "''${dontPlacateNuget-}" ] && placate-nuget.sh
-      [ -z "''${dontPlacatePaket-}" ] && placate-paket.sh
-      [ -z "''${dontPatchFSharpTargets-}" ] && patch-fsharp-targets.sh
-
-      runHook postConfigure
-    '';
 
     buildPhase = ''
       runHook preBuild
@@ -67,8 +57,6 @@ let
 
       runHook postBuild
     '';
-
-    dontStrip = true;
 
     installPhase = ''
       runHook preInstall
@@ -120,6 +108,18 @@ let
 
       runHook postInstall
     '';
+
+    configurePhase = ''
+      runHook preConfigure
+
+      [ -z "''${dontPlacateNuget-}" ] && placate-nuget.sh
+      [ -z "''${dontPlacatePaket-}" ] && placate-paket.sh
+      [ -z "''${dontPatchFSharpTargets-}" ] && patch-fsharp-targets.sh
+
+      runHook postConfigure
+    '';
+
+    dontStrip = true;
   };
 in
 stdenv.mkDerivation (attrs // (removeAttrs attrsOrig [ "nativeBuildInputs" ]))

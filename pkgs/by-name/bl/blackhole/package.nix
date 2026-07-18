@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  xcbuildHook,
   apple-sdk,
   nix-update-script,
+  xcbuildHook,
   channel ? "256ch",
 }:
 let
@@ -27,16 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [ apple-sdk ];
 
-  bundleId = "audio.existential.BlackHole${channel}";
-  xcbuildFlags = [
-    "-project"
-    "BlackHole.xcodeproj"
-    "-configuration"
-    "Release"
-    "PRODUCT_BUNDLE_IDENTIFIER=${finalAttrs.bundleId}"
-    "GCC_PREPROCESSOR_DEFINITIONS=$GCC_PREPROCESSOR_DEFINITIONS kNumber_Of_Channels=${toString numChannels} kDriver_Name=\\\"BlackHole\\\" kPlugIn_BundleID=\\\"${finalAttrs.bundleId}\\\" kPlugIn_Icon=\\\"BlackHole.icns\\\""
-  ];
-
   installPhase = ''
     runHook preInstall
 
@@ -46,13 +36,24 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  bundleId = "audio.existential.BlackHole${channel}";
+
+  xcbuildFlags = [
+    "-project"
+    "BlackHole.xcodeproj"
+    "-configuration"
+    "Release"
+    "PRODUCT_BUNDLE_IDENTIFIER=${finalAttrs.bundleId}"
+    "GCC_PREPROCESSOR_DEFINITIONS=$GCC_PREPROCESSOR_DEFINITIONS kNumber_Of_Channels=${toString numChannels} kDriver_Name=\\\"BlackHole\\\" kPlugIn_BundleID=\\\"${finalAttrs.bundleId}\\\" kPlugIn_Icon=\\\"BlackHole.icns\\\""
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Virtual audio driver for macOS";
     homepage = "https://existential.audio/blackhole";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.darwin;
     maintainers = with lib.maintainers; [ eveeifyeve ];
+    platforms = lib.platforms.darwin;
   };
 })

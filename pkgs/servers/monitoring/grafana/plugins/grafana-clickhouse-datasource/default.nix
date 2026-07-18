@@ -1,13 +1,15 @@
-{ grafanaPlugin, lib }:
+{ lib, grafanaPlugin }:
 
 grafanaPlugin rec {
   pname = "grafana-clickhouse-datasource";
   version = "4.16.0";
+
   zipHash = {
-    x86_64-linux = "sha256-fmYrMoLMFSA/bG7db7IhEKcgYAd3ukRTZOtT6h0bCbw=";
-    aarch64-linux = "sha256-TTo85HkQrq6bbifAfG30BPVP72nqOYP9yaJ7INpBN1U=";
     aarch64-darwin = "sha256-NC5yVkrnD1J1LiDbSnKwNZsUOCShgfSZy8FuDnXpZWs=";
+    aarch64-linux = "sha256-TTo85HkQrq6bbifAfG30BPVP72nqOYP9yaJ7INpBN1U=";
+    x86_64-linux = "sha256-fmYrMoLMFSA/bG7db7IhEKcgYAd3ukRTZOtT6h0bCbw=";
   };
+
   meta = {
     description = "Connects Grafana to ClickHouse";
     license = lib.licenses.asl20;

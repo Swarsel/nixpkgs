@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  fetchsvn,
-  pkg-config,
   autoreconfHook,
   bison,
+  fetchsvn,
   flex,
   glib,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,12 +19,14 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "369";
     sha256 = "sha256-czwwhchTizfgVmeknQGLijYgaFSP/45pD2yhDKj5BKw=";
   };
+
   nativeBuildInputs = [
     pkg-config
     autoreconfHook
     bison # For yacc
     flex
   ];
+
   buildInputs = [
     glib
   ];
@@ -33,7 +35,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Command-line Linux utility that efficiently directs mail synchronization between a pair of mailboxes";
     homepage = "https://mswatch.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ doronbehar ];
+    platforms = lib.platforms.linux;
   };
 })

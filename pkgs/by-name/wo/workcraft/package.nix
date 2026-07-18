@@ -17,8 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  dontConfigure = true;
-
   installPhase = ''
     mkdir -p $out/share
     cp -r * $out/share
@@ -28,12 +26,14 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix _JAVA_OPTIONS " " "-Dawt.useSystemAAFontSettings=gasp";
   '';
 
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://workcraft.org/";
     description = "Framework for interpreted graph modeling, verification and synthesis";
-    mainProgram = "workcraft";
-    platforms = lib.platforms.linux;
+    homepage = "https://workcraft.org/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ timor ];
+    platforms = lib.platforms.linux;
+    mainProgram = "workcraft";
   };
 })

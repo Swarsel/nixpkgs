@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   fetchpatch,
 }:
 
@@ -20,16 +20,16 @@ buildGoModule (finalAttrs: {
     # go 1.19 support
     # https://github.com/asciimoo/wuzz/pull/146
     (fetchpatch {
-      url = "https://github.com/asciimoo/wuzz/commit/bb4c4fff794f160920df1d3b87541b28f071862c.patch";
       hash = "sha256-nbgwmST36nB5ia3mgZvkwAVqJfznvFnNyzdoyo51kLg=";
+      url = "https://github.com/asciimoo/wuzz/commit/bb4c4fff794f160920df1d3b87541b28f071862c.patch";
     })
   ];
 
   vendorHash = "sha256-oIm6DWSs6ZDKi6joxydguSXxqtGyKP21cmWtz8MkeIQ=";
 
   meta = {
-    homepage = "https://github.com/asciimoo/wuzz";
     description = "Interactive cli tool for HTTP inspection";
+    homepage = "https://github.com/asciimoo/wuzz";
     license = lib.licenses.agpl3Only;
     mainProgram = "wuzz";
   };

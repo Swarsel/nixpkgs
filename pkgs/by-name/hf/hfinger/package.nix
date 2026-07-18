@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "hfinger";
   version = "0.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "CERT-Polska";
@@ -33,6 +32,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   # Project has no tests
   doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "hfinger"
@@ -40,10 +40,10 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   meta = {
     description = "Fingerprinting tool for HTTP requests";
-    mainProgram = "hfinger";
     homepage = "https://github.com/CERT-Polska/hfinger";
     changelog = "https://github.com/CERT-Polska/hfinger/releases/tag/v${finalAttrs.version}";
     license = with lib.licenses; [ gpl3Only ];
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "hfinger";
   };
 })

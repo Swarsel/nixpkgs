@@ -1,8 +1,6 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  makeWrapper,
   bash,
   coreutils,
   diffutils,
@@ -10,7 +8,9 @@
   gnugrep,
   gnused,
   host,
+  makeWrapper,
   netcat-openbsd,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -50,10 +50,10 @@ stdenvNoCC.mkDerivation {
 
   meta = {
     description = "Detect if a domain uses DNS and/or HTTP Load-Balancing";
-    mainProgram = "lbd";
     homepage = "https://github.com/D3vil0p3r/lbd";
+    license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.gpl2Plus;
+    mainProgram = "lbd";
   };
 }

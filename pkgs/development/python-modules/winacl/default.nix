@@ -9,20 +9,17 @@
 buildPythonPackage rec {
   pname = "winacl";
   version = "0.1.9";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-r3DC7DAXi/njyKHEjCXoeBI1/iwbMhrbRuLyrh+NSqs=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ cryptography ];
-
   # Project doesn't have tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ cryptography ];
+  pyproject = true;
   pythonImportsCheck = [ "winacl" ];
 
   meta = {

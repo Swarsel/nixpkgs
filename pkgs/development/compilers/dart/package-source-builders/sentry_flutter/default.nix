@@ -4,21 +4,21 @@
   fetchFromGitHub,
 }:
 
-{ version, src, ... }:
+{ src, version, ... }:
 
 let
   sentry-native = fetchFromGitHub {
+    fetchSubmodules = true;
+    hash = "sha256-1jyJGiIrX0TsRDzAeg3IuE1Vf5STAaG8JVxdbmPMXGQ=";
     owner = "getsentry";
     repo = "sentry-native";
     tag = "0.9.1";
-    fetchSubmodules = true;
-    hash = "sha256-1jyJGiIrX0TsRDzAeg3IuE1Vf5STAaG8JVxdbmPMXGQ=";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "sentry_flutter";
   inherit version src;
   inherit (src) passthru;
+  pname = "sentry_flutter";
 
   postPatch = lib.optionalString (lib.versionAtLeast version "8.10.0") ''
     sed -i "s|GIT_REPOSITORY.*|SOURCE_DIR "${sentry-native}"|" sentry-native/sentry-native.cmake

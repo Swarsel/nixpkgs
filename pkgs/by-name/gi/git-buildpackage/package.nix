@@ -1,24 +1,21 @@
 {
   lib,
   stdenv,
-
-  coreutils,
   fetchFromGitHub,
-  nix-update-script,
-  python3Packages,
-
+  coreutils,
   # nativeCheckInputs
   debian-devscripts,
   dpkg,
   gitMinimal,
   gitSetupHook,
   man,
+  nix-update-script,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "git-buildpackage";
   version = "0.9.39";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "agx";
@@ -33,20 +30,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     --replace-fail "/bin/true" "${lib.getExe' coreutils "true"}" \
     --replace-fail "/bin/false" "${lib.getExe' coreutils "false"}"
   '';
-
-  build-system = [
-    python3Packages.setuptools
-  ];
-
-  dependencies = with python3Packages; [
-    python-dateutil
-    pyyaml
-    rpm
-  ];
-
-  pythonImportsCheck = [
-    "gbp"
-  ];
 
   # don't add pytest and pytest-cov to setup_requires
   env.WITHOUT_PYTESTS = true;
@@ -63,6 +46,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pytestCheckHook
   ]);
 
+  build-system = [
+    python3Packages.setuptools
+  ];
+
+  dependencies = with python3Packages; [
+    python-dateutil
+    pyyaml
+    rpm
+  ];
+
   disabledTests = [
     # gbp.command_wrappers.CommandExecFailed:
     # Couldn't commit to 'pristine-tar' with upstream 'upstream':
@@ -78,6 +71,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     # Cannot create Git repository at '/does/not/exist':
     # [Errno 30] Read-only file system: '/does'
     "tests.doctests.test_GitRepository.test_create_noperm"
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "gbp"
   ];
 
   passthru.updateScript = nix-update-script {

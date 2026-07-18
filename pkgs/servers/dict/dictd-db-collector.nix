@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   dict,
   libfaketime,
 }:
@@ -80,12 +80,10 @@
   in
 
   stdenv.mkDerivation {
-    name = "dictd-dbs";
-
+    inherit installPhase;
     nativeBuildInputs = [ libfaketime ];
     buildInputs = [ dict ];
-
     dontUnpack = true;
-    inherit installPhase;
+    name = "dictd-dbs";
   }
 )

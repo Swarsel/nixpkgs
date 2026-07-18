@@ -1,12 +1,12 @@
 {
   lib,
-  flutter341,
   fetchFromGitHub,
+  _experimental-update-script-combinators,
+  dart,
+  flutter341,
+  gitUpdater,
   runCommand,
   yq-go,
-  _experimental-update-script-combinators,
-  gitUpdater,
-  dart,
 }:
 
 let
@@ -20,18 +20,16 @@ let
   };
 in
 flutter341.buildFlutterApplication {
-  pname = "butterfly";
   inherit version src;
-
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
-
-  sourceRoot = "${src.name}/app";
-
-  gitHashes = lib.importJSON ./git-hashes.json;
+  pname = "butterfly";
 
   postInstall = ''
     cp -r linux/debian/usr/share $out/share
   '';
+
+  gitHashes = lib.importJSON ./git-hashes.json;
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
+  sourceRoot = "${src.name}/app";
 
   passthru = {
     pubspecSource =
@@ -43,6 +41,7 @@ flutter341.buildFlutterApplication {
         ''
           yq eval --output-format=json --prettyPrint $src/app/pubspec.lock > "$out"
         '';
+
     updateScript = _experimental-update-script-combinators.sequence [
       (
         (gitUpdater {
@@ -67,6 +66,7 @@ flutter341.buildFlutterApplication {
           "--output"
           ./git-hashes.json
         ];
+
         supportedFeatures = [ ];
       }
     ];
@@ -75,16 +75,20 @@ flutter341.buildFlutterApplication {
   meta = {
     description = "Note taking app where your ideas come first";
     homepage = "https://github.com/LinwoodDev/Butterfly";
-    mainProgram = "butterfly";
+
     license = with lib.licenses; [
       agpl3Plus
       cc-by-sa-40
       asl20
     ];
+
     maintainers = [ ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ];
+
+    mainProgram = "butterfly";
   };
 }

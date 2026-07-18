@@ -1,19 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
+  buildPythonPackage,
   nose2,
+  pythonAtLeast,
   typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "dataclass-factory";
   version = "2.16";
-  format = "setuptools";
-
-  # upstream 2.x branch abandoned since 2022; v3 was renamed to adaptix
-  disabled = pythonAtLeast "3.14";
 
   src = fetchFromGitHub {
     owner = "reagento";
@@ -23,10 +19,7 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ nose2 ];
-
   checkInputs = [ typing-extensions ];
-
-  pythonImportsCheck = [ "dataclass_factory" ];
 
   checkPhase = ''
     runHook preCheck
@@ -35,6 +28,11 @@ buildPythonPackage rec {
 
     runHook postCheck
   '';
+
+  # upstream 2.x branch abandoned since 2022; v3 was renamed to adaptix
+  disabled = pythonAtLeast "3.14";
+  format = "setuptools";
+  pythonImportsCheck = [ "dataclass_factory" ];
 
   meta = {
     description = "Modern way to convert python dataclasses or other objects to and from more common types like dicts or json-like structures";

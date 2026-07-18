@@ -12,12 +12,11 @@
 buildPythonPackage rec {
   pname = "netapp-ontap";
   version = "9.17.1.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "netapp_ontap";
     inherit version;
     hash = "sha256-bzDGsKCEH3oszuz4OKnOg7WTMQTnJAGh7POmGhRCyzc=";
+    pname = "netapp_ontap";
   };
 
   postPatch = ''
@@ -25,6 +24,8 @@ buildPythonPackage rec {
       --replace-fail 'marshmallow>=3.21.3,<4.0.0' 'marshmallow>=3.21.3'
   '';
 
+  # No tests in sdist and no other download available
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,9 +35,7 @@ buildPythonPackage rec {
     urllib3
   ];
 
-  # No tests in sdist and no other download available
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "netapp_ontap" ];
 
   meta = {

@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "pandoc-eqnos";
   version = "2.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tomduck";
@@ -21,9 +20,9 @@ python3Packages.buildPythonApplication rec {
   ];
 
   propagatedBuildInputs = with python3Packages; [ pandoc-xnos ];
-
   # Different pandoc executables are not available
   doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "Standalone pandoc filter from the pandoc-xnos suite for numbering equations and equation references";

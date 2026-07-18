@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,6 +16,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-VVa77h0mgWLEuL2+Q3qre5V71kbBaWaugNN9TcTC8y0=";
+  doCheck = false;
 
   ldflags = [
     "-s"
@@ -24,13 +25,11 @@ buildGoModule (finalAttrs: {
     "-X main.revision=${finalAttrs.src.rev}"
   ];
 
-  doCheck = false;
-
   meta = {
-    homepage = "https://github.com/sqls-server/sqls";
     description = "SQL language server written in Go";
-    mainProgram = "sqls";
+    homepage = "https://github.com/sqls-server/sqls";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ vinnymeller ];
+    mainProgram = "sqls";
   };
 })

@@ -36,40 +36,47 @@ in
     services.miniupnpd = {
       enable = mkEnableOption "MiniUPnP daemon";
 
+      appendConfig = mkOption {
+        default = "";
+
+        description = ''
+          Configuration lines appended to the MiniUPnP config.
+        '';
+
+        type = types.lines;
+      };
+
       externalInterface = mkOption {
-        type = types.str;
         description = ''
           Name of the external interface.
         '';
+
+        type = types.str;
       };
 
       internalIPs = mkOption {
-        type = types.listOf types.str;
+        description = ''
+          The IP address ranges to listen on.
+        '';
+
         example = [
           "192.168.1.1/24"
           "enp1s0"
         ];
-        description = ''
-          The IP address ranges to listen on.
-        '';
+
+        type = types.listOf types.str;
       };
 
       natpmp = mkEnableOption "NAT-PMP support";
 
       upnp = mkOption {
         default = true;
-        type = types.bool;
+
         description = ''
           Whether to enable UPNP support.
         '';
-      };
 
-      appendConfig = mkOption {
-        type = types.lines;
-        default = "";
-        description = ''
-          Configuration lines appended to the MiniUPnP config.
-        '';
+        type = types.bool;
       };
     };
   };
@@ -94,7 +101,6 @@ in
     networking.nftables = lib.mkIf (firewall == "nftables") {
       # see nft_init in ${miniupnpd-nftables}/etc/miniupnpd
       tables.miniupnpd = {
-        family = "inet";
         # The following is omitted because it's expected that the firewall is to be responsible for it.
         #
         # chain forward {
@@ -118,18 +124,22 @@ in
             type nat hook postrouting priority srcnat; policy accept;
           }
         '';
+
+        family = "inet";
       };
     };
 
     systemd.services.miniupnpd = {
-      description = "MiniUPnP daemon";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "MiniUPnP daemon";
+
       serviceConfig = {
         ExecStart = "${miniupnpd}/bin/miniupnpd -f ${configFile}";
         PIDFile = "/run/miniupnpd.pid";
         Type = "forking";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

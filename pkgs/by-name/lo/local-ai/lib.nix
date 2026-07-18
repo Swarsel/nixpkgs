@@ -1,8 +1,8 @@
 {
   lib,
-  writers,
-  writeText,
   linkFarmFromDrvs,
+  writeText,
+  writers,
 }:
 {
   genModels =

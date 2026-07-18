@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   bluepy,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "btlewrap";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ChristianKuehnel";
@@ -19,13 +18,8 @@ buildPythonPackage rec {
     hash = "sha256-cjPj+Uw/L9kq/BbxlnOCJtaBcnf9VOJKN2NJ3cmKe6U=";
   };
 
-  build-system = [ setuptools ];
-
-  optional-dependencies = {
-    bluepy = [ bluepy ];
-  };
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
 
   disabledTestPaths = [
     # Require optional dependencies or hardware
@@ -35,6 +29,11 @@ buildPythonPackage rec {
     "test/unit_tests/test_available_backends.py"
   ];
 
+  optional-dependencies = {
+    bluepy = [ bluepy ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "btlewrap" ];
 
   meta = {

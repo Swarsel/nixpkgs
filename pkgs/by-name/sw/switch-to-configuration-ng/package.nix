@@ -1,8 +1,8 @@
 {
+  lib,
   buildPackages,
   clippy,
   dbus,
-  lib,
   nixosTests,
   pkg-config,
   rustPlatform,
@@ -11,14 +11,10 @@
 rustPlatform.buildRustPackage {
   pname = "switch-to-configuration";
   version = "0.1.0";
-
   src = builtins.filterSource (name: _: !(lib.hasSuffix ".nix" name)) ./.;
-
-  cargoLock.lockFile = ./Cargo.lock;
-
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ dbus ];
-
+  cargoLock.lockFile = ./Cargo.lock;
   env.SYSTEMD_DBUS_INTERFACE_DIR = "${buildPackages.systemd}/share/dbus-1/interfaces";
 
   nativeCheckInputs = [
@@ -34,8 +30,8 @@ rustPlatform.buildRustPackage {
 
   meta = {
     description = "NixOS switch-to-configuration program";
-    mainProgram = "switch-to-configuration";
-    maintainers = with lib.maintainers; [ jmbaur ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ jmbaur ];
+    mainProgram = "switch-to-configuration";
   };
 }

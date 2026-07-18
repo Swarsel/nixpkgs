@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
   nix-update-script,
 }:
 
@@ -23,14 +23,13 @@ stdenv.mkDerivation (finalAttrs: {
     # ref. https://github.com/cnr-isti-vclab/corto/pull/47
     # merged upstream
     (fetchpatch {
+      hash = "sha256-imJfQ8JEhCcSkkO35N7Z3NtGElCyVxENPMDMWfNqdW0=";
       name = "cmake-exports.patch";
       url = "https://github.com/cnr-isti-vclab/corto/commit/169356e97b29587b278822118aef34ed742b6b37.patch";
-      hash = "sha256-imJfQ8JEhCcSkkO35N7Z3NtGElCyVxENPMDMWfNqdW0=";
     })
   ];
 
   nativeBuildInputs = [ cmake ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

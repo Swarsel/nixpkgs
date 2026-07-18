@@ -1,13 +1,12 @@
 {
   buildDunePackage,
-  ocaml_pcre,
   mparser,
+  ocaml_pcre,
 }:
 
 buildDunePackage {
-  pname = "mparser-pcre";
-
   inherit (mparser) src version;
+  pname = "mparser-pcre";
 
   propagatedBuildInputs = [
     ocaml_pcre

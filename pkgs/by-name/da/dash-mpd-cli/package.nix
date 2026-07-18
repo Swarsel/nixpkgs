@@ -1,17 +1,17 @@
 {
   lib,
-  stdenvNoCC,
-  rustPlatform,
   fetchFromGitHub,
-  makeWrapper,
   bento4,
-  protobuf,
   ffmpeg,
   gpac,
   libxslt,
-  shaka-packager,
+  makeWrapper,
   nix-update-script,
+  protobuf,
   runCommand,
+  rustPlatform,
+  shaka-packager,
+  stdenvNoCC,
   versionCheckHook,
 }:
 
@@ -34,15 +34,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-IPWbS3kIn3rC1s7nJe3Q94scuW87LaQn5KAhXTYvWGg=";
   };
 
-  cargoHash = "sha256-MmZwiH1Qzb5MiwhEYsCVo4xD5YmJ+mObpkgc6J0sfuw=";
-
-  __structuredAttrs = true;
-
   nativeBuildInputs = [
     makeWrapper
     protobuf
   ];
 
+  cargoHash = "sha256-MmZwiH1Qzb5MiwhEYsCVo4xD5YmJ+mObpkgc6J0sfuw=";
   # The tests depend on network access.
   doCheck = false;
 
@@ -60,23 +57,24 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   doInstallCheck = true;
-
   nativeInstallCheckInputs = [ versionCheckHook ];
-
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Download media content from a DASH-MPEG or DASH-WebM MPD manifest";
+
     longDescription = ''
       A commandline application for downloading media content from a DASH MPD
       file, as used for on-demand replay of TV content and video streaming
       services.
     '';
+
     homepage = "https://emarsden.github.io/dash-mpd-cli/";
-    downloadPage = "https://github.com/emarsden/dash-mpd-cli/releases";
     changelog = "https://github.com/emarsden/dash-mpd-cli/blob/main/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ al3xtjames ];
     mainProgram = "dash-mpd-cli";
+    downloadPage = "https://github.com/emarsden/dash-mpd-cli/releases";
   };
 })

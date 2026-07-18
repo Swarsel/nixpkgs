@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pass-wayland,
   coreutils,
+  findutils,
   gnugrep,
   libnotify,
-  pwgen,
-  findutils,
   makeWrapper,
+  pass-wayland,
+  pwgen,
   wl-clipboard,
-  wtype,
   wofi,
+  wtype,
   extensions ? exts: [ ],
 }:
 
@@ -41,12 +41,12 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  dontBuild = true;
-
   installPhase = ''
     install -Dm755 wofi-pass -t $out/bin
     install -Dm755 wofi-pass.conf -t $out/share/doc/wofi-pass/wofi-pass.conf
   '';
+
+  dontBuild = true;
 
   fixupPhase = ''
     patchShebangs $out/bin
@@ -58,8 +58,8 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Script to make wofi work with password-store";
     homepage = "https://github.com/schmidtandreas/wofi-pass";
-    maintainers = with lib.maintainers; [ akechishiro ];
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ akechishiro ];
     platforms = with lib.platforms; linux;
     mainProgram = "wofi-pass";
   };

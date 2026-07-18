@@ -1,17 +1,15 @@
 {
-  bundlerEnv,
-  ruby,
   lib,
+  bundlerEnv,
   bundlerUpdateScript,
+  ruby,
 }:
 
 bundlerEnv rec {
+  inherit ruby;
   pname = "html-proofer";
   version = (import ./gemset.nix).html-proofer.version;
-
-  inherit ruby;
   gemdir = ./.;
-
   passthru.updateScript = bundlerUpdateScript pname;
 
   meta = {

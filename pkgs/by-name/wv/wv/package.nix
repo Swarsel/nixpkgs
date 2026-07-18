@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  zlib,
-  imagemagick,
-  libpng,
-  glib,
-  pkg-config,
-  libgsf,
-  libxml2,
-  bzip2,
   autoreconfHook,
   buildPackages,
+  bzip2,
+  glib,
+  imagemagick,
+  libgsf,
+  libpng,
+  libxml2,
+  pkg-config,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,10 +25,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-xcC+/M1EzFqQFeF5Dw9qd8VIy7r8JdKMp2X/GHkFiPA=";
   };
 
+  # autoreconfHook fails hard if these two files do not exist.
+  # The extra move is to work around case-insensitive filesystems.
+  postPatch = ''
+    touch AUTHORS
+    mv CHANGELOG ChangeLog~ && mv ChangeLog~ ChangeLog
+  '';
+
   nativeBuildInputs = [
     pkg-config
     autoreconfHook
   ];
+
   buildInputs = [
     zlib
     imagemagick
@@ -48,21 +56,13 @@ stdenv.mkDerivation (finalAttrs: {
     lib.optionalString stdenv.cc.isClang
       "-Wno-error=incompatible-function-pointer-types -Wno-error=int-conversion";
 
+  enableParallelBuilding = true;
   hardeningDisable = [ "format" ];
 
-  enableParallelBuilding = true;
-
-  # autoreconfHook fails hard if these two files do not exist.
-  # The extra move is to work around case-insensitive filesystems.
-  postPatch = ''
-    touch AUTHORS
-    mv CHANGELOG ChangeLog~ && mv ChangeLog~ ChangeLog
-  '';
-
   meta = {
-    homepage = "https://github.com/AbiWord/wv";
     description = "Converter from Microsoft Word formats to human-editable ones";
-    platforms = lib.platforms.unix;
+    homepage = "https://github.com/AbiWord/wv";
     license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.unix;
   };
 })

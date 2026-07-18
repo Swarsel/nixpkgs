@@ -17,27 +17,6 @@ let
 
   nutFormat = {
 
-    type =
-      with lib.types;
-      let
-
-        singleAtom =
-          nullOr (oneOf [
-            bool
-            int
-            float
-            str
-          ])
-          // {
-            description = "atom (null, bool, int, float or string)";
-          };
-
-      in
-      attrsOf (oneOf [
-        singleAtom
-        (listOf (nonEmptyListOf singleAtom))
-      ]);
-
     generate =
       name: value:
       let
@@ -66,10 +45,31 @@ let
       in
       pkgs.writeText name (
         lib.generators.toKeyValue {
-          mkKeyValue = lib.generators.mkKeyValueDefault { inherit mkValueString; } " ";
           listsAsDuplicateKeys = true;
+          mkKeyValue = lib.generators.mkKeyValueDefault { inherit mkValueString; } " ";
         } normalizedValue
       );
+
+    type =
+      with lib.types;
+      let
+
+        singleAtom =
+          nullOr (oneOf [
+            bool
+            int
+            float
+            str
+          ])
+          // {
+            description = "atom (null, bool, int, float or string)";
+          };
+
+      in
+      attrsOf (oneOf [
+        singleAtom
+        (listOf (nonEmptyListOf singleAtom))
+      ]);
 
   };
 
@@ -112,41 +112,43 @@ let
   );
 
   upsOptions =
-    { name, config, ... }:
+    { config, name, ... }:
     {
       options = {
+        description = lib.mkOption {
+          default = "";
+
+          description = ''
+            Description of the UPS.
+          '';
+
+          type = lib.types.str;
+        };
+
+        directives = lib.mkOption {
+          default = [ ];
+
+          description = ''
+            List of configuration directives for this UPS.
+          '';
+
+          type = lib.types.listOf lib.types.str;
+        };
+
         # This can be inferred from the UPS model by looking at
         # /nix/store/nut/share/driver.list
         driver = lib.mkOption {
-          type = lib.types.str;
           description = ''
             Specify the program to run to talk to this UPS.  apcsmart,
             bestups, and sec are some examples.
           '';
-        };
 
-        port = lib.mkOption {
           type = lib.types.str;
-          description = ''
-            The serial port to which your UPS is connected.  /dev/ttyS0 is
-            usually the first port on Linux boxes, for example.
-          '';
-        };
-
-        shutdownOrder = lib.mkOption {
-          default = 0;
-          type = lib.types.int;
-          description = ''
-            When you have multiple UPSes on your system, you usually need to
-            turn them off in a certain order.  upsdrvctl shuts down all the
-            0s, then the 1s, 2s, and so on.  To exclude a UPS from the
-            shutdown sequence, set this to -1.
-          '';
         };
 
         maxStartDelay = lib.mkOption {
           default = null;
-          type = lib.types.uniq (lib.types.nullOr lib.types.int);
+
           description = ''
             This can be set as a global variable above your first UPS
             definition and it can also be set in a UPS section.  This value
@@ -154,30 +156,40 @@ let
             starting.  This keeps your system from getting stuck due to a
             broken driver or UPS.
           '';
+
+          type = lib.types.uniq (lib.types.nullOr lib.types.int);
         };
 
-        description = lib.mkOption {
-          default = "";
+        port = lib.mkOption {
+          description = ''
+            The serial port to which your UPS is connected.  /dev/ttyS0 is
+            usually the first port on Linux boxes, for example.
+          '';
+
           type = lib.types.str;
-          description = ''
-            Description of the UPS.
-          '';
         };
 
-        directives = lib.mkOption {
-          default = [ ];
-          type = lib.types.listOf lib.types.str;
+        shutdownOrder = lib.mkOption {
+          default = 0;
+
           description = ''
-            List of configuration directives for this UPS.
+            When you have multiple UPSes on your system, you usually need to
+            turn them off in a certain order.  upsdrvctl shuts down all the
+            0s, then the 1s, 2s, and so on.  To exclude a UPS from the
+            shutdown sequence, set this to -1.
           '';
+
+          type = lib.types.int;
         };
 
         summary = lib.mkOption {
           default = "";
-          type = lib.types.lines;
+
           description = ''
             Lines which would be added inside ups.conf for handling this UPS.
           '';
+
+          type = lib.types.lines;
         };
 
       };
@@ -200,20 +212,23 @@ let
   listenOptions = {
     options = {
       address = lib.mkOption {
-        type = lib.types.str;
         description = ''
           Address of the interface for `upsd` to listen on.
           See `man upsd.conf` for details.
         '';
+
+        type = lib.types.str;
       };
 
       port = lib.mkOption {
-        type = lib.types.port;
         default = defaultPort;
+
         description = ''
           TCP port for `upsd` to listen on.
           See `man upsd.conf` for details.
         '';
+
+        type = lib.types.port;
       };
     };
   };
@@ -221,14 +236,29 @@ let
   upsdOptions = {
     options = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         defaultText = lib.literalMD "`true` if `mode` is one of `standalone`, `netserver`";
         description = "Whether to enable `upsd`.";
+        type = lib.types.bool;
+      };
+
+      extraConfig = lib.mkOption {
+        default = "";
+
+        description = ''
+          Additional lines to add to `upsd.conf`.
+        '';
+
+        type = lib.types.lines;
       };
 
       listen = lib.mkOption {
-        type = with lib.types; listOf (submodule listenOptions);
         default = [ ];
+
+        description = ''
+          Address of the interface for `upsd` to listen on.
+          See `man upsd` for details`.
+        '';
+
         example = [
           {
             address = "192.168.50.1";
@@ -238,18 +268,8 @@ let
             port = 5923;
           }
         ];
-        description = ''
-          Address of the interface for `upsd` to listen on.
-          See `man upsd` for details`.
-        '';
-      };
 
-      extraConfig = lib.mkOption {
-        type = lib.types.lines;
-        default = "";
-        description = ''
-          Additional lines to add to `upsd.conf`.
-        '';
+        type = with lib.types; listOf (submodule listenOptions);
       };
     };
 
@@ -264,53 +284,62 @@ let
   };
 
   monitorOptions =
-    { name, config, ... }:
+    { config, name, ... }:
     {
       options = {
-        system = lib.mkOption {
-          type = lib.types.str;
-          default = name;
-          description = ''
-            Identifier of the UPS to monitor, in this form: `<upsname>[@<hostname>[:<port>]]`
-            See `upsmon.conf` for details.
-          '';
-        };
-
-        powerValue = lib.mkOption {
-          type = lib.types.int;
-          default = 1;
-          description = ''
-            Number of power supplies that the UPS feeds on this system.
-            See `upsmon.conf` for details.
-          '';
-        };
-
-        user = lib.mkOption {
-          type = lib.types.str;
-          description = ''
-            Username from `upsd.users` for accessing this UPS.
-            See `upsmon.conf` for details.
-          '';
-        };
-
         passwordFile = lib.mkOption {
-          type = lib.types.str;
           defaultText = lib.literalMD "power.ups.users.\${user}.passwordFile";
+
           description = ''
             The full path to a file containing the password from
             `upsd.users` for accessing this UPS. The password file
             is read on service start.
             See `upsmon.conf` for details.
           '';
+
+          type = lib.types.str;
+        };
+
+        powerValue = lib.mkOption {
+          default = 1;
+
+          description = ''
+            Number of power supplies that the UPS feeds on this system.
+            See `upsmon.conf` for details.
+          '';
+
+          type = lib.types.int;
+        };
+
+        system = lib.mkOption {
+          default = name;
+
+          description = ''
+            Identifier of the UPS to monitor, in this form: `<upsname>[@<hostname>[:<port>]]`
+            See `upsmon.conf` for details.
+          '';
+
+          type = lib.types.str;
         };
 
         type = lib.mkOption {
-          type = lib.types.str;
           default = "master";
+
           description = ''
             The relationship with `upsd`.
             See `upsmon.conf` for details.
           '';
+
+          type = lib.types.str;
+        };
+
+        user = lib.mkOption {
+          description = ''
+            Username from `upsd.users` for accessing this UPS.
+            See `upsmon.conf` for details.
+          '';
+
+          type = lib.types.str;
         };
       };
 
@@ -322,39 +351,35 @@ let
   upsmonOptions = {
     options = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         defaultText = lib.literalMD "`true` if `mode` is one of `standalone`, `netserver`, `netclient`";
         description = "Whether to enable `upsmon`.";
+        type = lib.types.bool;
       };
 
-      user = lib.mkOption {
-        type = lib.types.str;
-        default = "nutmon";
-        description = ''
-          User to run `upsmon` as. `upsmon.conf` will have its owner set to this
-          user. If not specified, a default user will be created.
-        '';
-      };
       group = lib.mkOption {
-        type = lib.types.str;
         default = "nutmon";
+
         description = ''
           Group for the default `nutmon` user. If the default user is created
           and this is not specified, a default group will be created.
         '';
+
+        type = lib.types.str;
       };
 
       monitor = lib.mkOption {
-        type = with lib.types; attrsOf (submodule monitorOptions);
         default = { };
+
         description = ''
           Set of UPS to monitor. See `man upsmon.conf` for details.
         '';
+
+        type = with lib.types; attrsOf (submodule monitorOptions);
       };
 
       settings = lib.mkOption {
-        type = nutFormat.type;
         default = { };
+
         defaultText = lib.literalMD ''
           {
             MINSUPPLIES = 1;
@@ -364,7 +389,9 @@ let
             SHUTDOWNCMD = "''${pkgs.systemd}/bin/shutdown now";
           }
         '';
+
         description = "Additional settings to add to `upsmon.conf`.";
+
         example = lib.literalMD ''
           {
             MINSUPPLIES = 2;
@@ -374,6 +401,19 @@ let
             ];
           }
         '';
+
+        type = nutFormat.type;
+      };
+
+      user = lib.mkOption {
+        default = "nutmon";
+
+        description = ''
+          User to run `upsmon` as. `upsmon.conf` will have its owner set to this
+          user. If not specified, a default user will be created.
+        '';
+
+        type = lib.types.str;
       };
     };
 
@@ -385,8 +425,10 @@ let
           "netclient"
         ]
       );
+
       settings = {
         MINSUPPLIES = lib.mkDefault 1;
+
         MONITOR = lib.flip lib.mapAttrsToList cfg.upsmon.monitor (
           name: monitor: with monitor; [
             system
@@ -396,6 +438,7 @@ let
             type
           ]
         );
+
         NOTIFYCMD = lib.mkDefault "${cfg.package}/bin/upssched";
         POWERDOWNFLAG = lib.mkDefault "/run/killpower";
         SHUTDOWNCMD = lib.mkDefault "${pkgs.systemd}/bin/shutdown now";
@@ -405,44 +448,51 @@ let
 
   userOptions = {
     options = {
-      passwordFile = lib.mkOption {
-        type = lib.types.str;
-        description = ''
-          The full path to a file that contains the user's (clear text)
-          password. The password file is read on service start.
-        '';
-      };
-
       actions = lib.mkOption {
-        type = with lib.types; listOf str;
         default = [ ];
+
         description = ''
           Allow the user to do certain things with upsd.
           See `man upsd.users` for details.
         '';
+
+        type = with lib.types; listOf str;
       };
 
       instcmds = lib.mkOption {
-        type = with lib.types; listOf str;
         default = [ ];
+
         description = ''
           Let the user initiate specific instant commands. Use "ALL" to grant all commands automatically. For the full list of what your UPS supports, use "upscmd -l".
           See `man upsd.users` for details.
         '';
+
+        type = with lib.types; listOf str;
+      };
+
+      passwordFile = lib.mkOption {
+        description = ''
+          The full path to a file that contains the user's (clear text)
+          password. The password file is read on service start.
+        '';
+
+        type = lib.types.str;
       };
 
       upsmon = lib.mkOption {
+        default = null;
+
+        description = ''
+          Add the necessary actions for a upsmon process to work.
+          See `man upsd.users` for details.
+        '';
+
         type =
           with lib.types;
           nullOr (enum [
             "primary"
             "secondary"
           ]);
-        default = null;
-        description = ''
-          Add the necessary actions for a upsmon process to work.
-          See `man upsd.users` for details.
-        '';
       };
     };
   };
@@ -461,14 +511,23 @@ in
 
       package = lib.mkPackageOption pkgs "nut" { };
 
+      maxStartDelay = lib.mkOption {
+        default = 45;
+
+        description = ''
+          This can be set as a global variable above your first UPS
+          definition and it can also be set in a UPS section.  This value
+          controls how long upsdrvctl will wait for the driver to finish
+          starting.  This keeps your system from getting stuck due to a
+          broken driver or UPS.
+        '';
+
+        type = lib.types.int;
+      };
+
       mode = lib.mkOption {
         default = "standalone";
-        type = lib.types.enum [
-          "none"
-          "standalone"
-          "netserver"
-          "netclient"
-        ];
+
         description = ''
           The MODE determines which part of the NUT is to be started, and
           which configuration files must be modified.
@@ -491,68 +550,74 @@ in
 
           - netclient: this mode only requires upsmon.
         '';
-      };
 
-      schedulerRules = lib.mkOption {
-        example = "/etc/nixos/upssched.conf";
-        type = lib.types.str;
-        description = ''
-          File which contains the rules to handle UPS events.
-        '';
+        type = lib.types.enum [
+          "none"
+          "standalone"
+          "netserver"
+          "netclient"
+        ];
       };
 
       openFirewall = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Open ports in the firewall for `upsd`.
         '';
+
+        type = lib.types.bool;
       };
 
-      maxStartDelay = lib.mkOption {
-        default = 45;
-        type = lib.types.int;
+      schedulerRules = lib.mkOption {
         description = ''
-          This can be set as a global variable above your first UPS
-          definition and it can also be set in a UPS section.  This value
-          controls how long upsdrvctl will wait for the driver to finish
-          starting.  This keeps your system from getting stuck due to a
-          broken driver or UPS.
+          File which contains the rules to handle UPS events.
         '';
-      };
 
-      upsmon = lib.mkOption {
-        default = { };
-        description = ''
-          Options for the `upsmon.conf` configuration file.
-        '';
-        type = lib.types.submodule upsmonOptions;
-      };
-
-      upsd = lib.mkOption {
-        default = { };
-        description = ''
-          Options for the `upsd.conf` configuration file.
-        '';
-        type = lib.types.submodule upsdOptions;
+        example = "/etc/nixos/upssched.conf";
+        type = lib.types.str;
       };
 
       ups = lib.mkOption {
         default = { };
+
         # see nut/etc/ups.conf.sample
         description = ''
           This is where you configure all the UPSes that this system will be
           monitoring directly.  These are usually attached to serial ports,
           but USB devices are also supported.
         '';
+
         type = with lib.types; attrsOf (submodule upsOptions);
+      };
+
+      upsd = lib.mkOption {
+        default = { };
+
+        description = ''
+          Options for the `upsd.conf` configuration file.
+        '';
+
+        type = lib.types.submodule upsdOptions;
+      };
+
+      upsmon = lib.mkOption {
+        default = { };
+
+        description = ''
+          Options for the `upsmon.conf` configuration file.
+        '';
+
+        type = lib.types.submodule upsmonOptions;
       };
 
       users = lib.mkOption {
         default = { };
+
         description = ''
           Users that can access upsd. See `man upsd.users`.
         '';
+
         type = with lib.types; attrsOf (submodule userOptions);
       };
 
@@ -571,12 +636,36 @@ in
         in
         lib.mkIf cfg.upsmon.enable {
           assertion = totalPowerValue >= minSupplies;
+
           message = ''
             `power.ups.upsmon`: Total configured power value (${toString totalPowerValue}) must be at least MINSUPPLIES (${toString minSupplies}).
           '';
         }
       )
     ];
+
+    environment.etc = {
+      "nut/nut.conf".source = pkgs.writeText "nut.conf" ''
+        MODE = ${cfg.mode}
+      '';
+
+      "nut/ups.conf".source = pkgs.writeText "ups.conf" ''
+        maxstartdelay = ${toString cfg.maxStartDelay}
+
+        ${lib.concatStringsSep "\n\n" (lib.forEach (lib.attrValues cfg.ups) (ups: ups.summary))}
+      '';
+
+      "nut/upsd.conf".source = pkgs.writeText "upsd.conf" ''
+        ${lib.concatStringsSep "\n" (
+          lib.forEach cfg.upsd.listen (listen: "LISTEN ${listen.address} ${toString listen.port}")
+        )}
+        ${cfg.upsd.extraConfig}
+      '';
+
+      "nut/upsd.users".source = "/run/nut/upsd.users";
+      "nut/upsmon.conf".source = "/run/nut/upsmon.conf";
+      "nut/upssched.conf".source = cfg.schedulerRules;
+    };
 
     # For interactive use.
     environment.systemPackages = [ cfg.package ];
@@ -590,9 +679,85 @@ in
           lib.unique (lib.forEach cfg.upsd.listen (listen: listen.port));
     };
 
-    systemd.slices.system-ups = {
-      description = "Network UPS Tools (NUT) Slice";
-      documentation = [ "https://networkupstools.org/" ];
+    power.ups.schedulerRules = lib.mkDefault "${cfg.package}/etc/upssched.conf.sample";
+    services.udev.packages = [ cfg.package ];
+
+    systemd.services.ups-killpower = lib.mkIf (cfg.upsmon.settings.POWERDOWNFLAG != null) {
+      enable = cfg.upsd.enable;
+      after = [ "shutdown.target" ];
+      before = [ "final.target" ];
+      description = "UPS Kill Power";
+      environment = envVars;
+
+      serviceConfig = {
+        ExecStart = "${cfg.package}/bin/upsdrvctl shutdown";
+        Type = "oneshot";
+      };
+
+      unitConfig = {
+        ConditionPathExists = cfg.upsmon.settings.POWERDOWNFLAG;
+        DefaultDependencies = "no";
+      };
+
+      wantedBy = [ "shutdown.target" ];
+    };
+
+    systemd.services.upsd =
+      let
+        secrets = lib.mapAttrsToList (name: user: "upsdusers_password_${name}") cfg.users;
+        createUpsdUsers = installSecrets upsdUsers "/run/nut/upsd.users" "root" secrets;
+      in
+      {
+        enable = cfg.upsd.enable;
+
+        after = [
+          "network.target"
+          "upsmon.service"
+        ];
+
+        description = "Uninterruptible Power Supplies (Daemon)";
+        environment = envVars;
+
+        restartTriggers = [
+          config.environment.etc."nut/upsd.conf".source
+        ];
+
+        serviceConfig = {
+          ExecReload = "${cfg.package}/sbin/upsd -c reload";
+          # TODO: replace 'root' by another username.
+          ExecStart = "${cfg.package}/sbin/upsd -u root";
+          ExecStartPre = "${createUpsdUsers}";
+
+          LoadCredential = lib.mapAttrsToList (
+            name: user: "upsdusers_password_${name}:${user.passwordFile}"
+          ) cfg.users;
+
+          Slice = "system-ups.slice";
+          Type = "forking";
+        };
+
+        wantedBy = [ "multi-user.target" ];
+      };
+
+    systemd.services.upsdrv = {
+      enable = cfg.upsd.enable;
+      after = [ "upsd.service" ];
+      description = "Uninterruptible Power Supplies (Register all UPS)";
+      environment = envVars;
+
+      restartTriggers = [
+        config.environment.etc."nut/ups.conf".source
+      ];
+
+      serviceConfig = {
+        # TODO: replace 'root' by another username.
+        ExecStart = "${cfg.package}/bin/upsdrvctl -u root start";
+        RemainAfterExit = true;
+        Slice = "system-ups.slice";
+        Type = "oneshot";
+      };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.services.upsmon =
@@ -602,121 +767,42 @@ in
       in
       {
         enable = cfg.upsmon.enable;
-        description = "Uninterruptible Power Supplies (Monitor)";
         after = [ "network.target" ];
-        wantedBy = [ "multi-user.target" ];
+        description = "Uninterruptible Power Supplies (Monitor)";
+        environment = envVars;
+
         serviceConfig = {
-          Type = "forking";
-          ExecStartPre = "${createUpsmonConf}";
-          ExecStart = "${cfg.package}/sbin/upsmon -u ${cfg.upsmon.user}";
           ExecReload = "${cfg.package}/sbin/upsmon -c reload";
+          ExecStart = "${cfg.package}/sbin/upsmon -u ${cfg.upsmon.user}";
+          ExecStartPre = "${createUpsmonConf}";
+
           LoadCredential = lib.mapAttrsToList (
             name: monitor: "upsmon_password_${name}:${monitor.passwordFile}"
           ) cfg.upsmon.monitor;
-          Slice = "system-ups.slice";
-        };
-        environment = envVars;
-      };
 
-    systemd.services.upsd =
-      let
-        secrets = lib.mapAttrsToList (name: user: "upsdusers_password_${name}") cfg.users;
-        createUpsdUsers = installSecrets upsdUsers "/run/nut/upsd.users" "root" secrets;
-      in
-      {
-        enable = cfg.upsd.enable;
-        description = "Uninterruptible Power Supplies (Daemon)";
-        after = [
-          "network.target"
-          "upsmon.service"
-        ];
-        wantedBy = [ "multi-user.target" ];
-        serviceConfig = {
+          Slice = "system-ups.slice";
           Type = "forking";
-          ExecStartPre = "${createUpsdUsers}";
-          # TODO: replace 'root' by another username.
-          ExecStart = "${cfg.package}/sbin/upsd -u root";
-          ExecReload = "${cfg.package}/sbin/upsd -c reload";
-          LoadCredential = lib.mapAttrsToList (
-            name: user: "upsdusers_password_${name}:${user.passwordFile}"
-          ) cfg.users;
-          Slice = "system-ups.slice";
         };
-        environment = envVars;
-        restartTriggers = [
-          config.environment.etc."nut/upsd.conf".source
-        ];
+
+        wantedBy = [ "multi-user.target" ];
       };
 
-    systemd.services.upsdrv = {
-      enable = cfg.upsd.enable;
-      description = "Uninterruptible Power Supplies (Register all UPS)";
-      after = [ "upsd.service" ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-        # TODO: replace 'root' by another username.
-        ExecStart = "${cfg.package}/bin/upsdrvctl -u root start";
-        Slice = "system-ups.slice";
-      };
-      environment = envVars;
-      restartTriggers = [
-        config.environment.etc."nut/ups.conf".source
-      ];
+    systemd.slices.system-ups = {
+      description = "Network UPS Tools (NUT) Slice";
+      documentation = [ "https://networkupstools.org/" ];
     };
-
-    systemd.services.ups-killpower = lib.mkIf (cfg.upsmon.settings.POWERDOWNFLAG != null) {
-      enable = cfg.upsd.enable;
-      description = "UPS Kill Power";
-      wantedBy = [ "shutdown.target" ];
-      after = [ "shutdown.target" ];
-      before = [ "final.target" ];
-      unitConfig = {
-        ConditionPathExists = cfg.upsmon.settings.POWERDOWNFLAG;
-        DefaultDependencies = "no";
-      };
-      environment = envVars;
-      serviceConfig = {
-        Type = "oneshot";
-        ExecStart = "${cfg.package}/bin/upsdrvctl shutdown";
-      };
-    };
-
-    environment.etc = {
-      "nut/nut.conf".source = pkgs.writeText "nut.conf" ''
-        MODE = ${cfg.mode}
-      '';
-      "nut/ups.conf".source = pkgs.writeText "ups.conf" ''
-        maxstartdelay = ${toString cfg.maxStartDelay}
-
-        ${lib.concatStringsSep "\n\n" (lib.forEach (lib.attrValues cfg.ups) (ups: ups.summary))}
-      '';
-      "nut/upsd.conf".source = pkgs.writeText "upsd.conf" ''
-        ${lib.concatStringsSep "\n" (
-          lib.forEach cfg.upsd.listen (listen: "LISTEN ${listen.address} ${toString listen.port}")
-        )}
-        ${cfg.upsd.extraConfig}
-      '';
-      "nut/upssched.conf".source = cfg.schedulerRules;
-      "nut/upsd.users".source = "/run/nut/upsd.users";
-      "nut/upsmon.conf".source = "/run/nut/upsmon.conf";
-    };
-
-    power.ups.schedulerRules = lib.mkDefault "${cfg.package}/etc/upssched.conf.sample";
 
     systemd.tmpfiles.rules = [
       "d /var/state/ups -"
       "d /var/lib/nut 700"
     ];
 
-    services.udev.packages = [ cfg.package ];
+    users.groups.nutmon = lib.mkIf (cfg.upsmon.user == "nutmon" && cfg.upsmon.group == "nutmon") { };
 
     users.users.nutmon = lib.mkIf (cfg.upsmon.user == "nutmon") {
-      isSystemUser = true;
       group = cfg.upsmon.group;
+      isSystemUser = true;
     };
-    users.groups.nutmon = lib.mkIf (cfg.upsmon.user == "nutmon" && cfg.upsmon.group == "nutmon") { };
 
   };
 }

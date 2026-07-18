@@ -1,20 +1,20 @@
 {
+  lib,
+  alcotest,
+  bstr,
+  buildDunePackage,
+  ca-certs,
+  digestif,
+  dns-client-miou-unix,
   fetchpatch2,
   fetchzip,
-  buildDunePackage,
-  lib,
-  logs,
   fmt,
-  h2,
   h1,
-  ca-certs,
-  bstr,
-  tls-miou-unix,
-  dns-client-miou-unix,
+  h2,
   happy-eyeballs-miou-unix,
+  logs,
   mirage-crypto-rng-miou-unix,
-  alcotest,
-  digestif,
+  tls-miou-unix,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -28,8 +28,8 @@ buildDunePackage (finalAttrs: {
 
   patches = [
     (fetchpatch2 {
-      url = "https://github.com/robur-coop/httpcats/commit/d8787555d4831e0488780d42bd2c65de662d1d38.patch";
       hash = "sha256-6zXPb+mvw2rcEMv28b0npcL8cKl3CASxDbl7FOAGsXs=";
+      url = "https://github.com/robur-coop/httpcats/commit/d8787555d4831e0488780d42bd2c65de662d1d38.patch";
     })
   ];
 
@@ -43,9 +43,8 @@ buildDunePackage (finalAttrs: {
     happy-eyeballs-miou-unix
   ];
 
-  __darwinAllowLocalNetworking = true;
-
   doCheck = true;
+
   checkInputs = [
     logs
     fmt
@@ -54,9 +53,11 @@ buildDunePackage (finalAttrs: {
     digestif
   ];
 
+  __darwinAllowLocalNetworking = true;
+
   meta = {
-    homepage = "https://github.com/robur-coop/httpcats/";
     description = "A simple HTTP client / server using h1, h2, and miou";
+    homepage = "https://github.com/robur-coop/httpcats/";
     changelog = "https://github.com/robur-coop/httpcats/blob/v${finalAttrs.version}/CHANGES.md";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ rpqt ];

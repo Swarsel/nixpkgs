@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   buildNpmPackage,
-  nixosTests,
   debianutils,
   mkdocs,
+  nixosTests,
   python3,
   python3Packages,
   runtimeShell,
@@ -20,10 +20,6 @@ buildGoModule (
       pname = "ntfy-sh-ui";
       npmDepsHash = "sha256-ENwqAS3HDzezlwiNG7e0dCN16c6RreBirua+Yv6GTS4=";
 
-      prePatch = ''
-        cd web/
-      '';
-
       installPhase = ''
         runHook preInstall
 
@@ -33,6 +29,10 @@ buildGoModule (
         mv build/ $out/site
 
         runHook postInstall
+      '';
+
+      prePatch = ''
+        cd web/
       '';
     };
   in
@@ -47,29 +47,6 @@ buildGoModule (
       hash = "sha256-/VOCztlfi8n12PrUmv17jNpV2/aVh+G0Qq0/leuHnzw=";
     };
 
-    vendorHash = "sha256-t/NTLIL+eVFBFuTy6T1st8cdRliJZCYHojyDx76IW7o=";
-
-    doCheck = false;
-
-    ldflags = [
-      "-s"
-      "-w"
-      "-X main.version=${finalAttrs.version}"
-    ];
-
-    excludedPackages = [
-      # main module (heckel.io/ntfy/v2) does not contain package heckel.io/ntfy/v2/tools/loadtest
-      "tools/loadtest"
-    ];
-
-    nativeBuildInputs = [
-      debianutils
-      mkdocs
-      python3
-      python3Packages.mkdocs-material
-      python3Packages.mkdocs-minify-plugin
-    ];
-
     postPatch = ''
       sed -i 's# /bin/echo# echo#' Makefile
       substituteInPlace \
@@ -80,14 +57,37 @@ buildGoModule (
           'scriptLauncher = []string{"${runtimeShell}", "-c"}'
     '';
 
+    nativeBuildInputs = [
+      debianutils
+      mkdocs
+      python3
+      python3Packages.mkdocs-material
+      python3Packages.mkdocs-minify-plugin
+    ];
+
+    vendorHash = "sha256-t/NTLIL+eVFBFuTy6T1st8cdRliJZCYHojyDx76IW7o=";
+
     preBuild = ''
       cp -r ${ui}/site/ server/
       make docs-build
     '';
 
+    doCheck = false;
+
+    excludedPackages = [
+      # main module (heckel.io/ntfy/v2) does not contain package heckel.io/ntfy/v2/tools/loadtest
+      "tools/loadtest"
+    ];
+
+    ldflags = [
+      "-s"
+      "-w"
+      "-X main.version=${finalAttrs.version}"
+    ];
+
     passthru = {
-      updateScript = ./update.sh;
       tests.ntfy-sh = nixosTests.ntfy-sh;
+      updateScript = ./update.sh;
     };
 
     meta = {
@@ -95,11 +95,13 @@ buildGoModule (
       homepage = "https://ntfy.sh";
       changelog = "https://github.com/binwiederhier/ntfy/releases/tag/v${finalAttrs.version}";
       license = lib.licenses.asl20;
+
       maintainers = with lib.maintainers; [
         arjan-s
         fpletz
         matthiasbeyer
       ];
+
       mainProgram = "ntfy";
     };
   }

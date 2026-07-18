@@ -9,22 +9,19 @@
 buildPythonPackage rec {
   pname = "extra-streamlit-components";
   version = "0.1.81";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "extra_streamlit_components";
     inherit version;
     hash = "sha256-65vre6z+iz0jjxiIohx4rGz6VpNBvkhLygjD6gsV8g0=";
+    pname = "extra_streamlit_components";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ streamlit ];
-
-  pythonImportsCheck = [ "extra_streamlit_components" ];
 
   # Module has no tests
   doCheck = false;
+  build-system = [ setuptools ];
+  dependencies = [ streamlit ];
+  pyproject = true;
+  pythonImportsCheck = [ "extra_streamlit_components" ];
 
   meta = {
     description = "Additional components for streamlit";

@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   cups,
 }:
@@ -11,8 +11,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = fetchurl {
     url = "https://godex.s3-accelerate.amazonaws.com/tWHDYruxWFM98frjWNTE,g.file?v01";
-    name = "${finalAttrs.pname}-${finalAttrs.version}-source.tar.gz";
     hash = "sha256-iBhM8Mht/XncWU75cd485WK5GZtJNv78yMsFsD0eKWQ=";
+    name = "${finalAttrs.pname}-${finalAttrs.version}-source.tar.gz";
   };
 
   buildInputs = [ cups ];

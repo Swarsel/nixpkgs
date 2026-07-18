@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest,
   pytest-metadata,
   pytest-xdist,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "pytest-json-report";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "numirias";
@@ -21,16 +20,15 @@ buildPythonPackage rec {
     hash = "sha256-hMB/atDuo7CjwhHFUOxVfgJ7Qp4AA9J428iv7hyQFcs=";
   };
 
-  build-system = [ setuptools ];
-
   buildInputs = [ pytest ];
-
-  dependencies = [ pytest-metadata ];
 
   nativeCheckInputs = [
     pytest-xdist
     pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
+  dependencies = [ pytest-metadata ];
 
   disabledTests = [
     # pytest-flaky is not available at the moment
@@ -41,6 +39,7 @@ buildPythonPackage rec {
     "test_report_crash_and_traceback"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pytest_jsonreport" ];
 
   meta = {

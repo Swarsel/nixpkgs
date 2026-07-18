@@ -14,20 +14,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-lFM7558e7JZeWYhtXwCjXLZ1xdsdiUGfJTu3LxQKvds=";
   };
 
-  buildInputs = [ readline ];
-
   postPatch = ''
     substituteInPlace Makefile \
       --replace 'gcc' '${stdenv.cc.targetPrefix}cc'
   '';
 
+  buildInputs = [ readline ];
   preInstall = "mkdir -p $out/bin";
-
   installFlags = [ "BIN=$(out)/bin/" ];
 
   meta = {
-    homepage = "http://www.knossos.net.nz/resources/free-software/dterm/";
     description = "Simple terminal program";
+
     longDescription = ''
       dterm is a simple terminal emulator, which doesn’t actually emulate any
       particular terminal. Mainly, it is designed for use with xterm and
@@ -36,6 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
       are forwarded to the serial line, and data forwarded from the serial line
       appears on the terminal.
     '';
+
+    homepage = "http://www.knossos.net.nz/resources/free-software/dterm/";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ auchter ];
     platforms = lib.platforms.unix;

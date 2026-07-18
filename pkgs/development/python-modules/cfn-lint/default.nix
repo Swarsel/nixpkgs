@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aws-sam-translator,
   buildPythonPackage,
   defusedxml,
-  fetchFromGitHub,
   jschema-to-python,
   jsonpatch,
   junit-xml,
@@ -22,35 +22,12 @@
 buildPythonPackage rec {
   pname = "cfn-lint";
   version = "1.43.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aws-cloudformation";
     repo = "cfn-lint";
     tag = "v${version}";
     hash = "sha256-tolQ7O6J/pfmtw29t8SGBDEDGiTOsJdc/mI3ulUseKo=";
-  };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    aws-sam-translator
-    jsonpatch
-    networkx
-    pyyaml
-    regex
-    sympy
-    typing-extensions
-  ];
-
-  optional-dependencies = {
-    graph = [ pydot ];
-    junit = [ junit-xml ];
-    sarif = [
-      jschema-to-python
-      sarif-om
-    ];
-    full = lib.concatAttrValues (lib.removeAttrs optional-dependencies [ "full" ]);
   };
 
   nativeCheckInputs = [
@@ -64,9 +41,16 @@ buildPythonPackage rec {
     export PATH=$out/bin:$PATH
   '';
 
-  disabledTests = [
-    # Requires git directory
-    "test_update_docs"
+  build-system = [ setuptools ];
+
+  dependencies = [
+    aws-sam-translator
+    jsonpatch
+    networkx
+    pyyaml
+    regex
+    sympy
+    typing-extensions
   ];
 
   disabledTestPaths = [
@@ -78,14 +62,31 @@ buildPythonPackage rec {
     "test/integration/test_good_templates.py::TestQuickStartTemplates::test_templates"
   ];
 
+  disabledTests = [
+    # Requires git directory
+    "test_update_docs"
+  ];
+
+  optional-dependencies = {
+    full = lib.concatAttrValues (lib.removeAttrs optional-dependencies [ "full" ]);
+    graph = [ pydot ];
+    junit = [ junit-xml ];
+
+    sarif = [
+      jschema-to-python
+      sarif-om
+    ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "cfnlint" ];
 
   meta = {
     description = "Checks cloudformation for practices and behaviour that could potentially be improved";
-    mainProgram = "cfn-lint";
     homepage = "https://github.com/aws-cloudformation/cfn-lint";
     changelog = "https://github.com/aws-cloudformation/cfn-lint/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "cfn-lint";
   };
 }

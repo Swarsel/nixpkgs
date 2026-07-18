@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "argh";
   version = "0.31.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -34,12 +33,13 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "argh" ];
 
   meta = {
-    changelog = "https://github.com/neithere/argh/blob/v${version}/CHANGES";
-    homepage = "https://github.com/neithere/argh";
     description = "Unobtrusive argparse wrapper with natural syntax";
+    homepage = "https://github.com/neithere/argh";
+    changelog = "https://github.com/neithere/argh/blob/v${version}/CHANGES";
     license = lib.licenses.lgpl3Plus;
     maintainers = [ ];
   };

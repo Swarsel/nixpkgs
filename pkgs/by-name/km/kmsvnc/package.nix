@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   libdrm,
+  libva,
   libvncserver,
   libxkbcommon,
-  libva,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,7 +38,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/isjerryxiao/kmsvnc";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ nickcao ];
-    mainProgram = "kmsvnc";
     platforms = lib.platforms.linux;
+    mainProgram = "kmsvnc";
   };
 })

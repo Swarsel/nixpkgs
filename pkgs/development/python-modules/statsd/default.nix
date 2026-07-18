@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   mock,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "statsd";
   version = "4.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jsocol";
@@ -27,11 +26,12 @@ buildPythonPackage rec {
   ];
 
   enabledTestPaths = [ "statsd/tests.py" ];
+  pyproject = true;
 
   meta = {
-    maintainers = [ ];
     description = "Simple statsd client";
-    license = lib.licenses.mit;
     homepage = "https://github.com/jsocol/pystatsd";
+    license = lib.licenses.mit;
+    maintainers = [ ];
   };
 }

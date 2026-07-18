@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  python3,
-  gnome-shell,
   dconf,
+  gnome-shell,
+  python3,
+  stdenvNoCC,
   writableTmpDirAsHomeHook,
-  colors ? [ "all" ], # Default to install all available colors
   additionalInstallationTweaks ? [ ], # Additional installation tweaks
+  colors ? [ "all" ], # Default to install all available colors
 }:
 
 assert lib.assertMsg (colors != [ ]) "The `colors` list can not be empty";
@@ -23,17 +23,17 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-EYQmtVq852YG4Pmk6Nj4RF+aZUJmIZwhegHIR+Xxu8A=";
   };
 
+  postPatch = ''
+    substituteInPlace scripts/config.py \
+      --replace-fail "~/.themes" ".themes"
+  '';
+
   nativeBuildInputs = [
     python3
     gnome-shell
     dconf
     writableTmpDirAsHomeHook
   ];
-
-  postPatch = ''
-    substituteInPlace scripts/config.py \
-      --replace-fail "~/.themes" ".themes"
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -49,10 +49,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Shell theme for GNOME DE";
-    license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     homepage = "https://github.com/imarkoff/Marble-shell-theme";
     changelog = "https://github.com/imarkoff/Marble-shell-theme/releases/tag/${finalAttrs.version}";
+    license = lib.licenses.gpl3Plus;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

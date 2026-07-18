@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "pass2csv";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -24,12 +23,13 @@ python3Packages.buildPythonApplication rec {
 
   # Project has no tests.
   doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "Export pass(1), \"Standard unix password manager\", to CSV";
-    mainProgram = "pass2csv";
     homepage = "https://codeberg.org/svartstare/pass2csv";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "pass2csv";
   };
 }

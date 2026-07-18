@@ -1,13 +1,13 @@
 {
+  lib,
+  stdenv,
+  bash,
   fetchgit,
   gawk,
   jq,
-  lib,
   makeWrapper,
   slurp,
-  stdenv,
   sway,
-  bash,
 }:
 
 stdenv.mkDerivation {
@@ -24,7 +24,6 @@ stdenv.mkDerivation {
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ bash ];
 
-  dontBuild = true;
   installPhase = ''
     runHook preInstall
 
@@ -41,6 +40,8 @@ stdenv.mkDerivation {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
   passthru.scriptName = "wlprop.sh";
 
   meta = {

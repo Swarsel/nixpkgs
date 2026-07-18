@@ -3,28 +3,14 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  perl,
   libitl,
+  perl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "itools";
   version = "1.1";
-
-  nativeBuildInputs = [
-    pkg-config
-    autoreconfHook
-  ];
-  buildInputs = [
-    libitl
-    perl
-  ];
-
-  outputs = [
-    "out"
-    "man"
-  ];
 
   src = fetchFromGitHub {
     owner = "arabeyes-org";
@@ -33,12 +19,28 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-DxTZaq2SlEmy9k7iAdjctpPkk+2rIaF+xEcfXj/ERWw=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   postPatch = ''
     rm config.h.in
   '';
 
+  nativeBuildInputs = [
+    pkg-config
+    autoreconfHook
+  ];
+
+  buildInputs = [
+    libitl
+    perl
+  ];
+
   meta = {
     description = "Islamic command-line tools for prayer times and hijri dates";
+
     longDescription = ''
       The itools package is a set of user friendly applications utilizing Arabeyes' ITL library.
 
@@ -46,9 +48,10 @@ stdenv.mkDerivation (finalAttrs: {
       is envisioned to mimick the development of the underlying ITL library and is meant to
       always give the end-user a simple means to access its functions.
     '';
+
     homepage = "https://www.arabeyes.org/ITL";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ amyipdev ];
+    platforms = lib.platforms.all;
   };
 })

@@ -2,25 +2,25 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  perl,
-  alsa-lib,
-  libevdev,
-  libopus,
-  udev,
   SDL2,
-  ffmpeg,
-  pkg-config,
-  libpthread-stubs,
-  libxcb,
-  libvdpau,
-  libpulseaudio,
-  libcec,
+  alsa-lib,
+  avahi,
+  cmake,
   curl,
   expat,
-  avahi,
+  ffmpeg,
+  libcec,
+  libevdev,
+  libopus,
+  libpthread-stubs,
+  libpulseaudio,
   libuuid,
   libva,
+  libvdpau,
+  libxcb,
+  perl,
+  pkg-config,
+  udev,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -45,6 +45,7 @@ stdenv.mkDerivation (finalAttrs: {
     perl
     pkg-config
   ];
+
   buildInputs = [
     alsa-lib
     libevdev
@@ -69,7 +70,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/moonlight-stream/moonlight-embedded";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
-    mainProgram = "moonlight";
     platforms = lib.platforms.linux;
+    mainProgram = "moonlight";
   };
 })

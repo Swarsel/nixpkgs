@@ -2,23 +2,23 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
-  msrest,
   mock,
+  msrest,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "vsts-cd-manager";
   version = "1.0.2";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-C7CQWc1VPhwgbpLvMkyw3PkjNIRtZGxExoT2JWuGRHs=";
   };
 
+  # no tests included
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,9 +26,7 @@ buildPythonPackage (finalAttrs: {
     mock
   ];
 
-  # no tests included
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "vsts_cd_manager" ];
 
   meta = {

@@ -1,12 +1,12 @@
 {
   lib,
-  buildDotnetModule,
   fetchFromGitHub,
+  buildDotnetModule,
   dotnetCorePackages,
-  technitium-dns-server-library,
   libmsquic,
-  nixosTests,
   nix-update-script,
+  nixosTests,
+  technitium-dns-server-library,
 }:
 buildDotnetModule rec {
   pname = "technitium-dns-server";
@@ -20,13 +20,6 @@ buildDotnetModule rec {
     name = "${pname}-${version}";
   };
 
-  dotnet-sdk = dotnetCorePackages.sdk_10_0;
-  dotnet-runtime = dotnetCorePackages.aspnetcore_10_0;
-
-  nugetDeps = ./nuget-deps.json;
-
-  projectFile = [ "DnsServerApp/DnsServerApp.csproj" ];
-
   # move dependencies from TechnitiumLibrary to the expected directory
   preBuild = ''
     mkdir -p ../TechnitiumLibrary/bin
@@ -36,6 +29,11 @@ buildDotnetModule rec {
   postFixup = ''
     mv $out/bin/DnsServerApp $out/bin/technitium-dns-server
   '';
+
+  dotnet-runtime = dotnetCorePackages.aspnetcore_10_0;
+  dotnet-sdk = dotnetCorePackages.sdk_10_0;
+  nugetDeps = ./nuget-deps.json;
+  projectFile = [ "DnsServerApp/DnsServerApp.csproj" ];
 
   runtimeDeps = [
     libmsquic
@@ -48,15 +46,17 @@ buildDotnetModule rec {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/TechnitiumSoftware/DnsServer/blob/master/CHANGELOG.md";
     description = "Authorative and Recursive DNS server for Privacy and Security";
     homepage = "https://github.com/TechnitiumSoftware/DnsServer";
+    changelog = "https://github.com/TechnitiumSoftware/DnsServer/blob/master/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
-    mainProgram = "technitium-dns-server";
+
     maintainers = with lib.maintainers; [
       fabianrig
       awildleon
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "technitium-dns-server";
   };
 }

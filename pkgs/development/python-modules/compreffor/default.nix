@@ -3,15 +3,14 @@
   buildPythonPackage,
   cython,
   fetchPypi,
-  setuptools-scm,
   fonttools,
   pytestCheckHook,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "compreffor";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -22,13 +21,6 @@ buildPythonPackage rec {
     sed -i "/setuptools_git_ls_files/d" pyproject.toml
   '';
 
-  build-system = [
-    cython
-    setuptools-scm
-  ];
-
-  dependencies = [ fonttools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
 
   preCheck = ''
@@ -37,14 +29,21 @@ buildPythonPackage rec {
     rm -r src tools
   '';
 
+  build-system = [
+    cython
+    setuptools-scm
+  ];
+
+  dependencies = [ fonttools ];
+  pyproject = true;
   pythonImportsCheck = [ "compreffor" ];
 
   meta = {
-    changelog = "https://github.com/googlefonts/compreffor/releases/tag/${version}";
     description = "CFF table subroutinizer for FontTools";
-    mainProgram = "compreffor";
     homepage = "https://github.com/googlefonts/compreffor";
+    changelog = "https://github.com/googlefonts/compreffor/releases/tag/${version}";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "compreffor";
   };
 }

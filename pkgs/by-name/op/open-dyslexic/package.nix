@@ -1,15 +1,15 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 let
   version = "0.91.12";
 in
 stdenvNoCC.mkDerivation {
-  pname = "open-dyslexic";
   inherit version;
+  pname = "open-dyslexic";
 
   src = fetchFromGitHub {
     owner = "antijingoist";
@@ -27,10 +27,10 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://opendyslexic.org/";
     description = "Font created to increase readability for readers with dyslexia";
+    homepage = "https://opendyslexic.org/";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.rycee ];
+    platforms = lib.platforms.all;
   };
 }

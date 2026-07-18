@@ -1,10 +1,10 @@
 {
   lib,
+  blockbuster,
   buildPythonPackage,
+  croniter,
   fetchPypi,
   hatchling,
-  blockbuster,
-  croniter,
   langgraph,
   langgraph-checkpoint,
   sse-starlette,
@@ -15,16 +15,17 @@
 buildPythonPackage (finalAttrs: {
   pname = "langgraph-runtime-inmem";
   version = "0.30.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   # Not available in any repository
   src = fetchPypi {
-    pname = "langgraph_runtime_inmem";
     inherit (finalAttrs) version;
     hash = "sha256-MZVOHebNQ8KEtCUkPU+uroGPaLPayk2+QxPmUbb14R0=";
+    pname = "langgraph_runtime_inmem";
   };
 
+  # no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -37,10 +38,8 @@ buildPythonPackage (finalAttrs: {
     structlog
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "langgraph_runtime_inmem" ];
-
-  # no tests
-  doCheck = false;
 
   meta = {
     description = "Inmem implementation for the LangGraph API server";

@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
+  adwaita-icon-theme,
+  glib,
+  gtk3,
+  libxtst,
   makeDesktopItem,
   openjdk21,
-  gtk3,
-  glib,
-  adwaita-icon-theme,
-  wrapGAppsHook3,
-  libxtst,
   which,
+  wrapGAppsHook3,
 }:
 let
   jre = openjdk21;
@@ -22,6 +22,7 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://www.syntevo.com/downloads/smartsynchronize/smartsynchronize-linux-${
       builtins.replaceStrings [ "." ] [ "_" ] finalAttrs.version
     }.tar.gz";
+
     hash = "sha256-F+Yrr029nPnnCvFEhIxgeXloyt2JRKSw8uOmVySWKzo=";
   };
 
@@ -32,25 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
     adwaita-icon-theme
     gtk3
   ];
-
-  preFixup = ''
-    gappsWrapperArgs+=( \
-      --prefix PATH : ${
-        lib.makeBinPath [
-          jre
-          which
-        ]
-      } \
-      --prefix LD_LIBRARY_PATH : ${
-        lib.makeLibraryPath [
-          gtk3
-          glib
-          libxtst
-        ]
-      } \
-      --prefix JAVA_HOME : ${jre} \
-    )
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -72,33 +54,56 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  preFixup = ''
+    gappsWrapperArgs+=( \
+      --prefix PATH : ${
+        lib.makeBinPath [
+          jre
+          which
+        ]
+      } \
+      --prefix LD_LIBRARY_PATH : ${
+        lib.makeLibraryPath [
+          gtk3
+          glib
+          libxtst
+        ]
+      } \
+      --prefix JAVA_HOME : ${jre} \
+    )
+  '';
+
   desktopItem = makeDesktopItem {
-    name = "smartsynchronize";
-    exec = "smartsynchronize";
-    comment = finalAttrs.meta.description;
-    icon = "smartsynchronize";
-    desktopName = "SmartSynchronize";
     categories = [ "Development" ];
-    startupNotify = true;
-    startupWMClass = "smartsynchronize";
+    comment = finalAttrs.meta.description;
+    desktopName = "SmartSynchronize";
+    exec = "smartsynchronize";
+    icon = "smartsynchronize";
+
     keywords = [
       "compare"
       "file manager"
     ];
+
+    name = "smartsynchronize";
+    startupNotify = true;
+    startupWMClass = "smartsynchronize";
   };
 
   meta = {
     description = "File Manager, File/Directory Compare";
+
     longDescription = ''
       SmartSynchronize is a dual-pane, keyboard-centric, multi-platform file manager.
       It also is known for its file compare, directory compare and file merge.
       SmartSynchronize is free to use for active Open Source developers and users from academic institutions.
     '';
+
     homepage = "https://www.syntevo.com/smartsynchronize/";
     changelog = "https://www.syntevo.com/smartsynchronize/changelog-${lib.versions.majorMinor finalAttrs.version}.txt";
     license = lib.licenses.unfree;
-    mainProgram = "smartsynchronize";
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ tmssngr ];
+    platforms = lib.platforms.linux;
+    mainProgram = "smartsynchronize";
   };
 })

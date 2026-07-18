@@ -1,34 +1,34 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  makeWrapper,
-  gnused,
-  db,
-  openssl,
-  cyrus_sasl,
-  libnsl,
-  lmdb,
-  coreutils,
-  findutils,
-  gnugrep,
-  gawk,
-  icu,
-  pcre2,
-  m4,
-  fetchpatch,
   buildPackages,
-  nixosTests,
-  withLDAP ? true,
-  openldap,
-  withPgSQL ? false,
-  libpq,
-  withMySQL ? false,
+  coreutils,
+  cyrus_sasl,
+  db,
+  fetchpatch,
+  findutils,
+  gawk,
+  gnugrep,
+  gnused,
+  icu,
   libmysqlclient,
-  withSQLite ? false,
-  sqlite,
-  withTLSRPT ? true,
+  libnsl,
+  libpq,
   libtlsrpt,
+  lmdb,
+  m4,
+  makeWrapper,
+  nixosTests,
+  openldap,
+  openssl,
+  pcre2,
+  sqlite,
+  withLDAP ? true,
+  withMySQL ? false,
+  withPgSQL ? false,
+  withSQLite ? false,
+  withTLSRPT ? true,
 }:
 
 let
@@ -85,10 +85,36 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Smqz0Ok5CYn6IB/GxEYEX8cCxOFueiR8OuJhyem+5hA=";
   };
 
+  patches = [
+    ./postfix-script-shell.patch
+    ./post-install-script.patch
+    ./postfix-3.0-no-warnings.patch
+    ./relative-symlinks.patch
+
+    # glibc 2.34 compat
+    (fetchpatch {
+      sha256 = "sha256-xRUL5gaoIt6HagGlhsGwvwrAfYvzMgydsltYMWvl9BI=";
+      url = "https://src.fedoraproject.org/rpms/postfix/raw/2f9d42453e67ebc43f786d98262a249037f80a77/f/postfix-3.6.2-glibc-234-build-fix.patch";
+    })
+  ];
+
+  postPatch =
+    lib.optionalString (stdenv.hostPlatform != stdenv.buildPlatform) ''
+      sed -e 's!bin/postconf!${buildPackages.postfix}/bin/postconf!' -i postfix-install
+    ''
+    + ''
+      sed -e '/^PATH=/d' -i postfix-install
+      sed -e "s|@PACKAGE@|$out|" -i conf/post-install
+
+      # post-install need skip permissions check/set on all symlinks following to /nix/store
+      sed -e "s|@NIX_STORE@|$NIX_STORE|" -i conf/post-install
+    '';
+
   nativeBuildInputs = [
     makeWrapper
     m4
   ];
+
   buildInputs = [
     cyrus_sasl'
     db
@@ -104,32 +130,9 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional withLDAP openldap
   ++ lib.optional withTLSRPT libtlsrpt;
 
-  hardeningDisable = [ "format" ];
-
-  patches = [
-    ./postfix-script-shell.patch
-    ./post-install-script.patch
-    ./postfix-3.0-no-warnings.patch
-    ./relative-symlinks.patch
-
-    # glibc 2.34 compat
-    (fetchpatch {
-      url = "https://src.fedoraproject.org/rpms/postfix/raw/2f9d42453e67ebc43f786d98262a249037f80a77/f/postfix-3.6.2-glibc-234-build-fix.patch";
-      sha256 = "sha256-xRUL5gaoIt6HagGlhsGwvwrAfYvzMgydsltYMWvl9BI=";
-    })
-  ];
-
-  postPatch =
-    lib.optionalString (stdenv.hostPlatform != stdenv.buildPlatform) ''
-      sed -e 's!bin/postconf!${buildPackages.postfix}/bin/postconf!' -i postfix-install
-    ''
-    + ''
-      sed -e '/^PATH=/d' -i postfix-install
-      sed -e "s|@PACKAGE@|$out|" -i conf/post-install
-
-      # post-install need skip permissions check/set on all symlinks following to /nix/store
-      sed -e "s|@NIX_STORE@|$NIX_STORE|" -i conf/post-install
-    '';
+  env = lib.optionalAttrs withLDAP {
+    NIX_LDFLAGS = "-llber";
+  };
 
   postConfigure = ''
     export command_directory=$out/sbin
@@ -149,16 +152,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     make makefiles CCARGS='${ccargs}' AUXLIBS='${auxlibs}'
   '';
-
-  enableParallelBuilding = true;
-
-  env = lib.optionalAttrs withLDAP {
-    NIX_LDFLAGS = "-llber";
-  };
-
-  installTargets = [ "non-interactive-package" ];
-
-  installFlags = [ "install_root=installdir" ];
 
   postInstall = ''
     mkdir -p $out
@@ -190,24 +183,31 @@ stdenv.mkDerivation (finalAttrs: {
     sed -e "s|$NIX_STORE/[a-z0-9]\{32\}-|$NIX_STORE/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee-|g" -i $out/etc/postfix/makedefs.out
   '';
 
+  enableParallelBuilding = true;
+  hardeningDisable = [ "format" ];
+  installFlags = [ "install_root=installdir" ];
+  installTargets = [ "non-interactive-package" ];
+
   passthru = {
     tests = { inherit (nixosTests) postfix postfix-raise-smtpd-tls-security-level; };
-
     updateScript = ./update.sh;
   };
 
   meta = {
+    description = "Fast, easy to administer, and secure mail server";
     homepage = "http://www.postfix.org/";
     changelog = "https://www.postfix.org/announcements/postfix-${finalAttrs.version}.html";
-    description = "Fast, easy to administer, and secure mail server";
+
     license = with lib.licenses; [
       ipl10
       epl20
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       dotlambda
       lewo
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

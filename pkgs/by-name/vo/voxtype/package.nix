@@ -1,53 +1,46 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  nix-update-script,
-  versionCheckHook,
-
+  alsa-lib,
   clang,
   cmake,
+  dotool,
   gitMinimal,
   installShellFiles,
   libclang,
-  makeBinaryWrapper,
-  pkg-config,
-
-  alsa-lib,
-  dotool,
   libnotify,
+  makeBinaryWrapper,
+  nix-update-script,
+  onnxruntime,
   openssl,
   pciutils,
-  wl-clipboard,
-  wtype,
-  which,
-  xclip,
-  xdotool,
-
-  installManPages ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
-  installShellCompletions ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
-
-  vulkanSupport ? false,
+  pkg-config,
+  rustPlatform,
   shaderc,
+  versionCheckHook,
   vulkan-headers,
   vulkan-loader,
-
+  which,
+  wl-clipboard,
+  wtype,
+  xclip,
+  xdotool,
+  installManPages ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
+  installShellCompletions ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
   onnxSupport ? false,
-  onnxruntime,
-
-  waylandSupport ? stdenv.hostPlatform.isLinux,
+  vulkanSupport ? false,
   waylandRuntimePackages ? [
     dotool
     wl-clipboard
     wtype
   ],
-
-  x11Support ? stdenv.hostPlatform.isLinux,
+  waylandSupport ? stdenv.hostPlatform.isLinux,
   x11RuntimePackages ? [
     xclip
     xdotool
   ],
+  x11Support ? stdenv.hostPlatform.isLinux,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -60,20 +53,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-CpG/5ws9VX8ZQjwtJMxyUF0L90u+j0veHHLHGqTvoIw=";
   };
-
-  cargoHash = "sha256-gHnYssFZixWt7F8oa1yYyfqThCrRsv0U7ezgZUcq1nk=";
-
-  buildFeatures =
-    [ ]
-    ++ lib.optionals vulkanSupport [ "gpu-vulkan" ]
-    ++ lib.optionals onnxSupport [
-      "parakeet-load-dynamic"
-      "moonshine"
-      "sensevoice"
-      "paraformer"
-      "dolphin"
-      "omnilingual"
-    ];
 
   nativeBuildInputs = [
     cmake
@@ -100,6 +79,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ++ lib.optionals onnxSupport [
     onnxruntime
   ];
+
+  cargoHash = "sha256-gHnYssFZixWt7F8oa1yYyfqThCrRsv0U7ezgZUcq1nk=";
 
   env = {
     # NOTE: set LIBCLANG_PATH so bindgen can locate libclang
@@ -154,27 +135,42 @@ rustPlatform.buildRustPackage (finalAttrs: {
     installShellCompletion packaging/completions/voxtype.{bash,zsh,fish}
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  buildFeatures =
+    [ ]
+    ++ lib.optionals vulkanSupport [ "gpu-vulkan" ]
+    ++ lib.optionals onnxSupport [
+      "parakeet-load-dynamic"
+      "moonshine"
+      "sensevoice"
+      "paraformer"
+      "dolphin"
+      "omnilingual"
+    ];
 
   passthru.update-script = nix-update-script { };
 
   meta = {
     description = "Voice-to-text with push-to-talk for Wayland compositors";
+
     longDescription = ''
       Voxtype is a push-to-talk voice-to-text daemon for Linux.
       Hold a hotkey while speaking, release to transcribe and output
       text at your cursor position. Supports Whisper, Parakeet,
       SenseVoice, Moonshine, Paraformer, Dolphin, and Omnilingual engines.
     '';
+
     homepage = "https://voxtype.io";
-    downloadPage = "https://voxtype.io/download/";
     changelog = "https://github.com/peteonrails/voxtype/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ DuskyElf ];
     platforms = lib.platforms.linux;
     mainProgram = "voxtype";
+    downloadPage = "https://voxtype.io/download/";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "objsize";
   version = "0.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "liran-funaro";
@@ -18,15 +17,15 @@ buildPythonPackage rec {
     hash = "sha256-u4PTUk3K3ZCNZ87xM+PoCabsw+EjOoDgNySDWWB7yho=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "objsize" ];
-
   enabledTestPaths = [ "test_objsize.py" ];
+  pyproject = true;
+  pythonImportsCheck = [ "objsize" ];
 
   meta = {
     description = "Traversal over objects subtree and calculate the total size";

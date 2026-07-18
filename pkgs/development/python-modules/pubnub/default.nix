@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
   busypie,
   cbor2,
-  fetchFromGitHub,
   h2,
   httpx,
   pycryptodomex,
@@ -18,7 +18,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pubnub";
   version = "10.7.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pubnub";
@@ -27,7 +26,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-qHLkRWq30o6F1P5z+hxUkGLOh15ReOVtto0ttKCiPqg=";
   };
 
-  pythonRelaxDeps = [ "httpx" ];
+  nativeCheckInputs = [
+    busypie
+    pytest-asyncio
+    pytest-vcr
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -38,13 +42,6 @@ buildPythonPackage (finalAttrs: {
     httpx
     pycryptodomex
     requests
-  ];
-
-  nativeCheckInputs = [
-    busypie
-    pytest-asyncio
-    pytest-vcr
-    pytestCheckHook
   ];
 
   disabledTestPaths = [
@@ -61,7 +58,9 @@ buildPythonPackage (finalAttrs: {
     "test_handshaking"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pubnub" ];
+  pythonRelaxDeps = [ "httpx" ];
 
   meta = {
     description = "Python-based APIs for PubNub";

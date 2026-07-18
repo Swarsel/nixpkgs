@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pypaInstallHook,
   setuptoolsBuildHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "urlobject";
   version = "2.4.3";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "zacharyvoase";
@@ -25,7 +24,7 @@ buildPythonPackage rec {
 
   # Tests use `nose`
   doInstallCheck = false;
-
+  pyproject = false;
   pythonImportsCheck = [ "urlobject" ];
 
   meta = {

@@ -1,25 +1,24 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  dbus,
   fetchFromCodeberg,
-  pkg-config,
   meson,
   ninja,
-  dbus,
+  pkg-config,
   scdoc,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "fyi";
   version = "1.0.4";
+
   src = fetchFromCodeberg {
     owner = "dnkl";
     repo = "fyi";
     rev = finalAttrs.version;
     hash = "sha256-UGkShHziREQTkQUlbFXT1144BiBApFVbCvu5A1DuoMI=";
   };
-
-  depsBuildBuild = [ pkg-config ];
 
   nativeBuildInputs = [
     pkg-config
@@ -29,14 +28,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ dbus ];
+  depsBuildBuild = [ pkg-config ];
 
   meta = {
-    changelog = "https://codeberg.org/dnkl/fyi/releases/tag/${finalAttrs.version}";
     description = "Command line utility to create desktop notifications";
     homepage = "https://codeberg.org/dnkl/fyi";
+    changelog = "https://codeberg.org/dnkl/fyi/releases/tag/${finalAttrs.version}";
     license = [ lib.licenses.mit ];
-    mainProgram = "fyi";
     maintainers = with lib.maintainers; [ marnym ];
     platforms = lib.platforms.linux;
+    mainProgram = "fyi";
   };
 })

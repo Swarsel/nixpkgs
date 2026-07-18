@@ -2,19 +2,18 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  filelock,
+  platformdirs,
   replaceVars,
+  requests,
   setuptools,
   setuptools-scm,
-  filelock,
-  requests,
-  platformdirs,
   unicode-character-database,
 }:
 
 buildPythonPackage rec {
   pname = "youseedee";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -29,6 +28,13 @@ buildPythonPackage rec {
     })
   ];
 
+  # Package has no unit tests, but we can check an example as per README.rst:
+  checkPhase = ''
+    runHook preCheck
+    python -m youseedee 0x078A | grep -qE "Block\s+Thaana"
+    runHook postCheck
+  '';
+
   build-system = [
     setuptools
     setuptools-scm
@@ -40,12 +46,7 @@ buildPythonPackage rec {
     platformdirs
   ];
 
-  # Package has no unit tests, but we can check an example as per README.rst:
-  checkPhase = ''
-    runHook preCheck
-    python -m youseedee 0x078A | grep -qE "Block\s+Thaana"
-    runHook postCheck
-  '';
+  pyproject = true;
 
   meta = {
     description = "Python library for querying the Unicode Character Database";

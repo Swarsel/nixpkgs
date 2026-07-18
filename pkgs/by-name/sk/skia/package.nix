@@ -1,13 +1,15 @@
 {
   lib,
   stdenv,
-  fetchgit,
+  cctools,
   expat,
+  fetchgit,
+  fixDarwinDylibNames,
   fontconfig,
   freetype,
+  gn,
   harfbuzzFull,
   icu,
-  gn,
   libGL,
   libjpeg,
   libwebp,
@@ -18,10 +20,7 @@
   vulkan-headers,
   vulkan-memory-allocator,
   xcbuild,
-  cctools,
   zlib,
-  fixDarwinDylibNames,
-
   enableVulkan ? !stdenv.hostPlatform.isDarwin,
 }:
 
@@ -48,6 +47,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   strictDeps = true;
+
   nativeBuildInputs = [
     gn
     ninja
@@ -75,46 +75,6 @@ stdenv.mkDerivation (finalAttrs: {
     vulkan-headers
     vulkan-memory-allocator
   ];
-
-  gnFlags =
-    let
-      cpu =
-        {
-          "x86_64" = "x64";
-          "i686" = "x86";
-          "arm" = "arm";
-          "aarch64" = "arm64";
-        }
-        .${stdenv.hostPlatform.parsed.cpu.name};
-    in
-    [
-      # Build in release mode
-      "is_official_build=true"
-      "is_component_build=true"
-      # Don't use missing tools
-      "skia_use_dng_sdk=false"
-      "skia_use_wuffs=false"
-      # Use system dependencies
-      "extra_cflags=[\"-I${harfbuzzFull.dev}/include/harfbuzz\"]"
-      "cc=\"${stdenv.cc.targetPrefix}cc\""
-      "cxx=\"${stdenv.cc.targetPrefix}c++\""
-      "ar=\"${stdenv.cc.targetPrefix}ar\""
-      "target_cpu=\"${cpu}\""
-    ]
-    ++ map (lib: "skia_use_system_${lib}=true") [
-      "zlib"
-      "harfbuzz"
-      "libpng"
-      "libwebp"
-    ]
-    ++ lib.optionals enableVulkan [
-      "skia_use_vulkan=true"
-    ]
-    ++ lib.optionals stdenv.hostPlatform.isDarwin [
-      "skia_use_fontconfig=true"
-      "skia_use_freetype=true"
-      "skia_use_metal=true"
-    ];
 
   env.NIX_LDFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-lz";
 
@@ -160,6 +120,46 @@ stdenv.mkDerivation (finalAttrs: {
         --replace-fail '#include "include/' '#include "'
     done
   '';
+
+  gnFlags =
+    let
+      cpu =
+        {
+          "aarch64" = "arm64";
+          "arm" = "arm";
+          "i686" = "x86";
+          "x86_64" = "x64";
+        }
+        .${stdenv.hostPlatform.parsed.cpu.name};
+    in
+    [
+      # Build in release mode
+      "is_official_build=true"
+      "is_component_build=true"
+      # Don't use missing tools
+      "skia_use_dng_sdk=false"
+      "skia_use_wuffs=false"
+      # Use system dependencies
+      "extra_cflags=[\"-I${harfbuzzFull.dev}/include/harfbuzz\"]"
+      "cc=\"${stdenv.cc.targetPrefix}cc\""
+      "cxx=\"${stdenv.cc.targetPrefix}c++\""
+      "ar=\"${stdenv.cc.targetPrefix}ar\""
+      "target_cpu=\"${cpu}\""
+    ]
+    ++ map (lib: "skia_use_system_${lib}=true") [
+      "zlib"
+      "harfbuzz"
+      "libpng"
+      "libwebp"
+    ]
+    ++ lib.optionals enableVulkan [
+      "skia_use_vulkan=true"
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [
+      "skia_use_fontconfig=true"
+      "skia_use_freetype=true"
+      "skia_use_metal=true"
+    ];
 
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 

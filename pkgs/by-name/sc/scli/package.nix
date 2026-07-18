@@ -1,12 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
   dbus,
-  signal-cli,
-  xclip,
-  testers,
+  python3,
   scli,
+  signal-cli,
+  testers,
+  xclip,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
@@ -25,9 +25,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     urwid
     urwid-readline
   ];
-  pyproject = false;
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -38,6 +35,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
 
   makeWrapperArgs = [
     "--prefix"
@@ -50,18 +49,20 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ])
   ];
 
+  pyproject = false;
+
   passthru.tests = {
     version = testers.testVersion {
-      package = scli;
       command = "HOME=$(mktemp -d) scli --version";
+      package = scli;
     };
   };
 
   meta = {
     description = "Simple terminal user interface for Signal";
-    mainProgram = "scli";
     homepage = "https://github.com/isamert/scli";
     license = lib.licenses.gpl3Only;
     maintainers = [ ];
+    mainProgram = "scli";
   };
 })

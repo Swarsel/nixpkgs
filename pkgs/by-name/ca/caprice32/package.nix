@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  SDL,
   desktop-file-utils,
+  freetype,
   libGLU,
   libpng,
   pkg-config,
-  SDL,
-  freetype,
   zlib,
 }:
 
@@ -15,32 +15,33 @@ stdenv.mkDerivation (finalAttrs: {
 
   pname = "caprice32";
   version = "4.6.0";
+
   # NOTE: When bumping version beyond 4.6.0, you likely need to remove
   #       string.patch below. The fix of this patch has already been
   #       done upstream but is not yet part of a release
-
   src = fetchFromGitHub {
+    owner = "ColinPitrat";
     repo = "caprice32";
     rev = "v${finalAttrs.version}";
-    owner = "ColinPitrat";
     sha256 = "0hng5krwgc1h9bz1xlkp2hwnvas965nd7sb3z9mb2m6x9ghxlacz";
   };
+
+  patches = [
+    ./string.patch
+    ./cstdint.patch
+  ];
 
   nativeBuildInputs = [
     desktop-file-utils
     pkg-config
   ];
+
   buildInputs = [
     libGLU
     libpng
     SDL
     freetype
     zlib
-  ];
-
-  patches = [
-    ./string.patch
-    ./cstdint.patch
   ];
 
   makeFlags = [

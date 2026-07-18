@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   attrs,
   buildPythonPackage,
-  fetchFromGitHub,
   fetchpatch,
   packaging,
   poetry-core,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "arsenic";
   version = "21.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "HENNGE";
@@ -25,20 +24,20 @@ buildPythonPackage rec {
   patches = [
     # Switch to poetry-core, https://github.com/HENNGE/arsenic/pull/160
     (fetchpatch {
+      hash = "sha256-ECCUaJF4MRmFOKH1C6HowJ+zmbEPPiS7h9DlKw5otZc=";
       name = "switch-to-poetry-core.patch";
       url = "https://github.com/HENNGE/arsenic/commit/ca82894a5f1e832ab9283a245258b334bdd48855.patch";
-      hash = "sha256-ECCUaJF4MRmFOKH1C6HowJ+zmbEPPiS7h9DlKw5otZc=";
     })
     # Replace distutils with packaging, https://github.com/HENNGE/arsenic/pull/166
     (fetchpatch {
+      hash = "sha256-QbOH6EdFKZxm1VaXRiTbJ3zIzEKVet9GUQDaJnmSNQw=";
       name = "replace-distutils.patch";
       url = "https://github.com/HENNGE/arsenic/commit/440faed7d2a8fbd635a135c007051ea494e72873.patch";
-      hash = "sha256-QbOH6EdFKZxm1VaXRiTbJ3zIzEKVet9GUQDaJnmSNQw=";
     })
   ];
 
-  pythonRelaxDeps = [ "structlog" ];
-
+  # Test depends on asyncio_extras which is not longer maintained
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -48,10 +47,9 @@ buildPythonPackage rec {
     structlog
   ];
 
-  # Test depends on asyncio_extras which is not longer maintained
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "arsenic" ];
+  pythonRelaxDeps = [ "structlog" ];
 
   meta = {
     description = "WebDriver implementation for asyncio and asyncio-compatible frameworks";

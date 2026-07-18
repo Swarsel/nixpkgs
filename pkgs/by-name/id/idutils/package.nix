@@ -1,17 +1,17 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  emacs,
-  gnulib,
+  fetchurl,
   autoconf,
-  bison,
   automake,
+  bison,
+  emacs,
   gettext,
+  gnulib,
   gperf,
-  texinfo,
   perl,
   rsync,
+  texinfo,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,16 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1hmai3422iaqnp34kkzxdnywl7n7pvlxp11vrw66ybxn9wxg90c1";
   };
 
-  preConfigure = ''
-    # replace embedded gnulib tests with those from gnulib package
-    bash -O extglob -c "cd gnulib-tests; rm -r !(Makefile.am)"
-    substituteInPlace ./configure.ac --replace "AC_PREREQ(2.61)" "AC_PREREQ(2.64)"
-    ./bootstrap --force --gnulib-srcdir=${gnulib} --skip-po --bootstrap-sync --no-git
-  '';
-
-  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
-    emacs
-  ];
+  patches = [ ./nix-mapping.patch ];
 
   nativeBuildInputs = [
     gnulib
@@ -46,9 +37,18 @@ stdenv.mkDerivation (finalAttrs: {
     rsync
   ];
 
-  doCheck = !stdenv.hostPlatform.isDarwin;
+  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
+    emacs
+  ];
 
-  patches = [ ./nix-mapping.patch ];
+  preConfigure = ''
+    # replace embedded gnulib tests with those from gnulib package
+    bash -O extglob -c "cd gnulib-tests; rm -r !(Makefile.am)"
+    substituteInPlace ./configure.ac --replace "AC_PREREQ(2.61)" "AC_PREREQ(2.64)"
+    ./bootstrap --force --gnulib-srcdir=${gnulib} --skip-po --bootstrap-sync --no-git
+  '';
+
+  doCheck = !stdenv.hostPlatform.isDarwin;
 
   meta = {
     description = "Text searching utility";
@@ -76,7 +76,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     homepage = "https://www.gnu.org/software/idutils/";
     license = lib.licenses.gpl3Plus;
-
     maintainers = with lib.maintainers; [ gfrascadorio ];
     platforms = lib.platforms.all;
   };

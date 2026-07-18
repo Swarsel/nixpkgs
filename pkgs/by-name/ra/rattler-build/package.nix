@@ -2,14 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-
+  buildPackages,
+  installShellFiles,
+  nix-update-script,
   openssl,
   pkg-config,
-  installShellFiles,
-  buildPackages,
+  rustPlatform,
   versionCheckHook,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -23,20 +22,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-dS+PLxG5HfORy3hCEipS1rCoqCttHcqwsvIXwE5lQ/w=";
   };
 
-  cargoHash = "sha256-uJjS0dE89XRy1irTZv1piH2Mm9/CqeNuUJl8Ntc4V8c=";
-
-  doCheck = false; # test requires network access
-
-  buildInputs = [
-    openssl
-  ];
-
   nativeBuildInputs = [
     pkg-config
     installShellFiles
   ];
 
-  cargoBuildFlags = [ "--bin rattler-build" ]; # other bin like `generate-cli-docs` shouldn't be distributed.
+  buildInputs = [
+    openssl
+  ];
+
+  cargoHash = "sha256-uJjS0dE89XRy1irTZv1piH2Mm9/CqeNuUJl8Ntc4V8c=";
+  doCheck = false; # test requires network access
 
   postInstall = lib.optionalString (stdenv.hostPlatform.emulatorAvailable buildPackages) (
     let
@@ -51,10 +47,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   );
 
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
+  cargoBuildFlags = [ "--bin rattler-build" ]; # other bin like `generate-cli-docs` shouldn't be distributed.
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -62,10 +60,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://rattler.build/";
     changelog = "https://github.com/prefix-dev/rattler-build/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       genga898
       xiaoxiangmoe
     ];
+
     mainProgram = "rattler-build";
   };
 })

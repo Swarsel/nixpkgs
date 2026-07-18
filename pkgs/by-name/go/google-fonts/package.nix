@@ -1,13 +1,20 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
   fonts ? [ ],
 }:
 
 stdenvNoCC.mkDerivation {
   pname = "google-fonts";
   version = "0-unstable-2026-03-13";
+
+  src = fetchFromGitHub {
+    owner = "google";
+    repo = "fonts";
+    rev = "5174b3333331c966c38f4355d50b03ca1c1df2f9";
+    hash = "sha256-XvFlnyXCM69WscpY20EhKAaKYj1fs0eqmODZWx0NIPg=";
+  };
 
   # Adobe Blank is split out in a separate output,
   # because it causes crashes with `libfontconfig`.
@@ -16,13 +23,6 @@ stdenvNoCC.mkDerivation {
     "out"
     "adobeBlank"
   ];
-
-  src = fetchFromGitHub {
-    owner = "google";
-    repo = "fonts";
-    rev = "5174b3333331c966c38f4355d50b03ca1c1df2f9";
-    hash = "sha256-XvFlnyXCM69WscpY20EhKAaKYj1fs0eqmODZWx0NIPg=";
-  };
 
   postPatch = ''
     # These directories need to be removed because they contain
@@ -42,13 +42,6 @@ stdenvNoCC.mkDerivation {
     fi
   '';
 
-  dontBuild = true;
-
-  # The font files are in the fonts directory and use three naming schemes:
-  # FamilyName-StyleName.ttf, FamilyName[param1,param2,...].ttf, and
-  # FamilyName.ttf. This installs all fonts if fonts is empty and otherwise
-  # only the specified fonts by FamilyName.
-  fonts = map (font: builtins.replaceStrings [ " " ] [ "" ] font) fonts;
   installPhase = ''
     adobeBlankDest=$adobeBlank/share/fonts/truetype
     install -m 444 -Dt $adobeBlankDest ofl/adobeblank/AdobeBlank-Regular.ttf
@@ -68,16 +61,25 @@ stdenvNoCC.mkDerivation {
       ''
   );
 
+  dontBuild = true;
+  # The font files are in the fonts directory and use three naming schemes:
+  # FamilyName-StyleName.ttf, FamilyName[param1,param2,...].ttf, and
+  # FamilyName.ttf. This installs all fonts if fonts is empty and otherwise
+  # only the specified fonts by FamilyName.
+  fonts = map (font: builtins.replaceStrings [ " " ] [ "" ] font) fonts;
+
   meta = {
-    homepage = "https://fonts.google.com";
     description = "Font files available from Google Fonts";
+    homepage = "https://fonts.google.com";
+
     license = with lib.licenses; [
       asl20
       ofl
       ufl
     ];
+
+    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
     platforms = lib.platforms.all;
     hydraPlatforms = [ ];
-    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
   };
 }

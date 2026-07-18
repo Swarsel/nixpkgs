@@ -15,19 +15,20 @@
 buildPythonPackage (finalAttrs: {
   pname = "google-cloud-webrisk";
   version = "1.22.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_webrisk";
     inherit (finalAttrs) version;
     hash = "sha256-OjJcQDXpbtq4RB8Cev6UgCqvDByOXmoJ306oFlQtryQ=";
+    pname = "google_cloud_webrisk";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
+  nativeCheckInputs = [
+    mock
+    pytest-asyncio
+    pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     google-api-core
@@ -37,16 +38,16 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  nativeCheckInputs = [
-    mock
-    pytest-asyncio
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "google.cloud.webrisk"
     "google.cloud.webrisk_v1"
     "google.cloud.webrisk_v1beta1"
+  ];
+
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

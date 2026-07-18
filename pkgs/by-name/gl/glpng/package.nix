@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchFromRepoOrCz,
   cmake,
+  fetchFromRepoOrCz,
   libGL,
   libpng,
   pkg-config,
@@ -31,8 +31,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://repo.or.cz/glpng.git/blob_plain/HEAD:/glpng.htm";
     description = "PNG loader library for OpenGL";
+    homepage = "https://repo.or.cz/glpng.git/blob_plain/HEAD:/glpng.htm";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.unix;

@@ -1,14 +1,14 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
-  yarnInstallHook,
-  nodejs,
-  versionCheckHook,
   nix-update-script,
+  nodejs,
+  stdenvNoCC,
+  versionCheckHook,
+  yarnBuildHook,
+  yarnConfigHook,
+  yarnInstallHook,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -22,11 +22,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-2nQCxmZdDMKHcmVihloU4leKRB9LRBO4Q5AINR1vdCQ=";
   };
 
-  offlineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-YemcF7hRg+LAkR3US1xAgE0ELAeZTVLhscOphjmheRI=";
-  };
-
   nativeBuildInputs = [
     yarnConfigHook
     yarnBuildHook
@@ -35,10 +30,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     nodejs
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-  versionCheckProgram = "${placeholder "out"}/bin/gitmoji";
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-YemcF7hRg+LAkR3US1xAgE0ELAeZTVLhscOphjmheRI=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
+
+  versionCheckProgram = "${placeholder "out"}/bin/gitmoji";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -46,9 +46,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://github.com/carloscuesta/gitmoji-cli";
     changelog = "https://github.com/carloscuesta/gitmoji-cli/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "gitmoji";
+
     maintainers = with lib.maintainers; [
       yzx9
     ];
+
+    mainProgram = "gitmoji";
   };
 })

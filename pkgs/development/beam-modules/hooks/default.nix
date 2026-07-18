@@ -13,6 +13,11 @@
     meta.license = lib.licenses.mit;
   } ./beam-module-install-hook.sh;
 
+  mixAppConfigPatchHook = makeSetupHook {
+    name = "mix-config-patch-hook.sh";
+    meta.license = lib.licenses.mit;
+  } ./mix-app-config-patch-hook.sh;
+
   mixBuildDirHook = makeSetupHook {
     name = "mix-configure-hook.sh";
     meta.license = lib.licenses.mit;
@@ -22,11 +27,6 @@
     name = "mix-compile-hook.sh";
     meta.license = lib.licenses.mit;
   } ./mix-compile-hook.sh;
-
-  mixAppConfigPatchHook = makeSetupHook {
-    name = "mix-config-patch-hook.sh";
-    meta.license = lib.licenses.mit;
-  } ./mix-app-config-patch-hook.sh;
 
   rebar3CompileHook = makeSetupHook {
     name = "rebar3-compile-hook.sh";

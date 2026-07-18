@@ -1,22 +1,20 @@
 {
-  stdenv,
   lib,
-  mkDerivation,
-  cmake,
-  extra-cmake-modules,
-  kdoctools,
-  qttools,
+  stdenv,
   acl,
   attr,
-  libkrb5,
-  util-linux,
+  cmake,
+  extra-cmake-modules,
   karchive,
   kbookmarks,
   kcompletion,
   kconfig,
   kconfigwidgets,
   kcoreaddons,
+  kcrash,
   kdbusaddons,
+  kded,
+  kdoctools,
   ki18n,
   kiconthemes,
   kitemviews,
@@ -28,21 +26,34 @@
   kwidgetsaddons,
   kwindowsystem,
   kxmlgui,
+  libkrb5,
+  mkDerivation,
   qtbase,
   qtscript,
+  qttools,
   qtx11extras,
   solid,
-  kcrash,
-  kded,
+  util-linux,
 }:
 
 mkDerivation {
   pname = "kio";
+
+  outputs = [
+    "out"
+    "dev"
+  ];
+
+  patches = [
+    ./0001-Remove-impure-smbd-search-path.patch
+  ];
+
   nativeBuildInputs = [
     cmake
     extra-cmake-modules
     kdoctools
   ];
+
   buildInputs = [
     karchive
     kconfigwidgets
@@ -64,6 +75,7 @@ mkDerivation {
     attr # both are needed for ACL support
     util-linux # provides libmount
   ];
+
   propagatedBuildInputs = [
     kbookmarks
     kcompletion
@@ -80,14 +92,9 @@ mkDerivation {
   ++ lib.optionals stdenv.hostPlatform.isLinux [
     kded
   ];
-  outputs = [
-    "out"
-    "dev"
-  ];
+
   separateDebugInfo = true;
-  patches = [
-    ./0001-Remove-impure-smbd-search-path.patch
-  ];
+
   meta = {
     homepage = "https://api.kde.org/frameworks/kio/html/";
   };

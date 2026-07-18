@@ -1,14 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   argcomplete,
   backoff,
   buildPythonPackage,
-  fetchFromGitHub,
   importlib-metadata,
   parameterized,
   poetry-core,
-  pytest-mock,
   pytest-cov-stub,
+  pytest-mock,
   pytestCheckHook,
   pythonAtLeast,
   requests,
@@ -21,7 +21,6 @@
 buildPythonPackage rec {
   pname = "censys";
   version = "2.2.19";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "censys";
@@ -29,16 +28,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-3eQtGCIKtjpDWfyrIEPZnA6xLMNl0cg61wh0nuwNwh4=";
   };
-
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    argcomplete
-    backoff
-    requests
-    rich
-    importlib-metadata
-  ];
 
   nativeCheckInputs = [
     parameterized
@@ -55,6 +44,16 @@ buildPythonPackage rec {
     mkdir -p $HOME
   '';
 
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    argcomplete
+    backoff
+    requests
+    rich
+    importlib-metadata
+  ];
+
   disabledTests = lib.optionals (pythonAtLeast "3.14") [
     # argparse usage prefix uses the actual prog (python3.14 -m pytest) instead of sys.argv[0]
     "test_default_help"
@@ -62,6 +61,7 @@ buildPythonPackage rec {
     "test_search_help"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "censys" ];
 
   meta = {

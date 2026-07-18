@@ -1,8 +1,8 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   aiohttp,
+  buildPythonPackage,
   dask,
   distributed,
   hatchling,
@@ -12,7 +12,6 @@ buildPythonPackage rec {
   pname = "dask-gateway";
   # update dask-gateway lock step with dask-gateway-server
   version = "2025.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dask";
@@ -21,8 +20,8 @@ buildPythonPackage rec {
     hash = "sha256-Ezt5QkA21SDfuCMm+XY8d+xso8SDb4lmK/yd89Guu0Y=";
   };
 
-  sourceRoot = "${src.name}/dask-gateway";
-
+  # tests requires cluster for testing
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -31,10 +30,9 @@ buildPythonPackage rec {
     distributed
   ];
 
-  # tests requires cluster for testing
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "dask_gateway" ];
+  sourceRoot = "${src.name}/dask-gateway";
 
   meta = {
     description = "Client library for interacting with a dask-gateway server";

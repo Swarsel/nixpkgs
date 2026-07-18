@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 buildGoModule (finalAttrs: {
@@ -16,6 +16,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-hEPZrS2D6YqlaaJXF8uyt+fJ38Adi3WvOq7v9dZuovI=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
@@ -23,14 +25,11 @@ buildGoModule (finalAttrs: {
     "-X github.com/timo-reymann/deterministic-zip/pkg/buildinfo.Version=${finalAttrs.version}"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-
   meta = {
     description = "Simple (almost drop-in) replacement for zip that produces deterministic files";
-    mainProgram = "deterministic-zip";
     homepage = "https://github.com/timo-reymann/deterministic-zip";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ rhysmdnz ];
+    mainProgram = "deterministic-zip";
   };
 })

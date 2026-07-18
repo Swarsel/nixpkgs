@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -19,11 +19,11 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-yKNJHs6A7Du9NvGOpwaDmABz6SBMPVzJNoQb7W32IfA=";
 
-  ldflags = [ "-s" ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  doInstallCheck = true;
+  checkFlags = lib.optionals stdenv.hostPlatform.isDarwin [
+    # utils_test.go:62: route ip+net: no such network interface
+    # does not work in sandbox even with __darwinAllowLocalNetworking
+    "-skip=^TestGetIPv4Addr$"
+  ];
 
   preCheck = ''
     # Possible race condition
@@ -32,12 +32,9 @@ buildGoModule (finalAttrs: {
     rm update/update_test.go
   '';
 
-  checkFlags = lib.optionals stdenv.hostPlatform.isDarwin [
-    # utils_test.go:62: route ip+net: no such network interface
-    # does not work in sandbox even with __darwinAllowLocalNetworking
-    "-skip=^TestGetIPv4Addr$"
-  ];
-
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  ldflags = [ "-s" ];
   versionCheckProgramArg = [ "-v" ];
 
   meta = {
@@ -45,11 +42,13 @@ buildGoModule (finalAttrs: {
     homepage = "https://goshs.de";
     changelog = "https://github.com/goshs-labs/goshs/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       fab
       matthiasbeyer
       seiarotg
     ];
+
     mainProgram = "goshs";
   };
 })

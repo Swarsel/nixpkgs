@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "hns";
   version = "1.0.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "primaprashant";
@@ -30,6 +29,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     sounddevice
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "hns"
   ];
@@ -38,6 +39,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     description = "Speech-to-text CLI to transcribe voice from microphone directly to clipboard";
     homepage = "https://hns-cli.dev";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       afh
       dwt

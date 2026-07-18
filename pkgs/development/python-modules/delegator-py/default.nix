@@ -1,15 +1,14 @@
 {
-  buildPythonPackage,
   lib,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pexpect,
+  setuptools,
 }:
 
 buildPythonPackage rec {
-  version = "0.1.1";
   pname = "delegator-py";
-  pyproject = true;
+  version = "0.1.1";
 
   src = fetchFromGitHub {
     owner = "amitt001";
@@ -18,14 +17,12 @@ buildPythonPackage rec {
     hash = "sha256-i9OZkXcDqrKnCFJBBxP8PrHxPGF7DEgZr91p+fuAyZ4=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pexpect ];
-
-  pythonImportsCheck = [ "delegator" ];
-
   # no tests in github or pypi
   doCheck = false;
+  build-system = [ setuptools ];
+  dependencies = [ pexpect ];
+  pyproject = true;
+  pythonImportsCheck = [ "delegator" ];
 
   meta = {
     description = "Subprocesses for Humans 2.0";

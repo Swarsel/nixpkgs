@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "requests-oauthlib";
   version = "2.0.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -30,6 +29,9 @@ buildPythonPackage rec {
     requests-mock
   ];
 
+  # Requires selenium and chrome
+  disabledTestPaths = [ "tests/examples/test_native_spa_pkce_auth0.py" ];
+
   disabledTests = [
     # Exclude tests which require network access
     "testCanPostBinaryData"
@@ -39,9 +41,7 @@ buildPythonPackage rec {
     "test_fetch_access_token"
   ];
 
-  # Requires selenium and chrome
-  disabledTestPaths = [ "tests/examples/test_native_spa_pkce_auth0.py" ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "requests_oauthlib" ];
 
   meta = {

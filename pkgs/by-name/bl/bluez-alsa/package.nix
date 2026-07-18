@@ -1,23 +1,23 @@
 {
   lib,
   stdenv,
-  aacSupport ? true,
+  fetchFromGitHub,
   alsa-lib,
   autoreconfHook,
   bluez,
   dbus,
   fdk_aac,
-  fetchFromGitHub,
   gitUpdater,
   glib,
   libbsd,
   ncurses,
   pkg-config,
+  python3,
   readline,
   sbc,
-  python3,
-  systemdSupport ? true,
   systemdLibs,
+  aacSupport ? true,
+  systemdSupport ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -69,8 +69,8 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://github.com/Arkq/bluez-alsa";
     description = "Bluez 5 Bluetooth Audio ALSA Backend";
+
     longDescription = ''
       Bluez-ALSA (BlueALSA) is an ALSA backend for Bluez 5 audio interface.
       Bluez-ALSA registers all Bluetooth devices with audio profiles in Bluez
@@ -90,10 +90,12 @@ stdenv.mkDerivation (finalAttrs: {
       BluezALSA if you disable `bluetooth-discover` and `bluez5-discover`
       modules in PA and configure it to play/capture sound over `bluealsa` PCM.
     '';
+
+    homepage = "https://github.com/Arkq/bluez-alsa";
     license = with lib.licenses; [ mit ];
-    mainProgram = "bluealsa";
     maintainers = with lib.maintainers; [ oxij ];
     platforms = lib.platforms.linux;
+    mainProgram = "bluealsa";
   };
 })
 # TODO: aptxSupport

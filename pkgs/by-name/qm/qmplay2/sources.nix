@@ -17,6 +17,18 @@
     in
     self;
 
+  qmvk = {
+    pname = "qmvk";
+    version = "0-unstable-2026-06-21";
+
+    src = fetchFromGitHub {
+      owner = "zaps166";
+      repo = "QmVk";
+      rev = "26ef419a3b91bc11856c714b3b932c62db098bf9";
+      hash = "sha256-EaOGXYjon1brDQx+l7C2jvUkYgkW+D1qP52JPiMr3H0=";
+    };
+  };
+
   vulkan-headers-qmplay2 =
     let
       self = {
@@ -32,16 +44,4 @@
       };
     in
     self;
-
-  qmvk = {
-    pname = "qmvk";
-    version = "0-unstable-2026-06-21";
-
-    src = fetchFromGitHub {
-      owner = "zaps166";
-      repo = "QmVk";
-      rev = "26ef419a3b91bc11856c714b3b932c62db098bf9";
-      hash = "sha256-EaOGXYjon1brDQx+l7C2jvUkYgkW+D1qP52JPiMr3H0=";
-    };
-  };
 }

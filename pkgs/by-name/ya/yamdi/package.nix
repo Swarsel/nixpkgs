@@ -26,8 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Yet Another MetaData Injector for FLV";
     homepage = "https://yamdi.sourceforge.net/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.ryanartecona ];
+    platforms = lib.platforms.all;
     mainProgram = "yamdi";
   };
 })

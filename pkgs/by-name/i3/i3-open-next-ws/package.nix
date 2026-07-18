@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "i3-open-next-ws";
@@ -18,8 +18,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Workspace management utility for i3 and sway, that picks the first unused workspace automagically";
     homepage = "https://github.com/JohnDowson/i3-open-next-ws";
     license = lib.licenses.mit;
-    mainProgram = "i3-open-next-ws";
     maintainers = with lib.maintainers; [ quantenzitrone ];
     platforms = lib.platforms.linux;
+    mainProgram = "i3-open-next-ws";
   };
 })

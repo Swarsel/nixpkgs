@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
-  webencodings,
   pytestCheckHook,
+  webencodings,
 }:
 
 buildPythonPackage rec {
   pname = "tinyhtml5";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "CourtBouillon";
@@ -18,6 +17,10 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-PSDlCLPK3JVMq5dyt6xzNb4xx3F8Jwf8HAgYLKoXH+E=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     flit-core
@@ -27,18 +30,16 @@ buildPythonPackage rec {
     webencodings
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "tinyhtml5"
   ];
 
   meta = {
-    changelog = "https://github.com/CourtBouillon/tinyhtml5/releases/tag/${src.tag}";
     description = "Tiny HTML5 parser";
     homepage = "https://github.com/CourtBouillon/tinyhtml5";
+    changelog = "https://github.com/CourtBouillon/tinyhtml5/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

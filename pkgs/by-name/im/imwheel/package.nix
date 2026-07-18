@@ -28,12 +28,12 @@ stdenv.mkDerivation (finalAttrs: {
     libxtst
   ];
 
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
-
   makeFlags = [
     "sysconfdir=/etc"
     "ETCDIR=/etc"
   ];
+
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
 
   installFlags = [
     "sysconfdir=${placeholder "out"}/etc"
@@ -41,11 +41,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://imwheel.sourceforge.net/";
     description = "Mouse wheel configuration tool for XFree86/Xorg";
+    homepage = "https://imwheel.sourceforge.net/";
+    license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ jhillyerd ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl2Only;
     mainProgram = "imwheel";
   };
 })

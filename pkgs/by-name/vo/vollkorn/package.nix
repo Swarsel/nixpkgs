@@ -1,27 +1,28 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "vollkorn";
   version = "4.105";
 
+  src = fetchzip {
+    url = "http://vollkorn-typeface.com/download/vollkorn-${
+      builtins.replaceStrings [ "." ] [ "-" ] finalAttrs.version
+    }.zip";
+
+    hash = "sha256-oG79GgCwCavbMFAPakza08IPmt13Gwujrkc/NKTai7g=";
+    stripRoot = false;
+  };
+
   outputs = [
     "out"
     "webfont"
     "doc"
   ];
-
-  src = fetchzip {
-    url = "http://vollkorn-typeface.com/download/vollkorn-${
-      builtins.replaceStrings [ "." ] [ "-" ] finalAttrs.version
-    }.zip";
-    stripRoot = false;
-    hash = "sha256-oG79GgCwCavbMFAPakza08IPmt13Gwujrkc/NKTai7g=";
-  };
 
   nativeBuildInputs = [ installFonts ];
 
@@ -30,10 +31,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://vollkorn-typeface.com/";
     description = "Free and healthy typeface for bread and butter use";
+    homepage = "http://vollkorn-typeface.com/";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.schmittlauch ];
+    platforms = lib.platforms.all;
   };
 })

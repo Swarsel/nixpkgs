@@ -1,30 +1,30 @@
 {
-  buildVersion,
-  dev ? false,
   aarch64sha256,
+  buildVersion,
   x64sha256,
+  dev ? false,
 }:
 
 {
-  fetchurl,
   lib,
   stdenv,
-  libx11,
-  glib,
-  libGL,
-  glibcLocales,
-  gtk3,
+  fetchurl,
   cairo,
-  pango,
-  libredirect,
-  makeWrapper,
-  wrapGAppsHook3,
-  pkexecPath ? "/run/wrappers/bin/pkexec",
-  writeShellScript,
   common-updater-scripts,
-  curl,
-  gnugrep,
   coreutils,
+  curl,
+  glib,
+  glibcLocales,
+  gnugrep,
+  gtk3,
+  libGL,
+  libredirect,
+  libx11,
+  makeWrapper,
+  pango,
+  wrapGAppsHook3,
+  writeShellScript,
+  pkexecPath ? "/run/wrappers/bin/pkexec",
 }:
 
 let
@@ -64,19 +64,17 @@ let
   binaryPackage = stdenv.mkDerivation rec {
     pname = "${pnameBase}-bin";
     version = buildVersion;
-
     src = passthru.sources.${stdenv.hostPlatform.system};
 
-    dontStrip = true;
-    dontPatchELF = true;
+    nativeBuildInputs = [
+      makeWrapper
+      wrapGAppsHook3
+    ];
+
     buildInputs = [
       glib
       # for GSETTINGS_SCHEMAS_PATH
       gtk3
-    ];
-    nativeBuildInputs = [
-      makeWrapper
-      wrapGAppsHook3
     ];
 
     buildPhase = ''
@@ -104,8 +102,6 @@ let
       runHook postInstall
     '';
 
-    dontWrapGApps = true; # non-standard location, need to wrap the executables manually
-
     postFixup = ''
       wrapProgram $out/${primaryBinary} \
         --set LD_PRELOAD "${libredirect}/lib/libredirect.so" \
@@ -124,15 +120,20 @@ let
         --argv0 "/ssh-askpass-sublime"
     '';
 
+    dontPatchELF = true;
+    dontStrip = true;
+    dontWrapGApps = true; # non-standard location, need to wrap the executables manually
+
     passthru = {
       sources = {
         "aarch64-linux" = fetchurl {
-          url = downloadUrl "arm64";
           sha256 = aarch64sha256;
+          url = downloadUrl "arm64";
         };
+
         "x86_64-linux" = fetchurl {
-          url = downloadUrl "x64";
           sha256 = x64sha256;
+          url = downloadUrl "x64";
         };
       };
     };
@@ -141,8 +142,6 @@ in
 stdenv.mkDerivation rec {
   pname = pnameBase;
   version = buildVersion;
-
-  dontUnpack = true;
 
   nativeBuildInputs = [
     makeWrapper
@@ -171,6 +170,8 @@ stdenv.mkDerivation rec {
     done
     runHook postInstall
   '';
+
+  dontUnpack = true;
 
   passthru = {
     unwrapped = binaryPackage;
@@ -209,13 +210,15 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Git client from the makers of Sublime Text";
     homepage = "https://www.sublimemerge.com";
-    mainProgram = "sublime_merge";
-    maintainers = with lib.maintainers; [ zookatron ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ zookatron ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ];
+
+    mainProgram = "sublime_merge";
   };
 }

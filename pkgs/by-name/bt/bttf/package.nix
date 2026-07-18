@@ -1,14 +1,13 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
   versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "bttf";
   version = "0.1.4";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "BurntSushi";
@@ -18,22 +17,25 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-afmzxV+rN2Cw1cQltsml4Z6NsP3E5FEf/VY9RRWE+uc=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   meta = {
     description = "Command line tool for datetime arithmetic, parsing, formatting and more. Replacment for biff";
     homepage = "https://github.com/BurntSushi/bttf";
     changelog = "https://github.com/BurntSushi/bttf/releases/tag/${finalAttrs.src.tag}";
+
     license = with lib.licenses; [
       mit
       unlicense
     ];
+
     maintainers = with lib.maintainers; [
       kpbaks
       paepcke
     ];
+
     mainProgram = "bttf";
   };
 })

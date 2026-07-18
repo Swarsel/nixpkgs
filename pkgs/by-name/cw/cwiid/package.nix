@@ -4,10 +4,10 @@
   fetchFromGitHub,
   autoreconfHook,
   bison,
-  flex,
   bluez,
-  pkg-config,
+  flex,
   gtk2,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -21,21 +21,8 @@ stdenv.mkDerivation {
     sha256 = "0qdb0x757k76nfj32xc2nrrdqd9jlwgg63vfn02l2iznnzahxp0h";
   };
 
-  hardeningDisable = [ "format" ];
-
-  configureFlags = [ "--without-python" ];
-
-  prePatch = ''
-    sed -i -e '/$(LDCONFIG)/d' common/include/lib.mak.in
-  '';
-
   patches = [
     ./fix-ar.diff
-  ];
-
-  buildInputs = [
-    bluez
-    gtk2
   ];
 
   nativeBuildInputs = [
@@ -45,6 +32,13 @@ stdenv.mkDerivation {
     flex
   ];
 
+  buildInputs = [
+    bluez
+    gtk2
+  ];
+
+  configureFlags = [ "--without-python" ];
+
   env = {
     NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
     NIX_LDFLAGS = "-lbluetooth";
@@ -53,6 +47,12 @@ stdenv.mkDerivation {
   postInstall = ''
     # Some programs (for example, cabal-install) have problems with the double 0
     sed -i -e "s/0.6.00/0.6.0/" $out/lib/pkgconfig/cwiid.pc
+  '';
+
+  hardeningDisable = [ "format" ];
+
+  prePatch = ''
+    sed -i -e '/$(LDCONFIG)/d' common/include/lib.mak.in
   '';
 
   meta = {

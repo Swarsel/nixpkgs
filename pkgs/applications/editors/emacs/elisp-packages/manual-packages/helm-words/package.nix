@@ -1,7 +1,7 @@
 {
   lib,
-  dictionary,
   fetchFromGitHub,
+  dictionary,
   helm,
   melpaBuild,
 }:
@@ -23,8 +23,8 @@ melpaBuild {
   ];
 
   meta = {
-    homepage = "https://github.com/emacsmirror/helm-words";
     description = "Helm extension for looking up words in dictionaries and thesauri";
+    homepage = "https://github.com/emacsmirror/helm-words";
     license = lib.licenses.gpl3Plus;
   };
 }

@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   civetweb,
+  cmake,
   curl,
   gbenchmark,
   gtest,
+  pkg-config,
   zlib,
 }:
 
@@ -22,30 +22,33 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-XQ8N+affKVqn/hrMHWg0eN+0Op6m9ZdVNNAW0GpDAng=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     pkg-config
   ];
+
   buildInputs = [
     gbenchmark
     gtest
   ];
+
   propagatedBuildInputs = [
     civetweb
     curl
     zlib
   ];
-  strictDeps = true;
 
   cmakeFlags = [
     "-DBUILD_SHARED_LIBS=ON"
     "-DOVERRIDE_CXX_STANDARD_FLAGS=OFF"
     "-DUSE_THIRDPARTY_LIBRARIES=OFF"
-  ];
-
-  outputs = [
-    "out"
-    "dev"
   ];
 
   meta = {

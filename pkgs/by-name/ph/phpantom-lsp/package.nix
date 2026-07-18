@@ -1,26 +1,24 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   _experimental-update-script-combinators,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 let
   stubsSrc = fetchFromGitHub {
+    hash = "sha256-IDWAuy301avfTF/E7Mby2JQQtIr/gnN5flZ3uctUpus=";
     owner = "JetBrains";
     repo = "phpstorm-stubs";
     rev = "517b9ad1adaf2c5453c00ec2fbb02d192a4a9b6c";
-    hash = "sha256-IDWAuy301avfTF/E7Mby2JQQtIr/gnN5flZ3uctUpus=";
   };
 in
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "phpantom-lsp";
   version = "0.8.0";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "AJenbo";
@@ -45,11 +43,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "completion_inheritance"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   passthru = {
     inherit stubsSrc;
+
     updateScript = _experimental-update-script-combinators.sequence [
       (nix-update-script { })
       ./update-php-stubs.sh
@@ -57,11 +57,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/AJenbo/phpantom_lsp/releases/tag/${finalAttrs.src.tag}";
     description = "Fast, lightweight PHP language server written in Rust";
     homepage = "https://github.com/AJenbo/phpantom_lsp";
+    changelog = "https://github.com/AJenbo/phpantom_lsp/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
-    mainProgram = "phpantom_lsp";
     maintainers = with lib.maintainers; [ nanoyaki ];
+    mainProgram = "phpantom_lsp";
   };
 })

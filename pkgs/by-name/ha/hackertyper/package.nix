@@ -16,10 +16,10 @@ stdenv.mkDerivation {
     sha256 = "0shri0srihw9fk027k61qkxr9ikwkn28aaamrhps6lg0vpbqpx2w";
   };
 
-  makeFlags = [ "PREFIX=$(out)" ];
   buildInputs = [ ncurses ];
-
+  makeFlags = [ "PREFIX=$(out)" ];
   doInstallCheck = true;
+
   installCheckPhase = ''
     $out/bin/hackertyper -v
   '';

@@ -8,7 +8,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "glob2";
   version = "0.7";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -18,6 +17,8 @@ buildPythonPackage (finalAttrs: {
   checkPhase = ''
     ${python.interpreter} test.py
   '';
+
+  format = "setuptools";
 
   meta = {
     description = "Version of the glob module that can capture patterns and supports recursive wildcards";

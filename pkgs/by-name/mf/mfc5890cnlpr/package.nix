@@ -1,15 +1,15 @@
 {
-  stdenv,
-  a2ps,
   lib,
+  stdenv,
   fetchurl,
-  dpkg,
-  makeWrapper,
+  a2ps,
   coreutils,
+  dpkg,
   file,
   gawk,
   ghostscript,
   gnused,
+  makeWrapper,
   pkgsi686Linux,
 }:
 
@@ -22,16 +22,10 @@ stdenv.mkDerivation rec {
     sha256 = "119h3s1p9pv83mrfv6cmxpc0v33xf8c9nw5clj9yafv3aizxy6dp";
   };
 
-  unpackPhase = ''
-    dpkg-deb -x $src $out
-  '';
-
   nativeBuildInputs = [
     dpkg
     makeWrapper
   ];
-
-  dontBuild = true;
 
   installPhase = ''
     dir=$out/usr/local/Brother/Printer/mfc5890cn
@@ -71,12 +65,19 @@ stdenv.mkDerivation rec {
       }
   '';
 
+  dontBuild = true;
+
+  unpackPhase = ''
+    dpkg-deb -x $src $out
+  '';
+
   meta = {
     description = "Brother MFC-5890CN LPR printer driver";
     homepage = "http://www.brother.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ martinramm ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"

@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
   colorlog,
-  fetchFromGitHub,
   python-dateutil,
   requests,
   setuptools-scm,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "pyisy";
   version = "3.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "automicus";
@@ -26,6 +25,8 @@ buildPythonPackage rec {
       --replace 'version_format="{tag}"' 'version="${version}"'
   '';
 
+  # no tests implemented
+  doCheck = false;
   build-system = [ setuptools-scm ];
 
   dependencies = [
@@ -35,9 +36,7 @@ buildPythonPackage rec {
     requests
   ];
 
-  # no tests implemented
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyisy" ];
 
   meta = {

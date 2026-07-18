@@ -1,11 +1,11 @@
 {
   lib,
   fetchFromGitHub,
+  nix-update-script,
   runCommand,
   swift,
   swiftpm,
   versionCheckHook,
-  nix-update-script,
 }:
 
 swift.stdenv.mkDerivation (finalAttrs: {
@@ -28,14 +28,13 @@ swift.stdenv.mkDerivation (finalAttrs: {
     install -D "$(swiftpmBinPath)/swiftformat" $out/bin/swiftformat
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru = {
-    updateScript = nix-update-script { };
-
     tests.format =
       runCommand "swiftformat-test-format"
         {
@@ -66,16 +65,20 @@ swift.stdenv.mkDerivation (finalAttrs: {
 
           touch $out
         '';
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Code formatting and linting tool for Swift";
     homepage = "https://github.com/nicklockwood/SwiftFormat";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       bdesham
       DimitarNestorov
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

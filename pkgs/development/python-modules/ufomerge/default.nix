@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonRelaxDepsHook,
+  buildPythonPackage,
+  fontfeatures,
+  fonttools,
   pytestCheckHook,
+  pythonRelaxDepsHook,
   setuptools,
   setuptools-scm,
-  fonttools,
-  fontfeatures,
   ufolib2,
 }:
 
 buildPythonPackage rec {
   pname = "ufomerge";
   version = "1.9.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googlefonts";
@@ -22,6 +21,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-5nTxcZeBClui7ceeq6sIOaoK8x0L6sBWqmhXr0On4Eg=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    fontfeatures
+  ];
 
   build-system = [
     setuptools
@@ -33,16 +37,12 @@ buildPythonPackage rec {
     ufolib2
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    fontfeatures
-  ];
-
   disabledTests = [
     # Fails with `KeyError: 'B'`
     "test_28"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "ufomerge" ];
 
   meta = {

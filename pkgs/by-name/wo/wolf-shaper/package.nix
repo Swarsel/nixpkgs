@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libjack2,
-  lv2,
-  libx11,
-  liblo,
   libGL,
+  libjack2,
+  liblo,
+  libx11,
   libxcursor,
+  lv2,
   pkg-config,
 }:
 
@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libjack2
     lv2
@@ -40,10 +41,6 @@ stdenv.mkDerivation (finalAttrs: {
     "BUILD_JACK=true"
   ];
 
-  patchPhase = ''
-    patchShebangs ./dpf/utils/generate-ttl.sh
-  '';
-
   installPhase = ''
     mkdir -p $out/lib/lv2
     mkdir -p $out/lib/dssi
@@ -55,15 +52,21 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r bin/wolf-shaper        $out/bin/
   '';
 
+  patchPhase = ''
+    patchShebangs ./dpf/utils/generate-ttl.sh
+  '';
+
   meta = {
-    homepage = "https://wolf-plugins.github.io/wolf-shaper/";
     description = "Waveshaper plugin with spline-based graph editor";
+    homepage = "https://wolf-plugins.github.io/wolf-shaper/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.magnetophon ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ];
+
     mainProgram = "wolf-shaper";
   };
 })

@@ -1,24 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  fontconfig,
   graphviz,
-
   # build-system
   pdm-backend,
-
   # tests
   pytest-cov-stub,
   pytestCheckHook,
   pyyaml,
   test2ref,
-  fontconfig,
 }:
 
 buildPythonPackage rec {
   pname = "anytree";
   version = "2.13.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "c0fec0de";
@@ -34,8 +31,6 @@ buildPythonPackage rec {
         'cmd = ["${lib.getExe' graphviz "dot"}"'
   '';
 
-  build-system = [ pdm-backend ];
-
   nativeCheckInputs = [
     pytest-cov-stub
     pytestCheckHook
@@ -48,6 +43,8 @@ buildPythonPackage rec {
     export FONTCONFIG_FILE=${fontconfig.out}/etc/fonts/fonts.conf
   '';
 
+  build-system = [ pdm-backend ];
+  pyproject = true;
   pythonImportsCheck = [ "anytree" ];
 
   meta = {

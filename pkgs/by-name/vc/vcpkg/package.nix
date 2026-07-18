@@ -1,9 +1,9 @@
 {
-  fetchFromGitHub,
-  stdenvNoCC,
   lib,
-  vcpkg-tool,
+  fetchFromGitHub,
   makeWrapper,
+  stdenvNoCC,
+  vcpkg-tool,
   doWrap ? true,
 }:
 
@@ -17,6 +17,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-pPTN+Oy9CwcgeJx7nXK0K65JQDWiQdytbqA9e2cXgkY=";
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       VCPKG_BASELINE_COMMIT_SHA=$(git rev-parse --verify HEAD)
@@ -35,8 +36,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     '';
   };
 
-  nativeBuildInputs = [ makeWrapper ];
-
   postPatch = ''
     substituteInPlace scripts/toolchains/linux.cmake \
       --replace-fail "\''${CMAKE_SYSTEM_PROCESSOR}-linux-gnu" "\''${CMAKE_SYSTEM_PROCESSOR}-unknown-linux-gnu" \
@@ -45,6 +44,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     # are installed by vcpkg.
     find triplets -name '*linux*.cmake' -exec bash -c 'echo "set(X_VCPKG_RPATH_KEEP_SYSTEM_PATHS ON)" >> "$1"' -- {} \;
   '';
+
+  nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
     runHook preInstall
@@ -65,14 +66,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   meta = {
     description = "C++ Library Manager for Windows, Linux, and macOS";
-    mainProgram = "vcpkg";
     homepage = "https://vcpkg.io/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       guekka
       gracicot
       h7x4
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "vcpkg";
   };
 })

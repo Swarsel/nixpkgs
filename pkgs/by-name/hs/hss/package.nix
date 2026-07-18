@@ -1,8 +1,8 @@
 {
   lib,
   buildRubyGem,
-  ruby,
   openssh,
+  ruby,
 }:
 
 # Example ~/.hss.yml
@@ -14,11 +14,8 @@
 #    long: 'git@github.com'
 
 buildRubyGem rec {
-  name = "hss-${version}";
   inherit ruby;
-  gemName = "hss";
   version = "1.1.0";
-  source.sha256 = "0zfgsiqy2c99c6hlg69bzj83kn6clkw1jmz6n6xh9ap4hz17blgm";
 
   postInstall = ''
     substituteInPlace $GEM_HOME/gems/${gemName}-${version}/bin/hss \
@@ -27,16 +24,23 @@ buildRubyGem rec {
         "'${openssh}/bin/ssh'"
   '';
 
+  gemName = "hss";
+  name = "hss-${version}";
+  source.sha256 = "0zfgsiqy2c99c6hlg69bzj83kn6clkw1jmz6n6xh9ap4hz17blgm";
+
   meta = {
     description = ''
       A SSH helper that uses regex and fancy expansion to dynamically manage SSH shortcuts.
     '';
+
     homepage = "https://github.com/akerl/hss";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       nixy
       lukas-sgx
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "hss";
   };

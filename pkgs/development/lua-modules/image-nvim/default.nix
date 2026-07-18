@@ -1,7 +1,7 @@
 {
-  buildLuarocksPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildLuarocksPackage,
   lua,
   luaOlder,
   luajitPackages,
@@ -9,10 +9,6 @@
 buildLuarocksPackage rec {
   pname = "image.nvim";
   version = "1.5.1";
-
-  disabled = luaOlder "5.1";
-  knownRockspec = "image.nvim-scm-1.rockspec";
-  rockspecVersion = "scm-1";
 
   src = fetchFromGitHub {
     owner = "3rd";
@@ -26,10 +22,14 @@ buildLuarocksPackage rec {
     luajitPackages.magick
   ];
 
+  disabled = luaOlder "5.1";
+  knownRockspec = "image.nvim-scm-1.rockspec";
+  rockspecVersion = "scm-1";
+
   meta = {
-    homepage = "https://github.com/3rd/image.nvim";
     description = "🖼️ Bringing images to Neovim.";
-    maintainers = with lib.maintainers; [ SuperSandro2000 ];
+    homepage = "https://github.com/3rd/image.nvim";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ SuperSandro2000 ];
   };
 }

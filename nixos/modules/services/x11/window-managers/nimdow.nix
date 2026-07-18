@@ -17,16 +17,18 @@ in
   };
 
   config = mkIf cfg.enable {
+    environment.systemPackages = [
+      cfg.package
+      pkgs.st
+    ];
+
     services.xserver.windowManager.session = singleton {
       name = "nimdow";
+
       start = ''
         ${cfg.package}/bin/nimdow &
         waitPID=$!
       '';
     };
-    environment.systemPackages = [
-      cfg.package
-      pkgs.st
-    ];
   };
 }

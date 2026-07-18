@@ -1,9 +1,9 @@
 {
-  cmake,
-  fetchFromGitHub,
   lib,
-  python3,
   stdenv,
+  fetchFromGitHub,
+  cmake,
+  python3,
   unstableGitUpdater,
 }:
 
@@ -54,7 +54,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/canokeys/canokey-usbip";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.jmbaur ];
-    mainProgram = "canokey-usbip";
     platforms = lib.platforms.all;
+    mainProgram = "canokey-usbip";
   };
 })

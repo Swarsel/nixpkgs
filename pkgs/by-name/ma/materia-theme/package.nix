@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  sassc,
+  gdk-pixbuf,
   gnome-shell,
   gnome-themes-extra,
   gtk-engine-murrine,
-  gdk-pixbuf,
   librsvg,
+  meson,
+  ninja,
+  sassc,
 }:
 
 stdenv.mkDerivation rec {
@@ -35,8 +35,6 @@ stdenv.mkDerivation rec {
     librsvg
   ];
 
-  propagatedUserEnvPkgs = [ gtk-engine-murrine ];
-
   mesonFlags = [
     "-Dgnome_shell_version=${lib.versions.majorMinor gnome-shell.version}"
   ];
@@ -44,6 +42,8 @@ stdenv.mkDerivation rec {
   postInstall = ''
     rm $out/share/themes/*/COPYING
   '';
+
+  propagatedUserEnvPkgs = [ gtk-engine-murrine ];
 
   meta = {
     description = "Material Design theme for GNOME/GTK based desktop environments";

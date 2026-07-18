@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pyuca";
   version = "1.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "jtauber";
@@ -17,9 +16,9 @@ buildPythonPackage rec {
     hash = "sha256-KIWk+/o1MX5J9cO7xITvjHrYg0NdgdTetOzfGVwAI/4=";
   };
 
-  pythonImportsCheck = [ "pyuca" ];
-
   nativeCheckInputs = [ unittestCheckHook ];
+  format = "setuptools";
+  pythonImportsCheck = [ "pyuca" ];
 
   meta = {
     description = "Python implementation of the Unicode Collation Algorithm";

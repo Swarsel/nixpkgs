@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   git,
   ncurses,
@@ -7,7 +8,6 @@
   pkg-config,
   rustPlatform,
   sqlite,
-  stdenv,
   versionCheckHook,
 }:
 
@@ -22,8 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-V769kYbmUe6JtVoo83ejxUsegyiBh07tMYPVhJiFNgs=";
   };
 
-  cargoHash = "sha256-5uygCOzPNqHjKJfq2LFTfaRT/N++/AY/PwlBJ8j8QwM=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -32,15 +30,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sqlite
   ];
 
-  postInstall = lib.optionalString (with stdenv; buildPlatform.canExecute hostPlatform) ''
-    $out/bin/git-branchless install-man-pages $out/share/man
-  '';
-
-  preCheck = ''
-    export TEST_GIT=${git}/bin/git
-    export TEST_GIT_EXEC_PATH=$(${git}/bin/git --exec-path)
-  '';
-
+  cargoHash = "sha256-5uygCOzPNqHjKJfq2LFTfaRT/N++/AY/PwlBJ8j8QwM=";
   # Note that upstream has disabled CI tests for git>=2.46
   # See: https://github.com/arxanas/git-branchless/issues/1416
   #      https://github.com/arxanas/git-branchless/pull/1417
@@ -54,22 +44,34 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=test_switch_auto_switch_interactive"
   ];
 
+  preCheck = ''
+    export TEST_GIT=${git}/bin/git
+    export TEST_GIT_EXEC_PATH=$(${git}/bin/git --exec-path)
+  '';
+
+  postInstall = lib.optionalString (with stdenv; buildPlatform.canExecute hostPlatform) ''
+    $out/bin/git-branchless install-man-pages $out/share/man
+  '';
+
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "--version";
-  doInstallCheck = true;
 
   meta = {
     description = "Suite of tools to help you visualize, navigate, manipulate, and repair your commit history";
     homepage = "https://github.com/arxanas/git-branchless";
+
     license = [
       lib.licenses.asl20
       lib.licenses.mit
     ];
-    mainProgram = "git-branchless";
+
     maintainers = with lib.maintainers; [
       nh2
       hmenke
       bryango
     ];
+
+    mainProgram = "git-branchless";
   };
 })

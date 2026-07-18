@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  cockpit,
-  nodejs,
-  gettext,
-  writeShellScriptBin,
   fetchFromGitHub,
+  cockpit,
+  gettext,
   gitUpdater,
   libosinfo,
+  nodejs,
   osinfo-db,
+  writeShellScriptBin,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,18 +20,9 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "cockpit-machines";
     tag = finalAttrs.version;
     hash = "sha256-r5gvs6/clRDV0VZKU1r6fjJSwHLuf9Pnhi0c60/9qkE=";
-
     fetchSubmodules = true;
     postFetch = "cp $out/node_modules/.package-lock.json $out/package-lock.json";
   };
-
-  buildInputs = [
-    nodejs
-    gettext
-    (writeShellScriptBin "git" "true")
-  ];
-
-  cockpitSrc = cockpit.src;
 
   postPatch = ''
     mkdir -p pkg; cp -r $cockpitSrc/pkg/lib pkg
@@ -48,20 +39,29 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs build.js
   '';
 
+  buildInputs = [
+    nodejs
+    gettext
+    (writeShellScriptBin "git" "true")
+  ];
+
+  cockpitSrc = cockpit.src;
+
   passthru = {
-    updateScript = gitUpdater { };
     cockpitPath = [
       libosinfo
       osinfo-db
     ];
+
+    updateScript = gitUpdater { };
   };
 
   meta = {
     description = "Cockpit UI for virtual machines";
     homepage = "https://github.com/cockpit-project/cockpit-machines";
     changelog = "https://github.com/cockpit-project/cockpit-machines/releases/tag/${finalAttrs.version}";
-    platforms = lib.platforms.linux;
     license = [ lib.licenses.lgpl21 ];
+    platforms = lib.platforms.linux;
     teams = [ lib.teams.cockpit ];
   };
 })

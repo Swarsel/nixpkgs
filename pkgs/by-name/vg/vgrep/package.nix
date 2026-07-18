@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   go-md2man,
   installShellFiles,
 }:
@@ -17,18 +17,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-OQjuNRuzFluZLssM+q+WpoRncdJMj6Sl/A+mUZA7UpI=";
   };
 
-  vendorHash = null;
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [
     go-md2man
     installShellFiles
   ];
+
+  vendorHash = null;
 
   postBuild = ''
     sed -i '/SHELL= /d' Makefile
@@ -36,11 +30,17 @@ buildGoModule (finalAttrs: {
     installManPage docs/*.[1-9]
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version}"
+  ];
+
   meta = {
     description = "User-friendly pager for grep/git-grep/ripgrep";
-    mainProgram = "vgrep";
     homepage = "https://github.com/vrothberg/vgrep";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ SuperSandro2000 ];
+    mainProgram = "vgrep";
   };
 })

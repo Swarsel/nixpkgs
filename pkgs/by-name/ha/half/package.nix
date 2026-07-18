@@ -5,8 +5,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "2.2.0";
   pname = "half";
+  version = "2.2.0";
 
   src = fetchzip {
     url = "mirror://sourceforge/half/${finalAttrs.version}/half-${finalAttrs.version}.zip";
@@ -22,8 +22,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "C++ library for half precision floating point arithmetics";
-    platforms = lib.platforms.all;
     license = lib.licenses.mit;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 })

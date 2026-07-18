@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildPackages,
-  autoreconfHook,
   fetchurl,
-  fetchpatch,
+  autoreconfHook,
+  buildPackages,
   directoryListingUpdater,
+  fetchpatch,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,23 +20,13 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # fixes some includes / missing types on musl libc; should not make a difference for other platforms
     (fetchpatch {
-      url = "https://raw.githubusercontent.com/void-linux/void-packages/ae690000017d5fd355ab397c49202426e3a01c11/srcpkgs/alsa-firmware/patches/musl.patch";
       hash = "sha256-4A+TBBvpz14NwMNewLc2LQL51hnz4EZlZ44rhnx5dnc=";
+      url = "https://raw.githubusercontent.com/void-linux/void-packages/ae690000017d5fd355ab397c49202426e3a01c11/srcpkgs/alsa-firmware/patches/musl.patch";
     })
   ];
 
   nativeBuildInputs = [ autoreconfHook ];
-
   configureFlags = [ "--with-hotplug-dir=$(out)/lib/firmware" ];
-
-  depsBuildBuild = lib.optional (
-    stdenv.buildPlatform != stdenv.hostPlatform
-    || stdenv.hostPlatform.isAarch64
-    || stdenv.hostPlatform.isLoongArch64
-    || stdenv.hostPlatform.isRiscV64
-  ) buildPackages.stdenv.cc;
-
-  dontStrip = true;
 
   postInstall = ''
     # These are lifted from the Arch PKGBUILD
@@ -48,21 +38,33 @@ stdenv.mkDerivation (finalAttrs: {
     rm -rf $out/bin
   '';
 
+  depsBuildBuild = lib.optional (
+    stdenv.buildPlatform != stdenv.hostPlatform
+    || stdenv.hostPlatform.isAarch64
+    || stdenv.hostPlatform.isLoongArch64
+    || stdenv.hostPlatform.isRiscV64
+  ) buildPackages.stdenv.cc;
+
+  dontStrip = true;
+
   passthru.updateScript = directoryListingUpdater {
     url = "https://alsa-project.org/files/pub/firmware/";
   };
 
   meta = {
-    homepage = "https://www.alsa-project.org/";
     description = "Soundcard firmwares from the alsa project";
+    homepage = "https://www.alsa-project.org/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
-    maintainers = with lib.maintainers; [
-      nick-linux
-    ];
+
     sourceProvenance = with lib.sourceTypes; [
       binaryFirmware
       fromSource
     ];
+
+    maintainers = with lib.maintainers; [
+      nick-linux
+    ];
+
+    platforms = lib.platforms.linux;
   };
 })

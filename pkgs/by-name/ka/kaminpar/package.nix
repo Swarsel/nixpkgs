@@ -3,14 +3,14 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  numactl,
-  mpi,
-  sparsehash,
-  onetbb,
+  gtest,
   kagen,
   kassert,
-  gtest,
+  mpi,
   mpiCheckPhaseHook,
+  numactl,
+  onetbb,
+  sparsehash,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "kaminpar";
@@ -24,7 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
-
   buildInputs = lib.optional stdenv.hostPlatform.isLinux numactl;
 
   propagatedBuildInputs = [
@@ -43,20 +42,20 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
 
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [
     gtest
     mpiCheckPhaseHook
   ];
 
+  __darwinAllowLocalNetworking = true;
+
   meta = {
     description = "Parallel heuristic solver for the balanced k-way graph partitioning problem";
     homepage = "https://github.com/KaHIP/KaMinPar";
     changelog = "https://github.com/KaHIP/KaMinPar/releases/tag/v${finalAttrs.version}";
-    mainProgram = "KaMinPar";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ dsalwasser ];
+    platforms = lib.platforms.unix;
+    mainProgram = "KaMinPar";
   };
 })

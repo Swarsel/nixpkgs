@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   libsForQt5,
 }:
@@ -30,25 +30,9 @@ stdenv.mkDerivation {
     libsForQt5.qtbase
   ];
 
-  # libCommuni.dylib is installed in $out/Applications/Communi.app/Contents/Frameworks/ on Darwin
-  # Wrapper hook thinks it's a binary because it's in $out/Applications, wraps it with a shell script
-  # So we manually call the wrapper script on just the binary
-  dontWrapQtApps = stdenv.hostPlatform.isDarwin;
-
   preConfigure = ''
     export QMAKEFEATURES=${libsForQt5.libcommuni}/features
   '';
-
-  qmakeFlags = [
-    "COMMUNI_INSTALL_PREFIX=${placeholder "out"}"
-    "COMMUNI_INSTALL_PLUGINS=${placeholder "out"}/lib/communi/plugins"
-    "COMMUNI_INSTALL_ICONS=${placeholder "out"}/share/icons/hicolor"
-    "COMMUNI_INSTALL_DESKTOP=${placeholder "out"}/share/applications"
-    "COMMUNI_INSTALL_THEMES=${placeholder "out"}/share/communi/themes"
-    "COMMUNI_INSTALL_BINS=${placeholder "out"}/${
-      if stdenv.hostPlatform.isDarwin then "Applications" else "bin"
-    }"
-  ];
 
   postInstall =
     if stdenv.hostPlatform.isDarwin then
@@ -71,11 +55,27 @@ stdenv.mkDerivation {
     rm -rf lib
   '';
 
+  # libCommuni.dylib is installed in $out/Applications/Communi.app/Contents/Frameworks/ on Darwin
+  # Wrapper hook thinks it's a binary because it's in $out/Applications, wraps it with a shell script
+  # So we manually call the wrapper script on just the binary
+  dontWrapQtApps = stdenv.hostPlatform.isDarwin;
+
+  qmakeFlags = [
+    "COMMUNI_INSTALL_PREFIX=${placeholder "out"}"
+    "COMMUNI_INSTALL_PLUGINS=${placeholder "out"}/lib/communi/plugins"
+    "COMMUNI_INSTALL_ICONS=${placeholder "out"}/share/icons/hicolor"
+    "COMMUNI_INSTALL_DESKTOP=${placeholder "out"}/share/applications"
+    "COMMUNI_INSTALL_THEMES=${placeholder "out"}/share/communi/themes"
+    "COMMUNI_INSTALL_BINS=${placeholder "out"}/${
+      if stdenv.hostPlatform.isDarwin then "Applications" else "bin"
+    }"
+  ];
+
   meta = {
     description = "Simple and elegant cross-platform IRC client";
-    mainProgram = "communi";
     homepage = "https://github.com/communi/communi-desktop";
     license = lib.licenses.bsd3;
     platforms = lib.platforms.all;
+    mainProgram = "communi";
   };
 }

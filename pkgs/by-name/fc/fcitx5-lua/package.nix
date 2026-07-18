@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  kdePackages,
   fcitx5,
-  lua5_3,
   gettext,
+  kdePackages,
+  lua5_3,
+  pkg-config,
 }:
 
 let
@@ -17,8 +17,6 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "fcitx5-lua";
   version = "5.0.17";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "fcitx";
@@ -38,6 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
     fcitx5
     lua
   ];
+
+  __structuredAttrs = true;
 
   passthru = {
     extraLdLibraries = [ lua ];

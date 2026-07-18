@@ -1,30 +1,23 @@
 {
   lib,
-  backendStdenv,
   fetchFromGitHub,
-  flags,
-
-  # nativeBuildInputs
-  cmake,
-  cuda_nvcc,
-
+  backendStdenv,
   # buildInputs
   boost,
+  # nativeBuildInputs
+  cmake,
+  config,
   cuda_cudart,
+  cuda_nvcc,
   cuda_nvml_dev,
-
+  flags,
   # passthru
   nvbandwidth,
-
-  config,
   cudaSupport ? config.cudaSupport,
 }:
 backendStdenv.mkDerivation (finalAttrs: {
   pname = "nvbandwidth";
   version = "0.9";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "NVIDIA";
@@ -39,19 +32,21 @@ backendStdenv.mkDerivation (finalAttrs: {
     ./use-cuda-imported-targets.patch
   ];
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     cuda_nvcc
-  ];
-
-  cmakeFlags = [
-    (lib.cmakeFeature "CMAKE_CUDA_ARCHITECTURES" flags.cmakeCudaArchitecturesString)
   ];
 
   buildInputs = [
     boost
     cuda_cudart # cuda_runtime.h, libcuda stub
     cuda_nvml_dev # libnvidia-ml
+  ];
+
+  cmakeFlags = [
+    (lib.cmakeFeature "CMAKE_CUDA_ARCHITECTURES" flags.cmakeCudaArchitecturesString)
   ];
 
   installPhase = ''
@@ -62,13 +57,16 @@ backendStdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
   passthru.gpuCheck = nvbandwidth.overrideAttrs (_: {
-    requiredSystemFeatures = [ "cuda" ];
     doInstallCheck = true;
+
     postInstallCheck = ''
       $out/bin/${nvbandwidth.meta.mainProgram}
     '';
 
+    requiredSystemFeatures = [ "cuda" ];
     # Failing (probably a sandbox limitation):
     #   hwloc/linux: failed to find sysfs cpu topology directory, aborting linux discovery.
     meta.broken = true;
@@ -80,8 +78,8 @@ backendStdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/NVIDIA/nvbandwidth/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ GaetanLepage ];
-    mainProgram = "nvbandwidth";
     platforms = lib.platforms.linux;
+    mainProgram = "nvbandwidth";
     broken = !cudaSupport;
   };
 })

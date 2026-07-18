@@ -1,32 +1,28 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  replaceVars,
-  openjpeg,
-  libtiff,
+  # tests
+  addBinToPathHook,
+  buildPythonPackage,
   glibc,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
+  libtiff,
   # dependencies
   lxml,
   numpy,
+  openjpeg,
   pillow,
-
-  # tests
-  addBinToPathHook,
   pytestCheckHook,
+  replaceVars,
   scikit-image,
+  # build-system
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "glymur";
   version = "0.14.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "quintusdias";
@@ -49,6 +45,12 @@ buildPythonPackage (finalAttrs: {
           'ctypes.CDLL("${lib.getLib glibc}/lib/libc.so.6")'
   '';
 
+  nativeCheckInputs = [
+    addBinToPathHook
+    pytestCheckHook
+    scikit-image
+  ];
+
   __propagatedImpureHostDeps = lib.optional stdenv.hostPlatform.isDarwin "/usr/lib/libc.dylib";
 
   build-system = [
@@ -62,18 +64,13 @@ buildPythonPackage (finalAttrs: {
     pillow
   ];
 
-  nativeCheckInputs = [
-    addBinToPathHook
-    pytestCheckHook
-    scikit-image
-  ];
-
   disabledTestPaths = [
     # this test involves glymur's different ways of finding the openjpeg path on
     # fsh systems by reading an .rc file and such, and is obviated by the patch
     "tests/test_config.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "glymur" ];
 
   meta = {

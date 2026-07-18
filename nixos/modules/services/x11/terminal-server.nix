@@ -11,22 +11,15 @@
 
   config = {
 
+    # Enable GDM.  Any display manager will do as long as it supports XDMCP.
+    services.displayManager.gdm.enable = true;
     services.xserver.enable = true;
     services.xserver.videoDrivers = [ ];
 
-    # Enable GDM.  Any display manager will do as long as it supports XDMCP.
-    services.displayManager.gdm.enable = true;
-
-    systemd.sockets.terminal-server = {
-      description = "Terminal Server Socket";
-      wantedBy = [ "sockets.target" ];
-      before = [ "multi-user.target" ];
-      socketConfig.Accept = true;
-      socketConfig.ListenStream = 5900;
-    };
-
     systemd.services."terminal-server@" = {
       description = "Terminal Server";
+      environment.FD_GEOM = "1024x786x24";
+      environment.FD_XDMCP_IF = "127.0.0.1";
 
       path = [
         pkgs.xorg-server.out
@@ -41,20 +34,25 @@
         pkgs.bash
       ];
 
-      environment.FD_GEOM = "1024x786x24";
-      environment.FD_XDMCP_IF = "127.0.0.1";
       #environment.FIND_DISPLAY_OUTPUT = "/tmp/foo"; # to debug the "find display" script
-
       serviceConfig = {
-        StandardInput = "socket";
-        StandardOutput = "socket";
-        StandardError = "journal";
         ExecStart = "@${pkgs.x11vnc}/bin/x11vnc x11vnc -inetd -display WAIT:1024x786:cmd=FINDCREATEDISPLAY-Xvfb.xdmcp -unixpw -ssl SAVE";
         # Don't kill the X server when the user quits the VNC
         # connection.  FIXME: the X server should run in a
         # separate systemd session.
         KillMode = "process";
+        StandardError = "journal";
+        StandardInput = "socket";
+        StandardOutput = "socket";
       };
+    };
+
+    systemd.sockets.terminal-server = {
+      before = [ "multi-user.target" ];
+      description = "Terminal Server Socket";
+      socketConfig.Accept = true;
+      socketConfig.ListenStream = 5900;
+      wantedBy = [ "sockets.target" ];
     };
 
   };

@@ -10,11 +10,6 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "plzip";
   version = "1.13";
-  outputs = [
-    "out"
-    "man"
-    "info"
-  ];
 
   src = fetchurl {
     url = "mirror://savannah/lzip/plzip/plzip-${finalAttrs.version}.tar.lz";
@@ -22,24 +17,31 @@ stdenv.mkDerivation (finalAttrs: {
     # hash from release email
   };
 
+  outputs = [
+    "out"
+    "man"
+    "info"
+  ];
+
   nativeBuildInputs = [
     lzip
     texinfo
   ];
-  buildInputs = [ lzlib ];
 
+  buildInputs = [ lzlib ];
+  doCheck = true;
   enableParallelBuilding = true;
 
-  doCheck = true;
-
   meta = {
-    homepage = "https://www.nongnu.org/lzip/plzip.html";
     description = "Massively parallel lossless data compressor based on the lzlib compression library";
+    homepage = "https://www.nongnu.org/lzip/plzip.html";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       _360ied
     ];
+
+    platforms = lib.platforms.all;
     mainProgram = "plzip";
   };
 })

@@ -1,23 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
+  buildPythonPackage,
   # dependencies
   cachelib,
-  flask,
-  pytz,
-
   # tests
   elasticsearch,
+  flask,
   flask-sqlalchemy,
   peewee,
+  # build-system
+  poetry-core,
   pymemcache,
   pymongo,
   pytestCheckHook,
+  pytz,
   redis,
   redisTestHook,
 }:
@@ -25,9 +22,6 @@
 buildPythonPackage rec {
   pname = "flask-session2";
   version = "1.3.1";
-  pyproject = true;
-
-  __darwinAllowLocalNetworking = true;
 
   src = fetchFromGitHub {
     owner = "christopherpickering";
@@ -35,20 +29,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-kxUuEirUG/jZlygKyQy2Sm7hmB331K2q8vBmcIbp7/s=";
   };
-
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    cachelib
-    flask
-    pytz
-  ];
-
-  pythonRelaxDeps = [
-    "cachelib"
-    "flask"
-    "pytz"
-  ];
 
   nativeCheckInputs = [
     elasticsearch
@@ -61,6 +41,15 @@ buildPythonPackage rec {
     redisTestHook
   ];
 
+  __darwinAllowLocalNetworking = true;
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    cachelib
+    flask
+    pytz
+  ];
+
   disabledTests = [
     "test_elasticsearch_session"
     "test_flasksqlalchemy_session"
@@ -70,7 +59,14 @@ buildPythonPackage rec {
     "test_session_use_signer"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "flask_session" ];
+
+  pythonRelaxDeps = [
+    "cachelib"
+    "flask"
+    "pytz"
+  ];
 
   meta = {
     description = "Flask extension that adds support for server-side sessions";

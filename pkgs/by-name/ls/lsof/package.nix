@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   buildPackages,
-  perl,
-  which,
+  ed,
+  freebsd,
   ncurses,
   nukeReferences,
-  freebsd,
-  ed,
+  perl,
+  which,
 }:
 
 let
@@ -39,24 +39,16 @@ stdenv.mkDerivation rec {
            -e "s|/Library.*/MacOSX.sdk/|\"$SDKROOT\"/|" Configure
   '';
 
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
   nativeBuildInputs = [
     nukeReferences
     perl
     which
     ed
   ];
-  buildInputs = [ ncurses ];
 
+  buildInputs = [ ncurses ];
   # Stop build scripts from searching global include paths
   env.LSOF_INCLUDE = "${lib.getDev stdenv.cc.libc}/include";
-  configurePhase =
-    let
-      genericFlags = "LSOF_CC=$CC LSOF_AR=\"$AR cr\" LSOF_RANLIB=$RANLIB";
-      linuxFlags = lib.optionalString stdenv.hostPlatform.isLinux "LINUX_CONF_CC=$CC_FOR_BUILD";
-      freebsdFlags = lib.optionalString stdenv.hostPlatform.isFreeBSD "FREEBSD_SYS=${freebsd.sys.src}/sys";
-    in
-    "${genericFlags} ${linuxFlags} ${freebsdFlags} ./Configure -n ${dialect}";
 
   preBuild = ''
     for filepath in $(find dialects/${dialect} -type f); do
@@ -78,18 +70,30 @@ stdenv.mkDerivation rec {
     cp lsof $out/bin
   '';
 
+  configurePhase =
+    let
+      genericFlags = "LSOF_CC=$CC LSOF_AR=\"$AR cr\" LSOF_RANLIB=$RANLIB";
+      linuxFlags = lib.optionalString stdenv.hostPlatform.isLinux "LINUX_CONF_CC=$CC_FOR_BUILD";
+      freebsdFlags = lib.optionalString stdenv.hostPlatform.isFreeBSD "FREEBSD_SYS=${freebsd.sys.src}/sys";
+    in
+    "${genericFlags} ${linuxFlags} ${freebsdFlags} ./Configure -n ${dialect}";
+
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+
   meta = {
-    homepage = "https://github.com/lsof-org/lsof";
-    changelog = "https://github.com/lsof-org/lsof/releases/tag/${src.tag}";
     description = "Tool to list open files";
-    mainProgram = "lsof";
+
     longDescription = ''
       List open files. Can show what process has opened some file,
       socket (IPv6/IPv4/UNIX local), or partition (by opening a file
       from it).
     '';
+
+    homepage = "https://github.com/lsof-org/lsof";
+    changelog = "https://github.com/lsof-org/lsof/releases/tag/${src.tag}";
     license = lib.licenses.lsof;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "lsof";
   };
 }

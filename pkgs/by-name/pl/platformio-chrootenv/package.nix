@@ -34,20 +34,8 @@ let
 
 in
 buildFHSEnv {
-  pname = "platformio";
   inherit (platformio-core) version;
-
-  targetPkgs = pio-pkgs;
-  # disabled temporarily because fastdiff no longer support 32bit
-  # multiPkgs = pio-pkgs;
-
-  meta = {
-    description = "Open source ecosystem for IoT development";
-    homepage = "https://platformio.org";
-    maintainers = with lib.maintainers; [ mog ];
-    license = lib.licenses.asl20;
-    platforms = with lib.platforms; linux;
-  };
+  pname = "platformio";
 
   extraInstallCommands = ''
     ln -s $out/bin/platformio $out/bin/pio
@@ -55,4 +43,15 @@ buildFHSEnv {
   '';
 
   runScript = "platformio";
+  targetPkgs = pio-pkgs;
+
+  # disabled temporarily because fastdiff no longer support 32bit
+  # multiPkgs = pio-pkgs;
+  meta = {
+    description = "Open source ecosystem for IoT development";
+    homepage = "https://platformio.org";
+    license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ mog ];
+    platforms = with lib.platforms; linux;
+  };
 }

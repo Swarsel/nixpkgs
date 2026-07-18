@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
-  writableTmpDirAsHomeHook,
   testers,
+  writableTmpDirAsHomeHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,8 +19,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-EPtAOczXzBbt+lZFC+K0svh4hh/H3myduIoTs7nrjRw=";
   };
 
-  vendorHash = "sha256-+4QYxAe45jlbC2b06ZkJuSYjGX1v1CCJM1XNHx8rIFM=";
-
   postPatch = ''
     # Disable some tests that need file system & network access.
     find cmd -name "*_test.go" | xargs rm -f
@@ -28,25 +26,7 @@ buildGoModule (finalAttrs: {
   '';
 
   nativeBuildInputs = [ installShellFiles ];
-
-  excludedPackages = [
-    "integration"
-    "samples"
-    "tools"
-  ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/okteto/okteto/pkg/config.VersionString=${finalAttrs.version}"
-  ];
-
-  tags = [
-    "osusergo"
-    "netgo"
-    "static_build"
-  ];
-
+  vendorHash = "sha256-+4QYxAe45jlbC2b06ZkJuSYjGX1v1CCJM1XNHx8rIFM=";
   nativeCheckInputs = [ writableTmpDirAsHomeHook ];
 
   checkFlags =
@@ -73,9 +53,27 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/okteto completion zsh)
   '';
 
+  excludedPackages = [
+    "integration"
+    "samples"
+    "tools"
+  ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/okteto/okteto/pkg/config.VersionString=${finalAttrs.version}"
+  ];
+
+  tags = [
+    "osusergo"
+    "netgo"
+    "static_build"
+  ];
+
   passthru.tests.version = testers.testVersion {
-    package = finalAttrs.finalPackage;
     command = "HOME=\"$(mktemp -d)\" okteto version";
+    package = finalAttrs.finalPackage;
   };
 
   meta = {

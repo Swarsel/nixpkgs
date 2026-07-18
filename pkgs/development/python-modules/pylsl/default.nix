@@ -1,9 +1,9 @@
 {
   lib,
-  liblsl,
+  stdenv,
   fetchFromGitHub,
   buildPythonPackage,
-  stdenv,
+  liblsl,
   numpy,
   setuptools,
   setuptools-scm,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "pylsl";
   version = "1.18.3.b1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "labstreaminglayer";
@@ -40,6 +39,7 @@ buildPythonPackage rec {
     numpy
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pylsl" ];
 
   meta = {

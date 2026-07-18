@@ -1,8 +1,8 @@
 {
   lib,
   fetchurl,
-  ocaml,
   buildDunePackage,
+  ocaml,
   ounit,
   ppx_deriving,
   ppx_sexp_conv,
@@ -19,8 +19,8 @@
 }:
 
 buildDunePackage {
-  pname = "ppx_import";
   inherit version;
+  pname = "ppx_import";
 
   src = fetchurl {
     url =
@@ -31,9 +31,9 @@ buildDunePackage {
 
     hash =
       {
-        "1.9.1" = "sha256-0bSY4u44Ds84XPIbcT5Vt4AG/4PkzFKMl9CDGFZyIdI=";
         "1.11.0" = "sha256-Jmfv1IkQoaTkyxoxp9FI0ChNESqCaoDsA7D4ZUbOrBo=";
         "1.12.0" = "sha256-1vpYHFl0rEdG3hE+6BCpWmfLvdLvoEx+Jxq0DFrRdJc=";
+        "1.9.1" = "sha256-0bSY4u44Ds84XPIbcT5Vt4AG/4PkzFKMl9CDGFZyIdI=";
       }
       ."${version}";
   };
@@ -42,18 +42,18 @@ buildDunePackage {
     ppxlib
   ];
 
+  doCheck = true;
+
   checkInputs = [
     ounit
     ppx_deriving
     ppx_sexp_conv
   ];
 
-  doCheck = true;
-
   meta = {
     description = "Syntax extension for importing declarations from interface files";
-    license = lib.licenses.mit;
     homepage = "https://github.com/ocaml-ppx/ppx_import";
+    license = lib.licenses.mit;
     broken = lib.versionAtLeast ocaml.version "5.5";
   };
 }

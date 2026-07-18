@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  strace,
   stdenv,
+  fetchFromGitHub,
+  rustPlatform,
+  strace,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,7 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-ZvbWJSe/jQEswcdFM/Akb6hW/0iqMNbtEyzcxsbemFQ=";
-
   nativeCheckInputs = [ strace ];
 
   checkFlags = lib.optionals stdenv.hostPlatform.isAarch64 [
@@ -28,9 +27,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Analyzes strace output";
-    mainProgram = "strace-analyzer";
     homepage = "https://github.com/wookietreiber/strace-analyzer";
     license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.matthiasbeyer ];
+    mainProgram = "strace-analyzer";
   };
 })

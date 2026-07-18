@@ -14,16 +14,9 @@ in
   options = {
 
     services.spamassassin = {
-      enable = lib.mkEnableOption "the SpamAssassin daemon";
-
-      debug = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Whether to run the SpamAssassin daemon in debug mode";
-      };
-
       config = lib.mkOption {
-        type = lib.types.lines;
+        default = "";
+
         description = ''
           The SpamAssassin local.cf config
 
@@ -47,6 +40,7 @@ in
 
           To filter your messages based on the additional mail headers added by spamassassin.
         '';
+
         example = ''
           #rewrite_header Subject [***** SPAM _SCORE_ *****]
           required_score          5.0
@@ -54,13 +48,21 @@ in
           bayes_auto_learn        1
           add_header all Status _YESNO_, score=_SCORE_ required=_REQD_ tests=_TESTS_ autolearn=_AUTOLEARN_ version=_VERSION_
         '';
-        default = "";
+
+        type = lib.types.lines;
+      };
+
+      enable = lib.mkEnableOption "the SpamAssassin daemon";
+
+      debug = lib.mkOption {
+        default = false;
+        description = "Whether to run the SpamAssassin daemon in debug mode";
+        type = lib.types.bool;
       };
 
       initPreConf = lib.mkOption {
-        type = with lib.types; either str path;
-        description = "The SpamAssassin init.pre config.";
         apply = val: if builtins.isPath val then val else pkgs.writeText "init.pre" val;
+
         default = ''
           #
           # to update this list, run this command in the rules directory:
@@ -108,6 +110,9 @@ in
           loadplugin Mail::SpamAssassin::Plugin::WhiteListSubject
           loadplugin Mail::SpamAssassin::Plugin::WLBLEval
         '';
+
+        description = "The SpamAssassin init.pre config.";
+        type = with lib.types; either str path;
       };
     };
   };
@@ -115,33 +120,11 @@ in
   config = lib.mkIf cfg.enable {
     environment.etc."mail/spamassassin/init.pre".source = cfg.initPreConf;
     environment.etc."mail/spamassassin/local.cf".source = spamassassin-local-cf;
-
     # Allow users to run 'spamc'.
     environment.systemPackages = [ pkgs.spamassassin ];
 
-    users.users.spamd = {
-      description = "Spam Assassin Daemon";
-      home = "/var/lib/spamassassin";
-      uid = config.ids.uids.spamd;
-      group = "spamd";
-    };
-
-    users.groups.spamd = {
-      gid = config.ids.gids.spamd;
-    };
-
     systemd.services.sa-update = {
-      # Needs to be able to contact the update server.
-      wants = [ "network-online.target" ];
       after = [ "network-online.target" ];
-
-      serviceConfig = {
-        Type = "oneshot";
-        User = "spamd";
-        Group = "spamd";
-        StateDirectory = "spamassassin";
-        ExecStartPost = "+${config.systemd.package}/bin/systemctl -q --no-block try-reload-or-restart spamd.service";
-      };
 
       script = ''
         set +e
@@ -162,27 +145,26 @@ in
         # An update was available and installed. Compile the rules.
         ${pkgs.spamassassin}/bin/sa-compile
       '';
-    };
 
-    systemd.timers.sa-update = {
-      description = "sa-update-service";
-      partOf = [ "sa-update.service" ];
-      wantedBy = [ "timers.target" ];
-      timerConfig = {
-        OnCalendar = "1:*";
-        Persistent = true;
+      serviceConfig = {
+        ExecStartPost = "+${config.systemd.package}/bin/systemctl -q --no-block try-reload-or-restart spamd.service";
+        Group = "spamd";
+        StateDirectory = "spamassassin";
+        Type = "oneshot";
+        User = "spamd";
       };
+
+      # Needs to be able to contact the update server.
+      wants = [ "network-online.target" ];
     };
 
     systemd.services.spamd = {
-      description = "SpamAssassin Server";
-
-      wantedBy = [ "multi-user.target" ];
-      wants = [ "sa-update.service" ];
       after = [
         "network.target"
         "sa-update.service"
       ];
+
+      description = "SpamAssassin Server";
 
       reloadTriggers = [
         config.environment.etc."mail/spamassassin/init.pre".source
@@ -190,12 +172,38 @@ in
       ];
 
       serviceConfig = {
-        User = "spamd";
-        Group = "spamd";
-        ExecStart = "+${pkgs.spamassassin}/bin/spamd ${lib.optionalString cfg.debug "-D"} --username=spamd --groupname=spamd --virtual-config-dir=%S/spamassassin/user-%u --allow-tell --pidfile=/run/spamd.pid";
         ExecReload = "+${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+        ExecStart = "+${pkgs.spamassassin}/bin/spamd ${lib.optionalString cfg.debug "-D"} --username=spamd --groupname=spamd --virtual-config-dir=%S/spamassassin/user-%u --allow-tell --pidfile=/run/spamd.pid";
+        Group = "spamd";
         StateDirectory = "spamassassin";
+        User = "spamd";
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "sa-update.service" ];
+    };
+
+    systemd.timers.sa-update = {
+      description = "sa-update-service";
+      partOf = [ "sa-update.service" ];
+
+      timerConfig = {
+        OnCalendar = "1:*";
+        Persistent = true;
+      };
+
+      wantedBy = [ "timers.target" ];
+    };
+
+    users.groups.spamd = {
+      gid = config.ids.gids.spamd;
+    };
+
+    users.users.spamd = {
+      description = "Spam Assassin Daemon";
+      group = "spamd";
+      home = "/var/lib/spamassassin";
+      uid = config.ids.uids.spamd;
     };
   };
 }

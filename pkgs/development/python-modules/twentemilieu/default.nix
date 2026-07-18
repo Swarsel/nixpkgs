@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   pytest-asyncio,
   pytest-cov-stub,
@@ -17,7 +17,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "twentemilieu";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "frenck";
@@ -31,6 +30,15 @@ buildPythonPackage (finalAttrs: {
     substituteInPlace pyproject.toml \
       --replace '"0.0.0"' '"${finalAttrs.version}"'
   '';
+
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+    syrupy
+  ]
+  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
   build-system = [ poetry-core ];
 
@@ -46,15 +54,7 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-    syrupy
-  ]
-  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
-
+  pyproject = true;
   pythonImportsCheck = [ "twentemilieu" ];
 
   meta = {

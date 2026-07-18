@@ -1,25 +1,24 @@
 {
   lib,
   fetchFromGitHub,
-  replaceVars,
-  python3Packages,
-  gst_all_1,
-  wrapGAppsHook3,
   gobject-introspection,
+  gst_all_1,
   gtk3,
-  libwnck,
-  keybinder3,
   intltool,
-  libcanberra-gtk3,
+  keybinder3,
   libappindicator-gtk3,
-  libpulseaudio,
+  libcanberra-gtk3,
   libgudev,
+  libpulseaudio,
+  libwnck,
+  python3Packages,
+  replaceVars,
+  wrapGAppsHook3,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "kazam";
   version = "1.5.5-unstable-2025-01-02";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "niknah";
@@ -27,6 +26,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     rev = "b6c1bddc9ac93aad50476f2c87fec9f0cf204f2a";
     hash = "sha256-xllpNoKeSXVWZhzlY60ZDnWIKoAW+cd08Tb1413Ldpk=";
   };
+
+  patches = [
+    # Fix paths
+    (replaceVars ./fix-paths.patch {
+      inherit libpulseaudio;
+      libcanberra = libcanberra-gtk3;
+    })
+  ];
 
   nativeBuildInputs = [
     gobject-introspection
@@ -45,6 +52,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     libgudev
   ];
 
+  # no tests
+  doCheck = false;
+
   build-system = with python3Packages; [
     setuptools
     distutils-extra
@@ -59,17 +69,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     python-xlib
   ];
 
-  patches = [
-    # Fix paths
-    (replaceVars ./fix-paths.patch {
-      libcanberra = libcanberra-gtk3;
-      inherit libpulseaudio;
-    })
-  ];
-
-  # no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "kazam" ];
 
   meta = {
@@ -77,8 +77,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     homepage = "https://github.com/niknah/kazam";
     changelog = "https://github.com/niknah/kazam/raw/${finalAttrs.src.rev}/NEWS";
     license = lib.licenses.lgpl3;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "kazam";
   };
 })

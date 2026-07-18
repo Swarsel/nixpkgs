@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,6 +16,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-sqspcTwODoRzaaUSXT+2yPUTzUqcW1gNu0c1Lv9D1u0=";
+  # Requires a running substrate node
+  doCheck = false;
 
   # Only build the command line client
   cargoBuildFlags = [
@@ -23,21 +25,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "subxt"
   ];
 
-  # Requires a running substrate node
-  doCheck = false;
-
   meta = {
-    homepage = "https://github.com/paritytech/subxt";
     description = "Subxt is a CLI tool for interacting with chains in the Polkadot network";
+    homepage = "https://github.com/paritytech/subxt";
     changelog = "https://github.com/paritytech/subxt/releases/tag/${finalAttrs.src.tag}";
-    mainProgram = "subxt";
+
     license = with lib.licenses; [
       gpl3Plus
       asl20
     ];
+
     maintainers = with lib.maintainers; [
       FlorianFranzen
       kilyanni
     ];
+
+    mainProgram = "subxt";
   };
 })

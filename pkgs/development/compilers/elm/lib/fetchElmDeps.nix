@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
 }:
 
 {
   elmPackages,
-  registryDat,
   elmVersion,
+  registryDat,
 }:
 
 let

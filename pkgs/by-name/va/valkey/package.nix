@@ -2,24 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  lua,
+  getconf,
   jemalloc,
-  pkg-config,
+  lua,
   nixosTests,
+  openssl,
+  pkg-config,
+  ps,
+  systemd,
   tcl,
   which,
-  ps,
-  getconf,
-  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
-  systemd,
   # dependency ordering is broken at the moment when building with openssl
   tlsSupport ? !stdenv.hostPlatform.isStatic,
-  openssl,
-
   # Using system jemalloc fixes cross-compilation and various setups.
   # However the experimental 'active defragmentation' feature of valkey requires
   # their custom patched version of jemalloc.
   useSystemJemalloc ? true,
+  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,7 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   patches = lib.optional useSystemJemalloc ./use_system_jemalloc.patch;
-
+  strictDeps = true;
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -43,12 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional useSystemJemalloc jemalloc
   ++ lib.optional withSystemd systemd
   ++ lib.optional tlsSupport openssl;
-
-  strictDeps = true;
-
-  preBuild = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    substituteInPlace src/Makefile --replace-fail "-flto" ""
-  '';
 
   # More cross-compiling fixes.
   makeFlags = [
@@ -61,18 +54,22 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withSystemd [ "USE_SYSTEMD=yes" ]
   ++ lib.optionals tlsSupport [ "BUILD_TLS=yes" ];
 
-  enableParallelBuilding = true;
-
   env.NIX_CFLAGS_COMPILE = toString (lib.optionals stdenv.cc.isClang [ "-std=c11" ]);
+
+  preBuild = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    substituteInPlace src/Makefile --replace-fail "-flto" ""
+  '';
 
   # darwin currently lacks a pure `pgrep` which is extensively used here
   doCheck = !stdenv.hostPlatform.isDarwin;
+
   nativeCheckInputs = [
     which
     tcl
     ps
   ]
   ++ lib.optionals stdenv.hostPlatform.isStatic [ getconf ];
+
   checkPhase = ''
     runHook preCheck
 
@@ -107,18 +104,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postCheck
   '';
 
+  enableParallelBuilding = true;
+
   passthru = {
-    tests.redis = nixosTests.redis;
     serverBin = "valkey-server";
+    tests.redis = nixosTests.redis;
   };
 
   meta = {
-    homepage = "https://valkey.io/";
     description = "High-performance data structure server that primarily serves key/value workloads";
+    homepage = "https://valkey.io/";
+    changelog = "https://github.com/valkey-io/valkey/releases/tag/${finalAttrs.version}";
     license = lib.licenses.bsd3;
     platforms = lib.platforms.all;
-    teams = [ lib.teams.redis ];
-    changelog = "https://github.com/valkey-io/valkey/releases/tag/${finalAttrs.version}";
     mainProgram = "valkey-cli";
+    teams = [ lib.teams.redis ];
   };
 })

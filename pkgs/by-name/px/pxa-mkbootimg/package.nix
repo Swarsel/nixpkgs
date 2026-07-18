@@ -31,8 +31,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/osm0sis/pxa-mkbootimg";
     description = "Boot image tool variants for the Marvell PXA1088 and PXA1908 boards";
+    homepage = "https://github.com/osm0sis/pxa-mkbootimg";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ ungeskriptet ];
     mainProgram = "pxa-mkbootimg";

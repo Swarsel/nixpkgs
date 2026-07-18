@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -28,20 +28,96 @@ let
   '';
 in
 {
-  meta.maintainers = with lib.maintainers; [
-    cole-h
-  ];
-
   options = {
     services.lifecycled = {
       enable = lib.mkEnableOption "lifecycled, a daemon for responding to AWS AutoScaling Lifecycle Hooks";
+
+      # XXX: Can be removed if / when
+      # https://github.com/buildkite/lifecycled/pull/91 is merged.
+      awsRegion = lib.mkOption {
+        default = null;
+
+        description = ''
+          The region used for accessing AWS services.
+        '';
+
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      cloudwatchGroup = lib.mkOption {
+        default = null;
+
+        description = ''
+          Write logs to a specific Cloudwatch Logs group.
+        '';
+
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      cloudwatchStream = lib.mkOption {
+        default = null;
+
+        description = ''
+          Write logs to a specific Cloudwatch Logs stream. Defaults to the instance ID.
+        '';
+
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      debug = lib.mkOption {
+        default = false;
+
+        description = ''
+          Enable debugging information.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      handler = lib.mkOption {
+        description = ''
+          The script to invoke to handle events.
+        '';
+
+        type = lib.types.path;
+      };
+
+      instanceId = lib.mkOption {
+        default = null;
+
+        description = ''
+          The instance ID to listen for events for.
+        '';
+
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      json = lib.mkOption {
+        default = false;
+
+        description = ''
+          Enable JSON logging.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      noSpot = lib.mkOption {
+        default = false;
+
+        description = ''
+          Disable the spot termination listener.
+        '';
+
+        type = lib.types.bool;
+      };
 
       queueCleaner = {
         enable = lib.mkEnableOption "lifecycled-queue-cleaner";
 
         frequency = lib.mkOption {
-          type = lib.types.str;
           default = "hourly";
+
           description = ''
             How often to trigger the queue cleaner.
 
@@ -50,102 +126,42 @@ in
             {manpage}`systemd.timer(5)`
             for more information.
           '';
+
+          type = lib.types.str;
         };
 
         parallel = lib.mkOption {
-          type = lib.types.ints.unsigned;
           default = 20;
+
           description = ''
             The number of parallel deletes to run.
           '';
+
+          type = lib.types.ints.unsigned;
         };
       };
 
-      instanceId = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        description = ''
-          The instance ID to listen for events for.
-        '';
-      };
-
       snsTopic = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
         default = null;
+
         description = ''
           The SNS topic that receives events.
         '';
-      };
 
-      noSpot = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Disable the spot termination listener.
-        '';
-      };
-
-      handler = lib.mkOption {
-        type = lib.types.path;
-        description = ''
-          The script to invoke to handle events.
-        '';
-      };
-
-      json = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Enable JSON logging.
-        '';
-      };
-
-      cloudwatchGroup = lib.mkOption {
         type = lib.types.nullOr lib.types.str;
-        default = null;
-        description = ''
-          Write logs to a specific Cloudwatch Logs group.
-        '';
-      };
-
-      cloudwatchStream = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        description = ''
-          Write logs to a specific Cloudwatch Logs stream. Defaults to the instance ID.
-        '';
-      };
-
-      debug = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Enable debugging information.
-        '';
-      };
-
-      # XXX: Can be removed if / when
-      # https://github.com/buildkite/lifecycled/pull/91 is merged.
-      awsRegion = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        description = ''
-          The region used for accessing AWS services.
-        '';
       };
     };
   };
 
   ### Implementation ###
-
   config = lib.mkMerge [
     (lib.mkIf cfg.enable {
       environment.etc."lifecycled".source = configFile;
-
       systemd.packages = [ pkgs.lifecycled ];
+
       systemd.services.lifecycled = {
-        wantedBy = [ "network-online.target" ];
         restartTriggers = [ configFile ];
+        wantedBy = [ "network-online.target" ];
       };
     })
 
@@ -153,21 +169,28 @@ in
       systemd.services.lifecycled-queue-cleaner = {
         description = "Lifecycle Daemon Queue Cleaner";
         environment = lib.optionalAttrs (cfg.awsRegion != null) { AWS_REGION = cfg.awsRegion; };
+
         serviceConfig = {
-          Type = "oneshot";
           ExecStart = "${pkgs.lifecycled}/bin/lifecycled-queue-cleaner -parallel ${toString cfg.queueCleaner.parallel}";
+          Type = "oneshot";
         };
       };
 
       systemd.timers.lifecycled-queue-cleaner = {
-        description = "Lifecycle Daemon Queue Cleaner Timer";
-        wantedBy = [ "timers.target" ];
         after = [ "network-online.target" ];
+        description = "Lifecycle Daemon Queue Cleaner Timer";
+
         timerConfig = {
-          Unit = "lifecycled-queue-cleaner.service";
           OnCalendar = "${cfg.queueCleaner.frequency}";
+          Unit = "lifecycled-queue-cleaner.service";
         };
+
+        wantedBy = [ "timers.target" ];
       };
     })
+  ];
+
+  meta.maintainers = with lib.maintainers; [
+    cole-h
   ];
 }

@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  libgpg-error,
   libassuan,
   libgcrypt,
+  libgpg-error,
+  openssl,
   pkcs11helper,
   pkg-config,
-  openssl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,19 +36,23 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    changelog = "https://github.com/alonbl/gnupg-pkcs11-scd/blob/gnupg-pkcs11-scd-${finalAttrs.version}/ChangeLog";
     description = "Smart-card daemon to enable the use of PKCS#11 tokens with GnuPG";
-    mainProgram = "gnupg-pkcs11-scd";
+
     longDescription = ''
       gnupg-pkcs11 is a project to implement a BSD-licensed smart-card
       daemon to enable the use of PKCS#11 tokens with GnuPG.
     '';
+
     homepage = "https://gnupg-pkcs11.sourceforge.net/";
+    changelog = "https://github.com/alonbl/gnupg-pkcs11-scd/blob/gnupg-pkcs11-scd-${finalAttrs.version}/ChangeLog";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
       philandstuff
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "gnupg-pkcs11-scd";
   };
 })

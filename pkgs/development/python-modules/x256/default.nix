@@ -8,19 +8,16 @@
 buildPythonPackage (finalAttrs: {
   pname = "x256";
   version = "0.0.3";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-+FXbzNkeU/WJAoPYIDhVdDgn5+7VldXPGVRLo9IS4AE=";
   };
 
-  build-system = [ setuptools ];
-
   doCheck = false;
-
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "x256" ];
 
   meta = {

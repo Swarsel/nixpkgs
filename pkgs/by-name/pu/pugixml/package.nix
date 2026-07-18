@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
   check,
+  cmake,
   validatePkgConfig,
   shared ? false,
 }:
@@ -31,12 +31,12 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "BUILD_SHARED_LIBS" shared)
   ];
 
-  nativeCheckInputs = [ check ];
-
   preConfigure = ''
     # Enable long long support (required for filezilla)
     sed -i -e '/PUGIXML_HAS_LONG_LONG/ s/^\/\///' src/pugiconfig.hpp
   '';
+
+  nativeCheckInputs = [ check ];
 
   meta = {
     description = "Light-weight, simple and fast XML parser for C++ with XPath support";

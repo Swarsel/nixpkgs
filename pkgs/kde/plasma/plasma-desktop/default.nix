@@ -1,26 +1,26 @@
 {
   lib,
-  mkKdeDerivation,
-  runCommandLocal,
-  makeWrapper,
+  SDL2,
+  breeze,
   glib,
   gsettings-desktop-schemas,
-  replaceVars,
+  ibus,
+  libcanberra,
+  libwacom,
+  libxcursor,
+  libxft,
+  libxkbfile,
+  makeWrapper,
+  mkKdeDerivation,
   pkg-config,
   qtsvg,
   qtwayland,
-  breeze,
-  SDL2,
+  replaceVars,
+  runCommandLocal,
+  xf86-input-evdev,
+  xf86-input-libinput,
   xkeyboard_config,
   xorg-server,
-  xf86-input-libinput,
-  xf86-input-evdev,
-  libxft,
-  libxcursor,
-  libcanberra,
-  libwacom,
-  libxkbfile,
-  ibus,
 }:
 let
   # run gsettings with desktop schemas for using in "kcm_access" kcm
@@ -43,7 +43,6 @@ mkKdeDerivation {
     })
   ];
 
-  extraNativeBuildInputs = [ pkg-config ];
   extraBuildInputs = [
     qtsvg
     qtwayland
@@ -63,6 +62,7 @@ mkKdeDerivation {
     ibus
   ];
 
+  extraNativeBuildInputs = [ pkg-config ];
   # wrap kaccess with wrapped gsettings so it can access accessibility schemas
   qtWrapperArgs = [ "--prefix PATH : ${lib.makeBinPath [ gsettings-wrapper ]}" ];
 }

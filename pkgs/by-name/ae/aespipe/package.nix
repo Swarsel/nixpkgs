@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  sharutils,
   makeWrapper,
+  sharutils,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

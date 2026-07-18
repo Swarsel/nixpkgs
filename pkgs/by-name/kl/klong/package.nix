@@ -3,9 +3,9 @@
   stdenv,
   fetchurl,
   fetchFromSourcehut,
+  gv,
   installShellFiles,
   makeBinaryWrapper,
-  gv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,13 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchurl {
     url = "https://t3x.org/klong/klong${finalAttrs.version}.tgz";
     hash = "sha256-XhpIdyKKPGQ6mdv9LXPmC8P6hW4mFawv54yANw5/lrQ=";
-  };
-
-  docs = fetchFromSourcehut {
-    owner = "~nut";
-    repo = "klong-docs";
-    rev = "350da558709e3728df60ddf45fafe09e3fb89139";
-    hash = "sha256-yfvXljjJwCETWPa70zXhaQJOHhZYR2k+BKAd0Dw/U70=";
   };
 
   nativeBuildInputs = [
@@ -47,15 +40,24 @@ stdenv.mkDerivation (finalAttrs: {
     installManPage $docs/*.1
   '';
 
+  docs = fetchFromSourcehut {
+    hash = "sha256-yfvXljjJwCETWPa70zXhaQJOHhZYR2k+BKAd0Dw/U70=";
+    owner = "~nut";
+    repo = "klong-docs";
+    rev = "350da558709e3728df60ddf45fafe09e3fb89139";
+  };
+
   meta = {
     description = "Simple Array programming language";
     homepage = "https://t3x.org/klong";
-    mainProgram = "kg";
-    maintainers = [ lib.maintainers.casaca ];
-    platforms = lib.platforms.all;
+
     license = with lib.licenses; [
       publicDomain
       cc0
     ];
+
+    maintainers = [ lib.maintainers.casaca ];
+    platforms = lib.platforms.all;
+    mainProgram = "kg";
   };
 })

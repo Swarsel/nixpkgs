@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
 }:
 
@@ -18,14 +18,13 @@ buildNpmPackage {
   };
 
   npmDepsHash = "sha256-mreSdJxFjSaz3kNoFC5ZSlBENA2sOLmsxS0VKW4o0z4=";
-
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
   meta = {
     description = "JSON Fixer for Humans using (relaxed) JSON5";
     homepage = "https://github.com/rhysd/fixjson";
     license = lib.licenses.mit;
-    mainProgram = "fixjson";
     maintainers = [ ];
+    mainProgram = "fixjson";
   };
 }

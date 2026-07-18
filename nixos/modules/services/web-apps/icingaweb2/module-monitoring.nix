@@ -46,33 +46,9 @@ in
 {
   options.services.icingaweb2.modules.monitoring = with types; {
     enable = mkOption {
-      type = bool;
       default = true;
       description = "Whether to enable the icingaweb2 monitoring module.";
-    };
-
-    generalConfig = {
-      mutable = mkOption {
-        type = bool;
-        default = false;
-        description = "Make config.ini of the monitoring module mutable (e.g. via the web interface).";
-      };
-
-      protectedVars = mkOption {
-        type = listOf str;
-        default = [
-          "*pw*"
-          "*pass*"
-          "community"
-        ];
-        description = "List of string patterns for custom variables which should be excluded from user’s view.";
-      };
-    };
-
-    mutableBackends = mkOption {
       type = bool;
-      default = false;
-      description = "Make backends.ini of the monitoring module mutable (e.g. via the web interface).";
     };
 
     backends = mkOption {
@@ -81,28 +57,30 @@ in
           resource = "icinga_ido";
         };
       };
+
       description = "Monitoring backends to define";
+
       type = attrsOf (
         submodule (
           { name, ... }:
           {
             options = {
+              disabled = mkOption {
+                default = false;
+                description = "Disable this backend";
+                type = bool;
+              };
+
               name = mkOption {
-                visible = false;
                 default = name;
-                type = str;
                 description = "Name of this backend";
+                type = str;
+                visible = false;
               };
 
               resource = mkOption {
-                type = str;
                 description = "Name of the IDO resource";
-              };
-
-              disabled = mkOption {
-                type = bool;
-                default = false;
-                description = "Disable this backend";
+                type = str;
               };
             };
           }
@@ -110,72 +88,99 @@ in
       );
     };
 
-    mutableTransports = mkOption {
+    generalConfig = {
+      mutable = mkOption {
+        default = false;
+        description = "Make config.ini of the monitoring module mutable (e.g. via the web interface).";
+        type = bool;
+      };
+
+      protectedVars = mkOption {
+        default = [
+          "*pw*"
+          "*pass*"
+          "community"
+        ];
+
+        description = "List of string patterns for custom variables which should be excluded from user’s view.";
+        type = listOf str;
+      };
+    };
+
+    mutableBackends = mkOption {
+      default = false;
+      description = "Make backends.ini of the monitoring module mutable (e.g. via the web interface).";
       type = bool;
+    };
+
+    mutableTransports = mkOption {
       default = true;
       description = "Make commandtransports.ini of the monitoring module mutable (e.g. via the web interface).";
+      type = bool;
     };
 
     transports = mkOption {
       default = { };
       description = "Command transports to define";
+
       type = attrsOf (
         submodule (
           { name, ... }:
           {
             options = {
-              name = mkOption {
-                visible = false;
-                default = name;
+              host = mkOption {
+                description = "Host for the api or remote transport";
                 type = str;
+              };
+
+              instance = mkOption {
+                default = null;
+                description = "Assign a icinga instance to this transport";
+                type = nullOr str;
+              };
+
+              name = mkOption {
+                default = name;
                 description = "Name of this transport";
+                type = str;
+                visible = false;
+              };
+
+              password = mkOption {
+                description = "Password for the api transport";
+                type = str;
+              };
+
+              path = mkOption {
+                description = "Path to the socket for local or remote transports";
+                type = str;
+              };
+
+              port = mkOption {
+                default = null;
+                description = "Port to connect to for the api or remote transport";
+                type = nullOr str;
+              };
+
+              resource = mkOption {
+                description = "SSH identity resource for the remote transport";
+                type = str;
               };
 
               type = mkOption {
+                default = "api";
+                description = "Type of  this transport";
+
                 type = enum [
                   "api"
                   "local"
                   "remote"
                 ];
-                default = "api";
-                description = "Type of  this transport";
-              };
-
-              instance = mkOption {
-                type = nullOr str;
-                default = null;
-                description = "Assign a icinga instance to this transport";
-              };
-
-              path = mkOption {
-                type = str;
-                description = "Path to the socket for local or remote transports";
-              };
-
-              host = mkOption {
-                type = str;
-                description = "Host for the api or remote transport";
-              };
-
-              port = mkOption {
-                type = nullOr str;
-                default = null;
-                description = "Port to connect to for the api or remote transport";
               };
 
               username = mkOption {
-                type = str;
                 description = "Username for the api or remote transport";
-              };
-
-              password = mkOption {
                 type = str;
-                description = "Password for the api transport";
-              };
-
-              resource = mkOption {
-                type = str;
-                description = "SSH identity resource for the remote transport";
               };
             };
           }

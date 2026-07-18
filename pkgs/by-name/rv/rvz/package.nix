@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   zlib,
 }:
 
@@ -16,11 +16,13 @@ buildGoModule rec {
     hash = "sha256-OxU+Pm9OfFuwmmc2+b7eLhN8JR3SB8cjvh9lPS0qJ5Y=";
   };
 
+  buildInputs = [ zlib ];
   vendorHash = "sha256-Spmp0ZuvC0IpbfZrXNzJQ18LIuRRfwvuwf3E7S+30GY=";
 
-  buildInputs = [ zlib ];
+  checkPhase = ''
+    go test -v -short -coverprofile=cover.out ./...
+  '';
 
-  rev = "aa4ae9eeff06cd2942db0d5af5f4fa5872530256";
   buildDate = "2022-11-18T23:11:47Z";
 
   ldflags = [
@@ -31,11 +33,8 @@ buildGoModule rec {
     "-X main.date=${buildDate}"
   ];
 
+  rev = "aa4ae9eeff06cd2942db0d5af5f4fa5872530256";
   subPackages = [ "cmd/rvz" ];
-
-  checkPhase = ''
-    go test -v -short -coverprofile=cover.out ./...
-  '';
 
   meta = {
     description = "Golang library for reading RVZ disc images";

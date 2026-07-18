@@ -3,25 +3,25 @@
   stdenv,
   fetchFromGitLab,
   autoreconfHook,
+  libdrm,
+  libpciaccess,
+  nix-update-script,
   pkg-config,
   util-macros,
   xorg-server,
   xorgproto,
-  libdrm,
-  libpciaccess,
-  nix-update-script,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xf86-video-mga";
   version = "2.1.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
-    group = "xorg";
     owner = "driver";
     repo = "xf86-video-mga";
     tag = "xf86-video-mga-${finalAttrs.version}";
     hash = "sha256-9DpqSyGTu4jOttZlF95/rpi2oEu+JPU3sniuHTatoRo=";
+    domain = "gitlab.freedesktop.org";
+    group = "xorg";
   };
 
   strictDeps = true;
@@ -47,12 +47,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Matrox video driver for the Xorg X server";
     homepage = "https://gitlab.freedesktop.org/xorg/driver/xf86-video-mga";
+
     license = with lib.licenses; [
       x11
       mitOpenGroup
       hpndSellVariant
       mit
     ];
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
   };

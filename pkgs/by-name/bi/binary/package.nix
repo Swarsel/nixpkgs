@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   appstream,
   blueprint-compiler,
   desktop-file-utils,
-  fetchFromGitHub,
   glib,
   gobject-introspection,
   gtk4,
@@ -19,7 +19,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "binary";
   version = "5.4";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "fizzyizzy05";
@@ -44,9 +43,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
   ];
 
   buildInputs = [ libadwaita ];
-
   dependencies = with python3Packages; [ pygobject3 ];
-
   dontWrapGApps = true;
   makeWrapperArgs = [ "\${gappsWrapperArgs[@]}" ];
 
@@ -57,6 +54,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     mesonCheckPhase
   '';
 
+  pyproject = false;
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -66,8 +65,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     homepage = "https://github.com/fizzyizzy05/binary";
     changelog = "https://github.com/fizzyizzy05/binary/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    teams = [ lib.teams.gnome-circle ];
-    mainProgram = "binary";
     platforms = lib.platforms.linux;
+    mainProgram = "binary";
+    teams = [ lib.teams.gnome-circle ];
   };
 })

@@ -3,8 +3,6 @@
   mkDerivation,
 }:
 mkDerivation {
-  path = "lib/libusb";
-
   outputs = [
     "out"
     "man"
@@ -15,5 +13,6 @@ mkDerivation {
     mv $out/data/pkgconfig $out/lib/pkgconfig
   '';
 
+  path = "lib/libusb";
   meta.platforms = lib.platforms.freebsd;
 }

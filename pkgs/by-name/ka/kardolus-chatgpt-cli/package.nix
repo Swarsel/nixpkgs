@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   makeWrapper,
 }:
 
@@ -18,6 +18,7 @@ buildGoModule (finalAttrs: {
     hash = "sha256-X+QfmoVY8J+D9WEQ6GS7ws5sFUh/2yfszyLkNCRy4gc=";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
   vendorHash = null;
   # The tests of kardolus/chatgpt-cli require an OpenAI API Key to be present in the environment,
   # (e.g. https://github.com/kardolus/chatgpt-cli/blob/v1.10.12/test/contract/contract_test.go#L35)
@@ -25,7 +26,6 @@ buildGoModule (finalAttrs: {
   # Therefore, tests must be skipped.
   doCheck = false;
 
-  nativeBuildInputs = [ makeWrapper ];
   postFixup = ''
     wrapProgram $out/bin/chatgpt \
       --run "mkdir -p ~/.chatgpt-cli" \
@@ -34,15 +34,17 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Command-line interface for ChatGPT";
+
     longDescription = ''
       ChatGPT CLI is a versatile tool for interacting with LLMs through OpenAI, Azure, and other popular providers like Perplexity AI and Llama.
       It supports prompt files, history tracking, and live data injection via MCP (Model Context Protocol),
       making it ideal for both casual users and developers seeking a powerful, customizable GPT experience.
     '';
+
     homepage = "https://github.com/kardolus/chatgpt-cli";
-    platforms = lib.platforms.unix;
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ralleka ];
+    platforms = lib.platforms.unix;
     mainProgram = "chatgpt";
   };
 })

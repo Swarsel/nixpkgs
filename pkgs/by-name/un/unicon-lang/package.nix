@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  libx11,
-  libxcrypt,
   fetchFromGitHub,
   coreutils,
-  libpng,
-  libxft,
   freetype,
-  zlib,
   libjpeg,
+  libpng,
+  libx11,
+  libxcrypt,
+  libxft,
   openssl,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -43,26 +43,25 @@ stdenv.mkDerivation (finalAttrs: {
     openssl
   ];
 
-  hardeningDisable = [ "fortify" ];
-
-  # Issues when building plugins and running tests on aarch
-  enableParallelBuilding = false;
-
   doCheck = true;
-  checkTarget = "Test";
-
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
     $out/bin/unicon -version
     runHook postInstallCheck
   '';
 
+  checkTarget = "Test";
+  # Issues when building plugins and running tests on aarch
+  enableParallelBuilding = false;
+  hardeningDisable = [ "fortify" ];
+
   meta = {
     description = "Very high level, goal-directed, object-oriented, general purpose applications language";
+    homepage = "http://www.unicon.org";
+    license = lib.licenses.gpl2;
     maintainers = [ ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl2;
-    homepage = "http://www.unicon.org";
   };
 })

@@ -18,8 +18,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
-
   doCheck = true;
+
   postCheck = ''
     for i in $src/test-data/*.Z; do
       mkdir -p test
@@ -34,8 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/wfr/unshieldv3";
     changelog = "https://github.com/wfr/unshieldv3/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+    maintainers = [ lib.maintainers.jchw ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "unshieldv3";
-    maintainers = [ lib.maintainers.jchw ];
   };
 })

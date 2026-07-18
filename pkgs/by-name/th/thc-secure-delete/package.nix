@@ -20,9 +20,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://aur.archlinux.org/cgit/aur.git/plain/signal-handler-fix.patch?h=thc-secure-delete&id=ca83e2c6a548aaba56a0499180d15d61c75b6acd";
-      hash = "sha256-MGCl5wXHuDr0Z4MlBGlSAUrv5VeQ8FjWCNsTOnS7Evw=";
       extraPrefix = "";
+      hash = "sha256-MGCl5wXHuDr0Z4MlBGlSAUrv5VeQ8FjWCNsTOnS7Evw=";
+      url = "https://aur.archlinux.org/cgit/aur.git/plain/signal-handler-fix.patch?h=thc-secure-delete&id=ca83e2c6a548aaba56a0499180d15d61c75b6acd";
     })
   ];
 
@@ -50,7 +50,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/gordrs/thc-secure-delete/blob/v${finalAttrs.version}/CHANGES";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ tochiaha ];
-    mainProgram = "srm";
     platforms = lib.platforms.all;
+    mainProgram = "srm";
   };
 })

@@ -1,15 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
   autoconf,
   automake,
+  buildPythonPackage,
   cmake,
   gcc,
   libtool,
   parameterized,
   perl,
+  pytestCheckHook,
   setuptools,
   simplejson,
   snapshot-restore-py,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "awslambdaric";
   version = "4.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aws";
@@ -25,11 +24,6 @@ buildPythonPackage rec {
     tag = version;
     sha256 = "sha256-wlQTYFbC/5gmal4xx9XHAxpdzEhGaD9N28BrhDUKV5A=";
   };
-
-  propagatedBuildInputs = [
-    simplejson
-    snapshot-restore-py
-  ];
 
   nativeBuildInputs = [
     autoconf
@@ -42,12 +36,18 @@ buildPythonPackage rec {
 
   buildInputs = [ gcc ];
 
-  dontUseCmakeConfigure = true;
+  propagatedBuildInputs = [
+    simplejson
+    snapshot-restore-py
+  ];
 
   nativeCheckInputs = [
     parameterized
     pytestCheckHook
   ];
+
+  dontUseCmakeConfigure = true;
+  pyproject = true;
 
   pythonImportsCheck = [
     "awslambdaric"

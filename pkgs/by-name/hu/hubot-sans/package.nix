@@ -1,18 +1,13 @@
 {
   lib,
   fetchzip,
-  stdenvNoCC,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "hubot-sans";
   version = "1.0.1";
-
-  outputs = [
-    "out"
-    "webfont"
-  ];
 
   src = fetchzip {
     url = "https://github.com/github/hubot-sans/releases/download/v${finalAttrs.version}/Hubot-Sans.zip";
@@ -20,13 +15,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     stripRoot = false;
   };
 
+  outputs = [
+    "out"
+    "webfont"
+  ];
+
   nativeBuildInputs = [ installFonts ];
 
   meta = {
     description = "Variable font from GitHub";
-    homepage = "https://github.com/github/hubot-sans";
-    changelog = "https://github.com/github/hubot-sans/releases/tag/v${finalAttrs.version}";
-    license = lib.licenses.ofl;
+
     longDescription = ''
       Hubot Sans is Mona Sans’s robotic sidekick. The typeface is designed with
       more geometric accents to lend a technical and idiosyncratic feel—perfect
@@ -36,6 +34,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       of a typeface to be incorporated into one single file, and are supported
       by all major browsers.
     '';
+
+    homepage = "https://github.com/github/hubot-sans";
+    changelog = "https://github.com/github/hubot-sans/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.ofl;
     maintainers = with lib.maintainers; [ pancaek ];
     platforms = lib.platforms.all;
   };

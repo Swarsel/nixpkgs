@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-  ncurses,
+  libewf-legacy,
+  libjpeg,
   libuuid,
+  ncurses,
   pkg-config,
   wrapQtAppsHook,
-  libjpeg,
   zlib,
-  libewf-legacy,
-  enableNtfs ? !stdenv.hostPlatform.isDarwin,
-  ntfs3g ? null,
-  enableExtFs ? !stdenv.hostPlatform.isDarwin,
   e2fsprogs ? null,
+  enableExtFs ? !stdenv.hostPlatform.isDarwin,
+  enableNtfs ? !stdenv.hostPlatform.isDarwin,
   enableQt ? false,
+  ntfs3g ? null,
   qtbase ? null,
   qttools ? null,
   qwt ? null,
@@ -28,17 +28,27 @@ assert enableQt -> qwt != null;
 stdenv.mkDerivation rec {
   pname = "testdisk";
   version = "7.2";
+
   src = fetchurl {
     url = "https://www.cgsecurity.org/testdisk-${version}.tar.bz2";
     hash = "sha256-+DQ74gy0ABxdkaLjvNkYOY8Arm2DEIlKWp8v64E8KD8=";
   };
+
+  outputs = [
+    "out"
+    "man"
+    "doc"
+  ];
 
   postPatch = ''
     substituteInPlace linux/qphotorec.desktop \
       --replace "/usr" "$out"
   '';
 
-  enableParallelBuilding = true;
+  nativeBuildInputs = [
+    pkg-config
+  ]
+  ++ lib.optional enableQt wrapQtAppsHook;
 
   buildInputs = [
     ncurses
@@ -55,23 +65,12 @@ stdenv.mkDerivation rec {
     qwt
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-  ]
-  ++ lib.optional enableQt wrapQtAppsHook;
-
   env.NIX_CFLAGS_COMPILE = "-Wno-unused";
-
-  outputs = [
-    "out"
-    "man"
-    "doc"
-  ];
+  enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://www.cgsecurity.org/wiki/Main_Page";
-    downloadPage = "https://www.cgsecurity.org/wiki/TestDisk_Download";
     description = "Data recovery utilities";
+
     longDescription = ''
       TestDisk is a powerful free data recovery software. It was primarily
       designed to help recover lost partitions and/or make non-booting disks
@@ -86,11 +85,16 @@ stdenv.mkDerivation rec {
       it will still work even if your media's file system has been severely
       damaged or reformatted.
     '';
+
+    homepage = "https://www.cgsecurity.org/wiki/Main_Page";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       fgaz
       ryand56
     ];
+
+    platforms = lib.platforms.all;
+    downloadPage = "https://www.cgsecurity.org/wiki/TestDisk_Download";
   };
 }

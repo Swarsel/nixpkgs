@@ -1,18 +1,17 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  pbr,
   decorator,
-  py,
+  fetchPypi,
   mock,
+  pbr,
+  py,
   pytest,
 }:
 
 buildPythonPackage rec {
   pname = "retry";
   version = "0.9.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -34,6 +33,8 @@ buildPythonPackage rec {
   checkPhase = ''
     pytest
   '';
+
+  format = "setuptools";
 
   meta = {
     description = "Easy to use retry decorator";

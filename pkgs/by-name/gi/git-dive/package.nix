@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
+  gitMinimal,
   libgit2,
   oniguruma,
+  pkg-config,
+  rustPlatform,
   zlib,
-  gitMinimal,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-sy2qNFn8JLE173HVWfFXBx21jcx4kpFMwi9a0m38lso=";
   };
 
-  cargoHash = "sha256-qRF111ofiM8SNUjQfpDg75OPpJnP7fOqM8Ih3NQUdGY=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -32,12 +30,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zlib
   ];
 
+  cargoHash = "sha256-qRF111ofiM8SNUjQfpDg75OPpJnP7fOqM8Ih3NQUdGY=";
+
+  env = {
+    LIBGIT2_NO_VENDOR = 1;
+    RUSTONIG_SYSTEM_LIBONIG = true;
+  };
+
   nativeCheckInputs = [
     gitMinimal
   ];
-
-  # don't use vendored libgit2
-  buildNoDefaultFeatures = true;
 
   checkFlags = [
     # requires internet access
@@ -50,19 +52,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     git config --global user.email nixbld@example.com
   '';
 
-  env = {
-    LIBGIT2_NO_VENDOR = 1;
-    RUSTONIG_SYSTEM_LIBONIG = true;
-  };
+  # don't use vendored libgit2
+  buildNoDefaultFeatures = true;
 
   meta = {
     description = "Dive into a file's history to find root cause";
     homepage = "https://github.com/gitext-rs/git-dive";
     changelog = "https://github.com/gitext-rs/git-dive/blob/${finalAttrs.src.rev}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = [ lib.maintainers.matthiasbeyer ];
     mainProgram = "git-dive";
   };

@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
 }:
 buildGoModule (finalAttrs: {
   pname = "scc";
@@ -16,9 +16,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-gOr09UzPfmNDUqvGJtmXYdn0gWfcvvVyoBfyRBDSy88=";
   };
 
-  vendorHash = null;
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = null;
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd scc \
@@ -31,13 +30,15 @@ buildGoModule (finalAttrs: {
   excludedPackages = [ "scripts" ];
 
   meta = {
-    homepage = "https://github.com/boyter/scc";
     description = "Very fast accurate code counter with complexity calculations and COCOMO estimates written in pure Go";
-    maintainers = with lib.maintainers; [
-      sigma
-    ];
+    homepage = "https://github.com/boyter/scc";
+
     license = with lib.licenses; [
       mit
+    ];
+
+    maintainers = with lib.maintainers; [
+      sigma
     ];
   };
 })

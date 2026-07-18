@@ -1,27 +1,26 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
   alsa-lib,
   openssl,
   pkg-config,
-  lib,
   unstableGitUpdater,
 }:
 
 let
 
   firmwareSrc = fetchFromGitHub {
+    hash = "sha256-s61eyS47SuIbK9KR59XxHpybvl9tHFWPLkpHmdqwO24=";
     owner = "geoffreybennett";
     repo = "scarlett2-firmware";
     rev = "f628dfb4d2e874b2078dbb43e8c1d59dd6553dd1";
-    hash = "sha256-s61eyS47SuIbK9KR59XxHpybvl9tHFWPLkpHmdqwO24=";
   };
 
 in
 stdenv.mkDerivation {
 
   pname = "scarlett2";
-
   version = "0-unstable-2024-04-06";
 
   src = fetchFromGitHub {
@@ -31,18 +30,16 @@ stdenv.mkDerivation {
     hash = "sha256-yhmXVfys300NwZ8UJ7WvOyNkGP3OkIVoRaToF+SenQA=";
   };
 
+  nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     alsa-lib
     openssl
   ];
 
-  nativeBuildInputs = [ pkg-config ];
-
   preBuild = ''
     makeFlagsArray+=( PREFIX=$out )
   '';
-
-  passthru.updateScript = unstableGitUpdater { };
 
   # the program expects to find firmware files in a directory called "firmware" relative to the resolved path of the binary
   postInstall = ''
@@ -51,6 +48,8 @@ stdenv.mkDerivation {
     ln -s $out/share/scarlett2 $out/bin/scarlett2
     ln -s ${firmwareSrc}/firmware $out/share/firmware
   '';
+
+  passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "Firmware Management Utility for Scarlett 2nd, 3rd, and 4th Gen, Clarett USB, and Clarett+ interfaces";

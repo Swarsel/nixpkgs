@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   enaml,
   pyqtgraph,
   pythonocc-core,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "enamlx";
   version = "0.6.4";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "frmdstryr";
@@ -31,6 +30,7 @@ buildPythonPackage rec {
   # qt_occ_viewer test requires enaml.qt.QtOpenGL which got dropped somewhere
   # between enaml 0.9.0 and 0.10.0
   doCheck = false;
+  format = "setuptools";
 
   pythonImportsCheck = [
     "enamlx.core"
@@ -39,8 +39,8 @@ buildPythonPackage rec {
   ];
 
   meta = {
-    homepage = "https://github.com/frmdstryr/enamlx";
     description = "Additional Qt Widgets for Enaml";
+    homepage = "https://github.com/frmdstryr/enamlx";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ raboof ];
   };

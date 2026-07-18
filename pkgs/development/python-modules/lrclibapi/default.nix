@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
+  pytestCheckHook,
   requests,
   vcrpy,
-  pytestCheckHook,
 }:
 buildPythonPackage rec {
   pname = "lrclibapi";
   version = "0.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Dr-Blank";
@@ -18,6 +17,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-K5wO3BexftnWe48loaW8TjySQvh2X+X3GSmG5qg+BGc=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    vcrpy
+  ];
 
   build-system = [
     poetry-core
@@ -27,19 +31,16 @@ buildPythonPackage rec {
     requests
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "lrclib"
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    vcrpy
-  ];
-
   meta = {
+    description = "Python wrapper for downloading synced lyrics from the lrclib.net api";
     homepage = "https://github.com/Dr-Blank/lrclibapi";
     changelog = "https://github.com/Dr-Blank/lrclibapi/releases/tag/v${version}";
-    description = "Python wrapper for downloading synced lyrics from the lrclib.net api";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ DataHearth ];
   };

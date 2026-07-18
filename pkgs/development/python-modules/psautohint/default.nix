@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  setuptools-scm,
+  buildPythonPackage,
   fonttools,
-  pytestCheckHook,
+  psautohint, # for passthru.tests
   pytest-cov-stub,
   pytest-xdist,
+  pytestCheckHook,
+  setuptools,
+  setuptools-scm,
   runAllTests ? false,
-  psautohint, # for passthru.tests
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "psautohint";
   version = "2.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "adobe-type-tools";
@@ -31,6 +30,12 @@ buildPythonPackage (finalAttrs: {
     sed -i '/setup(/a \     version="${finalAttrs.version}",' setup.py
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+    pytest-xdist
+  ];
+
   build-system = [
     setuptools
     setuptools-scm
@@ -38,12 +43,6 @@ buildPythonPackage (finalAttrs: {
 
   dependencies = [
     fonttools
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-    pytest-xdist
   ];
 
   disabledTests = lib.optionals (!runAllTests) [
@@ -59,6 +58,8 @@ buildPythonPackage (finalAttrs: {
     "test_hashmap_old_version"
     "test_hashmap_no_version"
   ];
+
+  pyproject = true;
 
   passthru.tests = {
     fullTestsuite = psautohint.override { runAllTests = true; };

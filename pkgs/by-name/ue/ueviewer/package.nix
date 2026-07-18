@@ -1,14 +1,14 @@
 {
-  gccStdenv,
   lib,
   fetchFromGitHub,
+  SDL2,
   fetchpatch,
-  unstableGitUpdater,
+  gccStdenv,
   libGL,
   libpng,
   libx11,
   perl,
-  SDL2,
+  unstableGitUpdater,
   zlib,
 }:
 
@@ -27,9 +27,9 @@ gccStdenv.mkDerivation (finalAttrs: {
     # Fix compilation on Darwin
     # Remove when https://github.com/gildor2/UEViewer/pull/319 merged
     (fetchpatch {
+      hash = "sha256-v68yoBLz0dUB3evlKApKuajKQiOwbJczVeW5oxYaVyw=";
       name = "0001-ueviewer-Dont-use-c++2a-standard.patch";
       url = "https://github.com/gildor2/UEViewer/commit/d44bef038abca99c84d7f418aedcbcb761de58aa.patch";
-      hash = "sha256-v68yoBLz0dUB3evlKApKuajKQiOwbJczVeW5oxYaVyw=";
     })
   ];
 
@@ -68,8 +68,6 @@ gccStdenv.mkDerivation (finalAttrs: {
     SDL2
   ];
 
-  enableParallelBuilding = true;
-
   buildPhase = ''
     runHook preBuild
 
@@ -86,6 +84,8 @@ gccStdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   passthru.updateScript = unstableGitUpdater {
     # Tags represent various milestones, nothing that can be mapped to a numerical version number
     hardcodeZeroVersion = true;
@@ -95,9 +95,9 @@ gccStdenv.mkDerivation (finalAttrs: {
     description = "Viewer and exporter for Unreal Engine 1-4 assets (aka umodel)";
     homepage = "https://www.gildor.org/en/projects/umodel";
     license = lib.licenses.mit;
-    mainProgram = "umodel";
     maintainers = with lib.maintainers; [ OPNA2608 ];
     # Hardcoded usage of SSE2
     platforms = lib.platforms.x86;
+    mainProgram = "umodel";
   };
 })

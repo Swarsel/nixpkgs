@@ -4,12 +4,12 @@
   fetchurl,
   fetchpatch,
   gperf,
-  pkg-config,
-  netsurf-buildsystem,
   libdom,
   libhubbub,
   libparserutils,
   libwapcaplet,
+  netsurf-buildsystem,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -48,9 +48,9 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://www.netsurf-browser.org/projects/libsvgtiny/";
-    description = "NetSurf SVG decoder";
-    license = lib.licenses.mit;
     inherit (netsurf-buildsystem.meta) maintainers platforms;
+    description = "NetSurf SVG decoder";
+    homepage = "https://www.netsurf-browser.org/projects/libsvgtiny/";
+    license = lib.licenses.mit;
   };
 })

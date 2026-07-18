@@ -4,8 +4,8 @@
   click,
   diskcache,
   fetchPypi,
-  hatchling,
   hatch-vcs,
+  hatchling,
   jinja2,
   jsonschema,
   platformdirs,
@@ -16,13 +16,18 @@
 buildPythonPackage rec {
   pname = "glean-parser";
   version = "19.2.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "glean_parser";
     inherit version;
     hash = "sha256-oL2vnZWvaoZUPJb1IML0egeTU/ND/TsJqzC4fLnWyDY=";
+    pname = "glean_parser";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  preCheck = ''
+    export HOME=$TMPDIR
+  '';
 
   build-system = [
     hatchling
@@ -38,12 +43,6 @@ buildPythonPackage rec {
     platformdirs
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  preCheck = ''
-    export HOME=$TMPDIR
-  '';
-
   disabledTests = [
     # Network access
     "test_validate_ping"
@@ -52,14 +51,15 @@ buildPythonPackage rec {
     "test_yaml_lint"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "glean_parser" ];
 
   meta = {
     description = "Tools for parsing the metadata for Mozilla's glean telemetry SDK";
-    mainProgram = "glean_parser";
     homepage = "https://github.com/mozilla/glean_parser";
     changelog = "https://github.com/mozilla/glean_parser/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.mpl20;
     maintainers = [ ];
+    mainProgram = "glean_parser";
   };
 }

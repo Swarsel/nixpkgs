@@ -1,23 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  requests,
-  pytestCheckHook,
-  typesense,
+  buildPythonPackage,
   curl,
-  pytest-mock,
-  requests-mock,
-  python-dotenv,
   faker,
   isort,
+  pytest-mock,
+  pytestCheckHook,
+  python-dotenv,
+  requests,
+  requests-mock,
+  setuptools,
+  typesense,
 }:
 
 buildPythonPackage rec {
   pname = "typesense";
   version = "1.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "typesense";
@@ -32,10 +31,6 @@ buildPythonPackage rec {
     ./generated-temp-path.patch
   ];
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   nativeCheckInputs = [
     pytestCheckHook
     typesense
@@ -46,10 +41,6 @@ buildPythonPackage rec {
     faker
     isort
   ];
-  disabledTestMarks = [ "open_ai" ];
-  disabledTests = [ "import_typing_extensions" ];
-
-  __darwinAllowLocalNetworking = true;
 
   preCheck = ''
     TYPESENSE_API_KEY="xyz" \
@@ -63,10 +54,17 @@ buildPythonPackage rec {
       while ! curl -s --fail localhost:8108/health; do sleep 1; done
     ' || false
   '';
+
   postCheck = ''
     kill $typesense_pid
   '';
 
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  disabledTestMarks = [ "open_ai" ];
+  disabledTests = [ "import_typing_extensions" ];
+  pyproject = true;
   pythonImportsCheck = [ "typesense" ];
 
   meta = {

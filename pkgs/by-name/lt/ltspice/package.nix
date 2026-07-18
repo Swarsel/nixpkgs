@@ -1,30 +1,22 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  msitools,
+  copyDesktopItems,
   icoutils,
   imagemagick,
-  wine64,
   makeDesktopItem,
-  copyDesktopItems,
+  msitools,
+  stdenvNoCC,
+  wine64,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "ltspice";
   version = "26.0.2";
+
   src = fetchurl {
     url = "https://ltspice.analog.com/download/${finalAttrs.version}/LTspice64.msi";
     hash = "sha256-SF2r0tfYKT3nM6OZcZ9lOO/aSlS0ixgaFOBycRhphNM=";
   };
-  dontUnpack = true;
-  dontConfigure = true;
-
-  nativeBuildInputs = [
-    msitools
-    icoutils
-    imagemagick
-    copyDesktopItems
-  ];
 
   postPatch = ''
     cp ${./ltspice.sh} ./ltspice.sh
@@ -32,6 +24,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --replace-fail wine ${lib.getExe wine64} \
       --replace-fail @outpath@ $out
   '';
+
+  nativeBuildInputs = [
+    msitools
+    icoutils
+    imagemagick
+    copyDesktopItems
+  ];
 
   buildPhase = ''
     runHook preBuild
@@ -55,13 +54,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     install -Dm755 ltspice.sh $out/bin/ltspice
     runHook postInstall
   '';
+
   desktopItems = [
     (makeDesktopItem {
-      name = "ltspice";
-      desktopName = "LTspice";
       comment = finalAttrs.meta.description;
+      desktopName = "LTspice";
       exec = "${finalAttrs.meta.mainProgram} %f";
       icon = "ltspice";
+
       mimeTypes = [
         "application/raw"
         "application/asc"
@@ -75,18 +75,23 @@ stdenvNoCC.mkDerivation (finalAttrs: {
         "application/jft"
         "application/mos"
       ];
+
+      name = "ltspice";
     })
   ];
+
+  dontConfigure = true;
+  dontUnpack = true;
 
   meta = {
     description = "SPICE simulator, schematic capture and waveform viewer";
     homepage = "https://www.analog.com/en/resources/design-tools-and-calculators/ltspice-simulator.html";
     changelog = "https://ltspice.analog.com/download/updates.txt";
     license = lib.licenses.unfree;
-    mainProgram = "ltspice";
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = [ lib.maintainers.zimward ];
     #technically windows too, but for that the builder would need some conditionals
     platforms = [ "x86_64-linux" ];
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    mainProgram = "ltspice";
   };
 })

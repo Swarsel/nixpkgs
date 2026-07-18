@@ -25,11 +25,11 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/osm0sis/mkmtkhdr";
     description = "Tool to write MTK headers for split zImages and ramdisks";
+    homepage = "https://github.com/osm0sis/mkmtkhdr";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ ungeskriptet ];
-    teams = [ lib.teams.android ];
     mainProgram = "mkmtkhdr";
+    teams = [ lib.teams.android ];
   };
 }

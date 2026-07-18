@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  lz4,
-  ffmpeg-full,
   fetchFromGitHub,
-  openssh,
+  ffmpeg-full,
+  lz4,
   netcat,
+  openssh,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,9 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-rJYdmBQrDH/oURXVO8WWTxgvibcpNC8yxno6pZPl6No=";
   };
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -51,11 +48,14 @@ stdenv.mkDerivation (finalAttrs: {
         "$out/bin/restream"
     '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "reMarkable screen sharing over SSH";
-    mainProgram = "restream";
     homepage = "https://github.com/rien/reStream";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.cpcloud ];
+    mainProgram = "restream";
   };
 })

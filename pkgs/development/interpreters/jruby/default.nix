@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  callPackage,
   fetchurl,
+  callPackage,
   fetchMavenArtifact,
   gitUpdater,
-  mkRubyVersion,
-  makeBinaryWrapper,
   jre,
+  makeBinaryWrapper,
+  mkRubyVersion,
 }:
 
 let
@@ -54,12 +54,14 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru = rec {
-    rubyEngine = "jruby";
-    gemPath = "lib/${rubyEngine}/gems/${rubyVersion.libDir}";
-    libPath = "lib/${rubyEngine}/${rubyVersion.libDir}";
     devEnv = callPackage ../ruby/dev.nix {
       ruby = finalAttrs.finalPackage;
     };
+
+    gemPath = "lib/${rubyEngine}/gems/${rubyVersion.libDir}";
+    libPath = "lib/${rubyEngine}/${rubyVersion.libDir}";
+    rubyEngine = "jruby";
+
     updateScript = gitUpdater {
       url = "https://github.com/jruby/jruby.git";
     };
@@ -69,13 +71,15 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Ruby interpreter written in Java";
     homepage = "https://www.jruby.org/";
     changelog = "https://github.com/jruby/jruby/releases/tag/${finalAttrs.version}";
+
     license = with lib.licenses; [
       cpl10
       gpl2
       lgpl21
     ];
-    platforms = jre.meta.platforms;
-    maintainers = [ lib.maintainers.fzakaria ];
+
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    maintainers = [ lib.maintainers.fzakaria ];
+    platforms = jre.meta.platforms;
   };
 })

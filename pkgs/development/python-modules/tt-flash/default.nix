@@ -1,25 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  pyyaml,
-  tabulate,
+  buildPythonPackage,
   pyluwen,
-  tt-tools-common,
-
   # tests
   pytestCheckHook,
+  # dependencies
+  pyyaml,
+  # build-system
+  setuptools,
+  tabulate,
+  tt-tools-common,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "tt-flash";
   version = "3.10.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "tenstorrent";
@@ -28,14 +23,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-wE8qDgoXiYeUbrcGY46JnPVT4neNGu3U5DTXlMuewjc=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
+
   build-system = [
     setuptools
   ];
 
-  pythonRelaxDeps = [
-    "pyyaml"
-    "tabulate"
-  ];
   dependencies = [
     tabulate
     pyyaml
@@ -43,18 +40,20 @@ buildPythonPackage (finalAttrs: {
     tt-tools-common
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "tt_flash" ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
+  pythonRelaxDeps = [
+    "pyyaml"
+    "tabulate"
   ];
 
   meta = {
     description = "Tenstorrent Firmware Update Utility";
     homepage = "https://tenstorrent.com";
-    downloadPage = "https://github.com/tenstorrent/tt-flash";
     changelog = "https://github.com/tenstorrent/tt-flash/blob/${finalAttrs.src.tag}/CHANGELOG.md";
-    maintainers = with lib.maintainers; [ RossComputerGuy ];
     license = with lib.licenses; [ asl20 ];
+    maintainers = with lib.maintainers; [ RossComputerGuy ];
+    downloadPage = "https://github.com/tenstorrent/tt-flash";
   };
 })

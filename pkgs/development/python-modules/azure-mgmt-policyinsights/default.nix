@@ -12,14 +12,15 @@
 buildPythonPackage (finalAttrs: {
   pname = "azure-mgmt-policyinsights";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_policyinsights";
     inherit (finalAttrs) version;
     hash = "sha256-rsmIKwVcRrWUxDjJf1Cj4YczEooRUwRpzgl6fFmaDl0=";
+    pname = "azure_mgmt_policyinsights";
   };
 
+  # has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,9 +30,7 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  # has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.mgmt.policyinsights" ];
 
   meta = {

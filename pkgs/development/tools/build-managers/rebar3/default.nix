@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchgit,
-  fetchHex,
-  erlang,
-  makeWrapper,
-  writeScript,
   common-updater-scripts,
   coreutils,
+  erlang,
+  fetchHex,
+  fetchgit,
   git,
   gnused,
+  makeWrapper,
   nix,
   rebar3-nix,
+  writeScript,
 }:
 
 let
@@ -20,8 +20,8 @@ let
   owner = "erlang";
   deps = import ./rebar-deps.nix { inherit fetchFromGitHub fetchgit fetchHex; };
   rebar3 = stdenv.mkDerivation rec {
-    pname = "rebar3";
     inherit version erlang;
+    pname = "rebar3";
 
     # How to obtain `sha256`:
     # nix-prefetch-url --unpack https://github.com/erlang/rebar3/archive/${version}.tar.gz
@@ -31,8 +31,6 @@ let
       rev = version;
       sha256 = "+va3wHlAfVtl3aK6+DVkN/EgpiMxwAGUyNywaWiKTJQ=";
     };
-
-    buildInputs = [ erlang ];
 
     postPatch = ''
       mkdir -p _checkouts _build/default/lib/
@@ -57,39 +55,22 @@ let
         --replace-fail 'xref_test, xref_ignore_test,' 'xref_test,'
     '';
 
+    buildInputs = [ erlang ];
+
     buildPhase = ''
       HOME=. escript bootstrap
     '';
+
+    doCheck = true;
 
     checkPhase = ''
       HOME=. escript ./rebar3 ct
     '';
 
-    doCheck = true;
-
     installPhase = ''
       mkdir -p $out/bin
       cp rebar3 $out/bin/rebar3
     '';
-
-    meta = {
-      homepage = "https://github.com/rebar/rebar3";
-      description = "Erlang build tool that makes it easy to compile and test Erlang applications, port drivers and releases";
-      mainProgram = "rebar3";
-
-      longDescription = ''
-        rebar is a self-contained Erlang script, so it's easy to distribute or
-        even embed directly in a project. Where possible, rebar uses standard
-        Erlang/OTP conventions for project structures, thus minimizing the amount
-        of build configuration work. rebar also provides dependency management,
-        enabling application writers to easily re-use common libraries from a
-        variety of locations (hex.pm, git, hg, and so on).
-      '';
-
-      platforms = lib.platforms.unix;
-      teams = [ lib.teams.beam ];
-      license = lib.licenses.asl20;
-    };
 
     passthru.updateScript = writeScript "update.sh" ''
       #!${stdenv.shell}
@@ -117,6 +98,25 @@ let
         echo "rebar3 is already up-to-date"
       fi
     '';
+
+    meta = {
+      description = "Erlang build tool that makes it easy to compile and test Erlang applications, port drivers and releases";
+
+      longDescription = ''
+        rebar is a self-contained Erlang script, so it's easy to distribute or
+        even embed directly in a project. Where possible, rebar uses standard
+        Erlang/OTP conventions for project structures, thus minimizing the amount
+        of build configuration work. rebar also provides dependency management,
+        enabling application writers to easily re-use common libraries from a
+        variety of locations (hex.pm, git, hg, and so on).
+      '';
+
+      homepage = "https://github.com/rebar/rebar3";
+      license = lib.licenses.asl20;
+      platforms = lib.platforms.unix;
+      mainProgram = "rebar3";
+      teams = [ lib.teams.beam ];
+    };
   };
 
   # Alias rebar3 so we can use it as default parameter below
@@ -124,8 +124,8 @@ let
 
   rebar3WithPlugins =
     {
-      plugins ? [ ],
       globalPlugins ? [ ],
+      plugins ? [ ],
       rebar3 ? _rebar3,
     }:
     let
@@ -151,17 +151,16 @@ let
       );
     in
     stdenv.mkDerivation {
-      pname = "rebar3-with-plugins";
       inherit (rebar3) version;
+      pname = "rebar3-with-plugins";
+
       nativeBuildInputs = [
         erlang
         makeWrapper
       ];
-      unpackPhase = "true";
 
       # Here we extract the rebar3 escript (like `rebar3_prv_local_install.erl`) and
       # add plugins to the code path.
-
       installPhase = ''
         erl -noshell -eval '
           {ok, Escript} = escript:extract("${rebar3Patched}/bin/rebar3", []),
@@ -177,6 +176,8 @@ let
           --suffix-each ERL_LIBS ":" "$out/lib ${toString pluginLibDirs}" \
           --add-flags "+sbtu +A1 -noshell -boot start_clean -s rebar3 main -extra"
       '';
+
+      unpackPhase = "true";
     };
 in
 {

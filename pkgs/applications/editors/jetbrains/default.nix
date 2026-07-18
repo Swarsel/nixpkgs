@@ -1,14 +1,12 @@
 {
   lib,
-  config,
   stdenv,
   callPackage,
-
-  python3,
-
+  config,
   jdk,
-  vmopts ? null,
+  python3,
   forceWayland ? false,
+  vmopts ? null,
 }:
 
 let
@@ -26,8 +24,8 @@ let
     callPackage path (
       {
         inherit mkJetBrainsProduct;
-        libdbm = _idea-oss.libdbm;
         fsnotifier = _idea-oss.fsnotifier;
+        libdbm = _idea-oss.libdbm;
       }
       // extras
     );
@@ -44,6 +42,7 @@ let
           python3
           setuptools
         ];
+
       preInstall = ''
         echo "compiling cython debug speedups"
         if [[ -d plugins/python-ce ]]; then
@@ -81,15 +80,14 @@ in
   idea-oss = _idea-oss;
   mps = mkBinIde ./ides/mps.nix { };
   phpstorm = mkBinIde ./ides/phpstorm.nix { };
+  # Plugins
+  plugins = callPackage ./plugins { };
   pycharm = mkBinIde ./ides/pycharm.nix { inherit pyCharmCommonOverrides; };
   pycharm-oss = mkSrcIde ./ides/pycharm-oss.nix { inherit pyCharmCommonOverrides; };
   rider = mkBinIde ./ides/rider.nix { inherit patchSharedLibs; };
   ruby-mine = mkBinIde ./ides/ruby-mine.nix { };
   rust-rover = mkBinIde ./ides/rust-rover.nix { inherit patchSharedLibs; };
   webstorm = mkBinIde ./ides/webstorm.nix { };
-
-  # Plugins
-  plugins = callPackage ./plugins { };
 }
 
 // lib.optionalAttrs config.allowAliases {
@@ -97,22 +95,13 @@ in
   # Deprecated products and aliases.
 
   aqua = throw "jetbrains.aqua: Aqua has been removed as it has been discontinued by JetBrains";
-
   idea-community = throw "jetbrains.idea-community: IntelliJ IDEA Community has been removed as it has been discontinued by JetBrains. Either switch to 'jetbrains.idea-oss' or 'jetbrains.idea'. See: https://blog.jetbrains.com/idea/2025/07/intellij-idea-unified-distribution-plan/";
-
   idea-community-bin = throw "jetbrains.idea-community-bin: IntelliJ IDEA Community has been removed as it has been discontinued by JetBrains. Either switch to 'jetbrains.idea-oss' or 'jetbrains.idea'. See: https://blog.jetbrains.com/idea/2025/07/intellij-idea-unified-distribution-plan/";
-
   idea-community-src = throw "jetbrains.idea-community-src: IntelliJ IDEA Community has been removed as it has been discontinued by JetBrains. Either switch to 'jetbrains.idea-oss' or 'jetbrains.idea'. See: https://blog.jetbrains.com/idea/2025/07/intellij-idea-unified-distribution-plan/";
-
   idea-ultimate = throw "'jetbrains.idea-ultimate' has been renamed to/replaced by 'jetbrains.idea'";
-
   pycharm-community = throw "jetbrains.pycharm-community: PyCharm Community has been removed as it has been discontinued by JetBrains. Either switch to 'jetbrains.pycharm-oss' or 'jetbrains.pycharm'. See: https://blog.jetbrains.com/pycharm/2025/04/pycharm-2025";
-
   pycharm-community-bin = throw "jetbrains.pycharm-community-bin: PyCharm Community has been removed as it has been discontinued by JetBrains. Either switch to 'jetbrains.pycharm-oss' or 'jetbrains.pycharm'. See: https://blog.jetbrains.com/pycharm/2025/04/pycharm-2025";
-
   pycharm-community-src = throw "jetbrains.pycharm-community-src: PyCharm Community has been removed as it has been discontinued by JetBrains. Either switch to 'jetbrains.pycharm-oss' or 'jetbrains.pycharm'. See: https://blog.jetbrains.com/pycharm/2025/04/pycharm-2025";
-
   pycharm-professional = throw "'jetbrains.pycharm-professional' has been renamed to/replaced by 'jetbrains.pycharm'";
-
   writerside = throw "jetbrains.writerside: Writerside has been removed as it has been discontinued by JetBrains";
 }

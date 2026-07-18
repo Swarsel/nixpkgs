@@ -1,15 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatch-vcs,
   hatchling,
+  pytest,
   pytest-base-url,
   pytest-html,
   pytest-mock,
   pytest-variables,
   pytest-xdist,
-  pytest,
   pytestCheckHook,
   requests,
   selenium,
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "pytest-selenium";
   version = "4.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pytest-dev";
@@ -27,6 +26,12 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-fIyos73haqTAgp5WVvMwJswQAtXnsnUeXKjPweXLGRM=";
   };
+
+  nativeCheckInputs = [
+    pytest-mock
+    pytest-xdist
+    pytestCheckHook
+  ];
 
   build-system = [
     hatch-vcs
@@ -44,14 +49,6 @@ buildPythonPackage rec {
     tenacity
   ];
 
-  nativeCheckInputs = [
-    pytest-mock
-    pytest-xdist
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "pytest_selenium" ];
-
   disabledTests = [
     # Tests require additional setup and/or network features
     "test_driver_quit"
@@ -67,6 +64,9 @@ buildPythonPackage rec {
     "test_profile"
     "test_xdist"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pytest_selenium" ];
 
   meta = {
     description = "Plugin for running Selenium with pytest";

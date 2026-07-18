@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
+  gettext,
+  glib,
+  libxml2,
   meson,
   ninja,
   pkg-config,
-  gettext,
-  libxml2,
-  glib,
   shared-mime-info,
 }:
 
@@ -15,18 +15,20 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "shared-mime-info";
   version = "2.4";
 
+  src = fetchFromGitLab {
+    owner = "xdg";
+    repo = "shared-mime-info";
+    rev = finalAttrs.version;
+    hash = "sha256-5eyMkfSBUOD7p8woIYTgz5C/L8uQMXyr0fhL0l23VMA=";
+    domain = "gitlab.freedesktop.org";
+  };
+
   outputs = [
     "out"
     "dev"
   ];
 
-  src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
-    owner = "xdg";
-    repo = "shared-mime-info";
-    rev = finalAttrs.version;
-    hash = "sha256-5eyMkfSBUOD7p8woIYTgz5C/L8uQMXyr0fhL0l23VMA=";
-  };
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -42,8 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
     glib
   ];
 
-  strictDeps = true;
-
   mesonFlags = [
     "-Dupdate-mimedb=true"
   ];
@@ -52,9 +52,9 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Database of common MIME types";
     homepage = "http://freedesktop.org/wiki/Software/shared-mime-info";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.mimame ];
-    teams = [ lib.teams.freedesktop ];
+    platforms = lib.platforms.unix;
     mainProgram = "update-mime-database";
+    teams = [ lib.teams.freedesktop ];
   };
 })

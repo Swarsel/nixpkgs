@@ -2,13 +2,13 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  pytestCheckHook,
   ipywidgets,
   jupyter-packaging,
   jupyterlab,
   lz4,
   numpy,
   pandas,
+  pytestCheckHook,
   setuptools,
   traitlets,
 }:
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "ipytablewidgets";
   version = "0.3.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -32,6 +31,8 @@ buildPythonPackage rec {
       --replace 'jupyterlab>=3.0.0,<3.7' 'jupyterlab>=3.0.0'
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     jupyter-packaging
     jupyterlab
@@ -46,8 +47,7 @@ buildPythonPackage rec {
     traitlets
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "ipytablewidgets" ];
 
   meta = {

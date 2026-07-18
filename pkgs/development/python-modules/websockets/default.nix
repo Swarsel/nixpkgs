@@ -1,18 +1,17 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  unittestCheckHook,
+  buildPythonPackage,
   pythonAtLeast,
   setuptools,
+  unittestCheckHook,
   werkzeug,
 }:
 
 buildPythonPackage rec {
   pname = "websockets";
   version = "16.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aaugustin";
@@ -20,6 +19,23 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-75FkU45qbOb+xbJO4VKqfWBTep+Toh6OWch2WXnU4bg=";
   };
+
+  # Tests fail on Darwin with `OSError: AF_UNIX path too long`
+  doCheck = !stdenv.hostPlatform.isDarwin;
+
+  nativeCheckInputs = [
+    unittestCheckHook
+    werkzeug
+  ];
+
+  preCheck = ''
+    # https://github.com/python-websockets/websockets/issues/1509
+    export WEBSOCKETS_TESTS_TIMEOUT_FACTOR=100
+    # Disable all tests that need to terminate within a predetermined amount of
+    # time. This is nondeterministic.
+    sed -i 's/with self.assertCompletesWithin.*:/if True:/' \
+      tests/legacy/test_protocol.py
+  '';
 
   build-system = [ setuptools ];
 
@@ -39,23 +55,7 @@ buildPythonPackage rec {
     "test_writing_in_send_context_fails"
   ];
 
-  nativeCheckInputs = [
-    unittestCheckHook
-    werkzeug
-  ];
-
-  preCheck = ''
-    # https://github.com/python-websockets/websockets/issues/1509
-    export WEBSOCKETS_TESTS_TIMEOUT_FACTOR=100
-    # Disable all tests that need to terminate within a predetermined amount of
-    # time. This is nondeterministic.
-    sed -i 's/with self.assertCompletesWithin.*:/if True:/' \
-      tests/legacy/test_protocol.py
-  '';
-
-  # Tests fail on Darwin with `OSError: AF_UNIX path too long`
-  doCheck = !stdenv.hostPlatform.isDarwin;
-
+  pyproject = true;
   pythonImportsCheck = [ "websockets" ];
 
   meta = {

@@ -16,12 +16,16 @@
 buildPythonPackage rec {
   pname = "pywebpush";
   version = "2.3.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-0eJ9uN6eZ1fBh19nKSVUvVTEGHTDb0tcTrtUQtziBPI=";
   };
+
+  nativeCheckInputs = [
+    mock
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -34,11 +38,7 @@ buildPythonPackage rec {
     six
   ];
 
-  nativeCheckInputs = [
-    mock
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pywebpush" ];
 
   meta = {

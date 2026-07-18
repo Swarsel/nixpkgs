@@ -1,28 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   hatchling,
-
   # dependencies
   pydantic,
-  rich,
-  snakemake-interface-executor-plugins,
-  snakemake-interface-logger-plugins,
-
   # tests
   pytestCheckHook,
+  rich,
   snakemake,
+  snakemake-interface-executor-plugins,
+  snakemake-interface-logger-plugins,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "snakemake-logger-plugin-rich";
   version = "0.4.2";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "cademirch";
@@ -30,6 +25,14 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-vdPM1nRovZ5QhKudzCebMNMndzOWPvTmI5I1oTbzg9o=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    snakemake
+    writableTmpDirAsHomeHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     hatchling
@@ -42,13 +45,8 @@ buildPythonPackage (finalAttrs: {
     snakemake-interface-logger-plugins
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "snakemake_logger_plugin_rich" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    snakemake
-    writableTmpDirAsHomeHook
-  ];
 
   meta = {
     description = "Snakemake logger plugin using Rich";

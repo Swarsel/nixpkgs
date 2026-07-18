@@ -1,18 +1,18 @@
 {
-  botan3,
-  fetchFromGitLab,
-  cmake,
-  pkg-config,
-  hwdata,
   lib,
-  libdrm,
+  stdenv,
+  fetchFromGitLab,
+  botan3,
+  cmake,
+  hwdata,
   kdePackages,
+  libdrm,
   mesa-demos,
+  pkg-config,
   polkit,
   procps,
   pugixml,
   spdlog,
-  stdenv,
   util-linux,
   vulkan-tools,
 }:
@@ -27,6 +27,10 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-NwGrvDqImiyPc3AsL7rMwNG9na+AzZS6NvXQOc6VWHg=";
   };
+
+  patches = [
+    ./Always-locate-polkit-with-pkg-config.diff
+  ];
 
   nativeBuildInputs = [
     cmake
@@ -54,14 +58,14 @@ stdenv.mkDerivation (finalAttrs: {
     vulkan-tools
   ];
 
-  patches = [
-    ./Always-locate-polkit-with-pkg-config.diff
-  ];
-
   cmakeFlags = [
     "-DINSTALL_DBUS_FILES_IN_PREFIX=true"
     "-DPOLKIT_POLICY_INSTALL_DIR=${placeholder "out"}/share/polkit-1/actions"
     "-DWITH_PCI_IDS_PATH=${hwdata}/share/hwdata/pci.ids"
+  ];
+
+  qtWrapperArgs = [
+    "--prefix PATH : ${lib.makeBinPath finalAttrs.runtimeInputs}"
   ];
 
   runtimeInputs = [
@@ -72,20 +76,18 @@ stdenv.mkDerivation (finalAttrs: {
     vulkan-tools
   ];
 
-  qtWrapperArgs = [
-    "--prefix PATH : ${lib.makeBinPath finalAttrs.runtimeInputs}"
-  ];
-
   meta = {
-    homepage = "https://gitlab.com/corectrl/corectrl/";
     description = "Control your computer hardware via application profiles";
+
     longDescription = ''
       CoreCtrl is a Free and Open Source GNU/Linux application that allows you
       to control with ease your computer hardware using application profiles. It
       aims to be flexible, comfortable and accessible to regular users.
     '';
+
+    homepage = "https://gitlab.com/corectrl/corectrl/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ Scrumplex ];
+    platforms = lib.platforms.linux;
   };
 })

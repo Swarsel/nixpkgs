@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  unittestCheckHook,
+  buildPythonPackage,
   setuptools,
   setuptools-scm,
+  unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "crccheck";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "MartinScharrer";
@@ -19,13 +18,14 @@ buildPythonPackage rec {
     hash = "sha256-hT+8+moni7turn5MK719b4Xy336htyWWmoMnhgxKkYo=";
   };
 
+  nativeCheckInputs = [ unittestCheckHook ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
-  nativeCheckInputs = [ unittestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "crccheck" ];
 
   meta = {

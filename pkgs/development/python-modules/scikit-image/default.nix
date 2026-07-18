@@ -2,9 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  buildPythonPackage,
-  python,
   astropy,
+  buildPythonPackage,
   cython,
   dask,
   imageio,
@@ -13,12 +12,13 @@
   meson-python,
   networkx,
   numpy,
+  numpydoc,
   packaging,
   pillow,
   pooch,
   pyamg,
   pytestCheckHook,
-  numpydoc,
+  python,
   pythran,
   pywavelets,
   scikit-learn,
@@ -32,7 +32,6 @@ let
   self = buildPythonPackage rec {
     pname = "scikit-image";
     version = "0.26.0";
-    pyproject = true;
 
     src = fetchFromGitHub {
       owner = "scikit-image";
@@ -46,6 +45,22 @@ let
 
       substituteInPlace src/skimage/_build_utils/version.py \
         --replace-fail "version = version_from_init()" "version = \"${version}\""
+    '';
+
+    # test suite is very cpu intensive, move to passthru.tests
+    doCheck = false;
+
+    nativeCheckInputs = [
+      pytestCheckHook
+      numpydoc
+    ];
+
+    # (1) The package has cythonized modules, whose .so libs will appear only in the wheel, i.e. in nix store;
+    # (2) To stop Python from importing the wrong directory, i.e. the one in the build dir, not the one in nix store, `skimage` dir should be removed or renamed;
+    # (3) Therefore, tests should be run on the installed package in nix store.
+    # See e.g. https://discourse.nixos.org/t/cant-import-cythonized-modules-at-checkphase/14207 on why the following is needed.
+    preCheck = ''
+      rm -r skimage
     '';
 
     build-system = [
@@ -64,49 +79,6 @@ let
       pillow
       scipy
       tifffile
-    ];
-
-    optional-dependencies = {
-      data = [ pooch ];
-      optional = [
-        simpleitk
-        scikit-learn
-        pyamg
-      ]
-      ++ self.passthru.optional-dependencies.optional_free_threaded;
-      optional_free_threaded = [
-        astropy
-        dask
-        matplotlib
-        pooch
-        pywavelets
-      ]
-      ++ dask.optional-dependencies.array;
-    };
-
-    # test suite is very cpu intensive, move to passthru.tests
-    doCheck = false;
-    nativeCheckInputs = [
-      pytestCheckHook
-      numpydoc
-    ];
-
-    # (1) The package has cythonized modules, whose .so libs will appear only in the wheel, i.e. in nix store;
-    # (2) To stop Python from importing the wrong directory, i.e. the one in the build dir, not the one in nix store, `skimage` dir should be removed or renamed;
-    # (3) Therefore, tests should be run on the installed package in nix store.
-
-    # See e.g. https://discourse.nixos.org/t/cant-import-cythonized-modules-at-checkphase/14207 on why the following is needed.
-    preCheck = ''
-      rm -r skimage
-    '';
-
-    pytestFlags = [
-      "--pyargs"
-      "skimage"
-    ];
-
-    enabledTestPaths = [
-      installedPackageRoot
     ];
 
     disabledTestPaths = [
@@ -130,6 +102,37 @@ let
     ++ lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) [
       # https://github.com/scikit-image/scikit-image/issues/7104
       "skimage/measure/tests/test_moments.py"
+    ];
+
+    enabledTestPaths = [
+      installedPackageRoot
+    ];
+
+    optional-dependencies = {
+      data = [ pooch ];
+
+      optional = [
+        simpleitk
+        scikit-learn
+        pyamg
+      ]
+      ++ self.passthru.optional-dependencies.optional_free_threaded;
+
+      optional_free_threaded = [
+        astropy
+        dask
+        matplotlib
+        pooch
+        pywavelets
+      ]
+      ++ dask.optional-dependencies.array;
+    };
+
+    pyproject = true;
+
+    pytestFlags = [
+      "--pyargs"
+      "skimage"
     ];
 
     # Check cythonized modules

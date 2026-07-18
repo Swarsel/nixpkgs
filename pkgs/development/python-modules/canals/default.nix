@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   mkdocs-material,
   mkdocs-mermaid2-plugin,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "canals";
   version = "0.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "deepset-ai";
@@ -32,14 +31,6 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  optional-dependencies = {
-    docs = [
-      mkdocs-material
-      mkdocs-mermaid2-plugin
-      mkdocstrings
-    ];
-  };
-
   nativeCheckInputs = [
     pytestCheckHook
   ]
@@ -55,6 +46,15 @@ buildPythonPackage rec {
     "test_draw_pygraphviz"
   ];
 
+  optional-dependencies = {
+    docs = [
+      mkdocs-material
+      mkdocs-mermaid2-plugin
+      mkdocstrings
+    ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "canals" ];
 
   meta = {

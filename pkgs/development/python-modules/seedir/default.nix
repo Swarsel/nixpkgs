@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   natsort,
   pytestCheckHook,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "seedir";
   version = "0.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "earnestt1234";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
     hash = "sha256-o2CUK00WdoYyLqbDlh+wa30Q23ZkWZC+RvGDCSiCwH4=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ natsort ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ natsort ];
+  pyproject = true;
   pythonImportsCheck = [ "seedir" ];
 
   meta = {

@@ -1,51 +1,50 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   curl,
   expat,
-  fetchFromGitHub,
   gspell,
   gst_all_1,
   gtk3,
   libGL,
   libGLU,
-  libsm,
-  libxinerama,
-  libxtst,
-  libxxf86vm,
+  libjpeg_turbo,
   libnotify,
   libpng,
   libsecret,
+  libsm,
   libtiff,
-  libjpeg_turbo,
+  libxinerama,
   libxkbcommon,
-  zlib,
+  libxtst,
+  libxxf86vm,
+  # TODO: Clean up on `staging`.
+  llvmPackages,
   pcre2,
   pkg-config,
+  webkitgtk_4_1,
   xorgproto,
+  zlib,
   compat28 ? false,
   compat30 ? true,
   unicode ? true,
   withMesa ? !stdenv.hostPlatform.isDarwin,
   withWebKit ? true,
-  webkitgtk_4_1,
-
-  # TODO: Clean up on `staging`.
-  llvmPackages,
 }:
 let
   catch = fetchFromGitHub {
+    hash = "sha256-fB/E17tiAicAkq88Je/YFYohJ6EHJOO54oQaqiR/OzY=";
     owner = "wxWidgets";
     repo = "Catch";
     rev = "5f5e4cecd1cafc85e109471356dec29e778d2160";
-    hash = "sha256-fB/E17tiAicAkq88Je/YFYohJ6EHJOO54oQaqiR/OzY=";
   };
 
   nanosvg = fetchFromGitHub {
+    hash = "sha256-ymziU0NgGqxPOKHwGm0QyEdK/8jL/QYk5UdIQ3Tn8jw=";
     owner = "wxWidgets";
     repo = "nanosvg";
     rev = "ccdb1995134d340a93fb20e3a3d323ccb3838dd0";
-    hash = "sha256-ymziU0NgGqxPOKHwGm0QyEdK/8jL/QYk5UdIQ3Tn8jw=";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -151,8 +150,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://www.wxwidgets.org/";
     description = "Cross-Platform C++ GUI Library";
+
     longDescription = ''
       wxWidgets gives you a single, easy-to-use API for writing GUI applications
       on multiple platforms that still utilize the native platform's controls
@@ -163,13 +162,18 @@ stdenv.mkDerivation (finalAttrs: {
       multithreading, image loading and saving in a variety of popular formats,
       database support, HTML viewing and printing, and much more.
     '';
+
+    homepage = "https://www.wxwidgets.org/";
+
     license = with lib.licenses; [
       lgpl2Plus
       wxWindowsException31
     ];
+
     maintainers = with lib.maintainers; [
       fliegendewurst
     ];
+
     platforms = lib.platforms.unix;
   };
 })

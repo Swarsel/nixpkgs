@@ -20,6 +20,73 @@ in
 {
 
   options = {
+    security.pki.caBundle = lib.mkOption {
+      description = ''
+        (Read-only) the path to the final bundle of certificate authorities as a single file.
+      '';
+
+      readOnly = true;
+      type = lib.types.path;
+    };
+
+    security.pki.caCertificateBlacklist = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        A list of blacklisted CA certificate names that won't be imported from
+        the Mozilla Trust Store into
+        {file}`/etc/ssl/certs/ca-certificates.crt`. Use the
+        names from that file.
+      '';
+
+      example = [
+        "WoSign"
+        "WoSign China"
+        "CA WoSign ECC Root"
+        "Certification Authority of WoSign G2"
+      ];
+
+      type = lib.types.listOf lib.types.str;
+    };
+
+    security.pki.certificateFiles = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        A list of files containing trusted root certificates in PEM
+        format. These are concatenated to form
+        {file}`/etc/ssl/certs/ca-certificates.crt`, which is
+        used by many programs that use OpenSSL, such as
+        {command}`curl` and {command}`git`.
+      '';
+
+      example = lib.literalExpression ''[ "''${pkgs.dn42-cacert}/etc/ssl/certs/dn42-ca.crt" ]'';
+      type = lib.types.listOf lib.types.path;
+    };
+
+    security.pki.certificates = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        A list of trusted root certificates in PEM format.
+      '';
+
+      example = lib.literalExpression ''
+        [ '''
+            NixOS.org
+            =========
+            -----BEGIN CERTIFICATE-----
+            MIIGUDCCBTigAwIBAgIDD8KWMA0GCSqGSIb3DQEBBQUAMIGMMQswCQYDVQQGEwJJ
+            TDEWMBQGA1UEChMNU3RhcnRDb20gTHRkLjErMCkGA1UECxMiU2VjdXJlIERpZ2l0
+            ...
+            -----END CERTIFICATE-----
+          '''
+        ]
+      '';
+
+      type = lib.types.listOf lib.types.str;
+    };
+
     security.pki.installCACerts = lib.mkEnableOption "installing CA certificates to the system" // {
       default = true;
       internal = true;
@@ -36,78 +103,17 @@ in
       Nevertheless, enabling this will strip all additional trust rules provided by the
       certificates themselves. This can have security consequences depending on your usecases
     '';
-
-    security.pki.certificateFiles = lib.mkOption {
-      type = lib.types.listOf lib.types.path;
-      default = [ ];
-      example = lib.literalExpression ''[ "''${pkgs.dn42-cacert}/etc/ssl/certs/dn42-ca.crt" ]'';
-      description = ''
-        A list of files containing trusted root certificates in PEM
-        format. These are concatenated to form
-        {file}`/etc/ssl/certs/ca-certificates.crt`, which is
-        used by many programs that use OpenSSL, such as
-        {command}`curl` and {command}`git`.
-      '';
-    };
-
-    security.pki.certificates = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-      example = lib.literalExpression ''
-        [ '''
-            NixOS.org
-            =========
-            -----BEGIN CERTIFICATE-----
-            MIIGUDCCBTigAwIBAgIDD8KWMA0GCSqGSIb3DQEBBQUAMIGMMQswCQYDVQQGEwJJ
-            TDEWMBQGA1UEChMNU3RhcnRDb20gTHRkLjErMCkGA1UECxMiU2VjdXJlIERpZ2l0
-            ...
-            -----END CERTIFICATE-----
-          '''
-        ]
-      '';
-      description = ''
-        A list of trusted root certificates in PEM format.
-      '';
-    };
-
-    security.pki.caCertificateBlacklist = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-      example = [
-        "WoSign"
-        "WoSign China"
-        "CA WoSign ECC Root"
-        "Certification Authority of WoSign G2"
-      ];
-      description = ''
-        A list of blacklisted CA certificate names that won't be imported from
-        the Mozilla Trust Store into
-        {file}`/etc/ssl/certs/ca-certificates.crt`. Use the
-        names from that file.
-      '';
-    };
-
-    security.pki.caBundle = lib.mkOption {
-      type = lib.types.path;
-      readOnly = true;
-      description = ''
-        (Read-only) the path to the final bundle of certificate authorities as a single file.
-      '';
-    };
   };
 
   config = lib.mkMerge [
     (lib.mkIf cfg.installCACerts {
 
-      # NixOS canonical location + Debian/Ubuntu/Arch/Gentoo compatibility.
-      environment.etc."ssl/certs/ca-certificates.crt".source = caBundle;
-
-      # Old NixOS compatibility.
-      environment.etc."ssl/certs/ca-bundle.crt".source = caBundle;
-
       # CentOS/Fedora compatibility.
       environment.etc."pki/tls/certs/ca-bundle.crt".source = caBundle;
-
+      # Old NixOS compatibility.
+      environment.etc."ssl/certs/ca-bundle.crt".source = caBundle;
+      # NixOS canonical location + Debian/Ubuntu/Arch/Gentoo compatibility.
+      environment.etc."ssl/certs/ca-certificates.crt".source = caBundle;
       # P11-Kit trust source.
       environment.etc."ssl/trust-source".source = "${cacertPackage.p11kit}/etc/ssl/trust-source";
     })

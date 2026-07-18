@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   beautifulsoup4,
   buildPythonPackage,
-  fetchFromGitHub,
   html5lib,
   lxml,
   mock,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "mf2py";
   version = "2.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "microformats";
@@ -37,6 +36,7 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "mf2py" ];
 
   meta = {

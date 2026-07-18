@@ -1,24 +1,24 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  gnome,
-  cmake,
-  gettext,
-  intltool,
-  pkg-config,
-  evolution-data-server,
-  evolution,
-  gtk3,
-  libsoup_3,
-  libical,
-  json-glib,
-  libmspack,
-  webkitgtk_4_1,
-  replaceVars,
   _experimental-update-script-combinators,
+  cmake,
+  evolution,
+  evolution-data-server,
+  gettext,
   glib,
+  gnome,
+  gtk3,
+  intltool,
+  json-glib,
+  libical,
+  libmspack,
+  libsoup_3,
   makeHardcodeGsettingsPatch,
+  pkg-config,
+  replaceVars,
+  webkitgtk_4_1,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -67,11 +67,12 @@ stdenv.mkDerivation (finalAttrs: {
   passthru = {
     hardcodeGsettingsPatch = makeHardcodeGsettingsPatch {
       inherit (finalAttrs) src;
-      schemaIdToVariableMapping = {
-        "org.gnome.evolution.mail" = "evo";
-        "org.gnome.evolution.calendar" = "evo";
-      };
       schemaExistsFunction = "e_ews_common_utils_gsettings_schema_exists";
+
+      schemaIdToVariableMapping = {
+        "org.gnome.evolution.calendar" = "evo";
+        "org.gnome.evolution.mail" = "evo";
+      };
     };
 
     updateScript =

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   requests,
   websocket-client,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "zwave-me-ws";
   version = "0.4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Z-Wave-Me";
@@ -28,7 +27,7 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "zwave_me_ws" ];
 
   meta = {

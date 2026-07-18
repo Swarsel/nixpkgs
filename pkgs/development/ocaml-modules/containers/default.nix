@@ -1,21 +1,21 @@
 {
   lib,
   fetchFromGitHub,
-  fetchpatch,
   buildDunePackage,
   dune-configurator,
   either,
-  seq,
+  fetchpatch,
   gen,
   iter,
   qcheck-core,
+  seq,
   uutf,
   yojson,
 }:
 
 buildDunePackage (finalAttrs: {
-  version = "3.16";
   pname = "containers";
+  version = "3.16";
 
   src = fetchFromGitHub {
     owner = "c-cube";
@@ -27,16 +27,19 @@ buildDunePackage (finalAttrs: {
   patches = [
     # Compatibility with qcheck ≥ 0.26
     (fetchpatch {
-      url = "https://github.com/c-cube/ocaml-containers/commit/3b49ad2a4e8cfe366d0588e1940d626f0e1b8a2d.patch";
       hash = "sha256-LFe+LtpBBrf82SX57b4iQSvfd9tSXmnfhffjvjcfLpg=";
+      url = "https://github.com/c-cube/ocaml-containers/commit/3b49ad2a4e8cfe366d0588e1940d626f0e1b8a2d.patch";
     })
   ];
 
   buildInputs = [ dune-configurator ];
+
   propagatedBuildInputs = [
     either
     seq
   ];
+
+  doCheck = true;
 
   checkInputs = [
     gen
@@ -46,11 +49,9 @@ buildDunePackage (finalAttrs: {
     yojson
   ];
 
-  doCheck = true;
-
   meta = {
-    homepage = "https://github.com/c-cube/ocaml-containers";
     description = "Modular standard library focused on data structures";
+
     longDescription = ''
       Containers is a standard library (BSD license) focused on data structures,
       combinators and iterators, without dependencies on unix. Every module is
@@ -61,6 +62,8 @@ buildDunePackage (finalAttrs: {
       It also features optional libraries for dealing with strings, and
       helpers for unix and threads.
     '';
+
+    homepage = "https://github.com/c-cube/ocaml-containers";
     license = lib.licenses.bsd2;
   };
 })

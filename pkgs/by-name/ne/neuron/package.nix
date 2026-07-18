@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  readline,
-  libxext,
-  libxcomposite,
-  libx11,
-  mpi,
-  cmake,
   bison,
+  cmake,
   flex,
   git,
-  perl,
   gsl,
-  xcbuild,
+  libx11,
+  libxcomposite,
+  libxext,
+  mpi,
+  perl,
   python3,
-  useMpi ? false,
-  useIv ? true,
+  readline,
+  xcbuild,
   useCore ? false,
+  useIv ? true,
+  useMpi ? false,
   useRx3d ? false,
 }:
 let
@@ -28,8 +28,22 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "neuron";
   version = "8.2.7";
 
-  # pyproject is for pythonModule conversion
-  pyproject = false;
+  src = fetchFromGitHub {
+    owner = "neuronsimulator";
+    repo = "nrn";
+    tag = finalAttrs.version;
+    hash = "sha256-dmpx0Wud0IhdFvvTJuW/w1Uq6vFYaNal9n27LAqV1Qc=";
+    fetchSubmodules = true;
+  };
+
+  # Patch build shells for cmake (bin, src, cmake) and submodules (external)
+  postPatch = ''
+    patchShebangs ./bin ./src ./external ./cmake
+    substituteInPlace external/coreneuron/extra/nrnivmodl_core_makefile.in \
+      --replace-fail \
+        "DESTDIR =" \
+        "DESTDIR = $out"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -68,15 +82,6 @@ stdenv.mkDerivation (finalAttrs: {
     python3.pkgs.numpy
   ];
 
-  # Patch build shells for cmake (bin, src, cmake) and submodules (external)
-  postPatch = ''
-    patchShebangs ./bin ./src ./external ./cmake
-    substituteInPlace external/coreneuron/extra/nrnivmodl_core_makefile.in \
-      --replace-fail \
-        "DESTDIR =" \
-        "DESTDIR = $out"
-  '';
-
   cmakeFlags = [
     (cmakeBool "NRN_ENABLE_INTERVIEWS" useIv)
     (cmakeBool "NRN_ENABLE_MPI" useMpi)
@@ -94,16 +99,12 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  src = fetchFromGitHub {
-    owner = "neuronsimulator";
-    repo = "nrn";
-    tag = finalAttrs.version;
-    fetchSubmodules = true;
-    hash = "sha256-dmpx0Wud0IhdFvvTJuW/w1Uq6vFYaNal9n27LAqV1Qc=";
-  };
+  # pyproject is for pythonModule conversion
+  pyproject = false;
 
   meta = {
     description = "Simulation environment for empirically-based simulations of neurons and networks of neurons";
+
     longDescription = ''
       NEURON is a simulation environment for developing and exercising models of
       neurons and networks of neurons. It is particularly well-suited to problems where
@@ -111,13 +112,16 @@ stdenv.mkDerivation (finalAttrs: {
       potential close to the membrane), and where cell membrane properties are complex,
       involving many ion-specific channels, ion accumulation, and second messengers
     '';
-    sourceProvenance = with lib.sourceTypes; [ fromSource ];
-    license = lib.licenses.bsd3;
+
     homepage = "http://www.neuron.yale.edu/neuron";
+    license = lib.licenses.bsd3;
+    sourceProvenance = with lib.sourceTypes; [ fromSource ];
+
     maintainers = with lib.maintainers; [
       adev
       davidcromp
     ];
+
     platforms = lib.platforms.all;
   };
 })

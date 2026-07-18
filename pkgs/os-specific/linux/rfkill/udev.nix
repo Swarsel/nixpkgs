@@ -31,22 +31,15 @@
 
 let
   rfkillHook = replaceVarsWith {
-    replacements = { inherit (stdenv) shell; };
-    isExecutable = true;
     src = ./rfkill-hook.sh;
+    isExecutable = true;
+    replacements = { inherit (stdenv) shell; };
   };
 in
 stdenv.mkDerivation {
-  name = "rfkill-udev";
-
   nativeBuildInputs = [
     udevCheckHook
   ];
-
-  doInstallCheck = true;
-
-  dontUnpack = true;
-  dontBuild = true;
 
   installPhase = ''
     mkdir -p "$out/etc/udev/rules.d/";
@@ -58,11 +51,16 @@ stdenv.mkDerivation {
     cp ${rfkillHook} "$out/bin/rfkill-hook.sh"
   '';
 
+  doInstallCheck = true;
+  dontBuild = true;
+  dontUnpack = true;
+  name = "rfkill-udev";
+
   meta = {
-    homepage = "http://wireless.kernel.org/en/users/Documentation/rfkill";
     description = "Rules+hook for udev to catch rfkill state changes";
-    mainProgram = "rfkill-hook.sh";
-    platforms = lib.platforms.linux;
+    homepage = "http://wireless.kernel.org/en/users/Documentation/rfkill";
     license = lib.licenses.mit;
+    platforms = lib.platforms.linux;
+    mainProgram = "rfkill-hook.sh";
   };
 }

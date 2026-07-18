@@ -3,24 +3,17 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  ninja,
-  pkg-config,
   eigen,
   ffmpeg,
-  libresample,
   kissfft,
+  libresample,
+  ninja,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
   pname = "musly";
   version = "0.1-unstable-2019-09-05";
-
-  outputs = [
-    "bin"
-    "dev"
-    "out"
-    "doc"
-  ];
 
   src = fetchFromGitHub {
     owner = "dominikschnitzer";
@@ -28,6 +21,13 @@ stdenv.mkDerivation {
     rev = "7a0c6a9a2782e6fca84fb86fce5232a8c8a104ed";
     hash = "sha256-DOvGGx3pCcvPPsT97sQlINjT1sJy8ZWvxLsFGGZbgzE=";
   };
+
+  outputs = [
+    "bin"
+    "dev"
+    "out"
+    "doc"
+  ];
 
   patches = [
     # Fix build with FFmpeg 7, C++17, and external libresample and kissfft
@@ -59,8 +59,8 @@ stdenv.mkDerivation {
   doCheck = true;
 
   meta = {
-    homepage = "https://www.musly.org";
     description = "Fast and high-quality audio music similarity library written in C/C++";
+
     longDescription = ''
       Musly analyzes the the audio signal of music pieces to estimate their similarity.
       No meta-data about the music piece is included in the similarity estimation.
@@ -68,6 +68,8 @@ stdenv.mkDerivation {
       or try the command line application included in the package and start generating
       some automatic music playlists right away.
     '';
+
+    homepage = "https://www.musly.org";
     license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [ ggpeti ];
     platforms = lib.platforms.unix;

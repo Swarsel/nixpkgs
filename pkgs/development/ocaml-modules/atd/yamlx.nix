@@ -1,12 +1,12 @@
 {
-  buildDunePackage,
   atd-jsonlike,
+  buildDunePackage,
   yamlx,
 }:
 
 buildDunePackage {
-  pname = "atd-yamlx";
   inherit (atd-jsonlike) version src;
+  pname = "atd-yamlx";
 
   propagatedBuildInputs = [
     atd-jsonlike

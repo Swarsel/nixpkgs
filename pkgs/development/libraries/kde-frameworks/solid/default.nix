@@ -1,5 +1,4 @@
 {
-  mkDerivation,
   lib,
   stdenv,
   bison,
@@ -7,6 +6,7 @@
   extra-cmake-modules,
   flex,
   media-player-info,
+  mkDerivation,
   qtbase,
   qtdeclarative,
   qttools,
@@ -15,6 +15,7 @@
 mkDerivation {
   pname = "solid";
   patches = [ ./fix-search-path.patch ];
+
   nativeBuildInputs = [
     bison
     cmake
@@ -22,10 +23,12 @@ mkDerivation {
     flex
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ media-player-info ];
+
   buildInputs = [
     qtdeclarative
     qttools
   ];
+
   propagatedBuildInputs = [ qtbase ];
   propagatedUserEnvPkgs = lib.optionals stdenv.hostPlatform.isLinux [ media-player-info ];
 }

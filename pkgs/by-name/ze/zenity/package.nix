@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  gettext,
+  gnome,
+  gtk4,
   help2man,
+  itstool,
+  libadwaita,
+  libxml2,
   meson,
   ninja,
   pkg-config,
-  libxml2,
-  gnome,
-  gtk4,
-  gettext,
-  libadwaita,
-  itstool,
   wrapGAppsHook4,
 }:
 
@@ -48,12 +48,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    mainProgram = "zenity";
     description = "Tool to display dialogs from the commandline and shell scripts";
     homepage = "https://gitlab.gnome.org/GNOME/zenity";
     changelog = "https://gitlab.gnome.org/GNOME/zenity/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.unix;
+    mainProgram = "zenity";
     teams = [ lib.teams.gnome ];
   };
 })

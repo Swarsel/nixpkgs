@@ -45,15 +45,6 @@ let
   */
   # TODO: feeling really uninspired on the API
   loreDef = {
-    # YARA rule file
-    rules = (src + "/execers.yar");
-    # output filenames; "types" of lore
-    types = [
-      "execers"
-      "wrappers"
-    ];
-    # shell rule callbacks; see github.com/abathur/yallback
-    yallback = (src + "/execers.yall");
     # TODO:
     # - echo for debug, can be removed at some point
     # - I really just wanted to put the bit after the pipe
@@ -72,6 +63,18 @@ let
         ${yara}/bin/yara --scan-list --recursive ${lore.rules} <(printf '%s\n' ${drv}/{bin,lib,libexec}) | ${yallback}/bin/yallback ${lore.yallback}
       fi
     '';
+
+    # YARA rule file
+    rules = (src + "/execers.yar");
+
+    # output filenames; "types" of lore
+    types = [
+      "execers"
+      "wrappers"
+    ];
+
+    # shell rule callbacks; see github.com/abathur/yallback
+    yallback = (src + "/execers.yall");
   };
 
 in
@@ -90,8 +93,8 @@ rec {
   */
   collect =
     {
-      lore ? loreDef,
       drvs,
+      lore ? loreDef,
       strip ? [ ],
     }:
     (runCommand "more-binlore" { } ''

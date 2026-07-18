@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitLab,
   baseline,
   buildPythonPackage,
-  fetchFromGitLab,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "plum-py";
   version = "0.8.7";
-  format = "setuptools";
 
   src = fetchFromGitLab {
     owner = "dangass";
@@ -28,15 +27,15 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "plum" ];
-
-  enabledTestPaths = [ "tests" ];
-
   disabledTestPaths = [
     # tests enum.IntFlag behaviour which has been disallowed in python 3.11.6
     # https://gitlab.com/dangass/plum/-/issues/150
     "tests/flag/test_flag_invalid.py"
   ];
+
+  enabledTestPaths = [ "tests" ];
+  format = "setuptools";
+  pythonImportsCheck = [ "plum" ];
 
   meta = {
     description = "Classes and utilities for packing/unpacking bytes";

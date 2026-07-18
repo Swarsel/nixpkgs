@@ -10,16 +10,16 @@
 buildPythonPackage (finalAttrs: {
   pname = "alibabacloud-sts20150401";
   version = "1.2.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "alibabacloud_sts20150401";
     inherit (finalAttrs) version;
     hash = "sha256-uXu8bL+1zycJ3bZBqJOZofbzAj2UwYM12pqTlWl538o=";
+    pname = "alibabacloud_sts20150401";
   };
 
+  # Module has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,10 +27,8 @@ buildPythonPackage (finalAttrs: {
     darabonba-core
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "alibabacloud_sts20150401" ];
-
-  # Module has no tests
-  doCheck = false;
 
   meta = {
     description = "Alibaba Cloud Sts (20150401) SDK Library for Python";

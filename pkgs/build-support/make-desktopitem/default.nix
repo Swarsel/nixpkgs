@@ -1,7 +1,7 @@
 {
   lib,
-  writeTextFile,
   buildPackages,
+  writeTextFile,
 }:
 
 /**
@@ -74,34 +74,34 @@
 */
 lib.makeOverridable (
   {
-    name, # The name of the desktop file
-    destination ? "/share/applications",
-    type ? "Application",
     # version is hardcoded
     desktopName, # The name of the application
-    genericName ? null,
-    noDisplay ? null,
-    comment ? null,
-    icon ? null,
-    # we don't support the Hidden key - if you don't need something, just don't install it
-    onlyShowIn ? [ ],
-    notShowIn ? [ ],
-    dbusActivatable ? null,
-    tryExec ? null,
-    exec ? null,
-    path ? null,
-    terminal ? null,
+    name, # The name of the desktop file
     actions ? { }, # An attrset of [internal name] -> { name, exec?, icon? }
-    mimeTypes ? [ ], # The spec uses "MimeType" as singular, use plural here to signify list-ness
     categories ? [ ],
+    comment ? null,
+    dbusActivatable ? null,
+    destination ? "/share/applications",
+    exec ? null,
+    extraConfig ? { }, # Additional values to be added literally to the final item, e.g. vendor extensions
+    genericName ? null,
+    icon ? null,
     implements ? [ ],
     keywords ? [ ],
-    startupNotify ? null,
-    startupWMClass ? null,
-    url ? null,
+    mimeTypes ? [ ], # The spec uses "MimeType" as singular, use plural here to signify list-ness
+    noDisplay ? null,
+    notShowIn ? [ ],
+    # we don't support the Hidden key - if you don't need something, just don't install it
+    onlyShowIn ? [ ],
+    path ? null,
     prefersNonDefaultGPU ? null,
     singleMainWindow ? null,
-    extraConfig ? { }, # Additional values to be added literally to the final item, e.g. vendor extensions
+    startupNotify ? null,
+    startupWMClass ? null,
+    terminal ? null,
+    tryExec ? null,
+    type ? "Application",
+    url ? null,
   }:
   let
     # There are multiple places in the FDO spec that make "boolean" values actually tristate,
@@ -132,30 +132,30 @@ lib.makeOverridable (
     # The [Desktop Entry] section of the desktop file, as an attribute set.
     # Please keep in spec order.
     mainSection = {
-      "Type" = type;
-      "Version" = "1.5";
-      "Name" = desktopName;
-      "GenericName" = genericName;
-      "NoDisplay" = boolOrNullToString noDisplay;
-      "Comment" = comment;
-      "Icon" = icon;
-      "OnlyShowIn" = renderList "onlyShowIn" onlyShowIn;
-      "NotShowIn" = renderList "notShowIn" notShowIn;
-      "DBusActivatable" = boolOrNullToString dbusActivatable;
-      "TryExec" = tryExec;
-      "Exec" = exec;
-      "Path" = path;
-      "Terminal" = boolOrNullToString terminal;
       "Actions" = renderList "actions" (builtins.attrNames actions);
-      "MimeType" = renderList "mimeTypes" mimeTypes;
       "Categories" = renderList "categories" categories;
+      "Comment" = comment;
+      "DBusActivatable" = boolOrNullToString dbusActivatable;
+      "Exec" = exec;
+      "GenericName" = genericName;
+      "Icon" = icon;
       "Implements" = renderList "implements" implements;
       "Keywords" = renderList "keywords" keywords;
-      "StartupNotify" = boolOrNullToString startupNotify;
-      "StartupWMClass" = startupWMClass;
-      "URL" = url;
+      "MimeType" = renderList "mimeTypes" mimeTypes;
+      "Name" = desktopName;
+      "NoDisplay" = boolOrNullToString noDisplay;
+      "NotShowIn" = renderList "notShowIn" notShowIn;
+      "OnlyShowIn" = renderList "onlyShowIn" onlyShowIn;
+      "Path" = path;
       "PrefersNonDefaultGPU" = boolOrNullToString prefersNonDefaultGPU;
       "SingleMainWindow" = boolOrNullToString singleMainWindow;
+      "StartupNotify" = boolOrNullToString startupNotify;
+      "StartupWMClass" = startupWMClass;
+      "Terminal" = boolOrNullToString terminal;
+      "TryExec" = tryExec;
+      "Type" = type;
+      "URL" = url;
+      "Version" = "1.5";
     }
     // extraConfig;
 
@@ -184,13 +184,13 @@ lib.makeOverridable (
     preprocessAction =
       {
         name,
-        icon ? null,
         exec ? null,
+        icon ? null,
       }:
       {
-        "Name" = name;
-        "Icon" = icon;
         "Exec" = exec;
+        "Icon" = icon;
+        "Name" = name;
       };
     renderAction = name: attrs: renderSection "Desktop Action ${name}" (preprocessAction attrs);
     actionsRendered = lib.mapAttrsToList renderAction actions;
@@ -199,9 +199,9 @@ lib.makeOverridable (
     content = [ mainSectionRendered ] ++ actionsRendered;
   in
   writeTextFile {
-    name = "${name}.${extension}";
-    destination = "${destination}/${name}.${extension}";
-    text = builtins.concatStringsSep "\n" content;
     checkPhase = ''${buildPackages.desktop-file-utils}/bin/desktop-file-validate "$target"'';
+    destination = "${destination}/${name}.${extension}";
+    name = "${name}.${extension}";
+    text = builtins.concatStringsSep "\n" content;
   }
 )

@@ -5,7 +5,7 @@
   versionCheckHook,
 }:
 
-(php.withExtensions ({ enabled, all }: enabled ++ (with all; [ ast ]))).buildComposerProject2
+(php.withExtensions ({ all, enabled }: enabled ++ (with all; [ ast ]))).buildComposerProject2
   (finalAttrs: {
     pname = "phan";
     version = "6.0.7";
@@ -18,22 +18,23 @@
     };
 
     vendorHash = "sha256-4PJWNPIikfWwIbrHr1c3yPOP68+bNlwjT9GkJJZoOFc=";
-
-    composerStrictValidation = false;
     doInstallCheck = true;
     nativeInstallCheckInputs = [ versionCheckHook ];
+    composerStrictValidation = false;
     versionCheckProgramArg = "--version";
 
     meta = {
       description = "Static analyzer for PHP";
-      homepage = "https://github.com/phan/phan";
-      license = lib.licenses.mit;
+
       longDescription = ''
         Phan is a static analyzer for PHP. Phan prefers to avoid false-positives
         and attempts to prove incorrectness rather than correctness.
       '';
-      mainProgram = "phan";
+
+      homepage = "https://github.com/phan/phan";
+      license = lib.licenses.mit;
       maintainers = [ ];
+      mainProgram = "phan";
       teams = [ lib.teams.php ];
     };
   })

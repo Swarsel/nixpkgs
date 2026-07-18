@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchurl,
-  gfortran,
-  pkg-config,
-  libtool,
-  m4,
-  gnum4,
-  file,
-  # Memory Hierarchy (End-user can provide this.)
-  memHierarchy ? "",
   # Headers/Libraries
   blas,
-  zlib,
+  doxygen,
+  file,
+  gfortran,
+  gnum4,
+  help2man,
+  libtool,
+  m4,
+  octave,
   # RPC headers (rpc/xdr.h)
   openmpi,
-  help2man,
-  doxygen,
-  octave,
+  pkg-config,
+  zlib,
+  # Memory Hierarchy (End-user can provide this.)
+  memHierarchy ? "",
 }:
 
 stdenv.mkDerivation rec {
@@ -28,6 +28,21 @@ stdenv.mkDerivation rec {
     url = "mirror://sourceforge/${pname}/${pname}-${version}.tar.gz";
     sha256 = "sha256-GMb8RD+hz9KoEQ99S4jVu8tJO56Fs6YgFLi7V6hI4E8=";
   };
+
+  nativeBuildInputs = [
+    gfortran
+    pkg-config
+    libtool
+    m4
+    gnum4
+    file
+    blas
+    zlib
+    openmpi
+    octave
+    help2man # Turn "--help" into a man-page
+    doxygen # Build documentation
+  ];
 
   # The default configure flags are still present when building
   # --disable-static --disable-dependency-tracking
@@ -46,32 +61,16 @@ stdenv.mkDerivation rec {
 
   # Ensure C/Fortran code is position-independent.
   env = {
-    NIX_CFLAGS_COMPILE = toString [
-      "-fPIC"
-      "-Ofast"
-    ];
     FCFLAGS = toString [
       "-fPIC"
       "-Ofast"
     ];
+
+    NIX_CFLAGS_COMPILE = toString [
+      "-fPIC"
+      "-Ofast"
+    ];
   };
-
-  enableParallelBuilding = true;
-
-  nativeBuildInputs = [
-    gfortran
-    pkg-config
-    libtool
-    m4
-    gnum4
-    file
-    blas
-    zlib
-    openmpi
-    octave
-    help2man # Turn "--help" into a man-page
-    doxygen # Build documentation
-  ];
 
   # Need to run cleanall target to remove any previously-generated files.
   preBuild = ''
@@ -81,11 +80,13 @@ stdenv.mkDerivation rec {
   nativeCheckInputs = [
     octave
   ];
+
   checkTarget = "tests";
+  enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://librsb.sourceforge.net/";
     description = "Shared memory parallel sparse matrix and sparse BLAS library";
+
     longDescription = ''
       Library for sparse matrix computations featuring the Recursive Sparse
       Blocks (RSB) matrix format. This format allows cache efficient and
@@ -96,6 +97,8 @@ stdenv.mkDerivation rec {
       Contains libraries and header files for developing applications that
       want to make use of librsb.
     '';
+
+    homepage = "https://librsb.sourceforge.net/";
     license = with lib.licenses; [ lgpl3Plus ];
     maintainers = with lib.maintainers; [ ravenjoad ];
     platforms = lib.platforms.all;

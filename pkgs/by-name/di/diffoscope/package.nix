@@ -1,6 +1,8 @@
 {
   lib,
   stdenv,
+  fetchurl,
+  R,
   aapt,
   abootimg,
   acl,
@@ -21,9 +23,7 @@
   docutils,
   dtc,
   e2fsprogs,
-  enableBloat ? true,
   enjarify,
-  fetchurl,
   ffmpeg,
   file,
   findutils,
@@ -63,7 +63,6 @@
   procyon,
   python3,
   qemu,
-  R,
   sng,
   sqlite,
   squashfsTools,
@@ -72,18 +71,18 @@
   ubootTools,
   unzip,
   wabt,
+  # updater only
+  writeScript,
   xmlbeans,
   xxd,
   xz,
   zip,
   zstd,
-  # updater only
-  writeScript,
+  enableBloat ? true,
 }:
 
 let
   python = python3.override {
-    self = python;
     packageOverrides = final: prev: {
       # version 4 or newer would log the following error but tests currently don't fail because radare2 is disabled
       # ValueError: argument TNULL is not a TLSH hex string
@@ -94,6 +93,7 @@ let
         in
         {
           inherit version;
+
           src = src.override {
             tag = version;
             hash = "sha256-ZYEjT/yShfA4+zpbGOtaFOx1nSSOWPtMvskPhHv3c9U=";
@@ -101,6 +101,8 @@ let
         }
       );
     };
+
+    self = python;
   };
 in
 
@@ -108,7 +110,6 @@ in
 python.pkgs.buildPythonApplication rec {
   pname = "diffoscope";
   version = "324";
-  pyproject = true;
 
   src = fetchurl {
     url = "https://diffoscope.org/archive/diffoscope-${version}.tar.bz2";
@@ -138,7 +139,71 @@ python.pkgs.buildPythonApplication rec {
     installShellFiles
   ];
 
+  nativeCheckInputs = with python.pkgs; [ pytestCheckHook ] ++ pythonPath;
+
+  preCheck = lib.optionalString (enableBloat && stdenv.hostPlatform.isDarwin) ''
+    # h5dump is in hdf5's bin output, but its dylibs are in the out output.
+    export DYLD_LIBRARY_PATH="${lib.makeLibraryPath [ hdf5 ]}''${DYLD_LIBRARY_PATH:+:''${DYLD_LIBRARY_PATH}}"
+  '';
+
+  postInstall = ''
+    make -C doc
+    installManPage doc/diffoscope.1
+  '';
+
   build-system = with python.pkgs; [ setuptools ];
+
+  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
+    "tests/comparators/test_git.py"
+    "tests/comparators/test_java.py"
+    "tests/comparators/test_uimage.py"
+    "tests/comparators/test_device.py"
+    "tests/comparators/test_macho.py"
+    # OSError: AF_UNIX path too long
+    "tests/comparators/test_sockets.py"
+  ];
+
+  disabledTests = [
+    "test_sbin_added_to_path"
+    "test_diff_meta"
+    "test_diff_meta2"
+
+    # Fails because it fails to determine llvm version
+    "test_item3_deflate_llvm_bitcode"
+
+    # Flaky test on Linux and Darwin
+    "test_non_unicode_filename"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    # Disable flaky tests on Darwin
+    "test_listing"
+    "test_symlink_root"
+
+    # Appears to be a sandbox related issue
+    "test_trim_stderr_in_command"
+    # Seems to be a bug caused by having different versions of rdata than
+    # expected. Will file upstream.
+    "test_item_rdb"
+    # Caused by getting an otool command instead of llvm-objdump. Could be Nix
+    # setup, could be upstream bug. Will file upstream.
+    "test_libmix_differences"
+  ];
+
+  makeWrapperArgs = lib.optionals enableBloat (
+    [
+      "--prefix PATH : ${lib.makeBinPath [ hdf5 ]}"
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [
+      "--prefix DYLD_LIBRARY_PATH : ${lib.makeLibraryPath [ hdf5 ]}"
+    ]
+  );
+
+  pyproject = true;
+
+  pytestFlags = [
+    # Always show more information when tests fail
+    "-vv"
+  ];
 
   # Most of the non-Python dependencies here are optional command-line tools for various file-format parsers.
   # To help figuring out what's missing from the list, run: ./pkgs/tools/misc/diffoscope/list-missing-tools.sh
@@ -262,68 +327,6 @@ python.pkgs.buildPythonApplication rec {
     )
   );
 
-  nativeCheckInputs = with python.pkgs; [ pytestCheckHook ] ++ pythonPath;
-
-  pytestFlags = [
-    # Always show more information when tests fail
-    "-vv"
-  ];
-
-  preCheck = lib.optionalString (enableBloat && stdenv.hostPlatform.isDarwin) ''
-    # h5dump is in hdf5's bin output, but its dylibs are in the out output.
-    export DYLD_LIBRARY_PATH="${lib.makeLibraryPath [ hdf5 ]}''${DYLD_LIBRARY_PATH:+:''${DYLD_LIBRARY_PATH}}"
-  '';
-
-  makeWrapperArgs = lib.optionals enableBloat (
-    [
-      "--prefix PATH : ${lib.makeBinPath [ hdf5 ]}"
-    ]
-    ++ lib.optionals stdenv.hostPlatform.isDarwin [
-      "--prefix DYLD_LIBRARY_PATH : ${lib.makeLibraryPath [ hdf5 ]}"
-    ]
-  );
-
-  postInstall = ''
-    make -C doc
-    installManPage doc/diffoscope.1
-  '';
-
-  disabledTests = [
-    "test_sbin_added_to_path"
-    "test_diff_meta"
-    "test_diff_meta2"
-
-    # Fails because it fails to determine llvm version
-    "test_item3_deflate_llvm_bitcode"
-
-    # Flaky test on Linux and Darwin
-    "test_non_unicode_filename"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    # Disable flaky tests on Darwin
-    "test_listing"
-    "test_symlink_root"
-
-    # Appears to be a sandbox related issue
-    "test_trim_stderr_in_command"
-    # Seems to be a bug caused by having different versions of rdata than
-    # expected. Will file upstream.
-    "test_item_rdb"
-    # Caused by getting an otool command instead of llvm-objdump. Could be Nix
-    # setup, could be upstream bug. Will file upstream.
-    "test_libmix_differences"
-  ];
-
-  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
-    "tests/comparators/test_git.py"
-    "tests/comparators/test_java.py"
-    "tests/comparators/test_uimage.py"
-    "tests/comparators/test_device.py"
-    "tests/comparators/test_macho.py"
-    # OSError: AF_UNIX path too long
-    "tests/comparators/test_sockets.py"
-  ];
-
   passthru = {
     updateScript = writeScript "update-diffoscope" ''
       #!/usr/bin/env nix-shell
@@ -339,6 +342,7 @@ python.pkgs.buildPythonApplication rec {
 
   meta = {
     description = "Perform in-depth comparison of files, archives, and directories";
+
     longDescription = ''
       diffoscope will try to get to the bottom of what makes files or directories
       different. It will recursively unpack archives of many kinds and transform
@@ -349,13 +353,16 @@ python.pkgs.buildPythonApplication rec {
       diffoscope is developed as part of the "reproducible builds" Debian
       project and was formerly known as "debbindiff".
     '';
+
     homepage = "https://diffoscope.org/";
     changelog = "https://diffoscope.org/news/diffoscope-${version}-released/";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       danielfullmer
       mdaniels5757
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "diffoscope";
   };

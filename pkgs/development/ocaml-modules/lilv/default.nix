@@ -1,10 +1,10 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
-  dune-configurator,
+  buildDunePackage,
   ctypes,
   ctypes-foreign,
+  dune-configurator,
   lilv,
 }:
 
@@ -19,18 +19,19 @@ buildDunePackage (finalAttrs: {
     sha256 = "080ja8c4sxprk5qnldpfzxriag57m9603vny3b4bnwh5xm1id08c";
   };
 
-  minimalOCamlVersion = "4.03.0";
-
   buildInputs = [ dune-configurator ];
+
   propagatedBuildInputs = [
     ctypes
     ctypes-foreign
     lilv
   ];
 
+  minimalOCamlVersion = "4.03.0";
+
   meta = {
-    homepage = "https://github.com/savonet/ocaml-lilv";
     description = "OCaml bindings for lilv";
+    homepage = "https://github.com/savonet/ocaml-lilv";
     license = lib.licenses.lgpl21Only;
     maintainers = with lib.maintainers; [ dandellion ];
   };

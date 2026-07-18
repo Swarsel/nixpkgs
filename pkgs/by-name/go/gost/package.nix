@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   buildGoModule,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,6 +19,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-LbmGYV85+JmiLlJhdozAyzWIql4QxpHj2C4hjo+PT1k=";
+  # i/o timeout
+  doCheck = !stdenv.hostPlatform.isDarwin;
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __darwinAllowLocalNetworking = true;
 
   # Based on ldflags in upstream's .goreleaser.yaml
   ldflags = [
@@ -26,28 +31,20 @@ buildGoModule (finalAttrs: {
     "-X main.version=v${finalAttrs.version}"
   ];
 
-  __darwinAllowLocalNetworking = true;
-
-  # i/o timeout
-  doCheck = !stdenv.hostPlatform.isDarwin;
-
-  doInstallCheck = true;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   versionCheckProgramArg = "-V";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Simple tunnel written in golang";
     homepage = "https://github.com/go-gost/gost";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       pmy
       ramblurr
       moraxyc
     ];
+
     mainProgram = "gost";
   };
 })

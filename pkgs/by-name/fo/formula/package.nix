@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   buildDotnetModule,
   dotnetCorePackages,
+  stdenvNoCC,
   unstableGitUpdater,
 }:
 
@@ -20,10 +20,6 @@ buildDotnetModule (finalAttrs: {
 
   patches = [ ./dotnet-8-upgrade.patch ];
 
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-  nugetDeps = ./nuget.json;
-  projectFile = "Src/CommandLine/CommandLine.csproj";
-
   postFixup =
     lib.optionalString stdenvNoCC.hostPlatform.isLinux ''
       mv $out/bin/CommandLine $out/bin/formula
@@ -34,6 +30,9 @@ buildDotnetModule (finalAttrs: {
         --prefix DYLD_LIBRARY_PATH : $out/lib/formula-dotnet/runtimes/macos/native
     '';
 
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+  nugetDeps = ./nuget.json;
+  projectFile = "Src/CommandLine/CommandLine.csproj";
   passthru.updateScript = unstableGitUpdater { url = finalAttrs.meta.homepage; };
 
   meta = {

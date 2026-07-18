@@ -1,9 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
   unstableGitUpdater,
-
   withRoundedCorners ? false,
 }:
 stdenvNoCC.mkDerivation {
@@ -16,9 +15,6 @@ stdenvNoCC.mkDerivation {
     rev = "393845cf3ed0e0000bfe57fe1b9ad75748e2547f";
     hash = "sha256-ss0kW+ulvMhxeZKBrjQ7E5Cya+02eJrGsE4OLEkqKks=";
   };
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -33,16 +29,20 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "Soothing pastel theme for Fcitx5";
     homepage = "https://github.com/catppuccin/fcitx5";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       pluiedev
       Guanran928
     ];
+
     platforms = lib.platforms.all;
   };
 }

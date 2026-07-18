@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   ensureNewerSourcesForZipFilesHook,
+  glibmm,
+  libao,
+  libpulseaudio,
   pkg-config,
   scons,
-  glibmm,
-  libpulseaudio,
-  libao,
   speechd-minimal,
 }:
 
@@ -19,8 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "RHVoice";
     repo = "RHVoice";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-CwwWZE60YxLL4kZBHdNqI/gk5yi6MFAJ2pg8LApwwl4=";
+    fetchSubmodules = true;
   };
 
   patches = [

@@ -1,7 +1,7 @@
 {
-  appimageTools,
   lib,
   fetchurl,
+  appimageTools,
 }:
 let
   pname = "everdo";
@@ -29,7 +29,7 @@ appimageTools.wrapType2 {
     homepage = "https://everdo.net/";
     license = lib.licenses.unfree;
     maintainers = [ lib.maintainers.luftmensch-luftmensch ];
-    mainProgram = "everdo";
     platforms = [ "x86_64-linux" ];
+    mainProgram = "everdo";
   };
 }

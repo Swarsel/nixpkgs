@@ -20,8 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     wrapGAppsHook3
   ];
 
-  sourceRoot = "scite/gtk";
-
   makeFlags = [
     "GTK3=1"
     "prefix=${placeholder "out"}"
@@ -44,16 +42,19 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   enableParallelBuilding = true;
+  sourceRoot = "scite/gtk";
 
   meta = {
-    homepage = "https://www.scintilla.org/SciTE.html";
     description = "SCIntilla based Text Editor";
+    homepage = "https://www.scintilla.org/SciTE.html";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       rszibele
       aleksana
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "SciTE";
   };
 })

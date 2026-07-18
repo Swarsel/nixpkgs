@@ -33,15 +33,9 @@ pkgsi686Linux.stdenv.mkDerivation (finalAttrs: {
     pkgsi686Linux.zlib
   ];
 
-  dontConfigure = true;
-
   env.NIX_CFLAGS_COMPILE = toString [
     # Until upstream fixes the issues...
     "-Wp,-D_FORTIFY_SOURCE=0"
-  ];
-
-  installFlags = [
-    "PREFIX=${placeholder "out"}"
   ];
 
   postInstall = ''
@@ -53,10 +47,15 @@ pkgsi686Linux.stdenv.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
+  dontConfigure = true;
+
+  installFlags = [
+    "PREFIX=${placeholder "out"}"
+  ];
 
   meta = {
-    homepage = "https://github.com/xyproto/zsnes";
     description = "Maintained fork of zsnes";
+    homepage = "https://github.com/xyproto/zsnes";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.intersectLists lib.platforms.linux lib.platforms.x86;

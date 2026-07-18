@@ -1,23 +1,23 @@
 {
-  stdenv,
-  fetchzip,
   lib,
-  wrapGAppsHook3,
-  xdg-utils,
-  which,
+  stdenv,
   alsa-lib,
   atk,
   cairo,
+  fetchzip,
   fontconfig,
   gdk-pixbuf,
   glib,
   gst_all_1,
   gtk3,
+  libpng12,
   libsm,
   libx11,
   libxtst,
-  libpng12,
   pango,
+  which,
+  wrapGAppsHook3,
+  xdg-utils,
   zlib,
 }:
 
@@ -47,29 +47,6 @@ stdenv.mkDerivation rec {
     gst-plugins-ugly
   ];
 
-  dontPatchELF = true;
-
-  libPath =
-    with gst_all_1;
-    lib.makeLibraryPath [
-      stdenv.cc.cc
-      glib
-      gtk3
-      atk
-      fontconfig
-      pango
-      cairo
-      gdk-pixbuf
-      alsa-lib
-      libx11
-      libxtst
-      libsm
-      libpng12
-      gstreamer
-      gst-plugins-base
-      zlib
-    ];
-
   installPhase = ''
     mkdir -p $out/bin $out/libexec $out/share/doc
     cp transcribe $out/libexec
@@ -97,8 +74,32 @@ stdenv.mkDerivation rec {
     ln -s $out/libexec/transcribe $out/bin/
   '';
 
+  dontPatchELF = true;
+
+  libPath =
+    with gst_all_1;
+    lib.makeLibraryPath [
+      stdenv.cc.cc
+      glib
+      gtk3
+      atk
+      fontconfig
+      pango
+      cairo
+      gdk-pixbuf
+      alsa-lib
+      libx11
+      libxtst
+      libsm
+      libpng12
+      gstreamer
+      gst-plugins-base
+      zlib
+    ];
+
   meta = {
     description = "Software to help transcribe recorded music";
+
     longDescription = ''
       The Transcribe! application is an assistant for people who want
       to work out a piece of music from a recording, in order to write
@@ -108,10 +109,11 @@ stdenv.mkDerivation rec {
       has many transcription-specific features not found on
       conventional music players.
     '';
+
     homepage = "https://www.seventhstring.com/xscribe/";
     changelog = "https://www.seventhstring.com/xscribe/history.html";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ iwanb ];
     platforms = lib.platforms.linux;
     mainProgram = "transcribe";

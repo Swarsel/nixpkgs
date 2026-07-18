@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  perlPackages,
-  makeWrapper,
-  zip,
   libxslt,
+  makeWrapper,
+  perlPackages,
+  zip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -47,6 +47,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Convert DocBook to OpenDocument Format (ODF)";
+
     longDescription = ''
       Docbook2odf is a toolkit that automatically converts DocBook to OASIS
       OpenDocument (ODF, the ISO standardized format used for texts,
@@ -54,10 +55,11 @@ stdenv.mkDerivation (finalAttrs: {
       makes it easy to convert DocBook->ODF, ODT, ODS and ODP as all these
       documents are XML based.
     '';
+
     homepage = "http://open.comsultia.com/docbook2odf/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.linux;
     mainProgram = "docbook2odf";
   };
 })

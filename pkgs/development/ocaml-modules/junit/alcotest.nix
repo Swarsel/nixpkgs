@@ -1,15 +1,14 @@
 {
-  buildDunePackage,
   lib,
-  ocaml,
-  junit,
   alcotest,
+  buildDunePackage,
+  junit,
+  ocaml,
 }:
 
 buildDunePackage {
-  pname = "junit_alcotest";
-
   inherit (junit) src version meta;
+  pname = "junit_alcotest";
 
   propagatedBuildInputs = [
     junit

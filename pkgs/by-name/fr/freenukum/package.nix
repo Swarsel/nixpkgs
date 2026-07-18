@@ -1,31 +1,32 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitLab,
-  makeDesktopItem,
-  installShellFiles,
-  dejavu_fonts,
   SDL2,
-  SDL2_ttf,
   SDL2_image,
+  SDL2_ttf,
+  dejavu_fonts,
+  installShellFiles,
+  makeDesktopItem,
+  rustPlatform,
 }:
 let
   pname = "freenukum";
   description = "Clone of the original Duke Nukum 1 Jump'n Run game";
 
   desktopItem = makeDesktopItem {
-    desktopName = pname;
-    name = pname;
-    exec = pname;
-    icon = pname;
-    comment = description;
     categories = [
       "Game"
       "ArcadeGame"
       "ActionGame"
     ];
+
+    comment = description;
+    desktopName = pname;
+    exec = pname;
     genericName = pname;
+    icon = pname;
+    name = pname;
   };
 
 in
@@ -34,14 +35,17 @@ rustPlatform.buildRustPackage rec {
   version = "0.4.0";
 
   src = fetchFromGitLab {
-    domain = "salsa.debian.org";
     owner = "silwol";
     repo = "freenukum";
     rev = "v${version}";
     hash = "sha256-Tk9n2gPwyPin6JZ4RSO8d/+xVpEz4rF8C2eGKwrAXU0=";
+    domain = "salsa.debian.org";
   };
 
-  cargoHash = "sha256-lQZ9Z/1tbL7BeLmGxJXNUvrXsOGtgzGXNt6WYGezxi0=";
+  postPatch = ''
+    substituteInPlace src/graphics.rs \
+      --replace /usr $out
+  '';
 
   nativeBuildInputs = [
     installShellFiles
@@ -53,10 +57,7 @@ rustPlatform.buildRustPackage rec {
     SDL2_image
   ];
 
-  postPatch = ''
-    substituteInPlace src/graphics.rs \
-      --replace /usr $out
-  '';
+  cargoHash = "sha256-lQZ9Z/1tbL7BeLmGxJXNUvrXsOGtgzGXNt6WYGezxi0=";
 
   postInstall = ''
     mkdir -p $out/share/fonts/truetype/dejavu

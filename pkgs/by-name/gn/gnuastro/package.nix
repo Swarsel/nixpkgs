@@ -2,7 +2,6 @@
   lib,
   stdenv,
   fetchurl,
-  libtool,
   cfitsio,
   curl,
   ghostscript,
@@ -10,6 +9,7 @@
   libgit2,
   libjpeg,
   libtiff,
+  libtool,
   lzlib,
   wcslib,
 }:
@@ -38,7 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   enableParallelBuilding = true;
-
   hardeningDisable = lib.optionals stdenv.hostPlatform.isDarwin [ "format" ];
 
   meta = {
@@ -46,7 +45,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://www.gnu.org/software/gnuastro/";
     changelog = "https://git.savannah.gnu.org/cgit/gnuastro.git/plain/NEWS?id=gnuastro_v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ sikmir ];
+    platforms = lib.platforms.unix;
   };
 })

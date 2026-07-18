@@ -2,40 +2,52 @@
   lib,
   stdenv,
   buildPythonPackage,
-  fetchPypi,
-  setuptools,
   defusedxml,
-  lxml,
-  relatorio,
+  fetchPypi,
   genshi,
-  python-dateutil,
-  polib,
-  python-sql,
-  werkzeug,
-  passlib,
-  pydot,
-  levenshtein,
-  html2text,
-  weasyprint,
   gevent,
+  html2text,
+  levenshtein,
+  lxml,
+  passlib,
   pillow,
-  pwdlib,
-  simpleeval,
-  withPostgresql ? true,
+  polib,
   psycopg2,
+  pwdlib,
+  pydot,
+  python-dateutil,
+  python-sql,
+  relatorio,
+  setuptools,
+  simpleeval,
   unittestCheckHook,
+  weasyprint,
+  werkzeug,
   writableTmpDirAsHomeHook,
+  withPostgresql ? true,
 }:
 
 buildPythonPackage rec {
   pname = "trytond";
   version = "7.8.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-9X7/+cP4rKUJcfj3wa3ONyMkpXaHz36hrIZxeGvOpp4=";
   };
+
+  # Fontconfig error: Cannot load default config file: No such file: (null)
+  doCheck = false;
+
+  nativeCheckInputs = [
+    unittestCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
+  preCheck = ''
+    export TRYTOND_DATABASE_URI="sqlite://"
+    export DB_NAME=":memory:";
+  '';
 
   build-system = [ setuptools ];
 
@@ -65,18 +77,7 @@ buildPythonPackage rec {
   ++ passlib.optional-dependencies.argon2
   ++ lib.optional withPostgresql psycopg2;
 
-  # Fontconfig error: Cannot load default config file: No such file: (null)
-  doCheck = false;
-
-  nativeCheckInputs = [
-    unittestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
-  preCheck = ''
-    export TRYTOND_DATABASE_URI="sqlite://"
-    export DB_NAME=":memory:";
-  '';
+  pyproject = true;
 
   unittestFlagsArray = [
     "-s"
@@ -85,6 +86,7 @@ buildPythonPackage rec {
 
   meta = {
     description = "Server of the Tryton application platform";
+
     longDescription = ''
       The server for Tryton, a three-tier high-level general purpose
       application platform under the license GPL-3 written in Python and using
@@ -93,13 +95,16 @@ buildPythonPackage rec {
       It is the core base of a complete business solution providing
       modularity, scalability and security.
     '';
+
     homepage = "http://www.tryton.org/";
     changelog = "https://foss.heptapod.net/tryton/tryton/-/blob/trytond-${version}/trytond/CHANGELOG?ref_type=tags";
     license = lib.licenses.gpl3Plus;
-    broken = stdenv.hostPlatform.isDarwin;
+
     maintainers = with lib.maintainers; [
       udono
       johbo
     ];
+
+    broken = stdenv.hostPlatform.isDarwin;
   };
 }

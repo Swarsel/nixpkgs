@@ -1,15 +1,15 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   cmake,
   crocoddyl,
   ctestCheckHook,
-  fetchFromGitHub,
   fetchpatch,
-  lib,
   llvmPackages,
+  nix-update-script,
   pkg-config,
   proxsuite,
-  stdenv,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -43,9 +43,12 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "BUILD_WITH_MULTITHREADS" crocoddyl.withMultithread)
   ];
 
+  doCheck = true;
+
   nativeCheckInputs = [
     ctestCheckHook
   ];
+
   disabledTests = [
     # Fails with osqp>=1.0.0
     # See https://github.com/machines-in-motion/mim_solvers/pull/67
@@ -61,7 +64,6 @@ stdenv.mkDerivation (finalAttrs: {
     # Reported upstream: https://github.com/machines-in-motion/mim_solvers/issues/69
     "test_solvers"
   ];
-  doCheck = true;
 
   passthru.updateScript = nix-update-script { };
 

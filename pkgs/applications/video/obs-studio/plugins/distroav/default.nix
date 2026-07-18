@@ -2,28 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  obs-studio,
   cmake,
-  qtbase,
-  ndi-6,
   curl,
+  ndi-6,
+  obs-studio,
+  qtbase,
 }:
 
 stdenv.mkDerivation rec {
   pname = "distroav";
   version = "6.1.1";
-
-  nativeBuildInputs = [
-    cmake
-    qtbase
-  ];
-
-  buildInputs = [
-    obs-studio
-    qtbase
-    ndi-6
-    curl
-  ];
 
   src = fetchFromGitHub {
     owner = "DistroAV";
@@ -45,10 +33,20 @@ stdenv.mkDerivation rec {
     ln -s ${ndi-6}/include lib/ndi
   '';
 
+  nativeBuildInputs = [
+    cmake
+    qtbase
+  ];
+
+  buildInputs = [
+    obs-studio
+    qtbase
+    ndi-6
+    curl
+  ];
+
   cmakeFlags = [ "-DENABLE_QT=ON" ];
-
   env.NIX_CFLAGS_COMPILE = "-Wno-deprecated-declarations";
-
   dontWrapQtApps = true;
 
   meta = {

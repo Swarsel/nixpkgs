@@ -1,7 +1,7 @@
 {
-  buildOctavePackage,
   lib,
   fetchurl,
+  buildOctavePackage,
 }:
 
 buildOctavePackage rec {
@@ -14,10 +14,8 @@ buildOctavePackage rec {
   };
 
   meta = {
-    homepage = "https://gnu-octave.github.io/packages/stk/";
-    license = lib.licenses.gpl3Plus;
-    maintainers = with lib.maintainers; [ ravenjoad ];
     description = "STK is a (not so) Small Toolbox for Kriging";
+
     longDescription = ''
       The STK is a (not so) Small Toolbox for Kriging. Its primary focus is on
       the interpolation/regression technique known as kriging, which is very
@@ -29,5 +27,9 @@ buildOctavePackage rec {
       useful for other applications areas (such as Geostatistics, Machine
       Learning, Non-parametric Regression, etc.).
     '';
+
+    homepage = "https://gnu-octave.github.io/packages/stk/";
+    license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ ravenjoad ];
   };
 }

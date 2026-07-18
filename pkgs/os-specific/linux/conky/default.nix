@@ -1,75 +1,65 @@
 {
-  config,
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  pkg-config,
+  buildPackages,
+  catch2,
   cmake,
-
+  config,
+  expat,
+  fetchpatch,
+  freetype,
   # dependencies
   glib,
-  libxfixes,
-  libxinerama,
-  catch2,
   gperf,
-
-  # lib.optional features without extra dependencies
-  mpdSupport ? true,
-  ibmSupport ? true, # IBM/Lenovo notebooks
-
-  # lib.optional features with extra dependencies
-
-  docsSupport ? true,
-  buildPackages,
-  pandoc,
-  python3,
-
-  ncursesSupport ? true,
-  ncurses ? null,
-  x11Support ? true,
-  freetype,
-  libxft,
-  libxext,
-  libx11,
-  libsm,
   libice,
-  waylandSupport ? true,
+  libsm,
+  libx11,
+  libxext,
+  libxfixes,
+  libxft,
+  libxinerama,
+  pandoc,
   pango,
+  pkg-config,
+  python3,
+  versionCheckHook,
   wayland,
   wayland-protocols,
   wayland-scanner,
-  xdamageSupport ? x11Support,
-  libxdamage ? null,
-  doubleBufferSupport ? x11Support,
-  imlib2Support ? x11Support,
-  imlib2 ? null,
-
-  luaSupport ? true,
-  lua ? null,
-  luaImlib2Support ? luaSupport && imlib2Support,
-  luaCairoSupport ? luaSupport && (x11Support || waylandSupport),
   cairo ? null,
+  curl ? null,
+  curlSupport ? true,
+  # lib.optional features with extra dependencies
+  docsSupport ? true,
+  doubleBufferSupport ? x11Support,
+  extrasSupport ? true,
+  ibmSupport ? true, # IBM/Lenovo notebooks
+  imlib2 ? null,
+  imlib2Support ? x11Support,
+  journalSupport ? true,
+  libXNVCtrl ? null,
+  libpulseaudio ? null,
+  libxdamage ? null,
+  libxml2 ? null,
+  lua ? null,
+  luaCairoSupport ? luaSupport && (x11Support || waylandSupport),
+  luaImlib2Support ? luaSupport && imlib2Support,
+  luaSupport ? true,
+  # lib.optional features without extra dependencies
+  mpdSupport ? true,
+  ncurses ? null,
+  ncursesSupport ? true,
+  nvidiaSupport ? false,
+  pulseSupport ? config.pulseaudio or false,
+  rssSupport ? curlSupport,
+  systemd ? null,
   toluapp ? null,
-
+  waylandSupport ? true,
   wirelessSupport ? true,
   wirelesstools ? null,
-  nvidiaSupport ? false,
-  libXNVCtrl ? null,
-  pulseSupport ? config.pulseaudio or false,
-  libpulseaudio ? null,
-
-  curlSupport ? true,
-  curl ? null,
-  rssSupport ? curlSupport,
-  journalSupport ? true,
-  systemd ? null,
-  libxml2 ? null,
-
-  extrasSupport ? true,
-
-  versionCheckHook,
-  expat,
+  x11Support ? true,
+  xdamageSupport ? x11Support,
 }:
 
 assert docsSupport -> pandoc != null && python3 != null;
@@ -187,17 +177,16 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
+    description = "Advanced, highly configurable system monitor based on torsmo";
     homepage = "https://conky.cc";
     changelog = "https://github.com/brndnmtthws/conky/releases/tag/${finalAttrs.src.tag}";
-    description = "Advanced, highly configurable system monitor based on torsmo";
-    mainProgram = "conky";
-    maintainers = [ lib.maintainers.guibert ];
     license = lib.licenses.gpl3Plus;
+    maintainers = [ lib.maintainers.guibert ];
     platforms = lib.platforms.linux;
+    mainProgram = "conky";
   };
 })

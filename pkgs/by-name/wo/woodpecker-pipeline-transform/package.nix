@@ -18,13 +18,15 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Utility to convert different pipelines to Woodpecker CI pipelines";
-    changelog = "https://codeberg.org/lafriks/woodpecker-pipeline-transform/src/tag/v${finalAttrs.version}";
     homepage = "https://codeberg.org/lafriks/woodpecker-pipeline-transform";
+    changelog = "https://codeberg.org/lafriks/woodpecker-pipeline-transform/src/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "pipeline-convert";
+
     maintainers = with lib.maintainers; [
       ambroisie
       luftmensch-luftmensch
     ];
+
+    mainProgram = "pipeline-convert";
   };
 })

@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  nixosTests,
+  bashNonInteractive,
+  gawk,
   makeWrapper,
+  nixosTests,
   openjdk21,
   which,
-  gawk,
-  bashNonInteractive,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,9 +19,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Hc9i5+gDXnFzK4ZTK5+OMhnOiVa9BpQNWgAkaWcnGSo=";
   };
 
+  strictDeps = true;
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ bashNonInteractive ];
-  strictDeps = true;
 
   installPhase = ''
     mkdir -p "$out/share/neo4j"

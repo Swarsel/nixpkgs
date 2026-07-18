@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  unstableGitUpdater,
+  boost,
   cmake,
+  eigen_3_4_0,
+  guile,
+  libpng,
+  libsForQt5,
   ninja,
   pkg-config,
-  eigen_3_4_0,
-  zlib,
-  libpng,
-  boost,
-  guile,
   python3,
-  libsForQt5,
+  unstableGitUpdater,
+  zlib,
 }:
 
 stdenv.mkDerivation {
@@ -33,6 +33,7 @@ stdenv.mkDerivation {
     pkg-config
     python3.pkgs.pythonImportsCheckHook
   ];
+
   buildInputs = [
     eigen_3_4_0
     zlib
@@ -42,6 +43,14 @@ stdenv.mkDerivation {
     python3
     libsForQt5.qtbase
   ];
+
+  cmakeFlags = [
+    "-DGUILE_CCACHE_DIR=${placeholder "out"}/${guile.siteCcacheDir}"
+  ];
+
+  env = lib.optionalAttrs stdenv.cc.isClang {
+    NIX_CFLAGS_COMPILE = "-Wno-error=enum-constexpr-conversion";
+  };
 
   preConfigure = ''
     substituteInPlace studio/src/guile/interpreter.cpp \
@@ -66,14 +75,6 @@ stdenv.mkDerivation {
 
     export XDG_CACHE_HOME=$(mktemp -d)/.cache
   '';
-
-  cmakeFlags = [
-    "-DGUILE_CCACHE_DIR=${placeholder "out"}/${guile.siteCcacheDir}"
-  ];
-
-  env = lib.optionalAttrs stdenv.cc.isClang {
-    NIX_CFLAGS_COMPILE = "-Wno-error=enum-constexpr-conversion";
-  };
 
   postInstall =
     lib.optionalString stdenv.hostPlatform.isDarwin ''
@@ -114,14 +115,17 @@ stdenv.mkDerivation {
   meta = {
     description = "Infrastructure for solid modeling with F-Reps in C, C++, and Guile";
     homepage = "https://libfive.com/";
-    maintainers = with lib.maintainers; [
-      kovirobi
-      wulfsta
-    ];
+
     license = with lib.licenses; [
       mpl20
       gpl2Plus
     ];
+
+    maintainers = with lib.maintainers; [
+      kovirobi
+      wulfsta
+    ];
+
     platforms = with lib.platforms; all;
   };
 }

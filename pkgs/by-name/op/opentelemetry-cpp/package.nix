@@ -3,28 +3,28 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  gtest,
-  protobuf,
   curl,
   grpc,
-  prometheus-cpp,
-  nlohmann_json,
+  gtest,
   nix-update-script,
-  cxxStandard ? null,
-  enableHttp ? false,
-  enableGrpc ? false,
-  enablePrometheus ? false,
-  enableElasticSearch ? false,
-  enableZipkin ? false,
+  nlohmann_json,
   # for passthru.tests
   opentelemetry-cpp,
+  prometheus-cpp,
+  protobuf,
+  cxxStandard ? null,
+  enableElasticSearch ? false,
+  enableGrpc ? false,
+  enableHttp ? false,
+  enablePrometheus ? false,
+  enableZipkin ? false,
 }:
 let
   opentelemetry-proto = fetchFromGitHub {
+    hash = "sha256-RJrS0C4GZfUdETff+ZlbJr67Z+JObrLsDvyGqobf4UI=";
     owner = "open-telemetry";
     repo = "opentelemetry-proto";
     rev = "v1.10.0";
-    hash = "sha256-RJrS0C4GZfUdETff+ZlbJr67Z+JObrLsDvyGqobf4UI=";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -38,11 +38,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-7G9uHMlV7/rHvD/g+ktxT6RTfDRSfsXQO7QHk26XVKs=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     ./0001-Disable-tests-requiring-network-access.patch
   ]
   ++ lib.optional stdenv.hostPlatform.isDarwin ./0002-Disable-segfaulting-test-on-Darwin.patch;
 
+  strictDeps = true;
   nativeBuildInputs = [ cmake ];
 
   buildInputs = [
@@ -59,14 +65,6 @@ stdenv.mkDerivation (finalAttrs: {
       prometheus-cpp
     ];
 
-  doCheck = true;
-
-  checkInputs = [
-    gtest
-  ];
-
-  strictDeps = true;
-
   cmakeFlags = [
     (lib.cmakeBool "BUILD_SHARED_LIBS" (!stdenv.hostPlatform.isStatic))
     (lib.cmakeBool "WITH_BENCHMARK" false)
@@ -82,9 +80,10 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "WITH_STL" "CXX${cxxStandard}")
   ];
 
-  outputs = [
-    "out"
-    "dev"
+  doCheck = true;
+
+  checkInputs = [
+    gtest
   ];
 
   # "--replace-fail" would normally be preferred, since it is better at
@@ -99,28 +98,30 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-quiet "\''${_IMPORT_PREFIX}/include" "$dev/include"
   '';
 
-  passthru.updateScript = nix-update-script { };
-
   passthru.tests = {
     # Unfortunately there is no such thing as finalAttrs.finalPackage.override,
     # so we have to resort to this.
     full = opentelemetry-cpp.override {
-      enableHttp = true;
-      enableGrpc = true;
-      enablePrometheus = true;
       enableElasticSearch = true;
+      enableGrpc = true;
+      enableHttp = true;
+      enablePrometheus = true;
       enableZipkin = true;
     };
   };
+
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "OpenTelemetry C++ Client Library";
     homepage = "https://github.com/open-telemetry/opentelemetry-cpp";
     license = [ lib.licenses.asl20 ];
+
     maintainers = with lib.maintainers; [
       jfroche
       panicgh
     ];
+
     platforms = lib.platforms.all;
     # https://github.com/protocolbuffers/protobuf/issues/14492
     broken = !(stdenv.buildPlatform.canExecute stdenv.hostPlatform);

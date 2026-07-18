@@ -1,10 +1,10 @@
 {
-  buildFHSEnv,
-  fetchFromGitHub,
-  fetchYarnDeps,
-  electron,
-  git,
   lib,
+  fetchFromGitHub,
+  buildFHSEnv,
+  electron,
+  fetchYarnDeps,
+  git,
   makeDesktopItem,
   nodejs,
   stdenvNoCC,
@@ -34,13 +34,8 @@ let
   ];
 
   unwrapped = stdenvNoCC.mkDerivation {
-    pname = "${pname}-unwrapped";
     inherit version src patches;
-
-    offlineCache = fetchYarnDeps {
-      inherit src patches;
-      hash = "sha256-5yUsjXQ3OHwEGFgMTUJAXAuTdAl4zkb8zxTs5OT6sw4=";
-    };
+    pname = "${pname}-unwrapped";
 
     nativeBuildInputs = [
       git
@@ -50,6 +45,9 @@ let
       yarnConfigHook
       zip
     ];
+
+    # electron-forge's console output is squeezed into one narrow column if unset
+    env.CI = "1";
 
     preBuild = ''
       # electron files need to be writable on Darwin
@@ -67,11 +65,6 @@ let
         --replace-fail 'await this.getElectronZipPath(downloadOpts)' '"electron.zip"'
     '';
 
-    # electron-forge's console output is squeezed into one narrow column if unset
-    env.CI = "1";
-
-    yarnBuildScript = "package";
-
     installPhase = ''
       runHook preInstall
 
@@ -82,30 +75,35 @@ let
 
       runHook postInstall
     '';
+
+    offlineCache = fetchYarnDeps {
+      inherit src patches;
+      hash = "sha256-5yUsjXQ3OHwEGFgMTUJAXAuTdAl4zkb8zxTs5OT6sw4=";
+    };
+
+    yarnBuildScript = "package";
   };
 
   desktopItem = makeDesktopItem {
-    name = "electron-fiddle";
-    desktopName = "Electron Fiddle";
-    comment = "The easiest way to get started with Electron";
-    genericName = "Electron Fiddle";
-    exec = "electron-fiddle %U";
-    icon = "electron-fiddle";
-    startupNotify = true;
     categories = [
       "GNOME"
       "GTK"
       "Utility"
     ];
+
+    comment = "The easiest way to get started with Electron";
+    desktopName = "Electron Fiddle";
+    exec = "electron-fiddle %U";
+    genericName = "Electron Fiddle";
+    icon = "electron-fiddle";
     mimeTypes = [ "x-scheme-handler/electron-fiddle" ];
+    name = "electron-fiddle";
+    startupNotify = true;
   };
 
 in
 buildFHSEnv {
   inherit pname version;
-  runScript = "${lib.getExe electron} ${unwrapped}/lib/electron-fiddle/resources/app.asar";
-
-  passthru = { inherit unwrapped; };
 
   extraInstallCommands = ''
     mkdir -p "$out/share/icons/hicolor/scalable/apps"
@@ -113,6 +111,8 @@ buildFHSEnv {
     mkdir -p "$out/share/applications"
     cp "${desktopItem}/share/applications"/*.desktop "$out/share/applications/"
   '';
+
+  runScript = "${lib.getExe electron} ${unwrapped}/lib/electron-fiddle/resources/app.asar";
 
   targetPkgs =
     pkgs:
@@ -174,15 +174,19 @@ buildFHSEnv {
       # https://github.com/electron/electron/issues/13972
     ];
 
+  passthru = { inherit unwrapped; };
+
   meta = {
     description = "Easiest way to get started with Electron";
     homepage = "https://www.electronjs.org/fiddle";
     license = lib.licenses.mit;
-    mainProgram = "electron-fiddle";
+
     maintainers = with lib.maintainers; [
       andersk
       tomasajt
     ];
+
     platforms = electron.meta.platforms;
+    mainProgram = "electron-fiddle";
   };
 }

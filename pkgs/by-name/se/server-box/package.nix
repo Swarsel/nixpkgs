@@ -1,15 +1,15 @@
 {
   lib,
-  flutter344,
   fetchFromGitHub,
+  _experimental-update-script-combinators,
   autoPatchelfHook,
   copyDesktopItems,
+  dart,
+  flutter344,
   makeDesktopItem,
+  nix-update-script,
   runCommand,
   yq-go,
-  _experimental-update-script-combinators,
-  nix-update-script,
-  dart,
 }:
 
 let
@@ -19,17 +19,13 @@ let
     owner = "lollipopkit";
     repo = "flutter_server_box";
     tag = "v${version}";
-    fetchSubmodules = true;
     hash = "sha256-jgbuEgUxsN1ijH++NjXr3eZeTPUQbB/9axCMM/FWp54=";
+    fetchSubmodules = true;
   };
 in
 flutter344.buildFlutterApplication {
-  pname = "server-box";
   inherit version src;
-
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
-
-  gitHashes = lib.importJSON ./git-hashes.json;
+  pname = "server-box";
 
   nativeBuildInputs = [
     copyDesktopItems
@@ -39,26 +35,31 @@ flutter344.buildFlutterApplication {
   # https://github.com/juliansteenbakker/flutter_secure_storage/issues/965
   env.CXXFLAGS = toString [ "-Wno-deprecated-literal-operator" ];
 
+  postInstall = ''
+    install -D --mode=0644 assets/app_icon.png $out/share/icons/hicolor/512x512/apps/server-box.png
+  '';
+
   desktopItems = [
     (makeDesktopItem {
-      name = "server-box";
-      exec = "ServerBox";
-      icon = "server-box";
-      genericName = "ServerBox";
-      desktopName = "ServerBox";
       categories = [ "Utility" ];
+      desktopName = "ServerBox";
+      exec = "ServerBox";
+      genericName = "ServerBox";
+      icon = "server-box";
+
       keywords = [
         "server"
         "ssh"
         "sftp"
         "system"
       ];
+
+      name = "server-box";
     })
   ];
 
-  postInstall = ''
-    install -D --mode=0644 assets/app_icon.png $out/share/icons/hicolor/512x512/apps/server-box.png
-  '';
+  gitHashes = lib.importJSON ./git-hashes.json;
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
 
   passthru = {
     pubspecSource =
@@ -70,6 +71,7 @@ flutter344.buildFlutterApplication {
         ''
           yq eval --output-format=json --prettyPrint $src/pubspec.lock > "$out"
         '';
+
     updateScript = _experimental-update-script-combinators.sequence [
       (nix-update-script { })
       (
@@ -86,6 +88,7 @@ flutter344.buildFlutterApplication {
           "--output"
           ./git-hashes.json
         ];
+
         supportedFeatures = [ ];
       }
     ];
@@ -94,11 +97,11 @@ flutter344.buildFlutterApplication {
   meta = {
     description = "Server status & toolbox";
     homepage = "https://serverbox.lpkt.cn";
-    downloadPage = "https://serverbox.lpkt.cn/installation";
     changelog = "https://github.com/lollipopkit/flutter_server_box/releases/tag/${src.tag}";
-    mainProgram = "ServerBox";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ ulysseszhan ];
+    platforms = lib.platforms.linux;
+    mainProgram = "ServerBox";
+    downloadPage = "https://serverbox.lpkt.cn/installation";
   };
 }

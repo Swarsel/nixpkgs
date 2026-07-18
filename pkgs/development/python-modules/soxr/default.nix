@@ -1,30 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   cmake,
+  # native dependencies
+  libsoxr,
   nanobind,
   ninja,
+  # dependencies
+  numpy,
+  # tests
+  pytestCheckHook,
   scikit-build-core,
   setuptools,
   setuptools-scm,
-
-  # native dependencies
-  libsoxr,
-
-  # dependencies
-  numpy,
-
-  # tests
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "soxr";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dofuuz";
@@ -40,11 +35,13 @@ buildPythonPackage rec {
     ninja
   ];
 
-  dontUseCmakeConfigure = true;
+  buildInputs = [ libsoxr ];
 
   cmakeFlags = [
     (lib.cmakeBool "USE_SYSTEM_LIBSOXR" true)
   ];
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     scikit-build-core
@@ -53,18 +50,15 @@ buildPythonPackage rec {
     setuptools-scm
   ];
 
-  buildInputs = [ libsoxr ];
-
   dependencies = [ numpy ];
-
+  dontUseCmakeConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "soxr" ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   meta = {
-    changelog = "https://github.com/dofuuz/python-soxr/releases/tag/${src.tag}";
     description = "High quality, one-dimensional sample-rate conversion library";
     homepage = "https://github.com/dofuuz/python-soxr/tree/main";
+    changelog = "https://github.com/dofuuz/python-soxr/releases/tag/${src.tag}";
     license = lib.licenses.lgpl21Plus;
     maintainers = with lib.maintainers; [ hexa ];
   };

@@ -1,9 +1,9 @@
 {
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
   makeWrapper,
   nodejs,
-  stdenv,
   yarn-berry_3,
 }:
 
@@ -19,13 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "svgo";
     tag = "v${finalAttrs.version}";
     hash = "sha256-HYI3E14MN0XhREQMYkhLB1gZOBtrpjayC1RyVEhvkOU=";
-  };
-
-  missingHashes = ./missing-hashes.json;
-
-  offlineCache = yarn-berry.fetchYarnBerryDeps {
-    inherit (finalAttrs) src missingHashes;
-    hash = "sha256-oBWUTYlMa3wi7TYAOTXSNBbSMiAZI6APXZvPyQzoPbM=";
   };
 
   nativeBuildInputs = [
@@ -44,13 +37,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  missingHashes = ./missing-hashes.json;
+
+  offlineCache = yarn-berry.fetchYarnBerryDeps {
+    inherit (finalAttrs) src missingHashes;
+    hash = "sha256-oBWUTYlMa3wi7TYAOTXSNBbSMiAZI6APXZvPyQzoPbM=";
+  };
+
   meta = {
-    changelog = "https://github.com/svg/svgo/releases/tag/${finalAttrs.src.tag}";
     description = "Node.js tool for optimizing SVG files";
     homepage = "https://github.com/svg/svgo";
+    changelog = "https://github.com/svg/svgo/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
-    mainProgram = "svgo";
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "svgo";
   };
 })

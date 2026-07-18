@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  buildNpmPackage,
   fetchFromGitHub,
-  jq,
-  pkg-config,
-  makeWrapper,
+  buildNpmPackage,
   clang_20,
+  jq,
   libsecret,
-  ripgrep,
-  nodejs_22,
+  makeWrapper,
   nix-update-script,
+  nodejs_22,
+  pkg-config,
+  ripgrep,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -23,29 +23,6 @@ buildNpmPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-pabav4ehssc3oQFuF4MgnSG7Ql1r5Y6n+ZzYbgh5tz8=";
   };
-
-  nodejs = nodejs_22;
-
-  npmDepsHash = "sha256-Df1EVzKYWo5o2cvP3kFGcNKEuDu3fZno4OTKBe37IK8=";
-
-  dontPatchElf = stdenv.hostPlatform.isDarwin;
-
-  nativeBuildInputs = [
-    jq
-    pkg-config
-    makeWrapper
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [ clang_20 ]; # clang_21 breaks @vscode/vsce's optionalDependencies keytar
-
-  buildInputs = [
-    ripgrep
-    libsecret
-  ];
-
-  preConfigure = ''
-    mkdir -p packages/generated
-    echo "export const GIT_COMMIT_INFO = { commitHash: '${finalAttrs.src.rev}' };" > packages/generated/git-commit.ts
-  '';
 
   postPatch = ''
     # Remove node-pty dependency from package.json
@@ -73,13 +50,24 @@ buildNpmPackage (finalAttrs: {
       --replace-fail "!settings.merged.general.enableAutoUpdate" "!false"
   '';
 
-  # Prevent npmDeps and python from getting into the closure
-  disallowedReferences = [
-    finalAttrs.npmDeps
-    finalAttrs.nodejs.python
+  nativeBuildInputs = [
+    jq
+    pkg-config
+    makeWrapper
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [ clang_20 ]; # clang_21 breaks @vscode/vsce's optionalDependencies keytar
+
+  buildInputs = [
+    ripgrep
+    libsecret
   ];
 
-  npmBuildScript = "bundle";
+  npmDepsHash = "sha256-Df1EVzKYWo5o2cvP3kFGcNKEuDu3fZno4OTKBe37IK8=";
+
+  preConfigure = ''
+    mkdir -p packages/generated
+    echo "export const GIT_COMMIT_INFO = { commitHash: '${finalAttrs.src.rev}' };" > packages/generated/git-commit.ts
+  '';
 
   installPhase = ''
     runHook preInstall
@@ -109,6 +97,15 @@ buildNpmPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  # Prevent npmDeps and python from getting into the closure
+  disallowedReferences = [
+    finalAttrs.npmDeps
+    finalAttrs.nodejs.python
+  ];
+
+  dontPatchElf = stdenv.hostPlatform.isDarwin;
+  nodejs = nodejs_22;
+  npmBuildScript = "bundle";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -116,6 +113,7 @@ buildNpmPackage (finalAttrs: {
     homepage = "https://github.com/google-gemini/gemini-cli";
     license = lib.licenses.asl20;
     sourceProvenance = with lib.sourceTypes; [ fromSource ];
+
     maintainers = with lib.maintainers; [
       brantes
       xiaoxiangmoe
@@ -123,6 +121,7 @@ buildNpmPackage (finalAttrs: {
       taranarmo
       caverav
     ];
+
     platforms = lib.platforms.all;
     mainProgram = "gemini";
   };

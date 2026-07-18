@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   numpy,
   pybind11,
+  pytestCheckHook,
   setuptools,
   wheel,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "chroma-hnswlib";
   version = "0.8.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "chroma-core";
@@ -29,7 +28,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "hnswlib" ];
 
   meta = {

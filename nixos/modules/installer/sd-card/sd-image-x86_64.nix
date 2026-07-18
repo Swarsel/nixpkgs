@@ -15,15 +15,16 @@
     ./sd-image.nix
   ];
 
-  boot.loader = {
-    grub.enable = false;
-    generic-extlinux-compatible.enable = true;
-  };
-
   boot.consoleLogLevel = lib.mkDefault 7;
+
+  boot.loader = {
+    generic-extlinux-compatible.enable = true;
+    grub.enable = false;
+  };
 
   sdImage = {
     populateFirmwareCommands = "";
+
     populateRootCommands = ''
       mkdir -p ./files/boot
       ${config.boot.loader.generic-extlinux-compatible.populateCmd} -c ${config.system.build.toplevel} -d ./files/boot

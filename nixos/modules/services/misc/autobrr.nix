@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -14,55 +14,58 @@ in
   options = {
     services.autobrr = {
       enable = lib.mkEnableOption "Autobrr";
+      package = lib.mkPackageOption pkgs "autobrr" { };
 
       openFirewall = lib.mkOption {
-        type = lib.types.bool;
         default = false;
         description = "Open ports in the firewall for the Autobrr web interface.";
+        type = lib.types.bool;
       };
 
       secretFile = lib.mkOption {
-        type = lib.types.path;
         description = "File containing the session secret for the Autobrr web interface.";
+        type = lib.types.path;
       };
 
       settings = lib.mkOption {
-        type = lib.types.submodule {
-          freeformType = configFormat.type;
-          options = {
-            host = lib.mkOption {
-              type = lib.types.str;
-              default = "127.0.0.1";
-              description = "The host address autobrr listens on.";
-            };
-
-            port = lib.mkOption {
-              type = lib.types.port;
-              default = 7474;
-              description = "The port autobrr listens on.";
-            };
-
-            checkForUpdates = lib.mkOption {
-              type = lib.types.bool;
-              default = true;
-              description = "Whether autobrr needs to check for updates.";
-            };
-          };
-        };
         default = { };
-        example = {
-          port = 7654;
-          logLevel = "DEBUG";
-        };
+
         description = ''
           Autobrr configuration options.
 
           Refer to <https://autobrr.com/configuration/autobrr>
           for a full list.
         '';
-      };
 
-      package = lib.mkPackageOption pkgs "autobrr" { };
+        example = {
+          logLevel = "DEBUG";
+          port = 7654;
+        };
+
+        type = lib.types.submodule {
+          options = {
+            checkForUpdates = lib.mkOption {
+              default = true;
+              description = "Whether autobrr needs to check for updates.";
+              type = lib.types.bool;
+            };
+
+            host = lib.mkOption {
+              default = "127.0.0.1";
+              description = "The host address autobrr listens on.";
+              type = lib.types.str;
+            };
+
+            port = lib.mkOption {
+              default = 7474;
+              description = "The port autobrr listens on.";
+              type = lib.types.port;
+            };
+          };
+
+          freeformType = configFormat.type;
+        };
+      };
     };
   };
 
@@ -70,6 +73,7 @@ in
     assertions = [
       {
         assertion = !(cfg.settings ? sessionSecret);
+
         message = ''
           Session secrets should not be passed via settings, as
           these are stored in the world-readable nix store.
@@ -78,7 +82,32 @@ in
       }
     ];
 
+    networking.firewall = lib.mkIf cfg.openFirewall { allowedTCPPorts = [ cfg.settings.port ]; };
+
     systemd = {
+      services.autobrr = {
+        after = [
+          "syslog.target"
+          "network-online.target"
+        ];
+
+        description = "Autobrr";
+        restartTriggers = [ configFile ];
+
+        serviceConfig = {
+          DynamicUser = true;
+          Environment = [ "AUTOBRR__SESSION_SECRET_FILE=%d/sessionSecret" ];
+          ExecStart = "${lib.getExe cfg.package} --config %S/autobrr";
+          LoadCredential = "sessionSecret:${cfg.secretFile}";
+          Restart = "on-failure";
+          StateDirectory = "autobrr";
+          Type = "simple";
+        };
+
+        wantedBy = [ "multi-user.target" ];
+        wants = [ "network-online.target" ];
+      };
+
       tmpfiles.settings = {
         "10-autobrr" = {
           # DynamicUser uses /var/lib/private/
@@ -87,30 +116,7 @@ in
           };
         };
       };
-
-      services.autobrr = {
-        description = "Autobrr";
-        after = [
-          "syslog.target"
-          "network-online.target"
-        ];
-        wants = [ "network-online.target" ];
-        wantedBy = [ "multi-user.target" ];
-        restartTriggers = [ configFile ];
-
-        serviceConfig = {
-          Type = "simple";
-          DynamicUser = true;
-          LoadCredential = "sessionSecret:${cfg.secretFile}";
-          Environment = [ "AUTOBRR__SESSION_SECRET_FILE=%d/sessionSecret" ];
-          StateDirectory = "autobrr";
-          ExecStart = "${lib.getExe cfg.package} --config %S/autobrr";
-          Restart = "on-failure";
-        };
-      };
     };
-
-    networking.firewall = lib.mkIf cfg.openFirewall { allowedTCPPorts = [ cfg.settings.port ]; };
   };
 
   meta.maintainers = with lib.maintainers; [ av-gal ];

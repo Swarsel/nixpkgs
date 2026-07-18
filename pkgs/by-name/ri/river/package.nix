@@ -4,9 +4,9 @@
   callPackage,
   fetchFromCodeberg,
   libGL,
-  libx11,
   libevdev,
   libinput,
+  libx11,
   libxkbcommon,
   pixman,
   pkg-config,
@@ -29,8 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "river";
   version = "0.4.5";
 
-  outputs = [ "out" ] ++ lib.optionals withManpages [ "man" ];
-
   src = fetchFromCodeberg {
     owner = "river";
     repo = "river";
@@ -38,9 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-q4JAlr9/ex+BEgktBmFwOvZzQEAGvxXPD1QyKqyha4g=";
   };
 
+  outputs = [ "out" ] ++ lib.optionals withManpages [ "man" ];
   strictDeps = true;
-
-  deps = callPackage ./build.zig.zon.nix { };
 
   nativeBuildInputs = [
     pkg-config
@@ -66,20 +63,21 @@ stdenv.mkDerivation (finalAttrs: {
     libx11
   ];
 
+  postInstall = ''
+    install contrib/river.desktop -Dt $out/share/wayland-sessions
+  '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  deps = callPackage ./build.zig.zon.nix { };
+  versionCheckProgramArg = "-version";
+
   zigBuildFlags = [
     "--system"
     "${finalAttrs.deps}"
   ]
   ++ lib.optional withManpages "-Dman-pages"
   ++ lib.optional xwaylandSupport "-Dxwayland";
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "-version";
-
-  postInstall = ''
-    install contrib/river.desktop -Dt $out/share/wayland-sessions
-  '';
 
   passthru = {
     providedSessions = [ "river" ];
@@ -88,14 +86,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Non-monolithic Wayland compositor";
-    homepage = "https://codeberg.org/river/river";
-    donationPage = "https://codeberg.org/river/river#donate";
+
     longDescription = ''
       River is a non-monolithic Wayland compositor.
       Unlike other Wayland compositors, river does not combine the compositor and window manager into one program.
       Instead, users can choose any window manager implementing the river-window-management-v1 protocol.
     '';
+
+    homepage = "https://codeberg.org/river/river";
     changelog = "https://codeberg.org/river/river/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       # source code
       gpl3Only
@@ -103,11 +103,14 @@ stdenv.mkDerivation (finalAttrs: {
       # wayland protocols
       mit
     ];
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       adamcstephens
     ];
-    mainProgram = "river";
+
     platforms = lib.platforms.linux;
+    mainProgram = "river";
+    donationPage = "https://codeberg.org/river/river#donate";
   };
 })

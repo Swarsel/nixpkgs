@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   coreutils,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,6 +18,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-qBTHNArPgf/qrce6hP3GJ1f9NcJ5OmSokCs5IVtyJQQ=";
 
+  # skip the TTY-only test
+  checkFlags = [
+    "--skip"
+    "screen::unix::tests::winsize_test"
+  ];
+
   # https://github.com/rschmitt/heatseeker/issues/42
   # I've suggested using `/usr/bin/env stty`, but doing that isn't quite as simple
   # as a substitution, and this works since we have the path to coreutils stty.
@@ -25,18 +31,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     substituteInPlace src/screen/unix.rs --replace "/bin/stty" "${coreutils}/bin/stty"
   '';
 
-  # skip the TTY-only test
-  checkFlags = [
-    "--skip"
-    "screen::unix::tests::winsize_test"
-  ];
-
   meta = {
     description = "General-purpose fuzzy selector";
     homepage = "https://github.com/rschmitt/heatseeker";
     license = lib.licenses.mit;
     maintainers = [ ];
-    mainProgram = "hs";
     platforms = lib.platforms.unix;
+    mainProgram = "hs";
   };
 })

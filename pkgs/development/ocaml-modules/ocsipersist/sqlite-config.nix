@@ -1,14 +1,14 @@
 {
   buildDunePackage,
   findlib,
-  ocsipersist-sqlite,
   ocsigen_server,
+  ocsipersist-sqlite,
   xml-light,
 }:
 
 buildDunePackage {
-  pname = "ocsipersist-sqlite-config";
   inherit (ocsipersist-sqlite) version src;
+  pname = "ocsipersist-sqlite-config";
 
   propagatedBuildInputs = [
     findlib

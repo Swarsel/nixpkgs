@@ -1,23 +1,22 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
   pname = "lmmath";
   version = "1.959";
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
   src = fetchzip {
     url = "https://www.gust.org.pl/projects/e-foundry/lm-math/download/latinmodern-math-1959.zip";
     hash = "sha256-et/WMhfZZYgP0S7ZmI6MZK5owv9bSoMBXFX6yGSng5Y=";
   };
 
+  strictDeps = true;
   nativeBuildInputs = [ installFonts ];
+  __structuredAttrs = true;
 
   meta = {
     description = "Latin Modern Math (LM Math) font completes the modernization of the Computer Modern family of typefaces designed and programmed by Donald E. Knuth";

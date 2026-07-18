@@ -1,23 +1,22 @@
 {
+  alcotest,
+  alcotest-lwt,
   buildDunePackage,
+  cacert,
   cohttp-lwt,
   cohttp-lwt-unix,
+  git-unix,
   graphql-cohttp,
   graphql-lwt,
   irmin,
-  git-unix,
-  alcotest,
-  alcotest-lwt,
   logs,
   yojson,
-  cacert,
 }:
 
 buildDunePackage {
 
-  pname = "irmin-graphql";
-
   inherit (irmin) version src;
+  pname = "irmin-graphql";
 
   propagatedBuildInputs = [
     cohttp-lwt

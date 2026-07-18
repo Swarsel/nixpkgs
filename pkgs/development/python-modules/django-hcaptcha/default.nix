@@ -1,26 +1,24 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   django,
+  fetchPypi,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "django-hcaptcha";
   version = "0.2.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit (finalAttrs) version;
-    pname = "django-hCaptcha";
     hash = "sha256-slGerwzJeGWscvglMBEixc9h4eSFLWiVmUFgIirLbBo=";
+    pname = "django-hCaptcha";
   };
 
   propagatedBuildInputs = [ django ];
-
   # No tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "hcaptcha" ];
 
   meta = {

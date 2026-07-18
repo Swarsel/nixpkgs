@@ -20,10 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [ installShellFiles ];
   buildInputs = [ python3 ];
 
-  prePatch = ''
-    patchShebangs .
-  '';
-
   installPhase = ''
     runHook preInstall
 
@@ -36,10 +32,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  prePatch = ''
+    patchShebangs .
+  '';
+
   meta = {
     inherit (finalAttrs) version;
     inherit (finalAttrs.src.meta) homepage;
     description = "Storage load analysis tool for OpenZFS";
+
     longDescription = ''
       ioztat is a storage load analysis tool for OpenZFS. It provides
       iostat-like statistics at an individual dataset/zvol level.
@@ -52,9 +53,10 @@ stdenv.mkDerivation (finalAttrs: {
       systems -- particularly those with many VMs or containers operating
       essentially independent workloads.
     '';
+
     license = lib.licenses.bsd2;
-    platforms = with lib.platforms; linux ++ freebsd;
     maintainers = with lib.maintainers; [ numinit ];
+    platforms = with lib.platforms; linux ++ freebsd;
     mainProgram = "ioztat";
   };
 })

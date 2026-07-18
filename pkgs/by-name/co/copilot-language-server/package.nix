@@ -1,11 +1,10 @@
 {
   lib,
-  stdenvNoCC,
-  makeWrapper,
   fetchzip,
+  makeWrapper,
   nix-update-script,
   nodejs,
-
+  stdenvNoCC,
   testers,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -39,13 +38,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Use GitHub Copilot with any editor or IDE via the Language Server Protocol";
     homepage = "https://github.com/features/copilot";
+
     license = {
       deprecated = false;
       free = false;
@@ -54,15 +54,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       shortName = "GitHub Copilot License";
       url = "https://github.com/customer-terms/github-copilot-product-specific-terms";
     };
-    mainProgram = "copilot-language-server";
+
+    maintainers = with lib.maintainers; [
+      arunoruto
+      wattmto
+    ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
-    maintainers = with lib.maintainers; [
-      arunoruto
-      wattmto
-    ];
+
+    mainProgram = "copilot-language-server";
   };
 })

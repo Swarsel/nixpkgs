@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -15,14 +15,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-C1UtfrRFzz0uv/hj8e7huXe4sNd5h7ozVhirWEAyXGg=";
   };
-  __structuredAttrs = true;
-  strictDeps = true;
-  dontBuild = true;
 
   outputs = [
     "out"
     "webfont"
   ];
+
+  strictDeps = true;
   nativeBuildInputs = [ installFonts ];
 
   installPhase = ''
@@ -30,11 +29,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  dontBuild = true;
+
   meta = {
-    homepage = "https://github.com/rastikerdar/vazirmatn";
     description = "Persian (Farsi) Font - قلم (فونت) فارسی وزیرمتن";
+    homepage = "https://github.com/rastikerdar/vazirmatn";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 })

@@ -2,30 +2,26 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  pytestCheckHook,
   setuptools,
   sphinx,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "sphinxcontrib-katex";
   version = "0.9.11";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "sphinxcontrib_katex";
     inherit version;
     hash = "sha256-LTKyENILvuRRpR0ZZF9v719VaLmlTigTr/uW76ZhI4o=";
+    pname = "sphinxcontrib_katex";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ sphinx ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ sphinx ];
+  pyproject = true;
   pythonImportsCheck = [ "sphinxcontrib.katex" ];
-
   pythonNamespaces = [ "sphinxcontrib" ];
 
   meta = {

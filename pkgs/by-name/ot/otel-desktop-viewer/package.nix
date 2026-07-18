@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
   apple-sdk,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,6 +19,17 @@ buildGoModule (finalAttrs: {
     hash = "sha256-9m1W2DxbMyBOGeECTn78X7I3GcToW5Gi33HWXGyWFO8=";
   };
 
+  buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ apple-sdk ];
+  vendorHash = "sha256-WTaPggKaQJY9t16jES9gbsFNHOn4ujxHsqezKOYMdCs=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version}"
+  ];
+
   # NOTE: This project uses Go workspaces, but 'buildGoModule' does not support
   # them at the time of writing; trying to build with 'env.GOWORK = "off"'
   # fails with the following error message:
@@ -27,31 +38,20 @@ buildGoModule (finalAttrs: {
   #
   # cf. https://github.com/NixOS/nixpkgs/issues/203039
   proxyVendor = true;
-  vendorHash = "sha256-WTaPggKaQJY9t16jES9gbsFNHOn4ujxHsqezKOYMdCs=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version}"
-  ];
-
-  buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ apple-sdk ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
   versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/CtrlSpice/otel-desktop-viewer/releases/tag/v${finalAttrs.version}";
     description = "Receive & visualize OpenTelemtry traces locally within one CLI tool";
     homepage = "https://github.com/CtrlSpice/otel-desktop-viewer";
+    changelog = "https://github.com/CtrlSpice/otel-desktop-viewer/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       jkachmar
       lf-
     ];
+
     mainProgram = "otel-desktop-viewer";
   };
 })

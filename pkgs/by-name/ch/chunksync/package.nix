@@ -7,8 +7,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.4";
   pname = "chunksync";
+  version = "0.4";
 
   src = fetchurl {
     url = "https://chunksync.florz.de/chunksync_${finalAttrs.version}.tar.gz";
@@ -20,12 +20,12 @@ stdenv.mkDerivation (finalAttrs: {
     perl
   ];
 
-  env.NIX_LDFLAGS = "-lgcc_s";
-
   makeFlags = [
     "DESTDIR=$(out)"
     "PREFIX="
   ];
+
+  env.NIX_LDFLAGS = "-lgcc_s";
 
   preInstall = ''
     mkdir -p $out/bin
@@ -34,10 +34,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Space-efficient incremental backups of large files or block devices";
-    mainProgram = "chunksync";
     homepage = "http://chunksync.florz.de/";
     license = lib.licenses.gpl2Plus;
-    platforms = with lib.platforms; linux;
     maintainers = with lib.maintainers; [ yayayayaka ];
+    platforms = with lib.platforms; linux;
+    mainProgram = "chunksync";
   };
 })

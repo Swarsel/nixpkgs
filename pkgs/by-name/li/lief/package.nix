@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3,
   cmake,
   ninja,
   nix-update-script,
+  python3,
   testers,
   validatePkgConfig,
 }:
@@ -33,6 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
     "py"
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -72,10 +74,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   pythonImportsCheck = [ "lief" ];
 
-  strictDeps = true;
-
-  passthru.updateScript = nix-update-script { };
-
   passthru.tests = {
     pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
@@ -83,14 +81,18 @@ stdenv.mkDerivation (finalAttrs: {
     };
   };
 
+  passthru.updateScript = nix-update-script { };
+
   meta = {
     description = "Library to Instrument Executable Formats";
     homepage = "https://lief.quarkslab.com/";
     license = [ lib.licenses.asl20 ];
-    platforms = with lib.platforms; linux ++ darwin;
+
     maintainers = with lib.maintainers; [
       lassulus
     ];
+
+    platforms = with lib.platforms; linux ++ darwin;
     pkgConfigModules = [ "LIEF" ];
   };
 })

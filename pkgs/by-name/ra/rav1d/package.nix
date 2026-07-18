@@ -1,13 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  nasm,
   meson,
+  nasm,
   ninja,
-  pkg-config,
-
   nix-update-script,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,11 +20,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-OAfuUeScdjL7xIpf6pclNyo4ugRLIIcTjjf0AwoF+7o=";
   };
 
-  cargoHash = "sha256-13j0++XHcNjkVc3VZxv2ukQvhiu+heZPgaTsA1U4MGQ=";
-
   nativeBuildInputs = [
     nasm
   ];
+
+  cargoHash = "sha256-13j0++XHcNjkVc3VZxv2ukQvhiu+heZPgaTsA1U4MGQ=";
 
   # Tests are using meson
   # https://github.com/memorysafety/rav1d/tree/v1.0.0?tab=readme-ov-file#running-tests

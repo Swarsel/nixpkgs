@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
+  buildPythonPackage,
   colorama,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "ansimarkup";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gvalkov";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
     hash = "sha256-+kZt8tv09RHrMRZtvJPBBiFaeCksXyrlHqIabPrXYDY=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ colorama ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ colorama ];
+  pyproject = true;
   pythonImportsCheck = [ "ansimarkup" ];
 
   meta = {

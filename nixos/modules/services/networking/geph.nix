@@ -10,19 +10,19 @@ in
 {
   options.services.geph = {
     enable = lib.mkEnableOption "geph client daemon";
-
     package = lib.mkPackageOption pkgs "geph" { };
 
     configFile = lib.mkOption {
-      type = lib.types.pathWith {
-        inStore = false;
-        absolute = true;
-      };
       description = ''
         Path to the geph config file.
 
         This file contain sensitive credentials, so it must not live in the Nix store.
       '';
+
+      type = lib.types.pathWith {
+        absolute = true;
+        inStore = false;
+      };
     };
   };
 
@@ -31,48 +31,33 @@ in
     networking.firewall.checkReversePath = "loose";
 
     systemd.services.geph = {
-      description = "geph client daemon";
-      wantedBy = [ "multi-user.target" ];
-      wants = [ "network-online.target" ];
       after = [ "network-online.target" ];
-      startLimitBurst = 5;
-      startLimitIntervalSec = 20;
+      description = "geph client daemon";
+
       serviceConfig = {
-        DynamicUser = true;
-        LoadCredential = "geph-config:${cfg.configFile}";
-        ExecStart = "${lib.getExe cfg.package} --config %d/geph-config";
-
-        Restart = "on-failure";
-        RestartSec = 2;
-        LimitNOFILE = 65535;
-
-        StateDirectory = "geph";
-        StateDirectoryMode = "0700";
-        WorkingDirectory = "/var/lib/geph";
-
         AmbientCapabilities = [
           "CAP_NET_ADMIN"
           "CAP_NET_BIND_SERVICE"
         ];
+
         CapabilityBoundingSet = [
           "CAP_NET_ADMIN"
           "CAP_NET_BIND_SERVICE"
         ];
+
         DeviceAllow = "/dev/net/tun rw";
         DevicePolicy = "closed";
-        PrivateUsers = false;
-        PrivateDevices = false;
-        RestrictAddressFamilies = [
-          "AF_UNIX"
-          "AF_INET"
-          "AF_INET6"
-          "AF_NETLINK"
-        ];
+        DynamicUser = true;
+        ExecStart = "${lib.getExe cfg.package} --config %d/geph-config";
+        LimitNOFILE = 65535;
+        LoadCredential = "geph-config:${cfg.configFile}";
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
         NoNewPrivileges = true;
+        PrivateDevices = false;
         PrivateMounts = true;
         PrivateTmp = true;
+        PrivateUsers = false;
         ProcSubset = "pid";
         ProtectClock = true;
         ProtectControlGroups = true;
@@ -83,13 +68,31 @@ in
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
         ProtectSystem = "strict";
+        Restart = "on-failure";
+        RestartSec = 2;
+
+        RestrictAddressFamilies = [
+          "AF_UNIX"
+          "AF_INET"
+          "AF_INET6"
+          "AF_NETLINK"
+        ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
+        StateDirectory = "geph";
+        StateDirectoryMode = "0700";
         SystemCallArchitectures = "native";
         SystemCallFilter = "@system-service";
         UMask = "0077";
+        WorkingDirectory = "/var/lib/geph";
       };
+
+      startLimitBurst = 5;
+      startLimitIntervalSec = 20;
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
   };
 

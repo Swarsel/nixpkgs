@@ -1,14 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  pythonPackages,
   mopidy,
+  pythonPackages,
 }:
 
 pythonPackages.buildPythonApplication (finalAttrs: {
   pname = "mopidy-subidy";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Prior99";
@@ -16,6 +15,10 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     sha256 = "0c5ghhhrj5v3yp4zmll9ari6r5c6ha8c1izwqshvadn40b02q7xz";
   };
+
+  nativeCheckInputs = [
+    pythonPackages.pytestCheckHook
+  ];
 
   build-system = [
     pythonPackages.setuptools
@@ -26,15 +29,12 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     pythonPackages.py-sonic
   ];
 
-  nativeCheckInputs = [
-    pythonPackages.pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mopidy_subidy" ];
 
   meta = {
-    homepage = "https://www.mopidy.com/";
     description = "Mopidy extension for playing music from a Subsonic-compatible Music Server";
+    homepage = "https://www.mopidy.com/";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ wenngle ];
   };

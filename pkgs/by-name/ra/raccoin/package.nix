@@ -1,24 +1,24 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  makeWrapper,
-  libxkbcommon,
-  wayland,
+  alsa-lib,
   cairo,
-  pango,
-  harfbuzz,
   fontconfig,
   freetype,
-  alsa-lib,
+  harfbuzz,
   libGL,
-  libxrandr,
-  libxi,
-  libxcursor,
   libx11,
-  openssl,
+  libxcursor,
+  libxi,
+  libxkbcommon,
+  libxrandr,
+  makeWrapper,
   nix-update-script,
+  openssl,
+  pango,
+  pkg-config,
+  rustPlatform,
+  wayland,
   withWayland ? true,
   withX11 ? true,
 }:
@@ -33,12 +33,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-6BwRFU8qU6K0KqKdK+soKcWU2LPxkKKPOcn2gupunGg=";
   };
-  cargoHash = "sha256-pz3dwIIBQZIwTammiI/UQwM0Iy1ZgC9ntK+qNGv3s24=";
 
   nativeBuildInputs = [
     pkg-config
     makeWrapper
   ];
+
   buildInputs = [
     cairo
     pango
@@ -60,15 +60,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libxrandr
   ];
 
+  cargoHash = "sha256-pz3dwIIBQZIwTammiI/UQwM0Iy1ZgC9ntK+qNGv3s24=";
   # upstream has no tests
   doCheck = false;
+
   # alternatively when tests are added later
   #doCheck = true;
   #checkPhase = ''
   #  cargo test --lib -- --nocapture
   #'';
   #passthru.tests.version = testers.testVersion { package = raccoin; };
-
   postFixup = ''
     patchelf --set-rpath "${
       lib.makeLibraryPath (
@@ -82,21 +83,24 @@ rustPlatform.buildRustPackage (finalAttrs: {
     }" \
       $out/bin/raccoin
   '';
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Crypto portfolio & capital-gains reporting tool (Rust + Slint)";
+
     longDescription = ''
       This GUI Tool enables accounting with the quite basic principle
       "first in, first out" (FIFO) in multiple wallets. It is for
       e.g. bitcoiners that actually use the currency and want
       reports on their holdings.
     '';
+
     homepage = "https://raccoin.org";
     changelog = "https://github.com/bjorn/raccoin/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "raccoin";
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ vv01f ];
+    platforms = lib.platforms.linux;
+    mainProgram = "raccoin";
   };
 })

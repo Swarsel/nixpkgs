@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  ninja,
   libpng,
+  ninja,
   qt6,
   versionCheckHook,
   zlib,
@@ -14,18 +14,18 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "zint${lib.optionalString withGUI "-qt"}";
   version = "2.16.0";
 
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-  ];
-
   src = fetchFromGitHub {
     owner = "zint";
     repo = "zint";
     tag = finalAttrs.version;
     hash = "sha256-5zVGtnm6QdehDL+R7ZNq7AdgUIOIySPWGlS6GbJK+/4=";
   };
+
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     cmake
@@ -53,7 +53,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "ZINT_QT6" true) # do not use Qt 5
   ];
 
-  doInstallCheck = true;
   nativeCheckInputs = [ versionCheckHook ];
 
   postInstall = lib.optionalString withGUI ''
@@ -62,14 +61,18 @@ stdenv.mkDerivation (finalAttrs: {
     install -Dm644 -t $out/share/icons/hicolor/scalable/apps $src/frontend_qt/images/scalable/zint-qt.svg
   '';
 
+  doInstallCheck = true;
+
   meta = {
     description = "Barcode generating tool and library";
+
     longDescription = ''
       The Zint project aims to provide a complete cross-platform open source
       barcode generating solution. The package currently consists of "${lib.optionalString withGUI "a Qt based GUI, "}
       a CLI command line executable and a library with an API to allow
       developers access to the capabilities of Zint.
     '';
+
     homepage = "https://www.zint.org.uk";
     changelog = "https://github.com/zint/zint/blob/${finalAttrs.src.rev}/ChangeLog";
     license = lib.licenses.gpl3Plus;

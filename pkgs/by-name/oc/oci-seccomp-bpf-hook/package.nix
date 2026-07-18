@@ -1,42 +1,42 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  bcc,
+  buildGoModule,
   go-md2man,
   installShellFiles,
-  pkg-config,
-  bcc,
   libseccomp,
+  pkg-config,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "oci-seccomp-bpf-hook";
   version = "1.3.0";
+
   src = fetchFromGitHub {
     owner = "containers";
     repo = "oci-seccomp-bpf-hook";
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-seizupkZHWCPsnPMiLlEZrw1cPQNsfsGxYg2S9ZGBbw=";
   };
-  vendorHash = null;
 
   outputs = [
     "out"
     "man"
   ];
+
   nativeBuildInputs = [
     go-md2man
     installShellFiles
     pkg-config
   ];
+
   buildInputs = [
     bcc
     libseccomp
   ];
 
-  checkPhase = ''
-    go test -v ./...
-  '';
+  vendorHash = null;
 
   buildPhase = ''
     make
@@ -46,6 +46,10 @@ buildGoModule (finalAttrs: {
     substituteInPlace oci-seccomp-bpf-hook.json --replace HOOK_BIN_DIR "$out/bin"
   '';
 
+  checkPhase = ''
+    go test -v ./...
+  '';
+
   installPhase = ''
     install -Dm755 bin/* -t $out/bin
     install -Dm644 oci-seccomp-bpf-hook.json -t $out
@@ -53,13 +57,14 @@ buildGoModule (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/containers/oci-seccomp-bpf-hook";
     description = ''
       OCI hook to trace syscalls and generate a seccomp profile
     '';
-    mainProgram = "oci-seccomp-bpf-hook";
+
+    homepage = "https://github.com/containers/oci-seccomp-bpf-hook";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ saschagrunert ];
     platforms = lib.platforms.linux;
+    mainProgram = "oci-seccomp-bpf-hook";
   };
 })

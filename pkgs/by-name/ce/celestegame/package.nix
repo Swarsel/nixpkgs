@@ -1,31 +1,30 @@
 {
   lib,
-  callPackage,
-  buildFHSEnv,
-  fetchzip,
-  makeDesktopItem,
-  writeShellScript,
   autoPatchelfHook,
-  runtimeShell,
+  buildFHSEnv,
+  callPackage,
   # Override this to everest-bin if you want to use steam-run.
   everest,
-
-  withEverest ? false,
-  overrideSrc ? null,
-  # If build with Everest, must set writableDir to the path of a writable dir
-  # so that the mods can be installed there.
-  # It must be an absolute path.
-  # Example: "/home/kat/.local/share/Everest"
-  writableDir ? null,
+  fetchzip,
+  makeDesktopItem,
+  runtimeShell,
+  writeShellScript,
   # Optionally set paths of symlinks to the installation dir of Celeste.
   # You can use this in Olympus so that you don't have to change installation dir path
   # every time the nix store path changes.
   # The links are updated every time the command `Celeste` is run.
   gameDir ? [ ],
-  # This will be appended to everest-launch.txt.
-  launchFlags ? "",
   # This will be appended to everest-env.txt.
   launchEnv ? "",
+  # This will be appended to everest-launch.txt.
+  launchFlags ? "",
+  overrideSrc ? null,
+  withEverest ? false,
+  # If build with Everest, must set writableDir to the path of a writable dir
+  # so that the mods can be installed there.
+  # It must be an absolute path.
+  # Example: "/home/kat/.local/share/Everest"
+  writableDir ? null,
 }:
 
 # For those who would like to use steam-run or alike to launch Celeste
@@ -60,6 +59,7 @@ let
       launchEnv
       everestLogFilename
       ;
+
     desktopItems = [ desktopItem ];
     writableDir = writableDir';
   };
@@ -67,19 +67,30 @@ let
   celesteHome = "${celeste}/${celesteHomeRelative}";
 
   desktopItem = makeDesktopItem {
-    name = "Celeste";
-    desktopName = "Celeste";
-    genericName = "Celeste";
-    comment = celeste.meta.description;
-    exec = executableName;
-    icon = "Celeste";
     categories = [ "Game" ];
+    comment = celeste.meta.description;
+    desktopName = "Celeste";
+    exec = executableName;
+    genericName = "Celeste";
+    icon = "Celeste";
+    name = "Celeste";
   };
 
 in
 buildFHSEnv {
   inherit pname executableName;
   version = celeste.version + (lib.optionalString withEverest "+everest.${everest.version}");
+
+  extraInstallCommands = ''
+    icon=$out/share/icons/hicolor/512x512/apps/Celeste.png
+    mkdir -p $(dirname $icon)
+    ln -s ${celesteHome}/Celeste.png $icon
+    cp -r ${desktopItem}/* $out
+  '';
+
+  extraPreBwrapCmds = ''
+    export NIX_CELESTE_LAUNCHER=$(realpath --no-symlinks $0)
+  '';
 
   multiPkgs =
     pkgs: with pkgs; [
@@ -147,19 +158,6 @@ buildFHSEnv {
       libxdmcp
     ];
 
-  targetPkgs = pkgs: [ celeste ];
-
-  extraInstallCommands = ''
-    icon=$out/share/icons/hicolor/512x512/apps/Celeste.png
-    mkdir -p $(dirname $icon)
-    ln -s ${celesteHome}/Celeste.png $icon
-    cp -r ${desktopItem}/* $out
-  '';
-
-  extraPreBwrapCmds = ''
-    export NIX_CELESTE_LAUNCHER=$(realpath --no-symlinks $0)
-  '';
-
   runScript = writeShellScript executableName (
     lib.optionalString (writableDir' != null) ''
       mkdir -p "${writableDir'}"
@@ -199,6 +197,7 @@ buildFHSEnv {
     ''
   );
 
+  targetPkgs = pkgs: [ celeste ];
   passthru.celeste-unwrapped = celeste;
 
   meta = {
@@ -210,6 +209,7 @@ buildFHSEnv {
       sourceProvenance
       platforms
       ;
+
     maintainers = with lib.maintainers; [ ulysseszhan ];
   };
 }

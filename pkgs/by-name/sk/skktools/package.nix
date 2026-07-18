@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   fetchpatch,
-  pkg-config,
   gdbm,
   glib,
+  pkg-config,
 }:
 
 # Note (2017-10-24, yuriaisaka):
@@ -19,12 +19,14 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "skktools";
   version = "1.3.4";
+
   src = fetchFromGitHub {
     owner = "skk-dev";
     repo = "skktools";
     rev = "skktools-${lib.replaceStrings [ "." ] [ "_" ] finalAttrs.version}";
     sha256 = "1zway8jsm18279xq8zlpr84iqiw373x3v0ysay74n9bjqxbl234a";
   };
+
   # # See "12.2. Package naming"
   # name = "skktools-unstable-${finalAttrs.version}";
   # version = "2017-03-05";
@@ -39,13 +41,14 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix build with gcc15
     # https://github.com/skk-dev/skktools/pull/30
     (fetchpatch {
+      hash = "sha256-wao2kRsDq5WN4JO/YpXhNirsdnA3vZpsY9GDCTPSJKY=";
       name = "skktools-fix-function-prototype-empty-arguments-gcc15.patch";
       url = "https://github.com/skk-dev/skktools/commit/fb6a295607dbe2b5171c2c89f8a2f0b82bee9766.patch";
-      hash = "sha256-wao2kRsDq5WN4JO/YpXhNirsdnA3vZpsY9GDCTPSJKY=";
     })
   ];
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     gdbm
     glib
@@ -53,11 +56,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Collection of tools to edit SKK dictionaries";
+
     longDescription = ''
       This package provides a collection of tools to manipulate
       (merge, sort etc.) the dictionaries formatted for SKK Japanese
       input method.
     '';
+
     homepage = "https://github.com/skk-dev/skktools";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ yuriaisaka ];

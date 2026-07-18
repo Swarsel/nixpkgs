@@ -1,12 +1,12 @@
 {
   lib,
-  mkCoqDerivation,
-  which,
   coq,
-  stdlib,
   metarocq-erasure,
-  version ? null,
+  mkCoqDerivation,
+  stdlib,
+  which,
   single ? false,
+  version ? null,
 }:
 
 let
@@ -19,11 +19,12 @@ let
   defaultVersion =
     let
       case = coq: mr: out: {
+        inherit out;
+
         cases = [
           coq
           mr
         ];
-        inherit out;
       };
     in
     lib.switch
@@ -37,25 +38,29 @@ let
       ]
       null;
   release = {
-    "0.2.1".hash = "sha256-GWdu/l7CipeBubgS5OGHsZfpP2Fkr1cfiZMRH5d1n0g=";
     "0.2.0".hash = "sha256-rgg39X45IXjcnejBhh8N7wMiH+gHQrfO8pBbFEWOGVI=";
+    "0.2.1".hash = "sha256-GWdu/l7CipeBubgS5OGHsZfpP2Fkr1cfiZMRH5d1n0g=";
   };
   releaseRev = v: "v${v}";
 
   packages = {
+    "all" = [
+      "plugin"
+    ];
+
     "common" = [ ];
+
     "elm" = [
       "common"
     ];
-    "rust" = [
-      "common"
-    ];
+
     "plugin" = [
       "elm"
       "rust"
     ];
-    "all" = [
-      "plugin"
+
+    "rust" = [
+      "common"
     ];
   };
 
@@ -85,7 +90,6 @@ let
               owner
               ;
 
-            mlPlugin = true;
             propagatedBuildInputs = [
               stdlib
               coq.ocamlPackages.findlib
@@ -93,9 +97,8 @@ let
             ]
             ++ typedextraction-deps;
 
-            patchPhase = ''
-              patchShebangs ./configure.sh
-              patchShebangs ./plugin/process_extraction.sh
+            preBuild = ''
+              cd ${pkgpath}
             '';
 
             configurePhase =
@@ -107,15 +110,18 @@ let
                 ./configure.sh local
               '';
 
-            preBuild = ''
-              cd ${pkgpath}
+            mlPlugin = true;
+
+            patchPhase = ''
+              patchShebangs ./configure.sh
+              patchShebangs ./plugin/process_extraction.sh
             '';
 
             meta = {
-              homepage = "https://peregrine-project.github.io/";
               description = "A framework for extracting Rocq programs to Rust and Elm";
-              maintainers = with lib.maintainers; [ _4ever2 ];
+              homepage = "https://peregrine-project.github.io/";
               license = lib.licenses.mit;
+              maintainers = with lib.maintainers; [ _4ever2 ];
             };
           }
           // lib.optionalAttrs (package != "single") {

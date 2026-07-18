@@ -1,8 +1,8 @@
 { runCommand }:
 {
   pname,
-  version,
   src,
+  version,
 }:
 
 runCommand "roundcube-plugin-${pname}-${version}" { inherit pname version; } ''

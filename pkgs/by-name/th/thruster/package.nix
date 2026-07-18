@@ -1,7 +1,7 @@
 {
   lib,
-  buildGo126Module,
   fetchFromGitHub,
+  buildGo126Module,
   nix-update-script,
 }:
 
@@ -18,13 +18,12 @@ buildGo126Module (finalAttrs: {
 
   vendorHash = "sha256-veXgGs6+TauExVAaNnkIZwylQWZ4um3rrG8of/dYCv0=";
 
-  subPackages = [ "cmd/thrust" ];
-
   ldflags = [
     "-s"
     "-w"
   ];
 
+  subPackages = [ "cmd/thrust" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

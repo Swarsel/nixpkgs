@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "clickclick";
   version = "20.10.2";
-  pyproject = true;
 
   src = fetchFromCodeberg {
     owner = "hjacobs";
@@ -22,6 +21,11 @@ buildPythonPackage rec {
     rev = version;
     hash = "sha256-gefU6CI4ibtvonsaKZmuffuUNUioBn5ODs72BI5zXOw=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+  ];
 
   build-system = [ setuptools ];
 
@@ -32,18 +36,14 @@ buildPythonPackage rec {
     six
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-  ];
-
-  pythonImportsCheck = [ "clickclick" ];
-
   disabledTests = [
     # Tests asserts on exact quoting style of output
     "test_choice_default"
     "test_cli"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "clickclick" ];
 
   meta = {
     description = "Click command line utilities";

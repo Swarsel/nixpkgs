@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -12,6 +12,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     url = "https://www.gust.org.pl/projects/e-foundry/tex-gyre/whole/tg${
       lib.replaceStrings [ "." ] [ "_" ] finalAttrs.version
     }otf.zip";
+
     hash = "sha256-mRPI/rDsx1vDVItG7h29I7VNPYqgSPqChXS6/gVgfNc=";
   };
 
@@ -25,6 +26,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   meta = {
     description = "OpenType fonts from the Gyre project, suitable for use with (La)TeX";
+
     longDescription = ''
       The Gyre project started in 2006, and will
       eventually include enhanced releases of all 35 freely available
@@ -32,9 +34,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       being converted to OpenType and extended with diacritical marks
       covering all modern European languages and then some
     '';
+
     homepage = "https://www.gust.org.pl/projects/e-foundry/tex-gyre/index_html#Readings";
     license = lib.licenses.lppl13c;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ bergey ];
+    platforms = lib.platforms.all;
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
-  ruby,
   defaultGemConfig,
-  test,
+  ruby,
   should,
+  test,
 }:
 let
   testConfigs = {
@@ -16,13 +16,13 @@ builtins.concatLists [
   (test.run "All set, no gemdir"
     (functions.bundlerFiles {
       gemfile = test/Gemfile;
-      lockfile = test/Gemfile.lock;
       gemset = test/gemset.nix;
+      lockfile = test/Gemfile.lock;
     })
     {
       gemfile = should.equal test/Gemfile;
-      lockfile = should.equal test/Gemfile.lock;
       gemset = should.equal test/gemset.nix;
+      lockfile = should.equal test/Gemfile.lock;
     }
   )
 
@@ -32,8 +32,8 @@ builtins.concatLists [
     })
     {
       gemfile = should.equal test/Gemfile;
-      lockfile = should.equal test/Gemfile.lock;
       gemset = should.equal test/gemset.nix;
+      lockfile = should.equal test/Gemfile.lock;
     }
   )
 
@@ -44,8 +44,8 @@ builtins.concatLists [
     })
     {
       gemfile = should.equal test/Gemfile;
-      lockfile = should.equal test/Gemfile.lock;
       gemset = should.equal test/extraGemset.nix;
+      lockfile = should.equal test/Gemfile.lock;
     }
   )
 
@@ -71,6 +71,7 @@ builtins.concatLists [
       set:
       functions.filterGemset {
         inherit ruby;
+
         groups = [
           "y"
           "z"
@@ -100,8 +101,8 @@ builtins.concatLists [
         test = {
           platforms = [
             {
-              engine = ruby.rubyEngine;
               version = ruby.version.majMin;
+              engine = ruby.rubyEngine;
             }
           ];
         };
@@ -130,6 +131,7 @@ builtins.concatLists [
       set:
       functions.filterGemset {
         inherit ruby;
+
         groups = [
           "a"
           "b"

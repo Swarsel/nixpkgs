@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchurl,
+  autoconf,
+  automake,
   boost,
   fastjet,
   gfortran,
   gsl,
   lhapdf,
+  libtool,
   thepeg,
   zlib,
-  autoconf,
-  automake,
-  libtool,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,6 +22,14 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://www.hepforge.org/archive/herwig/Herwig-${finalAttrs.version}.tar.bz2";
     hash = "sha256-JiSBnS3/EFupUuobXPEutvSSbUlRd0pBkHaZ4vVnaGw=";
   };
+
+  postPatch = ''
+    patchShebangs ./
+
+    # Fix failing "make install" being unable to find HwEvtGenInterface.so
+    substituteInPlace src/defaults/decayers.in.in \
+      --replace "read EvtGenDecayer.in" ""
+  '';
 
   nativeBuildInputs = [
     autoconf
@@ -42,14 +50,6 @@ stdenv.mkDerivation (finalAttrs: {
     CT14lo
     CT14nlo
   ]);
-
-  postPatch = ''
-    patchShebangs ./
-
-    # Fix failing "make install" being unable to find HwEvtGenInterface.so
-    substituteInPlace src/defaults/decayers.in.in \
-      --replace "read EvtGenDecayer.in" ""
-  '';
 
   configureFlags = [
     "--with-thepeg=${thepeg}"

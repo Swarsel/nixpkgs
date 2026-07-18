@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitLab,
-  rustPlatform,
   pkg-config,
+  rustPlatform,
   xen,
 }:
 rustPlatform.buildRustPackage {
@@ -16,14 +16,13 @@ rustPlatform.buildRustPackage {
     hash = "sha256-OhzRsRwDvt0Ov+nLxQSP87G3RDYSLREMz2w9pPtSUYg=";
   };
 
-  cargoHash = "sha256-o4eQ1ORI7Rw097m6CsvWLeCW5Dtl75uRXi/tcv/Xq0Q=";
-
   nativeBuildInputs = [
     rustPlatform.bindgenHook
     pkg-config
   ];
 
   buildInputs = [ xen ];
+  cargoHash = "sha256-o4eQ1ORI7Rw097m6CsvWLeCW5Dtl75uRXi/tcv/Xq0Q=";
 
   postInstall =
     # Install the sample systemd service.
@@ -43,7 +42,7 @@ rustPlatform.buildRustPackage {
     homepage = "https://gitlab.com/xen-project/xen-guest-agent";
     license = lib.licenses.agpl3Only;
     platforms = lib.platforms.unix;
-    teams = [ lib.teams.xen ];
     mainProgram = "xen-guest-agent";
+    teams = [ lib.teams.xen ];
   };
 }

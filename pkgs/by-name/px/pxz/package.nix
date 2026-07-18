@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  testers,
   pxz,
+  testers,
   xz,
 }:
 
@@ -40,10 +40,8 @@ stdenv.mkDerivation {
   };
 
   meta = {
-    homepage = "https://jnovy.fedorapeople.org/pxz/";
-    license = lib.licenses.gpl2Plus;
-    maintainers = with lib.maintainers; [ pashev ];
     description = "Compression utility that runs LZMA compression of different parts on multiple cores simultaneously";
+
     longDescription = ''
       Parallel XZ is a compression utility that takes advantage of
       running LZMA compression of different parts of an input file on multiple
@@ -51,7 +49,11 @@ stdenv.mkDerivation {
       resources to speed up compression time with minimal possible influence
       on compression ratio
     '';
-    mainProgram = "pxz";
+
+    homepage = "https://jnovy.fedorapeople.org/pxz/";
+    license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ pashev ];
     platforms = with lib.platforms; linux;
+    mainProgram = "pxz";
   };
 }

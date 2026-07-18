@@ -1,8 +1,8 @@
 {
   lib,
   fetchurl,
-  ocaml,
   buildDunePackage,
+  ocaml,
 }:
 
 let
@@ -20,18 +20,19 @@ let
 in
 
 buildDunePackage (finalAttrs: {
-  pname = "easy-format";
   inherit (params) version;
+  pname = "easy-format";
 
   src = fetchurl {
-    url = "https://github.com/ocaml-community/easy-format/releases/download/${finalAttrs.version}/easy-format-${finalAttrs.version}.tbz";
     inherit (params) hash;
+    url = "https://github.com/ocaml-community/easy-format/releases/download/${finalAttrs.version}/easy-format-${finalAttrs.version}.tbz";
   };
 
   doCheck = true;
 
   meta = {
     description = "High-level and functional interface to the Format module of the OCaml standard library";
+
     longDescription = ''
       This module offers a high-level and functional interface to the Format module of
       the OCaml standard library. It is a pretty-printing facility, i.e. it takes as
@@ -50,6 +51,7 @@ buildDunePackage (finalAttrs: {
       any sequence of items such as arrays of data or lists of definitions that are
       labelled with something like "int main", "let x =" or "x:".
     '';
+
     homepage = "https://github.com/ocaml-community/easy-format";
     changelog = "https://github.com/ocaml-community/easy-format/releases/tag/${params.version}";
     license = lib.licenses.bsd3;

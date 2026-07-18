@@ -5,9 +5,9 @@
   cmake,
   hashcat,
   ocl-icd,
+  opencl-clhpp,
   tesseract,
   testers,
-  opencl-clhpp,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,9 +30,10 @@ stdenv.mkDerivation (finalAttrs: {
       hashcat
       opencl-clhpp
       ;
+
     pkg-config = testers.hasPkgConfigModules {
-      package = finalAttrs.finalPackage;
       moduleNames = [ "OpenCL-Headers" ];
+      package = finalAttrs.finalPackage;
     };
   };
 
@@ -40,7 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Khronos OpenCL headers version ${finalAttrs.version}";
     homepage = "https://www.khronos.org/registry/cl/";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix ++ lib.platforms.windows;
     maintainers = [ lib.maintainers.xokdvium ];
+    platforms = lib.platforms.unix ++ lib.platforms.windows;
   };
 })

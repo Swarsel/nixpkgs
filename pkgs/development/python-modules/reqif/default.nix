@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   jinja2,
   lxml,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "reqif";
   version = "0.0.52";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "strictdoc-project";
@@ -28,6 +27,8 @@ buildPythonPackage rec {
       "\"${placeholder "out"}/${python.sitePackages}/reqif\""
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     hatchling
   ];
@@ -39,16 +40,15 @@ buildPythonPackage rec {
     openpyxl
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "reqif" ];
 
   meta = {
     description = "Python library for ReqIF format";
-    mainProgram = "reqif";
     homepage = "https://github.com/strictdoc-project/reqif";
     changelog = "https://github.com/strictdoc-project/reqif/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "reqif";
   };
 }

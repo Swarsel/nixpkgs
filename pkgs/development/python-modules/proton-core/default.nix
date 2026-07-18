@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
   bcrypt,
+  buildPythonPackage,
   pyopenssl,
-  python-gnupg,
-  requests,
-  pytestCheckHook,
   pyotp,
   pytest-cov-stub,
+  pytestCheckHook,
+  python-gnupg,
+  requests,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "proton-core";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ProtonVPN";
@@ -24,6 +23,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-ZT/LkppzeEDGs9aOCx561fA1EgAShPCnMs8c05mgF0k=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+    pyotp
+  ];
 
   build-system = [ setuptools ];
 
@@ -33,14 +38,6 @@ buildPythonPackage rec {
     pyopenssl
     python-gnupg
     requests
-  ];
-
-  pythonImportsCheck = [ "proton" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-    pyotp
   ];
 
   disabledTestPaths = [
@@ -70,6 +67,9 @@ buildPythonPackage rec {
     "test_generate_v"
     "test_srp"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "proton" ];
 
   meta = {
     description = "Core logic used by the other Proton components";

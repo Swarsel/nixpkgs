@@ -1,43 +1,43 @@
 {
   lib,
   stdenv,
-  llvm_meta,
-  pkgsBuildBuild,
-  src ? null,
-  monorepoSrc ? null,
-  runCommand,
+  buildLlvmPackages,
   cmake,
   darwin,
-  ninja,
-  python3,
-  python3Packages,
-  libffi,
+  fetchpatch,
+  getVersionFile,
   ld64,
   libbfd,
+  libffi,
+  # for tests
+  libllvm,
   libpfm,
   libxml2,
+  llvm_meta,
   ncurses,
-  version,
+  ninja,
+  pkgsBuildBuild,
+  python3,
+  python3Packages,
   release_version,
-  zlib,
-  which,
+  runCommand,
   sysctl,
-  buildLlvmPackages,
   updateAutotoolsGnuConfigScriptsHook,
+  version,
+  which,
+  zlib,
+  devExtraCmakeFlags ? [ ],
   enableManpages ? false,
-  enableSharedLibraries ? !stdenv.hostPlatform.isStatic,
   enablePFM ?
     stdenv.hostPlatform.isLinux # PFM only supports Linux
     # broken for Ampere eMAG 8180 (c2.large.arm on Packet) #56245
     # broken for the armv7l builder
     && !stdenv.hostPlatform.isAarch,
   enablePolly ? true,
+  enableSharedLibraries ? !stdenv.hostPlatform.isStatic,
   enableTerminfo ? true,
-  devExtraCmakeFlags ? [ ],
-  getVersionFile,
-  fetchpatch,
-  # for tests
-  libllvm,
+  monorepoSrc ? null,
+  src ? null,
 }:
 
 let
@@ -82,8 +82,8 @@ stdenv.mkDerivation (
         python3;
   in
   {
-    pname = "llvm";
     inherit version;
+    pname = "llvm";
 
     src =
       if monorepoSrc != null then
@@ -105,18 +105,11 @@ stdenv.mkDerivation (
       else
         src;
 
-    sourceRoot = "${finalAttrs.src.name}/llvm";
-
     outputs = [
       "out"
       "lib"
       "dev"
       "python"
-    ];
-
-    hardeningDisable = [
-      "trivialautovarinit"
-      "shadowstack"
     ];
 
     patches =
@@ -172,26 +165,26 @@ stdenv.mkDerivation (
           #   https://github.com/llvm/llvm-project/pull/101761
           (
             fetchpatch {
-              url = "https://github.com/llvm/llvm-project/commit/7e44305041d96b064c197216b931ae3917a34ac1.patch";
               hash = "sha256-1htuzsaPHbYgravGc1vrR8sqpQ/NSQ8PUZeAU8ucCFk=";
               stripLen = 1;
+              url = "https://github.com/llvm/llvm-project/commit/7e44305041d96b064c197216b931ae3917a34ac1.patch";
             }
           )
       ++ lib.optionals (lib.versions.major release_version == "18") [
         # Reorgs one test so the next patch applies
         (fetchpatch {
-          name = "osabi-test-reorg.patch";
-          url = "https://github.com/llvm/llvm-project/commit/06cecdc60ec9ebfdd4d8cdb2586d201272bdf6bd.patch";
-          stripLen = 1;
           hash = "sha256-s9GZTNgzLS511Pzh6Wb1hEV68lxhmLWXjlybHBDMhvM=";
+          name = "osabi-test-reorg.patch";
+          stripLen = 1;
+          url = "https://github.com/llvm/llvm-project/commit/06cecdc60ec9ebfdd4d8cdb2586d201272bdf6bd.patch";
         })
         # Sets the OSABI for OpenBSD, needed for an LLD patch for OpenBSD.
         # https://github.com/llvm/llvm-project/pull/98553
         (fetchpatch {
-          name = "mc-set-openbsd-osabi.patch";
-          url = "https://github.com/llvm/llvm-project/commit/b64c1de714c50bec7493530446ebf5e540d5f96a.patch";
-          stripLen = 1;
           hash = "sha256-fqw5gTSEOGs3kAguR4tINFG7Xja1RAje+q67HJt2nGg=";
+          name = "mc-set-openbsd-osabi.patch";
+          stripLen = 1;
+          url = "https://github.com/llvm/llvm-project/commit/b64c1de714c50bec7493530446ebf5e540d5f96a.patch";
         })
         # Fix build with gcc15
         # https://github.com/llvm/llvm-project/commit/8f39502b85d34998752193e85f36c408d3c99248
@@ -201,9 +194,9 @@ stdenv.mkDerivation (
       ++ lib.optionals (lib.versionOlder release_version "19") [
         # Fixes test-suite on glibc 2.40 (https://github.com/llvm/llvm-project/pull/100804)
         (fetchpatch {
-          url = "https://github.com/llvm/llvm-project/commit/1e8df9e85a1ff213e5868bd822877695f27504ad.patch";
           hash = "sha256-mvBlG2RxpZPFnPI7jvCMz+Fc8JuM15Ye3th1FVZMizE=";
           stripLen = 1;
+          url = "https://github.com/llvm/llvm-project/commit/1e8df9e85a1ff213e5868bd822877695f27504ad.patch";
         })
       ]
       ++ lib.optionals enablePolly [
@@ -218,42 +211,11 @@ stdenv.mkDerivation (
           # https://github.com/llvm/llvm-project/issues/150818
           (
             fetchpatch {
-              url = "https://github.com/llvm/llvm-project/commit/bd49bbaaafc98433a2cb4e95ce25b7a201baf5a5.patch";
               hash = "sha256-3hkbYPUVRAtWpo5qBmc2jLZLivURMx8T0GQomvNZesc=";
               stripLen = 1;
+              url = "https://github.com/llvm/llvm-project/commit/bd49bbaaafc98433a2cb4e95ce25b7a201baf5a5.patch";
             }
           );
-
-    nativeBuildInputs = [
-      cmake
-      # while this is not an autotools build, it still includes a config.guess
-      # this is needed until scripts are updated to not use /usr/bin/uname on FreeBSD native
-      updateAutotoolsGnuConfigScriptsHook
-      python
-      ninja
-    ]
-    ++ optionals enableManpages [
-      # Note: we intentionally use `python3Packages` instead of `python3.pkgs`;
-      # splicing does *not* work with the latter. (TODO: fix)
-      python3Packages.sphinx
-      python3Packages.myst-parser
-    ];
-
-    buildInputs = [
-      libxml2
-      libffi
-    ]
-    ++ optional enablePFM libpfm; # exegesis
-
-    propagatedBuildInputs = [
-      ncurses
-      zlib
-    ];
-
-    nativeCheckInputs = [
-      which
-    ]
-    ++ lib.optional stdenv.hostPlatform.isDarwin sysctl;
 
     postPatch =
       optionalString stdenv.hostPlatform.isDarwin (
@@ -381,66 +343,31 @@ stdenv.mkDerivation (
         patchShebangs test/BugPoint/compile-custom.ll.py
       '';
 
-    # Workaround for configure flags that need to have spaces
-    preConfigure = ''
-      cmakeFlagsArray+=(
-        -DLLVM_LIT_ARGS="--verbose -j''${NIX_BUILD_CORES}"
-      )
-    '';
+    nativeBuildInputs = [
+      cmake
+      # while this is not an autotools build, it still includes a config.guess
+      # this is needed until scripts are updated to not use /usr/bin/uname on FreeBSD native
+      updateAutotoolsGnuConfigScriptsHook
+      python
+      ninja
+    ]
+    ++ optionals enableManpages [
+      # Note: we intentionally use `python3Packages` instead of `python3.pkgs`;
+      # splicing does *not* work with the latter. (TODO: fix)
+      python3Packages.sphinx
+      python3Packages.myst-parser
+    ];
 
-    # Defensive check: some paths (that we make symlinks to) depend on the release
-    # version, for example:
-    #  - https://github.com/llvm/llvm-project/blob/406bde9a15136254f2b10d9ef3a42033b3cb1b16/clang/lib/Headers/CMakeLists.txt#L185
-    #
-    # So we want to sure that the version in the source matches the release
-    # version we were given.
-    #
-    # We do this check here, in the LLVM build, because it happens early.
-    postConfigure =
-      let
-        v = lib.versions;
-        major = v.major release_version;
-        minor = v.minor release_version;
-        patch = v.patch release_version;
-      in
-      ''
-        # $1: part, $2: expected
-        check_version() {
-          part="''${1^^}"
-          part="$(cat include/llvm/Config/llvm-config.h  | grep "#define LLVM_VERSION_''${part} " | cut -d' ' -f3)"
+    buildInputs = [
+      libxml2
+      libffi
+    ]
+    ++ optional enablePFM libpfm; # exegesis
 
-          if [[ "$part" != "$2" ]]; then
-            echo >&2 \
-              "mismatch in the $1 version! we have version ${release_version}" \
-              "and expected the $1 version to be '$2'; the source has '$part' instead"
-            exit 3
-          fi
-        }
-
-        check_version major ${major}
-        check_version minor ${minor}
-        check_version patch ${patch}
-      '';
-
-    env =
-      # E.g. Mesa uses the build-id as a cache key (see #93946):
-      lib.optionalAttrs (enableSharedLibraries && !stdenv.hostPlatform.isDarwin) {
-        LDFLAGS = "-Wl,--build-id=sha1";
-      }
-      // lib.optionalAttrs stdenv.hostPlatform.isDarwin {
-        # This test was introduced by https://github.com/llvm/llvm-project/pull/158719 to check
-        # for a Windows-specific quirk.
-        # It is also unconditionally run on other platforms because running binaries
-        # without any environment variables should work, but as the test binaries link against
-        # our libLLVM.dylib that has not been installed at this point, and the `DYLD_LIBRARY_PATH`
-        # we set for tests to work around this issue is cleared away by the test itself,
-        # it will fail.
-        # Unfortunately "fixing" the test to pass just `DYLD_LIBRARY_PATH` would void the purpose
-        # of the test itself, so we skip it instead.
-        GTEST_FILTER = "-ProgramEnvTest.TestExecuteEmptyEnvironment";
-      };
-
-    cmakeBuildType = "Release";
+    propagatedBuildInputs = [
+      ncurses
+      zlib
+    ];
 
     cmakeFlags =
       let
@@ -540,6 +467,80 @@ stdenv.mkDerivation (
           ]
       ++ devExtraCmakeFlags;
 
+    env =
+      # E.g. Mesa uses the build-id as a cache key (see #93946):
+      lib.optionalAttrs (enableSharedLibraries && !stdenv.hostPlatform.isDarwin) {
+        LDFLAGS = "-Wl,--build-id=sha1";
+      }
+      // lib.optionalAttrs stdenv.hostPlatform.isDarwin {
+        # This test was introduced by https://github.com/llvm/llvm-project/pull/158719 to check
+        # for a Windows-specific quirk.
+        # It is also unconditionally run on other platforms because running binaries
+        # without any environment variables should work, but as the test binaries link against
+        # our libLLVM.dylib that has not been installed at this point, and the `DYLD_LIBRARY_PATH`
+        # we set for tests to work around this issue is cleared away by the test itself,
+        # it will fail.
+        # Unfortunately "fixing" the test to pass just `DYLD_LIBRARY_PATH` would void the purpose
+        # of the test itself, so we skip it instead.
+        GTEST_FILTER = "-ProgramEnvTest.TestExecuteEmptyEnvironment";
+      };
+
+    # Workaround for configure flags that need to have spaces
+    preConfigure = ''
+      cmakeFlagsArray+=(
+        -DLLVM_LIT_ARGS="--verbose -j''${NIX_BUILD_CORES}"
+      )
+    '';
+
+    # Defensive check: some paths (that we make symlinks to) depend on the release
+    # version, for example:
+    #  - https://github.com/llvm/llvm-project/blob/406bde9a15136254f2b10d9ef3a42033b3cb1b16/clang/lib/Headers/CMakeLists.txt#L185
+    #
+    # So we want to sure that the version in the source matches the release
+    # version we were given.
+    #
+    # We do this check here, in the LLVM build, because it happens early.
+    postConfigure =
+      let
+        v = lib.versions;
+        major = v.major release_version;
+        minor = v.minor release_version;
+        patch = v.patch release_version;
+      in
+      ''
+        # $1: part, $2: expected
+        check_version() {
+          part="''${1^^}"
+          part="$(cat include/llvm/Config/llvm-config.h  | grep "#define LLVM_VERSION_''${part} " | cut -d' ' -f3)"
+
+          if [[ "$part" != "$2" ]]; then
+            echo >&2 \
+              "mismatch in the $1 version! we have version ${release_version}" \
+              "and expected the $1 version to be '$2'; the source has '$part' instead"
+            exit 3
+          fi
+        }
+
+        check_version major ${major}
+        check_version minor ${minor}
+        check_version patch ${patch}
+      '';
+
+    doCheck =
+      !isDarwinBootstrap
+      && !stdenv.hostPlatform.isAarch32
+      && (
+        !stdenv.hostPlatform.isx86_32 # TODO: why
+      )
+      && (!stdenv.hostPlatform.isMusl)
+      && !(stdenv.hostPlatform.isPower64 && stdenv.hostPlatform.isBigEndian)
+      && (stdenv.hostPlatform == stdenv.buildPlatform);
+
+    nativeCheckInputs = [
+      which
+    ]
+    ++ lib.optional stdenv.hostPlatform.isDarwin sysctl;
+
     postInstall = ''
       mkdir -p $python/share
       mv $out/share/opt-viewer $python/share/opt-viewer
@@ -563,21 +564,21 @@ stdenv.mkDerivation (
         ''
     );
 
-    doCheck =
-      !isDarwinBootstrap
-      && !stdenv.hostPlatform.isAarch32
-      && (
-        !stdenv.hostPlatform.isx86_32 # TODO: why
-      )
-      && (!stdenv.hostPlatform.isMusl)
-      && !(stdenv.hostPlatform.isPower64 && stdenv.hostPlatform.isBigEndian)
-      && (stdenv.hostPlatform == stdenv.buildPlatform);
-
     checkTarget = "check-all";
+    cmakeBuildType = "Release";
+
+    hardeningDisable = [
+      "trivialautovarinit"
+      "shadowstack"
+    ];
+
+    requiredSystemFeatures = [ "big-parallel" ];
+    sourceRoot = "${finalAttrs.src.name}/llvm";
 
     passthru = {
       # For the update script:
       inherit monorepoSrc;
+
       tests.withoutOptionalFeatures = libllvm.override {
         enablePFM = false;
         enablePolly = false;
@@ -585,10 +586,9 @@ stdenv.mkDerivation (
       };
     };
 
-    requiredSystemFeatures = [ "big-parallel" ];
     meta = llvm_meta // {
-      homepage = "https://llvm.org/";
       description = "Collection of modular and reusable compiler and toolchain technologies";
+
       longDescription = ''
         The LLVM Project is a collection of modular and reusable compiler and
         toolchain technologies. Despite its name, LLVM has little to do with
@@ -603,6 +603,9 @@ stdenv.mkDerivation (
         widely used in academic research. Code in the LLVM project is licensed
         under the "Apache 2.0 License with LLVM exceptions".
       '';
+
+      homepage = "https://llvm.org/";
+
       identifiers.cpeParts = llvm_meta.identifiers.cpeParts // {
         inherit version;
         update = "*";
@@ -611,18 +614,13 @@ stdenv.mkDerivation (
   }
   // lib.optionalAttrs enableManpages {
     pname = "llvm-manpages";
-
-    propagatedBuildInputs = [ ];
-
-    ninjaFlags = [ "docs-llvm-man" ];
-    installTargets = [ "install-docs-llvm-man" ];
-
-    doCheck = false;
-
-    postPatch = null;
-    postInstall = null;
-
     outputs = [ "out" ];
+    postPatch = null;
+    propagatedBuildInputs = [ ];
+    doCheck = false;
+    postInstall = null;
+    installTargets = [ "install-docs-llvm-man" ];
+    ninjaFlags = [ "docs-llvm-man" ];
 
     meta = llvm_meta // {
       description = "man pages for LLVM ${version}";

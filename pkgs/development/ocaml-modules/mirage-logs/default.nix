@@ -1,21 +1,19 @@
 {
   lib,
   fetchurl,
-  buildDunePackage,
-  logs,
-  fmt,
-  ptime,
-  mirage-clock,
-  cmdliner,
-  lwt,
   alcotest,
+  buildDunePackage,
+  cmdliner,
+  fmt,
+  logs,
+  lwt,
+  mirage-clock,
+  ptime,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "mirage-logs";
   version = "2.1.0";
-
-  duneVersion = "3";
 
   src = fetchurl {
     url = "https://github.com/mirage/mirage-logs/releases/download/v${finalAttrs.version}/mirage-logs-${finalAttrs.version}.tbz";
@@ -31,10 +29,13 @@ buildDunePackage (finalAttrs: {
   ];
 
   doCheck = true;
+
   checkInputs = [
     lwt
     alcotest
   ];
+
+  duneVersion = "3";
 
   meta = {
     description = "Reporter for the Logs library that writes log messages to stderr, using a Mirage `CLOCK` to add timestamps";

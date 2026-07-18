@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   asysocks,
+  buildPythonPackage,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "unidns";
   version = "0.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "skelsec";
@@ -18,23 +17,25 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-uhTb27HeBaoI4yURpNf1+D6bWIXSsmYzUyk0RJmgbjQ=";
   };
 
+  # No tests provided
+  doCheck = false;
+
   build-system = [
     setuptools
-  ];
-
-  pythonRelaxDeps = [
-    "asysocks"
   ];
 
   dependencies = [
     asysocks
   ];
 
-  # No tests provided
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "unidns"
+  ];
+
+  pythonRelaxDeps = [
+    "asysocks"
   ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
-  buildOctavePackage,
   lib,
   fetchFromGitHub,
+  buildOctavePackage,
 }:
 
 buildOctavePackage rec {
@@ -16,9 +16,9 @@ buildOctavePackage rec {
   };
 
   meta = {
+    description = "Mostly MATLAB-compatible fuzzy logic toolkit for Octave";
     homepage = "https://github.com/lmarkowsky/fuzzy-logic-toolkit";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ ravenjoad ];
-    description = "Mostly MATLAB-compatible fuzzy logic toolkit for Octave";
   };
 }

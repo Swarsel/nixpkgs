@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -23,20 +23,22 @@ buildGoModule (finalAttrs: {
   '';
 
   vendorHash = "sha256-QVnpISwYri8aL4umZWi2LJ0X13CXXK7JygaBh1Sq5PA=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Go AT protocol CLI tool";
     homepage = "https://github.com/bluesky-social/goat/blob/main/README.md";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = with lib.maintainers; [
       pyrox0
       isabelroses
     ];
+
     mainProgram = "goat";
   };
 })

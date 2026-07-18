@@ -1,6 +1,6 @@
 {
-  buildPythonPackage,
   lib,
+  buildPythonPackage,
   fetchPypi,
   numpy,
 }:
@@ -10,16 +10,14 @@ let
   hash = "sha256-mUl/bzxjilD/dhby+M2Iexi7/zdl3BvYaBVU2xRnyTM=";
 in
 buildPythonPackage {
-  format = "setuptools";
   inherit pname version;
-
   src = fetchPypi { inherit pname version hash; };
-
   propagatedBuildInputs = [ numpy ];
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/erdewit/eventkit";
     description = "Event-driven data pipelines";
+    homepage = "https://github.com/erdewit/eventkit";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ cab404 ];
   };

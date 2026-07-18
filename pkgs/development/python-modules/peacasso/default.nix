@@ -1,32 +1,34 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  setuptools,
-  setuptools-scm,
   accelerate,
+  buildPythonPackage,
   diffusers,
   fastapi,
+  fetchPypi,
   ftfy,
+  nix-update-script,
   pydantic,
   scipy,
+  setuptools,
+  setuptools-scm,
   torch,
   transformers,
   typer,
   uvicorn,
-  nix-update-script,
 }:
 
 buildPythonPackage rec {
   pname = "peacasso";
   version = "0.0.19a0";
-  pyproject = true;
 
   # No releases or tags are available in https://github.com/victordibia/peacasso
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-qBoG9FAJs0oZrQ0jShtPZfZPmyUZD30MGXDUfMl5bQk=";
   };
+
+  # No tests
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -46,15 +48,13 @@ buildPythonPackage rec {
     uvicorn
   ];
 
-  pythonRelaxDeps = [ "diffusers" ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "peacasso"
   ];
 
-  # No tests
-  doCheck = false;
-
+  pythonRelaxDeps = [ "diffusers" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

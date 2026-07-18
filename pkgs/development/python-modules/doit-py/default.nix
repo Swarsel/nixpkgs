@@ -2,18 +2,17 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  doit,
   configclass,
-  mergedict,
-  pytestCheckHook,
+  doit,
   hunspell,
   hunspellDicts,
+  mergedict,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "doit-py";
   version = "0.5.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "pydoit";
@@ -39,6 +38,7 @@ buildPythonPackage rec {
     "tests/test_pyflakes.py"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "doitpy" ];
 
   meta = {

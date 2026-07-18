@@ -1,12 +1,11 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "cryptop";
   version = "0.2.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -21,10 +20,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   # No tests in archive
   doCheck = false;
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/huwwp/cryptop";
     description = "Command line Cryptocurrency Portfolio";
+    homepage = "https://github.com/huwwp/cryptop";
     license = lib.licenses.mit;
     mainProgram = "cryptop";
   };

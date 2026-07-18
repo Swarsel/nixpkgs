@@ -4,11 +4,11 @@
   test-bash = callPackage (
     {
       lib,
-      runCommandLocal,
       bash,
       hello,
       ksh,
       patchRcPathBash,
+      runCommandLocal,
       shellcheck,
       zsh,
     }:
@@ -21,9 +21,10 @@
           shellcheck
           zsh
         ];
+
         meta = {
-          description = "Package test of patchActivateBash";
           inherit (patchRcPathBash.meta) maintainers;
+          description = "Package test of patchActivateBash";
         };
       }
       ''
@@ -135,10 +136,10 @@
   test-csh = callPackage (
     {
       lib,
-      runCommandLocal,
       gnused,
       hello,
       patchRcPathCsh,
+      runCommandLocal,
       tcsh,
     }:
     runCommandLocal "patch-rc-path-csh-test"
@@ -147,9 +148,10 @@
           patchRcPathCsh
           tcsh
         ];
+
         meta = {
-          description = "Package test of patchActivateCsh";
           inherit (patchRcPathCsh.meta) maintainers;
+          description = "Package test of patchActivateCsh";
         };
       }
       ''
@@ -214,10 +216,10 @@
   test-fish = callPackage (
     {
       lib,
-      runCommandLocal,
       fish,
       hello,
       patchRcPathFish,
+      runCommandLocal,
     }:
     runCommandLocal "patch-rc-path-fish-test"
       {
@@ -225,9 +227,10 @@
           fish
           patchRcPathFish
         ];
+
         meta = {
-          description = "Package test of patchActivateFish";
           inherit (patchRcPathFish.meta) maintainers;
+          description = "Package test of patchActivateFish";
         };
       }
       ''
@@ -294,13 +297,13 @@
   test-posix = callPackage (
     {
       lib,
-      runCommandLocal,
       bash,
       dash,
       gnused,
       hello,
       ksh,
       patchRcPathPosix,
+      runCommandLocal,
       shellcheck,
     }:
     runCommandLocal "patch-rc-path-posix-test"
@@ -312,9 +315,10 @@
           patchRcPathPosix
           shellcheck
         ];
+
         meta = {
-          description = "Package test of patchActivatePosix";
           inherit (patchRcPathPosix.meta) maintainers;
+          description = "Package test of patchActivatePosix";
         };
       }
       ''

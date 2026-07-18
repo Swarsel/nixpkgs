@@ -2,18 +2,14 @@ bcachefs-tools:
 {
   lib,
   stdenv,
-  kernelModuleMakeFlags,
   kernel,
+  kernelModuleMakeFlags,
   rustPlatform,
 }:
 
 stdenv.mkDerivation {
   pname = "bcachefs";
   version = "${kernel.version}-${bcachefs-tools.version}";
-
-  __structuredAttrs = true;
-  strictDeps = true;
-
   src = bcachefs-tools.dkms;
 
   postPatch = ''
@@ -21,9 +17,8 @@ stdenv.mkDerivation {
       --replace-fail '$(objtree)/vmlinux' '${kernel.dev}/vmlinux'
   '';
 
+  strictDeps = true;
   nativeBuildInputs = kernel.moduleBuildDependencies;
-
-  enableParallelBuilding = true;
 
   makeFlags = kernelModuleMakeFlags ++ [
     "KDIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
@@ -37,13 +32,14 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
+
   passthru = {
     inherit (bcachefs-tools.passthru) tests;
   };
 
   meta = {
-    description = "out-of-tree bcachefs kernel module";
-
     inherit (bcachefs-tools.meta)
       homepage
       downloadPage
@@ -52,6 +48,7 @@ stdenv.mkDerivation {
       platforms
       ;
 
+    description = "out-of-tree bcachefs kernel module";
     broken = !(lib.versionAtLeast kernel.version "6.16" && lib.versionOlder kernel.version "7.3");
   };
 }

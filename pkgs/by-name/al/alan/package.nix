@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cgreen,
   openjdk,
@@ -26,6 +26,13 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i 's/-Og/-O2/g' interpreter/Makefile.common
   '';
 
+  nativeBuildInputs = [
+    cgreen
+    openjdk
+    pkg-config
+    which
+  ];
+
   installPhase = ''
     runHook preInstall
 
@@ -43,18 +50,11 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  nativeBuildInputs = [
-    cgreen
-    openjdk
-    pkg-config
-    which
-  ];
-
   meta = {
-    homepage = "https://www.alanif.se/";
     description = "Alan interactive fiction language";
+    homepage = "https://www.alanif.se/";
     license = lib.licenses.artistic2;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ neilmayhew ];
+    platforms = lib.platforms.linux;
   };
 })

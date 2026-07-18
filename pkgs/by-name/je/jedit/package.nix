@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  fetchgit,
   ant,
+  fetchgit,
   jdk,
   jre,
-  xmlstarlet,
   makeWrapper,
   stripJavaArchivesHook,
+  xmlstarlet,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,47 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://git.code.sf.net/p/jedit/jEdit";
     tag = "v${finalAttrs.version}";
     hash = "sha256-Q2uarFMWXTWuJ0brw1PNS/vKWUa9gOTpD6Fumn0wMoI=";
-  };
-
-  ivyDeps = stdenv.mkDerivation {
-    name = "${finalAttrs.pname}-${finalAttrs.version}-ivy-deps";
-    inherit (finalAttrs) src;
-
-    nativeBuildInputs = [
-      ant
-      jdk
-      xmlstarlet
-    ];
-
-    # set defaultCacheDir to something that can exist
-    # this directory won't get copied, but needs to be set properly
-    configurePhase = ''
-      runHook preConfigure
-
-      xmlstarlet ed --subnode /ivysettings -t elem -n caches ivysettings.xml \
-          | xmlstarlet ed --insert /ivysettings/caches -t attr -n defaultCacheDir -v "$(pwd)/ivy-cache" \
-          > ivysettings.xml.tmp
-      mv ivysettings.xml.tmp ivysettings.xml
-
-      runHook postConfigure
-    '';
-
-    buildPhase = ''
-      runHook preBuild
-      ant retrieve
-      runHook postBuild
-    '';
-
-    installPhase = ''
-      runHook preInstall
-      mkdir -p $out/lib
-      cp -r lib/* $out/lib
-      runHook postInstall
-    '';
-
-    outputHashMode = "recursive";
-    outputHashAlgo = "sha256";
-    outputHash = "sha256-NGSBGB7q0HpOpajJV68K0rqCOqFYNrZHsnUHW+1GSLs=";
   };
 
   # ignore a test failing because of the build environment
@@ -103,17 +62,60 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  ivyDeps = stdenv.mkDerivation {
+    inherit (finalAttrs) src;
+
+    nativeBuildInputs = [
+      ant
+      jdk
+      xmlstarlet
+    ];
+
+    buildPhase = ''
+      runHook preBuild
+      ant retrieve
+      runHook postBuild
+    '';
+
+    installPhase = ''
+      runHook preInstall
+      mkdir -p $out/lib
+      cp -r lib/* $out/lib
+      runHook postInstall
+    '';
+
+    # set defaultCacheDir to something that can exist
+    # this directory won't get copied, but needs to be set properly
+    configurePhase = ''
+      runHook preConfigure
+
+      xmlstarlet ed --subnode /ivysettings -t elem -n caches ivysettings.xml \
+          | xmlstarlet ed --insert /ivysettings/caches -t attr -n defaultCacheDir -v "$(pwd)/ivy-cache" \
+          > ivysettings.xml.tmp
+      mv ivysettings.xml.tmp ivysettings.xml
+
+      runHook postConfigure
+    '';
+
+    name = "${finalAttrs.pname}-${finalAttrs.version}-ivy-deps";
+    outputHash = "sha256-NGSBGB7q0HpOpajJV68K0rqCOqFYNrZHsnUHW+1GSLs=";
+    outputHashAlgo = "sha256";
+    outputHashMode = "recursive";
+  };
+
   meta = {
-    changelog = "https://sourceforge.net/p/jedit/jEdit/ci/v${finalAttrs.version}/tree/doc/CHANGES.txt";
     description = "Programmer's text editor written in Java";
     homepage = "https://www.jedit.org";
+    changelog = "https://sourceforge.net/p/jedit/jEdit/ci/v${finalAttrs.version}/tree/doc/CHANGES.txt";
     license = lib.licenses.gpl2Only;
-    mainProgram = "jedit";
-    maintainers = with lib.maintainers; [ tomasajt ];
-    platforms = lib.platforms.unix;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # ivyDeps contains .jar dependencies
     ];
+
+    maintainers = with lib.maintainers; [ tomasajt ];
+    platforms = lib.platforms.unix;
+    mainProgram = "jedit";
   };
 })

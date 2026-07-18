@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
+  buildPythonPackage,
   hatch-fancy-pypi-readme,
+  hatchling,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "hijridate";
   version = "2.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dralshehri";
@@ -19,13 +18,14 @@ buildPythonPackage rec {
     hash = "sha256-xnFF81l1ZqtH91NzYvjzXpXpN/zeHdARJYx6L5VNBSo=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     hatchling
     hatch-fancy-pypi-readme
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "hijridate" ];
 
   meta = {

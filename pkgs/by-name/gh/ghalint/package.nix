@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   versionCheckHook,
 }:
@@ -18,22 +18,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-u85vX9lg5JKUvRjFloE4KZUm/qs8RmjoY/hybtJk/kc=";
   };
 
-  vendorHash = "sha256-n++Rq79KHyRVhIXIdN9IOADTGEG73Wl2SUq/YEo++WM=";
-
-  subPackages = [ "cmd/ghalint" ];
-
-  env.CGO_ENABLED = 0;
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version}"
-    "-X main.commit=v${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  vendorHash = "sha256-n++Rq79KHyRVhIXIdN9IOADTGEG73Wl2SUq/YEo++WM=";
+  env.CGO_ENABLED = 0;
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd 'ghalint' \
@@ -42,13 +32,22 @@ buildGoModule (finalAttrs: {
       --fish <("$out/bin/ghalint" completion fish)
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version}"
+    "-X main.commit=v${finalAttrs.version}"
+  ];
+
+  subPackages = [ "cmd/ghalint" ];
   versionCheckProgramArg = "version";
 
   meta = {
-    homepage = "https://github.com/suzuki-shunsuke/ghalint";
     description = "GitHub Actions linter for security best practice";
+    homepage = "https://github.com/suzuki-shunsuke/ghalint";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ryota2357 ];
     mainProgram = "ghalint";

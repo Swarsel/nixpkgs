@@ -1,14 +1,13 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   diff-match-patch,
+  fetchPypi,
 }:
 
 buildPythonPackage rec {
   pname = "three-merge";
   version = "0.1.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ diff-match-patch ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "three_merge" ];
 
   meta = {

@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   autoreconfHook,
-  pkg-config,
-  glib,
-  libxml2,
-  flex,
   bison,
-  vips,
-  gtk2,
+  fetchpatch,
   fftw,
-  gsl,
+  flex,
+  glib,
   goffice,
+  gsl,
+  gtk2,
   libgsf,
+  libxml2,
   makeWrapper,
+  pkg-config,
+  vips,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,14 +31,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-A17+/Vmjf0l1Jpl22VL11gj5m6oFB8DnvkH2EHiRTw8=";
       name = "do-not-redeclare-statfs.patch";
       url = "https://github.com/libvips/nip2/commit/045268a78c40d7f546220504f971c728aebc00be.patch";
-      hash = "sha256-A17+/Vmjf0l1Jpl22VL11gj5m6oFB8DnvkH2EHiRTw8=";
     })
     (fetchpatch {
+      hash = "sha256-o5OHNSbUORGquhyCYCtGQTY74IfroByaa0UAXYsP484=";
       name = "declare-function-arguments-for-function-pointer.patch";
       url = "https://github.com/libvips/nip2/commit/8c60c517b59f806da84d57cb1d083a213b811151.patch";
-      hash = "sha256-o5OHNSbUORGquhyCYCtGQTY74IfroByaa0UAXYsP484=";
     })
   ];
 
@@ -50,10 +50,6 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
     glib
   ];
-
-  preAutoreconf = ''
-    glib-gettextize --force --copy
-  '';
 
   buildInputs = [
     glib
@@ -70,9 +66,13 @@ stdenv.mkDerivation (finalAttrs: {
     wrapProgram $out/bin/nip2 --set VIPSHOME "$out"
   '';
 
+  preAutoreconf = ''
+    glib-gettextize --force --copy
+  '';
+
   meta = {
-    homepage = "https://github.com/libvips/nip2";
     description = "Graphical user interface for VIPS image processing system";
+    homepage = "https://github.com/libvips/nip2";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ kovirobi ];
     platforms = lib.platforms.unix;

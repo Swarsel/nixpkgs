@@ -2,24 +2,24 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nixosTests,
   autoreconfHook,
   bison,
-  flex,
+  cmocka,
   docbook_xml_dtd_45,
   docbook_xsl,
+  flex,
   itstool,
+  libbsd,
+  libxcrypt,
   libxml2,
   libxslt,
-  libxcrypt,
+  nixosTests,
   pkg-config,
+  tcb,
   glibc ? null,
   pam ? null,
   withLibbsd ? lib.meta.availableOn stdenv.hostPlatform libbsd,
-  libbsd,
   withTcb ? lib.meta.availableOn stdenv.hostPlatform tcb,
-  tcb,
-  cmocka,
 }:
 let
   glibc' =
@@ -49,25 +49,6 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
-  nativeBuildInputs = [
-    autoreconfHook
-    bison
-    flex
-    docbook_xml_dtd_45
-    docbook_xsl
-    itstool
-    libxml2
-    libxslt
-    pkg-config
-  ];
-
-  buildInputs = [
-    libxcrypt
-  ]
-  ++ lib.optional (pam != null && (lib.meta.availableOn stdenv.hostPlatform pam)) pam
-  ++ lib.optional withLibbsd libbsd
-  ++ lib.optional withTcb tcb;
-
   patches = [
     # Don't set $PATH to /bin:/usr/bin but inherit the $PATH of the caller.
     ./keep-path.patch
@@ -89,11 +70,24 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace configure.ac --replace-fail '$SHELL' /bin/sh
   '';
 
-  # `AC_FUNC_SETPGRP' is not cross-compilation capable.
-  preConfigure = ''
-    export ac_cv_func_setpgrp_void=${lib.boolToYesNo (!stdenv.hostPlatform.isBSD)}
-    export shadow_cv_logdir=/var/log
-  '';
+  nativeBuildInputs = [
+    autoreconfHook
+    bison
+    flex
+    docbook_xml_dtd_45
+    docbook_xsl
+    itstool
+    libxml2
+    libxslt
+    pkg-config
+  ];
+
+  buildInputs = [
+    libxcrypt
+  ]
+  ++ lib.optional (pam != null && (lib.meta.availableOn stdenv.hostPlatform pam)) pam
+  ++ lib.optional withLibbsd libbsd
+  ++ lib.optional withTcb tcb;
 
   configureFlags = [
     "--enable-man"
@@ -106,11 +100,18 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional (stdenv.hostPlatform.libc != "glibc") "--disable-nscd"
   ++ lib.optional withTcb "--with-tcb";
 
+  # `AC_FUNC_SETPGRP' is not cross-compilation capable.
+  preConfigure = ''
+    export ac_cv_func_setpgrp_void=${lib.boolToYesNo (!stdenv.hostPlatform.isBSD)}
+    export shadow_cv_logdir=/var/log
+  '';
+
   preBuild = lib.optionalString (stdenv.hostPlatform.libc == "glibc") ''
     substituteInPlace lib/nscd.c --replace /usr/sbin/nscd ${glibc'.bin}/bin/nscd
   '';
 
   doCheck = true;
+
   nativeCheckInputs = [
     cmocka
   ];
@@ -121,25 +122,25 @@ stdenv.mkDerivation (finalAttrs: {
     mv $out/bin/su $su/bin
   '';
 
-  enableParallelBuilding = true;
-
   disallowedReferences = lib.optional (
     stdenv.buildPlatform != stdenv.hostPlatform
   ) stdenv.shellPackage;
 
-  meta = {
-    homepage = "https://github.com/shadow-maint/shadow";
-    description = "Suite containing authentication-related tools such as passwd and su";
-    license = lib.licenses.bsd3;
-    maintainers = with lib.maintainers; [ mdaniels5757 ];
-    teams = [ lib.teams.security-review ];
-    platforms = lib.platforms.linux;
-    identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "shadow_project" finalAttrs.version;
-  };
+  enableParallelBuilding = true;
 
   passthru = {
     shellPath = "/bin/nologin";
     # TODO: Run system tests: https://github.com/shadow-maint/shadow/blob/master/doc/contributions/tests.md#system-tests
     tests = { inherit (nixosTests) shadow; };
+  };
+
+  meta = {
+    description = "Suite containing authentication-related tools such as passwd and su";
+    homepage = "https://github.com/shadow-maint/shadow";
+    license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ mdaniels5757 ];
+    platforms = lib.platforms.linux;
+    identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "shadow_project" finalAttrs.version;
+    teams = [ lib.teams.security-review ];
   };
 })

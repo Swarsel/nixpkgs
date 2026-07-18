@@ -1,18 +1,15 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   autoPatchelfHook,
   dpkg,
   glib-networking,
-  wrapGAppsHook4,
+  stdenvNoCC,
   webkitgtk_4_1,
+  wrapGAppsHook4,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
-  strictDeps = true;
-  __structuredAttrs = true;
-
   pname = "proton-authenticator";
   version = "1.1.6";
 
@@ -21,8 +18,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-jHtqBdGE9+Kz5sjPMrCDnHKX0NLscO5Dp4pYYE8L2iU=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
+  strictDeps = true;
 
   nativeBuildInputs = [
     dpkg
@@ -50,8 +46,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     )
   '';
 
+  __structuredAttrs = true;
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "Two-factor authentication manager with optional sync";
+
     longDescription = ''
       This package provides proton-authenticator as a pre-built binary.
 
@@ -59,14 +60,17 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       Use this package (proton-authenticator-bin) if you prefer the pre-built binary
       instead of building from source.
     '';
+
     homepage = "https://proton.me/authenticator";
     license = lib.licenses.unfree; # source not yet published
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       felschr
       pbek
     ];
+
     platforms = [ "x86_64-linux" ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     mainProgram = "proton-authenticator";
   };
 })

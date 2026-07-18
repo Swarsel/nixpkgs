@@ -1,12 +1,11 @@
 {
-  fetchPypi,
   lib,
+  fetchPypi,
   python3,
 }:
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "seventeenlands";
   version = "0.1.44";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -15,9 +14,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   # No tests
   doCheck = false;
-
-  pythonImportsCheck = [ "seventeenlands" ];
-
   build-system = with python3.pkgs; [ hatchling ];
 
   dependencies = with python3.pkgs; [
@@ -25,6 +21,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     requests
     tkinter
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "seventeenlands" ];
 
   meta = {
     description = "Client for passing relevant events from MTG Arena logs to the 17Lands REST endpoint, also known as mtga-log-client";

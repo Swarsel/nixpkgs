@@ -2,8 +2,8 @@
 {
   lib,
   stdenv,
-  goofcord,
   bun,
+  goofcord,
   nodejs,
   writableTmpDirAsHomeHook,
 }:
@@ -11,19 +11,11 @@ stdenv.mkDerivation {
   inherit (goofcord) version src;
   pname = goofcord.pname + "-modules";
 
-  impureEnvVars = lib.fetchers.proxyImpureEnvVars ++ [
-    "GIT_PROXY_COMMAND"
-    "SOCKS_SERVER"
-  ];
-
   nativeBuildInputs = [
     bun
     nodejs
     writableTmpDirAsHomeHook
   ];
-
-  dontConfigure = true;
-  dontFixup = true;
 
   buildPhase = ''
     runHook preBuild
@@ -48,12 +40,21 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+  dontFixup = true;
+
+  impureEnvVars = lib.fetchers.proxyImpureEnvVars ++ [
+    "GIT_PROXY_COMMAND"
+    "SOCKS_SERVER"
+  ];
+
   outputHash =
     {
-      x86_64-linux = "sha256-2PH4qa4M/y4AzVT9dW4BK1jE3RWSr+NWY1AhU3cfUTE=";
       aarch64-linux = "sha256-RGJGUdp3i6Q/tCuQ42NfF4eFGrrgoyhx1l14fPwlCN8=";
+      x86_64-linux = "sha256-2PH4qa4M/y4AzVT9dW4BK1jE3RWSr+NWY1AhU3cfUTE=";
     }
     .${stdenv.hostPlatform.system} or (throw "Unsupported system ${stdenv.hostPlatform.system}");
+
   outputHashAlgo = "sha256";
   outputHashMode = "recursive";
 

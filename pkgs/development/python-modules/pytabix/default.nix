@@ -1,15 +1,14 @@
 {
   lib,
   buildPythonPackage,
-  isPy3k,
   fetchPypi,
+  isPy3k,
   zlib,
 }:
 
 buildPythonPackage rec {
   pname = "pytabix";
   version = "0.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -17,17 +16,19 @@ buildPythonPackage rec {
   };
 
   buildInputs = [ zlib ];
-
   doCheck = !isPy3k;
+
   preCheck = ''
     substituteInPlace test/test.py \
       --replace 'test_remote_file' 'dont_test_remote_file'
   '';
+
+  format = "setuptools";
   pythonImportsCheck = [ "tabix" ];
 
   meta = {
-    homepage = "https://github.com/slowkow/pytabix";
     description = "Python interface for tabix";
+    homepage = "https://github.com/slowkow/pytabix";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ris ];
   };

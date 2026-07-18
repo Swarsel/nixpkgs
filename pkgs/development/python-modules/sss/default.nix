@@ -1,11 +1,10 @@
 {
   lib,
   buildPythonPackage,
-  python,
-  sssd,
-
   # tests
   pytestCheckHook,
+  python,
+  sssd,
 }:
 
 let
@@ -14,15 +13,13 @@ let
   };
 in
 buildPythonPackage {
-  pname = "sss";
   inherit (sssdForPython) version;
+  pname = "sss";
+  # No tests
+  doCheck = false;
 
-  pyproject = false;
-  dontUnpack = true;
-  dontBuild = true;
-
-  dependencies = [
-    sssdForPython
+  nativeCheckInputs = [
+    pytestCheckHook
   ];
 
   installPhase = ''
@@ -36,6 +33,14 @@ buildPythonPackage {
     runHook postInstall
   '';
 
+  dependencies = [
+    sssdForPython
+  ];
+
+  dontBuild = true;
+  dontUnpack = true;
+  pyproject = false;
+
   pythonImportsCheck = [
     "sssd"
     "pysss"
@@ -45,15 +50,16 @@ buildPythonPackage {
     "SSSDConfig"
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
-  # No tests
-  doCheck = false;
-
   meta = {
+    inherit (sssd.meta)
+      homepage
+      changelog
+      platforms
+      maintainers
+      ;
+
     description = "Python bindings for SSSD (System Security Services Daemon)";
+
     longDescription = ''
       This package provides Python bindings for SSSD including:
       - sssd: SSSD Python utilities module
@@ -63,11 +69,5 @@ buildPythonPackage {
       - pyhbac: HBAC (Host-Based Access Control) module
       - SSSDConfig: Configuration management module
     '';
-    inherit (sssd.meta)
-      homepage
-      changelog
-      platforms
-      maintainers
-      ;
   };
 }

@@ -1,21 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
   alsa-lib,
   flac,
+  kdePackages,
   libjack2,
   libogg,
-  libvorbis,
   libsndfile,
+  libvorbis,
+  pkg-config,
   rtmidi,
-  kdePackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "2.5.1";
   pname = "polyphone";
+  version = "2.5.1";
 
   src = fetchFromGitHub {
     owner = "davy7125";
@@ -59,14 +59,16 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
     description = "Soundfont editor for creating musical instruments";
-    mainProgram = "polyphone";
     homepage = "https://www.polyphone-soundfonts.com/";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       maxdamantus
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "polyphone";
+    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
   };
 })

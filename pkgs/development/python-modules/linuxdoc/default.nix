@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  fspath,
+  buildPythonPackage,
   docutils,
+  fspath,
+  setuptools,
   sphinx,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "linuxdoc";
   version = "20240924";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "return42";
@@ -30,6 +29,7 @@ buildPythonPackage (finalAttrs: {
     sphinx
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "linuxdoc" ];
 
   meta = {

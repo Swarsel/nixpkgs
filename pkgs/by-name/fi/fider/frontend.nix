@@ -1,15 +1,18 @@
 {
   buildNpmPackage,
-
-  pname,
-  version,
-  src,
   npmDepsHash,
+  pname,
+  src,
+  version,
 }:
 
 buildNpmPackage {
   inherit version src npmDepsHash;
   pname = "${pname}-frontend";
+
+  env = {
+    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = 1;
+  };
 
   buildPhase = ''
     runHook preBuild
@@ -30,8 +33,4 @@ buildNpmPackage {
 
     runHook postInstall
   '';
-
-  env = {
-    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = 1;
-  };
 }

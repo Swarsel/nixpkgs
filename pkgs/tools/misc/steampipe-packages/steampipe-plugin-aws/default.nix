@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   steampipe,
 }:
@@ -18,12 +18,6 @@ buildGoModule rec {
   };
 
   vendorHash = "sha256-8ZVl70Lwz3j3PM3XljZGFaoGt+JP6TP+o5gOGoBlUY8=";
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   doCheck = true;
 
   installPhase = ''
@@ -37,14 +31,19 @@ buildGoModule rec {
     runHook postInstall
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/turbot/steampipe-plugin-aws/blob/v${version}/CHANGELOG.md";
     description = "AWS Plugin for Steampipe";
-    homepage = "https://github.com/turbot/steampipe-plugin-aws";
-    license = lib.licenses.asl20;
     longDescription = "Use SQL to instantly query AWS resources across regions and accounts.";
+    homepage = "https://github.com/turbot/steampipe-plugin-aws";
+    changelog = "https://github.com/turbot/steampipe-plugin-aws/blob/v${version}/CHANGELOG.md";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ anthonyroussel ];
     platforms = steampipe.meta.platforms;
   };

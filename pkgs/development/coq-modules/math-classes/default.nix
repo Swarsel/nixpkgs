@@ -1,15 +1,17 @@
 {
   lib,
-  mkCoqDerivation,
-  coq,
   bignums,
+  coq,
+  mkCoqDerivation,
   version ? null,
 }:
 
 mkCoqDerivation {
 
-  pname = "math-classes";
   inherit version;
+  pname = "math-classes";
+  propagatedBuildInputs = [ bignums ];
+
   defaultVersion =
     with lib.versions;
     lib.switch coq.coq-version [
@@ -30,6 +32,8 @@ mkCoqDerivation {
         out = "8.15.0";
       }
     ] null;
+
+  mlPlugin = true; # uses coq-bignums.plugin
   release."8.12.0".hash = "sha256:14nd6a08zncrl5yg2gzk0xf4iinwq4hxnsgm4fyv07ydbkxfb425";
   release."8.13.0".hash = "sha256:1ln7ziivfbxzbdvlhbvyg3v30jgblncmwcsam6gg3d1zz6r7cbby";
   release."8.15.0".hash = "sha256:10w1hm537k6jx8a8vghq1yx12rsa0sjk2ipv3scgir71ln30hllw";
@@ -37,13 +41,10 @@ mkCoqDerivation {
   release."8.18.0".hash = "sha256-0WwPss8+Vr37zX616xeuS4TvtImtSbToFQkQostIjO8=";
   release."8.19.0".hash = "sha256-rsV96W9MPFi/DKsepNPm1QnC2DMemio+uALIgzVYw0w=";
 
-  mlPlugin = true; # uses coq-bignums.plugin
-
-  propagatedBuildInputs = [ bignums ];
-
   meta = {
-    homepage = "https://math-classes.github.io";
     description = "Library of abstract interfaces for mathematical structures in Coq";
+    homepage = "https://math-classes.github.io";
+
     maintainers = with lib.maintainers; [
       siddharthist
       jwiegley

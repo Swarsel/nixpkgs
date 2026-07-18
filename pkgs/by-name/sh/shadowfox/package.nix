@@ -20,13 +20,12 @@ buildGoModule (finalAttrs: {
     # get vendoring to work with go1.20
     # https://github.com/arguablykomodo/shadowfox-updater/pull/70
     (fetchpatch {
-      url = "https://github.com/arguablykomodo/shadowfox-updater/commit/c16be00829373e0de7de47d6fb4d4c341fc36f75.patch";
       hash = "sha256-buijhFLI8Sf9qBDntf689Xcpr6me+aVDoRqwSIcKKEw=";
+      url = "https://github.com/arguablykomodo/shadowfox-updater/commit/c16be00829373e0de7de47d6fb4d4c341fc36f75.patch";
     })
   ];
 
   vendorHash = "sha256-3pHwyktSGxNM7mt0nPOe6uixS+bBJH9R8xqCyY6tlb0=";
-
   doCheck = false;
 
   ldflags = [

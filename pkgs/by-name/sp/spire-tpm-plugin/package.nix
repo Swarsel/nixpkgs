@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  nix-update-script,
   openssl,
   tpm2-tools,
   xxd,
-  nix-update-script,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,12 +19,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-QHFLFotfMyUxKQHN1CcmNMvLvMEatltZPHiUA3G5QWo=";
   };
 
-  proxyVendor = true;
-  vendorHash = "sha256-cENDkx/iz6H/AhAO1lKypHhOFz+F3gC3bMg8Jw7eeo0=";
-
-  ldflags = [ "-s" ];
-
   buildInputs = [ openssl ];
+  vendorHash = "sha256-cENDkx/iz6H/AhAO1lKypHhOFz+F3gC3bMg8Jw7eeo0=";
 
   nativeCheckInputs = [
     openssl.bin
@@ -32,9 +28,10 @@ buildGoModule (finalAttrs: {
     xxd
   ];
 
-  passthru.updateScript = nix-update-script { };
-
   __structuredAttrs = true;
+  ldflags = [ "-s" ];
+  proxyVendor = true;
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Provides agent and server plugins for SPIRE to allow TPM 2-based node attestation";

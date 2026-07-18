@@ -1,8 +1,8 @@
 {
-  lib,
   config,
-  utils,
+  lib,
   pkgs,
+  utils,
   ...
 }:
 
@@ -49,10 +49,10 @@ let
 
   sysfsAttrs = with lib.types; nullOr (either sysfsValue (attrsOf sysfsAttrs));
   sysfsValue = lib.mkOptionType {
-    name = "sysfs value";
+    check = v: isConvertibleWithToString v;
     description = "sysfs attribute value";
     descriptionClass = "noun";
-    check = v: isConvertibleWithToString v;
+
     merge =
       loc: defs:
       if length defs == 1 then
@@ -70,6 +70,8 @@ let
             }"
             first
         ) (head defs) (tail defs)).value;
+
+    name = "sysfs value";
   };
 
   mapAttrsToListRecursive =
@@ -132,11 +134,7 @@ in
 {
   options = {
     boot.kernel.sysfs = lib.mkOption {
-      type = lib.types.submodule {
-        freeformType = lib.types.attrsOf sysfsAttrs // {
-          description = "nested attribute set of null or sysfs attribute values";
-        };
-      };
+      default = { };
 
       description = ''
         sysfs attributes to be set as soon as they become available.
@@ -161,8 +159,6 @@ in
         idempotently, as the configured values might be written more than once.
       '';
 
-      default = { };
-
       example = lib.literalExpression ''
         {
           # enable transparent hugepages with deferred defragmentaion
@@ -186,10 +182,21 @@ in
           };
         }
       '';
+
+      type = lib.types.submodule {
+        freeformType = lib.types.attrsOf sysfsAttrs // {
+          description = "nested attribute set of null or sysfs attribute values";
+        };
+      };
     };
   };
 
   config = lib.mkIf (cfg != { }) {
+    assertions = mapAttrsToListRecursive (p: v: {
+      assertion = all (n: match ''(\.\.?|.*/.*)'' n == null) p;
+      message = "Attribute path \"${concatStringsSep "." p}\" has invalid components.";
+    }) cfg;
+
     systemd = {
       paths = {
         "nixos-sysfs@" = {
@@ -205,9 +212,9 @@ in
             [ ]
           else
             nameValuePair "nixos-sysfs@${escapeSystemdPath (mkPath p)}" {
+              before = [ "sysinit.target" ];
               overrideStrategy = "asDropin";
               wantedBy = [ "sysinit.target" ];
-              before = [ "sysinit.target" ];
             }
         ) cfg
       );
@@ -215,22 +222,14 @@ in
       services."nixos-sysfs@" = {
         description = "/%I attribute setter";
 
-        unitConfig = {
-          DefaultDependencies = false;
-          AssertPathIsMountPoint = "/sys";
-          AssertPathExistsGlob = "/%I";
-        };
-
         serviceConfig = {
-          Type = "oneshot";
-          RemainAfterExit = true;
-
           # while we could be tempted to use simple shell script to set the
           # sysfs attributes specified by the path or glob pattern, it is
           # almost impossible to properly escape a glob pattern so that it
           # can be used safely in a shell script
           ExecStart = "${lib.getExe' config.systemd.package "systemd-tmpfiles"} --prefix=/sys --create ${tmpfiles}/%i.conf";
-
+          RemainAfterExit = true;
+          Type = "oneshot";
           # hardening may be overkill for such a simple and short‐lived
           # service, the following settings would however be suitable to deny
           # access to anything but /sys
@@ -244,6 +243,12 @@ in
           #  "@file-system"
           #];
         };
+
+        unitConfig = {
+          AssertPathExistsGlob = "/%I";
+          AssertPathIsMountPoint = "/sys";
+          DefaultDependencies = false;
+        };
       };
     };
 
@@ -254,11 +259,6 @@ in
       else
         [ ]
     ) cfg;
-
-    assertions = mapAttrsToListRecursive (p: v: {
-      assertion = all (n: match ''(\.\.?|.*/.*)'' n == null) p;
-      message = "Attribute path \"${concatStringsSep "." p}\" has invalid components.";
-    }) cfg;
   };
 
   meta.maintainers = with lib.maintainers; [ mvs ];

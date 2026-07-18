@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
-  makeWrapper,
   jdk8,
+  makeWrapper,
+  unzip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,9 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     unzip
     makeWrapper
   ];
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -41,14 +38,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "Extensible cross-language static code analyzer";
     homepage = "https://pmd.github.io/";
     changelog = "https://pmd.github.io/pmd-${finalAttrs.version}/pmd_release_notes.html";
-    platforms = lib.platforms.unix;
+
     license = with lib.licenses; [
       bsdOriginal
       asl20
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

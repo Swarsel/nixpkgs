@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "serverfiles";
   version = "0.3.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -17,9 +16,9 @@ buildPythonPackage (finalAttrs: {
   };
 
   propagatedBuildInputs = [ requests ];
-
-  pythonImportsCheck = [ "serverfiles" ];
   nativeCheckInputs = [ unittestCheckHook ];
+  format = "setuptools";
+  pythonImportsCheck = [ "serverfiles" ];
 
   meta = {
     description = "Utility that accesses files on a HTTP server and stores them locally for reuse";

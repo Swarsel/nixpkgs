@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   makeBinaryWrapper,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -43,6 +43,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Compute Pi and other constants to billions of digits";
+
     longDescription = ''
       How fast can your computer compute Pi?
 
@@ -57,17 +58,20 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       y-cruncher has been used to set several world records for the
       most digits of Pi ever computed.
     '';
+
     homepage = "https://www.numberworld.org/y-cruncher/";
-    downloadPage = "https://www.numberworld.org/y-cruncher/#Download";
     changelog = "https://www.numberworld.org/y-cruncher/version_history.html";
+
     license = with lib.licenses; [
       unfree
       asl20 # Apache Commons + HTTP Client
       bsd3 # Intel Cilk Run-Time Library
     ];
+
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = [ ];
-    mainProgram = "y-cruncher";
     platforms = lib.platforms.linux;
+    mainProgram = "y-cruncher";
+    downloadPage = "https://www.numberworld.org/y-cruncher/#Download";
   };
 })

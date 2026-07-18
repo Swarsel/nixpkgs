@@ -1,12 +1,12 @@
 {
   buildDunePackage,
-  zmq,
   lwt,
+  zmq,
 }:
 
 buildDunePackage {
-  pname = "zmq-lwt";
   inherit (zmq) version src meta;
+  pname = "zmq-lwt";
 
   propagatedBuildInputs = [
     zmq

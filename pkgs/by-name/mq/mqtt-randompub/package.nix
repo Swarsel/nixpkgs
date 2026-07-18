@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "mqtt-randompub";
   version = "0.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fabaff";
@@ -16,13 +15,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-L59wqMAw+/ZERGwq+Iyw+qGE+W6WQP0HtrZH36sJUKo=";
   };
 
-  build-system = with python3.pkgs; [ hatchling ];
-
-  dependencies = with python3.pkgs; [ paho-mqtt ];
-
   # Project has no tests
   doCheck = false;
-
+  build-system = with python3.pkgs; [ hatchling ];
+  dependencies = with python3.pkgs; [ paho-mqtt ];
+  pyproject = true;
   pythonImportsCheck = [ "mqtt_randompub" ];
 
   meta = {

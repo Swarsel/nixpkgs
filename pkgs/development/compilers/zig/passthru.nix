@@ -1,31 +1,30 @@
 {
   stdenv,
-  zig,
   callPackage,
-  wrapCCWith,
-  wrapBintoolsWith,
   overrideCC,
+  wrapBintoolsWith,
+  wrapCCWith,
+  zig,
 }:
 {
-  # Provided for backward compatibility, as the `zig` derivation now sets
-  # setupHook.
-  hook = zig;
-
-  bintools-unwrapped = callPackage ./bintools.nix { inherit zig; };
   bintools = wrapBintoolsWith { bintools = zig.bintools-unwrapped; };
+  bintools-unwrapped = callPackage ./bintools.nix { inherit zig; };
 
-  cc-unwrapped = callPackage ./cc.nix { inherit zig; };
   cc = wrapCCWith {
-    cc = zig.cc-unwrapped;
     bintools = zig.bintools;
+    cc = zig.cc-unwrapped;
     extraPackages = [ ];
+
     nixSupport.cc-cflags = [
       "-target"
       "${stdenv.targetPlatform.system}-${stdenv.targetPlatform.parsed.abi.name}"
     ];
   };
 
-  stdenv = overrideCC stdenv zig.cc;
-
+  cc-unwrapped = callPackage ./cc.nix { inherit zig; };
   fetchDeps = callPackage ./fetcher.nix { inherit zig; };
+  # Provided for backward compatibility, as the `zig` derivation now sets
+  # setupHook.
+  hook = zig;
+  stdenv = overrideCC stdenv zig.cc;
 }

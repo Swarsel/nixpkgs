@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromBitbucket,
   jdk,
 }:
@@ -18,15 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [ jdk ];
 
-  configurePhase = ''
-    runHook preConfigure
-
-    sed -i 's/OS = MACOSX/OS = LINUX/g' Makefile.include
-    printf '%s\n%s\n' '#include <iostream>' "$(cat Kernel/AtomicDecomposer.cpp)" > Kernel/AtomicDecomposer.cpp
-
-    runHook postConfigure
-  '';
-
   installPhase = ''
     runHook preInstall
 
@@ -36,13 +27,22 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+
+    sed -i 's/OS = MACOSX/OS = LINUX/g' Makefile.include
+    printf '%s\n%s\n' '#include <iostream>' "$(cat Kernel/AtomicDecomposer.cpp)" > Kernel/AtomicDecomposer.cpp
+
+    runHook postConfigure
+  '';
+
   meta = {
     description = "Tableaux-based reasoner for expressive Description Logics (DL)";
     homepage = "http://owl.cs.manchester.ac.uk/tools/fact/";
-    maintainers = [ lib.maintainers.mgttlinger ];
     license = lib.licenses.gpl2Plus;
+    maintainers = [ lib.maintainers.mgttlinger ];
     platforms = with lib.platforms; linux ++ darwin ++ windows;
-    broken = !stdenv.hostPlatform.isLinux;
     mainProgram = "FaCT++";
+    broken = !stdenv.hostPlatform.isLinux;
   };
 })

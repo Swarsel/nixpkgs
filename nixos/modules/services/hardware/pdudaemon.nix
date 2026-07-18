@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -11,76 +11,68 @@ let
     lib.generators.toJSON { } {
       daemon = {
         hostname = cfg.bindAddress;
-        port = cfg.port;
-        logging_level = cfg.logLevel;
         listener = cfg.listener;
+        logging_level = cfg.logLevel;
+        port = cfg.port;
       };
+
       pdus = cfg.pdus;
     }
   );
 in
 {
-  meta = {
-    maintainers = with lib.maintainers; [
-      aiyion
-      emantor
-    ];
-  };
-
   options = {
     services.pdudaemon = {
       enable = lib.mkEnableOption "PDUDaemon";
-
       package = lib.mkPackageOption pkgs "pdudaemon" { };
 
       bindAddress = lib.mkOption {
         default = "0.0.0.0";
-        type = lib.types.str;
         description = "Bind address for the PDUDaemon.";
-      };
-
-      port = lib.mkOption {
-        default = 16421;
-        type = lib.types.port;
-        description = "Port to bind to.";
-      };
-
-      openFirewall = lib.mkOption {
-        default = false;
-        type = lib.types.bool;
-        description = ''
-          Whether to automatically open the PDUDaemon listen port in the firewall.
-        '';
+        type = lib.types.str;
       };
 
       listener = lib.mkOption {
         default = "http";
+        description = "Which kind of listener to provide.";
+
         type = lib.types.enum [
           "http"
           "tcp"
         ];
-        description = "Which kind of listener to provide.";
       };
 
       logLevel = lib.mkOption {
         default = "error";
+        description = "PDUDaemon log level.";
+
         type = lib.types.enum [
           "debug"
           "info"
           "warning"
           "error"
         ];
-        description = "PDUDaemon log level.";
+      };
+
+      openFirewall = lib.mkOption {
+        default = false;
+
+        description = ''
+          Whether to automatically open the PDUDaemon listen port in the firewall.
+        '';
+
+        type = lib.types.bool;
       };
 
       pdus = lib.mkOption {
-        type = with lib.types; attrsOf anything;
         default = { };
+
         description = ''
           Structural pdus section of PDUDaemon's pdudaemon.conf.
           Refer to <https://github.com/pdudaemon/pdudaemon/blob/main/share/pdudaemon.conf>
           for more examples.
         '';
+
         example = lib.literalExpression ''
           {
             cbs350-poe-switch = {
@@ -99,6 +91,14 @@ in
             };
           };
         '';
+
+        type = with lib.types; attrsOf anything;
+      };
+
+      port = lib.mkOption {
+        default = 16421;
+        description = "Port to bind to.";
+        type = lib.types.port;
       };
     };
   };
@@ -109,38 +109,48 @@ in
     systemd.services.pdudaemon = {
       after = [ "network-online.target" ];
       description = "Control and Queueing daemon for PDUs";
+
       serviceConfig = {
-        ExecStart = "${lib.getExe cfg.package} --conf ${configFile}";
-        Type = "simple";
-        DynamicUser = "yes";
-        StateDirectory = "pdudaemon";
-        ProtectHome = true;
-        Restart = "on-failure";
         CapabilityBoundingSet = "";
-        PrivateDevices = true;
-        ProtectClock = true;
-        ProtectKernelLogs = true;
-        ProtectControlGroups = true;
-        ProtectKernelModules = true;
-        SystemCallArchitectures = "native";
-        MemoryDenyWriteExecute = true;
-        RestrictNamespaces = true;
-        ProtectHostname = true;
+        DynamicUser = "yes";
+        ExecStart = "${lib.getExe cfg.package} --conf ${configFile}";
         LockPersonality = true;
-        ProtectKernelTunables = true;
-        RestrictRealtime = true;
-        ProtectProc = "invisible";
-        ProcSubset = "pid";
+        MemoryDenyWriteExecute = true;
+        PrivateDevices = true;
         PrivateUsers = true;
+        ProcSubset = "pid";
+        ProtectClock = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectHostname = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectProc = "invisible";
+        Restart = "on-failure";
+        RestrictNamespaces = true;
+        RestrictRealtime = true;
+        StateDirectory = "pdudaemon";
+        SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
           "~@resources"
         ];
+
+        Type = "simple";
       };
 
       wantedBy = [ "multi-user.target" ];
       wants = [ "network-online.target" ];
     };
+  };
+
+  meta = {
+    maintainers = with lib.maintainers; [
+      aiyion
+      emantor
+    ];
   };
 }

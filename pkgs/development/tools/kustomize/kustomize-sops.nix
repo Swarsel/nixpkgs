@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule rec {
@@ -16,6 +16,8 @@ buildGoModule rec {
   };
 
   vendorHash = "sha256-4NyrK3iaAqIaoikfProfsghYA5kX6dSGChnchhZZZ9A=";
+  # Tests are broken in a nix environment
+  doCheck = false;
 
   installPhase = ''
     mkdir -p $out/bin
@@ -26,15 +28,14 @@ buildGoModule rec {
     ln -s $out/bin/ksops $out/lib/viaduct.ai/v1/ksops/ksops
   '';
 
-  # Tests are broken in a nix environment
-  doCheck = false;
-
   meta = {
     description = "Flexible Kustomize Plugin for SOPS Encrypted Resource";
+
     longDescription = ''
       KSOPS can be used to decrypt any Kubernetes resource, but is most commonly
       used to decrypt encrypted Kubernetes Secrets and ConfigMaps.
     '';
+
     homepage = "https://github.com/viaduct-ai/kustomize-sops";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ starcraft66 ];

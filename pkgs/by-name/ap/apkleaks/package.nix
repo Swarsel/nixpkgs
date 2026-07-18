@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "apkleaks";
   version = "2.6.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dwisiswant0";
@@ -17,6 +16,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-8P4LZsyq0mSVdE6QhnW3QaaA3UAg4UDBS3jSg7Kg/oY=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -25,9 +26,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     setuptools
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "apkleaks" ];
 
   meta = {

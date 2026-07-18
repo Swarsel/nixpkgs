@@ -1,22 +1,21 @@
 {
   lib,
   fetchFromGitHub,
-  setuptools,
-  requests,
-  ssdpy,
   appdirs,
-  pygobject3,
+  buildPythonPackage,
   gobject-introspection,
   gtk3,
+  pygobject3,
+  requests,
+  setuptools,
+  ssdpy,
   wrapGAppsHook3,
-  buildPythonPackage,
   buildApplication ? false,
 }:
 
 buildPythonPackage rec {
   pname = "controku";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "benthetechguy";
@@ -43,14 +42,15 @@ buildPythonPackage rec {
     pygobject3
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "controku" ];
 
   meta = {
-    changelog = "https://github.com/benthetechguy/controku/releases/tag/${version}";
     description = "Control Roku devices from the comfort of your own desktop";
-    mainProgram = "controku";
     homepage = "https://github.com/benthetechguy/controku";
+    changelog = "https://github.com/benthetechguy/controku/releases/tag/${version}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ mjm ];
+    mainProgram = "controku";
   };
 }

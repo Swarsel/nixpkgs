@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   leaps,
   nixosTests,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,7 +18,6 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-9AYE8+K6B6/odwNR+UhTTqmJ1RD6HhKvtC3WibWUZic=";
   };
 
-  proxyVendor = true; # darwin/linux hash mismatch
   vendorHash = "sha256-0dwUOoV2bxPB+B6CKxJPImPIDlBMPcm0AwEMrVUkALc=";
 
   ldflags = [
@@ -27,16 +26,18 @@ buildGoModule (finalAttrs: {
     "-X main.version=${finalAttrs.version}"
   ];
 
+  proxyVendor = true; # darwin/linux hash mismatch
+
   passthru.tests = {
-    version = testers.testVersion { package = leaps; };
     inherit (nixosTests) leaps;
+    version = testers.testVersion { package = leaps; };
   };
 
   meta = {
     description = "Pair programming tool and library written in Golang";
-    mainProgram = "leaps";
     homepage = "https://github.com/jeffail/leaps/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ qknight ];
+    mainProgram = "leaps";
   };
 })

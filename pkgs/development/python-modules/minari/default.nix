@@ -1,38 +1,33 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  google-cloud-storage,
   # dependencies
   gymnasium,
-  numpy,
-  packaging,
-  typer,
-  typing-extensions,
-
-  # optional-dependencies
-  pyarrow,
-  jax,
-  google-cloud-storage,
-  tqdm,
   h5py,
   huggingface-hub,
-  mktestdocs,
-  pytest,
-  scikit-image,
-
+  jax,
   # tests
   jaxlib,
+  mktestdocs,
+  numpy,
+  packaging,
+  # optional-dependencies
+  pyarrow,
+  pytest,
   pytestCheckHook,
+  scikit-image,
+  # build-system
+  setuptools,
+  tqdm,
+  typer,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "minari";
   version = "0.5.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Farama-Foundation";
@@ -40,6 +35,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-LvJwp2dZdGPazJPWQtrk+v7zaPjOlomBu5j9avVdCcA=";
   };
+
+  nativeCheckInputs = [
+    jaxlib
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [
     setuptools
@@ -53,34 +54,11 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  optional-dependencies = {
-    arrow = [ pyarrow ];
-    create = [ jax ];
-    gcs = [
-      google-cloud-storage
-      tqdm
-    ];
-    hdf5 = [ h5py ];
-    hf = [ huggingface-hub ];
-    integrations = [
-      # agilerl
-      # d3rlpy
-    ];
-    testing = [
-      # gymnasium-robotics
-      mktestdocs
-      pytest
-      scikit-image
-    ];
-  };
-
-  pythonImportsCheck = [ "minari" ];
-
-  nativeCheckInputs = [
-    jaxlib
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
+  disabledTestPaths = [
+    # Require internet access
+    "tests/dataset/test_dataset_download.py"
+    "tests/test_cli.py"
+  ];
 
   disabledTests = [
     # Require internet access
@@ -92,20 +70,44 @@ buildPythonPackage rec {
     "test_readme"
   ];
 
-  disabledTestPaths = [
-    # Require internet access
-    "tests/dataset/test_dataset_download.py"
-    "tests/test_cli.py"
-  ];
+  optional-dependencies = {
+    arrow = [ pyarrow ];
+    create = [ jax ];
+
+    gcs = [
+      google-cloud-storage
+      tqdm
+    ];
+
+    hdf5 = [ h5py ];
+    hf = [ huggingface-hub ];
+
+    integrations = [
+      # agilerl
+      # d3rlpy
+    ];
+
+    testing = [
+      # gymnasium-robotics
+      mktestdocs
+      pytest
+      scikit-image
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "minari" ];
 
   meta = {
     description = "Standard format for offline reinforcement learning datasets, with popular reference datasets and related utilities";
     homepage = "https://github.com/Farama-Foundation/Minari";
     changelog = "https://github.com/Farama-Foundation/Minari/releases/tag/v${version}";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ GaetanLepage ];
     mainProgram = "minari";
   };

@@ -26,7 +26,6 @@
 buildPythonPackage rec {
   pname = "cherrypy";
   version = "18.10.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -38,16 +37,6 @@ buildPythonPackage rec {
     substituteInPlace pytest.ini \
       --replace-fail "--doctest-modules" "-vvv"
   '';
-
-  build-system = [ setuptools-scm ];
-
-  dependencies = [
-    cheroot
-    jaraco-collections
-    more-itertools
-    portend
-    zc-lockfile
-  ];
 
   nativeCheckInputs = [
     objgraph
@@ -63,9 +52,19 @@ buildPythonPackage rec {
     export CI=true
   '';
 
-  pytestFlags = [
-    "-Wignore::DeprecationWarning"
-    "-Wignore::pytest.PytestUnraisableExceptionWarning"
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools-scm ];
+
+  dependencies = [
+    cheroot
+    jaraco-collections
+    more-itertools
+    portend
+    zc-lockfile
+  ];
+
+  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
+    "cherrypy/test/test_config_server.py"
   ];
 
   disabledTests = [
@@ -100,31 +99,33 @@ buildPythonPackage rec {
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ "test_block" ];
 
-  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
-    "cherrypy/test/test_config_server.py"
-  ];
-
-  __darwinAllowLocalNetworking = true;
-
-  pythonImportsCheck = [ "cherrypy" ];
-
   optional-dependencies = {
     json = [ simplejson ];
     memcached_session = [ python-memcached ];
     routes_dispatcher = [ routes ];
     ssl = [ pyopenssl ];
+
     # not packaged yet
     xcgi = [
       # flup
     ];
   };
 
+  pyproject = true;
+
+  pytestFlags = [
+    "-Wignore::DeprecationWarning"
+    "-Wignore::pytest.PytestUnraisableExceptionWarning"
+  ];
+
+  pythonImportsCheck = [ "cherrypy" ];
+
   meta = {
     description = "Object-oriented HTTP framework";
-    mainProgram = "cherryd";
     homepage = "https://cherrypy.dev/";
     changelog = "https://github.com/cherrypy/cherrypy/blob/v${version}/CHANGES.rst";
     license = lib.licenses.bsd3;
     maintainers = [ ];
+    mainProgram = "cherryd";
   };
 }

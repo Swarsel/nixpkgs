@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   ecdsa,
-  fetchFromGitHub,
   hypothesis,
   pytestCheckHook,
   pythonAtLeast,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "tlslite-ng";
   version = "0.8.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tlsfuzzer";
@@ -21,19 +20,20 @@ buildPythonPackage rec {
     hash = "sha256-lKSFPJ4Dm8o1zUgvXjUUpStV5M+xf7s6wOg2ceYbpbw=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ ecdsa ];
-
   nativeCheckInputs = [
     hypothesis
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ ecdsa ];
+
   # This file imports asyncore which is removed in 3.12
   disabledTestPaths = lib.optionals (pythonAtLeast "3.12") [
     "tlslite/integration/tlsasyncdispatchermixin.py"
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Implementation of SSL and TLS";

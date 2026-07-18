@@ -9,23 +9,23 @@
 buildPythonPackage rec {
   pname = "iniconfig";
   version = "2.3.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-x2MVx32waGUNScW1YxR3SngE3xb+5EAsHxnW0V2MRzA=";
   };
 
+  # Requires pytest, which in turn requires this package - causes infinite
+  # recursion. See also: https://github.com/NixOS/nixpkgs/issues/63168
+  doCheck = false;
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "iniconfig" ];
-
-  # Requires pytest, which in turn requires this package - causes infinite
-  # recursion. See also: https://github.com/NixOS/nixpkgs/issues/63168
-  doCheck = false;
 
   meta = {
     description = "Brain-dead simple parsing of ini files";

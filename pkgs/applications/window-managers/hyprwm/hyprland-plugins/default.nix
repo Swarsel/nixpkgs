@@ -1,9 +1,9 @@
 {
-  config,
   lib,
   callPackage,
-  pkg-config,
+  config,
   hyprland,
+  pkg-config,
 }@topLevelArgs:
 let
 
@@ -13,10 +13,10 @@ let
     extendDrvArgs =
       finalAttrs:
       {
-        pluginName ? "",
-        nativeBuildInputs ? [ ],
         buildInputs ? [ ],
         hyprland ? topLevelArgs.hyprland,
+        nativeBuildInputs ? [ ],
+        pluginName ? "",
         ...
       }@args:
 
@@ -24,8 +24,10 @@ let
         pname = "${pluginName}";
         nativeBuildInputs = [ pkg-config ] ++ nativeBuildInputs;
         buildInputs = [ hyprland ] ++ hyprland.buildInputs ++ buildInputs;
+
         meta = args.meta // {
           description = args.meta.description or "";
+
           longDescription =
             (args.meta.longDescription or "")
             + "\n\nPlugins can be installed via a plugin entry in the Hyprland NixOS or Home Manager options.";

@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  stdenvNoCC,
+  buildGoModule,
+  fetchPnpmDeps,
   nix-update-script,
   nixosTests,
   nodejs,
-  pnpm_11,
-  fetchPnpmDeps,
   pnpmConfigHook,
+  pnpm_11,
+  stdenvNoCC,
   typescript,
   versionCheckHook,
 }:
@@ -25,8 +25,8 @@ let
   };
 
   autobrr-web = stdenvNoCC.mkDerivation {
-    pname = "${pname}-web";
     inherit src version;
+    pname = "${pname}-web";
 
     nativeBuildInputs = [
       nodejs
@@ -35,7 +35,13 @@ let
       typescript
     ];
 
-    sourceRoot = "${src.name}/web";
+    postBuild = ''
+      pnpm run build
+    '';
+
+    installPhase = ''
+      cp -r dist $out
+    '';
 
     pnpmDeps = fetchPnpmDeps {
       inherit (autobrr-web)
@@ -44,18 +50,13 @@ let
         src
         sourceRoot
         ;
-      pnpm = pnpm_11;
+
       fetcherVersion = 4;
       hash = "sha256-VDW1B8OVFZ72nBl8IYM5nXqit2za1Q8mXI6UhcmEeSo=";
+      pnpm = pnpm_11;
     };
 
-    postBuild = ''
-      pnpm run build
-    '';
-
-    installPhase = ''
-      cp -r dist $out
-    '';
+    sourceRoot = "${src.name}/web";
   };
 in
 buildGoModule (finalAttrs: {
@@ -71,11 +72,6 @@ buildGoModule (finalAttrs: {
     cp -r ${finalAttrs.passthru.autobrr-web}/* web/dist
   '';
 
-  ldflags = [
-    "-X main.version=${finalAttrs.version}"
-    "-X main.commit=${src.tag}"
-  ];
-
   # In darwin, tests try to access /etc/protocols, which is not permitted.
   doCheck = !stdenv.hostPlatform.isDarwin;
   doInstallCheck = !stdenv.hostPlatform.isDarwin;
@@ -83,27 +79,34 @@ buildGoModule (finalAttrs: {
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
+  ldflags = [
+    "-X main.version=${finalAttrs.version}"
+    "-X main.commit=${src.tag}"
+  ];
+
   versionCheckProgram = "${placeholder "out"}/bin/autobrrctl";
   versionCheckProgramArg = "version";
 
   passthru = {
     inherit autobrr-web;
+    tests.testService = nixosTests.autobrr;
+
     updateScript = nix-update-script {
       extraArgs = [
         "--subpackage"
         "autobrr-web"
       ];
     };
-    tests.testService = nixosTests.autobrr;
   };
 
   meta = {
     description = "Modern, easy to use download automation for torrents and usenet";
-    license = lib.licenses.gpl2Plus;
     homepage = "https://autobrr.com/";
     changelog = "https://autobrr.com/release-notes/v${finalAttrs.version}";
+    license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ av-gal ];
-    mainProgram = "autobrr";
     platforms = with lib.platforms; darwin ++ freebsd ++ linux;
+    mainProgram = "autobrr";
   };
 })

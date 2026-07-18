@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  testers,
-  mosdns,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
+  mosdns,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,15 +19,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-N0JY0brs9IXx3L+sz66JniRaBzY0bGD8PawJ1WA3tkw=";
   };
 
-  vendorHash = "sha256-FfCA5204MP+m5nkzj/jLDh5NzpD1EtrL7owmcvZhOBU=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version}"
-  ];
+  vendorHash = "sha256-FfCA5204MP+m5nkzj/jLDh5NzpD1EtrL7owmcvZhOBU=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd mosdns \
@@ -36,10 +29,16 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/mosdns completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version}"
+  ];
+
   passthru.tests = {
     version = testers.testVersion {
-      package = mosdns;
       command = "${lib.getExe mosdns} version";
+      package = mosdns;
     };
   };
 

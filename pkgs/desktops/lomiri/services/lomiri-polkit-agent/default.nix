@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  nixosTests,
   cmake,
   cmake-extras,
   dbus,
   dbus-test-runner,
+  gitUpdater,
   gtest,
   libnotify,
+  nixosTests,
   pkg-config,
   polkit,
   properties-cpp,
@@ -41,6 +41,8 @@ stdenv.mkDerivation (finalAttrs: {
     properties-cpp
   ];
 
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   nativeCheckInputs = [
     dbus
     (python3.withPackages (ps: with ps; [ python-dbusmock ]))
@@ -50,8 +52,6 @@ stdenv.mkDerivation (finalAttrs: {
     dbus-test-runner
     gtest
   ];
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
   # Parallelism breaks dbus during tests
   enableParallelChecking = false;
@@ -67,11 +67,13 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Policy kit agent for the Lomiri desktop";
     homepage = "https://gitlab.com/ubports/development/core/lomiri-polkit-agent";
+
     changelog = "https://gitlab.com/ubports/development/core/lomiri-polkit-agent/-/blob/${
       if (!isNull finalAttrs.src.tag) then finalAttrs.src.tag else finalAttrs.src.rev
     }/ChangeLog";
+
     license = lib.licenses.gpl3Only;
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.lomiri ];
   };
 })

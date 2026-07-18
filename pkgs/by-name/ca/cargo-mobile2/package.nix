@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  openssl,
   git,
   makeWrapper,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,18 +19,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-DjoWjdgfNHLZkaWUjPq4tNrmHsifKKhBaRjK25WRdiE=";
   };
 
-  # Manually specify the sourceRoot since this crate depends on other crates in the workspace. Relevant info at
-  # https://discourse.nixos.org/t/difficulty-using-buildrustpackage-with-a-src-containing-multiple-cargo-workspaces/10202
-  # sourceRoot = "${src.name}/tooling/cli";
-
-  cargoHash = "sha256-m+9wPfheH9t7zxTsW7vHe4td/gyeC/nXFDHRGjK5XBg=";
-
-  buildInputs = [ openssl ];
   nativeBuildInputs = [
     pkg-config
     git
     makeWrapper
   ];
+
+  buildInputs = [ openssl ];
+  # Manually specify the sourceRoot since this crate depends on other crates in the workspace. Relevant info at
+  # https://discourse.nixos.org/t/difficulty-using-buildrustpackage-with-a-src-containing-multiple-cargo-workspaces/10202
+  # sourceRoot = "${src.name}/tooling/cli";
+  cargoHash = "sha256-m+9wPfheH9t7zxTsW7vHe4td/gyeC/nXFDHRGjK5XBg=";
 
   preBuild = ''
     mkdir -p $out/share/
@@ -48,10 +47,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Rust on mobile made easy";
     homepage = "https://tauri.app/";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
+
     maintainers = with lib.maintainers; [ happysalada ];
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   typing-extensions,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "http-sfv";
   version = "0.9.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mnot";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ typing-extensions ];
-
   # Tests require external data (https://github.com/httpwg/structured-field-tests)
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "http_sfv" ];
 
   meta = {

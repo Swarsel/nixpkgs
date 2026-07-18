@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,9 +17,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Cargo-subcommand to speed up Rust Docker builds using Docker layer caching";
-    mainProgram = "cargo-chef";
     homepage = "https://github.com/LukeMathWalker/cargo-chef";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kkharji ];
+    mainProgram = "cargo-chef";
   };
 })

@@ -4,9 +4,9 @@
   fetchurl,
   buildFHSEnv,
   git,
+  graphite-cli,
   installShellFiles,
   testers,
-  graphite-cli,
 }:
 
 let
@@ -14,35 +14,38 @@ let
     attrs:
     attrs.${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
   suffix = selectSystem {
-    x86_64-linux = "linux-x64";
-    aarch64-linux = "linux-arm64";
     aarch64-darwin = "darwin-arm64";
+    aarch64-linux = "linux-arm64";
+    x86_64-linux = "linux-x64";
   };
 
   version = "1.8.6";
 
   meta = {
-    changelog = "https://graphite.dev/docs/cli-changelog";
     description = "CLI that makes creating stacked git changes fast & intuitive";
-    downloadPage = "https://www.npmjs.com/package/@withgraphite/graphite-cli";
     homepage = "https://graphite.dev/docs/graphite-cli";
+    changelog = "https://graphite.dev/docs/cli-changelog";
     license = lib.licenses.unfree; # no license specified
-    mainProgram = "gt";
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = with lib.maintainers; [ joshheinrichs-shopify ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
+    mainProgram = "gt";
+    downloadPage = "https://www.npmjs.com/package/@withgraphite/graphite-cli";
   };
 
   passthru = {
-    updateScript = ./update.sh;
     tests.version = testers.testVersion {
-      package = graphite-cli;
       command = "gt --version";
+      package = graphite-cli;
     };
+
+    updateScript = ./update.sh;
   };
 
   shellCompletions = ''
@@ -53,30 +56,25 @@ let
   '';
 
   unwrapped = stdenv.mkDerivation {
-    pname = "graphite-cli-unwrapped";
     inherit version meta passthru;
-    strictDeps = true;
+    pname = "graphite-cli-unwrapped";
 
     src = fetchurl {
       url = "https://registry.npmjs.org/@withgraphite/graphite-cli-${suffix}/-/graphite-cli-${suffix}-${version}.tgz";
+
       hash = selectSystem {
-        x86_64-linux = "sha256-YnG3iw35ZEyGbB9vGdcnj0qkvUfyLuaIEB5l09hkRck=";
-        aarch64-linux = "sha256-Z4yY26hXf8++TX5tJcqufsAULTn9oUL90d9tDZj5d/k=";
         aarch64-darwin = "sha256-6eogi8fMOD5IgRyEdPRxdDa17WytB1JwTpKRzyyhQ2Q=";
+        aarch64-linux = "sha256-Z4yY26hXf8++TX5tJcqufsAULTn9oUL90d9tDZj5d/k=";
+        x86_64-linux = "sha256-YnG3iw35ZEyGbB9vGdcnj0qkvUfyLuaIEB5l09hkRck=";
       };
     };
+
+    strictDeps = true;
 
     nativeBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
       git
       installShellFiles
     ];
-
-    dontConfigure = true;
-    dontBuild = true;
-    # Skip fixup on all platforms: strip discards the vercel/pkg virtual
-    # filesystem appended to the binary (see the comment below), leaving a
-    # binary that fails at runtime with "Pkg: Error reading from file."
-    dontFixup = true;
 
     installPhase = ''
       runHook preInstall
@@ -91,6 +89,13 @@ let
       export HOME=$(mktemp -d)
       ${shellCompletions}
     '';
+
+    dontBuild = true;
+    dontConfigure = true;
+    # Skip fixup on all platforms: strip discards the vercel/pkg virtual
+    # filesystem appended to the binary (see the comment below), leaving a
+    # binary that fails at runtime with "Pkg: Error reading from file."
+    dontFixup = true;
   };
 in
 # The binary is built with vercel/pkg, which appends a virtual filesystem to
@@ -100,22 +105,22 @@ in
 # libraries without touching the binary. On Darwin this isn't needed.
 if stdenv.hostPlatform.isLinux then
   (buildFHSEnv {
-    pname = "graphite-cli";
     inherit version passthru;
-
-    targetPkgs = pkgs: [
-      unwrapped
-      pkgs.stdenv.cc.cc.lib
-      git
-    ];
-
-    runScript = "gt";
+    pname = "graphite-cli";
 
     extraInstallCommands = ''
       ln -s $out/bin/graphite-cli $out/bin/gt
       source ${installShellFiles}/nix-support/setup-hook
       ${shellCompletions}
     '';
+
+    runScript = "gt";
+
+    targetPkgs = pkgs: [
+      unwrapped
+      pkgs.stdenv.cc.cc.lib
+      git
+    ];
 
     meta = meta // {
       platforms = [

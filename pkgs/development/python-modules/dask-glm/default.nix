@@ -1,30 +1,26 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools-scm,
-
+  buildPythonPackage,
   # dependencies
   cloudpickle,
+  dask,
   distributed,
   multipledispatch,
-  scikit-learn,
-  scipy,
-  sparse,
-  dask,
-
   # tests
   pytest-xdist,
   pytestCheckHook,
+  scikit-learn,
+  scipy,
+  # build-system
+  setuptools-scm,
+  sparse,
 }:
 
 buildPythonPackage rec {
   pname = "dask-glm";
   version = "0.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dask";
@@ -39,6 +35,15 @@ buildPythonPackage rec {
       --replace-fail "if arr:" "if (arr is not None) and (arr.size > 0):"
   '';
 
+  # On darwin, tests saturate the entire system, even when constrained to run single-threaded
+  # Removing pytest-xdist AND setting --cores to one does not prevent the load from exploding
+  doCheck = !stdenv.hostPlatform.isDarwin;
+
+  nativeCheckInputs = [
+    pytest-xdist
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools-scm ];
 
   dependencies = [
@@ -51,13 +56,6 @@ buildPythonPackage rec {
   ]
   ++ dask.optional-dependencies.array;
 
-  nativeCheckInputs = [
-    pytest-xdist
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "dask_glm" ];
-
   disabledTests = [
     # ValueError: <class 'bool'> can be computed for one-element arrays only.
     "test_dot_with_sparse"
@@ -66,9 +64,8 @@ buildPythonPackage rec {
     "test_sparse"
   ];
 
-  # On darwin, tests saturate the entire system, even when constrained to run single-threaded
-  # Removing pytest-xdist AND setting --cores to one does not prevent the load from exploding
-  doCheck = !stdenv.hostPlatform.isDarwin;
+  pyproject = true;
+  pythonImportsCheck = [ "dask_glm" ];
 
   meta = {
     description = "Generalized Linear Models with Dask";

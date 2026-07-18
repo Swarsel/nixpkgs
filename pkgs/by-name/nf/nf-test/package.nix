@@ -1,11 +1,11 @@
 {
   lib,
+  stdenv,
   fetchurl,
   makeWrapper,
   nextflow,
   nf-test,
   openjdk17,
-  stdenv,
   testers,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -17,7 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://github.com/askimed/nf-test/releases/download/v${finalAttrs.version}/nf-test-${finalAttrs.version}.tar.gz";
     hash = "sha256-t2eeuQzclkK/qJ6WNNsCzm5pneU6017w4vSEdjT8FkE=";
   };
-  sourceRoot = ".";
 
   nativeBuildInputs = [ makeWrapper ];
 
@@ -35,9 +34,11 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
+
   passthru.tests.version = testers.testVersion {
-    package = nf-test;
     command = "nf-test version";
+    package = nf-test;
   };
 
   meta = {
@@ -46,7 +47,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/askimed/nf-test/releases";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ rollf ];
-    mainProgram = "nf-test";
     platforms = lib.platforms.unix;
+    mainProgram = "nf-test";
   };
 })

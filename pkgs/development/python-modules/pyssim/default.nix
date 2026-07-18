@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   numpy,
-  scipy,
   pillow,
   pywavelets,
+  scipy,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyssim";
   version = "0.7.1";
-  pyproject = true;
 
   # PyPI tarball doesn't contain test images so let's use GitHub
   src = fetchFromGitHub {
@@ -21,17 +20,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-6393EATaXg12pYXPaHty+8LepUM6kgtZ0zSjZ1Izytg=";
   };
-
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    numpy
-    scipy
-    pillow
-    pywavelets
-  ];
 
   # Tests are copied from .github/workflows/python-package.yml
   checkPhase = ''
@@ -44,12 +32,25 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    numpy
+    scipy
+    pillow
+    pywavelets
+  ];
+
+  pyproject = true;
+
   meta = {
     description = "Module for computing Structured Similarity Image Metric (SSIM) in Python";
-    mainProgram = "pyssim";
     homepage = "https://github.com/jterrace/pyssim";
     changelog = "https://github.com/jterrace/pyssim/blob/${src.tag}/CHANGES.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jluttine ];
+    mainProgram = "pyssim";
   };
 }

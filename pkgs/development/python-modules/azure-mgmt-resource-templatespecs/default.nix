@@ -1,26 +1,27 @@
 {
   lib,
+  azure-cli,
+  azure-common,
+  azure-mgmt-core,
   buildPythonPackage,
   fetchPypi,
-  azure-mgmt-core,
-  azure-common,
   isodate,
   setuptools,
   typing-extensions,
-  azure-cli,
 }:
 
 buildPythonPackage rec {
   pname = "azure-mgmt-resource-templatespecs";
   version = "1.0.0b1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_resource_templatespecs";
     inherit version;
     hash = "sha256-D55zmrQ9sq2HDq5d8bXEv6BQC76hxuWKpeLpw4X6y8U=";
+    pname = "azure_mgmt_resource_templatespecs";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,16 +31,15 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  # Module has no tests
-  doCheck = false;
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "azure.mgmt.resource.templatespecs"
+  ];
 
   pythonNamespaces = [
     "azure.mgmt"
     "azure.mgmt.resource"
-  ];
-
-  pythonImportsCheck = [
-    "azure.mgmt.resource.templatespecs"
   ];
 
   meta = {

@@ -5,13 +5,13 @@
   bison,
   cadical,
   cmake,
+  cudd,
+  fetchpatch,
   flex,
   makeWrapper,
+  nix-update-script,
   perl,
   replaceVars,
-  cudd,
-  nix-update-script,
-  fetchpatch,
   versionCheckHook,
 }:
 
@@ -25,26 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "cbmc-${finalAttrs.version}";
     hash = "sha256-GCagpb2TFhOEH+lzMth+PWiJxlEw0L+H1DYUEQoMF3g=";
   };
-
-  srcglucose = fetchFromGitHub {
-    owner = "brunodutertre";
-    repo = "glucose-syrup";
-    rev = "0bb2afd3b9baace6981cbb8b4a1c7683c44968b7";
-    hash = "sha256-+KrnXEJe7ApSuj936T615DaXOV+C2LlRxc213fQI+Q4=";
-  };
-
-  srccadical =
-    (cadical.override {
-      version = "3.0.0";
-    }).src;
-
-  nativeBuildInputs = [
-    bison
-    cmake
-    flex
-    perl
-    makeWrapper
-  ];
 
   patches = [
     (replaceVars ./0001-Do-not-download-sources-in-cmake.patch {
@@ -74,14 +54,19 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "add_subdirectory(goto-gcc)" ""
   '';
 
-  postInstall = ''
-    # goto-cc expects ls_parse.py in PATH
-    mkdir -p $out/share/cbmc
-    mv $out/bin/ls_parse.py $out/share/cbmc/ls_parse.py
-    chmod +x $out/share/cbmc/ls_parse.py
-    wrapProgram $out/bin/goto-cc \
-      --prefix PATH : "$out/share/cbmc"
-  '';
+  nativeBuildInputs = [
+    bison
+    cmake
+    flex
+    perl
+    makeWrapper
+  ];
+
+  # TODO: add jbmc support
+  cmakeFlags = [
+    "-DWITH_JBMC=OFF"
+    "-Dsat_impl=cadical"
+  ];
 
   env.NIX_CFLAGS_COMPILE = toString (
     lib.optionals stdenv.cc.isClang [
@@ -96,16 +81,33 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
-  # TODO: add jbmc support
-  cmakeFlags = [
-    "-DWITH_JBMC=OFF"
-    "-Dsat_impl=cadical"
-  ];
+  postInstall = ''
+    # goto-cc expects ls_parse.py in PATH
+    mkdir -p $out/share/cbmc
+    mv $out/bin/ls_parse.py $out/share/cbmc/ls_parse.py
+    chmod +x $out/share/cbmc/ls_parse.py
+    wrapProgram $out/bin/goto-cc \
+      --prefix PATH : "$out/share/cbmc"
+  '';
+
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  srccadical =
+    (cadical.override {
+      version = "3.0.0";
+    }).src;
+
+  srcglucose = fetchFromGitHub {
+    hash = "sha256-+KrnXEJe7ApSuj936T615DaXOV+C2LlRxc213fQI+Q4=";
+    owner = "brunodutertre";
+    repo = "glucose-syrup";
+    rev = "0bb2afd3b9baace6981cbb8b4a1c7683c44968b7";
+  };
+
   versionCheckProgram = "${placeholder "out"}/bin/cbmc";
 
   passthru.updateScript = nix-update-script {

@@ -1,13 +1,13 @@
 {
+  lib,
+  fetchFromGitHub,
   _cuda,
   backendStdenv,
-  cuda_cudart,
-  cuda_nvcc,
   cudaMajorMinorVersion,
   cudaNamePrefix,
-  fetchFromGitHub,
+  cuda_cudart,
+  cuda_nvcc,
   flags,
-  lib,
   # passthru.updateScript
   gitUpdater,
 }:
@@ -16,11 +16,6 @@ let
   inherit (lib) licenses maintainers teams;
 in
 backendStdenv.mkDerivation (finalAttrs: {
-  __structuredAttrs = true;
-  strictDeps = true;
-
-  # NOTE: Depends on the CUDA package set, so use cudaNamePrefix.
-  name = "${cudaNamePrefix}-${finalAttrs.pname}-${finalAttrs.version}";
   pname = "gdrcopy";
   version = "2.6";
 
@@ -32,10 +27,6 @@ backendStdenv.mkDerivation (finalAttrs: {
   };
 
   outputs = [ "out" ];
-
-  nativeBuildInputs = [
-    cuda_nvcc
-  ];
 
   postPatch = ''
     nixLog "patching shebang in $PWD/config_arch"
@@ -69,7 +60,11 @@ backendStdenv.mkDerivation (finalAttrs: {
         'lib'
   '';
 
-  enableParallelBuilding = true;
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    cuda_nvcc
+  ];
 
   buildInputs = [
     cuda_cudart
@@ -88,11 +83,16 @@ backendStdenv.mkDerivation (finalAttrs: {
 
   # Tests require gdrdrv be installed (don't know how to communicate dependency on the driver).
   doCheck = false;
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
 
   installFlags = [
     "DESTDIR=${placeholder "out"}"
     "prefix=/"
   ];
+
+  # NOTE: Depends on the CUDA package set, so use cudaNamePrefix.
+  name = "${cudaNamePrefix}-${finalAttrs.pname}-${finalAttrs.version}";
 
   passthru.updateScript = gitUpdater {
     inherit (finalAttrs) pname version;
@@ -103,11 +103,13 @@ backendStdenv.mkDerivation (finalAttrs: {
     description = "Fast GPU memory copy library based on NVIDIA GPUDirect RDMA technology";
     homepage = "https://github.com/NVIDIA/gdrcopy";
     license = licenses.mit;
+    maintainers = [ maintainers.connorbaker ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ];
-    maintainers = [ maintainers.connorbaker ];
+
     teams = [ teams.cuda ];
   };
 })

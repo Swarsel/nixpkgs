@@ -1,8 +1,8 @@
 {
   lib,
-  autoreconfHook,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  autoreconfHook,
   wxwidgets_3_1,
   withGui ? true,
 }:
@@ -18,11 +18,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-4jtyFQVtde8ilTn5W/E6adQwX3fwC5T7EJU63mD2zM8=";
   };
 
-  nativeBuildInputs = [ autoreconfHook ] ++ lib.optional withGui wxwidgets_3_1;
-
-  buildInputs = lib.optional withGui wxwidgets_3_1;
-
   strictDeps = true;
+  nativeBuildInputs = [ autoreconfHook ] ++ lib.optional withGui wxwidgets_3_1;
+  buildInputs = lib.optional withGui wxwidgets_3_1;
 
   configureFlags = [
     (lib.enableFeature withGui "gui")

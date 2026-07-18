@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
   cmake,
+  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,7 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

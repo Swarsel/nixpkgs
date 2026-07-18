@@ -1,38 +1,27 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
-  zlib,
+  darwin,
   libffi,
   libxml2,
   llvmPackages_18,
   ncurses,
-  darwin,
   rustPlatform,
+  zlib,
 }:
 
 rustPlatform.buildRustPackage {
   pname = "ante";
   version = "0-unstable-2025-07-12";
+
   src = fetchFromGitHub {
     owner = "jfecher";
     repo = "ante";
     rev = "e1f68f00937ae39badcc42a48c0078b608f294bf";
-    fetchSubmodules = true;
     hash = "sha256-mbjV7S705bSseA/P31jiJiktpUEQ8hS+M4kcs2AM1/Y=";
+    fetchSubmodules = true;
   };
-
-  cargoHash = "sha256-cRF1JFqWpGGQO3fIGcatVY1pp65CvNeM/6LFYDJxdpM=";
-
-  strictDeps = true;
-
-  nativeBuildInputs = [ llvmPackages_18.llvm ];
-  buildInputs = [
-    zlib
-    libffi
-    libxml2
-    ncurses
-  ];
 
   postPatch = ''
     substituteInPlace tests/golden_tests.rs --replace-fail \
@@ -41,6 +30,19 @@ rustPlatform.buildRustPackage {
     substituteInPlace src/util/mod.rs \
       --replace-fail '"gcc"' '"${lib.getExe llvmPackages_18.clang}"'
   '';
+
+  strictDeps = true;
+  nativeBuildInputs = [ llvmPackages_18.llvm ];
+
+  buildInputs = [
+    zlib
+    libffi
+    libxml2
+    ncurses
+  ];
+
+  cargoHash = "sha256-cRF1JFqWpGGQO3fIGcatVY1pp65CvNeM/6LFYDJxdpM=";
+
   preBuild =
     let
       major = lib.versions.major llvmPackages_18.llvm.version;
@@ -54,6 +56,7 @@ rustPlatform.buildRustPackage {
       mkdir -p $ANTE_STDLIB_DIR
       cp -r $src/stdlib/* $ANTE_STDLIB_DIR
     '';
+
   # Ante uses the default LLVM target which, because we currently
   # don’t include a Darwin version in the target, seemingly defaults
   # to the host macOS version, which makes `ld(1)` warn about the
@@ -67,10 +70,10 @@ rustPlatform.buildRustPackage {
   '';
 
   meta = {
-    homepage = "https://antelang.org/";
     description = "Low-level functional language for exploring refinement types, lifetime inference, and algebraic effects";
-    mainProgram = "ante";
+    homepage = "https://antelang.org/";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ ehllie ];
+    mainProgram = "ante";
   };
 }

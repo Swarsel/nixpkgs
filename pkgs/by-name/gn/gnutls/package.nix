@@ -2,45 +2,43 @@
   lib,
   stdenv,
   fetchurl,
-  zlib,
-  libtasn1,
-  nettle,
-  pkg-config,
-  perl,
-  gmp,
-  libidn2,
-  libiconv,
-  texinfo,
-  unbound,
-  dns-root-data,
-  gettext,
-  util-linuxMinimal,
-  cxxBindings ? !stdenv.hostPlatform.isStatic, # tries to link libstdc++.so
-  tpmSupport ? false,
-  trousers,
-  which,
-  net-tools,
-  libunistring,
-  withP11-kit ? !stdenv.hostPlatform.isStatic,
-  p11-kit,
   # certificate compression - only zlib now, more possible: zstd, brotli
-
   # for passthru.tests
   curlWithGnuTls,
+  dns-root-data,
   emacs,
   ffmpeg,
+  gettext,
+  gitUpdater,
+  gmp,
   haskellPackages,
   knot-resolver_5,
+  libiconv,
+  libidn2,
+  libtasn1,
+  libunistring,
+  net-tools,
+  nettle,
   ngtcp2-gnutls,
   ocamlPackages,
+  openconnect,
+  p11-kit,
+  perl,
+  pkg-config,
   pkgsStatic,
   python3Packages,
   qemu,
   rsyslog,
-  openconnect,
   samba,
-
-  gitUpdater,
+  texinfo,
+  trousers,
+  unbound,
+  util-linuxMinimal,
+  which,
+  zlib,
+  cxxBindings ? !stdenv.hostPlatform.isStatic, # tries to link libstdc++.so
+  tpmSupport ? false,
+  withP11-kit ? !stdenv.hostPlatform.isStatic,
 }:
 
 let
@@ -59,6 +57,7 @@ let
 in
 
 stdenv.mkDerivation rec {
+  inherit doCheck;
   pname = "gnutls";
   version = "3.8.13";
 
@@ -76,10 +75,6 @@ stdenv.mkDerivation rec {
     "man"
     "devdoc"
   ];
-
-  # Not normally useful docs.
-  outputInfo = "devdoc";
-  outputDoc = "devdoc";
 
   patches = [
     ./nix-ssl-cert-file.patch
@@ -112,7 +107,32 @@ stdenv.mkDerivation rec {
     sed '2iexit 77' -i tests/system-override-compress-cert.sh
   '';
 
-  preConfigure = "patchShebangs .";
+  nativeBuildInputs = [
+    perl
+    pkg-config
+    texinfo
+  ]
+  ++ lib.optionals doCheck [
+    which
+    net-tools
+    util-linux
+  ];
+
+  buildInputs = [
+    libtasn1
+    libidn2
+    zlib
+    gmp
+    libunistring
+    unbound
+    gettext
+    libiconv
+  ]
+  ++ lib.optional withP11-kit p11-kit
+  ++ lib.optional (tpmSupport && stdenv.hostPlatform.isLinux) trousers;
+
+  propagatedBuildInputs = [ nettle ];
+
   configureFlags =
     lib.optionals withP11-kit [
       "--with-default-trust-store-file=/etc/ssl/certs/ca-certificates.crt"
@@ -143,37 +163,7 @@ stdenv.mkDerivation rec {
       "--with-zlib=link"
     ];
 
-  enableParallelBuilding = true;
-
-  hardeningDisable = [ "trivialautovarinit" ];
-
-  buildInputs = [
-    libtasn1
-    libidn2
-    zlib
-    gmp
-    libunistring
-    unbound
-    gettext
-    libiconv
-  ]
-  ++ lib.optional withP11-kit p11-kit
-  ++ lib.optional (tpmSupport && stdenv.hostPlatform.isLinux) trousers;
-
-  nativeBuildInputs = [
-    perl
-    pkg-config
-    texinfo
-  ]
-  ++ lib.optionals doCheck [
-    which
-    net-tools
-    util-linux
-  ];
-
-  propagatedBuildInputs = [ nettle ];
-
-  inherit doCheck;
+  preConfigure = "patchShebangs .";
   # stdenv's `NIX_SSL_CERT_FILE=/no-cert-file.crt` breaks tests.
   # Also empty files won't work, and we want to avoid potentially impure /etc/
   preCheck = "NIX_SSL_CERT_FILE=${./dummy.crt}";
@@ -193,9 +183,11 @@ stdenv.mkDerivation rec {
         --replace "-lunistring" ""
     '';
 
-  passthru.updateScript = gitUpdater {
-    url = "https://gitlab.com/gnutls/gnutls.git";
-  };
+  enableParallelBuilding = true;
+  hardeningDisable = [ "trivialautovarinit" ];
+  outputDoc = "devdoc";
+  # Not normally useful docs.
+  outputInfo = "devdoc";
 
   passthru.tests = {
     inherit
@@ -208,11 +200,16 @@ stdenv.mkDerivation rec {
       samba
       openconnect
       ;
+
     #inherit (ocamlPackages) ocamlnet;
     #haskell-gnutls = haskellPackages.gnutls;
     python3-gnutls = python3Packages.python3-gnutls;
     rsyslog = rsyslog.override { withGnutls = true; };
     static = pkgsStatic.gnutls;
+  };
+
+  passthru.updateScript = gitUpdater {
+    url = "https://gitlab.com/gnutls/gnutls.git";
   };
 
   meta = {

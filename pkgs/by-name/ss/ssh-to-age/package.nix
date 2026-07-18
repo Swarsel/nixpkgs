@@ -16,14 +16,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-FveYuYa6C3R50+jdAlU1jorRw/mg482eZ4ZJ8Pu+R0s=";
+  doCheck = true;
 
   checkPhase = ''
     runHook preCheck
     go test ./...
     runHook postCheck
   '';
-
-  doCheck = true;
 
   meta = {
     description = "Convert ssh private keys in ed25519 format to age keys";

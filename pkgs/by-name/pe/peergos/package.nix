@@ -4,11 +4,11 @@
   fetchFromGitHub,
   ant,
   jdk25,
-  openjdk8-bootstrap,
   jre,
-  stripJavaArchivesHook,
   makeWrapper,
   nix-update-script,
+  openjdk8-bootstrap,
+  stripJavaArchivesHook,
 }:
 
 let
@@ -28,11 +28,11 @@ let
         --replace-fail gcc cc
     '';
 
-    makeFlags = [ "jni" ];
-
     nativeBuildInputs = [
       openjdk8-bootstrap # javah
     ];
+
+    makeFlags = [ "jni" ];
 
     installPhase = ''
       install -Dvm644 libtweetnacl.so $out/lib/libtweetnacl.so
@@ -51,17 +51,17 @@ stdenv.mkDerivation rec {
     fetchSubmodules = true;
   };
 
+  postPatch = ''
+    substituteInPlace build.xml \
+      --replace-fail '${"\${repository.version}"}' '${version}'
+  '';
+
   nativeBuildInputs = [
     ant
     jdk25
     stripJavaArchivesHook
     makeWrapper
   ];
-
-  postPatch = ''
-    substituteInPlace build.xml \
-      --replace-fail '${"\${repository.version}"}' '${version}'
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -86,19 +86,22 @@ stdenv.mkDerivation rec {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/Peergos/web-ui/releases/tag/v${version}";
     description = "P2P, secure file storage, social network and application protocol";
-    downloadPage = "https://github.com/Peergos/web-ui";
     homepage = "https://peergos.org/";
+    changelog = "https://github.com/Peergos/web-ui/releases/tag/v${version}";
+
     license = [
       lib.licenses.agpl3Only # server
       lib.licenses.gpl3Only # web-ui
     ];
-    mainProgram = "peergos";
+
     maintainers = with lib.maintainers; [
       raspher
       christoph-heiss
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "peergos";
+    downloadPage = "https://github.com/Peergos/web-ui";
   };
 }

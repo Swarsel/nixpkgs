@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   cmake,
   git,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,26 +20,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-beWw+OgF4zCepv/7NQiwXOA8qMwMb8Z3C6icywT+Jr0=";
   };
 
-  cargoHash = "sha256-+B7mjiCtuxPQ/zSMy8Lw6r5aGB+PVxhRES6zJhD5NAE=";
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
     git
   ];
 
-  cargoBuildFlags = [
-    "-p"
-    "nodtool"
-    "-p"
-    "nod-ffi"
-  ];
-
-  cargoTestFlags = [
-    "-p"
-    "nodtool"
-    "-p"
-    "nod-ffi"
-  ];
+  cargoHash = "sha256-+B7mjiCtuxPQ/zSMy8Lw6r5aGB+PVxhRES6zJhD5NAE=";
 
   installPhase = ''
     runHook preInstall
@@ -69,14 +57,29 @@ rustPlatform.buildRustPackage (finalAttrs: {
     runHook postInstall
   '';
 
-  __structuredAttrs = true;
-  strictDeps = true;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
+  __structuredAttrs = true;
+
+  cargoBuildFlags = [
+    "-p"
+    "nodtool"
+    "-p"
+    "nod-ffi"
+  ];
+
+  cargoTestFlags = [
+    "-p"
+    "nodtool"
+    "-p"
+    "nod-ffi"
+  ];
+
   versionCheckProgramArg = "--version";
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -86,10 +89,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "GameCube/Wii disc image CLI tool and C library";
     homepage = "https://github.com/encounter/nod";
     changelog = "https://github.com/encounter/nod/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ liberodark ];
     platforms = lib.platforms.linux;
     mainProgram = "nodtool";

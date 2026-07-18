@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   lxml,
   numpy,
   pytestCheckHook,
   scikit-image,
+  setuptools,
 }:
 let
   version = "1.2.1";
 in
 buildPythonPackage {
-  pname = "mung";
   inherit version;
-  pyproject = true;
+  pname = "mung";
 
   src = fetchFromGitHub {
     owner = "OMR-Research";
@@ -32,7 +31,7 @@ buildPythonPackage {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mung" ];
 
   meta = {

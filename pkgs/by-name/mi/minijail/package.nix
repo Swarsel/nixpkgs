@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitiles,
-  libcap,
   installShellFiles,
+  libcap,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,22 +16,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-15TQnTFIx2DSdAQZPCVhBPs8a+V6YV3IrA1LqfMWcRQ=";
   };
 
-  buildInputs = [ libcap ];
-
-  nativeBuildInputs = [ installShellFiles ];
-
-  makeFlags = [
-    "ECHO=echo"
-    "LIBDIR=$(out)/lib"
-  ];
-
   postPatch = ''
     substituteInPlace Makefile --replace /bin/echo echo
     patchShebangs platform2_preinstall.sh
   '';
 
-  # causes redefinition of _FORTIFY_SOURCE
-  hardeningDisable = [ "fortify3" ];
+  nativeBuildInputs = [ installShellFiles ];
+  buildInputs = [ libcap ];
+
+  makeFlags = [
+    "ECHO=echo"
+    "LIBDIR=$(out)/lib"
+  ];
 
   installPhase = ''
     ./platform2_preinstall.sh ${finalAttrs.version} $out/include/chromeos
@@ -48,16 +44,20 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   enableParallelBuilding = true;
+  # causes redefinition of _FORTIFY_SOURCE
+  hardeningDisable = [ "fortify3" ];
 
   meta = {
-    homepage = "https://chromium.googlesource.com/chromiumos/platform/minijail/+/refs/heads/main/README.md";
     description = "Sandboxing library and application using Linux namespaces and capabilities";
+    homepage = "https://chromium.googlesource.com/chromiumos/platform/minijail/+/refs/heads/main/README.md";
     changelog = "https://chromium.googlesource.com/chromiumos/platform/minijail/+/refs/tags/linux-v${finalAttrs.version}";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       pcarrier
       qyliss
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "minijail0";
   };

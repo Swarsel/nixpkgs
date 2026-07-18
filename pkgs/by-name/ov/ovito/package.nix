@@ -1,23 +1,23 @@
 {
   lib,
   stdenv,
-  fetchFromGitLab,
   fetchurl,
-  makeDesktopItem,
-  cmake,
+  fetchFromGitLab,
   boost,
   bzip2,
+  cmake,
+  copyDesktopItems,
   ffmpeg,
   fftwSinglePrec,
   hdf5,
+  imagemagick,
+  makeDesktopItem,
   muparser,
   netcdf,
+  nix-update-script,
   openssl,
   python3,
   qt6Packages,
-  imagemagick,
-  copyDesktopItems,
-  nix-update-script,
   wrapGAppsHook3,
 }:
 
@@ -64,7 +64,17 @@ stdenv.mkDerivation (finalAttrs: {
     qt6Packages.qtwayland
   ];
 
-  dontWrapGApps = true;
+  postInstall =
+    let
+      icon = fetchurl {
+        hash = "sha256-FOmIUeXem+4MjavQNag0UIlcR2wa2emJjivwxoJh6fI=";
+        url = "https://www.ovito.org/wp-content/uploads/logo_rgb-768x737.png";
+      };
+    in
+    ''
+      mkdir -p $out/share/icons/hicolor/512x512/apps
+      magick ${icon} -resize 512x512 $out/share/icons/hicolor/512x512/apps/ovito.png
+    '';
 
   preFixup = ''
     qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
@@ -73,46 +83,38 @@ stdenv.mkDerivation (finalAttrs: {
   # manually create a desktop file
   desktopItems = [
     (makeDesktopItem {
-      name = "ovito";
+      categories = [ "Science" ];
       comment = "Open Visualization Tool";
+      desktopName = "ovito";
       exec = "ovito";
       icon = "ovito";
-      terminal = false;
+      name = "ovito";
       startupNotify = false;
-      desktopName = "ovito";
       startupWMClass = "Ovito";
-      categories = [ "Science" ];
+      terminal = false;
     })
   ];
 
-  postInstall =
-    let
-      icon = fetchurl {
-        url = "https://www.ovito.org/wp-content/uploads/logo_rgb-768x737.png";
-        hash = "sha256-FOmIUeXem+4MjavQNag0UIlcR2wa2emJjivwxoJh6fI=";
-      };
-    in
-    ''
-      mkdir -p $out/share/icons/hicolor/512x512/apps
-      magick ${icon} -resize 512x512 $out/share/icons/hicolor/512x512/apps/ovito.png
-    '';
-
+  dontWrapGApps = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Scientific visualization and analysis software for atomistic and particle simulation data";
-    mainProgram = "ovito";
     homepage = "https://ovito.org";
     changelog = "https://docs.ovito.org/new_features.html";
+
     license = with lib.licenses; [
       gpl3Only
       mit
     ];
+
     maintainers = with lib.maintainers; [
       twhitehead
       chn
       chillcicada
     ];
+
+    mainProgram = "ovito";
     broken = stdenv.hostPlatform.isDarwin; # clang-11: error: no such file or directory: '$-DOVITO_COPYRIGHT_NOTICE=...
   };
 })

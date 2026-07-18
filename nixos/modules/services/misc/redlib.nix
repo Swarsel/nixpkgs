@@ -44,31 +44,38 @@ in
   options = {
     services.redlib = {
       enable = mkEnableOption "Private front-end for Reddit";
-
       package = mkPackageOption pkgs "redlib" { };
 
       address = mkOption {
         default = "0.0.0.0";
+        description = "The address to listen on";
         example = "127.0.0.1";
         type = types.str;
-        description = "The address to listen on";
+      };
+
+      openFirewall = mkOption {
+        default = false;
+        description = "Open ports in the firewall for the redlib web interface";
+        type = types.bool;
       };
 
       port = mkOption {
         default = 8080;
+        description = "The port to listen on";
         example = 8000;
         type = types.port;
-        description = "The port to listen on";
-      };
-
-      openFirewall = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Open ports in the firewall for the redlib web interface";
       };
 
       settings = lib.mkOption {
+        default = { };
+
+        description = ''
+          See [GitHub](https://github.com/redlib-org/redlib/tree/main?tab=readme-ov-file#configuration) for available settings.
+        '';
+
         type = lib.types.submodule {
+          options = { };
+
           freeformType =
             with types;
             attrsOf (
@@ -78,22 +85,27 @@ in
                 str
               ])
             );
-          options = { };
         };
-        default = { };
-        description = ''
-          See [GitHub](https://github.com/redlib-org/redlib/tree/main?tab=readme-ov-file#configuration) for available settings.
-        '';
       };
     };
   };
 
   config = mkIf cfg.enable {
+    networking.firewall = mkIf cfg.openFirewall {
+      allowedTCPPorts = [ cfg.port ];
+    };
+
     systemd.packages = [ cfg.package ];
+
     systemd.services.redlib = {
-      wantedBy = [ "default.target" ];
       environment = mapAttrs (_: v: if isBool v then boolToString' v else toString v) cfg.settings;
+
       serviceConfig = {
+        ExecStart = [
+          ""
+          "${lib.getExe cfg.package} ${args}"
+        ];
+
         # Hardening
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
@@ -112,14 +124,17 @@ in
         ProtectProc = "invisible";
         ProtectSystem = "full";
         RemoveIPC = true;
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "~@mount"
           "~@swap"
@@ -133,12 +148,8 @@ in
           "~@clock"
           "~@privileged"
         ];
-        UMask = "0027";
 
-        ExecStart = [
-          ""
-          "${lib.getExe cfg.package} ${args}"
-        ];
+        UMask = "0027";
       }
       // (
         if (cfg.port < 1024) then
@@ -148,16 +159,14 @@ in
           }
         else
           {
+            CapabilityBoundingSet = false;
             # A private user cannot have process capabilities on the host's user
             # namespace and thus CAP_NET_BIND_SERVICE has no effect.
             PrivateUsers = true;
-            CapabilityBoundingSet = false;
           }
       );
-    };
 
-    networking.firewall = mkIf cfg.openFirewall {
-      allowedTCPPorts = [ cfg.port ];
+      wantedBy = [ "default.target" ];
     };
   };
 

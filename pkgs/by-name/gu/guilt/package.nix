@@ -1,16 +1,16 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   asciidoc,
   docbook_xml_dtd_45,
   docbook_xsl,
-  fetchFromGitHub,
   gawk,
   git,
   gnused,
-  lib,
   makeWrapper,
   openssl,
   perl,
-  stdenv,
   xmlto,
 }:
 
@@ -25,12 +25,11 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-7OgRbMGYWtGvrZxKfJe0CkpmU3AUkPebF5NyTsfXeGA=";
   };
 
-  doCheck = true;
-
   patches = [
     ./guilt-help-mandir.patch
     ./darwin-fix.patch
   ];
+
   nativeBuildInputs = [
     asciidoc
     docbook_xml_dtd_45
@@ -39,12 +38,14 @@ stdenv.mkDerivation (finalAttrs: {
     perl
     xmlto
   ];
+
   buildInputs = [
     gawk
     git
     gnused
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ openssl ];
+
   makeFlags = [
     "PREFIX=$(out)"
   ];
@@ -52,6 +53,8 @@ stdenv.mkDerivation (finalAttrs: {
   postBuild = ''
     make -j $NIX_BUILD_CORES doc
   '';
+
+  doCheck = true;
 
   preCheck = ''
     patchShebangs regression/run-tests regression/*.sh
@@ -67,6 +70,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Manage patches like quilt, on top of a git repository";
+
     longDescription = ''
       Andrew Morton originally developed a set of scripts for
       maintaining kernel patches outside of any SCM tool. Others
@@ -86,9 +90,10 @@ stdenv.mkDerivation (finalAttrs: {
       revision control, so you can have a separate history of changes
       made to your patches.
     '';
+
     homepage = "https://github.com/jeffpc/guilt";
-    maintainers = with lib.maintainers; [ javimerino ];
     license = [ lib.licenses.gpl2 ];
+    maintainers = with lib.maintainers; [ javimerino ];
     platforms = lib.platforms.all;
     mainProgram = "guilt";
   };

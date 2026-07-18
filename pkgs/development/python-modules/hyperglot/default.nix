@@ -1,21 +1,20 @@
 {
   lib,
-  nix-update-script,
   fetchFromGitHub,
   buildPythonApplication,
-  setuptools,
-  pytestCheckHook,
   click,
-  fonttools,
-  uharfbuzz,
-  pyyaml,
   colorlog,
+  fonttools,
+  nix-update-script,
   packaging,
+  pytestCheckHook,
+  pyyaml,
+  setuptools,
+  uharfbuzz,
 }:
 buildPythonApplication rec {
   pname = "hyperglot";
   version = "0.8.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rosettatype";
@@ -23,6 +22,9 @@ buildPythonApplication rec {
     tag = version;
     hash = "sha256-fiiDYggMBwd7nTHeQLWnSc3BNDyU+JUgAIk8pHLntUY=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
 
   dependencies = [
     click
@@ -33,11 +35,8 @@ buildPythonApplication rec {
     packaging
   ];
 
-  build-system = [ setuptools ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
   pythonImportsCheck = [ "hyperglot" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

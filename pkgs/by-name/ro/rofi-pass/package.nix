@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeBinaryWrapper,
-  unstableGitUpdater,
   coreutils,
-  util-linuxMinimal,
-  gnugrep,
-  libnotify,
-  pwgen,
   findutils,
   gawk,
+  gnugrep,
   gnused,
-  rofi,
-  # wayland-only deps
-  pass-wayland,
-  wl-clipboard,
-  wtype,
+  libnotify,
+  makeBinaryWrapper,
   # x11-only deps
   pass,
+  # wayland-only deps
+  pass-wayland,
+  pwgen,
+  rofi,
+  unstableGitUpdater,
+  util-linuxMinimal,
+  wl-clipboard,
+  wtype,
   xclip,
   xdotool,
   # backend selector
@@ -43,8 +43,6 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = [ makeBinaryWrapper ];
 
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -55,6 +53,23 @@ stdenv.mkDerivation {
     cp -a config.example $out/share/doc/rofi-pass/config.example
 
     runHook postInstall
+  '';
+
+  dontBuild = true;
+
+  fixupPhase = ''
+    runHook preFixup
+
+    patchShebangs $out/bin
+
+    wrapProgram $out/bin/rofi-pass \
+      --prefix PATH : "$wrapperPath" \
+      --set-default ROFI_PASS_BACKEND ${if backend == "wayland" then "wtype" else "xdotool"} \
+      --set-default ROFI_PASS_CLIPBOARD_BACKEND ${
+        if backend == "wayland" then "wl-clipboard" else "xclip"
+      }
+
+    runHook postFixup
   '';
 
   wrapperPath = lib.makeBinPath (
@@ -81,29 +96,14 @@ stdenv.mkDerivation {
     ]
   );
 
-  fixupPhase = ''
-    runHook preFixup
-
-    patchShebangs $out/bin
-
-    wrapProgram $out/bin/rofi-pass \
-      --prefix PATH : "$wrapperPath" \
-      --set-default ROFI_PASS_BACKEND ${if backend == "wayland" then "wtype" else "xdotool"} \
-      --set-default ROFI_PASS_CLIPBOARD_BACKEND ${
-        if backend == "wayland" then "wl-clipboard" else "xclip"
-      }
-
-    runHook postFixup
-  '';
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "Script to make rofi work with password-store";
-    mainProgram = "rofi-pass";
     homepage = "https://github.com/carnager/rofi-pass";
     license = lib.licenses.gpl3;
-    platforms = with lib.platforms; linux;
     maintainers = [ ];
+    platforms = with lib.platforms; linux;
+    mainProgram = "rofi-pass";
   };
 }

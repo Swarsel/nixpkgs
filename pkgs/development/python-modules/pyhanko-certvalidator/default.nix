@@ -1,26 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  nix-update-script,
-
-  asn1crypto,
-  cryptography,
-  oscrypto,
-  requests,
-  uritools,
-
   aiohttp,
+  asn1crypto,
+  buildPythonPackage,
+  cryptography,
   freezegun,
+  nix-update-script,
+  oscrypto,
   pytest-asyncio,
   pytestCheckHook,
+  requests,
   setuptools,
+  uritools,
 }:
 
 buildPythonPackage rec {
   pname = "pyhanko-certvalidator";
   version = "0.31.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "MatthiasValvekens";
@@ -29,14 +26,19 @@ buildPythonPackage rec {
     hash = "sha256-mZ9u3mQ8JZIq+G1iwNQST8r7/rCWi/UW0j1xfeV9zFM=";
   };
 
-  sourceRoot = "${src.name}/pkgs/pyhanko-certvalidator";
-
   postPatch = ''
     substituteInPlace src/pyhanko_certvalidator/version.py \
       --replace-fail "0.0.0.dev1" "${version}" \
       --replace-fail "(0, 0, 0, 'dev1')" "tuple(\"${version}\".split(\".\"))"
     substituteInPlace pyproject.toml --replace-fail "0.0.0.dev1" "${version}"
   '';
+
+  nativeCheckInputs = [
+    aiohttp
+    freezegun
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -48,14 +50,9 @@ buildPythonPackage rec {
     uritools
   ];
 
-  nativeCheckInputs = [
-    aiohttp
-    freezegun
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyhanko_certvalidator" ];
+  sourceRoot = "${src.name}/pkgs/pyhanko-certvalidator";
 
   passthru.updateScript = nix-update-script {
     extraArgs = [

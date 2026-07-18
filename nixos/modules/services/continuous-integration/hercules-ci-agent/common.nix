@@ -7,8 +7,8 @@
 {
   config,
   lib,
-  options,
   pkgs,
+  options,
   ...
 }:
 let
@@ -47,8 +47,8 @@ in
 
   options.services.hercules-ci-agent = {
     enable = mkOption {
-      type = types.bool;
       default = false;
+
       description = ''
         Enable to run Hercules CI Agent as a system service.
 
@@ -57,8 +57,12 @@ in
 
         Support is available at [help@hercules-ci.com](mailto:help@hercules-ci.com).
       '';
+
+      type = types.bool;
     };
+
     package = mkPackageOption pkgs "hercules-ci-agent" { };
+
     settings = mkOption {
       description = ''
         These settings are written to the {file}`agent.toml` file.
@@ -67,6 +71,7 @@ in
 
         For the exhaustive list of settings, see <https://docs.hercules-ci.com/hercules-ci/reference/agent-config/>.
       '';
+
       type = types.submoduleWith { modules = [ settingsModule ]; };
     };
 
@@ -77,12 +82,14 @@ in
       default.nix on both NixOS and nix-darwin.
     */
     tomlFile = mkOption {
-      type = types.path;
-      internal = true;
       defaultText = lib.literalMD "generated `hercules-ci-agent.toml`";
+
       description = ''
         The fully assembled config file.
       '';
+
+      internal = true;
+      type = types.path;
     };
   };
 
@@ -93,6 +100,7 @@ in
         assertion =
           (cfg.settings.nixUserIsTrusted or false)
           -> builtins.match ".*(^|\n)[ \t]*trusted-users[ \t]*=.*" config.nix.extraOptions == null;
+
         message = ''
           hercules-ci-agent: Please do not set `trusted-users` in `nix.extraOptions`.
 
@@ -107,17 +115,20 @@ in
         '';
       }
     ];
+
     nix.extraOptions = ''
       # A store path that was missing at first may well have finished building,
       # even shortly after the previous lookup. This *also* applies to the daemon.
       narinfo-cache-negative-ttl = 0
     '';
+
     services.hercules-ci-agent = {
-      tomlFile = format.generate "hercules-ci-agent.toml" cfg.settings;
       settings.config._module.args = {
-        packageOption = options.services.hercules-ci-agent.package;
         inherit pkgs;
+        packageOption = options.services.hercules-ci-agent.package;
       };
+
+      tomlFile = format.generate "hercules-ci-agent.toml" cfg.settings;
     };
   };
 }

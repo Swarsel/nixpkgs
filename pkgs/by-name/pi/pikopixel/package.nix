@@ -1,7 +1,7 @@
 {
   lib,
-  clangStdenv,
   fetchurl,
+  clangStdenv,
   gnustep-back,
   wrapGNUstepAppsHook,
 }:
@@ -14,8 +14,6 @@ clangStdenv.mkDerivation rec {
     url = "https://twilightedge.com/downloads/PikoPixel.Sources.${version}.tar.gz";
     sha256 = "1b27npgsan2nx1p581b9q2krx4506yyd6s34r4sf1r9x9adshm77";
   };
-
-  sourceRoot = "PikoPixel.Sources.${version}/PikoPixel";
 
   nativeBuildInputs = [
     wrapGNUstepAppsHook
@@ -36,13 +34,15 @@ clangStdenv.mkDerivation rec {
       PikoPixel.app/Resources/PikoPixel.desktop > $out/share/applications/PikoPixel.desktop
   '';
 
+  sourceRoot = "PikoPixel.Sources.${version}/PikoPixel";
+
   meta = {
     description = "Application for drawing and editing pixel-art images";
-    mainProgram = "PikoPixel";
     homepage = "https://twilightedge.com/mac/pikopixel/";
-    downloadPage = "https://twilightedge.com/mac/pikopixel/";
     license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.all;
+    mainProgram = "PikoPixel";
+    downloadPage = "https://twilightedge.com/mac/pikopixel/";
   };
 }

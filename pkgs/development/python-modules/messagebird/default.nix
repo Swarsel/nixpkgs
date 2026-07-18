@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  requests,
-  pyjwt,
+  buildPythonPackage,
   mock,
-  python-dateutil,
+  pyjwt,
   pytestCheckHook,
+  python-dateutil,
+  requests,
 }:
 
 buildPythonPackage rec {
   pname = "messagebird";
   version = "2.2.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "messagebird";
@@ -32,12 +31,13 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "messagebird" ];
-
   disabledTestPaths = [
     # ValueError: not enough values to unpack (expected 6, got 0)
     "tests/test_request_validator.py"
   ];
+
+  format = "setuptools";
+  pythonImportsCheck = [ "messagebird" ];
 
   meta = {
     description = "Client for MessageBird's REST API";

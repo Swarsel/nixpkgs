@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchurl,
+  dconf,
   desktop-file-utils,
-  meson,
-  ninja,
-  vala,
-  libxslt,
-  pkg-config,
+  docbook-xsl-nons,
+  gettext,
   glib,
+  gnome,
+  gobject-introspection,
   gtk3,
   libhandy,
-  gnome,
-  dconf,
   libxml2,
-  gettext,
-  docbook-xsl-nons,
+  libxslt,
+  meson,
+  ninja,
+  pkg-config,
+  vala,
   wrapGAppsHook3,
-  gobject-introspection,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -64,11 +64,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "GSettings editor for GNOME";
-    mainProgram = "dconf-editor";
     homepage = "https://apps.gnome.org/DconfEditor/";
     changelog = "https://gitlab.gnome.org/GNOME/dconf-editor/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
     license = lib.licenses.gpl3Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.unix;
+    mainProgram = "dconf-editor";
+    teams = [ lib.teams.gnome ];
   };
 })

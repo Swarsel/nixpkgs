@@ -1,24 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  readchar,
+  buildPythonPackage,
   colorama,
-
   # tests
   pytestCheckHook,
+  # dependencies
+  readchar,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "cutie";
   version = "0.3.2";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "kamik423";
@@ -36,6 +31,9 @@ buildPythonPackage (finalAttrs: {
         'cutie = types.ModuleType("cutie")'
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+  __structuredAttrs = true;
+
   build-system = [
     setuptools
   ];
@@ -45,8 +43,7 @@ buildPythonPackage (finalAttrs: {
     readchar
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "cutie" ];
 
   meta = {
@@ -54,6 +51,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/kamik423/cutie";
     changelog = "https://github.com/kamik423/cutie/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       gigahawk
     ];

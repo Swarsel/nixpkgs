@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
-  cairo,
   fetchFromGitHub,
+  cairo,
   nix-update-script,
   pango,
   patchelf,
   pkg-config,
+  rustPlatform,
   wayland,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-pYmFEqMMEsSTYBwxbD2l2F+lO7WuVt1FFmnkCCoaXf0=";
   };
 
-  cargoHash = "sha256-TM3Jsgmp5idFIOMm+qz0rNEWEhcGeQywF7ZmKlg6CXg=";
-
   nativeBuildInputs = [
     patchelf
     pkg-config
@@ -31,6 +29,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     cairo
     pango
   ];
+
+  cargoHash = "sha256-TM3Jsgmp5idFIOMm+qz0rNEWEhcGeQywF7ZmKlg6CXg=";
 
   postFixup = ''
     patchelf --add-rpath ${lib.makeLibraryPath [ wayland ]} $out/bin/wl-tray-bridge
@@ -42,8 +42,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Bridges the gap between the StatusNotifierItem protocols and wayland compositors implementing jay-tray-v1";
     homepage = "https://github.com/mahkoh/wl-tray-bridge";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ uku3lig ];
+    platforms = lib.platforms.linux;
     mainProgram = "wl-tray-bridge";
   };
 })

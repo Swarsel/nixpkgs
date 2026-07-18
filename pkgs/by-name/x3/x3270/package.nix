@@ -1,26 +1,26 @@
 {
-  stdenv,
   lib,
-  libiconv,
+  stdenv,
   fetchurl,
-  m4,
-  expat,
-  libx11,
-  libxt,
-  libxaw,
-  libxmu,
   bdftopcf,
-  mkfontdir,
+  expat,
   font-adobe-100dpi,
   font-adobe-utopia-100dpi,
   font-bh-100dpi,
   font-bh-lucidatypewriter-100dpi,
   font-bitstream-100dpi,
-  tcl,
+  libiconv,
+  libx11,
+  libxaw,
+  libxmu,
+  libxt,
+  m4,
+  mkfontdir,
   ncurses,
   openssl,
   python3,
   readline,
+  tcl,
 }:
 let
   majorVersion = "4";
@@ -41,33 +41,11 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace Common/mkversion.py --replace-fail "int(os.environ['SOURCE_DATE_EPOCH'])" "1"
   '';
 
-  buildFlags = lib.optional stdenv.hostPlatform.isLinux "unix";
-
-  configureFlags = lib.optionals stdenv.hostPlatform.isDarwin [
-    "--enable-c3270"
-    "--enable-pr3270"
-    "--enable-s3270"
-    "--enable-tcl3270"
-  ];
-
-  enableParallelBuilding = true;
-
-  preBuild = ''
-    if [ -n "$SOURCE_DATE_EPOCH" ]; then
-      export SOURCE_DATE_EPOCH="$(date -u -d "@$SOURCE_DATE_EPOCH" '+%a %b %d %H:%M:%S UTC %Y')"
-    fi
-  '';
-
-  postBuild = ''
-    make install.man
-  '';
-
-  pathsToLink = [ "/share/man" ];
-
   nativeBuildInputs = [
     m4
     python3
   ];
+
   buildInputs = [
     expat
     libx11
@@ -90,6 +68,28 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     libiconv
   ];
+
+  configureFlags = lib.optionals stdenv.hostPlatform.isDarwin [
+    "--enable-c3270"
+    "--enable-pr3270"
+    "--enable-s3270"
+    "--enable-tcl3270"
+  ];
+
+  buildFlags = lib.optional stdenv.hostPlatform.isLinux "unix";
+
+  preBuild = ''
+    if [ -n "$SOURCE_DATE_EPOCH" ]; then
+      export SOURCE_DATE_EPOCH="$(date -u -d "@$SOURCE_DATE_EPOCH" '+%a %b %d %H:%M:%S UTC %Y')"
+    fi
+  '';
+
+  postBuild = ''
+    make install.man
+  '';
+
+  enableParallelBuilding = true;
+  pathsToLink = [ "/share/man" ];
 
   meta = {
     description = "IBM 3270 terminal emulator for the X Window System";

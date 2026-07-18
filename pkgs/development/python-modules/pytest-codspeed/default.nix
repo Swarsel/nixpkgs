@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cffi,
-  fetchFromGitHub,
+  pytest,
   pytest-benchmark,
   pytest-cov-stub,
   pytest-xdist,
-  pytest,
   pytestCheckHook,
   rich,
   semver,
@@ -15,17 +15,16 @@
 
 let
   instrument-hooks = fetchFromGitHub {
+    hash = "sha256-JTSH4wOpOGJ97iV6sagiRUu8d3sKM2NJRXcB3NmozNQ=";
     owner = "CodSpeedHQ";
     repo = "instrument-hooks";
     rev = "b003e5024d61cfb784d6ac6f3ffd7d61bf7b9ec9";
-    hash = "sha256-JTSH4wOpOGJ97iV6sagiRUu8d3sKM2NJRXcB3NmozNQ=";
   };
 in
 
 buildPythonPackage rec {
   pname = "pytest-codspeed";
   version = "4.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "CodSpeedHQ";
@@ -41,12 +40,18 @@ buildPythonPackage rec {
     popd
   '';
 
+  buildInputs = [ pytest ];
+
+  nativeCheckInputs = [
+    semver
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
   build-system = [
     cffi
     setuptools
   ];
-
-  buildInputs = [ pytest ];
 
   dependencies = [
     cffi
@@ -60,12 +65,7 @@ buildPythonPackage rec {
     ];
   };
 
-  nativeCheckInputs = [
-    semver
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pytest_codspeed" ];
 
   meta = {

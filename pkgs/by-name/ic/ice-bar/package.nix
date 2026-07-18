@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
-  unzip,
   fetchurl,
   nix-update-script,
+  stdenvNoCC,
+  unzip,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -14,8 +14,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     url = "https://github.com/jordanbaird/Ice/releases/download/${finalAttrs.version}/Ice.zip";
     hash = "sha256-13DoFZdWbdLSNj/rNQ+AjHqS42PflcUeSBQOsw5FLMk=";
   };
-
-  sourceRoot = ".";
 
   nativeBuildInputs = [ unzip ];
 
@@ -28,14 +26,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Powerful menu bar manager for macOS";
     homepage = "https://icemenubar.app/";
     license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ _4evy ];
     platforms = lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

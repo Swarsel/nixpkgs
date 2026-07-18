@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchgit,
 }:
 
@@ -27,8 +27,8 @@ stdenv.mkDerivation {
     description = "Archetype data for the Crossfire free MMORPG";
     homepage = "http://crossfire.real-time.com/";
     license = lib.licenses.gpl2Plus;
+    maintainers = [ ];
     platforms = lib.platforms.linux;
     hydraPlatforms = [ ];
-    maintainers = [ ];
   };
 }

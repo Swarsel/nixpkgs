@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromSourcehut,
+  keyutils,
   meson,
   ninja,
-  pkg-config,
   pam,
-  keyutils,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -37,15 +37,17 @@ stdenv.mkDerivation {
 
   meta = {
     description = "PAM module for leveraging disk encryption password in the PAM session";
+
     longDescription = ''
       pam_fde_boot_pw transfers a password from the kernel keyring (for example,
       the passphrase used to unlock an encrypted disk) into the PAM session.
       This enables user-space keyrings, such as gnome-keyring, to be
       automatically unlocked.
     '';
+
     homepage = "https://git.sr.ht/~kennylevinsen/pam_fde_boot_pw";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ ivanbrennan ];
+    platforms = lib.platforms.linux;
   };
 }

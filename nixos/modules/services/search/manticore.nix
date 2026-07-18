@@ -11,8 +11,8 @@ let
 
   toSphinx =
     {
-      mkKeyValue ? lib.generators.mkKeyValueDefault { } "=",
       listsAsDuplicateKeys ? true,
+      mkKeyValue ? lib.generators.mkKeyValueDefault { } "=",
     }:
     attrsOfAttrs:
     let
@@ -48,25 +48,26 @@ in
       settings = lib.mkOption {
         default = {
           searchd = {
+            data_dir = "/var/lib/manticore";
+
             listen = [
               "127.0.0.1:9312"
               "127.0.0.1:9306:mysql"
               "127.0.0.1:9308:http"
             ];
+
             log = "/var/log/manticore/searchd.log";
-            query_log = "/var/log/manticore/query.log";
             pid_file = "/run/manticore/searchd.pid";
-            data_dir = "/var/lib/manticore";
+            query_log = "/var/log/manticore/query.log";
           };
         };
+
         description = ''
           Configuration for Manticoresearch. See
           <https://manual.manticoresearch.com/Server%20settings>
           for more information.
         '';
-        type = lib.types.submodule {
-          freeformType = format.type;
-        };
+
         example = lib.literalExpression ''
           {
             searchd = {
@@ -82,6 +83,10 @@ in
             };
           }
         '';
+
+        type = lib.types.submodule {
+          freeformType = format.type;
+        };
       };
 
     };
@@ -91,53 +96,64 @@ in
 
     systemd = {
       packages = [ pkgs.manticoresearch ];
+
       services.manticore = {
-        wantedBy = [ "multi-user.target" ];
         after = [ "network.target" ];
+
         serviceConfig = {
+          CapabilityBoundingSet = "";
+          DynamicUser = true;
+
           ExecStart = [
             ""
             "${pkgs.manticoresearch}/bin/searchd --config ${configFile}"
           ];
+
+          ExecStartPre = [ "" ];
+
           ExecStop = [
             ""
             "${pkgs.manticoresearch}/bin/searchd --config ${configFile} --stopwait"
           ];
-          ExecStartPre = [ "" ];
-          DynamicUser = true;
+
+          LockPersonality = true;
           LogsDirectory = "manticore";
-          RuntimeDirectory = "manticore";
-          StateDirectory = "manticore";
-          ReadWritePaths = "";
-          CapabilityBoundingSet = "";
-          RestrictAddressFamilies = [
-            "AF_UNIX"
-            "AF_INET"
-            "AF_INET6"
-          ];
-          RestrictNamespaces = true;
+          MemoryDenyWriteExecute = true;
           PrivateDevices = true;
           PrivateUsers = true;
           ProtectClock = true;
           ProtectControlGroups = true;
           ProtectHome = true;
+          ProtectHostname = true;
           ProtectKernelLogs = true;
           ProtectKernelModules = true;
           ProtectKernelTunables = true;
+          ReadWritePaths = "";
+
+          RestrictAddressFamilies = [
+            "AF_UNIX"
+            "AF_INET"
+            "AF_INET6"
+          ];
+
+          RestrictNamespaces = true;
+          RestrictRealtime = true;
+          RuntimeDirectory = "manticore";
+          StateDirectory = "manticore";
           SystemCallArchitectures = "native";
+
           SystemCallFilter = [
             "@system-service"
             "~@privileged"
           ];
-          RestrictRealtime = true;
-          LockPersonality = true;
-          MemoryDenyWriteExecute = true;
+
           UMask = "0066";
-          ProtectHostname = true;
         }
         // lib.optionalAttrs (cfg.settings.searchd.pid_file != null) {
           PIDFile = cfg.settings.searchd.pid_file;
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
     };
 

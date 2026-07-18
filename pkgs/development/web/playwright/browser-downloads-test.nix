@@ -1,8 +1,8 @@
 {
   lib,
-  runCommand,
   nodejs,
   playwright-core,
+  runCommand,
 }:
 let
   browserNames = [

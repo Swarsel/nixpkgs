@@ -1,22 +1,23 @@
 {
-  deployAndroidPackage,
   lib,
   stdenv,
-  package,
-  os,
   arch,
   autoPatchelfHook,
+  deployAndroidPackage,
   makeWrapper,
+  meta,
+  os,
+  package,
   pkgs,
   pkgsi686Linux,
   postInstall,
-  meta,
 }:
 
 deployAndroidPackage {
-  name = "androidsdk-tools";
   inherit package os arch;
+  inherit meta;
   nativeBuildInputs = [ makeWrapper ] ++ lib.optionals (os == "linux") [ autoPatchelfHook ];
+
   buildInputs = lib.optionals (os == "linux") (
     (with pkgs; [
       glibc
@@ -41,6 +42,8 @@ deployAndroidPackage {
       ]
     )
   );
+
+  name = "androidsdk-tools";
 
   patchInstructions = ''
     ${lib.optionalString (os == "linux") ''
@@ -76,6 +79,4 @@ deployAndroidPackage {
     cd $out/libexec/android-sdk
     ${postInstall}
   '';
-
-  inherit meta;
 }

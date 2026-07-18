@@ -3,36 +3,36 @@
   stdenv,
   fetchurl,
   fetchFromGitHub,
-  perl,
-  enableGhostscript ? false,
-  ghostscript,
+  autoreconfHook,
+  bashNonInteractive,
+  bison,
+  buildPackages,
   gawk,
+  ghostscript,
+  iconv,
+  libuchardet, # for detecting input file encoding in preconv(1)
   libx11,
   libxaw,
-  libxt,
   libxmu, # for postscript and html output
-  enableHtml ? false,
-  psutils,
+  libxt,
   netpbm, # for html output
-  enableIconv ? false,
-  iconv,
-  enableLibuchardet ? false,
-  libuchardet, # for detecting input file encoding in preconv(1)
-  enableUrwFonts ? false,
-  buildPackages,
-  autoreconfHook,
+  perl,
   pkg-config,
+  psutils,
   texinfo,
-  bison,
-  bashNonInteractive,
+  enableGhostscript ? false,
+  enableHtml ? false,
+  enableIconv ? false,
+  enableLibuchardet ? false,
+  enableUrwFonts ? false,
 }:
 let
   urw-fonts = fetchFromGitHub {
+    hash = "sha256-YQl5IDtodcbTV3D6vtJi7CwxVtHHl58fG6qCAoSaP4U=";
     name = "groff-urw-base35-fonts";
     owner = "ArtifexSoftware";
     repo = "urw-base35-fonts";
     tag = "20200910";
-    hash = "sha256-YQl5IDtodcbTV3D6vtJi7CwxVtHHl58fG6qCAoSaP4U=";
   };
   nativeGroffBinPath = lib.makeBinPath [
     buildPackages.groff
@@ -48,13 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-dOKBl5W2r/QxrqyYPWOpyJaO6roqLrp9+LpMe0Hnz9g=";
   };
 
-  patches = [
-    # This revert a upstream refactor in continuous rendering mode, but this
-    # causes a big performance regression for big manpages like
-    # `man 5 configuration.nix`.
-    ./0001-Revert-man-Fix-Savannah-65190.patch
-  ];
-
   outputs = [
     "out"
     "man"
@@ -63,7 +56,12 @@ stdenv.mkDerivation (finalAttrs: {
     "perl"
   ];
 
-  enableParallelBuilding = true;
+  patches = [
+    # This revert a upstream refactor in continuous rendering mode, but this
+    # causes a big performance regression for big manpages like
+    # `man 5 configuration.nix`.
+    ./0001-Revert-man-Fix-Savannah-65190.patch
+  ];
 
   postPatch = ''
     # POSIX_SHELL_PROG gets replaced with a path to the build bash which doesn't get automatically patched by patchShebangs
@@ -82,6 +80,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -89,6 +88,7 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   # Required due to the patch that changes .ypp files.
   ++ lib.optional (stdenv.cc.isClang && lib.versionAtLeast stdenv.cc.version "9") bison;
+
   buildInputs = [
     perl
     bashNonInteractive
@@ -132,6 +132,13 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-urw-fonts-dir=${urw-fonts}/fonts"
   ];
 
+  makeFlags = lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
+    # Trick to get the build system find the proper 'native' groff
+    # http://www.mail-archive.com/bug-groff@gnu.org/msg01335.html
+    "GROFF_BIN_PATH=${nativeGroffBinPath}"
+    "GROFFBIN=${lib.getExe' buildPackages.groff "groff"}"
+  ];
+
   postConfigure = ''
     # Move mom docs instead of linking them to avoid dangling symlinks
     substituteInPlace Makefile \
@@ -142,13 +149,6 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace Makefile \
       --replace-fail 'GROFF_COMMAND=test-groff \' 'GROFF_COMMAND=$(GROFFBIN) \'
   '';
-
-  makeFlags = lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
-    # Trick to get the build system find the proper 'native' groff
-    # http://www.mail-archive.com/bug-groff@gnu.org/msg01335.html
-    "GROFF_BIN_PATH=${nativeGroffBinPath}"
-    "GROFFBIN=${lib.getExe' buildPackages.groff "groff"}"
-  ];
 
   doCheck = true;
 
@@ -186,13 +186,10 @@ stdenv.mkDerivation (finalAttrs: {
     find $perl/ -type f -print0 | xargs --null sed -i 's|${buildPackages.perl}|${perl}|'
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://www.gnu.org/software/groff/";
     description = "GNU Troff, a typesetting package that reads plain text and produces formatted output";
-    license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
-    maintainers = with lib.maintainers; [ pSub ];
-    mainProgram = "groff";
 
     longDescription = ''
       groff is the GNU implementation of troff, a document formatting
@@ -205,6 +202,12 @@ stdenv.mkDerivation (finalAttrs: {
       version gxditview of the X11 xditview previewer, and an
       implementation of the -mm macros.
     '';
+
+    homepage = "https://www.gnu.org/software/groff/";
+    license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ pSub ];
+    platforms = lib.platforms.all;
+    mainProgram = "groff";
 
     outputsToInstall = [
       "out"

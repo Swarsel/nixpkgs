@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  lua5_4,
   curl,
   libxml2,
-  openssl,
+  lua5_4,
   nix-update-script,
+  openssl,
+  pkg-config,
   versionCheckHook,
 }:
 
@@ -39,23 +39,26 @@ stdenv.mkDerivation (finalAttrs: {
     "--bindir=${placeholder "out"}/bin"
   ];
 
-  passthru.updateScript = nix-update-script { };
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "C port of Stefan Hirschmann's NoteBook FanControl";
+
     longDescription = ''
       nbfc-linux provides fan control service for notebooks
     '';
+
     homepage = "https://github.com/nbfc-linux/nbfc-linux";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       Celibistrial
       bohanubis
     ];
-    mainProgram = "nbfc";
+
     platforms = lib.platforms.linux;
+    mainProgram = "nbfc";
   };
 })

@@ -4,13 +4,13 @@
   fetchurl,
   buildPackages,
   coreutils,
-  pam,
-  groff,
-  sssd,
-  nixosTests,
-  genericUpdater,
-  writeShellScript,
   curl,
+  genericUpdater,
+  groff,
+  nixosTests,
+  pam,
+  sssd,
+  writeShellScript,
   sendmailPath ? "/run/wrappers/bin/sendmail",
   withInsults ? false,
   withSssd ? false,
@@ -22,17 +22,20 @@ stdenv.mkDerivation (finalAttrs: {
   # e.g. links to man pages, value constraints etc.
   version = "1.9.17p2";
 
-  __structuredAttrs = true;
-
   src = fetchurl {
     url = "https://www.sudo.ws/dist/sudo-${finalAttrs.version}.tar.gz";
     hash = "sha256-SjihqzrbEZklftwqfEor1xRmXrYFsENohDsG2tos/Ps=";
   };
 
-  prePatch = ''
-    # do not set sticky bit in nix store
-    substituteInPlace src/Makefile.in --replace 04755 0755
-  '';
+  outputs = [
+    "out"
+    "man"
+    "doc"
+    "dev"
+  ];
+
+  nativeBuildInputs = [ groff ];
+  buildInputs = lib.optionals (!stdenv.hostPlatform.isOpenBSD) [ pam ];
 
   configureFlags = [
     "--with-env-editor"
@@ -54,18 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-sssd-lib=${sssd}/lib"
   ];
 
-  outputs = [
-    "out"
-    "man"
-    "doc"
-    "dev"
-  ];
-  # The default stdenv ./configure flags for some reason cause the upstream's
-  # Makefile to `mkdir /var/db`, which fails in the sandbox. Since we split
-  # only trivial outputs - a single header and documentation, we can safely set
-  # the following:
-  setOutputFlags = false;
-
   postConfigure = ''
     cat >> pathnames.h <<'EOF'
       #undef _PATH_MV
@@ -75,20 +66,30 @@ stdenv.mkDerivation (finalAttrs: {
     installFlags="sudoers_uid=$(id -u) sudoers_gid=$(id -g) sysconfdir=$out/etc rundir=$TMPDIR/dummy vardir=$TMPDIR/dummy DESTDIR=/"
   '';
 
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
-  nativeBuildInputs = [ groff ];
-  buildInputs = lib.optionals (!stdenv.hostPlatform.isOpenBSD) [ pam ];
-
-  enableParallelBuilding = true;
-
   doCheck = false; # needs root
 
   postInstall = ''
     rm $out/share/doc/sudo/ChangeLog
   '';
 
+  __structuredAttrs = true;
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  enableParallelBuilding = true;
+
+  prePatch = ''
+    # do not set sticky bit in nix store
+    substituteInPlace src/Makefile.in --replace 04755 0755
+  '';
+
+  # The default stdenv ./configure flags for some reason cause the upstream's
+  # Makefile to `mkdir /var/db`, which fails in the sandbox. Since we split
+  # only trivial outputs - a single header and documentation, we can safely set
+  # the following:
+  setOutputFlags = false;
+
   passthru = {
     tests = { inherit (nixosTests) sudo; };
+
     updateScript = genericUpdater {
       versionLister = writeShellScript "sudo-versionLister" ''
         ${lib.getExe curl} -sL https://www.sudo.ws/dist | grep -Po 'href="sudo-\K[\w.]*(?=\.tar\.gz")'
@@ -98,13 +99,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Command to run commands as root";
+
     longDescription = ''
       Sudo (su "do") allows a system administrator to delegate
       authority to give certain users (or groups of users) the ability
       to run some (or all) commands as root or another user while
       providing an audit trail of the commands and their arguments.
     '';
+
     homepage = "https://www.sudo.ws/";
+
     # From https://www.sudo.ws/about/license/
     license = with lib.licenses; [
       sudo
@@ -112,6 +116,7 @@ stdenv.mkDerivation (finalAttrs: {
       bsd3
       zlib
     ];
+
     maintainers = with lib.maintainers; [ rhendric ];
     platforms = lib.platforms.linux ++ lib.platforms.freebsd ++ lib.platforms.openbsd;
     mainProgram = "sudo";

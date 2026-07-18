@@ -1,20 +1,17 @@
 {
   lib,
   stdenv,
-  callPackage,
-  nix-update-script,
-
-  buildNpmPackage,
-  fetchNpmDeps,
   fetchFromGitHub,
-  makeDesktopItem,
-  nodejs_22,
-
   autoPatchelfHook,
+  buildNpmPackage,
+  callPackage,
   copyDesktopItems,
-  makeWrapper,
-
   electron,
+  fetchNpmDeps,
+  makeDesktopItem,
+  makeWrapper,
+  nix-update-script,
+  nodejs_22,
   steam-run-free,
 }:
 
@@ -39,21 +36,6 @@ buildNpmPackage (finalAttrs: {
     ln -s ${finalAttrs.passthru.depotdownloader}/bin/DepotDownloader assets/scripts/DepotDownloader
   '';
 
-  npmDepsHash = "sha256-wmPZv1lqGr31wBGaeLw7LL6ZMzq/x8lkoy/iMxU+M80=";
-
-  extraNpmDeps = fetchNpmDeps {
-    name = "bs-manager-${finalAttrs.version}-extra-npm-deps";
-    inherit (finalAttrs) src;
-    sourceRoot = "${finalAttrs.src.name}/release/app";
-    hash = "sha256-jE/M22QQzuTS0zgcB+tLEL8Ey61HE8MP7H1MTX060gY=";
-  };
-
-  makeCacheWritable = true;
-
-  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-
-  npmRebuildFlags = [ "--ignore-scripts" ];
-
   nativeBuildInputs = [
     autoPatchelfHook # for some prebuilt node deps: query-process @resvg/resvg-js
     copyDesktopItems
@@ -64,9 +46,8 @@ buildNpmPackage (finalAttrs: {
     stdenv.cc.cc
   ];
 
-  autoPatchelfIgnoreMissingDeps = [
-    "libc.musl-x86_64.so.1" # musl-based node modules won't be used on glibc systems
-  ];
+  npmDepsHash = "sha256-wmPZv1lqGr31wBGaeLw7LL6ZMzq/x8lkoy/iMxU+M80=";
+  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
   preBuild = ''
     pushd release/app
@@ -109,14 +90,21 @@ buildNpmPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  autoPatchelfIgnoreMissingDeps = [
+    "libc.musl-x86_64.so.1" # musl-based node modules won't be used on glibc systems
+  ];
+
   desktopItems = [
     (makeDesktopItem {
+      categories = [
+        "Utility"
+        "Game"
+      ];
+
       desktopName = "BSManager";
-      name = "BSManager";
       exec = "bs-manager";
-      terminal = false;
-      type = "Application";
       icon = "bs-manager";
+
       mimeTypes = [
         "x-scheme-handler/bsmanager"
         "x-scheme-handler/beatsaver"
@@ -124,33 +112,46 @@ buildNpmPackage (finalAttrs: {
         "x-scheme-handler/modelsaber"
         "x-scheme-handler/web+bsmap"
       ];
-      categories = [
-        "Utility"
-        "Game"
-      ];
+
+      name = "BSManager";
+      terminal = false;
+      type = "Application";
     })
   ];
 
+  extraNpmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-jE/M22QQzuTS0zgcB+tLEL8Ey61HE8MP7H1MTX060gY=";
+    name = "bs-manager-${finalAttrs.version}-extra-npm-deps";
+    sourceRoot = "${finalAttrs.src.name}/release/app";
+  };
+
+  makeCacheWritable = true;
+  npmRebuildFlags = [ "--ignore-scripts" ];
+
   passthru = {
-    updateScript = nix-update-script { };
     depotdownloader = callPackage ./depotdownloader { };
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://github.com/Zagrios/bs-manager/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     description = "Your Beat Saber Assistant";
     homepage = "https://github.com/Zagrios/bs-manager";
+    changelog = "https://github.com/Zagrios/bs-manager/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
-    mainProgram = "bs-manager";
+
+    sourceProvenance = with lib.sourceTypes; [
+      binaryNativeCode # prebuilt node deps
+    ];
+
     maintainers = with lib.maintainers; [
       mistyttm
       Scrumplex
       ImSapphire
       tomasajt
     ];
+
     platforms = lib.platforms.linux;
-    sourceProvenance = with lib.sourceTypes; [
-      binaryNativeCode # prebuilt node deps
-    ];
+    mainProgram = "bs-manager";
   };
 })

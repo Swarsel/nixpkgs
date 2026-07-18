@@ -1,26 +1,26 @@
 {
   lib,
-  nix-update-script,
   stdenv,
   fetchFromGitHub,
   apple-sdk,
+  cctools,
   cmake,
   coreutils,
+  # Not really used for anything real, just at build time.
+  git,
   libxml2,
-  lto ? true,
   makeWrapper,
+  nix-update-script,
   openssl,
   pcre2,
   pony-corral,
+  procps,
   python3,
-  zlib,
-  # Not really used for anything real, just at build time.
-  git,
   replaceVars,
   which,
   z3,
-  cctools,
-  procps,
+  zlib,
+  lto ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,21 +35,33 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  benchmarkRev = "1.9.5";
-  benchmark = fetchFromGitHub {
-    owner = "google";
-    repo = "benchmark";
-    rev = "v${finalAttrs.benchmarkRev}";
-    hash = "sha256-Mm4pG7zMB00iof32CxreoNBFnduPZTMp3reHMCIAFPQ=";
-  };
+  patches = [
+    # Sandbox disallows network access, so disabling problematic networking tests
+    ./disable-networking-tests.patch
+    ./disable-process-tests.patch
 
-  googletestRev = "1.17.0";
-  googletest = fetchFromGitHub {
-    owner = "google";
-    repo = "googletest";
-    rev = "v${finalAttrs.googletestRev}";
-    hash = "sha256-HIHMxAUR4bjmFLoltJeIAVSulVQ6kVuIT2Ku+lwAx/4=";
-  };
+    # Take PONY_LINKER into account
+    ./genexe-pony-linker.patch
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    (replaceVars ./fix-darwin-build.patch {
+      inherit apple-sdk;
+    })
+  ];
+
+  postPatch = ''
+    substituteInPlace packages/process/_test.pony \
+        --replace-fail '"/bin/' '"${coreutils}/bin/' \
+        --replace-fail '=/bin' "${coreutils}/bin"
+    substituteInPlace src/libponyc/pkg/package.c \
+        --replace-fail "/usr/local/lib" "" \
+        --replace-fail "/opt/local/lib" ""
+
+    # Replace downloads with local copies.
+    substituteInPlace lib/CMakeLists.txt \
+        --replace-fail "https://github.com/google/benchmark/archive/v$benchmarkRev.tar.gz" "$NIX_BUILD_TOP/deps/benchmark-$benchmarkRev.tar" \
+        --replace-fail "https://github.com/google/googletest/releases/download/v$googletestRev/googletest-$googletestRev.tar.gz" "$NIX_BUILD_TOP/deps/googletest-$googletestRev.tar"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -68,41 +80,16 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  patches = [
-    # Sandbox disallows network access, so disabling problematic networking tests
-    ./disable-networking-tests.patch
-    ./disable-process-tests.patch
-
-    # Take PONY_LINKER into account
-    ./genexe-pony-linker.patch
+  makeFlags = [
+    "PONYC_VERSION=${finalAttrs.version}"
+    "prefix=${placeholder "out"}"
   ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    (replaceVars ./fix-darwin-build.patch {
-      inherit apple-sdk;
-    })
+  ++ lib.optionals stdenv.hostPlatform.isDarwin ([ "bits=64" ] ++ lib.optional (!lto) "lto=no");
+
+  env.NIX_CFLAGS_COMPILE = toString [
+    "-Wno-error=redundant-move"
+    "-Wno-error=implicit-fallthrough"
   ];
-
-  postUnpack = ''
-    mkdir -p $NIX_BUILD_TOP/deps
-    tar -C "$benchmark" -cf $NIX_BUILD_TOP/deps/benchmark-$benchmarkRev.tar .
-    tar -C "$googletest" -cf $NIX_BUILD_TOP/deps/googletest-$googletestRev.tar .
-  '';
-
-  dontConfigure = true;
-
-  postPatch = ''
-    substituteInPlace packages/process/_test.pony \
-        --replace-fail '"/bin/' '"${coreutils}/bin/' \
-        --replace-fail '=/bin' "${coreutils}/bin"
-    substituteInPlace src/libponyc/pkg/package.c \
-        --replace-fail "/usr/local/lib" "" \
-        --replace-fail "/opt/local/lib" ""
-
-    # Replace downloads with local copies.
-    substituteInPlace lib/CMakeLists.txt \
-        --replace-fail "https://github.com/google/benchmark/archive/v$benchmarkRev.tar.gz" "$NIX_BUILD_TOP/deps/benchmark-$benchmarkRev.tar" \
-        --replace-fail "https://github.com/google/googletest/releases/download/v$googletestRev/googletest-$googletestRev.tar.gz" "$NIX_BUILD_TOP/deps/googletest-$googletestRev.tar"
-  '';
 
   # We do not concern ourselves with darwin as the ponyc compiler
   # has logic which overrides this environmental variable in this
@@ -137,23 +124,7 @@ stdenv.mkDerivation (finalAttrs: {
     make configure "''${extraFlags[@]}"
   '';
 
-  enableParallelBuilding = true;
-
-  makeFlags = [
-    "PONYC_VERSION=${finalAttrs.version}"
-    "prefix=${placeholder "out"}"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin ([ "bits=64" ] ++ lib.optional (!lto) "lto=no");
-
-  env.NIX_CFLAGS_COMPILE = toString [
-    "-Wno-error=redundant-move"
-    "-Wno-error=implicit-fallthrough"
-  ];
-
   doCheck = true;
-
-  enableParallelChecking = true;
-
   nativeCheckInputs = [ procps ];
 
   installPhase = ''
@@ -180,8 +151,34 @@ stdenv.mkDerivation (finalAttrs: {
       }"
   '';
 
+  benchmark = fetchFromGitHub {
+    hash = "sha256-Mm4pG7zMB00iof32CxreoNBFnduPZTMp3reHMCIAFPQ=";
+    owner = "google";
+    repo = "benchmark";
+    rev = "v${finalAttrs.benchmarkRev}";
+  };
+
+  benchmarkRev = "1.9.5";
+  dontConfigure = true;
   # Stripping breaks linking for ponyc
   dontStrip = true;
+  enableParallelBuilding = true;
+  enableParallelChecking = true;
+
+  googletest = fetchFromGitHub {
+    hash = "sha256-HIHMxAUR4bjmFLoltJeIAVSulVQ6kVuIT2Ku+lwAx/4=";
+    owner = "google";
+    repo = "googletest";
+    rev = "v${finalAttrs.googletestRev}";
+  };
+
+  googletestRev = "1.17.0";
+
+  postUnpack = ''
+    mkdir -p $NIX_BUILD_TOP/deps
+    tar -C "$benchmark" -cf $NIX_BUILD_TOP/deps/benchmark-$benchmarkRev.tar .
+    tar -C "$googletest" -cf $NIX_BUILD_TOP/deps/googletest-$googletestRev.tar .
+  '';
 
   passthru = {
     tests.pony-corral = pony-corral;
@@ -192,11 +189,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Pony is an Object-oriented, actor-model, capabilities-secure, high performance programming language";
     homepage = "https://www.ponylang.io";
     license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       kamilchm
       redvers
       numinit
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"

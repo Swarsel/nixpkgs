@@ -29,13 +29,13 @@ let
       file = writeText "dhall-expression" code;
 
       drv = stdenv.mkDerivation {
-        name = "dhall-compiled.nix";
+        buildInputs = [ dhall-nix ];
 
         buildCommand = ''
           dhall-to-nix <<< "${file}" > $out
         '';
 
-        buildInputs = [ dhall-nix ];
+        name = "dhall-compiled.nix";
       };
 
     in

@@ -1,47 +1,63 @@
 {
   lib,
   stdenv,
+  anyio,
+  argon2-cffi,
   buildPythonPackage,
   fetchPypi,
+  flaky,
   hatch-jupyter-builder,
   hatchling,
-  pytestCheckHook,
+  ipykernel,
+  jinja2,
+  jupyter-client,
+  jupyter-core,
+  jupyter-events,
+  jupyter-server-terminals,
+  nbconvert,
+  nbformat,
+  overrides,
+  packaging,
+  prometheus-client,
   pytest-console-scripts,
   pytest-jupyter,
   pytest-timeout,
-  argon2-cffi,
-  jinja2,
-  tornado,
+  pytestCheckHook,
   pyzmq,
-  ipykernel,
-  traitlets,
-  jupyter-core,
-  jupyter-client,
-  jupyter-events,
-  jupyter-server-terminals,
-  nbformat,
-  nbconvert,
-  packaging,
+  requests,
   send2trash,
   terminado,
-  prometheus-client,
-  anyio,
+  tornado,
+  traitlets,
   websocket-client,
-  overrides,
-  requests,
-  flaky,
 }:
 
 buildPythonPackage rec {
   pname = "jupyter-server";
   version = "2.17.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "jupyter_server";
     inherit version;
     hash = "sha256-w46omFZpZMiItHcq4e1Y7KhFkuiCUdLPxNFx+B9+mdU=";
+    pname = "jupyter_server";
   };
+
+  nativeCheckInputs = [
+    ipykernel
+    pytestCheckHook
+    pytest-console-scripts
+    pytest-jupyter
+    pytest-timeout
+    requests
+    flaky
+  ];
+
+  preCheck = ''
+    export HOME=$(mktemp -d)
+    export PATH=$out/bin:$PATH
+  '';
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     hatch-jupyter-builder
@@ -69,33 +85,13 @@ buildPythonPackage rec {
     overrides
   ];
 
-  # https://github.com/NixOS/nixpkgs/issues/299427
-  stripExclude = lib.optionals stdenv.hostPlatform.isDarwin [ "favicon.ico" ];
-
-  pythonImportsCheck = [ "jupyter_server" ];
-
-  nativeCheckInputs = [
-    ipykernel
-    pytestCheckHook
-    pytest-console-scripts
-    pytest-jupyter
-    pytest-timeout
-    requests
-    flaky
+  disabledTestPaths = [
+    "tests/services/kernels/test_api.py"
+    "tests/services/sessions/test_api.py"
+    # nbconvert failed: `relax_add_props` kwargs of validate has been
+    # deprecated for security reasons, and will be removed soon.
+    "tests/nbconvert/test_handlers.py"
   ];
-
-  pytestFlags = [
-    "-Wignore::DeprecationWarning"
-    # 19 failures on python 3.13:
-    # ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7ffff2a0cc70>
-    # TODO: Can probably be removed at the next update
-    "-Wignore::pytest.PytestUnraisableExceptionWarning"
-  ];
-
-  preCheck = ''
-    export HOME=$(mktemp -d)
-    export PATH=$out/bin:$PATH
-  '';
 
   disabledTests = [
     "test_cull_idle"
@@ -122,22 +118,26 @@ buildPythonPackage rec {
     "test_terminal_create_with_cwd"
   ];
 
-  disabledTestPaths = [
-    "tests/services/kernels/test_api.py"
-    "tests/services/sessions/test_api.py"
-    # nbconvert failed: `relax_add_props` kwargs of validate has been
-    # deprecated for security reasons, and will be removed soon.
-    "tests/nbconvert/test_handlers.py"
+  pyproject = true;
+
+  pytestFlags = [
+    "-Wignore::DeprecationWarning"
+    # 19 failures on python 3.13:
+    # ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7ffff2a0cc70>
+    # TODO: Can probably be removed at the next update
+    "-Wignore::pytest.PytestUnraisableExceptionWarning"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  pythonImportsCheck = [ "jupyter_server" ];
+  # https://github.com/NixOS/nixpkgs/issues/299427
+  stripExclude = lib.optionals stdenv.hostPlatform.isDarwin [ "favicon.ico" ];
 
   meta = {
-    changelog = "https://github.com/jupyter-server/jupyter_server/blob/v${version}/CHANGELOG.md";
     description = "Backend—i.e. core services, APIs, and REST endpoints—to Jupyter web applications";
-    mainProgram = "jupyter-server";
     homepage = "https://github.com/jupyter-server/jupyter_server";
+    changelog = "https://github.com/jupyter-server/jupyter_server/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.bsdOriginal;
+    mainProgram = "jupyter-server";
     teams = [ lib.teams.jupyter ];
   };
 }

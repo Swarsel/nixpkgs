@@ -1,8 +1,8 @@
 {
+  lib,
   stdenv,
   fetchzip,
   ghostscript,
-  lib,
   texliveMedium,
 }:
 
@@ -16,15 +16,15 @@ stdenv.mkDerivation (finalAttrs: {
     stripRoot = false;
   };
 
+  outputs = [
+    "out"
+    "doc"
+  ];
+
   patches = [
     ./fastcap-mulglobal-drop-conflicting-lib.patch
     ./fastcap-mulsetup-add-forward-declarations.patch
     ./fastcap-mulglobal-add-ualloc-declaration.patch
-  ];
-
-  nativeBuildInputs = [
-    ghostscript
-    texliveMedium
   ];
 
   postPatch = ''
@@ -47,7 +47,10 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  dontConfigure = true;
+  nativeBuildInputs = [
+    ghostscript
+    texliveMedium
+  ];
 
   makeFlags = [
     "RM=rm"
@@ -62,11 +65,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-Wno-error=implicit-int"
     # gcc15
     "-std=gnu17"
-  ];
-
-  outputs = [
-    "out"
-    "doc"
   ];
 
   postBuild = ''
@@ -92,13 +90,17 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+
   meta = {
     description = "Multipole-accelerated capacitance extraction program";
+
     longDescription = ''
       Fastcap is  a three dimensional capacitance extraction program that
       compute self and mutual capacitances between conductors of arbitrary
       shapes, sizes and orientations.
     '';
+
     homepage = "https://www.rle.mit.edu/cpg/research_codes.htm";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fbeffa ];

@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "zerorpc";
   version = "0.6.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -26,12 +25,13 @@ buildPythonPackage rec {
   ];
 
   doCheck = false; # pypi version doesn't include tests
+  format = "setuptools";
 
   meta = {
     description = "Easy to use, intuitive, and cross-language RPC";
-    mainProgram = "zerorpc";
     homepage = "https://www.zerorpc.io";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ xeji ];
+    mainProgram = "zerorpc";
   };
 }

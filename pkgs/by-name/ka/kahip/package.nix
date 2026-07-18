@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  mpi,
-  metis,
   llvmPackages,
+  metis,
+  mpi,
   python3Packages,
-  pythonSupport ? false,
   isILP64 ? false,
+  pythonSupport ? false,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "kahip";
@@ -61,12 +61,12 @@ stdenv.mkDerivation (finalAttrs: {
   pythonImportsCheck = [ "kahip" ];
 
   meta = {
-    homepage = "https://kahip.github.io/";
-    downloadPage = "https://github.com/KaHIP/KaHIP/";
-    changelog = "https://github.com/KaHIP/KaHIP/releases/tag/v${finalAttrs.version}";
     description = "Karlsruhe HIGH Quality Partitioning";
+    homepage = "https://kahip.github.io/";
+    changelog = "https://github.com/KaHIP/KaHIP/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ qbisi ];
+    platforms = lib.platforms.unix;
+    downloadPage = "https://github.com/KaHIP/KaHIP/";
   };
 })

@@ -18,14 +18,6 @@ stdenv.mkDerivation {
     hash = "sha512-KMHgj73eXHT++IE8DbCsFeJ87ngc9R3XxMUJy4Z3s4/MtMeB9zblADHkyJqz9oyeugeJTrDtuVETPBRo7M4Y8A==";
   };
 
-  env.NIX_CFLAGS_COMPILE = toString [
-    "-march=armv8-a+crc"
-  ];
-
-  preConfigure = ''
-    cd armstubs
-  '';
-
   makeFlags = [
     "CC8=${stdenv.cc.targetPrefix}cc"
     "LD8=${stdenv.cc.targetPrefix}ld"
@@ -46,6 +38,14 @@ stdenv.mkDerivation {
     "armstub8-32-gic.bin"
   ];
 
+  env.NIX_CFLAGS_COMPILE = toString [
+    "-march=armv8-a+crc"
+  ];
+
+  preConfigure = ''
+    cd armstubs
+  '';
+
   installPhase = ''
     runHook preInstall
     mkdir -vp $out/
@@ -57,11 +57,12 @@ stdenv.mkDerivation {
     description = "Firmware related ARM stubs for the Raspberry Pi";
     homepage = "https://github.com/raspberrypi/tools";
     license = lib.licenses.bsd3;
+    maintainers = [ ];
+
     platforms = [
       "armv6l-linux"
       "armv7l-linux"
       "aarch64-linux"
     ];
-    maintainers = [ ];
   };
 }

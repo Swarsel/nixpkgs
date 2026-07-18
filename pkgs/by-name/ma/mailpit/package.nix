@@ -3,16 +3,14 @@
   stdenv,
   fetchFromGitHub,
   buildGoModule,
-  fetchNpmDeps,
-  npmHooks,
-  nodejs,
-
-  python3,
-  libtool,
   cctools,
-
+  fetchNpmDeps,
+  libtool,
   mailpit,
   nixosTests,
+  nodejs,
+  npmHooks,
+  python3,
   testers,
 }:
 
@@ -37,16 +35,8 @@ let
   # go-modules build inherits specific attributes and fails. Getting that to
   # work is hackier than just splitting the build.
   ui = stdenv.mkDerivation {
-    pname = "mailpit-ui";
     inherit src version;
-
-    npmDeps = fetchNpmDeps {
-      inherit src;
-      hash = source.npmDepsHash;
-    };
-
-    # error "C++20 or later required." for dependency node_modules/tree-sitter
-    env.NIX_CFLAGS_COMPILE = "-std=c++20";
+    pname = "mailpit-ui";
 
     nativeBuildInputs = [
       nodejs
@@ -55,6 +45,9 @@ let
       npmHooks.npmConfigHook
     ];
 
+    # error "C++20 or later required." for dependency node_modules/tree-sitter
+    env.NIX_CFLAGS_COMPILE = "-std=c++20";
+
     buildPhase = ''
       npm run package
     '';
@@ -62,32 +55,40 @@ let
     installPhase = ''
       mv server/ui/dist $out
     '';
+
+    npmDeps = fetchNpmDeps {
+      inherit src;
+      hash = source.npmDepsHash;
+    };
   };
 
 in
 
 buildGoModule (finalAttrs: {
-  pname = "mailpit";
   inherit src version vendorHash;
-
+  pname = "mailpit";
   env.CGO_ENABLED = 0;
+
+  preBuild = ''
+    cp -r ${finalAttrs.passthru.ui} server/ui/dist
+  '';
+
+  __darwinAllowLocalNetworking = true;
 
   ldflags = [
     "-s"
     "-X github.com/axllent/mailpit/config.Version=${version}"
   ];
 
-  preBuild = ''
-    cp -r ${finalAttrs.passthru.ui} server/ui/dist
-  '';
-
   passthru = {
+    inherit ui;
+
     tests = {
       # cannot use versionCheckHook due to the extra --no-release-check flag
       # for workarounds and other solutions see https://github.com/NixOS/nixpkgs/pull/486143#discussion_r2754533347
       version = testers.testVersion {
-        package = mailpit;
         command = "mailpit version --no-release-check";
+        package = mailpit;
       };
     }
     // lib.optionalAttrs (!stdenv.hostPlatform.isDarwin) {
@@ -95,25 +96,23 @@ buildGoModule (finalAttrs: {
     };
 
     updateScript = {
-      supportedFeatures = [ "commit" ];
       command = ./update.sh;
+      supportedFeatures = [ "commit" ];
     };
-
-    inherit ui;
   };
 
-  __darwinAllowLocalNetworking = true;
-
   meta = {
-    changelog = "https://github.com/axllent/mailpit/releases/tag/v${version}";
     description = "Email and SMTP testing tool with API for developers";
-    downloadPage = "https://github.com/axllent/mailpit";
     homepage = "https://mailpit.axllent.org";
+    changelog = "https://github.com/axllent/mailpit/releases/tag/v${version}";
     license = lib.licenses.mit;
-    mainProgram = "mailpit";
+
     maintainers = with lib.maintainers; [
       stephank
       phanirithvij
     ];
+
+    mainProgram = "mailpit";
+    downloadPage = "https://github.com/axllent/mailpit";
   };
 })

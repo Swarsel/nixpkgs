@@ -19,13 +19,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Zs508OQ0RYCg0f9wqR+VXUmVvhP/jCA3piwRq2ZpR84=";
   };
 
-  dontBuild = true;
-
   nativeBuildInputs = [
     udevCheckHook
   ];
-
-  doInstallCheck = true;
 
   installPhase = ''
     runHook preInstall
@@ -35,11 +31,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  dontBuild = true;
+
   meta = {
-    homepage = "https://github.com/qmk/qmk_firmware";
     description = "Official QMK udev rules list";
-    platforms = lib.platforms.linux;
+    homepage = "https://github.com/qmk/qmk_firmware";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ miniharinn ];
+    platforms = lib.platforms.linux;
   };
 })

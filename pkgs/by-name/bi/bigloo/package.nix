@@ -1,11 +1,11 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
   autoconf,
   automake,
-  libtool,
   gmp,
+  libtool,
   libunistring,
 }:
 
@@ -40,6 +40,17 @@ stdenv.mkDerivation (finalAttrs: {
       export CXXCPP="$CXX -E"
     '';
 
+  # remove forbidden references to $TMPDIR
+  preFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
+    for f in "$out"/bin/*; do
+      if isELF "$f"; then
+        patchelf --shrink-rpath --allowed-rpath-prefixes "$NIX_STORE" "$f"
+      fi
+    done
+  '';
+
+  checkTarget = "test";
+
   patchPhase = ''
     # Fix absolute paths.
     sed -e 's=/bin/mv=mv=g' -e 's=/bin/rm=rm=g'			\
@@ -54,24 +65,8 @@ stdenv.mkDerivation (finalAttrs: {
         -i comptime/Cc/cc.c
   '';
 
-  checkTarget = "test";
-
-  # remove forbidden references to $TMPDIR
-  preFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
-    for f in "$out"/bin/*; do
-      if isELF "$f"; then
-        patchelf --shrink-rpath --allowed-rpath-prefixes "$NIX_STORE" "$f"
-      fi
-    done
-  '';
-
   meta = {
     description = "Efficient Scheme compiler";
-    homepage = "http://www-sop.inria.fr/indes/fp/Bigloo/";
-    license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
-    maintainers = with lib.maintainers; [ thoughtpolice ];
-    broken = stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64; # segfault during build
 
     longDescription = ''
       Bigloo is a Scheme implementation devoted to one goal: enabling
@@ -84,5 +79,11 @@ stdenv.mkDerivation (finalAttrs: {
       Scheme and C programs, between Scheme and Java programs, and
       between Scheme and C# programs.
     '';
+
+    homepage = "http://www-sop.inria.fr/indes/fp/Bigloo/";
+    license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ thoughtpolice ];
+    platforms = lib.platforms.unix;
+    broken = stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64; # segfault during build
   };
 })

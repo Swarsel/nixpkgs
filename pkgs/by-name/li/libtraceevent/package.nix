@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  fetchgit,
-  pkg-config,
   asciidoc,
-  xmlto,
+  cunit,
   docbook_xml_dtd_45,
   docbook_xsl,
+  fetchgit,
+  gitUpdater,
   meson,
   ninja,
-  cunit,
-  gitUpdater,
+  pkg-config,
+  xmlto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,17 +23,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-4KuF+UNMWxfxXYVlS0cBY5/p242UQ/NoRRVK+wmn04E=";
   };
 
-  postPatch = ''
-    chmod +x Documentation/install-docs.sh.in
-    patchShebangs --build check-manpages.sh Documentation/install-docs.sh.in
-  '';
-
   outputs = [
     "out"
     "dev"
     "devman"
     "doc"
   ];
+
+  postPatch = ''
+    chmod +x Documentation/install-docs.sh.in
+    patchShebangs --build check-manpages.sh Documentation/install-docs.sh.in
+  '';
+
   nativeBuildInputs = [
     meson
     ninja
@@ -44,25 +45,25 @@ stdenv.mkDerivation (finalAttrs: {
     docbook_xsl
   ];
 
+  doCheck = true;
+  checkInputs = [ cunit ];
+
   ninjaFlags = [
     "all"
     "docs"
   ];
 
-  doCheck = true;
-  checkInputs = [ cunit ];
-
   passthru.updateScript = gitUpdater {
+    rev-prefix = "libtraceevent-";
     # No nicer place to find latest release.
     url = "https://git.kernel.org/pub/scm/libs/libtrace/libtraceevent.git";
-    rev-prefix = "libtraceevent-";
   };
 
   meta = {
     description = "Linux kernel trace event library";
     homepage = "https://git.kernel.org/pub/scm/libs/libtrace/libtraceevent.git/";
     license = lib.licenses.lgpl21Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ wentasah ];
+    platforms = lib.platforms.linux;
   };
 })

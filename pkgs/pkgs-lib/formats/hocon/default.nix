@@ -6,13 +6,11 @@ let
   inherit (pkgs) buildPackages callPackage;
 
   hocon-generator = buildPackages.rustPlatform.buildRustPackage {
-    name = "hocon-generator";
     version = "0.1.0";
     src = ./src;
-
-    passthru.updateScript = ./update.sh;
-
     cargoLock.lockFile = ./src/Cargo.lock;
+    name = "hocon-generator";
+    passthru.updateScript = ./update.sh;
   };
 
   hocon-validator =
@@ -33,29 +31,34 @@ in
 {
   format =
     {
+      doCheck ? true,
       generator ? hocon-generator,
       validator ? hocon-validator,
-      doCheck ? true,
     }:
     let
       hoconLib = {
+        mkAppend = value: {
+          inherit value;
+          _type = "append";
+        };
+
         mkInclude =
           value:
           let
             includeStatement =
               if lib.isAttrs value && !(lib.isDerivation value) then
                 {
+                  _type = "include";
                   required = false;
                   type = null;
-                  _type = "include";
                 }
                 // value
               else
                 {
-                  value = toString value;
+                  _type = "include";
                   required = false;
                   type = null;
-                  _type = "include";
+                  value = toString value;
                 };
           in
           assert lib.assertMsg
@@ -71,18 +74,13 @@ in
             '';
           includeStatement;
 
-        mkAppend = value: {
-          inherit value;
-          _type = "append";
-        };
-
         mkSubstitution =
           value:
           if lib.isString value then
             {
               inherit value;
-              optional = false;
               _type = "substitution";
+              optional = false;
             }
           else
             assert lib.assertMsg (lib.isAttrs value) ''
@@ -93,14 +91,64 @@ in
               ${builtins.toJSON value}
             '';
             {
-              value = value.value;
-              optional = value.optional or false;
               _type = "substitution";
+              optional = value.optional or false;
+              value = value.value;
             };
       };
 
     in
     {
+      generate =
+        name: value:
+        callPackage
+          (
+            {
+              hocon-generator,
+              hocon-validator,
+              stdenvNoCC,
+              writeText,
+            }:
+            stdenvNoCC.mkDerivation rec {
+              inherit name;
+              inherit doCheck;
+              strictDeps = true;
+              nativeBuildInputs = [ hocon-generator ];
+
+              buildPhase = ''
+                runHook preBuild
+                hocon-generator < $jsonPath > output.conf
+                runHook postBuild
+              '';
+
+              nativeCheckInputs = [ hocon-validator ];
+
+              checkPhase = ''
+                runHook preCheck
+                hocon-validator output.conf
+                runHook postCheck
+              '';
+
+              installPhase = ''
+                runHook preInstall
+                mv output.conf $out
+                runHook postInstall
+              '';
+
+              dontUnpack = true;
+              json = builtins.toJSON value;
+              passAsFile = [ "json" ];
+              preferLocalBuild = true;
+              passthru.json = writeText "${name}.json" json;
+            }
+          )
+          {
+            hocon-generator = generator;
+            hocon-validator = validator;
+          };
+
+      lib = hoconLib;
+
       type =
         let
           type' =
@@ -127,56 +175,5 @@ in
             };
         in
         type';
-
-      lib = hoconLib;
-
-      generate =
-        name: value:
-        callPackage
-          (
-            {
-              stdenvNoCC,
-              hocon-generator,
-              hocon-validator,
-              writeText,
-            }:
-            stdenvNoCC.mkDerivation rec {
-              inherit name;
-
-              dontUnpack = true;
-              preferLocalBuild = true;
-
-              json = builtins.toJSON value;
-              passAsFile = [ "json" ];
-
-              strictDeps = true;
-              nativeBuildInputs = [ hocon-generator ];
-              buildPhase = ''
-                runHook preBuild
-                hocon-generator < $jsonPath > output.conf
-                runHook postBuild
-              '';
-
-              inherit doCheck;
-              nativeCheckInputs = [ hocon-validator ];
-              checkPhase = ''
-                runHook preCheck
-                hocon-validator output.conf
-                runHook postCheck
-              '';
-
-              installPhase = ''
-                runHook preInstall
-                mv output.conf $out
-                runHook postInstall
-              '';
-
-              passthru.json = writeText "${name}.json" json;
-            }
-          )
-          {
-            hocon-generator = generator;
-            hocon-validator = validator;
-          };
     };
 }

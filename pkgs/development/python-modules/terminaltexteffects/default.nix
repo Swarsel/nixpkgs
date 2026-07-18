@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "terminaltexteffects";
   version = "0.14.2";
-  pyproject = true;
 
   # no tests on pypi, no tags on github
   src = fetchPypi {
@@ -17,7 +16,7 @@ buildPythonPackage rec {
   };
 
   build-system = [ hatchling ];
-
+  pyproject = true;
   pythonImportsCheck = [ "terminaltexteffects" ];
 
   meta = {
@@ -25,8 +24,8 @@ buildPythonPackage rec {
     homepage = "https://chrisbuilds.github.io/terminaltexteffects";
     changelog = "https://chrisbuilds.github.io/terminaltexteffects/changeblog/changeblog/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
     mainProgram = "tte";
   };
 }

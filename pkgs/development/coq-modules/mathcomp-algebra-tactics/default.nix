@@ -1,31 +1,34 @@
 {
   lib,
-  mkCoqDerivation,
   coq,
-  mathcomp-ssreflect,
-  mathcomp-algebra,
   coq-elpi,
+  mathcomp-algebra,
+  mathcomp-ssreflect,
   mathcomp-zify,
+  mkCoqDerivation,
   version ? null,
 }:
 
 mkCoqDerivation {
-  namePrefix = [
-    "coq"
-    "mathcomp"
-  ];
-  pname = "algebra-tactics";
-  owner = "math-comp";
   inherit version;
+  pname = "algebra-tactics";
+
+  propagatedBuildInputs = [
+    mathcomp-ssreflect
+    mathcomp-algebra
+    coq-elpi
+    mathcomp-zify
+  ];
 
   defaultVersion =
     let
       case = coq: mc: out: {
+        inherit out;
+
         cases = [
           coq
           mc
         ];
-        inherit out;
       };
     in
     with lib.versions;
@@ -42,6 +45,12 @@ mkCoqDerivation {
       ]
       null;
 
+  namePrefix = [
+    "coq"
+    "mathcomp"
+  ];
+
+  owner = "math-comp";
   release."1.0.0".hash = "sha256-kszARPBizWbxSQ/Iqpf2vLbxYc6AjpUCLnSNlPcNfls=";
   release."1.1.1".hash = "sha256-5wItMeeTRoJlRBH3zBNc2VUZn6pkDde60YAvXTx+J3U=";
   release."1.2.2".hash = "sha256-EU9RJGV3BvnmsX+mGH+6+MDXiGHgDI7aP5sIYiMUXTs=";
@@ -50,13 +59,6 @@ mkCoqDerivation {
   release."1.2.5".hash = "sha256-wTfe+g7ljWs1S+g02VQutnJGLVIOzNX1lm1HTMXeUUA=";
   release."1.2.6".hash = "sha256-D7EEiLeCJMgxsYvlAFyL7QZyx/KJAKesVE+vyfzqzkU=";
   release."1.2.7".hash = "sha256-pCal3BPZ85SMAsEFAXRWWV7nuriHGWtyfNocJqsEmLk=";
-
-  propagatedBuildInputs = [
-    mathcomp-ssreflect
-    mathcomp-algebra
-    coq-elpi
-    mathcomp-zify
-  ];
 
   meta = {
     description = "Ring and field tactics for Mathematical Components";

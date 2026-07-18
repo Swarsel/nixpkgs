@@ -1,46 +1,42 @@
 {
   lib,
   stdenv,
-  pkgs,
-  buildPythonPackage,
-  rerun,
-  python,
-
-  # nativeBuildInputs
-  rustPlatform,
-
   # dependencies
   attrs,
+  # tests
+  av,
+  buildPythonPackage,
+  datafusion,
+  inline-snapshot,
   numpy,
   opencv4,
   pillow,
-  pyarrow,
-  semver,
-  typing-extensions,
-
-  # tests
-  av,
-  datafusion,
-  inline-snapshot,
+  pkgs,
   polars,
+  pyarrow,
   pytest-snapshot,
   pytestCheckHook,
+  python,
+  rerun,
   rerun-notebook,
+  # nativeBuildInputs
+  rustPlatform,
+  semver,
   tomli,
   torch,
   torchvision,
+  typing-extensions,
 }:
 
 buildPythonPackage {
-  pname = "rerun-sdk";
-  pyproject = true;
-  __structuredAttrs = true;
-
   inherit (rerun)
     src
     version
     cargoDeps
     ;
+
+  inherit (rerun) addDlopenRunpaths addDlopenRunpathsPhase;
+  pname = "rerun-sdk";
 
   postPatch =
     (rerun.postPatch or "")
@@ -64,30 +60,6 @@ buildPythonPackage {
     rustPlatform.maturinBuildHook
   ];
 
-  dependencies = [
-    attrs
-    numpy
-    opencv4
-    pillow
-    pyarrow
-    semver
-    typing-extensions
-  ];
-
-  buildAndTestSubdir = "rerun_py";
-
-  # https://github.com/NixOS/nixpkgs/issues/289340
-  #
-  # Alternatively, one could
-  # dontUsePythonImportsCheck = true;
-  # dontUsePytestCheck = true;
-  postInstall = ''
-    rm $out/${python.sitePackages}/rerun_sdk.pth
-    ln -s rerun_sdk/rerun $out/${python.sitePackages}/rerun
-  '';
-
-  pythonImportsCheck = [ "rerun" ];
-
   nativeCheckInputs = [
     av
     datafusion
@@ -101,8 +73,49 @@ buildPythonPackage {
     torchvision
   ];
 
-  inherit (rerun) addDlopenRunpaths addDlopenRunpathsPhase;
-  postPhases = lib.optionals stdenv.hostPlatform.isLinux [ "addDlopenRunpathsPhase" ];
+  # https://github.com/NixOS/nixpkgs/issues/289340
+  #
+  # Alternatively, one could
+  # dontUsePythonImportsCheck = true;
+  # dontUsePytestCheck = true;
+  postInstall = ''
+    rm $out/${python.sitePackages}/rerun_sdk.pth
+    ln -s rerun_sdk/rerun $out/${python.sitePackages}/rerun
+  '';
+
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+  buildAndTestSubdir = "rerun_py";
+
+  dependencies = [
+    attrs
+    numpy
+    opencv4
+    pillow
+    pyarrow
+    semver
+    typing-extensions
+  ];
+
+  disabledTestPaths = [
+    # RuntimeError: MCAP error: Bad magic number. The .mcap test assets are
+    # Git LFS pointer files, not real binaries (rerun.src is fetched without
+    # fetchLFS).
+    "rerun_py/tests/integration/test_mcap_reader.py"
+
+    # "fixture 'benchmark' not found"
+    "tests/python/log_benchmark/test_log_benchmark.py"
+    "tests/python/log_benchmark/test_micro_benchmark.py"
+
+    # ValueError: Failed to start Rerun server: Error loading RRD: couldn't decode "/build/source/tests/assets/rrd/dataset/file4.rrd"
+    "rerun_py/tests/e2e_redap_tests"
+
+    # ConnectionError: Connection: connecting to server: transport error
+    "rerun_py/tests/api_sandbox/"
+
+    # RuntimeError: Failed to load URDF file: No elements found
+    "rerun_py/tests/unit/test_urdf_tree.py"
+  ];
 
   disabledTests = [
     # RuntimeError: MP4 error: MP4 demux: MP4 error: file contains a box with a larger size than it
@@ -149,36 +162,19 @@ buildPythonPackage {
     "test_heuristic_fallback_when_is_keyframe_column_absent"
   ];
 
-  disabledTestPaths = [
-    # RuntimeError: MCAP error: Bad magic number. The .mcap test assets are
-    # Git LFS pointer files, not real binaries (rerun.src is fetched without
-    # fetchLFS).
-    "rerun_py/tests/integration/test_mcap_reader.py"
-
-    # "fixture 'benchmark' not found"
-    "tests/python/log_benchmark/test_log_benchmark.py"
-    "tests/python/log_benchmark/test_micro_benchmark.py"
-
-    # ValueError: Failed to start Rerun server: Error loading RRD: couldn't decode "/build/source/tests/assets/rrd/dataset/file4.rrd"
-    "rerun_py/tests/e2e_redap_tests"
-
-    # ConnectionError: Connection: connecting to server: transport error
-    "rerun_py/tests/api_sandbox/"
-
-    # RuntimeError: Failed to load URDF file: No elements found
-    "rerun_py/tests/unit/test_urdf_tree.py"
-  ];
-
-  __darwinAllowLocalNetworking = true;
+  postPhases = lib.optionals stdenv.hostPlatform.isLinux [ "addDlopenRunpathsPhase" ];
+  pyproject = true;
+  pythonImportsCheck = [ "rerun" ];
 
   meta = {
-    description = "Python bindings for `rerun` (an interactive visualization tool for stream data)";
     inherit (rerun.meta)
       changelog
       homepage
       license
       maintainers
       ;
+
+    description = "Python bindings for `rerun` (an interactive visualization tool for stream data)";
     mainProgram = "rerun";
   };
 }

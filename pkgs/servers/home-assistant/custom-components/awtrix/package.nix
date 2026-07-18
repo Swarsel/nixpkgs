@@ -6,8 +6,6 @@
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "10der";
-  domain = "awtrix";
   version = "0.3.21";
 
   src = fetchFromGitHub {
@@ -22,10 +20,13 @@ buildHomeAssistantComponent rec {
     requests
   ];
 
+  domain = "awtrix";
+  owner = "10der";
+
   meta = {
     description = "Home-assistant integration for awtrix";
     homepage = "https://github.com/10der/homeassistant-custom_components-awtrix";
-    maintainers = with lib.maintainers; [ pinpox ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ pinpox ];
   };
 }

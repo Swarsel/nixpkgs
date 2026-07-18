@@ -1,30 +1,26 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-
-  # build-system
-  flit-core,
-
   # dependencies
   docutils,
+  fetchPypi,
+  # build-system
+  flit-core,
   mistune,
   pygments,
-  sphinx,
-
   # tests
   pytestCheckHook,
+  sphinx,
 }:
 
 buildPythonPackage rec {
   pname = "sphinx-mdinclude";
   version = "0.6.2";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "sphinx_mdinclude";
     inherit version;
     hash = "sha256-RHRi6Cy4vmFASiIEIn+SB2nrkj0vV2COMyXzu4goa0w=";
+    pname = "sphinx_mdinclude";
   };
 
   nativeBuildInputs = [ flit-core ];
@@ -37,11 +33,11 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/omnilib/sphinx-mdinclude";
-    changelog = "https://github.com/omnilib/sphinx-mdinclude/blob/v${version}/CHANGELOG.md";
     description = "Sphinx extension for including or writing pages in Markdown format";
+
     longDescription = ''
       A simple Sphinx extension that enables including Markdown documents from within
       reStructuredText.
@@ -50,7 +46,11 @@ buildPythonPackage rec {
 
       sphinx-mdinclude is a fork of m2r and m2r2, focused only on providing a Sphinx extension.
     '';
+
+    homepage = "https://github.com/omnilib/sphinx-mdinclude";
+    changelog = "https://github.com/omnilib/sphinx-mdinclude/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       flokli
       JulianFP

@@ -1,7 +1,7 @@
 {
+  lib,
   haskell,
   haskellPackages,
-  lib,
   runCommand,
 }:
 
@@ -17,8 +17,6 @@ in
 
 dconf2nix.overrideAttrs (oldAttrs: {
   passthru = (oldAttrs.passthru or { }) // {
-    updateScript = ./update.sh;
-
     # These tests can be run with the following command.
     #
     # $ nix-build -A dconf2nix.passthru.tests
@@ -32,5 +30,7 @@ dconf2nix.overrideAttrs (oldAttrs: {
         ''
           dconf2nix > $out
         '';
+
+    updateScript = ./update.sh;
   };
 })

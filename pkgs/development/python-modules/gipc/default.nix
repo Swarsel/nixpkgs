@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   gevent,
   pytestCheckHook,
   pythonAtLeast,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "gipc";
   version = "1.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jgehrcke";
@@ -20,13 +19,9 @@ buildPythonPackage rec {
     hash = "sha256-P3soMA/EBMuhkXQsiLv9gnDBfo9XGosKnSMi+EZ0gaM=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ gevent ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "gipc" ];
+  build-system = [ setuptools ];
+  dependencies = [ gevent ];
 
   disabledTests = [
     # AttributeError
@@ -46,10 +41,12 @@ buildPythonPackage rec {
     "test_write_closewrite_read"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "gipc" ];
+
   meta = {
-    # https://github.com/jgehrcke/gipc/issues/141
-    broken = pythonAtLeast "3.14";
     description = "Gevent-cooperative child processes and IPC";
+
     longDescription = ''
       Usage of Python's multiprocessing package in a gevent-powered
       application may raise problems and most likely breaks the application
@@ -58,9 +55,12 @@ buildPythonPackage rec {
       multiprocessing. Process-based child processes can safely be created
       anywhere within your gevent-powered application.
     '';
+
     homepage = "http://gehrcke.de/gipc";
     changelog = "https://github.com/jgehrcke/gipc/blob/${version}/CHANGELOG.rst";
     license = lib.licenses.mit;
     maintainers = [ ];
+    # https://github.com/jgehrcke/gipc/issues/141
+    broken = pythonAtLeast "3.14";
   };
 }

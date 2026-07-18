@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   torch,
 }:
 
 buildPythonPackage rec {
   pname = "lion-pytorch";
   version = "0.2.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "lucidrains";
@@ -18,9 +17,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ torch ];
-
-  pythonImportsCheck = [ "lion_pytorch" ];
   doCheck = false; # no tests currently
+  format = "setuptools";
+  pythonImportsCheck = [ "lion_pytorch" ];
 
   meta = {
     description = "Optimizer tuned by Google Brain using genetic algorithms";

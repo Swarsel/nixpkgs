@@ -6,8 +6,8 @@
 }:
 
 stdenv.mkDerivation {
-  version = "1.1a-3";
   pname = "contacts";
+  version = "1.1a-3";
 
   src = fetchFromGitHub {
     owner = "dhess";

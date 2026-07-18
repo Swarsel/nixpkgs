@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,8 +18,8 @@ buildGoModule (finalAttrs: {
   vendorHash = "sha256-PSl0bGzyG9XBZPi8+YzLNq3JEm7QtmfX0272xOgtbek=";
 
   meta = {
-    homepage = "https://github.com/schachmat/wego";
     description = "Weather app for the terminal";
+    homepage = "https://github.com/schachmat/wego";
     license = lib.licenses.isc;
     mainProgram = "wego";
   };

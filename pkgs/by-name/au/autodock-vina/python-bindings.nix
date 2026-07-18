@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   autodock-vina,
-  swig,
-  setuptools,
+  buildPythonPackage,
   numpy,
+  setuptools,
+  swig,
 }:
 
 let
@@ -18,10 +18,6 @@ buildPythonPackage {
     src
     meta
     ;
-
-  pyproject = true;
-
-  sourceRoot = "${autodock-vina.src.name}/build/python";
 
   postPatch = ''
     # wildcards are not allowed
@@ -58,8 +54,11 @@ buildPythonPackage {
 
   # upstream has no tests
   doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "vina"
   ];
+
+  sourceRoot = "${autodock-vina.src.name}/build/python";
 }

@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  makeWrapper,
-  wrapGAppsHook3,
   jre,
+  makeWrapper,
+  stdenvNoCC,
+  wrapGAppsHook3,
 }:
 let
   jre' = jre.override {
@@ -20,16 +20,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-ZFBfOe35ybXUfmZpgfgePDqInU8SKzBlr34mn0jlNCM=";
   };
 
-  dontUnpack = true;
-  dontBuild = true;
-
   nativeBuildInputs = [
     jre'
     makeWrapper
     wrapGAppsHook3
   ];
-
-  dontWrapGApps = true;
 
   installPhase = ''
     runHook preInstall
@@ -46,13 +41,17 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       ''${gappsWrapperArgs[@]}
   '';
 
+  dontBuild = true;
+  dontUnpack = true;
+  dontWrapGApps = true;
+
   meta = {
-    homepage = "https://github.com/Querz/mcaselector";
     description = "Tool to select chunks from Minecraft worlds for deletion or export";
-    mainProgram = "mcaselector";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    homepage = "https://github.com/Querz/mcaselector";
     license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ lib.maintainers.Scrumplex ];
     platforms = lib.platforms.linux;
+    mainProgram = "mcaselector";
   };
 })

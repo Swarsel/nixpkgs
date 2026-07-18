@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libpng,
   libx11,
   libxcursor,
-  xorgproto,
+  pkg-config,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xcursorgen";
@@ -19,7 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -44,8 +43,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "prepares X11 cursor sets for use with libxcursor";
     homepage = "https://gitlab.freedesktop.org/xorg/app/xcursorgen";
     license = lib.licenses.hpndSellVariant;
-    mainProgram = "xcursorgen";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xcursorgen";
   };
 })

@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "brotab";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "balta2ar";
@@ -16,24 +15,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-Pv5tEDL11brc/n3TuFcad9kTr7Jb/Bt7JFb29HuX/28=";
   };
 
-  build-system = with python3Packages; [
-    setuptools
-  ];
-
-  dependencies = with python3Packages; [
-    flask
-    psutil
-    requests
-    werkzeug
-    setuptools
-  ];
-
-  pythonRelaxDeps = [
-    "flask"
-    "psutil"
-    "requests"
-    "werkzeug"
-    "setuptools"
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
   ];
 
   postInstall = ''
@@ -50,13 +33,31 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   __darwinAllowLocalNetworking = true;
 
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
+  build-system = with python3Packages; [
+    setuptools
+  ];
+
+  dependencies = with python3Packages; [
+    flask
+    psutil
+    requests
+    werkzeug
+    setuptools
+  ];
+
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "flask"
+    "psutil"
+    "requests"
+    "werkzeug"
+    "setuptools"
   ];
 
   meta = {
-    homepage = "https://github.com/balta2ar/brotab";
     description = "Control your browser's tabs from the command line";
+    homepage = "https://github.com/balta2ar/brotab";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ doronbehar ];
   };

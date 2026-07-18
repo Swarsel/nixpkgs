@@ -1,38 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   django,
-  stripe,
   mysqlclient,
+  poetry-core,
   psycopg2,
   pytest-django,
   pytestCheckHook,
+  stripe,
 }:
 
 buildPythonPackage rec {
   pname = "dj-stripe";
   version = "2.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dj-stripe";
     repo = "dj-stripe";
     tag = version;
     hash = "sha256-ijTzSid5B79mAi7qUFSGL5+4PfmBStDWayzjW1iwRww=";
-  };
-
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    django
-    stripe
-  ];
-
-  passthru.optional-dependencies = {
-    mysql = [ mysqlclient ];
-    postgres = [ psycopg2 ];
   };
 
   env = {
@@ -43,6 +30,13 @@ buildPythonPackage rec {
   nativeCheckInputs = [
     pytest-django
     pytestCheckHook
+  ];
+
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    django
+    stripe
   ];
 
   disabledTestPaths = [
@@ -110,7 +104,13 @@ buildPythonPackage rec {
     "tests/test_webhooks.py::TestGetRemoteIp::test_get_remote_ip_remote_addr_is_none"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "djstripe" ];
+
+  passthru.optional-dependencies = {
+    mysql = [ mysqlclient ];
+    postgres = [ psycopg2 ];
+  };
 
   meta = {
     description = "Stripe Models for Django";

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  perl,
   libxcb,
+  perl,
 }:
 
 stdenv.mkDerivation rec {
@@ -30,11 +30,13 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Lightweight xcb based bar";
     homepage = "https://github.com/LemonBoy/bar";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       meisternu
       moni
     ];
-    license = lib.licenses.mit;
+
     platforms = lib.platforms.linux;
     mainProgram = "lemonbar";
   };

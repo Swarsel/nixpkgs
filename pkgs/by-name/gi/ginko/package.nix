@@ -19,9 +19,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Device-tree source parser, analyzer and language server";
-    maintainers = [ lib.maintainers.fredeb ];
-    license = lib.licenses.mit;
     homepage = "https://github.com/Schottkyc137/ginko";
     changelog = "https://github.com/Schottkyc137/ginko/releases/tag/v${finalAttrs.version}/CHANGELOG.md";
+    license = lib.licenses.mit;
+    maintainers = [ lib.maintainers.fredeb ];
   };
 })

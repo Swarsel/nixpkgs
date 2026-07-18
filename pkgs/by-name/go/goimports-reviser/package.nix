@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -14,17 +14,9 @@ buildGoModule (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-QFnTiFINWprGuBrRwLFMexIbv6Xu+tq7rTVif7YvLsc=";
   };
+
   vendorHash = "sha256-aTPzvqIwjZzEq9LHFdebIgbKMwsBOqLbpEWB7rN7cYY=";
-
   env.CGO_ENABLED = 0;
-
-  subPackages = [ "." ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=main.Tag=${finalAttrs.src.rev}"
-  ];
 
   checkFlags = [
     "-skip=TestSourceFile_Fix_WithAliasForVersionSuffix/success_with_set_alias"
@@ -37,11 +29,19 @@ buildGoModule (finalAttrs: {
     unset CGO_ENABLED
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=main.Tag=${finalAttrs.src.rev}"
+  ];
+
+  subPackages = [ "." ];
+
   meta = {
     description = "Right imports sorting & code formatting tool (goimports alternative)";
-    mainProgram = "goimports-reviser";
     homepage = "https://github.com/incu6us/goimports-reviser";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jk ];
+    mainProgram = "goimports-reviser";
   };
 })

@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  nixosTests,
   cmake,
   exiv2,
   gettext,
+  gitUpdater,
   gst_all_1,
   libusermetrics,
   lomiri-action-api,
   lomiri-content-hub,
-  lomiri-ui-toolkit,
   lomiri-thumbnailer,
+  lomiri-ui-toolkit,
+  nixosTests,
   pkg-config,
   qtbase,
   qtdeclarative,
@@ -85,8 +85,6 @@ stdenv.mkDerivation (finalAttrs: {
     gst-plugins-ugly
   ]);
 
-  nativeCheckInputs = [ xvfb-run ];
-
   cmakeFlags = [
     (lib.cmakeBool "INSTALL_TESTS" false)
     (lib.cmakeBool "CLICK_MODE" false)
@@ -105,6 +103,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+  nativeCheckInputs = [ xvfb-run ];
 
   preCheck =
     let
@@ -127,13 +126,13 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/share/lomiri-camera-app/assets/lomiri-barcode-reader-app-splash.svg $out/share/lomiri-app-launch/splash/lomiri-barcode-reader-app.svg
   '';
 
-  dontWrapGApps = true;
-
   preFixup = ''
     qtWrapperArgs+=(
       "''${gappsWrapperArgs[@]}"
     )
   '';
+
+  dontWrapGApps = true;
 
   passthru = {
     tests = {
@@ -143,6 +142,7 @@ stdenv.mkDerivation (finalAttrs: {
         v4l2-qr
         ;
     };
+
     updateScript = gitUpdater { rev-prefix = "v"; };
   };
 
@@ -150,12 +150,14 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Camera application for Ubuntu Touch devices";
     homepage = "https://gitlab.com/ubports/development/apps/lomiri-camera-app";
     changelog = "https://gitlab.com/ubports/development/apps/lomiri-camera-app/-/blob/v${finalAttrs.version}/ChangeLog";
+
     license = with lib.licenses; [
       gpl3Only # code
       cc-by-sa-30 # extra graphics
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "lomiri-camera-app";
     teams = [ lib.teams.lomiri ];
-    platforms = lib.platforms.linux;
   };
 })

@@ -46,11 +46,11 @@ let
     ];
 
   desktopItem = pkgs.makeDesktopItem {
-    name = "captive-browser";
+    categories = [ "Network" ];
     desktopName = "Captive Portal Browser";
     exec = "captive-browser";
     icon = "nix-snowflake";
-    categories = [ "Network" ];
+    name = "captive-browser";
   };
 
   captive-browser-configured = pkgs.writeShellScriptBin "captive-browser" ''
@@ -72,19 +72,25 @@ in
   options = {
     programs.captive-browser = {
       enable = mkEnableOption "captive browser, a dedicated Chrome instance to log into captive portals without messing with DNS settings";
-
       package = mkPackageOption pkgs "captive-browser" { };
 
-      interface = mkOption {
-        type = types.str;
-        description = "your public network interface (wlp3s0, wlan0, eth0, ...)";
+      bindInterface = mkOption {
+        default = true;
+
+        description = ''
+          Binds `captive-browser` to the network interface declared in
+          `cfg.interface`. This can be used to avoid collisions
+          with private subnets.
+        '';
+
+        type = types.bool;
       };
 
       # the options below are the same as in "captive-browser.toml"
       browser = mkOption {
-        type = types.str;
         default = browserDefault pkgs.chromium;
         defaultText = literalExpression (browserDefault "\${pkgs.chromium}");
+
         description = ''
           The shell (/bin/sh) command executed once the proxy starts.
           When browser exits, the proxy exits. An extra env var PROXY is available.
@@ -97,31 +103,29 @@ in
           @volth: chromium is to open a plain HTTP (not HTTPS nor redirect to HTTPS!) website.
                   upstream uses http://example.com but I have seen captive portals whose DNS server resolves "example.com" to 127.0.0.1
         '';
+
+        type = types.str;
       };
 
       dhcp-dns = mkOption {
-        type = types.str;
         description = ''
           The shell (/bin/sh) command executed to obtain the DHCP
           DNS server address. The first match of an IPv4 regex is used.
           IPv4 only, because let's be real, it's a captive portal.
         '';
+
+        type = types.str;
+      };
+
+      interface = mkOption {
+        description = "your public network interface (wlp3s0, wlan0, eth0, ...)";
+        type = types.str;
       };
 
       socks5-addr = mkOption {
-        type = types.str;
         default = "localhost:1666";
         description = "the listen address for the SOCKS5 proxy server";
-      };
-
-      bindInterface = mkOption {
-        default = true;
-        type = types.bool;
-        description = ''
-          Binds `captive-browser` to the network interface declared in
-          `cfg.interface`. This can be used to avoid collisions
-          with private subnets.
-        '';
+        type = types.str;
       };
     };
   };

@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  makeWrapper,
+  buildGoModule,
   installShellFiles,
+  makeWrapper,
 }:
 buildGoModule (finalAttrs: {
   pname = "asdf-vm";
@@ -13,19 +13,17 @@ buildGoModule (finalAttrs: {
   src = fetchFromGitHub {
     owner = "asdf-vm";
     repo = "asdf";
-
     tag = "v${finalAttrs.version}";
     hash = "sha256-qq1HJidVBqHyfk2OZ439fnkJKRq1xglqOrF3GVvWeXY=";
 
   };
-
-  vendorHash = "sha256-Rv5p63opBTlyRlRDisgYX5fVJFny1clDn7b/zumV83M=";
 
   nativeBuildInputs = [
     makeWrapper
     installShellFiles
   ];
 
+  vendorHash = "sha256-Rv5p63opBTlyRlRDisgYX5fVJFny1clDn7b/zumV83M=";
   # Tests have additional requirements
   doCheck = false;
 
@@ -53,11 +51,13 @@ buildGoModule (finalAttrs: {
     description = "Extendable version manager with support for Ruby, Node.js, Erlang & more";
     homepage = "https://asdf-vm.com/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       c4605
       vringar
     ];
-    mainProgram = "asdf";
+
     platforms = lib.platforms.unix;
+    mainProgram = "asdf";
   };
 })

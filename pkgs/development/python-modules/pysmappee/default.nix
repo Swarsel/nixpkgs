@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cachetools,
-  fetchFromGitHub,
   paho-mqtt,
   pytz,
   requests,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "pysmappee";
   version = "0.2.29";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "smappee";
@@ -33,7 +32,7 @@ buildPythonPackage rec {
 
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pysmappee" ];
 
   meta = {

@@ -1,12 +1,12 @@
 {
   lib,
-  fetchgit,
   fetchFromGitHub,
   fetchFromGitLab,
-  fetchFromGitea,
-  python3,
-  poetry,
   buildMaubotPlugin,
+  fetchFromGitea,
+  fetchgit,
+  poetry,
+  python3,
 }:
 
 let
@@ -39,8 +39,8 @@ lib.flip builtins.mapAttrs json (
   lib.makeOverridable buildMaubotPlugin (
     entry.attrs
     // {
-      pname = manifest.id;
       inherit (manifest) version;
+      pname = manifest.id;
 
       src =
         if entry ? github then
@@ -55,7 +55,6 @@ lib.flip builtins.mapAttrs json (
           throw "Invalid generated entry for ${manifest.id}: missing source";
 
       propagatedBuildInputs = builtins.filter (x: x != null) (reqDeps ++ optDeps);
-
       passthru.isOfficial = entry.isOfficial or false;
 
       meta = entry.attrs.meta // {
@@ -69,6 +68,7 @@ lib.flip builtins.mapAttrs json (
             );
           in
           spdxLicenses.${spdx};
+
         broken = builtins.elem null reqDeps;
       };
     }

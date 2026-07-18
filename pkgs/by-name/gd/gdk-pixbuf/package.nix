@@ -1,35 +1,42 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  nixosTests,
-  fixDarwinDylibNames,
-  meson,
-  ninja,
-  pkg-config,
-  gettext,
-  python3,
+  buildPackages,
   docutils,
+  fetchpatch,
+  fixDarwinDylibNames,
+  gettext,
   gi-docgen,
   glib,
-  libtiff,
+  gnome,
+  gobject-introspection,
   libjpeg,
   libpng,
-  gnome,
-  doCheck ? false,
+  libtiff,
   makeWrapper,
-  lib,
+  meson,
+  ninja,
+  nixosTests,
+  pkg-config,
+  python3,
   testers,
-  buildPackages,
+  doCheck ? false,
   withIntrospection ?
     lib.meta.availableOn stdenv.hostPlatform gobject-introspection
     && stdenv.hostPlatform.emulatorAvailable buildPackages,
-  gobject-introspection,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
+  # The tests take an excessive amount of time (> 1.5 hours) and memory (> 6 GB).
+  inherit doCheck;
   pname = "gdk-pixbuf";
   version = "2.44.6";
+
+  src = fetchurl {
+    url = "mirror://gnome/sources/gdk-pixbuf/${lib.versions.majorMinor finalAttrs.version}/gdk-pixbuf-${finalAttrs.version}.tar.xz";
+    hash = "sha256-FAwtC4mfz4U+6SsmNzydwijbzeCCCkJGaT9DKKJ0Zvo=";
+  };
 
   outputs = [
     "out"
@@ -39,11 +46,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional withIntrospection "devdoc"
   ++ lib.optional (stdenv.buildPlatform == stdenv.hostPlatform) "installedTests";
 
-  src = fetchurl {
-    url = "mirror://gnome/sources/gdk-pixbuf/${lib.versions.majorMinor finalAttrs.version}/gdk-pixbuf-${finalAttrs.version}.tar.xz";
-    hash = "sha256-FAwtC4mfz4U+6SsmNzydwijbzeCCCkJGaT9DKKJ0Zvo=";
-  };
-
   patches = [
     # Move installed tests to a separate output
     ./installed-tests-path.patch
@@ -51,17 +53,30 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix loading of xpm module if built-in
     # https://gitlab.gnome.org/GNOME/gdk-pixbuf/-/merge_requests/267
     (fetchpatch {
-      url = "https://gitlab.gnome.org/GNOME/gdk-pixbuf/-/commit/62b8f9fd0bb3b862823cd34afce4b389fbd27569.patch";
       hash = "sha256-ECEIt8lq/jBtDdBetErKpap2PWGav10vqCXKCpIQSyA=";
+      url = "https://gitlab.gnome.org/GNOME/gdk-pixbuf/-/commit/62b8f9fd0bb3b862823cd34afce4b389fbd27569.patch";
     })
   ];
 
+  postPatch = ''
+    chmod +x build-aux/* # patchShebangs only applies to executables
+    patchShebangs build-aux
+
+    substituteInPlace tests/meson.build --subst-var-by installedtestsprefix "$installedTests"
+
+    # Run-time dependency gi-docgen found: NO (tried pkgconfig and cmake)
+    # it should be a build-time dep for build
+    # TODO: send upstream
+    substituteInPlace docs/meson.build \
+      --replace-fail "dependency('gi-docgen'," "dependency('gi-docgen', native:true," \
+      --replace-fail "'gi-docgen', req" "'gi-docgen', native:true, req"
+
+    # Remove 'ani' loader until proper fix for CVE-2022-48622
+    substituteInPlace meson.build --replace-fail "'ani'," ""
+  '';
+
   # gdk-pixbuf-thumbnailer is not wrapped therefore strictDeps will work
   strictDeps = true;
-
-  depsBuildBuild = [
-    pkg-config
-  ];
 
   nativeBuildInputs = [
     meson
@@ -104,23 +119,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dbuiltin_loaders=all"
   ];
 
-  postPatch = ''
-    chmod +x build-aux/* # patchShebangs only applies to executables
-    patchShebangs build-aux
-
-    substituteInPlace tests/meson.build --subst-var-by installedtestsprefix "$installedTests"
-
-    # Run-time dependency gi-docgen found: NO (tried pkgconfig and cmake)
-    # it should be a build-time dep for build
-    # TODO: send upstream
-    substituteInPlace docs/meson.build \
-      --replace-fail "dependency('gi-docgen'," "dependency('gi-docgen', native:true," \
-      --replace-fail "'gi-docgen', req" "'gi-docgen', native:true, req"
-
-    # Remove 'ani' loader until proper fix for CVE-2022-48622
-    substituteInPlace meson.build --replace-fail "'ani'," ""
-  '';
-
   postInstall = ''
     # All except one utility seem to be only useful during building.
     moveToOutput "bin" "$dev"
@@ -152,36 +150,36 @@ stdenv.mkDerivation (finalAttrs: {
     moveToOutput "share/doc" "$devdoc"
   '';
 
-  # The tests take an excessive amount of time (> 1.5 hours) and memory (> 6 GB).
-  inherit doCheck;
-
-  setupHook = ./setup-hook.sh;
+  depsBuildBuild = [
+    pkg-config
+  ];
 
   separateDebugInfo = stdenv.hostPlatform.isLinux;
+  setupHook = ./setup-hook.sh;
 
   passthru = {
-    updateScript = gnome.updateScript {
-      packageName = "gdk-pixbuf";
-      versionPolicy = "odd-unstable";
-    };
+    # gdk_pixbuf_binarydir and gdk_pixbuf_moduledir variables from gdk-pixbuf-2.0.pc
+    binaryDir = "lib/gdk-pixbuf-2.0/2.10.0";
+    moduleDir = "${finalAttrs.passthru.binaryDir}/loaders";
 
     tests = {
       installedTests = nixosTests.installed-tests.gdk-pixbuf;
       pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
     };
 
-    # gdk_pixbuf_binarydir and gdk_pixbuf_moduledir variables from gdk-pixbuf-2.0.pc
-    binaryDir = "lib/gdk-pixbuf-2.0/2.10.0";
-    moduleDir = "${finalAttrs.passthru.binaryDir}/loaders";
+    updateScript = gnome.updateScript {
+      packageName = "gdk-pixbuf";
+      versionPolicy = "odd-unstable";
+    };
   };
 
   meta = {
     description = "Library for image loading and manipulation";
     homepage = "https://gitlab.gnome.org/GNOME/gdk-pixbuf";
     license = lib.licenses.lgpl21Plus;
-    teams = [ lib.teams.gnome ];
+    platforms = lib.platforms.unix;
     mainProgram = "gdk-pixbuf-thumbnailer";
     pkgConfigModules = [ "gdk-pixbuf-2.0" ];
-    platforms = lib.platforms.unix;
+    teams = [ lib.teams.gnome ];
   };
 })

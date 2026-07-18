@@ -1,18 +1,18 @@
 {
   lib,
-  gitUpdater,
   fetchFromGitHub,
-  meson,
-  ninja,
-  gettext,
-  wrapGAppsHook3,
-  gobject-introspection,
-  pango,
-  gdk-pixbuf,
-  python3,
   atk,
+  gdk-pixbuf,
+  gettext,
+  gitUpdater,
+  gobject-introspection,
   gtk3,
   hicolor-icon-theme,
+  meson,
+  ninja,
+  pango,
+  python3,
+  wrapGAppsHook3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
@@ -25,8 +25,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "vQVtvQrs8oPevvrC75T2YcdYuT5XYDiAFDTduTkICBk=";
   };
-
-  pyproject = false;
 
   nativeBuildInputs = [
     wrapGAppsHook3
@@ -48,11 +46,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pygobject3
   ];
 
-  preConfigure = ''
-    # app bundle for macos
-    substituteInPlace src/diffuse/meson.build data/icons/meson.build src/diffuse/mac-os-app/diffuse-mac.in --replace-fail "/Applications" "$out/Applications";
-  '';
-
   mesonFlags = [
     "-Db_ndebug=true"
   ];
@@ -60,9 +53,16 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   # to avoid running gtk-update-icon-cache, update-desktop-database and glib-compile-schemas
   env.DESTDIR = "/";
 
+  preConfigure = ''
+    # app bundle for macos
+    substituteInPlace src/diffuse/meson.build data/icons/meson.build src/diffuse/mac-os-app/diffuse-mac.in --replace-fail "/Applications" "$out/Applications";
+  '';
+
   makeWrapperArgs = [
     "--prefix XDG_DATA_DIRS : ${hicolor-icon-theme}/share"
   ];
+
+  pyproject = false;
 
   passthru = {
     updateScript = gitUpdater {
@@ -71,11 +71,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/MightyCreak/diffuse";
     description = "Graphical tool for merging and comparing text files";
-    mainProgram = "diffuse";
+    homepage = "https://github.com/MightyCreak/diffuse";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ k3a ];
     platforms = lib.platforms.unix;
+    mainProgram = "diffuse";
   };
 })

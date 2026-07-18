@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,13 +17,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-Z5+RrHDlKCS66zNW+Y3RtMIpCeKV28OXO+llsz1iFYc=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "WebAssembly Composition (WAC) tooling";
-    license = lib.licenses.asl20;
     homepage = "https://github.com/bytecodealliance/wac";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ water-sucks ];
     mainProgram = "wac";
   };

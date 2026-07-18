@@ -9,10 +9,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "ut";
   version = "2.3.1";
 
-  cmakeFlags = [
-    "-DBOOST_UT_ALLOW_CPM_USE=OFF"
-  ];
-
   src = fetchFromGitHub {
     owner = "boost-ext";
     repo = "ut";
@@ -23,6 +19,10 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [
     cmake
     ninja
+  ];
+
+  cmakeFlags = [
+    "-DBOOST_UT_ALLOW_CPM_USE=OFF"
   ];
 
   meta = {

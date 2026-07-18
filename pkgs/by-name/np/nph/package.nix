@@ -8,11 +8,6 @@ buildNimPackage (finalAttrs: {
   pname = "nph";
   version = "0.7.0";
 
-  postPatch = ''
-    substituteInPlace src/nph.nim \
-      --replace-fail 'git describe --long --dirty --always --tags' "echo ${finalAttrs.version}"
-  '';
-
   src = fetchFromGitHub {
     owner = "arnetheduck";
     repo = "nph";
@@ -20,7 +15,10 @@ buildNimPackage (finalAttrs: {
     hash = "sha256-mH7yEyveR6cM7CFr93rO2K/5tAtKbawyTgbtU0kk5o8=";
   };
 
-  lockFile = ./lock.json;
+  postPatch = ''
+    substituteInPlace src/nph.nim \
+      --replace-fail 'git describe --long --dirty --always --tags' "echo ${finalAttrs.version}"
+  '';
 
   checkPhase = ''
     runHook preCheck
@@ -30,6 +28,8 @@ buildNimPackage (finalAttrs: {
 
     runHook postCheck
   '';
+
+  lockFile = ./lock.json;
 
   meta = {
     description = "Opinionated code formatter for Nim";

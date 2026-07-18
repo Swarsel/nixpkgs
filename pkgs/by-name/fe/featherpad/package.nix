@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  qt6,
   hunspell,
   pkg-config,
+  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,8 +35,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Lightweight Qt5 Plain-Text Editor for Linux";
     homepage = "https://github.com/tsujan/FeatherPad";
-    platforms = lib.platforms.linux;
-    maintainers = [ lib.maintainers.flosse ];
     license = lib.licenses.gpl3Plus;
+    maintainers = [ lib.maintainers.flosse ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  makeWrapper,
   buildGoModule,
+  makeWrapper,
   wireshark-cli,
 }:
 
@@ -19,9 +19,7 @@ buildGoModule (finalAttrs: {
 
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ wireshark-cli ];
-
   vendorHash = "sha256-C9XOiNjo+TZ+erdnypRhhfpbuBhB3yEqNpbtwjEv14g=";
-
   doCheck = false;
 
   postFixup = ''
@@ -33,10 +31,10 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://termshark.io/";
     description = "Terminal UI for wireshark-cli, inspired by Wireshark";
-    mainProgram = "termshark";
+    homepage = "https://termshark.io/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ winpat ];
+    mainProgram = "termshark";
   };
 })

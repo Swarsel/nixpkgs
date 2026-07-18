@@ -1,7 +1,7 @@
 {
   lib,
-  pkgs,
   buildPythonPackage,
+  pkgs,
   requests,
   six,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage {
   pname = "dopy";
   version = "2016-01-04";
-  format = "setuptools";
 
   src = pkgs.fetchFromGitHub {
     owner = "Wiredcraft";
@@ -25,6 +24,7 @@ buildPythonPackage {
 
   # contains no tests
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "dopy" ];
 
   meta = {

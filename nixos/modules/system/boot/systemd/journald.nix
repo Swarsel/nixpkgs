@@ -13,45 +13,60 @@ in
   ];
 
   options = {
+    services.journald.audit = lib.mkOption {
+      default = "keep";
+
+      description = ''
+        If enabled systemd-journald will turn on auditing on start-up.
+        If disabled it will turn it off. If unset it will neither enable nor disable it, leaving the previous state unchanged.
+
+        NixOS defaults to leaving this unset as enabling audit without auditd running leads to spamming /dev/kmesg with random messages
+        and if you enable auditd then auditd is responsible for turning auditing on.
+
+        If you want to have audit logs in journald and do not mind audit logs also ending up in /dev/kmesg you can set this option to true.
+
+        If you want to for some ununderstandable reason disable auditing if auditd enabled it then you can set this option to false.
+        It is of NixOS' opinion that setting this to false is definitely the wrong thing to do - but it's an option.
+      '';
+
+      type = lib.types.oneOf [
+        lib.types.bool
+        (lib.types.enum [ "keep" ])
+      ];
+    };
+
     services.journald.console = lib.mkOption {
       default = "";
-      type = lib.types.str;
       description = "If non-empty, write log messages to the specified TTY device.";
-    };
-
-    services.journald.rateLimitInterval = lib.mkOption {
-      default = "30s";
       type = lib.types.str;
-      description = ''
-        Configures the rate limiting interval that is applied to all
-        messages generated on the system. This rate limiting is applied
-        per-service, so that two services which log do not interfere with
-        each other's limit. The value may be specified in the following
-        units: s, min, h, ms, us. To turn off any kind of rate limiting,
-        set either value to 0.
-
-        See {option}`services.journald.rateLimitBurst` for important
-        considerations when setting this value.
-      '';
     };
 
-    services.journald.storage = lib.mkOption {
-      default = "persistent";
-      type = lib.types.enum [
-        "persistent"
-        "volatile"
-        "auto"
-        "none"
-      ];
+    services.journald.extraConfig = lib.mkOption {
+      default = "";
+
       description = ''
-        Controls where to store journal data. See
-        {manpage}`journald.conf(5)` for further information.
+        Extra config options for systemd-journald. See {manpage}`journald.conf(5)`
+        for available options.
       '';
+
+      example = "Storage=volatile";
+      type = lib.types.lines;
+    };
+
+    services.journald.forwardToSyslog = lib.mkOption {
+      default = config.services.rsyslogd.enable || config.services.syslog-ng.enable;
+      defaultText = lib.literalExpression "services.rsyslogd.enable || services.syslog-ng.enable";
+
+      description = ''
+        Whether to forward log messages to syslog.
+      '';
+
+      type = lib.types.bool;
     };
 
     services.journald.rateLimitBurst = lib.mkOption {
       default = 10000;
-      type = lib.types.int;
+
       description = ''
         Configures the rate limiting burst limit (number of messages per
         interval) that is applied to all messages generated on the system.
@@ -72,70 +87,46 @@ in
         With default settings for log lines that are 100 Bytes long, this can
         amount to just a few hours.
       '';
+
+      type = lib.types.int;
     };
 
-    services.journald.audit = lib.mkOption {
-      default = "keep";
-      type = lib.types.oneOf [
-        lib.types.bool
-        (lib.types.enum [ "keep" ])
+    services.journald.rateLimitInterval = lib.mkOption {
+      default = "30s";
+
+      description = ''
+        Configures the rate limiting interval that is applied to all
+        messages generated on the system. This rate limiting is applied
+        per-service, so that two services which log do not interfere with
+        each other's limit. The value may be specified in the following
+        units: s, min, h, ms, us. To turn off any kind of rate limiting,
+        set either value to 0.
+
+        See {option}`services.journald.rateLimitBurst` for important
+        considerations when setting this value.
+      '';
+
+      type = lib.types.str;
+    };
+
+    services.journald.storage = lib.mkOption {
+      default = "persistent";
+
+      description = ''
+        Controls where to store journal data. See
+        {manpage}`journald.conf(5)` for further information.
+      '';
+
+      type = lib.types.enum [
+        "persistent"
+        "volatile"
+        "auto"
+        "none"
       ];
-      description = ''
-        If enabled systemd-journald will turn on auditing on start-up.
-        If disabled it will turn it off. If unset it will neither enable nor disable it, leaving the previous state unchanged.
-
-        NixOS defaults to leaving this unset as enabling audit without auditd running leads to spamming /dev/kmesg with random messages
-        and if you enable auditd then auditd is responsible for turning auditing on.
-
-        If you want to have audit logs in journald and do not mind audit logs also ending up in /dev/kmesg you can set this option to true.
-
-        If you want to for some ununderstandable reason disable auditing if auditd enabled it then you can set this option to false.
-        It is of NixOS' opinion that setting this to false is definitely the wrong thing to do - but it's an option.
-      '';
-    };
-
-    services.journald.extraConfig = lib.mkOption {
-      default = "";
-      type = lib.types.lines;
-      example = "Storage=volatile";
-      description = ''
-        Extra config options for systemd-journald. See {manpage}`journald.conf(5)`
-        for available options.
-      '';
-    };
-
-    services.journald.forwardToSyslog = lib.mkOption {
-      default = config.services.rsyslogd.enable || config.services.syslog-ng.enable;
-      defaultText = lib.literalExpression "services.rsyslogd.enable || services.syslog-ng.enable";
-      type = lib.types.bool;
-      description = ''
-        Whether to forward log messages to syslog.
-      '';
     };
   };
 
   config = {
-    systemd.additionalUpstreamSystemUnits = [
-      "systemd-journald.socket"
-      "systemd-journald@.socket"
-      "systemd-journald-varlink@.socket"
-      "systemd-journald.service"
-      "systemd-journald@.service"
-      "systemd-journal-flush.service"
-      "systemd-journal-catalog-update.service"
-      "systemd-journald-sync@.service"
-      "systemd-journald-audit.socket"
-      "systemd-journald-dev-log.socket"
-      "systemd-journalctl.socket"
-      "systemd-journalctl@.service"
-      "syslog.socket"
-    ];
-
-    systemd.sockets.systemd-journald-audit.wantedBy = [
-      "systemd-journald.service"
-      "sockets.target"
-    ];
-
     environment.etc = {
       "systemd/journald.conf".text = ''
         [Journal]
@@ -154,16 +145,41 @@ in
       '';
     };
 
-    users.groups.systemd-journal.gid = config.ids.gids.systemd-journal;
+    systemd.additionalUpstreamSystemUnits = [
+      "systemd-journald.socket"
+      "systemd-journald@.socket"
+      "systemd-journald-varlink@.socket"
+      "systemd-journald.service"
+      "systemd-journald@.service"
+      "systemd-journal-flush.service"
+      "systemd-journal-catalog-update.service"
+      "systemd-journald-sync@.service"
+      "systemd-journald-audit.socket"
+      "systemd-journald-dev-log.socket"
+      "systemd-journalctl.socket"
+      "systemd-journalctl@.service"
+      "syslog.socket"
+    ];
 
     systemd.services.systemd-journal-flush.restartIfChanged = false;
+
     systemd.services.systemd-journald.restartTriggers = [
       config.environment.etc."systemd/journald.conf".source
     ];
+
     systemd.services.systemd-journald.stopIfChanged = false;
+
     systemd.services."systemd-journald@".restartTriggers = [
       config.environment.etc."systemd/journald.conf".source
     ];
+
     systemd.services."systemd-journald@".stopIfChanged = false;
+
+    systemd.sockets.systemd-journald-audit.wantedBy = [
+      "systemd-journald.service"
+      "sockets.target"
+    ];
+
+    users.groups.systemd-journal.gid = config.ids.gids.systemd-journal;
   };
 }

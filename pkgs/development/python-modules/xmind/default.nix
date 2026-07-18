@@ -1,16 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "xmind";
   version = "1.2.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "zhuifengshen";
@@ -19,11 +16,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-xC1WpHz2eHb5+xShM/QUQAIYnJNyK1EKWbTXJKhDwbQ=";
   };
 
-  build-system = [ setuptools ];
-
   # Project thas no tests
   doCheck = false;
-
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "xmind" ];
 
   meta = {

@@ -1,17 +1,17 @@
 {
-  mkDerivation,
-  libressl,
   libevent,
+  libressl,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "usr.sbin/syslogd";
+  postPatch = ''
+    sed -i /DPADD/d $BSDSRCDIR/usr.sbin/syslogd/Makefile
+  '';
 
   buildInputs = [
     libressl
     libevent
   ];
 
-  postPatch = ''
-    sed -i /DPADD/d $BSDSRCDIR/usr.sbin/syslogd/Makefile
-  '';
+  path = "usr.sbin/syslogd";
 }

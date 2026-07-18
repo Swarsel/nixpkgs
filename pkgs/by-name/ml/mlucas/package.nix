@@ -21,16 +21,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-AHzx7jfmBIzES9fJ9xhmRMD8NCucxhD2aEo8OYR25xs=";
   };
 
-  enableParallelBuilding = true;
-
-  buildInputs = [
-    gmp
-  ];
-
   postPatch = ''
     chmod +x makemake.sh
     patchShebangs makemake.sh
   '';
+
+  buildInputs = [
+    gmp
+  ];
 
   env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
 
@@ -50,11 +48,13 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  enableParallelBuilding = true;
 
   meta = {
     description = "Open-source program for primality testing of Mersenne numbers";
+
     longDescription = ''
       This program may be used to test any suitable number as you wish, but it is preferable that you do so in a coordinated fashion,
       as part of the Great Internet Mersenne Prime Search (GIMPS). Note that on x86 processors Mlucas is not as efficient
@@ -63,13 +63,16 @@ stdenv.mkDerivation (finalAttrs: {
       x86 processor architecture. The help.txt file in the Github repo includes a variety of usage information
       not covered in the original README.
     '';
+
     homepage = "https://github.com/primesearch/Mlucas";
-    maintainers = with lib.maintainers; [ dstremur ];
     license = lib.licenses.gpl3Only;
+    maintainers = with lib.maintainers; [ dstremur ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
     mainProgram = "mlucas";
   };
 })

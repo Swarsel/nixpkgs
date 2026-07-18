@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  curl,
+  libevent,
+  meson,
   ninja,
   pkg-config,
-  meson,
-  libevent,
-  curl,
   spdlog,
 }:
 
@@ -15,11 +15,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.3.2";
 
   src = fetchFromGitLab {
-    domain = "nheko.im";
     owner = "nheko-reborn";
     repo = "coeurl";
     tag = "v${finalAttrs.version}";
     hash = "sha256-8BwyPfLgkJG1CHnRAKxgn8ObEGSK+lKKUhQibs1dCg4=";
+    domain = "nheko.im";
   };
 
   nativeBuildInputs = [
@@ -38,7 +38,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Simple async wrapper around CURL for C++";
     homepage = "https://nheko.im/nheko-reborn/coeurl";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ rnhmjoj ];
+    platforms = lib.platforms.all;
   };
 })

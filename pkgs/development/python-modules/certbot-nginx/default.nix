@@ -6,13 +6,8 @@
 }:
 
 buildPythonPackage rec {
-  pname = "certbot-nginx";
-  pyproject = true;
-
   inherit (certbot) src version;
-
-  sourceRoot = "${src.name}/certbot-nginx";
-
+  pname = "certbot-nginx";
   build-system = [ setuptools ];
 
   dependencies = [
@@ -20,10 +15,14 @@ buildPythonPackage rec {
     pyparsing
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "certbot_nginx"
     "certbot.plugins.nginx"
   ];
+
+  sourceRoot = "${src.name}/certbot-nginx";
 
   meta = certbot.meta // {
     description = "Nginx plugin for Certbot";

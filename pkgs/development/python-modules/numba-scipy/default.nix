@@ -2,15 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  scipy,
   numba,
   pytestCheckHook,
+  scipy,
 }:
 
 buildPythonPackage rec {
   pname = "numba-scipy";
   version = "0.4.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -25,12 +24,14 @@ buildPythonPackage rec {
   nativeCheckInputs = [
     pytestCheckHook
   ];
+
+  format = "setuptools";
+  pythonImportsCheck = [ "numba_scipy" ];
+
   pythonRelaxDeps = [
     "scipy"
     "numba"
   ];
-
-  pythonImportsCheck = [ "numba_scipy" ];
 
   meta = {
     description = "Extends Numba to make it aware of SciPy";

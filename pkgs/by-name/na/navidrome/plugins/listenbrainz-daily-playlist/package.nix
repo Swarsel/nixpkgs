@@ -1,7 +1,7 @@
 {
   lib,
-  pkgs,
   buildNavidromePlugin,
+  pkgs,
 }:
 buildNavidromePlugin rec {
   pname = "listenbrainz-daily-playlist";

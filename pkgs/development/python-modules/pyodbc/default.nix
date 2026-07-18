@@ -9,9 +9,6 @@
 buildPythonPackage rec {
   pname = "pyodbc";
   version = "5.3.0";
-  format = "setuptools";
-
-  disabled = isPyPy; # use pypypdbc instead
 
   src = fetchPypi {
     inherit pname version;
@@ -23,10 +20,10 @@ buildPythonPackage rec {
   ];
 
   buildInputs = [ unixodbc ];
-
   # Tests require a database server
   doCheck = false;
-
+  disabled = isPyPy; # use pypypdbc instead
+  format = "setuptools";
   pythonImportsCheck = [ "pyodbc" ];
 
   meta = {
@@ -34,7 +31,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/mkleehammer/pyodbc";
     changelog = "https://github.com/mkleehammer/pyodbc/releases/tag/${version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ bjornfor ];
+    platforms = lib.platforms.unix;
   };
 }

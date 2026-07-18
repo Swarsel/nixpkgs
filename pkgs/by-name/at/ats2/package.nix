@@ -3,16 +3,16 @@
   stdenv,
   fetchurl,
   gmp,
-  withEmacsSupport ? true,
   withContrib ? true,
+  withEmacsSupport ? true,
 }:
 
 let
   versionPkg = "0.4.2";
 
   contrib = fetchurl {
-    url = "mirror://sourceforge/ats2-lang/ATS2-Postiats-contrib-${versionPkg}.tgz";
     hash = "sha256-m0hfBLsaNiLaIktcioK+ZtWUsWht3IDSJ6CzgJmS06c=";
+    url = "mirror://sourceforge/ats2-lang/ATS2-Postiats-contrib-${versionPkg}.tgz";
   };
 
   postInstallContrib = lib.optionalString withContrib ''
@@ -51,16 +51,16 @@ stdenv.mkDerivation rec {
 
   buildInputs = [ gmp ];
 
-  # Disable parallel build, errors:
-  #  *** No rule to make target 'patscc.dats', needed by 'patscc_dats.c'.  Stop.
-  enableParallelBuilding = false;
-
   makeFlags = [
     "CC=${stdenv.cc.targetPrefix}cc"
     "CCOMP=${stdenv.cc.targetPrefix}cc"
   ];
 
   env.NIX_CFLAGS_COMPILE = "-Wno-error=implicit-function-declaration";
+  postInstall = postInstallContrib + postInstallEmacs;
+  # Disable parallel build, errors:
+  #  *** No rule to make target 'patscc.dats', needed by 'patscc_dats.c'.  Stop.
+  enableParallelBuilding = false;
 
   setupHook =
     let
@@ -68,16 +68,16 @@ stdenv.mkDerivation rec {
     in
     builtins.toFile "setupHook.sh" (lib.concatMapStringsSep "\n" builtins.readFile hookFiles);
 
-  postInstall = postInstallContrib + postInstallEmacs;
-
   meta = {
     description = "Functional programming language with dependent types";
     homepage = "http://www.ats-lang.org";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
       bbarker
     ];
+
+    platforms = lib.platforms.unix;
   };
 }

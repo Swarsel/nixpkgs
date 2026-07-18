@@ -1,9 +1,9 @@
 {
-  autoreconfHook,
-  fetchFromGitHub,
   lib,
-  pkg-config,
   stdenv,
+  fetchFromGitHub,
+  autoreconfHook,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,13 +26,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Enhanced version of GNU dd";
-
     homepage = "https://github.com/resurrecting-open-source-projects/dcfldd";
-
     license = lib.licenses.gpl2Plus;
-
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ qknight ];
+    platforms = lib.platforms.all;
     mainProgram = "dcfldd";
   };
 })

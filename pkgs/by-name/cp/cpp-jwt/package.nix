@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  openssl,
   gtest,
   nlohmann_json,
+  openssl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,11 +19,7 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-TyLYTk7vlpNmYJxaH9zhGwFvv1BEcShTDr7JYfgu6f0=";
   };
 
-  cmakeFlags = [
-    "-DCPP_JWT_USE_VENDORED_NLOHMANN_JSON=OFF"
-    "-DCPP_JWT_BUILD_EXAMPLES=OFF"
-  ];
-
+  strictDeps = true;
   nativeBuildInputs = [ cmake ];
 
   buildInputs = [
@@ -32,9 +28,12 @@ stdenv.mkDerivation (finalAttrs: {
     nlohmann_json
   ];
 
-  doCheck = true;
+  cmakeFlags = [
+    "-DCPP_JWT_USE_VENDORED_NLOHMANN_JSON=OFF"
+    "-DCPP_JWT_BUILD_EXAMPLES=OFF"
+  ];
 
-  strictDeps = true;
+  doCheck = true;
 
   meta = {
     description = "JSON Web Token library for C++";

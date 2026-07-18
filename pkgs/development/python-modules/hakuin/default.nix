@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   hatchling,
   jinja2,
   nltk,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "hakuin";
   version = "0.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pruzko";
@@ -21,6 +20,8 @@ buildPythonPackage rec {
     hash = "sha256-97nh+woUsCXcoO2i5KprCwJiE24V3mg91qcNgy7bpgg=";
   };
 
+  # Module has no test
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -30,9 +31,7 @@ buildPythonPackage rec {
     sqlglot
   ];
 
-  # Module has no test
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "hakuin" ];
 
   meta = {

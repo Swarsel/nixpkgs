@@ -1,11 +1,11 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  writeText,
+  fetchurl,
   jdk,
   makeWrapper,
   nixosTests,
+  writeText,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "soapui";
@@ -15,20 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://dl.eviware.com/soapuios/${finalAttrs.version}/SoapUI-${finalAttrs.version}-linux-bin.tar.gz";
     sha256 = "sha256-VlI6TcesavKOpKf/R8S6IubepkthArFf8Jmi7YUGHjs=";
   };
-
-  nativeBuildInputs = [ makeWrapper ];
-  buildInputs = [ jdk ];
-
-  installPhase = ''
-    runHook preInstall
-
-    mkdir -p $out/share/java
-    cp -R bin lib $out/share/java
-
-    makeWrapper $out/share/java/bin/soapui.sh $out/bin/soapui --set SOAPUI_HOME $out/share/java
-
-    runHook postInstall
-  '';
 
   patches = [
     # Adjust java path to point to derivation paths
@@ -53,13 +39,27 @@ stdenv.mkDerivation (finalAttrs: {
     '')
   ];
 
+  nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ jdk ];
+
+  installPhase = ''
+    runHook preInstall
+
+    mkdir -p $out/share/java
+    cp -R bin lib $out/share/java
+
+    makeWrapper $out/share/java/bin/soapui.sh $out/bin/soapui --set SOAPUI_HOME $out/share/java
+
+    runHook postInstall
+  '';
+
   passthru.tests = { inherit (nixosTests) soapui; };
 
   meta = {
     description = "Most Advanced REST & SOAP Testing Tool in the World";
     homepage = "https://www.soapui.org/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.eupl11;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ gerschtli ];
     platforms = lib.platforms.linux; # we don't fetch the dmg yet
     mainProgram = "soapui";

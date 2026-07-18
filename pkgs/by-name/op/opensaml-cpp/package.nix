@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
   autoreconfHook,
-  pkg-config,
   boost,
-  openssl,
+  fetchFromCodeberg,
   log4shib,
+  openssl,
+  pkg-config,
+  unstableGitUpdater,
   xercesc,
   xml-security-c,
   xml-tooling-c,
   zlib,
-  unstableGitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,6 +25,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-iBfKM40SzCiDGHacnxc7zZdvOYbCy9NEWjhPzCvWQ1c=";
   };
 
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
+  ];
+
   buildInputs = [
     boost
     openssl
@@ -34,10 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
     xml-tooling-c
     zlib
   ];
-  nativeBuildInputs = [
-    autoreconfHook
-    pkg-config
-  ];
 
   configureFlags = [
     "--with-boost=${boost.dev}"
@@ -45,17 +46,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.NIX_CFLAGS_COMPILE = lib.optionalString (!stdenv.hostPlatform.isDarwin) "-std=c++14";
-
   enableParallelBuilding = true;
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    homepage = "https://shibboleth.net/products/opensaml-cpp.html";
     description = "Low-level library written in C++ that provides support for producing and consuming SAML messages";
-    mainProgram = "samlsign";
-    platforms = lib.platforms.unix;
+    homepage = "https://shibboleth.net/products/opensaml-cpp.html";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ drawbu ];
+    platforms = lib.platforms.unix;
+    mainProgram = "samlsign";
   };
 })

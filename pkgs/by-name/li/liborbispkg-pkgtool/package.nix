@@ -1,7 +1,7 @@
 {
   lib,
-  buildDotnetModule,
   fetchFromGitHub,
+  buildDotnetModule,
 }:
 buildDotnetModule {
   pname = "liborbispkg-pkgtool";
@@ -14,11 +14,11 @@ buildDotnetModule {
     hash = "sha256-bCnaWooLHmUK5Say4fQINUuzTAmXr8qULmkD8bVVUjU=";
   };
 
-  projectFile = "PkgTool.Core/PkgTool.Core.csproj";
-
   postFixup = ''
     mv $out/bin/PkgTool.Core $out/bin/pkgtool
   '';
+
+  projectFile = "PkgTool.Core/PkgTool.Core.csproj";
 
   meta = {
     description = "CLI for creating, inspecting, and modifying PS4 PKG, SFO, PFS, and related filetypes";

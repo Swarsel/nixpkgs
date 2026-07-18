@@ -2,20 +2,17 @@
   lib,
   stdenv,
   buildPythonPackage,
-  setuptools,
-  scipy,
+  pytestCheckHook,
   scikits-odes-core,
   scikits-odes-daepack,
   scikits-odes-sundials,
-  pytestCheckHook,
+  scipy,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   inherit (scikits-odes-core) version src;
   pname = "scikits.odes";
-  pyproject = true;
-
-  sourceRoot = "${src.name}/packages/scikits-odes";
 
   patches = [
     # https://github.com/bmcage/odes/pull/205
@@ -30,6 +27,7 @@ buildPythonPackage rec {
       --replace-fail "StiffVODECompare," ""
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -39,14 +37,14 @@ buildPythonPackage rec {
     scikits-odes-sundials
   ];
 
-  pythonImportsCheck = [ "scikits_odes" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTests = lib.optionals stdenv.hostPlatform.isAarch64 [
     # skip on aarch64, see https://github.com/bmcage/odes/issues/101
     "test_lsodi"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "scikits_odes" ];
+  sourceRoot = "${src.name}/packages/scikits-odes";
 
   meta = scikits-odes-core.meta // {
     description = "Scikit offering extra ode/dae solvers, as an extension to what is available in scipy";

@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
-  numpy,
-  scipy,
   matplotlib,
-  pytestCheckHook,
+  numpy,
   pytest-cov-stub,
+  pytestCheckHook,
+  scipy,
 }:
 
 buildPythonPackage rec {
   pname = "kneed";
   version = "0.8.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "arvkevi";
@@ -22,6 +21,12 @@ buildPythonPackage rec {
     sha256 = "sha256-A9d5igX9Eqr3rgx93VMee9yFEs6WfO0bb/eCEFCxUJg=";
   };
 
+  checkInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+    matplotlib
+  ];
+
   build-system = [ hatchling ];
 
   dependencies = [
@@ -29,16 +34,12 @@ buildPythonPackage rec {
     scipy
   ];
 
-  checkInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-    matplotlib
-  ];
-
   disabledTestPaths = [
     # Fails when matplotlib is installed
     "tests/test_no_matplotlib.py"
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Knee point detection in Python";

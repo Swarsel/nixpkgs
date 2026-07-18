@@ -1,10 +1,10 @@
 {
   lib,
-  cmake,
+  stdenv,
   fetchFromGitHub,
+  cmake,
   gtest,
   nix-update-script,
-  stdenv,
   testers,
   validatePkgConfig,
 }:
@@ -25,22 +25,23 @@ stdenv.mkDerivation (finalAttrs: {
     validatePkgConfig
   ];
 
-  doCheck = true;
-  checkInputs = [
-    gtest
-  ];
-
   cmakeFlags = [
     (lib.cmakeBool "BUILD_SHARED_LIBS" (!stdenv.hostPlatform.isStatic))
     (lib.cmakeBool "NBYTES_ENABLE_TESTING" finalAttrs.finalPackage.doCheck)
   ];
 
-  passthru = {
-    updateScript = nix-update-script { };
+  doCheck = true;
 
+  checkInputs = [
+    gtest
+  ];
+
+  passthru = {
     tests.pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {

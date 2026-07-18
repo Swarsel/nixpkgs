@@ -2,16 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3Packages,
-  makeDesktopItem,
   copyDesktopItems,
+  makeDesktopItem,
+  python3Packages,
   enableModern ? true,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "ausweiskopie";
   version = "0.1.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Varbin";
@@ -24,23 +23,13 @@ python3Packages.buildPythonApplication rec {
     copyDesktopItems
   ];
 
+  postInstall = ''
+    install -Dm644 ./src/ausweiskopie/resources/icon_colored.png $out/share/icons/hicolor/256x256/apps/ausweiskopie.png
+  '';
+
   build-system = with python3Packages; [
     setuptools
     setuptools-scm
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "Meine Ausweiskopie";
-      exec = "ausweiskopie";
-      icon = "ausweiskopie";
-      desktopName = "Meine Ausweiskopie";
-      comment = "Create redacted copies of German identity cards";
-      categories = [
-        "Office"
-        "Viewer"
-      ];
-    })
   ];
 
   dependencies =
@@ -58,11 +47,23 @@ python3Packages.buildPythonApplication rec {
       ]
     );
 
-  optional-dependencies.modern = [ python3Packages.ttkbootstrap ];
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Office"
+        "Viewer"
+      ];
 
-  postInstall = ''
-    install -Dm644 ./src/ausweiskopie/resources/icon_colored.png $out/share/icons/hicolor/256x256/apps/ausweiskopie.png
-  '';
+      comment = "Create redacted copies of German identity cards";
+      desktopName = "Meine Ausweiskopie";
+      exec = "ausweiskopie";
+      icon = "ausweiskopie";
+      name = "Meine Ausweiskopie";
+    })
+  ];
+
+  optional-dependencies.modern = [ python3Packages.ttkbootstrap ];
+  pyproject = true;
 
   meta = {
     description = "Create privacy friendly and legal copies of your Ausweisdokument";

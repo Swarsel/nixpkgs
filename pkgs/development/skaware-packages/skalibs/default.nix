@@ -1,16 +1,13 @@
 {
   lib,
   stdenv,
-  skawarePackages,
   pkgs,
+  skawarePackages,
 }:
 
 skawarePackages.buildPackage {
   pname = "skalibs";
   version = "2.15.0.0";
-  sha256 = "sha256-f96W6K+0GRWToVMoiD6cdybJaJHPBxIiFGgh6Mh/gAc=";
-
-  description = "Set of general-purpose C programming libraries";
 
   outputs = [
     "lib"
@@ -58,6 +55,9 @@ skawarePackages.buildPackage {
 
     mv doc $doc/share/doc/skalibs/html
   '';
+
+  description = "Set of general-purpose C programming libraries";
+  sha256 = "sha256-f96W6K+0GRWToVMoiD6cdybJaJHPBxIiFGgh6Mh/gAc=";
 
   passthru.tests = {
     # fdtools is one of the few non-skalib packages that depends on skalibs

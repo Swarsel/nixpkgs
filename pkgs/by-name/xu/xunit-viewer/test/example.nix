@@ -1,4 +1,4 @@
-{ xunit-viewer, runCommand, ... }:
+{ runCommand, xunit-viewer, ... }:
 
 runCommand "test-xunit-viewer"
   {

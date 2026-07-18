@@ -24,10 +24,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://gitlab.com/dlalic/gitlab-clippy";
     description = "Convert clippy warnings into GitLab Code Quality report";
-    mainProgram = "gitlab-clippy";
+    homepage = "https://gitlab.com/dlalic/gitlab-clippy";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ wucke13 ];
+    mainProgram = "gitlab-clippy";
   };
 })

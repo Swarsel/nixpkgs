@@ -1,11 +1,11 @@
 {
   lib,
-  buildPythonPackage,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   backoff,
+  buildPythonPackage,
   certifi,
-  fetchFromGitHub,
   poetry-core,
   pytest-aiohttp,
   pytest-asyncio,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "pyiqvia";
   version = "2023.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bachya";
@@ -34,8 +33,6 @@ buildPythonPackage rec {
     yarl
   ];
 
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [
     aresponses
     pytest-aiohttp
@@ -43,20 +40,25 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  __darwinAllowLocalNetworking = true;
+
   disabledTestPaths = [
     # Ignore the examples as they are prefixed with test_
     "examples/"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyiqvia" ];
 
   meta = {
     description = "Module for working with IQVIA data";
+
     longDescription = ''
       pyiqvia is an async-focused Python library for allergen, asthma, and
       disease data from the IQVIA family of websites (such as https://pollen.com,
       https://flustar.com and more).
     '';
+
     homepage = "https://github.com/bachya/pyiqvia";
     changelog = "https://github.com/bachya/pyiqvia/releases/tag/${version}";
     license = with lib.licenses; [ mit ];

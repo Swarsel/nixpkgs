@@ -1,7 +1,7 @@
 {
   lib,
-  mkTclDerivation,
   fetchzip,
+  mkTclDerivation,
 }:
 
 mkTclDerivation {
@@ -15,14 +15,16 @@ mkTclDerivation {
 
   meta = {
     description = "Tcl extension that exposes Tcl's Virtual File System (VFS) subsystem to the script level";
-    homepage = "https://core.tcl.tk/tclvfs";
-    license = lib.licenses.tcltk;
+
     longDescription = ''
       The TclVfs project aims to provide an extension to the Tcl language which
       allows Virtual Filesystems to be built using Tcl scripts only. It is also
       a repository of such Tcl-implemented filesystems (metakit, zip, ftp, tar,
       http, webdav, namespace, url)
     '';
+
+    homepage = "https://core.tcl.tk/tclvfs";
+    license = lib.licenses.tcltk;
     maintainers = with lib.maintainers; [ fgaz ];
   };
 }

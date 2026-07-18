@@ -1,11 +1,11 @@
 {
   lib,
-  copyDesktopItems,
+  stdenv,
   fetchFromGitHub,
+  copyDesktopItems,
   love,
   makeDesktopItem,
   makeWrapper,
-  stdenv,
   strip-nondeterminism,
   zip,
 }:
@@ -28,17 +28,6 @@ stdenv.mkDerivation {
     zip
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "mari0";
-      exec = "mari0";
-      comment = "Crossover between Super Mario Bros. and Portal";
-      desktopName = "mari0";
-      genericName = "mari0";
-      categories = [ "Game" ];
-    })
-  ];
-
   installPhase = ''
     runHook preInstall
     zip -9 -r mari0.love ./*
@@ -49,12 +38,23 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = "Crossover between Super Mario Bros. and Portal";
+      desktopName = "mari0";
+      exec = "mari0";
+      genericName = "mari0";
+      name = "mari0";
+    })
+  ];
+
   meta = {
     description = "Crossover between Super Mario Bros. and Portal";
     homepage = "https://github.com/Stabyourself/mari0";
-    mainProgram = "mari0";
-    platforms = love.meta.platforms;
     license = lib.licenses.mit;
+    platforms = love.meta.platforms;
+    mainProgram = "mari0";
     downloadPage = "https://stabyourself.net/mari0/";
   };
 

@@ -1,9 +1,9 @@
 {
   lib,
-  fetchzip,
   buildGo125Module,
-  nixosTests,
+  fetchzip,
   nix-update-script,
+  nixosTests,
 }:
 
 buildGo125Module (finalAttrs: {
@@ -18,11 +18,6 @@ buildGo125Module (finalAttrs: {
   };
 
   vendorHash = "sha256-lMGuyp3GdcMUdzxu/e3c3ZV1/XWnsqVho2uj230GXzw=";
-
-  proxyVendor = true;
-
-  subPackages = [ "cmd/traefik" ];
-
   env.CGO_ENABLED = 0;
 
   preBuild = ''
@@ -36,6 +31,9 @@ buildGo125Module (finalAttrs: {
     ldflags+=" -X github.com/traefik/traefik/v${lib.versions.major finalAttrs.version}/pkg/version.Codename=$CODENAME"
   '';
 
+  proxyVendor = true;
+  subPackages = [ "cmd/traefik" ];
+
   passthru.tests = {
     inherit (nixosTests) traefik;
   };
@@ -43,14 +41,16 @@ buildGo125Module (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://traefik.io";
     description = "Modern reverse proxy";
+    homepage = "https://traefik.io";
     changelog = "https://github.com/traefik/traefik/raw/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       djds
       vdemeester
     ];
+
     mainProgram = "traefik";
   };
 })

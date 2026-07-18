@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  stdenvNoCC,
   python3Packages,
+  stdenvNoCC,
   yq,
 }:
 let
@@ -19,6 +19,11 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-LBPlGfmIyzgRhUdAJmPxjDB7D8iRHcSA8Tf5teMnFzA=";
   };
 
+  outputs = [
+    "out"
+    "doc"
+  ];
+
   patches = [ ./mkdocs.patch ];
 
   nativeBuildInputs = [
@@ -27,11 +32,6 @@ stdenvNoCC.mkDerivation {
     pymdown-extensions
 
     yq
-  ];
-
-  outputs = [
-    "out"
-    "doc"
   ];
 
   buildPhase = ''
@@ -54,14 +54,16 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/swisskyrepo/PayloadsAllTheThings";
     description = "List of useful payloads and bypass for Web Application Security and Pentest/CTF";
+    homepage = "https://github.com/swisskyrepo/PayloadsAllTheThings";
     license = with lib.licenses; [ mit ];
+    sourceProvenance = with lib.sourceTypes; [ fromSource ];
+
     maintainers = with lib.maintainers; [
       shard7
       felbinger
     ];
+
     platforms = lib.platforms.all;
-    sourceProvenance = with lib.sourceTypes; [ fromSource ];
   };
 }

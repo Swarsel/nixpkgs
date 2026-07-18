@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   nix-update-script,
-  stdenv,
   testers,
 }:
 
@@ -20,19 +20,9 @@ buildGoModule (finalAttrs: {
     sparseCheckout = [ "cli" ];
   };
 
-  modRoot = "./cli";
-
-  vendorHash = "sha256-Gg1mifMVt6Ma8yQ/t0R5nf6NXbzLZBpuZrYsW48p0mw=";
-
-  env.CGO_ENABLED = 0;
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.AppVersion=cli-v${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-Gg1mifMVt6Ma8yQ/t0R5nf6NXbzLZBpuZrYsW48p0mw=";
+  env.CGO_ENABLED = 0;
 
   postInstall = ''
     mv $out/bin/{cli,ente}
@@ -57,19 +47,30 @@ buildGoModule (finalAttrs: {
           --zsh <($out/bin/ente completion zsh)
       '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.AppVersion=cli-v${finalAttrs.version}"
+  ];
+
+  modRoot = "./cli";
+
   passthru = {
     # only works on linux, see comment above about ENTE_CLI_SECRETS_PATH on darwin
     tests.version = lib.optionalAttrs stdenv.hostPlatform.isLinux (
       testers.testVersion {
-        package = finalAttrs.finalPackage;
+        version = "Version cli-v${finalAttrs.version}";
+
         command = ''
           env ENTE_CLI_CONFIG_PATH=$TMP \
               ENTE_CLI_SECRETS_PATH=$TMP/secrets \
               ente version
         '';
-        version = "Version cli-v${finalAttrs.version}";
+
+        package = finalAttrs.finalPackage;
       }
     );
+
     updateScript = nix-update-script {
       extraArgs = [
         "--version-regex"
@@ -80,9 +81,11 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "CLI client for downloading your data from Ente";
+
     longDescription = ''
       The Ente CLI is a Command Line Utility for exporting data from Ente. It also does a few more things, for example, you can use it to decrypting the export from Ente Auth.
     '';
+
     homepage = "https://github.com/ente/ente/tree/main/cli#readme";
     changelog = "https://github.com/ente/ente/releases/tag/cli-v${finalAttrs.version}";
     license = lib.licenses.agpl3Only;

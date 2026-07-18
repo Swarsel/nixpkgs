@@ -3,19 +3,23 @@
   stdenv,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pkgs,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "fusepy";
   version = "3.0.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-cv94PsL0PeOrOU4/dFdgW/BMjPKIovQGi0zeFB1O5r0=";
   };
+
+  # No tests included
+  doCheck = false;
+  build-system = [ setuptools ];
+  dependencies = [ pkgs.fuse3 ];
 
   # On macOS, users are expected to install macFUSE. This means fusepy should
   # be able to find libfuse in /usr/local/lib.
@@ -24,21 +28,17 @@ buildPythonPackage (finalAttrs: {
       "find_library('fuse')" "'${lib.getLib pkgs.fuse}/lib/libfuse.so'"
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pkgs.fuse3 ];
-
-  # No tests included
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = lib.optionals (!stdenv.hostPlatform.isDarwin) [ "fuse" ];
 
   meta = {
     description = "Simple ctypes bindings for FUSE";
+
     longDescription = ''
       Python module that provides a simple interface to FUSE and MacFUSE.
       It's just one file and is implemented using ctypes.
     '';
+
     homepage = "https://github.com/terencehonles/fusepy";
     license = lib.licenses.isc;
     platforms = lib.platforms.unix;

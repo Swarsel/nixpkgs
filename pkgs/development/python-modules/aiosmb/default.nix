@@ -19,13 +19,14 @@
 buildPythonPackage rec {
   pname = "aiosmb";
   version = "0.4.14";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-So6u+sX7EOEIjrYejfWK/z/mH9bxHOcu/YpjF1VfAsM=";
   };
 
+  # Project doesn't have tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -42,9 +43,7 @@ buildPythonPackage rec {
     winsspi
   ];
 
-  # Project doesn't have tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "aiosmb" ];
 
   meta = {

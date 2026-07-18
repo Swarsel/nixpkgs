@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  vala,
-  pkg-config,
   gobject-introspection,
-  libxml2,
   libgee,
+  libxml2,
+  pkg-config,
+  vala,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,6 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Easily access XML data of the iso-codes package";
+
     longDescription = ''
       This library can be used to easily access XML data of
       the iso-codes package. It will provide an abstraction
@@ -45,6 +46,7 @@ stdenv.mkDerivation (finalAttrs: {
       programming languages, for example C, Vala, Ruby,
       Python, Perl, Lua, JavaScript, PHP and many more.
     '';
+
     homepage = "https://github.com/toddy15/libisocodes";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ aleksana ];

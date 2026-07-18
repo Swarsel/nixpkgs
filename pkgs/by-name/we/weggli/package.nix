@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
   testers,
   weggli,
 }:
@@ -20,20 +20,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
   cargoHash = "sha256-vJd+4cZuDSGThnkUULhwEUFbHlkiIGyxT+1fWRUsIJk=";
 
   passthru.tests.version = testers.testVersion {
-    package = weggli;
-    command = "weggli -V";
     version = "weggli ${finalAttrs.version}";
+    command = "weggli -V";
+    package = weggli;
   };
 
   meta = {
     description = "Fast and robust semantic search tool for C and C++ codebases";
     homepage = "https://github.com/weggli-rs/weggli";
     changelog = "https://github.com/weggli-rs/weggli/releases/tag/v${finalAttrs.version}";
-    mainProgram = "weggli";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       arturcygan
       mfrw
     ];
+
+    mainProgram = "weggli";
   };
 })

@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   rustPlatform,
 }:
 
@@ -21,8 +21,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Tool to load and execute binaries over UART for Mediatek SoCs";
     homepage = "https://github.com/981213/mtk_uartboot";
     license = lib.licenses.agpl3Only;
-    mainProgram = "mtk_uartboot";
     maintainers = [ lib.maintainers.jmbaur ];
     platforms = lib.platforms.unix;
+    mainProgram = "mtk_uartboot";
   };
 })

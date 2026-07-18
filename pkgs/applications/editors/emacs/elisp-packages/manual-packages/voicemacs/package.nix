@@ -1,20 +1,20 @@
 {
   lib,
+  fetchFromGitHub,
   avy,
   bind-key,
   cl-lib,
   company,
   company-quickhelp,
   default-text-scale,
+  el-patch,
   f,
-  fetchFromGitHub,
   helm,
   json-rpc-server,
   melpaBuild,
   nav-flash,
   porthole,
   yasnippet,
-  el-patch,
 }:
 
 melpaBuild {
@@ -49,8 +49,8 @@ melpaBuild {
   ];
 
   meta = {
-    homepage = "https://github.com/jcaw/voicemacs/";
     description = "Set of utilities for controlling Emacs by voice";
+    homepage = "https://github.com/jcaw/voicemacs/";
     license = lib.licenses.gpl3Only;
     maintainers = [ ];
   };

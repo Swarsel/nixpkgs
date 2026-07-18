@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchurl,
+  alsa-lib,
+  fftw,
+  fftwFloat,
+  hamlib,
+  imagemagick,
+  libpulseaudio,
+  libsForQt5,
+  libv4l,
   openjpeg,
   pkg-config,
-  libsForQt5,
-  fftw,
-  libpulseaudio,
-  alsa-lib,
-  hamlib,
-  libv4l,
-  fftwFloat,
-  imagemagick,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "9.5.8";
   pname = "qsstv";
+  version = "9.5.8";
 
   src = fetchurl {
     url = "https://www.qsl.net/o/on4qz/qsstv/downloads/qsstv_${finalAttrs.version}.tar.gz";
@@ -50,10 +50,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Qt-based slow-scan TV and fax";
-    mainProgram = "qsstv";
     homepage = "https://www.qsl.net/on4qz/";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ hax404 ];
+    platforms = lib.platforms.linux;
+    mainProgram = "qsstv";
   };
 })

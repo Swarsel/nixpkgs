@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -20,22 +20,36 @@ in
 
     enable = lib.mkEnableOption "zsh-autosuggestions";
 
+    async = lib.mkOption {
+      default = true;
+      description = "Whether to fetch suggestions asynchronously";
+      example = false;
+      type = lib.types.bool;
+    };
+
+    extraConfig = lib.mkOption {
+      default = { };
+      description = "Attribute set with additional configuration values";
+
+      example = lib.literalExpression ''
+        {
+          "ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE" = "20";
+        }
+      '';
+
+      type = lib.types.attrsOf lib.types.str;
+    };
+
     highlightStyle = lib.mkOption {
-      type = lib.types.str;
       default = "fg=8"; # https://github.com/zsh-users/zsh-autosuggestions/tree/v0.4.3#suggestion-highlight-style
       description = "Highlight style for suggestions ({fore,back}ground color)";
       example = "fg=cyan";
+      type = lib.types.str;
     };
 
     strategy = lib.mkOption {
-      type = lib.types.listOf (
-        lib.types.enum [
-          "history"
-          "completion"
-          "match_prev_cmd"
-        ]
-      );
       default = [ "history" ];
+
       description = ''
         `ZSH_AUTOSUGGEST_STRATEGY` is an array that specifies how suggestions should be generated.
         The strategies in the array are tried successively until a suggestion is found.
@@ -47,24 +61,14 @@ in
             the most recently executed command. Note that this strategy won't work as expected with ZSH options that
             don't preserve the history order such as `HIST_IGNORE_ALL_DUPS` or `HIST_EXPIRE_DUPS_FIRST`.
       '';
-    };
 
-    async = lib.mkOption {
-      type = lib.types.bool;
-      default = true;
-      description = "Whether to fetch suggestions asynchronously";
-      example = false;
-    };
-
-    extraConfig = lib.mkOption {
-      type = lib.types.attrsOf lib.types.str;
-      default = { };
-      description = "Attribute set with additional configuration values";
-      example = lib.literalExpression ''
-        {
-          "ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE" = "20";
-        }
-      '';
+      type = lib.types.listOf (
+        lib.types.enum [
+          "history"
+          "completion"
+          "match_prev_cmd"
+        ]
+      );
     };
 
   };

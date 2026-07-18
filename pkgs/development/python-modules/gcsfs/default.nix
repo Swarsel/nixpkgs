@@ -1,31 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   aiohttp,
+  buildPythonPackage,
+  crcmod,
   decorator,
   fsspec,
+  # optional-dependencies
+  fusepy,
   google-auth,
   google-auth-oauthlib,
   google-cloud-storage,
   google-cloud-storage-control,
   requests,
-
-  # optional-dependencies
-  fusepy,
-  crcmod,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "gcsfs";
   version = "2026.3.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "fsspec";
@@ -33,6 +28,10 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-RLh3xFW/0qX5labJeUDsRRmQtnTdkvBS+gzJUJ1IP7k=";
   };
+
+  # Tests require a running Docker instance
+  doCheck = false;
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -50,13 +49,11 @@ buildPythonPackage (finalAttrs: {
   ];
 
   optional-dependencies = {
-    gcsfuse = [ fusepy ];
     crc = [ crcmod ];
+    gcsfuse = [ fusepy ];
   };
 
-  # Tests require a running Docker instance
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "gcsfs" ];
 
   meta = {

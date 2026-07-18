@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -19,8 +19,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   nativeBuildInputs = [ installFonts ];
 
   meta = {
-    homepage = "https://b612-font.com/";
     description = "Highly legible font family for use on aircraft cockpit screens";
+
     longDescription = ''
       B612 is the result of a research project initiated by Airbus. The font
       was designed by Nicolas Chauveau and Thomas Paillot (intactile DESIGN) with the
@@ -35,11 +35,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       imaginary asteroid of the aviator Saint‑Exupéry, benefited from a complete
       hinting on all the characters.
     '';
+
+    homepage = "https://b612-font.com/";
+
     license = with lib.licenses; [
       ofl
       epl10
       bsd3
     ];
+
     maintainers = with lib.maintainers; [ sternenseemann ];
     platforms = lib.platforms.all;
   };

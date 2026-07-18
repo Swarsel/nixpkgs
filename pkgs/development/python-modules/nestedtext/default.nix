@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   docopt,
-  fetchFromGitHub,
   flit-core,
   hypothesis,
   inform,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "nestedtext";
   version = "3.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "KenKundert";
@@ -24,9 +23,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-eg5Q11dl9ikGpNYx2Sd47MBPC9S4W2M6PpehFpowzdk=";
   };
 
-  build-system = [ flit-core ];
-
-  dependencies = [ inform ];
+  # Tests depend on quantiphy. To avoid infinite recursion, tests are only
+  # enabled when building passthru.tests.
+  doCheck = false;
 
   nativeCheckInputs = [
     docopt
@@ -36,9 +35,8 @@ buildPythonPackage (finalAttrs: {
     voluptuous
   ];
 
-  # Tests depend on quantiphy. To avoid infinite recursion, tests are only
-  # enabled when building passthru.tests.
-  doCheck = false;
+  build-system = [ flit-core ];
+  dependencies = [ inform ];
 
   disabledTestPaths = [
     # Avoids an ImportMismatchError.
@@ -47,16 +45,18 @@ buildPythonPackage (finalAttrs: {
     "examples/"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "nestedtext" ];
+
   passthru.tests = {
     runTests = nestedtext.overrideAttrs (_: {
       doCheck = true;
     });
   };
 
-  pythonImportsCheck = [ "nestedtext" ];
-
   meta = {
     description = "Human friendly data format";
+
     longDescription = ''
       NestedText is a file format for holding data that is to be entered,
       edited, or viewed by people. It allows data to be organized into a nested
@@ -68,6 +68,7 @@ buildPythonPackage (finalAttrs: {
       text editor and easily understood and used by both programmers and
       non-programmers.
     '';
+
     homepage = "https://nestedtext.org";
     changelog = "https://github.com/KenKundert/nestedtext/blob/${finalAttrs.src.tag}/doc/releases.rst";
     license = lib.licenses.mit;

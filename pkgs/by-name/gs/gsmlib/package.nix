@@ -26,7 +26,7 @@ stdenv.mkDerivation {
     description = "Library to access GSM mobile phones through GSM modems";
     homepage = "https://github.com/x-logLT/gsmlib";
     license = lib.licenses.lgpl2;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.misuzu ];
+    platforms = lib.platforms.linux;
   };
 }

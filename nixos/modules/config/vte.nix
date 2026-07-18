@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -11,8 +11,8 @@ let
     # Supports both bash and zsh, requires interactive shell.
     . ${
       pkgs.vte.override {
-        withApp = false;
         gtkVersion = null;
+        withApp = false;
       }
     }/etc/profile.d/vte.sh
   '';
@@ -21,30 +21,30 @@ in
 
 {
 
-  meta = {
-    teams = [ lib.teams.gnome ];
-  };
-
   options = {
 
     programs.bash.vteIntegration = lib.mkOption {
       default = false;
-      type = lib.types.bool;
+
       description = ''
         Whether to enable Bash integration for VTE terminals.
         This allows it to preserve the current directory of the shell
         across terminals.
       '';
+
+      type = lib.types.bool;
     };
 
     programs.zsh.vteIntegration = lib.mkOption {
       default = false;
-      type = lib.types.bool;
+
       description = ''
         Whether to enable Zsh integration for VTE terminals.
         This allows it to preserve the current directory of the shell
         across terminals.
       '';
+
+      type = lib.types.bool;
     };
 
   };
@@ -58,4 +58,8 @@ in
       programs.zsh.interactiveShellInit = vteInitSnippet;
     })
   ];
+
+  meta = {
+    teams = [ lib.teams.gnome ];
+  };
 }

@@ -1,24 +1,23 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   ccloader,
+  rustPlatform,
 }:
 
 let
   # for whatever reason, rustPlatform fetches it the wrong way, so do it manually
   pcf = fetchFromGitHub {
+    hash = "sha256-2/Y5thDN5fwthk+I/D7pORe7yQ1H0UpNjVvAeSYpD5Q=";
     owner = "MinusKelvin";
     repo = "pcf";
     rev = "64cd95557f3cf56e11e4c91a963fce9700d85325";
-    hash = "sha256-2/Y5thDN5fwthk+I/D7pORe7yQ1H0UpNjVvAeSYpD5Q=";
   };
 in
 
 rustPlatform.buildRustPackage {
   pname = "libcoldclear";
   version = "0.1.0";
-
   src = "${ccloader.src}/cold-clear";
 
   # remove workspace cargo.toml so we don't load all of workspace's deps
@@ -32,6 +31,7 @@ rustPlatform.buildRustPackage {
 
   cargoLock = {
     lockFile = ./Cargo.lock;
+
     outputHashes = {
       "webutil-0.1.0" = "sha256-Zg98VmCUd/ZTlRTfTfkPJh4xX0QrepGxICbszebQw0I=";
     };

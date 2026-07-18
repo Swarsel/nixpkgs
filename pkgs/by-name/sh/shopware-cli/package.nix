@@ -1,20 +1,21 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  installShellFiles,
-  makeWrapper,
+  buildGoModule,
   dart-sass,
   git,
+  installShellFiles,
+  makeWrapper,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "shopware-cli";
   version = "0.15.12";
+
   src = fetchFromGitHub {
-    repo = "shopware-cli";
     owner = "shopware";
+    repo = "shopware-cli";
     tag = finalAttrs.version;
     hash = "sha256-9T04G88OPjdgHKWpuRAma5HGudVfep0cN5tR+MHL28Q=";
   };
@@ -23,12 +24,13 @@ buildGoModule (finalAttrs: {
     installShellFiles
     makeWrapper
   ];
+
+  vendorHash = "sha256-VdFA3Ax3aBsJN/MmJq7YYlP+4NVcDhXegVTCKA6MIQ0=";
+
   nativeCheckInputs = [
     git
     dart-sass
   ];
-
-  vendorHash = "sha256-VdFA3Ax3aBsJN/MmJq7YYlP+4NVcDhXegVTCKA6MIQ0=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd shopware-cli \
@@ -42,20 +44,20 @@ buildGoModule (finalAttrs: {
       --prefix PATH : ${lib.makeBinPath [ dart-sass ]}
   '';
 
+  __darwinAllowLocalNetworking = true;
+
   ldflags = [
     "-s"
     "-w"
     "-X 'github.com/shopware/shopware-cli/cmd.version=${finalAttrs.version}'"
   ];
 
-  __darwinAllowLocalNetworking = true;
-
   meta = {
     description = "Command line tool for Shopware 6";
-    mainProgram = "shopware-cli";
     homepage = "https://github.com/shopware/shopware-cli";
     changelog = "https://github.com/shopware/shopware-cli/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ shyim ];
+    mainProgram = "shopware-cli";
   };
 })

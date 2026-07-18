@@ -1,19 +1,19 @@
 {
-  stdenv,
-  pkg-config,
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
   libGL,
+  libjpeg,
+  libpng,
   libx11,
   libxrandr,
-  libpng,
-  libjpeg,
-  wayland,
-  wayland-scanner,
-  wayland-protocols,
-  versionCheckHook,
   meson,
   ninja,
+  pkg-config,
+  versionCheckHook,
+  wayland,
+  wayland-protocols,
+  wayland-scanner,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -44,21 +44,22 @@ stdenv.mkDerivation (finalAttrs: {
     libjpeg
   ];
 
-  installFlags = [ "PREFIX=${placeholder "out"}" ];
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  installFlags = [ "PREFIX=${placeholder "out"}" ];
   versionCheckProgramArg = "--version";
 
   meta = {
-    changelog = "https://github.com/1ay1/neowall/releases/tag/${finalAttrs.src.tag}";
     description = "GPU shader wallpapers for Wayland";
     homepage = "https://github.com/1ay1/neowall";
+    changelog = "https://github.com/1ay1/neowall/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ lonerOrz ];
+    platforms = lib.platforms.linux;
     mainProgram = "neowall";
   };
 })

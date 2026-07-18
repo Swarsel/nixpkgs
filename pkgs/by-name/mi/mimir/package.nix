@@ -1,22 +1,34 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  nixosTests,
+  buildGoModule,
   nix-update-script,
+  nixosTests,
 }:
 buildGoModule (finalAttrs: {
   pname = "mimir";
   version = "3.1.2";
 
   src = fetchFromGitHub {
-    rev = "mimir-${finalAttrs.version}";
     owner = "grafana";
     repo = "mimir";
+    rev = "mimir-${finalAttrs.version}";
     hash = "sha256-8GvpmCanVlsObH1mwPA/TsHzNp3f0hzF7fURIDHy/DU=";
   };
 
   vendorHash = null;
+
+  ldflags =
+    let
+      t = "github.com/grafana/mimir/pkg/util/version";
+    in
+    [
+      "-s"
+      "-w"
+      "-X ${t}.Version=${finalAttrs.version}"
+      "-X ${t}.Revision=unknown"
+      "-X ${t}.Branch=unknown"
+    ];
 
   subPackages = [
     "cmd/mimir"
@@ -36,34 +48,24 @@ buildGoModule (finalAttrs: {
   ]);
 
   passthru = {
+    tests = {
+      inherit (nixosTests) mimir;
+    };
+
     updateScript = nix-update-script {
       extraArgs = [
         "--version-regex"
         "mimir-(3\\.[0-9.]+)"
       ];
     };
-    tests = {
-      inherit (nixosTests) mimir;
-    };
   };
-
-  ldflags =
-    let
-      t = "github.com/grafana/mimir/pkg/util/version";
-    in
-    [
-      "-s"
-      "-w"
-      "-X ${t}.Version=${finalAttrs.version}"
-      "-X ${t}.Revision=unknown"
-      "-X ${t}.Branch=unknown"
-    ];
 
   meta = {
     description = "Grafana Mimir provides horizontally scalable, highly available, multi-tenant, long-term storage for Prometheus. ";
     homepage = "https://github.com/grafana/mimir";
     changelog = "https://github.com/grafana/mimir/releases/tag/mimir-${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       happysalada
       bryanhonof

@@ -3,7 +3,6 @@ let
   common = callPackage ./common.nix { };
 in
 buildGoModule {
-  pname = "woodpecker-agent";
   inherit (common)
     version
     src
@@ -12,9 +11,9 @@ buildGoModule {
     vendorHash
     ;
 
-  subPackages = "cmd/agent";
-
+  pname = "woodpecker-agent";
   env.CGO_ENABLED = 0;
+  subPackages = "cmd/agent";
 
   meta = common.meta // {
     description = "Woodpecker Continuous Integration agent";

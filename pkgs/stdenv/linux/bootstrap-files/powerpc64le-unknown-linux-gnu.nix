@@ -10,12 +10,13 @@
 # - build time: Fri, 20 Mar 2026 12:10:47 +0000
 {
   bootstrapTools = import <nix/fetchurl.nix> {
-    url = "http://tarballs.nixos.org/stdenv/powerpc64le-unknown-linux-gnu/4def26f6e59f6059e1ff4367f743f530739046bf/bootstrap-tools.tar.xz";
     hash = "sha256-7MCJRYLPhcQZn6QRaoMvtugClqxblyW4//ZJb39fl7c=";
+    url = "http://tarballs.nixos.org/stdenv/powerpc64le-unknown-linux-gnu/4def26f6e59f6059e1ff4367f743f530739046bf/bootstrap-tools.tar.xz";
   };
+
   busybox = import <nix/fetchurl.nix> {
-    url = "http://tarballs.nixos.org/stdenv/powerpc64le-unknown-linux-gnu/4def26f6e59f6059e1ff4367f743f530739046bf/busybox";
-    hash = "sha256-OgJQ5wod0ivNPKEEuVC8xK5J5pvsZ+Jrtf4yLS4PNy4=";
     executable = true;
+    hash = "sha256-OgJQ5wod0ivNPKEEuVC8xK5J5pvsZ+Jrtf4yLS4PNy4=";
+    url = "http://tarballs.nixos.org/stdenv/powerpc64le-unknown-linux-gnu/4def26f6e59f6059e1ff4367f743f530739046bf/busybox";
   };
 }

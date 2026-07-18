@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   options,
   ...
 }:
@@ -33,7 +33,8 @@ in
     package = lib.options.mkPackageOption pkgs "benchexec" { };
 
     users = lib.options.mkOption {
-      type = with lib.types; listOf (either str int);
+      default = [ ];
+
       description = ''
         Users that intend to use BenchExec.
         Provide usernames of users that are configured via {option}`${options.users.users}` as string,
@@ -41,13 +42,15 @@ in
         Control group delegation will be configured via systemd.
         For more information, see <https://github.com/sosy-lab/benchexec/blob/3.18/doc/INSTALL.md#setting-up-cgroups>.
       '';
-      default = [ ];
+
       example = lib.literalExpression ''
         [
           "alice" # username of a user configured via ${options.users.users}
           1007    # UID of a mutable user
         ]
       '';
+
+      type = with lib.types; listOf (either str int);
     };
   };
 
@@ -55,32 +58,20 @@ in
     assertions =
       (map (user: {
         assertion = config.users.users ? ${user};
+
         message = ''
           The user '${user}' intends to use BenchExec (via `${opt.users}`), but is not configured via `${options.users.users}`.
         '';
       }) (builtins.filter builtins.isString cfg.users))
       ++ (map (id: {
         assertion = config.users.mutableUsers;
+
         message = ''
           The user with UID '${id}' intends to use BenchExec (via `${opt.users}`), but mutable users are disabled via `${options.users.mutableUsers}`.
         '';
       }) (builtins.filter builtins.isInt cfg.users));
 
     environment.systemPackages = [ cfg.package ];
-
-    # See <https://github.com/sosy-lab/benchexec/blob/3.18/doc/INSTALL.md#setting-up-cgroups>.
-    systemd.services = builtins.listToAttrs (
-      map (user: {
-        name = "user@${toString (uid user)}";
-        value = {
-          serviceConfig.Delegate = "yes";
-          overrideStrategy = "asDropin";
-        };
-      }) (builtins.filter filterUsers cfg.users)
-    );
-
-    # See <https://github.com/sosy-lab/benchexec/blob/3.18/doc/INSTALL.md#requirements>.
-    virtualisation.lxc.lxcfs.enable = lib.mkDefault true;
 
     # See <https://github.com/sosy-lab/benchexec/blob/3.18/doc/INSTALL.md#requirements>.
     programs = {
@@ -89,6 +80,21 @@ in
 
     # See <https://github.com/sosy-lab/benchexec/blob/3.18/doc/INSTALL.md#kernel-requirements>.
     security.unprivilegedUsernsClone = true;
+
+    # See <https://github.com/sosy-lab/benchexec/blob/3.18/doc/INSTALL.md#setting-up-cgroups>.
+    systemd.services = builtins.listToAttrs (
+      map (user: {
+        name = "user@${toString (uid user)}";
+
+        value = {
+          overrideStrategy = "asDropin";
+          serviceConfig.Delegate = "yes";
+        };
+      }) (builtins.filter filterUsers cfg.users)
+    );
+
+    # See <https://github.com/sosy-lab/benchexec/blob/3.18/doc/INSTALL.md#requirements>.
+    virtualisation.lxc.lxcfs.enable = lib.mkDefault true;
   };
 
   meta.maintainers = with lib.maintainers; [ lorenzleutgeb ];

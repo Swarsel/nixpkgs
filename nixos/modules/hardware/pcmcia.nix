@@ -15,29 +15,35 @@ in
   options = {
 
     hardware.pcmcia = {
-      enable = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Enable this option to support PCMCIA card.
-        '';
-      };
-
-      firmware = lib.mkOption {
-        type = lib.types.listOf lib.types.path;
-        default = [ ];
-        description = ''
-          List of firmware used to handle specific PCMCIA card.
-        '';
-      };
-
       config = lib.mkOption {
         default = null;
-        type = lib.types.nullOr lib.types.path;
+
         description = ''
           Path to the configuration file which maps the memory, IRQs
           and ports used by the PCMCIA hardware.
         '';
+
+        type = lib.types.nullOr lib.types.path;
+      };
+
+      enable = lib.mkOption {
+        default = false;
+
+        description = ''
+          Enable this option to support PCMCIA card.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      firmware = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          List of firmware used to handle specific PCMCIA card.
+        '';
+
+        type = lib.types.listOf lib.types.path;
       };
     };
   };
@@ -47,10 +53,8 @@ in
   config = lib.mkIf config.hardware.pcmcia.enable {
 
     boot.kernelModules = [ "pcmcia" ];
-
-    services.udev.packages = [ pcmciautils ];
-
     environment.systemPackages = [ pcmciautils ];
+    services.udev.packages = [ pcmciautils ];
 
   };
 

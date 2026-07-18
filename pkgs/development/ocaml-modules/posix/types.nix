@@ -1,10 +1,8 @@
 { buildDunePackage, posix-base }:
 
 buildDunePackage {
-  pname = "posix-types";
-
   inherit (posix-base) version src;
-
+  pname = "posix-types";
   propagatedBuildInputs = [ posix-base ];
 
   meta = posix-base.meta // {

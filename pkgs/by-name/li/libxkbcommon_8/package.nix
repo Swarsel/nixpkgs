@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  bison,
+  doxygen,
+  libx11,
+  libxcb,
+  libxml2,
   meson,
   ninja,
   pkg-config,
-  bison,
-  doxygen,
-  xkeyboard_config,
-  libxcb,
-  libxml2,
   python3,
   setxkbmap,
+  testers,
+  wayland,
+  wayland-protocols,
+  wayland-scanner,
   xkbcomp,
-  libx11,
+  xkeyboard_config,
   # To enable the "interactive-wayland" subcommand of xkbcli. This is the
   # wayland equivalent of `xev` on X11.
   xvfb,
   withWaylandTools ? stdenv.hostPlatform.isLinux,
-  wayland,
-  wayland-protocols,
-  wayland-scanner,
-  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -41,7 +41,6 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
   ];
 
-  depsBuildBuild = [ pkg-config ];
   nativeBuildInputs = [
     meson
     ninja
@@ -61,11 +60,6 @@ stdenv.mkDerivation (finalAttrs: {
     wayland
     wayland-protocols
   ];
-  nativeCheckInputs = [
-    python3
-    setxkbmap
-    xkbcomp
-  ];
 
   mesonFlags = [
     "-Dxkb-config-root=${xkeyboard_config}/etc/X11/xkb"
@@ -76,9 +70,18 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = stdenv.hostPlatform.isLinux; # TODO: disable just a part of the tests
+
+  nativeCheckInputs = [
+    python3
+    setxkbmap
+    xkbcomp
+  ];
+
   preCheck = ''
     patchShebangs ../test/
   '';
+
+  depsBuildBuild = [ pkg-config ];
 
   passthru = {
     tests.pkg-config = testers.hasPkgConfigModules {
@@ -88,19 +91,24 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Library to handle keyboard descriptions";
+
     longDescription = ''
       libxkbcommon is a keyboard keymap compiler and support library which
       processes a reduced subset of keymaps as defined by the XKB (X Keyboard
       Extension) specification. It also contains a module for handling Compose
       and dead keys.
     ''; # and a separate library for listing available keyboard layouts.
+
     homepage = "https://xkbcommon.org";
     changelog = "https://github.com/xkbcommon/libxkbcommon/blob/xkbcommon-${finalAttrs.version}/NEWS.md";
     license = lib.licenses.mit;
+
     maintainers = [
     ];
-    mainProgram = "xkbcli";
+
     platforms = with lib.platforms; unix;
+    mainProgram = "xkbcli";
+
     pkgConfigModules = [
       "xkbcommon"
       "xkbcommon-x11"

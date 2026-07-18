@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatch-vcs,
   hatchling,
   hypothesis,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "chardet";
   version = "6.0.0.post1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "chardet";
@@ -22,11 +21,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-7G998L4VRvNiGBBNAxPJB27lI2DtL1lTteowUH2NBDk=";
   };
 
-  build-system = [
-    hatch-vcs
-    hatchling
-  ];
-
   nativeCheckInputs = [
     hypothesis
     pytest-timeout
@@ -34,19 +28,25 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  build-system = [
+    hatch-vcs
+    hatchling
+  ];
+
   disabledTests = [
     # flaky; https://github.com/chardet/chardet/issues/256
     "test_detect_all_and_detect_one_should_agree"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "chardet" ];
 
   meta = {
-    changelog = "https://github.com/chardet/chardet/releases/tag/${finalAttrs.src.tag}";
     description = "Universal encoding detector";
-    mainProgram = "chardetect";
     homepage = "https://github.com/chardet/chardet";
+    changelog = "https://github.com/chardet/chardet/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.lgpl21Plus;
     maintainers = [ ];
+    mainProgram = "chardetect";
   };
 })

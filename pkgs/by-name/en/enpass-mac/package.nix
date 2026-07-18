@@ -1,18 +1,18 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  gzip,
-  xar,
-  cpio,
-  writeShellApplication,
-  curl,
   cacert,
-  gawk,
   common-updater-scripts,
-  versionCheckHook,
-  writeShellScript,
+  cpio,
+  curl,
+  gawk,
+  gzip,
   re-plistbuddy,
+  stdenvNoCC,
+  versionCheckHook,
+  writeShellApplication,
+  writeShellScript,
+  xar,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -24,16 +24,27 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-o4IHDeuoOtZ6gvvfxrPFXCou0nkLOpcMnip/+f6eVkU=";
   };
 
-  dontPatch = true;
-  dontConfigure = true;
-  dontBuild = true;
-  dontFixup = true;
-
   nativeBuildInputs = [
     gzip
     xar
     cpio
   ];
+
+  installPhase = ''
+    runHook preInstall
+
+    mkdir -p $out/Applications
+    mv Enpass.app $out/Applications
+
+    runHook postInstall
+  '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  dontBuild = true;
+  dontConfigure = true;
+  dontFixup = true;
+  dontPatch = true;
 
   unpackPhase = ''
     runHook preUnpack
@@ -46,39 +57,31 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postUnpack
   '';
 
-  installPhase = ''
-    runHook preInstall
-
-    mkdir -p $out/Applications
-    mv Enpass.app $out/Applications
-
-    runHook postInstall
-  '';
-
-  passthru.updateScript = lib.getExe (writeShellApplication {
-    name = "enpass-mac-update-script";
-    runtimeInputs = [
-      curl
-      cacert
-      gawk
-      common-updater-scripts
-    ];
-    text = ''
-      url="https://www.enpass.io/download/macos/website/stable"
-      version=$(curl -Ls -o /dev/null -w "%{url_effective}" "$url" | awk -F'/' '{print $7}')
-      update-source-version enpass-mac "$version"
-    '';
-  });
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgram = writeShellScript "version-check" ''
     marketing_version=$(${lib.getExe' re-plistbuddy "PlistBuddy"} -c "Print :CFBundleShortVersionString" "$1")
     build_version=$(${lib.getExe' re-plistbuddy "PlistBuddy"} -c "Print :CFBundleVersion" "$1")
 
     echo $marketing_version.$build_version
   '';
+
   versionCheckProgramArg = [ "${placeholder "out"}/Applications/Enpass.app/Contents/Info.plist" ];
-  doInstallCheck = true;
+
+  passthru.updateScript = lib.getExe (writeShellApplication {
+    name = "enpass-mac-update-script";
+
+    runtimeInputs = [
+      curl
+      cacert
+      gawk
+      common-updater-scripts
+    ];
+
+    text = ''
+      url="https://www.enpass.io/download/macos/website/stable"
+      version=$(curl -Ls -o /dev/null -w "%{url_effective}" "$url" | awk -F'/' '{print $7}')
+      update-source-version enpass-mac "$version"
+    '';
+  });
 
   meta = {
     description = "Choose your own safest place to store passwords";

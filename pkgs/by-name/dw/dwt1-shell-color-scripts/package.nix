@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitLab,
   installShellFiles,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -16,12 +16,12 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-1iDcUv6uVq5LzFgZo36RRKqAzKoYKZW/MnlbneayvCY=";
   };
 
-  nativeBuildInputs = [ installShellFiles ];
-
   postPatch = ''
     patchShebangs ./colorscript.sh
     patchShebangs ./colorscripts
   '';
+
+  nativeBuildInputs = [ installShellFiles ];
 
   installPhase = ''
     runHook preInstall
@@ -47,8 +47,8 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://gitlab.com/dwt1/shell-color-scripts";
     description = "Collection of shell color scripts collected by dt (Derek Taylor)";
+    homepage = "https://gitlab.com/dwt1/shell-color-scripts";
     license = with lib.licenses; [ mit ];
     maintainers = [ ];
     platforms = lib.platforms.all;

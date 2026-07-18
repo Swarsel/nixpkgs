@@ -1,14 +1,13 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
 }:
 
 buildPythonPackage rec {
   pname = "pyeverlights";
   version = "0.1.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "joncar";
@@ -18,9 +17,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ aiohttp ];
-
   # no tests are present
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "pyeverlights" ];
 
   meta = {

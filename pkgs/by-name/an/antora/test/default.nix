@@ -1,14 +1,13 @@
 {
+  lib,
   antora,
   antora-lunr-extension,
-  antora-lunr-extension-test ? false,
   antora-ui-default,
   gitMinimal,
-  lib,
   stdenvNoCC,
+  antora-lunr-extension-test ? false,
 }:
 stdenvNoCC.mkDerivation {
-  name = "${antora.pname}${lib.optionalString antora-lunr-extension-test "-${antora-lunr-extension.pname}"}-test";
   src = ./minimal_working_example;
 
   postPatch =
@@ -29,6 +28,11 @@ stdenvNoCC.mkDerivation {
         GIT_COMMITTER_NAME=Nixpkgs \
         git commit --allow-empty --allow-empty-message --message ""
     '';
+
+  nativeBuildInputs = [
+    antora
+    gitMinimal
+  ];
 
   buildPhase =
     let
@@ -52,10 +56,7 @@ stdenvNoCC.mkDerivation {
       } "${playbook}"
     '';
 
-  nativeBuildInputs = [
-    antora
-    gitMinimal
-  ];
+  name = "${antora.pname}${lib.optionalString antora-lunr-extension-test "-${antora-lunr-extension.pname}"}-test";
 
   meta = {
     description = "Reproducible Antora test framework";

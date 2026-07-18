@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -18,8 +18,8 @@ buildDunePackage (finalAttrs: {
   minimalOCamlVersion = "4.11";
 
   meta = {
-    homepage = "https://github.com/janestreet/memtrace";
     description = "Streaming client for OCaml's Memprof";
+    homepage = "https://github.com/janestreet/memtrace";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ niols ];
   };

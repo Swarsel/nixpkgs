@@ -1,8 +1,8 @@
 {
   # Basic
   lib,
-  melpaBuild,
   fetchFromGitHub,
+  melpaBuild,
   # Updater
   unstableGitUpdater,
 }:
@@ -25,18 +25,20 @@ melpaBuild {
   '';
 
   passthru = {
-    updateScript = unstableGitUpdater { };
     eafPythonDeps =
       ps: with ps; [
         pyte
         psutil
       ];
+
+    updateScript = unstableGitUpdater { };
   };
 
   meta = {
     description = "Terminal written in PyQt6 for the EAF";
     homepage = "https://github.com/mumu-lhl/eaf-pyqterminal";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       thattemperature
     ];

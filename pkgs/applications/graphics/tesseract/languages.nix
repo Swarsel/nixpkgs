@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   fetchFromGitHub,
 }:
@@ -9,44 +9,43 @@ rec {
   makeLanguages =
     {
       tessdataRev,
-      tessdata ? null,
       all ? null,
       languages ? { },
+      tessdata ? null,
     }:
     let
       tessdataSrc = fetchFromGitHub {
+        hash = tessdata;
         owner = "tesseract-ocr";
         repo = "tessdata";
         rev = tessdataRev;
-        hash = tessdata;
       };
 
       languageFile =
         lang: hash:
         fetchurl {
-          url = "https://github.com/tesseract-ocr/tessdata/raw/${tessdataRev}/${lang}.traineddata";
           inherit hash;
+          url = "https://github.com/tesseract-ocr/tessdata/raw/${tessdataRev}/${lang}.traineddata";
         };
     in
     {
       # Use a simple fixed-output derivation for all languages to increase nix eval performance
       all = stdenv.mkDerivation {
-        name = "all";
         buildCommand = ''
           mkdir $out
           cd ${tessdataSrc}
           cp *.traineddata $out
         '';
-        outputHashMode = "recursive";
-        outputHashAlgo = "sha256";
+
+        name = "all";
         outputHash = all;
+        outputHashAlgo = "sha256";
+        outputHashMode = "recursive";
       };
     }
     // (lib.mapAttrs languageFile languages);
 
   v3 = makeLanguages {
-    tessdataRev = "3cf1e2df1fe1d1da29295c9ef0983796c7958b7d";
-    tessdata = "sha256-591NFrPdZ9orB9PtxKqsukh6aAq5DDO8yJ19W/Ywi+w=";
     all = "sha256-FuIGfE0bNPvB8ip6cL8GRl0U9T7oD6sx+38CaGyCRno=";
 
     # Run `./fetch-language-hashes <tessdataRev>` to generate these hashes
@@ -160,11 +159,12 @@ rec {
       yid = "sha256-zZm4mvPApL0hpD3UPxN+/96j3V0ZrVk+ALvUih5orck=";
 
     };
+
+    tessdata = "sha256-591NFrPdZ9orB9PtxKqsukh6aAq5DDO8yJ19W/Ywi+w=";
+    tessdataRev = "3cf1e2df1fe1d1da29295c9ef0983796c7958b7d";
   };
 
   v4 = makeLanguages {
-    tessdataRev = "4.1.0";
-    tessdata = "sha256-70bp4prs1zUbSzQmcqd7v736cyYWv8oNNbmZXypik5I=";
     all = "sha256-hk+DjoVWf7RW9S+Gu9XUX8aWYYsL5dU5c6jLSKJp+MY=";
 
     # Run `./fetch-language-hashes <tessdataRev>` to generate these hashes
@@ -299,5 +299,8 @@ rec {
       yid = "sha256-H1AC4G/G7jOuvJJZb9u8ofDF5RqKi/PwVTjsTkDcy3Y=";
       yor = "sha256-m35CeoAKh2Rg8CDVaDgCkuIm1i/4pOutieZZUSJTgx8=";
     };
+
+    tessdata = "sha256-70bp4prs1zUbSzQmcqd7v736cyYWv8oNNbmZXypik5I=";
+    tessdataRev = "4.1.0";
   };
 }

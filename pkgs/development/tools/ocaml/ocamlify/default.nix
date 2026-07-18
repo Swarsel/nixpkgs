@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
   camlp-streams,
 }:
 
@@ -22,8 +22,8 @@ buildDunePackage (finalAttrs: {
   dontStrip = true;
 
   meta = {
-    homepage = "https://github.com/gildor478/ocamlify";
     description = "Include files in OCaml code";
+    homepage = "https://github.com/gildor478/ocamlify";
     license = lib.licenses.lgpl21;
     mainProgram = "ocamlify";
   };

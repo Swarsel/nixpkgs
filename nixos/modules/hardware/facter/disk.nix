@@ -1,4 +1,4 @@
-{ lib, config, ... }:
+{ config, lib, ... }:
 let
   facterLib = import ./lib.nix lib;
 
@@ -6,7 +6,6 @@ let
 in
 {
   options.hardware.facter.detected.boot.disk.kernelModules = lib.mkOption {
-    type = lib.types.listOf lib.types.str;
     default = lib.uniqueStrings (
       facterLib.collectDrivers (
         # A disk might be attached.
@@ -16,10 +15,14 @@ in
         ++ (report.hardware.storage_controller or [ ])
       )
     );
+
     defaultText = "hardware dependent";
+
     description = ''
       List of kernel modules that are needed to access the disk.
     '';
+
+    type = lib.types.listOf lib.types.str;
   };
 
   config = lib.mkIf config.hardware.facter.enable {

@@ -4,9 +4,9 @@
   fetchFromGitHub,
   cmake,
   doctest,
-  nlohmann_json,
   libuuid,
   nix-update-script,
+  nlohmann_json,
   xtl,
 }:
 
@@ -37,12 +37,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
   preCheck = "export LD_LIBRARY_PATH=$PWD";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://xeus.readthedocs.io";
     description = "C++ implementation of the Jupyter Kernel protocol";
+    homepage = "https://xeus.readthedocs.io";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ serge_sans_paille ];
     platforms = lib.platforms.all;

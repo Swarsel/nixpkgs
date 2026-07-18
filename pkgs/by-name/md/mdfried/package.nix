@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   chafa,
   fontconfig,
   glib,
   gnumake,
   gperf,
   libiconv,
+  nix-update-script,
+  pkg-config,
   python3,
+  rustPlatform,
   unzip,
   writeShellScriptBin,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -26,15 +26,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Zcn1C8mXwljJ3HtYgYBPyU9cVHvoNBUn7qjqx45wMhE=";
   };
-
-  cargoHash = "sha256-Nt+oBl2HX/H/7j62VjaHrY29gpd2vouevBJO0W3AYAk=";
-
-  buildFeatures = [ "pdf" ];
-
-  # Prevent updateAutotoolsGnuConfigScripts from modifying mupdf's vendored
-  # autotools files — doing so invalidates cargo's fingerprint for mupdf-sys
-  # and causes a rebuild that fails on read-only cargoArtifacts files.
-  updateAutotoolsGnuConfigScriptsPhase = "true";
 
   nativeBuildInputs = [
     pkg-config
@@ -59,13 +50,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libiconv
   ];
 
+  cargoHash = "sha256-Nt+oBl2HX/H/7j62VjaHrY29gpd2vouevBJO0W3AYAk=";
+
   env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
     CFLAGS_aarch64_apple_darwin = "-UTARGET_OS_MAC";
     CXXFLAGS_aarch64_apple_darwin = "-UTARGET_OS_MAC";
   };
 
   doCheck = true;
-
+  buildFeatures = [ "pdf" ];
+  # Prevent updateAutotoolsGnuConfigScripts from modifying mupdf's vendored
+  # autotools files — doing so invalidates cargo's fingerprint for mupdf-sys
+  # and causes a rebuild that fails on read-only cargoArtifacts files.
+  updateAutotoolsGnuConfigScriptsPhase = "true";
   passthru.updateScript = nix-update-script { };
 
   meta = {

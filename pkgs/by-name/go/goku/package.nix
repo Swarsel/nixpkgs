@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  unzip,
   joker,
   nix-update-script,
+  stdenvNoCC,
+  unzip,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -24,12 +24,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       };
 
   nativeBuildInputs = [ unzip ];
-
   buildInputs = [ joker ];
-
-  sourceRoot = if stdenvNoCC.hostPlatform.isAarch64 then "goku" else ".";
-
-  passthru.updateScript = nix-update-script { };
 
   installPhase = ''
     runHook preInstall
@@ -39,10 +34,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = if stdenvNoCC.hostPlatform.isAarch64 then "goku" else ".";
+  passthru.updateScript = nix-update-script { };
+
   meta = {
-    changelog = "https://github.com/yqrashawn/GokuRakuJoudo/blob/v${finalAttrs.version}/CHANGELOG.org";
     description = "Karabiner configurator";
     homepage = "https://github.com/yqrashawn/GokuRakuJoudo";
+    changelog = "https://github.com/yqrashawn/GokuRakuJoudo/blob/v${finalAttrs.version}/CHANGELOG.org";
     license = lib.licenses.gpl3;
     maintainers = [ lib.maintainers.nikitavoloboev ];
     platforms = lib.platforms.darwin;

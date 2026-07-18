@@ -1,36 +1,30 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-  hatch-fancy-pypi-readme,
-  uv-dynamic-versioning,
-
+  anyio,
+  buildPythonPackage,
   # dependencies
   h11,
-  truststore,
-
   # optional dependencies
   h2,
-  socksio,
-  trio,
-  anyio,
-
-  # tests
-  pytestCheckHook,
-  pytest-httpbin,
-  pytest-trio,
-
+  hatch-fancy-pypi-readme,
+  # build-system
+  hatchling,
   # reverse deps
   httpx2,
+  pytest-httpbin,
+  pytest-trio,
+  # tests
+  pytestCheckHook,
+  socksio,
+  trio,
+  truststore,
+  uv-dynamic-versioning,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "httpcore2";
   version = "2.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pydantic";
@@ -42,6 +36,20 @@ buildPythonPackage (finalAttrs: {
   postPatch = ''
     pushd src/httpcore2
   '';
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-httpbin
+    pytest-trio
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
+
+  preCheck = ''
+    popd
+  '';
+
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
 
   build-system = [
     hatchling
@@ -61,29 +69,16 @@ buildPythonPackage (finalAttrs: {
     trio = [ trio ];
   };
 
+  pyproject = true;
+  pytestFlags = [ "tests/httpcore2" ];
+
   pythonImportsCheck = [
     "httpcore2"
   ];
 
-  preCheck = ''
-    popd
-  '';
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-httpbin
-    pytest-trio
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
-
-  pytestFlags = [ "tests/httpcore2" ];
-
   passthru.tests = {
     inherit httpx2;
   };
-
-  __darwinAllowLocalNetworking = true;
-  __structuredAttrs = true;
 
   meta = {
     description = "A next generation HTTP client for Python";

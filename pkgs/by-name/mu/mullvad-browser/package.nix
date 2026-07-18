@@ -2,61 +2,52 @@
   lib,
   stdenv,
   fetchurl,
-  makeDesktopItem,
-  copyDesktopItems,
-  makeWrapper,
-  writeText,
-  wrapGAppsHook3,
-  autoPatchelfHook,
-  patchelfUnstable, # have to use patchelfUnstable to support --no-clobber-old-sections
-  callPackage,
-
+  alsa-lib,
+  apulse,
   atk,
+  autoPatchelfHook,
   cairo,
+  callPackage,
+  copyDesktopItems,
   dbus,
   dbus-glib,
+  ffmpeg_7,
   fontconfig,
   freetype,
   gdk-pixbuf,
   glib,
   gtk3,
-  libxcb,
+  libGL,
+  libdrm,
+  libgbm,
+  libnotify,
+  libpulseaudio,
+  libva,
   libx11,
+  libxcb,
   libxext,
+  libxkbcommon,
   libxrender,
   libxt,
   libxtst,
-  libgbm,
+  makeDesktopItem,
+  makeWrapper,
   pango,
+  patchelfUnstable, # have to use patchelfUnstable to support --no-clobber-old-sections
   pciutils,
-  zlib,
-
-  libnotifySupport ? stdenv.hostPlatform.isLinux,
-  libnotify,
-
-  waylandSupport ? stdenv.hostPlatform.isLinux,
-  libxkbcommon,
-  libdrm,
-  libGL,
-
-  mediaSupport ? true,
-  ffmpeg_7,
-
-  audioSupport ? mediaSupport,
-
-  pipewireSupport ? audioSupport,
   pipewire,
-
-  pulseaudioSupport ? audioSupport,
-  libpulseaudio,
-  apulse,
-  alsa-lib,
-
-  libvaSupport ? mediaSupport,
-  libva,
-
+  wrapGAppsHook3,
+  writeText,
+  zlib,
+  audioSupport ? mediaSupport,
   # Extra preferences
   extraPrefs ? "",
+  libnotifySupport ? stdenv.hostPlatform.isLinux,
+  libvaSupport ? mediaSupport,
+  mediaSupport ? true,
+  pipewireSupport ? audioSupport,
+  pulseaudioSupport ? audioSupport,
+  waylandSupport ? stdenv.hostPlatform.isLinux,
 }:
 
 let
@@ -101,6 +92,8 @@ let
 
   sources = {
     x86_64-linux = fetchurl {
+      hash = "sha256-hvLft1HDj/5NgAfQb1igYdhJN5H/jZ2+7s/JKKLf4Gs=";
+
       urls = [
         "https://cdn.mullvad.net/browser/${version}/mullvad-browser-linux-x86_64-${version}.tar.xz"
         "https://github.com/mullvad/mullvad-browser/releases/download/${version}/mullvad-browser-linux-x86_64-${version}.tar.xz"
@@ -109,7 +102,6 @@ let
         "https://tor.eff.org/dist/mullvadbrowser/${version}/mullvad-browser-linux-x86_64-${version}.tar.xz"
         "https://tor.calyxinstitute.org/dist/mullvadbrowser/${version}/mullvad-browser-linux-x86_64-${version}.tar.xz"
       ];
-      hash = "sha256-hvLft1HDj/5NgAfQb1igYdhJN5H/jZ2+7s/JKKLf4Gs=";
     };
   };
 
@@ -117,16 +109,16 @@ let
     lib.generators.toINI { } {
       # Some light branding indicating this build uses our distro preferences
       Global = {
-        id = "nixos";
         version = "1.0";
         about = "Mullvad Browser for NixOS";
+        id = "nixos";
       };
     }
   );
 in
 stdenv.mkDerivation rec {
-  pname = "mullvad-browser";
   inherit version;
+  pname = "mullvad-browser";
 
   src =
     sources.${stdenv.hostPlatform.system}
@@ -139,41 +131,12 @@ stdenv.mkDerivation rec {
     makeWrapper
     wrapGAppsHook3
   ];
+
   buildInputs = [
     gtk3
     alsa-lib
     dbus-glib
     libxtst
-  ];
-
-  # Firefox uses "relrhack" to manually process relocations from a fixed offset
-  patchelfFlags = [ "--no-clobber-old-sections" ];
-
-  preferLocalBuild = true;
-  allowSubstitutes = false;
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "mullvad-browser";
-      exec = "mullvad-browser %U";
-      icon = "mullvad-browser";
-      desktopName = "Mullvad Browser";
-      genericName = "Web Browser";
-      comment = meta.description;
-      categories = [
-        "Network"
-        "WebBrowser"
-        "Security"
-      ];
-      mimeTypes = [
-        "text/html"
-        "text/xml"
-        "application/xhtml+xml"
-        "application/vnd.mozilla.xul+xml"
-        "x-scheme-handler/http"
-        "x-scheme-handler/https"
-      ];
-    })
   ];
 
   buildPhase = ''
@@ -280,8 +243,42 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  allowSubstitutes = false;
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Network"
+        "WebBrowser"
+        "Security"
+      ];
+
+      comment = meta.description;
+      desktopName = "Mullvad Browser";
+      exec = "mullvad-browser %U";
+      genericName = "Web Browser";
+      icon = "mullvad-browser";
+
+      mimeTypes = [
+        "text/html"
+        "text/xml"
+        "application/xhtml+xml"
+        "application/vnd.mozilla.xul+xml"
+        "x-scheme-handler/http"
+        "x-scheme-handler/https"
+      ];
+
+      name = "mullvad-browser";
+    })
+  ];
+
+  # Firefox uses "relrhack" to manually process relocations from a fixed offset
+  patchelfFlags = [ "--no-clobber-old-sections" ];
+  preferLocalBuild = true;
+
   passthru = {
     inherit sources;
+
     updateScript = callPackage ./update.nix {
       inherit pname version meta;
       baseUrl = "https://dist.torproject.org/mullvadbrowser/";
@@ -291,15 +288,8 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Privacy-focused browser made in a collaboration between The Tor Project and Mullvad";
-    mainProgram = "mullvad-browser";
     homepage = "https://mullvad.net/en/browser";
-    platforms = lib.attrNames sources;
-    maintainers = with lib.maintainers; [
-      felschr
-      panicgh
-      sigmasquadron
-      whispersofthedawn
-    ];
+
     # MPL2.0+, GPL+, &c.  While it's not entirely clear whether
     # the compound is "libre" in a strict sense (some components place certain
     # restrictions on redistribution), it's free enough for our purposes.
@@ -309,6 +299,17 @@ stdenv.mkDerivation rec {
       lgpl3Plus
       free
     ];
+
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
+    maintainers = with lib.maintainers; [
+      felschr
+      panicgh
+      sigmasquadron
+      whispersofthedawn
+    ];
+
+    platforms = lib.attrNames sources;
+    mainProgram = "mullvad-browser";
   };
 }

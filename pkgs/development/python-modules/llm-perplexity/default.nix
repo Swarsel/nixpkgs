@@ -1,26 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   llm,
+  llm-perplexity,
   openai,
-
+  pillow,
   # tests
   pytestCheckHook,
-  writableTmpDirAsHomeHook,
   python-dotenv,
-  pillow,
-  llm-perplexity,
+  # build-system
+  setuptools,
+  writableTmpDirAsHomeHook,
 }:
 buildPythonPackage rec {
   pname = "llm-perplexity";
   version = "2026.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hex";
@@ -29,13 +25,6 @@ buildPythonPackage rec {
     hash = "sha256-fZrIKIAGXaMwBq2njtqSUcgRHIbr0ajjx6mECoguFm0=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    llm
-    openai
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
     writableTmpDirAsHomeHook
@@ -43,8 +32,15 @@ buildPythonPackage rec {
     pillow
   ];
 
-  pythonImportsCheck = [ "llm_perplexity" ];
+  build-system = [ setuptools ];
 
+  dependencies = [
+    llm
+    openai
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "llm_perplexity" ];
   passthru.tests = llm.mkPluginTest llm-perplexity;
 
   meta = {

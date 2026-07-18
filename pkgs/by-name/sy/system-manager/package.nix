@@ -1,16 +1,16 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  dbus,
-  pkg-config,
-  clippy,
-  nix,
-  nixVersions,
   cargo,
+  clippy,
+  dbus,
+  nix,
   nix-update-script,
-  writableTmpDirAsHomeHook,
+  nixVersions,
+  pkg-config,
+  rustPlatform,
   system-manager,
+  writableTmpDirAsHomeHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -24,12 +24,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-r0/UDbEeYmVqhtxiuJSUfYhjBjtLKHDWhMScpe1RkOA=";
   };
 
-  cargoHash = "sha256-oJWEP3wmINuhm7BGGRHPO81j4Zwll0OtyBF5WJ9+oQk=";
-
-  buildInputs = [ dbus ];
   nativeBuildInputs = [
     pkg-config
   ];
+
+  buildInputs = [ dbus ];
+  cargoHash = "sha256-oJWEP3wmINuhm7BGGRHPO81j4Zwll0OtyBF5WJ9+oQk=";
 
   nativeCheckInputs = [
     clippy
@@ -48,19 +48,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.latest-nix = system-manager.override { nix = nixVersions.latest; };
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Manage system config using nix on any distro";
     homepage = "http://system-manager.net";
     license = lib.licenses.mit;
-    mainProgram = "system-manager";
+
     maintainers = with lib.maintainers; [
       jfroche
       picnoir
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "system-manager";
   };
 })

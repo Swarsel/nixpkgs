@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   makeWrapper,
   perlPackages,
@@ -30,21 +30,21 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ perlPackages.perl ] ++ perlDeps;
-
   makeFlags = [ "prefix=$(out)" ];
-  installFlags = [ "INSTALL=install" ];
 
   postFixup = ''
     wrapProgram "$out/bin/extract_url" \
       --set PERL5LIB "${perlPackages.makeFullPerlPath perlDeps}"
   '';
 
+  installFlags = [ "INSTALL=install" ];
+
   meta = {
-    homepage = "https://www.memoryhole.net/~kyle/extract_url/";
     description = "Extracts URLs from MIME messages or plain text";
-    mainProgram = "extract_url";
+    homepage = "https://www.memoryhole.net/~kyle/extract_url/";
     license = lib.licenses.bsd2;
     maintainers = [ lib.maintainers.qyliss ];
     platforms = lib.platforms.unix;
+    mainProgram = "extract_url";
   };
 })

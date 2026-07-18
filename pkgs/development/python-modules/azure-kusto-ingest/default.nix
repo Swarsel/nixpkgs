@@ -1,24 +1,23 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   azure-kusto-data,
   azure-storage-blob,
   azure-storage-queue,
   buildPythonPackage,
-  fetchFromGitHub,
   pandas,
   pytest-asyncio,
   pytest-xdist,
   pytestCheckHook,
   responses,
-  uv-build,
   tenacity,
+  uv-build,
 }:
 
 buildPythonPackage rec {
   pname = "azure-kusto-ingest";
   version = "6.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Azure";
@@ -27,30 +26,10 @@ buildPythonPackage rec {
     hash = "sha256-iggsVxLmDbP6+oSPaIiujPLsZAWwm5VLZSl+HYm0DIQ=";
   };
 
-  sourceRoot = "${src.name}/${pname}";
-
   postPatch = ''
     substituteInPlace pyproject.toml \
       --replace-fail "uv_build>=0.8.9,<0.9.0" uv-build
   '';
-
-  build-system = [ uv-build ];
-
-  dependencies = [
-    azure-kusto-data
-    azure-storage-blob
-    azure-storage-queue
-    tenacity
-  ];
-
-  pythonRelaxDeps = [
-    "azure-storage-blob"
-    "azure-storage-queue"
-  ];
-
-  optional-dependencies = {
-    pandas = [ pandas ];
-  };
 
   nativeCheckInputs = [
     aiohttp
@@ -61,12 +40,33 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
-  pythonImportsCheck = [ "azure.kusto.ingest" ];
+  build-system = [ uv-build ];
+
+  dependencies = [
+    azure-kusto-data
+    azure-storage-blob
+    azure-storage-queue
+    tenacity
+  ];
 
   disabledTestPaths = [
     # Tests require network access
     "tests/test_e2e_ingest.py"
   ];
+
+  optional-dependencies = {
+    pandas = [ pandas ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "azure.kusto.ingest" ];
+
+  pythonRelaxDeps = [
+    "azure-storage-blob"
+    "azure-storage-queue"
+  ];
+
+  sourceRoot = "${src.name}/${pname}";
 
   meta = {
     description = "Module for Kusto Ingest";

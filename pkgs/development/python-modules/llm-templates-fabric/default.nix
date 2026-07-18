@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   llm,
   llm-templates-fabric,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "llm-templates-fabric";
   version = "0.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -20,11 +19,9 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
-
   dependencies = [ llm ];
-
+  pyproject = true;
   pythonImportsCheck = [ "llm_templates_fabric" ];
-
   passthru.tests = llm.mkPluginTest llm-templates-fabric;
 
   meta = {

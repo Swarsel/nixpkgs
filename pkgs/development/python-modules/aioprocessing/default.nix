@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "aioprocessing";
   version = "2.0.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,9 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ flit-core ];
-
   # Tests aren't included in pypi package
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "aioprocessing" ];
 
   meta = {

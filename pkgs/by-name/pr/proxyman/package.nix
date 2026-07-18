@@ -1,7 +1,7 @@
 {
   lib,
-  appimageTools,
   fetchurl,
+  appimageTools,
   asar,
   nix-update-script,
 }:
@@ -16,6 +16,7 @@ let
 
   appimageContents = appimageTools.extract {
     inherit pname version src;
+
     postExtract = ''
       ${asar}/bin/asar extract $out/resources/app.asar app
 
@@ -44,8 +45,8 @@ appimageTools.wrapAppImage {
   '';
 
   passthru = {
-    updateScript = nix-update-script { };
     inherit src; # needed for nix-update to find the GitHub URL
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -53,9 +54,9 @@ appimageTools.wrapAppImage {
     homepage = "https://proxyman.com";
     changelog = "https://proxyman.com/changelog-windows";
     license = lib.licenses.unfree;
-    mainProgram = "proxyman";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ nilathedragon ];
     platforms = [ "x86_64-linux" ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    mainProgram = "proxyman";
   };
 }

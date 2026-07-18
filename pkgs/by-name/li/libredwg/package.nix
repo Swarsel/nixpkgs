@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  writeShellScript,
-  pkg-config,
-  texinfo,
-  pcre2,
-  swig,
   libxml2,
   ncurses,
+  pcre2,
+  pkg-config,
+  swig,
+  texinfo,
+  writeShellScript,
   enablePython ? false,
   python ? null,
 }:
@@ -39,11 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
       cp ${printVersion} build-aux/git-version-gen
     '';
 
-  preConfigure = lib.optionalString (stdenv.hostPlatform.isDarwin && enablePython) ''
-    # prevent configure picking up stack_size from distutils.sysconfig
-    export PYTHON_EXTRA_LDFLAGS=" "
-  '';
-
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -61,6 +56,11 @@ stdenv.mkDerivation (finalAttrs: {
   # prevent python tests from running when not building with python
   configureFlags = lib.optional (!enablePython) "--disable-python";
 
+  preConfigure = lib.optionalString (stdenv.hostPlatform.isDarwin && enablePython) ''
+    # prevent configure picking up stack_size from distutils.sysconfig
+    export PYTHON_EXTRA_LDFLAGS=" "
+  '';
+
   # FAIL: alive.test
   doCheck = !stdenv.hostPlatform.isLinux;
 
@@ -73,8 +73,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Free implementation of the DWG file format";
     homepage = "https://savannah.gnu.org/projects/libredwg/";
-    maintainers = with lib.maintainers; [ tweber ];
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ tweber ];
     platforms = lib.platforms.all;
   };
 })

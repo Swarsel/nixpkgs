@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  setuptools,
-  urllib3,
-  six,
-  certifi,
-  python-dateutil,
   asn1crypto,
+  buildPythonPackage,
+  certifi,
+  fetchPypi,
+  python-dateutil,
+  setuptools,
+  six,
+  urllib3,
 }:
 
 buildPythonPackage rec {
   pname = "ionoscloud";
   version = "6.1.13";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -32,12 +31,12 @@ buildPythonPackage rec {
 
   # upstream only has codecoverage tests, but no actual tests to go with them
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "ionoscloud" ];
 
   meta = {
-    homepage = "https://github.com/ionos-cloud/sdk-python";
     description = "Python API client for ionoscloud";
+    homepage = "https://github.com/ionos-cloud/sdk-python";
     changelog = "https://github.com/ionos-cloud/sdk-python/blob/v${version}/docs/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = [ ];

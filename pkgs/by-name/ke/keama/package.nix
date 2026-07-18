@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
 }:
 
@@ -13,14 +13,14 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-CsQWu1WZfKhjIXT9EHN/1hzbjbonUhYKM1d1vCHcc8c=";
   };
 
-  enableParallelBuilding = true;
-
   # The Kea Migration Assistant lives as a subdirectory of the
   # original ISC DHCP server source code.
   makeFlags = [
     "-C"
     "keama"
   ];
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "Kea Migration Assistent";
@@ -32,8 +32,8 @@ stdenv.mkDerivation (finalAttrs: {
 
     homepage = "https://gitlab.isc.org/isc-projects/dhcp/-/wikis/kea-migration-assistant";
     license = lib.licenses.mpl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ blitz ];
+    platforms = lib.platforms.unix;
     mainProgram = "keama";
   };
 })

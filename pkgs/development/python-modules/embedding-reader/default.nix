@@ -1,8 +1,8 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  fsspec,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
+  fsspec,
   numpy,
   pandas,
   pyarrow,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "embedding-reader";
   version = "1.8.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "rom1504";
@@ -22,7 +21,7 @@ buildPythonPackage rec {
     hash = "sha256-D7yrvV6hDqzHaIMhCQ16DhY/8FEr3P4gcT5vV371whs=";
   };
 
-  pythonRelaxDeps = [ "pyarrow" ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
   dependencies = [
     fsspec
@@ -32,9 +31,9 @@ buildPythonPackage rec {
     tqdm
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "embedding_reader" ];
+  pythonRelaxDeps = [ "pyarrow" ];
 
   meta = {
     description = "Efficiently read embedding in streaming from any filesystem";

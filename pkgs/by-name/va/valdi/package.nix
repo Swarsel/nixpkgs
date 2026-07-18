@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -15,11 +15,9 @@ buildNpmPackage rec {
     hash = "sha256-HJmWPlLC1/2etwEm+xSfOwcbXY1qx+QlM0QgDJ4FIcg=";
   };
 
-  passthru.updateScript = ./update.sh;
-
-  sourceRoot = "${src.name}/npm_modules/cli";
-
   npmDepsHash = "sha256-UFdWHEdi6VQYLBQ7gmwxcLNRfoHLKwx4l0ANe5lZnZc=";
+  sourceRoot = "${src.name}/npm_modules/cli";
+  passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Cross-platform UI framework CLI by Snapchat";

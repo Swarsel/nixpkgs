@@ -13,22 +13,21 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ifvdjHtjZJ7rFHlBV1e4mJA8BB5ztJt4Ao29ZOyjCHo=";
   };
 
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     install -D $src $out/bin/trunk
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
   passthru.updateScript = ./update.sh;
 
   meta = {
-    homepage = "https://trunk.io/";
     description = "Developer experience toolkit used to check, test, merge, and monitor code";
+    homepage = "https://trunk.io/";
     license = lib.licenses.unfree;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ aaronjheng ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "trunk";
   };
 })

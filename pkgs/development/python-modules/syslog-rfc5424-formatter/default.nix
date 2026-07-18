@@ -1,16 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "syslog-rfc5424-formatter";
   version = "1.2.3";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "easypost";
@@ -19,13 +16,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-dvRSOMXRmZf0vEEyX6H7OBSfo/PgyOLKuDS8X6g4qe0=";
   };
 
+  # Tests depend on syslog_rfc5424_parser, which we don't package
+  doCheck = false;
+  __structuredAttrs = true;
+
   build-system = [
     setuptools
   ];
 
-  # Tests depend on syslog_rfc5424_parser, which we don't package
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "syslog_rfc5424_formatter" ];
 
   meta = {

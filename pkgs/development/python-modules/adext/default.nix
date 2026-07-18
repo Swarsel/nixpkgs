@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools-scm,
   alarmdecoder,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "adext";
   version = "0.4.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ajschmidt8";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
     hash = "sha256-cZMA8/t24xk5b1At2LQWeDWuRfPcXBCXpl2T70YxZeA=";
   };
 
-  build-system = [ setuptools-scm ];
-
-  dependencies = [ alarmdecoder ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools-scm ];
+  dependencies = [ alarmdecoder ];
+  pyproject = true;
   pythonImportsCheck = [ "adext" ];
 
   meta = {

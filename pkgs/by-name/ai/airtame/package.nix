@@ -1,38 +1,38 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  autoPatchelfHook,
-  dpkg,
-  makeBinaryWrapper,
-  libgcc,
-  glib,
-  nss,
-  nspr,
-  at-spi2-atk,
-  cups,
-  libdrm,
-  gtk3,
-  pango,
-  cairo,
-  libgbm,
-  expat,
-  libxkbcommon,
   alsa-lib,
-  libva-minimal,
-  pulseaudio,
-  libGL,
-  vulkan-loader,
+  at-spi2-atk,
+  autoPatchelfHook,
+  cairo,
+  cups,
   curlWithGnuTls,
-  libxrandr,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcomposite,
-  lib,
-  libnotify,
+  dpkg,
+  expat,
+  glib,
+  gtk3,
+  libGL,
   libappindicator-gtk3,
-  systemd,
+  libdrm,
+  libgbm,
+  libgcc,
+  libnotify,
+  libva-minimal,
+  libxcomposite,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxkbcommon,
+  libxrandr,
+  makeBinaryWrapper,
+  nspr,
+  nss,
+  pango,
   pciutils,
+  pulseaudio,
+  systemd,
+  vulkan-loader,
 }:
 let
   xorgDeps = [
@@ -85,16 +85,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = deps;
-  runtimeDependencies = [
-    (lib.getLib systemd)
-    libnotify
-    libappindicator-gtk3
-    pulseaudio
-    pciutils
-  ];
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -125,14 +115,25 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
+  runtimeDependencies = [
+    (lib.getLib systemd)
+    libnotify
+    libappindicator-gtk3
+    pulseaudio
+    pciutils
+  ];
+
   meta = {
     description = "Airtame official screen streaming application";
     homepage = "https://airtame.com";
-    downloadPage = "https://downloads.airtame.com/app/latest/linux/Airtame-${finalAttrs.version}.deb";
-    mainProgram = "airtame-application";
     license = lib.licenses.unfree;
-    platforms = lib.platforms.linux;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ BastianAsmussen ];
+    platforms = lib.platforms.linux;
+    mainProgram = "airtame-application";
+    downloadPage = "https://downloads.airtame.com/app/latest/linux/Airtame-${finalAttrs.version}.deb";
   };
 })

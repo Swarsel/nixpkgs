@@ -1,14 +1,14 @@
 {
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   nodejs,
   python3,
-  runtimeShell,
-  stdenv,
-  testers,
   runme,
+  runtimeShell,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -22,20 +22,33 @@ buildGoModule (finalAttrs: {
     hash = "sha256-RnbyVVXxPw6w55ulhK3XIB/RPAsZqDLUXY4x/BLeAi8=";
   };
 
-  vendorHash = "sha256-bTXLDu2oF2HcPSPeEMyLvSm2SHjfWUMfkltMUnSwxIc=";
+  postPatch = ''
+    substituteInPlace testdata/{flags/fmt,prompts/basic,runall/basic,script/basic,tags/categories}.txtar \
+      --replace-fail /bin/bash "${runtimeShell}"
+  '';
 
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  vendorHash = "sha256-bTXLDu2oF2HcPSPeEMyLvSm2SHjfWUMfkltMUnSwxIc=";
+  # checkFlags = [
+  #   "-ldflags=-X=github.com/runmedev/runme/v3/internal/version.BuildVersion=${finalAttrs.version}"
+  # ];
+  # tests fail to access /etc/bashrc on darwin
+  doCheck = !stdenv.hostPlatform.isDarwin;
 
   nativeCheckInputs = [
     nodejs
     python3
   ];
 
-  subPackages = [
-    "."
-  ];
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    installShellCompletion --cmd runme \
+      --bash <($out/bin/runme completion bash) \
+      --fish <($out/bin/runme completion fish) \
+      --zsh <($out/bin/runme completion zsh)
+  '';
 
   ldflags = [
     "-s"
@@ -45,24 +58,9 @@ buildGoModule (finalAttrs: {
     "-X=github.com/runmedev/runme/v3/internal/version.Commit=${finalAttrs.src.rev}"
   ];
 
-  # checkFlags = [
-  #   "-ldflags=-X=github.com/runmedev/runme/v3/internal/version.BuildVersion=${finalAttrs.version}"
-  # ];
-
-  # tests fail to access /etc/bashrc on darwin
-  doCheck = !stdenv.hostPlatform.isDarwin;
-
-  postPatch = ''
-    substituteInPlace testdata/{flags/fmt,prompts/basic,runall/basic,script/basic,tags/categories}.txtar \
-      --replace-fail /bin/bash "${runtimeShell}"
-  '';
-
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    installShellCompletion --cmd runme \
-      --bash <($out/bin/runme completion bash) \
-      --fish <($out/bin/runme completion fish) \
-      --zsh <($out/bin/runme completion zsh)
-  '';
+  subPackages = [
+    "."
+  ];
 
   passthru.tests = {
     version = testers.testVersion {
@@ -72,10 +70,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Execute commands inside your runbooks, docs, and READMEs";
-    mainProgram = "runme";
     homepage = "https://runme.dev";
     changelog = "https://github.com/runmedev/runme/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ _7karni ];
+    mainProgram = "runme";
   };
 })

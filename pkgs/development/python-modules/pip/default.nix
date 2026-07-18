@@ -1,31 +1,27 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
+  buildPythonPackage,
   # build-system
   flit-core,
-  installShellFiles,
-
-  # docs
-  sphinx,
-  sphinx-issues,
-
   # checks
   freezegun,
   git,
+  installShellFiles,
   mock,
-  scripttest,
-  virtualenv,
+  # coupled downstream dependencies
+  pip-tools,
   pretend,
   proxy-py,
   pytestCheckHook,
+  pythonAtLeast,
+  scripttest,
+  # docs
+  sphinx,
+  sphinx-issues,
   tomli-w,
+  virtualenv,
   werkzeug,
-
-  # coupled downstream dependencies
-  pip-tools,
 }:
 
 let
@@ -35,7 +31,6 @@ let
   self = buildPythonPackage rec {
     pname = "pip";
     version = "25.3";
-    pyproject = true;
 
     src = fetchFromGitHub {
       owner = "pypa";
@@ -43,6 +38,13 @@ let
       tag = version;
       hash = "sha256-aHV4j9OMLD6I6Fe6A04bE7xk6eS5CxeUEw4Psqj7xz0=";
     };
+
+    outputs = [
+      "out"
+    ]
+    ++ lib.optionals sphinxSupported [
+      "man"
+    ];
 
     postPatch = ''
       # Remove vendored Windows PE binaries
@@ -58,13 +60,6 @@ let
       # docs
       sphinx
       sphinx-issues
-    ];
-
-    outputs = [
-      "out"
-    ]
-    ++ lib.optionals sphinxSupported [
-      "man"
     ];
 
     # pip uses a custom sphinx extension and unusual conf.py location, mimic the internal build rather than attempting
@@ -113,17 +108,19 @@ let
         --zsh <($out/bin/pip completion --zsh --no-cache-dir)
     '';
 
+    pyproject = true;
+
     passthru.tests = {
       inherit pip-tools;
       pytest = self.overridePythonAttrs { doCheck = true; };
     };
 
     meta = {
-      mainProgram = "pip";
       description = "PyPA recommended tool for installing Python packages";
-      license = with lib.licenses; [ mit ];
       homepage = "https://pip.pypa.io/";
       changelog = "https://pip.pypa.io/en/stable/news/#v${lib.replaceStrings [ "." ] [ "-" ] version}";
+      license = with lib.licenses; [ mit ];
+      mainProgram = "pip";
     };
   };
 in

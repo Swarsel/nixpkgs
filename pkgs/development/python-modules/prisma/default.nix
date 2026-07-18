@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
   httpx,
   jinja2,
   nodeenv,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "prisma";
   version = "0.15.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "RobertCraigie";
@@ -25,6 +24,8 @@ buildPythonPackage rec {
     hash = "sha256-F+Up1HHslralt3NvZZ/wT+CKvzKOjhEEuMEeT0L6NZM=";
   };
 
+  # Building the client requires network access
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -38,9 +39,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  # Building the client requires network access
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "prisma" ];
 
   meta = {

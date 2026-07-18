@@ -2,20 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  autoreconfHook,
   libiconv,
   zlib,
-  autoreconfHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.4";
   pname = "runzip";
-
-  nativeBuildInputs = [ autoreconfHook ];
-  buildInputs = [
-    libiconv
-    zlib
-  ];
+  version = "1.4";
 
   src = fetchFromGitHub {
     owner = "vlm";
@@ -27,6 +21,13 @@ stdenv.mkDerivation (finalAttrs: {
   postPatch = ''
     patchShebangs tests/check-runzip.sh
   '';
+
+  nativeBuildInputs = [ autoreconfHook ];
+
+  buildInputs = [
+    libiconv
+    zlib
+  ];
 
   configureFlags = [ "CFLAGS=-std=gnu17" ];
 
@@ -42,12 +43,13 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/vlm/zip-fix-filename-encoding";
     license = lib.licenses.bsd2;
     maintainers = [ lib.maintainers.raskin ];
+    platforms = lib.platforms.unix;
+    mainProgram = "runzip";
+
     # runzip vendors libzip 0.7.1.
     knownVulnerabilities = [
       "CVE-2015-2331"
       "CVE-2017-14107"
     ];
-    platforms = lib.platforms.unix;
-    mainProgram = "runzip";
   };
 })

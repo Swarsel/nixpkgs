@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
-  hdf5,
   bzip2,
-  libzip,
-  zstd,
-  szipSupport ? hdf5.szipSupport,
+  curl, # for DAP
+  hdf5,
   libaec,
   libxml2,
+  libzip,
   m4,
-  curl, # for DAP
   removeReferencesTo,
+  unzip,
+  zstd,
+  szipSupport ? hdf5.szipSupport,
 }:
 
 let
@@ -40,6 +40,8 @@ stdenv.mkDerivation (finalAttrs: {
       --replace '#!/bin/bash' '${stdenv.shell}'
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     m4
     removeReferencesTo
@@ -57,17 +59,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional szipSupport libaec
   ++ lib.optional mpiSupport mpi;
 
-  strictDeps = true;
-
-  passthru = {
-    inherit mpiSupport mpi;
-  };
-
-  env.NIX_CFLAGS_COMPILE =
-    # Suppress incompatible function pointer errors when building with newer versions of clang 16.
-    # tracked upstream here: https://github.com/Unidata/netcdf-c/issues/2715
-    lib.optionalString stdenv.cc.isClang "-Wno-error=incompatible-function-pointer-types";
-
   configureFlags = [
     "--enable-netcdf-4"
     "--enable-dap"
@@ -80,13 +71,10 @@ stdenv.mkDerivation (finalAttrs: {
     "CC=${lib.getDev mpi}/bin/mpicc"
   ]);
 
-  enableParallelBuilding = true;
-
-  disallowedReferences = [ stdenv.cc ];
-
-  postFixup = ''
-    remove-references-to -t ${stdenv.cc} "$(readlink -f $out/lib/libnetcdf.settings)"
-  '';
+  env.NIX_CFLAGS_COMPILE =
+    # Suppress incompatible function pointer errors when building with newer versions of clang 16.
+    # tracked upstream here: https://github.com/Unidata/netcdf-c/issues/2715
+    lib.optionalString stdenv.cc.isClang "-Wno-error=incompatible-function-pointer-types";
 
   doCheck = !mpiSupport;
   nativeCheckInputs = [ unzip ];
@@ -95,14 +83,27 @@ stdenv.mkDerivation (finalAttrs: {
     export HOME=$TEMP
   '';
 
+  postFixup = ''
+    remove-references-to -t ${stdenv.cc} "$(readlink -f $out/lib/libnetcdf.settings)"
+  '';
+
+  disallowedReferences = [ stdenv.cc ];
+  enableParallelBuilding = true;
+
+  passthru = {
+    inherit mpiSupport mpi;
+  };
+
   meta = {
     description = "Libraries for the Unidata network Common Data Format";
-    platforms = lib.platforms.unix;
     homepage = "https://www.unidata.ucar.edu/software/netcdf/";
     changelog = "https://docs.unidata.ucar.edu/netcdf-c/${finalAttrs.version}/RELEASE_NOTES.html";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       doronbehar
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

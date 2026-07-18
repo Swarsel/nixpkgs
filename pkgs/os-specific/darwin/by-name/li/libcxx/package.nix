@@ -6,14 +6,11 @@
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
+  inherit (apple-sdk_26) src;
   pname = "libcxx";
   # Keep this in sync with the corresponding LLVM libc++ version
   # defined as `_LIBCPP_VERSION` in `usr/include/c++/v1/__config`.
   version = "21.1.6+apple-sdk-${apple-sdk_26.version}";
-  inherit (apple-sdk_26) src;
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -24,5 +21,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
   passthru.isLLVM = true;
 })

@@ -1,17 +1,16 @@
 {
   lib,
+  alure2,
   buildPythonPackage,
-  fetchFromSourcehut,
   cmake,
   cython_0,
+  fetchFromSourcehut,
   setuptools,
-  alure2,
 }:
 
 buildPythonPackage rec {
   pname = "palace";
   version = "0.2.5";
-  pyproject = true;
 
   src = fetchFromSourcehut {
     owner = "~cnx";
@@ -27,6 +26,9 @@ buildPythonPackage rec {
       --replace-fail "cmake_minimum_required(VERSION 2.6.0)" "cmake_minimum_required(VERSION 3.10)"
   '';
 
+  propagatedBuildInputs = [ alure2 ];
+  doCheck = false; # FIXME: tests need an audio device
+
   build-system = [
     cmake
     cython_0
@@ -34,11 +36,7 @@ buildPythonPackage rec {
   ];
 
   dontUseCmakeConfigure = true;
-
-  propagatedBuildInputs = [ alure2 ];
-
-  doCheck = false; # FIXME: tests need an audio device
-
+  pyproject = true;
   pythonImportsCheck = [ "palace" ];
 
   meta = {

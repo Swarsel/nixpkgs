@@ -1,16 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  libnotify,
   nix-update-script,
   python3Packages,
-  libnotify,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "gcalcli";
   version = "4.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "insanum";
@@ -19,13 +18,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-FU1EHLQ+/2sOGeeGwONsrV786kHTFfMel7ocBcCe+rI=";
   };
 
-  passthru.updateScript = nix-update-script { };
-
   postPatch = lib.optionalString stdenv.hostPlatform.isLinux ''
     substituteInPlace gcalcli/argparsers.py \
       --replace-fail "'notify-send" "'${lib.getExe libnotify}"
   '';
 
+  nativeCheckInputs = with python3Packages; [ pytestCheckHook ];
   build-system = with python3Packages; [ setuptools-scm ];
 
   dependencies = with python3Packages; [
@@ -45,13 +43,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     vobject
   ];
 
-  nativeCheckInputs = with python3Packages; [ pytestCheckHook ];
+  pyproject = true;
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "CLI for Google Calendar";
-    mainProgram = "gcalcli";
     homepage = "https://github.com/insanum/gcalcli";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ nocoolnametom ];
+    mainProgram = "gcalcli";
   };
 })

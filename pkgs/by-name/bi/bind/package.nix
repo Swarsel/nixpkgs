@@ -1,31 +1,31 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  removeReferencesTo,
-  perl,
-  pkg-config,
+  buildPackages,
+  cmocka,
+  fstrm,
+  gitUpdater,
+  jemalloc,
+  json_c,
   libcap,
   libidn2,
+  libkrb5,
   libtool,
-  libxml2,
-  json_c,
-  openssl,
   liburcu,
   libuv,
+  libxml2,
   nghttp2,
-  jemalloc,
-  enablePython ? false,
-  python3,
-  enableGSSAPI ? true,
-  libkrb5,
-  buildPackages,
   nixosTests,
-  cmocka,
-  tzdata,
-  gitUpdater,
-  fstrm,
+  openssl,
+  perl,
+  pkg-config,
   protobufc,
+  python3,
+  removeReferencesTo,
+  tzdata,
+  enableGSSAPI ? true,
+  enablePython ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -50,12 +50,15 @@ stdenv.mkDerivation (finalAttrs: {
     ./dont-keep-configure-flags.patch
   ];
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     perl
     pkg-config
     protobufc
     removeReferencesTo
   ];
+
   buildInputs = [
     libidn2
     libtool
@@ -73,8 +76,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional enableGSSAPI libkrb5
   ++ lib.optional enablePython (python3.withPackages (ps: with ps; [ ply ]));
 
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
-
   configureFlags = [
     "--localstatedir=/var"
     "--without-lmdb"
@@ -83,6 +84,25 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional enableGSSAPI "--with-gssapi=${libkrb5.dev}/bin/krb5-config"
   ++ lib.optional (stdenv.hostPlatform != stdenv.buildPlatform) "BUILD_CC=$(CC_FOR_BUILD)";
+
+  doCheck = false;
+
+  checkInputs = [
+    cmocka
+  ]
+  ++ lib.optionals (!stdenv.hostPlatform.isMusl) [
+    tzdata
+  ];
+
+  preCheck =
+    lib.optionalString stdenv.hostPlatform.isMusl ''
+      # musl doesn't respect TZDIR, skip timezone-related tests
+      sed -i '/^ISC_TEST_ENTRY(isc_time_formatISO8601L/d' tests/isc/time_test.c
+    ''
+    + lib.optionalString stdenv.hostPlatform.isDarwin ''
+      # Test timeouts on Darwin
+      sed -i '/^ISC_TEST_ENTRY(tcpdns_recv_one/d' tests/isc/netmgr_test.c
+    '';
 
   postInstall = ''
     moveToOutput bin/bind9-config $dev
@@ -109,10 +129,10 @@ stdenv.mkDerivation (finalAttrs: {
     EOF
   '';
 
-  enableParallelBuilding = true;
-  strictDeps = true;
+  postFixup = ''
+    remove-references-to -t "$out" "$dnsutils/bin/delv"
+  '';
 
-  doCheck = false;
   # TODO: investigate failures; see this and linked discussions:
   # https://github.com/NixOS/nixpkgs/pull/192962
   /*
@@ -121,53 +141,38 @@ stdenv.mkDerivation (finalAttrs: {
       && !is32bit;
   */
   checkTarget = "unit";
-  checkInputs = [
-    cmocka
-  ]
-  ++ lib.optionals (!stdenv.hostPlatform.isMusl) [
-    tzdata
-  ];
-  preCheck =
-    lib.optionalString stdenv.hostPlatform.isMusl ''
-      # musl doesn't respect TZDIR, skip timezone-related tests
-      sed -i '/^ISC_TEST_ENTRY(isc_time_formatISO8601L/d' tests/isc/time_test.c
-    ''
-    + lib.optionalString stdenv.hostPlatform.isDarwin ''
-      # Test timeouts on Darwin
-      sed -i '/^ISC_TEST_ENTRY(tcpdns_recv_one/d' tests/isc/netmgr_test.c
-    '';
-
-  postFixup = ''
-    remove-references-to -t "$out" "$dnsutils/bin/delv"
-  '';
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  enableParallelBuilding = true;
 
   passthru = {
     tests = {
-      withCheck = finalAttrs.finalPackage.overrideAttrs { doCheck = true; };
       inherit (nixosTests) bind;
       prometheus-exporter = nixosTests.prometheus-exporters.bind;
+      withCheck = finalAttrs.finalPackage.overrideAttrs { doCheck = true; };
     }
     // lib.optionalAttrs (stdenv.hostPlatform.system == "x86_64-linux") {
-      kubernetes-dns-single-node = nixosTests.kubernetes.dns-single-node;
       kubernetes-dns-multi-node = nixosTests.kubernetes.dns-multi-node;
+      kubernetes-dns-single-node = nixosTests.kubernetes.dns-single-node;
     };
 
     updateScript = gitUpdater {
-      # No nicer place to find latest stable release.
-      url = "https://gitlab.isc.org/isc-projects/bind9.git";
-      rev-prefix = "v";
       # Avoid unstable 9.19 releases.
       odd-unstable = true;
+      rev-prefix = "v";
+      # No nicer place to find latest stable release.
+      url = "https://gitlab.isc.org/isc-projects/bind9.git";
     };
   };
 
   meta = {
-    homepage = "https://www.isc.org/bind/";
     description = "Domain name server";
-    license = lib.licenses.mpl20;
+    homepage = "https://www.isc.org/bind/";
+
     changelog = "https://downloads.isc.org/isc/bind9/cur/${lib.versions.majorMinor finalAttrs.version}/doc/arm/html/notes.html#notes-for-bind-${
       lib.replaceStrings [ "." ] [ "-" ] finalAttrs.version
     }";
+
+    license = lib.licenses.mpl20;
     maintainers = [ ];
     platforms = lib.platforms.unix;
 

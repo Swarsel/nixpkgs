@@ -13,8 +13,9 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "megatokio";
     repo = "zasm";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-bymcbuz3hcUYeqoYtY2mm7rDYPgPVHoaxKQ/LBWsskQ=";
+    fetchSubmodules = true;
+
     postFetch = ''
       # remove folder containing files with weird names (causes the hash to turn out differently under macOS vs. Linux)
       rm -rv $out/Test
@@ -40,11 +41,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Z80 / 8080 / Z180 assembler (for unix-style OS)";
-    mainProgram = "zasm";
     homepage = "https://k1.spdns.de/Develop/Projects/zasm/Distributions/";
     license = lib.licenses.bsd2;
     maintainers = [ lib.maintainers.turbomack ];
     platforms = lib.platforms.unix;
     badPlatforms = lib.platforms.aarch64;
+    mainProgram = "zasm";
   };
 })

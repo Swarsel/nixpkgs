@@ -1,13 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  nix-update-script,
-  pkg-config,
   alsa-lib,
+  nix-update-script,
   openssl,
   pipewire,
-
+  pkg-config,
+  rustPlatform,
   withPipewireVisualizer ? true,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-kuiL3d5gB37X/WampwDI1r21fP/HWWWR+HDUmKFIhHw=";
   };
 
-  cargoHash = "sha256-7j4EdJJy8AZjYYbfa3rotnJeekCBJkZapCI2z6XE3hM=";
-
   nativeBuildInputs = [ pkg-config ] ++ lib.optional withPipewireVisualizer rustPlatform.bindgenHook;
 
   buildInputs = [
@@ -31,7 +28,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ]
   ++ lib.optional withPipewireVisualizer pipewire;
 
-  buildNoDefaultFeatures = true;
+  cargoHash = "sha256-7j4EdJJy8AZjYYbfa3rotnJeekCBJkZapCI2z6XE3hM=";
+
   buildFeatures = [
     "cover-art"
     "discord-rpc"
@@ -41,6 +39,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ]
   ++ lib.optional withPipewireVisualizer "audio-viz";
 
+  buildNoDefaultFeatures = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -49,9 +48,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     changelog = "https://github.com/LargeModGames/spotatui/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.lordmzte ];
-    mainProgram = "spotatui";
-
     # macOS is supported by upstream, but the package maintainer has no way to test this.
     platforms = lib.platforms.linux;
+    mainProgram = "spotatui";
   };
 })

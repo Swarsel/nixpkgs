@@ -1,14 +1,13 @@
 {
   lib,
-  buildKodiAddon,
   fetchFromGitHub,
-  requests,
+  buildKodiAddon,
   infotagger,
+  requests,
 }:
 
 buildKodiAddon rec {
   pname = "jurialmunkey";
-  namespace = "script.module.jurialmunkey";
   version = "0.2.35";
 
   src = fetchFromGitHub {
@@ -23,13 +22,15 @@ buildKodiAddon rec {
     infotagger
   ];
 
+  namespace = "script.module.jurialmunkey";
+
   passthru = {
     pythonPath = "resources/modules";
   };
 
   meta = {
-    homepage = "https://github.com/jurialmunkey/script.module.jurialmunkey/tree/main";
     description = "Common code required by TMDbHelper and other related jurialmunkey add-ons";
+    homepage = "https://github.com/jurialmunkey/script.module.jurialmunkey/tree/main";
     license = lib.licenses.gpl3Plus;
     teams = [ lib.teams.kodi ];
   };

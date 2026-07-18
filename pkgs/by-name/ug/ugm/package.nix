@@ -1,7 +1,7 @@
 {
   lib,
-  buildGo126Module,
   fetchFromGitHub,
+  buildGo126Module,
   makeWrapper,
   nix-update-script,
 }:
@@ -17,9 +17,8 @@ buildGo126Module (finalAttrs: {
     hash = "sha256-W4oHJAEppb17t1kxKxDF5fVZkqhOtvm7gCtlmSg7YFA=";
   };
 
-  vendorHash = "sha256-W9v52cxhXdNyW5RGk+SoA1u7Yid+63YYdd9YaGKEWDs=";
-
   nativeBuildInputs = [ makeWrapper ];
+  vendorHash = "sha256-W9v52cxhXdNyW5RGk+SoA1u7Yid+63YYdd9YaGKEWDs=";
 
   # Fix unaligned table when running this program under a CJK environment
   postFixup = ''
@@ -34,8 +33,8 @@ buildGo126Module (finalAttrs: {
     homepage = "https://github.com/ariasmn/ugm";
     changelog = "https://github.com/ariasmn/ugm/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
-    mainProgram = "ugm";
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "ugm";
   };
 })

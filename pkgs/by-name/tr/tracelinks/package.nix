@@ -1,9 +1,9 @@
 {
+  lib,
+  stdenv,
   fetchFromGitHub,
   help2man,
-  lib,
   nix-update-script,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,13 +17,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-sGC1TdcugitMgafnCZGpwYPqWioX+fRl2ZqDZE9levY=";
   };
 
+  nativeBuildInputs = [ help2man ];
+
   makeFlags = [
     "PREFIX=$(out)"
     "VERSION=${finalAttrs.version}"
   ];
-  nativeBuildInputs = [ help2man ];
-  doCheck = true;
 
+  doCheck = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
+  cctools,
   python3,
   unbound,
-  cctools,
 }:
 
 buildNpmPackage rec {
@@ -19,8 +19,6 @@ buildNpmPackage rec {
     hash = "sha256-7hF8cJf9Oewfg5WvNpqQSrBZjpnERcdDAaxixOdArpo=";
   };
 
-  npmDepsHash = "sha256-fO8ia0FwNvMMVBUO22gUNImkXY3kjdUjQIP7s5MOJDs=";
-
   nativeBuildInputs = [
     python3
   ]
@@ -32,12 +30,13 @@ buildNpmPackage rec {
     unbound
   ];
 
+  npmDepsHash = "sha256-fO8ia0FwNvMMVBUO22gUNImkXY3kjdUjQIP7s5MOJDs=";
   dontNpmBuild = true;
 
   meta = {
-    changelog = "https://github.com/handshake-org/hsd/blob/${src.rev}/CHANGELOG.md";
     description = "Implementation of the Handshake protocol";
     homepage = "https://github.com/handshake-org/hsd";
+    changelog = "https://github.com/handshake-org/hsd/blob/${src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
   };
 }

@@ -1,7 +1,7 @@
 {
+  extraModules ? [ ],
   isoBaseName ? "nixos-graphical-gnome",
   system ? builtins.currentSystem,
-  extraModules ? [ ],
 }:
 
 let
@@ -11,6 +11,7 @@ let
   config =
     (import ../../../../nixos/lib/eval-config.nix {
       inherit system;
+
       modules = [
         module
         { image.baseName = isoBaseName; }

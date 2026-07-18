@@ -1,20 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  nix-update-script,
+  pytest-subprocess,
+  pytestCheckHook,
   setuptools,
   writableTmpDirAsHomeHook,
-  pytestCheckHook,
-  pytest-subprocess,
   xonsh,
-  nix-update-script,
 }:
 
 buildPythonPackage rec {
   pname = "xontrib-fish-completer";
   version = "0.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xonsh";
@@ -23,15 +21,6 @@ buildPythonPackage rec {
     hash = "sha256-PhhdZ3iLPDEIG9uDeR5ctJ9zz2+YORHBhbsiLrJckyA=";
   };
 
-  prePatch = ''
-    substituteInPlace pyproject.toml \
-      --replace-fail '"xonsh>=0.12.5"' ""
-  '';
-
-  build-system = [
-    setuptools
-  ];
-
   nativeCheckInputs = [
     writableTmpDirAsHomeHook
     pytestCheckHook
@@ -39,6 +28,16 @@ buildPythonPackage rec {
     xonsh
   ];
 
+  build-system = [
+    setuptools
+  ];
+
+  prePatch = ''
+    substituteInPlace pyproject.toml \
+      --replace-fail '"xonsh>=0.12.5"' ""
+  '';
+
+  pyproject = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

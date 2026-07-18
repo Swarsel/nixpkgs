@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
   cmake,
+  libb64,
   rapidjson,
   replaceVars,
-  libb64,
   versionCheckHook,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -20,10 +20,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-RT85vw6QeVkuNC2mtoT/BJyU0rdQVfz6ZBJf+ouY8vk=";
   };
 
-  mpack = fetchurl {
-    url = "https://github.com/ludocode/mpack/archive/df17e83f0fa8571b9cd0d8ccf38144fa90e244d1.tar.gz";
-    hash = "sha256-hyiXygbAHnNgF4TIg+DemBvtdBnSgJ7fAhknVuL+T/c=";
-  };
+  patches = [
+    ./cmake-v4.patch
+    (replaceVars ./use-nix-deps.patch {
+      libb64 = "${libb64}";
+      rapidjson = "${rapidjson}";
+    })
+  ];
 
   nativeBuildInputs = [
     cmake
@@ -34,29 +37,27 @@ stdenv.mkDerivation (finalAttrs: {
     libb64
   ];
 
-  patches = [
-    ./cmake-v4.patch
-    (replaceVars ./use-nix-deps.patch {
-      rapidjson = "${rapidjson}";
-      libb64 = "${libb64}";
-    })
-  ];
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  mpack = fetchurl {
+    hash = "sha256-hyiXygbAHnNgF4TIg+DemBvtdBnSgJ7fAhknVuL+T/c=";
+    url = "https://github.com/ludocode/mpack/archive/df17e83f0fa8571b9cd0d8ccf38144fa90e244d1.tar.gz";
+  };
 
   postUnpack = ''
     mkdir $sourceRoot/contrib
     cp ${finalAttrs.mpack} $sourceRoot/contrib/mpack-df17e83f0fa8571b9cd0d8ccf38144fa90e244d1.tar.gz
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgram = "${placeholder "out"}/bin/json2msgpack";
   versionCheckProgramArg = "-v";
-  doInstallCheck = true;
 
   meta = {
     description = "Command-line tools for converting between MessagePack and JSON";
     homepage = "https://github.com/ludocode/msgpack-tools";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ deejayem ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

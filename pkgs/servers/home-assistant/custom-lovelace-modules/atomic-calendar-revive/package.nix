@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   fetchPnpmDeps,
-  nodejs,
-  pnpm_11,
-  pnpmConfigHook,
   nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_11,
 }:
 
 let
@@ -22,13 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "atomic-calendar-revive";
     tag = "v${finalAttrs.version}";
     hash = "sha256-qqEQrbLQU5zhMcDDtg5f9Py4raOSYKCy4uv2omK6eO8=";
-  };
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    fetcherVersion = 4;
-    hash = "sha256-RR+QxRJvxd8YXE4Siw4CmUGUC4mrPfstSIkHqoHvldE=";
   };
 
   nativeBuildInputs = [
@@ -54,12 +47,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 4;
+    hash = "sha256-RR+QxRJvxd8YXE4Siw4CmUGUC4mrPfstSIkHqoHvldE=";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/totaldebug/atomic-calendar-revive/releases/tag/v${finalAttrs.version}";
     description = "Advanced calendar card for Home Assistant Lovelace";
     homepage = "https://github.com/totaldebug/atomic-calendar-revive";
+    changelog = "https://github.com/totaldebug/atomic-calendar-revive/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hexa ];
     platforms = lib.platforms.all;

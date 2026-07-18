@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   poetry-dynamic-versioning,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "radixtarget";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "blacklanternsecurity";
@@ -18,14 +17,15 @@ buildPythonPackage rec {
     hash = "sha256-C7QmiAc8SO7ddfseoGDYkmrkLoxmAGww9MPhBX94ucg=";
   };
 
+  # Module has no tests
+  doCheck = false;
+
   build-system = [
     poetry-core
     poetry-dynamic-versioning
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "radixtarget" ];
 
   meta = {

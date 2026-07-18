@@ -1,10 +1,9 @@
 {
-  callPackage,
   lib,
-  zig_0_13,
   stdenv,
-  fetchFromSourcehut,
+  callPackage,
   fcft,
+  fetchFromSourcehut,
   libxkbcommon,
   pixman,
   pkg-config,
@@ -12,6 +11,7 @@
   wayland,
   wayland-protocols,
   wayland-scanner,
+  zig_0_13,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,8 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-+9Zgq5/Zbb1I3CMH1pivPkddThaGDXM+vVCzWppXq+0=";
   };
-
-  deps = callPackage ./build.zig.zon.nix { };
 
   nativeBuildInputs = [
     zig_0_13
@@ -42,22 +40,24 @@ stdenv.mkDerivation (finalAttrs: {
     wayland-protocols
   ];
 
-  zigBuildFlags = [
-    "--system"
-    "${finalAttrs.deps}"
-  ];
-
   postFixup = ''
     substituteInPlace $out/bin/wayprompt-ssh-askpass \
       --replace-fail wayprompt $out/bin/wayprompt
   '';
 
+  deps = callPackage ./build.zig.zon.nix { };
+
+  zigBuildFlags = [
+    "--system"
+    "${finalAttrs.deps}"
+  ];
+
   meta = {
-    homepage = "https://git.sr.ht/~leon_plickat/wayprompt";
     description = "Multi-purpose (password-)prompt tool for Wayland";
+    homepage = "https://git.sr.ht/~leon_plickat/wayprompt";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ sg-qwt ];
-    mainProgram = "pinentry-wayprompt";
     platforms = lib.platforms.linux;
+    mainProgram = "pinentry-wayprompt";
   };
 })

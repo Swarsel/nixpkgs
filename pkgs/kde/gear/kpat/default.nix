@@ -1,23 +1,24 @@
 {
-  mkKdeDerivation,
-  qtsvg,
   _7zz,
-  shared-mime-info,
   black-hole-solver,
   freecell-solver,
   libkdegames,
+  mkKdeDerivation,
+  qtsvg,
+  shared-mime-info,
 }:
 mkKdeDerivation {
   pname = "kpat";
 
-  extraNativeBuildInputs = [
-    _7zz
-    shared-mime-info
-  ];
   extraBuildInputs = [
     qtsvg
     black-hole-solver
     freecell-solver
+  ];
+
+  extraNativeBuildInputs = [
+    _7zz
+    shared-mime-info
   ];
 
   qtWrapperArgs = [ "--prefix XDG_DATA_DIRS : ${libkdegames}/share" ];

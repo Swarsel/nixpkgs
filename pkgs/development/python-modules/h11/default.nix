@@ -2,16 +2,15 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  pytestCheckHook,
   httpcore,
   httpx,
+  pytestCheckHook,
   wsproto,
 }:
 
 buildPythonPackage rec {
   pname = "h11";
   version = "0.16.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -19,9 +18,9 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
-
   # Some of the tests use localhost networking.
   __darwinAllowLocalNetworking = true;
+  format = "setuptools";
 
   passthru.tests = {
     inherit httpcore httpx wsproto;

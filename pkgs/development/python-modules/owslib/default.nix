@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   lxml,
   pytest-cov-stub,
   pytest-httpserver,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "owslib";
   version = "0.36.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "geopython";
@@ -29,6 +28,17 @@ buildPythonPackage rec {
       --replace-fail "setuptools<69" "setuptools"
   '';
 
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytest-httpserver
+    pytestCheckHook
+  ];
+
+  preCheck = ''
+    # _pytest.pathlib.ImportPathMismatchError: ('owslib.swe.sensor.sml', '/build/source/build/...
+    export PY_IGNORE_IMPORTMISMATCH=1
+  '';
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -37,19 +47,6 @@ buildPythonPackage rec {
     pyyaml
     requests
   ];
-
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytest-httpserver
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "owslib" ];
-
-  preCheck = ''
-    # _pytest.pathlib.ImportPathMismatchError: ('owslib.swe.sensor.sml', '/build/source/build/...
-    export PY_IGNORE_IMPORTMISMATCH=1
-  '';
 
   disabledTestMarks = [
     # Disable tests which require network access
@@ -60,6 +57,9 @@ buildPythonPackage rec {
     # Tests requires network access
     "tests/test_ogcapi_connectedsystems_osh.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "owslib" ];
 
   meta = {
     description = "Client for Open Geospatial Consortium web service interface standards";

@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   python,
 }:
 
 buildPythonPackage {
   pname = "pydes";
   version = "unstable-2019-01-08";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "twhiteman";
@@ -21,6 +20,7 @@ buildPythonPackage {
     ${python.interpreter} test_pydes.py
   '';
 
+  format = "setuptools";
   pythonImportsCheck = [ "pyDes" ];
 
   meta = {

@@ -11,18 +11,15 @@
 buildPythonPackage rec {
   pname = "freezegun";
   version = "1.5.5";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-rHdCpsxsJaLDXpKS39VUuJe1F9LewmiRoujevyBcuUo=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ python-dateutil ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  dependencies = [ python-dateutil ];
 
   disabledTests = lib.optionals (pythonAtLeast "3.13") [
     # https://github.com/spulec/freezegun/issues/547
@@ -31,6 +28,7 @@ buildPythonPackage rec {
     "test_method_decorator_works_on_unittest_kwarg_hello"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "freezegun" ];
 
   meta = {

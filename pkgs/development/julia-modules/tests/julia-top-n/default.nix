@@ -1,9 +1,9 @@
 {
-  mkDerivation,
+  lib,
   aeson,
   base,
   filepath,
-  lib,
+  mkDerivation,
   optparse-applicative,
   sandwich,
   text,
@@ -13,8 +13,8 @@
 mkDerivation {
   pname = "julia-top-n";
   version = "0.1.0.0";
+
   src = lib.fileset.toSource {
-    root = ./.;
     fileset = lib.fileset.unions [
       ./app
       ./julia-top-n.cabal
@@ -22,9 +22,10 @@ mkDerivation {
       ./stack.yaml
       ./stack.yaml.lock
     ];
+
+    root = ./.;
   };
-  isLibrary = false;
-  isExecutable = true;
+
   executableHaskellDepends = [
     aeson
     base
@@ -35,6 +36,9 @@ mkDerivation {
     unliftio
     yaml
   ];
+
+  isExecutable = true;
+  isLibrary = false;
   license = lib.licenses.bsd3;
   mainProgram = "julia-top-n-exe";
 }

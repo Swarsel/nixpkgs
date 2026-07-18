@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
   autoconf-archive,
   autoreconfHook,
-  pkg-config,
-  libstrophe,
+  fetchFromCodeberg,
   glib,
   gpgme,
+  libstrophe,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,10 +39,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Command Line Interface Tool for XMPP";
-    mainProgram = "xmppc";
     homepage = "https://codeberg.org/Anoxinon_e.V./xmppc";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.jugendhacker ];
+    platforms = lib.platforms.unix;
+    mainProgram = "xmppc";
   };
 })

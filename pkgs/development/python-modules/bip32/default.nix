@@ -1,17 +1,16 @@
 {
   lib,
   fetchFromGitHub,
+  base58,
   buildPythonPackage,
+  coincurve,
   pytestCheckHook,
   setuptools,
-  base58,
-  coincurve,
 }:
 
 buildPythonPackage rec {
   pname = "bip32";
   version = "5.0";
-  pyproject = true;
 
   # the PyPi source distribution ships a broken setup.py, so use github instead
   src = fetchFromGitHub {
@@ -21,8 +20,6 @@ buildPythonPackage rec {
     hash = "sha256-QO1gS9bx/eQPaLuB1ZNZuXj4DmeO4/La2hG9NCXjd+4=";
   };
 
-  pythonRelaxDeps = [ "coincurve" ];
-
   nativeBuildInputs = [ setuptools ];
 
   propagatedBuildInputs = [
@@ -31,8 +28,9 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "bip32" ];
+  pythonRelaxDeps = [ "coincurve" ];
 
   meta = {
     description = "Minimalistic implementation of the BIP32 key derivation scheme";

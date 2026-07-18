@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  gfortran,
-  meson,
-  ninja,
-  cmake,
-  pkg-config,
-  mctc-lib,
-  mstore,
-  toml-f,
   blas,
+  cmake,
+  gfortran,
+  mctc-lib,
+  meson,
+  mstore,
+  ninja,
+  pkg-config,
+  toml-f,
   buildType ? "meson",
 }:
 
@@ -33,6 +33,11 @@ stdenv.mkDerivation rec {
     hash = "sha256-Bv+N9/dQVpSglt/54ay6mt4kRhu4klMTp7+sRP1bP80=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     ./cmake.patch
   ];
@@ -54,11 +59,6 @@ stdenv.mkDerivation rec {
     blas
   ];
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   cmakeFlags = [
     (lib.strings.cmakeBool "BUILD_SHARED_LIBS" (!stdenv.hostPlatform.isStatic))
   ];
@@ -67,13 +67,15 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Reimplementation of the DFT-D3 program";
-    mainProgram = "s-dftd3";
+    homepage = "https://github.com/dftd3/simple-dftd3";
+
     license = with lib.licenses; [
       lgpl3Only
       gpl3Only
     ];
-    homepage = "https://github.com/dftd3/simple-dftd3";
-    platforms = lib.platforms.linux;
+
     maintainers = [ lib.maintainers.sheepforce ];
+    platforms = lib.platforms.linux;
+    mainProgram = "s-dftd3";
   };
 }

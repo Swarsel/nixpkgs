@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -15,10 +15,6 @@ stdenvNoCC.mkDerivation rec {
     hash = "sha256-AkqFRPK0tVdalL+iyMou0LIUkPkFnYYdSqwEbFbgzqI=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
-  dontFixup = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -26,6 +22,10 @@ stdenvNoCC.mkDerivation rec {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
+  dontConfigure = true;
+  dontFixup = true;
 
   meta = {
     description = "Header-only C++ program options parser library";

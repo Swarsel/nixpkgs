@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchgit,
+  python3Packages,
   writableTmpDirAsHomeHook,
 }:
 
 python3Packages.buildPythonPackage {
   pname = "qmake2cmake";
   version = "1.0.8";
-  pyproject = true;
 
   src = fetchgit {
     url = "https://codereview.qt-project.org/qt/qmake2cmake";
@@ -21,6 +20,11 @@ python3Packages.buildPythonPackage {
     ./fix-locations.patch
   ];
 
+  nativeCheckInputs = [
+    python3Packages.pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
   build-system = [ python3Packages.setuptools ];
 
   dependencies = [
@@ -31,10 +35,7 @@ python3Packages.buildPythonPackage {
     python3Packages.sympy
   ];
 
-  nativeCheckInputs = [
-    python3Packages.pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
+  pyproject = true;
 
   meta = {
     description = "Tool to convert qmake .pro files to CMakeLists.txt";

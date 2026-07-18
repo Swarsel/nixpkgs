@@ -4,8 +4,8 @@
   fetchFromGitLab,
   cmake,
   gfortran,
-  libzip,
   lhapdf,
+  libzip,
   testers,
 }:
 
@@ -46,9 +46,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Monte Carlo event generator for the Simulation of High-Energy Reactions of PArticles";
-    license = lib.licenses.gpl3Plus;
     homepage = "https://gitlab.com/sherpa-team/sherpa";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ veprbl ];
+    platforms = lib.platforms.unix;
   };
 })

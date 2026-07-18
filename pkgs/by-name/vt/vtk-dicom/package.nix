@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  vtk,
   gdcm,
   testers,
+  vtk,
   vtk-dicom,
 }:
 
@@ -43,13 +43,13 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = true;
 
   passthru.tests = {
-    python = vtk-dicom.override {
-      vtk = vtk.override { pythonSupport = true; };
-    };
-
     cmake-config = testers.hasCmakeConfigModules {
       moduleNames = [ "DICOM" ];
       package = finalAttrs.finalPackage;
+    };
+
+    python = vtk-dicom.override {
+      vtk = vtk.override { pythonSupport = true; };
     };
   };
 
@@ -58,10 +58,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/dgobbi/vtk-dicom";
     changelog = "https://github.com/dgobbi/vtk-dicom/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       qbisi
       bcdarwin
     ];
+
     platforms = lib.platforms.unix;
   };
 })

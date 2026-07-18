@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  rustPlatform,
-  protobuf,
-  libffi,
+  buildPythonPackage,
   callPackage,
-  librusty_v8 ? callPackage ./librusty_v8.nix { },
+  libffi,
   nix-update-script,
+  protobuf,
+  rustPlatform,
+  librusty_v8 ? callPackage ./librusty_v8.nix { },
 }:
 buildPythonPackage rec {
   pname = "vl-convert-python";
   version = "1.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vega";
@@ -22,14 +21,8 @@ buildPythonPackage rec {
   };
 
   patches = [ ./libffi-sys-system-feature.patch ];
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-P228JMS5K0TbZYyPgKhIbZ1NviwO1jHO5dClFYerNbI=";
-  };
-
-  buildAndTestSubdir = "vl-convert-python";
-
+  nativeBuildInputs = [ protobuf ];
+  buildInputs = [ libffi ];
   env.RUSTY_V8_ARCHIVE = librusty_v8;
 
   build-system = [
@@ -37,10 +30,14 @@ buildPythonPackage rec {
     rustPlatform.cargoSetupHook
   ];
 
-  nativeBuildInputs = [ protobuf ];
+  buildAndTestSubdir = "vl-convert-python";
 
-  buildInputs = [ libffi ];
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-P228JMS5K0TbZYyPgKhIbZ1NviwO1jHO5dClFYerNbI=";
+  };
 
+  pyproject = true;
   pythonImportsCheck = [ "vl_convert" ];
 
   passthru.updateScript = nix-update-script {
@@ -52,9 +49,9 @@ buildPythonPackage rec {
 
   meta = {
     description = "Utilities for converting Vega-Lite specs from the command line and Python";
-    license = lib.licenses.bsd3;
     homepage = "https://github.com/vega/vl-convert";
     changelog = "https://github.com/vega/vl-convert/releases/tag/v${version}";
+    license = lib.licenses.bsd3;
     maintainers = [ ];
   };
 }

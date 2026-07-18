@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pyserial,
   pytestCheckHook,
   pythonAtLeast,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "nad-receiver";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "joopert";
@@ -21,12 +20,10 @@ buildPythonPackage rec {
     hash = "sha256-jRMk/yMA48ei+g/33+mMYwfwixaKTMYcU/z/VOoJbvY=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pyserial ] ++ lib.optionals (pythonAtLeast "3.13") [ standard-telnetlib ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ pyserial ] ++ lib.optionals (pythonAtLeast "3.13") [ standard-telnetlib ];
+  pyproject = true;
   pythonImportsCheck = [ "nad_receiver" ];
 
   meta = {

@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  stdenvNoCC,
+  versionCheckHook,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "shtris";
@@ -16,8 +16,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-lAuDM6461fR+i3KkgcCcytRT6llSj0kEoqK6N8Q3kVI=";
   };
 
-  dontConfigure = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -26,11 +24,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
+  dontConfigure = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

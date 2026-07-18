@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "sploitscan";
   version = "0.14.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xaitax";
@@ -15,8 +14,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = "v.${finalAttrs.version}";
     hash = "sha256-TVxwgYUyFF+W1rMzGffii/vBo3GXCNO5SxuVcYyUgxA=";
   };
-
-  pythonRelaxDeps = true;
 
   build-system = with python3.pkgs; [ setuptools ];
 
@@ -28,7 +25,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     requests
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "sploitscan" ];
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Cybersecurity utility designed to provide detailed information on vulnerabilities and associated exploits";

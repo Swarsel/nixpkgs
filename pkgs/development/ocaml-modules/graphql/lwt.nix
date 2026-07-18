@@ -1,23 +1,21 @@
 {
-  buildDunePackage,
   alcotest,
+  buildDunePackage,
   graphql,
   lwt,
 }:
 
 buildDunePackage {
-  pname = "graphql-lwt";
-
   inherit (graphql) version src;
+  pname = "graphql-lwt";
 
   propagatedBuildInputs = [
     graphql
     lwt
   ];
 
-  checkInputs = [ alcotest ];
-
   doCheck = true;
+  checkInputs = [ alcotest ];
 
   meta = graphql.meta // {
     description = "Build GraphQL schemas with Lwt support";

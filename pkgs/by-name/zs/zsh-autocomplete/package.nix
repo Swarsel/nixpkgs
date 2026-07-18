@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -16,6 +16,7 @@ stdenvNoCC.mkDerivation rec {
   };
 
   strictDeps = true;
+
   installPhase = ''
     install -D zsh-autocomplete.plugin.zsh $out/share/zsh-autocomplete/zsh-autocomplete.plugin.zsh
     cp -R Completions $out/share/zsh-autocomplete/Completions
@@ -26,7 +27,7 @@ stdenvNoCC.mkDerivation rec {
     description = "Real-time type-ahead completion for Zsh. Asynchronous find-as-you-type autocompletion";
     homepage = "https://github.com/marlonrichert/zsh-autocomplete/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.leona ];
+    platforms = lib.platforms.unix;
   };
 }

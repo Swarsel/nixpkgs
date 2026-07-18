@@ -1,46 +1,26 @@
 {
+  lib,
   stdenv,
   lndir,
-  lib,
 }:
 
 args@{
   bazel,
-  registry ? null,
+  command,
+  targets,
+  bazelPostBuild ? "",
+  bazelPreBuild ? "",
   bazelRepoCache ? null,
   bazelVendorDeps ? null,
-  startupArgs ? [ ],
   commandArgs ? [ ],
-  bazelPreBuild ? "",
-  bazelPostBuild ? "",
+  registry ? null,
   serverJavabase ? null,
-  targets,
-  command,
+  startupArgs ? [ ],
   ...
 }:
 
 stdenv.mkDerivation (
   {
-    preBuildPhases = [ "preBuildPhase" ];
-    preBuildPhase =
-      (lib.optionalString (bazelRepoCache != null) ''
-        # repo_cache needs to be writeable even in air-gapped builds
-        mkdir repo_cache
-        ${lndir}/bin/lndir -silent ${bazelRepoCache}/repo_cache repo_cache
-      '')
-
-      + (lib.optionalString (bazelVendorDeps != null) ''
-        mkdir vendor_dir
-        ${lndir}/bin/lndir -silent ${bazelVendorDeps}/vendor_dir vendor_dir
-
-        # pin all deps to avoid re-fetch attempts by Bazel
-        rm vendor_dir/VENDOR.bazel
-        find vendor_dir -mindepth 1 -maxdepth 1 -type d -printf "pin(\"@@%P\")\n" > vendor_dir/VENDOR.bazel
-      '')
-      # keep preBuildPhase always defined as it is listed in preBuildPhases
-      + ''
-        true
-      '';
     buildPhase = ''
       runHook preBuild
 
@@ -68,6 +48,28 @@ stdenv.mkDerivation (
 
       runHook postBuild
     '';
+
+    preBuildPhase =
+      (lib.optionalString (bazelRepoCache != null) ''
+        # repo_cache needs to be writeable even in air-gapped builds
+        mkdir repo_cache
+        ${lndir}/bin/lndir -silent ${bazelRepoCache}/repo_cache repo_cache
+      '')
+
+      + (lib.optionalString (bazelVendorDeps != null) ''
+        mkdir vendor_dir
+        ${lndir}/bin/lndir -silent ${bazelVendorDeps}/vendor_dir vendor_dir
+
+        # pin all deps to avoid re-fetch attempts by Bazel
+        rm vendor_dir/VENDOR.bazel
+        find vendor_dir -mindepth 1 -maxdepth 1 -type d -printf "pin(\"@@%P\")\n" > vendor_dir/VENDOR.bazel
+      '')
+      # keep preBuildPhase always defined as it is listed in preBuildPhases
+      + ''
+        true
+      '';
+
+    preBuildPhases = [ "preBuildPhase" ];
 
   }
   // args

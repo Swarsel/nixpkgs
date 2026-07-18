@@ -1,30 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  ansible-core,
+  buildPythonPackage,
+  # tests
+  coreutils,
+  flaky,
+  pytest-instafail,
+  pytest-mock,
+  pytestCheckHook,
+  # dependencies
+  pyyaml,
   # build-system
   setuptools,
   setuptools-scm,
-
-  # dependencies
-  pyyaml,
   subprocess-tee,
-
-  # tests
-  coreutils,
-  ansible-core,
-  flaky,
-  pytest-mock,
-  pytest-instafail,
-  pytestCheckHook,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "ansible-compat";
   version = "26.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ansible";
@@ -32,17 +28,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-PYcbY/VUehdhLQV8ecSJSTuM0ll/Eup8y22h3URF70I=";
   };
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  dependencies = [
-    ansible-core
-    pyyaml
-    subprocess-tee
-  ];
 
   nativeCheckInputs = [
     ansible-core # ansible-config
@@ -57,6 +42,17 @@ buildPythonPackage rec {
     substituteInPlace test/test_runtime.py \
       --replace-fail "printenv" "${lib.getExe' coreutils "printenv"}"
   '';
+
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [
+    ansible-core
+    pyyaml
+    subprocess-tee
+  ];
 
   disabledTests = [
     # require network
@@ -79,6 +75,7 @@ buildPythonPackage rec {
     "test_ro_venv"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "ansible_compat" ];
 
   meta = {

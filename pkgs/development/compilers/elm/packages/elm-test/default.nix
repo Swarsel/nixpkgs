@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -15,13 +15,11 @@ buildNpmPackage rec {
     hash = "sha256-qmzmImTDH7CBFxEDtR+XydegnpuYiZuNF6eJ80I2fwM=";
   };
 
-  npmDepsHash = "sha256-Yy53mGzARXRnPDLWnUevbnSCMSch1ecsvROu5C96WBA=";
-
   postPatch = ''
     sed -i '/elm-tooling install/d' package.json
   '';
 
-  dontNpmBuild = true;
+  npmDepsHash = "sha256-Yy53mGzARXRnPDLWnUevbnSCMSch1ecsvROu5C96WBA=";
 
   postInstall = ''
     # clean up broken symlinks to build tool binaries
@@ -30,12 +28,14 @@ buildNpmPackage rec {
       -delete
   '';
 
+  dontNpmBuild = true;
+
   meta = {
-    changelog = "https://github.com/rtfeldman/node-test-runner/blob/${src.rev}/CHANGELOG.md";
     description = "Runs elm-test suites from Node.js";
-    mainProgram = "elm-test";
     homepage = "https://github.com/rtfeldman/node-test-runner";
+    changelog = "https://github.com/rtfeldman/node-test-runner/blob/${src.rev}/CHANGELOG.md";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ turbomack ];
+    mainProgram = "elm-test";
   };
 }

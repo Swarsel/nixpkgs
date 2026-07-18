@@ -5,8 +5,8 @@
   autoreconfHook,
   blas,
   gfortran,
-  openssh,
   mpi,
+  openssh,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     gfortran
   ];
+
   buildInputs = [
     mpi
     blas
@@ -46,8 +47,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Global Arrays Programming Models";
     homepage = "http://hpc.pnl.gov/globalarrays/";
-    maintainers = [ lib.maintainers.markuskowa ];
     license = lib.licenses.bsd3;
+    maintainers = [ lib.maintainers.markuskowa ];
     platforms = lib.platforms.linux;
   };
 })

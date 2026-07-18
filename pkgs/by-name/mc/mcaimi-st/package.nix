@@ -7,8 +7,8 @@
   libxext,
   libxft,
   ncurses,
-  pkg-config,
   nix-update-script,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -25,6 +25,7 @@ stdenv.mkDerivation {
   nativeBuildInputs = [
     pkg-config
   ];
+
   buildInputs = [
     fontconfig
     libx11
@@ -43,11 +44,11 @@ stdenv.mkDerivation {
   };
 
   meta = {
-    homepage = "https://github.com/mcaimi/st";
     description = "Suckless Terminal fork";
-    mainProgram = "st";
+    homepage = "https://github.com/mcaimi/st";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "st";
   };
 }

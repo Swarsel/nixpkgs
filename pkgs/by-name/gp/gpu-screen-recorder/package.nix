@@ -1,29 +1,29 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  addDriverRunpath,
+  dbus,
   fetchgit,
+  ffmpeg,
+  gitUpdater,
+  libdrm,
+  libglvnd,
+  libpulseaudio,
+  libva,
+  libxcomposite,
+  libxdamage,
+  libxfixes,
+  libxi,
+  libxrandr,
   makeWrapper,
   meson,
   ninja,
-  addDriverRunpath,
+  pipewire,
   pkg-config,
-  libxcomposite,
-  libpulseaudio,
-  dbus,
-  ffmpeg,
+  vulkan-headers,
   wayland,
   wayland-scanner,
-  vulkan-headers,
-  pipewire,
-  libdrm,
-  libva,
-  libglvnd,
-  libxdamage,
-  libxi,
-  libxrandr,
-  libxfixes,
   wrapperDir ? "/run/wrappers/bin",
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -90,11 +90,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Screen recorder that has minimal impact on system performance by recording a window using the GPU only";
     homepage = "https://git.dec05eba.com/gpu-screen-recorder/about/";
     license = lib.licenses.gpl3Only;
-    mainProgram = "gpu-screen-recorder";
+
     maintainers = with lib.maintainers; [
       babbaj
       js6pak
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "gpu-screen-recorder";
   };
 })

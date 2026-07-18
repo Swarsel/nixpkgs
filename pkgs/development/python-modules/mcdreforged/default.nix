@@ -1,10 +1,7 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
-  pytestCheckHook,
-  versionCheckHook,
-
+  fetchFromGitHub,
+  buildPythonPackage,
   colorama,
   colorlog,
   packaging,
@@ -12,17 +9,18 @@
   pathspec,
   prompt-toolkit,
   psutil,
+  pytestCheckHook,
   requests,
   resolvelib,
   ruamel-yaml,
   setuptools,
   typing-extensions,
+  versionCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mcdreforged";
   version = "2.15.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "MCDReforged";
@@ -30,6 +28,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-e1JrDh8Zio+TCVCVvH8tBE/tY5ja3Nr3dCQRJwRqYh4=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    versionCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -47,15 +50,12 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    versionCheckHook
-  ];
-
+  pyproject = true;
   pythonRelaxDeps = [ "ruamel.yaml" ];
 
   meta = {
-    changelog = "https://github.com/MCDReforged/MCDReforged/releases/tag/${finalAttrs.src.tag}";
+    description = "Minecraft server control tool";
+
     longDescription = ''
       MCDReforged (abbreviated as MCDR) is a tool which provides the
       management ability of the Minecraft server using custom plugin
@@ -66,10 +66,11 @@ buildPythonPackage (finalAttrs: {
       scoreboard, manage structure file and backup / load backup, you
       can implement these by using MCDR and related plugins.
     '';
-    description = "Minecraft server control tool";
+
     homepage = "https://mcdreforged.com";
+    changelog = "https://github.com/MCDReforged/MCDReforged/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.lgpl3Only;
-    mainProgram = "mcdreforged";
     maintainers = with lib.maintainers; [ moraxyc ];
+    mainProgram = "mcdreforged";
   };
 })

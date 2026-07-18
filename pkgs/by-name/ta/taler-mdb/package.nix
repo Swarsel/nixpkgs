@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  fetchgit,
   autoreconfHook,
-  pkg-config,
   curl,
+  fetchgit,
   gnunet,
   jansson,
   libgcrypt,
   libmicrohttpd,
   libnfc,
   libsodium,
+  pkg-config,
   qrencode,
   taler-exchange,
   taler-merchant,
@@ -22,8 +22,8 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchgit {
     url = "https://git-www.taler.net/taler-mdb.git";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-bslsC/m75kt8JoIQPp53u64SxghwZloOHehctphpNwI=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -47,11 +47,11 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = true;
 
   meta = {
-    homepage = "https://git-www.taler.net/taler-mdb.git";
     description = "Sales integration with the Multi-Drop-Bus of Snack machines, NFC readers and QR code display";
+    homepage = "https://git-www.taler.net/taler-mdb.git";
     license = lib.licenses.agpl3Plus;
-    teams = with lib.teams; [ ngi ];
     maintainers = [ ];
     mainProgram = "taler-mdb";
+    teams = with lib.teams; [ ngi ];
   };
 })

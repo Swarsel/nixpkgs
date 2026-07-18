@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
-  testers,
   rhoas,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,16 +19,8 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-9fydRgp2u1LWf0lEDMi1OxxFURd14oKCBDKACqrgWII=";
   };
 
-  vendorHash = null;
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/redhat-developer/app-services-cli/internal/build.Version=${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
-
+  vendorHash = null;
   # Networking tests fail.
   doCheck = false;
 
@@ -39,16 +31,22 @@ buildGoModule (finalAttrs: {
       --zsh <(HOME=$TMP $out/bin/rhoas completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/redhat-developer/app-services-cli/internal/build.Version=${finalAttrs.version}"
+  ];
+
   passthru.tests.version = testers.testVersion {
-    package = rhoas;
     command = "HOME=$TMP rhoas version";
+    package = rhoas;
   };
 
   meta = {
     description = "Command Line Interface for Red Hat OpenShift Application Services";
-    license = lib.licenses.asl20;
     homepage = "https://github.com/redhat-developer/app-services-cli";
     changelog = "https://github.com/redhat-developer/app-services-cli/releases/v${finalAttrs.version}";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ stehessel ];
     mainProgram = "rhoas";
   };

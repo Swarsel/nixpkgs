@@ -1,14 +1,14 @@
 {
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
+  buildGoModule,
+  fetchYarnDeps,
   installShellFiles,
   nix-update-script,
-  stdenv,
-  fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
   nodejs,
+  yarnBuildHook,
+  yarnConfigHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -22,34 +22,33 @@ buildGoModule (finalAttrs: {
     hash = "sha256-I3udVhmPpOA2Lf1mkJqG+d+mGpfM16HIKBkEnTiAw0c=";
   };
 
-  ui = stdenv.mkDerivation {
-    pname = "argocd-ui";
-    inherit (finalAttrs) version;
-    src = finalAttrs.src + "/ui";
-
-    offlineCache = fetchYarnDeps {
-      yarnLock = "${finalAttrs.src}/ui/yarn.lock";
-      hash = "sha256-/B7FviD0a3VDmbbM59Ksmr8apuTRHrRbTtfX4QgO8JM=";
-    };
-
-    nativeBuildInputs = [
-      yarnConfigHook
-      yarnBuildHook
-      nodejs
-    ];
-
-    postInstall = ''
-      mkdir -p $out
-      cp -r dist $out/dist
-    '';
-  };
-
-  proxyVendor = true; # darwin/linux hash mismatch
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-w6jFNWKvcwxyeiSy+Pqb43qOfMOXF5UHr2VpyQD2dFw=";
 
-  # Set target as ./cmd per cli-local
-  # https://github.com/argoproj/argo-cd/blob/master/Makefile
-  subPackages = [ "cmd" ];
+  preBuild = ''
+    cp -r ${finalAttrs.ui}/dist ./ui
+    stat ./ui/dist/app/index.html # Sanity check
+  '';
+
+  installPhase = ''
+    runHook preInstall
+    mkdir -p $out/bin
+    install -Dm755 "$GOPATH/bin/cmd" -T $out/bin/argocd
+    runHook postInstall
+  '';
+
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    installShellCompletion --cmd argocd \
+      --bash <($out/bin/argocd completion bash) \
+      --fish <($out/bin/argocd completion fish) \
+      --zsh <($out/bin/argocd completion zsh)
+  '';
+
+  doInstallCheck = true;
+
+  installCheckPhase = ''
+    $out/bin/argocd version --client | grep ${finalAttrs.src.rev} > /dev/null
+  '';
 
   ldflags =
     let
@@ -65,13 +64,6 @@ buildGoModule (finalAttrs: {
       "-X ${packageUrl}.gitTreeState=clean"
     ];
 
-  nativeBuildInputs = [ installShellFiles ];
-
-  preBuild = ''
-    cp -r ${finalAttrs.ui}/dist ./ui
-    stat ./ui/dist/app/index.html # Sanity check
-  '';
-
   # set ldflag for kubectlVersion since it is needed for argo
   # Per https://github.com/search?q=repo%3Aargoproj%2Fargo-cd+%22KUBECTL_VERSION%3D%22+path%3AMakefile&type=code
   prePatch = ''
@@ -79,37 +71,48 @@ buildGoModule (finalAttrs: {
     echo using $KUBECTL_VERSION
     ldflags="''${ldflags} -X github.com/argoproj/argo-cd/v3/common.kubectlVersion=''${KUBECTL_VERSION}"
   '';
-  installPhase = ''
-    runHook preInstall
-    mkdir -p $out/bin
-    install -Dm755 "$GOPATH/bin/cmd" -T $out/bin/argocd
-    runHook postInstall
-  '';
 
-  doInstallCheck = true;
-  installCheckPhase = ''
-    $out/bin/argocd version --client | grep ${finalAttrs.src.rev} > /dev/null
-  '';
+  proxyVendor = true; # darwin/linux hash mismatch
+  # Set target as ./cmd per cli-local
+  # https://github.com/argoproj/argo-cd/blob/master/Makefile
+  subPackages = [ "cmd" ];
 
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    installShellCompletion --cmd argocd \
-      --bash <($out/bin/argocd completion bash) \
-      --fish <($out/bin/argocd completion fish) \
-      --zsh <($out/bin/argocd completion zsh)
-  '';
+  ui = stdenv.mkDerivation {
+    inherit (finalAttrs) version;
+    pname = "argocd-ui";
+    src = finalAttrs.src + "/ui";
+
+    nativeBuildInputs = [
+      yarnConfigHook
+      yarnBuildHook
+      nodejs
+    ];
+
+    postInstall = ''
+      mkdir -p $out
+      cp -r dist $out/dist
+    '';
+
+    offlineCache = fetchYarnDeps {
+      hash = "sha256-/B7FviD0a3VDmbbM59Ksmr8apuTRHrRbTtfX4QgO8JM=";
+      yarnLock = "${finalAttrs.src}/ui/yarn.lock";
+    };
+  };
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Declarative continuous deployment for Kubernetes";
-    mainProgram = "argocd";
-    downloadPage = "https://github.com/argoproj/argo-cd";
     homepage = "https://argo-cd.readthedocs.io/en/stable/";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       shahrukh330
       qjoly
       FKouhai
     ];
+
+    mainProgram = "argocd";
+    downloadPage = "https://github.com/argoproj/argo-cd";
   };
 })

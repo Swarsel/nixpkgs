@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   allure-python-commons,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest,
   setuptools-scm,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "allure-pytest";
   version = "2.15.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "allure-framework";
@@ -19,18 +18,14 @@ buildPythonPackage rec {
     hash = "sha256-06SKodvyoT0mYn4RmAIryZc+VyTI79KXFK+2/zuhzQ0=";
   };
 
-  sourceRoot = "${src.name}/allure-pytest";
-
-  build-system = [ setuptools-scm ];
-
   buildInputs = [ pytest ];
-
-  dependencies = [ allure-python-commons ];
-
   # Tests were moved to the meta package
   doCheck = false;
-
+  build-system = [ setuptools-scm ];
+  dependencies = [ allure-python-commons ];
+  pyproject = true;
   pythonImportsCheck = [ "allure_pytest" ];
+  sourceRoot = "${src.name}/allure-pytest";
 
   meta = {
     description = "Allure integrations for Python test frameworks";

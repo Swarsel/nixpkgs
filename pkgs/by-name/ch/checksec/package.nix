@@ -1,12 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-
   buildGoModule,
-
+  checksec,
   # tests
   testers,
-  checksec,
 }:
 
 buildGoModule (finalAttrs: {
@@ -30,20 +28,22 @@ buildGoModule (finalAttrs: {
 
   passthru.tests = {
     version = testers.testVersion {
-      package = checksec;
       inherit (finalAttrs) version;
+      package = checksec;
     };
   };
 
   meta = {
     description = "Tool for checking security bits on executables";
-    mainProgram = "checksec";
     homepage = "https://slimm609.github.io/checksec/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
       sdht0
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "checksec";
   };
 })

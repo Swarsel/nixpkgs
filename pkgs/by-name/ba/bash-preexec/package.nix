@@ -1,16 +1,16 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
   bats,
+  stdenvNoCC,
 }:
 
 let
   version = "0.6.0";
 in
 stdenvNoCC.mkDerivation {
-  pname = "bash-preexec";
   inherit version;
+  pname = "bash-preexec";
 
   src = fetchFromGitHub {
     owner = "rcaloras";
@@ -19,11 +19,23 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-4DzbeIiUX7iXy2CeSvRC2X+XnjVk+/UiMbM/dLHx7zU=";
   };
 
+  doCheck = true;
   nativeCheckInputs = [ bats ];
 
-  dontConfigure = true;
-  doCheck = true;
+  checkPhase = ''
+    runHook preCheck
+    bats test
+    runHook postCheck
+  '';
+
+  installPhase = ''
+    runHook preInstall
+    install -Dm755 bash-preexec.sh $out/share/bash/bash-preexec.sh
+    runHook postInstall
+  '';
+
   dontBuild = true;
+  dontConfigure = true;
 
   patchPhase = ''
     runHook prePatch
@@ -38,27 +50,17 @@ stdenvNoCC.mkDerivation {
     runHook postPatch
   '';
 
-  checkPhase = ''
-    runHook preCheck
-    bats test
-    runHook postCheck
-  '';
-
-  installPhase = ''
-    runHook preInstall
-    install -Dm755 bash-preexec.sh $out/share/bash/bash-preexec.sh
-    runHook postInstall
-  '';
-
   meta = {
     description = "Preexec and precmd functions for Bash just like Zsh";
-    license = lib.licenses.mit;
     homepage = "https://github.com/rcaloras/bash-preexec";
     changelog = "https://github.com/rcaloras/bash-preexec/releases/tag/${version}";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       hawkw
       rycee
     ];
+
     platforms = lib.platforms.unix;
   };
 }

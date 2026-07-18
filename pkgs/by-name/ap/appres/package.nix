@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  meson,
-  ninja,
-  xorgproto,
   libx11,
   libxt,
+  meson,
+  ninja,
+  pkg-config,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "appres";
@@ -46,15 +46,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Utility to list X application resource database";
+
     longDescription = ''
       The appres program prints the resources seen by an application (or subhierarchy of an
       application) with the specified class and instance names.
       It can be used to determine which resources a particular program will load.
     '';
+
     homepage = "https://gitlab.freedesktop.org/xorg/app/appres";
     license = lib.licenses.mitOpenGroup;
-    mainProgram = "appres";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "appres";
   };
 })

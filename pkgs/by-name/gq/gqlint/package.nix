@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -16,14 +16,13 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-Fc5RbBqrJB7KSqLgTmIsPf3MK2n7vef/UVeFqH0o7mE=";
-
   dontNpmBuild = true;
 
   meta = {
     description = "GraphQL linter";
     homepage = "https://github.com/happylinks/gqlint";
     license = lib.licenses.mit;
-    mainProgram = "gqlint";
     maintainers = with lib.maintainers; [ hardselius ];
+    mainProgram = "gqlint";
   };
 }

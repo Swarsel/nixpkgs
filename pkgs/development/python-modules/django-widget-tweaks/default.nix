@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools-scm,
+  buildPythonPackage,
   django,
   python,
   setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "django-widget-tweaks";
   version = "1.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jazzband";
@@ -20,13 +19,13 @@ buildPythonPackage rec {
     hash = "sha256-ymjBuNGfndUwQdBU2xnc9CA51oOaEPA+RaAspJMKQ04=";
   };
 
-  build-system = [ setuptools-scm ];
-
-  dependencies = [ django ];
-
   checkPhase = ''
     ${python.interpreter} -m django test --settings=tests.settings
   '';
+
+  build-system = [ setuptools-scm ];
+  dependencies = [ django ];
+  pyproject = true;
 
   meta = {
     description = "Tweak the form field rendering in templates, not in python-level form definitions";

@@ -1,34 +1,34 @@
 {
   lib,
   stdenv,
-  llvm_meta,
-  src ? null,
-  monorepoSrc ? null,
-  runCommand,
-  cmake,
-  ninja,
-  libxml2,
-  libllvm,
-  release_version,
-  version,
-  python3,
   buildLlvmPackages,
-  fixDarwinDylibNames,
-  enableManpages ? false,
-  enableClangToolsExtra ? true,
-  extraPatches ? [ ],
-  devExtraCmakeFlags ? [ ],
-  replaceVars,
-  getVersionFile,
+  cmake,
   fetchpatch,
+  fixDarwinDylibNames,
+  getVersionFile,
   # for tests
   libclang,
+  libllvm,
+  libxml2,
+  llvm_meta,
+  ninja,
+  python3,
+  release_version,
+  replaceVars,
+  runCommand,
+  version,
+  devExtraCmakeFlags ? [ ],
+  enableClangToolsExtra ? true,
+  enableManpages ? false,
+  extraPatches ? [ ],
+  monorepoSrc ? null,
+  src ? null,
 }:
 stdenv.mkDerivation (
   finalAttrs:
   {
-    pname = "clang";
     inherit version;
+    pname = "clang";
 
     src =
       if monorepoSrc != null then
@@ -41,7 +41,12 @@ stdenv.mkDerivation (
       else
         src;
 
-    sourceRoot = "${finalAttrs.src.name}/clang";
+    outputs = [
+      "out"
+      "lib"
+      "dev"
+      "python"
+    ];
 
     patches = [
       (getVersionFile "clang/purity.patch")
@@ -65,17 +70,28 @@ stdenv.mkDerivation (
     # Fixes a bunch of lambda-related crashes
     # https://github.com/llvm/llvm-project/pull/93206
     ++ lib.optional (lib.versions.major release_version == "18") (fetchpatch {
-      name = "tweak-tryCaptureVariable-for-unevaluated-lambdas.patch";
-      url = "https://github.com/llvm/llvm-project/commit/3d361b225fe89ce1d8c93639f27d689082bd8dad.patch";
       # TreeTransform.h is not affected in LLVM 18.
       excludes = [
         "docs/ReleaseNotes.rst"
         "lib/Sema/TreeTransform.h"
       ];
-      stripLen = 1;
+
       hash = "sha256-1NKej08R9SPlbDY/5b0OKUsHjX07i9brR84yXiPwi7E=";
+      name = "tweak-tryCaptureVariable-for-unevaluated-lambdas.patch";
+      stripLen = 1;
+      url = "https://github.com/llvm/llvm-project/commit/3d361b225fe89ce1d8c93639f27d689082bd8dad.patch";
     })
     ++ extraPatches;
+
+    postPatch = ''
+      # Make sure clang passes the correct location of libLTO to ld64
+      substituteInPlace lib/Driver/ToolChains/Darwin.cpp \
+        --replace-fail 'StringRef P = llvm::sys::path::parent_path(D.Dir);' 'StringRef P = "${lib.getLib libllvm}";'
+      (cd tools && ln -s ../../clang-tools-extra extra)
+    ''
+    + lib.optionalString stdenv.hostPlatform.isMusl ''
+      sed -i -e 's/lgcc_s/lgcc_eh/' lib/Driver/ToolChains/*.cpp
+    '';
 
     nativeBuildInputs = [
       cmake
@@ -121,24 +137,13 @@ stdenv.mkDerivation (
     ]
     ++ devExtraCmakeFlags;
 
-    postPatch = ''
-      # Make sure clang passes the correct location of libLTO to ld64
-      substituteInPlace lib/Driver/ToolChains/Darwin.cpp \
-        --replace-fail 'StringRef P = llvm::sys::path::parent_path(D.Dir);' 'StringRef P = "${lib.getLib libllvm}";'
-      (cd tools && ln -s ../../clang-tools-extra extra)
-    ''
-    + lib.optionalString stdenv.hostPlatform.isMusl ''
-      sed -i -e 's/lgcc_s/lgcc_eh/' lib/Driver/ToolChains/*.cpp
-    '';
-
-    outputs = [
-      "out"
-      "lib"
-      "dev"
-      "python"
-    ];
-
-    separateDebugInfo = stdenv.buildPlatform.is64bit; # OOMs on 32 bit
+    env =
+      lib.optionalAttrs (stdenv.buildPlatform != stdenv.hostPlatform && !stdenv.hostPlatform.useLLVM)
+        {
+          # The following warning is triggered with (at least) gcc >=
+          # 12, but appears to occur only for cross compiles.
+          NIX_CFLAGS_COMPILE = "-Wno-maybe-uninitialized";
+        };
 
     postInstall = ''
       ln -sv $out/bin/clang $out/bin/cpp
@@ -180,19 +185,13 @@ stdenv.mkDerivation (
       cp bin/clang-pseudo-gen $dev/bin
     '';
 
-    env =
-      lib.optionalAttrs (stdenv.buildPlatform != stdenv.hostPlatform && !stdenv.hostPlatform.useLLVM)
-        {
-          # The following warning is triggered with (at least) gcc >=
-          # 12, but appears to occur only for cross compiles.
-          NIX_CFLAGS_COMPILE = "-Wno-maybe-uninitialized";
-        };
+    requiredSystemFeatures = [ "big-parallel" ];
+    separateDebugInfo = stdenv.buildPlatform.is64bit; # OOMs on 32 bit
+    sourceRoot = "${finalAttrs.src.name}/clang";
 
     passthru = {
       inherit libllvm;
-      isClang = true;
-      langC = true;
-      langCC = true;
+
       hardeningUnsupportedFlagsByTargetPlatform =
         targetPlatform:
         [ "fortify3" ]
@@ -209,15 +208,19 @@ stdenv.mkDerivation (
         ) "stackclashprotection"
         ++ lib.optional (!(targetPlatform.isx86_64 || targetPlatform.isAarch64)) "zerocallusedregs"
         ++ (finalAttrs.passthru.hardeningUnsupportedFlags or [ ]);
+
+      isClang = true;
+      langC = true;
+      langCC = true;
+
       tests.withoutOptionalFeatures = libclang.override {
         enableClangToolsExtra = false;
       };
     };
 
-    requiredSystemFeatures = [ "big-parallel" ];
     meta = llvm_meta // {
-      homepage = "https://clang.llvm.org/";
       description = "C language family frontend for LLVM";
+
       longDescription = ''
         The Clang project provides a language front-end and tooling
         infrastructure for languages in the C language family (C, C++, Objective
@@ -229,13 +232,15 @@ stdenv.mkDerivation (
         of tools that can be built using the Clang frontend as a library to
         parse C/C++ code.
       '';
+
+      homepage = "https://clang.llvm.org/";
       mainProgram = "clang";
     };
   }
   // lib.optionalAttrs enableManpages {
     pname = "clang-manpages";
-
-    ninjaFlags = [ "docs-clang-man" ];
+    outputs = [ "out" ];
+    doCheck = false;
 
     installPhase = ''
       mkdir -p $out/share/man/man1
@@ -243,9 +248,7 @@ stdenv.mkDerivation (
       cp docs/man/*.1 $out/share/man/man1/
     '';
 
-    outputs = [ "out" ];
-
-    doCheck = false;
+    ninjaFlags = [ "docs-clang-man" ];
 
     meta = llvm_meta // {
       description = "man page for Clang ${version}";

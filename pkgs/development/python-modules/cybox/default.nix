@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
   lxml,
   mixbox,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "cybox";
   version = "2.1.0.21";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "CybOXProject";
@@ -25,12 +24,13 @@ buildPythonPackage rec {
   patches = [
     # Import ABC from collections.abc for Python 3 compatibility, https://github.com/CybOXProject/python-cybox/pull/332
     (fetchpatch {
+      hash = "sha256-dXEsJujtbU/SuUBge8abWgMPeYO1ZR3c5758Bd0dnwE=";
       name = "collections-abc.patch";
       url = "https://github.com/CybOXProject/python-cybox/commit/fd4631dac12943d89e9ea2e94105cbc3b81d52f9.patch";
-      hash = "sha256-dXEsJujtbU/SuUBge8abWgMPeYO1ZR3c5758Bd0dnwE=";
     })
   ];
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -39,8 +39,7 @@ buildPythonPackage rec {
     python-dateutil
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "cybox" ];
 
   meta = {

@@ -2,10 +2,10 @@
 {
   lib,
   buildDunePackage,
-  ocaml,
-  csexp,
-  sexplib0,
   callPackage,
+  csexp,
+  ocaml,
+  sexplib0,
   ...
 }@args:
 
@@ -17,8 +17,8 @@ let
 
 in
 buildDunePackage {
-  pname = "ocamlformat-rpc-lib";
   inherit src version;
+  pname = "ocamlformat-rpc-lib";
 
   propagatedBuildInputs = [
     csexp
@@ -26,9 +26,10 @@ buildDunePackage {
   ];
 
   meta = {
-    homepage = "https://github.com/ocaml-ppx/ocamlformat";
     description = "Auto-formatter for OCaml code (RPC mode)";
+    homepage = "https://github.com/ocaml-ppx/ocamlformat";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       Zimmi48
       Julow

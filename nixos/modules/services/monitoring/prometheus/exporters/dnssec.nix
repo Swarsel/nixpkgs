@@ -10,17 +10,17 @@ let
   configFile = configFormat.generate "dnssec-checks.toml" cfg.configuration;
 in
 {
-  port = 9204;
   extraOpts = {
     configuration = lib.mkOption {
-      type = lib.types.nullOr lib.types.attrs;
       default = null;
+
       description = ''
         dnssec exporter configuration as nix attribute set.
 
         See <https://github.com/chrj/prometheus-dnssec-exporter/blob/master/README.md>
         for the description of the configuration file format.
       '';
+
       example = lib.literalExpression ''
         {
           records = [
@@ -37,43 +37,55 @@ in
           ];
         }
       '';
-    };
 
-    listenAddress = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
-      default = null;
-      description = ''
-        Listen address as host IP and port definition.
-      '';
-      example = ":9204";
-    };
-
-    resolvers = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-      description = ''
-        DNSSEC capable resolver to be used for the check.
-      '';
-      example = [ "0.0.0.0:53" ];
-    };
-
-    timeout = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
-      default = null;
-      description = ''
-        DNS request timeout duration.
-      '';
-      example = "10s";
+      type = lib.types.nullOr lib.types.attrs;
     };
 
     extraFlags = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
       default = [ ];
+
       description = ''
         Extra commandline options when launching Prometheus.
       '';
+
+      type = lib.types.listOf lib.types.str;
+    };
+
+    listenAddress = lib.mkOption {
+      default = null;
+
+      description = ''
+        Listen address as host IP and port definition.
+      '';
+
+      example = ":9204";
+      type = lib.types.nullOr lib.types.str;
+    };
+
+    resolvers = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        DNSSEC capable resolver to be used for the check.
+      '';
+
+      example = [ "0.0.0.0:53" ];
+      type = lib.types.listOf lib.types.str;
+    };
+
+    timeout = lib.mkOption {
+      default = null;
+
+      description = ''
+        DNS request timeout duration.
+      '';
+
+      example = "10s";
+      type = lib.types.nullOr lib.types.str;
     };
   };
+
+  port = 9204;
 
   serviceOpts = {
     serviceConfig =

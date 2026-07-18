@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
-  cacert,
-  yarn-berry,
-  nodejs-slim, # no need for npm
   fetchFromGitHub,
+  cacert,
   nix-update-script,
+  nodejs-slim, # no need for npm
+  stdenvNoCC,
   versionCheckHook,
   writeScriptBin,
+  yarn-berry,
 }:
 
 let
@@ -24,25 +24,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-VgiQ4k6HiRxemtizItL0zkTDpgTnL0ScfSOfgjMpokI=";
   };
 
-  nativeBuildInputs = [
-    nodejs
-    yarn-berry
-    yarn-berry.yarnBerryConfigHook
-  ];
-  buildInputs = [
-    nodejs
-  ];
-
-  missingHashes = ./missing-hashes.json;
-  offlineCache = yarn-berry.fetchYarnBerryDeps {
-    inherit nodejs;
-    inherit (finalAttrs)
-      missingHashes
-      src
-      ;
-    hash = "sha256-Q7vUJrFUr8ZbDdaMZq8fnJFfIgEFYkHQiUoo2xILaKo=";
-  };
-
   postPatch = ''
     substituteInPlace tests/_runCli.ts --replace-fail 'require.resolve(`../dist/corepack.js`)' "'$out/bin/corepack'"
     substituteInPlace tests/main.test.ts --replace-fail 'npath.dirname(__dirname)' "'$out'"
@@ -53,6 +34,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       sources/commands/Enable.ts \
       --replace-fail 'require.resolve(`corepack/package.json`)' "'$out/package.json'"
   '';
+
+  nativeBuildInputs = [
+    nodejs
+    yarn-berry
+    yarn-berry.yarnBerryConfigHook
+  ];
+
+  buildInputs = [
+    nodejs
+  ];
 
   buildPhase = ''
     runHook preBuild
@@ -83,25 +74,40 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     cacert
     versionCheckHook
   ];
+
+  # vitest needs to bind to `localhost` during installCheck; allow that in the Darwin sandbox.
+  __darwinAllowLocalNetworking = true;
+  missingHashes = ./missing-hashes.json;
+
+  offlineCache = yarn-berry.fetchYarnBerryDeps {
+    inherit nodejs;
+
+    inherit (finalAttrs)
+      missingHashes
+      src
+      ;
+
+    hash = "sha256-Q7vUJrFUr8ZbDdaMZq8fnJFfIgEFYkHQiUoo2xILaKo=";
+  };
+
   # Built-in SQLite support is only available in Node.js 22+, and required to run the tests.
   preInstallCheck = lib.optional (lib.versionAtLeast nodejs.version "22") ''
     # Exclude test files that require internet access.
     NOCK_ENV=replay yarn test --reporter tap --exclude tests/config.test.ts --exclude tests/Use.test.ts
   '';
-  doInstallCheck = true;
-  # vitest needs to bind to `localhost` during installCheck; allow that in the Darwin sandbox.
-  __darwinAllowLocalNetworking = true;
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/nodejs/corepack/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "Package manager version manager for Node.js projects";
     homepage = "https://github.com/nodejs/corepack";
+    changelog = "https://github.com/nodejs/corepack/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ aduh95 ];
     mainProgram = "corepack";

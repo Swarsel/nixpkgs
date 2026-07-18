@@ -1,49 +1,49 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  fetchpatch,
-  cmake,
-  pkg-config,
-  zlib,
-  gettext,
-  libvdpau,
-  libva,
-  libxv,
-  sqlite,
-  yasm,
-  freetype,
-  fontconfig,
-  fribidi,
-  makeWrapper,
-  libxext,
-  libGLU,
   alsa-lib,
-  withX265 ? true,
-  x265,
-  withX264 ? true,
-  x264,
-  withXvid ? true,
-  xvidcore,
-  withLAME ? true,
-  lame,
-  withFAAC ? false,
+  cmake,
   faac,
-  withVorbis ? true,
-  libvorbis,
-  withPulse ? true,
-  libpulseaudio,
-  withFAAD ? true,
   faad2,
-  withOpus ? true,
+  fetchpatch,
+  fontconfig,
+  freetype,
+  fribidi,
+  gettext,
+  lame,
+  libGLU,
   libopus,
-  withVPX ? true,
-  libvpx,
-  withQT ? true,
+  libpulseaudio,
   libsForQt5,
-  withCLI ? true,
+  libva,
+  libvdpau,
+  libvorbis,
+  libvpx,
+  libxext,
+  libxv,
+  makeWrapper,
+  pkg-config,
+  sqlite,
+  x264,
+  x265,
+  xvidcore,
+  yasm,
+  zlib,
   default ? "qt5",
+  withCLI ? true,
+  withFAAC ? false,
+  withFAAD ? true,
+  withLAME ? true,
+  withOpus ? true,
   withPlugins ? true,
+  withPulse ? true,
+  withQT ? true,
+  withVPX ? true,
+  withVorbis ? true,
+  withX264 ? true,
+  withX265 ? true,
+  withXvid ? true,
 }:
 
 assert default != "qt5" -> default == "cli";
@@ -64,20 +64,20 @@ stdenv.mkDerivation (finalAttrs: {
     # x265 API change in 4.1 breaks build
     # See discussion in https://avidemux.org/smif/index.php/topic,19995.msg97494.html#msg97494
     (fetchpatch {
+      hash = "sha256-5QqocvYaY/phyvSX2lhTzeAi+z9Wgqs+ITR0cXReps4=";
       name = "fix_build_with_x265_4_1.patch";
       url = "https://github.com/mean00/avidemux2/commit/c16d32a67cdb012db093472ad3776713939a30d1.patch";
-      hash = "sha256-5QqocvYaY/phyvSX2lhTzeAi+z9Wgqs+ITR0cXReps4=";
     })
   ];
 
   postPatch = ''
     cp ${
       fetchpatch {
+        hash = "sha256-s9PcYbt0mFb2wvgMcFL1J+2OS6Sxyd2wYkGzLr2qd9M=";
         # Backport fix for binutils-2.41.
         name = "binutils-2.41.patch";
-        url = "https://git.ffmpeg.org/gitweb/ffmpeg.git/patch/effadce6c756247ea8bae32dc13bb3e6f464f0eb";
-        hash = "sha256-s9PcYbt0mFb2wvgMcFL1J+2OS6Sxyd2wYkGzLr2qd9M=";
         stripLen = 1;
+        url = "https://git.ffmpeg.org/gitweb/ffmpeg.git/patch/effadce6c756247ea8bae32dc13bb3e6f464f0eb";
       }
     } avidemux_core/ffmpeg_package/patches/
 
@@ -104,6 +104,7 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
   ]
   ++ lib.optional withQT libsForQt5.wrapQtAppsHook;
+
   buildInputs = [
     zlib
     gettext
@@ -135,8 +136,6 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   )
   ++ lib.optional withVPX libvpx;
-
-  dontWrapQtApps = true;
 
   buildCommand =
     let
@@ -177,15 +176,18 @@ stdenv.mkDerivation (finalAttrs: {
       fixupPhase
     '';
 
+  dontWrapQtApps = true;
+
   meta = {
-    homepage = "http://fixounet.free.fr/avidemux/";
     description = "Free video editor designed for simple video editing tasks";
+    homepage = "http://fixounet.free.fr/avidemux/";
+    license = lib.licenses.gpl2;
     maintainers = [ ];
+
     # "CPU not supported" errors on AArch64
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ];
-    license = lib.licenses.gpl2;
   };
 })

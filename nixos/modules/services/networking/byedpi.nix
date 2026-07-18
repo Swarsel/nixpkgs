@@ -1,6 +1,6 @@
 {
-  lib,
   config,
+  lib,
   pkgs,
   ...
 }:
@@ -12,9 +12,11 @@ in
   options.services.byedpi = {
     enable = lib.mkEnableOption "the ByeDPI service";
     package = lib.mkPackageOption pkgs "byedpi" { };
+
     extraArgs = lib.mkOption {
-      type = with lib.types; listOf str;
       default = [ ];
+      description = "Extra command line arguments.";
+
       example = [
         "--split"
         "1"
@@ -25,27 +27,32 @@ in
         "--tlsrec"
         "1+s"
       ];
-      description = "Extra command line arguments.";
+
+      type = with lib.types; listOf str;
     };
   };
+
   config = lib.mkIf cfg.enable {
     systemd.services.byedpi = {
-      description = "ByeDPI";
-      wantedBy = [ "default.target" ];
-      wants = [ "network-online.target" ];
       after = [
         "network-online.target"
         "nss-lookup.target"
       ];
+
+      description = "ByeDPI";
+
       serviceConfig = {
         ExecStart = lib.escapeShellArgs ([ (lib.getExe cfg.package) ] ++ cfg.extraArgs);
         NoNewPrivileges = "yes";
-        StandardOutput = "null";
-        StandardError = "journal";
-        TimeoutStopSec = "5s";
         PrivateTmp = "true";
         ProtectSystem = "full";
+        StandardError = "journal";
+        StandardOutput = "null";
+        TimeoutStopSec = "5s";
       };
+
+      wantedBy = [ "default.target" ];
+      wants = [ "network-online.target" ];
     };
   };
 

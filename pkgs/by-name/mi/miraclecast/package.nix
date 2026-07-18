@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   glib,
   gst_all_1,
@@ -11,7 +12,6 @@
   ninja,
   pkg-config,
   readline,
-  stdenv,
   systemdLibs,
   testers,
   udev,
@@ -39,6 +39,11 @@ stdenv.mkDerivation {
     hash = "sha256-y37+AOz8xYjtDk9ITxMB7UeWeMpDH+b6HQBczv+x5zo=";
   };
 
+  postPatch = ''
+    substituteInPlace res/miracle-gst \
+      --replace-fail "/usr/bin/gst-launch-1.0" "${gst_all_1.gstreamer}/bin/gst-launch-1.0"
+  '';
+
   nativeBuildInputs = [
     makeBinaryWrapper
     meson
@@ -65,19 +70,14 @@ stdenv.mkDerivation {
     "-Drely-udev=true"
   ];
 
-  postPatch = ''
-    substituteInPlace res/miracle-gst \
-      --replace-fail "/usr/bin/gst-launch-1.0" "${gst_all_1.gstreamer}/bin/gst-launch-1.0"
-  '';
-
   postInstall = ''
     wrapProgram $out/bin/miracle-gst --set GST_PLUGIN_SYSTEM_PATH_1_0 ${gstreamerPluginPaths}
   '';
 
   passthru.tests.version = testers.testVersion {
-    package = miraclecast;
-    command = "miracled --version";
     version = "Miraclecast 1";
+    command = "miracled --version";
+    package = miraclecast;
   };
 
   meta = {

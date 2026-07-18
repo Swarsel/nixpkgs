@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  dbus,
   apple-sdk_14,
   darwinMinVersionHook,
+  dbus,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Bj4gPklufU6p2JpvN6j7QViv7ghSn52jemeXPVXkhlk=";
   };
 
-  cargoHash = "sha256-8vVTACodxxju4x19bNzDKM5xn6btV1UCh+5GUxS70S8=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs =
@@ -31,6 +29,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
       (darwinMinVersionHook "10.15")
     ];
 
+  cargoHash = "sha256-8vVTACodxxju4x19bNzDKM5xn6btV1UCh+5GUxS70S8=";
   doCheck = false;
 
   meta = {
@@ -38,7 +37,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/googleworkspace/cli";
     changelog = "https://github.com/googleworkspace/cli/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    mainProgram = "gws";
     maintainers = with lib.maintainers; [ imalison ];
+    mainProgram = "gws";
   };
 })

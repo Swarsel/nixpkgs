@@ -22,17 +22,17 @@ let
   escape = lib.strings.escape [ ''"'' ];
 
   udevValue = types.addCheck types.nonEmptyStr (x: builtins.match "[^\n\r]*" x != null) // {
-    name = "udevValue";
     description = "udev rule value";
     descriptionClass = "noun";
+    name = "udevValue";
   };
 
   udevRule =
     {
-      rotational ? null,
-      include ? null,
-      exclude ? null,
       scheduler,
+      exclude ? null,
+      include ? null,
+      rotational ? null,
     }:
     concatStringsSep ", " (
       [
@@ -57,35 +57,22 @@ in
 {
   options.hardware.block = {
     defaultScheduler = mkOption {
-      type = types.nullOr udevValue;
       default = null;
+
       description = ''
         Default block I/O scheduler.
 
         Unless `null`, the value is assigned through a udev rule matching all
         block devices.
       '';
+
       example = "kyber";
-    };
-
-    defaultSchedulerRotational = mkOption {
       type = types.nullOr udevValue;
-      default = null;
-      description = ''
-        Default block I/O scheduler for rotational drives (e.g. hard disks).
-
-        Unless `null`, the value is assigned through a udev rule matching all
-        rotational block devices.
-
-        This option takes precedence over
-        {option}`config.hardware.block.defaultScheduler`.
-      '';
-      example = "bfq";
     };
 
     defaultSchedulerExclude = mkOption {
-      type = types.nullOr udevValue;
       default = "loop[0-9]*";
+
       description = ''
         Device name pattern to exclude from default scheduler assignment
         through {option}`config.hardware.block.defaultScheduler` and
@@ -97,11 +84,30 @@ in
 
         This setting does not affect {option}`config.hardware.block.scheduler`.
       '';
+
+      type = types.nullOr udevValue;
+    };
+
+    defaultSchedulerRotational = mkOption {
+      default = null;
+
+      description = ''
+        Default block I/O scheduler for rotational drives (e.g. hard disks).
+
+        Unless `null`, the value is assigned through a udev rule matching all
+        rotational block devices.
+
+        This option takes precedence over
+        {option}`config.hardware.block.defaultScheduler`.
+      '';
+
+      example = "bfq";
+      type = types.nullOr udevValue;
     };
 
     scheduler = mkOption {
-      type = types.attrsOf udevValue;
       default = { };
+
       description = ''
         Assign block I/O scheduler by device name pattern.
 
@@ -151,10 +157,13 @@ in
         {option}`config.hardware.block.defaultSchedulerRotational` but may be
         overridden by other udev rules.
       '';
+
       example = {
         "mmcblk[0-9]*" = "bfq";
         "nvme[0-9]*" = "kyber";
       };
+
+      type = types.attrsOf udevValue;
     };
   };
 
@@ -170,8 +179,8 @@ in
                 scheduler = cfg.defaultScheduler;
               })
               ++ optional (cfg.defaultSchedulerRotational != null) (udevRule {
-                rotational = true;
                 exclude = cfg.defaultSchedulerExclude;
+                rotational = true;
                 scheduler = cfg.defaultSchedulerRotational;
               })
               ++ mapAttrsToList (

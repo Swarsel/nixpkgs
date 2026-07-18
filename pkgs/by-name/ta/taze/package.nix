@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nodejs,
-  pnpm_11,
   fetchPnpmDeps,
-  pnpmConfigHook,
-  npmHooks,
-  versionCheckHook,
   nix-update-script,
+  nodejs,
+  npmHooks,
+  pnpmConfigHook,
+  pnpm_11,
+  versionCheckHook,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "taze";
@@ -19,13 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "taze";
     tag = "v${finalAttrs.version}";
     hash = "sha256-tcyZ4nbMw+RjASQKOiMDUCYNSWBeJ0u/rQ9Dq81HA7Y=";
-  };
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm_11;
-    fetcherVersion = 4;
-    hash = "sha256-6J7yNwtekfMfsqeXWpNeqw4cak7z03494nYlBHRMZH0=";
   };
 
   nativeBuildInputs = [
@@ -44,12 +37,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postBuild
   '';
 
-  dontNpmPrune = true;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  dontNpmPrune = true;
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 4;
+    hash = "sha256-6J7yNwtekfMfsqeXWpNeqw4cak7z03494nYlBHRMZH0=";
+    pnpm = pnpm_11;
+  };
 
   passthru.updateScript = nix-update-script { };
 

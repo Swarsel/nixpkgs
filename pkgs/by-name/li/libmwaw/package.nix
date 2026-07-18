@@ -3,12 +3,12 @@
   stdenv,
   fetchurl,
   boost,
-  pkg-config,
   cppunit,
-  zlib,
-  libwpg,
-  libwpd,
   librevenge,
+  libwpd,
+  libwpg,
+  pkg-config,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,6 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     boost
     cppunit
@@ -29,6 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     libwpd
     librevenge
   ];
+
   enableParallelBuilding = true;
 
   meta = {

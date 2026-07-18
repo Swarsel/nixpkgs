@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   buildGoModule,
-  stdenvNoCC,
   fetchPnpmDeps,
-  pnpmConfigHook,
-  pnpmBuildHook,
-  nodejs-slim,
-  pnpm_10,
   installShellFiles,
   nix-update-script,
   nixosTests,
+  nodejs-slim,
+  pnpmBuildHook,
+  pnpmConfigHook,
+  pnpm_10,
+  stdenvNoCC,
 }:
 
 let
@@ -25,10 +25,8 @@ let
   };
 
   frontend = stdenvNoCC.mkDerivation (finalAttrs: {
-    pname = "filebrowser-frontend";
     inherit version src;
-
-    sourceRoot = "${src.name}/frontend";
+    pname = "filebrowser-frontend";
 
     nativeBuildInputs = [
       nodejs-slim
@@ -36,18 +34,6 @@ let
       pnpmBuildHook
       pnpm_10
     ];
-
-    pnpmDeps = fetchPnpmDeps {
-      inherit (finalAttrs)
-        pname
-        version
-        src
-        sourceRoot
-        ;
-      fetcherVersion = 3;
-      pnpm = pnpm_10;
-      hash = "sha256-UwTA7Eogp2GrvmXDbdfGBTJS3DuOTJ42e6fHlQxSHoA=";
-    };
 
     installPhase = ''
       runHook preInstall
@@ -57,16 +43,33 @@ let
 
       runHook postInstall
     '';
+
+    pnpmDeps = fetchPnpmDeps {
+      inherit (finalAttrs)
+        pname
+        version
+        src
+        sourceRoot
+        ;
+
+      fetcherVersion = 3;
+      hash = "sha256-UwTA7Eogp2GrvmXDbdfGBTJS3DuOTJ42e6fHlQxSHoA=";
+      pnpm = pnpm_10;
+    };
+
+    sourceRoot = "${src.name}/frontend";
   });
 
 in
 buildGoModule {
-  pname = "filebrowser";
   inherit version src;
-
+  pname = "filebrowser";
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-WXbXD75acK4woS7UC0G73pY48aGmp1l0spDc3sGYXMg=";
 
-  nativeBuildInputs = [ installShellFiles ];
+  preBuild = ''
+    cp -r ${frontend}/dist frontend/
+  '';
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd filebrowser \
@@ -77,24 +80,22 @@ buildGoModule {
 
   excludedPackages = [ "tools" ];
 
-  preBuild = ''
-    cp -r ${frontend}/dist frontend/
-  '';
-
   ldflags = [
     "-X github.com/filebrowser/filebrowser/v2/version.Version=v${version}"
   ];
 
   passthru = {
+    inherit frontend;
+
+    tests = {
+      inherit (nixosTests) filebrowser;
+    };
+
     updateScript = nix-update-script {
       extraArgs = [
         "--subpackage"
         "frontend"
       ];
-    };
-    inherit frontend;
-    tests = {
-      inherit (nixosTests) filebrowser;
     };
   };
 

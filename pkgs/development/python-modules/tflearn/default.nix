@@ -1,18 +1,17 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
-  pytest,
-  scipy,
+  fetchPypi,
   h5py,
   pillow,
+  pytest,
+  scipy,
   tensorflow,
 }:
 
 buildPythonPackage rec {
   pname = "tflearn";
   version = "0.5.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -29,6 +28,7 @@ buildPythonPackage rec {
   ];
 
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Deep learning library featuring a higher-level API for TensorFlow";

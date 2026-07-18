@@ -1,28 +1,24 @@
 {
   lib,
   stdenv,
-  which,
-  replaceVars,
-  perl,
-  buildPackages,
-  runtimeShellPackage,
-
-  # apparmor deps
-  libapparmor,
   apparmor-bin-utils,
   apparmor-parser,
-
+  buildPackages,
+  coreutils,
+  gnugrep,
   # runtime deps
   gnused,
-  gnugrep,
+  # apparmor deps
+  libapparmor,
+  perl,
+  replaceVars,
+  runtimeShellPackage,
   systemd,
-  coreutils,
+  which,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  pname = "apparmor-init";
   inherit (libapparmor) version src;
-
-  sourceRoot = "${finalAttrs.src.name}/init";
+  pname = "apparmor-init";
 
   patches = [
     (replaceVars ./fix-rc-apparmor-functions-FHS.patch {
@@ -52,6 +48,8 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     which
     perl
@@ -67,6 +65,9 @@ stdenv.mkDerivation (finalAttrs: {
     "MANDIR=share/man"
   ];
 
+  doCheck = true;
+  __structuredAttrs = true;
+
   installFlags = [
     "DESTDIR=${placeholder "out"}"
     "DISTRO=unknown"
@@ -76,8 +77,6 @@ stdenv.mkDerivation (finalAttrs: {
     "SYSTEMD_UNIT_DIR=${placeholder "out"}/lib/systemd/system"
   ];
 
-  doCheck = true;
-
   installTargets = [
     "install"
     # Likely not very useful for NixOS, as this is missing some NixOS awareness such as loading declarative profiles from the store
@@ -85,8 +84,7 @@ stdenv.mkDerivation (finalAttrs: {
     "install-systemd"
   ];
 
-  strictDeps = true;
-  __structuredAttrs = true;
+  sourceRoot = "${finalAttrs.src.name}/init";
 
   meta = libapparmor.meta // {
     description = "Mandatory access control system - init files";

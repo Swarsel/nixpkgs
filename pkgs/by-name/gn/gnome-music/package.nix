@@ -1,44 +1,45 @@
 {
   lib,
-  meson,
-  ninja,
-  gettext,
   fetchurl,
+  appstream-glib,
+  desktop-file-utils,
   gdk-pixbuf,
-  tinysparql,
-  libxml2,
-  python3,
-  libnotify,
-  wrapGAppsHook4,
-  libmediaart,
-  gobject-introspection,
+  gettext,
+  glib,
+  gnome,
   gnome-online-accounts,
+  gobject-introspection,
   grilo,
   grilo-plugins,
-  pkg-config,
-  gtk4,
-  pango,
-  glib,
-  desktop-file-utils,
-  appstream-glib,
-  itstool,
-  gnome,
-  gst_all_1,
-  libsoup_3,
-  libadwaita,
   gsettings-desktop-schemas,
+  gst_all_1,
+  gtk4,
+  itstool,
+  libadwaita,
+  libmediaart,
+  libnotify,
+  libsoup_3,
+  libxml2,
+  meson,
+  ninja,
+  pango,
+  pkg-config,
+  python3,
+  tinysparql,
+  wrapGAppsHook4,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "gnome-music";
   version = "50.0";
 
-  pyproject = false;
-
   src = fetchurl {
     url = "mirror://gnome/sources/gnome-music/${lib.versions.major finalAttrs.version}/gnome-music-${finalAttrs.version}.tar.xz";
     hash = "sha256-xyiQyn5YCc7+uHawEZn4sZcUa1wl6dV0UwGihMDzzao=";
   };
+
+  # handle setup hooks better
+  strictDeps = false;
 
   nativeBuildInputs = [
     meson
@@ -78,34 +79,32 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     gst-libav
   ]);
 
+  doCheck = false;
+
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
+  # Prevent double wrapping, let the Python wrapper use the args in preFixup.
+  dontWrapGApps = true;
+  pyproject = false;
+
   pythonPath = with python3.pkgs; [
     pycairo
     dbus-python
     pygobject3
   ];
 
-  # Prevent double wrapping, let the Python wrapper use the args in preFixup.
-  dontWrapGApps = true;
-
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
-
-  doCheck = false;
-
-  # handle setup hooks better
-  strictDeps = false;
-
   passthru = {
     updateScript = gnome.updateScript { packageName = "gnome-music"; };
   };
 
   meta = {
-    homepage = "https://apps.gnome.org/Music/";
     description = "Music player and management application for the GNOME desktop environment";
-    mainProgram = "gnome-music";
-    teams = [ lib.teams.gnome ];
+    homepage = "https://apps.gnome.org/Music/";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
+    mainProgram = "gnome-music";
+    teams = [ lib.teams.gnome ];
   };
 })

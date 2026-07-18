@@ -14,14 +14,15 @@ in
       configuring flashprog udev rules and
       installing flashprog as system package
     '';
+
     package = lib.mkPackageOption pkgs "flashprog" { };
   };
 
   config = lib.mkIf cfg.enable {
-    services.udev.packages = [ cfg.package ];
     environment.systemPackages = [ cfg.package ];
-    hardware.libjaylink.enable = true;
     hardware.libftdi.enable = true;
+    hardware.libjaylink.enable = true;
+    services.udev.packages = [ cfg.package ];
   };
 
   meta.maintainers = with lib.maintainers; [ felixsinger ];

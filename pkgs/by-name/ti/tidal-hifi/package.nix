@@ -1,53 +1,52 @@
 {
   lib,
-  buildNpmPackage,
-  fetchFromGitHub,
-  callPackage,
-  makeShellWrapper,
-  copyDesktopItems,
-  makeDesktopItem,
   stdenv,
-  wrapGAppsHook3,
-  glib,
-  gtk3,
-  gtk4,
-  at-spi2-atk,
-  libdrm,
-  libgbm,
-  libxkbcommon,
-  libxshmfence,
-  libGL,
-  vulkan-loader,
+  fetchFromGitHub,
   alsa-lib,
+  at-spi2-atk,
+  buildNpmPackage,
   cairo,
+  callPackage,
+  common-updater-scripts,
+  copyDesktopItems,
   cups,
+  curl,
   dbus,
   expat,
   gdk-pixbuf,
-  nss,
-  nspr,
+  glib,
+  gtk3,
+  gtk4,
+  libGL,
+  libdrm,
+  libgbm,
+  libnotify,
+  libpulseaudio,
+  libsecret,
   libx11,
   libxcb,
   libxcomposite,
   libxdamage,
   libxext,
   libxfixes,
-  libxrandr,
+  libxkbcommon,
   libxkbfile,
+  libxrandr,
+  libxshmfence,
+  makeDesktopItem,
+  makeShellWrapper,
+  nix-update,
+  nspr,
+  nss,
   pango,
-  systemd,
   pciutils,
-  libnotify,
   pipewire,
-  libsecret,
-  libpulseaudio,
   speechd-minimal,
+  systemd,
+  vulkan-loader,
+  wrapGAppsHook3,
   writeShellScript,
   yq,
-  curl,
-  nix-update,
-  common-updater-scripts,
-
   castlabs-electron ? callPackage ./electron.nix { },
 }:
 
@@ -108,9 +107,6 @@ buildNpmPackage (finalAttrs: {
   ];
 
   npmDepsHash = "sha256-8uDzikiVGLjhpba6HpSHcvlNghRtmugqjazoAYP1M98=";
-  forceGitDeps = true;
-  makeCacheWritable = true;
-
   env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
   buildPhase = ''
@@ -125,31 +121,6 @@ buildNpmPackage (finalAttrs: {
 
     runHook postBuild
   '';
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = finalAttrs.pname;
-      desktopName = "TIDAL Hi-Fi";
-      genericName = "Music Player";
-      comment = finalAttrs.meta.description;
-      icon = "tidal-hifi";
-      exec = finalAttrs.meta.mainProgram;
-      terminal = false;
-      mimeTypes = [ "x-scheme-handler/tidal" ];
-      categories = [
-        "Audio"
-        "Music"
-        "Player"
-        "Network"
-        "AudioVideo"
-      ];
-      startupNotify = true;
-      startupWMClass = "tidal-hifi";
-      extraConfig.X-PulseAudio-Properties = "media.role=music";
-    })
-  ];
-
-  dontWrapGApps = true;
 
   installPhase = ''
     runHook preInstall
@@ -190,8 +161,37 @@ buildNpmPackage (finalAttrs: {
       "''${gappsWrapperArgs[@]}"
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Audio"
+        "Music"
+        "Player"
+        "Network"
+        "AudioVideo"
+      ];
+
+      comment = finalAttrs.meta.description;
+      desktopName = "TIDAL Hi-Fi";
+      exec = finalAttrs.meta.mainProgram;
+      extraConfig.X-PulseAudio-Properties = "media.role=music";
+      genericName = "Music Player";
+      icon = "tidal-hifi";
+      mimeTypes = [ "x-scheme-handler/tidal" ];
+      name = finalAttrs.pname;
+      startupNotify = true;
+      startupWMClass = "tidal-hifi";
+      terminal = false;
+    })
+  ];
+
+  dontWrapGApps = true;
+  forceGitDeps = true;
+  makeCacheWritable = true;
+
   passthru = {
     inherit castlabs-electron;
+
     updateScript = writeShellScript "update" ''
       set -xeuo pipefail
       export PATH="${
@@ -213,14 +213,16 @@ buildNpmPackage (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/Mastermindzh/tidal-hifi/releases/tag/${finalAttrs.version}";
     description = "Web version of Tidal running in Electron with Hi-Fi support thanks to Widevine";
     homepage = "https://github.com/Mastermindzh/tidal-hifi";
+    changelog = "https://github.com/Mastermindzh/tidal-hifi/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       gerg-l
       spikespaz
     ];
+
     # `castlabs-electron` doesn't have a distribution for `aarch64-linux`.
     # See: <https://github.com/castlabs/electron-releases/issues/198>
     platforms = [ "x86_64-linux" ];

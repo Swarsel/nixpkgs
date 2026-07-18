@@ -1,15 +1,12 @@
 {
   lib,
   bundlerApp,
-  makeWrapper,
   curl,
+  makeWrapper,
 }:
 
 bundlerApp {
   pname = "wpscan";
-  gemdir = ./.;
-  exes = [ "wpscan" ];
-
   nativeBuildInputs = [ makeWrapper ];
 
   postBuild = ''
@@ -17,6 +14,8 @@ bundlerApp {
       --prefix PATH : ${lib.makeBinPath [ curl ]}
   '';
 
+  exes = [ "wpscan" ];
+  gemdir = ./.;
   passthru.updateScript = ./update.sh;
 
   meta = {
@@ -24,9 +23,11 @@ bundlerApp {
     homepage = "https://wpscan.org/";
     changelog = "https://github.com/wpscanteam/wpscan/releases";
     license = lib.licenses.unfreeRedistributable;
+
     maintainers = with lib.maintainers; [
       nyanloutre
     ];
+
     platforms = lib.platforms.unix;
   };
 }

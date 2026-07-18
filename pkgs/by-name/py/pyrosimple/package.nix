@@ -12,7 +12,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "pyrosimple";
   version = "2.14.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kannibalox";
@@ -20,12 +19,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-qER73B6wuRczwV23A+NwfDL4oymvSwmauA0uf2AE+kY=";
   };
-
-  pythonRelaxDeps = [
-    "parsimonious"
-    "prometheus-client"
-    "python-daemon"
-  ];
 
   nativeBuildInputs = with python3.pkgs; [
     poetry-core
@@ -53,12 +46,21 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pytestCheckHook
   ];
 
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "parsimonious"
+    "prometheus-client"
+    "python-daemon"
+  ];
+
   passthru = {
-    updateScript = nix-update-script { };
     tests = testers.testVersion {
-      package = pyrosimple;
       command = "pyroadmin --version";
+      package = pyrosimple;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {

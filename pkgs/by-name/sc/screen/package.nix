@@ -3,9 +3,9 @@
   stdenv,
   fetchurl,
   autoreconfHook,
-  texinfo,
-  ncurses,
   libxcrypt,
+  ncurses,
+  texinfo,
   pam ? null,
 }:
 
@@ -18,6 +18,23 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-yposfiQJGbx6wSEkWTrkUpu0619zSdiFeCm34/CzszI=";
   };
 
+  outputs = [
+    "out"
+    "info"
+    "man"
+  ];
+
+  nativeBuildInputs = [
+    autoreconfHook
+    texinfo
+  ];
+
+  buildInputs = [
+    ncurses
+    libxcrypt
+    pam
+  ];
+
   configureFlags = [
     "--enable-telnet"
     "--enable-pam"
@@ -26,26 +43,8 @@ stdenv.mkDerivation (finalAttrs: {
   # We need _GNU_SOURCE so that mallocmock_reset() is defined: https://savannah.gnu.org/bugs/?66416
   env.NIX_CFLAGS_COMPILE = "-D_GNU_SOURCE=1";
 
-  nativeBuildInputs = [
-    autoreconfHook
-    texinfo
-  ];
-  buildInputs = [
-    ncurses
-    libxcrypt
-    pam
-  ];
-
-  outputs = [
-    "out"
-    "info"
-    "man"
-  ];
-
   meta = {
-    homepage = "https://www.gnu.org/software/screen/";
     description = "Window manager that multiplexes a physical terminal";
-    license = lib.licenses.gpl3Plus;
 
     longDescription = ''
       GNU Screen is a full-screen window manager that multiplexes a physical
@@ -69,7 +68,9 @@ stdenv.mkDerivation (finalAttrs: {
       terminal.
     '';
 
-    platforms = lib.platforms.unix;
+    homepage = "https://www.gnu.org/software/screen/";
+    license = lib.licenses.gpl3Plus;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

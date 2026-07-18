@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -15,8 +15,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-wa2GfV2Y8oX8G+1LbWnb2KH/+QbUYL9GXgOOVHpzbN8=";
   };
 
-  cargoHash = "sha256-sdyx2W9VUp1cBl19fFL2JDS+uS12zaC50yYzHaLOnHs=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -25,11 +23,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-sdyx2W9VUp1cBl19fFL2JDS+uS12zaC50yYzHaLOnHs=";
+
   meta = {
     description = "Migration manager written in Rust, that attempts to be smart yet minimal";
-    mainProgram = "movine";
-    homepage = "https://github.com/byronwasti/movine";
-    license = lib.licenses.mit;
+
     longDescription = ''
       Movine is a simple database migration manager that aims to be compatible
       with real-world migration work. Many migration managers get confused
@@ -47,6 +45,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
       Consider <link xling:href="https://diesel.rs/">diesel</link> instead if
       you want an ORM.
     '';
+
+    homepage = "https://github.com/byronwasti/movine";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ netcrns ];
+    mainProgram = "movine";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   fetchpatch,
 }:
 
@@ -16,15 +16,15 @@ buildGoModule {
     hash = "sha256-cHTgt+zW6S6NDWBE6NxSXNPdn84CLD8WmqBe+uXN8sA=";
   };
 
-  vendorHash = null;
-
   patches = [
     # Add Go Modules support
     (fetchpatch {
-      url = "https://github.com/jstemmer/gotags/commit/9146999bce9a88e15b5f123d1aa1613926dd9a9c.patch";
       hash = "sha256-6v/Ws15y50S6iCI1c0kEw5WHSg+1WqVT4mwdQKoi5G8=";
+      url = "https://github.com/jstemmer/gotags/commit/9146999bce9a88e15b5f123d1aa1613926dd9a9c.patch";
     })
   ];
+
+  vendorHash = null;
 
   ldflags = [
     "-s"
@@ -33,9 +33,9 @@ buildGoModule {
 
   meta = {
     description = "ctags-compatible tag generator for Go";
-    mainProgram = "gotags";
     homepage = "https://github.com/jstemmer/gotags";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "gotags";
   };
 }

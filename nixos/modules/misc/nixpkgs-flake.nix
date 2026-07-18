@@ -1,8 +1,8 @@
 {
   config,
-  options,
   lib,
   pkgs,
+  options,
   ...
 }:
 let
@@ -10,56 +10,7 @@ let
 in
 {
   options.nixpkgs.flake = {
-    source = lib.mkOption {
-      # In newer Nix versions, particularly with lazy trees, outPath of
-      # flakes becomes a Nix-language path object. We deliberately allow this
-      # to gracefully come through the interface in discussion with @roberth.
-      #
-      # See: https://github.com/NixOS/nixpkgs/pull/278522#discussion_r1460292639
-      type = lib.types.nullOr (lib.types.either lib.types.str lib.types.path);
-
-      default = null;
-      defaultText = "if (using nixpkgsFlake.lib.nixosSystem) then self.outPath else null";
-
-      example = ''fetchTarball { name = "source"; sha256 = "${lib.fakeHash}"; url = "https://github.com/nixos/nixpkgs/archive/somecommit.tar.gz"; }'';
-
-      description = ''
-        The path to the nixpkgs sources used to build the system. This is automatically set up to be
-        the store path of the nixpkgs flake used to build the system if using
-        `nixpkgs.lib.nixosSystem`, and is otherwise null by default.
-
-        This can also be optionally set if the NixOS system is not built with a flake but still uses
-        pinned sources: set this to the store path for the nixpkgs sources used to build the system,
-        as may be obtained by `fetchTarball`, for example.
-
-        Note: the name of the store path must be "source" due to
-        <https://github.com/NixOS/nix/issues/7075>.
-      '';
-    };
-
-    setNixPath = lib.mkOption {
-      type = lib.types.bool;
-
-      default = cfg.source != null;
-      defaultText = "config.nixpkgs.flake.source != null";
-
-      description = ''
-        Whether to set {env}`NIX_PATH` to include `nixpkgs=flake:nixpkgs` such that `<nixpkgs>`
-        lookups receive the version of nixpkgs that the system was built with, in concert with
-        {option}`nixpkgs.flake.setFlakeRegistry`.
-
-        This is on by default for NixOS configurations built with flakes.
-
-        This makes {command}`nix-build '<nixpkgs>' -A hello` work out of the box on flake systems.
-
-        Note that this option makes the NixOS closure depend on the nixpkgs sources, which may add
-        undesired closure size if the system will not have any nix commands run on it.
-      '';
-    };
-
     setFlakeRegistry = lib.mkOption {
-      type = lib.types.bool;
-
       default = cfg.source != null;
       defaultText = "config.nixpkgs.flake.source != null";
 
@@ -75,6 +26,54 @@ in
         Note that this option makes the NixOS closure depend on the nixpkgs sources, which may add
         undesired closure size if the system will not have any nix commands run on it.
       '';
+
+      type = lib.types.bool;
+    };
+
+    setNixPath = lib.mkOption {
+      default = cfg.source != null;
+      defaultText = "config.nixpkgs.flake.source != null";
+
+      description = ''
+        Whether to set {env}`NIX_PATH` to include `nixpkgs=flake:nixpkgs` such that `<nixpkgs>`
+        lookups receive the version of nixpkgs that the system was built with, in concert with
+        {option}`nixpkgs.flake.setFlakeRegistry`.
+
+        This is on by default for NixOS configurations built with flakes.
+
+        This makes {command}`nix-build '<nixpkgs>' -A hello` work out of the box on flake systems.
+
+        Note that this option makes the NixOS closure depend on the nixpkgs sources, which may add
+        undesired closure size if the system will not have any nix commands run on it.
+      '';
+
+      type = lib.types.bool;
+    };
+
+    source = lib.mkOption {
+      default = null;
+      defaultText = "if (using nixpkgsFlake.lib.nixosSystem) then self.outPath else null";
+
+      description = ''
+        The path to the nixpkgs sources used to build the system. This is automatically set up to be
+        the store path of the nixpkgs flake used to build the system if using
+        `nixpkgs.lib.nixosSystem`, and is otherwise null by default.
+
+        This can also be optionally set if the NixOS system is not built with a flake but still uses
+        pinned sources: set this to the store path for the nixpkgs sources used to build the system,
+        as may be obtained by `fetchTarball`, for example.
+
+        Note: the name of the store path must be "source" due to
+        <https://github.com/NixOS/nix/issues/7075>.
+      '';
+
+      example = ''fetchTarball { name = "source"; sha256 = "${lib.fakeHash}"; url = "https://github.com/nixos/nixpkgs/archive/somecommit.tar.gz"; }'';
+      # In newer Nix versions, particularly with lazy trees, outPath of
+      # flakes becomes a Nix-language path object. We deliberately allow this
+      # to gracefully come through the interface in discussion with @roberth.
+      #
+      # See: https://github.com/NixOS/nixpkgs/pull/278522#discussion_r1460292639
+      type = lib.types.nullOr (lib.types.either lib.types.str lib.types.path);
     };
   };
 
@@ -84,6 +83,7 @@ in
         assertions = [
           {
             assertion = cfg.setNixPath -> cfg.setFlakeRegistry;
+
             message = ''
               Setting `nixpkgs.flake.setNixPath` requires that `nixpkgs.flake.setFlakeRegistry` also
               be set, since it is implemented in terms of indirection through the flake registry.
@@ -93,8 +93,8 @@ in
       }
       (lib.mkIf cfg.setFlakeRegistry {
         nix.registry.nixpkgs.to = lib.mkDefault {
-          type = "path";
           path = cfg.source;
+          type = "path";
         };
       })
       (lib.mkIf cfg.setNixPath {

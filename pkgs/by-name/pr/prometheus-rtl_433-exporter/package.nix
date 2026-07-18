@@ -1,8 +1,8 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
   bash,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -18,16 +18,14 @@ buildGoModule rec {
   };
 
   postPatch = "substituteInPlace rtl_433_prometheus.go --replace /bin/bash ${bash}/bin/bash";
-
   vendorHash = "sha256-BsNB0OTwBUu9kK+lSN7EF8ZQH3kFx8P9h4QgcfCvtg4=";
-
   passthru.tests = { inherit (nixosTests.prometheus-exporters) rtl_433; };
 
   meta = {
     description = "Prometheus time-series DB exporter for rtl_433 433MHz radio packet decoder";
-    mainProgram = "rtl_433_prometheus";
     homepage = "https://github.com/mhansen/rtl_433_prometheus";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ zopieux ];
+    mainProgram = "rtl_433_prometheus";
   };
 }

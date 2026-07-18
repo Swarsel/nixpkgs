@@ -1,16 +1,13 @@
 {
+  generator-out,
+  protobuf,
   python3,
   stdenvNoCC,
-  protobuf,
   version,
-  generator-out,
 }:
 stdenvNoCC.mkDerivation {
-  pname = "nanopb-generator";
   inherit version;
-
-  dontUnpack = true;
-
+  pname = "nanopb-generator";
   nativeBuildInputs = [ python3.pkgs.wrapPython ];
 
   propagatedBuildInputs = [
@@ -25,4 +22,6 @@ stdenvNoCC.mkDerivation {
     wrapPythonPrograms
     cp ${generator-out}/bin/nanopb_generator.py $out/bin/
   '';
+
+  dontUnpack = true;
 }

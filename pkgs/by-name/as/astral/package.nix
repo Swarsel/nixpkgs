@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   jdk8,
   jre8,
-  strip-nondeterminism,
   makeWrapper,
+  stdenvNoCC,
+  strip-nondeterminism,
   zip,
 }:
 
@@ -67,17 +67,20 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/smirarab/ASTRAL";
     description = "Tool for estimating an unrooted species tree given a set of unrooted gene trees";
-    mainProgram = "astral";
+    homepage = "https://github.com/smirarab/ASTRAL";
+    license = lib.licenses.asl20;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # source bundles dependencies as jars
     ];
-    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       bzizou
       tomasajt
     ];
+
+    mainProgram = "astral";
   };
 })

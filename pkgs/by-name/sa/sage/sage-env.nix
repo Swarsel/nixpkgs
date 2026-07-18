@@ -1,56 +1,56 @@
 {
-  stdenv,
   lib,
-  writeTextFile,
-  sagelib,
-  sage-docbuild,
-  env-locations,
-  gfortran,
-  ninja,
-  meson,
+  stdenv,
   bash,
-  coreutils,
-  gnused,
-  gnugrep,
-  gawk,
   binutils,
-  pythonEnv,
-  python3,
-  pkg-config,
-  pari,
-  gap,
-  maxima,
-  singular,
+  blas,
+  cddlib,
+  coreutils,
+  eclib,
+  ecm,
+  env-locations,
   fflas-ffpack,
-  givaro,
+  flint,
+  gap,
+  gawk,
   gd,
+  gfan,
+  gfortran,
+  giac,
+  givaro,
+  glpk,
+  gmp,
+  gnugrep,
+  gnused,
+  gsl,
+  lapack,
+  lcalc,
+  less,
   libpng,
   linbox,
   m4ri,
-  giac,
-  palp,
-  rWrapper,
-  gfan,
-  cddlib,
-  tachyon,
-  glpk,
-  eclib,
-  sympow,
-  nauty,
-  sqlite,
-  ppl,
-  ecm,
-  lcalc,
-  rubiks,
-  blas,
-  lapack,
-  flint,
-  gmp,
+  maxima,
+  meson,
   mpfr,
-  zlib,
-  gsl,
+  nauty,
+  ninja,
   ntl,
-  less,
+  palp,
+  pari,
+  pkg-config,
+  ppl,
+  python3,
+  pythonEnv,
+  rWrapper,
+  rubiks,
+  sage-docbuild,
+  sagelib,
+  singular,
+  sqlite,
+  sympow,
+  tachyon,
+  writeTextFile,
+  zlib,
 }:
 
 assert (!blas.isILP64) && (!lapack.isILP64);
@@ -102,13 +102,8 @@ let
   );
 in
 writeTextFile rec {
-  name = "sage-env";
   destination = "/${name}";
-
-  passthru = {
-    lib = sagelib;
-    docbuild = sage-docbuild;
-  };
+  name = "sage-env";
 
   text = ''
     export PKG_CONFIG_PATH='${
@@ -187,4 +182,9 @@ writeTextFile rec {
       ]
     }''${DYLD_LIBRARY_PATH:+:}$DYLD_LIBRARY_PATH"
   '';
+
+  passthru = {
+    docbuild = sage-docbuild;
+    lib = sagelib;
+  };
 }

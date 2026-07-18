@@ -12,8 +12,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   src = fetchCrate {
     inherit (finalAttrs) version;
-    pname = "toml-cli";
     hash = "sha256-V/yMk/Zt3yvEx10nzRhY/7GYnQninGg9h63NSaQChSA=";
+    pname = "toml-cli";
   };
 
   cargoHash = "sha256-PoqVMTCRmSTt7UhCpMF3ixmAfVtpkaOfaTTmDNhrpLA=";

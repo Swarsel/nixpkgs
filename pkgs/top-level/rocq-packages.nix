@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  fetchzip,
   callPackage,
+  fetchpatch,
+  fetchzip,
+  makeWrapper,
   newScope,
   ocamlPackages_4_14,
   ocamlPackages_5_4,
-  fetchpatch,
-  makeWrapper,
 }@args:
 let
   lib = import ../build-support/rocq/extra-lib.nix { inherit (args) lib; };
@@ -21,10 +21,29 @@ let
     in
     {
       inherit rocq-core lib;
-      rocqPackages = self // {
-        __attrsFailEvaluation = true;
-        recurseForDerivations = false;
-      };
+      bignums = callPackage ../development/rocq-modules/bignums { };
+      filterPackages = doesFilter: if doesFilter then filterRocqPackages self else self;
+      hierarchy-builder = callPackage ../development/rocq-modules/hierarchy-builder { };
+      iris = callPackage ../development/rocq-modules/iris { };
+      mathcomp = callPackage ../development/rocq-modules/mathcomp { };
+      mathcomp-algebra = self.mathcomp.algebra;
+      mathcomp-analysis = callPackage ../development/rocq-modules/mathcomp-analysis { };
+      mathcomp-analysis-stdlib = self.mathcomp-analysis.analysis-stdlib;
+      mathcomp-bigenough = callPackage ../development/rocq-modules/mathcomp-bigenough { };
+      mathcomp-boot = self.mathcomp.boot;
+      mathcomp-character = self.mathcomp-group-representation;
+      mathcomp-classical = self.mathcomp-analysis.classical;
+      mathcomp-experimental-reals = self.mathcomp-analysis.experimental-reals;
+      mathcomp-field = self.mathcomp.field;
+      mathcomp-fingroup = self.mathcomp-finite-group;
+      mathcomp-finite-group = self.mathcomp.finite-group;
+      mathcomp-finmap = callPackage ../development/rocq-modules/mathcomp-finmap { };
+      mathcomp-group-representation = self.mathcomp.group-representation;
+      mathcomp-order = self.mathcomp.order;
+      mathcomp-real-closed = callPackage ../development/rocq-modules/mathcomp-real-closed { };
+      mathcomp-reals = self.mathcomp-analysis.reals;
+      mathcomp-reals-stdlib = self.mathcomp-analysis.reals-stdlib;
+      mathcomp-solvable = self.mathcomp.solvable;
 
       metaFetch = import ../build-support/rocq/meta-fetch/default.nix {
         inherit
@@ -34,40 +53,22 @@ let
           fetchurl
           ;
       };
-      mkRocqDerivation = lib.makeOverridable (callPackage ../build-support/rocq { });
 
-      bignums = callPackage ../development/rocq-modules/bignums { };
-      hierarchy-builder = callPackage ../development/rocq-modules/hierarchy-builder { };
-      iris = callPackage ../development/rocq-modules/iris { };
-      mathcomp = callPackage ../development/rocq-modules/mathcomp { };
-      mathcomp-boot = self.mathcomp.boot;
-      mathcomp-order = self.mathcomp.order;
-      mathcomp-finite-group = self.mathcomp.finite-group;
-      mathcomp-fingroup = self.mathcomp-finite-group;
-      mathcomp-algebra = self.mathcomp.algebra;
-      mathcomp-solvable = self.mathcomp.solvable;
-      mathcomp-field = self.mathcomp.field;
-      mathcomp-group-representation = self.mathcomp.group-representation;
-      mathcomp-character = self.mathcomp-group-representation;
-      mathcomp-analysis = callPackage ../development/rocq-modules/mathcomp-analysis { };
-      mathcomp-analysis-stdlib = self.mathcomp-analysis.analysis-stdlib;
-      mathcomp-bigenough = callPackage ../development/rocq-modules/mathcomp-bigenough { };
-      mathcomp-classical = self.mathcomp-analysis.classical;
-      mathcomp-experimental-reals = self.mathcomp-analysis.experimental-reals;
-      mathcomp-finmap = callPackage ../development/rocq-modules/mathcomp-finmap { };
-      mathcomp-real-closed = callPackage ../development/rocq-modules/mathcomp-real-closed { };
-      mathcomp-reals = self.mathcomp-analysis.reals;
-      mathcomp-reals-stdlib = self.mathcomp-analysis.reals-stdlib;
       micromega-plugin = callPackage ../development/rocq-modules/micromega-plugin { };
+      mkRocqDerivation = lib.makeOverridable (callPackage ../build-support/rocq { });
       parseque = callPackage ../development/rocq-modules/parseque { };
       relation-algebra = callPackage ../development/rocq-modules/relation-algebra { };
       rocq-elpi = callPackage ../development/rocq-modules/rocq-elpi { };
+
+      rocqPackages = self // {
+        __attrsFailEvaluation = true;
+        recurseForDerivations = false;
+      };
+
       rocqnavi = callPackage ../development/rocq-modules/rocqnavi { };
       stdlib = callPackage ../development/rocq-modules/stdlib { };
       stdpp = callPackage ../development/rocq-modules/stdpp { };
       vsrocq-language-server = callPackage ../development/rocq-modules/vsrocq-language-server { };
-
-      filterPackages = doesFilter: if doesFilter then filterRocqPackages self else self;
     };
 
   filterRocqPackages =
@@ -113,14 +114,12 @@ rec {
     in
     self.filterPackages (!rocq-core.dontFilter or false);
 
+  rocq-core = rocqPackages.rocq-core;
   rocq-core_9_0 = mkRocq "9.0";
   rocq-core_9_1 = mkRocq "9.1";
   rocq-core_9_2 = mkRocq "9.2";
-
+  rocqPackages = lib.recurseIntoAttrs rocqPackages_9_1;
   rocqPackages_9_0 = mkRocqPackages rocq-core_9_0;
   rocqPackages_9_1 = mkRocqPackages rocq-core_9_1;
   rocqPackages_9_2 = mkRocqPackages rocq-core_9_2;
-
-  rocqPackages = lib.recurseIntoAttrs rocqPackages_9_1;
-  rocq-core = rocqPackages.rocq-core;
 }

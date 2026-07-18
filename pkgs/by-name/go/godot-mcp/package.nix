@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage {
@@ -16,29 +16,30 @@ buildNpmPackage {
   };
 
   npmDepsHash = "sha256-9F2QW8+IQiL+qZ4EXSq1pgk3DMmES8aAP3CAwL+fDfc=";
-
-  npmInstallFlags = [
-    "--ignore-scripts"
-  ];
+  doCheck = false;
 
   npmBuildFlags = [
     "run"
     "build"
   ];
 
-  doCheck = false;
+  npmInstallFlags = [
+    "--ignore-scripts"
+  ];
 
   meta = {
     description = "MCP server for interfacing with Godot game engine";
+
     longDescription = ''
       A Model Context Protocol (MCP) server for interacting with the Godot
       game engine. Enables AI assistants to launch the Godot editor, run
       projects, capture debug output, and control project execution.
     '';
-    mainProgram = "godot-mcp";
+
     homepage = "https://github.com/Coding-Solo/godot-mcp";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "godot-mcp";
   };
 }

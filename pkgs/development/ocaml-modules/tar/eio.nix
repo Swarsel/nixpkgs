@@ -1,16 +1,14 @@
 {
-  buildDunePackage,
-  tar,
-  eio,
   alcotest,
+  buildDunePackage,
+  eio,
   eio_main,
+  tar,
 }:
 
 buildDunePackage {
-  pname = "tar-eio";
   inherit (tar) version src doCheck;
-
-  minimalOCamlVersion = "5.1";
+  pname = "tar-eio";
 
   propagatedBuildInputs = [
     tar
@@ -21,6 +19,8 @@ buildDunePackage {
     alcotest
     eio_main
   ];
+
+  minimalOCamlVersion = "5.1";
 
   meta = tar.meta // {
     description = "Decode and encode tar format files using Eio";

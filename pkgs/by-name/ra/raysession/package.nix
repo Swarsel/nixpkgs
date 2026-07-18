@@ -1,11 +1,11 @@
 {
   lib,
   fetchurl,
-  python3Packages,
-  libjack2,
-  which,
   bash,
+  libjack2,
+  python3Packages,
   qt5,
+  which,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
@@ -25,32 +25,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
     chmod -x src/clients/jackpatch/main_loop.py
   '';
 
-  pyproject = false;
-
   nativeBuildInputs = [
     python3Packages.pyqt5 # pyuic5 and pyrcc5 to build resources.
     qt5.qttools # lrelease to build translations.
     which # which to find lrelease.
     qt5.wrapQtAppsHook
   ];
+
   buildInputs = [
     libjack2
     bash
-  ];
-  dependencies = [
-    python3Packages.pyliblo3
-    python3Packages.pyqt5
-  ];
-
-  dontWrapQtApps = true; # The program is a python script.
-
-  installFlags = [ "PREFIX=$(out)" ];
-
-  makeWrapperArgs = [
-    "--suffix"
-    "LD_LIBRARY_PATH"
-    ":"
-    (lib.makeLibraryPath [ libjack2 ])
   ];
 
   postFixup = ''
@@ -60,9 +44,26 @@ python3Packages.buildPythonApplication (finalAttrs: {
     done
   '';
 
+  dependencies = [
+    python3Packages.pyliblo3
+    python3Packages.pyqt5
+  ];
+
+  dontWrapQtApps = true; # The program is a python script.
+  installFlags = [ "PREFIX=$(out)" ];
+
+  makeWrapperArgs = [
+    "--suffix"
+    "LD_LIBRARY_PATH"
+    ":"
+    (lib.makeLibraryPath [ libjack2 ])
+  ];
+
+  pyproject = false;
+
   meta = {
-    homepage = "https://github.com/Houston4444/RaySession";
     description = "Session manager for Linux musical programs";
+    homepage = "https://github.com/Houston4444/RaySession";
     license = lib.licenses.gpl2;
     maintainers = [ ];
     platforms = lib.platforms.linux;

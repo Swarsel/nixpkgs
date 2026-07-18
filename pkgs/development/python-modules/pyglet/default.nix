@@ -1,35 +1,34 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  apple-sdk,
+  buildPythonPackage,
+  ffmpeg-full,
   flit-core,
-  libGL,
-  libGLU,
-  libxxf86vm,
-  libxrender,
-  libxrandr,
-  libxi,
-  libxinerama,
-  libxext,
-  libx11,
-  pytestCheckHook,
-  glibc,
-  gtk2-x11,
-  gdk-pixbuf,
   fontconfig,
   freetype,
-  ffmpeg-full,
-  openal,
-  libpulseaudio,
+  gdk-pixbuf,
+  glibc,
+  gtk2-x11,
   harfbuzz,
-  apple-sdk,
+  libGL,
+  libGLU,
+  libpulseaudio,
+  libx11,
+  libxext,
+  libxi,
+  libxinerama,
+  libxrandr,
+  libxrender,
+  libxxf86vm,
+  openal,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
-  version = "2.1.12";
   pname = "pyglet";
-  pyproject = true;
+  version = "2.1.12";
 
   src = fetchFromGitHub {
     owner = "pyglet";
@@ -124,18 +123,17 @@ buildPythonPackage rec {
       EOF
     '';
 
-  build-system = [ flit-core ];
-
   # needs GL set up which isn't really possible in a build environment even in headless mode.
   # tests do run and pass in nix-shell, however.
   doCheck = false;
-
   nativeCheckInputs = [ pytestCheckHook ];
 
   preCheck = # libEGL only available on Linux (despite meta.platforms on libGL)
     lib.optionalString stdenv.hostPlatform.isLinux ''
       export PYGLET_HEADLESS=True
     '';
+
+  build-system = [ flit-core ];
 
   # test list taken from .travis.yml
   disabledTestPaths = [
@@ -145,12 +143,13 @@ buildPythonPackage rec {
     "tests/unit/text/test_layout.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyglet" ];
 
   meta = {
+    description = "Cross-platform windowing and multimedia library";
     homepage = "http://www.pyglet.org/";
     changelog = "https://github.com/pyglet/pyglet/blob/${src.tag}/RELEASE_NOTES";
-    description = "Cross-platform windowing and multimedia library";
     license = lib.licenses.bsd3;
     # The patch needs adjusting for other platforms.
     platforms = with lib.platforms; linux ++ darwin;

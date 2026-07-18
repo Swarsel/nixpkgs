@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   beautifulsoup4,
   buildPythonPackage,
-  fetchFromGitHub,
   pytestCheckHook,
   requests,
   responses,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "lyricwikia";
   version = "0.1.11";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "enricobacis";
@@ -37,19 +36,20 @@ buildPythonPackage rec {
     responses
   ];
 
-  pythonImportsCheck = [ "lyricwikia" ];
-
   disabledTests = [
     # Test requires network access
     "test_integration"
   ];
 
+  format = "setuptools";
+  pythonImportsCheck = [ "lyricwikia" ];
+
   meta = {
     description = "LyricWikia API for song lyrics";
-    mainProgram = "lyrics";
     homepage = "https://github.com/enricobacis/lyricwikia";
     changelog = "https://github.com/enricobacis/lyricwikia/releases/tag/${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kmein ];
+    mainProgram = "lyrics";
   };
 }

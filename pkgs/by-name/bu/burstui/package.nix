@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   makeWrapper,
   pkgs,
 }:
@@ -17,11 +17,15 @@ buildGoModule (finalAttrs: {
     hash = "sha256-mSWEngpnV1zycqxsW7DW1gVPBQM8EUf/dip/sqV63ps=";
   };
 
-  __structuredAttrs = true;
-
+  nativeBuildInputs = [ makeWrapper ];
   vendorHash = "sha256-35IockAC27Va3+y2QwbyHeyKezgAG2F7mqTdNpo51lA=";
 
-  nativeBuildInputs = [ makeWrapper ];
+  postFixup = ''
+    wrapProgram $out/bin/burstui \
+      --prefix PATH : ${lib.makeBinPath [ pkgs.gobuster ]} \
+  '';
+
+  __structuredAttrs = true;
 
   ldflags = [
     "-s"
@@ -29,11 +33,6 @@ buildGoModule (finalAttrs: {
     "-X=main.commit=${finalAttrs.src.rev}"
     "-X=main.commitDate=1970-01-01T00:00:00Z"
   ];
-
-  postFixup = ''
-    wrapProgram $out/bin/burstui \
-      --prefix PATH : ${lib.makeBinPath [ pkgs.gobuster ]} \
-  '';
 
   meta = {
     description = "TUI for Gobuster";

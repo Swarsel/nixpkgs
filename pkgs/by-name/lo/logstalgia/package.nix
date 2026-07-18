@@ -3,20 +3,20 @@
   stdenv,
   fetchurl,
   SDL2,
-  ftgl,
-  autoreconfHook,
-  pkg-config,
-  libpng,
-  libjpeg,
-  pcre2,
   SDL2_image,
-  glew,
-  libGLU,
-  libGL,
-  libx11,
+  autoreconfHook,
   boost,
-  glm,
   freetype,
+  ftgl,
+  glew,
+  glm,
+  libGL,
+  libGLU,
+  libjpeg,
+  libpng,
+  libx11,
+  pcre2,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -62,9 +62,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://logstalgia.io/";
     description = "Website traffic visualization tool";
-    license = lib.licenses.gpl3Plus;
 
     longDescription = ''
       Logstalgia is a website traffic visualization that replays or
@@ -85,8 +83,10 @@ stdenv.mkDerivation (finalAttrs: {
       a Miscellaneous section.
     '';
 
-    platforms = lib.platforms.gnu ++ lib.platforms.linux ++ lib.platforms.darwin;
+    homepage = "https://logstalgia.io/";
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ pSub ];
+    platforms = lib.platforms.gnu ++ lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "logstalgia";
   };
 })

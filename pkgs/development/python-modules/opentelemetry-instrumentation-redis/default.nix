@@ -1,22 +1,25 @@
 {
   buildPythonPackage,
+  fakeredis,
   hatchling,
   opentelemetry-api,
   opentelemetry-instrumentation,
   opentelemetry-semantic-conventions,
-  wrapt,
-  redis,
   opentelemetry-test-utils,
   pytestCheckHook,
-  fakeredis,
+  redis,
+  wrapt,
 }:
 
 buildPythonPackage {
   inherit (opentelemetry-instrumentation) version src;
   pname = "opentelemetry-instrumentation-redis";
-  pyproject = true;
 
-  sourceRoot = "${opentelemetry-instrumentation.src.name}/instrumentation/opentelemetry-instrumentation-redis";
+  nativeCheckInputs = [
+    fakeredis
+    opentelemetry-test-utils
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -27,20 +30,16 @@ buildPythonPackage {
     wrapt
   ];
 
-  nativeCheckInputs = [
-    fakeredis
-    opentelemetry-test-utils
-    pytestCheckHook
-  ];
-
   optional-dependencies = {
     instruments = [ redis ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "opentelemetry.instrumentation.redis" ];
+  sourceRoot = "${opentelemetry-instrumentation.src.name}/instrumentation/opentelemetry-instrumentation-redis";
 
   meta = opentelemetry-instrumentation.meta // {
-    homepage = "https://github.com/open-telemetry/opentelemetry-python-contrib/blob/main/instrumentation/opentelemetry-instrumentation-redis";
     description = "Redis instrumentation for OpenTelemetry";
+    homepage = "https://github.com/open-telemetry/opentelemetry-python-contrib/blob/main/instrumentation/opentelemetry-instrumentation-redis";
   };
 }

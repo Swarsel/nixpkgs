@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   eth-utils,
   hypothesis,
-  pytestCheckHook,
   pydantic,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "hexbytes";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ethereum";
@@ -21,8 +20,6 @@ buildPythonPackage rec {
     hash = "sha256-xYXxlyVGdsksxZJtSpz1V3pj4NL7IzX0gaQeCoiHr8g=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     eth-utils
     hypothesis
@@ -30,8 +27,9 @@ buildPythonPackage rec {
     pydantic
   ];
 
+  build-system = [ setuptools ];
   disabledTests = [ "test_install_local_wheel" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "hexbytes" ];
 
   meta = {

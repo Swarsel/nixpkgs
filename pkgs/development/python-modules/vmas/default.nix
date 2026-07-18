@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   gym,
   gym-notices,
   gymnasium,
@@ -23,10 +23,6 @@
 buildPythonPackage rec {
   pname = "vmas";
   version = "1.5.2";
-  pyproject = true;
-
-  # dependency "gym" broken
-  disabled = pythonOlder "3.12";
 
   src = fetchFromGitHub {
     owner = "proroklab";
@@ -34,6 +30,13 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-i1dr65IPIOGAH/1jXS7+PnxJzl986+fGB7M4ydisIrs=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pyyaml
+    tqdm
+  ]
+  ++ optional-dependencies.gymnasium;
 
   build-system = [ setuptools ];
 
@@ -44,6 +47,16 @@ buildPythonPackage rec {
     pyglet
     six
     torch
+  ];
+
+  # dependency "gym" broken
+  disabled = pythonOlder "3.12";
+
+  disabledTests = [
+    # pyglet.display.xlib.NoSuchDisplayException: Cannot connect to "None"
+    "test_use_vmas_env"
+    # Missing python3Packages.cvxpylayers
+    "test_heuristic"
   ];
 
   optional-dependencies = {
@@ -59,26 +72,13 @@ buildPythonPackage rec {
     ];
   };
 
+  pyproject = true;
+  pythonImportsCheck = [ "vmas" ];
+
   pythonRelaxDeps = [
     "gym-notices"
     "pyglet"
   ];
-
-  disabledTests = [
-    # pyglet.display.xlib.NoSuchDisplayException: Cannot connect to "None"
-    "test_use_vmas_env"
-    # Missing python3Packages.cvxpylayers
-    "test_heuristic"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pyyaml
-    tqdm
-  ]
-  ++ optional-dependencies.gymnasium;
-
-  pythonImportsCheck = [ "vmas" ];
 
   meta = {
     description = "A vectorized differentiable simulator designed for efficient Multi-Agent Reinforcement Learning benchmarking";

@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installShellFiles,
-  ronn,
   nix-update-script,
+  ronn,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation rec {
   pname = "git-identity";
@@ -43,10 +43,10 @@ stdenvNoCC.mkDerivation rec {
 
   meta = {
     description = "Manage your identity in Git";
-    mainProgram = "git-identity";
     homepage = "https://github.com/madx/git-identity";
     license = lib.licenses.wtfpl;
     maintainers = with lib.maintainers; [ mynacol ];
     platforms = lib.platforms.all;
+    mainProgram = "git-identity";
   };
 }

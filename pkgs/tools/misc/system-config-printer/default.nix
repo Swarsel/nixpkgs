@@ -2,32 +2,32 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  udev,
-  pkg-config,
-  glib,
-  xmlto,
-  wrapGAppsHook3,
-  docbook_xml_dtd_412,
-  docbook_xsl,
-  libxml2,
-  desktop-file-utils,
-  libusb1,
-  cups,
-  gdk-pixbuf,
-  pango,
   atk,
-  libnotify,
-  gobject-introspection,
-  libsecret,
-  packagekit,
-  libcupsfilters,
-  gettext,
-  libtool,
   autoconf-archive,
-  python3Packages,
   autoreconfHook,
   bash,
+  cups,
+  desktop-file-utils,
+  docbook_xml_dtd_412,
+  docbook_xsl,
   fetchpatch,
+  gdk-pixbuf,
+  gettext,
+  glib,
+  gobject-introspection,
+  libcupsfilters,
+  libnotify,
+  libsecret,
+  libtool,
+  libusb1,
+  libxml2,
+  packagekit,
+  pango,
+  pkg-config,
+  python3Packages,
+  udev,
+  wrapGAppsHook3,
+  xmlto,
 }:
 
 stdenv.mkDerivation rec {
@@ -41,20 +41,13 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-l3HEnYycP56vZWREWkAyHmcFgtu09dy4Ds65u7eqNZk=";
   };
 
-  prePatch = ''
-    # for automake
-    touch README ChangeLog
-    # for tests
-    substituteInPlace Makefile.am --replace /bin/bash ${bash}/bin/bash
-  '';
-
   patches = [
     ./detect_serverbindir.patch
     # fix typeerror, remove on next release
     (fetchpatch {
-      url = "https://github.com/OpenPrinting/system-config-printer/commit/399b3334d6519639cfe7f1c0457e2475b8ee5230.patch";
-      sha256 = "sha256-JCdGmZk2vRn3X1BDxOJaY3Aw8dr0ODVzi0oY20ZWfRs=";
       excludes = [ "NEWS" ];
+      sha256 = "sha256-JCdGmZk2vRn3X1BDxOJaY3Aw8dr0ODVzi0oY20ZWfRs=";
+      url = "https://github.com/OpenPrinting/system-config-printer/commit/399b3334d6519639cfe7f1c0457e2475b8ee5230.patch";
     })
 
     # switch to pep517 build tools
@@ -62,20 +55,6 @@ stdenv.mkDerivation rec {
 
     # FIXME: remove when gettext is fixed
     ./gettext-0.25.patch
-  ];
-
-  buildInputs = [
-    glib
-    udev
-    libusb1
-    cups
-    python3Packages.python
-    libnotify
-    gdk-pixbuf
-    pango
-    atk
-    packagekit
-    libsecret
   ];
 
   nativeBuildInputs = [
@@ -98,16 +77,19 @@ stdenv.mkDerivation rec {
     gobject-introspection
   ];
 
-  pythonPath =
-    with python3Packages;
-    requiredPythonModules [
-      pycups
-      pycurl
-      dbus-python
-      pygobject3
-      pycairo
-      pysmbc
-    ];
+  buildInputs = [
+    glib
+    udev
+    libusb1
+    cups
+    python3Packages.python
+    libnotify
+    gdk-pixbuf
+    pango
+    atk
+    packagekit
+    libsecret
+  ];
 
   configureFlags = [
     "--with-udev-rules"
@@ -115,14 +97,7 @@ stdenv.mkDerivation rec {
     "--with-systemdsystemunitdir=${placeholder "out"}/etc/systemd/system"
   ];
 
-  stripDebugList = [
-    "bin"
-    "lib"
-    "etc/udev"
-  ];
-
   doCheck = true;
-  doInstallCheck = true;
 
   postInstall = ''
     buildPythonPath "$out ''${pythonPath[*]}"
@@ -140,9 +115,35 @@ stdenv.mkDerivation rec {
       --replace "udev-configure-printer" "$out/etc/udev/udev-configure-printer"
   '';
 
+  doInstallCheck = true;
+
+  prePatch = ''
+    # for automake
+    touch README ChangeLog
+    # for tests
+    substituteInPlace Makefile.am --replace /bin/bash ${bash}/bin/bash
+  '';
+
+  pythonPath =
+    with python3Packages;
+    requiredPythonModules [
+      pycups
+      pycurl
+      dbus-python
+      pygobject3
+      pycairo
+      pysmbc
+    ];
+
+  stripDebugList = [
+    "bin"
+    "lib"
+    "etc/udev"
+  ];
+
   meta = {
     homepage = "https://github.com/openprinting/system-config-printer";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.linux;
   };
 }

@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
   lib,
   fetchurl,
+  stdenvNoCC,
   variants ? [ ],
 }:
 
@@ -23,9 +23,6 @@ in
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "xcursor-pro";
   version = "2.0.2";
-  srcs = map (variant: fetchurl { inherit (sources.${variant}) url sha256; }) selectedVariants;
-
-  sourceRoot = ".";
 
   installPhase = ''
     runHook preInstall
@@ -39,16 +36,20 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
+  srcs = map (variant: fetchurl { inherit (sources.${variant}) url sha256; }) selectedVariants;
   passthru.updateScript = ./update.sh;
 
   meta = {
-    homepage = "https://github.com/ful1e5/XCursor-pro";
     description = "Modern XCursors";
+    homepage = "https://github.com/ful1e5/XCursor-pro";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       lactose
       midischwarz12
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

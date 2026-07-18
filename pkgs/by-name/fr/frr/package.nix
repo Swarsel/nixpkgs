@@ -2,82 +2,75 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-
   # build time
   autoreconfHook,
-  flex,
   bison,
-  perl,
-  pkg-config,
-  texinfo,
   buildPackages,
-  grpc,
-  protobuf,
-  which,
-
   # runtime
   c-ares,
+  elfutils,
+  fetchpatch,
+  flex,
+  grpc,
   json_c,
   libcap,
-  elfutils,
   libunwind,
   libyang,
-  net-snmp,
-  openssl,
-  pam,
-  pcre2,
-  python3,
-  readline,
-  rtrlib,
-  protobufc,
-  sqlite,
   lua53Packages,
-
+  net-snmp,
   # tests
   net-tools,
   nixosTests,
-
-  # general options
-  snmpSupport ? true,
-  rpkiSupport ? true,
-  numMultipath ? 64,
-  watchfrrSupport ? true,
-  cumulusSupport ? false,
-  irdpSupport ? true,
-  mgmtdSupport ? true,
-  scriptingSupport ? true,
-  # Experimental as of 10.1, reconsider if upstream changes defaults
-  grpcSupport ? false,
-
-  # routing daemon options
-  bgpdSupport ? true,
-  ripdSupport ? true,
-  ripngdSupport ? true,
-  ospfdSupport ? true,
-  ospf6dSupport ? true,
-  ldpdSupport ? true,
-  nhrpdSupport ? true,
-  eigrpdSupport ? true,
+  openssl,
+  pam,
+  pcre2,
+  perl,
+  pkg-config,
+  protobuf,
+  protobufc,
+  python3,
+  readline,
+  rtrlib,
+  sqlite,
+  texinfo,
+  which,
   babeldSupport ? true,
-  isisdSupport ? true,
-  pimdSupport ? true,
-  pim6dSupport ? true,
-  sharpdSupport ? true,
-  fabricdSupport ? true,
-  vrrpdSupport ? true,
-  pathdSupport ? true,
   bfddSupport ? true,
-  pbrdSupport ? true,
-  staticdSupport ? true,
-
   # BGP options
   bgpAnnounce ? true,
   bgpBmp ? true,
   bgpVnc ? true,
-
+  # routing daemon options
+  bgpdSupport ? true,
+  cumulusSupport ? false,
+  eigrpdSupport ? true,
+  fabricdSupport ? true,
+  # Experimental as of 10.1, reconsider if upstream changes defaults
+  grpcSupport ? false,
+  irdpSupport ? true,
+  isisdSupport ? true,
+  ldpdSupport ? true,
+  mgmtdSupport ? true,
+  nhrpdSupport ? true,
+  numMultipath ? 64,
+  ospf6dSupport ? true,
   # OSPF options
   ospfApi ? true,
+  ospfdSupport ? true,
+  pathdSupport ? true,
+  pbrdSupport ? true,
+  pim6dSupport ? true,
+  pimdSupport ? true,
+  ripdSupport ? true,
+  ripngdSupport ? true,
+  rpkiSupport ? true,
+  scriptingSupport ? true,
+  sharpdSupport ? true,
+  # general options
+  snmpSupport ? true,
+  staticdSupport ? true,
+  vrrpdSupport ? true,
+  watchfrrSupport ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -91,9 +84,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-sSvw9tfVNUyQjEOELoUAIQkEvXg765MsWvVKM0gsYUc=";
   };
 
-  # Without the std explicitly set, we may run into abseil-cpp
-  # compilation errors.
-  env.CXXFLAGS = "-std=gnu++23";
+  postPatch = ''
+    substituteInPlace tools/frr-reload \
+      --replace-quiet /usr/lib/frr/ $out/libexec/frr/
+    sed -i '/^PATH=/ d' tools/frr.in tools/frrcommon.sh.in
+  '';
 
   nativeBuildInputs = [
     autoreconfHook
@@ -139,21 +134,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals scriptingSupport [
     lua53Packages.lua
   ];
-
-  # otherwise in cross-compilation: "configure: error: no working python version found"
-  depsBuildBuild = [
-    buildPackages.python3
-  ]
-  ++ lib.optionals scriptingSupport [
-    buildPackages.lua53Packages.lua
-  ];
-
-  # cross-compiling: clippy is compiled with the build host toolchain, split it out to ease
-  # navigation in dependency hell
-  clippy-helper = buildPackages.callPackage ./clippy-helper.nix {
-    frrVersion = finalAttrs.version;
-    frrSource = finalAttrs.src;
-  };
 
   configureFlags = [
     "--disable-zeromq"
@@ -212,12 +192,9 @@ stdenv.mkDerivation (finalAttrs: {
     "NETSNMP_CONFIG=${lib.getDev net-snmp}/bin/net-snmp-config"
   ];
 
-  postPatch = ''
-    substituteInPlace tools/frr-reload \
-      --replace-quiet /usr/lib/frr/ $out/libexec/frr/
-    sed -i '/^PATH=/ d' tools/frr.in tools/frrcommon.sh.in
-  '';
-
+  # Without the std explicitly set, we may run into abseil-cpp
+  # compilation errors.
+  env.CXXFLAGS = "-std=gnu++23";
   doCheck = true;
 
   nativeCheckInputs = [
@@ -225,11 +202,27 @@ stdenv.mkDerivation (finalAttrs: {
     python3.pkgs.pytest
   ];
 
+  # cross-compiling: clippy is compiled with the build host toolchain, split it out to ease
+  # navigation in dependency hell
+  clippy-helper = buildPackages.callPackage ./clippy-helper.nix {
+    frrSource = finalAttrs.src;
+    frrVersion = finalAttrs.version;
+  };
+
+  # otherwise in cross-compilation: "configure: error: no working python version found"
+  depsBuildBuild = [
+    buildPackages.python3
+  ]
+  ++ lib.optionals scriptingSupport [
+    buildPackages.lua53Packages.lua
+  ];
+
   enableParallelBuilding = true;
+  passthru.tests = { inherit (nixosTests) frr; };
 
   meta = {
-    homepage = "https://frrouting.org/";
     description = "FRR BGP/OSPF/ISIS/RIP/RIPNG routing daemon suite";
+
     longDescription = ''
       FRRouting (FRR) is a free and open source Internet routing protocol suite
       for Linux and Unix platforms. It implements BGP, OSPF, RIP, IS-IS, PIM,
@@ -252,19 +245,22 @@ stdenv.mkDerivation (finalAttrs: {
       infrastructure, web 2.0 businesses, hyperscale services, and Fortune 500
       private clouds.
     '';
+
+    homepage = "https://frrouting.org/";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl21Plus
     ];
+
     maintainers = with lib.maintainers; [
       woffs
       thillux
     ];
+
     # adapt to platforms stated in http://docs.frrouting.org/en/latest/overview.html#supported-platforms
     platforms = (
       lib.platforms.linux ++ lib.platforms.freebsd ++ lib.platforms.netbsd ++ lib.platforms.openbsd
     );
   };
-
-  passthru.tests = { inherit (nixosTests) frr; };
 })

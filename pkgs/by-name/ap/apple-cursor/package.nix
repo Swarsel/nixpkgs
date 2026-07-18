@@ -1,7 +1,7 @@
 {
   lib,
-  fetchzip,
   stdenv,
+  fetchzip,
 }:
 
 let
@@ -9,9 +9,9 @@ let
     variant: suffix: hash:
     fetchzip (
       {
+        hash = hash;
         name = variant;
         url = "https://github.com/ful1e5/apple_cursor/releases/download/v${version}/${variant}.${suffix}";
-        hash = hash;
       }
       // (lib.optionalAttrs (suffix == "zip") { stripRoot = false; })
       // (lib.optionalAttrs (suffix == "tar.xz") { stripRoot = false; })
@@ -23,29 +23,32 @@ let
   version = "2.0.1";
 in
 stdenv.mkDerivation {
-  pname = "apple_cursor";
   inherit version;
   inherit srcs;
-
-  sourceRoot = ".";
+  pname = "apple_cursor";
 
   installPhase = ''
     install -dm 0755 $out/share/icons
     cp -r macOS/macOS* $out/share/icons/
   '';
 
+  sourceRoot = ".";
+
   meta = {
     description = "Opensource macOS Cursors";
     homepage = "https://github.com/ful1e5/apple_cursor";
+
     license = [
       lib.licenses.gpl3Only
       # Potentially a derivative work of copyrighted Apple designs
       lib.licenses.unfree
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       colemickens
       dxwil
     ];
+
+    platforms = lib.platforms.linux;
   };
 }

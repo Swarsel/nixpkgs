@@ -1,8 +1,8 @@
 {
   buildPythonPackage,
   dlib,
-  pytestCheckHook,
   more-itertools,
+  pytestCheckHook,
 }:
 
 buildPythonPackage.override { inherit (dlib) stdenv; } {
@@ -17,14 +17,7 @@ buildPythonPackage.override { inherit (dlib) stdenv; } {
     meta
     ;
 
-  format = "setuptools";
-
   patches = [ ./build-cores.patch ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    more-itertools
-  ];
 
   postPatch = ''
     substituteInPlace setup.py \
@@ -41,8 +34,6 @@ buildPythonPackage.override { inherit (dlib) stdenv; } {
     done
   '';
 
-  dontUseCmakeConfigure = true;
-
   doCheck =
     !(
       # The tests attempt to use CUDA on the build platform.
@@ -54,4 +45,12 @@ buildPythonPackage.override { inherit (dlib) stdenv; } {
       # with AVX support.
       || dlib.avxSupport
     );
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    more-itertools
+  ];
+
+  dontUseCmakeConfigure = true;
+  format = "setuptools";
 }

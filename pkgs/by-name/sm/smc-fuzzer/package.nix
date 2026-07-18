@@ -1,8 +1,8 @@
 {
   lib,
-  swiftPackages,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  swiftPackages,
 }:
 
 stdenv.mkDerivation {
@@ -10,8 +10,8 @@ stdenv.mkDerivation {
   version = "0-unstable-2020-12-23";
 
   src = fetchFromGitHub {
-    repo = "smc-fuzzer";
     owner = "theopolis";
+    repo = "smc-fuzzer";
     rev = "ed60c4efeddea8a9778a976c49c650eee3840eac";
     hash = "sha256-FyiFSVeO46UnBrpC8AhSuGe7alo37pT8J1qQWGPqV2U=";
   };
@@ -26,6 +26,7 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Apple SMC (System Management Controller) API fuzzer";
+
     longDescription = ''
       smc-fuzzer uses the AppleSMC IOKit interface and a userland API for
       interacting with the System Management Controller (Mac embedded
@@ -36,10 +37,11 @@ stdenv.mkDerivation {
       system management, e.g. controlling and querying the charge status of an
       Apple laptop.
     '';
+
     homepage = "https://github.com/theopolis/smc-fuzzer";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ hraban ];
-    mainProgram = "smc";
     platforms = lib.platforms.darwin;
+    mainProgram = "smc";
   };
 }

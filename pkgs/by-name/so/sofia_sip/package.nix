@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
-  gitUpdater,
-  testers,
   autoconf,
   automake,
   check,
+  fetchpatch2,
+  gitUpdater,
   glib,
   libtool,
   openssl,
   pkg-config,
+  testers,
   valgrind,
   zlib,
 }:
@@ -30,9 +30,9 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fix build with gcc 14 from https://github.com/freeswitch/sofia-sip/pull/249
     (fetchpatch2 {
+      hash = "sha256-bZzjg7GBxR2wSlPH81krZRCK43OirGLWH/lrLRZ0L0k=";
       name = "sofia-sip-fix-incompatible-pointer-type.patch";
       url = "https://github.com/freeswitch/sofia-sip/commit/46b02f0655af0a9594e805f09a8ee99278f84777.patch?full_index=1";
-      hash = "sha256-bZzjg7GBxR2wSlPH81krZRCK43OirGLWH/lrLRZ0L0k=";
     })
 
     # Disable some failing tests
@@ -66,6 +66,16 @@ stdenv.mkDerivation (finalAttrs: {
     openssl
   ];
 
+  configureFlags = [
+    (lib.strings.enableFeature true "expensive-checks")
+  ];
+
+  preConfigure = ''
+    ./bootstrap.sh
+  '';
+
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   nativeCheckInputs = [
     valgrind
   ];
@@ -75,23 +85,14 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  preConfigure = ''
-    ./bootstrap.sh
-  '';
-
-  configureFlags = [
-    (lib.strings.enableFeature true "expensive-checks")
-  ];
-
   enableParallelBuilding = true;
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
   passthru = {
     tests.pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
       versionCheck = true;
     };
+
     updateScript = gitUpdater {
       rev-prefix = "v";
     };
@@ -100,12 +101,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Open-source SIP User-Agent library, compliant with the IETF RFC3261 specification";
     homepage = "https://github.com/freeswitch/sofia-sip";
-    platforms = lib.platforms.unix;
     license = lib.licenses.lgpl2Plus;
-    teams = [ lib.teams.ngi ];
+    platforms = lib.platforms.unix;
+
     pkgConfigModules = [
       "sofia-sip-ua"
       "sofia-sip-ua-glib"
     ];
+
+    teams = [ lib.teams.ngi ];
   };
 })

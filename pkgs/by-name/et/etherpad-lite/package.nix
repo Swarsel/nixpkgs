@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  pnpm_9,
   fetchPnpmDeps,
-  pnpmConfigHook,
   makeWrapper,
+  nix-update-script,
   nodejs,
+  pnpmConfigHook,
+  pnpm_9,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,13 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
     # FIXME: this patch disables plugin support
     ./dont-fail-on-plugins-json.patch
   ];
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm_9;
-    fetcherVersion = 3;
-    hash = "sha256-2nKpmGxC+KVg0oF0BsswS9L84QxzpRF7NvKyqyQ7WJM=";
-  };
 
   nativeBuildInputs = [
     pnpmConfigHook
@@ -77,22 +70,33 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 3;
+    hash = "sha256-2nKpmGxC+KVg0oF0BsswS9L84QxzpRF7NvKyqyQ7WJM=";
+    pnpm = pnpm_9;
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Modern really-real-time collaborative document editor";
+
     longDescription = ''
       Etherpad is a real-time collaborative editor scalable to thousands of simultaneous real time users.
       It provides full data export capabilities, and runs on your server, under your control.
     '';
+
     homepage = "https://etherpad.org/";
     changelog = "https://github.com/ether/etherpad/blob/${finalAttrs.src.rev}/CHANGELOG.md";
+    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       erdnaxe
       f2k1de
     ];
-    license = lib.licenses.asl20;
-    mainProgram = "etherpad-lite";
+
     platforms = lib.platforms.unix;
+    mainProgram = "etherpad-lite";
   };
 })

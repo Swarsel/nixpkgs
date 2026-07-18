@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromCodeberg,
-  pkg-config,
-  openssl,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-fzuqgzBVnVIOcRplDKLBskhX9PlMA9LM0f3MnLqzyhk=";
   };
 
-  cargoHash = "sha256-gAfN3kO5wrZ8usKv4C97LT+BAEu9ZD8ZP/GOCrWC7Nk=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -28,6 +26,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-gAfN3kO5wrZ8usKv4C97LT+BAEu9ZD8ZP/GOCrWC7Nk=";
   passthru.updateScript = nix-update-script { };
 
   meta = {

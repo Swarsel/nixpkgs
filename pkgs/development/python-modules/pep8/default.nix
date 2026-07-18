@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "pep8";
   version = "1.7.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,12 +15,13 @@ buildPythonPackage rec {
 
   # FAIL: test_checkers_testsuite (testsuite.test_all.Pep8TestCase)
   doCheck = false;
+  format = "setuptools";
 
   meta = {
-    homepage = "https://pep8.readthedocs.org/";
     description = "Python style guide checker";
-    mainProgram = "pep8";
+    homepage = "https://pep8.readthedocs.org/";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "pep8";
   };
 }

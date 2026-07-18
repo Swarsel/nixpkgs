@@ -10,11 +10,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = fetchzip {
     url = "https://www.rarlab.com/rar/unrarsrc-${finalAttrs.version}.tar.gz";
-    stripRoot = false;
     hash = "sha256-X0MOIbsIL5iczClCLSj8UX0ofLHBu1Asap4EKKbLVnw=";
+    stripRoot = false;
   };
 
-  sourceRoot = finalAttrs.src.name;
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   postPatch = ''
     substituteInPlace unrar/makefile \
@@ -22,11 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "STRIP=" "#STRIP=" \
       --replace-fail "AR=" "#AR="
   '';
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   # `make {unrar,lib}` call `make clean` implicitly
   # separate build into different dirs to avoid deleting them
@@ -53,13 +51,14 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   setupHook = ./setup-hook.sh;
+  sourceRoot = finalAttrs.src.name;
 
   meta = {
     description = "Utility for RAR archives";
     homepage = "https://www.rarlab.com/";
     license = lib.licenses.unfreeRedistributable;
-    mainProgram = "unrar";
     maintainers = with lib.maintainers; [ wegank ];
     platforms = lib.platforms.all;
+    mainProgram = "unrar";
   };
 })

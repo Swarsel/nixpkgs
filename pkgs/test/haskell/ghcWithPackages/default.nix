@@ -1,14 +1,11 @@
 {
   lib,
+  haskellPackages,
   runCommand,
   runCommandCC,
-  haskellPackages,
 }:
 
 lib.recurseIntoAttrs {
-  # This is special-cased to return just `ghc`.
-  trivial = haskellPackages.ghcWithPackages (hsPkgs: [ ]);
-
   # Here we actually build a trivial package.
   hello = haskellPackages.ghcWithPackages (hsPkgs: [
     hsPkgs.hello
@@ -49,6 +46,9 @@ lib.recurseIntoAttrs {
 
         touch $out
       '';
+
+  # This is special-cased to return just `ghc`.
+  trivial = haskellPackages.ghcWithPackages (hsPkgs: [ ]);
 
   use-llvm =
     let

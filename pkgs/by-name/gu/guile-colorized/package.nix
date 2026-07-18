@@ -1,7 +1,7 @@
 {
   lib,
-  fetchgit,
   stdenv,
+  fetchgit,
   guile,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -15,7 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ guile ];
   buildInputs = [ guile ];
 
@@ -45,7 +44,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Colorized REPL for GNU Guile";
     homepage = "https://gitlab.com/NalaGinrut/guile-colorized/";
     license = lib.licenses.gpl3Plus;
-    platforms = guile.meta.platforms;
     maintainers = with lib.maintainers; [ nemin ];
+    platforms = guile.meta.platforms;
   };
 })

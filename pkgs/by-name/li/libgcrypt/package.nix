@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  gettext,
-  libgpg-error,
-  enableCapabilities ? false,
-  libcap,
   buildPackages,
+  gettext,
   # for passthru.tests
   gnupg,
+  libcap,
+  libgpg-error,
   libotr,
   rsyslog,
+  enableCapabilities ? false,
 }:
 
 assert enableCapabilities -> stdenv.hostPlatform.isLinux;
@@ -32,25 +32,13 @@ stdenv.mkDerivation rec {
     "out"
   ];
 
-  hardeningDisable = [
-    "strictflexarrays3"
-  ]
-  ++ lib.optionals stdenv.cc.isClang [
-    # The CPU Jitter random number generator must not be compiled with
-    # optimizations and the optimize -O0 pragma only works for gcc.
-    # The build enables -O2 by default for everything else.
-    "fortify"
-  ];
-
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  strictDeps = true;
 
   buildInputs = [
     libgpg-error
   ]
   ++ lib.optional stdenv.hostPlatform.isDarwin gettext
   ++ lib.optional enableCapabilities libcap;
-
-  strictDeps = true;
 
   configureFlags = [
     "--with-libgpg-error-prefix=${libgpg-error.dev}"
@@ -63,19 +51,19 @@ stdenv.mkDerivation rec {
     stdenv.cc.bintools.isLLVM && lib.versionAtLeast stdenv.cc.bintools.version "17"
   ) "LDFLAGS=-Wl,--undefined-version";
 
-  # Necessary to generate correct assembly when compiling for aarch32 on
-  # aarch64
-  configurePlatforms = [
-    "host"
-    "build"
-  ];
-
   postConfigure = ''
     sed -i configure \
         -e 's/NOEXECSTACK_FLAGS=$/NOEXECSTACK_FLAGS="-Wa,--noexecstack"/'
   '';
 
-  enableParallelBuilding = true;
+  doCheck = true;
+
+  # TODO: figure out why this is even necessary and why the missing dylib only crashes
+  # random instead of every test
+  preCheck = lib.optionalString (stdenv.hostPlatform.isDarwin && !stdenv.hostPlatform.isStatic) ''
+    mkdir -p $lib/lib
+    cp src/.libs/libgcrypt.20.dylib $lib/lib
+  '';
 
   # Make sure libraries are correct for .pc and .la files
   # Also make sure includes are fixed for callers who don't use libgpgcrypt-config
@@ -93,27 +81,38 @@ stdenv.mkDerivation rec {
     sed -i 's,\(-lcap\),-L${libcap.lib}/lib \1,' $lib/lib/libgcrypt.la
   '';
 
-  # TODO: figure out why this is even necessary and why the missing dylib only crashes
-  # random instead of every test
-  preCheck = lib.optionalString (stdenv.hostPlatform.isDarwin && !stdenv.hostPlatform.isStatic) ''
-    mkdir -p $lib/lib
-    cp src/.libs/libgcrypt.20.dylib $lib/lib
-  '';
+  # Necessary to generate correct assembly when compiling for aarch32 on
+  # aarch64
+  configurePlatforms = [
+    "host"
+    "build"
+  ];
 
-  doCheck = true;
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  enableParallelBuilding = true;
   enableParallelChecking = true;
+
+  hardeningDisable = [
+    "strictflexarrays3"
+  ]
+  ++ lib.optionals stdenv.cc.isClang [
+    # The CPU Jitter random number generator must not be compiled with
+    # optimizations and the optimize -O0 pragma only works for gcc.
+    # The build enables -O2 by default for everything else.
+    "fortify"
+  ];
 
   passthru.tests = {
     inherit gnupg libotr rsyslog;
   };
 
   meta = {
+    description = "General-purpose cryptographic library";
     homepage = "https://www.gnu.org/software/libgcrypt/";
     changelog = "https://git.gnupg.org/cgi-bin/gitweb.cgi?p=${pname}.git;a=blob;f=NEWS;hb=refs/tags/${pname}-${version}";
-    description = "General-purpose cryptographic library";
     license = lib.licenses.lgpl2Plus;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "gnupg" version;
   };
 }

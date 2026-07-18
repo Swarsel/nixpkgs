@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "cfonts";
@@ -15,8 +15,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   cargoHash = "sha256-Gf4W7ACyyVSCXV2RmpAfrE7Xircjk34Llk2j58cWXtU=";
 
   meta = {
-    homepage = "https://github.com/dominikwilkowski/cfonts";
     description = "Silly little command line tool for sexy ANSI fonts in the console";
+    homepage = "https://github.com/dominikwilkowski/cfonts";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ leifhelm ];
     mainProgram = "cfonts";

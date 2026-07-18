@@ -1,23 +1,23 @@
 {
   lib,
   fetchFromGitHub,
+  aircrack-ng,
+  bully,
+  cowpatty,
   fetchpatch,
+  hashcat,
+  hcxdumptool,
+  hcxtools,
+  iw,
+  john,
+  macchanger,
+  pixiewps,
   python3,
   python3Packages,
-  wirelesstools,
-  aircrack-ng,
-  wireshark-cli,
   reaverwps-t6x,
-  cowpatty,
-  hashcat,
-  hcxtools,
-  hcxdumptool,
   which,
-  bully,
-  pixiewps,
-  john,
-  iw,
-  macchanger,
+  wirelesstools,
+  wireshark-cli,
 }:
 
 let
@@ -29,7 +29,6 @@ in
 python3.pkgs.buildPythonApplication rec {
   pname = "wifite2";
   version = "2.7.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "kimocoder";
@@ -40,16 +39,16 @@ python3.pkgs.buildPythonApplication rec {
 
   patches = [
     (fetchpatch {
-      url = "https://salsa.debian.org/pkg-security-team/wifite/raw/debian/2.7.0-1/debian/patches/Disable-aircrack-failing-test.patch";
       hash = "sha256-BUAowBajfnZ1x6Z3Ce3L0rAERv7v/KrdHcdvKxTxSrM=";
+      url = "https://salsa.debian.org/pkg-security-team/wifite/raw/debian/2.7.0-1/debian/patches/Disable-aircrack-failing-test.patch";
     })
     (fetchpatch {
-      url = "https://salsa.debian.org/pkg-security-team/wifite/raw/debian/2.7.0-1/debian/patches/Disable-two-failing-tests.patch";
       hash = "sha256-wCwfNkF/GvOU5FWPmQ3dJ4Txthz9T9TO2xhSL5vllQc=";
+      url = "https://salsa.debian.org/pkg-security-team/wifite/raw/debian/2.7.0-1/debian/patches/Disable-two-failing-tests.patch";
     })
     (fetchpatch {
-      url = "https://salsa.debian.org/pkg-security-team/wifite/raw/debian/2.7.0-1/debian/patches/fix-for-new-which.patch";
       hash = "sha256-8xs+O2ILSRcvsw2pyx2gEBFHdduoI+xmUvDBchKz2Qs=";
+      url = "https://salsa.debian.org/pkg-security-team/wifite/raw/debian/2.7.0-1/debian/patches/fix-for-new-which.patch";
     })
   ];
 
@@ -72,16 +71,19 @@ python3.pkgs.buildPythonApplication rec {
   ++ pythonDependencies;
 
   nativeCheckInputs = propagatedBuildInputs ++ [ python3.pkgs.unittestCheckHook ];
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/kimocoder/wifite2";
     description = "Rewrite of the popular wireless network auditor, wifite";
-    mainProgram = "wifite";
+    homepage = "https://github.com/kimocoder/wifite2";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       lassulus
       danielfullmer
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "wifite";
   };
 }

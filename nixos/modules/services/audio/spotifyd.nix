@@ -21,29 +21,33 @@ in
 {
   options = {
     services.spotifyd = {
-      enable = lib.mkEnableOption "spotifyd, a Spotify playing daemon";
-
-      package = lib.mkPackageOption pkgs "spotifyd" { };
-
       config = lib.mkOption {
         default = "";
-        type = lib.types.lines;
+
         description = ''
           (Deprecated) Configuration for Spotifyd. For syntax and directives, see
           <https://docs.spotifyd.rs/configuration/index.html#config-file>.
         '';
+
+        type = lib.types.lines;
       };
+
+      enable = lib.mkEnableOption "spotifyd, a Spotify playing daemon";
+      package = lib.mkPackageOption pkgs "spotifyd" { };
 
       settings = lib.mkOption {
         default = { };
-        type = toml.type;
-        example = {
-          global.bitrate = 320;
-        };
+
         description = ''
           Configuration for Spotifyd. For syntax and directives, see
           <https://docs.spotifyd.rs/configuration/index.html#config-file>.
         '';
+
+        example = {
+          global.bitrate = 320;
+        };
+
+        type = toml.type;
       };
 
     };
@@ -58,22 +62,25 @@ in
     ];
 
     systemd.services.spotifyd = {
-      wantedBy = [ "multi-user.target" ];
-      wants = [ "network-online.target" ];
       after = [
         "network-online.target"
         "sound.target"
       ];
+
       description = "spotifyd, a Spotify playing daemon";
       environment.SHELL = "/bin/sh";
+
       serviceConfig = {
+        CacheDirectory = "spotifyd";
+        DynamicUser = true;
         ExecStart = "${cfg.package}/bin/spotifyd --no-daemon --cache-path /var/cache/spotifyd --config-path ${spotifydConf}";
         Restart = "always";
         RestartSec = 12;
-        DynamicUser = true;
-        CacheDirectory = "spotifyd";
         SupplementaryGroups = [ "audio" ];
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
   };
 

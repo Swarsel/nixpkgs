@@ -12,8 +12,6 @@ let
   xnu = sourceRelease "xnu";
 
   privateHeaders = stdenvNoCC.mkDerivation {
-    name = "IOKitTools-deps-private-headers";
-
     buildCommand = ''
       install -D -t "$out/include/IOKit/" \
         '${iokitUser}/IOKitLibPrivate.h' \
@@ -37,25 +35,25 @@ let
       extern void pdwriter_record_variable_str(pdwriter_t, char*, const char*);
       EOF
     '';
+
+    name = "IOKitTools-deps-private-headers";
   };
 in
 mkAppleDerivation {
-  releaseName = "IOKitTools";
-
   outputs = [
     "out"
     "man"
   ];
 
-  xcodeHash = "sha256-qFG4sB8NXNPTSvYTEX2E1ReOX+NcMBHrS2NuNBLO7zw=";
-
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     apple-sdk.privateFrameworksHook
     ncurses
   ];
 
   env.NIX_CFLAGS_COMPILE = "-I${privateHeaders}/include";
-
+  releaseName = "IOKitTools";
+  xcodeHash = "sha256-qFG4sB8NXNPTSvYTEX2E1ReOX+NcMBHrS2NuNBLO7zw=";
   meta.description = "IOKit tools";
 }

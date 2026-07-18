@@ -2,66 +2,61 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  protobufc,
-  pkg-config,
+  botan3,
   fuse3,
+  jitterentropy,
+  libkcapi,
+  libselinux,
   meson,
   ninja,
-  libselinux,
-  jitterentropy,
-  botan3,
   openssl,
-  libkcapi,
-
+  pkg-config,
+  protobufc,
+  ais2031 ? true, # set the seeding strategy to be compliant with AIS 20/31
+  auxHasFullEntropy ? false, # is already conditioned data inserted into aux pool?
+  cryptoBackend ? "botan", # set backend for hash and drbg operations
+  drngMaxReseedBits ? lib.fromHexString "0xffffffff",
+  # DRNG-related options
+  drngReseedThresholdBits ? lib.fromHexString "0xffffffff",
+  esCPU ? true, # enable support for the entropy source: cpu-based entropy
+  esCPUEntropyRate ? 256, # amount of entropy to account for cpu rng source
+  esHwrand ? true, # enable support for the entropy source: /dev/hwrng
+  esHwrandEntropyRate ? 256, # amount of entropy to account for /dev/hwrng-based sources
+  esIRQ ? false, # enable support for the entropy source: interrupt-based entropy
+  esIRQEntropyRate ? 256, # amount of entropy to account for interrupt-based source (only set irq XOR sched != 0)
+  # entropy sources
+  esJitterRng ? true, # enable support for the entropy source: jitter rng (running in user space)
+  esJitterRngAllCaches ? false, # use all caches in calculating size of memory buffer?
+  esJitterRngEntropyBlocks ? 128, # number of cached entropy blocks for jitterentropy
+  esJitterRngEntropyRate ? 256, # amount of entropy to account for jitter rng source
+  esJitterRngHashLoopCount ? -1, # set increased hashloop count, -1 disables it
+  esJitterRngKernel ? false, # enable support for the entropy source: jitter rng (running in kernel space)
+  esJitterRngKernelEntropyRate ? 256, # amount of entropy to account for kernel jitter rng source
+  esJitterRngMaxMem ? -1, # set static maximum size of memory buffer, -1 disables it
+  esJitterRngNtg1 ? false, # configures jitterentropy NTG.1 mode
+  esJitterRngOsr ? 3, # set larger oversampling rate if necessary, (default 3)
+  esKernel ? false, # enable support for the entropy source: kernel-based entropy
+  esKernelEntropyRate ? 256, # amount of entropy to account for kernel-based source
+  esSched ? false, # enable support for the entropy source: scheduler-based entropy
+  esSchedEntropyRate ? 0, # amount of entropy to account for interrupt-based source (only set irq XOR sched != 0)
+  esTPM2 ? true, # enable support for the entropy source: TPM-based entropy
+  esTPM2EntropyRate ? 256, # amount of entropy to account for TPM-based source
+  fips140 ? false, # enable FIPS 140 checksum support
+  linuxDevFiles ? true, # enable linux /dev/random and /dev/urandom support
+  linuxGetRandom ? true, # enable linux getrandom support
+  linuxKernelReseedEntropyRate ? 512, # how many bits to account on kernel (re-)seeding
+  # kernel seeding
+  linuxKernelReseedInterval ? 60, # how often to push entropy into Linux kernel, iff seeder service is started
+  maxThreads ? 64, # number of RPC handler threads
+  numAuxPools ? 128, # use multiple hash pools for e.g. smartcard input
+  openSSLRandProvider ? true, # build ESDM provider for OpenSSL 3.x
   # A more detailed explanation of the following meson build options can be found
   # in the source code of esdm.
   # A brief explanation is given.
-
   # general options
   selinux ? false, # enable selinux support
-  fips140 ? false, # enable FIPS 140 checksum support
-  ais2031 ? true, # set the seeding strategy to be compliant with AIS 20/31
   sp80090c ? true, # set compliance with NIST SP800-90C
-  cryptoBackend ? "botan", # set backend for hash and drbg operations
-  linuxDevFiles ? true, # enable linux /dev/random and /dev/urandom support
-  linuxGetRandom ? true, # enable linux getrandom support
-  openSSLRandProvider ? true, # build ESDM provider for OpenSSL 3.x
-  maxThreads ? 64, # number of RPC handler threads
   validationHelpers ? true, # used to analyze entropy output from esdm_es
-  numAuxPools ? 128, # use multiple hash pools for e.g. smartcard input
-  auxHasFullEntropy ? false, # is already conditioned data inserted into aux pool?
-
-  # DRNG-related options
-  drngReseedThresholdBits ? lib.fromHexString "0xffffffff",
-  drngMaxReseedBits ? lib.fromHexString "0xffffffff",
-
-  # entropy sources
-  esJitterRng ? true, # enable support for the entropy source: jitter rng (running in user space)
-  esJitterRngEntropyRate ? 256, # amount of entropy to account for jitter rng source
-  esJitterRngNtg1 ? false, # configures jitterentropy NTG.1 mode
-  esJitterRngAllCaches ? false, # use all caches in calculating size of memory buffer?
-  esJitterRngMaxMem ? -1, # set static maximum size of memory buffer, -1 disables it
-  esJitterRngHashLoopCount ? -1, # set increased hashloop count, -1 disables it
-  esJitterRngOsr ? 3, # set larger oversampling rate if necessary, (default 3)
-  esJitterRngEntropyBlocks ? 128, # number of cached entropy blocks for jitterentropy
-  esJitterRngKernel ? false, # enable support for the entropy source: jitter rng (running in kernel space)
-  esJitterRngKernelEntropyRate ? 256, # amount of entropy to account for kernel jitter rng source
-  esCPU ? true, # enable support for the entropy source: cpu-based entropy
-  esCPUEntropyRate ? 256, # amount of entropy to account for cpu rng source
-  esKernel ? false, # enable support for the entropy source: kernel-based entropy
-  esKernelEntropyRate ? 256, # amount of entropy to account for kernel-based source
-  esTPM2 ? true, # enable support for the entropy source: TPM-based entropy
-  esTPM2EntropyRate ? 256, # amount of entropy to account for TPM-based source
-  esIRQ ? false, # enable support for the entropy source: interrupt-based entropy
-  esIRQEntropyRate ? 256, # amount of entropy to account for interrupt-based source (only set irq XOR sched != 0)
-  esSched ? false, # enable support for the entropy source: scheduler-based entropy
-  esSchedEntropyRate ? 0, # amount of entropy to account for interrupt-based source (only set irq XOR sched != 0)
-  esHwrand ? true, # enable support for the entropy source: /dev/hwrng
-  esHwrandEntropyRate ? 256, # amount of entropy to account for /dev/hwrng-based sources
-
-  # kernel seeding
-  linuxKernelReseedInterval ? 60, # how often to push entropy into Linux kernel, iff seeder service is started
-  linuxKernelReseedEntropyRate ? 512, # how many bits to account on kernel (re-)seeding
 }:
 
 assert cryptoBackend == "openssl" || cryptoBackend == "botan";
@@ -76,6 +71,8 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-0s9YOqa+sn0rk5YoMWZczO1TB5/wpbFsdkaVWFf4ipI=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -137,28 +134,29 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonOption "drng_max_reseed_bits" (toString drngMaxReseedBits))
   ];
 
+  doCheck = true;
+
   postFixup = lib.optionals fips140 ''
     $out/bin/esdm-tool --fips-checkfile $out/bin/.esdm-server.hmac \
                        --fips-targetfile $out/bin/esdm-server
   '';
 
-  doCheck = true;
-
-  strictDeps = true;
   __structuredAttrs = true;
-
   mesonBuildType = "release";
 
   meta = {
-    homepage = "https://www.chronox.de/esdm.html";
     description = "Entropy Source and DRNG Manager in user space";
+    homepage = "https://www.chronox.de/esdm.html";
+
     license = with lib.licenses; [
       gpl2Only
       bsd3
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       thillux
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

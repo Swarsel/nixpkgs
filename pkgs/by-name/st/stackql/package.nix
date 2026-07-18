@@ -2,8 +2,8 @@
   lib,
   fetchFromGitHub,
   buildGoModule,
-  testers,
   stackql,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,6 +18,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-go1i5xFt3AE+K37+uZz9sjjsgD521fZ7/nPu26531Q8=";
+  checkFlags = [ "--tags json1,sqleanal" ];
+  __darwinAllowLocalNetworking = true;
 
   ldflags = [
     "-s"
@@ -29,20 +31,16 @@ buildGoModule (finalAttrs: {
     "-X stackql/internal/stackql/planbuilder.PlanCacheEnabled=true"
   ];
 
-  __darwinAllowLocalNetworking = true;
-
-  checkFlags = [ "--tags json1,sqleanal" ];
-
   passthru.tests.version = testers.testVersion {
-    package = stackql;
     version = "v${finalAttrs.version}";
+    package = stackql;
   };
 
   meta = {
-    homepage = "https://github.com/stackql/stackql";
     description = "Deploy, manage and query cloud resources and interact with APIs using SQL";
-    mainProgram = "stackql";
+    homepage = "https://github.com/stackql/stackql";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jonochang ];
+    mainProgram = "stackql";
   };
 })

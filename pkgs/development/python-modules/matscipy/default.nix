@@ -1,54 +1,46 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  fetchpatch,
-
-  # build-system
-  meson-python,
-  ninja,
-  numpy,
-
-  # dependencies
-  ase,
-  packaging,
-  scipy,
-
   # optional-dependencies
   # cli:
   argcomplete,
+  # dependencies
+  ase,
   # dislocation:
   atomman,
-  nglview,
-  ovito,
+  buildPythonPackage,
+  fetchpatch,
   # docs:
   jupytext,
+  # build-system
+  meson-python,
   myst-nb,
+  nglview,
+  ninja,
+  numpy,
   numpydoc,
+  ovito,
+  packaging,
   pydata-sphinx-theme,
-  sphinx,
-  sphinx-copybutton,
-  sphinx-rtd-theme,
-  sphinxcontrib-spelling,
-
   # tests
   pytest-subtests,
   pytest-timeout,
   pytest-xdist,
-  sympy,
-
   # tests
   pytestCheckHook,
+  pythonAtLeast,
+  scipy,
+  sphinx,
+  sphinx-copybutton,
+  sphinx-rtd-theme,
+  sphinxcontrib-spelling,
+  sympy,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "matscipy";
   version = "1.2.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "libAtoms";
@@ -61,12 +53,12 @@ buildPythonPackage (finalAttrs: {
     # API: Fix compatibility with ASE 3.27.0
     # https://github.com/libAtoms/matscipy/pull/301
     (fetchpatch {
-      url = "https://github.com/libAtoms/matscipy/commit/6a91a4646e30796abe51ef3efa4b479d4471aae0.patch";
       hash = "sha256-PH9I+7+nN6fSkugVbxPCs3LqjhP/fQ5NZjiNQ7F70YU=";
+      url = "https://github.com/libAtoms/matscipy/commit/6a91a4646e30796abe51ef3efa4b479d4471aae0.patch";
     })
     (fetchpatch {
-      url = "https://github.com/libAtoms/matscipy/commit/f6478347bbceeab8ec177042b6ed1243e742d55f.patch";
       hash = "sha256-DKk+1TlP+OngcmycsCIE+7s2h/7wa7Gxv9APbuIAoZg=";
+      url = "https://github.com/libAtoms/matscipy/commit/f6478347bbceeab8ec177042b6ed1243e742d55f.patch";
     })
   ];
 
@@ -86,6 +78,20 @@ buildPythonPackage (finalAttrs: {
           "[tool:pytest]"
     '';
 
+  nativeCheckInputs = [
+    pytest-subtests
+    pytest-timeout
+    pytest-xdist
+    pytestCheckHook
+    sympy
+  ];
+
+  preCheck = ''
+    rm -rf matscipy
+  '';
+
+  __structuredAttrs = true;
+
   build-system = [
     # meson
     meson-python
@@ -99,42 +105,6 @@ buildPythonPackage (finalAttrs: {
     packaging
     scipy
   ];
-
-  optional-dependencies = {
-    cli = [
-      argcomplete
-    ];
-    dislocation = [
-      atomman
-      nglview
-      ovito
-    ];
-    docs = [
-      jupytext
-      # matscipy
-      myst-nb
-      numpydoc
-      pydata-sphinx-theme
-      sphinx
-      sphinx-copybutton
-      sphinx-rtd-theme
-      sphinxcontrib-spelling
-    ];
-  };
-
-  pythonImportsCheck = [ "matscipy" ];
-
-  nativeCheckInputs = [
-    pytest-subtests
-    pytest-timeout
-    pytest-xdist
-    pytestCheckHook
-    sympy
-  ];
-
-  preCheck = ''
-    rm -rf matscipy
-  '';
 
   disabledTestPaths = [
     # The CLI tests look for the source scripts under `../matscipy/cli` relative to the test
@@ -175,6 +145,33 @@ buildPythonPackage (finalAttrs: {
     "test_read_molecules_from_lammps_data"
     "test_read_write_lammps_data"
   ];
+
+  optional-dependencies = {
+    cli = [
+      argcomplete
+    ];
+
+    dislocation = [
+      atomman
+      nglview
+      ovito
+    ];
+
+    docs = [
+      jupytext
+      # matscipy
+      myst-nb
+      numpydoc
+      pydata-sphinx-theme
+      sphinx
+      sphinx-copybutton
+      sphinx-rtd-theme
+      sphinxcontrib-spelling
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "matscipy" ];
 
   meta = {
     description = "Materials science with Python at the atomic-scale";

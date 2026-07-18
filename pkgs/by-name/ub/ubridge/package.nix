@@ -38,26 +38,31 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     tests.version = testers.testVersion {
-      package = ubridge;
       command = "ubridge -v";
+      package = ubridge;
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Bridge for UDP tunnels, Ethernet, TAP, and VMnet interfaces";
+
     longDescription = ''
       uBridge is a simple application to create user-land bridges between
       various technologies. Currently bridging between UDP tunnels, Ethernet
       and TAP interfaces is supported. Packet capture is also supported.
     '';
+
     homepage = "https://github.com/GNS3/ubridge";
     changelog = "https://github.com/GNS3/ubridge/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "ubridge";
+
     maintainers = with lib.maintainers; [
       anthonyroussel
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "ubridge";
   };
 })

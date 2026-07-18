@@ -2,11 +2,11 @@
   lib,
   fetchFromGitHub,
   buildGoModule,
-  nixosTests,
-  testers,
-  temporal,
-  versionCheckHook,
   nix-update-script,
+  nixosTests,
+  temporal,
+  testers,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,17 +21,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-KZKlARki/AXGhfsQsOixHjx+t1H9htd9oBx3wsiebY0=";
-
-  excludedPackages = [ "./build" ];
-
   env.CGO_ENABLED = 0;
-
-  tags = [ "test_dep" ];
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   # There too many integration tests.
   doCheck = false;
 
@@ -50,15 +40,26 @@ buildGoModule (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
+  excludedPackages = [ "./build" ];
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
+  tags = [ "test_dep" ];
   versionCheckProgramArg = "--version";
-  doInstallCheck = true;
 
   passthru = {
     tests = {
       inherit (nixosTests) temporal;
+
       version = testers.testVersion {
         package = temporal;
       };

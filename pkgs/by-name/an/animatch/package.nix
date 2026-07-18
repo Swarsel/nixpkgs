@@ -1,21 +1,22 @@
 {
   lib,
+  stdenv,
+  fetchFromGitLab,
   allegro5,
   cmake,
-  fetchFromGitLab,
   libGL,
-  stdenv,
   libx11,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "animatch";
   version = "1.0.3";
+
   src = fetchFromGitLab {
     owner = "HolyPangolin";
     repo = "animatch";
-    fetchSubmodules = true;
     tag = "v${finalAttrs.version}";
     hash = "sha256-zBV45WMAXtCpPPbDpr04K/a9UtZ4KLP9nUauBlbhrFo=";
+    fetchSubmodules = true;
   };
 
   postPatch = ''
@@ -23,6 +24,8 @@ stdenv.mkDerivation (finalAttrs: {
       'cmake_minimum_required(VERSION 3.1)' \
       'cmake_minimum_required(VERSION 4.0)'
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -38,13 +41,11 @@ stdenv.mkDerivation (finalAttrs: {
     "-DLIBSUPERDERPY_STATIC=ON" # recommended by upstream for coexistence with other superderpy games
   ];
 
-  strictDeps = true;
-
   meta = {
-    homepage = "https://gitlab.com/HolyPangolin/animatch/";
     description = "Cute match three game for the Librem 5 smartphone";
-    mainProgram = "animatch";
+    homepage = "https://gitlab.com/HolyPangolin/animatch/";
     license = with lib.licenses; [ gpl3Plus ];
     maintainers = with lib.maintainers; [ colinsane ];
+    mainProgram = "animatch";
   };
 })

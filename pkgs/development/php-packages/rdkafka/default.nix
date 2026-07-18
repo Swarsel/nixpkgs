@@ -1,19 +1,20 @@
 {
-  buildPecl,
   lib,
-  rdkafka,
+  buildPecl,
   pcre2,
+  rdkafka,
 }:
 
 buildPecl {
   pname = "rdkafka";
   version = "6.0.5";
-  hash = "sha256-Cva2ZcljyMfREJzsc4A0N42ciGPL9hLAvTI15RmnCPE=";
 
   buildInputs = [
     rdkafka
     pcre2
   ];
+
+  hash = "sha256-Cva2ZcljyMfREJzsc4A0N42ciGPL9hLAvTI15RmnCPE=";
 
   postPhpize = ''
     substituteInPlace configure \
@@ -22,8 +23,8 @@ buildPecl {
 
   meta = {
     description = "Kafka client based on librdkafka";
-    license = lib.licenses.mit;
     homepage = "https://github.com/arnaud-lb/php-rdkafka";
+    license = lib.licenses.mit;
     teams = [ lib.teams.php ];
   };
 }

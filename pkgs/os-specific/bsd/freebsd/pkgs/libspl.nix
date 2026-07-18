@@ -1,7 +1,13 @@
 { lib, mkDerivation }:
 
 mkDerivation {
-  path = "cddl/lib/libspl";
+  # Without a prefix it will try to put object files in nonexistent directories
+  preBuild = ''
+    export MAKEOBJDIRPREFIX=$TMP/obj
+  '';
+
+  alwaysKeepStatic = true;
+
   extraPaths = [
     "cddl/compat/opensolaris/include"
     "sys/contrib/openzfs/include"
@@ -10,12 +16,7 @@ mkDerivation {
     "sys/modules/zfs/zfs_config.h"
   ];
 
-  # Without a prefix it will try to put object files in nonexistent directories
-  preBuild = ''
-    export MAKEOBJDIRPREFIX=$TMP/obj
-  '';
-
-  alwaysKeepStatic = true;
+  path = "cddl/lib/libspl";
 
   meta = {
     license = lib.licenses.cddl;

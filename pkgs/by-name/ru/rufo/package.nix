@@ -1,14 +1,13 @@
 {
+  lib,
   bundlerApp,
   bundlerUpdateScript,
-  lib,
 }:
 
 bundlerApp {
   pname = "rufo";
-  gemdir = ./.;
   exes = [ "rufo" ];
-
+  gemdir = ./.;
   passthru.updateScript = bundlerUpdateScript "rufo";
 
   meta = {

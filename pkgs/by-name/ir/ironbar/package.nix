@@ -1,30 +1,30 @@
 {
-  gtk4,
-  gdk-pixbuf,
-  librsvg,
-  webp-pixbuf-loader,
-  gobject-introspection,
-  glib-networking,
-  glib,
-  shared-mime-info,
-  gsettings-desktop-schemas,
-  wrapGAppsHook4,
-  gtk4-layer-shell,
-  adwaita-icon-theme,
-  libxkbcommon,
-  pkg-config,
-  hicolor-icon-theme,
-  rustPlatform,
   lib,
   fetchFromGitHub,
+  adwaita-icon-theme,
+  dbus,
+  gdk-pixbuf,
+  glib,
+  glib-networking,
+  gobject-introspection,
+  gsettings-desktop-schemas,
+  gtk4,
+  gtk4-layer-shell,
+  hicolor-icon-theme,
+  libevdev,
+  libinput,
+  libpulseaudio,
+  librsvg,
+  libxkbcommon,
   luajit,
   luajitPackages,
-  libpulseaudio,
-  libinput,
-  libevdev,
-  features ? [ ],
+  pkg-config,
+  rustPlatform,
+  shared-mime-info,
   systemd,
-  dbus,
+  webp-pixbuf-loader,
+  wrapGAppsHook4,
+  features ? [ ],
 }:
 
 let
@@ -41,7 +41,11 @@ rustPlatform.buildRustPackage rec {
     hash = "sha256-9UPBSOgiyBOlUYZlx+xQN5PTPwDWCDdYKdCAhigzHwA=";
   };
 
-  cargoHash = "sha256-ticVPKKfQnz21LpegKDwAtizi7bavIPEmpXsrZdRN48=";
+  nativeBuildInputs = [
+    pkg-config
+    wrapGAppsHook4
+    gobject-introspection
+  ];
 
   buildInputs = [
     gtk4
@@ -64,17 +68,17 @@ rustPlatform.buildRustPackage rec {
     libevdev
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-    wrapGAppsHook4
-    gobject-introspection
-  ];
   propagatedBuildInputs = [ gtk4 ];
+  cargoHash = "sha256-ticVPKKfQnz21LpegKDwAtizi7bavIPEmpXsrZdRN48=";
 
-  runtimeDeps = [ luajitPackages.lgi ];
+  preFixup = ''
+    gappsWrapperArgs+=(
+      ${gappsWrapperArgs}
+    )
+  '';
 
-  buildNoDefaultFeatures = features != [ ];
   buildFeatures = features;
+  buildNoDefaultFeatures = features != [ ];
 
   gappsWrapperArgs = ''
     # Thumbnailers
@@ -91,22 +95,20 @@ rustPlatform.buildRustPackage rec {
     --prefix LUA_CPATH : "./?.so;${luajitPackages.lgi}/lib/lua/5.1/?.so;${luajit}/lib/lua/5.1/?.so;${luajit}/lib/lua/5.1/loadall.so"
   '';
 
-  preFixup = ''
-    gappsWrapperArgs+=(
-      ${gappsWrapperArgs}
-    )
-  '';
+  runtimeDeps = [ luajitPackages.lgi ];
 
   meta = {
-    homepage = "https://github.com/JakeStanger/ironbar";
     description = "Customizable gtk-layer-shell wlroots/sway bar written in Rust";
+    homepage = "https://github.com/JakeStanger/ironbar";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       yavko
       donovanglover
       jakestanger
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "ironbar";
   };
 }

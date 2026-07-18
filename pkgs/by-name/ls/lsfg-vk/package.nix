@@ -2,8 +2,8 @@
   lib,
   fetchFromGitHub,
   cmake,
-  vulkan-headers,
   llvmPackages,
+  vulkan-headers,
 }:
 
 llvmPackages.stdenv.mkDerivation (finalAttrs: {
@@ -38,7 +38,7 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/PancakeTAS/lsfg-vk/";
     changelog = "https://github.com/PancakeTAS/lsfg-vk/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ pabloaul ];
+    platforms = lib.platforms.linux;
   };
 })

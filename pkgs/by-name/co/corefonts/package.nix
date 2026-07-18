@@ -9,78 +9,80 @@
 let
   fonts = [
     {
-      name = "andale";
       hash = "sha256-BST+QpUa3Dp+uHDjLwkgMTxx8XDIWbX3cNgrTuER6XA=";
+      name = "andale";
     }
     {
-      name = "arial";
       hash = "sha256-hSl6TRRunIesb3SCJzS97l9LKnItfqpYS38sv3b0ePY=";
+      name = "arial";
     }
     {
-      name = "arialb";
       hash = "sha256-pCXw/7ahpe3luXntYXf09PT972rnwwKnt3IO8zL+wKg=";
+      name = "arialb";
     }
     {
-      name = "comic";
       hash = "sha256-nG3z/u/eJtTkHUpP5dsqifkSOncllNf1mv0GJiXNIE4=";
+      name = "comic";
     }
     {
-      name = "courie";
       hash = "sha256-u1EdhhZV3eh5rlUuuGsTTW+uZ8tYUC5v9z7F2RUfM4Q=";
+      name = "courie";
     }
     {
-      name = "georgi";
       hash = "sha256-LCx9zaZgbqXPCJGPt80/M1np6EM43GkAE/IM1C6TAwE=";
+      name = "georgi";
     }
     {
-      name = "impact";
       hash = "sha256-YGHvO3QB2WQvXf218rN2qhRmP2J15gpRIHrU+s8vzPs=";
+      name = "impact";
     }
     {
-      name = "times";
       hash = "sha256-21ZZXsbvXT3lwkmU8AHwOyoT43zuJ7wlxY9vQ+j4B6s=";
+      name = "times";
     }
     {
-      name = "trebuc";
       hash = "sha256-WmkNm7hRC+G4tP5J8fIxllH+UbvlR3Xd3djvC9B/2sk=";
+      name = "trebuc";
     }
     {
-      name = "webdin";
       hash = "sha256-ZFlbWrwQgPuoYQxcNPq1hjQI6Aaq/oRlPKhXW+0X11o=";
+      name = "webdin";
     }
     {
-      name = "verdan";
       hash = "sha256-wcthJV42MWZ5TkdmTi8hr446JstjRuuNKuL6hd1arZY=";
+      name = "verdan";
     }
     {
-      name = "wd97vwr";
       hash = "sha256-9hEmptF7LRJqfzGxQlBNzkk095icVfHBPGR3s/6As9I=";
+      name = "wd97vwr";
     }
   ];
 
   eula = fetchurl {
-    url = "https://corefonts.sourceforge.net/eula.htm";
     hash = "sha256-LOgNEsM+dANEreP2LsFi+pAnBNDMFB9Pg+KJAahlC6s=";
+    url = "https://corefonts.sourceforge.net/eula.htm";
   };
 in
 stdenv.mkDerivation {
   pname = "corefonts";
   version = "1";
 
-  env.exes = toString (
-    map (
-      { name, hash }:
-      fetchurl {
-        url = "mirror://sourceforge/corefonts/the%20fonts/final/${name}32.exe";
-        inherit hash;
-      }
-    ) fonts
-  );
-
   nativeBuildInputs = [
     cabextract
     installFonts
   ];
+
+  env.exes = toString (
+    map (
+      { hash, name }:
+      fetchurl {
+        inherit hash;
+        url = "mirror://sourceforge/corefonts/the%20fonts/final/${name}32.exe";
+      }
+    ) fonts
+  );
+
+  __structuredAttrs = true;
 
   buildCommand = ''
     for i in $exes; do
@@ -145,13 +147,11 @@ stdenv.mkDerivation {
     done
   '';
 
-  __structuredAttrs = true;
-
   meta = {
-    homepage = "https://corefonts.sourceforge.net/";
     description = "Microsoft's TrueType core fonts for the Web";
-    platforms = lib.platforms.all;
+    homepage = "https://corefonts.sourceforge.net/";
     license = lib.licenses.unfreeRedistributable;
+    platforms = lib.platforms.all;
     # Set a non-zero priority to allow easy overriding of the
     # fontconfig configuration files.
     priority = 5;

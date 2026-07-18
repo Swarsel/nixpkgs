@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  callPackage,
-  stdenvNoCC,
   fetchurl,
-  rpmextract,
   _7zz,
+  callPackage,
   cctools,
+  rpmextract,
+  stdenvNoCC,
   validatePkgConfig,
   enableStatic ? stdenv.hostPlatform.isStatic,
 }:
@@ -34,44 +34,40 @@ let
   shlibExt = stdenvNoCC.hostPlatform.extensions.sharedLibrary;
 
   oneapi-mkl = fetchurl {
-    url = "https://yum.repos.intel.com/oneapi/intel-oneapi-mkl-${mklVersion}-${mklVersion}-${rel}.x86_64.rpm";
     hash = "sha256-PGLPNnR+11AmmaNxldeze/l2Kw/4+mfjB+RqsPhP6oM=";
+    url = "https://yum.repos.intel.com/oneapi/intel-oneapi-mkl-${mklVersion}-${mklVersion}-${rel}.x86_64.rpm";
   };
 
   oneapi-mkl-common = fetchurl {
-    url = "https://yum.repos.intel.com/oneapi/intel-oneapi-mkl-common-${mklVersion}-${mklVersion}-${rel}.noarch.rpm";
     hash = "sha256-wztTE2R/IdG6ujGf7KFocpRmXzlZSnEKopTBOlPPlBw=";
+    url = "https://yum.repos.intel.com/oneapi/intel-oneapi-mkl-common-${mklVersion}-${mklVersion}-${rel}.noarch.rpm";
   };
 
   oneapi-mkl-common-devel = fetchurl {
-    url = "https://yum.repos.intel.com/oneapi/intel-oneapi-mkl-common-devel-${mklVersion}-${mklVersion}-${rel}.noarch.rpm";
     hash = "sha256-MWa8mpyFM4zgDLup+EzFRM+N2Oxf0o6FBBRM8mAanbI=";
+    url = "https://yum.repos.intel.com/oneapi/intel-oneapi-mkl-common-devel-${mklVersion}-${mklVersion}-${rel}.noarch.rpm";
   };
 
   oneapi-mkl-devel = fetchurl {
-    url = "https://yum.repos.intel.com/oneapi/intel-oneapi-mkl-devel-${mklVersion}-${mklVersion}-${rel}.x86_64.rpm";
     hash = "sha256-Arq5kXktI92031XqfV0pkzQCHaFsTRKX05iOA/fPNOs=";
+    url = "https://yum.repos.intel.com/oneapi/intel-oneapi-mkl-devel-${mklVersion}-${mklVersion}-${rel}.x86_64.rpm";
   };
 
   oneapi-openmp = fetchurl {
-    url = "https://yum.repos.intel.com/oneapi/intel-oneapi-openmp-${mklVersion}-${mklVersion}-${openmpRel}.x86_64.rpm";
     hash = "sha256-cyBD3P4AEvyreP4pP3BE+yyDB+ptblOQ9GYI8ysGsIM=";
+    url = "https://yum.repos.intel.com/oneapi/intel-oneapi-openmp-${mklVersion}-${mklVersion}-${openmpRel}.x86_64.rpm";
   };
 
   oneapi-tbb = fetchurl {
-    url = "https://yum.repos.intel.com/oneapi/intel-oneapi-tbb-${tbbVersion}-${tbbVersion}-${tbbRel}.x86_64.rpm";
     hash = "sha256-pzJpQdiYVpcKDShePak2I0uEh7u08vJgX7OBF5p5yAM=";
+    url = "https://yum.repos.intel.com/oneapi/intel-oneapi-tbb-${tbbVersion}-${tbbVersion}-${tbbRel}.x86_64.rpm";
   };
 
 in
 stdenvNoCC.mkDerivation (
   {
-    pname = "mkl";
     inherit version;
-
-    dontUnpack = stdenvNoCC.hostPlatform.isLinux;
-
-    sourceRoot = if stdenvNoCC.hostPlatform.isDarwin then "." else null;
+    pname = "mkl";
 
     nativeBuildInputs = [
       validatePkgConfig
@@ -174,23 +170,28 @@ stdenvNoCC.mkDerivation (
       install_name_tool -change @rpath/libtbbmalloc.2.dylib $out/lib/libtbbmalloc.2.dylib $out/lib/libtbbmalloc_proxy.dylib
     '';
 
+    dontPatchELF = true;
     # Per license agreement, do not modify the binary
     dontStrip = true;
-    dontPatchELF = true;
+    dontUnpack = stdenvNoCC.hostPlatform.isLinux;
+    sourceRoot = if stdenvNoCC.hostPlatform.isDarwin then "." else null;
 
     passthru.tests = {
       pkg-config-dynamic-iomp = callPackage ./test {
         enableStatic = false;
         execution = "iomp";
       };
-      pkg-config-static-iomp = callPackage ./test {
-        enableStatic = true;
-        execution = "iomp";
-      };
+
       pkg-config-dynamic-seq = callPackage ./test {
         enableStatic = false;
         execution = "seq";
       };
+
+      pkg-config-static-iomp = callPackage ./test {
+        enableStatic = true;
+        execution = "iomp";
+      };
+
       pkg-config-static-seq = callPackage ./test {
         enableStatic = true;
         execution = "seq";
@@ -199,15 +200,18 @@ stdenvNoCC.mkDerivation (
 
     meta = {
       description = "Intel OneAPI Math Kernel Library";
+
       longDescription = ''
         Intel OneAPI Math Kernel Library (Intel oneMKL) optimizes code with minimal
         effort for future generations of Intel processors. It is compatible with your
         choice of compilers, languages, operating systems, and linking and
         threading models.
       '';
+
       homepage = "https://software.intel.com/en-us/mkl";
-      sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
       license = lib.licenses.issl;
+      sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
       platforms = [
         "x86_64-linux"
       ];

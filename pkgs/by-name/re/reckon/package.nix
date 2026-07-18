@@ -1,28 +1,24 @@
 {
-  stdenv,
   lib,
+  stdenv,
   bundlerEnv,
   bundlerUpdateScript,
-  makeWrapper,
   file,
-  testers,
+  makeWrapper,
   reckon,
+  testers,
 }:
 
 stdenv.mkDerivation rec {
   pname = "reckon";
   version = (import ./gemset.nix).reckon.version;
-
-  dontUnpack = true;
-
   nativeBuildInputs = [ makeWrapper ];
 
   installPhase =
     let
       env = bundlerEnv {
-        name = "${pname}-${version}-gems";
-
         gemdir = ./.;
+        name = "${pname}-${version}-gems";
       };
     in
     ''
@@ -33,20 +29,23 @@ stdenv.mkDerivation rec {
       runHook postInstall
     '';
 
+  dontUnpack = true;
+
   passthru = {
     tests.version = testers.testVersion {
-      package = reckon;
       version = "${version}";
+      package = reckon;
     };
+
     updateScript = bundlerUpdateScript "reckon";
   };
 
   meta = {
     description = "Flexibly import bank account CSV files into Ledger for command line accounting";
-    mainProgram = "reckon";
+    changelog = "https://github.com/cantino/reckon/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ nicknovitski ];
     platforms = lib.platforms.unix;
-    changelog = "https://github.com/cantino/reckon/blob/v${version}/CHANGELOG.md";
+    mainProgram = "reckon";
   };
 }

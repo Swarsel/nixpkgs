@@ -12,8 +12,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "rpcemu";
   version = "0.9.5";
 
-  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
-
   src = fetchhg {
     url = "http://www.home.marutan.net/hg/rpcemu";
     rev = "release_${finalAttrs.version}";
@@ -29,14 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
     qtmultimedia
   ];
 
-  configurePhase = ''
-    runHook preConfigure
-
-    cd src/qt5
-    qmake
-
-    runHook postConfigure
-  '';
+  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
 
   installPhase = ''
     runHook preInstall
@@ -47,10 +38,18 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+
+    cd src/qt5
+    qmake
+
+    runHook postConfigure
+  '';
+
   meta = {
-    homepage = "https://www.marutan.net/rpcemu/index.php";
     description = "Risc PC Emulator";
-    mainProgram = "rpcemu-interpreter";
+
     longDescription = ''
       RPCEmu is an emulator of classic Acorn computer systems, such as the Risc
       PC and A7000. It runs on multiple platforms including Windows, Linux and
@@ -60,8 +59,11 @@ stdenv.mkDerivation (finalAttrs: {
       unknown bugs, and all files used with it should be well backed up before
       using them with RPCEmu.
     '';
+
+    homepage = "https://www.marutan.net/rpcemu/index.php";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "rpcemu-interpreter";
   };
 })

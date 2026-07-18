@@ -1,29 +1,19 @@
 {
   lib,
   stdenv,
-  mkDerivation,
+  csu,
   include,
   libcMinimal,
   libgcc,
-  csu,
+  mkDerivation,
 }:
 
 mkDerivation {
-  path = "lib/msun";
-  extraPaths = [
-    "lib/libc" # wants arch headers
-  ]
-  ++ lib.optionals (stdenv.hostPlatform.isAarch32 || stdenv.hostPlatform.isAarch64) [
-    "contrib/arm-optimized-routines"
-  ];
-
   outputs = [
     "out"
     "man"
     "debug"
   ];
-
-  noLibc = true;
 
   buildInputs = [
     include
@@ -31,9 +21,19 @@ mkDerivation {
     libgcc
   ];
 
+  env.MK_TESTS = "no";
+
   preBuild = ''
     export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE -B${csu}/lib"
   '';
 
-  env.MK_TESTS = "no";
+  extraPaths = [
+    "lib/libc" # wants arch headers
+  ]
+  ++ lib.optionals (stdenv.hostPlatform.isAarch32 || stdenv.hostPlatform.isAarch64) [
+    "contrib/arm-optimized-routines"
+  ];
+
+  noLibc = true;
+  path = "lib/msun";
 }

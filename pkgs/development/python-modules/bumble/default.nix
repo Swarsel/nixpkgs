@@ -1,13 +1,13 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   appdirs,
   buildPythonPackage,
   click,
   cryptography,
-  fetchFromGitHub,
   grpcio,
   humanize,
-  lib,
   libusb-package,
   libusb1,
   platformdirs,
@@ -29,7 +29,6 @@
 buildPythonPackage rec {
   pname = "bumble";
   version = "0.0.232";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "google";
@@ -38,14 +37,16 @@ buildPythonPackage rec {
     hash = "sha256-NT8WNfkYHorjNfsZWry63Uuxk7zyOQDOHTqxZxJNypI=";
   };
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
+
   build-system = [
     setuptools
     setuptools-scm
-  ];
-
-  pythonRelaxDeps = [
-    "libusb-package"
-    "tomli"
   ];
 
   dependencies = [
@@ -69,26 +70,25 @@ buildPythonPackage rec {
     websockets
   ];
 
-  pythonImportsCheck = [ "bumble" ];
-
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
-  pytestFlags = [ "--asyncio-mode=auto" ];
-  __darwinAllowLocalNetworking = true;
-
   disabledTests = [
     # tests require networking
     "test_android_netsim_connection"
     "test_open_transport_with_metadata"
   ];
 
+  pyproject = true;
+  pytestFlags = [ "--asyncio-mode=auto" ];
+  pythonImportsCheck = [ "bumble" ];
+
+  pythonRelaxDeps = [
+    "libusb-package"
+    "tomli"
+  ];
+
   meta = {
-    changelog = "https://github.com/google/bumble/releases/tag/${src.tag}";
     description = "Bluetooth Stack for Apps, Emulation, Test and Experimentation";
     homepage = "https://github.com/google/bumble";
+    changelog = "https://github.com/google/bumble/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.dotlambda ];
   };

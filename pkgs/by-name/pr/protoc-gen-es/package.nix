@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   npm-lockfile-fix,
 }:
 
@@ -21,8 +21,6 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-6iof5DCyA+LLbWfFE/BuznUD87hT8jtmzKleVK5cnw8=";
-
-  npmWorkspace = "packages/protoc-gen-es";
 
   preBuild = ''
     npm run --workspace=packages/protobuf build
@@ -45,6 +43,7 @@ buildNpmPackage rec {
     cp -rL node_modules/@bufbuild $out/lib/node_modules/protobuf-es/node_modules/
   '';
 
+  npmWorkspace = "packages/protoc-gen-es";
   passthru.updateScript = ./update.sh;
 
   meta = {
@@ -52,10 +51,12 @@ buildNpmPackage rec {
     homepage = "https://github.com/bufbuild/protobuf-es";
     changelog = "https://github.com/bufbuild/protobuf-es/releases/tag/v${version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       felschr
       jtszalay
     ];
+
     mainProgram = "protoc-gen-es";
   };
 }

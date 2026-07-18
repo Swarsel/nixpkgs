@@ -1,15 +1,15 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  bzip2,
+  cacert,
+  git,
   nix-update-script,
   pkg-config,
-  bzip2,
+  rustPlatform,
+  rustup,
   xz,
   zstd,
-  git,
-  rustup,
-  cacert,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -23,7 +23,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-WNbo3sm5tSNYQMLB4bjiNtLwp5pD4KAoyG2lwWYEpzk=";
   };
 
-  cargoHash = "sha256-gzaDAGAjWDcJyoES0foFOyhTP4HDsaQHrrwCQmAzXZA=";
+  # remove tests that require internet access
+  postPatch = ''
+    rm cargo-dist/tests/cli-tests.rs cargo-dist/tests/integration-tests.rs
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -35,36 +38,36 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zstd
   ];
 
+  cargoHash = "sha256-gzaDAGAjWDcJyoES0foFOyhTP4HDsaQHrrwCQmAzXZA=";
+
+  env = {
+    SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
+    ZSTD_SYS_USE_PKG_CONFIG = true;
+  };
+
   nativeCheckInputs = [
     git
     rustup
     cacert
   ];
 
-  env = {
-    ZSTD_SYS_USE_PKG_CONFIG = true;
-    SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
-  };
-
-  # remove tests that require internet access
-  postPatch = ''
-    rm cargo-dist/tests/cli-tests.rs cargo-dist/tests/integration-tests.rs
-  '';
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Tool for building final distributable artifacts and uploading them to an archive";
-    mainProgram = "dist";
     homepage = "https://github.com/axodotdev/cargo-dist";
     changelog = "https://github.com/axodotdev/cargo-dist/blob/v${finalAttrs.version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
       mistydemeo
     ];
+
+    mainProgram = "dist";
   };
 })

@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  libsForQt5,
   ddcutil,
+  libsForQt5,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -35,10 +35,10 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Graphical user interface for ddcutil - control monitor settings";
-    mainProgram = "ddcui";
     homepage = "https://www.ddcutil.com/ddcui_main/";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ nh2 ];
     platforms = with lib.platforms; linux;
+    mainProgram = "ddcui";
   };
 }

@@ -1,13 +1,10 @@
 {
-  mkDerivation,
   stdenv,
+  mkDerivation,
   pkgsBuildTarget,
 }:
 
 mkDerivation {
-  path = "sys/arch/amd64/stand";
-  extraPaths = [ "sys" ];
-
   patches = [
     ../sys/initpath.patch
     ./cmd-buff-size.patch
@@ -34,4 +31,7 @@ mkDerivation {
 
     export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE -Wno-pointer-sign"
   '';
+
+  extraPaths = [ "sys" ];
+  path = "sys/arch/amd64/stand";
 }

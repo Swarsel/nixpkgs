@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  colorama,
   setuptools-scm,
   tqdm,
-  colorama,
 }:
 
 buildPythonPackage {
   pname = "tqdm-multiprocess";
   version = "0.0.11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "EleutherAI";
@@ -27,6 +26,8 @@ buildPythonPackage {
     colorama
     tqdm
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "tqdm_multiprocess"

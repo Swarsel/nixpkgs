@@ -1,7 +1,7 @@
 {
+  lib,
   fetchFromGitHub,
   renode,
-  lib,
 }:
 let
   normalizedVersion =

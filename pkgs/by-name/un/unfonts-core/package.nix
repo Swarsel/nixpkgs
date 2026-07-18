@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -22,13 +22,15 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://kldp.net/unfonts/";
     description = "Korean Hangul typeface collection";
+
     longDescription = ''
       The Un-fonts come from the HLaTeX as type1 fonts in 1998 by Koaunghi Un, he made type1 fonts to use with Korean TeX (HLaTeX) in the late 1990's and released it under the GPL license.
 
       They were converted to TrueType with the FontForge (PfaEdit) by Won-kyu Park in 2003.
     '';
+
+    homepage = "https://kldp.net/unfonts/";
     license = lib.licenses.gpl2;
     platforms = lib.platforms.all;
   };

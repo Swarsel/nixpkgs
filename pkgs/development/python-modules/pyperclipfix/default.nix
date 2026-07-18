@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
 
 buildPythonPackage {
-  version = "1.9.4-unstable-2024-01-23";
   pname = "pyperclipfix";
-  pyproject = true;
+  version = "1.9.4-unstable-2024-01-23";
 
   src = fetchFromGitHub {
     owner = "AuroraWright";
@@ -18,8 +17,8 @@ buildPythonPackage {
     hash = "sha256-sREtSNEMj0Q+XWQsJu/7u9M1UdiocDq/YkrCPGRLhHA=";
   };
 
-  build-system = [ setuptools ];
-
+  # test file is trying to import pyperclip
+  doCheck = false;
   nativeCheckInputs = [ pytestCheckHook ];
 
   preCheck = ''
@@ -27,15 +26,14 @@ buildPythonPackage {
       --replace-fail "pyperclip" "pyperclipfix"
   '';
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "pyperclipfix" ];
 
-  # test file is trying to import pyperclip
-  doCheck = false;
-
   meta = {
+    description = "Cross-platform clipboard module with various fixes";
     homepage = "https://github.com/AuroraWright/pyperclipfix";
     license = lib.licenses.bsd3;
-    description = "Cross-platform clipboard module with various fixes";
     maintainers = with lib.maintainers; [ sigmanificient ];
   };
 }

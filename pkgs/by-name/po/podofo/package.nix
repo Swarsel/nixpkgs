@@ -30,6 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -51,20 +53,22 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "CMAKE_BUILD_WITH_INSTALL_NAME_DIR" true)
   ];
 
-  strictDeps = true;
   __structuredAttrs = true;
 
   meta = {
-    homepage = "https://github.com/podofo/podofo";
     description = "Library to work with the PDF file format";
+    homepage = "https://github.com/podofo/podofo";
     changelog = "https://github.com/podofo/podofo/blob/${finalAttrs.version}/CHANGELOG.md";
-    platforms = lib.platforms.all;
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl2Plus
     ];
+
     maintainers = with lib.maintainers; [
       kuflierl
     ];
+
+    platforms = lib.platforms.all;
   };
 })

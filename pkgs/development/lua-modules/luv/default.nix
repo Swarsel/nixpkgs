@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchFromGitHub,
   buildLuarocksPackage,
   cmake,
-  fetchFromGitHub,
   libuv,
   lua,
   luaOlder,
@@ -19,15 +19,10 @@ buildLuarocksPackage rec {
     owner = "luvit";
     repo = "luv";
     rev = version;
+    hash = "sha256-mU+Gvlpvp6iZE5IpXfTr+21QQ34vZk+tYhnr0b891qg=";
     # Need deps/lua-compat-5.3 only
     fetchSubmodules = true;
-    hash = "sha256-mU+Gvlpvp6iZE5IpXfTr+21QQ34vZk+tYhnr0b891qg=";
   };
-
-  # to make sure we dont use bundled deps
-  prePatch = ''
-    rm -rf deps/lua deps/luajit deps/libuv
-  '';
 
   patches = [
     # Fails with "Uncaught Error: ./tests/test-dns.lua:164: assertion failed!"
@@ -40,10 +35,8 @@ buildLuarocksPackage rec {
     ./disable-failing-darwin-tests.patch
   ];
 
-  buildInputs = [ libuv ];
   nativeBuildInputs = [ cmake ];
-
-  rockspecFilename = "luv-scm-0.rockspec";
+  buildInputs = [ libuv ];
 
   postConfigure = ''
     mv "$rockspecFilename" "$generatedRockspecFilename"
@@ -52,23 +45,33 @@ buildLuarocksPackage rec {
       --replace-fail 'version = "scm-0"' "version = \"$version\""
   '';
 
-  luarocksConfig.variables = {
-    WITH_SHARED_LIBUV = "ON";
-  };
-
-  __darwinAllowLocalNetworking = true;
-
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
     luarocks test
     runHook postInstallCheck
   '';
 
+  __darwinAllowLocalNetworking = true;
   disabled = luaOlder "5.1";
+
+  luarocksConfig.variables = {
+    WITH_SHARED_LIBUV = "ON";
+  };
+
+  # to make sure we dont use bundled deps
+  prePatch = ''
+    rm -rf deps/lua deps/luajit deps/libuv
+  '';
+
+  rockspecFilename = "luv-scm-0.rockspec";
 
   passthru = {
     tests = {
+      # Test libluv too
+      inherit (lua.pkgs) libluv;
+
       test =
         runCommand "luv-${version}-test"
           {
@@ -81,21 +84,20 @@ buildLuarocksPackage rec {
             print(uv.version_string())
             EOF
           '';
-
-      # Test libluv too
-      inherit (lua.pkgs) libluv;
     };
 
     updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://github.com/luvit/luv";
     description = "Bare libuv bindings for lua";
+
     longDescription = ''
       This library makes libuv available to lua scripts. It was made for the luvit
       project but should usable from nearly any lua project.
     '';
+
+    homepage = "https://github.com/luvit/luv";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ stasjok ];
     platforms = lua.meta.platforms;

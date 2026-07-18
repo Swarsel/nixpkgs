@@ -1,39 +1,31 @@
 {
   lib,
   stdenv,
-  darwin,
   fetchurl,
-  graphviz,
-  doxygen,
-  ocamlPackages,
   coq,
+  darwin,
+  doxygen,
   dune,
-  why3,
   gdk-pixbuf,
+  graphviz,
+  ocamlPackages,
+  why3,
   wrapGAppsHook3,
-  withGui ? true,
-  withWP ? true,
-  withMarkdown ? true,
   withApron ? true,
+  withGui ? true,
+  withMarkdown ? true,
+  withWP ? true,
   withZeroMQ ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "frama-c";
   version = "32.1";
-  slang = "Germanium";
-
-  __structuredAttrs = true;
 
   src = fetchurl {
     url = "https://frama-c.com/download/frama-c-${finalAttrs.version}-${finalAttrs.slang}.tar.gz";
     hash = "sha256-3V1uid9d3mpAs4vq0wLQpbmGCxw7ZbzYU2CneAh8E+I=";
   };
-
-  preConfigure = ''
-    substituteInPlace src/dune --replace-fail " bytes " " "
-    substituteInPlace Makefile --replace-fail "include ivette/Makefile.installation" ""
-  '';
 
   strictDeps = true;
 
@@ -82,13 +74,16 @@ stdenv.mkDerivation (finalAttrs: {
       zmq
     ];
 
+  preConfigure = ''
+    substituteInPlace src/dune --replace-fail " bytes " " "
+    substituteInPlace Makefile --replace-fail "include ivette/Makefile.installation" ""
+  '';
+
   buildPhase = ''
     runHook preBuild
     dune build ''${enableParallelBuilding:+-j $NIX_BUILD_CORES} --release @install
     runHook postBuild
   '';
-
-  installFlags = [ "PREFIX=$(out)" ];
 
   preFixup =
     let
@@ -116,8 +111,13 @@ stdenv.mkDerivation (finalAttrs: {
       gappsWrapperArgs+=(--prefix OCAMLPATH ':' ${ocamlPath}:$out/lib/)
     '';
 
+  __structuredAttrs = true;
+  installFlags = [ "PREFIX=$(out)" ];
+  slang = "Germanium";
+
   meta = {
     description = "Extensible and collaborative platform dedicated to source-code analysis of C software";
+
     longDescription = ''
       Frama-C is an open-source extensible and collaborative platform
       dedicated to source-code analysis of C software. The Frama-C
@@ -125,15 +125,19 @@ stdenv.mkDerivation (finalAttrs: {
       from the navigation through unfamiliar projects up to the
       certification of critical software.
     '';
+
     homepage = "https://www.frama-c.com/index.html";
     license = lib.licenses.lgpl21;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
       amiddelk
       luc65r
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "frama-c";
+
     broken =
       !lib.versionAtLeast ocamlPackages.ocaml.version "4.14"
       || lib.versionAtLeast ocamlPackages.ocaml.version "5.5";

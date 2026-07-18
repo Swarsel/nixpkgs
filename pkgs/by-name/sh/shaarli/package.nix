@@ -18,11 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
   ];
 
-  patchPhase = ''
-    substituteInPlace index.php \
-      --replace "new ConfigManager();" "new ConfigManager(getenv('SHAARLI_CONFIG'));"
-  '';
-
   #    Point $SHAARLI_CONFIG to your configuration file, see https://github.com/shaarli/Shaarli/wiki/Shaarli-configuration.
   #    For example:
   #      <?php /*
@@ -49,7 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
   #          }
   #      }
   #      */ ?>
-
   installPhase = ''
     rm -r {cache,pagecache,tmp,data}/
     mkdir -p $doc/share/doc
@@ -58,10 +52,15 @@ stdenv.mkDerivation (finalAttrs: {
     cp -R ./* $out
   '';
 
+  patchPhase = ''
+    substituteInPlace index.php \
+      --replace "new ConfigManager();" "new ConfigManager(getenv('SHAARLI_CONFIG'));"
+  '';
+
   meta = {
     description = "Personal, minimalist, super-fast, database free, bookmarking service";
-    license = lib.licenses.gpl3Plus;
     homepage = "https://github.com/shaarli/Shaarli";
+    license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.all;
   };

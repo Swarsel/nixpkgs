@@ -1,24 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools_80,
-
   # dependencies
   apsw,
+  buildPythonPackage,
   fastcore,
-
+  hypothesis,
   # tests
   pytestCheckHook,
-  hypothesis,
+  # build-system
+  setuptools_80,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "apswutils";
   version = "0.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "AnswerDotAI";
@@ -26,6 +22,11 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-lqtgjQ4nhmcf52mFeXdFxvd8WNsDDR9PEeWAncBX46g=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    hypothesis
+  ];
 
   build-system = [
     setuptools_80
@@ -36,10 +37,7 @@ buildPythonPackage (finalAttrs: {
     fastcore
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    hypothesis
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "apswutils"

@@ -15,8 +15,6 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-v7f56tbNMoOJvC2lOGBEO8DoBd/QjMiJv99Dsmyypug=";
   };
 
-  dontUnpack = true;
-
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ jre ];
 
@@ -38,14 +36,18 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Java source formatter by Google";
+
     longDescription = ''
       A program that reformats Java source code to comply with Google Java Style.
     '';
+
     homepage = "https://github.com/google/google-java-format";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ lib.maintainers.emptyflask ];
     platforms = lib.platforms.all;
     mainProgram = "google-java-format";

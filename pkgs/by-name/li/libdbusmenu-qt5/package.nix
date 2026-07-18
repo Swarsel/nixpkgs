@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchgit,
   cmake,
+  fetchgit,
   libsForQt5,
 }:
 
@@ -16,8 +16,8 @@ stdenv.mkDerivation rec {
     hash = "sha256-nXZv1m/dQv8vt+xPS7WTC8nKfbEJ45WtZ8vVBencPg0=";
   };
 
-  buildInputs = [ libsForQt5.qtbase ];
   nativeBuildInputs = [ cmake ];
+  buildInputs = [ libsForQt5.qtbase ];
 
   cmakeFlags = [
     "-DWITH_DOC=OFF"
@@ -27,10 +27,10 @@ stdenv.mkDerivation rec {
   dontWrapQtApps = true;
 
   meta = {
-    homepage = "https://launchpad.net/libdbusmenu-qt";
-    description = "Provides a Qt implementation of the DBusMenu spec";
-    maintainers = [ ];
     inherit (libsForQt5.qtbase.meta) platforms;
+    description = "Provides a Qt implementation of the DBusMenu spec";
+    homepage = "https://launchpad.net/libdbusmenu-qt";
     license = lib.licenses.lgpl2;
+    maintainers = [ ];
   };
 }

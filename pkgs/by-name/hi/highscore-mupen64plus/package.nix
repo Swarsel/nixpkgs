@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  libhighscore,
   meson,
+  mupen64plus,
   ninja,
   pkg-config,
-  libhighscore,
-  mupen64plus,
   unstableGitUpdater,
 }:
 
@@ -43,10 +43,10 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    inherit (libhighscore.meta) maintainers;
+    inherit (mupen64plus.meta) platforms broken;
     description = "Port of Mupen64Plus to Highscore";
     homepage = "https://github.com/highscore-emu/mupen64plus-highscore";
     license = lib.licenses.gpl2Plus;
-    inherit (libhighscore.meta) maintainers;
-    inherit (mupen64plus.meta) platforms broken;
   };
 })

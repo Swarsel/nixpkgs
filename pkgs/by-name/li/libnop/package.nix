@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchpatch,
   fetchFromGitHub,
+  fetchpatch,
   gtest,
 }:
 
@@ -44,7 +44,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Fast, header-only C++ serialization library";
     homepage = "https://github.com/google/libnop";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ phodina ];
+    platforms = lib.platforms.all;
   };
 })

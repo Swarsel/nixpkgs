@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,14 +20,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   cargoLock.lockFile = ./Cargo.lock;
-
   passthru.shellPath = "/bin/sush";
 
   meta = {
     description = "Bash written with Rust, a.k.a. sushi shell";
     homepage = "https://github.com/shellgei/rusty_bash";
     license = lib.licenses.bsd3;
-    mainProgram = "sush";
     maintainers = with lib.maintainers; [ aleksana ];
+    mainProgram = "sush";
   };
 })

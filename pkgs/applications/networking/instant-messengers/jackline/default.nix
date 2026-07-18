@@ -10,8 +10,6 @@ buildDunePackage {
   pname = "jackline";
   version = "unstable-2024-10-21";
 
-  minimalOCamlVersion = "4.13";
-
   src = fetchFromGitHub {
     owner = "hannesm";
     repo = "jackline";
@@ -52,11 +50,13 @@ buildDunePackage {
     ppx_sexp_conv
   ];
 
+  minimalOCamlVersion = "4.13";
+
   meta = {
-    homepage = "https://github.com/hannesm/jackline";
     description = "Minimalistic secure XMPP client in OCaml";
-    mainProgram = "jackline";
+    homepage = "https://github.com/hannesm/jackline";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ sternenseemann ];
+    mainProgram = "jackline";
   };
 }

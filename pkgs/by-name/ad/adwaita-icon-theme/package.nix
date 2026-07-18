@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
+  gdk-pixbuf,
+  gnome,
+  gtk3,
+  hicolor-icon-theme,
+  librsvg,
   meson,
   ninja,
   pkg-config,
-  gnome,
-  gtk3,
-  gdk-pixbuf,
-  librsvg,
-  hicolor-icon-theme,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,13 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://gnome/sources/adwaita-icon-theme/${lib.versions.major finalAttrs.version}/adwaita-icon-theme-${finalAttrs.version}.tar.xz";
     hash = "sha256-+sbgQB/KcUeAVhoIG49+J8O8HbNOvaTaF1CB8msk1GA=";
   };
+
+  postPatch = ''
+    # Postpone these changes for now, please discuss in https://github.com/NixOS/nixpkgs/pull/316416
+    substituteInPlace index.theme \
+      --replace-fail "Hidden=true" "" \
+      --replace-fail "Inherits=AdwaitaLegacy,hicolor" "Inherits=hicolor"
+  '';
 
   nativeBuildInputs = [
     meson
@@ -38,13 +45,6 @@ stdenv.mkDerivation (finalAttrs: {
     hicolor-icon-theme
   ];
 
-  postPatch = ''
-    # Postpone these changes for now, please discuss in https://github.com/NixOS/nixpkgs/pull/316416
-    substituteInPlace index.theme \
-      --replace-fail "Hidden=true" "" \
-      --replace-fail "Inherits=AdwaitaLegacy,hicolor" "Inherits=hicolor"
-  '';
-
   dontDropIconThemeCache = true;
 
   passthru = {
@@ -56,8 +56,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     homepage = "https://gitlab.gnome.org/GNOME/adwaita-icon-theme";
     changelog = "https://gitlab.gnome.org/GNOME/adwaita-icon-theme/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
+    license = lib.licenses.cc-by-sa-30;
     platforms = with lib.platforms; linux ++ darwin;
     teams = [ lib.teams.gnome ];
-    license = lib.licenses.cc-by-sa-30;
   };
 })

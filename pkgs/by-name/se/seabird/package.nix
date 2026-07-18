@@ -1,16 +1,16 @@
 {
   lib,
+  fetchFromGitHub,
   buildGoModule,
   copyDesktopItems,
-  fetchFromGitHub,
-  pkg-config,
-  wrapGAppsHook4,
   gobject-introspection,
   gtk4,
   gtksourceview5,
   libadwaita,
   libxml2,
+  pkg-config,
   vte-gtk4,
+  wrapGAppsHook4,
 }:
 
 buildGoModule (finalAttrs: {
@@ -24,7 +24,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-z+XEOqr7JX376AyGr0zx3AV3P+YqFbyspXMoxidCWY0=";
   };
 
-  vendorHash = "sha256-hPvMSAHWtcJULE9t8TKx8r0OpI9V287UPVACeORqOHA=";
+  postPatch = ''
+    substituteInPlace main.go --replace-fail 'version = "dev"' 'version = "${finalAttrs.version}"'
+  '';
 
   nativeBuildInputs = [
     copyDesktopItems
@@ -41,16 +43,7 @@ buildGoModule (finalAttrs: {
     vte-gtk4
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
-  enableParallelBuilding = true;
-
-  postPatch = ''
-    substituteInPlace main.go --replace-fail 'version = "dev"' 'version = "${finalAttrs.version}"'
-  '';
+  vendorHash = "sha256-hPvMSAHWtcJULE9t8TKx8r0OpI9V287UPVACeORqOHA=";
 
   preBuild = ''
     go generate internal/icon/icon.go
@@ -61,6 +54,12 @@ buildGoModule (finalAttrs: {
   '';
 
   desktopItems = [ "dev.skynomads.Seabird.desktop" ];
+  enableParallelBuilding = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
 
   meta = {
     description = "Native Kubernetes desktop client";

@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
   autoreconfHook,
-  pkg-config,
   curl,
+  icu,
   leptonica,
   libarchive,
   libpng,
   libtiff,
-  icu,
+  nix-update-script,
   pango,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,8 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     sha256 = "sha256-VLmKwycJK66fFkdWOSYO5OJkJC8MTWKTQWIVb243ekc=";
   };
-
-  enableParallelBuilding = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -42,7 +40,9 @@ stdenv.mkDerivation (finalAttrs: {
     pango
   ];
 
+  enableParallelBuilding = true;
   passthru.updateScript = nix-update-script { };
+
   meta = {
     description = "OCR engine";
     homepage = "https://github.com/tesseract-ocr/tesseract";

@@ -13,13 +13,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.12.13";
 
   src = fetchFromGitHub {
-    sha256 = "sha256-rfh4JLnLekx9UhyLH6eDJUeItPROmY/Lc6mcWpbGb3s=";
-    rev = finalAttrs.version;
-    repo = "leatherman";
     owner = "puppetlabs";
+    repo = "leatherman";
+    rev = finalAttrs.version;
+    sha256 = "sha256-rfh4JLnLekx9UhyLH6eDJUeItPROmY/Lc6mcWpbGb3s=";
   };
-
-  cmakeFlags = [ "-DLEATHERMAN_ENABLE_TESTING=OFF" ];
 
   # CMake4 3.2.2 is deprecated and no longer supported by CMake > 4
   # https://github.com/NixOS/nixpkgs/issues/445447
@@ -43,18 +41,20 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace tests/CMakeLists.txt --replace-fail 'system ' ""
   '';
 
-  env.NIX_CFLAGS_COMPILE = "-Wno-error";
-
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     boost
     curl
     ruby
   ];
 
+  cmakeFlags = [ "-DLEATHERMAN_ENABLE_TESTING=OFF" ];
+  env.NIX_CFLAGS_COMPILE = "-Wno-error";
+
   meta = {
-    homepage = "https://github.com/puppetlabs/leatherman/";
     description = "Collection of C++ and CMake utility libraries";
+    homepage = "https://github.com/puppetlabs/leatherman/";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.womfoo ];
     platforms = lib.platforms.unix;

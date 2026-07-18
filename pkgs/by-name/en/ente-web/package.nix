@@ -1,20 +1,20 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   binaryen,
   cargo,
-  fetchFromGitHub,
   fetchYarnDeps,
+  nixosTests,
   nodejs,
   rustPlatform,
   rustc,
   sd,
   wasm-bindgen-cli_0_2_108,
   wasm-pack,
-  yarnConfigHook,
-  yarnBuildHook,
   writeScript,
-  extraBuildEnv ? { },
+  yarnBuildHook,
+  yarnConfigHook,
   # This package contains serveral sub-applications. This specifies which of them you want to build.
   enteApp ? "photos",
   # Accessing some apps (such as account) directly will result in a hardcoded redirect to ente.io.
@@ -22,7 +22,7 @@
   # can set this parameter to override these occurrences with your own url. Must include the schema.
   # Example: https://my-ente.example.com
   enteMainUrl ? null,
-  nixosTests,
+  extraBuildEnv ? { },
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,48 +32,15 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchFromGitHub {
     owner = "ente";
     repo = "ente";
+    tag = "photos-v${finalAttrs.version}";
+    hash = "sha256-o75r8LFgG3BT3IIPiD9x6gY3fRDoxJ3ZTBPAYr3hLWI=";
+    fetchSubmodules = true;
+
     sparseCheckout = [
       "rust"
       "web"
     ];
-    tag = "photos-v${finalAttrs.version}";
-    fetchSubmodules = true;
-    hash = "sha256-o75r8LFgG3BT3IIPiD9x6gY3fRDoxJ3ZTBPAYr3hLWI=";
   };
-  sourceRoot = "${finalAttrs.src.name}/web";
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      sourceRoot
-      cargoRoot
-      ;
-    hash = "sha256-NYPxaVYEaJVcsRX6wLVJd+/UUJrNel0zTPYGdEv8a+U=";
-  };
-  cargoRoot = "packages/wasm";
-
-  offlineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/web/yarn.lock";
-    hash = "sha256-eGu+s8g0nGijYfjo8RkT5/iBfbwk5cBMacbe/gO03NI=";
-  };
-
-  nativeBuildInputs = [
-    yarnConfigHook
-    yarnBuildHook
-    binaryen
-    cargo
-    rustPlatform.cargoSetupHook
-    rustc
-    rustc.llvmPackages.lld
-    nodejs
-    wasm-bindgen-cli_0_2_108
-    wasm-pack
-  ];
-
-  # See: https://github.com/ente/ente/blob/main/web/apps/photos/.env
-  env = extraBuildEnv;
 
   postPatch =
     # Use our `wasm-pack` binary, rather than the Node version, which is
@@ -92,7 +59,22 @@ stdenv.mkDerivation (finalAttrs: {
       done
     '';
 
-  yarnBuildScript = "build:${enteApp}";
+  nativeBuildInputs = [
+    yarnConfigHook
+    yarnBuildHook
+    binaryen
+    cargo
+    rustPlatform.cargoSetupHook
+    rustc
+    rustc.llvmPackages.lld
+    nodejs
+    wasm-bindgen-cli_0_2_108
+    wasm-pack
+  ];
+
+  # See: https://github.com/ente/ente/blob/main/web/apps/photos/.env
+  env = extraBuildEnv;
+
   installPhase =
     let
       distName = if enteApp == "payments" then "dist" else "out";
@@ -105,8 +87,31 @@ stdenv.mkDerivation (finalAttrs: {
       runHook postInstall
     '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      sourceRoot
+      cargoRoot
+      ;
+
+    hash = "sha256-NYPxaVYEaJVcsRX6wLVJd+/UUJrNel0zTPYGdEv8a+U=";
+  };
+
+  cargoRoot = "packages/wasm";
+
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-eGu+s8g0nGijYfjo8RkT5/iBfbwk5cBMacbe/gO03NI=";
+    yarnLock = "${finalAttrs.src}/web/yarn.lock";
+  };
+
+  sourceRoot = "${finalAttrs.src.name}/web";
+  yarnBuildScript = "build:${enteApp}";
+
   passthru = {
     tests = { inherit (nixosTests) ente; };
+
     updateScript = writeScript "update-ente-web" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p coreutils nix-update gnugrep gnused curl
@@ -165,11 +170,13 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://ente.io/";
     changelog = "https://github.com/ente/ente/releases";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       pinpox
       oddlama
       nicegamer7
     ];
+
     platforms = lib.platforms.all;
   };
 })

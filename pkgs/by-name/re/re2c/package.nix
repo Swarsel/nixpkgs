@@ -3,12 +3,11 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  nix-update-script,
-  python3,
-
   # for passthru.tests
   ninja,
+  nix-update-script,
   php,
+  python3,
   spamassassin,
 }:
 
@@ -29,13 +28,18 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
-  enableParallelBuilding = true;
 
   preCheck = ''
     patchShebangs run_tests.py
   '';
 
+  enableParallelBuilding = true;
+
   passthru = {
+    tests = {
+      inherit ninja php spamassassin;
+    };
+
     updateScript = nix-update-script {
       # Skip non-release tags like `python-experimental`.
       extraArgs = [
@@ -43,16 +47,13 @@ stdenv.mkDerivation (finalAttrs: {
         "([0-9.]+)"
       ];
     };
-    tests = {
-      inherit ninja php spamassassin;
-    };
   };
 
   meta = {
     description = "Tool for writing very fast and very flexible scanners";
     homepage = "https://re2c.org";
     license = lib.licenses.publicDomain;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ thoughtpolice ];
+    platforms = lib.platforms.all;
   };
 })

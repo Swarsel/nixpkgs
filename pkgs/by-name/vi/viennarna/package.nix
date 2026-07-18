@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   dlib,
   gsl,
   mpfr,
   perl,
+  pkg-config,
   python3,
 }:
 stdenv.mkDerivation rec {

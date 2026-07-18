@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   future,
   httplib2,
   httpx,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "nebula3-python";
   version = "5.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vesoft-inc";
@@ -23,6 +22,7 @@ buildPythonPackage rec {
     hash = "sha256-WVbLywb/uVHWjtzXHSSlvBUwFz0p3VtiYwAl/0CcMDw=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ pdm-backend ];
 
   dependencies = [
@@ -33,10 +33,6 @@ buildPythonPackage rec {
     six
   ]
   ++ httpx.optional-dependencies.http2;
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "nebula3" ];
 
   disabledTestPaths = [
     # Tests require a running thrift instance
@@ -51,6 +47,9 @@ buildPythonPackage rec {
     "tests/test_ssl_connection.py"
     "tests/test_ssl_pool.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "nebula3" ];
 
   meta = {
     description = "Client API of Nebula Graph in Python";

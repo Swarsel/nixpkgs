@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   jaraco-classes,
   jaraco-context,
   keyring,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "keyrings-alt";
   version = "5.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jaraco";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     hash = "sha256-m/hIXjri3FZ3rPIymiIBy8cKNOwJoj14WjsOyDtcWmU=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    keyring
+  ];
+
   build-system = [ setuptools-scm ];
 
   dependencies = [
@@ -28,11 +32,7 @@ buildPythonPackage rec {
     jaraco-context
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    keyring
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "keyrings.alt" ];
 
   meta = {

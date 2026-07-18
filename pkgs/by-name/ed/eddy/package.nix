@@ -1,15 +1,14 @@
 {
-  python3Packages,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   jre,
+  python3Packages,
   qt5,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "eddy";
   version = "3.7.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "obdasystems";
@@ -27,23 +26,25 @@ python3Packages.buildPythonApplication (finalAttrs: {
     python3Packages.pyqt5
   ];
 
-  # Tests fail with: ImportError: cannot import name 'QtXmlPatterns' from 'PyQt5'
-  doCheck = false;
-
   preBuild = ''
     export HOME=/tmp
   '';
+
+  # Tests fail with: ImportError: cannot import name 'QtXmlPatterns' from 'PyQt5'
+  doCheck = false;
 
   preFixup = ''
     wrapQtApp "$out/bin/eddy" --prefix JAVA_HOME : ${jre}
   '';
 
+  format = "setuptools";
+
   meta = {
-    homepage = "http://www.obdasystems.com/eddy";
     description = "Graphical editor for the specification and visualization of Graphol ontologies";
-    mainProgram = "eddy";
+    homepage = "http://www.obdasystems.com/eddy";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ koslambrou ];
+    platforms = lib.platforms.linux;
+    mainProgram = "eddy";
   };
 })

@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
-  versionCheckHook,
+  fetchpatch,
   nixosTests,
+  versionCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,15 +19,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-8EWchUppW4H2kEUCGBXIk1meARJj2usKKO5gFYPoW3s=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/miniupnpc";
-
   patches = [
     # fix missing include
     # remove on next release
     (fetchpatch {
-      url = "https://github.com/miniupnp/miniupnp/commit/e263ab6f56c382e10fed31347ec68095d691a0e8.patch";
       hash = "sha256-PHqjruFOcsGT3rdFS/GD3wEvalCmoRY4BtIKFxCjKDw=";
       stripLen = 1;
+      url = "https://github.com/miniupnp/miniupnp/commit/e263ab6f56c382e10fed31347ec68095d691a0e8.patch";
     })
   ];
 
@@ -37,12 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "UPNPC_BUILD_SHARED" (!stdenv.hostPlatform.isStatic))
     (lib.cmakeBool "UPNPC_BUILD_STATIC" stdenv.hostPlatform.isStatic)
   ];
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  versionCheckProgram = "${placeholder "out"}/bin/upnpc";
-  doInstallCheck = true;
 
   doCheck = !stdenv.hostPlatform.isFreeBSD;
 
@@ -56,17 +48,25 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "upnpc" $out/bin/upnpc
   '';
 
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
   __darwinAllowLocalNetworking = true;
+  sourceRoot = "${finalAttrs.src.name}/miniupnpc";
+  versionCheckProgram = "${placeholder "out"}/bin/upnpc";
 
   passthru.tests = {
     inherit (nixosTests) upnp;
   };
 
   meta = {
-    homepage = "https://miniupnp.tuxfamily.org/";
     description = "Client that implements the UPnP Internet Gateway Device (IGD) specification";
-    platforms = with lib.platforms; linux ++ freebsd ++ darwin;
+    homepage = "https://miniupnp.tuxfamily.org/";
     license = lib.licenses.bsd3;
+    platforms = with lib.platforms; linux ++ freebsd ++ darwin;
     mainProgram = "upnpc";
   };
 })

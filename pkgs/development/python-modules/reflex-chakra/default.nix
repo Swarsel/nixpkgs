@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pytestCheckHook,
   reflex,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "reflex-chakra";
   version = "0.8.2post1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "reflex-dev";
@@ -20,20 +19,19 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-DugZRZpGP90EFkBjpAS1XkjrNPG6WWwCQPUcEZJ0ff8=";
   };
 
+  # there are no "test_*.py" files, and the
+  # other files with `test_*` functions are not maintained it seems
+  doCheck = false;
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     hatchling
     uv-dynamic-versioning
   ];
 
   dependencies = [ reflex ];
-
+  pyproject = true;
   pythonImportsCheck = [ "reflex_chakra" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  # there are no "test_*.py" files, and the
-  # other files with `test_*` functions are not maintained it seems
-  doCheck = false;
 
   meta = {
     description = "Chakra Implementation in Reflex";

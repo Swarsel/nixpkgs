@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  ghostscript,
+  gtk3,
+  makeWrapper,
   meson,
+  ninja,
+  nix-update-script,
+  pantheon,
   pkg-config,
   vala,
-  gtk3,
   wrapGAppsHook3,
-  pantheon,
-  ninja,
-  ghostscript,
-  makeWrapper,
-  nix-update-script,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "pdftricks";
@@ -23,6 +23,13 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-l4Xg4Uk520qoaEo8UxdLE8MfpVkRj/bpGBzL5HwdDUo=";
   };
+
+  postPatch = ''
+    # Remove positional arguments that cause errors
+    substituteInPlace data/meson.build \
+      --replace-fail "'desktop'," "" \
+      --replace-fail "'appdata'," ""
+  '';
 
   nativeBuildInputs = [
     meson
@@ -46,14 +53,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   dontWrapGApps = true;
-
-  postPatch = ''
-    # Remove positional arguments that cause errors
-    substituteInPlace data/meson.build \
-      --replace-fail "'desktop'," "" \
-      --replace-fail "'appdata'," ""
-  '';
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

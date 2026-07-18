@@ -5,8 +5,8 @@
 }:
 
 buildDunePackage {
-  pname = "mparser-re";
   inherit (mparser) src version;
+  pname = "mparser-re";
 
   propagatedBuildInputs = [
     mparser

@@ -18,26 +18,13 @@ let
       targetPlatformConfig = stdenv.targetPlatform.config;
     in
     stdenv.mkDerivation (finalAttrs: {
-      pname = "${targetPlatformConfig}-nim-wrapper";
       inherit (nimUnwrapped) version;
-      preferLocalBuild = true;
-      strictDeps = true;
-
-      nativeBuildInputs = [ makeWrapper ];
-
       # Needed for any nim package that uses the standard library's
       # 'std/sysrand' module.
-
       inherit patches;
-
-      unpackPhase = ''
-        runHook preUnpack
-        tar xf ${nimUnwrapped.src} nim-$version/config
-        cd nim-$version
-        runHook postUnpack
-      '';
-
-      dontConfigure = true;
+      pname = "${targetPlatformConfig}-nim-wrapper";
+      strictDeps = true;
+      nativeBuildInputs = [ makeWrapper ];
 
       buildPhase =
         # Configure the Nim compiler to use $CC and $CXX as backends
@@ -86,24 +73,6 @@ let
           runHook postBuild
         '';
 
-      wrapperArgs = [
-        "--prefix PATH : ${lib.makeBinPath [ buildPackages.gdb ]}:${placeholder "out"}/bin"
-        # Used by nim-gdb
-
-        "--prefix LD_LIBRARY_PATH : ${
-          lib.makeLibraryPath [
-            openssl
-            pcre
-          ]
-        }"
-        # These libraries may be referred to by the standard library.
-        # This is broken for cross-compilation because the package
-        # set will be shifted back by nativeBuildInputs.
-
-        "--set NIM_CONFIG_PATH ${placeholder "out"}/etc/nim"
-        # Use the custom configuration
-      ];
-
       installPhase = ''
         runHook preInstall
 
@@ -136,6 +105,34 @@ let
         runHook postInstall
       '';
 
+      dontConfigure = true;
+      preferLocalBuild = true;
+
+      unpackPhase = ''
+        runHook preUnpack
+        tar xf ${nimUnwrapped.src} nim-$version/config
+        cd nim-$version
+        runHook postUnpack
+      '';
+
+      wrapperArgs = [
+        "--prefix PATH : ${lib.makeBinPath [ buildPackages.gdb ]}:${placeholder "out"}/bin"
+        # Used by nim-gdb
+
+        "--prefix LD_LIBRARY_PATH : ${
+          lib.makeLibraryPath [
+            openssl
+            pcre
+          ]
+        }"
+        # These libraries may be referred to by the standard library.
+        # This is broken for cross-compilation because the package
+        # set will be shifted back by nativeBuildInputs.
+
+        "--set NIM_CONFIG_PATH ${placeholder "out"}/etc/nim"
+        # Use the custom configuration
+      ];
+
       passthru = nimUnwrapped.passthru // {
         inherit wrapNim;
         nim = nimUnwrapped;
@@ -148,6 +145,6 @@ let
     });
 in
 wrapNim {
-  nimUnwrapped = nim-unwrapped;
   patches = [ ./nim2.cfg.patch ];
+  nimUnwrapped = nim-unwrapped;
 }

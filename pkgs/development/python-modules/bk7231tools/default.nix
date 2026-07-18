@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
-  pycryptodome,
   py-datastruct,
+  pycryptodome,
   pyserial,
 }:
 
 buildPythonPackage rec {
   pname = "bk7231tools";
   version = "2.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tuya-cloudcutter";
@@ -19,12 +18,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-CXX4BcdlUQHPtZYggCn0LaqqEDCWXI7LRZnCWsja+SY=";
   };
-
-  pythonRelaxDeps = [
-    "pycryptodome"
-    "py-datastruct"
-    "pyserial"
-  ];
 
   build-system = [ poetry-core ];
 
@@ -34,7 +27,14 @@ buildPythonPackage rec {
     pyserial
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "bk7231tools" ];
+
+  pythonRelaxDeps = [
+    "pycryptodome"
+    "py-datastruct"
+    "pyserial"
+  ];
 
   meta = {
     description = "Tools to interact with and analyze artifacts for BK7231 MCUs";

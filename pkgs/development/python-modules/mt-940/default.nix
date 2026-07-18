@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   pytest-cov-stub,
+  pytestCheckHook,
   pyyaml,
   setuptools,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "mt-940";
   version = "4.30.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "wolph";
@@ -28,6 +27,7 @@ buildPythonPackage rec {
     pytest-cov-stub
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "mt940" ];
 
   meta = {

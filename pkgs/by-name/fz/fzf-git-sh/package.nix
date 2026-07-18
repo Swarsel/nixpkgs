@@ -1,21 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchFromGitHub,
   bash,
   bat,
   coreutils,
-  fetchFromGitHub,
   findutils,
+  fish,
   fzf,
   gawk,
   git,
   gnugrep,
   gnused,
+  unstableGitUpdater,
   util-linux,
   xdg-utils,
   zsh,
-  fish,
-  unstableGitUpdater,
 }:
 
 stdenv.mkDerivation rec {
@@ -28,9 +28,6 @@ stdenv.mkDerivation rec {
     rev = "d76cd4df21f2ca5aafeab8b31118c4df133472c0";
     hash = "sha256-lK8rbwu5PhCOY3ODWW6U/R/O3AA4c4etxCQogHja9nA=";
   };
-
-  dontBuild = true;
-  doInstallCheck = true;
 
   postPatch = ''
     sed -i \
@@ -64,6 +61,8 @@ stdenv.mkDerivation rec {
     install -D fzf-git.fish $out/share/${pname}/fzf-git.fish
   '';
 
+  doInstallCheck = true;
+
   # Smoke test
   installCheckPhase = ''
     export HOME=$(mktemp -d)
@@ -71,11 +70,12 @@ stdenv.mkDerivation rec {
     ${fish}/bin/fish -c "source $out/share/${pname}/fzf-git.fish"
   '';
 
+  dontBuild = true;
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    homepage = "https://github.com/junegunn/fzf-git.sh";
     description = "Bash, zsh and fish key bindings for Git objects, powered by fzf";
+    homepage = "https://github.com/junegunn/fzf-git.sh";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ deejayem ];
     platforms = lib.platforms.all;

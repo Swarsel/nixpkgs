@@ -2,23 +2,24 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  fetchpatch,
-  writeText,
+  SDL2,
   bluez,
   cjson,
   cmake,
   config,
+  cudaPackages,
   dbus,
   doxygen,
   eigen,
   elfutils,
+  fetchpatch,
   glslang,
   gst_all_1,
   hidapi,
+  libGL,
   libbsd,
   libdrm,
   libffi,
-  libGL,
   libjpeg,
   librealsense,
   libsurvive,
@@ -33,6 +34,7 @@
   libxext,
   libxrandr,
   nix-update-script,
+  nixosTests,
   onnxruntime,
   opencv4,
   openvr,
@@ -40,7 +42,6 @@
   pcre2,
   pkg-config,
   python3,
-  SDL2,
   shaderc,
   tracy,
   udev,
@@ -49,10 +50,9 @@
   wayland,
   wayland-protocols,
   wayland-scanner,
+  writeText,
   zlib,
   zstd,
-  nixosTests,
-  cudaPackages,
   enableCuda ? config.cudaSupport,
   # Set as 'false' to build monado without service support, i.e. allow VR
   # applications linking against libopenxr_monado.so to use OpenXR standalone
@@ -67,20 +67,20 @@ stdenv.mkDerivation (finalAttrs: {
   version = "25.1.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "monado";
     repo = "monado";
     tag = "v${finalAttrs.version}";
     hash = "sha256-hUSm76PV+FhvzhiYMUbGcNDQMK1TZCPYh1PNADJmdSU=";
+    domain = "gitlab.freedesktop.org";
   };
 
   patches = [
     # Resolves issues with wayvr
     # See https://github.com/NixOS/nixpkgs/pull/489154#issuecomment-4018732528
     (fetchpatch {
+      hash = "sha256-6lD4j7CMQk52btfxD8hOm0GWZaOxSgc1jel9hyXqktA=";
       name = "monado-cylinder-aspectRatio.patch";
       url = "https://gitlab.freedesktop.org/monado/monado/-/commit/69834fe93b84640170f8efa54b4700e5e0dc03c1.diff";
-      hash = "sha256-6lD4j7CMQk52btfxD8hOm0GWZaOxSgc1jel9hyXqktA=";
     })
   ];
 
@@ -161,8 +161,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.basic-service = nixosTests.monado;
+    updateScript = nix-update-script { };
   };
 
   meta = {

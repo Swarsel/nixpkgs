@@ -1,12 +1,12 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  makeWrapper,
-  nodejs_24,
+  buildGoModule,
   gitMinimal,
-  versionCheckHook,
+  makeWrapper,
   nix-update-script,
+  nodejs_24,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,14 +20,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-Bcpaw3tVCkpxMmjxKTxu1H3amlawbIS0UdH0+qWEv18=";
   };
 
-  vendorHash = "sha256-JS+8A6/JiIctCFzZQl1GqfSGv5yZT64++0BgYC8sulE=";
-
-  ldflags = [
-    "-s"
-    "-X main.version=v${finalAttrs.version}"
-  ];
-
+  strictDeps = true;
   nativeBuildInputs = [ makeWrapper ];
+  vendorHash = "sha256-JS+8A6/JiIctCFzZQl1GqfSGv5yZT64++0BgYC8sulE=";
 
   postInstall = ''
     wrapProgram $out/bin/github-act-runner \
@@ -39,13 +34,18 @@ buildGoModule (finalAttrs: {
       }
   '';
 
-  __structuredAttrs = true;
-  strictDeps = true;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  __structuredAttrs = true;
+
+  ldflags = [
+    "-s"
+    "-X main.version=v${finalAttrs.version}"
+  ];
 
   passthru = {
     updateScript = nix-update-script { };

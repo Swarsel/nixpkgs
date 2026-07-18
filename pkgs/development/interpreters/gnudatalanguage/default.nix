@@ -2,68 +2,68 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
-  wrapGAppsHook3,
-  readline,
-  ncurses,
-  zlib,
-  gsl,
-  openmp,
-  graphicsmagick,
+  eccodes,
+  eigen,
+  expat,
+  fetchpatch,
   fftw,
   fftwFloat,
   fftwLongDouble,
-  proj,
-  shapelib,
-  expat,
-  udunits,
-  eigen,
-  pslib,
-  libpng,
-  plplot,
-  libtiff,
+  glpk,
+  graphicsmagick,
+  gsl,
+  hdf4,
+  hdf5,
+  libaec,
   libgeotiff,
   libjpeg,
+  libpng,
+  libtiff,
+  # Choose MPICH over OpenMPI because it currently builds on AArch and Darwin
+  mpi,
+  ncurses,
+  netcdf,
+  openmp,
+  plplot,
+  proj,
+  pslib,
+  python3,
   qhull,
+  readline,
+  shapelib,
+  szip,
+  udunits,
+  wrapGAppsHook3,
+  wxwidgets_3_2,
+  zlib,
+  enableGLPK ? stdenv.hostPlatform.isLinux,
   # eccodes is broken on darwin
   enableGRIB ? stdenv.hostPlatform.isLinux,
-  eccodes,
-  enableGLPK ? stdenv.hostPlatform.isLinux,
-  glpk,
+  enableHDF4 ? true,
+  enableHDF5 ? true,
   # We enable it in hdf4 and use libtirpc as a dependency here from the passthru
   # of hdf4
   enableLibtirpc ? stdenv.hostPlatform.isLinux,
-  python3,
   enableMPI ? (stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isDarwin),
-  # Choose MPICH over OpenMPI because it currently builds on AArch and Darwin
-  mpi,
+  enableNetCDF ? true,
   # Unfree optional dependency for hdf4 and hdf5
   enableSzip ? false,
-  szip,
-  libaec,
-  enableHDF4 ? true,
-  hdf4,
+  # wxWidgets is preferred over X11 for this project but we only have it on Linux
+  # and Darwin.
+  enableWX ? (stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isDarwin),
+  # X11: OFF by default for platform consistency. Use X where WX is not available
+  enableXWin ? (!stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isDarwin),
   hdf4-forced ? null,
-  enableHDF5 ? true,
+  hdf5-forced ? null,
+  netcdf-forced ? null,
+  plplot-forced ? null,
   # HDF5 format version (API version) 1.10 and 1.12 is not fully compatible
   # Specify if the API version should default to 1.10
   # netcdf currently depends on hdf5 with `apiVersion = "v110"`
   # If you wish to use HDF5 API version 1.12 (`useHdf5v110Api=false`),
   # you will need to turn NetCDF off.
   useHdf5v110Api ? true,
-  hdf5,
-  hdf5-forced ? null,
-  enableNetCDF ? true,
-  netcdf,
-  netcdf-forced ? null,
-  plplot-forced ? null,
-  # wxWidgets is preferred over X11 for this project but we only have it on Linux
-  # and Darwin.
-  enableWX ? (stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isDarwin),
-  wxwidgets_3_2,
-  # X11: OFF by default for platform consistency. Use X where WX is not available
-  enableXWin ? (!stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isDarwin),
 }:
 
 let
@@ -72,9 +72,9 @@ let
       hdf4-forced
     else
       hdf4.override {
-        uselibtirpc = enableLibtirpc;
-        szipSupport = enableSzip;
         inherit szip;
+        szipSupport = enableSzip;
+        uselibtirpc = enableLibtirpc;
       };
   hdf5-custom =
     if hdf5-forced != null then
@@ -82,10 +82,10 @@ let
     else
       hdf5.override (
         {
-          mpiSupport = enableMPI;
           inherit mpi;
-          szipSupport = enableSzip;
           inherit libaec;
+          mpiSupport = enableMPI;
+          szipSupport = enableSzip;
         }
         // lib.optionalAttrs enableMPI {
           cppSupport = false;
@@ -127,9 +127,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/gnudatalanguage/gdl/commit/b648a63c5070f38e90167f858a79ba6f01dad1d3.patch?full_index=1";
-      includes = [ "CMakeLists.txt" ];
       hash = "sha256-lYtAstI21Up4RArf6pXnjiTwJ3Omoisw43Ih1H2Wc0s=";
+      includes = [ "CMakeLists.txt" ];
+      url = "https://github.com/gnudatalanguage/gdl/commit/b648a63c5070f38e90167f858a79ba6f01dad1d3.patch?full_index=1";
     })
   ];
 
@@ -223,11 +223,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru = {
-    hdf4 = hdf4-custom;
-    hdf5 = hdf5-custom;
-    netcdf = netcdf-custom;
-    plplot = plplot-with-drivers;
-    python = python3;
     inherit
       enableMPI
       mpi
@@ -236,15 +231,23 @@ stdenv.mkDerivation (finalAttrs: {
       enableWX
       enableXWin
       ;
+
+    hdf4 = hdf4-custom;
+    hdf5 = hdf5-custom;
+    netcdf = netcdf-custom;
+    plplot = plplot-with-drivers;
+    python = python3;
   };
 
   meta = {
     description = "Free incremental compiler of IDL";
+
     longDescription = ''
       GDL (GNU Data Language) is a free/libre/open source incremental compiler
       compatible with IDL (Interactive Data Language) and to some extent with PV-WAVE.
       GDL is aimed as a drop-in replacement for IDL.
     '';
+
     homepage = "https://github.com/gnudatalanguage/gdl";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ ShamrockLee ];

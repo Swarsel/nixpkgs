@@ -1,19 +1,19 @@
 {
   lib,
   fetchurl,
-  intltool,
-  python3Packages,
-  gobject-introspection,
-  gtk3,
-  itstool,
-  libwnck,
-  keybinder3,
-  desktop-file-utils,
-  shared-mime-info,
-  wrapGAppsHook3,
-  wafHook,
   bash,
   dbus,
+  desktop-file-utils,
+  gobject-introspection,
+  gtk3,
+  intltool,
+  itstool,
+  keybinder3,
+  libwnck,
+  python3Packages,
+  shared-mime-info,
+  wafHook,
+  wrapGAppsHook3,
 }:
 
 with python3Packages;
@@ -21,8 +21,6 @@ with python3Packages;
 buildPythonApplication (finalAttrs: {
   pname = "kupfer";
   version = "329";
-
-  pyproject = false;
 
   src = fetchurl {
     url = "https://github.com/kupferlauncher/kupfer/releases/download/v${finalAttrs.version}/kupfer-v${finalAttrs.version}.tar.xz";
@@ -41,11 +39,13 @@ buildPythonApplication (finalAttrs: {
     docutils # for rst2man
     dbus # for detection of dbus-send during build
   ];
+
   buildInputs = [
     libwnck
     keybinder3
     bash
   ];
+
   propagatedBuildInputs = [
     pygobject3
     gtk3
@@ -54,6 +54,8 @@ buildPythonApplication (finalAttrs: {
     pycairo
   ];
 
+  doCheck = false; # no tests
+
   postInstall = ''
     gappsWrapperArgs+=(
       "--prefix" "PYTHONPATH" : "${makePythonPath finalAttrs.propagatedBuildInputs}"
@@ -61,7 +63,7 @@ buildPythonApplication (finalAttrs: {
     )
   '';
 
-  doCheck = false; # no tests
+  pyproject = false;
 
   meta = {
     description = "Smart, quick launcher";

@@ -1,9 +1,9 @@
 {
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
   makeBinaryWrapper,
   odin,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,7 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ makeBinaryWrapper ];
-
   buildInputs = [ odin ];
 
   buildPhase = ''
@@ -57,10 +56,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Language server for the Odin programming language";
     homepage = "https://github.com/DanielGavin/ols";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       astavie
       atomicptr
     ];
+
     mainProgram = "ols";
   };
 })

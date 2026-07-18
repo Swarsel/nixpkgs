@@ -19,8 +19,8 @@ stdenv.mkDerivation rec {
     m4
     perl
   ];
-  buildInputs = [ m4 ];
 
+  buildInputs = [ m4 ];
   # Work around a known issue in Cygwin.  See
   # http://thread.gmane.org/gmane.comp.sysutils.autoconf.bugs/6822 for
   # details.
@@ -28,21 +28,18 @@ stdenv.mkDerivation rec {
   #doCheck = ((!stdenv.hostPlatform.isCygwin) && (!stdenv.hostPlatform.isSunOS));
   doCheck = false;
 
-  # Don't fixup "#! /bin/sh" in Autoconf, otherwise it will use the
-  # "fixed" path in generated files!
-  dontPatchShebangs = true;
-
-  enableParallelBuilding = true;
-
   # Make the Autotest test suite run in parallel.
   preCheck = ''
     export TESTSUITEFLAGS="-j$NIX_BUILD_CORES"
   '';
 
   doInstallCheck = false; # fails
+  # Don't fixup "#! /bin/sh" in Autoconf, otherwise it will use the
+  # "fixed" path in generated files!
+  dontPatchShebangs = true;
+  enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://www.gnu.org/software/autoconf/";
     description = "Part of the GNU Build System";
 
     longDescription = ''
@@ -55,8 +52,8 @@ stdenv.mkDerivation rec {
       can use, in the form of M4 macro calls.
     '';
 
+    homepage = "https://www.gnu.org/software/autoconf/";
     license = lib.licenses.gpl2Plus;
-
     platforms = lib.platforms.all;
   };
 }

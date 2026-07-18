@@ -7,17 +7,15 @@
 buildPythonPackage (finalAttrs: {
   pname = "bech32";
   version = "1.2.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-fW24IUYDvXhx/PpsCCbvaLhbCr2Q+iHChanF4h0r2Jk=";
   };
 
+  __structuredAttrs = true;
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "bech32" ];
 
   meta = {

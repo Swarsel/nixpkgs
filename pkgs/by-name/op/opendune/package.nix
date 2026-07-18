@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
-  alsa-lib,
-  libpulseaudio,
   SDL2,
   SDL2_image,
   SDL2_mixer,
+  alsa-lib,
+  libpulseaudio,
+  pkg-config,
 }:
 
 # - set the opendune configuration at ~/.config/opendune/opendune.ini:
@@ -31,11 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "typedef unsigned char bool;" ""
   '';
 
-  configureFlags = [
-    "--with-alsa=${lib.getLib alsa-lib}/lib/libasound.so"
-    "--with-pulse=${lib.getLib libpulseaudio}/lib/libpulse.so"
-  ];
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -46,7 +41,10 @@ stdenv.mkDerivation (finalAttrs: {
     SDL2_mixer
   ];
 
-  enableParallelBuilding = true;
+  configureFlags = [
+    "--with-alsa=${lib.getLib alsa-lib}/lib/libasound.so"
+    "--with-pulse=${lib.getLib libpulseaudio}/lib/libpulse.so"
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -57,11 +55,13 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Dune, Reinvented";
-    mainProgram = "opendune";
     homepage = "https://github.com/OpenDUNE/OpenDUNE";
     license = lib.licenses.gpl2Only;
     maintainers = [ ];
+    mainProgram = "opendune";
   };
 })

@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage {
   pname = "cocotb-bus";
   version = "unstable-2025-11-03";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "cocotb";
@@ -18,12 +17,12 @@ buildPythonPackage {
 
   # tests require cocotb, disable for now to avoid circular dependency
   doCheck = false;
+  format = "setuptools";
 
   # checkPhase = ''
   #   export PATH=$out/bin:$PATH
   #   make test
   # '';
-
   meta = {
     description = "Pre-packaged testbenching tools and reusable bus interfaces for cocotb";
     homepage = "https://github.com/cocotb/cocotb-bus";

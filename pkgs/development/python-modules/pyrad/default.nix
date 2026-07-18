@@ -1,19 +1,18 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
-  nix-update-script,
-  setuptools,
+  fetchFromGitHub,
+  buildPythonPackage,
   netaddr,
+  nix-update-script,
   pytestCheckHook,
-  sphinxHook,
+  setuptools,
   sphinx-rtd-theme,
+  sphinxHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyrad";
   version = "2.5.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyradius";
@@ -22,9 +21,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-94BjJRzCSJu/bVuYYKFlJkBcOVcQjmbDJ8QG+JwVpxY=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ netaddr ];
+  outputs = [
+    "out"
+    "doc"
+  ];
 
   # Upstream doesn't exclude docs, example, and pyrad.tests from package
   # discovery, causing them to be installed into site-packages.
@@ -33,20 +33,16 @@ buildPythonPackage (finalAttrs: {
       --replace-fail 'exclude = ["tests*"]' 'exclude = ["docs*", "example*", "pyrad.tests*"]'
   '';
 
-  outputs = [
-    "out"
-    "doc"
-  ];
-
   nativeBuildInputs = [
     sphinxHook
     sphinx-rtd-theme
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ netaddr ];
+  pyproject = true;
   pythonImportsCheck = [ "pyrad" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

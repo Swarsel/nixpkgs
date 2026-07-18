@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  gfortran,
-  cmake,
-  pkg-config,
   blas,
+  cmake,
+  gfortran,
   lapack,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,9 +36,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Library for Green’s function based electronic structure theory calculations";
-    license = [ lib.licenses.asl20 ];
     homepage = "https://github.com/nomad-coe/greenX";
-    platforms = lib.platforms.linux;
+    license = [ lib.licenses.asl20 ];
     maintainers = [ lib.maintainers.sheepforce ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -3,24 +3,20 @@
   buildPythonPackage,
   dvc-objects,
   fetchPypi,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
   webdav4,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "dvc-webdav";
   version = "3.0.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "dvc_webdav";
     inherit (finalAttrs) version;
     hash = "sha256-PA0Er7CYWiwVbwtxn0uUN85KzTRmR9j2/uBDtekXx24";
+    pname = "dvc_webdav";
   };
-
-  # Prevent circular dependency
-  pythonRemoveDeps = [ "dvc" ];
 
   build-system = [
     setuptools
@@ -32,9 +28,12 @@ buildPythonPackage (finalAttrs: {
     webdav4
   ];
 
+  pyproject = true;
+  # Prevent circular dependency
+  pythonRemoveDeps = [ "dvc" ];
+
   # Circular dependency
   # pythonImportsCheck = [ "dvc_webdav" ];
-
   meta = {
     description = "Webdav plugin for dvc";
     homepage = "https://pypi.org/project/dvc-webdav/";

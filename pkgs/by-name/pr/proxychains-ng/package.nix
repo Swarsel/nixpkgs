@@ -24,13 +24,13 @@ stdenv.mkDerivation (finalAttrs: {
     # The fix is not present in v4.17; remove the patch next version update.
     # https://github.com/rofl0r/proxychains-ng/issues/557
     (fetchpatch {
-      url = "https://github.com/rofl0r/proxychains-ng/commit/fffd2532ad34bdf7bf430b128e4c68d1164833c6.patch";
       hash = "sha256-l3qSFUDMUfVDW1Iw+R2aW/wRz4CxvpR4eOwx9KzuAAo=";
+      url = "https://github.com/rofl0r/proxychains-ng/commit/fffd2532ad34bdf7bf430b128e4c68d1164833c6.patch";
     })
     (fetchpatch {
+      hash = "sha256-taCNTm3qvBmLSSO0DEBu15tDZ35PDzHGtbZW7nLrRDw=";
       name = "CVE-2025-34451.patch";
       url = "https://github.com/httpsgithu/proxychains-ng/commit/cc005b7132811c9149e77b5e33cff359fc95512e.patch";
-      hash = "sha256-taCNTm3qvBmLSSO0DEBu15tDZ35PDzHGtbZW7nLrRDw=";
     })
   ];
 
@@ -47,10 +47,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Preloader which hooks calls to sockets in dynamically linked programs and redirects it through one or more socks/http proxies";
     homepage = "https://github.com/rofl0r/proxychains-ng";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       zenithal
       usertam
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "proxychains4";
   };

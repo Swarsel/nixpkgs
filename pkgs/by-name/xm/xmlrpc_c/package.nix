@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  fetchDebianPatch,
-  pkg-config,
   curl,
+  fetchDebianPatch,
   libxml2,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -21,8 +21,8 @@ stdenv.mkDerivation rec {
     (fetchDebianPatch {
       inherit pname version;
       debianRevision = "1";
-      patch = "fix-gcc15-build.patch";
       hash = "sha256-VcjXzzruDBuDarqhgNDHOtLxz2vlBrUAylILfMEGPmA=";
+      patch = "fix-gcc15-build.patch";
     })
   ];
 
@@ -43,6 +43,9 @@ stdenv.mkDerivation rec {
     "--enable-libxml2-backend"
   ];
 
+  # ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-error=implicit-function-declaration";
+
   # Build and install the "xmlrpc" tool (like the Debian package)
   postInstall = ''
     (cd tools/xmlrpc && make && make install)
@@ -50,15 +53,12 @@ stdenv.mkDerivation rec {
 
   enableParallelBuilding = true;
 
-  # ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-error=implicit-function-declaration";
-
   meta = {
     description = "Lightweight RPC library based on XML and HTTP";
     homepage = "https://xmlrpc-c.sourceforge.net/";
     # <xmlrpc-c>/doc/COPYING also lists "ABYSS Web Server License" and "Python 1.5.2 License"
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.unix;
   };
 }

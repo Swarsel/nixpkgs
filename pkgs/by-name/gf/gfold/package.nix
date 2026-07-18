@@ -1,11 +1,11 @@
 {
+  lib,
   fetchFromGitHub,
   gfold,
-  lib,
-  rustPlatform,
-  testers,
   mold,
   nix-update-script,
+  rustPlatform,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,18 +19,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-iQWcRApAxWGrztEPtsKeaTWcM8gO0CQUA8tNia+bZ1I=";
   };
 
+  nativeBuildInputs = [ mold ];
   cargoHash = "sha256-N7dgB0yzL5JSdQOAhNL9pnCSpV/Mo0Phe6ljwipLD/8=";
 
-  nativeBuildInputs = [ mold ];
-
   passthru = {
-    updateScript = nix-update-script { };
-
     tests.version = testers.testVersion {
-      package = gfold;
-      command = "gfold --version";
       inherit (finalAttrs) version;
+      command = "gfold --version";
+      package = gfold;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {

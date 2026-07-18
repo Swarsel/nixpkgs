@@ -1,51 +1,77 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  fetchsvn,
   fetchFromGitHub,
+  autoconf,
+  automake,
+  curl,
+  dmidecode,
+  fetchsvn,
+  iksemel,
   jansson,
   libedit,
+  libogg,
+  libopus,
+  libtool,
+  libuuid,
   libxml2,
   libxslt,
-  ncurses,
-  openssl,
-  sqlite,
-  util-linux,
-  dmidecode,
-  libuuid,
-  newt,
   lua,
-  speex,
-  libopus,
-  opusfile,
-  libogg,
-  srtp,
-  wget,
-  curl,
-  iksemel,
-  pkg-config,
-  autoconf,
-  libtool,
-  automake,
-  python3,
-  writeScript,
-  withOpus ? true,
-  ldapSupport ? false,
+  ncurses,
+  newt,
   openldap,
+  openssl,
+  opusfile,
+  pkg-config,
+  python3,
+  speex,
+  sqlite,
+  srtp,
+  util-linux,
+  wget,
+  writeScript,
+  ldapSupport ? false,
+  withOpus ? true,
 }:
 
 let
   common =
     {
-      version,
-      sha256,
       externals,
+      sha256,
+      version,
       pjsip_patches ? [ ],
     }:
     stdenv.mkDerivation {
       inherit version;
       pname = "asterisk" + lib.optionalString ldapSupport "-ldap";
+
+      src = fetchurl {
+        inherit sha256;
+        url = "https://downloads.asterisk.org/pub/telephony/asterisk/old-releases/asterisk-${version}.tar.gz";
+      };
+
+      patches = [
+        # We want the Makefile to install the default /var skeleton
+        # under ${out}/var but we also want to use /var at runtime.
+        # This patch changes the runtime behavior to look for state
+        # directories in /var rather than ${out}/var.
+        ./runtime-vardirs.patch
+      ]
+      ++ lib.optional withOpus "${asterisk-opus}/asterisk.patch";
+
+      postPatch = ''
+        echo "PJPROJECT_CONFIG_OPTS += --prefix=$out" >> third-party/pjproject/Makefile.rules
+      '';
+
+      nativeBuildInputs = [
+        util-linux
+        pkg-config
+        autoconf
+        libtool
+        automake
+      ];
 
       buildInputs = [
         jansson
@@ -71,35 +97,16 @@ let
         libogg
       ]
       ++ lib.optionals ldapSupport [ openldap ];
-      nativeBuildInputs = [
-        util-linux
-        pkg-config
-        autoconf
-        libtool
-        automake
+
+      configureFlags = [
+        "--libdir=\${out}/lib"
+        "--with-lua=${lua}/lib"
+        "--with-pjproject-bundled"
+        "--with-externals-cache=$(PWD)/externals_cache"
       ];
-
-      patches = [
-        # We want the Makefile to install the default /var skeleton
-        # under ${out}/var but we also want to use /var at runtime.
-        # This patch changes the runtime behavior to look for state
-        # directories in /var rather than ${out}/var.
-        ./runtime-vardirs.patch
-      ]
-      ++ lib.optional withOpus "${asterisk-opus}/asterisk.patch";
-
-      postPatch = ''
-        echo "PJPROJECT_CONFIG_OPTS += --prefix=$out" >> third-party/pjproject/Makefile.rules
-      '';
-
-      src = fetchurl {
-        url = "https://downloads.asterisk.org/pub/telephony/asterisk/old-releases/asterisk-${version}.tar.gz";
-        inherit sha256;
-      };
 
       # The default libdir is $PREFIX/usr/lib, which causes problems when paths
       # compiled into Asterisk expect ${out}/usr/lib rather than ${out}/lib.
-
       # Copy in externals to avoid them being downloaded;
       # they have to be copied, because the modification date is checked.
       # If you are getting a permission denied error on this dir,
@@ -125,13 +132,6 @@ let
         ./bootstrap.sh
       '';
 
-      configureFlags = [
-        "--libdir=\${out}/lib"
-        "--with-lua=${lua}/lib"
-        "--with-pjproject-bundled"
-        "--with-externals-cache=$(PWD)/externals_cache"
-      ];
-
       preBuild = ''
         cat third-party/pjproject/source/pjlib-util/src/pjlib-util/scanner.c
         make menuselect.makeopts
@@ -154,43 +154,46 @@ let
         description = "Software implementation of a telephone private branch exchange (PBX)";
         homepage = "https://www.asterisk.org/";
         license = lib.licenses.gpl2Only;
-        mainProgram = "asterisk";
+
         maintainers = with lib.maintainers; [
           auntie
           DerTim1
           yorickvp
         ];
+
+        mainProgram = "asterisk";
       };
     };
 
   pjproject = fetchurl {
-    url = "https://raw.githubusercontent.com/asterisk/third-party/master/pjproject/2.15.1/pjproject-2.15.1.tar.bz2";
     hash = "sha256-WLuDzsTUMfSNAG5FXYIWaEUPjPa2yV8JDe9HBi+jpgw=";
+    url = "https://raw.githubusercontent.com/asterisk/third-party/master/pjproject/2.15.1/pjproject-2.15.1.tar.bz2";
   };
 
   mp3-204 = fetchsvn {
-    url = "http://svn.digium.com/svn/thirdparty/mp3/trunk";
-    rev = "204";
     hash = "sha256-Viec0LwFPfR7ewy+2hc/LIUR1LiDZfYos3RUbc+tyNk=";
+    rev = "204";
+    url = "http://svn.digium.com/svn/thirdparty/mp3/trunk";
   };
 
   asterisk-opus = fetchFromGitHub {
+    hash = "sha256-CASlTvTahOg9D5jccF/IN10LP/U8rRy9BFCSaHGQfCw=";
     owner = "traud";
     repo = "asterisk-opus";
     # No releases, points to master as of 2022-04-06
     rev = "a959f072d3f364be983dd27e6e250b038aaef747";
-    hash = "sha256-CASlTvTahOg9D5jccF/IN10LP/U8rRy9BFCSaHGQfCw=";
   };
 
   # auto-generated by update.py
   versions = lib.mapAttrs (
     _:
-    { version, sha256 }:
+    { sha256, version }:
     common {
       inherit version sha256;
+
       externals = {
-        "externals_cache/${pjproject.name}" = pjproject;
         "addons/mp3" = mp3-204;
+        "externals_cache/${pjproject.name}" = pjproject;
       };
     }
   ) (lib.importJSON ./versions.json);
@@ -209,6 +212,12 @@ let
 
 in
 {
+  asterisk = versions.asterisk_22.overrideAttrs (o: {
+    passthru = (o.passthru or { }) // {
+      inherit updateScript;
+    };
+  });
+
   # Supported releases (as of 2025-10-19).
   # Source: https://wiki.asterisk.org/wiki/display/AST/Asterisk+Versions
   # Exact version can be found at https://www.asterisk.org/downloads/asterisk/all-asterisk-versions/
@@ -222,11 +231,6 @@ in
   # 23.x    Standard   2025-10-15  2026-10-15  2027-10-15
   asterisk-lts = versions.asterisk_22;
   asterisk-stable = versions.asterisk_20;
-  asterisk = versions.asterisk_22.overrideAttrs (o: {
-    passthru = (o.passthru or { }) // {
-      inherit updateScript;
-    };
-  });
 
 }
 // versions

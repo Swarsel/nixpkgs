@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   attrs,
   buildPythonPackage,
   dnspython,
-  fetchFromGitHub,
   hatchling,
   hier-config,
   loguru,
@@ -22,7 +22,6 @@
 buildPythonPackage rec {
   pname = "ciscoconfparse2";
   version = "0.9.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mpenning";
@@ -31,12 +30,9 @@ buildPythonPackage rec {
     hash = "sha256-o96f1tlP3/gbdy6Ix8A9wDXXG9xxi05S9+NdUBHN0WA=";
   };
 
-  pythonRelaxDeps = [
-    "attrs"
-    "hier-config"
-    "passlib"
-    "tomlkit"
-    "typeguard"
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
   ];
 
   build-system = [ hatchling ];
@@ -56,13 +52,6 @@ buildPythonPackage rec {
     typeguard
   ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "ciscoconfparse2" ];
-
   disabledTests = [
     # Fixtures are missing
     "testParse_parse_syntax"
@@ -76,6 +65,17 @@ buildPythonPackage rec {
     "testValues_IOSCfgLine"
     "testValues_pickle"
     "testValues_save_as_01"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "ciscoconfparse2" ];
+
+  pythonRelaxDeps = [
+    "attrs"
+    "hier-config"
+    "passlib"
+    "tomlkit"
+    "typeguard"
   ];
 
   meta = {

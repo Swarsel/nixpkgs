@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  openssl,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,18 +18,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-1+7oqWiJd7AZUlaDGYRtR1lyenrlhyaaGeWufW9lPUU=";
   };
 
-  cargoHash = "sha256-AOE0fs3QK8vTIMOIxMg6SooDSQVtqFdB0tF3S88J7Ew=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ openssl ];
+  cargoHash = "sha256-AOE0fs3QK8vTIMOIxMg6SooDSQVtqFdB0tF3S88J7Ew=";
+  # Needs https://github.com/zed-industries/package-version-server/pull/2 to be merged
+  doCheck = false;
 
   passthru = {
     updateScript = nix-update-script { };
   };
-
-  # Needs https://github.com/zed-industries/package-version-server/pull/2 to be merged
-  doCheck = false;
 
   meta = {
     description = "Language server that handles hover information in package.json files";

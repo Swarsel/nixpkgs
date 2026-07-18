@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   django,
-  setuptools,
-  pyotp,
   fido2,
-  qrcode,
+  pyotp,
   python,
+  qrcode,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "django-mfa3";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xi";
@@ -21,6 +20,10 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-J31NiqOysOS6FFDCaCiPAJUBvD0Xu99sIykLxfk0M3U=";
   };
+
+  checkPhase = ''
+    ${python.interpreter} -m django test --settings tests.settings
+  '';
 
   build-system = [ setuptools ];
 
@@ -31,13 +34,10 @@ buildPythonPackage rec {
     qrcode
   ];
 
+  pyproject = true;
   # qrcode 8.0 not supported yet
   # See https://github.com/xi/django-mfa3/pull/14
   pythonRelaxDeps = [ "qrcode" ];
-
-  checkPhase = ''
-    ${python.interpreter} -m django test --settings tests.settings
-  '';
 
   meta = {
     description = "Multi factor authentication for Django";

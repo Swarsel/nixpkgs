@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "udatetime";
   version = "0.0.17";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,14 +15,14 @@ buildPythonPackage rec {
 
   # tests not included on pypi
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "udatetime" ];
 
   meta = {
     description = "Fast RFC3339 compliant Python date-time library";
-    mainProgram = "bench_udatetime.py";
     homepage = "https://github.com/freach/udatetime";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "bench_udatetime.py";
   };
 }

@@ -1,20 +1,17 @@
 {
   lib,
-  buildPythonPackage,
-  fastmcp,
-
-  # build-system
-  hatchling,
-  uv-dynamic-versioning,
-
   # dependencies
   anthropic,
   authlib,
   azure-identity,
+  buildPythonPackage,
   cyclopts,
   exceptiongroup,
+  fastmcp,
   google-genai,
   griffelib,
+  # build-system
+  hatchling,
   httpx,
   jsonref,
   jsonschema-path,
@@ -37,16 +34,17 @@
   rich,
   typing-extensions,
   uncalled-for,
+  uv-dynamic-versioning,
   uvicorn,
   watchfiles,
   websockets,
 }:
 
 buildPythonPackage (finalAttrs: {
-  pname = "fastmcp-slim";
   inherit (fastmcp) version src;
-  sourceRoot = "${finalAttrs.src.name}/fastmcp_slim";
-  pyproject = true;
+  pname = "fastmcp-slim";
+  # tests are done in fastmcp package
+  doCheck = false;
 
   build-system = [
     hatchling
@@ -65,13 +63,16 @@ buildPythonPackage (finalAttrs: {
 
   optional-dependencies = {
     anthropic = [ anthropic ];
+
     apps = [
       # unpackaged prefab-ui
     ];
+
     azure = [
       azure-identity
       pyjwt
     ];
+
     client = [
       authlib
     ]
@@ -79,18 +80,23 @@ buildPythonPackage (finalAttrs: {
     ++ py-key-value-aio.optional-dependencies.filetree
     ++ py-key-value-aio.optional-dependencies.keyring
     ++ py-key-value-aio.optional-dependencies.memory;
+
     code-mode = [ pydantic-monty ];
+
     gemini = [
       google-genai
       jsonref
     ];
+
     mcp = [
       exceptiongroup
       httpx
       mcp
       opentelemetry-api
     ];
+
     openai = [ openai ];
+
     server = [
       authlib
       cyclopts
@@ -112,20 +118,20 @@ buildPythonPackage (finalAttrs: {
     ++ py-key-value-aio.optional-dependencies.filetree
     ++ py-key-value-aio.optional-dependencies.keyring
     ++ py-key-value-aio.optional-dependencies.memory;
+
     tasks = [
       pydocket
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "fastmcp" ];
-
-  # tests are done in fastmcp package
-  doCheck = false;
+  sourceRoot = "${finalAttrs.src.name}/fastmcp_slim";
 
   meta = {
     description = "Dependency-slim FastMCP package";
-    changelog = "https://github.com/jlowin/fastmcp/releases/tag/${finalAttrs.src.tag}";
     homepage = "https://github.com/PrefectHQ/fastmcp/tree/main/fastmcp_slim";
+    changelog = "https://github.com/jlowin/fastmcp/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ GaetanLepage ];
   };

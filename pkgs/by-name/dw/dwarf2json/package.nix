@@ -17,18 +17,19 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-3PnXB8AfZtgmYEPJuh0fwvG38dtngoS/lxyx3H+rvFs=";
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
-    homepage = "https://github.com/volatilityfoundation/dwarf2json";
     description = "Convert ELF/DWARF symbol and type information into vol3's intermediate JSON";
+    homepage = "https://github.com/volatilityfoundation/dwarf2json";
     license = lib.licenses.vol-sl;
+
     maintainers = with lib.maintainers; [
       arkivm
       asauzeau
     ];
+
     mainProgram = "dwarf2json";
   };
 })

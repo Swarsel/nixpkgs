@@ -16,38 +16,45 @@ let
     ;
 in
 {
-  port = 9700;
-
   extraOpts = {
-    pools = mkOption {
-      type = with types; listOf str;
-      default = [ ];
-      description = ''
-        Name of the pool(s) to collect, repeat for multiple pools (default: all pools).
-      '';
-    };
-
     depth = mkOption {
-      type = types.int;
       default = 1;
+
       description = ''
         Depth of the vdev tree to report on.
         0 is the pool, 1 is top level vdevs, 2 is devices too.
       '';
+
+      type = types.int;
     };
 
     fullPath = mkOption {
-      type = types.bool;
       default = false;
+
       description = ''
         Report the full path of disks.
       '';
+
+      type = types.bool;
+    };
+
+    pools = mkOption {
+      default = [ ];
+
+      description = ''
+        Name of the pool(s) to collect, repeat for multiple pools (default: all pools).
+      '';
+
+      type = with types; listOf str;
     };
   };
+
+  port = 9700;
 
   serviceOpts = {
     # needs zpool
     path = [ config.boot.zfs.package ];
+
     serviceConfig = {
       ExecStart = ''
         ${pkgs.prometheus-siebenmann-zfs-exporter}/bin/zfs_exporter \
@@ -57,8 +64,9 @@ in
           ${concatStringsSep " " (map (p: "--pool=${p}") cfg.pools)} \
           ${concatStringsSep " \\\n  " cfg.extraFlags}
       '';
-      ProtectClock = false;
+
       PrivateDevices = false;
+      ProtectClock = false;
     };
   };
 }

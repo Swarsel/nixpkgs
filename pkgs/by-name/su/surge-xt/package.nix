@@ -1,24 +1,23 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  gitUpdater,
-  cmake,
-  pkg-config,
   alsa-lib,
+  cmake,
   freetype,
+  gitUpdater,
   libjack2,
-  lv2,
   libx11,
   libxcursor,
   libxext,
   libxinerama,
   libxrandr,
-
-  buildVST3 ? true,
-  buildLV2 ? true,
+  lv2,
+  pkg-config,
   buildCLAP ? true,
+  buildLV2 ? true,
   buildStandalone ? true,
+  buildVST3 ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,8 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "surge-synthesizer";
     repo = "surge";
     tag = "${finalAttrs.finalPackage.passthru.rev-prefix}${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-4b0H3ZioiXFc4KCeQReobwQZJBl6Ep2/8JlRIwvq/hQ=";
+    fetchSubmodules = true;
   };
 
   patches = [
@@ -67,8 +66,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals buildLV2 [ lv2 ];
 
-  enableParallelBuilding = true;
-
   cmakeFlags = [
     (lib.cmakeBool "SURGE_SKIP_STANDALONE" (!buildStandalone))
     (lib.cmakeBool "SURGE_SKIP_VST3" (!buildVST3))
@@ -85,8 +82,11 @@ stdenv.mkDerivation (finalAttrs: {
     "-lXrandr"
   ];
 
+  enableParallelBuilding = true;
+
   passthru = {
     rev-prefix = "release_xt_";
+
     updateScript = gitUpdater {
       inherit (finalAttrs.finalPackage.passthru) rev-prefix;
     };
@@ -96,10 +96,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "LV2, VST3 & CLAP synthesizer plug-in (previously released as Vember Audio Surge)";
     homepage = "https://surge-synthesizer.github.io";
     license = lib.licenses.gpl3;
-    platforms = [ "x86_64-linux" ];
+
     maintainers = with lib.maintainers; [
       magnetophon
       mrtnvgr
     ];
+
+    platforms = [ "x86_64-linux" ];
   };
 })

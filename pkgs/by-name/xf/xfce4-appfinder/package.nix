@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gettext,
-  pkg-config,
-  xfce4-dev-tools,
-  wrapGAppsHook3,
   garcon,
-  gtk3,
-  libxfce4util,
-  libxfce4ui,
-  xfconf,
+  gettext,
   gitUpdater,
+  gtk3,
+  libxfce4ui,
+  libxfce4util,
+  pkg-config,
+  wrapGAppsHook3,
+  xfce4-dev-tools,
+  xfconf,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,11 +19,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "4.20.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.xfce.org";
     owner = "xfce";
     repo = "xfce4-appfinder";
     tag = "xfce4-appfinder-${finalAttrs.version}";
     hash = "sha256-HovQnkfv5BOsRPowgMkMEWQmESkivVK0Xb7I15ZaOMc=";
+    domain = "gitlab.xfce.org";
   };
 
   nativeBuildInputs = [
@@ -45,16 +45,16 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   passthru.updateScript = gitUpdater {
-    rev-prefix = "xfce4-appfinder-";
     odd-unstable = true;
+    rev-prefix = "xfce4-appfinder-";
   };
 
   meta = {
     description = "Appfinder for the Xfce4 Desktop Environment";
     homepage = "https://gitlab.xfce.org/xfce/xfce4-appfinder";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "xfce4-appfinder";
     platforms = lib.platforms.linux;
+    mainProgram = "xfce4-appfinder";
     teams = [ lib.teams.xfce ];
   };
 })

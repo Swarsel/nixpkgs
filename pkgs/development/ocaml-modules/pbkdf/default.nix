@@ -1,10 +1,10 @@
 {
   lib,
-  buildDunePackage,
-  fetchzip,
-  digestif,
-  mirage-crypto,
   alcotest,
+  buildDunePackage,
+  digestif,
+  fetchzip,
+  mirage-crypto,
   ohex,
 }:
 
@@ -17,21 +17,24 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-D2dXpf1D/wsJrcajU3If37tuLYjahoA/+QoXZKr1vQs=";
   };
 
-  minimalOCamlVersion = "4.08";
   propagatedBuildInputs = [
     digestif
     mirage-crypto
   ];
+
+  doCheck = true;
+
   checkInputs = [
     alcotest
     ohex
   ];
-  doCheck = true;
+
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "Password based key derivation functions (PBKDF) from PKCS#5";
-    maintainers = [ lib.maintainers.sternenseemann ];
-    license = lib.licenses.bsd2;
     homepage = "https://github.com/abeaumont/ocaml-pbkdf";
+    license = lib.licenses.bsd2;
+    maintainers = [ lib.maintainers.sternenseemann ];
   };
 })

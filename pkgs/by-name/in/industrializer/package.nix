@@ -27,6 +27,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-28w23zAex41yUzeh9l+kPgGrTk2XHb9CGVXdy8VEyEw=";
   };
 
+  postPatch = ''
+    # Replace obsolete AM_PATH_XML2 with PKG_CHECK_MODULES
+    substituteInPlace configure.ac \
+      --replace-fail 'AM_PATH_XML2(2.6.0, [], AC_MSG_ERROR(Fatal error: Need libxml2 >= 2.6.0))' \
+                     'PKG_CHECK_MODULES([XML], [libxml-2.0 >= 2.6.0])' \
+      --replace-fail 'XML_CPPFLAGS' 'XML_CFLAGS'
+  '';
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     pkg-config
     autoconf
@@ -49,25 +59,17 @@ stdenv.mkDerivation (finalAttrs: {
     libpulseaudio
   ];
 
-  strictDeps = true;
-
-  postPatch = ''
-    # Replace obsolete AM_PATH_XML2 with PKG_CHECK_MODULES
-    substituteInPlace configure.ac \
-      --replace-fail 'AM_PATH_XML2(2.6.0, [], AC_MSG_ERROR(Fatal error: Need libxml2 >= 2.6.0))' \
-                     'PKG_CHECK_MODULES([XML], [libxml-2.0 >= 2.6.0])' \
-      --replace-fail 'XML_CPPFLAGS' 'XML_CFLAGS'
-  '';
-
   # jack.c:190:5: error: initialization of 'const gchar * (*)(int)' {aka 'const char * (*)(int)'} from incompatible pointer type 'const char * (*)(int * (*)())
   env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
 
   meta = {
     description = "This program generates synthesized percussion sounds using physical modelling";
+
     longDescription = ''
       The range of sounds possible include but is not limited to cymbal sounds, metallic noises, bubbly sounds, and chimes.
       After a sound is rendered, it can be played and then saved to a .WAV file.
     '';
+
     homepage = "https://sourceforge.net/projects/industrializer/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.magnetophon ];

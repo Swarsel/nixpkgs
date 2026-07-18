@@ -1,13 +1,13 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   autoPatchelfHook,
-  pkg-config,
-  udev,
-  opencv,
   clang,
   nix-update-script,
+  opencv,
+  pkg-config,
+  rustPlatform,
+  udev,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "tuicam";
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Ry64sd0OYGqbiVqveU05gsmf1c9kQy2QMN9Z5seMedc=";
   };
-
-  cargoHash = "sha256-z+5fVSl9zFdOFNCCf49iVltAm+rZcJtLsz+zLCUlC6o=";
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -34,9 +32,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     opencv
   ];
 
+  cargoHash = "sha256-z+5fVSl9zFdOFNCCf49iVltAm+rZcJtLsz+zLCUlC6o=";
   # Test require Camera Hardware
   doCheck = false;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -1,10 +1,10 @@
 {
   lib,
-  buildGo125Module,
   fetchFromGitHub,
+  buildGo125Module,
+  dbus,
   nix-update-script,
   versionCheckHook,
-  dbus,
 }:
 
 buildGo125Module (finalAttrs: {
@@ -19,16 +19,6 @@ buildGo125Module (finalAttrs: {
   };
 
   vendorHash = "sha256-d4YYTQhAmTvf2JCN2f9XaDchXyc/6Fg5KNkY0QH9viQ=";
-
-  ldflags = [
-    "-s -w -X github.com/UpCloudLtd/upcloud-cli/v3/internal/config.Version=${finalAttrs.version}"
-  ];
-
-  subPackages = [
-    "cmd/upctl"
-    "internal/*"
-  ];
-
   nativeCheckInputs = [ dbus ];
 
   checkFlags =
@@ -39,17 +29,26 @@ buildGo125Module (finalAttrs: {
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+
+  ldflags = [
+    "-s -w -X github.com/UpCloudLtd/upcloud-cli/v3/internal/config.Version=${finalAttrs.version}"
+  ];
+
+  subPackages = [
+    "cmd/upctl"
+    "internal/*"
+  ];
+
   versionCheckProgram = "${placeholder "out"}/bin/upctl";
   versionCheckProgramArg = "version";
-  doInstallCheck = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/UpCloudLtd/upcloud-cli/blob/refs/tags/v${finalAttrs.version}/CHANGELOG.md";
     description = "Command-line tool for managing UpCloud services";
     homepage = "https://github.com/UpCloudLtd/upcloud-cli";
+    changelog = "https://github.com/UpCloudLtd/upcloud-cli/blob/refs/tags/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ lu1a ];
     mainProgram = "upctl";

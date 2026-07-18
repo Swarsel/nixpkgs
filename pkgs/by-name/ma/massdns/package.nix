@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   nix-update-script,
 }:
@@ -19,8 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
     "PREFIX=$(out)"
     "PROJECT_FLAGS=-DMASSDNS_REVISION='\"v${finalAttrs.version}\"'"
   ];
-  buildFlags = if stdenv.hostPlatform.isLinux then "all" else "nolinux";
 
+  buildFlags = if stdenv.hostPlatform.isLinux then "all" else "nolinux";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -29,9 +29,9 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/blechschmidt/massdns/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ geoffreyfrogeye ];
-    mainProgram = "massdns";
     platforms = lib.platforms.all;
     # error: use of undeclared identifier 'MSG_NOSIGNAL'
     badPlatforms = lib.platforms.darwin;
+    mainProgram = "massdns";
   };
 })

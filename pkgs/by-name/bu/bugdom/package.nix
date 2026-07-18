@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   SDL2,
-  libGL,
   cmake,
+  libGL,
   makeWrapper,
 }:
 
@@ -29,15 +29,15 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i '/plutil/d' CMakeLists.txt
   '';
 
+  nativeBuildInputs = [
+    cmake
+    makeWrapper
+  ];
+
   buildInputs = [
 
     SDL2
     libGL
-  ];
-
-  nativeBuildInputs = [
-    cmake
-    makeWrapper
   ];
 
   cmakeFlags = lib.optionals stdenv.hostPlatform.isDarwin [
@@ -77,7 +77,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/jorio/Bugdom";
     license = with lib.licenses; [ cc-by-sa-40 ];
     maintainers = with lib.maintainers; [ lux ];
-    mainProgram = "Bugdom";
     platforms = lib.platforms.unix;
+    mainProgram = "Bugdom";
   };
 })

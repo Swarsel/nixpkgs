@@ -1,15 +1,15 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  lib,
-  pkg-config,
   alsa-lib,
+  directoryListingUpdater,
   ffmpeg,
   libjack2,
   libogg,
   libpulseaudio,
+  pkg-config,
   speexdsp,
-  directoryListingUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -49,6 +49,7 @@ stdenv.mkDerivation (finalAttrs: {
     maintainers = with lib.maintainers; [
       nick-linux
     ];
+
     platforms = lib.platforms.linux;
   };
 })

@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  openssh,
+  buildGoModule,
   makeWrapper,
+  openssh,
   ps,
 }:
 
@@ -13,22 +13,14 @@ buildGoModule (finalAttrs: {
   version = "2.17.2";
 
   src = fetchFromGitHub {
-    repo = "assh";
     owner = "moul";
+    repo = "assh";
     tag = "v${finalAttrs.version}";
     hash = "sha256-/w4RluA7py6d75S04czNsgHpmR5rmAUZx8OnZfu9oNg=";
   };
 
-  vendorHash = "sha256-EA39KqAN9SHPU362j6/j6okvT+eZb2R4unMA0bB+bVg=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=moul.io/assh/v2/pkg/version.Version=${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [ makeWrapper ];
-
+  vendorHash = "sha256-EA39KqAN9SHPU362j6/j6okvT+eZb2R4unMA0bB+bVg=";
   nativeCheckInputs = lib.optionals stdenv.hostPlatform.isDarwin [ ps ];
 
   postInstall = ''
@@ -37,9 +29,16 @@ buildGoModule (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     $out/bin/assh --help > /dev/null
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=moul.io/assh/v2/pkg/version.Version=${finalAttrs.version}"
+  ];
 
   meta = {
     description = "Advanced SSH config - Regex, aliases, gateways, includes and dynamic hosts";

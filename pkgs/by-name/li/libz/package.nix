@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  gitUpdater,
   fixDarwinDylibNames,
+  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,14 +17,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-tr9r0X+iHz3LZFgIxi3JMQUnSlyTRtAIhtjwI+DIhpc=";
   };
 
-  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
-    fixDarwinDylibNames
-  ];
-
   outputs = [
     "out"
     "dev"
   ];
+
+  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
+    fixDarwinDylibNames
+  ];
+
   outputDoc = "dev"; # single tiny man3 page
 
   passthru.updateScript = gitUpdater {
@@ -32,8 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://sortix.org/libz/";
     description = "Clean fork of zlib";
+    homepage = "https://sortix.org/libz/";
     license = [ lib.licenses.zlib ];
     maintainers = [ ];
     platforms = lib.platforms.unix;

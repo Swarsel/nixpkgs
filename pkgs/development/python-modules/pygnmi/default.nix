@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cryptography,
   dictdiffer,
   grpcio,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "pygnmi";
   version = "0.8.15";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "akarneliuk";
@@ -31,17 +30,16 @@ buildPythonPackage rec {
   # almost all tests fail with:
   # TypeError: expected string or bytes-like object
   doCheck = false;
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "pygnmi" ];
 
   meta = {
     description = "Pure Python gNMI client to manage network functions and collect telemetry";
-    mainProgram = "pygnmicli";
     homepage = "https://github.com/akarneliuk/pygnmi";
     changelog = "https://github.com/akarneliuk/pygnmi/releases/tag/${src.tag}";
     license = lib.licenses.bsd3;
     maintainers = [ ];
+    mainProgram = "pygnmicli";
   };
 }

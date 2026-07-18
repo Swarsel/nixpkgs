@@ -1,9 +1,9 @@
 {
-  stdenvNoCC,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   gtk3,
   jdupes,
+  stdenvNoCC,
   nordzy-themes ? [ "all" ], # Override this to only install selected themes
 }:
 
@@ -28,8 +28,6 @@ stdenvNoCC.mkDerivation rec {
     jdupes
   ];
 
-  dontDropIconThemeCache = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -45,13 +43,14 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontDropIconThemeCache = true;
   dontFixup = true;
 
   meta = {
     description = "Icon theme using the Nord color palette, based on WhiteSur and Numix icon themes";
     homepage = "https://github.com/alvatip/Nordzy-icon";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ alexnortung ];
+    platforms = lib.platforms.linux;
   };
 }

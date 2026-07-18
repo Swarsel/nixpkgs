@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,9 +16,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-7u1aaBEv9Rco/hVHOmpMrLlNapqHB2FBCL8SEyeB+Xs=";
   };
 
-  cargoHash = "sha256-BbByF7AGKb/oiTDMSEutoHfmSA/55HrxFv+pDEWhaNw=";
-
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-BbByF7AGKb/oiTDMSEutoHfmSA/55HrxFv+pDEWhaNw=";
 
   postInstall = ''
     installManPage tldr.1
@@ -30,7 +29,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/tldr-pages/tlrc";
     changelog = "https://github.com/tldr-pages/tlrc/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "tldr";
     maintainers = with lib.maintainers; [ acuteenvy ];
+    mainProgram = "tldr";
   };
 })

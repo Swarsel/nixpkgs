@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   glib,
   libcap,
   libseccomp,
   libslirp,
   nixosTests,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,6 +21,13 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-/ZnlWv5kSkYMiO2mTs6mY70QGBm0FsIDyd+gGaVK9rs=";
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -35,22 +42,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   enableParallelBuilding = true;
-  strictDeps = true;
-
-  outputs = [
-    "out"
-    "man"
-  ];
-
   passthru.tests = { inherit (nixosTests) podman; };
 
   meta = {
-    homepage = "https://github.com/rootless-containers/slirp4netns";
     description = "User-mode networking for unprivileged network namespaces";
+    homepage = "https://github.com/rootless-containers/slirp4netns";
     license = lib.licenses.gpl2Only;
     maintainers = [ ];
-    teams = [ lib.teams.podman ];
     platforms = lib.platforms.linux;
     mainProgram = "slirp4netns";
+    teams = [ lib.teams.podman ];
   };
 })

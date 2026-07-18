@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
-  python3,
-  openssl,
+  stdenv,
   fetchzip,
+  openssl,
+  python3,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "librandombytes";
@@ -21,19 +21,9 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs scripts-build
   '';
 
-  __structuredAttrs = true;
+  nativeBuildInputs = [ python3 ];
+  buildInputs = [ openssl ];
 
-  # NOTE: librandombytes uses a custom Python `./configure`: it does not expect standard
-  # autoconfig --build --host etc. arguments: disable
-  configurePlatforms = [ ];
-
-  # NOTE: the librandombytes library has required specific CFLAGS defined:
-  # https://randombytes.cr.yp.to/librandombytes-20240318/compilers/default.html
-  # - `-O` (alias `-O1`) safe optimization
-  # - `-Qunused-arguments` suppress clang warning
-  # the default "fortify" hardening sets -O2, -D_FORTIFY_SOURCE=2:
-  # since librandombytes uses -O1, we disable the fortify hardening, and then manually re-enable -D_FORTIFY_SOURCE.
-  hardeningDisable = [ "fortify" ];
   env.NIX_CFLAGS_COMPILE = toString (
     lib.optionals stdenv.cc.isClang [ "-Qunused-arguments" ]
     ++ [
@@ -42,21 +32,29 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
-  nativeBuildInputs = [ python3 ];
-
-  buildInputs = [ openssl ];
-
   preFixup = lib.optionalString stdenv.hostPlatform.isDarwin ''
     install_name_tool -id "$out/lib/librandombytes-kernel.1.dylib" "$out/lib/librandombytes-kernel.1.dylib"
     install_name_tool -change "librandombytes-kernel.1.dylib" "$out/lib/librandombytes-kernel.1.dylib" "$out/bin/randombytes-info"
   '';
 
+  __structuredAttrs = true;
+  # NOTE: librandombytes uses a custom Python `./configure`: it does not expect standard
+  # autoconfig --build --host etc. arguments: disable
+  configurePlatforms = [ ];
+  # NOTE: the librandombytes library has required specific CFLAGS defined:
+  # https://randombytes.cr.yp.to/librandombytes-20240318/compilers/default.html
+  # - `-O` (alias `-O1`) safe optimization
+  # - `-Qunused-arguments` suppress clang warning
+  # the default "fortify" hardening sets -O2, -D_FORTIFY_SOURCE=2:
+  # since librandombytes uses -O1, we disable the fortify hardening, and then manually re-enable -D_FORTIFY_SOURCE.
+  hardeningDisable = [ "fortify" ];
   passthru.updateScript = ./update.sh;
 
   meta = {
-    homepage = "https://randombytes.cr.yp.to/";
     description = "Simple API for applications generating fresh randomness";
+    homepage = "https://randombytes.cr.yp.to/";
     changelog = "https://randombytes.cr.yp.to/download.html";
+
     license = with lib.licenses; [
       # Upstream specifies the public domain licenses with the terms here https://cr.yp.to/spdx.html
       publicDomain
@@ -65,11 +63,13 @@ stdenv.mkDerivation (finalAttrs: {
       mit
       mit0
     ];
+
     maintainers = with lib.maintainers; [
       kiike
       imadnyc
       jleightcap
     ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"

@@ -8,27 +8,19 @@ let
   unwrapped = root.override { python3 = python; };
 in
 buildPythonPackage {
-  # ROOT builds the C++ libraries and CPython extensions in one package and
-  # python versions must never be mixed
-  passthru = {
-    inherit unwrapped;
-  };
-
   inherit (unwrapped) pname version meta;
-
   src = null;
-
-  pyproject = false; # disables setuptools/pyproject logic
-
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     mkdir -p $out/${python.sitePackages}
     rmdir $out/${python.sitePackages}
     ln -s ${unwrapped}/lib $out/${python.sitePackages}
   '';
+
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
+  pyproject = false; # disables setuptools/pyproject logic
 
   # Those namespaces are looked up dynamically via ROOTs CPython extension, so
   # these checks cover the most fragile parts of the package
@@ -39,4 +31,10 @@ buildPythonPackage {
     "ROOT.RooFit"
     "ROOT.std"
   ];
+
+  # ROOT builds the C++ libraries and CPython extensions in one package and
+  # python versions must never be mixed
+  passthru = {
+    inherit unwrapped;
+  };
 }

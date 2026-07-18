@@ -1,8 +1,8 @@
 {
-  lib,
   config,
-  options,
+  lib,
   pkgs,
+  options,
   ...
 }:
 
@@ -35,61 +35,20 @@ in
   ];
 
   options.services.taler.exchange = {
-    settings = lib.mkOption {
-      description = ''
-        Configuration options for the taler exchange config file.
-
-        For a list of all possible options, please see the man page [`taler-exchange.conf(5)`](https://docs.taler.net/manpages/taler-exchange.conf.5.html)
-      '';
-      type = lib.types.submodule {
-        inherit (options.services.taler.settings.type.nestedTypes) freeformType;
-        options = {
-          # TODO: do we want this to be a sub-attribute or only define the exchange set of options here
-          exchange = {
-            CURRENCY = lib.mkOption {
-              type = lib.types.nonEmptyStr;
-              description = ''
-                The currency which the exchange will operate with. This cannot be changed later.
-              '';
-            };
-            CURRENCY_ROUND_UNIT = lib.mkOption {
-              type = lib.types.str;
-              default = "${cfg.settings.exchange.CURRENCY}:0.01";
-              defaultText = "0.01 in {option}`CURRENCY`";
-              description = ''
-                Smallest amount in this currency that can be transferred using the underlying RTGS. For example: "EUR:0.01" or "JPY:1"
-              '';
-            };
-            DB = lib.mkOption {
-              type = lib.types.enum [ "postgres" ];
-              default = "postgres";
-              description = "Plugin to use for the database.";
-            };
-            MASTER_PUBLIC_KEY = lib.mkOption {
-              type = lib.types.str;
-              default = "";
-              description = "Used by the exchange to verify information signed by the offline system.";
-            };
-            PORT = lib.mkOption {
-              type = lib.types.port;
-              default = 8081;
-              description = "Port on which the HTTP server listens.";
-            };
-          };
-          exchangedb-postgres = {
-            CONFIG = lib.mkOption {
-              type = lib.types.nonEmptyStr;
-              default = "postgres:///taler-exchange-httpd";
-              description = "Database connection URI.";
-            };
-          };
-        };
-      };
-      default = { };
-    };
     denominationConfig = lib.mkOption {
-      type = lib.types.lines;
       defaultText = "None, you must set this yourself.";
+
+      description = ''
+        This option configures the cash denomination for the coins that the exchange offers.
+        For more information, consult the [upstream docs](https://docs.taler.net/taler-exchange-manual.html#coins-denomination-keys).
+
+        You can either write these manually or you can use the `taler-harness deployment gen-coin-config`
+        command to generate it.
+
+        Warning: Do not modify existing denominations after deployment.
+        Please see the upstream docs for how to safely do that.
+      '';
+
       example = ''
         [COIN_KUDOS-n1-t1718140083]
         VALUE = KUDOS:0.1
@@ -103,16 +62,72 @@ in
         RSA_KEYSIZE = 2048
         CIPHER = RSA
       '';
+
+      type = lib.types.lines;
+    };
+
+    settings = lib.mkOption {
+      default = { };
+
       description = ''
-        This option configures the cash denomination for the coins that the exchange offers.
-        For more information, consult the [upstream docs](https://docs.taler.net/taler-exchange-manual.html#coins-denomination-keys).
+        Configuration options for the taler exchange config file.
 
-        You can either write these manually or you can use the `taler-harness deployment gen-coin-config`
-        command to generate it.
-
-        Warning: Do not modify existing denominations after deployment.
-        Please see the upstream docs for how to safely do that.
+        For a list of all possible options, please see the man page [`taler-exchange.conf(5)`](https://docs.taler.net/manpages/taler-exchange.conf.5.html)
       '';
+
+      type = lib.types.submodule {
+        inherit (options.services.taler.settings.type.nestedTypes) freeformType;
+
+        options = {
+          # TODO: do we want this to be a sub-attribute or only define the exchange set of options here
+          exchange = {
+            CURRENCY = lib.mkOption {
+              description = ''
+                The currency which the exchange will operate with. This cannot be changed later.
+              '';
+
+              type = lib.types.nonEmptyStr;
+            };
+
+            CURRENCY_ROUND_UNIT = lib.mkOption {
+              default = "${cfg.settings.exchange.CURRENCY}:0.01";
+              defaultText = "0.01 in {option}`CURRENCY`";
+
+              description = ''
+                Smallest amount in this currency that can be transferred using the underlying RTGS. For example: "EUR:0.01" or "JPY:1"
+              '';
+
+              type = lib.types.str;
+            };
+
+            DB = lib.mkOption {
+              default = "postgres";
+              description = "Plugin to use for the database.";
+              type = lib.types.enum [ "postgres" ];
+            };
+
+            MASTER_PUBLIC_KEY = lib.mkOption {
+              default = "";
+              description = "Used by the exchange to verify information signed by the offline system.";
+              type = lib.types.str;
+            };
+
+            PORT = lib.mkOption {
+              default = 8081;
+              description = "Port on which the HTTP server listens.";
+              type = lib.types.port;
+            };
+          };
+
+          exchangedb-postgres = {
+            CONFIG = lib.mkOption {
+              default = "postgres:///taler-exchange-httpd";
+              description = "Database connection URI.";
+              type = lib.types.nonEmptyStr;
+            };
+          };
+        };
+      };
     };
   };
 
@@ -120,6 +135,7 @@ in
     assertions = [
       {
         assertion = cfg.settings.exchange.MASTER_PUBLIC_KEY != "";
+
         message = ''
           You must provide `config.services.taler.exchange.settings.exchange.MASTER_PUBLIC_KEY` with the
           public part of your master key.
@@ -136,13 +152,13 @@ in
       (pkgs.writers.writeText "exchange-denominations.conf" cfg.denominationConfig)
     ];
 
-    systemd.services.taler-exchange-wirewatch = {
-      requires = [ "taler-exchange-httpd.service" ];
-      after = [ "taler-exchange-httpd.service" ];
-    };
-
     systemd.services."taler-${talerComponent}-dbinit".script = ''
       ${lib.getExe' cfg.package "taler-exchange-dbinit"} -c ${configFile}
     '';
+
+    systemd.services.taler-exchange-wirewatch = {
+      after = [ "taler-exchange-httpd.service" ];
+      requires = [ "taler-exchange-httpd.service" ];
+    };
   };
 }

@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
-  fetchpatch,
   fetchurl,
+  fetchFromGitHub,
   cmake,
-  ninja,
+  fetchpatch,
   ffmpeg-headless,
-  zlib,
+  ninja,
+  nix-update-script,
   testers,
   validatePkgConfig,
-  nix-update-script,
+  zlib,
   withExamples ? true,
   withTools ? true,
 }:
@@ -29,8 +29,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # fix generated pkg-config files
     (fetchpatch {
-      url = "https://github.com/acoustid/chromaprint/commit/782ef6bb5f6498e35f8e275f76998fbd5ffa36d6.patch";
       hash = "sha256-drUfAMzTrqqB5UbzOnfPq6XD3HI+3sxyJJSTCa0BmD8=";
+      url = "https://github.com/acoustid/chromaprint/commit/782ef6bb5f6498e35f8e275f76998fbd5ffa36d6.patch";
     })
   ];
 
@@ -47,9 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  # with trivialautovarinit enabled can produce an empty .pc file
-  hardeningDisable = [ "trivialautovarinit" ];
-
   cmakeFlags = [
     (lib.cmakeBool "BUILD_TOOLS" withTools)
   ]
@@ -58,19 +55,15 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "BUILD_TESTS" finalAttrs.finalPackage.doCheck)
   ];
 
-  passthru = {
-    updateScript = nix-update-script { };
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
-  };
-
   # From some reason it dies at the end...
   doCheck = !stdenv.hostPlatform.isDarwin;
+
   checkPhase =
     let
       exampleAudio = fetchurl {
+        hash = "sha256-I+Ve3/OpL+3Joc928F8M21LhCH2eQfRtaJVx9mNOLW0=";
         name = "Dvorak_Symphony_9_1.mp3";
         url = "https://archive.org/download/Dvorak_Symphony_9/01.Adagio-Allegro_Molto.mp3";
-        hash = "sha256-I+Ve3/OpL+3Joc928F8M21LhCH2eQfRtaJVx9mNOLW0=";
         meta.license = lib.licenses.publicDomain;
       };
 
@@ -84,10 +77,18 @@ stdenv.mkDerivation (finalAttrs: {
       runHook postCheck
     '';
 
+  # with trivialautovarinit enabled can produce an empty .pc file
+  hardeningDisable = [ "trivialautovarinit" ];
+
+  passthru = {
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+    updateScript = nix-update-script { };
+  };
+
   meta = {
-    changelog = "https://github.com/acoustid/chromaprint/releases/tag/v${finalAttrs.version}";
-    homepage = "https://acoustid.org/chromaprint";
     description = "AcoustID audio fingerprinting library";
+    homepage = "https://acoustid.org/chromaprint";
+    changelog = "https://github.com/acoustid/chromaprint/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.unix;
     pkgConfigModules = [ "libchromaprint" ];

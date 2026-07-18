@@ -23,23 +23,31 @@ in
   options.services.firewalld = {
     enable = lib.mkEnableOption "FirewallD";
     package = lib.mkPackageOption pkgs "firewalld" { };
-    packages = lib.mkOption {
-      type = lib.types.listOf lib.types.package;
+
+    extraArgs = lib.mkOption {
       default = [ ];
+      description = "Extra arguments to pass to FirewallD.";
+      example = [ "--debug" ];
+      type = lib.types.listOf lib.types.str;
+    };
+
+    packages = lib.mkOption {
+      default = [ ];
+
       description = ''
         Packages providing firewalld zones and other files.
         Files found in `/lib/firewalld` will be included.
       '';
-    };
-    extraArgs = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-      example = [ "--debug" ];
-      description = "Extra arguments to pass to FirewallD.";
+
+      type = lib.types.listOf lib.types.package;
     };
   };
 
   config = lib.mkIf cfg.enable {
+    environment.etc."sysconfig/firewalld".text = ''
+      FIREWALLD_ARGS=${lib.concatStringsSep " " cfg.extraArgs}
+    '';
+
     environment.systemPackages = [ cfg.package ];
     services.dbus.packages = [ cfg.package ];
     services.firewalld.packages = [ cfg.package ];
@@ -49,18 +57,12 @@ in
       minsize = "1M";
     };
 
-    environment.etc."sysconfig/firewalld".text = ''
-      FIREWALLD_ARGS=${lib.concatStringsSep " " cfg.extraArgs}
-    '';
-
     systemd.packages = [ cfg.package ];
+
     systemd.services.firewalld = {
       aliases = [ "dbus-org.fedoraproject.FirewallD1.service" ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig.ExecReload = [
-        ""
-        "${lib.getExe' pkgs.coreutils "kill"} -HUP $MAINPID"
-      ];
+      environment.NIX_FIREWALLD_CONFIG_PATH = "${paths}/lib/firewalld";
+
       reloadTriggers = [
         config.environment.etc."firewalld/firewalld.conf".source
       ]
@@ -70,7 +72,13 @@ in
       ++ lib.mapAttrsToList (
         name: _: config.environment.etc."firewalld/services/${name}.xml".source
       ) config.services.firewalld.services;
-      environment.NIX_FIREWALLD_CONFIG_PATH = "${paths}/lib/firewalld";
+
+      serviceConfig.ExecReload = [
+        ""
+        "${lib.getExe' pkgs.coreutils "kill"} -HUP $MAINPID"
+      ];
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

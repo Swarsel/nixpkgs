@@ -1,10 +1,9 @@
 {
   lib,
   ctags,
-  writeTextFile,
-  runtimeShell,
   ctagsWrapped,
-  name ? "${ctags.name}-wrapped",
+  runtimeShell,
+  writeTextFile,
   args ? lib.concatLists [
     ctagsWrapped.defaultArgs
     ctagsWrapped.phpLang
@@ -13,6 +12,7 @@
     ctagsWrapped.asLang
     ctagsWrapped.rubyLang
   ],
+  name ? "${ctags.name}-wrapped",
 }:
 
 # Define a ctags wrapper derivation adding support for some not-that-common languages customization.
@@ -20,12 +20,7 @@
 
 writeTextFile {
   inherit name;
-  executable = true;
-  destination = "/bin/${name}";
-  text = ''
-    #!${runtimeShell}
-    exec ${ctags}/bin/ctags ${lib.concatStringsSep " " (map lib.escapeShellArg args)} "$@"
-  '';
+
   derivationArgs = {
     # Inherit the metadata from the parent `ctags` derivation.
     inherit (ctags) meta;
@@ -34,17 +29,6 @@ writeTextFile {
       # `ctagsWrapped` exists for backwards compatibility; ctagsWrapped used to be an attrset and
       # now is a derivation, so keep supporting the use of `ctagsWrapped.ctagsWrapped`.
       inherit ctagsWrapped;
-
-      ### language arguments
-
-      # don't scan version control directories
-      defaultArgs = [
-        "--exclude=.svn"
-        "--exclude=.hg"
-        "--exclude=.git"
-        "--exclude=_darcs"
-        "--sort=yes"
-      ];
 
       # actionscript
       asLang = [
@@ -57,12 +41,14 @@ writeTextFile {
         "--regex-ActionScript=/class[ \\t]+[a-z0-9_.]*([A-Z][A-Za-z0-9_]+)/\\1/c,class,classes/"
       ];
 
-      # PHP
-      phpLang = [
-        "--langmap=PHP:.php"
-        "--regex-PHP=/abstract class ([^ ]*)/\\1/c/"
-        "--regex-PHP=/interface ([^ ]*)/\\1/i/"
-        "--regex-PHP=/function[ \\t]+([^ (]*)/\\1/f/"
+      ### language arguments
+      # don't scan version control directories
+      defaultArgs = [
+        "--exclude=.svn"
+        "--exclude=.hg"
+        "--exclude=.git"
+        "--exclude=_darcs"
+        "--sort=yes"
       ];
 
       # Javascript: also find unnamed functions and functions being passed within a dict.
@@ -80,6 +66,14 @@ writeTextFile {
         "--regex-NIX=/([^ \\t*]*)[ \\t]*=/\\1/f/"
       ];
 
+      # PHP
+      phpLang = [
+        "--langmap=PHP:.php"
+        "--regex-PHP=/abstract class ([^ ]*)/\\1/c/"
+        "--regex-PHP=/interface ([^ ]*)/\\1/i/"
+        "--regex-PHP=/function[ \\t]+([^ (]*)/\\1/f/"
+      ];
+
       rubyLang = [
         "--langmap=RUBY:.rb"
         "--regex-RUBY=/class ([^ ]*)/\\1/c/"
@@ -87,4 +81,12 @@ writeTextFile {
       ];
     };
   };
+
+  destination = "/bin/${name}";
+  executable = true;
+
+  text = ''
+    #!${runtimeShell}
+    exec ${ctags}/bin/ctags ${lib.concatStringsSep " " (map lib.escapeShellArg args)} "$@"
+  '';
 }

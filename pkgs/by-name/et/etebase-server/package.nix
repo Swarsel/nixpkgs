@@ -1,17 +1,16 @@
 {
   lib,
   fetchFromGitHub,
+  nix-update-script,
+  nixosTests,
   python3,
   withLdap ? false,
   withPostgres ? true,
-  nix-update-script,
-  nixosTests,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "etebase-server";
   version = "0.14.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "etesync";
@@ -21,8 +20,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   };
 
   patches = [ ./secret.patch ];
-
-  doCheck = false;
 
   propagatedBuildInputs =
     with python3.pkgs;
@@ -45,6 +42,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ++ lib.optional withLdap python-ldap
     ++ lib.optional withPostgres psycopg2;
 
+  doCheck = false;
+
   postInstall = ''
     mkdir -p $out/bin $out/lib
     cp manage.py $out/bin/etebase-server
@@ -52,23 +51,28 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     chmod +x $out/bin/etebase-server
   '';
 
-  passthru.updateScript = nix-update-script { };
+  format = "setuptools";
   passthru.python = python3;
   # PYTHONPATH of all dependencies used by the package
   passthru.pythonPath = python3.pkgs.makePythonPath finalAttrs.propagatedBuildInputs;
+
   passthru.tests = {
     nixosTest = nixosTests.etebase-server;
   };
 
+  passthru.updateScript = nix-update-script { };
+
   meta = {
-    homepage = "https://github.com/etesync/server";
     description = "Etebase (EteSync 2.0) server so you can run your own";
-    mainProgram = "etebase-server";
+    homepage = "https://github.com/etesync/server";
     changelog = "https://github.com/etesync/server/blob/v${finalAttrs.version}/ChangeLog.md";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       felschr
       phaer
     ];
+
+    mainProgram = "etebase-server";
   };
 })

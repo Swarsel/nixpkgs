@@ -5,8 +5,8 @@
   installShellFiles,
   libuuid,
   lvm2_dmeventd, # <libdevmapper-event.h>
-  zlib,
   python3,
+  zlib,
 }:
 
 stdenv.mkDerivation rec {
@@ -35,8 +35,6 @@ stdenv.mkDerivation rec {
     pyyaml
   ];
 
-  pythonPath = propagatedBuildInputs;
-
   makeFlags = [
     "DESTDIR=${placeholder "out"}"
     "INSTALLOWNER="
@@ -47,8 +45,6 @@ stdenv.mkDerivation rec {
     "python3_sitelib=${python3.sitePackages}"
   ];
 
-  enableParallelBuilding = true;
-
   postInstall = ''
     installShellCompletion --bash $out/usr/share/bash-completion/completions/*
     rm -rv $out/usr
@@ -56,9 +52,15 @@ stdenv.mkDerivation rec {
     wrapPythonPrograms
   '';
 
+  enableParallelBuilding = true;
+  pythonPath = propagatedBuildInputs;
+
   meta = {
-    homepage = "https://github.com/dm-vdo/vdo";
     description = "Set of userspace tools for managing pools of deduplicated and/or compressed block storage";
+    homepage = "https://github.com/dm-vdo/vdo";
+    license = with lib.licenses; [ gpl2Plus ];
+    maintainers = [ ];
+
     # platforms are defined in https://github.com/dm-vdo/vdo/blob/master/utils/uds/atomicDefs.h
     platforms = [
       "x86_64-linux"
@@ -67,7 +69,5 @@ stdenv.mkDerivation rec {
       "powerpc64-linux"
       "powerpc64le-linux"
     ];
-    license = with lib.licenses; [ gpl2Plus ];
-    maintainers = [ ];
   };
 }

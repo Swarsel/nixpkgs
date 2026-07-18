@@ -1,10 +1,10 @@
 {
   lib,
-  fetchCrate,
-  rustPlatform,
   cacert,
-  versionCheckHook,
+  fetchCrate,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -12,9 +12,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   version = "0.47.0";
 
   src = fetchCrate {
-    pname = "jsonschema-cli";
     inherit (finalAttrs) version;
     hash = "sha256-0U9NBfkpqCZnNQIxQhNjErX/LehI3xOcUvHiYRKwrXo=";
+    pname = "jsonschema-cli";
   };
 
   cargoHash = "sha256-q/3Nvl+hND94im0mzHqZRepE8GcB5Fec/0HurPgqOmY=";
@@ -23,10 +23,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     export SSL_CERT_FILE=${cacert}/etc/ssl/certs/ca-bundle.crt
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru.updateScript = nix-update-script { };
 
@@ -35,9 +36,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/Stranger6667/jsonschema";
     changelog = "https://github.com/Stranger6667/jsonschema/releases/tag/rust-v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       kachick
     ];
+
     mainProgram = "jsonschema-cli";
   };
 })

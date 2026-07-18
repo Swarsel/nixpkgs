@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   pymodbus-repl,
   pyserial,
   pytest-asyncio,
@@ -18,23 +18,12 @@
 buildPythonPackage (finalAttrs: {
   pname = "pymodbus";
   version = "3.14.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pymodbus-dev";
     repo = "pymodbus";
     tag = "v${finalAttrs.version}";
     hash = "sha256-abU7hOXXJuoBHqSCL4++4ZHZcG8hcyLCMw56eBz1eQc=";
-  };
-
-  __darwinAllowLocalNetworking = true;
-
-  build-system = [ setuptools ];
-
-  optional-dependencies = {
-    repl = [ pymodbus-repl ];
-    serial = [ pyserial ];
-    simulator = [ aiohttp ];
   };
 
   nativeCheckInputs = [
@@ -56,7 +45,13 @@ buildPythonPackage (finalAttrs: {
     popd
   '';
 
-  pythonImportsCheck = [ "pymodbus" ];
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  disabledTestPaths = [
+    # Don't test the examples
+    "examples/"
+  ];
 
   disabledTests = [
     # Tests often hang
@@ -68,19 +63,25 @@ buildPythonPackage (finalAttrs: {
     "test_simulator"
   ];
 
-  disabledTestPaths = [
-    # Don't test the examples
-    "examples/"
-  ];
+  optional-dependencies = {
+    repl = [ pymodbus-repl ];
+    serial = [ pyserial ];
+    simulator = [ aiohttp ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "pymodbus" ];
 
   meta = {
     description = "Python implementation of the Modbus protocol";
+
     longDescription = ''
       Pymodbus is a full Modbus protocol implementation using twisted,
       torndo or asyncio for its asynchronous communications core. It can
       also be used without any third party dependencies if a more
       lightweight project is needed.
     '';
+
     homepage = "https://github.com/pymodbus-dev/pymodbus";
     changelog = "https://github.com/pymodbus-dev/pymodbus/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd3;

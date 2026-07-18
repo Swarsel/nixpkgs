@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   cython,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "cymem";
   version = "2.0.14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "explosion";
@@ -18,11 +17,6 @@ buildPythonPackage (finalAttrs: {
     tag = "release-v${finalAttrs.version}";
     hash = "sha256-pb7AWkCOLfoH2kLNNwIxxHyGsxCpq72Qzid4aCYu9XM=";
   };
-
-  build-system = [
-    setuptools
-    cython
-  ];
 
   nativeCheckInputs = [ pytestCheckHook ];
 
@@ -32,6 +26,12 @@ buildPythonPackage (finalAttrs: {
     rm -r ./cymem
   '';
 
+  build-system = [
+    setuptools
+    cython
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "cymem" ];
 
   meta = {

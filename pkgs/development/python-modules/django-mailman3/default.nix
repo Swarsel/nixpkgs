@@ -1,61 +1,66 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  fetchpatch,
-
-  # build-system
-  pdm-backend,
-
-  # dependencies
-  django-gravatar2,
-  django-allauth,
-  mailmanclient,
-  pytz,
-
   # tests
   django,
+  django-allauth,
+  # dependencies
+  django-gravatar2,
+  fetchPypi,
+  fetchpatch,
+  mailmanclient,
+  nixosTests,
+  # build-system
+  pdm-backend,
   pytest-django,
   pytestCheckHook,
-  nixosTests,
+  pytz,
 }:
 
 buildPythonPackage rec {
   pname = "django-mailman3";
   version = "1.3.15";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "django_mailman3";
     inherit version;
     hash = "sha256-+ZFrJpy5xdW6Yde/XEvxoAN8+TSQdiI0PfjZ7bHG0Rs=";
+    pname = "django_mailman3";
   };
 
   patches = [
     (fetchpatch {
-      name = "django-5.2.patch";
-      url = "https://gitlab.com/mailman/django-mailman3/-/commit/465c1ffc77556bb8a80a678f53a40f16b9766cc6.patch";
       excludes = [
         ".gitlab-ci.yml"
         "README.rst"
       ];
+
       hash = "sha256-gSFczuNLlMclqixOu6ElS0BewUTGyhP6RXtE/waLzyo=";
+      name = "django-5.2.patch";
+      url = "https://gitlab.com/mailman/django-mailman3/-/commit/465c1ffc77556bb8a80a678f53a40f16b9766cc6.patch";
     })
 
     (fetchpatch {
+      hash = "sha256-xgQu70DkbPz+ULRFgKeJTbx/Tq2PLEyGgrncf26ChA4=";
       # Only needed so the next one applies.
       name = "allauth-64-1.patch";
       url = "https://gitlab.com/mailman/django-mailman3/-/commit/96f3f3bf0c718395ccd1b0d539a40d627522a9c4.patch";
-      hash = "sha256-xgQu70DkbPz+ULRFgKeJTbx/Tq2PLEyGgrncf26ChA4=";
     })
     (fetchpatch {
+      hash = "sha256-6mwGSw31Q0+APwdGFe0JE0gBigdo453HZZ6JApqgtTE=";
       name = "allauth-64-2.patch";
       url = "https://gitlab.com/mailman/django-mailman3/-/commit/cfdacb9195ce266e5ae23307b31304898369f696.patch";
-      hash = "sha256-6mwGSw31Q0+APwdGFe0JE0gBigdo453HZZ6JApqgtTE=";
     })
   ];
 
-  pythonRelaxDeps = [ "django-allauth" ];
+  nativeCheckInputs = [
+    django
+    pytest-django
+    pytestCheckHook
+  ];
+
+  preCheck = ''
+    export DJANGO_SETTINGS_MODULE=django_mailman3.tests.settings_test
+  '';
 
   build-system = [ pdm-backend ];
 
@@ -68,17 +73,9 @@ buildPythonPackage rec {
   ++ django-allauth.optional-dependencies.openid
   ++ django-allauth.optional-dependencies.socialaccount;
 
-  nativeCheckInputs = [
-    django
-    pytest-django
-    pytestCheckHook
-  ];
-
-  preCheck = ''
-    export DJANGO_SETTINGS_MODULE=django_mailman3.tests.settings_test
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "django_mailman3" ];
+  pythonRelaxDeps = [ "django-allauth" ];
 
   passthru.tests = {
     inherit (nixosTests) mailman;

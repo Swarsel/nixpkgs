@@ -1,14 +1,12 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "xcaddy";
   version = "0.4.6";
-
-  subPackages = [ "cmd/xcaddy" ];
 
   src = fetchFromGitHub {
     owner = "caddyserver";
@@ -22,18 +20,20 @@ buildGoModule (finalAttrs: {
     ./use_tmpdir_on_darwin.diff
   ];
 
+  vendorHash = "sha256-K5+Gj4Lqla6q9vx95BtCS67mZMWkMjgIHVYpBUdx/Wc=";
+
   ldflags = [
     "-s"
     "-w"
     "-X github.com/caddyserver/xcaddy/cmd.customVersion=v${finalAttrs.version}"
   ];
 
-  vendorHash = "sha256-K5+Gj4Lqla6q9vx95BtCS67mZMWkMjgIHVYpBUdx/Wc=";
+  subPackages = [ "cmd/xcaddy" ];
 
   meta = {
-    homepage = "https://github.com/caddyserver/xcaddy";
     description = "Build Caddy with plugins";
-    mainProgram = "xcaddy";
+    homepage = "https://github.com/caddyserver/xcaddy";
     license = lib.licenses.asl20;
+    mainProgram = "xcaddy";
   };
 })

@@ -1,25 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   asttokens,
+  buildPythonPackage,
   colorama,
   executing,
   pygments,
-
   # tests
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "icecream";
   version = "2.1.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gruns";
@@ -28,6 +24,7 @@ buildPythonPackage rec {
     hash = "sha256-5PFl+DIsWGbh2VR+xW/L9fYBF0VCo1B10b+mzsq85As=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -37,7 +34,7 @@ buildPythonPackage rec {
     pygments
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   meta = {
     description = "Little library for sweet and creamy print debugging";

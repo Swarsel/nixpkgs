@@ -2,22 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  libsamplerate,
+  libsndfile,
   meson,
   ninja,
   pkg-config,
-  libsndfile,
-  libsamplerate,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libresample";
   version = "0.1.4-unstable-2024-08-23";
-
-  outputs = [
-    "bin"
-    "dev"
-    "out"
-  ];
 
   src = fetchFromGitHub {
     owner = "minorninth";
@@ -25,6 +19,12 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "7cb7f9c3f72d4e6774d964dc324af827192df7c3";
     hash = "sha256-8gyGZVblqeHYXKFM79AcfX455+l3Tsoq3xQse5nrKAo=";
   };
+
+  outputs = [
+    "bin"
+    "dev"
+    "out"
+  ];
 
   patches = [
     # Fix testresample.c output span; add exit code
@@ -48,7 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   mesonFlags = [ (lib.mesonEnable "compareresample" (!libsamplerate.meta.broken)) ];
-
   doCheck = true;
 
   meta = {
@@ -56,10 +55,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/minorninth/libresample";
     license = lib.licenses.bsd2; # OR LGPL-2.1-or-later
     sourceProvenance = [ lib.sourceTypes.fromSource ];
-    platforms = lib.platforms.all;
+
     maintainers = [
       lib.maintainers.emily
     ];
+
+    platforms = lib.platforms.all;
     mainProgram = "resample-sndfile";
   };
 })

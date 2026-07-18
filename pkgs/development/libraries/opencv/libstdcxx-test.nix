@@ -1,7 +1,7 @@
 {
+  attrName,
   python3Packages,
   runCommand,
-  attrName,
 }:
 
 runCommand "${python3Packages.${attrName}.name}-libstdcxx-test"

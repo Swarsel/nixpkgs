@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
-  xmltodict,
+  buildPythonPackage,
   python-socketio-v4,
+  setuptools,
   websocket-client,
+  xmltodict,
 }:
 
 buildPythonPackage rec {
   pname = "pycontrol4";
   version = "2.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lawtancool";
@@ -21,6 +20,8 @@ buildPythonPackage rec {
     hash = "sha256-4qgyn2ekxo0pjPixfNpRqHE+jgsNQGk9fbESbUTDxMg=";
   };
 
+  # tests access network
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,8 +31,7 @@ buildPythonPackage rec {
     websocket-client
   ];
 
-  # tests access network
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "pyControl4.account"
@@ -41,9 +41,9 @@ buildPythonPackage rec {
   ];
 
   meta = {
-    changelog = "https://github.com/lawtancool/pyControl4/releases/tag/v${version}";
     description = "Python 3 asyncio package for interacting with Control4 systems";
     homepage = "https://github.com/lawtancool/pyControl4";
+    changelog = "https://github.com/lawtancool/pyControl4/releases/tag/v${version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

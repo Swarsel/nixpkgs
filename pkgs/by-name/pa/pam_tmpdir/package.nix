@@ -27,17 +27,15 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ autoreconfHook ];
-
   buildInputs = [ pam ];
-
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://tracker.debian.org/pkg/pam-tmpdir";
     description = "PAM module for creating safe per-user temporary directories";
-    mainProgram = "pam-tmpdir-helper";
+    homepage = "https://tracker.debian.org/pkg/pam-tmpdir";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ peterhoeg ];
     platforms = lib.platforms.linux;
+    mainProgram = "pam-tmpdir-helper";
   };
 })

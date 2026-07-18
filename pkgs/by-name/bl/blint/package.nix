@@ -1,15 +1,14 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  writableTmpDirAsHomeHook,
   nixosTests,
+  python3Packages,
+  writableTmpDirAsHomeHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "blint";
   version = "3.0.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "owasp-dep-scan";
@@ -17,6 +16,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-RloxQlnhl4zCto6QO09UZs+29QRCpL0/PJCzYrVi8ng=";
   };
+
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+    pytest-cov-stub
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [
     python3Packages.poetry-core
@@ -39,24 +44,20 @@ python3Packages.buildPythonApplication (finalAttrs: {
     symbolic
   ];
 
-  pythonRelaxDeps = [
-    "apsw"
-    "symbolic"
+  # only runs on windows and fails, obviously
+  disabledTests = [
+    "test_demangle"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "blint"
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-    pytest-cov-stub
-    writableTmpDirAsHomeHook
-  ];
-
-  # only runs on windows and fails, obviously
-  disabledTests = [
-    "test_demangle"
+  pythonRelaxDeps = [
+    "apsw"
+    "symbolic"
   ];
 
   passthru.tests = { inherit (nixosTests) blint; };
@@ -66,9 +67,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     homepage = "https://github.com/owasp-dep-scan/blint";
     changelog = "https://github.com/owasp-dep-scan/blint/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ ethancedwards8 ];
-    teams = with lib.teams; [ ngi ];
+    platforms = lib.platforms.unix;
     mainProgram = "blint";
+    teams = with lib.teams; [ ngi ];
   };
 })

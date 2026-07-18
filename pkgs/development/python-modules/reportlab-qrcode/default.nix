@@ -2,19 +2,18 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
-  wheel,
-  qrcode,
-  reportlab,
   pillow,
   pytest,
   pyzbar,
+  qrcode,
+  reportlab,
+  setuptools,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "reportlab-qrcode";
   version = "0.1.6";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -39,6 +38,7 @@ buildPythonPackage rec {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "reportlab_qrcode" ];
 
   meta = {

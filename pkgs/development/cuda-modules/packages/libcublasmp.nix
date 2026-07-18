@@ -6,7 +6,6 @@
   nccl,
 }:
 buildRedist {
-  redistName = "cublasmp";
   pname = "libcublasmp";
 
   outputs = [
@@ -28,14 +27,18 @@ buildRedist {
     "libcuda.so.1"
   ];
 
+  redistName = "cublasmp";
+
   meta = {
     description = "High-performance, multi-process, GPU-accelerated library for distributed basic dense linear algebra";
+
     longDescription = ''
       NVIDIA cuBLASMp is a high-performance, multi-process, GPU-accelerated library for distributed basic dense linear
       algebra.
 
       cuBLASMp is compatible with 2D block-cyclic data layout and provides PBLAS-like C APIs.
     '';
+
     homepage = "https://docs.nvidia.com/cuda/cublasmp";
     changelog = "https://docs.nvidia.com/cuda/cublasmp/release_notes";
     license = _cuda.lib.licenses.math_sdk_sla;

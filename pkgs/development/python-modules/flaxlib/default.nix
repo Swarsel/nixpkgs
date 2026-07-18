@@ -1,28 +1,22 @@
 {
   lib,
   buildPythonPackage,
+  # nativeBuildInputs
+  cmake,
   flax,
-  tomlq,
-  python,
-
   # build-system
   nanobind,
   ninja,
-  scikit-build-core,
-
-  # nativeBuildInputs
-  cmake,
   pkg-config,
+  python,
+  scikit-build-core,
+  tomlq,
 }:
 
 buildPythonPackage rec {
+  inherit (flax) src;
   pname = "flaxlib";
   version = "0.0.1";
-  pyproject = true;
-
-  inherit (flax) src;
-
-  sourceRoot = "${src.name}/flaxlib_src";
 
   postPatch = ''
     expected_version="$version"
@@ -36,24 +30,25 @@ buildPythonPackage rec {
     fi
   '';
 
-  dontUseCmakeConfigure = true;
-
-  build-system = [
-    nanobind
-    ninja
-    scikit-build-core
-  ];
   nativeBuildInputs = [
     cmake
     pkg-config
   ];
 
   env.CMAKE_PREFIX_PATH = "${nanobind}/${python.sitePackages}/nanobind";
-
-  pythonImportsCheck = [ "flaxlib" ];
-
   # This package does not have tests (yet ?)
   doCheck = false;
+
+  build-system = [
+    nanobind
+    ninja
+    scikit-build-core
+  ];
+
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+  pythonImportsCheck = [ "flaxlib" ];
+  sourceRoot = "${src.name}/flaxlib_src";
 
   passthru = {
     inherit (flax) updateScript;

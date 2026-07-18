@@ -29,10 +29,12 @@ stdenv.mkDerivation (finalAttrs: {
       pname = "dillo";
       version = "3.0.5";
       debianRevision = "7.2";
-      patch = "gcc-15.patch";
       hash = "sha256-DFtR5h8N/vl0Lv5tRHgO2Lz0719ORGog02r0zSYMVYU=";
+      patch = "gcc-15.patch";
     })
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -47,8 +49,6 @@ stdenv.mkDerivation (finalAttrs: {
     openssl
   ];
 
-  strictDeps = true;
-
   makeFlags = [
     "PREFIX=$(out)"
     "DOWNLOADER_TOOL=${lib.getExe wget}"
@@ -61,7 +61,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/crossbowerbt/dillo-plus/blob/main/ChangeLog";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ fgaz ];
-    mainProgram = "dillo";
     platforms = lib.platforms.linux;
+    mainProgram = "dillo";
   };
 })

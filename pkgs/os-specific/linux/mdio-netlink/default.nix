@@ -6,18 +6,17 @@
 }:
 
 stdenv.mkDerivation {
+  inherit (mdio-tools) src;
   pname = "mdio-netlink";
   version = "${mdio-tools.version}-${kernel.version}";
-
-  inherit (mdio-tools) src;
-  sourceRoot = "source/kernel";
-
   nativeBuildInputs = kernel.moduleBuildDependencies;
 
   makeFlags = kernel.commonMakeFlags ++ [
     "KDIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
     "INSTALL_MOD_PATH=${placeholder "out"}"
   ];
+
+  sourceRoot = "source/kernel";
 
   meta = {
     description = "Netlink support for MDIO devices";

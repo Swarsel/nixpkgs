@@ -1,11 +1,11 @@
 {
-  stdenv,
-  cmake,
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  cmake,
+  copyDesktopItems,
   libGLU,
   makeDesktopItem,
-  copyDesktopItems,
   qt5,
 }:
 
@@ -25,34 +25,36 @@ stdenv.mkDerivation rec {
     qt5.wrapQtAppsHook
     copyDesktopItems
   ];
+
   buildInputs = [
     libGLU
     qt5.qtbase
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "plater";
-      exec = "plater";
-      icon = "plater";
-      desktopName = "Ideamaker";
-      genericName = meta.description;
-      categories = [
-        "Utility"
-        "Engineering"
-      ];
-    })
   ];
 
   postInstall = ''
     install -D $src/gui/img/plater.png -t $out/share/icons/hicolor/128x128/apps
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Utility"
+        "Engineering"
+      ];
+
+      desktopName = "Ideamaker";
+      exec = "plater";
+      genericName = meta.description;
+      icon = "plater";
+      name = "plater";
+    })
+  ];
+
   meta = {
     description = "3D-printer parts placer and plate generator";
     homepage = "https://github.com/Rhoban/Plater";
+    license = lib.licenses.cc-by-nc-30;
     maintainers = with lib.maintainers; [ lovesegfault ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.cc-by-nc-30;
   };
 }

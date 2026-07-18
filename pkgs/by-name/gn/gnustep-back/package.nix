@@ -1,8 +1,8 @@
 {
   lib,
+  cairo,
   clangStdenv,
   fetchzip,
-  cairo,
   fontconfig,
   freetype,
   gnustep-gui,
@@ -38,13 +38,15 @@ clangStdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Generic backend for GNUstep";
-    mainProgram = "gpbs";
     homepage = "https://gnustep.github.io/";
     license = lib.licenses.lgpl2Plus;
+
     maintainers = with lib.maintainers; [
       ashalkhakov
       dblsaiko
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "gpbs";
   };
 })

@@ -17,8 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  dontBuild = true;
-
   installPhase = ''
     mkdir -p $out/lib
     cp -r lib/* $out/lib
@@ -36,18 +34,22 @@ stdenv.mkDerivation (finalAttrs: {
       --add-flags "-classpath $classpath com.adobe.epubcheck.tool.Checker"
   '';
 
+  dontBuild = true;
+
   meta = {
-    homepage = "https://github.com/w3c/epubcheck";
     description = "Validation tool for EPUB";
-    mainProgram = "epubcheck";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    homepage = "https://github.com/w3c/epubcheck";
+
     license = with lib.licenses; [
       asl20
       bsd3
       mpl10
       w3c
     ];
-    platforms = lib.platforms.all;
+
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ eadwu ];
+    platforms = lib.platforms.all;
+    mainProgram = "epubcheck";
   };
 })

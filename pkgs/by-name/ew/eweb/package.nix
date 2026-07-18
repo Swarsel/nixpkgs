@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  python3,
   asciidoc,
+  python3,
 }:
 
 stdenv.mkDerivation rec {
@@ -27,11 +27,11 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://eweb.sourceforge.net/";
     description = "Asciidoc-based literate programming tool, written in Python";
-    mainProgram = "etangle.py";
-    platforms = lib.platforms.linux;
+    homepage = "https://eweb.sourceforge.net/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "etangle.py";
   };
 }

@@ -1,27 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  zope-interface,
-  zope-schema,
-  zope-cachedescriptors,
-  pytz,
-  webtest,
   beautifulsoup4,
-  soupsieve,
-  wsgiproxy2,
+  buildPythonPackage,
   legacy-cgi,
   mock,
+  python,
+  pytz,
+  setuptools,
+  soupsieve,
+  webtest,
+  wsgiproxy2,
+  zope-cachedescriptors,
+  zope-interface,
+  zope-schema,
   zope-testing,
   zope-testrunner,
-  python,
 }:
 
 buildPythonPackage rec {
   pname = "zope-testbrowser";
   version = "8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zopefoundation";
@@ -39,6 +38,16 @@ buildPythonPackage rec {
       --replace-fail "suite.addTests(wire)" ""
   '';
 
+  nativeCheckInputs = [
+    mock
+    zope-testing
+    zope-testrunner
+  ];
+
+  checkPhase = ''
+    ${python.interpreter} -m zope.testrunner --test-path=src
+  '';
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -54,15 +63,7 @@ buildPythonPackage rec {
     legacy-cgi
   ];
 
-  nativeCheckInputs = [
-    mock
-    zope-testing
-    zope-testrunner
-  ];
-
-  checkPhase = ''
-    ${python.interpreter} -m zope.testrunner --test-path=src
-  '';
+  pyproject = true;
 
   pythonImportsCheck = [
     "zope.testbrowser"
@@ -73,9 +74,9 @@ buildPythonPackage rec {
   ];
 
   meta = {
-    changelog = "https://github.com/zopefoundation/zope.testbrowser/blob/${src.rev}/CHANGES.rst";
     description = "Programmable browser for functional black-box tests";
     homepage = "https://github.com/zopefoundation/zope.testbrowser";
+    changelog = "https://github.com/zopefoundation/zope.testbrowser/blob/${src.rev}/CHANGES.rst";
     license = lib.licenses.zpl21;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

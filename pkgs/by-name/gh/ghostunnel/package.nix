@@ -1,9 +1,9 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
-  nixosTests,
+  fetchFromGitHub,
+  buildGoModule,
   ghostunnel,
+  nixosTests,
 }:
 
 buildGoModule rec {
@@ -23,25 +23,24 @@ buildGoModule rec {
   ];
 
   vendorHash = "sha256-pd7fTP0BAgpd4mD8ZG8Ak9fFF2sC0JGCDbPG8tAnWvw=";
-
-  deleteVendor = true;
-
   # These tests don't exist for Linux, and on Darwin they attempt to use the macOS Keychain
   # which doesn't work from a nix build. Presumably other platform implementations of the
   # certstore would have similar issues, so it probably makes sense to skip them in
   # general wherever they are available.
   checkFlags = [ "-skip=^Test(ImportDelete|Signer|Certificate)(RSA|ECDSA|EC)$" ];
+  deleteVendor = true;
+
+  passthru.services.default = {
+    ghostunnel.package = ghostunnel; # FIXME: finalAttrs.finalPackage
+
+    imports = [
+      (lib.modules.importApply ./service.nix { })
+    ];
+  };
 
   passthru.tests = {
     nixos = nixosTests.ghostunnel;
     podman = nixosTests.podman-tls-ghostunnel;
-  };
-
-  passthru.services.default = {
-    imports = [
-      (lib.modules.importApply ./service.nix { })
-    ];
-    ghostunnel.package = ghostunnel; # FIXME: finalAttrs.finalPackage
   };
 
   meta = {
@@ -49,10 +48,12 @@ buildGoModule rec {
     homepage = "https://github.com/ghostunnel/ghostunnel#readme";
     changelog = "https://github.com/ghostunnel/ghostunnel/releases/tag/v${version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       roberth
       mjm
     ];
+
     mainProgram = "ghostunnel";
   };
 }

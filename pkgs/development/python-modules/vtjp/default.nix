@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
   setuptools,
   tabulate,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "vtjp";
   version = "0.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Miicroo";
@@ -28,15 +27,15 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "vasttrafik" ];
 
   meta = {
     description = "Python wrapper and cli for Västtrafik public API";
-    mainProgram = "vtjp";
     homepage = "https://github.com/Miicroo/python-vasttrafik";
     changelog = "https://github.com/Miicroo/python-vasttrafik/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "vtjp";
   };
 }

@@ -2,39 +2,39 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  pnpm_11,
-  python3,
-  nodejs,
-  node-gyp,
-  runCommand,
-  nixosTests,
-  immich-machine-learning,
-  # build-time deps
-  pkg-config,
-  makeWrapper,
   binaryen,
-  curl,
+  buildPackages,
   cacert,
-  extism-js,
-  unzip,
   # runtime deps
   cairo,
+  curl,
   exiftool,
+  extism-js,
+  fetchPnpmDeps,
   giflib,
-  jellyfin-ffmpeg, # Immich depends on the jellyfin customizations, see https://github.com/NixOS/nixpkgs/issues/351943
   imagemagick,
+  immich-machine-learning,
+  jellyfin-ffmpeg, # Immich depends on the jellyfin customizations, see https://github.com/NixOS/nixpkgs/issues/351943
+  libheif,
   libjpeg,
   libpng,
   libraw,
-  libheif,
   librsvg,
+  makeWrapper,
+  nixosTests,
+  node-gyp,
+  nodejs,
   pango,
   perl,
   pixman,
+  # build-time deps
+  pkg-config,
+  pnpmConfigHook,
+  pnpm_11,
+  python3,
+  runCommand,
+  unzip,
   vips_8_17, # thumbnail generation fails with vips 8.18
-  buildPackages,
 }:
 let
   pnpm = pnpm_11;
@@ -46,32 +46,34 @@ let
         args
         // rec {
           version = "0.28.1";
+
           src = fetchFromGitHub {
             owner = "evanw";
             repo = "esbuild";
             tag = "v${version}";
             hash = "sha256-V+HKaWGAIs24ynFFIS9fQ0EAJJdNmlAMeL1sgDEAqWM=";
           };
+
           vendorHash = "sha256-+BfxCyg0KkDQpHt/wycy/8CTG6YBA/VJvJFhhzUnSiQ=";
         }
       );
   };
 
   buildLock = {
+    packages = [ ];
+
     sources =
       map
         (p: {
-          name = p.pname;
           inherit (p) version;
           inherit (p.src) rev;
+          name = p.pname;
         })
         [
           imagemagick
           libheif
           libraw
         ];
-
-    packages = [ ];
   };
 
   # The geodata website is not versioned, so we use the internet archive
@@ -84,14 +86,14 @@ let
     in
     runCommand "immich-geodata"
       {
-        outputHash = "sha256-Pf5u+bqzF2x1PECxKwZ6dfGiEj1YMlRejTcTI1amMvU=";
-        outputHashMode = "recursive";
         nativeBuildInputs = [
           cacert
           curl
           unzip
         ];
 
+        outputHash = "sha256-Pf5u+bqzF2x1PECxKwZ6dfGiEj1YMlRejTcTI1amMvU=";
+        outputHashMode = "recursive";
         meta.license = lib.licenses.cc-by-40;
       }
       ''
@@ -122,13 +124,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "immich";
     tag = "v${finalAttrs.version}";
     hash = "sha256-DLDzICjhvIErVm15CLoLnd8WwQl+lcalXhz2xmWposA=";
-  };
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    fetcherVersion = 4;
-    hash = "sha256-kCMFAPWcv2/qqVUoR5pbRxmkGg3mLPrpm8ce7R+9VYM=";
   };
 
   postPatch = ''
@@ -165,8 +160,8 @@ stdenv.mkDerivation (finalAttrs: {
     vips'
   ];
 
-  env.SHARP_FORCE_GLOBAL_LIBVIPS = 1;
   env.ESBUILD_BINARY_PATH = lib.getExe esbuild';
+  env.SHARP_FORCE_GLOBAL_LIBVIPS = 1;
   # fix for node-gyp, see https://github.com/nodejs/node-gyp/issues/1191#issuecomment-301243919
   env.npm_config_nodedir = nodejs;
 
@@ -224,35 +219,45 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 4;
+    hash = "sha256-kCMFAPWcv2/qqVUoR5pbRxmkGg3mLPrpm8ce7R+9VYM=";
+  };
+
   passthru = {
-    tests = {
-      inherit (nixosTests) immich immich-vectorchord-reindex;
-    };
+    inherit
+      geodata
+      pnpm
+      ;
 
     machine-learning = immich-machine-learning.override {
       immich = finalAttrs.finalPackage;
     };
 
-    inherit
-      geodata
-      pnpm
-      ;
+    tests = {
+      inherit (nixosTests) immich immich-vectorchord-reindex;
+    };
   };
 
   meta = {
-    changelog = "https://github.com/immich-app/immich/releases/tag/${finalAttrs.src.tag}";
     description = "Self-hosted photo and video backup solution";
     homepage = "https://immich.app/";
+    changelog = "https://github.com/immich-app/immich/releases/tag/${finalAttrs.src.tag}";
+
     license = with lib.licenses; [
       agpl3Only
       cc-by-40 # geonames
     ];
+
     maintainers = with lib.maintainers; [
       dotlambda
       jvanbruegge
       Scrumplex
       titaniumtown
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.freebsd;
     mainProgram = "server";
   };

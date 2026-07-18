@@ -1,22 +1,22 @@
 {
-  config,
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  libtool,
-  zip,
-  libffi,
-  libsigsegv,
-  readline,
+  SDL,
+  cairo,
+  config,
   gmp,
   gnutls,
   gtk2,
-  cairo,
-  SDL,
+  libffi,
+  libsigsegv,
+  libtool,
+  pkg-config,
+  readline,
   sqlite,
-  emacsSupport ? config.emacsSupport or false,
+  zip,
   emacs ? null,
+  emacsSupport ? config.emacsSupport or false,
 }:
 
 assert emacsSupport -> (emacs != null);
@@ -49,12 +49,10 @@ stdenv.mkDerivation (finalAttrs: {
     ./0001-fix-compilation.patch
   ];
 
-  enableParallelBuilding = true;
-  env.NIX_CFLAGS_COMPILE = "-std=gnu99";
-
   # The dependencies and their justification are explained at
   # http://smalltalk.gnu.org/download
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libtool
     zip
@@ -71,29 +69,32 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional emacsSupport emacs;
 
   configureFlags = lib.optional (!emacsSupport) "--without-emacs";
-
-  hardeningDisable = [ "format" ];
-
-  installFlags = lib.optional emacsSupport "lispdir=${placeholder "$out"}/share/emacs/site-lisp";
-
+  env.NIX_CFLAGS_COMPILE = "-std=gnu99";
   # For some reason the tests fail if executated with nix-build, but pass if
   # executed within nix-shell --pure.
   doCheck = false;
+  enableParallelBuilding = true;
+  hardeningDisable = [ "format" ];
+  installFlags = lib.optional emacsSupport "lispdir=${placeholder "$out"}/share/emacs/site-lisp";
 
   meta = {
     description = "Free implementation of the Smalltalk-80 language";
+
     longDescription = ''
       GNU Smalltalk is a free implementation of the Smalltalk-80 language. It
       runs on most POSIX compatible operating systems (including GNU/Linux, of
       course), as well as under Windows. Smalltalk is a dynamic object-oriented
       language, well-versed to scripting tasks.
     '';
+
     homepage = "http://smalltalk.gnu.org/";
+
     license = with lib.licenses; [
       gpl2
       lgpl2
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [ sauricat ];
+    platforms = lib.platforms.linux;
   };
 })

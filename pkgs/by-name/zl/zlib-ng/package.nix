@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   gtest,
+  pkg-config,
   withZlibCompat ? false,
 }:
 
@@ -31,12 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
   ];
 
-  env = lib.optionalAttrs stdenv.hostPlatform.isFreeBSD {
-    # This can be removed when we switch to libcxx from llvm 20
-    # https://github.com/llvm/llvm-project/pull/122361
-    NIX_CFLAGS_COMPILE = "-D_XOPEN_SOURCE=700";
-  };
-
   buildInputs = [ gtest ];
 
   cmakeFlags = [
@@ -46,11 +40,17 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals withZlibCompat [ "-DZLIB_COMPAT=ON" ];
 
+  env = lib.optionalAttrs stdenv.hostPlatform.isFreeBSD {
+    # This can be removed when we switch to libcxx from llvm 20
+    # https://github.com/llvm/llvm-project/pull/122361
+    NIX_CFLAGS_COMPILE = "-D_XOPEN_SOURCE=700";
+  };
+
   meta = {
     description = "Zlib data compression library for the next generation systems";
     homepage = "https://github.com/zlib-ng/zlib-ng";
     license = lib.licenses.zlib;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ izorkin ];
+    platforms = lib.platforms.all;
   };
 })

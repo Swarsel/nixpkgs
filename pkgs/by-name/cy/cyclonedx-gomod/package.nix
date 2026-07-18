@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,14 +16,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-x2aP+tGG5cn7ePeIbo+3XuPdWTScdY4dYvEKSJjxoSo=";
+  # Tests require network access and cyclonedx executable
+  doCheck = false;
 
   ldflags = [
     "-w"
     "-s"
   ];
-
-  # Tests require network access and cyclonedx executable
-  doCheck = false;
 
   meta = {
     description = "Tool to create CycloneDX Software Bill of Materials (SBOM) from Go modules";

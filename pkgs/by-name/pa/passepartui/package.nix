@@ -18,11 +18,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-LV/2+oSGVBRrWaHP/u1PcCb1T6Nduna/lusakCZW+PM=";
   };
 
-  cargoHash = "sha256-JR5zOhYogBa+6xYYyc36n/x7f5JW1mnNi2cK5i9QMSM=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ gpgme ];
+  cargoHash = "sha256-JR5zOhYogBa+6xYYyc36n/x7f5JW1mnNi2cK5i9QMSM=";
 
   passthru = {
     updateScript = nix-update-script { };

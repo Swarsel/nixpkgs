@@ -1,15 +1,15 @@
 {
+  lib,
+  fetchFromGitHub,
   _cuda,
   backendStdenv,
   cmake,
+  cudaNamePrefix,
   cuda_cudart,
   cuda_nvcc,
   cuda_profiler_api,
-  cudaNamePrefix,
-  fetchFromGitHub,
   fetchzip,
   flags,
-  lib,
   runCommand,
   stdenvNoCC,
   tensorrt,
@@ -30,13 +30,7 @@ let
     ;
 in
 backendStdenv.mkDerivation (finalAttrs: {
-  __structuredAttrs = true;
-  strictDeps = true;
-
-  name = "${cudaNamePrefix}-${finalAttrs.pname}-${finalAttrs.version}";
-
   pname = "tensorrt-samples";
-
   version = majorMinorPatch tensorrt.version;
 
   src = fetchFromGitHub (
@@ -46,88 +40,101 @@ backendStdenv.mkDerivation (finalAttrs: {
     }
     // getAttr finalAttrs.version {
       "10.0.0" = {
-        tag = "v10.0.0";
         hash = "sha256-k0FqEURPCtcPgowORHme/lhQ5SN63d0lYQvTvFXS6vw=";
+        tag = "v10.0.0";
       };
+
       "10.0.1" = {
-        tag = "v10.0.1";
         hash = "sha256-lSEw0GM0eW2BHNBq/wTQA8v3aNueE3FT+k9F5nH1OgA=";
+        tag = "v10.0.1";
       };
+
       "10.1.0" = {
-        tag = "v10.1.0";
         hash = "sha256-A3QwrQaI0EgRspgXEKcna/z6p7abOq3M7KDQMPQftvE=";
+        tag = "v10.1.0";
       };
-      "10.2.0" = {
-        tag = "v10.2.0";
-        hash = "sha256-Euo9VD4VTpx8XJV97IMETTAx/YkPGXiNdA39Wjp3UMU=";
-      };
-      "10.3.0" = {
-        tag = "v10.3.0";
-        hash = "sha256-odSrsfOa8PlbJiPrkvWFm2hHc+ud0qSpLQanx9/M/90=";
-      };
-      "10.4.0" = {
-        tag = "v10.4.0";
-        hash = "sha256-GAu/VdHrC3UQw9okPexVItLPrRb1m3ZMpCkHNcfzRkE=";
-      };
-      "10.5.0" = {
-        tag = "v10.5.0";
-        hash = "sha256-No0JKfvi6ETXrnebMX+tAVhz7fuuCwYAp/WNUN73XzY=";
-      };
-      "10.6.0" = {
-        tag = "v10.6.0";
-        hash = "sha256-nnzicyCjVqpAonIhx3u9yNnoJkZ0XXjJ8oxQH+wfrtE=";
-      };
-      "10.7.0" = {
-        tag = "v10.7.0";
-        hash = "sha256-sbp61GverIWrHKvJV+oO9TctFTO4WUmH0oInZIwqF/s=";
-      };
-      "10.8.0" = {
-        tag = "v10.8.0";
-        hash = "sha256-SDlTZf8EQBq8vDCH3YFJCROHbf47RB5WUu4esLNpYuA=";
-      };
-      "10.9.0" = {
-        tag = "v10.9.0";
-        hash = "sha256-J8K9RjeGIem5ZxXyU+Rne8uBbul54ie6P/Y1In2mQ0g=";
-      };
+
       "10.10.0" = {
-        tag = "v10.10.0";
         hash = "sha256-/vkGmH+WKXMXsUizGfjBKRHOp5IpS236eUdCQ8tr1u8=";
+        tag = "v10.10.0";
       };
+
       "10.11.0" = {
-        tag = "v10.11";
         hash = "sha256-OXI6mR2X+kF/0EO5RSBnnaGjMKD6AkuQMfl0OMzayxc=";
+        tag = "v10.11";
       };
+
       "10.12.0" = {
-        tag = "v10.12.0";
         hash = "sha256-3pFiqDzWcMAk3GfnSOzzInddEfoGX0Fwqb+vEYr9eBw=";
+        tag = "v10.12.0";
       };
+
       "10.13.0" = {
-        tag = "v10.13.0";
         hash = "sha256-hjl9fKFIE8p05/lmius2vuil6evPbNEjTT9yJyC44FI=";
+        tag = "v10.13.0";
       };
+
       "10.13.2" = {
-        tag = "v10.13.2";
         hash = "sha256-1t4TyQKGTVPyPPNA3dlVDoBSHXKGcTms8AUejbvtVfw=";
+        tag = "v10.13.2";
       };
+
       "10.13.3" = {
-        tag = "v10.13.3";
         hash = "sha256-d14R0UmSLT63wlmpCMi9ZvHZjottr8LJfig7EcqxLEY=";
+        tag = "v10.13.3";
       };
+
       "10.14.1" = {
-        tag = "v10.14";
         hash = "sha256-pWvXpXiUriLDYHqro3HWAmO/9wbGznyUrc9qxq/t0/U=";
+        tag = "v10.14";
       };
+
       "10.16.1" = {
-        tag = "v10.16";
         hash = "sha256-Wm5oOXxAIpIlwiJKhH0WjgUAuTB9H2xFEVpM/sO36qk=";
+        tag = "v10.16";
+      };
+
+      "10.2.0" = {
+        hash = "sha256-Euo9VD4VTpx8XJV97IMETTAx/YkPGXiNdA39Wjp3UMU=";
+        tag = "v10.2.0";
+      };
+
+      "10.3.0" = {
+        hash = "sha256-odSrsfOa8PlbJiPrkvWFm2hHc+ud0qSpLQanx9/M/90=";
+        tag = "v10.3.0";
+      };
+
+      "10.4.0" = {
+        hash = "sha256-GAu/VdHrC3UQw9okPexVItLPrRb1m3ZMpCkHNcfzRkE=";
+        tag = "v10.4.0";
+      };
+
+      "10.5.0" = {
+        hash = "sha256-No0JKfvi6ETXrnebMX+tAVhz7fuuCwYAp/WNUN73XzY=";
+        tag = "v10.5.0";
+      };
+
+      "10.6.0" = {
+        hash = "sha256-nnzicyCjVqpAonIhx3u9yNnoJkZ0XXjJ8oxQH+wfrtE=";
+        tag = "v10.6.0";
+      };
+
+      "10.7.0" = {
+        hash = "sha256-sbp61GverIWrHKvJV+oO9TctFTO4WUmH0oInZIwqF/s=";
+        tag = "v10.7.0";
+      };
+
+      "10.8.0" = {
+        hash = "sha256-SDlTZf8EQBq8vDCH3YFJCROHbf47RB5WUu4esLNpYuA=";
+        tag = "v10.8.0";
+      };
+
+      "10.9.0" = {
+        hash = "sha256-J8K9RjeGIem5ZxXyU+Rne8uBbul54ie6P/Y1In2mQ0g=";
+        tag = "v10.9.0";
       };
     }
   );
-
-  nativeBuildInputs = [
-    cmake
-    cuda_nvcc
-  ];
 
   postPatch = ''
     nixLog "patching $PWD/CMakeLists.txt to avoid manually setting CMAKE_CXX_COMPILER"
@@ -154,6 +161,20 @@ backendStdenv.mkDerivation (finalAttrs: {
             'list(APPEND CMAKE_CUDA_ARCHITECTURES "''${SM}")'
       '';
 
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    cmake
+    cuda_nvcc
+  ];
+
+  buildInputs = [
+    (getInclude cuda_nvcc)
+    cuda_cudart
+    cuda_profiler_api
+    tensorrt
+  ];
+
   cmakeFlags = [
     # Use tensorrt for these components; we only really want the samples.
     (cmakeBool "BUILD_PARSERS" false)
@@ -164,12 +185,8 @@ backendStdenv.mkDerivation (finalAttrs: {
     (cmakeFeature "GPU_ARCHS" (replaceStrings [ ";" ] [ " " ] flags.cmakeCudaArchitecturesString))
   ];
 
-  buildInputs = [
-    (getInclude cuda_nvcc)
-    cuda_cudart
-    cuda_profiler_api
-    tensorrt
-  ];
+  __structuredAttrs = true;
+  name = "${cudaNamePrefix}-${finalAttrs.pname}-${finalAttrs.version}";
 
   passthru = import ./passthru.nix {
     inherit
@@ -187,11 +204,13 @@ backendStdenv.mkDerivation (finalAttrs: {
     description = "Open Source Software (OSS) components of NVIDIA TensorRT";
     homepage = "https://github.com/NVIDIA/TensorRT";
     license = licenses.asl20;
+    maintainers = with maintainers; [ connorbaker ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ];
+
     teams = [ teams.cuda ];
-    maintainers = with maintainers; [ connorbaker ];
   };
 })

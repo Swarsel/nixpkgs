@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "dosbox";
   version = "0-unstable-2026-04-20";
 
   src = fetchFromGitHub {
@@ -15,6 +14,7 @@ mkLibretroCore {
   };
 
   env.CXXFLAGS = "-std=gnu++11";
+  core = "dosbox";
 
   meta = {
     description = "Port of DOSBox to libretro";

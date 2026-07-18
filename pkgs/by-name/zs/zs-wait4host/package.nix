@@ -1,8 +1,8 @@
 {
-  coreutils,
-  fetchurl,
-  fping,
   lib,
+  fetchurl,
+  coreutils,
+  fping,
   stdenvNoCC,
 }:
 

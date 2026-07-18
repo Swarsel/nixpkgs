@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "fertilizer";
   version = "0.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "moleculekayak";
@@ -15,6 +14,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-dPTR3GfofXBV1gwQ8Xdl8Dyz23CU9qBLAahwpxj8z+Q=";
   };
+
+  nativeCheckInputs = with python3.pkgs; [
+    pytestCheckHook
+    requests-mock
+  ];
 
   build-system = with python3.pkgs; [ setuptools ];
 
@@ -25,11 +29,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     requests
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    pytestCheckHook
-    requests-mock
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "fertilizer" ];
 
   meta = {

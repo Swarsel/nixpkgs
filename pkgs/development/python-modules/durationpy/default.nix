@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "durationpy";
   version = "0.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "icholy";
@@ -18,12 +17,10 @@ buildPythonPackage rec {
     hash = "sha256-tJ3zOCROkwFWzTgIKx+0H7J1rNkwy5XJPh8Zec7jJ5g=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
   enabledTestPaths = [ "test.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "durationpy" ];
 
   meta = {

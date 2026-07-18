@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   gitUpdater,
-  testers,
   libiodata,
   pkg-config,
   qmake,
   qtbase,
   sailfish-access-control,
+  testers,
   tzdata,
   wrapQtAppsHook,
 }:
@@ -17,18 +17,18 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "timed";
   version = "3.6.24";
 
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-  ];
-
   src = fetchFromGitHub {
     owner = "sailfishos";
     repo = "timed";
     tag = finalAttrs.version;
     hash = "sha256-6axLd3XRCIsuYnKQ0AiCD6Cxut9Ck9hNWwIbkj4Aza8=";
   };
+
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+  ];
 
   postPatch = ''
     substituteInPlace src/{lib/lib,voland/voland}.pro \
@@ -74,18 +74,17 @@ stdenv.mkDerivation (finalAttrs: {
     sailfish-access-control
   ];
 
+  env = {
+    # Other subprojects expect library to already be present
+    NIX_CFLAGS_COMPILE = "-isystem ${placeholder "dev"}/include";
+    NIX_LDFLAGS = "-L${placeholder "out"}/lib";
+    TIMED_VERSION = "${finalAttrs.version}";
+  };
+
   # Do all configuring now, not during build
   postConfigure = ''
     make qmake_all
   '';
-
-  env = {
-    TIMED_VERSION = "${finalAttrs.version}";
-
-    # Other subprojects expect library to already be present
-    NIX_CFLAGS_COMPILE = "-isystem ${placeholder "dev"}/include";
-    NIX_LDFLAGS = "-L${placeholder "out"}/lib";
-  };
 
   preBuild = ''
     pushd src/lib
@@ -95,11 +94,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru = {
-    updateScript = gitUpdater { };
     tests.pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
       # Version fields exclude patch-level
     };
+
+    updateScript = gitUpdater { };
   };
 
   meta = {
@@ -107,12 +107,14 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/sailfishos/timed";
     changelog = "https://github.com/sailfishos/timed/releases/tag/${finalAttrs.version}";
     license = lib.licenses.lgpl21Only;
-    mainProgram = "timed";
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.linux;
+    mainProgram = "timed";
+
     pkgConfigModules = [
       "timed-qt${lib.versions.major qtbase.version}"
       "timed-voland-qt${lib.versions.major qtbase.version}"
     ];
+
+    teams = [ lib.teams.lomiri ];
   };
 })

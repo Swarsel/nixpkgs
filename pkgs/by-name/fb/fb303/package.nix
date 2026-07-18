@@ -1,30 +1,21 @@
 {
   lib,
   stdenv,
-
   fetchFromGitHub,
-
   cmake,
-  ninja,
-
-  gflags,
-  glog,
-  folly,
   fbthrift,
   fizz,
-  wangle,
-
+  folly,
+  gflags,
+  glog,
+  ninja,
   nix-update-script,
+  wangle,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "fb303";
   version = "2026.01.19.00";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "facebook";
@@ -32,6 +23,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-mQuTvjaBTbbLG8fmtM19MU1yIbq1O8TjaQ2TLQXpwkQ=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     ./glog-0.7.patch
@@ -70,12 +66,14 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Base Thrift service and a common set of functionality for querying stats, options, and other information from a service";
     homepage = "https://github.com/facebook/fb303";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       kylesferrazza
       emily
       techknowlogick
       lf-
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

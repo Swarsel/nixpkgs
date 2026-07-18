@@ -2,22 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  perl,
-  pkg-config,
-
+  cmocka,
   json_c,
   libaio,
   liburcu,
   linuxHeaders,
   lvm2,
+  nixosTests,
+  perl,
+  pkg-config,
   readline,
   systemd,
   udevCheckHook,
   util-linuxMinimal,
-
-  cmocka,
-  nixosTests,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,6 +27,8 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-uppx79+ZWazGM/QQ+8jeTogqXyHosiFfcnH2npiz7W0=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     perl
@@ -48,8 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
     util-linuxMinimal # for libmount
   ];
 
-  strictDeps = true;
-
   makeFlags = [
     "WARN_ONLY=1"
     "LIB=lib"
@@ -63,14 +60,14 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
+  checkInputs = [ cmocka ];
+
   preCheck = ''
     # skip test attempting to access /sys/dev/block
     substituteInPlace tests/Makefile --replace-fail ' devt ' ' '
   '';
-  checkInputs = [ cmocka ];
 
   doInstallCheck = true;
-
   passthru.tests = { inherit (nixosTests) iscsi-multipath-root; };
 
   meta = {

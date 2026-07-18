@@ -1,12 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   appdirs,
+  buildPythonPackage,
   geojson,
   hatchling,
-  requests,
   pytestCheckHook,
+  requests,
   requests-mock,
   versioningit,
 }:
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "datapoint";
   version = "0.13.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Perseudonymous";
@@ -28,6 +27,11 @@ buildPythonPackage rec {
       --replace-fail 'dynamic = ["version"]' 'version = "${version}"'
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    requests-mock
+  ];
+
   build-system = [
     hatchling
     versioningit
@@ -39,11 +43,7 @@ buildPythonPackage rec {
     requests
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    requests-mock
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "datapoint" ];
 
   meta = {

@@ -1,16 +1,16 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   autoreconfHook,
   bc,
-  fetchFromGitHub,
   gettext,
   makeWrapper,
   perl,
   python3,
   screen,
-  stdenv,
-  vim,
   tmux,
+  vim,
 }:
 
 let
@@ -27,6 +27,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-QovoXH8cm8CZMSYGjI7FgynHtJjahpe9R2s62F7aZvo=";
   };
 
+  postPatch = ''
+    for file in usr/bin/byobu-export.in usr/lib/byobu/menu; do
+      substituteInPlace $file \
+        --replace "gettext" "${gettext}/bin/gettext"
+    done
+  '';
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     gettext
@@ -40,14 +49,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
-  strictDeps = true;
-
-  postPatch = ''
-    for file in usr/bin/byobu-export.in usr/lib/byobu/menu; do
-      substituteInPlace $file \
-        --replace "gettext" "${gettext}/bin/gettext"
-    done
-  '';
 
   postInstall = ''
     # By some reason the po files are not being compiled
@@ -91,8 +92,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://www.byobu.org/";
     description = "Text-based window manager and terminal multiplexer";
+
     longDescription = ''
       Byobu is a text-based window manager and terminal multiplexer. It was
       originally designed to provide elegant enhancements to the otherwise
@@ -103,9 +104,11 @@ stdenv.mkDerivation (finalAttrs: {
       Tmux terminal multiplexer, and works on most Linux, BSD, and Mac
       distributions.
     '';
+
+    homepage = "https://www.byobu.org/";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "byobu";
     maintainers = with lib.maintainers; [ cbrxyz ];
     platforms = lib.platforms.unix;
+    mainProgram = "byobu";
   };
 })

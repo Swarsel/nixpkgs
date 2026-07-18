@@ -2,29 +2,25 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pycryptodome,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "brelpy";
   version = "0.0.3";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-MYWSKYd7emHZfY+W/UweQtTg62GSUMybpecL9BR8dhg=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pycryptodome ];
-
   # Source not tagged and PyPI releases don't contain tests
   doCheck = false;
-
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  dependencies = [ pycryptodome ];
+  pyproject = true;
   pythonImportsCheck = [ "brelpy" ];
 
   meta = {

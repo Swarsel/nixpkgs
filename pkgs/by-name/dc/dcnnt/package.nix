@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "dcnnt";
   version = "0.10.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -22,13 +21,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pycryptodome
   ];
 
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/cyanomiko/dcnnt-py";
     description = "UI-less tool to connect Android phone with desktop";
+
     longDescription = ''
       Yet another tool to connect Android phone with desktop similar to
       KDE Connect.
     '';
+
+    homepage = "https://github.com/cyanomiko/dcnnt-py";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ arnoutkroeze ];
     mainProgram = "dcnnt";

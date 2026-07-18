@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  autoreconfHook,
   fetchurl,
+  autoreconfHook,
   pam,
 }:
 
@@ -16,15 +16,14 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ autoreconfHook ];
-
   buildInputs = [ pam ];
 
   meta = {
     description = "Utility program to test the PAM facility";
-    mainProgram = "pamtester";
     homepage = "https://pamtester.sourceforge.net/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "pamtester";
   };
 })

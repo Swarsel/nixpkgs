@@ -1,16 +1,15 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
-  pytestCheckHook,
   flit-core,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "click-default-group";
   version = "1.2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "click-contrib";
@@ -20,11 +19,9 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ flit-core ];
-
   propagatedBuildInputs = [ click ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "click_default_group" ];
 
   meta = {

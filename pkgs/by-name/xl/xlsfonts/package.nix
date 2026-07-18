@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libx11,
-  xorgproto,
+  pkg-config,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xlsfonts";
@@ -17,7 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -40,8 +39,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Utility to list core protocol fonts on an X server";
     homepage = "https://gitlab.freedesktop.org/xorg/app/xlsfonts";
     license = lib.licenses.mitOpenGroup;
-    mainProgram = "xlsfonts";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xlsfonts";
   };
 })

@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
-  pytestCheckHook,
+  buildPythonPackage,
   pytest-asyncio,
   pytest-timeout,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyliebherrhomeapi";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mettolen";
@@ -21,16 +20,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-f0+2gqNLeyLP6rOAWay+T04ry21SPA79pm+prG7kJtc=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-asyncio
     pytest-timeout
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "pyliebherrhomeapi" ];
 
   meta = {

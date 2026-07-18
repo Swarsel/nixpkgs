@@ -1,48 +1,47 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  dpkg,
   alsa-lib,
   atk,
+  autoPatchelfHook,
   cairo,
+  coreutils,
   cups,
   dbus,
+  dpkg,
   expat,
   fontconfig,
   freetype,
   gdk-pixbuf,
   glib,
-  pango,
+  gnugrep,
+  gtk3,
+  iproute2,
+  libGL,
+  libappindicator,
+  libgbm,
+  libnotify,
+  libx11,
+  libxcb,
+  libxcomposite,
+  libxcursor,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxi,
+  libxrandr,
+  libxrender,
+  libxscrnsaver,
+  libxshmfence,
+  libxtst,
+  makeWrapper,
   nspr,
   nss,
-  gtk3,
-  libgbm,
-  libGL,
-  wayland,
-  libxtst,
-  libxscrnsaver,
-  libxrender,
-  libxrandr,
-  libxi,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcursor,
-  libxcomposite,
-  libx11,
-  libxshmfence,
-  libxcb,
-  autoPatchelfHook,
+  pango,
   systemd,
-  libnotify,
-  libappindicator,
-  makeWrapper,
-  coreutils,
-  gnugrep,
-  iproute2,
-
   versionCheckHook,
+  wayland,
 }:
 
 let
@@ -85,13 +84,13 @@ let
     attrs.${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
 
   platform = selectSystem {
-    x86_64-linux = "amd64";
     aarch64-linux = "arm64";
+    x86_64-linux = "amd64";
   };
 
   hash = selectSystem {
-    x86_64-linux = "sha256-OMbuc66AhwaIVgkiooUlttDazGLC5BCTiGPXA46TGso=";
     aarch64-linux = "sha256-pEzb21CSPn/ZflzZGTSJI5Hz3Q+ERFILg8q7V89AN1Q=";
+    x86_64-linux = "sha256-OMbuc66AhwaIVgkiooUlttDazGLC5BCTiGPXA46TGso=";
   };
 in
 
@@ -99,13 +98,16 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "mullvad-vpn";
   version = "2026.3";
 
-  __structuredAttrs = true;
-  strictDeps = true;
-
   src = fetchurl {
-    url = "https://github.com/mullvad/mullvadvpn-app/releases/download/${finalAttrs.version}/MullvadVPN-${finalAttrs.version}_${platform}.deb";
     inherit hash;
+    url = "https://github.com/mullvad/mullvadvpn-app/releases/download/${finalAttrs.version}/MullvadVPN-${finalAttrs.version}_${platform}.deb";
   };
+
+  postPatch = ''
+    patchShebangs opt/Mullvad\ VPN/mullvad-vpn
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -114,22 +116,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = deps;
-
-  dontBuild = true;
-  dontConfigure = true;
-
-  runtimeDependencies = [
-    (lib.getLib systemd)
-    iproute2
-    libGL
-    libnotify
-    libappindicator
-    wayland
-  ];
-
-  postPatch = ''
-    patchShebangs opt/Mullvad\ VPN/mullvad-vpn
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -163,26 +149,42 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  __structuredAttrs = true;
+  dontBuild = true;
+  dontConfigure = true;
+
+  runtimeDependencies = [
+    (lib.getLib systemd)
+    iproute2
+    libGL
+    libnotify
+    libappindicator
+    wayland
+  ];
 
   passthru.updateScript = ./update.sh;
 
   meta = {
-    homepage = "https://github.com/mullvad/mullvadvpn-app";
     description = "Client for Mullvad VPN";
+    homepage = "https://github.com/mullvad/mullvadvpn-app";
     changelog = "https://github.com/mullvad/mullvadvpn-app/blob/${finalAttrs.version}/CHANGELOG.md";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.gpl3Only;
-    mainProgram = "mullvad-vpn";
-    platforms = lib.platforms.unix;
-    badPlatforms = [ lib.systems.inspect.patterns.isDarwin ];
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       jackr
       airone01
       sigmasquadron
     ];
+
+    platforms = lib.platforms.unix;
+    badPlatforms = [ lib.systems.inspect.patterns.isDarwin ];
+    mainProgram = "mullvad-vpn";
   };
 })

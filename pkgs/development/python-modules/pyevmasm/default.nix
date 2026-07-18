@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   future,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pyevmasm";
   version = "0.2.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "crytic";
@@ -19,15 +18,15 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ future ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
 
   meta = {
     description = "Ethereum Virtual Machine (EVM) assembler and disassembler";
-    mainProgram = "evmasm";
     homepage = "https://github.com/crytic/pyevmasm";
     changelog = "https://github.com/crytic/pyevmasm/releases/tag/${version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ arturcygan ];
+    mainProgram = "evmasm";
   };
 }

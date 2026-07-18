@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   callPackage,
   easytier,
-  replaceVars,
   imagemagick,
+  replaceVars,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,6 +21,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     # populate values that require us to use git. By doing this in postFetch we
     # can delete .git afterwards and maintain better reproducibility of the src.
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       echo $(git log -1 --pretty=%ct)"000" > $out/SOURCE_DATE_EPOCH
@@ -33,9 +34,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ./0001-nix-read-timestamp-from-SOURCE_DATE_EPOCH.patch
     # Use easytier from inputs instead
     (replaceVars ./0002-nix-use-easytier-from-nix-input.patch {
-      TERRACOTTA_ET_PATH = easytier;
-      TERRACOTTA_ET_EXE = "${easytier}/bin/easytier-core";
       TERRACOTTA_ET_CLI = "${easytier}/bin/easytier-cli";
+      TERRACOTTA_ET_EXE = "${easytier}/bin/easytier-core";
+      TERRACOTTA_ET_PATH = easytier;
     })
   ];
 
@@ -52,16 +53,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   nativeBuildInputs = [ imagemagick ];
-
-  cargoBuildFlags = [
-    "--bin"
-    "terracotta"
-  ];
-  cargoTestFlags = [
-    "--bin"
-    "terracotta"
-  ];
-
   cargoLock.lockFile = ./Cargo.lock;
 
   env = {
@@ -90,17 +81,28 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
       cat > "$daemon_plist" <<EOF
       ${lib.generators.toPlist { escape = true; } {
+        KeepAlive = true;
         Label = "org.nixos.terracotta.daemon";
+
         ProgramArguments = [
           "@TERRACOTTA_BIN@"
           "--daemon"
         ];
-        KeepAlive = true;
       }}
       EOF
       substituteInPlace "$daemon_plist" \
         --replace-fail '@TERRACOTTA_BIN@' "$out/bin/terracotta"
     '';
+
+  cargoBuildFlags = [
+    "--bin"
+    "terracotta"
+  ];
+
+  cargoTestFlags = [
+    "--bin"
+    "terracotta"
+  ];
 
   passthru.updateScript = lib.getExe (callPackage ./update.nix { });
 

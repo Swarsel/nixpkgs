@@ -2,8 +2,8 @@
   lib,
   stdenv,
   callPackage,
-  nodejs,
   fetchPnpmDeps,
+  nodejs,
   pnpmConfigHook,
   pnpm_11,
 }:
@@ -13,18 +13,8 @@ let
   pnpm = pnpm_11;
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "woodpecker-webui";
   inherit (common) version src;
-
-  sourceRoot = "${common.src.name}/web";
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    sourceRoot = "${common.src.name}/web";
-    fetcherVersion = 4;
-    hash = common.nodeModulesHash;
-  };
+  pname = "woodpecker-webui";
 
   nativeBuildInputs = [
     nodejs
@@ -47,6 +37,16 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 4;
+    hash = common.nodeModulesHash;
+    sourceRoot = "${common.src.name}/web";
+  };
+
+  sourceRoot = "${common.src.name}/web";
 
   meta = common.meta // {
     description = "Woodpecker Continuous Integration server webui";

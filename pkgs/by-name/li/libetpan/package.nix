@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   autoconf,
   automake,
@@ -33,15 +33,13 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ openssl ];
-
   configureFlags = [ "CFLAGS=-std=gnu17" ];
-
   configureScript = "./autogen.sh";
 
   meta = {
-    changelog = "https://github.com/dinhvh/libetpan/releases/tag/${finalAttrs.src.tag}";
     description = "Mail Framework for the C Language";
     homepage = "https://www.etpan.org/libetpan.html";
+    changelog = "https://github.com/dinhvh/libetpan/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd3;
     maintainers = [ ];
     platforms = lib.platforms.unix;

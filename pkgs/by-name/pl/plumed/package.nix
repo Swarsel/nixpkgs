@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   blas,
 }:
@@ -23,7 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   buildInputs = [ blas ];
-
   enableParallelBuilding = true;
 
   meta = {

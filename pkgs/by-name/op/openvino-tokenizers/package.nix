@@ -19,8 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "openvino-tokenizers";
   version = "2026.2.1.0";
 
-  __structuredAttrs = true;
-
   src =
     assert lib.hasPrefix openvino.version finalAttrs.version;
     fetchFromGitHub {
@@ -29,6 +27,15 @@ stdenv.mkDerivation (finalAttrs: {
       tag = finalAttrs.version;
       hash = "sha256-K0Zdo9er+s9/PWvBmVJTsWOSgzzZ5De7sRLMNEpxf/U=";
     };
+
+  patches = [
+    # Use system pcre2 via pkg-config rather than FetchContent, and add
+    # sentencepiece's binary dir to the include path so cmake-generated config.h
+    # is found at compile time.
+    ./use-system-pcre2-and-sentencepiece-binary-dir.patch
+  ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -39,15 +46,6 @@ stdenv.mkDerivation (finalAttrs: {
     onetbb
     openvino
     pcre2
-  ];
-
-  strictDeps = true;
-
-  patches = [
-    # Use system pcre2 via pkg-config rather than FetchContent, and add
-    # sentencepiece's binary dir to the include path so cmake-generated config.h
-    # is found at compile time.
-    ./use-system-pcre2-and-sentencepiece-binary-dir.patch
   ];
 
   cmakeFlags = [
@@ -61,8 +59,8 @@ stdenv.mkDerivation (finalAttrs: {
     (cmakeBool "FETCHCONTENT_FULLY_DISCONNECTED" true)
   ];
 
+  __structuredAttrs = true;
   enableParallelBuilding = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -70,7 +68,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/openvinotoolkit/openvino_tokenizers";
     changelog = "https://github.com/openvinotoolkit/openvino_tokenizers/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ jpds ];
+    platforms = lib.platforms.linux;
   };
 })

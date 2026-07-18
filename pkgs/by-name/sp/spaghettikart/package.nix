@@ -1,35 +1,35 @@
 {
   lib,
-  fetchFromGitHub,
-  applyPatches,
-  writeTextFile,
-  fetchurl,
-  fetchpatch,
   stdenv,
-  replaceVars,
-  yaml-cpp,
-  srcOnly,
+  fetchurl,
+  fetchFromGitHub,
+  SDL2,
+  SDL2_net,
+  applyPatches,
   cmake,
   copyDesktopItems,
+  fetchpatch,
   installShellFiles,
-  lsb-release,
-  makeWrapper,
-  ninja,
-  pkg-config,
   libGL,
   libvorbis,
   libx11,
   libzip,
+  lsb-release,
+  makeDesktopItem,
+  makeWrapper,
+  ninja,
   nlohmann_json,
-  SDL2,
-  SDL2_net,
-  spdlog,
-  tinyxml-2,
-  tomlplusplus,
-  zenity,
+  pkg-config,
+  replaceVars,
   sdl_gamecontrollerdb,
   spaghettikart,
-  makeDesktopItem,
+  spdlog,
+  srcOnly,
+  tinyxml-2,
+  tomlplusplus,
+  writeTextFile,
+  yaml-cpp,
+  zenity,
 }:
 
 let
@@ -37,10 +37,10 @@ let
   # The following are either normally fetched during build time or a specific version is required
 
   dr_libs = fetchFromGitHub {
+    hash = "sha256-ydFhQ8LTYDBnRTuETtfWwIHZpRciWfqGsZC6SuViEn0=";
     owner = "mackron";
     repo = "dr_libs";
     rev = "da35f9d6c7374a95353fd1df1d394d44ab66cf01";
-    hash = "sha256-ydFhQ8LTYDBnRTuETtfWwIHZpRciWfqGsZC6SuViEn0=";
   };
 
   imgui' = applyPatches {
@@ -50,33 +50,35 @@ let
       tag = "v1.91.9b-docking";
       hash = "sha256-mQOJ6jCN+7VopgZ61yzaCnt4R1QLrW7+47xxMhFRHLQ=";
     };
+
     patches = [
       "${spaghettikart.src}/libultraship/cmake/dependencies/patches/imgui-fixes-and-config.patch"
     ];
   };
 
   libgfxd = fetchFromGitHub {
+    hash = "sha256-AmHAa3/cQdh7KAMFOtz5TQpcM6FqO9SppmDpKPTjTt8=";
     owner = "glankk";
     repo = "libgfxd";
     rev = "008f73dca8ebc9151b205959b17773a19c5bd0da";
-    hash = "sha256-AmHAa3/cQdh7KAMFOtz5TQpcM6FqO9SppmDpKPTjTt8=";
   };
 
   prism = fetchFromGitHub {
+    hash = "sha256-jRPwO1Vub0cH12YMlME6kd8zGzKmcfIrIJZYpQJeOks=";
     owner = "KiritoDv";
     repo = "prism-processor";
     rev = "bbcbc7e3f890a5806b579361e7aa0336acd547e7";
-    hash = "sha256-jRPwO1Vub0cH12YMlME6kd8zGzKmcfIrIJZYpQJeOks=";
   };
 
   semver = fetchurl {
+    hash = "sha256-rywMUxJNx/UsWKcgXkWK0++6wvYc5Vrd+cj5QzigQYI=";
     name = "semver.hpp";
     url = "https://raw.githubusercontent.com/Neargye/semver/refs/tags/v1.0.0-rc/include/semver.hpp";
-    hash = "sha256-rywMUxJNx/UsWKcgXkWK0++6wvYc5Vrd+cj5QzigQYI=";
   };
 
   stb_impl = writeTextFile {
     name = "stb_impl.c";
+
     text = ''
       #define STB_IMAGE_IMPLEMENTATION
       #include "stb_image.h"
@@ -84,9 +86,9 @@ let
   };
 
   stb' = fetchurl {
+    hash = "sha256-xUsVponmofMsdeLsI6+kQuPg436JS3PBl00IZ5sg3Vw=";
     name = "stb_image.h";
     url = "https://raw.githubusercontent.com/nothings/stb/0bc88af4de5fb022db643c2d8e549a0927749354/stb_image.h";
-    hash = "sha256-xUsVponmofMsdeLsI6+kQuPg436JS3PBl00IZ5sg3Vw=";
   };
 
   stormlib' = applyPatches {
@@ -96,27 +98,29 @@ let
       tag = "v9.25";
       hash = "sha256-HTi2FKzKCbRaP13XERUmHkJgw8IfKaRJvsK3+YxFFdc=";
     };
+
     patches = [
       "${spaghettikart.src}/libultraship/cmake/dependencies/patches/stormlib-optimizations.patch"
     ];
   };
 
   thread_pool = fetchFromGitHub {
+    hash = "sha256-zhRFEmPYNFLqQCfvdAaG5VBNle9Qm8FepIIIrT9sh88=";
     owner = "bshoshany";
     repo = "thread-pool";
     tag = "v4.1.0";
-    hash = "sha256-zhRFEmPYNFLqQCfvdAaG5VBNle9Qm8FepIIIrT9sh88=";
   };
 
   # Include cmake4 patch
   # Remove when yaml-cpp.src is updated to include it
   yaml-patched = applyPatches {
     src = yaml-cpp.src;
+
     patches = [
       (fetchpatch {
+        hash = "sha256-1kXRa+xrAbLEhcJxNV1oGHPmayj1RNIe6dDWXZA3mUA=";
         name = "yaml-cpp-fix-cmake-4.patch";
         url = "https://github.com/jbeder/yaml-cpp/commit/c2680200486572baf8221ba052ef50b58ecd816e.patch";
-        hash = "sha256-1kXRa+xrAbLEhcJxNV1oGHPmayj1RNIe6dDWXZA3mUA=";
       })
     ];
   };
@@ -133,6 +137,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-XEsOtt2Xg/HyYw07YGXTIBOCtIDbh3hmaBEQpbFVFYc=";
     fetchSubmodules = true;
     deepClone = true;
+
     postFetch = ''
       cd $out
       (git describe --tags HEAD 2>/dev/null || echo "") > PROJECT_VERSION
@@ -148,32 +153,44 @@ stdenv.mkDerivation (finalAttrs: {
     # Can't fetch these torch deps in the sandbox
     (replaceVars ./git-deps.patch {
       libgfxd_src = fetchFromGitHub {
+        hash = "sha256-dedZuV0BxU6goT+rPvrofYqTz9pTA/f6eQcsvpDWdvQ=";
         owner = "glankk";
         repo = "libgfxd";
         rev = "96fd3b849f38b3a7c7b7f3ff03c5921d328e6cdf";
-        hash = "sha256-dedZuV0BxU6goT+rPvrofYqTz9pTA/f6eQcsvpDWdvQ=";
       };
+
       spdlog_src = fetchFromGitHub {
+        hash = "sha256-cxTaOuLXHRU8xMz9gluYz0a93O0ez2xOxbloyc1m1ns=";
         owner = "gabime";
         repo = "spdlog";
         rev = "7e635fca68d014934b4af8a1cf874f63989352b7";
-        hash = "sha256-cxTaOuLXHRU8xMz9gluYz0a93O0ez2xOxbloyc1m1ns=";
       };
+
+      tinyxml2_src = srcOnly tinyxml-2;
+
       yaml-cpp_src = fetchFromGitHub {
+        hash = "sha256-59/s4Rqiiw7LKQw0UwH3vOaT/YsNVcoq3vblK0FiO5c=";
         owner = "jbeder";
         repo = "yaml-cpp";
         rev = "28f93bdec6387d42332220afa9558060c8016795";
-        hash = "sha256-59/s4Rqiiw7LKQw0UwH3vOaT/YsNVcoq3vblK0FiO5c=";
       };
-      tinyxml2_src = srcOnly tinyxml-2;
     })
 
     # Can't fetch in the sandbox
     ./semver.patch
   ];
 
-  # Recent builds enabled LTO which won't build with nix
-  env.NIX_CFLAGS_COMPILE = "-fno-lto";
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+    --replace-fail "COMMAND git describe --tags" "COMMAND echo $(cat PROJECT_VERSION)" \
+    --replace-fail "COMMAND git log --pretty=format:%h -1" "COMMAND echo $(cat PROJECT_VERSION_PATCH)"
+
+    # We need to use GetAppDirectoryPath on nix or else it crashes
+    substituteInPlace src/port/GameExtractor.cpp \
+    --replace-fail "const std::string assets_path = Ship::Context::GetAppBundlePath();" "const std::string assets_path = Ship::Context::GetAppDirectoryPath();"
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -212,10 +229,8 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_YAML-CPP" "${yaml-patched}")
   ];
 
-  strictDeps = true;
-
-  # Linking fails without this
-  hardeningDisable = [ "format" ];
+  # Recent builds enabled LTO which won't build with nix
+  env.NIX_CFLAGS_COMPILE = "-fno-lto";
 
   preConfigure = ''
     mkdir stb
@@ -229,16 +244,6 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace CMakeLists.txt \
       --replace-fail "\''${SEMVER_DIR}" "$(readlink -f ./semver)"
 
-  '';
-
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-    --replace-fail "COMMAND git describe --tags" "COMMAND echo $(cat PROJECT_VERSION)" \
-    --replace-fail "COMMAND git log --pretty=format:%h -1" "COMMAND echo $(cat PROJECT_VERSION_PATCH)"
-
-    # We need to use GetAppDirectoryPath on nix or else it crashes
-    substituteInPlace src/port/GameExtractor.cpp \
-    --replace-fail "const std::string assets_path = Ship::Context::GetAppBundlePath();" "const std::string assets_path = Ship::Context::GetAppDirectoryPath();"
   '';
 
   postBuild = ''
@@ -260,7 +265,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   # Unfortunately, spaghettikart really wants a writable working directory
   # Create $HOME/.local/share/spaghettikart and symlink required files
-
   postFixup = ''
     wrapProgram $out/bin/Spaghettify \
       --prefix PATH ":" ${lib.makeBinPath [ zenity ]} \
@@ -275,26 +279,31 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "spaghettikart";
-      icon = "spaghettikart";
-      exec = "Spaghettify";
+      categories = [ "Game" ];
       comment = finalAttrs.meta.description;
       desktopName = "spaghettikart";
-      categories = [ "Game" ];
+      exec = "Spaghettify";
+      icon = "spaghettikart";
+      name = "spaghettikart";
     })
   ];
 
+  # Linking fails without this
+  hardeningDisable = [ "format" ];
+
   meta = {
-    homepage = "https://github.com/HarbourMasters/SpaghettiKart";
     description = "Mario Kart 64 PC Port";
-    mainProgram = "Spaghettify";
-    platforms = [ "x86_64-linux" ];
-    maintainers = with lib.maintainers; [ qubitnano ];
+    homepage = "https://github.com/HarbourMasters/SpaghettiKart";
+
     license = with lib.licenses; [
       # libultraship, libgfxd, thread_pool, dr_libs, prism-processor
       mit
       # Reverse engineering
       unfree
     ];
+
+    maintainers = with lib.maintainers; [ qubitnano ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "Spaghettify";
   };
 })

@@ -2,16 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  z3,
-  cmake,
-  ninja,
-  pkg-config,
-  ocamlPackages,
-
-  gmp,
   cli11,
+  cmake,
+  gmp,
   jsoncons,
+  ninja,
+  ocamlPackages,
+  pkg-config,
+  z3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,6 +27,8 @@ stdenv.mkDerivation (finalAttrs: {
     ./unvendor-deps.patch
   ];
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     z3
     cmake
@@ -36,24 +36,25 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
     ocamlPackages.sail
   ];
+
   buildInputs = [
     gmp
     # Header-only
     jsoncons
     cli11
   ];
-  strictDeps = true;
 
   cmakeFlags = [
     (lib.cmakeBool "ENABLE_LTO" true)
   ];
 
   meta = {
-    homepage = "https://github.com/riscv/sail-riscv";
     description = "Formal specification of the RISC-V architecture, written in Sail";
+    homepage = "https://github.com/riscv/sail-riscv";
+    license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       xokdvium
     ];
-    license = lib.licenses.bsd2;
   };
 })

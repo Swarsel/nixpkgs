@@ -1,22 +1,22 @@
 {
   lib,
   stdenv,
-  replaceVars,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   alsa-lib,
-  ftgl,
-  freetype,
-  libGLU,
-  rtmidi,
-  libjack2,
-  fluidsynth,
-  soundfont-fluid,
-  soundFonts ? [ soundfont-fluid ],
+  cmake,
   dejavu_fonts,
-  unzip,
+  fluidsynth,
+  freetype,
+  ftgl,
+  libGLU,
+  libjack2,
+  pkg-config,
   qt6,
+  replaceVars,
+  rtmidi,
+  soundfont-fluid,
+  unzip,
+  soundFonts ? [ soundfont-fluid ],
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -91,10 +91,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "MIDI file player that teaches you how to play the piano";
-    mainProgram = "pianobooster";
     homepage = "https://www.pianobooster.org";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ ulysseszhan ];
+    platforms = lib.platforms.unix;
+    mainProgram = "pianobooster";
   };
 })

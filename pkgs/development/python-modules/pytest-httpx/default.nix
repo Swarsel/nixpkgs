@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   httpx,
   pytest,
   pytest-asyncio,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "pytest-httpx";
   version = "0.36.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Colin-b";
@@ -28,17 +27,16 @@ buildPythonPackage rec {
   ];
 
   buildInputs = [ pytest ];
-
   propagatedBuildInputs = [ httpx ];
-
-  pythonRelaxDeps = [ "httpx" ];
 
   nativeCheckInputs = [
     pytest-asyncio
     pytestCheckHook
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pytest_httpx" ];
+  pythonRelaxDeps = [ "httpx" ];
 
   meta = {
     description = "Send responses to httpx";

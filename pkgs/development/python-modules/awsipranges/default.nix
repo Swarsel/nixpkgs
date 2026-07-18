@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pyopenssl,
   pytestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "awsipranges";
   version = "0.3.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aws-samples";
@@ -26,14 +25,15 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "awsipranges" ];
-
   disabledTestPaths = [
     # Tests require network access
     "tests/data/test_syntax_and_semantics.py"
     "tests/integration/test_package_apis.py"
     "tests/unit/test_data_loading.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "awsipranges" ];
 
   meta = {
     description = "Module to work with the AWS IP address ranges";

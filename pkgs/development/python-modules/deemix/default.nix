@@ -1,19 +1,18 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  spotipy,
   click,
-  pycryptodomex,
-  mutagen,
-  requests,
   deezer-py,
+  fetchPypi,
+  mutagen,
+  pycryptodomex,
+  requests,
+  spotipy,
 }:
 
 buildPythonPackage rec {
   pname = "deemix";
   version = "3.6.6";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -31,14 +30,14 @@ buildPythonPackage rec {
 
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "deezer" ];
 
   meta = {
     description = "Deezer downloader built from the ashes of Deezloader Remix";
-    mainProgram = "deemix";
     homepage = "https://gitlab.com/RemixDev/deemix-py";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ natto1784 ];
+    mainProgram = "deemix";
   };
 }

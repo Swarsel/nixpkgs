@@ -1,24 +1,22 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
-  intltool,
-  glib,
-  itstool,
-  gtk3,
-  wrapGAppsHook3,
-  gobject-introspection,
-  pango,
-  gdk-pixbuf,
   atk,
+  gdk-pixbuf,
+  glib,
+  gobject-introspection,
+  gtk3,
+  intltool,
+  itstool,
+  pango,
+  python3Packages,
   wafHook,
+  wrapGAppsHook3,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "hamster";
   version = "3.0.3";
-
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "projecthamster";
@@ -54,8 +52,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   env.PYTHONDIR = "${placeholder "out"}/${python3Packages.python.sitePackages}";
 
-  dontWrapGApps = true;
-
   # Arguments to be passed to `makeWrapper`, only used by buildPython*
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
@@ -65,12 +61,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
     wrapPythonProgramsIn $out/libexec "$out ''${pythonPath[*]}"
   '';
 
+  dontWrapGApps = true;
+  pyproject = false;
+
   meta = {
     description = "Time tracking application";
-    mainProgram = "hamster";
     homepage = "http://projecthamster.org/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.fabianhauser ];
+    platforms = lib.platforms.all;
+    mainProgram = "hamster";
   };
 })

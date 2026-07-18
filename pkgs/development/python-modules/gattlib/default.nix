@@ -1,23 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  bluez,
+  boost,
+  buildPythonPackage,
   fetchpatch,
-  replaceVars,
-
+  glib,
   # build
   pkg-config,
   python,
+  replaceVars,
   setuptools,
-  bluez,
-  boost,
-  glib,
 }:
 
 buildPythonPackage rec {
   pname = "gattlib";
   version = "20210616";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "oscaracena";
@@ -29,8 +27,8 @@ buildPythonPackage rec {
   patches = [
     # Fix build for Python 3.13
     (fetchpatch {
-      url = "https://github.com/oscaracena/pygattlib/commit/73a73b71cfc139e1e0a08816fb976ff330c77ea5.patch";
       hash = "sha256-/Y/CZNdN/jcxWroqRfdCH2rPUxZUbug668MIAow0scs=";
+      url = "https://github.com/oscaracena/pygattlib/commit/73a73b71cfc139e1e0a08816fb976ff330c77ea5.patch";
     })
     (replaceVars ./setup.patch {
       boost_version =
@@ -40,8 +38,6 @@ buildPythonPackage rec {
         "boost_python${pythonVersion}";
     })
   ];
-
-  build-system = [ setuptools ];
 
   nativeBuildInputs = [
     pkg-config
@@ -55,7 +51,8 @@ buildPythonPackage rec {
 
   # has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "gattlib" ];
 
   meta = {

@@ -16,17 +16,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-bwybMxIAbOzPr43QGshjbnRK5GdziGiYDsTutZdSj4s=";
   };
 
-  buildInputs = [
-    ladspa-sdk
-  ];
-
   postPatch = ''
     substituteInPlace Makefile --replace /usr/local "$out"
   '';
 
+  buildInputs = [
+    ladspa-sdk
+  ];
+
   meta = {
-    homepage = "https://tomscii.sig7.se/tap-plugins/";
     description = "Tom's Audio Processing plugins";
+
     longDescription = ''
       A number of LADSPA plugins including: TAP AutoPanner, TAP Chorus/Flanger,
       TAP DeEsser, TAP Dynamics (Mono & Stereo), TAP Equalizer and TAP
@@ -35,6 +35,8 @@ stdenv.mkDerivation (finalAttrs: {
       Limiter, TAP Sigmoid Booster, TAP Stereo Echo, TAP Tremolo, TAP
       TubeWarmth, TAP Vibrato.
     '';
+
+    homepage = "https://tomscii.sig7.se/tap-plugins/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;

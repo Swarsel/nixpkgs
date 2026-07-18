@@ -2,21 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  # tests
+  addBinToPathHook,
   buildPythonPackage,
-  pythonAtLeast,
-
-  # build-system
-  hatchling,
-
   # dependencies
   click,
   croniter,
-  redis,
-
-  # tests
-  addBinToPathHook,
+  # build-system
+  hatchling,
   psutil,
   pytestCheckHook,
+  pythonAtLeast,
+  redis,
   redisTestHook,
   versionCheckHook,
 }:
@@ -24,8 +21,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "rq";
   version = "2.10";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "rq";
@@ -34,13 +29,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-D5K9N5egGdysskfyjriANgytHWK0E+JMvyEpJt9QJyo=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [
-    click
-    croniter
-    redis
-  ];
+  # redisTestHook does not work on darwin-x86_64
+  doCheck = !(stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64);
 
   nativeCheckInputs = [
     addBinToPathHook
@@ -55,9 +45,14 @@ buildPythonPackage (finalAttrs: {
   '';
 
   __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+  build-system = [ hatchling ];
 
-  # redisTestHook does not work on darwin-x86_64
-  doCheck = !(stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64);
+  dependencies = [
+    click
+    croniter
+    redis
+  ];
 
   disabledTests =
     lib.optionals
@@ -82,6 +77,7 @@ buildPythonPackage (finalAttrs: {
       "test_reap_workers"
     ];
 
+  pyproject = true;
   pythonImportsCheck = [ "rq" ];
 
   meta = {

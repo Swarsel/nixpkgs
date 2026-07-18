@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   flac,
   lame,
   makeBinaryWrapper,
+  rustPlatform,
   sox_ng,
 }:
 let
@@ -25,21 +25,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-ifaZ+rmMmWhn8HM25sRPXJKuXvWE5VG+5hFMi9hqxA0=";
   };
 
-  cargoHash = "sha256-g8Duhl5nZ6umIrAafW7s4vtDS+f06CWnFLoLSw0wa4o=";
+  postPatch = ''
+    substituteInPlace Cargo.toml crates/*/Cargo.toml \
+      --replace-fail 'version = "0.0.0"' 'version = "${finalAttrs.version}"'
+  '';
 
   nativeBuildInputs = [
     makeBinaryWrapper
   ];
-  nativeCheckInputs = runtimeDeps;
+
+  cargoHash = "sha256-g8Duhl5nZ6umIrAafW7s4vtDS+f06CWnFLoLSw0wa4o=";
 
   env = {
     CAESURA_NIX = "1";
   };
 
-  postPatch = ''
-    substituteInPlace Cargo.toml crates/*/Cargo.toml \
-      --replace-fail 'version = "0.0.0"' 'version = "${finalAttrs.version}"'
-  '';
+  nativeCheckInputs = runtimeDeps;
 
   preCheck = ''
     cat > config.yml <<EOF

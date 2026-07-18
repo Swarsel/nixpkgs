@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  quickjs,
+  buildPythonPackage,
   llm,
-  llm-tools-quickjs,
   llm-echo,
+  llm-tools-quickjs,
   pytestCheckHook,
+  quickjs,
+  setuptools,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "llm-tools-quickjs";
   version = "0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -23,6 +22,12 @@ buildPythonPackage rec {
     hash = "sha256-Si3VcHnRUj8Q/N8pRhltPOM6K64TX9DBH/u4WQxQJjQ=";
   };
 
+  nativeCheckInputs = [
+    llm-echo
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,14 +35,8 @@ buildPythonPackage rec {
     quickjs
   ];
 
-  nativeCheckInputs = [
-    llm-echo
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "llm_tools_quickjs" ];
-
   passthru.tests = llm.mkPluginTest llm-tools-quickjs;
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "lndconnect";
@@ -23,8 +23,8 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Generate QRCode to connect apps to lnd Resources";
-    license = lib.licenses.mit;
     homepage = "https://github.com/LN-Zap/lndconnect";
+    license = lib.licenses.mit;
     platforms = lib.platforms.linux;
     mainProgram = "lndconnect";
   };

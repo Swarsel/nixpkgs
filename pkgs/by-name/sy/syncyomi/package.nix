@@ -1,27 +1,29 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  buildGoModule,
+  esbuild,
+  fetchPnpmDeps,
   iana-etc,
   libredirect,
-  buildGoModule,
-  nodejs,
-  pnpm_10,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  esbuild,
   nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_10,
+  stdenvNoCC,
 }:
 let
   lockedEsbuild = esbuild.overrideAttrs (
     finalAttrs: prevAttrs: {
       version = "0.21.5";
+
       src = fetchFromGitHub {
         owner = "evanw";
         repo = "esbuild";
         tag = "v${finalAttrs.version}";
         hash = "sha256-FpvXWIlt67G8w3pBKZo/mcp57LunxDmRUaCU/Ne89B8=";
       };
+
       vendorHash = "sha256-+BfxCyg0KkDQpHt/wycy/8CTG6YBA/VJvJFhhzUnSiQ=";
     }
   );
@@ -39,22 +41,29 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-7AySGQBQHaTp2M1uj5581ZqcpzgexI1KvanWMOc6rx0=";
 
-  web = stdenvNoCC.mkDerivation (webFinalAttrs: {
-    pname = "${finalAttrs.pname}-web";
-    inherit (finalAttrs) src version;
-    sourceRoot = "${webFinalAttrs.src.name}/web";
+  preConfigure = ''
+    cp -r $web/* web/dist
+  '';
 
-    pnpmDeps = fetchPnpmDeps {
-      inherit (webFinalAttrs)
-        pname
-        version
-        src
-        sourceRoot
-        ;
-      pnpm = pnpm_10;
-      fetcherVersion = 4;
-      hash = "sha256-i4ji/NjK6/hpqrma+DJ2x5kKq/YEN3Cy8mKQLy1M+dU=";
-    };
+  nativeCheckInputs = lib.optionals stdenvNoCC.hostPlatform.isDarwin [ libredirect.hook ];
+
+  preCheck = lib.optionalString stdenvNoCC.hostPlatform.isDarwin ''
+    export NIX_REDIRECTS=/etc/protocols=${iana-etc}/etc/protocols:/etc/services=${iana-etc}/etc/services
+  '';
+
+  postInstall = lib.optionalString (!stdenvNoCC.hostPlatform.isDarwin) ''
+    mv $out/bin/SyncYomi $out/bin/syncyomi
+  '';
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=v${finalAttrs.version}"
+  ];
+
+  web = stdenvNoCC.mkDerivation (webFinalAttrs: {
+    inherit (finalAttrs) src version;
+    pname = "${finalAttrs.pname}-web";
 
     nativeBuildInputs = [
       nodejs
@@ -75,27 +84,22 @@ buildGoModule (finalAttrs: {
       cp -r dist $out
       runHook postInstall
     '';
+
+    pnpmDeps = fetchPnpmDeps {
+      inherit (webFinalAttrs)
+        pname
+        version
+        src
+        sourceRoot
+        ;
+
+      fetcherVersion = 4;
+      hash = "sha256-i4ji/NjK6/hpqrma+DJ2x5kKq/YEN3Cy8mKQLy1M+dU=";
+      pnpm = pnpm_10;
+    };
+
+    sourceRoot = "${webFinalAttrs.src.name}/web";
   });
-
-  preConfigure = ''
-    cp -r $web/* web/dist
-  '';
-
-  nativeCheckInputs = lib.optionals stdenvNoCC.hostPlatform.isDarwin [ libredirect.hook ];
-
-  preCheck = lib.optionalString stdenvNoCC.hostPlatform.isDarwin ''
-    export NIX_REDIRECTS=/etc/protocols=${iana-etc}/etc/protocols:/etc/services=${iana-etc}/etc/services
-  '';
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=v${finalAttrs.version}"
-  ];
-
-  postInstall = lib.optionalString (!stdenvNoCC.hostPlatform.isDarwin) ''
-    mv $out/bin/SyncYomi $out/bin/syncyomi
-  '';
 
   passthru.updateScript = nix-update-script { };
 
@@ -104,11 +108,13 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/SyncYomi/SyncYomi";
     changelog = "https://github.com/SyncYomi/SyncYomi/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       eriedaberrie
       miniharinn
     ];
-    mainProgram = "syncyomi";
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "syncyomi";
   };
 })

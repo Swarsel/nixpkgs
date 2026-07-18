@@ -1,12 +1,12 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  lib,
-  qt5,
   fribidi,
   libunibreak,
+  pkg-config,
+  qt5,
   zstd,
 }:
 
@@ -37,12 +37,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
-    homepage = "https://github.com/buggins/coolreader";
     description = "Cross platform open source e-book reader";
-    mainProgram = "cr3";
+    homepage = "https://github.com/buggins/coolreader";
     license = lib.licenses.gpl2Plus; # see https://github.com/buggins/coolreader/issues/80
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "cr3";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

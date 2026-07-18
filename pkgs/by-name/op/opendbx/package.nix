@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  readline,
   libmysqlclient,
   libpq,
+  readline,
   sqlite,
 }:
 
@@ -21,11 +21,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0z29h6zx5f3gghkh1a0060w6wr572ci1rl2a3480znf728wa0ii2";
   };
 
-  preConfigure = ''
-    export CPPFLAGS="-I${getDev libmysqlclient}/include/mysql"
-    export LDFLAGS="-L${libmysqlclient}/lib/mysql"
-    configureFlagsArray=(--with-backends="mysql pgsql sqlite3")
-  '';
+  buildInputs = [
+    readline
+    libmysqlclient
+    libpq
+    sqlite
+  ];
 
   configureFlags = [
     # detection fails when cross-compiling
@@ -34,23 +35,22 @@ stdenv.mkDerivation (finalAttrs: {
     "ac_cv_func_strtod=yes"
   ];
 
-  buildInputs = [
-    readline
-    libmysqlclient
-    libpq
-    sqlite
-  ];
-
   env.NIX_CFLAGS_COMPILE = toString [
     # Needed with GCC 12
     "-std=c++14"
   ];
 
+  preConfigure = ''
+    export CPPFLAGS="-I${getDev libmysqlclient}/include/mysql"
+    export LDFLAGS="-L${libmysqlclient}/lib/mysql"
+    configureFlagsArray=(--with-backends="mysql pgsql sqlite3")
+  '';
+
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Extremely lightweight but extensible database access library written in C";
-    mainProgram = "odbx-sql";
     license = lib.licenses.lgpl21;
     platforms = lib.platforms.all;
+    mainProgram = "odbx-sql";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

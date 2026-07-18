@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   django,
-  pytestCheckHook,
+  nix-update-script,
   pytest-cov-stub,
   pytest-django,
-  nix-update-script,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "django-cache-memoize";
   version = "0-unstable-2026-03-01";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "peterbe";
@@ -23,6 +22,12 @@ buildPythonPackage rec {
     hash = "sha256-DqW9P1Su/KVrDvEicHpHg7/L6Wqg1ShEVkYSSNm9Kp0=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+    pytest-django
+  ];
+
   build-system = [
     setuptools
   ];
@@ -31,12 +36,7 @@ buildPythonPackage rec {
     django
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-    pytest-django
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "cache_memoize" ];
 
   passthru.updateScript = nix-update-script {

@@ -1,10 +1,10 @@
 {
   lib,
-  fetchurl,
   stdenv,
+  fetchurl,
   callPackages,
-  runCommand,
   cctools,
+  runCommand,
 }:
 
 let
@@ -24,9 +24,9 @@ let
   # Fetch a module from package-lock.json -> packages
   fetchModule =
     {
+      fetcherOpts,
       module,
       npmRoot ? null,
-      fetcherOpts,
     }:
     (
       if module ? "resolved" && module.resolved != null then
@@ -47,8 +47,8 @@ let
             else if (scheme == "http" || scheme == "https") then
               (fetchurl (
                 {
-                  url = module.resolved;
                   hash = module.integrity;
+                  url = module.resolved;
                 }
                 // fetcherOpts
               ))
@@ -85,21 +85,98 @@ let
 
 in
 lib.fix (self: {
-  importNpmLock =
+  inherit hooks;
+  inherit (hooks) npmConfigHook linkNodeModulesHook;
+  __functor = self: self.importNpmLock;
+
+  # Build node modules from package.json & package-lock.json
+  buildNodeModules =
     {
+      nodejs,
+      derivationArgs ? { },
       npmRoot ? null,
       package ? importJSON (npmRoot + "/package.json"),
       packageLock ? importJSON (npmRoot + "/package-lock.json"),
-      pname ? getName package,
-      version ? getVersion package,
+    }:
+    let
+      # Backwards compatibility: if derivationArgs contains passAsFile,
+      # we can't force structuredAttrs here yet.
+      __structuredAttrs = !(derivationArgs ? passAsFile);
+    in
+    stdenv.mkDerivation (
+      {
+        pname = derivationArgs.pname or "${getName package}-node-modules";
+        version = derivationArgs.version or getVersion package;
+
+        installPhase = ''
+          runHook preInstall
+          mkdir $out
+          cp package.json $out/
+          cp package-lock.json $out/
+          [[ -d node_modules ]] && mv node_modules $out/
+          runHook postInstall
+        '';
+
+        dontUnpack = true;
+
+        npmDeps = self.importNpmLock {
+          inherit npmRoot package packageLock;
+        };
+
+        package = toJSON package;
+        packageLock = toJSON packageLock;
+      }
+      // derivationArgs
+      // {
+        inherit __structuredAttrs;
+
+        postPatch =
+          (
+            if __structuredAttrs then
+              ''
+                printf "%s" "$package" > package.json
+                printf "%s" "$packageLock" > package-lock.json
+              ''
+            else
+              ''
+                cp --no-preserve=mode "$packagePath" package.json
+                cp --no-preserve=mode "$packageLockPath" package-lock.json
+              ''
+          )
+          + derivationArgs.postPatch or "";
+
+        nativeBuildInputs = [
+          nodejs
+          nodejs.passthru.python
+          hooks.npmConfigHook
+        ]
+        ++ lib.optionals stdenv.hostPlatform.isDarwin [ cctools ]
+        ++ derivationArgs.nativeBuildInputs or [ ];
+      }
+      // lib.optionalAttrs (!__structuredAttrs) {
+        passAsFile = [
+          "package"
+          "packageLock"
+        ]
+        ++ derivationArgs.passAsFile;
+      }
+    );
+
+  importNpmLock =
+    {
       # A map of additional fetcher options forwarded to the fetcher used to download the package.
       # Example: { "node_modules/axios" = { curlOptsList = [ "--verbose" ]; }; }
       # This will download the axios package with curl's verbose option.
       fetcherOpts ? { },
+      npmRoot ? null,
+      package ? importJSON (npmRoot + "/package.json"),
+      packageLock ? importJSON (npmRoot + "/package-lock.json"),
       # A map from node_module path to an alternative package to use instead of fetching the source in package-lock.json.
       # Example: { "node_modules/axios" = stdenv.mkDerivation { ... }; }
       # This is useful if you want to inject custom sources for a specific package.
       packageSourceOverrides ? { },
+      pname ? getName package,
+      version ? getVersion package,
     }:
     let
       mapLockDependencies = mapAttrs (
@@ -165,93 +242,13 @@ lib.fix (self: {
     runCommand "${pname}-${version}-sources"
       {
         inherit pname version;
-
+        __structuredAttrs = true;
         package = toJSON packageJSON';
         packageLock = toJSON packageLock';
-
-        __structuredAttrs = true;
       }
       ''
         mkdir $out
         printf "%s" "$package" > $out/package.json
         printf "%s" "$packageLock" > $out/package-lock.json
       '';
-
-  # Build node modules from package.json & package-lock.json
-  buildNodeModules =
-    {
-      npmRoot ? null,
-      package ? importJSON (npmRoot + "/package.json"),
-      packageLock ? importJSON (npmRoot + "/package-lock.json"),
-      nodejs,
-      derivationArgs ? { },
-    }:
-    let
-      # Backwards compatibility: if derivationArgs contains passAsFile,
-      # we can't force structuredAttrs here yet.
-      __structuredAttrs = !(derivationArgs ? passAsFile);
-    in
-    stdenv.mkDerivation (
-      {
-        pname = derivationArgs.pname or "${getName package}-node-modules";
-        version = derivationArgs.version or getVersion package;
-
-        dontUnpack = true;
-
-        npmDeps = self.importNpmLock {
-          inherit npmRoot package packageLock;
-        };
-
-        package = toJSON package;
-        packageLock = toJSON packageLock;
-
-        installPhase = ''
-          runHook preInstall
-          mkdir $out
-          cp package.json $out/
-          cp package-lock.json $out/
-          [[ -d node_modules ]] && mv node_modules $out/
-          runHook postInstall
-        '';
-      }
-      // derivationArgs
-      // {
-        nativeBuildInputs = [
-          nodejs
-          nodejs.passthru.python
-          hooks.npmConfigHook
-        ]
-        ++ lib.optionals stdenv.hostPlatform.isDarwin [ cctools ]
-        ++ derivationArgs.nativeBuildInputs or [ ];
-
-        postPatch =
-          (
-            if __structuredAttrs then
-              ''
-                printf "%s" "$package" > package.json
-                printf "%s" "$packageLock" > package-lock.json
-              ''
-            else
-              ''
-                cp --no-preserve=mode "$packagePath" package.json
-                cp --no-preserve=mode "$packageLockPath" package-lock.json
-              ''
-          )
-          + derivationArgs.postPatch or "";
-
-        inherit __structuredAttrs;
-      }
-      // lib.optionalAttrs (!__structuredAttrs) {
-        passAsFile = [
-          "package"
-          "packageLock"
-        ]
-        ++ derivationArgs.passAsFile;
-      }
-    );
-
-  inherit hooks;
-  inherit (hooks) npmConfigHook linkNodeModulesHook;
-
-  __functor = self: self.importNpmLock;
 })

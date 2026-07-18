@@ -1,8 +1,8 @@
 # To build this derivation, run `nix-build -A treefmt.optionsDoc`
 {
   lib,
-  treefmt,
   nixosOptionsDoc,
+  treefmt,
 }:
 
 let
@@ -20,8 +20,8 @@ let
     in
     assert lib.hasPrefix root fileStr;
     {
-      url = "https://github.com/NixOS/nixpkgs/blob/${revision}/${subpath}";
       name = subpath;
+      url = "https://github.com/NixOS/nixpkgs/blob/${revision}/${subpath}";
     };
 in
 nixosOptionsDoc {

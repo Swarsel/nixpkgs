@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  jre,
-  giflib,
-  gawk,
-  makeBinaryWrapper,
-  icoutils,
   copyDesktopItems,
+  fetchzip,
+  gawk,
+  giflib,
+  icoutils,
+  jre,
+  makeBinaryWrapper,
   makeDesktopItem,
 }:
 
@@ -24,21 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace bin/maltego \
       --replace-fail /usr/bin/awk ${lib.getExe gawk}
   '';
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "maltego";
-      desktopName = "Maltego";
-      exec = "maltego";
-      icon = "maltego";
-      comment = "An open source intelligence and forensics application";
-      categories = [
-        "Network"
-        "Security"
-      ];
-      startupNotify = false;
-    })
-  ];
 
   nativeBuildInputs = [
     icoutils
@@ -76,15 +61,33 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Network"
+        "Security"
+      ];
+
+      comment = "An open source intelligence and forensics application";
+      desktopName = "Maltego";
+      exec = "maltego";
+      icon = "maltego";
+      name = "maltego";
+      startupNotify = false;
+    })
+  ];
+
   meta = {
-    homepage = "https://www.maltego.com";
     description = "Open source intelligence and forensics application, enabling to easily gather information about DNS, domains, IP addresses, websites, persons, and so on";
-    mainProgram = "maltego";
+    homepage = "https://www.maltego.com";
+    license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       emilytrau
     ];
+
     platforms = lib.platforms.unix;
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
-    license = lib.licenses.unfree;
+    mainProgram = "maltego";
   };
 })

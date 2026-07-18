@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  gtk2,
   cairo,
   glib,
-  pkg-config,
   gnome,
+  gtk2,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     gtk2
     cairo
@@ -30,9 +31,9 @@ stdenv.mkDerivation (finalAttrs: {
   passthru = {
     updateScript = gnome.updateScript {
       attrPath = "goocanvas_${lib.versions.major finalAttrs.version}";
+      freeze = true;
       packageName = "goocanvas";
       versionPolicy = "odd-unstable";
-      freeze = true;
     };
   };
 

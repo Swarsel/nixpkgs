@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   openldap,
   pytestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "slapd";
   version = "0.1.6";
-  pyproject = true;
 
   # Pypi tarball doesn't include tests/
   src = fetchFromGitHub {
@@ -19,8 +18,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-xXIKC8xDJ3Q6yV1BL5Io0PkLqVbFRbbkB0QSXQGHMNg=";
   };
-
-  build-system = [ hatchling ];
 
   nativeCheckInputs = [ pytestCheckHook ];
 
@@ -32,6 +29,8 @@ buildPythonPackage rec {
     export SCHEMA="${openldap}/etc/schema"
   '';
 
+  build-system = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "slapd" ];
 
   meta = {

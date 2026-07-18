@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  wrapGAppsHook3,
   gtk3,
   librsvg,
   libusb1,
+  pkg-config,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation {
@@ -26,6 +26,7 @@ stdenv.mkDerivation {
     pkg-config
     wrapGAppsHook3
   ];
+
   buildInputs = [
     gtk3
     librsvg
@@ -33,8 +34,8 @@ stdenv.mkDerivation {
   ];
 
   meta = {
-    homepage = "https://github.com/roelj/inklingreader";
     description = "GNU/Linux-friendly version of the Wacom Inkling SketchManager";
+    homepage = "https://github.com/roelj/inklingreader";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ totoroot ];
     platforms = lib.platforms.linux;

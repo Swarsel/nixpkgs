@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "opentimestamps-client";
   version = "0.7.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "opentimestamps";
@@ -15,6 +14,10 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = "opentimestamps-client-v${finalAttrs.version}";
     hash = "sha256-ny2svB8WcoUky8UfeilANo1DlS+f3o9RtV4YNmUwjJk=";
   };
+
+  nativeCheckInputs = with python3.pkgs; [
+    pytestCheckHook
+  ];
 
   build-system = with python3.pkgs; [
     setuptools
@@ -27,9 +30,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pysocks
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "otsclient"
@@ -37,10 +38,10 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   meta = {
     description = "Command-line tool to create and verify OpenTimestamps proofs";
-    mainProgram = "ots";
     homepage = "https://github.com/opentimestamps/opentimestamps-client";
     changelog = "https://github.com/opentimestamps/opentimestamps-client/releases/tag/opentimestamps-client-v${finalAttrs.version}";
     license = lib.licenses.lgpl3Only;
     maintainers = with lib.maintainers; [ erikarvstedt ];
+    mainProgram = "ots";
   };
 })

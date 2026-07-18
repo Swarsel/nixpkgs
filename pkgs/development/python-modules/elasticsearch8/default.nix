@@ -14,13 +14,15 @@
 buildPythonPackage rec {
   pname = "elasticsearch8";
   version = "8.19.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-fv/pWzYCQbbVbvaCGQN6kK0PVnI2FNtUu+V9MwWEAvQ=";
   };
 
+  # Check is disabled because running them destroy the content of the local cluster!
+  # https://github.com/elasticsearch/elasticsearch-py/tree/main/test_elasticsearch
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -31,14 +33,11 @@ buildPythonPackage rec {
 
   optional-dependencies = {
     async = [ aiohttp ];
-    requests = [ requests ];
     orjson = [ orjson ];
+    requests = [ requests ];
   };
 
-  # Check is disabled because running them destroy the content of the local cluster!
-  # https://github.com/elasticsearch/elasticsearch-py/tree/main/test_elasticsearch
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "elasticsearch8" ];
 
   meta = {

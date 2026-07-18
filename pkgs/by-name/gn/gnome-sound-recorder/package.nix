@@ -1,22 +1,22 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  pkg-config,
+  desktop-file-utils,
+  gdk-pixbuf,
   gettext,
-  gobject-introspection,
-  wrapGAppsHook4,
   gjs,
   glib,
-  gtk4,
-  gdk-pixbuf,
-  gst_all_1,
   gnome,
+  gobject-introspection,
+  gst_all_1,
+  gtk4,
+  libadwaita,
   meson,
   ninja,
+  pkg-config,
   python3,
-  desktop-file-utils,
-  libadwaita,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,6 +27,13 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://gnome/sources/gnome-sound-recorder/${lib.versions.major finalAttrs.version}/gnome-sound-recorder-${finalAttrs.version}.tar.xz";
     hash = "sha256-bbbbmjsbUv0KtU+aW/Tymctx5SoTrF/fw+dOtGmFpOY=";
   };
+
+  postPatch = ''
+    chmod +x build-aux/meson_post_install.py
+    substituteInPlace build-aux/meson_post_install.py \
+      --replace-fail 'gtk-update-icon-cache' 'gtk4-update-icon-cache'
+    patchShebangs build-aux/meson_post_install.py
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -53,24 +60,17 @@ stdenv.mkDerivation (finalAttrs: {
     gst-plugins-bad # for gstreamer-player-1.0
   ]);
 
-  postPatch = ''
-    chmod +x build-aux/meson_post_install.py
-    substituteInPlace build-aux/meson_post_install.py \
-      --replace-fail 'gtk-update-icon-cache' 'gtk4-update-icon-cache'
-    patchShebangs build-aux/meson_post_install.py
-  '';
-
   passthru = {
     updateScript = gnome.updateScript { packageName = "gnome-sound-recorder"; };
   };
 
   meta = {
     description = "Simple and modern sound recorder";
-    mainProgram = "gnome-sound-recorder";
     homepage = "https://gitlab.gnome.org/World/vocalis";
     changelog = "https://gitlab.gnome.org/World/vocalis/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+    mainProgram = "gnome-sound-recorder";
+    teams = [ lib.teams.gnome ];
   };
 })

@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  nix-update-script,
-  makeWrapper,
   installShellFiles,
-  writableTmpDirAsHomeHook,
+  makeWrapper,
   ninja,
+  nix-update-script,
+  rustPlatform,
   versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,15 +22,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-6jpsrRsBqowPL0TXke5gbgl6twuQLUsQ9yMGh4bJVds=";
   };
 
-  cargoHash = "sha256-kxbMkz3vEhXXzJ8yVDPAkCrALOq9+dNw9NoknCmGPIE=";
-
-  passthru.updateScript = nix-update-script { };
-
   nativeBuildInputs = [
     makeWrapper
     installShellFiles
     writableTmpDirAsHomeHook
   ];
+
+  cargoHash = "sha256-kxbMkz3vEhXXzJ8yVDPAkCrALOq9+dNw9NoknCmGPIE=";
 
   postInstall = ''
     wrapProgram "$out/bin/laze" \
@@ -43,17 +41,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <($out/bin/laze completion --generate zsh)
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Fast, declarative meta build system for C/C++/Rust projects, based on Ninja";
-    mainProgram = "laze";
     homepage = "https://github.com/kaspar030/laze";
     changelog = "https://github.com/kaspar030/laze/blob/${finalAttrs.version}/CHANGELOG.md";
     license = with lib.licenses; [ asl20 ];
     maintainers = with lib.maintainers; [ dannixon ];
+    mainProgram = "laze";
   };
 })

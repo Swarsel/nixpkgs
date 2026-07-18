@@ -36,8 +36,8 @@ stdenv.mkDerivation {
     description = "Command line utility for inserting a dylib load command into a Mach-O binary";
     homepage = "https://github.com/tyilo/insert_dylib";
     license = lib.licenses.unfree; # no license specified
-    mainProgram = "insert_dylib";
     maintainers = with lib.maintainers; [ wegank ];
     platforms = lib.platforms.darwin;
+    mainProgram = "insert_dylib";
   };
 }

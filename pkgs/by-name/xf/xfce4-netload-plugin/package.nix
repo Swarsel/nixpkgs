@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   gettext,
-  meson,
-  ninja,
-  pkg-config,
+  gitUpdater,
   glib,
   gtk3,
   libxfce4ui,
   libxfce4util,
+  meson,
+  ninja,
+  pkg-config,
   xfce4-panel,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,11 +19,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.5.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.xfce.org";
     owner = "panel-plugins";
     repo = "xfce4-netload-plugin";
     tag = "xfce4-netload-plugin-${finalAttrs.version}";
     hash = "sha256-iZnfPCOHg0+eo8ubfIsweH2T/DSLeL2Q+giWK/Vkpko=";
+    domain = "gitlab.xfce.org";
   };
 
   strictDeps = true;
@@ -49,7 +49,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Internet load speed plugin for Xfce4 panel";
     homepage = "https://gitlab.xfce.org/panel-plugins/xfce4-netload-plugin";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.xfce ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.xfce ];
   };
 })

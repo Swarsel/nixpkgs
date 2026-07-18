@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "speedtest-go";
@@ -15,21 +15,21 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-2z241HQOckNFvQWkxfjVVmmdFW4XevQBLj8huxYAheg=";
-
-  excludedPackages = [ "example" ];
-
   # test suite requires network
   doCheck = false;
+  excludedPackages = [ "example" ];
 
   meta = {
     description = "CLI and Go API to Test Internet Speed using speedtest.net";
     homepage = "https://github.com/showwin/speedtest-go";
     changelog = "https://github.com/showwin/speedtest-go/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       aleksana
       luftmensch-luftmensch
     ];
+
     mainProgram = "speedtest-go";
   };
 })

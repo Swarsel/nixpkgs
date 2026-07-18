@@ -1,18 +1,17 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
+  dbus,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
   wayland,
   wayland-protocols,
-  dbus,
-  pkg-config,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "stasis";
   version = "1.3.0";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "saltnpepper97";
@@ -20,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-5p0r9ymR2YimorGEVFdjqYKaQTeqSY7dZleV3kghUIc=";
   };
-
-  cargoHash = "sha256-pXu9TQ3LKzjvenHzFjPEhtEj0oEl7cplGBchBRHWAAo=";
 
   nativeBuildInputs = [
     pkg-config
@@ -33,6 +30,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     dbus
   ];
 
+  cargoHash = "sha256-pXu9TQ3LKzjvenHzFjPEhtEj0oEl7cplGBchBRHWAAo=";
   #There are no tests
   doCheck = false;
 
@@ -42,11 +40,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Modern idle manager for Wayland";
+
     longDescription = ''
       Stasis is a smart idle manager for Wayland that understands context.
       It automatically prevents idle when watching videos, reading documents,
@@ -55,6 +54,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
       inhibitor protocol support, and flexible configuration using the RUNE
       configuration language.
     '';
+
     homepage = "https://github.com/saltnpepper97/stasis";
     changelog = "https://github.com/saltnpepper97/stasis/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;

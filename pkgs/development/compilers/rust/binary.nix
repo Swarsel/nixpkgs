@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  makeWrapper,
-  wrapRustc,
+  autoPatchelfHook,
   bash,
   curl,
-  zlib,
-  autoPatchelfHook,
   gcc,
-  version,
-  src,
+  makeWrapper,
   platform,
+  src,
+  version,
   versionType,
+  wrapRustc,
+  zlib,
 }:
 
 let
@@ -23,34 +23,71 @@ let
 in
 
 rec {
-  rustc-unwrapped = stdenv.mkDerivation {
-    pname = "rustc-${versionType}";
-
+  cargo = stdenv.mkDerivation {
     inherit version;
     inherit src;
+    pname = "cargo-${versionType}";
+
+    postPatch = ''
+      patchShebangs .
+    '';
+
+    nativeBuildInputs = [
+      makeWrapper
+    ]
+    ++ lib.optional (!stdenv.hostPlatform.isDarwin) autoPatchelfHook;
+
+    buildInputs = [
+      bash
+    ]
+    ++ lib.optional (!stdenv.hostPlatform.isDarwin && !stdenv.hostPlatform.isFreeBSD) gcc.cc.lib;
+
+    installPhase = ''
+      patchShebangs ./install.sh
+      ./install.sh --prefix=$out \
+        --components=cargo
+    ''
+    + lib.optionalString stdenv.hostPlatform.isDarwin ''
+      install_name_tool -change "/usr/lib/libcurl.4.dylib" \
+        "${lib.getLib curl}/lib/libcurl.4.dylib" "$out/bin/cargo"
+    ''
+    + ''
+      wrapProgram "$out/bin/cargo" \
+        --suffix PATH : "${rustc}/bin"
+    '';
 
     meta = {
-      homepage = "https://www.rust-lang.org/";
-      sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-      description = "Safe, concurrent, practical language";
-      mainProgram = "rustc";
-      maintainers = with lib.maintainers; [ qknight ];
+      description = "Rust package manager";
+      homepage = "https://doc.rust-lang.org/cargo/";
+
       license = [
         lib.licenses.mit
         lib.licenses.asl20
       ];
+
+      sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+      maintainers = with lib.maintainers; [ qknight ];
     };
+  };
+
+  rustc = wrapRustc rustc-unwrapped;
+
+  rustc-unwrapped = stdenv.mkDerivation {
+    inherit version;
+    inherit src;
+    pname = "rustc-${versionType}";
+
+    postPatch = ''
+      patchShebangs .
+    '';
 
     nativeBuildInputs = lib.optional (!stdenv.hostPlatform.isDarwin) autoPatchelfHook;
+
     buildInputs = [
       bash
     ]
     ++ lib.optional (!stdenv.hostPlatform.isDarwin && !stdenv.hostPlatform.isFreeBSD) gcc.cc.lib
     ++ lib.optional (!stdenv.hostPlatform.isDarwin) zlib;
-
-    postPatch = ''
-      patchShebangs .
-    '';
 
     installPhase = ''
       ./install.sh --prefix=$out \
@@ -72,10 +109,32 @@ rec {
     # .rmeta section, but it is removed. Luckily, this doesn't appear to be an
     # issue for Rust builds produced by Nix.
     dontStrip = true;
-
     setupHooks = ./setup-hook.sh;
 
     passthru = rec {
+      badTargetPlatforms = [
+        # Rust is currently unable to target the n32 ABI
+        lib.systems.inspect.patterns.isMips64n32
+      ];
+
+      targetPlatforms = targetPlatformsWithHostTools ++ [
+        # Platforms without host tools from
+        # https://doc.rust-lang.org/nightly/rustc/platform-support.html
+        "armv5tel-linux"
+        "armv7a-linux"
+        "m68k-linux"
+        "mips-linux"
+        "mips64-linux"
+        "mipsel-linux"
+        "mips64el-linux"
+        "riscv32-linux"
+        "armv6l-netbsd"
+        "mipsel-netbsd"
+        "riscv64-netbsd"
+        "x86_64-redox"
+        "wasm32-wasi"
+      ];
+
       targetPlatformsWithHostTools = [
         # Platforms with host tools from
         # https://doc.rust-lang.org/nightly/rustc/platform-support.html
@@ -104,74 +163,20 @@ rec {
         "i686-windows"
         "x86_64-windows"
       ];
-      targetPlatforms = targetPlatformsWithHostTools ++ [
-        # Platforms without host tools from
-        # https://doc.rust-lang.org/nightly/rustc/platform-support.html
-        "armv5tel-linux"
-        "armv7a-linux"
-        "m68k-linux"
-        "mips-linux"
-        "mips64-linux"
-        "mipsel-linux"
-        "mips64el-linux"
-        "riscv32-linux"
-        "armv6l-netbsd"
-        "mipsel-netbsd"
-        "riscv64-netbsd"
-        "x86_64-redox"
-        "wasm32-wasi"
-      ];
-      badTargetPlatforms = [
-        # Rust is currently unable to target the n32 ABI
-        lib.systems.inspect.patterns.isMips64n32
-      ];
     };
-  };
-
-  rustc = wrapRustc rustc-unwrapped;
-
-  cargo = stdenv.mkDerivation {
-    pname = "cargo-${versionType}";
-
-    inherit version;
-    inherit src;
 
     meta = {
-      homepage = "https://doc.rust-lang.org/cargo/";
-      sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-      description = "Rust package manager";
-      maintainers = with lib.maintainers; [ qknight ];
+      description = "Safe, concurrent, practical language";
+      homepage = "https://www.rust-lang.org/";
+
       license = [
         lib.licenses.mit
         lib.licenses.asl20
       ];
+
+      sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+      maintainers = with lib.maintainers; [ qknight ];
+      mainProgram = "rustc";
     };
-
-    nativeBuildInputs = [
-      makeWrapper
-    ]
-    ++ lib.optional (!stdenv.hostPlatform.isDarwin) autoPatchelfHook;
-    buildInputs = [
-      bash
-    ]
-    ++ lib.optional (!stdenv.hostPlatform.isDarwin && !stdenv.hostPlatform.isFreeBSD) gcc.cc.lib;
-
-    postPatch = ''
-      patchShebangs .
-    '';
-
-    installPhase = ''
-      patchShebangs ./install.sh
-      ./install.sh --prefix=$out \
-        --components=cargo
-    ''
-    + lib.optionalString stdenv.hostPlatform.isDarwin ''
-      install_name_tool -change "/usr/lib/libcurl.4.dylib" \
-        "${lib.getLib curl}/lib/libcurl.4.dylib" "$out/bin/cargo"
-    ''
-    + ''
-      wrapProgram "$out/bin/cargo" \
-        --suffix PATH : "${rustc}/bin"
-    '';
   };
 }

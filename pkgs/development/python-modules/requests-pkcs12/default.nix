@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pyopenssl,
   requests,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "requests-pkcs12";
   version = "1.27";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "m-click";
@@ -25,7 +24,7 @@ buildPythonPackage rec {
 
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "requests_pkcs12" ];
 
   meta = {

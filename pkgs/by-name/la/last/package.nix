@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  parallel,
+  python3,
   unzip,
   zlib,
-  python3,
-  parallel,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

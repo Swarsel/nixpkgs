@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,10 +16,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-K2Ca9s2FV+KYuJhO6BA/5gCXb7nXK68RO8+QwcKgpAM=";
-
   doCheck = false;
-
-  subPackages = [ "cmd/swagger" ];
 
   ldflags = [
     "-s"
@@ -27,6 +24,8 @@ buildGoModule (finalAttrs: {
     "-X github.com/go-swagger/go-swagger/cmd/swagger/commands.Version=${finalAttrs.version}"
     "-X github.com/go-swagger/go-swagger/cmd/swagger/commands.Commit=${finalAttrs.src.rev}"
   ];
+
+  subPackages = [ "cmd/swagger" ];
 
   meta = {
     description = "Golang implementation of Swagger 2.0, representation of your RESTful API";

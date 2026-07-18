@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   cmake,
+  docbook-xsl-nons,
   pkg-config,
   qt6,
   qt6Packages,
-  docbook-xsl-nons,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,10 +37,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Virtual MIDI Piano Keyboard";
-    mainProgram = "vmpk";
     homepage = "http://vmpk.sourceforge.net/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "vmpk";
   };
 })

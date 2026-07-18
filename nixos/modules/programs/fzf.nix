@@ -1,7 +1,7 @@
 {
-  pkgs,
   config,
   lib,
+  pkgs,
   ...
 }:
 
@@ -30,6 +30,10 @@ in
         ''
       );
 
+      fish.interactiveShellInit = lib.optionalString cfg.keybindings ''
+        source ${pkgs.fzf}/share/fzf/key-bindings.fish && fzf_key_bindings
+      '';
+
       zsh = {
         interactiveShellInit = lib.optionalString (!config.programs.zsh.ohMyZsh.enable) (
           lib.optionalString cfg.fuzzyCompletion ''
@@ -42,10 +46,6 @@ in
 
         ohMyZsh.plugins = lib.mkIf config.programs.zsh.ohMyZsh.enable [ "fzf" ];
       };
-
-      fish.interactiveShellInit = lib.optionalString cfg.keybindings ''
-        source ${pkgs.fzf}/share/fzf/key-bindings.fish && fzf_key_bindings
-      '';
     };
   };
 

@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   linux-pam,
-  testers,
+  rustPlatform,
   shpool,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -24,10 +24,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --replace-fail '/usr/bin/shpool' "$out/bin/shpool"
   '';
 
-  cargoHash = "sha256-NXV8aiFBsWND/BZO3R1S6wABCclp5B/fb/S4NVaxnCo=";
-
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ linux-pam ];
-
+  cargoHash = "sha256-NXV8aiFBsWND/BZO3R1S6wABCclp5B/fb/S4NVaxnCo=";
   # The majority of tests rely on impure environment
   # (such as systemd socket, ssh socket), and some of them
   # have race conditions. They don't print their full name,
@@ -48,8 +46,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Persistent session management like tmux, but more lightweight";
     homepage = "https://github.com/shell-pool/shpool";
     license = lib.licenses.asl20;
-    mainProgram = "shpool";
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "shpool";
   };
 })

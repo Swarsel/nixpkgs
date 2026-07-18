@@ -1,20 +1,21 @@
 {
   lib,
-  pkgs,
-  buildPythonPackage,
   fetchFromGitHub,
-  symlinkJoin,
+  buildPythonPackage,
   cmake,
   ninja,
   pathspec,
   pcre,
-  scikit-build-core,
-  pytestCheckHook,
+  pkgs,
   pytest-mock,
+  pytestCheckHook,
+  scikit-build-core,
+  symlinkJoin,
 }:
 let
   lib-deps = symlinkJoin {
     name = "hyperscan-static-deps";
+
     paths = [
       (pkgs.hyperscan.override { withStatic = true; })
       (pcre.overrideAttrs { dontDisableStatic = 0; }).out
@@ -24,7 +25,6 @@ in
 buildPythonPackage rec {
   pname = "hyperscan";
   version = "0.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "darvid";
@@ -35,7 +35,10 @@ buildPythonPackage rec {
 
   env.CMAKE_ARGS = "-DHS_SRC_ROOT=${pkgs.hyperscan.src} -DHS_BUILD_LIB_ROOT=${lib-deps}/lib";
 
-  dontUseCmakeConfigure = true;
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-mock
+  ];
 
   build-system = [
     cmake
@@ -44,23 +47,20 @@ buildPythonPackage rec {
     scikit-build-core
   ];
 
-  pythonImportsCheck = [ "hyperscan" ];
-
+  dontUseCmakeConfigure = true;
   enabledTestPaths = [ "tests" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-mock
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "hyperscan" ];
 
   meta = {
     description = "CPython extension for the Hyperscan regular expression matching library";
     homepage = "https://github.com/darvid/python-hyperscan";
     changelog = "https://github.com/darvid/python-hyperscan/blob/${src.tag}/CHANGELOG.md";
+    license = lib.licenses.mit;
+    maintainers = [ ];
+
     platforms = [
       "x86_64-linux"
     ];
-    license = lib.licenses.mit;
-    maintainers = [ ];
   };
 }

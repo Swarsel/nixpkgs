@@ -14,12 +14,11 @@
 buildPythonPackage rec {
   pname = "gradient-statsd";
   version = "1.0.1";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "gradient_statsd";
     inherit version;
     hash = "sha256-iWlNX43ZtvU73wz4+8DgDulQNOnssJGxTBkvAaLj530=";
+    pname = "gradient_statsd";
   };
 
   propagatedBuildInputs = [
@@ -32,10 +31,10 @@ buildPythonPackage rec {
     urllib3
   ];
 
-  pythonImportsCheck = [ "gradient_statsd" ];
-
   # Pypi does not contain tests
   doCheck = false;
+  format = "setuptools";
+  pythonImportsCheck = [ "gradient_statsd" ];
 
   meta = {
     description = "Wrapper around the DogStatsd client";

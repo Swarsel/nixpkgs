@@ -1,10 +1,9 @@
 {
   lib,
   stdenv,
-  callPackage,
-  makeWrapper,
   bash,
   cabextract,
+  callPackage,
   coreutils,
   curl,
   gawk,
@@ -12,20 +11,27 @@
   gnused,
   gnutar,
   gzip,
+  makeWrapper,
   p7zip,
   perl,
+  unrar-free,
   unzip,
+  versionCheckHook,
   which,
   zenity,
-  unrar-free,
-  versionCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "winetricks";
   version = finalAttrs.src.version;
-
   src = (callPackage ./sources.nix { }).winetricks;
+
+  postPatch = ''
+    patchShebangs src/winetricks
+    substituteInPlace src/winetricks \
+      --replace-fail 'command -v unrar' 'command -v unrar-free' \
+      --replace-fail 'w_try unrar' 'w_try unrar-free'
+  '';
 
   buildInputs = [
     perl
@@ -34,18 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   makeFlags = [ "PREFIX=$(out)" ];
-
   doCheck = false; # requires "bashate"
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  postPatch = ''
-    patchShebangs src/winetricks
-    substituteInPlace src/winetricks \
-      --replace-fail 'command -v unrar' 'command -v unrar-free' \
-      --replace-fail 'w_try unrar' 'w_try unrar-free'
-  '';
 
   postInstall =
     let
@@ -73,15 +68,18 @@ stdenv.mkDerivation (finalAttrs: {
         --set WINETRICKS_LATEST_VERSION_CHECK "disabled"
     '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
   passthru = {
     inherit (finalAttrs.src) updateScript;
   };
 
   meta = {
     description = "Script to install DLLs needed to work around problems in Wine";
-    mainProgram = "winetricks";
-    license = lib.licenses.lgpl21;
     homepage = "https://github.com/Winetricks/winetricks";
+    license = lib.licenses.lgpl21;
     platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "winetricks";
   };
 })

@@ -2,57 +2,32 @@
   lib,
   stdenv,
   fetchurl,
-  gettext,
   bash,
   coreutils,
+  dbus,
+  gettext,
+  libcap_ng,
+  libselinux,
+  openbox,
+  policycoreutils,
   python3,
   python3Packages,
-  libcap_ng,
-  policycoreutils,
   selinux-python,
-  dbus,
+  setools,
+  xmodmap,
   xorg-server,
   xwayland,
-  openbox,
-  xmodmap,
-  libselinux,
-  setools,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit (policycoreutils) se_url;
   pname = "selinux-sandbox";
   version = "3.11";
-  inherit (policycoreutils) se_url;
 
   src = fetchurl {
     url = "${finalAttrs.se_url}/${finalAttrs.version}/selinux-sandbox-${finalAttrs.version}.tar.gz";
     hash = "sha256-MnxiXev62tCi1Ek6PP7ZhS9GA5AhQrLLWHV1Z/LeOt8=";
   };
-
-  nativeBuildInputs = [
-    gettext
-    python3Packages.wrapPython
-  ];
-  buildInputs = [
-    bash
-    coreutils
-    libcap_ng
-    policycoreutils
-    python3
-    xorg-server
-    openbox
-    xmodmap
-    dbus
-    libselinux
-  ];
-  propagatedBuildInputs = [
-    python3Packages.pygobject3
-    selinux-python
-  ];
-  pythonPath = [
-    python3Packages.libselinux
-    setools
-  ];
 
   postPatch = ''
     # Fix setuid install
@@ -78,14 +53,33 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs --host sandboxX.sh sandbox start sandbox.init
   '';
 
+  nativeBuildInputs = [
+    gettext
+    python3Packages.wrapPython
+  ];
+
+  buildInputs = [
+    bash
+    coreutils
+    libcap_ng
+    policycoreutils
+    python3
+    xorg-server
+    openbox
+    xmodmap
+    dbus
+    libselinux
+  ];
+
+  propagatedBuildInputs = [
+    python3Packages.pygobject3
+    selinux-python
+  ];
+
   makeFlags = [
     "PREFIX=$(out)"
     "SYSCONFDIR=$(out)/etc/sysconfig"
   ];
-
-  postFixup = ''
-    wrapPythonPrograms
-  '';
 
   doInstallCheck = true;
 
@@ -96,12 +90,21 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  postFixup = ''
+    wrapPythonPrograms
+  '';
+
+  pythonPath = [
+    python3Packages.libselinux
+    setools
+  ];
+
   meta = {
-    mainProgram = "sandbox";
-    description = "SELinux sandbox utility";
-    license = lib.licenses.gpl2Only;
-    homepage = "https://selinuxproject.org";
-    platforms = lib.platforms.linux;
     inherit (selinux-python.meta) maintainers;
+    description = "SELinux sandbox utility";
+    homepage = "https://selinuxproject.org";
+    license = lib.licenses.gpl2Only;
+    platforms = lib.platforms.linux;
+    mainProgram = "sandbox";
   };
 })

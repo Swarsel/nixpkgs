@@ -7,24 +7,29 @@ let
   withEnv =
     env:
     haskellPackages.mkDerivation {
+      inherit env;
       pname = "puppy";
       version = "1.0.0";
       src = null;
       license = null;
-
-      inherit env;
     };
 
   failures = lib.runTests {
     testCanSetEnv = {
+      expected = "DOGGY";
+
       expr =
         (withEnv {
           PUPPY = "DOGGY";
         }).drvAttrs.PUPPY;
-      expected = "DOGGY";
     };
 
     testCanSetEnvMultiple = {
+      expected = {
+        PUPPY = "DOGGY";
+        SILLY = "GOOFY";
+      };
+
       expr =
         let
           env =
@@ -36,18 +41,15 @@ let
         {
           inherit (env) PUPPY SILLY;
         };
-      expected = {
-        PUPPY = "DOGGY";
-        SILLY = "GOOFY";
-      };
     };
 
     testCanSetEnvPassthru = {
+      expected = "DOGGY";
+
       expr =
         (withEnv {
           PUPPY = "DOGGY";
         }).passthru.env.PUPPY;
-      expected = "DOGGY";
     };
   };
 in

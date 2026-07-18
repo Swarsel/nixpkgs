@@ -1,14 +1,13 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cython,
-  fetchFromGitHub,
 }:
 
 buildPythonPackage rec {
   pname = "python-ctags3";
   version = "1.6.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "universal-ctags";
@@ -17,12 +16,13 @@ buildPythonPackage rec {
     hash = "sha256-x+kyCB05VtOPlenkK5vOTjxXR24d436JpGvSd07PIbA=";
   };
 
-  nativeBuildInputs = [ cython ];
-
   # Regenerating the bindings keeps later versions of Python happy
   postPatch = ''
     cython src/_readtags.pyx
   '';
+
+  nativeBuildInputs = [ cython ];
+  format = "setuptools";
 
   meta = {
     inherit (src.meta) homepage;

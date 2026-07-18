@@ -1,19 +1,16 @@
 {
   lib,
   buildDunePackage,
+  containers,
   decoders,
   msgpck,
-  containers,
   ounit2,
 }:
 
 buildDunePackage (finalAttrs: {
-  pname = "decoders-msgpck";
-
   # sub-package built separately from the same source
   inherit (decoders) src version;
-
-  minimalOCamlVersion = "4.03.0";
+  pname = "decoders-msgpck";
 
   propagatedBuildInputs = [
     decoders
@@ -21,10 +18,13 @@ buildDunePackage (finalAttrs: {
   ];
 
   doCheck = true;
+
   checkInputs = [
     containers
     ounit2
   ];
+
+  minimalOCamlVersion = "4.03.0";
 
   meta = {
     description = "Msgpck backend for decoders";

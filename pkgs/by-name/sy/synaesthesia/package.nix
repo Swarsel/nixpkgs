@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
-  fetchzip,
+  stdenv,
   SDL,
-  pkg-config,
+  fetchzip,
   libsm,
+  pkg-config,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "synaesthesia";
@@ -25,11 +25,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://logarithmic.net/pfh/synaesthesia";
     description = "Program for representing sounds visually";
+    homepage = "https://logarithmic.net/pfh/synaesthesia";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "synaesthesia";
   };
 })

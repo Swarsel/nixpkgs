@@ -10,13 +10,14 @@
 buildPythonPackage rec {
   pname = "peco";
   version = "0.1.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-xW65tEL86ecOfGIbnGiSnKtq7SmKQxW2eMTVrs/nxNc=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -24,9 +25,7 @@ buildPythonPackage rec {
     pydantic
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "peco" ];
 
   meta = {

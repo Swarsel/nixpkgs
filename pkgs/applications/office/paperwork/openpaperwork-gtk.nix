@@ -1,44 +1,26 @@
 {
-  buildPythonPackage,
   lib,
+  buildPythonPackage,
   callPackage,
-
+  distro,
   isPy3k,
   isPyPy,
-
   openpaperwork-core,
   pillow,
-  pygobject3,
-  distro,
-  setuptools-scm,
-
   pkgs,
+  pygobject3,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
-  pname = "openpaperwork-gtk";
   inherit (callPackage ./src.nix { }) version src;
-  pyproject = true;
-
-  sourceRoot = "${finalAttrs.src.name}/openpaperwork-gtk";
-
-  # Python 2.x is not supported.
-  disabled = !isPy3k && !isPyPy;
-
-  patchPhase = ''
-    chmod a+w -R ..
-    patchShebangs ../tools
-  '';
+  pname = "openpaperwork-gtk";
 
   nativeBuildInputs = [
     pkgs.gettext
     pkgs.which
     setuptools-scm
   ];
-
-  preBuild = ''
-    make l10n_compile
-  '';
 
   propagatedBuildInputs = [
     pillow
@@ -51,14 +33,31 @@ buildPythonPackage (finalAttrs: {
     openpaperwork-core
   ];
 
+  preBuild = ''
+    make l10n_compile
+  '';
+
+  # Python 2.x is not supported.
+  disabled = !isPy3k && !isPyPy;
+
+  patchPhase = ''
+    chmod a+w -R ..
+    patchShebangs ../tools
+  '';
+
+  pyproject = true;
+  sourceRoot = "${finalAttrs.src.name}/openpaperwork-gtk";
+
   meta = {
     description = "Reusable GTK components of Paperwork";
     homepage = "https://openpaper.work/";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       aszlig
       symphorien
     ];
+
     platforms = lib.platforms.linux;
   };
 })

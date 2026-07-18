@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "dockerfile-parse";
   version = "2.0.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -17,12 +16,13 @@ buildPythonPackage rec {
 
   nativeCheckInputs = [ pytestCheckHook ];
 
-  pythonImportsCheck = [ "dockerfile_parse" ];
-
   disabledTests = [
     # python-dockerfile-parse.spec is not present
     "test_all_versions_match"
   ];
+
+  format = "setuptools";
+  pythonImportsCheck = [ "dockerfile_parse" ];
 
   meta = {
     description = "Library for parsing Dockerfile files";

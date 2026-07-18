@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  pkg-config,
-  libsecret,
-  testers,
+  buildGoModule,
   docker-credential-helpers,
+  libsecret,
+  pkg-config,
+  testers,
 }:
 
 buildGoModule rec {
@@ -20,17 +20,9 @@ buildGoModule rec {
     sha256 = "sha256-xioDtn0/4CZytaUhRXb2T5DHnP/yWdXPeNTQoKf9AoA=";
   };
 
-  vendorHash = null;
-
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ pkg-config ];
-
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ libsecret ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/docker/docker-credential-helpers/credentials.Version=${version}"
-  ];
+  vendorHash = null;
 
   buildPhase =
     let
@@ -56,9 +48,15 @@ buildGoModule rec {
     install -Dm755 -t $out/bin bin/docker-credential-*
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/docker/docker-credential-helpers/credentials.Version=${version}"
+  ];
+
   passthru.tests.version = testers.testVersion {
-    package = docker-credential-helpers;
     command = "docker-credential-pass version";
+    package = docker-credential-helpers;
   };
 
   meta =

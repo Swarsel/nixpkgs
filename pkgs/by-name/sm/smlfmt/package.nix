@@ -26,7 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Custom parser/auto-formatter for Standard ML";
-    mainProgram = "smlfmt";
+
     longDescription = ''
       A custom parser and code formatter for Standard ML, with helpful error messages.
 
@@ -35,9 +35,10 @@ stdenv.mkDerivation (finalAttrs: {
       maps.
     '';
 
+    homepage = "https://github.com/shwestrick/smlfmt";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ munksgaard ];
     platforms = mlton.meta.platforms;
-    homepage = "https://github.com/shwestrick/smlfmt";
+    mainProgram = "smlfmt";
   };
 })

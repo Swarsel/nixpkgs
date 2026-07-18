@@ -1,35 +1,38 @@
 {
-  stdenv,
   lib,
-  vala,
+  stdenv,
+  fetchFromGitea,
+  glib,
+  gobject-introspection,
+  gtk3,
+  libgflow,
   meson,
   ninja,
   pkg-config,
-  fetchFromGitea,
-  gobject-introspection,
-  glib,
-  gtk3,
-  libgflow,
+  vala,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libgtkflow3";
   version = "1.0.6";
 
+  src = fetchFromGitea {
+    owner = "grindhold";
+    repo = "libgtkflow";
+    rev = "gtkflow3_${finalAttrs.version}";
+    hash = "sha256-JoVq7U5JQ3pRxptR7igWFw7lcBTsgr3aVXxayLqhyFo=";
+    domain = "notabug.org";
+  };
+
   outputs = [
     "out"
     "dev"
     "devdoc"
   ];
-  outputBin = "devdoc"; # demo app
 
-  src = fetchFromGitea {
-    domain = "notabug.org";
-    owner = "grindhold";
-    repo = "libgtkflow";
-    rev = "gtkflow3_${finalAttrs.version}";
-    hash = "sha256-JoVq7U5JQ3pRxptR7igWFw7lcBTsgr3aVXxayLqhyFo=";
-  };
+  postPatch = ''
+    rm -r libgflow
+  '';
 
   nativeBuildInputs = [
     vala
@@ -45,26 +48,24 @@ stdenv.mkDerivation (finalAttrs: {
     libgflow
   ];
 
-  postFixup = ''
-    # Cannot be in postInstall, otherwise _multioutDocs hook in preFixup will move right back.
-    moveToOutput "share/doc" "$devdoc"
-  '';
-
   mesonFlags = [
     "-Denable_valadoc=true"
     "-Denable_gtk4=false"
     "-Denable_gflow=false"
   ];
 
-  postPatch = ''
-    rm -r libgflow
+  postFixup = ''
+    # Cannot be in postInstall, otherwise _multioutDocs hook in preFixup will move right back.
+    moveToOutput "share/doc" "$devdoc"
   '';
+
+  outputBin = "devdoc"; # demo app
 
   meta = {
     description = "Flow graph widget for GTK 3";
     homepage = "https://notabug.org/grindhold/libgtkflow";
-    maintainers = with lib.maintainers; [ grindhold ];
     license = lib.licenses.lgpl3Plus;
+    maintainers = with lib.maintainers; [ grindhold ];
     platforms = lib.platforms.unix;
   };
 })

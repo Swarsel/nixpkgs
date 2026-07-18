@@ -1,38 +1,38 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   coreutils,
   db,
-  fetchurl,
+  dovecot,
+  hiredis,
+  jansson,
+  killall,
+  libmysqlclient,
+  libpq,
+  libspf2,
+  libxcrypt,
+  opendmarc,
+  openldap,
   openssl,
+  pam,
   pcre2,
   perl,
   pkg-config,
-  lib,
-  stdenv,
-  libxcrypt,
   procps,
-  killall,
-  enableLDAP ? false,
-  openldap,
-  enableMySQL ? false,
-  libmysqlclient,
-  zlib,
-  enablePgSQL ? false,
-  libpq,
-  enableSqlite ? false,
   sqlite,
+  zlib,
   enableAuthDovecot ? false,
-  dovecot,
-  enablePAM ? false,
-  pam,
-  enableSPF ? true,
-  libspf2,
   enableDMARC ? true,
-  opendmarc,
-  enableRedis ? false,
-  hiredis,
   enableJSON ? false,
-  jansson,
+  enableLDAP ? false,
+  enableMySQL ? false,
+  enablePAM ? false,
+  enablePgSQL ? false,
+  enableRedis ? false,
+  enableSPF ? true,
   enableSRS ? false,
+  enableSqlite ? false,
 }:
 let
   perl' = perl.withPackages (p: with p; [ FileFcntlLock ]);
@@ -46,9 +46,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-h/84gVcA37HuTrfo26eRbfenVZBTVNLQ+qGuF5DE/Z0=";
   };
 
-  enableParallelBuilding = true;
-
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     coreutils
     db
@@ -74,6 +73,26 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional enableDMARC opendmarc
   ++ lib.optional enableRedis hiredis
   ++ lib.optional enableJSON jansson;
+
+  installPhase = ''
+    runHook preInstall
+
+    mkdir -p $out/bin $out/share/man/man8
+    cp doc/exim.8 $out/share/man/man8
+
+    ( cd build-Linux-*
+      cp exicyclog exim_checkaccess exim_dumpdb exim_lock exim_tidydb \
+        exipick exiqsumm exigrep exim_dbmbuild exim exim_fixdb eximstats \
+        exinext exiqgrep exiwhat \
+        $out/bin )
+
+    ( cd $out/bin
+      for i in mailq newaliases rmail rsmtp runq sendmail; do
+        ln -s exim $i
+      done )
+
+    runHook postInstall
+  '';
 
   configurePhase = ''
     runHook preConfigure
@@ -171,40 +190,25 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postConfigure
   '';
 
-  installPhase = ''
-    runHook preInstall
-
-    mkdir -p $out/bin $out/share/man/man8
-    cp doc/exim.8 $out/share/man/man8
-
-    ( cd build-Linux-*
-      cp exicyclog exim_checkaccess exim_dumpdb exim_lock exim_tidydb \
-        exipick exiqsumm exigrep exim_dbmbuild exim exim_fixdb eximstats \
-        exinext exiqgrep exiwhat \
-        $out/bin )
-
-    ( cd $out/bin
-      for i in mailq newaliases rmail rsmtp runq sendmail; do
-        ln -s exim $i
-      done )
-
-    runHook postInstall
-  '';
+  enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://exim.org/";
     description = "Mail transfer agent (MTA)";
+    homepage = "https://exim.org/";
+    changelog = "https://github.com/Exim/exim/blob/exim-${finalAttrs.version}/doc/doc-txt/ChangeLog";
+
     license = with lib.licenses; [
       gpl2Plus
       bsd3
     ];
-    mainProgram = "exim";
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       das_j
       helsinki-Jo
       tv
     ];
-    changelog = "https://github.com/Exim/exim/blob/exim-${finalAttrs.version}/doc/doc-txt/ChangeLog";
+
+    platforms = lib.platforms.linux;
+    mainProgram = "exim";
   };
 })

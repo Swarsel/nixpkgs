@@ -11,33 +11,28 @@ in
 {
   options.services.bitwarden-directory-connector-cli = {
     enable = mkEnableOption "Bitwarden Directory Connector";
-
     package = mkPackageOption pkgs "bitwarden-directory-connector-cli" { };
 
     domain = mkOption {
-      type = types.str;
       description = "The domain the Bitwarden/Vaultwarden is accessible on.";
       example = "https://vaultwarden.example.com";
-    };
-
-    user = mkOption {
       type = types.str;
-      description = "User to run the program.";
-      default = "bwdc";
     };
 
     interval = mkOption {
-      type = types.str;
       default = "*:0,15,30,45";
       description = "The interval when to run the connector. This uses systemd's OnCalendar syntax.";
+      type = types.str;
     };
 
     ldap = mkOption {
+      default = { };
+
       description = ''
         Options to configure the LDAP connection.
         If you used the desktop application to test the configuration you can find the settings by searching for `ldap` in `~/.config/Bitwarden\ Directory\ Connector/data.json`.
       '';
-      default = { };
+
       type = types.submodule (
         {
           config,
@@ -45,87 +40,62 @@ in
           ...
         }:
         {
-          freeformType = types.attrsOf (pkgs.formats.json { }).type;
-
-          config.finalJSON = builtins.toJSON (
-            removeAttrs config (
-              filter (x: x == "finalJSON" || !options.${x}.isDefined or false) (attrNames options)
-            )
-          );
-
           options = {
+            ad = mkOption {
+              default = false;
+              description = "Whether the LDAP Server is an Active Directory.";
+              type = types.bool;
+            };
+
             finalJSON = mkOption {
-              type = (pkgs.formats.json { }).type;
               internal = true;
               readOnly = true;
+              type = (pkgs.formats.json { }).type;
               visible = false;
-            };
-
-            ssl = mkOption {
-              type = types.bool;
-              default = false;
-              description = "Whether to use TLS.";
-            };
-            startTls = mkOption {
-              type = types.bool;
-              default = false;
-              description = "Whether to use STARTTLS.";
             };
 
             hostname = mkOption {
-              type = types.str;
               description = "The host the LDAP is accessible on.";
               example = "ldap.example.com";
-            };
-
-            port = mkOption {
-              type = types.port;
-              default = 389;
-              description = "Port LDAP is accessible on.";
-            };
-
-            ad = mkOption {
-              type = types.bool;
-              default = false;
-              description = "Whether the LDAP Server is an Active Directory.";
+              type = types.str;
             };
 
             pagedSearch = mkOption {
-              type = types.bool;
               default = false;
               description = "Whether the LDAP server paginates search results.";
+              type = types.bool;
+            };
+
+            port = mkOption {
+              default = 389;
+              description = "Port LDAP is accessible on.";
+              type = types.port;
             };
 
             rootPath = mkOption {
-              type = types.str;
               description = "Root path for LDAP.";
               example = "dc=example,dc=com";
+              type = types.str;
+            };
+
+            ssl = mkOption {
+              default = false;
+              description = "Whether to use TLS.";
+              type = types.bool;
+            };
+
+            startTls = mkOption {
+              default = false;
+              description = "Whether to use STARTTLS.";
+              type = types.bool;
             };
 
             username = mkOption {
-              type = types.str;
               description = "The user to authenticate as.";
               example = "cn=admin,dc=example,dc=com";
+              type = types.str;
             };
           };
-        }
-      );
-    };
-
-    sync = mkOption {
-      description = ''
-        Options to configure what gets synced.
-        If you used the desktop application to test the configuration you can find the settings by searching for `sync` in `~/.config/Bitwarden\ Directory\ Connector/data.json`.
-      '';
-      default = { };
-      type = types.submodule (
-        {
-          config,
-          options,
-          ...
-        }:
-        {
-          freeformType = types.attrsOf (pkgs.formats.json { }).type;
 
           config.finalJSON = builtins.toJSON (
             removeAttrs config (
@@ -133,165 +103,193 @@ in
             )
           );
 
-          options = {
-            finalJSON = mkOption {
-              type = (pkgs.formats.json { }).type;
-              internal = true;
-              readOnly = true;
-              visible = false;
-            };
-
-            removeDisabled = mkOption {
-              type = types.bool;
-              default = true;
-              description = "Remove users from bitwarden groups if no longer in the ldap group.";
-            };
-
-            overwriteExisting = mkOption {
-              type = types.bool;
-              default = false;
-              description = "Remove and re-add users/groups, See <https://bitwarden.com/help/user-group-filters/#overwriting-syncs> for more details.";
-            };
-
-            largeImport = mkOption {
-              type = types.bool;
-              default = false;
-              description = "Enable if you are syncing more than 2000 users/groups.";
-            };
-
-            memberAttribute = mkOption {
-              type = types.str;
-              description = "Attribute that lists members in a LDAP group.";
-              example = "uniqueMember";
-            };
-
-            creationDateAttribute = mkOption {
-              type = types.str;
-              description = "Attribute that lists a user's creation date.";
-              example = "whenCreated";
-            };
-
-            useEmailPrefixSuffix = mkOption {
-              type = types.bool;
-              default = false;
-              description = "If a user has no email address, combine a username prefix with a suffix value to form an email.";
-            };
-            emailPrefixAttribute = mkOption {
-              type = types.str;
-              description = "The attribute that contains the users username.";
-              example = "accountName";
-            };
-            emailSuffix = mkOption {
-              type = types.str;
-              description = "Suffix for the email, normally @example.com.";
-              example = "@example.com";
-            };
-
-            users = mkOption {
-              type = types.bool;
-              default = false;
-              description = "Sync users.";
-            };
-            userPath = mkOption {
-              type = types.str;
-              description = "User directory, relative to root.";
-              default = "ou=users";
-            };
-            userObjectClass = mkOption {
-              type = types.str;
-              description = "Class that users must have.";
-              default = "inetOrgPerson";
-            };
-            userEmailAttribute = mkOption {
-              type = types.str;
-              description = "Attribute for a users email.";
-              default = "mail";
-            };
-            userFilter = mkOption {
-              type = types.str;
-              description = "LDAP filter for users.";
-              example = "(memberOf=cn=sales,ou=groups,dc=example,dc=com)";
-              default = "";
-            };
-
-            groups = mkOption {
-              type = types.bool;
-              default = false;
-              description = "Whether to sync ldap groups into BitWarden.";
-            };
-            groupPath = mkOption {
-              type = types.str;
-              description = "Group directory, relative to root.";
-              default = "ou=groups";
-            };
-            groupObjectClass = mkOption {
-              type = types.str;
-              description = "A class that groups will have.";
-              default = "groupOfNames";
-            };
-            groupNameAttribute = mkOption {
-              type = types.str;
-              description = "Attribute for a name of group.";
-              default = "cn";
-            };
-            groupFilter = mkOption {
-              type = types.str;
-              description = "LDAP filter for groups.";
-              example = "(cn=sales)";
-              default = "";
-            };
-          };
+          freeformType = types.attrsOf (pkgs.formats.json { }).type;
         }
       );
     };
 
     secrets = {
-      ldap = mkOption {
-        type = types.str;
-        description = "Path to file that contains LDAP password for user in {option}`ldap.username";
-      };
-
       bitwarden = {
         client_path_id = mkOption {
-          type = types.str;
           description = "Path to file that contains Client ID.";
-        };
-        client_path_secret = mkOption {
           type = types.str;
+        };
+
+        client_path_secret = mkOption {
           description = "Path to file that contains Client Secret.";
+          type = types.str;
         };
       };
+
+      ldap = mkOption {
+        description = "Path to file that contains LDAP password for user in {option}`ldap.username";
+        type = types.str;
+      };
+    };
+
+    sync = mkOption {
+      default = { };
+
+      description = ''
+        Options to configure what gets synced.
+        If you used the desktop application to test the configuration you can find the settings by searching for `sync` in `~/.config/Bitwarden\ Directory\ Connector/data.json`.
+      '';
+
+      type = types.submodule (
+        {
+          config,
+          options,
+          ...
+        }:
+        {
+          options = {
+            creationDateAttribute = mkOption {
+              description = "Attribute that lists a user's creation date.";
+              example = "whenCreated";
+              type = types.str;
+            };
+
+            emailPrefixAttribute = mkOption {
+              description = "The attribute that contains the users username.";
+              example = "accountName";
+              type = types.str;
+            };
+
+            emailSuffix = mkOption {
+              description = "Suffix for the email, normally @example.com.";
+              example = "@example.com";
+              type = types.str;
+            };
+
+            finalJSON = mkOption {
+              internal = true;
+              readOnly = true;
+              type = (pkgs.formats.json { }).type;
+              visible = false;
+            };
+
+            groupFilter = mkOption {
+              default = "";
+              description = "LDAP filter for groups.";
+              example = "(cn=sales)";
+              type = types.str;
+            };
+
+            groupNameAttribute = mkOption {
+              default = "cn";
+              description = "Attribute for a name of group.";
+              type = types.str;
+            };
+
+            groupObjectClass = mkOption {
+              default = "groupOfNames";
+              description = "A class that groups will have.";
+              type = types.str;
+            };
+
+            groupPath = mkOption {
+              default = "ou=groups";
+              description = "Group directory, relative to root.";
+              type = types.str;
+            };
+
+            groups = mkOption {
+              default = false;
+              description = "Whether to sync ldap groups into BitWarden.";
+              type = types.bool;
+            };
+
+            largeImport = mkOption {
+              default = false;
+              description = "Enable if you are syncing more than 2000 users/groups.";
+              type = types.bool;
+            };
+
+            memberAttribute = mkOption {
+              description = "Attribute that lists members in a LDAP group.";
+              example = "uniqueMember";
+              type = types.str;
+            };
+
+            overwriteExisting = mkOption {
+              default = false;
+              description = "Remove and re-add users/groups, See <https://bitwarden.com/help/user-group-filters/#overwriting-syncs> for more details.";
+              type = types.bool;
+            };
+
+            removeDisabled = mkOption {
+              default = true;
+              description = "Remove users from bitwarden groups if no longer in the ldap group.";
+              type = types.bool;
+            };
+
+            useEmailPrefixSuffix = mkOption {
+              default = false;
+              description = "If a user has no email address, combine a username prefix with a suffix value to form an email.";
+              type = types.bool;
+            };
+
+            userEmailAttribute = mkOption {
+              default = "mail";
+              description = "Attribute for a users email.";
+              type = types.str;
+            };
+
+            userFilter = mkOption {
+              default = "";
+              description = "LDAP filter for users.";
+              example = "(memberOf=cn=sales,ou=groups,dc=example,dc=com)";
+              type = types.str;
+            };
+
+            userObjectClass = mkOption {
+              default = "inetOrgPerson";
+              description = "Class that users must have.";
+              type = types.str;
+            };
+
+            userPath = mkOption {
+              default = "ou=users";
+              description = "User directory, relative to root.";
+              type = types.str;
+            };
+
+            users = mkOption {
+              default = false;
+              description = "Sync users.";
+              type = types.bool;
+            };
+          };
+
+          config.finalJSON = builtins.toJSON (
+            removeAttrs config (
+              filter (x: x == "finalJSON" || !options.${x}.isDefined or false) (attrNames options)
+            )
+          );
+
+          freeformType = types.attrsOf (pkgs.formats.json { }).type;
+        }
+      );
+    };
+
+    user = mkOption {
+      default = "bwdc";
+      description = "User to run the program.";
+      type = types.str;
     };
   };
 
   config = mkIf cfg.enable {
-    users.groups."${cfg.user}" = { };
-    users.users."${cfg.user}" = {
-      isSystemUser = true;
-      group = cfg.user;
-    };
-
     systemd = {
-      timers.bitwarden-directory-connector-cli = {
-        description = "Sync timer for Bitwarden Directory Connector";
-        wantedBy = [ "timers.target" ];
-        after = [ "network-online.target" ];
-        wants = [ "network-online.target" ];
-        timerConfig = {
-          OnCalendar = cfg.interval;
-          Unit = "bitwarden-directory-connector-cli.service";
-          Persistent = true;
-        };
-      };
-
       services.bitwarden-directory-connector-cli = {
         description = "Main process for Bitwarden Directory Connector";
-        path = [ pkgs.jq ];
 
         environment = {
           BITWARDENCLI_CONNECTOR_APPDATA_DIR = "/tmp";
           BITWARDENCLI_CONNECTOR_PLAINTEXT_SECRETS = "true";
         };
+
+        path = [ pkgs.jq ];
 
         preStart = ''
           set -eo pipefail
@@ -326,12 +324,33 @@ in
         '';
 
         serviceConfig = {
+          ExecStart = "${lib.getExe cfg.package} sync";
+          PrivateTmp = true;
           Type = "oneshot";
           User = "${cfg.user}";
-          PrivateTmp = true;
-          ExecStart = "${lib.getExe cfg.package} sync";
         };
       };
+
+      timers.bitwarden-directory-connector-cli = {
+        after = [ "network-online.target" ];
+        description = "Sync timer for Bitwarden Directory Connector";
+
+        timerConfig = {
+          OnCalendar = cfg.interval;
+          Persistent = true;
+          Unit = "bitwarden-directory-connector-cli.service";
+        };
+
+        wantedBy = [ "timers.target" ];
+        wants = [ "network-online.target" ];
+      };
+    };
+
+    users.groups."${cfg.user}" = { };
+
+    users.users."${cfg.user}" = {
+      group = cfg.user;
+      isSystemUser = true;
     };
   };
 

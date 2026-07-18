@@ -1,15 +1,14 @@
 {
   lib,
   buildPythonPackage,
-  setuptools,
-  isPy3k,
   buildbot,
+  isPy3k,
+  setuptools,
 }:
 
 buildPythonPackage {
-  pname = "buildbot_pkg";
   inherit (buildbot) src version;
-  pyproject = true;
+  pname = "buildbot_pkg";
 
   postPatch = ''
     cd pkg
@@ -18,19 +17,17 @@ buildPythonPackage {
     substituteInPlace buildbot_pkg.py --replace "os.listdir = listdir" ""
   '';
 
-  build-system = [ setuptools ];
-
   # No tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  disabled = !isPy3k;
+  pyproject = true;
   pythonImportsCheck = [ "buildbot_pkg" ];
 
-  disabled = !isPy3k;
-
   meta = {
-    homepage = "https://buildbot.net/";
     description = "Buildbot Packaging Helper";
-    teams = [ lib.teams.buildbot ];
+    homepage = "https://buildbot.net/";
     license = lib.licenses.gpl2;
+    teams = [ lib.teams.buildbot ];
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,10 +17,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-jd6nUvuWKygyKxyGCesQQj5OyYp+SD51ZDFXbyaJckc=";
 
-  subPackages = [
-    "cmd/gosec"
-  ];
-
   ldflags = [
     "-s"
     "-w"
@@ -29,14 +25,20 @@ buildGoModule (finalAttrs: {
     "-X main.BuildDate=unknown"
   ];
 
+  subPackages = [
+    "cmd/gosec"
+  ];
+
   meta = {
-    homepage = "https://github.com/securego/gosec";
     description = "Golang security checker";
-    mainProgram = "gosec";
+    homepage = "https://github.com/securego/gosec";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       kalbasit
       nilp0inter
     ];
+
+    mainProgram = "gosec";
   };
 })

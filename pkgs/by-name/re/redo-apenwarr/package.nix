@@ -1,17 +1,18 @@
 {
-  stdenv,
   lib,
-  python3,
+  stdenv,
   fetchFromGitHub,
-  which,
   coreutils,
-  perl,
-  installShellFiles,
   gnumake42,
+  installShellFiles,
+  perl,
+  python3,
+  which,
   doCheck ? true,
 }:
 stdenv.mkDerivation (finalAttrs: {
 
+  inherit doCheck;
   pname = "redo-apenwarr";
   version = "0.42d";
 
@@ -21,6 +22,11 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "${repo}-${finalAttrs.version}";
     sha256 = "/QIMXpVhVLAIJa3LiOlRKzbUztIWZygkWZUKN4Nrh+M=";
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
 
   postPatch = ''
 
@@ -55,20 +61,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "/etc/passwd" "${coreutils}/bin/pwd"
   '';
 
-  inherit doCheck;
-
-  checkTarget = "test";
-
-  outputs = [
-    "out"
-    "man"
-  ];
-
-  installFlags = [
-    "PREFIX=$(out)"
-    "DESTDIR=/"
-  ];
-
   nativeBuildInputs = [
     python3
     which
@@ -82,13 +74,22 @@ stdenv.mkDerivation (finalAttrs: {
     installShellCompletion --bash contrib/bash_completion.d/redo
   '';
 
+  checkTarget = "test";
+
+  installFlags = [
+    "PREFIX=$(out)"
+    "DESTDIR=/"
+  ];
+
   meta = {
     description = "Smaller, easier, more powerful, and more reliable than make. An implementation of djb's redo";
     homepage = "https://github.com/apenwarr/redo";
+    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       ck3d
     ];
-    license = lib.licenses.asl20;
+
     platforms = python3.meta.platforms;
   };
 })

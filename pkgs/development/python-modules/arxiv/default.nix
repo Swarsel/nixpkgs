@@ -1,24 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-  hatch-vcs,
-
+  buildPythonPackage,
   # dependencies
   feedparser,
-  requests,
-
+  hatch-vcs,
+  # build-system
+  hatchling,
   # tests
   mock,
   pytestCheckHook,
+  requests,
 }:
 buildPythonPackage rec {
   pname = "arxiv";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lukasschwab";
@@ -26,6 +22,11 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-o2Vqkr5Tlx7Iv1NEWDSU8X6hvlGUslIl4oHiRQNGdqI=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    mock
+  ];
 
   build-system = [
     hatchling
@@ -35,11 +36,6 @@ buildPythonPackage rec {
   dependencies = [
     feedparser
     requests
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    mock
   ];
 
   disabledTests = [
@@ -62,6 +58,7 @@ buildPythonPackage rec {
     "test_search_results_offset"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "arxiv" ];
 
   meta = {

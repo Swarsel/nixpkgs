@@ -1,21 +1,47 @@
 {
   lib,
-  callPackage,
   fetchFromGitLab,
+  callPackage,
   fetchpatch,
 }:
 
 let
   packages = {
+    libxml2 = callPackage ./common.nix {
+      version = "2.15.3";
+
+      src = fetchFromGitLab {
+        owner = "GNOME";
+        repo = "libxml2";
+        tag = "v${packages.libxml2.version}";
+        hash = "sha256-fDntZDyITs223by8n7ueOXiO7yyzshtANoWbY0+yeqo=";
+        domain = "gitlab.gnome.org";
+      };
+
+      extraMeta = {
+        maintainers = with lib.maintainers; [
+          jtojnar
+        ];
+      };
+    };
+
     libxml2_13 = callPackage ./common.nix {
       version = "2.13.9";
+
       src = fetchFromGitLab {
-        domain = "gitlab.gnome.org";
         owner = "GNOME";
         repo = "libxml2";
         tag = "v${packages.libxml2_13.version}";
         hash = "sha256-1qrgoMu702MglErNH9N2eCWFqxQnNHepR13m53GJb58=";
+        domain = "gitlab.gnome.org";
       };
+
+      extraMeta = {
+        maintainers = with lib.maintainers; [
+          gepbird
+        ];
+      };
+
       extraPatches = [
         # Unmerged ABI-breaking patch required to fix the following security issues:
         # - https://gitlab.gnome.org/GNOME/libxslt/-/issues/139
@@ -25,9 +51,9 @@ let
         ./xml-attr-extra.patch
 
         (fetchpatch {
+          hash = "sha256-Df2WLCTsP/ItSzgnVkNjRpLKkBP4xUOXEfCUV9o/Yks=";
           name = "CVE-2026-0990.patch";
           url = "https://gitlab.gnome.org/GNOME/libxml2/-/commit/1961208e958ca22f80a0b4e4c9d71cfa050aa982.patch";
-          hash = "sha256-Df2WLCTsP/ItSzgnVkNjRpLKkBP4xUOXEfCUV9o/Yks=";
         })
 
         # Based on https://gitlab.gnome.org/GNOME/libxml2/-/commit/f75abfcaa419a740a3191e56c60400f3ff18988d
@@ -39,33 +65,14 @@ let
         ./2.13-CVE-2026-0989.patch
 
         (fetchpatch {
+          excludes = [ "test/catalogs/test.sh" ];
+          hash = "sha256-DcPZl6rOuP6aycK+1EHUgPX4YWDAH+ctAZtOI48QO2Q=";
           name = "CVE-2026-11979.patch";
           url = "https://gitlab.gnome.org/GNOME/libxml2/-/commit/c2e233fc1b341685fc99621b2768b503f777a72e.patch";
-          hash = "sha256-DcPZl6rOuP6aycK+1EHUgPX4YWDAH+ctAZtOI48QO2Q=";
-          excludes = [ "test/catalogs/test.sh" ];
         })
       ];
+
       freezeUpdateScript = true;
-      extraMeta = {
-        maintainers = with lib.maintainers; [
-          gepbird
-        ];
-      };
-    };
-    libxml2 = callPackage ./common.nix {
-      version = "2.15.3";
-      src = fetchFromGitLab {
-        domain = "gitlab.gnome.org";
-        owner = "GNOME";
-        repo = "libxml2";
-        tag = "v${packages.libxml2.version}";
-        hash = "sha256-fDntZDyITs223by8n7ueOXiO7yyzshtANoWbY0+yeqo=";
-      };
-      extraMeta = {
-        maintainers = with lib.maintainers; [
-          jtojnar
-        ];
-      };
     };
   };
 in

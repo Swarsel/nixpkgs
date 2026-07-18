@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  qt6,
   assimp,
-  opencascade-occt,
-  ctestCheckHook,
+  cmake,
   copyDesktopItems,
+  ctestCheckHook,
   makeDesktopItem,
+  opencascade-occt,
+  qt6,
   # options
   withAssimp ? true,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.9.0";
   pname = "mayo";
+  version = "0.9.0";
 
   src = fetchFromGitHub {
     owner = "fougue";
@@ -22,6 +22,21 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-A2ODbbOyoWIhKOWGzSQS2gUF8kpWlN8hN8CdeumAUps=";
   };
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    qt6.wrapQtAppsHook
+    copyDesktopItems
+    cmake
+  ];
+
+  buildInputs = [
+    qt6.qtbase
+    qt6.qtsvg
+    opencascade-occt
+  ]
+  ++ lib.optional withAssimp assimp;
 
   cmakeFlags = [
     (lib.cmakeOptionType "string" "Mayo_VersionMajor" (lib.versions.major finalAttrs.version))
@@ -31,35 +46,8 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional withAssimp "-DMayo_BuildPluginAssimp=ON";
 
-  strictDeps = true;
-  buildInputs = [
-    qt6.qtbase
-    qt6.qtsvg
-    opencascade-occt
-  ]
-  ++ lib.optional withAssimp assimp;
-
-  nativeBuildInputs = [
-    qt6.wrapQtAppsHook
-    copyDesktopItems
-    cmake
-  ];
-  desktopItems = [
-    (makeDesktopItem {
-      name = "mayo";
-      exec = "mayo";
-      desktopName = "Mayo";
-      icon = "mayo";
-      comment = finalAttrs.meta.description;
-      categories = [
-        "Graphics"
-        "3DGraphics"
-        "Engineering"
-      ];
-    })
-  ];
-
   doCheck = true;
+
   nativeCheckInputs = [
     ctestCheckHook
   ];
@@ -83,13 +71,29 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Graphics"
+        "3DGraphics"
+        "Engineering"
+      ];
+
+      comment = finalAttrs.meta.description;
+      desktopName = "Mayo";
+      exec = "mayo";
+      icon = "mayo";
+      name = "mayo";
+    })
+  ];
+
   meta = {
     description = "3D CAD viewer and converter based on Qt + OpenCascade";
-    mainProgram = "mayo";
-    changelog = "https://github.com/fougue/mayo/releases/tag/v${finalAttrs.version}";
     homepage = "https://github.com/fougue/mayo";
+    changelog = "https://github.com/fougue/mayo/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.bsd2;
     maintainers = [ lib.maintainers.gigahawk ];
     platforms = with lib.platforms; linux ++ darwin;
-    license = lib.licenses.bsd2;
+    mainProgram = "mayo";
   };
 })

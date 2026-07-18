@@ -1,8 +1,8 @@
 {
-  cmake,
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
+  cmake,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -42,7 +42,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/Neizvestnyj/stl-to-obj";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ nim65s ];
-    mainProgram = "stl2obj";
     platforms = lib.platforms.all;
+    mainProgram = "stl2obj";
   };
 })

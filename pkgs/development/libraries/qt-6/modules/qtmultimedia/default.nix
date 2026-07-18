@@ -1,35 +1,41 @@
 {
-  qtModule,
   lib,
   stdenv,
+  alsa-lib,
+  elfutils,
+  ffmpeg,
+  gst-libav,
+  gst-plugins-bad,
+  gst-plugins-base,
+  gst-plugins-good,
+  gstreamer,
+  libpulseaudio,
+  libunwind,
+  libva,
+  libxrandr,
+  # TODO: Clean up on `staging`.
+  llvmPackages,
+  orc,
+  pipewire,
+  pkg-config,
+  pkgsBuildBuild,
+  qtModule,
   qtbase,
   qtdeclarative,
   qtquick3d,
   qtshadertools,
   qtsvg,
-  pkg-config,
-  alsa-lib,
-  gstreamer,
-  gst-plugins-bad,
-  gst-plugins-base,
-  gst-plugins-good,
-  gst-libav,
-  ffmpeg,
-  libva,
-  libpulseaudio,
-  pipewire,
   wayland,
-  libxrandr,
-  elfutils,
-  libunwind,
-  orc,
-  pkgsBuildBuild,
-  # TODO: Clean up on `staging`.
-  llvmPackages,
 }:
 
 qtModule {
   pname = "qtmultimedia";
+
+  patches = lib.optionals stdenv.hostPlatform.isMinGW [
+    ./windows-no-uppercase-libs.patch
+    ./windows-resolve-function-name.patch
+  ];
+
   nativeBuildInputs = [
     pkg-config
   ]
@@ -37,6 +43,7 @@ qtModule {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     llvmPackages.lld
   ];
+
   buildInputs = [
     ffmpeg
   ]
@@ -53,6 +60,7 @@ qtModule {
     libva
   ]
   ++ lib.optionals (lib.meta.availableOn stdenv.hostPlatform elfutils) [ elfutils ];
+
   propagatedBuildInputs = [
     qtbase
     qtdeclarative
@@ -66,11 +74,6 @@ qtModule {
     gst-plugins-base
     gst-plugins-good
     gst-libav
-  ];
-
-  patches = lib.optionals stdenv.hostPlatform.isMinGW [
-    ./windows-no-uppercase-libs.patch
-    ./windows-resolve-function-name.patch
   ];
 
   cmakeFlags = [

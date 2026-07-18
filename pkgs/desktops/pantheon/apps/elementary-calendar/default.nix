@@ -2,12 +2,6 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
-  wrapGAppsHook3,
   clutter,
   evolution-data-server,
   folks,
@@ -20,6 +14,12 @@
   libhandy,
   libical,
   libportal-gtk3,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
+  vala,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation rec {
@@ -65,7 +65,7 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/elementary/calendar";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
-    teams = [ lib.teams.pantheon ];
     mainProgram = "io.elementary.calendar";
+    teams = [ lib.teams.pantheon ];
   };
 }

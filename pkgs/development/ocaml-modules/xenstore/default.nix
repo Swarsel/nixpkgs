@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   lwt,
   ounit2,
 }:
@@ -18,15 +18,14 @@ buildDunePackage rec {
   };
 
   propagatedBuildInputs = [ lwt ];
-
   doCheck = true;
   checkInputs = [ ounit2 ];
 
   meta = {
     description = "Xenstore protocol in pure OCaml";
+    homepage = "https://github.com/mirage/ocaml-xenstore";
     license = lib.licenses.lgpl21Only;
     maintainers = [ lib.maintainers.sternenseemann ];
     teams = [ lib.teams.xen ];
-    homepage = "https://github.com/mirage/ocaml-xenstore";
   };
 }

@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "usb-devices";
   version = "0.4.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Bluetooth-Devices";
@@ -26,6 +25,7 @@ buildPythonPackage rec {
     pytest-cov-stub
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "usb_devices" ];
 
   meta = {

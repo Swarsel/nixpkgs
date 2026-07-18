@@ -1,8 +1,8 @@
 {
-  testers,
-  pana,
   git,
   jq,
+  pana,
+  testers,
 }:
 let
   testPkgName = "dummy_pkg";
@@ -32,29 +32,15 @@ let
   '';
 in
 {
-  usage = testers.runCommand {
-    name = "pana-usage-test";
-    buildInputs = [ pana ];
-    script = ''
-      export HOME=$TMPDIR
-      pana > output.txt 2>&1 || true
-      if grep -q "Usage: pana" output.txt; then
-        touch $out
-      else
-        echo "Usage string not found in output."
-        exit 1
-      fi
-    '';
-  };
-
   # Comprehensive behavioral test
   json-output = testers.runCommand {
-    name = "pana-json-test";
     buildInputs = [
       pana
       git
       jq
     ];
+
+    name = "pana-json-test";
 
     script = ''
             # Nix sandbox environment setup
@@ -143,6 +129,22 @@ in
             }
 
             main
+    '';
+  };
+
+  usage = testers.runCommand {
+    buildInputs = [ pana ];
+    name = "pana-usage-test";
+
+    script = ''
+      export HOME=$TMPDIR
+      pana > output.txt 2>&1 || true
+      if grep -q "Usage: pana" output.txt; then
+        touch $out
+      else
+        echo "Usage string not found in output."
+        exit 1
+      fi
     '';
   };
 }

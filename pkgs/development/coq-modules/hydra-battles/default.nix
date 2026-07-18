@@ -1,23 +1,16 @@
 {
   lib,
-  mkCoqDerivation,
+  LibHyps,
   coq,
   equations,
-  LibHyps,
+  mkCoqDerivation,
   version ? null,
 }:
 
 (mkCoqDerivation {
-  pname = "hydra-battles";
-  owner = "coq-community";
-
-  release."0.4".hash = "sha256:1f7pc4w3kir4c9p0fjx5l77401bx12y72nmqxrqs3qqd3iynvqlp";
-  release."0.5".hash = "sha256:121pcbn6v59l0c165ha9n00whbddpy11npx2y9cn7g879sfk2nqk";
-  release."0.6".hash = "sha256:1dri4sisa7mhclf8w4kw7ixs5zxm8xyjr034r1377p96rdk3jj0j";
-  release."0.9".hash = "sha256-wlK+154owQD/03FB669KCjyQlL2YOXLCi0KLSo0DOwc=";
-  releaseRev = (v: "v${v}");
-
   inherit version;
+  pname = "hydra-battles";
+
   defaultVersion =
     let
       case = case: out: { inherit case out; };
@@ -28,10 +21,17 @@
       (case (range "8.11" "8.12") "0.4")
     ] null;
 
+  owner = "coq-community";
+  release."0.4".hash = "sha256:1f7pc4w3kir4c9p0fjx5l77401bx12y72nmqxrqs3qqd3iynvqlp";
+  release."0.5".hash = "sha256:121pcbn6v59l0c165ha9n00whbddpy11npx2y9cn7g879sfk2nqk";
+  release."0.6".hash = "sha256:1dri4sisa7mhclf8w4kw7ixs5zxm8xyjr034r1377p96rdk3jj0j";
+  release."0.9".hash = "sha256-wlK+154owQD/03FB669KCjyQlL2YOXLCi0KLSo0DOwc=";
+  releaseRev = (v: "v${v}");
   useDune = true;
 
   meta = {
     description = "Exploration of some properties of Kirby and Paris' hydra battles, with the help of Coq";
+
     longDescription = ''
       An exploration of some properties of Kirby and Paris' hydra
       battles, with the help of the Coq Proof assistant. This
@@ -39,11 +39,14 @@
       ordinal numbers, and a part of the so-called Ketonen and Solovay
       machinery (combinatorial properties of epsilon0).
     '';
+
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       siraben
       Zimmi48
     ];
-    license = lib.licenses.mit;
+
     platforms = lib.platforms.unix;
   };
 }).overrideAttrs

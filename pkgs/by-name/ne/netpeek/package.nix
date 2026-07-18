@@ -1,23 +1,20 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  meson,
-  ninja,
   appstream,
   desktop-file-utils,
   gobject-introspection,
-  wrapGAppsHook4,
   libadwaita,
   libportal-gtk4,
+  meson,
+  ninja,
   nix-update-script,
+  python3Packages,
+  wrapGAppsHook4,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "netpeek";
   version = "0.2.7";
-  pyproject = false;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "ZingyTomato";
@@ -40,6 +37,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     libportal-gtk4
   ];
 
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
+  __structuredAttrs = true;
+
   dependencies = with python3Packages; [
     pygobject3
     ping3
@@ -47,11 +50,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
   ];
 
   dontWrapGApps = true;
-
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
-
+  pyproject = false;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -60,7 +59,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     changelog = "https://github.com/ZingyTomato/NetPeek/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ Cameo007 ];
-    mainProgram = "netpeek";
     platforms = lib.platforms.linux;
+    mainProgram = "netpeek";
   };
 })

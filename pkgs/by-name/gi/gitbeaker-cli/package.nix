@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nodejs,
   gnutar,
   makeBinaryWrapper,
+  nodejs,
   yarn-berry_4,
 }:
 
@@ -32,13 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
     makeBinaryWrapper
     gnutar
   ];
-
-  missingHashes = ./missing-hashes.json;
-
-  offlineCache = yarn-berry_4.fetchYarnBerryDeps {
-    inherit (finalAttrs) src missingHashes patches;
-    hash = "sha256-RTgdHicbfbJbToif51TchLCfdIPZynvT0n/KwrydLYU=";
-  };
 
   buildPhase = ''
     runHook preBuild
@@ -71,12 +64,19 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/bin/gb $out/bin/gitbeaker
   '';
 
+  missingHashes = ./missing-hashes.json;
+
+  offlineCache = yarn-berry_4.fetchYarnBerryDeps {
+    inherit (finalAttrs) src missingHashes patches;
+    hash = "sha256-RTgdHicbfbJbToif51TchLCfdIPZynvT0n/KwrydLYU=";
+  };
+
   passthru.updateScript = ./update.sh;
 
   meta = {
-    changelog = "https://github.com/jdalrymple/gitbeaker/releases/tag/${finalAttrs.version}";
     description = "CLI Wrapper for the @gitbeaker/rest SDK";
     homepage = "https://github.com/jdalrymple/gitbeaker";
+    changelog = "https://github.com/jdalrymple/gitbeaker/releases/tag/${finalAttrs.version}";
     maintainers = [ ];
     mainProgram = "gitbeaker";
   };

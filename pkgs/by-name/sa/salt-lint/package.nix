@@ -8,7 +8,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "salt-lint";
   version = "0.9.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "warpnet";
@@ -31,11 +30,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     versionCheckHook
   ];
 
+  pyproject = true;
+
   meta = {
     description = "Command-line utility that checks for best practices in SaltStack";
     homepage = "https://salt-lint.readthedocs.io/en/latest/";
     license = lib.licenses.mit;
-    mainProgram = "salt-lint";
     maintainers = with lib.maintainers; [ genga898 ];
+    mainProgram = "salt-lint";
   };
 })

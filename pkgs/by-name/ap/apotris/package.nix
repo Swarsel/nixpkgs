@@ -1,27 +1,27 @@
 {
   lib,
   stdenv,
-  fetchFromGitea,
-  meson,
-  libGLU,
-  ninja,
-  python3,
-  cmake,
-  pkg-config,
-  xxd,
-  libopus,
-  libogg,
-  zlib,
   SDL2,
   SDL2_mixer,
+  cmake,
+  fetchFromGitea,
+  libGLU,
+  libogg,
   libopenmpt,
-  libxrandr,
+  libopus,
+  libxcursor,
   libxext,
   libxfixes,
-  libxcursor,
   libxi,
+  libxrandr,
   libxscrnsaver,
   makeDesktopItem,
+  meson,
+  ninja,
+  pkg-config,
+  python3,
+  xxd,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,17 +29,19 @@ stdenv.mkDerivation (finalAttrs: {
   version = "4.1.0";
 
   src = fetchFromGitea {
-    domain = "gitea.com";
     owner = "akouzoukos";
     repo = "apotris";
     rev = "v${finalAttrs.version}";
     hash = "sha256-jP0fmfAAjWkgI5I3OTLS5+7+xLvcGhV8yP80qDWDjC8=";
     fetchSubmodules = true;
+    domain = "gitea.com";
   };
 
   postPatch = ''
     patchShebangs tools/bin2s.py
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -66,22 +68,23 @@ stdenv.mkDerivation (finalAttrs: {
     libxscrnsaver
   ];
 
-  strictDeps = true;
-
-  dontUseCmakeConfigure = true;
-
   desktopItem = makeDesktopItem {
-    name = "Apotris";
-    exec = "Apotris";
-    comment = "A block stacking game";
-    desktopName = "Apotris";
     categories = [
       "Game"
     ];
+
+    comment = "A block stacking game";
+    desktopName = "Apotris";
+    exec = "Apotris";
+    name = "Apotris";
   };
 
+  dontUseCmakeConfigure = true;
+
   meta = {
+    inherit (SDL2.meta) platforms;
     description = "Block stacking game";
+
     longDescription = ''
       Apotris is a multiplatform open-source block stacking game! What sets
       Apotris apart from other block stacking games is its extensive
@@ -96,14 +99,16 @@ stdenv.mkDerivation (finalAttrs: {
       platforms, so between the ports and emulation you can play Apotris on
       almost anything.
     '';
+
     homepage = "https://akouzoukos.com/apotris/";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       oluceps
       bizmyth
     ];
+
     mainProgram = "Apotris";
-    inherit (SDL2.meta) platforms;
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

@@ -1,21 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
-  pkg-config,
-  qttools,
-  libxcb,
+  docutils,
+  fetchpatch,
   libxau,
+  libxcb,
+  nixosTests,
   pam,
+  pkg-config,
   qtbase,
   qtdeclarative,
-  qtquickcontrols2 ? null,
+  qttools,
   systemd,
   xkeyboard-config,
-  nixosTests,
-  docutils,
+  qtquickcontrols2 ? null,
 }:
 let
   isQt6 = lib.versions.major qtbase.version == "6";
@@ -42,9 +42,9 @@ stdenv.mkDerivation (finalAttrs: {
     ./sddm-default-session.patch
 
     (fetchpatch {
+      hash = "sha256-Okt9LeZBhTDhP7NKBexWAZhkK6N6j9dFkAEgpidSnzE=";
       name = "sddm-fix-cmake-4.patch";
       url = "https://github.com/sddm/sddm/commit/228778c2b4b7e26db1e1d69fe484ed75c5791c3a.patch";
-      hash = "sha256-Okt9LeZBhTDhP7NKBexWAZhkK6N6j9dFkAEgpidSnzE=";
     })
   ];
 
@@ -69,9 +69,6 @@ stdenv.mkDerivation (finalAttrs: {
     qtquickcontrols2
     systemd
   ];
-
-  # We will wrap manually later
-  dontWrapQtApps = true;
 
   cmakeFlags = [
     (lib.cmakeBool "BUILD_WITH_QT6" isQt6)
@@ -106,15 +103,19 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  # We will wrap manually later
+  dontWrapQtApps = true;
   passthru.tests = { inherit (nixosTests) sddm; };
 
   meta = {
     description = "QML based X11 display manager";
     homepage = "https://github.com/sddm/sddm";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       k900
     ];
+
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl2Plus;
   };
 })

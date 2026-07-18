@@ -1,27 +1,27 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  setuptools,
-  msrestazure,
   azure-common,
   azure-mgmt-core,
   azure-mgmt-nspkg,
+  buildPythonPackage,
+  fetchPypi,
+  msrestazure,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "azure-mgmt-managementpartner";
   version = "1.0.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
-    extension = "zip";
     hash = "sha256-HNWRhIRUoRXCFtIWo/t4AsG13gSxBeJpbkI3sPh2jy8=";
+    extension = "zip";
   };
 
+  # has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,9 +31,7 @@ buildPythonPackage (finalAttrs: {
     azure-mgmt-nspkg
   ];
 
-  # has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.mgmt.managementpartner" ];
 
   meta = {

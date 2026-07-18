@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  setuptools,
-  wheel,
   aiohttp,
   attrs,
+  buildPythonPackage,
+  fetchPypi,
   multidict,
+  setuptools,
+  wheel,
   yarl,
 }:
 
 buildPythonPackage rec {
   pname = "aiohttp-sse-client";
   version = "0.2.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -36,6 +35,8 @@ buildPythonPackage rec {
     multidict
     yarl
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "aiohttp_sse_client"

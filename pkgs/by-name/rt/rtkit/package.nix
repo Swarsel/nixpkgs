@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  dbus,
+  fetchpatch,
+  libcap,
   meson,
   ninja,
+  nix-update-script,
   pkg-config,
-  unixtools,
-  dbus,
-  libcap,
   polkit,
   systemdLibs,
-  fetchpatch,
-  nix-update-script,
+  unixtools,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,18 +19,18 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.14";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "pipewire";
     repo = "rtkit";
     tag = "v${finalAttrs.version}";
     hash = "sha256-y952SHbUWIjg1BKqenHABVWm0S5d/sBac1zRp9BpXB8=";
+    domain = "gitlab.freedesktop.org";
   };
 
   patches = [
     # Let us override the `sysusersdir` path
     (fetchpatch {
-      url = "https://gitlab.freedesktop.org/pipewire/rtkit/-/commit/621fdc3f2c037781dc279760cfbff64974fdbe77.patch";
       hash = "sha256-Ffdi6dfZmdBpClpJkPNISmEoeUkIufrObz5g7RSPqLw=";
+      url = "https://gitlab.freedesktop.org/pipewire/rtkit/-/commit/621fdc3f2c037781dc279760cfbff64974fdbe77.patch";
     })
   ];
 
@@ -61,14 +61,16 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://gitlab.freedesktop.org/pipewire/rtkit";
     description = "Daemon that hands out real-time priority to processes";
-    mainProgram = "rtkitctl";
+    homepage = "https://gitlab.freedesktop.org/pipewire/rtkit";
+
     license = with lib.licenses; [
       gpl3Plus
       mit
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = [ lib.maintainers.Gliczy ];
+    platforms = lib.platforms.linux;
+    mainProgram = "rtkitctl";
   };
 })

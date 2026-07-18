@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  cairomm,
+  glibmm,
+  gnome,
   meson,
   ninja,
-  python3,
   pango,
-  glibmm,
-  cairomm,
-  gnome,
+  pkg-config,
+  python3,
 }:
 
 stdenv.mkDerivation rec {
@@ -21,6 +21,11 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-GyTJJiSuEnXMtXdYF10198Oa0zQtjAtLpg8NmEnS0Io=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     # Fixes a missing include leading to build failures while compiling `attrlist.cc` (as outlined by @dslm4515 [1])
     # Note that the files in that directory are generated and not tracked in Git [2], which is why we can't simply
@@ -30,17 +35,13 @@ stdenv.mkDerivation rec {
     ./2.42.2-add-missing-include-attrlist.cc.patch
   ];
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   nativeBuildInputs = [
     pkg-config
     meson
     ninja
     python3
   ];
+
   propagatedBuildInputs = [
     pango
     glibmm
@@ -51,25 +52,14 @@ stdenv.mkDerivation rec {
 
   passthru = {
     updateScript = gnome.updateScript {
+      freeze = true;
       packageName = "pangomm";
       versionPolicy = "odd-unstable";
-      freeze = true;
     };
   };
 
   meta = {
-    broken =
-      (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64) || stdenv.hostPlatform.isDarwin;
     description = "C++ interface to the Pango text rendering library";
-    homepage = "https://www.pango.org/";
-    license = with lib.licenses; [
-      lgpl2
-      lgpl21
-    ];
-    maintainers = with lib.maintainers; [
-      raskin
-    ];
-    platforms = lib.platforms.unix;
 
     longDescription = ''
       Pango is a library for laying out and rendering of text, with an
@@ -78,5 +68,21 @@ stdenv.mkDerivation rec {
       far has been done in the context of the GTK widget toolkit.
       Pango forms the core of text and font handling for GTK.
     '';
+
+    homepage = "https://www.pango.org/";
+
+    license = with lib.licenses; [
+      lgpl2
+      lgpl21
+    ];
+
+    maintainers = with lib.maintainers; [
+      raskin
+    ];
+
+    platforms = lib.platforms.unix;
+
+    broken =
+      (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64) || stdenv.hostPlatform.isDarwin;
   };
 }

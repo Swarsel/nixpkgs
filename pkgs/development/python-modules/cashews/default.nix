@@ -1,12 +1,12 @@
 {
+  lib,
+  fetchFromGitHub,
   bitarray,
   buildPythonPackage,
   dill,
   diskcache,
-  fetchFromGitHub,
   hiredis,
   hypothesis,
-  lib,
   pytest,
   pytest-asyncio,
   pytest-cov-stub,
@@ -20,26 +20,12 @@
 buildPythonPackage rec {
   pname = "cashews";
   version = "7.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Krukov";
     repo = "cashews";
     tag = version;
     hash = "sha256-GQObsWTCAKuYCyHZVd1wDzhvyYK5Xw1z1QazLuAP3Jg=";
-  };
-
-  build-system = [ setuptools ];
-
-  optional-dependencies = {
-    dill = [ dill ];
-    diskcache = [ diskcache ];
-    redis = [ redis ];
-    speedup = [
-      bitarray
-      hiredis
-      xxhash
-    ];
   };
 
   nativeCheckInputs = [
@@ -51,6 +37,8 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+
   disabledTests = [
     # these tests require too many dependencies
     "redis"
@@ -58,6 +46,19 @@ buildPythonPackage rec {
     "integration"
   ];
 
+  optional-dependencies = {
+    dill = [ dill ];
+    diskcache = [ diskcache ];
+    redis = [ redis ];
+
+    speedup = [
+      bitarray
+      hiredis
+      xxhash
+    ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "cashews" ];
 
   meta = {

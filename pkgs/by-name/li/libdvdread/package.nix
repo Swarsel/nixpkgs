@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
+  libdvdcss,
   meson,
   ninja,
   pkg-config,
-  libdvdcss,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,8 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://dvdnav.mplayerhq.hu/";
     description = "Library for reading DVDs";
+    homepage = "http://dvdnav.mplayerhq.hu/";
     license = lib.licenses.gpl2;
     maintainers = [ lib.maintainers.wmertens ];
     platforms = lib.platforms.unix;

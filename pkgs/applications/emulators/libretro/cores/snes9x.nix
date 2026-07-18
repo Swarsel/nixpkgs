@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "snes9x";
   version = "0-unstable-2026-07-05";
 
   src = fetchFromGitHub {
@@ -14,8 +13,9 @@ mkLibretroCore {
     hash = "sha256-+f6u8VUHNLI9pb2AFLyEoGQtGzNIkeWS2wvF9PYDIm8=";
   };
 
-  makefile = "Makefile";
   preBuild = "cd libretro";
+  core = "snes9x";
+  makefile = "Makefile";
 
   meta = {
     description = "Port of SNES9x git to libretro";

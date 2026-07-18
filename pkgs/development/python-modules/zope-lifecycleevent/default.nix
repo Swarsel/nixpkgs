@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
-  zope-event,
-  zope-interface,
   unittestCheckHook,
   zope-component,
+  zope-event,
+  zope-interface,
   zope-testing,
 }:
 
 buildPythonPackage rec {
   pname = "zope-lifecycleevent";
   version = "6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zopefoundation";
@@ -27,6 +26,12 @@ buildPythonPackage rec {
       --replace-fail "setuptools ==" "setuptools >="
   '';
 
+  nativeCheckInputs = [
+    unittestCheckHook
+    zope-component
+    zope-testing
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,24 +39,19 @@ buildPythonPackage rec {
     zope-interface
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "zope.lifecycleevent"
     "zope.interface"
   ];
 
-  nativeCheckInputs = [
-    unittestCheckHook
-    zope-component
-    zope-testing
-  ];
-
+  pythonNamespaces = [ "zope" ];
   unittestFlagsArray = [ "src/zope/lifecycleevent" ];
 
-  pythonNamespaces = [ "zope" ];
-
   meta = {
-    homepage = "https://github.com/zopefoundation/zope.lifecycleevent";
     description = "Object life-cycle events";
+    homepage = "https://github.com/zopefoundation/zope.lifecycleevent";
     changelog = "https://github.com/zopefoundation/zope.lifecycleevent/blob/${src.tag}/CHANGES.rst";
     license = lib.licenses.zpl21;
     maintainers = [ ];

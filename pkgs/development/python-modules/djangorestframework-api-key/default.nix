@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   dj-database-url,
   django,
   django-test-migrations,
@@ -18,7 +18,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "djangorestframework-api-key";
   version = "3.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "florimondmanca";
@@ -26,6 +25,26 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-TyYSO3OQslipl2T5BtsTABaTJD4HMCX61TOZXNR+lXE=";
   };
+
+  nativeCheckInputs = [
+    dj-database-url
+    django-test-migrations
+    pytest-cov-stub
+    pytest-django
+    pytest-dotenv
+    pytestCheckHook
+  ];
+
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [
+    django
+    djangorestframework
+    packaging
+  ];
 
   # Use python-dotenv instead of django-dotenv
   # as django-dotenv has not been maintained for
@@ -39,25 +58,7 @@ buildPythonPackage (finalAttrs: {
     runHook postPatch
   '';
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  dependencies = [
-    django
-    djangorestframework
-    packaging
-  ];
-
-  nativeCheckInputs = [
-    dj-database-url
-    django-test-migrations
-    pytest-cov-stub
-    pytest-django
-    pytest-dotenv
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "rest_framework_api_key"

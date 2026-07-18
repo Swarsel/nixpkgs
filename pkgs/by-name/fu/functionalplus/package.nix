@@ -22,7 +22,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Functional Programming Library for C++";
     homepage = "https://github.com/Dobiasd/FunctionalPlus";
     license = lib.licenses.boost;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   graphviz,
   ipywidgets,
   matplotlib,
@@ -24,7 +24,6 @@
 buildPythonPackage rec {
   pname = "pyro-ppl";
   version = "1.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyro-ppl";
@@ -33,6 +32,8 @@ buildPythonPackage rec {
     hash = "sha256-Dvbl/80EGoGWGhWYVIf/xjovUJG1+3WtpMH+lx1oB2E=";
   };
 
+  # pyro not shipping tests do simple smoke test instead
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -60,8 +61,7 @@ buildPythonPackage rec {
     ];
   };
 
-  # pyro not shipping tests do simple smoke test instead
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "pyro"
@@ -75,6 +75,7 @@ buildPythonPackage rec {
     homepage = "http://pyro.ai";
     changelog = "https://github.com/pyro-ppl/pyro/releases/tag/${version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       teh
       georgewhewell

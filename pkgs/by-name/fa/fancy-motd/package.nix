@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   bc,
   curl,
@@ -22,15 +22,6 @@ stdenv.mkDerivation {
     sha256 = "sha256-O/euB63Dyj+NyfZK42egSEYwZhL8B0jCxSSDYoT4cpo=";
   };
 
-  buildInputs = [
-    bc
-    curl
-    figlet
-    fortune
-    gawk
-    iproute2
-  ];
-
   postPatch = ''
     substituteInPlace motd.sh \
       --replace 'BASE_DIR="$(dirname "$(readlink -f "$0")")"' "BASE_DIR=\"$out/lib\""
@@ -41,6 +32,15 @@ stdenv.mkDerivation {
     # does not work on nixos
     rm modules/41-updates
   '';
+
+  buildInputs = [
+    bc
+    curl
+    figlet
+    fortune
+    gawk
+    iproute2
+  ];
 
   installPhase = ''
     runHook preInstall

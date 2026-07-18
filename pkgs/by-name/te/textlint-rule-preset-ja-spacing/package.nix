@@ -4,10 +4,10 @@
   fetchFromGitHub,
   fetchYarnDeps,
   nodejs,
-  yarnBuildHook,
-  yarnConfigHook,
   textlint,
   textlint-rule-preset-ja-spacing,
+  yarnBuildHook,
+  yarnConfigHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,11 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "textlint-rule-preset-ja-spacing";
     tag = "v${finalAttrs.version}";
     hash = "sha256-M27qhjIHMcKbuPAh523Pi5IB5BD0VWawh84kUyLcKvg=";
-  };
-
-  offlineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-AfbYACqYBvfsKzhryQabXQQmera19N/UH67sR5kbihM=";
   };
 
   nativeBuildInputs = [
@@ -51,6 +46,11 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-AfbYACqYBvfsKzhryQabXQQmera19N/UH67sR5kbihM=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
 
   passthru.tests = textlint.testPackages {
     rule = textlint-rule-preset-ja-spacing;

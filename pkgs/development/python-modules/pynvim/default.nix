@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  msgpack,
-  isPyPy,
+  buildPythonPackage,
   greenlet,
+  isPyPy,
+  msgpack,
   pythonOlder,
+  setuptools,
   typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "pynvim";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "neovim";
@@ -22,6 +21,8 @@ buildPythonPackage rec {
     hash = "sha256-Wxn4g/lFelAJx0Zz2yaeXqX56xeOWUJNb2p8EiJgKE0=";
   };
 
+  # Tests require pkgs.neovim which we cannot add because of circular dependency
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,9 +31,7 @@ buildPythonPackage rec {
   ++ lib.optionals (!isPyPy) [ greenlet ]
   ++ lib.optionals (pythonOlder "3.12") [ typing-extensions ];
 
-  # Tests require pkgs.neovim which we cannot add because of circular dependency
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pynvim" ];
 
   meta = {

@@ -18,23 +18,24 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-YRvnE4fH5jWITSiMUbtlaOJFKAW0/Alzo1YVDlm8CO8=";
   };
 
-  preConfigure = ''
-    cd src
-  '';
-
   nativeBuildInputs = [
     pkg-config
     wrapGAppsHook4
   ];
+
   buildInputs = [
     libffcall
     glib
     gtk4
   ];
 
+  preConfigure = ''
+    cd src
+  '';
+
   meta = {
-    homepage = "https://www.gtk-server.org/";
     description = "Gtk-server for interpreted GUI programming";
+    homepage = "https://www.gtk-server.org/";
     changelog = "https://www.gtk-server.org/notes.txt";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];

@@ -15,10 +15,14 @@ in
     enable = lib.mkEnableOption "Meshtastic daemon";
     package = lib.mkPackageOption pkgs "meshtasticd" { };
 
-    user = lib.mkOption {
-      default = "meshtasticd";
-      description = "User meshtasticd runs as.";
-      type = lib.types.str;
+    dataDir = lib.mkOption {
+      default = "/var/lib/meshtasticd";
+
+      description = ''
+        The data directory.
+      '';
+
+      type = lib.types.path;
     };
 
     group = lib.mkOption {
@@ -28,13 +32,18 @@ in
     };
 
     port = lib.mkOption {
-      type = lib.types.port;
       default = 4403;
       description = "Port to listen on";
+      type = lib.types.port;
     };
 
     settings = lib.mkOption {
-      type = format.type;
+      description = ''
+        The Meshtastic configuration file.
+
+        An example of configuration can be found at <https://github.com/meshtastic/firmware/blob/develop/bin/config-dist.yaml>
+      '';
+
       example = lib.literalExpression ''
         Lora = {
           Module = "auto";
@@ -49,45 +58,18 @@ in
           MACAddressSource = "eth0";
         };
       '';
-      description = ''
-        The Meshtastic configuration file.
 
-        An example of configuration can be found at <https://github.com/meshtastic/firmware/blob/develop/bin/config-dist.yaml>
-      '';
+      type = format.type;
     };
 
-    dataDir = lib.mkOption {
-      default = "/var/lib/meshtasticd";
-      type = lib.types.path;
-      description = ''
-        The data directory.
-      '';
+    user = lib.mkOption {
+      default = "meshtasticd";
+      description = "User meshtasticd runs as.";
+      type = lib.types.str;
     };
   };
 
   config = lib.mkIf cfg.enable {
-    # Creation of the `meshtasticd` privilege user.
-    users = {
-      users = lib.mkIf (cfg.user == "meshtasticd") {
-        meshtasticd = {
-          home = cfg.dataDir;
-          description = "meshtasticd-daemon privilege user";
-          group = cfg.group;
-          isSystemUser = true;
-          extraGroups = [
-            "spi"
-            "gpio"
-          ];
-        };
-      };
-      groups = lib.mkIf (cfg.group == "meshtasticd") {
-        meshtasticd = { };
-        # These groups are required for udev rules to work properly.
-        spi = { };
-        gpio = { };
-      };
-    };
-
     # The `meshtasticd` package provides udev rules.
     services.udev.packages = [
       cfg.package
@@ -96,28 +78,57 @@ in
     # Creation of the `meshtasticd` service.
     # Based on the official meshtasticd service file: https://github.com/meshtastic/firmware/blob/develop/bin/meshtasticd.service
     systemd.services.meshtasticd = {
-      description = "Meshtastic Native Daemon";
       after = [
         "network-online.target"
         "network.target"
       ];
+
+      description = "Meshtastic Native Daemon";
+
+      serviceConfig = {
+        AmbientCapabilities = [
+          "CAP_NET_BIND_SERVICE"
+        ];
+
+        ExecStart = "${lib.getExe cfg.package} --port=${toString cfg.port} --fsdir=${cfg.dataDir} --config=${configFile} --verbose";
+        Group = cfg.group;
+        Restart = "always";
+        RestartSec = "3";
+        StateDirectory = "meshtasticd";
+        Type = "simple";
+        User = cfg.user;
+      };
+
+      wantedBy = [ "multi-user.target" ];
+
       wants = [
         "network-online.target"
         "network.target"
       ];
-      wantedBy = [ "multi-user.target" ];
+    };
 
-      serviceConfig = {
-        User = cfg.user;
-        Group = cfg.group;
-        Type = "simple";
-        StateDirectory = "meshtasticd";
-        AmbientCapabilities = [
-          "CAP_NET_BIND_SERVICE"
-        ];
-        ExecStart = "${lib.getExe cfg.package} --port=${toString cfg.port} --fsdir=${cfg.dataDir} --config=${configFile} --verbose";
-        Restart = "always";
-        RestartSec = "3";
+    # Creation of the `meshtasticd` privilege user.
+    users = {
+      groups = lib.mkIf (cfg.group == "meshtasticd") {
+        gpio = { };
+        meshtasticd = { };
+        # These groups are required for udev rules to work properly.
+        spi = { };
+      };
+
+      users = lib.mkIf (cfg.user == "meshtasticd") {
+        meshtasticd = {
+          description = "meshtasticd-daemon privilege user";
+
+          extraGroups = [
+            "spi"
+            "gpio"
+          ];
+
+          group = cfg.group;
+          home = cfg.dataDir;
+          isSystemUser = true;
+        };
       };
     };
   };

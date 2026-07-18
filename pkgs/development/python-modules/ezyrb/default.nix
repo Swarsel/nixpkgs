@@ -1,27 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   future,
-  numpy,
-  scipy,
   matplotlib,
-  scikit-learn,
-  torch,
-
+  numpy,
   # tests
   pytestCheckHook,
+  scikit-learn,
+  scipy,
+  # build-system
+  setuptools,
+  torch,
 }:
 
 buildPythonPackage rec {
   pname = "ezyrb";
   version = "1.3.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mathLab";
@@ -41,6 +37,8 @@ buildPythonPackage rec {
         "np.exceptions.VisibleDeprecationWarning"
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
   ];
@@ -54,20 +52,19 @@ buildPythonPackage rec {
     torch
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "ezyrb" ];
-
   disabledTestPaths = [
     # Exclude long tests
     "tests/test_podae.py"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "ezyrb" ];
+
   meta = {
     description = "Easy Reduced Basis method";
     homepage = "https://mathlab.github.io/EZyRB/";
-    downloadPage = "https://github.com/mathLab/EZyRB/releases";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ yl3dy ];
+    downloadPage = "https://github.com/mathLab/EZyRB/releases";
   };
 }

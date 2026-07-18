@@ -13,142 +13,6 @@ let
   configFile = settingsFormat.generate "config.json" cfg.settings;
 in
 {
-  meta = {
-    maintainers = with lib.maintainers; [ moraxyc ];
-  };
-  options = {
-    services.nezha-agent = {
-      enable = lib.mkEnableOption "Agent of Nezha Monitoring";
-
-      package = lib.mkPackageOption pkgs "nezha-agent" { };
-
-      debug = lib.mkEnableOption "verbose log";
-
-      settings = lib.mkOption {
-        description = ''
-          Generate to {file}`config.json` as a Nix attribute set.
-          Check the [guide](https://nezha.wiki/en_US/guide/agent.html)
-          for possible options.
-        '';
-        type = lib.types.submodule {
-          freeformType = settingsFormat.type;
-
-          options = {
-            disable_command_execute = lib.mkOption {
-              type = lib.types.bool;
-              default = true;
-              description = ''
-                Disable executing the command from dashboard.
-              '';
-            };
-            disable_nat = lib.mkOption {
-              type = lib.types.bool;
-              default = false;
-              description = ''
-                Disable NAT penetration.
-              '';
-            };
-            disable_send_query = lib.mkOption {
-              type = lib.types.bool;
-              default = false;
-              description = ''
-                Disable sending TCP/ICMP/HTTP requests.
-              '';
-            };
-            gpu = lib.mkOption {
-              type = lib.types.bool;
-              default = false;
-              description = ''
-                Enable GPU monitoring.
-              '';
-            };
-            tls = lib.mkOption {
-              type = lib.types.bool;
-              default = false;
-              description = ''
-                Enable SSL/TLS encryption.
-              '';
-            };
-            temperature = lib.mkOption {
-              type = lib.types.bool;
-              default = true;
-              description = ''
-                Enable temperature monitoring.
-              '';
-            };
-            use_ipv6_country_code = lib.mkOption {
-              type = lib.types.bool;
-              default = true;
-              description = ''
-                Use ipv6 countrycode to report location.
-              '';
-            };
-            skip_connection_count = lib.mkOption {
-              type = lib.types.bool;
-              default = false;
-              description = ''
-                Do not monitor the number of connections.
-              '';
-            };
-            skip_procs_count = lib.mkOption {
-              type = lib.types.bool;
-              default = false;
-              description = ''
-                Do not monitor the number of processes.
-              '';
-            };
-            report_delay = lib.mkOption {
-              type = lib.types.ints.between 1 4;
-              default = 3;
-              description = ''
-                The interval between system status reportings.
-                The value must be an integer from 1 to 4.
-              '';
-            };
-            server = lib.mkOption {
-              type = lib.types.str;
-              example = "127.0.0.1:8008";
-              description = ''
-                Address to the dashboard.
-              '';
-            };
-            uuid = lib.mkOption {
-              type = with lib.types; nullOr str;
-              # pre-defined uuid of Dns in RFC 4122
-              example = "6ba7b810-9dad-11d1-80b4-00c04fd430c8";
-              default = null;
-              description = ''
-                Must be set to a unique identifier, preferably a UUID according to
-                RFC 4122. UUIDs can be generated with `uuidgen` command, found in
-                the `util-linux` package.
-
-                Set {option}`services.nezha-agent.genUuid` to true to generate uuid
-                from {option}`networking.fqdn` automatically.
-              '';
-            };
-          };
-        };
-      };
-
-      genUuid = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Whether to generate uuid from fqdn automatically.
-          Please note that changes in hostname/domain will result in different uuid.
-        '';
-      };
-
-      clientSecretFile = lib.mkOption {
-        type = with lib.types; nullOr path;
-        default = null;
-        description = ''
-          Path to the file contained the client_secret of the dashboard.
-        '';
-      };
-    };
-  };
-
   imports = with lib; [
     (mkRenamedOptionModule
       [ "services" "nezha-agent" "disableCommandExecute" ]
@@ -206,6 +70,177 @@ in
     '')
   ];
 
+  options = {
+    services.nezha-agent = {
+      enable = lib.mkEnableOption "Agent of Nezha Monitoring";
+      package = lib.mkPackageOption pkgs "nezha-agent" { };
+
+      clientSecretFile = lib.mkOption {
+        default = null;
+
+        description = ''
+          Path to the file contained the client_secret of the dashboard.
+        '';
+
+        type = with lib.types; nullOr path;
+      };
+
+      debug = lib.mkEnableOption "verbose log";
+
+      genUuid = lib.mkOption {
+        default = false;
+
+        description = ''
+          Whether to generate uuid from fqdn automatically.
+          Please note that changes in hostname/domain will result in different uuid.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      settings = lib.mkOption {
+        description = ''
+          Generate to {file}`config.json` as a Nix attribute set.
+          Check the [guide](https://nezha.wiki/en_US/guide/agent.html)
+          for possible options.
+        '';
+
+        type = lib.types.submodule {
+          options = {
+            disable_command_execute = lib.mkOption {
+              default = true;
+
+              description = ''
+                Disable executing the command from dashboard.
+              '';
+
+              type = lib.types.bool;
+            };
+
+            disable_nat = lib.mkOption {
+              default = false;
+
+              description = ''
+                Disable NAT penetration.
+              '';
+
+              type = lib.types.bool;
+            };
+
+            disable_send_query = lib.mkOption {
+              default = false;
+
+              description = ''
+                Disable sending TCP/ICMP/HTTP requests.
+              '';
+
+              type = lib.types.bool;
+            };
+
+            gpu = lib.mkOption {
+              default = false;
+
+              description = ''
+                Enable GPU monitoring.
+              '';
+
+              type = lib.types.bool;
+            };
+
+            report_delay = lib.mkOption {
+              default = 3;
+
+              description = ''
+                The interval between system status reportings.
+                The value must be an integer from 1 to 4.
+              '';
+
+              type = lib.types.ints.between 1 4;
+            };
+
+            server = lib.mkOption {
+              description = ''
+                Address to the dashboard.
+              '';
+
+              example = "127.0.0.1:8008";
+              type = lib.types.str;
+            };
+
+            skip_connection_count = lib.mkOption {
+              default = false;
+
+              description = ''
+                Do not monitor the number of connections.
+              '';
+
+              type = lib.types.bool;
+            };
+
+            skip_procs_count = lib.mkOption {
+              default = false;
+
+              description = ''
+                Do not monitor the number of processes.
+              '';
+
+              type = lib.types.bool;
+            };
+
+            temperature = lib.mkOption {
+              default = true;
+
+              description = ''
+                Enable temperature monitoring.
+              '';
+
+              type = lib.types.bool;
+            };
+
+            tls = lib.mkOption {
+              default = false;
+
+              description = ''
+                Enable SSL/TLS encryption.
+              '';
+
+              type = lib.types.bool;
+            };
+
+            use_ipv6_country_code = lib.mkOption {
+              default = true;
+
+              description = ''
+                Use ipv6 countrycode to report location.
+              '';
+
+              type = lib.types.bool;
+            };
+
+            uuid = lib.mkOption {
+              default = null;
+
+              description = ''
+                Must be set to a unique identifier, preferably a UUID according to
+                RFC 4122. UUIDs can be generated with `uuidgen` command, found in
+                the `util-linux` package.
+
+                Set {option}`services.nezha-agent.genUuid` to true to generate uuid
+                from {option}`networking.fqdn` automatically.
+              '';
+
+              # pre-defined uuid of Dns in RFC 4122
+              example = "6ba7b810-9dad-11d1-80b4-00c04fd430c8";
+              type = with lib.types; nullOr str;
+            };
+          };
+
+          freeformType = settingsFormat.type;
+        };
+      };
+    };
+  };
+
   config = lib.mkIf cfg.enable {
     assertions = [
       {
@@ -226,56 +261,9 @@ in
     };
 
     systemd.services.nezha-agent = {
-      serviceConfig = {
-        Restart = "on-failure";
-        StateDirectory = "nezha-agent";
-        RuntimeDirectory = "nezha-agent";
-        WorkingDirectory = "/var/lib/nezha-agent";
-        ReadWritePaths = "/var/lib/nezha-agent";
-
-        LoadCredential = lib.optionalString (
-          cfg.clientSecretFile != null
-        ) "client-secret:${cfg.clientSecretFile}";
-
-        # Hardening
-        ProcSubset = "all"; # Needed to get host information
-        DynamicUser = true;
-        RemoveIPC = true;
-        LockPersonality = true;
-        ProtectClock = true;
-        MemoryDenyWriteExecute = true;
-        PrivateUsers = true;
-        ProtectHostname = true;
-        RestrictSUIDSGID = true;
-        AmbientCapabilities = [ ];
-        CapabilityBoundingSet = "";
-        NoNewPrivileges = true;
-        PrivateTmp = true;
-        ProtectControlGroups = true;
-        ProtectHome = true;
-        ProtectKernelLogs = true;
-        ProtectKernelModules = true;
-        ProtectKernelTunables = true;
-        ProtectProc = "invisible";
-        ProtectSystem = "strict";
-        RestrictNamespaces = true;
-        RestrictRealtime = true;
-        SystemCallArchitectures = "native";
-        UMask = "0066";
-        SystemCallFilter = [
-          "@system-service"
-          "~@privileged"
-        ];
-        RestrictAddressFamilies = [
-          "AF_INET"
-          "AF_INET6"
-        ];
-        PrivateDevices = "yes";
-      };
-      environment.HOME = "/var/lib/nezha-agent";
       enableStrictShellChecks = true;
-      startLimitIntervalSec = 10;
-      startLimitBurst = 3;
+      environment.HOME = "/var/lib/nezha-agent";
+
       script = ''
         cp "${configFile}" "''${RUNTIME_DIRECTORY}"/config.json
         ${lib.optionalString (cfg.clientSecretFile != null) ''
@@ -290,7 +278,65 @@ in
         ''}
         ${lib.getExe cfg.package} --config "''${RUNTIME_DIRECTORY}"/config.json
       '';
+
+      serviceConfig = {
+        AmbientCapabilities = [ ];
+        CapabilityBoundingSet = "";
+        DynamicUser = true;
+
+        LoadCredential = lib.optionalString (
+          cfg.clientSecretFile != null
+        ) "client-secret:${cfg.clientSecretFile}";
+
+        LockPersonality = true;
+        MemoryDenyWriteExecute = true;
+        NoNewPrivileges = true;
+        PrivateDevices = "yes";
+        PrivateTmp = true;
+        PrivateUsers = true;
+        # Hardening
+        ProcSubset = "all"; # Needed to get host information
+        ProtectClock = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectHostname = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectProc = "invisible";
+        ProtectSystem = "strict";
+        ReadWritePaths = "/var/lib/nezha-agent";
+        RemoveIPC = true;
+        Restart = "on-failure";
+
+        RestrictAddressFamilies = [
+          "AF_INET"
+          "AF_INET6"
+        ];
+
+        RestrictNamespaces = true;
+        RestrictRealtime = true;
+        RestrictSUIDSGID = true;
+        RuntimeDirectory = "nezha-agent";
+        StateDirectory = "nezha-agent";
+        SystemCallArchitectures = "native";
+
+        SystemCallFilter = [
+          "@system-service"
+          "~@privileged"
+        ];
+
+        UMask = "0066";
+        WorkingDirectory = "/var/lib/nezha-agent";
+      };
+
+      startLimitBurst = 3;
+      startLimitIntervalSec = 10;
       wantedBy = [ "multi-user.target" ];
     };
+  };
+
+  meta = {
+    maintainers = with lib.maintainers; [ moraxyc ];
   };
 }

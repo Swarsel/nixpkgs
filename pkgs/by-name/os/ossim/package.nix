@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
-  makeWrapper,
   curl,
+  fetchpatch,
   freetype,
   geos,
   jsoncpp,
   libgeotiff,
   libjpeg,
   libtiff,
+  makeWrapper,
   proj,
   sqlite,
 }:
@@ -30,8 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fixed build error gcc version 15.0.1
     (fetchpatch {
-      url = "https://github.com/ossimlabs/ossim/commit/13b9fa9ae54f79a7e7728408de6246e00d38f399.patch";
       hash = "sha256-AKzOT+JurB/54gvzn2a5amw+uIupaNxssnEhc8CSfPM=";
+      url = "https://github.com/ossimlabs/ossim/commit/13b9fa9ae54f79a7e7728408de6246e00d38f399.patch";
     })
   ];
 
@@ -74,7 +74,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Open Source Software Image Map library";
     homepage = "https://github.com/ossimlabs/ossim";
     license = lib.licenses.mit;
-    teams = [ lib.teams.geospatial ];
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.geospatial ];
   };
 })

@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  meson,
-  ninja,
   boost,
   curl,
   libgcrypt,
   libmpdclient,
+  meson,
+  ninja,
+  pkg-config,
   systemd,
 }:
 
@@ -21,11 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-IPidlFv1F8TWi/d6d6NZ/bE4QqsSlejSHtp5vitbNc4=";
   };
 
-  mesonFlags = [
-    (lib.mesonOption "systemd_user_unit_dir" "etc/systemd/user")
-    (lib.mesonOption "systemd_system_unit_dir" "etc/systemd/system")
-  ];
-
   postPatch = ''
     sed '1i#include <ctime>' -i src/Log.cxx # gcc12
   '';
@@ -35,6 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     meson
     ninja
   ];
+
   buildInputs = [
     libmpdclient
     curl
@@ -43,14 +39,21 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional stdenv.hostPlatform.isLinux systemd;
 
+  mesonFlags = [
+    (lib.mesonOption "systemd_user_unit_dir" "etc/systemd/user")
+    (lib.mesonOption "systemd_system_unit_dir" "etc/systemd/system")
+  ];
+
   meta = {
     description = "MPD client which submits info about tracks being played to a scrobbler";
     homepage = "https://www.musicpd.org/clients/mpdscribble/";
     license = lib.licenses.gpl2Plus;
+
     maintainers = [
       lib.maintainers.sohalt
       lib.maintainers.kybe236
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "mpdscribble";
   };

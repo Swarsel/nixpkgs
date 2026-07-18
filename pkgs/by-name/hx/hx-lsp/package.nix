@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
   versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,14 +16,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-fR5KUm1o10xHrwBv5pPWYe5hpGOp4QKoHZ2dQYlhDCY=";
-
   nativeInstallCheckInputs = [ versionCheckHook ];
+
   meta = {
     description = "LSP tool providing custom code snippets and Code Actions for Helix Editor";
     homepage = "https://github.com/erasin/hx-lsp";
     changelog = "https://github.com/erasin/hx-lsp/releases/tag/${finalAttrs.version}";
-    mainProgram = "hx-lsp";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hadziqM ];
+    mainProgram = "hx-lsp";
   };
 })

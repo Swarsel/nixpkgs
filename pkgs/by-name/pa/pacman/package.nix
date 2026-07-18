@@ -3,40 +3,36 @@
   stdenv,
   fetchFromGitLab,
   asciidoc,
+  # makepkg requires compgen to work
+  bashInteractive,
   binutils,
+  bzip2,
   coreutils,
   curl,
-  gpgme,
-  installShellFiles,
-  libarchive,
-  makeWrapper,
-  meson,
-  ninja,
-  openssl,
-  perl,
-  pkg-config,
-  zlib,
-
-  # Compression tools in scripts/libmakepkg/util/compress.sh.in
-  gzip,
-  bzip2,
-  xz,
-  zstd,
-  lrzip,
-  lzop,
-  ncompress,
-  lz4,
-  lzip,
-
   # pacman-key runtime dependencies
   gawk,
   gettext,
   gnugrep,
   gnupg,
-
-  # makepkg requires compgen to work
-  bashInteractive,
-
+  gpgme,
+  # Compression tools in scripts/libmakepkg/util/compress.sh.in
+  gzip,
+  installShellFiles,
+  libarchive,
+  lrzip,
+  lz4,
+  lzip,
+  lzop,
+  makeWrapper,
+  meson,
+  ncompress,
+  ninja,
+  openssl,
+  perl,
+  pkg-config,
+  xz,
+  zlib,
+  zstd,
   # Tells pacman where to find ALPM hooks provided by packages.
   # This path is very likely to be used in an Arch-like root.
   sysHookDir ? "/usr/share/libalpm/hooks/",
@@ -47,35 +43,12 @@ stdenv.mkDerivation (finalAttrs: {
   version = "7.1.0-unstable-2026-01-25";
 
   src = fetchFromGitLab {
-    domain = "gitlab.archlinux.org";
     owner = "pacman";
     repo = "pacman";
     rev = "cb7452f63414291b52061166ab2ebf1083897917";
     hash = "sha256-ocynGQ1oIeaQgLlCTCrxq/ihxziDMqrIPKAJThvV7SE=";
+    domain = "gitlab.archlinux.org";
   };
-
-  strictDeps = true;
-
-  nativeBuildInputs = [
-    asciidoc
-    bashInteractive
-    gettext
-    installShellFiles
-    libarchive
-    makeWrapper
-    meson
-    ninja
-    pkg-config
-  ];
-
-  buildInputs = [
-    curl
-    gpgme
-    libarchive
-    openssl
-    perl
-    zlib
-  ];
 
   patches = [
     ./dont-create-empty-dirs.patch
@@ -107,6 +80,29 @@ stdenv.mkDerivation (finalAttrs: {
         --replace-fail bsdtar "${libarchive}/bin/bsdtar"
     '';
 
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    asciidoc
+    bashInteractive
+    gettext
+    installShellFiles
+    libarchive
+    makeWrapper
+    meson
+    ninja
+    pkg-config
+  ];
+
+  buildInputs = [
+    curl
+    gpgme
+    libarchive
+    openssl
+    perl
+    zlib
+  ];
+
   mesonFlags = [
     "--sysconfdir=/etc"
     "--localstatedir=/var"
@@ -134,8 +130,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://archlinux.org/pacman/";
     changelog = "https://gitlab.archlinux.org/pacman/pacman/-/raw/v${finalAttrs.version}/NEWS";
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ samlukeyes123 ];
     platforms = lib.platforms.linux;
     mainProgram = "pacman";
-    maintainers = with lib.maintainers; [ samlukeyes123 ];
   };
 })

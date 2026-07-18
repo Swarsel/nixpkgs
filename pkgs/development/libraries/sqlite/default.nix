@@ -2,24 +2,21 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
-  tcl,
-  zlib,
-  readline,
+  buildPackages,
+  gitUpdater,
   ncurses,
-
   # for tests
   python3Packages,
+  readline,
   sqldiff,
   sqlite-analyzer,
   sqlite-rsync,
+  tcl,
   tinysparql,
-
+  unzip,
+  zlib,
   # uses readline & ncurses for a better interactive experience if set to true
   interactive ? false,
-
-  gitUpdater,
-  buildPackages,
 }:
 
 let
@@ -36,10 +33,6 @@ stdenv.mkDerivation rec {
     url = "https://sqlite.org/2026/sqlite-src-${archiveVersion version}.zip";
     hash = "sha256-GytXVdkGTE1dGwv1MHtIsImWPikcQMxzUTGKobYcRg4=";
   };
-  docsrc = fetchurl {
-    url = "https://sqlite.org/2026/sqlite-doc-${archiveVersion version}.zip";
-    hash = "sha256-n9Bgv33YwseOdBHQb7gdyKqgWeth7sgMZeBlioVFtDM=";
-  };
 
   outputs = [
     "bin"
@@ -48,16 +41,12 @@ stdenv.mkDerivation rec {
     "doc"
     "out"
   ];
-  separateDebugInfo = stdenv.hostPlatform.isLinux;
-
-  depsBuildBuild = [
-    buildPackages.stdenv.cc
-  ];
 
   nativeBuildInputs = [
     unzip
     tcl
   ];
+
   buildInputs = [
     zlib
   ]
@@ -65,18 +54,6 @@ stdenv.mkDerivation rec {
     readline
     ncurses
   ];
-
-  # required for aarch64 but applied for all arches for simplicity
-  preConfigure = ''
-    patchShebangs configure
-  '';
-
-  # sqlite relies on autosetup now; so many of the
-  # previously-understood flags are gone. They should instead be set
-  # on a per-output basis.
-  setOutputFlags = false;
-
-  env.TCLLIBDIR = "${placeholder "out"}/lib";
 
   configureFlags = [
     "--bindir=${placeholder "bin"}/bin"
@@ -115,6 +92,13 @@ stdenv.mkDerivation rec {
     "-DSQLITE_MAX_EXPR_DEPTH=10000"
   ];
 
+  env.TCLLIBDIR = "${placeholder "out"}/lib";
+
+  # required for aarch64 but applied for all arches for simplicity
+  preConfigure = ''
+    patchShebangs configure
+  '';
+
   # Test for features which may not be available at compile time
   preBuild = ''
     # Necessary for FTS5 on Linux
@@ -125,21 +109,38 @@ stdenv.mkDerivation rec {
     echo ""
   '';
 
+  # SQLite’s tests are unreliable on Darwin. Sometimes they run successfully, but often they do not.
+  # The tests are only defined for Darwin, Linux, Windows, and OpenBSD, not any other unix-like OS.
+  doCheck = stdenv.hostPlatform.isLinux;
+
   postInstall = ''
     mkdir -p $doc/share/doc
     unzip $docsrc
     mv sqlite-doc-${archiveVersion version} $doc/share/doc/sqlite
   '';
 
-  # SQLite’s tests are unreliable on Darwin. Sometimes they run successfully, but often they do not.
-  # The tests are only defined for Darwin, Linux, Windows, and OpenBSD, not any other unix-like OS.
-  doCheck = stdenv.hostPlatform.isLinux;
   # When tcl is not available, only run test targets that don't need it.
   checkTarget = lib.optionalString stdenv.hostPlatform.isStatic "fuzztest sourcetest";
+
+  depsBuildBuild = [
+    buildPackages.stdenv.cc
+  ];
+
+  docsrc = fetchurl {
+    hash = "sha256-n9Bgv33YwseOdBHQb7gdyKqgWeth7sgMZeBlioVFtDM=";
+    url = "https://sqlite.org/2026/sqlite-doc-${archiveVersion version}.zip";
+  };
+
+  separateDebugInfo = stdenv.hostPlatform.isLinux;
+  # sqlite relies on autosetup now; so many of the
+  # previously-understood flags are gone. They should instead be set
+  # on a per-output basis.
+  setOutputFlags = false;
 
   passthru = {
     tests = {
       inherit (python3Packages) sqlalchemy;
+
       inherit
         sqldiff
         sqlite-analyzer
@@ -149,24 +150,24 @@ stdenv.mkDerivation rec {
     };
 
     updateScript = gitUpdater {
-      # No nicer place to look for latest version.
-      url = "https://github.com/sqlite/sqlite.git";
       # Expect tags like "version-3.43.0".
       rev-prefix = "version-";
+      # No nicer place to look for latest version.
+      url = "https://github.com/sqlite/sqlite.git";
     };
   };
 
   meta = {
-    changelog = "https://www.sqlite.org/releaselog/${lib.replaceStrings [ "." ] [ "_" ] version}.html";
     description = "Self-contained, serverless, zero-configuration, transactional SQL database engine";
-    downloadPage = "https://sqlite.org/download.html";
     homepage = "https://www.sqlite.org/";
+    changelog = "https://www.sqlite.org/releaselog/${lib.replaceStrings [ "." ] [ "_" ] version}.html";
     license = lib.licenses.publicDomain;
-    mainProgram = "sqlite3";
     maintainers = with lib.maintainers; [ np ];
-    teams = [ lib.teams.security-review ];
     platforms = lib.platforms.unix ++ lib.platforms.windows;
-    pkgConfigModules = [ "sqlite3" ];
+    mainProgram = "sqlite3";
+    downloadPage = "https://sqlite.org/download.html";
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "sqlite" version;
+    pkgConfigModules = [ "sqlite3" ];
+    teams = [ lib.teams.security-review ];
   };
 }

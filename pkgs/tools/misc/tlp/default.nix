@@ -1,32 +1,32 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchFromGitHub,
   checkbashisms,
   coreutils,
   ethtool,
-  fetchFromGitHub,
   gawk,
+  glib,
   gnugrep,
   gnused,
   hdparm,
   iw,
   kmod,
   makeWrapper,
+  networkmanager,
   pciutils,
   perl,
   perlcritic,
   shellcheck,
   smartmontools,
   systemd,
+  tlp-pd,
   udevCheckHook,
   usbutils,
   util-linux,
-  glib,
   x86_energy_perf_policy,
   # RDW only works with NetworkManager, and thus is optional with default off
   enableRDW ? false,
-  networkmanager,
-  tlp-pd,
 }:
 stdenv.mkDerivation rec {
   pname = "tlp";
@@ -49,11 +49,12 @@ stdenv.mkDerivation rec {
     substituteInPlace Makefile --replace-fail ' ?= /usr/' ' ?= /'
   '';
 
-  buildInputs = [ perl ];
   nativeBuildInputs = [
     makeWrapper
     udevCheckHook
   ];
+
+  buildInputs = [ perl ];
 
   # XXX: While [1] states that DESTDIR should not be used, and that the correct
   # variable to set is, in fact, PREFIX, tlp thinks otherwise. The Makefile for
@@ -70,24 +71,13 @@ stdenv.mkDerivation rec {
     "DESTDIR=${placeholder "out"}"
   ];
 
-  installTargets = [
-    "install-tlp"
-    "install-man"
-  ]
-  ++ lib.optionals enableRDW [
-    "install-rdw"
-    "install-man-rdw"
-  ];
-
   doCheck = true;
+
   nativeCheckInputs = [
     checkbashisms
     perlcritic
     shellcheck
   ];
-  checkTarget = [ "checkall" ];
-
-  doInstallCheck = true;
 
   # TODO: Consider using resholve here
   postInstall =
@@ -141,6 +131,18 @@ stdenv.mkDerivation rec {
       rm -rf $out/share/metainfo
     '';
 
+  doInstallCheck = true;
+  checkTarget = [ "checkall" ];
+
+  installTargets = [
+    "install-tlp"
+    "install-man"
+  ]
+  ++ lib.optionals enableRDW [
+    "install-rdw"
+    "install-man-rdw"
+  ];
+
   passthru.tests = {
     inherit tlp-pd;
   };
@@ -149,11 +151,13 @@ stdenv.mkDerivation rec {
     description = "Advanced Power Management for Linux";
     homepage = "https://linrunner.de/en/tlp/docs/tlp-linux-advanced-power-management.html";
     changelog = "https://github.com/linrunner/TLP/releases/tag/${version}";
-    platforms = lib.platforms.linux;
-    mainProgram = "tlp";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       lovesegfault
     ];
-    license = lib.licenses.gpl2Plus;
+
+    platforms = lib.platforms.linux;
+    mainProgram = "tlp";
   };
 }

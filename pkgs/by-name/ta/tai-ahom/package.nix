@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -13,8 +13,6 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-U1vcVf/VgXhvK1f2Iw2JKkd2EzJgz7KbHAwnUanX8n4=";
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -23,11 +21,13 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
-    homepage = "https://github.com/enabling-languages/tai-languages";
     description = "Unicode-compliant Tai Ahom font";
-    maintainers = with lib.maintainers; [ mathnerd314 ];
+    homepage = "https://github.com/enabling-languages/tai-languages";
     license = lib.licenses.ofl; # See font metadata
+    maintainers = with lib.maintainers; [ mathnerd314 ];
     platforms = lib.platforms.all;
   };
 }

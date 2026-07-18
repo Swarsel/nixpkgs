@@ -41,24 +41,20 @@ in
     services.newt = {
       enable = lib.mkEnableOption "Newt, user space tunnel client for Pangolin";
       package = lib.mkPackageOption pkgs "fosrl-newt" { };
-      settings = lib.mkOption {
-        inherit type;
-        default = { };
-        example = {
-          endpoint = "pangolin.example.com";
-          id = "8yfsghj438a20ol";
-        };
-        description = "Settings for Newt module, see [Newt CLI docs](https://github.com/fosrl/newt?tab=readme-ov-file#cli-args) for more information.";
-      };
+
       blueprint = lib.mkOption {
         inherit (format) type;
         default = { };
+        description = "Blueprint for declarative settings, see [Newt Blueprint docs](https://docs.pangolin.net/manage/blueprints#blueprints) for more information.";
+
         example = {
           proxy-resources = {
             jellyfin = {
+              auth.sso-enabled = true;
+              full-domain = "jfn.example.com";
               name = "Jellyfin";
               protocol = "http";
-              full-domain = "jfn.example.com";
+
               targets = [
                 {
                   hostname = "localhost";
@@ -66,17 +62,15 @@ in
                   port = 8096;
                 }
               ];
-              auth.sso-enabled = true;
             };
           };
         };
-        description = "Blueprint for declarative settings, see [Newt Blueprint docs](https://docs.pangolin.net/manage/blueprints#blueprints) for more information.";
       };
 
       # provide path to file to keep secrets out of the nix store
       environmentFile = lib.mkOption {
-        type = with lib.types; nullOr path;
         default = null;
+
         description = ''
           Path to a file containing sensitive environment variables for Newt. See [Client credentials](https://docs.pangolin.net/manage/clients/credentials) for more information.
           These will overwrite anything defined in the config.
@@ -84,6 +78,19 @@ in
           NEWT_ID=2ix2t8xk22ubpfy
           NEWT_SECRET=nnisrfsdfc7prqsp9ewo1dvtvci50j5uiqotez00dgap0ii2
         '';
+
+        type = with lib.types; nullOr path;
+      };
+
+      settings = lib.mkOption {
+        inherit type;
+        default = { };
+        description = "Settings for Newt module, see [Newt CLI docs](https://github.com/fosrl/newt?tab=readme-ov-file#cli-args) for more information.";
+
+        example = {
+          endpoint = "pangolin.example.com";
+          id = "8yfsghj438a20ol";
+        };
       };
     };
   };
@@ -98,51 +105,14 @@ in
     ];
 
     systemd.services.newt = {
-      description = "Newt, user space tunnel client for Pangolin";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "Newt, user space tunnel client for Pangolin";
 
       environment = {
         HOME = "/var/lib/private/newt";
       };
+
       serviceConfig = {
-        ExecStart = "${lib.getExe cfg.package} ${
-          lib.cli.toCommandLineShellGNU { } (lib.recursiveUpdate cfg.settings { inherit blueprint-file; })
-        }";
-        DynamicUser = true;
-        StateDirectory = "newt";
-        StateDirectoryMode = "0700";
-        Restart = "always";
-        RestartSec = "10s";
-        EnvironmentFile = cfg.environmentFile;
-        # hardening
-        ProtectSystem = "strict";
-        ProtectHome = true;
-        PrivateTmp = "disconnected";
-        PrivateDevices = true;
-        PrivateUsers = true;
-        PrivateMounts = true;
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
-        ProtectKernelLogs = true;
-        ProtectControlGroups = true;
-        LockPersonality = true;
-        RestrictRealtime = true;
-        ProtectClock = true;
-        ProtectProc = "noaccess";
-        ProtectHostname = true;
-        RemoveIPC = true;
-        NoNewPrivileges = true;
-        RestrictSUIDSGID = true;
-        MemoryDenyWriteExecute = true;
-        SystemCallArchitectures = "native";
-        UMask = "0077";
-        RestrictAddressFamilies = [
-          "AF_INET"
-          "AF_INET6"
-          "AF_NETLINK"
-          "AF_UNIX"
-        ];
         CapabilityBoundingSet = [
           "~CAP_BLOCK_SUSPEND"
           "~CAP_BPF"
@@ -161,6 +131,48 @@ in
           "~CAP_SYSLOG"
           "~CAP_WAKE_ALARM"
         ];
+
+        DynamicUser = true;
+        EnvironmentFile = cfg.environmentFile;
+
+        ExecStart = "${lib.getExe cfg.package} ${
+          lib.cli.toCommandLineShellGNU { } (lib.recursiveUpdate cfg.settings { inherit blueprint-file; })
+        }";
+
+        LockPersonality = true;
+        MemoryDenyWriteExecute = true;
+        NoNewPrivileges = true;
+        PrivateDevices = true;
+        PrivateMounts = true;
+        PrivateTmp = "disconnected";
+        PrivateUsers = true;
+        ProtectClock = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectHostname = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectProc = "noaccess";
+        # hardening
+        ProtectSystem = "strict";
+        RemoveIPC = true;
+        Restart = "always";
+        RestartSec = "10s";
+
+        RestrictAddressFamilies = [
+          "AF_INET"
+          "AF_INET6"
+          "AF_NETLINK"
+          "AF_UNIX"
+        ];
+
+        RestrictRealtime = true;
+        RestrictSUIDSGID = true;
+        StateDirectory = "newt";
+        StateDirectoryMode = "0700";
+        SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "~@aio:EPERM"
           "~@chown:EPERM"
@@ -183,7 +195,11 @@ in
           "~@sync:EPERM"
           "~@timer:EPERM"
         ];
+
+        UMask = "0077";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

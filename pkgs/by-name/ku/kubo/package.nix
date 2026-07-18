@@ -1,19 +1,16 @@
 {
   lib,
-  buildGoModule,
-  fetchurl,
-  nixosTests,
   stdenv,
+  fetchurl,
+  buildGoModule,
   callPackage,
   installShellFiles,
+  nixosTests,
 }:
 
 buildGoModule rec {
   pname = "kubo";
   version = "0.40.1"; # When updating, also check if the repo version changed and adjust repoVersion below
-  rev = "v${version}";
-
-  passthru.repoVersion = "18";
 
   # Kubo makes changes to its source tarball that don't match the git source.
   src = fetchurl {
@@ -21,32 +18,11 @@ buildGoModule rec {
     hash = "sha256-O6mSFDKj1DdTMGhg5Q6L0hiLW9CUyUq9uyFz9Xjmm4s=";
   };
 
-  # tarball contains multiple files/directories
-  postUnpack = ''
-    mkdir kubo-src
-    shopt -s extglob
-    mv !(kubo-src) kubo-src || true
-    cd kubo-src
-  '';
-
-  sourceRoot = ".";
-
-  subPackages = [ "cmd/ipfs" ];
-
-  passthru.tests = {
-    inherit (nixosTests) kubo ipget;
-    repoVersion = callPackage ./test-repoVersion.nix { };
-  };
-
-  vendorHash = null;
-
   outputs = [
     "out"
     "systemd_unit"
     "systemd_unit_hardened"
   ];
-
-  nativeBuildInputs = [ installShellFiles ];
 
   postPatch = ''
     substituteInPlace 'misc/systemd/ipfs.service' \
@@ -54,6 +30,9 @@ buildGoModule rec {
     substituteInPlace 'misc/systemd/ipfs-hardened.service' \
       --replace-fail '/usr/local/bin/ipfs' "$out/bin/ipfs"
   '';
+
+  nativeBuildInputs = [ installShellFiles ];
+  vendorHash = null;
 
   postInstall = ''
     install --mode=444 -D 'misc/systemd/ipfs-api.socket' "$systemd_unit/etc/systemd/system/ipfs-api.socket"
@@ -71,15 +50,35 @@ buildGoModule rec {
       --zsh <($out/bin/ipfs commands completion zsh)
   '';
 
+  # tarball contains multiple files/directories
+  postUnpack = ''
+    mkdir kubo-src
+    shopt -s extglob
+    mv !(kubo-src) kubo-src || true
+    cd kubo-src
+  '';
+
+  rev = "v${version}";
+  sourceRoot = ".";
+  subPackages = [ "cmd/ipfs" ];
+  passthru.repoVersion = "18";
+
+  passthru.tests = {
+    inherit (nixosTests) kubo ipget;
+    repoVersion = callPackage ./test-repoVersion.nix { };
+  };
+
   meta = {
     description = "IPFS implementation in Go";
     homepage = "https://ipfs.io/";
     changelog = "https://github.com/ipfs/kubo/releases/tag/${rev}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
-    mainProgram = "ipfs";
+
     maintainers = with lib.maintainers; [
       Luflosi
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "ipfs";
   };
 }

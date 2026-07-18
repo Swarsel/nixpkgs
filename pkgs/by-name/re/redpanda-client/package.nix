@@ -1,10 +1,10 @@
 {
-  buildGoModule,
-  doCheck ? !stdenv.hostPlatform.isDarwin, # Can't start localhost test server in MacOS sandbox.
-  fetchFromGitHub,
-  installShellFiles,
   lib,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
+  doCheck ? !stdenv.hostPlatform.isDarwin, # Can't start localhost test server in MacOS sandbox.
 }:
 let
   version = "26.1.12";
@@ -16,19 +16,10 @@ let
   };
 in
 buildGoModule rec {
-  pname = "redpanda-rpk";
   inherit doCheck src version;
-  modRoot = "./src/go/rpk";
-  runVend = false;
-  vendorHash = "sha256-g+LZgjD6wAuIDHweXYyZMxVT0Y8YWphC7ZzhBS9ozKk=";
-
-  ldflags = [
-    ''-X "github.com/redpanda-data/redpanda/src/go/rpk/pkg/cli/cmd/version.version=${version}"''
-    ''-X "github.com/redpanda-data/redpanda/src/go/rpk/pkg/cli/cmd/version.rev=v${version}"''
-    ''-X "github.com/redpanda-data/redpanda/src/go/rpk/pkg/cli/cmd/container/common.tag=v${version}"''
-  ];
-
+  pname = "redpanda-rpk";
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-g+LZgjD6wAuIDHweXYyZMxVT0Y8YWphC7ZzhBS9ozKk=";
 
   postInstall = ''
     for shell in bash fish zsh; do
@@ -37,14 +28,25 @@ buildGoModule rec {
     done
   '';
 
+  ldflags = [
+    ''-X "github.com/redpanda-data/redpanda/src/go/rpk/pkg/cli/cmd/version.version=${version}"''
+    ''-X "github.com/redpanda-data/redpanda/src/go/rpk/pkg/cli/cmd/version.rev=v${version}"''
+    ''-X "github.com/redpanda-data/redpanda/src/go/rpk/pkg/cli/cmd/container/common.tag=v${version}"''
+  ];
+
+  modRoot = "./src/go/rpk";
+  runVend = false;
+
   meta = {
     description = "Redpanda client";
     homepage = "https://redpanda.com/";
     license = lib.licenses.bsl11;
+
     maintainers = with lib.maintainers; [
       avakhrenev
       happysalada
     ];
+
     platforms = lib.platforms.all;
     mainProgram = "rpk";
   };

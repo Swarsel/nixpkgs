@@ -5,13 +5,13 @@
   appstream-glib,
   autoreconfHook,
   dbus,
+  nixosTests,
   pango,
   pcre2,
   pkg-config,
   tmux,
   vte,
   wrapGAppsHook3,
-  nixosTests,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -59,8 +59,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Minimal terminal emulator";
     homepage = "https://github.com/Keruspe/Germinal";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "germinal";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "germinal";
   };
 })

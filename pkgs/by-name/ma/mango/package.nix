@@ -1,30 +1,28 @@
 {
-  cjson,
   lib,
-  libx11,
+  stdenv,
+  fetchFromGitHub,
+  cjson,
+  libGL,
   libinput,
+  libx11,
   libxcb,
+  libxcb-wm,
   libxkbcommon,
+  meson,
+  ninja,
   pcre2,
   pixman,
   pkg-config,
-  stdenv,
-  fetchFromGitHub,
+  scenefx,
   wayland,
   wayland-protocols,
   wayland-scanner,
-  libxcb-wm,
+  wlroots_0_19,
   xwayland,
   enableXWayland ? true,
-  meson,
-  ninja,
-  scenefx,
-  wlroots_0_19,
-  libGL,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  __structuredAttrs = true;
-  strictDeps = true;
   pname = "mango";
   version = "0.14.4";
 
@@ -34,6 +32,8 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-WfQNALT+8ZbjZG2co1tz2dZZZw1tcU5ynuFe+vVMbV0=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -65,6 +65,8 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonEnable "xwayland" enableXWayland)
   ];
 
+  __structuredAttrs = true;
+
   passthru = {
     providedSessions = [
       "mango"
@@ -72,14 +74,16 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    mainProgram = "mango";
     description = "Lightweight and feature-rich Wayland compositor based on dwl";
     homepage = "https://mangowm.github.io";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       hustlerone
       yvnth
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "mango";
   };
 })

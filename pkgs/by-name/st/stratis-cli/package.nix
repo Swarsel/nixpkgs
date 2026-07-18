@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   nixosTests,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "stratis-cli";
   version = "3.8.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "stratis-storage";
@@ -16,6 +15,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-wkFInG/sbHxyi5UIjIANxsTd9BrIHuyAfYG4DvqLsmU=";
   };
+
+  env.STRATIS_STRICT_POOL_FEATURES = "1"; # required for unit tests
+
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+  ];
 
   build-system = with python3Packages; [
     setuptools
@@ -31,19 +36,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     wcwidth
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-  ];
-
   disabledTestPaths = [
     # tests below require dbus daemon
     "tests/whitebox/integration"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "stratis_cli" ];
-
-  env.STRATIS_STRICT_POOL_FEATURES = "1"; # required for unit tests
-
   passthru.tests = nixosTests.stratis;
 
   meta = {

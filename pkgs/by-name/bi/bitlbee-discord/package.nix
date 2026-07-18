@@ -1,9 +1,9 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
-  bitlbee,
+  fetchFromGitHub,
   autoreconfHook,
+  bitlbee,
   pkg-config,
 }:
 
@@ -12,9 +12,9 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.4.3";
 
   src = fetchFromGitHub {
-    tag = finalAttrs.version;
     owner = "sm00th";
     repo = "bitlbee-discord";
+    tag = finalAttrs.version;
     sha256 = "00qgdvrp7hv02n0ns685igp810zxmv3adsama8601122al6x041n";
   };
 
@@ -22,6 +22,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [ bitlbee ];
 
   preConfigure = ''
@@ -32,7 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Bitlbee plugin for Discord";
-
     homepage = "https://github.com/sm00th/bitlbee-discord";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ lassulus ];

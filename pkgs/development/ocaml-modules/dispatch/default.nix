@@ -1,17 +1,15 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
-  ocaml,
   alcotest,
+  buildDunePackage,
+  ocaml,
   result,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "dispatch";
   version = "0.5.0";
-
-  duneVersion = "3";
 
   src = fetchFromGitHub {
     owner = "inhabitedtype";
@@ -21,15 +19,14 @@ buildDunePackage (finalAttrs: {
   };
 
   propagatedBuildInputs = [ result ];
-
-  checkInputs = [ alcotest ];
-
   doCheck = lib.versionAtLeast ocaml.version "4.08";
+  checkInputs = [ alcotest ];
+  duneVersion = "3";
 
   meta = {
     inherit (finalAttrs.src.meta) homepage;
-    license = lib.licenses.bsd3;
     description = "Path-based dispatching for client- and server-side applications";
+    license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.vbgl ];
   };
 

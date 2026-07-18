@@ -1,8 +1,8 @@
 {
-  binutils,
   lib,
-  perlPackages,
   fetchFromGitLab,
+  binutils,
+  perlPackages,
 }:
 
 perlPackages.buildPerlPackage rec {
@@ -16,19 +16,19 @@ perlPackages.buildPerlPackage rec {
     hash = "sha256-gCc5JmmdhTAUQqkMOK/0YmlCRD0JcpemCpqusYmpoKU=";
   };
 
-  sourceRoot = "${src.name}/perl";
-
   postPatch = ''
     substituteInPlace arf.pm \
       --replace-fail /usr/bin/ar ${binutils.bintools}/bin/ar
   '';
 
+  sourceRoot = "${src.name}/perl";
+
   meta = {
     description = "Manipulate the cryptographic signatures stored inside a .deb file";
-    mainProgram = "debsigs";
     homepage = "https://gitlab.com/debsigs/debsigs";
     changelog = "https://gitlab.com/debsigs/debsigs/-/tags/release/${version}";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ usertam ];
+    mainProgram = "debsigs";
   };
 }

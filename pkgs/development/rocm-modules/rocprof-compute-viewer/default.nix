@@ -19,6 +19,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-hjwqU5TxV4p2EjGy5haQfQqItVtYMI7i/VIfrKZvqhE=";
   };
 
+  # tries to use qt_deploy_runtime_dependencies, but wrapQtAppsHook
+  # handles that instead
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail 'install(SCRIPT ''${deploy_script})' ""
+  '';
+
   nativeBuildInputs = [
     cmake
     ninja
@@ -28,13 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [
     qt6.qtbase
   ];
-
-  # tries to use qt_deploy_runtime_dependencies, but wrapQtAppsHook
-  # handles that instead
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail 'install(SCRIPT ''${deploy_script})' ""
-  '';
 
   cmakeFlags = [
     (lib.cmakeFeature "QT_VERSION_MAJOR" "6")

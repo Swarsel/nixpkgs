@@ -1,16 +1,15 @@
 {
   lib,
-  fetchPypi,
+  brotli,
   buildPythonPackage,
   django,
+  fetchPypi,
   zstandard,
-  brotli,
 }:
 
 buildPythonPackage rec {
   pname = "django-compression-middleware";
   version = "0.5.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -22,6 +21,8 @@ buildPythonPackage rec {
     zstandard
     brotli
   ];
+
+  format = "setuptools";
 
   meta = {
     description = "Django middleware to compress responses using several algorithms";

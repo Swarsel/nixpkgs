@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchCrate,
-  rustPlatform,
+  libiconv,
   openssl,
   pkg-config,
-  libiconv,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {

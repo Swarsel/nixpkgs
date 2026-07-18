@@ -17,11 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-93ItLKThtT9JRc+X/bRm06pugsN31HAF3qTUqqCu6nE=";
   };
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
-
   # https://github.com/FedeDP/libmodule/issues/7
   postPatch = ''
     substituteInPlace Extra/libmodule.pc.in \
@@ -29,13 +24,20 @@ stdenv.mkDerivation (finalAttrs: {
       --replace '$'{prefix}/@CMAKE_INSTALL_INCLUDEDIR@ @CMAKE_INSTALL_FULL_INCLUDEDIR@
   '';
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
+
   meta = {
     description = "C simple and elegant implementation of an actor library";
     homepage = "https://github.com/FedeDP/libmodule";
-    platforms = lib.platforms.linux;
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       eadwu
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

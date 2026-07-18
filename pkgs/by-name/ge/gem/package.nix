@@ -3,15 +3,15 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  puredata,
+  file,
+  glew,
   libGL,
   libGLU,
-  glew,
   libglut,
   libv4l,
   libx11,
-  file,
+  pkg-config,
+  puredata,
 }:
 
 stdenv.mkDerivation {
@@ -46,10 +46,12 @@ stdenv.mkDerivation {
     description = "Graphics Environment for Multimedia";
     homepage = "http://puredata.info/downloads/gem";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       raboof
       carlthome
     ];
+
     platforms = lib.platforms.linux;
   };
 }

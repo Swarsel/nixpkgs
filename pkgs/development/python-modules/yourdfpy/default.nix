@@ -1,28 +1,23 @@
 {
   lib,
-
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  # dependencies
+  lxml,
+  numpy,
+  pytest-cov-stub,
+  # nativeCheckInputs
+  pytestCheckHook,
   # build-system
   setuptools,
   setuptools-scm,
-
-  # dependencies
-  lxml,
-  trimesh,
-  numpy,
   six,
-
-  # nativeCheckInputs
-  pytestCheckHook,
-  pytest-cov-stub,
+  trimesh,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "yourdfpy";
   version = "0.0.60";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "clemense";
@@ -30,6 +25,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-tXFrwtxjLvHNxT/MhrAiV2CGcbKj1JRi/Yo8Qt6UBfk=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+  ];
 
   build-system = [
     setuptools
@@ -43,10 +43,7 @@ buildPythonPackage (finalAttrs: {
     six
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "yourdfpy"

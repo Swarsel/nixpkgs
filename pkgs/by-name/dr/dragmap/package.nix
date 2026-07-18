@@ -15,20 +15,9 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "Illumina";
     repo = "DRAGMAP";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-f1jsOErriS1I/iUS4CzJ3+Dz8SMUve/ccb3KaE+L7U8=";
+    fetchSubmodules = true;
   };
-
-  nativeBuildInputs = [ boost ];
-  buildInputs = [
-    gtest
-    zlib
-  ];
-
-  # Latest boost do not need system as a linking flag
-  postPatch = ''
-    sed -i 's/system filesystem/filesystem/' config.mk
-  '';
 
   patches = [
     # getHostVersion use an empty parameter list. This is now an error for GC
@@ -47,11 +36,26 @@ stdenv.mkDerivation (finalAttrs: {
     ./boost-iterator-range.patch
   ];
 
+  # Latest boost do not need system as a linking flag
+  postPatch = ''
+    sed -i 's/system filesystem/filesystem/' config.mk
+  '';
+
+  nativeBuildInputs = [ boost ];
+
+  buildInputs = [
+    gtest
+    zlib
+  ];
+
   env = {
-    GTEST_INCLUDEDIR = "${gtest.dev}/include";
     CPPFLAGS = "-I ${boost.dev}/include";
+    GTEST_INCLUDEDIR = "${gtest.dev}/include";
     LDFLAGS = "-L ${boost.out}/lib";
   };
+
+  # Tests are launched by default from makefile
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -62,21 +66,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  # Tests are launched by default from makefile
-  doCheck = false;
-
   meta = {
     description = "Open Source version of Dragen mapper for genomics";
-    mainProgram = "dragen-os";
+
     longDescription = ''
       DRAGMAP is an open-source software implementation of the DRAGEN mapper,
       which the Illumina team created to procude the same results as their
       proprietary DRAGEN hardware.
     '';
+
     homepage = "https://github.com/Illumina/DRAGMAP";
     changelog = "https://github.com/Illumina/DRAGMAP/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3;
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ apraga ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "dragen-os";
   };
 })

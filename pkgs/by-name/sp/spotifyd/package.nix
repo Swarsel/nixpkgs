@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  config,
+  fetchFromGitHub,
   alsa-lib,
   cmake,
+  config,
   dbus,
-  fetchFromGitHub,
   libjack2,
   libpulseaudio,
   nix-update-script,
@@ -32,8 +32,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-+t6z2cenw0fU5onl5F5vtk7Hr24IzTCAee+Lcnd7aT4=";
   };
 
-  cargoHash = "sha256-rv4FWyciv6vDKtD7moJppY3tOJb0B3ezE9HgCLNhIo8=";
-
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -49,16 +47,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ++ lib.optional withPulseAudio libpulseaudio
     ++ lib.optional withPortAudio portaudio;
 
-  # `aws-lc-sys` fails with this enabled
-  hardeningDisable = [ "strictoverflow" ];
-
-  buildNoDefaultFeatures = true;
-  buildFeatures =
-    lib.optional withALSA "alsa_backend"
-    ++ lib.optional withJack "rodiojack_backend"
-    ++ lib.optional withMpris "dbus_mpris"
-    ++ lib.optional withPortAudio "portaudio_backend"
-    ++ lib.optional withPulseAudio "pulseaudio_backend";
+  cargoHash = "sha256-rv4FWyciv6vDKtD7moJppY3tOJb0B3ezE9HgCLNhIo8=";
 
   checkFlags = lib.optionals stdenv.hostPlatform.isDarwin [
     # `assertion failed: shell.is_some()`
@@ -66,6 +55,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     # https://github.com/Spotifyd/spotifyd/blob/8777c67988508d3623d3f6b81c9379fb071ac7dd/src/utils.rs#L45-L47
     "--skip=utils::tests::test_ffi_discovery"
   ];
+
+  buildFeatures =
+    lib.optional withALSA "alsa_backend"
+    ++ lib.optional withJack "rodiojack_backend"
+    ++ lib.optional withMpris "dbus_mpris"
+    ++ lib.optional withPortAudio "portaudio_backend"
+    ++ lib.optional withPulseAudio "pulseaudio_backend";
+
+  buildNoDefaultFeatures = true;
+  # `aws-lc-sys` fails with this enabled
+  hardeningDisable = [ "strictoverflow" ];
 
   passthru = {
     tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
@@ -77,10 +77,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://spotifyd.rs/";
     changelog = "https://github.com/Spotifyd/spotifyd/releases/tag/${toString finalAttrs.src.tag}";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       anderslundstedt
       getchoo
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "spotifyd";
   };

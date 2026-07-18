@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  jre,
   graphviz,
+  jre,
   makeWrapper,
 }:
 
@@ -18,10 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  # The package is distributed as a prebuilt JAVA binary
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -33,6 +29,10 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
+  # The package is distributed as a prebuilt JAVA binary
+  dontConfigure = true;
 
   meta = {
     description = "Simple family tree generator that scales";

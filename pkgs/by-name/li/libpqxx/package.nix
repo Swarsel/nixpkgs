@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  gcc14Stdenv,
   fetchFromGitHub,
+  autoreconfHook,
+  gcc14Stdenv,
   libpq,
-  python3,
   postgresql,
   postgresqlTestHook,
-  autoreconfHook,
+  python3,
 }:
 
 # Work around issue reported in https://github.com/NixOS/nixpkgs/issues/476278.
@@ -28,21 +28,6 @@ gcc14Stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
-  nativeBuildInputs = [
-    # Needed because Makefile.am is patched to disable the tools/lint test.
-    autoreconfHook
-    python3
-  ];
-
-  buildInputs = [
-    libpq
-  ];
-
-  nativeCheckInputs = [
-    postgresql
-    postgresqlTestHook
-  ];
-
   postPatch = ''
     # Disable linting step for tests, it tries to install packages with pip.
     substituteInPlace Makefile.am \
@@ -53,6 +38,18 @@ gcc14Stdenv.mkDerivation (finalAttrs: {
     patchShebangs tools/*.py
   '';
 
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    # Needed because Makefile.am is patched to disable the tools/lint test.
+    autoreconfHook
+    python3
+  ];
+
+  buildInputs = [
+    libpq
+  ];
+
   configureFlags = [
     "--disable-documentation"
     "--enable-shared"
@@ -60,19 +57,21 @@ gcc14Stdenv.mkDerivation (finalAttrs: {
 
   doCheck = lib.meta.availableOn stdenv.hostPlatform postgresqlTestHook;
 
-  enableParallelBuilding = true;
+  nativeCheckInputs = [
+    postgresql
+    postgresqlTestHook
+  ];
 
   __structuredAttrs = true;
-
-  strictDeps = true;
+  enableParallelBuilding = true;
 
   meta = {
-    changelog = "https://github.com/jtv/libpqxx/releases/tag/${finalAttrs.version}";
     description = "C++ library to access PostgreSQL databases";
-    downloadPage = "https://github.com/jtv/libpqxx";
     homepage = "https://pqxx.org/development/libpqxx/";
+    changelog = "https://github.com/jtv/libpqxx/releases/tag/${finalAttrs.version}";
     license = lib.licenses.bsd3;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    downloadPage = "https://github.com/jtv/libpqxx";
   };
 })

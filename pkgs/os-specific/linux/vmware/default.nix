@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  gnugrep,
   kernel,
   kmod,
-  gnugrep,
 }:
 
 stdenv.mkDerivation {
@@ -17,12 +17,6 @@ stdenv.mkDerivation {
     rev = "5c80f597017882f76e9c7ffd48a292a4b7c860fe";
     hash = "sha256-EFOkzwul1QCaKUBwFqH8uIsIUcvtEmxYVaE/OdoHdZI=";
   };
-
-  hardeningDisable = [ "pic" ];
-
-  nativeBuildInputs = kernel.moduleBuildDependencies;
-
-  enableParallelBuilding = true;
 
   postPatch = ''
     substituteInPlace Makefile \
@@ -37,18 +31,25 @@ stdenv.mkDerivation {
     done
   '';
 
+  nativeBuildInputs = kernel.moduleBuildDependencies;
+
   preInstall = ''
     mkdir -p "$out/lib/modules/${kernel.modDirVersion}/misc"
   '';
+
+  enableParallelBuilding = true;
+  hardeningDisable = [ "pic" ];
 
   meta = {
     description = "Kernel modules needed for VMware hypervisor";
     homepage = "https://github.com/mkubecek/vmware-host-modules";
     license = lib.licenses.gpl2Only;
-    platforms = [ "x86_64-linux" ];
+
     maintainers = with lib.maintainers; [
       deinferno
       vifino
     ];
+
+    platforms = [ "x86_64-linux" ];
   };
 }

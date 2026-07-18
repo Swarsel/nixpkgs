@@ -1,36 +1,35 @@
 {
   lib,
+  stdenv,
+  fetchurl,
   _7zz,
   alsa-lib,
-  systemd,
-  wrapGAppsHook4,
   autoPatchelfHook,
   blas,
   dpkg,
-  fetchurl,
   gtk3,
-  libglvnd,
-  libxkbcommon,
-  makeShellWrapper,
   libgbm,
+  libglvnd,
+  libsecret,
+  libx11,
+  libxcomposite,
+  libxdamage,
+  libxkbcommon,
+  libxkbfile,
+  makeShellWrapper,
   musl,
   nss,
-  patchelf,
   openssl,
-  stdenv,
-  libxdamage,
-  libxcomposite,
-  libx11,
-  libxkbfile,
-  libsecret,
+  patchelf,
+  systemd,
   webkitgtk_4_1,
+  wrapGAppsHook4,
 }:
 let
   pname = "positron-bin";
   version = "2026.06.1-6";
 in
 stdenv.mkDerivation {
-  dontFixup = stdenv.hostPlatform.isDarwin;
   inherit version pname;
 
   src =
@@ -49,6 +48,16 @@ stdenv.mkDerivation {
         url = "https://cdn.posit.co/positron/releases/deb/x86_64/Positron-${version}-x64.deb";
         hash = "sha256-kTVHMNRbPoLg2Ua+Fo6UaUiUA6OqPwNAXXpgtqaBjls=";
       };
+
+  nativeBuildInputs =
+    lib.optionals stdenv.hostPlatform.isLinux [
+      autoPatchelfHook
+      dpkg
+      wrapGAppsHook4
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [
+      _7zz
+    ];
 
   buildInputs = [
     makeShellWrapper
@@ -73,21 +82,6 @@ stdenv.mkDerivation {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     blas
     patchelf
-  ];
-
-  nativeBuildInputs =
-    lib.optionals stdenv.hostPlatform.isLinux [
-      autoPatchelfHook
-      dpkg
-      wrapGAppsHook4
-    ]
-    ++ lib.optionals stdenv.hostPlatform.isDarwin [
-      _7zz
-    ];
-
-  runtimeDependencies = lib.optionals stdenv.hostPlatform.isLinux [
-    # Needed to fix the "Zygote could not fork" error.
-    (lib.getLib systemd)
   ];
 
   installPhase =
@@ -135,21 +129,31 @@ stdenv.mkDerivation {
         runHook postInstall
       '';
 
+  dontFixup = stdenv.hostPlatform.isDarwin;
+
+  runtimeDependencies = lib.optionals stdenv.hostPlatform.isLinux [
+    # Needed to fix the "Zygote could not fork" error.
+    (lib.getLib systemd)
+  ];
+
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Positron, a next-generation data science IDE";
     homepage = "https://github.com/posit-dev/positron";
     license = lib.licenses.elastic20;
+
     maintainers = with lib.maintainers; [
       b-rodrigues
       detroyejr
     ];
-    mainProgram = "positron";
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
+    mainProgram = "positron";
   };
 }

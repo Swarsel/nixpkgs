@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "duration-parser";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "adriansahlman";
@@ -18,13 +17,15 @@ buildPythonPackage rec {
     hash = "sha256-Vn3H2JEMrJ6b/7eNG+h9tG5QzslGvaV3sunM7UO9Bok=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "duration_parser"

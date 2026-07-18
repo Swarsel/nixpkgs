@@ -1,22 +1,19 @@
 {
   lib,
   fetchFromGitHub,
-  replaceVars,
   buildPythonPackage,
-  isPy3k,
   gnutls,
-  twisted,
+  isPy3k,
   pyopenssl,
+  replaceVars,
   service-identity,
   setuptools,
+  twisted,
 }:
 
 buildPythonPackage rec {
   pname = "python3-gnutls";
   version = "3.1.10";
-  pyproject = true;
-
-  disabled = !isPy3k;
 
   src = fetchFromGitHub {
     owner = "AGProjects";
@@ -24,6 +21,12 @@ buildPythonPackage rec {
     tag = "release-${version}";
     hash = "sha256-AdFRF3ZlkkAoSm5rvf/09FSYIo7SsZ38sD2joOLyukA=";
   };
+
+  patches = [
+    (replaceVars ./libgnutls-path.patch {
+      gnutlslib = "${lib.getLib gnutls}/lib";
+    })
+  ];
 
   nativeBuildInputs = [ setuptools ];
 
@@ -33,19 +36,13 @@ buildPythonPackage rec {
     service-identity
   ];
 
-  patches = [
-    (replaceVars ./libgnutls-path.patch {
-      gnutlslib = "${lib.getLib gnutls}/lib";
-    })
-  ];
-
+  disabled = !isPy3k;
+  pyproject = true;
   pythonImportsCheck = [ "gnutls" ];
 
   meta = {
     description = "Python wrapper for the GnuTLS library";
-    homepage = "https://github.com/AGProjects/python3-gnutls";
-    license = lib.licenses.lgpl21Plus;
-    maintainers = with lib.maintainers; [ chanley ];
+
     longDescription = ''
       This package provides a high level object oriented wrapper around libgnutls,
       as well as low level bindings to the GnuTLS types and functions via ctypes.
@@ -64,5 +61,9 @@ buildPythonPackage rec {
       extend without any need to write C code or recompile anything.
 
     '';
+
+    homepage = "https://github.com/AGProjects/python3-gnutls";
+    license = lib.licenses.lgpl21Plus;
+    maintainers = with lib.maintainers; [ chanley ];
   };
 }

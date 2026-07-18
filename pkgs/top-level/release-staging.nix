@@ -8,19 +8,20 @@
   nixpkgs ? {
     outPath = (import ../../lib).cleanSource ../..;
     revCount = 1234;
-    shortRev = "abcdef";
     revision = "0000000000000000000000000000000000000000";
+    shortRev = "abcdef";
   },
-  # The platform doubles for which we build Nixpkgs.
-  supportedSystems ? builtins.fromJSON (builtins.readFile ./release-supported-systems.json),
   # Attributes passed to nixpkgs. Don't build packages marked as unfree.
   nixpkgsArgs ? {
+    __allowFileset = false;
+
     config = {
       allowUnfree = false;
       inHydra = true;
     };
-    __allowFileset = false;
   },
+  # The platform doubles for which we build Nixpkgs.
+  supportedSystems ? builtins.fromJSON (builtins.readFile ./release-supported-systems.json),
 }:
 
 let

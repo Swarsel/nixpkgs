@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   apprise,
   babel,
   buildPythonPackage,
@@ -16,7 +17,6 @@
   requests,
   requests-oauthlib,
   setuptools,
-  stdenv,
   terminal-notifier,
   testers,
 }:
@@ -24,7 +24,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "apprise";
   version = "1.11.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -37,6 +36,17 @@ buildPythonPackage (finalAttrs: {
   '';
 
   nativeBuildInputs = [ installShellFiles ];
+
+  nativeCheckInputs = [
+    gntp
+    paho-mqtt
+    pytest-mock
+    pytestCheckHook
+  ];
+
+  postInstall = ''
+    installManPage packaging/man/apprise.1
+  '';
 
   build-system = [
     babel
@@ -52,23 +62,13 @@ buildPythonPackage (finalAttrs: {
     requests-oauthlib
   ];
 
-  nativeCheckInputs = [
-    gntp
-    paho-mqtt
-    pytest-mock
-    pytestCheckHook
-  ];
-
-  postInstall = ''
-    installManPage packaging/man/apprise.1
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "apprise" ];
 
   passthru = {
     tests.version = testers.testVersion {
-      package = apprise;
       version = "v${finalAttrs.version}";
+      package = apprise;
     };
   };
 

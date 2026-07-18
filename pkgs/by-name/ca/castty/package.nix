@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  libsoundio,
   lame,
+  libsoundio,
 }:
 
 stdenv.mkDerivation {

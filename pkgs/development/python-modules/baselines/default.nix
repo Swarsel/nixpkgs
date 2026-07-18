@@ -1,28 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytest,
-  gym,
-  scipy,
-  tqdm,
-  joblib,
-  dill,
-  progressbar2,
-  cloudpickle,
+  buildPythonPackage,
   click,
-  pyzmq,
-  tensorflow,
+  cloudpickle,
+  dill,
+  gym,
+  joblib,
   mpi4py,
+  progressbar2,
+  pytest,
+  pyzmq,
+  scipy,
+  setuptools,
+  tensorflow,
+  tqdm,
 }:
 
 buildPythonPackage {
   pname = "baselines";
   version = "0.1.6"; # remember to manually adjust the rev
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "openai";
@@ -32,6 +29,17 @@ buildPythonPackage {
     hash = "sha256-lK1HRBdKR92E2hHZF5cFZ0P3N1aJ57pw8tazrPOZTEg=";
   };
 
+  postPatch = ''
+    # Needed for the atari wrapper, but the gym-atari package is not supported
+    # in nixos anyways. Since opencv-python is not currently packaged, we
+    # disable it.
+    sed -i -e '/opencv-python/d' setup.py
+  '';
+
+  # fails to create a daemon, probably because of sandboxing
+  doCheck = false;
+  nativeCheckInputs = [ pytest ];
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -48,18 +56,7 @@ buildPythonPackage {
     click
   ];
 
-  postPatch = ''
-    # Needed for the atari wrapper, but the gym-atari package is not supported
-    # in nixos anyways. Since opencv-python is not currently packaged, we
-    # disable it.
-    sed -i -e '/opencv-python/d' setup.py
-  '';
-
-  # fails to create a daemon, probably because of sandboxing
-  doCheck = false;
-
-  nativeCheckInputs = [ pytest ];
-
+  pyproject = true;
   pythonImportsCheck = [ "baselines" ];
 
   meta = {

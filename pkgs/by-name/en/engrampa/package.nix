@@ -4,22 +4,22 @@
   fetchFromGitHub,
   autoconf-archive,
   autoreconfHook,
-  pkg-config,
-  gettext,
-  itstool,
-  libxml2,
   caja,
+  file,
+  gettext,
+  gitUpdater,
   gtk3,
   hicolor-icon-theme,
+  itstool,
   json-glib,
+  libxml2,
   mate-common,
   mate-desktop,
+  pkg-config,
   wrapGAppsHook3,
   yelp-tools,
-  gitUpdater,
   # can be defaulted to true once switch to meson
   withMagic ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
-  file,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,8 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "mate-desktop";
     repo = "engrampa";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-bmqCsbGz49wda1sMiAvG3XTGpFEwMvDx8ojuzxZ9MAI=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -73,14 +73,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Archive Manager for MATE";
-    mainProgram = "engrampa";
     homepage = "https://mate-desktop.org";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl2Plus
       fdl11Plus
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "engrampa";
     teams = [ lib.teams.mate ];
   };
 })

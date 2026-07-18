@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
-  linux-pam,
-  systemdLibs,
+  docbook-xsl-ns,
   libcap,
-  libxcrypt,
   libeconf,
   libselinux,
-  docbook-xsl-ns,
+  libxcrypt,
   libxslt,
+  linux-pam,
+  meson,
+  ninja,
   nixosTests,
+  pkg-config,
+  systemdLibs,
 }:
 let
   selinuxSupport = lib.meta.availableOn stdenv.hostPlatform libselinux;
@@ -29,7 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-9l+y7FLb0IZXXp4RstlhNR6yA7b4b831obFuiVtO9+k=";
   };
 
-  __structuredAttrs = true;
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -54,6 +53,8 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonOption "c_args" "-ffat-lto-objects")
   ];
 
+  __structuredAttrs = true;
+
   passthru.tests = {
     inherit (nixosTests) login-nosuid;
   };
@@ -62,6 +63,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Services, utilities and PAM modules, which allow authentication and account management on systems with the NoNewPrivs flag set (no setuid/setgid binaries)";
     homepage = "https://github.com/thkukuk/account-utils";
     changelog = "https://github.com/thkukuk/account-utils/releases/tag/v${finalAttrs.version}";
+
     license =
       with lib.licenses;
       AND [
@@ -69,6 +71,7 @@ stdenv.mkDerivation (finalAttrs: {
         lgpl21Plus
         bsd2
       ];
+
     maintainers = with lib.maintainers; [ grimmauld ];
     platforms = lib.platforms.linux;
     # take precedence over shadow

@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   imagemagick,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -23,16 +23,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ imagemagick ];
-
   makeFlags = [ "prefix=$(out)" ];
-
   enableParallelBuilding = true;
-
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
   meta = {
     description = "Wallpapers for Pop!_OS";
     homepage = "https://pop.system76.com/";
+
     license = with lib.licenses; [
       #
       # Kate Hazen:
@@ -84,9 +82,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       # tony-webster-97532.jpg
       publicDomain
     ];
+
     maintainers = with lib.maintainers; [
       pandapip1
     ];
+
     platforms = lib.platforms.all;
   };
 })

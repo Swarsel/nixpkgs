@@ -54,7 +54,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "C99 library implementation of AWS client-side authentication";
     homepage = "https://github.com/awslabs/aws-c-auth";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ r-burns ];
+    platforms = lib.platforms.unix;
   };
 })

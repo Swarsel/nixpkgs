@@ -1,46 +1,46 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
+  buildPackages,
   gettext,
-  perl,
-  pkg-config,
-  xfce4-dev-tools,
-  wrapGAppsHook3,
-  libice,
-  libsm,
+  gitUpdater,
+  gobject-introspection,
+  gtk3,
   libepoxy,
   libgtop,
   libgudev,
+  libice,
+  libsm,
   libstartup_notification,
-  xfconf,
-  gtk3,
   libxfce4util,
+  perl,
+  pkg-config,
+  vala,
+  wrapGAppsHook3,
+  xfce4-dev-tools,
+  xfconf,
   withIntrospection ?
     lib.meta.availableOn stdenv.hostPlatform gobject-introspection
     && stdenv.hostPlatform.emulatorAvailable buildPackages,
-  buildPackages,
-  gobject-introspection,
-  vala,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libxfce4ui";
   version = "4.20.2";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchFromGitLab {
-    domain = "gitlab.xfce.org";
     owner = "xfce";
     repo = "libxfce4ui";
     tag = "libxfce4ui-${finalAttrs.version}";
     hash = "sha256-NsTrJ2271v8vMMyiEef+4Rs0KBOkSkKPjfoJdgQU0ds=";
+    domain = "gitlab.xfce.org";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     gettext
@@ -77,19 +77,21 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   passthru.updateScript = gitUpdater {
-    rev-prefix = "libxfce4ui-";
     odd-unstable = true;
+    rev-prefix = "libxfce4ui-";
   };
 
   meta = {
     description = "Widgets library for Xfce";
     homepage = "https://gitlab.xfce.org/xfce/libxfce4ui";
-    mainProgram = "xfce4-about";
+
     license = with lib.licenses; [
       lgpl2Plus
       lgpl21Plus
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "xfce4-about";
     teams = [ lib.teams.xfce ];
   };
 })

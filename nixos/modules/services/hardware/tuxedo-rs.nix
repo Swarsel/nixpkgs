@@ -12,7 +12,6 @@ in
   options = {
     hardware.tuxedo-rs = {
       enable = lib.mkEnableOption "Rust utilities for interacting with hardware from TUXEDO Computers";
-
       tailor-gui.enable = lib.mkEnableOption "tailor-gui, an alternative to TUXEDO Control Center, written in Rust";
     };
   };
@@ -20,28 +19,27 @@ in
   config = lib.mkIf cfg.enable (
     lib.mkMerge [
       {
+        environment.systemPackages = [ pkgs.tuxedo-rs ];
         hardware.tuxedo-drivers.enable = true;
+        services.dbus.packages = [ pkgs.tuxedo-rs ];
 
         systemd = {
           services.tailord = {
             enable = true;
-            description = "Tuxedo Tailor hardware control service";
             after = [ "systemd-logind.service" ];
-            wantedBy = [ "multi-user.target" ];
+            description = "Tuxedo Tailor hardware control service";
 
             serviceConfig = {
-              Type = "dbus";
               BusName = "com.tux.Tailor";
-              ExecStart = "${pkgs.tuxedo-rs}/bin/tailord";
               Environment = "RUST_BACKTRACE=1";
+              ExecStart = "${pkgs.tuxedo-rs}/bin/tailord";
               Restart = "on-failure";
+              Type = "dbus";
             };
+
+            wantedBy = [ "multi-user.target" ];
           };
         };
-
-        services.dbus.packages = [ pkgs.tuxedo-rs ];
-
-        environment.systemPackages = [ pkgs.tuxedo-rs ];
       }
       (lib.mkIf cfg.tailor-gui.enable {
         environment.systemPackages = [ pkgs.tailor-gui ];

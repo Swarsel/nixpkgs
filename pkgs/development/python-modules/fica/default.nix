@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   docutils,
+  numpy,
+  poetry-core,
+  pytestCheckHook,
   pyyaml,
   sphinx,
-  pytestCheckHook,
-  numpy,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "fica";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "chrispyles";
@@ -21,6 +20,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-A13xC8BGsPddsk8ZN2DeMCYc0phy/B4JD9shuoorOwg=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    numpy
+  ];
 
   build-system = [
     poetry-core
@@ -32,13 +36,10 @@ buildPythonPackage (finalAttrs: {
     sphinx
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "fica"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    numpy
   ];
 
   meta = {

@@ -1,14 +1,14 @@
 {
   lib,
-  config,
-  callPackage,
-  newScope,
-  boost179,
-  opencv,
-  python3Packages,
-  openmpi,
   stdenv,
+  boost179,
+  callPackage,
+  config,
+  newScope,
+  opencv,
+  openmpi,
   pkgs,
+  python3Packages,
 }:
 
 let
@@ -23,9 +23,45 @@ let
     in
     {
       inherit rocmClangStdenv;
-      stdenv = rocmClangStdenv;
+      inherit (self.llvm) rocm-toolchain clang openmp;
 
-      rocmUpdateScript = self.callPackage ./update.nix { };
+      amdsmi = pyPackages.callPackage ./amdsmi {
+        inherit (self) rocmUpdateScript;
+      };
+
+      aotriton = self.callPackage ./aotriton { stdenv = origStdenv; };
+      aqlprofile = self.callPackage ./aqlprofile { };
+
+      ck4inductor = pyPackages.callPackage ./composable_kernel/ck4inductor.nix {
+        inherit (self) composable_kernel rocm-toolchain;
+      };
+
+      # Replaces hip, opencl-runtime, and rocclr
+      clr = self.callPackage ./clr { };
+      composable_kernel = self.callPackage ./composable_kernel { };
+      # hipTensor - Only supports GFX9
+      composable_kernel_base = self.callPackage ./composable_kernel/base.nix { };
+      half = self.callPackage ./half { };
+      hip-common = self.callPackage ./hip-common { };
+      hipblas = self.callPackage ./hipblas { };
+      hipblas-common = self.callPackage ./hipblas-common { };
+      hipblaslt = self.callPackage ./hipblaslt { };
+      hipcc = self.callPackage ./hipcc { stdenv = origStdenv; };
+      hipcub = self.callPackage ./hipcub { };
+      hipfft = self.callPackage ./hipfft { };
+      hipfort = self.callPackage ./hipfort { };
+
+      hipify = self.callPackage ./hipify {
+        stdenv = origStdenv;
+      };
+
+      hiprand = self.callPackage ./hiprand { };
+      hiprt = self.callPackage ./hiprt { };
+      hipsolver = self.callPackage ./hipsolver { };
+      hipsparse = self.callPackage ./hipsparse { };
+      hipsparselt = self.callPackage ./hipsparselt { };
+      # hsakmt was merged into rocm-runtime
+      hsakmt = self.rocm-runtime;
 
       ## ROCm ##
       llvm = lib.recurseIntoAttrs (
@@ -35,140 +71,8 @@ let
           inherit (self) rocm-device-libs;
         }
       );
-      inherit (self.llvm) rocm-toolchain clang openmp;
 
-      rocm-core = self.callPackage ./rocm-core { stdenv = origStdenv; };
-
-      rocm-cmake = self.callPackage ./rocm-cmake { stdenv = origStdenv; };
-
-      rocm-device-libs = self.callPackage ./rocm-device-libs { };
-
-      rocm-runtime = self.callPackage ./rocm-runtime {
-        stdenv = origStdenv;
-      };
-
-      rocm-comgr = self.callPackage ./rocm-comgr { };
-
-      rocminfo = self.callPackage ./rocminfo { stdenv = origStdenv; };
-
-      amdsmi = pyPackages.callPackage ./amdsmi {
-        inherit (self) rocmUpdateScript;
-      };
-
-      rocm-smi = pyPackages.callPackage ./rocm-smi {
-        inherit (self) rocmUpdateScript;
-      };
-
-      aqlprofile = self.callPackage ./aqlprofile { };
-
-      rdc = self.callPackage ./rdc { };
-
-      rocm-docs-core = python3Packages.callPackage ./rocm-docs-core { };
-
-      hip-common = self.callPackage ./hip-common { };
-
-      hipcc = self.callPackage ./hipcc { stdenv = origStdenv; };
-
-      # Replaces hip, opencl-runtime, and rocclr
-      clr = self.callPackage ./clr { };
-
-      aotriton = self.callPackage ./aotriton { stdenv = origStdenv; };
-
-      hipify = self.callPackage ./hipify {
-        stdenv = origStdenv;
-      };
-
-      # hsakmt was merged into rocm-runtime
-      hsakmt = self.rocm-runtime;
-
-      rocprofiler = self.callPackage ./rocprofiler {
-        inherit (llvm) clang;
-      };
-      rocprofiler-register = self.callPackage ./rocprofiler-register {
-        inherit (llvm) clang;
-      };
-      rocprofiler-sdk = self.callPackage ./rocprofiler-sdk { };
-
-      rocprof-compute-viewer = self.callPackage ./rocprof-compute-viewer { };
-
-      rocprof-trace-decoder = self.callPackage ./rocprof-trace-decoder { };
-
-      roctracer = self.callPackage ./roctracer { };
-
-      rocgdb = self.callPackage ./rocgdb { };
-
-      rocdbgapi = self.callPackage ./rocdbgapi { };
-
-      rocr-debug-agent = self.callPackage ./rocr-debug-agent { };
-
-      rocprim = self.callPackage ./rocprim { };
-
-      rocsparse = self.callPackage ./rocsparse { };
-
-      rocthrust = self.callPackage ./rocthrust { };
-
-      rocrand = self.callPackage ./rocrand { };
-
-      hiprand = self.callPackage ./hiprand { };
-
-      rocfft = self.callPackage ./rocfft { };
-
-      mscclpp = self.callPackage ./mscclpp { };
-
-      rccl = self.callPackage ./rccl { };
-
-      rocshmem = self.callPackage ./rocshmem { };
-
-      hipcub = self.callPackage ./hipcub { };
-
-      hipsparse = self.callPackage ./hipsparse { };
-
-      hipfort = self.callPackage ./hipfort { };
-
-      hipfft = self.callPackage ./hipfft { };
-
-      hiprt = self.callPackage ./hiprt { };
-
-      tensile = pyPackages.callPackage ./tensile {
-        inherit (self)
-          rocmUpdateScript
-          clr
-          ;
-      };
-
-      rocblas = self.callPackage ./rocblas { };
-
-      rocsolver = self.callPackage ./rocsolver { };
-
-      rocwmma = self.callPackage ./rocwmma { };
-
-      rocalution = self.callPackage ./rocalution { };
-
-      rocmlir-rock = self.callPackage ./rocmlir {
-        buildRockCompiler = true;
-      };
-      rocmlir = self.rocmlir-rock;
-
-      hipsolver = self.callPackage ./hipsolver { };
-
-      hipblas-common = self.callPackage ./hipblas-common { };
-
-      hipblas = self.callPackage ./hipblas { };
-
-      hipblaslt = self.callPackage ./hipblaslt { };
-
-      hipsparselt = self.callPackage ./hipsparselt { };
-
-      # hipTensor - Only supports GFX9
-
-      composable_kernel_base = self.callPackage ./composable_kernel/base.nix { };
-      composable_kernel = self.callPackage ./composable_kernel { };
-
-      ck4inductor = pyPackages.callPackage ./composable_kernel/ck4inductor.nix {
-        inherit (self) composable_kernel rocm-toolchain;
-      };
-
-      half = self.callPackage ./half { };
+      migraphx = self.callPackage ./migraphx { stdenv = origStdenv; };
 
       miopen = self.callPackage ./miopen {
         boost = boost179.override { enableStatic = true; };
@@ -176,30 +80,25 @@ let
 
       miopen-hip = self.miopen;
 
-      migraphx = self.callPackage ./migraphx { stdenv = origStdenv; };
-
-      rpp = self.callPackage ./rpp { };
-
-      rpp-hip = self.rpp.override { useCPU = false; };
-
-      rpp-cpu = self.rpp.override { useCPU = true; };
-
       mivisionx = self.callPackage ./mivisionx {
-        stdenv = origStdenv;
         opencv = opencv.override { enablePython = true; };
-      };
-
-      mivisionx-hip = self.mivisionx.override {
-        rpp = self.rpp-hip;
-        useOpenCL = false;
-        useCPU = false;
+        stdenv = origStdenv;
       };
 
       mivisionx-cpu = self.mivisionx.override {
         rpp = self.rpp-cpu;
-        useOpenCL = false;
         useCPU = true;
+        useOpenCL = false;
       };
+
+      mivisionx-hip = self.mivisionx.override {
+        rpp = self.rpp-hip;
+        useCPU = false;
+        useOpenCL = false;
+      };
+
+      mpi = self.openmpi;
+      mscclpp = self.callPackage ./mscclpp { };
 
       # Even if config.rocmSupport is false we need rocmSupport true
       # version of ucc/ucx in openmpi in this package set
@@ -214,13 +113,84 @@ let
         in
         {
           inherit ucx;
+
           ucc = prev.ucc.override {
-            enableCuda = false;
             inherit ucx;
+            enableCuda = false;
           };
         }
       );
-      mpi = self.openmpi;
+
+      rccl = self.callPackage ./rccl { };
+      rdc = self.callPackage ./rdc { };
+      rocalution = self.callPackage ./rocalution { };
+      rocblas = self.callPackage ./rocblas { };
+      rocdbgapi = self.callPackage ./rocdbgapi { };
+      rocfft = self.callPackage ./rocfft { };
+      rocgdb = self.callPackage ./rocgdb { };
+
+      rocm-bandwidth-test = self.callPackage ./rocm-bandwidth-test {
+        rocmPackages = self;
+      };
+
+      rocm-cmake = self.callPackage ./rocm-cmake { stdenv = origStdenv; };
+      rocm-comgr = self.callPackage ./rocm-comgr { };
+      rocm-core = self.callPackage ./rocm-core { stdenv = origStdenv; };
+      rocm-device-libs = self.callPackage ./rocm-device-libs { };
+      rocm-docs-core = python3Packages.callPackage ./rocm-docs-core { };
+
+      rocm-runtime = self.callPackage ./rocm-runtime {
+        stdenv = origStdenv;
+      };
+
+      rocm-smi = pyPackages.callPackage ./rocm-smi {
+        inherit (self) rocmUpdateScript;
+      };
+
+      rocm-tests = self.callPackage ./rocm-tests {
+        rocmPackages = self;
+      };
+
+      rocmUpdateScript = self.callPackage ./update.nix { };
+      rocminfo = self.callPackage ./rocminfo { stdenv = origStdenv; };
+      rocmlir = self.rocmlir-rock;
+
+      rocmlir-rock = self.callPackage ./rocmlir {
+        buildRockCompiler = true;
+      };
+
+      rocprim = self.callPackage ./rocprim { };
+      rocprof-compute-viewer = self.callPackage ./rocprof-compute-viewer { };
+      rocprof-trace-decoder = self.callPackage ./rocprof-trace-decoder { };
+
+      rocprofiler = self.callPackage ./rocprofiler {
+        inherit (llvm) clang;
+      };
+
+      rocprofiler-register = self.callPackage ./rocprofiler-register {
+        inherit (llvm) clang;
+      };
+
+      rocprofiler-sdk = self.callPackage ./rocprofiler-sdk { };
+      rocr-debug-agent = self.callPackage ./rocr-debug-agent { };
+      rocrand = self.callPackage ./rocrand { };
+      rocshmem = self.callPackage ./rocshmem { };
+      rocsolver = self.callPackage ./rocsolver { };
+      rocsparse = self.callPackage ./rocsparse { };
+      rocthrust = self.callPackage ./rocthrust { };
+      roctracer = self.callPackage ./roctracer { };
+      rocwmma = self.callPackage ./rocwmma { };
+      rpp = self.callPackage ./rpp { };
+      rpp-cpu = self.rpp.override { useCPU = true; };
+      rpp-hip = self.rpp.override { useCPU = false; };
+      stdenv = rocmClangStdenv;
+
+      tensile = pyPackages.callPackage ./tensile {
+        inherit (self)
+          rocmUpdateScript
+          clr
+          ;
+      };
 
       meta = {
         # eval all pkgsRocm release attrs with
@@ -240,27 +210,28 @@ let
               acc
           ) { } attrPaths;
       };
-
-      rocm-bandwidth-test = self.callPackage ./rocm-bandwidth-test {
-        rocmPackages = self;
-      };
-
-      rocm-tests = self.callPackage ./rocm-tests {
-        rocmPackages = self;
-      };
     }
     // lib.optionalAttrs config.allowAliases {
-      rpp-opencl = throw ''
-        'rpp-opencl' has been removed as it has been broken for a year and has no consuming packages.
-        Use 'rpp' or 'rpp-cpu' instead.
-      ''; # Added 2026-03-08
+      clang-ocl = throw ''
+        'clang-ocl' has been deprecated upstream. Use ROCm's clang directly.
+      ''; # Added 2025-3-16
 
-      rocmPath = throw ''
-        'rocm-path' has been removed. If a ROCM_PATH value is required in nixpkgs please
-        construct one with the minimal set of required deps.
-        For convenience use outside of nixpkgs consider one of the entries in
-        'rocmPackages.meta'.
-      ''; # Added 2025-09-30
+      hsa-amd-aqlprofile-bin = lib.warn ''
+        'hsa-amd-aqlprofile-bin' has been replaced by 'aqlprofile'.
+      '' self.aqlprofile; # Added 2025-08-27
+
+      miopen-opencl = throw ''
+        'miopen-opencl' has been deprecated.
+      ''; # Added 2024-3-3
+
+      miopengemm = throw ''
+        'miopengemm' has been deprecated.
+      ''; # Added 2024-3-3
+
+      mivisionx-opencl = throw ''
+        'mivisionx-opencl' has been deprecated.
+        Other versions of mivisionx are still available.
+      ''; # Added 2024-3-24
 
       rocm-merged-llvm = throw ''
         'rocm-merged-llvm' has been removed.
@@ -272,34 +243,25 @@ let
         size.
       ''; # Added 2025-09-30
 
-      hsa-amd-aqlprofile-bin = lib.warn ''
-        'hsa-amd-aqlprofile-bin' has been replaced by 'aqlprofile'.
-      '' self.aqlprofile; # Added 2025-08-27
-
-      triton = throw ''
-        'rocmPackages.triton' has been removed. Please use python3Packages.triton
-      ''; # Added 2025-08-24
-
       rocm-thunk = throw ''
         'rocm-thunk' has been removed. It's now part of the ROCm runtime.
       ''; # Added 2025-3-16
 
-      clang-ocl = throw ''
-        'clang-ocl' has been deprecated upstream. Use ROCm's clang directly.
-      ''; # Added 2025-3-16
+      rocmPath = throw ''
+        'rocm-path' has been removed. If a ROCM_PATH value is required in nixpkgs please
+        construct one with the minimal set of required deps.
+        For convenience use outside of nixpkgs consider one of the entries in
+        'rocmPackages.meta'.
+      ''; # Added 2025-09-30
 
-      miopengemm = throw ''
-        'miopengemm' has been deprecated.
-      ''; # Added 2024-3-3
+      rpp-opencl = throw ''
+        'rpp-opencl' has been removed as it has been broken for a year and has no consuming packages.
+        Use 'rpp' or 'rpp-cpu' instead.
+      ''; # Added 2026-03-08
 
-      miopen-opencl = throw ''
-        'miopen-opencl' has been deprecated.
-      ''; # Added 2024-3-3
-
-      mivisionx-opencl = throw ''
-        'mivisionx-opencl' has been deprecated.
-        Other versions of mivisionx are still available.
-      ''; # Added 2024-3-24
+      triton = throw ''
+        'rocmPackages.triton' has been removed. Please use python3Packages.triton
+      ''; # Added 2025-08-24
     }
   );
   scopeForArches =
@@ -320,16 +282,11 @@ outer
   }) outer.clr.gpuTargets
 )
 // {
-  gfx9 = scopeForArches [
-    "gfx906"
-    "gfx908"
-    "gfx90a"
-    "gfx942"
-  ];
   gfx10 = scopeForArches [
     "gfx1010"
     "gfx1030"
   ];
+
   gfx11 = scopeForArches [
     "gfx1100"
     "gfx1101"
@@ -337,8 +294,16 @@ outer
     "gfx1150"
     "gfx1151"
   ];
+
   gfx12 = scopeForArches [
     "gfx1200"
     "gfx1201"
+  ];
+
+  gfx9 = scopeForArches [
+    "gfx906"
+    "gfx908"
+    "gfx90a"
+    "gfx942"
   ];
 }

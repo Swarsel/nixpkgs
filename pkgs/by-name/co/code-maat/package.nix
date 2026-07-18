@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  makeBinaryWrapper,
   jre,
+  makeBinaryWrapper,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -14,8 +14,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     url = "https://github.com/adamtornhill/code-maat/releases/download/v${finalAttrs.version}/code-maat-${finalAttrs.version}-standalone.jar";
     hash = "sha256-QoeuIDSQGERFD3aVR7xEl6DaGm0cf6b63IWHBeZ0O18=";
   };
-
-  dontUnpack = true;
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -36,12 +34,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       runHook postInstall
     '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Command line tool to mine and analyze data from version-control systems";
-    mainProgram = "code-maat";
     homepage = "https://github.com/adamtornhill/code-maat";
-    platforms = lib.platforms.unix;
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ sir4ur0n ];
+    platforms = lib.platforms.unix;
+    mainProgram = "code-maat";
   };
 })

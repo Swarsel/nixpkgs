@@ -2,34 +2,23 @@
   lib,
   stdenv,
   fetchurl,
-  which,
   gfortran,
   libGLU,
-  libxmu,
   libx11,
+  libxmu,
+  which,
 }:
 
 stdenv.mkDerivation rec {
-  version = "6.3";
   pname = "molden";
+  version = "6.3";
 
   src = fetchurl {
     url = "https://ftp.science.ru.nl/Molden//molden${version}.tar.gz";
     sha256 = "02qi16pz2wffn3cc47dpjqhfafzwfmb79waw4nnhfyir8a4h3cq1";
   };
 
-  nativeBuildInputs = [ which ];
-  buildInputs = [
-    gfortran
-    libGLU
-    libx11
-    libxmu
-  ];
-
   patches = [ ./dont_register_file_types.patch ];
-
-  # fix build with GCC 14+
-  env.NIX_CFLAGS_COMPILE = "-Wno-implicit-function-declaration -Wno-implicit-int -Wno-return-mismatch -std=gnu17";
 
   postPatch = ''
     substituteInPlace ./makefile --replace '-L/usr/X11R6/lib'  "" \
@@ -44,6 +33,18 @@ stdenv.mkDerivation rec {
     sed -i '/^# DO NOT DELETE THIS LINE/q;' surf/Makefile
   '';
 
+  nativeBuildInputs = [ which ];
+
+  buildInputs = [
+    gfortran
+    libGLU
+    libx11
+    libxmu
+  ];
+
+  # fix build with GCC 14+
+  env.NIX_CFLAGS_COMPILE = "-Wno-implicit-function-declaration -Wno-implicit-int -Wno-return-mismatch -std=gnu17";
+
   preInstall = ''
     mkdir -p $out/bin
   '';
@@ -53,12 +54,14 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Display and manipulate molecular structures";
     homepage = "http://www3.cmbi.umcn.nl/molden/";
+
     license = {
+      free = false;
       fullName = "Free for academic/non-profit use";
       url = "http://www3.cmbi.umcn.nl/molden/CopyRight.html";
-      free = false;
     };
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [ markuskowa ];
+    platforms = lib.platforms.linux;
   };
 }

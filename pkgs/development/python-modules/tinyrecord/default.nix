@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   tinydb,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "tinyrecord";
   version = "0.2.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "eugene-eeo";
@@ -24,7 +23,7 @@ buildPythonPackage rec {
   ];
 
   enabledTestPaths = [ "tests.py" ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "tinyrecord" ];
 
   meta = {

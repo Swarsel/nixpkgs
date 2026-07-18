@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   cython,
-  tree-sitter,
   pytestCheckHook,
   python,
+  setuptools,
+  tree-sitter,
 }:
 
 buildPythonPackage rec {
   pname = "tree-sitter-languages";
   version = "1.10.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "grantjenks";
@@ -22,6 +21,7 @@ buildPythonPackage rec {
     # Use git, to also fetch tree-sitter repositories that upstream puts their
     # hashes in the repository as well, in repos.txt.
     forceFetchGit = true;
+
     postFetch = ''
       cd $out
       substitute build.py get-repos.py \
@@ -32,16 +32,13 @@ buildPythonPackage rec {
     '';
   };
 
-  build-system = [
-    setuptools
-    cython
-  ];
-  dependencies = [ tree-sitter ];
   # Generate languages.so file (build won't fail without this, but tests will).
   preBuild = ''
     ${python.pythonOnBuildForHost.interpreter} build.py
   '';
+
   nativeCheckInputs = [ pytestCheckHook ];
+
   # Without cd $out, tests fail to import the compiled cython extensions.
   # Without copying the ./tests/ directory to $out, pytest won't detect the
   # tests and run them. See also:
@@ -51,6 +48,13 @@ buildPythonPackage rec {
     cd $out
   '';
 
+  build-system = [
+    setuptools
+    cython
+  ];
+
+  dependencies = [ tree-sitter ];
+  pyproject = true;
   pythonImportsCheck = [ "tree_sitter_languages" ];
 
   meta = {

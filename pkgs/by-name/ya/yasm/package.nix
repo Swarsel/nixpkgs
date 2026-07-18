@@ -22,8 +22,8 @@ stdenv.mkDerivation (finalAttrs: {
   depsBuildBuild = [ buildPackages.stdenv.cc ];
 
   meta = {
-    homepage = "http://www.tortall.net/projects/yasm/";
     description = "Complete rewrite of the NASM assembler";
+    homepage = "http://www.tortall.net/projects/yasm/";
     license = lib.licenses.bsd2;
     platforms = lib.platforms.unix;
   };

@@ -1,8 +1,8 @@
 {
-  appimageTools,
+  lib,
   stdenv,
   fetchurl,
-  lib,
+  appimageTools,
 }:
 let
   pname = "artix-games-launcher";
@@ -29,8 +29,8 @@ appimageTools.wrapType2 {
     description = "Launcher for games by Artix Entertainment";
     homepage = "https://www.artix.com/downloads/artixlauncher";
     license = lib.licenses.unfree;
-    mainProgram = "artix-games-launcher";
     maintainers = with lib.maintainers; [ jtliang24 ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "artix-games-launcher";
   };
 }

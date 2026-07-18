@@ -1,8 +1,8 @@
 {
-  octave,
-  runCommand,
   nativeOctavePkgTestInputs,
+  octave,
   octavePkgTestEnv,
+  runCommand,
 }:
 package:
 

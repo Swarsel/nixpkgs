@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   freezegun,
   ical,
   pydantic,
@@ -16,9 +16,6 @@
 buildPythonPackage rec {
   pname = "gcal-sync";
   version = "9.0.0";
-  pyproject = true;
-
-  disabled = pythonOlder "3.13";
 
   src = fetchFromGitHub {
     owner = "allenporter";
@@ -27,6 +24,14 @@ buildPythonPackage rec {
     hash = "sha256-17w9ozdgMEZ9wpypWZtf3AqZDW/9XYb/oiO/7yO1MsM=";
   };
 
+  nativeCheckInputs = [
+    freezegun
+    pytest-aiohttp
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -35,15 +40,8 @@ buildPythonPackage rec {
     pydantic
   ];
 
-  __darwinAllowLocalNetworking = true;
-
-  nativeCheckInputs = [
-    freezegun
-    pytest-aiohttp
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  disabled = pythonOlder "3.13";
+  pyproject = true;
   pythonImportsCheck = [ "gcal_sync" ];
 
   meta = {

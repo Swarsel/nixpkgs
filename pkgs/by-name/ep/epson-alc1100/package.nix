@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchurl,
-  cups,
-  pkgsi686Linux,
-  dpkg,
-  psutils,
-  makeWrapper,
-  ghostscript,
   bash,
+  cups,
+  dpkg,
+  ghostscript,
+  makeWrapper,
+  pkgsi686Linux,
+  psutils,
 }:
 
 let
   version = "1.2-0";
 
   libstdcpp5 = fetchurl {
-    url = "mirror://ubuntu/pool/universe/g/gcc-3.3/libstdc++5_3.3.6-17ubuntu1_i386.deb";
     sha256 = "10f8zcmqaa7skvg2bz94mnlgqpan4iscvi8913r6iawjh7hiisjy";
+    url = "mirror://ubuntu/pool/universe/g/gcc-3.3/libstdc++5_3.3.6-17ubuntu1_i386.deb";
   };
 in
 stdenv.mkDerivation {
-  pname = "epson-alc1100";
   inherit version;
+  pname = "epson-alc1100";
 
   src = fetchurl {
     url = "https://download3.ebz.epson.net/dsc/f/03/00/11/33/07/4027e99517b5c388d444b8444d719b4b77f7e9db/Epson-ALC1100-filter-1.2.tar.gz";
@@ -46,14 +46,6 @@ stdenv.mkDerivation {
     bash
   ];
 
-  postUnpack = ''
-    dpkg -x ${libstdcpp5} libstdcpp5_i386;
-
-    mkdir -p $out/lib;
-
-    mv libstdcpp5_i386/usr/lib/* $out/lib;
-  '';
-
   postFixup = ''
     patchelf --set-interpreter ${pkgsi686Linux.glibc}/lib/ld-linux.so.2 \
       --set-rpath "${
@@ -76,9 +68,17 @@ stdenv.mkDerivation {
       --suffix PATH : "\$PATH:${psutils}/bin:${ghostscript}/bin:${bash}/bin:/var/lib/cups/path/bin"
   '';
 
+  postUnpack = ''
+    dpkg -x ${libstdcpp5} libstdcpp5_i386;
+
+    mkdir -p $out/lib;
+
+    mv libstdcpp5_i386/usr/lib/* $out/lib;
+  '';
+
   meta = {
-    homepage = "http://download.ebz.epson.net/dsc/search/01/search/";
     description = "Epson AcuLaser C1100 Driver";
+
     longDescription = ''
       This package provides a print filter for printing to EPSON AL-C1100
       printers on Linux systems.
@@ -90,11 +90,14 @@ stdenv.mkDerivation {
         };
     '';
 
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    homepage = "http://download.ebz.epson.net/dsc/search/01/search/";
+
     license = with lib.licenses; [
       mit
       eapl
     ];
+
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ lib.maintainers.eperuffo ];
     platforms = lib.platforms.linux;
   };

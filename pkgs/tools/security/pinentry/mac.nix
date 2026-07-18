@@ -3,20 +3,19 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
+  common-updater-scripts,
   libassuan,
   libgpg-error,
-  makeBinaryWrapper,
-  texinfo,
-  common-updater-scripts,
-  writers,
-  re-plistbuddy,
   # TODO: Clean up on `staging`
   llvmPackages,
+  makeBinaryWrapper,
+  re-plistbuddy,
+  texinfo,
+  writers,
 }:
 
 stdenv.mkDerivation rec {
   pname = "pinentry-mac";
-
   # NOTE: Don't update manually. Use passthru.updateScript on a Mac with XCode
   # installed.
   version = "1.1.1.1";
@@ -44,6 +43,7 @@ stdenv.mkDerivation rec {
   '';
 
   strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     makeBinaryWrapper
@@ -77,6 +77,7 @@ stdenv.mkDerivation rec {
 
   passthru = {
     binaryPath = "Applications/pinentry-mac.app/Contents/MacOS/pinentry-mac";
+
     updateScript = writers.writeBash "update-pinentry-mac" ''
       set -euxo pipefail
 
@@ -108,8 +109,8 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Pinentry for GPG on Mac";
-    license = lib.licenses.gpl2Plus;
     homepage = "https://github.com/GPGTools/pinentry";
+    license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.darwin;
     mainProgram = "pinentry-mac";
   };

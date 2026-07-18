@@ -2,13 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-
   libcap,
-  zlib,
+  libmnl,
   libnetfilter_queue,
   libnfnetlink,
-  libmnl,
+  nix-update-script,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,16 +17,15 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchFromGitHub {
     owner = "bol-van";
     repo = "zapret";
-
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-UWkLi/wWihtdLyk77cQ90xZ31vho1PjPfFQ6bQWrIUs=";
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       git rev-parse --short HEAD > $out/COMMIT
       find "$out" -name .git -print0 | xargs -0 rm -rf
     '';
-
-    tag = "v${finalAttrs.version}";
-    hash = "sha256-UWkLi/wWihtdLyk77cQ90xZ31vho1PjPfFQ6bQWrIUs=";
   };
 
   buildInputs = [
@@ -38,11 +36,11 @@ stdenv.mkDerivation (finalAttrs: {
     libmnl
   ];
 
+  makeFlags = [ "TGT=${placeholder "out"}/bin" ];
+
   preBuild = ''
     makeFlagsArray+=("CFLAGS=-DZAPRET_GH_VER=${finalAttrs.src.tag} -DZAPRET_GH_HASH=`cat $src/COMMIT`")
   '';
-
-  makeFlags = [ "TGT=${placeholder "out"}/bin" ];
 
   installPhase = ''
     runHook preInstall
@@ -97,7 +95,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/bol-van/zapret/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ nishimara ];
-    mainProgram = "zapret";
     platforms = lib.platforms.linux;
+    mainProgram = "zapret";
   };
 })

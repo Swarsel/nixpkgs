@@ -1,27 +1,27 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
-  cmake,
-  git,
-  pkg-config,
   boost188,
+  cmake,
   eigen_5,
-  glm,
+  fetchFromCodeberg,
   gcc,
+  git,
+  glm,
+  ilmbase,
   libGL,
   libpng,
-  makeWrapper,
-  openexr,
-  onetbb,
-  libxrandr,
+  libx11,
+  libxcursor,
+  libxext,
   libxi,
   libxinerama,
-  libxext,
-  libxcursor,
-  libx11,
-  ilmbase,
+  libxrandr,
   llvmPackages,
+  makeWrapper,
+  onetbb,
+  openexr,
+  pkg-config,
   unstableGitUpdater,
 }:
 
@@ -37,7 +37,13 @@ stdenv.mkDerivation {
     fetchSubmodules = true;
   };
 
+  postPatch = ''
+    substituteInPlace extern/googletest/googletest/CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 2.6.2)" "cmake_minimum_required(VERSION 3.10)"
+  '';
+
   strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     git
@@ -68,18 +74,13 @@ stdenv.mkDerivation {
   # force char to be unsigned on aarch64
   # https://codeberg.org/doug-moen/curv/issues/227
   env.NIX_CFLAGS_COMPILE = toString [ "-fsigned-char" ];
-
   # GPU tests do not work in sandbox, instead we do this for sanity
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
     test "$(set -x; $out/bin/curv -x "2 + 2")" -eq "4"
     runHook postInstallCheck
-  '';
-
-  postPatch = ''
-    substituteInPlace extern/googletest/googletest/CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 2.6.2)" "cmake_minimum_required(VERSION 3.10)"
   '';
 
   ## support runtime compilation with -Ojit
@@ -100,10 +101,10 @@ stdenv.mkDerivation {
     description = "2D and 3D geometric modelling programming language for creating art with maths";
     homepage = "https://codeberg.org/doug-moen/curv";
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ pbsds ];
     platforms = lib.platforms.all;
+    mainProgram = "curv";
     # aarch64 fails installCheckPhase: https://hydra.nixos.org/build/319705783
     broken = stdenv.hostPlatform.isDarwin || stdenv.hostPlatform.isAarch64;
-    maintainers = with lib.maintainers; [ pbsds ];
-    mainProgram = "curv";
   };
 }

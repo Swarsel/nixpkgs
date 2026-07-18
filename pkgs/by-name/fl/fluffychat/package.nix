@@ -2,20 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  callPackage,
+  copyDesktopItems,
   fetchzip,
-  imagemagick,
-  libgbm,
-  libdrm,
   flutter341,
+  imagemagick,
+  libdrm,
+  libgbm,
+  makeDesktopItem,
   pulseaudio,
   webkitgtk_4_1,
-  copyDesktopItems,
-  makeDesktopItem,
-
-  callPackage,
-  vodozemac-wasm ? callPackage ./vodozemac-wasm.nix { flutter = flutter341; },
-
   targetFlutterPlatform ? "linux",
+  vodozemac-wasm ? callPackage ./vodozemac-wasm.nix { flutter = flutter341; },
 }:
 
 let
@@ -25,12 +23,14 @@ let
   ];
   pubspecLock = lib.importJSON ./pubspec.lock.json;
   libwebrtc = fetchzip {
-    url = "https://github.com/flutter-webrtc/flutter-webrtc/releases/download/v1.4.0/libwebrtc.zip";
     sha256 = "sha256-OvqUF6RuytDorJE+C58EnIxPHfcphs8iPiPjt7SDrU0=";
+    url = "https://github.com/flutter-webrtc/flutter-webrtc/releases/download/v1.4.0/libwebrtc.zip";
   };
 in
 flutter341.buildFlutterApplication (
   rec {
+    inherit pubspecLock;
+    inherit targetFlutterPlatform;
     pname = "fluffychat-${targetFlutterPlatform}";
     version = "2.6.0";
 
@@ -41,28 +41,26 @@ flutter341.buildFlutterApplication (
       hash = "sha256-iAHJjpDd2RNYPtEqyotFNvW/nybW1ozNtvMTT+wQVVY=";
     };
 
-    inherit pubspecLock;
-
-    gitHashes = {
-      webcrypto = "sha256-yPhL0LoSIaJ9e9wrLtdPuTBRvXft1DQM9KR7WdNcj68=";
-    };
-
-    inherit targetFlutterPlatform;
-
     flutterBuildFlags = [
       # Required since v2.4.0
       "--enable-experiment=dot-shorthands"
     ];
 
+    gitHashes = {
+      webcrypto = "sha256-yPhL0LoSIaJ9e9wrLtdPuTBRvXft1DQM9KR7WdNcj68=";
+    };
+
     meta = {
       description = "Chat with your friends (matrix client)";
       homepage = "https://fluffychat.im/";
       license = lib.licenses.agpl3Plus;
+
       maintainers = with lib.maintainers; [
         mkg20001
         tebriel
         aleksana
       ];
+
       badPlatforms = lib.platforms.darwin;
     }
     // lib.optionalAttrs (targetFlutterPlatform == "linux") {
@@ -70,39 +68,43 @@ flutter341.buildFlutterApplication (
     };
   }
   // lib.optionalAttrs (targetFlutterPlatform == "linux") {
+    # Temporary fix for json deprecation error
+    # https://github.com/juliansteenbakker/flutter_secure_storage/issues/965
+    postPatch = ''
+      substituteInPlace linux/CMakeLists.txt \
+        --replace-fail \
+        "PRIVATE -Wall -Werror" \
+        "PRIVATE -Wall -Werror -Wno-deprecated"
+    '';
+
     nativeBuildInputs = [
       imagemagick
       copyDesktopItems
       webkitgtk_4_1
     ];
 
-    runtimeDependencies = [ pulseaudio ];
-
     env.NIX_LDFLAGS = "-rpath-link ${libwebrtcRpath}";
 
-    desktopItems = [
-      (makeDesktopItem {
-        name = "Fluffychat";
-        exec = "fluffychat";
-        icon = "fluffychat";
-        desktopName = "Fluffychat";
-        genericName = "Chat with your friends (matrix client)";
-        categories = [
-          "Chat"
-          "Network"
-          "InstantMessaging"
-        ];
-        startupWMClass = "fluffychat";
-      })
-    ];
+    postInstall = ''
+      FAV=$out/app/fluffychat-linux/data/flutter_assets/assets/favicon.png
+      ICO=$out/share/icons
+
+      for size in 24 32 42 64 128 256 512; do
+        D=$ICO/hicolor/''${size}x''${size}/apps
+        mkdir -p $D
+        magick $FAV -resize ''${size}x''${size} $D/fluffychat.png
+      done
+
+      patchelf --add-rpath ${libwebrtcRpath} $out/app/fluffychat-linux/lib/libwebrtc.so
+    '';
 
     customSourceBuilders = {
       flutter_webrtc =
-        { version, src, ... }:
+        { src, version, ... }:
         stdenv.mkDerivation {
-          pname = "flutter_webrtc";
           inherit version src;
           inherit (src) passthru;
+          pname = "flutter_webrtc";
 
           postPatch = ''
             substituteInPlace third_party/CMakeLists.txt \
@@ -121,27 +123,24 @@ flutter341.buildFlutterApplication (
         };
     };
 
-    # Temporary fix for json deprecation error
-    # https://github.com/juliansteenbakker/flutter_secure_storage/issues/965
-    postPatch = ''
-      substituteInPlace linux/CMakeLists.txt \
-        --replace-fail \
-        "PRIVATE -Wall -Werror" \
-        "PRIVATE -Wall -Werror -Wno-deprecated"
-    '';
+    desktopItems = [
+      (makeDesktopItem {
+        categories = [
+          "Chat"
+          "Network"
+          "InstantMessaging"
+        ];
 
-    postInstall = ''
-      FAV=$out/app/fluffychat-linux/data/flutter_assets/assets/favicon.png
-      ICO=$out/share/icons
+        desktopName = "Fluffychat";
+        exec = "fluffychat";
+        genericName = "Chat with your friends (matrix client)";
+        icon = "fluffychat";
+        name = "Fluffychat";
+        startupWMClass = "fluffychat";
+      })
+    ];
 
-      for size in 24 32 42 64 128 256 512; do
-        D=$ICO/hicolor/''${size}x''${size}/apps
-        mkdir -p $D
-        magick $FAV -resize ''${size}x''${size} $D/fluffychat.png
-      done
-
-      patchelf --add-rpath ${libwebrtcRpath} $out/app/fluffychat-linux/lib/libwebrtc.so
-    '';
+    runtimeDependencies = [ pulseaudio ];
   }
   // lib.optionalAttrs (targetFlutterPlatform == "web") {
     preBuild = ''

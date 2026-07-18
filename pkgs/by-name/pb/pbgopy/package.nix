@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,9 +19,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Copy and paste between devices";
-    mainProgram = "pbgopy";
     homepage = "https://github.com/nakabonne/pbgopy";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "pbgopy";
   };
 })

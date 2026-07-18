@@ -1,24 +1,23 @@
 {
   lib,
-  buildPythonPackage,
-  django-stubs-ext,
-  django,
   fetchFromGitHub,
-  uv-build,
-  redis,
+  buildPythonPackage,
+  django,
+  django-stubs-ext,
   mypy,
   oracledb,
   pytestCheckHook,
+  redis,
   types-pytz,
   types-pyyaml,
   types-redis,
   typing-extensions,
+  uv-build,
 }:
 
 buildPythonPackage rec {
   pname = "django-stubs";
   version = "5.2.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "typeddjango";
@@ -34,6 +33,11 @@ buildPythonPackage rec {
     sed -i "/mypy/d" pytest.ini
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
+
   build-system = [ uv-build ];
 
   dependencies = [
@@ -44,31 +48,28 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  optional-dependencies = {
-    compatible-mypy = [ mypy ];
-    oracle = [ oracledb ];
-    redis = [
-      redis
-      types-redis
-    ];
-  };
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
-  disabledTests = [
-    # AttributeError: module 'django.contrib.auth.forms' has no attribute 'SetUnusablePasswordMixin'
-    "test_find_classes_inheriting_from_generic"
-  ];
-
   disabledTestPaths = [
     # Skip type checking
     "tests/typecheck/"
     "ext/tests/typecheck/"
   ];
 
+  disabledTests = [
+    # AttributeError: module 'django.contrib.auth.forms' has no attribute 'SetUnusablePasswordMixin'
+    "test_find_classes_inheriting_from_generic"
+  ];
+
+  optional-dependencies = {
+    compatible-mypy = [ mypy ];
+    oracle = [ oracledb ];
+
+    redis = [
+      redis
+      types-redis
+    ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "django-stubs" ];
 
   meta = {

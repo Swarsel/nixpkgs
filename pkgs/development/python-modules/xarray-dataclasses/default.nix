@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  numpy,
   poetry-core,
   pytestCheckHook,
-  numpy,
   typing-extensions,
   xarray,
 }:
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "xarray-dataclasses";
   version = "1.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "astropenguin";
@@ -25,8 +24,6 @@ buildPythonPackage rec {
     poetry-core
   ];
 
-  pythonRelaxDeps = [ "xarray" ];
-
   propagatedBuildInputs = [
     numpy
     typing-extensions
@@ -34,8 +31,9 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "xarray_dataclasses" ];
+  pythonRelaxDeps = [ "xarray" ];
 
   meta = {
     description = "Xarray data creation made easy by dataclass";

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "copygen";
@@ -15,14 +15,14 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-dOIGGZWtr8F82YJRXibdw3MvohLFBQxD+Y4OkZIJc2s=";
-  subPackages = [ "." ];
   proxyVendor = true;
+  subPackages = [ "." ];
 
   meta = {
     description = "Command-line and programmatic Go code generator that generates custom type-based code";
     homepage = "https://github.com/switchupcb/copygen";
     license = lib.licenses.agpl3Only;
-    mainProgram = "copygen";
     maintainers = with lib.maintainers; [ connerohnesorge ];
+    mainProgram = "copygen";
   };
 })

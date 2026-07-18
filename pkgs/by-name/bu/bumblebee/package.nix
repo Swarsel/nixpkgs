@@ -17,25 +17,29 @@
 # To use at startup, see hardware.bumblebee options.
 
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  autoreconfHook,
   fetchpatch,
-  pkg-config,
-  help2man,
-  makeWrapper,
   glib,
-  libbsd,
-  libx11,
-  xorg-server,
+  help2man,
   kmod,
-  xf86-video-nouveau,
-  nvidia_x11 ? linuxPackages.nvidia_x11,
+  libbsd,
+  libglvnd,
+  libx11,
   linuxPackages,
+  makeWrapper,
+  pkg-config,
   pkgsi686Linux,
   virtualgl,
-  libglvnd,
-  autoreconfHook,
+  xf86-video-nouveau,
+  xorg-server,
+  extraNouveauDeviceOptions ? "",
+  extraNvidiaDeviceOptions ? "",
+  libglvnd_i686 ?
+    if stdenv.hostPlatform.system == "x86_64-linux" then pkgsi686Linux.libglvnd else null,
+  nvidia_x11 ? linuxPackages.nvidia_x11,
   # The below should only be non-null in a x86_64 system. On a i686
   # system the above nvidia_x11 and virtualgl will be the i686 packages.
   # TODO: Confusing. Perhaps use "SubArch" instead of i686?
@@ -44,11 +48,7 @@
       pkgsi686Linux.linuxPackages.nvidia_x11.override { libsOnly = true; }
     else
       null,
-  libglvnd_i686 ?
-    if stdenv.hostPlatform.system == "x86_64-linux" then pkgsi686Linux.libglvnd else null,
   useDisplayDevice ? false,
-  extraNvidiaDeviceOptions ? "",
-  extraNouveauDeviceOptions ? "",
   useNvidia ? true,
 }:
 
@@ -75,16 +75,16 @@ let
   );
 
   modprobePatch = fetchpatch {
-    url = "https://github.com/Bumblebee-Project/Bumblebee/commit/1ada79fe5916961fc4e4917f8c63bb184908d986.patch";
     sha256 = "02vq3vba6nx7gglpjdfchws9vjhs1x02a543yvqrxqpvvdfim2x2";
+    url = "https://github.com/Bumblebee-Project/Bumblebee/commit/1ada79fe5916961fc4e4917f8c63bb184908d986.patch";
   };
   libkmodPatch = fetchpatch {
-    url = "https://github.com/Bumblebee-Project/Bumblebee/commit/deceb14cdf2c90ff64ebd1010a674305464587da.patch";
     sha256 = "00c05i5lxz7vdbv445ncxac490vbl5g9w3vy3gd71qw1f0si8vwh";
+    url = "https://github.com/Bumblebee-Project/Bumblebee/commit/deceb14cdf2c90ff64ebd1010a674305464587da.patch";
   };
   gcc10Patch = fetchpatch {
-    url = "https://github.com/Bumblebee-Project/Bumblebee/commit/f94a118a88cd76e2dbea33d735bd53cf54b486a1.patch";
     hash = "sha256-3b5tLoMrGYSdg9Hz5bh0c44VIrbSZrY56JpWEyU/Pik=";
+    url = "https://github.com/Bumblebee-Project/Bumblebee/commit/f94a118a88cd76e2dbea33d735bd53cf54b486a1.patch";
   };
 
 in
@@ -105,17 +105,6 @@ stdenv.mkDerivation rec {
     gcc10Patch
   ];
 
-  # By default we don't want to use a display device
-  nvidiaDeviceOptions =
-    lib.optionalString (!useDisplayDevice) ''
-      # Disable display device
-      Option "UseEDID" "false"
-      Option "UseDisplayDevice" "none"
-    ''
-    + extraNvidiaDeviceOptions;
-
-  nouveauDeviceOptions = extraNouveauDeviceOptions;
-
   # the have() function is deprecated and not available to bash completions the
   # way they are currently loaded in NixOS, so use _have. See #10936
   postPatch = ''
@@ -123,14 +112,12 @@ stdenv.mkDerivation rec {
       --replace "have optirun" "_have optirun"
   '';
 
-  preConfigure = ''
-    # Apply configuration options
-    substituteInPlace conf/xorg.conf.nvidia \
-      --subst-var nvidiaDeviceOptions
-
-    substituteInPlace conf/xorg.conf.nouveau \
-      --subst-var nouveauDeviceOptions
-  '';
+  nativeBuildInputs = [
+    makeWrapper
+    pkg-config
+    help2man
+    autoreconfHook
+  ];
 
   # Build-time dependencies of bumblebeed and optirun.
   # Note that it has several runtime dependencies.
@@ -139,12 +126,6 @@ stdenv.mkDerivation rec {
     glib
     libbsd
     kmod
-  ];
-  nativeBuildInputs = [
-    makeWrapper
-    pkg-config
-    help2man
-    autoreconfHook
   ];
 
   # The order of LDPATH is very specific: First X11 then the host
@@ -170,6 +151,15 @@ stdenv.mkDerivation rec {
     "-DX_MODULE_APPENDS=\\\"${xmodules}\\\""
   ];
 
+  preConfigure = ''
+    # Apply configuration options
+    substituteInPlace conf/xorg.conf.nvidia \
+      --subst-var nvidiaDeviceOptions
+
+    substituteInPlace conf/xorg.conf.nouveau \
+      --subst-var nouveauDeviceOptions
+  '';
+
   postInstall = ''
     wrapProgram "$out/sbin/bumblebeed" \
       --prefix PATH : "${bbdPath}"
@@ -177,6 +167,17 @@ stdenv.mkDerivation rec {
     wrapProgram "$out/bin/optirun" \
       --prefix PATH : "${virtualgl}/bin"
   '';
+
+  nouveauDeviceOptions = extraNouveauDeviceOptions;
+
+  # By default we don't want to use a display device
+  nvidiaDeviceOptions =
+    lib.optionalString (!useDisplayDevice) ''
+      # Disable display device
+      Option "UseEDID" "false"
+      Option "UseDisplayDevice" "none"
+    ''
+    + extraNvidiaDeviceOptions;
 
   meta = {
     description = "Daemon for managing Optimus videocards (power-on/off, spawns xservers)";

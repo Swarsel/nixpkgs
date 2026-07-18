@@ -1,19 +1,17 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   makeBinaryWrapper,
   symlinkJoin,
-  versionCheckHook,
   vale,
   valeStyles,
+  versionCheckHook,
 }:
 
 buildGoModule rec {
   pname = "vale";
   version = "3.15.1";
-
-  subPackages = [ "cmd/vale" ];
 
   src = fetchFromGitHub {
     owner = "errata-ai";
@@ -23,28 +21,31 @@ buildGoModule rec {
   };
 
   vendorHash = "sha256-OOatkx5c+0VCT1+M/Ra60Ujy/djgQd1f3SIYoh9Mesg=";
+  # Tests require network access
+  doCheck = false;
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
     "-X main.version=${version}"
   ];
 
-  # Tests require network access
-  doCheck = false;
-  doInstallCheck = true;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  subPackages = [ "cmd/vale" ];
 
   passthru.withStyles =
     selector:
     symlinkJoin {
-      name = "vale-with-styles-${vale.version}";
-      paths = [ vale ] ++ selector valeStyles;
       nativeBuildInputs = [ makeBinaryWrapper ];
+
       postBuild = ''
         wrapProgram "$out/bin/vale" \
           --set VALE_STYLES_PATH "$out/share/vale/styles/"
       '';
+
+      name = "vale-with-styles-${vale.version}";
+      paths = [ vale ] ++ selector valeStyles;
+
       meta = {
         inherit (vale.meta) mainProgram;
       };
@@ -52,6 +53,7 @@ buildGoModule rec {
 
   meta = {
     description = "Syntax-aware linter for prose built with speed and extensibility in mind";
+
     longDescription = ''
       Vale in Nixpkgs offers the helper `.withStyles` allow you to install it
       predefined styles:
@@ -60,10 +62,11 @@ buildGoModule rec {
       vale.withStyles (s: [ s.alex s.google ])
       ```
     '';
+
     homepage = "https://vale.sh/";
     changelog = "https://github.com/errata-ai/vale/releases/tag/v${version}";
-    mainProgram = "vale";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ pbsds ];
+    mainProgram = "vale";
   };
 }

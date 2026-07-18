@@ -1,20 +1,19 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   angr,
   buildPythonPackage,
   cmd2,
   coreutils,
-  fetchFromGitHub,
   pygments,
   pytestCheckHook,
   setuptools,
-  stdenv,
 }:
 
 buildPythonPackage rec {
   pname = "angrcli";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fmagin";
@@ -28,17 +27,17 @@ buildPythonPackage rec {
       --replace-fail "/bin/ls" "${coreutils}/bin/ls"
   '';
 
+  nativeCheckInputs = [
+    coreutils
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
     angr
     cmd2
     pygments
-  ];
-
-  nativeCheckInputs = [
-    coreutils
-    pytestCheckHook
   ];
 
   disabledTests = lib.optionals (!stdenv.hostPlatform.isx86) [
@@ -48,6 +47,7 @@ buildPythonPackage rec {
     "test_max_depth"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "angrcli" ];
 
   meta = {

@@ -2,34 +2,34 @@
   lib,
   stdenv,
   fetchurl,
+  docbook-xsl-nons,
+  docbook_xml_dtd_412,
+  gdk-pixbuf,
+  glib,
+  gnome,
+  gobject-introspection,
+  gtk-doc,
   meson,
   mesonEmulatorHook,
   ninja,
   pkg-config,
   vala,
-  gtk-doc,
-  docbook-xsl-nons,
-  docbook_xml_dtd_412,
-  glib,
-  gdk-pixbuf,
-  gobject-introspection,
-  gnome,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libmediaart";
   version = "1.9.7";
 
+  src = fetchurl {
+    url = "mirror://gnome/sources/libmediaart/${lib.versions.majorMinor finalAttrs.version}/libmediaart-${finalAttrs.version}.tar.xz";
+    sha256 = "K0Pdn1Tw2NC4nirduDNBqwbXuYyxsucEODWEr5xWD2s=";
+  };
+
   outputs = [
     "out"
     "dev"
     "devdoc"
   ];
-
-  src = fetchurl {
-    url = "mirror://gnome/sources/libmediaart/${lib.versions.majorMinor finalAttrs.version}/libmediaart-${finalAttrs.version}.tar.xz";
-    sha256 = "K0Pdn1Tw2NC4nirduDNBqwbXuYyxsucEODWEr5xWD2s=";
-  };
 
   nativeBuildInputs = [
     meson
@@ -63,8 +63,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Library tasked with managing, extracting and handling media art caches";
-    teams = [ lib.teams.gnome ];
     license = lib.licenses.gpl2;
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.gnome ];
   };
 })

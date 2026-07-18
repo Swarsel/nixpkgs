@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
 }:
 
@@ -18,20 +18,18 @@ buildNpmPackage (finalAttrs: {
 
   npmDepsHash = "sha256-QP2dlsZb43/p3+P+uNPn3hd3zbKtlYRVl0ABXbv12V4=";
 
-  dontNpmBuild = true;
-
-  npmFlags = [ "--ignore-scripts" ];
-
   postInstall = ''
     rm -rf $out/lib/node_modules/elm-upgrade/node_modules/.bin
   '';
 
+  dontNpmBuild = true;
+  npmFlags = [ "--ignore-scripts" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/avh4/elm-upgrade/blob/v${finalAttrs.version}/CHANGELOG.md";
     description = "Upgrade your Elm 0.18 projects to Elm 0.19";
     homepage = "https://github.com/avh4/elm-upgrade";
+    changelog = "https://github.com/avh4/elm-upgrade/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "elm-upgrade";

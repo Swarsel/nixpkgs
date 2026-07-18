@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
   autoreconfHook,
+  fetchFromCodeberg,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,14 +17,13 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ autoreconfHook ];
-
   enableParallelBuilding = true;
 
   meta = {
     description = "C99 HTML parsing algorithm";
     homepage = "https://codeberg.org/gumbo-parser/gumbo-parser";
+    license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.nico202 ];
     platforms = with lib.platforms; linux ++ darwin;
-    license = lib.licenses.asl20;
   };
 })

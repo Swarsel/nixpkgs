@@ -6,7 +6,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "vecx";
   version = "0-unstable-2026-04-11";
 
   src = fetchFromGitHub {
@@ -15,6 +14,8 @@ mkLibretroCore {
     rev = "8f671cc9d737f2890c3ce19e177e2984dcae121f";
     hash = "sha256-gNHPmoCiqWg7vWapWBPwHPPogiXCvXfkyqsHuudKHDg=";
   };
+
+  core = "vecx";
 
   extraBuildInputs = [
     libGL

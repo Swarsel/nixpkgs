@@ -1,37 +1,32 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  torch,
-  setuptools,
-
-  # buildInputs
-  openmp,
-
-  # dependencies
-  numpy,
-  nvidia-ml-py,
-
+  buildPythonPackage,
   # tests
   einops,
   fairscale,
   hydra-core,
   networkx,
+  # dependencies
+  numpy,
+  nvidia-ml-py,
+  # buildInputs
+  openmp,
   pytest-cov-stub,
   pytest-timeout,
   pytestCheckHook,
+  python,
   scipy,
+  setuptools,
   timm,
+  # build-system
+  torch,
   transformers,
   triton,
-  python,
-
+  writableTmpDirAsHomeHook,
   # passthru
   xformers,
-  writableTmpDirAsHomeHook,
 }:
 let
   inherit (torch) cudaCapabilities cudaPackages cudaSupport;
@@ -41,14 +36,13 @@ in
 buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
   pname = "xformers";
   version = "0.0.35";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "facebookresearch";
     repo = "xformers";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-UqpRHLN0INpW6sA8DbQCSeL8uhS+IoW60UPVUIh1NY0=";
+    fetchSubmodules = true;
   };
 
   # ModuleNotFoundError: No module named 'xformers.components'
@@ -57,21 +51,13 @@ buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
     touch xformers/components/attention/__init__.py
   '';
 
-  build-system = [
-    setuptools
-    torch
-  ];
-
-  preBuild = ''
-    export MAX_JOBS=$NIX_BUILD_CORES
-  '';
-
-  env = lib.attrsets.optionalAttrs cudaSupport {
-    # Don't silently fallback to a non-CUDA build
-    FORCE_CUDA = 1;
-
-    TORCH_CUDA_ARCH_LIST = "${lib.concatStringsSep ";" cudaCapabilities}";
-  };
+  nativeBuildInputs =
+    lib.optionals cudaSupport [
+      cudaPackages.cuda_nvcc
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [
+      openmp.dev
+    ];
 
   buildInputs =
     lib.optionals stdenv.hostPlatform.isDarwin [
@@ -89,27 +75,15 @@ buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
       ]
     );
 
-  nativeBuildInputs =
-    lib.optionals cudaSupport [
-      cudaPackages.cuda_nvcc
-    ]
-    ++ lib.optionals stdenv.hostPlatform.isDarwin [
-      openmp.dev
-    ];
+  env = lib.attrsets.optionalAttrs cudaSupport {
+    # Don't silently fallback to a non-CUDA build
+    FORCE_CUDA = 1;
+    TORCH_CUDA_ARCH_LIST = "${lib.concatStringsSep ";" cudaCapabilities}";
+  };
 
-  dependencies = [
-    numpy
-    torch
-  ]
-  ++ lib.optionals cudaSupport [
-    nvidia-ml-py
-  ];
-
-  pythonImportsCheck = [
-    "xformers"
-    "xformers.components"
-    "xformers.components.attention"
-  ];
+  preBuild = ''
+    export MAX_JOBS=$NIX_BUILD_CORES
+  '';
 
   nativeCheckInputs = [
     einops
@@ -137,8 +111,17 @@ buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
       ${python.interpreter} -m xformers.info
     '';
 
-  enabledTestPaths = [
-    "tests"
+  build-system = [
+    setuptools
+    torch
+  ];
+
+  dependencies = [
+    numpy
+    torch
+  ]
+  ++ lib.optionals cudaSupport [
+    nvidia-ml-py
   ];
 
   disabledTestPaths = [
@@ -166,8 +149,22 @@ buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
       "test_dispatch_decoding_bmghk"
     ];
 
+  enabledTestPaths = [
+    "tests"
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "xformers"
+    "xformers.components"
+    "xformers.components.attention"
+  ];
+
   passthru.gpuCheck = xformers.overridePythonAttrs (old: {
-    requiredSystemFeatures = [ "cuda" ];
+    nativeCheckInputs = old.nativeCheckInputs ++ [
+      writableTmpDirAsHomeHook
+    ];
 
     # Run all tests, including the ones that need a GPU
     disabledTestPaths = [ ];
@@ -200,9 +197,7 @@ buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
       "test_linearw24"
     ];
 
-    nativeCheckInputs = old.nativeCheckInputs ++ [
-      writableTmpDirAsHomeHook
-    ];
+    requiredSystemFeatures = [ "cuda" ];
   });
 
   meta = {

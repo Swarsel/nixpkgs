@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
-  build,
-  click,
   fetchFromGitHub,
+  build,
+  buildPythonPackage,
+  click,
   pip,
   pyproject-hooks,
   pytest-xdist,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "pip-tools";
   version = "7.5.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jazzband";
@@ -31,19 +30,6 @@ buildPythonPackage rec {
     ./fix-setup-py-bad-syntax-detection.patch
   ];
 
-  build-system = [ setuptools-scm ];
-
-  dependencies = [
-    build
-    click
-    pip
-    pyproject-hooks
-    setuptools
-    wheel
-  ];
-
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [
     pytest-xdist
     pytestCheckHook
@@ -54,6 +40,18 @@ buildPythonPackage rec {
     # https://github.com/python/cpython/issues/74570#issuecomment-1093748531
     export no_proxy='*';
   '';
+
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools-scm ];
+
+  dependencies = [
+    build
+    click
+    pip
+    pyproject-hooks
+    setuptools
+    wheel
+  ];
 
   disabledTestPaths = [
     # Most tests require network access
@@ -93,6 +91,7 @@ buildPythonPackage rec {
     "test_failure_of_legacy_resolver_prompts_for_backtracking"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "piptools" ];
 
   meta = {

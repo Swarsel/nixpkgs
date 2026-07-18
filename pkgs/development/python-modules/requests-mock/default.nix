@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "requests-mock";
   version = "1.12.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -27,13 +26,6 @@ buildPythonPackage rec {
       --replace-fail assertEquals assertEqual
   '';
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  dependencies = [ requests ];
-
   nativeCheckInputs = [
     fixtures
     purl
@@ -41,6 +33,14 @@ buildPythonPackage rec {
     requests-futures
     testtools
   ];
+
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [ requests ];
+  pyproject = true;
 
   meta = {
     description = "Mock out responses from the requests package";

@@ -1,25 +1,24 @@
 {
   lib,
   fetchFromGitHub,
-  ffmpeg,
-  python3Packages,
-  meson,
-  yt-dlp,
-  wrapGAppsHook4,
   desktop-file-utils,
-  ninja,
-  gobject-introspection,
+  ffmpeg,
   glib,
-  pkg-config,
+  gobject-introspection,
   gtk4,
-  librsvg,
   libadwaita,
+  librsvg,
+  meson,
+  ninja,
+  pkg-config,
+  python3Packages,
+  wrapGAppsHook4,
+  yt-dlp,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "video-downloader";
   version = "0.12.31";
-  pyproject = false; # Built with meson
 
   src = fetchFromGitHub {
     owner = "Unrud";
@@ -27,11 +26,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-b/CZRw2/hMTKoLXVuqpRuNRmMoouZwr9wXvAysj2xeQ=";
   };
-
-  propagatedBuildInputs = with python3Packages; [
-    pygobject3
-    yt-dlp
-  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -49,10 +43,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     libadwaita
   ];
 
+  propagatedBuildInputs = with python3Packages; [
+    pygobject3
+    yt-dlp
+  ];
+
   # would require network connectivity
   doCheck = false;
-
-  dontWrapGApps = true;
 
   preFixup = ''
     makeWrapperArgs+=(
@@ -61,10 +58,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     )
   '';
 
+  dontWrapGApps = true;
+  pyproject = false; # Built with meson
+
   meta = {
+    description = "GUI application based on yt-dlp";
     homepage = "https://github.com/Unrud/video-downloader";
     changelog = "https://github.com/Unrud/video-downloader/releases";
-    description = "GUI application based on yt-dlp";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ fliegendewurst ];
     mainProgram = "video-downloader";

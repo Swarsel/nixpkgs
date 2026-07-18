@@ -1,24 +1,22 @@
 {
   lib,
   stdenv,
+  cairo,
   fetchFromCodeberg,
-  pkg-config,
+  libxkbcommon,
   meson,
   ninja,
-  cairo,
   pango,
+  pkg-config,
+  scdoc,
   wayland,
   wayland-protocols,
   wayland-scanner,
-  libxkbcommon,
-  scdoc,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "wmenu";
   version = "0.2.0";
-
-  strictDeps = true;
 
   src = fetchFromCodeberg {
     owner = "adnano";
@@ -27,12 +25,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-JkKA3MUfRLsZWgvDyiYdqb8u4nGSfboL6Ecy7poPW1k=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     pkg-config
     meson
     ninja
     wayland-scanner
   ];
+
   buildInputs = [
     cairo
     pango
@@ -46,11 +47,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Efficient dynamic menu for Sway and wlroots based Wayland compositors";
     homepage = "https://codeberg.org/adnano/wmenu";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       eken
       sweiglbosker
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "wmenu";
   };
 })

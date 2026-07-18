@@ -1,16 +1,16 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   buildGoModule,
   callPackage,
-  fetchFromGitHub,
   installShellFiles,
-  stdenv,
   versionCheckHook,
+  withWlClipboard ? null,
+  withWlclip ? null,
   # Deprecated options
   # Remove them as soon as possible
   withXclip ? null,
-  withWlClipboard ? null,
-  withWlclip ? null,
 }:
 
 let
@@ -25,17 +25,27 @@ let
       hash = "sha256-4C6TtMU6PIYX7lO+o4GRVnIsKnYJxjAqPdoOyAwi7Gc=";
     };
 
-    vendorHash = "sha256-bkPd6zB9e4q6N20wbKS8n8zGGITOoScajdPYv7Race0=";
-    proxyVendor = true;
-
-    nativeBuildInputs = [ installShellFiles ];
-
     outputs = [
       "out"
       "man"
     ];
 
-    subPackages = [ "cmd/micro" ];
+    strictDeps = true;
+    nativeBuildInputs = [ installShellFiles ];
+    vendorHash = "sha256-bkPd6zB9e4q6N20wbKS8n8zGGITOoScajdPYv7Race0=";
+
+    preBuild = ''
+      GOOS= GOARCH= go generate ./runtime
+    '';
+
+    postInstall = ''
+      installManPage assets/packaging/micro.1
+      install -Dm444 assets/packaging/micro.desktop $out/share/applications/micro.desktop
+      install -Dm644 assets/micro-logo-mark.svg $out/share/icons/hicolor/scalable/apps/micro.svg
+    '';
+
+    doInstallCheck = true;
+    nativeInstallCheckInputs = [ versionCheckHook ];
 
     ldflags =
       let
@@ -50,33 +60,21 @@ let
         "-X ${t}/util.CommitHash=${self.src.rev}"
       ];
 
-    strictDeps = true;
-
-    preBuild = ''
-      GOOS= GOARCH= go generate ./runtime
-    '';
-
-    postInstall = ''
-      installManPage assets/packaging/micro.1
-      install -Dm444 assets/packaging/micro.desktop $out/share/applications/micro.desktop
-      install -Dm644 assets/micro-logo-mark.svg $out/share/icons/hicolor/scalable/apps/micro.svg
-    '';
+    proxyVendor = true;
+    subPackages = [ "cmd/micro" ];
 
     passthru = {
       tests = lib.packagesFromDirectoryRecursive {
         inherit callPackage;
         directory = ./tests;
       };
+
       wrapper = callPackage ./wrapper.nix { micro = self; };
     };
 
-    nativeInstallCheckInputs = [ versionCheckHook ];
-    doInstallCheck = true;
-
     meta = {
-      homepage = "https://micro-editor.github.io";
-      changelog = "https://github.com/micro-editor/micro/releases/";
       description = "Modern and intuitive terminal-based text editor";
+
       longDescription = ''
         micro is a terminal-based text editor that aims to be easy to use and
         intuitive, while also taking advantage of the capabilities of modern
@@ -87,11 +85,16 @@ let
         as a full-time editor for people who prefer to work in a terminal, or
         those who regularly edit files over SSH.
       '';
+
+      homepage = "https://micro-editor.github.io";
+      changelog = "https://github.com/micro-editor/micro/releases/";
       license = lib.licenses.mit;
-      mainProgram = "micro";
+
       maintainers = with lib.maintainers; [
         pbsds
       ];
+
+      mainProgram = "micro";
     };
   };
 in

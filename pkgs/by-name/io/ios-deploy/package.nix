@@ -52,8 +52,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Install and debug iPhone apps from the command line, without using Xcode";
     homepage = "https://github.com/ios-control/ios-deploy";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "ios-deploy";
     maintainers = with lib.maintainers; [ wegank ];
     platforms = lib.platforms.darwin;
+    mainProgram = "ios-deploy";
   };
 })

@@ -2,26 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  libdrm,
   libsForQt5,
   libxrandr,
-  libdrm,
 }:
 
 stdenv.mkDerivation rec {
 
   pname = "radeon-profile";
   version = "20200824";
-
-  nativeBuildInputs = [
-    libsForQt5.qmake
-    libsForQt5.wrapQtAppsHook
-  ];
-  buildInputs = [
-    libsForQt5.qtbase
-    libsForQt5.qtcharts
-    libxrandr
-    libdrm
-  ];
 
   src =
     (fetchFromGitHub {
@@ -31,6 +20,18 @@ stdenv.mkDerivation rec {
       sha256 = "0z6a9w79s5wiy8cvwcdp5wmgf6702d0wzw95f6176yhp4cwy4cq2";
     })
     + "/radeon-profile";
+
+  nativeBuildInputs = [
+    libsForQt5.qmake
+    libsForQt5.wrapQtAppsHook
+  ];
+
+  buildInputs = [
+    libsForQt5.qtbase
+    libsForQt5.qtcharts
+    libxrandr
+    libdrm
+  ];
 
   preConfigure = ''
     substituteInPlace radeon-profile.pro \

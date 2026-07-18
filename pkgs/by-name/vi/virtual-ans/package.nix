@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
+  SDL2,
+  alsa-lib,
+  autoPatchelfHook,
   fetchzip,
+  libGL,
   libx11,
   libxi,
-  libGL,
-  alsa-lib,
-  SDL2,
-  autoPatchelfHook,
 }:
 
 stdenv.mkDerivation rec {
@@ -45,6 +45,14 @@ stdenv.mkDerivation rec {
     ln -s $out/${startScript} $out/bin/virtual-ans
   '';
 
+  linuxExecutable =
+    if stdenv.hostPlatform.isx86_32 then
+      "pixilang_linux_x86"
+    else if stdenv.hostPlatform.isx86_64 then
+      "pixilang_linux_x86_64"
+    else
+      "";
+
   startScript =
     if stdenv.hostPlatform.isx86_32 then
       "START_LINUX_X86"
@@ -54,16 +62,9 @@ stdenv.mkDerivation rec {
     else
       throw "Unsupported platform: ${stdenv.hostPlatform.linuxArch}.";
 
-  linuxExecutable =
-    if stdenv.hostPlatform.isx86_32 then
-      "pixilang_linux_x86"
-    else if stdenv.hostPlatform.isx86_64 then
-      "pixilang_linux_x86_64"
-    else
-      "";
-
   meta = {
     description = "Photoelectronic microtonal/spectral musical instrument";
+
     longDescription = ''
       Virtual ANS is a software simulator of the unique Russian synthesizer ANS
       - photoelectronic musical instrument created by Evgeny Murzin from 1938 to
@@ -89,15 +90,17 @@ stdenv.mkDerivation rec {
       + supported file formats: WAV, AIFF, PNG, JPEG, GIF;
       + supported sound systems: ASIO, DirectSound, MME, ALSA, OSS, JACK, Audiobus, IAA.
     '';
+
     homepage = "https://warmplace.ru/soft/ans/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfreeRedistributable;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ jacg ];
+
     # I cannot test the Darwin version, so I'll leave it disabled
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
-    maintainers = with lib.maintainers; [ jacg ];
   };
 
 }

@@ -3,14 +3,14 @@
   stdenv,
   fetchurl,
   fetchFromGitHub,
-  flutter329,
-  makeDesktopItem,
   copyDesktopItems,
-  nixosTests,
-  libayatana-appindicator,
-  undmg,
-  makeBinaryWrapper,
   fetchpatch,
+  flutter329,
+  libayatana-appindicator,
+  makeBinaryWrapper,
+  makeDesktopItem,
+  nixosTests,
+  undmg,
 }:
 
 let
@@ -27,26 +27,15 @@ let
       hash = "sha256-1xMzlIcGEJ58laSM48bCKMxzHQ36eUHD5Mac0O1dnXk=";
     };
 
-    sourceRoot = "${src.name}/app";
-
-    pubspecLock = lib.importJSON ./pubspec.lock.json;
-
-    gitHashes = {
-      permission_handler_windows = "sha256-+TP3neqlQRZnW6BxHaXr2EbmdITIx1Yo7AEn5iwAhwM=";
-      pasteboard = "sha256-lJA5OWoAHfxORqWMglKzhsL1IFr9YcdAQP/NVOLYB4o=";
-    };
-
     patches = [
       # Fix for https://github.com/localsend/localsend/security/advisories/GHSA-34v6-52hh-x4r4
       # See: https://github.com/NixOS/nixpkgs/issues/488755
       # Can be removed with new release > 1.17.0
       (fetchpatch {
-        url = "https://github.com/localsend/localsend/commit/8f3cec85aa29b2b13fed9b2f8e499e1ac9b0504c.patch";
         hash = "sha256-Fswir+TebCDPxHVBg8YM3ROx2uoLG92E3E15wnzHz+U=";
+        url = "https://github.com/localsend/localsend/commit/8f3cec85aa29b2b13fed9b2f8e499e1ac9b0504c.patch";
       })
     ];
-
-    patchFlags = [ "-p2" ];
 
     postPatch = ''
       substituteInPlace lib/util/native/autostart_helper.dart \
@@ -67,35 +56,47 @@ let
       done
     '';
 
-    extraWrapProgramArgs = ''
-      --prefix LD_LIBRARY_PATH : $out/app/localsend/lib
-    '';
-
     desktopItems = [
       (makeDesktopItem {
-        name = "LocalSend";
-        exec = "localsend_app %U";
-        icon = "localsend";
-        desktopName = "LocalSend";
-        startupWMClass = "localsend_app";
-        genericName = "An open source cross-platform alternative to AirDrop";
         categories = [
           "GTK"
           "FileTransfer"
           "Utility"
         ];
+
+        desktopName = "LocalSend";
+        exec = "localsend_app %U";
+        genericName = "An open source cross-platform alternative to AirDrop";
+        icon = "localsend";
+
         keywords = [
           "Sharing"
           "LAN"
           "Files"
         ];
+
+        name = "LocalSend";
         startupNotify = true;
+        startupWMClass = "localsend_app";
       })
     ];
 
+    extraWrapProgramArgs = ''
+      --prefix LD_LIBRARY_PATH : $out/app/localsend/lib
+    '';
+
+    gitHashes = {
+      pasteboard = "sha256-lJA5OWoAHfxORqWMglKzhsL1IFr9YcdAQP/NVOLYB4o=";
+      permission_handler_windows = "sha256-+TP3neqlQRZnW6BxHaXr2EbmdITIx1Yo7AEn5iwAhwM=";
+    };
+
+    patchFlags = [ "-p2" ];
+    pubspecLock = lib.importJSON ./pubspec.lock.json;
+    sourceRoot = "${src.name}/app";
+
     passthru = {
-      updateScript = ./update.sh;
       tests.localsend = nixosTests.localsend;
+      updateScript = ./update.sh;
     };
 
     meta = metaCommon // {
@@ -116,8 +117,6 @@ let
       makeBinaryWrapper
     ];
 
-    sourceRoot = ".";
-
     installPhase = ''
       runHook preInstall
 
@@ -128,20 +127,25 @@ let
       runHook postInstall
     '';
 
+    sourceRoot = ".";
+
     meta = metaCommon // {
-      mainProgram = "localsend";
       sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
       platforms = [
         "aarch64-darwin"
       ];
+
+      mainProgram = "localsend";
     };
   };
 
   metaCommon = {
     description = "Open source cross-platform alternative to AirDrop";
-    homepage = "https://localsend.org/";
     donationPage = "https://localsend.org/donate";
+    homepage = "https://localsend.org/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       sikmir
       linsui

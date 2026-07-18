@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "pdfrw";
   version = "0.4";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,11 +15,12 @@ buildPythonPackage rec {
 
   # tests require the extra download of github.com/pmaupin/static_pdfs
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Pure Python library that reads and writes PDFs";
     homepage = "https://github.com/pmaupin/pdfrw";
-    maintainers = with lib.maintainers; [ teto ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ teto ];
   };
 }

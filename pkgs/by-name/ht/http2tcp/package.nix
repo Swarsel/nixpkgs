@@ -1,8 +1,8 @@
 {
   lib,
-  python3,
   stdenv,
   fetchurl,
+  python3,
 }:
 
 stdenv.mkDerivation rec {
@@ -20,17 +20,17 @@ stdenv.mkDerivation rec {
     ]))
   ];
 
-  dontBuild = true;
-
   installPhase = ''
     mkdir -p $out/{bin,share/${pname}}
     cp http2tcp* $out/bin
     cp Protocol $out/share/${pname}/
   '';
 
+  dontBuild = true;
+
   meta = {
-    maintainers = with lib.maintainers; [ clkamp ];
     description = "Tool for tunneling TCP connections via HTTP GET requests";
+
     longDescription = ''
       The http2tcp tools allow to tunnel tcp connections (presumably
       ssh) via syntactically correct http requests. It is designed to
@@ -41,8 +41,10 @@ stdenv.mkDerivation rec {
       the client's internet connection is unreliable (frequent long
       network outages, rapidly changing IP address, etc).
     '';
+
     homepage = "https://www.linta.de/~aehlig/http2tcp/";
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ clkamp ];
     platforms = lib.platforms.all;
   };
 }

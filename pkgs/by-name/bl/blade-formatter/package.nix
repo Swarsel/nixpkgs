@@ -1,17 +1,17 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
+  blade-formatter,
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
-  yarnInstallHook,
-  nodejs,
   nix-update-script,
+  nodejs,
+  runCommand,
+  stdenvNoCC,
   testers,
   writeText,
-  runCommand,
-  blade-formatter,
+  yarnBuildHook,
+  yarnConfigHook,
+  yarnInstallHook,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -25,11 +25,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-/HuYfAf0JwDzWKpc6ymsfl6NjfwnnzduVX/LGwuE1uo=";
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/yarn.lock";
-    hash = "sha256-gVAJO74lSwBaWS19/GeAPWUfRJIjeMA6Gqzk46VA8hU=";
-  };
-
   nativeBuildInputs = [
     yarnConfigHook
     yarnBuildHook
@@ -37,25 +32,24 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     nodejs
   ];
 
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-gVAJO74lSwBaWS19/GeAPWUfRJIjeMA6Gqzk46VA8hU=";
+    yarnLock = finalAttrs.src + "/yarn.lock";
+  };
+
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       version = testers.testVersion {
-        package = blade-formatter;
         command = "blade-formatter --version";
+        package = blade-formatter;
       };
 
       simple = testers.testEqualContents {
-        assertion = "blade-formatter formats a basic blade file";
-        expected = writeText "expected" ''
-          @if (true)
-              Hello world!
-          @endif
-        '';
         actual =
           runCommand "actual"
             {
               nativeBuildInputs = [ blade-formatter ];
+
               base = writeText "base" ''
                 @if(   true )  Hello world!   @endif
               '';
@@ -63,16 +57,26 @@ stdenvNoCC.mkDerivation (finalAttrs: {
             ''
               blade-formatter $base > $out
             '';
+
+        assertion = "blade-formatter formats a basic blade file";
+
+        expected = writeText "expected" ''
+          @if (true)
+              Hello world!
+          @endif
+        '';
       };
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
+    inherit (nodejs.meta) platforms;
     description = "Laravel Blade template formatter";
     homepage = "https://github.com/shufo/blade-formatter";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ lelgenio ];
     mainProgram = "blade-formatter";
-    inherit (nodejs.meta) platforms;
   };
 })

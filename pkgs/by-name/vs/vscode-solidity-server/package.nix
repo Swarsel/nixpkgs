@@ -1,11 +1,11 @@
 {
   lib,
-  buildNpmPackage,
-  fetchFromGitHub,
-  pkg-config,
-  libsecret,
   stdenv,
+  fetchFromGitHub,
+  buildNpmPackage,
   clang_20,
+  libsecret,
+  pkg-config,
 }:
 
 buildNpmPackage {
@@ -19,12 +19,9 @@ buildNpmPackage {
     hash = "sha256-GHa2VbMyYn0FXEhd1my0851rbtoWtlOGmsAF6JDzLkc=";
   };
 
-  npmDepsHash = "sha256-zXhWtPuiu+CRk712KskuHP4vglogJmFoCak6qWczPFM=";
-
   nativeBuildInputs = [ pkg-config ] ++ lib.optionals stdenv.hostPlatform.isDarwin [ clang_20 ]; # clang_21 breaks keytar
-
   buildInputs = [ libsecret ];
-
+  npmDepsHash = "sha256-zXhWtPuiu+CRk712KskuHP4vglogJmFoCak6qWczPFM=";
   npmBuildScript = "build:cli";
 
   meta = {

@@ -14,23 +14,59 @@ in
   options = {
     services.diod = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
         description = "Whether to enable the diod 9P file server.";
+        type = lib.types.bool;
       };
 
-      listen = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [ "0.0.0.0:564" ];
+      allsquash = lib.mkOption {
+        default = true;
+
         description = ''
-          [ "IP:PORT" [,"IP:PORT",...] ]
-          List the interfaces and ports that diod should listen on.
+          Remap all users to "nobody". The attaching user need not be present in the
+          password file.
         '';
+
+        type = lib.types.bool;
+      };
+
+      authRequired = lib.mkOption {
+        default = false;
+
+        description = ''
+          Allow clients to connect without authentication, i.e. without a valid MUNGE credential.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      exportall = lib.mkOption {
+        default = true;
+
+        description = ''
+          Export all file systems listed in /proc/mounts. If new file systems are mounted
+          after diod has started, they will become immediately mountable. If there is a
+          duplicate entry for a file system in the exports list, any options listed in
+          the exports entry will apply.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      exportopts = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          Establish a default set of export options. These are overridden, not appended
+          to, by opts attributes in an "exports" entry.
+        '';
+
+        type = lib.types.listOf lib.types.str;
       };
 
       exports = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
         default = [ ];
+
         description = ''
           List the file systems that clients will be allowed to mount. All paths should
           be fully qualified. The exports table can include two types of element:
@@ -42,100 +78,84 @@ in
           given mount due to inode uniqueness constraints, subdirectories of a file
           system can be separately exported.
         '';
-      };
 
-      exportall = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = ''
-          Export all file systems listed in /proc/mounts. If new file systems are mounted
-          after diod has started, they will become immediately mountable. If there is a
-          duplicate entry for a file system in the exports list, any options listed in
-          the exports entry will apply.
-        '';
-      };
-
-      exportopts = lib.mkOption {
         type = lib.types.listOf lib.types.str;
-        default = [ ];
-        description = ''
-          Establish a default set of export options. These are overridden, not appended
-          to, by opts attributes in an "exports" entry.
-        '';
       };
 
-      nwthreads = lib.mkOption {
-        type = lib.types.int;
-        default = 16;
-        description = ''
-          Sets the (fixed) number of worker threads created to handle 9P
-          requests for a unique aname.
-        '';
+      extraConfig = lib.mkOption {
+        default = "";
+        description = "Extra configuration options for diod.conf.";
+        type = lib.types.lines;
       };
 
-      authRequired = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Allow clients to connect without authentication, i.e. without a valid MUNGE credential.
-        '';
-      };
+      listen = lib.mkOption {
+        default = [ "0.0.0.0:564" ];
 
-      userdb = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
         description = ''
-          This option disables password/group lookups. It allows any uid to attach and
-          assumes gid=uid, and supplementary groups contain only the primary gid.
+          [ "IP:PORT" [,"IP:PORT",...] ]
+          List the interfaces and ports that diod should listen on.
         '';
-      };
 
-      allsquash = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = ''
-          Remap all users to "nobody". The attaching user need not be present in the
-          password file.
-        '';
-      };
-
-      squashuser = lib.mkOption {
-        type = lib.types.str;
-        default = "nobody";
-        description = ''
-          Change the squash user. The squash user must be present in the password file.
-        '';
+        type = lib.types.listOf lib.types.str;
       };
 
       logdest = lib.mkOption {
-        type = lib.types.str;
         default = "syslog:daemon:err";
+
         description = ''
           Set the destination for logging.
           The value has the form of "syslog:facility:level" or "filename".
         '';
+
+        type = lib.types.str;
+      };
+
+      nwthreads = lib.mkOption {
+        default = 16;
+
+        description = ''
+          Sets the (fixed) number of worker threads created to handle 9P
+          requests for a unique aname.
+        '';
+
+        type = lib.types.int;
+      };
+
+      squashuser = lib.mkOption {
+        default = "nobody";
+
+        description = ''
+          Change the squash user. The squash user must be present in the password file.
+        '';
+
+        type = lib.types.str;
       };
 
       statfsPassthru = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           This option configures statfs to return the host file system's type
           rather than V9FS_MAGIC.
         '';
+
+        type = lib.types.bool;
       };
 
-      extraConfig = lib.mkOption {
-        type = lib.types.lines;
-        default = "";
-        description = "Extra configuration options for diod.conf.";
+      userdb = lib.mkOption {
+        default = false;
+
+        description = ''
+          This option disables password/group lookups. It allows any uid to attach and
+          assumes gid=uid, and supplementary groups contain only the primary gid.
+        '';
+
+        type = lib.types.bool;
       };
     };
   };
 
   config = lib.mkIf config.services.diod.enable {
-    environment.systemPackages = [ pkgs.diod ];
-
     environment.etc."diod.conf".text = ''
       allsquash = ${diodBool cfg.allsquash}
       auth_required = ${diodBool cfg.authRequired}
@@ -151,6 +171,7 @@ in
       ${cfg.extraConfig}
     '';
 
+    environment.systemPackages = [ pkgs.diod ];
     systemd.packages = [ pkgs.diod ];
     systemd.services.diod.wantedBy = [ "multi-user.target" ];
   };

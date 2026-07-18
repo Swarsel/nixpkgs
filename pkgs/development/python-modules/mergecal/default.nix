@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   icalendar,
+  pytest-cov-stub,
+  pytestCheckHook,
   rich,
+  setuptools,
   typer,
   x-wr-timezone,
-  pytestCheckHook,
-  pytest-cov-stub,
 }:
 
 buildPythonPackage rec {
   pname = "mergecal";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mergecal";
@@ -22,6 +21,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-Je3gFREu97Ycofszhr6pKOCiK76oBuzb3ji4LAf5aE8=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+  ];
 
   build-system = [ setuptools ];
 
@@ -32,11 +36,7 @@ buildPythonPackage rec {
     x-wr-timezone
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mergecal" ];
 
   meta = {

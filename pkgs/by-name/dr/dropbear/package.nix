@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  zlib,
   libxcrypt,
+  zlib,
   enableSCP ? false,
   sftpPath ? "/run/current-system/sw/libexec/sftp-server",
 }:
@@ -12,8 +12,8 @@ let
   # NOTE: DROPBEAR_PATH_SSH_PROGRAM is only necessary when enableSCP is true,
   # but it is enabled here always anyways for consistency
   dflags = {
-    SFTPSERVER_PATH = sftpPath;
     DROPBEAR_PATH_SSH_PROGRAM = "${placeholder "out"}/bin/dbclient";
+    SFTPSERVER_PATH = sftpPath;
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -33,14 +33,19 @@ stdenv.mkDerivation (finalAttrs: {
     ./pass-path.patch
   ];
 
-  env.CFLAGS = lib.pipe (lib.attrNames dflags) [
-    (map (name: "-D${name}=\\\"${dflags.${name}}\\\""))
-    (lib.concatStringsSep " ")
+  buildInputs = [
+    zlib
+    libxcrypt
   ];
 
   configureFlags = lib.optionals stdenv.hostPlatform.isMusl [
     "--enable-wtmp=no"
     "--enable-wtmpx=no"
+  ];
+
+  env.CFLAGS = lib.pipe (lib.attrNames dflags) [
+    (map (name: "-D${name}=\\\"${dflags.${name}}\\\""))
+    (lib.concatStringsSep " ")
   ];
 
   # https://www.gnu.org/software/make/manual/html_node/Libraries_002fSearch.html
@@ -61,17 +66,13 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
-  buildInputs = [
-    zlib
-    libxcrypt
-  ];
-
   postInstall = lib.optionalString enableSCP ''
     ln -rs $out/bin/scp $out/bin/dbscp
   '';
 
   meta = {
     description = "Small memory footprint ssh server/client suitable for memory-constrained environments";
+
     longDescription = ''
       Dropbear is particularly useful for "embedded"-type Linux (or other Unix) systems, such as wireless routers.
 
@@ -86,13 +87,16 @@ stdenv.mkDerivation (finalAttrs: {
       dbclient user1@hop1,user2@hop2,destination
       ```
     '';
+
     homepage = "https://matt.ucc.asn.au/dropbear/dropbear.html";
     changelog = "https://github.com/mkj/dropbear/releases/tag/DROPBEAR_${finalAttrs.version}";
-    downloadPage = "https://matt.ucc.asn.au/dropbear/releases";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       debtquity
     ];
+
+    platforms = lib.platforms.linux;
+    downloadPage = "https://matt.ucc.asn.au/dropbear/releases";
   };
 })

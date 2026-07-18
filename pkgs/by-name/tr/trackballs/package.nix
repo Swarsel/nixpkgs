@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   SDL2,
-  SDL2_ttf,
-  gettext,
-  zlib,
-  SDL2_mixer,
   SDL2_image,
+  SDL2_mixer,
+  SDL2_ttf,
+  cmake,
+  gettext,
   guile,
-  libGLU,
   libGL,
+  libGLU,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     zlib
     SDL2
@@ -39,11 +40,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://trackballs.github.io/";
     description = "3D Marble Madness clone";
-    mainProgram = "trackballs";
-    platforms = lib.platforms.linux;
+    homepage = "https://trackballs.github.io/";
     # Music is licensed under Ethymonics Free Music License.
     license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.linux;
+    mainProgram = "trackballs";
   };
 })

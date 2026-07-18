@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  makeBinaryWrapper,
-  pkg-config,
-  oniguruma,
   ffmpeg,
   git,
+  makeBinaryWrapper,
+  oniguruma,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
@@ -20,14 +20,6 @@ rustPlatform.buildRustPackage {
     hash = "sha256-nOqh8kXS5mx0AM4NvIcwvC0lAZRHsQwrxI0c+9PeroU=";
   };
 
-  cargoHash = "sha256-lelmkdbqKRjSkJIkF5TWJ6LyCTo2j11hZf9QxIPBoOo=";
-
-  cargoPatches = [
-    # fix build with rust 1.80 by updating time crate version
-    # https://github.com/sloganking/codemov/pull/16
-    ./fix-build-with-rust-1.80.patch
-  ];
-
   nativeBuildInputs = [
     makeBinaryWrapper
     pkg-config
@@ -36,6 +28,8 @@ rustPlatform.buildRustPackage {
   buildInputs = [
     oniguruma
   ];
+
+  cargoHash = "sha256-lelmkdbqKRjSkJIkF5TWJ6LyCTo2j11hZf9QxIPBoOo=";
 
   env = {
     RUSTONIG_SYSTEM_LIBONIG = true;
@@ -50,6 +44,12 @@ rustPlatform.buildRustPackage {
         ]
       }
   '';
+
+  cargoPatches = [
+    # fix build with rust 1.80 by updating time crate version
+    # https://github.com/sloganking/codemov/pull/16
+    ./fix-build-with-rust-1.80.patch
+  ];
 
   meta = {
     description = "Create a video of how a git repository's code changes over time";

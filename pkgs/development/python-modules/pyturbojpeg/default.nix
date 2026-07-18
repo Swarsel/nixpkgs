@@ -1,19 +1,18 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   libjpeg_turbo,
-  setuptools,
   numpy,
   python,
   replaceVars,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyturbojpeg";
   version = "2.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lilohuang";
@@ -28,10 +27,6 @@ buildPythonPackage rec {
     })
   ];
 
-  build-system = [ setuptools ];
-
-  dependencies = [ numpy ];
-
   # upstream has no tests, but we want to test whether the library is found
   checkPhase = ''
     runHook preCheck
@@ -41,12 +36,15 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [ setuptools ];
+  dependencies = [ numpy ];
+  pyproject = true;
   pythonImportsCheck = [ "turbojpeg" ];
 
   meta = {
-    changelog = "https://github.com/lilohuang/PyTurboJPEG/releases/tag/${src.tag}";
     description = "Python wrapper of libjpeg-turbo for decoding and encoding JPEG image";
     homepage = "https://github.com/lilohuang/PyTurboJPEG";
+    changelog = "https://github.com/lilohuang/PyTurboJPEG/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

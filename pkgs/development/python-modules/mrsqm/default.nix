@@ -1,26 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cython,
   fftw,
-  pandas,
-  scikit-learn,
-  numpy,
-  pip,
-  setuptools,
-  pytestCheckHook,
   nix-update-script,
+  numpy,
+  pandas,
+  pip,
+  pytestCheckHook,
+  scikit-learn,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "mrsqm";
   version = "4";
-  pyproject = true;
-
-  build-system = [
-    setuptools
-  ];
 
   src = fetchFromGitHub {
     owner = "mlgig";
@@ -29,23 +24,15 @@ buildPythonPackage rec {
     hash = "sha256-59f18zItV3K6tXcg1v1q2Z8HYrQB8T0ntaaqjxeAEbM=";
   };
 
-  buildInputs = [ fftw ];
-
-  nativeBuildInputs = [ cython ];
-
-  dependencies = [
-    pandas
-    scikit-learn
-    numpy
-    pip
-  ];
-
   postPatch = ''
     substituteInPlace setup.py \
       --replace-fail "setup_requires=['pytest-runner']," ""
     substituteInPlace pyproject.toml \
       --replace-fail "numpy==" "numpy>="
   '';
+
+  nativeBuildInputs = [ cython ];
+  buildInputs = [ fftw ];
 
   preBuild = ''
     export HOME=$(mktemp -d)
@@ -55,10 +42,22 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    pandas
+    scikit-learn
+    numpy
+    pip
+  ];
+
   enabledTestPaths = [
     "tests/mrsqm"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "mrsqm" ];
 
   passthru.updateScript = nix-update-script {

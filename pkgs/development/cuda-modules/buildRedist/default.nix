@@ -1,6 +1,9 @@
 # NOTE: buildRedist should never take manifests or fixups as callPackage-provided arguments,
 # since we want to provide the flexibility to call it directly with a different fixup or manifest.
 {
+  lib,
+  stdenv,
+  fetchurl,
   _cuda,
   autoAddCudaCompatRunpath,
   autoAddDriverRunpath,
@@ -9,13 +12,10 @@
   cudaMajorMinorVersion,
   cudaMajorVersion,
   cudaNamePrefix,
-  fetchurl,
-  lib,
   manifests,
   markForCudatoolkitRootHook,
   removeStubsFromRunpathHook,
   srcOnly,
-  stdenv,
   stdenvNoCC,
 }:
 let
@@ -103,6 +103,7 @@ let
 in
 extendMkDerivation {
   constructDrv = backendStdenv.mkDerivation;
+
   # These attributes are moved to passthru to avoid changing derivation hashes.
   excludeDrvArgNames = [
     # Core
@@ -116,40 +117,21 @@ extendMkDerivation {
     "outputToPatterns"
     "outputNameVarFallbacks"
   ];
+
   extendDrvArgs =
     finalAttrs:
     {
+      pname,
       # Core
       redistName,
-      pname,
-      release ? manifests.${finalAttrs.passthru.redistName}.${finalAttrs.pname} or null,
-
-      # Outputs
-      outputs ? [ "out" ],
-      propagatedBuildOutputs ? [ ],
-
-      # Inputs
-      nativeBuildInputs ? [ ],
-      propagatedBuildInputs ? [ ],
-      buildInputs ? [ ],
-
-      # Checking
-      doInstallCheck ? true,
       allowFHSReferences ? false,
-
       # Fixups
       appendRunpaths ? [ ],
-      includeRemoveStubsFromRunpathHook ? elem "stubs" finalAttrs.outputs,
-      postFixup ? "",
-
-      # Extra
-      passthru ? { },
-      meta ? { },
-
       # Misc
       brokenAssertions ? [ ],
-      platformAssertions ? [ ],
-
+      buildInputs ? [ ],
+      # Checking
+      doInstallCheck ? true,
       # Order is important here so we use a list.
       expectedOutputs ? [
         "out"
@@ -163,30 +145,10 @@ extendMkDerivation {
         "static"
         "stubs"
       ],
-
-      # Traversed in the order of the outputs speficied in outputs;
-      # entries are skipped if they don't exist in outputs.
-      # NOTE: The nil LSP gets angry if we do not parenthesize the default attrset.
-      outputToPatterns ? {
-        bin = [ "bin" ];
-        dev = [
-          "**/*.pc"
-          "**/*.cmake"
-        ];
-        include = [ "include" ];
-        lib = [
-          "lib"
-          "lib64"
-        ];
-        static = [ "**/*.a" ];
-        samples = [ "samples" ];
-        python = [ "**/*.whl" ];
-        stubs = [
-          "stubs"
-          "lib/stubs"
-        ];
-      },
-
+      includeRemoveStubsFromRunpathHook ? elem "stubs" finalAttrs.outputs,
+      meta ? { },
+      # Inputs
+      nativeBuildInputs ? [ ],
       # Defines a list of fallbacks for each potential output.
       # The last fallback is the out output.
       # Taken and modified from:
@@ -195,31 +157,86 @@ extendMkDerivation {
         outputBin = [ "bin" ];
         outputDev = [ "dev" ];
         outputDoc = [ "doc" ];
+
         outputInclude = [
           "include"
           "dev"
         ];
+
         outputLib = [ "lib" ];
         outputOut = [ "out" ];
         outputPython = [ "python" ];
         outputSamples = [ "samples" ];
         outputStatic = [ "static" ];
+
         outputStubs = [
           "stubs"
           "lib"
         ];
       },
+      # Traversed in the order of the outputs speficied in outputs;
+      # entries are skipped if they don't exist in outputs.
+      # NOTE: The nil LSP gets angry if we do not parenthesize the default attrset.
+      outputToPatterns ? {
+        bin = [ "bin" ];
+
+        dev = [
+          "**/*.pc"
+          "**/*.cmake"
+        ];
+
+        include = [ "include" ];
+
+        lib = [
+          "lib"
+          "lib64"
+        ];
+
+        python = [ "**/*.whl" ];
+        samples = [ "samples" ];
+        static = [ "**/*.a" ];
+
+        stubs = [
+          "stubs"
+          "lib/stubs"
+        ];
+      },
+      # Outputs
+      outputs ? [ "out" ],
+      # Extra
+      passthru ? { },
+      platformAssertions ? [ ],
+      postFixup ? "",
+      propagatedBuildInputs ? [ ],
+      propagatedBuildOutputs ? [ ],
+      release ? manifests.${finalAttrs.passthru.redistName}.${finalAttrs.pname} or null,
       ...
     }:
     {
-      __structuredAttrs = true;
-      strictDeps = true;
-
+      # Required for the hook.
+      inherit cudaMajorMinorVersion cudaMajorVersion;
+      inherit doInstallCheck;
+      inherit allowFHSReferences;
+      inherit includeRemoveStubsFromRunpathHook;
       # NOTE: `release` may be null if a redistributable isn't available.
       version = finalAttrs.passthru.release.version or "0-unsupported";
 
-      # Name should be prefixed by cudaNamePrefix to create more descriptive path names.
-      name = "${cudaNamePrefix}-${finalAttrs.pname}-${finalAttrs.version}";
+      # src :: null | Derivation
+      src = mapNullable (
+        { relative_path, sha256, ... }:
+        srcOnly {
+          inherit (finalAttrs) pname version;
+          __structuredAttrs = true;
+
+          src = fetchurl {
+            inherit sha256;
+            url = mkRedistUrl finalAttrs.passthru.redistName relative_path;
+          };
+
+          stdenv = stdenvNoCC;
+          strictDeps = true;
+        }
+      ) (getPreferredRelease finalAttrs.passthru.supportedReleases);
 
       # We should only have the output `out` when `src` is null.
       # lists.intersectLists iterates over the second list, checking if the elements are in the first list.
@@ -230,40 +247,7 @@ extendMkDerivation {
         else
           intersectLists outputs finalAttrs.passthru.expectedOutputs;
 
-      # NOTE: Because the `dev` output is special in Nixpkgs -- make-derivation.nix uses it as the default if
-      # it is present -- we must ensure that it brings in the expected dependencies. For us, this means that `dev`
-      # should include `bin`, `include`, and `lib` -- `static` is notably absent because it is quite large.
-      # We do not include `stubs`, as a number of packages contain stubs for libraries they already ship with!
-      # Only a few, like cuda_cudart, actually provide stubs for libraries we're missing.
-      # As such, these packages should override propagatedBuildOutputs to add `stubs`.
-      propagatedBuildOutputs =
-        intersectLists [
-          "bin"
-          "include"
-          "lib"
-        ] finalAttrs.outputs
-        ++ propagatedBuildOutputs;
-
-      # src :: null | Derivation
-      src = mapNullable (
-        { relative_path, sha256, ... }:
-        srcOnly {
-          __structuredAttrs = true;
-          strictDeps = true;
-          stdenv = stdenvNoCC;
-          inherit (finalAttrs) pname version;
-          src = fetchurl {
-            url = mkRedistUrl finalAttrs.passthru.redistName relative_path;
-            inherit sha256;
-          };
-        }
-      ) (getPreferredRelease finalAttrs.passthru.supportedReleases);
-
-      # Required for the hook.
-      inherit cudaMajorMinorVersion cudaMajorVersion;
-
-      # We do need some other phases, like configurePhase, so the multiple-output setup hook works.
-      dontBuild = true;
+      strictDeps = true;
 
       nativeBuildInputs = [
         ./buildRedistHook.bash
@@ -298,10 +282,6 @@ extendMkDerivation {
         (lib.getLib stdenv.cc.cc)
       ]
       ++ buildInputs;
-
-      # Picked up by autoPatchelf
-      # Needed e.g. for libnvrtc to locate (dlopen) libnvrtc-builtins
-      appendRunpaths = [ "$ORIGIN" ] ++ appendRunpaths;
 
       # NOTE: We don't need to check for dev or doc, because those outputs are handled by
       # the multiple-outputs setup hook.
@@ -339,10 +319,6 @@ extendMkDerivation {
           runHook postInstall
         '';
 
-      inherit doInstallCheck;
-      inherit allowFHSReferences;
-      inherit includeRemoveStubsFromRunpathHook;
-
       postFixup =
         postFixup
         + optionalString finalAttrs.includeRemoveStubsFromRunpathHook ''
@@ -352,33 +328,37 @@ extendMkDerivation {
             "${getDev removeStubsFromRunpathHook}"
         '';
 
+      __structuredAttrs = true;
+      # Picked up by autoPatchelf
+      # Needed e.g. for libnvrtc to locate (dlopen) libnvrtc-builtins
+      appendRunpaths = [ "$ORIGIN" ] ++ appendRunpaths;
+      # We do need some other phases, like configurePhase, so the multiple-output setup hook works.
+      dontBuild = true;
+      # Name should be prefixed by cudaNamePrefix to create more descriptive path names.
+      name = "${cudaNamePrefix}-${finalAttrs.pname}-${finalAttrs.version}";
+
+      # NOTE: Because the `dev` output is special in Nixpkgs -- make-derivation.nix uses it as the default if
+      # it is present -- we must ensure that it brings in the expected dependencies. For us, this means that `dev`
+      # should include `bin`, `include`, and `lib` -- `static` is notably absent because it is quite large.
+      # We do not include `stubs`, as a number of packages contain stubs for libraries they already ship with!
+      # Only a few, like cuda_cudart, actually provide stubs for libraries we're missing.
+      # As such, these packages should override propagatedBuildOutputs to add `stubs`.
+      propagatedBuildOutputs =
+        intersectLists [
+          "bin"
+          "include"
+          "lib"
+        ] finalAttrs.outputs
+        ++ propagatedBuildOutputs;
+
       passthru = passthru // {
         inherit redistName release;
-
-        supportedReleases =
-          passthru.supportedReleases
-            # NOTE: `release` may be null, so we must use `lib.defaultTo`
-            or (getSupportedReleases (lib.defaultTo { } finalAttrs.passthru.release));
-
-        supportedNixSystems =
-          passthru.supportedNixSystems or (pipe finalAttrs.passthru.supportedReleases [
-            attrNames
-            (concatMap getNixSystems)
-            naturalSort
-            unique
-          ]);
-
-        supportedRedistSystems =
-          passthru.supportedRedistSystems or (naturalSort (attrNames finalAttrs.passthru.supportedReleases));
-
         # NOTE: Downstream may expand this to include other outputs, but they must remember to set the appropriate
         # outputNameVarFallbacks!
         inherit expectedOutputs;
-
         # Traversed in the order of the outputs speficied in outputs;
         # entries are skipped if they don't exist in outputs.
         inherit outputToPatterns;
-
         # Defines a list of fallbacks for each potential output.
         # The last fallback is the out output.
         # Taken and modified from:
@@ -393,33 +373,36 @@ extendMkDerivation {
         # because attempts to access attributes on the package will cause evaluation errors.
         brokenAssertions = [
           {
-            message = "lib output precedes static output";
             assertion =
               let
                 libIndex = findFirstIndex (x: x == "lib") null finalAttrs.outputs;
                 staticIndex = findFirstIndex (x: x == "static") null finalAttrs.outputs;
               in
               libIndex == null || staticIndex == null || libIndex < staticIndex;
+
+            message = "lib output precedes static output";
           }
           {
-            # NOTE: We cannot (easily) check that all expected outputs have a corresponding outputNameVar attribute in
-            # finalAttrs because of the presence of attributes which use the "output" prefix but are not outputNameVars
-            # (e.g., outputChecks and outputName).
-            message = "outputNameVarFallbacks is a super set of expectedOutputs";
             assertion =
               subtractLists (map mkOutputNameVar finalAttrs.passthru.expectedOutputs) (
                 attrNames finalAttrs.passthru.outputNameVarFallbacks
               ) == [ ];
+
+            # NOTE: We cannot (easily) check that all expected outputs have a corresponding outputNameVar attribute in
+            # finalAttrs because of the presence of attributes which use the "output" prefix but are not outputNameVars
+            # (e.g., outputChecks and outputName).
+            message = "outputNameVarFallbacks is a super set of expectedOutputs";
           }
           {
-            message = "outputToPatterns is a super set of expectedOutputs";
             assertion =
               subtractLists finalAttrs.passthru.expectedOutputs (attrNames finalAttrs.passthru.outputToPatterns)
               == [ ];
+
+            message = "outputToPatterns is a super set of expectedOutputs";
           }
           {
-            message = "propagatedBuildOutputs is a subset of outputs";
             assertion = subtractLists finalAttrs.outputs finalAttrs.propagatedBuildOutputs == [ ];
+            message = "propagatedBuildOutputs is a subset of outputs";
           }
         ]
         ++ brokenAssertions;
@@ -435,28 +418,38 @@ extendMkDerivation {
           in
           [
             {
-              message = "src is null if and only if hostRedistSystem is unsupported";
               assertion = (finalAttrs.src == null) == !isSupportedRedistSystem;
+              message = "src is null if and only if hostRedistSystem is unsupported";
             }
             {
-              message = "hostRedistSystem (${hostRedistSystem}) is supported (${builtins.toJSON finalAttrs.passthru.supportedRedistSystems})";
               assertion = isSupportedRedistSystem;
+              message = "hostRedistSystem (${hostRedistSystem}) is supported (${builtins.toJSON finalAttrs.passthru.supportedRedistSystems})";
             }
           ]
           ++ platformAssertions;
+
+        supportedNixSystems =
+          passthru.supportedNixSystems or (pipe finalAttrs.passthru.supportedReleases [
+            attrNames
+            (concatMap getNixSystems)
+            naturalSort
+            unique
+          ]);
+
+        supportedRedistSystems =
+          passthru.supportedRedistSystems or (naturalSort (attrNames finalAttrs.passthru.supportedReleases));
+
+        supportedReleases =
+          passthru.supportedReleases
+            # NOTE: `release` may be null, so we must use `lib.defaultTo`
+            or (getSupportedReleases (lib.defaultTo { } finalAttrs.passthru.release));
       };
 
       meta = meta // {
         longDescription = meta.longDescription or "" + ''
           By downloading and using this package you accept the terms and conditions of the associated license(s).
         '';
-        sourceProvenance = meta.sourceProvenance or [ sourceTypes.binaryNativeCode ];
-        platforms = finalAttrs.passthru.supportedNixSystems;
-        broken = _mkMetaBroken finalAttrs;
-        badPlatforms = _mkMetaBadPlatforms finalAttrs;
-        downloadPage =
-          meta.downloadPage
-            or "https://developer.download.nvidia.com/compute/${finalAttrs.passthru.redistName}/redist/${finalAttrs.pname}";
+
         # NOTE:
         #   Every redistributable should set its own license; since that's a lot of manual work, we default to
         #   nvidiaCudaRedist if the redistributable is from the CUDA redistributables and nvidiaCuda otherwise.
@@ -469,6 +462,16 @@ extendMkDerivation {
             [ licenses.nvidiaCudaRedist ]
           else
             [ licenses.nvidiaCuda ];
+
+        sourceProvenance = meta.sourceProvenance or [ sourceTypes.binaryNativeCode ];
+        platforms = finalAttrs.passthru.supportedNixSystems;
+        badPlatforms = _mkMetaBadPlatforms finalAttrs;
+        broken = _mkMetaBroken finalAttrs;
+
+        downloadPage =
+          meta.downloadPage
+            or "https://developer.download.nvidia.com/compute/${finalAttrs.passthru.redistName}/redist/${finalAttrs.pname}";
+
         teams = meta.teams or [ ] ++ [ teams.cuda ];
       };
     }

@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   # Python deps
   attrs,
+  buildPythonPackage,
   cbor2,
   certvalidator,
   cryptography,
@@ -14,8 +14,6 @@
 buildPythonPackage rec {
   pname = "cose";
   version = "1.1.0";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "TimothyClaeys";
@@ -33,6 +31,7 @@ buildPythonPackage rec {
     setuptools
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pycose" ];
 
   meta = {

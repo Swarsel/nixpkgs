@@ -14,65 +14,76 @@ in
   options = {
     services.gitolite = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Enable gitolite management under the
           `gitolite` user. After
           switching to a configuration with Gitolite enabled, you can
           then run `git clone gitolite@host:gitolite-admin.git` to manage it further.
         '';
-      };
 
-      dataDir = lib.mkOption {
-        type = lib.types.str;
-        default = "/var/lib/gitolite";
-        description = ''
-          The gitolite home directory used to store all repositories. If left as the default value
-          this directory will automatically be created before the gitolite server starts, otherwise
-          the sysadmin is responsible for ensuring the directory exists with appropriate ownership
-          and permissions.
-        '';
+        type = lib.types.bool;
       };
 
       adminPubkey = lib.mkOption {
-        type = lib.types.str;
         description = ''
           Initial administrative public key for Gitolite. This should
           be an SSH Public Key. Note that this key will only be used
           once, upon the first initialization of the Gitolite user.
           The key string cannot have any line breaks in it.
         '';
+
+        type = lib.types.str;
+      };
+
+      commonHooks = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          A list of custom git hooks that get copied to `~/.gitolite/hooks/common`.
+        '';
+
+        type = lib.types.listOf lib.types.path;
+      };
+
+      dataDir = lib.mkOption {
+        default = "/var/lib/gitolite";
+
+        description = ''
+          The gitolite home directory used to store all repositories. If left as the default value
+          this directory will automatically be created before the gitolite server starts, otherwise
+          the sysadmin is responsible for ensuring the directory exists with appropriate ownership
+          and permissions.
+        '';
+
+        type = lib.types.str;
+      };
+
+      description = lib.mkOption {
+        default = "Gitolite user";
+
+        description = ''
+          Gitolite user account's description.
+        '';
+
+        type = lib.types.str;
       };
 
       enableGitAnnex = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Enable git-annex support. Uses the `extraGitoliteRc` option
           to apply the necessary configuration.
         '';
-      };
 
-      commonHooks = lib.mkOption {
-        type = lib.types.listOf lib.types.path;
-        default = [ ];
-        description = ''
-          A list of custom git hooks that get copied to `~/.gitolite/hooks/common`.
-        '';
+        type = lib.types.bool;
       };
 
       extraGitoliteRc = lib.mkOption {
-        type = lib.types.lines;
         default = "";
-        example = lib.literalExpression ''
-          '''
-            $RC{UMASK} = 0027;
-            $RC{SITE_INFO} = 'This is our private repository host';
-            push( @{$RC{ENABLE}}, 'Kindergarten' ); # enable the command/feature
-            @{$RC{ENABLE}} = grep { $_ ne 'desc' } @{$RC{ENABLE}}; # disable the command/feature
-          '''
-        '';
+
         description = ''
           Extra configuration to append to the default `~/.gitolite.rc`.
 
@@ -93,30 +104,37 @@ in
 
           See also the `enableGitAnnex` option.
         '';
-      };
 
-      user = lib.mkOption {
-        type = lib.types.str;
-        default = "gitolite";
-        description = ''
-          Gitolite user account. This is the username of the gitolite endpoint.
+        example = lib.literalExpression ''
+          '''
+            $RC{UMASK} = 0027;
+            $RC{SITE_INFO} = 'This is our private repository host';
+            push( @{$RC{ENABLE}}, 'Kindergarten' ); # enable the command/feature
+            @{$RC{ENABLE}} = grep { $_ ne 'desc' } @{$RC{ENABLE}}; # disable the command/feature
+          '''
         '';
-      };
 
-      description = lib.mkOption {
-        type = lib.types.str;
-        default = "Gitolite user";
-        description = ''
-          Gitolite user account's description.
-        '';
+        type = lib.types.lines;
       };
 
       group = lib.mkOption {
-        type = lib.types.str;
         default = "gitolite";
+
         description = ''
           Primary group of the Gitolite user account.
         '';
+
+        type = lib.types.str;
+      };
+
+      user = lib.mkOption {
+        default = "gitolite";
+
+        description = ''
+          Gitolite user account. This is the username of the gitolite endpoint.
+        '';
+
+        type = lib.types.str;
       };
     };
   };
@@ -149,43 +167,24 @@ in
       '';
     in
     {
+      environment.systemPackages = [
+        pkgs.gitolite
+        pkgs.git
+      ]
+      ++ lib.optional cfg.enableGitAnnex pkgs.git-annex;
+
       services.gitolite.extraGitoliteRc = lib.optionalString cfg.enableGitAnnex ''
         # Enable git-annex support:
         push( @{$RC{ENABLE}}, 'git-annex-shell ua');
       '';
 
-      users.users.${cfg.user} = {
-        description = cfg.description;
-        home = cfg.dataDir;
-        uid = config.ids.uids.gitolite;
-        group = cfg.group;
-        useDefaultShell = true;
-      };
-      users.groups.${cfg.group}.gid = config.ids.gids.gitolite;
-
       systemd.services.gitolite-init = {
         description = "Gitolite initialization";
-        wantedBy = [ "multi-user.target" ];
-        unitConfig.RequiresMountsFor = cfg.dataDir;
 
         environment = {
           GITOLITE_RC = ".gitolite.rc";
           GITOLITE_RC_DEFAULT = "${rcDir}/gitolite.rc.default";
         };
-
-        serviceConfig = lib.mkMerge [
-          (lib.mkIf (cfg.dataDir == "/var/lib/gitolite") {
-            StateDirectory = "gitolite gitolite/.gitolite gitolite/.gitolite/logs";
-            StateDirectoryMode = "0750";
-          })
-          {
-            Type = "oneshot";
-            User = cfg.user;
-            Group = cfg.group;
-            WorkingDirectory = "~";
-            RemainAfterExit = true;
-          }
-        ];
 
         path = [
           pkgs.gitolite
@@ -195,6 +194,7 @@ in
           pkgs.diffutils
           config.programs.ssh.package
         ];
+
         script =
           let
             rcSetupScriptIfCustomFile =
@@ -250,13 +250,34 @@ in
             fi
             gitolite setup # Upgrade if needed
           '';
+
+        serviceConfig = lib.mkMerge [
+          (lib.mkIf (cfg.dataDir == "/var/lib/gitolite") {
+            StateDirectory = "gitolite gitolite/.gitolite gitolite/.gitolite/logs";
+            StateDirectoryMode = "0750";
+          })
+          {
+            Group = cfg.group;
+            RemainAfterExit = true;
+            Type = "oneshot";
+            User = cfg.user;
+            WorkingDirectory = "~";
+          }
+        ];
+
+        unitConfig.RequiresMountsFor = cfg.dataDir;
+        wantedBy = [ "multi-user.target" ];
       };
 
-      environment.systemPackages = [
-        pkgs.gitolite
-        pkgs.git
-      ]
-      ++ lib.optional cfg.enableGitAnnex pkgs.git-annex;
+      users.groups.${cfg.group}.gid = config.ids.gids.gitolite;
+
+      users.users.${cfg.user} = {
+        description = cfg.description;
+        group = cfg.group;
+        home = cfg.dataDir;
+        uid = config.ids.uids.gitolite;
+        useDefaultShell = true;
+      };
     }
   );
 }

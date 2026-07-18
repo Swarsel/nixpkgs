@@ -15,18 +15,36 @@ let
       This also enables
       {option}`programs.tsmClient.enable`
     '';
+
+    autoTime = mkOption {
+      default = null;
+
+      description = ''
+        The backup service will be invoked
+        automatically at the given date/time,
+        which must be in the format described in
+        {manpage}`systemd.time(5)`.
+        The default `null`
+        disables automatic backups.
+      '';
+
+      example = "12:00";
+      type = nullOr nonEmptyStr;
+    };
+
     command = mkOption {
-      type = nonEmptyStr;
       default = "backup";
-      example = "incr";
+
       description = ''
         The actual command passed to the
         `dsmc` executable to start the backup.
       '';
-    };
-    servername = mkOption {
+
+      example = "incr";
       type = nonEmptyStr;
-      example = "mainTsmServer";
+    };
+
+    servername = mkOption {
       description = ''
         Create a systemd system service
         `tsm-backup.service` that starts
@@ -40,19 +58,9 @@ let
         `HOME` when calling
         `dsmc`.
       '';
-    };
-    autoTime = mkOption {
-      type = nullOr nonEmptyStr;
-      default = null;
-      example = "12:00";
-      description = ''
-        The backup service will be invoked
-        automatically at the given date/time,
-        which must be in the format described in
-        {manpage}`systemd.time(5)`.
-        The default `null`
-        disables automatic backups.
-      '';
+
+      example = "mainTsmServer";
+      type = nonEmptyStr;
     };
   };
 
@@ -80,6 +88,7 @@ in
     inherit assertions;
     programs.tsmClient.enable = true;
     programs.tsmClient.servers.${cfg.servername}.passworddir = mkDefault "/var/lib/tsm-backup/password";
+
     systemd.services.tsm-backup = {
       description = "IBM Storage Protect (Tivoli Storage Manager) Backup";
       # DSM_LOG needs a trailing slash to have it treated as a directory.
@@ -87,18 +96,14 @@ in
       environment.DSM_LOG = "/var/log/tsm-backup/";
       # TSM needs a HOME dir to store certificates.
       environment.HOME = "/var/lib/tsm-backup";
+
       serviceConfig = {
-        # for exit status description see
-        # https://www.ibm.com/docs/en/storage-protect/8.2.1?topic=clients-client-return-codes
-        SuccessExitStatus = "4 8";
         # The `-se` option must come after the command.
         # The `-optfile` option suppresses a `dsm.opt`-not-found warning.
         ExecStart = "${getExe' cfgPrg.wrappedPackage "dsmc"} ${cfg.command} -se='${cfg.servername}' -optfile=/dev/null";
-        LogsDirectory = "tsm-backup";
-        StateDirectory = "tsm-backup";
-        StateDirectoryMode = "0750";
         # systemd sandboxing
         LockPersonality = true;
+        LogsDirectory = "tsm-backup";
         NoNewPrivileges = true;
         PrivateDevices = true;
         #PrivateTmp = true;  # would break backup of {/var,}/tmp
@@ -114,7 +119,13 @@ in
         ProtectSystem = "strict";
         RestrictNamespaces = true;
         RestrictSUIDSGID = true;
+        StateDirectory = "tsm-backup";
+        StateDirectoryMode = "0750";
+        # for exit status description see
+        # https://www.ibm.com/docs/en/storage-protect/8.2.1?topic=clients-client-return-codes
+        SuccessExitStatus = "4 8";
       };
+
       startAt = mkIf (cfg.autoTime != null) cfg.autoTime;
     };
   };

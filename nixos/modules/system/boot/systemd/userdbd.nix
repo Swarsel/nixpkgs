@@ -22,10 +22,10 @@ in
     '';
 
     silenceHighSystemUsers = lib.mkOption {
-      type = lib.types.bool;
       default = false;
-      example = true;
       description = "Silence warning about system users with high UIDs.";
+      example = true;
+      type = lib.types.bool;
       visible = false;
     };
   };
@@ -35,6 +35,29 @@ in
       assertion = cfg.enableSSHSupport -> config.security.enableWrappers;
       message = "OpenSSH userdb integration requires security wrappers.";
     };
+
+    # OpenSSH requires AuthorizedKeysCommand to be owned only by root.
+    # Referencing `userdbctl` directly from the Nix store won't work, as
+    # `/nix/store` is owned by the `nixbld` group.
+    security.wrappers = lib.mkIf cfg.enableSSHSupport {
+      userdbctl = {
+        group = "root";
+        owner = "root";
+        source = lib.getExe' config.systemd.package "userdbctl";
+      };
+    };
+
+    services.openssh = lib.mkIf cfg.enableSSHSupport {
+      authorizedKeysCommand = "/run/wrappers/bin/userdbctl ssh-authorized-keys %u";
+      authorizedKeysCommandUser = "root";
+    };
+
+    systemd.additionalUpstreamSystemUnits = [
+      "systemd-userdbd.socket"
+      "systemd-userdbd.service"
+    ];
+
+    systemd.sockets.systemd-userdbd.wantedBy = [ "sockets.target" ];
 
     warnings = lib.optional (lib.length highSystemUsers > 0 && !cfg.silenceHighSystemUsers) ''
       The following system users have UIDs higher than 1000:
@@ -57,28 +80,5 @@ in
       Alternatively, to acknowledge and silence this warning, set
       `services.userdbd.silenceHighSystemUsers` to true.
     '';
-
-    systemd.additionalUpstreamSystemUnits = [
-      "systemd-userdbd.socket"
-      "systemd-userdbd.service"
-    ];
-
-    systemd.sockets.systemd-userdbd.wantedBy = [ "sockets.target" ];
-
-    # OpenSSH requires AuthorizedKeysCommand to be owned only by root.
-    # Referencing `userdbctl` directly from the Nix store won't work, as
-    # `/nix/store` is owned by the `nixbld` group.
-    security.wrappers = lib.mkIf cfg.enableSSHSupport {
-      userdbctl = {
-        owner = "root";
-        group = "root";
-        source = lib.getExe' config.systemd.package "userdbctl";
-      };
-    };
-
-    services.openssh = lib.mkIf cfg.enableSSHSupport {
-      authorizedKeysCommand = "/run/wrappers/bin/userdbctl ssh-authorized-keys %u";
-      authorizedKeysCommandUser = "root";
-    };
   };
 }

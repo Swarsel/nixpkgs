@@ -34,13 +34,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Qt based Minesweeper game";
-    mainProgram = "libremines";
+
     longDescription = ''
       A Free/Libre and Open Source Software Qt based Minesweeper game available for GNU/Linux, FreeBSD and Windows systems.
     '';
+
     homepage = "https://bollos00.github.io/LibreMines";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.unix;
+    mainProgram = "libremines";
   };
 })

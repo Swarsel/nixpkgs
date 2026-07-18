@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "undefined";
   version = "0.0.8";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ flit ];
-
+  pyproject = true;
   pythonImportsCheck = [ "undefined" ];
 
   meta = {

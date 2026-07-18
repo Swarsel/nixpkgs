@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromCodeberg,
-  pkg-config,
-  pcsclite,
   nix-update-script,
-  testers,
+  pcsclite,
+  pkg-config,
   rsop,
+  rustPlatform,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,28 +20,29 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-vZW4L3hm2vRRoLcxU631jiNrbk+w0hDaL4VXIrtP2aY=";
   };
 
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ pcsclite ];
   cargoHash = "sha256-qrurMKwSs0w2D6KPto7tpsuLGuAJ9drKhdmIAbEaD9M=";
 
-  nativeBuildInputs = [ pkg-config ];
-
-  buildInputs = [ pcsclite ];
-
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
       command = "rsop version";
       package = rsop;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://codeberg.org/heiko/rsop";
     description = "Stateless OpenPGP (SOP) based on rpgp";
+    homepage = "https://codeberg.org/heiko/rsop";
+
     license = with lib.licenses; [
       mit
       apsl20
       cc0
     ];
+
     maintainers = with lib.maintainers; [ nikstur ];
     mainProgram = "rsop";
   };

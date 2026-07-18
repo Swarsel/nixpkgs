@@ -1,10 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 let
   pname = "pyembroidery";
@@ -17,7 +16,6 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "inkstitch";
@@ -26,16 +24,12 @@ buildPythonPackage {
     hash = "sha256-cnWQ/ZScdXTFMLHdceyCLjgEkcwv3KuZHwXWlsYCcBA=";
   };
 
-  build-system = [
-    setuptools
-  ];
-
-  pythonImportsCheck = [
-    "pyembroidery"
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
+  ];
+
+  build-system = [
+    setuptools
   ];
 
   # Failed assertions.
@@ -43,6 +37,12 @@ buildPythonPackage {
   disabledTests = [
     "test_generic_write_gcode"
     "test_jef_trims_commands"
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "pyembroidery"
   ];
 
   meta = {

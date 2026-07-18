@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitLab,
-  pkg-config,
-  openssl,
-  spade,
   git,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  spade,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -19,13 +19,13 @@ rustPlatform.buildRustPackage rec {
     hash = "sha256-5/yIucyErZpY5iN/6r8JNAfsrYPxh+lBHDBD6cnjbHQ=";
   };
 
-  cargoHash = "sha256-+znzedDuB7hMzaRtAvLNUC9gG0Q2R8Fn61D64udAyAM=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
     openssl
   ];
+
+  cargoHash = "sha256-+znzedDuB7hMzaRtAvLNUC9gG0Q2R8Fn61D64udAyAM=";
 
   nativeCheckInputs = [
     git

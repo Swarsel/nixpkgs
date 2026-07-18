@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  igraph,
-  pygments,
-  scikit-build-core,
-  pybind11,
-  ninja,
+  buildPythonPackage,
   cmake,
+  igraph,
+  ninja,
+  pybind11,
+  pygments,
   pytestCheckHook,
+  scikit-build-core,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "explorerscript";
   version = "0.2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SkyTemple";
@@ -32,39 +31,37 @@ buildPythonPackage rec {
       --replace-fail "scikit-build-core>=0.10.7, < 0.11" "scikit-build-core"
   '';
 
+  nativeBuildInputs = [
+    cmake
+    ninja
+  ];
+
+  nativeCheckInputs = [ pytestCheckHook ] ++ optional-dependencies.pygments;
+
   build-system = [
     setuptools
     scikit-build-core
     pybind11
   ];
 
-  nativeBuildInputs = [
-    cmake
-    ninja
+  dependencies = [
+    igraph
   ];
 
   # The source include some auto-generated ANTLR code that could be recompiled, but trying that resulted in a crash while decompiling unionall.ssb.
   # We thus do not rebuild them.
-
   dontUseCmakeConfigure = true;
+  optional-dependencies.pygments = [ pygments ];
+  pyproject = true;
+  pythonImportsCheck = [ "explorerscript" ];
 
   pythonRelaxDeps = [
     "igraph"
   ];
 
-  dependencies = [
-    igraph
-  ];
-
-  optional-dependencies.pygments = [ pygments ];
-
-  nativeCheckInputs = [ pytestCheckHook ] ++ optional-dependencies.pygments;
-
-  pythonImportsCheck = [ "explorerscript" ];
-
   meta = {
-    homepage = "https://github.com/SkyTemple/explorerscript";
     description = "Programming language + compiler/decompiler for creating scripts for Pokémon Mystery Dungeon Explorers of Sky";
+    homepage = "https://github.com/SkyTemple/explorerscript";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ marius851000 ];
   };

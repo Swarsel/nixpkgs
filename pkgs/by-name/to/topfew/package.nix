@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -16,25 +16,25 @@ buildGoModule (finalAttrs: {
     hash = "sha256-P3K3IhgYkrxmEG2l7EQDVWQ+P7fOjUMUFrlAnY+8NmI=";
   };
 
-  vendorHash = null;
-
   nativeBuildInputs = [
     installShellFiles
   ];
 
-  ldflags = [
-    "-s"
-  ];
+  vendorHash = null;
 
   postInstall = ''
     installManPage doc/tf.1
   '';
 
+  ldflags = [
+    "-s"
+  ];
+
   meta = {
     description = "Finds the fields (or combinations of fields) which appear most often in a stream of records";
     homepage = "https://github.com/timbray/topfew";
-    maintainers = with lib.maintainers; [ liberodark ];
     license = lib.licenses.gpl3Only;
+    maintainers = with lib.maintainers; [ liberodark ];
     mainProgram = "tf";
   };
 })

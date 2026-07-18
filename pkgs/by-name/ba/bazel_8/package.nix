@@ -1,36 +1,36 @@
 {
+  lib,
   stdenv,
+  bash,
   callPackage,
+  # Apple dependencies
+  cctools,
+  coreutils,
   # nix tooling and utilities
   darwin,
-  lib,
-  fetchzip,
+  diffutils,
   fetchpatch,
+  fetchzip,
+  file,
+  findutils,
+  gawk,
+  gnugrep,
+  gnupatch,
+  gnused,
+  gnutar,
+  gzip,
+  installShellFiles,
+  # Allow to independently override the jdks used to build and run respectively
+  jdk_headless,
   makeWrapper,
-  writeTextFile,
+  python3,
   replaceVars,
   # native build inputs
   runtimeShell,
-  zip,
   unzip,
-  bash,
-  coreutils,
   which,
-  gawk,
-  gnused,
-  gnutar,
-  gnugrep,
-  gzip,
-  findutils,
-  diffutils,
-  gnupatch,
-  file,
-  installShellFiles,
-  python3,
-  # Apple dependencies
-  cctools,
-  # Allow to independently override the jdks used to build and run respectively
-  jdk_headless,
+  writeTextFile,
+  zip,
   version ? "8.7.0",
 }:
 
@@ -117,47 +117,8 @@ let
 
 in
 stdenv.mkDerivation rec {
-  pname = "bazel";
   inherit version src;
-
-  darwinPatches = [
-    # Bazel integrates with apple IOKit to inhibit and track system sleep.
-    # Inside the darwin sandbox, these API calls are blocked, and bazel
-    # crashes. It seems possible to allow these APIs inside the sandbox, but it
-    # feels simpler to patch bazel not to use it at all. So our bazel is
-    # incapable of preventing system sleep, which is a small price to pay to
-    # guarantee that it will always run in any nix context.
-    #
-    # See also ./bazel_darwin_sandbox.patch in bazel_5. That patch uses
-    # NIX_BUILD_TOP env var to conditionnally disable sleep features inside the
-    # sandbox.
-    #
-    # If you want to investigate the sandbox profile path,
-    # IORegisterForSystemPower can be allowed with
-    #
-    #     propagatedSandboxProfile = ''
-    #       (allow iokit-open (iokit-user-client-class "RootDomainUserClient"))
-    #     '';
-    #
-    # I do not know yet how to allow IOPMAssertion{CreateWithName,Release}
-    ./patches/darwin_sleep.patch
-
-    # Fix DARWIN_XCODE_LOCATOR_COMPILE_COMMAND by removing multi-arch support.
-    # Nixpkgs toolcahins do not support that (yet?) and get confused.
-    # Also add an explicit /usr/bin prefix that will be patched below.
-    (replaceVars ./patches/xcode.patch {
-      clangDarwin = "${stdenv.cc}/bin/clang";
-    })
-
-    # Revert preference for apple_support over rules_cc toolchain for now
-    # will need to figure out how to build with apple_support toolchain later
-    ./patches/apple_cc_toolchain.patch
-
-    # On Darwin, the last argument to gcc is coming up as an empty string. i.e: ''
-    # This is breaking the build of any C target. This patch removes the last
-    # argument if it's found to be an empty string.
-    ./patches/trim-last-argument-to-gcc-if-empty.patch
-  ];
+  pname = "bazel";
 
   patches = lib.optionals isDarwin darwinPatches ++ [
     # patch that propagates rules_* patches below
@@ -165,16 +126,18 @@ stdenv.mkDerivation rec {
     # so rules_* patches are injected via addFilePatch
     ./patches/deps_patches.patch
     (addFilePatch {
-      path = "b/third_party/rules_python.patch";
       file = replaceVars ./patches/rules_python.patch {
         usrBinEnv = "${coreutils}/bin/env";
       };
+
+      path = "b/third_party/rules_python.patch";
     })
     (addFilePatch {
-      path = "b/third_party/rules_java.patch";
       file = replaceVars ./patches/rules_java.patch {
         defaultBash = "${defaultShell.bashWithDefaultShellUtils}/bin/bash";
       };
+
+      path = "b/third_party/rules_java.patch";
     })
     # Suggested for upstream in https://github.com/bazelbuild/bazel/pull/25936
     ./patches/build_execlog_parser.patch
@@ -221,19 +184,6 @@ stdenv.mkDerivation rec {
       };
     })
   ];
-
-  meta = {
-    homepage = "https://github.com/bazelbuild/bazel/";
-    description = "Build tool that builds code quickly and reliably";
-    sourceProvenance = with lib.sourceTypes; [
-      fromSource
-      binaryBytecode # source bundles dependencies as jars
-    ];
-    license = lib.licenses.asl20;
-    teams = [ lib.teams.bazel ];
-    mainProgram = "bazel";
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
-  };
 
   nativeBuildInputs = [
     makeWrapper
@@ -339,6 +289,45 @@ stdenv.mkDerivation rec {
       USE_BAZEL_VERSION=${version} $out/bin/bazel --batch info release
     '';
 
+  darwinPatches = [
+    # Bazel integrates with apple IOKit to inhibit and track system sleep.
+    # Inside the darwin sandbox, these API calls are blocked, and bazel
+    # crashes. It seems possible to allow these APIs inside the sandbox, but it
+    # feels simpler to patch bazel not to use it at all. So our bazel is
+    # incapable of preventing system sleep, which is a small price to pay to
+    # guarantee that it will always run in any nix context.
+    #
+    # See also ./bazel_darwin_sandbox.patch in bazel_5. That patch uses
+    # NIX_BUILD_TOP env var to conditionnally disable sleep features inside the
+    # sandbox.
+    #
+    # If you want to investigate the sandbox profile path,
+    # IORegisterForSystemPower can be allowed with
+    #
+    #     propagatedSandboxProfile = ''
+    #       (allow iokit-open (iokit-user-client-class "RootDomainUserClient"))
+    #     '';
+    #
+    # I do not know yet how to allow IOPMAssertion{CreateWithName,Release}
+    ./patches/darwin_sleep.patch
+
+    # Fix DARWIN_XCODE_LOCATOR_COMPILE_COMMAND by removing multi-arch support.
+    # Nixpkgs toolcahins do not support that (yet?) and get confused.
+    # Also add an explicit /usr/bin prefix that will be patched below.
+    (replaceVars ./patches/xcode.patch {
+      clangDarwin = "${stdenv.cc}/bin/clang";
+    })
+
+    # Revert preference for apple_support over rules_cc toolchain for now
+    # will need to figure out how to build with apple_support toolchain later
+    ./patches/apple_cc_toolchain.patch
+
+    # On Darwin, the last argument to gcc is coming up as an empty string. i.e: ''
+    # This is breaking the build of any C target. This patch removes the last
+    # argument if it's found to be an empty string.
+    ./patches/trim-last-argument-to-gcc-if-empty.patch
+  ];
+
   # Bazel binary includes zip archive at the end that `strip` would end up discarding
   stripExclude = [ "bin/.bazel-${version}-*-wrapped" ];
 
@@ -346,5 +335,20 @@ stdenv.mkDerivation rec {
     tests = {
       inherit (callPackage ./examples.nix { }) cpp java rust;
     };
+  };
+
+  meta = {
+    description = "Build tool that builds code quickly and reliably";
+    homepage = "https://github.com/bazelbuild/bazel/";
+    license = lib.licenses.asl20;
+
+    sourceProvenance = with lib.sourceTypes; [
+      fromSource
+      binaryBytecode # source bundles dependencies as jars
+    ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "bazel";
+    teams = [ lib.teams.bazel ];
   };
 }

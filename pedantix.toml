@@ -1,0 +1,15 @@
+# Repository-wide pedantix baseline for nixpkgs.
+#
+# nixfmt runs as a separate treefmt formatter, so pedantix only reorders
+# here (formatter = "off"). This root config is deliberately conservative:
+# reordering is disabled so that library code (lib/, nixos/lib, nixos/tests,
+# maintainers/, ci/, doc/) is left untouched. The pkgs/ and nixos/modules/
+# subtrees opt into a preset via their own pedantix.toml.
+
+formatter = "off"
+
+[args]
+sort = false
+
+[attrs]
+sort = false

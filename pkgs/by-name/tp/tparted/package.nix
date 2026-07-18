@@ -3,18 +3,18 @@
   stdenv,
   fetchurl,
   autoPatchelfHook,
+  btrfs-progs,
+  dosfstools,
+  e2fsprogs,
+  exfatprogs,
+  f2fs-tools,
+  jfsutils,
   makeWrapper,
+  nix-update-script,
+  ntfs3g,
   parted,
   util-linux,
-  dosfstools,
-  exfatprogs,
-  e2fsprogs,
-  ntfs3g,
-  btrfs-progs,
   xfsprogs,
-  jfsutils,
-  f2fs-tools,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,6 +30,15 @@ stdenv.mkDerivation (finalAttrs: {
     autoPatchelfHook
     makeWrapper
   ];
+
+  installPhase = ''
+    runHook preInstall
+    mkdir -p $out/bin
+    cp tparted $out/bin/
+    mkdir -p $out/opt/tparted
+    cp -r locale $out/opt/tparted/
+    runHook postInstall
+  '';
 
   postFixup = ''
     wrapProgram $out/bin/tparted \
@@ -68,15 +77,6 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postUnpack
   '';
 
-  installPhase = ''
-    runHook preInstall
-    mkdir -p $out/bin
-    cp tparted $out/bin/
-    mkdir -p $out/opt/tparted
-    cp -r locale $out/opt/tparted/
-    runHook postInstall
-  '';
-
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -86,8 +86,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/Kagamma/tparted";
     changelog = "https://github.com/Kagamma/tparted/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3;
-    maintainers = with lib.maintainers; [ liberodark ];
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    maintainers = with lib.maintainers; [ liberodark ];
     mainProgram = "tparted";
   };
 })

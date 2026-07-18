@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   lxml,
   pytestCheckHook,
   python-dateutil,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "tcxparser";
   version = "2.4.0-r1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vkurup";
@@ -19,6 +18,8 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-lQczTuxmxu4nCPJsgblrW2RXST7kvhtPnscemwXCx0Y=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -29,8 +30,7 @@ buildPythonPackage rec {
     python-dateutil
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "tcxparser" ];
 
   meta = {

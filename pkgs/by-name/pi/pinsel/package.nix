@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
+  glib,
   gtk3,
   lua,
-  glib,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {

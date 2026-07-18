@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  clingo,
   catch2,
+  clingo,
+  cmake,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,11 +37,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Extension of clingo to handle constraints over integers";
-    mainProgram = "clingcon";
+    homepage = "https://potassco.org/";
+    changelog = "https://github.com/potassco/clingcon/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     platforms = lib.platforms.unix;
-    homepage = "https://potassco.org/";
+    mainProgram = "clingcon";
     downloadPage = "https://github.com/potassco/clingcon/releases/";
-    changelog = "https://github.com/potassco/clingcon/releases/tag/v${finalAttrs.version}";
   };
 })

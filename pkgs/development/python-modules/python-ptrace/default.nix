@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "python-ptrace";
   version = "0.9.9";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -16,9 +15,9 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   # requires distorm, which is optionally
   doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "Python binding of ptrace library";

@@ -1,12 +1,12 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dnspython,
-  fetchFromGitHub,
   hatch-vcs,
   hatchling,
   icalendar,
   icalendar-searcher,
-  lib,
   lxml,
   manuel,
   niquests,
@@ -28,7 +28,6 @@
 buildPythonPackage rec {
   pname = "caldav";
   version = "2.2.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-caldav";
@@ -36,6 +35,19 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-xtxWDlYESIwkow/YdjaUAkJ/x2jdUyhqfSRycJVLncY=";
   };
+
+  nativeCheckInputs = [
+    manuel
+    proxy-py
+    pyfakefs
+    pytestCheckHook
+    (toPythonModule (radicale.override { python3 = python; }))
+    tzlocal
+    vobject
+    writableTmpDirAsHomeHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     hatch-vcs
@@ -53,19 +65,6 @@ buildPythonPackage rec {
     pyyaml
   ];
 
-  pythonImportsCheck = [ "caldav" ];
-
-  nativeCheckInputs = [
-    manuel
-    proxy-py
-    pyfakefs
-    pytestCheckHook
-    (toPythonModule (radicale.override { python3 = python; }))
-    tzlocal
-    vobject
-    writableTmpDirAsHomeHook
-  ];
-
   disabledTests = [
     # test contacts CalDAV servers on the internet
     "test_rfc8764_test_conf"
@@ -73,12 +72,13 @@ buildPythonPackage rec {
     "testConfigfile"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+  pythonImportsCheck = [ "caldav" ];
 
   meta = {
-    changelog = "https://github.com/python-caldav/caldav/blob/${src.tag}/CHANGELOG.md";
     description = "CalDAV (RFC4791) client library";
     homepage = "https://github.com/python-caldav/caldav";
+    changelog = "https://github.com/python-caldav/caldav/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.dotlambda ];
   };

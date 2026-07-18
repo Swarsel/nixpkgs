@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
+  fsrx,
   rustPlatform,
   testers,
-  fsrx,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {

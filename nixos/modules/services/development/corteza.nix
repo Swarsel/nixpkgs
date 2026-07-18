@@ -13,53 +13,62 @@ in
     package = lib.mkPackageOption pkgs "corteza" { };
 
     address = lib.mkOption {
-      type = lib.types.str;
       default = "0.0.0.0";
+
       description = ''
         IP for the HTTP server.
       '';
-    };
-    port = lib.mkOption {
-      type = lib.types.port;
-      default = 80;
-      description = ''
-        Port for the HTTP server.
-      '';
-    };
-    openFirewall = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      example = true;
-      description = "Whether to open ports in the firewall.";
-    };
 
-    user = lib.mkOption {
       type = lib.types.str;
-      default = "corteza";
-      description = "The user to run Corteza under.";
     };
 
     group = lib.mkOption {
-      type = lib.types.str;
       default = "corteza";
       description = "The group to run Corteza under.";
+      type = lib.types.str;
+    };
+
+    openFirewall = lib.mkOption {
+      default = false;
+      description = "Whether to open ports in the firewall.";
+      example = true;
+      type = lib.types.bool;
+    };
+
+    port = lib.mkOption {
+      default = 80;
+
+      description = ''
+        Port for the HTTP server.
+      '';
+
+      type = lib.types.port;
     };
 
     settings = lib.mkOption {
-      type = lib.types.submodule {
-        freeformType = lib.types.attrsOf lib.types.str;
-        options = {
-          HTTP_WEBAPP_ENABLED = lib.mkEnableOption "webapps" // {
-            default = true;
-            apply = toString;
-          };
-        };
-      };
       default = { };
+
       description = ''
         Configuration for Corteza, will be passed as environment variables.
         See <https://docs.cortezaproject.org/corteza-docs/2024.9/devops-guide/references/configuration/server.html>.
       '';
+
+      type = lib.types.submodule {
+        options = {
+          HTTP_WEBAPP_ENABLED = lib.mkEnableOption "webapps" // {
+            apply = toString;
+            default = true;
+          };
+        };
+
+        freeformType = lib.types.attrsOf lib.types.str;
+      };
+    };
+
+    user = lib.mkOption {
+      default = "corteza";
+      description = "The user to run Corteza under.";
+      type = lib.types.str;
     };
   };
 
@@ -71,41 +80,46 @@ in
       }
     ];
 
-    warnings = lib.optional (!cfg.settings ? DB_DSN) ''
-      A database connection string is not set.
-      Corteza will create a temporary SQLite database in memory, but it will not persist data.
-      For production use, set `services.corteza.settings.DB_DSN`.
-    '';
-
     networking.firewall.allowedTCPPorts = lib.mkIf cfg.openFirewall [ cfg.port ];
 
     systemd.services.corteza = {
+      after = [ "network-online.target" ];
       description = "Corteza";
       documentation = [ "https://docs.cortezaproject.org/" ];
-      after = [ "network-online.target" ];
-      wants = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
+
       environment = {
-        HTTP_WEBAPP_BASE_DIR = "./webapp";
         HTTP_ADDR = "${cfg.address}:${toString cfg.port}";
+        HTTP_WEBAPP_BASE_DIR = "./webapp";
       }
       // cfg.settings;
+
       path = [ pkgs.dart-sass ];
+
       serviceConfig = {
-        WorkingDirectory = cfg.package;
-        User = cfg.user;
-        Group = cfg.group;
         ExecStart = "${lib.getExe cfg.package} serve-api";
+        Group = cfg.group;
+        User = cfg.user;
+        WorkingDirectory = cfg.package;
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
 
     users = {
       groups.${cfg.group} = { };
+
       users.${cfg.user} = {
         inherit (cfg) group;
         isSystemUser = true;
       };
     };
+
+    warnings = lib.optional (!cfg.settings ? DB_DSN) ''
+      A database connection string is not set.
+      Corteza will create a temporary SQLite database in memory, but it will not persist data.
+      For production use, set `services.corteza.settings.DB_DSN`.
+    '';
   };
 
   meta.maintainers = with lib.maintainers; [

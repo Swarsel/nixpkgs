@@ -1,12 +1,12 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  makeWrapper,
+  buildGoModule,
   git,
-  go,
   gnumake,
+  go,
   installShellFiles,
+  makeWrapper,
   testers,
 }:
 
@@ -21,15 +21,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-iTC5HY4E54YG+isSgW2515Kz83+khzANAml78z8EG88=";
   };
 
-  vendorHash = "sha256-7rXunagWkUWGL5v+xkmyLELwrIEuRVGPk4SK8/lotio=";
-
-  subPackages = [
-    "internal/cli/cmd"
-    "."
-  ];
-
-  allowGoReference = true;
-
   postPatch = ''
     substituteInPlace internal/cli/version/version.go \
       --replace-fail "return main.Version" 'return "v${finalAttrs.version}"'
@@ -40,6 +31,8 @@ buildGoModule (finalAttrs: {
     git
     installShellFiles
   ];
+
+  vendorHash = "sha256-7rXunagWkUWGL5v+xkmyLELwrIEuRVGPk4SK8/lotio=";
 
   postInstall = ''
     wrapProgram $out/bin/kubebuilder \
@@ -57,20 +50,29 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/kubebuilder completion zsh)
   '';
 
+  allowGoReference = true;
+
+  subPackages = [
+    "internal/cli/cmd"
+    "."
+  ];
+
   passthru.tests.version = testers.testVersion {
+    version = "v${finalAttrs.version}";
     command = "${finalAttrs.finalPackage}/bin/kubebuilder version";
     package = finalAttrs.finalPackage;
-    version = "v${finalAttrs.version}";
   };
 
   meta = {
     description = "SDK for building Kubernetes APIs using CRDs";
-    mainProgram = "kubebuilder";
     homepage = "https://github.com/kubernetes-sigs/kubebuilder";
     changelog = "https://github.com/kubernetes-sigs/kubebuilder/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       hythera
     ];
+
+    mainProgram = "kubebuilder";
   };
 })

@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  bemenu,
+  libassuan,
+  libgpg-error,
   meson,
   ninja,
   pkg-config,
-  libassuan,
-  libgpg-error,
   popt,
-  bemenu,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,6 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
     pkg-config
   ];
+
   buildInputs = [
     libassuan
     libgpg-error

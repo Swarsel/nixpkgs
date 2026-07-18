@@ -1,7 +1,7 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 let
@@ -17,8 +17,6 @@ in
 python3.pkgs.buildPythonApplication {
   inherit pname version src;
 
-  pyproject = true;
-
   propagatedBuildInputs = [
     python3.pkgs.hatchling
     python3.pkgs.pydantic
@@ -26,6 +24,8 @@ python3.pkgs.buildPythonApplication {
     python3.pkgs.rich
     python3.pkgs.shodan
   ];
+
+  pyproject = true;
 
   pythonRelaxDeps = [
     "pydantic"
@@ -37,10 +37,10 @@ python3.pkgs.buildPythonApplication {
   ];
 
   meta = {
-    homepage = "https://github.com/pirxthepilot/wtfis";
     description = "Passive hostname, domain and IP lookup tool for non-robots";
-    mainProgram = "wtfis";
+    homepage = "https://github.com/pirxthepilot/wtfis";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "wtfis";
   };
 }

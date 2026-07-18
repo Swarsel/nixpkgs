@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  pkg-config,
-  wrapGAppsHook4,
+  buildGoModule,
   gobject-introspection,
   gtk4,
+  pkg-config,
+  wrapGAppsHook4,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,8 +19,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-7M5LlZKDfY/z8lBfEYeChQprkRRRfOZ3IIn5QuEdQJI=";
   };
 
-  vendorHash = null;
-
   nativeBuildInputs = [
     pkg-config
     wrapGAppsHook4
@@ -31,6 +29,7 @@ buildGoModule (finalAttrs: {
     gtk4
   ];
 
+  vendorHash = null;
   ldflags = [ "-s" ];
 
   meta = {

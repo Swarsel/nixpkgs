@@ -11,12 +11,11 @@
 buildPythonPackage rec {
   pname = "eufylife-ble-client";
   version = "0.1.10";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "eufylife_ble_client";
     inherit version;
     hash = "sha256-hfUsFifkwr5qhYM6Otlxo4AAGu967p/eWCR+yBrC4eM=";
+    pname = "eufylife_ble_client";
   };
 
   nativeBuildInputs = [ poetry-core ];
@@ -29,7 +28,7 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "eufylife_ble_client" ];
 
   meta = {

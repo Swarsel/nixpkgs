@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  flit-core,
   beautifulsoup4,
+  buildPythonPackage,
+  flit-core,
+  furo,
   jinja2,
+  myst-parser,
   requests,
   sphinx,
   sphinxHook,
-  furo,
-  myst-parser,
 }:
 
 buildPythonPackage rec {
   pname = "sphinx-tippy";
   version = "0.4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sphinx-extensions2";
@@ -24,14 +23,14 @@ buildPythonPackage rec {
     hash = "sha256-+EXvj8Q6eMu51Gh4hLD6h8I7PDZaeVH+2pZuQUMVH+4=";
   };
 
-  build-system = [
-    flit-core
-  ];
-
   nativeBuildInputs = [
     sphinxHook
     furo
     myst-parser
+  ];
+
+  build-system = [
+    flit-core
   ];
 
   dependencies = [
@@ -40,6 +39,8 @@ buildPythonPackage rec {
     requests
     sphinx
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "sphinx_tippy"

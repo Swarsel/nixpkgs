@@ -1,11 +1,11 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   buildGoModule,
   doppler,
-  fetchFromGitHub,
   installShellFiles,
-  lib,
   testers,
-  stdenv,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,14 +19,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-CmNSn4WRWMP07qC5APw8PTouCUOHJrz1ZYqpKhdiIDM=";
   };
 
-  vendorHash = "sha256-u6SB3SXCqu7Y2aUoTAJ01mtDCxMofVQLAde1jDxVvks=";
-
-  ldflags = [
-    "-s -w"
-    "-X github.com/DopplerHQ/cli/pkg/version.ProgramVersion=v${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-u6SB3SXCqu7Y2aUoTAJ01mtDCxMofVQLAde1jDxVvks=";
 
   postInstall = ''
     mv $out/bin/cli $out/bin/doppler
@@ -40,16 +34,21 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/doppler completion zsh)
   '';
 
+  ldflags = [
+    "-s -w"
+    "-X github.com/DopplerHQ/cli/pkg/version.ProgramVersion=v${finalAttrs.version}"
+  ];
+
   passthru.tests.version = testers.testVersion {
-    package = doppler;
     version = "v${finalAttrs.version}";
+    package = doppler;
   };
 
   meta = {
     description = "Official CLI for interacting with your Doppler Enclave secrets and configuration";
-    mainProgram = "doppler";
     homepage = "https://doppler.com";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ lucperkins ];
+    mainProgram = "doppler";
   };
 })

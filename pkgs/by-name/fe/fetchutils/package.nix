@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   bash,
   scdoc,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -17,6 +17,10 @@ stdenvNoCC.mkDerivation {
     sha256 = "sha256-ONrVZC6GBV5v3TeBekW9ybZjDHF3FNyXw1rYknqKRbk=";
   };
 
+  postPatch = ''
+    patchShebangs --host src/*
+  '';
+
   nativeBuildInputs = [
     scdoc
   ];
@@ -27,15 +31,11 @@ stdenvNoCC.mkDerivation {
 
   installFlags = [ "PREFIX=$(out)/" ];
 
-  postPatch = ''
-    patchShebangs --host src/*
-  '';
-
   meta = {
     description = "Collection of small shell utilities to fetch system information";
     homepage = "https://github.com/lptstr/fetchutils";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ moni ];
+    platforms = lib.platforms.unix;
   };
 }

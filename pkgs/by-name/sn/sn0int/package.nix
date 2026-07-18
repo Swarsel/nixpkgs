@@ -1,14 +1,14 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
-  rustPlatform,
+  installShellFiles,
   libseccomp,
   libsodium,
   pkg-config,
   pkgs,
+  rustPlatform,
   sqlite,
-  stdenv,
-  installShellFiles,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -21,8 +21,6 @@ rustPlatform.buildRustPackage rec {
     tag = "v${version}";
     hash = "sha256-tiJLwlxZ9ndircgkH23ew+3QJeuuqt93JahAtFPcuG8=";
   };
-
-  cargoHash = "sha256-nDgWNm5HTvFEMQhUUnU7o2Rpzl3/bGwyB0N9Z1KorDs=";
 
   nativeBuildInputs = [
     pkg-config
@@ -37,6 +35,7 @@ rustPlatform.buildRustPackage rec {
     libseccomp
   ];
 
+  cargoHash = "sha256-nDgWNm5HTvFEMQhUUnU7o2Rpzl3/bGwyB0N9Z1KorDs=";
   # One of the dependencies (chrootable-https) tries to read "/etc/resolv.conf"
   # in "checkPhase", hence fails in sandbox of "nix".
   doCheck = false;
@@ -53,10 +52,12 @@ rustPlatform.buildRustPackage rec {
     homepage = "https://github.com/kpcyrd/sn0int";
     changelog = "https://github.com/kpcyrd/sn0int/releases/tag/v${version}";
     license = with lib.licenses; [ gpl3Plus ];
+
     maintainers = with lib.maintainers; [
       fab
       xrelkd
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "sn0int";
   };

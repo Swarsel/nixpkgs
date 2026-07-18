@@ -1,14 +1,14 @@
 {
-  fetchFromGitHub,
   lib,
-  rustPlatform,
-  pkg-config,
-  autoPatchelfHook,
   stdenv,
-  wayland,
-  vulkan-loader,
+  fetchFromGitHub,
+  autoPatchelfHook,
   libxkbcommon,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  vulkan-loader,
+  wayland,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "cantus";
@@ -21,21 +21,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-TRqWhoRlinNzLdxODs4bR5IgJR6ELKs4SOOpvtoFNFA=";
   };
 
-  cargoHash = "sha256-YUXEgeZn0UXh34RnCaqLhhK0QSPz3Y8XJuR2oMa4rIU=";
-
   nativeBuildInputs = [
     pkg-config
     autoPatchelfHook
   ];
 
+  buildInputs = [
+    stdenv.cc.cc.lib
+  ];
+
+  cargoHash = "sha256-YUXEgeZn0UXh34RnCaqLhhK0QSPz3Y8XJuR2oMa4rIU=";
+
   runtimeDependencies = [
     libxkbcommon
     vulkan-loader
     wayland
-  ];
-
-  buildInputs = [
-    stdenv.cc.cc.lib
   ];
 
   passthru.updateScript = nix-update-script { };
@@ -44,8 +44,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Beautiful interactive music widget for Wayland";
     homepage = "https://github.com/CodedNil/cantus";
     license = lib.licenses.mit;
-    mainProgram = "cantus";
     maintainers = with lib.maintainers; [ CodedNil ];
     platforms = lib.platforms.linux;
+    mainProgram = "cantus";
   };
 })

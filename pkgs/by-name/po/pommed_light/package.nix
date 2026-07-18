@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  pciutils,
-  libconfuse,
   alsa-lib,
   audiofile,
+  eject,
+  fetchpatch,
+  libconfuse,
+  pciutils,
   pkg-config,
   zlib,
-  eject,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,8 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
     #   https://github.com/bytbox/pommed-light/pull/38
     (fetchpatch {
       name = "fno-common.patch";
-      url = "https://github.com/bytbox/pommed-light/commit/5848b49b45a9c3ab047ebd17deb2162daab1e0b8.patch";
       sha256 = "15rsq2i4rqp4ssab20486a1wgxi2cp87b7nxyk9h23gdwld713vf";
+      url = "https://github.com/bytbox/pommed-light/commit/5848b49b45a9c3ab047ebd17deb2162daab1e0b8.patch";
     })
   ];
 
@@ -41,6 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     pciutils
     libconfuse
@@ -65,14 +66,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Trimmed version of the pommed hotkey handler for MacBooks";
-    mainProgram = "pommed";
+
     longDescription = ''
       This is a stripped-down version of pommed with client, dbus, and
       ambient light sensor support removed, optimized for use with dwm
       and the like.
     '';
+
     homepage = "https://github.com/bytbox/pommed-light";
-    platforms = [ "x86_64-linux" ];
     license = lib.licenses.gpl2Only;
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "pommed";
   };
 })

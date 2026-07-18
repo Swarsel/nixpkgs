@@ -1,10 +1,10 @@
 { stdenv, undmg }:
 
 {
-  pname,
-  version,
-  src,
   meta,
+  pname,
+  src,
+  version,
 }:
 stdenv.mkDerivation {
   inherit
@@ -15,8 +15,6 @@ stdenv.mkDerivation {
     ;
 
   nativeBuildInputs = [ undmg ];
-
-  sourceRoot = ".";
 
   installPhase = ''
     mkdir -p $out/Applications $out/bin
@@ -31,4 +29,6 @@ stdenv.mkDerivation {
     substituteInPlace $out/bin/p4vc \
       --replace /Applications $out/Applications
   '';
+
+  sourceRoot = ".";
 }

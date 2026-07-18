@@ -1,8 +1,8 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   beautifulsoup4,
+  buildPythonPackage,
   jsbeautifier,
   mkdocs,
   mkdocs-material,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "mkdocs-mermaid2-plugin";
   version = "1.2.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "fralau";
@@ -35,7 +34,7 @@ buildPythonPackage rec {
 
   # non-traditional python tests (e.g. nodejs based tests)
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "mermaid2" ];
 
   meta = {

@@ -1,15 +1,15 @@
 {
+  lib,
   stdenv,
   buildEnv,
-  lib,
   makeBinaryWrapper,
-  mpvScripts,
   mpv-unwrapped,
+  mpvScripts,
   symlinkJoin,
   writeTextDir,
   yt-dlp,
   extraMakeWrapperArgs ? [ ],
-  youtubeSupport ? true,
+  extraUmpvWrapperArgs ? [ ],
   # a set of derivations (probably from `mpvScripts`) where each is expected
   # to have a `scriptName` passthru attribute that points to the name of the
   # script that would reside in the script's derivation's
@@ -18,7 +18,7 @@
   # A script can optionally also provide `passthru.extraWrapperArgs`
   # attribute.
   scripts ? [ ],
-  extraUmpvWrapperArgs ? [ ],
+  youtubeSupport ? true,
 }:
 
 let
@@ -104,18 +104,29 @@ let
   );
 in
 symlinkJoin {
-  pname = "mpv-with-scripts";
   inherit (mpv-unwrapped) version;
+  pname = "mpv-with-scripts";
+  nativeBuildInputs = [ makeBinaryWrapper ];
+
+  postBuild = ''
+    # wrapProgram can't operate on symlinks
+    rm "$out/bin/mpv"
+    makeWrapper "${mpv-unwrapped}/bin/mpv" "$out/bin/mpv" ${mostMakeWrapperArgs}
+    rm "$out/bin/umpv"
+    makeWrapper "${mpv-unwrapped}/bin/umpv" "$out/bin/umpv" ${umpvWrapperArgs}
+  ''
+  + lib.optionalString stdenv.hostPlatform.isDarwin ''
+    # wrapProgram can't operate on symlinks
+    rm "$out/Applications/mpv.app/Contents/MacOS/mpv"
+    makeWrapper "${mpv-unwrapped}/Applications/mpv.app/Contents/MacOS/mpv" "$out/Applications/mpv.app/Contents/MacOS/mpv" ${mostMakeWrapperArgs}
+  '';
 
   # TODO: don't link all mpv outputs
   paths = [ mpv-unwrapped.all ];
 
-  nativeBuildInputs = [ makeBinaryWrapper ];
-
-  passthru.unwrapped = mpv-unwrapped;
-
   passthru.tests.mpv-scripts-should-not-collide = buildEnv {
     name = "mpv-scripts-env";
+
     paths = lib.pipe mpvScripts [
       # filters "throw" aliases
       (lib.filterAttrs (key: script: (builtins.tryEval (lib.isDerivation script)).success))
@@ -134,18 +145,7 @@ symlinkJoin {
     ];
   };
 
-  postBuild = ''
-    # wrapProgram can't operate on symlinks
-    rm "$out/bin/mpv"
-    makeWrapper "${mpv-unwrapped}/bin/mpv" "$out/bin/mpv" ${mostMakeWrapperArgs}
-    rm "$out/bin/umpv"
-    makeWrapper "${mpv-unwrapped}/bin/umpv" "$out/bin/umpv" ${umpvWrapperArgs}
-  ''
-  + lib.optionalString stdenv.hostPlatform.isDarwin ''
-    # wrapProgram can't operate on symlinks
-    rm "$out/Applications/mpv.app/Contents/MacOS/mpv"
-    makeWrapper "${mpv-unwrapped}/Applications/mpv.app/Contents/MacOS/mpv" "$out/Applications/mpv.app/Contents/MacOS/mpv" ${mostMakeWrapperArgs}
-  '';
+  passthru.unwrapped = mpv-unwrapped;
 
   meta = {
     inherit (mpv-unwrapped.meta)
@@ -154,6 +154,7 @@ symlinkJoin {
       longDescription
       maintainers
       ;
+
     mainProgram = "mpv";
   };
 }

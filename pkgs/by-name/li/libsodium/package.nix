@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  autoreconfHook,
   fetchFromGitHub,
+  autoreconfHook,
   testers,
   unstableGitUpdater,
 }:
@@ -25,13 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ autoreconfHook ];
 
-  separateDebugInfo = stdenv.hostPlatform.isLinux && stdenv.hostPlatform.libc != "musl";
-
-  enableParallelBuilding = true;
-  hardeningDisable = lib.optional (
-    stdenv.hostPlatform.isMusl && stdenv.hostPlatform.isx86_32
-  ) "stackprotector";
-
   # FIXME: the hardeingDisable attr above does not seems effective, so
   # the need to disable stackprotector via configureFlags
   configureFlags = lib.optional (
@@ -39,9 +32,17 @@ stdenv.mkDerivation (finalAttrs: {
   ) "--disable-ssp";
 
   doCheck = true;
+  enableParallelBuilding = true;
+
+  hardeningDisable = lib.optional (
+    stdenv.hostPlatform.isMusl && stdenv.hostPlatform.isx86_32
+  ) "stackprotector";
+
+  separateDebugInfo = stdenv.hostPlatform.isLinux && stdenv.hostPlatform.libc != "musl";
 
   passthru = {
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = unstableGitUpdater {
       branch = "stable";
       tagConverter = "cut -d - -f 1";
@@ -52,11 +53,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Modern and easy-to-use crypto library";
     homepage = "https://doc.libsodium.org/";
     license = lib.licenses.isc;
+
     maintainers = with lib.maintainers; [
       mdaniels5757
     ];
-    teams = [ lib.teams.security-review ];
-    pkgConfigModules = [ "libsodium" ];
+
     platforms = lib.platforms.all;
+    pkgConfigModules = [ "libsodium" ];
+    teams = [ lib.teams.security-review ];
   };
 })

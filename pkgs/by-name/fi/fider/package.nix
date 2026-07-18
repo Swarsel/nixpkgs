@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   callPackage,
-  nixosTests,
   nix-update-script,
+  nixosTests,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -18,9 +18,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-2aV6f4cgO89hIqksT/kutR+ZRTGncuS04kJ5xZZC5Ds=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
-
   # Allow easier version overrides, e.g.:
   # pkgs.fider.overrideAttrs (prev: {
   #   version = "...";
@@ -32,23 +29,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   # })
   vendorHash = "sha256-4ilOdUblpwteY0ZInitSuzuB8mU1ltYgRJjla6LiziU=";
   npmDepsHash = "sha256-c8CFMMmFcLZkJL50bfLlk2HP9B/rexNZ2WWJkV0x4Rk=";
-
-  server = callPackage ./server.nix {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      vendorHash
-      ;
-  };
-  frontend = callPackage ./frontend.nix {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      npmDepsHash
-      ;
-  };
 
   installPhase = ''
     runHook preInstall
@@ -62,10 +42,32 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
+  frontend = callPackage ./frontend.nix {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      npmDepsHash
+      ;
+  };
+
+  server = callPackage ./server.nix {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      vendorHash
+      ;
+  };
+
   passthru = {
     tests = {
       inherit (nixosTests) fider;
     };
+
     updateScript = nix-update-script { };
   };
 
@@ -74,9 +76,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://github.com/getfider/fider";
     changelog = "https://github.com/getfider/fider/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.agpl3Only;
-    mainProgram = "fider";
+
     maintainers = with lib.maintainers; [
       niklaskorz
     ];
+
+    mainProgram = "fider";
   };
 })

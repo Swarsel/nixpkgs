@@ -1,35 +1,35 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  replaceVars,
+  bash,
+  gettext,
+  glib,
+  gnome,
+  gnutls,
+  gsettings-desktop-schemas,
+  libproxy,
+  makeWrapper,
   meson,
   ninja,
   nixosTests,
   pkg-config,
-  glib,
-  gettext,
-  makeWrapper,
-  gnutls,
-  libproxy,
-  gnome,
-  gsettings-desktop-schemas,
-  bash,
+  replaceVars,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "glib-networking";
   version = "2.80.1";
 
-  outputs = [
-    "out"
-    "installedTests"
-  ];
-
   src = fetchurl {
     url = "mirror://gnome/sources/glib-networking/${lib.versions.majorMinor finalAttrs.version}/glib-networking-${finalAttrs.version}.tar.xz";
     hash = "sha256-uA4odBV81VBx8bZxD6C5EdWsXeEGqe4qTJx77mF4L44=";
   };
+
+  outputs = [
+    "out"
+    "installedTests"
+  ];
 
   patches = [
     (replaceVars ./hardcode-gsettings.patch {
@@ -64,12 +64,12 @@ stdenv.mkDerivation (finalAttrs: {
     bash # installed-tests shebangs
   ];
 
-  doCheck = false; # tests need to access the certificates (among other things)
-
   mesonFlags = [
     "-Dinstalled_tests=true"
     "-Dinstalled_test_prefix=${placeholder "installedTests"}"
   ];
+
+  doCheck = false; # tests need to access the certificates (among other things)
 
   postFixup = ''
     find "$installedTests/libexec" "$out/libexec" -type f -executable -print0 \
@@ -80,13 +80,13 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru = {
+    tests = {
+      installedTests = nixosTests.installed-tests.glib-networking;
+    };
+
     updateScript = gnome.updateScript {
       packageName = "glib-networking";
       versionPolicy = "odd-unstable";
-    };
-
-    tests = {
-      installedTests = nixosTests.installed-tests.glib-networking;
     };
   };
 
@@ -94,11 +94,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Network-related giomodules for glib";
     homepage = "https://gitlab.gnome.org/GNOME/glib-networking";
     license = lib.licenses.lgpl21Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.unix;
+
     badPlatforms = [
       # GIO shared modules are mandatory.
       lib.systems.inspect.platformPatterns.isStatic
     ];
+
+    teams = [ lib.teams.gnome ];
   };
 })

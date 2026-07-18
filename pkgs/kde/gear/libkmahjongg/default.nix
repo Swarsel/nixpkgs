@@ -1,15 +1,15 @@
 {
-  mkKdeDerivation,
   _7zz,
-  svgcleaner,
+  mkKdeDerivation,
   qtsvg,
+  svgcleaner,
 }:
 mkKdeDerivation {
   pname = "libkmahjongg";
+  extraBuildInputs = [ qtsvg ];
 
   extraNativeBuildInputs = [
     _7zz
     svgcleaner
   ];
-  extraBuildInputs = [ qtsvg ];
 }

@@ -1,29 +1,29 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
+  atk,
+  cairo,
+  dbus,
+  gdk-pixbuf,
+  glib,
+  gnome,
+  gobject-introspection,
+  gtk3,
+  harfbuzz,
+  libsysprof-capture,
+  libxml2,
+  makeWrapper,
   meson,
   mesonEmulatorHook,
   ninja,
-  pkg-config,
-  gnome,
-  gtk3,
-  atk,
-  gobject-introspection,
-  spidermonkey_140,
+  nixosTests,
   pango,
-  cairo,
+  pkg-config,
   readline,
-  libsysprof-capture,
-  glib,
-  libxml2,
-  dbus,
-  gdk-pixbuf,
-  harfbuzz,
-  makeWrapper,
+  spidermonkey_140,
   which,
   xvfb-run,
-  nixosTests,
   installTests ? true,
 }:
 
@@ -43,16 +43,16 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "gjs";
   version = "1.88.0";
 
+  src = fetchurl {
+    url = "mirror://gnome/sources/gjs/${lib.versions.majorMinor finalAttrs.version}/gjs-${finalAttrs.version}.tar.xz";
+    hash = "sha256-MKC58zF+jmCxiW2ykDxw6LDNM9+VPDKHVYA6dRkdxFM=";
+  };
+
   outputs = [
     "out"
     "dev"
     "installedTests"
   ];
-
-  src = fetchurl {
-    url = "mirror://gnome/sources/gjs/${lib.versions.majorMinor finalAttrs.version}/gjs-${finalAttrs.version}.tar.xz";
-    hash = "sha256-MKC58zF+jmCxiW2ykDxw6LDNM9+VPDKHVYA6dRkdxFM=";
-  };
 
   patches = [
     # Hard-code various paths
@@ -71,6 +71,17 @@ stdenv.mkDerivation (finalAttrs: {
     # Message: Error opening file “/build/.UGHEA3/öäü-3”: Invalid or incomplete multibyte or wide character in /build/gjs-1.84.2/build/../installed-tests/js/testGIMarshalling.js (line 2937)
     ./disable-umlaut-test.patch
   ];
+
+  postPatch = ''
+    patchShebangs build/choose-tests-locale.sh
+    substituteInPlace installed-tests/debugger-test.sh --subst-var-by gjsConsole $out/bin/gjs-console
+  ''
+  + lib.optionalString stdenv.hostPlatform.isMusl ''
+    substituteInPlace installed-tests/js/meson.build \
+      --replace "'Encoding'," "#'Encoding',"
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -93,12 +104,6 @@ stdenv.mkDerivation (finalAttrs: {
     spidermonkey_140
   ];
 
-  nativeCheckInputs = [
-    xvfb-run
-  ];
-
-  checkInputs = testDeps;
-
   propagatedBuildInputs = [
     glib
   ];
@@ -113,16 +118,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = !stdenv.hostPlatform.isDarwin;
 
-  strictDeps = true;
+  nativeCheckInputs = [
+    xvfb-run
+  ];
 
-  postPatch = ''
-    patchShebangs build/choose-tests-locale.sh
-    substituteInPlace installed-tests/debugger-test.sh --subst-var-by gjsConsole $out/bin/gjs-console
-  ''
-  + lib.optionalString stdenv.hostPlatform.isMusl ''
-    substituteInPlace installed-tests/js/meson.build \
-      --replace "'Encoding'," "#'Encoding',"
-  '';
+  checkInputs = testDeps;
 
   preCheck = ''
     # Our gobject-introspection patches make the shared library paths absolute
@@ -138,6 +138,15 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $PWD/installed-tests/js/libgjstesttools/libgjstesttools.so $installedTests/libexec/installed-tests/gjs/libgjstesttools.so
   '';
 
+  checkPhase = ''
+    runHook preCheck
+    GTK_A11Y=none \
+    HOME=$(mktemp -d) \
+    xvfb-run -s '-screen 0 800x600x24' \
+      meson test --print-errorlogs
+    runHook postCheck
+  '';
+
   postInstall = ''
     # TODO: make the glib setup hook handle moving the schemas in other outputs.
     installedTestsSchemaDatadir="$installedTests/share/gsettings-schemas/gjs-${finalAttrs.version}"
@@ -149,15 +158,6 @@ stdenv.mkDerivation (finalAttrs: {
     wrapProgram "$installedTests/libexec/installed-tests/gjs/minijasmine" \
       --prefix XDG_DATA_DIRS : "$installedTestsSchemaDatadir" \
       --prefix GI_TYPELIB_PATH : "${lib.makeSearchPath "lib/girepository-1.0" testDeps}"
-  '';
-
-  checkPhase = ''
-    runHook preCheck
-    GTK_A11Y=none \
-    HOME=$(mktemp -d) \
-    xvfb-run -s '-screen 0 800x600x24' \
-      meson test --print-errorlogs
-    runHook postCheck
   '';
 
   separateDebugInfo = stdenv.hostPlatform.isLinux;
@@ -174,11 +174,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    inherit (gobject-introspection.meta) platforms badPlatforms;
     description = "JavaScript bindings for GNOME";
     homepage = "https://gitlab.gnome.org/GNOME/gjs/blob/master/doc/Home.md";
     license = lib.licenses.lgpl2Plus;
     mainProgram = "gjs";
     teams = [ lib.teams.gnome ];
-    inherit (gobject-introspection.meta) platforms badPlatforms;
   };
 })

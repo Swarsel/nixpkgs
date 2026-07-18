@@ -22,15 +22,17 @@ buildGoModule (finalAttrs: {
   vendorHash = null;
 
   meta = {
-    homepage = "https://github.com/tomnomnom/assetfinder";
     description = "Find domains and subdomains related to a given domain";
-    mainProgram = "assetfinder";
-    maintainers = with lib.maintainers; [ shard7 ];
-    platforms = lib.platforms.unix;
+    homepage = "https://github.com/tomnomnom/assetfinder";
+    license = with lib.licenses; [ mit ];
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryNativeCode
     ];
-    license = with lib.licenses; [ mit ];
+
+    maintainers = with lib.maintainers; [ shard7 ];
+    platforms = lib.platforms.unix;
+    mainProgram = "assetfinder";
   };
 })

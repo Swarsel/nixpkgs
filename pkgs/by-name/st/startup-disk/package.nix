@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitLab,
+  glib,
+  gtk4,
+  libadwaita,
   nix-update-script,
   pkg-config,
-  libadwaita,
-  gtk4,
-  glib,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "startup-disk";
@@ -20,6 +20,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     domain = "gitlab.gnome.org";
   };
 
+  postPatch = ''
+    # Fix sudo crate's hardcoded /usr/bin/sudo
+    substituteInPlace $cargoDepsCopy/*/sudo-0.6.0/src/lib.rs \
+      --replace-fail 'Command::new("/usr/bin/sudo")' 'Command::new("sudo")'
+  '';
+
   nativeBuildInputs = [
     pkg-config
     glib # glib-compile-resources
@@ -30,12 +36,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     gtk4
     glib
   ];
-
-  postPatch = ''
-    # Fix sudo crate's hardcoded /usr/bin/sudo
-    substituteInPlace $cargoDepsCopy/*/sudo-0.6.0/src/lib.rs \
-      --replace-fail 'Command::new("/usr/bin/sudo")' 'Command::new("sudo")'
-  '';
 
   cargoHash = "sha256-Ec2u/F/lVdT5Oi8N116kVWtp7duZTU0d5zOhYungJ/U=";
 
@@ -58,8 +58,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://gitlab.gnome.org/davide125/startup-disk";
     changelog = "https://gitlab.gnome.org/davide125/startup-disk/-/tags/${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "startup-disk";
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ milomc123 ];
+    platforms = lib.platforms.linux;
+    mainProgram = "startup-disk";
   };
 })

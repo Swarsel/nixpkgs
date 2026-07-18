@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
+  buildPythonPackage,
   pyobjc-framework-CoreAudio,
   pytest-asyncio,
   pytestCheckHook,
   pyudev,
-  stdenv,
   uv-build,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "audio-hotplug";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "LedFx";
@@ -27,17 +26,18 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "uv_build>=0.9.13,<0.10.0" "uv_build"
   '';
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
   build-system = [ uv-build ];
 
   dependencies =
     lib.optionals stdenv.hostPlatform.isLinux [ pyudev ]
     ++ lib.optional stdenv.hostPlatform.isDarwin pyobjc-framework-CoreAudio;
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "audio_hotplug" ];
 
   meta = {

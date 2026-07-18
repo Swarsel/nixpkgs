@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchurl,
+  coreutils,
+  gd,
+  hostname,
+  libusb-compat-0_1,
+  man,
+  nixosTests,
   pkg-config,
   systemd,
   unixtools,
-  libusb-compat-0_1,
-  coreutils,
   wall,
-  hostname,
-  man,
   enableCgiScripts ? true,
-  gd,
-  nixosTests,
 }:
 
 assert enableCgiScripts -> gd != null;
@@ -37,24 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
     ++ lib.optionals stdenv.hostPlatform.isDarwin [
       libusb-compat-0_1
     ];
-
-  prePatch = ''
-    sed -e "s,\$(INSTALL_PROGRAM) \$(STRIP),\$(INSTALL_PROGRAM)," \
-        -i ./src/apcagent/Makefile ./autoconf/targets.mak
-  ''
-  + lib.optionalString stdenv.hostPlatform.isDarwin ''
-    substituteInPlace src/apcagent/Makefile \
-      --replace-fail "Applications" "$out/Applications"
-    substituteInPlace include/libusb.h.in \
-      --replace-fail "@LIBUSBH@" "${libusb-compat-0_1.dev}/include/usb.h"
-    substituteInPlace platforms/darwin/Makefile \
-      --replace-fail "/Library/LaunchDaemons" "$out/Library/LaunchDaemons" \
-      --replace-fail "/System/Library/Extensions" "$out/System/Library/Extensions"
-  '';
-
-  preConfigure = ''
-    sed -i 's|/bin/cat|${coreutils}/bin/cat|' configure
-  '';
 
   # ./configure ignores --prefix, so we must specify some paths manually
   # There is no real reason for a bin/sbin split, so just use bin.
@@ -85,7 +67,9 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-cgi-bin=${placeholder "out"}/libexec/cgi-bin"
   ];
 
-  enableParallelBuilding = true;
+  preConfigure = ''
+    sed -i 's|/bin/cat|${coreutils}/bin/cat|' configure
+  '';
 
   postInstall = ''
     for file in "$out"/etc/apcupsd/*; do
@@ -96,13 +80,29 @@ stdenv.mkDerivation (finalAttrs: {
     rm -f "$out/bin/apcupsd-uninstall"
   '';
 
+  enableParallelBuilding = true;
+
+  prePatch = ''
+    sed -e "s,\$(INSTALL_PROGRAM) \$(STRIP),\$(INSTALL_PROGRAM)," \
+        -i ./src/apcagent/Makefile ./autoconf/targets.mak
+  ''
+  + lib.optionalString stdenv.hostPlatform.isDarwin ''
+    substituteInPlace src/apcagent/Makefile \
+      --replace-fail "Applications" "$out/Applications"
+    substituteInPlace include/libusb.h.in \
+      --replace-fail "@LIBUSBH@" "${libusb-compat-0_1.dev}/include/usb.h"
+    substituteInPlace platforms/darwin/Makefile \
+      --replace-fail "/Library/LaunchDaemons" "$out/Library/LaunchDaemons" \
+      --replace-fail "/System/Library/Extensions" "$out/System/Library/Extensions"
+  '';
+
   passthru.tests.smoke = nixosTests.apcupsd;
 
   meta = {
     description = "Daemon for controlling APC UPSes";
     homepage = "http://www.apcupsd.com/";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

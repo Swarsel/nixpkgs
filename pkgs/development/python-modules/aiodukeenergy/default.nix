@@ -1,9 +1,9 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
-  lib,
   poetry-core,
   pyjwt,
   pytest-asyncio,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "aiodukeenergy";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hunterjm";
@@ -23,6 +22,13 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-v8rWRjAlTGu7d0bQaAQ1A7Qm4oP3STkIzHcKLa8+/OY=";
   };
+
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -32,19 +38,13 @@ buildPythonPackage rec {
     yarl
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "aiodukeenergy" ];
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
   meta = {
-    changelog = "https://github.com/hunterjm/aiodukeenergy/blob/${src.tag}/CHANGELOG.md";
     description = "Asyncio Duke Energy";
     homepage = "https://github.com/hunterjm/aiodukeenergy";
+    changelog = "https://github.com/hunterjm/aiodukeenergy/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

@@ -1,7 +1,7 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
-  lib,
   google-api-core,
   opencensus-context,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "opencensus";
   version = "0.11.4";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -21,11 +20,10 @@ buildPythonPackage rec {
     opencensus-context
   ];
 
-  pythonNamespaces = [ "opencensus.common" ];
-
   doCheck = false; # No tests in sdist
-
+  format = "setuptools";
   pythonImportsCheck = [ "opencensus.common" ];
+  pythonNamespaces = [ "opencensus.common" ];
 
   meta = {
     description = "Stats collection and distributed tracing framework";

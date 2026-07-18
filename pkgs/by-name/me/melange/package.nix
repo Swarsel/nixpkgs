@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -18,6 +18,7 @@ buildGoModule (finalAttrs: {
     # populate values that require us to use git. By doing this in postFetch we
     # can delete .git afterwards and maintain better reproducibility of the src.
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       git rev-parse HEAD > $out/COMMIT
@@ -27,18 +28,8 @@ buildGoModule (finalAttrs: {
     '';
   };
 
-  vendorHash = "sha256-SfYzWPe6TaGrBhnnO9sFPhCsFwSCcr1TflDZD7ZNVL8=";
-
-  subPackages = [ "." ];
-
   nativeBuildInputs = [ installShellFiles ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X sigs.k8s.io/release-utils/version.gitVersion=v${finalAttrs.version}"
-    "-X sigs.k8s.io/release-utils/version.gitTreeState=clean"
-  ];
+  vendorHash = "sha256-SfYzWPe6TaGrBhnnO9sFPhCsFwSCcr1TflDZD7ZNVL8=";
 
   # ldflags based on metadata from git and source
   preBuild = ''
@@ -64,12 +55,21 @@ buildGoModule (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X sigs.k8s.io/release-utils/version.gitVersion=v${finalAttrs.version}"
+    "-X sigs.k8s.io/release-utils/version.gitTreeState=clean"
+  ];
+
+  subPackages = [ "." ];
+
   meta = {
+    description = "Build APKs from source code";
     homepage = "https://github.com/chainguard-dev/melange";
     changelog = "https://github.com/chainguard-dev/melange/blob/${finalAttrs.src.rev}/NEWS.md";
-    description = "Build APKs from source code";
-    mainProgram = "melange";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ developer-guy ];
+    mainProgram = "melange";
   };
 })

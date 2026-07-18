@@ -18,8 +18,8 @@ let
         (
           cfg.settings
           // {
-            journal_path = cfg.settings.dataDir + cfg.settings.journalFile;
             db_path = cfg.settings.dataDir + cfg.settings.dbFile;
+            journal_path = cfg.settings.dataDir + cfg.settings.journalFile;
           }
         )
         [
@@ -37,61 +37,40 @@ in
 {
   options.services.paisa = with lib.types; {
     enable = lib.mkEnableOption "Paisa personal finance manager";
-
     package = lib.mkPackageOption pkgs "paisa" { };
 
-    openFirewall = lib.mkOption {
-      default = false;
-      type = bool;
-      description = "Open ports in the firewall for the Paisa web server.";
+    host = lib.mkOption {
+      default = "0.0.0.0";
+      description = "Host bind IP address.";
+      type = str;
     };
 
     mutableSettings = lib.mkOption {
       default = true;
-      type = bool;
+
       description = ''
         Allow changes made on the web interface to persist between service
         restarts.
       '';
+
+      type = bool;
     };
 
-    host = lib.mkOption {
-      type = str;
-      default = "0.0.0.0";
-      description = "Host bind IP address.";
+    openFirewall = lib.mkOption {
+      default = false;
+      description = "Open ports in the firewall for the Paisa web server.";
+      type = bool;
     };
 
     port = lib.mkOption {
-      type = port;
       default = 7500;
       description = "Port to serve Paisa on.";
+      type = port;
     };
 
     settings = lib.mkOption {
       default = null;
-      type = nullOr (submodule {
-        freeformType = settingsFormat.type;
-        options = {
-          dataDir = lib.mkOption {
-            type = lib.types.str;
-            default = "/var/lib/paisa/";
-            description = "Path to paisa data directory.";
-          };
 
-          journalFile = lib.mkOption {
-            type = lib.types.str;
-            default = "main.ledger";
-            description = "Filename of the main journal / ledger file.";
-          };
-
-          dbFile = lib.mkOption {
-            type = lib.types.str;
-            default = "paisa.sqlite3";
-            description = "Filename of the Paisa database.";
-          };
-
-        };
-      });
       description = ''
         Paisa configuration. Please refer to
         <https://paisa.fyi/reference/config/> for details.
@@ -100,19 +79,41 @@ in
         into the configuration file on start, taking precedence over
         configuration changes made on the web interface.
       '';
+
+      type = nullOr (submodule {
+        options = {
+          dataDir = lib.mkOption {
+            default = "/var/lib/paisa/";
+            description = "Path to paisa data directory.";
+            type = lib.types.str;
+          };
+
+          dbFile = lib.mkOption {
+            default = "paisa.sqlite3";
+            description = "Filename of the Paisa database.";
+            type = lib.types.str;
+          };
+
+          journalFile = lib.mkOption {
+            default = "main.ledger";
+            description = "Filename of the main journal / ledger file.";
+            type = lib.types.str;
+          };
+
+        };
+
+        freeformType = settingsFormat.type;
+      });
     };
   };
+
   config = lib.mkIf cfg.enable {
     assertions = [ ];
+    networking.firewall.allowedTCPPorts = lib.mkIf cfg.openFirewall [ cfg.port ];
 
     systemd.services.paisa = {
-      description = "Paisa: Web Application";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
-      unitConfig = {
-        StartLimitIntervalSec = 5;
-        StartLimitBurst = 10;
-      };
+      description = "Paisa: Web Application";
 
       preStart = lib.optionalString (settings != null) ''
         if [ -e "$STATE_DIRECTORY/paisa.yaml" ] && [ "${toString cfg.mutableSettings}" = "1" ]; then
@@ -126,20 +127,26 @@ in
       '';
 
       serviceConfig = {
+        AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
         DynamicUser = true;
         ExecStart = "${lib.getExe cfg.package} serve ${args}";
-        AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
         Restart = "always";
         RestartSec = 5;
         RuntimeDirectory = "paisa";
         StateDirectory = "paisa";
       };
+
+      unitConfig = {
+        StartLimitBurst = 10;
+        StartLimitIntervalSec = 5;
+      };
+
+      wantedBy = [ "multi-user.target" ];
     };
-    networking.firewall.allowedTCPPorts = lib.mkIf cfg.openFirewall [ cfg.port ];
   };
 
   meta = {
-    maintainers = with lib.maintainers; [ skowalak ];
     doc = ./paisa.md;
+    maintainers = with lib.maintainers; [ skowalak ];
   };
 }

@@ -22,8 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ autoreconfHook ];
 
-  separateDebugInfo = true;
-
   # The code won't compile in c23 mode.
   # https://gcc.gnu.org/gcc-15/porting_to.html#c23-fn-decls-without-parameters
   configureFlags = [
@@ -35,6 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   enableParallelBuilding = true;
+  separateDebugInfo = true;
 
   passthru.tests = {
     inherit libguestfs rpm;
@@ -43,11 +42,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://www.gnu.org/software/cpio/";
     description = "Program to create or extract from cpio archives";
+    homepage = "https://www.gnu.org/software/cpio/";
     license = lib.licenses.gpl3;
     platforms = lib.platforms.all;
-    priority = 6; # resolves collision with gnutar's "libexec/rmt"
     mainProgram = "cpio";
+    priority = 6; # resolves collision with gnutar's "libexec/rmt"
   };
 })

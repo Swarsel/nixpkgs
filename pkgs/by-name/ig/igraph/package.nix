@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   arpack,
   bison,
   blas,
   cmake,
+  docbook_xml_dtd_43,
+  docbook_xsl,
   flex,
   glpk,
   gmp,
   lapack,
   libxml2,
   libxslt,
-  docbook_xml_dtd_43,
-  docbook_xsl,
   llvmPackages,
   pkg-config,
   plfit,
@@ -35,15 +35,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-mXaW9UOTPN5iM7ZNoV2NjH+2Maez5A/YfABeQRe0vgY=";
   };
 
-  postPatch = ''
-    echo "${finalAttrs.version}" > IGRAPH_VERSION
-  '';
-
   outputs = [
     "out"
     "dev"
     "doc"
   ];
+
+  postPatch = ''
+    echo "${finalAttrs.version}" > IGRAPH_VERSION
+  '';
 
   nativeBuildInputs = [
     bison
@@ -116,10 +116,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://igraph.org/";
     changelog = "https://github.com/igraph/igraph/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       MostAwesomeDude
       dotlambda
     ];
+
+    platforms = lib.platforms.all;
   };
 })

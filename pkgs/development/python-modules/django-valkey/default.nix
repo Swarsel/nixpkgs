@@ -1,32 +1,29 @@
 {
   lib,
   fetchFromGitHub,
-  buildPythonPackage,
-  hatchling,
-  pythonOlder,
-
+  # testing
+  anyio,
   # propagated
   backports-zstd,
   brotli,
+  buildPythonPackage,
   django,
+  hatchling,
   libvalkey,
   lz4,
   msgpack,
   msgspec,
-  valkey,
-
-  # testing
-  anyio,
   pytest-django,
   pytest-mock,
   pytestCheckHook,
+  pythonOlder,
   redisTestHook,
+  valkey,
 }:
 
 buildPythonPackage rec {
   pname = "django-valkey";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "django-commons";
@@ -34,25 +31,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-kXp4i7E2DnrMi0tTg8kdWmuImIWIPKTM5s7sPLWPFko=";
   };
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    django
-    valkey
-  ];
-
-  optional-dependencies = {
-    brotli = [ brotli ];
-    libvalkey = [ libvalkey ];
-    lz4 = [ lz4 ];
-    msgpack = [ msgpack ];
-    msgspec = [ msgspec ];
-    pyzstd = lib.optionals (pythonOlder "3.14") [ backports-zstd ];
-    zstd = lib.optionals (pythonOlder "3.14") [ backports-zstd ];
-  };
-
-  pythonImportsCheck = [ "django_valkey" ];
 
   nativeCheckInputs = [
     anyio
@@ -62,6 +40,14 @@ buildPythonPackage rec {
     redisTestHook # contains valkey
   ]
   ++ lib.flatten (lib.attrValues optional-dependencies);
+
+  __darwinAllowLocalNetworking = true;
+  build-system = [ hatchling ];
+
+  dependencies = [
+    django
+    valkey
+  ];
 
   disabledTestPaths = [
     # requires valkey cluster
@@ -81,7 +67,18 @@ buildPythonPackage rec {
     "tests/tests_async/test_requests.py"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  optional-dependencies = {
+    brotli = [ brotli ];
+    libvalkey = [ libvalkey ];
+    lz4 = [ lz4 ];
+    msgpack = [ msgpack ];
+    msgspec = [ msgspec ];
+    pyzstd = lib.optionals (pythonOlder "3.14") [ backports-zstd ];
+    zstd = lib.optionals (pythonOlder "3.14") [ backports-zstd ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "django_valkey" ];
 
   meta = {
     description = "Valkey backend for django";

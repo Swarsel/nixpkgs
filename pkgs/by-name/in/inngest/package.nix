@@ -1,12 +1,12 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  fetchPnpmDeps,
-  pnpm_10,
-  pnpmConfigHook,
-  nodejs,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  fetchPnpmDeps,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_10,
   testers,
 }:
 let
@@ -21,10 +21,10 @@ let
   };
 
   website = fetchFromGitHub {
+    hash = "sha256-EkTIv8jgcqzurz2M7PC6Kfh6x2Zxu7UmIhpTjlj8o88=";
     owner = "inngest";
     repo = "website";
     rev = websiteRev;
-    hash = "sha256-EkTIv8jgcqzurz2M7PC6Kfh6x2Zxu7UmIhpTjlj8o88=";
   };
 
   ui = stdenv.mkDerivation (finalAttrs: {
@@ -36,15 +36,6 @@ let
       pnpm_10
       pnpmConfigHook
     ];
-
-    pnpmDeps = fetchPnpmDeps {
-      inherit (finalAttrs) pname version src;
-      pnpm = pnpm_10;
-      sourceRoot = "${finalAttrs.src.name}/ui";
-      fetcherVersion = 4;
-      hash = "sha256-bt/7cpN9EXf2CZFRAaybr7pgJyInV0fdUy7Rv/UcT/I=";
-    };
-    pnpmRoot = "ui";
 
     buildPhase = ''
       runHook preBuild
@@ -58,15 +49,23 @@ let
       cp -r ui/apps/dev-server-ui/dist/. $out/dist/
       runHook postInstall
     '';
+
+    pnpmDeps = fetchPnpmDeps {
+      inherit (finalAttrs) pname version src;
+      fetcherVersion = 4;
+      hash = "sha256-bt/7cpN9EXf2CZFRAaybr7pgJyInV0fdUy7Rv/UcT/I=";
+      pnpm = pnpm_10;
+      sourceRoot = "${finalAttrs.src.name}/ui";
+    };
+
+    pnpmRoot = "ui";
   });
 in
 buildGoModule (finalAttrs: {
   inherit version src;
   pname = "inngest";
-
-  __structuredAttrs = true;
-
   vendorHash = null;
+  env.CGO_ENABLED = 0;
 
   preBuild = ''
     cp -r ${ui}/dist/. ./pkg/devserver/static/
@@ -77,13 +76,13 @@ buildGoModule (finalAttrs: {
     mv $out/bin/cmd $out/bin/inngest
   '';
 
+  __structuredAttrs = true;
+
   ldflags = [
     "-s"
     "-w"
     "-X github.com/inngest/inngest/pkg/inngest/version.Version=${version}"
   ];
-
-  env.CGO_ENABLED = 0;
 
   subPackages = [ "cmd" ];
 
@@ -99,11 +98,13 @@ buildGoModule (finalAttrs: {
     changelog = "https://github.com/inngest/inngest/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.sspl;
     sourceProvenance = with lib.sourceTypes; [ fromSource ];
+
     maintainers = with lib.maintainers; [
       albertchae
       kikos0
     ];
-    mainProgram = "inngest";
+
     platforms = lib.lists.remove "x86_64-darwin" lib.platforms.all;
+    mainProgram = "inngest";
   };
 })

@@ -1,20 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   asserts,
+  buildPythonPackage,
   mypy,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "htmlgen";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "srittau";
@@ -23,17 +20,10 @@ buildPythonPackage rec {
     hash = "sha256-RmJKaaTB+xvsJ+9jM21ZUNVTlr7ebPW785A8OXrpDoY=";
   };
 
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    mypy
-  ];
-
   nativeCheckInputs = [
     asserts
   ];
+
   # From some reason, using unittestCheckHook doesn't work, and the list of
   # test files have to be used explicitly, and also without the `discover`
   # argument.
@@ -44,6 +34,16 @@ buildPythonPackage rec {
 
     runHook postCheck
   '';
+
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    mypy
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "htmlgen"

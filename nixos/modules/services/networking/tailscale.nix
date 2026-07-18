@@ -12,61 +12,119 @@ let
   isNetworkd = config.networking.useNetworkd;
 in
 {
-  meta.maintainers = with maintainers; [
-    mbaillie
-    mfrw
-  ];
-
   options.services.tailscale = {
     enable = mkEnableOption "Tailscale client daemon";
+    package = lib.mkPackageOption pkgs "tailscale" { };
 
-    port = mkOption {
-      type = types.port;
-      default = 41641;
-      description = "The port to listen on for tunnel traffic (0=autoselect).";
-    };
-
-    interfaceName = mkOption {
-      type = types.str;
-      default = "tailscale0";
-      description = ''The interface name for tunnel traffic. Use "userspace-networking" (beta) to not use TUN.'';
-    };
-
-    permitCertUid = mkOption {
-      type = types.nullOr types.nonEmptyStr;
+    authKeyFile = mkOption {
       default = null;
-      description = "Username or user ID of the user allowed to to fetch Tailscale TLS certificates for the node.";
+
+      description = ''
+        A file containing the auth key.
+        Tailscale will be automatically started if provided.
+
+        Services that bind to Tailscale IPs should order using {option}`systemd.services.<name>.after` `tailscaled-autoconnect.service`.
+      '';
+
+      example = "/run/secrets/tailscale_key";
+      type = types.nullOr types.path;
+    };
+
+    authKeyParameters = mkOption {
+      default = { };
+
+      description = ''
+        Extra parameters to pass after the auth key.
+        See <https://tailscale.com/kb/1215/oauth-clients#registering-new-nodes-using-oauth-credentials>
+      '';
+
+      type = types.submodule {
+        options = {
+          baseURL = mkOption {
+            default = null;
+            description = "Base URL for the Tailscale API.";
+            type = types.nullOr types.str;
+          };
+
+          ephemeral = mkOption {
+            default = null;
+            description = "Whether to register as an ephemeral node.";
+            type = types.nullOr types.bool;
+          };
+
+          preauthorized = mkOption {
+            default = null;
+            description = "Whether to skip manual device approval.";
+            type = types.nullOr types.bool;
+          };
+        };
+      };
     };
 
     disableTaildrop = mkOption {
       default = false;
-      type = types.bool;
       description = "Whether to disable the Taildrop feature for sending files between nodes.";
+      type = types.bool;
     };
 
     disableUpstreamLogging = mkOption {
       default = false;
-      type = types.bool;
       description = "Whether to disable Tailscaled from sending debug logging upstream.";
+      type = types.bool;
     };
 
-    package = lib.mkPackageOption pkgs "tailscale" { };
+    extraDaemonFlags = mkOption {
+      default = [ ];
+      description = "Extra flags to pass to {command}`tailscaled`.";
+      example = [ "--no-logs-no-support" ];
+      type = types.listOf types.str;
+    };
+
+    extraSetFlags = mkOption {
+      default = [ ];
+      description = "Extra flags to pass to {command}`tailscale set`.";
+      example = [ "--advertise-exit-node" ];
+      type = types.listOf types.str;
+    };
+
+    extraUpFlags = mkOption {
+      default = [ ];
+
+      description = ''
+        Extra flags to pass to {command}`tailscale up`. Only applied if {option}`services.tailscale.authKeyFile` is specified.
+      '';
+
+      example = [ "--ssh" ];
+      type = types.listOf types.str;
+    };
+
+    interfaceName = mkOption {
+      default = "tailscale0";
+      description = ''The interface name for tunnel traffic. Use "userspace-networking" (beta) to not use TUN.'';
+      type = types.str;
+    };
 
     openFirewall = mkOption {
       default = false;
-      type = types.bool;
       description = "Whether to open the firewall for the specified port.";
+      type = types.bool;
+    };
+
+    permitCertUid = mkOption {
+      default = null;
+      description = "Username or user ID of the user allowed to to fetch Tailscale TLS certificates for the node.";
+      type = types.nullOr types.nonEmptyStr;
+    };
+
+    port = mkOption {
+      default = 41641;
+      description = "The port to listen on for tunnel traffic (0=autoselect).";
+      type = types.port;
     };
 
     useRoutingFeatures = mkOption {
-      type = types.enum [
-        "none"
-        "client"
-        "server"
-        "both"
-      ];
       default = "none";
-      example = "server";
+
       description = ''
         Enables settings required for Tailscale's routing features like subnet routers and exit nodes.
 
@@ -75,77 +133,48 @@ in
         When set to `client` or `both`, reverse path filtering will be set to loose instead of strict.
         When set to `server` or `both`, IP forwarding will be enabled.
       '';
-    };
 
-    authKeyFile = mkOption {
-      type = types.nullOr types.path;
-      default = null;
-      example = "/run/secrets/tailscale_key";
-      description = ''
-        A file containing the auth key.
-        Tailscale will be automatically started if provided.
+      example = "server";
 
-        Services that bind to Tailscale IPs should order using {option}`systemd.services.<name>.after` `tailscaled-autoconnect.service`.
-      '';
-    };
-
-    authKeyParameters = mkOption {
-      type = types.submodule {
-        options = {
-          ephemeral = mkOption {
-            type = types.nullOr types.bool;
-            default = null;
-            description = "Whether to register as an ephemeral node.";
-          };
-          preauthorized = mkOption {
-            type = types.nullOr types.bool;
-            default = null;
-            description = "Whether to skip manual device approval.";
-          };
-          baseURL = mkOption {
-            type = types.nullOr types.str;
-            default = null;
-            description = "Base URL for the Tailscale API.";
-          };
-        };
-      };
-      default = { };
-      description = ''
-        Extra parameters to pass after the auth key.
-        See <https://tailscale.com/kb/1215/oauth-clients#registering-new-nodes-using-oauth-credentials>
-      '';
-    };
-
-    extraUpFlags = mkOption {
-      description = ''
-        Extra flags to pass to {command}`tailscale up`. Only applied if {option}`services.tailscale.authKeyFile` is specified.
-      '';
-      type = types.listOf types.str;
-      default = [ ];
-      example = [ "--ssh" ];
-    };
-
-    extraSetFlags = mkOption {
-      description = "Extra flags to pass to {command}`tailscale set`.";
-      type = types.listOf types.str;
-      default = [ ];
-      example = [ "--advertise-exit-node" ];
-    };
-
-    extraDaemonFlags = mkOption {
-      description = "Extra flags to pass to {command}`tailscaled`.";
-      type = types.listOf types.str;
-      default = [ ];
-      example = [ "--no-logs-no-support" ];
+      type = types.enum [
+        "none"
+        "client"
+        "server"
+        "both"
+      ];
     };
   };
 
   config = mkIf cfg.enable {
+    boot.kernel.sysctl = mkIf (cfg.useRoutingFeatures == "server" || cfg.useRoutingFeatures == "both") {
+      "net.ipv4.conf.all.forwarding" = mkOverride 97 true;
+      "net.ipv6.conf.all.forwarding" = mkOverride 97 true;
+    };
+
     environment.systemPackages = [ cfg.package ]; # for the CLI
+    networking.dhcpcd.denyInterfaces = [ cfg.interfaceName ];
+    networking.firewall.allowedUDPPorts = mkIf cfg.openFirewall [ cfg.port ];
+
+    networking.firewall.checkReversePath = mkIf (
+      cfg.useRoutingFeatures == "client" || cfg.useRoutingFeatures == "both"
+    ) "loose";
+
+    systemd.network.networks."50-tailscale" = mkIf isNetworkd {
+      linkConfig = {
+        ActivationPolicy = "manual";
+        Unmanaged = true;
+      };
+
+      matchConfig = {
+        Name = cfg.interfaceName;
+      };
+    };
+
     systemd.packages = [ cfg.package ];
+
     systemd.services.tailscaled = {
       after = lib.mkIf (config.networking.networkmanager.enable) [ "NetworkManager-wait-online.service" ];
-      wantedBy = [ "multi-user.target" ];
+
       path = [
         (dirOf config.security.wrapperDir) # for `su` to use taildrive with correct access rights
         pkgs.procps # for collecting running services (opt-in feature)
@@ -153,6 +182,7 @@ in
         pkgs.kmod # required to pass tailscale's v6nat check
       ]
       ++ lib.optional config.networking.resolvconf.enable config.networking.resolvconf.package;
+
       serviceConfig.Environment = [
         "PORT=${toString cfg.port}"
         ''"FLAGS=--tun ${lib.escapeShellArg cfg.interfaceName} ${lib.concatStringsSep " " cfg.extraDaemonFlags}"''
@@ -166,6 +196,7 @@ in
       ++ (lib.optionals (cfg.disableUpstreamLogging) [
         "TS_NO_LOGS_NO_SUPPORT=true"
       ]);
+
       # Restart tailscaled with a single `systemctl restart` at the
       # end of activation, rather than a `stop` followed by a later
       # `start`. Activation over Tailscale can hang for tens of
@@ -178,20 +209,18 @@ in
       # version mismatches on restart for compatibility with other
       # linux distros.
       stopIfChanged = false;
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.services.tailscaled-autoconnect = mkIf (cfg.authKeyFile != null) {
       after = [ "tailscaled.service" ];
-      wants = [ "tailscaled.service" ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        Type = "notify";
-      };
+      enableStrictShellChecks = true;
+
       path = [
         cfg.package
         pkgs.jq
       ];
-      enableStrictShellChecks = true;
+
       script =
         let
           paramToString = v: if (builtins.isBool v) then (lib.boolToString v) else (toString v);
@@ -232,6 +261,13 @@ in
             sleep .5
           done
         '';
+
+      serviceConfig = {
+        Type = "notify";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "tailscaled.service" ];
     };
 
     systemd.services.tailscaled-set = mkIf (cfg.extraSetFlags != [ ]) {
@@ -239,37 +275,22 @@ in
         "tailscaled.service"
         "tailscaled-autoconnect.service"
       ];
-      wants = [ "tailscaled.service" ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        Type = "oneshot";
-      };
+
       script = ''
         ${lib.getExe cfg.package} set ${escapeShellArgs cfg.extraSetFlags}
       '';
-    };
 
-    boot.kernel.sysctl = mkIf (cfg.useRoutingFeatures == "server" || cfg.useRoutingFeatures == "both") {
-      "net.ipv4.conf.all.forwarding" = mkOverride 97 true;
-      "net.ipv6.conf.all.forwarding" = mkOverride 97 true;
-    };
-
-    networking.firewall.allowedUDPPorts = mkIf cfg.openFirewall [ cfg.port ];
-
-    networking.firewall.checkReversePath = mkIf (
-      cfg.useRoutingFeatures == "client" || cfg.useRoutingFeatures == "both"
-    ) "loose";
-
-    networking.dhcpcd.denyInterfaces = [ cfg.interfaceName ];
-
-    systemd.network.networks."50-tailscale" = mkIf isNetworkd {
-      matchConfig = {
-        Name = cfg.interfaceName;
+      serviceConfig = {
+        Type = "oneshot";
       };
-      linkConfig = {
-        Unmanaged = true;
-        ActivationPolicy = "manual";
-      };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "tailscaled.service" ];
     };
   };
+
+  meta.maintainers = with maintainers; [
+    mbaillie
+    mfrw
+  ];
 }

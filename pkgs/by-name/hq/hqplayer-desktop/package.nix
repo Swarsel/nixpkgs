@@ -1,41 +1,48 @@
 {
+  lib,
   stdenv,
+  fetchurl,
   alsa-lib,
   autoPatchelfHook,
   dpkg,
   evince,
-  fetchurl,
   flac,
-  lib,
+  imagemagick,
+  kdePackages,
   libmicrohttpd,
   libogg,
   libusb-compat-0_1,
   llvmPackages,
   mpfr,
   wavpack,
-  kdePackages,
-  imagemagick,
 }:
 
 let
   version = "5.16.2-43";
   srcs = {
     aarch64-linux = fetchurl {
-      url = "https://signalyst.com/bins/trixie/hqplayer5desktop_${version}_arm64.deb";
       hash = "sha256-dmnDbFf1obuBvKSMIGFiI7fXi/5YRP23625Y+UEj+Wo=";
+      url = "https://signalyst.com/bins/trixie/hqplayer5desktop_${version}_arm64.deb";
     };
+
     x86_64-linux = fetchurl {
-      url = "https://signalyst.com/bins/noble/hqplayer5desktop_${version}_amd64.deb";
       hash = "sha256-WUqfMUQSVb+MSc0GyhuEMM9H6fJP/NcmpFAX46BCiPI=";
+      url = "https://signalyst.com/bins/noble/hqplayer5desktop_${version}_amd64.deb";
     };
   };
 in
 stdenv.mkDerivation {
-  pname = "hqplayer-desktop";
   inherit version;
+  pname = "hqplayer-desktop";
 
   src =
     srcs.${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
+
+  # doc has dependencies on evince that is not required by main app
+  outputs = [
+    "out"
+    "doc"
+  ];
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -61,10 +68,6 @@ stdenv.mkDerivation {
     wavpack
   ];
 
-  dontPatch = true;
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -89,12 +92,6 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
-  # doc has dependencies on evince that is not required by main app
-  outputs = [
-    "out"
-    "doc"
-  ];
-
   postInstall = ''
     for desktopFile in $out/share/applications/hqplayer5{client,desktop}.desktop; do
       substituteInPlace "$desktopFile" \
@@ -109,12 +106,16 @@ stdenv.mkDerivation {
     patchelf --replace-needed libomp.so.5 libomp.so $out/bin/.hqplayer5*-wrapped
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontPatch = true;
+
   meta = {
-    homepage = "https://www.signalyst.com";
     description = "High-end upsampling multichannel software HD-audio player";
+    homepage = "https://www.signalyst.com";
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    platforms = builtins.attrNames srcs;
     maintainers = with lib.maintainers; [ lovesegfault ];
+    platforms = builtins.attrNames srcs;
   };
 }

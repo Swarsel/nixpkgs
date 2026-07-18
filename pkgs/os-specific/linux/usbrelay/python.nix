@@ -1,17 +1,15 @@
 { buildPythonPackage, usbrelay }:
 
 buildPythonPackage {
-  format = "setuptools";
-  pname = "usbrelay_py";
   inherit (usbrelay) version src;
+  inherit (usbrelay) meta;
+  pname = "usbrelay_py";
+  buildInputs = [ usbrelay ];
 
   preConfigure = ''
     cd usbrelay_py
   '';
 
-  buildInputs = [ usbrelay ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "usbrelay_py" ];
-
-  inherit (usbrelay) meta;
 }

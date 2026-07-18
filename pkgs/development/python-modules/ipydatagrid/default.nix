@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-
-  hatchling,
-  hatch-jupyter-builder,
-  jupyterlab,
   bqplot,
+  buildPythonPackage,
+  hatch-jupyter-builder,
+  hatchling,
   ipywidgets,
+  jupyterlab,
   pandas,
   py2vega,
+  pytestCheckHook,
   yarn-berry_3,
 }:
 
@@ -21,7 +20,6 @@ in
 buildPythonPackage rec {
   pname = "ipydatagrid";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jupyter-widgets";
@@ -30,15 +28,24 @@ buildPythonPackage rec {
     hash = "sha256-6jaIYgLbNXIYzM+mZIVMZ1CXOpcbVK5k9nzGjq5UdLI=";
   };
 
+  nativeBuildInputs = [
+    yarn-berry.yarnBerryConfigHook
+    yarn-berry
+  ];
+
+  preConfigure = ''
+    substituteInPlace pyproject.toml package.json \
+      --replace-fail 'jlpm' 'yarn'
+  '';
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     hatchling
     hatch-jupyter-builder
     jupyterlab
-  ];
-
-  nativeBuildInputs = [
-    yarn-berry.yarnBerryConfigHook
-    yarn-berry
   ];
 
   dependencies = [
@@ -53,14 +60,7 @@ buildPythonPackage rec {
     hash = "sha256-5KZl9mK6xNvy2XdWieH20hEZJ+h/KzvjOfpo78FlWpg=";
   };
 
-  preConfigure = ''
-    substituteInPlace pyproject.toml package.json \
-      --replace-fail 'jlpm' 'yarn'
-  '';
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   meta = {
     description = "Fast Datagrid widget for the Jupyter Notebook and JupyterLab";

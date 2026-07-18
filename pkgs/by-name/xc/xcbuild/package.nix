@@ -1,23 +1,22 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   cmake,
   darwin,
-  fetchFromGitHub,
   libpng,
   libxml2,
   makeBinaryWrapper,
   ninja,
-  stdenv,
+  zlib,
+  productBuildVer ? null,
+  sdkVer ? null,
   # xcbuild is included in the SDK. Avoid an infinite recursion by using a bootstrap stdenv
   stdenv' ? if stdenv.hostPlatform.isDarwin then darwin.bootstrapStdenv else stdenv,
-  zlib,
-
   # These are deprecated and do nothing. They’re needed for compatibility and will
   # warn eventually once in-tree uses are cleaned up.
   xcodePlatform ? null,
   xcodeVer ? null,
-  sdkVer ? null,
-  productBuildVer ? null,
 }:
 
 # TODO(@reckenrode) enable this warning after uses in nixpkgs have been fixed
@@ -60,19 +59,19 @@ let
 in
 stdenv'.mkDerivation (finalAttrs: {
   pname = "xcbuild";
-
-  outputs = [
-    "out"
-    "xcrun"
-  ];
-
   version = "0.1.1-unstable-2019-11-20";
+
   src = fetchFromGitHub {
     owner = "facebook";
     repo = "xcbuild";
     rev = "dbaee552d2f13640773eb1ad3c79c0d2aca7229c";
     hash = "sha256-7mvSuRCWU/LlIBdmnC59F4SSzJPEcQhlmEK13PNe1xc=";
   };
+
+  outputs = [
+    "out"
+    "xcrun"
+  ];
 
   patches = [
     # Add missing header for `abort`
@@ -86,12 +85,6 @@ stdenv'.mkDerivation (finalAttrs: {
     # Fallback to $HOME and correctly handle missing home directories
     ./patches/fix-no-home-directory-crash.patch
   ];
-
-  prePatch = ''
-    rmdir ThirdParty/*
-    cp -r --no-preserve=all ${googletest} ThirdParty/googletest
-    cp -r --no-preserve=all ${linenoise} ThirdParty/linenoise
-  '';
 
   postPatch = ''
     substituteInPlace Libraries/pbxbuild/Sources/Tool/TouchResolver.cpp \
@@ -123,14 +116,6 @@ stdenv'.mkDerivation (finalAttrs: {
 
   strictDeps = true;
 
-  env.NIX_CFLAGS_COMPILE = "-Wno-error";
-
-  # CMake 4 dropped support of versions lower than 3.5, and versions
-  # lower than 3.10 are deprecated.
-  cmakeFlags = [
-    (lib.cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "3.10")
-  ];
-
   nativeBuildInputs = [
     cmake
     makeBinaryWrapper
@@ -142,6 +127,14 @@ stdenv'.mkDerivation (finalAttrs: {
     libxml2
     zlib
   ];
+
+  # CMake 4 dropped support of versions lower than 3.5, and versions
+  # lower than 3.10 are deprecated.
+  cmakeFlags = [
+    (lib.cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "3.10")
+  ];
+
+  env.NIX_CFLAGS_COMPILE = "-Wno-error";
 
   # TODO: instruct cmake not to put it in /usr, rather than cleaning up
   postInstall = ''
@@ -160,6 +153,12 @@ stdenv'.mkDerivation (finalAttrs: {
 
   __structuredAttrs = true;
 
+  prePatch = ''
+    rmdir ThirdParty/*
+    cp -r --no-preserve=all ${googletest} ThirdParty/googletest
+    cp -r --no-preserve=all ${linenoise} ThirdParty/linenoise
+  '';
+
   passthru = {
     xcbuild =
       # lib.warn "xcbuild.xcbuild is deprecated and will be removed; use xcbuild instead."
@@ -169,11 +168,13 @@ stdenv'.mkDerivation (finalAttrs: {
   meta = {
     description = "Xcode-compatible build tool";
     homepage = "https://github.com/facebook/xcbuild";
+
     license = with lib.licenses; [
       bsd2
       bsd3
     ];
-    teams = [ lib.teams.darwin ];
+
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.darwin ];
   };
 })

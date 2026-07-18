@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,9 +19,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Extremely fast file and directory name linter";
-    mainProgram = "ls_lint";
     homepage = "https://ls-lint.org/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ flokli ];
+    mainProgram = "ls_lint";
   };
 })

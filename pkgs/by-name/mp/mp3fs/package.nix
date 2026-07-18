@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  autoreconfHook,
   fetchpatch2,
   flac,
   fuse3,
   lame,
   libid3tag,
   libvorbis,
-  autoreconfHook,
-  pkg-config,
   pandoc,
+  pkg-config,
   zlib,
 }:
 
@@ -27,10 +27,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch2 {
+      hash = "sha256-V2HZy0jiXAHGAjre+QtCdGev7maWJ8hW3F2e/87CEKA=";
       name = "Enable fuse3 support.patch";
       # https://github.com/khenriks/mp3fs/pull/81
       url = "https://github.com/khenriks/mp3fs/commit/6e1326de4a19b236eef88b89599755adf394526f.patch?full_index=1";
-      hash = "sha256-V2HZy0jiXAHGAjre+QtCdGev7maWJ8hW3F2e/87CEKA=";
     })
   ];
 
@@ -53,6 +53,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "FUSE file system that transparently transcodes to MP3";
+
     longDescription = ''
       A read-only FUSE filesystem which transcodes between audio formats
       (currently FLAC and Ogg Vorbis to MP3) on the fly when opened and read.
@@ -60,10 +61,11 @@ stdenv.mkDerivation (finalAttrs: {
       and/or hardware which only understands the MP3 format, or transcode
       files through simple drag-and-drop in a file browser.
     '';
+
     homepage = "https://khenriks.github.io/mp3fs/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ Luflosi ];
+    platforms = lib.platforms.unix;
     mainProgram = "mp3fs";
   };
 })

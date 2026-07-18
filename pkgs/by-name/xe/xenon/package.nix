@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "xenon";
   version = "0.9.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -15,7 +14,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   };
 
   doCheck = false;
-
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -24,6 +22,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pyaml
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "xenon" ];
 
   meta = {

@@ -1,22 +1,22 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gettext,
-  meson,
-  ninja,
-  pkg-config,
   cairo,
+  gettext,
+  gitUpdater,
   glib,
-  gtk3,
   gtk-layer-shell,
+  gtk3,
   libx11,
-  libxi,
   libxfce4ui,
   libxfce4util,
   libxfce4windowing,
+  libxi,
+  meson,
+  ninja,
+  pkg-config,
   xfce4-panel,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,18 +24,14 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.5.1";
 
   src = fetchFromGitLab {
-    domain = "gitlab.xfce.org";
     owner = "panel-plugins";
     repo = "xfce4-docklike-plugin";
     tag = "xfce4-docklike-plugin-${finalAttrs.version}";
     hash = "sha256-p4uRdxwV8cfRPQ3eGfa4/Wt3Im7hgze3UvK9a7pW94o=";
+    domain = "gitlab.xfce.org";
   };
 
   strictDeps = true;
-
-  depsBuildBuild = [
-    pkg-config
-  ];
 
   nativeBuildInputs = [
     gettext
@@ -58,13 +54,17 @@ stdenv.mkDerivation (finalAttrs: {
     xfce4-panel
   ];
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   passthru.updateScript = gitUpdater { rev-prefix = "xfce4-docklike-plugin-"; };
 
   meta = {
-    homepage = "https://docs.xfce.org/panel-plugins/xfce4-docklike-plugin/start";
     description = "Modern, minimalist taskbar for Xfce";
+    homepage = "https://docs.xfce.org/panel-plugins/xfce4-docklike-plugin/start";
     license = lib.licenses.gpl3Plus;
-    teams = [ lib.teams.xfce ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.xfce ];
   };
 })

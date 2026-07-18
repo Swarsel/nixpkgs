@@ -1,15 +1,15 @@
 {
+  lib,
+  stdenv,
   desktop-file-utils,
   fetchFromSourcehut,
   gobject-introspection,
   gtk3,
-  lib,
   libhandy,
   meson,
   ninja,
   pkg-config,
   python3,
-  stdenv,
   wrapGAppsHook3,
 }:
 
@@ -46,10 +46,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Postal package tracking application";
-    mainProgram = "shipments";
     homepage = "https://sr.ht/~martijnbraam/shipments/";
     changelog = "https://git.sr.ht/~martijnbraam/shipments/refs/${finalAttrs.version}";
     license = lib.licenses.lgpl3;
     maintainers = with lib.maintainers; [ michaelgrahamevans ];
+    mainProgram = "shipments";
   };
 })

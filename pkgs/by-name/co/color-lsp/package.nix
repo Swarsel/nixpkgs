@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,6 +22,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "-p"
     "color-lsp"
   ];
+
   cargoTestFlags = [
     "-p"
     "color-lsp"
@@ -31,10 +32,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "A document color language server supporting HEX, RGB, HSL, and named colors";
     homepage = "https://github.com/huacnlee/color-lsp";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       tonybutt
       matthiasbeyer
     ];
+
     mainProgram = "color-lsp";
   };
 })

@@ -20,14 +20,6 @@ crystal.buildCrystalPackage rec {
     hash = "sha256-TEHjR+34wrq24XJNLhWZCEzcDEMDlmUHv0iiF4Z6JlI=";
   };
 
-  shardsFile = ./shards.nix;
-
-  crystalBinaries.ameba-ls.src = "src/ameba-ls.cr";
-
-  buildTargets = [
-    "ameba-ls"
-  ];
-
   # There are no actual tests
   doCheck = false;
 
@@ -39,10 +31,18 @@ crystal.buildCrystalPackage rec {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  buildTargets = [
+    "ameba-ls"
+  ];
+
+  crystalBinaries.ameba-ls.src = "src/ameba-ls.cr";
+  shardsFile = ./shards.nix;
   versionCheckProgram = "${placeholder "out"}/bin/ameba-ls";
 
   meta = {
@@ -50,10 +50,12 @@ crystal.buildCrystalPackage rec {
     homepage = "https://github.com/crystal-ameba/ameba-ls";
     changelog = "https://github.com/crystal-ameba/ameba-ls/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       kachick
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "ameba-ls";
   };
 }

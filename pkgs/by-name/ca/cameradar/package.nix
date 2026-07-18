@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildGoModule,
   curl,
-  fetchFromGitHub,
   pkg-config,
 }:
 
@@ -17,12 +17,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-NgzTZpRrFLoFNn3xiR5ysORTO9Yj2kn2aPSwSa441t0=";
   };
 
-  vendorHash = "sha256-NljQGN/B/+gdMGmE1pI2rJPfZNY3xBHYLf+xPxzuh3w=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ curl ];
-
+  vendorHash = "sha256-NljQGN/B/+gdMGmE1pI2rJPfZNY3xBHYLf+xPxzuh3w=";
   subPackages = [ "cmd/cameradar" ];
 
   meta = {

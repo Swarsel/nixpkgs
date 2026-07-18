@@ -1,24 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  uv-build,
-
+  buildPythonPackage,
   # runtime
   click,
   peewee,
-
   # tests
   psycopg2,
   pytestCheckHook,
+  # build-system
+  uv-build,
 }:
 
 buildPythonPackage rec {
   pname = "peewee-migrate";
   version = "1.15.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "klen";
@@ -41,12 +37,13 @@ buildPythonPackage rec {
     click
   ];
 
-  pythonImportsCheck = [ "peewee_migrate" ];
-
   nativeCheckInputs = [
     psycopg2
     pytestCheckHook
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "peewee_migrate" ];
 
   meta = {
     description = "Simple migration engine for Peewee";

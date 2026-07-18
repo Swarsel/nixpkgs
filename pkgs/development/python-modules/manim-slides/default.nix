@@ -1,43 +1,39 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # Build system
-  hatchling,
-  hatch-fancy-pypi-readme,
-
-  # Dependencies
-  ffmpeg,
   beautifulsoup4,
+  buildPythonPackage,
   click,
   click-default-group,
+  docutils,
+  # Dependencies
+  ffmpeg,
+  hatch-fancy-pypi-readme,
+  # Build system
+  hatchling,
+  # Optional dependencies
+  ipython,
   jinja2,
   lxml,
+  manim,
+  manimgl,
   numpy,
   pillow,
   pydantic,
   pydantic-extra-types,
+  pyqt6,
+  pyside6,
   python-pptx,
   qtpy,
   requests,
   rich,
   rtoml,
-  tqdm,
-
-  # Optional dependencies
-  ipython,
-  manim,
-  manimgl,
   setuptools,
-  pyqt6,
-  pyside6,
-  docutils,
+  tqdm,
 }:
 buildPythonPackage rec {
   pname = "manim-slides";
   version = "5.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jeertmans";
@@ -49,13 +45,6 @@ buildPythonPackage rec {
   build-system = [
     hatchling
     hatch-fancy-pypi-readme
-  ];
-
-  pythonRelaxDeps = [
-    "rtoml" # We only package version 0.10, but manim-slides depends on 0.11.
-  ];
-  pythonRemoveDeps = [
-    "av" # It can use ffmpeg, which we already provide.
   ];
 
   dependencies = [
@@ -79,39 +68,57 @@ buildPythonPackage rec {
 
   optional-dependencies = lib.fix (self: {
     full = self.magic ++ self.manim ++ self.sphinx-directive;
+
     magic = self.manim ++ [
       ipython
     ];
+
     manim = [
       manim
     ];
+
     manimgl = [
       manimgl
       setuptools
     ];
+
     pyqt6 = [
       pyqt6
     ];
+
     pyqt6-full = self.full ++ self.pyqt6;
+
     pyside6 = [
       pyside6
     ];
+
     pyside6-full = self.full ++ self.pyside6;
+
     sphinx-directive = self.manim ++ [
       docutils
     ];
   });
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "manim_slides"
   ];
 
+  pythonRelaxDeps = [
+    "rtoml" # We only package version 0.10, but manim-slides depends on 0.11.
+  ];
+
+  pythonRemoveDeps = [
+    "av" # It can use ffmpeg, which we already provide.
+  ];
+
   meta = {
-    changelog = "https://github.com/jeertmans/manim-slides/blob/${src.tag}/CHANGELOG.md";
     description = "Tool for live presentations using manim";
     homepage = "https://github.com/jeertmans/manim-slides";
+    changelog = "https://github.com/jeertmans/manim-slides/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "manim-slides";
     maintainers = [ lib.maintainers.bpeetz ];
+    mainProgram = "manim-slides";
   };
 }

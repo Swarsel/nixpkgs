@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "python-ldap-test";
   version = "0.3.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,18 +15,20 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ py4j ];
-
   # Tests needs java to be present in path
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Tool for testing code speaking with LDAP server";
     homepage = "https://github.com/zoldar/python-ldap-test";
+    license = lib.licenses.mit;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode
     ];
-    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [ psyanticy ];
   };
 }

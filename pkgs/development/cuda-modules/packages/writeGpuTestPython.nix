@@ -1,15 +1,15 @@
 {
   lib,
-  runCommand,
-  python3Packages,
   makeWrapper,
+  python3Packages,
+  runCommand,
   writableTmpDirAsHomeHook,
 }:
 {
   feature ? "cuda",
-  name ? if feature == null then "cpu" else feature,
-  libraries ? [ ], # [PythonPackage] | (PackageSet -> [PythonPackage])
   gpuCheckArgs ? { },
+  libraries ? [ ], # [PythonPackage] | (PackageSet -> [PythonPackage])
+  name ? if feature == null then "cpu" else feature,
   ...
 }@args:
 

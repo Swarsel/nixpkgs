@@ -4,8 +4,8 @@
   fetchFromGitHub,
   autoreconfHook,
   libtool,
-  pkg-config,
   openssl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -19,11 +19,6 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-bvVUiv8y5c0P9fHAFs1JX3V7xsorbKUmm0qt3l2SoQQ=";
   };
 
-  configureFlags = [
-    "--with-enginesdir=${placeholder "out"}/lib/engines"
-    "--with-modulesdir=${placeholder "out"}/lib/ossl-module"
-  ];
-
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -32,8 +27,12 @@ stdenv.mkDerivation rec {
 
   buildInputs = [ openssl ];
 
-  enableParallelBuilding = true;
+  configureFlags = [
+    "--with-enginesdir=${placeholder "out"}/lib/engines"
+    "--with-modulesdir=${placeholder "out"}/lib/ossl-module"
+  ];
 
+  enableParallelBuilding = true;
   passthru = { inherit openssl; };
 
   meta = {

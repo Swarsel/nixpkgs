@@ -1,10 +1,10 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   lib,
-  nixosTests,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
+  nixosTests,
   symlinkJoin,
 }:
 
@@ -28,16 +28,14 @@ let
 
   meta = {
     description = "Distributed reliable key-value store for the most critical data of a distributed system";
-    downloadPage = "https://github.com/etcd-io/etcd";
-    license = lib.licenses.asl20;
     homepage = "https://etcd.io/";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dtomvan ];
     platforms = lib.platforms.darwin ++ lib.platforms.linux;
+    downloadPage = "https://github.com/etcd-io/etcd";
   };
 
   etcdserver = buildGoModule {
-    pname = "etcdserver";
-
     inherit
       env
       meta
@@ -45,26 +43,23 @@ let
       version
       ;
 
+    pname = "etcdserver";
     vendorHash = etcdServerVendorHash;
-
-    __darwinAllowLocalNetworking = true;
-
-    modRoot = "./server";
 
     preInstall = ''
       mv $GOPATH/bin/{server,etcd}
     '';
 
+    __darwinAllowLocalNetworking = true;
     # We set the GitSHA to `GitNotFound` to match official build scripts when
     # git is unavailable. This is to avoid doing a full Git Checkout of etcd.
     # User facing version numbers are still available in the binary, just not
     # the sha it was built from.
     ldflags = [ "-X go.etcd.io/etcd/api/v3/version.GitSHA=GitNotFound" ];
+    modRoot = "./server";
   };
 
   etcdutl = buildGoModule {
-    pname = "etcdutl";
-
     inherit
       env
       meta
@@ -72,13 +67,9 @@ let
       version
       ;
 
-    vendorHash = etcdUtlVendorHash;
-
-    __darwinAllowLocalNetworking = true;
-
-    modRoot = "./etcdutl";
-
+    pname = "etcdutl";
     nativeBuildInputs = [ installShellFiles ];
+    vendorHash = etcdUtlVendorHash;
 
     postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
       for shell in bash fish zsh; do
@@ -86,11 +77,12 @@ let
           --$shell <($out/bin/etcdutl completion $shell)
       done
     '';
+
+    __darwinAllowLocalNetworking = true;
+    modRoot = "./etcdutl";
   };
 
   etcdctl = buildGoModule {
-    pname = "etcdctl";
-
     inherit
       env
       meta
@@ -98,11 +90,9 @@ let
       version
       ;
 
-    vendorHash = etcdCtlVendorHash;
-
-    modRoot = "./etcdctl";
-
+    pname = "etcdctl";
     nativeBuildInputs = [ installShellFiles ];
+    vendorHash = etcdCtlVendorHash;
 
     postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
       for shell in bash fish zsh; do
@@ -110,24 +100,26 @@ let
           --$shell <($out/bin/etcdctl completion $shell)
       done
     '';
+
+    modRoot = "./etcdctl";
   };
 in
 symlinkJoin {
-  pname = "etcd";
-
   inherit meta version;
-
-  passthru = {
-    deps = {
-      inherit etcdserver etcdutl etcdctl;
-    };
-    tests = nixosTests.etcd."3_6";
-    updateScript = ./update.sh;
-  };
+  pname = "etcd";
 
   paths = [
     etcdserver
     etcdutl
     etcdctl
   ];
+
+  passthru = {
+    deps = {
+      inherit etcdserver etcdutl etcdctl;
+    };
+
+    tests = nixosTests.etcd."3_6";
+    updateScript = ./update.sh;
+  };
 }

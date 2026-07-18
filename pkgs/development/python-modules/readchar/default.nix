@@ -1,21 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  pexpect,
   # tests
   pytest-cov-stub,
   pytestCheckHook,
-  pexpect,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "readchar";
   version = "4.2.1";
-  pyproject = true;
 
   # Don't use wheels on PyPI
   src = fetchFromGitHub {
@@ -37,15 +34,15 @@ buildPythonPackage (finalAttrs: {
       --replace 'sys.platform.startswith("linux")' 'sys.platform.startswith(("darwin", "linux"))'
   '';
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "readchar" ];
-
   nativeCheckInputs = [
     pytest-cov-stub
     pytestCheckHook
     pexpect
   ];
+
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "readchar" ];
 
   meta = {
     description = "Python library to read characters and key strokes";

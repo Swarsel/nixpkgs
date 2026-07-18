@@ -1,15 +1,15 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
   boost,
-  nlohmann_json,
-  nixVersions,
-  pkg-config,
+  fetchpatch2,
   meson,
   ninja,
-  stdenv,
-  fetchpatch2,
+  nixVersions,
+  nlohmann_json,
+  pkg-config,
+  rustPlatform,
 }:
 let
   nixComponents = nixVersions.nixComponents_2_31;
@@ -22,9 +22,17 @@ let
 
   workerPackage = stdenv.mkDerivation {
     inherit src;
-
     pname = "nix-inspect-worker";
     version = "0.1.2-unstable-2025-08-14";
+
+    patches = [
+      # Upgrade to Nix 2.30 - https://github.com/bluskript/nix-inspect/pull/25
+      (fetchpatch2 {
+        hash = "sha256-ipyT/zr+CEZi8EPk6Tw8V58ukUdmrtXRn+H32Y7Csuw=";
+        url = "https://github.com/bluskript/nix-inspect/commit/af4dd48d69f399c7b7e3f07d5268ade606a91f22.patch";
+      })
+    ];
+
     postPatch = ''
       cd worker
     '';
@@ -33,14 +41,6 @@ let
       meson
       ninja
       pkg-config
-    ];
-
-    patches = [
-      # Upgrade to Nix 2.30 - https://github.com/bluskript/nix-inspect/pull/25
-      (fetchpatch2 {
-        url = "https://github.com/bluskript/nix-inspect/commit/af4dd48d69f399c7b7e3f07d5268ade606a91f22.patch";
-        hash = "sha256-ipyT/zr+CEZi8EPk6Tw8V58ukUdmrtXRn+H32Y7Csuw=";
-      })
     ];
 
     buildInputs = [
@@ -61,14 +61,13 @@ rustPlatform.buildRustPackage {
   pname = "nix-inspect";
   version = "0.1.2";
 
-  cargoHash = "sha256-3FTlbWSA0SKCfunQDdXu9g2aQAdAIfOTq5qJbzrRPjc=";
-
-  buildInputs = [ workerPackage ];
-
   postPatch = ''
     substituteInPlace src/workers.rs \
       --replace-fail 'env!("WORKER_BINARY_PATH")' '"${workerPackage}/bin/nix-inspect"'
   '';
+
+  buildInputs = [ workerPackage ];
+  cargoHash = "sha256-3FTlbWSA0SKCfunQDdXu9g2aQAdAIfOTq5qJbzrRPjc=";
 
   meta = {
     description = "Interactive TUI for inspecting nix configs and other expressions";

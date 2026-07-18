@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   calmsize,
   pandas,
-  torch,
   pytestCheckHook,
   setuptools,
+  torch,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pytorch-memlab";
   version = "0.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Stonesjtu";
@@ -21,9 +20,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-46C/2RvzhbHt1IHPmPCrLsIk2D3POhzuADNaXqUe0F4=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
 
   dependencies = [
     calmsize
@@ -31,13 +29,14 @@ buildPythonPackage (finalAttrs: {
     torch
   ];
 
-  pythonImportsCheck = [ "pytorch_memlab" ];
-
   # These tests require CUDA
   disabledTestPaths = [
     "test/test_courtesy.py"
     "test/test_line_profiler.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pytorch_memlab" ];
 
   meta = {
     description = "Simple and accurate CUDA memory management laboratory for pytorch";

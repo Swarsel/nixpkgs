@@ -1,12 +1,12 @@
 inputs@{
+  lib,
+  stdenv,
+  fetchFromGitHub,
   autoconf,
   automake,
   config,
   cudaPackages,
-  fetchFromGitHub,
-  lib,
   libtool,
-  stdenv,
   ucx,
   # Configuration options
   enableAvx ? stdenv.hostPlatform.avxSupport,
@@ -32,13 +32,6 @@ let
   effectiveStdenv = if enableCuda then cudaPackages.backendStdenv else inputs.stdenv;
 in
 effectiveStdenv.mkDerivation (finalAttrs: {
-  __structuredAttrs = true;
-  # TODO(@connorbaker):
-  # When strictDeps is enabled, `cuda_nvcc` is required as the argument to `--with-cuda` in `configureFlags` or else
-  # configurePhase fails with `checking for cuda_runtime.h... no`.
-  # This is odd, especially given `cuda_runtime.h` is provided by `cuda_cudart.dev`, which is already in `buildInputs`.
-  strictDeps = true;
-
   pname = "ucc";
   version = "1.8.0";
 
@@ -54,8 +47,6 @@ effectiveStdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
-  enableParallelBuilding = true;
-
   # NOTE: We use --replace-quiet because not all Makefile.am files contain /bin/bash.
   postPatch = ''
     for comp in $(find src/components -name Makefile.am); do
@@ -65,6 +56,12 @@ effectiveStdenv.mkDerivation (finalAttrs: {
           "${effectiveStdenv.shell}"
     done
   '';
+
+  # TODO(@connorbaker):
+  # When strictDeps is enabled, `cuda_nvcc` is required as the argument to `--with-cuda` in `configureFlags` or else
+  # configurePhase fails with `checking for cuda_runtime.h... no`.
+  # This is odd, especially given `cuda_runtime.h` is provided by `cuda_cudart.dev`, which is already in `buildInputs`.
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoconf
@@ -83,6 +80,15 @@ effectiveStdenv.mkDerivation (finalAttrs: {
     nccl
   ];
 
+  configureFlags =
+    optionals enableSse41 [ "--with-sse41" ]
+    ++ optionals enableSse42 [ "--with-sse42" ]
+    ++ optionals enableAvx [ "--with-avx" ]
+    ++ optionals enableCuda [
+      "--with-cuda=${cuda_nvcc}"
+      "--with-nvcc-gencode=${concatStringsSep " " flags.gencode}"
+    ];
+
   # NOTE: With `__structuredAttrs` enabled, `LDFLAGS` must be set under `env` so it is assured to be a string;
   # otherwise, we might have forgotten to convert it to a string and Nix would make LDFLAGS a shell variable
   # referring to an array!
@@ -99,27 +105,21 @@ effectiveStdenv.mkDerivation (finalAttrs: {
     ./autogen.sh
   '';
 
-  configureFlags =
-    optionals enableSse41 [ "--with-sse41" ]
-    ++ optionals enableSse42 [ "--with-sse42" ]
-    ++ optionals enableAvx [ "--with-avx" ]
-    ++ optionals enableCuda [
-      "--with-cuda=${cuda_nvcc}"
-      "--with-nvcc-gencode=${concatStringsSep " " flags.gencode}"
-    ];
-
   postInstall = ''
     find "$out/lib/" -name "*.la" -exec rm -f \{} \;
 
     moveToOutput bin/ucc_info "$dev"
   '';
 
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
+
   meta = {
     description = "Collective communication operations API";
     homepage = "https://openucx.github.io/ucc/";
-    mainProgram = "ucc_info";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.markuskowa ];
     platforms = lib.platforms.linux;
+    mainProgram = "ucc_info";
   };
 })

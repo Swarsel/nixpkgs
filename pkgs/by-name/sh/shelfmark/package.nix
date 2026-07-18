@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  buildNpmPackage,
   fetchFromGitHub,
-  python314Packages,
-  nix-update-script,
-  makeWrapper,
-  nixosTests,
-  unrar-free,
   _experimental-update-script-combinators,
+  buildNpmPackage,
+  makeWrapper,
+  nix-update-script,
+  nixosTests,
+  python314Packages,
+  unrar-free,
 }:
 
 let
@@ -47,11 +47,8 @@ let
   };
 
   frontend = buildNpmPackage (finalAttrs: {
-    pname = "shelfmark-frontend";
     inherit version src;
-
-    sourceRoot = "${finalAttrs.src.name}/src/frontend";
-
+    pname = "shelfmark-frontend";
     npmDepsHash = "sha256-oqEUiHOHx78+plHUnsOtdv0S3ZhaHr0CAb7kA0VbG/k=";
 
     installPhase = ''
@@ -59,18 +56,18 @@ let
       cp -r dist $out
       runHook postInstall
     '';
+
+    sourceRoot = "${finalAttrs.src.name}/src/frontend";
   });
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "shelfmark";
   inherit version src;
+  pname = "shelfmark";
 
   nativeBuildInputs = [
     python3Packages.wrapPython
     makeWrapper
   ];
-
-  pythonPath = pythonDeps;
 
   installPhase = ''
     runHook preInstall
@@ -97,6 +94,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  pythonPath = pythonDeps;
+
   passthru = {
     inherit frontend;
 
@@ -120,10 +119,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/calibrain/shelfmark";
     changelog = "https://github.com/calibrain/shelfmark/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       jamiemagee
       pyrox0
     ];
+
     mainProgram = "shelfmark";
   };
 })

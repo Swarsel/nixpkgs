@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,11 +18,11 @@ buildGoModule (finalAttrs: {
   vendorHash = "sha256-SUE868jVJywqE0A5yjMWohrMw58OUnxGGxvcR8UzPfE=";
 
   meta = {
+    description = "Send events to IRC channels from scripts and other applications";
     homepage = "https://github.com/irccloud/irccat";
     changelog = "https://github.com/irccloud/irccat/releases/tag/v${finalAttrs.version}";
-    description = "Send events to IRC channels from scripts and other applications";
-    mainProgram = "irccat";
-    maintainers = with lib.maintainers; [ qyliss ];
     license = lib.licenses.gpl3Only;
+    maintainers = with lib.maintainers; [ qyliss ];
+    mainProgram = "irccat";
   };
 })

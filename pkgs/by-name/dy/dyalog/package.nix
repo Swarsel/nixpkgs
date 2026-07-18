@@ -2,32 +2,25 @@
   lib,
   stdenv,
   fetchurl,
-
-  config,
-  acceptLicense ? config.dyalog.acceptLicense or false,
-
+  alsa-lib,
   autoPatchelfHook,
+  config,
+  dotnetCorePackages,
   dpkg,
+  gtk3,
+  libGL,
+  libdrm,
+  libgbm,
   makeWrapper,
   ncurses5,
-
-  dotnetCorePackages,
-  dotnetSupport ? false,
-
-  alsa-lib,
-  gtk3,
-  libdrm,
-  libGL,
-  libgbm,
   nss,
-  htmlRendererSupport ? false,
-
   unixodbc,
-  sqaplSupport ? false,
-
-  zeroFootprintRideSupport ? false,
-
+  acceptLicense ? config.dyalog.acceptLicense or false,
+  dotnetSupport ? false,
   enableDocs ? false,
+  htmlRendererSupport ? false,
+  sqaplSupport ? false,
+  zeroFootprintRideSupport ? false,
 }:
 
 let
@@ -60,33 +53,6 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "dyalog";
   version = "20.0.53963";
-  shortVersion = lib.versions.majorMinor finalAttrs.version;
-
-  passthru.sources =
-    let
-      fetchArtifact =
-        {
-          prefix,
-          suffix,
-          hash,
-        }:
-        fetchurl {
-          url = "https://download.dyalog.com/download.php?file=${finalAttrs.shortVersion}/${prefix}_${finalAttrs.version}_${suffix}";
-          inherit hash;
-        };
-    in
-    {
-      "x86_64-linux" = fetchArtifact {
-        prefix = "linux_64";
-        suffix = "unicode.x86_64.deb";
-        hash = "sha256-4LjB/aHK40HecgZA7YUIoY/CaCnSoMOs9OoIhong8j4=";
-      };
-      "aarch64-linux" = fetchArtifact {
-        prefix = "linux_64";
-        suffix = "unicode.aarch64.deb";
-        hash = "sha256-5uVxMK0yowLOARW+PjFDpFiUNc/0cU/5lzY8t5Z6DxY=";
-      };
-    };
 
   src =
     assert !acceptLicense -> throw licenseDisclaimer;
@@ -94,11 +60,6 @@ stdenv.mkDerivation (finalAttrs: {
     finalAttrs.passthru.sources.${system};
 
   outputs = [ "out" ] ++ lib.optional enableDocs "doc";
-
-  postUnpack = ''
-    sourceRoot=$sourceRoot/opt/mdyalog/${finalAttrs.shortVersion}/64/unicode
-  '';
-
   patches = [ ./dyalogscript.patch ];
 
   nativeBuildInputs = [
@@ -185,23 +146,61 @@ stdenv.mkDerivation (finalAttrs: {
     patchelf ${dyalogHome}/libcef.so --add-needed libudev.so --add-needed libGL.so
   '';
 
+  postUnpack = ''
+    sourceRoot=$sourceRoot/opt/mdyalog/${finalAttrs.shortVersion}/64/unicode
+  '';
+
+  shortVersion = lib.versions.majorMinor finalAttrs.version;
+
+  passthru.sources =
+    let
+      fetchArtifact =
+        {
+          hash,
+          prefix,
+          suffix,
+        }:
+        fetchurl {
+          inherit hash;
+          url = "https://download.dyalog.com/download.php?file=${finalAttrs.shortVersion}/${prefix}_${finalAttrs.version}_${suffix}";
+        };
+    in
+    {
+      "aarch64-linux" = fetchArtifact {
+        hash = "sha256-5uVxMK0yowLOARW+PjFDpFiUNc/0cU/5lzY8t5Z6DxY=";
+        prefix = "linux_64";
+        suffix = "unicode.aarch64.deb";
+      };
+
+      "x86_64-linux" = fetchArtifact {
+        hash = "sha256-4LjB/aHK40HecgZA7YUIoY/CaCnSoMOs9OoIhong8j4=";
+        prefix = "linux_64";
+        suffix = "unicode.x86_64.deb";
+      };
+    };
+
   meta = {
+    description = "Dyalog APL interpreter";
+    homepage = "https://www.dyalog.com";
+
     changelog = "https://dyalog.com/dyalog/dyalog-versions/${
       lib.replaceStrings [ "." ] [ "" ] finalAttrs.shortVersion
     }.htm";
-    description = "Dyalog APL interpreter";
-    homepage = "https://www.dyalog.com";
+
     license = {
+      free = false;
       fullName = "Dyalog License";
       url = licenseUrl;
-      free = false;
     };
-    mainProgram = "dyalog";
+
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       tomasajt
       markus1189
     ];
+
     platforms = lib.attrNames finalAttrs.passthru.sources;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    mainProgram = "dyalog";
   };
 })

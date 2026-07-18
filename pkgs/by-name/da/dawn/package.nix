@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  tk,
   makeWrapper,
+  tk,
 }:
 
 stdenv.mkDerivation rec {
@@ -14,6 +14,7 @@ stdenv.mkDerivation rec {
     url = "https://geant4.kek.jp/~tanaka/src/dawn_${
       builtins.replaceStrings [ "." ] [ "_" ] version
     }.tgz";
+
     hash = "sha256-gdhV6tERdoGxiCQt0L46JOAF2b1AY/0r2pp6eU689fQ=";
   };
 
@@ -25,8 +26,6 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  dontConfigure = true;
-
   preInstall = ''
     mkdir -p "$out/bin"
   '';
@@ -36,11 +35,13 @@ stdenv.mkDerivation rec {
       --prefix PATH : ${lib.makeBinPath [ tk ]}
   '';
 
+  dontConfigure = true;
+
   meta = {
     description = "Vectorized 3D PostScript processor with analytical hidden line/surface removal";
-    license = lib.licenses.unfree;
     homepage = "https://geant4.kek.jp/~tanaka/DAWN/About_DAWN.html";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ veprbl ];
+    platforms = lib.platforms.unix;
   };
 }

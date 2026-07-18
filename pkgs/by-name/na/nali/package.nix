@@ -17,17 +17,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-5AI8TAKYFqjgLVKob9imrf7yVmXmAPq/zHh1bDfC5r0=";
   };
 
-  vendorHash = "sha256-wIp/ShUddz+RIcsEuKWUfxsV/wNB2X1jZtIltBZ0ROM=";
-  subPackages = [ "." ];
-
   nativeBuildInputs = [ installShellFiles ];
-
+  vendorHash = "sha256-wIp/ShUddz+RIcsEuKWUfxsV/wNB2X1jZtIltBZ0ROM=";
   env.CGO_ENABLED = 0;
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/zu1k/nali/internal/constant.Version=${finalAttrs.version}"
-  ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     export HOME="$TMPDIR"
@@ -38,14 +30,24 @@ buildGoModule (finalAttrs: {
     installShellCompletion --cmd nali nali.{bash,fish,zsh}
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/zu1k/nali/internal/constant.Version=${finalAttrs.version}"
+  ];
+
+  subPackages = [ "." ];
+
   meta = {
     description = "Offline tool for querying IP geographic information and CDN provider";
     homepage = "https://github.com/zu1k/nali";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       diffumist
       xyenon
     ];
+
     mainProgram = "nali";
   };
 })

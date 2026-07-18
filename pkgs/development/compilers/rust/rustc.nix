@@ -1,46 +1,46 @@
 {
   lib,
   stdenv,
-  removeReferencesTo,
-  pkgsBuildBuild,
-  pkgsBuildHost,
-  pkgsBuildTarget,
-  targetPackages,
+  fetchurl,
+  bintools,
+  cargo,
+  cmake,
+  # This only builds std for target and reuses the rustc from build.
+  fastCross,
+  fd,
+  file,
+  firefox,
+  libffi,
+  llvmPackages,
   llvmShared,
   llvmSharedForBuild,
   llvmSharedForHost,
   llvmSharedForTarget,
-  llvmPackages,
-  runCommandLocal,
-  fetchurl,
-  file,
-  python3,
-  cargo,
-  cmake,
-  rustc,
-  rustfmt,
-  pkg-config,
-  openssl,
-  xz,
-  zlib,
-  rust-jemalloc-sys,
-  bintools,
-  which,
-  libffi,
-  withBundledLLVM ? false,
-  enableRustcDev ? true,
-  version,
-  sha256,
-  patches ? [ ],
-  fd,
-  ripgrep,
-  wezterm,
-  firefox,
-  thunderbird,
-  # This only builds std for target and reuses the rustc from build.
-  fastCross,
   lndir,
   makeWrapper,
+  openssl,
+  pkg-config,
+  pkgsBuildBuild,
+  pkgsBuildHost,
+  pkgsBuildTarget,
+  python3,
+  removeReferencesTo,
+  ripgrep,
+  runCommandLocal,
+  rust-jemalloc-sys,
+  rustc,
+  rustfmt,
+  sha256,
+  targetPackages,
+  thunderbird,
+  version,
+  wezterm,
+  which,
+  xz,
+  zlib,
+  enableRustcDev ? true,
+  patches ? [ ],
+  withBundledLLVM ? false,
 }:
 
 let
@@ -53,59 +53,89 @@ let
   useLLVM = stdenv.targetPlatform.useLLVM or false;
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "${targetPackages.stdenv.cc.targetPrefix}rustc";
   inherit version;
+  inherit patches;
+  pname = "${targetPackages.stdenv.cc.targetPrefix}rustc";
 
   src = fetchurl {
-    url = "https://static.rust-lang.org/dist/rustc-${version}-src.tar.gz";
     inherit sha256;
+    url = "https://static.rust-lang.org/dist/rustc-${version}-src.tar.gz";
     # See https://nixos.org/manual/nixpkgs/stable/#using-git-bisect-on-the-rust-compiler
     passthru.isReleaseTarball = true;
   };
 
-  __darwinAllowLocalNetworking = true;
+  outputs = [
+    "out"
+    "man"
+    "doc"
+  ];
 
-  # rustc complains about modified source files otherwise
-  dontUpdateAutotoolsGnuConfigScripts = true;
+  postPatch = ''
+    patchShebangs src/etc
 
-  # Running the default `strip -S` command on Darwin corrupts the
-  # .rlib files in "lib/".
-  #
-  # See https://github.com/NixOS/nixpkgs/pull/34227
-  #
-  # Running `strip -S` when cross compiling can harm the cross rlibs.
-  # See: https://github.com/NixOS/nixpkgs/pull/56540#issuecomment-471624656
-  stripDebugList = [ "bin" ];
+    # rust-lld is the name rustup uses for its bundled lld, so that it
+    # doesn't conflict with any system lld.  This is not an
+    # appropriate default for Nixpkgs, where there is no rust-lld.
+    substituteInPlace compiler/rustc_target/src/spec/*/*.rs \
+      --replace-quiet '"rust-lld"' '"lld"'
 
-  env = {
-    NIX_LDFLAGS = toString (
-      # when linking stage1 libstd: cc: undefined reference to `__cxa_begin_catch'
-      # This doesn't apply to cross-building for FreeBSD because the host
-      # uses libstdc++, but the target (used for building std) uses libc++
-      optional (
-        stdenv.hostPlatform.isLinux && !withBundledLLVM && !stdenv.targetPlatform.isFreeBSD && !useLLVM
-      ) "--push-state --as-needed -lstdc++ --pop-state"
-      ++
-        optional
-          (stdenv.hostPlatform.isLinux && !withBundledLLVM && !stdenv.targetPlatform.isFreeBSD && useLLVM)
-          "--push-state --as-needed -L${llvmPackages.libcxx}/lib -lc++ -lc++abi -lLLVM-${lib.versions.major llvmPackages.llvm.version} --pop-state"
-      ++ optional (stdenv.hostPlatform.isDarwin && !withBundledLLVM) "-lc++ -lc++abi"
-      ++ optional stdenv.hostPlatform.isDarwin "-rpath ${llvmSharedForHost.lib}/lib"
-    );
+    ${optionalString (!withBundledLLVM) "rm -rf src/llvm"}
 
-    RUSTFLAGS = lib.concatStringsSep " " (
-      [
-        # Increase codegen units to introduce parallelism within the compiler.
-        "-Ccodegen-units=10"
-      ]
-      ++ lib.optionals (stdenv.hostPlatform.rust.rustcTargetSpec == "x86_64-unknown-linux-gnu") [
-        # Upstream defaults to lld on x86_64-unknown-linux-gnu, we want to use our linker
-        "-Clinker-features=-lld"
-        "-Clink-self-contained=-linker"
-      ]
-    );
-    RUSTDOCFLAGS = "-A rustdoc::broken-intra-doc-links";
-  };
+    # Useful debugging parameter
+    # export VERBOSE=1
+  ''
+  + lib.optionalString (stdenv.hostPlatform.isDarwin || stdenv.targetPlatform.isDarwin) ''
+    # Replace hardcoded path to strip with llvm-strip
+    # https://github.com/NixOS/nixpkgs/issues/299606
+    substituteInPlace compiler/rustc_codegen_ssa/src/back/link.rs \
+      --replace-fail "/usr/bin/strip" "${lib.getExe' llvmShared "llvm-strip"}"
+  ''
+  + lib.optionalString (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64) ''
+    # See https://github.com/jemalloc/jemalloc/issues/1997
+    # Using a value of 48 should work on both emulated and native x86_64-darwin.
+    export JEMALLOC_SYS_WITH_LG_VADDR=48
+  ''
+  + lib.optionalString (!(finalAttrs.src.passthru.isReleaseTarball or false)) ''
+    mkdir .cargo
+    cat > .cargo/config.toml <<\EOF
+    [source.crates-io]
+    replace-with = "vendored-sources"
+    [source.vendored-sources]
+    directory = "vendor"
+    EOF
+  ''
+  + lib.optionalString (stdenv.hostPlatform.isFreeBSD) ''
+    # lzma-sys bundles an old version of xz that doesn't build
+    # on modern FreeBSD, use the system one instead
+    substituteInPlace src/bootstrap/src/core/build_steps/tool.rs \
+        --replace 'cargo.env("LZMA_API_STATIC", "1");' ' '
+  '';
+
+  nativeBuildInputs = [
+    file
+    python3
+    rustc
+    cmake
+    which
+    libffi
+    removeReferencesTo
+    pkg-config
+    xz
+  ]
+  ++ optionals fastCross [
+    lndir
+    makeWrapper
+  ];
+
+  buildInputs = [
+    openssl
+    rust-jemalloc-sys
+  ]
+  ++ optionals stdenv.hostPlatform.isDarwin [
+    zlib
+  ]
+  ++ optional (!withBundledLLVM) llvmShared.lib
+  ++ optional (useLLVM && !withBundledLLVM) llvmPackages.libunwind;
 
   # We need rust to build rust. If we don't provide it, configure will try to download it.
   # Reference: https://github.com/rust-lang/rust/blob/master/src/bootstrap/configure.py
@@ -288,6 +318,37 @@ stdenv.mkDerivation (finalAttrs: {
       "--set=rust.frame-pointers"
     ];
 
+  env = {
+    NIX_LDFLAGS = toString (
+      # when linking stage1 libstd: cc: undefined reference to `__cxa_begin_catch'
+      # This doesn't apply to cross-building for FreeBSD because the host
+      # uses libstdc++, but the target (used for building std) uses libc++
+      optional (
+        stdenv.hostPlatform.isLinux && !withBundledLLVM && !stdenv.targetPlatform.isFreeBSD && !useLLVM
+      ) "--push-state --as-needed -lstdc++ --pop-state"
+      ++
+        optional
+          (stdenv.hostPlatform.isLinux && !withBundledLLVM && !stdenv.targetPlatform.isFreeBSD && useLLVM)
+          "--push-state --as-needed -L${llvmPackages.libcxx}/lib -lc++ -lc++abi -lLLVM-${lib.versions.major llvmPackages.llvm.version} --pop-state"
+      ++ optional (stdenv.hostPlatform.isDarwin && !withBundledLLVM) "-lc++ -lc++abi"
+      ++ optional stdenv.hostPlatform.isDarwin "-rpath ${llvmSharedForHost.lib}/lib"
+    );
+
+    RUSTDOCFLAGS = "-A rustdoc::broken-intra-doc-links";
+
+    RUSTFLAGS = lib.concatStringsSep " " (
+      [
+        # Increase codegen units to introduce parallelism within the compiler.
+        "-Ccodegen-units=10"
+      ]
+      ++ lib.optionals (stdenv.hostPlatform.rust.rustcTargetSpec == "x86_64-unknown-linux-gnu") [
+        # Upstream defaults to lld on x86_64-unknown-linux-gnu, we want to use our linker
+        "-Clinker-features=-lld"
+        "-Clink-self-contained=-linker"
+      ]
+    );
+  };
+
   # if we already have a rust compiler for build just compile the target std
   # library and reuse compiler
   buildPhase =
@@ -329,95 +390,6 @@ stdenv.mkDerivation (finalAttrs: {
     else
       null;
 
-  # the rust build system complains that nix alters the checksums
-  dontFixLibtool = true;
-
-  inherit patches;
-
-  postPatch = ''
-    patchShebangs src/etc
-
-    # rust-lld is the name rustup uses for its bundled lld, so that it
-    # doesn't conflict with any system lld.  This is not an
-    # appropriate default for Nixpkgs, where there is no rust-lld.
-    substituteInPlace compiler/rustc_target/src/spec/*/*.rs \
-      --replace-quiet '"rust-lld"' '"lld"'
-
-    ${optionalString (!withBundledLLVM) "rm -rf src/llvm"}
-
-    # Useful debugging parameter
-    # export VERBOSE=1
-  ''
-  + lib.optionalString (stdenv.hostPlatform.isDarwin || stdenv.targetPlatform.isDarwin) ''
-    # Replace hardcoded path to strip with llvm-strip
-    # https://github.com/NixOS/nixpkgs/issues/299606
-    substituteInPlace compiler/rustc_codegen_ssa/src/back/link.rs \
-      --replace-fail "/usr/bin/strip" "${lib.getExe' llvmShared "llvm-strip"}"
-  ''
-  + lib.optionalString (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64) ''
-    # See https://github.com/jemalloc/jemalloc/issues/1997
-    # Using a value of 48 should work on both emulated and native x86_64-darwin.
-    export JEMALLOC_SYS_WITH_LG_VADDR=48
-  ''
-  + lib.optionalString (!(finalAttrs.src.passthru.isReleaseTarball or false)) ''
-    mkdir .cargo
-    cat > .cargo/config.toml <<\EOF
-    [source.crates-io]
-    replace-with = "vendored-sources"
-    [source.vendored-sources]
-    directory = "vendor"
-    EOF
-  ''
-  + lib.optionalString (stdenv.hostPlatform.isFreeBSD) ''
-    # lzma-sys bundles an old version of xz that doesn't build
-    # on modern FreeBSD, use the system one instead
-    substituteInPlace src/bootstrap/src/core/build_steps/tool.rs \
-        --replace 'cargo.env("LZMA_API_STATIC", "1");' ' '
-  '';
-
-  # rustc unfortunately needs cmake to compile llvm-rt but doesn't
-  # use it for the normal build. This disables cmake in Nix.
-  dontUseCmakeConfigure = true;
-
-  depsBuildBuild = [
-    pkgsBuildHost.stdenv.cc
-    pkg-config
-  ];
-  depsBuildTarget = lib.optionals stdenv.targetPlatform.isMinGW [ bintools ];
-
-  nativeBuildInputs = [
-    file
-    python3
-    rustc
-    cmake
-    which
-    libffi
-    removeReferencesTo
-    pkg-config
-    xz
-  ]
-  ++ optionals fastCross [
-    lndir
-    makeWrapper
-  ];
-
-  buildInputs = [
-    openssl
-    rust-jemalloc-sys
-  ]
-  ++ optionals stdenv.hostPlatform.isDarwin [
-    zlib
-  ]
-  ++ optional (!withBundledLLVM) llvmShared.lib
-  ++ optional (useLLVM && !withBundledLLVM) llvmPackages.libunwind;
-
-  outputs = [
-    "out"
-    "man"
-    "doc"
-  ];
-  setOutputFlags = false;
-
   postInstall =
     lib.optionalString (enableRustcDev && !fastCross) ''
       # install rustc-dev components. Necessary to build rls, clippy...
@@ -440,38 +412,61 @@ stdenv.mkDerivation (finalAttrs: {
       rm $out/lib/rustlib/uninstall.sh
     '';
 
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
   configurePlatforms = [ ];
 
+  depsBuildBuild = [
+    pkgsBuildHost.stdenv.cc
+    pkg-config
+  ];
+
+  depsBuildTarget = lib.optionals stdenv.targetPlatform.isMinGW [ bintools ];
+  # the rust build system complains that nix alters the checksums
+  dontFixLibtool = true;
+  # rustc complains about modified source files otherwise
+  dontUpdateAutotoolsGnuConfigScripts = true;
+  # rustc unfortunately needs cmake to compile llvm-rt but doesn't
+  # use it for the normal build. This disables cmake in Nix.
+  dontUseCmakeConfigure = true;
   enableParallelBuilding = true;
-
-  setupHooks = ./setup-hook.sh;
-
   requiredSystemFeatures = [ "big-parallel" ];
+  setOutputFlags = false;
+  setupHooks = ./setup-hook.sh;
+  # Running the default `strip -S` command on Darwin corrupts the
+  # .rlib files in "lib/".
+  #
+  # See https://github.com/NixOS/nixpkgs/pull/34227
+  #
+  # Running `strip -S` when cross compiling can harm the cross rlibs.
+  # See: https://github.com/NixOS/nixpkgs/pull/56540#issuecomment-471624656
+  stripDebugList = [ "bin" ];
 
   passthru = {
-    llvm = llvmShared;
     inherit llvmPackages;
     inherit (rustc) targetPlatforms targetPlatformsWithHostTools badTargetPlatforms;
+    llvm = llvmShared;
+
     tests = {
       inherit fd ripgrep wezterm;
     }
     // lib.optionalAttrs stdenv.hostPlatform.isLinux { inherit firefox thunderbird; };
   };
 
-  __structuredAttrs = true;
-
   meta = {
-    homepage = "https://www.rust-lang.org/";
     description = "Safe, concurrent, practical language";
-    mainProgram = "rustc";
-    teams = [ lib.teams.rust ];
+    homepage = "https://www.rust-lang.org/";
+
     license = [
       lib.licenses.mit
       lib.licenses.asl20
     ];
+
     platforms = rustc.targetPlatformsWithHostTools;
     # If rustc can't target a platform, we also can't build rustc for
     # that platform.
     badPlatforms = rustc.badTargetPlatforms;
+    mainProgram = "rustc";
+    teams = [ lib.teams.rust ];
   };
 })

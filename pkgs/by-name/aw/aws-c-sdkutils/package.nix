@@ -41,7 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "AWS SDK utility library";
     homepage = "https://github.com/awslabs/aws-c-sdkutils";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ r-burns ];
+    platforms = lib.platforms.unix;
   };
 })

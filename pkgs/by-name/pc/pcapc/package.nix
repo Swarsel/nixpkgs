@@ -17,12 +17,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ libpcap ];
-
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
 
   meta = {
-    homepage = "https://gitlab.com/post-factum/pcapc";
     description = "Compile libpcap filter expressions into BPF opcodes";
+    homepage = "https://gitlab.com/post-factum/pcapc";
     license = lib.licenses.gpl3Only;
     platforms = lib.platforms.linux;
     mainProgram = "pcapc";

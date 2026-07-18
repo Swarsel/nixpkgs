@@ -1,22 +1,26 @@
 {
+  lib,
+  fetchFromGitHub,
+  # test dependencies
+  anthropic,
+  anyio,
+  asyncpg,
   buildPythonPackage,
   callPackage,
-  fetchFromGitHub,
-  lib,
-
-  # build-system
-  hatchling,
-
+  cloudpickle,
+  dirty-equals,
   # dependencies
   executing,
+  google-genai,
+  # build-system
+  hatchling,
+  inline-snapshot,
+  logfire-api,
+  loguru,
+  mysql-connector-python,
+  openai-agents,
   opentelemetry-exporter-otlp-proto-http,
   opentelemetry-instrumentation,
-  opentelemetry-sdk,
-  protobuf,
-  rich,
-  tomli,
-  typing-extensions,
-
   # optional dependencies
   opentelemetry-instrumentation-aiohttp-client,
   opentelemetry-instrumentation-asgi,
@@ -30,21 +34,10 @@
   opentelemetry-instrumentation-requests,
   opentelemetry-instrumentation-sqlalchemy,
   opentelemetry-instrumentation-wsgi,
+  opentelemetry-sdk,
   packaging,
-
-  # test dependencies
-  anthropic,
-  anyio,
-  asyncpg,
-  cloudpickle,
-  dirty-equals,
-  google-genai,
-  inline-snapshot,
-  logfire-api,
-  loguru,
-  mysql-connector-python,
-  openai-agents,
   pandas,
+  protobuf,
   psycopg,
   pymongo,
   pymysql,
@@ -54,15 +47,17 @@
   pytestCheckHook,
   redis,
   requests-mock,
+  rich,
   sqlmodel,
   structlog,
   testcontainers,
+  tomli,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "logfire";
   version = "4.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pydantic";
@@ -70,60 +65,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-dAkT3xh0RsGTnW7Mqml2wV16VHJGUUkjjxiFLg9bUKc=";
   };
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    executing
-    opentelemetry-exporter-otlp-proto-http
-    opentelemetry-instrumentation
-    opentelemetry-sdk
-    protobuf
-    rich
-    tomli
-    typing-extensions
-  ];
-
-  # Some optional dependencies are commented out because the deps they require
-  # are not in nixpkgs as of writing
-  optional-dependencies = {
-    aiohttp = [ opentelemetry-instrumentation-aiohttp-client ];
-    aiohttp-client = [ opentelemetry-instrumentation-aiohttp-client ];
-    # aiohttp-server = [ opentelemetry-instrumentation-aiohttp-server ];
-    asgi = [ opentelemetry-instrumentation-asgi ];
-    # asyncpg = [ opentelemetry-instrumentation-asyncpg ];
-    # aws-lambda = [ opentelemetry-instrumentation-aws-lambda ];
-    celery = [ opentelemetry-instrumentation-celery ];
-    django = [
-      opentelemetry-instrumentation-asgi
-      opentelemetry-instrumentation-django
-    ];
-    # dspy = [ opentelemetry-instrumentation-dspy ];
-    fastapi = [ opentelemetry-instrumentation-fastapi ];
-    flask = [ opentelemetry-instrumentation-flask ];
-    # google-genai = [ opentelemetry-instrumentation-google-genai ];
-    httpx = [ opentelemetry-instrumentation-httpx ];
-    # litellm = [ opentelemetry-instrumentation-litellm ];
-    # mysql = [ opentelemetry-instrumentation-mysql ];
-    psycopg = [
-      # opentelemetry-instrumentation-psycopg
-      packaging
-    ];
-    psycopg2 = [
-      opentelemetry-instrumentation-psycopg2
-      packaging
-    ];
-    # pymongo = [ opentelemetry-instrumentation-pymongo ];
-    redis = [ opentelemetry-instrumentation-redis ];
-    requests = [ opentelemetry-instrumentation-requests ];
-    sqlalchemy = [ opentelemetry-instrumentation-sqlalchemy ];
-    # sqlite3 = [ opentelemetry-instrumentation-sqlite3 ];
-    # starlette = [ opentelemetry-instrumentation-starlette ];
-    # system-metrics = [ opentelemetry-instrumentation-system-metrics ];
-    wsgi = [ opentelemetry-instrumentation-wsgi ];
-  };
-
-  pythonImportsCheck = [ "logfire" ];
 
   # Too many outdated snapshots that fail with inline-snapshot
   doCheck = false;
@@ -156,6 +97,19 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
+  build-system = [ hatchling ];
+
+  dependencies = [
+    executing
+    opentelemetry-exporter-otlp-proto-http
+    opentelemetry-instrumentation
+    opentelemetry-sdk
+    protobuf
+    rich
+    tomli
+    typing-extensions
+  ];
+
   disabledTestPaths = [
     # Tests that require the commented optional dependencies above
     "tests/otel_integrations/test_aiohttp_server.py"
@@ -186,15 +140,64 @@ buildPythonPackage (finalAttrs: {
     "tests/otel_integrations/test_openai_agents.py"
   ];
 
+  # Some optional dependencies are commented out because the deps they require
+  # are not in nixpkgs as of writing
+  optional-dependencies = {
+    aiohttp = [ opentelemetry-instrumentation-aiohttp-client ];
+    aiohttp-client = [ opentelemetry-instrumentation-aiohttp-client ];
+    # aiohttp-server = [ opentelemetry-instrumentation-aiohttp-server ];
+    asgi = [ opentelemetry-instrumentation-asgi ];
+    # asyncpg = [ opentelemetry-instrumentation-asyncpg ];
+    # aws-lambda = [ opentelemetry-instrumentation-aws-lambda ];
+    celery = [ opentelemetry-instrumentation-celery ];
+
+    django = [
+      opentelemetry-instrumentation-asgi
+      opentelemetry-instrumentation-django
+    ];
+
+    # dspy = [ opentelemetry-instrumentation-dspy ];
+    fastapi = [ opentelemetry-instrumentation-fastapi ];
+    flask = [ opentelemetry-instrumentation-flask ];
+    # google-genai = [ opentelemetry-instrumentation-google-genai ];
+    httpx = [ opentelemetry-instrumentation-httpx ];
+
+    # litellm = [ opentelemetry-instrumentation-litellm ];
+    # mysql = [ opentelemetry-instrumentation-mysql ];
+    psycopg = [
+      # opentelemetry-instrumentation-psycopg
+      packaging
+    ];
+
+    psycopg2 = [
+      opentelemetry-instrumentation-psycopg2
+      packaging
+    ];
+
+    # pymongo = [ opentelemetry-instrumentation-pymongo ];
+    redis = [ opentelemetry-instrumentation-redis ];
+    requests = [ opentelemetry-instrumentation-requests ];
+    sqlalchemy = [ opentelemetry-instrumentation-sqlalchemy ];
+    # sqlite3 = [ opentelemetry-instrumentation-sqlite3 ];
+    # starlette = [ opentelemetry-instrumentation-starlette ];
+    # system-metrics = [ opentelemetry-instrumentation-system-metrics ];
+    wsgi = [ opentelemetry-instrumentation-wsgi ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "logfire" ];
+
   meta = {
-    changelog = "https://logfire.pydantic.dev/docs/release-notes";
     description = "Uncomplicated Observability for Python and beyond";
-    downloadPage = "https://github.com/pydantic/logfire/releases/tag/${finalAttrs.src.tag}";
     homepage = "https://logfire.pydantic.dev";
+    changelog = "https://logfire.pydantic.dev/docs/release-notes";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       de11n
       despsyched
     ];
+
+    downloadPage = "https://github.com/pydantic/logfire/releases/tag/${finalAttrs.src.tag}";
   };
 })

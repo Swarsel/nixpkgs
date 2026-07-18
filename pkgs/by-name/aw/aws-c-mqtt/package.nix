@@ -49,7 +49,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "C99 implementation of the MQTT 3.1.1 specification";
     homepage = "https://github.com/awslabs/aws-c-mqtt";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ r-burns ];
+    platforms = lib.platforms.unix;
   };
 })

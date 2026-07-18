@@ -1,10 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  uv-build,
   accelerate,
   bitsandbytes,
+  buildPythonPackage,
   datasets,
   hf-transfer,
   huggingface-hub,
@@ -25,14 +24,12 @@
   scikit-learn,
   tomli-w,
   transformers,
+  uv-build,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "heretic-llm";
   version = "1.4.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "p-e-w";
@@ -46,15 +43,7 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "uv_build>=0.8.11,<0.9.0" "uv_build"
   '';
 
-  pythonRelaxDeps = [
-    "datasets"
-    "huggingface-hub"
-    "peft"
-    "pydantic-settings"
-    "rich"
-    "transformers"
-  ];
-
+  __structuredAttrs = true;
   build-system = [ uv-build ];
 
   dependencies = [
@@ -89,16 +78,28 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "heretic" ];
+
+  pythonRelaxDeps = [
+    "datasets"
+    "huggingface-hub"
+    "peft"
+    "pydantic-settings"
+    "rich"
+    "transformers"
+  ];
 
   meta = {
     description = "Tool to remove censorship removal for language models";
     homepage = "https://github.com/p-e-w/heretic";
     changelog = "https://github.com/p-e-w/heretic/releases/tag/${finalAttrs.src.tag}";
+
     license = with lib.licenses; [
       agpl3Only
       agpl3Plus
     ];
+
     maintainers = with lib.maintainers; [ fab ];
   };
 })

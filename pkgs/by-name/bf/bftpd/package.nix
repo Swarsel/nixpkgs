@@ -27,7 +27,6 @@ stdenv.mkDerivation rec {
   '';
 
   buildInputs = [ libxcrypt ];
-
   env.CFLAGS = "-std=gnu89";
 
   preConfigure = ''
@@ -44,11 +43,11 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Minimal ftp server";
-    mainProgram = "bftpd";
-    downloadPage = "http://bftpd.sf.net/download.html";
     homepage = "http://bftpd.sf.net/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.all;
+    mainProgram = "bftpd";
+    downloadPage = "http://bftpd.sf.net/download.html";
   };
 }

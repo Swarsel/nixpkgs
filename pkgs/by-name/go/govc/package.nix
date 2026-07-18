@@ -17,13 +17,13 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-6DKE4rs7w070ZreAffs3i7bcJ075eCn9MrvVlOTANPo=";
 
-  sourceRoot = "${finalAttrs.src.name}/govc";
-
   ldflags = [
     "-s"
     "-w"
     "-X github.com/vmware/govmomi/govc/flags.BuildVersion=${finalAttrs.version}"
   ];
+
+  sourceRoot = "${finalAttrs.src.name}/govc";
 
   meta = {
     description = "VSphere CLI built on top of govmomi";

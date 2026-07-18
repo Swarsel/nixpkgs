@@ -2,50 +2,51 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  mpiCheckPhaseHook,
-  cmake,
-  python3,
-  gfortran,
   blas,
-  lapack,
+  cmake,
+  config,
+  cudaPackages,
   dbcsr,
+  dftd4,
+  elpa,
   fftw,
+  gfortran,
+  gmp,
+  greenx,
+  gsl,
+  hdf5-fortran-mpi,
+  jonquil,
+  lapack,
   libint,
+  libvdwxc,
   libvori,
   libxc_7,
-  dftd4,
-  simple-dftd3,
-  tblite,
-  mpi,
-  gsl,
-  scalapack,
-  makeWrapper,
   libxsmm,
-  spglib,
-  which,
+  makeWrapper,
+  mctc-lib,
+  mpi,
+  mpiCheckPhaseHook,
+  mstore,
+  multicharge,
+  newScope,
   pkg-config,
   plumed,
-  zlib,
-  hdf5-fortran-mpi,
-  sirius,
-  libvdwxc,
-  spla,
-  spfft,
-  trexio,
-  toml-f,
-  greenx,
-  gmp,
-  enableElpa ? false,
-  elpa,
-  cudaPackages,
+  python3,
   rocmPackages,
-  newScope,
-  mctc-lib,
-  jonquil,
-  multicharge,
-  mstore,
+  scalapack,
+  simple-dftd3,
+  sirius,
+  spfft,
+  spglib,
+  spla,
+  tblite,
   test-drive,
-  config,
+  toml-f,
+  trexio,
+  which,
+  zlib,
+  cudaTarget ? "80",
+  enableElpa ? false,
   gpuBackend ? (
     if config.cudaSupport then
       "cuda"
@@ -57,7 +58,6 @@
   # Change to a value suitable for your target GPU.
   # see https://github.com/cp2k/cp2k/blob/master/CMakeLists.txt#L433
   hipTarget ? "gfx908",
-  cudaTarget ? "80",
 }:
 
 assert builtins.elem gpuBackend [
@@ -68,53 +68,34 @@ assert builtins.elem gpuBackend [
 
 let
   grimmeCmake = lib.makeScope newScope (self: {
-    mctc-lib = mctc-lib.override {
-      buildType = "cmake";
-      inherit (self) jonquil;
-    };
-
-    toml-f = toml-f.override {
-      buildType = "cmake";
-      inherit (self) test-drive;
-    };
-
     dftd4 = dftd4.override {
-      buildType = "cmake";
       inherit (self) mstore mctc-lib multicharge;
+      buildType = "cmake";
     };
 
     jonquil = jonquil.override {
-      buildType = "cmake";
       inherit (self) toml-f test-drive;
+      buildType = "cmake";
+    };
+
+    mctc-lib = mctc-lib.override {
+      inherit (self) jonquil;
+      buildType = "cmake";
     };
 
     mstore = mstore.override {
-      buildType = "cmake";
       inherit (self) mctc-lib;
+      buildType = "cmake";
     };
 
     multicharge = multicharge.override {
-      buildType = "cmake";
       inherit (self) mctc-lib mstore;
+      buildType = "cmake";
     };
-
-    test-drive = test-drive.override { buildType = "cmake"; };
 
     simple-dftd3 = simple-dftd3.override {
-      buildType = "cmake";
       inherit (self) mctc-lib mstore toml-f;
-    };
-
-    tblite = tblite.override {
       buildType = "cmake";
-      inherit (self)
-        mctc-lib
-        mstore
-        toml-f
-        multicharge
-        dftd4
-        simple-dftd3
-        ;
     };
 
     sirius = sirius.override {
@@ -126,15 +107,32 @@ let
         simple-dftd3
         ;
     };
+
+    tblite = tblite.override {
+      inherit (self)
+        mctc-lib
+        mstore
+        toml-f
+        multicharge
+        dftd4
+        simple-dftd3
+        ;
+
+      buildType = "cmake";
+    };
+
+    test-drive = test-drive.override { buildType = "cmake"; };
+
+    toml-f = toml-f.override {
+      inherit (self) test-drive;
+      buildType = "cmake";
+    };
   });
 
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "cp2k";
   version = "2026.1-unstable-2026-06-16";
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "cp2k";
@@ -144,6 +142,11 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     # Remove the build command line from the source.
     # This avoids dependencies to .dev inputs
@@ -152,6 +155,12 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix pkg-config path generation
     ./pkgconfig.patch
   ];
+
+  postPatch = ''
+    patchShebangs tools exts/dbcsr/tools/build_utils exts/dbcsr/.cp2k
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     python3
@@ -210,11 +219,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   propagatedBuildInputs = [ (lib.getBin mpi) ];
-  propagatedUserEnvPkgs = [ mpi ];
-
-  postPatch = ''
-    patchShebangs tools exts/dbcsr/tools/build_utils exts/dbcsr/.cp2k
-  '';
 
   cmakeFlags = [
     (lib.strings.cmakeBool "CP2K_USE_DFTD4" true)
@@ -249,15 +253,6 @@ stdenv.mkDerivation (finalAttrs: {
     mpiCheckPhaseHook
   ];
 
-  passthru = {
-    inherit mpi;
-  };
-
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   postInstall = ''
     mkdir -p $out/share/cp2k
     cp -r ../data/* $out/share/cp2k
@@ -280,6 +275,13 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstallCheck
   '';
+
+  __structuredAttrs = true;
+  propagatedUserEnvPkgs = [ mpi ];
+
+  passthru = {
+    inherit mpi;
+  };
 
   meta = {
     description = "Quantum chemistry and solid state physics program";

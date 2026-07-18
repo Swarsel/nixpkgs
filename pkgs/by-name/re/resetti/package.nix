@@ -1,9 +1,9 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
-  versionCheckHook,
+  fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,24 +18,20 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-lhcCN5r1TSB95Y0pEoKAvftR0DMxtII3g+YOKT8I1qk=";
-
-  ldflags = [ "-s" ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckKeepEnvironment = [ "XDG_DATA_HOME" ];
-  preVersionCheck = "XDG_DATA_HOME=/tmp";
-
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  ldflags = [ "-s" ];
+  preVersionCheck = "XDG_DATA_HOME=/tmp";
+  versionCheckKeepEnvironment = [ "XDG_DATA_HOME" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Utility macros for Minecraft speedrunning";
     homepage = "https://github.com/tesselslate/resetti";
     changelog = "https://github.com/tesselslate/resetti/releases/tag/${finalAttrs.src.tag}";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ jess ];
+    platforms = lib.platforms.linux;
     mainProgram = "resetti";
   };
 })

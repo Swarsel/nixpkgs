@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
   bleach,
   bokeh,
+  buildPythonPackage,
+  fetchPypi,
   linkify-it-py,
   markdown,
   markdown-it-py,
@@ -11,8 +11,8 @@
   narwhals,
   pandas,
   param,
-  pyviz-comms,
   pyct,
+  pyviz-comms,
   requests,
   setuptools,
   tqdm,
@@ -23,20 +23,16 @@ buildPythonPackage rec {
   pname = "panel";
   version = "1.8.5";
 
-  format = "wheel";
-
   # We fetch a wheel because while we can fetch the node
   # artifacts using npm, the bundling invoked in setup.py
   # tries to fetch even more artifacts
   src = fetchPypi {
     inherit pname version;
-    format = "wheel";
     hash = "sha256-srrwEPz6xMku7/5x9GmQey9/rc/9025C+HxUHLtIw7M=";
     dist = "py3";
+    format = "wheel";
     python = "py3";
   };
-
-  pythonRelaxDeps = [ "bokeh" ];
 
   propagatedBuildInputs = [
     bleach
@@ -56,17 +52,18 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  pythonImportsCheck = [ "panel" ];
-
   # infinite recursion in test dependencies (hvplot)
   doCheck = false;
+  format = "wheel";
+  pythonImportsCheck = [ "panel" ];
+  pythonRelaxDeps = [ "bokeh" ];
 
   meta = {
     description = "High level dashboarding library for python visualization libraries";
-    mainProgram = "panel";
     homepage = "https://github.com/holoviz/panel";
     changelog = "https://github.com/holoviz/panel/releases/tag/v${version}";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ locnide ];
+    mainProgram = "panel";
   };
 }

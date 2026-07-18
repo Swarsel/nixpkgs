@@ -1,18 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
   pname = "drafting-mono";
   version = "1.1-unstable-2024-06-04";
-
-  outputs = [
-    "out"
-    "webfont"
-  ];
 
   src = fetchFromGitHub {
     owner = "indestructible-type";
@@ -21,13 +16,18 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-J64mmDOzTV4MRuZO3MB2SSX5agCRjLDjXAPXuDfdlOM=";
   };
 
+  outputs = [
+    "out"
+    "webfont"
+  ];
+
   nativeBuildInputs = [ installFonts ];
 
   meta = {
-    homepage = "https://indestructibletype.com/Drafting/";
     description = "Drafting* Mono a mixed serif typewriter inspired font by indestructible type*";
+    homepage = "https://indestructibletype.com/Drafting/";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ gavink97 ];
+    platforms = lib.platforms.all;
   };
 }

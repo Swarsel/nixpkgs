@@ -1,23 +1,29 @@
 {
   lib,
   stdenv,
-  cleanPackaging,
   fetchurl,
+  cleanPackaging,
   nix-update-script,
 }:
 {
-  # : string
-  pname,
-  # : string
-  version,
-  # : string
-  sha256 ? lib.fakeSha256,
-  # : drv | null
-  manpages ? null,
+  # TODO(Profpatsch): automatically infer most of these
+  # : list string
+  configureFlags,
   # : string
   description,
-  # : list Platform
-  platforms ? lib.platforms.all,
+  # : string
+  pname,
+  # mostly for moving and deleting files from the build directory
+  # : lines
+  postInstall,
+  # : string
+  version,
+  # : attributes to be merged into meta
+  broken ? false,
+  # : list Maintainer
+  maintainers ? [ ],
+  # : drv | null
+  manpages ? null,
   # : list string
   outputs ? [
     "bin"
@@ -26,20 +32,14 @@
     "doc"
     "out"
   ],
-  # TODO(Profpatsch): automatically infer most of these
-  # : list string
-  configureFlags,
-  # : string
-  postConfigure ? null,
-  # mostly for moving and deleting files from the build directory
-  # : lines
-  postInstall,
-  # : list Maintainer
-  maintainers ? [ ],
   # : passthru arguments (e.g. tests)
   passthru ? { },
-  # : attributes to be merged into meta
-  broken ? false,
+  # : list Platform
+  platforms ? lib.platforms.all,
+  # : string
+  postConfigure ? null,
+  # : string
+  sha256 ? lib.fakeSha256,
 }:
 
 let
@@ -72,10 +72,11 @@ let
 in
 stdenv.mkDerivation {
   inherit pname version;
+  inherit postConfigure;
 
   src = fetchurl {
-    url = "https://skarnet.org/software/${pname}/${pname}-${version}.tar.gz";
     inherit sha256;
+    url = "https://skarnet.org/software/${pname}/${pname}-${version}.tar.gz";
   };
 
   outputs =
@@ -96,9 +97,6 @@ stdenv.mkDerivation {
       else
         [ "man" ];
 
-  dontDisableStatic = true;
-  enableParallelBuilding = true;
-
   configureFlags =
     configureFlags
     ++ [
@@ -115,8 +113,6 @@ stdenv.mkDerivation {
     # http://www.skarnet.org/cgi-bin/archive.cgi?1:mss:623:heiodchokfjdkonfhdph
     ++ (lib.optional stdenv.hostPlatform.isDarwin "--build=${stdenv.hostPlatform.system}");
 
-  inherit postConfigure;
-
   makeFlags = lib.optionals stdenv.cc.isClang [
     "AR=${stdenv.cc.targetPrefix}ar"
     "RANLIB=${stdenv.cc.targetPrefix}ranlib"
@@ -127,8 +123,8 @@ stdenv.mkDerivation {
     echo "Cleaning & moving common files"
     ${
       cleanPackaging.commonFileActions {
-        noiseFiles = commonNoiseFiles;
         docFiles = commonMetaFiles;
+        noiseFiles = commonNoiseFiles;
       }
     } $doc/share/doc/${pname}
 
@@ -149,6 +145,9 @@ stdenv.mkDerivation {
     ${cleanPackaging.checkForRemainingFiles}
   '';
 
+  dontDisableStatic = true;
+  enableParallelBuilding = true;
+
   passthru = {
     updateScript = nix-update-script {
       extraArgs = [
@@ -163,9 +162,10 @@ stdenv.mkDerivation {
   // (if manpages == null then { } else { inherit manpages; });
 
   meta = {
-    homepage = "https://skarnet.org/software/${pname}/";
     inherit broken description platforms;
+    homepage = "https://skarnet.org/software/${pname}/";
     license = lib.licenses.isc;
+
     maintainers =
       with lib.maintainers;
       [

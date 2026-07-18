@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   coreutils,
   gawk,
   gnugrep,
   gnused,
+  makeWrapper,
   rofi,
   todo-txt-cli,
 }:
@@ -44,10 +44,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Todo-txt + Rofi = Todofi.sh";
-    mainProgram = "todofi.sh";
     homepage = "https://github.com/hugokernel/todofi.sh";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ewok ];
     platforms = lib.platforms.linux;
+    mainProgram = "todofi.sh";
   };
 })

@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
+  libtermkey,
   libtool,
   perl,
-  libtermkey,
+  pkg-config,
   unibilium,
 }:
 let
   version = "0.4.5";
 in
 stdenv.mkDerivation {
-  pname = "libtickit";
   inherit version;
+  pname = "libtickit";
 
   src = fetchFromGitHub {
     owner = "leonerd";
@@ -37,27 +37,27 @@ stdenv.mkDerivation {
     unibilium
   ];
 
-  nativeCheckInputs = [ perl ];
-
   makeFlags = [
     "LIBTOOL=${lib.getExe libtool}"
   ];
+
+  doCheck = true;
+  nativeCheckInputs = [ perl ];
+  enableParallelBuilding = true;
 
   installFlags = [
     "PREFIX=${placeholder "out"}"
   ];
 
-  enableParallelBuilding = true;
-
-  doCheck = true;
-
   meta = {
     description = "Terminal interface construction kit";
+
     longDescription = ''
       This library provides an abstracted mechanism for building interactive full-screen terminal
       programs. It provides a full set of output drawing functions, and handles keyboard and mouse
       input events.
     '';
+
     homepage = "https://www.leonerd.org.uk/code/libtickit/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ onemoresuza ];

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  cmake,
   clang,
+  cmake,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,20 +15,18 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-mKPtCE+wLFagvBVDida8oQCyO7N0klWkyHFjkip3aoY=";
   };
 
+  patches = [
+    ./patch-alglib-CMakeLists.patch
+  ];
+
   nativeBuildInputs = [
     cmake
     clang
   ];
 
-  patches = [
-    ./patch-alglib-CMakeLists.patch
-  ];
-
   meta = {
     description = "Numerical analysis and data processing library";
-    homepage = "https://www.alglib.net/";
-    license = lib.licenses.gpl2Plus;
-    maintainers = [ lib.maintainers.paperdigits ];
+
     longDescription = ''
       ALGLIB is a cross-platform numerical analysis and data processing library. It supports several programming languages (C++, C#, Delphi) and several operating systems (Windows and POSIX, including Linux). ALGLIB features include:
 
@@ -38,5 +36,9 @@ stdenv.mkDerivation (finalAttrs: {
       * Linear algebra (direct algorithms, EVD/SVD), direct and iterative linear solvers
       * Fast Fourier Transform and many other algorithms
     '';
+
+    homepage = "https://www.alglib.net/";
+    license = lib.licenses.gpl2Plus;
+    maintainers = [ lib.maintainers.paperdigits ];
   };
 })

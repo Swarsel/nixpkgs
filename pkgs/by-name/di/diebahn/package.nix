@@ -2,24 +2,24 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  blueprint-compiler,
+  cairo,
   cargo,
   desktop-file-utils,
+  gdk-pixbuf,
+  gettext,
+  glib,
+  gtk4,
+  libadwaita,
   meson,
   ninja,
+  nix-update-script,
+  openssl,
+  pango,
   pkg-config,
   rustPlatform,
   rustc,
   wrapGAppsHook4,
-  cairo,
-  gdk-pixbuf,
-  glib,
-  gtk4,
-  openssl,
-  libadwaita,
-  pango,
-  gettext,
-  blueprint-compiler,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation rec {
@@ -31,11 +31,6 @@ stdenv.mkDerivation rec {
     repo = "railway";
     tag = version;
     hash = "sha256-lmyseWTqOwMgKB3q+SQbpa4XNzZ+2hBe7Ct7o5oZjOc=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-ADJTkR0Lmr2mmhSvLhqryZYKLFjTHA+pGUbZPEBM7r4=";
   };
 
   nativeBuildInputs = [
@@ -68,21 +63,28 @@ stdenv.mkDerivation rec {
     GETTEXT_LIB_DIR = "${lib.getLib gettext}/lib";
   };
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-ADJTkR0Lmr2mmhSvLhqryZYKLFjTHA+pGUbZPEBM7r4=";
+  };
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://gitlab.com/schmiddi-on-mobile/railway/-/blob/${src.tag}/CHANGELOG.md";
     description = "Travel with all your train information in one place. Also known as Railway";
     homepage = "https://gitlab.com/schmiddi-on-mobile/railway";
+    changelog = "https://gitlab.com/schmiddi-on-mobile/railway/-/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "diebahn";
+
     maintainers = with lib.maintainers; [
       dotlambda
       lilacious
       cholli
     ];
+
+    mainProgram = "diebahn";
     teams = [ lib.teams.gnome-circle ];
   };
 }

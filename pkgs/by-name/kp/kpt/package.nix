@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,19 +17,19 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-2jJCvBtTiIYmpxA92p8eZnKl1UO74pKr1YFRH14keZY=";
 
-  subPackages = [ "." ];
-
   ldflags = [
     "-s"
     "-w"
     "-X github.com/kptdev/kpt/run.version=${finalAttrs.version}"
   ];
 
+  subPackages = [ "." ];
+
   meta = {
     description = "Automate Kubernetes Configuration Editing";
-    mainProgram = "kpt";
     homepage = "https://github.com/kptdev/kpt";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "kpt";
   };
 })

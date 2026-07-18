@@ -2,8 +2,8 @@
   lib,
   fetchFromGitHub,
   installShellFiles,
-  php,
   nix-update-script,
+  php,
   versionCheckHook,
 }:
 
@@ -18,9 +18,8 @@ php.buildComposerProject2 (finalAttrs: {
     hash = "sha256-3a0LJTlXTX28DYcHTfaUek2WzIuOhx6DaDm3RVu/rXA=";
   };
 
-  vendorHash = "sha256-k2Yx4aV07PTqMu2yKUvGumXDMPzDaIKkwtWnkhCBOYc=";
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-k2Yx4aV07PTqMu2yKUvGumXDMPzDaIKkwtWnkhCBOYc=";
 
   # install shell completions
   postInstall = ''
@@ -38,9 +37,9 @@ php.buildComposerProject2 (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/jolicode/castor/blob/v${finalAttrs.version}/CHANGELOG.md";
     description = "DX oriented task runner and command launcher built with PHP";
     homepage = "https://github.com/jolicode/castor";
+    changelog = "https://github.com/jolicode/castor/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "castor";

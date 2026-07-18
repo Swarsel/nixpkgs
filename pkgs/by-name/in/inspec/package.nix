@@ -1,27 +1,26 @@
 {
   lib,
-  ruby_3_4, # fix "Source locally installed gems is ignoring ... because it is missing extensions"
   bundlerApp,
   bundlerUpdateScript,
   inspec,
+  ruby_3_4, # fix "Source locally installed gems is ignoring ... because it is missing extensions"
   testers,
 }:
 
 bundlerApp {
   pname = "inspec";
+  exes = [ "inspec" ];
   gemdir = ./.;
-
   ruby = ruby_3_4;
 
-  exes = [ "inspec" ];
-
   passthru = {
-    updateScript = bundlerUpdateScript "inspec";
     tests.version = testers.testVersion {
-      package = inspec;
-      command = "inspec version";
       inherit ((import ./gemset.nix).inspec) version;
+      command = "inspec version";
+      package = inspec;
     };
+
+    updateScript = bundlerUpdateScript "inspec";
   };
 
   meta = {

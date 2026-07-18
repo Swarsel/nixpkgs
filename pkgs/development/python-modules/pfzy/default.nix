@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
 }:
 
 buildPythonPackage rec {
   pname = "pfzy";
   version = "0.3.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kazhala";
@@ -18,7 +17,7 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ poetry-core ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pfzy" ];
 
   meta = {

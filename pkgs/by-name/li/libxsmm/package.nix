@@ -21,14 +21,14 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-s/NEFU4IwQPLyPLwMmrrpMDd73q22Sk2BNid/kedawY=";
   };
 
-  # Fixes /build references in the rpath
-  patches = [ ./rpath.patch ];
-
   outputs = [
     "out"
     "dev"
     "doc"
   ];
+
+  # Fixes /build references in the rpath
+  patches = [ ./rpath.patch ];
 
   nativeBuildInputs = [
     gfortran
@@ -36,10 +36,6 @@ stdenv.mkDerivation (finalAttrs: {
     util-linux
     which
   ];
-
-  enableParallelBuilding = true;
-
-  dontConfigure = true;
 
   makeFlags =
     let
@@ -60,17 +56,20 @@ stdenv.mkDerivation (finalAttrs: {
     moveToOutput "share/libxsmm" ''${!outputDoc}
   '';
 
+  dontConfigure = true;
+  enableParallelBuilding = true;
+
   prePatch = ''
     patchShebangs .
   '';
 
   meta = {
-    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
     description = "Library targeting Intel Architecture for specialized dense and sparse matrix operations, and deep learning primitives";
-    mainProgram = "libxsmm_gemm_generator";
-    license = lib.licenses.bsd3;
     homepage = "https://github.com/hfp/libxsmm";
-    platforms = lib.platforms.linux;
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ chessai ];
+    platforms = lib.platforms.linux;
+    mainProgram = "libxsmm_gemm_generator";
+    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
   };
 })

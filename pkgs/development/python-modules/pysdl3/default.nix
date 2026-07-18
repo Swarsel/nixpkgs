@@ -1,19 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   fetchFromGitHub,
-  python,
-  buildPythonPackage,
-  setuptools-scm,
-  packaging,
   aiohttp,
+  buildPythonPackage,
+  packaging,
+  python,
   requests,
-
   # native dependencies
   sdl3,
-  sdl3-ttf,
   sdl3-image,
+  sdl3-ttf,
+  setuptools-scm,
 }:
 
 let
@@ -31,9 +30,6 @@ in
 buildPythonPackage rec {
   pname = "pysdl3";
   version = "0.9.11b1";
-  pyproject = true;
-
-  pythonImportsCheck = [ "sdl3" ];
 
   src = fetchFromGitHub {
     owner = "Aermoss";
@@ -42,14 +38,24 @@ buildPythonPackage rec {
     hash = "sha256-fATBYZ4DYpOYYr09SwfODaWqEwQtig0smqI2Pjnv9uo=";
   };
 
-  docfile = fetchurl {
-    url = "https://github.com/Aermoss/PySDL3/releases/download/v${version}/${stdenv.hostPlatform.uname.system}-Docs.py";
-    hash = dochash;
-  };
+  buildInputs = [
+    sdl3
+    sdl3-ttf
+    sdl3-image
+  ];
 
-  postUnpack = ''
-    cp ${docfile} source/sdl3/__doc__.py
-  '';
+  env = {
+    PYTHONFAULTHANDLER = "1";
+    SDL_AUDIODRIVER = "dummy";
+    # For import checks, duplicated from setup hook.
+    SDL_CHECK_BINARY_VERSION = 0;
+    SDL_DISABLE_METADATA = 1;
+    # Checks for __doc__.py next to the file being executed.
+    # It's very fragile, and doesn't work during the import check.
+    SDL_DOC_GENERATOR = 0;
+    SDL_RENDER_DRIVER = "software";
+    SDL_VIDEODRIVER = "dummy";
+  };
 
   postInstall = ''
     mkdir $out/${python.sitePackages}/sdl3/bin
@@ -62,44 +68,37 @@ buildPythonPackage rec {
     setuptools-scm
   ];
 
-  buildInputs = [
-    sdl3
-    sdl3-ttf
-    sdl3-image
-  ];
-
   dependencies = [
     packaging
     aiohttp
     requests
   ];
 
+  docfile = fetchurl {
+    hash = dochash;
+    url = "https://github.com/Aermoss/PySDL3/releases/download/v${version}/${stdenv.hostPlatform.uname.system}-Docs.py";
+  };
+
+  postUnpack = ''
+    cp ${docfile} source/sdl3/__doc__.py
+  '';
+
+  pyproject = true;
+  pythonImportsCheck = [ "sdl3" ];
   # PySDL3 tries to update both itself and SDL binaries at runtime. This hook
   # sets some env variables to tell it not to do that.
   setupHook = ./setup-hook.sh;
-
-  env = {
-    SDL_VIDEODRIVER = "dummy";
-    SDL_AUDIODRIVER = "dummy";
-    SDL_RENDER_DRIVER = "software";
-    PYTHONFAULTHANDLER = "1";
-
-    # For import checks, duplicated from setup hook.
-    SDL_CHECK_BINARY_VERSION = 0;
-    SDL_DISABLE_METADATA = 1;
-    # Checks for __doc__.py next to the file being executed.
-    # It's very fragile, and doesn't work during the import check.
-    SDL_DOC_GENERATOR = 0;
-  };
 
   meta = {
     description = "Pure Python wrapper for SDL3";
     homepage = "https://github.com/Aermoss/PySDL3";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       jansol
       alfarel
     ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"

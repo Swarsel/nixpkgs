@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 buildGoModule (finalAttrs: {
@@ -15,11 +15,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-RKFfljYRVEmfGTX3kqmSm6SDz5i3v0mX/bnSSPj8/ZI=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/client";
-
   vendorHash = "sha256-veSgWyk1ytHRNHuuZJBV+1rqGDsdEb01CImm+EexFCk=";
-
-  subPackages = [ "cmd/trdl" ];
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
@@ -27,18 +25,20 @@ buildGoModule (finalAttrs: {
     "-X github.com/werf/trdl/client/pkg/trdl.Version=${finalAttrs.src.rev}"
   ];
 
+  sourceRoot = "${finalAttrs.src.name}/client";
+  subPackages = [ "cmd/trdl" ];
+
   tags = [
     "dfrunmount"
     "dfssh"
   ];
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgram = "${placeholder "out"}/bin/trdl";
   versionCheckProgramArg = "version";
 
   meta = {
     description = "Universal solution for delivering your software updates";
+
     longDescription = ''
       trdl is an Open Source solution providing a secure channel for delivering
       updates from the Git repository to the end user.
@@ -51,6 +51,7 @@ buildGoModule (finalAttrs: {
       The user selects a release channel, continuously receives the latest
       software version from the TUF repository, and uses it.
     '';
+
     homepage = "https://trdl.dev";
     changelog = "https://github.com/werf/trdl/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.asl20;

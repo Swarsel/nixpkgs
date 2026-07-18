@@ -21,8 +21,6 @@ let
   xnu = sourceRelease "xnu"; # Can’t use xnuHeaders because adv_cmds is a transitive dependency of xnuHeaders.
 
   privateHeaders = stdenvNoCC.mkDerivation {
-    name = "system_cmds-deps-private-headers";
-
     buildCommand = ''
       mkdir -p "$out/include/sys"
       '${lib.getExe AvailabilityVersions}' ${lib.getVersion apple-sdk} "$out"
@@ -97,13 +95,11 @@ let
       # Older source releases depend on CrashReporterClient.h, but it’s not publicly available.
       touch "$out/include/CrashReporterClient.h"
     '';
+
+    name = "system_cmds-deps-private-headers";
   };
 in
 mkAppleDerivation {
-  releaseName = "system_cmds";
-
-  xcodeHash = "sha256-/JFbwYJA2sx3F+ihyxemZX/LK3y5HLZSbQFDdvctzmQ=";
-
   patches = [
     # `posix_spawnattr_set_use_sec_transition_shims_np` is only available on macOS 15.2 or newer.
     # Disable the feature that requires it when running on older systems.
@@ -128,11 +124,7 @@ mkAppleDerivation {
       --replace-fail '<dispatch/private.h>' '<dispatch/dispatch.h>'
   '';
 
-  preConfigure = ''
-    export NIX_CFLAGS_COMPILE+=" -iframework $SDKROOT/System/Library/Frameworks/OpenDirectory.framework/Frameworks"
-  '';
-
-  env.NIX_CFLAGS_COMPILE = "-I${privateHeaders}/include";
+  nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
     apple-sdk.privateFrameworksHook
@@ -141,7 +133,13 @@ mkAppleDerivation {
     openpam
   ];
 
-  nativeBuildInputs = [ pkg-config ];
+  env.NIX_CFLAGS_COMPILE = "-I${privateHeaders}/include";
 
+  preConfigure = ''
+    export NIX_CFLAGS_COMPILE+=" -iframework $SDKROOT/System/Library/Frameworks/OpenDirectory.framework/Frameworks"
+  '';
+
+  releaseName = "system_cmds";
+  xcodeHash = "sha256-/JFbwYJA2sx3F+ihyxemZX/LK3y5HLZSbQFDdvctzmQ=";
   meta.description = "System commands for Darwin";
 }

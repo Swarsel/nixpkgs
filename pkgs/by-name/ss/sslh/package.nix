@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   libcap,
-  libev,
   libconfig,
+  libev,
+  nixosTests,
+  pcre2,
   perl,
   tcp_wrappers,
-  pcre2,
-  nixosTests,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -48,9 +48,8 @@ stdenv.mkDerivation (finalAttrs: {
     ln -sf sslh-fork "$out/sbin/sslh"
   '';
 
-  installFlags = [ "PREFIX=$(out)" ];
-
   hardeningDisable = [ "format" ];
+  installFlags = [ "PREFIX=$(out)" ];
 
   passthru.tests = {
     inherit (nixosTests) sslh;
@@ -58,12 +57,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Applicative Protocol Multiplexer (e.g. share SSH and HTTPS on the same port)";
-    license = lib.licenses.gpl2Plus;
     homepage = "https://www.rutschle.net/tech/sslh/README.html";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       koral
       fpletz
     ];
+
     platforms = lib.platforms.all;
   };
 })

@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
   gtk4,
   libadwaita,
   libgee,
-  pipewire,
   libxml2,
+  meson,
+  ninja,
+  pipewire,
+  pkg-config,
+  vala,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-W3OKYdei/4l1uTQIXfzq6aaw2NF7dOBaAFkPTUFOLzA=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -39,14 +41,12 @@ stdenv.mkDerivation (finalAttrs: {
     libxml2
   ];
 
-  strictDeps = true;
-
   meta = {
     description = "PipeWire graph GTK4/Libadwaita GUI";
     homepage = "https://github.com/dp0sk/crosspipe";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ qweered ];
-    mainProgram = "crosspipe";
     platforms = lib.platforms.linux;
+    mainProgram = "crosspipe";
   };
 })

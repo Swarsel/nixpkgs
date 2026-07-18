@@ -1,60 +1,58 @@
 {
   lib,
   stdenv,
-  autoPatchelfHook,
-  requireFile,
   alsa-lib,
+  autoPatchelfHook,
   dbus,
   fontconfig,
   freetype,
   gcc,
   glib,
   installShellFiles,
+  libGL,
+  libGLU,
+  libice,
+  libsForQt5,
+  libsm,
   libssh2,
+  libuuid,
+  libx11,
+  libxcb,
+  libxcursor,
+  libxext,
+  libxfixes,
+  libxi,
+  libxml2,
+  libxmu,
+  libxrandr,
+  libxrender,
+  libxtst,
   ncurses,
   opencv4,
   openssl,
+  requireFile,
   unixodbc,
   xkeyboard_config,
-  libxtst,
-  libxrender,
-  libxrandr,
-  libxmu,
-  libxi,
-  libxfixes,
-  libxext,
-  libxcursor,
-  libx11,
-  libsm,
-  libice,
-  libxcb,
   zlib,
-  libxml2,
-  libuuid,
   lang ? "en",
-  libGL,
-  libGLU,
-  libsForQt5,
 }:
 
 let
   l10n = import ./l10ns.nix {
-    lib = lib;
     inherit requireFile lang;
+    lib = lib;
   };
   dirName = "WolframEngine";
 in
 stdenv.mkDerivation rec {
-  pname = "wolfram-engine";
-
   inherit (l10n) version src;
+  pname = "wolfram-engine";
 
   nativeBuildInputs = [
     autoPatchelfHook
     installShellFiles
     libsForQt5.wrapQtAppsHook
   ];
-  dontWrapQtApps = true;
 
   buildInputs = [
     alsa-lib
@@ -89,22 +87,6 @@ stdenv.mkDerivation rec {
     libice
     libsm
   ];
-
-  # some bundled libs are found through LD_LIBRARY_PATH
-  autoPatchelfIgnoreMissingDeps = true;
-
-  ldpath =
-    lib.makeLibraryPath buildInputs
-    + lib.optionalString (stdenv.hostPlatform.system == "x86_64-linux") (
-      ":" + lib.makeSearchPathOutput "lib" "lib64" buildInputs
-    );
-
-  unpackPhase = ''
-    # find offset from file
-    offset=$(${stdenv.shell} -c "$(grep -axm1 -e 'offset=.*' $src); echo \$offset" $src)
-    dd if="$src" ibs=$offset skip=1 | tar -xf -
-    cd Unix
-  '';
 
   installPhase = ''
     cd Installer
@@ -151,17 +133,33 @@ stdenv.mkDerivation rec {
     installManPage $out/libexec/${dirName}/SystemFiles/SystemDocumentation/Unix/*
   '';
 
+  # some bundled libs are found through LD_LIBRARY_PATH
+  autoPatchelfIgnoreMissingDeps = true;
+  # Stripping causes the program to core dump.
+  dontStrip = true;
+  dontWrapQtApps = true;
+
+  ldpath =
+    lib.makeLibraryPath buildInputs
+    + lib.optionalString (stdenv.hostPlatform.system == "x86_64-linux") (
+      ":" + lib.makeSearchPathOutput "lib" "lib64" buildInputs
+    );
+
   # This is primarily an IO bound build; there's little benefit to building remotely.
   preferLocalBuild = true;
 
-  # Stripping causes the program to core dump.
-  dontStrip = true;
+  unpackPhase = ''
+    # find offset from file
+    offset=$(${stdenv.shell} -c "$(grep -axm1 -e 'offset=.*' $src); echo \$offset" $src)
+    dd if="$src" ibs=$offset skip=1 | tar -xf -
+    cd Unix
+  '';
 
   meta = {
     description = "Wolfram Engine computational software system";
     homepage = "https://www.wolfram.com/engine/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ fbeffa ];
     platforms = [ "x86_64-linux" ];
   };

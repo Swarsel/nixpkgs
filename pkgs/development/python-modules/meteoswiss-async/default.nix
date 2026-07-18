@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   asyncstdlib,
   buildPythonPackage,
   dataclasses-json,
-  fetchFromGitHub,
   pytest-cov-stub,
   pytest-mock,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "meteoswiss-async";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "albertomontesg";
@@ -23,9 +22,10 @@ buildPythonPackage rec {
     hash = "sha256-xFvfyLZvBfnbzShKN+94piNUVjV1cfi4jWpc/Xw6XG4=";
   };
 
-  pythonRelaxDeps = [
-    "aiohttp"
-    "asyncstdlib"
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-mock
+    pytest-cov-stub
   ];
 
   build-system = [ setuptools ];
@@ -36,13 +36,13 @@ buildPythonPackage rec {
     dataclasses-json
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-mock
-    pytest-cov-stub
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "meteoswiss_async" ];
+
+  pythonRelaxDeps = [
+    "aiohttp"
+    "asyncstdlib"
+  ];
 
   meta = {
     description = "Asynchronous client library for MeteoSwiss API";

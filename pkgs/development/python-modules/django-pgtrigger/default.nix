@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   django,
+  poetry-core,
   psycopg2,
 }:
 
 buildPythonPackage rec {
   pname = "django-pgtrigger";
   version = "4.17.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "AmbitionEng";
@@ -26,6 +25,7 @@ buildPythonPackage rec {
     psycopg2
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pgtrigger" ];
 
   meta = {
@@ -33,6 +33,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/Opus10/django-pgtrigger";
     changelog = "https://github.com/Opus10/django-pgtrigger/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       pyrox0
     ];

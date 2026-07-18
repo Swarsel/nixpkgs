@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  appimageTools,
   fetchurl,
   _7zz,
+  appimageTools,
 }:
 
 let
@@ -12,17 +12,19 @@ let
   src =
     fetchurl
       {
-        aarch64-linux = {
-          url = "https://github.com/dbgate/dbgate/releases/download/v${version}/dbgate-${version}-linux_arm64.AppImage";
-          hash = "sha256-OkAyKMXOYxvZomVUB5xIpPKR+b4p3+US7TDMIYeCsoo=";
-        };
-        x86_64-linux = {
-          url = "https://github.com/dbgate/dbgate/releases/download/v${version}/dbgate-${version}-linux_x86_64.AppImage";
-          hash = "sha256-QR44QZ5QNz/q9Cfp/d5EYjlG84ZmCtBFe8a4aMFEhjQ=";
-        };
         aarch64-darwin = {
-          url = "https://github.com/dbgate/dbgate/releases/download/v${version}/dbgate-${version}-mac_universal.dmg";
           hash = "sha256-luk0vWRc4x3QMYAPquTWiSW9FqTe1IsBm9qOoOeHOps=";
+          url = "https://github.com/dbgate/dbgate/releases/download/v${version}/dbgate-${version}-mac_universal.dmg";
+        };
+
+        aarch64-linux = {
+          hash = "sha256-OkAyKMXOYxvZomVUB5xIpPKR+b4p3+US7TDMIYeCsoo=";
+          url = "https://github.com/dbgate/dbgate/releases/download/v${version}/dbgate-${version}-linux_arm64.AppImage";
+        };
+
+        x86_64-linux = {
+          hash = "sha256-QR44QZ5QNz/q9Cfp/d5EYjlG84ZmCtBFe8a4aMFEhjQ=";
+          url = "https://github.com/dbgate/dbgate/releases/download/v${version}/dbgate-${version}-linux_x86_64.AppImage";
         };
       }
       .${stdenv.hostPlatform.system} or (throw "dbgate: ${stdenv.hostPlatform.system} is unsupported.");
@@ -32,16 +34,18 @@ let
   meta = {
     description = "Database manager for MySQL, PostgreSQL, SQL Server, MongoDB, SQLite and others";
     homepage = "https://dbgate.org/";
-    license = lib.licenses.mit;
-    maintainers = with lib.maintainers; [ luftmensch-luftmensch ];
     changelog = "https://github.com/dbgate/dbgate/releases/tag/v${version}";
-    mainProgram = "dbgate";
+    license = lib.licenses.mit;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    maintainers = with lib.maintainers; [ luftmensch-luftmensch ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
+    mainProgram = "dbgate";
   };
 in
 if stdenv.hostPlatform.isDarwin then
@@ -54,11 +58,7 @@ if stdenv.hostPlatform.isDarwin then
       meta
       ;
 
-    sourceRoot = ".";
-
     nativeBuildInputs = [ _7zz ];
-
-    unpackPhase = "7zz x ${src}";
 
     installPhase = ''
       runHook preInstall
@@ -68,6 +68,9 @@ if stdenv.hostPlatform.isDarwin then
 
       runHook postInstall
     '';
+
+    sourceRoot = ".";
+    unpackPhase = "7zz x ${src}";
   }
 else
   let

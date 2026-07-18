@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
 }:
 
@@ -17,22 +17,22 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   env.NIX_CFLAGS_COMPILE = "-Wno-error=narrowing";
-
   # `faac' expects `mp4.h'.
   postInstall = "ln -s mp4v2/mp4v2.h $out/include/mp4.h";
-
   enableParallelBuilding = true;
 
   meta = {
     description = "Provides functions to read, create, and modify mp4 files";
+
     longDescription = ''
       MP4v2 library provides an API to work with mp4 files
       as defined by ISO-IEC:14496-1:2001 MPEG-4 Systems.
       This container format is derived from Apple's QuickTime format.
     '';
+
     homepage = "https://github.com/TechSmith/mp4v2";
+    license = lib.licenses.mpl11;
     maintainers = [ lib.maintainers.Anton-Latukha ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.mpl11;
   };
 })

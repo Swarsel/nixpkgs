@@ -1,51 +1,47 @@
 {
   lib,
-  config,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
-  # dependencies
-  cloudpickle,
-  datasets,
-  diskcache,
-  genson,
-  interegular,
-  jinja2,
-  jsonschema,
-  lark,
-  nest-asyncio,
-  numpy,
-  outlines-core,
-  pycountry,
-  pydantic,
-  torch,
-  transformers,
-
   # tests
   airportsdata,
   anthropic,
+  buildPythonPackage,
+  # dependencies
+  cloudpickle,
+  config,
+  datasets,
+  diskcache,
+  genson,
   google-genai,
+  interegular,
   iso3166,
   jax,
-  lmstudio,
+  jinja2,
+  jsonschema,
+  lark,
   llama-cpp-python,
+  lmstudio,
   mistralai,
+  nest-asyncio,
+  numpy,
   ollama,
   openai,
+  outlines-core,
+  pycountry,
+  pydantic,
   pytest-asyncio,
   pytest-mock,
   pytestCheckHook,
+  # build-system
+  setuptools,
+  setuptools-scm,
   tensorflow,
+  torch,
+  transformers,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "outlines";
   version = "1.2.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "outlines-dev";
@@ -72,6 +68,26 @@ buildPythonPackage (finalAttrs: {
         "from mistralai.client import Mistral"
   '';
 
+  # We also have to give up on tests for the same reason.
+  doCheck = !config.cudaSupport;
+
+  nativeCheckInputs = [
+    airportsdata
+    anthropic
+    google-genai
+    iso3166
+    jax
+    llama-cpp-python
+    lmstudio
+    mistralai
+    ollama
+    openai
+    pytest-asyncio
+    pytest-mock
+    pytestCheckHook
+    tensorflow
+  ];
+
   build-system = [
     setuptools
     setuptools-scm
@@ -95,34 +111,24 @@ buildPythonPackage (finalAttrs: {
     transformers
   ];
 
-  # llama_cpp dependency cannot be imported when cudaSupport is enabled as it tries to load libcuda.so.1.
-  # This library is provided by the nvidia driver at runtime, but isn't available in the sandbox.
-  pythonImportsCheck = lib.optionals (!config.cudaSupport) [
-    "outlines"
-  ];
-  # We also have to give up on tests for the same reason.
-  doCheck = !config.cudaSupport;
+  disabledTestPaths = [
+    # Try to dowload models from Hugging Face Hub
+    "tests/backends/test_backends.py"
+    "tests/backends/test_llguidance.py"
+    "tests/backends/test_outlines_core.py"
+    "tests/backends/test_xgrammar.py"
+    "tests/models/test_llamacpp.py"
+    "tests/models/test_llamacpp_tokenizer.py"
+    "tests/models/test_transformers.py"
+    "tests/models/test_transformers_multimodal.py"
+    "tests/models/test_transformers_multimodal_type_adapter.py"
+    "tests/models/test_transformers_type_adapter.py"
 
-  nativeCheckInputs = [
-    airportsdata
-    anthropic
-    google-genai
-    iso3166
-    jax
-    llama-cpp-python
-    lmstudio
-    mistralai
-    ollama
-    openai
-    pytest-asyncio
-    pytest-mock
-    pytestCheckHook
-    tensorflow
-  ];
+    # Requires unpackaged dottxt
+    "tests/models/test_dottxt.py"
 
-  pytestFlags = [
-    # FutureWarning: functools.partial will be a method descriptor in future Python versions; wrap it in enum.member() if you want to preserve the old behavior
-    "-Wignore::FutureWarning"
+    # ValueError: Missing key inputs argument! To use the Google AI API, provide (`api_key`) arguments.
+    "tests/models/test_gemini.py"
   ];
 
   disabledTests = [
@@ -226,24 +232,17 @@ buildPythonPackage (finalAttrs: {
     "test_mistral_vision_pydantic"
   ];
 
-  disabledTestPaths = [
-    # Try to dowload models from Hugging Face Hub
-    "tests/backends/test_backends.py"
-    "tests/backends/test_llguidance.py"
-    "tests/backends/test_outlines_core.py"
-    "tests/backends/test_xgrammar.py"
-    "tests/models/test_llamacpp.py"
-    "tests/models/test_llamacpp_tokenizer.py"
-    "tests/models/test_transformers.py"
-    "tests/models/test_transformers_multimodal.py"
-    "tests/models/test_transformers_multimodal_type_adapter.py"
-    "tests/models/test_transformers_type_adapter.py"
+  pyproject = true;
 
-    # Requires unpackaged dottxt
-    "tests/models/test_dottxt.py"
+  pytestFlags = [
+    # FutureWarning: functools.partial will be a method descriptor in future Python versions; wrap it in enum.member() if you want to preserve the old behavior
+    "-Wignore::FutureWarning"
+  ];
 
-    # ValueError: Missing key inputs argument! To use the Google AI API, provide (`api_key`) arguments.
-    "tests/models/test_gemini.py"
+  # llama_cpp dependency cannot be imported when cudaSupport is enabled as it tries to load libcuda.so.1.
+  # This library is provided by the nvidia driver at runtime, but isn't available in the sandbox.
+  pythonImportsCheck = lib.optionals (!config.cudaSupport) [
+    "outlines"
   ];
 
   meta = {

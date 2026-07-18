@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
-  openssl,
   asio,
-  tinyxml-2,
-  openjdk11,
-  python3,
-  foonathan-memory,
+  cmake,
   fastcdr,
+  foonathan-memory,
+  openjdk11,
+  openssl,
   pkg-config,
+  python3,
+  tinyxml-2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,8 +21,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "eProsima";
     repo = "Fast-DDS";
     rev = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-17AxZwYPBhl+AyehWvNYP/if124GcmNfWJOD/yB+tgk=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -50,17 +50,21 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "C++ implementation of the DDS (Data Distribution Service) standard";
-    homepage = "https://github.com/eProsima/Fast-DDS";
-    license = lib.licenses.asl20;
+
     longDescription = ''
       eProsima Fast DDS is a C++ implementation of the DDS (Data Distribution Service) standard
       of the OMG (Object Management Group). It implements the RTPS (Real Time Publish Subscribe)
       protocol, which provides publisher-subscriber communications over unreliable transports
       such as UDP, as defined and maintained by the Object Management Group (OMG) consortium.
     '';
+
+    homepage = "https://github.com/eProsima/Fast-DDS";
+    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       panicgh
     ];
+
     platforms = lib.platforms.linux;
   };
 })

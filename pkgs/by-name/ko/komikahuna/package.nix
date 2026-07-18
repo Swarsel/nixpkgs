@@ -1,8 +1,8 @@
 {
-  stdenvNoCC,
   lib,
   fetchzip,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {

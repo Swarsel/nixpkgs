@@ -1,7 +1,7 @@
 {
   lib,
-  buildNimPackage,
   fetchFromGitHub,
+  buildNimPackage,
   testers,
 }:
 
@@ -33,10 +33,12 @@ buildNimPackage (finalAttrs: {
     homepage = "https://github.com/inv2004/ttop";
     changelog = "https://github.com/inv2004/ttop/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       sikmir
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "ttop";
   };
 })

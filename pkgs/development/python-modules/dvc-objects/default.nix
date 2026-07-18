@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fsspec,
   pytest-asyncio,
   pytest-mock,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "dvc-objects";
   version = "5.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "iterative";
@@ -28,10 +27,6 @@ buildPythonPackage rec {
       --replace " --benchmark-skip" ""
   '';
 
-  build-system = [ setuptools-scm ];
-
-  dependencies = [ fsspec ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-mock
@@ -40,12 +35,16 @@ buildPythonPackage rec {
     shortuuid
   ];
 
-  pythonImportsCheck = [ "dvc_objects" ];
+  build-system = [ setuptools-scm ];
+  dependencies = [ fsspec ];
 
   disabledTestPaths = [
     # Disable benchmarking
     "tests/benchmarks/"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "dvc_objects" ];
 
   meta = {
     description = "Library for DVC objects";

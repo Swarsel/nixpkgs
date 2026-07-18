@@ -8,8 +8,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.2.0";
   pname = "libmicrodns";
+  version = "0.2.0";
 
   src = fetchFromGitHub {
     owner = "videolabs";
@@ -28,7 +28,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Minimal mDNS resolver library, used by VLC";
     homepage = "https://github.com/videolabs/libmicrodns";
     license = lib.licenses.lgpl21;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.shazow ];
+    platforms = lib.platforms.unix;
   };
 })

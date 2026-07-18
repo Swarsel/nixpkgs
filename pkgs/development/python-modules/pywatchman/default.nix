@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "pywatchman";
   version = "3.0.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -22,6 +21,7 @@ buildPythonPackage rec {
 
   # No tests in archive
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Watchman client for Python";

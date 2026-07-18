@@ -25,13 +25,15 @@ in
 
   ###### implementation
   config = mkIf cfg.enable {
+    environment.systemPackages = [ cfg.package ];
+
     services.xserver.windowManager.session = singleton {
       name = "katriawm";
+
       start = ''
         ${cfg.package}/bin/katriawm &
         waitPID=$!
       '';
     };
-    environment.systemPackages = [ cfg.package ];
   };
 }

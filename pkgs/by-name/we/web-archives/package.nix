@@ -1,21 +1,21 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
+  glib-networking,
+  libhandy,
+  libisocodes,
+  libxml2,
+  libzim-glib,
   meson,
   ninja,
-  vala,
   pkg-config,
-  wrapGAppsHook3,
-  libzim-glib,
   sqlite,
-  webkitgtk_4_1,
   tinysparql,
-  libxml2,
-  libisocodes,
-  libhandy,
-  glib-networking,
+  vala,
+  webkitgtk_4_1,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,18 +29,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-aP42WiSmpkAw7FtxUftIsHKDztt60xKcL8Zq2iTSRn8=";
   };
 
-  web-archive-darkreader = fetchurl {
-    # This is the same with build-aux/darkreader/Makefile
-    url = "https://github.com/birros/web-archives-darkreader/releases/download/v0.0.1/web-archives-darkreader_v0.0.1.js";
-    hash = "sha256-juhAqs2eCYZKerLnX3NvaW3NS0uOhqB7pyf/PRDvMqE=";
-  };
-
   postPatch = ''
     substituteInPlace meson.build \
       --replace-fail \
         "'make', '-C', 'build-aux/darkreader'" \
         "'cp', '${finalAttrs.web-archive-darkreader}', 'build-aux/darkreader/web-archives-darkreader.js'"
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -61,7 +57,11 @@ stdenv.mkDerivation (finalAttrs: {
     glib-networking
   ];
 
-  strictDeps = true;
+  web-archive-darkreader = fetchurl {
+    hash = "sha256-juhAqs2eCYZKerLnX3NvaW3NS0uOhqB7pyf/PRDvMqE=";
+    # This is the same with build-aux/darkreader/Makefile
+    url = "https://github.com/birros/web-archives-darkreader/releases/download/v0.0.1/web-archives-darkreader_v0.0.1.js";
+  };
 
   passthru = {
     inherit (finalAttrs) web-archive-darkreader;
@@ -71,8 +71,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Web archives reader offering the ability to browse offline millions of articles";
     homepage = "https://github.com/birros/web-archives";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "web-archives";
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.unix;
+    mainProgram = "web-archives";
   };
 })

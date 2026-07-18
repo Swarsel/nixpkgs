@@ -14,10 +14,10 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://cpputest.github.io/";
     description = "Unit testing and mocking framework for C/C++";
-    platforms = lib.platforms.all;
+    homepage = "https://cpputest.github.io/";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.juliendehos ];
+    platforms = lib.platforms.all;
   };
 })

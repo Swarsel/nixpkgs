@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "time-decode";
   version = "9.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "digitalsleuth";
@@ -29,7 +28,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   # Project has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "time_decode" ];
 
   meta = {

@@ -1,29 +1,25 @@
 {
   lib,
   fetchFromGitHub,
+  bottleneck,
   buildPythonPackage,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
+  hypothesis,
   # dependencies
   numba,
   numpy,
-
-  # tests
-  pytestCheckHook,
-  bottleneck,
-  hypothesis,
   pandas,
   pytest-benchmark,
+  # tests
+  pytestCheckHook,
+  # build-system
+  setuptools,
+  setuptools-scm,
   tabulate,
 }:
 
 buildPythonPackage rec {
-  version = "0.9.4";
   pname = "numbagg";
-  pyproject = true;
+  version = "0.9.4";
 
   src = fetchFromGitHub {
     owner = "numbagg";
@@ -31,18 +27,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-JYgjeExpL+rbiaFPO9IHsm4Qh6GTLdTWB5dO3zIIPbs=";
   };
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  dependencies = [
-    numpy
-    numba
-  ];
-
-  pythonImportsCheck = [ "numbagg" ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -54,13 +38,25 @@ buildPythonPackage rec {
     pytest-benchmark
   ];
 
-  pytestFlags = [ "--benchmark-disable" ];
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [
+    numpy
+    numba
+  ];
 
   disabledTests = [
     # Uses outdated pandas API as an oracle
     "nanargmin"
     "nanargmax"
   ];
+
+  pyproject = true;
+  pytestFlags = [ "--benchmark-disable" ];
+  pythonImportsCheck = [ "numbagg" ];
 
   meta = {
     description = "Fast N-dimensional aggregation functions with Numba";

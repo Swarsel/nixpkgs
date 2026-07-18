@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch2,
-  setuptools,
-  numpy,
-  scipy,
   h5py,
-  truncnorm,
+  numpy,
   pytestCheckHook,
+  scipy,
+  setuptools,
+  truncnorm,
 }:
 
 buildPythonPackage rec {
   pname = "bayespy";
   version = "0.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bayespy";
@@ -25,8 +24,8 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch2 {
-      url = "https://salsa.debian.org/python-team/packages/python-bayespy/-/raw/071f54815608b31aebac8f8e83bc532b2c632a48/debian/patches/numpy2.4-compat.patch";
       hash = "sha256-Tk3z94+vbGaSIqGFFRQZz0pcXI1Fzcbnva3oWnv502U=";
+      url = "https://salsa.debian.org/python-team/packages/python-bayespy/-/raw/071f54815608b31aebac8f8e83bc532b2c632a48/debian/patches/numpy2.4-compat.patch";
     })
   ];
 
@@ -36,6 +35,7 @@ buildPythonPackage rec {
       --replace-fail readfp read_file
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -45,13 +45,12 @@ buildPythonPackage rec {
     truncnorm
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "bayespy" ];
 
   meta = {
-    homepage = "http://www.bayespy.org";
     description = "Variational Bayesian inference tools for Python";
+    homepage = "http://www.bayespy.org";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jluttine ];
   };

@@ -1,77 +1,82 @@
 {
-  fetchurl,
-  runCommand,
   lib,
   stdenv,
-  pkg-config,
-  gettext,
-  gobject-introspection,
+  fetchurl,
+  atk,
   cairo,
   colord,
+  desktop-file-utils,
   docutils,
+  egl-wayland,
+  fribidi,
+  gettext,
+  gi-docgen,
+  glib,
+  gnome-desktop,
+  gnome-settings-daemon,
+  gobject-introspection,
+  graphene,
+  gsettings-desktop-schemas,
+  gtk4,
+  harfbuzz,
   lcms2,
-  pango,
-  libstartup_notification,
-  libcanberra,
-  ninja,
-  xvfb-run,
-  libadwaita,
-  libxcvt,
   libGL,
+  libadwaita,
+  libcanberra,
+  libdisplay-info,
+  libdrm,
+  libei,
+  libgbm,
+  libgudev,
   libice,
+  libinput,
+  libsm,
+  libstartup_notification,
+  libsysprof-capture,
+  libwacom,
   libx11,
+  libxau,
+  libxcb,
   libxcomposite,
   libxcursor,
+  libxcvt,
   libxdamage,
   libxext,
   libxfixes,
   libxi,
-  libxtst,
-  libxkbfile,
-  xkeyboard_config,
-  libxkbcommon,
-  libxcb,
-  libxrandr,
   libxinerama,
-  libxau,
-  libinput,
-  libdrm,
-  libgbm,
-  libei,
-  libdisplay-info,
-  gsettings-desktop-schemas,
-  glib,
-  atk,
-  gtk4,
-  fribidi,
-  harfbuzz,
-  gnome-desktop,
-  pipewire,
-  libgudev,
-  libwacom,
-  libsm,
-  xwayland,
+  libxkbcommon,
+  libxkbfile,
+  libxrandr,
+  libxtst,
   mesa-gl-headers,
   meson,
-  gnome-settings-daemon,
-  xorg-server,
+  ninja,
+  pango,
+  pipewire,
+  pkg-config,
   python3,
-  wayland-scanner,
-  wrapGAppsHook4,
-  gi-docgen,
+  runCommand,
   sysprof,
-  libsysprof-capture,
-  desktop-file-utils,
-  egl-wayland,
-  graphene,
   udevCheckHook,
   wayland,
   wayland-protocols,
+  wayland-scanner,
+  wrapGAppsHook4,
+  xkeyboard_config,
+  xorg-server,
+  xvfb-run,
+  xwayland,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "mutter";
   version = "48.7";
+
+  src = fetchurl {
+    url = "mirror://gnome/sources/mutter/${lib.versions.major finalAttrs.version}/mutter-${finalAttrs.version}.tar.xz";
+    hash = "sha256-7BAqo8uw45ABIGYnrKMFUxRVX3BgneXmwrfvzR+pDyA=";
+  };
 
   outputs = [
     "out"
@@ -80,31 +85,15 @@ stdenv.mkDerivation (finalAttrs: {
     "devdoc"
   ];
 
-  src = fetchurl {
-    url = "mirror://gnome/sources/mutter/${lib.versions.major finalAttrs.version}/mutter-${finalAttrs.version}.tar.xz";
-    hash = "sha256-7BAqo8uw45ABIGYnrKMFUxRVX3BgneXmwrfvzR+pDyA=";
-  };
+  postPatch = ''
+    patchShebangs src/backends/native/gen-default-modes.py
 
-  mesonFlags = [
-    "-Degl_device=true"
-    "-Dinstalled_tests=false" # TODO: enable these
-    "-Dtests=disabled"
-    # For NVIDIA proprietary driver up to 470.
-    # https://src.fedoraproject.org/rpms/mutter/pull-request/49
-    "-Dwayland_eglstream=true"
-    "-Dprofiler=true"
-    "-Dxwayland_path=${lib.getExe xwayland}"
-    # This should be auto detected, but it looks like it manages a false
-    # positive.
-    "-Dxwayland_initfd=disabled"
-    "-Ddocs=true"
-  ];
+    # https://gitlab.gnome.org/GNOME/mutter/-/merge_requests/3981
+    substituteInPlace src/frames/main.c \
+      --replace-fail "libadwaita-1.so.0" "${libadwaita}/lib/libadwaita-1.so.0"
+  '';
 
-  propagatedBuildInputs = [
-    # required for pkg-config to detect mutter-mtk
-    graphene
-    mesa-gl-headers
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     desktop-file-utils
@@ -182,13 +171,30 @@ stdenv.mkDerivation (finalAttrs: {
     ]))
   ];
 
-  postPatch = ''
-    patchShebangs src/backends/native/gen-default-modes.py
+  propagatedBuildInputs = [
+    # required for pkg-config to detect mutter-mtk
+    graphene
+    mesa-gl-headers
+  ];
 
-    # https://gitlab.gnome.org/GNOME/mutter/-/merge_requests/3981
-    substituteInPlace src/frames/main.c \
-      --replace-fail "libadwaita-1.so.0" "${libadwaita}/lib/libadwaita-1.so.0"
-  '';
+  mesonFlags = [
+    "-Degl_device=true"
+    "-Dinstalled_tests=false" # TODO: enable these
+    "-Dtests=disabled"
+    # For NVIDIA proprietary driver up to 470.
+    # https://src.fedoraproject.org/rpms/mutter/pull-request/49
+    "-Dwayland_eglstream=true"
+    "-Dprofiler=true"
+    "-Dxwayland_path=${lib.getExe xwayland}"
+    # This should be auto detected, but it looks like it manages a false
+    # positive.
+    "-Dxwayland_initfd=disabled"
+    "-Ddocs=true"
+  ];
+
+  # Install udev files into our own tree.
+  env.PKG_CONFIG_UDEV_UDEVDIR = "${placeholder "out"}/lib/udev";
+  doInstallCheck = true;
 
   postFixup = ''
     # Cannot be in postInstall, otherwise _multioutDocs hook in preFixup will move right back.
@@ -196,17 +202,11 @@ stdenv.mkDerivation (finalAttrs: {
     moveToOutput "share/mutter-${finalAttrs.passthru.libmutter_api_version}/doc" "$devdoc"
   '';
 
-  # Install udev files into our own tree.
-  env.PKG_CONFIG_UDEV_UDEVDIR = "${placeholder "out"}/lib/udev";
-
   separateDebugInfo = true;
-  strictDeps = true;
-
-  doInstallCheck = true;
 
   passthru = {
-    libmutter_api_version = "16"; # bumped each dev cycle
     libdir = "${finalAttrs.finalPackage}/lib/mutter-${finalAttrs.passthru.libmutter_api_version}";
+    libmutter_api_version = "16"; # bumped each dev cycle
 
     tests = {
       libdirExists = runCommand "mutter-libdir-exists" { } ''
@@ -221,11 +221,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Window manager for GNOME";
-    mainProgram = "mutter";
     homepage = "https://gitlab.gnome.org/GNOME/mutter";
     changelog = "https://gitlab.gnome.org/GNOME/mutter/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.pantheon ];
     platforms = lib.platforms.linux;
+    mainProgram = "mutter";
+    teams = [ lib.teams.pantheon ];
   };
 })

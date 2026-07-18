@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
-  libzen,
-  libmediainfo,
   jdk17,
+  libmediainfo,
+  libzen,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,15 +18,16 @@ stdenv.mkDerivation (finalAttrs: {
         attrs:
         attrs.${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
       arch = selectSystem {
-        x86_64-linux = "x86_64";
         aarch64-linux = "arm64";
+        x86_64-linux = "x86_64";
       };
     in
     fetchurl {
       url = "mirror://sourceforge/project/unimediaserver/${finalAttrs.version}/UMS-${finalAttrs.version}-${arch}.tgz";
+
       hash = selectSystem {
-        x86_64-linux = "sha256-MGi5S0jA9WVh7PuNei5hInUVZLcypJu8izwWJpDi42s=";
         aarch64-linux = "sha256-9x1M1rZxwg65RdMmxQ2geeF0yXrukQ3dQPXKfQ2GRIw=";
+        x86_64-linux = "sha256-MGi5S0jA9WVh7PuNei5hInUVZLcypJu8izwWJpDi42s=";
       };
     };
 
@@ -58,11 +59,13 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Universal Media Server: a DLNA-compliant UPnP Media Server";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       thall
       snicket2100
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "ums";
   };
 })

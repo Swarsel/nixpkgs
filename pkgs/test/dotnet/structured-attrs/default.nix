@@ -1,9 +1,9 @@
 {
   lib,
-  dotnet-sdk,
   buildPackages, # buildDotnetModule
-  testers,
+  dotnet-sdk,
   runCommand,
+  testers,
 }:
 let
   # Note: without structured attributes, we can’t use derivation arguments that
@@ -14,26 +14,27 @@ let
   inherit (buildPackages) buildDotnetModule;
 
   app = buildDotnetModule {
-    name = "structured-attrs-test-application";
     src = ./src;
-    nugetDeps = ./nuget-deps.json;
-    dotnetFlags = [ "--property:Copyright=${copyrightString}" ];
     env.TargetFramework = "net${lib.versions.majorMinor (lib.getVersion dotnet-sdk)}";
     __structuredAttrs = true;
+    dotnetFlags = [ "--property:Copyright=${copyrightString}" ];
+    name = "structured-attrs-test-application";
+    nugetDeps = ./nuget-deps.json;
   };
 in
 {
+  check-output = testers.testEqualContents {
+    actual = runCommand "dotnet-structured-attrs-test" { } ''
+      ${app}/bin/Application >"$out"
+    '';
+
+    assertion = "buildDotnetModule sets AssemblyCopyrightAttribute with structured attributes";
+    expected = builtins.toFile "expected-copyright.txt" copyrightString;
+  };
+
   no-structured-attrs = testers.testBuildFailure (
     app.overrideAttrs {
       __structuredAttrs = false;
     }
   );
-
-  check-output = testers.testEqualContents {
-    assertion = "buildDotnetModule sets AssemblyCopyrightAttribute with structured attributes";
-    expected = builtins.toFile "expected-copyright.txt" copyrightString;
-    actual = runCommand "dotnet-structured-attrs-test" { } ''
-      ${app}/bin/Application >"$out"
-    '';
-  };
 }

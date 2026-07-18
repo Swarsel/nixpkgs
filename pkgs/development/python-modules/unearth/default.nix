@@ -3,10 +3,10 @@
   buildPythonPackage,
   fetchPypi,
   fetchpatch,
+  flask,
+  httpx,
   packaging,
   pdm-backend,
-  httpx,
-  flask,
   pytest-httpserver,
   pytest-mock,
   pytestCheckHook,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "unearth";
   version = "0.18.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -27,21 +26,12 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/frostming/unearth/pull/176
     (fetchpatch {
+      excludes = [ "pdm.lock" ];
+      hash = "sha256-t/Ubv9qC1Fvh4JsnfVgOZO/O7ZpCGHugBUt9qAjnH8c=";
       name = "fix-packaging-26.0-changes.patch";
       url = "https://github.com/frostming/unearth/commit/69ece0800edeefb1daf035bb0ee348e17a4393fd.patch";
-      hash = "sha256-t/Ubv9qC1Fvh4JsnfVgOZO/O7ZpCGHugBUt9qAjnH8c=";
-      excludes = [ "pdm.lock" ];
     })
   ];
-
-  build-system = [ pdm-backend ];
-
-  dependencies = [
-    packaging
-    httpx
-  ];
-
-  __darwinAllowLocalNetworking = true;
 
   nativeCheckInputs = [
     flask
@@ -52,14 +42,23 @@ buildPythonPackage rec {
     trustme
   ];
 
+  __darwinAllowLocalNetworking = true;
+  build-system = [ pdm-backend ];
+
+  dependencies = [
+    packaging
+    httpx
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "unearth" ];
 
   meta = {
     description = "Utility to fetch and download Python packages";
-    mainProgram = "unearth";
     homepage = "https://github.com/frostming/unearth";
     changelog = "https://github.com/frostming/unearth/releases/tag/${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ betaboon ];
+    mainProgram = "unearth";
   };
 }

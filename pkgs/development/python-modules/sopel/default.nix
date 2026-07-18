@@ -4,37 +4,35 @@
   dnspython,
   fetchPypi,
   geoip2,
+  importlib-metadata,
   ipython,
   isPyPy,
-  setuptools,
+  packaging,
   praw,
   pyenchant,
   pytestCheckHook,
   pytz,
+  setuptools,
   sqlalchemy,
   xmltodict,
-  importlib-metadata,
-  packaging,
 }:
 
 buildPythonPackage rec {
   pname = "sopel";
   version = "8.0.4";
-  pyproject = true;
-
-  disabled = isPyPy;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-16QDzsZCquAPH3FPyBjxeXGcvSdjYLZFTXN0ASneROU=";
   };
 
-  build-system = [ setuptools ];
-
   postPatch = ''
     substituteInPlace pyproject.toml \
       --replace-fail "setuptools~=66.1" "setuptools"
   '';
+
+  nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
 
   dependencies = [
     dnspython
@@ -49,14 +47,7 @@ buildPythonPackage rec {
     packaging
   ];
 
-  pythonRemoveDeps = [ "sopel-help" ];
-
-  pythonRelaxDeps = [
-    "sqlalchemy"
-    "xmltodict"
-  ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
+  disabled = isPyPy;
 
   disabledTests = [
     # requires network access
@@ -75,7 +66,15 @@ buildPythonPackage rec {
     "test_example_wiktionary_ety_0"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "sopel" ];
+
+  pythonRelaxDeps = [
+    "sqlalchemy"
+    "xmltodict"
+  ];
+
+  pythonRemoveDeps = [ "sopel-help" ];
 
   meta = {
     description = "Simple and extensible IRC bot";

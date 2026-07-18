@@ -2,29 +2,24 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pandas,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "vega-datasets";
   version = "0.9.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "vega_datasets";
     inherit version;
     hash = "sha256-nb6YNCCOjsMqtElw3zFd6RAoYeTNoT2OFDqreoDZP8A=";
+    pname = "vega_datasets";
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ pandas ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pytestFlags = [ "--doctest-modules" ];
 
   disabledTests = [
     # timestamp precision mismatch
@@ -32,6 +27,8 @@ buildPythonPackage rec {
     "test_stock_date_parsing"
   ];
 
+  pyproject = true;
+  pytestFlags = [ "--doctest-modules" ];
   pythonImportsCheck = [ "vega_datasets" ];
 
   meta =

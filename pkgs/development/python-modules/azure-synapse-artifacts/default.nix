@@ -12,16 +12,16 @@
 buildPythonPackage (finalAttrs: {
   pname = "azure-synapse-artifacts";
   version = "0.22.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "azure_synapse_artifacts";
     inherit (finalAttrs) version;
     hash = "sha256-3cD7Yic4w+q3RlzkKM+gzUGtAahw+9RTYeTVjRdcYjw=";
+    pname = "azure_synapse_artifacts";
   };
 
+  # Tests are only available in mono-repo
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,9 +31,7 @@ buildPythonPackage (finalAttrs: {
     isodate
   ];
 
-  # Tests are only available in mono-repo
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.synapse.artifacts" ];
 
   meta = {

@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  bc,
   kernel,
   kernelModuleMakeFlags,
-  bc,
 }:
 
 let
@@ -22,15 +22,11 @@ stdenv.mkDerivation {
     sha256 = "sha256-1Kz/GgsHsEgrp+1x2rLpJpo98Ur16aWf9CV0gcYmp0Q=";
   };
 
-  hardeningDisable = [ "pic" ];
-
   nativeBuildInputs = kernel.moduleBuildDependencies ++ [ bc ];
 
   makeFlags = kernelModuleMakeFlags ++ [
     "KSRC=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
   ];
-
-  enableParallelBuilding = true;
 
   installPhase = ''
     runHook preInstall
@@ -42,12 +38,15 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+  hardeningDisable = [ "pic" ];
+
   meta = {
     description = "Realtek rtl8192eu driver";
     homepage = "https://github.com/Mange/rtl8192eu-linux-driver";
     license = lib.licenses.gpl2Only;
+    maintainers = with lib.maintainers; [ troydm ];
     platforms = lib.platforms.linux;
     broken = stdenv.hostPlatform.isAarch64 || kernel.kernelAtLeast "6.17";
-    maintainers = with lib.maintainers; [ troydm ];
   };
 }

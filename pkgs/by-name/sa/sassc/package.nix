@@ -22,19 +22,19 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ autoreconfHook ];
-
   buildInputs = [ libsass ];
-
   enableParallelBuilding = true;
 
   meta = {
     description = "Front-end for libsass";
     homepage = "https://github.com/sass/sassc/";
     license = lib.licenses.mit;
-    mainProgram = "sassc";
+
     maintainers = with lib.maintainers; [
       pjones
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "sassc";
   };
 })

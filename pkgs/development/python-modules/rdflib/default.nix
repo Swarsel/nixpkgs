@@ -1,23 +1,18 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # builds
-  poetry-core,
-
-  # propagates
-  pyparsing,
-
-  # extras: networkx
-  networkx,
-
+  buildPythonPackage,
   # extras: html
   html5lib,
-
+  # extras: networkx
+  networkx,
   # tests
   pip,
+  # builds
+  poetry-core,
+  # propagates
+  pyparsing,
   pytest-cov-stub,
   pytestCheckHook,
   setuptools,
@@ -26,7 +21,6 @@
 buildPythonPackage rec {
   pname = "rdflib";
   version = "7.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "RDFLib";
@@ -34,19 +28,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-jZ5mbTz/ra/ZHAFyMmtqaM4RZw851gfTCBCRuPcGeYA=";
   };
-
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    pyparsing
-  ];
-
-  optional-dependencies = {
-    html = [ html5lib ];
-    networkx = [ networkx ];
-  };
-
-  __darwinAllowLocalNetworking = true;
 
   nativeCheckInputs = [
     pip
@@ -56,6 +37,13 @@ buildPythonPackage rec {
   ]
   ++ optional-dependencies.networkx
   ++ optional-dependencies.html;
+
+  __darwinAllowLocalNetworking = true;
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    pyparsing
+  ];
 
   disabledTestPaths = [
     # requires network access
@@ -82,12 +70,18 @@ buildPythonPackage rec {
     "TestGraphHTTP"
   ];
 
+  optional-dependencies = {
+    html = [ html5lib ];
+    networkx = [ networkx ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "rdflib" ];
 
   meta = {
-    changelog = "https://github.com/RDFLib/rdflib/blob/${src.tag}/CHANGELOG.md";
     description = "Python library for working with RDF";
     homepage = "https://rdflib.readthedocs.io";
+    changelog = "https://github.com/RDFLib/rdflib/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.bsd3;
     maintainers = [ ];
   };

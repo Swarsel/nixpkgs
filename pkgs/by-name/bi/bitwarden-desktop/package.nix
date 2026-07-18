@@ -1,12 +1,13 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   buildNpmPackage,
   cargo,
   copyDesktopItems,
   dart-sass,
   darwin,
   electron_39,
-  fetchFromGitHub,
   gnome-keyring,
   jq,
   makeDesktopItem,
@@ -14,9 +15,8 @@
   nix-update-script,
   nodejs_22,
   pkg-config,
-  rustc,
   rustPlatform,
-  stdenv,
+  rustc,
   xcbuild,
 }:
 
@@ -64,32 +64,6 @@ buildNpmPackage (finalAttrs: {
     rm -r apps/cli
   '';
 
-  nodejs = nodejs_22;
-
-  makeCacheWritable = true;
-  npmFlags = [
-    "--engine-strict"
-    "--legacy-peer-deps"
-  ];
-
-  npmWorkspace = "apps/desktop";
-  npmDepsFetcherVersion = 3;
-  npmDepsHash = "sha256-C5GLei/WWetd4qLv7obBJWbQR9LBy+Sqdbjko3/W7VY=";
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      cargoRoot
-      patches
-      ;
-    hash = "sha256-xyK3+z2yfCG9K5XAB6LNEeyqMRknONi6ZfY/3oko7Z8=";
-  };
-  cargoRoot = "apps/desktop/desktop_native";
-
-  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-
   nativeBuildInputs = [
     cargo
     dart-sass
@@ -107,6 +81,9 @@ buildNpmPackage (finalAttrs: {
     xcbuild
     darwin.autoSignDarwinBinariesHook
   ];
+
+  npmDepsHash = "sha256-C5GLei/WWetd4qLv7obBJWbQR9LBy+Sqdbjko3/W7VY=";
+  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
   preBuild = ''
     if [[ $(jq --raw-output '.devDependencies.electron' < package.json | grep -E --only-matching '^[0-9]+') != ${lib.escapeShellArg (lib.versions.major electron.version)} ]]; then
@@ -213,17 +190,42 @@ buildNpmPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      cargoRoot
+      patches
+      ;
+
+    hash = "sha256-xyK3+z2yfCG9K5XAB6LNEeyqMRknONi6ZfY/3oko7Z8=";
+  };
+
+  cargoRoot = "apps/desktop/desktop_native";
+
   desktopItems = [
     (makeDesktopItem {
-      name = "bitwarden";
-      exec = "bitwarden %U";
       inherit icon;
+      categories = [ "Utility" ];
       comment = finalAttrs.meta.description;
       desktopName = "Bitwarden";
-      categories = [ "Utility" ];
+      exec = "bitwarden %U";
       mimeTypes = [ "x-scheme-handler/bitwarden" ];
+      name = "bitwarden";
     })
   ];
+
+  makeCacheWritable = true;
+  nodejs = nodejs_22;
+  npmDepsFetcherVersion = 3;
+
+  npmFlags = [
+    "--engine-strict"
+    "--legacy-peer-deps"
+  ];
+
+  npmWorkspace = "apps/desktop";
 
   passthru = {
     updateScript = nix-update-script {
@@ -235,19 +237,22 @@ buildNpmPackage (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/bitwarden/clients/releases/tag/${finalAttrs.src.tag}";
     description = "Secure and free password manager for all of your devices";
     homepage = "https://bitwarden.com";
+    changelog = "https://github.com/bitwarden/clients/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       tree-sapii
       amarshall
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
     mainProgram = "bitwarden";
   };
 })

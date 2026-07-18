@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  check,
   fetchpatch,
-  uthash,
   meson,
   ninja,
   pkg-config,
-  check,
+  uthash,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,14 +23,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      name = "CVE-2024-24793.CVE-2024-24794.patch";
-      url = "https://github.com/ImagingDataCommons/libdicom/commit/3661aa4cdbe9c39f67d38ae87520f9e3ed50ab16.patch";
       excludes = [ "CHANGELOG.md" ];
       hash = "sha256-/KTp0nKYk6jX4phNHY+nzjEptUBHKM2JkOftS5vHsEw=";
+      name = "CVE-2024-24793.CVE-2024-24794.patch";
+      url = "https://github.com/ImagingDataCommons/libdicom/commit/3661aa4cdbe9c39f67d38ae87520f9e3ed50ab16.patch";
     })
   ];
-
-  buildInputs = [ uthash ];
 
   nativeBuildInputs = [
     meson
@@ -39,11 +37,10 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals (finalAttrs.finalPackage.doCheck) [ check ];
 
-  mesonBuildType = "release";
-
+  buildInputs = [ uthash ];
   mesonFlags = lib.optionals (!finalAttrs.finalPackage.doCheck) [ "-Dtests=false" ];
-
   doCheck = true;
+  mesonBuildType = "release";
 
   meta = {
     description = "C library for reading DICOM files";

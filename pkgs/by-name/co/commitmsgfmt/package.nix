@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitLab,
-  testers,
   commitmsgfmt,
   nix-update-script,
+  rustPlatform,
+  testers,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "commitmsgfmt";
@@ -20,17 +20,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
   cargoHash = "sha256-Ewn7NCFtl8phC5cFyLWZcGZy4w+huummzeuXFRn64lQ=";
 
   passthru.tests.version = testers.testVersion {
-    package = commitmsgfmt;
     command = "commitmsgfmt -V";
+    package = commitmsgfmt;
   };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "Formats commit messages better than fmt(1) and Vim";
     homepage = "https://gitlab.com/mkjeldsen/commitmsgfmt";
     changelog = "https://gitlab.com/mkjeldsen/commitmsgfmt/-/raw/v${finalAttrs.version}/CHANGELOG.md";
-    description = "Formats commit messages better than fmt(1) and Vim";
-    mainProgram = "commitmsgfmt";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ mmlb ];
+    mainProgram = "commitmsgfmt";
   };
 })

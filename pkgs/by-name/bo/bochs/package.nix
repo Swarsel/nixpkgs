@@ -1,20 +1,20 @@
 {
   lib,
+  stdenv,
+  fetchurl,
   SDL2,
   curl,
   docbook_xml_dtd_45,
   docbook_xsl,
-  fetchurl,
   gtk3,
   libGL,
   libGLU,
+  libtool,
   libx11,
   libxpm,
-  libtool,
   ncurses,
   pkg-config,
   readline,
-  stdenv,
   wget,
   wxwidgets_3_2,
   # Boolean flags
@@ -32,6 +32,7 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/project/bochs/bochs/${finalAttrs.version}/bochs-${finalAttrs.version}.tar.gz";
     hash = "sha256-y29UK1HzWizJIGsqmA21YCt80bfPLk7U8Ras1VB3gao=";
   };
+
   # Fix build on darwin, remove on next version
   # https://sourceforge.net/p/bochs/bugs/1466/
   patches = lib.optional stdenv.hostPlatform.isDarwin ./fix-darwin-build.patch;
@@ -141,13 +142,15 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://bochs.sourceforge.io/";
     description = "Open-source IA-32 (x86) PC emulator";
+
     longDescription = ''
       Bochs is an open-source (LGPL), highly portable IA-32 PC emulator, written
       in C++, that runs on most popular platforms. It includes emulation of the
       Intel x86 CPU, common I/O devices, and a custom BIOS.
     '';
+
+    homepage = "https://bochs.sourceforge.io/";
     license = lib.licenses.lgpl2Plus;
     maintainers = with lib.maintainers; [ patrickdag ];
     platforms = lib.platforms.unix;

@@ -49,35 +49,39 @@ let
     nameValuePair "40-${name}" {
       netdevConfig = removeNulls {
         Kind = "wireguard";
-        Name = name;
         MTUBytes = interface.mtu;
+        Name = name;
       };
+
       wireguardConfig = removeNulls {
-        PrivateKey = "@${privateKeyCredential name}";
-        ListenPort = interface.listenPort;
         FirewallMark = if interface.fwMark == null then null else (fwMarkFromHexOrNum interface.fwMark);
-        RouteTable = if interface.allowedIPsAsRoutes then interface.table else null;
+        ListenPort = interface.listenPort;
+        PrivateKey = "@${privateKeyCredential name}";
         RouteMetric = interface.metric;
+        RouteTable = if interface.allowedIPsAsRoutes then interface.table else null;
       };
+
       wireguardPeers = map (generateWireguardPeer name) interface.peers;
     };
 
   generateWireguardPeer =
     interfaceName: peer:
     removeNulls {
-      PublicKey = peer.publicKey;
-      PresharedKey =
-        if peer.presharedKeyFile == null then null else "@${presharedKeyCredential interfaceName peer}";
       AllowedIPs = peer.allowedIPs;
       Endpoint = peer.endpoint;
       PersistentKeepalive = peer.persistentKeepalive;
+
+      PresharedKey =
+        if peer.presharedKeyFile == null then null else "@${presharedKeyCredential interfaceName peer}";
+
+      PublicKey = peer.publicKey;
     };
 
   generateNetwork =
     name: interface:
     nameValuePair "40-${name}" {
-      matchConfig.Name = name;
       address = interface.ips;
+      matchConfig.Name = name;
     };
 
   cfg = config.networking.wireguard;
@@ -89,29 +93,32 @@ let
   generateRefreshTimer =
     name: interface:
     nameValuePair "wireguard-dynamic-refresh-${name}" {
-      partOf = [ "wireguard-dynamic-refresh-${name}.service" ];
-      wantedBy = [ "timers.target" ];
       description = "Wireguard dynamic endpoint refresh (${name}) timer";
+      partOf = [ "wireguard-dynamic-refresh-${name}.service" ];
       timerConfig.OnBootSec = interface.dynamicEndpointRefreshSeconds;
       timerConfig.OnUnitInactiveSec = interface.dynamicEndpointRefreshSeconds;
+      wantedBy = [ "timers.target" ];
     };
 
   generateRefreshService =
     name: interface:
     nameValuePair "wireguard-dynamic-refresh-${name}" {
-      description = "Wireguard dynamic endpoint refresh (${name})";
       after = [ "network-online.target" ];
-      wants = [ "network-online.target" ];
+      description = "Wireguard dynamic endpoint refresh (${name})";
+
       path = with pkgs; [
         iproute2
         systemd
       ];
+
       # networkd doesn't automatically refresh peer endpoints.
       # See: https://github.com/systemd/systemd/issues/9911
       script = ''
         touch /etc/systemd/network/40-${name}.netdev
         networkctl reload
       '';
+
+      wants = [ "network-online.target" ];
     };
 
   # netdev config must be a real file (not a symlink to a store file)
@@ -124,13 +131,11 @@ let
 
 in
 {
-  meta.maintainers = [ lib.maintainers.majiir ];
-
   options.networking.wireguard = {
     useNetworkd = mkOption {
       default = config.networking.useNetworkd;
       defaultText = literalExpression "config.networking.useNetworkd";
-      type = types.bool;
+
       description = ''
         Whether to use networkd as the network configuration backend for
         Wireguard instead of the legacy script-based system.
@@ -141,6 +146,8 @@ in
         option you use before enabling this option.
         :::
       '';
+
+      type = types.bool;
     };
   };
 
@@ -163,7 +170,6 @@ in
     # supports setting a netdev's namespace. See:
     # https://github.com/systemd/systemd/issues/11103
     # https://github.com/systemd/systemd/pull/14915
-
     assertions = concatLists (
       flip mapAttrsToList cfg.interfaces (
         name: interface:
@@ -231,18 +237,22 @@ in
       )
     );
 
+    environment.etc = mapAttrs' generateRefreshNetdevMode refreshEnabledInterfaces;
+
     systemd.network = {
       enable = true;
       netdevs = mapAttrs' generateNetdev cfg.interfaces;
       networks = mapAttrs' generateNetwork cfg.interfaces;
     };
 
-    environment.etc = mapAttrs' generateRefreshNetdevMode refreshEnabledInterfaces;
-    systemd.timers = mapAttrs' generateRefreshTimer refreshEnabledInterfaces;
     systemd.services = (mapAttrs' generateRefreshService refreshEnabledInterfaces) // {
       systemd-networkd.serviceConfig.LoadCredential = flatten (
         mapAttrsToList interfaceCredentials cfg.interfaces
       );
     };
+
+    systemd.timers = mapAttrs' generateRefreshTimer refreshEnabledInterfaces;
   };
+
+  meta.maintainers = [ lib.maintainers.majiir ];
 }

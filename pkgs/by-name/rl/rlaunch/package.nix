@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  libxinerama,
-  libxft,
   libx11,
+  libxft,
+  libxinerama,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -35,8 +35,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Lightweight application launcher for X11";
     homepage = "https://github.com/PonasKovas/rlaunch";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ danc86 ];
+    platforms = lib.platforms.linux;
     mainProgram = "rlaunch";
   };
 })

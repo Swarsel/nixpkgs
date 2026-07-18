@@ -1,13 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   attrs,
   buildPythonPackage,
   celery,
   colorama,
   configobj,
-  dulwich,
   distro,
   dpath,
+  dulwich,
   dvc-azure,
   dvc-data,
   dvc-gdrive,
@@ -22,7 +23,6 @@
   dvc-task,
   dvc-webdav,
   dvc-webhdfs,
-  fetchFromGitHub,
   flatten-dict,
   flufl-lock,
   fsspec,
@@ -56,16 +56,15 @@
   typing-extensions,
   voluptuous,
   zc-lockfile,
-  enableGoogle ? false,
   enableAWS ? false,
   enableAzure ? false,
+  enableGoogle ? false,
   enableSSH ? false,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "dvc";
   version = "3.67.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "treeverse";
@@ -74,11 +73,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-KzHaR7o3PUHMBrtSDWXvH7/YMPxSafPSGUnS9018XKg=";
   };
 
-  pythonRelaxDeps = [
-    "dvc-data"
-    "platformdirs"
-  ];
-
   postPatch = ''
     substituteInPlace dvc/analytics.py \
       --replace-fail 'enabled = not os.getenv(DVC_NO_ANALYTICS)' 'enabled = False'
@@ -86,6 +80,8 @@ buildPythonPackage (finalAttrs: {
       --subst-var-by dvc "$out/bin/dvc"
   '';
 
+  # Tests require access to real cloud services
+  doCheck = false;
   build-system = [ setuptools-scm ];
 
   dependencies = [
@@ -151,12 +147,16 @@ buildPythonPackage (finalAttrs: {
     webhdfs_kerberos = [ dvc-webhdfs ] ++ dvc-webhdfs.optional-dependencies.kerberos;
   };
 
-  # Tests require access to real cloud services
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "dvc"
     "dvc.api"
+  ];
+
+  pythonRelaxDeps = [
+    "dvc-data"
+    "platformdirs"
   ];
 
   meta = {
@@ -164,10 +164,12 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://dvc.org";
     changelog = "https://github.com/treeverse/dvc/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       cmcdragonkai
       fab
     ];
+
     mainProgram = "dvc";
   };
 })

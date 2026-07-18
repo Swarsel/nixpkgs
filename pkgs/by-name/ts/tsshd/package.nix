@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
   stdenv,
-  versionCheckHook,
+  fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,13 +20,9 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-HJWxphZuBh3gXPoEqL/EVGtwdWyW+cMSQhKyfSymKG0=";
 
-  ldflags = [
-    "-s"
-    "-w"
+  nativeCheckInputs = [
+    versionCheckHook
   ];
-
-  # Enable for upstream KCP and QUIC tests which require UDP binding on localhost
-  __darwinAllowLocalNetworking = true;
 
   checkFlags =
     let
@@ -43,8 +39,12 @@ buildGoModule (finalAttrs: {
     ];
 
   doInstallCheck = true;
-  nativeCheckInputs = [
-    versionCheckHook
+  # Enable for upstream KCP and QUIC tests which require UDP binding on localhost
+  __darwinAllowLocalNetworking = true;
+
+  ldflags = [
+    "-s"
+    "-w"
   ];
 
   passthru.updateScript = nix-update-script { };

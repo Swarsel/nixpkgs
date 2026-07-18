@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   gitUpdater,
 }:
 
@@ -17,7 +17,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-VUuEVH3IUuvThIt/HJx8OE8oqbjnSeqDIQxP0sl0FJw=";
-
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -15,8 +15,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-fKgq3eUxrYBZtJuw2gs0K0wpW4BNqX5cDErF3IQ2ft4=";
   };
 
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -29,14 +27,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Geometric sans serif font with extended latin support (Regular, Alternates, Subrayada)";
     homepage = "https://www.fontspace.com/julieta-ulanovsky/montserrat";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       scolobb
       jk
     ];
+
+    platforms = lib.platforms.all;
   };
 })

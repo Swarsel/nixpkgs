@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  libsForQt5,
-  scrcpy,
   android-tools,
+  cmake,
+  copyDesktopItems,
   ffmpeg,
   imagemagick,
+  libsForQt5,
   makeDesktopItem,
-  copyDesktopItems,
+  pkg-config,
+  scrcpy,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -94,20 +94,6 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "QtScrcpy";
-      exec = "QtScrcpy %U";
-      icon = "qtscrcpy";
-      desktopName = "QtScrcpy";
-      genericName = "Android Display Control";
-      categories = [
-        "Utility"
-        "RemoteAccess"
-      ];
-    })
-  ];
-
   preFixup = ''
     qtWrapperArgs+=(
       --set QTSCRCPY_ADB_PATH ${lib.getExe' android-tools "adb"}
@@ -115,18 +101,26 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Utility"
+        "RemoteAccess"
+      ];
+
+      desktopName = "QtScrcpy";
+      exec = "QtScrcpy %U";
+      genericName = "Android Display Control";
+      icon = "qtscrcpy";
+      name = "QtScrcpy";
+    })
+  ];
+
   meta = {
     description = "Android real-time display control software";
     homepage = "https://github.com/barry-ran/QtScrcpy";
     license = lib.licenses.asl20;
-    maintainers = with lib.maintainers; [
-      daru-san
-      aleksana
-    ];
-    mainProgram = "QtScrcpy";
-    platforms = with lib.platforms; linux ++ darwin ++ windows;
-    # needs some special handling on darwin as it generates .app bundle directly
-    badPlatforms = lib.platforms.darwin;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       # Still includes sndcpy.apk vendored in the same repo
@@ -134,5 +128,15 @@ stdenv.mkDerivation (finalAttrs: {
       # https://github.com/barry-ran/QtScrcpy/blob/master/QtScrcpy/sndcpy/sndcpy.apk
       binaryBytecode
     ];
+
+    maintainers = with lib.maintainers; [
+      daru-san
+      aleksana
+    ];
+
+    platforms = with lib.platforms; linux ++ darwin ++ windows;
+    # needs some special handling on darwin as it generates .app bundle directly
+    badPlatforms = lib.platforms.darwin;
+    mainProgram = "QtScrcpy";
   };
 })

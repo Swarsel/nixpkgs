@@ -2,52 +2,28 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  ## wandb-core
-  buildGoModule,
-  gitMinimal,
-  writableTmpDirAsHomeHook,
-  versionCheckHook,
-
-  ## wandb-xpu
-  rustPlatform,
-
-  ## wandb
-  buildPythonPackage,
-  replaceVars,
-
-  # build-system
-  hatchling,
-
-  # dependencies
-  click,
-  gitpython,
-  platformdirs,
-  protobuf,
-  pydantic,
-  pyyaml,
-  requests,
-  sentry-sdk,
-  setproctitle,
-  setuptools,
-  pythonOlder,
-  typing-extensions,
-
-  # tests
-  pytestCheckHook,
-  azure-core,
   azure-containerregistry,
+  azure-core,
   azure-identity,
   azure-storage-blob,
   bokeh,
   boto3,
+  ## wandb-core
+  buildGoModule,
+  ## wandb
+  buildPythonPackage,
+  # dependencies
+  click,
   cloudpickle,
   cwsandbox,
   flask,
+  gitMinimal,
+  gitpython,
   google-cloud-artifact-registry,
   google-cloud-compute,
   google-cloud-storage,
+  # build-system
+  hatchling,
   hypothesis,
   jsonschema,
   kubernetes,
@@ -58,7 +34,10 @@
   pandas,
   parameterized,
   pillow,
+  platformdirs,
   plotly,
+  protobuf,
+  pydantic,
   pyfakefs,
   pyte,
   pytest-asyncio,
@@ -66,14 +45,29 @@
   pytest-mock,
   pytest-timeout,
   pytest-xdist,
+  # tests
+  pytestCheckHook,
+  pythonAtLeast,
+  pythonOlder,
+  pyyaml,
   rdkit,
+  replaceVars,
+  requests,
   responses,
+  ## wandb-xpu
+  rustPlatform,
   scikit-learn,
+  sentry-sdk,
+  setproctitle,
+  setuptools,
   soundfile,
   tenacity,
   torch,
   torchvision,
   tqdm,
+  typing-extensions,
+  versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 
 let
@@ -86,12 +80,9 @@ let
   };
 
   wandb-xpu = rustPlatform.buildRustPackage {
+    inherit src;
     pname = "wandb-xpu";
     version = "0.7.0";
-    inherit src;
-
-    sourceRoot = "${src.name}/xpu";
-
     cargoHash = "sha256-vB0LZjfnf//U1BXCzvaQBjlXLlGx/4g+emSZWcS+oGU=";
 
     checkFlags = [
@@ -102,10 +93,13 @@ let
       "--skip=tpu_libtpu::tests::test_libtpu_sdk"
     ];
 
+    doInstallCheck = true;
+
     nativeInstallCheckInputs = [
       versionCheckHook
     ];
-    doInstallCheck = true;
+
+    sourceRoot = "${src.name}/xpu";
 
     meta = {
       mainProgram = "wandb-xpu";
@@ -116,12 +110,9 @@ let
   libRustParquet = "librust_parquet_ffi${sharedLibrary}";
 
   parquet-rust-wrapper = rustPlatform.buildRustPackage {
+    inherit src;
     pname = "arrow-rs-wrapper";
     version = "0.1.0";
-    inherit src;
-
-    sourceRoot = "${src.name}/parquet-rust-wrapper";
-
     cargoHash = "sha256-BkeSRbZoehYGHj15KcInugRBvOLXJlh1NqTHhRnNOK8=";
 
     # The original build script renames the library:
@@ -131,13 +122,12 @@ let
     '';
 
     __darwinAllowLocalNetworking = true;
+    sourceRoot = "${src.name}/parquet-rust-wrapper";
   };
 
   wandb-core = buildGoModule {
-    pname = "wandb-core";
     inherit src version;
-
-    sourceRoot = "${src.name}/core";
+    pname = "wandb-core";
 
     postPatch =
       # Relax the Go toolchain requirement; nixpkgs ships 1.26.2.
@@ -162,17 +152,12 @@ let
             "${lib.getLib parquet-rust-wrapper}/lib/${libRustParquet}"
       '';
 
-    vendorHash = null;
-
     nativeBuildInputs = [
       gitMinimal
       writableTmpDirAsHomeHook
     ];
 
-    nativeInstallCheckInputs = [
-      versionCheckHook
-    ];
-    doInstallCheck = true;
+    vendorHash = null;
 
     checkFlags =
       let
@@ -186,17 +171,21 @@ let
       in
       [ "-skip=^${lib.concatStringsSep "$|^" skippedTests}$" ];
 
-    __darwinAllowLocalNetworking = true;
+    doInstallCheck = true;
 
+    nativeInstallCheckInputs = [
+      versionCheckHook
+    ];
+
+    __darwinAllowLocalNetworking = true;
+    sourceRoot = "${src.name}/core";
     meta.mainProgram = "wandb-core";
   };
 in
 
 buildPythonPackage (finalAttrs: {
-  pname = "wandb";
-  pyproject = true;
-
   inherit src version;
+  pname = "wandb";
 
   patches = [
     # Replace git paths
@@ -221,36 +210,13 @@ buildPythonPackage (finalAttrs: {
     '';
 
   env = {
+    WANDB_BUILD_SKIP_ORJSON = true;
     # Prevent the install script from trying to build and embed native binaries in the wheel.
     # Their paths have been patched accordingly in the `wandb-core` and `wandb` source codes.
     # https://github.com/wandb/wandb/blob/v0.18.5/hatch_build.py#L37-L47
     WANDB_BUILD_SKIP_WANDB_XPU = true;
-    WANDB_BUILD_SKIP_ORJSON = true;
     WANDB_BUILD_UNIVERSAL = true;
   };
-
-  build-system = [
-    hatchling
-  ];
-
-  dependencies = [
-    click
-    gitpython
-    platformdirs
-    protobuf
-    pydantic
-    pyyaml
-    requests
-    sentry-sdk
-    setproctitle
-    # setuptools is necessary since pkg_resources is required at runtime.
-    setuptools
-  ]
-  ++ lib.optionals (pythonOlder "3.12") [
-    typing-extensions
-  ];
-
-  __darwinAllowLocalNetworking = true;
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -295,9 +261,27 @@ buildPythonPackage (finalAttrs: {
     writableTmpDirAsHomeHook
   ];
 
-  # test_matplotlib_image_with_multiple_axes may take >60s
-  pytestFlags = [
-    "--timeout=1024"
+  __darwinAllowLocalNetworking = true;
+
+  build-system = [
+    hatchling
+  ];
+
+  dependencies = [
+    click
+    gitpython
+    platformdirs
+    protobuf
+    pydantic
+    pyyaml
+    requests
+    sentry-sdk
+    setproctitle
+    # setuptools is necessary since pkg_resources is required at runtime.
+    setuptools
+  ]
+  ++ lib.optionals (pythonOlder "3.12") [
+    typing-extensions
   ];
 
   disabledTestPaths = [
@@ -432,6 +416,13 @@ buildPythonPackage (finalAttrs: {
     # AttributeError: '...' object has no attribute '__annotations__'
     "test_watch_graph_torch_jit"
     "test_watch_parameters_torch_jit"
+  ];
+
+  pyproject = true;
+
+  # test_matplotlib_image_with_multiple_axes may take >60s
+  pytestFlags = [
+    "--timeout=1024"
   ];
 
   passthru = {

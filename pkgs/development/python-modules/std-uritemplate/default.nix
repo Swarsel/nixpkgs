@@ -8,19 +8,17 @@
 buildPythonPackage (finalAttrs: {
   pname = "std-uritemplate";
   version = "2.0.11";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "std_uritemplate";
     inherit (finalAttrs) version;
     hash = "sha256-afqeUkc41RG7S5Sz4jk8oFJKrRGOVJJZxU2zZ+BdmFI=";
+    pname = "std_uritemplate";
   };
-
-  build-system = [ poetry-core ];
 
   # Module doesn't have unittest, only functional tests
   doCheck = false;
-
+  build-system = [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "stduritemplate" ];
 
   meta = {

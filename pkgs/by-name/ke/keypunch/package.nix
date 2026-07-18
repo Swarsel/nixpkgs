@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  nix-update-script,
-  cargo,
-  rustc,
-  meson,
-  ninja,
-  pkg-config,
   appstream,
   blueprint-compiler,
+  cargo,
   desktop-file-utils,
   gettext,
-  wrapGAppsHook4,
   libadwaita,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
+  rustPlatform,
+  rustc,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,11 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "keypunch";
     tag = "v${finalAttrs.version}";
     hash = "sha256-NjPC7WbzOk0tDjM8la+TKGy+U2NNT2kwcrSkaG7TylQ=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-gQg6CCb5OzK2fLWMtkRTv1hK642IezRN+5qLMGVV6s8=";
   };
 
   strictDeps = true;
@@ -54,6 +49,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [ libadwaita ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-gQg6CCb5OzK2fLWMtkRTv1hK642IezRN+5qLMGVV6s8=";
+  };
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -63,12 +63,14 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/bragefuglseth/keypunch";
     changelog = "https://github.com/bragefuglseth/keypunch/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "keypunch";
+
     maintainers = with lib.maintainers; [
       tomasajt
       getchoo
     ];
-    teams = [ lib.teams.gnome-circle ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "keypunch";
+    teams = [ lib.teams.gnome-circle ];
   };
 })

@@ -23,10 +23,10 @@ buildGoModule {
   ];
 
   meta = {
-    homepage = "https://github.com/brianstrauch/solitaire-tui";
     description = "Klondike solitaire for the terminal";
-    mainProgram = "solitaire-tui";
-    maintainers = with lib.maintainers; [ nyadiia ];
+    homepage = "https://github.com/brianstrauch/solitaire-tui";
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ nyadiia ];
+    mainProgram = "solitaire-tui";
   };
 }

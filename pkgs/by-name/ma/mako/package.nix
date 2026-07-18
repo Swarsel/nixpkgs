@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
-  scdoc,
-  systemdMinimal,
-  pango,
+  bash,
   cairo,
   gdk-pixbuf,
   jq,
-  bash,
+  meson,
+  ninja,
+  pango,
+  pkg-config,
+  scdoc,
+  systemdMinimal,
   wayland,
-  wayland-scanner,
   wayland-protocols,
+  wayland-scanner,
   wrapGAppsHook3,
 }:
 
@@ -30,7 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  depsBuildBuild = [ pkg-config ];
+
   nativeBuildInputs = [
     meson
     ninja
@@ -40,6 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
     wrapGAppsHook3
     wayland-scanner
   ];
+
   buildInputs = [
     systemdMinimal
     pango
@@ -53,6 +54,13 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dsd-bus-provider=libsystemd"
   ];
 
+  postInstall = ''
+    mkdir -p $out/lib/systemd/user
+    substitute $src/contrib/systemd/mako.service $out/lib/systemd/user/mako.service \
+      --replace-fail '/usr/bin' "$out/bin"
+    chmod 0644 $out/lib/systemd/user/mako.service
+  '';
+
   preFixup = ''
     gappsWrapperArgs+=(
       --prefix PATH : "${
@@ -65,20 +73,17 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
-  postInstall = ''
-    mkdir -p $out/lib/systemd/user
-    substitute $src/contrib/systemd/mako.service $out/lib/systemd/user/mako.service \
-      --replace-fail '/usr/bin' "$out/bin"
-    chmod 0644 $out/lib/systemd/user/mako.service
-  '';
+  depsBuildBuild = [ pkg-config ];
 
   meta = {
     description = "Lightweight Wayland notification daemon";
     homepage = "https://github.com/emersion/mako";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       dywedir
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "mako";
   };

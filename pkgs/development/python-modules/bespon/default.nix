@@ -6,9 +6,8 @@
 }:
 
 buildPythonPackage rec {
-  version = "0.7.0";
   pname = "bespon";
-  pyproject = true;
+  version = "0.7.0";
 
   src = fetchPypi {
     inherit pname version;
@@ -18,8 +17,9 @@ buildPythonPackage rec {
   nativeBuildInputs = [ setuptools ];
   # upstream doesn't contain tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "bespon" ];
+
   meta = {
     description = "Encodes and decodes data in the BespON format";
     homepage = "https://github.com/gpoore/bespon_py";

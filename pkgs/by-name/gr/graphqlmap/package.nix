@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication {
   pname = "graphqlmap";
   version = "0-unstable-2022-01-17";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "swisskyrepo";
@@ -15,6 +14,9 @@ python3.pkgs.buildPythonApplication {
     rev = "98997bd7cf647aac7378b72913241060464749b1";
     hash = "sha256-lGnhNwtDc8KoPlwJ1p2FYq0NQ8PhSR3HgtluU7uxa/c=";
   };
+
+  # Tests are not available
+  doCheck = false;
 
   build-system = with python3.pkgs; [
     setuptools
@@ -24,8 +26,7 @@ python3.pkgs.buildPythonApplication {
     requests
   ];
 
-  # Tests are not available
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "graphqlmap"
@@ -33,9 +34,9 @@ python3.pkgs.buildPythonApplication {
 
   meta = {
     description = "Tool to interact with a GraphQL endpoint";
-    mainProgram = "graphqlmap";
     homepage = "https://github.com/swisskyrepo/GraphQLmap";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "graphqlmap";
   };
 }

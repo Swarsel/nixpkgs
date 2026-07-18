@@ -3,20 +3,20 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  sdl3,
-  zlib,
-  pkg-config,
-  sdl_gamecontrollerdb,
   copyDesktopItems,
-  makeDesktopItem,
   iconConvTools,
+  makeDesktopItem,
+  pkg-config,
+  sdl3,
+  sdl_gamecontrollerdb,
+  zlib,
 }:
 let
   plMpegSrc = fetchFromGitHub {
+    hash = "sha256-Mr+hid5RRQ2Yh6UcNDFFbbHMrGGVju0o20KIAEvzEg8=";
     owner = "phoboslab";
     repo = "pl_mpeg";
     rev = "c871f2be022ece7ef4f64230b4fb8e1fb9eb6023";
-    hash = "sha256-Mr+hid5RRQ2Yh6UcNDFFbbHMrGGVju0o20KIAEvzEg8=";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -30,21 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-SqoCSAFkQKcEbwDwHqicYXnQ8/HC523c+ePQFB+6rus=";
   };
 
-  __structuredAttrs = true;
   strictDeps = true;
-
-  cmakeFlags = [
-    (lib.cmakeFeature "MOONCHILD_RENDERER_BACKEND" "SDL3")
-    (lib.cmakeBool "MOONCHILD_VENDORED_SDL3" false)
-    (lib.cmakeBool "MOONCHILD_VENDORED_ZLIB" false)
-    (lib.cmakeBool "MOONCHILD_VENDORED_GAMECONTROLLERDB" false)
-    (lib.cmakeBool "MOONCHILD_VENDORED_PL_MPEG" false)
-  ];
-
-  env = {
-    MOONCHILD_PL_MPEG_PATH = plMpegSrc;
-    MOONCHILD_GAMECONTROLLERDB_PATH = "${sdl_gamecontrollerdb}/share/gamecontrollerdb.txt";
-  };
 
   nativeBuildInputs = [
     cmake
@@ -58,6 +44,19 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
     sdl_gamecontrollerdb
   ];
+
+  cmakeFlags = [
+    (lib.cmakeFeature "MOONCHILD_RENDERER_BACKEND" "SDL3")
+    (lib.cmakeBool "MOONCHILD_VENDORED_SDL3" false)
+    (lib.cmakeBool "MOONCHILD_VENDORED_ZLIB" false)
+    (lib.cmakeBool "MOONCHILD_VENDORED_GAMECONTROLLERDB" false)
+    (lib.cmakeBool "MOONCHILD_VENDORED_PL_MPEG" false)
+  ];
+
+  env = {
+    MOONCHILD_GAMECONTROLLERDB_PATH = "${sdl_gamecontrollerdb}/share/gamecontrollerdb.txt";
+    MOONCHILD_PL_MPEG_PATH = plMpegSrc;
+  };
 
   installPhase = ''
     runHook preInstall
@@ -73,32 +72,37 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
   desktopItems = [
     (makeDesktopItem {
-      name = "MoonChildFE";
-      desktopName = "Moon Child - Friend Edition";
-      exec = "MoonChildFE";
-      icon = "MoonChildFE";
-      comment = finalAttrs.meta.description;
-      startupWMClass = "MoonChildFE";
       categories = [
         "Game"
       ];
+
+      comment = finalAttrs.meta.description;
+      desktopName = "Moon Child - Friend Edition";
+      exec = "MoonChildFE";
+      icon = "MoonChildFE";
+      name = "MoonChildFE";
+      startupWMClass = "MoonChildFE";
     })
   ];
 
   meta = {
-    changelog = "https://github.com/MorsGames/MoonChildFE/releases/tag/v${finalAttrs.version}";
     description = "Modern source port of the 1997 Windows 95 classic, Moon Child";
     homepage = "https://github.com/MorsGames/MoonChildFE";
+    changelog = "https://github.com/MorsGames/MoonChildFE/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       # Code
       mit
       # Assets
       cc-by-nc-40
     ];
-    mainProgram = "MoonChildFE";
+
     maintainers = [ lib.maintainers.pyrox0 ];
     platforms = lib.platforms.linux;
+    mainProgram = "MoonChildFE";
   };
 })

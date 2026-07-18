@@ -1,15 +1,14 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  flit-core,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
+  flit-core,
   pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "esper";
   version = "3.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "benmoran56";
@@ -18,9 +17,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-dOeF1CyWcR1wLjO0rTjBq6piJN8QXae4dBK4akdQIjk=";
   };
 
-  build-system = [ flit-core ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ flit-core ];
+  pyproject = true;
   pythonImportsCheck = [ "esper" ];
 
   meta = {

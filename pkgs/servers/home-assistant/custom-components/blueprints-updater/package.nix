@@ -1,18 +1,16 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
-  httpx,
+  buildHomeAssistantComponent,
   home-assistant,
+  httpx,
+  pytest-asyncio,
   pytest-cov-stub,
   pytest-homeassistant-custom-component,
-  pytest-asyncio,
   pytestCheckHook,
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "luuquangvu";
-  domain = "blueprints_updater";
   version = "2.9.2";
 
   src = fetchFromGitHub {
@@ -34,8 +32,6 @@ buildHomeAssistantComponent rec {
       --replace-fail '"--timeout=60",' ""
   '';
 
-  dependencies = httpx.optional-dependencies.http2;
-
   nativeCheckInputs = [
     home-assistant
     pytest-asyncio
@@ -44,6 +40,8 @@ buildHomeAssistantComponent rec {
     pytestCheckHook
   ];
 
+  dependencies = httpx.optional-dependencies.http2;
+
   disabledTestPaths = [
     # pytest-homeassistant-custom-component tries to create temporary directories inside the nix store
     "tests/integration/test_init.py::test_full_update_lifecycle"
@@ -51,11 +49,14 @@ buildHomeAssistantComponent rec {
     "tests/integration/test_services.py::test_update_all_service"
   ];
 
+  domain = "blueprints_updater";
+  owner = "luuquangvu";
+
   meta = {
     description = "Automatically update Home Assistant blueprints via native update entities";
     homepage = "https://github.com/luuquangvu/blueprints-updater/";
     changelog = "https://github.com/luuquangvu/blueprints-updater/releases/tag/${src.tag}";
-    maintainers = with lib.maintainers; [ SuperSandro2000 ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ SuperSandro2000 ];
   };
 }

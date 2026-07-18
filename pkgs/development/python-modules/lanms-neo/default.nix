@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   nix-update-script,
-  pybind11,
   numpy,
+  pybind11,
 }:
 let
   pname = "lanms-neo";
@@ -12,7 +12,6 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "gen-ko";
@@ -26,6 +25,7 @@ buildPythonPackage {
     numpy
   ];
 
+  format = "setuptools";
   passthru.updateScript = nix-update-script { };
 
   meta = {

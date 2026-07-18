@@ -1,14 +1,14 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  makeWrapper,
-  installShellFiles,
-  versionCheckHook,
-  nix-update-script,
   bash,
   git,
+  installShellFiles,
+  makeWrapper,
+  nix-update-script,
   python3,
+  stdenvNoCC,
+  versionCheckHook,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -45,23 +45,25 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
   postInstall = ''
     installManPage \
       man1/*.1
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
-  versionCheckProgram = "${placeholder "out"}/bin/git-restore-mtime";
 
+  versionCheckProgram = "${placeholder "out"}/bin/git-restore-mtime";
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/MestreLion/git-tools/releases/tag/${finalAttrs.src.tag}";
     description = "Assorted git tools, including git-restore-mtime";
     homepage = "https://github.com/MestreLion/git-tools";
+    changelog = "https://github.com/MestreLion/git-tools/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ aduh95 ];
     platforms = lib.platforms.all;

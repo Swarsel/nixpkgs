@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  glibc,
   buildPackages,
+  glibc,
 }:
 
 let

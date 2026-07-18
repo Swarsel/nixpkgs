@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  buildPackages,
   fetchYarnDeps,
-  nodejs-slim,
-  yarn,
   fixup-yarn-lock,
+  nixosTests,
+  nodejs-slim,
   npmHooks,
   sqlite,
   srcOnly,
-  buildPackages,
-  nixosTests,
   xcbuild,
+  yarn,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,11 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
     echo /var/lib/thelounge > .thelounge_home
   '';
 
-  offlineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-wgG5AGZvMzdw4QnTNOzAfQGB//VWlV403AgWv4TceGQ=";
-  };
-
   nativeBuildInputs = [
     nodejs-slim
     nodejs-slim.npm
@@ -45,19 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
     fixup-yarn-lock
     npmHooks.npmInstallHook
   ];
-
-  configurePhase = ''
-    runHook preConfigure
-
-    export HOME="$PWD"
-
-    fixup-yarn-lock yarn.lock
-    yarn config --offline set yarn-offline-mirror ${finalAttrs.offlineCache}
-    yarn install --offline --frozen-lockfile --ignore-platform --ignore-scripts --no-progress --non-interactive
-    patchShebangs node_modules
-
-    runHook postConfigure
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -73,24 +55,42 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs node_modules
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+
+    export HOME="$PWD"
+
+    fixup-yarn-lock yarn.lock
+    yarn config --offline set yarn-offline-mirror ${finalAttrs.offlineCache}
+    yarn install --offline --frozen-lockfile --ignore-platform --ignore-scripts --no-progress --non-interactive
+    patchShebangs node_modules
+
+    runHook postConfigure
+  '';
+
   disallowedReferences = [ nodejs-slim.src ];
-
   dontNpmPrune = true;
-
   # Takes way, way, way too long.
   dontStrip = true;
+
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-wgG5AGZvMzdw4QnTNOzAfQGB//VWlV403AgWv4TceGQ=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
 
   passthru.tests = nixosTests.thelounge;
 
   meta = {
+    inherit (nodejs-slim.meta) platforms;
     description = "Modern, responsive, cross-platform, self-hosted web IRC client";
     homepage = "https://thelounge.chat";
     changelog = "https://github.com/thelounge/thelounge/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       winter
     ];
-    license = lib.licenses.mit;
-    inherit (nodejs-slim.meta) platforms;
+
     mainProgram = "thelounge";
   };
 })

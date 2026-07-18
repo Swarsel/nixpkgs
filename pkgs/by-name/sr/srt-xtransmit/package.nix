@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   openssl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -15,8 +15,8 @@ stdenv.mkDerivation rec {
     owner = "maxsharabayko";
     repo = "srt-xtransmit";
     tag = "v${version}";
-    fetchSubmodules = true;
     hash = "sha256-AEqVJr7TLH+MV4SntZhFFXTttnmcywda/P1EoD2px6E=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [

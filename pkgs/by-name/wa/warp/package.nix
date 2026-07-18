@@ -5,21 +5,21 @@
   appstream-glib,
   cargo,
   desktop-file-utils,
+  glib,
+  gst_all_1,
+  gtk4,
   itstool,
+  libadwaita,
+  libcamera,
   meson,
   ninja,
+  nix-update-script,
+  pipewire,
   pkg-config,
   python3,
   rustPlatform,
   rustc,
   wrapGAppsHook4,
-  glib,
-  gtk4,
-  libadwaita,
-  libcamera,
-  pipewire,
-  gst_all_1,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation rec {
@@ -27,21 +27,16 @@ stdenv.mkDerivation rec {
   version = "1.0.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "World";
     repo = "warp";
     tag = "v${version}";
     hash = "sha256-cFMIMNAVrP3rF7UQeKgSdaRZmJT8XcERR4BSLYqxSoI=";
+    domain = "gitlab.gnome.org";
   };
 
   postPatch = ''
     patchShebangs build-aux
   '';
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-CFe6Hg1cSz59agZ/eCL7PfnMe/N0vJvAs3gzfjZCwlY=";
-  };
 
   nativeBuildInputs = [
     appstream-glib
@@ -79,6 +74,11 @@ stdenv.mkDerivation rec {
     )
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-CFe6Hg1cSz59agZ/eCL7PfnMe/N0vJvAs3gzfjZCwlY=";
+  };
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -87,12 +87,14 @@ stdenv.mkDerivation rec {
     description = "Fast and secure file transfer";
     homepage = "https://apps.gnome.org/Warp/";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       dotlambda
     ];
-    teams = [ lib.teams.gnome-circle ];
+
     platforms = lib.platforms.all;
     mainProgram = "warp";
     broken = stdenv.hostPlatform.isDarwin;
+    teams = [ lib.teams.gnome-circle ];
   };
 }

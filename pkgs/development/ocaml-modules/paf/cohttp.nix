@@ -1,27 +1,27 @@
 {
+  alcotest-lwt,
+  astring,
   buildDunePackage,
-  paf,
   cohttp-lwt,
   domain-name,
+  fmt,
   h1,
   ipaddr,
-  alcotest-lwt,
-  fmt,
   logs,
+  lwt,
   mirage-crypto-rng,
+  paf,
   tcpip,
   uri,
-  lwt,
-  astring,
 }:
 
 buildDunePackage {
-  pname = "paf-cohttp";
-
   inherit (paf)
     version
     src
     ;
+
+  pname = "paf-cohttp";
 
   propagatedBuildInputs = [
     paf
@@ -32,6 +32,7 @@ buildDunePackage {
   ];
 
   doCheck = true;
+
   checkInputs = [
     alcotest-lwt
     fmt

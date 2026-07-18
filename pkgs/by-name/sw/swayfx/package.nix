@@ -1,14 +1,14 @@
 {
-  swayfx-unwrapped,
   sway,
+  swayfx-unwrapped,
+  dbusSupport ? true,
+  enableXWayland ? true,
+  extraOptions ? [ ], # E.g.: [ "--verbose" ]
+  extraSessionCommands ? "",
+  isNixOS ? false,
   # Used by the NixOS module:
   withBaseWrapper ? true,
-  extraSessionCommands ? "",
   withGtkWrapper ? false,
-  extraOptions ? [ ], # E.g.: [ "--verbose" ]
-  isNixOS ? false,
-  enableXWayland ? true,
-  dbusSupport ? true,
 }:
 
 sway.override {
@@ -21,5 +21,6 @@ sway.override {
     enableXWayland
     dbusSupport
     ;
+
   sway-unwrapped = swayfx-unwrapped;
 }

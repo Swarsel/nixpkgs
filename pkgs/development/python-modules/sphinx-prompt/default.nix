@@ -1,25 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  # dependencies
+  docutils,
   # build-system
   poetry-core,
   poetry-dynamic-versioning,
-
-  # dependencies
-  docutils,
   pygments,
-  sphinx,
-
   # tests
   pytestCheckHook,
+  sphinx,
 }:
 
 buildPythonPackage rec {
   pname = "sphinx-prompt";
   version = "1.10.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sbrunner";
@@ -35,6 +31,8 @@ buildPythonPackage rec {
     cp -r sphinx{_,-}prompt
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     poetry-core
     poetry-dynamic-versioning
@@ -46,6 +44,8 @@ buildPythonPackage rec {
     sphinx
   ];
 
+  pyproject = true;
+
   # upstream pins these unnecessarily in their requirements.txt
   pythonRelaxDeps = [
     "certifi"
@@ -53,8 +53,6 @@ buildPythonPackage rec {
     "urllib3"
     "zipp"
   ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   meta = {
     description = "Sphinx extension for creating unselectable prompt";

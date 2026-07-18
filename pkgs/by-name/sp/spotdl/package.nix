@@ -1,15 +1,14 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   ffmpeg,
+  python3Packages,
   writableTmpDirAsHomeHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "spotdl";
   version = "4.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "spotDL";
@@ -18,9 +17,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-u5t8t9NJq+h/ujeLObKDCQG4brTqwdjSDslemmhePdc=";
   };
 
-  build-system = with python3Packages; [ hatchling ];
+  nativeCheckInputs = with python3Packages; [
+    pyfakefs
+    pytest-mock
+    pytest-subprocess
+    pytestCheckHook
+    vcrpy
+    writableTmpDirAsHomeHook
+  ];
 
-  pythonRelaxDeps = true;
+  build-system = with python3Packages; [ hatchling ];
 
   dependencies =
     with python3Packages;
@@ -49,15 +55,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ]
     ++ python-slugify.optional-dependencies.unidecode
     ++ yt-dlp.optional-dependencies.default;
-
-  nativeCheckInputs = with python3Packages; [
-    pyfakefs
-    pytest-mock
-    pytest-subprocess
-    pytestCheckHook
-    vcrpy
-    writableTmpDirAsHomeHook
-  ];
 
   disabledTestPaths = [
     # Tests require networking
@@ -91,6 +88,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ":"
     (lib.makeBinPath [ ffmpeg ])
   ];
+
+  pyproject = true;
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Download your Spotify playlists and songs along with album art and metadata";

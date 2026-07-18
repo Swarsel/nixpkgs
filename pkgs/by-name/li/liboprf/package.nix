@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkgconf,
   libsodium,
   nix-update-script,
+  pkgconf,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,8 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-CQF7feBL83iN2I6GfWjJ2Xe6fLm7D2yEUb6KgioXWkw=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/src";
-
   patches = [
     ./no-static.patch
   ];
@@ -31,15 +29,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkgconf ];
-
   buildInputs = [ libsodium ];
-
   makeFlags = [ "PREFIX=$(out)" ];
-
   env.NIX_CFLAGS_COMPILE = "-Wno-error=maybe-uninitialized";
-
+  sourceRoot = "${finalAttrs.src.name}/src";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -47,7 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/stef/liboprf";
     changelog = "https://github.com/stef/liboprf/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.lgpl3Plus;
-    teams = [ lib.teams.ngi ];
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.ngi ];
   };
 })

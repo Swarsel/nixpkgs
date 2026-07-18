@@ -20,17 +20,18 @@ in
 
       enable = mkOption {
         default = false;
-        type = types.bool;
+
         description = ''
           Make Memtest86+, a memory testing program, available from the GRUB
           boot menu.
         '';
+
+        type = types.bool;
       };
 
       params = mkOption {
         default = [ ];
-        example = [ "console=ttyS0,115200" ];
-        type = types.listOf types.str;
+
         description = ''
           Parameters added to the Memtest86+ command line. As of memtest86+ 5.01
           the following list of (apparently undocumented) parameters are
@@ -58,6 +59,9 @@ in
           This list of command line options was obtained by reading the
           Memtest86+ source code.
         '';
+
+        example = [ "console=ttyS0,115200" ];
+        type = types.listOf types.str;
       };
 
     };
@@ -69,6 +73,7 @@ in
         linux @bootRoot@/memtest.bin ${toString cfg.params}
       }
     '';
+
     boot.loader.grub.extraFiles."memtest.bin" = memtest86.efi;
   };
 }

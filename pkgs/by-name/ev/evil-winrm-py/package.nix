@@ -1,17 +1,16 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   libkrb5,
-  versionCheckHook,
   nix-update-script,
+  python3Packages,
+  versionCheckHook,
   enableKerberos ? true,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "evil-winrm-py";
   version = "1.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "adityatelange";
@@ -20,14 +19,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-arfH7z7QGZPenyHLAubuG1VOJArUxI4wlQgV+iU7CvU=";
   };
 
-  pythonRelaxDeps = true;
-
   # Removes the additional binary ewp
   postPatch = ''
     substituteInPlace setup.py \
       --replace-fail '"ewp = evil_winrm_py.evil_winrm_py:main",' ""
   '';
 
+  # Add the C library if Kerberos is enabled
+  buildInputs = lib.optionals enableKerberos [ libkrb5 ];
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
   build-system = [ python3Packages.setuptools ];
 
   dependencies =
@@ -39,12 +40,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ]
     ++ lib.optionals enableKerberos pypsrp.optional-dependencies.kerberos;
 
-  # Add the C library if Kerberos is enabled
-  buildInputs = lib.optionals enableKerberos [ libkrb5 ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-
+  pyproject = true;
+  pythonRelaxDeps = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

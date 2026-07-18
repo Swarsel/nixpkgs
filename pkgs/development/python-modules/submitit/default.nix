@@ -1,26 +1,21 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  flit-core,
-
+  buildPythonPackage,
   # dependencies
   cloudpickle,
-  typing-extensions,
-
+  # build-system
+  flit-core,
+  pytest-asyncio,
   # tests
   pytestCheckHook,
-  pytest-asyncio,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "submitit";
   version = "1.5.4";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "facebookincubator";
@@ -29,20 +24,17 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Q/2mC7viLYl8fx7dtQueZqT191EbERZPfN0WkTS/U1w=";
   };
 
-  build-system = [ flit-core ];
-
-  dependencies = [
-    cloudpickle
-    typing-extensions
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-asyncio
   ];
 
-  pythonImportsCheck = [
-    "submitit"
+  __structuredAttrs = true;
+  build-system = [ flit-core ];
+
+  dependencies = [
+    cloudpickle
+    typing-extensions
   ];
 
   disabledTests = [
@@ -55,10 +47,16 @@ buildPythonPackage (finalAttrs: {
     "test_requeuing"
   ];
 
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "submitit"
+  ];
+
   meta = {
-    changelog = "https://github.com/facebookincubator/submitit/releases/tag/${finalAttrs.src.tag}";
     description = "Python 3.8+ toolbox for submitting jobs to Slurm";
     homepage = "https://github.com/facebookincubator/submitit";
+    changelog = "https://github.com/facebookincubator/submitit/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.nickcao ];
   };

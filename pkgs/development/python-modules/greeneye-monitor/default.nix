@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-socket,
   pytestCheckHook,
   setuptools,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "greeneye-monitor";
   version = "5.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jkeljo";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     hash = "sha256-7EDuQ+wECcTzxkEufMpg3WSzosWeiwfxcVIVtQi+0BI=";
   };
 
+  nativeCheckInputs = [
+    pytest-socket
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,11 +32,7 @@ buildPythonPackage rec {
     siobrultech-protocols
   ];
 
-  nativeCheckInputs = [
-    pytest-socket
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "greeneye.monitor" ];
 
   meta = {

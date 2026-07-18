@@ -1,11 +1,11 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
   pandoc,
   pandoc-acro,
-  texliveTeTeX,
+  python3Packages,
   runCommand,
+  texliveTeTeX,
 }:
 
 let
@@ -18,7 +18,6 @@ let
   };
 in
 python3Packages.buildPythonApplication {
-  format = "setuptools";
   inherit pname version src;
 
   propagatedBuildInputs = with python3Packages; [
@@ -28,6 +27,7 @@ python3Packages.buildPythonApplication {
 
   # Something in the tests does not typecheck, but the tool works well.
   doCheck = false;
+  format = "setuptools";
 
   passthru.tests.example-doc =
     let
@@ -60,8 +60,8 @@ python3Packages.buildPythonApplication {
     '';
 
   meta = {
-    homepage = "https://pypi.org/project/pandoc-acro/";
     description = "Pandoc filter which manages acronyms in Pandoc flavored Markdown sources";
+    homepage = "https://pypi.org/project/pandoc-acro/";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ tfc ];
     mainProgram = "pandoc-acro";

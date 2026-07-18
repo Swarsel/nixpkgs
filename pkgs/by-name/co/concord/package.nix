@@ -16,9 +16,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-yTFGRnhDzxU+dPeZbCWlm52gsmEgD2el+46c8XQBQng=";
   };
 
-  makeFlags = [ "PREFIX=${placeholder "out"}" ];
-
   buildInputs = [ curl ];
+  makeFlags = [ "PREFIX=${placeholder "out"}" ];
 
   meta = {
     description = "Discord API wrapper library made in C";

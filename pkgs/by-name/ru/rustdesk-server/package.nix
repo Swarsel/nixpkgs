@@ -1,13 +1,13 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   libsodium,
-  sqlite,
   nix-update-script,
-  testers,
+  pkg-config,
+  rustPlatform,
   rustdesk-server,
+  sqlite,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,8 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  cargoHash = "sha256-U1LTnqi2iEsm2U7t0Fr4VJWLo1MdQmeTKrPsNqRWap0=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -33,13 +31,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sqlite
   ];
 
+  cargoHash = "sha256-U1LTnqi2iEsm2U7t0Fr4VJWLo1MdQmeTKrPsNqRWap0=";
+
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
       inherit (finalAttrs) version;
-      package = rustdesk-server;
       command = "hbbr --version";
+      package = rustdesk-server;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -47,7 +48,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/rustdesk/rustdesk-server";
     changelog = "https://github.com/rustdesk/rustdesk-server/releases/tag/${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

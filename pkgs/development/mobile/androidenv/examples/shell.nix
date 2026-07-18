@@ -1,4 +1,6 @@
 {
+  # You probably need to set it to true to express consent.
+  licenseAccepted ? pkgs.callPackage ../license.nix { },
   # If you copy this example out of nixpkgs, use these lines instead of the next.
   # This example pins nixpkgs: https://nix.dev/tutorials/first-steps/towards-reproducibility-pinning-nixpkgs.html
   /*
@@ -11,14 +13,10 @@
       config.allowUnfree = true;
     },
   */
-
   # If you want to use the in-tree version of nixpkgs:
   pkgs ? import ../../../../.. {
     config.allowUnfree = true;
   },
-
-  # You probably need to set it to true to express consent.
-  licenseAccepted ? pkgs.callPackage ../license.nix { },
 }:
 
 # Copy this file to your Android project.
@@ -55,42 +53,7 @@ let
   ];
 
   androidComposition = androidEnv.composeAndroidPackages {
-    includeSources = true;
-    includeSystemImages = false;
-    includeEmulator = "if-supported";
-    includeNDK = "if-supported";
     inherit ndkVersions;
-    useGoogleAPIs = true;
-    useGoogleTVAddOns = true;
-
-    # Make sure everything from the last decade works since we are not using system images.
-    numLatestPlatformVersions = 10;
-
-    # If you want to use a custom repo JSON:
-    # repoJson = ../repo.json;
-
-    # If you want to use custom repo XMLs:
-    /*
-      repoXmls = {
-        packages = [ ../xml/repository2-1.xml ];
-        images = [
-          ../xml/android-sys-img2-1.xml
-          ../xml/android-tv-sys-img2-1.xml
-          ../xml/android-wear-sys-img2-1.xml
-          ../xml/android-wear-cn-sys-img2-1.xml
-          ../xml/google_apis-sys-img2-1.xml
-          ../xml/google_apis_playstore-sys-img2-1.xml
-        ];
-        addons = [ ../xml/addon2-1.xml ];
-      };
-    */
-
-    includeExtras = [
-      "extras;google;gcm"
-    ]
-    ++ pkgs.lib.optionals includeAuto [
-      "extras;google;auto"
-    ];
 
     # Accepting more licenses declaratively:
     extraLicenses = [
@@ -107,6 +70,40 @@ let
       "intel-android-sysimage-license"
       "mips-android-sysimage-license"
     ];
+
+    includeEmulator = "if-supported";
+
+    # If you want to use a custom repo JSON:
+    # repoJson = ../repo.json;
+    # If you want to use custom repo XMLs:
+    /*
+      repoXmls = {
+        packages = [ ../xml/repository2-1.xml ];
+        images = [
+          ../xml/android-sys-img2-1.xml
+          ../xml/android-tv-sys-img2-1.xml
+          ../xml/android-wear-sys-img2-1.xml
+          ../xml/android-wear-cn-sys-img2-1.xml
+          ../xml/google_apis-sys-img2-1.xml
+          ../xml/google_apis_playstore-sys-img2-1.xml
+        ];
+        addons = [ ../xml/addon2-1.xml ];
+      };
+    */
+    includeExtras = [
+      "extras;google;gcm"
+    ]
+    ++ pkgs.lib.optionals includeAuto [
+      "extras;google;auto"
+    ];
+
+    includeNDK = "if-supported";
+    includeSources = true;
+    includeSystemImages = false;
+    # Make sure everything from the last decade works since we are not using system images.
+    numLatestPlatformVersions = 10;
+    useGoogleAPIs = true;
+    useGoogleTVAddOns = true;
   };
 
   androidSdk = androidComposition.androidsdk;
@@ -120,19 +117,18 @@ let
   jdk = pkgs.jdk;
 in
 pkgs.mkShell rec {
+  ANDROID_HOME = "${androidSdk}/libexec/android-sdk";
+  ANDROID_NDK_ROOT = "${ANDROID_HOME}/ndk-bundle";
+  JAVA_HOME = jdk.home;
+  LANG = "C.UTF-8";
+  LC_ALL = "C.UTF-8";
   name = "androidenv-demo";
+
   packages = [
     androidSdk
     platformTools
     jdk
   ];
-
-  LANG = "C.UTF-8";
-  LC_ALL = "C.UTF-8";
-  JAVA_HOME = jdk.home;
-
-  ANDROID_HOME = "${androidSdk}/libexec/android-sdk";
-  ANDROID_NDK_ROOT = "${ANDROID_HOME}/ndk-bundle";
 
   shellHook = ''
     # Ensures that we don't have to use a FHS env by using the nix store's aapt2.

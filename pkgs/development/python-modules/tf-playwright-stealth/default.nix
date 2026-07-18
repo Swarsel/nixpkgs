@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   fake-http-header,
-  fetchFromGitHub,
   idna,
   mockito,
   playwright,
@@ -14,9 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "tf-playwright-stealth";
   version = "1.2.2-unstable-2026-06-30";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "tinyfish-io";
@@ -25,13 +22,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-dUU0JqnEda0s6nVzJNmU1l536YZ05SI3DYhb7onuBwY=";
   };
 
-  pythonRelaxDeps = [
-    "idna"
-    "urllib3"
+  nativeCheckInputs = [
+    mockito
+    pytestCheckHook
   ];
 
-  pythonRemoveDeps = [ "agentql" ];
-
+  __structuredAttrs = true;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -41,17 +37,20 @@ buildPythonPackage (finalAttrs: {
     urllib3
   ];
 
-  nativeCheckInputs = [
-    mockito
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "playwright_stealth" ];
-
   disabledTestPaths = [
     # Requires agentql
     "tests/e2e/"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "playwright_stealth" ];
+
+  pythonRelaxDeps = [
+    "idna"
+    "urllib3"
+  ];
+
+  pythonRemoveDeps = [ "agentql" ];
 
   meta = with lib; {
     description = "Module for using playwright stealthy";

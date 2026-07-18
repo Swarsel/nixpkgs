@@ -16,10 +16,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://sources.debian.org/data/main/c/catdoc/1:0.95-4.1/debian/patches/05-CVE-2017-11110.patch";
       sha256 = "1ljnwvssvzig94hwx8843b88p252ww2lbxh8zybcwr3kwwlcymx7";
+      url = "https://sources.debian.org/data/main/c/catdoc/1:0.95-4.1/debian/patches/05-CVE-2017-11110.patch";
     })
   ];
+
+  configureFlags = [ "--disable-wordview" ];
 
   # Remove INSTALL file to avoid `make` misinterpreting it as an up-to-date
   # target on case-insensitive filesystems e.g. Darwin
@@ -27,12 +29,10 @@ stdenv.mkDerivation (finalAttrs: {
     rm -v INSTALL
   '';
 
-  configureFlags = [ "--disable-wordview" ];
-
   meta = {
     description = "MS-Word/Excel/PowerPoint to text converter";
-    platforms = lib.platforms.all;
     license = lib.licenses.gpl2Only;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 })

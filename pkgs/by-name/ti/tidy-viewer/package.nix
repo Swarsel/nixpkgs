@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,11 +18,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   cargoHash = "sha256-HF7M4s2OHCAyVkbCIBxGButAxbxrhjmY3YE/do8et1s=";
 
   meta = {
-    changelog = "https://github.com/alexhallam/tv/blob/${finalAttrs.version}/CHANGELOG.md";
     description = "Cross-platform CLI csv pretty printer that uses column styling to maximize viewer enjoyment";
     homepage = "https://github.com/alexhallam/tv";
+    changelog = "https://github.com/alexhallam/tv/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.unlicense;
-    mainProgram = "tidy-viewer";
     maintainers = with lib.maintainers; [ phanirithvij ];
+    mainProgram = "tidy-viewer";
   };
 })

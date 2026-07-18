@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  polkit,
   gtk3,
-  pkg-config,
   intltool,
+  pkg-config,
+  polkit,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "polkit-gnome";
@@ -16,13 +16,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-F4RJSWO4v5oA7txs06KGj7EjuKXlFuZsXtpI3xerk2k=";
   };
 
-  buildInputs = [
-    polkit
-    gtk3
-  ];
   nativeBuildInputs = [
     pkg-config
     intltool
+  ];
+
+  buildInputs = [
+    polkit
+    gtk3
   ];
 
   configureFlags = [ "--disable-introspection" ];
@@ -34,9 +35,9 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
+    description = "Dbus session bus service that is used to bring up authentication dialogs";
     homepage = "https://gitlab.gnome.org/Archive/policykit-gnome";
     changelog = "https://gitlab.gnome.org/Archive/policykit-gnome/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
-    description = "Dbus session bus service that is used to bring up authentication dialogs";
     license = lib.licenses.lgpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;

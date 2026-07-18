@@ -51,8 +51,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "C++ Header-only Prometheus client library";
     homepage = "https://github.com/biaks/prometheus-cpp-lite";
-    maintainers = [ lib.maintainers.markuskowa ];
     license = lib.licenses.mit;
+    maintainers = [ lib.maintainers.markuskowa ];
     platforms = lib.platforms.linux;
   };
 })

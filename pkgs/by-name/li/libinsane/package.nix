@@ -1,39 +1,39 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchFromGitLab,
+  cunit,
+  docbook_xsl,
+  doxygen,
+  glib,
+  gobject-introspection,
+  gtk-doc,
   meson,
   ninja,
-  fetchFromGitLab,
   pkg-config,
-  glib,
-  docbook_xsl,
   sane-backends,
-  gobject-introspection,
   vala,
-  gtk-doc,
   valgrind,
-  doxygen,
-  cunit,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libinsane";
   version = "1.0.10";
 
+  src = fetchFromGitLab {
+    owner = "OpenPaperwork";
+    repo = "libinsane";
+    rev = finalAttrs.version;
+    sha256 = "sha256-2BLg8zB0InPJqK9JypQIMVXIJndo9ZuNB4OeOAo/Hsc=";
+    domain = "gitlab.gnome.org";
+    group = "World";
+  };
+
   outputs = [
     "out"
     "dev"
     "devdoc"
   ];
-
-  src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
-    repo = "libinsane";
-    group = "World";
-    owner = "OpenPaperwork";
-    rev = finalAttrs.version;
-    sha256 = "sha256-2BLg8zB0InPJqK9JypQIMVXIJndo9ZuNB4OeOAo/Hsc=";
-  };
 
   nativeBuildInputs = [
     meson
@@ -51,12 +51,12 @@ stdenv.mkDerivation (finalAttrs: {
     glib
   ];
 
+  doCheck = true;
+
   nativeCheckInputs = [
     cunit
     valgrind
   ];
-
-  doCheck = true;
 
   meta = {
     description = "Crossplatform access to image scanners (paper eaters only)";

@@ -1,14 +1,14 @@
 {
   lib,
-  cmake,
-  rustPlatform,
-  pkg-config,
   fetchFromGitHub,
   atk,
-  gtk3,
+  cmake,
   glib,
-  openssl,
+  gtk3,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,7 +22,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-kvtfEEydwonoDux1VbAxqrF/Hf8Qh8mhprYnROGOC6g=";
   };
 
-  cargoHash = "sha256-yQFGuhEGgkaa5N4uUIZ/0GFzP9CsPtiFet0hUppIQzQ=";
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
 
   buildInputs = [
     atk
@@ -31,18 +34,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
-
+  cargoHash = "sha256-yQFGuhEGgkaa5N4uUIZ/0GFzP9CsPtiFet0hUppIQzQ=";
   doCheck = false;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://jblindsay.github.io/ghrg/WhiteboxTools/index.html";
     description = "Advanced geospatial data analysis platform";
+    homepage = "https://jblindsay.github.io/ghrg/WhiteboxTools/index.html";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ mpickering ];
     teams = [ lib.teams.geospatial ];

@@ -10,25 +10,22 @@
 
   buildVimPlugin =
     {
-      name ? "${attrs.pname}-${attrs.version}",
       src,
-      unpackPhase ? "",
-      configurePhase ? ":",
-      buildPhase ? ":",
-      preInstall ? "",
-      postInstall ? "",
-      path ? ".",
       addonInfo ? null,
+      buildPhase ? ":",
+      configurePhase ? ":",
       meta ? { },
+      name ? "${attrs.pname}-${attrs.version}",
+      path ? ".",
+      postInstall ? "",
+      preInstall ? "",
+      unpackPhase ? "",
       ...
     }@attrs:
     let
       drv = stdenv.mkDerivation (
         attrs
         // {
-          name = lib.warnIf (attrs ? vimprefix) "The 'vimprefix' is now hardcoded in toVimPlugin" name;
-
-          __structuredAttrs = true;
           inherit
             unpackPhase
             configurePhase
@@ -47,6 +44,9 @@
 
             runHook postInstall
           '';
+
+          __structuredAttrs = true;
+          name = lib.warnIf (attrs ? vimprefix) "The 'vimprefix' is now hardcoded in toVimPlugin" name;
 
           meta = {
             platforms = lib.platforms.all;

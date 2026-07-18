@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  autoreconfHook,
   autoconf-archive,
+  autoreconfHook,
+  libepoxy,
+  nix-update-script,
   pkg-config,
   wrapGAppsHook3,
-  libepoxy,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.52.1";
   pname = "xcpc";
+  version = "0.52.1";
 
   src = fetchFromGitHub {
     owner = "ponceto";
@@ -30,8 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [ libepoxy ];
 
-  passthru.updateScript = nix-update-script { };
-
   postInstall = ''
     install -D $out/share/pixmaps/xcpc.png -t $out/share/icons/hicolor/64x64/apps
     rm -r $out/share/pixmaps
@@ -40,6 +38,8 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace $out/share/applications/xcpc.desktop --replace-fail \
       "$out/share/pixmaps/" ""
   '';
+
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Portable Amstrad CPC 464/664/6128 emulator written in C";

@@ -8,21 +8,20 @@ let
   cfg = config.programs.ydotool;
 in
 {
-  meta = {
-    maintainers = with lib.maintainers; [ quantenzitrone ];
-  };
-
   options.programs.ydotool = {
     enable = lib.mkEnableOption ''
       ydotoold system service and {command}`ydotool` for members of
       {option}`programs.ydotool.group`.
     '';
+
     group = lib.mkOption {
-      type = lib.types.str;
       default = "ydotool";
+
       description = ''
         Group which users must be in to use {command}`ydotool`.
       '';
+
+      type = lib.types.str;
     };
   };
 
@@ -31,28 +30,24 @@ in
       runtimeDirectory = "ydotoold";
     in
     lib.mkIf cfg.enable {
-      users.groups."${config.programs.ydotool.group}" = { };
+      environment.systemPackages = with pkgs; [ ydotool ];
+
+      environment.variables = {
+        YDOTOOL_SOCKET = "/run/${runtimeDirectory}/socket";
+      };
 
       systemd.services.ydotoold = {
         description = "ydotoold - backend for ydotool";
-        wantedBy = [ "multi-user.target" ];
         partOf = [ "multi-user.target" ];
+
         serviceConfig = {
-          Group = config.programs.ydotool.group;
-          RuntimeDirectory = runtimeDirectory;
-          RuntimeDirectoryMode = "0750";
-          ExecStart = "${lib.getExe' pkgs.ydotool "ydotoold"} --socket-path=${config.environment.variables.YDOTOOL_SOCKET} --socket-perm=0660";
-
+          CapabilityBoundingSet = "";
           # hardening
-
           ## allow access to uinput
           DeviceAllow = [ "/dev/uinput" ];
           DevicePolicy = "closed";
-
-          ## allow creation of unix sockets
-          RestrictAddressFamilies = [ "AF_UNIX" ];
-
-          CapabilityBoundingSet = "";
+          ExecStart = "${lib.getExe' pkgs.ydotool "ydotoold"} --socket-path=${config.environment.variables.YDOTOOL_SOCKET} --socket-perm=0660";
+          Group = config.programs.ydotool.group;
           IPAddressDeny = "any";
           LockPersonality = true;
           MemoryDenyWriteExecute = true;
@@ -70,24 +65,32 @@ in
           ProtectKernelTunables = true;
           ProtectProc = "invisible";
           ProtectSystem = "strict";
+          ## allow creation of unix sockets
+          RestrictAddressFamilies = [ "AF_UNIX" ];
           RestrictNamespaces = true;
           RestrictRealtime = true;
           RestrictSUIDSGID = true;
+          RuntimeDirectory = runtimeDirectory;
+          RuntimeDirectoryMode = "0750";
           SystemCallArchitectures = "native";
+
           SystemCallFilter = [
             "@system-service"
             "~@privileged"
             "~@resources"
           ];
-          UMask = "0077";
 
+          UMask = "0077";
           # -> systemd-analyze security score 0.7 SAFE 😀
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
 
-      environment.variables = {
-        YDOTOOL_SOCKET = "/run/${runtimeDirectory}/socket";
-      };
-      environment.systemPackages = with pkgs; [ ydotool ];
+      users.groups."${config.programs.ydotool.group}" = { };
     };
+
+  meta = {
+    maintainers = with lib.maintainers; [ quantenzitrone ];
+  };
 }

@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   curl,
-  pkg-config,
   libgit2,
   openssl,
+  pkg-config,
+  rustPlatform,
   zlib,
 }:
 
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-bHVqAZetPrbWKhiMRaiCenOCK0ZPiF1F2D3Wa6+mrzw=";
   };
 
-  cargoHash = "sha256-v7SEXhWyL+BCLWucYXG4dAoMqL57bPTKAUtQKCNu6FQ=";
-
   nativeBuildInputs = [
     curl
     pkg-config
@@ -34,13 +32,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zlib
   ];
 
+  cargoHash = "sha256-v7SEXhWyL+BCLWucYXG4dAoMqL57bPTKAUtQKCNu6FQ=";
+
   meta = {
     description = "Cargo subcommand for displaying when different versions of a same dependency are pulled in";
-    mainProgram = "cargo-duplicates";
     homepage = "https://github.com/Keruspe/cargo-duplicates";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
     ];
+
+    mainProgram = "cargo-duplicates";
   };
 })

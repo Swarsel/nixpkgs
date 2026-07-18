@@ -15,16 +15,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-AG5Lthp+CPR4R7I23DUmoWAmET8gLEFHHdjk2TUbQn4=";
   };
 
-  hardeningDisable = [ "pic" ];
+  nativeBuildInputs = kernel.moduleBuildDependencies;
 
   makeFlags = kernelModuleMakeFlags ++ [
     "INSTALL_MOD_PATH=${placeholder "out"}"
   ];
 
   env.KSRC = "${kernel.dev}/lib/modules/${kernel.modDirVersion}/build";
-
-  nativeBuildInputs = kernel.moduleBuildDependencies;
-
   preBuild = "cd linux/igb_uio";
 
   installPhase = ''
@@ -32,6 +29,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   enableParallelBuilding = true;
+  hardeningDisable = [ "pic" ];
 
   meta = {
     description = "Kernel modules for DPDK";

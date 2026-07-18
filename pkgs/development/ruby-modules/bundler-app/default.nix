@@ -1,9 +1,9 @@
 {
   lib,
   callPackage,
-  runCommand,
   makeWrapper,
   ruby,
+  runCommand,
 }@defs:
 
 # Use for simple installation of Ruby tools shipped in a Gem.
@@ -18,26 +18,26 @@
 {
   # use the name of the name in question; its version will be picked up from the gemset
   pname,
+  allowSubstitutes ? false,
+  buildInputs ? [ ],
+  # Exes is the list of executables provided by the gems in the Gemfile
+  exes ? [ ],
+  gemConfig ? null,
   # Gemdir is the location of the Gemfile{,.lock} and gemset.nix; usually ./.
   # This is required unless gemfile, lockfile, and gemset are all provided
   gemdir ? null,
-  # Exes is the list of executables provided by the gems in the Gemfile
-  exes ? [ ],
-  # Scripts are ruby programs depend on gems in the Gemfile (e.g. scripts/rails)
-  scripts ? [ ],
-  ruby ? defs.ruby,
   gemfile ? null,
-  lockfile ? null,
   gemset ? null,
-  preferLocalBuild ? false,
-  allowSubstitutes ? false,
   installManpages ? true,
+  lockfile ? null,
   meta ? { },
   nativeBuildInputs ? [ ],
-  buildInputs ? [ ],
-  postBuild ? "",
-  gemConfig ? null,
   passthru ? { },
+  postBuild ? "",
+  preferLocalBuild ? false,
+  ruby ? defs.ruby,
+  # Scripts are ruby programs depend on gems in the Gemfile (e.g. scripts/rails)
+  scripts ? [ ],
 }@args:
 
 let
@@ -58,14 +58,8 @@ let
     // {
       inherit preferLocalBuild allowSubstitutes; # pass the defaults
       inherit (basicEnv) version pname;
-
       nativeBuildInputs = nativeBuildInputs ++ lib.optionals (scripts != [ ]) [ makeWrapper ];
 
-      meta = {
-        mainProgram = pname;
-        inherit (ruby.meta) platforms;
-      }
-      // meta;
       passthru =
         basicEnv.passthru
         // {
@@ -73,6 +67,12 @@ let
           inherit (basicEnv) env;
         }
         // passthru;
+
+      meta = {
+        inherit (ruby.meta) platforms;
+        mainProgram = pname;
+      }
+      // meta;
     };
 in
 runCommand basicEnv.name cmdArgs ''

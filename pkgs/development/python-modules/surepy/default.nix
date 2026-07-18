@@ -1,15 +1,15 @@
 {
   lib,
+  fetchFromGitHub,
   aiodns,
   aiohttp,
   async-timeout,
   attrs,
   brotlipy,
   buildPythonPackage,
-  faust-cchardet,
   click,
   colorama,
-  fetchFromGitHub,
+  faust-cchardet,
   halo,
   poetry-core,
   requests,
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "surepy";
   version = "0.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "benleb";
@@ -28,12 +27,8 @@ buildPythonPackage rec {
     hash = "sha256-ETgpXSUUsV1xoZjdnL2bzn4HwDjKC2t13yXwf28OBqI=";
   };
 
-  pythonRelaxDeps = [
-    "aiohttp"
-    "async-timeout"
-    "rich"
-  ];
-
+  # Project has no tests
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -50,10 +45,14 @@ buildPythonPackage rec {
     rich
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "surepy" ];
+
+  pythonRelaxDeps = [
+    "aiohttp"
+    "async-timeout"
+    "rich"
+  ];
 
   meta = {
     description = "Python library to interact with the Sure Petcare API";

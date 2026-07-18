@@ -1,8 +1,8 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  gitUpdater,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
+  gitUpdater,
   pytestCheckHook,
   pyyaml,
   rustPlatform,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "ua-parser-rs";
   version = "0.1.4";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "ua-parser";
@@ -20,13 +19,6 @@ buildPythonPackage rec {
     hash = "sha256-8IU4NNW0v2zl6COtL6o7FALxqYNVKBGhERugxpXIN5g=";
     fetchSubmodules = true;
   };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-PNkyd9/0DdIqEmXbnw3dZs5ajWSo0rLhjJwRu3H06Cc=";
-  };
-
-  buildAndTestSubdir = "ua-parser-py";
 
   nativeBuildInputs = [
     rustPlatform.cargoSetupHook
@@ -38,6 +30,14 @@ buildPythonPackage rec {
     pyyaml
   ];
 
+  buildAndTestSubdir = "ua-parser-py";
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-PNkyd9/0DdIqEmXbnw3dZs5ajWSo0rLhjJwRu3H06Cc=";
+  };
+
+  format = "setuptools";
   passthru.updateScript = gitUpdater { rev-prefix = "ua-parser-rs-"; };
 
   meta = {

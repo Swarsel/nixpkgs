@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  bzip2,
   libarchive,
+  meson,
+  ninja,
+  pkg-config,
+  qt6,
   xz,
   zlib,
-  bzip2,
-  meson,
-  pkg-config,
-  ninja,
-  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -42,10 +42,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Qt based archiving solution with libarchive backend";
-    mainProgram = "archiver";
     homepage = "https://gitlab.com/marcusbritanicus/libarchive-qt";
     license = lib.licenses.lgpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "archiver";
   };
 })

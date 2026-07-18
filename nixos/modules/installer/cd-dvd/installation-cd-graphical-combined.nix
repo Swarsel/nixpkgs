@@ -15,8 +15,8 @@
       { config, ... }:
       {
         imports = [ ./installation-cd-graphical-calamares-gnome.nix ];
-        isoImage.showConfiguration = true;
         isoImage.configurationName = "GNOME (Linux LTS)";
+        isoImage.showConfiguration = true;
       };
 
     gnome_latest_kernel.configuration =
@@ -26,16 +26,17 @@
           ./installation-cd-graphical-calamares-gnome.nix
           ./latest-kernel.nix
         ];
-        isoImage.showConfiguration = true;
+
         isoImage.configurationName = "GNOME (Linux ${config.boot.kernelPackages.kernel.version})";
+        isoImage.showConfiguration = true;
       };
 
     plasma.configuration =
       { config, ... }:
       {
         imports = [ ./installation-cd-graphical-calamares-plasma6.nix ];
-        isoImage.showConfiguration = true;
         isoImage.configurationName = "Plasma (Linux LTS)";
+        isoImage.showConfiguration = true;
       };
 
     plasma_latest_kernel.configuration =
@@ -45,8 +46,9 @@
           ./installation-cd-graphical-calamares-plasma6.nix
           ./latest-kernel.nix
         ];
-        isoImage.showConfiguration = true;
+
         isoImage.configurationName = "Plasma (Linux ${config.boot.kernelPackages.kernel.version})";
+        isoImage.showConfiguration = true;
       };
   };
 }

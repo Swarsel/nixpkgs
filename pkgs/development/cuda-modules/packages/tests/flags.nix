@@ -1,7 +1,7 @@
 {
+  lib,
   _cuda,
   cudaNamePrefix,
-  lib,
   runCommand,
 }:
 let
@@ -17,17 +17,34 @@ assert assertMsg (
 assert
   let
     expected = {
-      cudaCapabilities = [
-        "7.5"
-        "8.6"
-      ];
-      cudaForwardCompat = true;
-
       # Sorted alphabetically
       archNames = [
         "Ampere"
         "Turing"
       ];
+
+      arches = [
+        "sm_75"
+        "sm_86"
+        "compute_86"
+      ];
+
+      cmakeCudaArchitecturesString = "75;86";
+
+      cudaCapabilities = [
+        "7.5"
+        "8.6"
+      ];
+
+      cudaForwardCompat = true;
+
+      gencode = [
+        "-gencode=arch=compute_75,code=sm_75"
+        "-gencode=arch=compute_86,code=sm_86"
+        "-gencode=arch=compute_86,code=compute_86"
+      ];
+
+      gencodeString = "-gencode=arch=compute_75,code=sm_75 -gencode=arch=compute_86,code=sm_86 -gencode=arch=compute_86,code=compute_86";
 
       realArches = [
         "sm_75"
@@ -38,29 +55,15 @@ assert
         "compute_75"
         "compute_86"
       ];
-
-      arches = [
-        "sm_75"
-        "sm_86"
-        "compute_86"
-      ];
-
-      gencode = [
-        "-gencode=arch=compute_75,code=sm_75"
-        "-gencode=arch=compute_86,code=sm_86"
-        "-gencode=arch=compute_86,code=compute_86"
-      ];
-
-      gencodeString = "-gencode=arch=compute_75,code=sm_75 -gencode=arch=compute_86,code=sm_86 -gencode=arch=compute_86,code=compute_86";
-
-      cmakeCudaArchitecturesString = "75;86";
     };
     actual = formatCapabilities {
       inherit cudaCapabilityToInfo;
+
       cudaCapabilities = [
         "7.5"
         "8.6"
       ];
+
       cudaForwardCompat = true;
     };
     actualWrapped = (tryEval (deepSeq actual actual)).value;
@@ -71,8 +74,8 @@ assert
   '';
 runCommand "${cudaNamePrefix}-tests-flags"
   {
-    __structuredAttrs = true;
     strictDeps = true;
+    __structuredAttrs = true;
   }
   ''
     touch "$out"

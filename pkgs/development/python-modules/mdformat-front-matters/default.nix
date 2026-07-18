@@ -1,26 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  uv-build,
-
+  buildPythonPackage,
   # dependencies
   mdformat,
   mdit-py-plugins,
-  ruamel-yaml,
-  toml,
-
   # tests
   pytestCheckHook,
+  ruamel-yaml,
+  toml,
   typing-extensions,
+  # build-system
+  uv-build,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mdformat-front-matters";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kyleking";
@@ -34,6 +30,11 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "uv_build>=0.9.10" "uv_build"
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    typing-extensions
+  ];
+
   build-system = [
     uv-build
   ];
@@ -45,12 +46,8 @@ buildPythonPackage (finalAttrs: {
     toml
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "mdformat_front_matters" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    typing-extensions
-  ];
 
   meta = {
     description = "mdformat plugin to format YAML, TOML, or JSON front matter";

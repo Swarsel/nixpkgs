@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  twemoji-color-font,
   imagemagick,
   inkscape,
+  nix-update-script,
   potrace,
   scfbuild,
   svgo,
+  twemoji-color-font,
   which,
 }:
 
@@ -32,13 +32,13 @@ stdenv.mkDerivation (finalAttrs: {
     which
   ];
 
-  # silence inkscape errors about non-writable home
-  preBuild = "export HOME=\"$NIX_BUILD_ROOT\"";
   buildFlags = [
     "SCFBUILD=${scfbuild}/bin/scfbuild"
     "linux-package"
   ];
-  enableParallelBuilding = true;
+
+  # silence inkscape errors about non-writable home
+  preBuild = "export HOME=\"$NIX_BUILD_ROOT\"";
 
   installPhase = ''
     runHook preInstall
@@ -47,6 +47,7 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -57,6 +58,7 @@ stdenv.mkDerivation (finalAttrs: {
       downloadPage
       license
       ;
+
     maintainers = [ lib.maintainers.ncfavier ];
     hydraPlatforms = [ ]; # https://github.com/NixOS/nixpkgs/issues/97871
   };

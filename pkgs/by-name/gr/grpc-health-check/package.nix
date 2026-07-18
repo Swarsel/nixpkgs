@@ -1,9 +1,9 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   protobuf,
-  lib,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
@@ -17,9 +17,8 @@ rustPlatform.buildRustPackage {
     hash = "sha256-nKut9c1HHIacdRcmvlXe0GrtkgCWN6sxJ4ImO0CIDdo=";
   };
 
-  cargoHash = "sha256-NdwQ9gctO0Thaes2T5E9lo6dZ00+FoA3IO553g+NJh0=";
-
   nativeBuildInputs = [ protobuf ];
+  cargoHash = "sha256-NdwQ9gctO0Thaes2T5E9lo6dZ00+FoA3IO553g+NJh0=";
   # tests fail
   doCheck = false;
 

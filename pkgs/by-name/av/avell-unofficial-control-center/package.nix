@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication {
   pname = "avell-unofficial-control-center";
   version = "1.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rodgomesc";
@@ -17,6 +16,8 @@ python3Packages.buildPythonApplication {
     sha256 = "1qz1kv7p09nxffndzz9jlkzpfx26ppz66f8603zyamjq9dqdmdin";
   };
 
+  # No tests included
+  doCheck = false;
   build-system = with python3Packages; [ setuptools ];
 
   dependencies = with python3Packages; [
@@ -24,14 +25,13 @@ python3Packages.buildPythonApplication {
     elevate
   ];
 
-  # No tests included
-  doCheck = false;
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/rodgomesc/avell-unofficial-control-center";
     description = "Software for controlling RGB keyboard lights on some gaming laptops that use ITE Device(8291) Rev 0.03";
-    mainProgram = "aucc";
+    homepage = "https://github.com/rodgomesc/avell-unofficial-control-center";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ rkitover ];
+    mainProgram = "aucc";
   };
 }

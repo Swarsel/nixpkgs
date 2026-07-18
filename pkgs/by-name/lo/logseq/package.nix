@@ -1,28 +1,25 @@
 {
   lib,
   stdenv,
-  clang_20,
-
   fetchFromGitHub,
-  fetchYarnDeps,
-  replaceVars,
-  writeShellScriptBin,
-
-  copyDesktopItems,
   cctools,
+  clang_20,
   clojure,
+  copyDesktopItems,
   darwin,
+  electron_39,
+  fetchYarnDeps,
+  git,
   makeDesktopItem,
   makeWrapper,
   nodejs-slim,
   removeReferencesTo,
+  replaceVars,
+  writeShellScriptBin,
+  xcbuild,
   yarnBuildHook,
   yarnConfigHook,
-  xcbuild,
   zip,
-
-  electron_39,
-  git,
 }:
 
 let
@@ -41,17 +38,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (replaceVars ./hardcode-git-paths.patch {
-      cljs_time_src = fetchFromGitHub {
-        owner = "logseq";
-        repo = "cljs-time";
-        rev = "5704fbf48d3478eedcf24d458c8964b3c2fd59a9";
-        hash = "sha256-IApL+SEm7AhbTN7J/1KiAKTx7rd53hchRh3jmPQ412g=";
-      };
       bb_tasks_src = fetchFromGitHub {
+        hash = "sha256-xVJj5XCkqfaNjnhYZkuqTSJN0ry8UVMaN44r9pxggB0=";
         owner = "logseq";
         repo = "bb-tasks";
         rev = "70d3edeb287f5cec7192e642549a401f7d6d4263";
-        hash = "sha256-xVJj5XCkqfaNjnhYZkuqTSJN0ry8UVMaN44r9pxggB0=";
+      };
+
+      cljs_time_src = fetchFromGitHub {
+        hash = "sha256-IApL+SEm7AhbTN7J/1KiAKTx7rd53hchRh3jmPQ412g=";
+        owner = "logseq";
+        repo = "cljs-time";
+        rev = "5704fbf48d3478eedcf24d458c8964b3c2fd59a9";
       };
     })
 
@@ -65,75 +63,6 @@ stdenv.mkDerivation (finalAttrs: {
     # zip extraction fails on newer nodejs versions without this fix
     ./bump-yauzl.patch
   ];
-
-  mavenRepo = stdenv.mkDerivation {
-    name = "logseq-${finalAttrs.version}-maven-deps";
-    inherit (finalAttrs) src patches;
-
-    nativeBuildInputs = [ clojure ];
-
-    buildPhase = ''
-      runHook preBuild
-
-      export HOME="$(mktemp -d)"
-      mkdir -p "$out"
-
-      # -P       -> resolve all normal deps
-      # -M:alias -> resolve extra-deps of the listed aliases
-      clj -Sdeps "{:mvn/local-repo \"$out\"}" -P -M:cljs
-
-      runHook postBuild
-    '';
-
-    # copied from buildMavenPackage
-    # keep only *.{pom,jar,sha1,nbm} and delete all ephemeral files with lastModified timestamps inside
-    installPhase = ''
-      runHook preInstall
-
-      find $out -type f \( \
-        -name \*.lastUpdated \
-        -o -name resolver-status.properties \
-        -o -name _remote.repositories \) \
-        -delete
-
-      runHook postInstall
-    '';
-
-    dontFixup = true;
-
-    outputHash = "sha256-gcq9zP5AQtpZU7sC9Oq3PkTj6uDo2NSShigkcuglV98=";
-    outputHashMode = "recursive";
-    outputHashAlgo = "sha256";
-  };
-
-  yarnOfflineCacheRoot = fetchYarnDeps {
-    name = "logseq-${finalAttrs.version}-yarn-deps-root";
-    inherit (finalAttrs) src patches;
-    hash = "sha256-xfAJ38shd92KdRfh/P7BH4eolZHQmzl4raoH1aZpGRk=";
-  };
-
-  # ./static and ./resources are combined into ./static by the build process
-  # ./static contains the lockfile and ./resources contains everything else
-  yarnOfflineCacheStaticResources = fetchYarnDeps {
-    name = "logseq-${finalAttrs.version}-yarn-deps-static-resources";
-    inherit (finalAttrs) src patches;
-    postPatch = "cd ./static";
-    hash = "sha256-TFisR5GwcKmuddGhe0i6rAmr2wDWzed/mXnxVGARYK0=";
-  };
-
-  yarnOfflineCacheAmplify = fetchYarnDeps {
-    name = "logseq-${finalAttrs.version}-yarn-deps-amplify";
-    inherit (finalAttrs) src patches;
-    postPatch = "cd ./packages/amplify";
-    hash = "sha256-IOhSwIf5goXCBDGHCqnsvWLf3EUPqq75xfQg55snIp4=";
-  };
-
-  yarnOfflineCacheTldraw = fetchYarnDeps {
-    name = "logseq-${finalAttrs.version}-yarn-deps-tldraw";
-    inherit (finalAttrs) src patches;
-    postPatch = "cd ./tldraw";
-    hash = "sha256-CtMl3MPlyO5nWfFhCC1SLb/+1HUM3YfFATAPqJg3rUo=";
-  };
 
   strictDeps = true;
 
@@ -168,9 +97,8 @@ stdenv.mkDerivation (finalAttrs: {
       clang_20 # newer clang breaks node-addon-api on darwin
     ];
 
-  # we'll run the hook manually multiple times
-  dontYarnInstallDeps = true;
-
+  # electron-forge's console output is squeezed into one narrow column if unset
+  env.CI = "1";
   env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
   postConfigure = ''
@@ -244,11 +172,6 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r static/node_modules resources/node_modules
   '';
 
-  # electron-forge's console output is squeezed into one narrow column if unset
-  env.CI = "1";
-
-  yarnBuildScript = "release-electron";
-
   installPhase = ''
     runHook preInstall
 
@@ -282,24 +205,96 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "Logseq";
+      categories = [ "Utility" ];
+      comment = "A privacy-first, open-source platform for knowledge management and collaboration.";
       desktopName = "Logseq";
       exec = "logseq %U";
-      terminal = false;
       icon = "logseq";
-      startupWMClass = "Logseq";
-      comment = "A privacy-first, open-source platform for knowledge management and collaboration.";
       mimeTypes = [ "x-scheme-handler/logseq" ];
-      categories = [ "Utility" ];
+      name = "Logseq";
+      startupWMClass = "Logseq";
+      terminal = false;
     })
   ];
+
+  # we'll run the hook manually multiple times
+  dontYarnInstallDeps = true;
+
+  mavenRepo = stdenv.mkDerivation {
+    inherit (finalAttrs) src patches;
+    nativeBuildInputs = [ clojure ];
+
+    buildPhase = ''
+      runHook preBuild
+
+      export HOME="$(mktemp -d)"
+      mkdir -p "$out"
+
+      # -P       -> resolve all normal deps
+      # -M:alias -> resolve extra-deps of the listed aliases
+      clj -Sdeps "{:mvn/local-repo \"$out\"}" -P -M:cljs
+
+      runHook postBuild
+    '';
+
+    # copied from buildMavenPackage
+    # keep only *.{pom,jar,sha1,nbm} and delete all ephemeral files with lastModified timestamps inside
+    installPhase = ''
+      runHook preInstall
+
+      find $out -type f \( \
+        -name \*.lastUpdated \
+        -o -name resolver-status.properties \
+        -o -name _remote.repositories \) \
+        -delete
+
+      runHook postInstall
+    '';
+
+    dontFixup = true;
+    name = "logseq-${finalAttrs.version}-maven-deps";
+    outputHash = "sha256-gcq9zP5AQtpZU7sC9Oq3PkTj6uDo2NSShigkcuglV98=";
+    outputHashAlgo = "sha256";
+    outputHashMode = "recursive";
+  };
+
+  yarnBuildScript = "release-electron";
+
+  yarnOfflineCacheAmplify = fetchYarnDeps {
+    inherit (finalAttrs) src patches;
+    postPatch = "cd ./packages/amplify";
+    hash = "sha256-IOhSwIf5goXCBDGHCqnsvWLf3EUPqq75xfQg55snIp4=";
+    name = "logseq-${finalAttrs.version}-yarn-deps-amplify";
+  };
+
+  yarnOfflineCacheRoot = fetchYarnDeps {
+    inherit (finalAttrs) src patches;
+    hash = "sha256-xfAJ38shd92KdRfh/P7BH4eolZHQmzl4raoH1aZpGRk=";
+    name = "logseq-${finalAttrs.version}-yarn-deps-root";
+  };
+
+  # ./static and ./resources are combined into ./static by the build process
+  # ./static contains the lockfile and ./resources contains everything else
+  yarnOfflineCacheStaticResources = fetchYarnDeps {
+    inherit (finalAttrs) src patches;
+    postPatch = "cd ./static";
+    hash = "sha256-TFisR5GwcKmuddGhe0i6rAmr2wDWzed/mXnxVGARYK0=";
+    name = "logseq-${finalAttrs.version}-yarn-deps-static-resources";
+  };
+
+  yarnOfflineCacheTldraw = fetchYarnDeps {
+    inherit (finalAttrs) src patches;
+    postPatch = "cd ./tldraw";
+    hash = "sha256-CtMl3MPlyO5nWfFhCC1SLb/+1HUM3YfFATAPqJg3rUo=";
+    name = "logseq-${finalAttrs.version}-yarn-deps-tldraw";
+  };
 
   meta = {
     description = "Privacy-first, open-source platform for knowledge management and collaboration";
     homepage = "https://github.com/logseq/logseq";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ tomasajt ];
-    mainProgram = "logseq";
     platforms = electron.meta.platforms;
+    mainProgram = "logseq";
   };
 })

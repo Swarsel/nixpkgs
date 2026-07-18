@@ -1,23 +1,23 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  pkg-config,
+  blueprint-compiler,
+  desktop-file-utils,
+  gdk-pixbuf,
+  gnome,
   gtk4,
   libadwaita,
-  pango,
-  gnome,
-  gdk-pixbuf,
-  librsvg,
   libmanette,
-  blueprint-compiler,
-  wrapGAppsHook4,
+  librsvg,
+  libsndfile,
   meson,
   ninja,
-  vala,
-  desktop-file-utils,
-  libsndfile,
   openal,
+  pango,
+  pkg-config,
+  vala,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -59,11 +59,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Classic falling-block game, Tetris";
-    mainProgram = "quadrapassel";
     homepage = "https://gitlab.gnome.org/GNOME/quadrapassel";
     changelog = "https://gitlab.gnome.org/GNOME/quadrapassel/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+    mainProgram = "quadrapassel";
+    teams = [ lib.teams.gnome ];
   };
 })

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,20 +34,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://github.com/hashcat/maskprocessor";
     description = "High-Performance word generator with a per-position configureable charset";
-    license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
+    homepage = "https://github.com/hashcat/maskprocessor";
     changelog = "https://github.com/hashcat/maskprocessor/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ethancedwards8 ];
+    platforms = lib.platforms.unix;
     mainProgram = "maskprocessor";
   };
 })

@@ -6,11 +6,12 @@
   makeSetupHook,
 }:
 makeSetupHook {
-  name = "removeStubsFromRunpathHook";
   propagatedBuildInputs = [
     arrayUtilities.getRunpathEntries
     autoFixElfFiles
   ];
+
+  name = "removeStubsFromRunpathHook";
 
   substitutions = {
     driverLinkLib = addDriverRunpath.driverLink + "/lib";

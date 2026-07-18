@@ -3,7 +3,6 @@
 }:
 mkDerivation {
   pname = "rc";
-  path = "etc";
 
   patches = [
     ./boot-phases.patch
@@ -18,4 +17,6 @@ mkDerivation {
     cp rc.d/rc.subr $out/etc/rc.d
     chmod +x $out/etc/rc
   '';
+
+  path = "etc";
 }

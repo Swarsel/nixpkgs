@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeBinaryWrapper,
   gitMinimal,
   less,
+  makeBinaryWrapper,
   util-linuxMinimal,
 }:
 
@@ -20,8 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeBinaryWrapper ];
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -40,12 +38,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
-    homepage = "https://github.com/paulirish/git-recent";
     description = "See your latest local git branches, formatted real fancy";
+    homepage = "https://github.com/paulirish/git-recent";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.jlesquembre ];
+    platforms = lib.platforms.all;
     mainProgram = "git-recent";
   };
 })

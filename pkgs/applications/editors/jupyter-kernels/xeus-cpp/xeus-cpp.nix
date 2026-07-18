@@ -1,34 +1,28 @@
 {
   lib,
-  clangStdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-
-  cpp-interop,
+  argparse,
+  clangStdenv,
   cling,
-
+  cmake,
+  cpp-interop,
+  curl,
+  # tests
+  doctest,
+  jq,
+  libuuid,
+  makeWrapper,
+  nlohmann_json,
+  openssl,
+  pkg-config,
+  pugixml,
+  # installCheck
+  python3,
   # Jupyter / xeus stack
   xeus,
   xeus-zmq,
-  nlohmann_json,
-  argparse,
-  pugixml,
-
   # Runtime libs
   zeromq,
-  openssl,
-  libuuid,
-  curl,
-  makeWrapper,
-
-  # tests
-  doctest,
-
-  # installCheck
-  python3,
-  jq,
-
   # "clang-repl" | "cling"
   backend ? "clang-repl",
 }:
@@ -42,17 +36,20 @@ let
   # xeus-cpp 0.10.0 needs newer xeus / xeus-zmq than nixpkgs ships by default.
   xeus_6 = xeus.overrideAttrs (old: {
     version = "6.0.5";
+
     src = fetchFromGitHub {
       owner = "jupyter-xeus";
       repo = "xeus";
       tag = "6.0.5";
       hash = "sha256-nbjq4dzrukVsZI6X3lWpr9oCZV5IUu/vkqSNKD7o3vo=";
     };
+
     doCheck = false;
   });
 
   xeus_zmq_4 = (xeus-zmq.override { xeus = xeus_6; }).overrideAttrs (old: {
     version = "4.0.0";
+
     src = fetchFromGitHub {
       owner = "jupyter-xeus";
       repo = "xeus-zmq";
@@ -85,7 +82,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     cmake
@@ -111,6 +107,23 @@ stdenv.mkDerivation (finalAttrs: {
     "-DXEUS_CPP_RESOURCE_DIR=${resourceDir}"
   ];
 
+  # Run the upstream doctest suite. Like the wrapped kernel, the test binary
+  # drives CppInterOp directly, so it needs the same hermetic interpreter args.
+  doCheck = true;
+  checkInputs = [ doctest ];
+
+  checkPhase = ''
+    runHook preCheck
+
+    export CPPINTEROP_EXTRA_INTERPRETER_ARGS="${interpreterArgs}"
+    # The test binary is linked with the install RPATH ($out/lib), which does not
+    # exist yet at check time; point it at the freshly built libxeus-cpp instead.
+    export LD_LIBRARY_PATH="$PWD''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+    cmake --build . --target check-xeus-cpp
+
+    runHook postCheck
+  '';
+
   # Make the kernel hermetic: hand the interpreter the include/resource flags it
   # needs, since it cannot probe a system compiler in the sandbox.
   postInstall = ''
@@ -125,25 +138,10 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  # Run the upstream doctest suite. Like the wrapped kernel, the test binary
-  # drives CppInterOp directly, so it needs the same hermetic interpreter args.
-  doCheck = true;
-  checkInputs = [ doctest ];
-  checkPhase = ''
-    runHook preCheck
-
-    export CPPINTEROP_EXTRA_INTERPRETER_ARGS="${interpreterArgs}"
-    # The test binary is linked with the install RPATH ($out/lib), which does not
-    # exist yet at check time; point it at the freshly built libxeus-cpp instead.
-    export LD_LIBRARY_PATH="$PWD''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-    cmake --build . --target check-xeus-cpp
-
-    runHook postCheck
-  '';
-
   # Smoke test: drive the installed, wrapped kernel through Papermill and check
   # it actually compiles and runs C++.
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -167,6 +165,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  __structuredAttrs = true;
+
   passthru = {
     inherit backend;
     flags = interpreterArgs;
@@ -174,10 +174,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Jupyter kernel for C++ based on CppInterOp (${backend} backend)";
-    mainProgram = "xcpp";
     homepage = "https://github.com/compiler-research/xeus-cpp";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ thomasjm ];
     platforms = lib.platforms.unix;
+    mainProgram = "xcpp";
   };
 })

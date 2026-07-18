@@ -3,16 +3,16 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  libpcap,
-  texinfo,
-  iptables,
-  gnupgSupport ? true,
   gnupg,
   gpgme, # Increases dependencies!
-  wgetSupport ? true,
+  iptables,
+  libpcap,
+  texinfo,
   wget,
-  buildServer ? true,
   buildClient ? true,
+  buildServer ? true,
+  gnupgSupport ? true,
+  wgetSupport ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -66,13 +66,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Single Packet Authorization (and Port Knocking) server/client";
+
     longDescription = ''
       fwknop stands for the "FireWall KNock OPerator", and implements an
       authorization scheme called Single Packet Authorization (SPA).
     '';
+
     homepage = "https://www.cipherdyne.org/fwknop/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -7,8 +7,9 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "13";
   pname = "physlock";
+  version = "13";
+
   src = fetchFromGitHub {
     owner = "xyb3rt";
     repo = "physlock";
@@ -21,21 +22,21 @@ stdenv.mkDerivation (finalAttrs: {
     systemd
   ];
 
-  preConfigure = ''
-    substituteInPlace Makefile \
-      --replace "-m 4755 -o root -g root" ""
-  '';
-
   makeFlags = [
     "PREFIX=$(out)"
     "SESSION=systemd"
   ];
 
+  preConfigure = ''
+    substituteInPlace Makefile \
+      --replace "-m 4755 -o root -g root" ""
+  '';
+
   meta = {
     description = "Secure suspend/hibernate-friendly alternative to `vlock -an`";
     homepage = "https://github.com/xyb3rt/physlock";
-    mainProgram = "physlock";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "physlock";
   };
 })

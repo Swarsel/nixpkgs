@@ -4,7 +4,6 @@
   fetchFromGitHub,
   fetchFromGitLab,
   autoreconfHook,
-  pkg-config,
   boost,
   cppunit,
   glm,
@@ -13,11 +12,13 @@
   librevenge,
   libxml2,
   mdds,
+  pkg-config,
   zlib,
 }:
 let
   mdds_2_1 = mdds.overrideAttrs {
     version = "2.1.1";
+
     src = fetchFromGitLab {
       owner = "mdds";
       repo = "mdds";
@@ -37,6 +38,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Dr4QhzZQzLNHf7OMMjUaR6WbnIQbu18LIiAjPD0sCsY=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -55,9 +58,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   configureFlags = [ "--with-mdds=2.1" ];
-
-  strictDeps = true;
-
   enableParallelBuilding = true;
 
   meta = {

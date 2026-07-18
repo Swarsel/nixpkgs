@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nodejs,
   fetchPnpmDeps,
+  nix-update-script,
+  nodejs,
+  npmHooks,
   pnpmConfigHook,
   pnpm_10,
-  npmHooks,
   versionCheckHook,
-  nix-update-script,
 }:
 let
   pnpm = pnpm_10;
@@ -22,13 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "mcporter";
     tag = "v${finalAttrs.version}";
     hash = "sha256-dfbNyvIbdhZOLuwRDNLqUJHVeMEemioanktD6nL0Pmk=";
-  };
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    fetcherVersion = 3;
-    hash = "sha256-EGG9ycEMssFE4MOiXL5YuCRiXEaP//3boceR3d7/VQo=";
   };
 
   nativeBuildInputs = [
@@ -46,13 +39,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postBuild
   '';
 
-  dontNpmPrune = true;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
-  doInstallCheck = true;
+  dontNpmPrune = true;
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 3;
+    hash = "sha256-EGG9ycEMssFE4MOiXL5YuCRiXEaP//3boceR3d7/VQo=";
+  };
 
   passthru.updateScript = nix-update-script { };
 

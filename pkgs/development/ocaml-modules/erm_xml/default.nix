@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  ocaml,
   findlib,
+  ocaml,
   ocamlbuild,
 }:
 
@@ -18,22 +18,22 @@ stdenv.mkDerivation {
     sha256 = "sha256-OQdLTq9tJZc6XlcuPv2gxzYiQAUGd6AiBzfSi169XL0=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     ocaml
     findlib
     ocamlbuild
   ];
 
-  strictDeps = true;
-
   createFindlibDestdir = true;
 
   meta = {
-    homepage = "https://github.com/hannesm/xml";
     description = "XML Parser for discrete data";
-    platforms = ocaml.meta.platforms or [ ];
+    homepage = "https://github.com/hannesm/xml";
     license = lib.licenses.bsd3;
-    broken = lib.versionOlder ocaml.version "4.02" || lib.versionAtLeast ocaml.version "5.0";
     maintainers = with lib.maintainers; [ vbgl ];
+    platforms = ocaml.meta.platforms or [ ];
+    broken = lib.versionOlder ocaml.version "4.02" || lib.versionAtLeast ocaml.version "5.0";
   };
 }

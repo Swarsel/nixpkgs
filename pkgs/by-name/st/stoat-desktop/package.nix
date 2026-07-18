@@ -1,19 +1,19 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  copyDesktopItems,
+  desktopToDarwinBundle,
+  electron_42,
   fetchPnpmDeps,
   makeDesktopItem,
-  desktopToDarwinBundle,
-  pnpmConfigHook,
   makeWrapper,
-  removeReferencesTo,
-  copyDesktopItems,
-  pnpm_10,
-  nodejs,
-  electron_42,
-  zip,
   nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_10,
+  removeReferencesTo,
+  stdenvNoCC,
+  zip,
 }:
 let
   electron = electron_42;
@@ -27,8 +27,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "stoatchat";
     repo = "for-desktop";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-l4kxlPwohaxserVyNAb3Dp4f5XhnPUKeuRJwrOl9EWc=";
+    fetchSubmodules = true;
   };
 
   patches = [
@@ -42,8 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   strictDeps = true;
-  __structuredAttrs = true;
-  doCheck = true;
 
   nativeBuildInputs = [
     pnpmConfigHook
@@ -58,22 +56,9 @@ stdenv.mkDerivation (finalAttrs: {
     desktopToDarwinBundle
   ];
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      patches
-      ;
-    fetcherVersion = 3;
-    pnpm = pnpm_10;
-    hash = "sha256-0v+MHYFgnIN4FvzFkv5D3Bqc7538763yCIWu05XR+fA=";
-  };
-
-  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-
   # electron-forge's console output is squeezed into one narrow column if unset
   env.CI = "1";
+  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
   buildPhase = ''
     runHook preBuild
@@ -107,6 +92,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postBuild
   '';
 
+  doCheck = true;
+
   installPhase = lib.concatStringsSep "\n" [
     "runHook preInstall"
     # Make freedesktop stuff, then the convert hook should make them for Darwin
@@ -137,21 +124,37 @@ stdenv.mkDerivation (finalAttrs: {
     "runHook postInstall"
   ];
 
+  __structuredAttrs = true;
+
   desktopItems = [
     (makeDesktopItem {
-      name = "Stoat";
-      exec = "${finalAttrs.meta.mainProgram} %u";
-      icon = "${finalAttrs.meta.mainProgram}";
-      desktopName = "Stoat";
-      genericName = "Chat Client";
       categories = [
         "Network"
         "Chat"
         "InstantMessaging"
       ];
+
+      desktopName = "Stoat";
+      exec = "${finalAttrs.meta.mainProgram} %u";
+      genericName = "Chat Client";
+      icon = "${finalAttrs.meta.mainProgram}";
+      name = "Stoat";
       startupNotify = false;
     })
   ];
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      patches
+      ;
+
+    fetcherVersion = 3;
+    hash = "sha256-0v+MHYFgnIN4FvzFkv5D3Bqc7538763yCIWu05XR+fA=";
+    pnpm = pnpm_10;
+  };
 
   passthru.updateScript = nix-update-script { };
 
@@ -160,10 +163,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://stoat.chat/";
     changelog = "https://github.com/stoatchat/for-desktop/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       v3rm1n0
       RossSmyth
     ];
+
     platforms = with lib.platforms; linux ++ darwin;
     mainProgram = "stoat-desktop";
   };

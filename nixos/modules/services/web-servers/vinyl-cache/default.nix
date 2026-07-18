@@ -45,11 +45,6 @@ let
 
   addressSubmodule = types.submodule {
     options = {
-      name = mkOption {
-        description = "Name is referenced in logs. If name is not specified, 'a0', 'a1', etc. is used.";
-        default = null;
-        type = with types; nullOr str;
-      };
       address = mkOption {
         description = ''
           If given an IP address, it can be a host name ("localhost"), an IPv4 dotted-quad
@@ -62,35 +57,48 @@ let
           The user, group and mode sub-arguments may be used to specify the permissions
           of the socket file. These sub-arguments do not apply to  abstract sockets.
         '';
+
         type = types.str;
       };
-      port = mkOption {
-        description = "The port to use for IP sockets. If port is not specified, port 80 (http) is used.";
+
+      group = mkOption {
         default = null;
+        description = "Group name who owns the socket file.";
+        type = with lib.types; nullOr str;
+      };
+
+      mode = mkOption {
+        default = null;
+        description = "Permission of the socket file (3-digit octal value).";
+        type = with types; nullOr str;
+      };
+
+      name = mkOption {
+        default = null;
+        description = "Name is referenced in logs. If name is not specified, 'a0', 'a1', etc. is used.";
+        type = with types; nullOr str;
+      };
+
+      port = mkOption {
+        default = null;
+        description = "The port to use for IP sockets. If port is not specified, port 80 (http) is used.";
         type = with types; nullOr port;
       };
+
       proto = mkOption {
+        default = "HTTP";
         description = "PROTO can be 'HTTP' (the default) or 'PROXY'.  Both version 1 and 2 of the proxy protocol can be used.";
+
         type = types.enum [
           "HTTP"
           "PROXY"
         ];
-        default = "HTTP";
       };
+
       user = mkOption {
+        default = null;
         description = "User name who owns the socket file.";
-        default = null;
         type = with lib.types; nullOr str;
-      };
-      group = mkOption {
-        description = "Group name who owns the socket file.";
-        default = null;
-        type = with lib.types; nullOr str;
-      };
-      mode = mkOption {
-        description = "Permission of the socket file (3-digit octal value).";
-        default = null;
-        type = with types; nullOr str;
       };
     };
   };
@@ -117,91 +125,64 @@ let
          }' -r vmod_path";
 in
 {
-  meta.maintainers = [
-    lib.maintainers.leona
-    lib.maintainers.osnyx
-  ];
   options = {
     services.vinyl-cache = {
+      config = lib.mkOption {
+        description = ''
+          Verbatim default.vcl configuration.
+        '';
+
+        type = lib.types.lines;
+      };
+
       enable = lib.mkEnableOption "Vinyl Cache";
+      package = lib.mkPackageOption pkgs "vinyl-cache" { };
 
       enableConfigCheck = lib.mkEnableOption "checking the config during build time" // {
         default = true;
       };
 
-      package = lib.mkPackageOption pkgs "vinyl-cache" { };
+      enableFileLogging = lib.mkEnableOption "file based logging";
+
+      extraCommandLine = lib.mkOption {
+        default = "";
+
+        description = ''
+          Command line switches for vinyld (run 'vinyld -?' to get list of options)
+        '';
+
+        example = "-s malloc,256M";
+        type = lib.types.str;
+      };
+
+      extraModules = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          Vinyl Cache modules (except 'std').
+        '';
+
+        type = lib.types.listOf lib.types.package;
+      };
 
       listen = lib.mkOption {
-        description = "Accept for client requests on the specified listen addresses.";
-        type = lib.types.listOf checkedAddressModule;
-        defaultText = lib.literalExpression ''[ { address="*"; port=6081; } ]'';
         default = [
           {
             address = "*";
             port = 6081;
           }
         ];
-      };
 
-      config = lib.mkOption {
-        type = lib.types.lines;
-        description = ''
-          Verbatim default.vcl configuration.
-        '';
+        defaultText = lib.literalExpression ''[ { address="*"; port=6081; } ]'';
+        description = "Accept for client requests on the specified listen addresses.";
+        type = lib.types.listOf checkedAddressModule;
       };
-
-      extraModules = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
-        default = [ ];
-        description = ''
-          Vinyl Cache modules (except 'std').
-        '';
-      };
-
-      extraCommandLine = lib.mkOption {
-        type = lib.types.str;
-        default = "";
-        example = "-s malloc,256M";
-        description = ''
-          Command line switches for vinyld (run 'vinyld -?' to get list of options)
-        '';
-      };
-
-      enableFileLogging = lib.mkEnableOption "file based logging";
     };
 
   };
 
   config = lib.mkMerge [
     (lib.mkIf cfg.enable {
-      systemd.services.vinyl-cache = {
-        description = "Vinyl Cache";
-        wantedBy = [ "multi-user.target" ];
-        after = [ "network.target" ];
-        serviceConfig = {
-          Type = "simple";
-          ExecStart = "${cfg.package}/bin/vinyld ${commandLineAddresses} -F ${cfg.extraCommandLine} ${commandLine}";
-          Restart = "always";
-          RestartSec = "5s";
-          User = "vinyl-cache";
-          Group = "vinyl-cache";
-          DynamicUser = true;
-          RuntimeDirectory = lib.removePrefix "/run/" stateDir;
-          AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
-          NoNewPrivileges = true;
-          LimitNOFILE = 131072;
-        };
-      };
-
-      environment.systemPackages = [ cfg.package ];
-
-      # check .vcl syntax at compile time (e.g. before nixops deployment)
-      system.checks = lib.mkIf cfg.enableConfigCheck [
-        (pkgs.runCommand "check-vinyl-cache-syntax" { } ''
-          ${cfg.package}/bin/vinyld -C ${commandLine} 2> $out || (cat $out; exit 1)
-        '')
-      ];
-
       assertions =
         concatMap (m: [
           {
@@ -223,37 +204,74 @@ in
             message = "The vinyl-cache NixOS mosule only supports statedirs in /run/, but vinyl-cache package was compiled with ${stateDir}.";
           }
         ];
+
+      environment.systemPackages = [ cfg.package ];
+
+      # check .vcl syntax at compile time (e.g. before nixops deployment)
+      system.checks = lib.mkIf cfg.enableConfigCheck [
+        (pkgs.runCommand "check-vinyl-cache-syntax" { } ''
+          ${cfg.package}/bin/vinyld -C ${commandLine} 2> $out || (cat $out; exit 1)
+        '')
+      ];
+
+      systemd.services.vinyl-cache = {
+        after = [ "network.target" ];
+        description = "Vinyl Cache";
+
+        serviceConfig = {
+          AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
+          DynamicUser = true;
+          ExecStart = "${cfg.package}/bin/vinyld ${commandLineAddresses} -F ${cfg.extraCommandLine} ${commandLine}";
+          Group = "vinyl-cache";
+          LimitNOFILE = 131072;
+          NoNewPrivileges = true;
+          Restart = "always";
+          RestartSec = "5s";
+          RuntimeDirectory = lib.removePrefix "/run/" stateDir;
+          Type = "simple";
+          User = "vinyl-cache";
+        };
+
+        wantedBy = [ "multi-user.target" ];
+      };
     })
     (lib.mkIf (cfg.enable && cfg.enableFileLogging) {
+      services.logrotate.settings.vinyl-cache = lib.mapAttrs (_: lib.mkDefault) {
+        compress = true;
+        delaycompress = true;
+        files = [ "/var/log/vinyl-cache/*.log" ];
+        frequency = "daily";
+        postrotate = "systemctl reload vinylncsa";
+        rotate = 14;
+      };
+
       systemd.services = {
         vinylncsa = {
           after = [ "vinyl-cache.service" ];
-          requires = [ "vinyl-cache.service" ];
           description = "Vinyl Cache logging daemon";
-          wantedBy = [ "multi-user.target" ];
+          requires = [ "vinyl-cache.service" ];
+
           # We want to reopen logs with HUP. vinylncsa must run in daemon mode for that.
           serviceConfig = {
-            Type = "forking";
-            Restart = "always";
-            RuntimeDirectory = "vinylncsa";
+            ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+            ExecStart = "${cfg.package}/bin/vinylncsa -D -a -w /var/log/vinyl-cache/vinyl-cache.log -P /run/vinylncsa/vinylncsa.pid";
+            Group = "vinyl-cache";
             LogsDirectory = "vinyl-cache";
             PIDFile = "/run/vinylncsa/vinylncsa.pid";
+            Restart = "always";
+            RuntimeDirectory = "vinylncsa";
+            Type = "forking";
             User = "vinyl-cache";
-            Group = "vinyl-cache";
-            ExecStart = "${cfg.package}/bin/vinylncsa -D -a -w /var/log/vinyl-cache/vinyl-cache.log -P /run/vinylncsa/vinylncsa.pid";
-            ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
           };
+
+          wantedBy = [ "multi-user.target" ];
         };
       };
-
-      services.logrotate.settings.vinyl-cache = lib.mapAttrs (_: lib.mkDefault) {
-        files = [ "/var/log/vinyl-cache/*.log" ];
-        frequency = "daily";
-        rotate = 14;
-        compress = true;
-        delaycompress = true;
-        postrotate = "systemctl reload vinylncsa";
-      };
     })
+  ];
+
+  meta.maintainers = [
+    lib.maintainers.leona
+    lib.maintainers.osnyx
   ];
 }

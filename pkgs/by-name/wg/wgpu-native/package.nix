@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  fixDarwinDylibNames,
-  vulkan-loader,
-  nix-update-script,
   callPackage,
+  fixDarwinDylibNames,
+  nix-update-script,
+  rustPlatform,
+  vulkan-loader,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -26,8 +26,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "dev"
   ];
 
-  cargoHash = "sha256-PZHS2lUX6PbIG1xF6jhreGjdtCbS/GWeY1pHhRPo2aU=";
-
   nativeBuildInputs = [
     rustPlatform.bindgenHook
   ]
@@ -37,6 +35,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     vulkan-loader
   ];
 
+  cargoHash = "sha256-PZHS2lUX6PbIG1xF6jhreGjdtCbS/GWeY1pHhRPo2aU=";
   env.WGPU_NATIVE_VERSION = finalAttrs.version;
 
   postInstall = ''
@@ -46,19 +45,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   passthru = {
-    updateScript = nix-update-script { };
     examples = callPackage ./examples.nix {
       inherit (finalAttrs) version src;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Native WebGPU implementation based on wgpu-core";
     homepage = "https://github.com/gfx-rs/wgpu-native";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = with lib.maintainers; [ niklaskorz ];
   };
 })

@@ -2,19 +2,18 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
   doubleratchet,
   omemo,
+  protobuf,
+  setuptools,
+  typing-extensions,
   x3dh,
   xeddsa,
-  protobuf,
-  typing-extensions,
   xmlschema,
 }:
 buildPythonPackage rec {
   pname = "twomemo";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Syndace";
@@ -24,7 +23,6 @@ buildPythonPackage rec {
   };
 
   strictDeps = true;
-
   build-system = [ setuptools ];
 
   dependencies = [
@@ -40,6 +38,8 @@ buildPythonPackage rec {
     xmlschema
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "twomemo"
   ];
@@ -49,7 +49,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/Syndace/python-twomemo";
     changelog = "https://github.com/Syndace/python-twomemo/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    teams = with lib.teams; [ ngi ];
     maintainers = with lib.maintainers; [ themadbit ];
+    teams = with lib.teams; [ ngi ];
   };
 }

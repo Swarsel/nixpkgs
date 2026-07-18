@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  gtk3,
   glib,
-  wrapGAppsHook3,
-  libusb1,
+  gtk3,
   hidapi,
-  udev,
+  libusb1,
   pkg-config,
+  rustPlatform,
+  udev,
+  wrapGAppsHook3,
 }:
 
 # system76-keyboard-configurator tries to spawn a daemon as root via pkexec, so
@@ -51,10 +51,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Keyboard configuration application for System76 keyboards and laptops";
-    mainProgram = "system76-keyboard-configurator";
     homepage = "https://github.com/pop-os/keyboard-configurator";
     license = with lib.licenses; [ gpl3Only ];
     maintainers = with lib.maintainers; [ mirrexagon ];
     platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "system76-keyboard-configurator";
   };
 })

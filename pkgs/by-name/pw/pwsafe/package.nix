@@ -3,24 +3,24 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  zip,
+  curl,
+  file,
   gettext,
-  perl,
-  wxwidgets_3_2,
+  gitUpdater,
+  libuuid,
   libxext,
   libxi,
   libxt,
   libxtst,
-  xercesc,
-  qrencode,
-  libuuid,
   libyubikey,
-  yubikey-personalization,
-  curl,
   openssl,
-  file,
-  gitUpdater,
+  perl,
+  pkg-config,
+  qrencode,
+  wxwidgets_3_2,
+  xercesc,
+  yubikey-personalization,
+  zip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,6 +33,28 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-54cwQZi93p32JxxLc2Mql2XbJPvwqA2Rfne5G+5i6eU=";
   };
+
+  postPatch = ''
+    # Fix perl scripts used during the build.
+    for f in $(find . -type f -name '*.pl') ; do
+      patchShebangs $f
+    done
+
+    # Fix hard coded paths.
+    for f in $(grep -Rl /usr/share/ src install/desktop) ; do
+      substituteInPlace $f --replace /usr/share/ $out/share/
+    done
+
+    # Fix hard coded zip path.
+    substituteInPlace help/Makefile.linux --replace /usr/bin/zip ${zip}/bin/zip
+
+    for f in $(grep -Rl /usr/bin/ .) ; do
+      substituteInPlace $f --replace /usr/bin/ ""
+    done
+  ''
+  + lib.optionalString stdenv.hostPlatform.isDarwin ''
+    substituteInPlace src/ui/cli/CMakeLists.txt --replace "uuid" ""
+  '';
 
   strictDeps = true;
 
@@ -71,28 +93,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-DNO_YUBI=ON"
   ];
 
-  postPatch = ''
-    # Fix perl scripts used during the build.
-    for f in $(find . -type f -name '*.pl') ; do
-      patchShebangs $f
-    done
-
-    # Fix hard coded paths.
-    for f in $(grep -Rl /usr/share/ src install/desktop) ; do
-      substituteInPlace $f --replace /usr/share/ $out/share/
-    done
-
-    # Fix hard coded zip path.
-    substituteInPlace help/Makefile.linux --replace /usr/bin/zip ${zip}/bin/zip
-
-    for f in $(grep -Rl /usr/bin/ .) ; do
-      substituteInPlace $f --replace /usr/bin/ ""
-    done
-  ''
-  + lib.optionalString stdenv.hostPlatform.isDarwin ''
-    substituteInPlace src/ui/cli/CMakeLists.txt --replace "uuid" ""
-  '';
-
   installFlags = [ "PREFIX=${placeholder "out"}" ];
 
   passthru.updateScript = gitUpdater {
@@ -102,6 +102,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Password database utility";
+
     longDescription = ''
       Password Safe is a password database utility. Like many other
       such products, commercial and otherwise, it stores your
@@ -109,11 +110,14 @@ stdenv.mkDerivation (finalAttrs: {
       one password (the "safe combination"), instead of all the
       username/password combinations that you use.
     '';
+
     homepage = "https://pwsafe.org/";
+    license = lib.licenses.artistic2;
+
     maintainers = with lib.maintainers; [
       pjones
     ];
+
     platforms = lib.platforms.unix;
-    license = lib.licenses.artistic2;
   };
 })

@@ -1,51 +1,43 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonOlder,
-  replaceVars,
-
-  # build-system
-  setuptools,
-
-  # patched in
-  geos,
-  gdal,
-  withGdal ? false,
-
-  # dependencies
-  asgiref,
-  sqlparse,
-
-  # optional-dependencies
-  argon2-cffi,
-  bcrypt,
-
   # tests
   aiosmtpd,
+  # optional-dependencies
+  argon2-cffi,
+  # dependencies
+  asgiref,
+  bcrypt,
+  buildPythonPackage,
   docutils,
+  gdal,
   geoip2,
+  # patched in
+  geos,
   jinja2,
   numpy,
   pillow,
   pylibmc,
   pymemcache,
   python,
-  pyyaml,
+  pythonOlder,
   pytz,
+  pyyaml,
   redis,
+  replaceVars,
   selenium,
+  # build-system
+  setuptools,
+  sqlparse,
   tblib,
   tzdata,
+  withGdal ? false,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "django";
   version = "6.0.7";
-  pyproject = true;
-
-  disabled = pythonOlder "3.12";
 
   src = fetchFromGitHub {
     owner = "django";
@@ -68,9 +60,9 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.optionals withGdal [
     (replaceVars ./6.x/gdal.patch {
-      geos = geos;
-      gdal = gdal;
       extension = stdenv.hostPlatform.extensions.sharedLibrary;
+      gdal = gdal;
+      geos = geos;
     })
   ];
 
@@ -78,18 +70,6 @@ buildPythonPackage (finalAttrs: {
     substituteInPlace tests/utils_tests/test_autoreload.py \
       --replace-fail "/usr/bin/python" "${python.interpreter}"
   '';
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    asgiref
-    sqlparse
-  ];
-
-  optional-dependencies = {
-    argon2 = [ argon2-cffi ];
-    bcrypt = [ bcrypt ];
-  };
 
   nativeCheckInputs = [
     # tests/requirements/py3.txt
@@ -135,11 +115,26 @@ buildPythonPackage (finalAttrs: {
   '';
 
   __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    asgiref
+    sqlparse
+  ];
+
+  disabled = pythonOlder "3.12";
+
+  optional-dependencies = {
+    argon2 = [ argon2-cffi ];
+    bcrypt = [ bcrypt ];
+  };
+
+  pyproject = true;
 
   meta = with lib; {
-    changelog = "https://docs.djangoproject.com/en/${lib.versions.majorMinor finalAttrs.version}/releases/${finalAttrs.version}/";
     description = "High-level Python Web framework that encourages rapid development and clean, pragmatic design";
     homepage = "https://www.djangoproject.com";
+    changelog = "https://docs.djangoproject.com/en/${lib.versions.majorMinor finalAttrs.version}/releases/${finalAttrs.version}/";
     license = licenses.bsd3;
     maintainers = with maintainers; [ hexa ];
   };

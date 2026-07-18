@@ -1,14 +1,13 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-
+  buildPythonPackage,
   cython,
   geos,
   numpy,
   oldest-supported-numpy,
+  pytestCheckHook,
   setuptools,
   wheel,
 }:
@@ -16,7 +15,6 @@
 buildPythonPackage rec {
   pname = "shapely";
   version = "2.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "shapely";
@@ -34,9 +32,6 @@ buildPythonPackage rec {
   ];
 
   buildInputs = [ geos ];
-
-  dependencies = [ numpy ];
-
   nativeCheckInputs = [ pytestCheckHook ];
 
   # Fix a ModuleNotFoundError. Investigated at:
@@ -44,6 +39,8 @@ buildPythonPackage rec {
   preCheck = ''
     cd $out
   '';
+
+  dependencies = [ numpy ];
 
   disabledTests = lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) [
     # FIXME(lf-): these logging tests are broken, which is definitely our
@@ -56,12 +53,13 @@ buildPythonPackage rec {
     "test_info_handler"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "shapely" ];
 
   meta = {
-    changelog = "https://github.com/shapely/shapely/blob/${src.tag}/CHANGES.txt";
     description = "Manipulation and analysis of geometric objects";
     homepage = "https://github.com/shapely/shapely";
+    changelog = "https://github.com/shapely/shapely/blob/${src.tag}/CHANGES.txt";
     license = lib.licenses.bsd3;
     teams = [ lib.teams.geospatial ];
   };

@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiodns,
   buildPythonPackage,
   cached-ipaddress,
-  fetchFromGitHub,
   ifaddr,
   libredirect,
   netifaces,
@@ -17,7 +17,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aiodiscover";
   version = "3.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bdraco";
@@ -25,18 +24,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-yrXy665O9VZ3aWn23QQCJm5USBV0P5aTSsQU5QGIcP8=";
   };
-
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    aiodns
-    cached-ipaddress
-    ifaddr
-    netifaces
-    pyroute2
-  ];
-
-  pythonRelaxDeps = [ "aiodns" ];
 
   nativeCheckInputs = [
     libredirect.hook
@@ -50,7 +37,19 @@ buildPythonPackage (finalAttrs: {
     export NIX_REDIRECTS=/etc/resolv.conf=$(realpath resolv.conf)
   '';
 
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    aiodns
+    cached-ipaddress
+    ifaddr
+    netifaces
+    pyroute2
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "aiodiscover" ];
+  pythonRelaxDeps = [ "aiodns" ];
 
   meta = {
     description = "Python module to discover hosts via ARP and PTR lookup";

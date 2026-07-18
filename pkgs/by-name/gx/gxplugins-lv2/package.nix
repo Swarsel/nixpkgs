@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libx11,
-  xorgproto,
   cairo,
+  libx11,
   lv2,
   pkg-config,
+  xorgproto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,14 +22,13 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libx11
     xorgproto
     cairo
     lv2
   ];
-
-  installFlags = [ "INSTALL_DIR=$(out)/lib/lv2" ];
 
   configurePhase = ''
     runHook preConfigure
@@ -41,11 +40,13 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postConfigure
   '';
 
+  installFlags = [ "INSTALL_DIR=$(out)/lib/lv2" ];
+
   meta = {
-    homepage = "https://github.com/brummer10/GxPlugins.lv2";
     description = "Set of extra lv2 plugins from the guitarix project";
-    maintainers = [ lib.maintainers.magnetophon ];
+    homepage = "https://github.com/brummer10/GxPlugins.lv2";
     license = lib.licenses.gpl3Plus;
+    maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.linux;
   };
 })

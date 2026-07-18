@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  jre,
-  makeWrapper,
-  makeDesktopItem,
   copyDesktopItems,
   gnused,
+  jre,
+  makeDesktopItem,
+  makeWrapper,
 }:
 stdenv.mkDerivation rec {
   pname = "worldpainter";
@@ -17,13 +17,13 @@ stdenv.mkDerivation rec {
     hash = "sha256-UY2KB6IUlv35wEG9PNU5gWvV5L6KsEiUvJEpqWXSBSA=";
   };
 
+  outputs = [ "out" ];
+
   nativeBuildInputs = [
     makeWrapper
     copyDesktopItems
     gnused
   ];
-
-  outputs = [ "out" ];
 
   installPhase = ''
     runHook preInstall
@@ -51,25 +51,25 @@ stdenv.mkDerivation rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = pname;
+      categories = [ "Game" ];
+      comment = "Paint your own Minecraft worlds";
       desktopName = pname;
       exec = pname;
       icon = pname;
+      name = pname;
+      startupWMClass = pname;
       terminal = false;
       type = "Application";
-      startupWMClass = pname;
-      comment = "Paint your own Minecraft worlds";
-      categories = [ "Game" ];
     })
   ];
 
   meta = {
-    homepage = "https://www.worldpainter.net/";
     description = "Interactive map generator for Minecraft";
     longDescription = "WorldPainter is an interactive map generator for Minecraft. It allows you to \"paint\" landscapes using similar tools as a regular paint program. Sculpt and mould the terrain, paint materials, trees, snow and ice, etc. onto it, and much more";
+    homepage = "https://www.worldpainter.net/";
     license = with lib.licenses; [ gpl3 ];
+    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
     maintainers = with lib.maintainers; [ eymeric ];
     platforms = lib.platforms.linux;
-    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
   };
 }

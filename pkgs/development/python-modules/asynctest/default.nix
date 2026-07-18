@@ -9,10 +9,6 @@
 buildPythonPackage rec {
   pname = "asynctest";
   version = "0.13.0";
-  format = "setuptools";
-
-  # Unmaintained and incompatible python 3.11
-  disabled = pythonAtLeast "3.11";
 
   src = fetchPypi {
     inherit pname version;
@@ -28,6 +24,10 @@ buildPythonPackage rec {
   checkPhase = ''
     ${python.interpreter} -m unittest test
   '';
+
+  # Unmaintained and incompatible python 3.11
+  disabled = pythonAtLeast "3.11";
+  format = "setuptools";
 
   meta = {
     description = "Enhance the standard unittest package with features for testing asyncio libraries";

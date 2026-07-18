@@ -1,15 +1,15 @@
 {
-  jdk,
-  version,
-  src,
   lib,
   stdenv,
   gradle,
-  extraConfig ? [ ],
-  extraNativeBuildInputs ? [ ],
+  jdk,
   rsync,
   runCommand,
+  src,
   testers,
+  version,
+  extraConfig ? [ ],
+  extraNativeBuildInputs ? [ ],
 }:
 
 # Each Corretto version is based on a corresponding OpenJDK version. So
@@ -29,17 +29,6 @@ in
 jdk.overrideAttrs (
   finalAttrs: oldAttrs: {
     inherit pname version src;
-
-    nativeBuildInputs =
-      oldAttrs.nativeBuildInputs
-      ++ [
-        jdk
-        gradle
-        rsync
-      ]
-      ++ extraNativeBuildInputs;
-
-    dontConfigure = true;
 
     postPatch =
       let
@@ -80,16 +69,17 @@ jdk.overrideAttrs (
         gradleFlagsArray+=(-Pcorretto.extra_config="${extra_config}")
       '';
 
+    nativeBuildInputs =
+      oldAttrs.nativeBuildInputs
+      ++ [
+        jdk
+        gradle
+        rsync
+      ]
+      ++ extraNativeBuildInputs;
+
     # since we dontConfigure, we must run this manually
     preBuild = "gradleConfigureHook";
-
-    # The Linux installer is placed at linux/universal/tar whereas the MacOS
-    # one is at mac/tar.
-    gradleBuildTask =
-      if stdenv.hostPlatform.isDarwin then
-        ":installers:mac:tar:build"
-      else
-        ":installers:linux:universal:tar:packageBuildResults";
 
     postBuild = ''
       # Prepare for the installPhase so that it looks like if a normal
@@ -111,6 +101,16 @@ jdk.overrideAttrs (
       ln -s $out/lib/corretto $out/lib/openjdk
     '';
 
+    dontConfigure = true;
+
+    # The Linux installer is placed at linux/universal/tar whereas the MacOS
+    # one is at mac/tar.
+    gradleBuildTask =
+      if stdenv.hostPlatform.isDarwin then
+        ":installers:mac:tar:build"
+      else
+        ":installers:linux:universal:tar:packageBuildResults";
+
     passthru =
       let
         pkg = finalAttrs.finalPackage;
@@ -119,10 +119,7 @@ jdk.overrideAttrs (
       // {
         tests = {
           version = testers.testVersion { package = pkg; };
-          vendor = runCommand "${pname}-vendor" { nativeBuildInputs = [ pkg ]; } ''
-            output=$(${pkg.meta.mainProgram} -XshowSettings:properties -version 2>&1 | grep vendor)
-            grep -Fq "java.vendor = Amazon.com Inc." - <<< "$output" && touch $out
-          '';
+
           compiler = runCommand "${pname}-compiler" { nativeBuildInputs = [ pkg ]; } ''
             cat << EOF  > Main.java
             class Main {
@@ -134,13 +131,18 @@ jdk.overrideAttrs (
             ${pkg}/bin/javac Main.java
             ${pkg}/bin/java Main | grep -q "Hello, World!" && touch $out
           '';
+
+          vendor = runCommand "${pname}-vendor" { nativeBuildInputs = [ pkg ]; } ''
+            output=$(${pkg.meta.mainProgram} -XshowSettings:properties -version 2>&1 | grep vendor)
+            grep -Fq "java.vendor = Amazon.com Inc." - <<< "$output" && touch $out
+          '';
         };
       };
 
     meta = oldAttrs.meta // {
+      description = "Amazon's distribution of OpenJDK";
       homepage = "https://aws.amazon.com/corretto";
       license = lib.licenses.gpl2Only;
-      description = "Amazon's distribution of OpenJDK";
       maintainers = with lib.maintainers; [ rollf ];
       platforms = lib.platforms.linux;
       teams = [ ];

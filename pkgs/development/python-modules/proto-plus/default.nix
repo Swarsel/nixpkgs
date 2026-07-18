@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  protobuf,
+  buildPythonPackage,
   googleapis-common-protos,
+  protobuf,
   pytestCheckHook,
   pytz,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "proto-plus";
   version = "1.27.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googleapis";
@@ -21,17 +20,15 @@ buildPythonPackage rec {
     hash = "sha256-B+CkOLzbpu3XXnH7MND5GCljG/bUyPPU57zXIIXoRiU=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ protobuf ];
-
-  pythonRelaxDeps = [ "protobuf" ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytz
     googleapis-common-protos
   ];
+
+  build-system = [ setuptools ];
+  dependencies = [ protobuf ];
+  pyproject = true;
 
   pytestFlags = [
     # pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
@@ -41,6 +38,7 @@ buildPythonPackage rec {
   ];
 
   pythonImportsCheck = [ "proto" ];
+  pythonRelaxDeps = [ "protobuf" ];
 
   meta = {
     description = "Beautiful, idiomatic protocol buffers in Python";

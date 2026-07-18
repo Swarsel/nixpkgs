@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   goatcounter,
   nixosTests,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,13 +19,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-ICbtL6O1Kbig2WgbLCVSSe9MbIrYWmxYn4M2R5mwv/c=";
-  subPackages = [ "cmd/goatcounter" ];
-  modRoot = ".";
-
   # Derived from the upstream build scripts:
   #
   # `-trimpath` is used, which `allowGoReference` sets
   allowGoReference = true;
+
   # Flags set in the upstream build.
   ldflags = [
     "-s"
@@ -33,25 +31,31 @@ buildGoModule (finalAttrs: {
     "-X zgo.at/goatcounter/v2.Version=${finalAttrs.src.rev}"
   ];
 
+  modRoot = ".";
+  subPackages = [ "cmd/goatcounter" ];
+
   passthru.tests = {
-    moduleTest = nixosTests.goatcounter;
     version = testers.testVersion {
-      package = goatcounter;
-      command = "goatcounter version";
       version = "v${finalAttrs.version}";
+      command = "goatcounter version";
+      package = goatcounter;
     };
+
+    moduleTest = nixosTests.goatcounter;
   };
 
   meta = {
     description = "Easy web analytics. No tracking of personal data";
-    changelog = "https://github.com/arp242/goatcounter/releases/tag/${finalAttrs.src.rev}";
+
     longDescription = ''
       GoatCounter is an open source web analytics platform available as a hosted
       service (free for non-commercial use) or self-hosted app. It aims to offer easy
       to use and meaningful privacy-friendly web analytics as an alternative to
       Google Analytics or Matomo.
     '';
+
     homepage = "https://github.com/arp242/goatcounter";
+    changelog = "https://github.com/arp242/goatcounter/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.eupl12;
     maintainers = with lib.maintainers; [ tylerjl ];
     mainProgram = "goatcounter";

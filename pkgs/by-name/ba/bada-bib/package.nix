@@ -1,7 +1,5 @@
 {
   lib,
-  meson,
-  ninja,
   fetchFromGitHub,
   appstream-glib,
   desktop-file-utils,
@@ -13,6 +11,8 @@
   gtksourceview5,
   libadwaita,
   libxml2,
+  meson,
+  ninja,
   pkg-config,
   python3Packages,
   wrapGAppsHook4,
@@ -21,7 +21,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "bada-bib";
   version = "0.8.1";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "RogerCrocker";
@@ -29,6 +28,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     sha256 = "sha256-8lpkmQCVh94+qhFJijAIVyYeJRFz2u/OYR1C5E+gtOE=";
   };
+
+  postPatch = ''
+    patchShebangs build-aux/meson/postinstall.py
+  '';
 
   nativeBuildInputs = [
     gettext
@@ -53,17 +56,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     desktop-file-utils
   ];
 
-  pythonPath = with python3Packages; [
-    bibtexparser
-    pygobject3
-  ];
-
-  postPatch = ''
-    patchShebangs build-aux/meson/postinstall.py
-  '';
-
-  dontWrapGApps = true; # Needs python wrapper
-
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
@@ -72,11 +64,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
     wrapPythonProgramsIn "$out/libexec" "$out ''${pythonPath[*]}"
   '';
 
+  dontWrapGApps = true; # Needs python wrapper
+  pyproject = false;
+
+  pythonPath = with python3Packages; [
+    bibtexparser
+    pygobject3
+  ];
+
   meta = {
-    homepage = "https://github.com/RogerCrocker/BadaBib";
     description = "Simple BibTeX Viewer and Editor";
-    mainProgram = "badabib";
-    maintainers = [ lib.maintainers.Cogitri ];
+    homepage = "https://github.com/RogerCrocker/BadaBib";
     license = lib.licenses.gpl3Plus;
+    maintainers = [ lib.maintainers.Cogitri ];
+    mainProgram = "badabib";
   };
 })

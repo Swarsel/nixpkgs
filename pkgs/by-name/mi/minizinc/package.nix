@@ -2,26 +2,28 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  bison,
   callPackage,
-  jq,
+  cbc,
   cmake,
   flex,
-  bison,
   gecode,
+  jq,
   mpfr,
-  cbc,
   zlib,
 }:
 
 let
   gecode_6_3_0 = gecode.overrideAttrs (_: {
     version = "6.3.0";
+
     src = fetchFromGitHub {
       owner = "gecode";
       repo = "gecode";
       rev = "f7f0d7c273d6844698f01cec8229ebe0b66a016a";
       hash = "sha256-skf2JEtNkRqEwfHb44WjDGedSygxVuqUixskTozi/5k=";
     };
+
     patches = [ ];
   });
 in
@@ -69,8 +71,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://www.minizinc.org/";
     description = "Medium-level constraint modelling language";
+
     longDescription = ''
       MiniZinc is a medium-level constraint modelling
       language. It is high-level enough to express most
@@ -78,8 +80,10 @@ stdenv.mkDerivation (finalAttrs: {
       that it can be mapped onto existing solvers easily and consistently.
       It is a subset of the higher-level language Zinc.
     '';
+
+    homepage = "https://www.minizinc.org/";
     license = lib.licenses.mpl20;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

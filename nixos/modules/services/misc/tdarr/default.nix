@@ -26,40 +26,41 @@ in
     package = lib.mkPackageOption pkgs "tdarr" { };
 
     dataDir = lib.mkOption {
-      type = lib.types.path;
       default = "/var/lib/tdarr";
       description = "Base directory for Tdarr data.";
-    };
-
-    user = lib.mkOption {
-      type = lib.types.str;
-      default = "tdarr";
-      description = "User account under which Tdarr runs.";
+      type = lib.types.path;
     };
 
     group = lib.mkOption {
-      type = lib.types.str;
       default = "tdarr";
       description = "Group under which Tdarr runs.";
+      type = lib.types.str;
+    };
+
+    user = lib.mkOption {
+      default = "tdarr";
+      description = "User account under which Tdarr runs.";
+      type = lib.types.str;
     };
   };
 
   config = lib.mkIf (cfg.enable || cfg.server.enable || cfg.nodes != { }) {
-    users.users.tdarr = lib.mkIf (cfg.user == "tdarr") {
-      isSystemUser = true;
-      group = cfg.group;
-      home = cfg.dataDir;
-      createHome = true;
-    };
-    users.groups.tdarr = lib.mkIf (cfg.group == "tdarr") { };
-
     systemd.tmpfiles.rules = [
       "d ${cfg.dataDir} 0750 ${cfg.user} ${cfg.group} -"
     ];
+
+    users.groups.tdarr = lib.mkIf (cfg.group == "tdarr") { };
+
+    users.users.tdarr = lib.mkIf (cfg.user == "tdarr") {
+      createHome = true;
+      group = cfg.group;
+      home = cfg.dataDir;
+      isSystemUser = true;
+    };
   };
 
   meta = {
-    maintainers = with lib.maintainers; [ mistyttm ];
     doc = ./tdarr.md;
+    maintainers = with lib.maintainers; [ mistyttm ];
   };
 }

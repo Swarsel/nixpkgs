@@ -1,20 +1,18 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  makeDesktopItem,
+  buildNpmPackage,
   copyDesktopItems,
   electron_41,
   makeBinaryWrapper,
+  makeDesktopItem,
   nix-update-script,
-
   installCli ? false,
 }:
 
 buildNpmPackage (finalAttrs: {
   pname = "zennotes-desktop";
   version = "2.13.2";
-  npmDepsHash = "sha256-7dchbcGAZm+PlVsES76sYD9NOqeCulEKC7S0zLERvvY=";
 
   src = fetchFromGitHub {
     owner = "ZenNotes";
@@ -23,17 +21,15 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-Wazp3v6fV0gBh4ASlinhmA6SnGDmBvRcWFEXbENQUII=";
   };
 
-  npmWorkspace = "apps/desktop";
-
-  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     makeBinaryWrapper
     copyDesktopItems
   ];
+
+  npmDepsHash = "sha256-7dchbcGAZm+PlVsES76sYD9NOqeCulEKC7S0zLERvvY=";
+  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
   installPhase = ''
     runHook preInstall
@@ -59,26 +55,32 @@ buildNpmPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
   desktopItems = [
     (makeDesktopItem {
-      name = "zennotes-desktop";
-      desktopName = "ZenNotes";
-      exec = "zennotes-desktop %U";
-      icon = "zennotes-desktop";
-      comment = "Keyboard-first local Markdown notes";
       categories = [
         "Office"
         "Utility"
         "TextEditor"
       ];
-      startupWMClass = "ZenNotes";
+
+      comment = "Keyboard-first local Markdown notes";
+      desktopName = "ZenNotes";
+      exec = "zennotes-desktop %U";
+      icon = "zennotes-desktop";
+
       mimeTypes = [
         "text/markdown"
         "x-scheme-handler/zennotes"
       ];
+
+      name = "zennotes-desktop";
+      startupWMClass = "ZenNotes";
     })
   ];
 
+  npmWorkspace = "apps/desktop";
   passthru.updateScript = nix-update-script { extraArgs = [ "--use-github-releases" ]; };
 
   meta = {
@@ -86,12 +88,14 @@ buildNpmPackage (finalAttrs: {
     homepage = "https://zennotes.org/";
     changelog = "https://github.com/ZenNotes/zennotes/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       justkrysteq
       Br1ght0ne
       ad030
     ];
-    mainProgram = "zennotes-desktop";
+
     platforms = lib.platforms.darwin ++ lib.platforms.linux;
+    mainProgram = "zennotes-desktop";
   };
 })

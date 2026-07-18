@@ -8,8 +8,6 @@
 
 faust.wrapWithBuildEnv {
 
-  baseName = "faust2lv2";
-
   buildInputs = [
     bash
   ];
@@ -20,9 +18,10 @@ faust.wrapWithBuildEnv {
     qt5.qtbase
   ];
 
-  dontWrapQtApps = true;
-
   preFixup = ''
     sed -i "/QMAKE=/c\ QMAKE="${qt5.qtbase.dev}/bin/qmake"" "$out"/bin/faust2lv2;
   '';
+
+  baseName = "faust2lv2";
+  dontWrapQtApps = true;
 }

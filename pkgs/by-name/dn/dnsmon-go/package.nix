@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   libpcap,
 }:
 
@@ -16,11 +16,11 @@ buildGoModule {
     hash = "sha256-lAJ2bjs5VLzrHd09eFK4X0V/cCee2QsgdgiKq+y2c10=";
   };
 
-  vendorHash = "sha256-aiX+NGUsFK0N9vC5baAHHMr28CbF5Xa4WgYLFFLBYTs=";
-
   buildInputs = [
     libpcap
   ];
+
+  vendorHash = "sha256-aiX+NGUsFK0N9vC5baAHHMr28CbF5Xa4WgYLFFLBYTs=";
 
   meta = {
     description = "Tool to collect DNS traffic";

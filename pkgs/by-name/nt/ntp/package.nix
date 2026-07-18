@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   autoreconfHook,
+  libcap,
   openssl,
   perl,
   pps-tools,
-  libcap,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,16 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "pthread_detach(NULL)" "pthread_detach(pthread_self())"
   '';
 
-  configureFlags = [
-    "--sysconfdir=/etc"
-    "--localstatedir=/var"
-    "--with-openssl-libdir=${lib.getLib openssl}/lib"
-    "--with-openssl-incdir=${openssl.dev}/include"
-    "--enable-ignore-dns-errors"
-    "--with-yielding-select=yes"
-  ]
-  ++ lib.optional stdenv.hostPlatform.isLinux "--enable-linuxcaps";
-
   nativeBuildInputs = [ autoreconfHook ];
 
   buildInputs = [
@@ -45,17 +35,29 @@ stdenv.mkDerivation (finalAttrs: {
     libcap
   ];
 
+  configureFlags = [
+    "--sysconfdir=/etc"
+    "--localstatedir=/var"
+    "--with-openssl-libdir=${lib.getLib openssl}/lib"
+    "--with-openssl-incdir=${openssl.dev}/include"
+    "--enable-ignore-dns-errors"
+    "--with-yielding-select=yes"
+  ]
+  ++ lib.optional stdenv.hostPlatform.isLinux "--enable-linuxcaps";
+
   postInstall = ''
     rm -rf $out/share/doc
   '';
 
   meta = {
-    homepage = "https://www.ntp.org/";
     description = "Implementation of the Network Time Protocol";
+    homepage = "https://www.ntp.org/";
+
     license = {
       # very close to isc and bsd2
       url = "https://www.eecis.udel.edu/~mills/ntp/html/copyright.html";
     };
+
     maintainers = with lib.maintainers; [ thoughtpolice ];
     platforms = lib.platforms.unix;
   };

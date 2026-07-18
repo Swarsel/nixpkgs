@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  glib,
   dbus,
   dbus-glib,
+  glib,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,6 +18,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     glib
     dbus
@@ -25,9 +26,9 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://hal.freedesktop.org/releases/";
     description = "D-Bus bindings for GObject";
-    platforms = lib.platforms.linux;
+    homepage = "https://hal.freedesktop.org/releases/";
     license = lib.licenses.lgpl2;
+    platforms = lib.platforms.linux;
   };
 })

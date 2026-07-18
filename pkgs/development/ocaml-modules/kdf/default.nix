@@ -1,10 +1,10 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  alcotest,
+  buildDunePackage,
   digestif,
   mirage-crypto,
-  alcotest,
   ohex,
 }:
 
@@ -22,11 +22,12 @@ buildDunePackage (finalAttrs: {
     mirage-crypto
   ];
 
+  doCheck = true;
+
   checkInputs = [
     alcotest
     ohex
   ];
-  doCheck = true;
 
   meta = {
     description = "Key Derivation Functions: HKDF RFC 5869, PBKDF RFC 2898, SCRYPT RFC 7914";

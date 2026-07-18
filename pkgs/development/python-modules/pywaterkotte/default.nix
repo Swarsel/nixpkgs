@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pytestCheckHook,
   requests,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pywaterkotte";
   version = "0.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "chboland";
@@ -21,7 +20,6 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ hatchling ];
-
   propagatedBuildInputs = [ requests ];
 
   nativeCheckInputs = [
@@ -29,6 +27,7 @@ buildPythonPackage rec {
     responses
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pywaterkotte" ];
 
   meta = {

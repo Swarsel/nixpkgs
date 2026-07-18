@@ -9,12 +9,11 @@
 buildPythonPackage (finalAttrs: {
   pname = "ec2-metadata";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "ec2_metadata";
     inherit (finalAttrs) version;
     hash = "sha256-EtfiaM4MsWv27cS+1VF/EPwJAGqsw8NP80IdrpC7COo=";
+    pname = "ec2_metadata";
   };
 
   build-system = [
@@ -24,6 +23,8 @@ buildPythonPackage (finalAttrs: {
   dependencies = [
     urllib3
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "ec2_metadata"

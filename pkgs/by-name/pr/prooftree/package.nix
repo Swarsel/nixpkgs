@@ -20,13 +20,13 @@ stdenv.mkDerivation (finalAttrs: {
     ocaml
     findlib
   ];
-  buildInputs = with ocamlPackages; [ lablgtk ];
 
+  buildInputs = with ocamlPackages; [ lablgtk ];
   prefixKey = "--prefix ";
 
   meta = {
     description = "Program for proof-tree visualization";
-    mainProgram = "prooftree";
+
     longDescription = ''
       Prooftree is a program for proof-tree visualization during interactive
       proof development in a theorem prover. It is currently being developed
@@ -44,9 +44,11 @@ stdenv.mkDerivation (finalAttrs: {
       below the tree (on single click) or in a separate window (on double or
       shift-click).
     '';
+
     homepage = "http://askra.de/software/prooftree";
-    platforms = lib.platforms.unix;
-    maintainers = [ lib.maintainers.jwiegley ];
     license = lib.licenses.gpl3;
+    maintainers = [ lib.maintainers.jwiegley ];
+    platforms = lib.platforms.unix;
+    mainProgram = "prooftree";
   };
 })

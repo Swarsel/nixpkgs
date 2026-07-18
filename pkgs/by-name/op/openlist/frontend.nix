@@ -1,14 +1,13 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   fetchPnpmDeps,
   fetchzip,
-
   nodejs,
-  openlistPnpm ? pnpm_11,
   pnpmConfigHook,
   pnpm_11,
+  openlistPnpm ? pnpm_11,
 }:
 buildNpmPackage (finalAttrs: {
   pname = "openlist-frontend";
@@ -21,12 +20,6 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-33W0JCAmt3pjhAAOxoaZS7zBbJJbl4i85fqyKzoibz8=";
   };
 
-  i18n = fetchzip {
-    url = "https://github.com/OpenListTeam/OpenList-Frontend/releases/download/v${finalAttrs.version}/i18n.tar.gz";
-    hash = "sha256-nnsnYXbH4Uq+sux11txanUs11MB2dHIT0vCLMIzYQdg=";
-    stripRoot = false;
-  };
-
   postPatch = ''
     cp -r ${finalAttrs.i18n}/* src/lang/
   '';
@@ -35,20 +28,6 @@ buildNpmPackage (finalAttrs: {
     nodejs
     openlistPnpm
   ];
-
-  npmDeps = null;
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = openlistPnpm;
-    fetcherVersion = 4;
-    hash = "sha256-V+YhQsfUvd8WHxIYEjuihEjTZE75eFfziq2GwW1rPbg=";
-  };
-
-  npmConfigHook = pnpmConfigHook;
-
-  # [plugin vite:legacy-generate-polyfill-chunk]
-  # Error: getaddrinfo ENOTFOUND localhost
-  __darwinAllowLocalNetworking = true;
 
   preBuild = ''
     rm -rf node_modules/mpegts.js
@@ -66,6 +45,26 @@ buildNpmPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  # [plugin vite:legacy-generate-polyfill-chunk]
+  # Error: getaddrinfo ENOTFOUND localhost
+  __darwinAllowLocalNetworking = true;
+
+  i18n = fetchzip {
+    hash = "sha256-nnsnYXbH4Uq+sux11txanUs11MB2dHIT0vCLMIzYQdg=";
+    stripRoot = false;
+    url = "https://github.com/OpenListTeam/OpenList-Frontend/releases/download/v${finalAttrs.version}/i18n.tar.gz";
+  };
+
+  npmConfigHook = pnpmConfigHook;
+  npmDeps = null;
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 4;
+    hash = "sha256-V+YhQsfUvd8WHxIYEjuihEjTZE75eFfziq2GwW1rPbg=";
+    pnpm = openlistPnpm;
+  };
+
   passthru = {
     # OpenList depends on a forked mpegts.js git package whose source does not include the generated dist/
     mpegts-js = buildNpmPackage {
@@ -80,16 +79,15 @@ buildNpmPackage (finalAttrs: {
       };
 
       npmDepsHash = "sha256-UDI0iPK/ouVgpzscGrQXNnVUseLWYmR0W9THpBm4WqA=";
-
       meta.license = lib.licenses.asl20;
     };
   };
 
   meta = {
+    inherit (nodejs.meta) platforms;
     description = "Frontend of OpenList";
     homepage = "https://github.com/OpenListTeam/OpenList-Frontend";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ moraxyc ];
-    inherit (nodejs.meta) platforms;
   };
 })

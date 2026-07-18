@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  mosquitto,
   curl,
-  openssl,
-  lmdb,
-  lua,
+  libconfig,
   libsodium,
   libuuid,
-  libconfig,
-  testers,
+  lmdb,
+  lua,
+  mosquitto,
+  openssl,
   owntracks-recorder,
+  pkg-config,
+  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -41,6 +41,19 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.getDev libsodium)
   ];
 
+  installPhase = ''
+    runHook preInstall
+
+    mkdir -p $out/bin
+
+    install -m 0755 ot-recorder $out/bin
+    install -m 0755 ocat $out/bin
+
+    cp -r docroot $out/htdocs
+
+    runHook postInstall
+  '';
+
   configurePhase = ''
     runHook preConfigure
 
@@ -55,23 +68,10 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postConfigure
   '';
 
-  installPhase = ''
-    runHook preInstall
-
-    mkdir -p $out/bin
-
-    install -m 0755 ot-recorder $out/bin
-    install -m 0755 ocat $out/bin
-
-    cp -r docroot $out/htdocs
-
-    runHook postInstall
-  '';
-
   passthru.tests.version = testers.testVersion {
-    package = owntracks-recorder;
-    command = "ocat --version";
     version = finalAttrs.version;
+    command = "ocat --version";
+    package = owntracks-recorder;
   };
 
   meta = {
@@ -79,8 +79,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/owntracks/recorder";
     changelog = "https://github.com/owntracks/recorder/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.aionescu ];
+    platforms = lib.platforms.linux;
     mainProgram = "ot-recorder";
   };
 })

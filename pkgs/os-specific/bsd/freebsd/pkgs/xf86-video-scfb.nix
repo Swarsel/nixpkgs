@@ -1,12 +1,13 @@
 {
   stdenv,
   fetchFromGitHub,
-  xorg-server,
   pkg-config,
+  xorg-server,
 }:
 stdenv.mkDerivation rec {
   pname = "xf86-video-scfb";
   version = "0.0.7";
+
   src = fetchFromGitHub {
     owner = "rayddteam";
     repo = pname;
@@ -18,6 +19,6 @@ stdenv.mkDerivation rec {
     sed -E -i -e "/xf86DisableRandR/d" src/scfb_driver.c
   '';
 
-  buildInputs = [ xorg-server ];
   nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ xorg-server ];
 }

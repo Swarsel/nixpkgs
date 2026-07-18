@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   bzip2,
   openssl,
+  pkg-config,
+  rustPlatform,
   zstd,
 }:
 
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  cargoHash = "sha256-GUWAG9mPPHUevA1IfFRpL9f93vUWb+/gaH0v+Dw9Rko=";
-
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
@@ -32,6 +30,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
     zstd
   ];
+
+  cargoHash = "sha256-GUWAG9mPPHUevA1IfFRpL9f93vUWb+/gaH0v+Dw9Rko=";
 
   env = {
     SYMBOLICATOR_GIT_VERSION = finalAttrs.src.rev;

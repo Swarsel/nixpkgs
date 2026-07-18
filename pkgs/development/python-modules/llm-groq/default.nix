@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
+  groq,
   llm,
   llm-groq,
-  groq,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "llm-groq";
   version = "0.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "angerman";
@@ -29,8 +28,8 @@ buildPythonPackage rec {
     llm
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "llm_groq" ];
-
   passthru.tests = llm.mkPluginTest llm-groq;
 
   meta = {

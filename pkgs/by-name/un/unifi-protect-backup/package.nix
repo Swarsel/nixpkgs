@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "unifi-protect-backup";
   version = "0.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ep1cman";
@@ -20,17 +19,10 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   patches = [
     # Switch to using UIProtect library, https://github.com/ep1cman/unifi-protect-backup/pull/160
     (fetchpatch {
+      hash = "sha256-kogl/crvLE+7t9DLTuZqeW3/WB5/sytWDgbndoBw+RQ=";
       name = "switch-uiprotect.patch";
       url = "https://github.com/ep1cman/unifi-protect-backup/commit/ccf2cde27229ade5c70ebfa902f289bf1a439f64.patch";
-      hash = "sha256-kogl/crvLE+7t9DLTuZqeW3/WB5/sytWDgbndoBw+RQ=";
     })
-  ];
-
-  pythonRelaxDeps = [
-    "aiorun"
-    "aiosqlite"
-    "click"
-    "uiprotect"
   ];
 
   nativeBuildInputs = with python3.pkgs; [ poetry-core ];
@@ -49,16 +41,26 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   ];
 
   nativeCheckInputs = with python3.pkgs; [ pytestCheckHook ];
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "aiorun"
+    "aiosqlite"
+    "click"
+    "uiprotect"
+  ];
 
   meta = {
     description = "Python tool to backup unifi event clips in realtime";
     homepage = "https://github.com/ep1cman/unifi-protect-backup";
     changelog = "https://github.com/ep1cman/unifi-protect-backup/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       das_j
       helsinki-Jo
     ];
+
     mainProgram = "unifi-protect-backup";
   };
 })

@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   django,
   djangorestframework,
   orjson,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "drf-orjson-renderer";
   version = "1.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "brianjbuck";
@@ -20,21 +19,22 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-PMVb+BtTl25BsftQhYlKdEhGhhH3HTlROVYsm+7PBjY=";
   };
 
+  doCheck = false; # Tests are broken upstream (https://github.com/brianjbuck/drf_orjson_renderer/pull/26)
   build-system = [ setuptools ];
 
-  doCheck = false; # Tests are broken upstream (https://github.com/brianjbuck/drf_orjson_renderer/pull/26)
   dependencies = [
     django
     djangorestframework
     orjson
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "drf_orjson_renderer" ];
 
   meta = {
-    changelog = "https://github.com/brianjbuck/drf_orjson_renderer/releases/tag/${finalAttrs.src.tag}";
     description = "JSON renderer and parser for Django Rest Framework using the orjson library";
     homepage = "https://github.com/brianjbuck/drf_orjson_renderer";
+    changelog = "https://github.com/brianjbuck/drf_orjson_renderer/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jvanbruegge ];
   };

@@ -1,17 +1,16 @@
 {
   lib,
+  fetchFromGitHub,
   attrs,
   buildPythonPackage,
-  fetchFromGitHub,
-  pygtrie,
   orjson,
+  pygtrie,
   setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "sqltrie";
   version = "0.11.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "iterative";
@@ -30,7 +29,7 @@ buildPythonPackage rec {
 
   # nox is not available at the moment
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "sqltrie" ];
 
   meta = {

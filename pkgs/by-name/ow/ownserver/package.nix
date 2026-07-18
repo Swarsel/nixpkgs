@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  openssl,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,12 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-bseDssSMerBlzlCvL3rD3X6ku5qDRYvI1wxq2W7As5k=";
   };
 
-  # Bump vendored `metrics` past 0.24.2 which fixes a borrow-checker error
-  # under newer rustc (https://github.com/rust-lang/rust/issues/141402).
-  cargoPatches = [ ./bump-metrics.patch ];
-
-  cargoHash = "sha256-EzuG3ev/6EqTGi0J0wppZz+cZJiH12WbBQLKOrTxTzs=";
-
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
@@ -33,9 +27,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-EzuG3ev/6EqTGi0J0wppZz+cZJiH12WbBQLKOrTxTzs=";
   # `proxy_client::fetch_token_test` spins up a warp server during `cargo test`.
   __darwinAllowLocalNetworking = true;
-
+  # Bump vendored `metrics` past 0.24.2 which fixes a borrow-checker error
+  # under newer rustc (https://github.com/rust-lang/rust/issues/141402).
+  cargoPatches = [ ./bump-metrics.patch ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

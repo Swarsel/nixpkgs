@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   lxml,
   six,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "ebooklib";
   version = "0.20";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "aerkalov";
@@ -23,6 +22,7 @@ buildPythonPackage rec {
     six
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "ebooklib" ];
 
   meta = {

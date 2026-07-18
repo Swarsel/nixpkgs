@@ -2,14 +2,13 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  sphinx,
   setuptools,
+  sphinx,
 }:
 
 buildPythonPackage rec {
   pname = "sphinx-multitoc-numbering";
   version = "0.1.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -17,9 +16,8 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ sphinx ];
-
+  pyproject = true;
   pythonImportsCheck = [ "sphinx_multitoc_numbering" ];
 
   meta = {

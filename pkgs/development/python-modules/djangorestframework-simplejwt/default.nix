@@ -13,12 +13,11 @@
 buildPythonPackage rec {
   pname = "djangorestframework-simplejwt";
   version = "5.5.1";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "djangorestframework_simplejwt";
     inherit version;
     hash = "sha256-5yxVcvUdeAMCEojiBXr8vQPxf+EdSECW9ApGCrx26H8=";
+    pname = "djangorestframework_simplejwt";
   };
 
   nativeBuildInputs = [ setuptools-scm ];
@@ -29,13 +28,14 @@ buildPythonPackage rec {
     pyjwt
   ];
 
-  optional-dependencies = {
-    python-jose = [ python-jose ];
-    crypto = [ cryptography ];
-  };
-
   # Test raises django.core.exceptions.ImproperlyConfigured
   doCheck = false;
+  format = "setuptools";
+
+  optional-dependencies = {
+    crypto = [ cryptography ];
+    python-jose = [ python-jose ];
+  };
 
   pythonImportsCheck = [ "rest_framework_simplejwt" ];
 

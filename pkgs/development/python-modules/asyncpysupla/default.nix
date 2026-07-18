@@ -9,20 +9,17 @@
 buildPythonPackage rec {
   pname = "asyncpysupla";
   version = "0.0.5";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-sRw4qAkHPIIc27FtxIe2vOvSK9PPBJYOZzDLgGYapDc=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
   # Tests require API credentials and network access
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "asyncpysupla" ];
 
   meta = {

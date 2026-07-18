@@ -3,30 +3,29 @@
   stdenv,
   fetchurl,
   fetchFromGitHub,
+  android-tools,
+  ffmpeg,
+  installShellFiles,
+  libusb1,
   makeWrapper,
   meson,
   ninja,
   pkg-config,
-  installShellFiles,
-
-  android-tools,
-  ffmpeg,
-  libusb1,
   sdl3,
 }:
 
 let
   version = "4.1";
   prebuilt_server = fetchurl {
-    name = "scrcpy-server";
     inherit version;
-    url = "https://github.com/Genymobile/scrcpy/releases/download/v${version}/scrcpy-server-v${version}";
     hash = "sha256-3qy5ke0lCXFRYP/ceQfke0Fg6zDRVmIX6QR/1biFDK4=";
+    name = "scrcpy-server";
+    url = "https://github.com/Genymobile/scrcpy/releases/download/v${version}/scrcpy-server-v${version}";
   };
 in
 stdenv.mkDerivation rec {
-  pname = "scrcpy";
   inherit version;
+  pname = "scrcpy";
 
   src = fetchFromGitHub {
     owner = "Genymobile";
@@ -66,16 +65,19 @@ stdenv.mkDerivation rec {
     description = "Display and control Android devices over USB or TCP/IP";
     homepage = "https://github.com/Genymobile/scrcpy";
     changelog = "https://github.com/Genymobile/scrcpy/releases/tag/v${version}";
+    license = lib.licenses.asl20;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # server
     ];
-    license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       deltaevo
       ryand56
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "scrcpy";
   };
 }

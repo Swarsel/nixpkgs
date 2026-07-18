@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitLab,
-  flit-core,
+  buildPythonPackage,
   dbus,
+  flit-core,
   pytest,
-  pytest-trio,
   pytest-asyncio,
+  pytest-trio,
   testpath,
   trio,
 }:
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "jeepney";
   version = "0.9";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "takluyver";
@@ -23,8 +22,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-d8w/4PtDviTYDHO4EwaVbxlYk7CXtlv7vuR+o4LhfRs=";
   };
-
-  build-system = [ flit-core ];
 
   nativeCheckInputs = [
     dbus
@@ -43,6 +40,9 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [ flit-core ];
+  pyproject = true;
+
   pythonImportsCheck = [
     "jeepney"
     "jeepney.auth"
@@ -54,9 +54,9 @@ buildPythonPackage rec {
   ];
 
   meta = {
-    changelog = "https://gitlab.com/takluyver/jeepney/-/blob/${src.tag}/docs/release-notes.rst";
-    homepage = "https://gitlab.com/takluyver/jeepney";
     description = "Pure Python DBus interface";
+    homepage = "https://gitlab.com/takluyver/jeepney";
+    changelog = "https://gitlab.com/takluyver/jeepney/-/blob/${src.tag}/docs/release-notes.rst";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

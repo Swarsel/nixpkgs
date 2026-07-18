@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   swift,
   swiftPackages,
   swiftpm,
@@ -13,17 +13,19 @@ in
 swiftPackages.stdenv.mkDerivation rec {
   pname = "autokbisw";
   version = "2.0.1";
+
   src = fetchFromGitHub {
     owner = "ohueter";
     repo = "autokbisw";
     tag = version;
     hash = "sha256-xNXXgDLWW8pdik3STmhpZATf9REd+8IGeoX/oxGg4vc=";
   };
+
   nativeBuildInputs = [
     swift
     swiftpm
   ];
-  configurePhase = generated.configure;
+
   installPhase = ''
     runHook preInstall
 
@@ -33,13 +35,15 @@ swiftPackages.stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  configurePhase = generated.configure;
+
   meta = {
     description = "Automatic keyboard input language switching for macOS";
     homepage = "https://github.com/ohueter/autokbisw";
     changelog = "https://github.com/ohueter/autokbisw/releases/tag/${version}";
     license = lib.licenses.asl20;
-    mainProgram = "autokbisw";
     maintainers = with lib.maintainers; [ craigf ];
     platforms = lib.platforms.darwin;
+    mainProgram = "autokbisw";
   };
 }

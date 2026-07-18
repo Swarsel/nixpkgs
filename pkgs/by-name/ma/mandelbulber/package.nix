@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  runCommand,
-  writableTmpDirAsHomeHook,
-  nix-update-script,
-  libpng,
   gsl,
+  libpng,
+  libsForQt5,
   libsndfile,
   lzo,
-  libsForQt5,
-  withOpenCL ? true,
-  opencl-clhpp ? null,
+  nix-update-script,
+  runCommand,
+  writableTmpDirAsHomeHook,
   ocl-icd ? null,
+  opencl-clhpp ? null,
+  withOpenCL ? true,
 }:
 
 assert withOpenCL -> opencl-clhpp != null;
@@ -34,6 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
     libsForQt5.wrapQtAppsHook
     libsForQt5.qttools
   ];
+
   buildInputs = [
     libsForQt5.qtbase
     libsForQt5.qtmultimedia
@@ -47,12 +48,12 @@ stdenv.mkDerivation (finalAttrs: {
     ocl-icd
   ];
 
-  sourceRoot = "${finalAttrs.src.name}/mandelbulber2";
-
   qmakeFlags = [
     "SHARED_PATH=${placeholder "out"}"
     (if withOpenCL then "qmake/mandelbulber-opencl.pro" else "qmake/mandelbulber.pro")
   ];
+
+  sourceRoot = "${finalAttrs.src.name}/mandelbulber2";
 
   passthru = {
     tests = {
@@ -63,16 +64,17 @@ stdenv.mkDerivation (finalAttrs: {
         ];
       } "mandelbulber2 --test && touch $out";
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "3D fractal rendering engine";
-    mainProgram = "mandelbulber2";
     longDescription = "Mandelbulber creatively generates three-dimensional fractals. Explore trigonometric, hyper-complex, Mandelbox, IFS, and many other 3D fractals.";
     homepage = "https://mandelbulber.com";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ kovirobi ];
+    platforms = lib.platforms.linux;
+    mainProgram = "mandelbulber2";
   };
 })

@@ -1,40 +1,40 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
-  pkg-config,
-  makeWrapper,
-  meson,
-  ninja,
-  installShellFiles,
-  libxcb,
-  libxcb-keysyms,
-  libxcb-util,
-  libxcb-wm,
-  xcbutilxrm,
-  libstartup_notification,
-  libx11,
-  pcre2,
-  libev,
-  yajl,
-  libxcb-cursor,
-  perl,
-  pango,
-  perlPackages,
-  libxkbcommon,
-  xorg-server,
-  xvfb-run,
-  xdotool,
-  xrandr,
-  setxkbmap,
-  which,
+  fetchFromGitHub,
   asciidoc,
-  xmlto,
   docbook_xml_dtd_45,
   docbook_xsl,
   findXMLCatalogs,
-  nixosTests,
+  installShellFiles,
+  libev,
+  libstartup_notification,
+  libx11,
+  libxcb,
+  libxcb-cursor,
+  libxcb-keysyms,
+  libxcb-util,
+  libxcb-wm,
+  libxkbcommon,
+  makeWrapper,
+  meson,
+  ninja,
   nix-update-script,
+  nixosTests,
+  pango,
+  pcre2,
+  perl,
+  perlPackages,
+  pkg-config,
+  setxkbmap,
+  which,
+  xcbutilxrm,
+  xdotool,
+  xmlto,
+  xorg-server,
+  xrandr,
+  xvfb-run,
+  yajl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -48,6 +48,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-gXm0jzRAHXnjEfmUtlB+Pr/ZNNuZVRk6KWBCxRNDneU=";
   };
 
+  postPatch = ''
+    patchShebangs .
+  '';
+
   nativeBuildInputs = [
     pkg-config
     makeWrapper
@@ -60,11 +64,6 @@ stdenv.mkDerivation (finalAttrs: {
     docbook_xml_dtd_45
     docbook_xsl
     findXMLCatalogs
-  ];
-
-  mesonFlags = [
-    (lib.mesonBool "docs" true)
-    (lib.mesonBool "mans" true)
   ];
 
   buildInputs = [
@@ -89,9 +88,10 @@ stdenv.mkDerivation (finalAttrs: {
     perlPackages.InlineC
   ];
 
-  postPatch = ''
-    patchShebangs .
-  '';
+  mesonFlags = [
+    (lib.mesonBool "docs" true)
+    (lib.mesonBool "mans" true)
+  ];
 
   # xvfb-run is available only on Linux
   doCheck = stdenv.hostPlatform.isLinux;
@@ -139,19 +139,15 @@ stdenv.mkDerivation (finalAttrs: {
   separateDebugInfo = true;
 
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       inherit (nixosTests) i3wm;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Tiling window manager";
-    homepage = "https://i3wm.org";
-    maintainers = with lib.maintainers; [ fpletz ];
-    mainProgram = "i3";
-    license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
 
     longDescription = ''
       A tiling window manager primarily targeted at advanced users and
@@ -160,5 +156,11 @@ stdenv.mkDerivation (finalAttrs: {
       floating windows. Configured via plain text file. Multi-monitor.
       UTF-8 clean.
     '';
+
+    homepage = "https://i3wm.org";
+    license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ fpletz ];
+    platforms = lib.platforms.unix;
+    mainProgram = "i3";
   };
 })

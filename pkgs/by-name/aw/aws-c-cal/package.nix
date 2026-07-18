@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   aws-c-common,
+  cmake,
   nix,
   openssl,
 }:
@@ -39,7 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "AWS Crypto Abstraction Layer";
     homepage = "https://github.com/awslabs/aws-c-cal";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

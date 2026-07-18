@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   configparser,
-  fetchFromGitHub,
   pip,
   pytest-mock,
   pytestCheckHook,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "liccheck";
   version = "0.9.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dhatim";
@@ -23,6 +22,13 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-ohq3ZsbZcyqhwmvaVF/+mo7lNde5gjbz8pwhzHi3SPY=";
   };
+
+  nativeCheckInputs = [
+    pip
+    pytest-mock
+    pytestCheckHook
+    python3-openid
+  ];
 
   build-system = [ setuptools ];
 
@@ -32,13 +38,7 @@ buildPythonPackage rec {
     toml
   ];
 
-  nativeCheckInputs = [
-    pip
-    pytest-mock
-    pytestCheckHook
-    python3-openid
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "liccheck" ];
 
   meta = {

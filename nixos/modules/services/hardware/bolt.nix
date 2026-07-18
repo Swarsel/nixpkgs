@@ -11,14 +11,16 @@ in
   options = {
     services.hardware.bolt = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to enable Bolt, a userspace daemon to enable
           security levels for Thunderbolt 3 on GNU/Linux.
 
           Bolt is used by GNOME 3 to handle Thunderbolt settings.
         '';
+
+        type = lib.types.bool;
       };
 
       package = lib.mkPackageOption pkgs "bolt" { };

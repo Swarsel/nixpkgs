@@ -1,9 +1,9 @@
 {
-  buildOctavePackage,
   lib,
   fetchFromGitHub,
-  libv4l,
+  buildOctavePackage,
   fltk,
+  libv4l,
   nix-update-script,
 }:
 
@@ -34,13 +34,15 @@ buildOctavePackage rec {
   };
 
   meta = {
-    homepage = "https://gnu-octave.github.io/packages/image-acquisition/";
-    license = lib.licenses.gpl3Plus;
-    maintainers = with lib.maintainers; [ ravenjoad ];
     description = "Functions to capture images from connected devices";
+
     longDescription = ''
       The Octave-forge Image Aquisition package provides functions to
       capture images from connected devices. Currently only v4l2 is supported.
     '';
+
+    homepage = "https://gnu-octave.github.io/packages/image-acquisition/";
+    license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ ravenjoad ];
   };
 }

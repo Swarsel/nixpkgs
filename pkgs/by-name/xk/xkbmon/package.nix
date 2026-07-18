@@ -25,11 +25,11 @@ stdenv.mkDerivation (finalAttrs: {
   installPhase = "install -D -t $out/bin xkbmon";
 
   meta = {
-    homepage = "https://github.com/xkbmon/xkbmon";
     description = "Command-line keyboard layout monitor for X11";
+    homepage = "https://github.com/xkbmon/xkbmon";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.linux;
     mainProgram = "xkbmon";
   };
 })

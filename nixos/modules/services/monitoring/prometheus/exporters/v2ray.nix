@@ -11,16 +11,20 @@ let
   inherit (lib) mkOption types concatStringsSep;
 in
 {
-  port = 9299;
   extraOpts = {
     v2rayEndpoint = mkOption {
-      type = types.str;
       default = "127.0.0.1:54321";
+
       description = ''
         v2ray grpc api endpoint
       '';
+
+      type = types.str;
     };
   };
+
+  port = 9299;
+
   serviceOpts = {
     serviceConfig = {
       ExecStart = ''

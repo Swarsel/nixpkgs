@@ -1,26 +1,28 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
   azure-core,
+  buildPythonPackage,
   cryptography,
+  fetchPypi,
   msal,
   msal-extensions,
-  typing-extensions,
   setuptools,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "azure-identity";
   version = "1.25.3";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_identity";
     inherit version;
     hash = "sha256-qyPA1jAV9QtjDvbGzzlecmL0Oc4G5dB6ZOh0xyT42eY=";
+    pname = "azure_identity";
   };
 
+  # Requires checkout from mono-repo and a mock account:
+  # https://github.com/Azure/azure-sdk-for-python/blob/master/sdk/identity/tests.yml
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,11 +33,8 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "azure.identity" ];
-
-  # Requires checkout from mono-repo and a mock account:
-  # https://github.com/Azure/azure-sdk-for-python/blob/master/sdk/identity/tests.yml
-  doCheck = false;
 
   meta = {
     description = "Microsoft Azure Identity Library for Python";

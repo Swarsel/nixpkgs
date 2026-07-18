@@ -1,11 +1,11 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  testers,
-  runCommand,
-  writeText,
+  buildNpmPackage,
   lessc,
+  runCommand,
+  testers,
+  writeText,
 }:
 
 buildNpmPackage {
@@ -20,21 +20,16 @@ buildNpmPackage {
   };
 
   npmDepsHash = "sha256-uAYXFxOoUo8tLrYqNeUFMRuaYp2GArGMLaaes1QhLp4=";
-
   dontNpmBuild = true;
 
   passthru = {
-    updateScript = ./update.sh;
     tests = {
       simple = testers.testEqualContents {
-        assertion = "lessc compiles a basic less file";
-        expected = writeText "expected" ''
-          body h1{color:red}
-        '';
         actual =
           runCommand "actual"
             {
               nativeBuildInputs = [ (lessc.withPlugins (p: [ p.clean-css ])) ];
+
               base = writeText "base" ''
                 @color: red;
                 body {
@@ -48,13 +43,21 @@ buildNpmPackage {
               lessc $base --clean-css="--s1 --advanced" > $out
               printf "\n" >> $out
             '';
+
+        assertion = "lessc compiles a basic less file";
+
+        expected = writeText "expected" ''
+          body h1{color:red}
+        '';
       };
     };
+
+    updateScript = ./update.sh;
   };
 
   meta = {
-    homepage = "https://github.com/less/less-plugin-clean-css";
     description = "Post-process and compress CSS using clean-css";
+    homepage = "https://github.com/less/less-plugin-clean-css";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ lelgenio ];
   };

@@ -4,27 +4,27 @@
   fetchurl,
   autoconf,
   automake,
-  libtool,
-  pkg-config,
   djvulibre,
   libsForQt5,
-  libxt,
   libtiff,
+  libtool,
+  libxt,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "djview";
   version = "4.12.3";
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
   src = fetchurl {
     url = "mirror://sourceforge/djvu/djview-${finalAttrs.version}.tar.gz";
     hash = "sha256-F7+5cxq4Bw4BI1OB8I5XsSMf+19J6wMYc+v6GJza9H0=";
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
 
   nativeBuildInputs = [
     autoconf
@@ -42,10 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
     libtiff
   ];
 
-  preConfigure = ''
-    NOCONFIGURE=1 ./autogen.sh
-  '';
-
   configureFlags = [
     "--disable-silent-rules"
     "--disable-dependency-tracking"
@@ -53,6 +49,10 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-tiff"
     "--disable-nsdejavu" # 2023-11-14: modern browsers have dropped support for NPAPI
   ];
+
+  preConfigure = ''
+    NOCONFIGURE=1 ./autogen.sh
+  '';
 
   postInstall =
     let
@@ -70,14 +70,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Portable DjVu viewer (Qt5)";
-    mainProgram = "djview";
-    homepage = "https://djvu.sourceforge.net/djview4.html";
-    license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
-    maintainers = with lib.maintainers; [
-      Anton-Latukha
-      bryango
-    ];
+
     longDescription = ''
       The portable DjVu viewer (Qt5) and browser (nsdejavu) plugin.
 
@@ -99,5 +92,16 @@ stdenv.mkDerivation (finalAttrs: {
       nsdejavu: browser plugin for DjVu. It internally uses djview.
       Has CGI-style arguments to configure the view of document (see man).
     '';
+
+    homepage = "https://djvu.sourceforge.net/djview4.html";
+    license = lib.licenses.gpl2Plus;
+
+    maintainers = with lib.maintainers; [
+      Anton-Latukha
+      bryango
+    ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "djview";
   };
 })

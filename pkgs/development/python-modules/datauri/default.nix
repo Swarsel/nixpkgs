@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  cached-property,
   pydantic,
   pytestCheckHook,
   setuptools,
   typing-extensions,
-  cached-property,
 }:
 
 buildPythonPackage rec {
   pname = "datauri";
   version = "3.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fcurella";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     hash = "sha256-WrOQPUZ9vaLSR0hxIvCK8kBnARiOLh6qqWBw/h6XpaY=";
   };
 
+  nativeCheckInputs = [
+    pydantic
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,11 +32,7 @@ buildPythonPackage rec {
     cached-property
   ];
 
-  nativeCheckInputs = [
-    pydantic
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "datauri" ];
 
   meta = {

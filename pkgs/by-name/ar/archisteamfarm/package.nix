@@ -1,13 +1,13 @@
 {
   lib,
-  buildDotnetModule,
+  stdenv,
   fetchFromGitHub,
+  buildDotnetModule,
+  callPackage,
   dotnetCorePackages,
   libkrb5,
-  zlib,
   openssl,
-  stdenv,
-  callPackage,
+  zlib,
 }:
 
 let
@@ -29,39 +29,6 @@ buildDotnetModule rec {
     tag = version;
     hash = "sha256-C0n3e/t1Bq02vlrF/KyT7vlhtNDIbAsg9zAk9aKZ5/g=";
   };
-
-  dotnet-runtime = dotnetCorePackages.aspnetcore_10_0;
-  dotnet-sdk = dotnetCorePackages.sdk_10_0;
-
-  nugetDeps = ./deps.json;
-
-  projectFile = [
-    "ArchiSteamFarm"
-  ]
-  ++ plugins;
-  testProjectFile = "ArchiSteamFarm.Tests";
-
-  executable = "ArchiSteamFarm";
-  installPath = "${placeholder "out"}/lib/ArchiSteamFarm";
-
-  enableParallelBuilding = false;
-
-  useAppHost = false;
-  dotnetFlags = [
-    # useAppHost doesn't explicitly disable this
-    "-p:UseAppHost=false"
-    "-p:RuntimeIdentifiers="
-  ];
-  dotnetBuildFlags = [
-    "--framework=net10.0"
-  ];
-  dotnetInstallFlags = dotnetBuildFlags;
-
-  runtimeDeps = [
-    libkrb5
-    zlib
-    openssl
-  ];
 
   # times out when trying to connect to something even with relaxed sandbox
   doCheck = stdenv.hostPlatform.isLinux;
@@ -95,18 +62,51 @@ buildDotnetModule rec {
       --replace-fail "exec " "exec dotnet "
   '';
 
+  dotnet-runtime = dotnetCorePackages.aspnetcore_10_0;
+  dotnet-sdk = dotnetCorePackages.sdk_10_0;
+
+  dotnetBuildFlags = [
+    "--framework=net10.0"
+  ];
+
+  dotnetFlags = [
+    # useAppHost doesn't explicitly disable this
+    "-p:UseAppHost=false"
+    "-p:RuntimeIdentifiers="
+  ];
+
+  dotnetInstallFlags = dotnetBuildFlags;
+  enableParallelBuilding = false;
+  executable = "ArchiSteamFarm";
+  installPath = "${placeholder "out"}/lib/ArchiSteamFarm";
+  nugetDeps = ./deps.json;
+
+  projectFile = [
+    "ArchiSteamFarm"
+  ]
+  ++ plugins;
+
+  runtimeDeps = [
+    libkrb5
+    zlib
+    openssl
+  ];
+
+  testProjectFile = "ArchiSteamFarm.Tests";
+  useAppHost = false;
+
   passthru = {
+    ui = callPackage ./web-ui { };
     # nix-shell maintainers/scripts/update.nix --argstr package archisteamfarm
     updateScript = ./update.sh;
-    ui = callPackage ./web-ui { };
   };
 
   meta = {
     description = "Application with primary purpose of idling Steam cards from multiple accounts simultaneously";
-    changelog = "https://github.com/JustArchiNET/ArchiSteamFarm/releases/tag/${src.tag}";
     homepage = "https://github.com/JustArchiNET/ArchiSteamFarm";
+    changelog = "https://github.com/JustArchiNET/ArchiSteamFarm/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
-    mainProgram = "ArchiSteamFarm";
     maintainers = with lib.maintainers; [ SuperSandro2000 ];
+    mainProgram = "ArchiSteamFarm";
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  melpaBuild,
   fetchFromGitHub,
+  melpaBuild,
   modus-themes,
   nix-update-script,
 }:
@@ -22,7 +22,7 @@ melpaBuild {
   meta = {
     description = "Export a Modus themes to another application";
     homepage = "https://github.com/protesilaos/modus-themes-exporter";
-    maintainers = [ lib.maintainers.HeitorAugustoLN ];
     license = lib.licenses.gpl3Plus;
+    maintainers = [ lib.maintainers.HeitorAugustoLN ];
   };
 }

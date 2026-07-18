@@ -1,20 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   icalendar,
   pandas,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "bokeh-sampledata";
   version = "2025.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bokeh";
@@ -37,6 +34,8 @@ buildPythonPackage rec {
     icalendar
     pandas
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "bokeh_sampledata"

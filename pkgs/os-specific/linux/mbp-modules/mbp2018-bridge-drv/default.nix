@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   kernel,
   kernelModuleMakeFlags,
-  fetchFromGitHub,
 }:
 
 stdenv.mkDerivation {
@@ -32,13 +32,15 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Driver for MacBook models 2018 and newer, which makes the keyboard, mouse and audio output work";
+
     longDescription = ''
       A driver for MacBook models 2018 and newer, implementing the VHCI (required for mouse/keyboard/etc.) and audio functionality.
     '';
+
     homepage = "https://github.com/MCMrARM/mbp2018-bridge-drv";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.hlolli ];
+    platforms = lib.platforms.linux;
     broken = kernel.kernelOlder "5.4";
   };
 }

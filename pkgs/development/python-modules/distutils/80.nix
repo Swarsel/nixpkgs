@@ -1,15 +1,12 @@
 {
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
-  pythonAtLeast,
-  setuptools-scm,
-  setuptools_80,
-  python,
+  buildPythonPackage,
   docutils,
   jaraco-collections,
-  jaraco-functools,
   jaraco-envs,
+  jaraco-functools,
   jaraco-path,
   jaraco-text,
   libz,
@@ -18,13 +15,15 @@
   path,
   pyfakefs,
   pytestCheckHook,
-  stdenv,
+  python,
+  pythonAtLeast,
+  setuptools-scm,
+  setuptools_80,
 }:
 
 buildPythonPackage {
-  pname = "distutils";
   inherit (setuptools_80) version;
-  pyproject = true;
+  pname = "distutils";
 
   src = fetchFromGitHub {
     owner = "pypa";
@@ -37,21 +36,8 @@ buildPythonPackage {
     sed -i '/coherent\.licensed/d' pyproject.toml
   '';
 
-  build-system = [ setuptools-scm ];
-
-  dependencies = [
-    jaraco-collections
-    jaraco-functools
-    more-itertools
-    packaging
-  ];
-
-  postInstall = ''
-    rm -r $out/${python.sitePackages}/distutils
-    ln -s ${setuptools_80}/${python.sitePackages}/setuptools/_distutils $out/${python.sitePackages}/distutils
-  '';
-
-  pythonImportsCheck = [ "distutils" ];
+  # jaraco-path depends ob pyobjc
+  doCheck = !stdenv.hostPlatform.isDarwin;
 
   nativeCheckInputs = [
     docutils
@@ -69,8 +55,19 @@ buildPythonPackage {
     libz
   ];
 
-  # jaraco-path depends ob pyobjc
-  doCheck = !stdenv.hostPlatform.isDarwin;
+  postInstall = ''
+    rm -r $out/${python.sitePackages}/distutils
+    ln -s ${setuptools_80}/${python.sitePackages}/setuptools/_distutils $out/${python.sitePackages}/distutils
+  '';
+
+  build-system = [ setuptools-scm ];
+
+  dependencies = [
+    jaraco-collections
+    jaraco-functools
+    more-itertools
+    packaging
+  ];
 
   disabledTests = [
     #  TypeError: byte_compile() got an unexpected keyword argument 'dry_run'
@@ -81,6 +78,9 @@ buildPythonPackage {
     #  AssertionError: assert '(?s:foo[^/]*)\\z' == '(?s:foo[^/]*)\\Z'
     "test_glob_to_re"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "distutils" ];
 
   meta = {
     description = "Distutils as found in cpython";

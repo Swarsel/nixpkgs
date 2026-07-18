@@ -1,11 +1,11 @@
 {
+  lib,
+  stdenv,
   fetchCrate,
   installShellFiles,
-  lib,
   libbsd,
   pkg-config,
   rustPlatform,
-  stdenv,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -23,7 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   buildInputs = [ libbsd ];
-
   cargoHash = "sha256-+GbbCAdEkxhyQoe8g4me2jlsuHx4R5vibd2PQLmqNM4=";
 
   postInstall = ''
@@ -34,10 +33,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Monitor XInput events and run arbitrary scripts on hierarchy change events";
     homepage = "https://github.com/andrewshadura/inputplug";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ jecaro ];
     platforms = lib.platforms.unix;
+    mainProgram = "inputplug";
     # `daemon(3)` is deprecated on macOS and `pidfile-rs` needs updating
     broken = stdenv.hostPlatform.isDarwin;
-    maintainers = with lib.maintainers; [ jecaro ];
-    mainProgram = "inputplug";
   };
 })

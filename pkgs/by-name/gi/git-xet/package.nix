@@ -1,14 +1,14 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  nix-update-script,
-  versionCheckHook,
-  pkg-config,
-  openssl,
-  zlib,
   git,
   git-lfs,
+  nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
+  zlib,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "git-xet";
@@ -21,8 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-PmAJg7R5IBvDUsQGyDWzUz4bAFsR5ET1pOncpBGiHl4=";
   };
 
-  cargoHash = "sha256-2f2lLSYcvllIKvyMlT5hphhkb0QY70wdTvncC1Lf4NI=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -32,29 +30,34 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zlib
   ];
 
-  # Build only the git_xet package
-  buildAndTestSubdir = "git_xet";
+  cargoHash = "sha256-2f2lLSYcvllIKvyMlT5hphhkb0QY70wdTvncC1Lf4NI=";
 
   nativeCheckInputs = [
     git
     git-lfs
   ];
+
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  versionCheckProgramArg = "--version";
-  doInstallCheck = true;
 
+  # Build only the git_xet package
+  buildAndTestSubdir = "git_xet";
+  versionCheckProgramArg = "--version";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Git LFS plugin that uploads and downloads using the Xet protocol";
     homepage = "https://github.com/huggingface/xet-core/blob/main/git_xet/README.md";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
-    mainProgram = "git-xet";
+
     maintainers = with lib.maintainers; [
       cybardev
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "git-xet";
   };
 })

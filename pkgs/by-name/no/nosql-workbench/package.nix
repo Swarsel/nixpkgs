@@ -1,10 +1,10 @@
 {
-  appimageTools,
   lib,
-  fetchurl,
-  jdk21,
   stdenv,
+  fetchurl,
   _7zz,
+  appimageTools,
+  jdk21,
 }:
 let
   pname = "nosql-workbench";
@@ -14,12 +14,13 @@ let
     fetchurl
       {
         aarch64-darwin = {
-          url = "https://s3.amazonaws.com/nosql-workbench/NoSQL%20Workbench-mac-arm64-${version}.dmg";
           hash = "sha256-U6Gea89/cXY9Fd6JAWrUtf7Q4VfEXDPzbjCQcHMRjiE=";
+          url = "https://s3.amazonaws.com/nosql-workbench/NoSQL%20Workbench-mac-arm64-${version}.dmg";
         };
+
         x86_64-linux = {
-          url = "https://s3.amazonaws.com/nosql-workbench/NoSQL%20Workbench-linux-${version}.AppImage";
           hash = "sha256-O62JsVHJ5OE6HLt3Pg9XVrd3j1eoY3O+bjqroowGEOE=";
+          url = "https://s3.amazonaws.com/nosql-workbench/NoSQL%20Workbench-linux-${version}.AppImage";
         };
       }
       .${stdenv.system} or (throw "Unsupported system: ${stdenv.system}");
@@ -30,6 +31,7 @@ let
     changelog = "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/WorkbenchDocumentHistory.html";
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ DataHearth ];
+
     platforms = [
       "aarch64-darwin"
       "x86_64-linux"
@@ -45,13 +47,10 @@ if stdenv.hostPlatform.isDarwin then
       meta
       ;
 
-    sourceRoot = ".";
-
     # DMG file is using APFS which is unsupported by "undmg".
     # Instead, use "7zz" to extract the contents.
     # "undmg" issue: https://github.com/matthewbauer/undmg/issues/4
     nativeBuildInputs = [ _7zz ];
-
     buildInputs = [ jdk21 ];
 
     installPhase = ''
@@ -63,6 +62,8 @@ if stdenv.hostPlatform.isDarwin then
       runHook postInstall
     '';
 
+    sourceRoot = ".";
+
   }
 else
   appimageTools.wrapType2 {
@@ -72,11 +73,6 @@ else
       src
       meta
       ;
-
-    extraPkgs = pkgs: [
-      # Required to run DynamoDB locally
-      pkgs.jdk21
-    ];
 
     extraInstallCommands =
       let
@@ -92,4 +88,9 @@ else
         substituteInPlace $out/share/applications/${internal_filename}.desktop \
             --replace-fail 'Exec=AppRun --no-sandbox %U' 'Exec=nosql-workbench'
       '';
+
+    extraPkgs = pkgs: [
+      # Required to run DynamoDB locally
+      pkgs.jdk21
+    ];
   }

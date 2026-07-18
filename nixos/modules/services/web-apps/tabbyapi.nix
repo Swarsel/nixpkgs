@@ -1,7 +1,7 @@
 {
-  pkgs,
   config,
   lib,
+  pkgs,
   ...
 }:
 
@@ -13,68 +13,64 @@ in
 {
   options.services.tabbyapi = {
     enable = lib.mkEnableOption "tabbyapi";
-
     package = lib.mkPackageOption pkgs "tabbyapi" { };
 
     openFirewall = lib.mkOption {
-      type = lib.types.bool;
       default = false;
       description = "Whether to open the firewall for the TabbyAPI port.";
+      type = lib.types.bool;
     };
 
     settings = lib.mkOption {
       description = ''
         Configuration for TabbyAPI. https://github.com/theroyallab/tabbyAPI/wiki/02.-Server-options
       '';
+
       type = lib.types.submodule {
-        freeformType = yamlFormat.type;
-
         options = {
-          network = {
-            host = lib.mkOption {
-              type = lib.types.str;
-              default = "127.0.0.1";
-              description = "The IP to host on. Use 0.0.0.0 to expose on all adapters.";
-            };
-
-            port = lib.mkOption {
-              type = lib.types.port;
-              default = 5000;
-              description = "The port to host on.";
-            };
-
-            disable_auth = lib.mkOption {
-              type = lib.types.bool;
-              default = false;
-              description = "Disable HTTP token authentication. WARNING: Vulnerable if exposed.";
-            };
-
-            api_servers = lib.mkOption {
-              type = lib.types.listOf lib.types.str;
-              default = [ "OAI" ];
-              description = "Select API servers to enable. Options: OAI, Kobold.";
-            };
-          };
-
           logging = {
             log_prompt = lib.mkOption {
-              type = lib.types.bool;
               default = false;
               description = "Enable prompt logging.";
+              type = lib.types.bool;
             };
 
             log_requests = lib.mkOption {
-              type = lib.types.bool;
               default = false;
               description = "Enable request logging. Only use for debug.";
+              type = lib.types.bool;
             };
           };
 
           model = {
-            model_dir = lib.mkOption {
+            cache_mode = lib.mkOption {
+              default = "FP16";
+              description = "Cache mode for VRAM savings. ExLlamaV2: FP16, Q8, Q6, Q4. ExLlamaV3: specific pair string (e.g., '8,8').";
               type = lib.types.str;
+            };
+
+            dummy_model_names = lib.mkOption {
+              default = [ "gpt-3.5-turbo" ];
+              description = "List of fake model names sent via the /v1/models endpoint.";
+              type = lib.types.listOf lib.types.str;
+            };
+
+            gpu_split_auto = lib.mkOption {
+              default = true;
+              description = "Automatically allocate resources to GPUs.";
+              type = lib.types.bool;
+            };
+
+            max_seq_len = lib.mkOption {
+              default = null;
+              description = "Max sequence length. Set null to use model defaults.";
+              type = lib.types.nullOr lib.types.int;
+            };
+
+            model_dir = lib.mkOption {
               default = "models";
               description = "Directory to look for models. Relative to the state directory.";
+
               example = lib.literalExpression ''
                 (pkgs.linkFarm "models" {
                   qwen-8b = pkgs.fetchgit {
@@ -109,40 +105,46 @@ in
                   # \ No newline at end of file
                 }).outPath;
               '';
+
+              type = lib.types.str;
             };
 
             model_name = lib.mkOption {
-              type = lib.types.nullOr lib.types.str;
               default = null;
               description = "The initial model to load on startup. Must exist in model_dir.";
               example = "Qwen3_5-9B";
+              type = lib.types.nullOr lib.types.str;
             };
+          };
 
-            max_seq_len = lib.mkOption {
-              type = lib.types.nullOr lib.types.int;
-              default = null;
-              description = "Max sequence length. Set null to use model defaults.";
-            };
-
-            cache_mode = lib.mkOption {
-              type = lib.types.str;
-              default = "FP16";
-              description = "Cache mode for VRAM savings. ExLlamaV2: FP16, Q8, Q6, Q4. ExLlamaV3: specific pair string (e.g., '8,8').";
-            };
-
-            gpu_split_auto = lib.mkOption {
-              type = lib.types.bool;
-              default = true;
-              description = "Automatically allocate resources to GPUs.";
-            };
-
-            dummy_model_names = lib.mkOption {
+          network = {
+            api_servers = lib.mkOption {
+              default = [ "OAI" ];
+              description = "Select API servers to enable. Options: OAI, Kobold.";
               type = lib.types.listOf lib.types.str;
-              default = [ "gpt-3.5-turbo" ];
-              description = "List of fake model names sent via the /v1/models endpoint.";
+            };
+
+            disable_auth = lib.mkOption {
+              default = false;
+              description = "Disable HTTP token authentication. WARNING: Vulnerable if exposed.";
+              type = lib.types.bool;
+            };
+
+            host = lib.mkOption {
+              default = "127.0.0.1";
+              description = "The IP to host on. Use 0.0.0.0 to expose on all adapters.";
+              type = lib.types.str;
+            };
+
+            port = lib.mkOption {
+              default = 5000;
+              description = "The port to host on.";
+              type = lib.types.port;
             };
           };
         };
+
+        freeformType = yamlFormat.type;
       };
     };
   };
@@ -151,6 +153,7 @@ in
     assertions = [
       {
         assertion = cfg.package.passthru.cudaSupport;
+
         message = ''
           TabbyAPI requires CUDA support to function. The configured package does not have CUDA enabled.
           Consider setting:
@@ -158,47 +161,48 @@ in
         '';
       }
     ];
+
     networking.firewall.allowedTCPPorts = lib.mkIf cfg.openFirewall [
       cfg.settings.network.port
     ];
 
     systemd.services.tabbyapi = {
       enable = true;
-      wantedBy = [ "multi-user.target" ];
       description = "TabbyAPI - OAI compatible server for Exllama";
 
       # Triton & huggingface downloader need writable cache folders
       environment = {
         HOME = "/var/lib/tabbyapi";
-        XDG_CACHE_HOME = "/var/lib/tabbyapi/.cache";
         TRITON_CACHE_DIR = "/tmp/triton";
+        XDG_CACHE_HOME = "/var/lib/tabbyapi/.cache";
       };
 
       serviceConfig = {
-        ExecStart = "${lib.getExe cfg.package} --config=${configFile}";
-        Restart = "on-failure";
-        StateDirectory = "tabbyapi";
-        WorkingDirectory = "/var/lib/tabbyapi";
-        User = "tabbyapi";
-        Group = "tabbyapi";
         DynamicUser = true;
-
-        # Hardening
-        ProtectSystem = "strict";
-        ProtectHome = "yes";
+        ExecStart = "${lib.getExe cfg.package} --config=${configFile}";
+        Group = "tabbyapi";
         LockPersonality = true;
         ProtectClock = true;
         ProtectControlGroups = true;
+        ProtectHome = "yes";
         ProtectHostname = true;
         ProtectKernelLogs = true;
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
+        # Hardening
+        ProtectSystem = "strict";
+        Restart = "on-failure";
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
+        StateDirectory = "tabbyapi";
         SystemCallArchitectures = "native";
+        User = "tabbyapi";
+        WorkingDirectory = "/var/lib/tabbyapi";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

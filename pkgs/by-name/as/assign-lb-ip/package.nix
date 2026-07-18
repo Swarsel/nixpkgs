@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,9 +19,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Assigns loadBalancerIP address to a Kubernetes service for testing purposes";
-    mainProgram = "assign-lb-ip";
     homepage = "https://github.com/Nordix/assign-lb-ip";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ starcraft66 ];
+    mainProgram = "assign-lb-ip";
   };
 })

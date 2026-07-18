@@ -16,10 +16,8 @@ stdenv.mkDerivation {
     hash = "sha256-yWPRbJLT09E7pqqs9E2k48ECoRR2nhcgTgK5pumkrxo=";
   };
 
-  buildInputs = [ readline ];
-
   patches = [ ./gcc15-fixes.patch ];
-
+  buildInputs = [ readline ];
   makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
 
   env.NIX_CFLAGS_COMPILE = toString (
@@ -28,12 +26,9 @@ stdenv.mkDerivation {
     ]
   );
 
-  enableParallelBuilding = true;
-
   # Tests are currently broken on i686 see
   # https://hydra.nixos.org/build/24003763/nixlog/1
   doCheck = !stdenv.hostPlatform.isi686 && !stdenv.hostPlatform.isAarch64;
-  checkTarget = "test";
 
   installPhase = ''
     runHook preInstall
@@ -46,9 +41,12 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  checkTarget = "test";
+  enableParallelBuilding = true;
+
   meta = {
     description = "Very small C interpreter for scripting";
-    mainProgram = "picoc";
+
     longDescription = ''
       PicoC is a very small C interpreter for scripting. It was originally
       written as a script language for a UAV's on-board flight system. It's
@@ -59,9 +57,11 @@ stdenv.mkDerivation {
       very sparing of data space. This means it can work well in small embedded
       devices.
     '';
+
     homepage = "https://gitlab.com/zsaleeba/picoc";
-    downloadPage = "https://code.google.com/p/picoc/downloads/list";
     license = lib.licenses.bsd3;
     platforms = lib.platforms.unix;
+    mainProgram = "picoc";
+    downloadPage = "https://code.google.com/p/picoc/downloads/list";
   };
 }

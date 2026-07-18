@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -24,8 +24,8 @@ let
     ;
   cfg = config.services.ersatztv;
   defaultEnv = {
-    ETV_UI_PORT = 8409;
     ETV_BASE_URL = "/";
+    ETV_UI_PORT = 8409;
   };
 
 in
@@ -33,22 +33,27 @@ in
   options = {
     services.ersatztv = {
       enable = mkEnableOption "ErsatzTV";
-
       package = mkPackageOption pkgs "ersatztv" { };
 
-      user = mkOption {
-        type = str;
-        default = "ersatztv";
-        description = "User account under which ErsatzTV runs.";
-      };
+      baseUrl = mkOption {
+        default = "/";
 
-      group = mkOption {
+        description = ''
+          Base URL to support reverse proxies that use paths (e.g. `/ersatztv`)
+        '';
+
         type = str;
-        default = "ersatztv";
-        description = "Group under which ErsatzTV runs.";
       };
 
       environment = mkOption {
+        default = defaultEnv;
+        description = "Environment variables to set for the ErsatzTV service.";
+
+        example = {
+          ETV_STREAMING_PORT = 8001;
+          ETV_UI_PORT = 8000;
+        };
+
         type =
           with lib.types;
           attrsOf (oneOf [
@@ -59,53 +64,45 @@ in
             path
             package
           ]);
-        default = defaultEnv;
-        example = {
-          ETV_UI_PORT = 8000;
-          ETV_STREAMING_PORT = 8001;
-        };
-        description = "Environment variables to set for the ErsatzTV service.";
       };
 
-      baseUrl = mkOption {
+      group = mkOption {
+        default = "ersatztv";
+        description = "Group under which ErsatzTV runs.";
         type = str;
-        default = "/";
-        description = ''
-          Base URL to support reverse proxies that use paths (e.g. `/ersatztv`)
-        '';
       };
 
       openFirewall = mkOption {
-        type = bool;
         default = false;
+
         description = ''
           Open the default ports in the firewall for the server.
         '';
+
+        type = bool;
+      };
+
+      user = mkOption {
+        default = "ersatztv";
+        description = "User account under which ErsatzTV runs.";
+        type = str;
       };
     };
   };
 
   config = mkIf cfg.enable {
+    networking.firewall = mkIf cfg.openFirewall {
+      allowedTCPPorts = [
+        cfg.environment.ETV_UI_PORT
+      ];
+    };
+
     services.ersatztv.environment = lib.mapAttrs (_: lib.mkDefault) defaultEnv;
 
     systemd = {
       services.ersatztv = {
-        description = "ErsatzTV";
         after = [ "network-online.target" ];
-        wants = [ "network-online.target" ];
-        wantedBy = [ "multi-user.target" ];
-
-        serviceConfig = {
-          Type = "simple";
-          User = cfg.user;
-          Group = cfg.group;
-          DynamicUser = true;
-          UMask = "0077";
-          StateDirectory = "ersatztv";
-          WorkingDirectory = "/var/lib/ersatztv";
-          ExecStart = getExe cfg.package;
-          Restart = "on-failure";
-        };
+        description = "ErsatzTV";
 
         # Set environment variables for the service, using known values for ETV_CONFIG_FOLDER and ETV_TRANSCODE_FOLDER, and allowing overrides from cfg.environment
         environment = {
@@ -113,22 +110,31 @@ in
           ETV_TRANSCODE_FOLDER = "/var/lib/ersatztv/transcode";
         }
         // (lib.mapAttrs (_: s: if lib.isBool s then lib.boolToString s else toString s) cfg.environment);
+
+        serviceConfig = {
+          DynamicUser = true;
+          ExecStart = getExe cfg.package;
+          Group = cfg.group;
+          Restart = "on-failure";
+          StateDirectory = "ersatztv";
+          Type = "simple";
+          UMask = "0077";
+          User = cfg.user;
+          WorkingDirectory = "/var/lib/ersatztv";
+        };
+
+        wantedBy = [ "multi-user.target" ];
+        wants = [ "network-online.target" ];
       };
     };
+
+    users.groups = mkIf (cfg.group == "ersatztv") { ersatztv = { }; };
 
     users.users = mkIf (cfg.user == "ersatztv") {
       ersatztv = {
         inherit (cfg) group;
         isSystemUser = true;
       };
-    };
-
-    users.groups = mkIf (cfg.group == "ersatztv") { ersatztv = { }; };
-
-    networking.firewall = mkIf cfg.openFirewall {
-      allowedTCPPorts = [
-        cfg.environment.ETV_UI_PORT
-      ];
     };
 
   };

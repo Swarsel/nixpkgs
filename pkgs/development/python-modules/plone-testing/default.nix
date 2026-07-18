@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  zope-testing,
+  buildPythonPackage,
   setuptools,
+  zope-testing,
 }:
 
 buildPythonPackage rec {
   pname = "plone-testing";
   version = "9.0.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "plone";
@@ -18,6 +17,8 @@ buildPythonPackage rec {
     hash = "sha256-5DaN0o/EaWwdMvmLW12zdNXJ3p6dowALJ10zrhUT3dA=";
   };
 
+  # Huge amount of testing dependencies (including Zope2)
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -25,11 +26,8 @@ buildPythonPackage rec {
     zope-testing
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "plone.testing" ];
-
-  # Huge amount of testing dependencies (including Zope2)
-  doCheck = false;
-
   pythonNamespaces = [ "plone" ];
 
   meta = {

@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nodejs,
-  pnpm_10,
   fetchPnpmDeps,
-  pnpmConfigHook,
   nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_10,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "tailwindcss-language-server";
@@ -19,24 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-o5NyU52j3ZyuKWT4lL5U78qz4TBbXerylTl2fdvwqlk=";
   };
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      pnpmWorkspaces
-      patchPhase
-      ;
-    pnpm = pnpm_10;
-    fetcherVersion = 4;
-    hash = "sha256-excPYLP+81ftU/LwBeO/lmj4Nbefb4dNvpvudg/sx+w=";
-  };
-
-  patchPhase = ''
-    substituteInPlace ./packages/tailwindcss-language-server/package.json \
-      --replace '"@tailwindcss/oxide": "^4.1.15",' '"@tailwindcss/oxide": "^4.1.14",'
-  '';
-
   nativeBuildInputs = [
     pnpmConfigHook
     pnpm_10
@@ -44,10 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [
     nodejs
-  ];
-
-  pnpmWorkspaces = [
-    "@tailwindcss/language-server..."
   ];
 
   # Must build the "@tailwindcss/language-service" package. Dependency is linked via workspace by "pnpm"
@@ -71,6 +49,29 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  patchPhase = ''
+    substituteInPlace ./packages/tailwindcss-language-server/package.json \
+      --replace '"@tailwindcss/oxide": "^4.1.15",' '"@tailwindcss/oxide": "^4.1.14",'
+  '';
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      pnpmWorkspaces
+      patchPhase
+      ;
+
+    fetcherVersion = 4;
+    hash = "sha256-excPYLP+81ftU/LwBeO/lmj4Nbefb4dNvpvudg/sx+w=";
+    pnpm = pnpm_10;
+  };
+
+  pnpmWorkspaces = [
+    "@tailwindcss/language-server..."
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -79,7 +80,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/tailwindlabs/tailwindcss-intellisense/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ happysalada ];
-    mainProgram = "tailwindcss-language-server";
     platforms = nodejs.meta.platforms;
+    mainProgram = "tailwindcss-language-server";
   };
 })

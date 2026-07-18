@@ -3,14 +3,15 @@
   stdenv,
   fetchFromGitHub,
   gradle,
-  makeBinaryWrapper,
   jre_headless,
-  zulu11,
+  makeBinaryWrapper,
   nix-update-script,
+  zulu11,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "gradle-dependency-tree-diff";
   version = "1.2.1";
+
   src = fetchFromGitHub {
     owner = "JakeWharton";
     repo = "dependency-tree-diff";
@@ -23,16 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     makeBinaryWrapper
   ];
 
-  mitmCache = gradle.fetchDeps {
-    inherit (finalAttrs) pname;
-    data = ./deps.json;
-  };
-  __darwinAllowLocalNetworking = true;
-
-  # There is a requirement on the specific Java toolchain.
-  gradleFlags = [ "-Dorg.gradle.java.home=${zulu11}" ];
-
-  gradleBuildTask = "build";
   doCheck = true;
 
   installPhase = ''
@@ -46,23 +37,37 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __darwinAllowLocalNetworking = true;
+  gradleBuildTask = "build";
+  # There is a requirement on the specific Java toolchain.
+  gradleFlags = [ "-Dorg.gradle.java.home=${zulu11}" ];
+
+  mitmCache = gradle.fetchDeps {
+    inherit (finalAttrs) pname;
+    data = ./deps.json;
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    inherit (jre_headless.meta) platforms;
     description = "Intelligent diff tool for the output of Gradle's dependencies task";
-    mainProgram = "dependency-tree-diff";
     homepage = "https://github.com/JakeWharton/dependency-tree-diff";
     changelog = "https://github.com/JakeWharton/dependency-tree-diff/releases/tag/${finalAttrs.version}";
+    license = lib.licenses.asl20;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode
     ];
-    license = lib.licenses.asl20;
+
     maintainers = [ lib.maintainers.progrm_jarvis ];
-    inherit (jre_headless.meta) platforms;
+
     badPlatforms = [
       # Currently fails to build on Darwin due to `Could not connect to the Gradle daemon.` error
       lib.systems.inspect.patterns.isDarwin
     ];
+
+    mainProgram = "dependency-tree-diff";
   };
 })

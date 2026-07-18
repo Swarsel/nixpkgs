@@ -1,12 +1,11 @@
 {
-  mkKdeDerivation,
   _7zz,
+  mkKdeDerivation,
   qtsvg,
 }:
 mkKdeDerivation {
   pname = "granatier";
-
-  extraNativeBuildInputs = [ _7zz ];
   extraBuildInputs = [ qtsvg ];
+  extraNativeBuildInputs = [ _7zz ];
   meta.mainProgram = "granatier";
 }

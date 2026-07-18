@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -16,7 +16,6 @@ stdenvNoCC.mkDerivation rec {
   };
 
   strictDeps = true;
-  dontBuild = true;
 
   installPhase = ''
     install -Dm644 LICENSE.md "$out/share/licenses/spaceship-prompt/LICENSE"
@@ -33,16 +32,20 @@ stdenvNoCC.mkDerivation rec {
     ln -s "$out/lib/spaceship-prompt/spaceship.zsh" "$out/share/zsh/site-functions/prompt_spaceship_setup"
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Zsh prompt for Astronauts";
     homepage = "https://github.com/denysdovhan/spaceship-prompt/";
     changelog = "https://github.com/spaceship-prompt/spaceship-prompt/releases/tag/v${version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       nyanloutre
       moni
       kyleondy
     ];
+
+    platforms = lib.platforms.unix;
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule rec {
@@ -19,9 +19,9 @@ buildGoModule rec {
 
   meta = {
     description = "Prometheus exporter for ICMP echo requests";
-    mainProgram = "ping_exporter";
     homepage = "https://github.com/czerwonk/ping_exporter";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ nudelsalat ];
+    mainProgram = "ping_exporter";
   };
 }

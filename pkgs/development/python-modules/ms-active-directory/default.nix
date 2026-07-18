@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dnspython,
-  fetchFromGitHub,
   ldap3,
   pyasn1,
   pycryptodome,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "ms-active-directory";
   version = "1.14.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zorn96";
@@ -23,6 +22,8 @@ buildPythonPackage rec {
     hash = "sha256-ZFIeG95+G9ofk54bYZpqu8uVfzjqsOrwWlIZvQgIWRI=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,9 +35,7 @@ buildPythonPackage rec {
     six
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "ms_active_directory" ];
 
   meta = {

@@ -1,13 +1,14 @@
 {
-  mkDerivation,
-  flex,
   byacc,
+  flex,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "usr.sbin/acpi";
-  extraPaths = [ "sys/contrib/dev/acpica" ];
   extraNativeBuildInputs = [
     flex
     byacc
   ];
+
+  extraPaths = [ "sys/contrib/dev/acpica" ];
+  path = "usr.sbin/acpi";
 }

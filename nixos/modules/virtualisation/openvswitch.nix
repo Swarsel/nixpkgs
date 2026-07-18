@@ -15,26 +15,37 @@ let
 in
 {
 
+  imports = [
+    (mkRemovedOptionModule [ "virtualisation" "vswitch" "ipsec" ] ''
+      OpenVSwitch IPSec functionality has been removed, because it depended on racoon,
+      which was removed from nixpkgs, because it was abanoded upstream.
+    '')
+  ];
+
   options.virtualisation.vswitch = {
     enable = mkOption {
-      type = types.bool;
       default = false;
+
       description = ''
         Whether to enable Open vSwitch. A configuration daemon (ovs-server)
         will be started.
       '';
+
+      type = types.bool;
     };
 
+    package = mkPackageOption pkgs "openvswitch" { };
+
     resetOnStart = mkOption {
-      type = types.bool;
       default = false;
+
       description = ''
         Whether to reset the Open vSwitch configuration database to a default
         configuration on every start of the systemd `ovsdb.service`.
       '';
-    };
 
-    package = mkPackageOption pkgs "openvswitch" { };
+      type = types.bool;
+    };
   };
 
   config = mkIf cfg.enable (
@@ -45,33 +56,58 @@ in
 
       # The path to the an initialized version of the database
       db = pkgs.stdenv.mkDerivation {
-        name = "vswitch.db";
-        dontUnpack = true;
-        buildPhase = "true";
         buildInputs = [
           cfg.package
         ];
+
+        buildPhase = "true";
+        dontUnpack = true;
         installPhase = "mkdir -p $out";
+        name = "vswitch.db";
       };
 
     in
     {
-      environment.systemPackages = [ cfg.package ];
+      boot.extraModulePackages = [ cfg.package ];
+
       boot.kernelModules = [
         "tun"
         "openvswitch"
       ];
 
-      boot.extraModulePackages = [ cfg.package ];
+      environment.systemPackages = [ cfg.package ];
+
+      systemd.services.ovs-vswitchd = {
+        after = [ "ovsdb.service" ];
+        bindsTo = [ "ovsdb.service" ];
+        description = "Open_vSwitch Daemon";
+        path = [ cfg.package ];
+
+        serviceConfig = {
+          ExecStart = ''
+            ${cfg.package}/bin/ovs-vswitchd \
+            --pidfile=/run/openvswitch/ovs-vswitchd.pid \
+            --detach
+          '';
+
+          PIDFile = "/run/openvswitch/ovs-vswitchd.pid";
+          Restart = "always";
+          RestartSec = 3;
+          # Use service type 'forking' to correctly determine when vswitchd is ready.
+          Type = "forking";
+        };
+
+        wantedBy = [ "multi-user.target" ];
+      };
 
       systemd.services.ovsdb = {
         description = "Open_vSwitch Database Server";
-        wantedBy = [ "multi-user.target" ];
         path = [ cfg.package ];
-        restartTriggers = [
-          db
-          cfg.package
-        ];
+
+        postStart = ''
+          ${cfg.package}/bin/ovs-vsctl --timeout 3 --retry --no-wait init
+        '';
+
         # Create the config database
         preStart = ''
           mkdir -p ${runDir}
@@ -92,6 +128,12 @@ in
             echo "Database already up to date"
           fi
         '';
+
+        restartTriggers = [
+          db
+          cfg.package
+        ];
+
         serviceConfig = {
           ExecStart = ''
             ${cfg.package}/bin/ovsdb-server \
@@ -104,46 +146,19 @@ in
               --detach \
               /var/db/openvswitch/conf.db
           '';
+
+          PIDFile = "/run/openvswitch/ovsdb.pid";
           Restart = "always";
           RestartSec = 3;
-          PIDFile = "/run/openvswitch/ovsdb.pid";
           # Use service type 'forking' to correctly determine when ovsdb-server is ready.
           Type = "forking";
         };
-        postStart = ''
-          ${cfg.package}/bin/ovs-vsctl --timeout 3 --retry --no-wait init
-        '';
-      };
 
-      systemd.services.ovs-vswitchd = {
-        description = "Open_vSwitch Daemon";
         wantedBy = [ "multi-user.target" ];
-        bindsTo = [ "ovsdb.service" ];
-        after = [ "ovsdb.service" ];
-        path = [ cfg.package ];
-        serviceConfig = {
-          ExecStart = ''
-            ${cfg.package}/bin/ovs-vswitchd \
-            --pidfile=/run/openvswitch/ovs-vswitchd.pid \
-            --detach
-          '';
-          PIDFile = "/run/openvswitch/ovs-vswitchd.pid";
-          # Use service type 'forking' to correctly determine when vswitchd is ready.
-          Type = "forking";
-          Restart = "always";
-          RestartSec = 3;
-        };
       };
 
     }
   );
-
-  imports = [
-    (mkRemovedOptionModule [ "virtualisation" "vswitch" "ipsec" ] ''
-      OpenVSwitch IPSec functionality has been removed, because it depended on racoon,
-      which was removed from nixpkgs, because it was abanoded upstream.
-    '')
-  ];
 
   meta.maintainers = with maintainers; [ netixx ];
 

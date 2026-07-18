@@ -1,38 +1,33 @@
 {
   lib,
   stdenv,
-  darwin,
   fetchFromGitHub,
-  callPackage,
-  buildGoModule,
-  installShellFiles,
-  buildPackages,
-  zlib,
-  zstd,
-  sqlite,
-  cmake,
-  python3,
-  ninja,
-  perl,
-  pkg-config,
   autoconf,
   automake,
-  libtool,
-  cctools,
+  buildGoModule,
+  buildPackages,
   cacert,
-  unzip,
+  callPackage,
+  cctools,
+  cmake,
+  darwin,
   go,
-  p11-kit,
+  installShellFiles,
+  libtool,
+  ninja,
   nixosTests,
+  p11-kit,
+  perl,
+  pkg-config,
+  python3,
+  sqlite,
+  unzip,
+  zlib,
+  zstd,
 }:
 stdenv.mkDerivation rec {
   pname = "curl-impersonate";
   version = "1.5.6";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "lexiforest";
@@ -41,15 +36,17 @@ stdenv.mkDerivation rec {
     hash = "sha256-t4fdTp/pb00dcuelvvZyN7ZdgLoQt3nbYXU9sW9jlS8=";
   };
 
-  # Disable blanket -Werror to fix build on `gcc-13` related to minor
-  # warnings on `boringssl`.
-  env.NIX_CFLAGS_COMPILE = "-Wno-error";
+  outputs = [
+    "out"
+    "dev"
+  ];
+
+  postPatch = ''
+    substituteInPlace Makefile.in \
+      --replace-fail "-lc++" "-lstdc++"
+  '';
 
   strictDeps = true;
-
-  depsBuildBuild = lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
-    buildPackages.stdenv.cc
-  ];
 
   nativeBuildInputs =
     lib.optionals stdenv.hostPlatform.isDarwin [
@@ -88,44 +85,9 @@ stdenv.mkDerivation rec {
   ];
 
   buildFlags = [ "build" ];
-  checkTarget = "checkbuild";
-  installTargets = [ "install" ];
-
-  doCheck = true;
-
-  dontUseCmakeConfigure = true;
-  dontUseNinjaBuild = true;
-  dontUseNinjaInstall = true;
-  dontUseNinjaCheck = true;
-
-  postUnpack =
-    lib.concatStringsSep "\n" (
-      lib.mapAttrsToList (name: dep: "ln -sT ${dep.outPath} ${src.name}/${name}") (
-        lib.filterAttrs (n: v: v ? outPath) passthru.deps
-      )
-    )
-    + ''
-
-      curltar=$(realpath -s ${src.name}/curl-*.tar.gz)
-
-      pushd "$(mktemp -d)"
-
-      tar -xf "$curltar"
-
-      pushd curl-curl-*/
-      patchShebangs scripts
-      popd
-
-      rm "$curltar"
-      tar -czf "$curltar" .
-
-      popd
-    '';
-
-  postPatch = ''
-    substituteInPlace Makefile.in \
-      --replace-fail "-lc++" "-lstdc++"
-  '';
+  # Disable blanket -Werror to fix build on `gcc-13` related to minor
+  # warnings on `boringssl`.
+  env.NIX_CFLAGS_COMPILE = "-Wno-error";
 
   preConfigure = ''
     export GOCACHE=$TMPDIR/go-cache
@@ -136,6 +98,8 @@ stdenv.mkDerivation rec {
     # Need to get value of $out for this flag
     configureFlagsArray+=("--with-libnssckbi=$out/lib")
   '';
+
+  doCheck = true;
 
   postInstall = ''
     # Remove vestigial *-config script
@@ -175,42 +139,75 @@ stdenv.mkDerivation rec {
       rm -rf "$dev/include/curl"
     '';
 
+  checkTarget = "checkbuild";
+
+  depsBuildBuild = lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
+    buildPackages.stdenv.cc
+  ];
+
   disallowedReferences = [ go ];
+  dontUseCmakeConfigure = true;
+  dontUseNinjaBuild = true;
+  dontUseNinjaCheck = true;
+  dontUseNinjaInstall = true;
+  installTargets = [ "install" ];
+
+  postUnpack =
+    lib.concatStringsSep "\n" (
+      lib.mapAttrsToList (name: dep: "ln -sT ${dep.outPath} ${src.name}/${name}") (
+        lib.filterAttrs (n: v: v ? outPath) passthru.deps
+      )
+    )
+    + ''
+
+      curltar=$(realpath -s ${src.name}/curl-*.tar.gz)
+
+      pushd "$(mktemp -d)"
+
+      tar -xf "$curltar"
+
+      pushd curl-curl-*/
+      patchShebangs scripts
+      popd
+
+      rm "$curltar"
+      tar -czf "$curltar" .
+
+      popd
+    '';
 
   passthru = {
-    deps = callPackage ./deps.nix { };
+    inherit src;
 
-    updateScript = ./update.sh;
+    boringssl-go-modules =
+      (buildGoModule {
+        inherit (passthru.boringssl-source) name;
+        src = passthru.boringssl-source;
+        nativeBuildInputs = [ unzip ];
+        vendorHash = "sha256-HepiJhj7OsV7iQHlM2yi5BITyAM04QqWRX28Rj7sRKk=";
+        proxyVendor = true;
+      }).goModules;
 
     # Find the correct boringssl source file
     boringssl-source = builtins.head (
       lib.attrValues (lib.filterAttrs (name: _: lib.strings.hasPrefix "boringssl-" name) passthru.deps)
     );
-    boringssl-go-modules =
-      (buildGoModule {
-        inherit (passthru.boringssl-source) name;
 
-        src = passthru.boringssl-source;
-        vendorHash = "sha256-HepiJhj7OsV7iQHlM2yi5BITyAM04QqWRX28Rj7sRKk=";
-
-        nativeBuildInputs = [ unzip ];
-
-        proxyVendor = true;
-      }).goModules;
-
-    inherit src;
-
+    deps = callPackage ./deps.nix { };
     tests = { inherit (nixosTests) curl-impersonate; };
+    updateScript = ./update.sh;
   };
 
   meta = {
-    changelog = "https://github.com/lexiforest/curl-impersonate/releases/tag/${src.tag}";
     description = "Special build of curl that can impersonate Chrome, Edge, Safari and Firefox";
     homepage = "https://github.com/lexiforest/curl-impersonate";
+    changelog = "https://github.com/lexiforest/curl-impersonate/releases/tag/${src.tag}";
+
     license = with lib.licenses; [
       curl
       mit
     ];
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
     mainProgram = "curl-impersonate";

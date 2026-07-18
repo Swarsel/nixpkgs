@@ -8,108 +8,105 @@ let
   cfg = config.services.zipline;
 in
 {
-  meta.maintainers = with lib.maintainers; [ defelo ];
-
   options.services.zipline = {
     enable = lib.mkEnableOption "Zipline";
-
     package = lib.mkPackageOption pkgs "zipline" { };
 
+    database.createLocally = lib.mkOption {
+      default = true;
+
+      description = ''
+        Whether to enable and configure a local PostgreSQL database server.
+      '';
+
+      type = lib.types.bool;
+    };
+
+    environmentFiles = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        Files to load environment variables from (in addition to [](#opt-services.zipline.settings)). This is useful to avoid putting secrets into the nix store. See <https://zipline.diced.sh/docs/config> for more information.
+      '';
+
+      example = [ "/run/secrets/zipline.env" ];
+      type = lib.types.listOf lib.types.path;
+    };
+
     settings = lib.mkOption {
+      default = { };
+
       description = ''
         Configuration of Zipline. See <https://zipline.diced.sh/docs/config> for more information.
       '';
-      default = { };
+
       example = {
-        DATABASE_URL = "postgres://postgres:postgres@postgres/postgres";
-        CORE_SECRET = "changethis";
         CORE_HOSTNAME = "0.0.0.0";
         CORE_PORT = "3000";
-        DATASOURCE_TYPE = "local";
+        CORE_SECRET = "changethis";
+        DATABASE_URL = "postgres://postgres:postgres@postgres/postgres";
         DATASOURCE_LOCAL_DIRECTORY = "/var/lib/zipline/uploads";
+        DATASOURCE_TYPE = "local";
       };
 
       type = lib.types.submodule {
+        options = {
+          CORE_HOSTNAME = lib.mkOption {
+            default = "127.0.0.1";
+            description = "The hostname to listen on.";
+            example = "0.0.0.0";
+            type = lib.types.str;
+          };
+
+          CORE_PORT = lib.mkOption {
+            default = 3000;
+            description = "The port to listen on.";
+            example = 8000;
+            type = lib.types.port;
+          };
+        };
+
         freeformType =
           with lib.types;
           attrsOf (oneOf [
             str
             int
           ]);
-
-        options = {
-          CORE_HOSTNAME = lib.mkOption {
-            type = lib.types.str;
-            description = "The hostname to listen on.";
-            default = "127.0.0.1";
-            example = "0.0.0.0";
-          };
-
-          CORE_PORT = lib.mkOption {
-            type = lib.types.port;
-            description = "The port to listen on.";
-            default = 3000;
-            example = 8000;
-          };
-        };
       };
-    };
-
-    environmentFiles = lib.mkOption {
-      type = lib.types.listOf lib.types.path;
-      default = [ ];
-      example = [ "/run/secrets/zipline.env" ];
-      description = ''
-        Files to load environment variables from (in addition to [](#opt-services.zipline.settings)). This is useful to avoid putting secrets into the nix store. See <https://zipline.diced.sh/docs/config> for more information.
-      '';
-    };
-
-    database.createLocally = lib.mkOption {
-      type = lib.types.bool;
-      default = true;
-      description = ''
-        Whether to enable and configure a local PostgreSQL database server.
-      '';
     };
   };
 
   config = lib.mkIf cfg.enable {
-    services.zipline.settings = {
-      DATABASE_URL = lib.mkIf cfg.database.createLocally "postgresql://zipline@localhost/zipline?host=/run/postgresql";
-      DATASOURCE_TYPE = lib.mkDefault "local";
-      DATASOURCE_LOCAL_DIRECTORY = lib.mkDefault "/var/lib/zipline/uploads"; # created automatically by zipline
-    };
-
     services.postgresql = lib.mkIf cfg.database.createLocally {
       enable = true;
-      ensureUsers = lib.singleton {
-        name = "zipline";
-        ensureDBOwnership = true;
-      };
       ensureDatabases = [ "zipline" ];
+
+      ensureUsers = lib.singleton {
+        ensureDBOwnership = true;
+        name = "zipline";
+      };
+    };
+
+    services.zipline.settings = {
+      DATABASE_URL = lib.mkIf cfg.database.createLocally "postgresql://zipline@localhost/zipline?host=/run/postgresql";
+      DATASOURCE_LOCAL_DIRECTORY = lib.mkDefault "/var/lib/zipline/uploads"; # created automatically by zipline
+      DATASOURCE_TYPE = lib.mkDefault "local";
     };
 
     systemd.services.zipline = {
-      wantedBy = [ "multi-user.target" ];
-
-      wants = [ "network-online.target" ];
       after = [ "network-online.target" ] ++ lib.optional cfg.database.createLocally "postgresql.target";
+      environment = lib.mapAttrs (_: value: toString value) cfg.settings;
       requires = lib.optional cfg.database.createLocally "postgresql.target";
 
-      environment = lib.mapAttrs (_: value: toString value) cfg.settings;
-
       serviceConfig = {
-        User = "zipline";
-        Group = "zipline";
-        DynamicUser = true;
-        StateDirectory = "zipline";
-        EnvironmentFile = cfg.environmentFiles;
-        ExecStart = lib.getExe cfg.package;
-
         # Hardening
         AmbientCapabilities = "";
         CapabilityBoundingSet = [ "" ];
         DevicePolicy = "closed";
+        DynamicUser = true;
+        EnvironmentFile = cfg.environmentFiles;
+        ExecStart = lib.getExe cfg.package;
+        Group = "zipline";
         LockPersonality = true;
         NoNewPrivileges = true;
         PrivateDevices = true;
@@ -130,15 +127,24 @@ in
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
+        StateDirectory = "zipline";
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
           "~@resources"
           "@chown"
         ];
+
         UMask = "0077";
+        User = "zipline";
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
   };
+
+  meta.maintainers = with lib.maintainers; [ defelo ];
 }

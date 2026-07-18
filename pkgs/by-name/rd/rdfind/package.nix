@@ -19,12 +19,11 @@ stdenv.mkDerivation (finalAttrs: {
   # passes -std=gnu++11 when using gcc 16 instead of the intended c++20.
   # autoconf 2.73 fixes this, so we autoreconf to avoid this issue.
   nativeBuildInputs = [ autoreconfHook ];
-
   buildInputs = [ nettle ];
 
   meta = {
-    homepage = "https://rdfind.pauldreik.se/";
     description = "Removes or hardlinks duplicate files very swiftly";
+    homepage = "https://rdfind.pauldreik.se/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.wmertens ];
     platforms = lib.platforms.all;

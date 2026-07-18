@@ -1,24 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  pytestCheckHook,
-
-  setuptools,
-
-  # for testing
-  numpy,
-  importlib-resources,
-
+  buildPythonPackage,
   # requirements
   editdistpy,
+  importlib-resources,
+  # for testing
+  numpy,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "symspellpy";
   version = "6.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mammothb";
@@ -27,15 +22,15 @@ buildPythonPackage rec {
     hash = "sha256-isxANYSiwN8pQ7/XfMtO7cyoGdTyrXYOZ6C5rDJsJIs=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ editdistpy ];
-
   nativeCheckInputs = [
     pytestCheckHook
     numpy
     importlib-resources
   ];
+
+  build-system = [ setuptools ];
+  dependencies = [ editdistpy ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "symspellpy"

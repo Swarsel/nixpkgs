@@ -2,14 +2,13 @@
   lib,
   buildPythonPackage,
   fetchFromBitbucket,
-  setuptools,
   httplib2,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "rtmapi";
   version = "0.7.2";
-  pyproject = true;
 
   src = fetchFromBitbucket {
     owner = "rtmapi";
@@ -17,14 +16,6 @@ buildPythonPackage rec {
     rev = "release-${version}";
     hash = "sha256-+aJ7T5bE+N9bINf6S3v48wUGXQ/ikz1Xb15xWbConT4=";
   };
-
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    httplib2
-  ];
 
   postPatch = ''
     substituteInPlace setup.py \
@@ -34,6 +25,15 @@ buildPythonPackage rec {
   # package has no tests
   doCheck = false;
 
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    httplib2
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "rtmapi" ];
 
   meta = {

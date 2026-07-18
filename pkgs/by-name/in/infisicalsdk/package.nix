@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonPackage rec {
   pname = "infisicalsdk";
   version = "1.0.16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Infisical";
@@ -16,6 +15,7 @@ python3Packages.buildPythonPackage rec {
     hash = "sha256-2bfT99ynl14CSbqIOG2SMQb3oW+uAWD+iJifdMQG8CE=";
   };
 
+  doCheck = false;
   build-system = [ python3Packages.setuptools ];
 
   dependencies = with python3Packages; [
@@ -26,12 +26,12 @@ python3Packages.buildPythonPackage rec {
     botocore
   ];
 
-  doCheck = false;
+  pyproject = true;
   pythonImportsCheck = [ "infisical_sdk" ];
 
   meta = {
-    homepage = "https://github.com/Infisical/python-sdk-official";
     description = "Infisical Python SDK";
+    homepage = "https://github.com/Infisical/python-sdk-official";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ artur-sannikov ];
   };

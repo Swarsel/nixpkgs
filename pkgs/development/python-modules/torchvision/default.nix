@@ -1,24 +1,20 @@
 {
   lib,
-  torch,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  # buildInputs
+  libjpeg_turbo,
   # nativeBuildInputs
   libpng,
   ninja,
-  which,
-
-  # buildInputs
-  libjpeg_turbo,
-
   # dependencies
   numpy,
   pillow,
-  scipy,
-
   # tests
   pytest,
+  scipy,
+  torch,
+  which,
   writableTmpDirAsHomeHook,
 }:
 
@@ -29,8 +25,6 @@ in
 buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
   pname = "torchvision";
   version = "0.27.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "pytorch";
@@ -52,26 +46,17 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     torch.cxxdev
   ];
 
-  dependencies = [
-    numpy
-    pillow
-    torch
-    scipy
-  ];
-
   env = {
     TORCHVISION_INCLUDE = "${libjpeg_turbo.dev}/include/";
     TORCHVISION_LIBRARY = "${libjpeg_turbo}/lib/";
   }
   // lib.optionalAttrs cudaSupport {
-    TORCH_CUDA_ARCH_LIST = "${lib.concatStringsSep ";" cudaCapabilities}";
     FORCE_CUDA = 1;
+    TORCH_CUDA_ARCH_LIST = "${lib.concatStringsSep ";" cudaCapabilities}";
   };
 
   # tests download big datasets, models, require internet connection, etc.
   doCheck = false;
-
-  pythonImportsCheck = [ "torchvision" ];
 
   nativeCheckInputs = [
     pytest
@@ -82,13 +67,25 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     py.test test --ignore=test/test_datasets_download.py
   '';
 
+  __structuredAttrs = true;
+
+  dependencies = [
+    numpy
+    pillow
+    torch
+    scipy
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "torchvision" ];
+
   meta = {
     description = "PyTorch vision library";
     homepage = "https://pytorch.org/vision";
-    downloadPage = "https://github.com/pytorch/vision";
     changelog = "https://github.com/pytorch/vision/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd3;
-    platforms = with lib.platforms; linux ++ lib.optionals (!cudaSupport) darwin;
     maintainers = with lib.maintainers; [ GaetanLepage ];
+    platforms = with lib.platforms; linux ++ lib.optionals (!cudaSupport) darwin;
+    downloadPage = "https://github.com/pytorch/vision";
   };
 })

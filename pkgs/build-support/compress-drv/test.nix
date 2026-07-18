@@ -1,7 +1,7 @@
 {
+  compressDrv,
   gzip,
   runCommand,
-  compressDrv,
 }:
 let
   example = runCommand "sample-drv" { } ''
@@ -11,12 +11,12 @@ let
     touch $out/2.png
   '';
   drv = compressDrv example {
-    formats = [ "txt" ];
     compressors.gz = "${gzip}/bin/gzip --force --keep --fast {}";
+    formats = [ "txt" ];
   };
   wrapped = compressDrv drv {
-    formats = [ "md" ];
     compressors.gz = "${gzip}/bin/gzip --force --keep --fast {}";
+    formats = [ "md" ];
   };
 in
 runCommand "test-compressDrv" { } ''

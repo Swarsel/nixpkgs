@@ -1,22 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   gitUpdater,
-
   # build-system
   hatchling,
-
+  langchain-mongodb,
   # dependencies
   langgraph-checkpoint,
-  langchain-mongodb,
   pymongo,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "langgraph-checkpoint-mongodb";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "langchain-ai";
@@ -25,14 +22,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-AdTAyMHNzkuvNB7DsbWxAxNKNqSxdgYwIB5UHBAAxZc=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/libs/langgraph-checkpoint-mongodb";
+  # Connection refused (to localhost:27017) for all tests
+  doCheck = false;
 
   build-system = [
     hatchling
-  ];
-
-  pythonRelaxDeps = [
-    "pymongo"
   ];
 
   dependencies = [
@@ -42,21 +36,25 @@ buildPythonPackage (finalAttrs: {
   ];
 
   enabledTestPaths = [ "tests/unit_tests" ];
+  pyproject = true;
+  # no pythonImportsCheck as this package does not provide any direct imports
+  pythonImportsCheck = [ "langgraph.checkpoint.mongodb" ];
 
-  # Connection refused (to localhost:27017) for all tests
-  doCheck = false;
+  pythonRelaxDeps = [
+    "pymongo"
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/libs/langgraph-checkpoint-mongodb";
 
   passthru = {
     # python updater script sets the wrong tag
     skipBulkUpdate = true;
+
     updateScript = gitUpdater {
-      rev-prefix = "libs/langgraph-checkpoint-mongodb/v";
       ignoredVersions = "a|b|dev|rc";
+      rev-prefix = "libs/langgraph-checkpoint-mongodb/v";
     };
   };
-
-  # no pythonImportsCheck as this package does not provide any direct imports
-  pythonImportsCheck = [ "langgraph.checkpoint.mongodb" ];
 
   meta = {
     description = "Integrations between MongoDB, Atlas, LangChain, and LangGraph";

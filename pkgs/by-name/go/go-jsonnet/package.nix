@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   testers,
 }:
 
@@ -18,25 +18,27 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-uFCvMmiZVaRYhaORI92W0pkDjDZNiWIcop70FssJiZo=";
 
-  subPackages = [ "cmd/jsonnet*" ];
-
   ldflags = [
     "-s"
     "-w"
   ];
 
+  subPackages = [ "cmd/jsonnet*" ];
+
   passthru.tests.version = testers.testVersion {
-    package = finalAttrs.finalPackage;
     version = "v${finalAttrs.version}";
+    package = finalAttrs.finalPackage;
   };
 
   meta = {
     description = "Implementation of Jsonnet in pure Go";
     homepage = "https://github.com/google/go-jsonnet";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       nshalman
     ];
+
     mainProgram = "jsonnet";
   };
 })

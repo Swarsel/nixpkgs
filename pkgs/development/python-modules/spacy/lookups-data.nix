@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  spacy,
+  buildPythonPackage,
   pytestCheckHook,
+  spacy,
 }:
 
 buildPythonPackage rec {
   pname = "spacy-lookups-data";
   version = "1.0.5";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "explosion";
@@ -23,6 +22,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "spacy_lookups_data" ];
 
   meta = {

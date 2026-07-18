@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "pymitv";
   version = "1.5.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,9 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ requests ];
-
   # Project thas no tests
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "pymitv" ];
 
   meta = {

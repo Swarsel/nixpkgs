@@ -2,24 +2,28 @@
   lib,
   stdenv,
   fetchurl,
+  gitUpdater,
+  libsndfile,
   lv2,
   meson,
   ninja,
+  # test derivations
+  pipewire,
   pkg-config,
   python3,
-  libsndfile,
   serd,
   sord,
   sratom,
-  gitUpdater,
-
-  # test derivations
-  pipewire,
 }:
 
 stdenv.mkDerivation rec {
   pname = "lilv";
   version = "0.28.0";
+
+  src = fetchurl {
+    url = "https://download.drobilla.net/lilv-${version}.tar.xz";
+    hash = "sha256-jctwrbXPByM1EVprCR9BE3EL3HOrqtqj+enB5VlXsUk=";
+  };
 
   outputs = [
     "out"
@@ -27,23 +31,20 @@ stdenv.mkDerivation rec {
     "man"
   ];
 
-  src = fetchurl {
-    url = "https://download.drobilla.net/lilv-${version}.tar.xz";
-    hash = "sha256-jctwrbXPByM1EVprCR9BE3EL3HOrqtqj+enB5VlXsUk=";
-  };
-
   nativeBuildInputs = [
     meson
     ninja
     pkg-config
     python3
   ];
+
   buildInputs = [
     libsndfile
     serd
     sord
     sratom
   ];
+
   propagatedBuildInputs = [ lv2 ];
 
   mesonFlags = [
@@ -68,16 +69,17 @@ stdenv.mkDerivation rec {
     tests = {
       inherit pipewire;
     };
+
     updateScript = gitUpdater {
-      url = "https://gitlab.com/lv2/lilv.git";
       rev-prefix = "v";
+      url = "https://gitlab.com/lv2/lilv.git";
     };
   };
 
   meta = {
+    description = "C library to make the use of LV2 plugins";
     homepage = "http://drobilla.net/software/lilv";
     changelog = "https://gitlab.com/lv2/lilv/-/blob/v${version}/NEWS";
-    description = "C library to make the use of LV2 plugins";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.unix;

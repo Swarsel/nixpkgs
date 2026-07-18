@@ -1,35 +1,35 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   alsa-lib,
   at-spi2-core,
   cmake,
   curl,
   dbus,
-  libepoxy,
-  fetchFromGitHub,
-  libglut,
   freetype,
   gcc-unwrapped,
   gtk3,
-  lib,
   libGL,
-  libxcursor,
-  libxdmcp,
-  libxext,
-  libxinerama,
-  libxrandr,
-  libxtst,
   libdatrie,
+  libepoxy,
+  libglut,
   libjack2,
   libpsl,
   libselinux,
   libsepol,
   libsysprof-capture,
   libthai,
+  libxcursor,
+  libxdmcp,
+  libxext,
+  libxinerama,
   libxkbcommon,
+  libxrandr,
+  libxtst,
   pkg-config,
   python3,
   sqlite,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,8 +40,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "jatinchowdhury18";
     repo = "ChowPhaser";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-9wo7ZFMruG3QNvlpILSvrFh/Sx6J1qnlWc8+aQyS4tQ=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -97,11 +97,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/jatinchowdhury18/ChowPhaser";
     description = "Phaser effect based loosely on the Schulte Compact Phasing 'A'";
+    homepage = "https://github.com/jatinchowdhury18/ChowPhaser";
     license = with lib.licenses; [ bsd3 ];
-    mainProgram = "ChowPhaserStereo";
     maintainers = with lib.maintainers; [ magnetophon ];
     platforms = lib.platforms.linux;
+    mainProgram = "ChowPhaserStereo";
   };
 })

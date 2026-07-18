@@ -31,6 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
     which
     gettext
   ];
+
   buildInputs = [
     libftdi1
     libtool
@@ -46,12 +47,14 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "http://urjtag.org/";
     description = "Universal JTAG library, server and tools";
+    homepage = "http://urjtag.org/";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl21Plus
     ];
+
     maintainers = [ ];
     platforms = lib.platforms.linux;
   };

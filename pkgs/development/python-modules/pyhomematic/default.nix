@@ -1,25 +1,23 @@
 {
   lib,
   buildPythonPackage,
-  setuptools,
   fetchPypi,
+  setuptools,
   unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pyhomematic";
   version = "0.1.78";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-uB9aDa1urIwL2DBdBwPi0sHWPW7SUZ3EaAjuMLSOudc=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ unittestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "pyhomematic" ];
 
   meta = {

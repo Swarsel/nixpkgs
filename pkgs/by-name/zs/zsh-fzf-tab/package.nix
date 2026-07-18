@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  zsh,
-  ncurses,
   autoconf,
+  ncurses,
   nix-update-script,
+  zsh,
 }:
 
 let
@@ -33,34 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
       "-Wno-error=implicit-int"
     ];
   };
-
-  # this script is modified according to fzf-tab/lib-ftb-build-module
-  configurePhase = ''
-    runHook preConfigure
-
-    pushd modules
-
-    tar -xf ${zsh.src}
-    ln -s $(pwd)/Src/fzftab.c zsh-${zsh.version}/Src/Modules/
-    ln -s $(pwd)/Src/fzftab.mdd zsh-${zsh.version}/Src/Modules/
-
-    pushd zsh-${zsh.version}
-
-    # Apply patches from zsh
-    ${lib.concatStringsSep "\n" (map (patch: "patch -p1 -i ${patch}") zsh.patches)}
-
-    if [[ ! -f ./configure ]]; then
-      ./Util/preconfig
-    fi
-    if [[ ! -f ./Makefile ]]; then
-      ./configure --disable-gdbm --without-tcsetpgrp
-    fi
-
-    popd
-    popd
-
-    runHook postConfigure
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -91,17 +63,47 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  # this script is modified according to fzf-tab/lib-ftb-build-module
+  configurePhase = ''
+    runHook preConfigure
+
+    pushd modules
+
+    tar -xf ${zsh.src}
+    ln -s $(pwd)/Src/fzftab.c zsh-${zsh.version}/Src/Modules/
+    ln -s $(pwd)/Src/fzftab.mdd zsh-${zsh.version}/Src/Modules/
+
+    pushd zsh-${zsh.version}
+
+    # Apply patches from zsh
+    ${lib.concatStringsSep "\n" (map (patch: "patch -p1 -i ${patch}") zsh.patches)}
+
+    if [[ ! -f ./configure ]]; then
+      ./Util/preconfig
+    fi
+    if [[ ! -f ./Makefile ]]; then
+      ./configure --disable-gdbm --without-tcsetpgrp
+    fi
+
+    popd
+    popd
+
+    runHook postConfigure
+  '';
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/Aloxaf/fzf-tab";
     description = "Replace zsh's default completion selection menu with fzf";
+    homepage = "https://github.com/Aloxaf/fzf-tab";
     changelog = "https://github.com/Aloxaf/fzf-tab/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       diredocks
       miniharinn
     ];
+
     platforms = lib.platforms.unix;
   };
 })

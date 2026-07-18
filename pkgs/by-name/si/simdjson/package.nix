@@ -29,11 +29,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
+    description = "Parsing gigabytes of JSON per second";
     homepage = "https://simdjson.org/";
     changelog = "https://github.com/simdjson/simdjson/releases/tag/${finalAttrs.src.tag}";
-    description = "Parsing gigabytes of JSON per second";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ chessai ];
+    platforms = lib.platforms.all;
   };
 })

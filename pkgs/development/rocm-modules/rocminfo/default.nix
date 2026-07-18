@@ -2,30 +2,30 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
+  busybox,
   cmake,
+  gnugrep,
+  python3,
   rocm-cmake,
   rocm-runtime,
-  busybox,
-  python3,
-  gnugrep,
+  rocmUpdateScript,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "7.2.3";
   pname = "rocminfo";
+  version = "7.2.3";
 
   src = fetchFromGitHub {
     owner = "ROCm";
     repo = "rocm-systems";
     rev = "rocm-${finalAttrs.version}";
+    hash = "sha256-0esRBEXVibC2uzyonpc0ABNNHQ2NAWZrBmmg6p1zP0c=";
+
     sparseCheckout = [
       "projects/rocminfo"
       "shared"
     ];
-    hash = "sha256-0esRBEXVibC2uzyonpc0ABNNHQ2NAWZrBmmg6p1zP0c=";
   };
-  sourceRoot = "${finalAttrs.src.name}/projects/rocminfo";
 
   strictDeps = true;
 
@@ -43,15 +43,16 @@ stdenv.mkDerivation (finalAttrs: {
     sed 's,lsmod | grep ,${busybox}/bin/lsmod | ${gnugrep}/bin/grep ,' -i rocminfo.cc
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/projects/rocminfo";
   passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
 
   meta = {
     description = "ROCm Application for Reporting System Info";
     homepage = "https://github.com/ROCm/rocm-systems/tree/develop/projects/rocminfo";
     license = lib.licenses.ncsa;
-    mainProgram = "rocminfo";
     maintainers = with lib.maintainers; [ lovesegfault ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    mainProgram = "rocminfo";
+    teams = [ lib.teams.rocm ];
   };
 })

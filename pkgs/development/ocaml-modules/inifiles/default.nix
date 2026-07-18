@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   fetchpatch,
-  ocaml,
   findlib,
+  ocaml,
   ocaml_pcre,
 }:
 
@@ -19,8 +19,8 @@ stdenv.mkDerivation rec {
 
   patches = [
     (fetchpatch {
-      url = "https://raw.githubusercontent.com/ocaml/opam-repository/master/packages/ocaml-inifiles/ocaml-inifiles.1.2/files/ocaml-inifiles.diff";
       sha256 = "037kk3172s187w8vwsykdxlpklxzc7m7np57sapk499d8adzdgwn";
+      url = "https://raw.githubusercontent.com/ocaml/opam-repository/master/packages/ocaml-inifiles/ocaml-inifiles.1.2/files/ocaml-inifiles.diff";
     })
   ];
 
@@ -28,13 +28,14 @@ stdenv.mkDerivation rec {
     substituteInPlace inifiles.ml --replace 'String.lowercase ' 'String.lowercase_ascii '
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     ocaml
     findlib
   ];
-  propagatedBuildInputs = [ ocaml_pcre ];
 
-  strictDeps = true;
+  propagatedBuildInputs = [ ocaml_pcre ];
 
   buildFlags = [
     "all"
@@ -44,8 +45,8 @@ stdenv.mkDerivation rec {
   createFindlibDestdir = true;
 
   meta = {
+    inherit (ocaml.meta) platforms;
     description = "Small OCaml library to read and write .ini files";
     license = lib.licenses.lgpl21Plus;
-    inherit (ocaml.meta) platforms;
   };
 }

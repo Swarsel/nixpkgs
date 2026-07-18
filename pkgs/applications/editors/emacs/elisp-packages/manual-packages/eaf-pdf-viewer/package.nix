@@ -1,8 +1,8 @@
 {
   # Basic
   lib,
-  melpaBuild,
   fetchFromGitHub,
+  melpaBuild,
   # Updater
   unstableGitUpdater,
 }:
@@ -25,18 +25,20 @@ melpaBuild {
   '';
 
   passthru = {
-    updateScript = unstableGitUpdater { };
     eafPythonDeps =
       ps: with ps; [
         packaging
         pymupdf
       ];
+
+    updateScript = unstableGitUpdater { };
   };
 
   meta = {
     description = "Fastest PDF Viewer in Emacs";
     homepage = "https://github.com/emacs-eaf/eaf-pdf-viewer";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       thattemperature
     ];

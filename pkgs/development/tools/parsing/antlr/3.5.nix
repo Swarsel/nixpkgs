@@ -1,19 +1,17 @@
 {
   lib,
   stdenv,
-  fetchpatch,
   fetchurl,
   fetchFromGitHub,
+  fetchpatch,
   jre,
 }:
 
 stdenv.mkDerivation rec {
+  inherit jre;
   pname = "antlr";
   version = "3.5.2";
-  jar = fetchurl {
-    url = "https://www.antlr3.org/download/antlr-${version}-complete.jar";
-    sha256 = "0srjwxipwsfzmpi0v32d1l5lzk9gi5in8ayg33sq8wyp8ygnbji6";
-  };
+
   src = fetchFromGitHub {
     owner = "antlr";
     repo = "antlr3";
@@ -23,8 +21,8 @@ stdenv.mkDerivation rec {
 
   patches = [
     (fetchpatch {
-      url = "https://src.fedoraproject.org/rpms/antlr3/raw/f1bb8d639678047935e1761c3bf3c1c7da8d0f1d/f/0006-antlr3memory.hpp-fix-for-C-20-mode.patch";
       sha256 = "0apk904afjqbad6c7z9r72a9lkbz69vwrl8j2a6zgxjn8dfb2p8b";
+      url = "https://src.fedoraproject.org/rpms/antlr3/raw/f1bb8d639678047935e1761c3bf3c1c7da8d0f1d/f/0006-antlr3memory.hpp-fix-for-C-20-mode.patch";
     })
   ];
 
@@ -40,10 +38,14 @@ stdenv.mkDerivation rec {
     ln -s "$out/bin/antlr"{,3}
   '';
 
-  inherit jre;
+  jar = fetchurl {
+    sha256 = "0srjwxipwsfzmpi0v32d1l5lzk9gi5in8ayg33sq8wyp8ygnbji6";
+    url = "https://www.antlr3.org/download/antlr-${version}-complete.jar";
+  };
 
   meta = {
     description = "Powerful parser generator";
+
     longDescription = ''
       ANTLR (ANother Tool for Language Recognition) is a powerful parser
       generator for reading, processing, executing, or translating structured
@@ -51,10 +53,11 @@ stdenv.mkDerivation rec {
       frameworks. From a grammar, ANTLR generates a parser that can build and
       walk parse trees.
     '';
+
     homepage = "https://www.antlr.org/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ lib.maintainers.workflow ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 }

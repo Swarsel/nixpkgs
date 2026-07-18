@@ -11,64 +11,198 @@ in
   options.services.tahoe = {
     introducers = lib.mkOption {
       default = { };
+
+      description = ''
+        The Tahoe introducers.
+      '';
+
       type =
         with lib.types;
         attrsOf (submodule {
           options = {
+            package = lib.mkPackageOption pkgs "tahoelafs" { };
+
             nickname = lib.mkOption {
-              type = lib.types.str;
               description = ''
                 The nickname of this Tahoe introducer.
               '';
+
+              type = lib.types.str;
             };
-            tub.port = lib.mkOption {
-              default = 3458;
-              type = lib.types.port;
-              description = ''
-                The port on which the introducer will listen.
-              '';
-            };
+
             tub.location = lib.mkOption {
               default = null;
-              type = lib.types.nullOr lib.types.str;
+
               description = ''
                 The external location that the introducer should listen on.
 
                 If specified, the port should be included.
               '';
+
+              type = lib.types.nullOr lib.types.str;
             };
-            package = lib.mkPackageOption pkgs "tahoelafs" { };
+
+            tub.port = lib.mkOption {
+              default = 3458;
+
+              description = ''
+                The port on which the introducer will listen.
+              '';
+
+              type = lib.types.port;
+            };
           };
         });
-      description = ''
-        The Tahoe introducers.
-      '';
     };
+
     nodes = lib.mkOption {
       default = { };
+
+      description = ''
+        The Tahoe nodes.
+      '';
+
       type =
         with lib.types;
         attrsOf (submodule {
           options = {
+            package = lib.mkPackageOption pkgs "tahoelafs" { };
+
+            client.helper = lib.mkOption {
+              default = null;
+
+              description = ''
+                The furl for a Tahoe helper node.
+
+                Like all furls, keep this safe and don't share it.
+              '';
+
+              type = lib.types.nullOr lib.types.str;
+            };
+
+            client.introducer = lib.mkOption {
+              default = null;
+
+              description = ''
+                The furl for a Tahoe introducer node.
+
+                Like all furls, keep this safe and don't share it.
+              '';
+
+              type = lib.types.nullOr lib.types.str;
+            };
+
+            client.shares.happy = lib.mkOption {
+              default = 7;
+
+              description = ''
+                The number of distinct storage nodes required to store
+                a file.
+              '';
+
+              type = lib.types.int;
+            };
+
+            client.shares.needed = lib.mkOption {
+              default = 3;
+
+              description = ''
+                The number of shares required to reconstitute a file.
+              '';
+
+              type = lib.types.int;
+            };
+
+            client.shares.total = lib.mkOption {
+              default = 10;
+
+              description = ''
+                The number of shares required to store a file.
+              '';
+
+              type = lib.types.int;
+            };
+
+            helper.enable = lib.mkEnableOption "helper service";
+
             nickname = lib.mkOption {
-              type = lib.types.str;
               description = ''
                 The nickname of this Tahoe node.
               '';
-            };
-            tub.port = lib.mkOption {
-              default = 3457;
-              type = lib.types.port;
-              description = ''
-                The port on which the tub will listen.
 
-                This is the correct setting to tweak if you want Tahoe's storage
-                system to listen on a different port.
-              '';
+              type = lib.types.str;
             };
+
+            sftpd.accounts.file = lib.mkOption {
+              default = null;
+
+              description = ''
+                Path to the accounts file.
+              '';
+
+              type = lib.types.nullOr lib.types.path;
+            };
+
+            sftpd.accounts.url = lib.mkOption {
+              default = null;
+
+              description = ''
+                URL of the accounts server.
+              '';
+
+              type = lib.types.nullOr lib.types.str;
+            };
+
+            sftpd.enable = lib.mkEnableOption "SFTP service";
+
+            sftpd.hostPrivateKeyFile = lib.mkOption {
+              default = null;
+
+              description = ''
+                Path to the SSH host private key.
+              '';
+
+              type = lib.types.nullOr lib.types.path;
+            };
+
+            sftpd.hostPublicKeyFile = lib.mkOption {
+              default = null;
+
+              description = ''
+                Path to the SSH host public key.
+              '';
+
+              type = lib.types.nullOr lib.types.path;
+            };
+
+            sftpd.port = lib.mkOption {
+              default = null;
+
+              description = ''
+                The port on which the SFTP server will listen.
+
+                This is the correct setting to tweak if you want Tahoe's SFTP
+                daemon to listen on a different port.
+              '';
+
+              type = lib.types.nullOr lib.types.port;
+            };
+
+            storage.enable = lib.mkEnableOption "storage service";
+
+            storage.reservedSpace = lib.mkOption {
+              default = "1G";
+
+              description = ''
+                The amount of filesystem space to not use for storage.
+              '';
+
+              type = lib.types.str;
+            };
+
             tub.location = lib.mkOption {
               default = null;
-              type = lib.types.nullOr lib.types.str;
+
               description = ''
                 The external location that the node should listen on.
 
@@ -77,113 +211,40 @@ in
 
                 If specified, the port should be included.
               '';
+
+              type = lib.types.nullOr lib.types.str;
             };
+
+            tub.port = lib.mkOption {
+              default = 3457;
+
+              description = ''
+                The port on which the tub will listen.
+
+                This is the correct setting to tweak if you want Tahoe's storage
+                system to listen on a different port.
+              '';
+
+              type = lib.types.port;
+            };
+
             web.port = lib.mkOption {
               default = 3456;
-              type = lib.types.port;
+
               description = ''
                 The port on which the Web server will listen.
 
                 This is the correct setting to tweak if you want Tahoe's WUI to
                 listen on a different port.
               '';
-            };
-            client.introducer = lib.mkOption {
-              default = null;
-              type = lib.types.nullOr lib.types.str;
-              description = ''
-                The furl for a Tahoe introducer node.
 
-                Like all furls, keep this safe and don't share it.
-              '';
+              type = lib.types.port;
             };
-            client.helper = lib.mkOption {
-              default = null;
-              type = lib.types.nullOr lib.types.str;
-              description = ''
-                The furl for a Tahoe helper node.
-
-                Like all furls, keep this safe and don't share it.
-              '';
-            };
-            client.shares.needed = lib.mkOption {
-              default = 3;
-              type = lib.types.int;
-              description = ''
-                The number of shares required to reconstitute a file.
-              '';
-            };
-            client.shares.happy = lib.mkOption {
-              default = 7;
-              type = lib.types.int;
-              description = ''
-                The number of distinct storage nodes required to store
-                a file.
-              '';
-            };
-            client.shares.total = lib.mkOption {
-              default = 10;
-              type = lib.types.int;
-              description = ''
-                The number of shares required to store a file.
-              '';
-            };
-            storage.enable = lib.mkEnableOption "storage service";
-            storage.reservedSpace = lib.mkOption {
-              default = "1G";
-              type = lib.types.str;
-              description = ''
-                The amount of filesystem space to not use for storage.
-              '';
-            };
-            helper.enable = lib.mkEnableOption "helper service";
-            sftpd.enable = lib.mkEnableOption "SFTP service";
-            sftpd.port = lib.mkOption {
-              default = null;
-              type = lib.types.nullOr lib.types.port;
-              description = ''
-                The port on which the SFTP server will listen.
-
-                This is the correct setting to tweak if you want Tahoe's SFTP
-                daemon to listen on a different port.
-              '';
-            };
-            sftpd.hostPublicKeyFile = lib.mkOption {
-              default = null;
-              type = lib.types.nullOr lib.types.path;
-              description = ''
-                Path to the SSH host public key.
-              '';
-            };
-            sftpd.hostPrivateKeyFile = lib.mkOption {
-              default = null;
-              type = lib.types.nullOr lib.types.path;
-              description = ''
-                Path to the SSH host private key.
-              '';
-            };
-            sftpd.accounts.file = lib.mkOption {
-              default = null;
-              type = lib.types.nullOr lib.types.path;
-              description = ''
-                Path to the accounts file.
-              '';
-            };
-            sftpd.accounts.url = lib.mkOption {
-              default = null;
-              type = lib.types.nullOr lib.types.str;
-              description = ''
-                URL of the accounts server.
-              '';
-            };
-            package = lib.mkPackageOption pkgs "tahoelafs" { };
           };
         });
-      description = ''
-        The Tahoe nodes.
-      '';
     };
   };
+
   config = lib.mkMerge [
     (lib.mkIf (cfg.introducers != { }) {
       environment = {
@@ -191,6 +252,7 @@ in
           node: settings:
           lib.nameValuePair "tahoe-lafs/introducer-${node}.cfg" {
             mode = "0444";
+
             text = ''
               # This configuration is generated by Nix. Edit at your own
               # peril; here be dragons.
@@ -202,9 +264,11 @@ in
             '';
           }
         );
+
         # Actually require Tahoe, so that we will have it installed.
         systemPackages = lib.flip lib.mapAttrsToList cfg.introducers (node: settings: settings.package);
       };
+
       # Open up the firewall.
       # networking.firewall.allowedTCPPorts = lib.flip lib.mapAttrsToList cfg.introducers
       #   (node: settings: settings.tub.port);
@@ -219,21 +283,8 @@ in
         lib.nameValuePair "tahoe.introducer-${node}" {
           description = "Tahoe LAFS node ${node}";
           documentation = [ "info:tahoe-lafs" ];
-          wantedBy = [ "multi-user.target" ];
           path = [ settings.package ];
-          restartTriggers = [
-            config.environment.etc."tahoe-lafs/introducer-${node}.cfg".source
-          ];
-          serviceConfig = {
-            Type = "simple";
-            PIDFile = pidfile;
-            # Believe it or not, Tahoe is very brittle about the order of
-            # arguments to $(tahoe run). The node directory must come first,
-            # and arguments which alter Twisted's behavior come afterwards.
-            ExecStart = ''
-              ${settings.package}/bin/tahoe run ${lib.escapeShellArg nodedir} --pidfile=${lib.escapeShellArg pidfile}
-            '';
-          };
+
           preStart = ''
             if [ ! -d ${lib.escapeShellArg nodedir} ]; then
               mkdir -p /var/db/tahoe-lafs
@@ -251,8 +302,27 @@ in
             # ln -s /etc/tahoe-lafs/introducer-${node}.cfg ${nodedir}/tahoe.cfg
             cp /etc/tahoe-lafs/introducer-"${node}".cfg ${lib.escapeShellArg nodedir}/tahoe.cfg
           '';
+
+          restartTriggers = [
+            config.environment.etc."tahoe-lafs/introducer-${node}.cfg".source
+          ];
+
+          serviceConfig = {
+            # Believe it or not, Tahoe is very brittle about the order of
+            # arguments to $(tahoe run). The node directory must come first,
+            # and arguments which alter Twisted's behavior come afterwards.
+            ExecStart = ''
+              ${settings.package}/bin/tahoe run ${lib.escapeShellArg nodedir} --pidfile=${lib.escapeShellArg pidfile}
+            '';
+
+            PIDFile = pidfile;
+            Type = "simple";
+          };
+
+          wantedBy = [ "multi-user.target" ];
         }
       );
+
       users.users = lib.flip lib.mapAttrs' cfg.introducers (
         node: _:
         lib.nameValuePair "tahoe.introducer-${node}" {
@@ -267,6 +337,7 @@ in
           node: settings:
           lib.nameValuePair "tahoe-lafs/${node}.cfg" {
             mode = "0444";
+
             text = ''
               # This configuration is generated by Nix. Edit at your own
               # peril; here be dragons.
@@ -314,9 +385,11 @@ in
             '';
           }
         );
+
         # Actually require Tahoe, so that we will have it installed.
         systemPackages = lib.flip lib.mapAttrsToList cfg.nodes (node: settings: settings.package);
       };
+
       # Open up the firewall.
       # networking.firewall.allowedTCPPorts = lib.flip lib.mapAttrsToList cfg.nodes
       #   (node: settings: settings.tub.port);
@@ -331,21 +404,8 @@ in
         lib.nameValuePair "tahoe.${node}" {
           description = "Tahoe LAFS node ${node}";
           documentation = [ "info:tahoe-lafs" ];
-          wantedBy = [ "multi-user.target" ];
           path = [ settings.package ];
-          restartTriggers = [
-            config.environment.etc."tahoe-lafs/${node}.cfg".source
-          ];
-          serviceConfig = {
-            Type = "simple";
-            PIDFile = pidfile;
-            # Believe it or not, Tahoe is very brittle about the order of
-            # arguments to $(tahoe run). The node directory must come first,
-            # and arguments which alter Twisted's behavior come afterwards.
-            ExecStart = ''
-              ${settings.package}/bin/tahoe run ${lib.escapeShellArg nodedir} --pidfile=${lib.escapeShellArg pidfile}
-            '';
-          };
+
           preStart = ''
             if [ ! -d ${lib.escapeShellArg nodedir} ]; then
               mkdir -p /var/db/tahoe-lafs
@@ -360,8 +420,27 @@ in
             # ln -s /etc/tahoe-lafs/${lib.escapeShellArg node}.cfg ${nodedir}/tahoe.cfg
             cp /etc/tahoe-lafs/${lib.escapeShellArg node}.cfg ${lib.escapeShellArg nodedir}/tahoe.cfg
           '';
+
+          restartTriggers = [
+            config.environment.etc."tahoe-lafs/${node}.cfg".source
+          ];
+
+          serviceConfig = {
+            # Believe it or not, Tahoe is very brittle about the order of
+            # arguments to $(tahoe run). The node directory must come first,
+            # and arguments which alter Twisted's behavior come afterwards.
+            ExecStart = ''
+              ${settings.package}/bin/tahoe run ${lib.escapeShellArg nodedir} --pidfile=${lib.escapeShellArg pidfile}
+            '';
+
+            PIDFile = pidfile;
+            Type = "simple";
+          };
+
+          wantedBy = [ "multi-user.target" ];
         }
       );
+
       users.users = lib.flip lib.mapAttrs' cfg.nodes (
         node: _:
         lib.nameValuePair "tahoe.${node}" {

@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "obsws-python";
   version = "5.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aatikturk";
@@ -18,6 +17,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-krIiSmn/56Ao4fH6Y7JSQ11Euqt0tIq4JJjxqrt8MZc=";
   };
 
+  doCheck = false; # attempts to connect to OBS
   build-system = [ hatchling ];
 
   dependencies = [
@@ -25,7 +25,7 @@ buildPythonPackage (finalAttrs: {
     websocket-client
   ];
 
-  doCheck = false; # attempts to connect to OBS
+  pyproject = true;
 
   meta = {
     description = "Python SDK for OBS Studio WebSocket v5.0";

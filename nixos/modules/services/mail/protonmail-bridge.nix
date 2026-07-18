@@ -11,17 +11,12 @@ in
 {
   options.services.protonmail-bridge = {
     enable = lib.mkEnableOption "protonmail bridge";
-
     package = lib.mkPackageOption pkgs "protonmail-bridge" { };
 
-    path = lib.mkOption {
-      type = lib.types.listOf lib.types.path;
-      default = [ ];
-      example = lib.literalExpression "with pkgs; [ pass gnome-keyring ]";
-      description = "List of derivations to put in protonmail-bridge's path.";
-    };
-
     logLevel = lib.mkOption {
+      default = null;
+      description = "Log level of the Proton Mail Bridge service. If set to null then the service uses it's default log level.";
+
       type = lib.types.nullOr (
         lib.types.enum [
           "panic"
@@ -32,16 +27,23 @@ in
           "debug"
         ]
       );
-      default = null;
-      description = "Log level of the Proton Mail Bridge service. If set to null then the service uses it's default log level.";
+    };
+
+    path = lib.mkOption {
+      default = [ ];
+      description = "List of derivations to put in protonmail-bridge's path.";
+      example = lib.literalExpression "with pkgs; [ pass gnome-keyring ]";
+      type = lib.types.listOf lib.types.path;
     };
   };
 
   config = lib.mkIf cfg.enable {
+    environment.systemPackages = [ cfg.package ];
+
     systemd.user.services.protonmail-bridge = {
-      description = "protonmail bridge";
-      wantedBy = [ "graphical-session.target" ];
       after = [ "graphical-session.target" ];
+      description = "protonmail bridge";
+      path = cfg.path;
 
       serviceConfig =
         let
@@ -52,9 +54,9 @@ in
           Restart = "always";
         };
 
-      path = cfg.path;
+      wantedBy = [ "graphical-session.target" ];
     };
-    environment.systemPackages = [ cfg.package ];
   };
+
   meta.maintainers = with lib.maintainers; [ mzacho ];
 }

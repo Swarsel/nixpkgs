@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   mock,
   pytestCheckHook,
   requests,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalattrs: {
   pname = "pyarlo";
   version = "0.2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tchellomello";
@@ -22,6 +21,12 @@ buildPythonPackage (finalattrs: {
     sha256 = "0pp7y2llk4xnf6zh57j5xas0gw5zqm42qaqssd8p4qa3g5rds8k3";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    mock
+    requests-mock
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,12 +34,7 @@ buildPythonPackage (finalattrs: {
     sseclient-py
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    mock
-    requests-mock
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyarlo" ];
 
   meta = {

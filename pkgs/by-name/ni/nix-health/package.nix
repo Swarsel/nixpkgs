@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
   libiconv,
   openssl,
   pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -13,17 +13,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   src = fetchCrate {
     inherit (finalAttrs) version;
-    pname = "nix_health";
     hash = "sha256-/I6LdcH61wgJOEv51J1jkWlD8BlSAaRR1e7gc5H9bQI=";
+    pname = "nix_health";
   };
 
-  cargoHash = "sha256-3DE/NwPdi//7xaoV2SVgF5l3ndrEYraoyg5NLJzvzBI=";
-
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libiconv
     openssl
   ];
+
+  cargoHash = "sha256-3DE/NwPdi//7xaoV2SVgF5l3ndrEYraoyg5NLJzvzBI=";
 
   meta = {
     description = "Check the health of your Nix setup";

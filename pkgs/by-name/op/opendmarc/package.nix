@@ -4,9 +4,9 @@
   fetchFromGitHub,
   autoreconfHook,
   libmilter,
+  makeWrapper,
   perl,
   perlPackages,
-  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,24 +27,25 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
   ];
 
-  env.NIX_CFLAGS_COMPILE = toString [
-    # gcc15 build failure
-    "-std=gnu17"
-  ];
-
-  buildInputs = [ perl ];
-  nativeBuildInputs = [
-    autoreconfHook
-    makeWrapper
-  ];
-
   postPatch = ''
     substituteInPlace configure.ac --replace '	docs/Makefile' ""
     patchShebangs contrib reports
   '';
 
+  nativeBuildInputs = [
+    autoreconfHook
+    makeWrapper
+  ];
+
+  buildInputs = [ perl ];
+
   configureFlags = [
     "--with-milter=${libmilter}"
+  ];
+
+  env.NIX_CFLAGS_COMPILE = toString [
+    # gcc15 build failure
+    "-std=gnu17"
   ];
 
   postFixup = ''
@@ -66,10 +67,12 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Free open source software implementation of the DMARC specification";
     homepage = "http://www.trusteddomain.org/opendmarc/";
+
     license = with lib.licenses; [
       bsd3
       sendmail
     ];
+
     maintainers = with lib.maintainers; [
       das_j
       helsinki-Jo

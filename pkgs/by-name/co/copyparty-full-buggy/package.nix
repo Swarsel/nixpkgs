@@ -1,19 +1,19 @@
 { copyparty }:
 (copyparty.override {
-  withHashedPasswords = true;
-  withCertgen = true;
-  withThumbnails = true;
-  withFastThumbnails = true;
-  withMediaProcessing = true;
+  longDescription = "Full variant, all dependencies and features including those marked buggy";
+  nameSuffix = "-full-buggy";
   withBasicAudioMetadata = true;
-  withZeroMQ = true;
+  withCertgen = true;
   withFTP = true;
   withFTPS = true;
-  withTFTP = true;
+  withFastThumbnails = true;
+  withHashedPasswords = true;
   withMagic = true;
+  withMediaProcessing = true;
   withSMB = true;
-  nameSuffix = "-full-buggy";
-  longDescription = "Full variant, all dependencies and features including those marked buggy";
+  withTFTP = true;
+  withThumbnails = true;
+  withZeroMQ = true;
 }).overrideAttrs
   (old: {
     # don't try to update this package, just update `copyparty`

@@ -1,16 +1,15 @@
 {
-  buildPythonPackage,
   lib,
+  buildPythonPackage,
   fetchPypi,
   pytest,
-  u-msgpack-python,
   six,
+  u-msgpack-python,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pytest-expect";
   version = "1.1.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -18,6 +17,7 @@ buildPythonPackage (finalAttrs: {
   };
 
   buildInputs = [ pytest ];
+
   propagatedBuildInputs = [
     u-msgpack-python
     six
@@ -25,6 +25,7 @@ buildPythonPackage (finalAttrs: {
 
   # Tests in neither the archive nor the repo
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "py.test plugin to store test expectations and mark tests based on them";

@@ -1,18 +1,17 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
+  async-timeout,
   bleak,
   bleak-retry-connector,
   buildPythonPackage,
-  fetchFromGitHub,
-  async-timeout,
   setuptools_80,
 }:
 
 buildPythonPackage rec {
   pname = "adax-local";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Danielhiversen";
@@ -21,6 +20,8 @@ buildPythonPackage rec {
     hash = "sha256-8gVpUYQoE4V3ATR6zFAz/sARyEmHu9lYyGchTpS1eX8=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools_80 ];
 
   dependencies = [
@@ -30,9 +31,7 @@ buildPythonPackage rec {
     async-timeout
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "adax_local" ];
 
   meta = {

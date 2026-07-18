@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "kivy-garden";
   version = "0.1.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kivy-garden";
@@ -24,14 +23,12 @@ buildPythonPackage (finalAttrs: {
     ./remove-import-pkg-resources.diff
   ];
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
-  pythonImportsCheck = [ "garden" ];
-
   # There are no tests
   doCheck = false;
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
+  pythonImportsCheck = [ "garden" ];
 
   meta = {
     description = "Kivy garden installation script, split into its own package for convenient use in buildozer";

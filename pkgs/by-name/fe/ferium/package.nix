@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,15 +16,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-eeQjezB6pRdnPADLgDLo8b+bUSP12gfBhFNt/uYCwHU=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   cargoHash = "sha256-3YKFKngyLg2ah4GY+LlbPbnVks7/xFawnMf3D1gjmwI=";
-
-  # Disable the GUI file picker so that GTK/XDG dependencies aren't used
-  buildNoDefaultFeatures = true;
-
   # Requires an internet connection
   doCheck = false;
-
-  nativeBuildInputs = [ installShellFiles ];
 
   postInstall = ''
     for shell in bash fish zsh; do
@@ -33,14 +28,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     done
   '';
 
+  # Disable the GUI file picker so that GTK/XDG dependencies aren't used
+  buildNoDefaultFeatures = true;
+
   meta = {
     description = "Fast and multi-source CLI program for managing Minecraft mods and modpacks from Modrinth, CurseForge, and GitHub Releases";
-    mainProgram = "ferium";
     homepage = "https://github.com/gorilla-devs/ferium";
     license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       leo60228
       soupglasses
     ];
+
+    mainProgram = "ferium";
   };
 })

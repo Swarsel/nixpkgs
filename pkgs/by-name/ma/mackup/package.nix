@@ -1,14 +1,13 @@
 {
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
   procps,
   python3Packages,
-  stdenv,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "mackup";
   version = "0.10.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lra";
@@ -22,24 +21,20 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --replace-fail '"/usr/bin/pgrep"' '"${lib.getExe' procps "pgrep"}"'
   '';
 
-  build-system = with python3Packages; [ hatchling ];
-
-  dependencies = with python3Packages; [ docopt-ng ];
-
-  pythonImportsCheck = [ "mackup" ];
-
   nativeCheckInputs = with python3Packages; [ pytestCheckHook ];
-
-  enabledTestPaths = [ "tests/*.py" ];
-
+  build-system = with python3Packages; [ hatchling ];
+  dependencies = with python3Packages; [ docopt-ng ];
   # Disabling tests failing on darwin due to a missing pgrep binary on procps
   disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [ "test_is_process_running" ];
+  enabledTestPaths = [ "tests/*.py" ];
+  pyproject = true;
+  pythonImportsCheck = [ "mackup" ];
 
   meta = {
     description = "Tool to keep your application settings in sync (OS X/Linux)";
+    homepage = "https://github.com/lra/mackup";
     changelog = "https://github.com/lra/mackup/releases/tag/${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
-    homepage = "https://github.com/lra/mackup";
     maintainers = with lib.maintainers; [ luftmensch-luftmensch ];
     mainProgram = "mackup";
   };

@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  gtk3, # utils
+  libudev0-shim,
+  libusb1,
   meson,
   ninja,
   pkg-config,
-  libusb1,
   systemd,
-  libudev0-shim,
-  gtk3, # utils
 }:
 
 stdenv.mkDerivation rec {
@@ -50,14 +50,16 @@ stdenv.mkDerivation rec {
   propagatedBuildOutputs = [ "lib" ];
 
   meta = with lib; {
-    homepage = "https://github.com/libtypec/libtypec";
     description = "generic diagnostic tool interface for usb-c ports";
     longDescription = "libtypec is aimed to provide a generic interface abstracting all platform complexity for user space to develop tools for efficient USB-C port management. The library can also enable development of diagnostic and debug tools to debug system issues around USB-C/USB PD topology.";
-    platforms = platforms.linux;
+    homepage = "https://github.com/libtypec/libtypec";
+
     license = with licenses; [
       mit
       gpl2Only
     ];
+
     maintainers = with maintainers; [ johnazoidberg ];
+    platforms = platforms.linux;
   };
 }

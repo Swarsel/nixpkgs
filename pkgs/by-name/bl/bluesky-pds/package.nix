@@ -1,21 +1,21 @@
 {
+  lib,
   stdenv,
+  fetchFromGitHub,
+  cctools,
+  fetchPnpmDeps,
+  fetchpatch2,
   makeBinaryWrapper,
+  nix-update-script,
+  nixosTests,
+  nodejs_24,
+  pkg-config,
+  pnpmConfigHook,
+  pnpm_10,
+  python3,
   removeReferencesTo,
   srcOnly,
-  python3,
-  pnpm_10,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  fetchFromGitHub,
-  nodejs_24,
   vips,
-  pkg-config,
-  nixosTests,
-  lib,
-  nix-update-script,
-  cctools,
-  fetchpatch2,
 }:
 
 let
@@ -37,13 +37,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-3IEbVn7ThiVL7E2fXMHzsRSLT7Tm1eiX8bPQ88rJCvs=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/service";
-
-  patchFlags = [ "-p2" ];
   patches = [
     (fetchpatch2 {
-      url = "https://github.com/bluesky-social/pds/commit/f8de5f08900c42023b01a4d10995556f16d05145.patch?full_index=1";
       hash = "sha256-E0mWvLWQ4lFjkFgqtmMIESpNH7PSAB/QpSqxIwsj6Q8=";
+      url = "https://github.com/bluesky-social/pds/commit/f8de5f08900c42023b01a4d10995556f16d05145.patch?full_index=1";
     })
   ];
 
@@ -62,20 +59,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   # Required for `sharp` npm dependency
   buildInputs = [ vips ];
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      sourceRoot
-      patchFlags
-      patches
-      ;
-    inherit pnpm;
-    fetcherVersion = 4;
-    hash = "sha256-BTSMmGhLpQ6KrI7/XfinRwe8ap7btIrPa55f6HB63M8=";
-  };
 
   buildPhase = ''
     runHook preBuild
@@ -103,6 +86,25 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  patchFlags = [ "-p2" ];
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      sourceRoot
+      patchFlags
+      patches
+      ;
+
+    inherit pnpm;
+    fetcherVersion = 4;
+    hash = "sha256-BTSMmGhLpQ6KrI7/XfinRwe8ap7btIrPa55f6HB63M8=";
+  };
+
+  sourceRoot = "${finalAttrs.src.name}/service";
+
   passthru = {
     tests = lib.optionalAttrs stdenv.hostPlatform.isLinux { inherit (nixosTests) bluesky-pds; };
     updateScript = nix-update-script { };
@@ -111,14 +113,17 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Bluesky Personal Data Server (PDS)";
     homepage = "https://github.com/bluesky-social/pds";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = with lib.maintainers; [
       t4ccer
       isabelroses
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "pds";
   };

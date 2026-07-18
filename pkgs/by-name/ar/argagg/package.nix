@@ -16,14 +16,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-G0PzoKpUyb1MaziLvHgasq98jPODUu4EgPzywRjuIN8=";
   };
 
-  nativeBuildInputs = [
-    cmake
-  ];
-
   postPatch = ''
     substituteInPlace CMakeLists.txt \
       --replace-fail "cmake_minimum_required( VERSION 2.8 )" "cmake_minimum_required(VERSION 3.10)"
   '';
+
+  nativeBuildInputs = [
+    cmake
+  ];
 
   env = lib.optionalAttrs stdenv.cc.isClang {
     # fixes: error: 'sprintf' is deprecated: This function is provided for compatibility reasons only.
@@ -31,8 +31,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/vietjtnguyen/argagg";
     description = "Argument Aggregator";
+
     longDescription = ''
       argagg is yet another C++ command line argument/option parser. It was
       written as a simple and idiomatic alternative to other frameworks like
@@ -44,6 +44,8 @@ stdenv.mkDerivation (finalAttrs: {
       types until you access them, so the result structures end up just being
       pointers into the original command line argument C-strings.
     '';
+
+    homepage = "https://github.com/vietjtnguyen/argagg";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.all;

@@ -2,20 +2,16 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-
-  # build-system
-  setuptools,
-
   # dependencies
   numpy,
+  # build-system
+  setuptools,
   torch,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "torchsummary";
   version = "1.5.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   # No tags on GitHub
   src = fetchPypi {
@@ -23,6 +19,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-mBv2ieIuDPf5XHRgAvIKJK0mqmudhhE0oUvGzpIjBZA=";
   };
 
+  # no tests in pypi tarball
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,9 +29,7 @@ buildPythonPackage (finalAttrs: {
     torch
   ];
 
-  # no tests in pypi tarball
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "torchsummary" ];
 
   meta = {

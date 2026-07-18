@@ -1,23 +1,22 @@
 # Generic builder for shattered pixel forks/mods
 {
-  pname,
-  version,
-  src,
-  meta,
-  desktopName,
-  patches ? [ ./disable-beryx.patch ],
-  depsPath ? null,
-
   lib,
   stdenv,
-  makeWrapper,
+  copyDesktopItems,
+  desktopName,
   gradle_8,
-  perl,
   jre,
   libGL,
   libpulseaudio,
   makeDesktopItem,
-  copyDesktopItems,
+  makeWrapper,
+  meta,
+  perl,
+  pname,
+  src,
+  version,
+  depsPath ? null,
+  patches ? [ ./disable-beryx.patch ],
   ...
 }@attrs:
 
@@ -44,21 +43,25 @@ let
   '';
 
   desktopItem = makeDesktopItem {
-    name = pname;
     inherit desktopName;
-    comment = meta.description;
-    icon = pname;
-    exec = pname;
-    terminal = false;
+
     categories = [
       "Game"
       "AdventureGame"
     ];
+
+    comment = meta.description;
+    exec = pname;
+    icon = pname;
+
     keywords = [
       "roguelike"
       "dungeon"
       "crawler"
     ];
+
+    name = pname;
+    terminal = false;
   };
 
   depsPath' = if depsPath != null then depsPath else ./. + "/${pname}/deps.json";
@@ -78,13 +81,6 @@ stdenv.mkDerivation (
       postPatch
       ;
 
-    mitmCache = gradle.fetchDeps {
-      inherit pname;
-      data = depsPath';
-    };
-
-    __darwinAllowLocalNetworking = true;
-
     nativeBuildInputs = [
       gradle
       perl
@@ -92,10 +88,6 @@ stdenv.mkDerivation (
       copyDesktopItems
     ]
     ++ attrs.nativeBuildInputs or [ ];
-
-    desktopItems = [ desktopItem ];
-
-    gradleBuildTask = "desktop:release";
 
     installPhase = ''
       runHook preInstall
@@ -126,14 +118,25 @@ stdenv.mkDerivation (
       runHook postInstall
     '';
 
+    __darwinAllowLocalNetworking = true;
+    desktopItems = [ desktopItem ];
+    gradleBuildTask = "desktop:release";
+
+    mitmCache = gradle.fetchDeps {
+      inherit pname;
+      data = depsPath';
+    };
+
     meta =
 
       {
+        license = lib.licenses.gpl3Plus;
+
         sourceProvenance = with lib.sourceTypes; [
           fromSource
           binaryBytecode # deps
         ];
-        license = lib.licenses.gpl3Plus;
+
         maintainers = with lib.maintainers; [ fgaz ];
         platforms = lib.platforms.all;
         mainProgram = pname;

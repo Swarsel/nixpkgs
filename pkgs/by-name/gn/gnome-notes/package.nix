@@ -1,29 +1,29 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchurl,
+  adwaita-icon-theme,
+  curl,
+  desktop-file-utils,
+  evolution-data-server,
+  gettext,
+  glib,
+  gnome,
+  gnome-online-accounts,
+  gsettings-desktop-schemas,
+  gtk3,
+  itstool,
+  json-glib,
+  libhandy,
+  libuuid,
+  libxml2,
   meson,
   ninja,
-  gettext,
-  fetchurl,
   pkg-config,
-  wrapGAppsHook3,
-  itstool,
-  desktop-file-utils,
   python3,
-  glib,
-  gtk3,
-  evolution-data-server,
-  gnome-online-accounts,
-  json-glib,
-  libuuid,
-  curl,
-  libhandy,
-  webkitgtk_4_1,
-  gnome,
-  adwaita-icon-theme,
-  libxml2,
-  gsettings-desktop-schemas,
   tinysparql,
+  webkitgtk_4_1,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,8 +34,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://gnome/sources/bijiben/${lib.versions.major finalAttrs.version}/bijiben-${finalAttrs.version}.tar.xz";
     hash = "sha256-siERvAaVa+81mqzx1u3h5So1sADIgROTZjL4rGztzmc=";
   };
-
-  doCheck = true;
 
   postPatch = ''
     chmod +x build-aux/meson_post_install.py
@@ -70,20 +68,21 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   mesonFlags = [ "-Dupdate_mimedb=false" ];
+  doCheck = true;
 
   passthru = {
     updateScript = gnome.updateScript {
-      packageName = "bijiben";
       attrPath = "gnome-notes";
+      packageName = "bijiben";
     };
   };
 
   meta = {
     description = "Note editor designed to remain simple to use";
-    mainProgram = "bijiben";
     homepage = "https://gitlab.gnome.org/GNOME/gnome-notes";
     license = lib.licenses.gpl3;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+    mainProgram = "bijiben";
+    teams = [ lib.teams.gnome ];
   };
 })

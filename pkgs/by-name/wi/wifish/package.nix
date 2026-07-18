@@ -4,8 +4,8 @@
   fetchFromGitHub,
   dialog,
   gawk,
-  wpa_supplicant,
   makeWrapper,
+  wpa_supplicant,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,13 +19,11 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-eTErN6CfKDey/wV+9o9cBVaG5FzCRBiA9UicrMz3KBc=";
   };
 
-  nativeBuildInputs = [ makeWrapper ];
-
   postPatch = ''
     sed -i -e 's|/var/lib/wifish|${placeholder "out"}/var/lib/wifish|' wifish
   '';
 
-  dontConfigure = true;
+  nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
     install -D -m0644 awk/wscanparse.awk ${placeholder "out"}/var/lib/wifish/wscanparse.awk
@@ -46,12 +44,14 @@ stdenv.mkDerivation (finalAttrs: {
       }
   '';
 
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://github.com/bougyman/wifish";
     description = "Simple wifi shell script for linux";
-    mainProgram = "wifish";
+    homepage = "https://github.com/bougyman/wifish";
     license = lib.licenses.wtfpl;
     maintainers = [ ];
     platforms = with lib.platforms; linux;
+    mainProgram = "wifish";
   };
 })

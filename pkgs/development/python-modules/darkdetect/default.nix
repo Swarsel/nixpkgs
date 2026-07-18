@@ -1,9 +1,8 @@
 {
   lib,
-  buildPythonPackage,
-  fetchFromGitHub,
   stdenv,
-
+  fetchFromGitHub,
+  buildPythonPackage,
   glib,
   setuptools,
 }:
@@ -11,7 +10,6 @@
 buildPythonPackage rec {
   pname = "darkdetect";
   version = "0.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "albertosottile";
@@ -20,14 +18,14 @@ buildPythonPackage rec {
     hash = "sha256-OOINgrgjSLr3L07E9zf1+mlTPr+7ZlgN3CfkWE8+LoE=";
   };
 
-  nativeBuildInputs = [ setuptools ];
-
-  pythonImportsCheck = [ "darkdetect" ];
-
   postPatch = lib.optionalString (stdenv.hostPlatform.isLinux) ''
     substituteInPlace darkdetect/_linux_detect.py \
       --replace "'gsettings'" "'${glib.bin}/bin/gsettings'"
   '';
+
+  nativeBuildInputs = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "darkdetect" ];
 
   meta = {
     description = "Detect OS Dark Mode from Python";

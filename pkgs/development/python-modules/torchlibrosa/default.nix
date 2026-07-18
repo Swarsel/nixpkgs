@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "torchlibrosa";
   version = "0.1.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -30,6 +29,8 @@ buildPythonPackage rec {
   checkPhase = ''
     export NUMBA_CACHE_DIR="$(mktemp -d)"
   '';
+
+  format = "setuptools";
   pythonImportsCheck = [ "torchlibrosa" ];
 
   meta = {

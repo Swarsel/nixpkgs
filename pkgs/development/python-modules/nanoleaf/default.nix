@@ -9,12 +9,16 @@
 buildPythonPackage rec {
   pname = "nanoleaf";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-GmnwW/IleBlvsGj1YwSPZrOho9uVlWeNzpZX6VbstZ0=";
   };
+
+  # Module has no test
+  doCheck = false;
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
 
   prePatch = ''
     sed -i '/^gitVersion =/d' setup.py
@@ -22,13 +26,7 @@ buildPythonPackage rec {
       --replace-fail 'gitVersion' '"${version}"'
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
-  # Module has no test
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "nanoleaf" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildDubPackage,
   fetchFromGitHub,
+  buildDubPackage,
   clang,
   ldc,
   which,
@@ -16,8 +16,6 @@ buildDubPackage rec {
     rev = "v${version}";
     hash = "sha256-ZFz2+GtBk3StqXo/9x47xrDFdz5XujHR62hj0p3AjcY=";
   };
-
-  dubLock = ./dub-lock.json;
 
   nativeBuildInputs = [
     ldc
@@ -35,11 +33,13 @@ buildDubPackage rec {
     runHook postInstall
   '';
 
+  dubLock = ./dub-lock.json;
+
   meta = {
     description = "Tool for converting C and Objective-C headers to D modules";
     homepage = "https://github.com/jacob-carlborg/dstep";
     license = lib.licenses.boost;
-    mainProgram = "dstep";
     maintainers = with lib.maintainers; [ imrying ];
+    mainProgram = "dstep";
   };
 }

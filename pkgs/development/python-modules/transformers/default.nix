@@ -1,101 +1,97 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  huggingface-hub,
-  numpy,
-  packaging,
-  pyyaml,
-  regex,
-  safetensors,
-  tokenizers,
-  tqdm,
-  typer,
-
-  # optional-dependencies
-  # sklearn
-  scikit-learn,
-  # torch
-  torch,
   accelerate,
+  # video
+  av,
+  blobfile,
+  buildPythonPackage,
+  datasets,
   # deepspeed
   # deepspeed,
   # codecarbon
   # codecarbon,
   # retrieval
   faiss,
-  datasets,
+  fastapi,
   # ja
   fugashi,
+  gitpython,
+  # dependencies
+  huggingface-hub,
   ipadic,
-  sudachipy,
-  # sudachidict_core,
-  # unidic_lite,
-  unidic,
-  # rhoknp,
-  # sagemaker
-  sagemaker,
-  # optuna
-  optuna,
-  # ray
-  ray,
-  # kernels
-  kernels,
-  # serving
-  openai,
-  pydantic,
-  uvicorn,
-  fastapi,
-  starlette,
-  rich,
-  # audio
-  librosa,
-  # pyctcdecode,
-  phonemizer,
-  # kenlm,
-  torchaudio,
-  # vision
-  pillow,
-  # timm
-  timm,
-  # torch-vision
-  torchvision,
-  # video
-  av,
-  # num2words
-  num2words,
-  # sentencepiece
-  sentencepiece,
-  protobuf,
-  # tiktoken
-  tiktoken,
-  blobfile,
-  # mistral-common
-  mistral-common,
   # chat_template
   jinja2,
   jmespath,
-  # quality
-  ruff,
-  gitpython,
-  urllib3,
+  # kernels
+  kernels,
   libcst,
-  tomli,
+  # audio
+  librosa,
+  # mistral-common
+  mistral-common,
+  # num2words
+  num2words,
+  numpy,
+  # serving
+  openai,
   # opentelemetry
   opentelemetry-api,
   opentelemetry-exporter-otlp,
   opentelemetry-sdk,
+  # optuna
+  optuna,
+  packaging,
+  # pyctcdecode,
+  phonemizer,
+  # vision
+  pillow,
+  protobuf,
+  pydantic,
+  pyyaml,
+  # ray
+  ray,
+  regex,
+  rich,
+  # quality
+  ruff,
+  safetensors,
+  # rhoknp,
+  # sagemaker
+  sagemaker,
+  # optional-dependencies
+  # sklearn
+  scikit-learn,
+  # sentencepiece
+  sentencepiece,
+  # build-system
+  setuptools,
+  starlette,
+  sudachipy,
+  # tiktoken
+  tiktoken,
+  # timm
+  timm,
+  tokenizers,
+  tomli,
+  # torch
+  torch,
+  # kenlm,
+  torchaudio,
+  # torch-vision
+  torchvision,
+  tqdm,
+  typer,
+  # sudachidict_core,
+  # unidic_lite,
+  unidic,
+  urllib3,
+  uvicorn,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "transformers";
   version = "5.5.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "huggingface";
@@ -104,6 +100,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-ZqynYPj8VxH6BmvxHuw3lq16e2FFi3p8pw5of+vkz40=";
   };
 
+  # Many tests require internet access.
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -119,6 +117,39 @@ buildPythonPackage (finalAttrs: {
   ];
 
   optional-dependencies = lib.fix (self: {
+    accelerate = [ accelerate ];
+
+    audio = [
+      torchaudio
+      librosa
+      # pyctcdecode
+      phonemizer
+    ];
+
+    benchmark = [
+      # optimum-benchmark
+    ];
+
+    chat-template = [
+      jinja2
+      jmespath
+    ];
+
+    codecarbon = [
+      # codecarbon
+    ];
+
+    deepspeed = [
+      # deepspeed
+    ]
+    ++ self.accelerate;
+
+    docs = [
+      # hf-docs-builder
+    ];
+
+    integrations = self.kernels ++ self.optuna ++ self.codecarbon ++ self.ray;
+
     ja = [
       fugashi
       ipadic
@@ -128,63 +159,19 @@ buildPythonPackage (finalAttrs: {
       sudachipy
       # sudachidict_core
     ];
-    sklearn = [ scikit-learn ];
-    torch = [
-      torch
-      accelerate
-    ];
-    accelerate = [ accelerate ];
-    retrieval = [
-      faiss
-      datasets
-    ];
-    sagemaker = [ sagemaker ];
-    deepspeed = [
-      # deepspeed
-    ]
-    ++ self.accelerate;
-    optuna = [ optuna ];
-    ray = [ ray ] ++ ray.optional-dependencies.tune;
+
     kernels = [ kernels ];
-    codecarbon = [
-      # codecarbon
-    ];
-    integrations = self.kernels ++ self.optuna ++ self.codecarbon ++ self.ray;
-    serving = [
-      openai
-      pydantic
-      uvicorn
-      fastapi
-      starlette
-      rich
-    ]
-    ++ self.torch;
-    audio = [
-      torchaudio
-      librosa
-      # pyctcdecode
-      phonemizer
-    ];
-    vision = [
-      torchvision
-      pillow
-    ];
-    timm = [ timm ];
-    video = [ av ];
-    num2words = [ num2words ];
-    sentencepiece = [
-      sentencepiece
-      protobuf
-    ];
-    tiktoken = [
-      tiktoken
-      blobfile
-    ];
     mistral-common = [ mistral-common ] ++ mistral-common.optional-dependencies.image;
-    chat-template = [
-      jinja2
-      jmespath
+    num2words = [ num2words ];
+
+    open-telemetry = [
+      opentelemetry-api
+      opentelemetry-exporter-otlp
+      opentelemetry-sdk
     ];
+
+    optuna = [ optuna ];
+
     quality = [
       datasets
       ruff
@@ -194,35 +181,69 @@ buildPythonPackage (finalAttrs: {
       rich
       tomli
     ];
-    docs = [
-      # hf-docs-builder
+
+    ray = [ ray ] ++ ray.optional-dependencies.tune;
+
+    retrieval = [
+      faiss
+      datasets
     ];
-    benchmark = [
-      # optimum-benchmark
+
+    sagemaker = [ sagemaker ];
+
+    sentencepiece = [
+      sentencepiece
+      protobuf
     ];
-    open-telemetry = [
-      opentelemetry-api
-      opentelemetry-exporter-otlp
-      opentelemetry-sdk
+
+    serving = [
+      openai
+      pydantic
+      uvicorn
+      fastapi
+      starlette
+      rich
+    ]
+    ++ self.torch;
+
+    sklearn = [ scikit-learn ];
+
+    tiktoken = [
+      tiktoken
+      blobfile
+    ];
+
+    timm = [ timm ];
+
+    torch = [
+      torch
+      accelerate
+    ];
+
+    video = [ av ];
+
+    vision = [
+      torchvision
+      pillow
     ];
   });
 
-  # Many tests require internet access.
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "transformers" ];
 
   meta = {
-    homepage = "https://github.com/huggingface/transformers";
     description = "Natural Language Processing for TensorFlow 2.0 and PyTorch";
-    mainProgram = "transformers-cli";
+    homepage = "https://github.com/huggingface/transformers";
     changelog = "https://github.com/huggingface/transformers/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       pashashocky
       happysalada
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "transformers-cli";
   };
 })

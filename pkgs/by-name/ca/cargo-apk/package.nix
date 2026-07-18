@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,12 +17,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Tool for creating Android packages";
-    mainProgram = "cargo-apk";
     homepage = "https://github.com/rust-windowing/android-ndk-rs";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = with lib.maintainers; [ nickcao ];
+    mainProgram = "cargo-apk";
   };
 })

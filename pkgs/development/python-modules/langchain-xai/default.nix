@@ -1,31 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
   # dependencies
   aiohttp,
+  buildPythonPackage,
+  # passthru
+  gitUpdater,
+  # build-system
+  hatchling,
   langchain-core,
   langchain-openai,
-  requests,
-
   # tests
   langchain-tests,
   pytest-asyncio,
   pytest-mock,
   pytestCheckHook,
-
-  # passthru
-  gitUpdater,
+  requests,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "langchain-xai";
   version = "1.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "langchain-ai";
@@ -34,7 +29,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-RUklm627HiwMcpKkm+0uWZgHp4iDtSsmEpLb9MxumqI=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/libs/partners/xai";
+  nativeCheckInputs = [
+    langchain-tests
+    pytest-asyncio
+    pytest-mock
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -45,37 +45,33 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  nativeCheckInputs = [
-    langchain-tests
-    pytest-asyncio
-    pytest-mock
-    pytestCheckHook
-  ];
-
-  enabledTestPaths = [ "tests/unit_tests" ];
-
   disabledTests = [
     # Breaks when langchain-core is updated
     # Also: Compares a diff to a string literal and misses platform differences (aarch64-linux)
     "test_serdes"
   ];
 
+  enabledTestPaths = [ "tests/unit_tests" ];
+  pyproject = true;
   pythonImportsCheck = [ "langchain_xai" ];
+  sourceRoot = "${finalAttrs.src.name}/libs/partners/xai";
 
   passthru = {
     # python updater script sets the wrong tag
     skipBulkUpdate = true;
+
     updateScript = gitUpdater {
-      rev-prefix = "langchain-xai==";
       ignoredVersions = "a|b|dev|rc";
+      rev-prefix = "langchain-xai==";
     };
   };
 
   meta = {
-    changelog = "https://github.com/langchain-ai/langchain/releases/tag/${finalAttrs.src.tag}";
     description = "Build LangChain applications with X AI";
     homepage = "https://github.com/langchain-ai/langchain/tree/master/libs/partners/xai";
+    changelog = "https://github.com/langchain-ai/langchain/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = [
       lib.maintainers.sarahec
     ];

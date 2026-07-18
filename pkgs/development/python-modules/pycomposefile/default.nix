@@ -9,20 +9,17 @@
 buildPythonPackage rec {
   pname = "pycomposefile";
   version = "0.0.34";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-kzqTtDn4aSiCtNUP90ThKj2ZYEAGjpZlGjfdhCEmpQg=";
   };
 
-  build-system = [ flit-core ];
-
-  dependencies = [ pyyaml ];
-
   # Tests are broken
   doCheck = false;
-
+  build-system = [ flit-core ];
+  dependencies = [ pyyaml ];
+  pyproject = true;
   pythonImportsCheck = [ "pycomposefile" ];
 
   meta = {

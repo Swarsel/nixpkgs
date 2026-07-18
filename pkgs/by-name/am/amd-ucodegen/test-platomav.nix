@@ -1,13 +1,10 @@
 {
-  stdenvNoCC,
   fetchFromGitHub,
   amd-ucodegen,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
-  name = "amd-ucodegen-test-platomav";
-  meta.timeout = 60;
-
   # Repository of dumped CPU microcodes
   src = fetchFromGitHub {
     owner = "platomav";
@@ -17,6 +14,7 @@ stdenvNoCC.mkDerivation {
   };
 
   nativeBuildInputs = [ amd-ucodegen ];
+
   buildPhase = ''
     runHook preBuild
 
@@ -37,4 +35,7 @@ stdenvNoCC.mkDerivation {
 
     runHook postBuild
   '';
+
+  name = "amd-ucodegen-test-platomav";
+  meta.timeout = 60;
 }

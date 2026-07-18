@@ -1,24 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  certifi,
-  scapy,
-  urllib3,
-  semantic-version,
   aiohttp,
-  jsons,
-  requests,
+  buildPythonPackage,
+  certifi,
   cryptography,
+  jsons,
+  pytest-asyncio,
   # Test inputs
   pytestCheckHook,
-  pytest-asyncio,
+  requests,
+  scapy,
+  semantic-version,
+  urllib3,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "plugp100";
   version = "5.1.5";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "petretiandrea";
@@ -50,6 +49,8 @@ buildPythonPackage (finalAttrs: {
     "tests/unit/test_hub.py "
     "tests/unit/test_klap_protocol.py"
   ];
+
+  format = "setuptools";
 
   meta = {
     description = "Python library to control Tapo Plug P100 devices";

@@ -3,9 +3,9 @@
   fetchFromGitHub,
   copyDesktopItems,
   iconConvTools,
+  jdk11,
   makeDesktopItem,
   makeWrapper,
-  jdk11,
   maven,
 }:
 
@@ -19,9 +19,6 @@ maven.buildMavenPackage rec {
     rev = version;
     hash = "sha256-GplMEVEBYSTTzrGzbHlbQTXqJYka6r0QfBZFVCS7wCs=";
   };
-
-  mvnJdk = jdk11;
-  mvnHash = "sha256-xC/zLPPLbQ8tZIkCZHOfY6FEaWXFF5ZC1LX4ovaSSqg=";
 
   patches = [
     # Pin built-in Maven plugins to avoid checksum variations on Maven updates
@@ -61,35 +58,42 @@ maven.buildMavenPackage rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = pname;
+      categories = [ "Development" ];
+      comment = meta.description;
       desktopName = "Protege Desktop";
+      exec = "protege";
       genericName = "Ontology Editor";
       icon = "protege";
-      comment = meta.description;
-      categories = [ "Development" ];
-      exec = "protege";
+      name = pname;
     })
   ];
 
+  mvnHash = "sha256-xC/zLPPLbQ8tZIkCZHOfY6FEaWXFF5ZC1LX4ovaSSqg=";
+  mvnJdk = jdk11;
+
   meta = {
-    homepage = "https://protege.stanford.edu/";
-    downloadPage = "https://protege.stanford.edu/software.php#desktop-protege";
     description = "Free and open-source OWL 2 ontology editor";
+
     longDescription = ''
       Protégé Desktop is a feature rich ontology editing environment with full
       support for the OWL 2 Web Ontology Language, and direct in-memory
       connections to description logic reasoners.
     '';
-    maintainers = with lib.maintainers; [ nessdoor ];
+
+    homepage = "https://protege.stanford.edu/";
     license = with lib.licenses; [ bsd2 ];
+
+    sourceProvenance = with lib.sourceTypes; [
+      fromSource
+      binaryBytecode
+    ];
+
+    maintainers = with lib.maintainers; [ nessdoor ];
     # TODO Protege is able to run on Darwin as well, but I (@nessdoor) had no
     #      way of testing it nor any experience in packaging Darwin apps, so I
     #      will leave the task to someone who has the right tools and knowledge.
     platforms = lib.platforms.unix;
     mainProgram = "protege";
-    sourceProvenance = with lib.sourceTypes; [
-      fromSource
-      binaryBytecode
-    ];
+    downloadPage = "https://protege.stanford.edu/software.php#desktop-protege";
   };
 }

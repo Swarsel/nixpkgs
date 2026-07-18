@@ -75,8 +75,8 @@ let
   wrappedBinaries =
     pkgs.runCommand "apcupsd-wrapped-binaries"
       {
-        preferLocalBuild = true;
         nativeBuildInputs = [ pkgs.makeWrapper ];
+        preferLocalBuild = true;
       }
       ''
         for p in "${lib.getBin pkgs.apcupsd}/bin/"*; do
@@ -87,6 +87,7 @@ let
 
   apcupsdWrapped = pkgs.symlinkJoin {
     name = "apcupsd-wrapped";
+
     # Put wrappers first so they "win"
     paths = [
       wrappedBinaries
@@ -105,7 +106,7 @@ in
 
       enable = lib.mkOption {
         default = false;
-        type = lib.types.bool;
+
         description = ''
           Whether to enable the APC UPS daemon. apcupsd monitors your UPS and
           permits orderly shutdown of your computer in the event of a power
@@ -113,6 +114,8 @@ in
           Note that apcupsd runs as root (to allow shutdown of computer).
           You can check the status of your UPS with the "apcaccess" command.
         '';
+
+        type = lib.types.bool;
       };
 
       configText = lib.mkOption {
@@ -122,7 +125,7 @@ in
           BATTERYLEVEL 50
           MINUTES 5
         '';
-        type = lib.types.lines;
+
         description = ''
           Contents of the runtime configuration file, apcupsd.conf. The default
           settings makes apcupsd autodetect USB UPSes, limit network access to
@@ -130,14 +133,13 @@ in
           percent, or when the UPS has calculated that it has 5 minutes or less
           of remaining power-on time. See man apcupsd.conf for details.
         '';
+
+        type = lib.types.lines;
       };
 
       hooks = lib.mkOption {
         default = { };
-        example = {
-          doshutdown = "# shell commands to notify that the computer is shutting down";
-        };
-        type = lib.types.attrsOf lib.types.lines;
+
         description = ''
           Each attribute in this option names an apcupsd event and the string
           value it contains will be executed in a shell, in response to that
@@ -148,6 +150,12 @@ in
           exiting with value 99. Do not do this unless you know what you're
           doing.
         '';
+
+        example = {
+          doshutdown = "# shell commands to notify that the computer is shutting down";
+        };
+
+        type = lib.types.attrsOf lib.types.lines;
       };
 
     };
@@ -165,6 +173,7 @@ in
             hooknames = builtins.attrNames cfg.hooks;
           in
           lib.all (x: lib.elem x eventList) hooknames;
+
         message = ''
           One (or more) attribute names in services.apcupsd.hooks are invalid.
           Current attribute names: ${toString (builtins.attrNames cfg.hooks)}
@@ -185,8 +194,8 @@ in
     # The message still gets through.
     systemd.services.apcupsd = {
       description = "APC UPS Daemon";
-      wantedBy = [ "multi-user.target" ];
       preStart = "mkdir -p /run/apcupsd/";
+
       serviceConfig = {
         ExecStart = "${pkgs.apcupsd}/bin/apcupsd -b -f ${configFile} -d1";
         # TODO: When apcupsd has initiated a shutdown, systemd always ends up
@@ -197,7 +206,9 @@ in
         # systemd kills it with SIGKILL.
         TimeoutStopSec = 5;
       };
+
       unitConfig.Documentation = "man:apcupsd(8)";
+      wantedBy = [ "multi-user.target" ];
     };
 
     # A special service to tell the UPS to power down/hibernate just before the
@@ -205,21 +216,24 @@ in
     # shuts off power.) Copied from here:
     # http://forums.opensuse.org/english/get-technical-help-here/applications/479499-apcupsd-systemd-killpower-issues.html
     systemd.services.apcupsd-killpower = {
-      description = "APC UPS Kill Power";
       after = [ "shutdown.target" ]; # append umount.target?
       before = [ "final.target" ];
-      wantedBy = [ "shutdown.target" ];
+      description = "APC UPS Kill Power";
+
+      serviceConfig = {
+        ExecStart = "${pkgs.apcupsd}/bin/apcupsd --killpower -f ${configFile}";
+        RemainAfterExit = "yes";
+        StandardOutput = "tty";
+        TimeoutSec = "infinity";
+        Type = "oneshot";
+      };
+
       unitConfig = {
         ConditionPathExists = "/run/apcupsd/powerfail";
         DefaultDependencies = "no";
       };
-      serviceConfig = {
-        Type = "oneshot";
-        ExecStart = "${pkgs.apcupsd}/bin/apcupsd --killpower -f ${configFile}";
-        TimeoutSec = "infinity";
-        StandardOutput = "tty";
-        RemainAfterExit = "yes";
-      };
+
+      wantedBy = [ "shutdown.target" ];
     };
 
   };

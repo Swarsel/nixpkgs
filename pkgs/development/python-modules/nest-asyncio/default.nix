@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   pythonAtLeast,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "nest-asyncio";
   version = "1.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "erdewit";
@@ -20,17 +19,18 @@ buildPythonPackage rec {
     hash = "sha256-5I5WItOl1QpyI4OXZgZf8GiQ7Jlo+SJbDicIbernaU4=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTestPaths = lib.optionals (pythonAtLeast "3.14") [
     "tests/nest_test.py::NestTest::test_timeout"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "nest_asyncio" ];
 
   meta = {

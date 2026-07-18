@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
+  bison,
   fetchpatch,
+  flex,
   libxml2,
   ncurses,
-  bison,
-  flex,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,15 +21,15 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     (fetchpatch {
       name = "reproducibility.patch";
-      url = "https://salsa.debian.org/debian/tiptop/raw/debian/2.3.1-1/debian/patches/0001-fix-reproducibility-of-build-process.patch";
       sha256 = "116l7n3nl9lj691i7j8x0d0za1i6zpqgghw5d70qfpb17c04cblp";
+      url = "https://salsa.debian.org/debian/tiptop/raw/debian/2.3.1-1/debian/patches/0001-fix-reproducibility-of-build-process.patch";
     })
 
     # Pull upstream patch for ncurses-6.3
     (fetchpatch {
       name = "ncurses-6.3.patch";
-      url = "https://gitlab.inria.fr/rohou/tiptop/-/commit/a78234c27fdd62fed09430d998950e49e11a1832.patch";
       sha256 = "1k55agdri7iw3gwm4snj3ps62qzmxlqr6s0868l8qamjw38z9g00";
+      url = "https://gitlab.inria.fr/rohou/tiptop/-/commit/a78234c27fdd62fed09430d998950e49e11a1832.patch";
     })
   ];
 
@@ -41,6 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
     flex
     bison
   ];
+
   buildInputs = [
     libxml2
     ncurses
@@ -52,7 +53,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Performance monitoring tool for Linux";
     homepage = "http://tiptop.gforge.inria.fr";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

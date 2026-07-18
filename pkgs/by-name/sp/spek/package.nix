@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
+  ffmpeg,
+  gtk3,
   intltool,
   pkg-config,
-  ffmpeg,
-  wxwidgets_3_2,
-  gtk3,
   wrapGAppsHook3,
+  wxwidgets_3_2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

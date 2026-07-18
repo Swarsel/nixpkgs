@@ -1,31 +1,28 @@
 {
   lib,
+  anywidget,
   buildPythonPackage,
-  fetchPypi,
-  python,
-
   # build-system
   dash,
-  hatchling,
+  fetchPypi,
   hatch-jupyter-builder,
-  pyyaml,
-  setuptools,
-
-  # nativeBuildInputs
-  nodejs,
-
+  hatchling,
   # optional-dependencies
   ipython,
+  marimo,
+  matplotlib,
+  narwhals,
+  # nativeBuildInputs
+  nodejs,
   numpy,
   pandas,
   polars,
-  narwhals,
-  matplotlib,
-  anywidget,
-  traitlets,
-  streamlit,
-  marimo,
   pyarrow,
+  python,
+  pyyaml,
+  setuptools,
+  streamlit,
+  traitlets,
   typing-extensions,
 }:
 
@@ -42,7 +39,22 @@ buildPythonPackage rec {
     hash = "sha256-Vix9cW1mfz+vh//hBEoZdHo7Ix7mqncl62+QjKoYxCk=";
   };
 
-  pyproject = true;
+  nativeBuildInputs = [
+    nodejs
+  ];
+
+  # don't run the hooks, as they try to invoke npm on packages/,
+  env.HATCH_BUILD_NO_HOOKS = true;
+  # no tests in pypi tarball
+  doCheck = false;
+
+  # The pyproject.toml shipped with the sources doesn't install anything,
+  # as the paths in the pypi tarball are not the same as in the repo checkout.
+  # We exclude itables_for_dash here, as it's missing the .dist-info dir
+  # plumbing to be discoverable, and should be its own package anyways.
+  postInstall = ''
+    cp -R itables $out/${python.sitePackages}
+  '';
 
   build-system = [
     dash
@@ -50,10 +62,6 @@ buildPythonPackage rec {
     hatch-jupyter-builder
     pyyaml
     setuptools
-  ];
-
-  nativeBuildInputs = [
-    nodejs
   ];
 
   # shiny and modin omitted due to missing deps
@@ -71,44 +79,37 @@ buildPythonPackage rec {
       marimo
       pyarrow
     ];
-    pandas = [ pandas ];
-    polars = [ polars ];
-    narwhals = [ narwhals ];
-    style = [
-      pandas
-      matplotlib
-    ];
-    notebook = [ ipython ];
-    widget = [
-      anywidget
-      traitlets
-    ];
+
     dash = [
       dash
       typing-extensions
     ];
-    streamlit = [ streamlit ];
+
     marimo = [ marimo ];
+    narwhals = [ narwhals ];
+    notebook = [ ipython ];
+
     other_dataframes = [
       narwhals
       pyarrow
     ];
+
+    pandas = [ pandas ];
+    polars = [ polars ];
+    streamlit = [ streamlit ];
+
+    style = [
+      pandas
+      matplotlib
+    ];
+
+    widget = [
+      anywidget
+      traitlets
+    ];
   };
 
-  # no tests in pypi tarball
-  doCheck = false;
-
-  # don't run the hooks, as they try to invoke npm on packages/,
-  env.HATCH_BUILD_NO_HOOKS = true;
-
-  # The pyproject.toml shipped with the sources doesn't install anything,
-  # as the paths in the pypi tarball are not the same as in the repo checkout.
-  # We exclude itables_for_dash here, as it's missing the .dist-info dir
-  # plumbing to be discoverable, and should be its own package anyways.
-  postInstall = ''
-    cp -R itables $out/${python.sitePackages}
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "itables" ];
 
   meta = {

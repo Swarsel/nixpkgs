@@ -1,20 +1,15 @@
 {
   lib,
-  llvmPackages,
   buildPythonPackage,
+  llvmPackages,
 }:
 let
   inherit (llvmPackages) clang-unwrapped;
 in
 buildPythonPackage rec {
-  pname = "libear";
   inherit (clang-unwrapped) version;
-
-  pyproject = false;
-
+  pname = "libear";
   src = clang-unwrapped.lib + "/lib/libear";
-
-  dontUnpack = true;
 
   installPhase = ''
     LIBPATH="$(toPythonPath "$out")/libear"
@@ -23,15 +18,19 @@ buildPythonPackage rec {
     install -t "$LIBPATH" $src/*
   '';
 
+  dontUnpack = true;
+  pyproject = false;
   pythonImportsCheck = [ "libear" ];
 
   meta = {
     description = "Hooks into build systems to listen to which files are opened";
     homepage = "https://github.com/llvm/llvm-project/tree/llvmorg-${version}/clang/tools/scan-build-py/lib/libear";
+
     license = with lib.licenses; [
       asl20
       llvm-exception
     ];
+
     maintainers = [ ];
   };
 }

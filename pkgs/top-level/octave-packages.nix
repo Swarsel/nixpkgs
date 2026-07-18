@@ -12,13 +12,13 @@
 # of the `callPackage` used for packages here. So, when we do need packages
 # from outside, we can `inherit` them from `pkgs`.
 {
-  pkgs,
-  config,
   lib,
   stdenv,
   fetchurl,
+  config,
   newScope,
   octave,
+  pkgs,
 }:
 
 let
@@ -147,6 +147,7 @@ makeScope newScope (
         portaudio
         jdk
         ;
+
       inherit (pkgs) fftwFloat fftwLongDouble;
     };
 

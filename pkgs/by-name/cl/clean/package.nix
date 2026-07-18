@@ -1,10 +1,10 @@
 {
-  binutils,
-  fetchurl,
-  gcc,
   lib,
-  runCommand,
   stdenv,
+  fetchurl,
+  binutils,
+  gcc,
+  runCommand,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,8 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     else
       throw "Architecture not supported";
 
-  hardeningDisable = [ "pic" ];
-
   patches = [
     ./chroot-build-support-do-not-rebuild-equal-timestamps.patch
     ./declare-functions-explicitly-for-gcc14.patch
@@ -40,14 +38,13 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail /usr/bin/gcc ${gcc}/bin/gcc
   '';
 
-  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
-
   buildFlags = [ "-C src/" ];
-
+  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
   # do not strip libraries and executables since all symbols since they are
   # required as is for compilation. Especially the labels of unused section need
   # to be kept.
   dontStrip = true;
+  hardeningDisable = [ "pic" ];
 
   passthru.tests.compile-hello-world = runCommand "compile-hello-world" { } ''
     cat >HelloWorld.icl <<EOF
@@ -60,6 +57,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "General purpose, state-of-the-art, pure and lazy functional programming language";
+
     longDescription = ''
       Clean is a general purpose, state-of-the-art, pure and lazy functional
       programming language designed for making real-world applications. Some
@@ -69,14 +67,17 @@ stdenv.mkDerivation (finalAttrs: {
 
     homepage = "http://wiki.clean.cs.ru.nl/Clean";
     license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       bmrips
       erin
     ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ];
+
     mainProgram = "clean";
   };
 })

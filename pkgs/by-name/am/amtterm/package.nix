@@ -1,9 +1,9 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
-  makeWrapper,
+  fetchFromGitHub,
   gtk3,
+  makeWrapper,
   openssl,
   perl,
   perlPackages,
@@ -16,6 +16,18 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "amtterm";
   version = "1.7-1-unstable-2023-10-27";
 
+  src = fetchFromGitHub {
+    owner = "kraxel";
+    repo = "amtterm";
+    rev = "ed5da502cbb150982ad982211ad9475414b8689a";
+    hash = "sha256-JwS2agmJJ6VcGLkNbkFRb5bzKV8el1DMDjalmLnOdE8=";
+  };
+
+  nativeBuildInputs = [
+    makeWrapper
+    pkg-config
+  ];
+
   buildInputs =
     (with perlPackages; [
       perl
@@ -27,17 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
       gtk3
       vte
     ];
-  nativeBuildInputs = [
-    makeWrapper
-    pkg-config
-  ];
-
-  src = fetchFromGitHub {
-    owner = "kraxel";
-    repo = "amtterm";
-    rev = "ed5da502cbb150982ad982211ad9475414b8689a";
-    hash = "sha256-JwS2agmJJ6VcGLkNbkFRb5bzKV8el1DMDjalmLnOdE8=";
-  };
 
   makeFlags = [
     "prefix=$(out)"

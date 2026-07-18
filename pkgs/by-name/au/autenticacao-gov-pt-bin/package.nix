@@ -1,13 +1,14 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   autoPatchelfHook,
   ccid,
   cjson,
   copyDesktopItems,
   curl,
   doxygen,
-  fetchurl,
   flatpak,
-  lib,
   libGL,
   libgcc,
   libsForQt5,
@@ -23,7 +24,6 @@
   pkg-config,
   proot,
   qt5,
-  stdenv,
   xml-security-c,
 }:
 
@@ -58,9 +58,6 @@ stdenv.mkDerivation rec {
     hash = "sha256-eOUW3sWG8ujihqNuTvYbwzQh9sP5nS4YxL2kHngQ/V0=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
-
   nativeBuildInputs = [
     autoPatchelfHook
     copyDesktopItems
@@ -94,26 +91,6 @@ stdenv.mkDerivation rec {
     xml-security-c
   ];
 
-  unpackPhase = ''
-    ostree init --repo=pteid --mode=archive-z2
-    ostree static-delta apply-offline --repo=pteid ${src}
-    ostree checkout --repo=pteid -U $(cd pteid/objects && echo */*.commit | sed -E "s/\/|\.commit$//g") pteid_out
-  '';
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = pname;
-      exec = pname;
-      desktopName = "Autenticação.gov";
-      genericName = "Portuguese eID Data";
-      comment = "Middleware for Electronic Identification in Portugal";
-      icon = "pt.gov.autenticacao";
-      terminal = false;
-      startupNotify = true;
-      categories = [ "Office" ];
-    })
-  ];
-
   preInstall = ''
     mkdir -p $out/share $out/app/{lib,share}
     cp -r pteid_out/files/bin $out/app
@@ -138,10 +115,32 @@ stdenv.mkDerivation rec {
     autoPatchelf $out/app
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Office" ];
+      comment = "Middleware for Electronic Identification in Portugal";
+      desktopName = "Autenticação.gov";
+      exec = pname;
+      genericName = "Portuguese eID Data";
+      icon = "pt.gov.autenticacao";
+      name = pname;
+      startupNotify = true;
+      terminal = false;
+    })
+  ];
+
+  dontBuild = true;
+  dontConfigure = true;
+
+  unpackPhase = ''
+    ostree init --repo=pteid --mode=archive-z2
+    ostree static-delta apply-offline --repo=pteid ${src}
+    ostree checkout --repo=pteid -U $(cd pteid/objects && echo */*.commit | sed -E "s/\/|\.commit$//g") pteid_out
+  '';
+
   meta = {
     description = "Middleware for Electronic Identification in Portugal (with precompiled binaries by AMA)";
-    homepage = "https://www.autenticacao.gov.pt/";
-    license = lib.licenses.eupl12;
+
     longDescription = ''
       This package provides the official Portuguese Citizen Card middleware (Autenticação.gov),
       extracted from AMA’s Flatpak release. It enables authentication and digital signing using
@@ -163,6 +162,9 @@ stdenv.mkDerivation rec {
       Building from source is possible, but upstream disables signing in source builds. Using the
       official binary avoids this limitation and provides full functionality.
     '';
+
+    homepage = "https://www.autenticacao.gov.pt/";
+    license = lib.licenses.eupl12;
     maintainers = with lib.maintainers; [ vaavaav ];
     platforms = lib.platforms.linux;
   };

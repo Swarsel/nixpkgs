@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "mockito";
   version = "1.5.5";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -24,6 +23,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "mockito" ];
 
   meta = {

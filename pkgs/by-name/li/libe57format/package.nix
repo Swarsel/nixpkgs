@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
+  cmake,
+  gtest,
   nix-update-script,
   xercesc,
-  gtest,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,14 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
     rmdir test/extern/googletest
     ln -s ${gtest.src} test/extern/googletest
   '';
-
-  # Repository of E57 files used for testing.
-  libE57Format-test-data_src = fetchFromGitHub {
-    owner = "asmaloney";
-    repo = "libE57Format-test-data";
-    rev = "2171612112b06afd4fec5babe8837be69d910149";
-    hash = "sha256-JARpxp6Z2VioBfY0pZSyQU2mG/EllbaF3qteSFM9u8o=";
-  };
 
   nativeBuildInputs = [
     cmake
@@ -77,16 +69,26 @@ stdenv.mkDerivation (finalAttrs: {
     fi
   '';
 
+  # Repository of E57 files used for testing.
+  libE57Format-test-data_src = fetchFromGitHub {
+    hash = "sha256-JARpxp6Z2VioBfY0pZSyQU2mG/EllbaF3qteSFM9u8o=";
+    owner = "asmaloney";
+    repo = "libE57Format-test-data";
+    rev = "2171612112b06afd4fec5babe8837be69d910149";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Library for reading & writing the E57 file format";
     homepage = "https://github.com/asmaloney/libE57Format";
     license = lib.licenses.boost;
+
     maintainers = with lib.maintainers; [
       chpatrick
       nh2
     ];
+
     platforms = lib.platforms.linux; # because of the .so buiding in `postInstall` above
   };
 })

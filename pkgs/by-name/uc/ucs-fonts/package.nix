@@ -3,31 +3,19 @@
   stdenv,
   fetchurl,
   bdftopcf,
+  fonttosfnt,
   libfaketime,
   mkfontscale,
-  fonttosfnt,
 }:
 
 stdenv.mkDerivation {
   pname = "ucs-fonts";
   version = "20090406";
 
-  srcs = [
-    (fetchurl {
-      url = "http://www.cl.cam.ac.uk/~mgk25/download/ucs-fonts.tar.gz";
-      sha256 = "12hgizg25fzmk10wjl0c88x97h3pg5r9ga122s3y28wixz6x2bvh";
-    })
-    (fetchurl {
-      url = "http://www.cl.cam.ac.uk/~mgk25/download/ucs-fonts-asian.tar.gz";
-      sha256 = "0ibjy4xpz5j373hsdr8bx99czfpclqmviwwv768j8n7z12z3wa51";
-    })
-    (fetchurl {
-      url = "http://www.cl.cam.ac.uk/~mgk25/download/ucs-fonts-75dpi100dpi.tar.gz";
-      sha256 = "08vqr8yb636xa1s28vf3pm22dzkia0gisvsi2svqjqh4kk290pzh";
-    })
+  outputs = [
+    "out"
+    "bdf"
   ];
-
-  sourceRoot = ".";
 
   nativeBuildInputs = [
     bdftopcf
@@ -57,14 +45,26 @@ stdenv.mkDerivation {
     mkfontdir "$bdf/share/fonts/misc"
   '';
 
-  outputs = [
-    "out"
-    "bdf"
+  sourceRoot = ".";
+
+  srcs = [
+    (fetchurl {
+      sha256 = "12hgizg25fzmk10wjl0c88x97h3pg5r9ga122s3y28wixz6x2bvh";
+      url = "http://www.cl.cam.ac.uk/~mgk25/download/ucs-fonts.tar.gz";
+    })
+    (fetchurl {
+      sha256 = "0ibjy4xpz5j373hsdr8bx99czfpclqmviwwv768j8n7z12z3wa51";
+      url = "http://www.cl.cam.ac.uk/~mgk25/download/ucs-fonts-asian.tar.gz";
+    })
+    (fetchurl {
+      sha256 = "08vqr8yb636xa1s28vf3pm22dzkia0gisvsi2svqjqh4kk290pzh";
+      url = "http://www.cl.cam.ac.uk/~mgk25/download/ucs-fonts-75dpi100dpi.tar.gz";
+    })
   ];
 
   meta = {
-    homepage = "https://www.cl.cam.ac.uk/~mgk25/ucs-fonts.html";
     description = "Unicode bitmap fonts";
+    homepage = "https://www.cl.cam.ac.uk/~mgk25/ucs-fonts.html";
     license = lib.licenses.publicDomain;
     maintainers = [ lib.maintainers.raskin ];
     platforms = lib.platforms.all;

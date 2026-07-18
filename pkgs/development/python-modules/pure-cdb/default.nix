@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "pure-cdb";
   version = "4.0.0";
-  format = "setuptools";
 
   # Archive on pypi has no tests.
   src = fetchFromGitHub {
@@ -19,7 +18,7 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ flake8 ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "cdblib" ];
 
   meta = {

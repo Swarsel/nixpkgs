@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  libmtsupport,
-  libfacet,
-  libbtree,
-  libmtquery,
   help2man,
+  libbtree,
+  libfacet,
+  libmtquery,
+  libmtsupport,
 }:
 
 stdenv.mkDerivation rec {
@@ -40,11 +40,11 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://multitran.sourceforge.net/";
     description = "Multitran: simple command line utilities for dictionary maintenance";
-    mainProgram = "mtquery";
+    homepage = "https://multitran.sourceforge.net/";
     license = lib.licenses.gpl2Only;
     maintainers = [ ];
     platforms = with lib.platforms; linux;
+    mainProgram = "mtquery";
   };
 }

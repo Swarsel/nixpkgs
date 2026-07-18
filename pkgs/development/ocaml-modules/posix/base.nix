@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   ctypes,
   integers,
 }:
@@ -23,8 +23,8 @@ buildDunePackage (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://www.liquidsoap.info/ocaml-posix/";
     description = "Base module for the posix bindings";
+    homepage = "https://www.liquidsoap.info/ocaml-posix/";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.vbgl ];
   };

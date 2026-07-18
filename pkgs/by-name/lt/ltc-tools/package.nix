@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
+  jack2,
   libltc,
   libsndfile,
-  jack2,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libltc
     libsndfile
@@ -29,10 +30,10 @@ stdenv.mkDerivation (finalAttrs: {
   makeFlags = [ "PREFIX=$(out)" ];
 
   meta = {
-    homepage = "https://github.com/x42/ltc-tools";
     description = "Tools to deal with linear-timecode (LTC)";
+    homepage = "https://github.com/x42/ltc-tools";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ tg-x ];
+    platforms = lib.platforms.unix;
   };
 })

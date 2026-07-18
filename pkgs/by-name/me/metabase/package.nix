@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   jre_headless,
+  makeWrapper,
   nixosTests,
 }:
 
@@ -21,27 +21,30 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  dontUnpack = true;
-
   installPhase = ''
     runHook preInstall
     makeWrapper ${lib.getExe jre} $out/bin/metabase --add-flags "-jar $src"
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
+  passthru.tests = {
+    inherit (nixosTests) metabase;
+  };
+
   meta = {
     description = "Business Intelligence and Embedded Analytics tool";
     homepage = "https://metabase.com";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.agpl3Only;
-    platforms = lib.platforms.all;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       thoughtpolice
       mmahut
     ];
+
+    platforms = lib.platforms.all;
     mainProgram = "metabase";
-  };
-  passthru.tests = {
-    inherit (nixosTests) metabase;
   };
 })

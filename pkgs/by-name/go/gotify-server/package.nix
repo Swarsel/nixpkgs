@@ -2,10 +2,10 @@
   lib,
   fetchFromGitHub,
   buildGoModule,
-  sqlite,
   callPackage,
-  nixosTests,
   nix-update-script,
+  nixosTests,
+  sqlite,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,37 +19,19 @@ buildGoModule (finalAttrs: {
     hash = "sha256-kFBZbfolfTs0aUmfpPcJ2UylmB5NF317mV1X2gSYbjs=";
   };
 
-  vendorHash = "sha256-oO0wnwBQPJqeJkFoAoEIKRuvbvsbp18F7jwxPCYjsxg=";
-
-  # No test
-  doCheck = false;
-
   buildInputs = [
     sqlite
   ];
 
-  ui = callPackage ./ui.nix { inherit (finalAttrs) src version; };
+  vendorHash = "sha256-oO0wnwBQPJqeJkFoAoEIKRuvbvsbp18F7jwxPCYjsxg=";
 
   # Use preConfigure instead of preBuild to keep goModules independent from ui
   preConfigure = ''
     cp -r ${finalAttrs.ui} ui/build
   '';
 
-  passthru = {
-    updateScript = nix-update-script {
-      extraArgs = [
-        "--subpackage"
-        "ui"
-      ];
-    };
-    tests = {
-      nixos = nixosTests.gotify-server;
-    };
-  };
-
-  # Otherwise, all other subpackages are built as well and from some reason,
-  # produce binaries which panic when executed and are not interesting at all
-  subPackages = [ "." ];
+  # No test
+  doCheck = false;
 
   # Based on LD_FLAGS in upstream's .github/workflows/build.yml:
   # https://github.com/gotify/server/blob/v2.6.3/.github/workflows/build.yml#L33
@@ -60,6 +42,24 @@ buildGoModule (finalAttrs: {
     "-X main.Commit=refs/tags/v${finalAttrs.version}"
     "-X main.BuildDate=unknown"
   ];
+
+  # Otherwise, all other subpackages are built as well and from some reason,
+  # produce binaries which panic when executed and are not interesting at all
+  subPackages = [ "." ];
+  ui = callPackage ./ui.nix { inherit (finalAttrs) src version; };
+
+  passthru = {
+    tests = {
+      nixos = nixosTests.gotify-server;
+    };
+
+    updateScript = nix-update-script {
+      extraArgs = [
+        "--subpackage"
+        "ui"
+      ];
+    };
+  };
 
   meta = {
     description = "Simple server for sending and receiving messages in real-time per WebSocket";

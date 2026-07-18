@@ -1,5 +1,7 @@
 {
   lib,
+  stdenv,
+  fetchurl,
   autoPatchelfHook,
   bash,
   copyDesktopItems,
@@ -8,30 +10,28 @@
   dosfstools,
   e2fsprogs,
   exfat,
-  fetchurl,
   gawk,
   gnugrep,
   gnused,
   gtk3,
   hexdump,
+  libsForQt5,
   makeDesktopItem,
   makeWrapper,
   ntfs3g,
   parted,
   procps,
-  stdenv,
   util-linux,
   which,
   xfsprogs,
   xz,
   defaultGuiType ? "",
   withCryptsetup ? false,
-  withXfs ? false,
   withExt4 ? false,
-  withNtfs ? false,
   withGtk3 ? defaultGuiType == "gtk3",
+  withNtfs ? false,
   withQt5 ? defaultGuiType == "qt5",
-  libsForQt5,
+  withXfs ? false,
 }:
 
 assert lib.elem defaultGuiType [
@@ -47,10 +47,10 @@ let
   inherit (libsForQt5) qtbase wrapQtAppsHook;
   arch =
     {
-      x86_64-linux = "x86_64";
-      i686-linux = "i386";
       aarch64-linux = "aarch64";
+      i686-linux = "i386";
       mipsel-linux = "mips64el";
+      x86_64-linux = "x86_64";
     }
     .${stdenv.hostPlatform.system} or (throw "Unsupported platform: ${stdenv.hostPlatform.system}");
 in
@@ -59,6 +59,7 @@ stdenv.mkDerivation (finalAttrs: {
     "ventoy"
     + optionalString (defaultGuiType == "gtk3") "-gtk3"
     + optionalString (defaultGuiType == "qt5") "-qt5";
+
   version = "1.1.12";
 
   src = fetchurl {
@@ -78,6 +79,8 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i 's:log\.txt:/var/log/ventoy\.log:g' \
         WebUI/static/js/languages.js tool/languages.json
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -107,24 +110,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ optionals withNtfs [ ntfs3g ]
   ++ optionals withXfs [ xfsprogs ]
   ++ optionals withQt5 [ qtbase ];
-
-  strictDeps = true;
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "Ventoy";
-      desktopName = "Ventoy";
-      comment = "Tool to create bootable USB drive for ISO/WIM/IMG/VHD(x)/EFI files";
-      icon = "VentoyLogo";
-      exec = "ventoy-gui";
-      terminal = false;
-      categories = [ "Utility" ];
-      startupNotify = true;
-    })
-  ];
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -192,10 +177,26 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Utility" ];
+      comment = "Tool to create bootable USB drive for ISO/WIM/IMG/VHD(x)/EFI files";
+      desktopName = "Ventoy";
+      exec = "ventoy-gui";
+      icon = "VentoyLogo";
+      name = "Ventoy";
+      startupNotify = true;
+      terminal = false;
+    })
+  ];
+
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://www.ventoy.net";
     description =
       "New Bootable USB Solution" + optionalString (defaultGuiType != "") " with GUI support";
+
     longDescription = ''
       Ventoy is an open source tool to create bootable USB drive for
       ISO/WIM/IMG/VHD(x)/EFI files.  With ventoy, you don't need to format the
@@ -209,7 +210,25 @@ stdenv.mkDerivation (finalAttrs: {
       also browse ISO/WIM/IMG/VHD(x)/EFI files in local disk and boot them.
       800+ image files are tested.  90%+ distros in DistroWatch supported.
     '';
+
+    homepage = "https://www.ventoy.net";
     changelog = "https://www.ventoy.net/doc_news.html";
+    license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
+    maintainers = with lib.maintainers; [
+      johnrtitor
+    ];
+
+    platforms = [
+      "x86_64-linux"
+      "i686-linux"
+      "aarch64-linux"
+      "mipsel-linux"
+    ];
+
+    mainProgram = "ventoy";
+
     knownVulnerabilities = [
       ''
         Ventoy uses binary blobs which can't be trusted to be free of malware or compliant to their licenses.
@@ -219,17 +238,5 @@ stdenv.mkDerivation (finalAttrs: {
         https://github.com/ventoy/Ventoy/issues/3224
       ''
     ];
-    license = lib.licenses.unfree;
-    mainProgram = "ventoy";
-    maintainers = with lib.maintainers; [
-      johnrtitor
-    ];
-    platforms = [
-      "x86_64-linux"
-      "i686-linux"
-      "aarch64-linux"
-      "mipsel-linux"
-    ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

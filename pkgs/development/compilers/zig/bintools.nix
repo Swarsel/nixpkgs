@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  zig,
-  runCommand,
   makeWrapper,
+  runCommand,
+  zig,
 }:
 let
   targetPrefix = lib.optionalString (
@@ -12,17 +12,15 @@ let
 in
 runCommand "zig-bintools-${zig.version}"
   {
-    pname = "zig-bintools";
     inherit (zig) version meta;
-
+    inherit zig;
+    pname = "zig-bintools";
     nativeBuildInputs = [ makeWrapper ];
 
     passthru = {
-      isZig = true;
       inherit targetPrefix;
+      isZig = true;
     };
-
-    inherit zig;
   }
   ''
     mkdir -p $out/bin

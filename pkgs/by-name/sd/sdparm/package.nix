@@ -19,8 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "http://sg.danny.cz/sg/sdparm.html";
     description = "Utility to access SCSI device parameters";
+    homepage = "http://sg.danny.cz/sg/sdparm.html";
     license = lib.licenses.bsd3;
     platforms = with lib.platforms; linux;
   };

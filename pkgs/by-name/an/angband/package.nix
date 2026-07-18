@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  autoreconfHook,
-  ncurses5,
-  enableSdl2 ? false,
   SDL2,
   SDL2_image,
   SDL2_mixer,
   SDL2_ttf,
+  autoreconfHook,
+  ncurses5,
+  enableSdl2 ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ autoreconfHook ];
+
   buildInputs = [
     ncurses5
   ]
@@ -34,15 +35,14 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   configureFlags = lib.optional enableSdl2 "--enable-sdl2";
-
   installFlags = [ "bindir=$(out)/bin" ];
 
   meta = {
-    homepage = "https://angband.github.io/angband";
     description = "Single-player roguelike dungeon exploration game";
-    mainProgram = "angband";
-    maintainers = [ lib.maintainers.kenran ];
+    homepage = "https://angband.github.io/angband";
     license = lib.licenses.gpl2Only;
+    maintainers = [ lib.maintainers.kenran ];
     platforms = lib.platforms.unix;
+    mainProgram = "angband";
   };
 })

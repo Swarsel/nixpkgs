@@ -19,9 +19,9 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [ autoreconfHook ];
 
   meta = {
-    homepage = "https://github.com/0-wiz-0/findnewest";
     description = "Recursively find newest file in a hierarchy and print its timestamp";
-    mainProgram = "fn";
+    homepage = "https://github.com/0-wiz-0/findnewest";
     license = lib.licenses.bsd2;
+    mainProgram = "fn";
   };
 })

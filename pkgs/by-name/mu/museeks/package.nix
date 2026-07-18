@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
   autoPatchelfHook,
-  webkitgtk_4_1,
-  libsoup_3,
-  glib,
-  gtk3,
   cairo,
   dbus,
+  dpkg,
   gdk-pixbuf,
-  nix-update-script,
-  wrapGAppsHook3,
+  glib,
   gst_all_1,
+  gtk3,
+  libsoup_3,
+  nix-update-script,
+  webkitgtk_4_1,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -60,8 +60,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Simple, clean and cross-platform music player";
     homepage = "https://github.com/martpie/museeks";
     license = lib.licenses.mit;
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ zendo ];
+    platforms = [ "x86_64-linux" ];
     mainProgram = "museeks";
   };
 })

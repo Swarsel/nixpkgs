@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pdm-backend,
   pdm-pep517,
   pytestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "jsonref";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gazpachoking";
@@ -25,9 +24,8 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
   enabledTestPaths = [ "tests.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "jsonref" ];
 
   meta = {

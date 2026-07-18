@@ -1,22 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  cython,
+  numpy,
   python,
-
+  scikit-learn,
+  scipy,
   setuptools,
   wheel,
-  cython,
-
-  numpy,
-  scipy,
-  scikit-learn,
 }:
 
 buildPythonPackage rec {
   pname = "quantile-forest";
   version = "1.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zillow";
@@ -24,6 +21,13 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-K/8W/BkQVeFsJyQMdOHX997/yrhTcvHU9vuYmZ4W+Qo=";
   };
+
+  # need network connection
+  doCheck = false;
+
+  postInstall = ''
+    rm -rf $out/${python.sitePackages}/examples
+  '';
 
   build-system = [
     setuptools
@@ -40,13 +44,7 @@ buildPythonPackage rec {
     scikit-learn
   ];
 
-  postInstall = ''
-    rm -rf $out/${python.sitePackages}/examples
-  '';
-
-  # need network connection
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "quantile_forest" ];
 
   meta = {

@@ -1,24 +1,24 @@
 {
-  gtkWidgets ? false, # build GTK widgets for libinfinity
-  avahiSupport ? false, # build support for Avahi in libinfinity
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  glib,
-  libxml2,
-  gnutls,
-  gsasl,
-  gobject-introspection,
-  gtk3 ? null,
-  gtk-doc,
-  docbook_xsl,
   docbook_xml_dtd_412,
-  avahi ? null,
+  docbook_xsl,
+  glib,
+  gnutls,
+  gobject-introspection,
+  gsasl,
+  gss,
+  gtk-doc,
   libdaemon,
   libidn,
-  gss,
   libintl,
+  libxml2,
+  pkg-config,
+  avahi ? null,
+  avahiSupport ? false, # build support for Avahi in libinfinity
+  gtk3 ? null,
+  gtkWidgets ? false, # build GTK widgets for libinfinity
 }:
 
 assert avahiSupport -> avahi != null;
@@ -28,6 +28,7 @@ let
   self = stdenv.mkDerivation rec {
     pname = "libinfinity";
     version = "0.7.2";
+
     src = fetchurl {
       url = "https://github.com/gobby/libinfinity/releases/download/${version}/libinfinity-${version}.tar.gz";
       sha256 = "17i3g61hxz9pzl3ryd1yr15142r25m06jfzjrpdy7ic1b8vjjw3f";
@@ -48,6 +49,7 @@ let
       docbook_xml_dtd_412
       gobject-introspection
     ];
+
     buildInputs = [
       glib
       libxml2
@@ -77,12 +79,12 @@ let
     };
 
     meta = {
-      homepage = "https://gobby.github.io/";
       description = "Implementation of the Infinote protocol written in GObject-based C";
-      mainProgram = "infinoted-0.7";
+      homepage = "https://gobby.github.io/";
       license = lib.licenses.lgpl2Plus;
       maintainers = [ ];
       platforms = with lib.platforms; linux ++ darwin;
+      mainProgram = "infinoted-0.7";
       # The last successful Darwin Hydra build was in 2024
       broken = stdenv.hostPlatform.isDarwin;
     };

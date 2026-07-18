@@ -2,27 +2,22 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-
-  # build-system
-  poetry-core,
-
   # dependencies
   httpx,
   packaging,
+  # build-system
+  poetry-core,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "wapiti-arsenic";
   version = "28.5";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "wapiti_arsenic";
     inherit (finalAttrs) version;
     hash = "sha256-snIKEdrBOIfPeHkVLv0X5lsBzDbOtDrbOj4m8UNCj60=";
+    pname = "wapiti_arsenic";
   };
-
-  pythonRelaxDeps = [ "packaging" ];
 
   postPatch = ''
     substituteInPlace pyproject.toml \
@@ -30,6 +25,8 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "poetry.masonry" "poetry.core.masonry"
   '';
 
+  # No tests in the pypi archive
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -37,10 +34,9 @@ buildPythonPackage (finalAttrs: {
     packaging
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "wapiti_arsenic" ];
-
-  # No tests in the pypi archive
-  doCheck = false;
+  pythonRelaxDeps = [ "packaging" ];
 
   meta = {
     description = "Asynchronous WebDriver client";

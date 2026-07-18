@@ -3,117 +3,103 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   bison,
-  flex,
   curl,
-  perl,
-  gperf,
-  openssl,
-  pcsclite,
-  networkmanager,
-  openresolv,
+  flex,
   glib,
+  gmp,
+  gperf,
+  iptables,
+  ldns,
+  libxml2,
+  networkmanager,
+  nixosTests,
+  openresolv,
+  openssl,
+  pam,
+  pcsclite,
+  perl,
+  pkg-config,
+  sqlite,
   systemd,
   tpm2-tss,
-  libxml2,
-  pam,
-  iptables,
   trousers,
-  sqlite,
   unbound,
-  ldns,
-  gmp,
-  nixosTests,
   enableNetworkManager ? false,
   enableTNC ? false,
   enableTPM2 ? false,
 }:
 let
   features = rec {
-    nm = enableNetworkManager;
-    cmd = true;
-    stroke = true;
-    swanctl = true;
-    systemd = stdenv.hostPlatform.isLinux;
-
-    openssl = true;
-
-    farp = stdenv.hostPlatform.isLinux;
-    dhcp = stdenv.hostPlatform.isLinux;
-    af-alg = stdenv.hostPlatform.isLinux;
-    resolve = stdenv.hostPlatform.isLinux;
-    scripts = stdenv.hostPlatform.isLinux;
-    connmark = stdenv.hostPlatform.isLinux;
-    forecast = stdenv.hostPlatform.isLinux;
-    kernel-netlink = stdenv.hostPlatform.isLinux;
-
+    acert = true;
     aesni = stdenv.hostPlatform.isx86_64;
-    rdrand = stdenv.hostPlatform.isx86_64;
-    padlock = stdenv.hostPlatform.system == "i686-linux";
-
-    kernel-pfkey = stdenv.hostPlatform.isDarwin || stdenv.hostPlatform.isFreeBSD;
-    kernel-pfroute = stdenv.hostPlatform.isDarwin || stdenv.hostPlatform.isFreeBSD;
-    kernel-libipsec = stdenv.hostPlatform.isDarwin || stdenv.hostPlatform.isFreeBSD;
-
-    keychain = false; # breaks build
-    osx-attr = stdenv.hostPlatform.isDarwin;
-
-    ml = true;
+    af-alg = stdenv.hostPlatform.isLinux;
+    chapoly = true;
+    cmd = true;
+    connmark = stdenv.hostPlatform.isLinux;
     # Note on curl support: If curl is built with gnutls as its backend, the
     # strongswan curl plugin may break.
     # See https://wiki.strongswan.org/projects/strongswan/wiki/Curl for more info.
     curl = true;
-    acert = true;
-    pkcs11 = true;
+    dhcp = stdenv.hostPlatform.isLinux;
     dnscert = true;
-    unbound = true;
-    chapoly = true;
-    ext-auth = true;
-    socket-dynamic = stdenv.hostPlatform.isLinux;
-
+    eap-aka = true;
+    eap-aka-3gpp = true;
+    eap-aka-3gpp2 = true;
+    eap-gtc = true;
+    eap-identity = true;
+    eap-md5 = true;
+    eap-mschapv2 = true;
+    eap-peap = true;
+    eap-radius = true;
     eap-sim = true;
     eap-sim-file = true;
     eap-sim-pcsc = true;
     eap-simaka-pseudonym = true;
     eap-simaka-reauth = true;
-    eap-identity = true;
-    eap-md5 = true;
-    eap-gtc = true;
-    eap-aka = true;
-    eap-aka-3gpp = true;
-    eap-aka-3gpp2 = true;
-    eap-mschapv2 = true;
     eap-tls = true;
-    eap-peap = true;
-    eap-radius = true;
-
-    xauth-eap = true;
-    xauth-pam = stdenv.hostPlatform.isLinux;
-    xauth-noauth = true;
-
+    ext-auth = true;
+    farp = stdenv.hostPlatform.isLinux;
+    forecast = stdenv.hostPlatform.isLinux;
     gmp = eap-aka-3gpp2;
+    kernel-libipsec = stdenv.hostPlatform.isDarwin || stdenv.hostPlatform.isFreeBSD;
+    kernel-netlink = stdenv.hostPlatform.isLinux;
+    kernel-pfkey = stdenv.hostPlatform.isDarwin || stdenv.hostPlatform.isFreeBSD;
+    kernel-pfroute = stdenv.hostPlatform.isDarwin || stdenv.hostPlatform.isFreeBSD;
+    keychain = false; # breaks build
+    ml = true;
+    nm = enableNetworkManager;
+    openssl = true;
+    osx-attr = stdenv.hostPlatform.isDarwin;
+    padlock = stdenv.hostPlatform.system == "i686-linux";
+    pkcs11 = true;
+    rdrand = stdenv.hostPlatform.isx86_64;
+    resolve = stdenv.hostPlatform.isLinux;
+    scripts = stdenv.hostPlatform.isLinux;
+    socket-dynamic = stdenv.hostPlatform.isLinux;
+    stroke = true;
+    swanctl = true;
+    systemd = stdenv.hostPlatform.isLinux;
+    unbound = true;
+    xauth-eap = true;
+    xauth-noauth = true;
+    xauth-pam = stdenv.hostPlatform.isLinux;
   }
   // lib.optionalAttrs enableTNC {
+    aikgen = true;
+    eap-dynamic = true;
     eap-tnc = true;
     eap-ttls = true;
-    eap-dynamic = true;
-
-    tnccs-20 = true;
-
+    imc-attestation = true;
+    imc-os = true;
+    imv-attestation = true;
+    imv-os = true;
+    sqlite = true;
+    tnc-ifmap = true;
     tnc-imc = true;
     tnc-imv = true;
-    tnc-ifmap = true;
-
-    imc-os = true;
-    imv-os = true;
-    imc-attestation = true;
-    imv-attestation = true;
-
-    aikgen = true;
+    tnccs-20 = true;
     tss-trousers = true;
-
-    sqlite = true;
   }
   // lib.optionalAttrs enableTPM2 {
     tpm = true;
@@ -136,6 +122,11 @@ stdenv.mkDerivation (finalAttrs: {
     ./firewall_defaults.patch
     ./updown-path.patch
   ];
+
+  postPatch = lib.optionalString features.resolve ''
+    substituteInPlace src/libcharon/plugins/resolve/resolve_handler.c \
+      --replace-fail "/sbin/resolvconf" "${openresolv}/sbin/resolvconf"
+  '';
 
   nativeBuildInputs = [
     autoreconfHook
@@ -174,20 +165,14 @@ stdenv.mkDerivation (finalAttrs: {
     ) "systemdsystemunitdir" "${placeholder "out"}/etc/systemd/system")
   ];
 
+  dontPatchELF = true;
+  enableParallelBuilding = true;
+
   installFlags = [
     "sysconfdir=${placeholder "out"}/etc"
   ];
 
-  enableParallelBuilding = true;
-
-  dontPatchELF = true;
-
   passthru.tests = { inherit (nixosTests) strongswan-swanctl; };
-
-  postPatch = lib.optionalString features.resolve ''
-    substituteInPlace src/libcharon/plugins/resolve/resolve_handler.c \
-      --replace-fail "/sbin/resolvconf" "${openresolv}/sbin/resolvconf"
-  '';
 
   meta = {
     description = "OpenSource IPsec-based VPN solution";
@@ -195,7 +180,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/strongswan/strongswan/blob/${finalAttrs.src.rev}/NEWS";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ nickcao ];
-    mainProgram = "swanctl";
     platforms = lib.platforms.unix;
+    mainProgram = "swanctl";
   };
 })

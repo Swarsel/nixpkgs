@@ -17,10 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-vx2iwnJIB+JhFaEwZsYTQ0VXV3MCI4AbWexzb9Iu6eQ=";
   };
 
-  propagatedUserEnvPkgs = [
-    gtk-engine-murrine
-  ];
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/share/themes/${themeName}
@@ -29,11 +25,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  propagatedUserEnvPkgs = [
+    gtk-engine-murrine
+  ];
+
   meta = {
     description = "Flat and light theme with a modern look";
     homepage = "https://github.com/EliverLara/${themeName}";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ alexarice ];
+    platforms = lib.platforms.all;
   };
 })

@@ -1,13 +1,13 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   bash,
-  rustPlatform,
-  just,
   dbus,
-  stdenv,
-  nixosTests,
+  just,
   nix-update-script,
+  nixosTests,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -30,17 +30,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --replace-fail '/usr/bin/start-cosmic' "$out/bin/start-cosmic"
   '';
 
-  cargoHash = "sha256-5dLG40X+yxJo566guyHqOCLNp+uNSE+HONS8GIDm58A=";
-
-  separateDebugInfo = true;
-  __structuredAttrs = true;
-
-  env.ORCA = "orca"; # get orca from $PATH
-
   nativeBuildInputs = [ just ];
-
   buildInputs = [ bash ];
-
+  cargoHash = "sha256-5dLG40X+yxJo566guyHqOCLNp+uNSE+HONS8GIDm58A=";
+  env.ORCA = "orca"; # get orca from $PATH
+  __structuredAttrs = true;
   dontUseJustBuild = true;
 
   justFlags = [
@@ -55,8 +49,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "target/${stdenv.hostPlatform.rust.cargoShortTarget}"
   ];
 
+  separateDebugInfo = true;
+
   passthru = {
     providedSessions = [ "cosmic" ];
+
     tests = {
       inherit (nixosTests)
         cosmic
@@ -75,11 +72,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/pop-os/cosmic-session";
     description = "Session manager for the COSMIC desktop environment";
+    homepage = "https://github.com/pop-os/cosmic-session";
     license = lib.licenses.gpl3Only;
+    platforms = lib.platforms.linux;
     mainProgram = "cosmic-session";
     teams = [ lib.teams.cosmic ];
-    platforms = lib.platforms.linux;
   };
 })

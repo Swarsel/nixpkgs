@@ -16,18 +16,17 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1xnbnbi0zk2xsyn8dqsmyxqlfnl36pb1wwibnlp0dxixw6sfymyl";
   };
 
-  strictDeps = true;
-
-  prePatch = ''
-    substituteInPlace deer \
-      --replace " perl " " ${perl}/bin/perl "
-  '';
-
   patches = [ ./realpath.patch ];
+  strictDeps = true;
 
   installPhase = ''
     mkdir -p $out/share/zsh/site-functions/
     cp deer $out/share/zsh/site-functions/
+  '';
+
+  prePatch = ''
+    substituteInPlace deer \
+      --replace " perl " " ${perl}/bin/perl "
   '';
 
   meta = {

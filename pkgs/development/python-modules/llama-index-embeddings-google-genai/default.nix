@@ -2,22 +2,23 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  google-genai,
   hatchling,
   llama-index-core,
-  google-genai,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "llama-index-embeddings-google-genai";
   version = "0.5.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "llama_index_embeddings_google_genai";
     inherit (finalAttrs) version;
     hash = "sha256-xA0J65uYGUnbWaNh0yJ0U8IumOnhjTXHK9Jklnvd2UQ=";
+    pname = "llama_index_embeddings_google_genai";
   };
 
+  # Tests are only available in the mono repo
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -25,9 +26,7 @@ buildPythonPackage (finalAttrs: {
     google-genai
   ];
 
-  # Tests are only available in the mono repo
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "llama_index.embeddings.google_genai" ];
 
   meta = {

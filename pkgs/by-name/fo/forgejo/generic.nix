@@ -1,45 +1,45 @@
 {
-  lts ? false,
-  version,
-  rev ? "refs/tags/v${version}",
   hash,
   npmDepsHash,
   vendorHash,
+  version,
+  lts ? false,
   nixUpdateExtraArgs ? [ ],
+  rev ? "refs/tags/v${version}",
 }:
 
 {
+  lib,
+  stdenv,
   bash,
   brotli,
   buildGoModule,
+  buildNpmPackage,
+  fetchFromCodeberg,
   fetchpatch,
   forgejo,
   git,
   gzip,
-  lib,
+  lndir,
   makeWrapper,
   nix-update-script,
   nixosTests,
   openssh,
-  sqliteSupport ? true,
-  lndir,
   runCommand,
-  stdenv,
-  fetchFromCodeberg,
-  buildNpmPackage,
   writableTmpDirAsHomeHook,
+  sqliteSupport ? true,
 }:
 
 let
   src = fetchFromCodeberg {
+    inherit rev hash;
     owner = "forgejo";
     repo = "forgejo";
-    inherit rev hash;
   };
 
   frontend = buildNpmPackage {
-    pname = "forgejo-frontend";
     inherit src version npmDepsHash;
+    pname = "forgejo-frontend";
 
     buildPhase = ''
       ./node_modules/.bin/webpack
@@ -53,27 +53,34 @@ let
   };
 in
 buildGoModule rec {
-  pname = "forgejo" + lib.optionalString lts "-lts";
-
   inherit
     version
     src
     vendorHash
     ;
 
-  subPackages = [
-    "."
-    "contrib/environment-to-ini"
-  ];
+  pname = "forgejo" + lib.optionalString lts "-lts";
 
   outputs = [
     "out"
     "data"
   ];
 
+  patches = [
+    ./static-root-path.patch
+  ];
+
+  postPatch = ''
+    substituteInPlace modules/setting/server.go --subst-var data
+  '';
+
   nativeBuildInputs = [
     makeWrapper
   ];
+
+  preConfigure = ''
+    export ldflags+=" -X main.ForgejoVersion=$(GITEA_VERSION=${version} make show-version-api)"
+  '';
 
   nativeCheckInputs = [
     git
@@ -81,28 +88,18 @@ buildGoModule rec {
     writableTmpDirAsHomeHook
   ];
 
-  patches = [
-    ./static-root-path.patch
-  ];
-  postPatch = ''
-    substituteInPlace modules/setting/server.go --subst-var data
-  '';
-
-  tags = lib.optionals sqliteSupport [
-    "sqlite"
-    "sqlite_unlock_notify"
-  ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.Version=${version}"
-    "-X 'main.Tags=${lib.concatStringsSep " " tags}'"
-  ];
-
-  preConfigure = ''
-    export ldflags+=" -X main.ForgejoVersion=$(GITEA_VERSION=${version} make show-version-api)"
-  '';
+  checkFlags =
+    let
+      skippedTests = [
+        "TestPassword" # requires network: api.pwnedpasswords.com
+        "TestCaptcha" # requires network: hcaptcha.com
+        "TestDNSUpdate" # requires network: release.forgejo.org
+        "TestMigrateWhiteBlocklist" # requires network: gitlab.com (DNS)
+        "TestURLAllowedSSH/Pushmirror_URL" # requires network git.gay (DNS)
+        "TestBleveDeleteIssue" # Known Flake-y https://github.com/NixOS/nixpkgs/issues/509878
+      ];
+    in
+    [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
   # expose and use the GO_TEST_PACKAGES var from the Makefile
   # instead of manually copying over the entire list:
@@ -117,19 +114,6 @@ buildGoModule rec {
     # TestRunHookPrePostReceive (cmd/hook_test.go) needs .git to pass
     git init
   '';
-
-  checkFlags =
-    let
-      skippedTests = [
-        "TestPassword" # requires network: api.pwnedpasswords.com
-        "TestCaptcha" # requires network: hcaptcha.com
-        "TestDNSUpdate" # requires network: release.forgejo.org
-        "TestMigrateWhiteBlocklist" # requires network: gitlab.com (DNS)
-        "TestURLAllowedSSH/Pushmirror_URL" # requires network git.gay (DNS)
-        "TestBleveDeleteIssue" # Known Flake-y https://github.com/NixOS/nixpkgs/issues/509878
-      ];
-    in
-    [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
   preInstall = ''
     mv "$GOPATH/bin/forgejo.org" "$GOPATH/bin/forgejo"
@@ -151,12 +135,29 @@ buildGoModule rec {
       }
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.Version=${version}"
+    "-X 'main.Tags=${lib.concatStringsSep " " tags}'"
+  ];
+
   # $data is not available in goModules.drv
   overrideModAttrs = (
     _: {
       postPatch = null;
     }
   );
+
+  subPackages = [
+    "."
+    "contrib/environment-to-ini"
+  ];
+
+  tags = lib.optionals sqliteSupport [
+    "sqlite"
+    "sqlite_unlock_notify"
+  ];
 
   passthru = {
     # allow nix-update to handle npmDepsHash
@@ -195,8 +196,8 @@ buildGoModule rec {
     homepage = "https://forgejo.org";
     changelog = "https://codeberg.org/forgejo/forgejo/releases/tag/v${version}";
     license = lib.licenses.gpl3Plus;
-    teams = [ lib.teams.forgejo ];
-    broken = stdenv.hostPlatform.isDarwin;
     mainProgram = "forgejo";
+    broken = stdenv.hostPlatform.isDarwin;
+    teams = [ lib.teams.forgejo ];
   };
 }

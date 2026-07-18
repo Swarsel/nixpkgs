@@ -13,6 +13,7 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "ntk";
   version = "1.3.1001";
+
   src = fetchFromGitHub {
     owner = "linuxaudio";
     repo = "ntk";
@@ -24,6 +25,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     wafHook
   ];
+
   buildInputs = [
     cairo
     libjpeg
@@ -40,13 +42,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Fork of FLTK 1.3.0 with additional functionality";
-    version = finalAttrs.version;
     homepage = "http://non.tuxfamily.org/";
     license = lib.licenses.lgpl21;
+
     maintainers = with lib.maintainers; [
       magnetophon
       nico202
     ];
+
     platforms = lib.platforms.linux;
+    version = finalAttrs.version;
   };
 })

@@ -8,34 +8,34 @@
 
 let
   flreSrc = fetchFromGitHub {
+    hash = "sha256-fs7CIjd3fwD/SORYh5pmJxIdrr8F9e36TNmnKUbUxP0=";
     owner = "benibela";
     repo = "flre";
     rev = "3e926d45d4352f1b7c7cd411ccd625df117dad5c";
-    hash = "sha256-fs7CIjd3fwD/SORYh5pmJxIdrr8F9e36TNmnKUbUxP0=";
   };
   synapseSrc = fetchFromGitHub {
+    hash = "sha256-bVLQ0ohGJYtuP88Krxy9a7RnHHrW0OWw8H/uxa3PerU=";
     owner = "benibela";
     repo = "ararat-synapse";
     rev = "7a77db926de66809080bada68b54172da7f84c0e";
-    hash = "sha256-bVLQ0ohGJYtuP88Krxy9a7RnHHrW0OWw8H/uxa3PerU=";
   };
   rcmdlineSrc = fetchFromGitHub {
+    hash = "sha256-6YtvAf0joRvtCKbUAaLwuwABw1GEIzammFLhboq9aG0=";
     owner = "benibela";
     repo = "rcmdline";
     rev = "ea02b770c4568717dd7b3b72da191a8bbcb4c751";
-    hash = "sha256-6YtvAf0joRvtCKbUAaLwuwABw1GEIzammFLhboq9aG0=";
   };
   internettoolsSrc = fetchFromGitHub {
+    hash = "sha256-09sADxPiE6ky1EX7dTXRBYVT3IarUcLYf5knzi7+CHU=";
     owner = "benibela";
     repo = "internettools";
     rev = "dd972caaa4415468fa679ea7262976ead3fd3e38";
-    hash = "sha256-09sADxPiE6ky1EX7dTXRBYVT3IarUcLYf5knzi7+CHU=";
   };
   pasdblstrutilsSrc = fetchFromGitHub {
+    hash = "sha256-x0AjOTa1g7gJOR2iBO76yBt1kzcRNujHRUsq5QOlfP0=";
     owner = "BeRo1985";
     repo = "pasdblstrutils";
     rev = "1696f0a2b822fef26c8992f96620f1be129cfa99";
-    hash = "sha256-x0AjOTa1g7gJOR2iBO76yBt1kzcRNujHRUsq5QOlfP0=";
   };
 in
 stdenv.mkDerivation {
@@ -51,20 +51,7 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = [ fpc ];
   buildInputs = [ openssl ];
-
   env.NIX_LDFLAGS = toString [ "-lcrypto" ];
-
-  patchPhase = ''
-    patchShebangs \
-      build.sh \
-      tests/test.sh \
-      tests/tests-file-module.sh \
-      tests/tests.sh \
-      tests/downloadTest.sh \
-      tests/downloadTests.sh \
-      tests/zorbajsoniq.sh \
-      tests/zorbajsoniq/download.sh
-  '';
 
   preBuild = ''
     mkdir -p import/{flre,synapse,pasdblstrutils} rcmdline internettools
@@ -85,23 +72,35 @@ stdenv.mkDerivation {
     runHook postBuild
   '';
 
+  # disabled, because tests require network
+  checkPhase = ''
+    ./tests/tests.sh
+  '';
+
   installPhase = ''
     mkdir -p "$out/bin" "$out/share/man/man1"
     cp meta/xidel.1 "$out/share/man/man1/"
     cp xidel "$out/bin/"
   '';
 
-  # disabled, because tests require network
-  checkPhase = ''
-    ./tests/tests.sh
+  patchPhase = ''
+    patchShebangs \
+      build.sh \
+      tests/test.sh \
+      tests/tests-file-module.sh \
+      tests/tests.sh \
+      tests/downloadTest.sh \
+      tests/downloadTests.sh \
+      tests/zorbajsoniq.sh \
+      tests/zorbajsoniq/download.sh
   '';
 
   meta = {
     description = "Command line tool to download and extract data from HTML/XML pages as well as JSON APIs";
-    mainProgram = "xidel";
     homepage = "https://www.videlibri.de/xidel.html";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.all;
+    mainProgram = "xidel";
   };
 }

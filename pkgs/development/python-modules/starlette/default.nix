@@ -1,34 +1,28 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
   # dependencies
   anyio,
-  typing-extensions,
-
+  buildPythonPackage,
+  # reverse dependencies
+  fastapi,
+  # build-system
+  hatchling,
+  httpx,
   # optional dependencies
   itsdangerous,
   jinja2,
-  python-multipart,
-  pyyaml,
-  httpx,
-
   # tests
   pytestCheckHook,
+  python-multipart,
+  pyyaml,
   trio,
-
-  # reverse dependencies
-  fastapi,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "starlette";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Kludex";
@@ -37,8 +31,14 @@ buildPythonPackage rec {
     hash = "sha256-9iQXlpA1VDGw1c7X1zJPmJ3Dub46PwqrVIX1+fWOZ7M=";
   };
 
-  build-system = [ hatchling ];
+  nativeCheckInputs = [
+    pytestCheckHook
+    trio
+    typing-extensions
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
+  build-system = [ hatchling ];
   dependencies = [ anyio ];
 
   optional-dependencies.full = [
@@ -49,13 +49,7 @@ buildPythonPackage rec {
     httpx
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    trio
-    typing-extensions
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "starlette" ];
 
   passthru.tests = {
@@ -63,11 +57,11 @@ buildPythonPackage rec {
   };
 
   meta = {
-    changelog = "https://github.com/Kludex/starlette/blob/${src.tag}/docs/release-notes.md";
-    downloadPage = "https://github.com/Kludex/starlette";
-    homepage = "https://www.starlette.io/";
     description = "Little ASGI framework that shines";
+    homepage = "https://www.starlette.io/";
+    changelog = "https://github.com/Kludex/starlette/blob/${src.tag}/docs/release-notes.md";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ wd15 ];
+    downloadPage = "https://github.com/Kludex/starlette";
   };
 }

@@ -1,24 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  rustPlatform,
-
-  # dependencies
-  typing-extensions,
-
+  buildPythonPackage,
   # tests
   numpy,
   pytestCheckHook,
+  # build-system
+  rustPlatform,
+  # dependencies
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "moyopy";
   version = "0.14.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "spglib";
@@ -26,9 +21,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-xDgkKwWZovHgkJH3Jcp7/Yz8oAySdDVEbrOCGIpdI4c=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/moyopy";
-  cargoRoot = "..";
 
   nativeBuildInputs = with rustPlatform; [
     cargoSetupHook
@@ -39,6 +31,18 @@ buildPythonPackage (finalAttrs: {
     CARGO_TARGET_DIR = "./target";
   };
 
+  nativeCheckInputs = [
+    numpy
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
+
+  build-system = [
+    rustPlatform.cargoSetupHook
+    rustPlatform.maturinBuildHook
+  ];
+
   cargoDeps = rustPlatform.fetchCargoVendor {
     inherit (finalAttrs)
       pname
@@ -47,29 +51,24 @@ buildPythonPackage (finalAttrs: {
       sourceRoot
       cargoRoot
       ;
+
     hash = "sha256-xivPb07t7MPK09SCeXQqyycrI0WB+LgOB15pIA6cAkE=";
   };
 
-  build-system = [
-    rustPlatform.cargoSetupHook
-    rustPlatform.maturinBuildHook
-  ];
+  cargoRoot = "..";
 
   dependencies = [
     typing-extensions
-  ];
-
-  pythonImportsCheck = [ "moyopy" ];
-
-  nativeCheckInputs = [
-    numpy
-    pytestCheckHook
   ];
 
   disabledTestPaths = [
     # Circular dependency with pymatgen
     "python/tests/test_interface.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "moyopy" ];
+  sourceRoot = "${finalAttrs.src.name}/moyopy";
 
   meta = {
     description = "Python interface of moyo, a fast and robust crystal symmetry finder";

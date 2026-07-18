@@ -1,18 +1,18 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  fetchPnpmDeps,
   cargo-tauri,
-  nodejs,
-  pnpm_10,
-  pnpmConfigHook,
-  wrapGAppsHook4,
-  webkitgtk_4_1,
-  pkg-config,
-  openssl,
+  fetchPnpmDeps,
   nix-update-script,
+  nodejs,
+  openssl,
+  pkg-config,
+  pnpmConfigHook,
+  pnpm_10,
+  rustPlatform,
+  webkitgtk_4_1,
+  wrapGAppsHook4,
 }:
 let
   pnpm = pnpm_10;
@@ -34,18 +34,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   strictDeps = true;
 
-  cargoRoot = "src-tauri";
-  buildAndTestSubdir = finalAttrs.cargoRoot;
-
-  cargoHash = "sha256-XYvwgZMJXM62kC8+DR06LygtTnL+8TLWyRZAgTQWf3Q=";
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    fetcherVersion = 3;
-    hash = "sha256-S/XCypKyYlJtuISNiG8NtJzisAejiUwqPVltXEmVlZw=";
-  };
-
   nativeBuildInputs = [
     cargo-tauri.hook
 
@@ -64,16 +52,26 @@ rustPlatform.buildRustPackage (finalAttrs: {
     webkitgtk_4_1
   ];
 
+  cargoHash = "sha256-XYvwgZMJXM62kC8+DR06LygtTnL+8TLWyRZAgTQWf3Q=";
   env.OPENSSL_NO_VENDOR = 1;
+  buildAndTestSubdir = finalAttrs.cargoRoot;
+  cargoRoot = "src-tauri";
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 3;
+    hash = "sha256-S/XCypKyYlJtuISNiG8NtJzisAejiUwqPVltXEmVlZw=";
+  };
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    inherit (cargo-tauri.hook.meta) platforms;
     description = "Lightweight, developer-focused database management tool, built with Tauri and React";
     homepage = "http://tabularis.dev";
     changelog = "https://github.com/debba/tabularis/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
-    inherit (cargo-tauri.hook.meta) platforms;
     maintainers = with lib.maintainers; [ nartsiss ];
     mainProgram = "tabularis";
   };

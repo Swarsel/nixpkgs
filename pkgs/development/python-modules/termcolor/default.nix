@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "termcolor";
   version = "3.3.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -22,19 +21,20 @@ buildPythonPackage rec {
     sed -i "/Programming Language :: Python :: 3.15/d" pyproject.toml
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     hatch-vcs
     hatchling
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "termcolor" ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   meta = {
-    changelog = "https://github.com/termcolor/termcolor/releases/tag/${version}";
     description = "ANSI color formatting for output in terminal";
     homepage = "https://github.com/termcolor/termcolor";
+    changelog = "https://github.com/termcolor/termcolor/releases/tag/${version}";
     license = lib.licenses.mit;
   };
 }

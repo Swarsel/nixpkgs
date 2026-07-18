@@ -1,11 +1,11 @@
 {
-  fetchFromGitHub,
   lib,
-  stdenvNoCC,
+  fetchFromGitHub,
   adwaita-icon-theme,
   gnome-icon-theme,
-  hicolor-icon-theme,
   gtk3,
+  hicolor-icon-theme,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -19,17 +19,15 @@ stdenvNoCC.mkDerivation rec {
     hash = "sha256-kB6JEl6CjVfZ/aY9qotfTogKxcPdZzNLlbA9OoKEvAc=";
   };
 
+  nativeBuildInputs = [
+    gtk3
+  ];
+
   propagatedBuildInputs = [
     adwaita-icon-theme
     gnome-icon-theme
     hicolor-icon-theme
   ];
-
-  nativeBuildInputs = [
-    gtk3
-  ];
-
-  dontDropIconThemeCache = true;
 
   installPhase = ''
     runHook preInstall
@@ -44,9 +42,11 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontDropIconThemeCache = true;
+
   meta = {
-    homepage = "https://github.com/linuxmint/mint-y-icons";
     description = "Mint-Y icon theme";
+    homepage = "https://github.com/linuxmint/mint-y-icons";
     license = lib.licenses.gpl3; # from debian/copyright
     platforms = lib.platforms.linux;
     teams = [ lib.teams.cinnamon ];

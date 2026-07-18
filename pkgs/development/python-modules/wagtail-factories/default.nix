@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   callPackage,
   factory-boy,
-  fetchFromGitHub,
   setuptools,
   wagtail,
 }:
@@ -11,15 +11,17 @@
 buildPythonPackage rec {
   pname = "wagtail-factories";
   version = "4.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
-    repo = "wagtail-factories";
     owner = "wagtail";
+    repo = "wagtail-factories";
     tag = "v${version}";
     hash = "sha256-mVxLnP++j116bfJMJa7GoH1Rqvj7rdj0JsNFm7fJ7h0=";
   };
 
+  # Tests require wagtail which in turn requires wagtail-factories
+  # Note that pythonImportsCheck is not used because it requires a Django app
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,10 +29,7 @@ buildPythonPackage rec {
     wagtail
   ];
 
-  # Tests require wagtail which in turn requires wagtail-factories
-  # Note that pythonImportsCheck is not used because it requires a Django app
-  doCheck = false;
-
+  pyproject = true;
   passthru.tests.wagtail-factories = callPackage ./tests.nix { };
 
   meta = {

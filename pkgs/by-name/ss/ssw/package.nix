@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   gtk3,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,9 +19,9 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [ gtk3 ];
 
   meta = {
+    description = "GNU Spread Sheet Widget";
     homepage = "https://www.gnu.org/software/ssw/";
     license = lib.licenses.gpl3;
-    description = "GNU Spread Sheet Widget";
     platforms = lib.platforms.linux;
   };
 })

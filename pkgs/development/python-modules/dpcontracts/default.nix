@@ -1,17 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage {
   pname = "dpcontracts";
   version = "0.6.0-unstable-2018-11-20";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "deadpixi";
@@ -25,18 +22,21 @@ buildPythonPackage {
     ./fix-doctests.patch
   ];
 
-  build-system = [
-    setuptools
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
+
+  build-system = [
+    setuptools
   ];
 
   enabledTestPaths = [
     "README.rst"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "dpcontracts" ];
 
   meta = {

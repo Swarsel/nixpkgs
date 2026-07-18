@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  rustPlatform,
+  appstream-glib,
   cargo,
-  meson,
-  ninja,
-  pkg-config,
-  rustc,
+  desktop-file-utils,
   glib,
+  gst_all_1,
   gtk4,
   libadwaita,
-  sqlite,
+  meson,
+  ninja,
+  nix-update-script,
   openssl,
   pipewire,
-  gst_all_1,
+  pkg-config,
+  rustPlatform,
+  rustc,
+  sqlite,
   wrapGAppsHook4,
-  appstream-glib,
-  desktop-file-utils,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,16 +26,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.9.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "World";
     repo = "decoder";
     tag = finalAttrs.version;
     hash = "sha256-ssbqtDuUpHDT0Q91YCWsvYS8T9cMl4ukOKuaIvnGg44=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-Ue89/U4OXQVftuGtiYF2cr4UuFzrfz6DT52EQM1wd7s=";
+    domain = "gitlab.gnome.org";
   };
 
   nativeBuildInputs = [
@@ -74,6 +69,11 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-Ue89/U4OXQVftuGtiYF2cr4UuFzrfz6DT52EQM1wd7s=";
+  };
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -83,8 +83,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.gnome.org/World/decoder";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ zendo ];
-    mainProgram = "decoder";
     platforms = lib.platforms.linux;
+    mainProgram = "decoder";
     teams = [ lib.teams.gnome-circle ];
   };
 })

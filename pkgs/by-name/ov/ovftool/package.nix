@@ -1,22 +1,22 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   autoPatchelfHook,
   c-ares,
   cacert,
   curl,
   darwin,
   expat,
-  fetchurl,
   glibc,
   icu60,
   jq,
-  lib,
   libiconv,
   libredirect,
   libxcrypt-legacy,
   libxml2,
   makeWrapper,
   openssl,
-  stdenv,
   unzip,
   writeShellScript,
   xercesc,
@@ -34,11 +34,11 @@ let
     {
       fileName,
       version,
-      toolId ? ovftoolId,
       artifactId ? 29848,
       fileType ? "Download",
-      source ? "",
       hash ? "",
+      source ? "",
+      toolId ? ovftoolId,
     }:
     let
       requestJson = lib.strings.toJSON {
@@ -51,10 +51,11 @@ let
       };
     in
     stdenv.mkDerivation {
-      name = fileName;
-      url =
-        (mkBaseUrl toolId)
-        + "?p_p_id=SDK_AND_TOOL_DETAILS_INSTANCE_iwlk&p_p_lifecycle=2&p_p_resource_id=documentDownloadArtifact";
+      nativeBuildInputs = [
+        curl
+        jq
+      ];
+
       builder = writeShellScript "builder.sh" ''
         curlVersion=$(${curl}/bin/curl -V | head -1 | cut -d' ' -f2)
 
@@ -80,17 +81,19 @@ let
           exit 1
         fi
       '';
-      nativeBuildInputs = [
-        curl
-        jq
-      ];
-      outputHashAlgo = "sha256";
-      outputHash = hash;
 
       impureEnvVars = lib.fetchers.proxyImpureEnvVars ++ [
         # This variable allows the user to pass additional options to curl
         "NIX_CURL_FLAGS"
       ];
+
+      name = fileName;
+      outputHash = hash;
+      outputHashAlgo = "sha256";
+
+      url =
+        (mkBaseUrl toolId)
+        + "?p_p_id=SDK_AND_TOOL_DETAILS_INSTANCE_iwlk&p_p_lifecycle=2&p_p_resource_id=documentDownloadArtifact";
     };
 
   ovftoolSystems = {
@@ -106,6 +109,7 @@ let
   # Regrettably, we need to compile this version or else ovftool complains about unknown symbols.
   ovftool-xercesc = xercesc.overrideAttrs (prev: rec {
     version = "3.2.5";
+
     src = fetchurl {
       url = lib.replaceStrings [ prev.version ] [ version ] prev.src.url;
       hash = "sha256-VFz8zmxOdVIHvR8n4xkkHlDjfAwnJQ8RzaEWAY8e8PU=";
@@ -113,8 +117,8 @@ let
   });
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "ovftool";
   inherit (ovftoolSystem) version;
+  pname = "ovftool";
 
   src =
     if acceptBroadcomEula then
@@ -129,6 +133,14 @@ stdenv.mkDerivation (finalAttrs: {
         Use `${finalAttrs.pname}.override { acceptBroadcomEula = true; }` if you accept Broadcom's terms
         and would like to use this package.
       '';
+
+  nativeBuildInputs = [
+    unzip
+    makeWrapper
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    autoPatchelfHook
+  ];
 
   buildInputs = [
     c-ares
@@ -147,23 +159,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     libxml2
   ];
-
-  nativeBuildInputs = [
-    unzip
-    makeWrapper
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    autoPatchelfHook
-  ];
-
-  postUnpack = ''
-    # The linux package wraps ovftool.bin with ovftool. Wrapping
-    # below in installPhase.
-    # Rename to ovftool on install for all systems to ovftool
-    if [[ -f ovftool.bin ]]; then
-      mv -v ovftool.bin ovftool
-    fi
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -238,6 +233,9 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  # Seems to get stuck and return 255, but works outside the sandbox
+  doInstallCheck = !stdenv.hostPlatform.isDarwin;
+
   preFixup =
     lib.optionalString stdenv.hostPlatform.isLinux ''
       addAutoPatchelfSearchPath "$out/lib"
@@ -291,16 +289,6 @@ stdenv.mkDerivation (finalAttrs: {
       done
     '';
 
-  # These paths are need for install check tests
-  propagatedSandboxProfile = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    (allow file-read* (subpath "/usr/share/locale"))
-    (allow file-read* (subpath "/var/db/timezone"))
-    (allow file-read* (subpath "/System/Library/TextEncodings"))
-  '';
-
-  # Seems to get stuck and return 255, but works outside the sandbox
-  doInstallCheck = !stdenv.hostPlatform.isDarwin;
-
   postInstallCheck =
     lib.optionalString stdenv.hostPlatform.isDarwin ''
       export HOME=$TMPDIR
@@ -338,17 +326,36 @@ stdenv.mkDerivation (finalAttrs: {
       set +x
     '';
 
+  postUnpack = ''
+    # The linux package wraps ovftool.bin with ovftool. Wrapping
+    # below in installPhase.
+    # Rename to ovftool on install for all systems to ovftool
+    if [[ -f ovftool.bin ]]; then
+      mv -v ovftool.bin ovftool
+    fi
+  '';
+
+  # These paths are need for install check tests
+  propagatedSandboxProfile = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    (allow file-read* (subpath "/usr/share/locale"))
+    (allow file-read* (subpath "/var/db/timezone"))
+    (allow file-read* (subpath "/System/Library/TextEncodings"))
+  '';
+
   meta = {
     description = "VMware tools for working with OVF, OVA, and VMX images";
     homepage = "https://developer.vmware.com/web/tool/ovf-tool/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       numinit
       thanegill
     ];
+
     platforms = lib.attrNames ovftoolSystems;
     mainProgram = "ovftool";
+
     knownVulnerabilities = lib.optionals stdenv.hostPlatform.isDarwin [
       "The bundled version of openssl 1.0.2zk in ovftool for Darwin has open vulnerabilities (maximum severity: Moderate)"
       "https://openssl-library.org/news/vulnerabilities-1.0.2/"

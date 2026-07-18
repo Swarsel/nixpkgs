@@ -1,13 +1,13 @@
 {
   lib,
-  fetchFromGitHub,
-  rustPlatform,
-  fetchPnpmDeps,
   stdenv,
-  pnpm_10,
-  pnpmConfigHook,
-  nodejs,
+  fetchFromGitHub,
+  fetchPnpmDeps,
   makeWrapper,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_10,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (
@@ -16,20 +16,10 @@ rustPlatform.buildRustPackage (
     frontendPname = "wealthfolio-frontend";
 
     frontend = stdenv.mkDerivation {
-      pname = frontendPname;
       inherit (finalAttrs) version src;
-
-      __structuredAttrs = true;
+      inherit (finalAttrs) meta;
+      pname = frontendPname;
       strictDeps = true;
-
-      pnpmDeps = fetchPnpmDeps {
-        pname = frontendPname;
-        inherit (finalAttrs) version src;
-
-        pnpm = pnpm_10;
-        fetcherVersion = 3;
-        hash = "sha256-fryLXUVzyDT1jOuS5sIf9kpCJ40oHaxFRJFKMrn7EGs=";
-      };
 
       nativeBuildInputs = [
         nodejs
@@ -47,12 +37,18 @@ rustPlatform.buildRustPackage (
         cp -R dist/* $out/
       '';
 
-      inherit (finalAttrs) meta;
+      __structuredAttrs = true;
+
+      pnpmDeps = fetchPnpmDeps {
+        inherit (finalAttrs) version src;
+        pname = frontendPname;
+        fetcherVersion = 3;
+        hash = "sha256-fryLXUVzyDT1jOuS5sIf9kpCJ40oHaxFRJFKMrn7EGs=";
+        pnpm = pnpm_10;
+      };
     };
   in
   {
-    __structuredAttrs = true;
-
     pname = "wealthfolio-server";
     version = "3.6.2";
 
@@ -63,11 +59,8 @@ rustPlatform.buildRustPackage (
       hash = "sha256-2Chwr7OifQ5PgRAnxDEeAxyYaxVQqS32mezqzUBKKyU=";
     };
 
-    cargoRoot = ".";
-    buildAndTestSubdir = "apps/server";
-    cargoHash = "sha256-pfUrfIZmuibjFYzcuh57WU/pTlXFZNWYgurNYn+Wvus=";
-
     nativeBuildInputs = [ makeWrapper ];
+    cargoHash = "sha256-pfUrfIZmuibjFYzcuh57WU/pTlXFZNWYgurNYn+Wvus=";
 
     postInstall = ''
       mkdir -p $out/share/wealthfolio/dist
@@ -78,14 +71,18 @@ rustPlatform.buildRustPackage (
         --set WF_STATIC_DIR "$out/share/wealthfolio/dist"
     '';
 
+    __structuredAttrs = true;
+    buildAndTestSubdir = "apps/server";
+    cargoRoot = ".";
+
     meta = {
       description = "Self-hosted web app for Wealthfolio";
       homepage = "https://wealthfolio.app/";
       changelog = "https://github.com/wealthfolio/wealthfolio/tag/${finalAttrs.src.tag}";
-      mainProgram = "wealthfolio-server";
       license = lib.licenses.agpl3Only;
       maintainers = with lib.maintainers; [ luuumine ];
       platforms = lib.platforms.linux;
+      mainProgram = "wealthfolio-server";
     };
   }
 )

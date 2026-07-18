@@ -3,7 +3,7 @@
 let
   mkRenamed =
     oldName:
-    { path, package }:
+    { package, path }:
     lib.warn "cudaPackages.${oldName} is deprecated, use ${path} instead" package;
 in
 final: _:
@@ -13,7 +13,7 @@ builtins.mapAttrs mkRenamed {
   # NVIDIA renamed cuda_cccl to cccl in CUDA 13.3.
   # For the sake of simplicity, we updated the attrname tree-wide, accross all cudaPackages version.
   cuda_cccl = {
-    path = "cccl";
     package = final.cccl;
+    path = "cccl";
   };
 }

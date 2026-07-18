@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   autoreconfHook,
   cairo,
-  fetchFromGitHub,
   giflib,
   glib,
   gtk3,
@@ -11,8 +11,8 @@
   libpcap,
   libpng,
   libuv,
-  libwebsockets,
   libwebp,
+  libwebsockets,
   openssl,
   pkg-config,
 }:
@@ -27,8 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-f7EPC/n3CyxVOXC6j43Nnwkgu/aDVst8lQpzfgegDsI=";
   };
-
-  enableParallelBuilding = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -50,6 +48,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.NIX_CFLAGS_COMPILE = "-Wno-error=int-conversion";
+  enableParallelBuilding = true;
 
   meta = {
     description = "Watches network traffic, and picks out and displays JPEG and GIF images for display";

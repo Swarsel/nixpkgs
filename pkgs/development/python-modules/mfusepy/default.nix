@@ -1,19 +1,18 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   fuse3,
+  setuptools,
 }:
 
 let
   version = "3.1.1";
 in
 buildPythonPackage {
-  pname = "mfusepy";
   inherit version;
-  pyproject = true;
+  pname = "mfusepy";
 
   src = fetchFromGitHub {
     owner = "mxmlnkn";
@@ -29,7 +28,7 @@ buildPythonPackage {
   '';
 
   build-system = [ setuptools ];
-
+  pyproject = true;
   # https://github.com/NixOS/nixpkgs/blob/1e1947e8b7962c914b725e8b821e311229e632ae/doc/packages/fuse.section.md?plain=1#L10
   pythonImportsCheck = lib.optionals stdenv.hostPlatform.isLinux [ "mfusepy" ];
 

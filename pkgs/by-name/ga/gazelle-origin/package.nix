@@ -6,13 +6,12 @@
 python3Packages.buildPythonApplication rec {
   pname = "gazelle-origin";
   version = "3.0.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
-    repo = "gazelle-origin";
     # Use the spinfast319 fork, since it seems that upstream
     # at <https://github.com/x1ppy/gazelle-origin> is inactive
     owner = "spinfast319";
+    repo = "gazelle-origin";
     tag = version;
     hash = "sha256-+yMKnfG2f+A1/MxSBFLaHfpCgI2m968iXqt+2QanM/c=";
   };
@@ -23,6 +22,7 @@ python3Packages.buildPythonApplication rec {
     requests
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "gazelleorigin" ];
 
   meta = {

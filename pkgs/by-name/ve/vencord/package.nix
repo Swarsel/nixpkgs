@@ -1,20 +1,20 @@
 {
-  curl,
-  fetchFromGitHub,
-  git,
-  jq,
   lib,
-  nix-update,
-  nodejs,
-  pnpm_10,
-  fetchPnpmDeps,
-  pnpmConfigHook,
   stdenv,
-  writeShellScript,
+  fetchFromGitHub,
+  curl,
   discord,
-  discord-ptb,
   discord-canary,
   discord-development,
+  discord-ptb,
+  fetchPnpmDeps,
+  git,
+  jq,
+  nix-update,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_10,
+  writeShellScript,
   buildWebExtension ? false,
 }:
 let
@@ -38,18 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail '"@types/react": "18.3.1"' '"@types/react": "19.0.12"'
   '';
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      src
-      patches
-      postPatch
-      ;
-    inherit pnpm;
-    fetcherVersion = 4;
-    hash = "sha256-pm5f6bGm07pzNCqpDHRyKFnuX2ZTE5w9BtJu5xXPHiI=";
-  };
-
   nativeBuildInputs = [
     git
     nodejs
@@ -58,8 +46,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env = {
-    VENCORD_REMOTE = "${finalAttrs.src.owner}/${finalAttrs.src.repo}";
     VENCORD_HASH = "${finalAttrs.version}";
+    VENCORD_REMOTE = "${finalAttrs.src.owner}/${finalAttrs.src.repo}";
   };
 
   buildPhase = ''
@@ -80,7 +68,24 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      src
+      patches
+      postPatch
+      ;
+
+    inherit pnpm;
+    fetcherVersion = 4;
+    hash = "sha256-pm5f6bGm07pzNCqpDHRyKFnuX2ZTE5w9BtJu5xXPHiI=";
+  };
+
   passthru = {
+    tests = lib.genAttrs' [ discord discord-ptb discord-canary discord-development ] (
+      p: lib.nameValuePair p.pname p.tests.withVencord
+    );
+
     # We need to fetch the latest *tag* ourselves, as nix-update can only fetch the latest *releases* from GitHub
     # Vencord had a single "devbuild" release that we do not care about
     updateScript = writeShellScript "update-vencord" ''
@@ -98,16 +103,13 @@ stdenv.mkDerivation (finalAttrs: {
 
       exec nix-update --version "$latestTag" "$@"
     '';
-
-    tests = lib.genAttrs' [ discord discord-ptb discord-canary discord-development ] (
-      p: lib.nameValuePair p.pname p.tests.withVencord
-    );
   };
 
   meta = {
     description = "Cutest Discord client mod";
     homepage = "https://github.com/Vendicated/Vencord";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       _4evy
       FlafyDev

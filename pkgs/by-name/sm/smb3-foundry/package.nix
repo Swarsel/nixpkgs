@@ -41,12 +41,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    changelog = "https://github.com/mchlnix/SMB3-Foundry/releases/tag/${finalAttrs.src.tag}";
     description = "Modern Super Mario Bros. 3 Level Editor";
     homepage = "https://github.com/mchlnix/SMB3-Foundry";
+    changelog = "https://github.com/mchlnix/SMB3-Foundry/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "smb3-foundry";
     maintainers = with lib.maintainers; [ tomasajt ];
     platforms = lib.platforms.unix;
+    mainProgram = "smb3-foundry";
   };
 })

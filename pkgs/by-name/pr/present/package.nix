@@ -1,7 +1,7 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 let
@@ -15,13 +15,14 @@ in
 pythonPackages.buildPythonPackage rec {
   pname = "present";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-l9W5L4LD9qRo3rLBkgd2I/aDaj+ucib5UYg+X4RYg6c=";
   };
 
+  # TypeError: don't know how to make test from: 0.6.0
+  doCheck = false;
   build-system = with pythonPackages; [ setuptools ];
 
   dependencies = with pythonPackages; [
@@ -32,10 +33,8 @@ pythonPackages.buildPythonPackage rec {
     mistune
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "present" ];
-
-  # TypeError: don't know how to make test from: 0.6.0
-  doCheck = false;
 
   meta = {
     description = "Terminal-based presentation tool with colors and effects";

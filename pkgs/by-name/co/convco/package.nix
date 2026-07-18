@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
   cmake,
   libiconv,
   openssl,
   pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-fJrP4XtlUX0RvH8T76YxqUCM/R+QvUpsaumn3Z1SOh0=";
   };
 
-  cargoHash = "sha256-ySTXy8Jqw/EZl/olbWjMaDD8dryUFyWFvyapfvglFHI=";
-
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -34,6 +32,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libiconv
   ];
 
+  cargoHash = "sha256-ySTXy8Jqw/EZl/olbWjMaDD8dryUFyWFvyapfvglFHI=";
+
   checkFlags = [
     # disable test requiring networking
     "--skip=git::tests::test_find_last_unordered_prerelease"
@@ -43,12 +43,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Conventional commit cli";
-    mainProgram = "convco";
     homepage = "https://github.com/convco/convco";
     license = with lib.licenses; [ mit ];
+
     maintainers = with lib.maintainers; [
       hoverbear
       cafkafk
     ];
+
+    mainProgram = "convco";
   };
 })

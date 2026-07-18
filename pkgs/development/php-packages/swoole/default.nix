@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildPecl,
+  pcre2,
   php,
   valgrind,
-  pcre2,
-  fetchFromGitHub,
 }:
 
 let
@@ -23,16 +23,15 @@ buildPecl {
   };
 
   buildInputs = [ pcre2 ] ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [ valgrind ];
-
   # tests require internet access
   doCheck = false;
 
   meta = {
-    changelog = "https://github.com/swoole/swoole-src/releases/tag/v${version}";
     description = "Coroutine-based concurrency library for PHP";
     homepage = "https://www.swoole.com";
+    changelog = "https://github.com/swoole/swoole-src/releases/tag/v${version}";
     license = lib.licenses.asl20;
-    teams = [ lib.teams.php ];
     broken = lib.versionAtLeast php.version "8.5";
+    teams = [ lib.teams.php ];
   };
 }

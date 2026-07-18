@@ -1,34 +1,31 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  nixosTests,
-
   cmake,
-  installShellFiles,
-  makeWrapper,
-  ncurses,
-  pkg-config,
-  python3,
-  scdoc,
-
   expat,
   fontconfig,
   freetype,
+  installShellFiles,
   libGL,
-  libxxf86vm,
-  libxi,
-  libxcursor,
   libx11,
   libxcb,
+  libxcursor,
+  libxi,
   libxkbcommon,
+  libxxf86vm,
+  makeWrapper,
+  ncurses,
+  nix-update-script,
+  nixosTests,
+  pkg-config,
+  python3,
+  rustPlatform,
+  scdoc,
+  versionCheckHook,
   wayland,
   xdg-utils,
-
-  nix-update-script,
   withGraphics ? false,
-  versionCheckHook,
 }:
 let
   rpathLibs = [
@@ -69,11 +66,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
         hash = "sha256-DdiioNKMVg9u4E4h7AysvaGJ6ys36ykTyJgjHWjIjjY=";
       };
 
-  cargoHash =
-    if !withGraphics then
-      "sha256-BX4PjZXr19SScEZhb0gWkMiJUYq8ByEuVh9RpJSRCHI="
-    else
-      "sha256-xWW0X4dCgnNMT4T6BNsYmxOOFIK8MIHwUMKVtIHAFYc=";
+  outputs = [
+    "out"
+    "terminfo"
+  ];
+
+  postPatch = lib.optionalString stdenv.hostPlatform.isLinux ''
+    substituteInPlace alacritty/src/config/ui_config.rs \
+      --replace xdg-open ${xdg-utils}/bin/xdg-open
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -87,15 +88,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   buildInputs = rpathLibs;
 
-  outputs = [
-    "out"
-    "terminfo"
-  ];
-
-  postPatch = lib.optionalString stdenv.hostPlatform.isLinux ''
-    substituteInPlace alacritty/src/config/ui_config.rs \
-      --replace xdg-open ${xdg-utils}/bin/xdg-open
-  '';
+  cargoHash =
+    if !withGraphics then
+      "sha256-BX4PjZXr19SScEZhb0gWkMiJUYq8ByEuVh9RpJSRCHI="
+    else
+      "sha256-xWW0X4dCgnNMT4T6BNsYmxOOFIK8MIHwUMKVtIHAFYc=";
 
   checkFlags = [ "--skip=term::test::mock_term" ]; # broken on aarch64
 
@@ -140,6 +137,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
       echo "$terminfo" >> $out/nix-support/propagated-user-env-packages
     '';
 
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
   dontPatchELF = true;
 
   passthru = {
@@ -147,20 +150,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
     updateScript = nix-update-script { };
   };
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
-
   meta = {
     description = "Cross-platform, GPU-accelerated terminal emulator";
+
     homepage =
       if !withGraphics then
         "https://github.com/alacritty/alacritty"
       else
         "https://github.com/ayosec/alacritty";
+
+    changelog =
+      if !withGraphics then
+        "https://github.com/alacritty/alacritty/blob/v${finalAttrs.version}/CHANGELOG.md"
+      else
+        "https://github.com/ayosec/alacritty/blob/v${finalAttrs.version}-graphics/CHANGELOG.md";
+
     license = lib.licenses.asl20;
-    mainProgram = "alacritty";
+
     maintainers =
       with lib.maintainers;
       if !withGraphics then
@@ -171,11 +177,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
         [
           afh
         ];
+
     platforms = lib.platforms.unix;
-    changelog =
-      if !withGraphics then
-        "https://github.com/alacritty/alacritty/blob/v${finalAttrs.version}/CHANGELOG.md"
-      else
-        "https://github.com/ayosec/alacritty/blob/v${finalAttrs.version}-graphics/CHANGELOG.md";
+    mainProgram = "alacritty";
   };
 })

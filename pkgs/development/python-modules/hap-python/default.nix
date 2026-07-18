@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   base36,
   buildPythonPackage,
   chacha20poly1305-reuseable,
   cryptography,
-  fetchFromGitHub,
   h11,
   orjson,
   pyqrcode,
@@ -19,7 +19,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "hap-python";
   version = "5.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ikalchev";
@@ -27,6 +26,13 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-+EhxoO5X/ANGh008WE0sJeBsu8SRnuds3hXGxNWpKnk=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-timeout
+    pytestCheckHook
+  ]
+  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
   build-system = [ setuptools ];
 
@@ -38,24 +44,18 @@ buildPythonPackage (finalAttrs: {
     zeroconf
   ];
 
+  disabledTests = lib.optionals (pythonAtLeast "3.14") [
+    # https://github.com/ikalchev/HAP-python/issues/490
+    "test_start_from_sync"
+  ];
+
   optional-dependencies.QRCode = [
     base36
     pyqrcode
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-timeout
-    pytestCheckHook
-  ]
-  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
-
+  pyproject = true;
   pythonImportsCheck = [ "pyhap" ];
-
-  disabledTests = lib.optionals (pythonAtLeast "3.14") [
-    # https://github.com/ikalchev/HAP-python/issues/490
-    "test_start_from_sync"
-  ];
 
   meta = {
     description = "HomeKit Accessory Protocol implementation";

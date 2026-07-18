@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  zlib,
   cmake,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,10 +29,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Per-Face Texture Mapping for Production Rendering";
-    mainProgram = "ptxinfo";
     homepage = "http://ptex.us/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.guibou ];
+    platforms = lib.platforms.all;
+    mainProgram = "ptxinfo";
   };
 })

@@ -1,34 +1,29 @@
 {
   lib,
   stdenv,
-  fetchPypi,
-  python,
-  pythonAtLeast,
-  buildPythonPackage,
-  writeTextFile,
-
-  # build-system
-  cython,
-  gfortran,
-  meson-python,
-  mesonEmulatorHook,
-  pkg-config,
-
   # native dependencies
   blas,
-  lapack,
-
-  openmpCheckPhaseHook,
-
-  # Reverse dependency
-  sage,
-
+  buildPythonPackage,
+  # build-system
+  cython,
+  fetchPypi,
+  gfortran,
   # tests
   hypothesis,
+  lapack,
+  meson-python,
+  mesonEmulatorHook,
+  openmpCheckPhaseHook,
+  pkg-config,
   pytest-xdist,
   pytestCheckHook,
+  python,
+  pythonAtLeast,
+  # Reverse dependency
+  sage,
   setuptools,
   typing-extensions,
+  writeTextFile,
 }:
 
 assert (!blas.isILP64) && (!lapack.isILP64);
@@ -36,13 +31,11 @@ assert (!blas.isILP64) && (!lapack.isILP64);
 buildPythonPackage (finalAttrs: {
   pname = "numpy";
   version = "1.26.4";
-  pyproject = true;
-  disabled = pythonAtLeast "3.13";
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
-    extension = "tar.gz";
     hash = "sha256-KgKrqe0S5KxOs+qUIcQgMBoMZGDZgw10qd+H76SRIBA=";
+    extension = "tar.gz";
   };
 
   patches = [
@@ -87,8 +80,9 @@ buildPythonPackage (finalAttrs: {
     lapack
   ];
 
-  # Causes `error: argument unused during compilation: '-fno-strict-overflow'` due to `-Werror`.
-  hardeningDisable = lib.optionals stdenv.cc.isClang [ "strictoverflow" ];
+  # Disable test
+  # - test_large_file_support: takes a long time and can cause the machine to run out of disk space
+  env.NOSE_EXCLUDE = "test_large_file_support";
 
   # we default openblas to build with 64 threads
   # if a machine has more than 64 threads, it will segfault
@@ -101,8 +95,6 @@ buildPythonPackage (finalAttrs: {
     ln -s ${finalAttrs.passthru.cfg} site.cfg
   '';
 
-  enableParallelBuilding = true;
-
   nativeCheckInputs = [
     pytest-xdist
     pytestCheckHook
@@ -111,13 +103,11 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  propagatedNativeBuildInputs = [
-    openmpCheckPhaseHook
-  ];
-
   preCheck = ''
     cd "$out"
   '';
+
+  disabled = pythonAtLeast "3.13";
 
   # https://github.com/numpy/numpy/blob/a277f6210739c11028f281b8495faf7da298dbef/numpy/_pytesttester.py#L180
   disabledTestMarks = [
@@ -155,47 +145,59 @@ buildPythonPackage (finalAttrs: {
     "test_dispatcher"
   ];
 
+  enableParallelBuilding = true;
+  # Causes `error: argument unused during compilation: '-fno-strict-overflow'` due to `-Werror`.
+  hardeningDisable = lib.optionals stdenv.cc.isClang [ "strictoverflow" ];
+
+  propagatedNativeBuildInputs = [
+    openmpCheckPhaseHook
+  ];
+
+  pyproject = true;
+
   passthru = {
     # just for backwards compatibility
     blas = blas.provider;
     blasImplementation = blas.implementation;
+
     buildConfig = {
       ${blas.implementation} = {
         include_dirs = "${lib.getDev blas}/include:${lib.getDev lapack}/include";
+        libraries = "lapack,lapacke,blas,cblas";
         library_dirs = "${blas}/lib:${lapack}/lib";
         runtime_library_dirs = "${blas}/lib:${lapack}/lib";
-        libraries = "lapack,lapacke,blas,cblas";
       };
-      lapack = {
-        include_dirs = "${lib.getDev lapack}/include";
-        library_dirs = "${lapack}/lib";
-        runtime_library_dirs = "${lapack}/lib";
-      };
+
       blas = {
         include_dirs = "${lib.getDev blas}/include";
         library_dirs = "${blas}/lib";
         runtime_library_dirs = "${blas}/lib";
       };
+
+      lapack = {
+        include_dirs = "${lib.getDev lapack}/include";
+        library_dirs = "${lapack}/lib";
+        runtime_library_dirs = "${lapack}/lib";
+      };
     };
+
     cfg = writeTextFile {
       name = "site.cfg";
       text = lib.generators.toINI { } finalAttrs.finalPackage.buildConfig;
     };
+
     coreIncludeDir = "${finalAttrs.finalPackage}/${python.sitePackages}/numpy/core/include";
+
     tests = {
       inherit sage;
     };
   };
 
-  # Disable test
-  # - test_large_file_support: takes a long time and can cause the machine to run out of disk space
-  env.NOSE_EXCLUDE = "test_large_file_support";
-
   meta = {
-    changelog = "https://github.com/numpy/numpy/releases/tag/v${finalAttrs.version}";
     description = "Scientific tools for Python";
-    mainProgram = "f2py";
     homepage = "https://numpy.org/";
+    changelog = "https://github.com/numpy/numpy/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
+    mainProgram = "f2py";
   };
 })

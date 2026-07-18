@@ -6,11 +6,11 @@
 
 faust.wrapWithBuildEnv {
 
-  baseName = "faust2ladspa";
-
   propagatedBuildInputs = [
     boost
     ladspa-header
   ];
+
+  baseName = "faust2ladspa";
 
 }

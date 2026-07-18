@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
 }:
 
@@ -31,7 +31,7 @@ buildNpmPackage (finalAttrs: {
     homepage = "https://github.com/perplexityai/modelcontextprotocol";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ malik ];
-    mainProgram = "perplexity-mcp";
     platforms = lib.platforms.all;
+    mainProgram = "perplexity-mcp";
   };
 })

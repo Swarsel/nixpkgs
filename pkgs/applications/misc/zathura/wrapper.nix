@@ -1,36 +1,26 @@
 {
-  symlinkJoin,
   lib,
+  stdenv,
+  file,
   makeWrapper,
+  symlinkJoin,
+  useMupdf,
+  zathura_cb,
   zathura_core,
   zathura_djvu,
-  zathura_ps,
-  zathura_cb,
   zathura_pdf_mupdf,
   zathura_pdf_poppler,
-  file,
-  useMupdf,
+  zathura_ps,
   plugins ? [
     zathura_djvu
     zathura_ps
     zathura_cb
     (if useMupdf then zathura_pdf_mupdf else zathura_pdf_poppler)
   ],
-  stdenv,
 }:
 symlinkJoin {
   inherit (zathura_core) version;
   pname = "zathura-with-plugins";
-
-  paths =
-    with zathura_core;
-    [
-      man
-      dev
-      out
-    ]
-    ++ plugins;
-
   nativeBuildInputs = [ makeWrapper ];
 
   postBuild =
@@ -55,21 +45,34 @@ symlinkJoin {
         --replace-fail "${zathura_core.out}" "$out"
     '';
 
+  paths =
+    with zathura_core;
+    [
+      man
+      dev
+      out
+    ]
+    ++ plugins;
+
   meta = {
-    homepage = "https://pwmt.org/projects/zathura";
     description = "Highly customizable and functional PDF viewer";
+
     longDescription = ''
       Zathura is a highly customizable and functional PDF viewer based on the
       poppler rendering library and the GTK toolkit. The idea behind zathura
       is an application that provides a minimalistic and space saving interface
       as well as an easy usage that mainly focuses on keyboard interaction.
     '';
+
+    homepage = "https://pwmt.org/projects/zathura";
     license = lib.licenses.zlib;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       TethysSvensson
       mithicspirit
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "zathura";
   };
 }

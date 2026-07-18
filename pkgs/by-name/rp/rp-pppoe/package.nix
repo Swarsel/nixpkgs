@@ -17,15 +17,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [ ppp ];
 
-  preConfigure = ''
-    cd src
-    export PPPD=${ppp}/sbin/pppd
-  '';
-
   configureFlags = [
     "--enable-plugin=${ppp}/include"
   ]
   ++ lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [ "rpppoe_cv_pack_bitfields=rev" ];
+
+  makeFlags = [ "AR:=$(AR)" ];
+
+  preConfigure = ''
+    cd src
+    export PPPD=${ppp}/sbin/pppd
+  '';
 
   postConfigure = ''
     sed -i Makefile -e 's@DESTDIR)/etc/ppp@out)/etc/ppp@'
@@ -34,13 +36,11 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i Makefile -e '/# Directory created by rp-pppoe for kernel-mode plugin/d'
   '';
 
-  makeFlags = [ "AR:=$(AR)" ];
-
   meta = {
     description = "Roaring Penguin Point-to-Point over Ethernet tool";
-    platforms = lib.platforms.linux;
     homepage = "https://dianne.skoll.ca/projects/rp-pppoe/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ DictXiong ];
+    platforms = lib.platforms.linux;
   };
 })

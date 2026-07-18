@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  meson,
-  ninja,
-  pkg-config,
-  wrapGAppsHook4,
   glib,
+  gnome,
   gtk4,
   libadwaita,
   libxkbcommon,
+  meson,
+  ninja,
+  pkg-config,
   wayland,
-  gnome,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -49,8 +49,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Keyboard layout viewer";
     homepage = "https://gitlab.gnome.org/GNOME/tecla";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.unix;
     mainProgram = "tecla";
+    teams = [ lib.teams.gnome ];
   };
 })

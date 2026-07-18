@@ -1,9 +1,8 @@
 {
   lib,
   stdenv,
-  fetchPypi,
-
   autoPatchelfHook,
+  fetchPypi,
   unzip,
 }:
 
@@ -11,8 +10,8 @@ let
   common = import ./common.nix { inherit lib; };
 in
 stdenv.mkDerivation rec {
-  pname = "semgrep-core";
   inherit (common) version;
+  pname = "semgrep-core";
 
   # fetch pre-built semgrep-core since the ocaml build is complex and relies on
   # the opam package manager at some point
@@ -24,12 +23,12 @@ stdenv.mkDerivation rec {
       data = common.core.${system} or (throw "Unsupported system: ${system}");
     in
     fetchPypi rec {
-      pname = "semgrep";
       inherit version;
-      format = "wheel";
-      dist = python;
-      python = common.pythonWheelTag;
       inherit (data) platform hash;
+      dist = python;
+      format = "wheel";
+      pname = "semgrep";
+      python = common.pythonWheelTag;
     };
 
   nativeBuildInputs = [
@@ -38,18 +37,6 @@ stdenv.mkDerivation rec {
   ++ lib.optional stdenv.hostPlatform.isLinux autoPatchelfHook;
 
   buildInputs = lib.optional stdenv.hostPlatform.isLinux stdenv.cc.cc.lib;
-
-  # _tryUnzip from unzip's setup-hook doesn't recognise .whl
-  # "do not know how to unpack source archive"
-  # perform unpack by hand
-  unpackPhase = ''
-    runHook preUnpack
-    LANG=en_US.UTF-8 unzip -qq "$src"
-    runHook postUnpack
-  '';
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -69,10 +56,22 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
+  # _tryUnzip from unzip's setup-hook doesn't recognise .whl
+  # "do not know how to unpack source archive"
+  # perform unpack by hand
+  unpackPhase = ''
+    runHook preUnpack
+    LANG=en_US.UTF-8 unzip -qq "$src"
+    runHook postUnpack
+  '';
+
   meta = common.meta // {
     description = common.meta.description + " - core binary";
-    mainProgram = "semgrep-core";
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     platforms = lib.attrNames common.core;
+    mainProgram = "semgrep-core";
   };
 }

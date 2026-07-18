@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  autoreconfHook,
   fetchFromGitHub,
+  autoreconfHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,9 +26,9 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    changelog = "https://github.com/lurcher/unixODBC/releases/tag/v${finalAttrs.version}";
     description = "ODBC driver manager for Unix";
     homepage = "https://www.unixodbc.org/";
+    changelog = "https://github.com/lurcher/unixODBC/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.lgpl2;
     maintainers = with lib.maintainers; [ hythera ];
     platforms = lib.platforms.unix;

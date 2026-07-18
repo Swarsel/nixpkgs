@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "cargo-nextest";
@@ -27,6 +27,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "-p"
     "cargo-nextest"
   ];
+
   cargoTestFlags = [
     "-p"
     "cargo-nextest"
@@ -38,17 +39,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Next-generation test runner for Rust projects";
-    mainProgram = "cargo-nextest";
     homepage = "https://github.com/nextest-rs/nextest";
     changelog = "https://nexte.st/changelog/#${finalAttrs.version}";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
       chrjabs
       figsoda
     ];
+
+    mainProgram = "cargo-nextest";
   };
 })

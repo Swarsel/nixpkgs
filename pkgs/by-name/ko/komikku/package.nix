@@ -1,31 +1,30 @@
 {
   lib,
-  fetchFromCodeberg,
+  blueprint-compiler,
   desktop-file-utils,
+  fetchFromCodeberg,
   gettext,
   glib,
   glib-networking,
+  gnome,
   gobject-introspection,
-  blueprint-compiler,
   gtk4,
   libadwaita,
   libglycin,
-  webkitgtk_6_0,
+  librsvg,
   meson,
   ninja,
+  nix-update-script,
   pkg-config,
   python3,
-  wrapGAppsHook4,
-  librsvg,
-  gnome,
+  webkitgtk_6_0,
   webp-pixbuf-loader,
-  nix-update-script,
+  wrapGAppsHook4,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "komikku";
   version = "50.9.0";
-  pyproject = false;
 
   src = fetchFromCodeberg {
     owner = "valos";
@@ -55,6 +54,22 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     webkitgtk_6_0
   ];
 
+  # Tests require network
+  doCheck = false;
+
+  # Pull in WebP support for manga pics of some servers.
+  # In postInstall to run before gappsWrapperArgsHook.
+  postInstall = ''
+    export GDK_PIXBUF_MODULE_FILE="${
+      gnome._gdkPixbufCacheBuilder_DO_NOT_USE {
+        extraLoaders = [
+          librsvg
+          webp-pixbuf-loader
+        ];
+      }
+    }"
+  '';
+
   dependencies = with python3.pkgs; [
     beautifulsoup4
     brotli
@@ -78,25 +93,10 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     unidecode
   ];
 
-  # Tests require network
-  doCheck = false;
-
-  # Pull in WebP support for manga pics of some servers.
-  # In postInstall to run before gappsWrapperArgsHook.
-  postInstall = ''
-    export GDK_PIXBUF_MODULE_FILE="${
-      gnome._gdkPixbufCacheBuilder_DO_NOT_USE {
-        extraLoaders = [
-          librsvg
-          webp-pixbuf-loader
-        ];
-      }
-    }"
-  '';
-
   # Prevent double wrapping.
   dontWrapGApps = true;
   makeWrapperArgs = [ "\${gappsWrapperArgs[@]}" ];
+  pyproject = false;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -104,14 +104,16 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   meta = {
     description = "Manga reader for GNOME";
-    mainProgram = "komikku";
     homepage = "https://apps.gnome.org/Komikku/";
-    license = lib.licenses.gpl3Plus;
     changelog = "https://codeberg.org/valos/Komikku/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       chuangzhu
       Gliczy
     ];
+
+    mainProgram = "komikku";
     teams = [ lib.teams.gnome-circle ];
   };
 })

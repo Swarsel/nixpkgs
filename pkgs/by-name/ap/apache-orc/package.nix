@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
   cmake,
   gtest,
   lz4,
@@ -20,9 +20,9 @@ let
       archiveName = "${name}.tar.gz";
     in
     fetchurl {
+      hash = "sha256-WE3+KkIClGF4/Y/H0SOb54BbntRZarIELe5znniAmSs=";
       name = archiveName;
       url = "https://www.apache.org/dyn/closer.lua/orc/${name}/${archiveName}?action=download";
-      hash = "sha256-WE3+KkIClGF4/Y/H0SOb54BbntRZarIELe5znniAmSs=";
     };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -88,9 +88,9 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/apache/orc/releases/tag/v${finalAttrs.version}";
     description = "Smallest, fastest columnar storage for Hadoop workloads";
     homepage = "https://github.com/apache/orc/";
+    changelog = "https://github.com/apache/orc/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = [ ];
     platforms = lib.platforms.all;

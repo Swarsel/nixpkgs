@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   alsa-lib,
   appstream-glib,
   blueprint-compiler,
   cargo,
   desktop-file-utils,
-  fetchFromGitHub,
   gettext,
   glib,
   gst_all_1,
@@ -33,11 +33,6 @@ stdenv.mkDerivation rec {
     repo = "spot";
     tag = version;
     hash = "sha256-7zWK0wkh53ojnoznv4T/X//JeyKJVKOrfYF0IkvciIY=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-731aD+yJkyrNMmYtgKYzXIAyLegDBzTT2XqZs5usXiI=";
   };
 
   postPatch = ''
@@ -74,11 +69,16 @@ stdenv.mkDerivation rec {
     openssl
   ];
 
-  # https://github.com/xou816/spot/issues/313
-  mesonBuildType = "release";
-
   # For https://github.com/xou816/spot/blob/21ee601f655caa4ca9cae1033a27459fe6289318/src/meson.build#L122
   env.CARGO_BUILD_TARGET = stdenv.hostPlatform.rust.rustcTargetSpec;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-731aD+yJkyrNMmYtgKYzXIAyLegDBzTT2XqZs5usXiI=";
+  };
+
+  # https://github.com/xou816/spot/issues/313
+  mesonBuildType = "release";
 
   passthru = {
     updateScript = nix-update-script { };
@@ -90,7 +90,7 @@ stdenv.mkDerivation rec {
     changelog = "https://github.com/xou816/spot/releases/tag/${src.rev}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ getchoo ];
-    mainProgram = "spot";
     platforms = lib.platforms.linux;
+    mainProgram = "spot";
   };
 }

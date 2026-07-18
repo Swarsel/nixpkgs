@@ -1,26 +1,25 @@
 {
   lib,
-  python3Packages,
-  fetchPypi,
   alsa-utils,
-  gobject-introspection,
-  libnotify,
-  wlrctl,
-  gtk4,
+  fetchPypi,
   gettext,
+  gobject-introspection,
+  gtk4,
+  libnotify,
+  nix-update-script,
+  python3Packages,
   safeeyes,
   testers,
+  versionCheckHook,
+  wlrctl,
+  wrapGAppsHook3,
   xprintidle,
   xprop,
-  wrapGAppsHook3,
-  versionCheckHook,
-  nix-update-script,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "safeeyes";
   version = "3.3.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -38,24 +37,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     libnotify
   ];
 
-  build-system = with python3Packages; [ setuptools ];
-
-  dependencies = with python3Packages; [
-    babel
-    psutil
-    python-xlib
-    pygobject3
-    dbus-python
-    packaging
-  ];
-
-  optional-dependencies = with python3Packages; {
-    healthstats = [ croniter ];
-    wayland = [ pywayland ];
-  };
-
-  # Prevent double wrapping, let the Python wrapper use the args in preFixup.
-  dontWrapGApps = true;
+  doCheck = false; # no tests
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   preFixup = ''
     makeWrapperArgs+=(
@@ -71,26 +55,43 @@ python3Packages.buildPythonApplication (finalAttrs: {
     )
   '';
 
-  doCheck = false; # no tests
+  build-system = with python3Packages; [ setuptools ];
 
+  dependencies = with python3Packages; [
+    babel
+    psutil
+    python-xlib
+    pygobject3
+    dbus-python
+    packaging
+  ];
+
+  # Prevent double wrapping, let the Python wrapper use the args in preFixup.
+  dontWrapGApps = true;
+
+  optional-dependencies = with python3Packages; {
+    healthstats = [ croniter ];
+    wayland = [ pywayland ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "safeeyes" ];
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion { package = safeeyes; };
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "http://slgobinath.github.io/SafeEyes";
     description = "Break reminder to prevent eye strain";
+
     longDescription = ''
       Protect your eyes from eye strain using this simple and
       beautiful, yet extensible break reminder.  Free GNU/Linux
       alternative to EyeLeo.
     '';
+
+    homepage = "http://slgobinath.github.io/SafeEyes";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
     mainProgram = "safeeyes";

@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   terraform-inventory,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,6 +18,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-pj9XLzaGU1PuNnpTL/7XaKJZUymX+i8hFMroZtHIqTc=";
+  doCheck = false;
 
   ldflags = [
     "-s"
@@ -25,17 +26,15 @@ buildGoModule (finalAttrs: {
     "-X main.build_version=${finalAttrs.version}"
   ];
 
-  doCheck = false;
-
   passthru.tests.version = testers.testVersion {
     package = terraform-inventory;
   };
 
   meta = {
-    homepage = "https://github.com/adammck/terraform-inventory";
     description = "Terraform state to ansible inventory adapter";
-    mainProgram = "terraform-inventory";
+    homepage = "https://github.com/adammck/terraform-inventory";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ htr ];
+    mainProgram = "terraform-inventory";
   };
 })

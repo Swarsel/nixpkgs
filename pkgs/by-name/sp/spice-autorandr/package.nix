@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   autoreconfHook,
   libx11,
   libxrandr,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -23,6 +23,7 @@ stdenv.mkDerivation {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     libx11
     libxrandr
@@ -39,7 +40,7 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Automatically adjust the client window resolution in Linux KVM guests using the SPICE driver";
-    mainProgram = "spice-autorandr";
+
     longDescription = ''
       Some desktop environments update the display resolution automatically,
       this package is only useful when running without a DE or with a DE that
@@ -48,11 +49,15 @@ stdenv.mkDerivation {
       This package relies on `spice-vdagent` running an updating the xrandr modes. Enable
       `spice-vdagent` by adding `services.spice-autorandr.enable = true` to your `configuration.nix`.
     '';
+
     homepage = "https://github.com/seife/spice-autorandr";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       dmytrokyrychuk
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "spice-autorandr";
   };
 }

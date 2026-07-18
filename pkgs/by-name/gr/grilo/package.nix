@@ -1,48 +1,41 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  docbook-xsl-nons,
+  docbook_xml_dtd_43,
+  gettext,
+  glib,
+  gnome,
+  gobject-introspection,
+  gtk-doc,
+  gtk3,
+  liboauth,
+  libsoup_3,
+  libxml2,
   meson,
   mesonEmulatorHook,
   ninja,
   pkg-config,
   python3,
-  gettext,
-  vala,
-  glib,
-  liboauth,
-  gtk3,
-  gtk-doc,
-  docbook-xsl-nons,
-  docbook_xml_dtd_43,
-  libxml2,
-  gnome,
-  gobject-introspection,
-  libsoup_3,
   totem-pl-parser,
+  vala,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "grilo";
   version = "0.3.19"; # if you change minor, also change ./setup-hook.sh
 
-  outputs = [
-    "out"
-    "dev"
-    "man"
-    "devdoc"
-  ];
-  outputBin = "dev";
-
-  setupHook = ./setup-hook.sh;
-
   src = fetchurl {
     url = "mirror://gnome/sources/grilo/${lib.versions.majorMinor finalAttrs.version}/grilo-${finalAttrs.version}.tar.xz";
     sha256 = "CGnIHRmrE5xmfXlWfBTdy2y1y/wBCNBMreKH6ylTZwY=";
   };
 
-  mesonFlags = [
-    "-Denable-gtk-doc=true"
+  outputs = [
+    "out"
+    "dev"
+    "man"
+    "devdoc"
   ];
 
   nativeBuildInputs = [
@@ -70,6 +63,13 @@ stdenv.mkDerivation (finalAttrs: {
     totem-pl-parser
   ];
 
+  mesonFlags = [
+    "-Denable-gtk-doc=true"
+  ];
+
+  outputBin = "dev";
+  setupHook = ./setup-hook.sh;
+
   passthru = {
     updateScript = gnome.updateScript {
       packageName = "grilo";
@@ -78,10 +78,10 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/grilo";
     description = "Framework that provides access to various sources of multimedia content, using a pluggable system";
-    teams = [ lib.teams.gnome ];
+    homepage = "https://gitlab.gnome.org/GNOME/grilo";
     license = lib.licenses.lgpl2Plus;
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.gnome ];
   };
 })

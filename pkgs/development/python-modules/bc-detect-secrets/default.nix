@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   gibberish-detector,
   mock,
   pkgs,
@@ -18,26 +18,12 @@
 buildPythonPackage (finalAttrs: {
   pname = "bc-detect-secrets";
   version = "1.5.47";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bridgecrewio";
     repo = "detect-secrets";
     tag = finalAttrs.version;
     hash = "sha256-ykmOa29/ASEr+AG2SjhSUN8gLMeKpscDKsPtTTZ+cU8=";
-  };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    pyyaml
-    requests
-    unidiff
-  ];
-
-  optional-dependencies = {
-    word_list = [ pyahocorasick ];
-    gibberish = [ gibberish-detector ];
   };
 
   nativeCheckInputs = [
@@ -48,6 +34,14 @@ buildPythonPackage (finalAttrs: {
     writableTmpDirAsHomeHook
   ]
   ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    pyyaml
+    requests
+    unidiff
+  ];
 
   disabledTests = [
     # Tests are failing for various reasons (missing git repo, missing test data, etc.)
@@ -62,6 +56,12 @@ buildPythonPackage (finalAttrs: {
     "TestModifiesBaselineFromVersionChange"
   ];
 
+  optional-dependencies = {
+    gibberish = [ gibberish-detector ];
+    word_list = [ pyahocorasick ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "detect_secrets" ];
 
   meta = {

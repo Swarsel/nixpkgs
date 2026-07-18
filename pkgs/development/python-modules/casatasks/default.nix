@@ -1,23 +1,23 @@
 {
   lib,
-  buildPythonPackage,
-  fetchgit,
   fetchurl,
+  buildPythonPackage,
+  casaconfig,
+  casatools,
+  certifi,
   common-updater-scripts,
   curl,
+  fetchgit,
   gnugrep,
   gnused,
-  writeShellScript,
   jdk,
-  wheel,
-  casatools,
-  casaconfig,
   matplotlib,
-  scipy,
-  certifi,
-  pyerfa,
-  setuptools,
   pipInstallHook,
+  pyerfa,
+  scipy,
+  setuptools,
+  wheel,
+  writeShellScript,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "casatasks";
@@ -30,9 +30,10 @@ buildPythonPackage (finalAttrs: {
     fetchSubmodules = false;
   };
 
-  sourceRoot = "${finalAttrs.src.name}/casatasks";
-
-  format = "other";
+  postPatch = ''
+    mkdir -p java
+    cp ${finalAttrs.xml_jar} java/${finalAttrs.jarName}
+  '';
 
   nativeBuildInputs = [
     jdk
@@ -50,18 +51,6 @@ buildPythonPackage (finalAttrs: {
     pyerfa
   ];
 
-  jarName = "xml-casa-assembly-1.88.jar";
-
-  xml_jar = fetchurl {
-    url = "http://casa.nrao.edu/download/devel/xml-casa/java/${finalAttrs.jarName}";
-    hash = "sha256-UJCiXLXAe7Prm1qGXJ9jbuZcgKhPTSrU8qnf4C5Goxs="; # xml-jar
-  };
-
-  postPatch = ''
-    mkdir -p java
-    cp ${finalAttrs.xml_jar} java/${finalAttrs.jarName}
-  '';
-
   buildPhase = ''
       runHook preBuild
       export HOME=$(mktemp -d)
@@ -76,6 +65,14 @@ buildPythonPackage (finalAttrs: {
 
   # Tests require a full CASA data directory and network access
   doCheck = false;
+  format = "other";
+  jarName = "xml-casa-assembly-1.88.jar";
+  sourceRoot = "${finalAttrs.src.name}/casatasks";
+
+  xml_jar = fetchurl {
+    hash = "sha256-UJCiXLXAe7Prm1qGXJ9jbuZcgKhPTSrU8qnf4C5Goxs="; # xml-jar
+    url = "http://casa.nrao.edu/download/devel/xml-casa/java/${finalAttrs.jarName}";
+  };
 
   passthru.updateScript = writeShellScript "update-casatasks" ''
     set -euo pipefail
@@ -100,7 +97,7 @@ buildPythonPackage (finalAttrs: {
     description = "High-level Python tasks for radio astronomy data reduction";
     homepage = "https://casa.nrao.edu/";
     license = lib.licenses.lgpl2Only;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ kiranshila ];
+    platforms = lib.platforms.unix;
   };
 })

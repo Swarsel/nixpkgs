@@ -1,32 +1,32 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   autoconf,
   automake,
   boost,
   buildNpmPackage,
   closurecompiler,
-  fetchFromGitHub,
   glibc,
+  grunt-cli,
   harfbuzz,
-  libheif,
-  nixosTests,
-  optipng,
-  x265,
-  libde265,
   icu,
   jdk,
-  lib,
-  nodejs_22,
+  libde265,
+  libheif,
+  nixosTests,
   nodejs-slim_22,
+  nodejs_22,
+  onlyoffice-documentserver,
   openssl,
+  optipng,
   pkg-config,
   python3,
   qt5,
   runCommand,
-  stdenv,
-  writers,
   writeScript,
-  onlyoffice-documentserver,
-  grunt-cli,
+  writers,
+  x265,
 }:
 
 let
@@ -55,74 +55,74 @@ let
   ];
   # see DocumentServer/core/Common/3dParty/html/fetch.py
   gumbo-parser-src = fetchFromGitHub {
+    hash = "sha256-+607iXJxeWKoCwb490pp3mqRZ1fWzxec0tJOEFeHoCs=";
     owner = "google";
     repo = "gumbo-parser";
     rev = "aa91b27b02c0c80c482e24348a457ed7c3c088e0";
-    hash = "sha256-+607iXJxeWKoCwb490pp3mqRZ1fWzxec0tJOEFeHoCs=";
   };
   # see DocumentServer/core/Common/3dParty/html/fetch.py
   katana-parser-src = fetchFromGitHub {
+    hash = "sha256-SYJFLtrg8raGyr3zQIEzZDjHDmMmt+K0po3viipZW5c=";
     owner = "jasenhuang";
     repo = "katana-parser";
     rev = "be6df458d4540eee375c513958dcb862a391cdd1";
-    hash = "sha256-SYJFLtrg8raGyr3zQIEzZDjHDmMmt+K0po3viipZW5c=";
   };
   # see build_tools/scripts/core_common/modules/googletest.py
   googletest-src = fetchFromGitHub {
+    hash = "sha256-LVLEn+e7c8013pwiLzJiiIObyrlbBHYaioO/SWbItPQ=";
     owner = "google";
     repo = "googletest";
     tag = "v1.13.0";
-    hash = "sha256-LVLEn+e7c8013pwiLzJiiIObyrlbBHYaioO/SWbItPQ=";
   };
   # 'latest' version
   # (see build_tools/scripts/core_common/modules/hyphen.py)
   hyphen-src = fetchFromGitHub {
+    hash = "sha256-WIHpSkOwHkhMvEKxOlgf6gsPs9T3xkzguD8ONXARf1U=";
     owner = "hunspell";
     repo = "hyphen";
     rev = "73dd2967c8e1e4f6d7334ee9e539a323d6e66cbd";
-    hash = "sha256-WIHpSkOwHkhMvEKxOlgf6gsPs9T3xkzguD8ONXARf1U=";
   };
   # see DocumentServer/core/Common/3dParty/md/fetch.py
   md4c-src = fetchFromGitHub {
+    hash = "sha256-zhInM3R0CJUqnzh6wRxMwlUdErovplbZQ5IwXe9XzZ4=";
     owner = "mity";
     repo = "md4c";
     rev = "481fbfbdf72daab2912380d62bb5f2187d438408";
-    hash = "sha256-zhInM3R0CJUqnzh6wRxMwlUdErovplbZQ5IwXe9XzZ4=";
   };
   # see DocumentServer/core/Common/3dParty/apple/fetch.py
   glm-src = fetchFromGitHub {
+    hash = "sha256-wwGI17vlQzL/x1O0ANr5+KgU1ETnATpLw3njpKfjnKQ=";
     owner = "g-truc";
     repo = "glm";
     rev = "33b4a621a697a305bc3a7610d290677b96beb181";
-    hash = "sha256-wwGI17vlQzL/x1O0ANr5+KgU1ETnATpLw3njpKfjnKQ=";
   };
   # see DocumentServer/core/Common/3dParty/apple/fetch.py
   mdds-src = fetchFromGitHub {
+    hash = "sha256-HMGMxMRO6SadisUjZ0ZNBGQqksNDFkEh3yaQGet9rc0=";
     owner = "kohei-us";
     repo = "mdds";
     rev = "0783158939c6ce4b0b1b89e345ab983ccb0f0ad0";
-    hash = "sha256-HMGMxMRO6SadisUjZ0ZNBGQqksNDFkEh3yaQGet9rc0=";
   };
   # see DocumentServer/core/Common/3dParty/apple/fetch.py
   librevenge-src = fetchFromGitHub {
+    hash = "sha256-2YRxuMYzKvvQHiwXH08VX6GRkdXnY7q05SL05Vbn0Vs=";
     owner = "DistroTech";
     repo = "librevenge";
     rev = "becd044b519ab83893ad6398e3cbb499a7f0aaf4";
-    hash = "sha256-2YRxuMYzKvvQHiwXH08VX6GRkdXnY7q05SL05Vbn0Vs=";
   };
   # see DocumentServer/core/Common/3dParty/apple/fetch.py
   libodfgen-src = fetchFromGitHub {
+    hash = "sha256-Bv/smZFmZn4PEAcOlXD2Z4k96CK7A7YGDHFDsqZpuiE=";
     owner = "DistroTech";
     repo = "libodfgen";
     rev = "8ef8c171ebe3c5daebdce80ee422cf7bb96aa3bc";
-    hash = "sha256-Bv/smZFmZn4PEAcOlXD2Z4k96CK7A7YGDHFDsqZpuiE=";
   };
   # see DocumentServer/core/Common/3dParty/apple/fetch.py
   libetonyek-src = fetchFromGitHub {
+    hash = "sha256-nFYI7PbcLyquhAWVGkjNLHp+tymv+Pzvfa5DNPeqZiw=";
     owner = "LibreOffice";
     repo = "libetonyek";
     rev = "cb396b4a9453a457469b62a740d8fb933c9442c3";
-    hash = "sha256-nFYI7PbcLyquhAWVGkjNLHp+tymv+Pzvfa5DNPeqZiw=";
   };
   #qmakeFlags = [ "CONFIG+=debug" ];
   qmakeFlags = [ ];
@@ -133,11 +133,11 @@ let
   version = "9.3.1";
   core-rev = "7043b3609328e917a4791aec8f3e8fca3225120f";
   core = fetchFromGitHub {
+    hash = "sha256-tCYc5R0dlEBoEaUo3DY6GCDJjoBZIaz8Syik0Z30s/s=";
     owner = "ONLYOFFICE";
     repo = "core";
     # rev that the 'core' submodule in documentserver points at
     rev = core-rev;
-    hash = "sha256-tCYc5R0dlEBoEaUo3DY6GCDJjoBZIaz8Syik0Z30s/s=";
   };
   # mini implementation of https://github.com/kentcdodds/cross-env
   # because that was not trivial to package and we don't need most
@@ -162,8 +162,6 @@ let
   web-apps-rev = "1c8ca9987876bada73c0bde21367da09c0e1ed83";
   web-apps-hash = "sha256-1OniYHaf5kMVYJbEThkeuWfJPxaJoaYqiHaBTi/euAc=";
   web-apps-mobile = buildNpmPackage (finalAttrs: {
-    name = "web-apps-mobile";
-
     src = fetchFromGitHub {
       owner = "ONLYOFFICE";
       repo = "web-apps";
@@ -177,11 +175,7 @@ let
       ./web-apps-mobile-no-spinner.patch
     ];
 
-    sourceRoot = "${finalAttrs.src.name}/vendor/framework7-react";
-
     npmDepsHash = "sha256-EBUseLFZ5Hc1DHRWL/2erOjlxfm4wHgyIURi5XTXNP8=";
-
-    dontNpmBuild = true;
 
     preBuild = ''
       export PRODUCT_VERSION=${version}
@@ -220,13 +214,12 @@ let
 
       runHook postInstall
     '';
+
+    dontNpmBuild = true;
+    name = "web-apps-mobile";
+    sourceRoot = "${finalAttrs.src.name}/vendor/framework7-react";
   });
   web-apps = buildNpmPackage (finalAttrs: {
-    name = "onlyoffice-core-web-apps";
-
-    # workaround for https://github.com/NixOS/nixpkgs/issues/477803
-    nodejs = nodejs_22;
-
     src = fetchFromGitHub {
       owner = "ONLYOFFICE";
       repo = "web-apps";
@@ -234,7 +227,6 @@ let
       rev = web-apps-rev;
       hash = web-apps-hash;
     };
-    sourceRoot = "${finalAttrs.src.name}/build";
 
     patches = [
       ./web-apps-avoid-phantomjs.patch
@@ -243,8 +235,6 @@ let
       ./web-apps-no-mobile.patch
     ];
 
-    npmDepsHash = "sha256-Uen7gl6w/0A4MDk+7j+exkdwfCYqMSPJidad8AM60eQ=";
-
     nativeBuildInputs = [
       autoconf
       automake
@@ -252,7 +242,7 @@ let
       optipng
     ];
 
-    dontNpmBuild = true;
+    npmDepsHash = "sha256-Uen7gl6w/0A4MDk+7j+exkdwfCYqMSPJidad8AM60eQ=";
 
     preBuild = ''
       export PRODUCT_VERSION=${version}
@@ -296,9 +286,14 @@ let
 
       runHook postInstall
     '';
+
+    dontNpmBuild = true;
+    name = "onlyoffice-core-web-apps";
+    # workaround for https://github.com/NixOS/nixpkgs/issues/477803
+    nodejs = nodejs_22;
+    sourceRoot = "${finalAttrs.src.name}/build";
   });
   sdkjs = buildNpmPackage (finalAttrs: {
-    name = "onlyoffice-core-sdkjs";
     src = fetchFromGitHub {
       owner = "ONLYOFFICE";
       repo = "sdkjs";
@@ -306,20 +301,17 @@ let
       rev = "aa78926242b3da023255d9c7e9180e5a3294167b";
       hash = "sha256-wZh4TH7+f1dr8sx2C3k3U8zRWLBxmKx8MocLBbPdhJA=";
     };
-    sourceRoot = "${finalAttrs.src.name}/build";
 
     postPatch = ''
       cp npm-shrinkwrap.json package-lock.json
     '';
 
-    npmDepsHash = "sha256-C+qp5d4wYmlrEGjIeBsjRhpivy6wKBppJWbcj1z9fbM=";
-
-    dontNpmBuild = true;
-
     nativeBuildInputs = [
       grunt-cli
       jdk
     ];
+
+    npmDepsHash = "sha256-C+qp5d4wYmlrEGjIeBsjRhpivy6wKBppJWbcj1z9fbM=";
 
     postBuild = ''
       chmod u+w ..
@@ -338,38 +330,35 @@ let
 
       runHook postInstall
     '';
+
+    dontNpmBuild = true;
+    name = "onlyoffice-core-sdkjs";
+    sourceRoot = "${finalAttrs.src.name}/build";
   });
   dictionaries = fetchFromGitHub {
+    hash = "sha256-7hvztNYnYjyOl3ynGP0vqtx9jLPp09XVDNIow1RYuWM=";
     owner = "ONLYOFFICE";
     repo = "dictionaries";
     rev = "d3223bbb777883db66ac3cd249f71c6ebdc992c7";
-    hash = "sha256-7hvztNYnYjyOl3ynGP0vqtx9jLPp09XVDNIow1RYuWM=";
   };
   buildCoreComponent =
     rootdir: attrs:
     stdenv.mkDerivation (
       finalAttrs:
       {
+        inherit dontStrip qmakeFlags;
         pname = "onlyoffice-core-${rootdir}";
         # Could be neater, but these are intermediate derivations anyway
         version = core-rev;
         src = core;
-        sourceRoot = "${finalAttrs.src.name}/${rootdir}";
-        dontWrapQtApps = true;
-        nativeBuildInputs = [
-          qmake
-        ];
-        inherit dontStrip qmakeFlags;
-        prePatch = ''
-          export SRCRT=$(pwd)
-          cd $(echo "${rootdir}" | sed -s "s/[^/]*/../g")
-          export BUILDRT=$(pwd)
-          ln -s $(pwd)/../source ../core
-          chmod -R u+w .
-        '';
+
         postPatch = ''
           cd $SRCRT
         '';
+
+        nativeBuildInputs = [
+          qmake
+        ];
 
         installPhase = ''
           runHook preInstall
@@ -380,6 +369,18 @@ let
 
           runHook postInstall
         '';
+
+        dontWrapQtApps = true;
+
+        prePatch = ''
+          export SRCRT=$(pwd)
+          cd $(echo "${rootdir}" | sed -s "s/[^/]*/../g")
+          export BUILDRT=$(pwd)
+          ln -s $(pwd)/../source ../core
+          chmod -R u+w .
+        '';
+
+        sourceRoot = "${finalAttrs.src.name}/${rootdir}";
       }
       // attrs
     );
@@ -388,7 +389,7 @@ let
     (buildCoreComponent rootdir (
       {
         doCheck = true;
-        qmakeFlags = qmakeFlags ++ icuQmakeFlags;
+
         checkPhase = ''
           runHook preCheck
           TEST=$(find . -type f -name test)
@@ -401,9 +402,12 @@ let
           fi
           runHook postCheck
         '';
+
         installPhase = ''
           touch $out
         '';
+
+        qmakeFlags = qmakeFlags ++ icuQmakeFlags;
       }
       // attrs
     ));
@@ -412,7 +416,7 @@ let
       # icu needs c++20 for include/unicode/localpointer.h
       ./common-cpp20.patch
     ];
-    qmakeFlags = qmakeFlags ++ icuQmakeFlags;
+
     preConfigure = ''
       source ${fixIcu}
 
@@ -422,16 +426,20 @@ let
         UnicodeConverter.cpp \
         --replace-fail "TRUE" "true"
     '';
+
+    qmakeFlags = qmakeFlags ++ icuQmakeFlags;
+
     passthru.tests = buildCoreTests "UnicodeConverter/test" {
       buildInputs = [
         unicodeConverter
         kernel
       ];
-      qmakeFlags = qmakeFlags ++ icuQmakeFlags;
+
       preConfigure = ''
         source ${fixIcu}
         echo -e "\ninclude(../../Common/3dParty/icu/icu.pri)" >> test.pro
       '';
+
       checkPhase = ''
         # Many of the tests do not appear to produce the 'expected' output,
         # but it's not obvious whether this an error in the behaviour
@@ -449,21 +457,26 @@ let
           diff $out/testfiles/''${test}_utf8.txt $out/testfiles/''${test}_test_utf8.txt >/dev/null
         done
       '';
+
       installPhase = ''
         # TODO: this produces files in $out/testfiles. It looks like this should
         # test that the files are identical, which they are not - but it is not
         # obvious the test is 'wrong' :/
         #md5sum $out/testfiles/*
       '';
+
+      qmakeFlags = qmakeFlags ++ icuQmakeFlags;
     };
   };
   kernel = buildCoreComponent "Common" {
     patches = [
       ./zlib-cstd.patch
     ];
+
     buildInputs = [
       unicodeConverter
     ];
+
     qmakeFlags = qmakeFlags ++ icuQmakeFlags;
   };
   graphics = buildCoreComponent "DesktopEditor/graphics/pro" {
@@ -471,6 +484,7 @@ let
       ./cximage-types.patch
       ./core-fontengine-custom-fonts-paths.patch
     ];
+
     buildInputs = [
       unicodeConverter
       kernel
@@ -479,6 +493,7 @@ let
       libde265
       boost
     ];
+
     preConfigure = ''
       ln -s ${katana-parser-src} $BUILDRT/Common/3dParty/html/katana-parser
 
@@ -499,17 +514,19 @@ let
 
       ln -s ${hyphen-src} $BUILDRT/Common/3dParty/hyphen/hyphen
     '';
+
     passthru.tests = lib.attrsets.genAttrs [ "alphaMask" "graphicsLayers" "TestPICT" ] (
       test:
       buildCoreTests "DesktopEditor/graphics/tests/${test}" {
-        preConfigure = ''
-          source ${fixIcu}
-        '';
         buildInputs = [
           graphics
           kernel
           unicodeConverter
         ];
+
+        preConfigure = ''
+          source ${fixIcu}
+        '';
       }
     );
   };
@@ -523,6 +540,7 @@ let
       # Interestingly only seems to pop up when debug mode is enabled
       ./xlsx-missing-import.patch
     ];
+
     buildInputs = [ boost ];
   };
   cryptopp = buildCoreComponent "Common/3dParty/cryptopp/project" {
@@ -557,13 +575,13 @@ let
     patches = [
       ./zlib-cstd.patch
     ];
-    # mdds uses bool_constant which needs a newer c++
-    qmakeFlags = qmakeFlags ++ [ "CONFIG+=c++1z" ];
+
     buildInputs = [
       kernel
       unicodeConverter
       boost
     ];
+
     preConfigure = ''
       ln -s ${glm-src} $BUILDRT/Common/3dParty/apple/glm
       ln -s ${mdds-src} $BUILDRT/Common/3dParty/apple/mdds
@@ -576,17 +594,23 @@ let
       chmod u+w $BUILDRT/Common/3dParty/apple/libetonyek/src/lib
       cp $BUILDRT/Common/3dParty/apple/headers/* $BUILDRT/Common/3dParty/apple/libetonyek/src/lib
     '';
+
     doCheck = true;
+    # mdds uses bool_constant which needs a newer c++
+    qmakeFlags = qmakeFlags ++ [ "CONFIG+=c++1z" ];
+
     passthru.tests = buildCoreTests "Apple/test" {
       buildInputs = [
         unicodeConverter
         kernel
         iworkfile
       ];
-      qmakeFlags = qmakeFlags ++ icuQmakeFlags;
+
       preConfigure = ''
         source ${fixIcu}
       '';
+
+      qmakeFlags = qmakeFlags ++ icuQmakeFlags;
     };
   };
   vbaformatlib = buildCoreComponent "MsBinaryFile/Projects/VbaFormatLib/Linux" {
@@ -600,11 +624,14 @@ let
       kernel
       boost
     ];
+
     preConfigure = ''
       source ${fixIcu}
     '';
+
     passthru.tests = buildCoreTests "OdfFile/Reader/Converter/StarMath2OOXML/TestSMConverter" {
       buildInputs = [ starmath ];
+
       preConfigure = ''
         source ${fixIcu}
         ln -s ${googletest-src} $BUILDRT/Common/3dParty/googletest/googletest
@@ -628,30 +655,35 @@ let
       kernel
       pdffile
     ];
+
     passthru.tests = buildCoreTests "OFDFile/test" {
+      patches = [ ./ofdfile-test.patch ];
+
       buildInputs = [
         unicodeConverter
         ofdfile
         graphics
         kernel
       ];
-      patches = [ ./ofdfile-test.patch ];
-      qmakeFlags = qmakeFlags ++ icuQmakeFlags;
+
       preConfigure = ''
         source ${fixIcu}
       '';
+
+      qmakeFlags = qmakeFlags ++ icuQmakeFlags;
     };
   };
   pdffile = buildCoreComponent "PdfFile" {
+    patches = [
+      ./pdffile-limits-include.patch
+    ];
+
     buildInputs = [
       graphics
       kernel
       unicodeConverter
       cryptopp
       network
-    ];
-    patches = [
-      ./pdffile-limits-include.patch
     ];
   };
   djvufile = buildCoreComponent "DjVuFile" {
@@ -675,6 +707,7 @@ let
       kernel
       graphics
     ];
+
     passthru.tests = buildCoreTests "DocxRenderer/test" {
       buildInputs = [
         unicodeConverter
@@ -687,6 +720,7 @@ let
         docxrenderer
         textcommandrenderer
       ];
+
       preConfigure = ''
         # (not as patch because of line endings)
         sed -i '47 a #include <limits>' $BUILDRT/Common/OfficeFileFormatChecker2.cpp
@@ -704,17 +738,6 @@ let
     ];
   };
   doctrenderer = buildCoreComponent "DesktopEditor/doctrenderer" {
-    buildInputs = [
-      graphics
-      boost
-      kernel
-      unicodeConverter
-      network
-      pdffile
-      djvufile
-      xpsfile
-      docxrenderer
-    ];
     patches = [
       # https://github.com/ONLYOFFICE/core/pull/1631
       ./doctrenderer-format-security.patch
@@ -728,19 +751,19 @@ let
       # needed for c++ 20 for nodejs_23
       ./common-pole-c20.patch
     ];
-    qmakeFlags =
-      qmakeFlags
-      ++ icuQmakeFlags
-      ++ [
-        # c++1z for nodejs-slim_22.libv8 (20 seems to produce errors around 'is_void_v' there)
-        # c++ 20 for nodejs_23.libv8
-        "CONFIG+=c++2a"
-        # v8_base.h will set nMaxVirtualMemory to 4000000000/5000000000
-        # which is not page-aligned, so disable memory limitation for now
-        "QMAKE_CXXFLAGS+=-DV8_VERSION_121_PLUS"
-        "QMAKE_CXXFLAGS+=-DDISABLE_MEMORY_LIMITATION"
-        "QMAKE_LFLAGS+=-licui18n"
-      ];
+
+    buildInputs = [
+      graphics
+      boost
+      kernel
+      unicodeConverter
+      network
+      pdffile
+      djvufile
+      xpsfile
+      docxrenderer
+    ];
+
     preConfigure = ''
       cd $BUILDRT
 
@@ -771,11 +794,27 @@ let
 
       cd $BUILDRT/DesktopEditor/doctrenderer
     '';
+
+    qmakeFlags =
+      qmakeFlags
+      ++ icuQmakeFlags
+      ++ [
+        # c++1z for nodejs-slim_22.libv8 (20 seems to produce errors around 'is_void_v' there)
+        # c++ 20 for nodejs_23.libv8
+        "CONFIG+=c++2a"
+        # v8_base.h will set nMaxVirtualMemory to 4000000000/5000000000
+        # which is not page-aligned, so disable memory limitation for now
+        "QMAKE_CXXFLAGS+=-DV8_VERSION_121_PLUS"
+        "QMAKE_CXXFLAGS+=-DDISABLE_MEMORY_LIMITATION"
+        "QMAKE_LFLAGS+=-licui18n"
+      ];
+
     passthru.tests = lib.attrsets.genAttrs [ "embed/external" "embed/internal" "js_internal" "json" ] (
       test:
       buildCoreTests "DesktopEditor/doctrenderer/test/${test}" {
         patches = [ ./doctrenderer-v8-test.patch ];
         buildInputs = [ doctrenderer ];
+
         preConfigure = ''
           ln -s ${googletest-src} $BUILDRT/Common/3dParty/googletest/googletest
         '';
@@ -790,6 +829,7 @@ let
       graphics
       unicodeConverter
     ];
+
     preConfigure = ''
       ln -s ${katana-parser-src} $BUILDRT/Common/3dParty/html/katana-parser
       ln -s ${gumbo-parser-src} $BUILDRT/Common/3dParty/html/gumbo-parser
@@ -810,20 +850,25 @@ let
       graphics
       boost
     ];
-    qmakeFlags = qmakeFlags ++ [
-      "QMAKE_LFLAGS+=-Wl,--no-undefined"
-    ];
+
     preConfigure = ''
       ln -s ${gumbo-parser-src} $BUILDRT/Common/3dParty/html/gumbo-parser
     '';
+
+    qmakeFlags = qmakeFlags ++ [
+      "QMAKE_LFLAGS+=-Wl,--no-undefined"
+    ];
+
     passthru.tests.run = buildCoreTests "Fb2File/test" {
       buildInputs = [
         fb2file
         kernel
       ];
+
       preConfigure = ''
         source ${fixIcu}
       '';
+
       checkPhase = ''
         for i in ../examples/*.fb2; do
           cp $i build/linux_64/res.fb2
@@ -836,17 +881,20 @@ let
     buildInputs = [
       kernel
     ];
+
     preConfigure = ''
       mkdir -p $BUILDRT/Common/3dParty/openssl/build/linux_64/lib
       for i in ${openssl'.out}/lib/*; do
         ln -s $i $BUILDRT/Common/3dParty/openssl/build/linux_64/lib/$(basename $i)
       done
     '';
+
     passthru.tests = buildCoreTests "DesktopEditor/xmlsec/src/test" {
       buildInputs = [
         kernel
         ooxmlsignature
       ];
+
       preConfigure = ''
         source ${fixIcu}
       '';
@@ -859,11 +907,11 @@ let
       graphics
       libheif.lib
     ];
-    qmakeFlags = qmakeFlags ++ icuQmakeFlags;
+
     preConfigure = ''
       source ${fixIcu}
     '';
-    dontStrip = true;
+
     installPhase = ''
       runHook preInstall
 
@@ -872,6 +920,9 @@ let
 
       runHook postInstall
     '';
+
+    dontStrip = true;
+    qmakeFlags = qmakeFlags ++ icuQmakeFlags;
   };
   allthemesgen = buildCoreComponent "DesktopEditor/allthemesgen" {
     buildInputs = [
@@ -885,11 +936,11 @@ let
       xpsfile
       djvufile
     ];
-    qmakeFlags = qmakeFlags ++ icuQmakeFlags;
+
     preConfigure = ''
       source ${fixIcu}
     '';
-    dontStrip = true;
+
     installPhase = ''
       runHook preInstall
 
@@ -898,12 +949,15 @@ let
 
       runHook postInstall
     '';
+
+    dontStrip = true;
+    qmakeFlags = qmakeFlags ++ icuQmakeFlags;
   };
   core-fonts = fetchFromGitHub {
+    hash = "sha256-yNUDyIJ09Ejbyt/kMrOpDbT15QTDOe7GTQChRU5+QY4=";
     owner = "ONLYOFFICE";
     repo = "core-fonts";
     rev = "7030c6681fb5bbed560675cb42422f91df15d5c9";
-    hash = "sha256-yNUDyIJ09Ejbyt/kMrOpDbT15QTDOe7GTQChRU5+QY4=";
   };
   allfonts = runCommand "allfonts" { } ''
     mkdir -p $out/web
@@ -920,8 +974,8 @@ let
   '';
 in
 buildCoreComponent "X2tConverter/build/Qt" {
-  pname = "x2t";
   inherit version;
+  pname = "x2t";
 
   buildInputs = [
     unicodeConverter
@@ -956,7 +1010,7 @@ buildCoreComponent "X2tConverter/build/Qt" {
     starmath
     ooxmlsignature
   ];
-  qmakeFlags = qmakeFlags ++ icuQmakeFlags ++ [ "X2tConverter.pro" ];
+
   preConfigure = ''
     source ${fixIcu}
 
@@ -987,21 +1041,9 @@ buildCoreComponent "X2tConverter/build/Qt" {
 
     runHook postInstall
   '';
-  passthru.tests = {
-    unicodeConverter = unicodeConverter.tests;
-    fb2file = fb2file.tests;
-    graphics = graphics.tests;
-    iworkfile = iworkfile.tests;
-    docxrenderer = docxrenderer.tests;
-    doctrenderer = doctrenderer.tests;
-    ofdfile = ofdfile.tests;
-    starmath = starmath.tests;
-    ooxmlsignature = ooxmlsignature.tests;
-    x2t = runCommand "x2t-test" { } ''
-      (${onlyoffice-documentserver.x2t}/bin/x2t || true) | grep "OOX/binary file converter." && mkdir -p $out
-    '';
-    nixos-module = nixosTests.onlyoffice;
-  };
+
+  qmakeFlags = qmakeFlags ++ icuQmakeFlags ++ [ "X2tConverter.pro" ];
+
   passthru.components = {
     inherit
       allfontsgen
@@ -1028,6 +1070,24 @@ buildCoreComponent "X2tConverter/build/Qt" {
       dictionaries
       ;
   };
+
+  passthru.tests = {
+    doctrenderer = doctrenderer.tests;
+    docxrenderer = docxrenderer.tests;
+    fb2file = fb2file.tests;
+    graphics = graphics.tests;
+    iworkfile = iworkfile.tests;
+    nixos-module = nixosTests.onlyoffice;
+    ofdfile = ofdfile.tests;
+    ooxmlsignature = ooxmlsignature.tests;
+    starmath = starmath.tests;
+    unicodeConverter = unicodeConverter.tests;
+
+    x2t = runCommand "x2t-test" { } ''
+      (${onlyoffice-documentserver.x2t}/bin/x2t || true) | grep "OOX/binary file converter." && mkdir -p $out
+    '';
+  };
+
   meta = {
     description = "Convert files from one format to another";
     homepage = "https://github.com/ONLYOFFICE/core/tree/master/X2tConverter";

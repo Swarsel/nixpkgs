@@ -2,20 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   autoreconfHook,
-  enablePsm2 ? (stdenv.hostPlatform.isx86_64 && stdenv.hostPlatform.isLinux),
   libpsm2,
-  enableOpx ? (stdenv.hostPlatform.isx86_64 && stdenv.hostPlatform.isLinux),
   libuuid,
   numactl,
+  pkg-config,
+  enableOpx ? (stdenv.hostPlatform.isx86_64 && stdenv.hostPlatform.isLinux),
+  enablePsm2 ? (stdenv.hostPlatform.isx86_64 && stdenv.hostPlatform.isLinux),
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libfabric";
   version = "2.6.0";
-
-  enableParallelBuilding = true;
 
   src = fetchFromGitHub {
     owner = "ofiwg";
@@ -47,14 +45,18 @@ stdenv.mkDerivation (finalAttrs: {
     (if enableOpx then "--enable-opx" else "--disable-opx")
   ];
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://ofiwg.github.io/libfabric/";
     description = "Open Fabric Interfaces";
+    homepage = "https://ofiwg.github.io/libfabric/";
+
     license = with lib.licenses; [
       gpl2
       bsd2
     ];
-    platforms = lib.platforms.all;
+
     maintainers = [ lib.maintainers.bzizou ];
+    platforms = lib.platforms.all;
   };
 })

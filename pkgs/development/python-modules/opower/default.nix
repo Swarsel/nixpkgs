@@ -1,22 +1,21 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aiozoneinfo,
   arrow,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   pyotp,
   pytest-asyncio,
-  python-dotenv,
   pytestCheckHook,
+  python-dotenv,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "opower";
   version = "0.18.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tronikos";
@@ -24,6 +23,12 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-lOmd/eyU0XDPbAjW2ur9lSlq5ECv80/1FZXjLaZ92e4=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+    python-dotenv
+  ];
 
   build-system = [ setuptools ];
 
@@ -35,23 +40,18 @@ buildPythonPackage (finalAttrs: {
     pyotp
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-    python-dotenv
-  ];
-
   disabledTestPaths = [
     # network access
     "tests/test_opower.py"
   ];
 
-  pythonImportsCheck = [ "opower" ];
-
   disabledTests = [
     # Tests require network access
     "test_invalid_auth"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "opower" ];
 
   meta = {
     description = "Module for getting historical and forecasted usage/cost from utilities that use opower.com";

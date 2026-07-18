@@ -1,17 +1,16 @@
 {
   lib,
+  stdenv,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
-  numpy,
   fluidsynth,
-  stdenv,
+  numpy,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyfluidsynth";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -26,9 +25,8 @@ buildPythonPackage rec {
   '';
 
   build-system = [ setuptools ];
-
   dependencies = [ numpy ];
-
+  pyproject = true;
   pythonImportsCheck = [ "fluidsynth" ];
 
   meta = {

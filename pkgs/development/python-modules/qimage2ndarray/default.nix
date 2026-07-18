@@ -10,8 +10,6 @@
 buildPythonPackage rec {
   pname = "qimage2ndarray";
   version = "1.10.0";
-  format = "setuptools";
-  disabled = !isPy3k;
 
   src = fetchPypi {
     inherit pname version;
@@ -25,10 +23,12 @@ buildPythonPackage rec {
 
   # no tests executed
   doCheck = false;
+  disabled = !isPy3k;
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/hmeine/qimage2ndarray";
     description = "Small python extension for quickly converting between QImages and numpy.ndarrays (in both directions)";
+    homepage = "https://github.com/hmeine/qimage2ndarray";
     license = lib.licenses.bsd3;
     maintainers = [ ];
   };

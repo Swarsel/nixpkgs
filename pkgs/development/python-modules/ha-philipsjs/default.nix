@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   httpx,
   pytest-aiohttp,
   pytest-mock,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "ha-philipsjs";
   version = "3.3.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "danielperna84";
@@ -23,13 +22,6 @@ buildPythonPackage rec {
     hash = "sha256-Ui15KtTpyfVTHmiHNVx/99qiUtKLZeyOOtAuQvfnU8k=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    cryptography
-    httpx
-  ];
-
   nativeCheckInputs = [
     pytest-aiohttp
     pytest-mock
@@ -37,6 +29,14 @@ buildPythonPackage rec {
     respx
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    cryptography
+    httpx
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "haphilipsjs" ];
 
   meta = {

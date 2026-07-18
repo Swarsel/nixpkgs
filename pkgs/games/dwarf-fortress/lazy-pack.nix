@@ -1,29 +1,29 @@
 {
-  stdenvNoCC,
   lib,
   buildEnv,
   df-games,
-  themes,
   latestVersion,
+  legends-browser,
+  stdenvNoCC,
+  themes,
   versionToName,
   dfVersion ? latestVersion,
   # This package should, at any given time, provide an opinionated "optimal"
   # DF experience. It's the equivalent of the Lazy Newbie Pack, that is, and
   # should contain every utility available unless you disable them.
   enableDFHack ? stdenvNoCC.hostPlatform.isLinux,
-  enableTWBT ? enableDFHack,
-  enableSoundSense ? true,
-  enableStoneSense ? true,
   enableDwarfTherapist ? true,
-  enableLegendsBrowser ? true,
-  legends-browser,
-  theme ? themes.phoebus,
+  enableFPS ? false,
   # General config options:
   enableIntro ? true,
-  enableTruetype ? null, # defaults to 24, see init.txt
-  enableFPS ? false,
-  enableTextMode ? false,
+  enableLegendsBrowser ? true,
   enableSound ? true,
+  enableSoundSense ? true,
+  enableStoneSense ? true,
+  enableTWBT ? enableDFHack,
+  enableTextMode ? false,
+  enableTruetype ? null, # defaults to 24, see init.txt
+  theme ? themes.phoebus,
 }:
 
 let
@@ -49,6 +49,7 @@ in
 buildEnv {
   pname = "dwarf-fortress-full";
   version = dfVersion;
+
   paths = [
     (dwarf-fortress.override {
       inherit
@@ -71,12 +72,14 @@ buildEnv {
   meta = {
     inherit mainProgram;
     description = "Opinionated wrapper for Dwarf Fortress";
+    homepage = "https://github.com/NixOS/nixpkgs/";
+    license = licenses.mit;
+
     maintainers = with maintainers; [
       Baughn
       numinit
     ];
-    license = licenses.mit;
+
     platforms = platforms.all;
-    homepage = "https://github.com/NixOS/nixpkgs/";
   };
 }

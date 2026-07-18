@@ -1,13 +1,12 @@
 {
   buildDunePackage,
-  httpun-lwt,
   gluten-lwt-unix,
+  httpun-lwt,
 }:
 
 buildDunePackage {
-  pname = "httpun-lwt-unix";
-
   inherit (httpun-lwt) version src;
+  pname = "httpun-lwt-unix";
 
   propagatedBuildInputs = [
     httpun-lwt

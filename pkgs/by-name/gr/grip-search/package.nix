@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   boost,
-  pkg-config,
-  cmake,
   catch2,
+  cmake,
+  fetchpatch,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,22 +20,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0bkqarylgzhis6fpj48qbifcd6a26cgnq8784hgnm707rq9kb0rx";
   };
 
-  nativeBuildInputs = [
-    pkg-config
-    cmake
-    catch2
-  ];
-
-  doCheck = true;
-
-  buildInputs = [ boost ];
-
   patches = [
     # Can be removed after this upstream PR gets merged: https://github.com/sc0ty/grip/pull/6
     (fetchpatch {
+      hash = "sha256-Xh++oDn5qn5NPgng7gfeCkO5FN9OmW+8fGhDLpAJfR8=";
       name = "include-cstdint.patch";
       url = "https://github.com/sc0ty/grip/commit/da37b3c805306ee4ea617ce3f1487b8ee9876e50.patch";
-      hash = "sha256-Xh++oDn5qn5NPgng7gfeCkO5FN9OmW+8fGhDLpAJfR8=";
     })
   ];
 
@@ -54,11 +44,20 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail ' system' ""
   '';
 
+  nativeBuildInputs = [
+    pkg-config
+    cmake
+    catch2
+  ];
+
+  buildInputs = [ boost ];
+  doCheck = true;
+
   meta = {
     description = "Fast, indexed regexp search over large file trees";
     homepage = "https://github.com/sc0ty/grip";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 })

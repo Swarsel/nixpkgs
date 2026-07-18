@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "casttube";
   version = "0.2.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,9 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ requests ];
-
   # no tests
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Interact with the Youtube Chromecast api";

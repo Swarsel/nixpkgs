@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   openssl,
-  testers,
   smartdns,
+  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,21 +32,23 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru.tests = {
     version = testers.testVersion {
-      package = smartdns;
       command = "smartdns -v";
+      package = smartdns;
     };
   };
 
   meta = {
     description = "Local DNS server to obtain the fastest website IP for the best Internet experience";
+
     longDescription = ''
       SmartDNS is a local DNS server. SmartDNS accepts DNS query requests from local clients, obtains DNS query results from multiple upstream DNS servers, and returns the fastest access results to clients.
       Avoiding DNS pollution and improving network access speed, supports high-performance ad filtering.
       Unlike dnsmasq's all-servers, smartdns returns the fastest access resolution.
     '';
+
     homepage = "https://github.com/pymumu/smartdns";
-    maintainers = [ lib.maintainers.lexuge ];
     license = lib.licenses.gpl3Plus;
+    maintainers = [ lib.maintainers.lexuge ];
     platforms = lib.platforms.linux;
     mainProgram = "smartdns";
   };

@@ -11,14 +11,15 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-servicefabricmanagedclusters";
   version = "2.1.0b3";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_servicefabricmanagedclusters";
     inherit version;
     hash = "sha256-52i8y0V2qy3yDP/mJi7zATE0+qi5H+F8Zcjnoc2qQTU=";
+    pname = "azure_mgmt_servicefabricmanagedclusters";
   };
 
+  # Module has tests in mono-repo
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,10 +28,8 @@ buildPythonPackage rec {
     azure-mgmt-core
   ];
 
+  pyproject = true;
   pythonNamespaces = [ "azure.mgmt" ];
-
-  # Module has tests in mono-repo
-  doCheck = false;
 
   meta = {
     description = "This is the Microsoft Azure Service Fabric Cluster Management Client Library";

@@ -3,12 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  versionCheckHook,
   nix-update-script,
   pico-sdk,
-
+  versionCheckHook,
   # Options
-
   # The submodules in the pico-sdk contain important additional functionality
   # such as tinyusb, but not all these libraries might be bsd3.
   # Off by default.
@@ -23,23 +21,21 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "raspberrypi";
     repo = "pico-sdk";
     tag = finalAttrs.version;
-    fetchSubmodules = withSubmodules;
+
     hash =
       if withSubmodules then
         "sha256-8ubZW6yQnUTYxQqYI6hi7s3kFVQhe5EaxVvHmo93vgk="
       else
         "sha256-hQdEZD84/cnLSzP5Xr9vbOGROQz4BjeVOnvbyhe6rfM=";
+
+    fetchSubmodules = withSubmodules;
   };
+
+  nativeBuildInputs = [ cmake ];
 
   cmakeFlags = [
     (lib.cmakeFeature "PIOASM_VERSION_STRING" finalAttrs.version)
   ];
-
-  nativeBuildInputs = [ cmake ];
-
-  # SDK contains libraries and build-system to develop projects for RP2040 chip
-  # We only need to compile pioasm binary
-  sourceRoot = "${finalAttrs.src.name}/tools/pioasm";
 
   installPhase = ''
     runHook preInstall
@@ -49,11 +45,16 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  # SDK contains libraries and build-system to develop projects for RP2040 chip
+  # We only need to compile pioasm binary
+  sourceRoot = "${finalAttrs.src.name}/tools/pioasm";
+
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       withSubmodules = pico-sdk.override { withSubmodules = true; };
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {

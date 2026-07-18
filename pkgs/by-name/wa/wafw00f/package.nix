@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "wafw00f";
   version = "2.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "EnableSecurity";
@@ -16,6 +15,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-vGTqgvAVO6fbgRN5V5HhlKFrI9Z2XZaAjI1L19RIi9U=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -23,9 +24,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pluginbase
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "wafw00f" ];
 
   meta = {

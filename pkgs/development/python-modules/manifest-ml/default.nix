@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   accelerate,
   aiohttp,
   buildPythonPackage,
   fastapi,
-  fetchFromGitHub,
   flask,
   numpy,
   pg8000,
@@ -28,7 +28,6 @@
 buildPythonPackage rec {
   pname = "manifest-ml";
   version = "0.1.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "HazyResearch";
@@ -37,9 +36,16 @@ buildPythonPackage rec {
     hash = "sha256-6m1XZOXzflBYyq9+PinbrW+zqvNGFN/aRDHH1b2Me5E=";
   };
 
-  __darwinAllowLocalNetworking = true;
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
-  pythonRelaxDeps = [ "pydantic" ];
+  preCheck = ''
+    export HOME=$TMPDIR
+  '';
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     setuptools
@@ -56,37 +62,6 @@ buildPythonPackage rec {
     tiktoken
     xxhash
   ];
-
-  optional-dependencies = {
-    api = [
-      accelerate
-      # deepspeed
-      # diffusers
-      flask
-      sentence-transformers
-      torch
-      transformers
-    ];
-    app = [
-      fastapi
-      uvicorn
-    ];
-    diffusers = [ pillow ];
-    gcp = [
-      pg8000
-      # cloud-sql-python-connector
-      sqlalchemy
-    ];
-  };
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
-  preCheck = ''
-    export HOME=$TMPDIR
-  '';
 
   disabledTestPaths = [
     # this file tries importing `deepspeed`, which is not yet packaged in nixpkgs
@@ -109,7 +84,34 @@ buildPythonPackage rec {
     "test_timing"
   ];
 
+  optional-dependencies = {
+    api = [
+      accelerate
+      # deepspeed
+      # diffusers
+      flask
+      sentence-transformers
+      torch
+      transformers
+    ];
+
+    app = [
+      fastapi
+      uvicorn
+    ];
+
+    diffusers = [ pillow ];
+
+    gcp = [
+      pg8000
+      # cloud-sql-python-connector
+      sqlalchemy
+    ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "manifest" ];
+  pythonRelaxDeps = [ "pydantic" ];
 
   meta = {
     description = "Manifest for Prompting Foundation Models";

@@ -1,17 +1,17 @@
 {
+  lib,
+  fetchFromGitHub,
   bleach,
   buildPythonPackage,
-  fetchFromGitHub,
   hatchling,
   jupytext,
   kagglesdk,
-  lib,
   packaging,
   protobuf,
+  pytestCheckHook,
   python-dateutil,
   python-dotenv,
   python-slugify,
-  pytestCheckHook,
   requests,
   six,
   tqdm,
@@ -20,11 +20,8 @@
 }:
 
 buildPythonPackage (finalAttrs: {
-  __structuredAttrs = true;
-
   pname = "kaggle";
   version = "2.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Kaggle";
@@ -33,6 +30,19 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-NvSR3kSncBtjj2zuwESGXRMbZofYcnRnXIglRJ3dsrQ=";
   };
 
+  # kaggle authenticates at import time; fake creds for the offline checks.
+  env = {
+    KAGGLE_KEY = "00000000000000000000000000000000";
+    KAGGLE_USERNAME = "nixos-test";
+  };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    # kaggle creates its config dir at import time; needs a writable HOME.
+    writableTmpDirAsHomeHook
+  ];
+
+  __structuredAttrs = true;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -50,26 +60,15 @@ buildPythonPackage (finalAttrs: {
     urllib3
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    # kaggle creates its config dir at import time; needs a writable HOME.
-    writableTmpDirAsHomeHook
-  ];
-
-  # kaggle authenticates at import time; fake creds for the offline checks.
-  env = {
-    KAGGLE_USERNAME = "nixos-test";
-    KAGGLE_KEY = "00000000000000000000000000000000";
-  };
-
+  pyproject = true;
   pythonImportsCheck = [ "kaggle" ];
 
   meta = {
     description = "Official Kaggle CLI";
-    mainProgram = "kaggle";
     homepage = "https://github.com/Kaggle/kaggle-cli";
     changelog = "https://github.com/Kaggle/kaggle-cli/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ daniel-fahey ];
+    mainProgram = "kaggle";
   };
 })

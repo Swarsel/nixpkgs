@@ -40,185 +40,228 @@ in
   options.services.kea = with lib.types; {
     package = lib.mkPackageOption pkgs "kea" { };
 
-    dhcp4 = lib.mkOption {
-      description = ''
-        DHCP4 Server configuration
-      '';
-      default = { };
-      type = submodule {
-        options = {
-          enable = lib.mkEnableOption "Kea DHCP4 server";
-
-          extraArgs = lib.mkOption {
-            type = listOf str;
-            default = [ ];
-            description = ''
-              List of additional arguments to pass to the daemon.
-            '';
-          };
-
-          configFile = lib.mkOption {
-            type = nullOr path;
-            default = null;
-            description = ''
-              Kea DHCP4 configuration as a path, see <https://kea.readthedocs.io/en/kea-${cfg.package.version}/arm/dhcp4-srv.html>.
-
-              Takes preference over [settings](#opt-services.kea.dhcp4.settings).
-              Most users should prefer using [settings](#opt-services.kea.dhcp4.settings) instead.
-            '';
-          };
-
-          settings = lib.mkOption {
-            type = format.type;
-            default = null;
-            example = {
-              valid-lifetime = 4000;
-              renew-timer = 1000;
-              rebind-timer = 2000;
-              interfaces-config = {
-                interfaces = [
-                  "eth0"
-                ];
-              };
-              lease-database = {
-                type = "memfile";
-                persist = true;
-                name = "/var/lib/kea/dhcp4.leases";
-              };
-              subnet4 = [
-                {
-                  id = 1;
-                  subnet = "192.0.2.0/24";
-                  pools = [
-                    {
-                      pool = "192.0.2.100 - 192.0.2.240";
-                    }
-                  ];
-                }
-              ];
-            };
-            description = ''
-              Kea DHCP4 configuration as an attribute set, see <https://kea.readthedocs.io/en/kea-${cfg.package.version}/arm/dhcp4-srv.html>.
-            '';
-          };
-        };
-      };
-    };
-
-    dhcp6 = lib.mkOption {
-      description = ''
-        DHCP6 Server configuration
-      '';
-      default = { };
-      type = submodule {
-        options = {
-          enable = lib.mkEnableOption "Kea DHCP6 server";
-
-          extraArgs = lib.mkOption {
-            type = listOf str;
-            default = [ ];
-            description = ''
-              List of additional arguments to pass to the daemon.
-            '';
-          };
-
-          configFile = lib.mkOption {
-            type = nullOr path;
-            default = null;
-            description = ''
-              Kea DHCP6 configuration as a path, see <https://kea.readthedocs.io/en/kea-${cfg.package.version}/arm/dhcp6-srv.html>.
-
-              Takes preference over [settings](#opt-services.kea.dhcp6.settings).
-              Most users should prefer using [settings](#opt-services.kea.dhcp6.settings) instead.
-            '';
-          };
-
-          settings = lib.mkOption {
-            type = format.type;
-            default = null;
-            example = {
-              valid-lifetime = 4000;
-              renew-timer = 1000;
-              rebind-timer = 2000;
-              preferred-lifetime = 3000;
-              interfaces-config = {
-                interfaces = [
-                  "eth0"
-                ];
-              };
-              lease-database = {
-                type = "memfile";
-                persist = true;
-                name = "/var/lib/kea/dhcp6.leases";
-              };
-              subnet6 = [
-                {
-                  id = 1;
-                  subnet = "2001:db8:1::/64";
-                  pools = [
-                    {
-                      pool = "2001:db8:1::1-2001:db8:1::ffff";
-                    }
-                  ];
-                }
-              ];
-            };
-            description = ''
-              Kea DHCP6 configuration as an attribute set, see <https://kea.readthedocs.io/en/kea-${cfg.package.version}/arm/dhcp6-srv.html>.
-            '';
-          };
-        };
-      };
-    };
-
     dhcp-ddns = lib.mkOption {
+      default = { };
+
       description = ''
         Kea DHCP-DDNS configuration
       '';
-      default = { };
+
       type = submodule {
         options = {
           enable = lib.mkEnableOption "Kea DDNS server";
 
-          extraArgs = lib.mkOption {
-            type = listOf str;
-            default = [ ];
-            description = ''
-              List of additional arguments to pass to the daemon.
-            '';
-          };
-
           configFile = lib.mkOption {
-            type = nullOr path;
             default = null;
+
             description = ''
               Kea DHCP-DDNS configuration as a path, see <https://kea.readthedocs.io/en/kea-${cfg.package.version}/arm/ddns.html>.
 
               Takes preference over [settings](#opt-services.kea.dhcp-ddns.settings).
               Most users should prefer using [settings](#opt-services.kea.dhcp-ddns.settings) instead.
             '';
+
+            type = nullOr path;
+          };
+
+          extraArgs = lib.mkOption {
+            default = [ ];
+
+            description = ''
+              List of additional arguments to pass to the daemon.
+            '';
+
+            type = listOf str;
           };
 
           settings = lib.mkOption {
-            type = format.type;
             default = null;
-            example = {
-              ip-address = "127.0.0.1";
-              port = 53001;
-              dns-server-timeout = 100;
-              ncr-protocol = "UDP";
-              ncr-format = "JSON";
-              tsig-keys = [ ];
-              forward-ddns = {
-                ddns-domains = [ ];
-              };
-              reverse-ddns = {
-                ddns-domains = [ ];
-              };
-            };
+
             description = ''
               Kea DHCP-DDNS configuration as an attribute set, see <https://kea.readthedocs.io/en/kea-${cfg.package.version}/arm/ddns.html>.
             '';
+
+            example = {
+              dns-server-timeout = 100;
+
+              forward-ddns = {
+                ddns-domains = [ ];
+              };
+
+              ip-address = "127.0.0.1";
+              ncr-format = "JSON";
+              ncr-protocol = "UDP";
+              port = 53001;
+
+              reverse-ddns = {
+                ddns-domains = [ ];
+              };
+
+              tsig-keys = [ ];
+            };
+
+            type = format.type;
+          };
+        };
+      };
+    };
+
+    dhcp4 = lib.mkOption {
+      default = { };
+
+      description = ''
+        DHCP4 Server configuration
+      '';
+
+      type = submodule {
+        options = {
+          enable = lib.mkEnableOption "Kea DHCP4 server";
+
+          configFile = lib.mkOption {
+            default = null;
+
+            description = ''
+              Kea DHCP4 configuration as a path, see <https://kea.readthedocs.io/en/kea-${cfg.package.version}/arm/dhcp4-srv.html>.
+
+              Takes preference over [settings](#opt-services.kea.dhcp4.settings).
+              Most users should prefer using [settings](#opt-services.kea.dhcp4.settings) instead.
+            '';
+
+            type = nullOr path;
+          };
+
+          extraArgs = lib.mkOption {
+            default = [ ];
+
+            description = ''
+              List of additional arguments to pass to the daemon.
+            '';
+
+            type = listOf str;
+          };
+
+          settings = lib.mkOption {
+            default = null;
+
+            description = ''
+              Kea DHCP4 configuration as an attribute set, see <https://kea.readthedocs.io/en/kea-${cfg.package.version}/arm/dhcp4-srv.html>.
+            '';
+
+            example = {
+              interfaces-config = {
+                interfaces = [
+                  "eth0"
+                ];
+              };
+
+              lease-database = {
+                name = "/var/lib/kea/dhcp4.leases";
+                persist = true;
+                type = "memfile";
+              };
+
+              rebind-timer = 2000;
+              renew-timer = 1000;
+
+              subnet4 = [
+                {
+                  id = 1;
+
+                  pools = [
+                    {
+                      pool = "192.0.2.100 - 192.0.2.240";
+                    }
+                  ];
+
+                  subnet = "192.0.2.0/24";
+                }
+              ];
+
+              valid-lifetime = 4000;
+            };
+
+            type = format.type;
+          };
+        };
+      };
+    };
+
+    dhcp6 = lib.mkOption {
+      default = { };
+
+      description = ''
+        DHCP6 Server configuration
+      '';
+
+      type = submodule {
+        options = {
+          enable = lib.mkEnableOption "Kea DHCP6 server";
+
+          configFile = lib.mkOption {
+            default = null;
+
+            description = ''
+              Kea DHCP6 configuration as a path, see <https://kea.readthedocs.io/en/kea-${cfg.package.version}/arm/dhcp6-srv.html>.
+
+              Takes preference over [settings](#opt-services.kea.dhcp6.settings).
+              Most users should prefer using [settings](#opt-services.kea.dhcp6.settings) instead.
+            '';
+
+            type = nullOr path;
+          };
+
+          extraArgs = lib.mkOption {
+            default = [ ];
+
+            description = ''
+              List of additional arguments to pass to the daemon.
+            '';
+
+            type = listOf str;
+          };
+
+          settings = lib.mkOption {
+            default = null;
+
+            description = ''
+              Kea DHCP6 configuration as an attribute set, see <https://kea.readthedocs.io/en/kea-${cfg.package.version}/arm/dhcp6-srv.html>.
+            '';
+
+            example = {
+              interfaces-config = {
+                interfaces = [
+                  "eth0"
+                ];
+              };
+
+              lease-database = {
+                name = "/var/lib/kea/dhcp6.leases";
+                persist = true;
+                type = "memfile";
+              };
+
+              preferred-lifetime = 3000;
+              rebind-timer = 2000;
+              renew-timer = 1000;
+
+              subnet6 = [
+                {
+                  id = 1;
+
+                  pools = [
+                    {
+                      pool = "2001:db8:1::1-2001:db8:1::ffff";
+                    }
+                  ];
+
+                  subnet = "2001:db8:1::/64";
+                }
+              ];
+
+              valid-lifetime = 4000;
+            };
+
+            type = format.type;
           };
         };
       };
@@ -228,39 +271,41 @@ in
   config =
     let
       commonEnvironment = {
-        # Allow hook scripts only when they originate from the system configuration
-        KEA_HOOK_SCRIPTS_PATH = lib.mkDefault "/nix/store";
         # Allow hooks to originate from the configured package
         KEA_HOOKS_PATH = lib.mkDefault "${cfg.package}/lib/kea/hooks";
+        # Allow hook scripts only when they originate from the system configuration
+        KEA_HOOK_SCRIPTS_PATH = lib.mkDefault "/nix/store";
       };
 
       commonServiceConfig = {
+        ConfigurationDirectory = "kea";
+        DynamicUser = true;
+
         ExecReload = toString [
           (lib.getExe' pkgs.coreutils "kill")
           "-HUP"
           "$MAINPID"
         ];
-        DynamicUser = true;
-        User = "kea";
-        ConfigurationDirectory = "kea";
+
         Restart = "on-failure";
         RuntimeDirectory = "kea";
         RuntimeDirectoryMode = "0750";
         RuntimeDirectoryPreserve = true;
         StateDirectory = "kea";
         UMask = "0077";
+        User = "kea";
       };
     in
     lib.mkIf (cfg.dhcp4.enable || cfg.dhcp6.enable || cfg.dhcp-ddns.enable) (
       lib.mkMerge [
         {
           environment.systemPackages = [ cfg.package ];
+          users.groups.kea = { };
 
           users.users.kea = {
-            isSystemUser = true;
             group = "kea";
+            isSystemUser = true;
           };
-          users.groups.kea = { };
         }
 
         (lib.mkIf cfg.dhcp4.enable {
@@ -274,21 +319,16 @@ in
           environment.etc."kea/dhcp4-server.conf".source = dhcp4Config;
 
           systemd.services.kea-dhcp4-server = {
-            description = "Kea DHCP4 Server";
-            documentation = [
-              "man:kea-dhcp4(8)"
-              "https://kea.readthedocs.io/en/kea-${cfg.package.version}/arm/dhcp4-srv.html"
-            ];
-
             after = [
               "network-online.target"
               "time-sync.target"
             ];
-            wants = [
-              "network-online.target"
-            ];
-            wantedBy = [
-              "multi-user.target"
+
+            description = "Kea DHCP4 Server";
+
+            documentation = [
+              "man:kea-dhcp4(8)"
+              "https://kea.readthedocs.io/en/kea-${cfg.package.version}/arm/dhcp4-srv.html"
             ];
 
             environment = commonEnvironment;
@@ -298,6 +338,17 @@ in
             ];
 
             serviceConfig = {
+              # Kea does not request capabilities by itself
+              AmbientCapabilities = [
+                "CAP_NET_BIND_SERVICE"
+                "CAP_NET_RAW"
+              ];
+
+              CapabilityBoundingSet = [
+                "CAP_NET_BIND_SERVICE"
+                "CAP_NET_RAW"
+              ];
+
               ExecStart = utils.escapeSystemdExecArgs (
                 [
                   (lib.getExe' cfg.package "kea-dhcp4")
@@ -306,17 +357,16 @@ in
                 ]
                 ++ cfg.dhcp4.extraArgs
               );
-              # Kea does not request capabilities by itself
-              AmbientCapabilities = [
-                "CAP_NET_BIND_SERVICE"
-                "CAP_NET_RAW"
-              ];
-              CapabilityBoundingSet = [
-                "CAP_NET_BIND_SERVICE"
-                "CAP_NET_RAW"
-              ];
             }
             // commonServiceConfig;
+
+            wantedBy = [
+              "multi-user.target"
+            ];
+
+            wants = [
+              "network-online.target"
+            ];
           };
         })
 
@@ -331,21 +381,16 @@ in
           environment.etc."kea/dhcp6-server.conf".source = dhcp6Config;
 
           systemd.services.kea-dhcp6-server = {
-            description = "Kea DHCP6 Server";
-            documentation = [
-              "man:kea-dhcp6(8)"
-              "https://kea.readthedocs.io/en/kea-${cfg.package.version}/arm/dhcp6-srv.html"
-            ];
-
             after = [
               "network-online.target"
               "time-sync.target"
             ];
-            wants = [
-              "network-online.target"
-            ];
-            wantedBy = [
-              "multi-user.target"
+
+            description = "Kea DHCP6 Server";
+
+            documentation = [
+              "man:kea-dhcp6(8)"
+              "https://kea.readthedocs.io/en/kea-${cfg.package.version}/arm/dhcp6-srv.html"
             ];
 
             environment = commonEnvironment;
@@ -355,6 +400,15 @@ in
             ];
 
             serviceConfig = {
+              # Kea does not request capabilities by itself
+              AmbientCapabilities = [
+                "CAP_NET_BIND_SERVICE"
+              ];
+
+              CapabilityBoundingSet = [
+                "CAP_NET_BIND_SERVICE"
+              ];
+
               ExecStart = utils.escapeSystemdExecArgs (
                 [
                   (lib.getExe' cfg.package "kea-dhcp6")
@@ -363,15 +417,16 @@ in
                 ]
                 ++ cfg.dhcp6.extraArgs
               );
-              # Kea does not request capabilities by itself
-              AmbientCapabilities = [
-                "CAP_NET_BIND_SERVICE"
-              ];
-              CapabilityBoundingSet = [
-                "CAP_NET_BIND_SERVICE"
-              ];
             }
             // commonServiceConfig;
+
+            wantedBy = [
+              "multi-user.target"
+            ];
+
+            wants = [
+              "network-online.target"
+            ];
           };
         })
 
@@ -386,19 +441,16 @@ in
           environment.etc."kea/dhcp-ddns.conf".source = dhcpDdnsConfig;
 
           systemd.services.kea-dhcp-ddns-server = {
-            description = "Kea DHCP-DDNS Server";
-            documentation = [
-              "man:kea-dhcp-ddns(8)"
-              "https://kea.readthedocs.io/en/kea-${cfg.package.version}/arm/ddns.html"
-            ];
-
-            wants = [ "network-online.target" ];
             after = [
               "network-online.target"
               "time-sync.target"
             ];
-            wantedBy = [
-              "multi-user.target"
+
+            description = "Kea DHCP-DDNS Server";
+
+            documentation = [
+              "man:kea-dhcp-ddns(8)"
+              "https://kea.readthedocs.io/en/kea-${cfg.package.version}/arm/ddns.html"
             ];
 
             environment = commonEnvironment;
@@ -408,6 +460,14 @@ in
             ];
 
             serviceConfig = {
+              AmbientCapabilities = [
+                "CAP_NET_BIND_SERVICE"
+              ];
+
+              CapabilityBoundingSet = [
+                "CAP_NET_BIND_SERVICE"
+              ];
+
               ExecStart = utils.escapeSystemdExecArgs (
                 [
                   (lib.getExe' cfg.package "kea-dhcp-ddns")
@@ -416,21 +476,21 @@ in
                 ]
                 ++ cfg.dhcp-ddns.extraArgs
               );
-              AmbientCapabilities = [
-                "CAP_NET_BIND_SERVICE"
-              ];
-              CapabilityBoundingSet = [
-                "CAP_NET_BIND_SERVICE"
-              ];
             }
             // commonServiceConfig;
+
+            wantedBy = [
+              "multi-user.target"
+            ];
+
+            wants = [ "network-online.target" ];
           };
         })
 
       ]
     );
 
-  meta.maintainers = with lib.maintainers; [ hexa ];
   # uses attributes of the linked package
   meta.buildDocsInSandbox = false;
+  meta.maintainers = with lib.maintainers; [ hexa ];
 }

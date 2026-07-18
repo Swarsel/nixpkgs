@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  pkg-config,
-  libxxf86vm,
-  libxrandr,
+  buildGoModule,
+  libGL,
+  libx11,
+  libxcursor,
   libxi,
   libxinerama,
-  libxcursor,
-  libx11,
-  libGL,
+  libxrandr,
+  libxxf86vm,
   nix-update-script,
+  pkg-config,
 }:
 
 buildGoModule (finalAttrs: {
@@ -25,8 +25,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-k1p9v3MQklycW2FsDCyEWNwjLFSymxx1qVg5qhC8xgI=";
   };
 
-  vendorHash = "sha256-OdmOalac4oked7vLGMWFCjjNU5TBq1P+HudE5a+bgq4=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
@@ -39,6 +37,7 @@ buildGoModule (finalAttrs: {
     libGL
   ];
 
+  vendorHash = "sha256-OdmOalac4oked7vLGMWFCjjNU5TBq1P+HudE5a+bgq4=";
   # open g:\bin\AI\tasks\gdQRrtQP\srt_no_ts_1.srt: no such file or directory
   doCheck = false;
 
@@ -53,8 +52,8 @@ buildGoModule (finalAttrs: {
     description = "Video translation and dubbing tool";
     homepage = "https://github.com/krillinai/KrillinAI";
     changelog = "https://github.com/krillinai/KrillinAI/releases/tag/v${finalAttrs.version}";
-    mainProgram = "krillinai-desktop";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
+    mainProgram = "krillinai-desktop";
   };
 })

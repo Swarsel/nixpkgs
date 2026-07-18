@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule rec {
@@ -15,23 +15,25 @@ buildGoModule rec {
     sha256 = "sha256-r/6tRecbLN9bX2+HYyk4tT0uNiAqtZwMoMMQUJ7niJI=";
   };
 
-  subPackages = [ "cmd/gitlab-ci-pipelines-exporter" ];
+  vendorHash = "sha256-k1yqPVaCRtU9qpCSBR4Mo4n+9cOCT9xyRI1Ian9rNOk=";
+  doCheck = true;
 
   ldflags = [
     "-X main.version=v${version}"
   ];
 
-  vendorHash = "sha256-k1yqPVaCRtU9qpCSBR4Mo4n+9cOCT9xyRI1Ian9rNOk=";
-  doCheck = true;
+  subPackages = [ "cmd/gitlab-ci-pipelines-exporter" ];
 
   meta = {
     description = "Prometheus / OpenMetrics exporter for GitLab CI pipelines insights";
-    mainProgram = "gitlab-ci-pipelines-exporter";
     homepage = "https://github.com/mvisonneau/gitlab-ci-pipelines-exporter";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       mmahut
       mvisonneau
     ];
+
+    mainProgram = "gitlab-ci-pipelines-exporter";
   };
 }

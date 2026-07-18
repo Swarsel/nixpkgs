@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "uwhoisd";
   version = "0.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kgaughan";
@@ -15,6 +14,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Em+SkQ/olmKGntwOG+CUe3x1ZIIH8grOBVxY/a3eVGI=";
   };
+
+  # Project has no tests
+  doCheck = false;
 
   build-system = with python3.pkgs; [
     hatchling
@@ -26,8 +28,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     requests
   ];
 
-  # Project has no tests
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "Universal WHOIS proxy server";

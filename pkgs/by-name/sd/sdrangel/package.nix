@@ -1,6 +1,7 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   airspy,
   airspyhf,
   aptdec,
@@ -11,15 +12,15 @@
   dab_lib,
   dsdcc,
   faad2,
-  fetchFromGitHub,
+  ffmpeg,
   fftwFloat,
   flac,
   ggmorse,
   glew,
   hackrf,
   hidapi,
-  ffmpeg,
   inmarsatc,
+  libbladeRF,
   libiio,
   libogg,
   libopus,
@@ -27,23 +28,22 @@
   libunwind,
   libusb1,
   limesuite,
-  libbladeRF,
   mbelib,
   ninja,
+  nix-update-script,
   opencv4,
   pkg-config,
   qt6,
   qt6Packages,
   rnnoise,
   rtl-sdr,
-  serialdv,
   sdrplay,
+  serialdv,
   sgp4,
   soapysdr-with-plugins,
   uhd,
   zlib,
   withSDRplay ? false,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -57,7 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-rdPXqA0ySnqh/rlMlfcDLyAd6egbggWHrRQRnXeQPFM=";
   };
 
-  __structuredAttrs = true;
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -128,20 +127,25 @@ stdenv.mkDerivation (finalAttrs: {
     "-Wno-dev"
   ];
 
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Software defined radio (SDR) software";
-    homepage = "https://github.com/f4exb/sdrangel";
-    license = lib.licenses.gpl3Plus;
+
     longDescription = ''
       SDRangel is an Open Source Qt6 / OpenGL 3.0+ SDR and signal analyzer frontend to various hardware.
     '';
+
+    homepage = "https://github.com/f4exb/sdrangel";
+    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       aciceri
       alkeryn
       Tungsten842
     ];
+
     platforms = lib.platforms.unix;
   };
 })

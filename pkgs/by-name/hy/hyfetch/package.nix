@@ -1,13 +1,13 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
   installShellFiles,
-  stdenv,
   makeWrapper,
-  pciutils,
-  versionCheckHook,
   nix-update-script,
+  pciutils,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,12 +21,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-/aOVgl93n9IL5lDzY1REg88BXhlqtDDjrZnkD4rQ9aw=";
   };
 
-  cargoHash = "sha256-uTIzLY5H+zoCsC/YalA0ImnJ817KhU5sXHWkbvWEfVk=";
+  outputs = [
+    "out"
+    "man"
+  ];
 
   nativeBuildInputs = [
     installShellFiles
     makeWrapper
   ];
+
+  cargoHash = "sha256-uTIzLY5H+zoCsC/YalA0ImnJ817KhU5sXHWkbvWEfVk=";
 
   # NOTE: The HyFetch project maintains an updated version of neofetch renamed
   # to "neowofetch" which is included in this package. However, the man page
@@ -45,19 +50,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <($out/bin/hyfetch --bpaf-complete-style-zsh)
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
   postFixup = ''
     wrapProgram $out/bin/neowofetch \
       --prefix PATH : ${lib.makeBinPath [ pciutils ]}
   '';
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckKeepEnvironment = [ "PATH" ];
-  doInstallCheck = true;
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version-regex=^(\\d+\\.\\d+\\.\\d+)$" ];
@@ -65,6 +66,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Neofetch with LGBTQ+ pride flags";
+
     longDescription = ''
       HyFetch is a command-line system information tool fork of neofetch.
       HyFetch displays information about your system next to your OS logo
@@ -74,10 +76,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
       operating system or distribution you are running, what theme or
       icon set you are using, etc.
     '';
+
     homepage = "https://github.com/hykilpikonna/hyfetch";
     changelog = "https://github.com/hykilpikonna/hyfetch/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "hyfetch";
+
     maintainers = with lib.maintainers; [
       yisuidenghua
       isabelroses
@@ -85,5 +88,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
       defelo
       Misaka13514
     ];
+
+    mainProgram = "hyfetch";
   };
 })

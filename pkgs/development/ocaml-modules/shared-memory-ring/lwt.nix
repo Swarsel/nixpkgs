@@ -1,20 +1,17 @@
 {
   buildDunePackage,
-  shared-memory-ring,
-  ppx_cstruct,
   cstruct,
   lwt,
   lwt-dllist,
   mirage-profile,
   ounit,
+  ppx_cstruct,
+  shared-memory-ring,
 }:
 
 buildDunePackage {
-  pname = "shared-memory-ring-lwt";
-
   inherit (shared-memory-ring) version src;
-
-  duneVersion = "3";
+  pname = "shared-memory-ring-lwt";
 
   buildInputs = [
     ppx_cstruct
@@ -29,9 +26,12 @@ buildDunePackage {
   ];
 
   doCheck = true;
+
   checkInputs = [
     ounit
   ];
+
+  duneVersion = "3";
 
   meta = shared-memory-ring.meta // {
     description = "Shared memory rings for RPC and bytestream communications using Lwt";

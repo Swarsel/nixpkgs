@@ -1,23 +1,20 @@
 {
   buildDunePackage,
-  happy-eyeballs,
   cmdliner,
   dns,
-  duration,
   domain-name,
-  ipaddr,
+  duration,
   fmt,
+  happy-eyeballs,
+  ipaddr,
   logs,
   lwt,
   mtime,
 }:
 
 buildDunePackage {
-  pname = "happy-eyeballs-lwt";
-
   inherit (happy-eyeballs) src version;
-
-  minimalOCamlVersion = "4.08";
+  pname = "happy-eyeballs-lwt";
 
   buildInputs = [
     cmdliner
@@ -36,9 +33,10 @@ buildDunePackage {
   ];
 
   doCheck = true;
+  minimalOCamlVersion = "4.08";
 
   meta = happy-eyeballs.meta // {
-    mainProgram = "happy_eyeballs_client";
     description = "Connecting to a remote host via IP version 4 or 6 using Lwt_unix";
+    mainProgram = "happy_eyeballs_client";
   };
 }

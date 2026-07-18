@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  file,
+  gnused,
   installShellFiles,
   makeWrapper,
-  pkg-config,
-  file,
+  musl-fts,
   ncurses,
+  pcre2,
+  pkg-config,
   readline,
   which,
-  musl-fts,
-  pcre2,
-  gnused,
   # options
   conf ? null,
+  extraMakeFlags ? [ ],
+  withEmojis ? false,
   withIcons ? false,
   withNerdIcons ? false,
-  withEmojis ? false,
   withPcre ? false,
-  extraMakeFlags ? [ ],
 }:
 
 # Mutually exclusive options
@@ -44,25 +44,18 @@ stdenv.mkDerivation (finalAttrs: {
     ./darwin-fix-file-mime-opts.patch
   ];
 
-  configFile = lib.optionalString (conf != null) (builtins.toFile "nnn.h" conf);
-  preBuild = lib.optionalString (conf != null) "cp ${finalAttrs.configFile} src/nnn.h";
-
   nativeBuildInputs = [
     installShellFiles
     makeWrapper
     pkg-config
   ];
+
   buildInputs = [
     readline
     ncurses
   ]
   ++ lib.optional stdenv.hostPlatform.isMusl musl-fts
   ++ lib.optional withPcre pcre2;
-
-  env = lib.optionalAttrs stdenv.hostPlatform.isMusl {
-    NIX_CFLAGS_COMPILE = "-I${musl-fts}/include";
-    NIX_LDFLAGS = "-lfts";
-  };
 
   makeFlags = [
     "PREFIX=$(out)"
@@ -73,16 +66,12 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withPcre [ "O_PCRE2=1" ]
   ++ extraMakeFlags;
 
-  binPath = lib.makeBinPath [
-    file
-    which
-    gnused
-  ];
+  env = lib.optionalAttrs stdenv.hostPlatform.isMusl {
+    NIX_CFLAGS_COMPILE = "-I${musl-fts}/include";
+    NIX_LDFLAGS = "-lfts";
+  };
 
-  installTargets = [
-    "install"
-    "install-desktop"
-  ];
+  preBuild = lib.optionalString (conf != null) "cp ${finalAttrs.configFile} src/nnn.h";
 
   postInstall = ''
     installShellCompletion --bash --name nnn.bash misc/auto-completion/bash/nnn-completion.bash
@@ -95,13 +84,26 @@ stdenv.mkDerivation (finalAttrs: {
     wrapProgram $out/bin/nnn --prefix PATH : "$binPath"
   '';
 
+  binPath = lib.makeBinPath [
+    file
+    which
+    gnused
+  ];
+
+  configFile = lib.optionalString (conf != null) (builtins.toFile "nnn.h" conf);
+
+  installTargets = [
+    "install"
+    "install-desktop"
+  ];
+
   meta = {
     description = "Small ncurses-based file browser forked from noice";
     homepage = "https://github.com/jarun/nnn";
     changelog = "https://github.com/jarun/nnn/blob/v${finalAttrs.version}/CHANGELOG";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ sikmir ];
+    platforms = lib.platforms.all;
     mainProgram = "nnn";
   };
 })

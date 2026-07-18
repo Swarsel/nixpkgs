@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -24,9 +24,9 @@ buildGoModule {
 
   meta = {
     description = "Tool for importing go packages into gx";
-    mainProgram = "gx-go";
     homepage = "https://github.com/whyrusleeping/gx-go";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ zimbatm ];
+    mainProgram = "gx-go";
   };
 }

@@ -1,20 +1,19 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  desktop-file-utils,
+  gobject-introspection,
+  libadwaita,
   meson,
   ninja,
   pkg-config,
-  gobject-introspection,
+  python3Packages,
   wrapGAppsHook4,
-  desktop-file-utils,
-  libadwaita,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "ascii-draw";
   version = "1.3.0";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "Nokse22";
@@ -42,19 +41,20 @@ python3Packages.buildPythonApplication (finalAttrs: {
     emoji
   ];
 
-  dontWrapGApps = true;
-
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
+
+  dontWrapGApps = true;
+  pyproject = false;
 
   meta = {
     description = "Draw diagrams or anything using only ASCII";
     homepage = "https://github.com/Nokse22/ascii-draw";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "ascii-draw";
     maintainers = with lib.maintainers; [ aleksana ];
     # gnulib bindtextdomain is missing on various other unix platforms
     platforms = lib.platforms.linux;
+    mainProgram = "ascii-draw";
   };
 })

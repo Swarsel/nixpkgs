@@ -1,9 +1,9 @@
-{ mkDerivation, buildPackages }:
+{ buildPackages, mkDerivation }:
 mkDerivation {
-  path = "lib/libipsec";
-
   extraNativeBuildInputs = [
     buildPackages.byacc
     buildPackages.flex
   ];
+
+  path = "lib/libipsec";
 }

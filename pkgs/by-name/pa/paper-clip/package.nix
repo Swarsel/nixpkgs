@@ -1,8 +1,9 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   desktop-file-utils,
   exempi,
-  fetchFromGitHub,
   glib,
   gtk4,
   libadwaita,
@@ -11,7 +12,6 @@
   nix-update-script,
   pkg-config,
   poppler,
-  stdenv,
   vala,
   wrapGAppsHook4,
 }:
@@ -49,12 +49,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/Diego-Ivan/Paper-Clip/releases/tag/v${finalAttrs.version}";
     description = "Edit PDF document metadata";
     homepage = "https://github.com/Diego-Ivan/Paper-Clip";
+    changelog = "https://github.com/Diego-Ivan/Paper-Clip/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
+    platforms = lib.platforms.linux;
     mainProgram = "pdf-metadata-editor";
     teams = [ lib.teams.gnome-circle ];
-    platforms = lib.platforms.linux;
   };
 })

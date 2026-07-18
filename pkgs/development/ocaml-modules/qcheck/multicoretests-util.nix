@@ -17,14 +17,12 @@ buildDunePackage (finalAttrs: {
   };
 
   propagatedBuildInputs = [ qcheck-core ];
-
   doCheck = true;
-
   minimalOCamlVersion = "4.12";
 
   meta = {
-    homepage = "https://github.com/ocaml-multicore/multicoretests";
     description = "Utility functions for property-based testing of multicore programs";
+    homepage = "https://github.com/ocaml-multicore/multicoretests";
     license = lib.licenses.bsd2;
     maintainers = [ lib.maintainers.vbgl ];
   };

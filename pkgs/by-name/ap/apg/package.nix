@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  openssl,
   autoreconfHook,
+  openssl,
 }:
 stdenv.mkDerivation {
   pname = "apg";
@@ -17,11 +17,11 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ autoreconfHook ];
-
   buildInputs = [ openssl ];
 
   meta = {
     description = "Tools for random password generation";
+
     longDescription = ''
        APG (Automated Password Generator) is the tool set for random
        password generation.
@@ -65,6 +65,7 @@ stdenv.mkDerivation {
         * Ability to enforce remote users to use only allowed type of
           password generation
     '';
+
     homepage = "https://github.com/wilx/apg";
     license = lib.licenses.bsd3;
     platforms = lib.platforms.unix;

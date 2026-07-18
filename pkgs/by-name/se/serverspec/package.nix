@@ -1,18 +1,15 @@
 {
   lib,
-  ruby,
   bundlerApp,
   bundlerUpdateScript,
+  ruby,
 }:
 
 bundlerApp {
-  pname = "serverspec";
-  gemdir = ./.;
-
   inherit ruby;
-
+  pname = "serverspec";
   exes = [ "serverspec-init" ];
-
+  gemdir = ./.;
   passthru.updateScript = bundlerUpdateScript "serverspec";
 
   meta = {

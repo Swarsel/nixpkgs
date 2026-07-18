@@ -1,20 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # tests
   pytestCheckHook,
+  pythonAtLeast,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "paginate";
   version = "0.5.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Pylons";
@@ -24,9 +21,6 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
-  pythonImportsCheck = [ "paginate" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
 
   disabledTests = lib.optionals (pythonAtLeast "3.12") [
@@ -34,6 +28,9 @@ buildPythonPackage rec {
     "test_wrong_collection"
     "test_unsliceable_sequence3"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "paginate" ];
 
   meta = {
     description = "Python pagination module";

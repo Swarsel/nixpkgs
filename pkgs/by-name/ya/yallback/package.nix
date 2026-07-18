@@ -2,14 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  coreutils,
   bashInteractive,
+  coreutils,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.2.0";
   pname = "yallback";
+  version = "0.2.0";
+
   src = fetchFromGitHub {
     owner = "abathur";
     repo = "yallback";
@@ -17,11 +18,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-t+fdnDJMFiFqN23dSY3TnsZsIDcravtwdNKJ5MiZosE=";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     coreutils
     bashInteractive
   ];
-  nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
     install -Dv yallback $out/bin/yallback
@@ -30,10 +32,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Callbacks for YARA rule matches";
-    mainProgram = "yallback";
     homepage = "https://github.com/abathur/yallback";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ abathur ];
     platforms = lib.platforms.all;
+    mainProgram = "yallback";
   };
 })

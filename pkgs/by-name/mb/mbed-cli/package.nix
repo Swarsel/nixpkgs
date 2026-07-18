@@ -1,9 +1,9 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
   git,
   mercurial,
+  python3Packages,
 }:
 
 with python3Packages;
@@ -11,7 +11,6 @@ with python3Packages;
 buildPythonApplication (finalAttrs: {
   pname = "mbed-cli";
   version = "1.10.5";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -31,9 +30,11 @@ buildPythonApplication (finalAttrs: {
     pytest test
   '';
 
+  format = "setuptools";
+
   meta = {
-    homepage = "https://github.com/ARMmbed/mbed-cli";
     description = "Arm Mbed Command Line Interface";
+    homepage = "https://github.com/ARMmbed/mbed-cli";
     license = lib.licenses.asl20;
     maintainers = [ ];
   };

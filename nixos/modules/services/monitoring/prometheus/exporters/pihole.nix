@@ -19,64 +19,84 @@ in
   imports = [
     (mkRemovedOptionModule [ "interval" ] "This option has been removed.")
     {
-      options.warnings = options.warnings;
       options.assertions = options.assertions;
+      options.warnings = options.warnings;
     }
   ];
 
-  port = 9617;
   extraOpts = {
     apiToken = mkOption {
-      type = types.str;
       default = "";
-      example = "580a770cb40511eb85290242ac130003580a770cb40511eb85290242ac130003";
+
       description = ''
         Pi-Hole API token which can be used instead of a password
       '';
-    };
-    password = mkOption {
+
+      example = "580a770cb40511eb85290242ac130003580a770cb40511eb85290242ac130003";
       type = types.str;
+    };
+
+    password = mkOption {
       default = "";
-      example = "password";
+
       description = ''
         The password to login into Pi-Hole. An api token can be used instead.
       '';
-    };
-    piholeHostname = mkOption {
+
+      example = "password";
       type = types.str;
+    };
+
+    piholeHostname = mkOption {
       default = "pihole";
-      example = "127.0.0.1";
+
       description = ''
         Hostname or address where to find the Pi-Hole webinterface
       '';
+
+      example = "127.0.0.1";
+      type = types.str;
     };
+
     piholePort = mkOption {
-      type = types.port;
       default = 80;
-      example = 443;
+
       description = ''
         The port Pi-Hole webinterface is reachable on
       '';
+
+      example = 443;
+      type = types.port;
     };
+
     protocol = mkOption {
+      default = "http";
+
+      description = ''
+        The protocol which is used to connect to Pi-Hole
+      '';
+
+      example = "https";
+
       type = types.enum [
         "http"
         "https"
       ];
-      default = "http";
-      example = "https";
-      description = ''
-        The protocol which is used to connect to Pi-Hole
-      '';
     };
+
     timeout = mkOption {
-      type = types.str;
       default = "5s";
+
       description = ''
         Controls the timeout to connect to a Pi-Hole instance
       '';
+
+      type = types.str;
     };
   };
+
+  port = 9617;
+
   serviceOpts = {
     serviceConfig = {
       ExecStart = ''

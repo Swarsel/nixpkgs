@@ -1,26 +1,25 @@
 {
   lib,
   stdenv,
-  scdoc,
   hare,
   hareHook,
+  scdoc,
 }:
 stdenv.mkDerivation {
+  inherit (hare) version src;
   pname = "haredoc";
+
   outputs = [
     "out"
     "man"
   ];
-  inherit (hare) version src;
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     scdoc
     hareHook
   ];
-
-  strictDeps = true;
-
-  enableParallelBuilding = true;
 
   buildPhase = ''
     runHook preBuild
@@ -42,12 +41,14 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://harelang.org/";
+    inherit (hareHook.meta) platforms badPlatforms;
     description = "Hare's documentation tool";
+    homepage = "https://harelang.org/";
     license = lib.licenses.gpl3Only;
     maintainers = [ ];
     mainProgram = "haredoc";
-    inherit (hareHook.meta) platforms badPlatforms;
   };
 }

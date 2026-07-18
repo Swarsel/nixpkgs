@@ -15,12 +15,13 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1rpqrh0022sbrjvd55a0jvpdqhhka5msf8dsz6adbbmxy3xzgdid";
   };
 
-  dontBuild = true;
   installPhase = ''
     mkdir -p $out/bin $out/share/man/man8
     cp bashcards.8 $out/share/man/man8/
     cp bashcards $out/bin/
   '';
+
+  dontBuild = true;
 
   meta = {
     description = "Practice flashcards in bash";

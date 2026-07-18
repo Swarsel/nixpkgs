@@ -26,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     llvmPackages.clang
     llvmPackages.llvm.dev
   ];
+
   buildInputs = [
     llvmPackages.libclang
     llvmPackages.llvm
@@ -51,13 +52,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "C/c++ language server powered by clang";
-    mainProgram = "ccls";
     homepage = "https://github.com/MaskRay/ccls";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
     maintainers = [
       lib.maintainers.mic92
       lib.maintainers.tobim
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "ccls";
   };
 })

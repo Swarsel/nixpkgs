@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule rec {
@@ -19,10 +19,10 @@ buildGoModule rec {
 
   meta = {
     description = "Prometheus exporter for PgBouncer";
-    mainProgram = "pgbouncer_exporter";
     homepage = "https://github.com/prometheus-community/pgbouncer_exporter";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ _1000101 ];
     platforms = lib.platforms.linux;
+    mainProgram = "pgbouncer_exporter";
   };
 }

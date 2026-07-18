@@ -4,18 +4,18 @@ in
 
 {
   lib,
+  stdenv,
   buildEnv,
   cctools,
+  config,
   generateSplicesForMkScope,
   libc,
   llvmPackages,
   makeScopeWithSplicing',
   pkgs,
   preLibcHeaders,
-  stdenv,
   targetPackages,
   wrapBintoolsWith,
-  config,
 }:
 
 let
@@ -42,35 +42,17 @@ let
 in
 
 makeScopeWithSplicing' {
-  otherSplices = generateSplicesForMkScope "darwin";
   extra = self: {
     inherit (llvmPackages) clang-unwrapped;
-
     # This is an internal helper for building source-release packages.
     # It’s not intended for use outside of the Darwin package set.
     mkAppleDerivation = self.callPackage ../os-specific/darwin/mk-apple-derivation { };
   };
+
   f = lib.extends autoCalledPackagesWithAliases (
     self:
     lib.recurseIntoAttrs {
       inherit (self.adv_cmds) ps;
-
-      # Removes propagated packages from the stdenv, so those packages can be built without depending upon themselves.
-      bootstrapStdenv = mkBootstrapStdenv stdenv;
-
-      # Note: Not in `package.nix` because it messes up the overrides.
-      binutils = wrapBintoolsWith {
-        libc = targetPackages.libc or libc;
-        bintools = self.binutils-unwrapped;
-      };
-
-      binutilsNoLibc = wrapBintoolsWith {
-        libc = targetPackages.preLibcHeaders or preLibcHeaders;
-        bintools = self.binutils-unwrapped;
-      };
-
-      sourceRelease = self.callPackage ../os-specific/darwin/sourceRelease { };
-
       inherit (self.file_cmds) xattr;
 
       # Note: Not in `packages.nix` because it’s a package set not a derivation.
@@ -144,6 +126,20 @@ makeScopeWithSplicing' {
         requireXcode
         ;
 
+      # Note: Not in `package.nix` because it messes up the overrides.
+      binutils = wrapBintoolsWith {
+        bintools = self.binutils-unwrapped;
+        libc = targetPackages.libc or libc;
+      };
+
+      binutilsNoLibc = wrapBintoolsWith {
+        bintools = self.binutils-unwrapped;
+        libc = targetPackages.preLibcHeaders or preLibcHeaders;
+      };
+
+      # Removes propagated packages from the stdenv, so those packages can be built without depending upon themselves.
+      bootstrapStdenv = mkBootstrapStdenv stdenv;
+
       # Note: Not in `package.nix` because it references files outside of the package.
       # See doc/packages/darwin-builder.section.md
       linux-builder = lib.makeOverridable (
@@ -158,13 +154,12 @@ makeScopeWithSplicing' {
               ]
               ++ modules;
 
+              nixpkgs.hostPlatform = lib.mkDefault (toGuest stdenv.hostPlatform.system);
               # If you need to override this, consider starting with the right Nixpkgs
               # in the first place, ie change `pkgs` in `pkgs.darwin.linux-builder`.
               # or if you're creating new wiring that's not `pkgs`-centric, perhaps use the
               # macos-builder profile directly.
               virtualisation.host = { inherit pkgs; };
-
-              nixpkgs.hostPlatform = lib.mkDefault (toGuest stdenv.hostPlatform.system);
             };
 
             system = null;
@@ -177,6 +172,10 @@ makeScopeWithSplicing' {
       linux-builder-x86_64 = self.linux-builder.override {
         modules = [ { nixpkgs.hostPlatform = "x86_64-linux"; } ];
       };
+
+      sourceRelease = self.callPackage ../os-specific/darwin/sourceRelease { };
     }
   );
+
+  otherSplices = generateSplicesForMkScope "darwin";
 }

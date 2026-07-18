@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   docopt,
   pyserial,
   pyserial-asyncio-fast,
-  setuptools,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "rflink";
   version = "0.0.68";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aequitas";
@@ -21,6 +20,12 @@ buildPythonPackage rec {
     hash = "sha256-0mMBZYN3xzRotVuLw2HgzSVhsXUv531x3i97B2lI5KE=";
   };
 
+  postPatch = ''
+    substituteInPlace setup.py \
+      --replace "version=version_from_git()" "version='${version}'"
+  '';
+
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,13 +34,7 @@ buildPythonPackage rec {
     pyserial-asyncio-fast
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  postPatch = ''
-    substituteInPlace setup.py \
-      --replace "version=version_from_git()" "version='${version}'"
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "rflink.protocol" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pycryptodome,
   pycryptodomex,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "unicrypto";
   version = "0.0.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "skelsec";
@@ -19,6 +18,8 @@ buildPythonPackage rec {
     hash = "sha256-RYwovFMalBNDPDEVjQ/8/N7DkOMiyeEQ5ESdgCK8RW8=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage rec {
     pycryptodomex
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "unicrypto" ];
 
   meta = {

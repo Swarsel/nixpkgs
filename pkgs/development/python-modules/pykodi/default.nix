@@ -1,8 +1,8 @@
 {
   lib,
+  aiohttp,
   buildPythonPackage,
   fetchPypi,
-  aiohttp,
   jsonrpc-async,
   jsonrpc-websocket,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pykodi";
   version = "0.2.7";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -25,7 +24,7 @@ buildPythonPackage rec {
 
   # has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pykodi" ];
 
   meta = {

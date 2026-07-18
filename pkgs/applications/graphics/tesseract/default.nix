@@ -12,21 +12,21 @@ let
 in
 {
   tesseract3 = callPackage ./wrapper.nix {
-    tesseractBase = base3;
     languages = languages.v3;
+    tesseractBase = base3;
   };
 
   tesseract4 = lowPrio (
     callPackage ./wrapper.nix {
-      tesseractBase = base4;
       languages = languages.v4;
+      tesseractBase = base4;
     }
   );
 
   tesseract5 = lowPrio (
     callPackage ./wrapper.nix {
-      tesseractBase = base5;
       languages = languages.v4;
+      tesseractBase = base5;
     }
   );
 }

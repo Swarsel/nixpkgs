@@ -1,12 +1,12 @@
 {
-  cmake,
-  fetchFromGitHub,
-  hidapi,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  cmake,
+  hidapi,
   libftdi1,
   libusb1,
   pkg-config,
-  stdenv,
   udev,
   zlib,
 }:
@@ -39,10 +39,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Universal utility for programming FPGAs";
-    mainProgram = "openFPGALoader";
     homepage = "https://github.com/trabucayre/openFPGALoader";
     license = lib.licenses.agpl3Only;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "openFPGALoader";
   };
 })

@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   bison,
+  fetchpatch,
   flex,
-  perl,
   gmp,
-  mpfr,
   libsForQt5,
+  mpfr,
+  perl,
   enableGist ? true,
 }:
 
@@ -27,17 +27,16 @@ stdenv.mkDerivation rec {
     # https://github.com/Gecode/gecode/pull/74
     (fetchpatch {
       name = "fix-const-weights-clang.patch";
-      url = "https://github.com/Gecode/gecode/commit/c810c96b1ce5d3692e93439f76c4fa7d3daf9fbb.patch";
       sha256 = "0270msm22q5g5sqbdh8kmrihlxnnxqrxszk9a49hdxd72736p4fc";
+      url = "https://github.com/Gecode/gecode/commit/c810c96b1ce5d3692e93439f76c4fa7d3daf9fbb.patch";
     })
   ];
 
-  enableParallelBuilding = true;
-  dontWrapQtApps = true;
   nativeBuildInputs = [
     bison
     flex
   ];
+
   buildInputs = [
     perl
     gmp
@@ -45,11 +44,14 @@ stdenv.mkDerivation rec {
   ]
   ++ lib.optional enableGist libsForQt5.qtbase;
 
+  dontWrapQtApps = true;
+  enableParallelBuilding = true;
+
   meta = {
-    license = lib.licenses.mit;
-    homepage = "https://www.gecode.org";
     description = "Toolkit for developing constraint-based systems";
-    platforms = lib.platforms.all;
+    homepage = "https://www.gecode.org";
+    license = lib.licenses.mit;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 }

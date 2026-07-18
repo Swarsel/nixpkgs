@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -24,8 +24,8 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://www.latofonts.com";
     description = "Sans-serif typeface family designed in Summer 2010 by Łukasz Dziedzic";
+
     longDescription = ''
       Lato is a sans-serif typeface family designed in the Summer 2010
       by Warsaw-based designer Łukasz Dziedzic ("Lato" means "Summer"
@@ -40,8 +40,10 @@ stdenvNoCC.mkDerivation {
       of the family have been revised and four additional weights were
       created.
     '';
+
+    homepage = "https://www.latofonts.com";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ chris-martin ];
+    platforms = lib.platforms.all;
   };
 }

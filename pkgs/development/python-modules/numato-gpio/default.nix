@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pyserial,
-  rich,
   pytestCheckHook,
+  rich,
 }:
 
 buildPythonPackage rec {
   pname = "numato-gpio";
   version = "0.14.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "clssn";
@@ -19,6 +18,10 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-9kbPEtJOQhCxYh8cjyCAufV63mV7ZF1x7CdUyJLfqII=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     hatchling
@@ -29,14 +32,12 @@ buildPythonPackage rec {
     rich
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # Exclude system tests that require hardware
     "sys_tests"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "numato_gpio"

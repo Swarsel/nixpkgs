@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  gtk2,
-  pkg-config,
-  curl,
   cdparanoia,
+  curl,
+  gtk2,
   libid3tag,
   libtool,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,19 +23,20 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     libtool
   ];
+
   buildInputs = [
     gtk2
     curl
     cdparanoia
     libid3tag
   ];
+
   enableParallelBuilding = true;
 
   meta = {
     description = "GTK-based audio CD player/ripper";
     homepage = "https://sourceforge.net/projects/grip/";
     license = lib.licenses.gpl2Plus;
-
     maintainers = [ ];
     platforms = lib.platforms.linux;
     mainProgram = "grip";

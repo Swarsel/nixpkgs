@@ -1,29 +1,23 @@
 {
   lib,
-  buildPackages,
   stdenv,
+  buildPackages,
+  gtest,
   mkMesonExecutable,
-
   nix-util,
   nix-util-c,
   nix-util-test-support,
-
   rapidcheck,
-  gtest,
-  zstd,
-  runCommand,
-
-  # Configuration Options
-
-  version,
   resolvePath,
+  runCommand,
+  # Configuration Options
+  version,
+  zstd,
 }:
 
 mkMesonExecutable (finalAttrs: {
-  pname = "nix-util-tests";
   inherit version;
-
-  workDir = ./.;
+  pname = "nix-util-tests";
 
   buildInputs = [
     nix-util
@@ -40,6 +34,8 @@ mkMesonExecutable (finalAttrs: {
   excludedTestPatterns = lib.optionals (lib.versions.majorMinor version == "2.34") [
     "fchmodatTryNoFollow.fallbackWithoutProc"
   ];
+
+  workDir = ./.;
 
   passthru = {
     tests = {

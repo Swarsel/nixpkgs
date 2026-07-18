@@ -2,40 +2,41 @@
   lib,
   stdenv,
   fetchurl,
-  python3,
-  perl,
-  blast,
   autoPatchelfHook,
-  zlib,
+  blast,
   bzip2,
+  coreutils,
   glib,
   libxml2,
-  coreutils,
+  perl,
+  python3,
   sqlite,
+  zlib,
 }:
 let
   pname = "blast-bin";
   version = "2.16.0";
 
   srcs = {
-    x86_64-linux = fetchurl {
-      url = "https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/${version}/ncbi-blast-${version}+-x64-linux.tar.gz";
-      hash = "sha256-sLEwmMkB0jsyStFwDnRxu3QIp/f1F9dNX6rXEb526PQ=";
-    };
-    aarch64-linux = fetchurl {
-      url = "https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/${version}/ncbi-blast-${version}+-aarch64-linux.tar.gz";
-      hash = "sha256-1EeiMu08R9Glq8qRky4OTT5lQPLJcM7iaqUrmUOS4MI=";
-    };
     aarch64-darwin = fetchurl {
-      url = "https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/${version}/ncbi-blast-${version}+-aarch64-macosx.tar.gz";
       hash = "sha256-6NpPNLBCHaBRscLZ5fjh5Dv3bjjPk2Gh2+L7xEtiJNs=";
+      url = "https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/${version}/ncbi-blast-${version}+-aarch64-macosx.tar.gz";
+    };
+
+    aarch64-linux = fetchurl {
+      hash = "sha256-1EeiMu08R9Glq8qRky4OTT5lQPLJcM7iaqUrmUOS4MI=";
+      url = "https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/${version}/ncbi-blast-${version}+-aarch64-linux.tar.gz";
+    };
+
+    x86_64-linux = fetchurl {
+      hash = "sha256-sLEwmMkB0jsyStFwDnRxu3QIp/f1F9dNX6rXEb526PQ=";
+      url = "https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/${version}/ncbi-blast-${version}+-x64-linux.tar.gz";
     };
   };
   src = srcs.${stdenv.hostPlatform.system};
 in
 stdenv.mkDerivation {
   inherit pname version src;
-
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
 
   buildInputs = [
@@ -65,12 +66,13 @@ stdenv.mkDerivation {
 
   meta = {
     inherit (blast.meta) description homepage license;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ natsukium ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    maintainers = with lib.maintainers; [ natsukium ];
   };
 }

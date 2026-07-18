@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -13,8 +13,6 @@ stdenvNoCC.mkDerivation rec {
     hash = "sha256-B89GNbOmm3lY/cRWQJEFu/5morCM/WrRQb/m6covbt8=";
   };
 
-  sourceRoot = ".";
-
   installPhase = ''
     runHook preInstall
 
@@ -24,11 +22,13 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
+
   meta = {
     description = "Upscaled version of scientifica";
     homepage = "https://github.com/oppiliappan/curie";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ moni ];
+    platforms = lib.platforms.all;
   };
 }

@@ -1,9 +1,8 @@
 {
   lib,
   stdenv,
-  rustPlatform,
-  autoPatchelfHook,
   fetchFromGitHub,
+  autoPatchelfHook,
   installShellFiles,
   libGL,
   libgbm,
@@ -12,6 +11,7 @@
   nix-update-script,
   pango,
   pkgconf,
+  rustPlatform,
   sqlite,
   udev,
   vulkan-loader,
@@ -28,8 +28,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-bdvcGO1E9fkmKiXQxc3nvISwjIAegY8g37HmxXolsmU=";
   };
-
-  cargoHash = "sha256-5yjMPDh7liaa9+KntfdCzUXz4vWzTcAhFmXrnVZ+pjM=";
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -48,9 +46,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     xkeyboard_config
   ];
 
-  runtimeDependencies = [
-    libglvnd
-  ];
+  cargoHash = "sha256-5yjMPDh7liaa9+KntfdCzUXz4vWzTcAhFmXrnVZ+pjM=";
 
   checkFlags = [
     # these 5 tests fail in the lix sandbox because they rely on io_uring
@@ -73,17 +69,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --fish <("$out/bin/jay" generate-completion fish)
   '';
 
+  runtimeDependencies = [
+    libglvnd
+  ];
+
   passthru = {
-    updateScript = nix-update-script { };
     providedSessions = [ "jay" ];
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Wayland compositor written in Rust";
     homepage = "https://github.com/mahkoh/jay";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ uku3lig ];
+    platforms = lib.platforms.linux;
     mainProgram = "jay";
   };
 })

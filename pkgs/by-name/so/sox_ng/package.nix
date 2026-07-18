@@ -1,49 +1,49 @@
 {
-  config,
   lib,
   stdenv,
-  fetchFromCodeberg,
-  autoreconfHook,
-  autoconf-archive,
-  pkg-config,
-  enableReplace ? true,
-  enableAMR ? true,
-  opencore-amr,
-  enableAlsa ? true,
   alsa-lib,
-  enableFLAC ? true,
-  flac,
-  enableFFTW ? true,
+  autoconf-archive,
+  autoreconfHook,
+  config,
+  fetchFromCodeberg,
   fftw,
-  enableLadspa ? true,
+  flac,
   ladspa-sdk,
-  enableLame ? config.sox.enableLame or false,
   lame,
-  enableLibao ? true,
   libao,
-  enableLibid3tag ? true,
   libid3tag,
-  enableLibmad ? true,
   libmad,
-  enableLibogg ? true,
   libogg,
-  libvorbis,
-  enableLibpulseaudio ?
-    stdenv.hostPlatform.isLinux && lib.meta.availableOn stdenv.hostPlatform libpulseaudio,
-  libpulseaudio,
-  enableLibsndfile ? true,
-  libsndfile,
-  enableOpusfile ? true,
-  opusfile,
-  enablePNG ? true,
   libpng,
-  enableSpeex ? true,
+  libpulseaudio,
+  libsndfile,
+  libvorbis,
+  opencore-amr,
+  opusfile,
+  pkg-config,
   speex,
   speexdsp,
-  enableTwolame ? config.sox.enableTwolame or false,
   twolame,
-  enableWavpack ? true,
   wavpack,
+  enableAMR ? true,
+  enableAlsa ? true,
+  enableFFTW ? true,
+  enableFLAC ? true,
+  enableLadspa ? true,
+  enableLame ? config.sox.enableLame or false,
+  enableLibao ? true,
+  enableLibid3tag ? true,
+  enableLibmad ? true,
+  enableLibogg ? true,
+  enableLibpulseaudio ?
+    stdenv.hostPlatform.isLinux && lib.meta.availableOn stdenv.hostPlatform libpulseaudio,
+  enableLibsndfile ? true,
+  enableOpusfile ? true,
+  enablePNG ? true,
+  enableReplace ? true,
+  enableSpeex ? true,
+  enableTwolame ? config.sox.enableTwolame or false,
+  enableWavpack ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -57,15 +57,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-yIebX0a/fbpr/NMgiK+gjDPNValf3gITpxDSJAc6eAw=";
   };
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
   outputs = [
     "out"
     "dev"
     "lib"
     "man"
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -102,13 +101,14 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.enableFeature enableReplace "replace")
   ];
 
+  __structuredAttrs = true;
   enableParallelBuilding = true;
 
   meta = {
     description = "Another Swiss Army Knife of sound processing utilities";
     homepage = "https://codeberg.org/sox_ng/sox_ng";
-    maintainers = with lib.maintainers; [ fpletz ];
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ fpletz ];
     platforms = lib.platforms.unix;
   };
 })

@@ -2,35 +2,35 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gitUpdater,
-  cmake,
-  pkg-config,
-  ninja,
-  makeWrapper,
-  libjack2,
   alsa-lib,
   alsa-tools,
+  cmake,
+  curl,
   freetype,
+  gitUpdater,
+  gtk3,
   jsoncpp,
+  libGL,
+  libjack2,
   libusb1,
   libx11,
-  libxrandr,
-  libxinerama,
-  libxext,
-  libxcursor,
-  libxscrnsaver,
-  libGL,
   libxcb,
-  vst2-sdk,
-  libxcb-util,
-  libxkbcommon,
-  libxcb-keysyms,
   libxcb-cursor,
-  gtk3,
-  webkitgtk_4_1,
-  python3,
-  curl,
+  libxcb-keysyms,
+  libxcb-util,
+  libxcursor,
+  libxext,
+  libxinerama,
+  libxkbcommon,
+  libxrandr,
+  libxscrnsaver,
+  makeWrapper,
   mount,
+  ninja,
+  pkg-config,
+  python3,
+  vst2-sdk,
+  webkitgtk_4_1,
   zenity,
   # It is not allowed to distribute binaries with the VST2 SDK plugin without a license
   # (the author of Bespoke has such a licence but not Nix). VST3 should work out of the box.
@@ -63,16 +63,6 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace Source/cmake/versiontools.cmake \
       --replace-fail 'cmake_host_system_information(RESULT BESPOKE_BUILD_FQDN QUERY FQDN)' 'set(BESPOKE_BUILD_FQDN "localhost")'
   '';
-
-  cmakeBuildType = "Release";
-
-  cmakeFlags = [
-    (lib.cmakeBool "BESPOKE_SYSTEM_PYBIND11" true)
-    (lib.cmakeBool "BESPOKE_SYSTEM_JSONCPP" true)
-  ]
-  ++ lib.optionals enableVST2 [
-    (lib.cmakeFeature "BESPOKE_VST2_SDK_LOCATION" "${vst2-sdk}")
-  ];
 
   strictDeps = true;
 
@@ -119,6 +109,25 @@ stdenv.mkDerivation (finalAttrs: {
     mount
   ];
 
+  cmakeFlags = [
+    (lib.cmakeBool "BESPOKE_SYSTEM_PYBIND11" true)
+    (lib.cmakeBool "BESPOKE_SYSTEM_JSONCPP" true)
+  ]
+  ++ lib.optionals enableVST2 [
+    (lib.cmakeFeature "BESPOKE_VST2_SDK_LOCATION" "${vst2-sdk}")
+  ];
+
+  env.NIX_LDFLAGS = lib.optionalString stdenv.hostPlatform.isLinux "-rpath ${
+    lib.makeLibraryPath [
+      libx11
+      libxrandr
+      libxinerama
+      libxext
+      libxcursor
+      libxscrnsaver
+    ]
+  }";
+
   postInstall =
     if stdenv.hostPlatform.isDarwin then
       ''
@@ -143,17 +152,7 @@ stdenv.mkDerivation (finalAttrs: {
           }'
       '';
 
-  env.NIX_LDFLAGS = lib.optionalString stdenv.hostPlatform.isLinux "-rpath ${
-    lib.makeLibraryPath [
-      libx11
-      libxrandr
-      libxinerama
-      libxext
-      libxcursor
-      libxscrnsaver
-    ]
-  }";
-
+  cmakeBuildType = "Release";
   dontPatchELF = true; # needed or nix will try to optimize the binary by removing "useless" rpath
 
   passthru.updateScript = gitUpdater {
@@ -164,13 +163,15 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Software modular synth with controllers support, scripting and VST";
     homepage = "https://www.bespokesynth.com/";
     license = [ lib.licenses.gpl3Plus ];
+
     maintainers = with lib.maintainers; [
       astro
       tobiasBora
       OPNA2608
       PowerUser64
     ];
-    mainProgram = "BespokeSynth";
+
     platforms = lib.platforms.all;
+    mainProgram = "BespokeSynth";
   };
 })

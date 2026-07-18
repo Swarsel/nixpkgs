@@ -20,8 +20,8 @@ appimageTools.wrapType2 rec {
     homepage = "https://jet-pilot.app/";
     changelog = "https://github.com/unxsist/jet-pilot/releases";
     license = lib.licenses.mit;
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ kashw2 ];
+    platforms = [ "x86_64-linux" ];
     mainProgram = "jet-pilot";
   };
 }

@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  rustPlatform,
   cargo,
   desktop-file-utils,
   glib,
-  meson,
-  ninja,
-  pkg-config,
-  rustc,
-  wrapGAppsHook4,
   libadwaita,
   libxml2,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  rustc,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation rec {
@@ -21,19 +21,14 @@ stdenv.mkDerivation rec {
   version = "1.6.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
-    group = "World";
     owner = "design";
     repo = "emblem";
     tag = version;
     hash = "sha256-OqP6KLaDix4hR/AA+lfaMu4nZPqpAKfYzZu7tr+RUJI=";
+    domain = "gitlab.gnome.org";
     # Temporary workaround for https://github.com/NixOS/nixpkgs/issues/485701
     forceFetchGit = true;
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-J00zw8jOeMLjGyn2Gj4TA5vHjIWOw+x/XEIXMyBFMdw=";
+    group = "World";
   };
 
   nativeBuildInputs = [
@@ -59,17 +54,22 @@ stdenv.mkDerivation rec {
     ]
   );
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-J00zw8jOeMLjGyn2Gj4TA5vHjIWOw+x/XEIXMyBFMdw=";
+  };
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Generate project icons and avatars from a symbolic icon";
-    mainProgram = "emblem";
     homepage = "https://gitlab.gnome.org/World/design/emblem";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "emblem";
     teams = [ lib.teams.gnome-circle ];
   };
 }

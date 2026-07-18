@@ -1,7 +1,7 @@
 {
-  rustPlatform,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,7 +22,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/coffebar/hyprland-monitor-attached";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ bddvlpr ];
-    mainProgram = "hyprland-monitor-attached";
     platforms = lib.platforms.linux;
+    mainProgram = "hyprland-monitor-attached";
   };
 })

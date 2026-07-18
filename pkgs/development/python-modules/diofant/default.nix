@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cython,
-  fetchFromGitHub,
   gmpy2,
   hypothesis,
   mpmath,
@@ -18,26 +18,12 @@
 buildPythonPackage rec {
   pname = "diofant";
   version = "0.15.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "diofant";
     repo = "diofant";
     tag = "v${version}";
     hash = "sha256-uQvAYSURDhuAKcX0WVMk4y2ZXiiq0lPZct/7A5n5t34=";
-  };
-
-  build-system = [ setuptools-scm ];
-
-  dependencies = [ mpmath ];
-
-  optional-dependencies = {
-    exports = [
-      cython
-      numpy
-      scipy
-    ];
-    gmpy = [ gmpy2 ];
   };
 
   doCheck = false; # some tests get stuck easily
@@ -50,9 +36,8 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  pytestFlags = [
-    "-Wignore::DeprecationWarning"
-  ];
+  build-system = [ setuptools-scm ];
+  dependencies = [ mpmath ];
 
   disabledTestMarks = [
     "slow"
@@ -65,12 +50,28 @@ buildPythonPackage rec {
     "test_evalf_sum"
   ];
 
+  optional-dependencies = {
+    exports = [
+      cython
+      numpy
+      scipy
+    ];
+
+    gmpy = [ gmpy2 ];
+  };
+
+  pyproject = true;
+
+  pytestFlags = [
+    "-Wignore::DeprecationWarning"
+  ];
+
   pythonImportsCheck = [ "diofant" ];
 
   meta = {
-    changelog = "https://diofant.readthedocs.io/en/latest/release/notes-${src.tag}.html";
     description = "Python CAS library";
     homepage = "https://github.com/diofant/diofant";
+    changelog = "https://diofant.readthedocs.io/en/latest/release/notes-${src.tag}.html";
     license = lib.licenses.bsd3;
     maintainers = [ ];
   };

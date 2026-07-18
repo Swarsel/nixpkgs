@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   crashtest,
-  fetchFromGitHub,
   pastel,
   poetry-core,
   pylev,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "clikit";
   version = "0.6.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sdispater";
@@ -22,7 +21,10 @@ buildPythonPackage rec {
     hash = "sha256-xAsUNhVQBjtSFHyjjnicAKRC3+Tdn3AdGDUYhmOOIdA=";
   };
 
-  pythonRelaxDeps = [ "crashtest" ];
+  nativeCheckInputs = [
+    pytest-mock
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -32,12 +34,9 @@ buildPythonPackage rec {
     pylev
   ];
 
-  nativeCheckInputs = [
-    pytest-mock
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "clikit" ];
+  pythonRelaxDeps = [ "crashtest" ];
 
   meta = {
     description = "Group of utilities to build beautiful and testable command line interfaces";

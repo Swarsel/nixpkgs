@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
   fetchpatch,
+  meson,
   multimarkdown,
   ninja,
   pkg-config,
@@ -23,6 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
   # Add missing meson build support
   # See: https://github.com/Linaro/vixl/pull/7
   patches = [ ./add_missing_meson_support.patch ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -31,13 +32,11 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
   ];
 
-  strictDeps = true;
-
   meta = {
     description = "AArch32 and AArch64 runtime code generation library";
     homepage = "https://github.com/Linaro/vixl";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ onny ];
+    platforms = lib.platforms.unix;
   };
 })

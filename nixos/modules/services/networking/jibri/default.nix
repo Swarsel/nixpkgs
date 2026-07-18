@@ -19,9 +19,6 @@ let
     "XMPP_PASSWORD_" + stringAsChars (c: if builtins.match "[A-Za-z0-9]" c != null then c else "_") s;
 
   defaultJibriConfig = {
-    id = "";
-    single-use-mode = false;
-
     api = {
       http.external-api-port = 2222;
       http.internal-api-port = 3333;
@@ -30,39 +27,38 @@ let
         name: env: {
           inherit name;
 
-          xmpp-server-hosts = env.xmppServerHosts;
-          xmpp-domain = env.xmppDomain;
-          control-muc = {
-            domain = env.control.muc.domain;
-            room-name = env.control.muc.roomName;
-            nickname = env.control.muc.nickname;
+          call-login = {
+            domain = env.call.login.domain;
+            password = format.lib.mkSubstitution (toVarName "${name}_call");
+            username = env.call.login.username;
           };
 
           control-login = {
             domain = env.control.login.domain;
-            username = env.control.login.username;
             password = format.lib.mkSubstitution (toVarName "${name}_control");
+            username = env.control.login.username;
           };
 
-          call-login = {
-            domain = env.call.login.domain;
-            username = env.call.login.username;
-            password = format.lib.mkSubstitution (toVarName "${name}_call");
+          control-muc = {
+            domain = env.control.muc.domain;
+            nickname = env.control.muc.nickname;
+            room-name = env.control.muc.roomName;
           };
 
           strip-from-room-domain = env.stripFromRoomDomain;
-          usage-timeout = env.usageTimeout;
           trust-all-xmpp-certs = env.disableCertificateVerification;
+          usage-timeout = env.usageTimeout;
+          xmpp-domain = env.xmppDomain;
+          xmpp-server-hosts = env.xmppServerHosts;
         }
       );
     };
 
-    recording = {
-      recordings-directory = "/tmp/recordings";
-      finalize-script = "${cfg.finalizeScript}";
+    call-status-checks = {
+      all-muted-timeout = "10 minutes";
+      default-call-empty-timout = "30 seconds";
+      no-media-timout = "30 seconds";
     };
-
-    streaming.rtmp-allow-list = [ ".*" ];
 
     chrome.flags = [
       "--use-fake-ui-for-media-stream"
@@ -74,16 +70,18 @@ let
     ]
     ++ lists.optional cfg.ignoreCert "--ignore-certificate-errors";
 
-    stats.enable-stats-d = true;
-    webhook.subscribers = [ ];
-
+    id = "";
     jwt-info = { };
 
-    call-status-checks = {
-      no-media-timout = "30 seconds";
-      all-muted-timeout = "10 minutes";
-      default-call-empty-timout = "30 seconds";
+    recording = {
+      finalize-script = "${cfg.finalizeScript}";
+      recordings-directory = "/tmp/recordings";
     };
+
+    single-use-mode = false;
+    stats.enable-stats-d = true;
+    streaming.rtmp-allow-list = [ ".*" ];
+    webhook.subscribers = [ ];
   };
   # Allow overriding leaves of the default config despite types.attrs not doing any merging.
   jibriConfig = recursiveUpdate defaultJibriConfig cfg.config;
@@ -91,19 +89,21 @@ let
 in
 {
   options.services.jibri = with types; {
-    enable = mkEnableOption "Jitsi BRoadcasting Infrastructure. Currently Jibri must be run on a host that is also running {option}`services.jitsi-meet.enable`, so for most use cases it will be simpler to run {option}`services.jitsi-meet.jibri.enable`";
     config = mkOption {
-      type = format.type;
       default = { };
+
       description = ''
         Jibri configuration.
         See <https://github.com/jitsi/jibri/blob/master/src/main/resources/reference.conf>
         for default configuration with comments.
       '';
+
+      type = format.type;
     };
 
+    enable = mkEnableOption "Jitsi BRoadcasting Infrastructure. Currently Jibri must be run on a host that is also running {option}`services.jitsi-meet.enable`, so for most use cases it will be simpler to run {option}`services.jitsi-meet.jibri.enable`";
+
     finalizeScript = mkOption {
-      type = types.path;
       default = pkgs.writeScript "finalize_recording.sh" ''
         #!/bin/sh
 
@@ -116,6 +116,7 @@ in
 
         exit 0
       '';
+
       defaultText = literalExpression ''
         pkgs.writeScript "finalize_recording.sh" ''''''
         #!/bin/sh
@@ -130,6 +131,11 @@ in
         exit 0
         '''''';
       '';
+
+      description = ''
+        This script runs when jibri finishes recording a video of a conference.
+      '';
+
       example = literalExpression ''
         pkgs.writeScript "finalize_recording.sh" ''''''
         #!/bin/sh
@@ -138,25 +144,29 @@ in
         exit 0
         '''''';
       '';
-      description = ''
-        This script runs when jibri finishes recording a video of a conference.
-      '';
+
+      type = types.path;
     };
 
     ignoreCert = mkOption {
-      type = bool;
       default = false;
-      example = true;
+
       description = ''
         Whether to enable the flag "--ignore-certificate-errors" for the Chromium browser opened by Jibri.
         Intended for use in automated tests or anywhere else where using a verified cert for Jitsi-Meet is not possible.
       '';
+
+      example = true;
+      type = bool;
     };
 
     xmppEnvironments = mkOption {
+      default = { };
+
       description = ''
         XMPP servers to connect to.
       '';
+
       example = literalExpression ''
         "jitsi-meet" = {
           xmppServerHosts = [ "localhost" ];
@@ -185,112 +195,144 @@ in
           stripFromRoomDomain = "conference.";
         };
       '';
-      default = { };
+
       type = attrsOf (
         submodule (
           { name, ... }:
           {
             options = {
-              xmppServerHosts = mkOption {
-                type = listOf str;
-                example = [ "xmpp.example.org" ];
-                description = ''
-                  Hostnames of the XMPP servers to connect to.
-                '';
-              };
-              xmppDomain = mkOption {
-                type = str;
-                example = "xmpp.example.org";
-                description = ''
-                  The base XMPP domain.
-                '';
-              };
-              control.muc.domain = mkOption {
-                type = str;
-                description = ''
-                  The domain part of the MUC to connect to for control.
-                '';
-              };
-              control.muc.roomName = mkOption {
-                type = str;
-                default = "JibriBrewery";
-                description = ''
-                  The room name of the MUC to connect to for control.
-                '';
-              };
-              control.muc.nickname = mkOption {
-                type = str;
-                default = "jibri";
-                description = ''
-                  The nickname for this Jibri instance in the MUC.
-                '';
-              };
-              control.login.domain = mkOption {
-                type = str;
-                description = ''
-                  The domain part of the JID for this Jibri instance.
-                '';
-              };
-              control.login.username = mkOption {
-                type = str;
-                default = "jvb";
-                description = ''
-                  User part of the JID.
-                '';
-              };
-              control.login.passwordFile = mkOption {
-                type = str;
-                example = "/run/keys/jibri-xmpp1";
-                description = ''
-                  File containing the password for the user.
-                '';
-              };
-
               call.login.domain = mkOption {
-                type = str;
-                example = "recorder.xmpp.example.org";
                 description = ''
                   The domain part of the JID for the recorder.
                 '';
-              };
-              call.login.username = mkOption {
+
+                example = "recorder.xmpp.example.org";
                 type = str;
-                default = "recorder";
-                description = ''
-                  User part of the JID for the recorder.
-                '';
               };
+
               call.login.passwordFile = mkOption {
-                type = str;
-                example = "/run/keys/jibri-recorder-xmpp1";
                 description = ''
                   File containing the password for the user.
                 '';
+
+                example = "/run/keys/jibri-recorder-xmpp1";
+                type = str;
               };
+
+              call.login.username = mkOption {
+                default = "recorder";
+
+                description = ''
+                  User part of the JID for the recorder.
+                '';
+
+                type = str;
+              };
+
+              control.login.domain = mkOption {
+                description = ''
+                  The domain part of the JID for this Jibri instance.
+                '';
+
+                type = str;
+              };
+
+              control.login.passwordFile = mkOption {
+                description = ''
+                  File containing the password for the user.
+                '';
+
+                example = "/run/keys/jibri-xmpp1";
+                type = str;
+              };
+
+              control.login.username = mkOption {
+                default = "jvb";
+
+                description = ''
+                  User part of the JID.
+                '';
+
+                type = str;
+              };
+
+              control.muc.domain = mkOption {
+                description = ''
+                  The domain part of the MUC to connect to for control.
+                '';
+
+                type = str;
+              };
+
+              control.muc.nickname = mkOption {
+                default = "jibri";
+
+                description = ''
+                  The nickname for this Jibri instance in the MUC.
+                '';
+
+                type = str;
+              };
+
+              control.muc.roomName = mkOption {
+                default = "JibriBrewery";
+
+                description = ''
+                  The room name of the MUC to connect to for control.
+                '';
+
+                type = str;
+              };
+
               disableCertificateVerification = mkOption {
-                type = bool;
                 default = false;
+
                 description = ''
                   Whether to skip validation of the server's certificate.
                 '';
+
+                type = bool;
               };
 
               stripFromRoomDomain = mkOption {
-                type = str;
                 default = "0";
-                example = "conference.";
+
                 description = ''
                   The prefix to strip from the room's JID domain to derive the call URL.
                 '';
-              };
-              usageTimeout = mkOption {
+
+                example = "conference.";
                 type = str;
+              };
+
+              usageTimeout = mkOption {
                 default = "0";
-                example = "1 hour";
+
                 description = ''
                   The duration that the Jibri session can be.
                   A value of zero means indefinitely.
                 '';
+
+                example = "1 hour";
+                type = str;
+              };
+
+              xmppDomain = mkOption {
+                description = ''
+                  The base XMPP domain.
+                '';
+
+                example = "xmpp.example.org";
+                type = str;
+              };
+
+              xmppServerHosts = mkOption {
+                description = ''
+                  Hostnames of the XMPP servers to connect to.
+                '';
+
+                example = [ "xmpp.example.org" ];
+                type = listOf str;
               };
             };
 
@@ -314,87 +356,33 @@ in
   };
 
   config = mkIf cfg.enable {
-    users.groups.jibri = { };
-    users.groups.plugdev = { };
-    users.users.jibri = {
-      isSystemUser = true;
-      group = "jibri";
-      home = "/var/lib/jibri";
-      extraGroups = [
-        "jitsi-meet"
-        "adm"
-        "audio"
-        "video"
-        "plugdev"
-      ];
-    };
-
-    systemd.services.jibri-xorg = {
-      description = "Jitsi Xorg Process";
-
-      after = [ "network.target" ];
-      wantedBy = [
-        "jibri.service"
-        "jibri-icewm.service"
-      ];
-
-      preStart = ''
-        cp --no-preserve=mode,ownership ${pkgs.jibri}/etc/jitsi/jibri/* /var/lib/jibri
-        mv /var/lib/jibri/{,.}asoundrc
+    boot = {
+      extraModprobeConfig = ''
+        options snd-aloop enable=1,1,1,1,1,1,1,1
       '';
 
-      environment.DISPLAY = ":0";
-      serviceConfig = {
-        Type = "simple";
-
-        User = "jibri";
-        Group = "jibri";
-        KillMode = "process";
-        Restart = "on-failure";
-        RestartPreventExitStatus = 255;
-
-        StateDirectory = "jibri";
-
-        ExecStart = "${pkgs.xorg-server}/bin/Xorg -nocursor -noreset +extension RANDR +extension RENDER -config ${pkgs.jibri}/etc/jitsi/jibri/xorg-video-dummy.conf -logfile /dev/null :0";
-      };
+      kernelModules = [ "snd-aloop" ];
     };
 
-    systemd.services.jibri-icewm = {
-      description = "Jitsi Window Manager";
-
-      requires = [ "jibri-xorg.service" ];
-      after = [ "jibri-xorg.service" ];
-      wantedBy = [ "jibri.service" ];
-
-      environment.DISPLAY = ":0";
-      serviceConfig = {
-        Type = "simple";
-
-        User = "jibri";
-        Group = "jibri";
-        Restart = "on-failure";
-        RestartPreventExitStatus = 255;
-
-        StateDirectory = "jibri";
-
-        ExecStart = "${pkgs.icewm}/bin/icewm-session";
-      };
+    # Configure Chromium to not show the "Chrome is being controlled by automatic test software" message.
+    environment.etc."chromium/policies/managed/managed_policies.json".text = builtins.toJSON {
+      CommandLineFlagSecurityWarningsEnabled = false;
     };
 
     systemd.services.jibri = {
-      description = "Jibri Process";
-
-      requires = [
-        "jibri-icewm.service"
-        "jibri-xorg.service"
-      ];
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Jibri Process";
+      environment.HOME = "/var/lib/jibri";
 
       path = with pkgs; [
         chromedriver
         chromium
         ffmpeg-full
+      ];
+
+      requires = [
+        "jibri-icewm.service"
+        "jibri-xorg.service"
       ];
 
       script =
@@ -408,40 +396,90 @@ in
           ${pkgs.jdk11_headless}/bin/java -Djava.util.logging.config.file=${./logging.properties-journal} -Dconfig.file=${configFile} -jar ${pkgs.jibri}/opt/jitsi/jibri/jibri.jar --config /var/lib/jibri/jibri.json
         '';
 
-      environment.HOME = "/var/lib/jibri";
-
       serviceConfig = {
-        Type = "simple";
-
-        User = "jibri";
         Group = "jibri";
         Restart = "always";
         RestartPreventExitStatus = 255;
-
         StateDirectory = "jibri";
+        Type = "simple";
+        User = "jibri";
       };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    systemd.services.jibri-icewm = {
+      after = [ "jibri-xorg.service" ];
+      description = "Jitsi Window Manager";
+      environment.DISPLAY = ":0";
+      requires = [ "jibri-xorg.service" ];
+
+      serviceConfig = {
+        ExecStart = "${pkgs.icewm}/bin/icewm-session";
+        Group = "jibri";
+        Restart = "on-failure";
+        RestartPreventExitStatus = 255;
+        StateDirectory = "jibri";
+        Type = "simple";
+        User = "jibri";
+      };
+
+      wantedBy = [ "jibri.service" ];
+    };
+
+    systemd.services.jibri-xorg = {
+      after = [ "network.target" ];
+      description = "Jitsi Xorg Process";
+      environment.DISPLAY = ":0";
+
+      preStart = ''
+        cp --no-preserve=mode,ownership ${pkgs.jibri}/etc/jitsi/jibri/* /var/lib/jibri
+        mv /var/lib/jibri/{,.}asoundrc
+      '';
+
+      serviceConfig = {
+        ExecStart = "${pkgs.xorg-server}/bin/Xorg -nocursor -noreset +extension RANDR +extension RENDER -config ${pkgs.jibri}/etc/jitsi/jibri/xorg-video-dummy.conf -logfile /dev/null :0";
+        Group = "jibri";
+        KillMode = "process";
+        Restart = "on-failure";
+        RestartPreventExitStatus = 255;
+        StateDirectory = "jibri";
+        Type = "simple";
+        User = "jibri";
+      };
+
+      wantedBy = [
+        "jibri.service"
+        "jibri-icewm.service"
+      ];
     };
 
     systemd.tmpfiles.settings."10-jibri"."/var/log/jitsi/jibri".d = {
-      user = "jibri";
       group = "jibri";
       mode = "755";
+      user = "jibri";
     };
 
-    # Configure Chromium to not show the "Chrome is being controlled by automatic test software" message.
-    environment.etc."chromium/policies/managed/managed_policies.json".text = builtins.toJSON {
-      CommandLineFlagSecurityWarningsEnabled = false;
+    users.groups.jibri = { };
+    users.groups.plugdev = { };
+
+    users.users.jibri = {
+      extraGroups = [
+        "jitsi-meet"
+        "adm"
+        "audio"
+        "video"
+        "plugdev"
+      ];
+
+      group = "jibri";
+      home = "/var/lib/jibri";
+      isSystemUser = true;
     };
+
     warnings = [
       "All security warnings for Chromium have been disabled. This is necessary for Jibri, but it also impacts all other uses of Chromium on this system."
     ];
-
-    boot = {
-      extraModprobeConfig = ''
-        options snd-aloop enable=1,1,1,1,1,1,1,1
-      '';
-      kernelModules = [ "snd-aloop" ];
-    };
   };
 
   meta.teams = [ lib.teams.jitsi ];

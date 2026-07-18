@@ -2,8 +2,8 @@
   lib,
   stdenv,
   buildPythonPackage,
-  python,
   fetchPypi,
+  python,
 }:
 
 let
@@ -12,6 +12,7 @@ let
   platforms = {
     aarch64-darwin =
       if pyShortVersion == "cp314" then "macosx_10_15_universal2" else "macosx_10_13_universal2";
+
     aarch64-linux = "manylinux_2_26_aarch64";
     x86_64-linux = "manylinux2014_x86_64.manylinux_2_17_x86_64";
   };
@@ -35,16 +36,16 @@ let
       or (throw "Unsupported Python version: ${python.pythonVersion}");
 in
 buildPythonPackage rec {
+  inherit format;
   pname = "gurobipy";
   version = "13.0.2";
-  inherit format;
 
   src = fetchPypi {
     inherit pname version;
-    python = pyShortVersion;
+    inherit format platform hash;
     abi = pyShortVersion;
     dist = pyShortVersion;
-    inherit format platform hash;
+    python = pyShortVersion;
   };
 
   pythonImportsCheck = [ "gurobipy" ];

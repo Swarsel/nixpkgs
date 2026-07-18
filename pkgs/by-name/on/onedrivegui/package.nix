@@ -1,15 +1,14 @@
 {
   lib,
-  python3Packages,
-  qt6,
   fetchFromGitHub,
-  writeText,
   copyDesktopItems,
   makeDesktopItem,
   makeWrapper,
-  onedrive,
-
   nix-update-script,
+  onedrive,
+  python3Packages,
+  qt6,
+  writeText,
 }:
 
 let
@@ -28,9 +27,8 @@ let
 
 in
 python3Packages.buildPythonApplication rec {
-  pname = "onedrivegui";
   inherit version;
-  pyproject = true;
+  pname = "onedrivegui";
 
   src = fetchFromGitHub {
     owner = "bpozdena";
@@ -39,9 +37,11 @@ python3Packages.buildPythonApplication rec {
     hash = "sha256-KgpQShjSjZHNBC/aovpl/VQO5zhJZ8+8GLup75m0gJo=";
   };
 
-  build-system = with python3Packages; [
-    setuptools
-  ];
+  postPatch = ''
+    # Patch global_config.py so DIR_PATH points to shared files location
+    sed -i src/global_config.py -e "s@^DIR_PATH =.*@DIR_PATH = '$out/share/OneDriveGUI'@"
+    cp ${setupPy} ${setupPy.name}
+  '';
 
   nativeBuildInputs = [
     copyDesktopItems
@@ -54,36 +54,7 @@ python3Packages.buildPythonApplication rec {
     qt6.qtwayland
   ];
 
-  dependencies = with python3Packages; [
-    pyside6
-    requests
-  ];
-
-  # wrap manually to avoid having a bash script in $out/bin with a .py extension
-  dontWrapPythonPrograms = true;
-  dontWrapQtApps = true;
-
   doCheck = false; # No tests defined
-  # pythonImportsCheck = [ "OneDriveGUI" ]; # requires a display
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "OneDriveGUI";
-      exec = "onedrivegui";
-      desktopName = "OneDriveGUI";
-      comment = "OneDrive GUI Client";
-      type = "Application";
-      icon = "OneDriveGUI";
-      terminal = false;
-      categories = [ "Utility" ];
-    })
-  ];
-
-  postPatch = ''
-    # Patch global_config.py so DIR_PATH points to shared files location
-    sed -i src/global_config.py -e "s@^DIR_PATH =.*@DIR_PATH = '$out/share/OneDriveGUI'@"
-    cp ${setupPy} ${setupPy.name}
-  '';
 
   postInstall = ''
     mkdir -p $out/share/OneDriveGUI
@@ -102,14 +73,41 @@ python3Packages.buildPythonApplication rec {
       --add-flags $out/${python3Packages.python.sitePackages}/OneDriveGUI.py
   '';
 
+  build-system = with python3Packages; [
+    setuptools
+  ];
+
+  dependencies = with python3Packages; [
+    pyside6
+    requests
+  ];
+
+  # pythonImportsCheck = [ "OneDriveGUI" ]; # requires a display
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Utility" ];
+      comment = "OneDrive GUI Client";
+      desktopName = "OneDriveGUI";
+      exec = "onedrivegui";
+      icon = "OneDriveGUI";
+      name = "OneDriveGUI";
+      terminal = false;
+      type = "Application";
+    })
+  ];
+
+  # wrap manually to avoid having a bash script in $out/bin with a .py extension
+  dontWrapPythonPrograms = true;
+  dontWrapQtApps = true;
+  pyproject = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/bpozdena/OneDriveGUI";
     description = "Simple GUI for Linux OneDrive Client, with multi-account support";
-    mainProgram = "onedrivegui";
+    homepage = "https://github.com/bpozdena/OneDriveGUI";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ philipdb ];
     platforms = lib.platforms.linux;
+    mainProgram = "onedrivegui";
   };
 }

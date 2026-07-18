@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  nix-update-script,
-  setuptools,
   aiohttp,
+  buildPythonPackage,
   cryptography,
+  nix-update-script,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "python-aidot";
   version = "0.3.53";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "AiDot-Development-Team";
@@ -29,6 +28,7 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "aidot" ];
 
   # Upstream publishes pre-release tags (e.g. v0.3.54b4) alongside

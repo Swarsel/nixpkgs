@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
-  cmake,
-  rocm-cmake,
-  clr,
-  rocfft,
-  gtest,
   boost,
+  clr,
+  cmake,
   fftw,
   fftwFloat,
+  gtest,
   openmp,
-  buildTests ? false,
+  rocfft,
+  rocm-cmake,
+  rocmUpdateScript,
   buildBenchmarks ? false,
   buildSamples ? false,
+  buildTests ? false,
   gpuTargets ? clr.localGpuTargets or [ ],
 }:
 
@@ -22,6 +22,19 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "hipfft";
   version = "7.2.3";
+
+  src = fetchFromGitHub {
+    owner = "ROCm";
+    repo = "rocm-libraries";
+    rev = "rocm-${finalAttrs.version}";
+    hash = "sha256-EtxZuxBPx6trTN9iC7uri2+UR0Eolp919Ry4U1PEqNA=";
+    fetchSubmodules = true;
+
+    sparseCheckout = [
+      "projects/hipfft"
+      "shared"
+    ];
+  };
 
   outputs = [
     "out"
@@ -35,19 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals buildSamples [
     "sample"
   ];
-
-  src = fetchFromGitHub {
-    owner = "ROCm";
-    repo = "rocm-libraries";
-    rev = "rocm-${finalAttrs.version}";
-    sparseCheckout = [
-      "projects/hipfft"
-      "shared"
-    ];
-    fetchSubmodules = true;
-    hash = "sha256-EtxZuxBPx6trTN9iC7uri2+UR0Eolp919Ry4U1PEqNA=";
-  };
-  sourceRoot = "${finalAttrs.src.name}/projects/hipfft";
 
   nativeBuildInputs = [
     clr
@@ -109,13 +109,14 @@ stdenv.mkDerivation (finalAttrs: {
       rmdir $out/bin
     '';
 
+  sourceRoot = "${finalAttrs.src.name}/projects/hipfft";
   passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
 
   meta = {
     description = "FFT marshalling library";
     homepage = "https://github.com/ROCm/rocm-libraries/tree/develop/projects/hipfft";
     license = with lib.licenses; [ mit ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

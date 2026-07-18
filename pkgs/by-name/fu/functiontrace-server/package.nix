@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -15,7 +15,6 @@ rustPlatform.buildRustPackage rec {
   };
 
   cargoHash = "sha256-rDCIzJUFA+2iEpITg3MuKFfgiyQ6GtMvIigiHkX70M8=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

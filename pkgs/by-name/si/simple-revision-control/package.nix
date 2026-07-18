@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  asciidoc,
   fetchFromGitLab,
+  asciidoc,
+  asciidoctor,
   git,
   makeWrapper,
   python3,
   rcs,
-  asciidoctor,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,6 +21,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-i5i6+RmQ/70ul2r/NC6xv/8sUP3+8mkQIDgyC1NrSrI=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     asciidoc
     asciidoctor
@@ -33,15 +35,13 @@ stdenv.mkDerivation (finalAttrs: {
     rcs
   ];
 
-  strictDeps = true;
+  makeFlags = [
+    "prefix=${placeholder "out"}"
+  ];
 
   preConfigure = ''
     patchShebangs .
   '';
-
-  makeFlags = [
-    "prefix=${placeholder "out"}"
-  ];
 
   postInstall = ''
     wrapProgram $out/bin/src \
@@ -49,8 +49,9 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://www.catb.org/esr/src/";
+    inherit (python3.meta) platforms;
     description = "Simple single-file revision control";
+
     longDescription = ''
       SRC, acronym of Simple Revision Control, is RCS/SCCS reloaded with a
       modern UI, designed to manage single-file solo projects kept more than one
@@ -59,10 +60,11 @@ stdenv.mkDerivation (finalAttrs: {
       will seem familiar to Subversion/Git/hg users, and no binary blobs
       anywhere.
     '';
+
+    homepage = "http://www.catb.org/esr/src/";
     changelog = "https://gitlab.com/esr/src/-/raw/${finalAttrs.version}/NEWS.adoc";
     license = lib.licenses.bsd2;
-    mainProgram = "src";
     maintainers = [ ];
-    inherit (python3.meta) platforms;
+    mainProgram = "src";
   };
 })

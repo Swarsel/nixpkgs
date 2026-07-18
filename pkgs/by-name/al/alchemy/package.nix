@@ -10,8 +10,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "alchemy";
   version = "008";
 
-  enableParallelBuilding = true;
-
   src = fetchurl {
     url = "http://al.chemy.org/files/Alchemy-${finalAttrs.version}.tar.gz";
     sha256 = "0449bvdccgx1jqnws1bckzs4nv2d230523qs0jx015gi81s1q7li";
@@ -28,8 +26,11 @@ stdenv.mkDerivation (finalAttrs: {
     chmod +x $out/bin/alchemy
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Drawing application";
+
     longDescription = ''
       Alchemy is an open drawing project aimed at exploring how we can sketch,
       draw, and create on computers in new ways. Alchemy isn’t software for
@@ -38,9 +39,10 @@ stdenv.mkDerivation (finalAttrs: {
       Experimental in nature, Alchemy lets you brainstorm visually to explore
       an expanded range of ideas and possibilities in a serendipitous way.
     '';
+
     homepage = "http://al.chemy.org/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.gpl3Plus;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ ];
     platforms = lib.platforms.linux;
     mainProgram = "alchemy";

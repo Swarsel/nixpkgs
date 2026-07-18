@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   pyspnego,
   pytest-mock,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "requests-kerberos";
   version = "0.15.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "requests";
@@ -35,6 +34,7 @@ buildPythonPackage rec {
     pytest-mock
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "requests_kerberos" ];
 
   meta = {

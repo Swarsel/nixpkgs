@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  libxml2,
   libdatovka,
   libsForQt5,
+  libxml2,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

@@ -5,18 +5,22 @@
   dbus,
   fontconfig,
   gccForLibs,
+  libinput,
   libx11,
+  libxcb,
+  libxcb-image,
+  libxcb-keysyms,
+  libxcb-render-util,
+  libxcb-wm,
   libxcomposite,
   libxcursor,
   libxdamage,
   libxext,
   libxi,
+  libxkbcommon,
   libxrandr,
   libxrender,
   libxtst,
-  libinput,
-  libxcb,
-  libxkbcommon,
   nss,
   qtbase,
   qtmultimedia,
@@ -24,24 +28,29 @@
   qttools,
   qtwebengine,
   qtwebview,
-  libxcb-image,
-  libxcb-keysyms,
-  libxcb-render-util,
-  libxcb-wm,
 }:
 
 {
-  pname,
-  version,
-  src,
   meta,
+  pname,
+  src,
+  version,
 }:
 let
   unwrapped = stdenv.mkDerivation {
-    pname = "${pname}-unwrapped";
     inherit version src meta;
+    pname = "${pname}-unwrapped";
+
+    patches = [
+      ./libs.patch # Fixes issues with bundled libraries that we've stripped out
+    ];
+
+    postPatch = ''
+      rm -r lib/plugins lib/libQt6* lib/libssl* lib/libicu* lib/libcrypto*
+    '';
 
     nativeBuildInputs = [ autoPatchelfHook ];
+
     buildInputs = [
       cups
       dbus
@@ -72,19 +81,6 @@ let
       libxcb-wm
     ];
 
-    dontBuild = true;
-
-    # Don't wrap the Qt apps; upstream has its own wrapper scripts.
-    dontWrapQtApps = true;
-
-    patches = [
-      ./libs.patch # Fixes issues with bundled libraries that we've stripped out
-    ];
-
-    postPatch = ''
-      rm -r lib/plugins lib/libQt6* lib/libssl* lib/libicu* lib/libcrypto*
-    '';
-
     installPhase = ''
       mkdir -p $out
       cp -r bin lib $out
@@ -95,10 +91,15 @@ let
     preFixup = ''
       patchelf --clear-symbol-version close $out/bin/p4{v,admin}.bin
     '';
+
+    dontBuild = true;
+    # Don't wrap the Qt apps; upstream has its own wrapper scripts.
+    dontWrapQtApps = true;
   };
 in
 stdenv.mkDerivation {
   inherit pname version;
+  inherit (unwrapped) meta passthru;
 
   # Build a "clean" version of the package so that we don't add extra ".bin" or
   # configuration files to users' PATHs. We can't easily put the unwrapped
@@ -110,7 +111,6 @@ stdenv.mkDerivation {
       ln -s ${unwrapped}/bin/$f $out/bin
     done
   '';
-  preferLocalBuild = true;
 
-  inherit (unwrapped) meta passthru;
+  preferLocalBuild = true;
 }

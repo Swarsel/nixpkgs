@@ -1,12 +1,12 @@
 {
-  ndpi,
-  fetchFromGitHub,
   lib,
   stdenv,
-  autoreconfHook,
+  fetchFromGitHub,
   autoconf,
   automake,
+  autoreconfHook,
   fixDarwinDylibNames,
+  ndpi,
 }:
 
 ndpi.overrideAttrs (
@@ -19,8 +19,6 @@ ndpi.overrideAttrs (
       hash = "sha256-W8ZBWMQH6bRHl+fXmG3XLO37UxEnSgCVCgzfwy8N+OM=";
     };
 
-    configureScript = "./autogen.sh";
-
     nativeBuildInputs =
       lib.remove autoreconfHook prevAttrs.nativeBuildInputs
       ++ [
@@ -28,5 +26,7 @@ ndpi.overrideAttrs (
         automake
       ]
       ++ lib.optionals stdenv.hostPlatform.isDarwin [ fixDarwinDylibNames ];
+
+    configureScript = "./autogen.sh";
   }
 )

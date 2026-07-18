@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "language-tags";
   version = "1.2.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "OnroerendErfgoed";
@@ -18,7 +17,7 @@ buildPythonPackage (finalAttrs: {
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "language_tags" ];
 
   meta = {

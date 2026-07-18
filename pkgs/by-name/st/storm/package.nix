@@ -1,21 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  zip,
-  unzip,
   jdk,
   python3,
-  confFile ? "",
-  extraLibraryPaths ? [ ],
-  extraJars ? [ ],
   testers,
+  unzip,
+  zip,
+  confFile ? "",
+  extraJars ? [ ],
+  extraLibraryPaths ? [ ],
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "apache-storm";
   version = "2.8.3";
-  name = "${finalAttrs.pname}-${finalAttrs.version}";
 
   src = fetchurl {
     url = "mirror://apache/storm/${finalAttrs.name}/${finalAttrs.name}.tar.gz";
@@ -36,6 +35,8 @@ stdenv.mkDerivation (finalAttrs: {
     mv conf bin $out/.
     mv log4j2 $out/conf/.
   '';
+
+  dontStrip = true;
 
   fixupPhase = ''
     patchShebangs $out
@@ -67,18 +68,18 @@ stdenv.mkDerivation (finalAttrs: {
     ${lib.concatMapStrings (jar: "ln -s ${jar};\n") extraJars}
   '';
 
-  dontStrip = true;
+  name = "${finalAttrs.pname}-${finalAttrs.version}";
 
   passthru.tests.version = testers.testVersion {
-    package = finalAttrs.finalPackage;
     command = "storm version";
+    package = finalAttrs.finalPackage;
   };
 
   meta = {
-    homepage = "https://storm.apache.org/";
     description = "Distributed realtime computation system";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    homepage = "https://storm.apache.org/";
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ ];
     platforms = with lib.platforms; unix;
   };

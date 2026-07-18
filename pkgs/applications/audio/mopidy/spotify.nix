@@ -1,15 +1,14 @@
 {
   lib,
   fetchFromGitHub,
-  pythonPackages,
   mopidy,
   nix-update-script,
+  pythonPackages,
 }:
 
 pythonPackages.buildPythonApplication (finalAttrs: {
   pname = "mopidy-spotify";
   version = "5.0.0a3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mopidy";
@@ -17,6 +16,11 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-pM+kqeWYiPXv9DZDBTgwiEwC6Sbqv6uz5vJ5odcixOw=";
   };
+
+  nativeCheckInputs = [
+    pythonPackages.pytestCheckHook
+    pythonPackages.responses
+  ];
 
   build-system = [ pythonPackages.setuptools ];
 
@@ -26,11 +30,7 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     pythonPackages.requests
   ];
 
-  nativeCheckInputs = [
-    pythonPackages.pytestCheckHook
-    pythonPackages.responses
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mopidy_spotify" ];
 
   passthru = {

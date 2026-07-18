@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   intel-gmmlib,
   intel-graphics-compiler,
   level-zero,
   libva,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-YjCRbYsq44U+pwdTnyA5lffJtSHVK2u3R2XRRNb6l9c=";
   };
+
+  outputs = [
+    "out"
+    "drivers"
+  ];
 
   nativeBuildInputs = [
     cmake
@@ -44,14 +49,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "NEO_DISABLE_MITIGATIONS" true)
   ];
 
-  outputs = [
-    "out"
-    "drivers"
-  ];
-
-  # causes redefinition of _FORTIFY_SOURCE
-  hardeningDisable = [ "fortify3" ];
-
   postInstall = ''
     # Avoid clash with intel-ocl
     mv $out/etc/OpenCL/vendors/intel.icd $out/etc/OpenCL/vendors/intel-neo.icd
@@ -72,16 +69,21 @@ stdenv.mkDerivation (finalAttrs: {
       $out/lib/intel-opencl/libigdrcl.so
   '';
 
+  # causes redefinition of _FORTIFY_SOURCE
+  hardeningDisable = [ "fortify3" ];
+
   meta = {
     description = "Intel Graphics Compute Runtime oneAPI Level Zero and OpenCL, supporting 12th Gen and newer";
-    mainProgram = "ocloc";
     homepage = "https://github.com/intel/compute-runtime";
     changelog = "https://github.com/intel/compute-runtime/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ SuperSandro2000 ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
-    maintainers = with lib.maintainers; [ SuperSandro2000 ];
+
+    mainProgram = "ocloc";
   };
 })

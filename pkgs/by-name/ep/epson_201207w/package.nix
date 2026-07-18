@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  rpmextract,
   autoreconfHook,
+  cups,
   file,
   libjpeg,
-  cups,
+  rpmextract,
 }:
 
 let
@@ -15,16 +15,17 @@ let
 in
 stdenv.mkDerivation {
 
-  pname = "epson_201207w";
   inherit version;
+  pname = "epson_201207w";
 
   src = fetchurl {
+    sha256 = "0icbsd3m8ij1zm55q8vms81dxd79nf5m33i2g4knddljsfv7nxdc";
+
     # NOTE: Don't forget to update the webarchive link too!
     urls = [
       "https://download3.ebz.epson.net/dsc/f/03/00/15/64/87/25d34a13841e5e95d80266e6fd8dfcdf67c95634/epson-inkjet-printer-201207w-1.0.1-1.src.rpm"
       "https://web.archive.org/web/https://download3.ebz.epson.net/dsc/f/03/00/15/64/87/25d34a13841e5e95d80266e6fd8dfcdf67c95634/epson-inkjet-printer-201207w-1.0.1-1.src.rpm"
     ];
-    sha256 = "0icbsd3m8ij1zm55q8vms81dxd79nf5m33i2g4knddljsfv7nxdc";
   };
 
   nativeBuildInputs = [
@@ -37,17 +38,6 @@ stdenv.mkDerivation {
     libjpeg
     cups
   ];
-
-  unpackPhase = ''
-    rpmextract $src
-    tar -zxf epson-inkjet-printer-201207w-${version}.tar.gz
-    tar -zxf epson-inkjet-printer-filter-${filterVersion}.tar.gz
-    for ppd in epson-inkjet-printer-201207w-${version}/ppds/*; do
-      substituteInPlace $ppd --replace "/opt/epson-inkjet-printer-201207w" "$out"
-      substituteInPlace $ppd --replace "/cups/lib" "/lib/cups"
-    done
-    cd epson-inkjet-printer-filter-${filterVersion}
-  '';
 
   preConfigure = ''
     chmod +x configure
@@ -63,9 +53,20 @@ stdenv.mkDerivation {
     cp -a README $out/doc/README.driver
   '';
 
+  unpackPhase = ''
+    rpmextract $src
+    tar -zxf epson-inkjet-printer-201207w-${version}.tar.gz
+    tar -zxf epson-inkjet-printer-filter-${filterVersion}.tar.gz
+    for ppd in epson-inkjet-printer-201207w-${version}/ppds/*; do
+      substituteInPlace $ppd --replace "/opt/epson-inkjet-printer-201207w" "$out"
+      substituteInPlace $ppd --replace "/cups/lib" "/lib/cups"
+    done
+    cd epson-inkjet-printer-filter-${filterVersion}
+  '';
+
   meta = {
-    homepage = "https://www.openprinting.org/driver/epson-201207w";
     description = "Epson printer driver (L110, L210, L300, L350, L355, L550, L555)";
+
     longDescription = ''
       This software is a filter program used with the Common UNIX Printing
       System (CUPS) under Linux. It supplies high quality printing with
@@ -86,10 +87,14 @@ stdenv.mkDerivation {
           drivers = [ pkgs.epson_201207w ];
         };
     '';
+
+    homepage = "https://www.openprinting.org/driver/epson-201207w";
+
     license = with lib.licenses; [
       lgpl21Plus
       epson
     ];
+
     maintainers = [ lib.maintainers.romildo ];
     platforms = [ "x86_64-linux" ];
   };

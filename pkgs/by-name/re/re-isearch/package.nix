@@ -1,12 +1,12 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
   db,
   file,
   libnsl,
-  writableTmpDirAsHomeHook,
   nix-update-script,
+  writableTmpDirAsHomeHook,
 }:
 
 stdenv.mkDerivation {
@@ -59,11 +59,6 @@ stdenv.mkDerivation {
     )
   '';
 
-  # Handwritten Makefiles, doesn't properly ensure that libraries are built before they're used in linking
-  # ld: cannot find -libUtils: No such file or directory
-  # ld: cannot find -libLocal: No such file or directory
-  enableParallelBuilding = false;
-
   installPhase = ''
     runHook preInstall
 
@@ -75,6 +70,11 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  # Handwritten Makefiles, doesn't properly ensure that libraries are built before they're used in linking
+  # ld: cannot find -libUtils: No such file or directory
+  # ld: cannot find -libLocal: No such file or directory
+  enableParallelBuilding = false;
+
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];
   };
@@ -83,8 +83,8 @@ stdenv.mkDerivation {
     description = "Novel multimodal search and retrieval engine";
     homepage = "https://nlnet.nl/project/Re-iSearch/";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.astro ];
+    platforms = lib.platforms.linux;
     teams = [ lib.teams.ngi ];
   };
 }

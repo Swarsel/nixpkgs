@@ -1,19 +1,18 @@
 {
   lib,
   stdenv,
-  kernel,
-  udev,
   autoconf,
   automake,
-  libtool,
   hwdata,
+  kernel,
   kernelOlder,
+  libtool,
+  udev,
 }:
 
 stdenv.mkDerivation {
   pname = "usbip-${kernel.pname}";
   version = kernel.version;
-
   src = kernel.src;
 
   patches =
@@ -30,8 +29,9 @@ stdenv.mkDerivation {
     automake
     libtool
   ];
-  buildInputs = [ udev ];
 
+  buildInputs = [ udev ];
+  configureFlags = [ "--with-usbids-dir=${hwdata}/share/hwdata/" ];
   env.NIX_CFLAGS_COMPILE = toString [ "-Wno-error=address-of-packed-member" ];
 
   preConfigure = ''
@@ -39,15 +39,15 @@ stdenv.mkDerivation {
     ./autogen.sh
   '';
 
-  configureFlags = [ "--with-usbids-dir=${hwdata}/share/hwdata/" ];
-
   meta = {
-    homepage = "https://github.com/torvalds/linux/tree/master/tools/usb/usbip";
     description = "Allows to pass USB device from server to client over the network";
+    homepage = "https://github.com/torvalds/linux/tree/master/tools/usb/usbip";
+
     license = with lib.licenses; [
       gpl2Only
       gpl2Plus
     ];
+
     platforms = lib.platforms.linux;
     broken = kernelOlder "4.10";
   };

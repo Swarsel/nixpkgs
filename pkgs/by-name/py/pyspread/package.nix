@@ -1,23 +1,23 @@
 {
   lib,
-  python3Packages,
-  fetchPypi,
-  qt6,
   R,
   copyDesktopItems,
+  fetchPypi,
   makeDesktopItem,
+  python3Packages,
+  qt6,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "pyspread";
   version = "2.4.5";
 
   src = fetchPypi {
-    pname = "pyspread";
     inherit (finalAttrs) version;
     hash = "sha256-7Nurn9OmK6LEz5TT543JUYKc/LjpkwfN/7r0ebS1PfY=";
+    pname = "pyspread";
   };
 
-  pyproject = true;
+  strictDeps = true;
 
   nativeBuildInputs = [
     R
@@ -26,6 +26,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
   ];
 
   buildInputs = [ qt6.qtsvg ];
+  doCheck = true;
+
+  preFixup = ''
+    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
+  '';
 
   dependencies = with python3Packages; [
     pyqt6
@@ -46,36 +51,30 @@ python3Packages.buildPythonApplication (finalAttrs: {
     #pycel # compile Excel spreadsheets to Python code
   ];
 
-  strictDeps = true;
-
-  doCheck = true;
-  pythonImportsCheck = [ "pyspread" ];
-
   desktopItems = [
     (makeDesktopItem {
-      name = "pyspread";
-      exec = "pyspread";
-      icon = "pyspread";
-      desktopName = "Pyspread";
-      genericName = "Spreadsheet";
-      comment = "Python-oriented spreadsheet application";
       categories = [
         "Office"
         "Development"
         "Spreadsheet"
       ];
+
+      comment = "Python-oriented spreadsheet application";
+      desktopName = "Pyspread";
+      exec = "pyspread";
+      genericName = "Spreadsheet";
+      icon = "pyspread";
+      name = "pyspread";
     })
   ];
 
   makeWrapperArgs = [ "--set R_HOME ${lib.getLib R}/lib/R" ];
-
-  preFixup = ''
-    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
-  '';
+  pyproject = true;
+  pythonImportsCheck = [ "pyspread" ];
 
   meta = {
-    homepage = "https://pyspread.gitlab.io/";
     description = "Python-oriented spreadsheet application";
+
     longDescription = ''
       pyspread is a non-traditional spreadsheet application that is based on and
       written in the programming language Python. The goal of pyspread is to be
@@ -86,9 +85,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
       that can be accessed from other cells. These objects can represent
       anything including lists or matrices.
     '';
+
+    homepage = "https://pyspread.gitlab.io/";
     license = with lib.licenses; [ gpl3Plus ];
-    mainProgram = "pyspread";
     maintainers = with lib.maintainers; [ Merikei ];
     platforms = lib.platforms.linux;
+    mainProgram = "pyspread";
   };
 })

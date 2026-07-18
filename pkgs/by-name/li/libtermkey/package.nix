@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchzip,
   libtool,
-  pkg-config,
   ncurses,
+  pkg-config,
   unibilium,
 }:
 
@@ -17,21 +17,22 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "02dks6bj7n23lj005yq41azf95wh3hapmgc2lzyh12vigkjh67rg";
   };
 
-  makeFlags = [
-    "PREFIX=$(out)"
-    "LIBTOOL=${libtool}/bin/libtool"
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     libtool
     pkg-config
   ];
+
   buildInputs = [
     ncurses
     unibilium
   ];
 
-  strictDeps = true;
+  makeFlags = [
+    "PREFIX=$(out)"
+    "LIBTOOL=${libtool}/bin/libtool"
+  ];
 
   meta = {
     description = "Terminal keypress reading library";

@@ -2,25 +2,25 @@
   lib,
   stdenv,
   fetchurl,
-  openssl,
-  zlib,
   asciidoc,
+  bzip2,
+  coreutils,
+  docbook_xsl,
+  docutils,
+  gnused,
+  groff,
+  gzip,
   libxml2,
   libxslt,
   luajit,
-  docbook_xsl,
-  pkg-config,
-  coreutils,
-  gnused,
-  groff,
-  docutils,
-  gzip,
-  bzip2,
   lzip,
-  xz,
-  zstd,
-  python3Packages,
   nixosTests,
+  openssl,
+  pkg-config,
+  python3Packages,
+  xz,
+  zlib,
+  zstd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,37 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://git.zx2c4.com/cgit/snapshot/cgit-${finalAttrs.version}.tar.xz";
     sha256 = "c40fd71e120783d5e57d822208f3e17333cde2cd4baf3e7c8c75630b68afe12a";
   };
-
-  # cgit is tightly coupled with git and needs a git source tree to build.
-  # IMPORTANT: Remember to check which git version cgit needs on every version
-  # bump (look for "GIT_VER" in the top-level Makefile).
-  gitSrc = fetchurl {
-    url = "mirror://kernel/software/scm/git/git-2.54.0.tar.xz";
-    hash = "sha256-9okWI2TBDeee+Jqo2/SHMesFfjTtu9IKylEM4BVGgaM=";
-  };
-
-  separateDebugInfo = true;
-
-  nativeBuildInputs = [
-    pkg-config
-    asciidoc
-  ]
-  ++ (with python3Packages; [
-    python
-    wrapPython
-  ]);
-  buildInputs = [
-    openssl
-    zlib
-    libxml2
-    libxslt
-    luajit
-    docbook_xsl
-  ];
-  pythonPath = with python3Packages; [
-    pygments
-    markdown
-  ];
 
   postPatch = ''
     sed -e 's|"gzip"|"${gzip}/bin/gzip"|' \
@@ -78,12 +47,23 @@ stdenv.mkDerivation (finalAttrs: {
       --replace 'rst2html.py' '${docutils}/bin/rst2html.py'
   '';
 
-  # Give cgit a git source tree and pass configuration parameters (as make
-  # variables).
-  preBuild = ''
-    mkdir -p git
-    tar --strip-components=1 -xf "$gitSrc" -C git
-  '';
+  nativeBuildInputs = [
+    pkg-config
+    asciidoc
+  ]
+  ++ (with python3Packages; [
+    python
+    wrapPython
+  ]);
+
+  buildInputs = [
+    openssl
+    zlib
+    libxml2
+    libxslt
+    luajit
+    docbook_xsl
+  ];
 
   makeFlags = [
     "prefix=$(out)"
@@ -91,6 +71,13 @@ stdenv.mkDerivation (finalAttrs: {
     "CC=${stdenv.cc.targetPrefix}cc"
     "AR=${stdenv.cc.targetPrefix}ar"
   ];
+
+  # Give cgit a git source tree and pass configuration parameters (as make
+  # variables).
+  preBuild = ''
+    mkdir -p git
+    tar --strip-components=1 -xf "$gitSrc" -C git
+  '';
 
   postInstall = ''
     # Install manpage.
@@ -108,21 +95,36 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  stripDebugList = [ "cgit" ];
-
   enableParallelBuilding = true;
 
+  # cgit is tightly coupled with git and needs a git source tree to build.
+  # IMPORTANT: Remember to check which git version cgit needs on every version
+  # bump (look for "GIT_VER" in the top-level Makefile).
+  gitSrc = fetchurl {
+    hash = "sha256-9okWI2TBDeee+Jqo2/SHMesFfjTtu9IKylEM4BVGgaM=";
+    url = "mirror://kernel/software/scm/git/git-2.54.0.tar.xz";
+  };
+
+  pythonPath = with python3Packages; [
+    pygments
+    markdown
+  ];
+
+  separateDebugInfo = true;
+  stripDebugList = [ "cgit" ];
   passthru.tests = { inherit (nixosTests) cgit; };
 
   meta = {
-    homepage = "https://git.zx2c4.com/cgit/about/";
     description = "Web frontend for git repositories";
+    homepage = "https://git.zx2c4.com/cgit/about/";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       bjornfor
       qyliss
       sternenseemann
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

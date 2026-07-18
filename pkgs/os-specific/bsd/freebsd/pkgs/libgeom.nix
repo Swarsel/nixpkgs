@@ -1,11 +1,9 @@
 {
-  mkDerivation,
   libbsdxml,
   libsbuf,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "lib/libgeom";
-
   outputs = [
     "out"
     "man"
@@ -21,4 +19,6 @@ mkDerivation {
     "SHLIB_MAJOR=1"
     "STRIP=-s"
   ];
+
+  path = "lib/libgeom";
 }

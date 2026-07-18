@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
+  nix-update-script,
   rustPlatform,
   versionCheckHook,
-  nix-update-script,
   vimUtils,
 }:
 let
@@ -15,8 +15,8 @@ let
     hash = "sha256-SONErPOIaRltx51+GCsGtR0FDSWp/36x3lDbYLSMxXM=";
   };
   cord-server = rustPlatform.buildRustPackage {
-    pname = "cord";
     inherit src version;
+    pname = "cord";
 
     # The version in .github/server-version.txt differs from the one in Cargo.toml
     postPatch = ''
@@ -25,21 +25,20 @@ let
     '';
 
     cargoHash = "sha256-14u3rhpDYNKZ4YLoGp6OPeeXDo3EzGYO3yhE9BkDSC0=";
-
-    # cord depends on nightly features
-    RUSTC_BOOTSTRAP = 1;
+    doInstallCheck = false;
 
     nativeInstallCheckInputs = [
       versionCheckHook
     ];
-    doInstallCheck = false;
 
+    # cord depends on nightly features
+    RUSTC_BOOTSTRAP = 1;
     meta.mainProgram = "cord";
   };
 in
 vimUtils.buildVimPlugin {
-  pname = "cord.nvim";
   inherit version src;
+  pname = "cord.nvim";
 
   # Patch the logic used to find the path to the cord server
   # This still lets the user set config.advanced.server.executable_path
@@ -52,18 +51,18 @@ vimUtils.buildVimPlugin {
   '';
 
   passthru = {
+    # needed for the update script
+    inherit cord-server;
+
     updateScript = nix-update-script {
       attrPath = "vimPlugins.cord-nvim.cord-nvim-rust";
     };
-
-    # needed for the update script
-    inherit cord-server;
   };
 
   meta = {
     homepage = "https://github.com/vyfor/cord.nvim";
-    license = lib.licenses.asl20;
     changelog = "https://github.com/vyfor/cord.nvim/releases/tag/v${version}";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ GaetanLepage ];
   };
 }

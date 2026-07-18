@@ -1,13 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   conda-package-streaming,
+  setuptools,
 }:
 buildPythonPackage rec {
   pname = "conda-package-handling";
   version = "2.4.0";
+
   src = fetchFromGitHub {
     owner = "conda";
     repo = "conda-package-handling";
@@ -15,10 +16,9 @@ buildPythonPackage rec {
     hash = "sha256-AvuxHl3gUH7zIyMhZGeXqpMy0rJ99wj1/SrdTvlaX9A=";
   };
 
-  pyproject = true;
   build-system = [ setuptools ];
   dependencies = [ conda-package-streaming ];
-
+  pyproject = true;
   pythonImportsCheck = [ "conda_package_handling" ];
 
   meta = {

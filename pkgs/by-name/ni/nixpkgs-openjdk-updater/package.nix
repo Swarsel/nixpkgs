@@ -1,25 +1,16 @@
 {
   lib,
-  python3Packages,
-  ruff,
-  pyright,
   fetchFromGitHub,
   nixpkgs-openjdk-updater,
+  pyright,
+  python3Packages,
+  ruff,
 }:
 
 python3Packages.buildPythonApplication {
   pname = "nixpkgs-openjdk-updater";
   version = "0.1.0";
-  pyproject = true;
-
   src = ./nixpkgs-openjdk-updater;
-
-  build-system = [ python3Packages.hatchling ];
-
-  dependencies = [
-    python3Packages.pydantic
-    python3Packages.pygithub
-  ];
 
   nativeCheckInputs = [
     ruff
@@ -37,10 +28,19 @@ python3Packages.buildPythonApplication {
     $out/bin/nixpkgs-openjdk-updater --help >/dev/null
   '';
 
+  build-system = [ python3Packages.hatchling ];
+
+  dependencies = [
+    python3Packages.pydantic
+    python3Packages.pygithub
+  ];
+
+  pyproject = true;
+
   passthru.openjdkSource =
     {
-      sourceFile,
       featureVersionPrefix,
+      sourceFile,
     }:
     let
       sourceInfo = lib.importJSON sourceFile;

@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   mashumaro,
   orjson,
   pyprojectVersionPatchHook,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "aiohasupervisor";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "home-assistant-libs";
@@ -36,6 +35,14 @@ buildPythonPackage rec {
     pyprojectVersionPatchHook
   ];
 
+  nativeCheckInputs = [
+    aioresponses
+    pytest-aiohttp
+    pytest-cov-stub
+    pytest-timeout
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -45,14 +52,7 @@ buildPythonPackage rec {
     yarl
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-aiohttp
-    pytest-cov-stub
-    pytest-timeout
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "aiohasupervisor" ];
 
   meta = {

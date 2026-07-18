@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest,
   tornado,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage {
   pname = "pytest-tornasync";
   version = "0.6.0.post2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "eukaryote";
@@ -21,10 +20,7 @@ buildPythonPackage {
   };
 
   buildInputs = [ pytest ];
-
   propagatedBuildInputs = [ tornado ];
-
-  __darwinAllowLocalNetworking = true;
 
   nativeCheckInputs = [
     pytest
@@ -34,6 +30,9 @@ buildPythonPackage {
   checkPhase = ''
     pytest test
   '';
+
+  __darwinAllowLocalNetworking = true;
+  format = "setuptools";
 
   meta = {
     description = "py.test plugin for testing Python 3.5+ Tornado code";

@@ -1,16 +1,15 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  which,
-  makeWrapper,
-  rsync,
+  buildGoModule,
   installShellFiles,
-  runtimeShell,
   kubectl,
-  nixosTests,
+  makeWrapper,
   nix-update-script,
-
+  nixosTests,
+  rsync,
+  runtimeShell,
+  which,
   components ? [
     "cmd/kubeadm"
     "cmd/kubelet"
@@ -32,17 +31,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-vE+2iBoJvkRhJDAHMCrJLIJKD53YWRBN6fBUP4589OU=";
   };
 
-  vendorHash = null;
-
-  doCheck = false;
-
-  nativeBuildInputs = [
-    makeWrapper
-    which
-    rsync
-    installShellFiles
-  ];
-
   outputs = [
     "out"
     "man"
@@ -51,6 +39,14 @@ buildGoModule (finalAttrs: {
 
   patches = [ ./fixup-addonmanager-lib-path.patch ];
 
+  nativeBuildInputs = [
+    makeWrapper
+    which
+    rsync
+    installShellFiles
+  ];
+
+  vendorHash = null;
   env.WHAT = toString components;
 
   buildPhase = ''
@@ -61,6 +57,8 @@ buildGoModule (finalAttrs: {
     ./hack/update-generated-docs.sh
     runHook postBuild
   '';
+
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -93,17 +91,18 @@ buildGoModule (finalAttrs: {
   '';
 
   passthru = {
-    updateScript = nix-update-script { };
     tests = nixosTests.kubernetes // {
       inherit kubectl;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Production-Grade Container Scheduling and Management";
-    license = lib.licenses.asl20;
     homepage = "https://kubernetes.io";
-    teams = [ lib.teams.kubernetes ];
+    license = lib.licenses.asl20;
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.kubernetes ];
   };
 })

@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   glslang,
+  libx11,
   meson,
   ninja,
   pkg-config,
-  libx11,
+  pkgsi686Linux,
   spirv-headers,
   vulkan-headers,
-  pkgsi686Linux,
 }:
 
 let
@@ -32,11 +32,13 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
     pkg-config
   ];
+
   buildInputs = [
     libx11
     spirv-headers
     vulkan-headers
   ];
+
   mesonFlags = [ "-Dappend_libdir_vkbasalt=true" ];
 
   postInstall = lib.optionalString (stdenv.hostPlatform.system == "x86_64-linux") ''

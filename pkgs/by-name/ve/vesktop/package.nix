@@ -2,28 +2,28 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  replaceVars,
-  makeBinaryWrapper,
-  makeWrapper,
-  makeDesktopItem,
-  copyDesktopItems,
-  vencord,
-  electron_40,
-  libicns,
-  pipewire,
-  libpulseaudio,
   autoPatchelfHook,
-  pnpm_10,
+  copyDesktopItems,
+  electron_40,
   fetchPnpmDeps,
-  pnpmConfigHook,
-  nodejs,
   jq,
+  libicns,
+  libpulseaudio,
+  makeBinaryWrapper,
+  makeDesktopItem,
+  makeWrapper,
   nix-update-script,
-  withTTS ? true,
+  nodejs,
+  pipewire,
+  pnpmConfigHook,
+  pnpm_10,
+  replaceVars,
+  vencord,
   withMiddleClickScroll ? false,
   # Enables the use of vencord from nixpkgs instead of
   # letting vesktop manage it's own version
   withSystemVencord ? false,
+  withTTS ? true,
 }:
 let
   electron = electron_40;
@@ -39,17 +39,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-YPDlqiO+0BtDgC7aFl8B2KPYsT41WqzOQ7et2Tejs3M=";
   };
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      patches
-      ;
-    pnpm = pnpm_10;
-    fetcherVersion = 3;
-    hash = "sha256-Ue1K1KmRi4gF7E519deVY7QH+22dqlECMjdA7Z7qDCA=";
-  };
+  patches = lib.optional withSystemVencord (
+    replaceVars ./use_system_vencord.patch {
+      inherit vencord;
+    }
+  );
 
   nativeBuildInputs = [
     nodejs
@@ -76,12 +70,6 @@ stdenv.mkDerivation (finalAttrs: {
     pipewire
     (lib.getLib stdenv.cc.cc)
   ];
-
-  patches = lib.optional withSystemVencord (
-    replaceVars ./use_system_vencord.patch {
-      inherit vencord;
-    }
-  );
 
   env = {
     ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
@@ -156,27 +144,44 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
   desktopItems = lib.optional stdenv.hostPlatform.isLinux (makeDesktopItem {
-    name = "vesktop";
+    categories = [
+      "Network"
+      "InstantMessaging"
+      "Chat"
+    ];
+
     desktopName = "Vesktop";
     exec = "vesktop %U";
-    icon = "vesktop";
-    startupWMClass = "Vesktop";
     genericName = "Internet Messenger";
+    icon = "vesktop";
+
     keywords = [
       "discord"
       "vencord"
       "electron"
       "chat"
     ];
-    categories = [
-      "Network"
-      "InstantMessaging"
-      "Chat"
-    ];
+
     mimeTypes = [
       "x-scheme-handler/discord"
     ];
+
+    name = "vesktop";
+    startupWMClass = "Vesktop";
   });
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      patches
+      ;
+
+    fetcherVersion = 3;
+    hash = "sha256-Ue1K1KmRi4gF7E519deVY7QH+22dqlECMjdA7Z7qDCA=";
+    pnpm = pnpm_10;
+  };
 
   passthru = {
     inherit (finalAttrs) pnpmDeps;
@@ -188,17 +193,20 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/Vencord/Vesktop";
     changelog = "https://github.com/Vencord/Vesktop/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       getchoo
       Scrumplex
       vgskye
       pluiedev
     ];
-    mainProgram = "vesktop";
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
+    mainProgram = "vesktop";
   };
 })

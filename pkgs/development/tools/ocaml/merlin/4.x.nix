@@ -1,19 +1,19 @@
 {
   lib,
-  replaceVars,
   fetchurl,
-  ocaml,
-  dune,
   buildDunePackage,
-  yojson,
   csexp,
-  merlin-lib,
   dot-merlin-reader,
+  dune,
   jq,
   menhir,
   menhirLib,
   menhirSdk,
+  merlin-lib,
+  ocaml,
+  replaceVars,
   seq,
+  yojson,
   # Each releases of Merlin support a limited range of versions of OCaml.
   version ?
     {
@@ -42,14 +42,14 @@
 let
 
   hashes = {
-    "4.7-412" = "sha256-0U3Ia7EblKULNy8AuXFVKACZvGN0arYJv7BWiBRgT0Y=";
-    "4.7.1-413" = "sha256-owR9ooUoOrKLOpZbKYDm8Q2ZfDn6C8GJwUF/4HQVRcI=";
     "4.14-500" = "sha256-7CPzJPh1UgzYiX8wPMbU5ZXz1wAJFNQQcp8WuGrR1w4=";
     "4.16-414" = "sha256-xekZdfPfVoSeGzBvNWwxcJorE519V2NLjSHkcyZvzy0="; # Used by ocaml-lsp
     "4.16-501" = "sha256-2lvzCbBAZFwpKuRXLMagpwDb0rz8mWrBPI5cODbCHiY="; # Used by ocaml-lsp
+    "4.17.1-501" = "sha256-N2cHqocfCeljlFbT++S4miHJrXXHdOlMu75n+EKwpQA=";
     "4.18-414" = "sha256-9tb3omYUHjWMGoaWEsgTXIWRhdVH6julya17tn/jDME=";
     "4.19-414" = "sha256-YKYw9ZIDqc5wR6XwTQ8jmUWWDaxvOBApIuMottJlc4Q=";
-    "4.17.1-501" = "sha256-N2cHqocfCeljlFbT++S4miHJrXXHdOlMu75n+EKwpQA=";
+    "4.7-412" = "sha256-0U3Ia7EblKULNy8AuXFVKACZvGN0arYJv7BWiBRgT0Y=";
+    "4.7.1-413" = "sha256-owR9ooUoOrKLOpZbKYDm8Q2ZfDn6C8GJwUF/4HQVRcI=";
     "5.3-502" = "sha256-LOpG8SOX+m4x7wwNT14Rwc/ZFu5JQgaUAFyV67OqJLw=";
     "5.4.1-503" = "sha256-SbO0x3jBISX8dAXnN5CwsxLV15dJ3XPUg4tlYqJTMCI=";
     "5.6-503" = "sha256-sNytCSqq96I/ZauaCJ6HYb1mXMcjV5CeCsbCGC9PwtQ=";
@@ -61,8 +61,8 @@ let
 in
 
 buildDunePackage {
-  pname = "merlin";
   inherit version;
+  pname = "merlin";
 
   src = fetchurl {
     url = "https://github.com/ocaml/merlin/releases/download/v${version}/merlin-${version}.tbz";
@@ -86,6 +86,7 @@ buildDunePackage {
     menhir
     jq
   ];
+
   buildInputs = [
     dot-merlin-reader
     yojson
@@ -96,6 +97,7 @@ buildDunePackage {
   ++ lib.optional (!lib.versionAtLeast version "4.7-414") seq;
 
   doCheck = false;
+
   checkPhase = ''
     runHook preCheck
     patchShebangs tests/merlin-wrapper
@@ -107,10 +109,12 @@ buildDunePackage {
     description = "Editor-independent tool to ease the development of programs in OCaml";
     homepage = "https://github.com/ocaml/merlin";
     license = lib.licenses.mit;
-    mainProgram = "ocamlmerlin";
+
     maintainers = [
       lib.maintainers.vbgl
       lib.maintainers.sternenseemann
     ];
+
+    mainProgram = "ocamlmerlin";
   };
 }

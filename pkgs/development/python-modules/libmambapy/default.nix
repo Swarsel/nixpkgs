@@ -1,10 +1,10 @@
 {
+  lib,
+  buildPythonPackage,
   bzip2,
   cmake,
   curl,
-  buildPythonPackage,
   fmt,
-  lib,
   libmamba,
   libsolv,
   msgpack-c,
@@ -21,21 +21,8 @@
 }:
 
 buildPythonPackage rec {
-  pname = "libmambapy";
-  pyproject = true;
-
   inherit (libmamba) version src;
-
-  sourceRoot = "${src.name}/libmambapy";
-
-  build-system = [
-    cmake
-    ninja
-    pybind11
-    scikit-build-core
-  ];
-
-  dontUseCmakeConfigure = true;
+  pname = "libmambapy";
 
   buildInputs = [
     (libmamba.override { python3 = python; })
@@ -52,15 +39,27 @@ buildPythonPackage rec {
     zstd
   ];
 
+  build-system = [
+    cmake
+    ninja
+    pybind11
+    scikit-build-core
+  ];
+
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+
   pythonImportsCheck = [
     "libmambapy"
     "libmambapy.bindings"
   ];
 
+  sourceRoot = "${src.name}/libmambapy";
+
   meta = {
-    changelog = "https://github.com/mamba-org/mamba/blob/${src.tag}/libmambapy/CHANGELOG.md";
     description = "Python library for the fast Cross-Platform Package Manager";
     homepage = "https://github.com/mamba-org/mamba";
+    changelog = "https://github.com/mamba-org/mamba/blob/${src.tag}/libmambapy/CHANGELOG.md";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.ericthemagician ];
   };

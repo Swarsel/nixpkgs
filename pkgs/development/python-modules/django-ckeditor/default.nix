@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
   django-extensions,
   django-js-asset,
-  fetchFromGitHub,
   pillow,
   python,
   selenium,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "django-ckeditor";
   version = "6.7.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "django-ckeditor";
@@ -22,14 +21,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-EqauGFy3VKWHV/MaHhga1lGZhmbHcz6nvc5I87RQ4Dc=";
   };
-
-  build-system = [ setuptools-scm ];
-
-  dependencies = [
-    django
-    django-js-asset
-    pillow
-  ];
 
   env.DJANGO_SETTINGS_MODULE = "ckeditor_demo.settings";
 
@@ -44,6 +35,15 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [ setuptools-scm ];
+
+  dependencies = [
+    django
+    django-js-asset
+    pillow
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "ckeditor" ];
 
   meta = {
@@ -52,6 +52,7 @@ buildPythonPackage rec {
     changelog = "https://github.com/django-ckeditor/django-ckeditor/blob/${src.tag}/CHANGELOG.rst";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ onny ];
+
     knownVulnerabilities = [
       ''
         django-ckeditor bundles CKEditor 4.22.1 which isn’t supported anmyore and

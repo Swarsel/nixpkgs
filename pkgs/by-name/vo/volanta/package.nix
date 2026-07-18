@@ -1,11 +1,11 @@
 {
-  appimageTools,
-  fetchurl,
   lib,
-  makeWrapper,
-  writeShellScript,
+  fetchurl,
+  appimageTools,
   common-updater-scripts,
+  makeWrapper,
   nix-update,
+  writeShellScript,
 }:
 let
   pname = "volanta";
@@ -19,7 +19,6 @@ let
 in
 appimageTools.wrapType2 {
   inherit pname version src;
-
   nativeBuildInputs = [ makeWrapper ];
 
   # Note: Volanta needs the env variable APPIMAGE=true to be set in order to work at all.
@@ -35,6 +34,7 @@ appimageTools.wrapType2 {
 
   passthru = {
     inherit src build;
+
     updateScript = writeShellScript "update-volanta" ''
       LATEST_YML=$(curl --fail --silent https://api.volanta.app/api/v1/ClientUpdate/latest-linux.yml)
       VERSION=$(echo "$LATEST_YML" | grep -E '^version:' | awk '{print $2}')
@@ -47,9 +47,9 @@ appimageTools.wrapType2 {
   meta = {
     description = "Easy-to-use smart flight tracker that integrates all your flight data across all major flightsims";
     homepage = "https://volanta.app/";
-    maintainers = with lib.maintainers; [ SirBerg ];
-    mainProgram = "volanta";
-    platforms = [ "x86_64-linux" ];
     license = lib.licenses.unfree;
+    maintainers = with lib.maintainers; [ SirBerg ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "volanta";
   };
 }

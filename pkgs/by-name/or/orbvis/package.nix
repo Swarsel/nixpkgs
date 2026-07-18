@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  gtk3,
   curl,
+  gtk3,
   libepoxy,
   meson,
   ninja,
-  wrapGAppsHook3,
   nix-update-script,
+  pkg-config,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -48,7 +48,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/wojciech-graj/OrbVis";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ thtrf ];
-    mainProgram = "orbvis";
     platforms = lib.platforms.linux;
+    mainProgram = "orbvis";
   };
 })

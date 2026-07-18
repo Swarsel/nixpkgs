@@ -1,14 +1,13 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
   scribus,
 }:
 
 python3.pkgs.buildPythonApplication {
   pname = "sla2pdf";
   version = "0.0.1-unstable-2023-05-17";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sla2pdf-team";
@@ -23,13 +22,17 @@ python3.pkgs.buildPythonApplication {
     "--prefix PATH : ${lib.makeBinPath [ scribus ]}"
   ];
 
+  pyproject = true;
+
   meta = {
     description = "Convert Scribus SLA files to PDF from the command line";
     homepage = "https://github.com/sla2pdf-team/sla2pdf";
+
     license = with lib.licenses; [
       cc-by-40
       mpl20
     ];
+
     maintainers = with lib.maintainers; [ ob7 ];
     mainProgram = "sla2pdf";
   };

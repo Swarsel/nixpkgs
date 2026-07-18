@@ -4,10 +4,10 @@
   fetchFromGitLab,
   cmake,
   exempi,
+  kdePackages,
   libcdio,
   makeWrapper,
   taglib,
-  kdePackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,11 +15,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "4.2.1";
 
   src = fetchFromGitLab {
-    domain = "invent.kde.org";
     owner = "office";
     repo = "tellico";
     tag = "v${finalAttrs.version}";
     hash = "sha256-CVZ3iicTMjg/uRQj09aB+215gucs/gwJW89BcIlBeto=";
+    domain = "invent.kde.org";
   };
 
   nativeBuildInputs = [
@@ -49,14 +49,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Collection management software, free and simple";
-    mainProgram = "tellico";
     homepage = "https://tellico-project.org/";
+
     license = with lib.licenses; [
       gpl2Only
       gpl3Only
       lgpl2Only
     ];
+
     maintainers = with lib.maintainers; [ numkem ];
     platforms = lib.platforms.linux;
+    mainProgram = "tellico";
   };
 })

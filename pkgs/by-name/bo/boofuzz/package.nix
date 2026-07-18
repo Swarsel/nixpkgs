@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "boofuzz";
   version = "0.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jtpereyda";
@@ -16,6 +15,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-ffZVFmfDAJ+Qn3hbeHY/CvYgpDLxB+jaYOiYyZqZ7mo=";
   };
+
+  nativeCheckInputs = with python3.pkgs; [
+    mock
+    netifaces
+    pytest-bdd
+    pytestCheckHook
+  ];
 
   build-system = with python3.pkgs; [ poetry-core ];
 
@@ -31,13 +37,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tornado
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    mock
-    netifaces
-    pytest-bdd
-    pytestCheckHook
-  ];
-
   disabledTests = [
     "TestNetworkMonitor"
     "TestNoResponseFailure"
@@ -46,6 +45,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ "test_time_repeater" ];
 
+  pyproject = true;
   pythonImportsCheck = [ "boofuzz" ];
 
   meta = {

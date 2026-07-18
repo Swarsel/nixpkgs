@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "ioctl-opt";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vpelletier";
@@ -18,7 +17,7 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "ioctl_opt" ];
 
   meta = {

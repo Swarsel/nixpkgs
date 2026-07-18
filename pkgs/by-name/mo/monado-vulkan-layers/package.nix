@@ -11,12 +11,16 @@ stdenv.mkDerivation {
   version = "0-unstable-2024-02-21";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "monado";
     repo = "utilities/vulkan-layers";
     rev = "ae43cdcbd25c56e3481bbc8a0ce2bfcebba9f7c2";
     sha256 = "sha256-QabYVKcenW+LQ+QSjUoQOLOQAVHdjE0YXd+1WsdzNPc=";
+    domain = "gitlab.freedesktop.org";
   };
+
+  patches = [
+    ./absolute-layer-path.patch
+  ];
 
   nativeBuildInputs = [
     cmake
@@ -27,18 +31,16 @@ stdenv.mkDerivation {
     vulkan-loader
   ];
 
-  patches = [
-    ./absolute-layer-path.patch
-  ];
-
   meta = {
     description = "Vulkan Layers for Monado";
     homepage = "https://gitlab.freedesktop.org/monado/utilities/vulkan-layers";
-    platforms = lib.platforms.linux;
     license = lib.licenses.boost;
+
     maintainers = with lib.maintainers; [
       Scrumplex
       passivelemon
     ];
+
+    platforms = lib.platforms.linux;
   };
 }

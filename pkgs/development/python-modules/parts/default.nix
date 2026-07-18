@@ -8,18 +8,16 @@
 buildPythonPackage rec {
   pname = "parts";
   version = "4.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-uw/bo+Y24KIgKH+hfc4iUboH8jJKeaoQGHBv6KjZixU=";
   };
 
-  build-system = [ setuptools ];
-
   # Project has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "parts" ];
 
   meta = {

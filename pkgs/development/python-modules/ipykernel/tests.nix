@@ -6,18 +6,14 @@
   ipykernel,
   ipyparallel,
   pre-commit,
-  pytestCheckHook,
   pytest-asyncio,
   pytest-timeout,
+  pytestCheckHook,
 }:
 
 buildPythonPackage {
-  pname = "ipykernel-tests";
   inherit (ipykernel) version src;
-  pyproject = false;
-
-  dontBuild = true;
-  dontInstall = true;
+  pname = "ipykernel-tests";
 
   nativeCheckInputs = [
     flaky
@@ -32,6 +28,9 @@ buildPythonPackage {
   preCheck = ''
     export HOME=$(mktemp -d)
   '';
+
+  # Some of the tests use localhost networking.
+  __darwinAllowLocalNetworking = true;
 
   disabledTests = [
     # The following three tests fail for unclear reasons.
@@ -54,6 +53,7 @@ buildPythonPackage {
     "test_unc_paths"
   ];
 
-  # Some of the tests use localhost networking.
-  __darwinAllowLocalNetworking = true;
+  dontBuild = true;
+  dontInstall = true;
+  pyproject = false;
 }

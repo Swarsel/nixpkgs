@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  bison,
   fetchurl,
+  bison,
   flex,
   gd,
   libjpeg,
@@ -22,11 +22,17 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "3c3481ae0599e1c2d30b7ed54ab45249127533ab2f20e768a0ae58d8551ddc23";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   nativeBuildInputs = [
     bison
     flex
     pkg-config
   ];
+
   buildInputs = [
     gd
     libjpeg
@@ -36,19 +42,13 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
+
   preCheck = ''
     sed -i -e "s|#!/bin/bash|#!${runtimeShell}|" test/renderercheck.sh
   '';
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
   meta = {
-    homepage = "http://www.mcternan.me.uk/mscgen/";
     description = "Convert Message Sequence Chart descriptions into PNG, SVG, or EPS images";
-    license = lib.licenses.gpl2Plus;
 
     longDescription = ''
       Mscgen is a small program that parses Message Sequence Chart
@@ -63,6 +63,8 @@ stdenv.mkDerivation (finalAttrs: {
       printing.
     '';
 
+    homepage = "http://www.mcternan.me.uk/mscgen/";
+    license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
     mainProgram = "mscgen";
   };

@@ -1,24 +1,23 @@
 {
   lib,
   stdenv,
-  python3Packages,
-  fetchpatch,
-  fetchPypi,
-  replaceVars,
-  pkg-config,
   cmake,
+  fetchPypi,
+  fetchpatch,
   flex,
   glib,
+  gst_all_1,
   json-glib,
   libxml2,
   llvmPackages,
-  gst_all_1,
+  pkg-config,
+  python3Packages,
+  replaceVars,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "hotdoc";
   version = "0.17.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -33,9 +32,9 @@ python3Packages.buildPythonApplication rec {
 
     # Fix build with gcc15
     (fetchpatch {
+      hash = "sha256-5y50Yk+AjV3aSk8H3k9od/Yvy09FyQQOcVOAcstQnw8=";
       name = "hotdoc-fix-c_comment_scanner-function-prototypes-gcc15.patch";
       url = "https://github.com/hotdoc/hotdoc/commit/adf8518431fafb78c9b47862a0a9a58824b6a421.patch";
-      hash = "sha256-5y50Yk+AjV3aSk8H3k9od/Yvy09FyQQOcVOAcstQnw8=";
     })
   ];
 
@@ -55,6 +54,17 @@ python3Packages.buildPythonApplication rec {
     libxml2
   ];
 
+  nativeCheckInputs = with python3Packages; [ pytestCheckHook ];
+
+  # Make pytest run from a temp dir to have it pick up installed package for cmark
+  preCheck = ''
+    pushd $TMPDIR
+  '';
+
+  postCheck = ''
+    popd
+  '';
+
   build-system = with python3Packages; [ setuptools ];
 
   dependencies = with python3Packages; [
@@ -73,24 +83,6 @@ python3Packages.buildPythonApplication rec {
     wheezy-template
   ];
 
-  nativeCheckInputs = with python3Packages; [ pytestCheckHook ];
-
-  # CMake is used to build CMARK, but the build system is still python
-  dontUseCmakeConfigure = true;
-
-  # Ensure C+GI+GST extensions are built and can be imported
-  pythonImportsCheck = [
-    "hotdoc.extensions.c.c_extension"
-    "hotdoc.extensions.gi.gi_extension"
-    "hotdoc.extensions.gst.gst_extension"
-  ];
-
-  pytestFlags = [
-    # Run the tests by package instead of current dir
-    "--pyargs"
-    "hotdoc"
-  ];
-
   disabledTests = [
     # Test does not correctly handle path normalization for test comparison
     "test_cli_overrides"
@@ -100,13 +92,22 @@ python3Packages.buildPythonApplication rec {
     "test_index"
   ];
 
-  # Make pytest run from a temp dir to have it pick up installed package for cmark
-  preCheck = ''
-    pushd $TMPDIR
-  '';
-  postCheck = ''
-    popd
-  '';
+  # CMake is used to build CMARK, but the build system is still python
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+
+  pytestFlags = [
+    # Run the tests by package instead of current dir
+    "--pyargs"
+    "hotdoc"
+  ];
+
+  # Ensure C+GI+GST extensions are built and can be imported
+  pythonImportsCheck = [
+    "hotdoc.extensions.c.c_extension"
+    "hotdoc.extensions.gi.gi_extension"
+    "hotdoc.extensions.gst.gst_extension"
+  ];
 
   passthru.tests = {
     inherit (gst_all_1) gstreamer gst-plugins-base;

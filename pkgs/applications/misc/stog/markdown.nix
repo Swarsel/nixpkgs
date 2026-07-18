@@ -1,16 +1,15 @@
 {
   buildDunePackage,
-  stog,
   ocf_ppx,
   omd,
+  stog,
 }:
 
 buildDunePackage {
-  pname = "stog_markdown";
-
   inherit (stog) version src;
-
+  pname = "stog_markdown";
   buildInputs = [ ocf_ppx ];
+
   propagatedBuildInputs = [
     omd
     stog

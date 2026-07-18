@@ -1,37 +1,33 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   click,
   cloudevents,
   deprecation,
+  # tests
+  docker,
   flask,
   gunicorn,
+  httpx,
+  pretend,
+  pytest-asyncio,
+  pytestCheckHook,
+  pythonAtLeast,
+  requests,
+  # build-system
+  setuptools,
   starlette,
   uvicorn,
   uvicorn-worker,
   watchdog,
   werkzeug,
-
-  # tests
-  docker,
-  httpx,
-  pretend,
-  pytest-asyncio,
-  pytestCheckHook,
-  requests,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "functions-framework";
   version = "3.10.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "GoogleCloudPlatform";
@@ -40,11 +36,17 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-JiDerfEXlamZWzHxZaTJN/QFMXSph5YDtRsZM4hb4hs=";
   };
 
+  nativeCheckInputs = [
+    docker
+    httpx
+    pretend
+    pytest-asyncio
+    pytestCheckHook
+    requests
+  ];
+
   build-system = [ setuptools ];
 
-  pythonRelaxDeps = [
-    "cloudevents"
-  ];
   dependencies = [
     click
     cloudevents
@@ -58,17 +60,6 @@ buildPythonPackage (finalAttrs: {
     werkzeug
   ];
 
-  nativeCheckInputs = [
-    docker
-    httpx
-    pretend
-    pytest-asyncio
-    pytestCheckHook
-    requests
-  ];
-
-  pythonImportsCheck = [ "functions_framework" ];
-
   disabledTestPaths = lib.optionals (pythonAtLeast "3.14") [
     # _pickle.PicklingError: Can't pickle local object <function Flask.__init__.<locals>.<lambda> at 0x7ffff47e54e0>
     "tests/test_timeouts.py"
@@ -77,6 +68,13 @@ buildPythonPackage (finalAttrs: {
   disabledTests = [
     # Test requires a running Docker instance
     "test_cloud_run_http"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "functions_framework" ];
+
+  pythonRelaxDeps = [
+    "cloudevents"
   ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,18 +16,17 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   patches = lib.optionals stdenv.hostPlatform.isDarwin [ ./bsm-add-audit_token_to_pid.patch ];
+  configureFlags = [ "ac_cv_file__usr_include_mach_audit_triggers_defs=no" ];
 
   preConfigure = lib.optionalString (lib.versionAtLeast stdenv.hostPlatform.darwinMinVersion "11") ''
     MACOSX_DEPLOYMENT_TARGET=10.16
   '';
 
-  configureFlags = [ "ac_cv_file__usr_include_mach_audit_triggers_defs=no" ];
-
   meta = {
     description = "Implementation of Sun's Basic Security Module (BSM) security audit API and file format";
     homepage = "http://www.openbsm.org/";
-    platforms = lib.platforms.unix;
-    maintainers = [ ];
     license = lib.licenses.bsd2;
+    maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

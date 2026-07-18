@@ -21,9 +21,9 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
+    description = "Library of Unicode names and annotation data";
     homepage = "https://github.com/fontforge/libuninameslist/";
     changelog = "https://github.com/fontforge/libuninameslist/blob/${finalAttrs.version}/ChangeLog";
-    description = "Library of Unicode names and annotation data";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ erictapen ];
     platforms = lib.platforms.all;

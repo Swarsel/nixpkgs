@@ -2,36 +2,36 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  autoconf-archive,
   autoreconfHook,
-  pkg-config,
-  gtk-doc,
-  docbook_xml_dtd_43,
-  python3,
-  gobject-introspection,
-  glib,
-  udev,
-  kmod,
-  parted,
   cryptsetup,
-  lvm2,
-  util-linux,
+  docbook_xml_dtd_43,
+  docbook_xsl,
+  e2fsprogs,
+  glib,
+  gobject-introspection,
+  gptfdisk,
+  gtk-doc,
+  json-glib,
+  keyutils,
+  kmod,
+  libatasmart,
   libbytesize,
   libndctl,
-  nss,
-  volume_key,
-  libxslt,
-  docbook_xsl,
-  gptfdisk,
-  libyaml,
-  autoconf-archive,
-  thin-provisioning-tools,
-  makeBinaryWrapper,
-  e2fsprogs,
   libnvme,
-  keyutils,
-  libatasmart,
-  json-glib,
+  libxslt,
+  libyaml,
+  lvm2,
+  makeBinaryWrapper,
   nix-update-script,
+  nss,
+  parted,
+  pkg-config,
+  python3,
+  thin-provisioning-tools,
+  udev,
+  util-linux,
+  volume_key,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libblockdev";
@@ -56,10 +56,6 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace src/python/gi/overrides/Makefile.am \
       --replace-fail ''\'''${exec_prefix}' '@PYTHON_EXEC_PREFIX@'
   '';
-
-  configureFlags = [
-    "--with-python_prefix=${placeholder "python"}"
-  ];
 
   strictDeps = true;
 
@@ -97,6 +93,10 @@ stdenv.mkDerivation (finalAttrs: {
     volume_key
   ];
 
+  configureFlags = [
+    "--with-python_prefix=${placeholder "python"}"
+  ];
+
   postInstall = ''
     wrapProgram $out/bin/lvm-cache-stats --prefix PATH : \
       ${lib.makeBinPath [ thin-provisioning-tools ]}
@@ -105,13 +105,15 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/storaged-project/libblockdev/raw/${finalAttrs.src.tag}/NEWS.rst";
     description = "Library for manipulating block devices";
     homepage = "http://storaged.org/libblockdev/";
+    changelog = "https://github.com/storaged-project/libblockdev/raw/${finalAttrs.src.tag}/NEWS.rst";
+
     license = with lib.licenses; [
       lgpl2Plus
       gpl2Plus
     ]; # lgpl2Plus for the library, gpl2Plus for the utils
+
     maintainers = with lib.maintainers; [ johnazoidberg ];
     platforms = lib.platforms.linux;
   };

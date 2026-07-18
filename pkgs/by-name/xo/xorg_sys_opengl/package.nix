@@ -9,16 +9,17 @@
 {
   lib,
   stdenv,
-  libxxf86vm,
-  libxext,
   expat,
   libdrm,
+  libxext,
+  libxxf86vm,
 }:
 
 stdenv.mkDerivation {
   pname = "xorg-sys-opengl";
   version = "3";
   builder = ./builder.sh;
+
   neededLibs = map (p: p.out) [
     libxxf86vm
     libxext

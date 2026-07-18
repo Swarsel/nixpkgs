@@ -1,22 +1,22 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
+  asciidoctor,
   cargo,
-  rustc,
-  stfl,
-  sqlite,
   curl,
   gettext,
-  pkg-config,
-  libxml2,
   json_c,
-  ncurses,
-  asciidoctor,
   libiconv,
+  libxml2,
   makeWrapper,
+  ncurses,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  rustc,
+  sqlite,
+  stfl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,11 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "newsboat";
     tag = "r${finalAttrs.version}";
     hash = "sha256-OV7WpM0NBfqOtFv9Co728UwHut4HhT2u5qgvamy/FAg=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-HJZnbQ7TDJ9zg0Rav1PCMEymaYy/mSxnrr2gkv4pTX0=";
   };
 
   # allow other ncurses versions on Darwin
@@ -66,20 +61,18 @@ stdenv.mkDerivation (finalAttrs: {
     gettext
   ];
 
+  makeFlags = [ "prefix=$(out)" ];
+
   env = {
+    GETTEXT_BIN_DIR = "${lib.getBin gettext}/bin";
+    GETTEXT_INCLUDE_DIR = "${lib.getDev gettext}/include";
     # https://github.com/NixOS/nixpkgs/pull/98471#issuecomment-703100014 . We set
     # these for all platforms, since upstream's gettext crate behavior might
     # change in the future.
     GETTEXT_LIB_DIR = "${lib.getLib gettext}/lib";
-    GETTEXT_INCLUDE_DIR = "${lib.getDev gettext}/include";
-    GETTEXT_BIN_DIR = "${lib.getBin gettext}/bin";
   };
 
-  makeFlags = [ "prefix=$(out)" ];
-  enableParallelBuilding = true;
-
   doCheck = true;
-  checkTarget = "test";
 
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     for prog in $out/bin/*; do
@@ -87,19 +80,29 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-HJZnbQ7TDJ9zg0Rav1PCMEymaYy/mSxnrr2gkv4pTX0=";
+  };
+
+  checkTarget = "test";
+  enableParallelBuilding = true;
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
+    description = "Fork of Newsbeuter, an RSS/Atom feed reader for the text console";
     homepage = "https://newsboat.org/";
     changelog = "https://github.com/newsboat/newsboat/blob/${finalAttrs.src.tag}/CHANGELOG.md";
-    description = "Fork of Newsbeuter, an RSS/Atom feed reader for the text console";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       dotlambda
       nicknovitski
     ];
-    license = lib.licenses.mit;
+
     platforms = lib.platforms.unix;
     mainProgram = "newsboat";
   };

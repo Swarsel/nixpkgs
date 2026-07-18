@@ -4,9 +4,9 @@
   fetchFromSourcehut,
   fetchpatch,
   fetchpatch2,
-  wayland,
   pixman,
   pkg-config,
+  wayland,
   wayland-scanner,
 }:
 
@@ -24,23 +24,24 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Backport cross fix.
     (fetchpatch {
-      url = "https://git.sr.ht/~leon_plickat/river-tag-overlay/commit/791eaadf46482121a4c811ffba13d03168d74d8f.patch";
       sha256 = "CxSDcweHGup1EF3oD/2vhP6RFoeYorj0BwmlgA3tbPE=";
+      url = "https://git.sr.ht/~leon_plickat/river-tag-overlay/commit/791eaadf46482121a4c811ffba13d03168d74d8f.patch";
     })
     # Specify argument types for C23 compatibility (gcc 15).
     (fetchpatch2 {
-      url = "https://git.sr.ht/~leon_plickat/river-tag-overlay/commit/b7d9232f9106c6d2c3ecce802495f14069ce3406.patch";
       hash = "sha256-/fNpVPY09zwwymS/VNaonqX7jtdflC3Iot5R26VsTTw=";
+      url = "https://git.sr.ht/~leon_plickat/river-tag-overlay/commit/b7d9232f9106c6d2c3ecce802495f14069ce3406.patch";
     })
+  ];
+
+  nativeBuildInputs = [
+    pkg-config
+    wayland-scanner
   ];
 
   buildInputs = [
     pixman
     wayland
-  ];
-  nativeBuildInputs = [
-    pkg-config
-    wayland-scanner
   ];
 
   makeFlags = [

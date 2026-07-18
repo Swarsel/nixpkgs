@@ -7,8 +7,6 @@
 }:
 
 mkAppleDerivation {
-  releaseName = "patch_cmds";
-
   outputs = [
     "out"
     "man"
@@ -19,8 +17,6 @@ mkAppleDerivation {
     ./patches/0001-Fall-back-to-scandir.patch
   ];
 
-  xcodeHash = "sha256-Ox8Ii2sUuledUttZ64DaHC0iFlUybs3lNZ23IDeziPM=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -28,8 +24,12 @@ mkAppleDerivation {
     libutil
   ];
 
+  releaseName = "patch_cmds";
+  xcodeHash = "sha256-Ox8Ii2sUuledUttZ64DaHC0iFlUybs3lNZ23IDeziPM=";
+
   meta = {
     description = "BSD patch commands for Darwin";
+
     license = [
       lib.licenses.apple-psl10
       lib.licenses.bsd2 # -freebsd

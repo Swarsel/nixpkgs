@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  buildPackages,
   fetchFromGitHub,
-  rustPlatform,
+  buildPackages,
   installShellFiles,
-  pkg-config,
-  withPCRE2 ? true,
   pcre2,
+  pkg-config,
+  rustPlatform,
   writableTmpDirAsHomeHook,
+  withPCRE2 ? true,
 }:
 
 let
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   pname = "ripgrep";
   version = "15.1.0";
 
-  __structuredAttrs = true;
-
   src = fetchFromGitHub {
     owner = "BurntSushi";
     repo = "ripgrep";
@@ -28,16 +26,25 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-0gjwYMUlXYnmIWQS1SVzF1yQw1lpveRLw5qp049lc3I=";
   };
 
-  cargoHash = "sha256-ry3pLuYNwX776Dpj9IE2+uc7eEa5+sQvdNNeG1eJecs=";
-
   nativeBuildInputs = [
     installShellFiles
     writableTmpDirAsHomeHook # required for wine when cross-compiling to Windows
   ]
   ++ lib.optional withPCRE2 pkg-config;
-  buildInputs = lib.optional withPCRE2 pcre2;
 
-  buildFeatures = lib.optional withPCRE2 "pcre2";
+  buildInputs = lib.optional withPCRE2 pcre2;
+  cargoHash = "sha256-ry3pLuYNwX776Dpj9IE2+uc7eEa5+sQvdNNeG1eJecs=";
+  doInstallCheck = true;
+
+  installCheckPhase = ''
+    file="$(mktemp)"
+    echo "abc\nbcd\ncde" > "$file"
+    ${rg} -N 'bcd' "$file"
+    ${rg} -N 'cd' "$file"
+  ''
+  + lib.optionalString withPCRE2 ''
+    echo '(a(aa)aa)' | ${rg} -P '\((a*|(?R))*\)'
+  '';
 
   postFixup = lib.optionalString canRunRg ''
     ${rg} --generate man > rg.1
@@ -49,31 +56,26 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <(${rg} --generate complete-zsh)
   '';
 
-  doInstallCheck = true;
-  installCheckPhase = ''
-    file="$(mktemp)"
-    echo "abc\nbcd\ncde" > "$file"
-    ${rg} -N 'bcd' "$file"
-    ${rg} -N 'cd' "$file"
-  ''
-  + lib.optionalString withPCRE2 ''
-    echo '(a(aa)aa)' | ${rg} -P '\((a*|(?R))*\)'
-  '';
+  __structuredAttrs = true;
+  buildFeatures = lib.optional withPCRE2 "pcre2";
 
   meta = {
     description = "Utility that combines the usability of The Silver Searcher with the raw speed of grep";
     homepage = "https://github.com/BurntSushi/ripgrep";
     changelog = "https://github.com/BurntSushi/ripgrep/releases/tag/${finalAttrs.version}";
+
     license = with lib.licenses; [
       unlicense # or
       mit
     ];
+
     maintainers = with lib.maintainers; [
       globin
       ma27
       zowoq
     ];
-    mainProgram = "rg";
+
     platforms = lib.platforms.all;
+    mainProgram = "rg";
   };
 })

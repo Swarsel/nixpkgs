@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   deadbeef,
   gtkmm3,
   libxmlxx3,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -20,15 +20,15 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     deadbeef
     gtkmm3
     libxmlxx3
   ];
 
-  env.NIX_CFLAGS_COMPILE = "-Wno-incompatible-pointer-types";
-
   buildFlags = [ "gtk3" ];
+  env.NIX_CFLAGS_COMPILE = "-Wno-incompatible-pointer-types";
 
   meta = {
     description = "Plugin for DeaDBeeF audio player that fetches and shows the song’s lyrics";

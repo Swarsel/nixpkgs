@@ -20,14 +20,21 @@ in
 {
   options.services.godns = {
     enable = mkEnableOption "GoDNS service";
-
     package = mkPackageOption pkgs "godns" { };
 
-    settings = mkOption {
-      type = types.submodule {
-        freeformType = settingsFormat.type;
-      };
+    loadCredential = lib.mkOption {
+      default = [ ];
 
+      description = ''
+        This can be used to pass secrets to the systemd service without adding
+        them to the nix store.
+      '';
+
+      example = [ "login_token:/path/to/login_token" ];
+      type = types.listOf types.str;
+    };
+
+    settings = mkOption {
       description = ''
         Configuration for GoDNS. Refer to the [configuration section](1) in the
         GoDNS GitHub repository for details.
@@ -36,40 +43,37 @@ in
       '';
 
       example = {
-        provider = "Cloudflare";
-        login_token_file = "$CREDENTIALS_DIRECTORY/login_token";
         domains = [
           {
             domain_name = "example.com";
             sub_domains = [ "foo" ];
           }
         ];
+
+        interval = 300;
+        ip_type = "IPv6";
+
         ipv6_urls = [
           "https://api6.ipify.org"
           "https://ip2location.io/ip"
           "https://v6.ipinfo.io/ip"
         ];
-        ip_type = "IPv6";
-        interval = 300;
-      };
-    };
 
-    loadCredential = lib.mkOption {
-      type = types.listOf types.str;
-      default = [ ];
-      example = [ "login_token:/path/to/login_token" ];
-      description = ''
-        This can be used to pass secrets to the systemd service without adding
-        them to the nix store.
-      '';
+        login_token_file = "$CREDENTIALS_DIRECTORY/login_token";
+        provider = "Cloudflare";
+      };
+
+      type = types.submodule {
+        freeformType = settingsFormat.type;
+      };
     };
   };
 
   config = mkIf cfg.enable {
     systemd.services.godns = {
-      description = "GoDNS service";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "GoDNS service";
+
       serviceConfig = {
         DynamicUser = true;
         ExecStart = "${lib.getExe cfg.package} -c ${settingsFormat.generate "config.yaml" cfg.settings}";
@@ -77,6 +81,8 @@ in
         Restart = "always";
         RestartSec = "2s";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

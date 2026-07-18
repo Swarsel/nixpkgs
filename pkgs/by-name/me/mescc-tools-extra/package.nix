@@ -23,19 +23,17 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s ${m2libc}/include/M2libc M2libc
   '';
 
-  enableParallelBuilding = true;
-
   doCheck = true;
-  checkTarget = "test";
   nativeCheckInputs = [ perl ];
-
+  checkTarget = "test";
+  enableParallelBuilding = true;
   installFlags = [ "PREFIX=$(out)" ];
 
   meta = {
+    inherit (m2libc.meta) platforms;
     description = "Collection of tools written for use in bootstrapping";
     homepage = "https://github.com/oriansj/mescc-tools-extra";
     license = lib.licenses.gpl3Only;
     teams = [ lib.teams.minimal-bootstrap ];
-    inherit (m2libc.meta) platforms;
   };
 })

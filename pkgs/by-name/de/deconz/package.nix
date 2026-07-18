@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  qt5,
-  dpkg,
   autoPatchelfHook,
-  openssl,
+  dpkg,
+  gnutar,
+  gzip,
   libredirect,
   makeWrapper,
-  gzip,
-  gnutar,
   nixosTests,
+  openssl,
+  qt5,
 }:
 
 stdenv.mkDerivation rec {
@@ -34,14 +34,6 @@ stdenv.mkDerivation rec {
     qt5.qtwebsockets
     openssl
   ];
-
-  unpackPhase = ''
-    runHook preUnpack
-
-    dpkg -x $src ./deconz-src
-
-    runHook postUnpack
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -80,6 +72,14 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  unpackPhase = ''
+    runHook preUnpack
+
+    dpkg -x $src ./deconz-src
+
+    runHook postUnpack
+  '';
+
   passthru = {
     tests = { inherit (nixosTests) deconz; };
   };
@@ -88,9 +88,9 @@ stdenv.mkDerivation rec {
     description = "Manage Zigbee network with ConBee, ConBee II or RaspBee hardware";
     homepage = "https://www.dresden-elektronik.com/wireless/software/deconz.html";
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ bjornfor ];
+    platforms = [ "x86_64-linux" ];
     mainProgram = "deCONZ";
   };
 }

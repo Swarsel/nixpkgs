@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   httpx,
   httpx-ws,
   ormsgpack,
   pydantic,
-  typing-extensions,
-  pytestCheckHook,
   pytest-asyncio,
   pytest-cov-stub,
+  pytestCheckHook,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "fish-audio-sdk";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fishaudio";
@@ -24,6 +23,15 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Ht3lVuJE1wv+Ky/q5quhO8C4mkw6EO4LkO/wSevRUhg=";
   };
+
+  # tests require network access and a valid API key
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+    pytest-cov-stub
+  ];
 
   build-system = [ hatchling ];
 
@@ -35,14 +43,7 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-    pytest-cov-stub
-  ];
-
-  # tests require network access and a valid API key
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "fishaudio"

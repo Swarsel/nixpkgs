@@ -12,7 +12,6 @@ let
         env = (python3.withPackages (ps: with ps; [ ipykernel ]));
       in
       {
-        displayName = "Python 3";
         argv = [
           env.interpreter
           "-m"
@@ -20,6 +19,8 @@ let
           "-f"
           "{connection_file}"
         ];
+
+        displayName = "Python 3";
         language = "python";
         logo32 = "${env}/${env.sitePackages}/ipykernel/resources/logo-32x32.png";
         logo64 = "${env}/${env.sitePackages}/ipykernel/resources/logo-64x64.png";
@@ -38,11 +39,7 @@ in
     }:
     stdenv.mkDerivation {
 
-      name = "jupyter-kernels";
-
       src = "/dev/null";
-
-      unpackCmd = "mkdir jupyter_kernels";
 
       installPhase = ''
         mkdir kernels
@@ -89,6 +86,9 @@ in
         mkdir $out
         cp -r kernels $out
       '';
+
+      name = "jupyter-kernels";
+      unpackCmd = "mkdir jupyter_kernels";
 
       meta = {
         description = "Wrapper to create jupyter notebook kernel definitions";

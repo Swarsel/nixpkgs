@@ -1,15 +1,13 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
-
-  # nativeBuildInputs
-  pkg-config,
-
   # buildInputs
   fcft,
+  fetchFromCodeberg,
   libxkbcommon,
   pixman,
+  # nativeBuildInputs
+  pkg-config,
   wayland,
   wayland-protocols,
   wayland-scanner,

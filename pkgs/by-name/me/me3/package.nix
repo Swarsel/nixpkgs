@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   makeWrapper,
   pkgsCross,
   replaceVars,
@@ -38,13 +38,6 @@ let
       })
     ];
 
-    cargoBuildFlags = [
-      "--package"
-      "me3-cli"
-    ];
-
-    cargoTestFlags = final.cargoBuildFlags;
-
     postInstall = ''
       install -Dm444 distribution/linux/me3-launch.desktop \
         $out/share/applications/me3-launch.desktop
@@ -53,11 +46,23 @@ let
       install -Dm444 distribution/assets/me3.png \
         $out/share/icons/hicolor/128x128/apps/me3.png
     '';
+
+    cargoBuildFlags = [
+      "--package"
+      "me3-cli"
+    ];
+
+    cargoTestFlags = final.cargoBuildFlags;
   });
 
   me3-windows = pkgsCross.mingwW64.rustPlatform.buildRustPackage (final: {
     inherit cargoHash version src;
     pname = "me3-windows";
+
+    # Remove useless libme3_mod_host.dll.a
+    postInstall = ''
+      rm -r $out/lib
+    '';
 
     CARGO_TARGET_X86_64_PC_WINDOWS_GNU_RUSTFLAGS = "-Clink-arg=-lmcfgthread";
     RUSTC_BOOTSTRAP = 1;
@@ -70,22 +75,10 @@ let
     ];
 
     cargoTestFlags = final.cargoBuildFlags;
-
-    # Remove useless libme3_mod_host.dll.a
-    postInstall = ''
-      rm -r $out/lib
-    '';
   });
 in
 symlinkJoin {
   inherit version;
-  name = "me3";
-
-  paths = [
-    me3-cli
-    me3-windows
-  ];
-
   nativeBuildInputs = [ makeWrapper ];
 
   postBuild = ''
@@ -93,6 +86,13 @@ symlinkJoin {
       --set WINEPATH $out/bin \
       --add-flags "--windows-binaries-dir $out/bin"
   '';
+
+  name = "me3";
+
+  paths = [
+    me3-cli
+    me3-windows
+  ];
 
   meta = {
     description = "Framework for modding and instrumenting games.";

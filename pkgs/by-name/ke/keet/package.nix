@@ -20,19 +20,18 @@ let
 in
 appimageTools.wrapType2 {
   inherit pname version;
-
   src = "${src}/Keet.AppImage";
+
+  extraInstallCommands = ''
+    install -m 444 -D ${appimageContents}/Keet.desktop -t $out/share/applications
+    cp -r ${appimageContents}/*.png $out/share
+  '';
 
   extraPkgs =
     pkgs: with pkgs; [
       gtk4
       graphene
     ];
-
-  extraInstallCommands = ''
-    install -m 444 -D ${appimageContents}/Keet.desktop -t $out/share/applications
-    cp -r ${appimageContents}/*.png $out/share
-  '';
 
   meta = {
     description = "Peer-to-Peer Chat";

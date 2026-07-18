@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  perlPackages,
   fetchurl,
+  perlPackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -14,6 +14,16 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1gc5c7lg2qrlck7b0lvjfqr824ch6jkrzkpsn0gjvlzg7hfmld75";
   };
 
+  buildInputs = [ perlPackages.perl ];
+
+  propagatedBuildInputs = with perlPackages; [
+    CryptX
+    Error
+    MailDKIM
+    MIMETools
+    NetServer
+  ];
+
   # Idea taken from pkgs/development/perl-modules/generic/builder.sh
   preFixup = ''
     perlFlags=
@@ -24,15 +34,6 @@ stdenv.mkDerivation (finalAttrs: {
       sed -i $out/bin/$f -e "s|#\!\(.*/perl.*\)$|#\! \1 $perlFlags|"
     done
   '';
-
-  buildInputs = [ perlPackages.perl ];
-  propagatedBuildInputs = with perlPackages; [
-    CryptX
-    Error
-    MailDKIM
-    MIMETools
-    NetServer
-  ];
 
   meta = {
     description = "SMTP-proxy that signs and/or verifies emails";

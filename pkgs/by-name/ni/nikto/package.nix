@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  perlPackages,
-  makeWrapper,
   installShellFiles,
+  makeWrapper,
+  perlPackages,
 }:
 
 let
   version = "2.6.0";
 in
 stdenv.mkDerivation rec {
-  pname = "nikto";
   inherit version;
+  pname = "nikto";
 
   src = fetchFromGitHub {
     owner = "sullo";
@@ -66,11 +66,11 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Web server scanner";
-    mainProgram = "nikto";
-    license = lib.licenses.gpl2Plus;
     homepage = "https://cirt.net/Nikto2";
     changelog = "https://github.com/sullo/nikto/releases/tag/${version}";
+    license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ tbutter ];
     platforms = lib.platforms.unix;
+    mainProgram = "nikto";
   };
 }

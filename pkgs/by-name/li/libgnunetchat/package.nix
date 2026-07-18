@@ -1,18 +1,18 @@
 {
   lib,
   stdenv,
+  check,
   fetchgit,
   fetchpatch,
+  gnunet,
+  libextractor,
+  libgcrypt,
+  libsodium,
   meson,
   ninja,
   pkg-config,
-  validatePkgConfig,
   testers,
-  check,
-  gnunet,
-  libsodium,
-  libgcrypt,
-  libextractor,
+  validatePkgConfig,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,8 +27,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://build.opensuse.org/public/source/openSUSE:Factory/libgnunetchat/libgnunetchat-0.6.1-gnunet-0.26.2.patch?rev=6";
       hash = "sha256-Q0FvZUXSnYwK+LsN9MoW7v+gPYmD7w4E+bXNDluhxfI=";
+      url = "https://build.opensuse.org/public/source/openSUSE:Factory/libgnunetchat/libgnunetchat-0.6.1-gnunet-0.26.2.patch?rev=6";
     })
   ];
 
@@ -50,19 +50,17 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.INSTALL_DIR = (placeholder "out") + "/";
-
   prePatch = "mkdir -p $out/lib";
-
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {
-    pkgConfigModules = [ "gnunetchat" ];
     description = "Library for secure, decentralized chat using GNUnet network services";
     homepage = "https://git-www.taler.net/libgnunetchat.git";
     changelog = "https://git-www.taler.net/libgnunetchat.git/plain/ChangeLog?h=v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
-    teams = with lib.teams; [ ngi ];
     maintainers = [ lib.maintainers.ethancedwards8 ];
+    platforms = lib.platforms.all;
+    pkgConfigModules = [ "gnunetchat" ];
+    teams = with lib.teams; [ ngi ];
   };
 })

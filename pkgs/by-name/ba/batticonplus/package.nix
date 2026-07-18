@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   gettext,
   glib,
   gtk3,
-  libnotify,
-  wrapGAppsHook3,
   libayatana-appindicator,
+  libnotify,
   nix-update-script,
+  pkg-config,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -45,10 +45,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Lightweight battery status icon for the system tray and notifier (based on cbatticon)";
-    mainProgram = "batticonplus";
     homepage = "https://github.com/artist4artixlinux/batticonplus";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ yechielw ];
+    platforms = lib.platforms.linux;
+    mainProgram = "batticonplus";
   };
 })

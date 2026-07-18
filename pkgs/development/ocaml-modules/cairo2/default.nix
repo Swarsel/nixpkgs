@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   buildDunePackage,
-  ocaml,
-  dune-configurator,
-  pkg-config,
   cairo,
+  dune-configurator,
+  ocaml,
+  pkg-config,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -19,6 +19,7 @@ buildDunePackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     cairo
     dune-configurator
@@ -32,15 +33,18 @@ buildDunePackage (finalAttrs: {
     );
 
   meta = {
-    homepage = "https://github.com/Chris00/ocaml-cairo";
     description = "Binding to Cairo, a 2D Vector Graphics Library";
+
     longDescription = ''
       This is a binding to Cairo, a 2D graphics library with support for
       multiple output devices. Currently supported output targets include
       the X Window System, Quartz, Win32, image buffers, PostScript, PDF,
       and SVG file output.
     '';
+
+    homepage = "https://github.com/Chris00/ocaml-cairo";
     license = lib.licenses.lgpl3;
+
     maintainers = with lib.maintainers; [
       jirkamarsik
       vbgl

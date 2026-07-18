@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "cloudgoat";
   version = "2.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "RhinoSecurityLabs";
@@ -16,6 +15,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-36GgGni4Zds4wZ8PQbrDD7SXwkKYQfcUi7Z//5j9NWU=";
   };
 
+  nativeCheckInputs = with python3.pkgs; [ pytestCheckHook ];
   build-system = with python3.pkgs; [ poetry-core ];
 
   dependencies = with python3.pkgs; [
@@ -26,8 +26,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     sqlite-utils
   ];
 
-  nativeCheckInputs = with python3.pkgs; [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "cloudgoat" ];
 
   meta = {

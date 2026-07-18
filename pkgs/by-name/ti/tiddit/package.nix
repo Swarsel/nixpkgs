@@ -1,15 +1,14 @@
 {
-  bwa,
   lib,
-  fermi2,
-  ropebwt2,
   fetchFromGitHub,
+  bwa,
+  fermi2,
   python3Packages,
+  ropebwt2,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "tiddit";
   version = "3.9.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SciLifeLab";
@@ -41,12 +40,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "--set PYTHONPATH $PYTHONPATH"
   ];
 
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/SciLifeLab/TIDDIT";
     description = "Identify chromosomal rearrangements using Mate Pair or Paired End sequencing data";
-    mainProgram = "tiddit";
+    homepage = "https://github.com/SciLifeLab/TIDDIT";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ apraga ];
     platforms = lib.platforms.unix;
+    mainProgram = "tiddit";
   };
 })

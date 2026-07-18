@@ -2,25 +2,22 @@
   lib,
   stdenv,
   buildPythonPackage,
-  fetchPypi,
   dbus,
-  pkgsLibpcap,
+  fetchPypi,
   pkg-about,
-  setuptools,
+  pkgsLibpcap,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "libpcap";
   version = "1.11.0b25";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-GzrTqpkiKJjWBuZ7ez707BGZez9wXB96psygDQykO6c=";
   };
-
-  build-system = [ setuptools ];
 
   # tox is listed in build requirements but not actually used to build
   # keeping it as a requirement breaks the build unnecessarily
@@ -38,18 +35,23 @@ buildPythonPackage rec {
     pkg-about
   ];
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   preCheck = ''
     pushd tests
   '';
+
   postCheck = ''
     popd
   '';
-  nativeCheckInputs = [ pytestCheckHook ];
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "libpcap" ];
 
   meta = {
     description = "Python binding for the libpcap C library";
+
     longDescription = ''
       Python libpcap module is a low-level binding for libpcap C library.
 
@@ -59,6 +61,7 @@ buildPythonPackage rec {
 
       It is fully compliant implementation of the original C libpcap from 1.0.0 up to 1.9.0 API and the WinPcap’s 4.1.3 libpcap (1.0.0rel0b) API by implementing whole its functionality in a clean Python instead of C.
     '';
+
     homepage = "https://github.com/karpierz/libpcap/";
     changelog = "https://github.com/karpierz/libpcap/blob/${version}/CHANGES.rst";
     license = lib.licenses.bsd3;

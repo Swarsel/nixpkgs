@@ -8,17 +8,15 @@
 buildPythonPackage rec {
   pname = "pyw215";
   version = "0.8.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-AQRGXpuduHRMozEZQMNLX5f5GtJa3T/5rHIGqGvWUP4=";
   };
 
-  build-system = [ setuptools ];
-
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "pyW215" ];
 
   meta = {

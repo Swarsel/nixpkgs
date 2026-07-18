@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication rec {
   pname = "zeronet";
   version = "0.7.1";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "HelloZeroNet";
@@ -47,11 +46,14 @@ python3Packages.buildPythonApplication rec {
       --set PATH ${python3Packages.python}/bin
   '';
 
+  pyproject = false;
+
   meta = {
     description = "Decentralized websites using Bitcoin crypto and BitTorrent network";
     homepage = "https://zeronet.io/";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ fgaz ];
+
     knownVulnerabilities = [
       ''
         Unmaintained. Probable XSS/code injection vulnerability.

@@ -1,16 +1,15 @@
 {
   lib,
   stdenv,
-  python3Packages,
-  fetchpatch,
   fetchFromGitHub,
+  fetchpatch,
+  python3Packages,
   rsync,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "remote-exec";
   version = "1.13.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "remote-cli";
@@ -23,8 +22,8 @@ python3Packages.buildPythonApplication rec {
     # relax install requirements
     # https://github.com/remote-cli/remote/pull/60.patch
     (fetchpatch {
-      url = "https://github.com/remote-cli/remote/commit/a2073c30c7f576ad7ceb46e39f996de8d06bf186.patch";
       hash = "sha256-As0j+yY6LamhOCGFzvjUQoXFv46BN/tRBpvIS7r6DaI=";
+      url = "https://github.com/remote-cli/remote/commit/a2073c30c7f576ad7ceb46e39f996de8d06bf186.patch";
     })
   ];
 
@@ -33,13 +32,6 @@ python3Packages.buildPythonApplication rec {
     substituteInPlace setup.py \
       --replace-fail '"mremote' '#"mremote'
   '';
-
-  dependencies = with python3Packages; [
-    click
-    pydantic
-    toml
-    watchdog
-  ];
 
   doCheck = true;
 
@@ -52,11 +44,20 @@ python3Packages.buildPythonApplication rec {
     pytest-cov-stub
   ];
 
+  dependencies = with python3Packages; [
+    click
+    pydantic
+    toml
+    watchdog
+  ];
+
   disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
     # `watchdog` dependency does not correctly detect fsevents on darwin.
     # this only affects `remote --stream-changes`
     "test/test_file_changes.py"
   ];
+
+  format = "setuptools";
 
   meta = {
     description = "Work with remote hosts seamlessly via rsync and ssh";

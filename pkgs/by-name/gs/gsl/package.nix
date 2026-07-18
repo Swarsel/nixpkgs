@@ -1,31 +1,34 @@
 {
-  fetchurl,
-  fetchpatch,
   lib,
   stdenv,
+  fetchurl,
+  fetchpatch,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "gsl";
   version = "2.8";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchurl {
     url = "mirror://gnu/gsl/gsl-${finalAttrs.version}.tar.gz";
     hash = "sha256-apnu7RVjLGNUiVsd1ULtWoVcDxXZrRMmxv4rLJ5CMZA=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     (fetchpatch {
-      url = "https://github.com/macports/macports-ports/raw/90be777d2ce451d3c23783cb2be0efab9732e4d0/math/gsl/files/patch-fix-linking.diff";
       extraPrefix = "";
       hash = "sha256-lweYndIxcM5+4ckIUubkD9XbJbqkfdK+y9c3aRzmq0M=";
+      url = "https://github.com/macports/macports-ports/raw/90be777d2ce451d3c23783cb2be0efab9732e4d0/math/gsl/files/patch-fix-linking.diff";
     })
   ];
+
+  # do not let -march=skylake to enable FMA (https://lists.gnu.org/archive/html/bug-gsl/2011-11/msg00019.html)
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isx86_64 "-mno-fma";
 
   preConfigure =
     if
@@ -37,13 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
     else
       null;
 
-  postInstall = ''
-    moveToOutput bin/gsl-config "$dev"
-  '';
-
-  # do not let -march=skylake to enable FMA (https://lists.gnu.org/archive/html/bug-gsl/2011-11/msg00019.html)
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isx86_64 "-mno-fma";
-
   doCheck =
     # https://lists.gnu.org/archive/html/bug-gsl/2015-11/msg00012.html
     stdenv.hostPlatform.system != "i686-linux"
@@ -51,10 +47,12 @@ stdenv.mkDerivation (finalAttrs: {
     # https://lists.gnu.org/archive/html/bug-gsl/2025-03/msg00010.html
     && !stdenv.hostPlatform.isBigEndian;
 
+  postInstall = ''
+    moveToOutput bin/gsl-config "$dev"
+  '';
+
   meta = {
     description = "GNU Scientific Library, a large numerical library";
-    homepage = "https://www.gnu.org/software/gsl/";
-    license = lib.licenses.gpl3Plus;
 
     longDescription = ''
       The GNU Scientific Library (GSL) is a numerical library for C
@@ -66,6 +64,9 @@ stdenv.mkDerivation (finalAttrs: {
       fitting.  There are over 1000 functions in total with an
       extensive test suite.
     '';
+
+    homepage = "https://www.gnu.org/software/gsl/";
+    license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.all;
   };
 })

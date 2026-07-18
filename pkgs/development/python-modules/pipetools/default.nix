@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage {
   pname = "pipetools";
   version = "1.1.0";
-  format = "setuptools";
 
   # Used github as the src since the pypi package does not include the tests
   src = fetchFromGitHub {
@@ -19,10 +18,9 @@ buildPythonPackage {
     hash = "sha256-BoZFePQCQfz1dkct5p/WQLuXoNX3eLcnKf3Mf0fG6u8=";
   };
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   propagatedBuildInputs = [ setuptools ];
-
+  nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
   pythonImportsCheck = [ "pipetools" ];
 
   meta = {

@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
 }:
 
 buildPythonPackage rec {
   pname = "pycfdns";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ludeeus";
@@ -24,12 +23,10 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ poetry-core ];
-
   propagatedBuildInputs = [ aiohttp ];
-
   # Project has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pycfdns" ];
 
   meta = {

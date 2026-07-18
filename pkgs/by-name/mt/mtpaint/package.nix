@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   freetype,
+  gettext,
   giflib,
+  gifsicle,
   gtk3,
   lcms2,
   libjpeg,
   libpng,
   libtiff,
   openjpeg,
-  gifsicle,
-  gettext,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -27,7 +27,6 @@ stdenv.mkDerivation {
   };
 
   strictDeps = true;
-  enableParallelBuilding = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -52,8 +51,11 @@ stdenv.mkDerivation {
     "man"
   ];
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Simple GTK painting program";
+
     longDescription = ''
       mtPaint is a simple GTK painting program designed for
       creating icons and pixel based artwork.  It can edit indexed palette
@@ -63,10 +65,11 @@ stdenv.mkDerivation {
       Due to its simplicity and lack of dependencies it runs well on
       GNU/Linux, Windows and older PC hardware.
     '';
+
     homepage = "https://mtpaint.sourceforge.net/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "mtpaint";
   };
 }

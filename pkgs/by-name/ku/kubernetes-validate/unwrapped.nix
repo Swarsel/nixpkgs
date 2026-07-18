@@ -2,26 +2,29 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   importlib-resources,
   jsonschema,
   packaging,
+  pytestCheckHook,
   pyyaml,
   referencing,
+  setuptools,
   typing-extensions,
-  pytestCheckHook,
   versionCheckHook,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "kubernetes-validate";
   version = "1.36.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "kubernetes_validate";
     inherit (finalAttrs) version;
     hash = "sha256-7b/S256ItXECmqFqsRFsZQKtK5YotnON051jkyP4RxU=";
+    pname = "kubernetes_validate";
   };
+
+  nativeCheckInputs = [
+    versionCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -36,10 +39,7 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    versionCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "kubernetes_validate" ];
 
   meta = {

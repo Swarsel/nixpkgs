@@ -10,32 +10,29 @@
 buildPythonPackage rec {
   pname = "pykcs11";
   version = "1.5.18";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-Ev2HizaYIdgMG+ihQMheig+xNY/Kq6ZspmhpITaS8ic=";
   };
 
-  build-system = [ setuptools ];
-
-  nativeBuildInputs = [ swig ];
-
-  pypaBuildFlags = [ "--skip-dependency-check" ];
-
   outputs = [
     "out"
     "testout"
   ];
+
+  nativeBuildInputs = [ swig ];
+  doCheck = false;
 
   postInstall = ''
     mkdir $testout
     cp -R test $testout/test
   '';
 
+  build-system = [ setuptools ];
+  pypaBuildFlags = [ "--skip-dependency-check" ];
+  pyproject = true;
   pythonImportsCheck = [ "PyKCS11" ];
-
-  doCheck = false;
 
   # tests complain about circular import, do testing with passthru.tests instead
   passthru.tests = {

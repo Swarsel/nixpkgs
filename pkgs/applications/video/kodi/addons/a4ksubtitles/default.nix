@@ -1,14 +1,13 @@
 {
   lib,
-  buildKodiAddon,
   fetchFromGitHub,
+  buildKodiAddon,
   requests,
   vfs-libarchive,
 }:
 
 buildKodiAddon rec {
   pname = "a4ksubtitles";
-  namespace = "service.subtitles.a4ksubtitles";
   version = "3.3.0";
 
   src = fetchFromGitHub {
@@ -23,9 +22,11 @@ buildKodiAddon rec {
     vfs-libarchive
   ];
 
+  namespace = "service.subtitles.a4ksubtitles";
+
   meta = {
-    homepage = "https://a4k-openproject.github.io/a4kSubtitles/";
     description = "Multi-Source Subtitles Addon";
+    homepage = "https://a4k-openproject.github.io/a4kSubtitles/";
     license = lib.licenses.mit;
     teams = [ lib.teams.kodi ];
   };

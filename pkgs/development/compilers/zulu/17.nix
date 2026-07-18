@@ -12,17 +12,19 @@ callPackage ./common.nix (
     # Details from https://www.azul.com/downloads/?version=java-17-lts&package=jdk
     # Note that the latest build may differ by platform
     dists = {
-      x86_64-linux = {
+      aarch64-darwin = {
         inherit zuluVersion jdkVersion;
+
         hash =
           if enableJavaFX then
-            "sha256-FCp5FoevH8ekD+AZhapvcqc8EpD08ubJ+UFCzwzDWJQ="
+            "sha256-szuMbtvi8wbKnbtwRjKIUQgb9LReDk6jCooECnpn6nM="
           else
-            "sha256-rTGaq+ZZwY+mP620RgJqfH9SYPAqYVn1EZVzXSDnqhw=";
+            "sha256-8r1a+qqkwj60vyx4kTx+t9PSKORCCf/sZS+3I4ii8lw=";
       };
 
       aarch64-linux = {
         inherit zuluVersion jdkVersion;
+
         hash =
           if enableJavaFX then
             "sha256-NzY55vSha3gxmPS9dQK2827q8eAfkcfPXoiZ6KODpfQ="
@@ -30,13 +32,14 @@ callPackage ./common.nix (
             "sha256-wX1WV6ZzwM/AmenYA+0wSYSViU1zWf0QZNRjCT7ZhQs=";
       };
 
-      aarch64-darwin = {
+      x86_64-linux = {
         inherit zuluVersion jdkVersion;
+
         hash =
           if enableJavaFX then
-            "sha256-szuMbtvi8wbKnbtwRjKIUQgb9LReDk6jCooECnpn6nM="
+            "sha256-FCp5FoevH8ekD+AZhapvcqc8EpD08ubJ+UFCzwzDWJQ="
           else
-            "sha256-8r1a+qqkwj60vyx4kTx+t9PSKORCCf/sZS+3I4ii8lw=";
+            "sha256-rTGaq+ZZwY+mP620RgJqfH9SYPAqYVn1EZVzXSDnqhw=";
       };
     };
   }

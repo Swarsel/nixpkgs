@@ -1,11 +1,11 @@
 {
-  stdenv,
-  buildGo126Module,
   lib,
+  stdenv,
   fetchFromGitHub,
+  buildGo126Module,
+  buildNpmPackage,
   fetchpatch,
   nix-update-script,
-  buildNpmPackage,
   nixosTests,
 }:
 buildGo126Module (finalAttrs: {
@@ -19,50 +19,16 @@ buildGo126Module (finalAttrs: {
     hash = "sha256-pVZ1ru9++BypZ3EwoE8clqJowXj1/CMiJxKaC+UY9VE=";
   };
 
-  webui = buildNpmPackage {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      meta
-      ;
-
-    npmFlags = [ "--legacy-peer-deps" ];
-
-    buildPhase = ''
-      runHook preBuild
-
-      npx lingui extract --overwrite
-      npx lingui compile
-      node --max_old_space_size=1024000 ./node_modules/vite/bin/vite.js build
-
-      runHook postBuild
-    '';
-
-    installPhase = ''
-      runHook preInstall
-
-      mkdir -p $out
-      cp -r dist/* $out
-
-      runHook postInstall
-    '';
-
-    sourceRoot = "${finalAttrs.src.name}/internal/site";
-
-    npmDepsHash = "sha256-mYAD8FrQwa+F/VgGxFpe8vqucfZaM0PmY+gJJqw1IKk=";
-  };
-
-  vendorHash = "sha256-TVpZbK9V9/GqpVFcjF7QGD5XJJHzRgjVXZOImHQTR1k=";
-
   patches = [
     # https://github.com/NixOS/nixpkgs/pull/513197
     (fetchpatch {
+      hash = "sha256-voIT9b14pgfhnbJrqgoIbQtwZPU1JF0fblybjG9mzvM=";
       name = "fix-updater-after-system-manager-shutdown.patch";
       url = "https://github.com/henrygd/beszel/commit/c538d1de1cf3f4664a2d98086341884a217846e7.patch";
-      hash = "sha256-voIT9b14pgfhnbJrqgoIbQtwZPU1JF0fblybjG9mzvM=";
     })
   ];
+
+  vendorHash = "sha256-TVpZbK9V9/GqpVFcjF7QGD5XJJHzRgjVXZOImHQTR1k=";
 
   preBuild = ''
     mkdir -p internal/site/dist
@@ -102,25 +68,60 @@ buildGo126Module (finalAttrs: {
 
   __darwinAllowLocalNetworking = true;
 
+  webui = buildNpmPackage {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      meta
+      ;
+
+    npmDepsHash = "sha256-mYAD8FrQwa+F/VgGxFpe8vqucfZaM0PmY+gJJqw1IKk=";
+
+    buildPhase = ''
+      runHook preBuild
+
+      npx lingui extract --overwrite
+      npx lingui compile
+      node --max_old_space_size=1024000 ./node_modules/vite/bin/vite.js build
+
+      runHook postBuild
+    '';
+
+    installPhase = ''
+      runHook preInstall
+
+      mkdir -p $out
+      cp -r dist/* $out
+
+      runHook postInstall
+    '';
+
+    npmFlags = [ "--legacy-peer-deps" ];
+    sourceRoot = "${finalAttrs.src.name}/internal/site";
+  };
+
   passthru = {
+    tests.nixos = nixosTests.beszel;
+
     updateScript = nix-update-script {
       extraArgs = [
         "--subpackage"
         "webui"
       ];
     };
-    tests.nixos = nixosTests.beszel;
   };
 
   meta = {
+    description = "Lightweight server monitoring hub with historical data, docker stats, and alerts";
     homepage = "https://github.com/henrygd/beszel";
     changelog = "https://github.com/henrygd/beszel/releases/tag/v${finalAttrs.version}";
-    description = "Lightweight server monitoring hub with historical data, docker stats, and alerts";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       bot-wxt1221
       arunoruto
       BonusPlay
     ];
-    license = lib.licenses.mit;
   };
 })

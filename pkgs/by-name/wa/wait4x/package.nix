@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "wait4x";
@@ -15,7 +15,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-fa3XEqLkzriMFYea3bv4FzaKgK2FsGwn5IQG48vh7+M=";
-
   # Tests make network access
   doCheck = false;
 

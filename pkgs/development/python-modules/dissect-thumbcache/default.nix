@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dissect-cstruct,
   dissect-util,
-  fetchFromGitHub,
   pytestCheckHook,
   setuptools,
   setuptools-scm,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "dissect-thumbcache";
   version = "1.11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fox-it";
@@ -20,6 +19,8 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-yZAowAPQGfYl8RcCcnR5yPiiaY2s7LykRqgVeKThkpk=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -31,15 +32,14 @@ buildPythonPackage rec {
     dissect-util
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "dissect.thumbcache" ];
-
   disabledTests = [
     # Don't run Windows related tests
     "windows"
     "test_index_type"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "dissect.thumbcache" ];
 
   meta = {
     description = "Dissect module implementing a parser for the Windows thumbcache";

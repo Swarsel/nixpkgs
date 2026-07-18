@@ -1,21 +1,19 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
-  fetchpatch,
   alcotest,
+  buildDunePackage,
   cmdliner,
+  fetchpatch,
+  gitUpdater,
   ppx_deriving,
   ppxlib,
   result,
-  gitUpdater,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "ppx_deriving_cmdliner";
   version = "0.6.1";
-
-  minimalOCamlVersion = "4.11";
 
   src = fetchFromGitHub {
     owner = "hammerlab";
@@ -28,8 +26,8 @@ buildDunePackage (finalAttrs: {
     # Ppxlib.0.26.0 compatibility
     # remove when a new version is released
     (fetchpatch {
-      url = "https://patch-diff.githubusercontent.com/raw/hammerlab/ppx_deriving_cmdliner/pull/50.patch";
       sha256 = "sha256-FfUfEAsyobwZ99+s5sFAaCE6Xgx7jLr/q79OxDbGcvQ=";
+      url = "https://patch-diff.githubusercontent.com/raw/hammerlab/ppx_deriving_cmdliner/pull/50.patch";
     })
   ];
 
@@ -41,10 +39,12 @@ buildDunePackage (finalAttrs: {
   ];
 
   doCheck = true;
+
   checkInputs = [
     (alcotest.override { inherit cmdliner; })
   ];
 
+  minimalOCamlVersion = "4.11";
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {

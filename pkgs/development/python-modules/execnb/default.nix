@@ -11,13 +11,14 @@
 buildPythonPackage rec {
   pname = "execnb";
   version = "0.1.18";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-VM2WsdFICc7trCjfupL5wW0UFTzRW5RPfWs6jYpCSDM=";
   };
 
+  # no real tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage rec {
     traitlets
   ];
 
-  # no real tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "execnb" ];
 
   meta = {

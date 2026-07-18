@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchurl,
-  pkgsi686Linux,
-  dpkg,
-  makeWrapper,
+  a2ps,
   coreutils,
-  gnused,
-  gawk,
-  file,
   cups,
+  dpkg,
+  file,
+  gawk,
+  ghostscript,
+  gnused,
+  makeWrapper,
+  pkgsi686Linux,
+  runtimeShell,
   util-linux,
   xxd,
-  runtimeShell,
-  ghostscript,
-  a2ps,
 }:
 
 # Why:
@@ -45,23 +45,13 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     cups
     ghostscript
     dpkg
     a2ps
   ];
-
-  dontUnpack = true;
-
-  brprintconf_mfcj6510dw_script = ''
-    #!${runtimeShell}
-    cd $(mktemp -d)
-    ln -s @out@/usr/bin/brprintconf_mfcj6510dw_patched brprintconf_mfcj6510dw_patched
-    ln -s @out@/opt/brother/Printers/mfcj6510dw/inf/brmfcj6510dwfunc brmfcj6510dwfunc
-    ln -s @out@/opt/brother/Printers/mfcj6510dw/inf/brmfcj6510dwrc brmfcj6510dwrc
-    ./brprintconf_mfcj6510dw_patched "$@"
-  '';
 
   installPhase = ''
     dpkg-deb -x $src $out
@@ -113,13 +103,24 @@ stdenv.mkDerivation rec {
       }
   '';
 
+  brprintconf_mfcj6510dw_script = ''
+    #!${runtimeShell}
+    cd $(mktemp -d)
+    ln -s @out@/usr/bin/brprintconf_mfcj6510dw_patched brprintconf_mfcj6510dw_patched
+    ln -s @out@/opt/brother/Printers/mfcj6510dw/inf/brmfcj6510dwfunc brmfcj6510dwfunc
+    ln -s @out@/opt/brother/Printers/mfcj6510dw/inf/brmfcj6510dwrc brmfcj6510dwrc
+    ./brprintconf_mfcj6510dw_patched "$@"
+  '';
+
+  dontUnpack = true;
+
   meta = {
     description = "Brother MFC-J6510DW LPR driver";
-    downloadPage = "http://support.brother.com/g/b/downloadlist.aspx?c=us&lang=en&prod=mfcj6510dw_all&os=128";
     homepage = "http://www.brother.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = with lib.licenses; unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ ramkromberg ];
     platforms = with lib.platforms; linux;
+    downloadPage = "http://support.brother.com/g/b/downloadlist.aspx?c=us&lang=en&prod=mfcj6510dw_all&os=128";
   };
 }

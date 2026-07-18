@@ -1,40 +1,40 @@
 {
   lib,
   stdenv,
-  buildPackages,
-  replaceVars,
   fetchFromGitHub,
-  meson,
-  mesonEmulatorHook,
   appstream,
-  ninja,
-  pkg-config,
+  bash-completion,
+  buildPackages,
+  cairo,
   cmake,
-  gettext,
-  xmlto,
+  curl,
   docbook-xsl-ns,
   docbook_xml_dtd_45,
-  libblake3,
-  libxslt,
-  libstemmer,
+  gdk-pixbuf,
+  gettext,
   glib,
-  xapian,
+  gobject-introspection,
+  gperf,
+  itstool,
+  libblake3,
+  libfyaml,
+  librsvg,
+  libstemmer,
   libxml2,
   libxmlb,
-  libfyaml,
-  gobject-introspection,
-  itstool,
-  gperf,
-  vala,
-  curl,
-  cairo,
-  gdk-pixbuf,
-  pango,
-  librsvg,
-  bash-completion,
-  systemd,
+  libxslt,
+  meson,
+  mesonEmulatorHook,
+  ninja,
   nixosTests,
+  pango,
+  pkg-config,
+  replaceVars,
+  systemd,
   testers,
+  vala,
+  xapian,
+  xmlto,
   withIntrospection ?
     lib.meta.availableOn stdenv.hostPlatform gobject-introspection
     && stdenv.hostPlatform.emulatorAvailable buildPackages,
@@ -45,18 +45,18 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "appstream";
   version = "1.1.3";
 
-  outputs = [
-    "out"
-    "dev"
-    "installedTests"
-  ];
-
   src = fetchFromGitHub {
     owner = "ximion";
     repo = "appstream";
     rev = "v${finalAttrs.version}";
     hash = "sha256-z9HmTYOjglki+ID7GPMf3jGLOAkxLqJd4+GsIR3W3u4=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+    "installedTests"
+  ];
 
   patches = [
     # Fix hardcoded paths
@@ -69,10 +69,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   strictDeps = true;
-
-  depsBuildBuild = [
-    pkg-config
-  ];
 
   nativeBuildInputs = [
     meson
@@ -131,8 +127,13 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dsystemd=false"
   ];
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   passthru.tests = {
     installed-tests = nixosTests.installed-tests.appstream;
+
     pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
     };
@@ -140,16 +141,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Software metadata handling library";
+
     longDescription = ''
       AppStream is a cross-distro effort for building Software-Center applications
       and enhancing metadata provided by software components.  It provides
       specifications for meta-information which is shipped by upstream projects and
       can be consumed by other software.
     '';
+
     homepage = "https://www.freedesktop.org/wiki/Distributions/AppStream/";
     license = lib.licenses.lgpl21Plus;
-    mainProgram = "appstreamcli";
     platforms = lib.platforms.unix;
+    mainProgram = "appstreamcli";
     pkgConfigModules = [ "appstream" ];
   };
 })

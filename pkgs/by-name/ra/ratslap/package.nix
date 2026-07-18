@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  git,
+  installShellFiles,
   libusb1,
   pkg-config,
-  installShellFiles,
-  git,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -58,10 +58,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Configure G300 and G300s Logitech mice";
+
     longDescription = ''
       A tool to configure Logitech mice on Linux. Supports remapping
       all buttons and configuring modes, DPI settings and the LED.
     '';
+
     homepage = "https://github.com/krayon/ratslap";
     changelog = "https://github.com/krayon/ratslap/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl2Only;

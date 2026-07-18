@@ -1,18 +1,18 @@
 # how to use
 # nix-update -u librewolf-unwrapped
 {
-  writeScript,
   lib,
   coreutils,
-  gnused,
-  gnugrep,
   curl,
+  gnugrep,
   gnupg,
+  gnused,
   jq,
-  nix-prefetch-git,
   moreutils,
-  runtimeShell,
   nix,
+  nix-prefetch-git,
+  runtimeShell,
+  writeScript,
   ...
 }:
 

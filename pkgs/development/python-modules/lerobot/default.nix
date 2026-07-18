@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  # tests
+  av,
+  buildPythonPackage,
   # build-system
   cmake,
-  setuptools,
-
+  datasets,
   # dependencies
   draccus,
   einops,
@@ -17,26 +17,21 @@
   opencv-python-headless,
   packaging,
   pillow,
+  pytestCheckHook,
   requests,
   safetensors,
+  setuptools,
   termcolor,
   torch,
   torchcodec,
   torchvision,
   tqdm,
-
-  # tests
-  av,
-  datasets,
-  pytestCheckHook,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "lerobot";
   version = "0.6.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "huggingface";
@@ -45,19 +40,21 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-glTeELaebo5C6RethwYIHF4gB7CgKZlPr4wf45ih9cs=";
   };
 
+  nativeCheckInputs = [
+    av
+    datasets
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+
   build-system = [
     cmake
     setuptools
   ];
-  dontUseCmakeConfigure = true;
 
-  pythonRelaxDeps = [
-    "draccus"
-    "numpy"
-    "packaging"
-    "torch"
-    "torchvision"
-  ];
   dependencies = [
     draccus
     einops
@@ -76,13 +73,13 @@ buildPythonPackage (finalAttrs: {
     tqdm
   ];
 
-  pythonImportsCheck = [ "lerobot" ];
+  disabledTestPaths = [
+    # Require internet access
+    # httpx.ConnectError: [Errno -3] Temporary failure in name resolution
+    "tests/policies/test_relative_actions.py"
 
-  nativeCheckInputs = [
-    av
-    datasets
-    pytestCheckHook
-    writableTmpDirAsHomeHook
+    # Sometimes hang forever
+    "tests/policies/rtc/test_modeling_rtc.py"
   ];
 
   disabledTests = [
@@ -148,16 +145,17 @@ buildPythonPackage (finalAttrs: {
     "test_end_to_end_transitions_flow"
   ];
 
-  disabledTestPaths = [
-    # Require internet access
-    # httpx.ConnectError: [Errno -3] Temporary failure in name resolution
-    "tests/policies/test_relative_actions.py"
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+  pythonImportsCheck = [ "lerobot" ];
 
-    # Sometimes hang forever
-    "tests/policies/rtc/test_modeling_rtc.py"
+  pythonRelaxDeps = [
+    "draccus"
+    "numpy"
+    "packaging"
+    "torch"
+    "torchvision"
   ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Making AI for Robotics more accessible with end-to-end learning";

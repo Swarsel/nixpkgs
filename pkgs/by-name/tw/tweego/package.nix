@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "tweego";
@@ -14,12 +14,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-LE85mSByTz7uFjs0XtrpfD7OARoMPE56FpjFw+FlGYw=";
   };
 
-  proxyVendor = true;
   vendorHash = "sha256-1O27CiCXgrD0RC+3jrVxAiq/RnI2s1FW2/uoBAd1fF8=";
 
   preBuild = ''
     go mod tidy
   '';
+
+  proxyVendor = true;
 
   meta = {
     description = "Free (gratis and libre) command line compiler for Twine/Twee story formats, written in Go";

@@ -1,19 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
-
   # Dependencies
   biothings-client,
+  buildPythonPackage,
   pandas,
+  pytestCheckHook,
   requests,
+  setuptools,
 }:
 buildPythonPackage rec {
   pname = "mygene";
   version = "3.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "biothings";
@@ -22,21 +20,24 @@ buildPythonPackage rec {
     hash = "sha256-/KxlzOTbZTN5BA0PrJyivVFh4cLtW90/EFwczda61Tg=";
   };
 
-  optional-dependencies = {
-    complete = [ pandas ];
-  };
-
   build-system = [ setuptools ];
+
   dependencies = [
     biothings-client
     requests
   ];
+
+  optional-dependencies = {
+    complete = [ pandas ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "mygene" ];
 
   meta = {
-    changelog = "https://github.com/biothings/mygene.py/blob/v${version}/CHANGES.txt";
     description = "REST web services to query/retrieve gene annotation data";
     homepage = "https://github.com/biothings/mygene.py";
+    changelog = "https://github.com/biothings/mygene.py/blob/v${version}/CHANGES.txt";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ rayhem ];
   };

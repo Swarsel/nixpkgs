@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 buildNpmPackage (finalAttrs: {
   pname = "clean-css-cli";
@@ -15,17 +15,15 @@ buildNpmPackage (finalAttrs: {
   };
 
   npmDepsHash = "sha256-uvI9esVVOE18syHUCJpoiDY+Vh3hJO+GsMOTZSYJaxg=";
-
-  dontNpmBuild = true;
-
   dontCheckForBrokenSymlinks = true;
+  dontNpmBuild = true;
 
   meta = {
     description = "Command-line interface to the clean-css CSS optimization library";
     homepage = "https://github.com/clean-css/clean-css-cli";
     changelog = "https://github.com/clean-css/clean-css-cli/blob/v${finalAttrs.version}/History.md";
     license = lib.licenses.mit;
-    mainProgram = "cleancss";
     maintainers = [ ];
+    mainProgram = "cleancss";
   };
 })

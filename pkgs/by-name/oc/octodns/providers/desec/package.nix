@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   octodns,
   pytestCheckHook,
   requests,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "octodns-desec";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rootshell-labs";
@@ -19,6 +18,12 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-tRviqrNkKYWj4a3EWCJEco8AnzFuRkvSCzZ1HrSye/I=";
   };
+
+  env.OCTODNS_RELEASE = 1;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -29,13 +34,8 @@ buildPythonPackage rec {
     requests
   ];
 
-  env.OCTODNS_RELEASE = 1;
-
+  pyproject = true;
   pythonImportsCheck = [ "octodns_desec" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
 
   meta = {
     description = "deSEC DNS provider for octoDNS";

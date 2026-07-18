@@ -1,14 +1,13 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "alertmanager-webhook-logger";
   version = "1.0";
-  rev = "${finalAttrs.version}";
 
   src = fetchFromGitHub {
     inherit (finalAttrs) rev;
@@ -18,16 +17,15 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-gKtOoM9TuEIHgvSjZhqWmdexG2zDjlPuM0HjjP52DOI=";
-
   doCheck = true;
-
+  rev = "${finalAttrs.version}";
   passthru.tests = { inherit (nixosTests.prometheus) alertmanager; };
 
   meta = {
     description = "Generates (structured) log messages from Prometheus AlertManager webhook notifier";
-    mainProgram = "alertmanager-webhook-logger";
     homepage = "https://github.com/tomtom-international/alertmanager-webhook-logger";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ jpds ];
+    mainProgram = "alertmanager-webhook-logger";
   };
 })

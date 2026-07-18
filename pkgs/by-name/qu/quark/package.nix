@@ -6,6 +6,7 @@
 }:
 
 stdenv.mkDerivation {
+  inherit patches;
   pname = "quark";
   version = "unstable-2021-02-22";
 
@@ -15,18 +16,15 @@ stdenv.mkDerivation {
     sha256 = "sha256-Jtu5zJfHd+6Oq572nVem5msMDCOjdqDNH4SQck8/O5A=";
   };
 
-  inherit patches;
-
   makeFlags = [ "CC:=$(CC)" ];
-
   installFlags = [ "PREFIX=$(out)" ];
 
   meta = {
     description = "Extremely small and simple HTTP GET/HEAD-only web server for static content";
-    mainProgram = "quark";
     homepage = "http://tools.suckless.org/quark";
     license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ sikmir ];
     platforms = lib.platforms.linux;
+    mainProgram = "quark";
   };
 }

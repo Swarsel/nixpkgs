@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
+  geopandas,
   pandas,
   pyarrow,
   pyproj,
-  shapely,
-  geopandas,
   pytestCheckHook,
+  setuptools,
+  shapely,
 }:
 
 buildPythonPackage {
   pname = "geoparquet";
   version = "0.7.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "darcy-r";
@@ -23,6 +22,8 @@ buildPythonPackage {
     hash = "sha256-WGZfDQh7Abh83n8jsCGr41IlKKq7QVDlauuWi20llh8=";
   };
 
+  doCheck = false; # no tests
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,10 +34,8 @@ buildPythonPackage {
     geopandas
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
   pythonImportsCheck = [ "geoparquet" ];
-
-  doCheck = false; # no tests
 
   meta = {
     description = "API between Parquet files and GeoDataFrames for fast input/output of GIS data";

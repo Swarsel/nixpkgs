@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  which,
-  m4,
-  python3,
   bison,
+  cmake,
   flex,
   llvmPackages,
+  m4,
   ncurses,
   onetbb,
+  python3,
+  which,
   # the default test target is sse4, but that is not supported by all Hydra agents
   testedTargets ?
     if stdenv.hostPlatform.isAarch64 || stdenv.hostPlatform.isAarch32 then
@@ -20,6 +20,7 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit testedTargets;
   pname = "ispc";
   version = "1.31.0";
 
@@ -29,6 +30,14 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-n1zWokIuZEDJZN/KH3jxnIhgUo8iKDfZwiQnXZdxhL8=";
   };
+
+  postPatch =
+    # Workaround for LLVM version mismatch: the build uses libcxx 19 (from darwin
+    # stdenv), while LLVM 21 is provided as a runtime dependency.
+    lib.optionalString stdenv.hostPlatform.isDarwin ''
+      substituteInPlace src/util.cpp \
+        --replace-fail "#ifdef _LIBCPP_VERSION" "#if FALSE"
+    '';
 
   nativeBuildInputs = [
     cmake
@@ -48,37 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
     ncurses
   ];
 
-  postPatch =
-    # Workaround for LLVM version mismatch: the build uses libcxx 19 (from darwin
-    # stdenv), while LLVM 21 is provided as a runtime dependency.
-    lib.optionalString stdenv.hostPlatform.isDarwin ''
-      substituteInPlace src/util.cpp \
-        --replace-fail "#ifdef _LIBCPP_VERSION" "#if FALSE"
-    '';
-
-  inherit testedTargets;
-
-  doCheck = true;
-
-  # the compiler enforces -Werror, and -fno-strict-overflow makes it mad.
-  # hilariously this is something of a double negative: 'disable' the
-  # 'strictoverflow' hardening protection actually means we *allow* the compiler
-  # to do strict overflow optimization. somewhat misleading...
-  hardeningDisable = [ "strictoverflow" ];
-
-  checkPhase = ''
-    export ISPC_HOME=$PWD/bin
-    for target in $testedTargets
-    do
-      echo "Testing target $target"
-      echo "================================"
-      echo
-      (cd ../
-       PATH=${llvmPackages.clang}/bin:$PATH python scripts/run_tests.py -t $target --non-interactive --verbose --file=test_output.log
-       fgrep -q "No new fails"  test_output.log || exit 1)
-    done
-  '';
-
   cmakeFlags = [
     (lib.cmakeFeature "FILE_CHECK_EXECUTABLE" "${llvmPackages.llvm}/bin/FileCheck")
     (lib.cmakeFeature "LLVM_AS_EXECUTABLE" "${llvmPackages.llvm}/bin/llvm-as")
@@ -95,17 +73,40 @@ stdenv.mkDerivation (finalAttrs: {
     ))
   ];
 
+  doCheck = true;
+
+  checkPhase = ''
+    export ISPC_HOME=$PWD/bin
+    for target in $testedTargets
+    do
+      echo "Testing target $target"
+      echo "================================"
+      echo
+      (cd ../
+       PATH=${llvmPackages.clang}/bin:$PATH python scripts/run_tests.py -t $target --non-interactive --verbose --file=test_output.log
+       fgrep -q "No new fails"  test_output.log || exit 1)
+    done
+  '';
+
+  # the compiler enforces -Werror, and -fno-strict-overflow makes it mad.
+  # hilariously this is something of a double negative: 'disable' the
+  # 'strictoverflow' hardening protection actually means we *allow* the compiler
+  # to do strict overflow optimization. somewhat misleading...
+  hardeningDisable = [ "strictoverflow" ];
+
   meta = {
     description = "Intel 'Single Program, Multiple Data' Compiler, a vectorised language";
     homepage = "https://ispc.github.io/";
     changelog = "https://github.com/ispc/ispc/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
       athas
       alexfmpe
     ];
-    mainProgram = "ispc";
+
     platforms = with lib.platforms; linux ++ darwin; # TODO: buildable on more platforms?
+    mainProgram = "ispc";
   };
 })

@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,6 +19,7 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Inspect the plaintext payload inside of proxied TLS connections";
+
     longDescription = ''
       This tool will listen on a given port, strip SSL encryption,
       forward traffic through a plain TCP proxy,
@@ -28,6 +29,7 @@ buildGoModule (finalAttrs: {
       Unlike most SSL stripping solutions this tool will negotiate ALPN and
       preserve the negotiated protocol all the way to the target.
     '';
+
     homepage = "https://github.com/VerSprite/alpnpass";
     license = lib.licenses.unlicense;
     maintainers = [ lib.maintainers.raboof ];

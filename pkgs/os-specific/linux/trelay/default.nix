@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchgit,
   kernel,
   kernelModuleMakeFlags,
@@ -20,16 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
     sparseCheckout = [ "package/kernel/trelay/src" ];
   };
 
-  sourceRoot = "${finalAttrs.src.name}/package/kernel/trelay/src";
-  hardeningDisable = [
-    "pic"
-    "format"
-  ];
-  nativeBuildInputs = [ kmod ] ++ kernel.moduleBuildDependencies;
-
   postPatch = ''
     cp '${./Makefile}' Makefile
   '';
+
+  nativeBuildInputs = [ kmod ] ++ kernel.moduleBuildDependencies;
 
   makeFlags = kernelModuleMakeFlags ++ [
     "KERNELRELEASE=${kernel.modDirVersion}"
@@ -37,8 +32,16 @@ stdenv.mkDerivation (finalAttrs: {
     "INSTALL_MOD_PATH=$(out)"
   ];
 
+  hardeningDisable = [
+    "pic"
+    "format"
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/package/kernel/trelay/src";
+
   meta = {
     description = "For relaying IP packets between two devices to build a IP bridge between them";
+
     longDescription = ''
       A kernel module that relays ethernet packets between two devices (similar to a bridge),
       but without any MAC address checks.
@@ -47,6 +50,7 @@ stdenv.mkDerivation (finalAttrs: {
       assuming the remote end uses the same source MAC address as the device that packets are
       supposed to exit from.
     '';
+
     homepage = "https://github.com/openwrt/openwrt/tree/main/package/kernel/trelay";
     license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.aprl ];

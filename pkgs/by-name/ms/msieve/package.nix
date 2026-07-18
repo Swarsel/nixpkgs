@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  fetchsvn,
-  zlib,
-  gmp,
   ecm,
+  fetchsvn,
+  gmp,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,27 +25,27 @@ stdenv.mkDerivation (finalAttrs: {
     ecm
   ];
 
-  env.ECM = if ecm == null then "0" else "1";
-
   # Doesn't hurt Linux but lets clang-based platforms like Darwin work fine too
   makeFlags = [
     "CC=${stdenv.cc.targetPrefix}cc"
     "all"
   ];
 
-  enableParallelBuilding = true;
+  env.ECM = if ecm == null then "0" else "1";
 
   installPhase = ''
     mkdir -p $out/bin/
     cp msieve $out/bin/
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "C library implementing a suite of algorithms to factor large integers";
-    mainProgram = "msieve";
-    license = lib.licenses.publicDomain;
     homepage = "http://msieve.sourceforge.net/";
+    license = lib.licenses.publicDomain;
     maintainers = [ lib.maintainers.roconnor ];
     platforms = [ "x86_64-linux" ] ++ lib.platforms.darwin;
+    mainProgram = "msieve";
   };
 })

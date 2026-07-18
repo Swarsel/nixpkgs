@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   beautifulsoup4,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
   hatchling,
   orjson,
   pytestCheckHook,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "policy-sentry";
   version = "0.16.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "salesforce";
@@ -24,8 +23,7 @@ buildPythonPackage rec {
     hash = "sha256-oR8/hrntE4XzZHdbde+NoKWdsLs9jJ3RLIv8YsoDFt4=";
   };
 
-  pythonRelaxDeps = [ "beautifulsoup4" ];
-
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ hatchling ];
 
   dependencies = [
@@ -37,9 +35,9 @@ buildPythonPackage rec {
     schema
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "policy_sentry" ];
+  pythonRelaxDeps = [ "beautifulsoup4" ];
 
   meta = {
     description = "Python module for generating IAM least privilege policies";

@@ -1,18 +1,16 @@
 {
   lib,
-  linuxHeaders, # Linux source tree
-  makeWrapper,
-  stdenvNoCC,
-
   binutils,
-  coreutils,
-  gnugrep,
-
   # decompressors for possible kernel image formats
   bzip2,
+  coreutils,
+  gnugrep,
   gzip,
+  linuxHeaders, # Linux source tree
   lz4,
   lzop,
+  makeWrapper,
+  stdenvNoCC,
   xz,
   zstd,
 }:
@@ -38,21 +36,19 @@ in
 stdenvNoCC.mkDerivation {
   inherit (linuxHeaders) version;
   pname = "linux-scripts";
-
   # These scripts will rarely change and are usually not bound to a specific
   # version of Linux. So it is okay to just use whatever Linux version comes
   # from `linuxHeaders.
   src = linuxHeaders.src;
-
   nativeBuildInputs = [ makeWrapper ];
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     ${toWrapScriptLines "extract-ikconfig"}
     ${toWrapScriptLines "extract-vmlinux"}
   '';
+
+  dontBuild = true;
+  dontConfigure = true;
 
   meta = {
     description = "Standalone scripts from <linux>/scripts";

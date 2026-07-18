@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  writableTmpDirAsHomeHook,
+  buildGoModule,
   nix-update-script,
+  writableTmpDirAsHomeHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,9 +18,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-494nqL6KiUk4VeKlG9YHFpgACgaYC3SR1I1EViD71Jw=";
-
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [ writableTmpDirAsHomeHook ];
 
   checkFlags =
@@ -38,14 +35,15 @@ buildGoModule (finalAttrs: {
     export CI=1
   '';
 
+  __darwinAllowLocalNetworking = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Extendable version manager";
     homepage = "https://github.com/version-fox/vfox";
     changelog = "https://github.com/version-fox/vfox/releases/tag/v${finalAttrs.version}";
-    mainProgram = "vfox";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "vfox";
   };
 })

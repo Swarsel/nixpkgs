@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   runtimeShell,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,12 +16,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-BQuc/YCUM61Lq0hPF4foETUCC/oTSVwTY4RK+WuRnac=";
   };
 
-  cargoHash = "sha256-5YnsLfCM64gPlQu9qr7daCdFSZA80PpQVfYE9h237h4=";
-
   postPatch = ''
     substituteInPlace cargo-insta/tests/functional/test_runner_fallback.rs \
       --replace-fail '#!/bin/bash' '#!${runtimeShell}'
   '';
+
+  cargoHash = "sha256-5YnsLfCM64gPlQu9qr7daCdFSZA80PpQVfYE9h237h4=";
 
   checkFlags = [
     # Depends on `rustfmt` and does not matter for packaging.
@@ -36,14 +36,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Cargo subcommand for snapshot testing";
-    mainProgram = "cargo-insta";
     homepage = "https://github.com/mitsuhiko/insta";
     changelog = "https://github.com/mitsuhiko/insta/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       oxalica
       matthiasbeyer
       figsoda
     ];
+
+    mainProgram = "cargo-insta";
   };
 })

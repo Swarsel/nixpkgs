@@ -13,11 +13,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-1itsPPIDkPpzVwRDkAhBZtJfHZMqETXEULaf5cKD13M=";
   };
 
-  postPatch = ''
-    substituteInPlace scripts/rescan-scsi-bus.sh \
-      --replace-fail '/usr/bin/sg_' "$out/bin/sg_"
-  '';
-
   outputs = [
     "out"
     "man"
@@ -25,14 +20,21 @@ stdenv.mkDerivation (finalAttrs: {
     "lib"
   ];
 
+  postPatch = ''
+    substituteInPlace scripts/rescan-scsi-bus.sh \
+      --replace-fail '/usr/bin/sg_' "$out/bin/sg_"
+  '';
+
   meta = {
+    description = "Utilities that send SCSI commands to devices";
     homepage = "https://sg.danny.cz/sg/";
     changelog = "https://sg.danny.cz/sg/p/sg3_utils.ChangeLog";
-    description = "Utilities that send SCSI commands to devices";
-    platforms = lib.platforms.linux;
+
     license = with lib.licenses; [
       bsd2
       gpl2Plus
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

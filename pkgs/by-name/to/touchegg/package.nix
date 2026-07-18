@@ -1,23 +1,23 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  nix-update-script,
-  systemd,
-  libinput,
-  pugixml,
   cairo,
-  libxtst,
-  libxrandr,
-  libxi,
-  libxdmcp,
-  libx11,
-  libpthread-stubs,
-  libxcb,
-  gtk3-x11,
-  pkg-config,
   cmake,
+  fetchpatch,
+  gtk3-x11,
+  libinput,
+  libpthread-stubs,
+  libx11,
+  libxcb,
+  libxdmcp,
+  libxi,
+  libxrandr,
+  libxtst,
+  nix-update-script,
+  pkg-config,
+  pugixml,
+  systemd,
   withPantheon ? false,
 }:
 
@@ -34,24 +34,24 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-q/rKXLN8wqisw3QfqEtu1ZaJonOYzkYLFRECNYB620g=";
       name = "cmake-4-support.patch";
       url = "https://github.com/JoseExposito/touchegg/commit/953c4227253d91c73f5ce46f89947262ebf45b18.patch";
-      hash = "sha256-q/rKXLN8wqisw3QfqEtu1ZaJonOYzkYLFRECNYB620g=";
     })
   ]
   ++ lib.optionals withPantheon [
     # Required for the next patch to apply
     # Reverts https://github.com/JoseExposito/touchegg/pull/603
     (fetchpatch {
-      url = "https://github.com/JoseExposito/touchegg/commit/34e947181d84620021601e7f28deb1983a154da8.patch";
       hash = "sha256-qbWwmEzVXvDAhhrGvMkKN4YNtnFfRW+Yra+i6VEQX4g=";
       revert = true;
+      url = "https://github.com/JoseExposito/touchegg/commit/34e947181d84620021601e7f28deb1983a154da8.patch";
     })
     # Disable per-application gesture by default to make sure the default
     # config does not conflict with Pantheon switchboard settings.
     (fetchpatch {
-      url = "https://github.com/elementary/os-patches/commit/7d9b133e02132d7f13cf2fe850b2fe4c015c3c5e.patch";
       hash = "sha256-ZOGVkxiXoTORXC6doz5r9IObAbYjhsDjgg3HtzlTSUc=";
+      url = "https://github.com/elementary/os-patches/commit/7d9b133e02132d7f13cf2fe850b2fe4c015c3c5e.patch";
     })
   ];
 
@@ -82,11 +82,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/JoseExposito/touchegg";
     description = "Linux multi-touch gesture recognizer";
-    mainProgram = "touchegg";
+    homepage = "https://github.com/JoseExposito/touchegg";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "touchegg";
     teams = [ lib.teams.pantheon ];
   };
 })

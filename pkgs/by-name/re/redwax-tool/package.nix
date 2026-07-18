@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-  autoreconfHook,
-  pkg-config,
-  txt2man,
-  which,
-  openssl,
-  nss,
-  p11-kit,
-  libical,
-  ldns,
-  unbound,
   apr,
   aprutil,
+  autoreconfHook,
+  ldns,
+  libical,
+  nss,
+  openssl,
+  p11-kit,
+  pkg-config,
+  txt2man,
+  unbound,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,6 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
     txt2man
     which
   ];
+
   buildInputs = [
     openssl
     nss
@@ -41,6 +42,7 @@ stdenv.mkDerivation (finalAttrs: {
     apr
     aprutil
   ];
+
   configureFlags = [
     "--with-openssl"
     "--with-nss"
@@ -52,15 +54,17 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://redwax.eu/rt/";
     description = "Universal certificate conversion tool";
-    mainProgram = "redwax-tool";
+
     longDescription = ''
       Read certificates and keys from your chosen sources, filter the
       certificates and keys you're interested in, write those
       certificates and keys to the destinations of your choice.
     '';
+
+    homepage = "https://redwax.eu/rt/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ astro ];
+    mainProgram = "redwax-tool";
   };
 })

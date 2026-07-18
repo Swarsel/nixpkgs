@@ -1,19 +1,17 @@
 {
   lib,
-  config,
-  fetchFromGitHub,
   stdenv,
-  capiSupport ? true,
+  fetchFromGitHub,
+  autoAddDriverRunpath,
+  blas,
   cmake,
+  config,
+  llvmPackages,
+  python3Packages,
   swig,
+  capiSupport ? true,
   cudaPackages ? { },
   cudaSupport ? config.cudaSupport,
-  pythonSupport ? true,
-  python3Packages,
-  sharedLibrarySupport ? false,
-  llvmPackages,
-  blas,
-  autoAddDriverRunpath,
   optLevel ?
     let
       optLevels =
@@ -23,6 +21,8 @@
     in
     # Choose the maximum available optimization level
     builtins.head optLevels,
+  pythonSupport ? true,
+  sharedLibrarySupport ? false,
 }@inputs:
 
 let
@@ -44,17 +44,15 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "faiss";
   version = "1.14.2";
 
-  __structuredAttrs = true;
-  strictDeps = true;
-
-  outputs = [ "out" ] ++ lib.optionals pythonSupport [ "dist" ];
-
   src = fetchFromGitHub {
     owner = "facebookresearch";
     repo = "faiss";
     tag = "v${finalAttrs.version}";
     hash = "sha256-g8URLqh7VXlb5vvpkiUUfE6cgtkMwYNGzs26iUtg28A=";
   };
+
+  outputs = [ "out" ] ++ lib.optionals pythonSupport [ "dist" ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -91,7 +89,6 @@ stdenv.mkDerivation (finalAttrs: {
   buildFlags = [ "faiss" ] ++ lib.optionals pythonSupport [ "swigfaiss" ];
 
   # pip wheel->pip install commands copied over from opencv4
-
   postBuild = lib.optionalString pythonSupport ''
     (cd faiss/python &&
      python -m pip wheel --verbose --no-index --no-deps --no-clean --no-build-isolation --wheel-dir dist .)
@@ -114,17 +111,19 @@ stdenv.mkDerivation (finalAttrs: {
       include("''${CMAKE_CURRENT_LIST_DIR}/faiss-targets.cmake")'
     '';
 
+  __structuredAttrs = true;
+
   passthru = {
     inherit cudaSupport cudaPackages pythonSupport;
   };
 
   meta = {
     description = "Library for efficient similarity search and clustering of dense vectors by Facebook Research";
-    mainProgram = "demo_ivfpq_indexing";
     homepage = "https://github.com/facebookresearch/faiss";
     changelog = "https://github.com/facebookresearch/faiss/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ SomeoneSerge ];
+    platforms = lib.platforms.unix;
+    mainProgram = "demo_ivfpq_indexing";
   };
 })

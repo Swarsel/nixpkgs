@@ -39,8 +39,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/wingo/fibers";
     description = "Concurrent ML-like concurrency for Guile";
+    homepage = "https://github.com/wingo/fibers";
     license = lib.licenses.lgpl3Plus;
     maintainers = [ ];
     platforms = guile.meta.platforms;

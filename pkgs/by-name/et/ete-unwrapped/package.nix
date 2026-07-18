@@ -2,6 +2,7 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  SDL2,
   cjson,
   cmake,
   curl,
@@ -15,7 +16,6 @@
   lua5_4,
   minizip,
   openal,
-  SDL2,
   sqlite,
   zlib,
 }:
@@ -57,7 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  cmakeDir = "../src";
   cmakeFlags = [
     (lib.cmakeBool "CROSS_COMPILE32" false)
     (lib.cmakeFeature "CMAKE_BUILD_TYPE" "Release")
@@ -74,10 +73,13 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  cmakeDir = "../src";
+
   meta = {
     description = "Improved Wolfenstein: Enemy Territory Engine";
     homepage = "https://github.com/etfdevs/ETe";
     license = with lib.licenses; [ gpl3Plus ];
+
     maintainers = with lib.maintainers; [
       ashleyghooper
       drupol

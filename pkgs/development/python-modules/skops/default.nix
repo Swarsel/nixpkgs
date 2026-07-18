@@ -1,34 +1,29 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   hatchling,
-
+  # tests
+  matplotlib,
   # dependencies
   numpy,
   packaging,
-  prettytable,
-  scikit-learn,
-  tabulate,
-
-  # tests
-  matplotlib,
   pandas,
+  prettytable,
   pytest-cov-stub,
   pytestCheckHook,
   pyyaml,
   rich,
+  scikit-learn,
   streamlit,
+  tabulate,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "skops";
   version = "0.14";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "skops-dev";
@@ -36,16 +31,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-AyrsXomc3vpfdqsBL51UmGXsjPsAJ+dx3uf3T8nPk/Y=";
   };
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    numpy
-    packaging
-    prettytable
-    scikit-learn
-    tabulate
-  ];
 
   nativeCheckInputs = [
     matplotlib
@@ -56,11 +41,16 @@ buildPythonPackage (finalAttrs: {
     streamlit
   ];
 
-  optional-dependencies = {
-    rich = [ rich ];
-  };
+  __structuredAttrs = true;
+  build-system = [ hatchling ];
 
-  enabledTestPaths = [ "skops" ];
+  dependencies = [
+    numpy
+    packaging
+    prettytable
+    scikit-learn
+    tabulate
+  ];
 
   disabledTests = [
     # fairlearn is not available in nixpkgs
@@ -83,6 +73,13 @@ buildPythonPackage (finalAttrs: {
     "test_permutation_importances_with_description"
   ];
 
+  enabledTestPaths = [ "skops" ];
+
+  optional-dependencies = {
+    rich = [ rich ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "skops" ];
 
   meta = {

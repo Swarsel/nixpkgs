@@ -2,37 +2,37 @@
   lib,
   stdenv,
   buildPackages,
-  version,
-  src,
-  replaceVars,
-  extraMeta ? { },
-  self,
-  packageOverrides ? (final: prev: { }),
+  passthruFun,
   pkgsBuildBuild,
   pkgsBuildHost,
   pkgsBuildTarget,
   pkgsHostHost,
   pkgsTargetTarget,
-  passthruFun,
-  enableFFI ? true,
-  enableJIT ? true,
-  enableJITDebugModule ? enableJIT,
-  enableGC64 ? true,
-  enable52Compat ? false,
-  enableValgrindSupport ? false,
-  valgrind ? null,
-  enableGDBJITSupport ? false,
-  enableAPICheck ? false,
-  enableVMAssertions ? false,
-  enableRegisterAllocationRandomization ? false,
-  useSystemMalloc ? false,
+  replaceVars,
+  self,
+  src,
+  version,
   # Upstream generates randomized string id's by default for security reasons
   # https://github.com/LuaJIT/LuaJIT/issues/626. Deterministic string id's should
   # never be needed for correctness (that should be fixed in the lua code),
   # but may be helpful when you want to embed jit-compiled raw lua blobs in
   # binaries that you want to be reproducible.
   deterministicStringIds ? false,
+  enable52Compat ? false,
+  enableAPICheck ? false,
+  enableFFI ? true,
+  enableGC64 ? true,
+  enableGDBJITSupport ? false,
+  enableJIT ? true,
+  enableJITDebugModule ? enableJIT,
+  enableRegisterAllocationRandomization ? false,
+  enableVMAssertions ? false,
+  enableValgrindSupport ? false,
+  extraMeta ? { },
   luaAttr ? "luajit_${lib.versions.major version}_${lib.versions.minor version}",
+  packageOverrides ? (final: prev: { }),
+  useSystemMalloc ? false,
+  valgrind ? null,
 }@inputs:
 assert enableJITDebugModule -> enableJIT;
 assert enableGDBJITSupport -> enableJIT;
@@ -66,10 +66,8 @@ let
 
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "luajit";
   inherit version src;
-
-  luaversion = "5.1";
+  pname = "luajit";
 
   postPatch = ''
     substituteInPlace Makefile --replace ldconfig :
@@ -80,13 +78,8 @@ stdenv.mkDerivation (finalAttrs: {
     fi
   '';
 
-  dontConfigure = true;
-
   buildInputs = lib.optional enableValgrindSupport valgrind;
 
-  buildFlags = [
-    "amalg" # Build highly optimized version
-  ];
   makeFlags = [
     "PREFIX=$(out)"
     "DEFAULT_CC=cc"
@@ -101,7 +94,11 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional enableJITDebugModule "INSTALL_LJLIBD=$(INSTALL_LMOD)"
   ++ lib.optional stdenv.hostPlatform.isStatic "BUILDMODE=static";
-  enableParallelBuilding = true;
+
+  buildFlags = [
+    "amalg" # Build highly optimized version
+  ];
+
   env.NIX_CFLAGS_COMPILE = toString XCFLAGS;
 
   # The LuaJIT build produces `src/luajit.exe` on Windows targets, but the
@@ -116,8 +113,8 @@ stdenv.mkDerivation (finalAttrs: {
     mkdir -p $out/nix-support
     cp ${
       replaceVars ../lua-5/utils.sh {
-        luapathsearchpaths = lib.escapeShellArgs finalAttrs.LuaPathSearchPaths;
         luacpathsearchpaths = lib.escapeShellArgs finalAttrs.LuaCPathSearchPaths;
+        luapathsearchpaths = lib.escapeShellArgs finalAttrs.LuaPathSearchPaths;
       }
     } $out/nix-support/utils.sh
     ( cd "$out/include"; ln -s luajit-*/* . )
@@ -127,8 +124,11 @@ stdenv.mkDerivation (finalAttrs: {
     fi
   '';
 
-  LuaPathSearchPaths = luaPackages.luaLib.luaPathList;
   LuaCPathSearchPaths = luaPackages.luaLib.luaCPathList;
+  LuaPathSearchPaths = luaPackages.luaLib.luaPathList;
+  dontConfigure = true;
+  enableParallelBuilding = true;
+  luaversion = "5.1";
 
   setupHook = builtins.toFile "lua-setup-hook" ''
     source @out@/nix-support/utils.sh
@@ -155,6 +155,7 @@ stdenv.mkDerivation (finalAttrs: {
       luaOnBuildForHost = override pkgsBuildHost.${luaAttr};
       luaOnBuildForTarget = override pkgsBuildTarget.${luaAttr};
       luaOnHostForHost = override pkgsHostHost.${luaAttr};
+
       luaOnTargetForTarget = lib.optionalAttrs (lib.hasAttr luaAttr pkgsTargetTarget) (
         override pkgsTargetTarget.${luaAttr}
       );
@@ -166,9 +167,17 @@ stdenv.mkDerivation (finalAttrs: {
       description = "High-performance JIT compiler for Lua 5.1";
       homepage = "https://luajit.org/";
       license = lib.licenses.mit;
+
+      maintainers = with lib.maintainers; [
+        thoughtpolice
+        vcunat
+        lblasc
+      ];
+
       # MSYS2 ships LuaJIT for mingw-w64, and nixpkgs consumers (like phosphor)
       # need it in Windows cross builds.
       platforms = lib.platforms.linux ++ lib.platforms.darwin ++ lib.platforms.windows;
+
       badPlatforms = [
         "loongarch64-linux" # See https://github.com/LuaJIT/LuaJIT/issues/1278
         "riscv64-linux" # See https://github.com/LuaJIT/LuaJIT/issues/628
@@ -176,12 +185,8 @@ stdenv.mkDerivation (finalAttrs: {
         "powerpc64-linux"
         "powerpc64le-linux"
       ];
+
       mainProgram = "lua";
-      maintainers = with lib.maintainers; [
-        thoughtpolice
-        vcunat
-        lblasc
-      ];
     }
     // extraMeta;
 })

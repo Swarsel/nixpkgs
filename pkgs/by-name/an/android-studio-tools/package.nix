@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   makeWrapper,
   openjdk,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -28,9 +28,6 @@ stdenvNoCC.mkDerivation {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -44,15 +41,18 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "Android Studio CLI Tools";
     homepage = "https://developer.android.com/studio";
-    downloadPage = "https://developer.android.com/studio";
     changelog = "https://developer.android.com/studio/releases";
     license = lib.licenses.unfree;
-    maintainers = with lib.maintainers; [ pandapip1 ];
-    teams = [ lib.teams.android ];
-    platforms = lib.platforms.all;
     sourceProvenance = with lib.sourceTypes; [ fromSource ]; # The 'binaries' are actually shell scripts
+    maintainers = with lib.maintainers; [ pandapip1 ];
+    platforms = lib.platforms.all;
+    downloadPage = "https://developer.android.com/studio";
+    teams = [ lib.teams.android ];
   };
 }

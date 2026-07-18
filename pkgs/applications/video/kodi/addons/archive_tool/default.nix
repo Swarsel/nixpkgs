@@ -1,12 +1,11 @@
 {
   lib,
-  buildKodiAddon,
   fetchFromGitHub,
+  buildKodiAddon,
   vfs-libarchive,
 }:
 buildKodiAddon rec {
   pname = "archive_tool";
-  namespace = "script.module.archive_tool";
   version = "2.0.3";
 
   src = fetchFromGitHub {
@@ -20,13 +19,15 @@ buildKodiAddon rec {
     vfs-libarchive
   ];
 
+  namespace = "script.module.archive_tool";
+
   passthru = {
     pythonPath = "lib";
   };
 
   meta = {
-    homepage = "https://github.com/zach-morris/script.module.archive_tool";
     description = "Set of common python functions to work with the Kodi archive virtual file system (vfs) binary addons";
+    homepage = "https://github.com/zach-morris/script.module.archive_tool";
     license = lib.licenses.gpl3Plus;
     teams = [ lib.teams.kodi ];
   };

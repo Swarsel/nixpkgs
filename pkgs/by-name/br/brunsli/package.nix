@@ -2,19 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
   brotli,
+  cmake,
+  fetchpatch,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "brunsli";
   version = "0.1";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "google";
@@ -23,17 +18,22 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ZcrRz2xSoRepgG8KZYY/JzgONerItW0e6mH1PYsko98=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     # unvendor brotli
     (fetchpatch {
-      url = "https://cgit.freebsd.org/ports/plain/graphics/brunsli/files/patch-CMakeLists.txt";
       extraPrefix = "";
       hash = "sha256-/WPOG9OcEDj9ObBSXEM8Luq4Rix+PS2MvsYyHhK5mns=";
+      url = "https://cgit.freebsd.org/ports/plain/graphics/brunsli/files/patch-CMakeLists.txt";
     })
     (fetchpatch {
-      url = "https://cgit.freebsd.org/ports/plain/graphics/brunsli/files/patch-brunsli.cmake";
       extraPrefix = "";
       hash = "sha256-+HXA9Tin+l2St7rRUEBM0AfhAjSoFxz8UX7hsg12aFg=";
+      url = "https://cgit.freebsd.org/ports/plain/graphics/brunsli/files/patch-brunsli.cmake";
     })
   ];
 

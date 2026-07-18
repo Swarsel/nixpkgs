@@ -10,16 +10,20 @@ pkgs.testers.runNixOSTest {
     {
       services.pulseaudio.enable = true;
       services.pulseaudio.systemWide = true;
+
       users.users.alice = {
-        isNormalUser = true;
-        password = "foo";
         extraGroups = [
           "wheel"
           "pulse-access"
         ];
+
+        isNormalUser = true;
+
         packages = with pkgs; [
           pulsemeeter
         ];
+
+        password = "foo";
       };
     };
 

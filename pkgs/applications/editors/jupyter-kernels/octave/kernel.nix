@@ -1,7 +1,7 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 with python3Packages;
@@ -9,12 +9,11 @@ with python3Packages;
 buildPythonPackage (finalAttrs: {
   pname = "octave-kernel";
   version = "0.34.2";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "octave_kernel";
     inherit (finalAttrs) version;
     sha256 = "sha256-5ki2lekfK7frPsmPBIzYQOfANCUY9x+F2ZRAQSdPTxo=";
+    pname = "octave_kernel";
   };
 
   propagatedBuildInputs = [
@@ -25,6 +24,7 @@ buildPythonPackage (finalAttrs: {
   # Tests fail because the kernel appears to be halting or failing to launch
   # There appears to be a similar problem with metakernel's tests
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Jupyter kernel for Octave";

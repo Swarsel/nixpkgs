@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
-  gnat,
-  gprbuild,
+  stdenv,
   fetchFromGitHub,
   fetchpatch2,
-  which,
+  gnat,
+  # for tests
+  gnatcoll-core,
+  gprbuild,
   python3,
   rsync,
+  which,
   enableGnatcollCore ? true,
   # TODO(@sternenseemann): figure out a way to split this up into three packages
   enableGnatcollProjects ? true,
-  # for tests
-  gnatcoll-core,
 }:
 
 # gnatcoll-projects depends on gnatcoll-core
@@ -32,15 +32,17 @@ stdenv.mkDerivation rec {
   patches = [
     # Fix compilation with GNAT 16
     (fetchpatch2 {
+      hash = "sha256-rG0D1y2dbXA2M2Arnto+f7iAhg3yCfTPDbDRN+pMJKQ=";
       name = "gnatcoll-core-gnat-16.patch";
       url = "https://github.com/AdaCore/gnatcoll-core/commit/b266466e0a05b30615ec43d72782c345470455b9.patch?full_index=1";
-      hash = "sha256-rG0D1y2dbXA2M2Arnto+f7iAhg3yCfTPDbDRN+pMJKQ=";
     })
   ];
 
   postPatch = ''
     patchShebangs */*.gpr.py
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     gprbuild
@@ -56,8 +58,6 @@ stdenv.mkDerivation rec {
     gprbuild # libgpr
   ];
 
-  strictDeps = true;
-
   makeFlags = [
     "prefix=${placeholder "out"}"
     "PROCESSORS=$(NIX_BUILD_CORES)"
@@ -69,18 +69,19 @@ stdenv.mkDerivation rec {
 
   passthru.tests = {
     minimalOnly = gnatcoll-core.override {
-      enableGnatcollProjects = false;
       enableGnatcollCore = false;
-    };
-    noProjects = gnatcoll-core.override {
       enableGnatcollProjects = false;
+    };
+
+    noProjects = gnatcoll-core.override {
       enableGnatcollCore = true;
+      enableGnatcollProjects = false;
     };
   };
 
   meta = {
-    homepage = "https://github.com/AdaCore/gnatcoll-core";
     description = "GNAT Components Collection - Core packages";
+    homepage = "https://github.com/AdaCore/gnatcoll-core";
     license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.sternenseemann ];
     platforms = lib.platforms.all;

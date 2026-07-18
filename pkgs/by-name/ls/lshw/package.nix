@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  hwdata,
-  gtk3,
-  pkg-config,
   gettext,
+  gtk3,
+  hwdata,
+  pkg-config,
   sqlite, # compile GUI
   withGUI ? false,
 }:
@@ -43,20 +43,17 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildFlags = [ "all" ] ++ lib.optional withGUI "gui";
-
+  enableParallelBuilding = true;
   hardeningDisable = lib.optionals stdenv.hostPlatform.isStatic [ "fortify" ];
-
   installTargets = [ "install" ] ++ lib.optional withGUI "install-gui";
 
-  enableParallelBuilding = true;
-
   meta = {
-    changelog = "https://github.com/lyonel/lshw/blob/master/docs/Changelog";
     description = "Provide detailed information on the hardware configuration of the machine";
     homepage = "https://ezix.org/project/wiki/HardwareLiSter";
+    changelog = "https://github.com/lyonel/lshw/blob/master/docs/Changelog";
     license = lib.licenses.gpl2;
-    mainProgram = "lshw";
     maintainers = with lib.maintainers; [ thiagokokada ];
     platforms = lib.platforms.linux;
+    mainProgram = "lshw";
   };
 })

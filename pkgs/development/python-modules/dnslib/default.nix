@@ -1,14 +1,13 @@
 {
   lib,
-  python,
   buildPythonPackage,
   fetchPypi,
+  python,
 }:
 
 buildPythonPackage rec {
   pname = "dnslib";
   version = "0.9.26";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -19,6 +18,7 @@ buildPythonPackage rec {
     VERSIONS=${python.interpreter} ./run_tests.sh
   '';
 
+  format = "setuptools";
   pythonImportsCheck = [ "dnslib" ];
 
   meta = {

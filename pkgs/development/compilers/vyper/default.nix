@@ -1,6 +1,5 @@
 {
   lib,
-  lark,
   asttokens,
   buildPythonPackage,
   cbor2,
@@ -8,6 +7,7 @@
   git,
   immutables,
   importlib-metadata,
+  lark,
   packaging,
   pycryptodome,
   recommonmark,
@@ -30,7 +30,6 @@ in
 buildPythonPackage rec {
   pname = "vyper";
   version = "0.4.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -49,11 +48,6 @@ buildPythonPackage rec {
     git
 
     setuptools-scm
-  ];
-
-  pythonRelaxDeps = [
-    "asttokens"
-    "packaging"
   ];
 
   propagatedBuildInputs = [
@@ -75,8 +69,15 @@ buildPythonPackage rec {
     $out/bin/vyper "${sample-contract}"
   '';
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "vyper"
+  ];
+
+  pythonRelaxDeps = [
+    "asttokens"
+    "packaging"
   ];
 
   meta = {

@@ -1,15 +1,14 @@
 {
   lib,
   fetchFromGitHub,
+  jrnl,
   python3,
   testers,
-  jrnl,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "jrnl";
   version = "4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jrnl-org";
@@ -24,9 +23,16 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       --replace-fail "from pytest_bdd.steps import inject_fixture" "from pytest_bdd.compat import inject_fixture"
   '';
 
-  disabledTests = [
-    "test_override_configured_linewrap_with_a_value_of_23"
+  nativeCheckInputs = with python3.pkgs; [
+    pytest-bdd
+    pytest-xdist
+    (pytestCheckHook.override { pytest = pytest_7; })
+    toml
   ];
+
+  preCheck = ''
+    export HOME=$(mktemp -d);
+  '';
 
   build-system = with python3.pkgs; [ poetry-core ];
 
@@ -45,24 +51,17 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     rich
   ];
 
-  pythonRelaxDeps = [ "rich" ];
-
-  nativeCheckInputs = with python3.pkgs; [
-    pytest-bdd
-    pytest-xdist
-    (pytestCheckHook.override { pytest = pytest_7; })
-    toml
+  disabledTests = [
+    "test_override_configured_linewrap_with_a_value_of_23"
   ];
 
-  preCheck = ''
-    export HOME=$(mktemp -d);
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "jrnl" ];
+  pythonRelaxDeps = [ "rich" ];
 
   passthru.tests.version = testers.testVersion {
-    package = jrnl;
     version = "v${finalAttrs.version}";
+    package = jrnl;
   };
 
   meta = {
@@ -70,9 +69,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     homepage = "https://jrnl.sh/";
     changelog = "https://github.com/jrnl-org/jrnl/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       zalakain
     ];
+
     mainProgram = "jrnl";
   };
 })

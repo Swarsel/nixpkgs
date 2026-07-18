@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule rec {
@@ -15,18 +15,12 @@ buildGoModule rec {
     hash = "sha256-c0sbFd19cDGm7VJbbfT+FKzUbeyAO1kCgh1eYV11C3I=";
   };
 
-  vendorHash = "sha256-GanQBm/g+PcMHaXA5gAaqacpOuv6kES6ng/CmH8/0j4=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/databus23/helm-diff/v3/cmd.Version=${version}"
-  ];
-
   # NOTE: Remove the install and upgrade hooks.
   postPatch = ''
     sed -i '/^hooks:/,+2 d' plugin.yaml
   '';
+
+  vendorHash = "sha256-GanQBm/g+PcMHaXA5gAaqacpOuv6kES6ng/CmH8/0j4=";
 
   postInstall = ''
     install -dm755 $out/${pname}
@@ -34,6 +28,12 @@ buildGoModule rec {
     mv $out/${pname}/bin/{helm-,}diff
     install -m644 -Dt $out/${pname} plugin.yaml
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/databus23/helm-diff/v3/cmd.Version=${version}"
+  ];
 
   meta = {
     description = "Helm plugin that shows a diff";

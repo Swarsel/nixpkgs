@@ -1,7 +1,7 @@
 {
   lib,
-  cmake,
   fetchurl,
+  cmake,
   ld64,
   llvm,
   mkAppleDerivation,
@@ -17,8 +17,8 @@ let
   # libdyld needs CrashReporterClient.h, which is hard to find, but WebKit2 has it.
   # Fetch it directly because the Darwin stdenv bootstrap can’t depend on fetchgit.
   crashreporter_h = fetchurl {
-    url = "https://raw.githubusercontent.com/apple-oss-distributions/WebKit2/WebKit2-7605.1.33.0.2/Platform/spi/Cocoa/CrashReporterClientSPI.h";
     hash = "sha256-0ybVcwHuGEdThv0PPjYQc3SW0YVOyrM3/L9zG/l1Vtk=";
+    url = "https://raw.githubusercontent.com/apple-oss-distributions/WebKit2/WebKit2-7605.1.33.0.2/Platform/spi/Cocoa/CrashReporterClientSPI.h";
   };
 
   launchd = sourceRelease "launchd";
@@ -28,8 +28,6 @@ let
   xnu = sourceRelease "xnu";
 
   privateHeaders = stdenvNoCC.mkDerivation {
-    name = "dyld-deps-private-headers";
-
     buildCommand = ''
       install -D -t "$out/include" \
         '${Libc}/include/_bounds.h'
@@ -84,20 +82,16 @@ let
       # Fortunately, nothing in it is actually needed to build `dyld_info` and `dsc_extractor`.
       touch "$out/include/File.h"
     '';
+
+    name = "dyld-deps-private-headers";
   };
 in
 mkAppleDerivation {
-  releaseName = "dyld";
-
   outputs = [
     "out"
     "lib"
     "man"
   ];
-
-  propagatedBuildOutputs = [ ];
-
-  xcodeHash = "sha256-eECKavCwz8NDqPOgW1YZ4ldQQHSUdBvAGRtYcVgEX/w=";
 
   patches = [
     # Disable use of private kdebug API
@@ -166,25 +160,27 @@ mkAppleDerivation {
       --subst-var lib
   '';
 
-  env.NIX_CFLAGS_COMPILE = "-I${privateHeaders}/include";
-
-  buildInputs = [
-    llvm
-    openssl
-  ];
-
   nativeBuildInputs = [
     cmake # CMake is required for Meson to find LLVM as a dependency.
     (lib.getDev pkgsBuildHost.llvm) # Workaround Meson limitations with LLVM 21.
     pkg-config
   ];
 
-  dontUseCmakeConfigure = true;
+  buildInputs = [
+    llvm
+    openssl
+  ];
+
+  env.NIX_CFLAGS_COMPILE = "-I${privateHeaders}/include";
 
   postInstall = ''
     install_name_tool "''${!outputBin}/bin/dsc_extractor" \
       -change @rpath/dsc_extractor.bundle "''${!outputLib}/lib/dsc_extractor.bundle"
   '';
 
+  dontUseCmakeConfigure = true;
+  propagatedBuildOutputs = [ ];
+  releaseName = "dyld";
+  xcodeHash = "sha256-eECKavCwz8NDqPOgW1YZ4ldQQHSUdBvAGRtYcVgEX/w=";
   meta.description = "Dyld-related commands for Darwin";
 }

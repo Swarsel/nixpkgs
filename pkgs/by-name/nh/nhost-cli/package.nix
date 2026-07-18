@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -16,24 +16,23 @@ buildGoModule (finalAttrs: {
     hash = "sha256-n61YgU1/Ad1NMZr/1/jnmuZpN8PemPUW/gomf+ETvRw=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/cli";
-
   vendorHash = null;
+  # require network access
+  checkFlags = [ "-skip=^TestMakeJSONRequest$" ];
+
+  postInstall = ''
+    mv $out/bin/cli $out/bin/nhost
+  '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
     "-X=main.Version=v${finalAttrs.version}"
   ];
 
-  postInstall = ''
-    mv $out/bin/cli $out/bin/nhost
-  '';
-
-  # require network access
-  checkFlags = [ "-skip=^TestMakeJSONRequest$" ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
+  sourceRoot = "${finalAttrs.src.name}/cli";
 
   meta = {
     description = "Tool for setting up a local development environment for Nhost";

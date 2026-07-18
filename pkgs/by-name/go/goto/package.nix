@@ -1,7 +1,7 @@
 {
+  lib,
   fetchFromGitHub,
   gawk,
-  lib,
   runCommand,
   stdenvNoCC,
   writableTmpDirAsHomeHook,
@@ -20,7 +20,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   buildInputs = [ gawk ];
 
   postInstall = ''

@@ -18,20 +18,20 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = [ autoreconfHook ];
 
-  env = {
-    NIX_CFLAGS_COMPILE = "-Wno-error=implicit-function-declaration";
-  };
-
   configureFlags = [
     "--enable-examples"
     "--enable-devel"
     "CFLAGS=-std=gnu17"
   ];
 
+  env = {
+    NIX_CFLAGS_COMPILE = "-Wno-error=implicit-function-declaration";
+  };
+
   meta = {
+    description = "Library for dealing with Microsoft ITSS/CHM format files";
     homepage = "http://www.jedrea.com/chmlib";
     license = lib.licenses.lgpl2;
-    description = "Library for dealing with Microsoft ITSS/CHM format files";
     platforms = lib.platforms.unix;
   };
 }

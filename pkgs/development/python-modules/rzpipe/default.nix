@@ -2,14 +2,13 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   rizin,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "rzpipe";
   version = "0.6.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -21,11 +20,10 @@ buildPythonPackage rec {
       --replace-fail "cmd = [rze," "cmd = ['${lib.getExe rizin}',"
   '';
 
-  build-system = [ setuptools ];
-
   # No native rz_core library
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "rzpipe" ];
 
   meta = {

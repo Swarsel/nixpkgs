@@ -5,15 +5,15 @@
   autoreconfHook,
   docbook_xml_dtd_412,
   docbook_xsl,
+  gtk2-x11,
   intltool,
+  libx11,
   libxml2,
   libxslt,
   pkg-config,
-  wrapGAppsHook3,
-  gtk2-x11,
-  libx11,
   polkit,
   vala,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,12 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-3RnRF4oMCtZbIraHVqEPnkviAkELq7uYqyHY0uCf/lU=";
   };
+
+  patches = [ ./repect-xml-catalog-file-var.patch ];
+
+  postPatch = ''
+    mkdir -p m4
+  '';
 
   nativeBuildInputs = [
     autoreconfHook
@@ -51,15 +57,9 @@ stdenv.mkDerivation (finalAttrs: {
     "--disable-buildin-polkit"
   ];
 
-  postPatch = ''
-    mkdir -p m4
-  '';
-
-  patches = [ ./repect-xml-catalog-file-var.patch ];
-
   meta = {
-    homepage = "https://wiki.lxde.org/en/LXSession";
     description = "Classic LXDE session manager";
+    homepage = "https://wiki.lxde.org/en/LXSession";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
     mainProgram = "lxsession";

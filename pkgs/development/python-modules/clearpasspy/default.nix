@@ -2,32 +2,30 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "clearpasspy";
   version = "1.1.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-HAi9z7DT5g0Pkr+rASUK18/tEsorWXScCODE95Q+ZZ0=";
   };
 
+  # Package has no tests
+  doCheck = false;
+
   build-system = [
     setuptools
   ];
 
-  pythonRelaxDeps = [ "requests" ];
-
   dependencies = [ requests ];
-
-  # Package has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "clearpasspy" ];
+  pythonRelaxDeps = [ "requests" ];
 
   meta = {
     description = "ClearPass API Python Library";

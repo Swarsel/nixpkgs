@@ -13,14 +13,11 @@
 buildPythonPackage rec {
   pname = "pysptk";
   version = "1.0.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-eLHJM4v3laQc3D/wP81GmcQBwyP1RjC7caGXEAeNCz8=";
   };
-
-  env.PYSPTK_BUILD_VERSION = 0;
 
   nativeBuildInputs = [ cython ];
 
@@ -32,9 +29,10 @@ buildPythonPackage rec {
     six
   ];
 
+  env.PYSPTK_BUILD_VERSION = 0;
   # Tests are not part of the PyPI releases
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pysptk" ];
 
   meta = {

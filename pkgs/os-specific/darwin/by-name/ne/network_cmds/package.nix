@@ -1,11 +1,11 @@
 {
+  file_cmds,
   libpcap,
   libresolv,
   libutil,
   mkAppleDerivation,
   openssl,
   pkg-config,
-  file_cmds,
   sourceRelease,
   stdenvNoCC,
   unifdef,
@@ -16,8 +16,6 @@ let
   xnu = sourceRelease "xnu";
 
   privateHeaders = stdenvNoCC.mkDerivation {
-    name = "network_cmds-deps-private-headers";
-
     nativeBuildInputs = [ unifdef ];
 
     buildCommand = ''
@@ -150,17 +148,15 @@ let
         '${xnuHeaders}/include/sys/unpcb.h' \
         '${xnuHeaders}/include/sys/vsock_private.h'
     '';
+
+    name = "network_cmds-deps-private-headers";
   };
 in
 mkAppleDerivation {
-  releaseName = "network_cmds";
-
   outputs = [
     "out"
     "man"
   ];
-
-  xcodeHash = "sha256-OIYpa71CvCOL8Ln7s8wUqWj9yD9lEeRifkj5gPvD78Y=";
 
   patches = [
     # Some private headers depend on corecrypto, which we can’t use.
@@ -180,8 +176,6 @@ mkAppleDerivation {
       --replace-fail 'tp->pr_name, tp->pr_protocol' 'tp->pr_protocol, tp->pr_name'
   '';
 
-  env.NIX_CFLAGS_COMPILE = "-I${privateHeaders}/include";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -193,5 +187,8 @@ mkAppleDerivation {
     openssl
   ];
 
+  env.NIX_CFLAGS_COMPILE = "-I${privateHeaders}/include";
+  releaseName = "network_cmds";
+  xcodeHash = "sha256-OIYpa71CvCOL8Ln7s8wUqWj9yD9lEeRifkj5gPvD78Y=";
   meta.description = "Network commands for Darwin";
 }

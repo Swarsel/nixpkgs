@@ -7,8 +7,8 @@
   libx11,
   libxext,
   libxres,
-  meson-python,
   meson,
+  meson-python,
   pillow,
   pkg-config,
   psutil,
@@ -18,17 +18,11 @@
 buildPythonPackage rec {
   pname = "ueberzug";
   version = "18.3.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-1Lk4E5YwEq2mUnYbIWDhzz9/CCwfXMJ11/TtJ44ugOk=";
   };
-
-  build-system = [
-    meson
-    meson-python
-  ];
 
   nativeBuildInputs = [ pkg-config ];
 
@@ -36,6 +30,13 @@ buildPythonPackage rec {
     libx11
     libxres
     libxext
+  ];
+
+  doCheck = false;
+
+  build-system = [
+    meson
+    meson-python
   ];
 
   dependencies = [
@@ -46,8 +47,7 @@ buildPythonPackage rec {
     python-xlib
   ];
 
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "ueberzug" ];
 
   meta = {
@@ -55,7 +55,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/ueber-devel/ueberzug";
     changelog = "https://github.com/ueber-devel/ueberzug/releases/tag/${version}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "ueberzug";
     platforms = lib.platforms.linux;
+    mainProgram = "ueberzug";
   };
 }

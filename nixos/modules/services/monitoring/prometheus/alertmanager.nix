@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -54,37 +54,11 @@ in
   options = {
     services.prometheus.alertmanager = {
       enable = lib.mkEnableOption "Prometheus Alertmanager";
-
       package = lib.mkPackageOption pkgs "prometheus-alertmanager" { };
 
-      configuration = lib.mkOption {
-        type = lib.types.nullOr lib.types.attrs;
-        default = null;
-        description = ''
-          Alertmanager configuration as nix attribute set.
-
-          The contents of the resulting config file are processed using envsubst.
-          `$` needs to be escaped as `$$` to be preserved.
-        '';
-      };
-
-      configText = lib.mkOption {
-        type = lib.types.nullOr lib.types.lines;
-        default = null;
-        description = ''
-          Alertmanager configuration as YAML text. If non-null, this option
-          defines the text that is written to alertmanager.yml. If null, the
-          contents of alertmanager.yml is generated from the structured config
-          options.
-
-          The contents of the resulting config file are processed using envsubst.
-          `$` needs to be escaped as `$$` to be preserved.
-        '';
-      };
-
       checkConfig = lib.mkOption {
-        type = lib.types.bool;
         default = true;
+
         description = ''
           Check configuration with `amtool check-config`. The call to `amtool` is
           subject to sandboxing by Nix.
@@ -94,17 +68,101 @@ in
           they will not be visible to `amtool`
           and it will report errors, despite a correct configuration.
         '';
+
+        type = lib.types.bool;
+      };
+
+      clusterPeers = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          Initial peers for HA cluster.
+        '';
+
+        type = lib.types.listOf lib.types.str;
+      };
+
+      configText = lib.mkOption {
+        default = null;
+
+        description = ''
+          Alertmanager configuration as YAML text. If non-null, this option
+          defines the text that is written to alertmanager.yml. If null, the
+          contents of alertmanager.yml is generated from the structured config
+          options.
+
+          The contents of the resulting config file are processed using envsubst.
+          `$` needs to be escaped as `$$` to be preserved.
+        '';
+
+        type = lib.types.nullOr lib.types.lines;
+      };
+
+      configuration = lib.mkOption {
+        default = null;
+
+        description = ''
+          Alertmanager configuration as nix attribute set.
+
+          The contents of the resulting config file are processed using envsubst.
+          `$` needs to be escaped as `$$` to be preserved.
+        '';
+
+        type = lib.types.nullOr lib.types.attrs;
+      };
+
+      environmentFile = lib.mkOption {
+        default = null;
+
+        description = ''
+          File to load as environment file. Environment variables
+          from this file will be interpolated into the config file
+          using envsubst with this syntax:
+          `$ENVIRONMENT ''${VARIABLE}`
+        '';
+
+        example = "/root/alertmanager.env";
+        type = lib.types.nullOr lib.types.path;
+      };
+
+      extraFlags = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          Extra commandline options when launching the Alertmanager.
+        '';
+
+        type = lib.types.listOf lib.types.str;
+      };
+
+      listenAddress = lib.mkOption {
+        default = "";
+
+        description = ''
+          Address to listen on for the web interface and API. Empty string will listen on all interfaces.
+          "localhost" will listen on 127.0.0.1 (but not ::1).
+        '';
+
+        type = lib.types.str;
       };
 
       logFormat = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
         default = null;
+
         description = ''
           If set use a syslog logger or JSON logging.
         '';
+
+        type = lib.types.nullOr lib.types.str;
       };
 
       logLevel = lib.mkOption {
+        default = "warn";
+
+        description = ''
+          Only log messages with the given severity or above.
+        '';
+
         type = lib.types.enum [
           "debug"
           "info"
@@ -112,74 +170,39 @@ in
           "error"
           "fatal"
         ];
-        default = "warn";
+      };
+
+      openFirewall = lib.mkOption {
+        default = false;
+
         description = ''
-          Only log messages with the given severity or above.
+          Open port in firewall for incoming connections.
         '';
+
+        type = lib.types.bool;
+      };
+
+      port = lib.mkOption {
+        default = 9093;
+
+        description = ''
+          Port to listen on for the web interface and API.
+        '';
+
+        type = lib.types.port;
       };
 
       webExternalUrl = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
         default = null;
+
         description = ''
           The URL under which Alertmanager is externally reachable (for example, if Alertmanager is served via a reverse proxy).
           Used for generating relative and absolute links back to Alertmanager itself.
           If the URL has a path portion, it will be used to prefix all HTTP endoints served by Alertmanager.
           If omitted, relevant URL components will be derived automatically.
         '';
-      };
 
-      listenAddress = lib.mkOption {
-        type = lib.types.str;
-        default = "";
-        description = ''
-          Address to listen on for the web interface and API. Empty string will listen on all interfaces.
-          "localhost" will listen on 127.0.0.1 (but not ::1).
-        '';
-      };
-
-      port = lib.mkOption {
-        type = lib.types.port;
-        default = 9093;
-        description = ''
-          Port to listen on for the web interface and API.
-        '';
-      };
-
-      openFirewall = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Open port in firewall for incoming connections.
-        '';
-      };
-
-      clusterPeers = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [ ];
-        description = ''
-          Initial peers for HA cluster.
-        '';
-      };
-
-      extraFlags = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [ ];
-        description = ''
-          Extra commandline options when launching the Alertmanager.
-        '';
-      };
-
-      environmentFile = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
-        default = null;
-        example = "/root/alertmanager.env";
-        description = ''
-          File to load as environment file. Environment variables
-          from this file will be interpolated into the config file
-          using envsubst with this syntax:
-          `$ENVIRONMENT ''${VARIABLE}`
-        '';
+        type = lib.types.nullOr lib.types.str;
       };
     };
   };
@@ -188,6 +211,7 @@ in
     (lib.mkIf cfg.enable {
       assertions = lib.singleton {
         assertion = cfg.configuration != null || cfg.configText != null;
+
         message =
           "Can not enable alertmanager without a configuration. "
           + "Set either the `configuration` or `configText` attribute.";
@@ -197,49 +221,42 @@ in
       networking.firewall.allowedTCPPorts = lib.optional cfg.openFirewall cfg.port;
 
       systemd.services.alertmanager = {
-        wantedBy = [ "multi-user.target" ];
-        wants = [ "network-online.target" ];
         after = [ "network-online.target" ];
+
         preStart = ''
           ${lib.getBin pkgs.envsubst}/bin/envsubst -o "/tmp/alert-manager-substituted.yaml" \
                                                    -i "${alertmanagerYml}"
         '';
+
         serviceConfig = {
+          CapabilityBoundingSet = [ "" ];
+          DeviceAllow = [ "" ];
+          DynamicUser = true;
+          EnvironmentFile = lib.mkIf (cfg.environmentFile != null) cfg.environmentFile;
+          ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+
           ExecStart =
             "${cfg.package}/bin/alertmanager"
             + lib.optionalString (lib.length cmdlineArgs != 0) (
               " \\\n  " + lib.concatStringsSep " \\\n  " cmdlineArgs
             );
-          ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
-
-          EnvironmentFile = lib.mkIf (cfg.environmentFile != null) cfg.environmentFile;
-
-          CapabilityBoundingSet = [ "" ];
-          DeviceAllow = [ "" ];
-          DynamicUser = true;
-          NoNewPrivileges = true;
-
-          MemoryDenyWriteExecute = true;
 
           LockPersonality = true;
-
-          ProtectProc = "invisible";
-          ProtectSystem = "strict";
-          ProtectHome = "tmpfs";
-
-          PrivateTmp = true;
+          MemoryDenyWriteExecute = true;
+          NoNewPrivileges = true;
           PrivateDevices = true;
           PrivateIPC = true;
-
+          PrivateTmp = true;
           ProcSubset = "pid";
-
-          ProtectHostname = true;
           ProtectClock = true;
-          ProtectKernelTunables = true;
-          ProtectKernelModules = true;
-          ProtectKernelLogs = true;
           ProtectControlGroups = true;
-
+          ProtectHome = "tmpfs";
+          ProtectHostname = true;
+          ProtectKernelLogs = true;
+          ProtectKernelModules = true;
+          ProtectKernelTunables = true;
+          ProtectProc = "invisible";
+          ProtectSystem = "strict";
           Restart = "always";
 
           RestrictAddressFamilies = [
@@ -247,11 +264,12 @@ in
             "AF_INET6"
             "AF_NETLINK"
           ];
+
           RestrictNamespaces = true;
           RestrictRealtime = true;
           RestrictSUIDSGID = true;
-
           StateDirectory = "alertmanager";
+
           SystemCallFilter = [
             "@system-service"
             "~@cpu-emulation"
@@ -263,6 +281,9 @@ in
 
           WorkingDirectory = "/tmp";
         };
+
+        wantedBy = [ "multi-user.target" ];
+        wants = [ "network-online.target" ];
       };
     })
   ];

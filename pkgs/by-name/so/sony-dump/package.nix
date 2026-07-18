@@ -15,16 +15,11 @@ stdenv.mkDerivation {
     hash = "sha256-kdHMDIX+ryx63A5TJMsqEZ4W36edC+dQrJKTeh5RFHA=";
   };
 
-  strictDeps = true;
-
-  prePatch = ''
-    tar -xzf ${zlib.src}
-    mv ${zlib.name} zlib
-  '';
-
   patches = [
     ./0001-Fix-makefile.patch
   ];
+
+  strictDeps = true;
 
   installPhase = ''
     runHook preInstall
@@ -32,14 +27,19 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  prePatch = ''
+    tar -xzf ${zlib.src}
+    mv ${zlib.name} zlib
+  '';
+
   meta = {
-    homepage = "https://github.com/munjeni/anyxperia_dumper";
     description = "Tool to dump Sony Xperia boot images";
+    homepage = "https://github.com/munjeni/anyxperia_dumper";
     # No license specified in the repository
     license = lib.licenses.free;
     sourceProvenance = with lib.sourceTypes; [ fromSource ];
     maintainers = with lib.maintainers; [ ungeskriptet ];
-    teams = [ lib.teams.android ];
     mainProgram = "sony_dump";
+    teams = [ lib.teams.android ];
   };
 }

@@ -1,22 +1,22 @@
 {
   lib,
-  mk64baserom ? null,
-  requireFile,
   fetchFromGitHub,
-  llvmPackages_19,
+  SDL2,
   cmake,
   copyDesktopItems,
+  directx-shader-compiler,
+  gtk3,
   installShellFiles,
+  llvmPackages_19,
+  makeDesktopItem,
   makeWrapper,
+  n64recomp,
   ninja,
   pkg-config,
-  wrapGAppsHook3,
-  SDL2,
-  gtk3,
+  requireFile,
   vulkan-loader,
-  makeDesktopItem,
-  n64recomp,
-  directx-shader-compiler,
+  wrapGAppsHook3,
+  mk64baserom ? null,
 }:
 
 let
@@ -26,7 +26,8 @@ let
       mk64baserom
     else
       requireFile {
-        name = "mk64.us.z64";
+        hash = "sha256-1rhTjdY/ATLssoVufTKBbtPDDj5HmuzSPPg/troXpdo=";
+
         message = ''
           mariokart64recomp only supports the US version of Mario Kart 64.
           Please dump your copy and rename it to mk64.us.z64
@@ -34,7 +35,8 @@ let
           nix-store --add-fixed sha256 mk64.us.z64
           See https://dumping.guide/carts/nintendo/n64 for more details.
         '';
-        hash = "sha256-1rhTjdY/ATLssoVufTKBbtPDDj5HmuzSPPg/troXpdo=";
+
+        name = "mk64.us.z64";
       };
 
 in
@@ -48,12 +50,13 @@ llvmPackages_19.stdenv.mkDerivation (finalAttrs: {
     repo = "MarioKart64Recomp";
     tag = "v${finalAttrs.version}";
     hash = "sha256-7h2dxa8yR5y03FGdoF9eLTv7ZQY7IkXPtkwu7Q+SbAo=";
+    fetchSubmodules = true;
+
     preFetch = ''
       export GIT_CONFIG_COUNT=1
       export GIT_CONFIG_KEY_0=url.https://github.com/.insteadOf
       export GIT_CONFIG_VALUE_0=git@github.com:
     '';
-    fetchSubmodules = true;
   };
 
   strictDeps = true;
@@ -75,17 +78,6 @@ llvmPackages_19.stdenv.mkDerivation (finalAttrs: {
     vulkan-loader
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "MarioKart64Recompiled";
-      icon = "MarioKart64Recompiled";
-      exec = "MarioKart64Recompiled";
-      comment = "Recompilation of MarioKart 64";
-      desktopName = "MarioKart64Recompiled";
-      categories = [ "Game" ];
-    })
-  ];
-
   preConfigure = ''
     ln -s ${baseRom} ./mk64.us.z64
     cp ${n64recomp}/bin/* .
@@ -102,14 +94,6 @@ llvmPackages_19.stdenv.mkDerivation (finalAttrs: {
       --replace-fail "\''${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/lib/x64" "${directx-shader-compiler}/lib/" \
       --replace-fail "\''${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/x64/dxc-linux" "${directx-shader-compiler}/bin/dxc"
   '';
-
-  # This is required or else nothing will build
-  hardeningDisable = [
-    "format"
-    "pic"
-    "stackprotector"
-    "zerocallusedregs"
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -142,9 +126,29 @@ llvmPackages_19.stdenv.mkDerivation (finalAttrs: {
     wrapProgram $out/bin/MarioKart64Recompiled --chdir "$out/bin/"
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = "Recompilation of MarioKart 64";
+      desktopName = "MarioKart64Recompiled";
+      exec = "MarioKart64Recompiled";
+      icon = "MarioKart64Recompiled";
+      name = "MarioKart64Recompiled";
+    })
+  ];
+
+  # This is required or else nothing will build
+  hardeningDisable = [
+    "format"
+    "pic"
+    "stackprotector"
+    "zerocallusedregs"
+  ];
+
   meta = {
     description = "Recompilation of MarioKart 64";
     homepage = "https://github.com/sonicdcer/MarioKart64Recomp";
+
     license = with lib.licenses; [
       # MarioKart64Recompiled, N64ModernRuntime
       gpl3Only
@@ -155,8 +159,9 @@ llvmPackages_19.stdenv.mkDerivation (finalAttrs: {
       # reverse engineering
       unfree
     ];
+
     maintainers = with lib.maintainers; [ qubitnano ];
-    mainProgram = "MarioKart64Recompiled";
     platforms = [ "x86_64-linux" ];
+    mainProgram = "MarioKart64Recompiled";
   };
 })

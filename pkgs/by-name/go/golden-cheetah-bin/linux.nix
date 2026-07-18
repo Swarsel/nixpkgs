@@ -1,8 +1,8 @@
 {
-  appimageTools,
   fetchurl,
-  pname,
+  appimageTools,
   commonMeta,
+  pname,
   version,
 }:
 
@@ -11,16 +11,11 @@ appimageTools.wrapType2 rec {
     pname
     version
     ;
+
   src = fetchurl {
     url = "https://github.com/GoldenCheetah/GoldenCheetah/releases/download/v${version}/GoldenCheetah_v${builtins.substring 0 7 version}_x64.AppImage";
     hash = "sha256-teWMDChmC2oWG3UJWTtHVXzIzi2khdkzMkMDFTTI6w8=";
   };
-
-  extraPkgs = pkgs: [
-    pkgs.R
-    pkgs.zlib
-    pkgs.libusb-compat-0_1
-  ];
 
   appimageContents = appimageTools.extract { inherit pname src version; };
 
@@ -33,6 +28,13 @@ appimageTools.wrapType2 rec {
       "Exec=GoldenCheetah" "Exec=env QT_PLUGIN_PATH= GoldenCheetah"
     cp ${appimageContents}/gc.png $out/share/icons/hicolor/512x512/apps/
   '';
+
+  extraPkgs = pkgs: [
+    pkgs.R
+    pkgs.zlib
+    pkgs.libusb-compat-0_1
+  ];
+
   meta = {
     inherit (commonMeta)
       description

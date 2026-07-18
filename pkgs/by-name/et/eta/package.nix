@@ -1,7 +1,7 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,8 +29,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Tool for monitoring progress and ETA of an arbitrary process";
     homepage = "https://github.com/aioobe/eta";
     license = lib.licenses.gpl3Only;
-    mainProgram = "eta";
     maintainers = with lib.maintainers; [ heisfer ];
     platforms = lib.platforms.linux;
+    mainProgram = "eta";
   };
 })

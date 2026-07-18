@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
+  boost,
   bzip2,
+  cmake,
+  expat,
   libxml2,
   libzip,
-  boost,
   lua,
   luabind,
-  onetbb,
-  expat,
   nixosTests,
+  onetbb,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -59,8 +59,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://project-osrm.org/";
     description = "Open Source Routing Machine computes shortest paths in a graph. It was designed to run well with map data from the Openstreetmap Project";
+    homepage = "https://project-osrm.org/";
     changelog = "https://github.com/Project-OSRM/osrm-backend/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ erictapen ];

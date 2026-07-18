@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
   setuptools-scm,
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "mwparserfromhell";
   version = "0.7.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "earwig";
@@ -24,13 +23,14 @@ buildPythonPackage (finalAttrs: {
       --replace '"pytest-runner"' ""
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mwparserfromhell" ];
 
   meta = {

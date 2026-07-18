@@ -1,36 +1,36 @@
 {
   lib,
   stdenv,
-  llvmPackages_20,
   fetchurl,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   # See https://files.ettus.com/manual_archive/v3.15.0.0/html/page_build_guide.html for dependencies explanations
   boost,
-  ncurses,
-  enableCApi ? true,
-  enablePythonApi ? true,
-  python3,
-  enableExamples ? false,
-  enableUtils ? true,
-  libusb1,
-  # Disable dpdk for now due to compilation issues.
-  enableDpdk ? false,
+  cmake,
   dpdk,
-  # Devices
-  enableOctoClock ? true,
-  enableMpmd ? true,
+  libusb1,
+  llvmPackages_20,
+  ncurses,
+  pkg-config,
+  python3,
   enableB100 ? true,
   enableB200 ? true,
-  enableUsrp1 ? true,
-  enableUsrp2 ? true,
-  enableX300 ? true,
-  enableX400 ? true,
-  enableN300 ? true,
-  enableN320 ? true,
+  enableCApi ? true,
+  # Disable dpdk for now due to compilation issues.
+  enableDpdk ? false,
   enableE300 ? true,
   enableE320 ? true,
+  enableExamples ? false,
+  enableMpmd ? true,
+  enableN300 ? true,
+  enableN320 ? true,
+  # Devices
+  enableOctoClock ? true,
+  enablePythonApi ? true,
+  enableUsrp1 ? true,
+  enableUsrp2 ? true,
+  enableUtils ? true,
+  enableX300 ? true,
+  enableX400 ? true,
 }:
 
 let
@@ -46,17 +46,13 @@ let
 in
 
 stdenv'.mkDerivation (finalAttrs: {
+  inherit (finalAttrs.finalPackage.passthru) pythonPath;
   pname = "uhd";
   # NOTE: Use the following command to update the package, and the uhdImageSrc attribute:
   #
   #     nix-shell maintainers/scripts/update.nix --argstr package uhd --arg commit true
   #
   version = "4.9.0.1";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "EttusResearch";
@@ -66,46 +62,40 @@ stdenv'.mkDerivation (finalAttrs: {
     # update the correct hash for the `src` vs the `uhdImagesSrc`
     hash = "sha256-AOZYCmkgsM09YORW7dVsPAwecXNZQOxOscJnVOlMoP0=";
   };
-  # Firmware images are downloaded (pre-built) from the respective release on Github
-  uhdImagesSrc = fetchurl {
-    url = "https://github.com/EttusResearch/uhd/releases/download/v${finalAttrs.version}/uhd-images_${finalAttrs.version}.tar.xz";
-    # Please don't convert this to a hash, in base64, see comment near src's
-    # hash.
-    sha256 = "15ahcxb7hsylvdzzv0q0shd3wqm7p2y4kzbqk85cvsxbdklxhsvn";
-  };
-  inherit (finalAttrs.finalPackage.passthru) pythonPath;
-  passthru = {
-    runtimePython = python3.withPackages (ps: finalAttrs.finalPackage.passthru.pythonPath);
-    # This are the minimum required Python dependencies, this attribute might
-    # be useful if you want to build a development environment with a python
-    # interpreter able to import the uhd module.
-    pythonPath =
-      optionals (enablePythonApi || enableUtils) [
-        python3.pkgs.numpy
-        python3.pkgs.setuptools
-      ]
-      ++ optionals enableUtils [
-        python3.pkgs.requests
-        python3.pkgs.six
 
-        /*
-          These deps are needed for the usrp_hwd.py utility, however even if they
-          would have been added here, the utility wouldn't have worked because it
-          depends on an old python library mprpc that is not supported for Python >
-          3.8. See also report upstream:
-          https://github.com/EttusResearch/uhd/issues/744
+  outputs = [
+    "out"
+    "dev"
+  ];
 
-          python3.pkgs.gevent
-          python3.pkgs.pyudev
-          python3.pkgs.pyroute2
-        */
-      ];
-    updateScript = [
-      ./update.sh
-      # Pass it this file name as argument
-      (builtins.unsafeGetAttrPos "pname" finalAttrs.finalPackage).file
+  patches = [
+    ./fix-pkg-config.patch
+  ];
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    # Present both here and in buildInputs for cross compilation.
+    python3
+    python3.pkgs.mako
+    # We add this unconditionally, but actually run wrapPythonPrograms only if
+    # python utilities are enabled
+    python3.pkgs.wrapPython
+  ];
+
+  buildInputs =
+    finalAttrs.pythonPath
+    ++ [
+      boost
+      libusb1
+    ]
+    ++ optionals enableExamples [
+      ncurses
+      ncurses.dev
+    ]
+    ++ optionals enableDpdk [
+      dpdk
     ];
-  };
 
   cmakeFlags = [
     (cmakeBool "ENABLE_LIBUHD" true)
@@ -160,59 +150,25 @@ stdenv'.mkDerivation (finalAttrs: {
     "-DCMAKE_CXX_FLAGS=-Wno-psabi"
   ];
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    # Present both here and in buildInputs for cross compilation.
-    python3
-    python3.pkgs.mako
-    # We add this unconditionally, but actually run wrapPythonPrograms only if
-    # python utilities are enabled
-    python3.pkgs.wrapPython
-  ];
-  buildInputs =
-    finalAttrs.pythonPath
-    ++ [
-      boost
-      libusb1
-    ]
-    ++ optionals enableExamples [
-      ncurses
-      ncurses.dev
-    ]
-    ++ optionals enableDpdk [
-      dpdk
-    ];
-
-  patches = [
-    ./fix-pkg-config.patch
-  ];
-
-  # many tests fails on darwin, according to ofborg
-  doCheck = !stdenv'.hostPlatform.isDarwin;
-
-  doInstallCheck = true;
-
   # Build only the host software
   preConfigure = "cd host";
+  # many tests fails on darwin, according to ofborg
+  doCheck = !stdenv'.hostPlatform.isDarwin;
+  doInstallCheck = true;
 
-  postPhases = [
-    "installFirmware"
-    "removeInstalledTests"
-  ]
-  ++ optionals (enableUtils && stdenv'.hostPlatform.isLinux) [
-    "moveUdevRules"
+  # Wrap the python utilities with our pythonPath definition
+  postFixup = lib.optionalString (enablePythonApi && enableUtils) ''
+    wrapPythonPrograms
+  '';
+
+  disallowedReferences = optionals (!enablePythonApi && !enableUtils) [
+    python3
   ];
 
   # UHD expects images in `$CMAKE_INSTALL_PREFIX/share/uhd/images`
   installFirmware = ''
     mkdir -p "$out/share/uhd/images"
     tar --strip-components=1 -xvf "${finalAttrs.uhdImagesSrc}" -C "$out/share/uhd/images"
-  '';
-
-  # -DENABLE_TESTS=ON installs the tests, we don't need them in the output
-  removeInstalledTests = ''
-    rm -r $out/lib/uhd/tests
   '';
 
   # Moves the udev rules to the standard location, needed only if utils are
@@ -222,16 +178,65 @@ stdenv'.mkDerivation (finalAttrs: {
     mv $out/lib/uhd/utils/uhd-usrp.rules $out/lib/udev/rules.d/
   '';
 
-  # Wrap the python utilities with our pythonPath definition
-  postFixup = lib.optionalString (enablePythonApi && enableUtils) ''
-    wrapPythonPrograms
-  '';
-  disallowedReferences = optionals (!enablePythonApi && !enableUtils) [
-    python3
+  postPhases = [
+    "installFirmware"
+    "removeInstalledTests"
+  ]
+  ++ optionals (enableUtils && stdenv'.hostPlatform.isLinux) [
+    "moveUdevRules"
   ];
+
+  # -DENABLE_TESTS=ON installs the tests, we don't need them in the output
+  removeInstalledTests = ''
+    rm -r $out/lib/uhd/tests
+  '';
+
+  # Firmware images are downloaded (pre-built) from the respective release on Github
+  uhdImagesSrc = fetchurl {
+    # Please don't convert this to a hash, in base64, see comment near src's
+    # hash.
+    sha256 = "15ahcxb7hsylvdzzv0q0shd3wqm7p2y4kzbqk85cvsxbdklxhsvn";
+    url = "https://github.com/EttusResearch/uhd/releases/download/v${finalAttrs.version}/uhd-images_${finalAttrs.version}.tar.xz";
+  };
+
+  passthru = {
+    # This are the minimum required Python dependencies, this attribute might
+    # be useful if you want to build a development environment with a python
+    # interpreter able to import the uhd module.
+    pythonPath =
+      optionals (enablePythonApi || enableUtils) [
+        python3.pkgs.numpy
+        python3.pkgs.setuptools
+      ]
+      ++ optionals enableUtils [
+        python3.pkgs.requests
+        python3.pkgs.six
+
+        /*
+          These deps are needed for the usrp_hwd.py utility, however even if they
+          would have been added here, the utility wouldn't have worked because it
+          depends on an old python library mprpc that is not supported for Python >
+          3.8. See also report upstream:
+          https://github.com/EttusResearch/uhd/issues/744
+
+          python3.pkgs.gevent
+          python3.pkgs.pyudev
+          python3.pkgs.pyroute2
+        */
+      ];
+
+    runtimePython = python3.withPackages (ps: finalAttrs.finalPackage.passthru.pythonPath);
+
+    updateScript = [
+      ./update.sh
+      # Pass it this file name as argument
+      (builtins.unsafeGetAttrPos "pname" finalAttrs.finalPackage).file
+    ];
+  };
 
   meta = {
     description = "USRP Hardware Driver (for Software Defined Radio)";
+
     longDescription = ''
       The USRP Hardware Driver (UHD) software is the hardware driver for all
       USRP (Universal Software Radio Peripheral) devices.
@@ -239,14 +244,17 @@ stdenv'.mkDerivation (finalAttrs: {
       USRP devices are designed and sold by Ettus Research, LLC and its parent
       company, National Instruments.
     '';
+
     homepage = "https://uhd.ettus.com/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
     maintainers = with lib.maintainers; [
       bjornfor
       fpletz
       tomberek
       doronbehar
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

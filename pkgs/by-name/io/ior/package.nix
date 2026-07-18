@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  autoreconfHook,
   fetchpatch,
   mpi,
   perl,
-  autoreconfHook,
   pkg-config,
 }:
 
@@ -24,9 +24,9 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix gcc-15 build:
     #   https://github.com/hpc/ior/pull/525
     (fetchpatch {
+      hash = "sha256-HvbRMt2EcuO7kxLL9qKpozpNKEOmWuHkKQTSUhfU7/w=";
       name = "gcc-15.patch";
       url = "https://github.com/hpc/ior/commit/526c5ad06695a91a27163c520ce3305109f50bef.patch";
-      hash = "sha256-HvbRMt2EcuO7kxLL9qKpozpNKEOmWuHkKQTSUhfU7/w=";
     })
   ];
 
@@ -43,10 +43,10 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://ior.readthedocs.io/en/latest/";
     description = "Parallel file system I/O performance test";
+    homepage = "https://ior.readthedocs.io/en/latest/";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ bzizou ];
+    platforms = lib.platforms.linux;
   };
 })

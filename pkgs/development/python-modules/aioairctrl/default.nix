@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  setuptools-scm,
   aiocoap,
+  buildPythonPackage,
   pycryptodomex,
   pytestCheckHook,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "aioairctrl";
   version = "0.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kongo09";
@@ -20,6 +19,10 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-Ea5OMbpwDubhnpY5K0CVXZneEGtNWkqkQQ7JwVa/JNU=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -31,16 +34,13 @@ buildPythonPackage rec {
     pycryptodomex
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "aioairctrl" ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
   meta = {
-    changelog = "https://github.com/kongo09/aioairctrl/releases/tag/${src.tag}";
     description = "Library for controlling Philips air purifiers (using encrypted CoAP)";
     homepage = "https://github.com/kongo09/aioairctrl";
+    changelog = "https://github.com/kongo09/aioairctrl/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ justinas ];
   };

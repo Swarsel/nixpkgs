@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "jaconv";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ikegami-yukino";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
     hash = "sha256-43sziwJ/SDdpLHJyGXyI5nXEofbos2W+NV7DlOpWWa8=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "jaconv" ];
 
   meta = {

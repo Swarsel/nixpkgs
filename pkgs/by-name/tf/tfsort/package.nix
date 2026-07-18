@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 buildGoModule (finalAttrs: {
@@ -28,13 +28,15 @@ buildGoModule (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/AlexNabokikh/tfsort/releases/tag/v${finalAttrs.version}";
     description = "Utility to sort Terraform variables, outputs, locals and terraform blocks";
     homepage = "https://github.com/AlexNabokikh/tfsort";
+    changelog = "https://github.com/AlexNabokikh/tfsort/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    mainProgram = "tfsort";
+
     maintainers = [
       lib.maintainers.alexnabokikh
     ];
+
+    mainProgram = "tfsort";
   };
 })

@@ -1,10 +1,10 @@
 {
-  writeShellScript,
-  nix,
+  common-updater-scripts,
   curl,
   gzip,
+  nix,
+  writeShellScript,
   xmlstarlet,
-  common-updater-scripts,
 }:
 
 { attrPath }:

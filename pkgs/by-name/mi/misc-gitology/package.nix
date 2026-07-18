@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   nix-update-script,
   perl,
@@ -16,8 +16,6 @@ stdenv.mkDerivation {
     rev = "8f6b200ed5f4d39f86026cf050f325d5f5713950";
     hash = "sha256-6LoMJUOyBpP1HvVXNahEQlN1JKC9KflcOH9QWIi4M6s=";
   };
-
-  dontBuild = true;
 
   buildInputs = [
     python3
@@ -36,12 +34,13 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  passthru.updateScript = nix-update-script { };
+
   meta = {
     description = "Assortment of scripts around Git";
     homepage = "https://github.com/da-x/misc-gitology";
     license = [ lib.licenses.bsd2 ];
     maintainers = [ lib.maintainers._9999years ];
   };
-
-  passthru.updateScript = nix-update-script { };
 }

@@ -4,13 +4,13 @@
   installShellFiles,
   mkShell,
   nix,
+  # passthru.tests
+  nixosTests,
   python3,
   python3Packages,
   runCommand,
   scdoc,
   withShellFiles ? true,
-  # passthru.tests
-  nixosTests,
 }:
 let
   executable = "nixos-rebuild";
@@ -19,11 +19,12 @@ python3Packages.buildPythonApplication rec {
   pname = "nixos-rebuild-ng";
   version = lib.trivial.release;
   src = ./src;
-  pyproject = true;
 
-  build-system = with python3Packages; [
-    setuptools
-  ];
+  postPatch = ''
+    substituteInPlace nixos_rebuild/constants.py \
+      --subst-var-by executable ${executable} \
+      --subst-var-by withShellFiles ${lib.boolToString withShellFiles}
+  '';
 
   nativeBuildInputs = lib.optionals withShellFiles [
     installShellFiles
@@ -43,11 +44,9 @@ python3Packages.buildPythonApplication rec {
     (lib.getBin nix)
   ];
 
-  postPatch = ''
-    substituteInPlace nixos_rebuild/constants.py \
-      --subst-var-by executable ${executable} \
-      --subst-var-by withShellFiles ${lib.boolToString withShellFiles}
-  '';
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+  ];
 
   postInstall = lib.optionalString withShellFiles ''
     scdoc < ${./nixos-rebuild.8.scd} > ${executable}.8
@@ -58,10 +57,11 @@ python3Packages.buildPythonApplication rec {
       --zsh <(shtab --shell zsh nixos_rebuild.get_main_parser)
   '';
 
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
+  build-system = with python3Packages; [
+    setuptools
   ];
 
+  pyproject = true;
   pytestFlags = [ "-vv" ];
 
   passthru =
@@ -80,6 +80,7 @@ python3Packages.buildPythonApplication rec {
     {
       devShell = mkShell {
         packages = [ python-with-pkgs ];
+
         shellHook = ''
           cd pkgs/by-name/ni/nixos-rebuild-ng/src || true
         '';
@@ -93,7 +94,7 @@ python3Packages.buildPythonApplication rec {
           nixos-rebuild-store-path
           nixos-rebuild-target-host
           ;
-        repl = callPackage ./tests/repl.nix { };
+
         # NOTE: this is a passthru test rather than a build-time test because we
         # want to keep the build closures small
         linters = runCommand "${pname}-linters" { nativeBuildInputs = [ python-with-pkgs ]; } ''
@@ -111,6 +112,8 @@ python3Packages.buildPythonApplication rec {
 
           touch $out
         '';
+
+        repl = callPackage ./tests/repl.nix { };
       };
     };
 
@@ -119,7 +122,7 @@ python3Packages.buildPythonApplication rec {
     homepage = "https://github.com/NixOS/nixpkgs/tree/master/pkgs/by-name/ni/nixos-rebuild-ng";
     license = lib.licenses.mit;
     maintainers = [ ];
-    teams = [ lib.teams.nixos-rebuild ];
     mainProgram = executable;
+    teams = [ lib.teams.nixos-rebuild ];
   };
 }

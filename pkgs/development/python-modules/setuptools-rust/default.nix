@@ -2,29 +2,30 @@
   lib,
   stdenv,
   buildPythonPackage,
+  cargo,
   fetchPypi,
   maturin,
+  python,
+  replaceVars,
   rustPlatform,
   rustc,
-  cargo,
   semantic-version,
   setuptools,
   setuptools-rust,
   setuptools-scm,
-  replaceVars,
-  python,
   targetPackages,
 }:
 buildPythonPackage rec {
   pname = "setuptools-rust";
   version = "1.12.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "setuptools_rust";
     inherit version;
     hash = "sha256-2UqT8Ml3UcFwFFZfB73DJL7kXTls0buoPY56+SuUXww=";
+    pname = "setuptools_rust";
   };
+
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -36,9 +37,8 @@ buildPythonPackage rec {
     setuptools
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "setuptools_rust" ];
-
-  doCheck = false;
 
   # integrate the setup hook to set up the build environment for cross compilation
   # this hook is automatically propagated to consumers using setuptools-rust as build-system
@@ -51,16 +51,14 @@ buildPythonPackage rec {
       null
     else
       replaceVars ./setuptools-rust-hook.sh {
-        pyLibDir = "${python.pythonOnTargetForTarget}/lib/${python.pythonOnTargetForTarget.libPrefix}";
         cargoBuildTarget = stdenv.targetPlatform.rust.rustcTargetSpec;
         cargoLinkerVar = stdenv.targetPlatform.rust.cargoEnvVarTarget;
+        pyLibDir = "${python.pythonOnTargetForTarget}/lib/${python.pythonOnTargetForTarget.libPrefix}";
         targetLinker = "${targetPackages.stdenv.cc}/bin/${targetPackages.stdenv.cc.targetPrefix}cc";
       };
 
   passthru.tests = {
     pyo3 = maturin.tests.pyo3.override {
-      buildAndTestSubdir = null;
-
       nativeBuildInputs = [
         setuptools-rust
       ]
@@ -75,6 +73,8 @@ buildPythonPackage rec {
         # example setup.
         cd examples/word-count
       '';
+
+      buildAndTestSubdir = null;
     };
   };
 

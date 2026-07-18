@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   fftwSinglePrec,
   libsndfile,
+  pkg-config,
   volk,
 }:
 
@@ -35,10 +35,12 @@ stdenv.mkDerivation {
     description = "Small signal processing utility library";
     homepage = "https://github.com/BatchDrake/sigutils";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       polygon
       oxapentane
     ];
+
+    platforms = lib.platforms.all;
   };
 }

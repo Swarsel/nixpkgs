@@ -14,6 +14,9 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0ihwrx4gspj8l7fc8vxch6dpjrw1lvv9z3c19f0wxnmnxhv1cjvs";
   };
 
+  buildInputs = [ openssl ];
+  makeFlags = [ "PREFIX=$(out)" ];
+
   env.NIX_CFLAGS_COMPILE = toString (
     [ "-Wno-error=deprecated-declarations" ]
     ++ lib.optionals (!stdenv.cc.isClang) [
@@ -21,10 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
       "-Wno-error=stringop-overflow"
     ]
   );
-
-  buildInputs = [ openssl ];
-
-  makeFlags = [ "PREFIX=$(out)" ];
 
   meta = {
     description = "Collection of tools to download books from Google Books";

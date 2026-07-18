@@ -1,14 +1,14 @@
 {
   lib,
-  meta,
-  stdenvNoCC,
-  _7zz,
   fetchurl,
-  writeShellScript,
+  _7zz,
+  common-updater-scripts,
   coreutils,
   curl,
+  meta,
+  stdenvNoCC,
+  writeShellScript,
   xmlstarlet,
-  common-updater-scripts,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "proton-vpn";
@@ -19,11 +19,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-1QpJ8UxQsO+K1oqJ/JaF1WmbotT5LLTDQxcpG0JUNfg=";
   };
 
-  __structuredAttrs = true;
   strictDeps = true;
-
-  sourceRoot = ".";
-
   nativeBuildInputs = [ _7zz ];
 
   installPhase = ''
@@ -34,6 +30,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  __structuredAttrs = true;
+  sourceRoot = ".";
 
   passthru.updateScript = writeShellScript "proton-vpn-update-script" ''
     set -euo pipefail
@@ -54,9 +53,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   meta = meta // {
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     platforms = [
       "aarch64-darwin"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

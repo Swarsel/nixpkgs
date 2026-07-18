@@ -1,18 +1,17 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
   copyDesktopItems,
-  makeDesktopItem,
-
-  libxxf86vm,
   glfw,
   gtk3,
+  libxxf86vm,
+  llvmPackages,
+  makeDesktopItem,
   pkg-config,
   wrapGAppsHook3,
   writableTmpDirAsHomeHook,
-  llvmPackages,
 }:
 
 buildGoModule (finalAttrs: {
@@ -27,14 +26,14 @@ buildGoModule (finalAttrs: {
     hash = "sha256-wjoYh6XWV4lJpSr9GQwPnlKGkbFH0YJOp1xVZJb5uOY=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/src";
-
-  vendorHash = "sha256-pbldRarOQ44bE4FPUSHvk2Qk4WQ0zKU0Hd75E717mLI=";
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
+  nativeBuildInputs = [
+    copyDesktopItems
+    pkg-config
+    wrapGAppsHook3
+    writableTmpDirAsHomeHook
+  ]
+  # TODO: Remove once #536365 reaches this branch
+  ++ lib.optional stdenv.hostPlatform.isDarwin llvmPackages.lld;
 
   buildInputs =
     # Depends on a vendored, patched GLFW.
@@ -45,14 +44,15 @@ buildGoModule (finalAttrs: {
       libxxf86vm
     ];
 
-  nativeBuildInputs = [
-    copyDesktopItems
-    pkg-config
-    wrapGAppsHook3
-    writableTmpDirAsHomeHook
-  ]
-  # TODO: Remove once #536365 reaches this branch
-  ++ lib.optional stdenv.hostPlatform.isDarwin llvmPackages.lld;
+  vendorHash = "sha256-pbldRarOQ44bE4FPUSHvk2Qk4WQ0zKU0Hd75E717mLI=";
+
+  env = {
+    CGO_ENABLED = 1;
+  }
+  // lib.optionalAttrs stdenv.hostPlatform.isDarwin {
+    # TODO: Remove once #536365 reaches this branch
+    NIX_CFLAGS_LINK = "-fuse-ld=lld";
+  };
 
   # git ls-files doesn't work as source is not a git repo
   checkFlags =
@@ -64,14 +64,6 @@ buildGoModule (finalAttrs: {
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
-  env = {
-    CGO_ENABLED = 1;
-  }
-  // lib.optionalAttrs stdenv.hostPlatform.isDarwin {
-    # TODO: Remove once #536365 reaches this branch
-    NIX_CFLAGS_LINK = "-fuse-ld=lld";
-  };
-
   postInstall = ''
     mv $out/bin/picocrypt $out/bin/picocrypt-ng-gui
     install -Dm644 $src/images/key.svg $out/share/icons/hicolor/scalable/apps/picocrypt-ng.svg
@@ -79,24 +71,33 @@ buildGoModule (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "Picocrypt-NG";
-      exec = "picocrypt-ng-gui";
-      icon = "picocrypt-ng";
+      categories = [ "Utility" ];
       comment = finalAttrs.meta.description;
       desktopName = "Picocrypt-NG";
-      categories = [ "Utility" ];
+      exec = "picocrypt-ng-gui";
+      icon = "picocrypt-ng";
+      name = "Picocrypt-NG";
     })
   ];
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/src";
 
   meta = {
     description = "Very small, very simple, yet very secure encryption tool";
     homepage = "https://github.com/Picocrypt-NG/Picocrypt-NG";
     changelog = "https://github.com/Picocrypt-NG/Picocrypt-NG/blob/${finalAttrs.version}/Changelog.md";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       tbutter
       ryand56
     ];
+
     mainProgram = "picocrypt-ng-gui";
   };
 })

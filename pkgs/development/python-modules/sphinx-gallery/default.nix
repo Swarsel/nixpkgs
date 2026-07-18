@@ -1,18 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
-  # dependencies
-  pillow,
-  sphinx,
-
   # optional-dependencies
   absl-py,
+  buildPythonPackage,
   graphviz,
   intersphinx-registry,
   ipython,
@@ -20,29 +11,32 @@
   jupyterlite-sphinx,
   lxml,
   matplotlib,
+  memory-profiler,
   mypy,
   numpy,
   packaging,
+  # dependencies
+  pillow,
   plotly,
   pydata-sphinx-theme,
   pytest,
   pytest-cov,
+  # tests
+  pytestCheckHook,
   seaborn,
+  # build-system
+  setuptools,
+  setuptools-scm,
+  sphinx,
   sphinx-design,
   statsmodels,
   types-docutils,
   types-pillow,
-  memory-profiler,
-
-  # tests
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "sphinx-gallery";
   version = "0.21.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "sphinx-gallery";
@@ -50,6 +44,13 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-eWU2xNnguyXi2AZ/PpBp0Pv3IsgL9wQMyPuQpNbn9cY=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ finalAttrs.passthru.optional-dependencies.dev;
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -61,10 +62,19 @@ buildPythonPackage (finalAttrs: {
     sphinx
   ];
 
+  # TODO:
+  disabledTests = [
+    # requires the sphinxcontrib.video package
+    "test_dummy_image"
+    # urllib.error.URLError: <urlopen error [Errno -3] Temporary failure in name resolution>
+    "test_embed_code_links_get_data"
+  ];
+
   optional-dependencies = {
     animations = [
       #sphinxcontrib-video
     ];
+
     dev = [
       absl-py
       graphviz
@@ -89,35 +99,29 @@ buildPythonPackage (finalAttrs: {
       types-pillow
       #types-pygments
     ];
+
     jupyterlite = [
       jupyterlite-sphinx
     ];
+
     parallel = [
       joblib
     ];
+
     recommender = [
       numpy
     ];
+
     show-api-usage = [
       graphviz
     ];
+
     show-memory = [
       memory-profiler
     ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ finalAttrs.passthru.optional-dependencies.dev;
-
-  # TODO:
-  disabledTests = [
-    # requires the sphinxcontrib.video package
-    "test_dummy_image"
-    # urllib.error.URLError: <urlopen error [Errno -3] Temporary failure in name resolution>
-    "test_embed_code_links_get_data"
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "sphinx_gallery"
@@ -127,8 +131,8 @@ buildPythonPackage (finalAttrs: {
     description = "Sphinx extension for automatic generation of an example gallery";
     homepage = "https://github.com/sphinx-gallery/sphinx-gallery";
     changelog = "https://github.com/sphinx-gallery/sphinx-gallery/blob/${finalAttrs.src.rev}/CHANGES.rst";
-    mainProgram = "sphinx_gallery_py2jupyter";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ eljamm ];
+    mainProgram = "sphinx_gallery_py2jupyter";
   };
 })

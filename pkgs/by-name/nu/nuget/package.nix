@@ -1,9 +1,9 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
   makeWrapper,
   mono,
-  lib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,9 +37,9 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
+    inherit (mono.meta) platforms;
     description = "Package manager for the .NET platform";
-    mainProgram = "nuget";
-    homepage = "https://www.mono-project.com/";
+
     longDescription = ''
       NuGet is the package manager for the .NET platform.
       This derivation bundles the Mono NuGet CLI, which is mostly used by
@@ -48,10 +48,12 @@ stdenv.mkDerivation (finalAttrs: {
       Newer .NET projects can use the dotnet CLI, which has most of this
       packages functionality built-in.
     '';
+
+    homepage = "https://www.mono-project.com/";
     # https://learn.microsoft.com/en-us/nuget/resources/nuget-faq#what-is-the-license-for-nuget-exe-
     license = lib.licenses.mit;
     sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
     maintainers = [ lib.maintainers.mdarocha ];
-    inherit (mono.meta) platforms;
+    mainProgram = "nuget";
   };
 })

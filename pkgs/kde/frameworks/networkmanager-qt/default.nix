@@ -1,13 +1,12 @@
 {
   mkKdeDerivation,
-  qtdeclarative,
-  pkg-config,
   networkmanager,
+  pkg-config,
+  qtdeclarative,
 }:
 mkKdeDerivation {
   pname = "networkmanager-qt";
-
-  extraNativeBuildInputs = [ pkg-config ];
   extraBuildInputs = [ qtdeclarative ];
+  extraNativeBuildInputs = [ pkg-config ];
   extraPropagatedBuildInputs = [ networkmanager ];
 }

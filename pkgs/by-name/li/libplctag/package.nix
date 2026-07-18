@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
+  cmake,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,6 +16,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-pk+N78MITI8G+LHyc6fXhqWeLyCOdUEkPePM2RtpMCE=";
   };
 
+  nativeBuildInputs = [ cmake ];
+
   env = {
     NIX_CFLAGS_COMPILE = toString [
       "-Wno-error=implicit-function-declaration"
@@ -23,15 +25,15 @@ stdenv.mkDerivation (finalAttrs: {
     ];
   };
 
-  nativeBuildInputs = [ cmake ];
-
   meta = {
-    homepage = "https://github.com/libplctag/libplctag";
     description = "Library that uses EtherNet/IP or Modbus TCP to read and write tags in PLCs";
+    homepage = "https://github.com/libplctag/libplctag";
+
     license = with lib.licenses; [
       lgpl2Plus
       mpl20
     ];
+
     maintainers = with lib.maintainers; [ petterstorvik ];
     platforms = lib.platforms.all;
   };

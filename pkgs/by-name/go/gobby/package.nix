@@ -1,26 +1,26 @@
 {
-  avahiSupport ? false, # build support for Avahi in libinfinity
   lib,
   stdenv,
   fetchFromGitHub,
   autoconf,
   automake,
+  gsasl,
+  gtkmm3,
+  gtksourceview3,
+  intltool,
+  itstool,
+  libinfinity,
+  libxmlxx,
   pkg-config,
   wrapGAppsHook3,
   yelp-tools,
-  gtkmm3,
-  gsasl,
-  gtksourceview3,
-  libxmlxx,
-  libinfinity,
-  intltool,
-  itstool,
+  avahiSupport ? false, # build support for Avahi in libinfinity
 }:
 
 let
   libinf = libinfinity.override {
-    gtkWidgets = true;
     inherit avahiSupport;
+    gtkWidgets = true;
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -43,6 +43,7 @@ stdenv.mkDerivation (finalAttrs: {
     yelp-tools
     wrapGAppsHook3
   ];
+
   buildInputs = [
     gtkmm3
     gsasl
@@ -54,11 +55,11 @@ stdenv.mkDerivation (finalAttrs: {
   preConfigure = "./autogen.sh";
 
   meta = {
-    homepage = "http://gobby.0x539.de/";
     description = "GTK-based collaborative editor supporting multiple documents in one session and a multi-user chat";
-    mainProgram = "gobby-0.5";
+    homepage = "http://gobby.0x539.de/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "gobby-0.5";
   };
 })

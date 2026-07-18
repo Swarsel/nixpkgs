@@ -1,29 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
+  buildPythonPackage,
   # dependencies
   chromadb,
-  langchain-core,
-  numpy,
-
-  # tests
-  langchain-tests,
-  pytestCheckHook,
-  pytest-asyncio,
-
   # passthru
   gitUpdater,
+  # build-system
+  hatchling,
+  langchain-core,
+  # tests
+  langchain-tests,
+  numpy,
+  pytest-asyncio,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "langchain-chroma";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "langchain-ai";
@@ -32,9 +27,22 @@ buildPythonPackage rec {
     hash = "sha256-WyW5QNLzbqI+kXIVCDyXLyqpShNOSk7tyBTdNoXGQZ0=";
   };
 
-  sourceRoot = "${src.name}/libs/partners/chroma";
+  nativeCheckInputs = [
+    langchain-tests
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
+
+  dependencies = [
+    chromadb
+    langchain-core
+    numpy
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "langchain_chroma" ];
 
   pythonRelaxDeps = [
     # Each component release requests the exact latest core.
@@ -43,34 +51,24 @@ buildPythonPackage rec {
     "numpy"
   ];
 
-  dependencies = [
-    chromadb
-    langchain-core
-    numpy
-  ];
-
-  pythonImportsCheck = [ "langchain_chroma" ];
-
-  nativeCheckInputs = [
-    langchain-tests
-    pytest-asyncio
-    pytestCheckHook
-  ];
+  sourceRoot = "${src.name}/libs/partners/chroma";
 
   passthru = {
     # python updater script sets the wrong tag
     skipBulkUpdate = true;
+
     updateScript = gitUpdater {
-      rev-prefix = "langchain-chroma==";
       ignoredVersions = "a|b|dev|rc";
+      rev-prefix = "langchain-chroma==";
     };
   };
 
   meta = {
-    changelog = "https://github.com/langchain-ai/langchain/releases/tag/${src.tag}";
     description = "Integration package connecting Chroma and LangChain";
     homepage = "https://github.com/langchain-ai/langchain/tree/master/libs/partners/chroma";
+    changelog = "https://github.com/langchain-ai/langchain/releases/tag/${src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       natsukium
       sarahec

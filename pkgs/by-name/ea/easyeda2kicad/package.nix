@@ -1,13 +1,12 @@
 {
-  python3Packages,
   lib,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonPackage rec {
   pname = "easyeda2kicad";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -22,6 +21,8 @@ python3Packages.buildPythonPackage rec {
     pydantic
     requests
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Convert any LCSC components (including EasyEDA) to KiCad library";

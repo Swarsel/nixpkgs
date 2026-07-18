@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
+  pytestCheckHook,
   torch,
   torchvision,
-  pytestCheckHook,
   transformers,
 }:
 
 buildPythonPackage rec {
   pname = "torchinfo";
   version = "1.8.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "TylerYep";
@@ -23,10 +22,10 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch {
-      # Add support for Python 3.11 and pytorch 2.1
-      url = "https://github.com/TylerYep/torchinfo/commit/c74784c71c84e62bcf56664653b7f28d72a2ee0d.patch";
       hash = "sha256-xSSqs0tuFpdMXUsoVv4sZLCeVnkK6pDDhX/Eobvn5mw=";
       includes = [ "torchinfo/model_statistics.py" ];
+      # Add support for Python 3.11 and pytorch 2.1
+      url = "https://github.com/TylerYep/torchinfo/commit/c74784c71c84e62bcf56664653b7f28d72a2ee0d.patch";
     })
   ];
 
@@ -44,6 +43,11 @@ buildPythonPackage rec {
     export HOME=$(mktemp -d)
   '';
 
+  disabledTestPaths = [
+    # Test requires network access
+    "tests/torchinfo_xl_test.py"
+  ];
+
   disabledTests = [
     # Skip as it downloads pretrained weights (require network access)
     "test_eval_order_doesnt_matter"
@@ -54,11 +58,7 @@ buildPythonPackage rec {
     "test_input_size_half_precision"
   ];
 
-  disabledTestPaths = [
-    # Test requires network access
-    "tests/torchinfo_xl_test.py"
-  ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "torchinfo" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
   cstruct,
   logs,
   lwt,
@@ -12,8 +12,6 @@
 buildDunePackage (finalAttrs: {
   pname = "ethernet";
   version = "3.2.0";
-
-  minimalOCamlVersion = "4.08";
 
   src = fetchurl {
     url = "https://github.com/mirage/ethernet/releases/download/v${finalAttrs.version}/ethernet-${finalAttrs.version}.tbz";
@@ -27,6 +25,8 @@ buildDunePackage (finalAttrs: {
     lwt
     logs
   ];
+
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "OCaml Ethernet (IEEE 802.3) layer, used in MirageOS";

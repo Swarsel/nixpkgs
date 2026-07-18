@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   flask,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "flask-themer";
   version = "2.0.0";
-  pyproject = true;
 
   # Pypi tarball doesn't contain tests/
   src = fetchFromGitHub {
@@ -21,15 +20,14 @@ buildPythonPackage rec {
     hash = "sha256-2Zw+gKKN0kfjYuruuLQ+3dIFF0X07DTy0Ypc22Ih66w=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ flask ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ flask ];
+  pyproject = true;
   pythonImportsCheck = [ "flask_themer" ];
 
   meta = {

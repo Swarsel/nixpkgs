@@ -1,22 +1,21 @@
 {
+  lib,
+  apeye-core,
   buildPythonPackage,
+  domdf-python-tools,
   fetchPypi,
   flit-core,
-  apeye-core,
-  domdf-python-tools,
   platformdirs,
   requests,
-  lib,
 }:
 buildPythonPackage rec {
   pname = "apeye";
   version = "1.4.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "apeye";
     hash = "sha256-FOpUL61onjv9vaIYmjVKSQjpCu5L+EwVq3XWhFPXajY=";
+    pname = "apeye";
   };
 
   build-system = [ flit-core ];
@@ -28,6 +27,7 @@ buildPythonPackage rec {
     requests
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "apeye" ];
 
   meta = {

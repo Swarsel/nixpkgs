@@ -2,9 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   alsa-lib,
+  cmake,
   ladspa-sdk,
   libarchive,
   libjack2,
@@ -12,6 +11,7 @@
   libpulseaudio,
   libsndfile,
   lrdf,
+  pkg-config,
   qt5,
 }:
 
@@ -31,6 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     qt5.wrapQtAppsHook
   ];
+
   buildInputs = [
     alsa-lib
     ladspa-sdk
@@ -55,7 +56,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Advanced drum machine";
     homepage = "http://www.hydrogen-music.org";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

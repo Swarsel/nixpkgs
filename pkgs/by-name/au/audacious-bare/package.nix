@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  audacious-plugins,
   fetchFromGitHub,
+  audacious-plugins,
   meson,
   ninja,
   pkg-config,
@@ -47,13 +47,7 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Lightweight and versatile audio player";
     homepage = "https://audacious-media-player.org";
-    downloadPage = "https://github.com/audacious-media-player/audacious";
-    mainProgram = "audacious";
-    maintainers = with lib.maintainers; [
-      ramkromberg
-      thiagokokada
-    ];
-    platforms = lib.platforms.linux;
+
     license = with lib.licenses; [
       bsd2
       bsd3 # https://github.com/audacious-media-player/audacious/blob/master/COPYING
@@ -61,5 +55,14 @@ stdenv.mkDerivation rec {
       gpl3
       lgpl2Plus # http://redmine.audacious-media-player.org/issues/46
     ];
+
+    maintainers = with lib.maintainers; [
+      ramkromberg
+      thiagokokada
+    ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "audacious";
+    downloadPage = "https://github.com/audacious-media-player/audacious";
   };
 }

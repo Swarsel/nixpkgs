@@ -1,12 +1,12 @@
 {
   lib,
+  stdenv,
+  fetchurl,
   SDL2,
   SDL2_image,
   SDL2_mixer,
   SDL2_ttf,
   directoryListingUpdater,
-  fetchurl,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,16 +37,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru.updateScript = directoryListingUpdater {
     inherit (finalAttrs) pname version;
-    url = "https://lgames.sourceforge.io/LBreakoutHD/";
     extraRegex = "(?!.*-win(32|64)).*";
+    url = "https://lgames.sourceforge.io/LBreakoutHD/";
   };
 
   meta = {
-    homepage = "https://lgames.sourceforge.io/LBreakoutHD/";
-    description = "Widescreen Breakout clone";
-    license = lib.licenses.gpl2Plus;
-    mainProgram = "lbreakouthd";
-    maintainers = [ ];
     inherit (SDL2.meta) platforms;
+    description = "Widescreen Breakout clone";
+    homepage = "https://lgames.sourceforge.io/LBreakoutHD/";
+    license = lib.licenses.gpl2Plus;
+    maintainers = [ ];
+    mainProgram = "lbreakouthd";
   };
 })

@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   stdenv,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 buildGoModule (finalAttrs: {
   pname = "nezha-agent";
@@ -18,12 +18,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-kYw1XgtlzRSQ0k8XK0lCJ0s2UaevVdmPunb9e7hoc70=";
-
-  ldflags = [
-    "-s"
-    "-X github.com/nezhahq/agent/pkg/monitor.Version=${finalAttrs.version}"
-    "-X main.arch=${stdenv.hostPlatform.system}"
-  ];
 
   checkFlags =
     let
@@ -48,11 +42,17 @@ buildGoModule (finalAttrs: {
 
   doInstallCheck = true;
 
-  versionCheckProgramArg = "-v";
-
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
+  ldflags = [
+    "-s"
+    "-X github.com/nezhahq/agent/pkg/monitor.Version=${finalAttrs.version}"
+    "-X main.arch=${stdenv.hostPlatform.system}"
+  ];
+
+  versionCheckProgramArg = "-v";
 
   passthru = {
     updateScript = nix-update-script { };

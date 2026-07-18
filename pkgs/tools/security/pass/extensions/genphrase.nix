@@ -16,18 +16,16 @@ stdenv.mkDerivation rec {
     sha256 = "01dff2jlp111y7vlmp1wbgijzphhlzc19m02fs8nzmn5vxyffanx";
   };
 
-  dontBuild = true;
-
   buildInputs = [ python3 ];
-
-  installTargets = [ "globalinstall" ];
-
-  installFlags = [ "PREFIX=$(out)" ];
 
   postFixup = ''
     substituteInPlace $out/lib/password-store/extensions/genphrase.bash \
       --replace '$EXTENSIONS' "$out/lib/password-store/extensions/"
   '';
+
+  dontBuild = true;
+  installFlags = [ "PREFIX=$(out)" ];
+  installTargets = [ "globalinstall" ];
 
   meta = {
     description = "Pass extension that generates memorable passwords";

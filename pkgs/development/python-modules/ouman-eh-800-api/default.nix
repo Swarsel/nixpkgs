@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
@@ -14,9 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "ouman-eh-800-api";
   version = "1.0.0";
-  pyproject = true;
-
-  disabled = pythonOlder "3.13";
 
   src = fetchFromGitHub {
     owner = "Markus98";
@@ -30,10 +27,6 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "uv_build>=0.9.21,<0.10.0" "uv_build"
   '';
 
-  build-system = [ uv-build ];
-
-  dependencies = [ aiohttp ];
-
   nativeCheckInputs = [
     aioresponses
     pytest-asyncio
@@ -41,6 +34,10 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  build-system = [ uv-build ];
+  dependencies = [ aiohttp ];
+  disabled = pythonOlder "3.13";
+  pyproject = true;
   pythonImportsCheck = [ "ouman_eh_800_api" ];
 
   meta = {

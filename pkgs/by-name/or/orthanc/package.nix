@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  fetchhg,
   boost,
   charls,
   civetweb,
   cmake,
   curl,
   dcmtk,
+  fetchhg,
   gtest,
   jsoncpp,
   libjpeg,
@@ -15,15 +15,15 @@
   libuuid,
   log4cplus,
   lua,
+  nixosTests,
   openssl,
+  orthanc-framework,
   protobuf,
   pugixml,
   python3,
   sqlite,
   unzip,
   versionCheckHook,
-  nixosTests,
-  orthanc-framework,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -42,7 +42,7 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
   ];
 
-  sourceRoot = "${finalAttrs.src.name}/OrthancServer";
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -69,10 +69,6 @@ stdenv.mkDerivation (finalAttrs: {
     pugixml
     sqlite
   ];
-
-  strictDeps = true;
-
-  enableParallelBuilding = true;
 
   cmakeFlags = [
     (lib.cmakeFeature "DCMTK_DICTIONARY_DIR_AUTO" "${dcmtk}/share/dcmtk-${dcmtk.version}")
@@ -108,14 +104,19 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r $src/OrthancServer/Plugins/Samples $doc/share/doc/orthanc/OrthancPluginSamples
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
+  enableParallelBuilding = true;
+  sourceRoot = "${finalAttrs.src.name}/OrthancServer";
   versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
-  doInstallCheck = true;
 
   passthru = {
     framework = orthanc-framework;
+
     tests = {
       inherit (nixosTests) orthanc;
     };
@@ -125,8 +126,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Lightweight, RESTful DICOM server for healthcare and medical research";
     homepage = "https://www.orthanc-server.com/";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "Orthanc";
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "Orthanc";
   };
 })

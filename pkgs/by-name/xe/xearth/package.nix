@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  imake,
   gccmakedep,
-  libxt,
+  imake,
   libxext,
+  libxt,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -42,19 +42,23 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Set the X root window to an image of the Earth";
-    mainProgram = "xearth";
-    homepage = "https://xearth.org";
+
     longDescription = ''
       Xearth  sets  the X root window to an image of the Earth, as seen from your favorite vantage point in space,
       correctly shaded for the current position of the Sun.
       By default, xearth updates the displayed image every  five  minutes.
     '';
-    maintainers = with lib.maintainers; [ mafo ];
+
+    homepage = "https://xearth.org";
+
     license = {
+      free = true;
       fullName = "xearth license";
       url = "https://xearth.org/copyright.html";
-      free = true;
     };
+
+    maintainers = with lib.maintainers; [ mafo ];
     platforms = lib.platforms.unix;
+    mainProgram = "xearth";
   };
 })

@@ -1,10 +1,10 @@
 {
+  lib,
+  stdenv,
   autoPatchelfHook,
   buildPythonPackage,
   cudaPackages,
-  lib,
   python,
-  stdenv,
 }:
 let
   inherit (cudaPackages.tensorrt)
@@ -17,11 +17,10 @@ let
   inherit (stdenv.hostPlatform) parsed;
 in
 buildPythonPackage {
+  inherit version;
   # Make sure to add the cudaNamePrefix tag since we're not using cudaPackages.buildRedist but this is a
   # redistributable.
   pname = "${cudaPackages.cudaNamePrefix}-${pname}";
-
-  inherit version;
 
   src =
     let
@@ -33,8 +32,6 @@ buildPythonPackage {
     in
     src + "/python/${distribution}-${version}-${pythonTag}-${abiTag}-${platformTag}.whl";
 
-  format = "wheel";
-
   nativeBuildInputs = [
     autoPatchelfHook
   ];
@@ -43,11 +40,10 @@ buildPythonPackage {
     cudaPackages.tensorrt
   ];
 
+  format = "wheel";
   pythonImportsCheck = [ "tensorrt" ];
 
   meta = {
-    description = "Python bindings for TensorRT, a high-performance deep learning interface";
-
     # Explicitly inherit from TensorRT's meta to avoid pulling in attributes added by stdenv.mkDerivation.
     inherit (meta)
       badPlatforms
@@ -62,5 +58,7 @@ buildPythonPackage {
       sourceProvenance
       teams
       ;
+
+    description = "Python bindings for TensorRT, a high-performance deep learning interface";
   };
 }

@@ -1,9 +1,9 @@
 {
-  buildNpmPackage,
+  lib,
   fetchFromGitHub,
+  buildNpmPackage,
   inter,
   nixosTests,
-  lib,
   # This is a app can only be used in a browser and starts a web server only accessible at
   # localhost/127.0.0.1 from the local computer at the given port.
   defaultHostname ? "127.0.0.1",
@@ -17,22 +17,23 @@ let
   tag = "v.${version}";
 in
 buildNpmPackage {
-  pname = "nextjs-ollama-llm-ui";
   inherit version;
+  pname = "nextjs-ollama-llm-ui";
 
   src = fetchFromGitHub {
+    inherit tag;
     owner = "jakobhoeg";
     repo = "nextjs-ollama-llm-ui";
-    inherit tag;
     hash = "sha256-hgLeTWtnyxGMkMsAGBbaM2yeS/H8AStMPR2bjLdjwEc=";
   };
-  npmDepsHash = "sha256-9+A+85IK4zmMGlBsVoLg7RnST72AhAM6xPGnBZLgLTk=";
 
   patches = [
     # nextjs tries to download google fonts from the internet during buildPhase and fails in Nix sandbox.
     # We patch the code to expect a local font from src/app/Inter.ttf that we load from Nixpkgs in preBuild phase.
     ./0002-use-local-google-fonts.patch
   ];
+
+  npmDepsHash = "sha256-9+A+85IK4zmMGlBsVoLg7RnST72AhAM6xPGnBZLgLTk=";
 
   # Adjust buildNpmPackage phases with nextjs quirk workarounds.
   # These are adapted from
@@ -81,8 +82,8 @@ buildNpmPackage {
   '';
 
   doDist = false;
-  #######################
 
+  #######################
   passthru = {
     tests = {
       inherit (nixosTests) nextjs-ollama-llm-ui;
@@ -91,11 +92,11 @@ buildNpmPackage {
 
   meta = {
     description = "Simple chat web interface for Ollama LLMs";
-    changelog = "https://github.com/jakobhoeg/nextjs-ollama-llm-ui/releases/tag/${tag}";
-    mainProgram = "nextjs-ollama-llm-ui";
     homepage = "https://github.com/jakobhoeg/nextjs-ollama-llm-ui";
+    changelog = "https://github.com/jakobhoeg/nextjs-ollama-llm-ui/releases/tag/${tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ malteneuss ];
     platforms = lib.platforms.all;
+    mainProgram = "nextjs-ollama-llm-ui";
   };
 }

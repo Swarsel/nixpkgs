@@ -1,10 +1,10 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
   gnome-themes-extra,
   gtk-engine-murrine,
   gtk_engines,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -23,13 +23,6 @@ stdenvNoCC.mkDerivation rec {
     gtk_engines # pixmap engine for Gtk2
   ];
 
-  propagatedUserEnvPkgs = [
-    gtk-engine-murrine # murrine engine for Gtk2
-  ];
-
-  # avoid the makefile which is only for theme maintainers
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -44,14 +37,23 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  # avoid the makefile which is only for theme maintainers
+  dontBuild = true;
+
+  propagatedUserEnvPkgs = [
+    gtk-engine-murrine # murrine engine for Gtk2
+  ];
+
   meta = {
     description = "Rosé Pine theme for GTK";
     homepage = "https://github.com/rose-pine/gtk";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       romildo
       the-argus
     ];
+
+    platforms = lib.platforms.linux;
   };
 }

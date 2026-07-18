@@ -16,21 +16,21 @@ stdenv.mkDerivation {
     sha256 = "0j1158nczhvy5i1ykvzvhlv4ndhibgng0dq1lw2bmi8q6k1q1s0w";
   };
 
-  patchPhase = ''
-    sed -i 's/port = 1234/port = ${port}/g' main.c
-  '';
-
   installPhase = ''
     mkdir -p $out/bin
     install -Dm755 among-sus $out/bin
   '';
 
+  patchPhase = ''
+    sed -i 's/port = 1234/port = ${port}/g' main.c
+  '';
+
   meta = {
-    homepage = "https://git.sr.ht/~martijnbraam/among-sus";
     description = "Among us, but it's a text adventure";
-    mainProgram = "among-sus";
+    homepage = "https://git.sr.ht/~martijnbraam/among-sus";
     license = lib.licenses.agpl3Plus;
     maintainers = [ lib.maintainers.eyjhb ];
     platforms = lib.platforms.unix;
+    mainProgram = "among-sus";
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,6 +16,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-jzK56x5mzQkD3tSs6X0Z2Zn1OLXFHgWHz0YLZ3m3NS4=";
+  doCheck = false;
 
   ldflags = [
     "-s"
@@ -24,8 +25,6 @@ buildGoModule (finalAttrs: {
     "-X github.com/jckuester/awsweeper/internal.commit=${finalAttrs.src.rev}"
     "-X github.com/jckuester/awsweeper/internal.date=unknown"
   ];
-
-  doCheck = false;
 
   meta = {
     description = "Tool to clean out your AWS account";

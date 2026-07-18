@@ -25,17 +25,17 @@ stdenv.mkDerivation {
   '';
 
   passthru.updateScript = unstableGitUpdater {
-    url = "https://github.com/trailofbits/onesixtyone";
-    tagPrefix = "v";
     branch = "master"; # optional, defaults to default branch
+    tagPrefix = "v";
+    url = "https://github.com/trailofbits/onesixtyone";
   };
 
   meta = {
     description = "Fast SNMP Scanner";
     homepage = "https://github.com/trailofbits/onesixtyone";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.fishi0x01 ];
+    platforms = lib.platforms.unix;
     mainProgram = "onesixtyone";
   };
 }

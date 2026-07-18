@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  callPackage,
   cmake,
-  pkg-config,
+  gtest,
   libdwarf,
   libunwind,
-  gtest,
-  callPackage,
-  zstd,
   nix-update-script,
+  pkg-config,
+  zstd,
   static ? stdenv.hostPlatform.isStatic,
 }:
 
@@ -55,36 +55,36 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "CPPTRACE_UNWIND_WITH_LIBUNWIND" true)
   ];
 
+  doCheck = true;
   checkInputs = [ gtest ];
 
   preCheck = lib.optionalString stdenv.hostPlatform.isDarwin ''
     dsymutil unittest
   '';
 
-  doCheck = true;
-
   passthru = {
-    updateScript = nix-update-script { };
     tests =
       let
         mkIntegrationTest =
           { static }:
           callPackage ./findpackage-integration.nix {
+            inherit static;
             src = "${finalAttrs.src}/test/findpackage-integration";
             checkOutput = finalAttrs.finalPackage.doCheck;
-            inherit static;
           };
       in
       {
         findpackage-integration-shared = mkIntegrationTest { static = false; };
         findpackage-integration-static = mkIntegrationTest { static = true; };
       };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://github.com/jeremy-rifkin/cpptrace/releases/tag/v${finalAttrs.version}";
     description = "Simple, portable, and self-contained stacktrace library for C++11 and newer";
     homepage = "https://github.com/jeremy-rifkin/cpptrace";
+    changelog = "https://github.com/jeremy-rifkin/cpptrace/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ xokdvium ];
     platforms = lib.platforms.all;

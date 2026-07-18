@@ -1,27 +1,32 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  pkg-config,
-  intltool,
+  fetchurl,
+  autoreconfHook,
+  cairo,
   glib,
+  gnome,
+  gnumeric,
+  gtk-doc,
   gtk3,
+  intltool,
   lasem,
   libgsf,
+  librsvg,
   libxml2,
   libxslt,
-  cairo,
   pango,
-  librsvg,
-  gnome,
-  autoreconfHook,
-  gtk-doc,
-  gnumeric,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "goffice";
   version = "0.10.61";
+
+  src = fetchurl {
+    url = "mirror://gnome/sources/goffice/${lib.versions.majorMinor finalAttrs.version}/goffice-${finalAttrs.version}.tar.xz";
+    hash = "sha256-VYWX/Zylm5P/VidQIY0efqjsPI0O1qXMCWqnFe+QmhU=";
+  };
 
   outputs = [
     "out"
@@ -29,17 +34,17 @@ stdenv.mkDerivation (finalAttrs: {
     "devdoc"
   ];
 
-  src = fetchurl {
-    url = "mirror://gnome/sources/goffice/${lib.versions.majorMinor finalAttrs.version}/goffice-${finalAttrs.version}.tar.xz";
-    hash = "sha256-VYWX/Zylm5P/VidQIY0efqjsPI0O1qXMCWqnFe+QmhU=";
-  };
-
   nativeBuildInputs = [
     pkg-config
     intltool
     autoreconfHook
     gtk-doc
     glib # for glib-genmarshal
+  ];
+
+  buildInputs = [
+    libxslt
+    librsvg
   ];
 
   propagatedBuildInputs = [
@@ -52,21 +57,16 @@ stdenv.mkDerivation (finalAttrs: {
     lasem
   ];
 
-  buildInputs = [
-    libxslt
-    librsvg
-  ];
-
   enableParallelBuilding = true;
 
   passthru = {
+    tests = {
+      inherit gnumeric;
+    };
+
     updateScript = gnome.updateScript {
       packageName = "goffice";
       versionPolicy = "odd-unstable";
-    };
-
-    tests = {
-      inherit gnumeric;
     };
   };
 
@@ -80,7 +80,6 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
     license = lib.licenses.gpl2Plus;
-
     platforms = lib.platforms.unix;
   };
 })

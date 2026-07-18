@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,18 +17,19 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-9VSjxnc804A+PTMy0ZoNWNkHAjh3/kMK0XoEfI/LgEY=";
 
-  subPackages = [ "cmd/helm-docs" ];
   ldflags = [
     "-w"
     "-s"
     "-X main.version=${finalAttrs.version}"
   ];
 
+  subPackages = [ "cmd/helm-docs" ];
+
   meta = {
-    homepage = "https://github.com/norwoodj/helm-docs";
     description = "Tool for automatically generating markdown documentation for Helm charts";
-    mainProgram = "helm-docs";
+    homepage = "https://github.com/norwoodj/helm-docs";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ sagikazarmark ];
+    mainProgram = "helm-docs";
   };
 })

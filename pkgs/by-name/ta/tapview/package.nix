@@ -1,15 +1,13 @@
 {
-  asciidoctor,
-  fetchFromGitLab,
   lib,
   stdenv,
+  fetchFromGitLab,
+  asciidoctor,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "tapview";
   version = "1.15";
-
-  nativeBuildInputs = [ asciidoctor ];
 
   src = fetchFromGitLab {
     owner = "esr";
@@ -18,14 +16,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-6v+CxNjj3gPE3wmhit6e5OuhkjVACFv/4QAbFDCySGc=";
   };
 
+  nativeBuildInputs = [ asciidoctor ];
   makeFlags = [ "prefix=$(out)" ];
 
   meta = {
     description = "Minimalist pure consumer for TAP (Test Anything Protocol)";
-    mainProgram = "tapview";
     homepage = "https://gitlab.com/esr/tapview";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ pamplemousse ];
+    platforms = lib.platforms.all;
+    mainProgram = "tapview";
   };
 })

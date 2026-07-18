@@ -12,14 +12,17 @@
 }:
 replaceVarsWith {
   src = ./remove-references-to;
+  dir = "bin";
+  isExecutable = true;
+
   replacements = {
     inherit (builtins) storeDir;
     shell = lib.getBin shell + (shell.shellPath or "");
+
     signingUtils = lib.optionalString (
       stdenvNoCC.targetPlatform.isDarwin && stdenvNoCC.targetPlatform.isAarch64
     ) signingUtils;
   };
-  dir = "bin";
-  isExecutable = true;
+
   meta.mainProgram = "remove-references-to";
 }

@@ -2,9 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   boost,
+  cmake,
   curl,
   cxxopts,
   gdal,
@@ -12,14 +11,15 @@
   libspatialite,
   luajit,
   lz4,
+  pkg-config,
   prime-server,
   protobuf,
   python3,
   rapidjson,
   sqlite,
+  testers,
   zeromq,
   zlib,
-  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -44,13 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
   ];
 
-  cmakeFlags = [
-    (lib.cmakeBool "BUILD_SHARED_LIBS" true)
-    (lib.cmakeBool "ENABLE_TESTS" false)
-    (lib.cmakeBool "ENABLE_SINGLE_FILES_WERROR" false)
-    (lib.cmakeBool "PREFER_EXTERNAL_DEPS" true)
-  ];
-
   buildInputs = [
     boost
     cxxopts
@@ -72,17 +65,24 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
+  cmakeFlags = [
+    (lib.cmakeBool "BUILD_SHARED_LIBS" true)
+    (lib.cmakeBool "ENABLE_TESTS" false)
+    (lib.cmakeBool "ENABLE_SINGLE_FILES_WERROR" false)
+    (lib.cmakeBool "PREFER_EXTERNAL_DEPS" true)
+  ];
+
   passthru.tests = {
     pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
-    changelog = "https://github.com/valhalla/valhalla/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "Open Source Routing Engine for OpenStreetMap";
     homepage = "https://valhalla.readthedocs.io/";
+    changelog = "https://github.com/valhalla/valhalla/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.Thra11 ];
-    pkgConfigModules = [ "libvalhalla" ];
     platforms = lib.platforms.linux;
+    pkgConfigModules = [ "libvalhalla" ];
   };
 })

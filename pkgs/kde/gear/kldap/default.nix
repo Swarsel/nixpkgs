@@ -1,6 +1,6 @@
 {
-  mkKdeDerivation,
   cyrus_sasl,
+  mkKdeDerivation,
   openldap,
 }:
 mkKdeDerivation {

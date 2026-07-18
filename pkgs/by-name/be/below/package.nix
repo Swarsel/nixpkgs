@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   clang,
-  pkg-config,
   elfutils,
+  pkg-config,
+  rustPlatform,
   rustfmt,
   zlib,
 }:
@@ -20,11 +20,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Paf3+aVsJpC8wyNqszCp3y5qQS8LEAyXvJBp9VG4uFM=";
   };
 
-  cargoHash = "sha256-8+8mBbQSFPcjfBB7y+dgyno+EW82ojhPNxx836gCMik=";
+  nativeBuildInputs = [
+    clang
+    pkg-config
+    rustfmt
+  ];
 
-  prePatch = ''
-    sed -i "s,ExecStart=.*/bin,ExecStart=$out/bin," etc/below.service
-  '';
+  buildInputs = [
+    elfutils
+    zlib
+  ];
+
+  cargoHash = "sha256-8+8mBbQSFPcjfBB7y+dgyno+EW82ojhPNxx836gCMik=";
+  # needs /sys/fs/cgroup
+  doCheck = false;
+
   postInstall = ''
     install -d $out/lib/systemd/system
     install -t $out/lib/systemd/system etc/below.service
@@ -36,25 +46,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "zerocallusedregs"
   ];
 
-  nativeBuildInputs = [
-    clang
-    pkg-config
-    rustfmt
-  ];
-  buildInputs = [
-    elfutils
-    zlib
-  ];
-
-  # needs /sys/fs/cgroup
-  doCheck = false;
+  prePatch = ''
+    sed -i "s,ExecStart=.*/bin,ExecStart=$out/bin," etc/below.service
+  '';
 
   meta = {
-    platforms = lib.platforms.linux;
-    maintainers = with lib.maintainers; [ globin ];
     description = "Time traveling resource monitor for modern Linux systems";
-    license = lib.licenses.asl20;
     homepage = "https://github.com/facebookincubator/below";
+    license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ globin ];
+    platforms = lib.platforms.linux;
     mainProgram = "below";
   };
 })

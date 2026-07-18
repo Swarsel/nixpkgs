@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   asyncio-dgram,
   buildPythonPackage,
-  fetchFromGitHub,
   hatchling,
   ifaddr,
   pytestCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "keba-kecontact";
   version = "4.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dannerph";
@@ -20,6 +19,7 @@ buildPythonPackage rec {
     hash = "sha256-gIqHo+J/I4vqJCs/r3ZHo3kChefTRqpVmdw3r3y3Hzk=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ hatchling ];
 
   dependencies = [
@@ -27,8 +27,7 @@ buildPythonPackage rec {
     ifaddr
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "keba_kecontact" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
+  lib,
   fetchFromGitHub,
   installShellFiles,
-  lib,
   nix-update-script,
   rustPlatform,
   stdenvNoCC,
@@ -19,9 +19,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-rDt4jtrC+KuPKdEoReVWW8R9/sKBnalnRuB4bj1tzas=";
   };
 
-  cargoHash = "sha256-VJ8ZB3oVppMRsSvpVOF1SIvOtI0rcS8elJEweoum/lY=";
-
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-VJ8ZB3oVppMRsSvpVOF1SIvOtI0rcS8elJEweoum/lY=";
 
   postInstall = lib.optionalString (stdenvNoCC.buildPlatform.canExecute stdenvNoCC.hostPlatform) ''
     for shell in bash fish zsh; do
@@ -32,19 +31,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/micahkepe/jsongrep/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "JSONPath-inspired query language";
+
     longDescription = ''
       `jsongrep` is a command-line tool and Rust library for querying
       JSON documents using regular path expressions.
     '';
+
     homepage = "https://github.com/micahkepe/jsongrep";
+    changelog = "https://github.com/micahkepe/jsongrep/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "jg";
     maintainers = with lib.maintainers; [ yiyu ];
+    mainProgram = "jg";
   };
 })

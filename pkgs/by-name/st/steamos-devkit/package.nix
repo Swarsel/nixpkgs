@@ -2,25 +2,24 @@
   lib,
   fetchFromGitHub,
   fetchFromGitLab,
-  python3,
+  SDL2,
   copyDesktopItems,
   makeDesktopItem,
   pkg-config,
-  SDL2,
+  python3,
 }:
 let
   # steamos-devkit requires a build of the unreleased pyimgui 2.0 branch, move to pythonPackages when 2.0 is released.
   pyimgui = python3.pkgs.buildPythonPackage {
     pname = "pyimgui";
     version = "2.0.0";
-    format = "setuptools";
 
     src = fetchFromGitHub {
       owner = "pyimgui";
       repo = "pyimgui";
       rev = "2.0.0";
-      fetchSubmodules = true;
       sha256 = "sha256-sw/bLTdrnPhBhrnk5yyXCbEK4kMo+PdEvoMJ9aaZbsE=";
+      fetchSubmodules = true;
     };
 
     nativeBuildInputs = with python3.pkgs; [
@@ -37,6 +36,7 @@ let
 
     # Requires OpenGL acceleration
     doCheck = false;
+    format = "setuptools";
     pythonImportsCheck = [ "imgui" ];
   };
   steamos-devkit-script = ''
@@ -59,15 +59,18 @@ in
 python3.pkgs.buildPythonPackage rec {
   pname = "steamos-devkit";
   version = "0.20240216.0";
-  format = "setuptools";
 
   src = fetchFromGitLab {
-    domain = "gitlab.steamos.cloud";
     owner = "devkit";
     repo = "steamos-devkit";
     rev = "v${version}";
     sha256 = "sha256-eOtESkGMIjcijAFITOcYKPsXH6xH/Xcj9D+OItMqebM=";
+    domain = "gitlab.steamos.cloud";
   };
+
+  nativeBuildInputs = [
+    copyDesktopItems
+  ];
 
   propagatedBuildInputs = with python3.pkgs; [
     appdirs
@@ -87,20 +90,8 @@ python3.pkgs.buildPythonPackage rec {
     six
   ];
 
-  nativeBuildInputs = [
-    copyDesktopItems
-  ];
-
-  postUnpack = ''
-    # Find the absolute source root to link correctly to the previous root
-    prevRoot=$(realpath $sourceRoot)
-
-    # Update the source root to the devkit_client package
-    sourceRoot="$sourceRoot/client"
-
-    # Link the setup script into the new source root
-    ln -s $prevRoot/setup/shiv-linux-setup.py $sourceRoot/setup.py
-  '';
+  # There are no checks for steamos-devkit
+  doCheck = false;
 
   postInstall = ''
     mkdir -p $out/bin
@@ -116,23 +107,34 @@ python3.pkgs.buildPythonPackage rec {
     chmod +x $out/bin/steamos-devkit
   '';
 
-  # There are no checks for steamos-devkit
-  doCheck = false;
-  pythonImportsCheck = [ "devkit_client" ];
-
   desktopItems = [
     (makeDesktopItem {
-      name = "SteamOS-Devkit";
-      exec = "steamos-devkit";
       desktopName = "SteamOS Devkit Client";
+      exec = "steamos-devkit";
+      name = "SteamOS-Devkit";
     })
   ];
 
+  format = "setuptools";
+
+  postUnpack = ''
+    # Find the absolute source root to link correctly to the previous root
+    prevRoot=$(realpath $sourceRoot)
+
+    # Update the source root to the devkit_client package
+    sourceRoot="$sourceRoot/client"
+
+    # Link the setup script into the new source root
+    ln -s $prevRoot/setup/shiv-linux-setup.py $sourceRoot/setup.py
+  '';
+
+  pythonImportsCheck = [ "devkit_client" ];
+
   meta = {
     description = "SteamOS Devkit Client";
-    mainProgram = "steamos-devkit";
     homepage = "https://gitlab.steamos.cloud/devkit/steamos-devkit";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ myaats ];
+    mainProgram = "steamos-devkit";
   };
 }

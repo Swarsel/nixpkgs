@@ -16,7 +16,6 @@ stdenv.mkDerivation {
   };
 
   strictDeps = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -31,12 +30,13 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Jump back to a specific directory, without doing `cd ../../..`";
     homepage = "https://github.com/Tarrasch/zsh-bd";
     license = lib.licenses.free;
-
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.olejorgenb ];
+    platforms = lib.platforms.unix;
   };
 }

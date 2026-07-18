@@ -3,20 +3,21 @@
   stdenv,
   fetchurl,
   autoPatchelfHook,
-  writableTmpDirAsHomeHook,
   versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 
 let
   version = "1.0.15498356";
   platformData = {
-    x86_64-linux = {
-      url = "https://dl.google.com/android/cli/${version}/linux_x86_64/android-cli";
-      hash = "sha256-TmwLwLKqnMCxWwtX8m50KflmisfeG3PjZsBs7z9vccU=";
-    };
     aarch64-darwin = {
-      url = "https://dl.google.com/android/cli/${version}/darwin_arm64/android-cli";
       hash = "sha256-E3PC0Ivf6MoYRQu56dSD/49LI8DJZhXL27/o6daH0Sg=";
+      url = "https://dl.google.com/android/cli/${version}/darwin_arm64/android-cli";
+    };
+
+    x86_64-linux = {
+      hash = "sha256-TmwLwLKqnMCxWwtX8m50KflmisfeG3PjZsBs7z9vccU=";
+      url = "https://dl.google.com/android/cli/${version}/linux_x86_64/android-cli";
     };
   };
 
@@ -26,26 +27,20 @@ let
 
 in
 stdenv.mkDerivation {
-  pname = "android-cli";
   inherit version;
-
-  strictDeps = true;
-  __structuredAttrs = true;
+  pname = "android-cli";
 
   src = fetchurl {
-    name = "android-cli";
     url = systemData.url;
     hash = systemData.hash;
+    name = "android-cli";
   };
 
-  dontUnpack = true;
+  strictDeps = true;
 
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     autoPatchelfHook
   ];
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -53,13 +48,17 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     writableTmpDirAsHomeHook
     versionCheckHook
   ];
 
-  doInstallCheck = true;
-
+  __structuredAttrs = true;
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
   versionCheckKeepEnvironment = [ "HOME" ];
 
   meta = with lib; {
@@ -68,11 +67,13 @@ stdenv.mkDerivation {
     license = licenses.unfree;
     sourceProvenance = with sourceTypes; [ binaryNativeCode ];
     maintainers = with maintainers; [ kirillrdy ];
-    teams = with teams; [ android ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-darwin"
     ];
+
     mainProgram = "android";
+    teams = with teams; [ android ];
   };
 }

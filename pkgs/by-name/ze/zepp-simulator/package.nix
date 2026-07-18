@@ -1,42 +1,40 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  makeWrapper,
-  copyDesktopItems,
+  SDL2,
+  asar,
   autoPatchelfHook,
-
+  cairo,
+  capstone_4,
+  copyDesktopItems,
+  curlWithGnuTls,
+  cyrus_sasl,
+  dpkg,
+  # aarch64-only?
+  dtc,
   # Upstream is officially built with Electron 18
   # (but it works with latest Electron with minor changes, see HACK below)
   electron,
-  asar,
-  dpkg,
-
+  gdk-pixbuf,
   # qemu deps
   # (it's not possible to de-vendor the qemu binary since it relies on proprietary cpu extensions)
   glib,
-  libgcc,
-  libcxx,
-  zlib,
-  libepoxy,
-  libpng,
-  libaio,
-  libx11,
-  libvterm,
-  vte,
   gsasl,
   gtk3,
-  cairo,
-  gdk-pixbuf,
-  numactl,
-  cyrus_sasl,
-  SDL2,
-  # aarch64-only?
-  dtc,
-  capstone_4,
-  libjpeg8,
+  libaio,
+  libcxx,
+  libepoxy,
   libgbm,
-  curlWithGnuTls,
+  libgcc,
+  libjpeg8,
+  libpng,
+  libvterm,
+  libx11,
+  makeWrapper,
+  numactl,
+  vte,
+  zlib,
 }:
 
 let
@@ -46,13 +44,14 @@ let
   # Linux ARM64: https://upload-cdn.zepp.com/zepp-applet-and-wechat-applet/20240927/02ec69e6a2f3b744d964fd7ba4f40fc3.deb
   # Linux AMD64: https://upload-cdn.zepp.com/zepp-applet-and-wechat-applet/20240927/3e688d423cd0cd31a8a589b8325a309e.deb
   srcs = {
-    x86_64-linux = {
-      url = "https://upload-cdn.zepp.com/zepp-applet-and-wechat-applet/20240927/3e688d423cd0cd31a8a589b8325a309e.deb";
-      sha256 = "sha256-ZHqaEL8FoSnRtuqGWpTyJka7D0dHtRADZthq8DG2k24=";
-    };
     aarch64-linux = {
-      url = "https://upload-cdn.zepp.com/zepp-applet-and-wechat-applet/20240927/02ec69e6a2f3b744d964fd7ba4f40fc3.deb";
       sha256 = "sha256-J5Y4wLiFOM9D2MIMiRyUtHIZ19rt65ktVCOMZQQwBCI=";
+      url = "https://upload-cdn.zepp.com/zepp-applet-and-wechat-applet/20240927/02ec69e6a2f3b744d964fd7ba4f40fc3.deb";
+    };
+
+    x86_64-linux = {
+      sha256 = "sha256-ZHqaEL8FoSnRtuqGWpTyJka7D0dHtRADZthq8DG2k24=";
+      url = "https://upload-cdn.zepp.com/zepp-applet-and-wechat-applet/20240927/3e688d423cd0cd31a8a589b8325a309e.deb";
     };
   };
 
@@ -61,7 +60,6 @@ in
 stdenv.mkDerivation {
   pname = "zepp-simulator";
   version = "2.0.2";
-
   src = fetchurl srcs.${stdenv.hostPlatform.system};
 
   patches = [
@@ -104,8 +102,6 @@ stdenv.mkDerivation {
     libgbm
     curlWithGnuTls
   ];
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -159,17 +155,21 @@ stdenv.mkDerivation {
     chmod +x $out/opt/simulator/resources/firmware/qemu_linux/qemu-system-arm
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Zepp OS Simulator";
     homepage = "https://developer.zepp.com/os/home";
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ griffi-gh ];
+
     # TODO Darwin
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
-    maintainers = with lib.maintainers; [ griffi-gh ];
+
     mainProgram = "simulator";
   };
 }

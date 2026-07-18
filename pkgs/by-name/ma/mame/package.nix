@@ -1,22 +1,23 @@
 {
   lib,
   stdenv,
+  fetchurl,
   fetchFromGitHub,
-  alsa-lib,
   SDL2,
   SDL2_ttf,
+  alsa-lib,
   copyDesktopItems,
   expat,
-  fetchurl,
   flac,
   fontconfig,
   glm,
   installShellFiles,
-  libxi,
-  libxinerama,
   libjpeg,
   libpcap,
   libpulseaudio,
+  libsForQt5,
+  libxi,
+  libxinerama,
   makeDesktopItem,
   makeWrapper,
   pkg-config,
@@ -24,7 +25,6 @@
   portmidi,
   pugixml,
   python3,
-  libsForQt5,
   rapidjson,
   sqlite,
   utf8proc,
@@ -37,7 +37,6 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "mame";
   version = "0.287";
-  srcVersion = builtins.replaceStrings [ "." ] [ "" ] finalAttrs.version;
 
   src = fetchFromGitHub {
     owner = "mamedev";
@@ -49,65 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
   outputs = [
     "out"
     "tools"
-  ];
-
-  makeFlags = [
-    "CC=${stdenv.cc.targetPrefix}cc"
-    "CXX=${stdenv.cc.targetPrefix}c++"
-    "TOOLS=1"
-    "USE_LIBSDL=1"
-    # "USE_SYSTEM_LIB_ASIO=1"
-    "USE_SYSTEM_LIB_EXPAT=1"
-    "USE_SYSTEM_LIB_FLAC=1"
-    "USE_SYSTEM_LIB_GLM=1"
-    "USE_SYSTEM_LIB_JPEG=1"
-    # https://www.mamedev.org/?p=523
-    # "USE_SYSTEM_LIB_LUA=1"
-    "USE_SYSTEM_LIB_PORTAUDIO=1"
-    "USE_SYSTEM_LIB_PORTMIDI=1"
-    "USE_SYSTEM_LIB_PUGIXML=1"
-    "USE_SYSTEM_LIB_RAPIDJSON=1"
-    "USE_SYSTEM_LIB_UTF8PROC=1"
-    "USE_SYSTEM_LIB_SQLITE3=1"
-    "USE_SYSTEM_LIB_ZLIB=1"
-  ];
-
-  # https://docs.mamedev.org/initialsetup/compilingmame.html
-  buildInputs = [
-    expat
-    zlib
-    flac
-    portmidi
-    portaudio
-    utf8proc
-    libjpeg
-    rapidjson
-    pugixml
-    glm
-    SDL2
-    SDL2_ttf
-    sqlite
-    libsForQt5.qtbase
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    alsa-lib
-    libpulseaudio
-    libxinerama
-    libxi
-    fontconfig
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    libpcap
-  ];
-
-  nativeBuildInputs = [
-    copyDesktopItems
-    installShellFiles
-    makeWrapper
-    pkg-config
-    python3
-    which
-    libsForQt5.wrapQtAppsHook
   ];
 
   patches = [
@@ -142,25 +82,63 @@ stdenv.mkDerivation (finalAttrs: {
       done
   '';
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "MAME";
-      desktopName = "MAME";
-      exec = "mame";
-      icon = "mame";
-      type = "Application";
-      genericName = "MAME is a multi-purpose emulation framework";
-      comment = "Play vintage games using the MAME emulator";
-      categories = [
-        "Game"
-        "Emulator"
-      ];
-      keywords = [
-        "Game"
-        "Emulator"
-        "Arcade"
-      ];
-    })
+  nativeBuildInputs = [
+    copyDesktopItems
+    installShellFiles
+    makeWrapper
+    pkg-config
+    python3
+    which
+    libsForQt5.wrapQtAppsHook
+  ];
+
+  # https://docs.mamedev.org/initialsetup/compilingmame.html
+  buildInputs = [
+    expat
+    zlib
+    flac
+    portmidi
+    portaudio
+    utf8proc
+    libjpeg
+    rapidjson
+    pugixml
+    glm
+    SDL2
+    SDL2_ttf
+    sqlite
+    libsForQt5.qtbase
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    alsa-lib
+    libpulseaudio
+    libxinerama
+    libxi
+    fontconfig
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    libpcap
+  ];
+
+  makeFlags = [
+    "CC=${stdenv.cc.targetPrefix}cc"
+    "CXX=${stdenv.cc.targetPrefix}c++"
+    "TOOLS=1"
+    "USE_LIBSDL=1"
+    # "USE_SYSTEM_LIB_ASIO=1"
+    "USE_SYSTEM_LIB_EXPAT=1"
+    "USE_SYSTEM_LIB_FLAC=1"
+    "USE_SYSTEM_LIB_GLM=1"
+    "USE_SYSTEM_LIB_JPEG=1"
+    # https://www.mamedev.org/?p=523
+    # "USE_SYSTEM_LIB_LUA=1"
+    "USE_SYSTEM_LIB_PORTAUDIO=1"
+    "USE_SYSTEM_LIB_PORTMIDI=1"
+    "USE_SYSTEM_LIB_PUGIXML=1"
+    "USE_SYSTEM_LIB_RAPIDJSON=1"
+    "USE_SYSTEM_LIB_UTF8PROC=1"
+    "USE_SYSTEM_LIB_SQLITE3=1"
+    "USE_SYSTEM_LIB_ZLIB=1"
   ];
 
   # TODO: copy shaders from src/osd/modules/opengl/shader/glsl*.*h
@@ -168,8 +146,8 @@ stdenv.mkDerivation (finalAttrs: {
   installPhase =
     let
       icon = fetchurl {
-        url = "https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-icon-theme/4256be4cf56870aa1fbd85c48cafeafa187160e0/Papirus/32x32/apps/mame.svg";
         hash = "sha256-s44Xl9UGizmddd/ugwABovM8w35P0lW9ByB69MIpG+E=";
+        url = "https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-icon-theme/4256be4cf56870aa1fbd85c48cafeafa187160e0/Papirus/32x32/apps/mame.svg";
       };
     in
     ''
@@ -194,16 +172,41 @@ stdenv.mkDerivation (finalAttrs: {
       runHook postInstall
     '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
   # man1 is the tools documentation, man6 is the emulator documentation
   # Need to be done in postFixup otherwise multi-output hook will move it back to $out
   postFixup = ''
     moveToOutput share/man/man1 $tools
   '';
 
-  enableParallelBuilding = true;
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Game"
+        "Emulator"
+      ];
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
+      comment = "Play vintage games using the MAME emulator";
+      desktopName = "MAME";
+      exec = "mame";
+      genericName = "MAME is a multi-purpose emulation framework";
+      icon = "mame";
+
+      keywords = [
+        "Game"
+        "Emulator"
+        "Arcade"
+      ];
+
+      name = "MAME";
+      type = "Application";
+    })
+  ];
+
+  enableParallelBuilding = true;
+  srcVersion = builtins.replaceStrings [ "." ] [ "" ] finalAttrs.version;
   versionCheckProgramArg = "-h";
 
   passthru.updateScript = writeScript "mame-update-script" ''
@@ -217,8 +220,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://www.mamedev.org/";
     description = "Multi-purpose emulation framework";
+
     longDescription = ''
       MAME's purpose is to preserve decades of software history. As electronic
       technology continues to rush forward, MAME prevents this important
@@ -233,15 +236,20 @@ stdenv.mkDerivation (finalAttrs: {
       calculators, in addition to the arcade video games that were its initial
       focus.
     '';
+
+    homepage = "https://www.mamedev.org/";
     changelog = "https://github.com/mamedev/mame/releases/download/mame${finalAttrs.srcVersion}/whatsnew_${finalAttrs.srcVersion}.txt";
+
     license = with lib.licenses; [
       bsd3
       gpl2Plus
     ];
+
     maintainers = with lib.maintainers; [
       thiagokokada
       DimitarNestorov
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "mame";
   };

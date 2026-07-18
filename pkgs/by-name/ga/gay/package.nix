@@ -1,12 +1,11 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "gay";
   version = "1.3.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -14,10 +13,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
   };
 
   build-system = [ python3Packages.setuptools ];
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/ms-jpq/gay";
     description = "Colour your text / terminal to be more gay";
+    homepage = "https://github.com/ms-jpq/gay";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ CodeLongAndProsper90 ];
     mainProgram = "gay";

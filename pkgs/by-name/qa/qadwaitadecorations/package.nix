@@ -2,17 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
   cmake,
+  fetchpatch2,
+  nix-update-script,
   qt5,
   qt6,
   wayland,
-  nix-update-script,
-  useQt6 ? false,
-
   # Shadows support on Qt5 requires the feature backported from Qt6:
   # https://src.fedoraproject.org/rpms/qt5-qtwayland/blob/rawhide/f/qtwayland-decoration-support-backports-from-qt6.patch
   qt5ShadowsSupport ? false,
+  useQt6 ? false,
 }:
 
 let
@@ -33,10 +32,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch2 {
+      hash = "sha256-7ZmceoOzUDHvvCX+8SwuX+DIi65d6hYIYfpikMiN0wM=";
       # https://github.com/FedoraQt/QAdwaitaDecorations/pull/88
       name = "Fix build with Qt 6.10";
       url = "https://github.com/FedoraQt/QAdwaitaDecorations/commit/e6da80a440218b87e441c8a698014ef3962af98b.patch?full_index=1";
-      hash = "sha256-7ZmceoOzUDHvvCX+8SwuX+DIi65d6hYIYfpikMiN0wM=";
     })
   ];
 
@@ -51,14 +50,13 @@ stdenv.mkDerivation (finalAttrs: {
     wayland
   ];
 
-  dontWrapQtApps = true;
-
   cmakeFlags = [
     "-DQT_PLUGINS_DIR=${placeholder "out"}/${qt.qtbase.qtPluginPrefix}"
   ]
   ++ lib.optional useQt6 "-DUSE_QT6=true"
   ++ lib.optional qt5ShadowsSupport "-DHAS_QT6_SUPPORT=true";
 
+  dontWrapQtApps = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

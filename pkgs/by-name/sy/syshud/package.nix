@@ -30,6 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail /usr/share/sys64/hud/style.css $out/share/sys64/hud/style.css
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     pkg-config
     wrapGAppsHook4
@@ -48,6 +50,11 @@ stdenv.mkDerivation (finalAttrs: {
     "PREFIX="
   ];
 
+  # syshud manually `dlopen`'s its library component
+  postInstall = ''
+    wrapProgram $out/bin/syshud --prefix LD_LIBRARY_PATH : $out/lib
+  '';
+
   # populate version info used by `syshud -v`:
   configurePhase = ''
     runHook preConfigure
@@ -58,13 +65,6 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postConfigure
   '';
 
-  # syshud manually `dlopen`'s its library component
-  postInstall = ''
-    wrapProgram $out/bin/syshud --prefix LD_LIBRARY_PATH : $out/lib
-  '';
-
-  strictDeps = true;
-
   passthru.updateScript = nix-update-script {
     extraArgs = [
       "--version"
@@ -74,10 +74,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Simple heads up display written in gtkmm 4";
-    mainProgram = "syshud";
     homepage = "https://github.com/System64fumo/syshud";
     license = lib.licenses.wtfpl;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ colinsane ];
+    platforms = lib.platforms.linux;
+    mainProgram = "syshud";
   };
 })

@@ -1,26 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  pbr,
-
+  buildPythonPackage,
   # dependencies
   oslo-config,
   oslo-log,
   oslo-utils,
-  prometheus-client,
-
   # tests
   oslotest,
+  # build-system
+  pbr,
+  prometheus-client,
   stestr,
 }:
 
 buildPythonPackage rec {
   pname = "oslo-metrics";
   version = "0.16.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openstack";
@@ -30,17 +26,6 @@ buildPythonPackage rec {
   };
 
   env.PBR_VERSION = version;
-
-  build-system = [
-    pbr
-  ];
-
-  dependencies = [
-    oslo-config
-    oslo-log
-    oslo-utils
-    prometheus-client
-  ];
 
   nativeCheckInputs = [
     oslotest
@@ -53,6 +38,18 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [
+    pbr
+  ];
+
+  dependencies = [
+    oslo-config
+    oslo-log
+    oslo-utils
+    prometheus-client
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "oslo_metrics" ];
 
   meta = {

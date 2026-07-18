@@ -1,15 +1,13 @@
 {
   lib,
   stdenv,
-  fetchgit,
-
   ant,
+  coreutils,
+  fetchgit,
   jdk,
+  jre,
   makeWrapper,
   stripJavaArchivesHook,
-
-  coreutils,
-  jre,
   which,
 }:
 
@@ -28,12 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     jdk
     makeWrapper
     stripJavaArchivesHook
-  ];
-
-  runtimeDeps = [
-    jre
-    coreutils
-    which
   ];
 
   buildPhase = ''
@@ -65,14 +57,22 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  runtimeDeps = [
+    jre
+    coreutils
+    which
+  ];
+
   meta = {
     description = "Project-Management Software similar to MS-Project";
     homepage = "https://www.projectlibre.com/";
     license = lib.licenses.cpal10;
-    mainProgram = "projectlibre";
+
     maintainers = with lib.maintainers; [
       tomasajt
     ];
+
     platforms = jre.meta.platforms;
+    mainProgram = "projectlibre";
   };
 })

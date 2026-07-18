@@ -1,24 +1,23 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cargo,
   click,
   colorama,
-  fetchFromGitHub,
   packaging,
-  python,
   pytest-xdist,
   pytestCheckHook,
+  python,
   requirements-parser,
-  rustc,
   rustPlatform,
+  rustc,
   tomli,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "deptry";
   version = "0.25.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "osprey-oss";
@@ -26,26 +25,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-GQWivQMWQ8wi6cWsCbmvSSyPEx1yl9QidO+9mTDrN1c=";
   };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-axUqKks3vxiJF2bRI/Qwk7iKjoUNQQc3NynI60n3quY=";
-  };
-
-  build-system = [
-    cargo
-    rustPlatform.cargoSetupHook
-    rustPlatform.maturinBuildHook
-    rustc
-  ];
-
-  dependencies = [
-    click
-    colorama
-    packaging
-    requirements-parser
-    tomli
-  ];
 
   nativeCheckInputs = [
     pytest-xdist
@@ -56,11 +35,32 @@ buildPythonPackage (finalAttrs: {
     cp $out/${python.sitePackages}/deptry/rust*.so python/deptry/
   '';
 
+  build-system = [
+    cargo
+    rustPlatform.cargoSetupHook
+    rustPlatform.maturinBuildHook
+    rustc
+  ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-axUqKks3vxiJF2bRI/Qwk7iKjoUNQQc3NynI60n3quY=";
+  };
+
+  dependencies = [
+    click
+    colorama
+    packaging
+    requirements-parser
+    tomli
+  ];
+
   disabledTestPaths = [
     # Don't run CLI tests
     "tests/functional/cli/"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "deptry" ];
 
   meta = {

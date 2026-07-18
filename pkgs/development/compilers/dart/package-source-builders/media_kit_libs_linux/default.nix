@@ -4,14 +4,12 @@
   mimalloc,
 }:
 
-{ version, src, ... }:
+{ src, version, ... }:
 
 stdenv.mkDerivation {
-  pname = "media_kit_libs_linux";
   inherit version src;
   inherit (src) passthru;
-
-  dontBuild = true;
+  pname = "media_kit_libs_linux";
 
   # Remove mimalloc download
   # Direct link for the original CMakeLists.txt: https://raw.githubusercontent.com/media-kit/media-kit/main/libs/linux/media_kit_libs_linux/linux/CMakeLists.txt
@@ -35,4 +33,6 @@ stdenv.mkDerivation {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
 }

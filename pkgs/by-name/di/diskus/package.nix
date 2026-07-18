@@ -19,17 +19,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Minimal, fast alternative to 'du -sh'";
-    homepage = "https://github.com/sharkdp/diskus";
-    license = with lib.licenses; [
-      asl20 # or
-      mit
-    ];
-    maintainers = [ lib.maintainers.fuerbringer ];
-    platforms = lib.platforms.unix;
+
     longDescription = ''
       diskus is a very simple program that computes the total size of the
       current directory. It is a parallelized version of du -sh.
     '';
+
+    homepage = "https://github.com/sharkdp/diskus";
+
+    license = with lib.licenses; [
+      asl20 # or
+      mit
+    ];
+
+    maintainers = [ lib.maintainers.fuerbringer ];
+    platforms = lib.platforms.unix;
     mainProgram = "diskus";
   };
 })

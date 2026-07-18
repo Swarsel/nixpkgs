@@ -17,8 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-djUO3qzY8ch29AuhY3Bn1ajxWZ4/W70icWVrxWRAxRc=";
   };
 
-  nativeBuildInputs = [ cmake ] ++ lib.optional stdenv.hostPlatform.isDarwin fixDarwinDylibNames;
-
   # Fix the build with CMake 4.
   #
   # Remove on the next version bump.
@@ -31,11 +29,13 @@ stdenv.mkDerivation (finalAttrs: {
         'cmake_minimum_required(VERSION 3.5...4.0)'
   '';
 
+  nativeBuildInputs = [ cmake ] ++ lib.optional stdenv.hostPlatform.isDarwin fixDarwinDylibNames;
+
   meta = {
-    homepage = "http://www.qhull.org/";
     description = "Compute the convex hull, Delaunay triangulation, Voronoi diagram and more";
+    homepage = "http://www.qhull.org/";
     license = lib.licenses.qhull;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

@@ -2,15 +2,13 @@
   lib,
   fetchFromGitHub,
   buildHomeAssistantComponent,
-  pytestCheckHook,
-  pytest-homeassistant-custom-component,
-  pydantic,
   mock,
   nix-update-script,
+  pydantic,
+  pytest-homeassistant-custom-component,
+  pytestCheckHook,
 }:
 buildHomeAssistantComponent rec {
-  owner = "BottlecapDave";
-  domain = "octopus_energy";
   version = "18.3.3";
 
   src = fetchFromGitHub {
@@ -20,17 +18,13 @@ buildHomeAssistantComponent rec {
     hash = "sha256-HETG4kp76j8nKpacuQtVMeSvu70VVe1XfZXu+bGi1eU=";
   };
 
-  dependencies = [ pydantic ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-homeassistant-custom-component
     mock
   ];
 
-  pytestFlags = [
-    "-Wignore::pytest.PytestRemovedIn9Warning"
-  ];
+  dependencies = [ pydantic ];
 
   disabledTestPaths = [
     # Integration tests require a valid Octopus Energy API Key
@@ -45,6 +39,13 @@ buildHomeAssistantComponent rec {
     "tests/unit/utils/test_dict_to_typed_dict.py::test_when_utc_datetime_is_present_during_bst_then_converted_to_correct_datetime"
   ];
 
+  domain = "octopus_energy";
+  owner = "BottlecapDave";
+
+  pytestFlags = [
+    "-Wignore::pytest.PytestRemovedIn9Warning"
+  ];
+
   passthru.updateScript = nix-update-script {
     extraArgs = [
       # Ignore pre-release versions ("beta")
@@ -53,11 +54,11 @@ buildHomeAssistantComponent rec {
   };
 
   meta = {
-    changelog = "https://github.com/BottlecapDave/HomeAssistant-OctopusEnergy/releases/tag/v${version}";
     description = "Unofficial Home Assistant integration for interacting with Octopus Energy";
     homepage = "https://github.com/BottlecapDave/HomeAssistant-OctopusEnergy";
-    maintainers = [ lib.maintainers.matteopacini ];
+    changelog = "https://github.com/BottlecapDave/HomeAssistant-OctopusEnergy/releases/tag/v${version}";
     license = lib.licenses.mit;
+    maintainers = [ lib.maintainers.matteopacini ];
   };
 
 }

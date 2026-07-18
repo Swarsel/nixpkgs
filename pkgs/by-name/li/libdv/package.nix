@@ -20,6 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
       --replace '#ifdef _SC_PRIORITY_SCHEDULING' '#if 0'
   '';
 
+  buildInputs = [ popt ];
+
   configureFlags = [
     "--disable-asm"
     "--disable-sdl"
@@ -27,8 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     "--disable-xv"
     "--disable-gprof"
   ];
-
-  buildInputs = [ popt ];
 
   meta = {
     description = "Software decoder for DV format video, as defined by the IEC 61834 and SMPTE 314M standards";

@@ -1,13 +1,13 @@
 {
-  fetchurl,
   lib,
+  fetchurl,
   virtualbox,
 }:
 fetchurl rec {
   pname = "virtualbox-extpack";
   version = "7.2.10";
   name = "Oracle_VirtualBox_Extension_Pack-${version}.vbox-extpack";
-  url = "https://download.virtualbox.org/virtualbox/${version}/${name}";
+
   sha256 =
     # Manually sha256sum the extensionPack file, must be hex!
     # Thus do not use `nix-prefetch-url` but instead plain old `sha256sum`.
@@ -18,13 +18,17 @@ fetchurl rec {
     assert (builtins.stringLength value) == 64;
     value;
 
+  url = "https://download.virtualbox.org/virtualbox/${version}/${name}";
+
   meta = {
     description = "Oracle Extension pack for VirtualBox";
-    license = lib.licenses.virtualbox-puel;
     homepage = "https://www.virtualbox.org/";
+    license = lib.licenses.virtualbox-puel;
+
     maintainers = with lib.maintainers; [
       friedrichaltheide
     ];
+
     platforms = [ "x86_64-linux" ];
   };
 }

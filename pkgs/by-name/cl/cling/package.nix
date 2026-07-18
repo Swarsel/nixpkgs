@@ -1,16 +1,7 @@
 {
-  apple-sdk,
-  cmake,
-  fetchFromGitHub,
-  git,
   lib,
-  libffi,
-  llvmPackages_20,
-  makeWrapper,
-  ncurses,
-  python3,
-  zlib,
-
+  fetchFromGitHub,
+  apple-sdk,
   # The compiler used to *compile* Cling, independent of the LLVM/Clang that
   # Cling is built against (the root-project/llvm-project fork checked out below)
   # and of llvmPackages_20 (used only for the runtime wrapper flags). The compiler
@@ -18,13 +9,18 @@
   # Cling builds against a fork of Clang we use Clang as the compiler too for
   # consistency.
   clangStdenv,
-
+  cmake,
   # For runtime C++ standard library
   gcc-unwrapped,
-
+  git,
+  libffi,
+  llvmPackages_20,
+  makeWrapper,
+  ncurses,
+  python3,
+  zlib,
   # Build with debug symbols
   debug ? false,
-
   # Build with libc++ (LLVM) rather than stdlibc++ (GCC).
   # This is experimental and not all features work.
   useLLVMLibcxx ? clangStdenv.hostPlatform.isDarwin,
@@ -43,8 +39,8 @@ let
   };
 
   unwrapped = stdenv.mkDerivation {
-    pname = "cling-unwrapped";
     inherit version;
+    pname = "cling-unwrapped";
 
     src = fetchFromGitHub {
       owner = "root-project";
@@ -53,31 +49,19 @@ let
       sha256 = "sha256-fv7nrpZ5Dhbf+nW0ED0pkc8NDBXeaBs9MV2TW6o7FGU=";
     };
 
-    preConfigure = ''
-      cp -r ${clingSrc} cling-source
-
-      # cling 1.3 only builds the clingUserInterface library (which the cling
-      # driver always links) when CLING_INCLUDE_TESTS is on. Always build it.
-      chmod -R u+w cling-source
-      pushd cling-source
-      patch -p1 < ${./always-build-user-interface.patch}
-      popd
-
-      cd llvm
-    '';
+    strictDeps = true;
 
     nativeBuildInputs = [
       python3
       git
       cmake
     ];
+
     buildInputs = [
       libffi
       ncurses
       zlib
     ];
-
-    strictDeps = true;
 
     cmakeFlags = [
       "-DLLVM_EXTERNAL_PROJECTS=cling"
@@ -100,6 +84,19 @@ let
 
     env.CPPFLAGS = lib.optionalString useLLVMLibcxx "-stdlib=libc++";
 
+    preConfigure = ''
+      cp -r ${clingSrc} cling-source
+
+      # cling 1.3 only builds the clingUserInterface library (which the cling
+      # driver always links) when CLING_INCLUDE_TESTS is on. Always build it.
+      chmod -R u+w cling-source
+      pushd cling-source
+      patch -p1 < ${./always-build-user-interface.patch}
+      popd
+
+      cd llvm
+    '';
+
     postInstall = ''
       mkdir -p $out/share/Jupyter
       cp -r ../../cling-source/tools/Jupyter/kernel $out/share/Jupyter
@@ -109,14 +106,16 @@ let
 
     meta = {
       description = "Interactive C++ Interpreter";
-      mainProgram = "cling";
       homepage = "https://root.cern/cling/";
+
       license = with lib.licenses; [
         lgpl21
         ncsa
       ];
+
       maintainers = with lib.maintainers; [ thomasjm ];
       platforms = lib.platforms.unix;
+      mainProgram = "cling";
     };
   };
 
@@ -175,15 +174,11 @@ let
 in
 
 stdenv.mkDerivation {
-  pname = "cling";
-  version = unwrapped.version;
-
-  nativeBuildInputs = [ makeWrapper ];
   inherit unwrapped flags;
   inherit (unwrapped) meta;
-
-  dontUnpack = true;
-  dontConfigure = true;
+  pname = "cling";
+  version = unwrapped.version;
+  nativeBuildInputs = [ makeWrapper ];
 
   buildPhase = ''
     runHook preBuild
@@ -195,6 +190,7 @@ stdenv.mkDerivation {
   '';
 
   doCheck = true;
+
   checkPhase = ''
     runHook preCheck
 
@@ -210,5 +206,7 @@ stdenv.mkDerivation {
     runHook postCheck
   '';
 
+  dontConfigure = true;
   dontInstall = true;
+  dontUnpack = true;
 }

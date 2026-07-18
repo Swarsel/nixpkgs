@@ -17,33 +17,35 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-L+OVR7JHs9qFh48ET2eugl4zZIpbM4DBtoWsHKzKbks=";
   };
 
-  buildAndTestSubdir = "crates/codebook-lsp";
   cargoHash = "sha256-+OmaZkae5b5TKfMwlYGijJTD5gGS/YuoQOvKKfKuipk=";
 
   env = {
-    CARGO_PROFILE_RELEASE_LTO = "fat";
     CARGO_PROFILE_RELEASE_CODEGEN_UNITS = "1";
+    CARGO_PROFILE_RELEASE_LTO = "fat";
   };
 
   # Integration tests require internet access for dictionaries
   doCheck = false;
-
-  passthru.updateScript = nix-update-script { };
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  buildAndTestSubdir = "crates/codebook-lsp";
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Unholy spellchecker for code";
     homepage = "https://github.com/blopker/codebook";
     changelog = "https://github.com/blopker/codebook/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       jpds
     ];
-    mainProgram = "codebook-lsp";
+
     platforms = with lib.platforms; unix ++ windows;
+    mainProgram = "codebook-lsp";
   };
 })

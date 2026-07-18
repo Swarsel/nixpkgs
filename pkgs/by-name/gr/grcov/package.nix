@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -39,9 +39,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Rust tool to collect and aggregate code coverage data for multiple source files";
-    mainProgram = "grcov";
     homepage = "https://github.com/mozilla/grcov";
     license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [ DieracDelta ];
+    mainProgram = "grcov";
   };
 })

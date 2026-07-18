@@ -1,15 +1,15 @@
 {
-  buildPythonPackage,
   lib,
-  fetchurl,
-  fetchpatch,
   stdenv,
-
+  fetchurl,
   boost189,
+  buildPythonPackage,
   cairomm,
   cgal,
   expat,
+  fetchpatch,
   fontconfig,
+  gitUpdater,
   gobject-introspection,
   graphviz,
   gtk3,
@@ -24,29 +24,29 @@
   scipy,
   sparsehash,
   zstandard,
-  gitUpdater,
 }:
 
 let
   boost' = boost189.override {
+    inherit python;
+
     patches = [
       # required to build against Clang >= 21 (https://github.com/boostorg/lexical_cast/pull/87)
       # TODO: drop when upgrading to Boost >= 1.90
       (fetchpatch {
-        name = "Reduce-dependency-on-Boost.TypeTraits-now-that-C-11-.patch";
-        url = "https://github.com/boostorg/lexical_cast/commit/8fc8a19931c8cb452400af907959fdacbbdd8ec1.patch";
-        relative = "include";
         hash = "sha256-OO39ejR+I5ufjqinrMJ6HgjTE7Ph+XBu50PqcIKaIQo=";
+        name = "Reduce-dependency-on-Boost.TypeTraits-now-that-C-11-.patch";
+        relative = "include";
+        url = "https://github.com/boostorg/lexical_cast/commit/8fc8a19931c8cb452400af907959fdacbbdd8ec1.patch";
       })
     ];
+
     enablePython = true;
-    inherit python;
   };
 in
 buildPythonPackage rec {
   pname = "graph-tool";
   version = "2.98";
-  pyproject = false;
 
   src = fetchurl {
     url = "https://downloads.skewed.de/graph-tool/graph-tool-${version}.tar.bz2";
@@ -69,21 +69,6 @@ buildPythonPackage rec {
           '"${lib.getLib graphviz}/lib/libgvc${stdenv.hostPlatform.extensions.sharedLibrary}"'
     '';
 
-  configureFlags =
-    lib.mapAttrsToList (lib.withFeatureAs true) {
-      boost-libdir = "${lib.getLib boost'}/lib";
-      cgal = lib.getDev cgal;
-      python-module-path = "$(out)/${python.sitePackages}";
-    }
-    ++
-      lib.optionals stdenv.cc.isGNU
-        # enable GCC's link-time optimizer in order to reduce compilation time and memory usage during compilation
-        # https://graph-tool.skewed.de/installation.html#memory-requirements-for-compilation
-        # https://git.skewed.de/count0/graph-tool/-/issues/798#note_5626
-        [ "MOD_CXXFLAGS=-flto" ];
-
-  enableParallelBuilding = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   # https://graph-tool.skewed.de/installation.html#manual-compilation
@@ -97,6 +82,19 @@ buildPythonPackage rec {
   ]
   ++ lib.optionals stdenv.cc.isClang [ llvmPackages.openmp ];
 
+  configureFlags =
+    lib.mapAttrsToList (lib.withFeatureAs true) {
+      boost-libdir = "${lib.getLib boost'}/lib";
+      cgal = lib.getDev cgal;
+      python-module-path = "$(out)/${python.sitePackages}";
+    }
+    ++
+      lib.optionals stdenv.cc.isGNU
+        # enable GCC's link-time optimizer in order to reduce compilation time and memory usage during compilation
+        # https://graph-tool.skewed.de/installation.html#memory-requirements-for-compilation
+        # https://git.skewed.de/count0/graph-tool/-/issues/798#note_5626
+        [ "MOD_CXXFLAGS=-flto" ];
+
   dependencies = [
     gtk3
     matplotlib
@@ -107,7 +105,7 @@ buildPythonPackage rec {
     zstandard
   ];
 
-  propagatedNativeBuildInputs = [ gobject-introspection ];
+  enableParallelBuilding = true;
 
   preInstallCheck =
     # avoid warnings about Matplotlib and Fontconfig configuration issues
@@ -116,11 +114,13 @@ buildPythonPackage rec {
       export FONTCONFIG_FILE=${fontconfig.out}/etc/fonts/fonts.conf
     '';
 
+  propagatedNativeBuildInputs = [ gobject-introspection ];
+  pyproject = false;
   pythonImportsCheck = [ "graph_tool.all" ];
 
   passthru.updateScript = gitUpdater {
-    url = "https://git.skewed.de/count0/graph-tool";
     rev-prefix = "release-";
+    url = "https://git.skewed.de/count0/graph-tool";
   };
 
   meta = {

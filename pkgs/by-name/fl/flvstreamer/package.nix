@@ -33,10 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
       stream audio or video content from all types of flash or rtmp servers.
     '';
 
-    license = lib.licenses.gpl2Plus;
-
     homepage = "https://savannah.nongnu.org/projects/flvstreamer";
-
+    license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = with lib.platforms; linux ++ darwin;
   };

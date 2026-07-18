@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage rec {
   pname = "upnpy";
   version = "1.1.8";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "5kyc0d3r";
@@ -18,6 +17,7 @@ buildPythonPackage rec {
 
   # Project has not published tests yet
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "upnpy" ];
 
   meta = {

@@ -1,30 +1,28 @@
 {
-  actool,
-  stdenv,
   lib,
-  nodejs_24,
-  pnpm_10,
-  node-gyp,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  pnpmBuildHook,
-  electron_42,
-  python3,
-  makeWrapper,
-  callPackage,
-  fetchFromGitHub,
+  stdenv,
   fetchurl,
+  fetchFromGitHub,
+  actool,
+  callPackage,
+  copyDesktopItems,
+  electron_42,
+  fetchPnpmDeps,
   jq,
   makeDesktopItem,
-  copyDesktopItems,
-  xcodebuild,
-  replaceVars,
-  noto-fonts-color-emoji,
+  makeWrapper,
   nixosTests,
-
+  node-gyp,
+  nodejs_24,
+  noto-fonts-color-emoji,
+  pnpmBuildHook,
+  pnpmConfigHook,
+  pnpm_10,
+  python3,
+  replaceVars,
+  xcodebuild,
   # command line arguments which are always set e.g "--password-store=kwallet6"
   commandLineArgs ? "",
-
   withAppleEmojis ? false,
 }:
 assert lib.warnIf (commandLineArgs != "")
@@ -48,6 +46,7 @@ let
     repo = "Signal-Desktop";
     tag = "v${version}";
     hash = "sha256-SiOgNUll6J+EZNlmM6yhXakOc5qFCFRE/GczhaH57Vo=";
+
     # Emoji font files will be added in `postFetch` if `withAppleEmojis` is enabled. They
     # are fetched separately below.
     postFetch = ''
@@ -56,24 +55,17 @@ let
   };
 
   apple-emoji = fetchurl {
-    url = "https://github.com/signalapp/Signal-Desktop/raw/refs/tags/v${version}/fonts/emoji.woff2";
     hash = "sha256-yGdx5GZVnsmYn+SI9/yAfGhRyzO5Q5Bd0bW9AQyVzv8=";
+    url = "https://github.com/signalapp/Signal-Desktop/raw/refs/tags/v${version}/fonts/emoji.woff2";
     meta.license = lib.licenses.unfree;
   };
 
   sticker-creator = stdenv.mkDerivation (finalAttrs: {
-    pname = "signal-desktop-sticker-creator";
     inherit version;
+    pname = "signal-desktop-sticker-creator";
     src = src + "/sticker-creator";
-
-    pnpmDeps = fetchPnpmDeps {
-      inherit (finalAttrs) pname src version;
-      inherit pnpm;
-      fetcherVersion = 4;
-      hash = "sha256-WmDSa4PrASaqs8X68LYaPBeE+i+Jh3FfWF30SseN74Y=";
-    };
-
     strictDeps = true;
+
     nativeBuildInputs = [
       nodejs
       pnpmConfigHook
@@ -86,30 +78,18 @@ let
       cp -r dist $out
       runHook postInstall
     '';
+
+    pnpmDeps = fetchPnpmDeps {
+      inherit (finalAttrs) pname src version;
+      inherit pnpm;
+      fetcherVersion = 4;
+      hash = "sha256-WmDSa4PrASaqs8X68LYaPBeE+i+Jh3FfWF30SseN74Y=";
+    };
   });
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "signal-desktop";
   inherit src version;
-
-  strictDeps = true;
-  nativeBuildInputs = [
-    actool
-    node-gyp
-    nodejs
-    pnpmConfigHook
-    pnpmBuildHook
-    pnpm
-    makeWrapper
-    python3
-    jq
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    xcodebuild
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    copyDesktopItems
-  ];
+  pname = "signal-desktop";
 
   patches = [
     ./force-90-days-expiration.patch
@@ -163,17 +143,25 @@ stdenv.mkDerivation (finalAttrs: {
     cp ${apple-emoji} fonts/emoji.woff2
   '';
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      patches
-      ;
-    inherit pnpm;
-    fetcherVersion = 4;
-    hash = "sha256-/z+P9mb7Cm3FzzMpV6Da6THcHd73JgPuuB0Gx8KwKcc=";
-  };
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    actool
+    node-gyp
+    nodejs
+    pnpmConfigHook
+    pnpmBuildHook
+    pnpm
+    makeWrapper
+    python3
+    jq
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    xcodebuild
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    copyDesktopItems
+  ];
 
   env = {
     ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
@@ -238,8 +226,6 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r ${sticker-creator} sticker-creator/dist
   '';
 
-  pnpmBuildScript = "generate";
-
   postBuild = ''
     pnpm exec electron-builder \
       ${
@@ -282,25 +268,43 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "signal";
-      desktopName = "Signal";
-      exec = "${finalAttrs.meta.mainProgram} %U";
-      type = "Application";
-      terminal = false;
-      icon = "signal-desktop";
-      comment = "Private messaging from your desktop";
-      startupWMClass = "signal";
-      mimeTypes = [
-        "x-scheme-handler/sgnl"
-        "x-scheme-handler/signalcaptcha"
-      ];
       categories = [
         "Network"
         "InstantMessaging"
         "Chat"
       ];
+
+      comment = "Private messaging from your desktop";
+      desktopName = "Signal";
+      exec = "${finalAttrs.meta.mainProgram} %U";
+      icon = "signal-desktop";
+
+      mimeTypes = [
+        "x-scheme-handler/sgnl"
+        "x-scheme-handler/signalcaptcha"
+      ];
+
+      name = "signal";
+      startupWMClass = "signal";
+      terminal = false;
+      type = "Application";
     })
   ];
+
+  pnpmBuildScript = "generate";
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      patches
+      ;
+
+    inherit pnpm;
+    fetcherVersion = 4;
+    hash = "sha256-/z+P9mb7Cm3FzzMpV6Da6THcHd73JgPuuB0Gx8KwKcc=";
+  };
 
   passthru = {
     inherit
@@ -311,35 +315,42 @@ stdenv.mkDerivation (finalAttrs: {
       sticker-creator
       signal-sqlcipher
       ;
+
     tests.application-launch = nixosTests.signal-desktop;
     updateScript.command = [ ./update.sh ];
   };
 
   meta = {
     description = "Private, simple, and secure messenger";
+
     longDescription = ''
       Signal Desktop is an Electron application that links with your
       "Signal Android" or "Signal iOS" app.
     '';
+
     homepage = "https://signal.org/";
     changelog = "https://github.com/signalapp/Signal-Desktop/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       agpl3Only
 
       # Various npm packages
       free
     ];
+
     maintainers = with lib.maintainers; [
       eclairevoyant
       iamanaws
       marcin-serwin
       teutat3s
     ];
-    mainProgram = "signal-desktop";
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
+    mainProgram = "signal-desktop";
   };
 })

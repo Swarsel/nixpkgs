@@ -1,9 +1,9 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  versionCheckHook,
+  buildNpmPackage,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -18,19 +18,16 @@ buildNpmPackage (finalAttrs: {
   };
 
   npmDepsHash = "sha256-sBQLgiVEIrgKDgFdDfFqm8kRyiiPw2tOpHhA7ah5UVw=";
-
-  dontNpmBuild = true;
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
+  dontNpmBuild = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "CLI tool for running Yeoman generators";
     homepage = "https://github.com/yeoman/yo";
     license = lib.licenses.bsd2;
-    mainProgram = "yo";
     maintainers = with lib.maintainers; [ chillcicada ];
+    mainProgram = "yo";
   };
 })

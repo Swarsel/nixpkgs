@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   octodns,
   pytestCheckHook,
-  setuptools,
   requests,
+  setuptools,
 }:
 buildPythonPackage rec {
   pname = "octodns-ddns";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "octodns";
@@ -18,6 +17,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-mHcm2MlQUVju3+3aQ3DVaMvg5WmDUi5+4zgAEQP3kiA=";
   };
+
+  env.OCTODNS_RELEASE = 1;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -28,14 +33,10 @@ buildPythonPackage rec {
     requests
   ];
 
-  env.OCTODNS_RELEASE = 1;
+  pyproject = true;
 
   pythonImportsCheck = [
     "octodns_ddns"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
   ];
 
   meta = {

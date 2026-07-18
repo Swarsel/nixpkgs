@@ -1,10 +1,10 @@
 {
+  lib,
   _cuda,
   backendStdenv,
   buildRedist,
-  lib,
-  libcublas,
   cuda_nvrtc,
+  libcublas,
   patchelf,
   zlib,
 }:
@@ -16,7 +16,6 @@ buildRedist (
     cudnnOlder = lib.versionOlder finalAttrs.version;
   in
   {
-    redistName = "cudnn";
     pname = "cudnn";
 
     outputs = [
@@ -82,36 +81,42 @@ buildRedist (
       [
         # https://docs.nvidia.com/deeplearning/cudnn/archives/cudnn-850/support-matrix/index.html#cudnn-cuda-hardware-versions
         {
+          assertion = cudnnAtLeast85 -> allCCNewerThan35;
+
           message =
             "cuDNN releases since 8.5 (found ${finalAttrs.version})"
             + " support CUDA compute capabilities 3.5 and newer (found ${builtins.toJSON cudaCapabilities})";
-          assertion = cudnnAtLeast85 -> allCCNewerThan35;
         }
         # https://docs.nvidia.com/deeplearning/cudnn/archives/cudnn-880/support-matrix/index.html#cudnn-cuda-hardware-versions
         {
+          assertion = cudnnAtLeast88 -> allCCNewerThan50;
+
           message =
             "cuDNN releases since 8.8 (found ${finalAttrs.version})"
             + " support CUDA compute capabilities 5.0 and newer (found ${builtins.toJSON cudaCapabilities})";
-          assertion = cudnnAtLeast88 -> allCCNewerThan50;
         }
         # https://docs.nvidia.com/deeplearning/cudnn/backend/v9.12.0/reference/support-matrix.html#gpu-cuda-toolkit-and-cuda-driver-requirements
         {
+          assertion = cudnnAtLeast912 -> allCCNewerThan75;
+
           message =
             "cuDNN releases since 9.12 (found ${finalAttrs.version})"
             + " support CUDA compute capabilities 7.5 and newer (found ${builtins.toJSON cudaCapabilities})";
-          assertion = cudnnAtLeast912 -> allCCNewerThan75;
         }
       ];
 
+    redistName = "cudnn";
+
     meta = {
       description = "GPU-accelerated library of primitives for deep neural networks";
+
       longDescription = ''
         The NVIDIA CUDA Deep Neural Network library (cuDNN) is a GPU-accelerated library of primitives for deep neural
         networks.
       '';
+
       homepage = "https://developer.nvidia.com/cudnn";
       changelog = "https://docs.nvidia.com/deeplearning/cudnn/backend/latest/release-notes.html";
-
       license = _cuda.lib.licenses.cudnn;
 
       maintainers = with lib.maintainers; [

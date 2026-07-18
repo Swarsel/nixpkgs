@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   autoreconfHook,
+  libconfuse,
   libite,
   libuev,
-  libconfuse,
   nixosTests,
+  pkg-config,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "watchdogd";
@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     autoreconfHook
   ];
+
   buildInputs = [
     libite
     libuev
@@ -37,7 +38,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://troglobit.com/watchdogd.html";
     changelog = "https://github.com/troglobit/watchdogd/releases/tag/${finalAttrs.version}";
     license = lib.licenses.isc;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ vifino ];
+    platforms = lib.platforms.linux;
   };
 })

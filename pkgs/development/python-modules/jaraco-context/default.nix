@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  backports-tarfile,
+  buildPythonPackage,
   pythonOlder,
   setuptools-scm,
-  backports-tarfile,
 }:
 
 buildPythonPackage rec {
   pname = "jaraco-context";
   version = "6.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jaraco";
@@ -23,16 +22,13 @@ buildPythonPackage rec {
     sed -i "/coherent.licensed/d" pyproject.toml
   '';
 
-  pythonNamespaces = [ "jaraco" ];
-
-  build-system = [ setuptools-scm ];
-
-  dependencies = lib.optionals (pythonOlder "3.12") [ backports-tarfile ];
-
   # Module has no tests
   doCheck = false;
-
+  build-system = [ setuptools-scm ];
+  dependencies = lib.optionals (pythonOlder "3.12") [ backports-tarfile ];
+  pyproject = true;
   pythonImportsCheck = [ "jaraco.context" ];
+  pythonNamespaces = [ "jaraco" ];
 
   meta = {
     description = "Python module for context management";

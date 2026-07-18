@@ -1,9 +1,9 @@
 {
   lib,
+  stdenv,
   acpica-tools,
   fetchgit,
   python3,
-  stdenv,
   writeText,
   # Configurable options
   ___build-type ? "csm",
@@ -42,30 +42,22 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-eDQpl8Mf30p9WRvsNW192ISfBnEtMCdsWjUbWMXWmWw=";
   };
 
-  postPatch = ''
-    echo ${finalAttrs.version} > .version
-  '';
-
   outputs = [
     "out"
     "doc"
   ];
 
-  nativeBuildInputs = [ python3 ];
-
-  buildInputs = [ acpica-tools ];
+  postPatch = ''
+    echo ${finalAttrs.version} > .version
+  '';
 
   strictDeps = true;
+  nativeBuildInputs = [ python3 ];
+  buildInputs = [ acpica-tools ];
 
   makeFlags = [
     # https://www.seabios.org/Build_overview#Distribution_builds
     "EXTRAVERSION=\"-nixpkgs\""
-  ];
-
-  hardeningDisable = [
-    "fortify"
-    "pic"
-    "stackprotector"
   ];
 
   postConfigure =
@@ -93,19 +85,27 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  hardeningDisable = [
+    "fortify"
+    "pic"
+    "stackprotector"
+  ];
+
   passthru = {
     build-type = ___build-type;
     firmware = "${finalAttrs.finalPackage}/share/seabios/${biosfile}";
   };
 
   meta = {
-    homepage = "https://www.seabios.org";
     description = "Open source implementation of a 16bit x86 BIOS";
+
     longDescription = ''
       SeaBIOS is an open source implementation of a 16bit x86 BIOS.
       It can run in an emulator or it can run natively on x86 hardware with the
       use of coreboot.
     '';
+
+    homepage = "https://www.seabios.org";
     license = with lib.licenses; [ lgpl3Plus ];
     maintainers = with lib.maintainers; [ sigmasquadron ];
     platforms = lib.systems.inspect.patternLogicalAnd lib.systems.inspect.patterns.isUnix lib.systems.inspect.patterns.isx86;

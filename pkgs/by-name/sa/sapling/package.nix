@@ -1,24 +1,23 @@
 {
   lib,
   stdenv,
-  python312Packages,
   fetchFromGitHub,
   cargo,
   curl,
+  fetchYarnDeps,
+  fixup-yarn-lock,
   gettext,
+  glibcLocales,
   libclang,
-  pkg-config,
+  libiconv,
+  nodejs,
   openssl,
+  pkg-config,
+  python312Packages,
   rustPlatform,
   rustc,
-  fetchYarnDeps,
-  yarn,
-  nodejs,
-  fixup-yarn-lock,
-  glibcLocales,
-  libiconv,
   versionCheckHook,
-
+  yarn,
   enableMinimal ? false,
 }:
 
@@ -52,15 +51,15 @@ let
 
   # Fetches the Yarn modules in Nix to to be used as an offline cache
   yarnOfflineCache = fetchYarnDeps {
-    yarnLock = "${addonsSrc}/yarn.lock";
     sha256 = "sha256-9l4lSzFTF5rSByO388tosJCxOb65Nnua6HaDD7F62No=";
+    yarnLock = "${addonsSrc}/yarn.lock";
   };
 
   # Builds the NodeJS server that runs with `sl web`
   isl = stdenv.mkDerivation {
+    inherit version;
     pname = "sapling-isl";
     src = addonsSrc;
-    inherit version;
 
     nativeBuildInputs = [
       fixup-yarn-lock
@@ -100,24 +99,8 @@ let
 in
 # Builds the main `sl` binary and its Python extensions
 python312Packages.buildPythonApplication {
-  format = "setuptools";
-  pname = "sapling";
   inherit src version;
-
-  sourceRoot = "${src.name}/eden/scm";
-
-  # Upstream does not commit Cargo.lock
-  cargoDeps = rustPlatform.importCargoLock {
-    lockFile = ./Cargo.lock;
-    outputHashes = {
-      "abomonation-0.7.3+smallvec1" = "sha256-AxEXR6GC8gHjycIPOfoViP7KceM29p2ZISIt4iwJzvM=";
-      "cloned-0.1.0" = "sha256-026OKsszbF2aPWpA8JBc6KwZHxEqwnKIluzDjO/opgc=";
-      "fb303_core-0.0.0" = "sha256-IJKAWgBLrLnWItw6UTNdwjuTDO6dUfqyKsVv2aW6Kyo=";
-      "fbthrift-0.0.1+unstable" = "sha256-FuUo1cZG7Ed+TAXY53MpylBPGzFruIsWaxKPR26TxVk=";
-      "serde_bser-0.4.0" = "sha256-OY+IZh4nz5ICrDKYr8pPfORW4i8KBULhGC5YyXb5Ulg=";
-      "watchman_client-0.9.0" = "sha256-OY+IZh4nz5ICrDKYr8pPfORW4i8KBULhGC5YyXb5Ulg=";
-    };
-  };
+  pname = "sapling";
 
   postPatch = ''
     cp ${./Cargo.lock} Cargo.lock
@@ -131,15 +114,6 @@ python312Packages.buildPythonApplication {
     # patch, 'sl web' will still work if 'nodejs' is in $PATH.
     substituteInPlace lib/config/loader/src/builtin_static/core.rs \
       --replace '"#);' $'[web]\nnode-path=${nodejs}/bin/node\n"#);'
-  '';
-
-  postInstall = ''
-    install ${isl}/isl-dist.tar.xz $out/lib/isl-dist.tar.xz
-  '';
-
-  postFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
-    wrapProgram $out/bin/sl \
-      --set LOCALE_ARCHIVE "${glibcLocales}/lib/locale/locale-archive"
   '';
 
   nativeBuildInputs = [
@@ -164,6 +138,7 @@ python312Packages.buildPythonApplication {
     LIBCLANG_PATH = "${lib.getLib libclang}/lib";
     SAPLING_OSS_BUILD = "true";
     SAPLING_VERSION = version;
+
     SAPLING_VERSION_HASH =
       let
         sha1Hash = builtins.hashString "sha1" version;
@@ -172,11 +147,38 @@ python312Packages.buildPythonApplication {
       lib.trivial.fromHexString hexSubstring;
   };
 
+  postInstall = ''
+    install ${isl}/isl-dist.tar.xz $out/lib/isl-dist.tar.xz
+  '';
+
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
+  postFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
+    wrapProgram $out/bin/sl \
+      --set LOCALE_ARCHIVE "${glibcLocales}/lib/locale/locale-archive"
+  '';
+
+  # Upstream does not commit Cargo.lock
+  cargoDeps = rustPlatform.importCargoLock {
+    lockFile = ./Cargo.lock;
+
+    outputHashes = {
+      "abomonation-0.7.3+smallvec1" = "sha256-AxEXR6GC8gHjycIPOfoViP7KceM29p2ZISIt4iwJzvM=";
+      "cloned-0.1.0" = "sha256-026OKsszbF2aPWpA8JBc6KwZHxEqwnKIluzDjO/opgc=";
+      "fb303_core-0.0.0" = "sha256-IJKAWgBLrLnWItw6UTNdwjuTDO6dUfqyKsVv2aW6Kyo=";
+      "fbthrift-0.0.1+unstable" = "sha256-FuUo1cZG7Ed+TAXY53MpylBPGzFruIsWaxKPR26TxVk=";
+      "serde_bser-0.4.0" = "sha256-OY+IZh4nz5ICrDKYr8pPfORW4i8KBULhGC5YyXb5Ulg=";
+      "watchman_client-0.9.0" = "sha256-OY+IZh4nz5ICrDKYr8pPfORW4i8KBULhGC5YyXb5Ulg=";
+    };
+  };
+
+  format = "setuptools";
+  sourceRoot = "${src.name}/eden/scm";
   versionCheckProgramArg = "version";
-  doInstallCheck = true;
 
   passthru = {
     # Expose isl to nix repl as sapling.isl.
@@ -188,11 +190,13 @@ python312Packages.buildPythonApplication {
     description = "Scalable, User-Friendly Source Control System";
     homepage = "https://sapling-scm.com";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       pbar
       thoughtpolice
       shikanime
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "sl";
   };

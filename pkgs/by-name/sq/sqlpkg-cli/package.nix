@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,18 +17,18 @@ buildGoModule (finalAttrs: {
 
   vendorHash = null;
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
+  preCheck = ''
+    export HOME="$TMP"
+  '';
 
   postInstall = ''
     mv -v $out/bin/cli $out/bin/sqlpkg
   '';
 
-  preCheck = ''
-    export HOME="$TMP"
-  '';
+  ldflags = [
+    "-s"
+    "-w"
+  ];
 
   meta = {
     description = "SQLite package manager";
@@ -36,11 +36,13 @@ buildGoModule (finalAttrs: {
     changelog = "https://github.com/nalgeon/sqlpkg-cli/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.pbsds ];
-    mainProgram = "sqlpkg";
     platforms = lib.platforms.unix;
+
     badPlatforms = [
       "aarch64-linux" # assets_test.go:44: BuildAssetPath: unexpected error unsupported platform: linux-arm64
       "aarch64-darwin" # install_test.go:22: installation error: failed to dequarantine files: exec: "xattr": executable file not found in $PATH
     ];
+
+    mainProgram = "sqlpkg";
   };
 })

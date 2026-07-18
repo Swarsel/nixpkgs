@@ -1,8 +1,8 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   buildGoModule,
-  stdenv,
   installShellFiles,
 }:
 
@@ -17,17 +17,8 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-Gm4DIQK8T+dTwB5swdrD+SjGgy/wFQ/fJYdSqNDSy9c=";
   };
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/weaveworks/weave-gitops/cmd/gitops/version.Version=${finalAttrs.version}"
-  ];
-
-  vendorHash = "sha256-RiPBlpEQ69fhVf3B0qHQ+zEtPIet/Y/Jp/HfaTrIssE=";
-
-  subPackages = [ "cmd/gitops" ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-RiPBlpEQ69fhVf3B0qHQ+zEtPIet/Y/Jp/HfaTrIssE=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd gitops \
@@ -36,12 +27,20 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/gitops completion zsh 2>/dev/null)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/weaveworks/weave-gitops/cmd/gitops/version.Version=${finalAttrs.version}"
+  ];
+
+  subPackages = [ "cmd/gitops" ];
+
   meta = {
-    homepage = "https://docs.gitops.weave.works";
     description = "Weave Gitops CLI";
+    homepage = "https://docs.gitops.weave.works";
     license = lib.licenses.mpl20;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "gitops";
   };
 })

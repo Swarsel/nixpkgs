@@ -1,29 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   julius,
   librosa,
-  torch,
-  torch-pitch-shift,
-  torchaudio,
-
   # tests
   pytest-cov-stub,
   pytestCheckHook,
   pyyaml,
+  # build-system
+  setuptools,
+  torch,
+  torch-pitch-shift,
+  torchaudio,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "torch-audiomentations";
   version = "0.12.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "asteroid-team";
@@ -32,8 +27,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-5ccVO1ECiIn0q7m8ZLHxqD2fhaXeMDKUEswa49dRTsY=";
   };
 
-  pythonRelaxDeps = [ "torchaudio" ];
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+    pyyaml
+  ];
 
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -43,14 +43,6 @@ buildPythonPackage (finalAttrs: {
     torch-pitch-shift
     torchaudio
   ];
-
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-    pyyaml
-  ];
-
-  pythonImportsCheck = [ "torch_audiomentations" ];
 
   disabledTestPaths = [
     # librosa issues
@@ -73,6 +65,10 @@ buildPythonPackage (finalAttrs: {
     "test_same_min_max_f_decay"
     "test_transform_is_differentiable"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "torch_audiomentations" ];
+  pythonRelaxDeps = [ "torchaudio" ];
 
   meta = {
     description = "Fast audio data augmentation in PyTorch";

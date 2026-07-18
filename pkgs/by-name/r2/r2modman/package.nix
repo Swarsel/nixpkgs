@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   copyDesktopItems,
   dart-sass,
   electron,
-  fetchFromGitHub,
   makeDesktopItem,
   makeWrapper,
   nodejs,
@@ -22,12 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-QGs3kF2GkHlISmRb0cIYOKts1b1RvBj5qkc2cUPawwE=";
   };
 
-  missingHashes = ./missing-hashes.json;
-  offlineCache = yarn-berry.fetchYarnBerryDeps {
-    inherit (finalAttrs) src patches missingHashes;
-    hash = "sha256-6CwayFhy0ZwdL1ZOZVtCJLlchCv5raX7WF1V4TvVpq4=";
-  };
-
   patches = [
     # Make it possible to launch Steam games from r2modman.
     ./steam-launch-fix.patch
@@ -40,7 +34,10 @@ stdenv.mkDerivation (finalAttrs: {
     ./wrapper-fix.patch
   ];
 
-  __darwinAllowLocalNetworking = true;
+  postPatch = ''
+    # Hide update banner
+    echo "<template></template>" > src/components/banner/ManagerUpdateBanner.vue
+  '';
 
   nativeBuildInputs = [
     copyDesktopItems
@@ -55,11 +52,6 @@ stdenv.mkDerivation (finalAttrs: {
     # Required, as the build process won't have network access. Uses the wrapped electron binary instead.
     ELECTRON_SKIP_BINARY_DOWNLOAD = true;
   };
-
-  postPatch = ''
-    # Hide update banner
-    echo "<template></template>" > src/components/banner/ManagerUpdateBanner.vue
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -96,35 +88,48 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __darwinAllowLocalNetworking = true;
+
   desktopItems = [
     (makeDesktopItem {
-      name = "r2modman";
+      categories = [ "Game" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "r2modman";
       exec = "r2modman %U";
       icon = "r2modman";
-      desktopName = "r2modman";
-      comment = finalAttrs.meta.description;
-      categories = [ "Game" ];
-      mimeTypes = [ "x-scheme-handler/ror2mm" ];
+
       keywords = [
         "launcher"
         "mod manager"
         "thunderstore"
       ];
+
+      mimeTypes = [ "x-scheme-handler/ror2mm" ];
+      name = "r2modman";
     })
   ];
+
+  missingHashes = ./missing-hashes.json;
+
+  offlineCache = yarn-berry.fetchYarnBerryDeps {
+    inherit (finalAttrs) src patches missingHashes;
+    hash = "sha256-6CwayFhy0ZwdL1ZOZVtCJLlchCv5raX7WF1V4TvVpq4=";
+  };
 
   passthru.updateScript = ./update.sh;
 
   meta = {
-    changelog = "https://github.com/ebkr/r2modmanPlus/releases/tag/v${finalAttrs.version}";
+    inherit (electron.meta) platforms;
     description = "Unofficial Thunderstore mod manager";
     homepage = "https://github.com/ebkr/r2modmanPlus";
+    changelog = "https://github.com/ebkr/r2modmanPlus/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "r2modman";
+
     maintainers = with lib.maintainers; [
       huantian
       hythera
     ];
-    inherit (electron.meta) platforms;
+
+    mainProgram = "r2modman";
   };
 })

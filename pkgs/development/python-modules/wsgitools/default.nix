@@ -12,13 +12,13 @@
 buildPythonPackage rec {
   pname = "wsgitools";
   version = "0.3.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-MTh2BwNTu7NsTHuvoH+r0YHjEGfphX84f04Ah2eu02A=";
   };
 
+  nativeCheckInputs = [ unittestCheckHook ];
   build-system = [ setuptools ];
 
   # the built-in asyncore library was removed in python 3.12
@@ -26,21 +26,22 @@ buildPythonPackage rec {
     lib.optionals (pythonAtLeast "3.13") [ legacy-cgi ]
     ++ lib.optionals (pythonAtLeast "3.12") [ pyasyncore ];
 
+  pyproject = true;
   pythonImportsCheck = [ "wsgitools" ];
 
-  nativeCheckInputs = [ unittestCheckHook ];
-
   meta = {
-    maintainers = with lib.maintainers; [ clkamp ];
     description = "Set of tools working with WSGI";
+
     longDescription = ''
       wsgitools is a set of tools working with WSGI (see PEP 333). It
       includes classes for filtering content, middlewares for caching,
       logging and tracebacks as well as two backends for SCGI. Goals
       in writing it were portability and simplicity.
     '';
+
     homepage = "https://subdivi.de/~helmut/wsgitools/";
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ clkamp ];
     platforms = lib.platforms.all;
   };
 }

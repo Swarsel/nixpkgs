@@ -3,13 +3,13 @@
   stdenv,
   fetchurl,
   autoreconfHook,
-  unzip,
-  m4,
   bison,
-  flex,
-  openssl,
-  zlib,
   buildPackages,
+  flex,
+  m4,
+  openssl,
+  unzip,
+  zlib,
 }:
 
 let
@@ -25,10 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-tTgVhMvIWRB4szmtoVn7BgWGwOHkZmtotKOVjvLisek=";
   };
 
-  buildInputs = [
-    openssl
-    zlib
-  ];
   nativeBuildInputs = [
     autoreconfHook
     bison
@@ -36,6 +32,12 @@ stdenv.mkDerivation (finalAttrs: {
     m4
     unzip
   ];
+
+  buildInputs = [
+    openssl
+    zlib
+  ];
+
   # Parallel building doesn't work as of 2.8.49
   enableParallelBuilding = false;
 
@@ -61,10 +63,12 @@ stdenv.mkDerivation (finalAttrs: {
     # 3. Proprietary commercial software development license (removes GPL
     #    restrictions)
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       bjornfor
       veprbl
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

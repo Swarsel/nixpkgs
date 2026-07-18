@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   cmdliner,
   fmt,
   markup,
@@ -16,8 +16,6 @@
 buildDunePackage (finalAttrs: {
   pname = "oui";
   version = "0-unstable-2025-12-02";
-
-  minimalOCamlVersion = "4.13";
 
   src = fetchFromGitHub {
     owner = "OCamlPro";
@@ -42,17 +40,22 @@ buildDunePackage (finalAttrs: {
 
   # upstream tests are matching full library paths
   doCheck = false;
+
   checkInputs = [
     ppx_expect
   ];
 
+  minimalOCamlVersion = "4.13";
+
   meta = {
-    homepage = "https://github.com/OCamlPro/ocaml-universal-installer";
     description = "A tool that builds standalone installers for your OCaml applications";
+
     longDescription = ''
       oui is a command-line tool that generates standalone installers for
       Linux, Windows and macOS from your OCaml and non OCaml binaries.
     '';
+
+    homepage = "https://github.com/OCamlPro/ocaml-universal-installer";
     license = lib.licenses.lgpl21;
     maintainers = [ lib.maintainers.stepbrobd ];
     mainProgram = "opam-oui";

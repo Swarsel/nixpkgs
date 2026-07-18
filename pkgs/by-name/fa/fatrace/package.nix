@@ -17,22 +17,21 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-ncLmO7DwkB2nC4K/40ctwRheVVSPDK+zfcGJZvYyuVI=";
   };
 
-  buildInputs = [
-    python3
-    which
-  ];
-
   postPatch = ''
     substituteInPlace power-usage-report \
       --replace "'which'" "'${which}/bin/which'"
   '';
 
+  buildInputs = [
+    python3
+    which
+  ];
+
   makeFlags = [ "PREFIX=$(out)" ];
 
   meta = {
     description = "Report system-wide file access events";
-    homepage = "https://github.com/martinpitt/fatrace";
-    license = lib.licenses.gpl3Plus;
+
     longDescription = ''
       fatrace reports file access events from all running processes.
       Its main purpose is to find processes which keep waking up the disk
@@ -40,6 +39,9 @@ stdenv.mkDerivation (finalAttrs: {
       Requires a Linux kernel with the FANOTIFY configuration option enabled.
       Enabling X86_MSR is also recommended for power-usage-report on x86.
     '';
+
+    homepage = "https://github.com/martinpitt/fatrace";
+    license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
   };
 })

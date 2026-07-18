@@ -1,14 +1,14 @@
 {
   lib,
-  perlPackages,
-  fetchFromGitHub,
-  makeWrapper,
   stdenv,
-  perl,
+  fetchFromGitHub,
   atomicparsley,
   ffmpeg,
-  testers,
   get_iplayer,
+  makeWrapper,
+  perl,
+  perlPackages,
+  testers,
 }:
 
 perlPackages.buildPerlPackage rec {
@@ -22,8 +22,14 @@ perlPackages.buildPerlPackage rec {
     hash = "sha256-O/mVtbudrYw0jKeSckZlgonFDiWxfeiVc8gdcy4iNBw=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ perl ];
+
   propagatedBuildInputs = with perlPackages; [
     LWP
     LWPProtocolHttps
@@ -33,10 +39,6 @@ perlPackages.buildPerlPackage rec {
 
   preConfigure = "touch Makefile.PL";
   doCheck = false;
-  outputs = [
-    "out"
-    "man"
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -54,18 +56,18 @@ perlPackages.buildPerlPackage rec {
   '';
 
   passthru.tests.version = testers.testVersion {
-    package = get_iplayer;
-    command = "HOME=$(mktemp -d) get_iplayer --help";
     version = "v${version}";
+    command = "HOME=$(mktemp -d) get_iplayer --help";
+    package = get_iplayer;
   };
 
   meta = {
     description = "Downloads TV and radio programmes from BBC iPlayer and BBC Sounds";
-    mainProgram = "get_iplayer";
-    license = lib.licenses.gpl3Plus;
     homepage = "https://github.com/get-iplayer/get_iplayer";
-    platforms = lib.platforms.all;
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ rika ];
+    platforms = lib.platforms.all;
+    mainProgram = "get_iplayer";
   };
 
 }

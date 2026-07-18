@@ -1,21 +1,20 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  nix-update-script,
-
-  # Deps
-  installShellFiles,
-  pkg-config,
-  scdoc,
-  wrapGAppsHook4,
   at-spi2-atk,
   glib,
   gtk4,
   gtk4-layer-shell,
+  # Deps
+  installShellFiles,
   libadwaita,
   librsvg,
   libxml2,
+  nix-update-script,
+  pkg-config,
+  rustPlatform,
+  scdoc,
+  wrapGAppsHook4,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "wleave";
@@ -28,7 +27,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-AiZVa8+nCrxgi6E54Aa6+At+6JUZkwESpe5v72S8HyA=";
   };
 
-  cargoHash = "sha256-tBjL1l9YH0P6effTYES9urYdKtUh/H3hCI5hUphb9tQ=";
+  postPatch = ''
+    substituteInPlace src/config.rs \
+      --replace-fail "/etc/wleave" "$out/etc/wleave"
+
+    substituteInPlace layout.json \
+      --replace-fail "/usr/share/wleave" "$out/share/wleave"
+  '';
 
   nativeBuildInputs = [
     installShellFiles
@@ -47,13 +52,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libxml2
   ];
 
-  postPatch = ''
-    substituteInPlace src/config.rs \
-      --replace-fail "/etc/wleave" "$out/etc/wleave"
-
-    substituteInPlace layout.json \
-      --replace-fail "/usr/share/wleave" "$out/share/wleave"
-  '';
+  cargoHash = "sha256-tBjL1l9YH0P6effTYES9urYdKtUh/H3hCI5hUphb9tQ=";
 
   postInstall = ''
     install -Dm644 -t "$out/etc/wleave" {"style.css","layout.json"}
@@ -69,8 +68,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Wayland-native logout script written in GTK4";
     homepage = "https://github.com/AMNatty/wleave";
     license = lib.licenses.mit;
-    mainProgram = "wleave";
     maintainers = with lib.maintainers; [ ludovicopiero ];
     platforms = lib.platforms.linux;
+    mainProgram = "wleave";
   };
 })

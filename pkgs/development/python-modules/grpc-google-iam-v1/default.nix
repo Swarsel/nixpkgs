@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   gitUpdater,
   googleapis-common-protos,
   grpcio,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "grpc-google-iam-v1";
   version = "0.14.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googleapis";
@@ -21,8 +20,7 @@ buildPythonPackage rec {
     hash = "sha256-i2t8qtF2czaP9vgGOUN9AjQ3XhLkk8g05FtXUdk/Vng=";
   };
 
-  sourceRoot = "${src.name}/packages/grpc-google-iam-v1";
-
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,18 +28,19 @@ buildPythonPackage rec {
     googleapis-common-protos
   ];
 
-  pythonRelaxDeps = [ "protobuf" ];
+  pyproject = true;
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pytestFlags = [
+    "-Wignore::DeprecationWarning"
+  ];
 
   pythonImportsCheck = [
     "google.iam"
     "google.iam.v1"
   ];
 
-  pytestFlags = [
-    "-Wignore::DeprecationWarning"
-  ];
+  pythonRelaxDeps = [ "protobuf" ];
+  sourceRoot = "${src.name}/packages/grpc-google-iam-v1";
 
   passthru = {
     skipBulkUpdate = true; # chooses tag for a different project

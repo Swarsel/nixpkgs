@@ -1,9 +1,9 @@
 # [nixpkgs]$ nix-build -A nixosTests.nixpkgs --show-trace
 
 {
-  evalMinimalConfig,
-  pkgs,
   lib,
+  pkgs,
+  evalMinimalConfig,
   stdenv,
 }:
 let
@@ -19,31 +19,32 @@ let
     nixpkgs.hostPlatform = "aarch64-linux";
   };
   withHostAndBuild = eval {
-    nixpkgs.hostPlatform = "aarch64-linux";
     nixpkgs.buildPlatform = "aarch64-darwin";
+    nixpkgs.hostPlatform = "aarch64-linux";
   };
   withSameHostAndBuild = eval {
-    nixpkgs.hostPlatform = "aarch64-linux";
     nixpkgs.buildPlatform = "aarch64-linux";
+    nixpkgs.hostPlatform = "aarch64-linux";
   };
   externalPkgsWithConfig = {
     _file = "ext-pkgs-config.nix";
-    nixpkgs.pkgs = pkgs;
     nixpkgs.config.allowUnfree = true;
+    nixpkgs.pkgs = pkgs;
   };
   ambiguous = {
-    _file = "ambiguous.nix";
-    nixpkgs.hostPlatform = "aarch64-linux";
-    nixpkgs.buildPlatform = "aarch64-darwin";
-    nixpkgs.system = "x86_64-linux";
-    nixpkgs.localSystem.system = "x86_64-freebsd";
-    nixpkgs.crossSystem.system = "i686-linux";
     imports = [
       {
         _file = "repeat.nix";
         nixpkgs.hostPlatform = "aarch64-linux";
       }
     ];
+
+    _file = "ambiguous.nix";
+    nixpkgs.buildPlatform = "aarch64-darwin";
+    nixpkgs.crossSystem.system = "i686-linux";
+    nixpkgs.hostPlatform = "aarch64-linux";
+    nixpkgs.localSystem.system = "x86_64-freebsd";
+    nixpkgs.system = "x86_64-linux";
   };
   getErrors =
     module:
@@ -73,36 +74,32 @@ let
 
   readOnlyBadConfig = evalMinimalConfig {
     imports = [ ./read-only.nix ];
-    nixpkgs.pkgs = pkgs;
     nixpkgs.config.allowUnfree = true; # do in pkgs instead!
+    nixpkgs.pkgs = pkgs;
   };
 
   readOnlyBadOverlays = evalMinimalConfig {
     imports = [ ./read-only.nix ];
-    nixpkgs.pkgs = pkgs;
     nixpkgs.overlays = [ (_: _: { }) ]; # do in pkgs instead!
+    nixpkgs.pkgs = pkgs;
   };
 
   readOnlyBadHostPlatform = evalMinimalConfig {
     imports = [ ./read-only.nix ];
-    nixpkgs.pkgs = pkgs;
     nixpkgs.hostPlatform = "foo-linux"; # do in pkgs instead!
+    nixpkgs.pkgs = pkgs;
   };
 
   readOnlyBadBuildPlatform = evalMinimalConfig {
     imports = [ ./read-only.nix ];
-    nixpkgs.pkgs = pkgs;
     nixpkgs.buildPlatform = "foo-linux"; # do in pkgs instead!
+    nixpkgs.pkgs = pkgs;
   };
 
   throws = x: !(builtins.tryEval x).success;
 
 in
 lib.recurseIntoAttrs {
-  invokeNixpkgsSimple =
-    (eval {
-      nixpkgs.system = stdenv.hostPlatform.system;
-    })._module.args.pkgs.hello;
   assertions =
     assert withHost._module.args.pkgs.stdenv.hostPlatform.system == "aarch64-linux";
     assert withHost._module.args.pkgs.stdenv.buildPlatform.system == "aarch64-linux";
@@ -153,8 +150,8 @@ lib.recurseIntoAttrs {
       ];
     assert
       getErrors {
-        nixpkgs.localSystem = pkgs.stdenv.hostPlatform;
         nixpkgs.hostPlatform = pkgs.stdenv.hostPlatform;
+        nixpkgs.localSystem = pkgs.stdenv.hostPlatform;
         nixpkgs.pkgs = pkgs;
       } == [ ];
 
@@ -174,4 +171,9 @@ lib.recurseIntoAttrs {
     assert !readOnly.options.nixpkgs ? crossSystem;
 
     pkgs.emptyFile;
+
+  invokeNixpkgsSimple =
+    (eval {
+      nixpkgs.system = stdenv.hostPlatform.system;
+    })._module.args.pkgs.hello;
 }

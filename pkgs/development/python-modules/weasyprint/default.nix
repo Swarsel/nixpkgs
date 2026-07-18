@@ -1,34 +1,31 @@
 {
   lib,
   stdenv,
-  pkgs,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  # dependencies
+  cffi,
+  cssselect2,
   fetchpatch2,
+  # build-system
+  flit-core,
   fontconfig,
+  fonttools,
   glib,
   harfbuzz,
   makeFontsConf,
   pango,
-  twemoji-color-font,
-
-  # build-system
-  flit-core,
-
-  # dependencies
-  cffi,
-  cssselect2,
-  fonttools,
   pillow,
+  pkgs,
   pydyf,
   pyphen,
-  tinycss2,
-  tinyhtml5,
-
   # tests
   pytest-cov-stub,
   pytestCheckHook,
   replaceVars,
+  tinycss2,
+  tinyhtml5,
+  twemoji-color-font,
   versionCheckHook,
   writableTmpDirAsHomeHook,
 }:
@@ -36,9 +33,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "weasyprint";
   version = "69.0";
-  pyproject = true;
-
-  __darwinAllowLocalNetworking = true;
 
   src = fetchFromGitHub {
     owner = "Kozea";
@@ -57,12 +51,35 @@ buildPythonPackage (finalAttrs: {
       pangoft2 = "${pango.out}/lib/libpangoft2-1.0${stdenv.hostPlatform.extensions.sharedLibrary}";
     })
     (fetchpatch2 {
+      hash = "sha256-uixfpg9fvkdNmSTqz/M1c1vkV/mJDqOs7zDAunn2rEY=";
       name = "fix-unicode-test";
       url = "https://github.com/Kozea/WeasyPrint/commit/b2efb459fbe7f7fd35ab9078734121cb87d3d65a.patch?full_index=1";
-      hash = "sha256-uixfpg9fvkdNmSTqz/M1c1vkV/mJDqOs7zDAunn2rEY=";
     })
   ];
 
+  env.FONTCONFIG_FILE = "${fontconfig.out}/etc/fonts/fonts.conf";
+
+  nativeCheckInputs = [
+    pkgs.ghostscript
+    pytest-cov-stub
+    pytestCheckHook
+    versionCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
+  # Custom font configuration for tests
+  preCheck = ''
+    export FONTCONFIG_FILE=${
+      makeFontsConf {
+        # include some emoji characters
+        fontDirectories = [ twemoji-color-font ];
+        # Darwin builds without sandbox can pollute the build
+        impureFontDirectories = [ ];
+      }
+    }
+  '';
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ flit-core ];
 
   dependencies = [
@@ -76,14 +93,6 @@ buildPythonPackage (finalAttrs: {
     tinyhtml5
   ]
   ++ fonttools.optional-dependencies.woff;
-
-  nativeCheckInputs = [
-    pkgs.ghostscript
-    pytest-cov-stub
-    pytestCheckHook
-    versionCheckHook
-    writableTmpDirAsHomeHook
-  ];
 
   disabledTests = [
     # needs the Ahem font (fails on macOS)
@@ -109,35 +118,22 @@ buildPythonPackage (finalAttrs: {
     "test_2d_transform"
   ];
 
-  env.FONTCONFIG_FILE = "${fontconfig.out}/etc/fonts/fonts.conf";
-
-  # Custom font configuration for tests
-  preCheck = ''
-    export FONTCONFIG_FILE=${
-      makeFontsConf {
-        # include some emoji characters
-        fontDirectories = [ twemoji-color-font ];
-
-        # Darwin builds without sandbox can pollute the build
-        impureFontDirectories = [ ];
-      }
-    }
-  '';
-
   # Set env variable explicitly for Darwin, but allow overriding when invoking directly
   makeWrapperArgs = [ "--set-default FONTCONFIG_FILE ${finalAttrs.env.FONTCONFIG_FILE}" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "weasyprint" ];
 
   meta = {
-    changelog = "https://github.com/Kozea/WeasyPrint/releases/tag/${finalAttrs.src.tag}";
     description = "Converts web documents to PDF";
     homepage = "https://weasyprint.org/";
+    changelog = "https://github.com/Kozea/WeasyPrint/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd3;
-    mainProgram = "weasyprint";
+
     maintainers = with lib.maintainers; [
       DutchGerman
       friedow
     ];
+
+    mainProgram = "weasyprint";
   };
 })

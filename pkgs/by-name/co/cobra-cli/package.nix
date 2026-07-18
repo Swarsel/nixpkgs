@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  makeWrapper,
-  installShellFiles,
+  buildGoModule,
   go,
+  installShellFiles,
+  makeWrapper,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,15 +19,6 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-E0I/Pxw4biOv7aGVzGlQOFXnxkc+zZaEoX1JmyMh6UE=";
   };
 
-  vendorHash = "sha256-vrtGPQzY+NImOGaSxV+Dvch+GNPfL9XfY4lfCHTGXwY=";
-
-  nativeBuildInputs = [
-    makeWrapper
-    installShellFiles
-  ];
-
-  allowGoReference = true;
-
   postPatch = ''
     substituteInPlace "cmd/add_test.go" \
       --replace "TestGoldenAddCmd" "SkipGoldenAddCmd"
@@ -35,10 +26,12 @@ buildGoModule (finalAttrs: {
       --replace "TestGoldenInitCmd" "SkipGoldenInitCmd"
   '';
 
-  postFixup = ''
-    wrapProgram "$out/bin/cobra-cli" \
-      --prefix PATH : ${go}/bin
-  '';
+  nativeBuildInputs = [
+    makeWrapper
+    installShellFiles
+  ];
+
+  vendorHash = "sha256-vrtGPQzY+NImOGaSxV+Dvch+GNPfL9XfY4lfCHTGXwY=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd cobra-cli \
@@ -53,12 +46,19 @@ buildGoModule (finalAttrs: {
       --replace-fail '#compdef _cobra-cli cobra-cli' "#compdef cobra-cli''\ncompdef _cobra-cli cobra-cli"
   '';
 
+  postFixup = ''
+    wrapProgram "$out/bin/cobra-cli" \
+      --prefix PATH : ${go}/bin
+  '';
+
+  allowGoReference = true;
+
   meta = {
     description = "Cobra CLI tool to generate applications and commands";
-    mainProgram = "cobra-cli";
     homepage = "https://github.com/spf13/cobra-cli/";
     changelog = "https://github.com/spf13/cobra-cli/releases/tag/${finalAttrs.version}";
     license = lib.licenses.afl20;
     maintainers = [ lib.maintainers.ivankovnatsky ];
+    mainProgram = "cobra-cli";
   };
 })

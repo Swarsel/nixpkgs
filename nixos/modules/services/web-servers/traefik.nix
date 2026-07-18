@@ -34,49 +34,37 @@ in
 {
   options.services.traefik = {
     enable = mkEnableOption "Traefik web server";
+    package = mkPackageOption pkgs "traefik" { };
 
-    staticConfigFile = mkOption {
-      default = null;
-      example = literalExpression "/path/to/static_config.toml";
-      type = types.nullOr types.path;
+    dataDir = mkOption {
+      default = "/var/lib/traefik";
+
       description = ''
-        Path to traefik's static configuration to use.
-        (Using that option has precedence over `staticConfigOptions` and `dynamicConfigOptions`)
+        Location for any persistent data traefik creates, ie. acme
       '';
-    };
 
-    staticConfigOptions = mkOption {
-      description = ''
-        Static configuration for Traefik.
-      '';
-      type = format.type;
-      default = {
-        entryPoints.http.address = ":80";
-      };
-      example = {
-        entryPoints.web.address = ":8080";
-        entryPoints.http.address = ":80";
-
-        api = { };
-      };
+      type = types.path;
     };
 
     dynamicConfigFile = mkOption {
       default = null;
-      example = literalExpression "/path/to/dynamic_config.toml";
-      type = types.nullOr types.path;
+
       description = ''
         Path to traefik's dynamic configuration to use.
         (Using that option has precedence over `dynamicConfigOptions`)
       '';
+
+      example = literalExpression "/path/to/dynamic_config.toml";
+      type = types.nullOr types.path;
     };
 
     dynamicConfigOptions = mkOption {
+      default = { };
+
       description = ''
         Dynamic configuration for Traefik.
       '';
-      type = format.type;
-      default = { };
+
       example = {
         http.routers.router1 = {
           rule = "Host(`localhost`)";
@@ -85,84 +73,113 @@ in
 
         http.services.service1.loadBalancer.servers = [ { url = "http://localhost:8080"; } ];
       };
-    };
 
-    dataDir = mkOption {
-      default = "/var/lib/traefik";
-      type = types.path;
-      description = ''
-        Location for any persistent data traefik creates, ie. acme
-      '';
+      type = format.type;
     };
-
-    group = mkOption {
-      default = "traefik";
-      type = types.str;
-      example = "docker";
-      description = ''
-        Set the group that traefik runs under.
-        For the docker backend this needs to be set to `docker` instead.
-      '';
-    };
-
-    package = mkPackageOption pkgs "traefik" { };
 
     environmentFiles = mkOption {
       default = [ ];
-      type = types.listOf types.path;
-      example = [ "/run/secrets/traefik.env" ];
+
       description = ''
         Files to load as environment file. Environment variables from this file
         will be substituted into the static configuration file using envsubst.
       '';
+
+      example = [ "/run/secrets/traefik.env" ];
+      type = types.listOf types.path;
+    };
+
+    group = mkOption {
+      default = "traefik";
+
+      description = ''
+        Set the group that traefik runs under.
+        For the docker backend this needs to be set to `docker` instead.
+      '';
+
+      example = "docker";
+      type = types.str;
+    };
+
+    staticConfigFile = mkOption {
+      default = null;
+
+      description = ''
+        Path to traefik's static configuration to use.
+        (Using that option has precedence over `staticConfigOptions` and `dynamicConfigOptions`)
+      '';
+
+      example = literalExpression "/path/to/static_config.toml";
+      type = types.nullOr types.path;
+    };
+
+    staticConfigOptions = mkOption {
+      default = {
+        entryPoints.http.address = ":80";
+      };
+
+      description = ''
+        Static configuration for Traefik.
+      '';
+
+      example = {
+        api = { };
+        entryPoints.http.address = ":80";
+        entryPoints.web.address = ":8080";
+      };
+
+      type = format.type;
     };
   };
 
   config = mkIf cfg.enable {
-    systemd.tmpfiles.rules = [ "d '${cfg.dataDir}' 0700 traefik traefik - -" ];
-
     systemd.services.traefik = {
-      description = "Traefik web server";
-      wants = [ "network-online.target" ];
       after = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
-      startLimitIntervalSec = 86400;
-      startLimitBurst = 5;
+      description = "Traefik web server";
+
       serviceConfig = {
+        AmbientCapabilities = "cap_net_bind_service";
+        CapabilityBoundingSet = "cap_net_bind_service";
         EnvironmentFile = cfg.environmentFiles;
+        ExecStart = "${cfg.package}/bin/traefik --configfile=${finalStaticConfigFile}";
+
         ExecStartPre = lib.optional (cfg.environmentFiles != [ ]) (
           pkgs.writeShellScript "pre-start" ''
             umask 077
             ${pkgs.envsubst}/bin/envsubst -i "${staticConfigFile}" > "${finalStaticConfigFile}"
           ''
         );
-        ExecStart = "${cfg.package}/bin/traefik --configfile=${finalStaticConfigFile}";
-        Type = "simple";
-        User = "traefik";
+
         Group = cfg.group;
-        Restart = "on-failure";
-        AmbientCapabilities = "cap_net_bind_service";
-        CapabilityBoundingSet = "cap_net_bind_service";
-        NoNewPrivileges = true;
-        LimitNPROC = 64;
         LimitNOFILE = 1048576;
-        PrivateTmp = true;
+        LimitNPROC = 64;
+        NoNewPrivileges = true;
         PrivateDevices = true;
+        PrivateTmp = true;
         ProtectHome = true;
         ProtectSystem = "full";
         ReadWritePaths = [ cfg.dataDir ];
+        Restart = "on-failure";
         RuntimeDirectory = "traefik";
+        Type = "simple";
+        User = "traefik";
         WorkingDirectory = cfg.dataDir;
       };
+
+      startLimitBurst = 5;
+      startLimitIntervalSec = 86400;
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
+
+    systemd.tmpfiles.rules = [ "d '${cfg.dataDir}' 0700 traefik traefik - -" ];
+    users.groups.traefik = { };
 
     users.users.traefik = {
+      createHome = true;
       group = "traefik";
       home = cfg.dataDir;
-      createHome = true;
       isSystemUser = true;
     };
-
-    users.groups.traefik = { };
   };
 }

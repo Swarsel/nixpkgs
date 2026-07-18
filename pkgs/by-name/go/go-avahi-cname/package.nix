@@ -1,14 +1,13 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "go-avahi-cname";
   version = "2.6.1";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "grishy";
@@ -18,6 +17,9 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-vbIHB9u9Ftwdw7rHnj6rkk/ABmESNvOgp0hixeWVnkI=";
+  # bind: operation not permitted
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
 
   ldflags = [
     "-w"
@@ -26,9 +28,6 @@ buildGoModule (finalAttrs: {
     "-X=main.commit=${finalAttrs.src.rev}"
     "-X=main.date=1970-01-01T00:00:00Z"
   ];
-
-  # bind: operation not permitted
-  __darwinAllowLocalNetworking = true;
 
   passthru.updateScript = nix-update-script { };
 

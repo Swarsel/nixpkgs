@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  versionCheckHook,
   autoPatchelfHook,
   makeWrapper,
+  versionCheckHook,
 }:
 let
   version = "4.3.2";
@@ -32,22 +32,22 @@ stdenv.mkDerivation {
   pname = "tailwindcss_4";
 
   src = fetchurl {
+    inherit hash;
+
     url =
       "https://github.com/tailwindlabs/tailwindcss/releases/download/v${version}/tailwindcss-" + plat;
-    inherit hash;
   };
 
   nativeBuildInputs = lib.optional stdenv.hostPlatform.isLinux autoPatchelfHook;
   buildInputs = [ makeWrapper ];
 
-  dontUnpack = true;
-  dontBuild = true;
-  dontStrip = true;
-
   installPhase = ''
     mkdir -p $out/bin
     install -m755 $src $out/bin/tailwindcss
   '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   # libstdc++.so.6 for @parcel/watcher
   postFixup = ''
@@ -56,11 +56,11 @@ stdenv.mkDerivation {
     }
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
+  dontBuild = true;
+  dontStrip = true;
+  dontUnpack = true;
   versionCheckProgram = "${placeholder "out"}/bin/tailwindcss";
   versionCheckProgramArg = "--help";
-
   passthru.updateScript = ./update.sh;
 
   meta = {
@@ -68,11 +68,13 @@ stdenv.mkDerivation {
     homepage = "https://tailwindcss.com/blog/tailwindcss-v4";
     license = lib.licenses.mit;
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       adamcstephens
       adamjhf
     ];
-    mainProgram = "tailwindcss";
+
     platforms = lib.platforms.darwin ++ lib.platforms.linux;
+    mainProgram = "tailwindcss";
   };
 }

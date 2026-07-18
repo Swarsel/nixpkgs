@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,8 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Ig/KdCuQZYSiCydouN29IsIRKh8qngtzcOknTozDRRM=";
   };
 
-  cargoHash = "sha256-Cj6hf/dizIv2pKbQvyRqqIz5k3AW3cdfpCaIHvk8G9o=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -27,14 +25,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-Cj6hf/dizIv2pKbQvyRqqIz5k3AW3cdfpCaIHvk8G9o=";
+
   meta = {
     description = "TUI for lobste.rs website";
     homepage = "https://github.com/pythops/lobtui";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
     ];
-    mainProgram = "lobtui";
+
     platforms = lib.platforms.linux;
+    mainProgram = "lobtui";
   };
 })

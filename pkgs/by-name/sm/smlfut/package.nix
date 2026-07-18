@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  mlton,
-  mlkit,
   futhark,
+  mlkit,
+  mlton,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,14 +18,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-xICcobdvSdHZfNxz4WRDOsaL4JGFRK7LmhMzKOZY5FY=";
   };
 
-  enableParallelBuilding = true;
-
   nativeBuildInputs = [ mlton ];
-
   env.MLCOMP = "mlton";
-
-  installFlags = [ "PREFIX=$(out)" ];
-
   doCheck = true;
 
   nativeCheckInputs = [
@@ -34,13 +28,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   checkTarget = "run_test";
+  enableParallelBuilding = true;
+  installFlags = [ "PREFIX=$(out)" ];
 
   meta = {
     description = "Allow SML programs to call Futhark programs";
     homepage = "https://github.com/diku-dk/smlfut";
     license = lib.licenses.gpl3Plus;
-    platforms = mlton.meta.platforms;
     maintainers = with lib.maintainers; [ athas ];
+    platforms = mlton.meta.platforms;
     mainProgram = "smlfut";
   };
 })

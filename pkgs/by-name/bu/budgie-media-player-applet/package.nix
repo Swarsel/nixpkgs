@@ -4,11 +4,11 @@
   fetchFromGitHub,
   glib,
   gtk3,
+  libxfce4windowing,
   meson,
   ninja,
   nix-update-script,
   python3Packages,
-  libxfce4windowing,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,6 +21,10 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Ekt6OXSjqKF4d6a9lmZyUa06pqz1uYkCHbzvLM7Z+W8=";
   };
+
+  postPatch = ''
+    substituteInPlace meson.build --replace-fail "/usr" "$out"
+  '';
 
   strictDeps = true;
 
@@ -39,22 +43,18 @@ stdenv.mkDerivation (finalAttrs: {
     libxfce4windowing
   ];
 
-  pythonPath = with python3Packages; [
-    requests
-  ];
-
   mesonFlags = [
     "-Dbudgie-api-v2=true"
   ];
-
-  postPatch = ''
-    substituteInPlace meson.build --replace-fail "/usr" "$out"
-  '';
 
   postFixup = ''
     buildPythonPath "$out ''${pythonPath[*]}"
     patchPythonScript "$out/lib/budgie-desktop/plugins/budgie-media-player-applet/applet.py"
   '';
+
+  pythonPath = with python3Packages; [
+    requests
+  ];
 
   passthru = {
     updateScript = nix-update-script { };

@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,19 +19,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-2AuVcQIurylmxAT/QUhYvymACWDeUBUn0ukSSn5IzWA=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-00NpGn0moeDhP8oP7hueRyVnB1enS8iN2fTDfTckIqY=";
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
 
   checkFlags = [
     # requires network access
     "-skip=^TestDownloadFromWebStore(|Negative)$"
   ];
-
-  nativeBuildInputs = [ installShellFiles ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd crx3 \
@@ -40,11 +34,16 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/crx3 completion zsh)
   '';
 
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   versionCheckProgram = "${placeholder "out"}/bin/crx3";
   versionCheckProgramArg = "version";
-  doInstallCheck = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

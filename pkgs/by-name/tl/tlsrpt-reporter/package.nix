@@ -1,23 +1,17 @@
 {
   lib,
+  fetchFromGitHub,
   asciidoctor,
   automake,
-  installShellFiles,
-  python3,
-  fetchFromGitHub,
   fetchpatch,
+  installShellFiles,
   nixosTests,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "tlsrpt-reporter";
   version = "0.5.0";
-  pyproject = true;
-
-  outputs = [
-    "out"
-    "man"
-  ];
 
   src = fetchFromGitHub {
     owner = "sys4";
@@ -26,11 +20,16 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-IH8hJX9l+YonqOuszcMome4mjdIaedgGNIptxTyH1ng=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   patches = [
     (fetchpatch {
+      hash = "sha256-RUNF86RkTu6DLv6/7eaY//fFB8kGzmZxQ70kdNpLxj8=";
       # https://github.com/sys4/tlsrpt-reporter/issues/43
       url = "https://github.com/sys4/tlsrpt-reporter/commit/32d00c13508dd7f9695b77e253e88c88dc838fbd.patch";
-      hash = "sha256-RUNF86RkTu6DLv6/7eaY//fFB8kGzmZxQ70kdNpLxj8=";
     })
     # https://github.com/sys4/tlsrpt-reporter/pull/48
     ./logging.patch
@@ -42,20 +41,20 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     installShellFiles
   ];
 
-  build-system = [
-    python3.pkgs.hatchling
-  ];
-
   postBuild = ''
     make -C doc
   '';
+
+  nativeCheckInputs = [
+    python3.pkgs.pytestCheckHook
+  ];
 
   postInstall = ''
     installManPage doc/*.1
   '';
 
-  nativeCheckInputs = [
-    python3.pkgs.pytestCheckHook
+  build-system = [
+    python3.pkgs.hatchling
   ];
 
   disabledTests = [
@@ -64,6 +63,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "test_intarg_cmd_float"
     "test_intarg_cmd_string"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "tlsrpt_reporter"

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   nixosTests,
 }:
@@ -18,13 +18,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-VebaCzdPGl0hOHRXvwZb4aDzXlDZ57v/QVYzuagvvOM=";
-
   doCheck = true;
 
   passthru = {
     tests = {
       inherit (nixosTests.prometheus-exporters) process;
     };
+
     updateScript = nix-update-script { };
   };
 

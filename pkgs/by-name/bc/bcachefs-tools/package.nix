@@ -2,31 +2,31 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  libuuid,
-  libsodium,
-  libunwind,
+  attr,
+  cargo,
+  fuse3,
+  installShellFiles,
   keyutils,
   kmod,
-  liburcu,
-  zlib,
   libaio,
-  zstd,
+  libsodium,
+  libunwind,
+  liburcu,
+  libuuid,
   lz4,
-  attr,
-  udev,
-  fuse3,
-  cargo,
-  rustc,
-  rustPlatform,
-  rust-bindgen,
   makeWrapper,
   nix-update-script,
-  versionCheckHook,
   nixosTests,
-  installShellFiles,
-  fuseSupport ? false,
+  pkg-config,
+  rust-bindgen,
+  rustPlatform,
+  rustc,
+  udev,
   udevCheckHook,
+  versionCheckHook,
+  zlib,
+  zstd,
+  fuseSupport ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,10 +40,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-9sDE7ua3WMCfV9ZbwQdAbpatv2IhvcwHzzPr+/l2au0=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src;
-    hash = "sha256-F1+FeAlYSqOxeWJI8vHShpXrOZqYXjNGvty/s6f6u8w=";
-  };
+  outputs = [
+    "out"
+    "dkms"
+  ];
 
   postPatch = ''
     substituteInPlace Makefile \
@@ -91,13 +91,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional fuseSupport "BCACHEFS_FUSE=1";
 
-  enableParallelBuilding = true;
-
-  installFlags = [
-    "install"
-    "install_dkms"
-  ];
-
   env = {
     CARGO_BUILD_TARGET = stdenv.hostPlatform.rust.rustcTargetSpec;
     "CARGO_TARGET_${stdenv.hostPlatform.rust.cargoEnvVarTarget}_LINKER" = "${stdenv.cc.targetPrefix}cc";
@@ -105,18 +98,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   # FIXME: Try enabling this once the default linux kernel is at least 6.7
   doCheck = false; # needs bcachefs module loaded on builder
+  checkFlags = [ "BCACHEFS_TEST_USE_VALGRIND=no" ];
 
   preCheck = lib.optionalString (!fuseSupport) ''
     rm tests/test_fuse.py
   '';
-  checkFlags = [ "BCACHEFS_TEST_USE_VALGRIND=no" ];
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [
-    udevCheckHook
-    versionCheckHook
-  ];
-  versionCheckProgramArg = "version";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd bcachefs \
@@ -125,18 +111,34 @@ stdenv.mkDerivation (finalAttrs: {
       --fish <($out/sbin/bcachefs completions fish)
   '';
 
-  outputs = [
-    "out"
-    "dkms"
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    udevCheckHook
+    versionCheckHook
   ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src;
+    hash = "sha256-F1+FeAlYSqOxeWJI8vHShpXrOZqYXjNGvty/s6f6u8w=";
+  };
+
+  enableParallelBuilding = true;
+
+  installFlags = [
+    "install"
+    "install_dkms"
+  ];
+
+  versionCheckProgramArg = "version";
 
   passthru = {
     # See NOTE in linux-kernels.nix
     kernelModule = import ./kernel-module.nix finalAttrs.finalPackage;
 
     tests = {
-      smoke-test = nixosTests.bcachefs;
       inherit (nixosTests.installer) bcachefsSimple bcachefsEncrypted bcachefsMulti;
+      smoke-test = nixosTests.bcachefs;
     };
 
     updateScript = nix-update-script { };
@@ -145,14 +147,16 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Tool for managing bcachefs filesystems";
     homepage = "https://bcachefs.org/";
-    downloadPage = "https://github.com/koverstreet/bcachefs-tools";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       davidak
       johnrtitor
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "bcachefs";
     broken = stdenv.hostPlatform.isi686; # error: stack smashing detected
+    downloadPage = "https://github.com/koverstreet/bcachefs-tools";
   };
 })

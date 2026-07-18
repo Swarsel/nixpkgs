@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  makeWrapper,
   jdk21_headless,
+  makeWrapper,
   nixosTests,
+  stdenvNoCC,
 }:
 
 let
@@ -24,8 +24,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     makeWrapper
   ];
 
-  dontUnpack = true;
-
   buildPhase = ''
     runHook preBuild
 
@@ -35,6 +33,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postBuild
   '';
 
+  dontUnpack = true;
+
   passthru.tests = {
     suwayomi-server-with-auth = nixosTests.suwayomi-server.with-auth;
     suwayomi-server-without-auth = nixosTests.suwayomi-server.without-auth;
@@ -42,18 +42,20 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Free and open source manga reader server that runs extensions built for Mihon (Tachiyomi)";
+
     longDescription = ''
       Suwayomi is an independent Mihon (Tachiyomi) compatible software and is not a Fork of Mihon (Tachiyomi).
 
       Suwayomi-Server is as multi-platform as you can get. Any platform that runs java and/or has a modern browser can run it. This includes Windows, Linux, macOS, chrome OS, etc.
     '';
+
     homepage = "https://github.com/Suwayomi/Suwayomi-Server";
-    downloadPage = "https://github.com/Suwayomi/Suwayomi-Server/releases";
     changelog = "https://github.com/Suwayomi/Suwayomi-Server/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mpl20;
-    platforms = jdk.meta.platforms;
     sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
     maintainers = with lib.maintainers; [ ratcornu ];
+    platforms = jdk.meta.platforms;
     mainProgram = "tachidesk-server";
+    downloadPage = "https://github.com/Suwayomi/Suwayomi-Server/releases";
   };
 })

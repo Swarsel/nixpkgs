@@ -2,31 +2,28 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   mock,
   pytestCheckHook,
   requests,
+  setuptools,
 }:
 buildPythonPackage rec {
   pname = "pygelf";
   version = "0.4.3";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "pygelf";
     inherit version;
     hash = "sha256-jtlyVjvjyPFoSD8B2/UitrxpeVnJej9IgTJLP3ljiRE=";
+    pname = "pygelf";
   };
-
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "pygelf" ];
 
   nativeCheckInputs = [
     mock
     pytestCheckHook
     requests
   ];
+
+  build-system = [ setuptools ];
 
   disabledTestPaths = [
     # The fixtures in these files fail to evaluate due to missing files `tests/config/cert.pem` and
@@ -39,6 +36,9 @@ buildPythonPackage rec {
     "tests/test_queuehandler_support.py"
     "tests/test_static_fields.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pygelf" ];
 
   meta = {
     description = "Python logging handlers with GELF (Graylog Extended Log Format) support";

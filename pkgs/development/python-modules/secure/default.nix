@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   maya,
-  requests,
   pytestCheckHook,
+  requests,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "secure";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "typeerror";
@@ -20,6 +19,7 @@ buildPythonPackage rec {
     hash = "sha256-lyosOejztFEINGKO0wAYv3PWBL7vpmAq+eQunwP9h5I=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,8 +27,7 @@ buildPythonPackage rec {
     requests
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "secure" ];
 
   meta = {

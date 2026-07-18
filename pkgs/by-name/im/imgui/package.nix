@@ -1,33 +1,28 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  SDL2,
   applyPatches,
   callPackage,
   cmake,
-  fetchFromGitHub,
   fetchpatch,
   glfw,
+  imgui,
   libGL,
-  SDL2,
   sdl3,
   vcpkg,
   vulkan-headers,
   vulkan-loader,
-  imgui,
-
-  # NOTE: Not coming from vcpkg
-  IMGUI_LINK_GLVND ?
-    !stdenv.hostPlatform.isWindows && (IMGUI_BUILD_OPENGL2_BINDING || IMGUI_BUILD_OPENGL3_BINDING),
-
   # The intent is to mirror vcpkg's flags[^1],
   # but we only actually support Linux and glfw3 until someone contributes the rest
   # [^1]: https://github.com/microsoft/vcpkg/blob/095ee06e7f60dceef7d713e3f8b1c2eb10d650d7/ports/imgui/CMakeLists.txt#L33-L108
   IMGUI_BUILD_ALLEGRO5_BINDING ? false,
   IMGUI_BUILD_ANDROID_BINDING ? stdenv.hostPlatform.isAndroid,
-  IMGUI_BUILD_DX9_BINDING ? false,
   IMGUI_BUILD_DX10_BINDING ? false,
   IMGUI_BUILD_DX11_BINDING ? false,
   IMGUI_BUILD_DX12_BINDING ? false,
+  IMGUI_BUILD_DX9_BINDING ? false,
   IMGUI_BUILD_GLFW_BINDING ? !stdenv.hostPlatform.isDarwin,
   IMGUI_BUILD_GLUT_BINDING ? false,
   IMGUI_BUILD_METAL_BINDING ? stdenv.hostPlatform.isDarwin,
@@ -35,15 +30,18 @@
   IMGUI_BUILD_OPENGL3_BINDING ?
     IMGUI_BUILD_SDL3_BINDING || IMGUI_BUILD_GLFW_BINDING || IMGUI_BUILD_GLUT_BINDING,
   IMGUI_BUILD_OSX_BINDING ? stdenv.hostPlatform.isDarwin,
-  IMGUI_BUILD_SDL3_BINDING ? !IMGUI_BUILD_GLFW_BINDING && !stdenv.hostPlatform.isDarwin,
-  IMGUI_BUILD_SDL3_RENDERER_BINDING ? IMGUI_BUILD_SDL3_BINDING,
   IMGUI_BUILD_SDL2_BINDING ? false,
   IMGUI_BUILD_SDL2_RENDERER_BINDING ? false,
+  IMGUI_BUILD_SDL3_BINDING ? !IMGUI_BUILD_GLFW_BINDING && !stdenv.hostPlatform.isDarwin,
+  IMGUI_BUILD_SDL3_RENDERER_BINDING ? IMGUI_BUILD_SDL3_BINDING,
   IMGUI_BUILD_SDLGPU3_BINDING ? IMGUI_BUILD_SDL3_BINDING && lib.versionAtLeast imgui.version "1.91.8",
   IMGUI_BUILD_VULKAN_BINDING ? false,
   IMGUI_BUILD_WIN32_BINDING ? false,
   IMGUI_FREETYPE ? false,
   IMGUI_FREETYPE_LUNASVG ? false,
+  # NOTE: Not coming from vcpkg
+  IMGUI_LINK_GLVND ?
+    !stdenv.hostPlatform.isWindows && (IMGUI_BUILD_OPENGL2_BINDING || IMGUI_BUILD_OPENGL3_BINDING),
   IMGUI_USE_WCHAR32 ? false,
 }:
 let
@@ -51,6 +49,7 @@ let
   vcpkgRevs.others = !vcpkgRevs.postSdl3;
   vcpkgSource = applyPatches {
     inherit (vcpkg) src;
+
     patches =
       lib.optionals vcpkgRevs.postSdl3 [
         # This patch was not accepted mainstream, as out-of-scope
@@ -63,8 +62,8 @@ let
         # Original version of the split-outputs patch
         fetchpatch
         {
-          url = "https://github.com/microsoft/vcpkg/commit/4108dd75ce9731a4fdcf50fd05034405156eaddf.patch";
           hash = "sha256-jXbR0NfyuO8EESmva5A+H3WmBfCG83OiA8ZCcWsRhQA=";
+          url = "https://github.com/microsoft/vcpkg/commit/4108dd75ce9731a4fdcf50fd05034405156eaddf.patch";
         }
       ];
   };
@@ -73,12 +72,6 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "imgui";
   version = "1.91.4";
-  outputs = [
-    # Note: no "dev" because vcpkg installs include/ and imgui-config.cmake
-    # into different prefixes but expects the merged layout at import time
-    "out"
-    "lib"
-  ];
 
   src = fetchFromGitHub {
     owner = "ocornut";
@@ -87,7 +80,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-6j4keBOAzbBDsV0+R4zTNlsltxz2dJDGI43UIrHXDNM=";
   };
 
-  cmakeRules = "${vcpkgSource}/ports/imgui";
+  outputs = [
+    # Note: no "dev" because vcpkg installs include/ and imgui-config.cmake
+    # into different prefixes but expects the merged layout at import time
+    "out"
+    "lib"
+  ];
+
   postPatch = ''
     cp "$cmakeRules"/{CMakeLists.txt,*.cmake.in} ./
   '';
@@ -130,6 +129,8 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "IMGUI_USE_WCHAR32" IMGUI_USE_WCHAR32)
   ];
 
+  cmakeRules = "${vcpkgSource}/ports/imgui";
+
   passthru = {
     tests = {
       demo = callPackage ./demo { };
@@ -137,6 +138,16 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "Bloat-free Graphical User interface for C++ with minimal dependencies";
+    homepage = "https://github.com/ocornut/imgui";
+    license = lib.licenses.mit; # vcpkg licensed as MIT too
+
+    maintainers = with lib.maintainers; [
+      SomeoneSerge
+    ];
+
+    platforms = lib.platforms.all;
+
     # These flags haven't been tested:
     broken =
       IMGUI_BUILD_SDL2_BINDING # Option removed from Vcpkg' CMakeLists
@@ -150,12 +161,5 @@ stdenv.mkDerivation (finalAttrs: {
       || IMGUI_BUILD_WIN32_BINDING
       || IMGUI_BUILD_ALLEGRO5_BINDING
       || IMGUI_BUILD_ANDROID_BINDING;
-    description = "Bloat-free Graphical User interface for C++ with minimal dependencies";
-    homepage = "https://github.com/ocornut/imgui";
-    license = lib.licenses.mit; # vcpkg licensed as MIT too
-    maintainers = with lib.maintainers; [
-      SomeoneSerge
-    ];
-    platforms = lib.platforms.all;
   };
 })

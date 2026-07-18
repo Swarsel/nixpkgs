@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,8 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-I0OurcPKKZntZn7Bk9AnWdpSrU9olGp7kghdOajPDeQ=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/src";
-
   buildPhase = ''
     runHook preBuild
     $CC tinyfetch.c -o tinyfetch
@@ -29,12 +27,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/src";
+
   meta = {
     description = "Simple fetch in C which is tiny and fast";
     homepage = "https://github.com/abrik1/tinyfetch";
     license = lib.licenses.mit;
-    mainProgram = "tinyfetch";
     maintainers = with lib.maintainers; [ pagedMov ];
     platforms = lib.platforms.unix;
+    mainProgram = "tinyfetch";
   };
 })

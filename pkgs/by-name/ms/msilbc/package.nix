@@ -16,11 +16,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "07j02y994ybh274fp7ydjvi76h34y2c34ndwjpjfcwwr03b48cfp";
   };
 
+  nativeBuildInputs = [ pkg-config ];
+
   propagatedBuildInputs = [
     ilbc
     linphonePackages.mediastreamer2
   ];
-  nativeBuildInputs = [ pkg-config ];
 
   configureFlags = [
     "ILBC_LIBS=ilbc"
@@ -31,7 +32,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Mediastreamer plugin for the iLBC audio codec";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl2;
+    platforms = lib.platforms.linux;
   };
 })

@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  lttng-tools,
-  libatomic_ops,
-  perl,
   coreutils,
+  libatomic_ops,
+  lttng-tools,
+  perl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -50,7 +50,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/microsoft/msquic";
     changelog = "https://github.com/microsoft/msquic/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ SohamG ];
+    platforms = lib.platforms.all;
   };
 })

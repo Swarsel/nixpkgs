@@ -1,39 +1,30 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  writeShellApplication,
   cacert,
   curl,
   openssl,
+  stdenvNoCC,
   undmg,
+  writeShellApplication,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "raycast-beta";
   version = "0.68.0.0";
 
-  __structuredAttrs = true;
-  strictDeps = true;
-
   src =
     {
       aarch64-darwin = fetchurl {
+        hash = "sha256-GD2iZeBBUhRbkbLaAw1EJtlOlBFqeMHUDdzNUk1DxO0=";
         name = "Raycast_Beta.dmg";
         url = "https://x-r2.raycast-releases.com/Raycast_Beta_0.68.0.0_c991260b0f_arm64.dmg";
-        hash = "sha256-GD2iZeBBUhRbkbLaAw1EJtlOlBFqeMHUDdzNUk1DxO0=";
       };
     }
     .${stdenvNoCC.system} or (throw "raycast-beta: ${stdenvNoCC.system} is unsupported.");
 
-  dontPatch = true;
-  dontConfigure = true;
-  dontBuild = true;
-  dontFixup = true;
-
+  strictDeps = true;
   nativeBuildInputs = [ undmg ];
-
-  sourceRoot = "Raycast Beta.app";
 
   installPhase = ''
     runHook preInstall
@@ -46,13 +37,22 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  dontBuild = true;
+  dontConfigure = true;
+  dontFixup = true;
+  dontPatch = true;
+  sourceRoot = "Raycast Beta.app";
+
   passthru.updateScript = lib.getExe (writeShellApplication {
     name = "raycast-beta-update-script";
+
     runtimeInputs = [
       cacert
       curl
       openssl
     ];
+
     text = ''
       url=$(curl --silent "https://www.raycast.com/new" | grep -o 'https://x-r2\.raycast-releases\.com/Raycast_Beta_[^"]*_arm64\.dmg' | head -n1)
       version=$(echo "$url" | sed -E 's|.*/Raycast_Beta_([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)_[^/]+_arm64\.dmg|\1|')
@@ -71,12 +71,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://raycast.app/new";
     changelog = "https://www.raycast.com/changelog/macos-beta";
     license = lib.licenses.unfree;
-    mainProgram = "raycast-beta";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       _4evy
       Br1ght0ne
     ];
+
     platforms = [ "aarch64-darwin" ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    mainProgram = "raycast-beta";
   };
 })

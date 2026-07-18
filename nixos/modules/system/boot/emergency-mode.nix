@@ -12,7 +12,7 @@
 
     systemd.enableEmergencyMode = lib.mkOption {
       default = true;
-      type = lib.types.bool;
+
       description = ''
         Whether to enable emergency mode, which is an
         {command}`sulogin` shell started on the console if
@@ -23,6 +23,8 @@
 
         For initrd emergency access, use ${options.boot.initrd.systemd.emergencyAccess} instead.
       '';
+
+      type = lib.types.bool;
     };
 
   };

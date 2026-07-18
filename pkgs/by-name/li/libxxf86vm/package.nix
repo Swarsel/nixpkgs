@@ -2,29 +2,28 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libx11,
   libxext,
-  xorgproto,
-  writeScript,
+  pkg-config,
   testers,
+  writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libxxf86vm";
   version = "1.1.7";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchurl {
     url = "mirror://xorg/individual/lib/libXxf86vm-${finalAttrs.version}.tar.xz";
     hash = "sha256-rlDA9mngr1pnzEzQ9U8h1kpk0mYK+IPoDpXT/lG5Rdg=";
   };
 
-  strictDeps = true;
+  outputs = [
+    "out"
+    "dev"
+  ];
 
+  strictDeps = true;
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -38,6 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
   ) "--enable-malloc0returnsnull";
 
   passthru = {
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = writeScript "update-${finalAttrs.pname}" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p common-updater-scripts
@@ -46,7 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
         | sort -V | tail -n1)"
       update-source-version ${finalAttrs.pname} "$version"
     '';
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
@@ -54,7 +54,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.freedesktop.org/xorg/lib/libxxf86vm";
     license = lib.licenses.x11;
     maintainers = [ ];
-    pkgConfigModules = [ "xxf86vm" ];
     platforms = lib.platforms.unix;
+    pkgConfigModules = [ "xxf86vm" ];
   };
 })

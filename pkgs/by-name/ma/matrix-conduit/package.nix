@@ -1,13 +1,13 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitLab,
-  pkg-config,
-  sqlite,
   stdenv,
+  fetchFromGitLab,
   nixosTests,
+  pkg-config,
   rocksdb,
   rust-jemalloc-sys,
+  rustPlatform,
+  sqlite,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,14 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-OBrbZlrhh8QqAlaC38Y9g2PH5503CzZAf7Kg7Wflgds=";
   };
 
-  cargoHash = "sha256-JN3Vs3Epv1P66EdsFMY5ojVV+a9rrPcW0/7NrEepo78=";
-
-  # Conduit enables rusqlite's bundled feature by default, but we'd rather use our copy of SQLite.
-  preBuild = ''
-    substituteInPlace Cargo.toml --replace-fail "features = [\"bundled\"]" "features = []"
-    cargo update --offline -p rusqlite
-  '';
-
   nativeBuildInputs = [
     rustPlatform.bindgenHook
     pkg-config
@@ -40,10 +32,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rocksdb
   ];
 
+  cargoHash = "sha256-JN3Vs3Epv1P66EdsFMY5ojVV+a9rrPcW0/7NrEepo78=";
+
   env = {
     ROCKSDB_INCLUDE_DIR = "${rocksdb}/include";
     ROCKSDB_LIB_DIR = "${rocksdb}/lib";
   };
+
+  # Conduit enables rusqlite's bundled feature by default, but we'd rather use our copy of SQLite.
+  preBuild = ''
+    substituteInPlace Cargo.toml --replace-fail "features = [\"bundled\"]" "features = []"
+    cargo update --offline -p rusqlite
+  '';
 
   # tests failed on x86_64-darwin with SIGILL: illegal instruction
   doCheck = !(stdenv.hostPlatform.isx86_64 && stdenv.hostPlatform.isDarwin);
@@ -56,11 +56,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Matrix homeserver written in Rust";
     homepage = "https://conduit.rs/";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       pstn
       SchweGELBin
       Kladki
     ];
+
     mainProgram = "conduit";
   };
 })

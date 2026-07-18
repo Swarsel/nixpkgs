@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  cmake,
   fetchpatch,
   libnotify,
-  cmake,
   ninja,
   qt6,
 }:
@@ -25,9 +25,9 @@ stdenv.mkDerivation (finalAttrs: {
 
     # cmake-4 support
     (fetchpatch {
+      hash = "sha256-toWG78tW6qOETTMb63/WtSyIiGkJ00RlPyGTqrWPnLY=";
       name = "cmake-4.patch";
       url = "https://gitlab.com/cubocore/libcprime/-/commit/505931e9634d1b55ea97bdaa0f68dcd51faaea39.patch";
-      hash = "sha256-toWG78tW6qOETTMb63/WtSyIiGkJ00RlPyGTqrWPnLY=";
     })
   ];
 

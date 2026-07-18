@@ -1,37 +1,39 @@
 {
   lib,
-  copyDesktopItems,
-  electron_41,
+  stdenv,
   fetchFromGitHub,
+  copyDesktopItems,
+  deltachat-desktop,
   deltachat-rpc-server,
   deltachat-tauri,
+  electron_41,
+  fetchPnpmDeps,
   makeDesktopItem,
   makeWrapper,
   nodejs,
   pkg-config,
-  pnpm_10,
-  fetchPnpmDeps,
   pnpmConfigHook,
+  pnpm_10,
   python3,
   rustPlatform,
-  stdenv,
   testers,
-  deltachat-desktop,
   yq,
 }:
 
 let
   deltachat-rpc-server' = deltachat-rpc-server.overrideAttrs rec {
     version = "2.53.0";
+
     src = fetchFromGitHub {
       owner = "chatmail";
       repo = "core";
       tag = "v${version}";
       hash = "sha256-W2Yh5+6MaJ47GqJioGKge2J3RetGGTcl+0YxPPlSdDo=";
     };
+
     cargoDeps = rustPlatform.fetchCargoVendor {
-      pname = "chatmail-core";
       inherit version src;
+      pname = "chatmail-core";
       hash = "sha256-aoPc5XvjwwuA9aOTvIOpTm15wozC9glJGqn3vPqsJF4=";
     };
   };
@@ -40,20 +42,12 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "deltachat-desktop";
   version = "2.53.1";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "deltachat";
     repo = "deltachat-desktop";
     tag = "v${finalAttrs.version}";
     hash = "sha256-UJ6005PeQBiL9Inj/VRZjgxZtR278Ky2RcD5MywcGD8=";
-  };
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm_10;
-    fetcherVersion = 4;
-    hash = "sha256-t5OHx1GCaTIgGo9193Z3Kkl+jHCBIgtRypcUaO6By3I=";
   };
 
   strictDeps = true;
@@ -124,19 +118,21 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
   desktopItems = lib.singleton (makeDesktopItem {
-    name = "deltachat";
-    exec = "deltachat %u";
-    icon = "deltachat";
-    desktopName = "Delta Chat";
-    genericName = "Delta Chat";
-    comment = finalAttrs.meta.description;
     categories = [
       "Network"
       "InstantMessaging"
       "Chat"
     ];
-    startupWMClass = "DeltaChat";
+
+    comment = finalAttrs.meta.description;
+    desktopName = "Delta Chat";
+    exec = "deltachat %u";
+    genericName = "Delta Chat";
+    icon = "deltachat";
+
     mimeTypes = [
       "application/x-webxdc"
       "x-scheme-handler/openpgp4fpr"
@@ -144,13 +140,24 @@ stdenv.mkDerivation (finalAttrs: {
       "x-scheme-handler/dclogin"
       "x-scheme-handler/mailto"
     ];
+
+    name = "deltachat";
+    startupWMClass = "DeltaChat";
   });
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 4;
+    hash = "sha256-t5OHx1GCaTIgGo9193Z3Kkl+jHCBIgtRypcUaO6By3I=";
+    pnpm = pnpm_10;
+  };
+
   passthru.tests = {
+    inherit deltachat-tauri;
+
     version = testers.testVersion {
       package = deltachat-desktop;
     };
-    inherit deltachat-tauri;
   };
 
   meta = {
@@ -158,8 +165,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/deltachat/deltachat-desktop";
     changelog = "https://github.com/deltachat/deltachat-desktop/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "deltachat";
     maintainers = with lib.maintainers; [ dotlambda ];
     platforms = lib.platforms.linux;
+    mainProgram = "deltachat";
   };
 })

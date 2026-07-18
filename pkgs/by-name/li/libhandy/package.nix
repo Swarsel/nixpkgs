@@ -2,32 +2,37 @@
   lib,
   stdenv,
   fetchurl,
+  at-spi2-atk,
+  at-spi2-core,
+  gdk-pixbuf,
+  gi-docgen,
+  glade,
+  glib,
+  gnome,
+  gobject-introspection,
+  gsettings-desktop-schemas,
+  gtk3,
+  hicolor-icon-theme,
+  libhandy,
+  librsvg,
+  libxml2,
   meson,
   ninja,
   pkg-config,
-  gobject-introspection,
-  vala,
-  gi-docgen,
-  glib,
-  gsettings-desktop-schemas,
-  gtk3,
-  enableGlade ? false,
-  glade,
-  xvfb-run,
-  gdk-pixbuf,
-  librsvg,
-  libxml2,
-  hicolor-icon-theme,
-  at-spi2-atk,
-  at-spi2-core,
-  gnome,
-  libhandy,
   runCommand,
+  vala,
+  xvfb-run,
+  enableGlade ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libhandy";
   version = "1.8.3";
+
+  src = fetchurl {
+    url = "mirror://gnome/sources/libhandy/${lib.versions.majorMinor finalAttrs.version}/libhandy-${finalAttrs.version}.tar.xz";
+    hash = "sha256-BbSXIpBz/1V/ELMm4HTFBm+HQ6MC1IIKuXvLXNLasIc=";
+  };
 
   outputs = [
     "out"
@@ -37,16 +42,8 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals enableGlade [
     "glade"
   ];
-  outputBin = "dev";
 
-  src = fetchurl {
-    url = "mirror://gnome/sources/libhandy/${lib.versions.majorMinor finalAttrs.version}/libhandy-${finalAttrs.version}.tar.xz";
-    hash = "sha256-BbSXIpBz/1V/ELMm4HTFBm+HQ6MC1IIKuXvLXNLasIc=";
-  };
-
-  depsBuildBuild = [
-    pkg-config
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     gobject-introspection
@@ -68,9 +65,18 @@ stdenv.mkDerivation (finalAttrs: {
     glade
   ];
 
-  checkInputs = [
-    librsvg
+  mesonFlags = [
+    "-Dgtk_doc=true"
+    "-Dglade_catalog=${if enableGlade then "enabled" else "disabled"}"
   ];
+
+  # Uses define_variable in pkg-config, but we still need it to use the glade output
+  env = {
+    PKG_CONFIG_GLADEUI_2_0_CATALOGDIR = "${placeholder "glade"}/share/glade/catalogs";
+    PKG_CONFIG_GLADEUI_2_0_MODULEDIR = "${placeholder "glade"}/lib/glade/modules";
+  };
+
+  doCheck = !stdenv.hostPlatform.isDarwin;
 
   nativeCheckInputs = [
     xvfb-run
@@ -80,20 +86,9 @@ stdenv.mkDerivation (finalAttrs: {
     hicolor-icon-theme
   ];
 
-  strictDeps = true;
-
-  mesonFlags = [
-    "-Dgtk_doc=true"
-    "-Dglade_catalog=${if enableGlade then "enabled" else "disabled"}"
+  checkInputs = [
+    librsvg
   ];
-
-  # Uses define_variable in pkg-config, but we still need it to use the glade output
-  env = {
-    PKG_CONFIG_GLADEUI_2_0_MODULEDIR = "${placeholder "glade"}/lib/glade/modules";
-    PKG_CONFIG_GLADEUI_2_0_CATALOGDIR = "${placeholder "glade"}/share/glade/catalogs";
-  };
-
-  doCheck = !stdenv.hostPlatform.isDarwin;
 
   checkPhase = ''
     runHook preCheck
@@ -125,6 +120,12 @@ stdenv.mkDerivation (finalAttrs: {
     moveToOutput "share/doc" "$devdoc"
   '';
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
+  outputBin = "dev";
+
   passthru = {
     updateScript = gnome.updateScript {
       packageName = "libhandy";
@@ -146,12 +147,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://gitlab.gnome.org/GNOME/libhandy/-/tags/${finalAttrs.version}";
     description = "Building blocks for modern adaptive GNOME apps";
-    mainProgram = "handy-1-demo";
     homepage = "https://gitlab.gnome.org/GNOME/libhandy";
+    changelog = "https://gitlab.gnome.org/GNOME/libhandy/-/tags/${finalAttrs.version}";
     license = lib.licenses.lgpl21Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.unix;
+    mainProgram = "handy-1-demo";
+    teams = [ lib.teams.gnome ];
   };
 })

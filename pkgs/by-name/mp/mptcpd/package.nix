@@ -1,16 +1,16 @@
 {
-  autoreconfHook,
+  lib,
+  stdenv,
+  fetchFromGitHub,
   autoconf-archive,
+  autoreconfHook,
   doxygen,
   ell,
-  fetchFromGitHub,
   fontconfig,
   graphviz,
-  lib,
   pandoc,
   perl,
   pkg-config,
-  stdenv,
   systemd,
 }:
 
@@ -40,38 +40,33 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
   ];
 
-  # ref. https://github.com/multipath-tcp/mptcpd/blob/main/README.md#bootstrapping
-  preConfigure = "./bootstrap";
-
-  # fix: 'To avoid this warning please remove this line from your configuration file or upgrade it using "doxygen -u"'
-  postConfigure = "doxygen -u";
+  buildInputs = [
+    ell
+    systemd
+  ];
 
   configureFlags = [
     "--sysconfdir=/etc"
     "--with-systemdsystemunitdir=${placeholder "out"}/lib/systemd/system"
   ];
 
+  # fix: 'Fontconfig error: Cannot load default config file: No such file: (null)'
+  env.FONTCONFIG_FILE = "${fontconfig.out}/etc/fonts/fonts.conf";
+  # ref. https://github.com/multipath-tcp/mptcpd/blob/main/README.md#bootstrapping
+  preConfigure = "./bootstrap";
+  # fix: 'To avoid this warning please remove this line from your configuration file or upgrade it using "doxygen -u"'
+  postConfigure = "doxygen -u";
+  # fix: 'Fontconfig error: No writable cache directories'
+  preBuild = "export XDG_CACHE_HOME=$(mktemp -d)";
+  # build and install doc
+  postBuild = "make doxygen-doc";
+  doCheck = true;
+  postInstall = "mv doc $doc";
+
   installFlags = [
     # The NixOS module generates /etc/mptcpd/mptcpd.conf declaratively.
     "pkgsysconfdir=$out/etc/mptcpd"
   ];
-
-  # fix: 'Fontconfig error: Cannot load default config file: No such file: (null)'
-  env.FONTCONFIG_FILE = "${fontconfig.out}/etc/fonts/fonts.conf";
-
-  buildInputs = [
-    ell
-    systemd
-  ];
-
-  # fix: 'Fontconfig error: No writable cache directories'
-  preBuild = "export XDG_CACHE_HOME=$(mktemp -d)";
-
-  # build and install doc
-  postBuild = "make doxygen-doc";
-  postInstall = "mv doc $doc";
-
-  doCheck = true;
 
   meta = {
     description = "Daemon for Linux that performs Multipath TCP path management related operations in the user space";
@@ -79,7 +74,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/multipath-tcp/mptcpd/blob/${finalAttrs.src.rev}/NEWS";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ nim65s ];
-    mainProgram = "mptcpize";
     platforms = lib.platforms.linux;
+    mainProgram = "mptcpize";
   };
 })

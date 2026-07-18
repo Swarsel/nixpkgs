@@ -1,12 +1,12 @@
 {
-  stdenvNoCC,
   lib,
-  makeDesktopItem,
-  copyDesktopItems,
   fetchurl,
+  copyDesktopItems,
+  imagemagick,
   jdk,
   makeBinaryWrapper,
-  imagemagick,
+  makeDesktopItem,
+  stdenvNoCC,
 }:
 
 let
@@ -21,30 +21,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-wACGbHeRQ5rXcuI1J3eTfQraWp8eWtkIAPo7BNGcFUU=";
   };
 
-  dontUnpack = true;
-
   strictDeps = true;
 
   nativeBuildInputs = [
     makeBinaryWrapper
     copyDesktopItems
     imagemagick
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "jetuml";
-      desktopName = "JetUML";
-      genericName = "UML Tool";
-      categories = [
-        "Application"
-        "Development"
-        "ProjectManagement"
-      ];
-      icon = "jet";
-      exec = "jetuml";
-      comment = finalAttrs.meta.description;
-    })
   ];
 
   installPhase = ''
@@ -64,13 +46,32 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Application"
+        "Development"
+        "ProjectManagement"
+      ];
+
+      comment = finalAttrs.meta.description;
+      desktopName = "JetUML";
+      exec = "jetuml";
+      genericName = "UML Tool";
+      icon = "jet";
+      name = "jetuml";
+    })
+  ];
+
+  dontUnpack = true;
+
   meta = {
-    homepage = "https://www.jetuml.org/";
     description = "Desktop application for fast UML diagramming";
-    mainProgram = "jetuml";
-    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
+    homepage = "https://www.jetuml.org/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
+    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
     maintainers = [ lib.maintainers.felissedano ];
+    platforms = lib.platforms.all;
+    mainProgram = "jetuml";
   };
 })

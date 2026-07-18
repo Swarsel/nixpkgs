@@ -28,36 +28,10 @@ in
 {
   options = {
     services.sssd = {
-      enable = lib.mkEnableOption "the System Security Services Daemon";
-
-      settings = lib.mkOption {
-        inherit (settingsFormat) type;
-        description = "Contents of {file}`sssd.conf`.";
-        default = { };
-        example = {
-          sssd = {
-            services = "nss, pam";
-            domains = "shadowutils";
-          };
-
-          nss = { };
-
-          pam = { };
-
-          "domain/shadowutils" = {
-            id_provider = "proxy";
-            proxy_lib_name = "files";
-            auth_provider = "proxy";
-            proxy_pam_target = "sssd-shadowutils";
-            proxy_fast_alias = true;
-          };
-        };
-      };
-
       config = lib.mkOption {
-        type = lib.types.lines;
-        description = "Contents of {file}`sssd.conf`.";
         default = "";
+        description = "Contents of {file}`sssd.conf`.";
+
         example = ''
           [sssd]
           services = nss, pam
@@ -74,37 +48,15 @@ in
           proxy_pam_target = sssd-shadowutils
           proxy_fast_alias = True
         '';
+
+        type = lib.types.lines;
       };
 
-      sshAuthorizedKeysIntegration = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Whether to make sshd look up authorized keys from SSS.
-          For this to work, the `ssh` SSS service must be enabled in the sssd configuration.
-        '';
-      };
-
-      kcm = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Whether to use SSS as a Kerberos Cache Manager (KCM).
-          Kerberos will be configured to cache credentials in SSS.
-        '';
-      };
-
-      subIDsIntegration = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Whether to use SSS as a source for subuid and subgid.
-        '';
-      };
+      enable = lib.mkEnableOption "the System Security Services Daemon";
 
       environmentFile = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
         default = null;
+
         description = ''
           Environment file as defined in {manpage}`systemd.exec(5)`.
 
@@ -123,9 +75,68 @@ in
             SSSD_LDAP_DEFAULT_AUTHTOK=verysecretpassword
           ```
         '';
+
+        type = lib.types.nullOr lib.types.path;
+      };
+
+      kcm = lib.mkOption {
+        default = false;
+
+        description = ''
+          Whether to use SSS as a Kerberos Cache Manager (KCM).
+          Kerberos will be configured to cache credentials in SSS.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      settings = lib.mkOption {
+        inherit (settingsFormat) type;
+        default = { };
+        description = "Contents of {file}`sssd.conf`.";
+
+        example = {
+          "domain/shadowutils" = {
+            auth_provider = "proxy";
+            id_provider = "proxy";
+            proxy_fast_alias = true;
+            proxy_lib_name = "files";
+            proxy_pam_target = "sssd-shadowutils";
+          };
+
+          nss = { };
+          pam = { };
+
+          sssd = {
+            domains = "shadowutils";
+            services = "nss, pam";
+          };
+        };
+      };
+
+      sshAuthorizedKeysIntegration = lib.mkOption {
+        default = false;
+
+        description = ''
+          Whether to make sshd look up authorized keys from SSS.
+          For this to work, the `ssh` SSS service must be enabled in the sssd configuration.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      subIDsIntegration = lib.mkOption {
+        default = false;
+
+        description = ''
+          Whether to use SSS as a source for subuid and subgid.
+        '';
+
+        type = lib.types.bool;
       };
     };
   };
+
   config = lib.mkMerge [
     (lib.mkIf cfg.enable {
       assertions = [
@@ -135,51 +146,34 @@ in
         }
       ];
 
+      environment.etc."sssd/conf.d".source = "${dataDir}/conf.d";
       # For `sssctl` to work.
       environment.etc."sssd/sssd.conf".source = settingsFile;
-      environment.etc."sssd/conf.d".source = "${dataDir}/conf.d";
+      services.dbus.packages = [ pkgs.sssd ];
+
+      system.nssDatabases = {
+        group = [ "sss" ];
+        passwd = [ "sss" ];
+        services = [ "sss" ];
+        shadow = [ "sss" ];
+      };
+
+      system.nssModules = [ pkgs.sssd ];
 
       systemd.services.sssd = {
-        description = "System Security Services Daemon";
-        wantedBy = [ "multi-user.target" ];
-        before = [
-          "systemd-user-sessions.service"
-          "nss-user-lookup.target"
-        ];
         after = [
           "network-online.target"
           "nscd.service"
         ];
-        requires = [
-          "network-online.target"
-          "nscd.service"
+
+        before = [
+          "systemd-user-sessions.service"
+          "nss-user-lookup.target"
         ];
-        wants = [ "nss-user-lookup.target" ];
-        restartTriggers = [
-          config.environment.etc."nscd.conf".source
-          settingsFileUnsubstituted
-        ];
+
+        description = "System Security Services Daemon";
         environment.LDB_MODULES_PATH = "${pkgs.ldb}/modules/ldb:${pkgs.sssd}/modules/ldb";
-        serviceConfig = {
-          # systemd needs to start sssd directly for "NotifyAccess=main" to work
-          ExecStart = "${pkgs.sssd}/bin/sssd -i -c ${settingsFile}";
-          Type = "notify";
-          NotifyAccess = "main";
-          PIDFile = "/run/sssd.pid";
-          CapabilityBoundingSet = [
-            "CAP_DAC_READ_SEARCH"
-            "CAP_SETGID"
-            "CAP_SETUID"
-          ];
-          Restart = "on-abnormal";
-          StateDirectory = baseNameOf dataDir;
-          # We cannot use LoadCredential here because it's not available in ExecStartPre
-          EnvironmentFile = lib.mkIf (cfg.environmentFile != null) cfg.environmentFile;
-        };
-        unitConfig = {
-          StartLimitIntervalSec = "50s";
-          StartLimitBurst = 5;
-        };
+
         preStart = ''
           mkdir -p "${dataDir}/conf.d"
           [ -f ${settingsFile} ] && rm -f ${settingsFile}
@@ -191,24 +185,57 @@ in
           umask $old_umask
           mkdir -p /var/lib/sss/{pubconf,db,mc,pipes,gpo_cache,secrets} /var/lib/sss/pipes/private /var/lib/sss/pubconf/krb5.include.d
         '';
-      };
 
-      system.nssModules = [ pkgs.sssd ];
-      system.nssDatabases = {
-        group = [ "sss" ];
-        passwd = [ "sss" ];
-        services = [ "sss" ];
-        shadow = [ "sss" ];
+        requires = [
+          "network-online.target"
+          "nscd.service"
+        ];
+
+        restartTriggers = [
+          config.environment.etc."nscd.conf".source
+          settingsFileUnsubstituted
+        ];
+
+        serviceConfig = {
+          CapabilityBoundingSet = [
+            "CAP_DAC_READ_SEARCH"
+            "CAP_SETGID"
+            "CAP_SETUID"
+          ];
+
+          # We cannot use LoadCredential here because it's not available in ExecStartPre
+          EnvironmentFile = lib.mkIf (cfg.environmentFile != null) cfg.environmentFile;
+          # systemd needs to start sssd directly for "NotifyAccess=main" to work
+          ExecStart = "${pkgs.sssd}/bin/sssd -i -c ${settingsFile}";
+          NotifyAccess = "main";
+          PIDFile = "/run/sssd.pid";
+          Restart = "on-abnormal";
+          StateDirectory = baseNameOf dataDir;
+          Type = "notify";
+        };
+
+        unitConfig = {
+          StartLimitBurst = 5;
+          StartLimitIntervalSec = "50s";
+        };
+
+        wantedBy = [ "multi-user.target" ];
+        wants = [ "nss-user-lookup.target" ];
       };
-      services.dbus.packages = [ pkgs.sssd ];
     })
 
     (lib.mkIf cfg.kcm {
+      security.krb5.settings.libdefaults.default_ccache_name = "KCM:";
+
       systemd.services.sssd-kcm = {
         description = "SSSD Kerberos Cache Manager";
         requires = [ "sssd-kcm.socket" ];
+
+        restartTriggers = [
+          settingsFileUnsubstituted
+        ];
+
         serviceConfig = {
-          ExecStart = "${pkgs.sssd}/libexec/sssd/sssd_kcm";
           CapabilityBoundingSet = [
             "CAP_IPC_LOCK"
             "CAP_CHOWN"
@@ -217,19 +244,18 @@ in
             "CAP_SETGID"
             "CAP_SETUID"
           ];
+
+          ExecStart = "${pkgs.sssd}/libexec/sssd/sssd_kcm";
         };
-        restartTriggers = [
-          settingsFileUnsubstituted
-        ];
       };
+
       systemd.sockets.sssd-kcm = {
         description = "SSSD Kerberos Cache Manager responder socket";
-        wantedBy = [ "sockets.target" ];
         # Matches the default in MIT krb5 and Heimdal:
         # https://github.com/krb5/krb5/blob/krb5-1.19.3-final/src/include/kcm.h#L43
         listenStreams = [ "/var/run/.heim_org.h5l.kcm-socket" ];
+        wantedBy = [ "sockets.target" ];
       };
-      security.krb5.settings.libdefaults.default_ccache_name = "KCM:";
     })
 
     (lib.mkIf cfg.sshAuthorizedKeysIntegration {
@@ -237,18 +263,20 @@ in
       # So indirect by a symlink.
       environment.etc."ssh/authorized_keys_command" = {
         mode = "0755";
+
         text = ''
           #!/bin/sh
           exec ${pkgs.sssd}/bin/sss_ssh_authorizedkeys "$@"
         '';
       };
+
       services.openssh.authorizedKeysCommand = "/etc/ssh/authorized_keys_command";
       services.openssh.authorizedKeysCommandUser = "nobody";
     })
 
     (lib.mkIf cfg.subIDsIntegration {
-      system.nssDatabases.subuid = [ "sss" ];
       system.nssDatabases.subgid = [ "sss" ];
+      system.nssDatabases.subuid = [ "sss" ];
     })
   ];
 

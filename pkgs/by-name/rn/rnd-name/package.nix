@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 let
@@ -19,16 +19,15 @@ buildGoModule {
   };
 
   vendorHash = null;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    platforms = lib.platforms.all;
-    mainProgram = "rnd-name";
     description = "Random strings that are easy to recognize";
     homepage = "https://github.com/mrhenry/rnd-name";
     changelog = "https://github.com/mrhenry/rnd-name/releases/tag/v${version}";
     license = lib.licenses.mit0;
     maintainers = with lib.maintainers; [ fd ];
+    platforms = lib.platforms.all;
+    mainProgram = "rnd-name";
   };
 }

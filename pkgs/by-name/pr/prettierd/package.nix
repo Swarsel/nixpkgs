@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
-  yarnInstallHook,
-  nodejs,
   nix-update-script,
+  nodejs,
   runCommand,
+  yarnBuildHook,
+  yarnConfigHook,
+  yarnInstallHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,11 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "prettierd";
     tag = "v${finalAttrs.version}";
     hash = "sha256-8fy8ciPRd2ZRZ56vzz0quDNqpaAPfUFBN4fjVTdd2Cg=";
-  };
-
-  offlineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/yarn.lock";
-    hash = "sha256-PPi+nobxbVTC9G0Xwu5kcNH6zxtJXueYGuZkl3+XTIo=";
   };
 
   strictDeps = true;
@@ -43,9 +38,12 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix PATH : ${lib.makeBinPath [ nodejs ]}
   '';
 
-  passthru = {
-    updateScript = nix-update-script { };
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-PPi+nobxbVTC9G0Xwu5kcNH6zxtJXueYGuZkl3+XTIo=";
+    yarnLock = finalAttrs.src + "/yarn.lock";
+  };
 
+  passthru = {
     tests = lib.optionalAttrs (!stdenv.hostPlatform.isDarwin) {
       format =
         runCommand "prettierd-format-file-test" { nativeBuildInputs = [ finalAttrs.finalPackage ]; }
@@ -54,18 +52,22 @@ stdenv.mkDerivation (finalAttrs: {
             prettierd ${finalAttrs.src}/package.json < ${finalAttrs.src}/package.json > $out
           '';
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    mainProgram = "prettierd";
     description = "Prettier, as a daemon, for improved formatting speed";
     homepage = "https://github.com/fsouza/prettierd";
-    license = lib.licenses.isc;
     changelog = "https://github.com/fsouza/prettierd/blob/${finalAttrs.src.rev}/CHANGELOG.md";
-    platforms = with lib.platforms; linux ++ darwin;
+    license = lib.licenses.isc;
+
     maintainers = with lib.maintainers; [
       NotAShelf
       n3oney
     ];
+
+    platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "prettierd";
   };
 })

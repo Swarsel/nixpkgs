@@ -17,25 +17,6 @@ let
     ;
 in
 {
-  port = 7979;
-  extraOpts = {
-    configFile = mkOption {
-      type = types.path;
-      description = ''
-        Path to configuration file.
-      '';
-    };
-  };
-  serviceOpts = {
-    serviceConfig = {
-      ExecStart = ''
-        ${pkgs.prometheus-json-exporter}/bin/json_exporter \
-          --config.file ${escapeShellArg cfg.configFile} \
-          --web.listen-address="${cfg.listenAddress}:${toString cfg.port}" \
-          ${concatStringsSep " \\\n  " cfg.extraFlags}
-      '';
-    };
-  };
   imports = [
     (mkRemovedOptionModule [ "url" ] ''
       This option was removed. The URL of the endpoint serving JSON
@@ -50,8 +31,31 @@ in
       (https://github.com/prometheus-community/json_exporter) of the json_exporter.
     '')
     {
-      options.warnings = options.warnings;
       options.assertions = options.assertions;
+      options.warnings = options.warnings;
     }
   ];
+
+  extraOpts = {
+    configFile = mkOption {
+      description = ''
+        Path to configuration file.
+      '';
+
+      type = types.path;
+    };
+  };
+
+  port = 7979;
+
+  serviceOpts = {
+    serviceConfig = {
+      ExecStart = ''
+        ${pkgs.prometheus-json-exporter}/bin/json_exporter \
+          --config.file ${escapeShellArg cfg.configFile} \
+          --web.listen-address="${cfg.listenAddress}:${toString cfg.port}" \
+          ${concatStringsSep " \\\n  " cfg.extraFlags}
+      '';
+    };
+  };
 }

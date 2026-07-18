@@ -1,26 +1,25 @@
 {
   lib,
   fetchFromGitHub,
-  python3,
-  runCommand,
-
   # passthru
   octodns,
+  python3,
+  runCommand,
 }:
 let
   # Export `python` with `octodns` as a module for `octodns-providers`.
   python = python3.override {
-    self = python;
     packageOverrides = final: prev: {
       octodns = final.toPythonModule octodns;
     };
+
+    self = python;
   };
   python3Packages = python.pkgs;
 in
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "octodns";
   version = "1.15.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "octodns";
@@ -28,6 +27,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-wVUMj47Ex2GrCytV0JhmXUKuIwAw59X7+ce/0LhwmkE=";
   };
+
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+  ];
 
   build-system = with python3Packages; [
     setuptools
@@ -42,10 +45,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pyyaml
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "octodns" ];
 
   passthru = {

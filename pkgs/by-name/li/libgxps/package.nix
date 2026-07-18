@@ -2,33 +2,33 @@
   lib,
   stdenv,
   fetchurl,
+  cairo,
+  freetype,
+  glib,
+  gnome,
+  gobject-introspection,
+  lcms2,
+  libarchive,
+  libjpeg,
+  libtiff,
   meson,
   ninja,
   pkg-config,
-  glib,
-  gobject-introspection,
-  cairo,
-  libarchive,
-  freetype,
-  libjpeg,
-  libtiff,
-  gnome,
-  lcms2,
 }:
 
 stdenv.mkDerivation rec {
   pname = "libgxps";
   version = "0.3.2";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchurl {
     url = "mirror://gnome/sources/libgxps/${lib.versions.majorMinor version}/libgxps-${version}.tar.xz";
     sha256 = "bSeGclajXM+baSU+sqiKMrrKO5fV9O9/guNmf6Q1JRw=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     meson
@@ -36,6 +36,7 @@ stdenv.mkDerivation rec {
     pkg-config
     gobject-introspection
   ];
+
   buildInputs = [
     glib
     cairo
@@ -44,6 +45,7 @@ stdenv.mkDerivation rec {
     libtiff
     lcms2
   ];
+
   propagatedBuildInputs = [ libarchive ];
 
   mesonFlags = [
@@ -64,7 +66,7 @@ stdenv.mkDerivation rec {
     description = "GObject based library for handling and rendering XPS documents";
     homepage = "https://gitlab.gnome.org/GNOME/libgxps";
     license = lib.licenses.lgpl21Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.gnome ];
   };
 }

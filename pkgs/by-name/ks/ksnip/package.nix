@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
-  cmake,
+  stdenv,
   fetchFromGitHub,
-  qt6,
+  cmake,
   kdePackages,
+  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,11 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "f50e2764d0d51af2fd06c9d70f1e5f1631726975";
     hash = "sha256-XehTMbvSRHfwTy6+Rv2QavQfRs6lK1+sd04iOZZZH4c=";
   };
-
-  cmakeFlags = [
-    "-DBUILD_WITH_QT6=ON"
-    "-DQT_FIND_PRIVATE_MODULES=ON"
-  ];
 
   nativeBuildInputs = [
     cmake
@@ -36,9 +31,14 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.qtsvg
   ];
 
+  cmakeFlags = [
+    "-DBUILD_WITH_QT6=ON"
+    "-DQT_FIND_PRIVATE_MODULES=ON"
+  ];
+
   meta = {
-    homepage = "https://github.com/ksnip/ksnip";
     description = "Cross-platform screenshot tool with many annotation features";
+
     longDescription = ''
       Features:
 
@@ -70,6 +70,8 @@ stdenv.mkDerivation (finalAttrs: {
       - User-defined actions for taking screenshot and post-processing.
       - Many configuration options.
     '';
+
+    homepage = "https://github.com/ksnip/ksnip";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
     mainProgram = "ksnip";

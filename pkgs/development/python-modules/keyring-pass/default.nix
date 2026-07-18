@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   gnupg,
   keyring,
   pass,
@@ -10,8 +10,6 @@
 buildPythonPackage rec {
   pname = "keyring-pass";
   version = "0.9.3";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nazarewk";
@@ -24,8 +22,6 @@ buildPythonPackage rec {
     substituteInPlace keyring_pass/__init__.py \
       --replace-fail 'pass_binary = "pass"' 'pass_binary = "${lib.getExe pass}"'
   '';
-
-  build-system = [ poetry-core ];
 
   nativeCheckInputs = [
     keyring
@@ -62,6 +58,8 @@ buildPythonPackage rec {
     keyring del test-service test-username
   '';
 
+  build-system = [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "keyring_pass" ];
 
   meta = {

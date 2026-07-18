@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   django,
-  pytestCheckHook,
   pytest-django,
+  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "django-scopes";
   version = "2.0.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "raphaelm";
@@ -26,6 +25,7 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "django_scopes" ];
 
   meta = {

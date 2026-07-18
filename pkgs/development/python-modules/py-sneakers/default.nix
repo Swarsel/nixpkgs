@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "py-sneakers";
   version = "1.0.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,14 +15,14 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "py_sneakers" ];
 
   meta = {
     description = "Library to emulate the Sneakers movie effect";
-    mainProgram = "py-sneakers";
     homepage = "https://github.com/aenima-x/py-sneakers";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "py-sneakers";
   };
 }

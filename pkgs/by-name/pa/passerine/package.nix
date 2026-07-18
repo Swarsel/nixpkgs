@@ -19,9 +19,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Small extensible programming language designed for concise expression with little code";
-    mainProgram = "passerine";
     homepage = "https://www.passerine.io/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ siraben ];
+    mainProgram = "passerine";
   };
 })

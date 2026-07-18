@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  testers,
   i3-back,
+  rustPlatform,
+  testers,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "i3-back";
@@ -23,7 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   cargoHash = "sha256-o/um/Ugm3GfDz1daBKxoDD7ailUu6QJ0rj5jcKWB0lM=";
-
   passthru.tests.version = testers.testVersion { package = i3-back; };
 
   meta = {

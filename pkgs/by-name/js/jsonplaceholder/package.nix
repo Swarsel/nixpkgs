@@ -1,10 +1,10 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   makeBinaryWrapper,
-  nodejs,
   nix-update-script,
+  nodejs,
 }:
 
 buildNpmPackage {
@@ -18,9 +18,8 @@ buildNpmPackage {
     hash = "sha256-b+p1bByq0oRj3zqVsFFoXFR2ydrbZqWwJdVIaXEmQwQ=";
   };
 
-  npmDepsHash = "sha256-x+EN33CQE4ga9T0V4oJRPkELT8x4WbNIsQmvyW+hHi8=";
-
   nativeBuildInputs = [ makeBinaryWrapper ];
+  npmDepsHash = "sha256-x+EN33CQE4ga9T0V4oJRPkELT8x4WbNIsQmvyW+hHi8=";
 
   postInstall = ''
     rm -rf $out/lib/node_modules/jsonplaceholder/node_modules/.bin

@@ -1,24 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   greenlet,
-  trio,
   outcome,
-  sniffio,
   pytest-trio,
   pytestCheckHook,
   pythonAtLeast,
+  setuptools,
+  sniffio,
+  trio,
 }:
 
 buildPythonPackage rec {
   pname = "trio-asyncio";
   version = "0.16.0";
-  pyproject = true;
-
-  # https://github.com/python-trio/trio-asyncio/issues/160
-  disabled = pythonAtLeast "3.14";
 
   src = fetchFromGitHub {
     owner = "python-trio";
@@ -32,6 +28,11 @@ buildPythonPackage rec {
       --replace-fail '"pytest-runner"' ""
   '';
 
+  nativeCheckInputs = [
+    pytest-trio
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -41,11 +42,8 @@ buildPythonPackage rec {
     sniffio
   ];
 
-  pytestFlags = [
-    # RuntimeWarning: Can't run the Python asyncio tests because they're not installed
-    "-Wignore::RuntimeWarning"
-    "-Wignore::DeprecationWarning"
-  ];
+  # https://github.com/python-trio/trio-asyncio/issues/160
+  disabled = pythonAtLeast "3.14";
 
   disabledTests = [
     # TypeError: RaisesGroup.__init__() got an unexpected keyword argument 'strict'
@@ -54,21 +52,26 @@ buildPythonPackage rec {
     "test_cancel_loop_with_tasks"
   ];
 
-  nativeCheckInputs = [
-    pytest-trio
-    pytestCheckHook
+  pyproject = true;
+
+  pytestFlags = [
+    # RuntimeWarning: Can't run the Python asyncio tests because they're not installed
+    "-Wignore::RuntimeWarning"
+    "-Wignore::DeprecationWarning"
   ];
 
   pythonImportsCheck = [ "trio_asyncio" ];
 
   meta = {
-    changelog = "https://github.com/python-trio/trio-asyncio/blob/v${version}/docs/source/history.rst";
     description = "Re-implementation of the asyncio mainloop on top of Trio";
     homepage = "https://github.com/python-trio/trio-asyncio";
+    changelog = "https://github.com/python-trio/trio-asyncio/blob/v${version}/docs/source/history.rst";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
+
     maintainers = with lib.maintainers; [ dotlambda ];
   };
 }

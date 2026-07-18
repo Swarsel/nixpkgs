@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
   installShellFiles,
-  stdenv,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,13 +17,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-8N3ToXpbDR+g19CT0q1J4QfQstBjS2QfX4IV2D7+ics=";
   };
 
-  cargoHash = "sha256-yByNgG8JAdT5jVxe3ijLbmjE1c8YybPkiwMHOvpZPTM=";
-
-  nativeBuildInputs = [ installShellFiles ];
-
   postPatch = ''
     rm .cargo/config.toml
   '';
+
+  nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-yByNgG8JAdT5jVxe3ijLbmjE1c8YybPkiwMHOvpZPTM=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd chara \

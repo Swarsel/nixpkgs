@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
-  yaml-cpp,
-  systemd,
-  python313Packages,
   asciidoc,
-  libxslt,
+  docbook5,
   docbook_xml_dtd_45,
   docbook_xsl,
   libxml2,
-  docbook5,
+  libxslt,
+  meson,
   mesonEmulatorHook,
+  ninja,
+  pkg-config,
+  python313Packages,
+  systemd,
+  yaml-cpp,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -45,10 +45,9 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [ mesonEmulatorHook ];
 
   buildInputs = [ yaml-cpp ];
-
   doCheck = true;
-
   doInstallCheck = true;
+
   installCheckPhase = ''
     found=0
     for man in "$out/share/man/man1"/ip2unix.1*; do
@@ -61,11 +60,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/nixcloud/ip2unix";
     description = "Turn IP sockets into Unix domain sockets";
-    platforms = lib.platforms.linux;
+    homepage = "https://github.com/nixcloud/ip2unix";
     license = lib.licenses.lgpl3;
     maintainers = [ lib.maintainers.aszlig ];
+    platforms = lib.platforms.linux;
     mainProgram = "ip2unix";
   };
 })

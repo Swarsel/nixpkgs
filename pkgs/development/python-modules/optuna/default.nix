@@ -1,51 +1,45 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  # tests
+  addBinToPathHook,
   # dependencies
   alembic,
-  colorlog,
-  numpy,
-  packaging,
-  sqlalchemy,
-  tqdm,
-  pyyaml,
-
   # optional-dependencies
   boto3,
+  buildPythonPackage,
   cmaes,
+  colorlog,
+  fakeredis,
   fvcore,
   google-cloud-storage,
   grpcio,
+  kaleido,
   matplotlib,
+  moto,
+  numpy,
+  packaging,
   pandas,
   plotly,
   protobuf,
+  pytest-xdist,
+  pytestCheckHook,
+  pyyaml,
   redis,
   scikit-learn,
   scipy,
-
-  # tests
-  addBinToPathHook,
-  fakeredis,
-  kaleido,
-  moto,
-  pytest-xdist,
-  pytestCheckHook,
+  # build-system
+  setuptools,
+  sqlalchemy,
   torch,
+  tqdm,
   versionCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "optuna";
   version = "4.9.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "optuna";
@@ -53,6 +47,32 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-BoRy5LSzMl9w5KS9BW1uHUTcEj1ZyYp4nWykPgq6ckI=";
   };
+
+  nativeCheckInputs = [
+    addBinToPathHook
+    fakeredis
+    kaleido
+    moto
+    pytest-xdist
+    pytestCheckHook
+    torch
+    versionCheckHook
+  ]
+  ++ fakeredis.optional-dependencies.lua
+  ++ finalAttrs.passthru.optional-dependencies.optional;
+
+  preCheck =
+    # grpc tests are racy
+    ''
+      sed -i '/"grpc",/d' optuna/testing/storages.py
+    ''
+    # Prevents 'Fatal Python error: Aborted' on darwin during checkPhase
+    + lib.optionalString stdenv.hostPlatform.isDarwin ''
+      export MPLBACKEND="Agg"
+    '';
+
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -68,45 +88,17 @@ buildPythonPackage (finalAttrs: {
     pyyaml
   ];
 
-  optional-dependencies = {
-    optional = [
-      boto3
-      cmaes
-      fvcore
-      google-cloud-storage
-      grpcio
-      matplotlib
-      pandas
-      plotly
-      protobuf
-      redis
-      scikit-learn
-      scipy
-    ];
-  };
-
-  preCheck =
-    # grpc tests are racy
-    ''
-      sed -i '/"grpc",/d' optuna/testing/storages.py
-    ''
-    # Prevents 'Fatal Python error: Aborted' on darwin during checkPhase
-    + lib.optionalString stdenv.hostPlatform.isDarwin ''
-      export MPLBACKEND="Agg"
-    '';
-
-  nativeCheckInputs = [
-    addBinToPathHook
-    fakeredis
-    kaleido
-    moto
-    pytest-xdist
-    pytestCheckHook
-    torch
-    versionCheckHook
-  ]
-  ++ fakeredis.optional-dependencies.lua
-  ++ finalAttrs.passthru.optional-dependencies.optional;
+  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
+    # PermissionError: [Errno 13] Permission denied: '/tmp/optuna_find_free_port.lock'
+    "tests/storages_tests/journal_tests/test_combination_with_grpc.py"
+    "tests/storages_tests/test_grpc.py"
+    "tests/storages_tests/test_storages.py"
+    "tests/study_tests/test_dataframe.py"
+    "tests/study_tests/test_optimize.py"
+    "tests/study_tests/test_study.py"
+    "tests/trial_tests/test_frozen.py"
+    "tests/trial_tests/test_trial.py"
+  ];
 
   disabledTests = [
     # ValueError: Transform failed with error code 525: error creating static canvas/context for image server
@@ -135,20 +127,24 @@ buildPythonPackage (finalAttrs: {
     "test_plot_terminator_improvement"
   ];
 
-  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
-    # PermissionError: [Errno 13] Permission denied: '/tmp/optuna_find_free_port.lock'
-    "tests/storages_tests/journal_tests/test_combination_with_grpc.py"
-    "tests/storages_tests/test_grpc.py"
-    "tests/storages_tests/test_storages.py"
-    "tests/study_tests/test_dataframe.py"
-    "tests/study_tests/test_optimize.py"
-    "tests/study_tests/test_study.py"
-    "tests/trial_tests/test_frozen.py"
-    "tests/trial_tests/test_trial.py"
-  ];
+  optional-dependencies = {
+    optional = [
+      boto3
+      cmaes
+      fvcore
+      google-cloud-storage
+      grpcio
+      matplotlib
+      pandas
+      plotly
+      protobuf
+      redis
+      scikit-learn
+      scipy
+    ];
+  };
 
-  __darwinAllowLocalNetworking = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "optuna" ];
 
   meta = {

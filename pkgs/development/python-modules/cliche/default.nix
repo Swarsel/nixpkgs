@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   ipdb,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage {
   pname = "cliche";
   version = "0.10.108";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "kootenpv";
@@ -24,16 +23,15 @@ buildPythonPackage {
   '';
 
   propagatedBuildInputs = [ ipdb ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "cliche" ];
 
   meta = {
     description = "Build a simple command-line interface from your functions :computer:";
-    mainProgram = "cliche";
     homepage = "https://github.com/kootenpv/cliche";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "cliche";
   };
 }

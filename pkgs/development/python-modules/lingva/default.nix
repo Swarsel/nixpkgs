@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   chameleon,
   click,
-  fetchFromGitHub,
   polib,
   pytestCheckHook,
   setuptools,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "lingva";
   version = "5.0.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vacanza";
@@ -21,6 +20,7 @@ buildPythonPackage rec {
     hash = "sha256-eGXUBSEO5n5WUENhJ+p5eKTdenBsONUWw1mDax7QcSA=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ] ++ optional-dependencies.chameleon;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -32,8 +32,7 @@ buildPythonPackage rec {
     chameleon = [ chameleon ];
   };
 
-  nativeCheckInputs = [ pytestCheckHook ] ++ optional-dependencies.chameleon;
-
+  pyproject = true;
   pythonImportsCheck = [ "lingva" ];
 
   meta = {

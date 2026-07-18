@@ -1,24 +1,24 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
+  bzip2,
   cmake,
-  libvorbis,
-  libeb,
+  fmt,
   hunspell,
-  opencc,
-  xapian,
+  libeb,
+  libiconv,
+  libvorbis,
+  libxtst,
   libzim,
   lzo,
-  xz,
-  tomlplusplus,
-  fmt,
-  bzip2,
-  libiconv,
-  libxtst,
+  opencc,
+  pkg-config,
   qt6,
+  tomlplusplus,
   wrapGAppsHook3,
+  xapian,
+  xz,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -64,13 +64,6 @@ stdenv.mkDerivation (finalAttrs: {
     libzim
   ];
 
-  # Prevent double wrapping of wrapQtApps and wrapGApps
-  dontWrapGApps = true;
-
-  preFixup = ''
-    qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
-
   cmakeFlags = [
     "-DWITH_XAPIAN=ON"
     "-DWITH_ZIM=ON"
@@ -80,16 +73,25 @@ stdenv.mkDerivation (finalAttrs: {
     "-DUSE_SYSTEM_TOML=ON"
   ];
 
+  preFixup = ''
+    qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
+  # Prevent double wrapping of wrapQtApps and wrapGApps
+  dontWrapGApps = true;
+
   meta = {
-    homepage = "https://xiaoyifang.github.io/goldendict-ng/";
     description = "Advanced multi-dictionary lookup program";
-    platforms = lib.platforms.linux;
-    mainProgram = "goldendict";
+    homepage = "https://xiaoyifang.github.io/goldendict-ng/";
+    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       slbtty
       michojel
       linsui
     ];
-    license = lib.licenses.gpl3Plus;
+
+    platforms = lib.platforms.linux;
+    mainProgram = "goldendict";
   };
 })

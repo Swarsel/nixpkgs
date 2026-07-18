@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   gast,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "beniget";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "serge-sans-paille";
@@ -19,13 +18,11 @@ buildPythonPackage rec {
     hash = "sha256-abxBLrz4JhZX084fd2wZEhP7w5bPBxvNXudYUaqS1Yo=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ gast ];
-
-  pythonImportsCheck = [ "beniget" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  dependencies = [ gast ];
+  pyproject = true;
+  pythonImportsCheck = [ "beniget" ];
 
   meta = {
     description = "Extract semantic information about static Python code";

@@ -1,24 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-  nix-update-script,
-  setuptools-rust,
-  rustPlatform,
+  buildPythonPackage,
   cargo,
-  rustc,
-  pkg-config,
-  llvmPackages,
   libxml2,
+  llvmPackages,
   ncurses,
+  nix-update-script,
+  pkg-config,
+  pythonAtLeast,
+  rustPlatform,
+  rustc,
+  setuptools-rust,
   zlib,
 }:
 
 buildPythonPackage.override { stdenv = llvmPackages.stdenv; } rec {
   pname = "verilogae";
   version = "24.0.0mob-unstable-2025-07-21";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "OpenVAF";
@@ -27,18 +26,10 @@ buildPythonPackage.override { stdenv = llvmPackages.stdenv; } rec {
     hash = "sha256-TDE2Ewokhm2KSKe+sunUbV8KD3kaTSd5dB3CLCWGJ9U=";
   };
 
-  # segfault in pythonImportsCheckPhase
-  disabled = pythonAtLeast "3.14";
-
   postPatch = ''
     substituteInPlace openvaf/osdi/build.rs \
       --replace-fail "-fPIC" ""
   '';
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-5SLrVL3h6+tptHv3GV7r8HUTrYQC9VdF68O2/Uct3xA=";
-  };
 
   nativeBuildInputs = [
     setuptools-rust
@@ -59,9 +50,16 @@ buildPythonPackage.override { stdenv = llvmPackages.stdenv; } rec {
 
   cargoBuildType = "release";
 
-  pythonImportsCheck = [ "verilogae" ];
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-5SLrVL3h6+tptHv3GV7r8HUTrYQC9VdF68O2/Uct3xA=";
+  };
 
+  # segfault in pythonImportsCheckPhase
+  disabled = pythonAtLeast "3.14";
   hardeningDisable = [ "pic" ];
+  pyproject = true;
+  pythonImportsCheck = [ "verilogae" ];
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];
@@ -70,13 +68,15 @@ buildPythonPackage.override { stdenv = llvmPackages.stdenv; } rec {
   meta = {
     description = "Verilog-A tool useful for compact model parameter extraction";
     homepage = "https://man.sr.ht/~dspom/openvaf_doc/verilogae/";
-    downloadPage = "https://github.com/OpenVAF/OpenVAF-Reloaded";
     license = lib.licenses.gpl3Only;
+    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       jasonodoom
       jleightcap
     ];
+
     platforms = lib.platforms.unix;
-    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
+    downloadPage = "https://github.com/OpenVAF/OpenVAF-Reloaded";
   };
 }

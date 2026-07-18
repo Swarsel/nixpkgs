@@ -5,16 +5,17 @@
 }:
 
 stdenv.mkDerivation {
-  pname = "libopcodes";
   inherit (binutils-unwrapped-all-targets) version;
+  pname = "libopcodes";
 
-  dontUnpack = true;
-  dontBuild = true;
-  dontInstall = true;
   propagatedBuildInputs = [
     binutils-unwrapped-all-targets.dev
     binutils-unwrapped-all-targets.lib
   ];
+
+  dontBuild = true;
+  dontInstall = true;
+  dontUnpack = true;
 
   passthru = {
     inherit (binutils-unwrapped-all-targets) dev;

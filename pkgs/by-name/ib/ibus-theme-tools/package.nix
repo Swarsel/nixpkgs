@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   gettext,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "ibus-theme-tools";
   version = "4.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openSUSE";
@@ -18,6 +17,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
   };
 
   buildInputs = [ gettext ];
+  # No test.
+  doCheck = false;
 
   build-system = with python3Packages; [
     setuptools
@@ -28,16 +29,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pygobject3
   ];
 
-  # No test.
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "ibus_theme_tools" ];
 
   meta = {
     description = "Generate the IBus GTK or GNOME Shell theme from existing themes";
+    homepage = "https://github.com/openSUSE/IBus-Theme-Tools";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ hollowman6 ];
-    homepage = "https://github.com/openSUSE/IBus-Theme-Tools";
     mainProgram = "ibus-theme-tools";
   };
 })

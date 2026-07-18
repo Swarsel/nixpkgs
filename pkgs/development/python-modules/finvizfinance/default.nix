@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   beautifulsoup4,
+  buildPythonPackage,
   datetime,
   lxml,
   pandas,
   pytest-mock,
   pytestCheckHook,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "finvizfinance";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lit26";
@@ -24,12 +23,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-M/EyQgINdJLLfOFNm/RhqONz3slb4ukugHLdiozDY0s=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     pytest-mock
     pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     beautifulsoup4
@@ -38,8 +37,6 @@ buildPythonPackage (finalAttrs: {
     pandas
     requests
   ];
-
-  pythonImportsCheck = [ "finvizfinance" ];
 
   disabledTests = [
     # Tests require network access
@@ -55,6 +52,9 @@ buildPythonPackage (finalAttrs: {
     "test_ticker_etf_holders_returns_list"
     "test_ticker_peer_returns_list"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "finvizfinance" ];
 
   meta = {
     description = "Finviz Finance information downloader";

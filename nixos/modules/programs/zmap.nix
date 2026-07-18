@@ -1,7 +1,7 @@
 {
-  pkgs,
   config,
   lib,
+  pkgs,
   ...
 }:
 
@@ -14,9 +14,8 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ pkgs.zmap ];
-
     environment.etc."zmap/blacklist.conf".source = "${pkgs.zmap}/etc/zmap/blacklist.conf";
     environment.etc."zmap/zmap.conf".source = "${pkgs.zmap}/etc/zmap.conf";
+    environment.systemPackages = [ pkgs.zmap ];
   };
 }

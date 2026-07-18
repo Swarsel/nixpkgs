@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   sphinx,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "sphinx-inline-tabs";
   version = "2025.12.21.14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pradyunsg";
@@ -19,12 +18,10 @@ buildPythonPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ flit-core ];
-
   propagatedBuildInputs = [ sphinx ];
-
   # no tests, see https://github.com/pradyunsg/sphinx-inline-tabs/issues/6
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "sphinx_inline_tabs" ];
 
   meta = {

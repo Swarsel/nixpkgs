@@ -1,28 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  dj-database-url,
   # dependencies
   django,
-  django-tasks,
-
   # tests
   django-modelcluster,
   django-taggit,
-  dj-database-url,
+  django-tasks,
   psycopg,
-  pytestCheckHook,
   pytest-django,
+  pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "modelsearch";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wagtail";
@@ -35,20 +31,6 @@ buildPythonPackage (finalAttrs: {
     substituteInPlace pyproject.toml \
       --replace-fail "setuptools>=80,<81" setuptools
   '';
-
-  build-system = [
-    setuptools
-  ];
-
-  pythonRelaxDeps = [
-    "django-tasks"
-  ];
-  dependencies = [
-    django
-    django-tasks
-  ];
-
-  pythonImportsCheck = [ "modelsearch" ];
 
   nativeCheckInputs = [
     dj-database-url
@@ -63,6 +45,22 @@ buildPythonPackage (finalAttrs: {
     export DJANGO_SETTINGS_MODULE=modelsearch.test.settings
     export SEARCH_BACKEND=db
   '';
+
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    django
+    django-tasks
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "modelsearch" ];
+
+  pythonRelaxDeps = [
+    "django-tasks"
+  ];
 
   meta = {
     description = "Index Django Models with Elasticsearch or OpenSearch and query them with the ORM";

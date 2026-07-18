@@ -53,97 +53,119 @@ in
 
       enable = mkEnableOption "namecoind, Namecoin client";
 
-      wallet = mkOption {
-        type = types.path;
-        default = "${dataDir}/wallet.dat";
-        description = ''
-          Wallet file. The ownership of the file has to be
-          namecoin:namecoin, and the permissions must be 0640.
-        '';
-      };
-
-      generate = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Whether to generate (mine) Namecoins.
-        '';
-      };
-
       extraNodes = mkOption {
-        type = types.listOf types.str;
         default = [ ];
+
         description = ''
           List of additional peer IP addresses to connect to.
         '';
-      };
 
-      trustedNodes = mkOption {
         type = types.listOf types.str;
-        default = [ ];
-        description = ''
-          List of the only peer IP addresses to connect to. If specified
-          no other connection will be made.
-        '';
       };
 
-      rpc.user = mkOption {
-        type = types.nullOr types.str;
-        default = null;
-        description = ''
-          User name for RPC connections.
-        '';
-      };
+      generate = mkOption {
+        default = false;
 
-      rpc.password = mkOption {
-        type = types.nullOr types.str;
-        default = null;
         description = ''
-          Password for RPC connections.
+          Whether to generate (mine) Namecoins.
         '';
+
+        type = types.bool;
       };
 
       rpc.address = mkOption {
-        type = types.str;
         default = "0.0.0.0";
+
         description = ''
           IP address the RPC server will bind to.
         '';
-      };
 
-      rpc.port = mkOption {
-        type = types.port;
-        default = 8332;
-        description = ''
-          Port the RPC server will bind to.
-        '';
-      };
-
-      rpc.certificate = mkOption {
-        type = types.nullOr types.path;
-        default = null;
-        example = "/var/lib/namecoind/server.cert";
-        description = ''
-          Certificate file for securing RPC connections.
-        '';
-      };
-
-      rpc.key = mkOption {
-        type = types.nullOr types.path;
-        default = null;
-        example = "/var/lib/namecoind/server.pem";
-        description = ''
-          Key file for securing RPC connections.
-        '';
+        type = types.str;
       };
 
       rpc.allowFrom = mkOption {
-        type = types.listOf types.str;
         default = [ "127.0.0.1" ];
+
         description = ''
           List of IP address ranges allowed to use the RPC API.
           Wiledcards (*) can be user to specify a range.
         '';
+
+        type = types.listOf types.str;
+      };
+
+      rpc.certificate = mkOption {
+        default = null;
+
+        description = ''
+          Certificate file for securing RPC connections.
+        '';
+
+        example = "/var/lib/namecoind/server.cert";
+        type = types.nullOr types.path;
+      };
+
+      rpc.key = mkOption {
+        default = null;
+
+        description = ''
+          Key file for securing RPC connections.
+        '';
+
+        example = "/var/lib/namecoind/server.pem";
+        type = types.nullOr types.path;
+      };
+
+      rpc.password = mkOption {
+        default = null;
+
+        description = ''
+          Password for RPC connections.
+        '';
+
+        type = types.nullOr types.str;
+      };
+
+      rpc.port = mkOption {
+        default = 8332;
+
+        description = ''
+          Port the RPC server will bind to.
+        '';
+
+        type = types.port;
+      };
+
+      rpc.user = mkOption {
+        default = null;
+
+        description = ''
+          User name for RPC connections.
+        '';
+
+        type = types.nullOr types.str;
+      };
+
+      trustedNodes = mkOption {
+        default = [ ];
+
+        description = ''
+          List of the only peer IP addresses to connect to. If specified
+          no other connection will be made.
+        '';
+
+        type = types.listOf types.str;
+      };
+
+      wallet = mkOption {
+        default = "${dataDir}/wallet.dat";
+
+        description = ''
+          Wallet file. The ownership of the file has to be
+          namecoin:namecoin, and the permissions must be 0640.
+        '';
+
+        type = types.path;
       };
 
     };
@@ -154,36 +176,9 @@ in
 
   config = mkIf cfg.enable {
 
-    users.users.namecoin = {
-      uid = config.ids.uids.namecoin;
-      description = "Namecoin daemon user";
-      home = dataDir;
-      createHome = true;
-    };
-
-    users.groups.namecoin = {
-      gid = config.ids.gids.namecoin;
-    };
-
     systemd.services.namecoind = {
-      description = "Namecoind daemon";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
-
-      startLimitIntervalSec = 120;
-      startLimitBurst = 5;
-      serviceConfig = {
-        User = "namecoin";
-        Group = "namecoin";
-        ExecStart = "${pkgs.namecoind}/bin/namecoind -conf=${configFile} -datadir=${dataDir} -printtoconsole";
-        ExecStop = "${pkgs.coreutils}/bin/kill -KILL $MAINPID";
-        ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
-        Nice = "10";
-        PrivateTmp = true;
-        TimeoutStopSec = "60s";
-        TimeoutStartSec = "2s";
-        Restart = "always";
-      };
+      description = "Namecoind daemon";
 
       preStart = optionalString (cfg.wallet != "${dataDir}/wallet.dat") ''
         # check wallet file permissions
@@ -195,6 +190,34 @@ in
         fi
       '';
 
+      serviceConfig = {
+        ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+        ExecStart = "${pkgs.namecoind}/bin/namecoind -conf=${configFile} -datadir=${dataDir} -printtoconsole";
+        ExecStop = "${pkgs.coreutils}/bin/kill -KILL $MAINPID";
+        Group = "namecoin";
+        Nice = "10";
+        PrivateTmp = true;
+        Restart = "always";
+        TimeoutStartSec = "2s";
+        TimeoutStopSec = "60s";
+        User = "namecoin";
+      };
+
+      startLimitBurst = 5;
+      startLimitIntervalSec = 120;
+      wantedBy = [ "multi-user.target" ];
+
+    };
+
+    users.groups.namecoin = {
+      gid = config.ids.gids.namecoin;
+    };
+
+    users.users.namecoin = {
+      createHome = true;
+      description = "Namecoin daemon user";
+      home = dataDir;
+      uid = config.ids.uids.namecoin;
     };
 
   };

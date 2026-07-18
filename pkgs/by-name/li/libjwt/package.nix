@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   jansson,
   openssl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,18 +19,19 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-0gFMeSW4gfbI6MUctcN8UuKhMDswaT8BzHTV2VuwZzc=";
   };
 
-  buildInputs = [
-    jansson
-    openssl
-  ];
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
   ];
 
+  buildInputs = [
+    jansson
+    openssl
+  ];
+
   meta = {
-    homepage = "https://github.com/benmcollins/libjwt";
     description = "JWT C Library";
+    homepage = "https://github.com/benmcollins/libjwt";
     license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [ pnotequalnp ];
     platforms = lib.platforms.all;

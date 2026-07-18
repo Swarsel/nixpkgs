@@ -1,30 +1,26 @@
 {
   lib,
+  atpublic,
   buildPythonPackage,
   fetchPypi,
-  atpublic,
   pdm-pep517,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
   sybil,
 }:
 
 buildPythonPackage rec {
   pname = "flufl-i18n";
   version = "4.1.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "flufl.i18n";
     inherit version;
     hash = "sha256-wKz6aggkJ9YBJ+o75XjC4Ddnn+Zi9hlYDnliwTc7DNs=";
+    pname = "flufl.i18n";
   };
 
   nativeBuildInputs = [ pdm-pep517 ];
-
   propagatedBuildInputs = [ atpublic ];
-
-  pythonImportsCheck = [ "flufl.i18n" ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -32,6 +28,8 @@ buildPythonPackage rec {
     sybil
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "flufl.i18n" ];
   pythonNamespaces = [ "flufl" ];
 
   meta = {

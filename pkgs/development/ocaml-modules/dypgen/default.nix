@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
-  fetchFromGitHub,
+  stdenv,
   fetchurl,
-  ocaml,
+  fetchFromGitHub,
   findlib,
+  ocaml,
 }:
 
 let
@@ -12,6 +12,7 @@ let
     if lib.versionAtLeast ocaml.version "4.07" then
       rec {
         version = "0.2";
+
         src = fetchFromGitHub {
           owner = "grain-lang";
           repo = "dypgen";
@@ -22,6 +23,7 @@ let
     else if lib.versionOlder ocaml.version "4.06" then
       {
         version = "20120619-1";
+
         src = fetchurl {
           url = "http://dypgen.free.fr/dypgen-20120619-1.tar.bz2";
           sha256 = "ecb53d6e469e9ec4d57ee6323ff498d45b78883ae13618492488e7c5151fdd97";
@@ -32,21 +34,14 @@ let
 in
 
 stdenv.mkDerivation {
-  pname = "ocaml${ocaml.version}-dypgen";
   inherit (params) src version;
+  pname = "ocaml${ocaml.version}-dypgen";
+  strictDeps = true;
 
   nativeBuildInputs = [
     ocaml
     findlib
   ];
-
-  strictDeps = true;
-
-  createFindlibDestdir = true;
-
-  buildPhase = ''
-    make
-  '';
 
   makeFlags = [
     "BINDIR=$(out)/bin"
@@ -54,10 +49,16 @@ stdenv.mkDerivation {
     "DYPGENLIBDIR=$(out)/lib/ocaml/${ocaml.version}/site-lib"
   ];
 
+  buildPhase = ''
+    make
+  '';
+
+  createFindlibDestdir = true;
+
   meta = {
-    homepage = "http://dypgen.free.fr";
-    description = "Dypgen GLR self extensible parser generator";
-    license = lib.licenses.cecill-b;
     inherit (ocaml.meta) platforms;
+    description = "Dypgen GLR self extensible parser generator";
+    homepage = "http://dypgen.free.fr";
+    license = lib.licenses.cecill-b;
   };
 }

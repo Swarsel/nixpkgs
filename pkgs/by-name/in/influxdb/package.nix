@@ -1,12 +1,12 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
   stdenv,
-  pkg-config,
-  rustPlatform,
+  fetchFromGitHub,
+  buildGoModule,
   libiconv,
   nixosTests,
+  pkg-config,
+  rustPlatform,
 }:
 
 let
@@ -16,12 +16,14 @@ let
   flux = rustPlatform.buildRustPackage (finalAttrs: {
     pname = "libflux";
     version = libflux_version;
+
     src = fetchFromGitHub {
       owner = "influxdata";
       repo = "flux";
       tag = "v${libflux_version}";
       hash = "sha256-935aN2SxfNZvpG90rXuqZ2OTpSGLgiBDbZsBoG0WUvU=";
     };
+
     patches = [
       # https://github.com/influxdata/flux/pull/5542
       ./fix-unsigned-char.patch
@@ -32,18 +34,11 @@ let
       substituteInPlace flux-core/src/lib.rs \
         --replace-fail "deny(warnings, missing_docs))]" "deny(warnings), allow(dead_code, mismatched_lifetime_syntaxes, unused_assignments))]"
     '';
-    sourceRoot = "${finalAttrs.src.name}/libflux";
 
-    cargoHash = "sha256-A6j/lb47Ob+Po8r1yvqBXDVP0Hf7cNz8WFZqiVUJj+Y=";
     nativeBuildInputs = [ rustPlatform.bindgenHook ];
     buildInputs = lib.optional stdenv.hostPlatform.isDarwin libiconv;
-    pkgcfg = ''
-      Name: flux
-      Version: ${libflux_version}
-      Description: Library for the InfluxData Flux engine
-      Cflags: -I/out/include
-      Libs: -L/out/lib -lflux -lpthread
-    '';
+    cargoHash = "sha256-A6j/lb47Ob+Po8r1yvqBXDVP0Hf7cNz8WFZqiVUJj+Y=";
+
     postInstall = ''
       mkdir -p $out/include $out/pkgconfig
       cp -r $NIX_BUILD_TOP/source/libflux/include/influxdata $out/include
@@ -56,6 +51,16 @@ let
     '';
 
     __structuredAttrs = true;
+
+    pkgcfg = ''
+      Name: flux
+      Version: ${libflux_version}
+      Description: Library for the InfluxData Flux engine
+      Cflags: -I/out/include
+      Libs: -L/out/lib -lflux -lpthread
+    '';
+
+    sourceRoot = "${finalAttrs.src.name}/libflux";
   });
 in
 buildGoModule (finalAttrs: {
@@ -69,10 +74,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-Q05mKmAXxrk7IVNxUD8HHNKnWCxmNCdsr6NK7d7vOHM=";
   };
 
-  vendorHash = "sha256-+6fOq/2YVz74Loy1pVLVRTr4OQm/fEBNtHy3+FQn51A=";
-
   nativeBuildInputs = [ pkg-config ];
-
+  vendorHash = "sha256-+6fOq/2YVz74Loy1pVLVRTr4OQm/fEBNtHy3+FQn51A=";
   env.PKG_CONFIG_PATH = "${flux}/pkgconfig";
 
   # Check that libflux is at the right version
@@ -85,6 +88,7 @@ buildGoModule (finalAttrs: {
   '';
 
   doCheck = false;
+  excludedPackages = "test";
 
   ldflags = [
     "-s"
@@ -92,16 +96,15 @@ buildGoModule (finalAttrs: {
     "-X main.version=${finalAttrs.version}"
   ];
 
-  excludedPackages = "test";
-
   passthru.tests = {
     inherit (nixosTests) influxdb;
   };
 
   meta = {
     description = "Open-source distributed time series database";
-    license = lib.licenses.mit;
     homepage = "https://influxdata.com/";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       zimbatm
     ];

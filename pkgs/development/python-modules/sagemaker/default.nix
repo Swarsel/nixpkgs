@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
+  accelerate,
   # dependencies
   attrs,
   boto3,
+  buildPythonPackage,
   cloudpickle,
   docker,
   fastapi,
   google-pasta,
   graphene,
+  # build-system
+  hatchling,
   importlib-metadata,
   jsonschema,
   numpy,
@@ -28,21 +27,18 @@
   requests,
   sagemaker-core,
   schema,
+  # optional-dependencies
+  scipy,
   smdebug-rulesconfig,
   tblib,
   tqdm,
   urllib3,
   uvicorn,
-
-  # optional-dependencies
-  scipy,
-  accelerate,
 }:
 
 buildPythonPackage rec {
   pname = "sagemaker";
   version = "2.256.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aws";
@@ -51,19 +47,10 @@ buildPythonPackage rec {
     hash = "sha256-Q5JeXWehj2TxP4SolNvn6B6lI8yxvUYzbardJvVfgaU=";
   };
 
+  doCheck = false; # many test dependencies are not available in nixpkgs
+
   build-system = [
     hatchling
-  ];
-
-  pythonRelaxDeps = [
-    "attrs"
-    "boto3"
-    "cloudpickle"
-    "importlib-metadata"
-    "numpy"
-    "omegaconf"
-    "packaging"
-    "protobuf"
   ];
 
   dependencies = [
@@ -95,23 +82,36 @@ buildPythonPackage rec {
     uvicorn
   ];
 
-  doCheck = false; # many test dependencies are not available in nixpkgs
+  optional-dependencies = {
+    huggingface = [ accelerate ];
+
+    local = [
+      urllib3
+      docker
+      pyyaml
+    ];
+
+    scipy = [ scipy ];
+    # feature-processor = [ pyspark sagemaker-feature-store-pyspark ]; # not available in nixpkgs
+  };
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "sagemaker"
     "sagemaker.lineage.visualizer"
   ];
 
-  optional-dependencies = {
-    local = [
-      urllib3
-      docker
-      pyyaml
-    ];
-    scipy = [ scipy ];
-    huggingface = [ accelerate ];
-    # feature-processor = [ pyspark sagemaker-feature-store-pyspark ]; # not available in nixpkgs
-  };
+  pythonRelaxDeps = [
+    "attrs"
+    "boto3"
+    "cloudpickle"
+    "importlib-metadata"
+    "numpy"
+    "omegaconf"
+    "packaging"
+    "protobuf"
+  ];
 
   meta = {
     description = "Library for training and deploying machine learning models on Amazon SageMaker";

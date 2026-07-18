@@ -4,8 +4,8 @@
   fetchFromGitHub,
   bison,
   flex,
-  readline,
   ncurses,
+  readline,
 }:
 
 stdenv.mkDerivation {
@@ -20,7 +20,6 @@ stdenv.mkDerivation {
   };
 
   patches = [ ./test_remove_interactive_line.patch ];
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -31,6 +30,14 @@ stdenv.mkDerivation {
   buildInputs = [
     readline
     ncurses
+  ];
+
+  makeFlags = [
+    "CC=${lib.getExe stdenv.cc}"
+    "PREFIX=${placeholder "out"}"
+    "BINDIR=${placeholder "out"}/bin"
+    "MANDIR=${placeholder "out"}/man1"
+    "CATDIR=${placeholder "out"}/cat1"
   ];
 
   env = {
@@ -44,23 +51,17 @@ stdenv.mkDerivation {
         "-Wno-error=incompatible-function-pointer-types"
       ]
     );
+
     NIX_LDFLAGS = "-lreadline";
   };
 
-  makeFlags = [
-    "CC=${lib.getExe stdenv.cc}"
-    "PREFIX=${placeholder "out"}"
-    "BINDIR=${placeholder "out"}/bin"
-    "MANDIR=${placeholder "out"}/man1"
-    "CATDIR=${placeholder "out"}/cat1"
-  ];
-
   doCheck = true;
-  checkTarget = "test";
 
   preInstall = ''
     mkdir -p $out/bin;
   '';
+
+  checkTarget = "test";
 
   meta = {
     description = "Translator English -- C/C++ declarations";

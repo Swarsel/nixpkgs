@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
+  cairo,
+  cargo,
+  glib,
+  libGL,
+  libgbm,
+  libxkbcommon,
   meson,
   ninja,
-  rustc,
-  cargo,
-  rustPlatform,
-  xdg-desktop-portal,
-  cairo,
-  pango,
-  libgbm,
-  libGL,
-  libxkbcommon,
-  glib,
-  pipewire,
-  wayland,
   nix-update-script,
+  pango,
+  pipewire,
+  pkg-config,
+  rustPlatform,
+  rustc,
+  wayland,
+  xdg-desktop-portal,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,11 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "xdg-desktop-portal-luminous";
     tag = "v${finalAttrs.version}";
     hash = "sha256-GiB0flnJgRgW7nYr+XdEyZ8rkTrZ94O8iedPUSLU9Lo=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-bGBq7D+Tugjddu2jp9Cl5s/qpEfqmrnFsodeAVK9a9s=";
   };
 
   nativeBuildInputs = [
@@ -64,13 +59,18 @@ stdenv.mkDerivation (finalAttrs: {
       $out/libexec/xdg-desktop-portal-luminous
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-bGBq7D+Tugjddu2jp9Cl5s/qpEfqmrnFsodeAVK9a9s=";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "xdg-desktop-portal backend for wlroots based compositors, providing screenshot and screencast";
     homepage = "https://github.com/waycrate/xdg-desktop-portal-luminous";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ Rishik-Y ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  meson,
-  vala,
-  ninja,
   gtk3,
+  meson,
+  ninja,
+  pkg-config,
   poppler,
+  vala,
   wrapGAppsHook3,
 }:
 
@@ -29,6 +29,7 @@ stdenv.mkDerivation (finalAttrs: {
     wrapGAppsHook3
     vala
   ];
+
   buildInputs = [
     gtk3
     poppler

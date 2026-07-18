@@ -1,26 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  rustPlatform,
+  buildPythonPackage,
   pytestCheckHook,
+  rustPlatform,
 }:
 
 buildPythonPackage rec {
   pname = "pyoxipng";
   version = "9.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nfrasser";
     repo = "pyoxipng";
     tag = "v${version}";
     hash = "sha256-aVya+0+X2p0VaWCZTxVlVUFFlqkqZ7A2lJjhxiXAgrE=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit src;
-    hash = "sha256-wMCx6cujqM4q96b1mg4eovKjWmsv0FcaDBCxy0OodmA=";
   };
 
   nativeBuildInputs = with rustPlatform; [
@@ -30,6 +24,12 @@ buildPythonPackage rec {
 
   nativeCheckInputs = [ pytestCheckHook ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit src;
+    hash = "sha256-wMCx6cujqM4q96b1mg4eovKjWmsv0FcaDBCxy0OodmA=";
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "oxipng" ];
 
   meta = {

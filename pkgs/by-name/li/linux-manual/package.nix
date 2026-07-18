@@ -2,19 +2,13 @@
   lib,
   stdenv,
   linuxPackages_latest,
-  python3,
   man,
+  python3,
 }:
 
 stdenv.mkDerivation {
-  pname = "linux-manual";
   inherit (linuxPackages_latest.kernel) version src;
-
-  nativeBuildInputs = [ python3 ];
-  nativeInstallCheckInputs = [ man ];
-
-  dontConfigure = true;
-  doInstallCheck = true;
+  pname = "linux-manual";
 
   postPatch = ''
     # Releases up to including 6.19.3 still use scripts/kernel-doc.py, but it
@@ -23,6 +17,8 @@ stdenv.mkDerivation {
       tools/docs \
       scripts/kernel-doc.py
   '';
+
+  nativeBuildInputs = [ python3 ];
 
   buildPhase = ''
     runHook preBuild
@@ -43,6 +39,9 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ man ];
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -52,9 +51,11 @@ stdenv.mkDerivation {
     runHook postInstallCheck
   '';
 
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://kernel.org/";
     description = "Linux kernel API manual pages";
+    homepage = "https://kernel.org/";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ mvs ];
     platforms = lib.platforms.linux;

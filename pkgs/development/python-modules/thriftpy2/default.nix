@@ -1,19 +1,18 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cython,
-  fetchFromGitHub,
   fetchpatch,
   ply,
-  six,
   setuptools,
+  six,
   tornado,
 }:
 
 buildPythonPackage rec {
   pname = "thriftpy2";
   version = "0.5.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Thriftpy";
@@ -24,13 +23,15 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/Thriftpy/thriftpy2/commit/0127d259eb4b96acb060cd158ca709f0597b148c.patch";
       sha256 = "sha256-UBcbd8NTkPyko1s9jTjKlQ7HprwtyOZS0m66u1CPH3A=";
+      url = "https://github.com/Thriftpy/thriftpy2/commit/0127d259eb4b96acb060cd158ca709f0597b148c.patch";
     })
   ];
-  build-system = [ setuptools ];
 
   nativeBuildInputs = [ cython ];
+  # Not all needed files seems to be present
+  doCheck = false;
+  build-system = [ setuptools ];
 
   dependencies = [
     ply
@@ -38,9 +39,7 @@ buildPythonPackage rec {
     tornado
   ];
 
-  # Not all needed files seems to be present
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "thriftpy2" ];
 
   meta = {

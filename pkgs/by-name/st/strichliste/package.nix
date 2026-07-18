@@ -1,10 +1,10 @@
 {
-  callPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  callPackage,
+  nixosTests,
   pkgs,
   php ? pkgs.php85,
-  nixosTests,
 }:
 
 php.buildComposerProject2 (finalAttrs: {
@@ -18,15 +18,12 @@ php.buildComposerProject2 (finalAttrs: {
     hash = "sha256-ps0IJBXVchPaW2Tx4rfD02EFYiv3oTyaNB6/V7txeM0=";
   };
 
-  vendorHash = "sha256-PLq+XiZIJyyzVq+87timGO/jbPB4ZYQqSZilZMIE4Cw=";
-  composerNoDev = true;
-  composerNoPlugins = false;
-  composerStrictValidation = true;
-
   postPatch = ''
     substituteInPlace config/services.yaml \
       --replace-fail "strichliste.yaml" "/etc/strichliste.yaml"
   '';
+
+  vendorHash = "sha256-PLq+XiZIJyyzVq+87timGO/jbPB4ZYQqSZilZMIE4Cw=";
 
   postBuild = ''
     composer dump-autoload --optimize --no-dev --no-scripts --no-interaction --no-cache
@@ -38,24 +35,29 @@ php.buildComposerProject2 (finalAttrs: {
   '';
 
   __structuredAttrs = true;
+  composerNoDev = true;
+  composerNoPlugins = false;
+  composerStrictValidation = true;
 
   passthru = {
     frontend = callPackage ./frontend.nix {
       inherit (finalAttrs) meta;
     };
+
     phpPackage = php;
+
     tests = {
       inherit (nixosTests) strichliste;
     };
   };
 
   meta = {
-    changelog = "https://github.com/strichliste/strichliste/releases/tag/${finalAttrs.src.tag}";
     description = "strichliste is a tool to replace a tally sheet.";
     homepage = "https://www.strichliste.org/";
+    changelog = "https://github.com/strichliste/strichliste/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hexa ];
-    mainProgram = "strichliste-console";
     platforms = lib.platforms.all;
+    mainProgram = "strichliste-console";
   };
 })

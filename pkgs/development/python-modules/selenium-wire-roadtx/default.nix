@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   blinker,
   brotli,
   buildPythonPackage,
   certifi,
   cryptography,
-  fetchFromGitHub,
   gunicorn,
   h2,
   httpbin,
@@ -27,9 +27,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "selenium-wire-roadtx";
   version = "5.2.4-unstable-2026-05-20";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "dirkjanm";
@@ -38,6 +35,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-WhGsgIuJrbc6Emq9B0uin7FUKc/qPH9E1DUjt/FIVZs=";
   };
 
+  nativeCheckInputs = [
+    gunicorn
+    httpbin
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -58,14 +62,6 @@ buildPythonPackage (finalAttrs: {
     zstandard
   ];
 
-  nativeCheckInputs = [
-    gunicorn
-    httpbin
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "seleniumwire" ];
-
   disabledTestPaths = [
     # Don't run End2End tests
     "tests/end2end/test_end2end.py"
@@ -80,6 +76,8 @@ buildPythonPackage (finalAttrs: {
     "test_save_response"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "seleniumwire" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

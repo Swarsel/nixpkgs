@@ -15,16 +15,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [ ./poll.patch ];
 
+  configureFlags = [
+    "--libdir=${placeholder "out"}/lib"
+  ];
+
   preConfigure = ''
     sed -i -e "s,\\\/usr,"$(echo $out|sed -e "s,\\/,\\\\\\\/,g")",g" tsocks
     substituteInPlace configure \
       --replace-fail "main(){return(0);}" "int main(){return(0);}"
     substituteInPlace tsocks --replace /usr $out
   '';
-
-  configureFlags = [
-    "--libdir=${placeholder "out"}/lib"
-  ];
 
   preBuild = ''
     # We don't need the saveme binary, it is in fact never stored and we're
@@ -36,11 +36,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Transparent SOCKS v4 proxying library";
-    mainProgram = "tsocks";
     homepage = "https://tsocks.sourceforge.net/";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ edwtjo ];
     platforms = lib.platforms.unix;
+    mainProgram = "tsocks";
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

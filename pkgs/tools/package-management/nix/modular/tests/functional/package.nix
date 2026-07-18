@@ -1,36 +1,27 @@
 {
   lib,
   stdenv,
-  mkMesonDerivation,
-
-  meson,
-  ninja,
-  pkg-config,
-
-  jq,
   git,
+  jq,
   mercurial,
-  util-linux,
-
-  nix-store,
-  nix-expr,
+  meson,
+  mkMesonDerivation,
+  ninja,
   nix-cli,
-
-  busybox-sandbox-shell ? null,
-
-  # Configuration Options
-
-  pname ? "nix-functional-tests",
+  nix-expr,
+  nix-store,
+  pkg-config,
+  util-linux,
   version,
-
+  busybox-sandbox-shell ? null,
+  # Configuration Options
+  pname ? "nix-functional-tests",
   # For running the functional tests against a different pre-built Nix.
   test-daemon ? null,
 }:
 
 mkMesonDerivation (finalAttrs: {
   inherit pname version;
-
-  workDir = ./.;
 
   nativeBuildInputs = [
     meson
@@ -73,15 +64,17 @@ mkMesonDerivation (finalAttrs: {
       echo $PWD | grep tests/functional
     '';
 
-  mesonCheckFlags = [
-    "--print-errorlogs"
-  ];
-
   doCheck = true;
 
   installPhase = ''
     mkdir $out
   '';
+
+  mesonCheckFlags = [
+    "--print-errorlogs"
+  ];
+
+  workDir = ./.;
 
   meta = {
     platforms = lib.platforms.unix;

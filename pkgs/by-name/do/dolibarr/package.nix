@@ -17,8 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Yse1rUaxRnuXawgAk0m4U3GCZNlV0IPPpZ9Qml4heA8=";
   };
 
-  dontBuild = true;
-
   postPatch = ''
     find . -type f -name "*.php" -print0 | xargs -0 sed -i 's|/etc/dolibarr|${stateDir}|g'
 
@@ -36,14 +34,16 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r * $out
   '';
 
+  dontBuild = true;
+
   passthru.tests = lib.optionalAttrs stdenv.hostPlatform.isLinux {
     inherit (nixosTests) dolibarr;
   };
 
   meta = {
     description = "Enterprise resource planning (ERP) and customer relationship manager (CRM) server";
-    changelog = "https://github.com/Dolibarr/dolibarr/releases/tag/${finalAttrs.version}";
     homepage = "https://dolibarr.org/";
+    changelog = "https://github.com/Dolibarr/dolibarr/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ GaetanLepage ];
   };

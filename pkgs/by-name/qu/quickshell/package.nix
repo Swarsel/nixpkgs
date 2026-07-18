@@ -1,27 +1,26 @@
 {
   lib,
   stdenv,
-  fetchFromGitea,
-
-  pkg-config,
+  cli11,
   cmake,
+  cpptrace,
+  fetchFromGitea,
+  glib,
+  jemalloc,
+  libdrm,
+  libgbm,
+  libxcb,
   ninja,
+  pam,
+  pipewire,
+  pkg-config,
+  polkit,
+  qt6,
   spirv-tools,
   vulkan-headers,
-  qt6,
-  cpptrace,
-  jemalloc,
-  cli11,
   wayland,
   wayland-protocols,
   wayland-scanner,
-  libxcb,
-  libdrm,
-  libgbm,
-  pipewire,
-  pam,
-  glib,
-  polkit,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "quickshell";
@@ -29,11 +28,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   # github mirror: https://github.com/quickshell-mirror/quickshell
   src = fetchFromGitea {
-    domain = "git.outfoxxed.me";
     owner = "quickshell";
     repo = "quickshell";
     tag = "v${finalAttrs.version}";
     hash = "sha256-gU+VGpwGJ2vvg0mtYqVvj5u+2LteuHlpokH6JSAtueY=";
+    domain = "git.outfoxxed.me";
   };
 
   nativeBuildInputs = [
@@ -73,15 +72,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   cmakeBuildType = "RelWithDebInfo";
-  separateDebugInfo = true;
   dontStrip = false;
+  separateDebugInfo = true;
 
   meta = {
-    homepage = "https://quickshell.org";
     description = "Flexbile QtQuick based desktop shell toolkit";
+    homepage = "https://quickshell.org";
     license = lib.licenses.lgpl3Only;
+    maintainers = with lib.maintainers; [ outfoxxed ];
     platforms = lib.platforms.linux;
     mainProgram = "quickshell";
-    maintainers = with lib.maintainers; [ outfoxxed ];
   };
 })

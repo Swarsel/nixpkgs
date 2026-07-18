@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
+  matplotlib,
   ordered-set,
   pytestCheckHook,
-  matplotlib,
   quantities,
+  setuptools,
   texliveSmall,
 }:
 
 buildPythonPackage rec {
   pname = "pylatex";
   version = "1.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "JelteF";
@@ -23,13 +22,7 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ ordered-set ];
-
-  pythonImportsCheck = [
-    "pylatex"
-    "pylatex.base_classes"
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -43,12 +36,19 @@ buildPythonPackage rec {
     ))
   ];
 
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "pylatex"
+    "pylatex.base_classes"
+  ];
+
   meta = {
     description = "Python library for creating LaTeX files and snippets";
     homepage = "https://jeltef.github.io/PyLaTeX/current/";
-    downloadPage = "https://github.com/JelteF/PyLaTeX/releases";
     changelog = "https://jeltef.github.io/PyLaTeX/current/changelog.html";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ MayNiklas ];
+    downloadPage = "https://github.com/JelteF/PyLaTeX/releases";
   };
 }

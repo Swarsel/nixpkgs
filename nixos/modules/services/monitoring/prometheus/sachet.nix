@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -13,9 +13,23 @@ in
     services.prometheus.sachet = {
       enable = lib.mkEnableOption "Sachet, an SMS alerting tool for the Prometheus Alertmanager";
 
+      address = lib.mkOption {
+        default = "localhost";
+
+        description = ''
+          The address Sachet will listen to.
+        '';
+
+        type = lib.types.str;
+      };
+
       configuration = lib.mkOption {
-        type = lib.types.nullOr lib.types.attrs;
         default = null;
+
+        description = ''
+          Sachet's configuration as a nix attribute set.
+        '';
+
         example = lib.literalExpression ''
           {
             providers = {
@@ -34,25 +48,18 @@ in
             }];
           }
         '';
-        description = ''
-          Sachet's configuration as a nix attribute set.
-        '';
-      };
 
-      address = lib.mkOption {
-        type = lib.types.str;
-        default = "localhost";
-        description = ''
-          The address Sachet will listen to.
-        '';
+        type = lib.types.nullOr lib.types.attrs;
       };
 
       port = lib.mkOption {
-        type = lib.types.port;
         default = 9876;
+
         description = ''
           The port Sachet will listen to.
         '';
+
+        type = lib.types.port;
       };
 
     };
@@ -65,29 +72,29 @@ in
     };
 
     systemd.services.sachet = {
-      wantedBy = [ "multi-user.target" ];
       after = [
         "network.target"
         "network-online.target"
       ];
+
       script = ''
         ${pkgs.envsubst}/bin/envsubst -i "${configFile}" > /tmp/sachet.yaml
         exec ${pkgs.prometheus-sachet}/bin/sachet -config /tmp/sachet.yaml -listen-address ${cfg.address}:${toString cfg.port}
       '';
 
       serviceConfig = {
-        Restart = "always";
-
-        ProtectSystem = "strict";
-        ProtectHome = true;
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
-        ProtectControlGroups = true;
-
         DynamicUser = true;
         PrivateTmp = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectSystem = "strict";
+        Restart = "always";
         WorkingDirectory = "/tmp/";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

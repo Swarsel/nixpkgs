@@ -17,15 +17,14 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ libusb1 ];
-
   installFlags = [ "PREFIX=$(out)" ];
 
   meta = {
-    homepage = "https://github.com/homewsn/whsniff";
     description = "Packet sniffer for 802.15.4 wireless networks";
-    mainProgram = "whsniff";
+    homepage = "https://github.com/homewsn/whsniff";
+    license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ snicket2100 ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl2Only;
+    mainProgram = "whsniff";
   };
 })

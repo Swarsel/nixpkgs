@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitLab,
-  hatchling,
+  buildPythonPackage,
   h5py,
+  hatchling,
   numpy,
+  pytestCheckHook,
   scipy,
   xmltodict,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pymatreader";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "obob";
@@ -28,8 +27,6 @@ buildPythonPackage rec {
       --replace-fail '"hatch-regex-commit"' ""
   '';
 
-  build-system = [ hatchling ];
-
   propagatedBuildInputs = [
     h5py
     numpy
@@ -38,7 +35,8 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "pymatreader" ];
 
   meta = {

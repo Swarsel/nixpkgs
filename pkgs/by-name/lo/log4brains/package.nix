@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  callPackage,
   fetchFromGitHub,
+  callPackage,
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
-  yarnInstallHook,
-  nodejs,
-  yarn,
-  moreutils,
+  fetchpatch2,
   jq,
   makeBinaryWrapper,
-  fetchpatch2,
+  moreutils,
+  nodejs,
   replaceVars,
+  yarn,
+  yarnBuildHook,
+  yarnConfigHook,
+  yarnInstallHook,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "log4brains";
@@ -24,11 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "log4brains";
     tag = "v${finalAttrs.version}";
     hash = "sha256-2EAETbICK3XSjAEoLV0KP2xeOYlw8qgctit+shMp5Qs=";
-  };
-
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/yarn.lock";
-    hash = "sha256-HHiWlOYwR+PhfpQlUfuTXUiQ+6w1HATGlmflQvqdNlg=";
   };
 
   # generated from https://codeberg.org/tropf/log4brains
@@ -47,6 +42,19 @@ stdenv.mkDerivation (finalAttrs: {
     # subdir), but w/o `version` the yarn hooks refuse to run.
     jq '.version = "${finalAttrs.version}"' < package.json | sponge package.json
   '';
+
+  nativeBuildInputs = [
+    yarnConfigHook
+    yarnBuildHook
+    yarnInstallHook
+    # Needed for executing package.json scripts
+    nodejs
+
+    makeBinaryWrapper
+
+    moreutils # sponge
+    jq
+  ];
 
   # = Notes =
   #
@@ -86,18 +94,10 @@ stdenv.mkDerivation (finalAttrs: {
       --set NODE_PATH $out/lib/node_modules
   '';
 
-  nativeBuildInputs = [
-    yarnConfigHook
-    yarnBuildHook
-    yarnInstallHook
-    # Needed for executing package.json scripts
-    nodejs
-
-    makeBinaryWrapper
-
-    moreutils # sponge
-    jq
-  ];
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-HHiWlOYwR+PhfpQlUfuTXUiQ+6w1HATGlmflQvqdNlg=";
+    yarnLock = finalAttrs.src + "/yarn.lock";
+  };
 
   passthru.tests.basic-scenario = callPackage ./test-basic-scenario.nix {
     log4brains = finalAttrs.finalPackage;
@@ -105,14 +105,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Architecture Decision Records (ADR) management and publication tool";
+
     longDescription = ''
       Log4brains is a docs-as-code knowledge base for your development and infrastructure projects.
       It enables you to log Architecture Decision Records (ADR) right from your IDE and to publish them automatically as a static website.
     '';
+
     homepage = "https://github.com/thomvaill/log4brains";
     license = lib.licenses.asl20;
-    mainProgram = "log4brains";
     maintainers = with lib.maintainers; [ tropf ];
     platforms = lib.platforms.all;
+    mainProgram = "log4brains";
   };
 })

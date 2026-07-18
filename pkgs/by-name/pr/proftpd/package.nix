@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
-  fetchpatch,
+  stdenv,
   fetchFromGitHub,
+  fetchpatch,
   libcap,
   libsodium,
-  openssl,
-  zlib,
-  perl,
-  ncurses,
   libxcrypt-legacy,
+  ncurses,
+  openssl,
+  perl,
   removeReferencesTo,
+  zlib,
 }:
 
 let
@@ -29,23 +29,23 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-SNLzIwMF6XU2SAc5B9LIW2Jeh1Fa4CVumQYd2O0XxRY=";
   };
 
-  patches = [
-    ./no-install-user.patch
-    (fetchpatch {
-      name = "CVE-2026-44331.patch";
-      url = "https://github.com/proftpd/proftpd/commit/5e06acc4687046c7bf794b55bd8c44a86a05ae61.patch";
-      hash = "sha256-1YM9yeiZJwU2CasPhf4g9O8Jf/B01ullFeUkERFe9WY=";
-    })
-  ];
-
-  strictDeps = true;
-  enableParallelBuilding = true;
-
   outputs = [
     "out"
     "man"
     "dev"
   ];
+
+  patches = [
+    ./no-install-user.patch
+    (fetchpatch {
+      hash = "sha256-1YM9yeiZJwU2CasPhf4g9O8Jf/B01ullFeUkERFe9WY=";
+      name = "CVE-2026-44331.patch";
+      url = "https://github.com/proftpd/proftpd/commit/5e06acc4687046c7bf794b55bd8c44a86a05ae61.patch";
+    })
+  ];
+
+  strictDeps = true;
+  nativeBuildInputs = [ removeReferencesTo ];
 
   buildInputs = [
     libcap
@@ -55,8 +55,6 @@ stdenv.mkDerivation (finalAttrs: {
     perl'
     ncurses
   ];
-
-  nativeBuildInputs = [ removeReferencesTo ];
 
   configureFlags = [
     "--enable-openssl"
@@ -86,16 +84,20 @@ stdenv.mkDerivation (finalAttrs: {
     remove-references-to -t $dev $out/bin/*
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
+    description = "Highly configurable GPL-licensed FTP server software";
     homepage = "http://www.proftpd.org/";
+    changelog = "http://proftpd.org/docs/RELEASE_NOTES-${finalAttrs.version}";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = [
       lib.maintainers.leona
       lib.maintainers.osnyx
     ];
-    license = lib.licenses.gpl2Plus;
-    mainProgram = "proftpd";
+
     platforms = lib.platforms.unix;
-    changelog = "http://proftpd.org/docs/RELEASE_NOTES-${finalAttrs.version}";
-    description = "Highly configurable GPL-licensed FTP server software";
+    mainProgram = "proftpd";
   };
 })

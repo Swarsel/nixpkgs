@@ -18,8 +18,8 @@ buildDunePackage (finalAttrs: {
   minimalOCamlVersion = "4.12";
 
   meta = {
-    homepage = "https://gitlab.com/gasche/domain-shims/";
     description = "Non-parallel implementation of Domains compatible with OCaml 4";
+    homepage = "https://gitlab.com/gasche/domain-shims/";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.vbgl ];
   };

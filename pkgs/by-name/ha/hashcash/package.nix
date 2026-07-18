@@ -9,12 +9,12 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "hashcash";
   version = "1.22";
 
-  buildInputs = [ openssl ];
-
   src = fetchurl {
     url = "http://www.hashcash.org/source/hashcash-${finalAttrs.version}.tgz";
     sha256 = "15kqaimwb2y8wvzpn73021bvay9mz1gqqfc40gk4hj6f84nz34h1";
   };
+
+  buildInputs = [ openssl ];
 
   makeFlags = [
     "generic-openssl"

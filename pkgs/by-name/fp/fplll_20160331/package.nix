@@ -4,21 +4,23 @@
   fetchFromGitHub,
   autoconf,
   automake,
-  libtool,
-  gettext,
   autoreconfHook,
+  gettext,
   gmp,
+  libtool,
   mpfr,
 }:
 stdenv.mkDerivation {
   pname = "fplll";
   version = "20160331";
+
   src = fetchFromGitHub {
     owner = "fplll";
     repo = "fplll";
     rev = "11dea26c2f9396ffb7a7191aa371343f1f74c5c3";
     sha256 = "1clxch9hbr30w6s84m2mprxv58adhg5qw6sa2p3jr1cy4r7r59ib";
   };
+
   nativeBuildInputs = [
     autoconf
     automake
@@ -26,10 +28,12 @@ stdenv.mkDerivation {
     gettext
     autoreconfHook
   ];
+
   buildInputs = [
     gmp
     mpfr
   ];
+
   meta = {
     description = "Lattice algorithms using floating-point arithmetic";
     homepage = "https://github.com/fplll/fplll";

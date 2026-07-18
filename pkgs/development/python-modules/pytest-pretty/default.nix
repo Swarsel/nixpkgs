@@ -1,23 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   hatchling,
-
   # dependencies
   pytest,
-  rich,
-
   # tests
   pytestCheckHook,
+  rich,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pytest-pretty";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "samuelcolvin";
@@ -25,6 +21,10 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-vJ75zpY0xlTQbi7qTHyqHZ7AMb7bLlM6SNq2b7zcQYs=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     hatchling
@@ -35,11 +35,8 @@ buildPythonPackage (finalAttrs: {
     rich
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pytest_pretty" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Pytest plugin for pretty printing the test summary";

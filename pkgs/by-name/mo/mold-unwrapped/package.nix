@@ -2,26 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-
-  cmake,
-  mimalloc,
-  ninja,
-  onetbb,
-  zlib,
-  zstd,
-
   buildPackages,
   clangStdenv,
+  cmake,
   gccStdenv,
   hello,
+  mimalloc,
   mold,
   mold-unwrapped,
+  ninja,
+  nix-update-script,
+  onetbb,
   runCommandCC,
   testers,
   useMoldLinker,
-
   versionCheckHook,
+  zlib,
+  zstd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -58,7 +55,6 @@ stdenv.mkDerivation (finalAttrs: {
   nativeInstallCheckInputs = [ versionCheckHook ];
 
   passthru = {
-    updateScript = nix-update-script { };
     tests =
       let
         helloTest =
@@ -100,11 +96,13 @@ stdenv.mkDerivation (finalAttrs: {
             stdenv = useMoldLinker gccStdenv;
           })
         );
+
         adapter-llvm = helloTest "adapter-llvm" (
           hello.override (old: {
             stdenv = useMoldLinker clangStdenv;
           })
         );
+
         wrapped = helloTest "wrapped" (
           hello.overrideAttrs (previousAttrs: {
             nativeBuildInputs = (previousAttrs.nativeBuildInputs or [ ]) ++ [ mold ];
@@ -112,21 +110,25 @@ stdenv.mkDerivation (finalAttrs: {
           })
         );
       };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Faster drop-in replacement for existing Unix linkers (unwrapped)";
+
     longDescription = ''
       mold is a faster drop-in replacement for existing Unix linkers. It is
       several times faster than the LLVM lld linker. mold is designed to
       increase developer productivity by reducing build time, especially in
       rapid debug-edit-rebuild cycles.
     '';
+
     homepage = "https://github.com/rui314/mold";
     changelog = "https://github.com/rui314/mold/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ azahi ];
     platforms = lib.platforms.unix;
     mainProgram = "mold";
-    maintainers = with lib.maintainers; [ azahi ];
   };
 })

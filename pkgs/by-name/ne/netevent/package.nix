@@ -17,23 +17,14 @@ stdenv.mkDerivation {
     sha256 = "ikC6S1LNkmv474dlhajtEuHat497Rcdo9O+bCQMXTHQ=";
   };
 
-  buildInputs = [ docutils ];
-  nativeBuildInputs = [ installShellFiles ];
-
   outputs = [
     "out"
     "doc"
     "man"
   ];
 
-  configurePhase = ''
-    runHook preConfigure
-
-    export RST2MAN=rst2man
-    ./configure
-
-    runHook postConfigure
-  '';
+  nativeBuildInputs = [ installShellFiles ];
+  buildInputs = [ docutils ];
 
   installPhase = ''
     mkdir -p $out/bin
@@ -45,11 +36,20 @@ stdenv.mkDerivation {
     cp doc/netevent.rst $doc/share/doc/netevent/netevent.rst
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+
+    export RST2MAN=rst2man
+    ./configure
+
+    runHook postConfigure
+  '';
+
   meta = {
     description = "Share linux event devices with other machines";
     homepage = "https://github.com/Blub/netevent";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ rgrunbla ];
+    platforms = lib.platforms.linux;
   };
 }

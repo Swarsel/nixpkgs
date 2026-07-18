@@ -1,17 +1,17 @@
 {
+  cargo,
+  corrosion,
   mkKdeDerivation,
-  sources,
+  qcoro,
   qtsvg,
   qtwebengine,
-  corrosion,
   rustPlatform,
-  cargo,
   rustc,
-  qcoro,
+  sources,
 }:
 mkKdeDerivation rec {
-  pname = "angelfish";
   inherit (sources.${pname}) version;
+  pname = "angelfish";
 
   cargoDeps = rustPlatform.fetchCargoVendor {
     inherit pname version;
@@ -19,16 +19,16 @@ mkKdeDerivation rec {
     hash = "sha256-XbFbS8zNcrj8T2Av67f9JFAgheso9WW6flr3FabhL4I=";
   };
 
-  extraNativeBuildInputs = [
-    rustPlatform.cargoSetupHook
-    cargo
-    rustc
-  ];
-
   extraBuildInputs = [
     qtsvg
     qtwebengine
     corrosion
     qcoro
+  ];
+
+  extraNativeBuildInputs = [
+    rustPlatform.cargoSetupHook
+    cargo
+    rustc
   ];
 }

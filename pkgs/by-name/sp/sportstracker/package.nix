@@ -1,13 +1,13 @@
 {
   lib,
-  jdk21,
-  openjfx21,
-  maven,
   fetchFromGitHub,
-  makeDesktopItem,
   copyDesktopItems,
-  wrapGAppsHook3,
   gtk3,
+  jdk21,
+  makeDesktopItem,
+  maven,
+  openjfx21,
+  wrapGAppsHook3,
 }:
 
 let
@@ -38,14 +38,6 @@ maven.buildMavenPackage rec {
     ./fix-maven-plugin-versions.patch
   ];
 
-  mvnJdk = jdkWithJFX;
-  mvnHash = "sha256-dAANjxM9cEEw+y3tOLHykxjdlVQh8I7pd/9k3lbkgzY=";
-
-  mvnParameters = toString [
-    "-Dproject.build.outputTimestamp=1980-01-01T00:00:02Z" # set fixed build timestamp for deterministic jar
-    "-Dtest=!BindingUtilsToggleGroupTest" # uses DISPLAY
-  ];
-
   nativeBuildInputs = [
     copyDesktopItems
     wrapGAppsHook3
@@ -64,24 +56,6 @@ maven.buildMavenPackage rec {
     runHook postInstall
   '';
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "sportstracker";
-      exec = "SportsTracker";
-      icon = "SportsTracker";
-      desktopName = "SportsTracker";
-      comment = meta.description;
-      terminal = false;
-      categories = [
-        "Sports"
-        "Utility"
-      ];
-    })
-  ];
-
-  # don't double-wrap
-  dontWrapGApps = true;
-
   postFixup = ''
     makeWrapper ${jdkWithJFX}/bin/java $out/bin/SportsTracker \
         --add-flags "-Djava.awt.headless=true" \
@@ -89,13 +63,39 @@ maven.buildMavenPackage rec {
         "''${gappsWrapperArgs[@]}"
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Sports"
+        "Utility"
+      ];
+
+      comment = meta.description;
+      desktopName = "SportsTracker";
+      exec = "SportsTracker";
+      icon = "SportsTracker";
+      name = "sportstracker";
+      terminal = false;
+    })
+  ];
+
+  # don't double-wrap
+  dontWrapGApps = true;
+  mvnHash = "sha256-dAANjxM9cEEw+y3tOLHykxjdlVQh8I7pd/9k3lbkgzY=";
+  mvnJdk = jdkWithJFX;
+
+  mvnParameters = toString [
+    "-Dproject.build.outputTimestamp=1980-01-01T00:00:02Z" # set fixed build timestamp for deterministic jar
+    "-Dtest=!BindingUtilsToggleGroupTest" # uses DISPLAY
+  ];
+
   meta = {
-    changelog = "https://www.saring.de/sportstracker/CHANGES.txt";
     description = "Desktop application for people who want to record and analyze their sporting activities";
     homepage = "https://www.saring.de/sportstracker";
+    changelog = "https://www.saring.de/sportstracker/CHANGES.txt";
     license = lib.licenses.gpl2Only;
-    mainProgram = "SportsTracker";
     maintainers = with lib.maintainers; [ tomasajt ];
     platforms = jdkWithJFX.meta.platforms;
+    mainProgram = "SportsTracker";
   };
 }

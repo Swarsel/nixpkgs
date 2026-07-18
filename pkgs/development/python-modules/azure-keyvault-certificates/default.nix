@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
   azure-common,
   azure-core,
+  buildPythonPackage,
+  fetchPypi,
   isodate,
   setuptools,
   typing-extensions,
@@ -12,12 +12,11 @@
 buildPythonPackage rec {
   pname = "azure-keyvault-certificates";
   version = "4.11.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_keyvault_certificates";
     inherit version;
     hash = "sha256-c02aZfqg8r1FueFi0xesrexxBWk06/S7/gWLI9dL0HM=";
+    pname = "azure_keyvault_certificates";
   };
 
   nativeBuildInputs = [ setuptools ];
@@ -29,12 +28,11 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  pythonNamespaces = [ "azure.keyvault" ];
-
   # Module has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.keyvault.certificates" ];
+  pythonNamespaces = [ "azure.keyvault" ];
 
   meta = {
     description = "Microsoft Azure Key Vault Certificates Client Library for Python";

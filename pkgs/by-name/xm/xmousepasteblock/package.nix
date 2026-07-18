@@ -1,34 +1,39 @@
 {
-  libxi,
-  libxext,
-  libx11,
   lib,
   stdenv,
-  libev,
   fetchFromGitHub,
+  libev,
+  libx11,
+  libxext,
+  libxi,
   pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "xmousepasteblock";
   version = "1.4";
+
   src = fetchFromGitHub {
     owner = "milaq";
     repo = "XMousePasteBlock";
-    hash = "sha256-uHlHGVnIro6X4kRp79ibtqMmiv2XQT+zgbQagUxdB0c=";
     rev = finalAttrs.version;
+    hash = "sha256-uHlHGVnIro6X4kRp79ibtqMmiv2XQT+zgbQagUxdB0c=";
   };
-  makeFlags = [
-    "PREFIX=$(out)"
-    "CC=${stdenv.cc.targetPrefix}cc"
-  ];
+
+  nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libx11
     libxext
     libxi
     libev
   ];
-  nativeBuildInputs = [ pkg-config ];
+
+  makeFlags = [
+    "PREFIX=$(out)"
+    "CC=${stdenv.cc.targetPrefix}cc"
+  ];
+
   meta = {
     description = "Middle mouse button primary X selection/clipboard paste disabler";
     homepage = "https://github.com/milaq/XMousePasteBlock";

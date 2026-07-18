@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   markdown,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "python-markdown-math";
   version = "0.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mitya57";
@@ -19,8 +18,8 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
-
   dependencies = [ markdown ];
+  pyproject = true;
 
   meta = {
     description = "Math extension for Python-Markdown";

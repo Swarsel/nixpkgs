@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "imap-tools";
   version = "1.13.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ikvk";
@@ -18,9 +17,8 @@ buildPythonPackage rec {
     hash = "sha256-1BcSF40yUbOvOVDsoqS4AXRU2GZ1a3f9p8Xz7crsfwc=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
 
   disabledTests = [
     # tests require a network connection
@@ -32,6 +30,7 @@ buildPythonPackage rec {
     "test_live"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "imap_tools" ];
 
   meta = {

@@ -1,18 +1,17 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  wrapGAppsHook4,
   gobject-introspection,
   gtk4-layer-shell,
   libadwaita,
   nix-update-script,
+  python3Packages,
+  wrapGAppsHook4,
 }:
 
 python3Packages.buildPythonPackage rec {
   pname = "niriswitcher";
   version = "0.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "isaksamsten";
@@ -20,8 +19,6 @@ python3Packages.buildPythonPackage rec {
     tag = version;
     hash = "sha256-qsw2D9Q9ZJYBsRECzT+qoytYMda4uZxX321/YxNWk9o=";
   };
-
-  build-system = [ python3Packages.hatchling ];
 
   nativeBuildInputs = [
     wrapGAppsHook4
@@ -33,10 +30,6 @@ python3Packages.buildPythonPackage rec {
     libadwaita
   ];
 
-  dependencies = [ python3Packages.pygobject3 ];
-
-  dontWrapGApps = true;
-
   preFixup = ''
     makeWrapperArgs+=(
       ''${gappsWrapperArgs[@]}
@@ -44,6 +37,10 @@ python3Packages.buildPythonPackage rec {
     )
   '';
 
+  build-system = [ python3Packages.hatchling ];
+  dependencies = [ python3Packages.pygobject3 ];
+  dontWrapGApps = true;
+  pyproject = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -51,7 +48,7 @@ python3Packages.buildPythonPackage rec {
     homepage = "https://github.com/isaksamsten/niriswitcher";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ bokicoder ];
-    mainProgram = "niriswitcher";
     platforms = lib.platforms.linux;
+    mainProgram = "niriswitcher";
   };
 }

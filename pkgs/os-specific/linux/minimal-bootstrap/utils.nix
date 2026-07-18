@@ -1,24 +1,18 @@
 {
   lib,
-  config,
   buildPlatform,
   callPackage,
+  checkMeta,
+  config,
+  hostPlatform,
   kaem,
   mescc-tools-extra,
-  checkMeta,
-  hostPlatform,
 }:
 let
   assertValidity = checkMeta.assertValidity hostPlatform;
   commonMeta = checkMeta.commonMeta hostPlatform;
 in
 rec {
-  maybeContentAddressed = lib.optionalAttrs config.contentAddressedByDefault {
-    __contentAddressed = true;
-    outputHashAlgo = "sha256";
-    outputHashMode = "recursive";
-  };
-
   derivationWithMeta =
     attrs:
     let
@@ -51,18 +45,26 @@ rec {
       // passthru'
     ) baseDrv;
 
+  maybeContentAddressed = lib.optionalAttrs config.contentAddressedByDefault {
+    __contentAddressed = true;
+    outputHashAlgo = "sha256";
+    outputHashMode = "recursive";
+  };
+
+  writeText = name: text: writeTextFile { inherit name text; };
+
   writeTextFile =
     {
       name, # the name of the derivation
       text,
-      executable ? false, # run chmod +x ?
       destination ? "", # relative path appended to $out eg "/bin/foo"
+      executable ? false, # run chmod +x ?
     }:
     derivationWithMeta {
       inherit name text;
-      passAsFile = [ "text" ];
+      inherit destination;
+      PATH = lib.makeBinPath [ mescc-tools-extra ];
 
-      builder = "${kaem}/bin/kaem";
       args = [
         "--verbose"
         "--strict"
@@ -83,11 +85,9 @@ rec {
         ))
       ];
 
-      PATH = lib.makeBinPath [ mescc-tools-extra ];
+      builder = "${kaem}/bin/kaem";
       destinationDir = dirOf destination;
-      inherit destination;
+      passAsFile = [ "text" ];
     };
-
-  writeText = name: text: writeTextFile { inherit name text; };
 
 }

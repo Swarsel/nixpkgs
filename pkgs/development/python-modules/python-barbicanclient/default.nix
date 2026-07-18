@@ -1,26 +1,25 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cliff,
-  fetchFromGitHub,
   keystoneauth1,
   openstackdocstheme,
   oslo-i18n,
   oslo-serialization,
   oslo-utils,
   pbr,
-  requests-mock,
   requests,
+  requests-mock,
   setuptools,
-  sphinxcontrib-apidoc,
   sphinxHook,
+  sphinxcontrib-apidoc,
   stestr,
 }:
 
 buildPythonPackage rec {
   pname = "python-barbicanclient";
   version = "7.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openstack";
@@ -29,32 +28,13 @@ buildPythonPackage rec {
     hash = "sha256-SFAldyA/M0rkKb2o6ePp+9ITWrUszyTz5jvCnUadufo=";
   };
 
-  env.PBR_VERSION = version;
-
   postPatch = ''
     # Disable rsvgconverter not needed to build manpage
     substituteInPlace doc/source/conf.py \
       --replace-fail "'sphinxcontrib.rsvgconverter'," "#'sphinxcontrib.rsvgconverter',"
   '';
 
-  build-system = [
-    openstackdocstheme
-    pbr
-    setuptools
-    sphinxHook
-    sphinxcontrib-apidoc
-  ];
-
-  sphinxBuilders = [ "man" ];
-
-  dependencies = [
-    cliff
-    keystoneauth1
-    oslo-i18n
-    oslo-serialization
-    oslo-utils
-    requests
-  ];
+  env.PBR_VERSION = version;
 
   nativeCheckInputs = [
     requests-mock
@@ -67,11 +47,30 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [
+    openstackdocstheme
+    pbr
+    setuptools
+    sphinxHook
+    sphinxcontrib-apidoc
+  ];
+
+  dependencies = [
+    cliff
+    keystoneauth1
+    oslo-i18n
+    oslo-serialization
+    oslo-utils
+    requests
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "barbicanclient" ];
+  sphinxBuilders = [ "man" ];
 
   meta = {
-    homepage = "https://opendev.org/openstack/python-barbicanclient";
     description = "Client library for OpenStack Barbican API";
+    homepage = "https://opendev.org/openstack/python-barbicanclient";
     license = lib.licenses.asl20;
     mainProgram = "barbican";
     teams = [ lib.teams.openstack ];

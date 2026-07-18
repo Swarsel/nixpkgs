@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   fetchPnpmDeps,
-  rustPlatform,
-  nodejs,
-  pnpm_10,
-  pnpmConfigHook,
   geist-font,
   nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_10,
+  rustPlatform,
   which,
   writableTmpDirAsHomeHook,
 }:
@@ -28,26 +28,8 @@ let
   # The Rust CLI embeds the dashboard UI via RustEmbed at compile time.
   # Build the Next.js static export so it can be placed at the expected path.
   dashboard = stdenv.mkDerivation {
-    pname = "agent-browser-dashboard";
     inherit version src;
-
-    nativeBuildInputs = [
-      nodejs
-      pnpm
-      pnpmConfigHook
-    ];
-
-    __darwinAllowLocalNetworking = true;
-
-    pnpmDeps = fetchPnpmDeps {
-      pname = "agent-browser-dashboard";
-      inherit version src pnpm;
-      pnpmWorkspaces = [ "dashboard" ];
-      fetcherVersion = 3;
-      hash = "sha256-ldxmXpejqVN/xuWcdLYMwNPc1VZ1rdNwRrumy8Is3N4=";
-    };
-
-    pnpmWorkspaces = [ "dashboard" ];
+    pname = "agent-browser-dashboard";
 
     # Replace Google Fonts fetch with a local font from nixpkgs since the
     # Nix sandbox has no network access.
@@ -64,6 +46,12 @@ let
         packages/dashboard/src/app/Geist-Regular.otf
     '';
 
+    nativeBuildInputs = [
+      nodejs
+      pnpm
+      pnpmConfigHook
+    ];
+
     buildPhase = ''
       runHook preBuild
       pnpm --filter dashboard build
@@ -75,21 +63,23 @@ let
       cp -r packages/dashboard/out $out
       runHook postInstall
     '';
+
+    __darwinAllowLocalNetworking = true;
+
+    pnpmDeps = fetchPnpmDeps {
+      inherit version src pnpm;
+      pname = "agent-browser-dashboard";
+      fetcherVersion = 3;
+      hash = "sha256-ldxmXpejqVN/xuWcdLYMwNPc1VZ1rdNwRrumy8Is3N4=";
+      pnpmWorkspaces = [ "dashboard" ];
+    };
+
+    pnpmWorkspaces = [ "dashboard" ];
   };
 in
 rustPlatform.buildRustPackage (finalAttrs: {
-  pname = "agent-browser";
   inherit version src;
-
-  sourceRoot = "${finalAttrs.src.name}/cli";
-
-  cargoHash = "sha256-2u7yokHCxIVq16370Mg+n5kf03yUDYJmctFxN1fnaAA=";
-
-  # Place the pre-built dashboard where RustEmbed expects it
-  postUnpack = ''
-    chmod u+w source/packages/dashboard
-    cp -r ${dashboard} source/packages/dashboard/out
-  '';
+  pname = "agent-browser";
 
   # `which_exists` spawns the external `which` binary at runtime to probe
   # for optional tools; pin it to an absolute store path.
@@ -98,11 +88,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
       '"which"' '"${lib.getExe which}"'
   '';
 
+  cargoHash = "sha256-2u7yokHCxIVq16370Mg+n5kf03yUDYJmctFxN1fnaAA=";
+
   nativeCheckInputs = [
     writableTmpDirAsHomeHook
   ];
-
-  __darwinAllowLocalNetworking = true;
 
   # The `skills` subcommand looks for `skills/` and `skill-data/` next to
   # `bin/`, relative to the canonical exe path. See cli/src/skills.rs.
@@ -111,8 +101,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     cp -r ../skill-data $out/skill-data
   '';
 
+  __darwinAllowLocalNetworking = true;
+
+  # Place the pre-built dashboard where RustEmbed expects it
+  postUnpack = ''
+    chmod u+w source/packages/dashboard
+    cp -r ${dashboard} source/packages/dashboard/out
+  '';
+
+  sourceRoot = "${finalAttrs.src.name}/cli";
+
   passthru = {
     inherit dashboard;
+
     updateScript = nix-update-script {
       extraArgs = [
         "--subpackage"
@@ -126,8 +127,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/vercel-labs/agent-browser";
     license = lib.licenses.asl20;
     sourceProvenance = with lib.sourceTypes; [ fromSource ];
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ codgician ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "agent-browser";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,23 +17,15 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-XPfqQFGJ5yZJVFzHq4zzTXzwuxsAPJvTrZBK+gZWRKE=";
 
-  overrideModAttrs = oldAttrs: {
-    postPatch = (oldAttrs.postPatch or "") + ''
-      export GOCACHE=$TMPDIR/go-cache
-      export GOPATH=$TMPDIR/go
-      go mod edit -replace golang.org/x/tools=golang.org/x/tools@v0.30.0
-      go mod tidy
-    '';
-    postBuild = (oldAttrs.postBuild or "") + ''
-      cp go.mod go.sum vendor/
-    '';
-  };
-
   preBuild = ''
     if [ -d vendor ]; then
       chmod -R u+w vendor
       cp vendor/go.mod vendor/go.sum .
     fi
+  '';
+
+  preCheck = ''
+    rm e2e/e2e_test.go # tests requires network
   '';
 
   ldflags = [
@@ -42,9 +34,18 @@ buildGoModule (finalAttrs: {
     "-X=github.com/Legit-Labs/legitify/internal/version.Version=${finalAttrs.version}"
   ];
 
-  preCheck = ''
-    rm e2e/e2e_test.go # tests requires network
-  '';
+  overrideModAttrs = oldAttrs: {
+    postPatch = (oldAttrs.postPatch or "") + ''
+      export GOCACHE=$TMPDIR/go-cache
+      export GOPATH=$TMPDIR/go
+      go mod edit -replace golang.org/x/tools=golang.org/x/tools@v0.30.0
+      go mod tidy
+    '';
+
+    postBuild = (oldAttrs.postBuild or "") + ''
+      cp go.mod go.sum vendor/
+    '';
+  };
 
   meta = {
     description = "Tool to detect and remediate misconfigurations and security risks of GitHub assets";

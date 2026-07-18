@@ -1,19 +1,15 @@
 {
   lib,
   stdenv,
-
   # sources
   fetchurl,
   fetchFromGitHub,
-  fetchDebianPatch,
-
+  SDL2,
   # nativeBuildInputs
   cmake,
-  ninja,
-  pkg-config,
-
   # buildInputs
   curl,
+  fetchDebianPatch,
   freealut,
   freetype,
   glew,
@@ -23,24 +19,24 @@
   libogg,
   libpng,
   libvorbis,
+  ninja,
   openal,
+  pkg-config,
   readline,
-  SDL2,
   tinyxml,
-
   # Enable the "Open Clonk Soundtrack - Explorers Journey" by David Oerther
   enableSoundtrack ? false,
 }:
 
 let
   soundtrack_src = fetchurl {
-    url = "http://www.openclonk.org/download/Music.ocg";
     hash = "sha256-Mye6pl1eSgEQ/vOLfDsdHDjp2ljb3euGKBr7s36+2W4=";
+    url = "http://www.openclonk.org/download/Music.ocg";
   };
 in
 stdenv.mkDerivation {
-  version = "9.0-unstable-2025-01-11";
   pname = "openclonk";
+  version = "9.0-unstable-2025-01-11";
 
   src = fetchFromGitHub {
     owner = "openclonk";
@@ -54,18 +50,10 @@ stdenv.mkDerivation {
       pname = "openclonk";
       version = "8.1";
       debianRevision = "3";
-      patch = "system-libb2.patch";
       hash = "sha256-zuH6zxSQXRhnt75092Xwb6XYv8UG391E5Arbnr7ApiI=";
+      patch = "system-libb2.patch";
     })
   ];
-
-  postInstall = ''
-    mv $out/games/openclonk $out/bin
-    rm -r $out/games
-  ''
-  + lib.optionalString enableSoundtrack ''
-    ln -sv ${soundtrack_src} $out/share/games/openclonk/Music.ocg
-  '';
 
   nativeBuildInputs = [
     cmake
@@ -90,14 +78,22 @@ stdenv.mkDerivation {
     tinyxml
   ];
 
+  postInstall = ''
+    mv $out/games/openclonk $out/bin
+    rm -r $out/games
+  ''
+  + lib.optionalString enableSoundtrack ''
+    ln -sv ${soundtrack_src} $out/share/games/openclonk/Music.ocg
+  '';
+
   cmakeBuildType = "RelWithDebInfo";
 
   meta = {
     description = "Free multiplayer action game in which you control clonks, small but witty and nimble humanoid beings";
     homepage = "https://www.openclonk.org";
     license = with lib.licenses; [ isc ] ++ lib.optional enableSoundtrack unfreeRedistributable;
-    mainProgram = "openclonk";
     maintainers = with lib.maintainers; [ wolfgangwalther ];
     platforms = lib.platforms.linux;
+    mainProgram = "openclonk";
   };
 }

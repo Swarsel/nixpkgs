@@ -17,18 +17,11 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-zdWObV/W6fmQ6bFznEVEtp95D8t2YZd45sIC15XQwYM=";
   };
 
-  enableParallelBuilding = true;
-
   nativeBuildInputs = [ mlton ];
-
+  buildFlags = [ "all" ];
   # Set as an environment variable in all the phase scripts.
   env.MLCOMP = "mlton";
-
-  buildFlags = [ "all" ];
-  installFlags = [ "prefix=$(out)" ];
-
   doCheck = true;
-
   nativeCheckInputs = [ unzip ];
 
   # We cannot run the pkgtests, as Nix does not allow network
@@ -39,12 +32,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postCheck
   '';
 
+  enableParallelBuilding = true;
+  installFlags = [ "prefix=$(out)" ];
+
   meta = {
     description = "Generic package manager for Standard ML libraries and programs";
     homepage = "https://github.com/diku-dk/smlpkg";
     license = lib.licenses.mit;
-    platforms = mlton.meta.platforms;
     maintainers = with lib.maintainers; [ athas ];
+    platforms = mlton.meta.platforms;
     mainProgram = "smlpkg";
   };
 })

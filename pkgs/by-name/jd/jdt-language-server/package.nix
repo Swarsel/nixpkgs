@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  python3,
   jdk,
+  python3,
 }:
 
 let
@@ -18,13 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-6UwwPYGY+XeTCANYJzh3H9GMUsVJKHhBC/IisaqB7x0=";
   };
 
-  sourceRoot = ".";
-
-  buildInputs = [
-    # Used for the included wrapper
-    python3
-  ];
-
   postPatch = ''
     # We store the plugins, config, and features folder in different locations
     # than in the original package. In addition, hard-code the path to the jdk
@@ -33,6 +26,11 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "jdtls_base_path = Path(__file__).parent.parent" "jdtls_base_path = Path(\"$out/share/java/jdtls/\")" \
       --replace-fail "java_executable = get_java_executable(known_args)" "java_executable = '${lib.getExe jdk}'"
   '';
+
+  buildInputs = [
+    # Used for the included wrapper
+    python3
+  ];
 
   installPhase =
     let
@@ -53,18 +51,21 @@ stdenv.mkDerivation (finalAttrs: {
       runHook postInstall
     '';
 
+  sourceRoot = ".";
   passthru.updateScript = ./update.sh;
 
   meta = {
-    homepage = "https://github.com/eclipse/eclipse.jdt.ls";
     description = "Java language server";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    homepage = "https://github.com/eclipse/eclipse.jdt.ls";
     license = lib.licenses.epl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       matt-snider
       wenjinnn
       yvnth
     ];
+
     platforms = lib.platforms.all;
     mainProgram = "jdtls";
   };

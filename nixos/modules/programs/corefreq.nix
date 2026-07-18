@@ -15,28 +15,32 @@ in
       enable = lib.mkEnableOption "Whether to enable the corefreq daemon and kernel module";
 
       package = lib.mkOption {
-        type = lib.types.package;
         default = kernelPackages.corefreq;
         defaultText = lib.literalExpression "config.boot.kernelPackages.corefreq";
+
         description = ''
           The corefreq package to use.
         '';
+
+        type = lib.types.package;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ cfg.package ];
     boot.extraModulePackages = [ cfg.package ];
     boot.kernelModules = [ "corefreqk" ];
+    environment.systemPackages = [ cfg.package ];
 
     # Create a systemd service for the corefreq daemon
     systemd.services.corefreq = {
       description = "CoreFreq daemon";
-      wantedBy = [ "multi-user.target" ];
+
       serviceConfig = {
         ExecStart = lib.getExe' cfg.package "corefreqd";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

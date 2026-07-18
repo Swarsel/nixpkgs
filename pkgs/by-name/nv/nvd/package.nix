@@ -1,9 +1,9 @@
 {
+  lib,
+  stdenv,
   fetchFromSourcehut,
   installShellFiles,
-  lib,
   python3,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,12 +17,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-3Fb6MDz4z41at3XpjLVng8NBwUJn/N7QBgU6Cbh0w98=";
   };
 
-  buildInputs = [
-    python3
-  ];
-
   nativeBuildInputs = [
     installShellFiles
+  ];
+
+  buildInputs = [
+    python3
   ];
 
   installPhase = ''
@@ -36,8 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Nix/NixOS package version diff tool";
     homepage = "https://khumba.net/projects/nvd";
     license = lib.licenses.asl20;
-    mainProgram = "nvd";
     maintainers = with lib.maintainers; [ khumba ];
     platforms = lib.platforms.all;
+    mainProgram = "nvd";
   };
 })

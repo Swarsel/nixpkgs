@@ -3,37 +3,28 @@
   stdenv,
   buildPythonPackage,
   fetchPypi,
-
-  # build-system
-  setuptools,
-
   # tests
   pandas,
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyfakefs";
   version = "6.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-BZ/QshdL/u1JnssKWbzP9VfyZ8xtiFr8Dlt254ttUNo=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "pyfakefs" ];
-
   nativeCheckInputs = [
     pandas
     pytestCheckHook
   ];
 
-  enabledTestPaths = [
-    "pyfakefs/tests"
-  ];
+  build-system = [ setuptools ];
 
   disabledTests = [
     "test_expand_root"
@@ -42,6 +33,13 @@ buildPythonPackage rec {
     # this test fails on darwin due to case-insensitive file system
     "test_rename_dir_to_existing_dir"
   ]);
+
+  enabledTestPaths = [
+    "pyfakefs/tests"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pyfakefs" ];
 
   meta = {
     description = "Fake file system that mocks the Python file system modules";

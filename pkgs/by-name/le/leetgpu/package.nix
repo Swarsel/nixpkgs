@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   installShellFiles,
+  stdenvNoCC,
   versionCheckHook,
 }:
 
@@ -12,19 +12,19 @@ let
   throwSystem = throw "Unsupported system: ${stdenvNoCC.hostPlatform.system}";
 
   srcs = {
-    x86_64-linux = fetchurl {
-      url = "https://cli.leetgpu.com/dist/${version}/leetgpu-linux-amd64";
-      hash = "sha256-um+KHqE1mmx7dkKm3pecrZSnsT+vbMh95kWQAsLGxFw=";
+    aarch64-darwin = fetchurl {
+      hash = "sha256-B1Sdyw+6fDBKS3PsINmiNA9PnOtEpDZiodFPsx+qk1Y=";
+      url = "https://cli.leetgpu.com/dist/${version}/leetgpu-macos-arm64";
     };
 
     aarch64-linux = fetchurl {
-      url = "https://cli.leetgpu.com/dist/${version}/leetgpu-linux-arm64";
       hash = "sha256-3BcM0SHBugv/72iznR0q6t18B+u1f2auyUK1n1t5KBY=";
+      url = "https://cli.leetgpu.com/dist/${version}/leetgpu-linux-arm64";
     };
 
-    aarch64-darwin = fetchurl {
-      url = "https://cli.leetgpu.com/dist/${version}/leetgpu-macos-arm64";
-      hash = "sha256-B1Sdyw+6fDBKS3PsINmiNA9PnOtEpDZiodFPsx+qk1Y=";
+    x86_64-linux = fetchurl {
+      hash = "sha256-um+KHqE1mmx7dkKm3pecrZSnsT+vbMh95kWQAsLGxFw=";
+      url = "https://cli.leetgpu.com/dist/${version}/leetgpu-linux-amd64";
     };
   };
 
@@ -32,17 +32,10 @@ let
 in
 
 stdenvNoCC.mkDerivation (finalAttrs: {
-  pname = "leetgpu";
   inherit version;
-
-  strictDeps = true;
-  __structuredAttrs = true;
-
   inherit src;
-
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
+  pname = "leetgpu";
+  strictDeps = true;
 
   installPhase = ''
     runHook preInstall
@@ -52,10 +45,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "version";
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
+  versionCheckProgramArg = "version";
   passthru.updateScript = ./update.sh;
 
   meta = {

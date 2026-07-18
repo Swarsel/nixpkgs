@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "mopidyapi";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -23,6 +22,8 @@ buildPythonPackage rec {
       --replace-fail "flit.buildapi" "flit_core.buildapi"
   '';
 
+  # PyPi does not include tests
+  doCheck = false;
   build-system = [ flit-core ];
 
   dependencies = [
@@ -30,10 +31,8 @@ buildPythonPackage rec {
     websockets
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "mopidyapi" ];
-
-  # PyPi does not include tests
-  doCheck = false;
 
   meta = {
     description = "Module for interacting with Mopidy via its JSON RPC API";

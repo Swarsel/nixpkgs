@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libmnl,
   libnfnetlink,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.0.5";
   pname = "libnetfilter_queue";
+  version = "1.0.5";
 
   src = fetchurl {
     url = "https://www.netfilter.org/projects/libnetfilter_queue/files/libnetfilter_queue-${finalAttrs.version}.tar.bz2";
@@ -17,14 +17,15 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libmnl
     libnfnetlink
   ];
 
   meta = {
-    homepage = "https://www.netfilter.org/projects/libnetfilter_queue/";
     description = "Userspace API to packets queued by the kernel packet filter";
+    homepage = "https://www.netfilter.org/projects/libnetfilter_queue/";
     license = lib.licenses.gpl2;
     platforms = lib.platforms.linux;
   };

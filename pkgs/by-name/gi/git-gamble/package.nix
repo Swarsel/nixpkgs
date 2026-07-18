@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitLab,
   gitMinimal,
   installShellFiles,
   makeWrapper,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,21 +19,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-DjwdoM9/W1UeD/XqVMXTyzjdcJLfHiAqRA3r//rkn1U=";
   };
 
-  cargoHash = "sha256-X3kJT0pscCH9sQxV3NkX0hL2sccTJHgMj0UeIpJOWJ4=";
+  nativeBuildInputs = [
+    makeWrapper
+    installShellFiles
+  ];
 
+  cargoHash = "sha256-X3kJT0pscCH9sQxV3NkX0hL2sccTJHgMj0UeIpJOWJ4=";
   nativeCheckInputs = [ gitMinimal ];
-  preCheck = ''
-    patchShebangs tests/editor/fake_editor.sh
-  '';
+
   checkFlags = [
     # this test can be flaky ; help is needed to stabilize it in upstream
     "--skip=git_gamble::cancel_command_with_signal::fail_when_git_is_killed"
   ];
 
-  nativeBuildInputs = [
-    makeWrapper
-    installShellFiles
-  ];
+  preCheck = ''
+    patchShebangs tests/editor/fake_editor.sh
+  '';
+
   postInstall = ''
     wrapProgram $out/bin/git-gamble \
       --prefix PATH : "${lib.makeBinPath [ gitMinimal ]}"

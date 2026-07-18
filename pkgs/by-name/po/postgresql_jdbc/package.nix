@@ -11,10 +11,10 @@ stdenv.mkDerivation (finalAttrs: {
   version = "42.7.7";
 
   src = fetchMavenArtifact {
+    inherit (finalAttrs) version;
+    hash = "sha256-FXlj1grmbWB+CUZujAzfgIfpyyDQFZiZ/8qWvKJShGA=";
     artifactId = "postgresql";
     groupId = "org.postgresql";
-    hash = "sha256-FXlj1grmbWB+CUZujAzfgIfpyyDQFZiZ/8qWvKJShGA=";
-    inherit (finalAttrs) version;
   };
 
   installPhase = ''
@@ -26,9 +26,9 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
+    description = "JDBC driver for PostgreSQL allowing Java programs to connect to a PostgreSQL database";
     homepage = "https://jdbc.postgresql.org/";
     changelog = "https://github.com/pgjdbc/pgjdbc/releases/tag/REL${finalAttrs.version}";
-    description = "JDBC driver for PostgreSQL allowing Java programs to connect to a PostgreSQL database";
     license = lib.licenses.bsd2;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     platforms = lib.platforms.unix;

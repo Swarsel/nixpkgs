@@ -1,17 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   hatch,
   hatch-build-scripts,
   hatch-nodejs-version,
   hatchling,
-  jupyterlab,
-
   # dependencies
   ipywidgets,
+  jupyterlab,
   numpy,
   pillow,
 }:
@@ -19,7 +17,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "ipycanvas";
   version = "0.14.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jupyter-widgets-contrib";
@@ -33,6 +30,9 @@ buildPythonPackage (finalAttrs: {
     echo '__version__ = "{${finalAttrs.version}}"' > ipycanvas/_version.py
   '';
 
+  env.HATCH_BUILD_NO_HOOKS = true;
+  doCheck = false; # tests are in Typescript and require `npx` and `chromium`
+
   build-system = [
     hatch
     hatch-build-scripts
@@ -41,15 +41,13 @@ buildPythonPackage (finalAttrs: {
     jupyterlab
   ];
 
-  env.HATCH_BUILD_NO_HOOKS = true;
-
   dependencies = [
     ipywidgets
     numpy
     pillow
   ];
 
-  doCheck = false; # tests are in Typescript and require `npx` and `chromium`
+  pyproject = true;
   pythonImportsCheck = [ "ipycanvas" ];
 
   meta = {

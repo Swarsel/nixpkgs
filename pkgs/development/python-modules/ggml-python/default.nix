@@ -1,68 +1,72 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  nix-update-script,
-
-  # build-system
-  cmake,
-  ninja,
-  scikit-build-core,
-
-  # buildInputs
-  ggml,
-
-  # dependencies
-  numpy,
-  typing-extensions,
-
   # optional-dependencies
   accelerate,
+  buildPythonPackage,
+  cairosvg,
+  # build-system
+  cmake,
+  # buildInputs
+  ggml,
+  mkdocs,
+  mkdocs-material,
+  mkdocstrings,
+  ninja,
+  nix-update-script,
+  # dependencies
+  numpy,
+  pillow,
+  # tests
+  pytestCheckHook,
+  scikit-build-core,
   sentencepiece,
   torch,
   torchaudio,
   torchvision,
   transformers,
-  cairosvg,
-  mkdocs,
-  mkdocs-material,
-  mkdocstrings,
-  pillow,
-
-  # tests
-  pytestCheckHook,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "ggml-python";
   version = "0.0.45";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "abetlen";
     repo = "ggml-python";
     tag = "v${finalAttrs.version}";
+    hash = "sha256-rPbYp6if9bCiQGfM7ZC84hkJKadE2mwC9N3elgVfQBc=";
     # ggml-python expects an older version of ggml than pkgs.ggml's
     fetchSubmodules = true;
-    hash = "sha256-rPbYp6if9bCiQGfM7ZC84hkJKadE2mwC9N3elgVfQBc=";
   };
+
+  buildInputs = [
+    ggml
+  ];
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
+  preCheck = ''
+    rm -rf ggml
+  '';
+
+  __structuredAttrs = true;
 
   build-system = [
     cmake
     ninja
     scikit-build-core
   ];
-  dontUseCmakeConfigure = true;
-
-  buildInputs = [
-    ggml
-  ];
 
   dependencies = [
     numpy
     typing-extensions
   ];
+
+  dontUseCmakeConfigure = true;
 
   optional-dependencies = {
     convert = [
@@ -74,6 +78,7 @@ buildPythonPackage (finalAttrs: {
       torchvision
       transformers
     ];
+
     docs = [
       cairosvg
       mkdocs
@@ -83,15 +88,8 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "ggml" ];
-
-  preCheck = ''
-    rm -rf ggml
-  '';
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
 
   passthru.updateScript = nix-update-script {
     extraArgs = [

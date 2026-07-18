@@ -21,8 +21,8 @@ buildDunePackage (finalAttrs: {
 
   meta = {
     description = "Pure OCaml library to read and write CSV files";
+    homepage = "https://github.com/Chris00/ocaml-csv";
     license = lib.licenses.lgpl21;
     maintainers = [ lib.maintainers.vbgl ];
-    homepage = "https://github.com/Chris00/ocaml-csv";
   };
 })

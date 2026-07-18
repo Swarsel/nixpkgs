@@ -3,19 +3,18 @@
   stdenv,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
   matplotlib,
-  numpy,
-  pytestCheckHook,
-  pillow,
   nix-update-script,
+  numpy,
+  pillow,
+  pytestCheckHook,
+  setuptools,
   typst,
 }:
 
 buildPythonPackage rec {
   pname = "mpl-typst";
   version = "0.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "daskol";
@@ -32,25 +31,18 @@ buildPythonPackage rec {
         "get_typst_compiler(name: str, default=Path('${lib.getExe typst}'))"
   '';
 
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    matplotlib
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pillow
     numpy
   ];
 
-  pytestFlags = [ "-v" ];
+  build-system = [
+    setuptools
+  ];
 
-  pythonImportsCheck = [
-    "mpl_typst"
-    "mpl_typst.as_default"
+  dependencies = [
+    matplotlib
   ];
 
   disabledTestPaths = [
@@ -70,6 +62,14 @@ buildPythonPackage rec {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     # fatal error when matplotlib creates a canvas
     "mpl_typst/backend_test.py"
+  ];
+
+  pyproject = true;
+  pytestFlags = [ "-v" ];
+
+  pythonImportsCheck = [
+    "mpl_typst"
+    "mpl_typst.as_default"
   ];
 
   passthru.updateScript = nix-update-script { };

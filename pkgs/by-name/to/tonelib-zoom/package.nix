@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchurl,
-  autoPatchelfHook,
-  dpkg,
   alsa-lib,
+  autoPatchelfHook,
+  curl,
+  dpkg,
   freetype,
   libglvnd,
-  curl,
+  libjack2,
   libxcursor,
   libxinerama,
   libxrandr,
   libxrender,
-  libjack2,
 }:
 
 stdenv.mkDerivation rec {
@@ -38,6 +38,11 @@ stdenv.mkDerivation rec {
   ]
   ++ runtimeDependencies;
 
+  installPhase = ''
+    mv usr $out
+    substituteInPlace $out/share/applications/ToneLib-Zoom.desktop --replace /usr/ $out/
+  '';
+
   runtimeDependencies = map lib.getLib [
     curl
     libxcursor
@@ -49,20 +54,15 @@ stdenv.mkDerivation rec {
 
   unpackCmd = "dpkg -x $curSrc source";
 
-  installPhase = ''
-    mv usr $out
-    substituteInPlace $out/share/applications/ToneLib-Zoom.desktop --replace /usr/ $out/
-  '';
-
   meta = {
-    # webkitgtk_4_0 was removed
-    broken = true;
     description = "ToneLib Zoom – change and save all the settings in your Zoom(r) guitar pedal";
     homepage = "https://tonelib.net/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "ToneLib-Zoom";
+    # webkitgtk_4_0 was removed
+    broken = true;
   };
 }

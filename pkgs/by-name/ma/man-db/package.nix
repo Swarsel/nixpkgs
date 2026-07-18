@@ -1,15 +1,16 @@
 {
-  buildPackages,
-  gdbm,
+  lib,
+  stdenv,
   fetchFromGitLab,
   autoconf,
   automake,
+  buildPackages,
   flex,
+  gdbm,
   gettext,
   gnulib,
   groff,
   gzip,
-  lib,
   libiconv,
   libiconvReal,
   libpipeline,
@@ -18,7 +19,6 @@
   nix-update-script,
   nixosTests,
   pkg-config,
-  stdenv,
   util-linuxMinimal,
   zstd,
 }:
@@ -42,27 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
     "doc"
   ];
-  outputMan = "out"; # users will want `man man` to work
-
-  strictDeps = true;
-  nativeBuildInputs = [
-    autoconf
-    automake
-    flex
-    gettext
-    groff
-    libtool
-    makeWrapper
-    pkg-config
-    zstd
-  ];
-  buildInputs = [
-    libpipeline
-    gdbm
-    groff
-    libiconv'
-  ]; # (Yes, 'groff' is both native and build input)
-  nativeCheckInputs = [ libiconv' ]; # for 'iconv' binary; make very sure it matches buildinput libiconv
 
   patches = [
     ./systemwide-man-db-conf.patch
@@ -79,6 +58,27 @@ stdenv.mkDerivation (finalAttrs: {
     # Add mandb locations for the above
     echo "MANDB_MAP	/nix/var/nix/profiles/default/share/man	/var/cache/man/nixpkgs" >> src/man_db.conf.in
   '';
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    autoconf
+    automake
+    flex
+    gettext
+    groff
+    libtool
+    makeWrapper
+    pkg-config
+    zstd
+  ];
+
+  buildInputs = [
+    libpipeline
+    gdbm
+    groff
+    libiconv'
+  ]; # (Yes, 'groff' is both native and build input)
 
   configureFlags = [
     "--disable-setuid"
@@ -106,6 +106,12 @@ stdenv.mkDerivation (finalAttrs: {
     configureFlagsArray+=("--with-sections=1 n l 8 3 0 2 5 4 9 6 7")
   '';
 
+  doCheck =
+    !stdenv.hostPlatform.isMusl # iconv binary
+  ;
+
+  nativeCheckInputs = [ libiconv' ]; # for 'iconv' binary; make very sure it matches buildinput libiconv
+
   postInstall = ''
     # apropos/whatis uses program name to decide whether to act like apropos or whatis
     # (multi-call binary). `apropos` is actually just a symlink to whatis. So we need to
@@ -127,24 +133,22 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   enableParallelBuilding = true;
-
-  doCheck =
-    !stdenv.hostPlatform.isMusl # iconv binary
-  ;
+  outputMan = "out"; # users will want `man man` to work
 
   passthru = {
     tests = {
       nixos = nixosTests.man;
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "http://man-db.nongnu.org";
     description = "Implementation of the standard Unix documentation system accessed using the man command";
+    homepage = "http://man-db.nongnu.org";
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ mdaniels5757 ];
     platforms = lib.platforms.unix;
     mainProgram = "man";
-    maintainers = with lib.maintainers; [ mdaniels5757 ];
   };
 })

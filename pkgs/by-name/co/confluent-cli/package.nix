@@ -17,23 +17,22 @@ stdenv.mkDerivation (finalAttrs: {
         attrs:
         attrs.${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
       system = selectSystem {
-        x86_64-linux = "linux_amd64";
-        aarch64-linux = "linux_arm64";
         aarch64-darwin = "darwin_arm64";
+        aarch64-linux = "linux_arm64";
+        x86_64-linux = "linux_amd64";
       };
     in
     fetchurl {
       url = "https://s3-us-west-2.amazonaws.com/confluent.cloud/confluent-cli/archives/${finalAttrs.version}/confluent_${finalAttrs.version}_${system}.tar.gz";
+
       hash = selectSystem {
-        x86_64-linux = "sha256-52zPTIuJOS+MMG1+pA+f0HI7VvBHLsRnSq5zWorHsiQ=";
-        aarch64-linux = "sha256-hdhMSZR593rcjch4EVdRshC72aTp1c3dTQBlLCDMsVg=";
         aarch64-darwin = "sha256-YOVGl47XOvvHDtm2/VzzLOeFCA6sw8BuDHQWZgzNNtE=";
+        aarch64-linux = "sha256-hdhMSZR593rcjch4EVdRshC72aTp1c3dTQBlLCDMsVg=";
+        x86_64-linux = "sha256-52zPTIuJOS+MMG1+pA+f0HI7VvBHLsRnSq5zWorHsiQ=";
       };
     };
 
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
-
-  dontStrip = stdenv.hostPlatform.isDarwin;
 
   installPhase = ''
     runHook preInstall
@@ -46,17 +45,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontStrip = stdenv.hostPlatform.isDarwin;
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Confluent CLI";
     homepage = "https://docs.confluent.io/confluent-cli/current/overview.html";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfreeRedistributable;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       rguevara84
       autophagy
     ];
+
     # TODO: There's support for i686 systems but I do not have any such system
     # to build it locally on, it's also unfree so I cannot rely on ofborg to
     # build it. Get the list of supported system by looking at the list of

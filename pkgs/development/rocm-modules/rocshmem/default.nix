@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
+  clr,
   cmake,
+  mpi,
   rocm-cmake,
   rocm-core,
   rocm-runtime,
-  clr,
-  mpi,
-  useMpi ? true,
-  useReverseOffload ? useMpi,
+  rocmUpdateScript,
   buildExamples ? false,
   gpuTargets ? (clr.localGpuTargets or [ ]),
+  useMpi ? true,
+  useReverseOffload ? useMpi,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -64,7 +64,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "The ROCm OpenSHMEM (rocSHMEM) runtime";
     homepage = "https://github.com/ROCm/rocSHMEM";
     license = with lib.licenses; [ mit ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

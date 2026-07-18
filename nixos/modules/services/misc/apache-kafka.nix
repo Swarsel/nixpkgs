@@ -36,133 +36,6 @@ let
 in
 {
 
-  options.services.apache-kafka = {
-    enable = lib.mkEnableOption "Apache Kafka event streaming broker";
-
-    settings = lib.mkOption {
-      description = ''
-        [Kafka broker configuration](https://kafka.apache.org/documentation.html#brokerconfigs)
-        {file}`server.properties`.
-
-        Note that .properties files contain mappings from string to string.
-        Keys with dots are NOT represented by nested attrs in these settings,
-        but instead as quoted strings (ie. `settings."broker.id"`, NOT
-        `settings.broker.id`).
-      '';
-      type = lib.types.submodule {
-        freeformType =
-          with lib.types;
-          let
-            primitive = oneOf [
-              bool
-              int
-              str
-            ];
-          in
-          lazyAttrsOf (nullOr (either primitive (listOf primitive)));
-
-        options = {
-          "broker.id" = lib.mkOption {
-            description = "Broker ID.";
-            default = null;
-            type = with lib.types; nullOr int;
-          };
-
-          "log.dirs" = lib.mkOption {
-            description = "Log file directories.";
-            # Deliberaly leave out old default and use the rewrite opportunity
-            # to have users choose a safer value -- /tmp might be volatile and is a
-            # slightly scary default choice.
-            # default = [ "/tmp/apache-kafka" ];
-            type = with lib.types; listOf path;
-          };
-
-          "listeners" = lib.mkOption {
-            description = ''
-              Kafka Listener List.
-              See [listeners](https://kafka.apache.org/documentation/#brokerconfigs_listeners).
-            '';
-            type = lib.types.listOf lib.types.str;
-            default = [ "PLAINTEXT://localhost:9092" ];
-          };
-        };
-      };
-    };
-
-    clusterId = lib.mkOption {
-      description = ''
-        KRaft mode ClusterId used for formatting log directories. Can be generated with `kafka-storage.sh random-uuid`
-      '';
-      type = with lib.types; nullOr str;
-      default = null;
-    };
-
-    configFiles.serverProperties = lib.mkOption {
-      description = ''
-        Kafka server.properties configuration file path.
-        Defaults to the rendered `settings`.
-      '';
-      type = lib.types.path;
-    };
-
-    configFiles.log4jProperties = lib.mkOption {
-      description = "Kafka log4j property configuration file path";
-      type = lib.types.path;
-      default = pkgs.writeText "log4j.properties" cfg.log4jProperties;
-      defaultText = ''pkgs.writeText "log4j.properties" cfg.log4jProperties'';
-    };
-
-    formatLogDirs = lib.mkOption {
-      description = ''
-        Whether to format log dirs in KRaft mode if all log dirs are
-        unformatted, ie. they contain no meta.properties.
-      '';
-      type = lib.types.bool;
-      default = false;
-    };
-
-    formatLogDirsIgnoreFormatted = lib.mkOption {
-      description = ''
-        Whether to ignore already formatted log dirs when formatting log dirs,
-        instead of failing. Useful when replacing or adding disks.
-      '';
-      type = lib.types.bool;
-      default = false;
-    };
-
-    log4jProperties = lib.mkOption {
-      description = "Kafka log4j property configuration.";
-      default = ''
-        log4j.rootLogger=INFO, stdout
-
-        log4j.appender.stdout=org.apache.log4j.ConsoleAppender
-        log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
-        log4j.appender.stdout.layout.ConversionPattern=[%d] %p %m (%c)%n
-      '';
-      type = lib.types.lines;
-    };
-
-    jvmOptions = lib.mkOption {
-      description = "Extra command line options for the JVM running Kafka.";
-      default = [ ];
-      type = lib.types.listOf lib.types.str;
-      example = [
-        "-Djava.net.preferIPv4Stack=true"
-        "-Dcom.sun.management.jmxremote"
-        "-Dcom.sun.management.jmxremote.local.only=true"
-      ];
-    };
-
-    package = lib.mkPackageOption pkgs "apacheKafka" { };
-
-    jre = lib.mkOption {
-      description = "The JRE with which to run Kafka";
-      default = cfg.package.passthru.jre;
-      defaultText = lib.literalExpression "pkgs.apacheKafka.passthru.jre";
-      type = lib.types.package;
-    };
-  };
-
   imports = [
     (lib.mkRenamedOptionModule
       [ "services" "apache-kafka" "brokerId" ]
@@ -203,24 +76,152 @@ in
     ] "Please see services.apache-kafka.settings and its documentation instead")
   ];
 
+  options.services.apache-kafka = {
+    enable = lib.mkEnableOption "Apache Kafka event streaming broker";
+    package = lib.mkPackageOption pkgs "apacheKafka" { };
+
+    clusterId = lib.mkOption {
+      default = null;
+
+      description = ''
+        KRaft mode ClusterId used for formatting log directories. Can be generated with `kafka-storage.sh random-uuid`
+      '';
+
+      type = with lib.types; nullOr str;
+    };
+
+    configFiles.log4jProperties = lib.mkOption {
+      default = pkgs.writeText "log4j.properties" cfg.log4jProperties;
+      defaultText = ''pkgs.writeText "log4j.properties" cfg.log4jProperties'';
+      description = "Kafka log4j property configuration file path";
+      type = lib.types.path;
+    };
+
+    configFiles.serverProperties = lib.mkOption {
+      description = ''
+        Kafka server.properties configuration file path.
+        Defaults to the rendered `settings`.
+      '';
+
+      type = lib.types.path;
+    };
+
+    formatLogDirs = lib.mkOption {
+      default = false;
+
+      description = ''
+        Whether to format log dirs in KRaft mode if all log dirs are
+        unformatted, ie. they contain no meta.properties.
+      '';
+
+      type = lib.types.bool;
+    };
+
+    formatLogDirsIgnoreFormatted = lib.mkOption {
+      default = false;
+
+      description = ''
+        Whether to ignore already formatted log dirs when formatting log dirs,
+        instead of failing. Useful when replacing or adding disks.
+      '';
+
+      type = lib.types.bool;
+    };
+
+    jre = lib.mkOption {
+      default = cfg.package.passthru.jre;
+      defaultText = lib.literalExpression "pkgs.apacheKafka.passthru.jre";
+      description = "The JRE with which to run Kafka";
+      type = lib.types.package;
+    };
+
+    jvmOptions = lib.mkOption {
+      default = [ ];
+      description = "Extra command line options for the JVM running Kafka.";
+
+      example = [
+        "-Djava.net.preferIPv4Stack=true"
+        "-Dcom.sun.management.jmxremote"
+        "-Dcom.sun.management.jmxremote.local.only=true"
+      ];
+
+      type = lib.types.listOf lib.types.str;
+    };
+
+    log4jProperties = lib.mkOption {
+      default = ''
+        log4j.rootLogger=INFO, stdout
+
+        log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+        log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
+        log4j.appender.stdout.layout.ConversionPattern=[%d] %p %m (%c)%n
+      '';
+
+      description = "Kafka log4j property configuration.";
+      type = lib.types.lines;
+    };
+
+    settings = lib.mkOption {
+      description = ''
+        [Kafka broker configuration](https://kafka.apache.org/documentation.html#brokerconfigs)
+        {file}`server.properties`.
+
+        Note that .properties files contain mappings from string to string.
+        Keys with dots are NOT represented by nested attrs in these settings,
+        but instead as quoted strings (ie. `settings."broker.id"`, NOT
+        `settings.broker.id`).
+      '';
+
+      type = lib.types.submodule {
+        options = {
+          "broker.id" = lib.mkOption {
+            default = null;
+            description = "Broker ID.";
+            type = with lib.types; nullOr int;
+          };
+
+          "listeners" = lib.mkOption {
+            default = [ "PLAINTEXT://localhost:9092" ];
+
+            description = ''
+              Kafka Listener List.
+              See [listeners](https://kafka.apache.org/documentation/#brokerconfigs_listeners).
+            '';
+
+            type = lib.types.listOf lib.types.str;
+          };
+
+          "log.dirs" = lib.mkOption {
+            description = "Log file directories.";
+            # Deliberaly leave out old default and use the rewrite opportunity
+            # to have users choose a safer value -- /tmp might be volatile and is a
+            # slightly scary default choice.
+            # default = [ "/tmp/apache-kafka" ];
+            type = with lib.types; listOf path;
+          };
+        };
+
+        freeformType =
+          with lib.types;
+          let
+            primitive = oneOf [
+              bool
+              int
+              str
+            ];
+          in
+          lazyAttrsOf (nullOr (either primitive (listOf primitive)));
+      };
+    };
+  };
+
   config = lib.mkIf cfg.enable {
     services.apache-kafka.configFiles.serverProperties = generator "server.properties" stringlySettings;
 
-    users.users.apache-kafka = {
-      isSystemUser = true;
-      group = "apache-kafka";
-      description = "Apache Kafka daemon user";
-    };
-    users.groups.apache-kafka = { };
-
-    systemd.tmpfiles.rules = map (
-      logDir: "d '${logDir}' 0700 apache-kafka - - -"
-    ) cfg.settings."log.dirs";
-
     systemd.services.apache-kafka = {
-      description = "Apache Kafka Daemon";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "Apache Kafka Daemon";
+
       preStart = lib.mkIf cfg.formatLogDirs (
         if cfg.formatLogDirsIgnoreFormatted then
           ''
@@ -235,6 +236,7 @@ in
             fi
           ''
       );
+
       serviceConfig = {
         ExecStart = ''
           ${cfg.jre}/bin/java \
@@ -244,13 +246,29 @@ in
             kafka.Kafka \
             ${cfg.configFiles.serverProperties}
         '';
-        User = "apache-kafka";
+
         SuccessExitStatus = "0 143";
+        User = "apache-kafka";
       };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    systemd.tmpfiles.rules = map (
+      logDir: "d '${logDir}' 0700 apache-kafka - - -"
+    ) cfg.settings."log.dirs";
+
+    users.groups.apache-kafka = { };
+
+    users.users.apache-kafka = {
+      description = "Apache Kafka daemon user";
+      group = "apache-kafka";
+      isSystemUser = true;
     };
   };
 
   meta.doc = ./kafka.md;
+
   meta.maintainers = with lib.maintainers; [
     srhb
   ];

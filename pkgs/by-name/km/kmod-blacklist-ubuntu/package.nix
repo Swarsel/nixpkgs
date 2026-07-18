@@ -9,8 +9,8 @@ let
 
 in
 stdenv.mkDerivation {
-  pname = "kmod-blacklist";
   inherit version;
+  pname = "kmod-blacklist";
 
   src = fetchurl {
     url = "https://launchpad.net/ubuntu/+archive/primary/+files/kmod_${version}.debian.tar.xz";
@@ -35,12 +35,14 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://launchpad.net/ubuntu/+source/kmod";
     description = "Linux kernel module blacklists from Ubuntu";
-    platforms = lib.platforms.linux;
+    homepage = "https://launchpad.net/ubuntu/+source/kmod";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl21Plus
     ];
+
+    platforms = lib.platforms.linux;
   };
 }

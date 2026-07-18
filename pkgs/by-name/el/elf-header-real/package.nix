@@ -1,8 +1,8 @@
 {
-  stdenvNoCC,
   lib,
   glibc,
   musl,
+  stdenvNoCC,
 }:
 
 let
@@ -15,14 +15,9 @@ let
 in
 
 stdenvNoCC.mkDerivation {
-  pname = "elf-header";
   inherit (libc) version;
-
+  pname = "elf-header";
   src = null;
-
-  dontUnpack = true;
-
-  dontBuild = true;
 
   installPhase = ''
     mkdir -p "$out/include";
@@ -34,14 +29,19 @@ stdenvNoCC.mkDerivation {
       > "$out/include/elf.h"
   '';
 
+  dontBuild = true;
+  dontUnpack = true;
+
   meta = libc.meta // {
-    outputsToInstall = [ "out" ];
     description = "Datastructures of ELF according to the target platform's libc";
+
     longDescription = ''
       The Executable and Linkable Format (ELF, formerly named Extensible Linking
       Format), is usually defined in a header like this.
     '';
-    platforms = lib.platforms.all;
+
     maintainers = [ lib.maintainers.ericson2314 ];
+    platforms = lib.platforms.all;
+    outputsToInstall = [ "out" ];
   };
 }

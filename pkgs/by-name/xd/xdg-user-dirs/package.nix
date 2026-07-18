@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  meson,
-  ninja,
   fetchurl,
-  libxslt,
-  docbook_xsl,
   docbook_xml_dtd_43,
+  docbook_xsl,
   gettext,
-  makeBinaryWrapper,
   libiconv,
   libintl,
+  libxslt,
+  makeBinaryWrapper,
+  meson,
+  ninja,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -58,13 +58,15 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://freedesktop.org/wiki/Software/xdg-user-dirs";
     description = "Tool to help manage well known user directories like the desktop folder and the music folder";
+    homepage = "http://freedesktop.org/wiki/Software/xdg-user-dirs";
     license = lib.licenses.gpl2;
+
     maintainers = with lib.maintainers; [
       donovanglover
       iFreilicht
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "xdg-user-dirs-update";
   };

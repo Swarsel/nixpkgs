@@ -1,13 +1,13 @@
 {
-  callPackage,
   lib,
   stdenv,
   fetchFromGitHub,
+  callPackage,
   gitMinimal,
-  zsh,
-  zlib,
-  runtimeShell,
   nix-update-script,
+  runtimeShell,
+  zlib,
+  zsh,
 }:
 let
   romkatv_libgit2 = callPackage ./romkatv_libgit2.nix { };
@@ -23,6 +23,17 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-b+9bwJ87VV6rbOPobkwMkDXGH34STjYPlt8wCRR5tEc=";
   };
 
+  postPatch = ''
+    sed -i '1i GITSTATUS_AUTO_INSTALL=''${GITSTATUS_AUTO_INSTALL-0}' gitstatus.plugin.sh
+    sed -i '1i GITSTATUS_AUTO_INSTALL=''${GITSTATUS_AUTO_INSTALL-0}' gitstatus.plugin.zsh
+    sed -i "1a GITSTATUS_DAEMON=$out/bin/gitstatusd" install
+  '';
+
+  buildInputs = [
+    romkatv_libgit2
+    zlib
+  ];
+
   env.NIX_LDFLAGS = toString (
     [
       # required by libgit2.a
@@ -30,17 +41,6 @@ stdenv.mkDerivation (finalAttrs: {
     ]
     ++ lib.optional stdenv.hostPlatform.isDarwin "-liconv"
   );
-
-  buildInputs = [
-    romkatv_libgit2
-    zlib
-  ];
-
-  postPatch = ''
-    sed -i '1i GITSTATUS_AUTO_INSTALL=''${GITSTATUS_AUTO_INSTALL-0}' gitstatus.plugin.sh
-    sed -i '1i GITSTATUS_AUTO_INSTALL=''${GITSTATUS_AUTO_INSTALL-0}' gitstatus.plugin.zsh
-    sed -i "1a GITSTATUS_DAEMON=$out/bin/gitstatusd" install
-  '';
 
   installPhase = ''
     install -Dm755 usrbin/gitstatusd $out/bin/gitstatusd
@@ -65,15 +65,7 @@ stdenv.mkDerivation (finalAttrs: {
     chmod +x $out/bin/gitstatus-share
   '';
 
-  # Don't install the "install" and "build.info" files, which the end user
-  # should not need to worry about.
-  pathsToLink = [
-    "/bin/gitstatusd"
-    "/share/gitstatus/gitstatus.plugin.sh"
-    "/share/gitstatus/gitstatus.plugin.zsh"
-    "/share/gitstatus/gitstatus.prompt.sh"
-    "/share/gitstatus/gitstatus.prompt.zsh"
-  ];
+  doInstallCheck = true;
 
   # The install check sets up an empty Git repository and a minimal zshrc that
   # invokes gitstatus.plugin.zsh. It runs zsh against this zshrc and verifies
@@ -84,7 +76,7 @@ stdenv.mkDerivation (finalAttrs: {
     gitMinimal
     zsh
   ];
-  doInstallCheck = true;
+
   installCheckPhase = ''
     TEMP=$(mktemp -d)
     cd "$TEMP"
@@ -119,6 +111,16 @@ stdenv.mkDerivation (finalAttrs: {
     wait $!
   '';
 
+  # Don't install the "install" and "build.info" files, which the end user
+  # should not need to worry about.
+  pathsToLink = [
+    "/bin/gitstatusd"
+    "/share/gitstatus/gitstatus.plugin.sh"
+    "/share/gitstatus/gitstatus.plugin.zsh"
+    "/share/gitstatus/gitstatus.prompt.sh"
+    "/share/gitstatus/gitstatus.prompt.zsh"
+  ];
+
   passthru = {
     inherit romkatv_libgit2;
     updateScript = nix-update-script { };
@@ -126,6 +128,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "10x faster implementation of `git status` command";
+
     longDescription = ''
       To enable the included gitstatus prompt, add the appropriate line to your NixOS configuration:
       `programs.bash.promptInit = "source $(gitstatus-share)/gitstatus.prompt.sh";`
@@ -133,12 +136,15 @@ stdenv.mkDerivation (finalAttrs: {
 
       See the project homepage for details on customization.
     '';
+
     homepage = "https://github.com/romkatv/gitstatus";
     license = lib.licenses.gpl3Only;
+
     maintainers = [
       lib.maintainers.mmlb
       lib.maintainers.SuperSandro2000
     ];
+
     platforms = lib.platforms.all;
     mainProgram = "gitstatusd";
   };

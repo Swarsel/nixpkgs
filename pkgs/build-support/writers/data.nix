@@ -1,7 +1,7 @@
 {
   lib,
-  pkgs,
   formats,
+  pkgs,
   runCommand,
 }:
 let
@@ -12,6 +12,8 @@ let
     ;
 in
 {
+  inherit (pkgs) writeText;
+
   /**
     Creates a transformer function that writes input data to disk, transformed
     by both the `input` and `output` arguments.
@@ -62,8 +64,6 @@ in
       ''
   );
 
-  inherit (pkgs) writeText;
-
   /**
     Writes the content to a JSON file.
 
@@ -74,7 +74,6 @@ in
     ```
   */
   writeJSON = (pkgs.formats.json { }).generate;
-
   /**
     Writes the content to a TOML file.
 
@@ -85,7 +84,6 @@ in
     ```
   */
   writeTOML = (pkgs.formats.toml { }).generate;
-
   /**
     Writes the content to a YAML file.
 

@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
-  gitUpdater,
-  pytestCheckHook,
-  pytest-cov-stub,
   attrs,
+  buildPythonPackage,
+  gitUpdater,
+  hatchling,
+  pytest-cov-stub,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "price-parser";
   version = "0.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scrapinghub";
@@ -21,17 +20,15 @@ buildPythonPackage rec {
     hash = "sha256-QM8kmfxExD7r4kX73QBT028zGbZosXtncCqguLj8Q4U=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ attrs ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
   ];
 
+  build-system = [ hatchling ];
+  dependencies = [ attrs ];
+  pyproject = true;
   pythonImportsCheck = [ "price_parser" ];
-
   passthru.updateScript = gitUpdater { };
 
   meta = {

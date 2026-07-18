@@ -1,11 +1,11 @@
 {
+  lib,
   stdenv,
   buildPackages,
-  lib,
   fetchzip,
   gpm,
-  libffi,
   libGL,
+  libffi,
   libx11,
   libxext,
   libxpm,
@@ -27,14 +27,6 @@ stdenv.mkDerivation rec {
     patchShebangs tests/warnings/test.sh
   '';
 
-  dontConfigure = true;
-
-  depsBuildBuild = [
-    buildPackages.stdenv.cc
-    buildPackages.ncurses
-    buildPackages.libffi
-  ];
-
   buildInputs = [
     ncurses
     libffi
@@ -46,12 +38,6 @@ stdenv.mkDerivation rec {
     libxext
     libxpm
     libxrandr
-  ];
-
-  enableParallelBuilding = true;
-
-  hardeningDisable = [
-    "format"
   ];
 
   makeFlags = lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
@@ -94,15 +80,9 @@ stdenv.mkDerivation rec {
     buildFlagsArray+=("FBC=$PWD/patched-fbc/bin/fbc${stdenv.buildPlatform.extensions.executable} -i $PWD/inc")
   '';
 
-  installFlags = [
-    "prefix=${placeholder "out"}"
-  ];
-
   # Tests do not work when cross-compiling even if build platform can execute
   # host binaries, compiler struggles to find the cross compiler's libgcc_s
   doCheck = stdenv.buildPlatform == stdenv.hostPlatform;
-
-  checkTarget = "unit-tests warning-tests log-tests";
 
   checkFlags = [
     "UNITTEST_RUN_ARGS=--verbose" # see what unit-tests are doing
@@ -127,18 +107,39 @@ stdenv.mkDerivation rec {
     runHook postCheck
   '';
 
+  checkTarget = "unit-tests warning-tests log-tests";
+
+  depsBuildBuild = [
+    buildPackages.stdenv.cc
+    buildPackages.ncurses
+    buildPackages.libffi
+  ];
+
+  dontConfigure = true;
+  enableParallelBuilding = true;
+
+  hardeningDisable = [
+    "format"
+  ];
+
+  installFlags = [
+    "prefix=${placeholder "out"}"
+  ];
+
   meta = {
-    homepage = "https://www.freebasic.net/";
     description = "Multi-platform BASIC Compiler";
-    mainProgram = "fbc";
+
     longDescription = ''
       FreeBASIC is a completely free, open-source, multi-platform BASIC compiler (fbc),
       with syntax similar to (and support for) MS-QuickBASIC, that adds new features
       such as pointers, object orientation, unsigned data types, inline assembly,
       and many others.
     '';
+
+    homepage = "https://www.freebasic.net/";
     license = lib.licenses.gpl2Plus; # runtime & graphics libraries are LGPLv2+ w/ static linking exception
     maintainers = with lib.maintainers; [ OPNA2608 ];
     platforms = with lib.platforms; windows ++ linux;
+    mainProgram = "fbc";
   };
 }

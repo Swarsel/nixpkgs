@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "mock";
   version = "5.2.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "mock" ];
 
   meta = {

@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   hatchling,
+  pytestCheckHook,
 }:
 buildPythonPackage rec {
   pname = "dataclass-csv";
   version = "1.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dfurtado";
@@ -17,14 +16,15 @@ buildPythonPackage rec {
     hash = "sha256-hDnuPg5xniybR2J91KnJxSlOI+dWzUPQJtYKfqsNCvw=";
   };
 
-  build-system = [
-    hatchling
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
   ];
 
+  build-system = [
+    hatchling
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "dataclass_csv" ];
 
   meta = {

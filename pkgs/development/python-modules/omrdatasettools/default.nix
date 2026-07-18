@@ -8,13 +8,13 @@
   mung,
   muscima,
   numpy,
+  pandas,
   pillow,
+  pyhamcrest,
   pytestCheckHook,
   scikit-image,
   sphinx-rtd-theme,
   sympy,
-  pandas,
-  pyhamcrest,
   tqdm,
   twine,
 }:
@@ -22,7 +22,6 @@
 buildPythonPackage rec {
   pname = "omrdatasettools";
   version = "1.4.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -63,6 +62,8 @@ buildPythonPackage rec {
     "test_render_node_masks_instance_segmentation_of_staff_lines"
     "test_render_node_masks_semantic_segmentation_of_nodes"
   ];
+
+  format = "setuptools";
 
   meta = {
     description = "Collection of datasets used for Optical Music Recognition";

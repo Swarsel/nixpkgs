@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,8 +21,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Sweep some mines for fun, and probably not for profit";
     homepage = "https://github.com/cpcloud/minesweep-rs";
     license = lib.licenses.asl20;
-    mainProgram = "minesweep";
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.all;
+    mainProgram = "minesweep";
   };
 })

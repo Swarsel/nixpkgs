@@ -1,51 +1,43 @@
 {
   lib,
   stdenv,
-  fetchgit,
   ant,
-  jdk11,
+  coreutils,
+  fetchgit,
   git,
-  xmlstarlet,
+  jdk11,
+  libgbm,
+  libx11,
+  libxcursor,
+  libxi,
+  libxrandr,
+  libxrender,
+  libxt,
+  libxxf86vm,
   stripJavaArchivesHook,
   udev,
-  libxxf86vm,
-  libxt,
-  libxrender,
-  libxrandr,
-  libxi,
-  libxcursor,
-  libx11,
-  libgbm,
-  coreutils,
+  xmlstarlet,
 }:
 
 let
   version = "2.4.0";
 
   gluegen-src = fetchgit {
-    url = "git://jogamp.org/srv/scm/gluegen.git";
-    rev = "v${version}";
-    hash = "sha256-qQzq7v2vMFeia6gXaNHS3AbOp9HhDRgISp7P++CKErA=";
     fetchSubmodules = true;
+    hash = "sha256-qQzq7v2vMFeia6gXaNHS3AbOp9HhDRgISp7P++CKErA=";
+    rev = "v${version}";
+    url = "git://jogamp.org/srv/scm/gluegen.git";
   };
   jogl-src = fetchgit {
-    url = "git://jogamp.org/srv/scm/jogl.git";
-    rev = "v${version}";
-    hash = "sha256-PHDq7uFEQfJ2P0eXPUi0DGFR1ob/n5a68otgzpFnfzQ=";
     fetchSubmodules = true;
+    hash = "sha256-PHDq7uFEQfJ2P0eXPUi0DGFR1ob/n5a68otgzpFnfzQ=";
+    rev = "v${version}";
+    url = "git://jogamp.org/srv/scm/jogl.git";
   };
 in
 stdenv.mkDerivation {
-  pname = "jogl";
   inherit version;
-
-  srcs = [
-    gluegen-src
-    jogl-src
-  ];
-  sourceRoot = ".";
-
-  unpackCmd = "cp -r $curSrc \${curSrc##*-}";
+  pname = "jogl";
 
   postPatch = ''
     substituteInPlace gluegen/src/java/com/jogamp/common/util/IOUtil.java \
@@ -90,11 +82,11 @@ stdenv.mkDerivation {
   ];
 
   env = {
+    # error: incompatible pointer to integer conversion returning 'GLhandleARB' (aka 'void *') from a function with result type 'jlong' (aka 'long long')
+    NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-int-conversion";
     SOURCE_LEVEL = "1.8";
     TARGET_LEVEL = "1.8";
     TARGET_RT_JAR = "null.jar";
-    # error: incompatible pointer to integer conversion returning 'GLhandleARB' (aka 'void *') from a function with result type 'jlong' (aka 'long long')
-    NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-int-conversion";
   };
 
   buildPhase = ''
@@ -119,6 +111,15 @@ stdenv.mkDerivation {
 
     runHook postInstall
   '';
+
+  sourceRoot = ".";
+
+  srcs = [
+    gluegen-src
+    jogl-src
+  ];
+
+  unpackCmd = "cp -r $curSrc \${curSrc##*-}";
 
   meta = {
     description = "Java libraries for 3D Graphics, Multimedia and Processing";

@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  trousers,
-  openssl,
-  opencryptoki,
   autoreconfHook,
   libtool,
+  opencryptoki,
+  openssl,
+  trousers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     libtool
   ];
+
   buildInputs = [
     trousers
     openssl
@@ -34,9 +35,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Simple PKCS11 provider for TPM chips";
+
     longDescription = ''
       A simple library for using the TPM chip to secure SSH keys.
     '';
+
     homepage = "https://github.com/ThomasHabets/simple-tpm-pk11";
     license = lib.licenses.asl20;
     maintainers = [ ];

@@ -10,12 +10,17 @@
 buildPythonPackage rec {
   pname = "pylibftdi";
   version = "0.23.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-v1tMa6c9eab234ScNFsAunY9AjIBvtm6Udh2pDl7Ftg=";
   };
+
+  postPatch = ''
+    substituteInPlace src/pylibftdi/driver.py \
+      --replace-fail 'self._load_library("libusb")' 'cdll.LoadLibrary("${libusb1.out}/lib/libusb-1.0.so")' \
+      --replace-fail 'self._load_library("libftdi")' 'cdll.LoadLibrary("${libftdi1.out}/lib/libftdi1.so")'
+  '';
 
   build-system = [ poetry-core ];
 
@@ -24,12 +29,7 @@ buildPythonPackage rec {
     libusb1
   ];
 
-  postPatch = ''
-    substituteInPlace src/pylibftdi/driver.py \
-      --replace-fail 'self._load_library("libusb")' 'cdll.LoadLibrary("${libusb1.out}/lib/libusb-1.0.so")' \
-      --replace-fail 'self._load_library("libftdi")' 'cdll.LoadLibrary("${libftdi1.out}/lib/libftdi1.so")'
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "pylibftdi" ];
 
   meta = {

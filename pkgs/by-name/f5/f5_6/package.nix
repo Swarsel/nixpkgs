@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 let
@@ -27,12 +27,14 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://dotcolon.net/font/f5_6/";
     description = "Weighted decorative font";
-    platforms = lib.platforms.all;
+    homepage = "https://dotcolon.net/font/f5_6/";
+    license = lib.licenses.ofl;
+
     maintainers = with lib.maintainers; [
       minijackson
     ];
-    license = lib.licenses.ofl;
+
+    platforms = lib.platforms.all;
   };
 }

@@ -1,41 +1,37 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  # tests
+  aiohttp,
+  buildPythonPackage,
   # dependencies
   lap,
   matplotlib,
+  onnx,
+  onnxruntime,
   opencv-python,
   pandas,
   pillow,
   polars,
   psutil,
   py-cpuinfo,
+  pytestCheckHook,
   pyyaml,
   requests,
   scipy,
   seaborn,
+  # build-system
+  setuptools,
   torch,
   torchvision,
   tqdm,
   ultralytics-thop,
-
-  # tests
-  aiohttp,
-  onnx,
-  onnxruntime,
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "ultralytics";
   version = "8.4.51";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ultralytics";
@@ -44,11 +40,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-vaedx45NlFi2RbrQj16M0bAWuSz+ZlVL8Ivykp54mQU=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "numpy"
+  nativeCheckInputs = [
+    aiohttp
+    onnx
+    onnxruntime
+    pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     lap
@@ -68,20 +67,6 @@ buildPythonPackage (finalAttrs: {
     torchvision
     tqdm
     ultralytics-thop
-  ];
-
-  pythonImportsCheck = [ "ultralytics" ];
-
-  nativeCheckInputs = [
-    aiohttp
-    onnx
-    onnxruntime
-    pytestCheckHook
-  ];
-
-  enabledTestPaths = [
-    # rest of the tests require internet access
-    "tests/test_python.py"
   ];
 
   disabledTests = [
@@ -128,15 +113,29 @@ buildPythonPackage (finalAttrs: {
     "test_train_ndjson"
   ];
 
+  enabledTestPaths = [
+    # rest of the tests require internet access
+    "tests/test_python.py"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "ultralytics" ];
+
+  pythonRelaxDeps = [
+    "numpy"
+  ];
+
   meta = {
+    description = "Train YOLO models for computer vision tasks";
     homepage = "https://github.com/ultralytics/ultralytics";
     changelog = "https://github.com/ultralytics/ultralytics/releases/tag/${finalAttrs.src.tag}";
-    description = "Train YOLO models for computer vision tasks";
-    mainProgram = "yolo";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       osbm
       mana-byte
     ];
+
+    mainProgram = "yolo";
   };
 })

@@ -1,18 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  stdenvNoCC,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
   pname = "knewave";
   version = "2012-07-30";
-
-  outputs = [
-    "out"
-    "webfont"
-  ];
 
   src = fetchFromGitHub {
     owner = "theleagueof";
@@ -21,13 +16,20 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-SaJU2GlxU7V3iJNQzFKg1YugaPsiJuSZpC8NCqtWyz0=";
   };
 
+  outputs = [
+    "out"
+    "webfont"
+  ];
+
   nativeBuildInputs = [ installFonts ];
 
   meta = {
     description = "Bold, painted face for the rocker within";
+
     longDescription = ''
       Knewave is bold, painted face. Get it? Git it.
     '';
+
     homepage = "https://www.theleagueofmoveabletype.com/knewave";
     license = lib.licenses.ofl;
     maintainers = with lib.maintainers; [ minijackson ];

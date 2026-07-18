@@ -2,42 +2,40 @@
   lib,
   stdenv,
   fetchurl,
+  getopt,
   netcat,
-
-  # Optional packages
-  systemd ? null,
-  ejabberd ? null,
-  mariadb ? null,
-  libpq ? null,
-  subversion ? null,
-  mongodb ? null,
-  mongodb-tools ? null,
-  influxdb ? null,
-  supervisor ? null,
+  catalinaBaseDir ? "/var/tomcat",
   docker ? null,
-  nginx ? null,
-  s6-rc ? null,
-  xinetd ? null,
-
+  ejabberd ? null,
   # Configuration flags
   enableApacheWebApplication ? false,
   enableAxis2WebService ? false,
-  enableEjabberdDump ? false,
-  enableMySQLDatabase ? false,
-  enablePostgreSQLDatabase ? false,
-  enableSubversionRepository ? false,
-  enableTomcatWebApplication ? false,
-  enableMongoDatabase ? false,
-  enableInfluxDatabase ? false,
-  enableSupervisordProgram ? false,
   enableDockerContainer ? false,
-  enableNginxWebApplication ? false,
-  enableXinetdService ? false,
-  enableS6RCService ? false,
+  enableEjabberdDump ? false,
+  enableInfluxDatabase ? false,
   enableLegacy ? false,
-  catalinaBaseDir ? "/var/tomcat",
+  enableMongoDatabase ? false,
+  enableMySQLDatabase ? false,
+  enableNginxWebApplication ? false,
+  enablePostgreSQLDatabase ? false,
+  enableS6RCService ? false,
+  enableSubversionRepository ? false,
+  enableSupervisordProgram ? false,
+  enableTomcatWebApplication ? false,
+  enableXinetdService ? false,
+  influxdb ? null,
   jobTemplate ? "systemd",
-  getopt,
+  libpq ? null,
+  mariadb ? null,
+  mongodb ? null,
+  mongodb-tools ? null,
+  nginx ? null,
+  s6-rc ? null,
+  subversion ? null,
+  supervisor ? null,
+  # Optional packages
+  systemd ? null,
+  xinetd ? null,
 }:
 
 assert enableMySQLDatabase -> mariadb != null;
@@ -55,30 +53,11 @@ assert enableXinetdService -> xinetd != null;
 stdenv.mkDerivation rec {
   pname = "dysnomia";
   version = "0.10.2";
+
   src = fetchurl {
     url = "https://github.com/svanderburg/dysnomia/releases/download/dysnomia-${version}/dysnomia-${version}.tar.gz";
     sha256 = "08ijqbijs2h584dvsb3z858ha385fqd5jfxc51lks9lxxv0sfkr4";
   };
-
-  configureFlags = [
-    (if enableApacheWebApplication then "--with-apache" else "--without-apache")
-    (if enableAxis2WebService then "--with-axis2" else "--without-axis2")
-    (if enableEjabberdDump then "--with-ejabberd" else "--without-ejabberd")
-    (if enableMySQLDatabase then "--with-mysql" else "--without-mysql")
-    (if enablePostgreSQLDatabase then "--with-postgresql" else "--without-postgresql")
-    (if enableSubversionRepository then "--with-subversion" else "--without-subversion")
-    (if enableTomcatWebApplication then "--with-tomcat=${catalinaBaseDir}" else "--without-tomcat")
-    (if enableMongoDatabase then "--with-mongodb" else "--without-mongodb")
-    (if enableInfluxDatabase then "--with-influxdb" else "--without-influxdb")
-    (if enableSupervisordProgram then "--with-supervisord" else "--without-supervisord")
-    (if enableDockerContainer then "--with-docker" else "--without-docker")
-    (if enableNginxWebApplication then "--with-nginx" else "--without-nginx")
-    (if enableXinetdService then "--with-xinetd" else "--without-xinetd")
-    (if enableS6RCService then "--with-s6-rc" else "--without-s6-rc")
-    (if stdenv.hostPlatform.isDarwin then "--with-launchd" else "--without-launchd")
-    "--with-job-template=${jobTemplate}"
-  ]
-  ++ lib.optional enableLegacy "--enable-legacy";
 
   buildInputs = [
     getopt
@@ -99,6 +78,26 @@ stdenv.mkDerivation rec {
   ++ lib.optional enableNginxWebApplication nginx
   ++ lib.optional enableS6RCService s6-rc
   ++ lib.optional enableXinetdService xinetd;
+
+  configureFlags = [
+    (if enableApacheWebApplication then "--with-apache" else "--without-apache")
+    (if enableAxis2WebService then "--with-axis2" else "--without-axis2")
+    (if enableEjabberdDump then "--with-ejabberd" else "--without-ejabberd")
+    (if enableMySQLDatabase then "--with-mysql" else "--without-mysql")
+    (if enablePostgreSQLDatabase then "--with-postgresql" else "--without-postgresql")
+    (if enableSubversionRepository then "--with-subversion" else "--without-subversion")
+    (if enableTomcatWebApplication then "--with-tomcat=${catalinaBaseDir}" else "--without-tomcat")
+    (if enableMongoDatabase then "--with-mongodb" else "--without-mongodb")
+    (if enableInfluxDatabase then "--with-influxdb" else "--without-influxdb")
+    (if enableSupervisordProgram then "--with-supervisord" else "--without-supervisord")
+    (if enableDockerContainer then "--with-docker" else "--without-docker")
+    (if enableNginxWebApplication then "--with-nginx" else "--without-nginx")
+    (if enableXinetdService then "--with-xinetd" else "--without-xinetd")
+    (if enableS6RCService then "--with-s6-rc" else "--without-s6-rc")
+    (if stdenv.hostPlatform.isDarwin then "--with-launchd" else "--without-launchd")
+    "--with-job-template=${jobTemplate}"
+  ]
+  ++ lib.optional enableLegacy "--enable-legacy";
 
   meta = {
     description = "Automated deployment of mutable components and services for Disnix";

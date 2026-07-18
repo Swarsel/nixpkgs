@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  slop,
-  ffmpeg,
   fetchFromGitHub,
+  ffmpeg,
   makeWrapper,
+  slop,
 }:
 
 stdenv.mkDerivation {
@@ -36,8 +36,8 @@ stdenv.mkDerivation {
   meta = {
     description = "No bullshit screen capture tool";
     homepage = "https://github.com/buhman/capture";
-    maintainers = [ lib.maintainers.ar1a ];
     license = lib.licenses.gpl3Plus;
+    maintainers = [ lib.maintainers.ar1a ];
     mainProgram = "capture";
   };
 }

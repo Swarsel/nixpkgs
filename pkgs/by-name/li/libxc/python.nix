@@ -1,10 +1,10 @@
 {
-  buildPythonPackage,
   lib,
-  libxc,
-  setuptools,
+  buildPythonPackage,
   cmake,
+  libxc,
   numpy,
+  setuptools,
 }:
 
 buildPythonPackage {
@@ -17,8 +17,6 @@ buildPythonPackage {
     nativeBuildInputs
     ;
 
-  pyproject = true;
-
   build-system = [
     setuptools
     cmake
@@ -29,6 +27,6 @@ buildPythonPackage {
   ];
 
   dontUseCmakeConfigure = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "pylibxc" ];
 }

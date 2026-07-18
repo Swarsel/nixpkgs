@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  dnspython,
   octodns,
   pytestCheckHook,
-  dnspython,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "octodns-bind";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "octodns";
@@ -19,6 +18,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-ezLaNeqJoi3fcfwQFkiEyYUSlw7cTCikmv0qmPTzrvI=";
   };
+
+  env.OCTODNS_RELEASE = 1;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -29,13 +34,8 @@ buildPythonPackage rec {
     dnspython
   ];
 
-  env.OCTODNS_RELEASE = 1;
-
+  pyproject = true;
   pythonImportsCheck = [ "octodns_bind" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
 
   meta = {
     description = "RFC compliant (Bind9) provider for octoDNS";

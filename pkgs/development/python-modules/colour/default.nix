@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "colour";
   version = "0.1.5";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -21,6 +20,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
 
   pytestFlags = [
     "--doctest-glob=*.rst"

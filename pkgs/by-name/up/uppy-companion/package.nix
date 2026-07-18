@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  nodejs,
   fetchFromGitHub,
+  nodejs,
   yarn-berry_4,
 }:
 
@@ -33,13 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
     nodejs
   ];
 
-  missingHashes = ./missing-hashes.json;
-
-  offlineCache = yarn-berry_4.fetchYarnBerryDeps {
-    inherit (finalAttrs) src missingHashes patches;
-    hash = "sha256-vmya3c+ec93T8kNoooUu4risqScY0b4cwML7d2kYz88=";
-  };
-
   buildPhase = ''
     runHook preBuild
 
@@ -68,15 +61,22 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  missingHashes = ./missing-hashes.json;
+
+  offlineCache = yarn-berry_4.fetchYarnBerryDeps {
+    inherit (finalAttrs) src missingHashes patches;
+    hash = "sha256-vmya3c+ec93T8kNoooUu4risqScY0b4cwML7d2kYz88=";
+  };
+
   updateScript = ./update.sh;
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
-    changelog = "https://github.com/transloadit/uppy/releases/tag/%40uppy%2Fcompanion%40${finalAttrs.version}";
     description = "Server integration for Uppy file uploader";
     homepage = "https://uppy.io/";
+    changelog = "https://github.com/transloadit/uppy/releases/tag/%40uppy%2Fcompanion%40${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "companion";
     maintainers = [ ];
+    mainProgram = "companion";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

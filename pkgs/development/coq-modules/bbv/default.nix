@@ -1,15 +1,16 @@
 {
   lib,
-  mkCoqDerivation,
   coq,
+  mkCoqDerivation,
   stdlib,
   version ? null,
 }:
 
 mkCoqDerivation {
-  pname = "bbv";
-  owner = "mit-plv";
   inherit version;
+  pname = "bbv";
+  propagatedBuildInputs = [ stdlib ];
+
   defaultVersion =
     let
       inherit (lib.versions) range;
@@ -20,12 +21,14 @@ mkCoqDerivation {
         out = "1.5";
       }
     ] null;
+
+  owner = "mit-plv";
+
   release = {
     "1.5".hash = "sha256-8/VPsfhNpuYpLmLC/hWszDhgvS6n8m7BRxUlea8PSUw=";
   };
-  releaseRev = v: "v${v}";
 
-  propagatedBuildInputs = [ stdlib ];
+  releaseRev = v: "v${v}";
 
   meta = {
     description = "Implementation of bitvectors in Coq";

@@ -17,8 +17,6 @@ stdenv.mkDerivation {
     fetchSubmodules = true;
   };
 
-  nativeBuildInputs = [ cmake ];
-
   # in submodule dev as of 1.4.7
   postPatch = ''
     (cd submodule/zstd && patch -Np1 < ${./fix-pkg-config.patch})
@@ -27,11 +25,13 @@ stdenv.mkDerivation {
       --replace-fail "cmake_minimum_required(VERSION 2.8.9 FATAL_ERROR)" "cmake_minimum_required(VERSION 3.10)"
   '';
 
+  nativeBuildInputs = [ cmake ];
+
   meta = {
-    homepage = "https://github.com/zraorg/ZRA";
     description = "Library for ZStandard random access";
-    platforms = lib.platforms.all;
-    maintainers = [ ];
+    homepage = "https://github.com/zraorg/ZRA";
     license = lib.licenses.bsd3;
+    maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 }

@@ -1,36 +1,37 @@
 {
   lib,
   fetchFromGitLab,
-  nix-update-script,
+  appstream,
   blueprint-compiler,
   desktop-file-utils,
+  glib,
+  gtk4,
   libadwaita,
-  meson,
-  ninja,
-  pkg-config,
-  wrapGAppsHook4,
-  python3,
-  libxml2,
-  python3Packages,
   libportal,
   libportal-gtk4,
-  appstream,
-  gtk4,
-  glib,
+  libxml2,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
+  python3,
+  python3Packages,
+  wrapGAppsHook4,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "refine";
   version = "0.7.0";
-  pyproject = false; # uses meson
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "TheEvilSkeleton";
     repo = "Refine";
     tag = finalAttrs.version;
     hash = "sha256-5rHct0GXsdjeG+wXxtDKXWBTCphhOCojuR2ExXrZyWA=";
+    domain = "gitlab.gnome.org";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     appstream
@@ -50,6 +51,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     libadwaita
   ];
 
+  mesonFlags = [ (lib.mesonBool "network_tests" false) ];
+
   dependencies = [
     libportal
     libportal-gtk4
@@ -58,12 +61,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pygobject3
   ]);
 
-  strictDeps = true;
-
-  mesonFlags = [ (lib.mesonBool "network_tests" false) ];
-
   dontWrapGApps = true;
-
   makeWrapperArgs = [ "\${gappsWrapperArgs[@]}" ];
 
   # NOTE: `postCheck` is intentionally not used here, as the entire checkPhase
@@ -73,14 +71,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
     mesonCheckPhase
   '';
 
+  pyproject = false; # uses meson
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Tweak various aspects of GNOME";
     homepage = "https://gitlab.gnome.org/TheEvilSkeleton/Refine";
-    mainProgram = "refine";
-    platforms = lib.platforms.linux;
     license = with lib.licenses; [ gpl3Plus ];
     maintainers = with lib.maintainers; [ getchoo ];
+    platforms = lib.platforms.linux;
+    mainProgram = "refine";
   };
 })

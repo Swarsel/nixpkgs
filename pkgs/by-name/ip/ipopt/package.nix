@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   blas,
-  lapack,
   gfortran,
-  enableAMPL ? true,
+  lapack,
   libamplsolver,
-  enableMUMPS ? true,
   mumps,
-  enableSPRAL ? true,
+  pkg-config,
   spral,
+  enableAMPL ? true,
+  enableMUMPS ? true,
+  enableSPRAL ? true,
 }:
 
 assert (!blas.isILP64) && (!lapack.isILP64);
@@ -64,10 +64,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Software package for large-scale nonlinear optimization";
     homepage = "https://projects.coin-or.org/Ipopt";
     license = lib.licenses.epl20;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       nim65s
       qbisi
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

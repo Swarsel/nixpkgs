@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  ncurses,
-  xmlto,
   docbook_xml_dtd_44,
   docbook_xsl,
   installShellFiles,
+  ncurses,
+  xmlto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,6 +18,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-JWCmrGS4jClSi6MCcGNiq8zUH+92fiqMtk58B+wMKQk=";
   };
 
+  outputs = [
+    "out"
+    "doc"
+    "man"
+  ];
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     installShellFiles
     xmlto
@@ -28,14 +36,6 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [
     ncurses
   ];
-
-  outputs = [
-    "out"
-    "doc"
-    "man"
-  ];
-
-  strictDeps = true;
 
   postBuild = ''
     xmlto man vms-empire.xml
@@ -54,8 +54,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://catb.org/~esr/vms-empire/";
     description = "Ancestor of all expand/explore/exploit/exterminate games";
+
     longDescription = ''
       Empire is a simulation of a full-scale war between two emperors, the
       computer and you. Naturally, there is only room for one, so the object of
@@ -64,9 +64,11 @@ stdenv.mkDerivation (finalAttrs: {
       expand/explore/exploit/exterminate games, including Civilization and
       Master of Orion.
     '';
+
+    homepage = "http://catb.org/~esr/vms-empire/";
     license = lib.licenses.gpl2Only;
-    mainProgram = "vms-empire";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "vms-empire";
   };
 })

@@ -1,29 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  rustPlatform,
-
-  setuptools,
-  setuptools-scm,
-
+  buildPythonPackage,
   cargo,
-  rustc,
-  setuptools-rust,
-
+  nix-update-script,
   numpy,
-
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
+  rustPlatform,
+  rustc,
   scikit-learn,
   scipy,
-
-  nix-update-script,
+  setuptools,
+  setuptools-rust,
+  setuptools-scm,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "scalib";
   version = "0.6.4";
-  pyproject = true;
+
   src = fetchFromGitHub {
     owner = "simple-crypto";
     repo = "SCALib";
@@ -31,31 +26,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-DVXb93W0TmOcyGyMN5GmIJNAdbLeeFnNm+3QfTw2j5s=";
   };
 
-  env = {
-    SCALIB_PORTABLE = "1";
-  };
-
   postPatch = ''
     substituteInPlace pyproject.toml \
       --replace-fail '"setuptools-scm-git-archive",' ""
   '';
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      cargoRoot
-      ;
-    hash = "sha256-mzzp5EnaBYIbGGxJ9mJ6dqRVcTDS406BRx7hWVZ11SY=";
-  };
-
-  cargoRoot = "src/scalib_ext";
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
 
   nativeBuildInputs = [
     cargo
@@ -64,9 +38,9 @@ buildPythonPackage (finalAttrs: {
     setuptools-rust
   ];
 
-  dependencies = [
-    numpy
-  ];
+  env = {
+    SCALIB_PORTABLE = "1";
+  };
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -76,6 +50,29 @@ buildPythonPackage (finalAttrs: {
     numpy
   ];
 
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      cargoRoot
+      ;
+
+    hash = "sha256-mzzp5EnaBYIbGGxJ9mJ6dqRVcTDS406BRx7hWVZ11SY=";
+  };
+
+  cargoRoot = "src/scalib_ext";
+
+  dependencies = [
+    numpy
+  ];
+
+  pyproject = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

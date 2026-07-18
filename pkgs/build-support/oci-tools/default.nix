@@ -1,38 +1,45 @@
 {
   lib,
-  writeText,
   runCommand,
   writeClosure,
+  writeText,
 }:
 
 {
   buildContainer =
     {
       args,
+      arch ? "x86_64",
       mounts ? { },
       os ? "linux",
-      arch ? "x86_64",
       readonly ? false,
     }:
     let
       sysMounts = {
-        "/proc" = {
-          type = "proc";
-          source = "proc";
-        };
         "/dev" = {
-          type = "tmpfs";
-          source = "tmpfs";
           options = [
             "nosuid"
             "strictatime"
             "mode=755"
             "size=65536k"
           ];
+
+          source = "tmpfs";
+          type = "tmpfs";
         };
+
+        "/dev/mqueue" = {
+          options = [
+            "nosuid"
+            "noexec"
+            "nodev"
+          ];
+
+          source = "mqueue";
+          type = "mqueue";
+        };
+
         "/dev/pts" = {
-          type = "devpts";
-          source = "devpts";
           options = [
             "nosuid"
             "noexec"
@@ -41,10 +48,12 @@
             "mode=755"
             "gid=5"
           ];
+
+          source = "devpts";
+          type = "devpts";
         };
+
         "/dev/shm" = {
-          type = "tmpfs";
-          source = "shm";
           options = [
             "nosuid"
             "noexec"
@@ -52,29 +61,29 @@
             "mode=1777"
             "size=65536k"
           ];
+
+          source = "shm";
+          type = "tmpfs";
         };
-        "/dev/mqueue" = {
-          type = "mqueue";
-          source = "mqueue";
-          options = [
-            "nosuid"
-            "noexec"
-            "nodev"
-          ];
+
+        "/proc" = {
+          source = "proc";
+          type = "proc";
         };
+
         "/sys" = {
-          type = "sysfs";
-          source = "sysfs";
           options = [
             "nosuid"
             "noexec"
             "nodev"
             "ro"
           ];
+
+          source = "sysfs";
+          type = "sysfs";
         };
+
         "/sys/fs/cgroup" = {
-          type = "cgroup";
-          source = "cgroup";
           options = [
             "nosuid"
             "noexec"
@@ -82,15 +91,13 @@
             "relatime"
             "ro"
           ];
+
+          source = "cgroup";
+          type = "cgroup";
         };
       };
       config = writeText "config.json" (
         builtins.toJSON {
-          ociVersion = "1.0.0";
-          platform = {
-            inherit os arch;
-          };
-
           linux = {
             namespaces = map (type: { inherit type; }) [
               "pid"
@@ -101,25 +108,11 @@
             ];
           };
 
-          root = {
-            path = "rootfs";
-            inherit readonly;
-          };
-
-          process = {
-            inherit args;
-            user = {
-              uid = 0;
-              gid = 0;
-            };
-            cwd = "/";
-          };
-
           mounts = lib.mapAttrsToList (
             destination:
             {
-              type,
               source,
+              type,
               options ? null,
             }:
             {
@@ -131,6 +124,27 @@
                 ;
             }
           ) sysMounts;
+
+          ociVersion = "1.0.0";
+
+          platform = {
+            inherit os arch;
+          };
+
+          process = {
+            inherit args;
+            cwd = "/";
+
+            user = {
+              gid = 0;
+              uid = 0;
+            };
+          };
+
+          root = {
+            inherit readonly;
+            path = "rootfs";
+          };
         }
       );
     in

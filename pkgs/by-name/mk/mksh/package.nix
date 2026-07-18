@@ -10,11 +10,12 @@ stdenv.mkDerivation (finalAttrs: {
   version = "59c";
 
   src = fetchurl {
+    hash = "sha256-d64WZaM38cSMYda5Yds+UhGbOOWIhNHIloSvMfh7xQY=";
+
     urls = [
       "http://www.mirbsd.org/MirOS/dist/mir/mksh/mksh-R${finalAttrs.version}.tgz"
       "http://pub.allbsd.org/MirOS/dist/mir/mksh/mksh-R${finalAttrs.version}.tgz"
     ];
-    hash = "sha256-d64WZaM38cSMYda5Yds+UhGbOOWIhNHIloSvMfh7xQY=";
   };
 
   strictDeps = true;
@@ -22,8 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [
     installShellFiles
   ];
-
-  dontConfigure = true;
 
   buildPhase = ''
     runHook preBuild
@@ -39,15 +38,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+
   passthru = {
     shellPath = "/bin/mksh";
   };
 
   meta = {
-    homepage = "http://www.mirbsd.org/mksh.htm";
-    changelog = "http://www.mirbsd.org/mksh.htm#clog";
     description = "MirBSD Korn Shell";
-    mainProgram = "mksh";
+
     longDescription = ''
       The MirBSD Korn Shell is a DFSG-free and OSD-compliant (and OSI
       approved) successor to pdksh, developed as part of the MirOS
@@ -55,12 +54,18 @@ stdenv.mkDerivation (finalAttrs: {
       also to be readily available under other UNIX(R)-like operating
       systems.
     '';
+
+    homepage = "http://www.mirbsd.org/mksh.htm";
+    changelog = "http://www.mirbsd.org/mksh.htm#clog";
+
     license = with lib.licenses; [
       miros
       isc
       unicode-dfs-2016
     ];
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "mksh";
   };
 })

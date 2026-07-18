@@ -2,12 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  cmake,
-  makedepend,
-  perl,
-  pkg-config,
-  qt5,
   alsa-lib,
+  cmake,
   dssi,
   fftwSinglePrec,
   flac,
@@ -17,16 +13,20 @@
   libjack2,
   liblo,
   libmpg123,
+  libogg,
   libopus,
   libsamplerate,
   libsndfile,
   libsysprof-capture,
   libvorbis,
   lilv,
-  lv2,
   lirc,
   lrdf,
-  libogg,
+  lv2,
+  makedepend,
+  perl,
+  pkg-config,
+  qt5,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,10 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/rosegarden/rosegarden-${finalAttrs.version}.tar.xz";
     sha256 = "sha256-df5SsAWJlHHMSw5JVL5dNe4c6PQWWauO9IomF4qlw20=";
   };
-
-  postPhase = ''
-    substituteInPlace src/CMakeLists.txt --replace svnheader svnversion
-  '';
 
   nativeBuildInputs = [
     cmake
@@ -79,10 +75,13 @@ stdenv.mkDerivation (finalAttrs: {
     "-DLILV_INCLUDE_DIR=${lilv.dev}/include/lilv-0"
   ];
 
+  postPhase = ''
+    substituteInPlace src/CMakeLists.txt --replace svnheader svnversion
+  '';
+
   meta = {
-    homepage = "https://www.rosegardenmusic.com/";
     description = "Music composition and editing environment";
-    mainProgram = "rosegarden";
+
     longDescription = ''
       Rosegarden is a music composition and editing environment based around
       a MIDI sequencer that features a rich understanding of music notation
@@ -92,8 +91,11 @@ stdenv.mkDerivation (finalAttrs: {
       ideal for composers, musicians, music students, and small studio or home
       recording environments.
     '';
-    maintainers = with lib.maintainers; [ lebastr ];
+
+    homepage = "https://www.rosegardenmusic.com/";
     license = lib.licenses.lgpl2Plus;
+    maintainers = with lib.maintainers; [ lebastr ];
     platforms = lib.platforms.linux;
+    mainProgram = "rosegarden";
   };
 })

@@ -1,26 +1,23 @@
 {
   lib,
   stdenv,
-  replaceVars,
+  attrs,
   buildPythonPackage,
+  dlinfo,
+  espeak-ng,
   fetchPypi,
   fetchpatch2,
   joblib,
-  segments,
-  attrs,
-  dlinfo,
-  typing-extensions,
-  espeak-ng,
-  setuptools,
   pytest,
+  replaceVars,
+  segments,
+  setuptools,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "phonemizer";
   version = "3.3.0";
-  pyproject = true;
-
-  build-system = [ setuptools ];
 
   src = fetchPypi {
     inherit pname version;
@@ -35,9 +32,9 @@ buildPythonPackage rec {
     # This patch is needed for python3Packages.misaki. See https://github.com/thewh1teagle/espeakng-loader?tab=readme-ov-file#usage-with-phonemizer
     # and https://github.com/bootphon/phonemizer/pull/191.
     (fetchpatch2 {
+      hash = "sha256-PMeX7A9BBVLS3Sk/Lum85GpJzKXM5tULTWSURq3MD8E=";
       name = "pr191-add-option-to-use-custom-espeak-data-path.patch";
       url = "https://github.com/bootphon/phonemizer/commit/cc1db4bfaf688fdfb8275fd83d218f06411455e6.patch?full_index=1";
-      hash = "sha256-PMeX7A9BBVLS3Sk/Lum85GpJzKXM5tULTWSURq3MD8E=";
     })
   ];
 
@@ -52,13 +49,15 @@ buildPythonPackage rec {
   # We tried to package festival, but were unable to get the backend running,
   # so let's disable related tests.
   doCheck = false;
+  build-system = [ setuptools ];
+  pyproject = true;
 
   meta = {
+    description = "Simple text to phones converter for multiple languages";
     homepage = "https://github.com/bootphon/phonemizer";
     changelog = "https://github.com/bootphon/phonemizer/blob/v${version}/CHANGELOG.md";
-    description = "Simple text to phones converter for multiple languages";
-    mainProgram = "phonemize";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ bot-wxt1221 ];
+    mainProgram = "phonemize";
   };
 }

@@ -20,10 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Hn0HrAgxrkfN+iXAt+C4rOd3/Z+ZKFVk3GGNgVtro7A=";
   };
 
-  depsBuildBuild = [
-    pkg-config
-  ];
-
   nativeBuildInputs = [
     wayland-protocols
     wayland-scanner
@@ -34,27 +30,31 @@ stdenv.mkDerivation (finalAttrs: {
     wayland
   ];
 
-  dontConfigure = true;
-
-  installFlags = [ "PREFIX=$$out" ];
-
   postInstall = ''
     install -Dm 644 havoc.cfg -t $out/etc/havoc/
     install -Dm 644 README.md -t $out/share/doc/havoc-${finalAttrs.version}/
   '';
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
+  dontConfigure = true;
   enableParallelBuilding = true;
+  installFlags = [ "PREFIX=$$out" ];
 
   meta = {
-    homepage = "https://github.com/ii8/havoc";
+    inherit (wayland.meta) platforms;
     description = "Minimal terminal emulator for Wayland";
+    homepage = "https://github.com/ii8/havoc";
+
     license = with lib.licenses; [
       mit
       publicDomain
     ];
-    mainProgram = "havoc";
+
     maintainers = with lib.maintainers; [ videl ];
-    inherit (wayland.meta) platforms;
+    mainProgram = "havoc";
     broken = stdenv.hostPlatform.isDarwin; # fatal error: 'sys/epoll.h' file not found
   };
 })

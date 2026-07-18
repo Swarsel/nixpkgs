@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchurl,
-  libx11,
-  zlib,
-  xorgproto,
-  withLibGL ? !stdenv.hostPlatform.isDarwin,
-  libGL,
-  withLibGLU ? !stdenv.hostPlatform.isDarwin,
-  libGLU,
-  withLibglut ? !stdenv.hostPlatform.isDarwin,
-  libglut,
   apple-sdk,
+  libGL,
+  libGLU,
+  libglut,
+  libx11,
+  xorgproto,
+  zlib,
+  withLibGL ? !stdenv.hostPlatform.isDarwin,
+  withLibGLU ? !stdenv.hostPlatform.isDarwin,
+  withLibglut ? !stdenv.hostPlatform.isDarwin,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1wmj527hbj1qv44cdsj6ahfjrnrjwg2dp8gdick8nd07vm062qxa";
   };
 
+  postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    substituteInPlace configure --replace-fail \
+      '-I/System/Library/Frameworks/GLUT.framework/Headers/' \
+      '-I${apple-sdk}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/GLUT.framework/Headers/'
+  '';
+
   buildInputs = [
     libx11
     zlib
@@ -33,24 +39,18 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional withLibglut libglut
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ apple-sdk ];
 
-  postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    substituteInPlace configure --replace-fail \
-      '-I/System/Library/Frameworks/GLUT.framework/Headers/' \
-      '-I${apple-sdk}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/GLUT.framework/Headers/'
-  '';
+  env.CXXFLAGS = "-std=c++98";
 
   preConfigure = ''
     substituteInPlace src/Makefile.in \
       --replace games bin
   '';
 
-  env.CXXFLAGS = "-std=c++98";
-
   meta = {
     description = "Masses and springs simulation game";
-    mainProgram = "construo.x11";
     homepage = "http://fs.fsf.org/construo/";
     license = lib.licenses.gpl3;
+    mainProgram = "construo.x11";
     priority = 10;
   };
 })

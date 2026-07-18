@@ -1,7 +1,7 @@
 {
-  buildOctavePackage,
   lib,
   fetchurl,
+  buildOctavePackage,
 }:
 
 buildOctavePackage rec {
@@ -14,15 +14,17 @@ buildOctavePackage rec {
   };
 
   meta = {
-    homepage = "https://gnu-octave.github.io/packages/lssa/";
-    license = lib.licenses.gpl3Plus;
-    maintainers = with lib.maintainers; [ ravenjoad ];
     description = "Tools to compute spectral decompositions of irregularly-spaced time series";
+
     longDescription = ''
       A package implementing tools to compute spectral decompositions of
       irregularly-spaced time series. Currently includes functions based off
       the Lomb-Scargle periodogram and Adolf Mathias' implementation for R
       and C.
     '';
+
+    homepage = "https://gnu-octave.github.io/packages/lssa/";
+    license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ ravenjoad ];
   };
 }

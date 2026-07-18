@@ -3,16 +3,15 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  wrapGAppsHook3,
-
   curl,
   freetype,
   gtk3,
   libGL,
   libjpeg,
   libpng,
+  pkg-config,
   sdl3,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -48,15 +47,17 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
+    description = "Physics-based sandbox game";
+    homepage = "https://principia-web.se/";
+
     changelog = "https://principia-web.se/wiki/Changelog#${
       lib.replaceStrings [ "." ] [ "-" ] finalAttrs.version
     }";
-    description = "Physics-based sandbox game";
-    mainProgram = "principia";
-    homepage = "https://principia-web.se/";
-    downloadPage = "https://principia-web.se/download";
+
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.fgaz ];
     platforms = lib.platforms.linux;
+    mainProgram = "principia";
+    downloadPage = "https://principia-web.se/download";
   };
 })

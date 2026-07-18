@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  llvmPackages,
   makeWrapper,
-  zlib,
   perl,
   perlPackages,
-  llvmPackages,
+  zlib,
 }:
 
 stdenv.mkDerivation rec {
-  version = "4.8.1";
   pname = "cd-hit";
+  version = "4.8.1";
 
   src = fetchFromGitHub {
     owner = "weizhongli";
@@ -20,17 +20,18 @@ stdenv.mkDerivation rec {
     sha256 = "032nva6iiwmw59gjipm1mv0xlcckhxsf45mc2qbnv19lbis0q22i";
   };
 
+  nativeBuildInputs = [
+    zlib
+    makeWrapper
+  ];
+
+  buildInputs = lib.optional stdenv.cc.isClang llvmPackages.openmp;
+
   propagatedBuildInputs = [
     perl
     perlPackages.TextNSP
     perlPackages.ImageMagick
   ];
-
-  nativeBuildInputs = [
-    zlib
-    makeWrapper
-  ];
-  buildInputs = lib.optional stdenv.cc.isClang llvmPackages.openmp;
 
   makeFlags = [
     "CC=${stdenv.cc.targetPrefix}c++" # remove once https://github.com/weizhongli/cdhit/pull/114 is merged
@@ -44,6 +45,7 @@ stdenv.mkDerivation rec {
     wrapProgram $out/bin/plot_2d.pl --prefix PERL5LIB : $PERL5LIB
     wrapProgram $out/bin/clstr_list_sort.pl --prefix PERL5LIB : $PERL5LIB
   '';
+
   meta = {
     description = "Clustering and comparing protein or nucleotide sequences";
     homepage = "http://weizhongli-lab.org/cd-hit/";

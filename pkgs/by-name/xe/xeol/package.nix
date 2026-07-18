@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,10 +17,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-hPWjXTxk/jRkzvLYNgVlgj0hjzfikwel1bxSqWquVhk=";
 
-  proxyVendor = true;
-
-  subPackages = [ "cmd/xeol/" ];
-
   ldflags = [
     "-s"
     "-X=main.version=${finalAttrs.version}"
@@ -28,6 +24,9 @@ buildGoModule (finalAttrs: {
     "-X=main.buildDate=1970-01-01T00:00:00Z"
     "-X=main.gitDescription=${finalAttrs.src.rev}"
   ];
+
+  proxyVendor = true;
+  subPackages = [ "cmd/xeol/" ];
 
   meta = {
     description = "Scanner for end-of-life (EOL) software and dependencies in container images, filesystems, and SBOMs";

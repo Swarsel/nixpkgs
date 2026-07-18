@@ -1,15 +1,15 @@
 {
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
+  buildGoModule,
+  callPackage,
   fetchYarnDeps,
   fixup-yarn-lock,
-  nodejs,
-  yarn,
-  stdenv,
   makeWrapper,
+  nodejs,
   runCommand,
-  callPackage,
+  yarn,
 }:
 
 let
@@ -32,9 +32,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-1mdpsctrQN012+HAWSgorzlN2UBA5D4+sZIIVYCq8k8=";
   };
 
-  vendorHash = "sha256-xQkQIWBrbrXzU9/5BMD3/+KKR847gh4XQrwj/CDoml0=";
-  proxyVendor = true; # needed for secp256k1-zkp CGO bindings
-
   postPatch = ''
     cp -r ${barkFfiGo.src}/golang bark-ffi-bindings-golang
     chmod -R u+w bark-ffi-bindings-golang
@@ -55,10 +52,7 @@ buildGoModule (finalAttrs: {
     (lib.getLib stdenv.cc.cc)
   ];
 
-  frontendYarnOfflineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/frontend/yarn.lock";
-    hash = "sha256-VI4FRe1kzVMqqcZ68nZmZqmXW7FOQMbJ0z8QqZoLYEA=";
-  };
+  vendorHash = "sha256-xQkQIWBrbrXzU9/5BMD3/+KKR847gh4XQrwj/CDoml0=";
 
   preBuild = ''
     mkdir -p bark-ffi-bindings-golang/lib/linux_${stdenv.hostPlatform.go.GOARCH}
@@ -75,16 +69,6 @@ buildGoModule (finalAttrs: {
     popd
   '';
 
-  subPackages = [
-    "cmd/http"
-  ];
-
-  ldflags = [
-    "-X github.com/getAlby/hub/version.Tag=v${finalAttrs.version}"
-    "-s"
-    "-w"
-  ];
-
   postInstall = ''
     mv $out/bin/http $out/bin/albyhub
   '';
@@ -98,6 +82,23 @@ buildGoModule (finalAttrs: {
       ]
     } $out/bin/albyhub
   '';
+
+  frontendYarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-VI4FRe1kzVMqqcZ68nZmZqmXW7FOQMbJ0z8QqZoLYEA=";
+    yarnLock = finalAttrs.src + "/frontend/yarn.lock";
+  };
+
+  ldflags = [
+    "-X github.com/getAlby/hub/version.Tag=v${finalAttrs.version}"
+    "-s"
+    "-w"
+  ];
+
+  proxyVendor = true; # needed for secp256k1-zkp CGO bindings
+
+  subPackages = [
+    "cmd/http"
+  ];
 
   passthru.tests.startup = runCommand "${finalAttrs.pname}-startup-test" { } ''
     export HOME="$TMPDIR"
@@ -138,8 +139,8 @@ buildGoModule (finalAttrs: {
     description = "Control lightning wallets over nostr";
     homepage = "https://github.com/getAlby/hub";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ bleetube ];
+    platforms = lib.platforms.linux;
     mainProgram = "albyhub";
   };
 })

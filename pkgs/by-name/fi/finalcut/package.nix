@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  autoreconfHook,
   autoconf-archive,
+  autoreconfHook,
   ncurses,
   pkg-config,
 }:

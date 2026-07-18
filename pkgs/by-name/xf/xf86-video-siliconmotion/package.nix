@@ -3,24 +3,24 @@
   stdenv,
   fetchFromGitLab,
   autoreconfHook,
+  libpciaccess,
+  nix-update-script,
   pkg-config,
   util-macros,
   xorg-server,
   xorgproto,
-  libpciaccess,
-  nix-update-script,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xf86-video-siliconmotion";
   version = "1.7.10";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
-    group = "xorg";
     owner = "driver";
     repo = "xf86-video-siliconmotion";
     tag = "xf86-video-siliconmotion-${finalAttrs.version}";
     hash = "sha256-CRuzdxlES6TFMDGIKk5sBAXF2Pa781jmTzlVT+A2Muk=";
+    domain = "gitlab.freedesktop.org";
+    group = "xorg";
   };
 
   strictDeps = true;
@@ -45,10 +45,12 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Silicon Motion video driver for the Xorg X server";
     homepage = "https://gitlab.freedesktop.org/xorg/driver/xf86-video-siliconmotion";
+
     license = with lib.licenses; [
       x11
       mit
     ];
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
     broken = stdenv.hostPlatform.isAarch64;

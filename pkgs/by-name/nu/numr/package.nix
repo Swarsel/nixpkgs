@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
-  openssl,
-  versionCheckHook,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-GmG6iGcN0Y+0YgUmV+sAtdnusNpuVKLUrzKklmz+dvs=";
   };
 
-  cargoHash = "sha256-SbgCF+m4dR2zPPJrVFxRLOOAyyjOSubXsYvzOa5tTyg=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -30,21 +28,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-SbgCF+m4dR2zPPJrVFxRLOOAyyjOSubXsYvzOa5tTyg=";
   env.OPENSSL_NO_VENDOR = true;
-
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "--version";
-  doInstallCheck = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Text calculator inspired by Numi - natural language expressions, variables, unit conversions";
     homepage = "https://github.com/nasedkinpv/numr";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
     ];
+
     mainProgram = "numr";
   };
 })

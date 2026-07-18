@@ -2,28 +2,24 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
-  pkg-config,
-  python3Packages,
-  makeWrapper,
-  libsamplerate,
-  wafHook,
   # Darwin Dependencies
   aften,
-
+  expat, # for dbus
+  fetchpatch2,
   # BSD Dependencies
   freebsd,
-
+  libsamplerate,
+  makeWrapper,
+  pkg-config,
+  python3Packages,
+  testers,
+  wafHook,
+  alsa-lib ? null,
   # Optional Dependencies
   dbus ? null,
-  expat, # for dbus
   libffado ? null,
-  alsa-lib ? null,
-
   # Extra options
   prefix ? "",
-
-  testers,
 }:
 
 let
@@ -54,12 +50,26 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
+  patches = [
+    (fetchpatch2 {
+      hash = "sha256-M/H72lLTeddefqth4BSkEfySZRYMIzLErb7nIgVN0u8=";
+      # Python 3.12 support
+      name = "jack2-waf2.0.26.patch";
+      url = "https://github.com/jackaudio/jack2/commit/250420381b1a6974798939ad7104ab1a4b9a9994.patch";
+    })
+  ];
+
+  postPatch = ''
+    patchShebangs --build svnversion_regenerate.sh
+  '';
+
   nativeBuildInputs = [
     pkg-config
     python
     wafHook
   ]
   ++ lib.optionals (optDbus != null) [ makeWrapper ];
+
   buildInputs = [
     libsamplerate
     optDbus
@@ -74,30 +84,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
     freebsd.libsysinfo
   ];
-
-  patches = [
-    (fetchpatch2 {
-      # Python 3.12 support
-      name = "jack2-waf2.0.26.patch";
-      url = "https://github.com/jackaudio/jack2/commit/250420381b1a6974798939ad7104ab1a4b9a9994.patch";
-      hash = "sha256-M/H72lLTeddefqth4BSkEfySZRYMIzLErb7nIgVN0u8=";
-    })
-  ];
-
-  postPatch = ''
-    patchShebangs --build svnversion_regenerate.sh
-  '';
-
-  wafConfigureFlags = [
-    "--classic"
-    "--autostart=${if (optDbus != null) then "dbus" else "classic"}"
-  ]
-  ++ lib.optional (optDbus != null) "--dbus"
-  ++ lib.optional (optLibffado != null) "--firewire"
-  ++ lib.optional (optAlsaLib != null) "--alsa"
-  ++ lib.optional (
-    stdenv.hostPlatform != stdenv.buildPlatform
-  ) "--platform=${stdenv.hostPlatform.parsed.kernel.name}";
 
   postInstall = (
     if libOnly then
@@ -116,14 +102,25 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "$out/include" "$dev/include"
   '';
 
+  wafConfigureFlags = [
+    "--classic"
+    "--autostart=${if (optDbus != null) then "dbus" else "classic"}"
+  ]
+  ++ lib.optional (optDbus != null) "--dbus"
+  ++ lib.optional (optLibffado != null) "--firewire"
+  ++ lib.optional (optAlsaLib != null) "--alsa"
+  ++ lib.optional (
+    stdenv.hostPlatform != stdenv.buildPlatform
+  ) "--platform=${stdenv.hostPlatform.parsed.kernel.name}";
+
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {
     description = "JACK audio connection kit, version 2 with jackdbus";
     homepage = "https://jackaudio.org";
     license = lib.licenses.gpl2Plus;
-    pkgConfigModules = [ "jack" ];
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    pkgConfigModules = [ "jack" ];
   };
 })

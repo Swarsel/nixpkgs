@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   asgiref,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
   pytest-django,
   pytestCheckHook,
   setuptools,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "django-htmx";
   version = "1.27.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "adamchainz";
@@ -21,17 +20,16 @@ buildPythonPackage rec {
     hash = "sha256-5Z/Ji1J6ofOHG64aj9bsHEw6EBELFQ4Lwsn8vGQUFe8=";
   };
 
-  build-system = [ setuptools ];
-
   buildInputs = [ django ];
-
-  dependencies = [ asgiref ];
 
   nativeCheckInputs = [
     pytestCheckHook
     pytest-django
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ asgiref ];
+  pyproject = true;
   pythonImportsCheck = [ "django_htmx" ];
 
   meta = {

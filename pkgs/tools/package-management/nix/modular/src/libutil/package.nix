@@ -1,28 +1,23 @@
 {
   lib,
   stdenv,
-  mkMesonLibrary,
-
   boost,
   brotli,
   libarchive,
   libblake3,
   libcpuid,
   libsodium,
+  mkMesonLibrary,
   nlohmann_json,
   openssl,
-  zstd,
-
   # Configuration Options
-
   version,
+  zstd,
 }:
 
 mkMesonLibrary (finalAttrs: {
-  pname = "nix-util";
   inherit version;
-
-  workDir = ./.;
+  pname = "nix-util";
 
   buildInputs = [
     brotli
@@ -44,6 +39,8 @@ mkMesonLibrary (finalAttrs: {
   mesonFlags = [
     (lib.mesonEnable "cpuid" stdenv.hostPlatform.isx86_64)
   ];
+
+  workDir = ./.;
 
   meta = {
     platforms = lib.platforms.unix ++ lib.platforms.windows;

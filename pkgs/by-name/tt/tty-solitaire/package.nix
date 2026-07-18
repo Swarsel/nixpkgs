@@ -29,10 +29,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Klondike Solitaire in your ncurses terminal";
-    license = lib.licenses.mit;
     homepage = "https://github.com/mpereira/tty-solitaire";
-    platforms = ncurses.meta.platforms;
+    license = lib.licenses.mit;
     maintainers = [ ];
+    platforms = ncurses.meta.platforms;
     mainProgram = "ttysolitaire";
   };
 })

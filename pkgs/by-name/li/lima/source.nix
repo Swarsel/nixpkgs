@@ -21,10 +21,12 @@ in
   meta = {
     homepage = "https://github.com/lima-vm/lima";
     changelog = "https://github.com/lima-vm/lima/releases/tag/v${version}";
-    knownVulnerabilities = lib.optional (lib.versionOlder version "2") "Lima version ${version} is EOL. See https://lima-vm.io/docs/releases/.";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       anhduy
     ];
+
+    knownVulnerabilities = lib.optional (lib.versionOlder version "2") "Lima version ${version} is EOL. See https://lima-vm.io/docs/releases/.";
   };
 }

@@ -17,67 +17,152 @@ in
   options.services.duplicity = {
     enable = lib.mkEnableOption "backups with duplicity";
 
-    root = lib.mkOption {
-      type = lib.types.path;
-      default = "/";
-      description = ''
-        Root directory to backup.
-      '';
-    };
+    cleanup = {
+      maxAge = lib.mkOption {
+        default = null;
 
-    include = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-      example = [ "/home" ];
-      description = ''
-        List of paths to include into the backups. See the FILE SELECTION
-        section in {manpage}`duplicity(1)` for details on the syntax.
-      '';
+        description = ''
+          If non-null, delete all backup sets older than the given time.  Old backup sets
+          will not be deleted if backup sets newer than time depend on them.
+        '';
+
+        example = "6M";
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      maxFull = lib.mkOption {
+        default = null;
+
+        description = ''
+          If non-null, delete all backups sets that are older than the count:th last full
+          backup (in other words, keep the last count full backups and
+          associated incremental sets).
+        '';
+
+        example = 2;
+        type = lib.types.nullOr lib.types.int;
+      };
+
+      maxIncr = lib.mkOption {
+        default = null;
+
+        description = ''
+          If non-null, delete incremental sets of all backups sets that are
+          older than the count:th last full backup (in other words, keep only
+          old full backups and not their increments).
+        '';
+
+        example = 1;
+        type = lib.types.nullOr lib.types.int;
+      };
     };
 
     exclude = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
       default = [ ];
+
       description = ''
         List of paths to exclude from backups. See the FILE SELECTION section in
         {manpage}`duplicity(1)` for details on the syntax.
       '';
-    };
 
-    includeFileList = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
-      default = null;
-      example = "/path/to/fileList.txt";
-      description = ''
-        File containing newline-separated list of paths to include into the
-        backups. See the FILE SELECTION section in {manpage}`duplicity(1)` for
-        details on the syntax.
-      '';
+      type = lib.types.listOf lib.types.str;
     };
 
     excludeFileList = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
       default = null;
-      example = "/path/to/fileList.txt";
+
       description = ''
         File containing newline-separated list of paths to exclude into the
         backups. See the FILE SELECTION section in {manpage}`duplicity(1)` for
         details on the syntax.
       '';
+
+      example = "/path/to/fileList.txt";
+      type = lib.types.nullOr lib.types.path;
     };
 
-    targetUrl = lib.mkOption {
-      type = lib.types.str;
-      example = "s3://host:port/prefix";
+    extraFlags = lib.mkOption {
+      default = [ ];
+
       description = ''
-        Target url to backup to. See the URL FORMAT section in
-        {manpage}`duplicity(1)` for supported urls.
+        Extra command-line flags passed to duplicity. See
+        {manpage}`duplicity(1)`.
       '';
+
+      example = [
+        "--backend-retry-delay"
+        "100"
+      ];
+
+      type = lib.types.listOf lib.types.str;
+    };
+
+    frequency = lib.mkOption {
+      default = "daily";
+
+      description = ''
+        Run duplicity with the given frequency (see
+        {manpage}`systemd.time(7)` for the format).
+        If null, do not run automatically.
+      '';
+
+      type = lib.types.nullOr lib.types.str;
+    };
+
+    fullIfOlderThan = lib.mkOption {
+      default = "never";
+
+      description = ''
+        If `"never"` (the default) always do incremental
+        backups (the first backup will be a full backup, of course).  If
+        `"always"` always do full backups.  Otherwise, this
+        must be a string representing a duration. Full backups will be made
+        when the latest full backup is older than this duration. If this is not
+        the case, an incremental backup is performed.
+      '';
+
+      example = "1M";
+      type = lib.types.str;
+    };
+
+    include = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        List of paths to include into the backups. See the FILE SELECTION
+        section in {manpage}`duplicity(1)` for details on the syntax.
+      '';
+
+      example = [ "/home" ];
+      type = lib.types.listOf lib.types.str;
+    };
+
+    includeFileList = lib.mkOption {
+      default = null;
+
+      description = ''
+        File containing newline-separated list of paths to include into the
+        backups. See the FILE SELECTION section in {manpage}`duplicity(1)` for
+        details on the syntax.
+      '';
+
+      example = "/path/to/fileList.txt";
+      type = lib.types.nullOr lib.types.path;
+    };
+
+    root = lib.mkOption {
+      default = "/";
+
+      description = ''
+        Root directory to backup.
+      '';
+
+      type = lib.types.path;
     };
 
     secretFile = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
       default = null;
+
       description = ''
         Path of a file containing secrets (gpg passphrase, access key...) in
         the format of EnvironmentFile as described by
@@ -88,83 +173,37 @@ in
         AWS_SECRET_ACCESS_KEY=«...»
         ```
       '';
+
+      type = lib.types.nullOr lib.types.path;
     };
 
-    frequency = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
-      default = "daily";
+    targetUrl = lib.mkOption {
       description = ''
-        Run duplicity with the given frequency (see
-        {manpage}`systemd.time(7)` for the format).
-        If null, do not run automatically.
+        Target url to backup to. See the URL FORMAT section in
+        {manpage}`duplicity(1)` for supported urls.
       '';
-    };
 
-    extraFlags = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-      example = [
-        "--backend-retry-delay"
-        "100"
-      ];
-      description = ''
-        Extra command-line flags passed to duplicity. See
-        {manpage}`duplicity(1)`.
-      '';
-    };
-
-    fullIfOlderThan = lib.mkOption {
+      example = "s3://host:port/prefix";
       type = lib.types.str;
-      default = "never";
-      example = "1M";
-      description = ''
-        If `"never"` (the default) always do incremental
-        backups (the first backup will be a full backup, of course).  If
-        `"always"` always do full backups.  Otherwise, this
-        must be a string representing a duration. Full backups will be made
-        when the latest full backup is older than this duration. If this is not
-        the case, an incremental backup is performed.
-      '';
-    };
-
-    cleanup = {
-      maxAge = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        example = "6M";
-        description = ''
-          If non-null, delete all backup sets older than the given time.  Old backup sets
-          will not be deleted if backup sets newer than time depend on them.
-        '';
-      };
-      maxFull = lib.mkOption {
-        type = lib.types.nullOr lib.types.int;
-        default = null;
-        example = 2;
-        description = ''
-          If non-null, delete all backups sets that are older than the count:th last full
-          backup (in other words, keep the last count full backups and
-          associated incremental sets).
-        '';
-      };
-      maxIncr = lib.mkOption {
-        type = lib.types.nullOr lib.types.int;
-        default = null;
-        example = 1;
-        description = ''
-          If non-null, delete incremental sets of all backups sets that are
-          older than the count:th last full backup (in other words, keep only
-          old full backups and not their increments).
-        '';
-      };
     };
   };
 
   config = lib.mkIf cfg.enable {
+    assertions = lib.singleton {
+      # Duplicity will fail if the last file selection option is an include. It
+      # is not always possible to detect but this simple case can be caught.
+      assertion = cfg.include != [ ] -> cfg.exclude != [ ] || cfg.extraFlags != [ ];
+
+      message = ''
+        Duplicity will fail if you only specify included paths ("Because the
+        default is to include all files, the expression is redundant. Exiting
+        because this probably isn't what you meant.")
+      '';
+    };
+
     systemd = {
       services.duplicity = {
         description = "backup files with duplicity";
-
         environment.HOME = stateDirectory;
 
         script =
@@ -220,10 +259,11 @@ in
               )
             } ${extra}
           '';
+
         serviceConfig = {
           PrivateTmp = true;
-          ProtectSystem = "strict";
           ProtectHome = "read-only";
+          ProtectSystem = "strict";
           StateDirectory = baseNameOf stateDirectory;
         }
         // lib.optionalAttrs (localTarget != null) {
@@ -238,17 +278,6 @@ in
       };
 
       tmpfiles.rules = lib.optional (localTarget != null) "d ${localTarget} 0700 root root -";
-    };
-
-    assertions = lib.singleton {
-      # Duplicity will fail if the last file selection option is an include. It
-      # is not always possible to detect but this simple case can be caught.
-      assertion = cfg.include != [ ] -> cfg.exclude != [ ] || cfg.extraFlags != [ ];
-      message = ''
-        Duplicity will fail if you only specify included paths ("Because the
-        default is to include all files, the expression is redundant. Exiting
-        because this probably isn't what you meant.")
-      '';
     };
   };
 }

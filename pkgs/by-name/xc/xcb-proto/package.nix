@@ -25,6 +25,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = writeScript "update-${finalAttrs.pname}" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p common-updater-scripts
@@ -40,7 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.freedesktop.org/xorg/proto/xcbproto";
     license = lib.licenses.x11;
     maintainers = [ ];
-    pkgConfigModules = [ "xcb-proto" ];
     platforms = lib.platforms.unix;
+    pkgConfigModules = [ "xcb-proto" ];
   };
 })

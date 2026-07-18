@@ -30,22 +30,21 @@ stdenv.mkDerivation (finalAttrs: {
       --replace "'test/suite-ev.janet'," ""
   '';
 
-  depsBuildBuild = [ pkgsBuildBuild.stdenv.cc ];
   nativeBuildInputs = [
     meson
     ninja
   ];
 
-  mesonBuildType = "release";
   mesonFlags = [ "-Dgit_hash=release" ];
-
   doCheck = true;
-
   doInstallCheck = true;
 
   installCheckPhase = ''
     $out/bin/janet -e '(+ 1 2 3)'
   '';
+
+  depsBuildBuild = [ pkgsBuildBuild.stdenv.cc ];
+  mesonBuildType = "release";
 
   passthru = {
     tests.run =
@@ -62,17 +61,20 @@ stdenv.mkDerivation (finalAttrs: {
 
           touch $out;
         '';
+
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Janet programming language";
-    mainProgram = "janet";
     homepage = "https://janet-lang.org/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       peterhoeg
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "janet";
   };
 })

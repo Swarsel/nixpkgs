@@ -1,11 +1,10 @@
 {
   mkKdeDerivation,
-  shared-mime-info,
   qtdeclarative,
+  shared-mime-info,
 }:
 mkKdeDerivation {
   pname = "kpkpass";
-
-  extraNativeBuildInputs = [ shared-mime-info ];
   extraBuildInputs = [ qtdeclarative ];
+  extraNativeBuildInputs = [ shared-mime-info ];
 }

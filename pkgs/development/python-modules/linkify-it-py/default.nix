@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
-  uc-micro-py,
   setuptools,
+  uc-micro-py,
 }:
 
 buildPythonPackage rec {
   pname = "linkify-it-py";
   version = "2.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tsutsu3";
@@ -20,12 +19,10 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ uc-micro-py ];
-
-  pythonImportsCheck = [ "linkify_it" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
+  pythonImportsCheck = [ "linkify_it" ];
 
   meta = {
     description = "Links recognition library with full unicode support";

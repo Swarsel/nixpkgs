@@ -1,32 +1,27 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  django,
-  django-appconf,
-  rcssmin,
-  rjsmin,
-
   # tests
   beautifulsoup4,
   brotli,
+  buildPythonPackage,
   csscompressor,
+  # dependencies
+  django,
+  django-appconf,
   django-sekizai,
   jinja2,
-  pytestCheckHook,
   pytest-django,
-
+  pytestCheckHook,
+  rcssmin,
+  rjsmin,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "django-compressor";
   version = "4.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "django-compressor";
@@ -34,17 +29,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-ymht/nl3UUFXLc54aqDADXArVG6jUNQppBJCNKp2P68=";
   };
-
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    django
-    django-appconf
-    rcssmin
-    rjsmin
-  ];
 
   env.DJANGO_SETTINGS_MODULE = "compressor.test_settings";
 
@@ -56,6 +40,17 @@ buildPythonPackage rec {
     jinja2
     pytestCheckHook
     pytest-django
+  ];
+
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    django
+    django-appconf
+    rcssmin
+    rjsmin
   ];
 
   # Getting error: compressor.exceptions.OfflineGenerationError: You have
@@ -70,6 +65,7 @@ buildPythonPackage rec {
     "test_calmjs_filter"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "compressor" ];
 
   meta = {

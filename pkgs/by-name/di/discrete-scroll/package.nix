@@ -31,7 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Fix for macOS's unnecessary scroll wheel acceleration";
     homepage = "https://github.com/emreyolcu/discrete-scroll";
     license = lib.licenses.mit;
-    platforms = lib.platforms.darwin;
     maintainers = with lib.maintainers; [ bb2020 ];
+    platforms = lib.platforms.darwin;
   };
 })

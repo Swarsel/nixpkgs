@@ -1,20 +1,20 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
   cmake,
-  pkg-config,
-  openjdk,
-  libuuid,
-  python3,
-  glfw,
-  yosys,
-  nextpnr,
-  verilator,
   dfu-util,
+  glfw,
   icestorm,
+  libuuid,
+  nextpnr,
+  openjdk,
+  pkg-config,
+  python3,
   trellis,
   unstableGitUpdater,
+  verilator,
+  yosys,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,27 +29,29 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
+  postPatch = ''
+    patchShebangs antlr/antlr.sh
+    # use nixpkgs version
+    rm -r python/pybind11
+  '';
+
   nativeBuildInputs = [
     cmake
     pkg-config
     openjdk
     glfw
   ];
+
   buildInputs = [
     libuuid
   ];
+
   propagatedBuildInputs = [
     (python3.withPackages (p: [
       p.edalize
       p.termcolor
     ]))
   ];
-
-  postPatch = ''
-    patchShebangs antlr/antlr.sh
-    # use nixpkgs version
-    rm -r python/pybind11
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -67,7 +69,8 @@ stdenv.mkDerivation (finalAttrs: {
       testProject =
         project:
         stdenv.mkDerivation {
-          name = "${silice.name}-test-${project}";
+          src = "${silice.src}/projects";
+
           nativeBuildInputs = [
             silice
             yosys
@@ -77,8 +80,7 @@ stdenv.mkDerivation (finalAttrs: {
             icestorm
             trellis
           ];
-          src = "${silice.src}/projects";
-          sourceRoot = "projects/${project}";
+
           buildPhase = ''
             targets=()
             for target in $(cat configs | tr -d '\r') ; do
@@ -91,20 +93,24 @@ stdenv.mkDerivation (finalAttrs: {
               false
             fi
           '';
+
           installPhase = ''
             mkdir $out
             for target in "''${targets[@]}" ; do
               [[ $target != Makefile* ]] || continue
             done
           '';
+
+          name = "${silice.name}-test-${project}";
+          sourceRoot = "projects/${project}";
         };
     in
     {
       # a selection of test projects that build with the FPGA tools in
       # nixpkgs
       audio_sdcard_streamer = testProject "audio_sdcard_streamer";
-      bram_interface = testProject "bram_interface";
       blinky = testProject "blinky";
+      bram_interface = testProject "bram_interface";
       pipeline_sort = testProject "pipeline_sort";
     };
 
@@ -114,11 +120,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Open source language that simplifies prototyping and writing algorithms on FPGA architectures";
     homepage = "https://github.com/sylefeb/Silice";
     license = lib.licenses.bsd2;
-    mainProgram = "silice";
+
     maintainers = with lib.maintainers; [
       astro
       pbsds
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "silice";
   };
 })

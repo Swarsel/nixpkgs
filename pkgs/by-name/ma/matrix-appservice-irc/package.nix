@@ -4,11 +4,11 @@
   fetchFromGitHub,
   fetchYarnDeps,
   fixup-yarn-lock,
+  matrix-sdk-crypto-nodejs,
+  nix-update-script,
+  nixosTests,
   node-gyp-build,
   nodejs-slim_22,
-  matrix-sdk-crypto-nodejs,
-  nixosTests,
-  nix-update-script,
   yarn,
 }:
 
@@ -24,9 +24,9 @@ let
   };
 
   yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-JHSHhkfDGAra6Lq2QB5ngkLo1jR+vrWeux+LYORciZ8=";
     name = "${pname}-${version}-offline-cache";
     yarnLock = "${src}/yarn.lock";
-    hash = "sha256-JHSHhkfDGAra6Lq2QB5ngkLo1jR+vrWeux+LYORciZ8=";
   };
 
 in
@@ -46,18 +46,6 @@ stdenv.mkDerivation {
     yarn
     node-gyp-build
   ];
-
-  configurePhase = ''
-    runHook preConfigure
-
-    export HOME=$(mktemp -d)
-    yarn config --offline set yarn-offline-mirror "$yarnOfflineCache"
-    fixup-yarn-lock yarn.lock
-    yarn install --frozen-lockfile --offline --no-progress --non-interactive --ignore-scripts
-    patchShebangs node_modules/ bin/
-
-    runHook postConfigure
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -86,16 +74,28 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+
+    export HOME=$(mktemp -d)
+    yarn config --offline set yarn-offline-mirror "$yarnOfflineCache"
+    fixup-yarn-lock yarn.lock
+    yarn install --frozen-lockfile --offline --no-progress --non-interactive --ignore-scripts
+    patchShebangs node_modules/ bin/
+
+    runHook postConfigure
+  '';
+
   passthru.tests.matrix-appservice-irc = nixosTests.matrix-appservice-irc;
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/matrix-org/matrix-appservice-irc/releases/tag/${version}";
     description = "Node.js IRC bridge for Matrix";
-    mainProgram = "matrix-appservice-irc";
-    maintainers = with lib.maintainers; [ rhysmdnz ];
     homepage = "https://github.com/matrix-org/matrix-appservice-irc";
+    changelog = "https://github.com/matrix-org/matrix-appservice-irc/releases/tag/${version}";
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ rhysmdnz ];
     platforms = lib.platforms.linux;
+    mainProgram = "matrix-appservice-irc";
   };
 }

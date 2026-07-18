@@ -3,7 +3,6 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   cmark,
   gamemode,
   jdk17,
@@ -11,6 +10,7 @@
   libarchive,
   ninja,
   nix-update-script,
+  pkg-config,
   qrencode,
   stripJavaArchivesHook,
   tomlplusplus,
@@ -20,10 +20,10 @@
 }:
 let
   libnbtplusplus = fetchFromGitHub {
+    hash = "sha256-6/8clF2yNhfonV16cfIkxVIzuB9i9ThxoLMxAo/fDuY=";
     owner = "PrismLauncher";
     repo = "libnbtplusplus";
     rev = "3538933614059f0f44388a2b16f3db25ce42285b";
-    hash = "sha256-6/8clF2yNhfonV16cfIkxVIzuB9i9ThxoLMxAo/fDuY=";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -36,11 +36,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-GvAfrZxQSlBnCJ59nvK87jDTVo60D8n25K42SokE1q8=";
   };
-
-  postUnpack = ''
-    rm -rf source/libraries/libnbtplusplus
-    ln -s ${libnbtplusplus} source/libraries/libnbtplusplus
-  '';
 
   # Ensure that instance shortucts point to our final wrapper, rather than this unwrapped version
   postPatch = ''
@@ -85,8 +80,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
-
   dontWrapQtApps = true;
+
+  postUnpack = ''
+    rm -rf source/libraries/libnbtplusplus
+    ln -s ${libnbtplusplus} source/libraries/libnbtplusplus
+  '';
 
   passthru = {
     updateScript = nix-update-script { };
@@ -94,20 +93,24 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Free, open source launcher for Minecraft";
+
     longDescription = ''
       Allows you to have multiple, separate instances of Minecraft (each with
       their own mods, texture packs, saves, etc) and helps you manage them and
       their associated options with a simple interface.
     '';
+
     homepage = "https://prismlauncher.org/";
     changelog = "https://github.com/PrismLauncher/PrismLauncher/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       minion3665
       Scrumplex
       getchoo
     ];
-    mainProgram = "prismlauncher";
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "prismlauncher";
   };
 })

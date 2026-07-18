@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   bzip2,
-  zstd,
+  pkg-config,
   rocksdb,
+  rustPlatform,
+  zstd,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-xyGRL8cSTiObuFDZN+c7e9Sggfn5jx9555PU0JSPh6o=";
   };
 
-  cargoHash = "sha256-kbMOAL/CvmbOjKVpnZrZlRsl0sibTBwvqCq5GzXjGx8=";
-
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
@@ -31,6 +29,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zstd
   ];
 
+  cargoHash = "sha256-kbMOAL/CvmbOjKVpnZrZlRsl0sibTBwvqCq5GzXjGx8=";
+
   env = {
     ROCKSDB_INCLUDE_DIR = "${rocksdb}/include";
     ROCKSDB_LIB_DIR = "${rocksdb}/lib";
@@ -40,10 +40,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Backend and Storages for zenoh using the file system";
     homepage = "https://github.com/eclipse-zenoh/zenoh-backend-filesystem";
+
     license = with lib.licenses; [
       epl20
       asl20
     ];
+
     maintainers = with lib.maintainers; [ markuskowa ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };

@@ -2,31 +2,31 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gitUpdater,
-  buildPackages,
-  cmake,
-  pkg-config,
   boost,
+  buildPackages,
   cairo,
+  catch2,
+  cmake,
   freetype,
   gdal,
+  gitUpdater,
   harfbuzz,
   icu,
   libavif,
   libjpeg,
   libpng,
+  libpq,
   libtiff,
   libwebp,
   libxml2,
+  openssl,
+  pkg-config,
   proj,
+  protozero,
   python3,
+  sparsehash,
   sqlite,
   zlib,
-  catch2,
-  libpq,
-  protozero,
-  sparsehash,
-  openssl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -41,7 +41,15 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  passthru.updateScript = gitUpdater { rev-prefix = "v"; };
+  # a distinct dev output makes python-mapnik fail
+  outputs = [ "out" ];
+
+  patches = [
+    # Account for full paths when generating libmapnik.pc
+    ./export-pkg-config-full-paths.patch
+    # Use 'sparsehash' package.
+    ./use-sparsehash-package.patch
+  ];
 
   postPatch = ''
     substituteInPlace configure \
@@ -52,16 +60,6 @@ stdenv.mkDerivation (finalAttrs: {
     # Remove bundled 'protozero' directory in favor of 'protozero' package
     rm -r deps/mapbox/protozero
   '';
-
-  # a distinct dev output makes python-mapnik fail
-  outputs = [ "out" ];
-
-  patches = [
-    # Account for full paths when generating libmapnik.pc
-    ./export-pkg-config-full-paths.patch
-    # Use 'sparsehash' package.
-    ./use-sparsehash-package.patch
-  ];
 
   nativeBuildInputs = [
     cmake
@@ -107,8 +105,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_CATCH2" "${catch2.src}")
   ];
 
-  doCheck = true;
-
   # mapnik-config is currently not build with CMake. So we use the SCons for
   # this one. We can't add SCons to nativeBuildInputs though, as stdenv would
   # then try to build everything with scons. C++17 is the minimum supported
@@ -119,19 +115,25 @@ stdenv.mkDerivation (finalAttrs: {
     cd build
   '';
 
+  doCheck = true;
+
   preInstall = ''
     install -Dm755 ../utils/mapnik-config/mapnik-config -t $out/bin
   '';
+
+  passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
     description = "Open source toolkit for developing mapping applications";
     homepage = "https://mapnik.org";
     changelog = "https://github.com/mapnik/mapnik/blob/${finalAttrs.src.tag}/CHANGELOG.md";
+    license = lib.licenses.lgpl21Plus;
+
     maintainers = with lib.maintainers; [
       hummeltech
     ];
-    teams = [ lib.teams.geospatial ];
-    license = lib.licenses.lgpl21Plus;
+
     platforms = lib.platforms.all;
+    teams = [ lib.teams.geospatial ];
   };
 })

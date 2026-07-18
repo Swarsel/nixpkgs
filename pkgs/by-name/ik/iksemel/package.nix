@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   autoreconfHook,
+  gnutls,
   libtool,
   pkg-config,
-  gnutls,
-  fetchFromGitHub,
   texinfo,
 }:
 
@@ -30,11 +30,11 @@ stdenv.mkDerivation (finalAttrs: {
     libtool
     texinfo
   ];
+
   buildInputs = [ gnutls ];
 
   meta = {
     description = "XML parser for jabber";
-
     homepage = "https://github.com/timothytylee/iksemel-1.4";
     license = lib.licenses.gpl2;
     platforms = lib.platforms.linux;

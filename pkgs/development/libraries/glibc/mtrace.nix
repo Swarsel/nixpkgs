@@ -10,6 +10,12 @@
 
 glibc.overrideAttrs (oldAttrs: {
   pname = "glibc-mtrace";
+  # Reset a few things declared by `pkgs.glibc`.
+  outputs = [ "out" ];
+  # Perl checked during configure
+  nativeBuildInputs = oldAttrs.nativeBuildInputs ++ [ perl ];
+  # Perl shebang used for `mtrace`.
+  buildInputs = oldAttrs.buildInputs ++ [ perl ];
 
   buildPhase = ''
     runHook preBuild
@@ -25,13 +31,6 @@ glibc.overrideAttrs (oldAttrs: {
     mv malloc/mtrace $out/bin/
   '';
 
-  # Perl checked during configure
-  nativeBuildInputs = oldAttrs.nativeBuildInputs ++ [ perl ];
-  # Perl shebang used for `mtrace`.
-  buildInputs = oldAttrs.buildInputs ++ [ perl ];
-
-  # Reset a few things declared by `pkgs.glibc`.
-  outputs = [ "out" ];
   separateDebugInfo = false;
 
   meta = oldAttrs.meta // {

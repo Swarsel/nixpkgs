@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit,
   requests,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "requests-download";
   version = "0.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "takluyver";
@@ -20,6 +19,7 @@ buildPythonPackage (finalAttrs: {
 
   build-system = [ flit ];
   dependencies = [ requests ];
+  pyproject = true;
 
   meta = {
     description = "Download files using requests and save them to a target path";

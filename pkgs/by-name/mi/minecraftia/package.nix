@@ -1,8 +1,8 @@
 {
   lib,
   fetchzip,
-  stdenvNoCC,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -18,10 +18,10 @@ stdenvNoCC.mkDerivation {
   nativeBuildInputs = [ installFonts ];
 
   meta = {
-    homepage = "https://fontlibrary.org/en/font/minecraftia";
     description = "Cool Minecraft font";
+    homepage = "https://fontlibrary.org/en/font/minecraftia";
     license = lib.licenses.cc-by-sa-30;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ gepbird ];
+    platforms = lib.platforms.all;
   };
 }

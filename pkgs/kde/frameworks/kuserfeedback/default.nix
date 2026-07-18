@@ -1,7 +1,7 @@
 {
   mkKdeDerivation,
-  qttools,
   qtsvg,
+  qttools,
 }:
 mkKdeDerivation {
   pname = "kuserfeedback";
@@ -11,6 +11,7 @@ mkKdeDerivation {
     "-DENABLE_CONSOLE=0"
     "-DENABLE_CLI=0"
   ];
+
   extraNativeBuildInputs = [
     qttools
     qtsvg

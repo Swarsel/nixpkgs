@@ -1,21 +1,21 @@
 {
-  buildah-unwrapped,
-  runCommand,
-  makeBinaryWrapper,
-  symlinkJoin,
   lib,
   stdenv,
-  extraPackages ? [ ],
-  runc, # Default container runtime
-  crun, # Container runtime (default with cgroups v2 for podman/buildah)
-  conmon, # Container runtime monitor
-  slirp4netns, # User-mode networking for unprivileged namespaces
-  fuse-overlayfs, # CoW for images, much faster than default vfs
-  util-linuxMinimal, # nsenter
-  iptables,
   aardvark-dns,
+  buildah-unwrapped,
+  conmon, # Container runtime monitor
+  crun, # Container runtime (default with cgroups v2 for podman/buildah)
+  fuse-overlayfs, # CoW for images, much faster than default vfs
+  iptables,
+  makeBinaryWrapper,
   netavark,
   passt,
+  runCommand,
+  runc, # Default container runtime
+  slirp4netns, # User-mode networking for unprivileged namespaces
+  symlinkJoin,
+  util-linuxMinimal, # nsenter
+  extraPackages ? [ ],
 }:
 
 let
@@ -50,12 +50,7 @@ let
 in
 runCommand buildah-unwrapped.name
   {
-    name = "${buildah-unwrapped.pname}-wrapper-${buildah-unwrapped.version}";
     inherit (buildah-unwrapped) pname version passthru;
-
-    preferLocalBuild = true;
-
-    meta = removeAttrs buildah-unwrapped.meta [ "outputsToInstall" ];
 
     outputs = [
       "out"
@@ -65,6 +60,10 @@ runCommand buildah-unwrapped.name
     nativeBuildInputs = [
       makeBinaryWrapper
     ];
+
+    name = "${buildah-unwrapped.pname}-wrapper-${buildah-unwrapped.version}";
+    preferLocalBuild = true;
+    meta = removeAttrs buildah-unwrapped.meta [ "outputsToInstall" ];
 
   }
   ''

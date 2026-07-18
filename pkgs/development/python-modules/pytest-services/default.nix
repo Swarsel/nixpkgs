@@ -1,7 +1,8 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  mysqlclient,
   psutil,
   pylibmc,
   pytest,
@@ -9,14 +10,12 @@
   requests,
   setuptools-scm,
   toml,
-  mysqlclient,
   zc-lockfile,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-services";
   version = "2.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pytest-dev";
@@ -25,18 +24,7 @@ buildPythonPackage rec {
     hash = "sha256-kWgqb7+3/hZKUz7B3PnfxHZq6yU3JUeJ+mruqrMD/NE=";
   };
 
-  build-system = [
-    setuptools-scm
-    toml
-  ];
-
   buildInputs = [ pytest ];
-
-  dependencies = [
-    requests
-    psutil
-    zc-lockfile
-  ];
 
   nativeCheckInputs = [
     mysqlclient
@@ -44,7 +32,19 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "pytest_services" ];
+  # Tests use sockets
+  __darwinAllowLocalNetworking = true;
+
+  build-system = [
+    setuptools-scm
+    toml
+  ];
+
+  dependencies = [
+    requests
+    psutil
+    zc-lockfile
+  ];
 
   disabledTests = [
     # Tests require binaries and additional parts
@@ -53,8 +53,8 @@ buildPythonPackage rec {
     "test_xvfb"
   ];
 
-  # Tests use sockets
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+  pythonImportsCheck = [ "pytest_services" ];
 
   meta = {
     description = "Services plugin for pytest testing framework";

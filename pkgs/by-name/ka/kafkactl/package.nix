@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,14 +16,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-oiN1nMln8oXy/e7gt0JtynCQxcxi0rwcdVthaWhjBWQ=";
-
   doCheck = false;
 
   meta = {
-    homepage = "https://github.com/deviceinsight/kafkactl";
-    changelog = "https://github.com/deviceinsight/kafkactl/blob/v${finalAttrs.version}/CHANGELOG.md";
     description = "Command Line Tool for managing Apache Kafka";
-    mainProgram = "kafkactl";
+
     longDescription = ''
       A command-line interface for interaction with Apache Kafka.
       Features:
@@ -32,7 +29,11 @@ buildGoModule (finalAttrs: {
       - Configuration of different contexts
       - directly access kafka clusters inside your kubernetes cluster
     '';
+
+    homepage = "https://github.com/deviceinsight/kafkactl";
+    changelog = "https://github.com/deviceinsight/kafkactl/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "kafkactl";
   };
 })

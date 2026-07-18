@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pydsdl";
   version = "1.22.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "OpenCyphal";
@@ -18,21 +17,20 @@ buildPythonPackage rec {
     hash = "sha256-JQE7e735arclu7avLu0Nf/ecULd0wuPmxyO3DtDsxLs=";
   };
 
-  build-system = [ setuptools ];
-
   # allow for writable directory for darwin
   preBuild = ''
     export HOME=$TMPDIR
   '';
 
-  pythonImportsCheck = [ "pydsdl" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
   enabledTestPaths = [ "pydsdl/_test.py" ];
+  pyproject = true;
+  pythonImportsCheck = [ "pydsdl" ];
 
   meta = {
     description = "Library to process Cyphal DSDL";
+
     longDescription = ''
       PyDSDL is a Cyphal DSDL compiler front-end implemented in Python. It accepts
       a DSDL namespace at the input and produces a well-annotated abstract syntax
@@ -41,6 +39,7 @@ buildPythonPackage rec {
       library should, in theory, work on any platform and with any Python
       implementation.
     '';
+
     homepage = "https://pydsdl.readthedocs.io/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ wucke13 ];

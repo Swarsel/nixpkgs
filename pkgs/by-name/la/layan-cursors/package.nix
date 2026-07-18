@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -29,8 +29,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Cursor theme inspired by layan gtk theme and based on capitaine-cursors";
-    changelog = "https://github.com/vinceliuice/Layan-cursors/releases/tag/${finalAttrs.version}/CHANGELOG.md";
     homepage = "https://github.com/vinceliuice/Layan-cursors/";
+    changelog = "https://github.com/vinceliuice/Layan-cursors/releases/tag/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ idlip ];
   };

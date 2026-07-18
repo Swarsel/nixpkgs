@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,13 +15,10 @@ buildGoModule (finalAttrs: {
     hash = "sha256-L5DBXn96PK4Ed3MhmIgfVDLniGWgB/iogI+HKzfsvvA=";
   };
 
-  vendorHash = "sha256-9MUhivdlbxAhcdbLALdt6vhxvMLzm+WincF3iG9pR1A=";
-
-  ldflags = [ "-s" ];
-
-  __structuredAttrs = true;
-
   strictDeps = true;
+  vendorHash = "sha256-9MUhivdlbxAhcdbLALdt6vhxvMLzm+WincF3iG9pR1A=";
+  __structuredAttrs = true;
+  ldflags = [ "-s" ];
 
   meta = {
     description = "Implementation of the Wappalyzer Technology Detection Library";

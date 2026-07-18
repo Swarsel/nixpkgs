@@ -9,51 +9,58 @@ let
   cfg = config.services.freeradius;
 
   freeradiusService = cfg: {
-    description = "FreeRadius server";
-    wantedBy = [ "multi-user.target" ];
     after = [ "network.target" ];
-    wants = [ "network.target" ];
+    description = "FreeRadius server";
+
     preStart = ''
       ${cfg.package}/bin/radiusd -C -d ${cfg.configDir} -l stdout
     '';
 
     serviceConfig = {
-      ExecStart =
-        "${cfg.package}/bin/radiusd -f -d ${cfg.configDir} -l stdout" + lib.optionalString cfg.debug " -xx";
       ExecReload = [
         "${cfg.package}/bin/radiusd -C -d ${cfg.configDir} -l stdout"
         "${pkgs.coreutils}/bin/kill -HUP $MAINPID"
       ];
-      User = "radius";
-      ProtectSystem = "full";
+
+      ExecStart =
+        "${cfg.package}/bin/radiusd -f -d ${cfg.configDir} -l stdout" + lib.optionalString cfg.debug " -xx";
+
+      LogsDirectory = "radius";
       ProtectHome = "on";
+      ProtectSystem = "full";
       Restart = "on-failure";
       RestartSec = 2;
-      LogsDirectory = "radius";
+      User = "radius";
     };
+
+    wantedBy = [ "multi-user.target" ];
+    wants = [ "network.target" ];
   };
 
   freeradiusConfig = {
     enable = lib.mkEnableOption "the freeradius server";
-
     package = lib.mkPackageOption pkgs "freeradius" { };
 
     configDir = lib.mkOption {
-      type = lib.types.path;
       default = "/etc/raddb";
+
       description = ''
         The path of the freeradius server configuration directory.
       '';
+
+      type = lib.types.path;
     };
 
     debug = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         Whether to enable debug logging for freeradius (-xx
         option). This should not be left on, since it includes
         sensitive data such as passwords in the logs.
       '';
+
+      type = lib.types.bool;
     };
 
   };
@@ -72,17 +79,19 @@ in
 
   config = lib.mkIf (cfg.enable) {
 
+    systemd.services.freeradius = freeradiusService cfg;
+
     users = {
+      groups.radius = { };
+
       users.radius = {
         # uid = config.ids.uids.radius;
         description = "Radius daemon user";
-        isSystemUser = true;
         group = "radius";
+        isSystemUser = true;
       };
-      groups.radius = { };
     };
 
-    systemd.services.freeradius = freeradiusService cfg;
     warnings = lib.optional cfg.debug "Freeradius debug logging is enabled. This will log passwords in plaintext to the journal!";
 
   };

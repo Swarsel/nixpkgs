@@ -1,17 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   borgmatic,
   nixosTests,
-  fetchFromGitHub,
   python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finallAttrs: {
   pname = "prometheus-borgmatic-exporter";
   version = "0.5.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "maxim-mityutko";
@@ -19,10 +16,6 @@ python3Packages.buildPythonApplication (finallAttrs: {
     tag = "v${finallAttrs.version}";
     hash = "sha256-pa1f31jrfDzUB3+xexJUwG0byiFszj/zEt+dIwlEv0o=";
   };
-
-  pythonRelaxDeps = [ "prometheus-client" ];
-
-  build-system = with python3Packages; [ poetry-core ];
 
   propagatedBuildInputs = [
     borgmatic
@@ -45,7 +38,10 @@ python3Packages.buildPythonApplication (finallAttrs: {
   ];
 
   __darwinAllowLocalNetworking = true;
-
+  __structuredAttrs = true;
+  build-system = with python3Packages; [ poetry-core ];
+  pyproject = true;
+  pythonRelaxDeps = [ "prometheus-client" ];
   passthru.tests.borgmatic = nixosTests.prometheus-exporters.borgmatic;
 
   meta = {
@@ -54,7 +50,7 @@ python3Packages.buildPythonApplication (finallAttrs: {
     changelog = "https://github.com/maxim-mityutko/borgmatic-exporter/releases/tag/${finallAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ flandweber ];
-    mainProgram = "borgmatic-exporter";
     platforms = lib.platforms.unix;
+    mainProgram = "borgmatic-exporter";
   };
 })

@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   perl,
-  udev,
   sg3_utils,
+  udev,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,14 +21,10 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [
     perl # for pod2man
   ];
+
   buildInputs = [
     udev
     sg3_utils
-  ];
-
-  installTargets = [
-    "install"
-    "install-systemd"
   ];
 
   makeFlags = [
@@ -38,11 +34,16 @@ stdenv.mkDerivation (finalAttrs: {
     "LEDMON_INSTDIR=${placeholder "out"}/sbin"
   ];
 
+  installTargets = [
+    "install"
+    "install-systemd"
+  ];
+
   meta = {
-    homepage = "https://github.com/md-raid-utilities/ledmon";
     description = "Enclosure LED Utilities";
-    platforms = lib.platforms.linux;
+    homepage = "https://github.com/md-raid-utilities/ledmon";
     license = with lib.licenses; [ gpl2Only ];
     maintainers = with lib.maintainers; [ sorki ];
+    platforms = lib.platforms.linux;
   };
 })

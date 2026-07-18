@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   expat,
-  ocaml,
   findlib,
+  ocaml,
   ounit,
 }:
 
@@ -19,30 +19,29 @@ stdenv.mkDerivation rec {
     hash = "sha256-eDA6MUcztaI+fpunWBdanNnPo9Y5gvbj/ViVcxYYEBg=";
   };
 
-  prePatch = ''
-    substituteInPlace Makefile --replace "gcc" "\$(CC)"
-  '';
+  strictDeps = true;
 
   nativeBuildInputs = [
     ocaml
     findlib
   ];
+
   buildInputs = [ expat ];
-
-  strictDeps = true;
-
   doCheck = lib.versionAtLeast ocaml.version "4.08";
-  checkTarget = "testall";
   checkInputs = [ ounit ];
-
+  checkTarget = "testall";
   createFindlibDestdir = true;
 
+  prePatch = ''
+    substituteInPlace Makefile --replace "gcc" "\$(CC)"
+  '';
+
   meta = {
+    inherit (src.meta) homepage;
+    inherit (ocaml.meta) platforms;
     description = "OCaml wrapper for the Expat XML parsing library";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.vbgl ];
-    inherit (src.meta) homepage;
-    inherit (ocaml.meta) platforms;
     broken = !(lib.versionAtLeast ocaml.version "4.02");
   };
 }

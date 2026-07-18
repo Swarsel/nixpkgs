@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   autoreconfHook,
+  cacert,
   gaucheBootstrap,
+  gdbm,
+  libiconv,
+  mbedtls,
+  openssl,
   pkg-config,
   texinfo,
-  libiconv,
-  gdbm,
-  openssl,
   zlib,
-  mbedtls,
-  cacert,
 }:
 
 stdenv.mkDerivation rec {
@@ -24,6 +24,12 @@ stdenv.mkDerivation rec {
     rev = "release${lib.replaceStrings [ "." ] [ "_" ] version}";
     hash = "sha256-M2vZqTMkob+WxUnCo4NDxS4pCVNleVBqkiiRp9nG/KA=";
   };
+
+  postPatch = ''
+    substituteInPlace ext/package-templates/configure \
+      --replace "#!/usr/bin/env gosh" "#!$out/bin/gosh"
+    patchShebangs .
+  '';
 
   nativeBuildInputs = [
     gaucheBootstrap
@@ -41,16 +47,6 @@ stdenv.mkDerivation rec {
     cacert
   ];
 
-  autoreconfPhase = ''
-    ./DIST gen
-  '';
-
-  postPatch = ''
-    substituteInPlace ext/package-templates/configure \
-      --replace "#!/usr/bin/env gosh" "#!$out/bin/gosh"
-    patchShebangs .
-  '';
-
   configureFlags = [
     "--with-iconv=${libiconv}"
     "--with-dbm=gdbm"
@@ -61,17 +57,21 @@ stdenv.mkDerivation rec {
     # "--with-slib=${slibGuile}/lib/slib"
   ];
 
-  enableParallelBuilding = true;
-
   # TODO: Fix tests that fail in sandbox build
   doCheck = false;
+
+  autoreconfPhase = ''
+    ./DIST gen
+  '';
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "R7RS Scheme scripting engine";
     homepage = "https://practical-scheme.net/gauche/";
-    mainProgram = "gosh";
-    maintainers = with lib.maintainers; [ mnacamura ];
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ mnacamura ];
     platforms = lib.platforms.unix;
+    mainProgram = "gosh";
   };
 }

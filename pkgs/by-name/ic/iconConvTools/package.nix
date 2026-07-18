@@ -7,16 +7,8 @@
 stdenv.mkDerivation {
   pname = "icon-conv-tools";
   version = "0.0.0";
-
   src = ./bin;
-
   buildInputs = [ icoutils ];
-
-  patchPhase = ''
-    substituteInPlace extractWinRscIconsToStdFreeDesktopDir.sh \
-      --replace "icotool" "${icoutils}/bin/icotool" \
-      --replace "wrestool" "${icoutils}/bin/wrestool"
-  '';
 
   buildPhase = ''
     mkdir -p "$out/bin"
@@ -24,9 +16,14 @@ stdenv.mkDerivation {
   '';
 
   installPhase = "true";
-
   dontPatchELF = true;
   dontStrip = true;
+
+  patchPhase = ''
+    substituteInPlace extractWinRscIconsToStdFreeDesktopDir.sh \
+      --replace "icotool" "${icoutils}/bin/icotool" \
+      --replace "wrestool" "${icoutils}/bin/wrestool"
+  '';
 
   meta = {
     description = "Tools for icon conversion specific to nix package manager";

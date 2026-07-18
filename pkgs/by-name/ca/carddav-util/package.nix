@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3Packages,
   makeWrapper,
+  python3Packages,
 }:
 
 stdenv.mkDerivation {
@@ -17,6 +17,7 @@ stdenv.mkDerivation {
     sha256 = "sha256-9iRCNDC0FJ+JD2Hk5TC0w4QMjJ9mMtct5WIA35xTGTg=";
   };
 
+  strictDeps = true;
   nativeBuildInputs = [ makeWrapper ];
 
   propagatedBuildInputs = with python3Packages; [
@@ -24,8 +25,6 @@ stdenv.mkDerivation {
     vobject
     lxml
   ];
-
-  strictDeps = true;
 
   doCheck = false; # no test
 
@@ -45,10 +44,10 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/ljanyst/carddav-util";
     description = "CardDAV import/export utility";
-    mainProgram = "carddav-util.py";
-    platforms = lib.platforms.unix;
+    homepage = "https://github.com/ljanyst/carddav-util";
     license = lib.licenses.isc;
+    platforms = lib.platforms.unix;
+    mainProgram = "carddav-util.py";
   };
 }

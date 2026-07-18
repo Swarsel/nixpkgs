@@ -1,14 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
   bash,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "marcel";
   version = "0.30.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "geophile";
@@ -25,11 +24,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     bash
   ];
 
-  pythonPath = with python3Packages; [
-    dill
-    psutil
-  ];
-
   # The tests use sudo and try to read/write $HOME/.local/share/marcel and /tmp
   doCheck = false;
 
@@ -38,6 +32,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --prefix PATH : "$program_PATH:${lib.getBin bash}/bin" \
       --prefix PYTHONPATH : "$program_PYTHONPATH"
   '';
+
+  pyproject = true;
+
+  pythonPath = with python3Packages; [
+    dill
+    psutil
+  ];
 
   meta = {
     description = "Modern shell";

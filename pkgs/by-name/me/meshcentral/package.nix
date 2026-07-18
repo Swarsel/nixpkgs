@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nodejs_22,
 }:
 
@@ -15,12 +15,6 @@ buildNpmPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-a+vqNjmKP866O2t+UsedpgYtWFbjeoYNtuCziAa436A=";
   };
-
-  npmDepsHash = "sha256-ZnSpqw4pn6OI8Gh9qLseTLH24jtj1zPGfHiMlUX+l/s=";
-  # Using the npmDeps with a newer nodejs causes `npm ci` errors, also upstream
-  # states they stick to the LTS version of nodejs:
-  # https://meshcentral.com/docs/MeshCentral2InstallGuide.pdf
-  nodejs = nodejs_22;
 
   patches = [
     ./fix-js-include-paths.patch
@@ -41,13 +35,18 @@ buildNpmPackage (finalAttrs: {
     ./optionalDependencies.patch
   ];
 
+  npmDepsHash = "sha256-ZnSpqw4pn6OI8Gh9qLseTLH24jtj1zPGfHiMlUX+l/s=";
   dontNpmBuild = true;
+  # Using the npmDeps with a newer nodejs causes `npm ci` errors, also upstream
+  # states they stick to the LTS version of nodejs:
+  # https://meshcentral.com/docs/MeshCentral2InstallGuide.pdf
+  nodejs = nodejs_22;
 
   meta = {
     description = "Computer management web app";
     homepage = "https://meshcentral.com/";
-    maintainers = with lib.maintainers; [ ma27 ];
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ ma27 ];
     mainProgram = "meshcentral";
   };
 })

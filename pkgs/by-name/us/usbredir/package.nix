@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  pkg-config,
-  meson,
-  ninja,
   glib,
   libusb1,
+  meson,
+  ninja,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -14,12 +14,17 @@ stdenv.mkDerivation rec {
   version = "0.15.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "spice";
     repo = "usbredir";
     rev = "${pname}-${version}";
     sha256 = "sha256-a+RaJO70jxsrVwSG+PzDg2luvBHqBdNdRdLOGhdhjzY=";
+    domain = "gitlab.freedesktop.org";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     meson
@@ -41,17 +46,12 @@ stdenv.mkDerivation rec {
     "-Dfuzzing=disabled"
   ];
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   meta = {
     description = "USB traffic redirection protocol";
-    mainProgram = "usbredirect";
     homepage = "https://www.spice-space.org/usbredir.html";
     license = lib.licenses.lgpl21Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "usbredirect";
   };
 }

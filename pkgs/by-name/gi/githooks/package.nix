@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   git,
-  testers,
-  makeWrapper,
   githooks,
+  makeWrapper,
+  testers,
 }:
 buildGoModule (finalAttrs: {
   pname = "githooks";
@@ -18,23 +18,19 @@ buildGoModule (finalAttrs: {
     hash = "sha256-aRv8zSTnpoQfhajagMKT0rpOmNWt0X4jiKv0kS6cQUE=";
   };
 
-  modRoot = "./githooks";
+  strictDeps = true;
+  nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ git ];
   vendorHash = "sha256-ULPbM/6DqyVPwq68MnpVesS3w1uxKBbVIZ7i5Kng+1Y=";
 
-  nativeBuildInputs = [ makeWrapper ];
+  # We need to generate some build files before building.
+  postConfigure = ''
+    GH_BUILD_VERSION="${finalAttrs.version}" \
+      GH_BUILD_TAG="v${finalAttrs.version}" \
+      go generate -mod=vendor ./...
+  '';
 
-  buildInputs = [ git ];
-
-  strictDeps = true;
-
-  ldflags = [
-    "-s" # Disable symbole table.
-    "-w" # Disable DWARF generation.
-  ];
-
-  # We need to disable updates and other features:
-  # That is done with tag `package_manager_enabled`.
-  tags = [ "package_manager_enabled" ];
+  doCheck = true;
 
   checkFlags =
     let
@@ -49,15 +45,6 @@ buildGoModule (finalAttrs: {
       "(${builtins.concatStringsSep "|" skippedTests})"
     ];
 
-  doCheck = true;
-
-  # We need to generate some build files before building.
-  postConfigure = ''
-    GH_BUILD_VERSION="${finalAttrs.version}" \
-      GH_BUILD_TAG="v${finalAttrs.version}" \
-      go generate -mod=vendor ./...
-  '';
-
   postInstall = ''
     # Rename executable to proper names.
     mv $out/bin/cli $out/bin/githooks-cli
@@ -70,10 +57,20 @@ buildGoModule (finalAttrs: {
     wrapProgram "$out/bin/githooks-runner" --prefix PATH : ${lib.makeBinPath [ git ]}
   '';
 
+  ldflags = [
+    "-s" # Disable symbole table.
+    "-w" # Disable DWARF generation.
+  ];
+
+  modRoot = "./githooks";
+  # We need to disable updates and other features:
+  # That is done with tag `package_manager_enabled`.
+  tags = [ "package_manager_enabled" ];
+
   passthru.tests.version = testers.testVersion {
-    package = githooks;
-    command = "githooks-cli --version";
     inherit (finalAttrs) version;
+    command = "githooks-cli --version";
+    package = githooks;
   };
 
   meta = {

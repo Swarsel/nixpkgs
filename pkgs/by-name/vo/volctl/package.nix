@@ -1,20 +1,19 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  wrapGAppsHook3,
-  gobject-introspection,
-  libpulseaudio,
   glib,
+  gobject-introspection,
   gtk3,
-  pango,
+  libpulseaudio,
   libxfixes,
+  pango,
+  python3Packages,
+  wrapGAppsHook3,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "volctl";
   version = "0.9.5";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "buzz";
@@ -29,9 +28,8 @@ python3Packages.buildPythonApplication rec {
       --replace 'libXfixes.so.3' "${libxfixes}/lib/libXfixes.so.3"
   '';
 
-  preBuild = ''
-    export LD_LIBRARY_PATH=${libpulseaudio}/lib
-  '';
+  # with strictDeps importing "gi.repository.Gtk" fails with "gi.RepositoryError: Typelib file for namespace 'Pango', version '1.0' not found"
+  strictDeps = false;
 
   nativeBuildInputs = [
     gobject-introspection
@@ -50,25 +48,27 @@ python3Packages.buildPythonApplication rec {
     pyyaml
   ]);
 
-  # with strictDeps importing "gi.repository.Gtk" fails with "gi.RepositoryError: Typelib file for namespace 'Pango', version '1.0' not found"
-  strictDeps = false;
+  preBuild = ''
+    export LD_LIBRARY_PATH=${libpulseaudio}/lib
+  '';
 
   # no tests included
   doCheck = false;
-
-  pythonImportsCheck = [ "volctl" ];
 
   preFixup = ''
     glib-compile-schemas ${glib.makeSchemaPath "$out" "${pname}-${version}"}
     gappsWrapperArgs+=(--prefix LD_LIBRARY_PATH : "${libpulseaudio}/lib")
   '';
 
+  format = "setuptools";
+  pythonImportsCheck = [ "volctl" ];
+
   meta = {
     description = "PulseAudio enabled volume control featuring per-app sliders";
     homepage = "https://buzz.github.io/volctl/";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.linux;
     mainProgram = "volctl";
   };
 }

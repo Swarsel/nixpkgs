@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
-  pytestCheckHook,
+  aioresponses,
+  buildPythonPackage,
   pytest-asyncio,
   pytest-cov-stub,
-  aioresponses,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "uhooapi";
   version = "1.2.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "getuhoo";
@@ -22,10 +21,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-SsnRHG9ePbcmaGULlXIemfbLaEUo+8x+tBZam/MBWnU=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-asyncio
@@ -33,6 +28,9 @@ buildPythonPackage (finalAttrs: {
     aioresponses
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "uhooapi" ];
 
   meta = {

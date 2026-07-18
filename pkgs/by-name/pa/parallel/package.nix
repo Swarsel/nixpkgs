@@ -1,13 +1,13 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  perl,
-  makeWrapper,
-  procps,
+  fetchurl,
+  buildPackages,
   coreutils,
   gawk,
-  buildPackages,
+  makeWrapper,
+  perl,
+  procps,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,20 +25,24 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
   ];
 
+  postPatch = lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    substituteInPlace Makefile.in \
+      --replace '$(DESTDIR)$(bindir)/parallel --shell-completion' '${lib.getExe buildPackages.parallel} --shell-completion'
+  '';
+
   strictDeps = true;
+
   nativeBuildInputs = [
     makeWrapper
     perl
   ];
+
   buildInputs = [
     perl
     procps
   ];
 
-  postPatch = lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    substituteInPlace Makefile.in \
-      --replace '$(DESTDIR)$(bindir)/parallel --shell-completion' '${lib.getExe buildPackages.parallel} --shell-completion'
-  '';
+  doCheck = true;
 
   preInstall = ''
     patchShebangs ./src/parallel
@@ -63,10 +67,10 @@ stdenv.mkDerivation (finalAttrs: {
   #   https://github.com/NixOS/nixpkgs/blob/ef4f672aa2be8b268a4280e8e2a68cd97a4cf67b/pkgs/stdenv/generic/setup.sh#L1541
   #   https://github.com/NixOS/nixpkgs/blob/ef4f672aa2be8b268a4280e8e2a68cd97a4cf67b/pkgs/stdenv/generic/setup.sh#L1555
   checkTarget = "check";
-  doCheck = true;
 
   meta = {
     description = "Shell tool for executing jobs in parallel";
+
     longDescription = ''
       GNU Parallel is a shell tool for executing jobs in parallel.  A job
       is typically a single command or a small script that has to be run
@@ -84,13 +88,16 @@ stdenv.mkDerivation (finalAttrs: {
       it possible to use output from GNU Parallel as input for other
       programs.
     '';
+
     homepage = "https://www.gnu.org/software/parallel/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       pSub
       tomberek
     ];
+
+    platforms = lib.platforms.all;
     mainProgram = "parallel";
   };
 })

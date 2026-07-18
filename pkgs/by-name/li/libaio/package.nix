@@ -5,8 +5,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.3.113";
   pname = "libaio";
+  version = "0.3.113";
 
   src = fetchFromCodeberg {
     owner = "jmoyer";
@@ -28,16 +28,15 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional stdenv.hostPlatform.isStatic "ENABLE_SHARED=0";
 
-  hardeningDisable = lib.optional (stdenv.hostPlatform.isi686) "stackprotector";
-
   checkTarget = "partcheck"; # "check" needs root
+  hardeningDisable = lib.optional (stdenv.hostPlatform.isi686) "stackprotector";
 
   meta = {
     description = "Library for asynchronous I/O in Linux";
     homepage = "https://lse.sourceforge.net/io/aio.html";
-    downloadPage = "https://codeberg.org/jmoyer/libaio";
-    platforms = lib.platforms.linux;
     license = lib.licenses.lgpl21;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    downloadPage = "https://codeberg.org/jmoyer/libaio";
   };
 })

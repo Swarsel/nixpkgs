@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  olm,
-  nix-update-script,
-  testers,
+  buildGoModule,
   mautrix-gmessages,
+  nix-update-script,
+  olm,
+  testers,
   # This option enables the use of an experimental pure-Go implementation of the
   # Olm protocol instead of libolm for end-to-end encryption. Using goolm is not
   # recommended by the mautrix developers, but they are interested in people
@@ -17,16 +17,17 @@
 buildGoModule rec {
   pname = "mautrix-gmessages";
   version = "26.05";
-  tag = "v0.2605.0";
 
   src = fetchFromGitHub {
+    inherit tag;
     owner = "mautrix";
     repo = "gmessages";
-    inherit tag;
     hash = "sha256-ScsjUmQZsB86hT+EqIoI4V3KX3T1sV9C4/3ytcLV8O0=";
   };
 
+  buildInputs = lib.optional (!withGoolm) olm;
   vendorHash = "sha256-rEcPW/egdx2AhXWqpjpaXbIjbmU9fShOKSv4fUZiX0w=";
+  doCheck = true;
 
   ldflags = [
     "-s"
@@ -35,14 +36,12 @@ buildGoModule rec {
     "main.Tag=${tag}"
   ];
 
-  buildInputs = lib.optional (!withGoolm) olm;
+  tag = "v0.2605.0";
   tags = lib.optional withGoolm "goolm";
 
-  doCheck = true;
-
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion { package = mautrix-gmessages; };
+    updateScript = nix-update-script { };
   };
 
   meta = {

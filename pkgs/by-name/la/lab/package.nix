@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  git,
+  installShellFiles,
   makeBinaryWrapper,
   xdg-utils,
-  installShellFiles,
-  git,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,22 +19,13 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-VCvjP/bSd/0ywvNWPsseXn/SPkdp+BsXc/jTvB11EOk=";
   };
 
-  subPackages = [ "." ];
-
-  vendorHash = "sha256-ChysquNuUffcM3qaWUdqu3Av33gnKkdlotEoFKoedA0=";
-
-  doCheck = false;
-
   nativeBuildInputs = [
     makeBinaryWrapper
     installShellFiles
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version}"
-  ];
+  vendorHash = "sha256-ChysquNuUffcM3qaWUdqu3Av33gnKkdlotEoFKoedA0=";
+  doCheck = false;
 
   postInstall = ''
     # create shell completions before wrapProgram so that lab detects the right path for itself
@@ -51,6 +42,14 @@ buildGoModule (finalAttrs: {
         ]
       }"
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version}"
+  ];
+
+  subPackages = [ "." ];
 
   meta = {
     description = "Wraps Git or Hub, making it simple to clone, fork, and interact with repositories on GitLab";

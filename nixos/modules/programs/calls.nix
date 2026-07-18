@@ -18,11 +18,11 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    programs.dconf.enable = true;
-
     environment.systemPackages = [
       pkgs.calls
     ];
+
+    programs.dconf.enable = true;
 
     services.dbus.packages = [
       pkgs.callaudiod

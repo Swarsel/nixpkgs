@@ -1,16 +1,15 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  nix-update-script,
+  buildGoModule,
   installShellFiles,
+  nix-update-script,
   versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "cloudquery";
   version = "6.36.1";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "cloudquery";
@@ -19,26 +18,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-D0gciTH5OwYXBPabOmn6bMHyWZwS6y5uAQIdNS+WugE=";
   };
 
-  modRoot = "cli";
-
-  vendorHash = "sha256-gY/FQ71Nwk9i7QXgMmOVlJe9lEW9ViPZ3Eh1NusIizE=";
-
-  subPackages = [
-    "."
-  ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/cloudquery/cloudquery/cli/v${lib.versions.major finalAttrs.version}/cmd.Version=${finalAttrs.version}"
-  ];
-
-  doInstallCheck = true;
-
   nativeBuildInputs = [
     installShellFiles
     versionCheckHook
   ];
+
+  vendorHash = "sha256-gY/FQ71Nwk9i7QXgMmOVlJe9lEW9ViPZ3Eh1NusIizE=";
 
   postInstall = ''
     mv $out/bin/cli $out/bin/cloudquery
@@ -48,6 +33,21 @@ buildGoModule (finalAttrs: {
        --fish <($out/bin/cloudquery completion fish) \
        --zsh <($out/bin/cloudquery completion zsh)
   '';
+
+  doInstallCheck = true;
+  __structuredAttrs = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/cloudquery/cloudquery/cli/v${lib.versions.major finalAttrs.version}/cmd.Version=${finalAttrs.version}"
+  ];
+
+  modRoot = "cli";
+
+  subPackages = [
+    "."
+  ];
 
   passthru.updateScript = nix-update-script { };
 

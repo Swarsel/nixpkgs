@@ -2,31 +2,27 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  nix-update-script,
-
-  # build-system
-  poetry-core,
-  poetry-dynamic-versioning,
-
   # dependencies
   click,
   cryptography,
   dnspython,
   httpx,
   libipld,
+  nix-update-script,
+  # build-system
+  poetry-core,
+  poetry-dynamic-versioning,
   pydantic,
-  typing-extensions,
-  websockets,
-
+  pytest-asyncio,
   # nativeCheckInputs
   pytestCheckHook,
-  pytest-asyncio,
+  typing-extensions,
+  websockets,
 }:
 
 buildPythonPackage rec {
   pname = "atproto";
   version = "0.0.69";
-  pyproject = true;
 
   # use GitHub, pypi does not include tests
   src = fetchFromGitHub {
@@ -37,6 +33,11 @@ buildPythonPackage rec {
   };
 
   env.POETRY_DYNAMIC_VERSIONING_BYPASS = version;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+  ];
 
   build-system = [
     poetry-core
@@ -54,16 +55,6 @@ buildPythonPackage rec {
     websockets
   ];
 
-  pythonRelaxDeps = [
-    "cryptography"
-    "websockets"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-  ];
-
   disabledTestPaths = [
     # the required `_PATH_TO_LEXICONS` is outside the package tree
     "tests/test_atproto_lexicon/test_lexicon_parser.py"
@@ -79,6 +70,8 @@ buildPythonPackage rec {
     "tests/test_atproto_server/auth/test_custom_feed_auth.py"
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "atproto"
     "atproto_cli"
@@ -90,6 +83,11 @@ buildPythonPackage rec {
     "atproto_identity"
     "atproto_lexicon"
     "atproto_server"
+  ];
+
+  pythonRelaxDeps = [
+    "cryptography"
+    "websockets"
   ];
 
   passthru.updateScript = nix-update-script { };

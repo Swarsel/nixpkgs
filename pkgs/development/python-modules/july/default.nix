@@ -1,19 +1,16 @@
 {
   lib,
   buildPythonPackage,
-  fetchpatch,
   fetchPypi,
-
+  fetchpatch,
   matplotlib,
   numpy,
-
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "july";
   version = "0.1.3";
-  pyproject = true;
 
   # No tags on GitHub
   src = fetchPypi {
@@ -24,10 +21,13 @@ buildPythonPackage rec {
   patches = [
     # Fixes compatibility with current matplotlib versions
     (fetchpatch {
-      url = "https://github.com/e-hulten/july/pull/44/commits/e5ff842bc98d3963c788737fff1b9086569b7d0a.patch";
       hash = "sha256-zgeUkDWCfAebt1rgDZgMUVgQF81NWGrG2tmSj4/ncYA=";
+      url = "https://github.com/e-hulten/july/pull/44/commits/e5ff842bc98d3963c788737fff1b9086569b7d0a.patch";
     })
   ];
+
+  # No tests
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -38,10 +38,8 @@ buildPythonPackage rec {
     numpy
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "july" ];
-
-  # No tests
-  doCheck = false;
 
   meta = {
     description = "Small library for creating pretty heatmaps of daily data";

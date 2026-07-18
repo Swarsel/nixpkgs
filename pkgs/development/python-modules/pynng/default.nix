@@ -1,38 +1,37 @@
 {
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
+  cffi,
   cmake,
   ninja,
-  buildPythonPackage,
-  fetchFromGitHub,
+  pytest,
+  pytest-asyncio,
+  pytest-trio,
   setuptools,
   setuptools-scm,
-  cffi,
   sniffio,
-  pytest,
   trio,
-  pytest-trio,
-  pytest-asyncio,
 }:
 let
   nng = fetchFromGitHub {
+    hash = "sha256-Kq8QxPU6SiTk0Ev2IJoktSPjVOlAS4/e1PQvw2+e8UA=";
     owner = "nanomsg";
     repo = "nng";
     tag = "v1.6.0";
-    hash = "sha256-Kq8QxPU6SiTk0Ev2IJoktSPjVOlAS4/e1PQvw2+e8UA=";
   };
 
   mbedtls = fetchFromGitHub {
+    hash = "sha256-HxsHcGbSExp1aG5yMR/J3kPL4zqnmNoN5T5wfV3APaw=";
     owner = "ARMmbed";
     repo = "mbedtls";
     tag = "v3.5.1";
-    hash = "sha256-HxsHcGbSExp1aG5yMR/J3kPL4zqnmNoN5T5wfV3APaw=";
   };
 
 in
 buildPythonPackage {
   pname = "pynng";
   version = "0.8.1-unstable-2025-05-14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "codypiersall";
@@ -41,17 +40,12 @@ buildPythonPackage {
     hash = "sha256-TxIVcqc+4bro+krc1AWgLdZKGGuQ2D6kybHnv5z1oHg=";
   };
 
-  env.SETUPTOOLS_SCM_PRETEND_VERSION = "0.8.1";
-
   nativeBuildInputs = [
     cmake
     ninja
   ];
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
+  env.SETUPTOOLS_SCM_PRETEND_VERSION = "0.8.1";
 
   preBuild = ''
     cp -r ${mbedtls} mbedtls
@@ -60,7 +54,10 @@ buildPythonPackage {
     chmod -R +w nng
   '';
 
-  dontUseCmakeConfigure = true;
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
 
   dependencies = [
     cffi
@@ -71,6 +68,8 @@ buildPythonPackage {
     pytest-asyncio
   ];
 
+  dontUseCmakeConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "pynng" ];
 
   meta = {

@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitLab,
-  installShellFiles,
   stdenv,
+  fetchFromGitLab,
+  buildGoModule,
+  installShellFiles,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,16 +17,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-qiQnu167BIF+LzwahheBE0KwxFmRcahdU7quTpPtEEk=";
   };
 
-  vendorHash = "sha256-cO7+wG4uAd9e6n/KWQPYepixNmXBbuBxagT82hcbcIo=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
-  subPackages = [ "." ];
+  vendorHash = "sha256-cO7+wG4uAd9e6n/KWQPYepixNmXBbuBxagT82hcbcIo=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd tuleap-cli \
@@ -34,6 +26,13 @@ buildGoModule (finalAttrs: {
       --fish <($out/bin/tuleap-cli -s tuleap.example.com completion fish) \
       --zsh <($out/bin/tuleap-cli -s tuleap.example.com completion zsh)
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
+  subPackages = [ "." ];
 
   meta = {
     description = "Command-line interface for the Tuleap API";

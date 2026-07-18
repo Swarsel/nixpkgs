@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pytest-plt";
   version = "1.1.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -24,6 +23,8 @@ buildPythonPackage rec {
     pytestCheckHook
     matplotlib
   ];
+
+  format = "setuptools";
 
   meta = {
     description = "Provides fixtures for quickly creating Matplotlib plots in your tests";

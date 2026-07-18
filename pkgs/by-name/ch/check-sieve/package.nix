@@ -5,8 +5,8 @@
   bison,
   diffutils,
   flex,
-  python3,
   nix-update-script,
+  python3,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "check-sieve";
@@ -24,11 +24,17 @@ stdenv.mkDerivation (finalAttrs: {
     flex
   ];
 
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=unused-result";
+  doCheck = true;
+
   nativeCheckInputs = [
     (python3.withPackages (p: [ p.setuptools ]))
   ];
 
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=unused-result";
+  preCheck = ''
+    substituteInPlace test/{AST,simulate}/util.py \
+      --replace-fail "/usr/bin/diff" "${diffutils}/bin/diff"
+  '';
 
   installPhase = ''
     runHook preInstall
@@ -36,24 +42,17 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  preCheck = ''
-    substituteInPlace test/{AST,simulate}/util.py \
-      --replace-fail "/usr/bin/diff" "${diffutils}/bin/diff"
-  '';
-
-  doCheck = true;
-
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version-regex=v(.*)" ];
   };
 
   meta = {
     description = "Syntax checker for mail sieves";
-    mainProgram = "check-sieve";
     homepage = "https://github.com/dburkart/check-sieve";
     changelog = "https://github.com/dburkart/check-sieve/blob/${finalAttrs.src.tag}/ChangeLog";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ eilvelia ];
+    platforms = lib.platforms.unix;
+    mainProgram = "check-sieve";
   };
 })

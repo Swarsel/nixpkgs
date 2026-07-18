@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  makeBinaryWrapper,
   itk,
+  makeBinaryWrapper,
   vtk,
 }:
 
@@ -41,12 +41,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    changelog = "https://github.com/ANTsX/ANTs/releases/tag/v${finalAttrs.version}";
     description = "Advanced normalization toolkit for medical image registration and other processing";
     homepage = "https://github.com/ANTsX/ANTs";
+    changelog = "https://github.com/ANTsX/ANTs/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    mainProgram = "antsRegistration";
     maintainers = with lib.maintainers; [ bcdarwin ];
     platforms = lib.platforms.unix;
+    mainProgram = "antsRegistration";
   };
 })

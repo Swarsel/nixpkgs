@@ -1,10 +1,10 @@
 {
   lib,
-  glibc,
   fetchFromGitHub,
-  makeWrapper,
-  buildGoModule,
   autoAddDriverRunpath,
+  buildGoModule,
+  glibc,
+  makeWrapper,
 }:
 
 let
@@ -28,8 +28,6 @@ buildGoModule (finalAttrs: {
     "tools"
   ];
 
-  vendorHash = null;
-
   patches = [
     # This patch causes library lookups to first attempt loading via dlopen
     # before falling back to the regular symlink location and ldcache location.
@@ -49,30 +47,12 @@ buildGoModule (finalAttrs: {
       --replace-fail '/sbin/ldconfig' '${lib.getBin glibc}/sbin/ldconfig'
   '';
 
-  subPackages = [
-    "cmd/nvidia-cdi-hook"
-    "cmd/nvidia-container-runtime"
-    "cmd/nvidia-container-runtime.cdi"
-    "cmd/nvidia-container-runtime-hook"
-    "cmd/nvidia-container-runtime.legacy"
-    "cmd/nvidia-ctk"
-  ];
-
-  # Based on upstream's Makefile:
-  # https://gitlab.com/nvidia/container-toolkit/container-toolkit/-/blob/03cbf9c6cd26c75afef8a2dd68e0306aace80401/Makefile#L64
-  ldflags = [
-    "-extldflags=-Wl,-z,lazy" # May be redunandant, cf. `man ld`: "Lazy binding is the default".
-    "-s" # "disable symbol table"
-
-    # "-X name=value"
-    "-X ${cliVersionPackage}.version=${finalAttrs.version}"
-    "-X ${cliVersionPackage}.gitCommit=${finalAttrs.src.rev}"
-  ];
-
   nativeBuildInputs = [
     autoAddDriverRunpath
     makeWrapper
   ];
+
+  vendorHash = null;
 
   checkFlags =
     let
@@ -89,15 +69,37 @@ buildGoModule (finalAttrs: {
     mv $out/bin/{nvidia-cdi-hook,nvidia-container-runtime,nvidia-container-runtime.cdi,nvidia-container-runtime-hook,nvidia-container-runtime.legacy} $tools/bin
   '';
 
+  # Based on upstream's Makefile:
+  # https://gitlab.com/nvidia/container-toolkit/container-toolkit/-/blob/03cbf9c6cd26c75afef8a2dd68e0306aace80401/Makefile#L64
+  ldflags = [
+    "-extldflags=-Wl,-z,lazy" # May be redunandant, cf. `man ld`: "Lazy binding is the default".
+    "-s" # "disable symbol table"
+
+    # "-X name=value"
+    "-X ${cliVersionPackage}.version=${finalAttrs.version}"
+    "-X ${cliVersionPackage}.gitCommit=${finalAttrs.src.rev}"
+  ];
+
+  subPackages = [
+    "cmd/nvidia-cdi-hook"
+    "cmd/nvidia-container-runtime"
+    "cmd/nvidia-container-runtime.cdi"
+    "cmd/nvidia-container-runtime-hook"
+    "cmd/nvidia-container-runtime.legacy"
+    "cmd/nvidia-ctk"
+  ];
+
   meta = {
-    homepage = "https://gitlab.com/nvidia/container-toolkit/container-toolkit";
     description = "NVIDIA Container Toolkit";
-    mainProgram = "nvidia-ctk";
+    homepage = "https://gitlab.com/nvidia/container-toolkit/container-toolkit";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       cpcloud
       christoph-heiss
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "nvidia-ctk";
   };
 })

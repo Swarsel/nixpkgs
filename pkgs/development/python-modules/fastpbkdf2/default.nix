@@ -2,16 +2,15 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
+  cffi,
   openssl,
   pytest,
-  cffi,
   six,
 }:
 
 buildPythonPackage rec {
   pname = "fastpbkdf2";
   version = "0.2";
-  format = "setuptools";
 
   # Fetching from GitHub as tests are missing in PyPI
   src = fetchFromGitHub {
@@ -22,16 +21,19 @@ buildPythonPackage rec {
   };
 
   buildInputs = [ openssl ];
-  nativeCheckInputs = [ pytest ];
+
   propagatedBuildInputs = [
     cffi
     six
   ];
+
+  nativeCheckInputs = [ pytest ];
+  format = "setuptools";
   propagatedNativeBuildInputs = [ cffi ];
 
   meta = {
-    homepage = "https://github.com/Ayrx/python-fastpbkdf2";
     description = "Python bindings for fastpbkdf2";
+    homepage = "https://github.com/Ayrx/python-fastpbkdf2";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ jqueiroz ];
   };

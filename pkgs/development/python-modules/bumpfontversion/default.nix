@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonRelaxDepsHook,
-  poetry-core,
-  fonttools,
-  openstep-plist,
-  ufolib2,
-  glyphslib,
+  buildPythonPackage,
   bump2version,
+  fonttools,
+  glyphslib,
+  openstep-plist,
+  poetry-core,
+  pythonRelaxDepsHook,
+  ufolib2,
 }:
 
 buildPythonPackage rec {
   pname = "bumpfontversion";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simoncozens";
@@ -30,9 +29,6 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ pythonRelaxDepsHook ];
-
-  pythonRelaxDeps = [ "glyphslib" ];
-
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -43,11 +39,14 @@ buildPythonPackage rec {
     bump2version
   ];
 
+  pyproject = true;
+  pythonRelaxDeps = [ "glyphslib" ];
+
   meta = {
     description = "Version-bump your font sources";
     homepage = "https://github.com/simoncozens/bumpfontversion";
     license = lib.licenses.asl20;
-    mainProgram = "bumpfontversion";
     maintainers = with lib.maintainers; [ jopejoe1 ];
+    mainProgram = "bumpfontversion";
   };
 }

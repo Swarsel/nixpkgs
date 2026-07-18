@@ -2,8 +2,6 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  xorgproto,
   libx11,
   libxcb,
   libxext,
@@ -11,7 +9,9 @@
   libxmu,
   libxrender,
   libxt,
+  pkg-config,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xeyes";
@@ -23,7 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -52,8 +51,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "A \"follow the mouse\" X demo, using the X SHAPE extension";
     homepage = "https://gitlab.freedesktop.org/xorg/app/xeyes";
     license = lib.licenses.x11;
-    mainProgram = "xeyes";
     maintainers = with lib.maintainers; [ mdaniels5757 ];
     platforms = lib.platforms.unix;
+    mainProgram = "xeyes";
   };
 })

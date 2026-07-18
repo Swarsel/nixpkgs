@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,9 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-uh8ST1AQ8OsFMfXly23TMMcheNmhb1MknmPMjB76GIQ=";
-
-  subPackages = [ "." ];
-
   doCheck = false;
 
   ldflags = [
@@ -27,13 +24,15 @@ buildGoModule (finalAttrs: {
     "-X main.gitCommit=${finalAttrs.version}"
   ];
 
+  subPackages = [ "." ];
+
   meta = {
-    homepage = "https://github.com/buchgr/bazel-remote";
     description = "Remote HTTP/1.1 cache for Bazel";
-    mainProgram = "bazel-remote";
+    homepage = "https://github.com/buchgr/bazel-remote";
     changelog = "https://github.com/buchgr/bazel-remote/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    teams = [ lib.teams.bazel ];
     platforms = lib.platforms.darwin ++ lib.platforms.linux;
+    mainProgram = "bazel-remote";
+    teams = [ lib.teams.bazel ];
   };
 })

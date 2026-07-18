@@ -1,12 +1,12 @@
 {
+  lib,
+  fetchFromGitHub,
   buildGoModule,
   coreutils,
-  fetchFromGitHub,
   git,
   installShellFiles,
   kubectl,
   kubernetes-helm,
-  lib,
   makeWrapper,
   yamale,
   yamllint,
@@ -23,25 +23,17 @@ buildGoModule (finalAttrs: {
     hash = "sha256-wdUUo19bFf3ov+Rd+JV6CtbH9TWGC73lWRrNLOfNGR8=";
   };
 
-  vendorHash = "sha256-29rGyStJsnhJiO01DIFf/ROaYsXGg3YRJatdzC6A7JU=";
-
   postPatch = ''
     substituteInPlace pkg/config/config.go \
       --replace "\"/etc/ct\"," "\"$out/etc/ct\","
   '';
 
-  ldflags = [
-    "-w"
-    "-s"
-    "-X github.com/helm/chart-testing/v3/ct/cmd.Version=${finalAttrs.version}"
-    "-X github.com/helm/chart-testing/v3/ct/cmd.GitCommit=${finalAttrs.src.rev}"
-    "-X github.com/helm/chart-testing/v3/ct/cmd.BuildDate=19700101-00:00:00"
-  ];
-
   nativeBuildInputs = [
     installShellFiles
     makeWrapper
   ];
+
+  vendorHash = "sha256-29rGyStJsnhJiO01DIFf/ROaYsXGg3YRJatdzC6A7JU=";
 
   postInstall = ''
     install -Dm644 -t $out/etc/ct etc/chart_schema.yaml
@@ -63,6 +55,14 @@ buildGoModule (finalAttrs: {
       ]
     }
   '';
+
+  ldflags = [
+    "-w"
+    "-s"
+    "-X github.com/helm/chart-testing/v3/ct/cmd.Version=${finalAttrs.version}"
+    "-X github.com/helm/chart-testing/v3/ct/cmd.GitCommit=${finalAttrs.src.rev}"
+    "-X github.com/helm/chart-testing/v3/ct/cmd.BuildDate=19700101-00:00:00"
+  ];
 
   meta = {
     description = "Tool for testing Helm charts";

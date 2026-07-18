@@ -1,20 +1,20 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
-  replaceVars,
+  fetchFromGitHub,
   SDL2,
-  frei0r,
-  ladspaPlugins,
-  gettext,
-  jack1,
-  pkg-config,
+  cmake,
+  ffmpeg,
   fftw,
+  frei0r,
+  gettext,
+  gitUpdater,
+  jack1,
+  ladspaPlugins,
+  pkg-config,
   qt6,
   qt6Packages,
-  cmake,
-  gitUpdater,
-  ffmpeg,
+  replaceVars,
   wrapGAppsHook3,
 }:
 
@@ -28,6 +28,13 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-iFaN3WB0CYdENXM4XLoi2RxCOG7kHmvfLRItvxCKYLA=";
   };
+
+  patches = [
+    (replaceVars ./fix-mlt-ffmpeg-path.patch {
+      inherit ffmpeg;
+      mlt = qt6Packages.mlt;
+    })
+  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -51,16 +58,18 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.qtwebsockets
   ];
 
+  cmakeFlags = [ "-DSHOTCUT_VERSION=${finalAttrs.version}" ];
   env.NIX_CFLAGS_COMPILE = "-DSHOTCUT_NOUPGRADE";
 
-  cmakeFlags = [ "-DSHOTCUT_VERSION=${finalAttrs.version}" ];
+  postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    mkdir $out/Applications $out/bin
+    mv $out/Shotcut.app $out/Applications/Shotcut.app
+    ln -s $out/Applications/Shotcut.app/Contents/MacOS/Shotcut $out/bin/shotcut
+  '';
 
-  patches = [
-    (replaceVars ./fix-mlt-ffmpeg-path.patch {
-      inherit ffmpeg;
-      mlt = qt6Packages.mlt;
-    })
-  ];
+  preFixup = ''
+    qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
 
   dontWrapGApps = true;
 
@@ -72,20 +81,11 @@ stdenv.mkDerivation (finalAttrs: {
     }"
   ];
 
-  preFixup = ''
-    qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
-
-  postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    mkdir $out/Applications $out/bin
-    mv $out/Shotcut.app $out/Applications/Shotcut.app
-    ln -s $out/Applications/Shotcut.app/Contents/MacOS/Shotcut $out/bin/shotcut
-  '';
-
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
     description = "Free, open source, cross-platform video editor";
+
     longDescription = ''
       An official binary for Shotcut, which includes all the
       dependencies pinned to specific versions, is provided on
@@ -95,13 +95,16 @@ stdenv.mkDerivation (finalAttrs: {
       nixpkgs maintainer(s). If you wish to report any bugs upstream,
       please use the official build from shotcut.org instead.
     '';
+
     homepage = "https://shotcut.org";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       woffs
       peti
       nick-linux
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "shotcut";
   };

@@ -19,9 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ installShellFiles ];
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -31,11 +28,13 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    homepage = "https://codeberg.org/ziglang/shell-completions";
     description = "Shell completions for the Zig compiler";
+    homepage = "https://codeberg.org/ziglang/shell-completions";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ aaronjheng ];
     platforms = lib.platforms.all;

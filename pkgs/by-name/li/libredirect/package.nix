@@ -2,8 +2,8 @@
   lib,
   stdenv,
   bintools-unwrapped,
-  llvmPackages,
   coreutils,
+  llvmPackages,
 }:
 
 if stdenv.hostPlatform.isStatic then
@@ -27,17 +27,10 @@ else
     pname = "libredirect";
     version = "0";
 
-    unpackPhase = ''
-      cp ${./libredirect.c} libredirect.c
-      cp ${./test.c} test.c
-    '';
-
     outputs = [
       "out"
       "hook"
     ];
-
-    libName = "libredirect" + stdenv.hostPlatform.extensions.sharedLibrary;
 
     buildPhase = ''
       runHook preBuild
@@ -82,11 +75,6 @@ else
       runHook postBuild
     '';
 
-    # We want to retain debugging info to be able to use GDB on libredirect.so
-    # to more easily investigate which function overrides are missing or why
-    # existing ones do not have the intended effect.
-    dontStrip = true;
-
     installPhase = ''
       runHook preInstall
 
@@ -128,13 +116,26 @@ else
       )
     '';
 
+    # We want to retain debugging info to be able to use GDB on libredirect.so
+    # to more easily investigate which function overrides are missing or why
+    # existing ones do not have the intended effect.
+    dontStrip = true;
+    libName = "libredirect" + stdenv.hostPlatform.extensions.sharedLibrary;
+
+    unpackPhase = ''
+      cp ${./libredirect.c} libredirect.c
+      cp ${./test.c} test.c
+    '';
+
     meta = {
-      platforms = lib.platforms.unix;
       description = "LD_PRELOAD library to intercept and rewrite the paths in glibc calls";
+
       longDescription = ''
         libredirect is an LD_PRELOAD library to intercept and rewrite the paths in
         glibc calls based on the value of $NIX_REDIRECTS, a colon-separated list
         of path prefixes to be rewritten, e.g. "/src=/dst:/usr/=/nix/store/".
       '';
+
+      platforms = lib.platforms.unix;
     };
   }

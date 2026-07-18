@@ -6,86 +6,86 @@
 {
   lib,
   stdenv,
-  fetchpatch,
   fetchurl,
-  runCommand,
-  writeShellScript,
-  writeText,
-  buildEnv,
-  ghostscript_headless,
-  git-latexdiff,
-  harfbuzzFull,
-  makeWrapper,
-  installShellFiles,
-  python3,
-  ruby,
-  perl,
-  tk,
-  jre_headless,
+  fetchFromGitHub,
+  asymptote,
   bash,
-  snobol4,
+  biber,
+  biber-ms,
+  brotli,
+  buildEnv,
+  buildPackages,
+  cairo,
+  clisp,
+  cmake,
   coreutils,
+  fetchpatch,
   findutils,
+  freetype,
   gawk,
+  gd,
   getopt,
   gettext,
+  ghostscript_headless,
+  git-latexdiff,
+  gmp,
   gnugrep,
+  # for bin.nix
+  gnum4,
   gnumake,
   gnupg,
   gnused,
-  gzip,
-  html-tidy,
-  ncurses,
-  zip,
-  libfaketime,
-  asymptote,
-  biber-ms,
-  makeFontsConf,
-  useFixedHashes ? true,
-  extraMirrors ? [ ],
-  nixfmt,
-  luajit,
-  texinfo,
-  # for bin.nix
-  gnum4,
-  jdk_headless,
-  perlPackages,
-  python3Packages,
-  pkg-config,
-  cmake,
-  ninja,
-  libpaper,
   graphite2,
-  zziplib,
-  potrace,
-  gmp,
-  mpfr,
-  mupdf-headless,
-  brotli,
-  cairo,
-  pixman,
-  libxi,
-  libxfixes,
-  clisp,
-  biber,
-  woff2,
-  xxhash,
-  unzip,
-  fetchFromGitHub,
-  buildPackages,
-  texlive,
-  zlib,
+  gzip,
+  harfbuzzFull,
+  html-tidy,
+  icu,
+  installShellFiles,
+  jdk_headless,
+  jre_headless,
+  libfaketime,
   libiconv,
+  libpaper,
   libpng,
   libx11,
-  freetype,
-  ttfautohint,
-  gd,
   libxaw,
-  icu,
-  libxpm,
-  libxmu,
   libxext,
+  libxfixes,
+  libxi,
+  libxmu,
+  libxpm,
+  luajit,
+  makeFontsConf,
+  makeWrapper,
+  mpfr,
+  mupdf-headless,
+  ncurses,
+  ninja,
+  nixfmt,
+  perl,
+  perlPackages,
+  pixman,
+  pkg-config,
+  potrace,
+  python3,
+  python3Packages,
+  ruby,
+  runCommand,
+  snobol4,
+  texinfo,
+  texlive,
+  tk,
+  ttfautohint,
+  unzip,
+  woff2,
+  writeShellScript,
+  writeText,
+  xxhash,
+  zip,
+  zlib,
+  zziplib,
+  extraMirrors ? [ ],
+  useFixedHashes ? true,
 }@args:
 let
   # various binaries (compiled)
@@ -134,14 +134,14 @@ let
     overrides tlpdb;
 
   version = {
-    # day of the snapshot being taken
-    year = "2026";
-    month = "03";
     day = "01";
-    # TeX Live version
-    texliveYear = 2025;
     # final (historic) release or snapshot
     final = true;
+    month = "03";
+    # TeX Live version
+    texliveYear = 2025;
+    # day of the snapshot being taken
+    year = "2026";
   };
 
   # The tarballs on CTAN mirrors for the current release are constantly
@@ -173,20 +173,21 @@ let
     );
 
   tlpdbxz = fetchurl {
+    hash = "sha256-Vt8DjpBwo9WH7s613vPxVLLKzM7zbUKVu0ngYYl3w0o=";
+
     urls =
       map (up: "${up}/tlpkg/texlive.tlpdb.xz")
         # use last mirror for daily snapshots as texlive.tlpdb.xz changes every day
         # TODO make this less hacky
         (if version.final then mirrors else [ (lib.last mirrors) ]);
-    hash = "sha256-Vt8DjpBwo9WH7s613vPxVLLKzM7zbUKVu0ngYYl3w0o=";
   };
 
   tlpdbNix =
     runCommand "tlpdb.nix"
       {
         inherit tlpdbxz;
-        tl2nix = ./tl2nix.sed;
         nativeBuildInputs = [ nixfmt ];
+        tl2nix = ./tl2nix.sed;
       }
       ''
         xzcat "$tlpdbxz" | sed -rn -f "$tl2nix" | uniq | nixfmt > "$out"
@@ -209,6 +210,7 @@ let
       snobol4
       tk
       ;
+
     texliveBinaries = bin;
   };
 
@@ -234,7 +236,7 @@ let
   buildTeXEnv = import ./build-tex-env.nix {
     inherit tl;
     inherit tlpdbVersion;
-    ghostscript = ghostscript_headless;
+
     inherit
       lib
       buildEnv
@@ -249,6 +251,8 @@ let
       gnugrep
       gnused
       ;
+
+    ghostscript = ghostscript_headless;
   };
 
   ### texlive.combine compatibility layer:
@@ -284,22 +288,23 @@ let
   tlOutToType = {
     out = "bin";
     tex = "run";
-    texsource = "source";
     texdoc = "doc";
+    texsource = "source";
     tlpkg = "tlpkg";
   };
 
   # convert { pkgs = [ ... ]; } lists to TeX packages
   # possibly more than one, if pkgs is also used to specify dependencies
   tlTypeToOut = {
-    run = "tex";
-    doc = "texdoc";
-    source = "texsource";
     bin = "out";
+    doc = "texdoc";
+    run = "tex";
+    source = "texsource";
     tlpkg = "tlpkg";
   };
   toSpecifiedNV = p: rec {
     name = value.tlOutputName;
+
     value = removeAttrs p [ "pkgs" ] // {
       outputSpecified = true;
       tlOutputName = tlTypeToOut.${p.tlType};
@@ -357,6 +362,7 @@ let
       ofl
       publicDomain
     ];
+
     scheme-bookpub = [
       artistic2
       asl20
@@ -377,6 +383,7 @@ let
       ofl
       publicDomain
     ];
+
     scheme-context = [
       bsd2
       bsd3
@@ -401,6 +408,7 @@ let
       publicDomain
       x11
     ];
+
     scheme-full = [
       agpl3Only
       artistic1-cl8
@@ -443,6 +451,7 @@ let
       publicDomain
       x11
     ];
+
     scheme-gust = [
       artistic1-cl8
       asl20
@@ -472,10 +481,12 @@ let
       publicDomain
       x11
     ];
+
     scheme-infraonly = [
       gpl2Plus
       lgpl21
     ];
+
     scheme-medium = [
       artistic1-cl8
       asl20
@@ -510,6 +521,7 @@ let
       publicDomain
       x11
     ];
+
     scheme-minimal = [
       cc-by-sa-40
       free
@@ -523,6 +535,7 @@ let
       ofl
       publicDomain
     ];
+
     scheme-small = [
       asl20
       cc-by-40
@@ -548,6 +561,7 @@ let
       publicDomain
       x11
     ];
+
     scheme-tetex = [
       agpl3Only
       artistic1-cl8
@@ -588,12 +602,14 @@ let
 
   meta = {
     description = "TeX Live environment";
-    platforms = lib.platforms.all;
+    license = licenses.scheme-infraonly;
+
     maintainers = with lib.maintainers; [
       veprbl
       xworld21
     ];
-    license = licenses.scheme-infraonly;
+
+    platforms = lib.platforms.all;
   };
 
   combined = lib.recurseIntoAttrs (
@@ -613,12 +629,14 @@ let
       (
         pname:
         (buildTeXEnv {
-          __extraName = "combined" + lib.removePrefix "scheme" pname;
-          __extraVersion =
-            if version.final then "-final" else ".${version.year}${version.month}${version.day}";
-          requiredTeXPackages = ps: [ ps.${pname} ];
           # to maintain full backward compatibility, enable texlive.combine behavior
           __combine = true;
+          __extraName = "combined" + lib.removePrefix "scheme" pname;
+
+          __extraVersion =
+            if version.final then "-final" else ".${version.year}${version.month}${version.day}";
+
+          requiredTeXPackages = ps: [ ps.${pname} ];
         }).overrideAttrs
           {
             meta = meta // {
@@ -634,6 +652,7 @@ let
     map
       (s: {
         name = "texlive" + s;
+
         value = lib.addMetaAttrs { license = licenses.${"scheme-" + (lib.toLower s)}; } (buildTeXEnv {
           requiredTeXPackages = ps: [ ps.${"scheme-" + (lib.toLower s)} ];
         });
@@ -655,13 +674,7 @@ let
 in
 allPkgLists
 // {
-  pkgs = tl;
-
-  tlpdb = {
-    # nested in an attribute set to prevent them from appearing in search
-    nix = tlpdbNix;
-    xz = tlpdbxz;
-  };
+  inherit schemes;
 
   bin =
     assert assertions;
@@ -679,7 +692,13 @@ allPkgLists
     assert assertions;
     combined;
 
-  inherit schemes;
+  pkgs = tl;
+
+  tlpdb = {
+    # nested in an attribute set to prevent them from appearing in search
+    nix = tlpdbNix;
+    xz = tlpdbxz;
+  };
 
   # convenience alias
   withPackages = (buildTeXEnv { }).withPackages;

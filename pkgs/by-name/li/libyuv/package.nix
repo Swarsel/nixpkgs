@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  fetchgit,
   cmake,
-  libjpeg,
+  fetchgit,
   gtest,
+  libjpeg,
 }:
 
 stdenv.mkDerivation {
@@ -22,19 +22,6 @@ stdenv.mkDerivation {
     ./dither-honour-byte-order.patch
   ];
 
-  nativeBuildInputs = [
-    cmake
-  ];
-
-  cmakeFlags = [
-    "-DUNIT_TEST=ON"
-  ];
-
-  buildInputs = [
-    libjpeg
-    gtest
-  ];
-
   postPatch = ''
     mkdir -p $out/lib/pkgconfig
     cp ${./yuv.pc} $out/lib/pkgconfig/libyuv.pc
@@ -43,6 +30,19 @@ stdenv.mkDerivation {
       --replace "@PREFIX@" "$out" \
       --replace "@VERSION@" "$version"
   '';
+
+  nativeBuildInputs = [
+    cmake
+  ];
+
+  buildInputs = [
+    libjpeg
+    gtest
+  ];
+
+  cmakeFlags = [
+    "-DUNIT_TEST=ON"
+  ];
 
   # [==========] 3454 tests from 8 test suites ran.
   # [  PASSED  ] 3376 tests.
@@ -58,11 +58,11 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://chromium.googlesource.com/libyuv/libyuv";
     description = "Open source project that includes YUV scaling and conversion functionality";
-    mainProgram = "yuvconvert";
-    platforms = lib.platforms.unix;
-    maintainers = with lib.maintainers; [ leixb ];
+    homepage = "https://chromium.googlesource.com/libyuv/libyuv";
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ leixb ];
+    platforms = lib.platforms.unix;
+    mainProgram = "yuvconvert";
   };
 }

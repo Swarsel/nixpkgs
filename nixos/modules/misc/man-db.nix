@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -11,6 +11,13 @@ let
 in
 
 {
+  imports = [
+    (lib.mkRenamedOptionModule
+      [ "documentation" "man" "manualPages" ]
+      [ "documentation" "man" "man-db" "manualPages" ]
+    )
+  ];
+
   options = {
     documentation.man.man-db = {
       enable = lib.mkEnableOption "man-db as the default man page viewer" // {
@@ -19,57 +26,56 @@ in
         example = false;
       };
 
-      skipPackages = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
-        default = [ ];
-        internal = true;
+      package = lib.mkOption {
+        default = pkgs.man-db;
+        defaultText = lib.literalExpression "pkgs.man-db";
+
         description = ''
-          Packages to *not* include in the man-db.
-          This can be useful to avoid unnecessary rebuilds due to packages that change frequently, like nixos-version.
+          The `man-db` derivation to use. Useful to override
+          configuration options used for the package.
         '';
+
+        type = lib.types.package;
       };
 
       manualPages = lib.mkOption {
-        type = lib.types.path;
         default = pkgs.buildEnv {
+          extraOutputsToInstall = [ "man" ] ++ lib.optionals config.documentation.dev.enable [ "devman" ];
+          ignoreCollisions = true;
           name = "man-paths";
           paths = lib.subtractLists cfg.skipPackages config.environment.systemPackages;
           pathsToLink = [ "/share/man" ];
-          extraOutputsToInstall = [ "man" ] ++ lib.optionals config.documentation.dev.enable [ "devman" ];
-          ignoreCollisions = true;
         };
+
         defaultText = lib.literalMD "all man pages in {option}`config.environment.systemPackages`";
+
         description = ''
           The manual pages to generate caches for if {option}`documentation.man.cache.enable`
           is enabled. Must be a path to a directory with man pages under
           `/share/man`; see the source for an example.
           Advanced users can make this a content-addressed derivation to save a few rebuilds.
         '';
+
+        type = lib.types.path;
       };
 
-      package = lib.mkOption {
-        type = lib.types.package;
-        default = pkgs.man-db;
-        defaultText = lib.literalExpression "pkgs.man-db";
+      skipPackages = lib.mkOption {
+        default = [ ];
+
         description = ''
-          The `man-db` derivation to use. Useful to override
-          configuration options used for the package.
+          Packages to *not* include in the man-db.
+          This can be useful to avoid unnecessary rebuilds due to packages that change frequently, like nixos-version.
         '';
+
+        internal = true;
+        type = lib.types.listOf lib.types.package;
       };
     };
   };
 
-  imports = [
-    (lib.mkRenamedOptionModule
-      [ "documentation" "man" "manualPages" ]
-      [ "documentation" "man" "man-db" "manualPages" ]
-    )
-  ];
-
   config = lib.mkIf cfg.enable (
     lib.mkMerge [
       {
-        environment.systemPackages = [ cfg.package ];
         environment.etc."man_db.conf".text =
           let
             # We unfortunately can’t use the customized `cfg.package` when
@@ -105,20 +111,17 @@ in
               MANDB_MAP /run/current-system/sw/share/man ${manualCache}
             ''}
           '';
+
+        environment.systemPackages = [ cfg.package ];
       }
 
       (lib.mkIf (cfgm.enable && cfgm.cache.generateAtRuntime) {
-        users.users.mandb = {
-          isSystemUser = true;
-          group = "mandb";
-        };
-        users.groups.mandb = { };
-
         systemd.services.mandb = {
           path = [
             cfg.package
             pkgs.rsync
           ];
+
           script = ''
             rsync \
               --checksum --recursive --copy-links --delete --no-times --no-perms --chmod=+w \
@@ -129,14 +132,23 @@ in
 
             mandb -C "$RUNTIME_DIRECTORY/man.conf" -q
           '';
+
           serviceConfig = {
+            BindReadOnlyPaths = [ "/dev/null:/etc/man_db.conf" ]; # mandb will still read /etc/man_db.conf if it exists, even when setting -C path/to/config.conf
             CacheDirectory = "man";
+            ProtectSystem = "strict";
             RuntimeDirectory = "mandb";
             User = "mandb";
-            BindReadOnlyPaths = [ "/dev/null:/etc/man_db.conf" ]; # mandb will still read /etc/man_db.conf if it exists, even when setting -C path/to/config.conf
-            ProtectSystem = "strict";
           };
+
           wantedBy = [ "multi-user.target" ];
+        };
+
+        users.groups.mandb = { };
+
+        users.users.mandb = {
+          group = "mandb";
+          isSystemUser = true;
         };
       })
     ]

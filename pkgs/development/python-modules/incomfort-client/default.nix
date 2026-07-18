@@ -1,19 +1,18 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
+  poetry-core,
   pytest-asyncio,
   pytestCheckHook,
-  poetry-core,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "incomfort-client";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zxdavb";
@@ -22,16 +21,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-myjT9mx3QfXFTVDPYusLGrpB61+qywu5r0K5InzMhYA=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ aiohttp ];
-
   nativeCheckInputs = [
     aioresponses
     pytest-asyncio
     pytestCheckHook
   ];
 
+  build-system = [ poetry-core ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "incomfortclient" ];
 
   meta = {

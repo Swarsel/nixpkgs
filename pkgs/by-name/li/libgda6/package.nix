@@ -3,28 +3,28 @@
   stdenv,
   fetchurl,
   fetchpatch,
-  pkg-config,
-  intltool,
-  meson,
-  ninja,
-  itstool,
-  libxml2,
-  python3,
-  gtk3,
-  json-glib,
-  isocodes,
-  openssl,
   gnome,
   gobject-introspection,
-  vala,
-  libgee,
-  sqlite,
   gtk-doc,
+  gtk3,
+  intltool,
+  isocodes,
+  itstool,
+  json-glib,
+  libgee,
+  libxml2,
+  meson,
+  ninja,
+  openssl,
+  pkg-config,
+  python3,
+  sqlite,
+  vala,
   yelp-tools,
-  mysqlSupport ? false,
   libmysqlclient ? null,
-  postgresSupport ? false,
   libpq ? null,
+  mysqlSupport ? false,
+  postgresSupport ? false,
 }:
 
 assert mysqlSupport -> libmysqlclient != null;
@@ -42,22 +42,28 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fix undefined behavior
     (fetchpatch {
-      url = "https://gitlab.gnome.org/GNOME/libgda/-/commit/657b2f8497da907559a6769c5b1d2d7b5bd40688.patch";
       sha256 = "Qx4S9KQsTAr4M0QJi0Xr5kKuHSp4NwZJHoRPYyxIyTk=";
+      url = "https://gitlab.gnome.org/GNOME/libgda/-/commit/657b2f8497da907559a6769c5b1d2d7b5bd40688.patch";
     })
 
     # Fix building vapi
     (fetchpatch {
-      url = "https://gitlab.gnome.org/GNOME/libgda/-/commit/57f618a3b2a3758ee3dcbf9bbdc566122dd8566d.patch";
       sha256 = "pyfymUd61m1kHaGyMbUQMma+szB8mlqGWwcFBBQawf8=";
+      url = "https://gitlab.gnome.org/GNOME/libgda/-/commit/57f618a3b2a3758ee3dcbf9bbdc566122dd8566d.patch";
     })
 
     (fetchpatch {
       name = "CVE-2021-39359.patch";
-      url = "https://gitlab.gnome.org/GNOME/libgda/-/commit/bebdffb4de586fb43fd07ac549121f4b22f6812d.patch";
       sha256 = "sha256-UjHP1nhb5n6TOdaMdQeE2s828T4wv/0ycG3FAk+I1QA=";
+      url = "https://gitlab.gnome.org/GNOME/libgda/-/commit/bebdffb4de586fb43fd07ac549121f4b22f6812d.patch";
     })
   ];
+
+  postPatch = ''
+    patchShebangs \
+      providers/raw_spec.py \
+      providers/mysql/gen_bin.py
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -90,16 +96,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-error=incompatible-function-pointer-types";
 
-  postPatch = ''
-    patchShebangs \
-      providers/raw_spec.py \
-      providers/mysql/gen_bin.py
-  '';
-
   passthru = {
     updateScript = gnome.updateScript {
-      packageName = "libgda";
       attrPath = "libgda6";
+      packageName = "libgda";
       versionPolicy = "odd-unstable";
     };
   };
@@ -107,13 +107,15 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Database access library";
     homepage = "https://www.gnome-db.org/";
+
     license = with lib.licenses; [
       # library
       lgpl2Plus
       # CLI tools
       gpl2Plus
     ];
-    teams = [ lib.teams.gnome ];
+
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.gnome ];
   };
 })

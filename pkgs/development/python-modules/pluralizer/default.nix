@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pluralizer";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "weixu365";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
     hash = "sha256-2m7E4cwAdmny/5R5FqaCzk8mu9so/ZCgNPBckTdIc/0=";
   };
 
-  build-system = [ hatchling ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "pluralizer" ];
 
   meta = {

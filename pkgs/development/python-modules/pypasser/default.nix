@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pythonRelaxDepsHook,
+  buildPythonPackage,
   pydub,
   pysocks,
+  pythonRelaxDepsHook,
   requests,
   selenium,
+  setuptools,
   speechrecognition,
 }:
 
 buildPythonPackage rec {
   pname = "pypasser";
   version = "0.0.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xHossein";
@@ -23,15 +22,13 @@ buildPythonPackage rec {
     hash = "sha256-vqa+Xap9dYvjJMiGNGNmegh7rmAqwf3//MH47xwr/T0=";
   };
 
-  build-system = [ setuptools ];
-
   nativeBuildInputs = [
     pythonRelaxDepsHook
   ];
 
-  pythonRelaxDeps = [
-    "speechrecognition"
-  ];
+  # Package has no tests
+  doCheck = false;
+  build-system = [ setuptools ];
 
   dependencies = [
     pydub
@@ -41,14 +38,17 @@ buildPythonPackage rec {
     speechrecognition
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "pypasser"
     "pypasser.reCaptchaV2"
     "pypasser.reCaptchaV3"
   ];
 
-  # Package has no tests
-  doCheck = false;
+  pythonRelaxDeps = [
+    "speechrecognition"
+  ];
 
   meta = {
     description = "Bypassing reCaptcha V3 by sending HTTP requests & solving reCaptcha V2 using speech to text";

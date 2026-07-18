@@ -2,16 +2,15 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  numpy,
   pytest,
   pytestCheckHook,
-  numpy,
   setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-astropy-header";
   version = "0.2.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -19,13 +18,14 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools-scm ];
-
   buildInputs = [ pytest ];
 
   nativeCheckInputs = [
     pytestCheckHook
     numpy
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Plugin to add diagnostic information to the header of the test output";

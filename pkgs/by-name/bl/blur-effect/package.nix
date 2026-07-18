@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  pkg-config,
   cmake,
+  fetchpatch,
   gdk-pixbuf,
   libGL,
   libgbm,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,9 +25,9 @@ stdenv.mkDerivation (finalAttrs: {
     # Pull cmake-4 fix:
     #   https://github.com/sonald/blur-effect/pull/7
     (fetchpatch {
+      hash = "sha256-f0PBhfdrcLCZBzYx+j8+qIG9boW3S4CSyz+bS9vFKRc=";
       name = "cmake-4.patch";
       url = "https://github.com/sonald/blur-effect/commit/76322ad8bd0e653726a6791eb8ebcc829cbb1b38.patch?full_index=1";
-      hash = "sha256-f0PBhfdrcLCZBzYx+j8+qIG9boW3S4CSyz+bS9vFKRc=";
     })
   ];
 
@@ -43,12 +43,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/sonald/blur-effect";
     description = "Off-screen image blurring utility using OpenGL ES 3.0";
+    homepage = "https://github.com/sonald/blur-effect";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.unix;
-    broken = stdenv.hostPlatform.isDarwin; # packages 'libdrm' and 'gbm' not found
     maintainers = with lib.maintainers; [ romildo ];
+    platforms = lib.platforms.unix;
     mainProgram = "blur_image";
+    broken = stdenv.hostPlatform.isDarwin; # packages 'libdrm' and 'gbm' not found
   };
 })

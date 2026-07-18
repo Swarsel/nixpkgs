@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  python3Packages,
   installShellFiles,
+  python3Packages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.6.0";
   pname = "arduino-mk";
+  version = "1.6.0";
 
   src = fetchFromGitHub {
     owner = "sudar";
@@ -21,12 +21,15 @@ stdenv.mkDerivation (finalAttrs: {
     python3Packages.wrapPython
     installShellFiles
   ];
+
   propagatedBuildInputs = with python3Packages; [ pyserial ];
+
   installPhase = ''
     mkdir $out
     cp -rT $src $out
     installManPage *.1
   '';
+
   postFixupPhase = ''
     wrapPythonPrograms
   '';

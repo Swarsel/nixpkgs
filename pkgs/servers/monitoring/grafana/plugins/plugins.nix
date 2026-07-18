@@ -1,9 +1,6 @@
 { callPackage }:
 {
   inherit callPackage;
-
-  grafanaPlugin = callPackage ./grafana-plugin.nix { };
-
   bsull-console-datasource = callPackage ./bsull-console-datasource { };
   doitintl-bigquery-datasource = callPackage ./doitintl-bigquery-datasource { };
   fetzerch-sunandmoon-datasource = callPackage ./fetzerch-sunandmoon-datasource { };
@@ -25,6 +22,7 @@
   grafana-pyroscope-app = callPackage ./grafana-pyroscope-app { };
   grafana-sentry-datasource = callPackage ./grafana-sentry-datasource { };
   grafana-worldmap-panel = callPackage ./grafana-worldmap-panel { };
+  grafanaPlugin = callPackage ./grafana-plugin.nix { };
   marcusolsson-calendar-panel = callPackage ./marcusolsson-calendar-panel { };
   marcusolsson-csv-datasource = callPackage ./marcusolsson-csv-datasource { };
   marcusolsson-dynamictext-panel = callPackage ./marcusolsson-dynamictext-panel { };

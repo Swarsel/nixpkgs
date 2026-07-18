@@ -1,16 +1,16 @@
 # legacy texlive.combine wrapper
 {
   lib,
-  toTLPkgList,
-  tl,
   buildTeXEnv,
+  tl,
+  toTLPkgList,
 }:
 args@{
+  extraName ? "combined",
+  extraVersion ? "",
   pkgFilter ? (
     pkg: pkg.tlType == "run" || pkg.tlType == "bin" || pkg.pname == "core" || pkg.hasManpages or false
   ),
-  extraName ? "combined",
-  extraVersion ? "",
   ...
 }:
 let
@@ -32,35 +32,36 @@ let
           map (
             {
               tlType,
-              version ? "",
               outputName ? "",
+              version ? "",
               ...
             }@pkg:
             {
+              inherit pkg;
               # outputName required to distinguish among bin.core-big outputs
               key = "${pkg.pname or pkg.name}.${tlType}-${version}-${outputName}";
-              inherit pkg;
             }
           ) (drv.pkgs or (toTLPkgList drv));
         pkgListToSets = lib.concatMap tlPkgToSets;
       in
       builtins.genericClosure {
-        startSet = pkgListToSets pkgList;
         operator =
           { pkg, ... }:
           pkgListToSets (
             if pkg ? tlDeps then if builtins.isFunction pkg.tlDeps then pkg.tlDeps tl else pkg.tlDeps else [ ]
           );
+
+        startSet = pkgListToSets pkgList;
       }
     );
   combined = combinePkgs (lib.attrValues pkgSet);
 
   # convert to specified outputs
   tlTypeToOut = {
-    run = "tex";
-    doc = "texdoc";
-    source = "texsource";
     bin = "out";
+    doc = "texdoc";
+    run = "tex";
+    source = "texsource";
     tlpkg = "tlpkg";
   };
   toSpecified =
@@ -78,9 +79,9 @@ lib.addMetaAttrs
     problems.removal.message = "texlive.combine is deprecated and will be removed from Nixpkgs 27.05. Please switch to texliveSmall.withPackages. See https://nixos.org/manual/nixpkgs/stable/#sec-language-texlive-user-guide.";
   }
   (buildTeXEnv {
+    __combine = true;
     __extraName = extraName;
     __extraVersion = extraVersion;
-    requiredTeXPackages = _: converted;
-    __combine = true;
     __fromCombineWrapper = true;
+    requiredTeXPackages = _: converted;
   })

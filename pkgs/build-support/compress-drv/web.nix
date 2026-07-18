@@ -1,7 +1,7 @@
 {
+  lib,
   brotli,
   compressDrv,
-  lib,
   zopfli,
   zstd,
 }:
@@ -112,6 +112,16 @@
 */
 drv:
 {
+  compressors ? {
+    br = "${lib.getExe brotli} --keep --no-copy-stat {}";
+    gz = "${lib.getExe zopfli} --keep {}";
+    # --force is required to not fail on symlinks
+    # for details on the compression level see
+    # https://github.com/NixOS/nixpkgs/pull/332752#issuecomment-2275110390
+    zstd = "${lib.getExe zstd} --force --keep --quiet -19 {}";
+  },
+  extraFindOperands ? "",
+  extraFormats ? [ ],
   formats ? [
     "css"
     "eot"
@@ -127,19 +137,9 @@ drv:
     "webmanifest"
     "xml"
   ],
-  extraFormats ? [ ],
-  compressors ? {
-    br = "${lib.getExe brotli} --keep --no-copy-stat {}";
-    gz = "${lib.getExe zopfli} --keep {}";
-    # --force is required to not fail on symlinks
-    # for details on the compression level see
-    # https://github.com/NixOS/nixpkgs/pull/332752#issuecomment-2275110390
-    zstd = "${lib.getExe zstd} --force --keep --quiet -19 {}";
-  },
-  extraFindOperands ? "",
 }:
 compressDrv drv {
-  formats = formats ++ extraFormats;
-  compressors = compressors;
   inherit extraFindOperands;
+  compressors = compressors;
+  formats = formats ++ extraFormats;
 }

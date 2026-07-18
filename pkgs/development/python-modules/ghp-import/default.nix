@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "ghp-import";
   version = "2.1.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,17 +15,16 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ python-dateutil ];
-
   # Does not include any unit tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "ghp_import" ];
 
   meta = {
     description = "Copy your docs directly to the gh-pages branch";
-    mainProgram = "ghp-import";
     homepage = "https://github.com/c-w/ghp-import";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ veehaitch ];
+    mainProgram = "ghp-import";
   };
 }

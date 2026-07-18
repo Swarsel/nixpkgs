@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -17,18 +17,15 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-19uN+jTqZDqIu/rqS/U9JSnZWowTlLAgHG7+YhXaOd4=";
+  # Tests require network access
+  doCheck = false;
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
     "-w"
   ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  doInstallCheck = true;
-
-  # Tests require network access
-  doCheck = false;
 
   meta = {
     description = "Tool to do OSINT";

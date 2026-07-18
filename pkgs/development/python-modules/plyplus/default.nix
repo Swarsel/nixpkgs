@@ -1,29 +1,28 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
-  ply,
+  fetchPypi,
   isPy3k,
+  ply,
 }:
 buildPythonPackage rec {
   pname = "plyplus";
   version = "0.7.5";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "PlyPlus";
     inherit version;
     sha256 = "0g3flgfm3jpb2d8v9z0qmbwca5gxdqr10cs3zvlfhv5cs06ahpnp";
+    pname = "PlyPlus";
   };
 
   propagatedBuildInputs = [ ply ];
-
   doCheck = !isPy3k;
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/erezsh/plyplus";
     description = "General-purpose parser built on top of PLY";
-    maintainers = with lib.maintainers; [ twey ];
+    homepage = "https://github.com/erezsh/plyplus";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ twey ];
   };
 }

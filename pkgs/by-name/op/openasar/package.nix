@@ -1,15 +1,15 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  unstableGitUpdater,
-  nodejs,
   asar,
-  unzip,
   discord,
-  discord-ptb,
   discord-canary,
   discord-development,
+  discord-ptb,
+  nodejs,
+  stdenvNoCC,
+  unstableGitUpdater,
+  unzip,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -42,6 +42,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postBuild
   '';
 
+  doCheck = false;
+
   installPhase = ''
     runHook preInstall
 
@@ -50,26 +52,27 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  doCheck = false;
-
   passthru = {
+    tests = lib.genAttrs' [ discord discord-ptb discord-canary discord-development ] (
+      p: lib.nameValuePair p.pname p.tests.withOpenASAR
+    );
+
     updateScript = unstableGitUpdater {
       # Only has a "nightly" tag (untaged version 0.2 is latest) see https://github.com/GooseMod/OpenAsar/commit/8f79dcef9b1f7732421235a392f06e5bd7382659
       hardcodeZeroVersion = true;
     };
-    tests = lib.genAttrs' [ discord discord-ptb discord-canary discord-development ] (
-      p: lib.nameValuePair p.pname p.tests.withOpenASAR
-    );
   };
 
   meta = {
     description = "Open-source alternative of Discord desktop's \"app.asar\"";
     homepage = "https://openasar.dev";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       Scrumplex
       jopejoe1
     ];
+
     platforms = nodejs.meta.platforms;
   };
 })

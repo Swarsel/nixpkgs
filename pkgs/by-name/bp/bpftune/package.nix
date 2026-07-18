@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  clang,
   bpftools,
+  clang,
   docutils,
   libbpf,
   libcap,
   libnl,
-  nixosTests,
   nix-update-script,
+  nixosTests,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -53,6 +53,8 @@ stdenv.mkDerivation (finalAttrs: {
     "BPF_INCLUDE=${lib.getDev libbpf}/include"
   ];
 
+  enableParallelBuilding = true;
+
   hardeningDisable = [
     "zerocallusedregs"
   ];
@@ -61,16 +63,15 @@ stdenv.mkDerivation (finalAttrs: {
     tests = {
       inherit (nixosTests) bpftune;
     };
+
     updateScript = nix-update-script { };
   };
 
-  enableParallelBuilding = true;
-
   meta = {
     description = "BPF-based auto-tuning of Linux system parameters";
-    mainProgram = "bpftune";
     homepage = "https://github.com/oracle-samples/bpftune";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ nickcao ];
+    mainProgram = "bpftune";
   };
 })

@@ -1,21 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   approvaltests,
+  buildPythonPackage,
   setuptools,
   typing-extensions,
 }:
 
 buildPythonPackage {
-  pname = "approval-utilities";
   inherit (approvaltests) version src;
-  pyproject = true;
+  pname = "approval-utilities";
 
   postPatch = ''
     mv setup/setup.approval_utilities.py setup.py
   ''
   + approvaltests.postPatch or "";
 
+  # upstream has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -23,10 +24,8 @@ buildPythonPackage {
     typing-extensions
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "approval_utilities" ];
-
-  # upstream has no tests
-  doCheck = false;
 
   meta = {
     description = "Utilities for your production code that work well with approvaltests";

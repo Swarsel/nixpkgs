@@ -26,34 +26,38 @@ in
         example = "wrapVdr.override { plugins = with pkgs.vdrPlugins; [ hello ]; }";
       };
 
-      videoDir = mkOption {
-        type = types.path;
-        default = "/srv/vdr/video";
-        description = "Recording directory";
-      };
-
-      extraArguments = mkOption {
-        type = types.listOf types.str;
-        default = [ ];
-        description = "Additional command line arguments to pass to VDR.";
-      };
-
       enableLirc = mkEnableOption "LIRC";
 
-      user = mkOption {
-        type = types.str;
-        default = "vdr";
-        description = ''
-          User under which the VDR service runs.
-        '';
+      extraArguments = mkOption {
+        default = [ ];
+        description = "Additional command line arguments to pass to VDR.";
+        type = types.listOf types.str;
       };
 
       group = mkOption {
-        type = types.str;
         default = "vdr";
+
         description = ''
           Group under which the VDRvdr service runs.
         '';
+
+        type = types.str;
+      };
+
+      user = mkOption {
+        default = "vdr";
+
+        description = ''
+          User under which the VDR service runs.
+        '';
+
+        type = types.str;
+      };
+
+      videoDir = mkOption {
+        default = "/srv/vdr/video";
+        description = "Recording directory";
+        type = types.path;
       };
     };
 
@@ -61,17 +65,15 @@ in
 
   config = mkIf cfg.enable {
 
-    systemd.tmpfiles.rules = [
-      "d ${cfg.videoDir} 0755 ${cfg.user} ${cfg.group} -"
-      "Z ${cfg.videoDir} - ${cfg.user} ${cfg.group} -"
-    ];
+    environment.systemPackages = [ cfg.package ];
 
     systemd.services.vdr = {
-      description = "VDR";
-      wantedBy = [ "multi-user.target" ];
-      wants = optional cfg.enableLirc "lircd.service";
       after = [ "network.target" ] ++ optional cfg.enableLirc "lircd.service";
+      description = "VDR";
+
       serviceConfig = {
+        CacheDirectory = "vdr";
+
         ExecStart =
           let
             args = [
@@ -81,31 +83,39 @@ in
             ++ cfg.extraArguments;
           in
           "${cfg.package}/bin/vdr ${lib.escapeShellArgs args}";
-        User = cfg.user;
+
         Group = cfg.group;
-        CacheDirectory = "vdr";
-        StateDirectory = "vdr";
-        RuntimeDirectory = "vdr";
         Restart = "on-failure";
+        RuntimeDirectory = "vdr";
+        StateDirectory = "vdr";
+        User = cfg.user;
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = optional cfg.enableLirc "lircd.service";
     };
 
-    environment.systemPackages = [ cfg.package ];
+    systemd.tmpfiles.rules = [
+      "d ${cfg.videoDir} 0755 ${cfg.user} ${cfg.group} -"
+      "Z ${cfg.videoDir} - ${cfg.user} ${cfg.group} -"
+    ];
+
+    users.groups = mkIf (cfg.group == "vdr") { vdr = { }; };
 
     users.users = mkIf (cfg.user == "vdr") {
       vdr = {
         inherit (cfg) group;
-        home = "/run/vdr";
-        isSystemUser = true;
+
         extraGroups = [
           "video"
           "audio"
         ]
         ++ optional cfg.enableLirc "lirc";
+
+        home = "/run/vdr";
+        isSystemUser = true;
       };
     };
-
-    users.groups = mkIf (cfg.group == "vdr") { vdr = { }; };
 
   };
 }

@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  libwpg,
-  libwpd,
-  lcms2,
-  pkg-config,
-  librevenge,
-  icu,
   boost,
   cppunit,
+  icu,
+  lcms2,
+  librevenge,
+  libwpd,
+  libwpg,
+  pkg-config,
   zlib,
 }:
 
@@ -23,6 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
+  nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
     libwpg
@@ -35,14 +36,12 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  nativeBuildInputs = [ pkg-config ];
-
   enableParallelBuilding = true;
 
   meta = {
     description = "Library providing ability to interpret and import Corel Draw drawings into various applications";
     homepage = "https://wiki.documentfoundation.org/DLP/Libraries/libcdr";
-    platforms = lib.platforms.all;
     license = lib.licenses.mpl20;
+    platforms = lib.platforms.all;
   };
 })

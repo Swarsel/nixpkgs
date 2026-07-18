@@ -1,9 +1,9 @@
 {
   lib,
-  buildPecl,
   fetchFromGitHub,
-  pkg-config,
+  buildPecl,
   lua51Packages,
+  pkg-config,
 }:
 
 buildPecl rec {
@@ -22,8 +22,8 @@ buildPecl rec {
 
   meta = {
     description = "Extension for PHP 7 and PHP 8 to allow safely running untrusted Lua 5.1 code from within PHP";
-    license = lib.licenses.mit;
     homepage = "https://www.mediawiki.org/wiki/LuaSandbox";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ georgyo ];
     platforms = lib.platforms.linux;
   };

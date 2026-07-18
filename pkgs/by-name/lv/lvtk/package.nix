@@ -5,11 +5,11 @@
   boost,
   gtkmm2,
   lv2,
-  pkg-config,
-  python3,
   meson,
-  pugl,
   ninja,
+  pkg-config,
+  pugl,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -50,6 +50,7 @@ stdenv.mkDerivation (finalAttrs: {
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ bot-wxt1221 ];
     platforms = lib.platforms.unix;
+
     badPlatforms = [
       "aarch64-darwin"
     ];

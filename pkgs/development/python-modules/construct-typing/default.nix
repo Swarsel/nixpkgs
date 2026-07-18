@@ -1,23 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pythonAtLeast,
-  construct,
-  typing-extensions,
   arrow,
+  buildPythonPackage,
   cloudpickle,
+  construct,
   cryptography,
   numpy,
   pytestCheckHook,
+  pythonAtLeast,
   ruamel-yaml,
+  setuptools,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "construct-typing";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "timrid";
@@ -25,20 +24,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-iiMnt/f1ppciL6AVq3q0wOtoARcNYJycQA5Ev+dIow8=";
   };
-
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [ "construct" ];
-
-  dependencies = [
-    construct
-    typing-extensions
-  ];
-
-  pythonImportsCheck = [
-    "construct-stubs"
-    "construct_typed"
-  ];
 
   nativeCheckInputs = [
     arrow
@@ -49,10 +34,26 @@ buildPythonPackage rec {
     ruamel-yaml
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    construct
+    typing-extensions
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "construct-stubs"
+    "construct_typed"
+  ];
+
+  pythonRelaxDeps = [ "construct" ];
+
   meta = {
-    changelog = "https://github.com/timrid/construct-typing/releases/tag/v${version}";
     description = "Extension for the python package 'construct' that adds typing features";
     homepage = "https://github.com/timrid/construct-typing";
+    changelog = "https://github.com/timrid/construct-typing/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

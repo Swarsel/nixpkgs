@@ -1,12 +1,12 @@
 {
-  pkgs,
   lib,
   stdenv,
   fetchFromGitHub,
-  writeScript,
+  libx11,
   makeWrapper,
   ncurses,
-  libx11,
+  pkgs,
+  writeScript,
 }:
 
 let
@@ -29,15 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-v/sWhPWF9cCKD8N0RHpwzChMM1t9G2yrMDmi1cZxdOs=";
   };
 
-  nativeBuildInputs = [ makeWrapper ];
-  buildInputs = [
-    ncurses
-    libx11
-  ];
-
-  # Makefile(s) and config are not top-level
-  sourceRoot = "${finalAttrs.src.name}/src";
-
   postPatch = ''
     # allow usage of ANGBAND_PATH
     substituteInPlace config.h --replace "#define FIXED_PATHS" ""
@@ -46,7 +37,12 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace Makefile.std --replace "-lcurses" "-lncurses"
   '';
 
-  makefile = "Makefile.std";
+  nativeBuildInputs = [ makeWrapper ];
+
+  buildInputs = [
+    ncurses
+    libx11
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -60,6 +56,10 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  makefile = "Makefile.std";
+  # Makefile(s) and config are not top-level
+  sourceRoot = "${finalAttrs.src.name}/src";
+
   passthru.tests = {
     saveDirCreation = pkgs.runCommand "save-dir-creation" { } ''
       HOME=$(pwd) ${lib.getExe pkgs.sil-q} --help
@@ -69,7 +69,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Roguelike game set in the First Age of Middle-earth";
-    mainProgram = "sil-q";
+
     longDescription = ''
       A game of adventure set in the First Age of Middle-earth, when the world still
       rang with Elven song and gleamed with Dwarven mail.
@@ -79,9 +79,11 @@ stdenv.mkDerivation (finalAttrs: {
 
       A fork of Sil that's still actively developed.
     '';
+
     homepage = "https://github.com/sil-quirk/sil-q";
     license = lib.licenses.gpl2Only;
     maintainers = [ lib.maintainers.kenran ];
     platforms = lib.platforms.linux;
+    mainProgram = "sil-q";
   };
 })

@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   django,
   djangorestframework,
-  pytestCheckHook,
-  pytest-django,
   ipdb,
+  pytest-django,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "drf-nested-routers";
   version = "0.95.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "alanjds";
@@ -22,7 +21,6 @@ buildPythonPackage rec {
   };
 
   buildInputs = [ django ];
-
   propagatedBuildInputs = [ djangorestframework ];
 
   nativeCheckInputs = [
@@ -31,10 +29,12 @@ buildPythonPackage rec {
     pytest-django
   ];
 
+  format = "setuptools";
+
   meta = {
+    description = "Provides routers and fields to create nested resources in the Django Rest Framework";
     homepage = "https://github.com/alanjds/drf-nested-routers";
     changelog = "https://github.com/alanjds/drf-nested-routers/blob/v${version}/CHANGELOG.md";
-    description = "Provides routers and fields to create nested resources in the Django Rest Framework";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ felschr ];
   };

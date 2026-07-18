@@ -11,7 +11,13 @@ let
   mk_uwsm_desktop_entry =
     opts:
     (pkgs.writeTextFile {
+      derivationArgs = {
+        passthru.providedSessions = [ "${opts.name}-uwsm" ];
+      };
+
+      destination = "/share/wayland-sessions/${opts.name}-uwsm.desktop";
       name = "${opts.name}-uwsm";
+
       text = ''
         [Desktop Entry]
         Name=${opts.prettyName} (UWSM)
@@ -19,16 +25,13 @@ let
         Exec=${lib.getExe cfg.package} start -F -- ${opts.binPath} ${lib.strings.escapeShellArgs opts.extraArgs}
         Type=Application
       '';
-      destination = "/share/wayland-sessions/${opts.name}-uwsm.desktop";
-      derivationArgs = {
-        passthru.providedSessions = [ "${opts.name}-uwsm" ];
-      };
     });
 
   desktopEntries = lib.mapAttrsToList (
     name: value:
     mk_uwsm_desktop_entry {
       inherit name;
+
       inherit (value)
         prettyName
         comment
@@ -68,51 +71,18 @@ in
       `graphical-session.target`, while using a WM, enabling this option
       might help
     '';
+
     package = lib.mkPackageOption pkgs "uwsm" { };
 
     waylandCompositors = lib.mkOption {
+      default = { };
+
       description = ''
         Configuration for UWSM-managed Wayland Compositors. This
         creates a desktop entry file which will be used by Display
         Managers like GDM, to allow starting the UWSM managed session.
       '';
-      type = lib.types.attrsOf (
-        lib.types.submodule (
-          { ... }:
-          {
-            options = {
-              prettyName = lib.mkOption {
-                type = lib.types.str;
-                description = "The full name of the desktop entry file.";
-                example = "ExampleWaylandCompositor";
-              };
-              comment = lib.mkOption {
-                type = lib.types.str;
-                description = "The comment field of the desktop entry file.";
-                default = "An intelligent Wayland compositor managed by UWSM.";
-              };
-              binPath = lib.mkOption {
-                type = lib.types.path;
-                description = ''
-                  The wayland-compositor binary path that will be called by UWSM.
 
-                  It is recommended to use the `/run/current-system/sw/bin/` path
-                  instead of `lib.getExe pkgs.<compositor>` to avoid version mismatch
-                  of the compositor used by UWSM and the one installed in the system.
-                '';
-                example = "/run/current-system/sw/bin/ExampleCompositor";
-              };
-              extraArgs = lib.mkOption {
-                type = with lib.types; listOf str;
-                default = [ ];
-                description = ''
-                  Extra command-line arguments pass to to the compsitor.
-                '';
-              };
-            };
-          }
-        )
-      );
       example = lib.literalExpression ''
         hyprland = {
           prettyName = "Hyprland";
@@ -125,32 +95,75 @@ in
           binPath = "/run/current-system/sw/bin/sway";
         };
       '';
-      default = { };
+
+      type = lib.types.attrsOf (
+        lib.types.submodule (
+          { ... }:
+          {
+            options = {
+              binPath = lib.mkOption {
+                description = ''
+                  The wayland-compositor binary path that will be called by UWSM.
+
+                  It is recommended to use the `/run/current-system/sw/bin/` path
+                  instead of `lib.getExe pkgs.<compositor>` to avoid version mismatch
+                  of the compositor used by UWSM and the one installed in the system.
+                '';
+
+                example = "/run/current-system/sw/bin/ExampleCompositor";
+                type = lib.types.path;
+              };
+
+              comment = lib.mkOption {
+                default = "An intelligent Wayland compositor managed by UWSM.";
+                description = "The comment field of the desktop entry file.";
+                type = lib.types.str;
+              };
+
+              extraArgs = lib.mkOption {
+                default = [ ];
+
+                description = ''
+                  Extra command-line arguments pass to to the compsitor.
+                '';
+
+                type = with lib.types; listOf str;
+              };
+
+              prettyName = lib.mkOption {
+                description = "The full name of the desktop entry file.";
+                example = "ExampleWaylandCompositor";
+                type = lib.types.str;
+              };
+            };
+          }
+        )
+      );
     };
   };
 
   config = lib.mkIf cfg.enable (
     lib.mkMerge [
       {
-        environment.systemPackages = [ cfg.package ];
-        systemd.packages = [ cfg.package ];
         environment.pathsToLink = [
           "/share/uwsm"
           "/share/wayland-sessions"
         ];
 
+        environment.systemPackages = [ cfg.package ];
         # UWSM recommends dbus broker for better compatibility
         services.dbus.implementation = "broker";
+        systemd.packages = [ cfg.package ];
 
         # Restarting these kills the graphical session, same treatment as the
         # display-manager modules.
         systemd.user.services = lib.genAttrs sessionServices (_: {
-          restartIfChanged = false;
           # Defining the units here generates drop-ins; without this they
           # would carry the NixOS default Environment="PATH=coreutils:…",
           # clobbering the PATH that uwsm imported into the user manager
           # and breaking spawn actions that rely on it.
           enableDefaultPath = false;
+          restartIfChanged = false;
         });
       }
 

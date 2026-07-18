@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "dropmqttapi";
   version = "1.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ChandlerSystems";
@@ -17,11 +16,10 @@ buildPythonPackage rec {
     hash = "sha256-njReF9Mu5E9o5WcbK60CCBWaIhZ3tpQHHlY/iEyyHGg=";
   };
 
-  build-system = [ setuptools ];
-
   # Module has no test
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "dropmqttapi" ];
 
   meta = {

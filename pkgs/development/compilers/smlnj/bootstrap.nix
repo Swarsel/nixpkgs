@@ -7,14 +7,13 @@
   stdenv,
   fetchurl,
   cpio,
+  makeWrapper,
   rsync,
   xar,
-  makeWrapper,
 }:
 
 stdenv.mkDerivation rec {
   pname = "smlnj-bootstrap";
-
   version = "110.91";
 
   src = fetchurl {
@@ -23,15 +22,11 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     cpio
     rsync
   ];
-
-  unpackPhase = ''
-    ${xar}/bin/xar -xf $src
-    cd smlnj.pkg
-  '';
 
   buildPhase = ''
     cat Payload | gunzip -dc | cpio -i
@@ -49,12 +44,17 @@ stdenv.mkDerivation rec {
     wrapProgram "$out/bin/sml" --set "SMLNJ_HOME" "$out"
   '';
 
+  unpackPhase = ''
+    ${xar}/bin/xar -xf $src
+    cd smlnj.pkg
+  '';
+
   meta = {
     description = "Compiler for the Standard ML '97 programming language";
     homepage = "http://www.smlnj.org";
     license = lib.licenses.free;
-    platforms = lib.platforms.darwin;
     maintainers = [ lib.maintainers.jwiegley ];
+    platforms = lib.platforms.darwin;
     mainProgram = "sml";
   };
 }

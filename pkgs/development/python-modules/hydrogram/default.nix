@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiosqlite,
   buildPythonPackage,
-  fetchFromGitHub,
   fetchpatch2,
   hatchling,
   pyaes,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "hydrogram";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hydrogram";
@@ -25,11 +24,16 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch2 {
-      name = "fix-async-in-test.patch";
       excludes = [ ".github/workflows/code-style.yml" ];
-      url = "https://github.com/hydrogram/hydrogram/commit/7431319a1d990aa838012bd566a9746da7df2a6e.patch";
       hash = "sha256-MPv13cxnNPDD+p9EPjDPFqydGy57oXzLeRxL3lG8JKU=";
+      name = "fix-async-in-test.patch";
+      url = "https://github.com/hydrogram/hydrogram/commit/7431319a1d990aa838012bd566a9746da7df2a6e.patch";
     })
+  ];
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
   ];
 
   build-system = [ hatchling ];
@@ -40,10 +44,7 @@ buildPythonPackage rec {
     aiosqlite
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "hydrogram"

@@ -1,8 +1,9 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
+  buildPythonPackage,
+  darwin,
   pexpect,
   poetry,
   poetry-core,
@@ -10,13 +11,11 @@
   pytest-xdist,
   pytestCheckHook,
   shellingham,
-  darwin,
 }:
 
 buildPythonPackage rec {
   pname = "poetry-plugin-shell";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-poetry";
@@ -25,15 +24,8 @@ buildPythonPackage rec {
     hash = "sha256-BntObwrW7xt1gYWpckLJF7GklkmUJMh8D1IUwCcOOl4=";
   };
 
-  build-system = [ poetry-core ];
-
   buildInputs = [
     poetry
-  ];
-
-  dependencies = [
-    pexpect
-    shellingham
   ];
 
   nativeCheckInputs = [
@@ -45,10 +37,19 @@ buildPythonPackage rec {
     darwin.ps
   ];
 
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    pexpect
+    shellingham
+  ];
+
+  pyproject = true;
+
   meta = {
-    changelog = "https://github.com/python-poetry/poetry-plugin-shell/blob/${src.tag}/CHANGELOG.md";
     description = "Poetry plugin to run subshell with virtual environment activated";
     homepage = "https://github.com/python-poetry/poetry-plugin-shell";
+    changelog = "https://github.com/python-poetry/poetry-plugin-shell/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

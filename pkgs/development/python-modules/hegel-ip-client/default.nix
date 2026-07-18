@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "hegel-ip-client";
   version = "0.1.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "boazca";
@@ -17,11 +16,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-IKOtZ6mxbFvH1cLT45j/OD3OzAwy6vmtdF584LS5M7A=";
   };
 
-  build-system = [ setuptools ];
-
   # no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "hegel_ip_client" ];
 
   meta = {

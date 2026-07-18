@@ -7,12 +7,9 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit (fwts) src;
   pname = "fwts-efi-runtime";
   version = "${fwts.version}-${kernel.version}";
-
-  inherit (fwts) src;
-
-  sourceRoot = "${fwts.sourceRoot}/efi_runtime";
 
   postPatch = ''
     substituteInPlace Makefile --replace \
@@ -22,11 +19,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = kernel.moduleBuildDependencies;
 
-  hardeningDisable = [ "pic" ];
-
   makeFlags = kernelModuleMakeFlags ++ [
     "INSTALL_MOD_PATH=${placeholder "out"}"
   ];
+
+  hardeningDisable = [ "pic" ];
+  sourceRoot = "${fwts.sourceRoot}/efi_runtime";
 
   meta = {
     inherit (fwts.meta) homepage license;

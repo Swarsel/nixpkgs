@@ -1,8 +1,8 @@
 {
   stdenv,
+  callPackage,
   fetchYarnDeps,
   fixup-yarn-lock,
-  callPackage,
   nodejs_22,
   yarn,
 }:
@@ -10,34 +10,15 @@ let
   common = callPackage ./common.nix { };
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "tandoor-recipes-frontend";
   inherit (common) version;
-
+  pname = "tandoor-recipes-frontend";
   src = "${common.src}/vue3";
-
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = common.yarnHash;
-  };
 
   nativeBuildInputs = [
     fixup-yarn-lock
     nodejs_22
     (yarn.override { nodejs = nodejs_22; })
   ];
-
-  configurePhase = ''
-    runHook preConfigure
-
-    export HOME=$(mktemp -d)
-    yarn config --offline set yarn-offline-mirror "$yarnOfflineCache"
-    fixup-yarn-lock yarn.lock
-    command -v yarn
-    yarn install --frozen-lockfile --offline --no-progress --non-interactive
-    patchShebangs node_modules/
-
-    runHook postConfigure
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -55,6 +36,24 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  configurePhase = ''
+    runHook preConfigure
+
+    export HOME=$(mktemp -d)
+    yarn config --offline set yarn-offline-mirror "$yarnOfflineCache"
+    fixup-yarn-lock yarn.lock
+    command -v yarn
+    yarn install --frozen-lockfile --offline --no-progress --non-interactive
+    patchShebangs node_modules/
+
+    runHook postConfigure
+  '';
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = common.yarnHash;
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
 
   meta = common.meta // {
     description = "Tandoor Recipes frontend";

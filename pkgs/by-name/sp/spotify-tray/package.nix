@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   autoreconfHook,
-  pkg-config,
+  fetchpatch,
   gtk3,
   makeWrapper,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,8 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     (fetchpatch {
       name = "fix-building-with-automake-1.16.5.patch";
-      url = "https://github.com/tsmetana/spotify-tray/commit/1305f473ba4a406e907b98c8255f23154f349613.patch";
       sha256 = "sha256-u2IopfMzNCu2F06RZoJw3OAsRxxZYdIMnKnyb7/KBgk=";
+      url = "https://github.com/tsmetana/spotify-tray/commit/1305f473ba4a406e907b98c8255f23154f349613.patch";
     })
   ];
 
@@ -41,11 +41,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/tsmetana/spotify-tray";
     description = "Adds a tray icon to the Spotify Linux client application";
+    homepage = "https://github.com/tsmetana/spotify-tray";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "spotify-tray";
   };
 })

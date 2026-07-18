@@ -9,82 +9,86 @@ let
   json = pkgs.formats.json { };
   configFile = json.generate "ServerSettings" (defaultConfig // cfg.serverConfig);
   defaultConfig = {
-    Port = 15000;
+    BasicSecurityPassword = null;
     BroadcastPort = 16342;
     BypassScriptUpdate = false;
-    BasicSecurityPassword = null;
+    Port = 15000;
   };
 in
 {
-  meta.maintainers = with lib.maintainers; [ gador ];
-
   options.services.blendfarm = with lib.types; {
     enable = lib.mkEnableOption "Blendfarm, a render farm management software for Blender";
     package = lib.mkPackageOption pkgs "blendfarm" { };
-    openFirewall = lib.mkEnableOption "allowing blendfarm network access through the firewall";
-
-    user = lib.mkOption {
-      description = "User under which blendfarm runs.";
-      default = "blendfarm";
-      type = str;
-    };
-
-    group = lib.mkOption {
-      description = "Group under which blendfarm runs.";
-      default = "blendfarm";
-      type = str;
-    };
 
     basicSecurityPasswordFile = lib.mkOption {
+      default = null;
+
       description = ''
         Path to the password file the client needs to connect to the server.
               The password must not contain a forward slash.'';
-      default = null;
+
       type = nullOr str;
     };
 
     blenderPackage = lib.mkPackageOption pkgs "blender" { };
 
+    group = lib.mkOption {
+      default = "blendfarm";
+      description = "Group under which blendfarm runs.";
+      type = str;
+    };
+
+    openFirewall = lib.mkEnableOption "allowing blendfarm network access through the firewall";
+
     serverConfig = lib.mkOption {
-      description = "Server configuration";
       default = defaultConfig;
+      description = "Server configuration";
+
       type = submodule {
-        freeformType = attrsOf anything;
         options = {
-          Port = lib.mkOption {
-            description = "Default port blendfarm server listens on.";
-            default = 15000;
-            type = types.port;
-          };
           BroadcastPort = lib.mkOption {
-            description = "Default port blendfarm server advertises itself on.";
             default = 16342;
+            description = "Default port blendfarm server advertises itself on.";
             type = types.port;
           };
 
           BypassScriptUpdate = lib.mkOption {
-            description = "Prevents blendfarm from replacing the .py self-generated scripts.";
             default = false;
+            description = "Prevents blendfarm from replacing the .py self-generated scripts.";
             type = bool;
           };
+
+          Port = lib.mkOption {
+            default = 15000;
+            description = "Default port blendfarm server listens on.";
+            type = types.port;
+          };
         };
+
+        freeformType = attrsOf anything;
       };
+    };
+
+    user = lib.mkOption {
+      default = "blendfarm";
+      description = "User under which blendfarm runs.";
+      type = str;
     };
   };
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [ cfg.package ];
+
     networking.firewall = lib.optionalAttrs (cfg.openFirewall) {
       allowedTCPPorts = [ cfg.serverConfig.Port ];
       allowedUDPPorts = [ cfg.serverConfig.BroadcastPort ];
     };
 
     systemd.services.blendfarm-server = {
-      wantedBy = [ "multi-user.target" ];
       after = [ "network-online.target" ];
-      wants = [ "network-online.target" ];
       description = "blendfarm server";
       path = [ cfg.blenderPackage ];
+
       preStart = ''
         rm -f ServerSettings
         install -m640 ${configFile} ServerSettings
@@ -99,51 +103,64 @@ in
         BLENDFARM_PASSWORD=$(${pkgs.systemd}/bin/systemd-creds cat BLENDFARM_PASS_FILE)
         sed -i "s/null/\"$BLENDFARM_PASSWORD\"/g" ServerSettings
       '';
+
       serviceConfig = {
-        ExecStart = "${cfg.package}/bin/LogicReinc.BlendFarm.Server";
+        CapabilityBoundingSet = "";
         DynamicUser = true;
-        LogsDirectory = "blendfarm";
-        StateDirectory = "blendfarm";
-        WorkingDirectory = "/var/lib/blendfarm";
-        User = cfg.user;
+        ExecStart = "${cfg.package}/bin/LogicReinc.BlendFarm.Server";
         Group = cfg.group;
-        StateDirectoryMode = "0755";
+
         LoadCredential = lib.optional (
           cfg.basicSecurityPasswordFile != null
         ) "BLENDFARM_PASS_FILE:${cfg.basicSecurityPasswordFile}";
-        ReadWritePaths = "";
-        CapabilityBoundingSet = "";
-        RestrictAddressFamilies = [
-          "AF_UNIX"
-          "AF_INET"
-          "AF_INET6"
-        ];
-        RestrictNamespaces = true;
+
+        LockPersonality = true;
+        LogsDirectory = "blendfarm";
         PrivateDevices = true;
         PrivateUsers = true;
         ProtectClock = true;
         ProtectControlGroups = true;
         ProtectHome = true;
+        ProtectHostname = true;
         ProtectKernelLogs = true;
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
+        ReadWritePaths = "";
+
+        RestrictAddressFamilies = [
+          "AF_UNIX"
+          "AF_INET"
+          "AF_INET6"
+        ];
+
+        RestrictNamespaces = true;
+        RestrictRealtime = true;
+        StateDirectory = "blendfarm";
+        StateDirectoryMode = "0755";
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
           "@chown"
         ];
-        RestrictRealtime = true;
-        LockPersonality = true;
+
         UMask = "0066";
-        ProtectHostname = true;
+        User = cfg.user;
+        WorkingDirectory = "/var/lib/blendfarm";
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
 
-    users.users.blendfarm = {
-      isSystemUser = true;
-      group = "blendfarm";
-    };
     users.groups.blendfarm = { };
+
+    users.users.blendfarm = {
+      group = "blendfarm";
+      isSystemUser = true;
+    };
   };
+
+  meta.maintainers = with lib.maintainers; [ gador ];
 }

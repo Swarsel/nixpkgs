@@ -11,10 +11,6 @@
 buildPythonPackage rec {
   pname = "future";
   version = "1.0.0";
-  pyproject = true;
-
-  # https://github.com/PythonCharmers/python-future/issues/640
-  disabled = pythonAtLeast "3.13";
 
   src = fetchPypi {
     inherit pname version;
@@ -22,6 +18,10 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
+  doCheck = false;
+  # https://github.com/PythonCharmers/python-future/issues/640
+  disabled = pythonAtLeast "3.13";
+  pyproject = true;
 
   pythonImportsCheck = [
     "future.builtins"
@@ -31,11 +31,9 @@ buildPythonPackage rec {
     "past.translation"
   ];
 
-  doCheck = false;
-
   meta = {
-    changelog = "https://github.com/PythonCharmers/python-future/blob/v${version}/docs/whatsnew.rst";
     description = "Clean single-source support for Python 3 and 2";
+
     longDescription = ''
       python-future is the missing compatibility layer between Python 2 and
       Python 3. It allows you to use a single, clean Python 3.x-compatible
@@ -47,9 +45,11 @@ buildPythonPackage rec {
       either Py2 or Py3 code easily to support both Python 2 and 3 in a
       single clean Py3-style codebase, module by module.
     '';
+
     homepage = "https://python-future.org";
-    downloadPage = "https://github.com/PythonCharmers/python-future/releases";
+    changelog = "https://github.com/PythonCharmers/python-future/blob/v${version}/docs/whatsnew.rst";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ prikhi ];
+    downloadPage = "https://github.com/PythonCharmers/python-future/releases";
   };
 }

@@ -21,17 +21,17 @@ in
     services.lambdabot = {
 
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
         description = "Enable the Lambdabot IRC bot";
+        type = lib.types.bool;
       };
 
       package = lib.mkPackageOption pkgs "lambdabot" { };
 
       script = lib.mkOption {
-        type = lib.types.str;
         default = "";
         description = "Lambdabot script";
+        type = lib.types.str;
       };
 
     };
@@ -43,9 +43,9 @@ in
   config = lib.mkIf cfg.enable {
 
     systemd.services.lambdabot = {
-      description = "Lambdabot daemon";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Lambdabot daemon";
+
       # Workaround for https://github.com/lambdabot/lambdabot/issues/117
       script = ''
         mkdir -p ~/.lambdabot
@@ -58,21 +58,24 @@ in
           done
         ) | ${cfg.package}/bin/lambdabot
       '';
-      serviceConfig = {
-        User = "lambdabot";
-        RuntimeDirectory = [ "lambdabot" ];
-      };
-    };
 
-    users.users.lambdabot = {
-      group = "lambdabot";
-      description = "Lambdabot daemon user";
-      home = "/var/lib/lambdabot";
-      createHome = true;
-      uid = config.ids.uids.lambdabot;
+      serviceConfig = {
+        RuntimeDirectory = [ "lambdabot" ];
+        User = "lambdabot";
+      };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     users.groups.lambdabot.gid = config.ids.gids.lambdabot;
+
+    users.users.lambdabot = {
+      createHome = true;
+      description = "Lambdabot daemon user";
+      group = "lambdabot";
+      home = "/var/lib/lambdabot";
+      uid = config.ids.uids.lambdabot;
+    };
 
   };
 

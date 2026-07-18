@@ -1,12 +1,12 @@
 {
-  fetchFromGitHub,
-  fixDarwinDylibNames,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  check,
+  fixDarwinDylibNames,
   meson,
   ninja,
-  stdenv,
   pkg-config,
-  check,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,14 +28,13 @@ stdenv.mkDerivation (finalAttrs: {
     fixDarwinDylibNames
   ];
 
+  mesonFlags = [ (lib.strings.mesonBool "test" finalAttrs.finalPackage.doCheck) ];
+  doCheck = true;
+
   nativeCheckInputs = [
     pkg-config
     check
   ];
-
-  mesonFlags = [ (lib.strings.mesonBool "test" finalAttrs.finalPackage.doCheck) ];
-
-  doCheck = true;
 
   meta = {
     description = "Client library for MPD (music player daemon)";

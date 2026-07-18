@@ -1,37 +1,24 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  setuptools,
-  replaceVars,
-  graphviz,
-  pytestCheckHook,
   chardet,
+  fetchPypi,
+  graphviz,
   parameterized,
   pyparsing,
+  pytestCheckHook,
+  replaceVars,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pydot";
   version = "4.0.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-whSPaBxKM+CL8OJqnl+OQJmoLg4qBoCY8yzoZXc2StU=";
   };
-
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [ pyparsing ];
-
-  nativeCheckInputs = [
-    chardet
-    parameterized
-    pytestCheckHook
-  ];
 
   patches = [
     (replaceVars ./hardcode-graphviz-path.patch {
@@ -39,8 +26,19 @@ buildPythonPackage rec {
     })
   ];
 
-  enabledTestPaths = [ "test/test_pydot.py" ];
+  nativeCheckInputs = [
+    chardet
+    parameterized
+    pytestCheckHook
+  ];
 
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [ pyparsing ];
+  enabledTestPaths = [ "test/test_pydot.py" ];
+  pyproject = true;
   pythonImportsCheck = [ "pydot" ];
 
   meta = {

@@ -1,19 +1,18 @@
 {
   lib,
-  pkg-config,
+  fetchFromGitHub,
+  buildPythonPackage,
   exiv2,
   gettext,
-  fetchFromGitHub,
   gitUpdater,
-  buildPythonPackage,
+  pkg-config,
+  pytestCheckHook,
   setuptools,
   toml,
-  pytestCheckHook,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "exiv2";
   version = "0.18.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jim-easterbrook";
@@ -22,10 +21,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-3r0qGsCkfe2sQuXiCipXzW0vF2JRg77L1IcOiLTPslM=";
   };
 
-  build-system = [
-    setuptools
-    toml
-  ];
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -33,9 +28,15 @@ buildPythonPackage (finalAttrs: {
     gettext
   ];
 
-  pythonImportsCheck = [ "exiv2" ];
   nativeCheckInputs = [ pytestCheckHook ];
 
+  build-system = [
+    setuptools
+    toml
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "exiv2" ];
   passthru.updateScript = gitUpdater { };
 
   meta = {

@@ -1,24 +1,19 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  torch,
-
+  buildPythonPackage,
   # tests
   pytestCheckHook,
+  # build-system
+  setuptools,
+  # dependencies
+  torch,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "torch-ema";
   version = "0.3.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "fadel";
@@ -26,6 +21,12 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-OOF5Lb3HEIBXc1WXoUp7y44pheDc5oX/7L1vTrwNS2o=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -35,18 +36,15 @@ buildPythonPackage (finalAttrs: {
     torch
   ];
 
-  pythonImportsCheck = [ "torch_ema" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
   disabledTests = lib.optionals (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64) [
     # aarch64-linux fails cpuinfo test, because /sys/devices/system/cpu/ does not exist in the sandbox:
     # RuntimeError: Failed to initialize cpuinfo!
     "test_state_dict_types"
     "test_to"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "torch_ema" ];
 
   meta = {
     description = "Tiny PyTorch library for maintaining a moving average of a collection of parameters";

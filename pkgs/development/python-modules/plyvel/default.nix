@@ -2,15 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  isPy3k,
   pkgs,
   pytest,
-  isPy3k,
 }:
 
 buildPythonPackage rec {
   pname = "plyvel";
   version = "1.5.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -18,14 +17,14 @@ buildPythonPackage rec {
   };
 
   buildInputs = [ pkgs.leveldb ] ++ lib.optional isPy3k pytest;
-
   # no tests for python2
   doCheck = isPy3k;
+  format = "setuptools";
 
   meta = {
     description = "Fast and feature-rich Python interface to LevelDB";
-    platforms = lib.platforms.unix;
     homepage = "https://github.com/wbolster/plyvel";
     license = lib.licenses.bsd3;
+    platforms = lib.platforms.unix;
   };
 }

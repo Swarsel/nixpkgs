@@ -1,14 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   installShellFiles,
   nix-update-script,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "dnsi";
   version = "0.2.0";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "NLnetLabs";
@@ -18,20 +17,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ installShellFiles ];
-
   cargoHash = "sha256-uIW7EDL2ulg6qDizjw5iHtc5HqyEZDBoXJxWHZOmoqo=";
 
   postInstall = ''
     installManPage doc/*.1
   '';
 
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Command line tool to investigate the Domain Name System";
-    mainProgram = "dnsi";
     homepage = "https://nlnetlabs.nl/projects/domain/dnsi/";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.skyesoss ];
+    mainProgram = "dnsi";
   };
 })

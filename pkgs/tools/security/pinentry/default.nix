@@ -1,61 +1,71 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  fetchpatch,
-  pkg-config,
   autoreconfHook,
-  wrapGAppsHook3,
-  kdePackages,
-  libgpg-error,
-  libassuan,
-  libsForQt5,
-  qt6,
-  ncurses,
-  gtk2,
+  fetchpatch,
   gcr,
-  withLibsecret ? true,
+  gtk2,
+  kdePackages,
+  libassuan,
+  libgpg-error,
+  libsForQt5,
   libsecret,
+  ncurses,
+  pkg-config,
+  qt6,
+  wrapGAppsHook3,
+  withLibsecret ? true,
 }:
 
 let
   flavorInfo = {
-    tty = {
-      flag = "tty";
-    };
     curses = {
-      flag = "curses";
       buildInputs = [ ncurses ];
+      flag = "curses";
     };
-    gtk2 = {
-      flag = "gtk2";
-      buildInputs = [ gtk2 ];
+
+    emacs = {
+      flag = "emacs";
     };
+
     gnome3 = {
-      flag = "gnome3";
-      buildInputs = [ gcr ];
       nativeBuildInputs = [ wrapGAppsHook3 ];
+      buildInputs = [ gcr ];
+      flag = "gnome3";
     };
-    qt5 = {
-      flag = "qt5";
-      buildInputs = [
-        libsForQt5.qtbase
-        libsForQt5.kwayland
-        libsForQt5.qtx11extras
-      ];
-      nativeBuildInputs = [ libsForQt5.wrapQtAppsHook ];
+
+    gtk2 = {
+      buildInputs = [ gtk2 ];
+      flag = "gtk2";
     };
+
     qt = {
-      flag = "qt";
+      nativeBuildInputs = [ qt6.wrapQtAppsHook ];
+
       buildInputs = [
         qt6.qtbase
         qt6.qtwayland
         kdePackages.kguiaddons
       ];
-      nativeBuildInputs = [ qt6.wrapQtAppsHook ];
+
+      flag = "qt";
     };
-    emacs = {
-      flag = "emacs";
+
+    qt5 = {
+      nativeBuildInputs = [ libsForQt5.wrapQtAppsHook ];
+
+      buildInputs = [
+        libsForQt5.qtbase
+        libsForQt5.kwayland
+        libsForQt5.qtx11extras
+      ];
+
+      flag = "qt5";
+    };
+
+    tty = {
+      flag = "tty";
     };
   };
 
@@ -74,6 +84,17 @@ let
         hash = "sha256-jphu2IVhtNpunv4MVPpMqJIwNcmSZN8LBGRJfF+5Tp4=";
       };
 
+      patches = [
+        ./autoconf-ar.patch
+        ./gettext-0.25.patch
+      ]
+      ++ lib.optionals (lib.elem "gtk2" buildFlavors) [
+        (fetchpatch {
+          sha256 = "15r1axby3fdlzz9wg5zx7miv7gqx2jy4immaw4xmmw5skiifnhfd";
+          url = "https://salsa.debian.org/debian/pinentry/raw/debian/1.1.0-1/debian/patches/0007-gtk2-When-X11-input-grabbing-fails-try-again-over-0..patch";
+        })
+      ];
+
       nativeBuildInputs = [
         pkg-config
         autoreconfHook
@@ -86,20 +107,6 @@ let
       ]
       ++ lib.optional withLibsecret libsecret
       ++ lib.concatMap (f: flavorInfo.${f}.buildInputs or [ ]) buildFlavors;
-
-      dontWrapGApps = true;
-      dontWrapQtApps = true;
-
-      patches = [
-        ./autoconf-ar.patch
-        ./gettext-0.25.patch
-      ]
-      ++ lib.optionals (lib.elem "gtk2" buildFlavors) [
-        (fetchpatch {
-          url = "https://salsa.debian.org/debian/pinentry/raw/debian/1.1.0-1/debian/patches/0007-gtk2-When-X11-input-grabbing-fails-try-again-over-0..patch";
-          sha256 = "15r1axby3fdlzz9wg5zx7miv7gqx2jy4immaw4xmmw5skiifnhfd";
-        })
-      ];
 
       configureFlags = [
         "--with-libgpg-error-prefix=${libgpg-error.dev}"
@@ -120,14 +127,25 @@ let
           wrapQtApp $out/bin/pinentry-qt
         '';
 
+      dontWrapGApps = true;
+      dontWrapQtApps = true;
+
       passthru = {
         flavors = buildFlavors;
       };
 
       meta = {
-        homepage = "https://gnupg.org/software/pinentry/index.html";
         description = "GnuPG’s interface to passphrase input";
+
+        longDescription = ''
+          Pinentry provides a console and (optional) GTK and Qt GUIs allowing users
+          to enter a passphrase when `gpg` or `gpg2` is run and needs it.
+        '';
+
+        homepage = "https://gnupg.org/software/pinentry/index.html";
         license = lib.licenses.gpl2Plus;
+        maintainers = with lib.maintainers; [ fpletz ];
+
         platforms =
           if lib.elem "gnome3" buildFlavors then
             lib.platforms.linux
@@ -135,46 +153,12 @@ let
             (lib.remove "aarch64-darwin" lib.platforms.all)
           else
             lib.platforms.all;
-        longDescription = ''
-          Pinentry provides a console and (optional) GTK and Qt GUIs allowing users
-          to enter a passphrase when `gpg` or `gpg2` is run and needs it.
-        '';
-        maintainers = with lib.maintainers; [ fpletz ];
+
         mainProgram = "pinentry";
       };
     };
 in
 {
-  pinentry-curses = buildPinentry "curses" [
-    "curses"
-    "tty"
-  ];
-  pinentry-emacs = buildPinentry "emacs" [
-    "emacs"
-    "curses"
-    "tty"
-  ];
-  pinentry-gnome3 = buildPinentry "gnome3" [
-    "gnome3"
-    "curses"
-    "tty"
-  ];
-  pinentry-gtk2 = buildPinentry "gtk2" [
-    "gtk2"
-    "curses"
-    "tty"
-  ];
-  pinentry-qt5 = buildPinentry "qt5" [
-    "qt5"
-    "curses"
-    "tty"
-  ];
-  pinentry-qt = buildPinentry "qt" [
-    "qt"
-    "curses"
-    "tty"
-  ];
-  pinentry-tty = buildPinentry "tty" [ "tty" ];
   pinentry-all = buildPinentry "all" [
     "curses"
     "tty"
@@ -183,4 +167,41 @@ in
     "qt"
     "emacs"
   ];
+
+  pinentry-curses = buildPinentry "curses" [
+    "curses"
+    "tty"
+  ];
+
+  pinentry-emacs = buildPinentry "emacs" [
+    "emacs"
+    "curses"
+    "tty"
+  ];
+
+  pinentry-gnome3 = buildPinentry "gnome3" [
+    "gnome3"
+    "curses"
+    "tty"
+  ];
+
+  pinentry-gtk2 = buildPinentry "gtk2" [
+    "gtk2"
+    "curses"
+    "tty"
+  ];
+
+  pinentry-qt = buildPinentry "qt" [
+    "qt"
+    "curses"
+    "tty"
+  ];
+
+  pinentry-qt5 = buildPinentry "qt5" [
+    "qt5"
+    "curses"
+    "tty"
+  ];
+
+  pinentry-tty = buildPinentry "tty" [ "tty" ];
 }

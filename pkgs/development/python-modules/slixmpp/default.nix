@@ -1,8 +1,8 @@
 {
   lib,
-  buildPythonPackage,
   aiodns,
   aiohttp,
+  buildPythonPackage,
   cargo,
   cryptography,
   defusedxml,
@@ -13,8 +13,8 @@
   pyasn1-modules,
   pytestCheckHook,
   replaceVars,
-  rustc,
   rustPlatform,
+  rustc,
   setuptools,
   setuptools-rust,
   setuptools-scm,
@@ -23,7 +23,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "slixmpp";
   version = "1.17.0";
-  pyproject = true;
 
   src = fetchFromCodeberg {
     owner = "poezio";
@@ -42,16 +41,21 @@ buildPythonPackage (finalAttrs: {
     ln -s ${./Cargo.lock} Cargo.lock
   '';
 
-  build-system = [
-    setuptools
-    setuptools-rust
-    setuptools-scm
-  ];
-
   nativeBuildInputs = [
     cargo
     rustc
     rustPlatform.cargoSetupHook
+  ];
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
+
+  build-system = [
+    setuptools
+    setuptools-rust
+    setuptools-scm
   ];
 
   cargoDeps = rustPlatform.importCargoLock {
@@ -64,18 +68,6 @@ buildPythonPackage (finalAttrs: {
     pyasn1-modules
   ];
 
-  optional-dependencies = {
-    xep-0363 = [ aiohttp ];
-    xep-0444-compliance = [ emoji ];
-    xep-0454 = [ cryptography ];
-    safer-xml-parsing = [ defusedxml ];
-  };
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
-
   disabledTestPaths = [
     # Exclude integration tests
     "itests/"
@@ -83,6 +75,14 @@ buildPythonPackage (finalAttrs: {
     "tests/live_test.py"
   ];
 
+  optional-dependencies = {
+    safer-xml-parsing = [ defusedxml ];
+    xep-0363 = [ aiohttp ];
+    xep-0444-compliance = [ emoji ];
+    xep-0454 = [ cryptography ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "slixmpp" ];
 
   meta = {
@@ -90,6 +90,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://slixmpp.readthedocs.io/";
     changelog = "https://codeberg.org/poezio/slixmpp/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       fab
       haansn08

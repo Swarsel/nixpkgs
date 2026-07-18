@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitLab,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,16 +16,17 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-ogdRXbS1EG402qlnj5SfuI/1P/Pi0+xwJrJsc6vwdds=";
-
   ldflags = [ "-s" ];
 
   meta = {
     description = "Collect and export metrics on Fail2Ban";
     homepage = "https://gitlab.com/hctrdev/fail2ban-prometheus-exporter";
     license = lib.licenses.mit;
-    mainProgram = "fail2ban-prometheus-exporter";
+
     maintainers = with lib.maintainers; [
       bartoostveen
     ];
+
+    mainProgram = "fail2ban-prometheus-exporter";
   };
 })

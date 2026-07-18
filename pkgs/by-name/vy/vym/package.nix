@@ -1,10 +1,10 @@
 {
   lib,
-  cmake,
+  stdenv,
   fetchFromGitHub,
+  cmake,
   pkg-config,
   qt5,
-  stdenv,
   replaceVars,
   unzip,
   zip,
@@ -36,10 +36,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (replaceVars ./patches/0000-fix-zip-paths.diff {
-      zipPath = "${lib.getExe zip}";
       unzipPath = "${lib.getExe unzip}";
+      zipPath = "${lib.getExe zip}";
     })
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -62,11 +64,9 @@ stdenv.mkDerivation (finalAttrs: {
     }"
   ];
 
-  strictDeps = true;
-
   meta = {
-    homepage = "http://www.insilmaril.de/vym/";
     description = "Mind-mapping software";
+
     longDescription = ''
       VYM (View Your Mind) is a tool to generate and manipulate maps which show
       your thoughts. Such maps can help you to improve your creativity and
@@ -78,9 +78,11 @@ stdenv.mkDerivation (finalAttrs: {
       drawn by hand or any drawing software vym offers much more features to
       work with such maps.
     '';
+
+    homepage = "http://www.insilmaril.de/vym/";
     license = with lib.licenses; [ gpl2Plus ];
-    mainProgram = "vym";
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "vym";
   };
 })

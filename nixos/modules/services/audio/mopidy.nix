@@ -14,11 +14,12 @@ let
   mopidyConf = settingsFormat.generate "mopidy.conf" cfg.settings;
 
   mopidyEnv = pkgs.buildEnv {
-    name = "mopidy-with-extensions-${pkgs.mopidy.version}";
     ignoreCollisions = true;
+    name = "mopidy-with-extensions-${pkgs.mopidy.version}";
+    nativeBuildInputs = [ pkgs.makeWrapper ];
     paths = lib.closePropagation cfg.extensionPackages;
     pathsToLink = [ "/${pkgs.mopidyPackages.python.sitePackages}" ];
-    nativeBuildInputs = [ pkgs.makeWrapper ];
+
     postBuild = ''
       makeWrapper ${lib.getExe pkgs.mopidy} $out/bin/mopidy \
         --prefix PYTHONPATH : $out/${pkgs.mopidyPackages.python.sitePackages}
@@ -38,88 +39,102 @@ in
 
       dataDir = lib.mkOption {
         default = "/var/lib/mopidy";
-        type = lib.types.str;
+
         description = ''
           The directory where Mopidy stores its state.
         '';
+
+        type = lib.types.str;
       };
 
       extensionPackages = lib.mkOption {
         default = [ ];
-        type = lib.types.listOf lib.types.package;
-        example = lib.literalExpression "[ pkgs.mopidy-spotify ]";
+
         description = ''
           Mopidy extensions that should be loaded by the service.
         '';
+
+        example = lib.literalExpression "[ pkgs.mopidy-spotify ]";
+        type = lib.types.listOf lib.types.package;
+      };
+
+      extraConfigFiles = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          Extra config file read by Mopidy when the service starts.
+          Later files in the list overrides earlier configuration.
+        '';
+
+        type = lib.types.listOf lib.types.str;
       };
 
       settings = lib.mkOption {
         inherit (settingsFormat) type;
         default = { };
-        example.mpd = {
-          enabled = true;
-          hostname = "::";
-        };
+
         description = ''
           The configuration that Mopidy should use.
           See the upstream documentation <https://docs.mopidy.com/stable/config/> for details.
         '';
-      };
 
-      extraConfigFiles = lib.mkOption {
-        default = [ ];
-        type = lib.types.listOf lib.types.str;
-        description = ''
-          Extra config file read by Mopidy when the service starts.
-          Later files in the list overrides earlier configuration.
-        '';
+        example.mpd = {
+          enabled = true;
+          hostname = "::";
+        };
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
 
-    systemd.tmpfiles.settings."10-mopidy".${cfg.dataDir}.d = {
-      user = "mopidy";
-      group = "mopidy";
-    };
-
     systemd.services.mopidy = {
-      wantedBy = [ "multi-user.target" ];
       after = [
         "network-online.target"
         "sound.target"
       ];
-      wants = [ "network-online.target" ];
+
       description = "mopidy music player daemon";
+
       serviceConfig = {
         ExecStart = "${mopidyEnv}/bin/mopidy --config ${
           lib.concatStringsSep ":" ([ mopidyConf ] ++ cfg.extraConfigFiles)
         }";
+
         Restart = "on-failure";
         User = "mopidy";
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
 
     systemd.services.mopidy-scan = {
       description = "mopidy local files scanner";
+
       serviceConfig = {
         ExecStart = "${mopidyEnv}/bin/mopidy --config ${
           lib.concatStringsSep ":" ([ mopidyConf ] ++ cfg.extraConfigFiles)
         } local scan";
-        User = "mopidy";
+
         Type = "oneshot";
+        User = "mopidy";
       };
     };
 
-    users.users.mopidy = {
-      inherit uid;
+    systemd.tmpfiles.settings."10-mopidy".${cfg.dataDir}.d = {
       group = "mopidy";
-      extraGroups = [ "audio" ];
-      description = "Mopidy daemon user";
-      home = cfg.dataDir;
+      user = "mopidy";
     };
 
     users.groups.mopidy.gid = gid;
+
+    users.users.mopidy = {
+      inherit uid;
+      description = "Mopidy daemon user";
+      extraGroups = [ "audio" ];
+      group = "mopidy";
+      home = cfg.dataDir;
+    };
   };
 }

@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  makeWrapper,
   nodejs,
   yarn-berry,
-  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,13 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
     # https://github.com/vultisig/vultisig-sdk/blob/main/package.json#L4
     ./yarn-4.14-support.patch
   ];
-
-  missingHashes = ./missing-hashes.json;
-
-  offlineCache = yarn-berry.fetchYarnBerryDeps {
-    inherit (finalAttrs) src missingHashes patches;
-    hash = "sha256-EW0Vc3502xoL4iDr2hPDXQ39McvvsiBWpMKgZRtF44M=";
-  };
 
   nativeBuildInputs = [
     nodejs
@@ -87,12 +80,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  missingHashes = ./missing-hashes.json;
+
+  offlineCache = yarn-berry.fetchYarnBerryDeps {
+    inherit (finalAttrs) src missingHashes patches;
+    hash = "sha256-EW0Vc3502xoL4iDr2hPDXQ39McvvsiBWpMKgZRtF44M=";
+  };
+
   meta = {
     description = "Command-line wallet for Vultisig - multi-chain MPC wallet management";
     homepage = "https://vultisig.com";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ RaghavSood ];
-    mainProgram = "vultisig";
     platforms = lib.platforms.all;
+    mainProgram = "vultisig";
   };
 })

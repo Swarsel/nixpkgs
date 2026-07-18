@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   clr,
+  cmake,
   python3,
 }:
 
@@ -49,13 +49,15 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://gpuopen.com/hiprt";
     description = "Ray tracing library for HIP";
+    homepage = "https://gpuopen.com/hiprt";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       mksafavi
     ];
-    teams = [ lib.teams.rocm ];
+
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

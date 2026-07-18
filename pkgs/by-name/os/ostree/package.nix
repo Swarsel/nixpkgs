@@ -1,49 +1,49 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  pkg-config,
-  gtk-doc,
-  nixosTests,
-  pkgsCross,
-  curl,
-  glib,
-  xz,
-  e2fsprogs,
-  libsoup_3,
-  gpgme,
-  which,
-  makeWrapper,
   autoconf,
   automake,
-  libtool,
-  fuse3,
-  util-linuxMinimal,
-  libselinux,
-  libsodium,
-  libarchive,
-  libcap,
-  bzip2,
   bison,
-  libxslt,
+  buildPackages,
+  bzip2,
+  composefs,
+  curl,
   docbook-xsl-nons,
   docbook_xml_dtd_42,
-  python3,
-  buildPackages,
-  withComposefs ? false,
-  composefs,
-  withGjs ? lib.meta.availableOn stdenv.hostPlatform gjs,
+  e2fsprogs,
+  fuse3,
   gjs,
+  glib,
+  gobject-introspection,
+  gpgme,
+  gtk-doc,
+  libarchive,
+  libcap,
+  libselinux,
+  libsodium,
+  libsoup_3,
+  libtool,
+  libxslt,
+  makeWrapper,
+  nixosTests,
+  openssl,
+  ostree-full,
+  pkg-config,
+  pkgsCross,
+  python3,
+  replaceVars,
+  systemd,
+  testers,
+  util-linuxMinimal,
+  which,
+  xz,
+  withComposefs ? false,
+  withGjs ? lib.meta.availableOn stdenv.hostPlatform gjs,
   withIntrospection ?
     lib.meta.availableOn stdenv.hostPlatform gobject-introspection
     && stdenv.hostPlatform.emulatorAvailable buildPackages,
-  gobject-introspection,
   withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
-  systemd,
-  replaceVars,
-  openssl,
-  ostree-full,
-  testers,
 }:
 
 let
@@ -57,17 +57,17 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "ostree";
   version = "2026.1";
 
+  src = fetchurl {
+    url = "https://github.com/ostreedev/ostree/releases/download/v${finalAttrs.version}/libostree-${finalAttrs.version}.tar.xz";
+    hash = "sha256-jnfChd1vpexfsGMTA5CXe+cn/hEQczXth3ikA4UGnpU=";
+  };
+
   outputs = [
     "out"
     "dev"
     "man"
     "installedTests"
   ];
-
-  src = fetchurl {
-    url = "https://github.com/ostreedev/ostree/releases/download/v${finalAttrs.version}/libostree-${finalAttrs.version}.tar.xz";
-    hash = "sha256-jnfChd1vpexfsGMTA5CXe+cn/hEQczXth3ikA4UGnpU=";
-  };
 
   patches = [
     # Workarounds for installed tests failing in pseudoterminal
@@ -76,8 +76,8 @@ stdenv.mkDerivation (finalAttrs: {
 
     # Hard-code paths in installed tests
     (replaceVars ./fix-test-paths.patch {
-      python3 = testPython.interpreter;
       openssl = "${openssl}/bin/openssl";
+      python3 = testPython.interpreter;
     })
   ];
 
@@ -127,8 +127,6 @@ stdenv.mkDerivation (finalAttrs: {
     systemd
   ];
 
-  enableParallelBuilding = true;
-
   configureFlags = [
     "--with-curl"
     "--with-systemdsystemunitdir=${placeholder "out"}/lib/systemd/system"
@@ -166,11 +164,14 @@ stdenv.mkDerivation (finalAttrs: {
       done
     '';
 
+  enableParallelBuilding = true;
+
   passthru = {
     tests = {
-      musl = pkgsCross.musl64.ostree;
-      installedTests = nixosTests.installed-tests.ostree;
       inherit ostree-full;
+      installedTests = nixosTests.installed-tests.ostree;
+      musl = pkgsCross.musl64.ostree;
+
       pkg-config = testers.hasPkgConfigModules {
         package = finalAttrs.finalPackage;
       };
@@ -181,8 +182,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Git for operating system binaries";
     homepage = "https://ostreedev.github.io/ostree/";
     license = lib.licenses.lgpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     pkgConfigModules = [ "ostree-1" ];
   };
 })

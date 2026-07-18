@@ -1,11 +1,11 @@
 {
-  fetchzip,
   lib,
-  stdenvNoCC,
   copyDesktopItems,
+  fetchzip,
   imagemagick,
-  makeDesktopItem,
   jdk21,
+  makeDesktopItem,
+  stdenvNoCC,
 }:
 let
   jre = jdk21;
@@ -27,23 +27,23 @@ let
   };
 
   desktopItem = makeDesktopItem {
-    name = "YourKit Java Profiler";
-    desktopName = "YourKit Java Profiler " + version;
-    type = "Application";
-    exec = "yourkit-java-profiler %f";
-    icon = "yourkit-java-profiler";
     categories = [
       "Development"
       "Java"
       "Profiling"
     ];
-    terminal = false;
+
+    desktopName = "YourKit Java Profiler " + version;
+    exec = "yourkit-java-profiler %f";
+    icon = "yourkit-java-profiler";
+    name = "YourKit Java Profiler";
     startupWMClass = "YourKit Java Profiler";
+    terminal = false;
+    type = "Application";
   };
 in
 stdenvNoCC.mkDerivation {
   inherit version;
-
   pname = "yourkit-java";
 
   src = fetchzip {
@@ -57,8 +57,6 @@ stdenvNoCC.mkDerivation {
   ];
 
   buildInputs = [ jre ];
-
-  desktopItems = [ desktopItem ];
 
   installPhase = ''
     runHook preInstall
@@ -89,6 +87,7 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  desktopItems = [ desktopItem ];
   passthru.updateScript = ./update.sh;
 
   meta = {
@@ -96,9 +95,9 @@ stdenvNoCC.mkDerivation {
     homepage = "https://www.yourkit.com";
     changelog = "https://www.yourkit.com/changes/";
     license = lib.licenses.unfree;
-    mainProgram = "yourkit-java-profiler";
-    platforms = lib.attrNames arches;
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ herberteuler ];
+    platforms = lib.attrNames arches;
+    mainProgram = "yourkit-java-profiler";
   };
 }

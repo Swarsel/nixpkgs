@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -16,15 +16,14 @@ buildGoModule {
   };
 
   vendorHash = "sha256-bbkCxS0UU8PIg/Xjo2X1Mia3WHjtBxYGmwj1c/ScVxc=";
-
   doCheck = false;
 
   meta = {
-    homepage = "https://github.com/ThomasLeister/prosody-filer";
-    maintainers = [ ];
-    license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     description = "Simple file server for handling XMPP http_upload requests";
+    homepage = "https://github.com/ThomasLeister/prosody-filer";
+    license = lib.licenses.mit;
+    maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "prosody-filer";
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -26,7 +26,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/vbauerster/kamp";
     license = lib.licenses.unlicense;
     maintainers = with lib.maintainers; [ erikeah ];
-    mainProgram = "kamp";
     platforms = lib.platforms.linux;
+    mainProgram = "kamp";
   };
 })

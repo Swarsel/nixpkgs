@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  nix-update-script,
   installFonts,
+  nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -17,18 +17,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-wX7UejIYUxXOnrH2WZYku9ljv4ZAlvgk8EEJJHOCCjE=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
-
   nativeBuildInputs = [ installFonts ];
-
+  dontBuild = true;
+  dontConfigure = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "System status icons by Google, featuring material design";
     homepage = "https://material.io/icons";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ mpcsh ];
+    platforms = lib.platforms.all;
   };
 })

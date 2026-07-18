@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -17,15 +17,14 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-EL+fsh603ydZfc3coI8VXkvAStQ0fwzBsJIOztB/VHc=";
+  # Depends on `/home` existing
+  doCheck = false;
 
   ldflags = [
     "-s"
     "-w"
     "-X github.com/julien040/gut/src/telemetry.gutVersion=${finalAttrs.version}"
   ];
-
-  # Depends on `/home` existing
-  doCheck = false;
 
   passthru.updateScript = nix-update-script { };
 

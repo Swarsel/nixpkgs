@@ -1,37 +1,29 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
-  fetchPypi,
-
-  # nativeBuildInputs
-  cmake,
-
-  # build-system
-  setuptools,
-
-  # buildInputs
-  mujoco,
-  pybind11,
-
   # dependencies
   absl-py,
+  buildPythonPackage,
+  # nativeBuildInputs
+  cmake,
   etils,
+  fetchPypi,
   glfw,
+  # buildInputs
+  mujoco,
   numpy,
-  pyopengl,
-  typing-extensions,
-
   perl,
+  pybind11,
+  pyopengl,
   python,
+  # build-system
+  setuptools,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
-  pname = "mujoco";
   inherit (mujoco) version;
-
-  pyproject = true;
-  __structuredAttrs = true;
+  pname = "mujoco";
 
   # We do not fetch from the repository because the PyPi tarball is
   # impurely build via
@@ -44,32 +36,18 @@ buildPythonPackage (finalAttrs: {
 
   nativeBuildInputs = [ cmake ];
 
-  dontUseCmakeConfigure = true;
-
-  build-system = [ setuptools ];
-
   buildInputs = [
     mujoco
     pybind11
   ];
 
-  dependencies = [
-    absl-py
-    etils
-    glfw
-    numpy
-    pyopengl
-    typing-extensions
-  ];
-
-  pythonImportsCheck = [ "mujoco" ];
-
-  env.MUJOCO_PATH = "${mujoco}";
-  env.MUJOCO_PLUGIN_PATH = "${mujoco}/lib";
   env.MUJOCO_CMAKE_ARGS = lib.concatStringsSep " " [
     (lib.cmakeBool "MUJOCO_SIMULATE_USE_SYSTEM_GLFW" true)
     (lib.cmakeBool "MUJOCO_PYTHON_USE_SYSTEM_PYBIND11" true)
   ];
+
+  env.MUJOCO_PATH = "${mujoco}";
+  env.MUJOCO_PLUGIN_PATH = "${mujoco}/lib";
 
   preConfigure =
     # Use non-system eigen3, lodepng, abseil: Remove mirror info and prefill
@@ -96,9 +74,26 @@ buildPythonPackage (finalAttrs: {
       ''
     );
 
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    absl-py
+    etils
+    glfw
+    numpy
+    pyopengl
+    typing-extensions
+  ];
+
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+  pythonImportsCheck = [ "mujoco" ];
+
   meta = {
-    description = "Python bindings for MuJoCo: a general purpose physics simulator";
     inherit (mujoco.meta) homepage changelog license;
+    description = "Python bindings for MuJoCo: a general purpose physics simulator";
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       tmplt

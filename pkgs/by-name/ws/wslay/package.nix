@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
-  cunit,
-  sphinx,
   autoreconfHook,
+  cunit,
   nettle,
+  pkg-config,
+  sphinx,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,9 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ nettle ];
-
   doCheck = true;
-
   checkInputs = [ cunit ];
 
   preCheck = lib.optionalString stdenv.hostPlatform.isDarwin ''
@@ -44,8 +42,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://tatsuhiro-t.github.io/wslay/";
     description = "WebSocket library in C";
+    homepage = "https://tatsuhiro-t.github.io/wslay/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ pingiun ];
     platforms = lib.platforms.unix;

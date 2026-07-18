@@ -1,22 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  tensorboard,
-  scipy,
-  tqdm,
-  scikit-learn,
+  buildPythonPackage,
+  dask,
+  dill,
   munkres,
   networkx,
-  torch,
   pandas,
+  pyspark,
   # test dependencies
   pytestCheckHook,
+  scikit-learn,
+  scipy,
   spacy,
-  pyspark,
-  dill,
-  dask,
   spacy-models,
+  tensorboard,
+  torch,
+  tqdm,
 }:
 let
   pname = "snorkel";
@@ -24,7 +24,6 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "snorkel-team";
@@ -57,6 +56,8 @@ buildPythonPackage {
     spacy-models.en_core_web_sm
   ]
   ++ dask.optional-dependencies.distributed;
+
+  format = "setuptools";
 
   meta = {
     description = "System for quickly generating training data with weak supervision";

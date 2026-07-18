@@ -4,22 +4,19 @@ let
   buildMoodlePlugin =
     a@{
       name,
-      src,
       pluginType,
-      configurePhase ? ":",
-      buildPhase ? ":",
+      src,
       buildInputs ? [ ],
+      buildPhase ? ":",
+      configurePhase ? ":",
       nativeBuildInputs ? [ ],
       ...
     }:
     stdenv.mkDerivation (
       a
       // {
-        name = name;
-
         inherit pluginType;
         inherit configurePhase buildPhase buildInputs;
-
         nativeBuildInputs = [ unzip ] ++ nativeBuildInputs;
 
         installPhase = ''
@@ -30,6 +27,8 @@ let
 
           runHook postInstall
         '';
+
+        name = name;
       }
     );
 in

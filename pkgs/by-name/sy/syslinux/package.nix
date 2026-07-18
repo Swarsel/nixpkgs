@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromRepoOrCz,
-  gnu-efi,
   fetchpatch,
+  gnu-efi,
   libuuid,
   makeWrapper,
   mtools,
@@ -25,14 +25,19 @@ stdenv.mkDerivation {
     hash = "sha256-XNC+X7UYxdMQQAg4MLACQLxRNnI5/ZCOiCJrEkKgPeM=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   patches =
     let
       archlinuxCommit = "db7884ec80642781edeead3e3bbd883a15b9b3ce";
       fetchArchlinuxPatch =
         name: hash:
         fetchpatch {
-          url = "https://gitlab.archlinux.org/archlinux/packaging/packages/syslinux/-/raw/${archlinuxCommit}/${name}";
           inherit name hash;
+          url = "https://gitlab.archlinux.org/archlinux/packaging/packages/syslinux/-/raw/${archlinuxCommit}/${name}";
         };
     in
     [
@@ -78,27 +83,6 @@ stdenv.mkDerivation {
     gnu-efi
   ];
 
-  # Fails very rarely with 'No rule to make target: ...'
-  enableParallelBuilding = false;
-
-  hardeningDisable = [
-    "pic"
-    "stackprotector"
-    "fortify"
-  ];
-
-  stripDebugList = [
-    "bin"
-    "sbin"
-    "share/syslinux/com32"
-  ];
-
-  # Workaround build failure on -fno-common toolchains like upstream
-  # gcc-10. Otherwise build fails as:
-  #   ld: acpi/xsdt.o:/build/syslinux-b404870/com32/gpllib/../gplinclude/memory.h:40: multiple definition of
-  #     `e820_types'; memory.o:/build/syslinux-b404870/com32/gpllib/../gplinclude/memory.h:40: first defined here
-  env.NIX_CFLAGS_COMPILE = "-fcommon";
-
   makeFlags = [
     "BINDIR=$(out)/bin"
     "SBINDIR=$(out)/sbin"
@@ -122,11 +106,11 @@ stdenv.mkDerivation {
   # Build "x86_64" EFI for x86_64
   ++ lib.optional stdenv.hostPlatform.isx86_64 "efi64";
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
+  # Workaround build failure on -fno-common toolchains like upstream
+  # gcc-10. Otherwise build fails as:
+  #   ld: acpi/xsdt.o:/build/syslinux-b404870/com32/gpllib/../gplinclude/memory.h:40: multiple definition of
+  #     `e820_types'; memory.o:/build/syslinux-b404870/com32/gpllib/../gplinclude/memory.h:40: first defined here
+  env.NIX_CFLAGS_COMPILE = "-fcommon";
   # Some tests require qemu, some others fail in a sandboxed environment
   doCheck = false;
 
@@ -138,13 +122,29 @@ stdenv.mkDerivation {
     rm -rf $out/share/syslinux/com32
   '';
 
+  # Fails very rarely with 'No rule to make target: ...'
+  enableParallelBuilding = false;
+
+  hardeningDisable = [
+    "pic"
+    "stackprotector"
+    "fortify"
+  ];
+
+  stripDebugList = [
+    "bin"
+    "sbin"
+    "share/syslinux/com32"
+  ];
+
   passthru.tests.biosCdrom = nixosTests.boot.biosCdrom;
 
   meta = {
-    homepage = "https://www.syslinux.org/";
     description = "Lightweight bootloader";
+    homepage = "https://www.syslinux.org/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"

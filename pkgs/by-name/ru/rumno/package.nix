@@ -1,18 +1,18 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitLab,
-  pkg-config,
+  atk,
+  cairo,
   dbus,
   gdk-pixbuf,
   glib,
-  gtk3,
-  cairo,
-  atk,
-  pango,
-  harfbuzz,
   gtk-layer-shell,
+  gtk3,
+  harfbuzz,
   nix-update-script,
+  pango,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -25,8 +25,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-vR6+dNq0sdVtzdBL6GTzqAhl0fE6ulF6UCqIH1fSte4=";
   };
-
-  cargoHash = "sha256-1FyDMdOO7m6y2oX/+VH5LxBwimz7fXM59eOeiffBnOI=";
 
   nativeBuildInputs = [
     pkg-config
@@ -44,6 +42,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     gtk-layer-shell
   ];
 
+  cargoHash = "sha256-1FyDMdOO7m6y2oX/+VH5LxBwimz7fXM59eOeiffBnOI=";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -51,7 +50,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://gitlab.com/ivanmalison/rumno";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ imalison ];
-    mainProgram = "rumno";
     platforms = lib.platforms.linux;
+    mainProgram = "rumno";
   };
 })

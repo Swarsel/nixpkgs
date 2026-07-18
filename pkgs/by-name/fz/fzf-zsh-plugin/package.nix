@@ -1,8 +1,8 @@
 {
-  bash,
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  bash,
   unstableGitUpdater,
   zsh,
 }:
@@ -37,8 +37,8 @@ stdenv.mkDerivation {
   passthru.updateScript = unstableGitUpdater { tagPrefix = "v"; };
 
   meta = {
-    homepage = "https://github.com/unixorn/fzf-zsh-plugin";
     description = "ZSH plugin to enable fzf searches of a lot more stuff - docker, tmux, homebrew and more";
+    homepage = "https://github.com/unixorn/fzf-zsh-plugin";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.eymeric ];
     platforms = lib.platforms.all;

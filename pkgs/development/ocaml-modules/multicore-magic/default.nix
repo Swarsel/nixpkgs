@@ -1,11 +1,11 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
-  nodejs-slim,
   alcotest,
+  buildDunePackage,
   domain_shims,
   js_of_ocaml,
+  nodejs-slim,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -19,19 +19,20 @@ buildDunePackage (finalAttrs: {
 
   doCheck = true;
 
-  checkInputs = [
-    alcotest
-    domain_shims
-  ];
   nativeCheckInputs = [
     nodejs-slim
     js_of_ocaml
   ];
 
+  checkInputs = [
+    alcotest
+    domain_shims
+  ];
+
   meta = {
     description = "Low-level multicore utilities for OCaml";
-    license = lib.licenses.isc;
     homepage = "https://github.com/ocaml-multicore/multicore-magic";
+    license = lib.licenses.isc;
     maintainers = [ lib.maintainers.vbgl ];
   };
 })

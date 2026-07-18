@@ -19,13 +19,17 @@ stdenv.mkDerivation rec {
     fetchSubmodules = true;
   };
 
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+  ];
+
   nativeBuildInputs = [
     bmake
     docbook_xsl
     libxslt # xsltproc
   ];
-  enableParallelBuilding = true;
-  enableParallelInstalling = false;
 
   # note: build checks value of '$CC' to add some extra cflags, but we don't
   # necessarily know which 'stdenv' someone chose, so we leave it alone (e.g.
@@ -54,17 +58,14 @@ stdenv.mkDerivation rec {
     done
   '';
 
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-  ];
+  enableParallelBuilding = true;
+  enableParallelInstalling = false;
 
   meta = {
     description = "DFA regular expression library & friends";
     homepage = "https://github.com/katef/libfsm";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ thoughtpolice ];
+    platforms = lib.platforms.unix;
   };
 }

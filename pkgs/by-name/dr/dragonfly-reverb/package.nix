@@ -2,16 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libjack2,
   libGL,
-  pkg-config,
+  libjack2,
   libx11,
-
-  buildStandalone ? true,
-  buildVST3 ? true,
-  buildLV2 ? true,
+  pkg-config,
   buildCLAP ? true,
+  buildLV2 ? true,
+  buildStandalone ? true,
   buildVST2 ? false, # can't distribute
+  buildVST3 ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -44,6 +43,7 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libjack2
     libx11
@@ -93,13 +93,15 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/michaelwillis/dragonfly-reverb";
     description = "Hall-style reverb based on freeverb3 algorithms";
+    homepage = "https://github.com/michaelwillis/dragonfly-reverb";
+    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       magnetophon
       mrtnvgr
     ];
-    license = lib.licenses.gpl3Plus;
+
     platforms = lib.platforms.linux;
     badPlatforms = [ lib.systems.inspect.patterns.isAarch ];
   };

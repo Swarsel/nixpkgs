@@ -3,18 +3,19 @@
   stdenv,
   fetchurl,
   SDL,
-  libGLU,
+  SDL_sound,
   libGL,
-  zlib,
+  libGLU,
+  libmikmod,
   libpng,
   libvorbis,
-  libmikmod,
-  SDL_sound,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "gltron";
   version = "0.70";
+
   src = fetchurl {
     url = "mirror://sourceforge/gltron/gltron-${finalAttrs.version}-source.tar.gz";
     sha256 = "e0c8ebb41a18a1f8d7302a9c2cb466f5b1dd63e9a9966c769075e6b6bdad8bb0";
@@ -25,9 +26,9 @@ stdenv.mkDerivation (finalAttrs: {
 
     # gcc-14 build fix: https://sourceforge.net/p/gltron/patches/7/
     (fetchurl {
+      hash = "sha256-OJAUAM/OQVwxYnIacBkncNxMLn/HDCoysbi+Txe+DC8=";
       name = "gcc-14.patch";
       url = "https://sourceforge.net/p/gltron/patches/7/attachment/gcc-14.patch";
-      hash = "sha256-OJAUAM/OQVwxYnIacBkncNxMLn/HDCoysbi+Txe+DC8=";
     })
   ];
 
@@ -36,12 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i /__USE_MISC/d lua/src/lib/liolib.c
   '';
 
-  # The build fails, unless we disable the default -Wall -Werror
-  configureFlags = [ "--disable-warn" ];
-
-  makeFlags = [ "AR=${stdenv.cc.targetPrefix}ar" ];
-
-  env.SDL_CONFIG = lib.getExe' (lib.getDev SDL) "sdl-config";
+  strictDeps = true;
 
   buildInputs = [
     SDL
@@ -54,15 +50,18 @@ stdenv.mkDerivation (finalAttrs: {
     SDL_sound
   ];
 
-  strictDeps = true;
+  # The build fails, unless we disable the default -Wall -Werror
+  configureFlags = [ "--disable-warn" ];
+  makeFlags = [ "AR=${stdenv.cc.targetPrefix}ar" ];
+  env.SDL_CONFIG = lib.getExe' (lib.getDev SDL) "sdl-config";
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "http://www.gltron.org/";
     description = "Game based on the movie Tron";
-    mainProgram = "gltron";
+    homepage = "http://www.gltron.org/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = with lib.platforms; linux;
+    mainProgram = "gltron";
   };
 })

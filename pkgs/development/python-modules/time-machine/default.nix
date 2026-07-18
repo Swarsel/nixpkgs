@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  python-dateutil,
-  tokenize-rt,
+  buildPythonPackage,
   freezegun,
   pytestCheckHook,
+  python-dateutil,
+  setuptools,
+  tokenize-rt,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "time-machine";
   version = "3.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "adamchainz";
@@ -21,21 +20,17 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-UWoKvNz0ojVZtkIUGT02zJitza+mkyToANQMsU64xL4=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    python-dateutil
-  ];
-
-  optional-dependencies.cli = [
-    tokenize-rt
-  ];
-
   nativeCheckInputs = [
     freezegun
     pytestCheckHook
   ]
   ++ finalAttrs.passthru.optional-dependencies.cli;
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    python-dateutil
+  ];
 
   disabledTests = [
     # https://github.com/adamchainz/time-machine/issues/405
@@ -47,6 +42,11 @@ buildPythonPackage (finalAttrs: {
     "test_move_to_datetime_with_tzinfo_zoneinfo"
   ];
 
+  optional-dependencies.cli = [
+    tokenize-rt
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "time_machine" ];
 
   meta = {

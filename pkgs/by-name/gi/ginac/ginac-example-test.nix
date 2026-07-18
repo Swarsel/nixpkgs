@@ -1,8 +1,8 @@
 {
-  runCommand,
-  gccStdenv,
   cln,
+  gccStdenv,
   ginac,
+  runCommand,
 }:
 runCommand "ginac-example-test"
   {

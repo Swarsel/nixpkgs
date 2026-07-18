@@ -1,5 +1,6 @@
 {
-  mkDerivation,
+  lib,
+  fetchFromGitHub,
   HsOpenSSL,
   QuickCheck,
   aeson,
@@ -9,6 +10,7 @@
   containers,
   crypton-connection,
   directory,
+  dotenv,
   hpack,
   hspec,
   hspec-discover,
@@ -16,8 +18,8 @@
   http-client,
   http-client-openssl,
   http-conduit,
-  lib,
   megaparsec,
+  mkDerivation,
   network-uri,
   optparse-applicative,
   parser-combinators,
@@ -27,8 +29,6 @@
   unix,
   unordered-containers,
   utf8-string,
-  dotenv,
-  fetchFromGitHub,
 }:
 mkDerivation rec {
   pname = "vaultenv";
@@ -42,15 +42,8 @@ mkDerivation rec {
   };
 
   buildTools = [ hpack ];
+  description = "Runs processes with secrets from HashiCorp Vault";
 
-  prePatch = ''
-    substituteInPlace package.yaml \
-        --replace -Werror ""
-    hpack
-  '';
-
-  isLibrary = false;
-  isExecutable = true;
   executableHaskellDepends = [
     HsOpenSSL
     aeson
@@ -75,6 +68,21 @@ mkDerivation rec {
     unordered-containers
     utf8-string
   ];
+
+  homepage = "https://github.com/channable/vaultenv#readme";
+  isExecutable = true;
+  isLibrary = false;
+  license = lib.licenses.bsd3;
+
+  maintainers = [
+  ];
+
+  prePatch = ''
+    substituteInPlace package.yaml \
+        --replace -Werror ""
+    hpack
+  '';
+
   testHaskellDepends = executableHaskellDepends ++ [
     QuickCheck
     directory
@@ -82,10 +90,5 @@ mkDerivation rec {
     hspec-discover
     hspec-expectations
     quickcheck-instances
-  ];
-  homepage = "https://github.com/channable/vaultenv#readme";
-  description = "Runs processes with secrets from HashiCorp Vault";
-  license = lib.licenses.bsd3;
-  maintainers = [
   ];
 }

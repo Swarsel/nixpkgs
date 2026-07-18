@@ -1,10 +1,10 @@
 {
   lib,
-  nix,
-  runCommand,
-  removeReferencesTo,
-  path,
   gitMinimal,
+  nix,
+  path,
+  removeReferencesTo,
+  runCommand,
 }:
 let
   nixpkgs = lib.cleanSource path;

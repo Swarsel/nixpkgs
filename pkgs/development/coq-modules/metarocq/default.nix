@@ -1,11 +1,11 @@
 {
   lib,
-  mkCoqDerivation,
-  single ? false,
+  ExtLib,
   coq,
   equations,
-  ExtLib,
+  mkCoqDerivation,
   stdlib,
+  single ? false,
   version ? null,
 }@args:
 
@@ -31,39 +31,48 @@ let
 
   # list of core metarocq packages and their dependencies
   packages = {
-    "utils" = [ ];
-    "common" = [ "utils" ];
-    "template-rocq" = [ "common" ];
-    "pcuic" = [ "common" ];
-    "safechecker" = [ "pcuic" ];
-    "template-pcuic" = [
-      "template-rocq"
-      "pcuic"
-    ];
-    "erasure" = [
-      "safechecker"
-      "template-pcuic"
-    ];
-    "quotation" = [
-      "template-rocq"
-      "pcuic"
-      "template-pcuic"
-    ];
-    "safechecker-plugin" = [
-      "template-pcuic"
-      "safechecker"
-    ];
-    "erasure-plugin" = [
-      "template-pcuic"
-      "erasure"
-    ];
-    "translations" = [ "template-rocq" ];
     "all" = [
       "safechecker-plugin"
       "erasure-plugin"
       "translations"
       "quotation"
     ];
+
+    "common" = [ "utils" ];
+
+    "erasure" = [
+      "safechecker"
+      "template-pcuic"
+    ];
+
+    "erasure-plugin" = [
+      "template-pcuic"
+      "erasure"
+    ];
+
+    "pcuic" = [ "common" ];
+
+    "quotation" = [
+      "template-rocq"
+      "pcuic"
+      "template-pcuic"
+    ];
+
+    "safechecker" = [ "pcuic" ];
+
+    "safechecker-plugin" = [
+      "template-pcuic"
+      "safechecker"
+    ];
+
+    "template-pcuic" = [
+      "template-rocq"
+      "pcuic"
+    ];
+
+    "template-rocq" = [ "common" ];
+    "translations" = [ "template-rocq" ];
+    "utils" = [ ];
   };
 
   template-rocq = metarocq_ "template-rocq";
@@ -91,7 +100,6 @@ let
             owner
             ;
 
-          mlPlugin = true;
           propagatedBuildInputs = [
             equations
             ExtLib
@@ -101,14 +109,8 @@ let
           ]
           ++ metarocq-deps;
 
-          patchPhase = ''
-            patchShebangs ./configure.sh
-            patchShebangs ./template-rocq/update_plugin.sh
-            patchShebangs ./template-rocq/gen-src/to-lower.sh
-            patchShebangs ./safechecker-plugin/clean_extraction.sh
-            patchShebangs ./erasure-plugin/clean_extraction.sh
-            echo "CAMLFLAGS+=-w -60 # Unused module" >> ./safechecker/Makefile.plugin.local
-            sed -i -e 's/mv $i $newi;/mv $i tmp; mv tmp $newi;/' ./template-rocq/gen-src/to-lower.sh ./safechecker-plugin/clean_extraction.sh ./erasure-plugin/clean_extraction.sh
+          preBuild = ''
+            cd ${pkgpath}
           '';
 
           configurePhase =
@@ -133,8 +135,16 @@ let
               ./configure.sh local
             '';
 
-          preBuild = ''
-            cd ${pkgpath}
+          mlPlugin = true;
+
+          patchPhase = ''
+            patchShebangs ./configure.sh
+            patchShebangs ./template-rocq/update_plugin.sh
+            patchShebangs ./template-rocq/gen-src/to-lower.sh
+            patchShebangs ./safechecker-plugin/clean_extraction.sh
+            patchShebangs ./erasure-plugin/clean_extraction.sh
+            echo "CAMLFLAGS+=-w -60 # Unused module" >> ./safechecker/Makefile.plugin.local
+            sed -i -e 's/mv $i $newi;/mv $i tmp; mv tmp $newi;/' ./template-rocq/gen-src/to-lower.sh ./safechecker-plugin/clean_extraction.sh ./erasure-plugin/clean_extraction.sh
           '';
 
           meta = {

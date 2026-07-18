@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -36,10 +36,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "BGP implemented in Go";
-    mainProgram = "gobgpd";
     homepage = "https://osrg.github.io/gobgp/";
     changelog = "https://github.com/osrg/gobgp/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ higebu ];
+    mainProgram = "gobgpd";
   };
 })

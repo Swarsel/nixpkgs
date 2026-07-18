@@ -1,13 +1,12 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
 }:
 
 buildPythonPackage rec {
   pname = "spacy-legacy";
   version = "3.0.12";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
 
   # nativeCheckInputs = [ pytestCheckHook spacy ];
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "spacy_legacy" ];
 
   meta = {

@@ -1,9 +1,9 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  pam,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   nixosTests,
+  pam,
 }:
 
 buildGoModule {
@@ -17,16 +17,16 @@ buildGoModule {
     sha256 = "0nb9hpqbghgi3zvq41kabydzyc6ffaaw9b4jkc5jrwn1klpw1xk8";
   };
 
+  buildInputs = [
+    pam
+  ];
+
+  vendorHash = "sha256-fOIzJuTXiDNJak5ilgI2KnPOCogbFWTlPL3yNQdzUUI=";
+
   preBuild = ''
     cp ${./go.mod} go.mod
     cp ${./go.sum} go.sum
   '';
-
-  vendorHash = "sha256-fOIzJuTXiDNJak5ilgI2KnPOCogbFWTlPL3yNQdzUUI=";
-
-  buildInputs = [
-    pam
-  ];
 
   buildPhase = ''
     runHook preBuild
@@ -38,6 +38,7 @@ buildGoModule {
 
     runHook postBuild
   '';
+
   checkPhase = ''
     runHook preCheck
 
@@ -45,6 +46,7 @@ buildGoModule {
 
     runHook postCheck
   '';
+
   installPhase = ''
     runHook preInstall
 
@@ -57,10 +59,10 @@ buildGoModule {
   passthru.tests = { inherit (nixosTests) pam-ussh; };
 
   meta = {
-    homepage = "https://github.com/uber/pam-ussh";
     description = "PAM module to authenticate using SSH certificates";
+    homepage = "https://github.com/uber/pam-ussh";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ lukegb ];
+    platforms = lib.platforms.linux;
   };
 }

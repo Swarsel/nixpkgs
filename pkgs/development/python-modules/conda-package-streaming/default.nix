@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   requests,
   zstandard,
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "conda-package-streaming";
   version = "0.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "conda";
@@ -19,11 +18,13 @@ buildPythonPackage rec {
   };
 
   build-system = [ flit-core ];
+
   dependencies = [
     requests
     zstandard
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "conda_package_streaming" ];
 
   meta = {

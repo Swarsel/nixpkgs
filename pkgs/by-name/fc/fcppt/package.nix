@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   boost,
   catch2_3,
+  cmake,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "fcppt";
@@ -18,6 +18,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     boost
     catch2_3
@@ -32,6 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Freundlich's C++ toolkit";
+
     longDescription = ''
       Freundlich's C++ Toolkit (fcppt) is a collection of libraries focusing on
       improving general C++ code by providing better types, a strong focus on
@@ -39,9 +41,11 @@ stdenv.mkDerivation (finalAttrs: {
       programming (which is both efficient and syntactically affordable in
       C++11).
     '';
+
     homepage = "https://fcppt.org";
     license = lib.licenses.boost;
     maintainers = with lib.maintainers; [ pmiddend ];
+
     platforms = [
       "x86_64-linux"
       "x86_64-windows"

@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,17 +17,15 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
+  # tests fail on linux for some reason
+  doCheck = stdenv.hostPlatform.isDarwin;
+  # Fix tests by preventing them from writing to /homeless-shelter.
+  preCheck = "export HOME=$(mktemp -d)";
 
   ldflags = [
     "-s"
     "-w"
   ];
-
-  # Fix tests by preventing them from writing to /homeless-shelter.
-  preCheck = "export HOME=$(mktemp -d)";
-
-  # tests fail on linux for some reason
-  doCheck = stdenv.hostPlatform.isDarwin;
 
   meta = {
     description = "Simple CLI for interacting with Google API authentication";

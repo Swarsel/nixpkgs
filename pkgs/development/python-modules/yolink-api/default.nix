@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aiomqtt,
   buildPythonPackage,
-  fetchFromGitHub,
   pydantic,
   setuptools,
   tenacity,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "yolink-api";
   version = "0.6.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "YoSmart-Inc";
@@ -21,6 +20,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-2nZNrCLxgO/pwjZZQYb3C4ImVn70WRa+THbi4iRDgJw=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,9 +31,7 @@ buildPythonPackage (finalAttrs: {
     tenacity
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "yolink" ];
 
   meta = {

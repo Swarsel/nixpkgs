@@ -1,19 +1,16 @@
 {
   lib,
   buildDunePackage,
-  decoders,
-  jsonaf ? null,
   containers,
+  decoders,
   ounit2,
+  jsonaf ? null,
 }:
 
 buildDunePackage (finalAttrs: {
-  pname = "decoders-jsonaf";
-
   # sub-package built separately from the same source
   inherit (decoders) src version;
-
-  minimalOCamlVersion = "4.11.0";
+  pname = "decoders-jsonaf";
 
   propagatedBuildInputs = [
     decoders
@@ -21,10 +18,13 @@ buildDunePackage (finalAttrs: {
   ];
 
   doCheck = true;
+
   checkInputs = [
     containers
     ounit2
   ];
+
+  minimalOCamlVersion = "4.11.0";
 
   meta = {
     description = "Jsonaf backend for decoders";

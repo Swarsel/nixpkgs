@@ -2,21 +2,19 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-
-  # build systems
-  setuptools,
   # runtime deps
   click,
   fastjsonschema,
   jsonschema,
   pyyaml,
   requests,
+  # build systems
+  setuptools,
   tqdm,
 }:
 buildPythonPackage rec {
   pname = "stac-validator";
   version = "4.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "stac-utils";
@@ -27,10 +25,6 @@ buildPythonPackage rec {
 
   build-system = [ setuptools ];
 
-  pythonRelaxDeps = [
-    "click"
-  ];
-
   dependencies = [
     click
     fastjsonschema
@@ -40,7 +34,12 @@ buildPythonPackage rec {
     tqdm
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "stac_validator" ];
+
+  pythonRelaxDeps = [
+    "click"
+  ];
 
   meta = {
     description = "Validator for the SpatioTemporal Asset Catalog (STAC) specification";

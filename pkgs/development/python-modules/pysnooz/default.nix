@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   bleak,
   bleak-retry-connector,
   bluetooth-sensor-state-data,
   buildPythonPackage,
   events,
-  fetchFromGitHub,
   freezegun,
   home-assistant-bluetooth,
   poetry-core,
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "pysnooz";
   version = "0.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "AustinBrunkhorst";
@@ -39,6 +38,14 @@ buildPythonPackage rec {
       --replace-fail 'Events = "^0.4"' 'Events = ">=0.4"'
   '';
 
+  nativeCheckInputs = [
+    freezegun
+    pytest-asyncio_0
+    pytest-cov-stub
+    pytest-mock
+    pytestCheckHook
+  ];
+
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -50,14 +57,7 @@ buildPythonPackage rec {
     transitions
   ];
 
-  nativeCheckInputs = [
-    freezegun
-    pytest-asyncio_0
-    pytest-cov-stub
-    pytest-mock
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pysnooz" ];
 
   meta = {

@@ -1,18 +1,18 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   copyDesktopItems,
-  pkg-config,
   glib,
   gtk3,
+  imagemagick,
+  libayatana-appindicator,
+  makeDesktopItem,
+  nix-update-script,
   openssl,
+  pkg-config,
+  rustPlatform,
   wayland,
   xdotool,
-  makeDesktopItem,
-  libayatana-appindicator,
-  imagemagick,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -25,10 +25,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-r3D6Uj8buMceqXov6An+OxgOTcNFrX5PwxhphtbeUv0=";
   };
-
-  cargoHash = "sha256-uRL9cnvEZzaO/Qewl8Nm1LZlidCLLDC/RDY2j5byMnE=";
-
-  sourceRoot = "${finalAttrs.src.name}/windSend-rs";
 
   nativeBuildInputs = [
     copyDesktopItems
@@ -43,6 +39,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     wayland
     xdotool
   ];
+
+  cargoHash = "sha256-uRL9cnvEZzaO/Qewl8Nm1LZlidCLLDC/RDY2j5byMnE=";
 
   checkFlags = [
     # need x11 server
@@ -59,15 +57,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=sync::session_registry::tests::start_attach_rejects_duplicate_session_ids"
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "windsend-rs";
-      exec = "wind_send";
-      icon = "windsend-rs";
-      desktopName = "WindSend";
-    })
-  ];
-
   postInstall = ''
     mkdir -p $out/share/icons/hicolor/128x128/apps
     magick icon-192.png -resize 128x128 $out/share/icons/hicolor/128x128/apps/windsend-rs.png
@@ -77,14 +66,24 @@ rustPlatform.buildRustPackage (finalAttrs: {
     patchelf --add-rpath ${lib.makeLibraryPath [ libayatana-appindicator ]} $out/bin/wind_send
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      desktopName = "WindSend";
+      exec = "wind_send";
+      icon = "windsend-rs";
+      name = "windsend-rs";
+    })
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/windSend-rs";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Quickly and securely sync clipboard, transfer files and directories between devices";
     homepage = "https://github.com/doraemonkeys/WindSend";
-    mainProgram = "wind_send";
     license = with lib.licenses; [ mit ];
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "wind_send";
   };
 })

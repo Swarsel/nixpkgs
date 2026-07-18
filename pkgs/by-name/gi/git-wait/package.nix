@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
   git,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
@@ -27,6 +27,7 @@ rustPlatform.buildRustPackage {
   # versionCheckHook is too complex to use here
   doInstallCheck = true;
   nativeInstallCheckInputs = [ git ];
+
   installCheckPhase = ''
     runHook preInstallCheck
 

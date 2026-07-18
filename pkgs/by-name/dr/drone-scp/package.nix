@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "drone-scp";
@@ -15,7 +15,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-GJwNG2vN/Vw0d3ecR8dMUdMp4P9Sh/WZ9C78AmJWezU=";
-
   # Needs a specific user...
   doCheck = false;
 

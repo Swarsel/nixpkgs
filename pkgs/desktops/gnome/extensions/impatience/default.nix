@@ -34,17 +34,18 @@ stdenv.mkDerivation {
   '';
 
   passthru = {
-    extensionUuid = "impatience@gfxmonk.net";
     extensionPortalSlug = "impatience";
+    extensionUuid = "impatience@gfxmonk.net";
   };
 
   meta = {
     description = "Speed up builtin gnome-shell animations";
+    homepage = "http://gfxmonk.net/dist/0install/gnome-shell-impatience.xml";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       timbertson
       tiramiseb
     ];
-    homepage = "http://gfxmonk.net/dist/0install/gnome-shell-impatience.xml";
   };
 }

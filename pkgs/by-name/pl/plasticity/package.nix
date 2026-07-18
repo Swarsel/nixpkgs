@@ -1,4 +1,7 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   alsa-lib,
   at-spi2-atk,
   autoPatchelfHook,
@@ -7,37 +10,34 @@
   dbus,
   desktop-file-utils,
   expat,
-  fetchurl,
   gdk-pixbuf,
   gtk3,
   gvfs,
   hicolor-icon-theme,
-  lib,
+  libGL,
   libdrm,
+  libgbm,
   libglvnd,
   libnotify,
+  libx11,
+  libxcb,
+  libxcomposite,
+  libxdamage,
+  libxext,
+  libxfixes,
   libxkbcommon,
-  libgbm,
-  libGL,
+  libxrandr,
+  libxtst,
   nspr,
   nss,
   openssl,
   pango,
   rpmextract,
-  stdenv,
   systemd,
   trash-cli,
   vulkan-loader,
   wrapGAppsHook3,
   xdg-utils,
-  libxtst,
-  libxrandr,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcomposite,
-  libx11,
-  libxcb,
 }:
 stdenv.mkDerivation rec {
   pname = "plasticity";
@@ -47,8 +47,6 @@ stdenv.mkDerivation rec {
     url = "https://github.com/nkallen/plasticity/releases/download/v${version}/Plasticity-${version}-1.x86_64.rpm";
     hash = "sha256-gHoih3CldhrHPLBpu3slRUxJSBIbYYhQ9WhEbhjHzyM=";
   };
-
-  passthru.updateScript = ./update.sh;
 
   nativeBuildInputs = [
     wrapGAppsHook3
@@ -81,35 +79,6 @@ stdenv.mkDerivation rec {
     xdg-utils
   ];
 
-  runtimeDependencies = [
-    systemd
-    libglvnd
-    vulkan-loader # may help with nvidia users
-    libx11
-    libxcb
-    libxcomposite
-    libxdamage
-    libxext
-    libxfixes
-    libxrandr
-    libxtst
-  ];
-
-  dontUnpack = true;
-
-  # can't find anything on the internet about these files, no clue what they do
-  autoPatchelfIgnoreMissingDeps = [
-    "ACCAMERA.tx"
-    "AcMPolygonObj15.tx"
-    "ATEXT.tx"
-    "ISM.tx"
-    "RText.tx"
-    "SCENEOE.tx"
-    "TD_DbEntities.tx"
-    "TD_DbIO.tx"
-    "WipeOut.tx"
-  ];
-
   installPhase = ''
     runHook preInstall
 
@@ -136,16 +105,49 @@ stdenv.mkDerivation rec {
     ln -s -t "$out/lib/Plasticity" "${lib.getLib vulkan-loader}/lib/libvulkan.so.1"
   '';
 
+  # can't find anything on the internet about these files, no clue what they do
+  autoPatchelfIgnoreMissingDeps = [
+    "ACCAMERA.tx"
+    "AcMPolygonObj15.tx"
+    "ATEXT.tx"
+    "ISM.tx"
+    "RText.tx"
+    "SCENEOE.tx"
+    "TD_DbEntities.tx"
+    "TD_DbIO.tx"
+    "WipeOut.tx"
+  ];
+
+  dontUnpack = true;
+
+  runtimeDependencies = [
+    systemd
+    libglvnd
+    vulkan-loader # may help with nvidia users
+    libx11
+    libxcb
+    libxcomposite
+    libxdamage
+    libxext
+    libxfixes
+    libxrandr
+    libxtst
+  ];
+
+  passthru.updateScript = ./update.sh;
+
   meta = {
     description = "CAD for artists";
     homepage = "https://www.plasticity.xyz";
     license = lib.licenses.unfree;
-    mainProgram = "Plasticity";
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       imadnyc
       bearfm
     ];
+
     platforms = [ "x86_64-linux" ];
+    mainProgram = "Plasticity";
   };
 }

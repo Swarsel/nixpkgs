@@ -1,30 +1,32 @@
 {
   channel,
   pname,
+  sha256Hash,
   version,
   versionPrefix,
-  sha256Hash,
 }:
 
 {
+  lib,
+  stdenv,
+  fetchurl,
   android-tools,
   bash,
   buildFHSEnv,
   coreutils,
   dpkg,
   e2fsprogs,
-  fetchurl,
   findutils,
+  fontconfig,
+  fontsConf,
+  freetype,
   git,
+  glib,
   gnugrep,
   gnused,
   gnutar,
   gtk2,
-  glib,
   gzip,
-  fontsConf,
-  fontconfig,
-  freetype,
   libGL,
   libsecret,
   libx11,
@@ -33,22 +35,20 @@
   libxrandr,
   libxrender,
   libxtst,
+  makeDesktopItem,
   makeFontsConf,
   makeWrapper,
   ncurses5,
   openssl,
   ps,
   python3,
-  lib,
-  stdenv,
+  runCommand,
   unzip,
   usbutils,
   which,
-  runCommand,
   xkeyboard_config,
   zip,
   zlib,
-  makeDesktopItem,
   tiling_wm ? false, # if we are using a tiling wm, need to set _JAVA_AWT_WM_NONREPARENTING in wrapper
 }:
 
@@ -56,8 +56,8 @@ let
   filename = "asfp-${versionPrefix}-${version}-linux.deb";
 
   androidStudioForPlatform = stdenv.mkDerivation {
-    pname = "${pname}-unwrapped";
     inherit version;
+    pname = "${pname}-unwrapped";
 
     src = fetchurl {
       url = "https://dl.google.com/android/asfp/${filename}";
@@ -133,15 +133,16 @@ let
   };
 
   desktopItem = makeDesktopItem {
-    name = pname;
-    exec = pname;
-    icon = pname;
-    desktopName = "Android Studio for Platform (${channel} channel)";
-    comment = "The official Android IDE for Android platform development";
     categories = [
       "Development"
       "IDE"
     ];
+
+    comment = "The official Android IDE for Android platform development";
+    desktopName = "Android Studio for Platform (${channel} channel)";
+    exec = pname;
+    icon = pname;
+    name = pname;
     startupNotify = true;
     startupWMClass = "jetbrains-studio";
   };
@@ -150,13 +151,15 @@ let
   # (e.g. `mksdcard`) have `/lib/ld-linux.so.2` set as the interpreter. An FHS
   # environment is used as a work around for that.
   fhsEnv = buildFHSEnv {
-    pname = "${pname}-fhs-env";
     inherit version;
+    pname = "${pname}-fhs-env";
+
     multiPkgs = pkgs: [
       zlib
       ncurses5
       ncurses5.dev
     ];
+
     profile = ''
       export ALLOW_NINJA_ENV=true
       export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib:/usr/lib32
@@ -166,26 +169,34 @@ in
 runCommand "${pname}-${version}"
   {
     inherit pname version;
+    allowSubstitutes = false;
+    preferLocalBuild = true;
+
     startScript = ''
       #!${bash}/bin/bash
       ${lib.getExe fhsEnv} ${androidStudioForPlatform}/bin/studio.sh "$@"
     '';
-    preferLocalBuild = true;
-    allowSubstitutes = false;
+
     passthru = {
       unwrapped = androidStudioForPlatform;
     };
+
     meta = {
       description = "Official IDE for Android platform development";
+
       longDescription = ''
         Android Studio for Platform (ASfP) is the version of the Android Studio IDE
         for Android Open Source Project (AOSP) platform developers who build with the Soong build system.
       '';
+
       homepage = "https://developer.android.com/studio/platform.html";
+
       license = with lib.licenses; [
         asl20
         unfree
       ]; # The code is under Apache-2.0, but:
+
+      maintainers = with lib.maintainers; [ robbins ];
       # If one selects Help -> Licenses in Android Studio, the dialog shows the following:
       # "Android Studio includes proprietary code subject to separate license,
       # including JetBrains CLion(R) (www.jetbrains.com/clion) and IntelliJ(R)
@@ -194,9 +205,8 @@ runCommand "${pname}-${version}"
       # binaries are also distributed as proprietary software (unlike the
       # source-code itself).
       platforms = [ "x86_64-linux" ];
-      maintainers = with lib.maintainers; [ robbins ];
-      teams = [ lib.teams.android ];
       mainProgram = pname;
+      teams = [ lib.teams.android ];
     };
   }
   ''

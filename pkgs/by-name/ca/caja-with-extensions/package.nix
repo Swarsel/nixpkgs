@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
-  glib,
-  wrapGAppsHook3,
-  lndir,
+  stdenv,
   atril,
   caja,
   caja-extensions,
   engrampa,
+  glib,
+  lndir,
+  wrapGAppsHook3,
   extensions ? [ ],
   useDefaultExtensions ? true,
 }:
@@ -22,9 +22,9 @@ let
     ]);
 in
 stdenv.mkDerivation {
-  pname = "${caja.pname}-with-extensions";
   inherit (caja) version outputs;
-
+  inherit (caja) meta;
+  pname = "${caja.pname}-with-extensions";
   src = null;
 
   nativeBuildInputs = [
@@ -38,13 +38,6 @@ stdenv.mkDerivation {
     ++ selectedExtensions
     ++ [ caja ]
     ++ caja.buildInputs;
-
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
-
-  preferLocalBuild = true;
-  allowSubstitutes = false;
 
   installPhase = ''
     runHook preInstall
@@ -73,5 +66,9 @@ stdenv.mkDerivation {
     )
   '';
 
-  inherit (caja) meta;
+  allowSubstitutes = false;
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
+  preferLocalBuild = true;
 }

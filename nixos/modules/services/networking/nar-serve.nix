@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -10,29 +10,14 @@ let
   cfg = config.services.nar-serve;
 in
 {
-  meta = {
-    maintainers = with lib.maintainers; [
-      rizary
-      zimbatm
-    ];
-  };
   options = {
     services.nar-serve = {
       enable = lib.mkEnableOption "serving NAR file contents via HTTP";
-
       package = lib.mkPackageOption pkgs "nar-serve" { };
 
-      port = mkOption {
-        type = types.port;
-        default = 8383;
-        description = ''
-          Port number where nar-serve will listen on.
-        '';
-      };
-
       cacheURL = mkOption {
-        type = types.str;
         default = "https://cache.nixos.org/";
+
         description = ''
           Binary cache URL to connect to.
 
@@ -41,36 +26,57 @@ in
           - s3:// for binary caches stored in Amazon S3
           - gs:// for binary caches stored in Google Cloud Storage
         '';
+
+        type = types.str;
       };
 
       domain = mkOption {
-        type = types.str;
         default = "";
+
         description = ''
           When set, enables the feature of serving <nar-hash>.<domain>
           on top of <domain>/nix/store/<nar-hash>-<pname>.
 
           Useful to preview static websites where paths are absolute.
         '';
+
+        type = types.str;
+      };
+
+      port = mkOption {
+        default = 8383;
+
+        description = ''
+          Port number where nar-serve will listen on.
+        '';
+
+        type = types.port;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.nar-serve = {
-      description = "NAR server";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
-
-      environment.PORT = toString cfg.port;
+      description = "NAR server";
       environment.NAR_CACHE_URL = cfg.cacheURL;
+      environment.PORT = toString cfg.port;
 
       serviceConfig = {
+        DynamicUser = true;
+        ExecStart = lib.getExe cfg.package;
         Restart = "always";
         RestartSec = "5s";
-        ExecStart = lib.getExe cfg.package;
-        DynamicUser = true;
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
+  };
+
+  meta = {
+    maintainers = with lib.maintainers; [
+      rizary
+      zimbatm
+    ];
   };
 }

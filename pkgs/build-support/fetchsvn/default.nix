@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   buildPackages,
   cacert,
-  subversion,
   glibcLocales,
-  sshSupport ? true,
+  stdenvNoCC,
+  subversion,
   openssh ? null,
+  sshSupport ? true,
 }:
 
 let
@@ -42,13 +42,13 @@ in
 
 {
   url,
-  rev ? "HEAD",
-  name ? repoToName url rev,
-  sha256 ? "",
   hash ? "",
   ignoreExternals ? false,
   ignoreKeywords ? false,
+  name ? repoToName url rev,
   preferLocalBuild ? true,
+  rev ? "HEAD",
+  sha256 ? "",
 }:
 
 assert sshSupport -> openssh != null;
@@ -58,25 +58,6 @@ if hash != "" && sha256 != "" then
 else
   stdenvNoCC.mkDerivation {
     inherit name;
-    builder = ./builder.sh;
-    nativeBuildInputs = [
-      cacert
-      subversion
-      glibcLocales
-    ]
-    ++ lib.optional sshSupport openssh;
-
-    SVN_SSH = if sshSupport then "${buildPackages.openssh}/bin/ssh" else null;
-
-    outputHashAlgo = if hash != "" then null else "sha256";
-    outputHashMode = "recursive";
-    outputHash =
-      if hash != "" then
-        hash
-      else if sha256 != "" then
-        sha256
-      else
-        lib.fakeSha256;
 
     inherit
       url
@@ -85,6 +66,27 @@ else
       ignoreKeywords
       ;
 
-    impureEnvVars = lib.fetchers.proxyImpureEnvVars;
     inherit preferLocalBuild;
+
+    nativeBuildInputs = [
+      cacert
+      subversion
+      glibcLocales
+    ]
+    ++ lib.optional sshSupport openssh;
+
+    SVN_SSH = if sshSupport then "${buildPackages.openssh}/bin/ssh" else null;
+    builder = ./builder.sh;
+    impureEnvVars = lib.fetchers.proxyImpureEnvVars;
+
+    outputHash =
+      if hash != "" then
+        hash
+      else if sha256 != "" then
+        sha256
+      else
+        lib.fakeSha256;
+
+    outputHashAlgo = if hash != "" then null else "sha256";
+    outputHashMode = "recursive";
   }

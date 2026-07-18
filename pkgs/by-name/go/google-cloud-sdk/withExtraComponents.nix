@@ -1,8 +1,8 @@
 {
   lib,
+  components,
   google-cloud-sdk,
   symlinkJoin,
-  components,
 }:
 
 comps_:
@@ -70,20 +70,20 @@ in
 # root. In order to not trip up this logic and still have the symlink joined root we copy
 # over this file. Since this file also has a Python wrapper, we need to copy that as well.
 symlinkJoin {
-  name = "google-cloud-sdk-${google-cloud-sdk.version}";
   inherit (google-cloud-sdk) meta;
-
-  paths = [
-    google-cloud-sdk
-  ]
-  ++ comps;
-
-  # Prevent Python from writing bytecode to ensure build determinism
-  PYTHONDONTWRITEBYTECODE = "1";
 
   postBuild = ''
     sed -i ';' $out/google-cloud-sdk/bin/.gcloud-wrapped
     sed -i -e "s#${google-cloud-sdk}#$out#" "$out/google-cloud-sdk/bin/gcloud"
     ${installCheck}
   '';
+
+  # Prevent Python from writing bytecode to ensure build determinism
+  PYTHONDONTWRITEBYTECODE = "1";
+  name = "google-cloud-sdk-${google-cloud-sdk.version}";
+
+  paths = [
+    google-cloud-sdk
+  ]
+  ++ comps;
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,17 +17,17 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-vXQSFh9lD7iNjgUwhA4AMZ2miq/1pV8Y8QT7rcvgdCE=";
 
-  subPackages = [
-    "."
-    "cmd/*"
-  ];
-
   preCheck = ''
     DIR="github.com/btcsuite/btcd/"
     # TestCreateDefaultConfigFile requires the sample-btcd.conf in $DIR
     mkdir -p $DIR
     cp sample-btcd.conf $DIR
   '';
+
+  subPackages = [
+    "."
+    "cmd/*"
+  ];
 
   meta = {
     description = "Alternative full node bitcoin implementation written in Go (golang)";

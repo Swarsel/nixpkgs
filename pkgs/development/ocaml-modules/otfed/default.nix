@@ -1,19 +1,17 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  alcotest,
   base,
+  buildDunePackage,
   ppx_deriving,
   ppx_inline_test,
   uutf,
-  alcotest,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "otfed";
   version = "0.3.1";
-
-  minimalOCamlVersion = "4.08";
 
   src = fetchFromGitHub {
     owner = "gfngfn";
@@ -32,15 +30,17 @@ buildDunePackage (finalAttrs: {
     ppx_inline_test
   ];
 
+  doCheck = true;
+
   checkInputs = [
     alcotest
   ];
 
-  doCheck = true;
+  minimalOCamlVersion = "4.08";
 
   meta = {
-    homepage = "https://github.com/gfngfn/otfed";
     description = "OpenType Font Format Encoder & Decoder";
+    homepage = "https://github.com/gfngfn/otfed";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.vbgl ];
   };

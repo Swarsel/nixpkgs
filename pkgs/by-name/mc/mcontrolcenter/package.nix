@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  qt6,
-  makeDesktopItem,
-  copyDesktopItems,
   fetchFromGitHub,
   cmake,
+  copyDesktopItems,
   kmod,
+  makeDesktopItem,
+  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,17 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace src/helper/mcontrolcenter.helper.service \
       --replace-fail "/usr" "$out"
   '';
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "MControlCenter";
-      exec = "mcontrolcenter";
-      icon = "mcontrolcenter";
-      comment = finalAttrs.meta.description;
-      desktopName = "MControlCenter";
-      categories = [ "System" ];
-    })
-  ];
 
   nativeBuildInputs = [
     qt6.wrapQtAppsHook
@@ -60,12 +49,23 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "System" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "MControlCenter";
+      exec = "mcontrolcenter";
+      icon = "mcontrolcenter";
+      name = "MControlCenter";
+    })
+  ];
+
   meta = {
-    homepage = "https://github.com/dmitry-s93/MControlCenter";
     description = "Tool to change the settings of MSI laptops running Linux";
+    homepage = "https://github.com/dmitry-s93/MControlCenter";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.Tommimon ];
+    platforms = lib.platforms.linux;
     mainProgram = "mcontrolcenter";
   };
 })

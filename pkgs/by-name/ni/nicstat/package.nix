@@ -43,8 +43,8 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/scotte/nicstat/blob/${finalAttrs.src.rev}/ChangeLog.txt";
     license = lib.licenses.artistic2;
     maintainers = with lib.maintainers; [ juliusrickert ];
-    mainProgram = "nicstat";
     platforms = lib.platforms.unix;
+    mainProgram = "nicstat";
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

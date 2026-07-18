@@ -1,7 +1,7 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 let
@@ -17,7 +17,6 @@ in
 buildPythonApplication (finalAttrs: {
   pname = "lesspass-cli";
   version = "9.1.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = repo;
@@ -25,12 +24,6 @@ buildPythonApplication (finalAttrs: {
     rev = finalAttrs.version;
     sha256 = "126zk248s9r72qk9b8j27yvb8gglw49kazwz0sd69b5kkxvhz2dh";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/cli";
-
-  build-system = [
-    setuptools
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -47,13 +40,19 @@ buildPythonApplication (finalAttrs: {
       --replace-fail "lesspass/core.py" "-m lesspass.core"
   '';
 
+  build-system = [
+    setuptools
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "lesspass" ];
+  sourceRoot = "${finalAttrs.src.name}/cli";
 
   meta = {
     description = "Stateless password manager";
-    mainProgram = "lesspass";
     homepage = "https://lesspass.com";
-    maintainers = with lib.maintainers; [ jasoncarr ];
     license = lib.licenses.gpl3;
+    maintainers = with lib.maintainers; [ jasoncarr ];
+    mainProgram = "lesspass";
   };
 })

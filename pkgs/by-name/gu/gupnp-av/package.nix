@@ -1,21 +1,26 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  gi-docgen,
+  glib,
+  gnome,
+  gobject-introspection,
+  libxml2,
   meson,
   ninja,
   pkg-config,
-  gi-docgen,
-  gobject-introspection,
   vala,
-  glib,
-  libxml2,
-  gnome,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "gupnp-av";
   version = "0.14.5";
+
+  src = fetchurl {
+    url = "mirror://gnome/sources/gupnp-av/${lib.versions.majorMinor finalAttrs.version}/gupnp-av-${finalAttrs.version}.tar.xz";
+    sha256 = "k5GPz1r1Kf2ls9LZ/Dt3zZPfiAZJObgvJJ9Vd9jeHAI=";
+  };
 
   outputs = [
     "out"
@@ -23,16 +28,7 @@ stdenv.mkDerivation (finalAttrs: {
     "devdoc"
   ];
 
-  src = fetchurl {
-    url = "mirror://gnome/sources/gupnp-av/${lib.versions.majorMinor finalAttrs.version}/gupnp-av-${finalAttrs.version}.tar.xz";
-    sha256 = "k5GPz1r1Kf2ls9LZ/Dt3zZPfiAZJObgvJJ9Vd9jeHAI=";
-  };
-
   strictDeps = true;
-
-  depsBuildBuild = [
-    pkg-config
-  ];
 
   nativeBuildInputs = [
     meson
@@ -59,6 +55,10 @@ stdenv.mkDerivation (finalAttrs: {
     moveToOutput "share/doc/gupnp-av-1.0" "$devdoc"
   '';
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   passthru = {
     updateScript = gnome.updateScript {
       packageName = "gupnp-av";
@@ -67,8 +67,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "http://gupnp.org/";
     description = "Collection of helpers for building AV (audio/video) applications using GUPnP";
+    homepage = "http://gupnp.org/";
     license = lib.licenses.lgpl2Plus;
     platforms = lib.platforms.unix;
   };

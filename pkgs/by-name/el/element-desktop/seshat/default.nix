@@ -1,13 +1,13 @@
 {
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  nodejs,
-  yarn,
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
+  nodejs,
+  rustPlatform,
   sqlcipher,
+  yarn,
+  yarnBuildHook,
+  yarnConfigHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,15 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-2v/qXMCD+r+CSQHtP/YT62p4GoApbGz33kcZfJAKbOU=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/seshat-node";
-
-  cargoHash = "sha256-krSm1wy7HkCOLEHPPHCx6V9Mj+FiavyhO6bLOz2/3Qw=";
-
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/seshat-node/yarn.lock";
-    hash = "sha256-hh9n8By/dNdKS55rcZkzCxmJWwQa6Ovt+4M3YP3/hDs=";
-  };
-
   nativeBuildInputs = [
     nodejs
     yarn
@@ -38,6 +29,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   buildInputs = [ sqlcipher ];
+  cargoHash = "sha256-krSm1wy7HkCOLEHPPHCx6V9Mj+FiavyhO6bLOz2/3Qw=";
 
   installPhase = ''
     runHook preInstall
@@ -49,4 +41,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   disallowedReferences = [ stdenv.cc.cc ];
+  sourceRoot = "${finalAttrs.src.name}/seshat-node";
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-hh9n8By/dNdKS55rcZkzCxmJWwQa6Ovt+4M3YP3/hDs=";
+    yarnLock = finalAttrs.src + "/seshat-node/yarn.lock";
+  };
 })

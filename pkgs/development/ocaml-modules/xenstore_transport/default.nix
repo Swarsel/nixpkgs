@@ -1,17 +1,14 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
-  xenstore,
+  buildDunePackage,
   lwt,
+  xenstore,
 }:
 
 buildDunePackage rec {
   pname = "xenstore_transport";
   version = "1.5.0";
-
-  minimalOCamlVersion = "4.08";
-  duneVersion = "3";
 
   src = fetchFromGitHub {
     owner = "xapi-project";
@@ -27,11 +24,13 @@ buildDunePackage rec {
 
   # requires a mounted xenfs and xen server
   doCheck = false;
+  duneVersion = "3";
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "Low-level libraries for connecting to a xenstore service on a xen host";
-    license = lib.licenses.lgpl21Only;
     homepage = "https://github.com/xapi-project/ocaml-xenstore-clients";
+    license = lib.licenses.lgpl21Only;
     teams = [ lib.teams.xen ];
   };
 }

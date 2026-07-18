@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  fetchgit,
+  stdenv,
   cmake,
+  fetchgit,
 }:
 
 stdenv.mkDerivation {
@@ -29,10 +29,12 @@ stdenv.mkDerivation {
     description = "Tiny OpenWrt fork of libnl";
     homepage = "https://git.openwrt.org/?p=project/libnl-tiny.git;a=summary";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       mkg20001
       dvn0
     ];
+
     platforms = lib.platforms.linux;
   };
 }

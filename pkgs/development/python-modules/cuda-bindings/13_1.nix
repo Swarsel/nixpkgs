@@ -1,25 +1,9 @@
 {
-  replaceVars,
   cudaLibPaths,
+  replaceVars,
 }:
 {
   version = "13.1.1";
-  sourceHash = "sha256-AvIw2G4EGWsX7PxFGxzECXhwkbwYslHzRdUArTNf7jE=";
-
-  nvidiaLibsPatch = replaceVars ./patch-nvidia-libs-paths_13_1.patch {
-    inherit (cudaLibPaths)
-      libcudart
-      libcufile
-      libnvjitlink
-      libnvml
-      libnvrtc
-      libnvvm
-      ;
-  };
-
-  pythonImportsCheck = [
-    "cuda.bindings._nvml"
-  ];
 
   disabledTests = [
     # sysfs cpu topology is not available in the sandbox, causing:
@@ -42,4 +26,21 @@
     "test_set_stats_level"
     "test_stats_start_stop"
   ];
+
+  nvidiaLibsPatch = replaceVars ./patch-nvidia-libs-paths_13_1.patch {
+    inherit (cudaLibPaths)
+      libcudart
+      libcufile
+      libnvjitlink
+      libnvml
+      libnvrtc
+      libnvvm
+      ;
+  };
+
+  pythonImportsCheck = [
+    "cuda.bindings._nvml"
+  ];
+
+  sourceHash = "sha256-AvIw2G4EGWsX7PxFGxzECXhwkbwYslHzRdUArTNf7jE=";
 }

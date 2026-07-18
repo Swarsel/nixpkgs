@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,22 +16,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-EIj2BUVS1tbY+kxUnpu1C+0+n68gTFZbp45f5UNidtY=";
-
+  env.RUSTFLAGS = "-Amismatched_lifetime_syntaxes";
   # tests fail with `--release`
   # https://github.com/yarrow/zet/pull/7
   checkType = "debug";
 
-  env.RUSTFLAGS = "-Amismatched_lifetime_syntaxes";
-
   meta = {
     description = "CLI utility to find the union, intersection, set difference, etc of files considered as sets of lines";
-    mainProgram = "zet";
     homepage = "https://github.com/yarrow/zet";
     changelog = "https://github.com/yarrow/zet/blob/${finalAttrs.src.rev}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = [ ];
+    mainProgram = "zet";
   };
 })

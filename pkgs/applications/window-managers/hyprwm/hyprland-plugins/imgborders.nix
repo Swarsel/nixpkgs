@@ -1,12 +1,11 @@
 {
   lib,
+  cmake,
   fetchFromCodeberg,
   mkHyprlandPlugin,
-  cmake,
   nix-update-script,
 }:
 mkHyprlandPlugin (finalAttrs: {
-  pluginName = "imgborders";
   version = "1.0.1";
 
   src = fetchFromCodeberg {
@@ -29,12 +28,14 @@ mkHyprlandPlugin (finalAttrs: {
     runHook postInstall
   '';
 
+  pluginName = "imgborders";
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://codeberg.org/zacoons/imgborders";
     description = "Add tiling image borders to windows!";
+    homepage = "https://codeberg.org/zacoons/imgborders";
     license = lib.licenses.unlicense;
+
     maintainers = with lib.maintainers; [
       mrdev023
     ];

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   agate,
   buildPythonPackage,
-  fetchFromGitHub,
   dbt-adapters,
   dbt-common,
   dbt-core,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "dbt-postgres";
   version = "1.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dbt-labs";
@@ -22,9 +21,9 @@ buildPythonPackage rec {
     hash = "sha256-lywWf78rluX17D5bcfehHd7X18tAdw3HZ65v440jETc=";
   };
 
+  # tests exist for the dbt tool but not for this package specifically
+  doCheck = false;
   build-system = [ hatchling ];
-
-  pythonRemoveDeps = [ "psycopg2-binary" ];
 
   dependencies = [
     agate
@@ -34,10 +33,9 @@ buildPythonPackage rec {
     psycopg2
   ];
 
-  # tests exist for the dbt tool but not for this package specifically
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "dbt.adapters.postgres" ];
+  pythonRemoveDeps = [ "psycopg2-binary" ];
 
   meta = {
     description = "Plugin enabling dbt to work with a Postgres database";

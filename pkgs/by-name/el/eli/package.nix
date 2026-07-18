@@ -2,23 +2,24 @@
   lib,
   stdenv,
   fetchurl,
-  symlinkJoin,
-  makeWrapper,
-  tcl,
-  fontconfig,
-  tk,
-  ncurses,
-  libxt,
-  libxext,
-  libxaw,
-  libx11,
   file,
+  fontconfig,
+  libx11,
+  libxaw,
+  libxext,
+  libxt,
+  makeWrapper,
+  ncurses,
+  symlinkJoin,
+  tcl,
+  tk,
 }:
 
 let
   # eli derives the location of the include folder from the location of the lib folder
   tk_combined = symlinkJoin {
     name = "tk_combined";
+
     paths = [
       tk
       tk.dev
@@ -26,6 +27,7 @@ let
   };
   curses_combined = symlinkJoin {
     name = "curses_combined";
+
     paths = [
       ncurses
       ncurses.dev
@@ -47,6 +49,11 @@ stdenv.mkDerivation (finalAttrs: {
     ./function-declarations.patch
   ];
 
+  nativeBuildInputs = [
+    file
+    makeWrapper
+  ];
+
   buildInputs = [
     ncurses
     fontconfig
@@ -56,14 +63,8 @@ stdenv.mkDerivation (finalAttrs: {
     libxext.dev
   ];
 
-  nativeBuildInputs = [
-    file
-    makeWrapper
-  ];
-
   # skip interactive browser check
   buildFlags = [ "nobrowsers" ];
-
   # Workaround build failure on -fno-common toolchains:
   #   ld: cexp.o:(.bss+0x40): multiple definition of `obstck'; cccp.o:(.bss+0x0): first defined here
   # Workaround build failure on "function definitions with identifier lists":
@@ -87,6 +88,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   # Test if eli starts
   doInstallCheck = true;
+
   installCheckPhase = ''
     export HOME="$TMP/home"
     mkdir -p "$HOME"
@@ -95,11 +97,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Translator Construction Made Easy";
+
     longDescription = ''
       Eli is a programming environment that supports all phases of translator
       construction with extensive libraries implementing common tasks, yet handling
       arbitrary special cases. Output is the C subset of C++.
     '';
+
     homepage = "https://eli-project.sourceforge.net/";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ timokau ];

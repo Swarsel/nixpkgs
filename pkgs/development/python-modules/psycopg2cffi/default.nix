@@ -1,8 +1,9 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   buildPythonPackage,
   cffi,
-  fetchFromGitHub,
-  lib,
   libpq,
   postgresql,
   postgresqlTestHook,
@@ -10,13 +11,11 @@
   pythonAtLeast,
   setuptools,
   six,
-  stdenv,
 }:
 
 buildPythonPackage rec {
   pname = "psycopg2cffi";
   version = "2.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "chtd";
@@ -31,17 +30,12 @@ buildPythonPackage rec {
       --replace-fail "sysconfig.get_python_inc()" "sysconfig.get_path('include')"
   '';
 
-  buildInputs = [ libpq ];
   nativeBuildInputs = [ libpq.pg_config ];
+  buildInputs = [ libpq ];
 
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    cffi
-    six
-  ];
+  env = {
+    PGDATABASE = "psycopg2_test";
+  };
 
   # FATAL: could not create shared memory segment: Operation not permitted
   doCheck = !stdenv.hostPlatform.isDarwin;
@@ -52,9 +46,13 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  disabledTests = [
-    # AssertionError: '{}' != []
-    "testEmptyArray"
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    cffi
+    six
   ];
 
   disabledTestPaths = lib.optionals (pythonAtLeast "3.13") [
@@ -62,10 +60,12 @@ buildPythonPackage rec {
     "psycopg2cffi/tests/psycopg2_tests/test_notify.py"
   ];
 
-  env = {
-    PGDATABASE = "psycopg2_test";
-  };
+  disabledTests = [
+    # AssertionError: '{}' != []
+    "testEmptyArray"
+  ];
 
+  pyproject = true;
   pythonImportsCheck = [ "psycopg2cffi" ];
 
   meta = {

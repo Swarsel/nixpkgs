@@ -1,7 +1,7 @@
 {
+  lib,
   fetchFromGitHub,
   gf2x,
-  lib,
   rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -15,15 +15,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-trCH2LIC3hjm3MMEoVGO2AY33eYTfn4N2mm2rOfUwt4=";
   };
 
-  cargoHash = "sha256-Flz7h2/i4WIGr8CgVjpbCGHUkkGKSiHw5wlOIo7uuXo=";
-
   buildInputs = [
     gf2x
   ];
 
+  cargoHash = "sha256-Flz7h2/i4WIGr8CgVjpbCGHUkkGKSiHw5wlOIo7uuXo=";
+
   meta = {
-    homepage = "https://github.com/8051Enthusiast/delsum";
     description = "Reverse engineer's checksum toolbox";
+    homepage = "https://github.com/8051Enthusiast/delsum";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ timschumi ];
     mainProgram = "delsum";

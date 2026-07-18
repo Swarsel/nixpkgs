@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  zlib,
-  gsl,
   boost,
+  gsl,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

@@ -1,20 +1,19 @@
 {
-  electron,
-  fetchFromGitHub,
-  nix-update-script,
-  imagemagick,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  electron,
+  fetchPnpmDeps,
+  imagemagick,
   makeDesktopItem,
   makeWrapper,
+  nix-update-script,
   nodejs,
-  pnpm_11,
-  fetchPnpmDeps,
   pnpmConfigHook,
-  stdenv,
+  pnpm_11,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "folo";
-
   version = "1.10.0";
 
   src = fetchFromGitHub {
@@ -24,6 +23,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-+k09Psuf6Bvjoc9Z1O0u2v44IIsaSQF1QbjJM6cWlUw=";
   };
 
+  postPatch = ''
+    # pnpm 11 verifies node_modules before every `pnpm run` which conflicts
+    # with --shamefully-hoist
+    echo 'verifyDepsBeforeRun: false' >> pnpm-workspace.yaml
+  '';
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     nodejs
     pnpmConfigHook
@@ -32,67 +39,29 @@ stdenv.mkDerivation (finalAttrs: {
     imagemagick
   ];
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      pnpmInstallFlags
-      ;
-    pnpm = pnpm_11;
-    fetcherVersion = 4;
-    hash = "sha256-KzF13ghND1NlJ3e2HsTuMbWZQCwqEXtBO31tyf1iIGI=";
-  };
-
-  __structuredAttrs = true;
-  strictDeps = true;
-
   env = {
     ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
+    VITE_API_URL = "https://api.follow.is";
 
+    VITE_FIREBASE_CONFIG = builtins.toJSON {
+      apiKey = "AIzaSyDuM93019tp8VI7wsszJv8ChOs7b1EE5Hk";
+      appId = "1:194977404578:web:1920bb0c9ea5e2373669fb";
+      authDomain = "follow-428106.firebaseapp.com";
+      measurementId = "G-SJE57D4F14";
+      messagingSenderId = "194977404578";
+      projectId = "follow-428106";
+      storageBucket = "follow-428106.appspot.com";
+    };
+
+    VITE_OPENPANEL_API_URL = "https://openpanel.follow.is/api";
+    VITE_OPENPANEL_CLIENT_ID = "0e477ab4-d92d-4d6e-b889-b09d86ab908e";
+    VITE_SENTRY_DSN = "https://e5bccf7428aa4e881ed5cb713fdff181@o4507542488023040.ingest.us.sentry.io/4507570439979008";
     # This environment variables inject the production Vite config at build time.
     # Copy from:
     # 1. https://github.com/RSSNext/Folo/blob/v0.4.6/.github/workflows/build-desktop.yml#L27
     # 2. And logs in the corresponding GitHub Actions: https://github.com/RSSNext/Folo/actions/workflows/build-desktop.yml
     VITE_WEB_URL = "https://app.follow.is";
-    VITE_API_URL = "https://api.follow.is";
-    VITE_SENTRY_DSN = "https://e5bccf7428aa4e881ed5cb713fdff181@o4507542488023040.ingest.us.sentry.io/4507570439979008";
-    VITE_OPENPANEL_CLIENT_ID = "0e477ab4-d92d-4d6e-b889-b09d86ab908e";
-    VITE_OPENPANEL_API_URL = "https://openpanel.follow.is/api";
-    VITE_FIREBASE_CONFIG = builtins.toJSON {
-      apiKey = "AIzaSyDuM93019tp8VI7wsszJv8ChOs7b1EE5Hk";
-      authDomain = "follow-428106.firebaseapp.com";
-      projectId = "follow-428106";
-      storageBucket = "follow-428106.appspot.com";
-      messagingSenderId = "194977404578";
-      appId = "1:194977404578:web:1920bb0c9ea5e2373669fb";
-      measurementId = "G-SJE57D4F14";
-    };
   };
-
-  dontCheckForBrokenSymlinks = true;
-
-  # Several build scripts import transitive dependencies directly (e.g.
-  # ast-kit from unplugin-ast).
-  pnpmInstallFlags = [ "--shamefully-hoist" ];
-
-  postPatch = ''
-    # pnpm 11 verifies node_modules before every `pnpm run` which conflicts
-    # with --shamefully-hoist
-    echo 'verifyDepsBeforeRun: false' >> pnpm-workspace.yaml
-  '';
-
-  desktopItem = makeDesktopItem {
-    name = "folo";
-    desktopName = "Folo";
-    comment = "Next generation information browser";
-    icon = "follow";
-    exec = "follow";
-    categories = [ "Utility" ];
-    mimeTypes = [ "x-scheme-handler/follow" ];
-  };
-
-  icon = finalAttrs.src + "/apps/desktop/resources/icon.png";
 
   buildPhase = ''
     runHook preBuild
@@ -135,6 +104,38 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
+  desktopItem = makeDesktopItem {
+    categories = [ "Utility" ];
+    comment = "Next generation information browser";
+    desktopName = "Folo";
+    exec = "follow";
+    icon = "follow";
+    mimeTypes = [ "x-scheme-handler/follow" ];
+    name = "folo";
+  };
+
+  dontCheckForBrokenSymlinks = true;
+  icon = finalAttrs.src + "/apps/desktop/resources/icon.png";
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      pnpmInstallFlags
+      ;
+
+    fetcherVersion = 4;
+    hash = "sha256-KzF13ghND1NlJ3e2HsTuMbWZQCwqEXtBO31tyf1iIGI=";
+    pnpm = pnpm_11;
+  };
+
+  # Several build scripts import transitive dependencies directly (e.g.
+  # ast-kit from unplugin-ast).
+  pnpmInstallFlags = [ "--shamefully-hoist" ];
+
   passthru.updateScript = nix-update-script {
     extraArgs = [
       "--version-regex"
@@ -147,10 +148,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/RSSNext/Folo";
     changelog = "https://github.com/RSSNext/Folo/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       amadejkastelic
       iosmanthus
     ];
+
     platforms = [ "x86_64-linux" ];
     mainProgram = "follow";
   };

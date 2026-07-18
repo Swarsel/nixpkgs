@@ -1,22 +1,11 @@
 {
+  csu,
+  include,
   mkDerivation,
   rpcgen,
-  include,
-  csu,
 }:
 
 mkDerivation {
-  path = "lib/librpcsvc";
-  extraPaths = [
-    "sys/nlm"
-    "include/rpcsvc"
-  ];
-  noLibc = true;
-
-  extraNativeBuildInputs = [
-    rpcgen
-  ];
-
   buildInputs = [
     include
   ];
@@ -27,4 +16,16 @@ mkDerivation {
   '';
 
   alwaysKeepStatic = true;
+
+  extraNativeBuildInputs = [
+    rpcgen
+  ];
+
+  extraPaths = [
+    "sys/nlm"
+    "include/rpcsvc"
+  ];
+
+  noLibc = true;
+  path = "lib/librpcsvc";
 }

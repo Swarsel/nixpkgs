@@ -1,7 +1,7 @@
 {
   lib,
-  pkgs,
   factor-unwrapped,
+  pkgs,
   overrides ? (self: super: { }),
 }:
 
@@ -13,27 +13,29 @@ let
     in
     lib.recurseIntoAttrs {
 
+      inherit factor-unwrapped;
+      # Vocabularies
+      bresenham = callPackage ../development/factor-vocabs/bresenham { };
+
       buildFactorApplication =
         callPackage ../development/compilers/factor-lang/mk-factor-application.nix
           { };
+
       buildFactorVocab = callPackage ../development/compilers/factor-lang/mk-vocab.nix { };
-
-      inherit factor-unwrapped;
-
       factor-lang = callPackage ../development/compilers/factor-lang/wrapper.nix { };
-      factor-no-gui = callPackage ../development/compilers/factor-lang/wrapper.nix {
-        guiSupport = false;
-      };
+
       factor-minimal = callPackage ../development/compilers/factor-lang/wrapper.nix {
         enableDefaults = false;
         guiSupport = false;
       };
+
       factor-minimal-gui = callPackage ../development/compilers/factor-lang/wrapper.nix {
         enableDefaults = false;
       };
 
-      # Vocabularies
-      bresenham = callPackage ../development/factor-vocabs/bresenham { };
+      factor-no-gui = callPackage ../development/compilers/factor-lang/wrapper.nix {
+        guiSupport = false;
+      };
 
     }
     // lib.optionalAttrs pkgs.config.allowAliases {

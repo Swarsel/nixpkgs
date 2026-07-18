@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  webos,
   cmake,
   pkg-config,
+  webos,
 }:
 
 stdenv.mkDerivation rec {
@@ -18,16 +18,16 @@ stdenv.mkDerivation rec {
     sha256 = "12s6g7l20kakyjlhqpli496miv2kfsdp17lcwhdrzdxvxl6hnf4n";
   };
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 2.8.7)" "cmake_minimum_required(VERSION 3.10)"
+  '';
+
   nativeBuildInputs = [
     cmake
     pkg-config
     webos.cmake-modules
   ];
-
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 2.8.7)" "cmake_minimum_required(VERSION 3.10)"
-  '';
 
   postInstall = ''
     install -Dm755 -t $out/bin ../scripts/novaterm

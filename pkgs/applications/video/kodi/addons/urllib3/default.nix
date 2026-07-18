@@ -1,14 +1,13 @@
 {
   lib,
-  rel,
+  addonUpdateScript,
   buildKodiAddon,
   fetchzip,
-  addonUpdateScript,
+  rel,
 }:
 
 buildKodiAddon rec {
   pname = "urllib3";
-  namespace = "script.module.urllib3";
   version = "2.2.3";
 
   src = fetchzip {
@@ -16,16 +15,19 @@ buildKodiAddon rec {
     sha256 = "sha256-xapFA51ENjkB3IldUey5WqXAjMij66dNqILQjKD/VkA=";
   };
 
+  namespace = "script.module.urllib3";
+
   passthru = {
     pythonPath = "lib";
+
     updateScript = addonUpdateScript {
       attrPath = "kodi.packages.urllib3";
     };
   };
 
   meta = {
-    homepage = "https://urllib3.readthedocs.io/en/latest/";
     description = "HTTP library with thread-safe connection pooling, file post, and more";
+    homepage = "https://urllib3.readthedocs.io/en/latest/";
     license = lib.licenses.mit;
     teams = [ lib.teams.kodi ];
   };

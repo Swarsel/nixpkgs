@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   jupyter-contrib-core,
   jupyter-core,
   jupyter-server,
   notebook,
-  pyyaml,
-  tornado,
   pytestCheckHook,
+  pyyaml,
   selenium,
+  tornado,
 }:
 
 buildPythonPackage rec {
   pname = "jupyter-nbextensions-configurator";
   version = "0.6.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jupyter-contrib";
@@ -23,6 +22,11 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-U4M6pGV/DdE+DOVMVaoBXOhfRERt+yUa+gADgqRRLn4=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    selenium
+  ];
 
   dependencies = [
     jupyter-contrib-core
@@ -33,11 +37,6 @@ buildPythonPackage rec {
     tornado
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    selenium
-  ];
-
   # Those tests fails upstream
   disabledTestPaths = [
     "tests/test_application.py"
@@ -45,14 +44,15 @@ buildPythonPackage rec {
     "tests/test_nbextensions_configurator.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "jupyter_nbextensions_configurator" ];
 
   meta = {
     description = "Jupyter notebook serverextension providing config interfaces for nbextensions";
-    mainProgram = "jupyter-nbextensions_configurator";
     homepage = "https://github.com/jupyter-contrib/jupyter_nbextensions_configurator";
     changelog = "https://github.com/Jupyter-contrib/jupyter_nbextensions_configurator/releases/tag/${version}";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ GaetanLepage ];
+    mainProgram = "jupyter-nbextensions_configurator";
   };
 }

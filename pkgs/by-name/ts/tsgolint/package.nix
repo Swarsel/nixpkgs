@@ -1,7 +1,7 @@
 {
   lib,
-  buildGo126Module,
   fetchFromGitHub,
+  buildGo126Module,
   findutils,
   nix-update-script,
 }:
@@ -17,12 +17,6 @@ buildGo126Module (finalAttrs: {
     hash = "sha256-6HTVsCz4lh/SM8nlaFT3U+TEOoEajqPr+60fn9PV4+w=";
     fetchSubmodules = true;
   };
-
-  nativeBuildInputs = [ findutils ];
-
-  prePatch = ''
-    pushd typescript-go
-  '';
 
   # These patches are applied to the typescript-go submodule in upstream justfile's "init" target.
   patches = [
@@ -40,9 +34,14 @@ buildGo126Module (finalAttrs: {
       mkdir -p internal/collections && find ./typescript-go/internal/collections -type f ! -name '*_test.go' -exec cp {} internal/collections/ \;
     '';
 
-  proxyVendor = true;
+  nativeBuildInputs = [ findutils ];
   vendorHash = "sha256-FVngoARi1ci/h5nE3CVwxkS6XuMvzpZH5j2Nl7suhFg=";
 
+  prePatch = ''
+    pushd typescript-go
+  '';
+
+  proxyVendor = true;
   subPackages = [ "cmd/tsgolint" ];
 
   passthru = {

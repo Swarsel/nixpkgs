@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   freezegun,
   mock,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "duo-client";
   version = "5.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "duosecurity";
@@ -28,10 +27,6 @@ buildPythonPackage rec {
       --replace-fail "flake8" ""
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ six ];
-
   nativeCheckInputs = [
     freezegun
     mock
@@ -39,7 +34,8 @@ buildPythonPackage rec {
     pytz
   ];
 
-  pythonImportsCheck = [ "duo_client" ];
+  build-system = [ setuptools ];
+  dependencies = [ six ];
 
   disabledTests = [
     # Tests require network access
@@ -51,6 +47,9 @@ buildPythonPackage rec {
     "test_set_enterprise_billing_edition"
     "test_set_telephony_credits"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "duo_client" ];
 
   meta = {
     description = "Python library for interacting with the Duo Auth, Admin, and Accounts APIs";

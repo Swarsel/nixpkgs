@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  xorgproto,
-  libxt,
   libx11,
+  libxt,
+  xorgproto,
   gifview ? false,
   static ? stdenv.hostPlatform.isStatic,
 }:
@@ -25,10 +25,9 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   configureFlags = lib.optional (!gifview) "--disable-gifview";
-
   env.LDFLAGS = lib.optionalString static "-static";
-
   doCheck = true;
+
   checkPhase = ''
     ./src/gifsicle --info logo.gif
   '';
@@ -37,7 +36,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Command-line tool for creating, editing, and getting information about GIF images and animations";
     homepage = "https://www.lcdf.org/gifsicle/";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ zimbatm ];
+    platforms = lib.platforms.all;
   };
 })

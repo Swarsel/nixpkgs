@@ -17,6 +17,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-hmFzFaBMb/hqKqc+2hYda1+iowWhs/pC+6LPPhhqzJo=";
   };
 
+  strictDeps = true;
   nativeBuildInputs = [ byacc ];
   makeFlags = [ "PREFIX=$(out)" ];
 
@@ -26,10 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
-  strictDeps = true;
-
   enableParallelBuilding = true;
-
   passthru.updateScript = gitUpdater { };
 
   meta = {

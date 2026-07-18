@@ -1,14 +1,15 @@
 {
-  mkPrelude,
-  prelude,
   base,
   linear,
+  mkPrelude,
+  prelude,
 }:
 mkPrelude {
-  name = "network";
   dependencies = [
     prelude
     base
     linear
   ];
+
+  name = "network";
 }

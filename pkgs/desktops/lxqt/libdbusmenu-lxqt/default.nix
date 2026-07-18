@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
+  gitUpdater,
   qtbase,
   wrapQtAppsHook,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation rec {
@@ -31,11 +31,11 @@ stdenv.mkDerivation rec {
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Qt implementation of the DBusMenu protocol";
     homepage = "https://github.com/lxqt/libdbusmenu-lxqt";
     license = lib.licenses.lgpl21Plus;
     platforms = with lib.platforms; unix;
+    broken = stdenv.hostPlatform.isDarwin;
     teams = [ lib.teams.lxqt ];
   };
 }

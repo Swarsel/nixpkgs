@@ -1,32 +1,27 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  flit,
-  setuptools,
-
-  # dependencies
-  dask,
-  numpy,
-  odc-geo,
-  rasterio,
-  xarray,
-
   # optional-dependencies
   botocore,
-  zarr,
-
+  buildPythonPackage,
+  # dependencies
+  dask,
+  # build-system
+  flit,
   # tests
   geopandas,
+  numpy,
+  odc-geo,
   pytestCheckHook,
+  rasterio,
+  setuptools,
+  xarray,
+  zarr,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "odc-loader";
   version = "0.6.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "opendatacube";
@@ -34,6 +29,12 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-nJSC93+uPzsZY0ZHmrodPkCIk2FZnZ2ksfJIvr+x0As=";
   };
+
+  nativeCheckInputs = [
+    geopandas
+    pytestCheckHook
+  ]
+  ++ finalAttrs.passthru.optional-dependencies.all;
 
   build-system = [
     flit
@@ -47,24 +48,20 @@ buildPythonPackage (finalAttrs: {
     xarray
   ];
 
-  optional-dependencies = lib.fix (self: {
-    botocore = [ botocore ];
-    zarr = [ zarr ];
-    all = self.botocore ++ self.zarr;
-  });
-
-  nativeCheckInputs = [
-    geopandas
-    pytestCheckHook
-  ]
-  ++ finalAttrs.passthru.optional-dependencies.all;
-
   disabledTests = [
     # Require internet access
     "test_mem_reader"
     "test_memreader_aux"
     "test_memreader_zarr"
   ];
+
+  optional-dependencies = lib.fix (self: {
+    all = self.botocore ++ self.zarr;
+    botocore = [ botocore ];
+    zarr = [ zarr ];
+  });
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "odc.loader"

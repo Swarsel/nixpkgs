@@ -1,13 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "adguardian";
   version = "1.7.0";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Lissy93";
@@ -17,12 +16,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-JJDMrRJVs67EMcGTK75tdU+FhdkiF3RswrZ0fOWrG/U=";
+  __structuredAttrs = true;
 
   meta = {
     description = "Terminal-based, real-time traffic monitoring and statistics for your AdGuard Home instance";
-    mainProgram = "adguardian";
     homepage = "https://github.com/Lissy93/AdGuardian-Term";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ GaetanLepage ];
+    mainProgram = "adguardian";
   };
 })

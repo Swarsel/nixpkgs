@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule rec {
   pname = "gorm-gentool";
@@ -14,16 +14,15 @@ buildGoModule rec {
     hash = "sha256-8xuprFktGflx/5BR3Sbzx/MWerSp57q2Ky2Yn5P6Y28=";
   };
 
-  modRoot = "tools/gentool";
-
-  proxyVendor = true;
   vendorHash = "sha256-0VU+zGQb6Ob9V2zOsUO5+ObUFdQO26236Ei2/TqjTBs=";
+  modRoot = "tools/gentool";
+  proxyVendor = true;
 
   meta = {
-    homepage = "https://github.com/go-gorm/gen";
     description = "Gen: Friendly & Safer GORM powered by Code Generation";
+    homepage = "https://github.com/go-gorm/gen";
     license = lib.licenses.mit;
-    mainProgram = "gentool";
     maintainers = with lib.maintainers; [ tembleking ];
+    mainProgram = "gentool";
   };
 }

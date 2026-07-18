@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  makeWrapper,
   apr,
-  expat,
-  gnused,
-  sslSupport ? true,
-  openssl,
-  bdbSupport ? true,
+  autoreconfHook,
+  cyrus_sasl,
   db,
-  ldapSupport ? !stdenv.hostPlatform.isCygwin,
-  openldap,
+  expat,
+  fetchpatch,
+  gnused,
   libiconv,
   libxcrypt,
-  cyrus_sasl,
-  autoreconfHook,
+  makeWrapper,
+  openldap,
+  openssl,
+  bdbSupport ? true,
+  ldapSupport ? !stdenv.hostPlatform.isCygwin,
+  sslSupport ? true,
 }:
 
 assert sslSupport -> openssl != null;
@@ -32,34 +32,42 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-pBB243EHRjJsOUUEKZStmk/KwM4Cd92P6gdv7DyXcrU=";
   };
 
-  patches = [
-    ./fix-libxcrypt-build.patch
-    # Fix incorrect Berkeley DB detection with newer versions of clang due to implicit `int` on main errors.
-    (fetchpatch {
-      url = "https://github.com/apache/apr-util/commit/2d838ff7319bd384a0b177f40ac19c4b6c81436d.patch?full_index=1";
-      hash = "sha256-/N6V5D1d9R6AVjHUwy3Ne839D3ZSsF3Hpn8W9sx1sXM=";
-      excludes = [ "CHANGES" ];
-    })
-    # Fix error with missing function prototype
-    (fetchpatch {
-      url = "https://github.com/apache/apr-util/commit/e67caa006c75181b45b761cd50294cb3c8e18f1a.patch?full_index=1";
-      hash = "sha256-fwKT7mGPHIgJ5uG/KAOOE/38FSNfow+GJgHCxcp9mgI=";
-    })
-  ]
-  ++ lib.optional stdenv.hostPlatform.isFreeBSD ./include-static-dependencies.patch;
-
-  env.NIX_CFLAGS_LINK = toString [ "-lcrypt" ];
-
   outputs = [
     "out"
     "dev"
   ];
-  outputBin = "dev";
+
+  patches = [
+    ./fix-libxcrypt-build.patch
+    # Fix incorrect Berkeley DB detection with newer versions of clang due to implicit `int` on main errors.
+    (fetchpatch {
+      excludes = [ "CHANGES" ];
+      hash = "sha256-/N6V5D1d9R6AVjHUwy3Ne839D3ZSsF3Hpn8W9sx1sXM=";
+      url = "https://github.com/apache/apr-util/commit/2d838ff7319bd384a0b177f40ac19c4b6c81436d.patch?full_index=1";
+    })
+    # Fix error with missing function prototype
+    (fetchpatch {
+      hash = "sha256-fwKT7mGPHIgJ5uG/KAOOE/38FSNfow+GJgHCxcp9mgI=";
+      url = "https://github.com/apache/apr-util/commit/e67caa006c75181b45b761cd50294cb3c8e18f1a.patch?full_index=1";
+    })
+  ]
+  ++ lib.optional stdenv.hostPlatform.isFreeBSD ./include-static-dependencies.patch;
 
   nativeBuildInputs = [
     makeWrapper
     autoreconfHook
   ];
+
+  propagatedBuildInputs = [
+    apr
+    expat
+    libiconv
+    libxcrypt
+  ]
+  ++ lib.optional sslSupport openssl
+  ++ lib.optional bdbSupport db
+  ++ lib.optional ldapSupport openldap
+  ++ lib.optional stdenv.hostPlatform.isFreeBSD cyrus_sasl;
 
   configureFlags = [
     "--with-apr=${apr.dev}"
@@ -78,6 +86,8 @@ stdenv.mkDerivation (finalAttrs: {
     "--without-crypto"
   ];
 
+  env.NIX_CFLAGS_LINK = toString [ "-lcrypt" ];
+
   postConfigure = ''
     echo '#define APR_HAVE_CRYPT_H 1' >> confdefs.h
   ''
@@ -92,17 +102,6 @@ stdenv.mkDerivation (finalAttrs: {
         --replace "-ldb-6.9" "-ldb"
     '';
 
-  propagatedBuildInputs = [
-    apr
-    expat
-    libiconv
-    libxcrypt
-  ]
-  ++ lib.optional sslSupport openssl
-  ++ lib.optional bdbSupport db
-  ++ lib.optional ldapSupport openldap
-  ++ lib.optional stdenv.hostPlatform.isFreeBSD cyrus_sasl;
-
   postInstall = ''
     for f in $out/lib/*.la $out/lib/apr-util-1/*.la $dev/bin/apu-1-config; do
       substituteInPlace $f \
@@ -116,17 +115,18 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   enableParallelBuilding = true;
+  outputBin = "dev";
 
   passthru = {
     inherit sslSupport bdbSupport ldapSupport;
   };
 
   meta = {
-    homepage = "https://apr.apache.org/";
     description = "Companion library to APR, the Apache Portable Runtime";
-    mainProgram = "apu-1-config";
+    homepage = "https://apr.apache.org/";
+    license = lib.licenses.asl20;
     maintainers = [ ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.asl20;
+    mainProgram = "apu-1-config";
   };
 })

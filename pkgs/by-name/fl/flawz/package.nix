@@ -1,13 +1,13 @@
 {
   lib,
-  fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  openssl,
-  sqlite,
-  installShellFiles,
   stdenv,
+  fetchFromGitHub,
   buildPackages,
+  installShellFiles,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  sqlite,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,7 +21,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-a+UfWoBQP54/Vj5VJ9eMKcG+wQxXtd1bXii281SwjHo=";
   };
 
-  cargoHash = "sha256-MnBbxGS70pG2vRQKfqI/fuWC4gCOYehoh/ncNXsN9kI=";
+  outputs = [
+    "out"
+    "man"
+  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -32,10 +35,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
     sqlite
   ];
-  outputs = [
-    "out"
-    "man"
-  ];
+
+  cargoHash = "sha256-MnBbxGS70pG2vRQKfqI/fuWC4gCOYehoh/ncNXsN9kI=";
 
   postInstall =
     let
@@ -67,12 +68,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Terminal UI for browsing CVEs";
     homepage = "https://github.com/orhun/flawz";
     changelog = "https://github.com/orhun/flawz/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
-    mainProgram = "flawz";
+
     maintainers = with lib.maintainers; [ anas ];
     platforms = with lib.platforms; unix ++ windows;
+    mainProgram = "flawz";
   };
 })

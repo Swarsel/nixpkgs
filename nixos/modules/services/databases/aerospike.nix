@@ -42,17 +42,25 @@ in
 
     services.aerospike = {
       enable = lib.mkEnableOption "Aerospike server";
-
       package = lib.mkPackageOption pkgs "aerospike" { };
 
-      workDir = lib.mkOption {
-        type = lib.types.str;
-        default = "/var/lib/aerospike";
-        description = "Location where Aerospike stores its files";
+      extraConfig = lib.mkOption {
+        default = "";
+        description = "Extra configuration";
+
+        example = ''
+          namespace test {
+            replication-factor 2
+            memory-size 4G
+            default-ttl 30d
+            storage-engine memory
+          }
+        '';
+
+        type = lib.types.lines;
       };
 
       networkConfig = lib.mkOption {
-        type = lib.types.lines;
         default = ''
           service {
             address any
@@ -77,21 +85,15 @@ in
             port 3003
           }
         '';
+
         description = "network section of configuration file";
+        type = lib.types.lines;
       };
 
-      extraConfig = lib.mkOption {
-        type = lib.types.lines;
-        default = "";
-        example = ''
-          namespace test {
-            replication-factor 2
-            memory-size 4G
-            default-ttl 30d
-            storage-engine memory
-          }
-        '';
-        description = "Extra configuration";
+      workDir = lib.mkOption {
+        default = "/var/lib/aerospike";
+        description = "Location where Aerospike stores its files";
+        type = lib.types.str;
       };
     };
 
@@ -101,32 +103,14 @@ in
 
   config = lib.mkIf config.services.aerospike.enable {
 
-    users.users.aerospike = {
-      name = "aerospike";
-      group = "aerospike";
-      uid = config.ids.uids.aerospike;
-      description = "Aerospike server user";
-    };
-    users.groups.aerospike.gid = config.ids.gids.aerospike;
-
     boot.kernel.sysctl = {
       "net.core.rmem_max" = lib.mkDefault 15728640;
       "net.core.wmem_max" = lib.mkDefault 5242880;
     };
 
     systemd.services.aerospike = rec {
-      description = "Aerospike server";
-
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
-
-      serviceConfig = {
-        ExecStart = "${cfg.package}/bin/asd --fgdaemon --config-file ${aerospikeConf}";
-        User = "aerospike";
-        Group = "aerospike";
-        LimitNOFILE = 100000;
-        PermissionsStartOnly = true;
-      };
+      description = "Aerospike server";
 
       preStart = ''
         if [ $(echo "$(${pkgs.procps}/bin/sysctl -n kernel.shmall) < 4294967296" | ${pkgs.bc}/bin/bc) == "1"  ]; then
@@ -142,6 +126,25 @@ in
         install -d -m0700 -o ${serviceConfig.User} -g ${serviceConfig.Group} "${cfg.workDir}/udf"
         install -d -m0700 -o ${serviceConfig.User} -g ${serviceConfig.Group} "${cfg.workDir}/udf/lua"
       '';
+
+      serviceConfig = {
+        ExecStart = "${cfg.package}/bin/asd --fgdaemon --config-file ${aerospikeConf}";
+        Group = "aerospike";
+        LimitNOFILE = 100000;
+        PermissionsStartOnly = true;
+        User = "aerospike";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups.aerospike.gid = config.ids.gids.aerospike;
+
+    users.users.aerospike = {
+      description = "Aerospike server user";
+      group = "aerospike";
+      name = "aerospike";
+      uid = config.ids.uids.aerospike;
     };
 
   };

@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
   autoconf,
   automake,
+  fetchpatch,
   perl,
   rdma-core,
 }:
@@ -22,9 +22,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-+7ckhUUB+7BG6qRKv0wgyIxkyvll2xjf3Wk1hpRsDo0=";
       name = "version-bump.patch";
       url = "https://github.com/linux-rdma/qperf/commit/34ec57ddb7e5ae1adfcfc8093065dff90b69a275.patch";
-      hash = "sha256-+7ckhUUB+7BG6qRKv0wgyIxkyvll2xjf3Wk1hpRsDo0=";
     })
   ];
 
@@ -34,11 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
     perl
     rdma-core
   ];
-  buildInputs = [ rdma-core ];
 
-  postUnpack = ''
-    patchShebangs .
-  '';
+  buildInputs = [ rdma-core ];
 
   configurePhase = ''
     runHook preConfigure
@@ -47,12 +44,16 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postConfigure
   '';
 
+  postUnpack = ''
+    patchShebangs .
+  '';
+
   meta = {
     description = "Measure RDMA and IP performance";
-    mainProgram = "qperf";
     homepage = "https://github.com/linux-rdma/qperf";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ edwtjo ];
+    platforms = lib.platforms.linux;
+    mainProgram = "qperf";
   };
 })

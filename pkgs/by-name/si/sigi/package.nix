@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
   installShellFiles,
-  testers,
+  rustPlatform,
   sigi,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,9 +16,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-O/M0NBES215xLwktgOTVIKeXpDXQHDJcJKV3ej5ILEw=";
   };
 
-  cargoHash = "sha256-0jB/eMXEMNEapqwSeFD6aHsYhzHTEYxL3usFrCCZ4uI=";
   nativeBuildInputs = [ installShellFiles ];
-
+  cargoHash = "sha256-0jB/eMXEMNEapqwSeFD6aHsYhzHTEYxL3usFrCCZ4uI=";
   # In case anything goes wrong.
   checkFlags = [ "RUST_BACKTRACE=1" ];
 

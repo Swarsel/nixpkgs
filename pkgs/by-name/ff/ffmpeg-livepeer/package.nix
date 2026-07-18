@@ -1,18 +1,20 @@
 {
-  ffmpeg_7-headless,
   lib,
   fetchFromGitHub,
+  ffmpeg_7-headless,
 }:
 
 (ffmpeg_7-headless.override {
   version = "7.0.1-unstable-2024-07-10";
-  withCudaLLVM = true;
+
   source = fetchFromGitHub {
+    hash = "sha256-IJVpb/k+obGFD9uOoIVHCd2ZiGL3CA4CV3D+Q9vMbQM=";
     owner = "livepeer";
     repo = "FFmpeg";
     rev = "d9751c73e714b01b363483db358b1ea8022c9bea"; # From branch n*-livepeer
-    hash = "sha256-IJVpb/k+obGFD9uOoIVHCd2ZiGL3CA4CV3D+Q9vMbQM=";
   };
+
+  withCudaLLVM = true;
 }).overrideAttrs
   (old: {
     pname = "ffmpeg-livepeer";
@@ -30,6 +32,7 @@
         pkgConfigModules
         platforms
         ;
+
       maintainers = with lib.maintainers; [ bot-wxt1221 ];
     };
   })

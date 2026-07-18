@@ -1,15 +1,13 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   version ? "2.3.0",
 }:
 
 buildDunePackage {
-  pname = "amqp-client";
-
   inherit version;
-  minimalOCamlVersion = "4.14.0";
+  pname = "amqp-client";
 
   src = fetchFromGitHub {
     owner = "andersfugmann";
@@ -19,13 +17,11 @@ buildDunePackage {
   };
 
   doCheck = true;
+  minimalOCamlVersion = "4.14.0";
 
   meta = {
     description = "Amqp client base library";
-    homepage = "https://github.com/andersfugmann/amqp-client";
-    license = lib.licenses.bsd3;
-    changelog = "https://raw.githubusercontent.com/andersfugmann/amqp-client/refs/tags/${version}/Changelog";
-    maintainers = [ ];
+
     longDescription = ''
       This library provides high level client bindings for amqp. The library
       is tested with rabbitmq, but should work with other amqp
@@ -35,5 +31,10 @@ buildDunePackage {
       You should install either amqp-client-async or amqp-client-lwt
       for actual client functionality.
     '';
+
+    homepage = "https://github.com/andersfugmann/amqp-client";
+    changelog = "https://raw.githubusercontent.com/andersfugmann/amqp-client/refs/tags/${version}/Changelog";
+    license = lib.licenses.bsd3;
+    maintainers = [ ];
   };
 }

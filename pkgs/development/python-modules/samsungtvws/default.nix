@@ -1,33 +1,27 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build system
-  setuptools,
-
-  # propagates:
-  requests,
-  websocket-client,
-
   # extras: async
   aiohttp,
-  websockets,
-
+  # tests
+  aioresponses,
+  buildPythonPackage,
   # extras: encrypted
   cryptography,
   py3rijndael,
-
-  # tests
-  aioresponses,
   pytest-asyncio,
   pytestCheckHook,
+  # propagates:
+  requests,
+  # build system
+  setuptools,
+  websocket-client,
+  websockets,
 }:
 
 buildPythonPackage rec {
   pname = "samsungtvws";
   version = "3.0.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xchwarze";
@@ -35,6 +29,14 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-8DDxon6ZGP0dToYxa2ZkvKl+1aFpvS1Zs+w7Hsozwdw=";
   };
+
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytestCheckHook
+  ]
+  ++ optional-dependencies.async
+  ++ optional-dependencies.encrypted;
 
   build-system = [ setuptools ];
 
@@ -48,20 +50,14 @@ buildPythonPackage rec {
       aiohttp
       websockets
     ];
+
     encrypted = [
       cryptography
       py3rijndael
     ];
   };
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytestCheckHook
-  ]
-  ++ optional-dependencies.async
-  ++ optional-dependencies.encrypted;
-
+  pyproject = true;
   pythonImportsCheck = [ "samsungtvws" ];
 
   meta = {

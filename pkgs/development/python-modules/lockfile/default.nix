@@ -2,15 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pbr,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "lockfile";
   version = "0.12.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -18,17 +17,18 @@ buildPythonPackage rec {
   };
 
   patches = [ ./fix-tests.patch ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     pbr
     setuptools
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   meta = {
-    homepage = "https://launchpad.net/pylockfile";
     description = "Platform-independent advisory file locking capability for Python applications";
+    homepage = "https://launchpad.net/pylockfile";
     license = lib.licenses.asl20;
   };
 }

@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  fetchgit,
-  pkg-config,
-  util-linux,
   bash,
-  udevCheckHook,
+  fetchgit,
   nixosTests,
+  pkg-config,
+  udevCheckHook,
+  util-linux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,7 +23,17 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     udevCheckHook
   ];
+
   buildInputs = [ util-linux ];
+
+  makeFlags = [
+    "PREFIX="
+    "DESTDIR=$(out)"
+  ];
+
+  preInstall = ''
+    mkdir -p "$out/sbin" "$out/lib/udev/rules.d" "$out/share/man/man8"
+  '';
 
   doInstallCheck = true;
 
@@ -44,21 +54,13 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "bcache-register \$tempnode" "${bash}/bin/sh -c 'echo \$tempnode > /sys/fs/bcache/register'"
   '';
 
-  makeFlags = [
-    "PREFIX="
-    "DESTDIR=$(out)"
-  ];
-
-  preInstall = ''
-    mkdir -p "$out/sbin" "$out/lib/udev/rules.d" "$out/share/man/man8"
-  '';
-
   passthru.tests = {
     inherit (nixosTests) bcache;
   };
 
   meta = {
     description = "User-space tools required for bcache (Linux block layer cache)";
+
     longDescription = ''
       Bcache is a Linux kernel block layer cache. It allows one or more fast
       disk drives such as flash-based solid state drives (SSDs) to act as a
@@ -69,13 +71,16 @@ stdenv.mkDerivation (finalAttrs: {
       User documentation is in Documentation/bcache.txt in the Linux kernel
       tree.
     '';
+
     homepage = "https://www.kernel.org/doc/html/latest/admin-guide/bcache.html";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       bjornfor
       pineapplehunter
     ];
-    mainProgram = "bcache-tools";
+
     platforms = lib.platforms.linux;
+    mainProgram = "bcache-tools";
   };
 })

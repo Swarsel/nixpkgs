@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   httpbin,
   pytest,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "pytest-httpbin";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kevin1024";
@@ -21,16 +20,16 @@ buildPythonPackage rec {
     hash = "sha256-gESU1SDpqSQs8GRcGJclWM0WpS4DZicfdtwxk2sQubQ=";
   };
 
-  build-system = [ setuptools ];
-
   buildInputs = [ pytest ];
-
   propagatedBuildInputs = [ httpbin ];
 
   nativeCheckInputs = [
     pytestCheckHook
     requests
   ];
+
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
 
   disabledTests = [
     # incompatible with flask 2.3
@@ -39,8 +38,7 @@ buildPythonPackage rec {
     "test_dont_crash_on_handshake_timeout"
   ];
 
-  __darwinAllowLocalNetworking = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "pytest_httpbin" ];
 
   meta = {

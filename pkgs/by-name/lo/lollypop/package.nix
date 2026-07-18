@@ -1,45 +1,50 @@
 {
   lib,
   fetchFromGitLab,
-  nix-update-script,
-  meson,
-  ninja,
-  pkg-config,
-  python3,
-  gtk3,
+  appstream-glib,
+  desktop-file-utils,
+  gdk-pixbuf,
+  glib,
+  glib-networking,
+  gobject-introspection,
   gst_all_1,
+  gtk3,
+  kid3,
   libhandy,
   libsecret,
   libsoup_3,
-  appstream-glib,
-  desktop-file-utils,
-  totem-pl-parser,
-  gobject-introspection,
-  glib-networking,
-  gdk-pixbuf,
-  glib,
+  meson,
+  ninja,
+  nix-update-script,
   pango,
-  kid3,
+  pkg-config,
+  python3,
+  totem-pl-parser,
   wrapGAppsHook3,
+  kid3Support ? true,
   lastFMSupport ? true,
   youtubeSupport ? true,
-  kid3Support ? true,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "lollypop";
   version = "1.4.40";
 
-  pyproject = false;
-
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "World";
     repo = "lollypop";
     rev = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-hdReviNgcigXuNqJns6aPW+kixlpmRXtqrLlm/LGHBo=";
+    fetchSubmodules = true;
+    domain = "gitlab.gnome.org";
   };
+
+  postPatch = ''
+    chmod +x meson_post_install.py
+    patchShebangs meson_post_install.py
+  '';
+
+  strictDeps = false;
 
   nativeBuildInputs = [
     appstream-glib
@@ -84,34 +89,28 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ++ lib.optional youtubeSupport python3.pkgs.yt-dlp
     ++ lib.optional kid3Support kid3;
 
-  postPatch = ''
-    chmod +x meson_post_install.py
-    patchShebangs meson_post_install.py
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
   postFixup = ''
     wrapPythonProgramsIn $out/libexec "$out $propagatedBuildInputs"
   '';
 
-  strictDeps = false;
-
   # Produce only one wrapper using wrap-python passing
   # gappsWrapperArgs to wrap-python additional wrapper
   # argument
   dontWrapGApps = true;
-
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
+  pyproject = false;
 
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://gitlab.gnome.org/World/lollypop/tags/${finalAttrs.version}";
     description = "Modern music player for GNOME";
     homepage = "https://gitlab.gnome.org/World/lollypop";
+    changelog = "https://gitlab.gnome.org/World/lollypop/tags/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ lovesegfault ];
     platforms = lib.platforms.linux;

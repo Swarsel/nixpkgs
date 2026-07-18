@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   ipython,
   numpy,
   pandas,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "cdcs";
   version = "0.2.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "usnistgov";
@@ -23,6 +22,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-P6fFL9yqnVbeUNBejnTcFowcf9xZP6XwheHwNUZKKlM=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    responses
+  ];
 
   build-system = [ setuptools ];
 
@@ -34,11 +38,7 @@ buildPythonPackage rec {
     tqdm
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    responses
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "cdcs" ];
 
   meta = {

@@ -2,20 +2,32 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
-  cmake,
-  rocm-cmake,
-  rocprim,
   clr,
+  cmake,
   gtest,
-  buildTests ? false,
+  rocm-cmake,
+  rocmUpdateScript,
+  rocprim,
   buildBenchmarks ? false,
+  buildTests ? false,
   gpuTargets ? clr.localGpuTargets or [ ],
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "rocthrust";
   version = "7.2.3";
+
+  src = fetchFromGitHub {
+    owner = "ROCm";
+    repo = "rocm-libraries";
+    rev = "rocm-${finalAttrs.version}";
+    hash = "sha256-wHEgpmBZCYtvp+OyebrRyfoFz3WQyKWfHPrdzQVL8lY=";
+
+    sparseCheckout = [
+      "projects/rocthrust"
+      "shared"
+    ];
+  };
 
   outputs = [
     "out"
@@ -26,18 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals buildBenchmarks [
     "benchmark"
   ];
-
-  src = fetchFromGitHub {
-    owner = "ROCm";
-    repo = "rocm-libraries";
-    rev = "rocm-${finalAttrs.version}";
-    sparseCheckout = [
-      "projects/rocthrust"
-      "shared"
-    ];
-    hash = "sha256-wHEgpmBZCYtvp+OyebrRyfoFz3WQyKWfHPrdzQVL8lY=";
-  };
-  sourceRoot = "${finalAttrs.src.name}/projects/rocthrust";
 
   nativeBuildInputs = [
     cmake
@@ -81,13 +81,14 @@ stdenv.mkDerivation (finalAttrs: {
       rm -rf $out/bin
     '';
 
+  sourceRoot = "${finalAttrs.src.name}/projects/rocthrust";
   passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
 
   meta = {
     description = "ROCm parallel algorithm library";
     homepage = "https://github.com/ROCm/rocm-libraries/tree/develop/projects/rocthrust";
     license = with lib.licenses; [ asl20 ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

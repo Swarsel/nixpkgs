@@ -1,21 +1,19 @@
 {
-  callPackage,
   lib,
   stdenv,
   fetchurl,
+  callPackage,
+  gettext,
+  gnulib,
+  hello,
   nixos,
   testers,
   versionCheckHook,
-  hello,
-  gettext,
-  gnulib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "hello";
   version = "2.12.3";
-
-  __structuredAttrs = true;
 
   src = fetchurl {
     url = "mirror://gnu/hello/hello-${finalAttrs.version}.tar.gz";
@@ -24,6 +22,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = lib.optional stdenv.hostPlatform.isCygwin gnulib.patches.memcpy-fix-backport-250512;
 
+  buildInputs = lib.optionals stdenv.hostPlatform.isFreeBSD [
+    gettext
+  ];
+
   # The GNU Hello `configure` script detects how to link libiconv but fails to actually make use of that.
   # Unfortunately, this cannot be a patch to `Makefile.am` because `autoreconfHook` causes a gettext
   # infrastructure mismatch error when trying to build `hello`.
@@ -31,16 +33,14 @@ stdenv.mkDerivation (finalAttrs: {
     NIX_LDFLAGS = "-liconv";
   };
 
-  buildInputs = lib.optionals stdenv.hostPlatform.isFreeBSD [
-    gettext
-  ];
-
   doCheck = true;
-
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
+  __structuredAttrs = true;
 
   # Give hello some install checks for testing purpose.
   postInstallCheck = ''
@@ -55,16 +55,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Program that produces a familiar, friendly greeting";
+
     longDescription = ''
       GNU Hello is a program that prints "Hello, world!" when you run it.
       It is fully customizable.
     '';
+
     homepage = "https://www.gnu.org/software/hello/manual/";
     changelog = "https://git.savannah.gnu.org/cgit/hello.git/plain/NEWS?h=v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ stv0g ];
-    mainProgram = "hello";
     platforms = lib.platforms.all;
+    mainProgram = "hello";
     identifiers.cpeParts.vendor = "gnu";
   };
 })

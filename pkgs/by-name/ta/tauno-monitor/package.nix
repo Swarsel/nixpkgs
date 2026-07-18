@@ -1,23 +1,20 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
   appstream,
   desktop-file-utils,
   gobject-introspection,
-  wrapGAppsHook4,
   libadwaita,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  python3Packages,
+  wrapGAppsHook4,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "tauno-monitor";
   version = "0.2.20";
-  pyproject = false;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "taunoe";
@@ -40,17 +37,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
     libadwaita
   ];
 
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
+  __structuredAttrs = true;
+
   dependencies = with python3Packages; [
     pygobject3
     pyserial
   ];
 
   dontWrapGApps = true;
-
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
-
+  pyproject = false;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -59,7 +58,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     changelog = "https://github.com/taunoe/tauno-monitor/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ Cameo007 ];
-    mainProgram = "tauno-monitor";
     platforms = lib.platforms.linux;
+    mainProgram = "tauno-monitor";
   };
 })

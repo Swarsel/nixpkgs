@@ -25,9 +25,8 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://graphitemaster.github.io/gmqcc/";
     description = "Modern QuakeC compiler";
-    mainProgram = "gmqcc";
+
     longDescription = ''
       For an enduring period of time the options for a decent compiler for
       the Quake C programming language were confined to a specific compiler
@@ -37,8 +36,11 @@ stdenv.mkDerivation {
       the NIH realm of sarcastic wit.
       We welcome you. You won't find a better Quake C compiler.
     '';
+
+    homepage = "https://graphitemaster.github.io/gmqcc/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ necrophcodr ];
     platforms = lib.platforms.linux;
+    mainProgram = "gmqcc";
   };
 }

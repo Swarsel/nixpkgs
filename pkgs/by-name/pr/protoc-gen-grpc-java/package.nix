@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   autoPatchelfHook,
+  makeWrapper,
 }:
 let
   hostArch =
@@ -36,19 +36,18 @@ let
   data = import ./data.nix;
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "protoc-gen-grpc-java";
   inherit (data) version;
+  pname = "protoc-gen-grpc-java";
+
   src = fetchurl {
     url = "https://repo1.maven.org/maven2/io/grpc/protoc-gen-grpc-java/${finalAttrs.version}/protoc-gen-grpc-java-${finalAttrs.version}-${hostArch}.exe";
     hash = data.hashes.${hostArch} or (throw "Unsuported host arch ${hostArch}");
   };
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
 
   nativeBuildInputs = (lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ]) ++ [
     makeWrapper
   ];
+
   buildInputs = [ stdenv.cc.cc ];
 
   installPhase = ''
@@ -59,19 +58,25 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "gRPC Java Codegen Plugin for Protobuf Compiler";
+
     longDescription = ''
       This generates the Java interfaces out of the service definition from a `.proto` file.
       It works with the Protobuf Compiler (`protoc`).
     '';
-    changelog = "https://github.com/grpc/grpc-java/releases/tag/v${finalAttrs.version}";
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
-    license = lib.licenses.asl20;
-    maintainers = [ lib.maintainers.progrm_jarvis ];
+
     homepage = "https://grpc.io/docs/languages/java/generated-code/";
+    changelog = "https://github.com/grpc/grpc-java/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.asl20;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    maintainers = [ lib.maintainers.progrm_jarvis ];
+
     platforms = [
       # Linux
       "x86_64-linux"

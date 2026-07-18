@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   blas,
-  lapack,
-  gfortran,
   fixDarwinDylibNames,
+  gfortran,
+  lapack,
   nix-update-script,
   python3Packages,
 }:
@@ -54,15 +54,17 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.scs-python = python3Packages.scs;
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Splitting Conic Solver";
+
     longDescription = ''
       Numerical optimization package for solving large-scale convex cone problems
     '';
+
     homepage = "https://github.com/cvxgrp/scs";
     changelog = "https://github.com/cvxgrp/scs/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;

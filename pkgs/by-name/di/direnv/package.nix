@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  buildGoModule,
   bash,
+  buildGoModule,
   fish,
-  zsh,
   writableTmpDirAsHomeHook,
+  zsh,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,14 +20,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-92xjoCjH5O7wx8U7OFG8Lw9eDOAdeVKNvxBHW+TiniM=";
   };
 
-  vendorHash = "sha256-SAIGFQGACTB3Q0KnIdiKKNYY6fVjf/09wGqNr0Hkg+M=";
-
-  # we have no bash at the moment for windows
-  env.BASH_PATH = lib.optionalString (!stdenv.hostPlatform.isWindows) "${bash}/bin/bash";
-
-  # Build a static executable to avoid environment runtime impurities
-  env.CGO_ENABLED = 0;
-
   # With CGO disabled the internal linker is used by default; remove the
   # explicit -linkmode=external flag from the Makefile which is incompatible
   # with CGO_ENABLED=0 (see https://github.com/NixOS/nixpkgs/pull/486452)
@@ -35,13 +27,15 @@ buildGoModule (finalAttrs: {
     substituteInPlace GNUmakefile --replace-fail " -linkmode=external" ""
   '';
 
+  vendorHash = "sha256-SAIGFQGACTB3Q0KnIdiKKNYY6fVjf/09wGqNr0Hkg+M=";
+  # we have no bash at the moment for windows
+  env.BASH_PATH = lib.optionalString (!stdenv.hostPlatform.isWindows) "${bash}/bin/bash";
+  # Build a static executable to avoid environment runtime impurities
+  env.CGO_ENABLED = 0;
+
   # replace the build phase to use the GNUMakefile instead
   buildPhase = ''
     make BASH_PATH=$BASH_PATH
-  '';
-
-  installPhase = ''
-    make install PREFIX=$out
   '';
 
   nativeCheckInputs = [
@@ -58,12 +52,17 @@ buildGoModule (finalAttrs: {
     runHook postCheck
   '';
 
+  installPhase = ''
+    make install PREFIX=$out
+  '';
+
   postInstall = ''
     rm -rf "$out/share/fish"
   '';
 
   meta = {
     description = "Shell extension that manages your environment";
+
     longDescription = ''
       Once hooked into your shell direnv is looking for an .envrc file in your
       current directory before every prompt.
@@ -75,6 +74,7 @@ buildGoModule (finalAttrs: {
       In short, this little tool allows you to have project-specific
       environment variables.
     '';
+
     homepage = "https://direnv.net";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.zimbatm ];

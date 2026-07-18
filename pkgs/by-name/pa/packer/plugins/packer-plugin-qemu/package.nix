@@ -1,7 +1,7 @@
 {
   lib,
-  mkPackerPlugin,
   fetchFromGitHub,
+  mkPackerPlugin,
 }:
 
 mkPackerPlugin (finalAttrs: {

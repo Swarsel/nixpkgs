@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,16 +18,12 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-32ArgWgQFHPyA/wqbcuIZ77HCCsh+V3QFw/8YrPJZww=";
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   preCheck = ''
     patchShebangs pkg/sidecar/sidecar_test.sh
   '';
 
   doInstallCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -36,6 +32,11 @@ buildGoModule (finalAttrs: {
 
     runHook postInstallCheck
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
 
   meta = {
     description = "Retrieve and manage SVIDs on behalf of a workload";

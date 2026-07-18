@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
   help2man,
+  installShellFiles,
   openssl,
   pkg-config,
-  installShellFiles,
+  rustPlatform,
 }:
 let
   version = "0.10.0-1";
@@ -18,17 +18,13 @@ let
   };
 in
 rustPlatform.buildRustPackage {
-  pname = "asfa";
   inherit version src;
-
-  cargoHash = "sha256-1aSUH1F6W7+3YQOphmF9olYmPuH/OJ9eIW5j6Jebn+s=";
+  pname = "asfa";
 
   outputs = [
     "out"
     "man"
   ];
-
-  buildInputs = [ openssl ];
 
   nativeBuildInputs = [
     help2man
@@ -36,6 +32,8 @@ rustPlatform.buildRustPackage {
     pkg-config
   ];
 
+  buildInputs = [ openssl ];
+  cargoHash = "sha256-1aSUH1F6W7+3YQOphmF9olYmPuH/OJ9eIW5j6Jebn+s=";
   # checks disabled because tests need to be run against (docker-based) ephemeral ssh-server
   doCheck = false;
 
@@ -59,10 +57,12 @@ rustPlatform.buildRustPackage {
     description = "Avoid sending file attachments by uploading them via SSH to a remote site and sharing a publicly-accessible URL with non-guessable (hash-based) prefix instead";
     homepage = "https://github.com/obreitwi/asfa";
     changelog = "https://github.com/obreitwi/asfa/blob/${src.rev}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ obreitwi ];
     mainProgram = "asfa";
   };

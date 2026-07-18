@@ -1,16 +1,16 @@
 {
   lib,
-  buildPlatform,
-  hostPlatform,
   fetchurl,
   bash,
-  gcc,
   binutils,
-  gnumake,
+  buildPlatform,
+  gcc,
   gnugrep,
+  gnumake,
   gnused,
   gnutar,
   gzip,
+  hostPlatform,
 }:
 let
   inherit (import ./common.nix { inherit lib; }) pname meta;

@@ -2,48 +2,49 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  replaceVars,
-  swaybg,
+  cairo,
+  evdev-proto,
+  gdk-pixbuf,
+  json_c,
+  libGL,
+  libdrm,
+  libevdev,
+  libinput,
+  librsvg,
+  libxcb-wm,
+  libxkbcommon,
   meson,
   ninja,
-  pkg-config,
-  wayland-scanner,
-  scdoc,
-  libGL,
-  wayland,
-  libxkbcommon,
-  pcre2,
-  json_c,
-  libevdev,
-  pango,
-  cairo,
-  libinput,
-  gdk-pixbuf,
-  librsvg,
-  wlroots_0_20,
-  wayland-protocols,
-  libdrm,
-  evdev-proto,
   nixosTests,
+  pango,
+  pcre2,
+  pkg-config,
+  replaceVars,
+  scdoc,
+  swaybg,
+  systemd,
+  wayland,
+  wayland-protocols,
+  wayland-scanner,
+  wlroots_0_20,
+  enableXWayland ? true,
   # Used by the NixOS module:
   isNixOS ? false,
-  enableXWayland ? true,
-  libxcb-wm,
   systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemd,
-  systemd,
   trayEnabled ? systemdSupport,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "sway-unwrapped";
-  version = "1.12";
-
   inherit
     enableXWayland
     isNixOS
     systemdSupport
     trayEnabled
     ;
+
+  pname = "sway-unwrapped";
+  version = "1.12";
+
   src = fetchFromGitHub {
     owner = "swaywm";
     repo = "sway";
@@ -70,9 +71,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   strictDeps = true;
-  depsBuildBuild = [
-    pkg-config
-  ];
 
   nativeBuildInputs = [
     meson
@@ -122,10 +120,15 @@ stdenv.mkDerivation (finalAttrs: {
       (mesonEnable "tray" finalAttrs.trayEnabled)
     ];
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   passthru.tests.basic = nixosTests.sway;
 
   meta = {
     description = "I3-compatible tiling Wayland compositor";
+
     longDescription = ''
       Sway is a tiling Wayland compositor and a drop-in replacement for the i3
       window manager for X11. It works with your existing i3 configuration and
@@ -135,11 +138,12 @@ stdenv.mkDerivation (finalAttrs: {
       maximizes the efficiency of your screen and can be quickly manipulated
       using only the keyboard.
     '';
+
     homepage = "https://swaywm.org";
     changelog = "https://github.com/swaywm/sway/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux ++ lib.platforms.freebsd;
     maintainers = with lib.maintainers; [ c6rg0 ];
+    platforms = lib.platforms.linux ++ lib.platforms.freebsd;
     mainProgram = "sway";
   };
 })

@@ -1,8 +1,8 @@
 {
-  buildPythonPackage,
-  fetchPypi,
   lib,
+  buildPythonPackage,
   colorlog,
+  fetchPypi,
   setuptools,
 }:
 let
@@ -11,7 +11,6 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -19,8 +18,8 @@ buildPythonPackage {
   };
 
   build-system = [ setuptools ];
-
   dependencies = [ colorlog ];
+  pyproject = true;
 
   meta = {
     description = "Python script logging for the lazy";

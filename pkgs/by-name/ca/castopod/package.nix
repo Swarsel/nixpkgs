@@ -1,8 +1,8 @@
 {
+  lib,
   stdenv,
   fetchurl,
   ffmpeg-headless,
-  lib,
   nixosTests,
   dataDir ? "/var/lib/castopod",
 }:
@@ -14,9 +14,6 @@ stdenv.mkDerivation {
     url = "https://code.castopod.org/adaures/castopod/uploads/0f1fbf6eb849b208e26b53d930b9e22f/castopod-1.11.0.tar.gz";
     sha256 = "09l4q8v809jnvgx9vpa1fyjhgqdbbrwkyk591kx5k1gg935rmgnx";
   };
-
-  dontBuild = true;
-  dontFixup = true;
 
   postPatch = ''
     # not configurable at runtime unfortunately:
@@ -44,6 +41,8 @@ stdenv.mkDerivation {
     cp -r . $out/share/castopod
   '';
 
+  dontBuild = true;
+  dontFixup = true;
   passthru.tests.castopod = nixosTests.castopod;
   passthru.updateScript = ./update.sh;
 

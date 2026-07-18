@@ -1,13 +1,11 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
-  pkg-config,
   autoreconfHook,
-  rake,
   boost,
   cmark,
   docbook_xsl,
+  fetchFromCodeberg,
   flac,
   fmt,
   gettext,
@@ -20,12 +18,14 @@
   libogg,
   libvorbis,
   libxslt,
+  nix-update-script,
   nlohmann_json,
+  pkg-config,
   pugixml,
   qt6,
+  rake,
   utf8cpp,
   zlib,
-  nix-update-script,
   withGUI ? true,
 }:
 
@@ -58,13 +58,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-85mL3/x7SoTgOxU/YCFh58vcGzHLG3qPbbG4MD5dB9o=";
   };
 
-  passthru = {
-    updateScript = nix-update-script {
-      extraArgs = [ "--version-regex=release-(.*)" ];
-    };
-  };
+  postPatch = ''
+    # autoupdate is not needed but it silences a ton of pointless warnings
+    patchShebangs . > /dev/null
+    autoupdate configure.ac ac/*.m4
 
-  __structuredAttrs = true;
+    # fix unit tests with GUI disabled
+    sed -i '5i$gtest_apps.delete("gui") if !$build_mkvtoolnix_gui' rake.d/gtest.rb
+  '';
 
   nativeBuildInputs = [
     autoreconfHook
@@ -98,15 +99,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ optionals withGUI [ cmark ]
   ++ optionals stdenv.hostPlatform.isLinux [ qt6.qtwayland ];
 
-  postPatch = ''
-    # autoupdate is not needed but it silences a ton of pointless warnings
-    patchShebangs . > /dev/null
-    autoupdate configure.ac ac/*.m4
-
-    # fix unit tests with GUI disabled
-    sed -i '5i$gtest_apps.delete("gui") if !$build_mkvtoolnix_gui' rake.d/gtest.rb
-  '';
-
   configureFlags = [
     "--disable-debug"
     "--disable-precompiled-headers"
@@ -122,27 +114,33 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildPhase = phase "Build" "";
-
-  installPhase = phase "Install" "install";
-
   doCheck = true;
-
   checkPhase = phase "Check" "tests:run_unit";
-
-  dontWrapQtApps = true;
+  installPhase = phase "Install" "install";
 
   postFixup = optionalString withGUI ''
     wrapQtApp $out/bin/mkvtoolnix-gui
   '';
 
+  __structuredAttrs = true;
+  dontWrapQtApps = true;
+
+  passthru = {
+    updateScript = nix-update-script {
+      extraArgs = [ "--version-regex=release-(.*)" ];
+    };
+  };
+
   meta = {
     description = "Cross-platform tools for Matroska";
     homepage = "https://mkvtoolnix.download/";
     license = lib.licenses.gpl2Only;
-    mainProgram = if withGUI then "mkvtoolnix-gui" else "mkvtoolnix";
+
     maintainers = with lib.maintainers; [
       rnhmjoj
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = if withGUI then "mkvtoolnix-gui" else "mkvtoolnix";
   };
 })

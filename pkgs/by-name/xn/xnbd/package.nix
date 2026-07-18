@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   autoreconfHook,
   glib,
   jansson,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,8 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://bitbucket.org/hirofuchi/xnbd/downloads/xnbd-${finalAttrs.version}.tgz";
     sha256 = "00wkvsa0yaq4mabczcbfpj6rjvp02yahw8vdrq8hgb3wpm80x913";
   };
-
-  sourceRoot = "xnbd-${finalAttrs.version}/trunk";
 
   patches = [ ./0001-Fix-build-for-glibc-2.28.patch ];
 
@@ -38,9 +36,11 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace Makefile.am --replace "lib doc ." "lib ."
   '';
 
+  sourceRoot = "xnbd-${finalAttrs.version}/trunk";
+
   meta = {
-    homepage = "https://bitbucket.org/hirofuchi/xnbd";
     description = "Yet another NBD (Network Block Device) server program";
+    homepage = "https://bitbucket.org/hirofuchi/xnbd";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;

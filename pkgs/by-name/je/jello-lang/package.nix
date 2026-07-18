@@ -1,16 +1,15 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   fetchpatch2,
   jellyfish,
   nix-update-script,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication {
   pname = "jello-lang";
   version = "0-unstable-2025-01-07";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "codereport";
@@ -21,12 +20,14 @@ python3Packages.buildPythonApplication {
 
   patches = [
     (fetchpatch2 {
+      hash = "sha256-6ZbytV6jUPAoPbV4IAbP5YsgPcjZZ+chGo3Z1h3hg1E=";
       # https://github.com/codereport/jello/pull/43
       url = "https://github.com/codereport/jello/commit/16ea477b302a810d161303539c4145130b90544c.patch";
-      hash = "sha256-6ZbytV6jUPAoPbV4IAbP5YsgPcjZZ+chGo3Z1h3hg1E=";
     })
   ];
 
+  # there are no tests
+  doCheck = false;
   build-system = [ python3Packages.setuptools ];
 
   dependencies = [
@@ -34,11 +35,8 @@ python3Packages.buildPythonApplication {
     python3Packages.prompt-toolkit
   ];
 
-  # there are no tests
-  doCheck = false;
-
   makeWrapperArgs = [ "--suffix PATH : ${lib.makeBinPath [ jellyfish ]}" ];
-
+  pyproject = true;
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
   meta = {

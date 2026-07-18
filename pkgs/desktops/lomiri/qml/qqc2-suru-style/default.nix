@@ -1,19 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
   cmake,
+  gitUpdater,
   qmake,
   qtbase,
   qtdeclarative,
-
+  # Qt6-only
+  qt5compat ? null,
   # Qt5-only
   qtgraphicaleffects ? null,
   qtquickcontrols2 ? null,
-
-  # Qt6-only
-  qt5compat ? null,
 }:
 
 let
@@ -42,7 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   # QMake can't find Qt modules from buildInputs
   strictDeps = withQt6;
-
   nativeBuildInputs = lib.optionals (!withQt6) [ qmake ] ++ lib.optionals withQt6 [ cmake ];
 
   propagatedBuildInputs = [
@@ -66,19 +63,20 @@ stdenv.mkDerivation (finalAttrs: {
 
   # QML plugin
   dontWrapQtApps = true;
-
   passthru.updateScript = gitUpdater { };
 
   meta = {
     description = "Suru Style for QtQuick Controls 2";
     homepage = "https://gitlab.com/ubports/development/core/qqc2-suru-style";
     changelog = "https://gitlab.com/ubports/development/core/qqc2-suru-style/-/blob/${finalAttrs.version}/ChangeLog";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl3Only
       cc-by-sa-30
     ];
-    teams = [ lib.teams.lomiri ];
+
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.lomiri ];
   };
 })

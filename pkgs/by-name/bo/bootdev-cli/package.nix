@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   nix-update-script,
   versionCheckHook,
@@ -20,17 +20,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-uoFnhcJvvY+lb8VLv0kPI8hp4H8XfQOY5R83Rj17gfw=";
   };
 
-  vendorHash = "sha256-ZDioEU5uPCkd+kC83cLlpgzyOsnpj2S7N+lQgsQb8uY=";
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   nativeBuildInputs = [
     installShellFiles
     writableTmpDirAsHomeHook
   ];
+
+  vendorHash = "sha256-ZDioEU5uPCkd+kC83cLlpgzyOsnpj2S7N+lQgsQb8uY=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     for shell in bash fish zsh; do
@@ -38,10 +33,15 @@ buildGoModule (finalAttrs: {
     done
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgram = "${placeholder "out"}/bin/bootdev";
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
+  versionCheckProgram = "${placeholder "out"}/bin/bootdev";
   passthru.updateScript = nix-update-script { };
 
   meta = {

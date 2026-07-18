@@ -1,10 +1,11 @@
 { mkDerivation }:
 mkDerivation {
-  path = "lib/libexpat";
-  extraPaths = [ "contrib/expat" ];
-  buildInputs = [ ];
   outputs = [
     "out"
     "debug"
   ];
+
+  buildInputs = [ ];
+  extraPaths = [ "contrib/expat" ];
+  path = "lib/libexpat";
 }

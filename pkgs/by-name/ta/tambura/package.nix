@@ -21,8 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     faust2lv2
   ];
 
-  dontWrapQtApps = true;
-
   buildPhase = ''
     faust2jaqt -vec -time -t 99999 Tambura.dsp
     faust2lv2 -vec -time -gui -t 99999 Tambura.dsp
@@ -36,6 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
     mkdir -p $out/lib/lv2
     cp -r Tambura.lv2/ $out/lib/lv2
   '';
+
+  dontWrapQtApps = true;
 
   meta = {
     description = "FAUST patch inspired by the Indian Tambura/Tanpura - a four string drone instrument, known for its unique rich harmonic timbre";

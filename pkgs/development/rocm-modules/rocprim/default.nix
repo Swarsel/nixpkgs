@@ -2,20 +2,32 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
-  cmake,
-  rocm-cmake,
   clr,
-  gtest,
+  cmake,
   gbenchmark,
-  buildTests ? false,
+  gtest,
+  rocm-cmake,
+  rocmUpdateScript,
   buildBenchmarks ? false,
+  buildTests ? false,
   gpuTargets ? clr.localGpuTargets or [ ],
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "rocprim";
   version = "7.2.3";
+
+  src = fetchFromGitHub {
+    owner = "ROCm";
+    repo = "rocm-libraries";
+    rev = "rocm-${finalAttrs.version}";
+    hash = "sha256-e0mZ27OXyblcnXQGv2ex/CvWx9smw6nBbHZIijj7lP8=";
+
+    sparseCheckout = [
+      "projects/rocprim"
+      "shared"
+    ];
+  };
 
   outputs = [
     "out"
@@ -26,18 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals buildBenchmarks [
     "benchmark"
   ];
-
-  src = fetchFromGitHub {
-    owner = "ROCm";
-    repo = "rocm-libraries";
-    rev = "rocm-${finalAttrs.version}";
-    sparseCheckout = [
-      "projects/rocprim"
-      "shared"
-    ];
-    hash = "sha256-e0mZ27OXyblcnXQGv2ex/CvWx9smw6nBbHZIijj7lP8=";
-  };
-  sourceRoot = "${finalAttrs.src.name}/projects/rocprim";
 
   nativeBuildInputs = [
     cmake
@@ -85,13 +85,14 @@ stdenv.mkDerivation (finalAttrs: {
       rmdir $out/bin
     '';
 
+  sourceRoot = "${finalAttrs.src.name}/projects/rocprim";
   passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
 
   meta = {
     description = "ROCm parallel primitives";
     homepage = "https://github.com/ROCm/rocm-libraries/tree/develop/projects/rocprim";
     license = with lib.licenses; [ mit ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

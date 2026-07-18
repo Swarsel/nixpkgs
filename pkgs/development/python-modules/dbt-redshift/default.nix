@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   agate,
   boto3,
   buildPythonPackage,
   dbt-core,
   dbt-postgres,
-  fetchFromGitHub,
   pytestCheckHook,
   redshift-connector,
   setuptools,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "dbt-redshift";
   version = "1.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dbt-labs";
@@ -23,11 +22,7 @@ buildPythonPackage rec {
     hash = "sha256-ayt5KRH3jAoi7k+0yfk1ZSqG4qsM+zny8tDnWOWO5oA=";
   };
 
-  pythonRelaxDeps = [
-    "boto3"
-    "redshift-connector"
-  ];
-
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -38,11 +33,14 @@ buildPythonPackage rec {
     redshift-connector
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   enabledTestPaths = [ "tests/unit" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "dbt.adapters.redshift" ];
+
+  pythonRelaxDeps = [
+    "boto3"
+    "redshift-connector"
+  ];
 
   meta = {
     description = "Plugin enabling dbt to work with Amazon Redshift";

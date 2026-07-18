@@ -1,7 +1,7 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
   libiconv,
   testers,
 }:
@@ -23,15 +23,11 @@ stdenv.mkDerivation (finalAttrs: {
     "devdoc"
   ];
 
-  hardeningDisable = [ "format" ];
-
   buildInputs = lib.optional stdenv.hostPlatform.isDarwin libiconv;
-
+  hardeningDisable = [ "format" ];
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {
-    changelog = "https://codeberg.org/libidn/libidn/src/tag/v${finalAttrs.version}/NEWS";
-    homepage = "https://www.gnu.org/software/libidn/";
     description = "Library for internationalized domain names";
 
     longDescription = ''
@@ -50,9 +46,11 @@ stdenv.mkDerivation (finalAttrs: {
       included.
     '';
 
-    mainProgram = "idn";
+    homepage = "https://www.gnu.org/software/libidn/";
+    changelog = "https://codeberg.org/libidn/libidn/src/tag/v${finalAttrs.version}/NEWS";
     license = lib.licenses.lgpl2Plus;
-    pkgConfigModules = [ "libidn" ];
     platforms = lib.platforms.all;
+    mainProgram = "idn";
+    pkgConfigModules = [ "libidn" ];
   };
 })

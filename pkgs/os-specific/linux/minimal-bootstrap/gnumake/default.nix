@@ -1,9 +1,9 @@
 {
   lib,
   fetchurl,
+  gnupatch,
   kaem,
   tinycc,
-  gnupatch,
 }:
 let
   inherit (import ./common.nix { inherit lib; }) meta;

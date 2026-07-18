@@ -2,15 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  numpy,
   setuptools,
   wheel,
-  numpy,
 }:
 
 buildPythonPackage rec {
   pname = "iisignature";
   version = "0.24";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -23,10 +22,9 @@ buildPythonPackage rec {
   ];
 
   propagatedBuildInputs = [ numpy ];
-
   # PyPI tarball has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "iisignature" ];
 
   meta = {

@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch2,
-  setuptools,
-  pkg-config,
   libnl,
   net-tools,
+  pkg-config,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "ethtool";
   version = "0.15";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fedora-python";
@@ -25,8 +24,8 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/fedora-python/python-ethtool/pull/60
     (fetchpatch2 {
-      url = "https://github.com/fedora-python/python-ethtool/commit/f82dd763bd50affda993b9afe3b141069a1a7466.patch";
       hash = "sha256-mtI7XsoyM43s2DFQdsBNpB8jJff7ZyO2J6SHodBrdrI=";
+      url = "https://github.com/fedora-python/python-ethtool/commit/f82dd763bd50affda993b9afe3b141069a1a7466.patch";
     })
   ];
 
@@ -35,23 +34,22 @@ buildPythonPackage rec {
       --replace-fail "Popen('ifconfig'," "Popen('${lib.getExe' net-tools "ifconfig"}',"
   '';
 
-  build-system = [ setuptools ];
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ libnl ];
-
-  pythonImportsCheck = [ "ethtool" ];
 
   nativeCheckInputs = [
     net-tools
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "ethtool" ];
+
   meta = {
-    changelog = "https://github.com/fedora-python/python-ethtool/blob/${src.rev}/CHANGES.rst";
     description = "Python bindings for the ethtool kernel interface";
     homepage = "https://github.com/fedora-python/python-ethtool";
+    changelog = "https://github.com/fedora-python/python-ethtool/blob/${src.rev}/CHANGES.rst";
     license = lib.licenses.gpl2Plus;
   };
 }

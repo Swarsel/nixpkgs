@@ -5,8 +5,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "3.20.0";
   pname = "commons-lang";
+  version = "3.20.0";
 
   src = fetchurl {
     url = "mirror://apache/commons/lang/binaries/commons-lang3-${finalAttrs.version}-bin.tar.gz";
@@ -25,8 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Provides additional methods to manipulate standard Java library classes";
     homepage = "https://commons.apache.org/proper/commons-lang";
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ ];
     platforms = with lib.platforms; unix;
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
   };
 })

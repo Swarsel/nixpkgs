@@ -25,117 +25,143 @@ in
 
     security.pam.mount = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Enable PAM mount system to mount filesystems on user login.
         '';
-      };
 
-      extraVolumes = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [ ];
-        description = ''
-          List of volume definitions for pam_mount.
-          For more information, visit <https://pam-mount.sourceforge.net/pam_mount.conf.5.html>.
-        '';
+        type = lib.types.bool;
       };
 
       additionalSearchPaths = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
         default = [ ];
-        example = lib.literalExpression "[ pkgs.bindfs ]";
+
         description = ''
           Additional programs to include in the search path of pam_mount.
           Useful for example if you want to use some FUSE filesystems like bindfs.
         '';
+
+        example = lib.literalExpression "[ pkgs.bindfs ]";
+        type = lib.types.listOf lib.types.package;
+      };
+
+      createMountPoints = lib.mkOption {
+        default = true;
+
+        description = ''
+          Create mountpoints for volumes if they do not exist.
+        '';
+
+        type = lib.types.bool;
       };
 
       cryptMountOptions = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
         default = [ ];
-        example = lib.literalExpression ''
-          [ "allow_discard" ]
-        '';
+
         description = ''
           Global mount options that apply to every crypt volume.
           You can define volume-specific options in the volume definitions.
         '';
-      };
 
-      fuseMountOptions = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [ ];
         example = lib.literalExpression ''
-          [ "nodev" "nosuid" "force-user=%(USER)" "gid=%(USERGID)" "perms=0700" "chmod-deny" "chown-deny" "chgrp-deny" ]
+          [ "allow_discard" ]
         '';
-        description = ''
-          Global mount options that apply to every FUSE volume.
-          You can define volume-specific options in the volume definitions.
-        '';
+
+        type = lib.types.listOf lib.types.str;
       };
 
       debugLevel = lib.mkOption {
-        type = lib.types.int;
         default = 0;
-        example = 1;
+
         description = ''
           Sets the Debug-Level. 0 disables debugging, 1 enables pam_mount tracing,
           and 2 additionally enables tracing in mount.crypt. The default is 0.
           For more information, visit <https://pam-mount.sourceforge.net/pam_mount.conf.5.html>.
         '';
+
+        example = 1;
+        type = lib.types.int;
+      };
+
+      extraVolumes = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          List of volume definitions for pam_mount.
+          For more information, visit <https://pam-mount.sourceforge.net/pam_mount.conf.5.html>.
+        '';
+
+        type = lib.types.listOf lib.types.str;
+      };
+
+      fuseMountOptions = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          Global mount options that apply to every FUSE volume.
+          You can define volume-specific options in the volume definitions.
+        '';
+
+        example = lib.literalExpression ''
+          [ "nodev" "nosuid" "force-user=%(USER)" "gid=%(USERGID)" "perms=0700" "chmod-deny" "chown-deny" "chgrp-deny" ]
+        '';
+
+        type = lib.types.listOf lib.types.str;
+      };
+
+      logoutHup = lib.mkOption {
+        default = false;
+
+        description = ''
+          Kill remaining processes after logout by sending a SIGHUP.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      logoutKill = lib.mkOption {
+        default = false;
+
+        description = ''
+          Kill remaining processes after logout by sending a SIGKILL.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      logoutTerm = lib.mkOption {
+        default = false;
+
+        description = ''
+          Kill remaining processes after logout by sending a SIGTERM.
+        '';
+
+        type = lib.types.bool;
       };
 
       logoutWait = lib.mkOption {
-        type = lib.types.int;
         default = 0;
+
         description = ''
           Amount of microseconds to wait until killing remaining processes after
           final logout.
           For more information, visit <https://pam-mount.sourceforge.net/pam_mount.conf.5.html>.
         '';
-      };
 
-      logoutHup = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Kill remaining processes after logout by sending a SIGHUP.
-        '';
-      };
-
-      logoutTerm = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Kill remaining processes after logout by sending a SIGTERM.
-        '';
-      };
-
-      logoutKill = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Kill remaining processes after logout by sending a SIGKILL.
-        '';
-      };
-
-      createMountPoints = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = ''
-          Create mountpoints for volumes if they do not exist.
-        '';
+        type = lib.types.int;
       };
 
       removeCreatedMountPoints = lib.mkOption {
-        type = lib.types.bool;
         default = true;
+
         description = ''
           Remove mountpoints created by pam_mount after logout. This
           only affects mountpoints that have been created by pam_mount
           in the same session.
         '';
+
+        type = lib.types.bool;
       };
     };
 
@@ -143,7 +169,6 @@ in
 
   config = lib.mkIf (cfg.enable || anyPamMount) {
 
-    environment.systemPackages = [ pkgs.pam_mount ];
     environment.etc."security/pam_mount.conf.xml" = {
       source =
         let
@@ -155,9 +180,9 @@ in
             user:
             let
               attrs = {
-                user = user.name;
-                path = user.cryptHomeLuks;
                 mountpoint = user.home;
+                path = user.cryptHomeLuks;
+                user = user.name;
               }
               // user.pamMount;
             in
@@ -195,6 +220,8 @@ in
           </pam_mount>
         '';
     };
+
+    environment.systemPackages = [ pkgs.pam_mount ];
 
   };
 }

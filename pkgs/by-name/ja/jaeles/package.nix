@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,16 +16,15 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-/Ow2qdcFduZ2ZyUUfCqpZxSh9yy3+tI/2N9Wl1fKXVI=";
-
   # Tests want to download signatures
   doCheck = false;
 
   meta = {
     description = "Tool for automated Web application testing";
-    mainProgram = "jaeles";
     homepage = "https://github.com/jaeles-project/jaeles";
     changelog = "https://github.com/jaeles-project/jaeles/releases/tag/beta-v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "jaeles";
   };
 })

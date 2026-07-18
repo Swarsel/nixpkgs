@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
-  numpy,
-  scipy,
   hypothesis,
+  numpy,
   pytestCheckHook,
+  scipy,
 }:
 
 buildPythonPackage rec {
   pname = "open-hypergraphs";
   version = "0.1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "statusfailed";
@@ -20,6 +19,11 @@ buildPythonPackage rec {
     tag = "pypi-${version}";
     hash = "sha256-sBF/+VENDajLN72UJ6iHekmk11pOqfxeKs8Kqszy6mQ=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    hypothesis
+  ];
 
   build-system = [
     hatchling
@@ -30,18 +34,15 @@ buildPythonPackage rec {
     scipy
   ];
 
-  pythonRelaxDeps = [
-    "numpy"
-    "scipy"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    hypothesis
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "open_hypergraphs"
+  ];
+
+  pythonRelaxDeps = [
+    "numpy"
+    "scipy"
   ];
 
   meta = {

@@ -1,27 +1,25 @@
 {
   lib,
   stdenv,
-  buildPackages,
   fetchurl,
-  pkg-config,
-  libuuid,
-  gettext,
-  texinfo,
-  withFuse ? stdenv.hostPlatform.isLinux,
-  fuse3,
-  shared ? !stdenv.hostPlatform.isStatic,
-  e2fsprogs,
-  runCommand,
-  libarchive,
   bash,
   bashNonInteractive,
+  buildPackages,
+  e2fsprogs,
+  fuse3,
+  gettext,
+  libarchive,
+  libuuid,
+  pkg-config,
+  runCommand,
+  texinfo,
+  shared ? !stdenv.hostPlatform.isStatic,
+  withFuse ? stdenv.hostPlatform.isLinux,
 }:
 
 stdenv.mkDerivation rec {
   pname = "e2fsprogs";
   version = "1.47.4";
-
-  __structuredAttrs = true;
 
   src = fetchurl {
     url = "mirror://kernel/linux/kernel/people/tytso/e2fsprogs/v${version}/e2fsprogs-${version}.tar.xz";
@@ -41,11 +39,11 @@ stdenv.mkDerivation rec {
 
   strictDeps = true;
 
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
   nativeBuildInputs = [
     pkg-config
     texinfo
   ];
+
   buildInputs = [
     libuuid
     gettext
@@ -75,8 +73,8 @@ stdenv.mkDerivation rec {
     "--disable-e2initrd-helper"
   ];
 
-  nativeCheckInputs = [ buildPackages.perl ];
   doCheck = true;
+  nativeCheckInputs = [ buildPackages.perl ];
 
   postInstall = ''
     # avoid cycle between outputs
@@ -94,6 +92,8 @@ stdenv.mkDerivation rec {
     mv $bin/bin/fuse2fs $fuse2fs/bin/fuse2fs
   '';
 
+  __structuredAttrs = true;
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
   enableParallelBuilding = true;
 
   # non-glibc gettext has issues with this
@@ -102,6 +102,7 @@ stdenv.mkDerivation rec {
       bash
       bashNonInteractive
     ];
+
     out.disallowedRequisites = [
       bash
       bashNonInteractive
@@ -119,16 +120,18 @@ stdenv.mkDerivation rec {
   };
 
   meta = {
+    description = "Tools for creating and checking ext2/ext3/ext4 filesystems";
     homepage = "https://e2fsprogs.sourceforge.net/";
     changelog = "https://e2fsprogs.sourceforge.net/e2fsprogs-release.html#${version}";
-    description = "Tools for creating and checking ext2/ext3/ext4 filesystems";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl2Plus # lib/ext2fs, lib/e2p
       bsd3 # lib/uuid
       mit # lib/et, lib/ss
     ];
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [ usertam ];
+    platforms = lib.platforms.unix;
   };
 }

@@ -3,10 +3,10 @@
   stdenv,
   fetchurl,
   neon,
-  pkg-config,
-  zlib,
   openssl,
+  pkg-config,
   readline,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,10 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://notroj.github.io/cadaver/cadaver-${finalAttrs.version}.tar.gz";
     hash = "sha256-M+OlS9VLHrMltIMWp8rMJAR8Uz74jm75i4jfu2DhJzQ=";
   };
-
-  configureFlags = [
-    "--with-ssl"
-  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -33,12 +29,16 @@ stdenv.mkDerivation (finalAttrs: {
     readline
   ];
 
+  configureFlags = [
+    "--with-ssl"
+  ];
+
   meta = {
     description = "Command-line WebDAV client";
     homepage = "https://notroj.github.io/cadaver/";
     changelog = "https://github.com/notroj/cadaver/blob/${finalAttrs.version}/NEWS";
-    maintainers = with lib.maintainers; [ ianwookim ];
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ ianwookim ];
     platforms = with lib.platforms; linux ++ freebsd ++ openbsd;
     mainProgram = "cadaver";
   };

@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   actool,
-  electron_42,
-  python3,
   copyDesktopItems,
-  nodejs,
-  pnpm_11,
+  electron_42,
   fetchPnpmDeps,
-  pnpmConfigHook,
   makeDesktopItem,
+  makeWrapper,
   nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_11,
+  python3,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "pear-desktop";
@@ -29,13 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     # MPRIS's DesktopEntry property needs to match the desktop entry basename
     ./fix-mpris-desktop-entry.patch
   ];
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm_11;
-    fetcherVersion = 4;
-    hash = "sha256-y4eLjikf9X/682RdK0ZvW7+GR1Ei82UJ5SVop09B9wg=";
-  };
 
   nativeBuildInputs = [
     makeWrapper
@@ -60,17 +53,6 @@ stdenv.mkDerivation (finalAttrs: {
       -c.electronDist=electron-dist \
       -c.electronVersion=${electron_42.version}
   '';
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "com.github.th-ch.youtube-music";
-      exec = "pear-desktop %u";
-      icon = "pear-desktop";
-      desktopName = "Pear Desktop";
-      startupWMClass = "com.github.th-ch.youtube-music";
-      categories = [ "AudioVideo" ];
-    })
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -105,24 +87,47 @@ stdenv.mkDerivation (finalAttrs: {
       --inherit-argv0
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "AudioVideo" ];
+      desktopName = "Pear Desktop";
+      exec = "pear-desktop %u";
+      icon = "pear-desktop";
+      name = "com.github.th-ch.youtube-music";
+      startupWMClass = "com.github.th-ch.youtube-music";
+    })
+  ];
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 4;
+    hash = "sha256-y4eLjikf9X/682RdK0ZvW7+GR1Ei82UJ5SVop09B9wg=";
+    pnpm = pnpm_11;
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Electron wrapper around YouTube Music";
     homepage = "https://github.com/pear-devs/pear-desktop";
+
     changelog = "https://github.com/pear-devs/pear-desktop/blob/master/changelog.md#${
       lib.replaceStrings [ "." ] [ "" ] finalAttrs.src.tag
     }";
+
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       aacebedo
       SuperSandro2000
     ];
-    mainProgram = "pear-desktop";
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
+    mainProgram = "pear-desktop";
   };
 })

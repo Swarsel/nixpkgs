@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  python3Packages,
-  pango,
+  gitUpdater,
+  gtk3,
   librsvg,
   libxfce4util,
-  libxml2,
-  menu-cache,
-  libxrandr,
   libxinerama,
+  libxml2,
+  libxrandr,
   makeWrapper,
-  enableXfcePanelApplet ? false,
+  menu-cache,
+  pango,
+  pkg-config,
+  python3Packages,
   xfce4-panel,
-  gtk3,
-  gitUpdater,
+  enableXfcePanelApplet ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -66,10 +66,10 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
-    homepage = "https://github.com/jgmenu/jgmenu";
     description = "Small X11 menu intended to be used with openbox and tint2";
+    homepage = "https://github.com/jgmenu/jgmenu";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -2,9 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  racket-minimal,
-
   cairo,
+  callPackage,
   fontconfig,
   glib,
   glibcLocales,
@@ -15,12 +14,10 @@
   libpng,
   makeFontsConf,
   pango,
+  racket-minimal,
   unixodbc,
   wrapGAppsHook3,
-
   disableDocs ? false,
-
-  callPackage,
 }:
 
 let
@@ -33,9 +30,22 @@ in
 minimal.overrideAttrs (
   finalAttrs: prevAttrs: {
     src = fetchurl {
-      url = "https://mirror.racket-lang.org/installers/${manifest.version}/${manifest.full.filename}";
       inherit (manifest.full) sha256;
+      url = "https://mirror.racket-lang.org/installers/${manifest.version}/${manifest.full.filename}";
     };
+
+    patches = prevAttrs.patches or [ ] ++ [
+      /*
+        Hardcode variant detection because nixpkgs wraps the Racket binary making it
+        fail to detect its variant at runtime.
+        https://github.com/NixOS/nixpkgs/issues/114993#issuecomment-812951247
+      */
+      ./patches/force-cs-variant.patch
+    ];
+
+    nativeBuildInputs = [
+      wrapGAppsHook3
+    ];
 
     buildInputs = prevAttrs.buildInputs ++ [
       (if isDarwin then libiodbc else unixodbc)
@@ -47,19 +57,6 @@ minimal.overrideAttrs (
       libjpeg
       libpng
       pango
-    ];
-
-    nativeBuildInputs = [
-      wrapGAppsHook3
-    ];
-
-    patches = prevAttrs.patches or [ ] ++ [
-      /*
-        Hardcode variant detection because nixpkgs wraps the Racket binary making it
-        fail to detect its variant at runtime.
-        https://github.com/NixOS/nixpkgs/issues/114993#issuecomment-812951247
-      */
-      ./patches/force-cs-variant.patch
     ];
 
     preBuild =
@@ -87,8 +84,6 @@ minimal.overrideAttrs (
         export XDG_CACHE_HOME=$(mktemp -d)
       '';
 
-    dontWrapGApps = true;
-
     preFixup = lib.optionalString (!isDarwin) ''
       gappsWrapperArgs+=("--set" "LOCALE_ARCHIVE" "${glibcLocales}/lib/locale/locale-archive")
 
@@ -101,6 +96,8 @@ minimal.overrideAttrs (
 
       wrapGApp $out/lib/racket/gracket
     '';
+
+    dontWrapGApps = true;
 
     passthru =
       let
@@ -118,6 +115,7 @@ minimal.overrideAttrs (
 
     meta = prevAttrs.meta // {
       description = "Programmable programming language";
+
       longDescription = ''
         Racket is a full-spectrum programming language. It goes beyond
         Lisp and Scheme with dialects that support objects, types,
@@ -127,6 +125,7 @@ minimal.overrideAttrs (
         libraries support applications from web servers and databases to
         GUIs and charts.
       '';
+
       badPlatforms = [ ];
     };
   }

@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch2,
-  makeWrapper,
-  haskellPackages,
-  haskell,
-  which,
-  swi-prolog,
-  rlwrap,
-  tk,
-  curl,
-  git,
-  unzip,
-  gnutar,
   coreutils,
+  curl,
+  fetchpatch2,
+  git,
+  gnutar,
+  haskell,
+  haskellPackages,
+  makeWrapper,
+  rlwrap,
   sqlite,
+  swi-prolog,
+  tk,
+  unzip,
+  which,
 }:
 
 let
@@ -43,9 +43,9 @@ let
             # the release yet
             (
               fetchpatch2 {
+                hash = "sha256-R3XjoUzAwTvDoUEAIIjmrSh2r4RHMqe00RMIs+7jFPY=";
                 name = "fix-mtl-2.3.patch";
                 url = "https://git.ps.informatik.uni-kiel.de/curry/curry-frontend/-/commit/3b26d2826141fee676da07939c2929a049279b70.diff";
-                hash = "sha256-R3XjoUzAwTvDoUEAIIjmrSh2r4RHMqe00RMIs+7jFPY=";
               }
             )
           )
@@ -57,11 +57,12 @@ in
 stdenv.mkDerivation {
   inherit pname version src;
 
-  buildInputs = [ swi-prolog ];
   nativeBuildInputs = [
     which
     makeWrapper
   ];
+
+  buildInputs = [ swi-prolog ];
 
   makeFlags = [
     "CURRYFRONTEND=${curry-frontend}/bin/curry-frontend"
@@ -116,9 +117,7 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "http://www.informatik.uni-kiel.de/~pakcs/";
     description = "Implementation of the multi-paradigm declarative language Curry";
-    license = lib.licenses.bsd3;
 
     longDescription = ''
       PAKCS is an implementation of the multi-paradigm declarative language
@@ -132,6 +131,8 @@ stdenv.mkDerivation {
       with dynamic web pages, prototyping embedded systems).
     '';
 
+    homepage = "http://www.informatik.uni-kiel.de/~pakcs/";
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ t4ccer ];
     platforms = lib.platforms.linux;
   };

@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  nodejs,
-  npmHooks,
+  buildGoModule,
   fetchNpmDeps,
   nix-update-script,
+  nodejs,
+  npmHooks,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,17 +19,33 @@ buildGoModule (finalAttrs: {
     hash = "sha256-YdIXMVtagF7uA9By6EHVdG2o5UwUi82XkYK26W5Fssg=";
   };
 
+  nativeBuildInputs = [
+    nodejs
+    npmHooks.npmConfigHook
+  ];
+
   vendorHash = "sha256-wGaRJFxuhwwwP7CBZ7eY5uR95EMdpWiJuU43eWXtHNo=";
+
+  preBuild = ''
+    npm --prefix="$npmRoot" run build
+    go generate ./...
+  '';
+
+  # Some tests require internet access, broken in sandbox
+  doCheck = false;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.Version=${finalAttrs.version}"
+  ];
+
   npmDeps = fetchNpmDeps {
     src = "${finalAttrs.src}/web";
     hash = "sha256-OsYBmDawDUCt/+s5kyOPawMA9BWQwJhd7TQNc55rPlc=";
   };
 
   npmRoot = "web";
-  nativeBuildInputs = [
-    nodejs
-    npmHooks.npmConfigHook
-  ];
 
   overrideModAttrs = oldAttrs: {
     # Do not add `npmConfigHook` to `goModules`
@@ -37,20 +53,6 @@ buildGoModule (finalAttrs: {
     # Do not run `preBuild` when building `goModules`
     preBuild = null;
   };
-
-  # Some tests require internet access, broken in sandbox
-  doCheck = false;
-
-  preBuild = ''
-    npm --prefix="$npmRoot" run build
-    go generate ./...
-  '';
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.Version=${finalAttrs.version}"
-  ];
 
   passthru.updateScript = nix-update-script { };
 

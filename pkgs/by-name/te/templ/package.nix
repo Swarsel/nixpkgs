@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -17,9 +17,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-i4uDGZb3VZUvIyO2Tt53VR1Do/3OYtj6JccGoFnnlbs=";
-
-  subPackages = [ "cmd/templ" ];
-
   env.CGO_ENABLED = 0;
 
   ldflags = [
@@ -28,13 +25,14 @@ buildGoModule (finalAttrs: {
     "-extldflags -static"
   ];
 
+  subPackages = [ "cmd/templ" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Language for writing HTML user interfaces in Go";
     homepage = "https://github.com/a-h/templ";
     license = lib.licenses.mit;
-    mainProgram = "templ";
     maintainers = with lib.maintainers; [ luleyleo ];
+    mainProgram = "templ";
   };
 })

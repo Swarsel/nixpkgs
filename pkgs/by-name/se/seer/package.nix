@@ -18,6 +18,17 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-QXVsjTJYGE/7nTKldlOGN6AnW8OthrBJruVbb/HiPdg=";
   };
 
+  nativeBuildInputs = [
+    cmake
+    kdePackages.wrapQtAppsHook
+  ];
+
+  buildInputs = with kdePackages; [
+    qtbase
+    qtcharts
+    qtsvg
+  ];
+
   preConfigure = ''
     cd src
   '';
@@ -27,22 +38,12 @@ stdenv.mkDerivation rec {
       --replace-fail "/usr/bin/gdb" "${gdb}/bin/gdb"
   '';
 
-  buildInputs = with kdePackages; [
-    qtbase
-    qtcharts
-    qtsvg
-  ];
-  nativeBuildInputs = [
-    cmake
-    kdePackages.wrapQtAppsHook
-  ];
-
   meta = {
     description = "Qt gui frontend for GDB";
-    mainProgram = "seergdb";
     homepage = "https://github.com/epasveer/seer";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ foolnotion ];
+    platforms = lib.platforms.linux;
+    mainProgram = "seergdb";
   };
 }

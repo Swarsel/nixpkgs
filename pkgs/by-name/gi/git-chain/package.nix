@@ -1,11 +1,11 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  openssl,
   git,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
@@ -19,21 +19,17 @@ rustPlatform.buildRustPackage {
     hash = "sha256-lOAURUhR2Ts1DF8yW0WnovSWeZFC8UwR6j4cxoreonY=";
   };
 
-  cargoHash = "sha256-0Ur80eIKQIsM5vyIt+9YpFufHTk97+T+KXoAkJE90Ag=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ openssl ];
-
+  cargoHash = "sha256-0Ur80eIKQIsM5vyIt+9YpFufHTk97+T+KXoAkJE90Ag=";
   nativeCheckInputs = [ git ];
-
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
   meta = {
     description = "Tool for rebasing a chain of local git branches";
     homepage = "https://github.com/dashed/git-chain";
     license = lib.licenses.mit;
-    mainProgram = "git-chain";
     maintainers = with lib.maintainers; [ bcyran ];
+    mainProgram = "git-chain";
   };
 }

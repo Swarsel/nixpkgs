@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
   autoPatchelfHook,
+  buildGoModule,
   xclip,
-  stdenv,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,7 +18,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-b0i9xaIm42RKWzzZdSAmapbmZDmTpCa4IxVsM9eSMqM=";
   };
 
+  nativeBuildInputs = lib.optional stdenv.hostPlatform.isLinux autoPatchelfHook;
+  buildInputs = [ xclip ];
   vendorHash = "sha256-7TxtM0O3wlfq0PF5FGn4i+Ph7dWRIcyLjFgnnKITLGM=";
+  #Some tests require internet access
+  doCheck = false;
 
   ldflags = [
     "-s"
@@ -27,13 +31,6 @@ buildGoModule (finalAttrs: {
     "-X=github.com/one2nc/cloudlens/cmd.commit=${finalAttrs.src.rev}"
     "-X=github.com/one2nc/cloudlens/cmd.date=1970-01-01T00:00:00Z"
   ];
-
-  nativeBuildInputs = lib.optional stdenv.hostPlatform.isLinux autoPatchelfHook;
-
-  buildInputs = [ xclip ];
-
-  #Some tests require internet access
-  doCheck = false;
 
   meta = {
     description = "K9s like CLI for AWS and GCP";

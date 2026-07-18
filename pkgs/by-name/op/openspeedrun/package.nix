@@ -1,12 +1,12 @@
 {
   lib,
   fetchFromGitHub,
+  autoPatchelfHook,
+  libGL,
+  libxkbcommon,
+  nix-update-script,
   rustPlatform,
   wayland,
-  libxkbcommon,
-  libGL,
-  autoPatchelfHook,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,10 +20,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-EZPApXUVhsaOYa6CnpR8IWeEoHEl89KJGGoBOYFqBV0=";
   };
 
-  cargoHash = "sha256-WzsLEfDZpjpUrbyPOr5QUkTMrlAJoC9Rej5BMOKF7OM=";
-
   nativeBuildInputs = [
     autoPatchelfHook
+  ];
+
+  cargoHash = "sha256-WzsLEfDZpjpUrbyPOr5QUkTMrlAJoC9Rej5BMOKF7OM=";
+
+  autoPatchelfIgnoreMissingDeps = [
+    "libgcc_s.so.1"
   ];
 
   runtimeDependencies = [
@@ -32,16 +36,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libGL
   ];
 
-  autoPatchelfIgnoreMissingDeps = [
-    "libgcc_s.so.1"
-  ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/SrWither/OpenSpeedRun/releases/tag/v${finalAttrs.version}";
     description = "Modern and minimalistic open-source speedrun timer";
     homepage = "https://github.com/SrWither/OpenSpeedRun";
+    changelog = "https://github.com/SrWither/OpenSpeedRun/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.pyrox0 ];
     mainProgram = "openspeedrun";

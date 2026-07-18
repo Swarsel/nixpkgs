@@ -1,30 +1,27 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  importlib-metadata,
+  # tests
+  mock,
+  packaging,
+  pyjwt,
   pytestCheckHook,
-
+  requests,
+  requests-toolbelt,
   # build-system
   setuptools,
   setuptools-scm,
-
   # dependencies
   urllib3,
-  requests,
-  requests-toolbelt,
-  pyjwt,
-  importlib-metadata,
-  packaging,
-
-  # tests
-  mock,
 }:
 
 let
   testDBOpts = {
     host = "127.0.0.1";
-    port = "8529";
     password = "test";
+    port = "8529";
     secret = "secret";
   };
 in
@@ -32,7 +29,6 @@ in
 buildPythonPackage rec {
   pname = "python-arango";
   version = "8.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "arangodb";
@@ -56,12 +52,6 @@ buildPythonPackage rec {
     urllib3
   ];
 
-  nativeCheckInputs = [
-    #arangodb
-    mock
-    pytestCheckHook
-  ];
-
   # ArangoDB has been removed from Nixpkgs due to lack of maintenace,
   # so we cannot run the tests at present.
   #
@@ -77,33 +67,10 @@ buildPythonPackage rec {
   # architecture issues will be irrelevant.
   doCheck = false;
 
-  #preCheck = lib.optionalString doCheck ''
-  #  # Start test DB
-  #  mkdir -p .nix-test/{data,work}
-  #
-  #  ICU_DATA=${arangodb}/share/arangodb3 \
-  #  GLIBCXX_FORCE_NEW=1 \
-  #  TZ=UTC \
-  #  TZ_DATA=${arangodb}/share/arangodb3/tzdata \
-  #  ARANGO_ROOT_PASSWORD=${testDBOpts.password} \
-  #  ${arangodb}/bin/arangod \
-  #    --server.uid=$(id -u) \
-  #    --server.gid=$(id -g) \
-  #    --server.authentication=true \
-  #    --server.endpoint=http+tcp://${testDBOpts.host}:${testDBOpts.port} \
-  #    --server.descriptors-minimum=4096 \
-  #    --server.jwt-secret=${testDBOpts.secret} \
-  #    --javascript.app-path=.nix-test/app \
-  #    --log.file=.nix-test/log \
-  #    --database.directory=.nix-test/data \
-  #    --foxx.api=false &
-  #'';
-
-  pytestFlags = [
-    "--host=${testDBOpts.host}"
-    "--port=${testDBOpts.port}"
-    "--passwd=${testDBOpts.password}"
-    "--secret=${testDBOpts.secret}"
+  nativeCheckInputs = [
+    #arangodb
+    mock
+    pytestCheckHook
   ];
 
   disabledTests = [
@@ -143,6 +110,36 @@ buildPythonPackage rec {
 
     # no replication configured via arangod invocation
     "test_replication_applier"
+  ];
+
+  pyproject = true;
+
+  #preCheck = lib.optionalString doCheck ''
+  #  # Start test DB
+  #  mkdir -p .nix-test/{data,work}
+  #
+  #  ICU_DATA=${arangodb}/share/arangodb3 \
+  #  GLIBCXX_FORCE_NEW=1 \
+  #  TZ=UTC \
+  #  TZ_DATA=${arangodb}/share/arangodb3/tzdata \
+  #  ARANGO_ROOT_PASSWORD=${testDBOpts.password} \
+  #  ${arangodb}/bin/arangod \
+  #    --server.uid=$(id -u) \
+  #    --server.gid=$(id -g) \
+  #    --server.authentication=true \
+  #    --server.endpoint=http+tcp://${testDBOpts.host}:${testDBOpts.port} \
+  #    --server.descriptors-minimum=4096 \
+  #    --server.jwt-secret=${testDBOpts.secret} \
+  #    --javascript.app-path=.nix-test/app \
+  #    --log.file=.nix-test/log \
+  #    --database.directory=.nix-test/data \
+  #    --foxx.api=false &
+  #'';
+  pytestFlags = [
+    "--host=${testDBOpts.host}"
+    "--port=${testDBOpts.port}"
+    "--passwd=${testDBOpts.password}"
+    "--secret=${testDBOpts.secret}"
   ];
 
   pythonImportsCheck = [ "arango" ];

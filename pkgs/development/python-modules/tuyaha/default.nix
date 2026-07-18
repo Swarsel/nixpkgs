@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
 }:
 
 buildPythonPackage rec {
   pname = "tuyaha";
   version = "0.0.11";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "PaulAnnekov";
@@ -18,9 +17,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ requests ];
-
   # Project has no tests
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "tuyaha" ];
 
   meta = {

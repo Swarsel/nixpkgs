@@ -22,7 +22,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-QRbF2GUDQsp8i6qVYlafSb9HaaozRuJ8dn1mhMMLeLc=";
   };
 
-  mesonFlags = [ "-Dcpp_std=c++17" ]; # required by gtest
+  nativeBuildInputs = [
+    meson
+    ninja
+    pkg-config
+  ];
 
   buildInputs = [
     freetype
@@ -30,12 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
     lz4
     woff2
   ];
-  nativeBuildInputs = [
-    meson
-    ninja
-    pkg-config
-  ];
 
+  mesonFlags = [ "-Dcpp_std=c++17" ]; # required by gtest
   doCheck = true;
 
   meta = {

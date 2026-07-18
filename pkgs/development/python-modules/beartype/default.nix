@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pytestCheckHook,
   typing-extensions,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "beartype";
   version = "0.22.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "beartype";
@@ -19,13 +18,13 @@ buildPythonPackage rec {
     hash = "sha256-F9x2qvzll1nUcTQZjaky+0ukP1RXoW35crzfS/pmvTs=";
   };
 
-  build-system = [ hatchling ];
-
   nativeCheckInputs = [
     pytestCheckHook
     typing-extensions
   ];
 
+  build-system = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "beartype" ];
 
   meta = {

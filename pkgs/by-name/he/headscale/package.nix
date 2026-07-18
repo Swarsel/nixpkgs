@@ -1,13 +1,13 @@
 {
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
-  installShellFiles,
+  buildGoModule,
   iana-etc,
+  installShellFiles,
   libredirect,
   nixosTests,
   postgresql,
-  stdenv,
 }:
 buildGoModule (finalAttrs: {
   pname = "headscale";
@@ -26,11 +26,8 @@ buildGoModule (finalAttrs: {
       --replace-fail 'Commit:    "unknown"' 'Commit: "${finalAttrs.src.tag}"'
   '';
 
-  vendorHash = "sha256-fzKyXNMw/2yAEhaTZu0n1NXatPO2IP0HFA2ey1vZIYM=";
-
-  subPackages = [ "cmd/headscale" ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-fzKyXNMw/2yAEhaTZu0n1NXatPO2IP0HFA2ey1vZIYM=";
 
   nativeCheckInputs = [
     libredirect.hook
@@ -50,11 +47,12 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/headscale completion zsh)
   '';
 
+  subPackages = [ "cmd/headscale" ];
   passthru.tests = { inherit (nixosTests) headscale; };
 
   meta = {
-    homepage = "https://github.com/juanfont/headscale";
     description = "Open source, self-hosted implementation of the Tailscale control server";
+
     longDescription = ''
       Tailscale is a modern VPN built on top of Wireguard. It works like an
       overlay network between the computers of your networks - using all kinds
@@ -71,12 +69,16 @@ buildGoModule (finalAttrs: {
 
       Headscale implements this coordination server.
     '';
+
+    homepage = "https://github.com/juanfont/headscale";
     license = lib.licenses.bsd3;
-    mainProgram = "headscale";
+
     maintainers = with lib.maintainers; [
       kradalby
       misterio77
       debtquity
     ];
+
+    mainProgram = "headscale";
   };
 })

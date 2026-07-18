@@ -13,12 +13,14 @@ in
     enable = lib.mkEnableOption "udev rules for Saleae Logic devices";
 
     package = lib.mkOption {
-      type = lib.types.package;
       default = pkgs.saleae-logic-2;
       defaultText = lib.literalExpression "pkgs.saleae-logic-2";
+
       description = ''
         Saleae Logic package to use.
       '';
+
+      type = lib.types.package;
     };
   };
 

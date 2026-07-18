@@ -16,11 +16,6 @@ flutter329.buildFlutterApplication rec {
     hash = "sha256-USZ243M/0SOvlYns66zkhDQCuq+kgEWYdBZN3iBF9SA=";
   };
 
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
-  gitHashes = {
-    "receive_sharing_intent" = "sha256-YsvnLOZvYZMyKx3J596Q3/hY2Fn/AFT6nhLTTHdMFOE=";
-  };
-
   postPatch = ''
     substituteInPlace linux/CMakeLists.txt \
      --replace-fail 'find_library(APPINDICATOR_LIBRARY NAMES appindicator3)' 'find_library(${libappindicator} NAMES appindicator3)' \
@@ -42,13 +37,19 @@ flutter329.buildFlutterApplication rec {
     install -Dm644 linux/icons/app-icon.svg $out/share/icons/hicolor/scalable/apps/libretrack.svg
   '';
 
+  gitHashes = {
+    "receive_sharing_intent" = "sha256-YsvnLOZvYZMyKx3J596Q3/hY2Fn/AFT6nhLTTHdMFOE=";
+  };
+
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
+
   meta = {
     description = "Private, cross-platform package tracking app";
     homepage = "https://github.com/proninyaroslav/libretrack";
     changelog = "https://github.com/proninyaroslav/libretrack/releases/tag/${version}";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ genga898 ];
-    mainProgram = "libretrack";
     platforms = lib.platforms.linux;
+    mainProgram = "libretrack";
   };
 }

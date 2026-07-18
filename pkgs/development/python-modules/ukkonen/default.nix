@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cffi,
   pytestCheckHook,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "ukkonen";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "asottile";
@@ -19,15 +18,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-vXyOLAiY92Df7g57quiSnOz8yhaIsm8MTB6Fbiv6axQ=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     cffi
     setuptools
   ];
 
   dependencies = [ cffi ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "ukkonen" ];
 
   meta = {

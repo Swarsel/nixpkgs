@@ -1,16 +1,17 @@
 {
-  mkKdeDerivation,
-  qtsvg,
-  qtspeech,
   _7zz,
+  mkKdeDerivation,
+  qtspeech,
+  qtsvg,
 }:
 mkKdeDerivation {
   pname = "knights";
 
-  extraNativeBuildInputs = [ _7zz ];
   extraBuildInputs = [
     qtsvg
     qtspeech
   ];
+
+  extraNativeBuildInputs = [ _7zz ];
   meta.mainProgram = "knights";
 }

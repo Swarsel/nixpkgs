@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
   autoPatchelfHook,
-  patchelfUnstable,
+  dpkg,
   openssl,
+  patchelfUnstable,
 }:
 
 # Use techniques described in https://web.archive.org/web/20220904051329/https://tapesoftware.net/replace-symbol/
@@ -24,48 +24,50 @@ let
     pname = "dell-command-configure-unpacked";
 
     src = fetchurl {
+      hash = "sha256-MM6Djkz/VuVCLHGEji88Xq0vIV+AfqQkjNXz4zqFOtw=";
+      # The CDN blocks the Curl user-agent, so set to blank instead.
+      curlOpts = ''-A=""'';
+
       urls = [
         "https://dl.dell.com/FOLDER12705845M/1/command-configure_${version}.ubuntu24_amd64.tar.gz"
         "https://web.archive.org/web/20250421172156/https://dl.dell.com/FOLDER12705845M/1/command-configure_5.1.0-6.ubuntu24_amd64.tar.gz"
       ];
-      # The CDN blocks the Curl user-agent, so set to blank instead.
-      curlOpts = ''-A=""'';
-      hash = "sha256-MM6Djkz/VuVCLHGEji88Xq0vIV+AfqQkjNXz4zqFOtw=";
     };
 
-    dontBuild = true;
-
     nativeBuildInputs = [ dpkg ];
+
+    installPhase = ''
+      mkdir $out
+      cp -r . $out
+    '';
+
+    dontBuild = true;
 
     unpackPhase = ''
       tar -xzf ${finalAttrs.src}
       dpkg-deb -x command-configure_${version}.ubuntu24_amd64.deb command-configure
       dpkg-deb -x srvadmin-hapi_9.5.0_amd64.deb srvadmin-hapi
     '';
-
-    installPhase = ''
-      mkdir $out
-      cp -r . $out
-    '';
   });
 
   # Contains a fopen() wrapper for finding the firmware package
   wrapperLibName = "wrapper-lib.so";
   wrapperLib = stdenv.mkDerivation {
-    pname = "dell-command-configure-unpacked-wrapper-lib";
     inherit version;
-
-    unpackPhase = ''
-      cp ${./wrapper-lib.c} wrapper-lib.c
-    '';
+    pname = "dell-command-configure-unpacked-wrapper-lib";
 
     postPatch = ''
       substitute wrapper-lib.c lib.c \
         --subst-var-by to "${unpacked}/srvadmin-hapi/opt/dell/srvadmin/etc/omreg.d/omreg-hapi.cfg"
       cc -fPIC -shared lib.c -o ${wrapperLibName}
     '';
+
     installPhase = ''
       install -D ${wrapperLibName} -t $out/lib
+    '';
+
+    unpackPhase = ''
+      cp ${./wrapper-lib.c} wrapper-lib.c
     '';
   };
 
@@ -73,17 +75,13 @@ in
 stdenv.mkDerivation {
   inherit version;
   pname = "dell-command-configure";
-
+  src = unpacked;
   nativeBuildInputs = [ autoPatchelfHook ];
 
   buildInputs = [
     openssl
     (lib.getLib stdenv.cc.cc)
   ];
-
-  dontConfigure = true;
-
-  src = unpacked;
 
   installPhase = ''
     runHook preInstall
@@ -110,12 +108,14 @@ stdenv.mkDerivation {
       $out/lib/*
   '';
 
+  dontConfigure = true;
+
   meta = {
     description = "Configure BIOS settings on Dell laptops";
     homepage = "https://www.dell.com/support/article/us/en/19/sln311302/dell-command-configure";
     license = lib.licenses.unfree;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = with lib.maintainers; [ ryangibb ];
     platforms = [ "x86_64-linux" ];
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
   };
 }

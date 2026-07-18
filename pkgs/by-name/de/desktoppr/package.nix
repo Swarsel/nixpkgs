@@ -1,11 +1,11 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
   fetchpatch,
   swift,
   swiftpm,
   versionCheckHook,
-  lib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,14 +22,14 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Update version in the code from 0.5b (beta) to 0.5 (release)
     (fetchpatch {
-      url = "https://github.com/scriptingosx/desktoppr/commit/419363c28c99eb0f391bf231813af5e507c35573.patch";
       hash = "sha256-7A3hsXO0hZYlZMrX1U0zC2vy59M9H5OZebEbPY8E9fA=";
       includes = [ "desktoppr/main.swift" ];
+      url = "https://github.com/scriptingosx/desktoppr/commit/419363c28c99eb0f391bf231813af5e507c35573.patch";
     })
     # Adds support for building with swiftpm
     (fetchpatch {
-      url = "https://github.com/scriptingosx/desktoppr/commit/eaf08da7cdd5fe9aa656516b3a5a0a9ac9969e72.patch";
       hash = "sha256-8sAUNnTGqQ2UHIFUPwTP0dd3QKgI0HfOrG0HzcIStMM=";
+      url = "https://github.com/scriptingosx/desktoppr/commit/eaf08da7cdd5fe9aa656516b3a5a0a9ac9969e72.patch";
     })
   ];
 
@@ -44,19 +44,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
   versionCheckProgramArg = "version";
-  doInstallCheck = true;
 
   meta = {
     description = "Simple command line tool to read and set the desktop picture/wallpaper";
     homepage = "https://github.com/scriptingosx/desktoppr";
-    platforms = lib.platforms.darwin;
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ andre4ik3 ];
+    platforms = lib.platforms.darwin;
     mainProgram = "desktoppr";
   };
 })

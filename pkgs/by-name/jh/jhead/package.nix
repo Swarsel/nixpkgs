@@ -25,6 +25,7 @@ stdenv.mkDerivation rec {
   ];
 
   doCheck = true;
+
   checkPhase = ''
     runHook preCheck
 
@@ -49,8 +50,8 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://www.sentex.net/~mwandel/jhead/";
     description = "Exif Jpeg header manipulation tool";
+    homepage = "https://www.sentex.net/~mwandel/jhead/";
     license = lib.licenses.publicDomain;
     maintainers = with lib.maintainers; [ rycee ];
     platforms = lib.platforms.all;

@@ -1,44 +1,38 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
+  boost,
+  docbook-xsl-nons,
+  docbook_xml_dtd_42,
+  docbook_xsl_ns,
   gettext,
   glib,
+  gobject-introspection,
+  gst_all_1,
+  gtk-doc,
+  gtk3,
+  jansson,
+  libxml2,
+  libxslt,
+  meson,
+  ninja,
+  nixosTests,
   pkg-config,
   polkit,
   python3,
   sqlite,
-  gobject-introspection,
-  vala,
-  jansson,
-  docbook_xsl_ns,
-  gtk-doc,
-  boost,
-  meson,
-  ninja,
-  libxslt,
-  docbook-xsl-nons,
-  docbook_xml_dtd_42,
-  libxml2,
-  gst_all_1,
-  gtk3,
-  enableCommandNotFound ? false,
-  enableBashCompletion ? false,
-  bash-completion ? null,
-  enableSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
   systemd,
-  nixosTests,
+  vala,
+  bash-completion ? null,
+  enableBashCompletion ? false,
+  enableCommandNotFound ? false,
+  enableSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "packagekit";
   version = "1.3.5";
-
-  outputs = [
-    "out"
-    "dev"
-    "devdoc"
-  ];
 
   src = fetchFromGitHub {
     owner = "PackageKit";
@@ -47,19 +41,25 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-aKucwqwNyZWyHfNu9ntzSwD+eQy8KjCt6RVMjjjZmZg=";
   };
 
-  buildInputs = [
-    glib
-    polkit
-    python3
-    gst_all_1.gstreamer
-    gst_all_1.gst-plugins-base
-    gtk3
-    jansson
-    sqlite
-    boost
-  ]
-  ++ lib.optional enableSystemd systemd
-  ++ lib.optional enableBashCompletion bash-completion;
+  outputs = [
+    "out"
+    "dev"
+    "devdoc"
+  ];
+
+  postPatch = ''
+    # HACK: we want packagekit to look in /etc for configs but install
+    # those files in $out/etc ; we just override the runtime paths here
+    # same for /var & $out/var
+    substituteInPlace etc/meson.build \
+      --replace-fail "install_dir: join_paths(get_option('sysconfdir'), 'PackageKit')" "install_dir: join_paths('$out', 'etc', 'PackageKit')"
+    substituteInPlace data/meson.build \
+      --replace-fail "install_dir: join_paths(get_option('localstatedir'), 'lib', 'PackageKit')," "install_dir: join_paths('$out', 'var', 'lib', 'PackageKit'),"
+    substituteInPlace client/meson.build \
+      --replace-fail http://docbook.sourceforge.net/release/xsl-ns/current ${docbook_xsl_ns}/share/xml/docbook-xsl-ns
+
+  '';
+
   nativeBuildInputs = [
     gobject-introspection
     glib
@@ -74,6 +74,20 @@ stdenv.mkDerivation (finalAttrs: {
     libxml2
     ninja
   ];
+
+  buildInputs = [
+    glib
+    polkit
+    python3
+    gst_all_1.gstreamer
+    gst_all_1.gst-plugins-base
+    gtk3
+    jansson
+    sqlite
+    boost
+  ]
+  ++ lib.optional enableSystemd systemd
+  ++ lib.optional enableBashCompletion bash-completion;
 
   mesonFlags = [
     (if enableSystemd then "-Dsystemd=true" else "-Dsystem=false")
@@ -92,25 +106,13 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional (!enableBashCompletion) "-Dbash_completion=false"
   ++ lib.optional (!enableCommandNotFound) "-Dbash_command_not_found=false";
 
-  postPatch = ''
-    # HACK: we want packagekit to look in /etc for configs but install
-    # those files in $out/etc ; we just override the runtime paths here
-    # same for /var & $out/var
-    substituteInPlace etc/meson.build \
-      --replace-fail "install_dir: join_paths(get_option('sysconfdir'), 'PackageKit')" "install_dir: join_paths('$out', 'etc', 'PackageKit')"
-    substituteInPlace data/meson.build \
-      --replace-fail "install_dir: join_paths(get_option('localstatedir'), 'lib', 'PackageKit')," "install_dir: join_paths('$out', 'var', 'lib', 'PackageKit'),"
-    substituteInPlace client/meson.build \
-      --replace-fail http://docbook.sourceforge.net/release/xsl-ns/current ${docbook_xsl_ns}/share/xml/docbook-xsl-ns
-
-  '';
-
   passthru.tests = {
     nixos-test = nixosTests.packagekit;
   };
 
   meta = {
     description = "System to facilitate installing and updating packages";
+
     longDescription = ''
       PackageKit is a system designed to make installing and updating software
       on your computer easier. The primary design goal is to unify all the
@@ -121,9 +123,10 @@ stdenv.mkDerivation (finalAttrs: {
       a common set of abstractions that can be used by standard GUI and text
       mode package managers.
     '';
+
     homepage = "https://github.com/PackageKit/PackageKit";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

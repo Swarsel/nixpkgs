@@ -2,9 +2,9 @@
   lib,
   fetchFromGitHub,
   buildGoModule,
-  pandoc,
   installShellFiles,
   nix-update-script,
+  pandoc,
   testers,
 }:
 
@@ -19,18 +19,12 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-jhVUYyp6t5LleVotQQme07IJVdVnIOVFFtKEmzt8e2k=";
   };
 
-  vendorHash = "sha256-A3lZtV0pXh4KxINl413xGbw2Pz7OzvIQiFSRubH428c=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.Version=v${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [
     pandoc
     installShellFiles
   ];
+
+  vendorHash = "sha256-A3lZtV0pXh4KxINl413xGbw2Pz7OzvIQiFSRubH428c=";
 
   postInstall = ''
     rm $out/bin/{test,tools}
@@ -38,13 +32,20 @@ buildGoModule (finalAttrs: {
     installManPage eget.1
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.Version=v${finalAttrs.version}"
+  ];
+
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
-      command = "eget -v";
       version = "v${finalAttrs.version}";
+      command = "eget -v";
+      package = finalAttrs.finalPackage;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {

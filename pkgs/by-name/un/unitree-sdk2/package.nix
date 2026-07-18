@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   autoPatchelfHook,
+  cmake,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,10 +37,11 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Unitree robot SDK version 2 for Go2, B2, H1, and G1 robots";
     homepage = "https://github.com/unitreerobotics/unitree_sdk2";
     license = lib.licenses.bsd3;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

@@ -1,13 +1,13 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  pkg-config,
-  libpulseaudio,
-  openssl,
   stdenv,
+  fetchFromGitHub,
   alsa-lib,
+  libpulseaudio,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
   versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,10 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     repo = "camilladsp";
     tag = "v${finalAttrs.version}";
     hash = "sha256-/OnD607xSPXM4AjVOZjaZQJpo7Q847Z8mq6elHmEwAU=";
-  };
-
-  cargoLock = {
-    lockFile = ./Cargo.lock;
   };
 
   postPatch = ''
@@ -40,21 +36,26 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ alsa-lib ];
 
-  passthru.updateScript = nix-update-script { extraArgs = [ "--generate-lockfile" ]; };
+  cargoLock = {
+    lockFile = ./Cargo.lock;
+  };
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  passthru.updateScript = nix-update-script { extraArgs = [ "--generate-lockfile" ]; };
 
   meta = {
     description = "Flexible cross-platform IIR and FIR engine for crossovers, room correction etc";
     homepage = "https://github.com/HEnquist/camilladsp";
     changelog = "https://github.com/HEnquist/camilladsp/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
     maintainers = with lib.maintainers; [
       paepcke
       stepbrobd
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "camilladsp";
   };
 })

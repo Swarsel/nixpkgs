@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
-  nix-update-script,
   installFonts,
+  nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -16,13 +16,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     stripRoot = false;
   };
 
-  nativeBuildInputs = [ installFonts ];
-
   outputs = [
     "out"
     "webfont"
   ];
 
+  nativeBuildInputs = [ installFonts ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

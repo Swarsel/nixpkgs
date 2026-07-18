@@ -1,17 +1,14 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-
+  just,
   # nativeBuildInputs
   libcosmicAppHook,
-  just,
-
+  nix-update-script,
   # buildInputs
   openssl,
-
-  nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
@@ -25,17 +22,15 @@ rustPlatform.buildRustPackage {
     hash = "sha256-QoZ854+2/4+VMZbOI/M167qjDPahtzbV/NH8Y46uBs8=";
   };
 
-  cargoHash = "sha256-di7zjwI0/6NB2cAih3d7iqwSb+o/607jbgJN1MtbZX8=";
-
   nativeBuildInputs = [
     libcosmicAppHook
     just
   ];
 
+  buildInputs = [ openssl ];
+  cargoHash = "sha256-di7zjwI0/6NB2cAih3d7iqwSb+o/607jbgJN1MtbZX8=";
   dontUseJustBuild = true;
   dontUseJustCheck = true;
-
-  buildInputs = [ openssl ];
 
   justFlags = [
     "--set"
@@ -59,10 +54,12 @@ rustPlatform.buildRustPackage {
     description = "Weather app written in rust and libcosmic";
     homepage = "https://github.com/cosmic-utils/forecast";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       HeitorAugustoLN
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "cosmic-ext-forecast";
   };

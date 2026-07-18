@@ -1,17 +1,17 @@
 {
-  pkgsi686Linux,
   lib,
   stdenv,
   fetchurl,
-  dpkg,
-  makeWrapper,
-  ghostscript,
-  file,
-  gnused,
-  gnugrep,
   coreutils,
-  which,
+  dpkg,
+  file,
+  ghostscript,
+  gnugrep,
+  gnused,
+  makeWrapper,
   perl,
+  pkgsi686Linux,
+  which,
 }:
 let
   version = "1.0.2-0";
@@ -19,8 +19,9 @@ let
   interpreter = "${pkgsi686Linux.stdenv.cc.libc}/lib/ld-linux.so.2";
 in
 stdenv.mkDerivation {
-  pname = "cups-brother-${model}";
   inherit version;
+  pname = "cups-brother-${model}";
+
   src = fetchurl {
     url = "https://download.brother.com/welcome/dlf103919/dcpl3550cdwpdrv-${version}.i386.deb";
     hash = "sha256-FbtqISK3f1q1+JXJ+RP5O/8G0ZW9gcCS7OI0YRljwyY=";
@@ -30,14 +31,6 @@ stdenv.mkDerivation {
     dpkg
     makeWrapper
   ];
-
-  unpackPhase = ''
-    runHook preUnpack
-
-    dpkg-deb -x $src $out
-
-    runHook postUnpack
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -91,19 +84,31 @@ stdenv.mkDerivation {
       --set NIX_REDIRECTS /opt=$out/opt
   '';
 
+  unpackPhase = ''
+    runHook preUnpack
+
+    dpkg-deb -x $src $out
+
+    runHook postUnpack
+  '';
+
   meta = {
-    homepage = "https://www.brother.com/";
-    downloadPage = "https://support.brother.com/g/b/downloadlist.aspx?c=eu_ot&lang=en&prod=${model}_eu&os=128";
     description = "Brother DCP-L3550CDW printer driver";
+    homepage = "https://www.brother.com/";
+
     license = with lib.licenses; [
       unfreeRedistributable
       gpl2Only
     ];
+
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ Tert0 ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
-    maintainers = with lib.maintainers; [ Tert0 ];
+
+    downloadPage = "https://support.brother.com/g/b/downloadlist.aspx?c=eu_ot&lang=en&prod=${model}_eu&os=128";
   };
 }

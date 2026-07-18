@@ -1,33 +1,30 @@
 {
   lib,
   fetchFromGitHub,
-  buildPythonPackage,
-  pytestCheckHook,
-
-  setuptools,
-  setuptools-scm,
-  pyyaml,
   aiohttp,
-  iso8601,
-  python-json-logger,
+  aresponses,
+  buildPythonPackage,
+  certvalidator,
   click,
-
+  freezegun,
+  iso8601,
   jsonpatch,
   kmock,
+  looptime,
+  pyngrok,
+  pytest-asyncio,
   pytest-mock,
   pytest-timeout,
-  pytest-asyncio,
-  pyngrok,
-  freezegun,
-  certvalidator,
-  aresponses,
-  looptime,
+  pytestCheckHook,
+  python-json-logger,
+  pyyaml,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "kopf";
   version = "1.44.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nolar";
@@ -35,6 +32,21 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-iwAq06qXtD3c0otC1S9TfRPDpc54y/NJQpJ7X8dCgGI=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pyngrok
+    pytest-timeout
+    pytest-asyncio
+    pytest-mock
+    kmock
+    freezegun
+    certvalidator
+    aresponses
+    looptime
+  ];
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     setuptools
@@ -48,19 +60,6 @@ buildPythonPackage rec {
     iso8601
     jsonpatch
     click
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pyngrok
-    pytest-timeout
-    pytest-asyncio
-    pytest-mock
-    kmock
-    freezegun
-    certvalidator
-    aresponses
-    looptime
   ];
 
   disabledTestPaths = [
@@ -80,9 +79,8 @@ buildPythonPackage rec {
     "test_connection_info_as_ssl_context_when_insecure"
   ];
 
+  pyproject = true;
   pytestFlags = [ "-Wignore::pytest.PytestUnraisableExceptionWarning" ];
-
-  __darwinAllowLocalNetworking = true;
 
   pythonImportsCheck = [
     "kopf"

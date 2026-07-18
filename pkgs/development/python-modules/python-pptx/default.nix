@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   lxml,
   pillow,
+  setuptools,
   typing-extensions,
   xlsxwriter,
 }:
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "python-pptx";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scanny";
@@ -31,6 +30,8 @@ buildPythonPackage rec {
     typing-extensions
     xlsxwriter
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "pptx"

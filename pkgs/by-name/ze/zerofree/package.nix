@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  installShellFiles,
   e2fsprogs,
+  installShellFiles,
 }:
 
 let
   manpage = fetchurl {
-    url = "https://manpages.ubuntu.com/manpages.gz/xenial/man8/zerofree.8.gz";
     sha256 = "0y132xmjl02vw41k794psa4nmjpdyky9f6sf0h4f7rvf83z3zy4k";
+    url = "https://manpages.ubuntu.com/manpages.gz/xenial/man8/zerofree.8.gz";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -34,11 +34,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://frippery.org/uml/";
     description = "Zero free blocks from ext2, ext3 and ext4 file-systems";
-    platforms = lib.platforms.linux;
+    homepage = "https://frippery.org/uml/";
     license = lib.licenses.gpl2Only;
     maintainers = [ lib.maintainers.theuni ];
+    platforms = lib.platforms.linux;
     mainProgram = "zerofree";
   };
 })

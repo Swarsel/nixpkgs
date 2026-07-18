@@ -1,29 +1,29 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  lib,
-  makeDesktopItem,
-  makeShellWrapper,
   autoPatchelfHook,
-  libgcc,
-  libx11,
-  libxext,
-  libxcb,
-  libGL,
+  dbus,
   ffmpeg,
   glib,
-  dbus,
-  pango,
-  libxcomposite,
-  libxdamage,
-  libxrandr,
-  libxkbcommon,
-  libgbm,
-  nss,
-  nspr,
   gtk3,
+  libGL,
+  libgbm,
+  libgcc,
   libnotify,
   libpulseaudio,
+  libx11,
+  libxcb,
+  libxcomposite,
+  libxdamage,
+  libxext,
+  libxkbcommon,
+  libxrandr,
+  makeDesktopItem,
+  makeShellWrapper,
+  nspr,
+  nss,
+  pango,
   writeShellApplication,
 }:
 
@@ -91,16 +91,17 @@ stdenv.mkDerivation rec {
   '';
 
   desktopItem = makeDesktopItem {
-    name = "osmium";
-    exec = "osmium";
-    icon = "osmium";
-    desktopName = "Osmium";
-    genericName = "A globally distributed community messaging and voice/video platform.";
     categories = [
       "Network"
       "InstantMessaging"
     ];
+
+    desktopName = "Osmium";
+    exec = "osmium";
+    genericName = "A globally distributed community messaging and voice/video platform.";
+    icon = "osmium";
     mimeTypes = [ "x-scheme-handler/osmium" ];
+    name = "osmium";
     startupWMClass = "Osmium";
   };
 
@@ -112,13 +113,16 @@ stdenv.mkDerivation rec {
     description = "Globally distributed community messaging and voice/video platform";
     homepage = "https://osmium.chat/";
     license = lib.licenses.unfree;
-    mainProgram = "osmium";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       twoneis
     ];
+
     platforms = [
       "x86_64-linux"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
+    mainProgram = "osmium";
   };
 }

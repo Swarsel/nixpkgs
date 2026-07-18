@@ -1,14 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "tzf-rs";
   version = "1.3.3";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "ringsaturn";
@@ -17,12 +15,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-pdh301znFcqsrXyo75W8NcIFKJnWowjoJIV9WpdeWVU=";
   };
 
+  cargoHash = "sha256-8Ma5WhUKJCFE3X26/dl2B1QeMtwjGY2Ux1DmRge5v2M=";
+  __structuredAttrs = true;
+
   buildFeatures = [
     # no method named `to_geojson` found for struct `DefaultFinder` in the current scope
     "export-geojson"
   ];
-
-  cargoHash = "sha256-8Ma5WhUKJCFE3X26/dl2B1QeMtwjGY2Ux1DmRge5v2M=";
 
   passthru.updateScript = nix-update-script { };
 
@@ -32,7 +31,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     changelog = "https://github.com/ringsaturn/tzf-rs/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ pcboy ];
-    mainProgram = "tzf";
     platforms = lib.platforms.unix;
+    mainProgram = "tzf";
   };
 })

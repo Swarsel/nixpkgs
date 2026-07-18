@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
   versionCheckHook,
 }:
 buildGoModule (finalAttrs: {
@@ -17,11 +17,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-zaguB4LLkzXlMQCEVOWkUUsEovU53F0B51w3BnVjre8=";
   };
 
-  vendorHash = "sha256-h9NSOkqpkZ3sKcfsPjF+T2JgX0N8CIAP6y1NVIb/r0E=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  ldflags = [ "-X github.com/conduktor/ctl/utils.version=${finalAttrs.version}" ];
+  vendorHash = "sha256-h9NSOkqpkZ3sKcfsPjF+T2JgX0N8CIAP6y1NVIb/r0E=";
 
   checkPhase = ''
     go test ./...
@@ -38,22 +35,22 @@ buildGoModule (finalAttrs: {
   '';
 
   doInstallCheck = true;
-
   nativeInstallCheckInputs = [ versionCheckHook ];
-
+  ldflags = [ "-X github.com/conduktor/ctl/utils.version=${finalAttrs.version}" ];
   versionCheckProgram = "${placeholder "out"}/bin/conduktor";
-
   versionCheckProgramArg = "version";
 
   meta = {
     description = "CLI tool to interact with the Conduktor Console and Gateway";
-    mainProgram = "conduktor";
     homepage = "https://github.com/conduktor/ctl";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       conduktorbot
       marnas
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "conduktor";
   };
 })

@@ -2,12 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
-  autoPatchelfHook,
-  wrapGAppsHook3,
-  fontconfig,
   atk,
+  autoPatchelfHook,
   cairo,
+  dpkg,
+  fontconfig,
   gdk-pixbuf,
   glib,
   gtk3,
@@ -18,12 +17,13 @@
   libgcrypt,
   libgpg-error,
   lz4,
+  nix-update-script,
   nspr,
   nss,
   pango,
   util-linux,
+  wrapGAppsHook3,
   xz,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -72,8 +72,6 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  dontWrapGApps = true;
-
   preFixup = ''
     makeWrapper $out/share/reqable/reqable $out/bin/reqable \
       --prefix LD_LIBRARY_PATH : $out/share/reqable/lib \
@@ -82,17 +80,18 @@ stdenv.mkDerivation (finalAttrs: {
     rm -r $out/share/pixmaps
   '';
 
+  dontWrapGApps = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Generation API debugging and testing one-stop solution";
     homepage = "https://reqable.com";
-    downloadPage = "https://github.com/reqable/reqable-app/releases";
     changelog = "https://github.com/reqable/reqable-app/releases/tag/${finalAttrs.version}";
-    mainProgram = "reqable";
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ chillcicada ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "reqable";
+    downloadPage = "https://github.com/reqable/reqable-app/releases";
   };
 })

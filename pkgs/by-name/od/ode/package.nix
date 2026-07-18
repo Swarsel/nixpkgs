@@ -20,15 +20,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Open Dynamics Engine";
-    mainProgram = "ode-config";
     homepage = "https://www.ode.org";
+
     license = with lib.licenses; [
       bsd3
       lgpl21Only
       lgpl3Only
       zlib
     ];
+
     maintainers = with lib.maintainers; [ wegank ];
     platforms = lib.platforms.unix;
+    mainProgram = "ode-config";
   };
 })

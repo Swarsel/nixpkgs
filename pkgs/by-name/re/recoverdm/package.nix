@@ -10,11 +10,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.20-9";
 
   src = fetchFromGitLab {
-    domain = "salsa.debian.org";
     owner = "pkg-security-team";
     repo = "recoverdm";
     rev = "debian/${finalAttrs.version}";
     hash = "sha256-HLaiTeeqXn0mgRnG5FZflkPiDiB8CGzq4FR7lDj5oHI=";
+    domain = "salsa.debian.org";
   };
 
   patches =
@@ -49,11 +49,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Recover damaged CD DVD and disks with bad sectors";
-    mainProgram = "recoverdm";
     homepage = "https://salsa.debian.org/pkg-security-team/recoverdm";
     changelog = "https://salsa.debian.org/pkg-security-team/recoverdm/-/blob/debian/master/debian/changelog";
+    license = lib.licenses.gpl1Only;
     maintainers = [ ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.gpl1Only;
+    mainProgram = "recoverdm";
   };
 })

@@ -1,18 +1,17 @@
 {
-  pkgs,
   lib,
   buildPythonPackage,
   fetchPypi,
   flit-core,
   pillow,
-  pytestCheckHook,
+  pkgs,
   pytest-cov-stub,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pydyf";
   version = "0.12.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -33,6 +32,7 @@ buildPythonPackage rec {
     pytest-cov-stub
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pydyf" ];
 
   meta = {

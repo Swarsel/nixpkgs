@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cryptography,
   ecdsa,
-  fetchFromGitHub,
   flask,
   pytestCheckHook,
   python-http-client,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "sendgrid";
   version = "6.12.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = pname;
@@ -25,7 +24,12 @@ buildPythonPackage rec {
     hash = "sha256-7r1FHcGmHRQK9mfpV3qcuZlIe7G6CIyarnpWLjduw4E=";
   };
 
-  pythonRelaxDeps = [ "cryptography" ];
+  nativeCheckInputs = [
+    flask
+    pytestCheckHook
+    pyyaml
+    werkzeug
+  ];
 
   build-system = [ setuptools ];
 
@@ -36,20 +40,15 @@ buildPythonPackage rec {
     starkbank-ecdsa
   ];
 
-  nativeCheckInputs = [
-    flask
-    pytestCheckHook
-    pyyaml
-    werkzeug
-  ];
-
   disabledTestPaths = [
     # Exclude tests that require network access
     "test/integ/test_sendgrid.py"
     "live_test.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "sendgrid" ];
+  pythonRelaxDeps = [ "cryptography" ];
 
   meta = {
     description = "Python client for SendGrid";

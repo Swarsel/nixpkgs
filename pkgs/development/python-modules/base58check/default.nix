@@ -2,18 +2,13 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "base58check";
   version = "1.0.2";
-  pyproject = true;
-
-  __structuredAttrs = true;
-
-  build-system = [ setuptools ];
 
   src = fetchFromGitHub {
     owner = "joeblackwaslike";
@@ -23,7 +18,9 @@ buildPythonPackage (finalAttrs: {
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "base58check" ];
 
   meta = {

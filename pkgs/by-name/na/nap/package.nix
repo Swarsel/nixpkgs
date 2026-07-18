@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,16 +16,17 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-puCqql77kvdWTcwp8z6LExBt/HbNRNe0f+wtM0kLoWM=";
-
   excludedPackages = ".nap";
 
   meta = {
     description = "Code snippets in your terminal";
-    mainProgram = "nap";
     homepage = "https://github.com/maaslalani/nap";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       phdcybersec
     ];
+
+    mainProgram = "nap";
   };
 })

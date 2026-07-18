@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  git,
   awscli,
+  git,
   python3Packages,
   unstableGitUpdater,
 }:
@@ -10,7 +10,6 @@
 python3Packages.buildPythonApplication {
   pname = "iceshelf";
   version = "0-unstable-2025-06-29";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "mrworf";
@@ -24,10 +23,6 @@ python3Packages.buildPythonApplication {
     git
   ];
 
-  dependencies = with python3Packages; [
-    python-gnupg
-  ];
-
   installPhase = ''
     mkdir -p $out/bin $out/share/doc/iceshelf $out/${python3Packages.python.sitePackages}
     cp -v iceshelf iceshelf-restore $out/bin
@@ -35,14 +30,20 @@ python3Packages.buildPythonApplication {
     cp -rv modules $out/${python3Packages.python.sitePackages}
   '';
 
+  dependencies = with python3Packages; [
+    python-gnupg
+  ];
+
+  pyproject = false;
+
   passthru = {
     updateScript = unstableGitUpdater { };
   };
 
   meta = {
     description = "Simple tool to allow storage of signed, encrypted, incremental backups using Amazon's Glacier storage";
-    license = lib.licenses.lgpl2;
     homepage = "https://github.com/mrworf/iceshelf";
+    license = lib.licenses.lgpl2;
     maintainers = with lib.maintainers; [ mmahut ];
     mainProgram = "iceshelf";
   };

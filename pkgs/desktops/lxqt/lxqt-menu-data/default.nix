@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  gitUpdater,
   lxqt-build-tools,
   qttools,
   wrapQtAppsHook,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation rec {
@@ -30,8 +30,8 @@ stdenv.mkDerivation rec {
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://github.com/lxqt/lxqt-menu-data";
     description = "Menu files for LXQt Panel, Configuration Center and PCManFM-Qt/libfm-qt";
+    homepage = "https://github.com/lxqt/lxqt-menu-data";
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.lxqt ];

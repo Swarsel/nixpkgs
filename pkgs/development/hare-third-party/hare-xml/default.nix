@@ -1,8 +1,8 @@
 {
-  fetchFromSourcehut,
-  hareHook,
   lib,
   stdenv,
+  fetchFromSourcehut,
+  hareHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,16 +17,14 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ hareHook ];
-
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
-
   doCheck = true;
 
   meta = {
-    homepage = "https://git.sr.ht/~sircmpwn/hare-xml/";
+    inherit (hareHook.meta) platforms badPlatforms;
     description = "This package provides XML support for Hare";
+    homepage = "https://git.sr.ht/~sircmpwn/hare-xml/";
     license = with lib.licenses; [ mpl20 ];
     maintainers = with lib.maintainers; [ sikmir ];
-    inherit (hareHook.meta) platforms badPlatforms;
   };
 })

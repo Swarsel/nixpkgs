@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
+  buildPackages,
   installShellFiles,
   libgit2,
-  openssl,
-  buildPackages,
-  versionCheckHook,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -23,8 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-+6qMOJFFzOJyAoa20yYaS0tjBW0A+dNgZ4/ABYHSx60=";
   };
 
-  cargoHash = "sha256-7cW+HIZ15ziD2fVrOtA5oY4g6K9V6SbvNt9HGs5iGPU=";
-
   nativeBuildInputs = [
     pkg-config
     installShellFiles
@@ -34,6 +32,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libgit2
     openssl
   ];
+
+  cargoHash = "sha256-7cW+HIZ15ziD2fVrOtA5oY4g6K9V6SbvNt9HGs5iGPU=";
 
   env = {
     LIBGIT2_NO_VENDOR = 1;
@@ -55,10 +55,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ''
   );
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru.updateScript = nix-update-script { };
 
@@ -67,10 +68,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://pixi.sh/";
     changelog = "https://pixi.sh/latest/CHANGELOG";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       esteve
       xiaoxiangmoe
     ];
+
     mainProgram = "pixi";
   };
 })

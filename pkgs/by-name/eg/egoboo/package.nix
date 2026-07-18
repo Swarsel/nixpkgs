@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  libGLU,
-  libGL,
   SDL,
-  SDL_mixer,
   SDL_image,
+  SDL_mixer,
   SDL_ttf,
+  libGL,
+  libGLU,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,22 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/egoboo/egoboo-${finalAttrs.version}.tar.gz";
     sha256 = "18cjgp9kakrsa90jcb4cl8hhh9k57mi5d1sy5ijjpd3p7zl647hd";
   };
-
-  buildPhase = ''
-    cd source
-    make -C enet all
-    # The target 'all' has trouble
-    make -C game -f Makefile.unix egoboo
-  '';
-
-  # The user will need to have all the files in '.' to run egoboo, with
-  # writeable controls.txt and setup.txt
-  installPhase = ''
-    mkdir -p $out/share/egoboo-${finalAttrs.version}
-    cp -v game/egoboo $out/share/egoboo-${finalAttrs.version}
-    cd ..
-    cp -v -Rd controls.txt setup.txt players modules basicdat $out/share/egoboo-${finalAttrs.version}
-  '';
 
   buildInputs = [
     libGLU
@@ -61,19 +45,32 @@ stdenv.mkDerivation (finalAttrs: {
       makeFlags=PREFIX=$out
     '';
   */
-
   env = {
     # Workaround build failure on -fno-common toolchains like upstream
     # gcc-10. Otherwise build fails as:
     #   ld: mad.o:(.bss+0x233800): multiple definition of `tile_dict'; camera.o:(.bss+0x140): first defined here
     NIX_CFLAGS_COMPILE = "-fcommon";
-
     NIX_LDFLAGS = "-lm";
   };
 
+  buildPhase = ''
+    cd source
+    make -C enet all
+    # The target 'all' has trouble
+    make -C game -f Makefile.unix egoboo
+  '';
+
+  # The user will need to have all the files in '.' to run egoboo, with
+  # writeable controls.txt and setup.txt
+  installPhase = ''
+    mkdir -p $out/share/egoboo-${finalAttrs.version}
+    cp -v game/egoboo $out/share/egoboo-${finalAttrs.version}
+    cd ..
+    cp -v -Rd controls.txt setup.txt players modules basicdat $out/share/egoboo-${finalAttrs.version}
+  '';
+
   meta = {
     description = "3D dungeon crawling adventure";
-
     homepage = "https://egoboo.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
 

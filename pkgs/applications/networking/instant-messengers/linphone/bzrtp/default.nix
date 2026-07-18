@@ -1,8 +1,8 @@
 {
-  bctoolbox,
-  sqlite,
   lib,
+  bctoolbox,
   mkLinphoneDerivation,
+  sqlite,
 }:
 mkLinphoneDerivation {
   pname = "bzrtp";

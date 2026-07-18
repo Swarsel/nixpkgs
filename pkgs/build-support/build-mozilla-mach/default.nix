@@ -1,25 +1,25 @@
 {
-  pname,
-  version,
-  packageVersion ? version,
   meta,
-  updateScript ? null,
-  binaryName ? "firefox",
+  pname,
+  src,
+  version,
+  allowAddonSideload ? false,
   application ? "browser",
   applicationName ? "Firefox",
+  binaryName ? "firefox",
   branding ? null,
-  requireSigning ? true,
-  allowAddonSideload ? false,
-  src,
-  unpackPhase ? null,
+  extraBuildInputs ? [ ],
+  extraConfigureFlags ? [ ],
+  extraMakeFlags ? [ ],
+  extraNativeBuildInputs ? [ ],
+  extraPassthru ? { },
   extraPatches ? [ ],
   extraPostPatch ? "",
-  extraNativeBuildInputs ? [ ],
-  extraConfigureFlags ? [ ],
-  extraBuildInputs ? [ ],
-  extraMakeFlags ? [ ],
-  extraPassthru ? { },
+  packageVersion ? version,
+  requireSigning ? true,
   tests ? { },
+  unpackPhase ? null,
+  updateScript ? null,
 }:
 
 let
@@ -42,147 +42,109 @@ in
 
 {
   lib,
-  pkgs,
   stdenv,
-  patchelf,
-  fetchpatch,
-
+  alsa-lib,
+  # Darwin
+  apple-sdk_14,
+  apple-sdk_15,
+  apple-sdk_26,
   # build time
   autoconf,
-  cargo,
-  dump_syms,
-  makeBinaryWrapper,
-  mimalloc,
-  nodejs,
-  perl,
-  pkg-config,
-  pkgsCross, # wasm32 rlbox
-  python3,
-  python313,
-  runCommand,
-  rustc,
-  rust-cbindgen,
-  rustPlatform,
-  unzip,
-  which,
-  wrapGAppsHook3,
-
+  buildPackages,
   # runtime
   bzip2,
+  cargo,
+  cups,
+  curl,
   dbus,
   dbus-glib,
+  dump_syms,
+  fetchpatch,
   file,
   fontconfig,
   freetype,
   glib,
   gnum4,
   gtk3,
+  jemalloc,
   libGL,
   libGLU,
+  libdrm,
   libevent,
   libffi,
+  libjack2,
   libjpeg,
+  libkrb5,
   libpng,
+  libpulseaudio,
   libstartup_notification,
   libvpx,
   libwebp,
+  libx11,
+  libxcursor,
+  libxdamage,
+  libxext,
+  libxft,
+  libxi,
+  libxkbcommon,
+  libxrender,
+  libxt,
+  libxtst,
+  makeBinaryWrapper,
+  mimalloc,
   nasm,
+  nodejs,
   nspr,
   nss_esr,
   nss_latest,
   onnxruntime,
+  overrideCC,
   pango,
-  libxt,
-  libxtst,
-  libxrender,
-  libxi,
-  libxft,
-  libxext,
-  libxdamage,
-  libxcursor,
-  libx11,
-  xorgproto,
+  patchelf,
+  perl,
   pixman,
+  pkg-config,
+  pkgs,
+  pkgsBuildBuild,
+  pkgsCross, # wasm32 rlbox
+  python3,
+  python313,
+  rsync, # used when preparing .app directory
+  runCommand,
+  rust-cbindgen,
+  rustPlatform,
+  rustc,
+  sndio,
+  unzip,
+  which,
+  wrapGAppsHook3,
+  xorgproto,
+  xvfb-run,
   zip,
   zlib,
-  pkgsBuildBuild,
-
-  # Darwin
-  apple-sdk_14,
-  apple-sdk_15,
-  apple-sdk_26,
-  cups,
-  rsync, # used when preparing .app directory
-
-  # optionals
-
-  ## addon signing/sideloading
-  requireSigning ? requireSigningDefault,
   allowAddonSideload ? allowAddonSideloadDefault,
-
-  ## debugging
-
-  debugBuild ? false,
-
-  # On 32bit platforms, we disable adding "-g" for easier linking.
-  enableDebugSymbols ? !stdenv.hostPlatform.is32bit,
-
   ## optional libraries
-
   alsaSupport ? stdenv.hostPlatform.isLinux,
-  alsa-lib,
-  ffmpegSupport ? true,
-  gssSupport ? true,
-  libkrb5,
-  jackSupport ? stdenv.hostPlatform.isLinux,
-  libjack2,
-  jemallocSupport ? !stdenv.hostPlatform.isMusl,
-  jemalloc,
-  ltoSupport ? (
-    (stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isDarwin)
-    && stdenv.hostPlatform.is64bit
-    && !stdenv.hostPlatform.isRiscV
-  ),
-  overrideCC,
-  buildPackages,
-  pgoSupport ? (stdenv.hostPlatform.isLinux && stdenv.hostPlatform == stdenv.buildPlatform),
-  xvfb-run,
-  elfhackSupport ?
-    isElfhackPlatform stdenv && !(stdenv.hostPlatform.isMusl && stdenv.hostPlatform.isAarch64),
-  pipewireSupport ? waylandSupport && webrtcSupport,
-  pulseaudioSupport ? stdenv.hostPlatform.isLinux,
-  libpulseaudio,
-  sndioSupport ? stdenv.hostPlatform.isLinux,
-  sndio,
-  waylandSupport ? !stdenv.hostPlatform.isDarwin,
-  libxkbcommon,
-  libdrm,
-
-  ## privacy-related options
-
-  privacySupport ? false,
-
   # WARNING: NEVER set any of the options below to `true` by default.
   # Set to `!privacySupport` or `false`.
-
   crashreporterSupport ?
     !privacySupport
     && !stdenv.hostPlatform.isLoongArch64
     && !stdenv.hostPlatform.isRiscV
     && !stdenv.hostPlatform.isMusl,
-  curl,
-  geolocationSupport ? !privacySupport,
-  webrtcSupport ? !privacySupport,
-
+  ## debugging
+  debugBuild ? false,
   # digital rights management
-
   # This flag controls whether Firefox will show the nagbar, that allows
   # users at runtime the choice to enable Widevine CDM support when a site
   # requests it.
   # Controlling the nagbar and widevine CDM at runtime is possible by setting
   # `browser.eme.ui.enabled` and `media.gmp-widevinecdm.enabled` accordingly
   drmSupport ? true,
-
+  elfhackSupport ?
+    isElfhackPlatform stdenv && !(stdenv.hostPlatform.isMusl && stdenv.hostPlatform.isAarch64),
+  # On 32bit platforms, we disable adding "-g" for easier linking.
+  enableDebugSymbols ? !stdenv.hostPlatform.is32bit,
   # As stated by Sylvestre Ledru (@sylvestre) on Nov 22, 2017 at
   # https://github.com/NixOS/nixpkgs/issues/31843#issuecomment-346372756 we
   # have permission to use the official firefox branding.
@@ -202,6 +164,27 @@ in
   # > the experience of Firefox users, you won't have any issues using the
   # > official branding.
   enableOfficialBranding ? true,
+  ffmpegSupport ? true,
+  geolocationSupport ? !privacySupport,
+  gssSupport ? true,
+  jackSupport ? stdenv.hostPlatform.isLinux,
+  jemallocSupport ? !stdenv.hostPlatform.isMusl,
+  ltoSupport ? (
+    (stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isDarwin)
+    && stdenv.hostPlatform.is64bit
+    && !stdenv.hostPlatform.isRiscV
+  ),
+  pgoSupport ? (stdenv.hostPlatform.isLinux && stdenv.hostPlatform == stdenv.buildPlatform),
+  pipewireSupport ? waylandSupport && webrtcSupport,
+  ## privacy-related options
+  privacySupport ? false,
+  pulseaudioSupport ? stdenv.hostPlatform.isLinux,
+  # optionals
+  ## addon signing/sideloading
+  requireSigning ? requireSigningDefault,
+  sndioSupport ? stdenv.hostPlatform.isLinux,
+  waylandSupport ? !stdenv.hostPlatform.isDarwin,
+  webrtcSupport ? !privacySupport,
 }:
 
 assert stdenv.cc.libc or null != null;
@@ -220,12 +203,12 @@ let
 
   # Force the use of lld and other llvm tools for LTO
   llvmPackages = llvmPackages0.override {
-    bootBintoolsNoLibc = null;
     bootBintools = null;
+    bootBintoolsNoLibc = null;
   };
   llvmPackagesBuildBuild = llvmPackagesBuildBuild0.override {
-    bootBintoolsNoLibc = null;
     bootBintools = null;
+    bootBintoolsNoLibc = null;
   };
 
   # LTO requires LLVM bintools including ld.lld and llvm-ar.
@@ -253,10 +236,11 @@ let
       lib.generators.toINI { } {
         # Some light branding indicating this build uses our distro preferences
         Global = {
-          id = "nixos";
           version = "1.0";
           about = "${applicationName} for ${platform}";
+          id = "nixos";
         };
+
         Preferences = {
           # These values are exposed through telemetry
           "app.distributor" = "nixos";
@@ -269,15 +253,15 @@ let
     if geolocationSupport then
       {
         "geo.provider.network.url" = {
-          value = "https://api.beacondb.net/v1/geolocate";
           reason = "We have no Google API keys and Mozilla Location Services were retired.";
+          value = "https://api.beacondb.net/v1/geolocate";
         };
       }
     else
       {
         "geo.provider.use_geoclue" = {
-          value = false;
           reason = "Geolocation support has been disabled through the `geolocationSupport` package attribute.";
+          value = false;
         };
       };
 
@@ -299,32 +283,14 @@ let
 in
 
 buildStdenv.mkDerivation {
+  inherit src unpackPhase;
   pname = "${pname}-unwrapped";
   version = packageVersion;
-
-  inherit src unpackPhase;
-
-  __structuredAttrs = true;
-  strictDeps = true;
-
-  meta =
-    meta
-    // lib.optionalAttrs stdenv.hostPlatform.isDarwin {
-      # MacOS builds may take a long time and sometimes hit the default timeout
-      timeout = lib.max (24 * 60 * 60) (meta.timeout or 0);
-    };
 
   outputs = [
     "out"
   ]
   ++ lib.optionals crashreporterSupport [ "symbols" ];
-
-  # Add another configure-build-profiling run before the final configure phase if we build with pgo
-  preConfigurePhases = lib.optionals pgoSupport [
-    "configurePhase"
-    "buildPhase"
-    "profilingPhase"
-  ];
 
   patches =
     # Remove references to the build clsoure
@@ -362,9 +328,9 @@ buildStdenv.mkDerivation {
         )
         [
           (fetchpatch {
+            hash = "sha256-+HiU7RMPmV7I7SIzjP0Q6iSDJL/vBjc3UcwUTg57lNQ=";
             name = "link-freebl-explicitly-for-system-nss-builds.patch";
             url = "https://hg-edge.mozilla.org/mozilla-central/raw-rev/1a56071ddc0fe97a55c3b825e1dd33c8422b9fc1";
-            hash = "sha256-+HiU7RMPmV7I7SIzjP0Q6iSDJL/vBjc3UcwUTg57lNQ=";
           })
         ]
     ++ extraPatches;
@@ -375,13 +341,7 @@ buildStdenv.mkDerivation {
   ''
   + extraPostPatch;
 
-  # Ignore trivial whitespace changes in patches, this fixes compatibility of
-  # ./env_var_for_system_dir-*.patch with Firefox >=65 without having to track
-  # two patches.
-  patchFlags = [
-    "-p1"
-    "-l"
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoconf
@@ -411,7 +371,152 @@ buildStdenv.mkDerivation {
   ++ lib.optionals pgoSupport [ xvfb-run ]
   ++ extraNativeBuildInputs;
 
-  setOutputFlags = false; # `./mach configure` doesn't understand `--*dir=` flags.
+  buildInputs = [
+    bzip2
+    file
+    libGL
+    libGLU
+    libstartup_notification
+    perl
+    zip
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    (
+      if lib.versionAtLeast version "145" then
+        apple-sdk_26
+      else if lib.versionAtLeast version "138" then
+        apple-sdk_15
+      else
+        apple-sdk_14
+    )
+    cups
+  ]
+  ++ (lib.optionals (!stdenv.hostPlatform.isDarwin) (
+    [
+      dbus
+      dbus-glib
+      fontconfig
+      freetype
+      glib
+      gtk3
+      libffi
+      libevent
+      libjpeg
+      libpng
+      libvpx
+      libwebp
+      nspr
+      pango
+      libx11
+      libxcursor
+      libxdamage
+      libxext
+      libxft
+      libxi
+      libxrender
+      libxt
+      libxtst
+      pixman
+      xorgproto
+      zlib
+      (if (lib.versionAtLeast version "144") then nss_latest else nss_esr)
+    ]
+    ++ lib.optional alsaSupport alsa-lib
+    ++ lib.optional jackSupport libjack2
+    ++ lib.optional pulseaudioSupport libpulseaudio # only headers are needed
+    ++ lib.optional sndioSupport sndio
+    ++ lib.optionals waylandSupport [
+      libxkbcommon
+      libdrm
+    ]
+  ))
+  ++ lib.optional gssSupport libkrb5
+  ++ lib.optional jemallocSupport jemalloc
+  ++ extraBuildInputs;
+
+  configureFlags = [
+    "--disable-tests"
+    "--disable-updater"
+    "--enable-application=${application}"
+    "--enable-default-toolkit=${toolkit}"
+    "--with-app-name=${binaryName}"
+    "--with-distribution-id=org.nixos"
+    "--with-libclang-path=${lib.getLib llvmPackagesBuildBuild.libclang}/lib"
+    "--with-wasi-sysroot=${wasiSysRoot}"
+    # for firefox, host is buildPlatform, target is hostPlatform
+    "--host=${buildStdenv.buildPlatform.config}"
+    "--target=${buildStdenv.hostPlatform.config}"
+  ]
+  # LTO is done using clang and lld.
+  ++ lib.optionals ltoSupport [
+    "--enable-lto=cross,full" # Cross-Language LTO
+    "--enable-linker=lld"
+  ]
+  ++ lib.optional (isElfhackPlatform stdenv) (enableFeature elfhackSupport "elf-hack")
+  ++ lib.optional (!drmSupport) "--disable-eme"
+  ++ lib.optional allowAddonSideload "--allow-addon-sideload"
+  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
+    # MacOS builds use bundled versions of libraries: https://bugzilla.mozilla.org/show_bug.cgi?id=1776255
+    "--enable-system-pixman"
+    "--with-system-ffi"
+    # Mozilla vendors 10+ patches and ICU upstream is very slow to adopt them
+    # "--with-system-icu"
+    "--with-system-jpeg"
+    "--with-system-libevent"
+    "--with-system-libvpx"
+    "--with-system-nspr"
+    "--with-system-nss"
+    "--with-system-png" # needs APNG support
+    "--with-system-webp"
+    "--with-system-zlib"
+
+    # These options are not available on MacOS, even --disable-*
+    (enableFeature alsaSupport "alsa")
+    (enableFeature jackSupport "jack")
+    (enableFeature pulseaudioSupport "pulseaudio")
+    (enableFeature sndioSupport "sndio")
+  ]
+  ++ lib.optionals (!buildStdenv.hostPlatform.isDarwin && lib.versionAtLeast version "141") [
+    "--with-onnx-runtime=${lib.getLib onnxruntime}/lib"
+  ]
+  ++ [
+    (enableFeature crashreporterSupport "crashreporter")
+    (enableFeature ffmpegSupport "ffmpeg")
+    (enableFeature geolocationSupport "necko-wifi")
+    (enableFeature gssSupport "negotiateauth")
+    (enableFeature jemallocSupport "jemalloc")
+    (enableFeature webrtcSupport "webrtc")
+
+    (enableFeature debugBuild "debug")
+    (if debugBuild then "--enable-profiling" else "--enable-optimize")
+    # --enable-release adds -ffunction-sections & LTO that require a big amount
+    # of RAM, and the 32-bit memory space cannot handle that linking
+    (enableFeature (!debugBuild && !stdenv.hostPlatform.is32bit) "release")
+    (enableFeature enableDebugSymbols "debug-symbols")
+  ]
+  ++ lib.optionals enableDebugSymbols [
+    "--disable-strip"
+    "--disable-install-strip"
+  ]
+  # As of Firefox 137 (https://bugzilla.mozilla.org/show_bug.cgi?id=1943009),
+  # the --enable-official-branding flag overrides the --with-branding flag.
+  ++ lib.optional (enableOfficialBranding && branding == null) "--enable-official-branding"
+  ++ lib.optional (branding != null) "--with-branding=${branding}"
+  ++ extraConfigureFlags;
+
+  makeFlags = extraMakeFlags;
+
+  env = {
+    # if not explicitly set, wrong cc from buildStdenv would be used
+    HOST_CC = "${llvmPackagesBuildBuild.stdenv.cc}/bin/cc";
+    HOST_CXX = "${llvmPackagesBuildBuild.stdenv.cc}/bin/c++";
+  }
+  // lib.optionalAttrs stdenv.hostPlatform.isMusl {
+    # Firefox relies on nonstandard behavior of the glibc dynamic linker. It re-uses
+    # previously loaded libraries even though they are not in the rpath of the newly loaded binary.
+    # On musl we have to explicitly set the rpath to include these libraries.
+    LDFLAGS = "-Wl,-rpath,${placeholder "out"}/lib/${binaryName}";
+  };
 
   preConfigure = ''
     # Runs autoconf through ./mach configure in configurePhase
@@ -484,141 +589,102 @@ buildStdenv.mkDerivation {
     export LD_PRELOAD=${mimalloc}/lib/libmimalloc.so
   '';
 
+  preBuild = ''
+    cd objdir
+  '';
+
+  postBuild = ''
+    cd ..
+  '';
+
+  # tests were disabled in configureFlags
+  doCheck = false;
+
+  # Generate build symbols once after the final build
+  # https://firefox-source-docs.mozilla.org/crash-reporting/uploading_symbol.html
+  preInstall =
+    lib.optionalString crashreporterSupport ''
+      ./mach buildsymbols
+      mkdir -p $symbols/
+      cp objdir/dist/*.crashreporter-symbols.zip $symbols/
+    ''
+    + ''
+      cd objdir
+    '';
+
+  postInstall =
+    lib.optionalString stdenv.hostPlatform.isDarwin ''
+      mkdir -p $out/Applications
+      cp -r dist/${binaryName}/*.app "$out/Applications/${applicationName}.app"
+
+      resourceDir="$out/Applications/${applicationName}.app/Contents/Resources"
+
+    ''
+    + lib.optionalString (!stdenv.hostPlatform.isDarwin) ''
+      # Remove SDK cruft. FIXME: move to a separate output?
+      rm -rf $out/share/idl $out/include $out/lib/${binaryName}-devel-*
+
+      resourceDir=$out/lib/${binaryName}
+    ''
+    + ''
+      # Install distribution customizations
+      install -Dvm644 ${distributionIni} "$resourceDir/distribution/distribution.ini"
+      install -Dvm644 ${defaultPrefsFile} "$resourceDir/browser/defaults/preferences/nixos-default-prefs.js"
+
+      cd ..
+    '';
+
+  # Some basic testing
+  doInstallCheck = true;
+
+  installCheckPhase =
+    lib.optionalString buildStdenv.hostPlatform.isDarwin ''
+      bindir="$out/Applications/${applicationName}.app/Contents/MacOS"
+    ''
+    + lib.optionalString (!buildStdenv.hostPlatform.isDarwin) ''
+      bindir=$out/bin
+    ''
+    + ''
+      "$bindir/${binaryName}" --version
+    '';
+
+  postFixup = lib.optionalString (crashreporterSupport && buildStdenv.hostPlatform.isLinux) ''
+    patchelf --add-rpath "${lib.makeLibraryPath [ curl ]}" $out/lib/${binaryName}/crashreporter
+  '';
+
+  __structuredAttrs = true;
   # firefox has a different definition of configurePlatforms from nixpkgs, see configureFlags
   configurePlatforms = [ ];
+  # the build system verifies checksums of the bundled rust sources
+  # ./third_party/rust is be patched by our libtool fixup code in stdenv
+  # unfortunately we can't just set this to `false` when we do not want it.
+  # See https://github.com/NixOS/nixpkgs/issues/77289 for more details
+  # Ideally we would figure out how to tell the build system to not
+  # care about changed hashes as we are already doing that when we
+  # fetch the sources. Any further modifications of the source tree
+  # is on purpose by some of our tool (or by accident and a bug?).
+  dontFixLibtool = true;
+  # on aarch64 this is also required
+  dontUpdateAutotoolsGnuConfigScripts = true;
+  enableParallelBuilding = true;
+  hardeningDisable = [ "format" ]; # -Werror=format-security
+  # The target will prepare .app bundle
+  installTargets = lib.optionalString stdenv.hostPlatform.isDarwin "stage-package";
 
-  configureFlags = [
-    "--disable-tests"
-    "--disable-updater"
-    "--enable-application=${application}"
-    "--enable-default-toolkit=${toolkit}"
-    "--with-app-name=${binaryName}"
-    "--with-distribution-id=org.nixos"
-    "--with-libclang-path=${lib.getLib llvmPackagesBuildBuild.libclang}/lib"
-    "--with-wasi-sysroot=${wasiSysRoot}"
-    # for firefox, host is buildPlatform, target is hostPlatform
-    "--host=${buildStdenv.buildPlatform.config}"
-    "--target=${buildStdenv.hostPlatform.config}"
-  ]
-  # LTO is done using clang and lld.
-  ++ lib.optionals ltoSupport [
-    "--enable-lto=cross,full" # Cross-Language LTO
-    "--enable-linker=lld"
-  ]
-  ++ lib.optional (isElfhackPlatform stdenv) (enableFeature elfhackSupport "elf-hack")
-  ++ lib.optional (!drmSupport) "--disable-eme"
-  ++ lib.optional allowAddonSideload "--allow-addon-sideload"
-  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
-    # MacOS builds use bundled versions of libraries: https://bugzilla.mozilla.org/show_bug.cgi?id=1776255
-    "--enable-system-pixman"
-    "--with-system-ffi"
-    # Mozilla vendors 10+ patches and ICU upstream is very slow to adopt them
-    # "--with-system-icu"
-    "--with-system-jpeg"
-    "--with-system-libevent"
-    "--with-system-libvpx"
-    "--with-system-nspr"
-    "--with-system-nss"
-    "--with-system-png" # needs APNG support
-    "--with-system-webp"
-    "--with-system-zlib"
+  # Ignore trivial whitespace changes in patches, this fixes compatibility of
+  # ./env_var_for_system_dir-*.patch with Firefox >=65 without having to track
+  # two patches.
+  patchFlags = [
+    "-p1"
+    "-l"
+  ];
 
-    # These options are not available on MacOS, even --disable-*
-    (enableFeature alsaSupport "alsa")
-    (enableFeature jackSupport "jack")
-    (enableFeature pulseaudioSupport "pulseaudio")
-    (enableFeature sndioSupport "sndio")
-  ]
-  ++ lib.optionals (!buildStdenv.hostPlatform.isDarwin && lib.versionAtLeast version "141") [
-    "--with-onnx-runtime=${lib.getLib onnxruntime}/lib"
-  ]
-  ++ [
-    (enableFeature crashreporterSupport "crashreporter")
-    (enableFeature ffmpegSupport "ffmpeg")
-    (enableFeature geolocationSupport "necko-wifi")
-    (enableFeature gssSupport "negotiateauth")
-    (enableFeature jemallocSupport "jemalloc")
-    (enableFeature webrtcSupport "webrtc")
-
-    (enableFeature debugBuild "debug")
-    (if debugBuild then "--enable-profiling" else "--enable-optimize")
-    # --enable-release adds -ffunction-sections & LTO that require a big amount
-    # of RAM, and the 32-bit memory space cannot handle that linking
-    (enableFeature (!debugBuild && !stdenv.hostPlatform.is32bit) "release")
-    (enableFeature enableDebugSymbols "debug-symbols")
-  ]
-  ++ lib.optionals enableDebugSymbols [
-    "--disable-strip"
-    "--disable-install-strip"
-  ]
-  # As of Firefox 137 (https://bugzilla.mozilla.org/show_bug.cgi?id=1943009),
-  # the --enable-official-branding flag overrides the --with-branding flag.
-  ++ lib.optional (enableOfficialBranding && branding == null) "--enable-official-branding"
-  ++ lib.optional (branding != null) "--with-branding=${branding}"
-  ++ extraConfigureFlags;
-
-  buildInputs = [
-    bzip2
-    file
-    libGL
-    libGLU
-    libstartup_notification
-    perl
-    zip
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    (
-      if lib.versionAtLeast version "145" then
-        apple-sdk_26
-      else if lib.versionAtLeast version "138" then
-        apple-sdk_15
-      else
-        apple-sdk_14
-    )
-    cups
-  ]
-  ++ (lib.optionals (!stdenv.hostPlatform.isDarwin) (
-    [
-      dbus
-      dbus-glib
-      fontconfig
-      freetype
-      glib
-      gtk3
-      libffi
-      libevent
-      libjpeg
-      libpng
-      libvpx
-      libwebp
-      nspr
-      pango
-      libx11
-      libxcursor
-      libxdamage
-      libxext
-      libxft
-      libxi
-      libxrender
-      libxt
-      libxtst
-      pixman
-      xorgproto
-      zlib
-      (if (lib.versionAtLeast version "144") then nss_latest else nss_esr)
-    ]
-    ++ lib.optional alsaSupport alsa-lib
-    ++ lib.optional jackSupport libjack2
-    ++ lib.optional pulseaudioSupport libpulseaudio # only headers are needed
-    ++ lib.optional sndioSupport sndio
-    ++ lib.optionals waylandSupport [
-      libxkbcommon
-      libdrm
-    ]
-  ))
-  ++ lib.optional gssSupport libkrb5
-  ++ lib.optional jemallocSupport jemalloc
-  ++ extraBuildInputs;
+  # Add another configure-build-profiling run before the final configure phase if we build with pgo
+  preConfigurePhases = lib.optionals pgoSupport [
+    "configurePhase"
+    "buildPhase"
+    "profilingPhase"
+  ];
 
   profilingPhase = lib.optionalString pgoSupport ''
     # Avoid compressing the instrumented build with high levels of compression
@@ -644,85 +710,9 @@ buildStdenv.mkDerivation {
     ./mach clobber
   '';
 
-  preBuild = ''
-    cd objdir
-  '';
-
-  postBuild = ''
-    cd ..
-  '';
-
-  makeFlags = extraMakeFlags;
+  requiredSystemFeatures = [ "big-parallel" ];
   separateDebugInfo = enableDebugSymbols;
-  enableParallelBuilding = true;
-  env = {
-    # if not explicitly set, wrong cc from buildStdenv would be used
-    HOST_CC = "${llvmPackagesBuildBuild.stdenv.cc}/bin/cc";
-    HOST_CXX = "${llvmPackagesBuildBuild.stdenv.cc}/bin/c++";
-  }
-  // lib.optionalAttrs stdenv.hostPlatform.isMusl {
-    # Firefox relies on nonstandard behavior of the glibc dynamic linker. It re-uses
-    # previously loaded libraries even though they are not in the rpath of the newly loaded binary.
-    # On musl we have to explicitly set the rpath to include these libraries.
-    LDFLAGS = "-Wl,-rpath,${placeholder "out"}/lib/${binaryName}";
-  };
-
-  # tests were disabled in configureFlags
-  doCheck = false;
-
-  # Generate build symbols once after the final build
-  # https://firefox-source-docs.mozilla.org/crash-reporting/uploading_symbol.html
-  preInstall =
-    lib.optionalString crashreporterSupport ''
-      ./mach buildsymbols
-      mkdir -p $symbols/
-      cp objdir/dist/*.crashreporter-symbols.zip $symbols/
-    ''
-    + ''
-      cd objdir
-    '';
-
-  # The target will prepare .app bundle
-  installTargets = lib.optionalString stdenv.hostPlatform.isDarwin "stage-package";
-
-  postInstall =
-    lib.optionalString stdenv.hostPlatform.isDarwin ''
-      mkdir -p $out/Applications
-      cp -r dist/${binaryName}/*.app "$out/Applications/${applicationName}.app"
-
-      resourceDir="$out/Applications/${applicationName}.app/Contents/Resources"
-
-    ''
-    + lib.optionalString (!stdenv.hostPlatform.isDarwin) ''
-      # Remove SDK cruft. FIXME: move to a separate output?
-      rm -rf $out/share/idl $out/include $out/lib/${binaryName}-devel-*
-
-      resourceDir=$out/lib/${binaryName}
-    ''
-    + ''
-      # Install distribution customizations
-      install -Dvm644 ${distributionIni} "$resourceDir/distribution/distribution.ini"
-      install -Dvm644 ${defaultPrefsFile} "$resourceDir/browser/defaults/preferences/nixos-default-prefs.js"
-
-      cd ..
-    '';
-
-  postFixup = lib.optionalString (crashreporterSupport && buildStdenv.hostPlatform.isLinux) ''
-    patchelf --add-rpath "${lib.makeLibraryPath [ curl ]}" $out/lib/${binaryName}/crashreporter
-  '';
-
-  # Some basic testing
-  doInstallCheck = true;
-  installCheckPhase =
-    lib.optionalString buildStdenv.hostPlatform.isDarwin ''
-      bindir="$out/Applications/${applicationName}.app/Contents/MacOS"
-    ''
-    + lib.optionalString (!buildStdenv.hostPlatform.isDarwin) ''
-      bindir=$out/bin
-    ''
-    + ''
-      "$bindir/${binaryName}" --version
-    '';
+  setOutputFlags = false; # `./mach configure` doesn't understand `--*dir=` flags.
 
   passthru = {
     inherit applicationName;
@@ -744,20 +734,10 @@ buildStdenv.mkDerivation {
   }
   // extraPassthru;
 
-  hardeningDisable = [ "format" ]; # -Werror=format-security
-
-  # the build system verifies checksums of the bundled rust sources
-  # ./third_party/rust is be patched by our libtool fixup code in stdenv
-  # unfortunately we can't just set this to `false` when we do not want it.
-  # See https://github.com/NixOS/nixpkgs/issues/77289 for more details
-  # Ideally we would figure out how to tell the build system to not
-  # care about changed hashes as we are already doing that when we
-  # fetch the sources. Any further modifications of the source tree
-  # is on purpose by some of our tool (or by accident and a bug?).
-  dontFixLibtool = true;
-
-  # on aarch64 this is also required
-  dontUpdateAutotoolsGnuConfigScripts = true;
-
-  requiredSystemFeatures = [ "big-parallel" ];
+  meta =
+    meta
+    // lib.optionalAttrs stdenv.hostPlatform.isDarwin {
+      # MacOS builds may take a long time and sometimes hit the default timeout
+      timeout = lib.max (24 * 60 * 60) (meta.timeout or 0);
+    };
 }

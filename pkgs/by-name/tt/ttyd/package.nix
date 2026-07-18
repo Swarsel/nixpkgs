@@ -2,20 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   cmake,
-  xxd,
-  openssl,
-  libwebsockets,
   json_c,
   libuv,
-  zlib,
+  libwebsockets,
   nixosTests,
+  openssl,
+  pkg-config,
+  xxd,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "ttyd";
   version = "1.7.7";
+
   src = fetchFromGitHub {
     owner = "tsl0922";
     repo = "ttyd";
@@ -23,22 +24,23 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-7e08oBKU7BMZ8328qCfNynCSe7LVZ88+iQZRRKl2YkY=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   nativeBuildInputs = [
     pkg-config
     cmake
     xxd
   ];
+
   buildInputs = [
     openssl
     libwebsockets
     json_c
     libuv
     zlib
-  ];
-
-  outputs = [
-    "out"
-    "man"
   ];
 
   passthru.tests = {

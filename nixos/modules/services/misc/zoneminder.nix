@@ -88,111 +88,135 @@ in
         upgrading to a newer version
       '';
 
+      cameras = mkOption {
+        default = 1;
+
+        description = ''
+          Set this to the number of cameras you expect to support.
+        '';
+
+        type = types.int;
+      };
+
+      database = {
+        createLocally = mkOption {
+          default = false;
+
+          description = ''
+            Create the database and database user locally.
+          '';
+
+          type = types.bool;
+        };
+
+        host = mkOption {
+          default = "localhost";
+
+          description = ''
+            Hostname hosting the database.
+          '';
+
+          type = types.str;
+        };
+
+        name = mkOption {
+          default = "zm";
+
+          description = ''
+            Name of database.
+          '';
+
+          type = types.str;
+        };
+
+        password = mkOption {
+          default = "zmpass";
+
+          description = ''
+            Username for accessing the database.
+            Not used if `createLocally` is set.
+          '';
+
+          type = types.str;
+        };
+
+        username = mkOption {
+          default = "zmuser";
+
+          description = ''
+            Username for accessing the database.
+          '';
+
+          type = types.str;
+        };
+      };
+
+      extraConfig = mkOption {
+        default = "";
+
+        description = ''
+          Additional configuration added verbatim to the configuration file.
+        '';
+
+        type = types.lines;
+      };
+
+      hostname = mkOption {
+        default = "localhost";
+
+        description = ''
+          The hostname on which to listen.
+        '';
+
+        type = types.str;
+      };
+
+      openFirewall = mkOption {
+        default = false;
+
+        description = ''
+          Open the firewall port(s).
+        '';
+
+        type = types.bool;
+      };
+
+      port = mkOption {
+        default = 8095;
+
+        description = ''
+          The port on which to listen.
+        '';
+
+        type = types.port;
+      };
+
+      storageDir = mkOption {
+        default = null;
+
+        description = ''
+          ZoneMinder can generate quite a lot of data, so in case you don't want
+          to use the default ${defaultDir}, you can override the path here.
+        '';
+
+        example = "/storage/tank";
+        type = types.nullOr types.str;
+      };
+
       webserver = mkOption {
-        type = types.enum [
-          "nginx"
-          "none"
-        ];
         default = "nginx";
+
         description = ''
           The webserver to configure for the PHP frontend.
 
           Set it to `none` if you want to configure it yourself. PRs are welcome
           for support for other web servers.
         '';
-      };
 
-      hostname = mkOption {
-        type = types.str;
-        default = "localhost";
-        description = ''
-          The hostname on which to listen.
-        '';
-      };
-
-      port = mkOption {
-        type = types.port;
-        default = 8095;
-        description = ''
-          The port on which to listen.
-        '';
-      };
-
-      openFirewall = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Open the firewall port(s).
-        '';
-      };
-
-      database = {
-        createLocally = mkOption {
-          type = types.bool;
-          default = false;
-          description = ''
-            Create the database and database user locally.
-          '';
-        };
-
-        host = mkOption {
-          type = types.str;
-          default = "localhost";
-          description = ''
-            Hostname hosting the database.
-          '';
-        };
-
-        name = mkOption {
-          type = types.str;
-          default = "zm";
-          description = ''
-            Name of database.
-          '';
-        };
-
-        username = mkOption {
-          type = types.str;
-          default = "zmuser";
-          description = ''
-            Username for accessing the database.
-          '';
-        };
-
-        password = mkOption {
-          type = types.str;
-          default = "zmpass";
-          description = ''
-            Username for accessing the database.
-            Not used if `createLocally` is set.
-          '';
-        };
-      };
-
-      cameras = mkOption {
-        type = types.int;
-        default = 1;
-        description = ''
-          Set this to the number of cameras you expect to support.
-        '';
-      };
-
-      storageDir = mkOption {
-        type = types.nullOr types.str;
-        default = null;
-        example = "/storage/tank";
-        description = ''
-          ZoneMinder can generate quite a lot of data, so in case you don't want
-          to use the default ${defaultDir}, you can override the path here.
-        '';
-      };
-
-      extraConfig = mkOption {
-        type = types.lines;
-        default = "";
-        description = ''
-          Additional configuration added verbatim to the configuration file.
-        '';
+        type = types.enum [
+          "nginx"
+          "none"
+        ];
       };
     };
   };
@@ -218,9 +242,9 @@ in
 
     services = {
       fcgiwrap.instances.zoneminder = lib.mkIf useNginx {
+        process.group = group;
         process.prefork = cfg.cameras;
         process.user = user;
-        process.group = group;
         socket = { inherit (config.services.nginx) user group; };
       };
 
@@ -228,28 +252,25 @@ in
         enable = true;
         package = lib.mkDefault pkgs.mariadb;
         ensureDatabases = [ cfg.database.name ];
+
         ensureUsers = [
           {
-            name = cfg.database.username;
             ensurePermissions = {
               "${cfg.database.name}.*" = "ALL PRIVILEGES";
             };
+
+            name = cfg.database.username;
           }
         ];
       };
 
       nginx = lib.mkIf useNginx {
         enable = true;
+
         virtualHosts = {
           ${cfg.hostname} = {
             default = true;
-            root = "${pkg}/share/zoneminder/www";
-            listen = [
-              {
-                addr = "0.0.0.0";
-                inherit (cfg) port;
-              }
-            ];
+
             extraConfig = ''
               index index.php;
 
@@ -299,6 +320,15 @@ in
                 }
               }
             '';
+
+            listen = [
+              {
+                inherit (cfg) port;
+                addr = "0.0.0.0";
+              }
+            ];
+
+            root = "${pkg}/share/zoneminder/www";
           };
         };
       };
@@ -306,30 +336,32 @@ in
       phpfpm = lib.mkIf useNginx {
         pools.zoneminder = {
           inherit user group;
+
+          phpOptions = ''
+            date.timezone = "${config.time.timeZone}"
+          '';
+
           phpPackage = pkgs.php.withExtensions (
-            { enabled, all }:
+            { all, enabled }:
             enabled
             ++ [
               all.apcu
               all.sysvsem
             ]
           );
-          phpOptions = ''
-            date.timezone = "${config.time.timeZone}"
-          '';
+
           settings = lib.mapAttrs (name: lib.mkDefault) {
-            "listen.owner" = user;
             "listen.group" = group;
             "listen.mode" = "0660";
-
-            "pm" = "dynamic";
-            "pm.start_servers" = 1;
-            "pm.min_spare_servers" = 1;
-            "pm.max_spare_servers" = 2;
-            "pm.max_requests" = 500;
-            "pm.max_children" = 5;
-            "pm.status_path" = "/$pool-status";
+            "listen.owner" = user;
             "ping.path" = "/$pool-ping";
+            "pm" = "dynamic";
+            "pm.max_children" = 5;
+            "pm.max_requests" = 500;
+            "pm.max_spare_servers" = 2;
+            "pm.min_spare_servers" = 1;
+            "pm.start_servers" = 1;
+            "pm.status_path" = "/$pool-status";
           };
         };
       };
@@ -338,18 +370,15 @@ in
     systemd.services = {
       zoneminder = with pkgs; {
         inherit (zoneminder.meta) description;
+        after = [ "nginx.service" ] ++ lib.optional cfg.database.createLocally "mysql.service";
         documentation = [ "https://zoneminder.readthedocs.org/en/latest/" ];
+
         path = [
           coreutils
           procps
           psmisc
         ];
-        after = [ "nginx.service" ] ++ lib.optional cfg.database.createLocally "mysql.service";
-        wantedBy = [ "multi-user.target" ];
-        restartTriggers = [
-          defaultsFile
-          configFile
-        ];
+
         preStart =
           lib.optionalString useCustomDir ''
             install -dm775 -o ${user} -g ${group} ${cfg.storageDir}/{${lib.concatStringsSep "," libDirs}}
@@ -371,28 +400,36 @@ in
                 WHERE Name = "ZM_FONT_FILE_LOCATION";
             EOF
           '';
+
+        restartTriggers = [
+          defaultsFile
+          configFile
+        ];
+
         serviceConfig = {
-          User = user;
-          Group = group;
-          SupplementaryGroups = [ "video" ];
+          CacheDirectory = dirs cacheDirs;
+          ExecReload = "${zoneminder}/bin/zmpkg.pl restart";
           ExecStart = "${zoneminder}/bin/zmpkg.pl start";
           ExecStop = "${zoneminder}/bin/zmpkg.pl stop";
-          ExecReload = "${zoneminder}/bin/zmpkg.pl restart";
+          Group = group;
+          LogsDirectory = dirName;
+          NoNewPrivileges = true;
           PIDFile = "/run/${dirName}/zm.pid";
-          Type = "forking";
+          PrivateTmp = true;
+          ProtectKernelTunables = true;
+          ProtectSystem = "strict";
+          ReadWritePaths = lib.mkIf useCustomDir [ cfg.storageDir ];
           Restart = "on-failure";
           RestartSec = "10s";
-          CacheDirectory = dirs cacheDirs;
           RuntimeDirectory = dirName;
-          ReadWritePaths = lib.mkIf useCustomDir [ cfg.storageDir ];
           StateDirectory = dirs (lib.optionals (!useCustomDir) libDirs);
-          LogsDirectory = dirName;
-          PrivateTmp = true;
-          ProtectSystem = "strict";
-          ProtectKernelTunables = true;
+          SupplementaryGroups = [ "video" ];
           SystemCallArchitectures = "native";
-          NoNewPrivileges = true;
+          Type = "forking";
+          User = user;
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
     };
 
@@ -401,10 +438,10 @@ in
     };
 
     users.users.${user} = {
-      uid = config.ids.uids.zoneminder;
-      group = user;
       inherit home;
       inherit (pkgs.zoneminder.meta) description;
+      group = user;
+      uid = config.ids.uids.zoneminder;
     };
   };
 

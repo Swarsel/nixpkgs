@@ -1,5 +1,6 @@
 {
   lib,
+  fetchFromGitHub,
   aiofiles,
   aiohttp,
   aioresponses,
@@ -7,7 +8,6 @@
   asyncclick,
   buildPythonPackage,
   debugpy,
-  fetchFromGitHub,
   hatchling,
   keyring,
   pytest-asyncio,
@@ -21,7 +21,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "evohome-async";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zxdavb";
@@ -29,6 +28,16 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-CbC5ms3YcNB6n5UmCHfHKTtyJau68m8QZ5UwRyiR9MM=";
   };
+
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytest-freezer
+    pytestCheckHook
+    pyyaml
+    syrupy
+  ]
+  ++ finalAttrs.passthru.optional-dependencies.cli;
 
   build-system = [ hatchling ];
 
@@ -47,16 +56,7 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytest-freezer
-    pytestCheckHook
-    pyyaml
-    syrupy
-  ]
-  ++ finalAttrs.passthru.optional-dependencies.cli;
-
+  pyproject = true;
   pythonImportsCheck = [ "evohomeasync2" ];
 
   meta = {

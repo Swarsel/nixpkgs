@@ -2,22 +2,20 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
+  gitUpdater,
+  gobject-introspection,
+  gtk3,
   meson,
   ninja,
+  polkit,
   psutil,
   pygobject3,
-  gtk3,
-  gobject-introspection,
   xapp,
-  polkit,
-  gitUpdater,
 }:
 
 buildPythonPackage rec {
   pname = "python-xapp";
   version = "3.0.3";
-
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "linuxmint";
@@ -25,6 +23,15 @@ buildPythonPackage rec {
     rev = version;
     hash = "sha256-KJ5mzilUg//FvwyhTHjzaUI3661RhN74r5qDIzdDOl8=";
   };
+
+  postPatch = ''
+    substituteInPlace "xapp/os.py" \
+      --replace-fail "/usr/bin/pkexec" "${polkit}/bin/pkexec"
+
+    # We actually want the localedir provided by the caller.
+    substituteInPlace "xapp/util/__init__.py" \
+      --replace-fail "/usr/share/locale" "/run/current-system/sw/share/locale"
+  '';
 
   nativeBuildInputs = [
     meson
@@ -40,26 +47,18 @@ buildPythonPackage rec {
     polkit
   ];
 
-  postPatch = ''
-    substituteInPlace "xapp/os.py" \
-      --replace-fail "/usr/bin/pkexec" "${polkit}/bin/pkexec"
-
-    # We actually want the localedir provided by the caller.
-    substituteInPlace "xapp/util/__init__.py" \
-      --replace-fail "/usr/share/locale" "/run/current-system/sw/share/locale"
-  '';
-
   doCheck = false;
+  pyproject = false;
   pythonImportsCheck = [ "xapp" ];
 
   passthru = {
-    updateScript = gitUpdater { ignoredVersions = "^master.*"; };
     skipBulkUpdate = true; # This should be bumped as part of Cinnamon update.
+    updateScript = gitUpdater { ignoredVersions = "^master.*"; };
   };
 
   meta = {
-    homepage = "https://github.com/linuxmint/python-xapp";
     description = "Cross-desktop libraries and common resources for python";
+    homepage = "https://github.com/linuxmint/python-xapp";
     license = lib.licenses.lgpl2Plus;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.cinnamon ];

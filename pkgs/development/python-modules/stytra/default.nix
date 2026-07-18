@@ -33,7 +33,6 @@
 buildPythonPackage rec {
   pname = "stytra";
   version = "0.8.34";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -43,6 +42,11 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/portugueslab/stytra/issues/87
     ./0000-workaround-pyqtgraph.patch
+  ];
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pyserial
   ];
 
   build-system = [ setuptools ];
@@ -73,15 +77,12 @@ buildPythonPackage rec {
     av
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pyserial
-  ];
-
   disabledTestPaths = [
     # Crashes python
     "stytra/tests/test_z_experiments.py"
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Modular package to control stimulation and track behaviour";

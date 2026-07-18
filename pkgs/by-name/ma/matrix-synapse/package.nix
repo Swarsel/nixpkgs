@@ -23,8 +23,10 @@ let
   searchPath = "${pythonEnv}/${matrix-synapse-unwrapped.python.sitePackages}";
 in
 stdenv.mkDerivation {
-  pname = (lib.appendToName "wrapped" matrix-synapse-unwrapped).pname;
   inherit (matrix-synapse-unwrapped) version;
+  # Carry the maintainer, licenses, and various useful information.
+  inherit (matrix-synapse-unwrapped) meta;
+  pname = (lib.appendToName "wrapped" matrix-synapse-unwrapped).pname;
 
   nativeBuildInputs = [
     makeWrapper
@@ -39,12 +41,8 @@ stdenv.mkDerivation {
   '';
 
   passthru = {
-    unwrapped = matrix-synapse-unwrapped;
-
     # for backward compatibility
     inherit (matrix-synapse-unwrapped) plugins tests;
+    unwrapped = matrix-synapse-unwrapped;
   };
-
-  # Carry the maintainer, licenses, and various useful information.
-  inherit (matrix-synapse-unwrapped) meta;
 }

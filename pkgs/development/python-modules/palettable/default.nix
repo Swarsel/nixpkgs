@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "palettable";
   version = "3.3.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -17,8 +16,8 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "palettable"

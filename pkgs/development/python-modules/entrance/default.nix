@@ -1,14 +1,14 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
-  routerFeatures,
-  setuptools,
+  fetchPypi,
   janus,
   ncclient,
   paramiko,
   pyyaml,
+  routerFeatures,
   sanic,
+  setuptools,
 }:
 
 let
@@ -17,26 +17,26 @@ let
   opts =
     if routerFeatures then
       {
-        prePatch = ''
-          substituteInPlace ./setup.py --replace-fail "extra_deps = []" "extra_deps = router_feature_deps"
-        '';
         extraBuildInputs = [
           janus
           ncclient
           paramiko
         ];
+
+        prePatch = ''
+          substituteInPlace ./setup.py --replace-fail "extra_deps = []" "extra_deps = router_feature_deps"
+        '';
       }
     else
       {
-        prePatch = "";
         extraBuildInputs = [ ];
+        prePatch = "";
       };
 in
 
 buildPythonPackage rec {
   pname = "entrance";
   version = "1.1.21";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -44,10 +44,8 @@ buildPythonPackage rec {
   };
 
   # The versions of `sanic` and `websockets` in nixpkgs only support 3.6 or later
-
   # No useful tests
   doCheck = false;
-
   build-system = [ setuptools ];
 
   dependencies = [
@@ -57,6 +55,7 @@ buildPythonPackage rec {
   ++ opts.extraBuildInputs;
 
   prePatch = opts.prePatch;
+  pyproject = true;
 
   meta = {
     description = "Server framework for web apps with an Elm frontend";

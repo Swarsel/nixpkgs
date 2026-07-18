@@ -24,6 +24,13 @@ stdenv.mkDerivation rec {
     zlib
   ];
 
+  installPhase = ''
+    mkdir -p $out/bin
+    mv ./wrk $out/bin/wrk2
+  '';
+
+  dontConfigure = true;
+
   patchPhase = ''
     rm -rf deps/luajit && mkdir deps/luajit
 
@@ -37,20 +44,14 @@ stdenv.mkDerivation rec {
       --replace 'struct luaL_reg ' 'struct luaL_Reg '
   '';
 
-  dontConfigure = true;
-  installPhase = ''
-    mkdir -p $out/bin
-    mv ./wrk $out/bin/wrk2
-  '';
-
   meta = {
     description = "Constant throughput, correct latency recording variant of wrk";
     homepage = "https://github.com/giltene/wrk2";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ thoughtpolice ];
+    platforms = lib.platforms.linux;
+    mainProgram = "wrk2";
     # never built on aarch64-linux since first introduction in nixpkgs
     broken = stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64;
-    mainProgram = "wrk2";
   };
 }

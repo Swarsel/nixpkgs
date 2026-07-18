@@ -1,17 +1,18 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   aiosqlite,
   buildPythonPackage,
   cryptography,
   fastapi,
-  fetchFromGitHub,
   google-api-core,
+  grpcio,
   grpcio-reflection,
   grpcio-tools,
-  grpcio,
   hatchling,
-  httpx-sse,
   httpx,
+  httpx-sse,
   opentelemetry-api,
   opentelemetry-sdk,
   protobuf,
@@ -27,7 +28,6 @@
   sqlalchemy,
   sse-starlette,
   starlette,
-  stdenv,
   uv-dynamic-versioning,
   uvicorn,
 }:
@@ -35,60 +35,12 @@
 buildPythonPackage (finalAttrs: {
   pname = "a2a-sdk";
   version = "0.3.26";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "a2aproject";
     repo = "a2a-python";
     tag = "v${finalAttrs.version}";
     hash = "sha256-OQVNoKCx/7t3LeLgcVCVJUDnrWnugbM6EReE0713CM4=";
-  };
-
-  build-system = [
-    hatchling
-    uv-dynamic-versioning
-  ];
-
-  dependencies = [
-    google-api-core
-    httpx
-    httpx-sse
-    protobuf
-    pydantic
-  ];
-
-  optional-dependencies = {
-    encryption = [ cryptography ];
-    grpc = [
-      grpcio
-      grpcio-reflection
-      grpcio-tools
-    ];
-    http-server = [
-      fastapi
-      sse-starlette
-      starlette
-    ];
-    mysql = [
-      sqlalchemy
-    ]
-    ++ sqlalchemy.optional-dependencies.asyncio
-    ++ sqlalchemy.optional-dependencies.postgresql_asyncpg;
-    postgresql = [
-      sqlalchemy
-    ]
-    ++ sqlalchemy.optional-dependencies.asyncio
-    ++ sqlalchemy.optional-dependencies.postgresql_asyncpg;
-    signing = [ pyjwt ];
-    sqlite = [
-      sqlalchemy
-    ]
-    ++ sqlalchemy.optional-dependencies.asyncio
-    ++ sqlalchemy.optional-dependencies.aiosqlite;
-    telemetry = [
-      opentelemetry-api
-      opentelemetry-sdk
-    ];
   };
 
   nativeCheckInputs = [
@@ -103,7 +55,18 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
-  pythonImportsCheck = [ "a2a" ];
+  build-system = [
+    hatchling
+    uv-dynamic-versioning
+  ];
+
+  dependencies = [
+    google-api-core
+    httpx
+    httpx-sse
+    protobuf
+    pydantic
+  ];
 
   disabledTests =
     [ ]
@@ -117,6 +80,50 @@ buildPythonPackage (finalAttrs: {
       "test_notification_triggering_after_config_change_e2e"
       "test_trace_function_sync_attribute_extractor_error_logged"
     ];
+
+  optional-dependencies = {
+    encryption = [ cryptography ];
+
+    grpc = [
+      grpcio
+      grpcio-reflection
+      grpcio-tools
+    ];
+
+    http-server = [
+      fastapi
+      sse-starlette
+      starlette
+    ];
+
+    mysql = [
+      sqlalchemy
+    ]
+    ++ sqlalchemy.optional-dependencies.asyncio
+    ++ sqlalchemy.optional-dependencies.postgresql_asyncpg;
+
+    postgresql = [
+      sqlalchemy
+    ]
+    ++ sqlalchemy.optional-dependencies.asyncio
+    ++ sqlalchemy.optional-dependencies.postgresql_asyncpg;
+
+    signing = [ pyjwt ];
+
+    sqlite = [
+      sqlalchemy
+    ]
+    ++ sqlalchemy.optional-dependencies.asyncio
+    ++ sqlalchemy.optional-dependencies.aiosqlite;
+
+    telemetry = [
+      opentelemetry-api
+      opentelemetry-sdk
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "a2a" ];
 
   meta = {
     description = "Python SDK for the Agent2Agent (A2A) Protocol";

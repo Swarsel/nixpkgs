@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  libcap,
   acl,
   file,
-  readline,
-  python3,
+  libcap,
   nix-update-script,
+  python3,
+  readline,
   versionCheckHook,
 }:
 
@@ -35,17 +35,15 @@ stdenv.mkDerivation (finalAttrs: {
     "DATADIR=${placeholder "out"}/share"
   ];
 
-  enableParallelBuilding = true;
-
-  nativeCheckInputs = [ versionCheckHook ];
   doCheck = true;
-
+  nativeCheckInputs = [ versionCheckHook ];
+  enableParallelBuilding = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "CLI-based, shell-like, and non-curses terminal file manager";
     homepage = "https://github.com/leo-arch/clifm";
     changelog = "https://github.com/leo-arch/clifm/releases/tag/v${finalAttrs.version}";
-    description = "CLI-based, shell-like, and non-curses terminal file manager";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ nadir-ishiguro ];
     platforms = lib.platforms.unix;

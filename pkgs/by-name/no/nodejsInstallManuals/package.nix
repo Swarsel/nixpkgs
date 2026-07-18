@@ -1,15 +1,17 @@
 {
   lib,
-  makeSetupHook,
   installShellFiles,
   jq,
+  makeSetupHook,
 }:
 
 makeSetupHook {
-  name = "nodejs-install-manuals";
   propagatedBuildInputs = [ installShellFiles ];
+  name = "nodejs-install-manuals";
+
   substitutions = {
     jq = "${jq}/bin/jq";
   };
+
   meta.license = lib.licenses.mit;
 } ./hook.sh

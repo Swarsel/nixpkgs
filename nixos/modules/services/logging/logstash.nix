@@ -61,78 +61,54 @@ in
     services.logstash = {
 
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
         description = "Enable logstash.";
+        type = lib.types.bool;
       };
 
       package = lib.mkPackageOption pkgs "logstash" { };
 
-      plugins = lib.mkOption {
-        type = lib.types.listOf lib.types.path;
-        default = [ ];
-        example = lib.literalExpression "[ pkgs.logstash-contrib ]";
-        description = "The paths to find other logstash plugins in.";
-      };
-
       dataDir = lib.mkOption {
-        type = lib.types.str;
         default = "/var/lib/logstash";
+
         description = ''
           A path to directory writable by logstash that it uses to store data.
           Plugins will also have access to this path.
         '';
-      };
 
-      logLevel = lib.mkOption {
-        type = lib.types.enum [
-          "debug"
-          "info"
-          "warn"
-          "error"
-          "fatal"
-        ];
-        default = "warn";
-        description = "Logging verbosity level.";
-      };
-
-      filterWorkers = lib.mkOption {
-        type = lib.types.int;
-        default = 1;
-        description = "The quantity of filter workers to run.";
-      };
-
-      listenAddress = lib.mkOption {
         type = lib.types.str;
-        default = "127.0.0.1";
-        description = "Address on which to start webserver.";
       };
 
-      port = lib.mkOption {
-        type = lib.types.str;
-        default = "9292";
-        description = "Port on which to start webserver.";
-      };
+      extraJvmOptions = lib.mkOption {
+        default = "";
+        description = "Extra JVM options, one per line (jvm.options format).";
 
-      inputConfig = lib.mkOption {
-        type = lib.types.lines;
-        default = "generator { }";
-        description = "Logstash input configuration.";
-        example = lib.literalExpression ''
-          '''
-            # Read from journal
-            pipe {
-              command => "''${config.systemd.package}/bin/journalctl -f -o json"
-              type => "syslog" codec => json {}
-            }
-          '''
+        example = ''
+          -Xms2g
+          -Xmx2g
         '';
+
+        type = lib.types.lines;
+      };
+
+      extraSettings = lib.mkOption {
+        default = "";
+        description = "Extra Logstash settings in YAML format.";
+
+        example = ''
+          pipeline:
+            batch:
+              size: 125
+              delay: 5
+        '';
+
+        type = lib.types.lines;
       };
 
       filterConfig = lib.mkOption {
-        type = lib.types.lines;
         default = "";
         description = "logstash filter configuration.";
+
         example = ''
           if [type] == "syslog" {
             # Keep only relevant systemd fields
@@ -145,38 +121,75 @@ in
             }
           }
         '';
+
+        type = lib.types.lines;
+      };
+
+      filterWorkers = lib.mkOption {
+        default = 1;
+        description = "The quantity of filter workers to run.";
+        type = lib.types.int;
+      };
+
+      inputConfig = lib.mkOption {
+        default = "generator { }";
+        description = "Logstash input configuration.";
+
+        example = lib.literalExpression ''
+          '''
+            # Read from journal
+            pipe {
+              command => "''${config.systemd.package}/bin/journalctl -f -o json"
+              type => "syslog" codec => json {}
+            }
+          '''
+        '';
+
+        type = lib.types.lines;
+      };
+
+      listenAddress = lib.mkOption {
+        default = "127.0.0.1";
+        description = "Address on which to start webserver.";
+        type = lib.types.str;
+      };
+
+      logLevel = lib.mkOption {
+        default = "warn";
+        description = "Logging verbosity level.";
+
+        type = lib.types.enum [
+          "debug"
+          "info"
+          "warn"
+          "error"
+          "fatal"
+        ];
       };
 
       outputConfig = lib.mkOption {
-        type = lib.types.lines;
         default = "stdout { codec => rubydebug }";
         description = "Logstash output configuration.";
+
         example = ''
           redis { host => ["localhost"] data_type => "list" key => "logstash" codec => json }
           elasticsearch { }
         '';
+
+        type = lib.types.lines;
       };
 
-      extraSettings = lib.mkOption {
-        type = lib.types.lines;
-        default = "";
-        description = "Extra Logstash settings in YAML format.";
-        example = ''
-          pipeline:
-            batch:
-              size: 125
-              delay: 5
-        '';
+      plugins = lib.mkOption {
+        default = [ ];
+        description = "The paths to find other logstash plugins in.";
+        example = lib.literalExpression "[ pkgs.logstash-contrib ]";
+        type = lib.types.listOf lib.types.path;
       };
 
-      extraJvmOptions = lib.mkOption {
-        type = lib.types.lines;
-        default = "";
-        description = "Extra JVM options, one per line (jvm.options format).";
-        example = ''
-          -Xms2g
-          -Xmx2g
-        '';
+      port = lib.mkOption {
+        default = "9292";
+        description = "Port on which to start webserver.";
+        type = lib.types.str;
       };
 
     };
@@ -187,10 +200,9 @@ in
   config = lib.mkIf cfg.enable {
     systemd.services.logstash = {
       description = "Logstash Daemon";
-      wantedBy = [ "multi-user.target" ];
       path = [ pkgs.bash ];
+
       serviceConfig = {
-        ExecStartPre = ''${pkgs.coreutils}/bin/mkdir -p "${cfg.dataDir}" ; ${pkgs.coreutils}/bin/chmod 700 "${cfg.dataDir}"'';
         ExecStart = lib.concatStringsSep " " (
           lib.filter (s: lib.stringLength s != 0) [
             "${cfg.package}/bin/logstash"
@@ -202,7 +214,11 @@ in
             "--path.data ${cfg.dataDir}"
           ]
         );
+
+        ExecStartPre = ''${pkgs.coreutils}/bin/mkdir -p "${cfg.dataDir}" ; ${pkgs.coreutils}/bin/chmod 700 "${cfg.dataDir}"'';
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

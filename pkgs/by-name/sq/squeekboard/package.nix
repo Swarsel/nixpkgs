@@ -3,23 +3,23 @@
   stdenv,
   fetchFromGitLab,
   cargo,
+  feedbackd,
+  glib,
+  gnome-desktop,
+  gtk3,
+  libbsd,
+  libxkbcommon,
+  libxml2,
   meson,
   ninja,
+  nixosTests,
   pkg-config,
-  gnome-desktop,
-  glib,
-  gtk3,
+  rustPlatform,
+  rustc,
   wayland,
   wayland-protocols,
   wayland-scanner,
-  libbsd,
-  libxml2,
-  libxkbcommon,
-  rustPlatform,
-  rustc,
-  feedbackd,
   wrapGAppsHook3,
-  nixosTests,
 }:
 
 stdenv.mkDerivation rec {
@@ -27,17 +27,12 @@ stdenv.mkDerivation rec {
   version = "1.43.1";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
-    group = "World";
     owner = "Phosh";
     repo = "squeekboard";
     rev = "v${version}";
     hash = "sha256-UsUr4UnYNo2ybEdNyOD/IiafEZ1YJFwRQ3CVy76X2H0=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-3K1heokPYxYbiAGha9TrrjQXguzGv/djIB4eWa8dVjg=";
+    domain = "gitlab.gnome.org";
+    group = "World";
   };
 
   nativeBuildInputs = [
@@ -62,6 +57,11 @@ stdenv.mkDerivation rec {
     libxkbcommon
     feedbackd
   ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-3K1heokPYxYbiAGha9TrrjQXguzGv/djIB4eWa8dVjg=";
+  };
 
   passthru.tests.phosh = nixosTests.phosh;
 

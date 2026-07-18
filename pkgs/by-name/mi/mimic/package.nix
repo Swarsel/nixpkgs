@@ -1,19 +1,19 @@
 {
-  config,
   lib,
   stdenv,
-  autoreconfHook,
   fetchFromGitHub,
-  fetchpatch,
-  pkg-config,
-  makeWrapper,
   alsa-lib,
   alsa-plugins,
-  libtool,
+  autoreconfHook,
+  config,
+  fetchpatch,
   icu,
-  pcre2,
-  pulseaudioSupport ? config.pulseaudio or false,
   libpulseaudio,
+  libtool,
+  makeWrapper,
+  pcre2,
+  pkg-config,
+  pulseaudioSupport ? config.pulseaudio or false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,8 +32,8 @@ stdenv.mkDerivation (finalAttrs: {
     #   https://github.com/MycroftAI/mimic1/pull/216
     (fetchpatch {
       name = "fno-common";
-      url = "https://github.com/MycroftAI/mimic1/commit/77b36eaeb2c38eba571b8db7e9bb0fd507774e6d.patch";
       sha256 = "0n3hqrfpbdp44y0c8bq55ay9m4c96r09k18hjxka4x54j5c7lw1m";
+      url = "https://github.com/MycroftAI/mimic1/commit/77b36eaeb2c38eba571b8db7e9bb0fd507774e6d.patch";
     })
   ];
 
@@ -66,7 +66,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Mycroft's TTS engine, based on CMU's Flite (Festival Lite)";
     homepage = "https://mimic.mycroft.ai/";
     license = lib.licenses.free;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.fx-chun ];
+    platforms = lib.platforms.linux;
   };
 })

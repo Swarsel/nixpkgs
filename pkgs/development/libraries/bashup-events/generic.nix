@@ -1,17 +1,17 @@
 {
   # general
   lib,
-  resholve,
   bash,
-  doCheck ? true,
-  doInstallCheck ? true,
+  branch,
+  keep,
+  resholve,
+  src,
   # variant-specific
   variant,
   version,
-  branch,
-  src,
+  doCheck ? true,
+  doInstallCheck ? true,
   fake ? false,
-  keep,
 }:
 let
   # extracting this so that it's trivial to test in other shells
@@ -32,22 +32,16 @@ let
 
 in
 resholve.mkDerivation {
+  # should be YYYY-MM-DD
+  inherit version;
+  inherit src;
+  inherit doCheck;
+  inherit doInstallCheck;
   # bashup.events doesn't version yet but it has two variants with
   # differing features/performance characteristics:
   # - branch master: a variant for bash 3.2+
   # - branch bash44: a variant for bash 4.4+
   pname = "bashup-events${variant}-unstable";
-  # should be YYYY-MM-DD
-  inherit version;
-  inherit src;
-
-  installPhase = ''
-    runHook preInstall
-    install -Dt $out/bin bashup.events
-    runHook postInstall
-  '';
-
-  inherit doCheck;
   nativeCheckInputs = [ bash ];
 
   checkPhase = ''
@@ -57,31 +51,37 @@ resholve.mkDerivation {
     runHook postCheck
   '';
 
-  solutions = {
-    events = {
-      inputs = [ ];
-      interpreter = "none";
-      scripts = [ "bin/bashup.events" ];
-      inherit keep;
-    }
-    // lib.optionalAttrs (lib.isAttrs fake) { inherit fake; };
-  };
+  installPhase = ''
+    runHook preInstall
+    install -Dt $out/bin bashup.events
+    runHook postInstall
+  '';
 
-  inherit doInstallCheck;
   nativeInstallCheckInputs = [ bash ];
+
   installCheckPhase = ''
     runHook preInstallCheck
     ${installCheck "${bash}/bin/bash"}
     runHook postInstallCheck
   '';
 
+  solutions = {
+    events = {
+      inherit keep;
+      inputs = [ ];
+      interpreter = "none";
+      scripts = [ "bin/bashup.events" ];
+    }
+    // lib.optionalAttrs (lib.isAttrs fake) { inherit fake; };
+  };
+
   meta = {
     inherit branch;
     description = "Event listener/callback API for creating extensible bash programs";
-    mainProgram = "bashup.events";
     homepage = "https://github.com/bashup/events";
     license = lib.licenses.cc0;
     maintainers = with lib.maintainers; [ abathur ];
     platforms = lib.platforms.all;
+    mainProgram = "bashup.events";
   };
 }

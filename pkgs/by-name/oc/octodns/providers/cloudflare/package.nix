@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   octodns,
   pytestCheckHook,
   requests,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "octodns-cloudflare";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "octodns";
@@ -20,6 +19,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-h3NgzqKgUlzUYN8QycHQE7V1YoBe8fWzHWQPv+Afplo=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    requests-mock
+  ];
 
   build-system = [
     setuptools
@@ -30,12 +34,8 @@ buildPythonPackage rec {
     requests
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "octodns_cloudflare" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    requests-mock
-  ];
 
   meta = {
     description = "Cloudflare API provider for octoDNS";

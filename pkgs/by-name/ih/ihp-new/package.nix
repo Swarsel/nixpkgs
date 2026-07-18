@@ -17,9 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-DmaIr9kF+TG24wVNPVufxC74TYMCLziLYS9hCZHBDTc=";
   };
 
-  dontConfigure = true;
-  sourceRoot = "${finalAttrs.src.name}/ProjectGenerator";
-
   nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
@@ -28,12 +25,15 @@ stdenv.mkDerivation (finalAttrs: {
       --suffix PATH ":" "${lib.makeBinPath [ git ]}";
   '';
 
+  dontConfigure = true;
+  sourceRoot = "${finalAttrs.src.name}/ProjectGenerator";
+
   meta = {
     description = "Project generator for the IHP (Integrated Haskell Platform) web framework";
-    mainProgram = "ihp-new";
     homepage = "https://ihp.digitallyinduced.com";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.mpscholten ];
     platforms = lib.platforms.unix;
+    mainProgram = "ihp-new";
   };
 })

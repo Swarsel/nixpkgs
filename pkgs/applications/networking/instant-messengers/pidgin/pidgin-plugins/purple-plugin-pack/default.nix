@@ -34,10 +34,10 @@ stdenv.mkDerivation {
   ];
 
   meta = {
-    homepage = "https://keep.imfreedom.org/pidgin/purple-plugin-pack";
     description = "Collection of plugins for purple-based clients such as Pidgin";
+    homepage = "https://keep.imfreedom.org/pidgin/purple-plugin-pack";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ bdimcheff ];
+    platforms = lib.platforms.linux;
   };
 }

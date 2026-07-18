@@ -2,29 +2,25 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   minikerberos,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "winsspi";
   version = "0.0.11";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-AXC6SJ+iWPGqTmdgoWKEbD8tDUUcg2aD609hO2bdQfM=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ minikerberos ];
-
   # Module doesn't have tests
   doCheck = false;
-
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  dependencies = [ minikerberos ];
+  pyproject = true;
   pythonImportsCheck = [ "winsspi" ];
 
   meta = {

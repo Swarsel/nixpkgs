@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,10 +18,10 @@ buildGoModule (finalAttrs: {
   vendorHash = "sha256-CURFy92K4aNF9xC8ik6RDadRAvlw8p3Xc+gWE2un6cc=";
 
   meta = {
-    homepage = "https://github.com/piqoni/matcha";
     description = "Daily digest generator from a list of RSS feeds";
+    homepage = "https://github.com/piqoni/matcha";
     license = lib.licenses.mit;
-    mainProgram = "matcha";
     maintainers = [ ];
+    mainProgram = "matcha";
   };
 })

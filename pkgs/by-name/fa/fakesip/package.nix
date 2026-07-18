@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  libmnl,
   libnetfilter_queue,
   libnfnetlink,
-  libmnl,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,11 +31,9 @@ stdenv.mkDerivation (finalAttrs: {
     "VERSION=${finalAttrs.version}"
   ];
 
-  installFlags = [ "PREFIX=$(out)" ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  installFlags = [ "PREFIX=$(out)" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -44,7 +42,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/MikeWang000000/FakeSIP/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ moraxyc ];
-    mainProgram = "fakesip";
     platforms = lib.platforms.linux;
+    mainProgram = "fakesip";
   };
 })

@@ -1,34 +1,29 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # nativeBuildInputs
-  nodejs,
-  yarn-berry_3,
+  buildPythonPackage,
   distutils,
-
   # build-system
   hatch-jupyter-builder,
   hatchling,
-  jupyterlab,
-
   # dependencies
   jupyter-server,
+  jupyterlab,
   jupyterlab-server,
+  # nativeBuildInputs
+  nodejs,
   notebook-shim,
-  tornado,
-
   # tests
   pytest-jupyter,
   pytestCheckHook,
+  tornado,
+  yarn-berry_3,
 }:
 
 buildPythonPackage rec {
   pname = "notebook";
   version = "7.5.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jupyter";
@@ -50,12 +45,18 @@ buildPythonPackage rec {
     distutils
   ];
 
-  missingHashes = ./missing-hashes.json;
-
-  offlineCache = yarn-berry_3.fetchYarnBerryDeps {
-    inherit src missingHashes;
-    hash = "sha256-BdoAtG7Dc+ZTBn4bCraAIazvXiZyvG5u97pcwvptjBY=";
+  env = {
+    CI = 1; # quiet lerna progress bar
+    JUPYTER_PLATFORM_DIRS = 1;
   };
+
+  nativeCheckInputs = [
+    pytest-jupyter
+    pytestCheckHook
+  ];
+
+  # Some of the tests use localhost networking.
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     hatch-jupyter-builder
@@ -71,29 +72,25 @@ buildPythonPackage rec {
     tornado
   ];
 
-  nativeCheckInputs = [
-    pytest-jupyter
-    pytestCheckHook
-  ];
+  missingHashes = ./missing-hashes.json;
+
+  offlineCache = yarn-berry_3.fetchYarnBerryDeps {
+    inherit src missingHashes;
+    hash = "sha256-BdoAtG7Dc+ZTBn4bCraAIazvXiZyvG5u97pcwvptjBY=";
+  };
+
+  pyproject = true;
 
   pytestFlags = [
     "-Wignore::DeprecationWarning"
   ];
 
-  env = {
-    CI = 1; # quiet lerna progress bar
-    JUPYTER_PLATFORM_DIRS = 1;
-  };
-
-  # Some of the tests use localhost networking.
-  __darwinAllowLocalNetworking = true;
-
   meta = {
-    changelog = "https://github.com/jupyter/notebook/blob/${src.tag}/CHANGELOG.md";
     description = "Web-based notebook environment for interactive computing";
     homepage = "https://github.com/jupyter/notebook";
+    changelog = "https://github.com/jupyter/notebook/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.bsd3;
-    teams = [ lib.teams.jupyter ];
     mainProgram = "jupyter-notebook";
+    teams = [ lib.teams.jupyter ];
   };
 }

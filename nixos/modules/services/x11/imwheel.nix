@@ -14,18 +14,28 @@ in
       enable = mkEnableOption "IMWheel service";
 
       extraOptions = mkOption {
-        type = types.listOf types.str;
         default = [ "--buttons=45" ];
-        example = [ "--debug" ];
+
         description = ''
           Additional command-line arguments to pass to
           {command}`imwheel`.
         '';
+
+        example = [ "--debug" ];
+        type = types.listOf types.str;
       };
 
       rules = mkOption {
-        type = types.attrsOf types.str;
         default = { };
+
+        description = ''
+          Window class translation rules.
+          /etc/X11/imwheelrc is generated based on this config
+          which means this config is global for all users.
+          See [official man pages](https://imwheel.sourceforge.net/imwheel.1.html)
+          for more information.
+        '';
+
         example = literalExpression ''
           {
             ".*" = '''
@@ -38,28 +48,23 @@ in
             ''';
           }
         '';
-        description = ''
-          Window class translation rules.
-          /etc/X11/imwheelrc is generated based on this config
-          which means this config is global for all users.
-          See [official man pages](https://imwheel.sourceforge.net/imwheel.1.html)
-          for more information.
-        '';
+
+        type = types.attrsOf types.str;
       };
     };
   };
 
   config = mkIf cfg.enable {
-    environment.systemPackages = [ pkgs.imwheel ];
-
     environment.etc."X11/imwheel/imwheelrc".source = pkgs.writeText "imwheelrc" (
       concatStringsSep "\n\n" (mapAttrsToList (rule: conf: "\"${rule}\"\n${conf}") cfg.rules)
     );
 
+    environment.systemPackages = [ pkgs.imwheel ];
+
     systemd.user.services.imwheel = {
       description = "imwheel service";
-      wantedBy = [ "graphical-session.target" ];
       partOf = [ "graphical-session.target" ];
+
       serviceConfig = {
         ExecStart =
           "${pkgs.imwheel}/bin/imwheel "
@@ -70,10 +75,13 @@ in
             ]
             ++ cfg.extraOptions
           );
+
         ExecStop = "${pkgs.procps}/bin/pkill imwheel";
-        RestartSec = 3;
         Restart = "always";
+        RestartSec = 3;
       };
+
+      wantedBy = [ "graphical-session.target" ];
     };
   };
 }

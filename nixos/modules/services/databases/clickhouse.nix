@@ -13,10 +13,7 @@ let
 in
 {
 
-  meta.maintainers = with lib.maintainers; [ thevar1able ];
-
   ###### interface
-
   options = {
 
     services.clickhouse = {
@@ -27,9 +24,46 @@ in
         example = "pkgs.clickhouse-lts";
       };
 
+      extraServerConfig = lib.mkOption {
+        default = "";
+        description = "Additional raw XML configuration for ClickHouse server.";
+
+        example = ''
+          <clickhouse>
+            <max_connections>500</max_connections>
+            <keep_alive_timeout>3</keep_alive_timeout>
+          </clickhouse>
+        '';
+
+        type = lib.types.lines;
+      };
+
+      extraUsersConfig = lib.mkOption {
+        default = "";
+        description = "Additional raw XML configuration for ClickHouse server.";
+
+        example = ''
+          <clickhouse>
+            <users>
+              <readonly>
+                <profile>readonly</profile>
+              </readonly>
+            </users>
+          </clickhouse>
+        '';
+
+        type = lib.types.lines;
+      };
+
       serverConfig = lib.mkOption {
-        type = format.type;
         default = { };
+
+        description = ''
+          Your {file}`config.yaml` as a Nix attribute set.
+          Check the [documentation](https://clickhouse.com/docs/operations/configuration-files)
+          for possible options.
+        '';
+
         example = lib.literalExpression ''
           {
             http_port = 8123;
@@ -48,16 +82,19 @@ in
             };
           }
         '';
-        description = ''
-          Your {file}`config.yaml` as a Nix attribute set.
-          Check the [documentation](https://clickhouse.com/docs/operations/configuration-files)
-          for possible options.
-        '';
+
+        type = format.type;
       };
 
       usersConfig = lib.mkOption {
-        type = format.type;
         default = { };
+
+        description = ''
+          Your {file}`users.yaml` as a Nix attribute set.
+          Check the [documentation](https://clickhouse.com/docs/operations/configuration-files#user-settings)
+          for possible options.
+        '';
+
         example = lib.literalExpression ''
           {
             profiles = {};
@@ -70,38 +107,8 @@ in
             };
           }
         '';
-        description = ''
-          Your {file}`users.yaml` as a Nix attribute set.
-          Check the [documentation](https://clickhouse.com/docs/operations/configuration-files#user-settings)
-          for possible options.
-        '';
-      };
 
-      extraServerConfig = lib.mkOption {
-        type = lib.types.lines;
-        default = "";
-        example = ''
-          <clickhouse>
-            <max_connections>500</max_connections>
-            <keep_alive_timeout>3</keep_alive_timeout>
-          </clickhouse>
-        '';
-        description = "Additional raw XML configuration for ClickHouse server.";
-      };
-
-      extraUsersConfig = lib.mkOption {
-        type = lib.types.lines;
-        default = "";
-        example = ''
-          <clickhouse>
-            <users>
-              <readonly>
-                <profile>readonly</profile>
-              </readonly>
-            </users>
-          </clickhouse>
-        '';
-        description = "Additional raw XML configuration for ClickHouse server.";
+        type = format.type;
       };
 
     };
@@ -109,55 +116,11 @@ in
   };
 
   ###### implementation
-
   config = lib.mkIf cfg.enable {
 
-    users.users.clickhouse = {
-      name = "clickhouse";
-      uid = config.ids.uids.clickhouse;
-      group = "clickhouse";
-      description = "ClickHouse server user";
-    };
-
-    users.groups.clickhouse.gid = config.ids.gids.clickhouse;
-
-    systemd.services.clickhouse = {
-      description = "ClickHouse server";
-
-      wantedBy = [ "multi-user.target" ];
-      after = [ "network.target" ];
-
-      serviceConfig = {
-        Type = "notify";
-        User = "clickhouse";
-        Group = "clickhouse";
-        AmbientCapabilities = "CAP_SYS_NICE";
-        StateDirectory = "clickhouse";
-        ExecStart = "${cfg.package}/bin/clickhouse-server --config=/etc/clickhouse-server/config.xml";
-        TimeoutStartSec = "infinity";
-      };
-
-      environment = {
-        # Switching off watchdog is very important for sd_notify to work correctly.
-        CLICKHOUSE_WATCHDOG_ENABLE = "0";
-      };
-    };
-
     environment.etc = {
-      "clickhouse-server/config.xml" = {
-        source = "${cfg.package}/etc/clickhouse-server/config.xml";
-      };
-
-      "clickhouse-server/users.xml" = {
-        source = "${cfg.package}/etc/clickhouse-server/users.xml";
-      };
-
       "clickhouse-server/config.d/100-nixos-module-config.yaml" = lib.mkIf (cfg.serverConfig != { }) {
         source = serverConfigFile;
-      };
-
-      "clickhouse-server/users.d/100-nixos-module-config.yaml" = lib.mkIf (cfg.usersConfig != { }) {
-        source = usersConfigFile;
       };
 
       "clickhouse-server/config.d/200-nixos-module-extra-config.xml" =
@@ -166,18 +129,62 @@ in
             text = cfg.extraServerConfig;
           };
 
+      "clickhouse-server/config.xml" = {
+        source = "${cfg.package}/etc/clickhouse-server/config.xml";
+      };
+
+      "clickhouse-server/users.d/100-nixos-module-config.yaml" = lib.mkIf (cfg.usersConfig != { }) {
+        source = usersConfigFile;
+      };
+
       "clickhouse-server/users.d/200-nixos-module-extra-config.xml" =
         lib.mkIf (cfg.extraUsersConfig != "")
           {
             text = cfg.extraUsersConfig;
           };
+
+      "clickhouse-server/users.xml" = {
+        source = "${cfg.package}/etc/clickhouse-server/users.xml";
+      };
     };
 
     environment.systemPackages = [ cfg.package ];
 
+    systemd.services.clickhouse = {
+      after = [ "network.target" ];
+      description = "ClickHouse server";
+
+      environment = {
+        # Switching off watchdog is very important for sd_notify to work correctly.
+        CLICKHOUSE_WATCHDOG_ENABLE = "0";
+      };
+
+      serviceConfig = {
+        AmbientCapabilities = "CAP_SYS_NICE";
+        ExecStart = "${cfg.package}/bin/clickhouse-server --config=/etc/clickhouse-server/config.xml";
+        Group = "clickhouse";
+        StateDirectory = "clickhouse";
+        TimeoutStartSec = "infinity";
+        Type = "notify";
+        User = "clickhouse";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
     # startup requires a `/etc/localtime` which only if exists if `time.timeZone != null`
     time.timeZone = lib.mkDefault "UTC";
+    users.groups.clickhouse.gid = config.ids.gids.clickhouse;
+
+    users.users.clickhouse = {
+      description = "ClickHouse server user";
+      group = "clickhouse";
+      name = "clickhouse";
+      uid = config.ids.uids.clickhouse;
+    };
 
   };
+
+  meta.maintainers = with lib.maintainers; [ thevar1able ];
 
 }

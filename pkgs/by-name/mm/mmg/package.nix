@@ -5,9 +5,9 @@
   cmake,
   perl,
   scotch,
+  testers,
   vtk,
   withVtk ? false,
-  testers,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "mmg";
@@ -59,8 +59,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Open source software for bidimensional and tridimensional remeshing";
     homepage = "http://www.mmgtools.org/";
-    platforms = lib.platforms.unix;
     license = lib.licenses.lgpl3Plus;
     maintainers = with lib.maintainers; [ mkez ];
+    platforms = lib.platforms.unix;
   };
 })

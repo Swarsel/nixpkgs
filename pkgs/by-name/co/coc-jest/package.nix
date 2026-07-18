@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage {
@@ -20,9 +20,7 @@ buildNpmPackage {
   ];
 
   npmDepsHash = "sha256-4X6lmblZnAF+4ZmrWYwfigO90Ah7I+B4tbMpFrguxMU=";
-
   npmBuildScript = "prepare";
-
   passthru.updateScript = ./update.sh;
 
   meta = {

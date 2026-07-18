@@ -5,7 +5,6 @@
   typstPackages,
 }:
 lib.extendMkDerivation {
-  inheritFunctionArgs = false;
   constructDrv = buildTypstPackage;
 
   excludeDrvArgNames = [
@@ -19,11 +18,11 @@ lib.extendMkDerivation {
   extendDrvArgs =
     finalAttrs:
     {
-      pname,
-      version,
       description,
       hash,
       license,
+      pname,
+      version,
       homepage ? null,
       typstDeps ? [ ],
     }:
@@ -40,14 +39,18 @@ lib.extendMkDerivation {
 
       meta = {
         inherit description;
+        license = lib.map (lib.flip lib.getAttr lib.licensesSpdx) license;
+
         maintainers = with lib.maintainers; [
           cherrypiejam
           RossSmyth
         ];
-        license = lib.map (lib.flip lib.getAttr lib.licensesSpdx) license;
+
         # Sending a bunch of trivial jobs to Hydra is not that great.
         hydraPlatforms = [ ];
       }
       // lib.optionalAttrs (homepage != null) { inherit homepage; };
     };
+
+  inheritFunctionArgs = false;
 }

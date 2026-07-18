@@ -24,11 +24,11 @@ stdenv.mkDerivation (finalAttrs: {
     libpng12
   ];
 
-  enableParallelBuilding = true;
-
   preInstall = ''
     mkdir -p $out/{bin,man/man1}
   '';
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "View pictures on a linux framebuffer device";

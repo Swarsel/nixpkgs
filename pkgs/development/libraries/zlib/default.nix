@@ -2,6 +2,8 @@
   lib,
   stdenv,
   fetchurl,
+  minizip,
+  testers,
   shared ? !stdenv.hostPlatform.isStatic,
   # zlib's hand-written `./configure` script is a bit buggy, and it always
   # builds the static library. The `--enable-shared` argument (alias to
@@ -19,8 +21,6 @@
   # a dedicated output for the static library, which is fortuenatly also
   # supported by the `--libdir` argument to `./configure`.
   splitStaticOutput ? shared && !(stdenv.hostPlatform.isWindows || stdenv.hostPlatform.isCygwin),
-  testers,
-  minizip,
 }:
 
 # Note: this package is used for bootstrapping fetchurl, and thus
@@ -37,14 +37,21 @@ stdenv.mkDerivation (finalAttrs: {
       inherit (finalAttrs) version;
     in
     fetchurl {
+      hash = "sha256-uzKaCizQJ00FUZ1hxmfAYuBpkNcuEl7i36jeZPARnRY=";
+
       urls = [
         # This URL works for 1.2.13 only; hopefully also for future releases.
         "https://github.com/madler/zlib/releases/download/v${version}/zlib-${version}.tar.gz"
         # Stable archive path, but captcha can be encountered, causing hash mismatch.
         "https://www.zlib.net/fossils/zlib-${version}.tar.gz"
       ];
-      hash = "sha256-uzKaCizQJ00FUZ1hxmfAYuBpkNcuEl7i36jeZPARnRY=";
     };
+
+  outputs = [
+    "out"
+    "dev"
+  ]
+  ++ lib.optional splitStaticOutput "static";
 
   # https://github.com/madler/zlib/pull/1171
   patches = [
@@ -61,19 +68,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   strictDeps = true;
-  outputs = [
-    "out"
-    "dev"
-  ]
-  ++ lib.optional splitStaticOutput "static";
-  setOutputFlags = false;
-  outputDoc = "dev"; # single tiny man3 page
-
-  dontConfigure = (stdenv.hostPlatform.isMinGW || stdenv.hostPlatform.isCygwin);
-
-  preConfigure = lib.optionalString (stdenv.hostPlatform != stdenv.buildPlatform) ''
-    export CHOST=${stdenv.hostPlatform.config}
-  '';
 
   configureFlags = [
     "--includedir=${placeholder "dev"}/include"
@@ -82,60 +76,6 @@ stdenv.mkDerivation (finalAttrs: {
     # See comment near splitStaticOutput argument
     (lib.enableFeature shared "shared")
   ];
-  dontDisableStatic = true;
-  dontAddStaticConfigureFlags = true;
-
-  # Note we don't need to set `dontDisableStatic`, because static-disabling
-  # works by grepping for `enable-static` in the `./configure` script
-  # (see `pkgs/stdenv/generic/setup.sh`), and zlib's handwritten one does
-  # not have such.
-  # It wouldn't hurt setting `dontDisableStatic = static && !splitStaticOutput`
-  # here (in case zlib ever switches to autoconf in the future),
-  # but we don't do it simply to avoid mass rebuilds.
-
-  postInstall =
-    # jww (2015-01-06): Sometimes this library install as a .so, even on
-    # Darwin; others time it installs as a .dylib.  I haven't yet figured out
-    # what causes this difference.
-    lib.optionalString stdenv.hostPlatform.isDarwin ''
-      for file in $out/lib/*.so* $out/lib/*.dylib* ; do
-        ${stdenv.cc.bintools.targetPrefix}install_name_tool -id "$file" $file
-      done
-    ''
-    # Non-typical naming confuses libtool which then refuses to use zlib's DLL
-    # in some cases, e.g. when compiling libpng.
-    + lib.optionalString (stdenv.hostPlatform.isMinGW && shared) ''
-      ln -s zlib1.dll $out/bin/libz.dll
-    '';
-
-  env =
-    lib.optionalAttrs (!stdenv.hostPlatform.isDarwin) {
-      # As zlib takes part in the stdenv building, we don't want references
-      # to the bootstrap-tools libgcc (as uses to happen on arm/mips)
-      NIX_CFLAGS_COMPILE = toString (
-        [ "-static-libgcc" ] ++ lib.optional stdenv.hostPlatform.isCygwin "-DHAVE_UNISTD_H"
-      );
-    }
-    // lib.optionalAttrs (stdenv.hostPlatform.linker == "lld") {
-      # lld 16 enables --no-undefined-version by default
-      # This makes configure think it can't build dynamic libraries
-      # this may be removed when a version is packaged with https://github.com/madler/zlib/issues/960 fixed
-      NIX_LDFLAGS = "--undefined-version";
-    };
-
-  # We don't strip on static cross-compilation because of reports that native
-  # stripping corrupted the target library; see commit 12e960f5 for the report.
-  dontStrip = stdenv.hostPlatform != stdenv.buildPlatform;
-  configurePlatforms = [ ];
-
-  installFlags = lib.optionals (stdenv.hostPlatform.isMinGW || stdenv.hostPlatform.isCygwin) [
-    "BINARY_PATH=$(out)/bin"
-    "INCLUDE_PATH=$(dev)/include"
-    "LIBRARY_PATH=$(out)/lib"
-  ];
-
-  enableParallelBuilding = true;
-  doCheck = true;
 
   makeFlags = [
     "PREFIX=${stdenv.cc.targetPrefix}"
@@ -155,19 +95,80 @@ stdenv.mkDerivation (finalAttrs: {
     "SHARED_MODE=1"
   ];
 
+  env =
+    lib.optionalAttrs (!stdenv.hostPlatform.isDarwin) {
+      # As zlib takes part in the stdenv building, we don't want references
+      # to the bootstrap-tools libgcc (as uses to happen on arm/mips)
+      NIX_CFLAGS_COMPILE = toString (
+        [ "-static-libgcc" ] ++ lib.optional stdenv.hostPlatform.isCygwin "-DHAVE_UNISTD_H"
+      );
+    }
+    // lib.optionalAttrs (stdenv.hostPlatform.linker == "lld") {
+      # lld 16 enables --no-undefined-version by default
+      # This makes configure think it can't build dynamic libraries
+      # this may be removed when a version is packaged with https://github.com/madler/zlib/issues/960 fixed
+      NIX_LDFLAGS = "--undefined-version";
+    };
+
+  preConfigure = lib.optionalString (stdenv.hostPlatform != stdenv.buildPlatform) ''
+    export CHOST=${stdenv.hostPlatform.config}
+  '';
+
+  doCheck = true;
+
+  # Note we don't need to set `dontDisableStatic`, because static-disabling
+  # works by grepping for `enable-static` in the `./configure` script
+  # (see `pkgs/stdenv/generic/setup.sh`), and zlib's handwritten one does
+  # not have such.
+  # It wouldn't hurt setting `dontDisableStatic = static && !splitStaticOutput`
+  # here (in case zlib ever switches to autoconf in the future),
+  # but we don't do it simply to avoid mass rebuilds.
+  postInstall =
+    # jww (2015-01-06): Sometimes this library install as a .so, even on
+    # Darwin; others time it installs as a .dylib.  I haven't yet figured out
+    # what causes this difference.
+    lib.optionalString stdenv.hostPlatform.isDarwin ''
+      for file in $out/lib/*.so* $out/lib/*.dylib* ; do
+        ${stdenv.cc.bintools.targetPrefix}install_name_tool -id "$file" $file
+      done
+    ''
+    # Non-typical naming confuses libtool which then refuses to use zlib's DLL
+    # in some cases, e.g. when compiling libpng.
+    + lib.optionalString (stdenv.hostPlatform.isMinGW && shared) ''
+      ln -s zlib1.dll $out/bin/libz.dll
+    '';
+
+  configurePlatforms = [ ];
+  dontAddStaticConfigureFlags = true;
+  dontConfigure = (stdenv.hostPlatform.isMinGW || stdenv.hostPlatform.isCygwin);
+  dontDisableStatic = true;
+  # We don't strip on static cross-compilation because of reports that native
+  # stripping corrupted the target library; see commit 12e960f5 for the report.
+  dontStrip = stdenv.hostPlatform != stdenv.buildPlatform;
+  enableParallelBuilding = true;
+
+  installFlags = lib.optionals (stdenv.hostPlatform.isMinGW || stdenv.hostPlatform.isCygwin) [
+    "BINARY_PATH=$(out)/bin"
+    "INCLUDE_PATH=$(dev)/include"
+    "LIBRARY_PATH=$(out)/lib"
+  ];
+
+  outputDoc = "dev"; # single tiny man3 page
+  setOutputFlags = false;
+
   passthru.tests = {
-    pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
     # uses `zlib` derivation:
     inherit minizip;
+    pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
-    homepage = "https://zlib.net";
     description = "Lossless data-compression library";
+    homepage = "https://zlib.net";
     license = lib.licenses.zlib;
     platforms = lib.platforms.all;
+    identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "zlib" finalAttrs.version;
     pkgConfigModules = [ "zlib" ];
     teams = [ lib.teams.security-review ];
-    identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "zlib" finalAttrs.version;
   };
 })

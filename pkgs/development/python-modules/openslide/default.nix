@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   openslide,
   pillow,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "openslide";
   version = "1.4.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openslide";
@@ -25,15 +24,12 @@ buildPythonPackage rec {
       --replace-fail "return cdll.LoadLibrary(names[0])" "return cdll.LoadLibrary(f'${lib.getLib openslide}/lib/{names[0]}')"
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pillow ];
-
-  pythonImportsCheck = [ "openslide" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
   preCheck = "rm -rf openslide/";
+  build-system = [ setuptools ];
+  dependencies = [ pillow ];
+  pyproject = true;
+  pythonImportsCheck = [ "openslide" ];
 
   meta = {
     description = "Python bindings to the OpenSlide library for reading whole-slide microscopy images";

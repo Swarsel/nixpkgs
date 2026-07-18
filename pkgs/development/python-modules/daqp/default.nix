@@ -2,15 +2,14 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  unittestCheckHook,
   cython,
-  setuptools,
   numpy,
+  setuptools,
+  unittestCheckHook,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "daqp";
   version = "0.8.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "darnstrom";
@@ -27,9 +26,17 @@ buildPythonPackage (finalAttrs: {
       "if False:"
   '';
 
-  sourceRoot = "${finalAttrs.src.name}/interfaces/daqp-python";
-
   nativeCheckInputs = [ unittestCheckHook ];
+
+  build-system = [
+    cython
+    setuptools
+  ];
+
+  dependencies = [ numpy ];
+  pyproject = true;
+  pythonImportsCheck = [ "daqp" ];
+  sourceRoot = "${finalAttrs.src.name}/interfaces/daqp-python";
 
   unittestFlagsArray = [
     "-s"
@@ -38,15 +45,6 @@ buildPythonPackage (finalAttrs: {
     "'*.py'"
     "-v"
   ];
-
-  build-system = [
-    cython
-    setuptools
-  ];
-
-  dependencies = [ numpy ];
-
-  pythonImportsCheck = [ "daqp" ];
 
   meta = {
     description = "Dual active-set algorithm for convex quadratic programming";

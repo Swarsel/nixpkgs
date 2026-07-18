@@ -1,27 +1,26 @@
 {
   lib,
   stdenv,
-  buildPackages,
   fetchurl,
-  perl,
-  libintl,
   bashNonInteractive,
-  updateAutotoolsGnuConfigScriptsHook,
-  gawk,
+  buildPackages,
   freebsd,
+  gawk,
   glibcLocales,
   libiconv,
-
+  libintl,
+  meta,
+  ncurses,
+  perl,
+  procps,
+  updateAutotoolsGnuConfigScriptsHook,
   # we are a dependency of gcc, this simplifies bootstrapping
   interactive ? false,
-  ncurses,
-  procps,
-  meta,
 }:
 
 {
-  version,
   hash,
+  version,
   patches ? [ ],
 }:
 
@@ -45,12 +44,12 @@ let
 in
 
 stdenv.mkDerivation {
-  pname = "texinfo${optionalString interactive "-interactive"}";
   inherit version;
+  pname = "texinfo${optionalString interactive "-interactive"}";
 
   src = fetchurl {
-    url = "mirror://gnu/texinfo/texinfo-${version}.tar.xz";
     inherit hash;
+    url = "mirror://gnu/texinfo/texinfo-${version}.tar.xz";
   };
 
   patches =
@@ -64,40 +63,9 @@ stdenv.mkDerivation {
     patchShebangs tp/maintain/regenerate_commands_perl_info.pl
   '';
 
-  env = {
-    XFAIL_TESTS = toString (
-      optionals stdenv.hostPlatform.isMusl [
-        # musl does not support locales.
-        "different_languages_gen_master_menu.sh"
-        "test_scripts/formatting_documentlanguage_cmdline.sh"
-        "test_scripts/layout_formatting_fr_info.sh"
-        "test_scripts/layout_formatting_fr.sh"
-        "test_scripts/layout_formatting_fr_icons.sh"
-      ]
-      ++ optionals (!stdenv.hostPlatform.isMusl && versionOlder version "7") [
-        # Test is known to fail on various locales on texinfo-6.8:
-        #   https://lists.gnu.org/r/bug-texinfo/2021-07/msg00012.html
-        "test_scripts/layout_formatting_fr_icons.sh"
-      ]
-    );
-  }
-  // lib.optionalAttrs crossBuildTools {
-    # ncurses is required to build `makedoc'
-    # this feature is introduced by the ./cross-tools-flags.patch
-    NATIVE_TOOLS_CFLAGS = "-I${getDev buildPackages.ncurses}/include";
-    NATIVE_TOOLS_LDFLAGS = "-L${getLib buildPackages.ncurses}/lib";
-  };
-
   strictDeps = true;
-  enableParallelBuilding = true;
-
-  # A native compiler is needed to build tools needed at build time
-  depsBuildBuild = [
-    buildPackages.stdenv.cc
-    perl
-  ];
-
   nativeBuildInputs = [ updateAutotoolsGnuConfigScriptsHook ];
+
   buildInputs = [
     bashNonInteractive
     libintl
@@ -123,16 +91,33 @@ stdenv.mkDerivation {
   ]
   ++ optional stdenv.hostPlatform.isSunOS "AWK=${gawk}/bin/awk";
 
-  installFlags = [ "TEXMF=$(out)/texmf-dist" ];
-  installTargets = [
-    "install"
-    "install-tex"
-  ];
-
-  nativeCheckInputs = [ procps ] ++ optionals stdenv.buildPlatform.isFreeBSD [ freebsd.locale ];
-  checkInputs = optionals (lib.versionAtLeast version "7.2") [ glibcLocales ];
+  env = {
+    XFAIL_TESTS = toString (
+      optionals stdenv.hostPlatform.isMusl [
+        # musl does not support locales.
+        "different_languages_gen_master_menu.sh"
+        "test_scripts/formatting_documentlanguage_cmdline.sh"
+        "test_scripts/layout_formatting_fr_info.sh"
+        "test_scripts/layout_formatting_fr.sh"
+        "test_scripts/layout_formatting_fr_icons.sh"
+      ]
+      ++ optionals (!stdenv.hostPlatform.isMusl && versionOlder version "7") [
+        # Test is known to fail on various locales on texinfo-6.8:
+        #   https://lists.gnu.org/r/bug-texinfo/2021-07/msg00012.html
+        "test_scripts/layout_formatting_fr_icons.sh"
+      ]
+    );
+  }
+  // lib.optionalAttrs crossBuildTools {
+    # ncurses is required to build `makedoc'
+    # this feature is introduced by the ./cross-tools-flags.patch
+    NATIVE_TOOLS_CFLAGS = "-I${getDev buildPackages.ncurses}/include";
+    NATIVE_TOOLS_LDFLAGS = "-L${getLib buildPackages.ncurses}/lib";
+  };
 
   doCheck = interactive && !stdenv.hostPlatform.isDarwin && !stdenv.hostPlatform.isSunOS; # flaky
+  nativeCheckInputs = [ procps ] ++ optionals stdenv.buildPlatform.isFreeBSD [ freebsd.locale ];
+  checkInputs = optionals (lib.versionAtLeast version "7.2") [ glibcLocales ];
 
   postFixup = optionalString crossBuildTools ''
     for f in "$out"/bin/{pod2texi,texi2any}; do
@@ -140,6 +125,20 @@ stdenv.mkDerivation {
         --replace-fail ${buildPackages.perl}/bin/perl ${perl}/bin/perl
     done
   '';
+
+  # A native compiler is needed to build tools needed at build time
+  depsBuildBuild = [
+    buildPackages.stdenv.cc
+    perl
+  ];
+
+  enableParallelBuilding = true;
+  installFlags = [ "TEXMF=$(out)/texmf-dist" ];
+
+  installTargets = [
+    "install"
+    "install-tex"
+  ];
 
   meta = meta // {
     branch = version;

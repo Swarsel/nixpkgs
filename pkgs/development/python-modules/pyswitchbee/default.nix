@@ -1,17 +1,16 @@
 {
   lib,
+  fetchFromGitHub,
+  aiohttp,
   awesomeversion,
   buildPythonPackage,
-  aiohttp,
-  fetchFromGitHub,
-  setuptools,
   packaging,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyswitchbee";
   version = "1.8.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jafar-atili";
@@ -30,7 +29,7 @@ buildPythonPackage rec {
 
   # Module doesn't have tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "switchbee" ];
 
   meta = {

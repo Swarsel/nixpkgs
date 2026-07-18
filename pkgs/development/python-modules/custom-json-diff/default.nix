@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   jinja2,
   json-flatten,
   packageurl-python,
-  semver,
-  toml,
   pytestCheckHook,
+  semver,
+  setuptools,
+  toml,
 }:
 
 buildPythonPackage rec {
   pname = "custom-json-diff";
   version = "2.1.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "appthreat";
@@ -22,6 +21,10 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-09kSj4fJHQHyzsCk0bSVlwAgkyzWOSjRKxU1rcMXacQ=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -35,9 +38,7 @@ buildPythonPackage rec {
     toml
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "custom_json_diff"

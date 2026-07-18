@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  nodejs,
-  pnpm_10,
-  fetchPnpmDeps,
-  pnpmConfigHook,
   fetchFromGitHub,
+  fetchPnpmDeps,
   gitMinimal,
   nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_10,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "cspell";
@@ -18,20 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "cspell";
     tag = "v${finalAttrs.version}";
     hash = "sha256-WT2MlBtFazi7vC7+2Dx1Y0Z5B3j0tFT6jUajyqhxlDw=";
-  };
-
-  pnpmWorkspaces = [ "cspell..." ];
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      pnpmWorkspaces
-      ;
-    pnpm = pnpm_10;
-    fetcherVersion = 3;
-    hash = "sha256-eQ9KiRSwWmfhCinYVP4ulQdAG6SOd9yyyOUWSwc5TV8=";
   };
 
   nativeBuildInputs = [
@@ -45,6 +31,9 @@ stdenv.mkDerivation (finalAttrs: {
     gitMinimal
   ];
 
+  # Make PNPM happy to re-install deps for prod
+  env.CI = true;
+
   buildPhase = ''
     runHook preBuild
 
@@ -52,9 +41,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postBuild
   '';
-
-  # Make PNPM happy to re-install deps for prod
-  env.CI = true;
 
   installPhase = ''
     runHook preInstall
@@ -85,6 +71,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      pnpmWorkspaces
+      ;
+
+    fetcherVersion = 3;
+    hash = "sha256-eQ9KiRSwWmfhCinYVP4ulQdAG6SOd9yyyOUWSwc5TV8=";
+    pnpm = pnpm_10;
+  };
+
+  pnpmWorkspaces = [ "cspell..." ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -92,7 +92,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://cspell.org";
     changelog = "https://github.com/streetsidesoftware/cspell/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "cspell";
     maintainers = [ ];
+    mainProgram = "cspell";
   };
 })

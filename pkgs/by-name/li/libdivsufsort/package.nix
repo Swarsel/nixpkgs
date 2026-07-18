@@ -16,17 +16,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-4p+L1bq9SBgWSHXx+WYWAe60V2g1AN+zlJvC+F367Tk=";
   };
 
+  nativeBuildInputs = [ cmake ];
+
   cmakeFlags = [
     "-DBUILD_DIVSUFSORT64=YES"
     "-DCMAKE_POLICY_VERSION_MINIMUM=3.10"
   ];
 
-  nativeBuildInputs = [ cmake ];
-
   meta = {
+    description = "Library to construct the suffix array and the BW transformed string";
     homepage = "https://github.com/y-256/libdivsufsort";
     license = lib.licenses.mit;
-    description = "Library to construct the suffix array and the BW transformed string";
     platforms = lib.platforms.unix;
   };
 })

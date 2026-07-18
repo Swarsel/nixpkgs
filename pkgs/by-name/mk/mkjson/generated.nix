@@ -1,15 +1,15 @@
 {
-  mkDerivation,
   lib,
   fetchFromGitHub,
+  Glob,
   aeson,
   base,
   bytestring,
   containers,
   criterion,
   doctest,
-  Glob,
   mersenne-random-pure64,
+  mkDerivation,
   mtl,
   optparse-applicative,
   parsec,
@@ -26,6 +26,7 @@
 mkDerivation rec {
   pname = "mkjson";
   version = "0.4.0";
+
   src = fetchFromGitHub {
     owner = "mfussenegger";
     repo = "mkjson";
@@ -33,64 +34,6 @@ mkDerivation rec {
     hash = "sha256-+NDLFtsWWxHv/6XC9hJOAHPU6YED5oHqS/j5BPwNsqA=";
   };
 
-  isLibrary = false;
-  isExecutable = true;
-  libraryHaskellDepends = [
-    aeson
-    base
-    bytestring
-    containers
-    mersenne-random-pure64
-    mtl
-    optparse-applicative
-    parsec
-    random
-    regex-tdfa
-    scientific
-    text
-    time
-    unordered-containers
-    uuid
-    vector
-  ];
-  executableHaskellDepends = [
-    aeson
-    base
-    bytestring
-    containers
-    mersenne-random-pure64
-    mtl
-    optparse-applicative
-    parsec
-    random
-    regex-tdfa
-    scientific
-    text
-    time
-    unordered-containers
-    uuid
-    vector
-  ];
-  testHaskellDepends = [
-    aeson
-    base
-    bytestring
-    containers
-    doctest
-    Glob
-    mersenne-random-pure64
-    mtl
-    optparse-applicative
-    parsec
-    random
-    regex-tdfa
-    scientific
-    text
-    time
-    unordered-containers
-    uuid
-    vector
-  ];
   benchmarkHaskellDepends = [
     aeson
     base
@@ -112,8 +55,71 @@ mkDerivation rec {
   ];
 
   description = "Commandline tool to generate static or random JSON records";
+
+  executableHaskellDepends = [
+    aeson
+    base
+    bytestring
+    containers
+    mersenne-random-pure64
+    mtl
+    optparse-applicative
+    parsec
+    random
+    regex-tdfa
+    scientific
+    text
+    time
+    unordered-containers
+    uuid
+    vector
+  ];
+
   homepage = "https://github.com/mfussenegger/mkjson";
+  isExecutable = true;
+  isLibrary = false;
+
+  libraryHaskellDepends = [
+    aeson
+    base
+    bytestring
+    containers
+    mersenne-random-pure64
+    mtl
+    optparse-applicative
+    parsec
+    random
+    regex-tdfa
+    scientific
+    text
+    time
+    unordered-containers
+    uuid
+    vector
+  ];
+
   license = lib.licenses.mit;
-  maintainers = with lib.maintainers; [ athas ];
   mainProgram = "mkjson";
+  maintainers = with lib.maintainers; [ athas ];
+
+  testHaskellDepends = [
+    aeson
+    base
+    bytestring
+    containers
+    doctest
+    Glob
+    mersenne-random-pure64
+    mtl
+    optparse-applicative
+    parsec
+    random
+    regex-tdfa
+    scientific
+    text
+    time
+    unordered-containers
+    uuid
+    vector
+  ];
 }

@@ -14,15 +14,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-JFDfu0qzXdLJ5k2MdQxRS/cpO4HY8yr3qxJEF/cK360=";
   };
 
+  strictDeps = true;
   nativeBuildInputs = [ pkg-config ];
-
   enableParallelBuilding = true;
 
-  strictDeps = true;
-
   meta = {
-    homepage = "http://log4cplus.sourceforge.net/";
     description = "Port the log4j library from Java to C++";
+    homepage = "http://log4cplus.sourceforge.net/";
     license = lib.licenses.asl20;
     platforms = lib.platforms.unix;
   };

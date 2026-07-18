@@ -1,23 +1,23 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  makeWrapper,
-  gawk,
-  gnused,
-  gnugrep,
   coreutils,
-  which,
-  perlPackages,
-  withMySQL ? false,
-  zlib,
-  mariadb-connector-c,
-  withPgSQL ? false,
-  libpq,
-  withSQLite ? false,
-  sqlite,
-  withDB ? false,
   db,
+  gawk,
+  gnugrep,
+  gnused,
+  libpq,
+  makeWrapper,
+  mariadb-connector-c,
+  perlPackages,
+  sqlite,
+  which,
+  zlib,
+  withDB ? false,
+  withMySQL ? false,
+  withPgSQL ? false,
+  withSQLite ? false,
 }:
 
 let
@@ -45,9 +45,20 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/dspam/dspam/dspam-${finalAttrs.version}/dspam-${finalAttrs.version}.tar.gz";
     sha256 = "1acklnxn1wvc7abn31l3qdj8q6k13s51k5gv86vka7q20jb5cxmf";
   };
+
   patches = [
     # https://gist.github.com/WhiteAnthrax/613136c76882e0ead3cb3bdad6b3d551
     ./mariadb.patch
+  ];
+
+  # patch out libmysql >= 5 check, since mariadb-connector is at 3.x
+  postPatch = ''
+    sed -i 's/atoi(m) >= 5/1/g' configure m4/mysql_drv.m4
+  '';
+
+  nativeBuildInputs = [
+    libpq.pg_config
+    makeWrapper
   ];
 
   buildInputs = [
@@ -60,14 +71,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional withPgSQL libpq
   ++ lib.optional withSQLite sqlite
   ++ lib.optional withDB db;
-  nativeBuildInputs = [
-    libpq.pg_config
-    makeWrapper
-  ];
-  # patch out libmysql >= 5 check, since mariadb-connector is at 3.x
-  postPatch = ''
-    sed -i 's/atoi(m) >= 5/1/g' configure m4/mysql_drv.m4
-  '';
 
   configureFlags = [
     "--with-storage-driver=${drivers}"
@@ -97,10 +100,6 @@ stdenv.mkDerivation (finalAttrs: {
   #   ld: .libs/hash_drv.o:/build/dspam-3.10.2/src/util.h:96: multiple definition of `verified_user';
   #     .libs/libdspam.o:/build/dspam-3.10.2/src/util.h:96: first defined here
   env.NIX_CFLAGS_COMPILE = "-fcommon";
-
-  # Lots of things are hardwired to paths like sysconfdir. That's why we install with both "prefix" and "DESTDIR"
-  # and fix directory structure manually after that.
-  installFlags = [ "DESTDIR=$(out)" ];
 
   postInstall = ''
     cp -r $out/$out/* $out
@@ -144,11 +143,15 @@ stdenv.mkDerivation (finalAttrs: {
       $out/bin/dspam_maintenance
   '';
 
+  # Lots of things are hardwired to paths like sysconfdir. That's why we install with both "prefix" and "DESTDIR"
+  # and fix directory structure manually after that.
+  installFlags = [ "DESTDIR=$(out)" ];
+
   meta = {
-    homepage = "https://dspam.sourceforge.net/";
     description = "Community Driven Antispam Filter";
+    homepage = "https://dspam.sourceforge.net/";
     license = lib.licenses.agpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

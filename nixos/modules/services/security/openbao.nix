@@ -18,12 +18,23 @@ in
         example = "pkgs.openbao.override { withHsm = false; withUi = false; }";
       };
 
+      extraArgs = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          Additional arguments given to OpenBao.
+        '';
+
+        type = lib.types.listOf lib.types.str;
+      };
+
       settings = lib.mkOption {
         description = ''
           Settings of OpenBao.
 
           See [documentation](https://openbao.org/docs/configuration) for more details.
         '';
+
         example = lib.literalExpression ''
           {
             ui = true;
@@ -43,52 +54,51 @@ in
         '';
 
         type = lib.types.submodule {
-          freeformType = settingsFormat.type;
           options = {
-            ui = lib.mkEnableOption "the OpenBao web UI";
-
             listener = lib.mkOption {
+              description = ''
+                Configure a listener for responding to requests.
+              '';
+
               type = lib.types.attrsOf (
                 lib.types.submodule (
                   { config, ... }:
                   {
-                    freeformType = settingsFormat.type;
                     options = {
+                      address = lib.mkOption {
+                        default = if config.type == "unix" then "/run/openbao/openbao.sock" else "127.0.0.1:8200";
+                        defaultText = lib.literalExpression ''if config.services.openbao.settings.listener.<name>.type == "unix" then "/run/openbao/openbao.sock" else "127.0.0.1:8200"'';
+
+                        description = ''
+                          The TCP address or UNIX socket path to listen on.
+                        '';
+
+                        type = lib.types.str;
+                      };
+
                       type = lib.mkOption {
+                        description = ''
+                          The listener type to enable.
+                        '';
+
                         type = lib.types.enum [
                           "tcp"
                           "unix"
                         ];
-                        description = ''
-                          The listener type to enable.
-                        '';
-                      };
-                      address = lib.mkOption {
-                        type = lib.types.str;
-                        default = if config.type == "unix" then "/run/openbao/openbao.sock" else "127.0.0.1:8200";
-                        defaultText = lib.literalExpression ''if config.services.openbao.settings.listener.<name>.type == "unix" then "/run/openbao/openbao.sock" else "127.0.0.1:8200"'';
-                        description = ''
-                          The TCP address or UNIX socket path to listen on.
-                        '';
                       };
                     };
+
+                    freeformType = settingsFormat.type;
                   }
                 )
               );
-              description = ''
-                Configure a listener for responding to requests.
-              '';
             };
-          };
-        };
-      };
 
-      extraArgs = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [ ];
-        description = ''
-          Additional arguments given to OpenBao.
-        '';
+            ui = lib.mkEnableOption "the OpenBao web UI";
+          };
+
+          freeformType = settingsFormat.type;
+        };
       };
     };
   };
@@ -97,15 +107,14 @@ in
     environment.systemPackages = [ cfg.package ];
 
     systemd.services.openbao = {
-      description = "OpenBao - A tool for managing secrets";
-
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
-
+      description = "OpenBao - A tool for managing secrets";
       restartIfChanged = false; # do not restart on "nixos-rebuild switch". It would seal the storage and disrupt the clients.
 
       serviceConfig = {
-        Type = "notify";
+        CapabilityBoundingSet = "";
+        DynamicUser = true;
+        ExecReload = "${lib.getExe' pkgs.coreutils "kill"} -SIGHUP $MAINPID";
 
         ExecStart = lib.escapeShellArgs (
           [
@@ -116,18 +125,8 @@ in
           ]
           ++ cfg.extraArgs
         );
-        ExecReload = "${lib.getExe' pkgs.coreutils "kill"} -SIGHUP $MAINPID";
 
-        StateDirectory = "openbao";
-        StateDirectoryMode = "0700";
-        RuntimeDirectory = "openbao";
-        RuntimeDirectoryMode = "0755";
-
-        DynamicUser = true;
-        User = "openbao";
         Group = "openbao";
-
-        CapabilityBoundingSet = "";
         LimitCORE = 0;
         LockPersonality = true;
         MemorySwapMax = 0;
@@ -143,22 +142,34 @@ in
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
         Restart = "on-failure";
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
           "AF_UNIX"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
+        RuntimeDirectory = "openbao";
+        RuntimeDirectoryMode = "0755";
+        StateDirectory = "openbao";
+        StateDirectoryMode = "0700";
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "@resources"
           "~@privileged"
           "@chown"
         ];
+
+        Type = "notify";
         UMask = "0077";
+        User = "openbao";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

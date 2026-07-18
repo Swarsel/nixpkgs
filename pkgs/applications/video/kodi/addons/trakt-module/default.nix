@@ -1,16 +1,15 @@
 {
   lib,
-  rel,
+  addonUpdateScript,
+  arrow,
   buildKodiAddon,
   fetchzip,
-  addonUpdateScript,
+  rel,
   requests,
   six,
-  arrow,
 }:
 buildKodiAddon rec {
   pname = "trakt-module";
-  namespace = "script.module.trakt";
   version = "4.4.0+matrix.1";
 
   src = fetchzip {
@@ -24,16 +23,19 @@ buildKodiAddon rec {
     arrow
   ];
 
+  namespace = "script.module.trakt";
+
   passthru = {
     pythonPath = "lib";
+
     updateScript = addonUpdateScript {
       attrPath = "kodi.packages.trakt-module";
     };
   };
 
   meta = {
-    homepage = "https://github.com/Razzeee/script.module.trakt";
     description = "Python trakt.py library packed for Kodi";
+    homepage = "https://github.com/Razzeee/script.module.trakt";
     license = lib.licenses.mit;
     teams = [ lib.teams.kodi ];
   };

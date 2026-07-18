@@ -1,7 +1,7 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   # Runtime dependencies
   httplib2,
   six,
@@ -10,7 +10,6 @@
 buildPythonPackage {
   pname = "plantuml";
   version = "0.3.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "dougn";
@@ -26,7 +25,7 @@ buildPythonPackage {
 
   # Project does not contain a test suite
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "plantuml" ];
 
   meta = {

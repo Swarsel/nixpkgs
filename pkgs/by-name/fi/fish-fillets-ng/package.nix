@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  makeDesktopItem,
-  copyDesktopItems,
   SDL,
-  lua5_1,
-  pkg-config,
-  SDL_mixer,
   SDL_image,
+  SDL_mixer,
   SDL_ttf,
+  copyDesktopItems,
   imagemagick,
+  lua5_1,
+  makeDesktopItem,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -20,10 +20,6 @@ stdenv.mkDerivation rec {
   src = fetchurl {
     url = "mirror://sourceforge/fillets/fillets-ng-${version}.tar.gz";
     sha256 = "1nljp75aqqb35qq3x7abhs2kp69vjcj0h1vxcpdyn2yn2nalv6ij";
-  };
-  data = fetchurl {
-    url = "mirror://sourceforge/fillets/fillets-ng-data-${version}.tar.gz";
-    sha256 = "169p0yqh2gxvhdilvjc2ld8aap7lv2nhkhkg4i1hlmgc6pxpkjgh";
   };
 
   nativeBuildInputs = [
@@ -40,26 +36,12 @@ stdenv.mkDerivation rec {
     SDL_ttf
   ];
 
-  # pass in correct sdl-config for cross builds
-  env.SDL_CONFIG = lib.getExe' (lib.getDev SDL) "sdl-config";
-
   makeFlags = [
     "AR=${stdenv.cc.targetPrefix}ar"
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "fish-fillets-ng";
-      exec = "fillets";
-      icon = "fish-fillets-ng";
-      desktopName = "Fish Fillets";
-      comment = "Puzzle game about witty fish saving the world sokoban-style";
-      categories = [
-        "Game"
-        "LogicGame"
-      ];
-    })
-  ];
+  # pass in correct sdl-config for cross builds
+  env.SDL_CONFIG = lib.getExe' (lib.getDev SDL) "sdl-config";
 
   postInstall = ''
     mkdir -p $out/share/games/fillets-ng
@@ -68,12 +50,32 @@ stdenv.mkDerivation rec {
     magick ${./icon.xpm} $out/share/icons/hicolor/32x32/apps/fish-fillets-ng.png
   '';
 
+  data = fetchurl {
+    sha256 = "169p0yqh2gxvhdilvjc2ld8aap7lv2nhkhkg4i1hlmgc6pxpkjgh";
+    url = "mirror://sourceforge/fillets/fillets-ng-data-${version}.tar.gz";
+  };
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Game"
+        "LogicGame"
+      ];
+
+      comment = "Puzzle game about witty fish saving the world sokoban-style";
+      desktopName = "Fish Fillets";
+      exec = "fillets";
+      icon = "fish-fillets-ng";
+      name = "fish-fillets-ng";
+    })
+  ];
+
   meta = {
     description = "Puzzle game";
-    mainProgram = "fillets";
+    homepage = "https://fillets.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.linux;
-    homepage = "https://fillets.sourceforge.net/";
+    mainProgram = "fillets";
   };
 }

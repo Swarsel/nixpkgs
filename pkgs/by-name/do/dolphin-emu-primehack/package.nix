@@ -2,52 +2,50 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
-  # nativeBuildInputs
-  pkg-config,
+  SDL2,
+  # linux-only
+  alsa-lib,
+  bluez,
   cmake,
-  qt6,
-
   # buildInputs
   curl,
   enet,
+  fetchpatch2,
   ffmpeg,
   fmt_9,
   gettext,
+  # darwin-only
+  hidapi,
   libGL,
   libGLU,
+  libao,
+  libevdev,
+  libpng,
+  libpthread-stubs,
+  libpulseaudio,
   libsm,
+  libusb1,
   libxdmcp,
   libxext,
   libxinerama,
   libxrandr,
   libxxf86vm,
-  libao,
-  libpthread-stubs,
-  libpulseaudio,
-  libusb1,
   mbedtls,
   miniupnpc,
+  nix-update-script,
   openal,
+  # nativeBuildInputs
+  pkg-config,
   portaudio,
+  qt6,
   readline,
-  SDL2,
   sfml,
   soundtouch,
-  xz,
-  # linux-only
-  alsa-lib,
-  bluez,
-  libevdev,
-  udev,
-  vulkan-loader,
-  # darwin-only
-  hidapi,
-  libpng,
-
   # passthru
   testers,
-  nix-update-script,
+  udev,
+  vulkan-loader,
+  xz,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -58,16 +56,27 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "shiiion";
     repo = "dolphin";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-/9AabEJ2ZOvHeSGXWRuOucmjleBMRcJfhX+VDeldbgo=";
+    fetchSubmodules = true;
   };
 
   patches = [
     (fetchpatch2 {
-      url = "https://github.com/dolphin-emu/dolphin/commit/8edef722ce1aae65d5a39faf58753044de48b6e0.patch?full_index=1";
       hash = "sha256-QEG0p+AzrExWrOxL0qRPa+60GlL0DlLyVBrbG6pGuog=";
+      url = "https://github.com/dolphin-emu/dolphin/commit/8edef722ce1aae65d5a39faf58753044de48b6e0.patch?full_index=1";
     })
   ];
+
+  # - Allow Dolphin to use nix-provided libraries instead of building them
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail 'DISTRIBUTOR "None"' 'DISTRIBUTOR "NixOS"'
+  ''
+  + lib.optionalString stdenv.hostPlatform.isDarwin ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail 'if(NOT APPLE)' 'if(true)' \
+      --replace-fail 'if(LIBUSB_FOUND AND NOT APPLE)' 'if(LIBUSB_FOUND)'
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -128,26 +137,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "OSX_USE_DEFAULT_SEARCH_PATH" true)
   ];
 
-  qtWrapperArgs = lib.optionals stdenv.hostPlatform.isLinux [
-    "--prefix LD_LIBRARY_PATH : ${vulkan-loader}/lib"
-    # https://bugs.dolphin-emu.org/issues/11807
-    # The .desktop file should already set this, but Dolphin may be launched in other ways
-    "--set QT_QPA_PLATFORM xcb"
-  ];
-
-  # - Allow Dolphin to use nix-provided libraries instead of building them
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail 'DISTRIBUTOR "None"' 'DISTRIBUTOR "NixOS"'
-  ''
-  + lib.optionalString stdenv.hostPlatform.isDarwin ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail 'if(NOT APPLE)' 'if(true)' \
-      --replace-fail 'if(LIBUSB_FOUND AND NOT APPLE)' 'if(LIBUSB_FOUND)'
-  '';
-
-  doInstallCheck = true;
-
   postInstall = ''
     mv $out/bin/dolphin-emu $out/bin/dolphin-emu-primehack
     mv $out/bin/dolphin-emu-nogui $out/bin/dolphin-emu-primehack-nogui
@@ -161,22 +150,32 @@ stdenv.mkDerivation (finalAttrs: {
     install -D $src/Data/51-usb-device.rules $out/etc/udev/rules.d/51-usb-device.rules
   '';
 
+  doInstallCheck = true;
+
+  qtWrapperArgs = lib.optionals stdenv.hostPlatform.isLinux [
+    "--prefix LD_LIBRARY_PATH : ${vulkan-loader}/lib"
+    # https://bugs.dolphin-emu.org/issues/11807
+    # The .desktop file should already set this, but Dolphin may be launched in other ways
+    "--set QT_QPA_PLATFORM xcb"
+  ];
+
   passthru = {
     tests = {
       version = testers.testVersion {
-        package = finalAttrs.finalPackage;
-        command = "dolphin-emu-primehack-nogui --version";
         version = "v${finalAttrs.version}";
+        command = "dolphin-emu-primehack-nogui --version";
+        package = finalAttrs.finalPackage;
       };
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://github.com/shiiion/dolphin";
     description = "Gamecube/Wii/Triforce emulator for x86_64 and ARMv8";
+    homepage = "https://github.com/shiiion/dolphin";
     license = lib.licenses.gpl2Plus;
-    broken = stdenv.hostPlatform.isDarwin;
     platforms = lib.platforms.unix;
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

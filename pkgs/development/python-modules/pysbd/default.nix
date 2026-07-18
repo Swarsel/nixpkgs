@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  tqdm,
+  buildPythonPackage,
   spacy,
+  tqdm,
 }:
 
 buildPythonPackage rec {
   pname = "pysbd";
   version = "0.3.4";
-  format = "setuptools";
 
   # provides no sdist on pypi
   src = fetchFromGitHub {
@@ -19,13 +18,14 @@ buildPythonPackage rec {
     sha256 = "12p7qm237z56hw4zr03n8rycgfymhki2m9c4w3ib0mvqq122a5dp";
   };
 
+  doCheck = false; # requires pyconll and blingfire
+
   nativeCheckInputs = [
     tqdm
     spacy
   ];
 
-  doCheck = false; # requires pyconll and blingfire
-
+  format = "setuptools";
   pythonImportsCheck = [ "pysbd" ];
 
   meta = {

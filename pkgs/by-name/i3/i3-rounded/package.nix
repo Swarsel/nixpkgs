@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   i3,
   pcre,
 }:
@@ -17,15 +17,14 @@ i3.overrideAttrs (oldAttrs: {
   };
 
   buildInputs = oldAttrs.buildInputs ++ [ pcre ];
-
   # Some tests are failing.
   doCheck = false;
 
   meta = {
     description = "Fork of i3-gaps that adds rounding to window corners";
     homepage = "https://github.com/LinoBigatti/i3-rounded";
-    maintainers = with lib.maintainers; [ marsupialgutz ];
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ marsupialgutz ];
     platforms = lib.platforms.unix;
   };
 })

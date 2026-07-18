@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
 }:
 
@@ -29,15 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace conf-cc conf-ld --replace-fail 'gcc' '${stdenv.cc}/bin/${stdenv.cc.targetPrefix}cc'
   '';
 
-  configurePhase = ''
-    runHook preConfigure
-
-    # Set install prefix to output directory
-    echo "$out" > conf-home
-
-    runHook postConfigure
-  '';
-
   postInstall = ''
     mkdir -p $man/share/man/man1 $man/share/man/man3
     cp doc/man/*.1 $man/share/man/man1/
@@ -46,6 +37,15 @@ stdenv.mkDerivation (finalAttrs: {
     mkdir -p $doc/share/doc/cdb
     cp doc/*.md $doc/share/doc/cdb/
     cp -r doc/html $doc/share/doc/cdb/
+  '';
+
+  configurePhase = ''
+    runHook preConfigure
+
+    # Set install prefix to output directory
+    echo "$out" > conf-home
+
+    runHook postConfigure
   '';
 
   meta = {

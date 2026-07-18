@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
-  ninja,
-  rapidjson,
-  tcl,
-  tk,
+  fetchpatch,
   libGL,
   libGLU,
   libxext,
-  libxmu,
   libxi,
+  libxmu,
+  ninja,
+  opencascade-occt,
+  rapidjson,
+  tcl,
+  tk,
   vtk,
   withVtk ? false,
-  opencascade-occt,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "opencascade-occt";
@@ -32,8 +32,8 @@ stdenv.mkDerivation (finalAttrs: {
     # fix compilation on darwin against latest version of freetype
     # https://gitlab.freedesktop.org/freetype/freetype/-/merge_requests/330
     (fetchpatch {
-      url = "https://github.com/Open-Cascade-SAS/OCCT/commit/7236e83dcc1e7284e66dc61e612154617ef715d6.diff";
       hash = "sha256-NoC2mE3DG78Y0c9UWonx1vmXoU4g5XxFUT3eVXqLU60=";
+      url = "https://github.com/Open-Cascade-SAS/OCCT/commit/7236e83dcc1e7284e66dc61e612154617ef715d6.diff";
     })
   ];
 
@@ -60,7 +60,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional withVtk vtk;
 
-  env.NIX_CFLAGS_COMPILE = "-fpermissive";
   cmakeFlags = [
     (lib.cmakeBool "USE_RAPIDJSON" true)
     # Enable exception handling for release builds.
@@ -73,6 +72,8 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "USE_VTK" true)
     (lib.cmakeFeature "3RDPARTY_VTK_INCLUDE_DIR" "${lib.getDev vtk}/include/vtk")
   ];
+
+  env.NIX_CFLAGS_COMPILE = "-fpermissive";
 
   passthru = {
     tests = {

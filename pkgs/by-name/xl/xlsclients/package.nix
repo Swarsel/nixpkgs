@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libxcb,
+  pkg-config,
   writeScript,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -16,9 +16,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ libxcb ];
 
   passthru = {
@@ -35,12 +33,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Utility to list client applications running on a X11 display";
     homepage = "https://gitlab.freedesktop.org/xorg/app/xlsclients";
+
     license = with lib.licenses; [
       mitOpenGroup
       mit
     ];
-    mainProgram = "xlsclients";
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xlsclients";
   };
 })

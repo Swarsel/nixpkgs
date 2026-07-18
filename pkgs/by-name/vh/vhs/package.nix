@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  buildGoModule,
-  installShellFiles,
   fetchFromGitHub,
-  ffmpeg,
-  ttyd,
+  buildGoModule,
   chromium,
+  ffmpeg,
+  installShellFiles,
   makeBinaryWrapper,
+  ttyd,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,18 +21,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-VOiI+ddiax04QtCcDr6ze53kd/HHGbfQE3j/32iq4Ro=";
   };
 
-  vendorHash = "sha256-cgKLYUATtn4hMdIOXZe9JWYNUOrX3S6BDfvS+rIWDfM=";
-
   nativeBuildInputs = [
     installShellFiles
     makeBinaryWrapper
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=main.Version=${finalAttrs.version}"
-  ];
+  vendorHash = "sha256-cgKLYUATtn4hMdIOXZe9JWYNUOrX3S6BDfvS+rIWDfM=";
 
   postInstall = ''
     wrapProgram $out/bin/vhs --prefix PATH : ${
@@ -54,12 +48,18 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/vhs completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=main.Version=${finalAttrs.version}"
+  ];
+
   meta = {
     description = "Tool for generating terminal GIFs with code";
-    mainProgram = "vhs";
     homepage = "https://github.com/charmbracelet/vhs";
     changelog = "https://github.com/charmbracelet/vhs/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "vhs";
   };
 })

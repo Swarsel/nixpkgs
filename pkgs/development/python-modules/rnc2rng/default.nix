@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "rnc2rng";
   version = "2.7.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -17,14 +16,14 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ rply ];
-
   checkPhase = "${python.interpreter} test.py";
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/djc/rnc2rng";
     description = "Compact to regular syntax conversion library for RELAX NG schemata";
-    mainProgram = "rnc2rng";
+    homepage = "https://github.com/djc/rnc2rng";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ bcdarwin ];
+    mainProgram = "rnc2rng";
   };
 }

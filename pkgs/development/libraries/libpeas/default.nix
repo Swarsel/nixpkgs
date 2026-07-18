@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  replaceVars,
-  meson,
-  ninja,
-  pkg-config,
   gettext,
   gi-docgen,
-  gnome,
   glib,
-  gtk3,
+  gnome,
   gobject-introspection,
-  python3,
+  gtk3,
+  meson,
   ncurses,
+  ninja,
+  pkg-config,
+  python3,
+  replaceVars,
   wrapGAppsHook3,
 }:
 
@@ -21,16 +21,16 @@ stdenv.mkDerivation rec {
   pname = "libpeas";
   version = "1.38.1";
 
+  src = fetchurl {
+    url = "mirror://gnome/sources/libpeas/${lib.versions.majorMinor version}/libpeas-${version}.tar.xz";
+    sha256 = "sha256-6C/TKK3KwaujS2QTa9/Lus8rMliovE5fSApyUCphGuk=";
+  };
+
   outputs = [
     "out"
     "dev"
     "devdoc"
   ];
-
-  src = fetchurl {
-    url = "mirror://gnome/sources/libpeas/${lib.versions.majorMinor version}/libpeas-${version}.tar.xz";
-    sha256 = "sha256-6C/TKK3KwaujS2QTa9/Lus8rMliovE5fSApyUCphGuk=";
-  };
 
   patches = [
     # Make PyGObject’s gi library available.
@@ -39,10 +39,6 @@ stdenv.mkDerivation rec {
         python3.pkgs.pygobject3
       ];
     })
-  ];
-
-  depsBuildBuild = [
-    pkg-config
   ];
 
   nativeBuildInputs = [
@@ -77,20 +73,24 @@ stdenv.mkDerivation rec {
     moveToOutput "share/doc" "$devdoc"
   '';
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   passthru = {
     updateScript = gnome.updateScript {
+      freeze = true;
       packageName = "libpeas";
       versionPolicy = "odd-unstable";
-      freeze = true;
     };
   };
 
   meta = {
     description = "GObject-based plugins engine";
-    mainProgram = "peas-demo";
     homepage = "https://gitlab.gnome.org/GNOME/libpeas";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
+    mainProgram = "peas-demo";
     teams = [ lib.teams.gnome ];
   };
 }

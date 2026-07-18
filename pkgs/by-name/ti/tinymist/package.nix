@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  installShellFiles,
-  pkg-config,
   buildPackages,
-  versionCheckHook,
+  installShellFiles,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
   vscode-extensions,
 }:
 
@@ -17,8 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   # this derivation.
   version = "0.15.2";
 
-  __structuredAttrs = true;
-
   src = fetchFromGitHub {
     owner = "Myriad-Dreamin";
     repo = "tinymist";
@@ -26,12 +24,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-wNSMjfU3upsqKQQUYx76iFGC+5ghcErlxy65ZJ/LvHk=";
   };
 
-  cargoHash = "sha256-NEvINvHMD9tVG9kyj84AC8DEAbR0ndjkCHpwR4OD6YA=";
-
   nativeBuildInputs = [
     installShellFiles
     pkg-config
   ];
+
+  cargoHash = "sha256-NEvINvHMD9tVG9kyj84AC8DEAbR0ndjkCHpwR4OD6YA=";
 
   checkFlags = [
     "--skip=e2e"
@@ -80,17 +78,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ''
   );
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
+  __structuredAttrs = true;
   versionCheckProgramArg = "-V";
-  doInstallCheck = true;
 
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       vscode-extension = vscode-extensions.myriad-dreamin.tinymist;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -98,10 +100,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/Myriad-Dreamin/tinymist";
     changelog = "https://github.com/Myriad-Dreamin/tinymist/blob/v${finalAttrs.version}/editors/vscode/CHANGELOG.md";
     license = lib.licenses.asl20;
-    mainProgram = "tinymist";
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       lampros
     ];
+
+    mainProgram = "tinymist";
   };
 })

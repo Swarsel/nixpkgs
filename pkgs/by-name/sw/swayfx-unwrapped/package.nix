@@ -1,36 +1,36 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
-  systemd,
-  meson,
-  replaceVars,
-  swaybg,
-  ninja,
-  pkg-config,
-  gdk-pixbuf,
-  librsvg,
-  wayland-protocols,
-  libdrm,
-  libinput,
+  fetchFromGitHub,
   cairo,
-  pango,
-  wayland,
-  libGL,
-  libxkbcommon,
-  pcre2,
+  gdk-pixbuf,
   json_c,
+  libGL,
+  libdrm,
   libevdev,
+  libinput,
+  librsvg,
+  libxcb-wm,
+  libxkbcommon,
+  meson,
+  ninja,
+  nixosTests,
+  pango,
+  pcre2,
+  pkg-config,
+  replaceVars,
   scdoc,
   scenefx,
-  wayland-scanner,
-  libxcb-wm,
-  wlroots_0_19,
+  swaybg,
+  systemd,
   testers,
-  nixosTests,
+  wayland,
+  wayland-protocols,
+  wayland-scanner,
+  wlroots_0_19,
+  enableXWayland ? true,
   # Used by the NixOS module:
   isNixOS ? false,
-  enableXWayland ? true,
   systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemd,
   trayEnabled ? systemdSupport,
 }:
@@ -53,8 +53,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-TZNN5pQhH/10DfntCfGHL1kuAceLMYbxwa4RFq7OmrQ=";
   };
 
-  separateDebugInfo = true;
-
   patches = [
     ./load-configuration-from-etc.patch
 
@@ -74,7 +72,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   strictDeps = true;
-  depsBuildBuild = [ pkg-config ];
 
   nativeBuildInputs = [
     meson
@@ -120,27 +117,23 @@ stdenv.mkDerivation (finalAttrs: {
       (mesonEnable "tray" finalAttrs.trayEnabled)
     ];
 
+  depsBuildBuild = [ pkg-config ];
+  separateDebugInfo = true;
+
   passthru = {
     tests = {
-      basic = nixosTests.swayfx;
       version = testers.testVersion {
-        package = finalAttrs.finalPackage;
-        command = "sway --version";
         version = "swayfx version ${finalAttrs.version}";
+        command = "sway --version";
+        package = finalAttrs.finalPackage;
       };
+
+      basic = nixosTests.swayfx;
     };
   };
 
   meta = {
     description = "Sway, but with eye candy";
-    homepage = "https://github.com/WillPower3309/swayfx";
-    changelog = "https://github.com/WillPower3309/swayfx/releases/tag/${finalAttrs.version}";
-    license = lib.licenses.mit;
-    maintainers = with lib.maintainers; [
-      ricarch97
-    ];
-    platforms = lib.platforms.linux;
-    mainProgram = "sway";
 
     longDescription = ''
       Fork of Sway, an incredible and one of the most well established Wayland
@@ -149,5 +142,16 @@ stdenv.mkDerivation (finalAttrs: {
       shadows and inactive window dimming to bring back some of the Picom X11
       compositor functionality, which was commonly used with the i3 window manager.
     '';
+
+    homepage = "https://github.com/WillPower3309/swayfx";
+    changelog = "https://github.com/WillPower3309/swayfx/releases/tag/${finalAttrs.version}";
+    license = lib.licenses.mit;
+
+    maintainers = with lib.maintainers; [
+      ricarch97
+    ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "sway";
   };
 })

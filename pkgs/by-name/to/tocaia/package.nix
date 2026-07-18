@@ -18,11 +18,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   makeFlags = [ "PREFIX=$(out)" ];
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru.updateScript = gitUpdater { };
 
@@ -31,8 +31,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/manipuladordedados/tocaia";
     changelog = "https://github.com/manipuladordedados/tocaia/releases/tag/${finalAttrs.version}";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ manipuladordedados ];
+    platforms = lib.platforms.unix;
     mainProgram = "tocaia";
   };
 })

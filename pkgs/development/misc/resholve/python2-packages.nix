@@ -9,21 +9,13 @@ with self;
 with super;
 {
   bootstrapped-pip = toPythonModule (callPackage ./python2-modules/bootstrapped-pip { });
-
-  pip = callPackage ./python2-modules/pip { };
-
-  setuptools = callPackage ./python2-modules/setuptools { };
-
-  wheel = callPackage ./python2-modules/wheel { };
-
   # resholve build deps
   configargparse = callPackage ./python2-modules/configargparse { };
-
-  six = callPackage ./python2-modules/six { };
-
-  typing = callPackage ./python2-modules/typing { };
-
   oildev = callPackage ./python2-modules/oildev { };
-
+  pip = callPackage ./python2-modules/pip { };
   sedparse = callPackage ./python2-modules/sedparse { };
+  setuptools = callPackage ./python2-modules/setuptools { };
+  six = callPackage ./python2-modules/six { };
+  typing = callPackage ./python2-modules/typing { };
+  wheel = callPackage ./python2-modules/wheel { };
 }

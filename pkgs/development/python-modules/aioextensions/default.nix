@@ -1,17 +1,15 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
-  lib,
-
+  pytest,
   # Python dependencies
   uvloop,
-  pytest,
 }:
 
 buildPythonPackage rec {
   pname = "aioextensions";
   version = "21.7.2261349";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -19,12 +17,14 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ uvloop ];
-
   nativeCheckInputs = [ pytest ];
+
   checkPhase = ''
     cd test/
     pytest
   '';
+
+  format = "setuptools";
 
   meta = {
     description = "High performance functions to work with the async IO";

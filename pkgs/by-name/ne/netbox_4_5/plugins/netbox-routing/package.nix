@@ -1,19 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
+  django-polymorphic,
   netbox,
   pytestCheckHook,
   python,
-  django-polymorphic,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "netbox-routing";
   version = "0.4.3";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "DanSheps";
@@ -22,19 +20,18 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-3biANhaAi3uRtaXnAw4i6nWnHkARkkBVqyBHLXIMOdA=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ netbox ];
 
   preFixup = ''
     export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
   '';
 
-  dontUsePythonImportsCheck = python.pythonVersion != netbox.python.pythonVersion;
-
-  pythonImportsCheck = [ "netbox_routing" ];
-
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
   dependencies = [ django-polymorphic ];
+  dontUsePythonImportsCheck = python.pythonVersion != netbox.python.pythonVersion;
+  pyproject = true;
+  pythonImportsCheck = [ "netbox_routing" ];
 
   meta = {
     description = "NetBox plugin for tracking all kinds of routing information";

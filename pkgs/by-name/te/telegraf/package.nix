@@ -1,18 +1,16 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  nixosTests,
   stdenv,
-  testers,
+  fetchFromGitHub,
+  buildGoModule,
+  nixosTests,
   telegraf,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "telegraf";
   version = "1.39.1";
-
-  subPackages = [ "cmd/telegraf" ];
 
   src = fetchFromGitHub {
     owner = "influxdata";
@@ -22,7 +20,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-9o0Tt6OZnoNO8iSLYmn1SMkQmZzC19uNmfHSkEqWzmA=";
-  proxyVendor = true;
 
   ldflags = [
     "-s"
@@ -38,6 +35,9 @@ buildGoModule (finalAttrs: {
     "-Wl,--long-plt"
   ];
 
+  proxyVendor = true;
+  subPackages = [ "cmd/telegraf" ];
+
   passthru.tests = {
     version = testers.testVersion {
       package = telegraf;
@@ -49,15 +49,17 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Plugin-driven server agent for collecting & reporting metrics";
-    mainProgram = "telegraf";
     homepage = "https://www.influxdata.com/time-series-platform/telegraf/";
     changelog = "https://github.com/influxdata/telegraf/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       mic92
       roblabla
       timstott
       zowoq
     ];
+
+    mainProgram = "telegraf";
   };
 })

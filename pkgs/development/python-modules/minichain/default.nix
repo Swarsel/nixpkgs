@@ -1,10 +1,10 @@
 {
+  lib,
   buildPythonPackage,
   eliot,
   fetchPypi,
   google-search-results,
   jinja2,
-  lib,
   manifest-ml,
   openai,
   pytestCheckHook,
@@ -14,10 +14,6 @@
 buildPythonPackage rec {
   pname = "minichain";
   version = "0.3.3";
-  format = "setuptools";
-
-  # See https://github.com/NixOS/nixpkgs/pull/248195#issuecomment-1687398702.
-  disabled = pythonAtLeast "3.11";
 
   # See https://github.com/srush/MiniChain/issues/23 and https://github.com/NixOS/nixpkgs/issues/248185 as to why we
   # don't fetchFromGitHub.
@@ -30,6 +26,23 @@ buildPythonPackage rec {
   postPatch = ''
     substituteInPlace ./minichain/__init__.py --replace "from .gradio import GradioConf, show" ""
   '';
+
+  # Some of these could be made optional. Certain packages are used by certain backends.
+  propagatedBuildInputs = [
+    eliot
+    google-search-results
+    jinja2
+    manifest-ml
+    openai
+  ];
+
+  # As of 0.3.3, the PyPI distribution does not include any tests.
+  doCheck = false;
+  nativeCheckInputs = [ pytestCheckHook ];
+  # See https://github.com/NixOS/nixpkgs/pull/248195#issuecomment-1687398702.
+  disabled = pythonAtLeast "3.11";
+  format = "setuptools";
+  pythonImportsCheck = [ "minichain" ];
 
   pythonRemoveDeps = [
     # Only used in the examples:
@@ -44,22 +57,6 @@ buildPythonPackage rec {
     # Not yet packaged in nixpkgs:
     "gradio"
   ];
-
-  # Some of these could be made optional. Certain packages are used by certain backends.
-  propagatedBuildInputs = [
-    eliot
-    google-search-results
-    jinja2
-    manifest-ml
-    openai
-  ];
-
-  # As of 0.3.3, the PyPI distribution does not include any tests.
-  doCheck = false;
-
-  pythonImportsCheck = [ "minichain" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   meta = {
     description = "Tiny library for coding with large language models";

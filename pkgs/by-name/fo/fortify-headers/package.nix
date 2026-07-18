@@ -21,8 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     ./restore-macros.patch
   ];
 
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -32,6 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   passthru.updateScript = gitUpdater {
     url = "git://git.2f30.org/fortify-headers";
   };
@@ -40,7 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Standalone header-based fortify-source implementation";
     homepage = "https://git.2f30.org/fortify-headers";
     license = lib.licenses.bsd0;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ ris ];
+    platforms = lib.platforms.all;
   };
 })

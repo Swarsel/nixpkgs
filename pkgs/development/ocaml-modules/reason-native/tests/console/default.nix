@@ -1,9 +1,9 @@
 {
   lib,
   buildDunePackage,
-  reason,
   console,
   ppxlib,
+  reason,
 }:
 
 buildDunePackage {
@@ -11,16 +11,15 @@ buildDunePackage {
   version = "1";
 
   src = lib.fileset.toSource {
-    root = ./.;
     fileset = lib.fileset.unions [
       ./console_test.opam
       ./console_test.re
       ./dune
       ./dune-project
     ];
-  };
 
-  duneVersion = "3";
+    root = ./.;
+  };
 
   nativeBuildInputs = [
     reason
@@ -33,6 +32,7 @@ buildDunePackage {
   ];
 
   doInstallCheck = true;
+  duneVersion = "3";
 
   postInstallCheck = ''
     $out/bin/console_test | grep -q "{\"Hello fellow Nixer!\"}" > /dev/null

@@ -1,17 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installFonts,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation {
   pname = "bodoni-moda";
   version = "2.4-unstable-2024-02-18";
-
-  outputs = [
-    "out"
-    "webfont"
-  ];
 
   src = fetchFromGitHub {
     owner = "indestructible-type";
@@ -20,13 +15,18 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-OQi+KKBM+BrmA2pDit6dib5krrQBba5dVCBd2/G5sIM=";
   };
 
+  outputs = [
+    "out"
+    "webfont"
+  ];
+
   nativeBuildInputs = [ installFonts ];
 
   meta = {
-    homepage = "https://indestructibletype.com/Bodoni.html";
     description = "Bodoni Moda a modern no-compromises Bodoni family by indestructible type*";
+    homepage = "https://indestructibletype.com/Bodoni.html";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ gavink97 ];
+    platforms = lib.platforms.all;
   };
 }

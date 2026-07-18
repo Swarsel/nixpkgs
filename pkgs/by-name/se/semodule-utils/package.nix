@@ -6,10 +6,9 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit (libsepol) se_url;
   pname = "semodule-utils";
   version = "3.11";
-
-  inherit (libsepol) se_url;
 
   src = fetchurl {
     url = "${finalAttrs.se_url}/${finalAttrs.version}/semodule-utils-${finalAttrs.version}.tar.gz";
@@ -24,8 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
+    inherit (libsepol.meta) homepage platforms maintainers;
     description = "SELinux policy core utilities (packaging additions)";
     license = lib.licenses.gpl2Only;
-    inherit (libsepol.meta) homepage platforms maintainers;
   };
 })

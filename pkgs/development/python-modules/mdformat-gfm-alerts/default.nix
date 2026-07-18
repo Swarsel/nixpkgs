@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   mdformat,
   mdit-py-plugins,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "mdformat-gfm-alerts";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "KyleKing";
@@ -20,6 +19,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Hfi4Ek91G8WHAWjv7m52ZnT5Je9QyZT4yWSecaeTcvA=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ flit-core ];
 
   dependencies = [
@@ -27,8 +27,7 @@ buildPythonPackage (finalAttrs: {
     mdit-py-plugins
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mdformat_gfm_alerts" ];
 
   meta = {

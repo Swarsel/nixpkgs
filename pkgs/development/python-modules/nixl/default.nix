@@ -1,25 +1,22 @@
 {
   lib,
-  buildPythonPackage,
-  python,
-  nixl,
-
   # build-system
   build,
+  buildPythonPackage,
+  config,
+  cudaPackages,
   meson-python,
-  pybind11,
-  pytest,
-  pyyaml,
-  setuptools,
-  types-pyyaml,
-
+  nixl,
   # dependencies
   numpy,
+  pybind11,
+  pytest,
+  python,
+  pyyaml,
+  setuptools,
   torch,
-
-  config,
+  types-pyyaml,
   cudaSupport ? config.cudaSupport,
-  cudaPackages,
 }:
 
 buildPythonPackage.override { inherit (nixl) stdenv; } (finalAttrs: {
@@ -34,7 +31,6 @@ buildPythonPackage.override { inherit (nixl) stdenv; } (finalAttrs: {
     buildInputs
     mesonFlags
     ;
-  pyproject = true;
 
   postPatch = (nixl.postPatch or "") + ''
     substituteInPlace pyproject.toml \
@@ -44,6 +40,18 @@ buildPythonPackage.override { inherit (nixl) stdenv; } (finalAttrs: {
       --replace-fail \
         "torch==2.11.*" \
         "torch"
+  '';
+
+  # No tests we can run in the sandbox
+  doCheck = false;
+
+  # Install the `nixl` shim module (re-exports nixl_cu{12,13}).
+  # Upstream builds this as a separate wheel via `uv build` (nixl-meta), but that doesn't work in
+  # the sandbox.
+  postInstall = ''
+    install -Dm644 \
+      src/bindings/python/nixl-meta/nixl/__init__.py \
+      "$out/${python.sitePackages}/nixl/__init__.py"
   '';
 
   build-system = [
@@ -56,21 +64,14 @@ buildPythonPackage.override { inherit (nixl) stdenv; } (finalAttrs: {
     torch
     types-pyyaml
   ];
-  dontUseMesonConfigure = true;
 
   dependencies = [
     numpy
     torch
   ];
 
-  # Install the `nixl` shim module (re-exports nixl_cu{12,13}).
-  # Upstream builds this as a separate wheel via `uv build` (nixl-meta), but that doesn't work in
-  # the sandbox.
-  postInstall = ''
-    install -Dm644 \
-      src/bindings/python/nixl-meta/nixl/__init__.py \
-      "$out/${python.sitePackages}/nixl/__init__.py"
-  '';
+  dontUseMesonConfigure = true;
+  pyproject = true;
 
   pythonImportsCheck = [
     "nixl"
@@ -78,9 +79,6 @@ buildPythonPackage.override { inherit (nixl) stdenv; } (finalAttrs: {
   ++ lib.optionals cudaSupport [
     "nixl_cu${cudaPackages.cudaMajorVersion}"
   ];
-
-  # No tests we can run in the sandbox
-  doCheck = false;
 
   meta = nixl.meta // {
     description = "Python API for nixl";

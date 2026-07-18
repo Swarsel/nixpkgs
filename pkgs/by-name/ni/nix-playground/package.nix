@@ -1,14 +1,13 @@
 {
-  cacert,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  cacert,
   python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "nix-playground";
   version = "1.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "LaunchPlatform";
@@ -16,6 +15,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-WiQlqQHW4RNvk79cs3B6+Tg1STYXj2tq2+Pvu82saxk=";
   };
+
+  # Tests require certificates
+  # https://github.com/NixOS/nixpkgs/pull/72544#issuecomment-582674047
+  env.SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
+
+  nativeCheckInputs = with python3.pkgs; [
+    pytestCheckHook
+  ];
 
   build-system = with python3.pkgs; [
     hatchling
@@ -27,27 +34,20 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     rich
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    pytestCheckHook
-  ];
-
   disabledTestPaths = [
     # Disable tests that require nix store
     "tests/acceptance/"
   ];
 
-  # Tests require certificates
-  # https://github.com/NixOS/nixpkgs/pull/72544#issuecomment-582674047
-  env.SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
-
+  pyproject = true;
   pythonImportsCheck = [ "nix_playground" ];
 
   meta = {
     description = "Command line tools for patching nixpkgs package source code easily";
-    mainProgram = "np";
     homepage = "https://github.com/LaunchPlatform/nix-playground";
     changelog = "https://github.com/LaunchPlatform/nix-playground/releases/tag/${finalAttrs.src.tag}";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ fangpen ];
+    mainProgram = "np";
   };
 })

@@ -1,7 +1,7 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   pinentry-curses,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage {
   pname = "pynentry";
   version = "0.1.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Laharah";
@@ -18,13 +17,13 @@ buildPythonPackage {
     hash = "sha256-bbuAI0IB3cTIfaCCrq0g93geRLUsxaahHWuU3bBtHII";
   };
 
-  build-system = [ setuptools ];
-
   postPatch = ''
     substituteInPlace pynentry.py \
       --replace-fail 'executable="pinentry"' 'executable="${lib.getExe pinentry-curses}"'
   '';
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "pynentry" ];
 
   meta = {

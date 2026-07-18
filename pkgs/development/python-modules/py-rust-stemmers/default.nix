@@ -1,18 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  rustPlatform,
-
+  buildPythonPackage,
   # build-system
   cargo,
+  rustPlatform,
   rustc,
 }:
 
 buildPythonPackage rec {
   pname = "py-rust-stemmers";
   version = "0.1.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "qdrant";
@@ -20,8 +18,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-WpTbS8XoOKhyyt1/YGagulopFKiqNI0ETkhjpiX0TL8=";
   };
-
-  cargoDeps = rustPlatform.importCargoLock { lockFile = ./Cargo.lock; };
 
   postPatch = ''
     ln -s ${./Cargo.lock} Cargo.lock
@@ -34,6 +30,8 @@ buildPythonPackage rec {
     rustc
   ];
 
+  cargoDeps = rustPlatform.importCargoLock { lockFile = ./Cargo.lock; };
+  pyproject = true;
   pythonImportsCheck = [ "py_rust_stemmers" ];
 
   meta = {

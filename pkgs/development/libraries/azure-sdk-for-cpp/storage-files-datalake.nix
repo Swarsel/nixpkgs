@@ -2,19 +2,15 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  meta,
   ninja,
+  nix-update-script,
   storage-blobs,
   storage-common,
-  nix-update-script,
-  meta,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "azure-sdk-for-cpp-storage-files-datalake";
   version = "12.14.0";
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "Azure";
@@ -22,7 +18,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "azure-storage-files-datalake_${finalAttrs.version}";
     hash = "sha256-cycBXSvc3G8TdLnI4Ht1lBd9ndPOjxWFQA54a24iUsY=";
   };
-  sourceRoot = "${finalAttrs.src.name}/sdk/storage/azure-storage-files-datalake";
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   postPatch = ''
     sed -i '/CMAKE_CXX_STANDARD/d' CMakeLists.txt
@@ -40,22 +40,24 @@ stdenv.mkDerivation (finalAttrs: {
     storage-common
   ];
 
-  env = {
-    AZURE_SDK_DISABLE_AUTO_VCPKG = 1;
-  };
-
   cmakeFlags = [
     "-DBUILD_SHARED_LIBS=ON"
     "-DWARNINGS_AS_ERRORS=OFF"
   ];
+
+  env = {
+    AZURE_SDK_DISABLE_AUTO_VCPKG = 1;
+  };
+
+  # See note in ./core.nix.
+  doCheck = false;
 
   postInstall = ''
     moveToOutput "share" "$dev"
     moveToOutput "share/$(basename "$sourceRoot")-cpp/copyright" "$out"
   '';
 
-  # See note in ./core.nix.
-  doCheck = false;
+  sourceRoot = "${finalAttrs.src.name}/sdk/storage/azure-storage-files-datalake";
 
   passthru.updateScript = nix-update-script {
     extraArgs = [

@@ -1,6 +1,6 @@
 {
-  gitMinimal,
   lib,
+  gitMinimal,
   runCommand,
 }:
 
@@ -21,12 +21,12 @@
     else
       python.withPackages (ps: packages);
 
-  # Convert an ordinary source checkout into a repo with a single commit
-  repoifySimple =
-    name: path:
-    runCommand "${name}-repoified" { buildInputs = [ gitMinimal ]; } ''
+  # Convert an dependency source info into a repo with a single commit
+  repoifyInfo =
+    uuid: info:
+    runCommand "julia-${info.name}-${info.version}" { buildInputs = [ gitMinimal ]; } ''
       mkdir -p $out
-      cp -r ${path}/. $out
+      cp -r ${info.src}/. $out
       cd $out
       chmod -R u+w .
       rm -rf .git
@@ -37,12 +37,12 @@
       git commit -m "Dummy commit"
     '';
 
-  # Convert an dependency source info into a repo with a single commit
-  repoifyInfo =
-    uuid: info:
-    runCommand "julia-${info.name}-${info.version}" { buildInputs = [ gitMinimal ]; } ''
+  # Convert an ordinary source checkout into a repo with a single commit
+  repoifySimple =
+    name: path:
+    runCommand "${name}-repoified" { buildInputs = [ gitMinimal ]; } ''
       mkdir -p $out
-      cp -r ${info.src}/. $out
+      cp -r ${path}/. $out
       cd $out
       chmod -R u+w .
       rm -rf .git

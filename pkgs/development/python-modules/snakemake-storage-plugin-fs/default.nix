@@ -1,27 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   poetry-core,
-
+  # tests
+  pytestCheckHook,
+  snakemake,
   # dependencies
   snakemake-interface-common,
   snakemake-interface-storage-plugins,
   sysrsync,
-
-  # tests
-  pytestCheckHook,
-  snakemake,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "snakemake-storage-plugin-fs";
   version = "1.1.3";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "snakemake";
@@ -29,6 +24,14 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-UdK0yhl7ljLh57CXAvH/OYiVyw+BjhPwGjSBXX8sbZk=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    snakemake
+    writableTmpDirAsHomeHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     poetry-core
@@ -40,15 +43,9 @@ buildPythonPackage (finalAttrs: {
     sysrsync
   ];
 
-  pythonImportsCheck = [ "snakemake_storage_plugin_fs" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    snakemake
-    writableTmpDirAsHomeHook
-  ];
-
   enabledTestPaths = [ "tests/tests.py" ];
+  pyproject = true;
+  pythonImportsCheck = [ "snakemake_storage_plugin_fs" ];
 
   meta = {
     description = "Snakemake storage plugin that reads and writes from a locally mounted filesystem using rsync";

@@ -1,9 +1,9 @@
 {
   lib,
-  autoreconfHook,
-  fetchFromGitHub,
-  rinetd,
   stdenv,
+  fetchFromGitHub,
+  autoreconfHook,
+  rinetd,
   testers,
 }:
 
@@ -27,8 +27,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru.tests.version = testers.testVersion {
-    package = rinetd;
     command = "rinetd --version";
+    package = rinetd;
   };
 
   meta = {

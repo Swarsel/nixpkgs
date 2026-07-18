@@ -1,30 +1,27 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  ddt,
   # Python Inputs
   fastdtw,
   numpy,
   psutil,
-  qiskit,
-  scikit-learn,
-  sparse,
-  torch,
+  pytest-timeout,
   # Check Inputs
   pytestCheckHook,
-  ddt,
-  pytest-timeout,
+  qiskit,
   qiskit-aer,
+  scikit-learn,
+  # build-system
+  setuptools,
+  sparse,
+  torch,
 }:
 
 buildPythonPackage rec {
   pname = "qiskit-machine-learning";
   version = "0.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "qiskit";
@@ -46,6 +43,7 @@ buildPythonPackage rec {
   ];
 
   doCheck = false; # TODO: enable. Tests fail on unstable due to some multithreading issue?
+
   nativeCheckInputs = [
     pytestCheckHook
     pytest-timeout
@@ -53,16 +51,10 @@ buildPythonPackage rec {
     qiskit-aer
   ];
 
-  pythonImportsCheck = [ "qiskit_machine_learning" ];
-
-  pytestFlags = [
-    "--durations=10"
-    "--showlocals"
-    "-vv"
-  ];
   disabledTestPaths = [
     "test/connectors/test_torch_connector.py" # TODO: fix, get multithreading errors with python3.9, segfaults
   ];
+
   disabledTests = [
     # Slow tests >10 s
     "test_readme_sample"
@@ -80,13 +72,23 @@ buildPythonPackage rec {
     "test_qgan_training"
   ];
 
+  pyproject = true;
+
+  pytestFlags = [
+    "--durations=10"
+    "--showlocals"
+    "-vv"
+  ];
+
+  pythonImportsCheck = [ "qiskit_machine_learning" ];
+
   meta = {
-    broken = true; # incompatible with qiskit >= 2.0 (see https://github.com/Qiskit/qiskit-machine-learning/issues/934)
     description = "Software for developing quantum computing programs";
     homepage = "https://qiskit.org";
-    downloadPage = "https://github.com/QISKit/qiskit-optimization/releases";
     changelog = "https://qiskit.org/documentation/release_notes.html";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    broken = true; # incompatible with qiskit >= 2.0 (see https://github.com/Qiskit/qiskit-machine-learning/issues/934)
+    downloadPage = "https://github.com/QISKit/qiskit-optimization/releases";
   };
 }

@@ -23,12 +23,14 @@ in
       enable = mkEnableOption "Ofono";
 
       plugins = mkOption {
-        type = types.listOf types.package;
         default = [ ];
-        example = literalExpression "[ pkgs.modem-manager-gui ]";
+
         description = ''
           The list of plugins to install.
         '';
+
+        example = literalExpression "[ pkgs.modem-manager-gui ]";
+        type = types.listOf types.package;
       };
     };
   };
@@ -36,9 +38,7 @@ in
   ###### implementation
   config = mkIf cfg.enable {
     services.dbus.packages = [ pkgs.ofono ];
-
     systemd.packages = [ pkgs.ofono ];
-
     systemd.services.ofono.environment.OFONO_PLUGIN_PATH = mkIf (cfg.plugins != [ ]) plugin_path;
 
   };

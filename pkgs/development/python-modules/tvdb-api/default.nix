@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  requests-cache,
+  buildPythonPackage,
   pytest,
+  requests-cache,
 }:
 
 buildPythonPackage {
   pname = "tvdb-api";
   version = "3.2.0-beta";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "dbr";
@@ -19,11 +18,10 @@ buildPythonPackage {
   };
 
   propagatedBuildInputs = [ requests-cache ];
-
-  nativeCheckInputs = [ pytest ];
-
   # requires network access
   doCheck = false;
+  nativeCheckInputs = [ pytest ];
+  format = "setuptools";
 
   meta = {
     description = "Simple to use TVDB (thetvdb.com) API in Python";

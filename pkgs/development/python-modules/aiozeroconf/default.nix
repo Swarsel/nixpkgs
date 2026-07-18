@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "aiozeroconf";
   version = "0.1.8";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -17,9 +16,8 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
-
   dependencies = [ netifaces ];
-
+  pyproject = true;
   pythonImportsCheck = [ "aiozeroconf" ];
 
   meta = {

@@ -2,41 +2,41 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   autoconf,
   automake,
   cargo,
-  libtool,
-  pkg-config,
   cracklib,
-  lmdb,
+  cyrus_sasl,
+  db,
+  fetchpatch,
+  icu,
   json_c,
-  linux-pam,
+  krb5,
   libevent,
+  libtool,
   libxcrypt,
+  linux-pam,
+  lmdb,
+  net-snmp,
+  nix-update-script,
   nspr,
   nss,
   openldap,
-  withOpenldap ? true,
-  db,
-  withBdb ? true,
-  cyrus_sasl,
-  icu,
-  net-snmp,
-  withNetSnmp ? true,
-  krb5,
+  openssl,
   pcre2,
+  pkg-config,
   python3,
+  rsync,
   rustPlatform,
   rustc,
-  openssl,
-  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
   systemd,
   zlib,
-  rsync,
-  withCockpit ? true,
   withAsan ? false,
-  nix-update-script,
+  withBdb ? true,
+  withCockpit ? true,
+  withNetSnmp ? true,
+  withOpenldap ? true,
+  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -52,27 +52,23 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-trzY/fDH3rs66DWbWI+PY46tIC9ShuVqspMHqEEKZYA=";
       # https://github.com/389ds/389-ds-base/pull/6930
       name = "389-ds-base-rustc-1_89.patch";
       url = "https://github.com/389ds/389-ds-base/commit/1701419551c246e9dc21778b118220eeb2258125.patch";
-      hash = "sha256-trzY/fDH3rs66DWbWI+PY46tIC9ShuVqspMHqEEKZYA=";
     })
     ./0001-remove-hard-coded-vendor-paths.patch
     (fetchpatch {
+      hash = "sha256-ItxG0bnuNPWLClL677rChTDvDWXxJ2L6ygx4VY2v80w=";
       # https://github.com/389ds/389-ds-base/security/advisories/GHSA-4qwg-c5j2-q4hp
       name = "CVE-2025-14905.patch";
       url = "https://github.com/389ds/389-ds-base/commit/2e424110def2e3998f6045e136fb0d43f47b7f5a.patch";
-      hash = "sha256-ItxG0bnuNPWLClL677rChTDvDWXxJ2L6ygx4VY2v80w=";
     })
   ];
 
-  cargoRoot = "src";
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src cargoRoot;
-    name = "389-ds-base-${finalAttrs.version}";
-    hash = "sha256-pNzMQjeBpmzFg6oWCxhLDmKGUKIW6jGmZQWai5Yunjc=";
-  };
+  postPatch = ''
+    patchShebangs ./buildnum.py ./ldap/servers/slapd/mkDBErrStrs.py
+  '';
 
   nativeBuildInputs = [
     autoconf
@@ -107,14 +103,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional withBdb db
   ++ lib.optional withNetSnmp net-snmp;
 
-  postPatch = ''
-    patchShebangs ./buildnum.py ./ldap/servers/slapd/mkDBErrStrs.py
-  '';
-
-  preConfigure = ''
-    ./autogen.sh --prefix="$out"
-  '';
-
   configureFlags = [
     "--enable-rust-offline"
     "--enable-autobind"
@@ -142,28 +130,38 @@ stdenv.mkDerivation (finalAttrs: {
     "--enable-debug"
   ];
 
+  preConfigure = ''
+    ./autogen.sh --prefix="$out"
+  '';
+
+  doCheck = true;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src cargoRoot;
+    hash = "sha256-pNzMQjeBpmzFg6oWCxhLDmKGUKIW6jGmZQWai5Yunjc=";
+    name = "389-ds-base-${finalAttrs.version}";
+  };
+
+  cargoRoot = "src";
   enableParallelBuilding = true;
   # Disable parallel builds as those lack some dependencies:
   #   ld: cannot find -lslapd: No such file or directory
   # https://hydra.nixos.org/log/h38bj77gav0r6jbi4bgzy1lfjq22k2wy-389-ds-base-2.3.1.drv
   enableParallelInstalling = false;
 
-  doCheck = true;
-
   installFlags = [
     "sysconfdir=${placeholder "out"}/etc"
     "localstatedir=${placeholder "TMPDIR"}"
   ];
 
+  passthru.updateScript = nix-update-script { };
   passthru.version = finalAttrs.version;
 
-  passthru.updateScript = nix-update-script { };
-
   meta = {
-    homepage = "https://www.port389.org/";
     description = "Enterprise-class Open Source LDAP server for Linux";
+    homepage = "https://www.port389.org/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.ners ];
+    platforms = lib.platforms.linux;
   };
 })

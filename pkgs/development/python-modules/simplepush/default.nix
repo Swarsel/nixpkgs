@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   requests,
   setuptools,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "simplepush";
   version = "2.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simplepush";
@@ -30,7 +29,7 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "simplepush" ];
 
   meta = {

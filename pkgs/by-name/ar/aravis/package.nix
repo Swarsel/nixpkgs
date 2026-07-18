@@ -2,25 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  gi-docgen,
+  glib,
+  gobject-introspection,
+  gst_all_1,
+  gtk3,
+  libusb1,
+  libxml2,
   meson,
   ninja,
   pkg-config,
-  gi-docgen,
-  glib,
-  libxml2,
-  gobject-introspection,
-
-  enableGstPlugin ? true,
-  enableViewer ? true,
-  gst_all_1,
-  gtk3,
   wrapGAppsHook3,
-
-  enableUsb ? true,
-  libusb1,
-
-  enablePacketSocket ? true,
   enableFastHeartbeat ? false,
+  enableGstPlugin ? true,
+  enablePacketSocket ? true,
+  enableUsb ? true,
+  enableViewer ? true,
 }:
 
 assert enableGstPlugin -> gst_all_1 != null;
@@ -80,15 +77,16 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional (!enablePacketSocket) "-Dpacket-socket=disabled";
 
   doCheck = true;
-
   # needed for fakegv tests
   __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Library for video acquisition using GenICam cameras";
+
     longDescription = ''
       Implements the gigabit ethernet and USB3 protocols used by industrial cameras.
     '';
+
     # the documentation is the best working homepage that's not the Github repo
     homepage = "https://aravisproject.github.io/docs/aravis-0.8";
     license = lib.licenses.lgpl21Plus;

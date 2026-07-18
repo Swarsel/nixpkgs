@@ -1,7 +1,7 @@
 {
+  lib,
   buildGoModule,
   fetchFromCodeberg,
-  lib,
   nix-update-script,
   versionCheckHook,
 }:
@@ -9,8 +9,6 @@
 buildGoModule (finalAttrs: {
   pname = "git-pages-cli";
   version = "1.10.0";
-
-  __structuredAttrs = true;
 
   src = fetchFromCodeberg {
     owner = "git-pages";
@@ -20,14 +18,15 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-SNLSkz38AgLfjpKaEYawBLdWznKWOz62bNzuaquk7Rs=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   ldflags = [
     "-X"
     "main.versionOverride=${finalAttrs.version}"
   ];
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "--version";
 
   passthru.updateScript = nix-update-script {
@@ -42,7 +41,7 @@ buildGoModule (finalAttrs: {
     homepage = "https://codeberg.org/git-pages/git-pages-cli";
     changelog = "https://codeberg.org/git-pages/git-pages-cli/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd0;
-    mainProgram = "git-pages-cli";
     maintainers = with lib.maintainers; [ dramforever ];
+    mainProgram = "git-pages-cli";
   };
 })

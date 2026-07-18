@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,6 +17,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-4EBMl5yvteoot6/r0tTZ95MQ6HGqgBzlRWClnlyqz/M=";
+  # tests fail for unknown reasons on aarch64-darwin
+  doCheck = !(stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64);
 
   cargoPatches = [
     # fix build with rust 1.76+
@@ -25,16 +27,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ./update-rustc-serialize.patch
   ];
 
-  # tests fail for unknown reasons on aarch64-darwin
-  doCheck = !(stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64);
-
   meta = {
     description = "Example-based texture synthesis written in Rust";
     homepage = "https://github.com/embarkstudios/texture-synthesis";
+
     license = with lib.licenses; [
       mit # or
       asl20
     ];
+
     maintainers = [ ];
     mainProgram = "texture-synthesis";
   };

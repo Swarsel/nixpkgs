@@ -2,14 +2,13 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "mmh3";
   version = "5.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hajimes";
@@ -18,11 +17,10 @@ buildPythonPackage rec {
     hash = "sha256-5a9r2nEuMeVPAEPy7NkG/RNeSsKtKSy2IjEbhBWTaDc=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "mmh3" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "mmh3" ];
 
   meta = {
     description = "Python wrapper for MurmurHash3, a set of fast and robust hash functions";

@@ -1,72 +1,72 @@
 {
-  config,
   lib,
   stdenv,
   fetchurl,
-  fetchsvn,
-  pkg-config,
-  freetype,
-  yasm,
-  ffmpeg_7,
-  aalibSupport ? true,
   aalib,
-  fontconfigSupport ? true,
-  fontconfig,
-  freefont_ttf,
-  fribidiSupport ? true,
-  fribidi,
-  x11Support ? true,
-  libx11,
-  libxext,
-  libGLU,
-  libGL,
-  xineramaSupport ? true,
-  libxinerama,
-  xvSupport ? true,
-  libxv,
-  alsaSupport ? stdenv.hostPlatform.isLinux,
   alsa-lib,
-  screenSaverSupport ? true,
-  libxscrnsaver,
-  vdpauSupport ? false,
-  libvdpau,
-  cddaSupport ? !stdenv.hostPlatform.isDarwin,
-  cdparanoia,
-  dvdnavSupport ? !stdenv.hostPlatform.isDarwin,
-  libdvdnav,
-  dvdreadSupport ? true,
-  libdvdread,
-  bluraySupport ? true,
-  libbluray,
-  amrSupport ? false,
   amrnb,
   amrwb,
-  cacaSupport ? true,
-  libcaca,
-  lameSupport ? true,
+  buildPackages,
+  cdparanoia,
+  config,
+  fetchsvn,
+  ffmpeg_7,
+  fontconfig,
+  freefont_ttf,
+  freetype,
+  fribidi,
   lame,
-  speexSupport ? true,
-  speex,
-  theoraSupport ? true,
-  libtheora,
-  x264Support ? false,
-  x264,
-  jackaudioSupport ? false,
-  libjack2,
-  pulseSupport ? config.pulseaudio or false,
-  libpulseaudio,
-  bs2bSupport ? false,
+  libGL,
+  libGLU,
+  libbluray,
   libbs2b,
-  v4lSupport ? false,
+  libcaca,
+  libdvdnav,
+  libdvdread,
+  libjack2,
+  libjpeg,
+  libpng,
+  libpulseaudio,
+  libtheora,
   libv4l,
+  libvdpau,
+  libx11,
+  libxext,
+  libxinerama,
+  libxscrnsaver,
+  libxv,
+  pkg-config,
+  speex,
+  versionCheckHook,
+  x264,
+  yasm,
+  aalibSupport ? true,
+  alsaSupport ? stdenv.hostPlatform.isLinux,
+  amrSupport ? false,
+  bluraySupport ? true,
+  bs2bSupport ? false,
+  cacaSupport ? true,
+  cddaSupport ? !stdenv.hostPlatform.isDarwin,
+  dvdnavSupport ? !stdenv.hostPlatform.isDarwin,
+  dvdreadSupport ? true,
+  fontconfigSupport ? true,
+  fribidiSupport ? true,
+  jackaudioSupport ? false,
+  lameSupport ? true,
+  libjpegSupport ? true,
   # For screenshots
   libpngSupport ? true,
-  libpng,
-  libjpegSupport ? true,
-  libjpeg,
+  pulseSupport ? config.pulseaudio or false,
+  screenSaverSupport ? true,
+  speexSupport ? true,
+  theoraSupport ? true,
   useUnfreeCodecs ? false,
-  buildPackages,
-  versionCheckHook,
+  v4lSupport ? false,
+  vdpauSupport ? false,
+  x11Support ? true,
+  x264Support ? false,
+  xineramaSupport ? true,
+  xvSupport ? true,
 }:
 
 assert xineramaSupport -> x11Support;
@@ -81,18 +81,18 @@ let
     in
     if stdenv.hostPlatform.system == "i686-linux" then
       fetchurl {
-        url = "${dir}/essential-${version}.tar.bz2";
         sha256 = "18vls12n12rjw0mzw4pkp9vpcfmd1c21rzha19d7zil4hn7fs2ic";
+        url = "${dir}/essential-${version}.tar.bz2";
       }
     else if stdenv.hostPlatform.system == "x86_64-linux" then
       fetchurl {
-        url = "${dir}/essential-amd64-${version}.tar.bz2";
         sha256 = "13xf5b92w1ra5hw00ck151lypbmnylrnznq9hhb0sj36z5wz290x";
+        url = "${dir}/essential-amd64-${version}.tar.bz2";
       }
     else if stdenv.hostPlatform.system == "powerpc-linux" then
       fetchurl {
-        url = "${dir}/essential-ppc-${version}.tar.bz2";
         sha256 = "18mlj8dp4wnz42xbhdk1jlz2ygra6fbln9wyrcyvynxh96g1871z";
+        url = "${dir}/essential-ppc-${version}.tar.bz2";
       }
     else
       null;
@@ -101,7 +101,6 @@ let
     if codecs_src != null then
       stdenv.mkDerivation {
         pname = "MPlayer-codecs-essential";
-
         src = codecs_src;
 
         installPhase = ''
@@ -128,14 +127,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ezWYBkhiSBgf/SeTrO6sKGbL/IrX+82KXCIlqYMEtgY=";
   };
 
-  prePatch = ''
-    echo "${finalAttrs.version}" > VERSION
-    sed -i /^_install_strip/d configure
+  strictDeps = true;
 
-    rm -rf ffmpeg
-  '';
-
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
   nativeBuildInputs = [
     pkg-config
     yasm
@@ -143,6 +136,7 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals cacaSupport [
     libcaca # caca-config
   ];
+
   buildInputs = [
     freetype
     ffmpeg_7
@@ -181,9 +175,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional bs2bSupport libbs2b
   ++ lib.optional v4lSupport libv4l;
 
-  strictDeps = true;
-
-  configurePlatforms = [ ];
   configureFlags = [
     (lib.enableFeature true "freetype")
     (lib.enableFeature fontconfigSupport "fontconfig")
@@ -232,22 +223,6 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-vidix-drivers=no"
   ];
 
-  preConfigure = ''
-    configureFlagsArray+=(
-      "--cc=$CC"
-      "--host-cc=$CC_FOR_BUILD"
-      "--as=$AS"
-      "--nm=$NM"
-      "--ar=$AR"
-      "--ranlib=$RANLIB"
-      "--windres=$WINDRES"
-    )
-  '';
-
-  postConfigure = ''
-    echo CONFIG_MPEGAUDIODSP=yes >> config.mak
-  '';
-
   env =
     lib.optionalAttrs stdenv.cc.isClang {
       # Fixes compilation with newer versions of clang that make these warnings errors by default.
@@ -272,9 +247,21 @@ stdenv.mkDerivation (finalAttrs: {
       );
     };
 
-  installTargets = [ "install" ] ++ lib.optional x11Support "install-gui";
+  preConfigure = ''
+    configureFlagsArray+=(
+      "--cc=$CC"
+      "--host-cc=$CC_FOR_BUILD"
+      "--as=$AS"
+      "--nm=$NM"
+      "--ar=$AR"
+      "--ranlib=$RANLIB"
+      "--windres=$WINDRES"
+    )
+  '';
 
-  enableParallelBuilding = true;
+  postConfigure = ''
+    echo CONFIG_MPEGAUDIODSP=yes >> config.mak
+  '';
 
   # Provide a reasonable standard font when not using fontconfig. Maybe we should symlink here.
   postInstall = lib.optionalString (!fontconfigSupport) ''
@@ -285,11 +272,22 @@ stdenv.mkDerivation (finalAttrs: {
     fi
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "--help";
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
   __structuredAttrs = true;
+  configurePlatforms = [ ];
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  enableParallelBuilding = true;
+  installTargets = [ "install" ] ++ lib.optional x11Support "install-gui";
+
+  prePatch = ''
+    echo "${finalAttrs.version}" > VERSION
+    sed -i /^_install_strip/d configure
+
+    rm -rf ffmpeg
+  '';
+
+  versionCheckProgramArg = "--help";
 
   meta = {
     description = "Movie player that supports many video formats";
@@ -297,6 +295,7 @@ stdenv.mkDerivation (finalAttrs: {
     license = lib.licenses.gpl2Only;
     # Picking it up: no idea about the origin of some choices (but seems fine)
     maintainers = [ lib.maintainers.raskin ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"

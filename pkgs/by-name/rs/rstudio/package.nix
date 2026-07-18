@@ -1,47 +1,43 @@
 {
   lib,
   stdenv,
-
-  server ? false, # build server version
-
   fetchFromGitHub,
+  R,
+  ant,
+  boost190,
+  cacert,
+  cmake,
+  electron_41,
   fetchNpmDeps,
   fetchYarnDeps,
   fetchzip,
-  replaceVars,
-  runCommand,
-  which,
-  ant,
-  cacert,
-  cmake,
+  fontconfig,
   git,
+  gnumake,
+  hunspellDicts,
   jdk,
+  libuuid,
+  llvmPackages,
   makeWrapper,
+  nixosTests,
   nodejs,
   npmHooks,
+  openssl,
+  pam,
+  pandoc,
   python3,
+  quarto,
+  replaceVars,
+  runCommand,
+  soci,
+  sqlite,
+  which,
   xcbuild,
   yarn,
   yarnConfigHook,
   zip,
-
-  boost190,
-  electron_41,
-  fontconfig,
-  gnumake,
-  hunspellDicts,
-  libuuid,
-  llvmPackages,
-  openssl,
-  pam,
-  pandoc,
-  quarto,
-  R,
-  soci,
-  sqlite,
   zlib,
-
-  nixosTests,
+  server ? false, # build server version
 }:
 
 let
@@ -49,23 +45,23 @@ let
   boost = boost190;
 
   mathJaxSrc = fetchzip {
-    url = "https://s3.amazonaws.com/rstudio-buildtools/mathjax-27.zip";
     hash = "sha256-J7SZK/9q3HcXTD7WFHxvh++ttuCd89Vc4SEBrUEU0AI=";
+    url = "https://s3.amazonaws.com/rstudio-buildtools/mathjax-27.zip";
   };
 
   # Note: we could build this from source, but let's just do what upstream does for now
   gwt = fetchzip {
-    url = "https://rstudio-buildtools.s3.us-east-1.amazonaws.com/gwt/gwt-2.12.2.tar.gz";
-    stripRoot = false;
     hash = "sha256-DgcCiheYeP7sISduz6E3WhTty2nSs14k2OYIG93KmkY=";
+    stripRoot = false;
+    url = "https://rstudio-buildtools.s3.us-east-1.amazonaws.com/gwt/gwt-2.12.2.tar.gz";
   };
 
   quartoSrc = fetchFromGitHub {
+    hash = "sha256-01urKiFz5iDtW8r+w7zwUDXUOKZIOhi/ip329RsuQ+Q=";
     owner = "quarto-dev";
     repo = "quarto";
     # Note: rev should ideally be the last commit of the release/rstudio-[codename] branch
     rev = "8c1669f3095c5afee6bcd98a659d51a43300bda9";
-    hash = "sha256-01urKiFz5iDtW8r+w7zwUDXUOKZIOhi/ip329RsuQ+Q=";
   };
 
   hunspellDictionaries = lib.filter lib.isDerivation (lib.unique (lib.attrValues hunspellDicts));
@@ -96,39 +92,44 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-6oHH3C3/MGFSOuI+FvyrLyOKRyy455Wkr75ZL8ZeiWg=";
   };
 
-  # sources fetched into _deps via cmake's FetchContent
-  extSrcs = stdenv.mkDerivation {
-    name = "rstudio-${finalAttrs.version}-ext-srcs";
-    inherit (finalAttrs) src;
+  patches = [
+    # Partly taken from https://github.com/rstudio/rstudio/pull/17470
+    ./electron-41.patch
 
-    nativeBuildInputs = [
-      cacert
-      cmake
-      git
-    ];
+    # zip extraction fails on newer nodejs versions without this fix
+    ./bump-yauzl.patch
 
-    installPhase = ''
-      runHook preInstall
+    # Hack RStudio to only use the input R and provided libclang.
+    (replaceVars ./r-location.patch {
+      R = lib.getBin R;
+    })
+    (replaceVars ./clang-location.patch {
+      libclang = lib.getLib llvmPackages.libclang;
+    })
 
-      # this will fail, since this is not meant to be a cmake entrypoint
-      # but it will fetch the dependencies regardless
-      cmake -S src/cpp/ext -B build || true
+    ./ignore-etc-os-release.patch
+    ./dont-yarn-install.patch
+    ./dont-npm-ci.patch
+    ./fix-darwin.patch
+  ];
 
-      mkdir -p "$out"
-      cp -r build/_deps/*-src "$out/"
-      find "$out" -name .git -print0 | xargs -0 rm -rf
+  postPatch = ''
+    # fix hardcoded paths to /usr/bin/which
+    substituteInPlace \
+    src/node/desktop/src/main/detect-r.ts \
+    src/node/desktop/src/main/gwt-callback.ts \
+    src/cpp/session/modules/clang/CodeCompletion.cpp \
+    src/cpp/core/system/PosixSystemTests.cpp \
+    --replace-fail "/usr/bin/which" "${lib.getExe which}"
 
-      runHook postInstall
-    '';
+    # fix .desktop Exec field
+    substituteInPlace src/node/desktop/resources/freedesktop/rstudio.desktop.in \
+      --replace-fail "\''${CMAKE_INSTALL_PREFIX}/rstudio" "rstudio"
 
-    dontConfigure = true;
-    dontBuild = true;
-    dontFixup = true;
-
-    outputHash = "sha256-XzSDU4GVY6OrIFG4qCWUF94nV6fcz9zyFSlSvttVrYw=";
-    outputHashAlgo = "sha256";
-    outputHashMode = "recursive";
-  };
+    # set install path of freedesktop files
+    substituteInPlace src/node/desktop/CMakeLists.txt \
+      --replace-fail "/usr/share" "$out/share"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -189,78 +190,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env = {
-    ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-
     # electron-forge's console output is squeezed into one narrow column if unset
     CI = "1";
-
+    ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
     # on Darwin, cmake uses find_library to locate R instead of using the PATH
     NIX_LDFLAGS = "-L${R}/lib/R/lib";
-
     RSTUDIO_VERSION_MAJOR = lib.versions.major finalAttrs.version;
     RSTUDIO_VERSION_MINOR = lib.versions.minor finalAttrs.version;
     RSTUDIO_VERSION_PATCH = lib.versions.patch finalAttrs.version;
     RSTUDIO_VERSION_SUFFIX = "+" + toString (lib.tail (lib.splitString "+" finalAttrs.version));
-  };
-
-  patches = [
-    # Partly taken from https://github.com/rstudio/rstudio/pull/17470
-    ./electron-41.patch
-
-    # zip extraction fails on newer nodejs versions without this fix
-    ./bump-yauzl.patch
-
-    # Hack RStudio to only use the input R and provided libclang.
-    (replaceVars ./r-location.patch {
-      R = lib.getBin R;
-    })
-    (replaceVars ./clang-location.patch {
-      libclang = lib.getLib llvmPackages.libclang;
-    })
-
-    ./ignore-etc-os-release.patch
-    ./dont-yarn-install.patch
-    ./dont-npm-ci.patch
-    ./fix-darwin.patch
-  ];
-
-  postPatch = ''
-    # fix hardcoded paths to /usr/bin/which
-    substituteInPlace \
-    src/node/desktop/src/main/detect-r.ts \
-    src/node/desktop/src/main/gwt-callback.ts \
-    src/cpp/session/modules/clang/CodeCompletion.cpp \
-    src/cpp/core/system/PosixSystemTests.cpp \
-    --replace-fail "/usr/bin/which" "${lib.getExe which}"
-
-    # fix .desktop Exec field
-    substituteInPlace src/node/desktop/resources/freedesktop/rstudio.desktop.in \
-      --replace-fail "\''${CMAKE_INSTALL_PREFIX}/rstudio" "rstudio"
-
-    # set install path of freedesktop files
-    substituteInPlace src/node/desktop/CMakeLists.txt \
-      --replace-fail "/usr/share" "$out/share"
-  '';
-
-  yarnOfflineCache = fetchYarnDeps {
-    src = quartoSrc;
-    hash = "sha256-XRxClyAaz3ja+Tr97aoqVxKhWOxezZ6OmEPGILdeOww=";
-  };
-
-  dontYarnInstallDeps = true; # will call manually in preConfigure
-
-  npmRoot = "src/node/desktop";
-
-  # don't build native modules with node headers
-  npmFlags = [ "--ignore-scripts" ];
-
-  makeCacheWritable = true;
-
-  npmDeps = fetchNpmDeps {
-    name = "rstudio-${finalAttrs.version}-npm-deps";
-    inherit (finalAttrs) src patches;
-    postPatch = "cd ${finalAttrs.npmRoot}";
-    hash = "sha256-rdtnQKaOUp9jfWRA4BuEOyJn8emimiy+Kvxu1939H30=";
   };
 
   preConfigure = ''
@@ -364,21 +302,75 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/Applications/RStudio.app/Contents/Resources/app/bin/{diagnostics,rpostback} $out/bin
   '';
 
+  dontYarnInstallDeps = true; # will call manually in preConfigure
+
+  # sources fetched into _deps via cmake's FetchContent
+  extSrcs = stdenv.mkDerivation {
+    inherit (finalAttrs) src;
+
+    nativeBuildInputs = [
+      cacert
+      cmake
+      git
+    ];
+
+    installPhase = ''
+      runHook preInstall
+
+      # this will fail, since this is not meant to be a cmake entrypoint
+      # but it will fetch the dependencies regardless
+      cmake -S src/cpp/ext -B build || true
+
+      mkdir -p "$out"
+      cp -r build/_deps/*-src "$out/"
+      find "$out" -name .git -print0 | xargs -0 rm -rf
+
+      runHook postInstall
+    '';
+
+    dontBuild = true;
+    dontConfigure = true;
+    dontFixup = true;
+    name = "rstudio-${finalAttrs.version}-ext-srcs";
+    outputHash = "sha256-XzSDU4GVY6OrIFG4qCWUF94nV6fcz9zyFSlSvttVrYw=";
+    outputHashAlgo = "sha256";
+    outputHashMode = "recursive";
+  };
+
+  makeCacheWritable = true;
+
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src patches;
+    postPatch = "cd ${finalAttrs.npmRoot}";
+    hash = "sha256-rdtnQKaOUp9jfWRA4BuEOyJn8emimiy+Kvxu1939H30=";
+    name = "rstudio-${finalAttrs.version}-npm-deps";
+  };
+
+  # don't build native modules with node headers
+  npmFlags = [ "--ignore-scripts" ];
+  npmRoot = "src/node/desktop";
+
+  yarnOfflineCache = fetchYarnDeps {
+    src = quartoSrc;
+    hash = "sha256-XRxClyAaz3ja+Tr97aoqVxKhWOxezZ6OmEPGILdeOww=";
+  };
+
   passthru = {
     inherit server;
+
     tests = lib.optionalAttrs stdenv.hostPlatform.isLinux {
       inherit (nixosTests) rstudio-server;
     };
   };
 
   meta = {
-    changelog = "https://github.com/rstudio/rstudio/tree/${finalAttrs.src.rev}/version/news";
     description = "Set of integrated tools for the R language";
     homepage = "https://www.rstudio.com/";
+    changelog = "https://github.com/rstudio/rstudio/tree/${finalAttrs.src.rev}/version/news";
     license = lib.licenses.agpl3Only;
     maintainers = [ lib.maintainers.tomasajt ];
-    mainProgram = "rstudio" + lib.optionalString server "-server";
     # rstudio-server on darwin is only partially supported by upstream
     platforms = lib.platforms.linux ++ lib.optionals (!server) lib.platforms.darwin;
+    mainProgram = "rstudio" + lib.optionalString server "-server";
   };
 })

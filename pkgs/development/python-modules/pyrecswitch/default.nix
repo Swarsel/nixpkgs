@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pycryptodome,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pyrecswitch";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "marcolertora";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-z9dOJ7WgUR2ntU6boUInRyKxSPBSoNWGtE3pOZcFYA0=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pycryptodome ];
-
   # Package has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ pycryptodome ];
+  pyproject = true;
   pythonImportsCheck = [ "pyrecswitch" ];
 
   meta = {

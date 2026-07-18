@@ -5,9 +5,9 @@
   meson,
   ninja,
   pkg-config,
-  wayland-scanner,
-  wayland-protocols,
   wayland,
+  wayland-protocols,
+  wayland-scanner,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,10 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   strictDeps = true;
 
-  depsBuildBuild = [
-    pkg-config
-  ];
-
   nativeBuildInputs = [
     meson
     ninja
@@ -39,14 +35,20 @@ stdenv.mkDerivation (finalAttrs: {
     wayland
   ];
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   meta = {
     description = "Gradually dim the screen on Wayland";
-    homepage = "https://git.sr.ht/~emersion/chayang/";
-    license = lib.licenses.mit;
+
     longDescription = ''
       Gradually dim the screen on Wayland.
       Can be used to implement a grace period before locking the session.
     '';
+
+    homepage = "https://git.sr.ht/~emersion/chayang/";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ mxkrsv ];
     platforms = lib.platforms.linux;
     mainProgram = "chayang";

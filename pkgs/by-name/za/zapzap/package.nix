@@ -8,7 +8,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "zapzap";
   version = "6.5.2.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rafatosta";
@@ -30,6 +29,18 @@ python3Packages.buildPythonApplication (finalAttrs: {
     export HOME=$(mktemp -d)
   '';
 
+  # has no tests
+  doCheck = false;
+
+  postInstall = ''
+    install -Dm555 share/applications/com.rtosta.zapzap.desktop -t $out/share/applications/
+    install -Dm555 share/icons/com.rtosta.zapzap.svg -t $out/share/icons/hicolor/scalable/apps/
+  '';
+
+  preFixup = ''
+    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
+  '';
+
   build-system = with python3Packages; [ setuptools ];
 
   dependencies = with python3Packages; [
@@ -39,27 +50,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pyqt6-sip
   ];
 
-  postInstall = ''
-    install -Dm555 share/applications/com.rtosta.zapzap.desktop -t $out/share/applications/
-    install -Dm555 share/icons/com.rtosta.zapzap.svg -t $out/share/icons/hicolor/scalable/apps/
-  '';
-
   dontWrapQtApps = true;
-  preFixup = ''
-    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
-  '';
-
-  # has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "zapzap" ];
 
   meta = {
     description = "WhatsApp desktop application written in Pyqt6 + PyQt6-WebEngine";
     homepage = "https://rtosta.com/zapzap/";
-    mainProgram = "zapzap";
-    license = lib.licenses.gpl3Only;
     changelog = "https://github.com/rafatosta/zapzap/releases/tag/${finalAttrs.src.tag}";
+    license = lib.licenses.gpl3Only;
     maintainers = [ lib.maintainers.eymeric ];
+    mainProgram = "zapzap";
   };
 })

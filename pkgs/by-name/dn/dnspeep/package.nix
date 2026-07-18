@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   libpcap,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -28,10 +28,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Spy on the DNS queries your computer is making";
-    mainProgram = "dnspeep";
     homepage = "https://github.com/jvns/dnspeep";
     changelog = "https://github.com/jvns/dnspeep/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.progrm_jarvis ];
+    mainProgram = "dnspeep";
   };
 })

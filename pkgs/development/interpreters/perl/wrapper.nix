@@ -1,14 +1,14 @@
 {
   lib,
-  perl,
+  stdenv,
   buildEnv,
   makeBinaryWrapper,
-  stdenv,
+  perl,
+  requiredPerlModules,
   extraLibs ? [ ],
   extraOutputsToInstall ? [ ],
-  postBuild ? "",
   ignoreCollisions ? false,
-  requiredPerlModules,
+  postBuild ? "",
 }:
 
 # Create a perl executable that knows about additional packages.
@@ -18,11 +18,8 @@ let
       paths = requiredPerlModules (extraLibs ++ [ perl ]);
     in
     buildEnv {
-      name = "${perl.name}-env";
-
       inherit paths;
       inherit ignoreCollisions;
-      extraOutputsToInstall = [ "out" ] ++ extraOutputsToInstall;
 
       # TODO: remove stdenv.cc as soon as it is added to propagatedNativeBuildInputs of makeBinaryWrapper
       nativeBuildInputs = [
@@ -54,14 +51,17 @@ let
       ''
       + postBuild;
 
+      extraOutputsToInstall = [ "out" ] ++ extraOutputsToInstall;
+      name = "${perl.name}-env";
+
+      passthru = perl.passthru // {
+        inherit perl;
+        interpreter = "${env}/bin/perl";
+      };
+
       meta = perl.meta // {
         outputsToInstall = [ "out" ];
       }; # remove "man" from meta.outputsToInstall. pkgs.buildEnv produces no "man", it puts everything to "out"
-
-      passthru = perl.passthru // {
-        interpreter = "${env}/bin/perl";
-        inherit perl;
-      };
     };
 in
 env

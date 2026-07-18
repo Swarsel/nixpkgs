@@ -1,7 +1,7 @@
 {
+  lib,
   fetchFromGitHub,
   rustPlatform,
-  lib,
 }:
 
 rustPlatform.buildRustPackage {
@@ -23,8 +23,8 @@ rustPlatform.buildRustPackage {
     description = "Generate changelogs from local git metadata";
     homepage = "https://github.com/clog-tool/clog-cli";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.nthorne ];
+    platforms = lib.platforms.unix;
     mainProgram = "clog";
   };
 }

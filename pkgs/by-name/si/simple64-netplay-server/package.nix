@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,7 +21,7 @@ buildGoModule (finalAttrs: {
     description = "Dedicated server for simple64 netplay";
     homepage = "https://github.com/simple64/simple64-netplay-server";
     license = lib.licenses.gpl3Only;
-    mainProgram = "simple64-netplay-server";
     maintainers = with lib.maintainers; [ tomasajt ];
+    mainProgram = "simple64-netplay-server";
   };
 })

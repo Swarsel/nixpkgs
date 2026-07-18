@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  unstableGitUpdater,
   cmake,
+  unstableGitUpdater,
   zlib,
 }:
 
@@ -38,8 +38,8 @@ stdenv.mkDerivation {
   };
 
   meta = {
-    homepage = "https://github.com/vgmrips/vgmtools";
     description = "Collection of tools for the VGM file format";
+    homepage = "https://github.com/vgmrips/vgmtools";
     license = lib.licenses.gpl2Only; # Not clarified whether Only or Plus
     maintainers = with lib.maintainers; [ OPNA2608 ];
     platforms = lib.platforms.all;

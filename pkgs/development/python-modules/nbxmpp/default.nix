@@ -1,8 +1,8 @@
 {
   lib,
-  buildPythonPackage,
   fetchurl,
   fetchFromGitLab,
+  buildPythonPackage,
   gobject-introspection,
   idna,
   libsoup_3,
@@ -17,14 +17,13 @@
 buildPythonPackage rec {
   pname = "nbxmpp";
   version = "7.2.0";
-  pyproject = true;
 
   src = fetchFromGitLab {
-    domain = "dev.gajim.org";
     owner = "gajim";
     repo = "python-nbxmpp";
     tag = version;
     hash = "sha256-OtJzCcaqcy2a46iNRcpknORgdTbzMtILocs5c6Akzrc=";
+    domain = "dev.gajim.org";
   };
 
   nativeBuildInputs = [
@@ -45,12 +44,12 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "nbxmpp" ];
 
   meta = {
-    homepage = "https://dev.gajim.org/gajim/python-nbxmpp";
     description = "Non-blocking Jabber/XMPP module";
+    homepage = "https://dev.gajim.org/gajim/python-nbxmpp";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
   };

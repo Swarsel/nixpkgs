@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   parver,
   pulumi,
   semver,
@@ -12,7 +12,6 @@ buildPythonPackage rec {
   pname = "pulumi-aws";
   # Version is independent of pulumi's.
   version = "7.24.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pulumi";
@@ -20,8 +19,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-PADClQ8ct9w0igKxQNoW4Act0n0vx1HiD7ysH4PwgFU=";
   };
-
-  sourceRoot = "${src.name}/sdk/python";
 
   postPatch = ''
     # We need the version of pulumi-aws in its package metadata to be accurate
@@ -31,6 +28,8 @@ buildPythonPackage rec {
       --replace-fail "7.0.0a0+dev" "${version}"
   '';
 
+  # Checks require cloud resources
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -39,10 +38,9 @@ buildPythonPackage rec {
     semver
   ];
 
-  # Checks require cloud resources
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pulumi_aws" ];
+  sourceRoot = "${src.name}/sdk/python";
 
   meta = {
     description = "Pulumi python amazon web services provider";

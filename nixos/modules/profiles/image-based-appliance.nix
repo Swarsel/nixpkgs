@@ -12,15 +12,13 @@
     "${modulesPath}/profiles/minimal.nix"
   ];
 
-  # The system cannot be rebuilt.
-  nix.enable = false;
-  system.switch.enable = false;
-
-  # The system is static.
-  users.mutableUsers = false;
-
   # The system avoids interpreters as much as possible to reduce its attack
   # surface.
   boot.initrd.systemd.enable = lib.mkDefault true;
   networking.useNetworkd = lib.mkDefault true;
+  # The system cannot be rebuilt.
+  nix.enable = false;
+  system.switch.enable = false;
+  # The system is static.
+  users.mutableUsers = false;
 }

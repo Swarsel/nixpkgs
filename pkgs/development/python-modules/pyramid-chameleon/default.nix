@@ -2,8 +2,8 @@
   lib,
   buildPythonPackage,
   chameleon,
-  fetchpatch,
   fetchPypi,
+  fetchpatch,
   pyramid,
   pytestCheckHook,
   setuptools,
@@ -13,12 +13,11 @@
 buildPythonPackage rec {
   pname = "pyramid-chameleon";
   version = "0.3";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "pyramid_chameleon";
     inherit version;
     hash = "sha256-0XZ5KlDrAV14ZbRL2bJKe9BIn6mlzrvRe54FBIzvkBc=";
+    pname = "pyramid_chameleon";
   };
 
   patches = [
@@ -26,9 +25,9 @@ buildPythonPackage rec {
     ./test-renderers-pyramid-import.patch
     # Compatibility with pyramid 2, https://github.com/Pylons/pyramid_chameleon/pull/34
     (fetchpatch {
+      hash = "sha256-cPS7JhcS8nkBS1T0OdZke25jvWHT0qkPFjyPUDKHBGU=";
       name = "support-later-limiter.patch";
       url = "https://github.com/Pylons/pyramid_chameleon/commit/36348bf4c01f52c3461e7ba4d20b1edfc54dba50.patch";
-      hash = "sha256-cPS7JhcS8nkBS1T0OdZke25jvWHT0qkPFjyPUDKHBGU=";
     })
   ];
 
@@ -40,7 +39,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "pyramid_chameleon" ];
 
   meta = {

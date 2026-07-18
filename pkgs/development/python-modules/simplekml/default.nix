@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "simplekml";
   version = "1.3.6";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
 
   # no tests are defined in 1.3.5
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "simplekml" ];
 
   meta = {

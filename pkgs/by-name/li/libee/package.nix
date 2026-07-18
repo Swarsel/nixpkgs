@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libestr,
+  pkg-config,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libee";
@@ -21,7 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Event Expression Library inspired by CEE";
     homepage = "http://www.libee.org/";
     license = lib.licenses.lgpl21Plus;
-    mainProgram = "libee-convert";
     platforms = lib.platforms.unix;
+    mainProgram = "libee-convert";
   };
 })

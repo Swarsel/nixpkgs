@@ -5,13 +5,6 @@
 
 # This file contains an extra mapping from Julia packages to the Python packages they depend on.
 rec {
-  packageMapping = {
-    ExcelFiles = [ "xlrd" ];
-    PyPlot = [ "matplotlib" ];
-    PythonPlot = [ "matplotlib" ];
-    SymPy = [ "sympy" ];
-  };
-
   getExtraPythonPackages =
     names:
     lib.concatMap (
@@ -21,4 +14,11 @@ rec {
       in
       lib.filter (x: lib.hasAttr x python3.pkgs) allCandidates
     ) names;
+
+  packageMapping = {
+    ExcelFiles = [ "xlrd" ];
+    PyPlot = [ "matplotlib" ];
+    PythonPlot = [ "matplotlib" ];
+    SymPy = [ "sympy" ];
+  };
 }

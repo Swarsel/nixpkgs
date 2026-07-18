@@ -1,19 +1,19 @@
 {
   lib,
+  fetchFromGitHub,
   beautifulsoup4,
   bleach,
   buildPythonPackage,
   chardet,
   django,
   django-contrib-comments,
-  fetchFromGitHub,
   filebrowser-safe,
   grappelli-safe,
   isPyPy,
   pillow,
-  pytestCheckHook,
   pytest-cov-stub,
   pytest-django,
+  pytestCheckHook,
   pytz,
   requests,
   requests-oauthlib,
@@ -25,9 +25,6 @@
 buildPythonPackage rec {
   pname = "mezzanine";
   version = "6.1.1";
-  format = "setuptools";
-
-  disabled = isPyPy;
 
   src = fetchFromGitHub {
     owner = "stephenmcd";
@@ -39,6 +36,13 @@ buildPythonPackage rec {
   patches = [
     # drop git requirement from tests and fake stable branch
     ./tests-no-git.patch
+  ];
+
+  nativeCheckInputs = [
+    pytest-django
+    pytest-cov-stub
+    pytestCheckHook
+    requirements-parser
   ];
 
   build-system = [ setuptools ];
@@ -59,18 +63,12 @@ buildPythonPackage rec {
   ]
   ++ bleach.optional-dependencies.css;
 
-  nativeCheckInputs = [
-    pytest-django
-    pytest-cov-stub
-    pytestCheckHook
-    requirements-parser
-  ];
+  disabled = isPyPy;
+  format = "setuptools";
 
   meta = {
-    # not updated to django 5.x
-    broken = lib.versionAtLeast django.version "5";
     description = "Content management platform built using the Django framework";
-    mainProgram = "mezzanine-project";
+
     longDescription = ''
       Mezzanine is a powerful, consistent, and flexible content
       management platform. Built using the Django framework, Mezzanine
@@ -86,10 +84,14 @@ buildPythonPackage rec {
       Mezzanine provides most of its functionality by default. This
       approach yields a more integrated and efficient platform.
     '';
+
     homepage = "http://mezzanine.jupo.org/";
-    downloadPage = "https://github.com/stephenmcd/mezzanine/releases";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ prikhi ];
     platforms = lib.platforms.unix;
+    mainProgram = "mezzanine-project";
+    # not updated to django 5.x
+    broken = lib.versionAtLeast django.version "5";
+    downloadPage = "https://github.com/stephenmcd/mezzanine/releases";
   };
 }

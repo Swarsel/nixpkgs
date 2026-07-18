@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
   varint,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "py-multicodec";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "multiformats";
@@ -19,14 +18,14 @@ buildPythonPackage rec {
     hash = "sha256-0s2ICkPkfF+D7HRrnPS2IRm380UhdVg5NCS7VFTP1P4=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
     varint
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "multicodec" ];
 
   meta = {

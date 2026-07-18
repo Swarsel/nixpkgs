@@ -1,15 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
   # dependencies
   aiohttp,
+  buildPythonPackage,
   click,
   msgpack,
+  # build-system
+  poetry-core,
   textual,
   textual-serve,
   typing-extensions,
@@ -18,7 +16,6 @@
 buildPythonPackage rec {
   pname = "textual-dev";
   version = "1.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Textualize";
@@ -27,6 +24,8 @@ buildPythonPackage rec {
     hash = "sha256-0NOFc0FKbVEeZ6rNZGX8lo5W8RU3lKJlH+AqRCifuOE=";
   };
 
+  # Tests require a running textual WS server
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -38,9 +37,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  # Tests require a running textual WS server
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "textual_dev" ];
 
   meta = {

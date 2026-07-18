@@ -1,14 +1,14 @@
 {
   lib,
-  rustPlatform,
-  steamcmd,
   fetchFromGitHub,
-  steam-run,
   openssl,
   pkg-config,
   runtimeShell,
-  withWine ? false,
+  rustPlatform,
+  steam-run,
+  steamcmd,
   wine,
+  withWine ? false,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -22,14 +22,15 @@ rustPlatform.buildRustPackage rec {
     sha256 = "sha256-3vBIpPIsh+7PjTuNNqp7e/pdciOYnzuGkjb/Eks6QJw=";
   };
 
-  cargoHash = "sha256-/39MrHCdJGTBTZplQcwYk6zpaVFYHpRKHhZC1GTNysY=";
-
   nativeBuildInputs = [
     openssl
     pkg-config
   ];
 
   buildInputs = [ steamcmd ] ++ lib.optional withWine wine;
+  cargoHash = "sha256-/39MrHCdJGTBTZplQcwYk6zpaVFYHpRKHhZC1GTNysY=";
+  env.PKG_CONFIG_PATH = "${openssl.dev}/lib/pkgconfig";
+  checkFlags = [ "--skip=impure" ];
 
   preFixup = ''
     mv $out/bin/steam-tui $out/bin/.steam-tui-unwrapped
@@ -41,17 +42,15 @@ rustPlatform.buildRustPackage rec {
     chmod +x $out/bin/steam-tui
   '';
 
-  checkFlags = [ "--skip=impure" ];
-
-  env.PKG_CONFIG_PATH = "${openssl.dev}/lib/pkgconfig";
-
   meta = {
     description = "Rust TUI client for steamcmd";
     homepage = "https://github.com/dmadisetti/steam-tui";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       dmadisetti
     ];
+
     # steam only supports that platform
     platforms = [ "x86_64-linux" ];
     mainProgram = "steam-tui";

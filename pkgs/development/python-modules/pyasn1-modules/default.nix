@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pyasn1,
   pytestCheckHook,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pyasn1-modules";
   version = "0.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyasn1";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
     hash = "sha256-jpMIxQ4BJ7MY3cV276sVJv+3M/MMFKRIoL2m2QJFxRY=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pyasn1 ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ pyasn1 ];
+  pyproject = true;
   pythonImportsCheck = [ "pyasn1_modules" ];
 
   meta = {

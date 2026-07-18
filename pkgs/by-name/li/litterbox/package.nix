@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  libressl,
   fetchzip,
+  libressl,
   pkg-config,
   sqlite,
 }:
@@ -16,14 +16,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-w4qW7J5CKm+hXHsNNbl9roBslHD14JOe0Nj5WntETqM=";
   };
 
+  strictDeps = true;
+  nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libressl
     sqlite
   ];
-
-  nativeBuildInputs = [ pkg-config ];
-
-  strictDeps = true;
 
   buildFlags = [ "all" ];
 
@@ -31,8 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Simple TLS-only IRC logger";
     homepage = "https://code.causal.agency/june/litterbox";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "litterbox";
     maintainers = with lib.maintainers; [ ajwhouse ];
     platforms = lib.platforms.linux;
+    mainProgram = "litterbox";
   };
 })

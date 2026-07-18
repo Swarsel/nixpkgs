@@ -1,12 +1,12 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
+  libevdev,
   libx11,
   libxi,
   libxtst,
-  libevdev,
+  pkg-config,
+  rustPlatform,
   udevCheckHook,
 }:
 
@@ -21,9 +21,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-44F4CdsDHuN2FuijnpfmoFy4a/eAbYOoBYijl9mOctg=";
   };
 
-  cargoHash = "sha256-3ylJSb6ItIkOl5Unhnm5aL83mQvWIM0PUg+1lMtUbPY=";
-
-  doInstallCheck = true;
+  nativeBuildInputs = [
+    pkg-config
+    udevCheckHook
+  ];
 
   buildInputs = [
     libx11
@@ -32,10 +33,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libevdev
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-    udevCheckHook
-  ];
+  cargoHash = "sha256-3ylJSb6ItIkOl5Unhnm5aL83mQvWIM0PUg+1lMtUbPY=";
 
   postInstall = ''
     mkdir -p $out/etc/udev/rules.d/
@@ -43,12 +41,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     echo 'KERNEL=="/dev/input/event*", SUBSYSTEM=="misc", TAG+="uaccess", OPTIONS+="static_node=uinput"' >> $out/etc/udev/rules.d/80-mouse-actions.rules
   '';
 
+  doInstallCheck = true;
+
   meta = {
     description = "Execute commands from mouse events such as clicks/wheel on the side/corners of the screen, or drawing shapes";
     homepage = "https://github.com/jersou/mouse-actions";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ rgri ];
-    mainProgram = "mouse-actions";
     platforms = lib.platforms.linux;
+    mainProgram = "mouse-actions";
   };
 })

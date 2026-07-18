@@ -1,7 +1,7 @@
 {
+  lib,
   buildEnv,
   callPackage,
-  lib,
   makeBinaryWrapper,
   postgresql,
 }:
@@ -20,8 +20,22 @@ let
   };
 in
 buildEnv (finalAttrs: {
-  pname = "${postgresql.pname}-and-plugins";
   inherit (postgresql) version;
+  pname = "${postgresql.pname}-and-plugins";
+
+  postBuild =
+    let
+      args = lib.concatMap (ext: ext.wrapperArgs or [ ]) installedExtensions;
+    in
+    ''
+      wrapProgram "$out/bin/postgres" ${lib.concatStringsSep " " args}
+    '';
+
+  derivationArgs = {
+    strictDeps = true;
+    nativeBuildInputs = [ makeBinaryWrapper ];
+  };
+
   paths = installedExtensions ++ [
     # consider keeping in-sync with `postBuild` below
     postgresql
@@ -37,21 +51,9 @@ buildEnv (finalAttrs: {
     "/share/postgresql/tsearch_data"
   ];
 
-  derivationArgs = {
-    strictDeps = true;
-    nativeBuildInputs = [ makeBinaryWrapper ];
-  };
-
-  postBuild =
-    let
-      args = lib.concatMap (ext: ext.wrapperArgs or [ ]) installedExtensions;
-    in
-    ''
-      wrapProgram "$out/bin/postgres" ${lib.concatStringsSep " " args}
-    '';
-
   passthru = {
     inherit installedExtensions;
+
     inherit (postgresql)
       pkgs
       psqlSchema
@@ -59,8 +61,8 @@ buildEnv (finalAttrs: {
 
     pg_config = postgresql.pg_config.override {
       outputs = {
-        out = finalAttrs.finalPackage;
         man = finalAttrs.finalPackage;
+        out = finalAttrs.finalPackage;
       };
     };
 
@@ -70,8 +72,7 @@ buildEnv (finalAttrs: {
     ) postgresql.tests;
 
     withJIT = recurse (_: installedExtensions ++ [ postgresql.jit ]);
-    withoutJIT = recurse (_: lib.remove postgresql.jit installedExtensions);
-
     withPackages = f': recurse (ps: installedExtensions ++ f' ps);
+    withoutJIT = recurse (_: lib.remove postgresql.jit installedExtensions);
   };
 })
